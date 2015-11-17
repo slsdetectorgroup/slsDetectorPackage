@@ -1435,6 +1435,12 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   */
   int resetCounterBlock(int startACQ=0);
 
+  /** set/get counter bit in detector
+   * @param i is -1 to get, 0 to reset and any other value to set the counter bit
+     /returns the counter bit in detector
+   */
+  int setCounterBit(int i = -1);
+
 
   int getMoveFlag(int imod){if (moveFlag) return *moveFlag; else return 1;};
 

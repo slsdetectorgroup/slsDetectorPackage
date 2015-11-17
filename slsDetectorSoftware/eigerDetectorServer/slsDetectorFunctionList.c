@@ -441,6 +441,18 @@ int enableTenGigabitEthernet(int val){
 }
 
 
+int setCounterBit(int val){
+	if(val!=-1){
+		Feb_Control_Set_Counter_Bit(val);
+#ifdef VERBOSE
+	printf("Counter Bit:%d\n",val);
+#endif
+	}
+
+	return Feb_Control_Get_Counter_Bit();
+}
+
+
 int setModule(sls_detector_module myMod, int* gain, int* offset){
 	int retval[2];
 	int i;
@@ -582,12 +594,9 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 
 
 int startReceiver(int d){
-
-	//reset frame number
+	printf("Going to prepare for acquisition with counter_bit:%d\n",Feb_Control_Get_Counter_Bit());
+	Feb_Control_PrepareForAcquisition();
 	printf("Going to reset Frame Number\n");
-
-	//if(master)
-		Feb_Control_PrepareForAcquisition();
 	Beb_ResetFrameNumber();
 
 	return OK;

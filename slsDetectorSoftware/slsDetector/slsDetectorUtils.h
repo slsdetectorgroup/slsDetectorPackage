@@ -382,8 +382,11 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual int resetCounterBlock(int startACQ=0)=0;
 
-
-
+  /** set/get counter bit in detector
+   * @param i is -1 to get, 0 to reset and any other value to set the counter bit
+     /returns the counter bit in detector
+   */
+  virtual int setCounterBit(int i = -1)=0;
 
 
   /**

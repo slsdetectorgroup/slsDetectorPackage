@@ -93,7 +93,9 @@ enum {
   F_SET_ALL_TRIMBITS,  /** < set all trimbits to this value */
 
   F_SET_CTB_PATTERN,  /** < loads a pattern in the CTB */
-  F_WRITE_ADC_REG  /** < writes an ADC register */
+  F_WRITE_ADC_REG,  /** < writes an ADC register */
+
+  F_SET_COUNTER_BIT  /** < set/reset counter bit in detector for eiger */
 
   /* Always append functions hereafter!!! */
 

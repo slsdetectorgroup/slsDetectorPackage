@@ -5721,6 +5721,41 @@ int slsDetector::resetCounterBlock(int startACQ){
 
 
 
+int slsDetector::setCounterBit(int i){
+	int fnum=F_SET_COUNTER_BIT;
+	int ret = FAIL;
+	int retval=-1;
+	char mess[100];
+
+	if(thisDetector->onlineFlag==ONLINE_FLAG){
+#ifdef VERBOSE
+		if(i ==-1)
+			std::cout<< "Getting counter bit from detector" << endl;
+		else if(i==0)
+			std::cout<< "Resetting counter bit in detector " << endl;
+		else
+			std::cout<< "Setting counter bit in detector " <<  endl;
+#endif
+		if (connectControl() == OK){
+
+			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+			controlSocket->SendDataOnly(&i,sizeof(i));
+			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			if (ret==FAIL){
+				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+				std::cout<< "Receiver returned error: " << mess << std::endl;
+				setErrorMask((getErrorMask())|(COULD_NOT_SET_COUNTER_BIT));
+			}
+			controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+			controlSocket->Disconnect();
+			if (ret==FORCE_UPDATE)
+				updateDetector();
+
+		}
+	}
+	return retval;
+}
+
 
 
 

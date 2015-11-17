@@ -175,6 +175,7 @@ int function_table() {
 	flist[F_CALIBRATE_PEDESTAL]=&calibrate_pedestal;
 	flist[F_ENABLE_TEN_GIGA]=&enable_ten_giga;
 	flist[F_SET_ALL_TRIMBITS]=&set_all_trimbits;
+	flist[F_SET_COUNTER_BIT]=&set_counter_bit;
 
 
 #ifdef VERBOSE
@@ -3513,7 +3514,7 @@ int calibrate_pedestal(int file_des){
 
 int enable_ten_giga(int file_des) {
 	int n;
-	int retval;
+	int retval=-1;
 	int ret=OK,ret1=OK;
 	int arg = -1;
 
@@ -3606,4 +3607,48 @@ int set_all_trimbits(int file_des){
 	}
 	return ret;
 
+}
+
+
+
+
+
+int set_counter_bit(int file_des) {
+	int n;
+	int retval = -1;
+	int ret=OK,ret1=OK;
+	int arg = -1;
+
+	sprintf(mess,"Can't set/rest counter bit \n");
+	/* receive arguments */
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+	/* execute action */
+	if(ret != FAIL){
+#ifdef VERBOSE
+		printf("Getting/Setting/Resetting counter bit :%d \n",arg);
+#endif
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+		retval=setCounterBit(arg);
+		if((arg != -1) && (retval != arg))
+			ret=FAIL;
+		else if (differentClients==1) {
+			ret=FORCE_UPDATE;
+		}
+#endif
+	}
+	/* send answer */
+	/* send OK/failed */
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
+	if (ret==FAIL)
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
+	/* send return argument */
+	n += sendData(file_des,&retval,sizeof(retval),INT32);
+	/*return ok/fail*/
+	return ret;
 }

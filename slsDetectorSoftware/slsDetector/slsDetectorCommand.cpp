@@ -163,6 +163,9 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdCounter;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="setctrbit"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdCounter;
+  i++;
 
   /* trim/cal directories */
   descrToFuncMap[i].m_pFuncName="trimdir"; //OK
@@ -2203,6 +2206,7 @@ string slsDetectorCommand::helpImage(int narg, char *args[], int action){
 
 string slsDetectorCommand::cmdCounter(int narg, char *args[], int action){
   int ival;
+  char answer[100];
   string sval;
   int retval;
   if (action==HELP_ACTION)
@@ -2229,6 +2233,16 @@ string slsDetectorCommand::cmdCounter(int narg, char *args[], int action){
       retval=myDet->resetCounterBlock(ival);
   }
 
+  else if (string(args[0])==string("setctrbit")){
+	  if (action==PUT_ACTION){
+		  if (!sscanf(args[1],"%d",&ival))
+			  return string("Could not scan resetctrbit input ")+string(args[1]);
+		  if(ival>=0)
+			  sprintf(answer,"%d",myDet->setCounterBit(ival));
+	  }else
+		  sprintf(answer,"%d",myDet->setCounterBit());
+	  return string(answer);
+  }
 
   if(retval==OK)
     return string("Counter read/reset succesfully");
@@ -2243,10 +2257,13 @@ string slsDetectorCommand::helpCounter(int narg, char *args[], int action){
   if (action==PUT_ACTION || action==HELP_ACTION){
     os << "readctr \t  Cannot put"<< std::endl;
     os << "resetctr i \t  resets counter in detector, restarts acquisition if i=1"<< std::endl;
+    os << "setctrbit i \t  sets/resets counter bit in detector"<< std::endl;
   }
-  if (action==GET_ACTION || action==HELP_ACTION)
-    os << "readctr i fname\t  reads counter in detector to file fname, restarts acquisition if i=1"<< std::endl;
-  os << "resetctr \t  Cannot get"<< std::endl;
+  if (action==GET_ACTION || action==HELP_ACTION){
+	  os << "readctr i fname\t  reads counter in detector to file fname, restarts acquisition if i=1"<< std::endl;
+	  os << "resetctr \t  Cannot get"<< std::endl;
+	  os << "setctrbit i \t  gets the counter bit in detector"<< std::endl;
+  }
   return os.str();
 }
 

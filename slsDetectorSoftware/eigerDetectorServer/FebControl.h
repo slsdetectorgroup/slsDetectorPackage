@@ -101,6 +101,7 @@ int Feb_Control_GetModuleNumber();
   int Feb_Control_StartDAQOnlyNWaitForFinish(int sleep_time_us);
 
   int Feb_Control_ResetChipCompletely();
+  int Feb_Control_ResetChipPartially();
 
   //struct sockaddr_in Feb_Control_serv_addr;
  /*
@@ -174,6 +175,8 @@ int Feb_Control_GetModuleNumber();
   int Feb_Control_SetTestModeVariable(int on);
   int Feb_Control_GetTestModeVariable();
 
+  void Feb_Control_Set_Counter_Bit(int value);
+  int Feb_Control_Get_Counter_Bit();
 
 
 

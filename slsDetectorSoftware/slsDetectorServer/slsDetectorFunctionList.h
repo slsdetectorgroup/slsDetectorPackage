@@ -47,6 +47,7 @@ int setHighVolage(int val, int imod);
 #ifdef EIGERD
 int setIODelay(int val, int imod);
 int enableTenGigabitEthernet(int val);
+int setCounterBit(int val);
 #endif
 
 #if defined(MYTHEND) || defined(GOTTHARDD)

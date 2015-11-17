@@ -55,6 +55,8 @@ unsigned int* Feb_Control_last_downloaded_trimbits;
 int Feb_Control_module_number;
 int Feb_Control_current_index;
 
+int counter_bit = 1;
+
 
 void Module_Module(struct Module* mod,unsigned int number, unsigned int address_top){
 	unsigned int i;
@@ -1408,7 +1410,18 @@ int Feb_Control_ResetChipCompletely(){
 		printf("Warning: could not ResetChipCompletely().\n");;
 		return 0;
 	}
+	printf("Chip reset completely\n");
+	return 1;
+}
 
+
+
+int Feb_Control_ResetChipPartially(){
+	if(!Feb_Control_SetCommandRegister(DAQ_RESET_PERIPHERY & DAQ_RESET_COLUMN_SELECT) || !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+		printf("Warning: could not ResetChipPartially().\n");;
+		return 0;
+	}
+	printf("Chip reset partially\n");
 	return 1;
 }
 
@@ -1524,7 +1537,12 @@ int Feb_Control_PrepareForAcquisition(){//return 1;
 		return 0;
 	}
 
-	if(!Feb_Control_ResetChipCompletely()){
+	int ret=0;
+	if(counter_bit)
+		ret = Feb_Control_ResetChipCompletely();
+	else
+		ret = Feb_Control_ResetChipPartially();
+	if(!ret){
 		printf("Trouble resetting chips ...\n");;
 		return 0;
 	}
@@ -1588,4 +1606,13 @@ int Feb_Control_SaveAllTrimbitsTo(int value){
 	for(i=0;i<Feb_Control_trimbit_size;i++)
 		chanregs[i] = value;
 	return Feb_Control_SetTrimbits(0,chanregs);
+}
+
+
+void Feb_Control_Set_Counter_Bit(int value){
+	counter_bit = value;
+}
+
+int Feb_Control_Get_Counter_Bit(){
+	return counter_bit;
 }

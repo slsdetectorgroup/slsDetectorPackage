@@ -622,10 +622,10 @@ int startStateMachine(){
 
 
 int stopStateMachine(){
-	printf("Going to stop acquisition\n");
+	cprintf(BG_RED,"Going to stop acquisition\n");
 	if(Feb_Control_StopAcquisition() & Beb_StopAcquisition())
 		return OK;
-	printf("failed to stop acquisition\n");
+	cprintf(BG_RED,"failed to stop acquisition\n");
 	return FAIL;
 }
 

@@ -3546,62 +3546,62 @@ int* slsDetector::readFrame(){
 
 
 int* slsDetector::getDataFromDetector(int *retval){
-  int nel=thisDetector->dataBytes/sizeof(int);
-  int n;
+	int nel=thisDetector->dataBytes/sizeof(int);
+	int n;
 
-  int *r=retval;
+	int *r=retval;
 
 
-  //	int* retval=new int[nel];
+	//	int* retval=new int[nel];
 
-  if (retval==NULL)
-    retval=new int[nel];
+	if (retval==NULL)
+		retval=new int[nel];
 
-  int ret=FAIL;
-  char mess[100]="Nothing";
+	int ret=FAIL;
+	char mess[100]="Nothing";
 
 #ifdef VERBOSE
-  std::cout<< "getting data "<< thisDetector->dataBytes << " " << nel<< std::endl;
+	std::cout<< "getting data "<< thisDetector->dataBytes << " " << nel<< std::endl;
 #endif
-  controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
 #ifdef VERBOSE
-  cout << "ret=" << ret << endl;
+	cout << "ret=" << ret << endl;
 #endif
 
-  if (ret!=OK) {
-    n= controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-   // if(thisDetector->receiverOnlineFlag == OFFLINE_FLAG)
-    if (ret==FAIL) {
-      thisDetector->stoppedFlag=1;
-      std::cout<< "Detector returned: " << mess << " " << n << std::endl;
-    } else {
-      ;
+	if (ret!=OK) {
+		n= controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+		// if(thisDetector->receiverOnlineFlag == OFFLINE_FLAG)
+		if (ret==FAIL) {
+			thisDetector->stoppedFlag=1;
+			std::cout<< "Detector returned: " << mess << " " << n << std::endl;
+		} else {
+			;
 #ifdef VERBOSE
-      std::cout<< "Detector successfully returned: " << mess << " " << n << std::endl;
+			std::cout<< "Detector successfully returned: " << mess << " " << n << std::endl;
 #endif
-    }
-    if (r==NULL) {
-      delete [] retval;
-    }
-    return NULL;
-  } else {
-    n=controlSocket->ReceiveDataOnly(retval,thisDetector->dataBytes);
+		}
+		if (r==NULL) {
+			delete [] retval;
+		}
+		return NULL;
+	} else {
+		n=controlSocket->ReceiveDataOnly(retval,thisDetector->dataBytes);
 
-    //   #ifdef VERBOSE
-    std::cout<< "Received "<< n << " data bytes" << std::endl;
-    // #endif
-    if (n!=thisDetector->dataBytes) {
-      std::cout<< "wrong data size received: received " << n << " but expected " << thisDetector->dataBytes << std::endl;
-      thisDetector->stoppedFlag=1;
-      ret=FAIL;
-      if (r==NULL) {
-	delete [] retval;
-      }
-      return NULL;
-    }
-  }
-  //  cout << "get data returning " << endl;
-  return retval;
+#ifdef VERBOSE
+		std::cout<< "Received "<< n << " data bytes" << std::endl;
+#endif
+		if (n!=thisDetector->dataBytes) {
+			std::cout<< "wrong data size received: received " << n << " but expected " << thisDetector->dataBytes << std::endl;
+			thisDetector->stoppedFlag=1;
+			ret=FAIL;
+			if (r==NULL) {
+				delete [] retval;
+			}
+			return NULL;
+		}
+	}
+	//  cout << "get data returning " << endl;
+	return retval;
 
 };
 
@@ -5207,8 +5207,10 @@ char* slsDetector::setDetectorIP(string detectorIP){
 
 
 char* slsDetector::setReceiver(string receiverIP){
-	if(getRunStatus()==RUNNING)
+	if(getRunStatus()==RUNNING){
+		cprintf(RED,"Acquisition already running, Stopping it.\n");
 		stopAcquisition();
+	}
 
 	strcpy(thisDetector->receiver_hostname,receiverIP.c_str());
 

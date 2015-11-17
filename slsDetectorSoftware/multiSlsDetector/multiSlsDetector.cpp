@@ -1293,66 +1293,72 @@ int multiSlsDetector::startReadOut(){
 
 int* multiSlsDetector::getDataFromDetector() {
 
-  int nel=thisMultiDetector->dataBytes/sizeof(int);
-  int n;
-  int* retval=new int[nel];
-  int *retdet, *p=retval;
-  int nodata=1, nodatadet=-1;;
- 
+	int nel=thisMultiDetector->dataBytes/sizeof(int);
+	int n;
+	int* retval=new int[nel];
+	int *retdet, *p=retval;
+	int nodata=1, nodatadet=-1;;
 
-  for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
-    if (detectors[id]) {
-      retdet=detectors[id]->getDataFromDetector(p);
-      n=detectors[id]->getDataBytes();
-      if(detectors[id]->getErrorMask())
-	setErrorMask(getErrorMask()|(1<<id));
 
-      if (retdet) {
-	nodata=0;
+	for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
+		if (detectors[id]) {
+			retdet=detectors[id]->getDataFromDetector(p);
+			n=detectors[id]->getDataBytes();
+			if(detectors[id]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<id));
+
+			if (retdet) {
+				nodata=0;
 #ifdef VERBOSE
-	cout << "Detector " << id << " returned " << n << " bytes " << endl;
+				cout << "Detector " << id << " returned " << n << " bytes " << endl;
 #endif
-      } else {
-	nodatadet=id;
+			} else {
+				nodatadet=id;
 #ifdef VERBOSE
-	cout << "Detector " << id << " does not have data left " << endl;
+				cout << "Detector " << id << " does not have data left " << endl;
 #endif
-	break;
-      }      
-      p+=n/sizeof(int);
-    }
-  }
-  if (nodatadet>=0) {
-    for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
-      if (id!=nodatadet) {
-	if (detectors[id]) {
-#ifdef VERBOSE
-	  cout << "Stopping detector "<< id << endl;
-#endif
-	  detectors[id]->stopAcquisition();
-	  if(detectors[id]->getErrorMask())
-	    setErrorMask(getErrorMask()|(1<<id));
-
-	  while ((retdet=detectors[id]->getDataFromDetector())) { 
-	    if(detectors[id]->getErrorMask())
-	      setErrorMask(getErrorMask()|(1<<id));
-
-#ifdef VERBOSE
-	    cout << "Detector "<< id << " still sent data " << endl;
-#endif
-	    delete [] retdet;
-	  }
-	  if(detectors[id]->getErrorMask())
-	    setErrorMask(getErrorMask()|(1<<id));
-
+				if(detectors[id]->getDetectorsType() != EIGER)
+					break;
+			}
+			p+=n/sizeof(int);
+		}
 	}
-      }
-    }
-    delete [] retval;
-    return NULL;
-  }
 
-  return retval;
+	//eiger returns only null
+	if(getDetectorsType() == EIGER)
+		return NULL;
+
+	if (nodatadet>=0) {
+		for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
+			if (id!=nodatadet) {
+				if (detectors[id]) {
+#ifdef VERBOSE
+					cout << "Stopping detector "<< id << endl;
+#endif
+					detectors[id]->stopAcquisition();
+					if(detectors[id]->getErrorMask())
+						setErrorMask(getErrorMask()|(1<<id));
+
+					while ((retdet=detectors[id]->getDataFromDetector())) {
+						if(detectors[id]->getErrorMask())
+							setErrorMask(getErrorMask()|(1<<id));
+
+#ifdef VERBOSE
+						cout << "Detector "<< id << " still sent data " << endl;
+#endif
+						delete [] retdet;
+					}
+					if(detectors[id]->getErrorMask())
+						setErrorMask(getErrorMask()|(1<<id));
+
+				}
+			}
+		}
+		delete [] retval;
+		return NULL;
+	}
+
+	return retval;
 };
 
 

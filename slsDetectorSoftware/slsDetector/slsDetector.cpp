@@ -7140,6 +7140,32 @@ int slsDetector::enableTenGigabitEthernet(int i){
 
 
 
+
+int slsDetector::setReceiverFifoDepth(int i){
+	int fnum=F_SET_RECEIVER_FIFO_DEPTH;
+	int ret = FAIL;
+	int retval=-1;
+
+
+	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+#ifdef VERBOSE
+		if(i ==-1)
+			std::cout<< "Getting Receiver Fifo Depth" << endl;
+		else
+			std::cout<< "Setting Receiver Fifo Depth to " << i << endl;
+#endif
+		if (connectData() == OK)
+			ret=thisReceiver->sendInt(fnum,retval,i);
+		if(ret==FAIL)
+			setErrorMask((getErrorMask())|(COULD_NOT_SET_FIFO_DEPTH));
+	}
+	return retval;
+}
+
+
+
+
+
   /******** CTB funcs */
 
   /** opens pattern file and sends pattern to CTB 

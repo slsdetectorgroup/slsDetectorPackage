@@ -407,6 +407,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   i++;
 
 
+
   /* flags */
 
   descrToFuncMap[i].m_pFuncName="flags";
@@ -916,6 +917,9 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="rx_fifodepth"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
+  i++;
 
   /* pattern generator */
 
@@ -4186,7 +4190,7 @@ string slsDetectorCommand::cmdConfiguration(int narg, char *args[], int action) 
   
   string sval;
   
-  if (narg<2)
+  if (narg<2 && cmd != "rx_printconfig")
     return string("should specify I/O file");
 
   myDet->setOnline(ONLINE_FLAG);
@@ -4203,7 +4207,7 @@ string slsDetectorCommand::cmdConfiguration(int narg, char *args[], int action) 
   } else if (cmd=="rx_printconfig"){
 	  if (action==PUT_ACTION)
 		  return string("cannot put");
-	  myDet->printReceiverConfiguration();
+	  return string(""+myDet->printReceiverConfiguration());
   }else if (cmd=="parameters") {
     if (action==PUT_ACTION) {
       sval=string(args[1]);
@@ -4353,6 +4357,19 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 
   }
 
+
+  else if(cmd=="rx_fifodepth"){
+	  if (action==PUT_ACTION){
+		  if (!sscanf(args[1],"%d",&ival))
+			  return string("Could not scan rx_fifodepth input ")+string(args[1]);
+		  if(ival>=0)
+			  sprintf(answer,"%d",myDet->setReceiverFifoDepth(ival));
+	  }else
+		  sprintf(answer,"%d",myDet->setReceiverFifoDepth());
+	  return string(answer);
+
+  }
+
     return string("could not decode command");
 
 }
@@ -4367,6 +4384,7 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
     os << "resetframescaught [any value] \t resets frames caught by receiver" << std::endl;
   	os << "r_readfreq \t sets the gui read frequency of the receiver, 0 if gui requests frame, >0 if receiver sends every nth frame to gui" << std::endl;
 	os << "tengiga \t sets system to be configure for 10Gbe if set to 1, else 1Gbe if set to 0" << std::endl;
+	os << "rx_fifodepth [val]\t sets receiver fifo depth to val" << std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION){
     os << "receiver \t returns the status of receiver - can be running or idle" << std::endl;
@@ -4374,6 +4392,7 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
     os << "frameindex \t returns the current frame index of receiver(average for multi)" << std::endl;
     os << "r_readfreq \t returns the gui read frequency of the receiver" << std::endl;
     os << "tengiga \t returns 1 if the system is configured for 10Gbe else 0 for 1Gbe" << std::endl;
+    os << "rx_fifodepth \t returns receiver fifo depth" << std::endl;
   }
   return os.str();
 

@@ -711,7 +711,11 @@ virtual int enableReceiverCompression(int i = -1)=0;
  */
 virtual int enableTenGigabitEthernet(int i = -1)=0;
 
-
+/** set/get receiver fifo depth
+ * @param i is -1 to get, any other value to set the fifo deph
+   /returns the receiver fifo depth
+ */
+virtual int setReceiverFifoDepth(int i = -1)=0;
 
   /******** CTB funcs */
 

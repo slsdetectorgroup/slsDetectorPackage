@@ -1248,6 +1248,12 @@ class multiSlsDetector  : public slsDetectorUtils {
    */
   int enableTenGigabitEthernet(int i = -1);
 
+  /** set/get receiver fifo depth
+   * @param i is -1 to get, any other value to set the fifo deph
+     /returns the receiver fifo depth
+   */
+  int setReceiverFifoDepth(int i = -1);
+
 
 
   /******** CTB funcs */

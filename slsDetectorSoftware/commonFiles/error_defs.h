@@ -51,6 +51,7 @@ using namespace std;
 #define ALLTIMBITS_NOT_SET					0x0000000000002000ULL
 #define COULD_NOT_SET_SPEED_PARAMETERS		0x0000000000004000ULL
 #define COULD_NOT_SET_READOUT_FLAGS			0x0000000000008000ULL
+#define COULD_NOT_SET_FIFO_DEPTH			0x0000000000010000ULL
 
 //											0x00000000FFFFFFFFULL
 /** @short class returning all error messages for error mask */
@@ -156,6 +157,9 @@ public:
 
 		if(slsErrorMask&COULD_NOT_SET_READOUT_FLAGS)
 			retval.append("Could not set the readout flag\n");
+
+		if(slsErrorMask&COULD_NOT_SET_FIFO_DEPTH)
+			retval.append("Could not set receiver fifo depth\n");
 
 		return retval;
 

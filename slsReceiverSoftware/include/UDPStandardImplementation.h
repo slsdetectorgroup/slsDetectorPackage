@@ -122,6 +122,13 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	int setTenGigaEnable(const bool b);
 
 
+	/**
+	 * Overridden method
+	 * Set Fifo Depth
+	 * @param i fifo depth value
+	 * @return OK or FAIL
+	 */
+	int setFifoDepth(const uint32_t i);
 
 	/*************************************************************************
 	 * Behavioral functions***************************************************
@@ -584,8 +591,8 @@ private:
 	/** Number of Jobs Per Buffer */
 	int numberofJobsPerBuffer;
 
-	/** Fifo Depth */
-	uint32_t fifoDepth;
+	/** Total fifo size */
+	uint32_t fifoSize;
 
 	/** Missing Packet identifier value */
 	const static uint16_t missingPacketValue = 0xFFFF;

@@ -235,6 +235,12 @@ class UDPInterface {
 	 */
 	virtual bool getTenGigaEnable() const = 0;
 
+	/**
+	 * Get Fifo Depth
+	 * @return fifo depth
+	 */
+	virtual uint32_t getFifoDepth() const = 0;
+
 	//***receiver status***
 	/**
 	 * Get Listening Status of Receiver
@@ -377,6 +383,13 @@ class UDPInterface {
 	 * @return OK or FAIL
 	 */
 	virtual int setTenGigaEnable(const bool b) = 0;
+
+	/**
+	 * Set Fifo Depth
+	 * @param i fifo depth value
+	 * @return OK or FAIL
+	 */
+	virtual int setFifoDepth(const uint32_t i) = 0;
 
 
 	/*************************************************************************

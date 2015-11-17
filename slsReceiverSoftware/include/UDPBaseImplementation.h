@@ -179,6 +179,13 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	bool getTenGigaEnable() const;
 
+	/**
+	 * Get Fifo Depth
+	 * @return fifo depth
+	 */
+	uint32_t getFifoDepth() const;
+
+
 	//***receiver status***
 	/**
 	 * Get Listening Status of Receiver
@@ -324,6 +331,13 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	int setTenGigaEnable(const bool b);
 
+	/**
+	 * Set Fifo Depth
+	 * @param i fifo depth value
+	 * @return OK or FAIL
+	 */
+	int setFifoDepth(const uint32_t i);
+
 
 	/*************************************************************************
 	 * Behavioral functions***************************************************
@@ -460,6 +474,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	uint32_t dynamicRange;
 	/** Ten Giga Enable*/
 	bool tengigaEnable;
+	/** Fifo Depth */
+	uint32_t fifoDepth;
 	/** Bottom Half Module Enable */
 	bool bottomEnable;
 

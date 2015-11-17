@@ -44,6 +44,7 @@ void UDPBaseImplementation::initializeMembers(){
 	numberOfFrames = 0;
 	dynamicRange = 16;
 	tengigaEnable = false;
+	fifoDepth = 0;
 	bottomEnable = false;
 
 	//***receiver parameters***
@@ -180,6 +181,8 @@ uint64_t UDPBaseImplementation::getNumberOfFrames() const{	FILE_LOG(logDEBUG) <<
 uint32_t UDPBaseImplementation::getDynamicRange() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return dynamicRange;}
 
 bool UDPBaseImplementation::getTenGigaEnable() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return tengigaEnable;}
+
+uint32_t UDPBaseImplementation::getFifoDepth() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return fifoDepth;}
 
 /***receiver status***/
 slsReceiverDefs::runStatus UDPBaseImplementation::getStatus() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return status;}
@@ -358,6 +361,15 @@ int UDPBaseImplementation::setTenGigaEnable(const bool b){
 	return OK;
 }
 
+int UDPBaseImplementation::setFifoDepth(const uint32_t i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	fifoDepth = i;
+	FILE_LOG(logINFO) << "Fifo Depth: " << i;
+
+	//overridden functions might return FAIL
+	return OK;
+}
 
 /*************************************************************************
  * Behavioral functions***************************************************

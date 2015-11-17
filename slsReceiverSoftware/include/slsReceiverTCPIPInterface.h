@@ -207,6 +207,9 @@ private:
 	/** enable 10Gbe */
 	int enable_tengiga();
 
+	/** set fifo depth */
+	int set_fifo_depth();
+
 	//General Functions
 	/** Locks Receiver */
 	int	lock_receiver();

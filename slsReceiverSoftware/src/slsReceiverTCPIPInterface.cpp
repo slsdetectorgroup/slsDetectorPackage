@@ -252,6 +252,7 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_ENABLE_RECEIVER_OVERWRITE]		= 	&slsReceiverTCPIPInterface::enable_overwrite;
 
 	flist[F_ENABLE_RECEIVER_TEN_GIGA]		= 	&slsReceiverTCPIPInterface::enable_tengiga;
+	flist[F_SET_RECEIVER_FIFO_DEPTH]		= 	&slsReceiverTCPIPInterface::set_fifo_depth;
 
 
 #ifdef VERYVERBOSE
@@ -2478,6 +2479,81 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 	//return ok/fail
 	return ret;
 }
+
+
+
+
+
+
+int slsReceiverTCPIPInterface::set_fifo_depth() {
+	ret=OK;
+	int value=-1;
+	int retval=-100;
+	strcpy(mess,"Could not set/get fifo depth for receiver\n");
+
+	// receive arguments
+	if(socket->ReceiveDataOnly(&value,sizeof(value)) < 0 ){
+		strcpy(mess,"Error reading from socket\n");
+		ret = FAIL;
+	}
+
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	if (ret==OK) {
+		if(value >= 0){
+			if (lockStatus==1 && socket->differentClients==1){
+				sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+				ret=FAIL;
+			}
+			else if (receiverBase == NULL){
+				strcpy(mess,"Receiver not set up\n");
+				ret=FAIL;
+			}
+			else if(receiverBase->getStatus()==RUNNING){
+				strcpy(mess,"Cannot set/get fifo depth while status is running\n");
+				ret=FAIL;
+			}
+			else{
+				if(value >= 0){
+					ret = receiverBase->setFifoDepth(value);
+				}
+			}
+		}
+
+
+		if (receiverBase == NULL){
+			strcpy(mess,"Receiver not set up\n");
+			ret=FAIL;
+		}else{
+			retval = receiverBase->getFifoDepth();
+			if(value >= 0 && retval != value)
+				ret = FAIL;
+		}
+
+	}
+#endif
+
+	if(ret==OK && socket->differentClients){
+		FILE_LOG(logDEBUG) << "Force update";
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL){
+		cprintf(RED,"%s\n",mess);
+		socket->SendDataOnly(mess,sizeof(mess));
+	}
+	socket->SendDataOnly(&retval,sizeof(retval));
+
+	//return ok/fail
+	return ret;
+}
+
+
+
+
 
 
 

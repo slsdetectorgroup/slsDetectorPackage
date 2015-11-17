@@ -585,10 +585,11 @@ int startReceiver(int d){
 
 	//reset frame number
 	printf("Going to reset Frame Number\n");
-	Beb_ResetFrameNumber();
 
 	//if(master)
 		Feb_Control_PrepareForAcquisition();
+	Beb_ResetFrameNumber();
+
 	return OK;
 }
 

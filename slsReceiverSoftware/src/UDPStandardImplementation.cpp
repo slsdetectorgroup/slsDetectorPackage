@@ -959,6 +959,7 @@ void UDPStandardImplementation::startReadout(){
 #ifdef DEBUG5
 				cprintf(MAGENTA,"waiting for all packets totalP:%d\n",totalP);
 #endif
+
 				usleep(5000);/* Need to find optimal time (exposure time and acquisition period) **/
 				prev = totalP;
 				totalP=0;
@@ -2315,14 +2316,11 @@ bool UDPStandardImplementation::popAndCheckEndofAcquisition(int ithread, char* w
 			else{
 				endofAcquisition = false;
 #ifdef DEBUG4
-				switch(myDetectorType){
-				case EIGER:
+				if(myDetectorType == EIGER){
 					eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(wbuffer[i] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
 					//cprintf(BLUE,"footer value:0x%x\n",i,(uint64_t)(*( (uint64_t*) wbuf_footer)));
 					cprintf(BLUE,"Fnum[%d]:%d\n",i,(uint32_t)(*( (uint64_t*) wbuf_footer)));
 					cprintf(BLUE,"Pnum[%d]:%d\n",i,*( (uint16_t*) wbuf_footer->packetNumber));
-					break;
-				default: break;
 				}
 #endif
 				if(myDetectorType == EIGER){

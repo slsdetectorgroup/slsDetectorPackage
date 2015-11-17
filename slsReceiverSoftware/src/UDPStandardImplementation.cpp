@@ -956,7 +956,9 @@ void UDPStandardImplementation::startReadout(){
 			prev = -1;
 			//wait as long as there is change from prev totalP
 			while(prev != totalP){
+#ifdef DEBUG5
 				cprintf(MAGENTA,"waiting for all packets totalP:%d\n",totalP);
+#endif
 				usleep(5000);/* Need to find optimal time (exposure time and acquisition period) **/
 				prev = totalP;
 				totalP=0;
@@ -2239,6 +2241,13 @@ void UDPStandardImplementation::waitWritingBufferForNextAcquisition(int ithread)
 	cprintf(GREEN,"Writing_Thread %d: Got 1st post. Creating File\n", ithread);
 #endif
 
+
+	//pop fifo so that its empty
+	char* temp;
+	while(!fifo[ithread]->isEmpty()){
+		cout << ithread << ":emptied buffer in fifo" << endl;
+		fifo[ithread]->pop(temp);
+	}
 
 	//create file
 	if((1<<ithread)&createFileMask){

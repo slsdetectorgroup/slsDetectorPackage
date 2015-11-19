@@ -315,7 +315,7 @@ void  slsDetectorUtils::acquire(int delflag){
        
 #ifdef VERBOSE
 	    cout << "done! " << endl;
-#endif     
+#endif
  
 
 	    if (*threadedProcessing==0){
@@ -452,12 +452,12 @@ void  slsDetectorUtils::acquire(int delflag){
       executeAction(stopScript);
     } else{
 
-  	  pthread_mutex_lock(&mg);
 #ifdef VERBOSE
     cout << "findex incremented " << endl;
  #endif
     if(*correctionMask&(1<<WRITE_FILE))
       IncrementFileIndex();
+    pthread_mutex_lock(&mg);
     setFileIndex(fileIO::getFileIndex());
     pthread_mutex_unlock(&mg);
 
@@ -465,13 +465,12 @@ void  slsDetectorUtils::acquire(int delflag){
     }
 
 
-
-	  pthread_mutex_lock(&mg);
 #ifdef VERBOSE
   cout << "findex incremented " << endl;
 #endif
   if(*correctionMask&(1<<WRITE_FILE))
     IncrementFileIndex();
+  pthread_mutex_lock(&mg);
   setFileIndex(fileIO::getFileIndex());
   pthread_mutex_unlock(&mg);
 

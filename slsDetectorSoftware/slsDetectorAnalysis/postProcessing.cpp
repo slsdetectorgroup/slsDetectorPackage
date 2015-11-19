@@ -505,9 +505,7 @@ void* postProcessing::processData(int delflag) {
 
 			cout.flush();
 			cout<<flush;
-			usleep(2000); //2ms need this else connecting error to receiver (too fast?)
-
-
+			usleep(20000); //20ms need this else connecting error to receiver (too fast)
 
 			//get progress
 			if(setReceiverOnline() == ONLINE_FLAG){

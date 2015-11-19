@@ -6429,7 +6429,7 @@ int slsDetector::setReceiverTCPSocket(string const name, int const receiver_port
     if(checkReceiverOnline().empty())
       retval=FAIL;
   } else {
-    thisDetector->receiverOnlineFlag=OFFLINE_FLAG;
+	thisDetector->receiverOnlineFlag=OFFLINE_FLAG;
 #ifdef VERBOSE
     std::cout<< "offline!" << std::endl;
 #endif

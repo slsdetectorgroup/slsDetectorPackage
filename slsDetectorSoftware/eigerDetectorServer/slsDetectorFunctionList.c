@@ -454,12 +454,14 @@ int setCounterBit(int val){
 
 
 int pulsePixel(int n, int x, int y){
-	printf("not implemented yet\n");
+	if(!Feb_Control_Pulse_Pixel(n,x,y))
+		return FAIL;
 	return OK;
 }
 
 int pulsePixelNMove(int n, int x, int y){
-	printf("not implemented yet\n");
+	if(!Feb_Control_PulsePixelNMove(n,x,y))
+		return FAIL;
 	return OK;
 }
 

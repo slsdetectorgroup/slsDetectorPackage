@@ -4945,7 +4945,6 @@ string slsDetectorCommand::helpPulse(int narg, char *args[], int action) {
 
 
 string slsDetectorCommand::cmdPulse(int narg, char *args[], int action) {
-int ival1=1,ival2=-2,ival3=-1;
 
 	if (action==HELP_ACTION)
 		return helpPulse(narg, args, action);
@@ -4953,6 +4952,17 @@ int ival1=1,ival2=-2,ival3=-1;
 		return string("cannot get ")+cmd;
 
 	myDet->setOnline(ONLINE_FLAG);
+
+	if(narg<4)
+		return string("insufficient arguments:\n" + helpPulse(narg, args, action));
+
+	int ival1=1,ival2=-2,ival3=-1;
+    if (!sscanf(args[1],"%d",&ival1))
+    	return string("Could not scan 1st argument ")+string(args[1]);
+    if (!sscanf(args[2],"%d",&ival2))
+    	return string("Could not scan 2nd argument ")+string(args[2]);
+    if (!sscanf(args[3],"%d",&ival3))
+    	return string("Could not scan 3rd argument ")+string(args[3]);
 
 	if (string(args[0])==string("pulse")){
 		if(myDet->pulsePixel(ival1,ival2,ival3) == OK)

@@ -1407,7 +1407,7 @@ unsigned int Feb_Control_ConvertTimeToRegister(float time_in_sec){
 
 int Feb_Control_ResetChipCompletely(){
 	if(!Feb_Control_SetCommandRegister(DAQ_RESET_COMPLETELY) || !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
-		printf("Warning: could not ResetChipCompletely().\n");;
+		printf("Warning: could not ResetChipCompletely() with 0x%x.\n",DAQ_RESET_COMPLETELY);
 		return 0;
 	}
 	printf("Chip reset completely\n");
@@ -1417,11 +1417,18 @@ int Feb_Control_ResetChipCompletely(){
 
 
 int Feb_Control_ResetChipPartially(){
-	if(!Feb_Control_SetCommandRegister(DAQ_RESET_PERIPHERY | DAQ_RESET_COLUMN_SELECT) || !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
-		printf("Warning: could not ResetChipPartially().\n");;
+	if(!Feb_Control_SetCommandRegister(DAQ_RESET_PERIPHERY) || !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+		printf("Warning: could not ResetChipPartially with periphery\n");
 		return 0;
 	}
-	printf("Chip reset partially\n");
+	printf("Chip reset periphery 0x%x\n",DAQ_RESET_PERIPHERY);
+
+	if(!Feb_Control_SetCommandRegister(DAQ_RESET_COLUMN_SELECT) || !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+		printf("Warning: could not ResetChipPartially with column select\n");
+		return 0;
+	}
+	printf("Chip reset column select 0x%x\n",DAQ_RESET_COLUMN_SELECT);
+
 	return 1;
 }
 
@@ -1566,6 +1573,25 @@ int Feb_Control_PrepareForAcquisition(){//return 1;
 		return 0;
 	}
 
+
+/*
+	reg_nums[0]=DAQ_REG_NEXPOSURES;
+	reg_vals[0]=Feb_Control_nimages;
+	reg_nums[1]=DAQ_REG_EXPOSURE_TIMER;
+	reg_vals[1]=Feb_Control_ConvertTimeToRegister(Feb_Control_exposure_time_in_sec);
+	reg_nums[2]=DAQ_REG_EXPOSURE_REPEAT_TIMER;
+	reg_vals[2]=Feb_Control_ConvertTimeToRegister(Feb_Control_exposure_period_in_sec);
+	reg_nums[3]=DAQ_REG_CHIP_CMDS;
+	reg_vals[3]=(Feb_Control_acquireNReadoutMode|Feb_Control_triggerMode|Feb_Control_externalEnableMode|Feb_Control_subFrameMode);
+	reg_nums[4]=DAQ_REG_SUBFRAME_EXPOSURES;
+	reg_vals[4]= Feb_Control_subframe_exposure_time_in_10nsec; //(1 means 10ns, 100 means 1000ns)
+	// if(!Feb_Interface_WriteRegisters((Module_GetTopLeftAddress(&modules[1])|Module_GetTopRightAddress(&modules[1])),20,reg_nums,reg_vals,0,0)){
+	if(!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(),5,reg_nums,reg_vals,0,0)){
+		printf("Trouble starting acquisition....\n");;
+		return 0;
+	}
+*/
+
 	return 1;
 }
 
@@ -1590,6 +1616,18 @@ int Feb_Control_StartAcquisition(){
 		printf("Trouble starting acquisition....\n");;
 		return 0;
 	}
+
+/*
+	reg_nums[0]=DAQ_REG_CTRL;
+	reg_vals[0]=0;
+	reg_nums[1]=DAQ_REG_CTRL;
+	reg_vals[1]=ACQ_CTRL_START;
+
+	if(!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(),2,reg_nums,reg_vals,0,0)){
+		printf("Trouble starting acquisition....\n");;
+		return 0;
+	}
+*/
 
 	return 1;
 }
@@ -1616,3 +1654,113 @@ void Feb_Control_Set_Counter_Bit(int value){
 int Feb_Control_Get_Counter_Bit(){
 	return counter_bit;
 }
+
+int Feb_Control_Pulse_Pixel(int npulses, int x, int y){
+	//this function is not designed for speed
+
+	int pulse_multiple = 0;  //has to be 0 or 1
+	int i;
+
+	if(x<0){
+		x=-x;
+		pulse_multiple=1;
+		printf("Pulsing pixel %d in all super columns below number %d.\n",x%8,x/8);
+	}
+	if(x<0||x>255||y<0||y>255){
+		printf("Warning: Pixel out of range.\n");
+		return 0;
+	}
+
+	//  y = 255 - y;
+	int nrowclocks = 0;
+	nrowclocks += (Feb_Control_staticBits&DAQ_STATIC_BIT_M4) ? 0 : 2*y;
+	nrowclocks += (Feb_Control_staticBits&DAQ_STATIC_BIT_M8) ? 0 : y;
+
+	Feb_Control_SetTestModeVariable(1); //on
+	Feb_Control_SetStaticBits();
+	Feb_Control_SetCommandRegister(DAQ_RESET_PERIPHERY|DAQ_RESET_COLUMN_SELECT);
+	Feb_Control_StartDAQOnlyNWaitForFinish(5000);
+
+	unsigned int serial_in = 8<<(4*(7-x%8));
+	if(!Feb_Control_Shift32InSerialIn(serial_in)){
+		printf("Warning ChipController::PulsePixel: could shift in the initail 32.\n");
+		return 0;
+	}
+
+	if(!pulse_multiple)
+		serial_in=0;
+	for(i=0;i<x/8;i++)
+		Feb_Control_Shift32InSerialIn(serial_in);
+
+	Feb_Control_SendTokenIn();
+	Feb_Control_ClockRowClock(nrowclocks);
+	Feb_Control_PulsePixelNMove(npulses,0,0);
+
+	return 1;
+}
+
+
+int Feb_Control_PulsePixelNMove(int npulses, int inc_x_pos, int inc_y_pos){
+	unsigned int c = DAQ_SEND_N_TEST_PULSES;
+	c |= (inc_x_pos) ? DAQ_CLK_MAIN_CLK_TO_SELECT_NEXT_PIXEL : 0;
+	c |= (inc_y_pos) ? DAQ_CLK_ROW_CLK_TO_SELECT_NEXT_ROW    : 0;
+
+	if(!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_SEND_N_TESTPULSES,npulses,0,0) ||
+			!Feb_Control_SetCommandRegister(c) ||
+			!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+		printf("Warning: could not PulsePixelNMove(...).\n");
+		return 0;
+	}
+
+	return 1;
+}
+
+/**new*/
+int Feb_Control_Shift32InSerialIn(unsigned int value_to_shift_in){
+	if(!Feb_Control_SetCommandRegister(DAQ_SERIALIN_SHIFT_IN_32) ||
+			!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_SHIFT_IN_32,value_to_shift_in,0,0) ||
+			!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+		printf("Warning: could not shift in 32.\n");
+		return 0;
+	}
+	return 1;
+}
+
+int Feb_Control_SendTokenIn(){
+	if(!Feb_Control_SetCommandRegister(DAQ_SEND_A_TOKEN_IN) ||
+			!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+		printf("Warning: could not SendTokenIn().\n");
+		return 0;
+	}
+	return 1;
+}
+
+int Feb_Control_ClockRowClock(unsigned int ntimes){
+	if(ntimes>1023){
+		printf("Warning: Clock row clock ntimes (%d) exceeds the maximum value of 1023.\n",ntimes);
+		printf("\t Setting ntimes to 1023.\n");
+		ntimes=1023;
+	}
+
+	if(!Feb_Control_SetCommandRegister(DAQ_CLK_ROW_CLK_NTIMES) ||
+			!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CLK_ROW_CLK_NTIMES,ntimes,0,0) ||
+			!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+		printf("Warning: could not clock row clock.\n");
+		return 0;
+	}
+
+	return 1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

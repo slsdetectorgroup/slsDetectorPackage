@@ -177,8 +177,11 @@ int Feb_Control_GetModuleNumber();
 
   void Feb_Control_Set_Counter_Bit(int value);
   int Feb_Control_Get_Counter_Bit();
-
-
+  int Feb_Control_Pulse_Pixel(int npulses,int x, int y);
+  int Feb_Control_PulsePixelNMove(int npulses, int inc_x_pos, int inc_y_pos);
+  int Feb_Control_Shift32InSerialIn(unsigned int value_to_shift_in);
+  int Feb_Control_SendTokenIn();
+  int Feb_Control_ClockRowClock(unsigned int ntimes);
 
 
 #endif 

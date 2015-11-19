@@ -176,6 +176,9 @@ int function_table() {
 	flist[F_ENABLE_TEN_GIGA]=&enable_ten_giga;
 	flist[F_SET_ALL_TRIMBITS]=&set_all_trimbits;
 	flist[F_SET_COUNTER_BIT]=&set_counter_bit;
+	flist[F_PULSE_PIXEL]=&pulse_pixel;
+	flist[F_PULSE_PIXEL_AND_MOVE]=&pulse_pixel_and_move;
+
 
 
 #ifdef VERBOSE
@@ -3526,19 +3529,25 @@ int enable_ten_giga(int file_des) {
 		ret=FAIL;
 	}
 	/* execute action */
-	if(ret != FAIL){
+#ifndef EIGERD
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
 #ifdef VERBOSE
 		printf("Enabling 10Gbe :%d \n",arg);
 #endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
+	if(ret != FAIL){
+
 		retval=enableTenGigabitEthernet(arg);
 		if((arg != -1) && (retval != arg))
 			ret=FAIL;
 		else if (differentClients==1) {
 			ret=FORCE_UPDATE;
 		}
-#endif
 	}
+#endif
+#endif
 	/* send answer */
 	/* send OK/failed */
 	//ret could be swapped during sendData
@@ -3570,6 +3579,10 @@ int set_all_trimbits(int file_des){
 		ret=FAIL;
 	}
 
+#ifndef EIGERD
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
 #ifdef VERBOSE
 	printf("setting all trimbits to %d\n",arg);
 #endif
@@ -3595,7 +3608,7 @@ int set_all_trimbits(int file_des){
 		}else if (differentClients)
 			ret=FORCE_UPDATE;
 	}
-
+#endif
 
 	//ret could be swapped during sendData
 	ret1 = ret;
@@ -3627,19 +3640,24 @@ int set_counter_bit(int file_des) {
 		ret=FAIL;
 	}
 	/* execute action */
-	if(ret != FAIL){
+#ifndef EIGERD
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
 #ifdef VERBOSE
 		printf("Getting/Setting/Resetting counter bit :%d \n",arg);
 #endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
+	if(ret != FAIL){
 		retval=setCounterBit(arg);
 		if((arg != -1) && (retval != arg))
 			ret=FAIL;
 		else if (differentClients==1) {
 			ret=FORCE_UPDATE;
 		}
-#endif
 	}
+#endif
+#endif
 	/* send answer */
 	/* send OK/failed */
 	//ret could be swapped during sendData
@@ -3652,3 +3670,99 @@ int set_counter_bit(int file_des) {
 	/*return ok/fail*/
 	return ret;
 }
+
+
+int pulse_pixel(int file_des) {
+
+	int ret=OK,ret1=OK;
+	int n;
+	int arg[3];
+	arg[0]=-1;	arg[1]=-1;	arg[2]=-1;
+
+
+	sprintf(mess,"pulse pixel failed\n");
+
+	n = receiveData(file_des,arg,sizeof(arg),INT32);
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+#ifndef EIGERD
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+	if (ret==OK) {
+		if (differentClients==1 && lockStatus==1) {
+			ret=FAIL;
+			sprintf(mess,"Detector locked by %s\n",lastClientIP);
+		} else
+			ret=pulsePixel(arg[0],arg[1],arg[2]);
+	}
+#endif
+#endif
+	if(ret==OK){
+		if (differentClients)
+			ret=FORCE_UPDATE;
+	}
+
+	/* send answer */
+	/* send OK/failed */
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
+	if (ret==FAIL)
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
+
+	/*return ok/fail*/
+	return ret;
+}
+
+
+int pulse_pixel_and_move(int file_des) {
+
+	int ret=OK,ret1=OK;
+	int n;
+	int arg[3];
+	arg[0]=-1;	arg[1]=-1;	arg[2]=-1;
+
+
+	sprintf(mess,"pulse pixel and move failed\n");
+
+	n = receiveData(file_des,arg,sizeof(arg),INT32);
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+#ifndef EIGERD
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+	if (ret==OK) {
+		if (differentClients==1 && lockStatus==1) {
+			ret=FAIL;
+			sprintf(mess,"Detector locked by %s\n",lastClientIP);
+		} else
+			ret=pulsePixelNMove(arg[0],arg[1],arg[2]);
+	}
+#endif
+#endif
+	if(ret==OK){
+		if (differentClients)
+			ret=FORCE_UPDATE;
+	}
+
+	/* send answer */
+	/* send OK/failed */
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
+	if (ret==FAIL)
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
+
+	/*return ok/fail*/
+	return ret;
+
+}
+

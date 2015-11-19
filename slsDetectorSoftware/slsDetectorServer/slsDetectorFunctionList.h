@@ -48,6 +48,8 @@ int setHighVolage(int val, int imod);
 int setIODelay(int val, int imod);
 int enableTenGigabitEthernet(int val);
 int setCounterBit(int val);
+int pulsePixel(int n, int x, int y);
+int pulsePixelNMove(int n, int x, int y);
 #endif
 
 #if defined(MYTHEND) || defined(GOTTHARDD)

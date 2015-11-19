@@ -1417,7 +1417,7 @@ int Feb_Control_ResetChipCompletely(){
 
 
 int Feb_Control_ResetChipPartially(){
-	if(!Feb_Control_SetCommandRegister(DAQ_RESET_PERIPHERY & DAQ_RESET_COLUMN_SELECT) || !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+	if(!Feb_Control_SetCommandRegister(DAQ_RESET_PERIPHERY | DAQ_RESET_COLUMN_SELECT) || !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
 		printf("Warning: could not ResetChipPartially().\n");;
 		return 0;
 	}

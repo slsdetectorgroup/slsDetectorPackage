@@ -7451,4 +7451,65 @@ int slsDetector::setCTBPatWaitTime(int level, uint64_t t) {
 
 }
 
+int slsDetector::pulsePixel(int n,int x,int y) {
+	int ret=FAIL;
+	int fnum=F_PULSE_PIXEL;
+	char mess[100];
+	int arg[3];
+	arg[0] = n; arg[1] = x; arg[2] = y;
+
+#ifdef VERBOSE
+	std::cout<< std::endl<< "Pulsing Pixel " << n << " number of times at (" << x << "," << "y)" << endl << endl;
+#endif
+
+	if (thisDetector->onlineFlag==ONLINE_FLAG) {
+		if (connectControl() == OK){
+			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+			controlSocket->SendDataOnly(arg,sizeof(arg));
+			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			if (ret==FAIL){
+				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+				std::cout<< "Detector returned error: " << mess << std::endl;
+				setErrorMask((getErrorMask())|(COULD_NOT_PULSE_PIXEL));
+			}
+			controlSocket->Disconnect();
+			if (ret==FORCE_UPDATE)
+				updateDetector();
+		}
+	}
+
+	return ret;
+}
+
+
+int slsDetector::pulsePixelNMove(int n,int x,int y) {
+	int ret=FAIL;
+	int fnum=F_PULSE_PIXEL_AND_MOVE;
+	char mess[100];
+	int arg[3];
+	arg[0] = n; arg[1] = x; arg[2] = y;
+
+#ifdef VERBOSE
+	std::cout<< std::endl<< "Pulsing Pixel " << n << " number of times and move by deltax:" << x << " deltay:" << y << endl << endl;
+#endif
+
+	if (thisDetector->onlineFlag==ONLINE_FLAG) {
+		if (connectControl() == OK){
+			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+			controlSocket->SendDataOnly(arg,sizeof(arg));
+			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			if (ret==FAIL){
+				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+				std::cout<< "Detector returned error: " << mess << std::endl;
+				setErrorMask((getErrorMask())|(COULD_NOT_PULSE_PIXEL_NMOVE));
+			}
+			controlSocket->Disconnect();
+			if (ret==FORCE_UPDATE)
+				updateDetector();
+		}
+	}
+
+	return ret;
+}
+
  

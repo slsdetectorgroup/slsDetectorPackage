@@ -1019,7 +1019,16 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   i++;
 
   
+  /* pulse pixel */
   
+  descrToFuncMap[i].m_pFuncName="pulse"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPulse;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="pulsenmove"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPulse;
+  i++;
+
   
 
   numberOfCommands=i;
@@ -4916,3 +4925,73 @@ else  return helpPattern(narg, args, action);
   return os.str();
 
 }
+
+
+
+string slsDetectorCommand::helpPulse(int narg, char *args[], int action) {
+
+  ostringstream os;
+  if (action==PUT_ACTION || action==HELP_ACTION) {
+    os << "pulse [n] [x] [y] \t pulses pixel at coordinates (x,y) n number of times" << std::endl;
+	os << "pulsenmove [n] [x] [y]\t pulses pixel n number of times and moves relatively by x value (x axis) and y value(y axis)" << std::endl;
+  }
+  if (action==GET_ACTION || action==HELP_ACTION){
+    os << "pulse \t cannot get" << std::endl;
+  	os << "pulsenmove \t cannot get" << std::endl;
+  }
+  return os.str();
+
+}
+
+
+string slsDetectorCommand::cmdPulse(int narg, char *args[], int action) {
+int ival1=1,ival2=-2,ival3=-1;
+
+	if (action==HELP_ACTION)
+		return helpPulse(narg, args, action);
+	else if (action==GET_ACTION)
+		return string("cannot get ")+cmd;
+
+	myDet->setOnline(ONLINE_FLAG);
+
+	if (string(args[0])==string("pulse")){
+		if(myDet->pulsePixel(ival1,ival2,ival3) == OK)
+			return string("Pulse pixel successful");
+		else
+			return string("Pulse pixel failed");
+	}
+
+	else if (string(args[0])==string("pulsenmove")){
+		if(myDet->pulsePixelNMove(ival1,ival2,ival3) == OK)
+			return string("Pulse pixel and move successful");
+		else
+			return string("Pulse pixel and move failed");
+	}
+
+	return string("could not decode command")+cmd;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

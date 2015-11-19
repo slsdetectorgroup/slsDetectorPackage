@@ -95,7 +95,9 @@ enum {
   F_SET_CTB_PATTERN,  /** < loads a pattern in the CTB */
   F_WRITE_ADC_REG,  /** < writes an ADC register */
 
-  F_SET_COUNTER_BIT  /** < set/reset counter bit in detector for eiger */
+  F_SET_COUNTER_BIT,  		/** < set/reset counter bit in detector for eiger */
+  F_PULSE_PIXEL,			/** < pulse pixel n number of times in eiger at (x,y)  */
+  F_PULSE_PIXEL_AND_MOVE	/** < pulse pixel n number of times and move relatively by x and y */
 
   /* Always append functions hereafter!!! */
 

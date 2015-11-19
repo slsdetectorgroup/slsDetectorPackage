@@ -85,7 +85,7 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   static string helpOverwrite(int narg, char *args[], int action);
   static string helpReceiver(int narg, char *args[], int action);
   static string helpPattern(int narg, char *args[], int action);
-
+  static string helpPulse(int narg, char *args[], int action);
 
 
 
@@ -157,6 +157,7 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   string cmdOverwrite(int narg, char *args[], int action);
   string cmdReceiver(int narg, char *args[], int action);
   string cmdPattern(int narg, char *args[], int action);
+  string cmdPulse(int narg, char *args[], int action);
 
 
   int numberOfCommands;

@@ -5098,9 +5098,6 @@ int multiSlsDetector::setCTBPatWaitAddr(int level, int addr) {
 int multiSlsDetector::setCTBPatWaitTime(int level, uint64_t t) {
 
 
-
-  
-
 	int ret=-100,ret1;
 	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++)
 		if (detectors[idet]){
@@ -5114,9 +5111,38 @@ int multiSlsDetector::setCTBPatWaitTime(int level, uint64_t t) {
 		}
 	return ret;
 
+}
 
 
+int multiSlsDetector::pulsePixel(int n,int x,int y) {
+	int ret=-100,ret1;
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++)
+		if (detectors[idet]){
+			ret1=detectors[idet]->pulsePixel(n,x,y);
+			if(detectors[idet]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<idet));
+			if(ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+	return ret;
+}
 
+
+int multiSlsDetector::pulsePixelNMove(int n,int x,int y) {
+	int ret=-100,ret1;
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++)
+		if (detectors[idet]){
+			ret1=detectors[idet]->pulsePixelNMove(n,x,y);
+			if(detectors[idet]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<idet));
+			if(ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+	return ret;
 }
 
  

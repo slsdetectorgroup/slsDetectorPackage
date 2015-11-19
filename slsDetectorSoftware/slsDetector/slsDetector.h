@@ -1734,6 +1734,24 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   */
   int setCTBPatWaitTime(int level, uint64_t t=-1);  
 
+  /**
+     Pulse Pixel
+     \param n is number of times to pulse
+     \param x is x coordinate
+     \param y is y coordinate
+     \returns OK or FAIL
+  */
+  int pulsePixel(int n=0,int x=0,int y=0);
+
+  /**
+     Pulse Pixel and move by a relative value
+     \param n is number of times to pulse
+     \param x is relative x value
+     \param y is relative y value
+     \returns OK or FAIL
+  */
+  int pulsePixelNMove(int n=0,int x=0,int y=0);
+
  
  protected:
  

@@ -453,6 +453,19 @@ int setCounterBit(int val){
 }
 
 
+int pulsePixel(int n, int x, int y){
+	printf("not implemented yet\n");
+	return OK;
+}
+
+int pulsePixelNMove(int n, int x, int y){
+	printf("not implemented yet\n");
+	return OK;
+}
+
+
+
+
 int setModule(sls_detector_module myMod, int* gain, int* offset){
 	int retval[2];
 	int i;

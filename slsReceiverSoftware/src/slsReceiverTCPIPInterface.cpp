@@ -1107,7 +1107,7 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 	for(i=0;i<rnel;i++)	retval[i]=0;
 	for(i=0;i<rnel;i++)	origVal[i]=0;
 
-	char* raw 		= new char[bufferSize];
+	char* raw;
 
 	uint64_t startAcquisitionIndex=0;
 	uint64_t startFrameIndex=0;
@@ -1292,7 +1292,7 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 	//depending on shortframe or not
 	if(shortFrame!=-1)
 		bufferSize=GOTTHARD_SHORT_BUFFER_SIZE;
-	char* raw 		= new char[bufferSize];
+	char* raw;
 
 
 	uint32_t index=-1,index2=0;
@@ -1461,7 +1461,7 @@ int	slsReceiverTCPIPInterface::propix_read_frame(){
 	int onebuffersize = bufferSize/PROPIX_PACKETS_PER_FRAME;
 	int onedatasize = PROPIX_DATA_BYTES;
 
-	char* raw 		= new char[bufferSize];
+	char* raw;
 	int rnel 		= bufferSize/(sizeof(int));
 	int* retval 	= new int[rnel];
 	int* origVal 	= new int[rnel];
@@ -1638,7 +1638,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 		dataSize	= EIGER_TEN_GIGA_ONE_DATA_SIZE * packetsPerFrame;
 		oneDataSize = EIGER_TEN_GIGA_ONE_DATA_SIZE;
 	}
-	char* raw 		= new char[frameSize];
+	char* raw;
 	char* origVal 	= new char[frameSize];
 	char* retval 	= new char[dataSize];
 	uint64_t startAcquisitionIndex=0;
@@ -1654,20 +1654,21 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 		ret=FAIL;
 	}
 
-	/**send garbage with -1 index to try again*/
+	//send garbage with -1 index to try again
 	else if(!receiverBase->getFramesCaught()){
 		startAcquisitionIndex=-1;
 #ifdef VERYVERBOSE
 		cout<<"haven't caught any frame yet"<<endl;
 #endif
 	}
-	/** acq started */
+
+
+	// acq started
 	else{
 		ret = OK;
-		/** read a frame */
+		//read a frame
 		receiverBase->readFrame(fName,&raw,startAcquisitionIndex,startFrameIndex);
-
-		/**send garbage with -1 index to try again*/
+		//send garbage with -1 index to try again
 		if (raw == NULL){
 			startAcquisitionIndex = -1;
 #ifdef VERYVERBOSE
@@ -1675,7 +1676,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 #endif
 		}
 
-		/**proper frame*/
+		//proper frame
 		else{//cout<<"**** got proper frame ******"<<endl;
 
 			eiger_packet_footer_t* wbuf_footer;

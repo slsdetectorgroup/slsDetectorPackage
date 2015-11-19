@@ -93,12 +93,7 @@ enum communicationProtocol{
   UDP /**< UDP */
 };
 
-typedef struct
-{
-	unsigned char  header_before[20];
-	unsigned char  fnum[4];
-	unsigned char  header_after[24];
-} eiger_image_header;
+
 
  genericSocket(const char* const host_ip_or_name, unsigned short int const port_number, communicationProtocol p, int ps = DEFAULT_PACKET_SIZE) :
    //   portno(port_number), 
@@ -120,6 +115,7 @@ typedef struct
 	 strcpy(lastClientIP,"none");
 	 strcpy(thisClientIP,"none1");
 	 strcpy(dummyClientIP,"dummy");
+	 differentClients = 0;
 
      struct hostent *hostInfo = gethostbyname(host_ip_or_name);
      if (hostInfo == NULL){
@@ -184,6 +180,7 @@ typedef struct
 		 strcpy(lastClientIP,"none");
 		 strcpy(thisClientIP,"none1");
 		 strcpy(dummyClientIP,"dummy");
+		 differentClients = 0;
 
 	 if(serverAddress.sin_port == htons(port_number)){
 		 socketDescriptor = -10;

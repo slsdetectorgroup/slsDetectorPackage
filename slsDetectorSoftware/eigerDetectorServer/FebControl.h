@@ -182,6 +182,7 @@ int Feb_Control_GetModuleNumber();
   int Feb_Control_Shift32InSerialIn(unsigned int value_to_shift_in);
   int Feb_Control_SendTokenIn();
   int Feb_Control_ClockRowClock(unsigned int ntimes);
+  int Feb_Control_PulseChip(int npulses);
 
 
 #endif 

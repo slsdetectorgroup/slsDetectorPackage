@@ -41,7 +41,18 @@ slsDetectorUtils::slsDetectorUtils()  {
 
 
 
-void  slsDetectorUtils::acquire(int delflag){
+int  slsDetectorUtils::acquire(int delflag){
+
+  //ensure acquire isnt started multiple times by same client
+  pthread_mutex_lock(&mp);
+  if(getAcquiringFlag() == false)
+    setAcquiringFlag(true);
+  else{
+	  std::cout << "Error: Acquire has already been started." << std::endl;
+	  return FAIL;
+  }
+  pthread_mutex_unlock(&mp);
+
 
   bool receiver = (setReceiverOnline()==ONLINE_FLAG);
   if(!receiver){
@@ -526,6 +537,10 @@ void  slsDetectorUtils::acquire(int delflag){
 #ifdef VERBOSE
   cout << "acquisition finished callback done " << endl;
 #endif
+
+  setAcquiringFlag(false);
+  return OK;
+
 }
 
 

@@ -178,7 +178,7 @@ int function_table() {
 	flist[F_SET_COUNTER_BIT]=&set_counter_bit;
 	flist[F_PULSE_PIXEL]=&pulse_pixel;
 	flist[F_PULSE_PIXEL_AND_MOVE]=&pulse_pixel_and_move;
-
+	flist[F_PULSE_CHIP]=&pulse_chip;
 
 
 #ifdef VERBOSE
@@ -3745,6 +3745,55 @@ int pulse_pixel_and_move(int file_des) {
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		} else
 			ret=pulsePixelNMove(arg[0],arg[1],arg[2]);
+	}
+#endif
+#endif
+	if(ret==OK){
+		if (differentClients)
+			ret=FORCE_UPDATE;
+	}
+
+	/* send answer */
+	/* send OK/failed */
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
+	if (ret==FAIL)
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
+
+	/*return ok/fail*/
+	return ret;
+
+}
+
+
+
+
+int pulse_chip(int file_des) {
+
+	int ret=OK,ret1=OK;
+	int n;
+	int arg = -1;
+
+
+	sprintf(mess,"pulse chip failed\n");
+
+	n = receiveData(file_des,arg,sizeof(arg),INT32);
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+#ifndef EIGERD
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+	if (ret==OK) {
+		if (differentClients==1 && lockStatus==1) {
+			ret=FAIL;
+			sprintf(mess,"Detector locked by %s\n",lastClientIP);
+		} else
+			ret=pulseChip(arg);
 	}
 #endif
 #endif

@@ -50,6 +50,7 @@ int enableTenGigabitEthernet(int val);
 int setCounterBit(int val);
 int pulsePixel(int n, int x, int y);
 int pulsePixelNMove(int n, int x, int y);
+int pulseChip(int n);
 #endif
 
 #if defined(MYTHEND) || defined(GOTTHARDD)

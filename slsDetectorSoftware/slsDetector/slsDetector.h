@@ -265,6 +265,9 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     /** 10 Gbe enable*/
     int tenGigaEnable;
 
+    /** flag for acquiring */
+    bool acquiringFlag;
+
   } sharedSlsDetector;
 
 
@@ -1751,6 +1754,25 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      \returns OK or FAIL
   */
   int pulsePixelNMove(int n=0,int x=0,int y=0);
+
+  /**
+     Pulse Chip
+     \param n is number of times to pulse
+     \returns OK or FAIL
+  */
+  int pulseChip(int n=0);
+
+  /**
+     Set acquiring flag in shared memory
+     \param b acquiring flag
+   */
+  void setAcquiringFlag(bool b=false);
+
+  /**
+     Get acquiring flag from shared memory
+     \returns acquiring flag
+   */
+  bool getAcquiringFlag();
 
  
  protected:

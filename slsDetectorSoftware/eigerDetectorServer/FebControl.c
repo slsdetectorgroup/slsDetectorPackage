@@ -296,25 +296,25 @@ int Feb_Control_ReadSetUpFileToAddModules(char* file_name){
 
 		if(!strcmp(str,"add_module")){
 			if( sscanf (line,"%s %d %d %d", str,&i0,&i1,&i2) < 4){
-				printf("Error adding module from %s.\n",file_name);
+				cprintf(RED,"Error adding module from %s.\n",file_name);
 				exit(0);
 			}
 			printf ("str:%s len:%d i0:%d i1:%d i2:%d\n", str, strlen(str),i0,i1,i2);
 			if(!Feb_Control_AddModule1(i0,1,i1,i2,0)){
-				printf("Error adding module, parameter was assigned twice in setup file: %s.\n",file_name);
+				cprintf(RED,"Error adding module, parameter was assigned twice in setup file: %s.\n",file_name);
 				exit(0);
 			}
 		}
 
 		else if(!strcmp(str,"add_half_module")){
 			if( sscanf (line,"%s %d %d %d", str,&i0,&i1,&i2) < 4){
-				printf("Error adding half module from %s.\n",file_name);
+				cprintf(RED,"Error adding half module from %s.\n",file_name);
 				exit(0);
 			}
 			printf ("str:%s len:%d i0:%d i1:%d i2:%d\n", str, strlen(str),i0,i1,i2);
 
 			if(!Feb_Control_AddModule1(i0,i1,i2,i2,1)){
-				printf("Error adding module, parameter was assigned twice in setup file: %s.\n",file_name);
+				cprintf(RED,"Error adding module, parameter was assigned twice in setup file: %s.\n",file_name);
 				exit(0);
 			}
 
@@ -322,7 +322,7 @@ int Feb_Control_ReadSetUpFileToAddModules(char* file_name){
 			Feb_Control_PrintModuleList();
 
 			/*  if(!Feb_Control_AddModule1(i0,i1)){
-				  printf("Error adding module, parameter was assigned twice in setup file: %s.\n",file_name);
+				  cprintf(RED,"Error adding module, parameter was assigned twice in setup file: %s.\n",file_name);
 				  exit(0);
 			  }*/
 		}
@@ -391,12 +391,12 @@ int Feb_Control_CheckModuleAddresses(struct Module* m){
 				(Module_BottomAddressIsValid(m)    && Module_GetBottomBaseAddress(&modules[i]) && Module_GetBottomBaseAddress(m)==Module_GetBottomBaseAddress(&modules[i]))) found_b=1;
 	}
 
-	if(found_t) printf("\tWarning: top address %d already used.\n",Module_GetTopBaseAddress(m));
-	if(found_b) printf("\tWarning: bottom address %d already used.\n",Module_GetBottomBaseAddress(m));
+	if(found_t) cprintf(RED,"\tWarning: top address %d already used.\n",Module_GetTopBaseAddress(m));
+	if(found_b) cprintf(RED,"\tWarning: bottom address %d already used.\n",Module_GetBottomBaseAddress(m));
 
 
 	int top_bottom_same = Module_TopAddressIsValid(m)&&Module_BottomAddressIsValid(m)&&Module_GetTopBaseAddress(m)==Module_GetBottomBaseAddress(m);
-	if(top_bottom_same) printf("\tWarning: top and bottom address are the same %d.\n",Module_GetTopBaseAddress(m));
+	if(top_bottom_same) cprintf(RED,"\tWarning: top and bottom address are the same %d.\n",Module_GetTopBaseAddress(m));
 
 	return !(top_bottom_same||found_t||found_b);
 }
@@ -473,7 +473,7 @@ int Feb_Control_ReadSetUpFile(unsigned int module_num, char* file_name){
 
 		if(!strcmp("iodelay",str)){
 			if(sscanf (line,"%s %d", str,&i0) < 2){
-				printf("Error reading io_delay\n");
+				cprintf(RED,"Error reading io_delay\n");
 				exit(0);
 			}
 			Feb_Control_SetIDelays(module_num,i0);
@@ -481,7 +481,7 @@ int Feb_Control_ReadSetUpFile(unsigned int module_num, char* file_name){
 
 		else if(!strcmp("high_voltage",str)){
 			if(sscanf (line,"%s %f", str,&f0) < 2){
-				printf("Error reading high_voltage\n");
+				cprintf(RED,"Error reading high_voltage\n");
 				exit(0);
 			}
 			Feb_Control_SetHighVoltage(f0);
@@ -489,7 +489,7 @@ int Feb_Control_ReadSetUpFile(unsigned int module_num, char* file_name){
 /*
 		else if(!strcmp("photon_energy",str)){
 			if(sscanf (line,"%s %f", str,&f0) < 2){
-				printf("Error reading photon_energy\n");
+				cprintf(RED,"Error reading photon_energy\n");
 				exit(0);
 			}
 			Feb_Control_SetPhotonEnergy(f0);
@@ -497,7 +497,7 @@ int Feb_Control_ReadSetUpFile(unsigned int module_num, char* file_name){
 
 		else if(!strcmp("dynamic_range",str)){
 			if(sscanf (line,"%s %d", str,&i0) < 2){
-				printf("Error reading dynamic_range\n");
+				cprintf(RED,"Error reading dynamic_range\n");
 				exit(0);
 			}
 			Feb_Control_SetDynamicRange(i0);
@@ -505,7 +505,7 @@ int Feb_Control_ReadSetUpFile(unsigned int module_num, char* file_name){
 
 		else if(!strcmp("readout_speed",str)){
 			if(sscanf (line,"%s %d", str,&i0) < 2){
-				printf("Error reading readout_speed\n");
+				cprintf(RED,"Error reading readout_speed\n");
 				exit(0);
 			}
 			Feb_Control_SetReadoutSpeed(i0);
@@ -513,7 +513,7 @@ int Feb_Control_ReadSetUpFile(unsigned int module_num, char* file_name){
 
 		else if(!strcmp("readout_mode",str)){
 			if(sscanf (line,"%s %d", str,&i0) < 2){
-				printf("Error reading readout_mode\n");
+				cprintf(RED,"Error reading readout_mode\n");
 				exit(0);
 			}
 			Feb_Control_SetReadoutMode(i0);
@@ -521,14 +521,14 @@ int Feb_Control_ReadSetUpFile(unsigned int module_num, char* file_name){
 
 		else {
 			if( sscanf (line,"%s %f", str,&f0) < 2){
-				printf("Error reading dac\n");
+				cprintf(RED,"Error reading dac\n");
 				exit(0);
 			}
 
 			if(module_num>0)
 				sprintf(str,"%s",str); /*sprintf(str,"mod%d::%s",module_num,str);*/
 			if(!Feb_Control_SetDAC(str,f0,1))
-				printf("error in string: %s",str);
+				cprintf(RED,"Error in string: %s",str);
 
 		}
 	}
@@ -548,25 +548,25 @@ int Feb_Control_CheckSetup(){
 
 	for(j=0;j<4;j++){
 		if(Module_GetTopIDelay(&modules[i],j)<0){
-			printf("Warning: module %d's idelay top number %d not set.\n",Module_GetModuleNumber(&modules[i]),j);
+			cprintf(RED,"Warning: module %d's idelay top number %d not set.\n",Module_GetModuleNumber(&modules[i]),j);
 			ok=0;
 		}
 		if(Module_GetBottomIDelay(&modules[i],j)<0){
-			printf("Warning: module %d's idelay bottom number %d not set.\n",Module_GetModuleNumber(&modules[i]),j);
+			cprintf(RED,"Warning: module %d's idelay bottom number %d not set.\n",Module_GetModuleNumber(&modules[i]),j);
 			ok=0;
 		}
 	}
 	if(Module_GetHighVoltage(&modules[i])<0){
-		printf("Warning: module %d's high voltage not set.\n",Module_GetModuleNumber(&modules[i]));
+		cprintf(RED,"Warning: module %d's high voltage not set.\n",Module_GetModuleNumber(&modules[i]));
 		ok=0;
 	}
 	for(j=0;j<Module_ndacs;j++){
 		if(Module_GetTopDACValue(&modules[i],j)<0){
-			printf("Warning: module %d's top \"%s\" dac is not set.\n",Module_GetModuleNumber(&modules[i]),Module_dac_names[i]);
+			cprintf(RED,"Warning: module %d's top \"%s\" dac is not set.\n",Module_GetModuleNumber(&modules[i]),Module_dac_names[i]);
 			ok=0;
 		}
 		if(Module_GetBottomDACValue(&modules[i],j)<0){
-			printf("Warning: module %d's bottom \"%s\" dac is not set.\n",Module_GetModuleNumber(&modules[i]),Module_dac_names[i]);
+			cprintf(RED,"Warning: module %d's bottom \"%s\" dac is not set.\n",Module_GetModuleNumber(&modules[i]),Module_dac_names[i]);
 			ok=0;
 		}
 	}
@@ -600,13 +600,13 @@ int Feb_Control_SetIDelays1(unsigned int module_num, unsigned int chip_pos, unsi
 	unsigned int i;
 	//currently set same for top and bottom
 	if(chip_pos>3){
-		printf("Error SetIDelay chip_pos %d doesn't exist.\n",chip_pos);;
+		cprintf(RED,"Error SetIDelay chip_pos %d doesn't exist.\n",chip_pos);;
 		return 0;
 	}
 
 	unsigned int module_index=0;
 	if(!Feb_Control_GetModuleIndex(module_num,&module_index)){
-		printf("Error could not set i delay module number %d invalid.\n",module_num);
+		cprintf(RED,"Error could not set i delay module number %d invalid.\n",module_num);
 		return 0;
 	}
 
@@ -620,7 +620,7 @@ int Feb_Control_SetIDelays1(unsigned int module_num, unsigned int chip_pos, unsi
 					for(i=0;i<moduleSize;i++) Module_SetBottomIDelay(&modules[i],chip_pos,ndelay_units);
 				}
 			}else{
-				printf("Error could not set idelay module number %d (top_left).\n",module_num);
+				cprintf(RED,"Error could not set idelay module number %d (top_left).\n",module_num);
 				ok=0;
 			}
 		}
@@ -632,7 +632,7 @@ int Feb_Control_SetIDelays1(unsigned int module_num, unsigned int chip_pos, unsi
 					for(i=0;i<moduleSize;i++) Module_SetBottomIDelay(&modules[i],chip_pos,ndelay_units);
 				}
 			}else{
-				printf("Error could not set idelay module number %d (bottom_left).\n",module_num);
+				cprintf(RED,"Error could not set idelay module number %d (bottom_left).\n",module_num);
 				ok=0;
 			}
 		}
@@ -642,7 +642,7 @@ int Feb_Control_SetIDelays1(unsigned int module_num, unsigned int chip_pos, unsi
 				if(module_index!=0) Module_SetTopIDelay(&modules[module_index],chip_pos,ndelay_units);
 				else for(i=0;i<moduleSize;i++) Module_SetTopIDelay(&modules[i],chip_pos,ndelay_units);
 			}else{
-				printf("Error could not set idelay module number %d (top_right).\n",module_num);
+				cprintf(RED,"Error could not set idelay module number %d (top_right).\n",module_num);
 				ok=0;
 			}
 		}
@@ -651,7 +651,7 @@ int Feb_Control_SetIDelays1(unsigned int module_num, unsigned int chip_pos, unsi
 				if(module_index!=0) Module_SetBottomIDelay(&modules[module_index],chip_pos,ndelay_units);
 				else for(i=0;i<moduleSize;i++) Module_SetBottomIDelay(&modules[i],chip_pos,ndelay_units);
 			}else{
-				printf("Error could not set idelay module number %d (bottom_right).\n",module_num);
+				cprintf(RED,"Error could not set idelay module number %d (bottom_right).\n",module_num);
 				ok=0;
 			}
 		}
@@ -682,7 +682,7 @@ int Feb_Control_SendIDelays(unsigned int dst_num, int chip_lr, unsigned int chan
 			!Feb_Interface_WriteRegister(dst_num,CHIP_DATA_OUT_DELAY_REG3,set_left_delay_channels,0,0)  ||
 			!Feb_Interface_WriteRegister(dst_num,CHIP_DATA_OUT_DELAY_REG4,set_right_delay_channels,0,0) ||
 			!Feb_Interface_WriteRegister(dst_num,CHIP_DATA_OUT_DELAY_REG_CTRL,CHIP_DATA_OUT_DELAY_SET,1,1)){
-		printf("Warning: could not SetChipDataInputDelays(...).\n");
+		cprintf(RED,"Warning: could not SetChipDataInputDelays(...).\n");
 		return 0;
 	}
 
@@ -711,7 +711,7 @@ int Feb_Control_SetHighVoltage1(unsigned int module_num,float value){
 
 	if(Module_TopAddressIsValid(&modules[module_index])){
 		if(!Feb_Control_GetModuleIndex(module_num,&module_index)){/*||!Module_TopAddressIsValid(&modules[module_index])){*/
-			printf("Error could not set high voltage module number %d invalid.\n",module_num);
+			cprintf(RED,"Error could not set high voltage module number %d invalid.\n",module_num);
 			return 0;
 		}
 	}else
@@ -742,7 +742,7 @@ int Feb_Control_SendHighVoltage(unsigned int dst_num,float* value){
 
 	unsigned int r = 0x20000000 | (b&0xff);
 	if(!Feb_Interface_WriteRegister(dst_num,0,r,0,0)){
-		printf("Warning: trouble setting high voltage for dst_num %d.\n",dst_num);
+		cprintf(RED,"Warning: trouble setting high voltage for dst_num %d.\n",dst_num);
 		return 0;
 	}
 
@@ -767,7 +767,7 @@ int Feb_Control_DecodeDACString(char* dac_str, unsigned int* module_index, int* 
 	  unsigned int number = atoi(temp); //unsigned int number = atoi((local_s.substr(p1+3,p2-3)).c_str());
 
     if(!Feb_Control_GetModuleIndex(number,module_index)){
-      printf("Error in dac_name \"%s\", module number %d not in list.\n",dac_str,number);
+      cprintf(RED,"Error in dac_name \"%s\", module number %d not in list.\n",dac_str,number);
       return 0;
     }
     strcpy(local_s,p2+2);//local_s    = local_s.substr(p2+2);
@@ -794,7 +794,7 @@ int Feb_Control_DecodeDACString(char* dac_str, unsigned int* module_index, int* 
 
 	*dac_ch = 0;
 	if(!Feb_Control_GetDACNumber(local_s,dac_ch)){
-		printf("Error in dac_name: %s  (%s)\n",dac_str,local_s);
+		cprintf(RED,"Error in dac_name: %s  (%s)\n",dac_str,local_s);
 		return 0;
 	}
 
@@ -811,7 +811,7 @@ int Feb_Control_SetDAC(char* dac_str, int value, int is_a_voltage_mv){
   if(p1!=string::npos&&p2!=string::npos&&(p1+3)<p2){
     unsigned int number = atoi((local_s.substr(p1+3,p2-3)).c_str());
     if(!GetModuleIndex(number,module_index)){
-      printf("Error in dac_name \""<<dac_str<<"\", module number "<<number<<" not in list.\n");;
+      cprintf(RED,"Error in dac_name \""<<dac_str<<"\", module number "<<number<<" not in list.\n");;
       return 0;
     }
     local_s    = local_s.substr(p2+2);
@@ -829,7 +829,7 @@ int Feb_Control_SetDAC(char* dac_str, int value, int is_a_voltage_mv){
 
   unsigned int dac_ch = 0;
   if(!GetDACNumber(local_s,dac_ch)){
-    printf("Error in dac_name: "<<dac_str<<"  ("<<local_s<<")\n");;
+    cprintf(RED,"Error in dac_name: "<<dac_str<<"  ("<<local_s<<")\n");;
     return 0;
   }
 	 */
@@ -840,11 +840,11 @@ int Feb_Control_SetDAC(char* dac_str, int value, int is_a_voltage_mv){
 
 	unsigned int v = value;
 	if(is_a_voltage_mv&&!Feb_Control_VoltageToDAC(value,&v,4096,0,2048)){
-		printf("Warning: SetDac bad value, %d. The range is 0 to 2048 mV.\n",value);
+		cprintf(RED,"Warning: SetDac bad value, %d. The range is 0 to 2048 mV.\n",value);
 		return 0;
 	}
 	if(v<0||v>4095){
-		printf("Warning: SetDac bad value, %d. The range is 0 to 4095.\n",v);
+		cprintf(RED,"Warning: SetDac bad value, %d. The range is 0 to 4095.\n",v);
 		return 0;
 	}
 
@@ -882,7 +882,7 @@ int Feb_Control_GetDAC(char* s, int* ret_value, int voltage_mv){
 
 int Feb_Control_GetDACName(unsigned int dac_num, char* s){
 	if(dac_num>=Module_ndacs){
-		printf("Warning: GetDACName index out of range, %d invalid.\n",dac_num);
+		cprintf(RED,"Warning: GetDACName index out of range, %d invalid.\n",dac_num);
 		return 0;
 	}
 	strcpy(s,Module_dac_names[dac_num]);
@@ -909,7 +909,7 @@ int Feb_Control_SendDACValue(unsigned int dst_num, unsigned int ch, unsigned int
 	//static float vmax = 2;
 
 	if(ch<0||ch>15){
-		printf("Warning invalid ch for SetDAC.\n");
+		cprintf(RED,"Warning invalid ch for SetDAC.\n");
 		return 0;
 	}
 
@@ -922,7 +922,7 @@ int Feb_Control_SendDACValue(unsigned int dst_num, unsigned int ch, unsigned int
 
 
 	if(!Feb_Interface_WriteRegister(dst_num,0,r,1,0)){
-		printf("Warning: trouble setting dac %d voltage.\n",ch);
+		cprintf(RED,"Warning: trouble setting dac %d voltage.\n",ch);
 		return 0;
 	}
 
@@ -953,11 +953,11 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits){
 
 	unsigned int module_index=0;
 	if(!Feb_Control_GetModuleIndex(module_num,&module_index)){
-		printf("Warning could not set trimbits, bad module number.\n");
+		cprintf(RED,"Warning could not set trimbits, bad module number.\n");
 		return 0;
 	}
 
-	if(!Feb_Control_Reset()) printf("Warning could not reset DAQ.\n");
+	if(!Feb_Control_Reset()) cprintf(RED,"Warning could not reset DAQ.\n");
 	int l_r;	//printf("222\n");
 	for(l_r=0;l_r<2;l_r++){ // l_r loop
 		//printf("\nl_r:%d\t\t",l_r);
@@ -971,12 +971,12 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits){
 			//printf("row_set:%d\t\t",row_set);
 			if(row_set==0){
 				if(!Feb_Control_SetCommandRegister(DAQ_RESET_COMPLETELY|DAQ_SEND_A_TOKEN_IN|DAQ_LOAD_16ROWS_OF_TRIMBITS)){
-					printf("Warning: Could not Feb_Control_SetCommandRegister for loading trim bits.\n");
+					cprintf(RED,"Warning: Could not Feb_Control_SetCommandRegister for loading trim bits.\n");
 					return 0;
 				}
 			}else{
 				if(!Feb_Control_SetCommandRegister(DAQ_LOAD_16ROWS_OF_TRIMBITS)){
-					printf("Warning: Could not Feb_Control_SetCommandRegister for loading trim bits.\n");
+					cprintf(RED,"Warning: Could not Feb_Control_SetCommandRegister for loading trim bits.\n");
 					return 0;
 				}
 			}
@@ -1084,7 +1084,7 @@ int Feb_Control_SetCommandRegister(unsigned int cmd){
 
 int Feb_Control_GetDAQStatusRegister(unsigned int dst_address, unsigned int* ret_status){
 	if(!Feb_Interface_ReadRegister(dst_address,DAQ_REG_STATUS,ret_status)){
-		printf("Error: reading status register.\n");
+		cprintf(RED,"Error: reading status register.\n");
 		return 0;
 	}
 
@@ -1095,7 +1095,7 @@ int Feb_Control_GetDAQStatusRegister(unsigned int dst_address, unsigned int* ret
 
 int Feb_Control_StartDAQOnlyNWaitForFinish(int sleep_time_us){
 	if(!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CTRL,0,0,0)||!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CTRL,DAQ_CTRL_START,0,0)){
-		printf("Warning: could not start.\n");
+		cprintf(RED,"Warning: could not start.\n");
 		return 0;
 	}
 
@@ -1110,15 +1110,15 @@ int Feb_Control_AcquisitionInProgress(){
 	if(Module_BottomAddressIsValid(&modules[ind])){
 
 		if(!(Feb_Control_GetDAQStatusRegister(Module_GetBottomRightAddress(&modules[ind]),&status_reg_r)))
-		{printf("ERROR: Trouble reading Status register. bottom right address\n");return 0;}
+		{cprintf(RED,"Error: Trouble reading Status register. bottom right address\n");return 0;}
 		if(!(Feb_Control_GetDAQStatusRegister(Module_GetBottomLeftAddress(&modules[ind]),&status_reg_l)))
-		{printf("ERROR: Trouble reading Status register. bottom left address\n");return 0;}
+		{cprintf(RED,"Error: Trouble reading Status register. bottom left address\n");return 0;}
 
 	}else{
 		if(!(Feb_Control_GetDAQStatusRegister(Module_GetTopRightAddress(&modules[ind]),&status_reg_r)))
-		{printf("ERROR: Trouble reading Status register. top right address\n");return 0;}
+		{cprintf(RED,"Error: Trouble reading Status register. top right address\n");return 0;}
 		if(!(Feb_Control_GetDAQStatusRegister(Module_GetTopLeftAddress(&modules[ind]),&status_reg_l)))
-		{printf("ERROR: Trouble reading Status register. top left address\n");return 0;}
+		{cprintf(RED,"Error: Trouble reading Status register. top left address\n");return 0;}
 	}
 
 	//running
@@ -1137,15 +1137,15 @@ int Feb_Control_AcquisitionStartedBit(){
 	if(Module_BottomAddressIsValid(&modules[ind])){
 
 		if(!(Feb_Control_GetDAQStatusRegister(Module_GetBottomRightAddress(&modules[ind]),&status_reg_r)))
-		{printf("ERROR: Trouble reading Status register. bottom right address\n");return -1;}
+		{cprintf(RED,"Error: Trouble reading Status register. bottom right address\n");return -1;}
 		if(!(Feb_Control_GetDAQStatusRegister(Module_GetBottomLeftAddress(&modules[ind]),&status_reg_l)))
-		{printf("ERROR: Trouble reading Status register. bottom left address\n");return -1;}
+		{cprintf(RED,"Error: Trouble reading Status register. bottom left address\n");return -1;}
 
 	}else{
 		if(!(Feb_Control_GetDAQStatusRegister(Module_GetTopRightAddress(&modules[ind]),&status_reg_r)))
-		{printf("ERROR: Trouble reading Status register. top right address\n"); return -1;}
+		{cprintf(RED,"Error: Trouble reading Status register. top right address\n"); return -1;}
 		if(!(Feb_Control_GetDAQStatusRegister(Module_GetTopLeftAddress(&modules[ind]),&status_reg_l)))
-		{printf("ERROR: Trouble reading Status register. top left address\n");return -1;}
+		{cprintf(RED,"Error: Trouble reading Status register. top left address\n");return -1;}
 	}
 
 	//doesnt mean it started, just the bit
@@ -1189,7 +1189,7 @@ int Feb_Control_WaitForStartedFlag(int sleep_time_us, int prev_flag){
 
 int Feb_Control_Reset(){
 	if(!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CTRL,0,0,0) || !Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CTRL,DAQ_CTRL_RESET,0,0) || !Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CTRL,0,0,0)){
-		printf("Warning: Could not reset daq, no response.\n");
+		cprintf(RED,"Warning: Could not reset daq, no response.\n");
 		return 0;
 	}
 
@@ -1202,7 +1202,7 @@ int Feb_Control_Reset(){
 int Feb_Control_SetStaticBits(){
 	//program=1,m4=2,m8=4,test=8,rotest=16,cs_bar_left=32,cs_bar_right=64
 	if(!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_STATIC_BITS,Feb_Control_staticBits,0,0) || !Feb_Control_SetCommandRegister(DAQ_SET_STATIC_BIT) || !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
-		printf("Warning: Could not set static bits\n");
+		cprintf(RED,"Warning: Could not set static bits\n");
 		return 0;
 	}
 
@@ -1213,7 +1213,7 @@ int Feb_Control_SetStaticBits1(unsigned int the_static_bits){
 	return Feb_Control_SetStaticBits();
 }
 
-int Feb_Control_SetTestModeVariable(int on){
+int Feb_Control_SetInTestModeVariable(int on){
 	if(on) Feb_Control_staticBits |=   DAQ_STATIC_BIT_CHIP_TEST;  //setting test bit to high
 	else   Feb_Control_staticBits &= (~DAQ_STATIC_BIT_CHIP_TEST); //setting test bit to low
 	return 1;
@@ -1238,7 +1238,7 @@ int Feb_Control_SetDynamicRange(unsigned int four_eight_sixteen_or_thirtytwo){
 		Feb_Control_staticBits    = DAQ_STATIC_BIT_M12 | (Feb_Control_staticBits&everything_but_bit_mode);
 		Feb_Control_subFrameMode |= DAQ_NEXPOSURERS_ACTIVATE_AUTO_SUBIMAGING;
 	}else{
-		printf("Warning: dynamic range (%d) not valid, not setting bit mode.\n",four_eight_sixteen_or_thirtytwo);
+		cprintf(RED,"Warning: dynamic range (%d) not valid, not setting bit mode.\n",four_eight_sixteen_or_thirtytwo);
 		printf("Set dynamic range int must equal 4,8 16, or 32.\n");
 		return 0;
 	}
@@ -1268,7 +1268,7 @@ int Feb_Control_SetReadoutSpeed(unsigned int readout_speed){ //0->full,1->half,2
 		printf("Everything at super slow speed, ie. reading with ~0.200 MHz main clk (super slow speed) ....\n");
 	}else{
 		if(readout_speed){
-			printf("Warning readout speed %d unknown, defaulting to full speed.\n",readout_speed);
+			cprintf(RED,"Warning readout speed %d unknown, defaulting to full speed.\n",readout_speed);
 			printf("Everything at full speed, ie. reading with 100 MHz main clk (full speed) ....\n");
 			return 0;
 		}
@@ -1289,7 +1289,7 @@ int Feb_Control_SetReadoutMode(unsigned int readout_mode){ //0->parallel,1->non-
 	}else{
 		Feb_Control_acquireNReadoutMode |= DAQ_NEXPOSURERS_PARALLEL_MODE;
 		if(readout_mode){
-			printf("Warning readout mode %d) unknown, defaulting to full speed.\n",readout_mode);
+			cprintf(RED,"Warning readout mode %d) unknown, defaulting to full speed.\n",readout_mode);
 			printf("Readout mode set to parrallel acquire/read mode ....     \n");;
 			return 0;
 		}
@@ -1317,7 +1317,7 @@ int Feb_Control_SetTriggerMode(unsigned int trigger_mode,int polarity){
 		printf("Trigger mode: externally controlled, external image window (start and stop).\n");;
 	}else{
 		Feb_Control_triggerMode = DAQ_NEXPOSURERS_INTERNAL_ACQUISITION;
-		if(trigger_mode) printf("Warning trigger %d) unknown, defaulting to internal triggering.\n",trigger_mode);;
+		if(trigger_mode) cprintf(RED,"Warning trigger %d) unknown, defaulting to internal triggering.\n",trigger_mode);;
 
 		printf("Trigger mode: acquisition internally controlled exposure length and period.\n");;
 		return trigger_mode==0;
@@ -1347,7 +1347,7 @@ int Feb_Control_SetExternalEnableMode(int use_external_enable, int polarity){
 			printf(", polarity set to negative.\n");;
 		}
 	}else{
-		Feb_Control_externalEnableMode  &= (~DAQ_NEXPOSURERS_EXTERNAL_ENABLING);
+		Feb_Control_externalEnableMode = 0; /* changed by Dhanya according to old code &= (~DAQ_NEXPOSURERS_EXTERNAL_ENABLING);*/
 		printf("External enabling disabled.\n");;
 	}
 
@@ -1356,7 +1356,7 @@ int Feb_Control_SetExternalEnableMode(int use_external_enable, int polarity){
 
 int Feb_Control_SetNExposures(unsigned int n_images){
 	if(!n_images){
-		printf("Warning nimages must be greater than zero.%d\n",n_images);
+		cprintf(RED,"Warning nimages must be greater than zero.%d\n",n_images);
 		return 0;
 	}
 
@@ -1393,7 +1393,7 @@ unsigned int Feb_Control_ConvertTimeToRegister(float time_in_sec){
 	unsigned int decoded_time;
 	if(n_clk_cycles>(pow(2,29)-1)*pow(10,7)){
 		float max_time = 10e-9*(pow(2,28)-1)*pow(10,7);
-		printf("Warning: time exceeds (%f) maximum exposure time of %f sec.\n",time_in_sec,max_time);
+		cprintf(RED,"Warning: time exceeds (%f) maximum exposure time of %f sec.\n",time_in_sec,max_time);
 		printf("\t Setting to maximum %f us.\n",max_time);
 		decoded_time = 0xffffffff;
 	}else{
@@ -1407,7 +1407,7 @@ unsigned int Feb_Control_ConvertTimeToRegister(float time_in_sec){
 
 int Feb_Control_ResetChipCompletely(){
 	if(!Feb_Control_SetCommandRegister(DAQ_RESET_COMPLETELY) || !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
-		printf("Warning: could not ResetChipCompletely() with 0x%x.\n",DAQ_RESET_COMPLETELY);
+		cprintf(RED,"Warning: could not ResetChipCompletely() with 0x%x.\n",DAQ_RESET_COMPLETELY);
 		return 0;
 	}
 	printf("Chip reset completely\n");
@@ -1418,13 +1418,13 @@ int Feb_Control_ResetChipCompletely(){
 
 int Feb_Control_ResetChipPartially(){
 	if(!Feb_Control_SetCommandRegister(DAQ_RESET_PERIPHERY) || !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
-		printf("Warning: could not ResetChipPartially with periphery\n");
+		cprintf(RED,"Warning: could not ResetChipPartially with periphery\n");
 		return 0;
 	}
 	printf("Chip reset periphery 0x%x\n",DAQ_RESET_PERIPHERY);
 
 	if(!Feb_Control_SetCommandRegister(DAQ_RESET_COLUMN_SELECT) || !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
-		printf("Warning: could not ResetChipPartially with column select\n");
+		cprintf(RED,"Warning: could not ResetChipPartially with column select\n");
 		return 0;
 	}
 	printf("Chip reset column select 0x%x\n",DAQ_RESET_COLUMN_SELECT);
@@ -1463,7 +1463,7 @@ int Feb_Control_SendBitModeToBebServer(){
 
 
 	if(!Beb_SetUpTransferParameters(bit_mode)){
-		printf("Error: sending bit mode ...\n");
+		cprintf(RED,"Error: sending bit mode ...\n");
 		return 0;
 	}
 
@@ -1472,7 +1472,7 @@ int Feb_Control_SendBitModeToBebServer(){
   sprintf(buffer,"setbitmode %d",bit_mode);
 
   if(Feb_Control_WriteNRead(buffer,strlen(buffer),1024)<1||strncmp(buffer,"0",1)){
-    printf("Error: sending bit mode ...\n");
+    cprintf(RED,"Error: sending bit mode ...\n");
     return 0;
   }
 	 */
@@ -1511,10 +1511,10 @@ int Feb_Control_WriteNRead(char* message, int length, int max_length){
   }
 
   int n = write(sockfd,message,length);
-    if(n<0) printf("ERROR writing to socket");
+    if(n<0) cprintf(RED,"Error writing to socket");
 
   length = read(sockfd,message,max_length);
-    if(length<0) printf("ERROR reading to socket");
+    if(length<0) cprintf(RED,"Error reading to socket");
 
   close(sockfd);
 
@@ -1613,7 +1613,7 @@ int Feb_Control_StartAcquisition(){
 	reg_vals[14]=ACQ_CTRL_START;
 
 	if(!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(),15,reg_nums,reg_vals,0,0)){
-		printf("Trouble starting acquisition....\n");;
+		cprintf(RED,"Trouble starting acquisition....\n");;
 		return 0;
 	}
 
@@ -1667,7 +1667,7 @@ int Feb_Control_Pulse_Pixel(int npulses, int x, int y){
 		printf("Pulsing pixel %d in all super columns below number %d.\n",x%8,x/8);
 	}
 	if(x<0||x>255||y<0||y>255){
-		printf("Warning: Pixel out of range.\n");
+		cprintf(RED,"Warning: Pixel out of range.\n");
 		return 0;
 	}
 
@@ -1676,14 +1676,14 @@ int Feb_Control_Pulse_Pixel(int npulses, int x, int y){
 	nrowclocks += (Feb_Control_staticBits&DAQ_STATIC_BIT_M4) ? 0 : 2*y;
 	nrowclocks += (Feb_Control_staticBits&DAQ_STATIC_BIT_M8) ? 0 : y;
 
-	Feb_Control_SetTestModeVariable(1); //on
+	Feb_Control_SetInTestModeVariable(1); //on
 	Feb_Control_SetStaticBits();
 	Feb_Control_SetCommandRegister(DAQ_RESET_PERIPHERY|DAQ_RESET_COLUMN_SELECT);
 	Feb_Control_StartDAQOnlyNWaitForFinish(5000);
 
 	unsigned int serial_in = 8<<(4*(7-x%8));
 	if(!Feb_Control_Shift32InSerialIn(serial_in)){
-		printf("Warning ChipController::PulsePixel: could shift in the initail 32.\n");
+		cprintf(RED,"Warning ChipController::PulsePixel: could shift in the initail 32.\n");
 		return 0;
 	}
 
@@ -1695,6 +1695,7 @@ int Feb_Control_Pulse_Pixel(int npulses, int x, int y){
 	Feb_Control_SendTokenIn();
 	Feb_Control_ClockRowClock(nrowclocks);
 	Feb_Control_PulsePixelNMove(npulses,0,0);
+
 
 	return 1;
 }
@@ -1708,7 +1709,7 @@ int Feb_Control_PulsePixelNMove(int npulses, int inc_x_pos, int inc_y_pos){
 	if(!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_SEND_N_TESTPULSES,npulses,0,0) ||
 			!Feb_Control_SetCommandRegister(c) ||
 			!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
-		printf("Warning: could not PulsePixelNMove(...).\n");
+		cprintf(RED,"Warning: could not PulsePixelNMove(...).\n");
 		return 0;
 	}
 
@@ -1720,7 +1721,7 @@ int Feb_Control_Shift32InSerialIn(unsigned int value_to_shift_in){
 	if(!Feb_Control_SetCommandRegister(DAQ_SERIALIN_SHIFT_IN_32) ||
 			!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_SHIFT_IN_32,value_to_shift_in,0,0) ||
 			!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
-		printf("Warning: could not shift in 32.\n");
+		cprintf(RED,"Warning: could not shift in 32.\n");
 		return 0;
 	}
 	return 1;
@@ -1729,7 +1730,7 @@ int Feb_Control_Shift32InSerialIn(unsigned int value_to_shift_in){
 int Feb_Control_SendTokenIn(){
 	if(!Feb_Control_SetCommandRegister(DAQ_SEND_A_TOKEN_IN) ||
 			!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
-		printf("Warning: could not SendTokenIn().\n");
+		cprintf(RED,"Warning: could not SendTokenIn().\n");
 		return 0;
 	}
 	return 1;
@@ -1737,15 +1738,14 @@ int Feb_Control_SendTokenIn(){
 
 int Feb_Control_ClockRowClock(unsigned int ntimes){
 	if(ntimes>1023){
-		printf("Warning: Clock row clock ntimes (%d) exceeds the maximum value of 1023.\n",ntimes);
-		printf("\t Setting ntimes to 1023.\n");
+		cprintf(RED,"Warning: Clock row clock ntimes (%d) exceeds the maximum value of 1023.\n\t Setting ntimes to 1023.\n",ntimes);
 		ntimes=1023;
 	}
 
 	if(!Feb_Control_SetCommandRegister(DAQ_CLK_ROW_CLK_NTIMES) ||
 			!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CLK_ROW_CLK_NTIMES,ntimes,0,0) ||
 			!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
-		printf("Warning: could not clock row clock.\n");
+		cprintf(RED,"Warning: could not clock row clock.\n");
 		return 0;
 	}
 
@@ -1753,7 +1753,39 @@ int Feb_Control_ClockRowClock(unsigned int ntimes){
 }
 
 
+int Feb_Control_PulseChip(int npulses){
+	int i;
+	int on = 1;
 
+	if(npulses == -1){
+		on = 0;
+		printf("\nResetting to normal mode\n");
+	}else{
+		printf("\n\nPulsing Chip.\n");//really just toggles the enable
+		printf("Vcmp should be set to 2.0 and Vtrim should be 2.\n");
+	}
+
+
+	Feb_Control_SetInTestModeVariable(on);
+	Feb_Control_SetStaticBits(); //toggle the enable 2x times
+	Feb_Control_ResetChipCompletely();
+
+	for(i=0;i<npulses;i++){
+		if(!Feb_Control_SetCommandRegister(DAQ_CHIP_CONTROLLER_SUPER_SLOW_SPEED|DAQ_RESET_PERIPHERY|DAQ_RESET_COLUMN_SELECT))
+			cprintf(RED,"some set command register error\n");
+		if(!Feb_Control_StartDAQOnlyNWaitForFinish(5000))
+			cprintf(RED,"some wait error\n");
+	}
+	Feb_Control_SetExternalEnableMode(on,1);
+	counter_bit = ~0;
+	printf("counter_bit:%d\n",counter_bit);
+
+	if(on)
+		printf("Pulse chip success\n");
+	else
+		printf("Reset to normal mode success\n");
+	return 1;
+}
 
 
 

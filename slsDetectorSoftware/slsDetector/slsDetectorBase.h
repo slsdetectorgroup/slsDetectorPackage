@@ -321,9 +321,9 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
       reads the encoder (iof required for angualr conversion) <br>
       processes the data (flat field, rate, angular conversion and merging ::processData())
       \param delflag 0 leaves the data in the final data queue (default is 1)
-      \returns nothing
+      \returns OK or FAIL depending on if it already started
   */
-  virtual void acquire(int delflag=1)=0;
+  virtual int acquire(int delflag=1)=0;
 
   int startMeasurement(){acquire(0); return OK;};
 

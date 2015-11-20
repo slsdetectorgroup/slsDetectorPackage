@@ -86,5 +86,7 @@ int set_all_trimbits(int);
 int set_counter_bit(int);
 int pulse_pixel(int);
 int pulse_pixel_and_move(int);
+int pulse_chip(int);
+
 
 #endif

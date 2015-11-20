@@ -1019,7 +1019,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   i++;
 
   
-  /* pulse pixel */
+  /* pulse */
   
   descrToFuncMap[i].m_pFuncName="pulse"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPulse;
@@ -1029,7 +1029,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPulse;
   i++;
 
-  
+  descrToFuncMap[i].m_pFuncName="pulsechip"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPulse;
+  i++;
+
 
   numberOfCommands=i;
   
@@ -1132,7 +1135,9 @@ string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action) {
 
 
 	myDet->setOnline(ONLINE_FLAG);
-	myDet->acquire();
+
+	if(myDet->acquire() == FAIL)
+		return string("acquire unsuccessful");
 	if(myDet->setReceiverOnline()==ONLINE_FLAG){
 		char answer[100];
 	      sprintf(answer,"\n%d",myDet->getFramesCaughtByReceiver());
@@ -4934,10 +4939,12 @@ string slsDetectorCommand::helpPulse(int narg, char *args[], int action) {
   if (action==PUT_ACTION || action==HELP_ACTION) {
     os << "pulse [n] [x] [y] \t pulses pixel at coordinates (x,y) n number of times" << std::endl;
 	os << "pulsenmove [n] [x] [y]\t pulses pixel n number of times and moves relatively by x value (x axis) and y value(y axis)" << std::endl;
+	os << "pulsechip [n] \t pulses chip n number of times, while n=-1 will reset it to normal mode" << std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION){
     os << "pulse \t cannot get" << std::endl;
   	os << "pulsenmove \t cannot get" << std::endl;
+  	os << "pulsechip \t cannot get" << std::endl;
   }
   return os.str();
 
@@ -4945,6 +4952,7 @@ string slsDetectorCommand::helpPulse(int narg, char *args[], int action) {
 
 
 string slsDetectorCommand::cmdPulse(int narg, char *args[], int action) {
+	int retval = FAIL;
 
 	if (action==HELP_ACTION)
 		return helpPulse(narg, args, action);
@@ -4953,32 +4961,43 @@ string slsDetectorCommand::cmdPulse(int narg, char *args[], int action) {
 
 	myDet->setOnline(ONLINE_FLAG);
 
-	if(narg<4)
-		return string("insufficient arguments:\n" + helpPulse(narg, args, action));
 
-	int ival1=1,ival2=-2,ival3=-1;
+	int ival1=-1;
     if (!sscanf(args[1],"%d",&ival1))
     	return string("Could not scan 1st argument ")+string(args[1]);
-    if (!sscanf(args[2],"%d",&ival2))
-    	return string("Could not scan 2nd argument ")+string(args[2]);
-    if (!sscanf(args[3],"%d",&ival3))
-    	return string("Could not scan 3rd argument ")+string(args[3]);
 
-	if (string(args[0])==string("pulse")){
-		if(myDet->pulsePixel(ival1,ival2,ival3) == OK)
-			return string("Pulse pixel successful");
-		else
-			return string("Pulse pixel failed");
+	if (string(args[0])==string("pulsechip"))
+		retval = myDet->pulseChip(ival1);
+
+
+	else{
+		//next commands requires 3 addnl. arguments
+		int ival2=-1,ival3=-1;
+		if(narg<4)
+			return string("insufficient arguments:\n" + helpPulse(narg, args, action));
+		if (!sscanf(args[2],"%d",&ival2))
+			return string("Could not scan 2nd argument ")+string(args[2]);
+		if (!sscanf(args[3],"%d",&ival3))
+			return string("Could not scan 3rd argument ")+string(args[3]);
+
+
+		if (string(args[0])==string("pulse"))
+			retval = myDet->pulsePixel(ival1,ival2,ival3);
+
+		else if (string(args[0])==string("pulsenmove"))
+			retval = myDet->pulsePixelNMove(ival1,ival2,ival3);
+
+		else return string("could not decode command")+cmd;
+
 	}
 
-	else if (string(args[0])==string("pulsenmove")){
-		if(myDet->pulsePixelNMove(ival1,ival2,ival3) == OK)
-			return string("Pulse pixel and move successful");
-		else
-			return string("Pulse pixel and move failed");
-	}
-
-	return string("could not decode command")+cmd;
+	return string("");
+/*
+	if(retval == OK)
+		return string(" successful");
+	else
+		return string(" failed");
+		*/
 }
 
 

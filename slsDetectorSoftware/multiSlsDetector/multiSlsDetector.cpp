@@ -199,7 +199,7 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
     }
 
     thisMultiDetector->receiver_read_freq = 0;
-
+    thisMultiDetector->acquiringFlag = false;
     thisMultiDetector->alreadyExisting=1;
   }
 
@@ -5145,4 +5145,27 @@ int multiSlsDetector::pulsePixelNMove(int n,int x,int y) {
 	return ret;
 }
 
- 
+
+int multiSlsDetector::pulseChip(int n) {
+	int ret=-100,ret1;
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++)
+		if (detectors[idet]){
+			ret1=detectors[idet]->pulsePixelNMove(n);
+			if(detectors[idet]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<idet));
+			if(ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+	return ret;
+}
+
+
+void multiSlsDetector::setAcquiringFlag(bool b){
+	thisMultiDetector->acquiringFlag = b;
+}
+
+bool multiSlsDetector::getAcquiringFlag(){
+	return thisMultiDetector->acquiringFlag;
+}

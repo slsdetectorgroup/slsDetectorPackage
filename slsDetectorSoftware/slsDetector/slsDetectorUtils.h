@@ -405,10 +405,10 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
       reads the encoder (iof required for angualr conversion) <br>
       processes the data (flat field, rate, angular conversion and merging ::processData())
       \param delflag 0 leaves the data in the final data queue
-      \returns nothing
+      \returns OK or FAIL depending on if it already started
   */
 
-  void acquire(int delflag=1);
+  int acquire(int delflag=1);
 
 
   //  double* convertAngles(){return convertAngles(currentPosition);};
@@ -778,8 +778,24 @@ virtual int setReceiverFifoDepth(int i = -1)=0;
   */
   virtual int pulsePixelNMove(int n=0,int x=0,int y=0)=0;
 
+  /**
+     Pulse Chip
+     \param n is number of times to pulse
+     \returns OK or FAIL
+  */
+  virtual int pulseChip(int n=0)=0;
 
+  /**
+     Set acquiring flag in shared memory
+     \param b acquiring flag
+   */
+  virtual void setAcquiringFlag(bool b=false)=0;
 
+  /**
+     Get acquiring flag from shared memory
+     \returns acquiring flag
+   */
+  virtual bool getAcquiringFlag() = 0;
 
 
 

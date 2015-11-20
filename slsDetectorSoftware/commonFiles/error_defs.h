@@ -55,7 +55,7 @@ using namespace std;
 #define COULD_NOT_SET_COUNTER_BIT			0x0000000000020000ULL
 #define COULD_NOT_PULSE_PIXEL				0x0000000000040000ULL
 #define COULD_NOT_PULSE_PIXEL_NMOVE			0x0000000000080000ULL
-
+#define COULD_NOT_PULSE_CHIP				0x0000000000100000ULL
 
 //											0x00000000FFFFFFFFULL
 /** @short class returning all error messages for error mask */
@@ -174,6 +174,8 @@ public:
 		if(slsErrorMask&COULD_NOT_PULSE_PIXEL_NMOVE)
 			retval.append("Could not pulse pixel and move\n");
 
+		if(slsErrorMask&COULD_NOT_PULSE_CHIP)
+			retval.append("Could not pulse chip\n");
 
 		return retval;
 

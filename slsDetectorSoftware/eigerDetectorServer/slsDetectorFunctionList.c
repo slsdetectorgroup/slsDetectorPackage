@@ -151,7 +151,7 @@ int initDetector(){
 	//SetRateCorrection(0); //deactivate rate correction
 	int enable[2] = {0,1};
 	setExternalGating(enable);//disable external gating
-	Feb_Control_SetTestModeVariable(0);
+	Feb_Control_SetInTestModeVariable(0);
 	Feb_Control_CheckSetup();
 
 	//print detector mac and ip
@@ -465,6 +465,11 @@ int pulsePixelNMove(int n, int x, int y){
 	return OK;
 }
 
+int pulseChip(int n){
+	if(!Feb_Control_PulseChip(n))
+		return FAIL;
+	return OK;
+}
 
 
 

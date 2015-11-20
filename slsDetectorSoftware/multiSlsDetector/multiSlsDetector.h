@@ -194,6 +194,9 @@ class multiSlsDetector  : public slsDetectorUtils {
     /* Receiver read frequency */
     int receiver_read_freq;
 
+    /** flag for acquiring */
+    bool acquiringFlag;
+
   };
 
 
@@ -1321,9 +1324,24 @@ class multiSlsDetector  : public slsDetectorUtils {
   */
   int pulsePixelNMove(int n=0,int x=0,int y=0);
   
+  /**
+     Pulse Chip
+     \param n is number of times to pulse
+     \returns OK or FAIL
+  */
+  int pulseChip(int n=0);
+
+  /**
+     Set acquiring flag in shared memory
+     \param b acquiring flag
+   */
+  void setAcquiringFlag(bool b=false);
   
-  
-  
+  /**
+     Get acquiring flag from shared memory
+     \returns acquiring flag
+   */
+  bool getAcquiringFlag();
 
 
 

@@ -5150,7 +5150,7 @@ int multiSlsDetector::pulseChip(int n) {
 	int ret=-100,ret1;
 	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++)
 		if (detectors[idet]){
-			ret1=detectors[idet]->pulsePixelNMove(n);
+			ret1=detectors[idet]->pulseChip(n);
 			if(detectors[idet]->getErrorMask())
 				setErrorMask(getErrorMask()|(1<<idet));
 			if(ret==-100)

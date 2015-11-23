@@ -36,7 +36,7 @@ public:
 		}
 
 		//Map
-		int totalNumberOfBytes =  numberOfPackets * bufferSize;
+		int totalNumberOfBytes = numberOfPackets * bufferSize;
 		int iPacket1 = 8;
 		int iPacket2 = (totalNumberOfBytes/2) + 8;
 		int iData1 = 0, iData2 = 0;
@@ -237,9 +237,11 @@ public:
 		uint32_t m=0, n = 0;
 		int linesperpacket,newix, newiy,origX;
 
+
 		//cout <<"ix:"<<ix<<" nx:"<<nx<<" iy:"<<iy<<" ny:"<<ny<<" datamap[iy][ix]:"<< dataMap[iy][ix] <<" datasize:"<< dataSize <<endl;
 		if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
 			m=dataMask[iy][ix];
+
 
 			//pixelpos1d = (nx * iy + ix);
 
@@ -271,6 +273,7 @@ public:
 			  //	cprintf(RED,"missing packet\n");
 			  return -1;
 			}
+
 
 
 		}else{

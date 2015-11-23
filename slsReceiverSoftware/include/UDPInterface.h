@@ -39,13 +39,17 @@ class UDPInterface {
 	 *
 	 *  set*()       : anytime after initialize(), multiple times
 	 *
-	 *  startReceiver(): anytime after initialize(). Will fail if state already is 'running':
+	 *  startReceiver(): anytime after initialize(). Will fail in TCPIP itself if state already is 'running':
 	 *
 	 *  Only startReceiver() does change the data receiver configuration, it does pass the whole configuration cache to the data receiver.
 	 *
 	 *  abort(), //FIXME: needed?
 	 *
 	 *  stopReceiver() : anytime after initialize(). Will do nothing if state already is idle.
+	 *  				 Otherwise, sets status to transmitting when shutting down sockets
+	 *  				 then to run_finished when all data obtained
+	 *  				 then to idle when returning from this function
+	 *
 	 *
 	 *  getStatus() returns the actual state of the data receiver - idle, running or error, enum defined in include/sls_receiver_defs.h
 	 *

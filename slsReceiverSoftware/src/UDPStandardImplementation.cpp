@@ -10,17 +10,12 @@
 #include "gotthardModuleData.h"
 #include "gotthardShortModuleData.h"
 
-//#include <sys/socket.h>		// socket(), bind(), listen(), accept(), shut down
-//#include <arpa/inet.h>		// sock_addr_in, htonl, INADDR_ANY
 #include <stdlib.h>			// exit()
 #include <iomanip>			//set precision for printing parameters for create new file
 #include <map>				//map
-//#include <sys/mman.h>		//munmap
-
 #include <iostream>
 #include <string.h>
 #include <stdint.h>
-#include <stdlib.h>
 using namespace std;
 
 #define WRITE_HEADERS
@@ -789,7 +784,7 @@ void UDPStandardImplementation::resetAcquisitionCount(){
 int UDPStandardImplementation::startReceiver(char *c){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 	
-	cout << "Starting Receiver" << endl;
+	FILE_LOG(logINFO)  << "Stopping Receiver";
 
 
 	//RESET
@@ -888,7 +883,7 @@ int UDPStandardImplementation::startReceiver(char *c){
 void UDPStandardImplementation::stopReceiver(){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
-	cout << "Stopping Receiver" << endl;
+	FILE_LOG(logINFO)  << "Stopping Receiver";
 
 	//set status to transmitting
 	startReadout();

@@ -8,8 +8,6 @@
 
 #include "UDPBaseImplementation.h"
 
-//#include "sls_receiver_defs.h"
-//#include "receiver_defs.h"
 #include "genericSocket.h"
 #include "circularFifo.h"
 #include "singlePhotonDetector.h"
@@ -39,7 +37,6 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 
 	/*************************************************************************
 	 * Constructor & Destructor **********************************************
-	 * They access local cache of configuration or detector parameters *******
 	 *************************************************************************/
 	/**
 	 * Constructor
@@ -155,6 +152,7 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	/**
 	 * Overridden method
 	 * Start Listening for Packets by activating all configuration settings to receiver
+	 * When this function returns, it has status RUNNING(upon SUCCESS) or IDLE (upon failure)
 	 * @param c error message if FAIL
 	 * @return OK or FAIL
 	 */
@@ -164,7 +162,8 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 * Overridden method
 	 * Stop Listening for Packets
 	 * Calls startReadout(), which stops listening and sets status to Transmitting
-	 * When it has read every frame in buffer,it returns with the status Run_Finished
+	 * When it has read every frame in buffer, the status changes to Run_Finished
+	 * When this function returns, receiver has status IDLE
 	 * Pre: status is running, semaphores have been instantiated,
 	 * Post: udp sockets shut down, status is idle, semaphores destroyed
 	 */
@@ -174,6 +173,7 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 * Overridden method
 	 * Stop Listening to Packets
 	 * and sets status to Transmitting
+	 * Next step would be to get all data and stop receiver completely and return with idle state
 	 * Pre: status is running, udp sockets have been initialized, stop receiver initiated
 	 * Post:udp sockets closed, status is transmitting
 	 */
@@ -182,6 +182,7 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	/**
 	 * Overridden method
 	 * Shuts down and deletes UDP Sockets
+	 * TCPIPInterface can also call this in case of illegal shutdown of receiver
 	 * @return OK or FAIL
 	 */
 	int shutDownUDPSockets();
@@ -199,6 +200,7 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	/**
 	 * Overridden method
 	 * Closes file / all files(data compression involves multiple files)
+	 * TCPIPInterface can also call this in case of illegal shutdown of receiver
 	 * @param i thread index valid for datacompression using root files, -1 for all threads
 	 */
 	void closeFile(int i = -1);

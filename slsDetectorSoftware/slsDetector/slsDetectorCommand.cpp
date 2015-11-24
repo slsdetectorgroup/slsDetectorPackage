@@ -1247,7 +1247,7 @@ string slsDetectorCommand::cmdStatus(int narg, char *args[], int action) {
       return string("unknown action");
   } else if (action==HELP_ACTION) {
     return helpStatus(narg,args,HELP_ACTION);
-  } 
+  }
   runStatus s=myDet->getRunStatus();
   return myDet->runStatusType(s);
 

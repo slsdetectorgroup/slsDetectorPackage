@@ -1255,6 +1255,7 @@ int multiSlsDetector::stopAcquisition(){
     }
   }
   *stoppedFlag=1;
+  setAcquiringFlag(false);
   return ret1;
 
 

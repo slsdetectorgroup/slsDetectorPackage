@@ -817,7 +817,7 @@ int slsReceiverTCPIPInterface::start_receiver(){
 	// send answer
 	socket->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED, "%s\n", mess);
+		cprintf(RED, "Error:%s\n", mess);
 		socket->SendDataOnly(mess,sizeof(mess));
 	}
 	//return ok/fail
@@ -1084,6 +1084,8 @@ int	slsReceiverTCPIPInterface::read_frame(){
 		return eiger_read_frame();
 	case PROPIX:
 		return propix_read_frame();
+	case JUNGFRAU:
+		return jungfrau_read_frame();
 	default:
 		return gotthard_read_frame();
 	}
@@ -1608,22 +1610,6 @@ int	slsReceiverTCPIPInterface::propix_read_frame(){
 int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	ret=OK;
 
-	/** structure of an eiger packet*/
-	typedef struct
-	{
-		unsigned char subframenum[4];
-		unsigned char missingpacket[2];
-		unsigned char portnum[1];
-		unsigned char dynamicrange[1];
-	} eiger_packet_header_t;
-
-	typedef struct
-	{
-		unsigned char framenum[6];
-		unsigned char packetnum[2];
-	} eiger_packet_footer_t;
-
-
 	char fName[MAX_STR_LENGTH]="";
 	int acquisitionIndex = -1;
 	int frameIndex= -1;
@@ -1686,7 +1672,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 			if(dynamicrange == 32){
 				eiger_packet_header_t* wbuf_header;
 				wbuf_header = (eiger_packet_header_t*) raw;
-				subframenumber = *( (uint32_t*) wbuf_header->subframenum);
+				subframenumber = *( (uint32_t*) wbuf_header->subFrameNumber);
 			}
 
 #ifdef VERYVERBOSE
@@ -1860,6 +1846,167 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	return ret;
 }
 
+
+
+
+
+
+
+int	slsReceiverTCPIPInterface::jungfrau_read_frame(){
+	ret=OK;
+
+	char fName[MAX_STR_LENGTH]="";
+	int acquisitionIndex = -1;
+	int frameIndex= -1;
+	uint64_t currentIndex=0;
+	uint64_t startAcquisitionIndex=0;
+	uint64_t startFrameIndex=0;
+	strcpy(mess,"Could not read frame\n");
+
+
+	int frameSize   = JFRAU_ONE_PACKET_SIZE * packetsPerFrame;
+	int dataSize 	= JFRAU_ONE_DATA_SIZE * packetsPerFrame;
+	int oneDataSize = JFRAU_ONE_DATA_SIZE;
+
+	char* raw;
+	char* origVal 	= new char[frameSize];
+	char* retval 	= new char[dataSize];
+	char* blackpacket = new char[oneDataSize];
+
+	for(int i=0;i<oneDataSize;i++)
+		blackpacket[i]='0';
+
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+
+	if (receiverBase == NULL){
+		strcpy(mess,"Receiver not set up\n");
+		ret=FAIL;
+	}
+
+	//send garbage with -1 currentIndex to try again
+	else if(!receiverBase->getFramesCaught()){
+		startAcquisitionIndex=-1;
+#ifdef VERYVERBOSE
+		cout<<"haven't caught any frame yet"<<endl;
+#endif
+	}
+
+
+	// acq started
+	else{
+		ret = OK;
+		//read a frame
+		receiverBase->readFrame(fName,&raw,startAcquisitionIndex,startFrameIndex);
+		//send garbage with -1 index to try again
+		if (raw == NULL){
+			startAcquisitionIndex = -1;
+#ifdef VERYVERBOSE
+			cout<<"data not ready for gui yet"<<endl;
+#endif
+		}
+
+		//proper frame
+		else{
+			//cout<<"**** got proper frame ******"<<endl;
+			memcpy(origVal,raw,frameSize);
+			raw=NULL;
+
+			//fixed frame number
+			jfrau_packet_header_t* header = (jfrau_packet_header_t*) origVal;
+			currentIndex = (*( (uint64_t*) header->frameNumber));
+#ifdef VERYVERBOSE
+			cout << "currentIndex:" << dec << currentIndex << endl;
+#endif
+
+			int64_t currentPacket = packetsPerFrame-1;
+			int offsetsrc = 0;
+			int offsetdest = 0;
+			uint64_t ifnum=-1;
+			uint64_t ipnum=-1;
+
+			while(currentPacket >= 0){
+				header = (jfrau_packet_header_t*) (origVal + offsetsrc);
+				ifnum = (*( (uint64_t*) header->frameNumber));
+				ipnum = (*( (uint64_t*) header->packetNumber));
+				if(ifnum != currentIndex) {
+					cout << "current packet " << currentPacket << " Wrong Frame number " << ifnum << ", copying blank packet" << endl;
+					memcpy(retval+offsetdest,blackpacket,oneDataSize);
+					offsetdest += oneDataSize;
+					//no need to increase offsetsrc as all packets will be wrong
+					currentPacket--;
+					continue;
+				}
+				if(ipnum!= currentPacket){
+					cout << "current packet " << currentPacket << " Wrong packet number " << ipnum << ", copying blank packet" << endl;
+					memcpy(retval+offsetdest,blackpacket,oneDataSize);
+					offsetdest += oneDataSize;
+					//no need to increase offsetsrc until we get the right packet
+					currentPacket--;
+					continue;
+				}
+				offsetsrc+=JFRAU_HEADER_LENGTH;
+				memcpy(retval+offsetdest,origVal+offsetsrc,oneDataSize);
+				offsetdest += oneDataSize;
+				offsetsrc += oneDataSize;
+				currentPacket--;
+			}
+
+
+			acquisitionIndex = (int)(currentIndex-startAcquisitionIndex);
+			if(acquisitionIndex ==  -1)
+				startFrameIndex = -1;
+			else
+				frameIndex = (int)(currentIndex-startFrameIndex);
+#ifdef VERY_VERY_DEBUG
+			cout << "acquisitionIndex calculated is:" << acquisitionIndex << endl;
+			cout << "frameIndex calculated is:" << frameIndex << endl;
+			cout << "currentIndex:" << currentIndex << endl;
+			cout << "startAcquisitionIndex:" << startAcquisitionIndex << endl;
+			cout << "startFrameIndex:" << startFrameIndex << endl;
+#endif
+		}
+	}
+
+#ifdef VERYVERBOSE
+	if(frameIndex!=-1){
+		cout << "fName:" << fName << endl;
+		cout << "acquisitionIndex:" << acquisitionIndex << endl;
+		cout << "frameIndex:" << frameIndex << endl;
+		cout << "startAcquisitionIndex:" << startAcquisitionIndex << endl;
+		cout << "startFrameIndex:" << startFrameIndex << endl;
+	}
+#endif
+
+
+
+#endif
+
+	if(ret==OK && socket->differentClients){
+		FILE_LOG(logDEBUG) << "Force update";
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL){
+		cprintf(RED,"%s\n",mess);
+		socket->SendDataOnly(mess,sizeof(mess));
+	}
+	else{
+		socket->SendDataOnly(fName,MAX_STR_LENGTH);
+		socket->SendDataOnly(&acquisitionIndex,sizeof(acquisitionIndex));
+		socket->SendDataOnly(&frameIndex,sizeof(frameIndex));
+		socket->SendDataOnly(retval,dataSize);
+	}
+
+	delete [] retval;
+	delete [] origVal;
+	delete [] raw;
+
+	return ret;
+}
 
 
 
@@ -2323,7 +2470,8 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 							packetsPerFrame = EIGER_ONE_GIGA_CONSTANT * dynamicrange * EIGER_MAX_PORTS;
 						else
 							packetsPerFrame = EIGER_TEN_GIGA_CONSTANT * dynamicrange * EIGER_MAX_PORTS;
-					}
+					}else if (myDetectorType == JUNGFRAU)
+						packetsPerFrame = JFRAU_PACKETS_PER_FRAME;
 				}
 			}
 		}

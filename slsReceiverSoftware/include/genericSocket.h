@@ -75,7 +75,8 @@ class sockaddr_in;
 using namespace std;
 
 #define DEFAULT_PACKET_SIZE 1286
-#define SOCKET_BUFFER_SIZE (100*1024*1024) //100MB
+/*#define SOCKET_BUFFER_SIZE (100*1024*1024) //100MB*/
+#define SOCKET_BUFFER_SIZE (2000*1024*1024) //100MB
 #define DEFAULT_PORTNO    1952
 #define DEFAULT_BACKLOG 5
 #define DEFAULT_UDP_PORTNO 50001
@@ -577,7 +578,6 @@ enum communicationProtocol{
 
     
      int ReceiveDataOnly(void* buf,int length=0){
-
 
     	 if (buf==NULL) return -1;
 

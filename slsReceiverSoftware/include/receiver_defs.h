@@ -5,6 +5,43 @@
 
 #include <stdint.h> 
 
+
+/**
+ * structure of an eiger packet header
+ * subframenum subframe number for 32 bit mode (already written by firmware)
+ * missingpacket explicitly put to 0xFF to recognize it in file read (written by software)
+ * portnum 0 for the first port and 1 for the second port (written by software to file)
+ * dynamicrange dynamic range or bits per pixel (written by software to file)
+ */
+typedef struct {
+	unsigned char subFrameNumber[4];
+	unsigned char missingPacket[2];
+	unsigned char portIndex[1];
+	unsigned char dynamicRange[1];
+} eiger_packet_header_t;
+/**
+ * structure of an eiger packet footer
+ * framenum 48 bit frame number (already written by firmware)
+ * packetnum packet number (already written by firmware)
+ */
+typedef struct	{
+	unsigned char frameNumber[6];
+	unsigned char packetNumber[2];
+} eiger_packet_footer_t;
+
+/**
+ * structure of an jungfrau packet header
+ * empty header
+ * framenumber
+ * packetnumber
+ */
+typedef struct {
+	unsigned char emptyHeader[6];
+	unsigned char frameNumber[8];
+	unsigned char packetNumber[8];
+} jfrau_packet_header_t;
+
+
 #define GOODBYE 							-200
 
 #define DO_NOTHING		0
@@ -87,6 +124,26 @@
 #define MOENCH_BYTES_PER_ADC				(40*2)
 #define MOENCH_PIXELS_IN_ONE_ROW			160
 #define MOENCH_BYTES_IN_ONE_ROW				(MOENCH_PIXELS_IN_ONE_ROW*2)
+
+
+
+
+#define JFRAU_FIFO_SIZE						2500 //cannot be less than max jobs per thread = 1000
+#define JFRAU_PACKETS_PER_FRAME				128
+#define JFRAU_HEADER_LENGTH					22
+#define JFRAU_ONE_DATA_SIZE					8192
+#define JFRAU_ONE_PACKET_SIZE				(JFRAU_HEADER_LENGTH+JFRAU_ONE_DATA_SIZE) //8214
+#define JFRAU_DATA_BYTES	 				(JFRAU_ONE_DATA_SIZE*JFRAU_PACKETS_PER_FRAME)		//8192*128
+#define JFRAU_BUFFER_SIZE 					(JFRAU_ONE_PACKET_SIZE*JFRAU_PACKETS_PER_FRAME) 	//8214*128
+
+
+#define JFRAU_FRAME_INDEX_MASK				0x0 //Not Applicable, use struct
+#define JFRAU_FRAME_INDEX_OFFSET			0x0 //Not Applicable, use struct
+#define JFRAU_PACKET_INDEX_MASK				0x0//Not Applicable, use struct
+
+#define JFRAU_PIXELS_IN_ONE_ROW				(256*4)
+#define JFRAU_PIXELS_IN_ONE_COL				(256*2)
+#define JFRAU_BYTES_IN_ONE_ROW				(JFRAU_PIXELS_IN_ONE_ROW*2)
 
 
 

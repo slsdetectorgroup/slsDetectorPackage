@@ -176,6 +176,9 @@ private:
 	/** eiger specific read frame */
 	int eiger_read_frame();
 
+	/** jungfrau specific read frame */
+	int jungfrau_read_frame();
+
 	/** Sets the receiver to send every nth frame to gui, or only upon gui request */
 	int set_read_frequency();
 

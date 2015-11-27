@@ -461,29 +461,6 @@ private:
 	 *************************************************************************/
 
 	//**detector parameters***
-	/**
-	 * structure of an eiger packet header
-	 * subframenum subframe number for 32 bit mode (already written by firmware)
-	 * missingpacket explicitly put to 0xFF to recognize it in file read (written by software)
-	 * portnum 0 for the first port and 1 for the second port (written by software to file)
-	 * dynamicrange dynamic range or bits per pixel (written by software to file)
-	 */
-	typedef struct {
-		unsigned char subFameNumber[4];
-		unsigned char missingPacket[2];
-		unsigned char portIndex[1];
-		unsigned char dynamicRange[1];
-	} eiger_packet_header_t;
-	/**
-	 * structure of an eiger packet footer
-	 * framenum 48 bit frame number (already written by firmware)
-	 * packetnum packet number (already written by firmware)
-	 */
-	typedef struct	{
-		unsigned char frameNumber[6];
-		unsigned char packetNumber[2];
-	} eiger_packet_footer_t;
-
 	/** Size of 1 Frame including headers */
 	int frameSize;
 

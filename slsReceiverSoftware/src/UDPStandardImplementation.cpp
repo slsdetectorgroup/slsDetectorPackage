@@ -251,7 +251,7 @@ int UDPStandardImplementation::setupFifoStructure(){
 	int64_t i;
 	int oldNumberofJobsPerBuffer = numberofJobsPerBuffer;
 	//eiger always listens to 1 packet at a time
-	if(myDetectorType == EIGER){
+	if((myDetectorType == EIGER) || (myDetectorType = JUNGFRAU)){
 		numberofJobsPerBuffer = 1;
 		FILE_LOG(logDEBUG) << "Info: 1 packet per buffer";
 	}
@@ -288,6 +288,7 @@ int UDPStandardImplementation::setupFifoStructure(){
 		case GOTTHARD:	fifoSize = GOTTHARD_FIFO_SIZE;	break;
 		case MOENCH:	fifoSize = MOENCH_FIFO_SIZE;	break;
 		case PROPIX:	fifoSize = PROPIX_FIFO_SIZE;	break;
+		case JUNGFRAU:	fifoSize = JFRAU_FIFO_SIZE;		break;
 		case EIGER:		fifoSize = EIGER_FIFO_SIZE  * packetsPerFrame;	break;//listens to 1 packet at a time and size depends on packetsperframe
 		default: break;
 		}
@@ -717,7 +718,6 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 		footerOffset		= EIGER_PACKET_HEADER_SIZE + oneDataSize;
 		break;
 	case JUNGFRAUCTB:
-	case JUNGFRAU:
 		packetsPerFrame		= JCTB_PACKETS_PER_FRAME;
 		onePacketSize 		= JCTB_ONE_PACKET_SIZE;
 		//oneDataSize 		= Not applicable;
@@ -728,6 +728,19 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 		packetIndexMask 	= JCTB_PACKET_INDEX_MASK;
 		maxPacketsPerFile	= JFCTB_MAX_FRAMES_PER_FILE * JCTB_PACKETS_PER_FRAME;
 		fifoSize			= JCTB_FIFO_SIZE;
+		//footerOffset		= Not applicable;
+		break;
+	case JUNGFRAU:
+		packetsPerFrame		= JFRAU_PACKETS_PER_FRAME;
+		onePacketSize 		= JFRAU_ONE_PACKET_SIZE;
+		oneDataSize 		= JFRAU_DATA_BYTES;
+		frameSize 			= JFRAU_BUFFER_SIZE;
+		bufferSize 			= JFRAU_BUFFER_SIZE;
+		frameIndexMask 		= JFRAU_FRAME_INDEX_MASK;
+		frameIndexOffset 	= JFRAU_FRAME_INDEX_OFFSET;
+		packetIndexMask 	= JFRAU_PACKET_INDEX_MASK;
+		maxPacketsPerFile	= JFRAU_MAX_FRAMES_PER_FILE * JFRAU_PACKETS_PER_FRAME;
+		fifoSize			= JFRAU_FIFO_SIZE;
 		//footerOffset		= Not applicable;
 		break;
 	default:
@@ -1297,9 +1310,9 @@ int UDPStandardImplementation::setupWriter(){
 		if (rawDataReadyCallBack){
 			FILE_LOG(logINFO) << "Data Write has been defined externally";
 		}
-	}else if(!fileWriteEnable)
+	}else if(!fileWriteEnable){
 		FILE_LOG(logINFO) << "Data will not be saved";
-
+	}
 
 
 	//creating first file
@@ -1571,6 +1584,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int lSize, in
 
 	int receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + cSize, lSize + cSize);
 
+
 	//throw away packets that is not one packet size, need to check status if socket is shut down
 	while(status != TRANSMITTING && myDetectorType == EIGER && receivedSize != onePacketSize) {
 		if(receivedSize != EIGER_HEADER_LENGTH)
@@ -1584,13 +1598,19 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int lSize, in
 	totalListeningFrameCount[ithread] += (receivedSize/onePacketSize);
 
 #ifdef MANUALDEBUG
-	eiger_packet_header_t* header = (eiger_packet_header_t*) (buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS);
-	eiger_packet_footer_t* footer = (eiger_packet_footer_t*)(buffer[ithread] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
-	cprintf(GREEN,"thread:%d subframenum:%d oldpacketnum:%d new pnum:%d\n",
-			ithread,
-			(*( (unsigned int*) header->subFameNumber)),
-			(*( (uint8_t*) header->dynamicRange)),
-			(*( (uint16_t*) footer->packetNumber)));
+	if(myDetectorType == JUNGFRAU){
+		jfrau_packet_header_t* header = (jfrau_packet_header_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS);
+		cprintf(RED,"framenumber:%llu\n",(long long unsigned int)(*( (uint64_t*) header->frameNumber)));
+		cprintf(RED,"packetnumber:%llu\n",(long long unsigned int)(*( (uint64_t*) header->packetNumber)));
+	}else if(myDetectorType == EIGER){
+		eiger_packet_header_t* header = (eiger_packet_header_t*) (buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS);
+		eiger_packet_footer_t* footer = (eiger_packet_footer_t*)(buffer[ithread] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
+		cprintf(GREEN,"thread:%d subframenum:%d oldpacketnum:%d new pnum:%d\n",
+				ithread,
+				(*( (unsigned int*) header->subFrameNumber)),
+				(*( (uint8_t*) header->dynamicRange)),
+				(*( (uint16_t*) footer->packetNumber)));
+	}
 #endif
 
 
@@ -1609,9 +1629,14 @@ void UDPStandardImplementation::startFrameIndices(int ithread){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//determine startFrameIndex
+	jfrau_packet_header_t* header=0;
 	switch(myDetectorType){
 	case EIGER:
 		startFrameIndex = 0;	//frame number always resets
+		break;
+	case JUNGFRAU:
+		header = (jfrau_packet_header_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS);
+		startFrameIndex = (*( (uint64_t*) header->frameNumber));
 		break;
 	default:
 		if(shortFrameEnable < 0){
@@ -1741,8 +1766,10 @@ uint32_t UDPStandardImplementation::processListeningBuffer(int ithread, int cSiz
 
 	int lastPacketOffset;		//the offset of the last packet
 	uint32_t lastFrameHeader;		//frame number of last packet in buffer
+	uint64_t lastFrameHeader64;		//frame number of last packet in buffer
 	uint32_t packetCount = (packetsPerFrame/numberofListeningThreads) * numberofJobsPerBuffer;		//packets received
 	cSize = 0;					//reset size
+	jfrau_packet_header_t* header;
 
 	switch(myDetectorType){
 	case GOTTHARD:
@@ -1800,6 +1827,44 @@ uint32_t UDPStandardImplementation::processListeningBuffer(int ithread, int cSiz
 					((((uint32_t)(*((uint32_t*)(temp)))))	& (packetIndexMask)));
 #endif
 		}
+		break;
+
+
+	case JUNGFRAU:
+		lastPacketOffset = (((numberofJobsPerBuffer * packetsPerFrame - 1) * onePacketSize) + HEADER_SIZE_NUM_TOT_PACKETS);
+#ifdef DEBUG4
+		header = (jfrau_packet_header_t*) (buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS);
+		cprintf(BLUE, "Listening_Thread: First Header:%llu\t First Packet:%llu\n",
+				(long long unsigned int)(*( (uint64_t*) header->frameNumber)),
+				(long long unsigned int)(*( (uint64_t*) header->packetNumber)));
+#endif
+		header = (jfrau_packet_header_t*) (buffer[ithread]+lastPacketOffset);
+#ifdef DEBUG4
+		cprintf(BLUE, "Listening_Thread: Last Header:%llu\t Last Packet:%llu\n",
+				(long long unsigned int)(*( (uint64_t*) header->frameNumber)),
+				(long long unsigned int)(*( (uint64_t*) header->packetNumber)));
+#endif
+		//jungfrau last packet value is 0, so find the last packet and store the others in a temp storage
+		if(*( (uint64_t*) header->packetNumber)){
+			cprintf(RED,"entering missing packet zone\n");
+			lastFrameHeader64 = (*( (uint64_t*) header->frameNumber));
+			cSize += onePacketSize;
+			lastPacketOffset -= onePacketSize;
+			--packetCount;
+			while (lastFrameHeader64 == (*( (uint64_t*) header->frameNumber))){
+				cSize += onePacketSize;
+				lastPacketOffset -= onePacketSize;
+				header = (jfrau_packet_header_t*) (buffer[ithread]+lastPacketOffset);
+#ifdef DEBUG4
+				cprintf(RED,"new header:%llu new packet:%llu\n",
+						(long long unsigned int)(*( (uint64_t*) header->frameNumber)),
+						(long long unsigned int)(*( (uint64_t*) header->packetNumber)));
+#endif
+				--packetCount;
+			}
+			memcpy(temp, buffer[ithread]+(lastPacketOffset+onePacketSize), cSize);
+		}
+
 		break;
 
 	default:
@@ -2406,17 +2471,24 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 
 
 	//get frame number (eiger already gets it when it does packet to packet processing)
-	if (myDetectorType != EIGER){
-		uint64_t tempframenumber = ((uint32_t)(*((uint32_t*)(wbuffer[0] + HEADER_SIZE_NUM_TOT_PACKETS))));
-		//for gotthard and normal frame, increment frame number to separate fnum and pnum
-		if (myDetectorType == PROPIX ||(myDetectorType == GOTTHARD && shortFrameEnable == -1))
-			tempframenumber++;
-		//get frame number
-		currentFrameNumber = (tempframenumber & frameIndexMask) >> frameIndexOffset;
+	if(myDetectorType != EIGER){
+		if(myDetectorType == JUNGFRAU){
+			jfrau_packet_header_t* header = (jfrau_packet_header_t*)(wbuffer[0] + HEADER_SIZE_NUM_TOT_PACKETS);
+			currentFrameNumber = (*( (uint64_t*) header->frameNumber));
+		}else{
+			uint64_t tempframenumber = ((uint32_t)(*((uint32_t*)(wbuffer[0] + HEADER_SIZE_NUM_TOT_PACKETS))));
+			//for gotthard and normal frame, increment frame number to separate fnum and pnum
+			if (myDetectorType == PROPIX ||(myDetectorType == GOTTHARD && shortFrameEnable == -1))
+				tempframenumber++;
+			//get frame number
+			currentFrameNumber = (tempframenumber & frameIndexMask) >> frameIndexOffset;
+		}
 		//set indices
 		acquisitionIndex = currentFrameNumber - startAcquisitionIndex;
 		frameIndex = currentFrameNumber - startFrameIndex;
 	}
+
+
 
 
 	//callback to write data

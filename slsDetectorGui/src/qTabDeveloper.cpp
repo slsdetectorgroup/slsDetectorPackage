@@ -137,6 +137,31 @@ void qTabDeveloper::SetupWidgetWindow(){
 		adcNames.push_back("Temperature FPGA:");
 
 		break;
+
+
+	case slsDetectorDefs::JUNGFRAU:
+		NUM_DAC_WIDGETS = 16;
+		NUM_ADC_WIDGETS = 0;
+		dacNames.push_back("v Dac 0:");
+		dacNames.push_back("v Dac 1:");
+		dacNames.push_back("v Dac 2:");
+		dacNames.push_back("v Dac 3:");
+		dacNames.push_back("v Dac 4:");
+		dacNames.push_back("v Dac 5:");
+		dacNames.push_back("v Dac 6:");
+		dacNames.push_back("i Dac 7:");
+		dacNames.push_back("v Dac 8:");
+		dacNames.push_back("v Dac 9:");
+		dacNames.push_back("v Dac 10:");
+		dacNames.push_back("v Dac 11:");
+		dacNames.push_back("v Dac 12:");
+		dacNames.push_back("v Dac 13:");
+		dacNames.push_back("v Dac 14:");
+		dacNames.push_back("i Dac 15:");
+
+
+		break;
+
 	default:
 		cout << "ERROR: Unknown detector type: " + myDet->slsDetectorBase::getDetectorType(detType) << endl;
 		qDefs::Message(qDefs::CRITICAL,string("Unknown detector type:")+myDet->slsDetectorBase::getDetectorType(detType),"qTabDeveloper::SetupWidgetWindow");
@@ -378,72 +403,98 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 			break;
 		}
 		break;
-	case slsDetectorDefs::EIGER:
-		switch(index){
-		case 0:	return slsDetectorDefs::E_SvP;
-		case 1:	return slsDetectorDefs::E_SvN;
-		case 2:	return slsDetectorDefs::E_Vrf;
-		case 3:	return slsDetectorDefs::E_Vrs;
-		case 4:	return slsDetectorDefs::E_Vtr;
-		case 5:	return slsDetectorDefs::E_Vtgstv;
-		case 6:	return slsDetectorDefs::E_cal;
-		case 7:	return slsDetectorDefs::E_Vcp;
-		case 8:	return slsDetectorDefs::E_Vcn;
-		case 9:	return slsDetectorDefs::E_Vis;
-		case 10:return slsDetectorDefs::E_rxb_lb;
-		case 11:return slsDetectorDefs::E_rxb_rb;
-		case 12:return slsDetectorDefs::E_Vcmp_ll;
-		case 13:return slsDetectorDefs::E_Vcmp_lr;
-		case 14:return slsDetectorDefs::E_Vcmp_rl;
-		case 15:return slsDetectorDefs::E_Vcmp_rr;
-		case 16:return slsDetectorDefs::THRESHOLD;
+		case slsDetectorDefs::EIGER:
+			switch(index){
+			case 0:	return slsDetectorDefs::E_SvP;
+			case 1:	return slsDetectorDefs::E_SvN;
+			case 2:	return slsDetectorDefs::E_Vrf;
+			case 3:	return slsDetectorDefs::E_Vrs;
+			case 4:	return slsDetectorDefs::E_Vtr;
+			case 5:	return slsDetectorDefs::E_Vtgstv;
+			case 6:	return slsDetectorDefs::E_cal;
+			case 7:	return slsDetectorDefs::E_Vcp;
+			case 8:	return slsDetectorDefs::E_Vcn;
+			case 9:	return slsDetectorDefs::E_Vis;
+			case 10:return slsDetectorDefs::E_rxb_lb;
+			case 11:return slsDetectorDefs::E_rxb_rb;
+			case 12:return slsDetectorDefs::E_Vcmp_ll;
+			case 13:return slsDetectorDefs::E_Vcmp_lr;
+			case 14:return slsDetectorDefs::E_Vcmp_rl;
+			case 15:return slsDetectorDefs::E_Vcmp_rr;
+			case 16:return slsDetectorDefs::THRESHOLD;
 
 
-		default:
-			qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error Index:"+ index,"qTabDeveloper::getSLSIndex");
-			Refresh();
+			default:
+				qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error Index:"+ index,"qTabDeveloper::getSLSIndex");
+				Refresh();
+				break;
+			}
 			break;
-		}
-		break;
-	case slsDetectorDefs::MOENCH:
-		switch(index){
-		case 0:	return slsDetectorDefs::V_DAC0;
-		case 1:	return slsDetectorDefs::V_DAC1;
-		case 2:	return slsDetectorDefs::V_DAC2;
-		case 3:	return slsDetectorDefs::V_DAC3;
-		case 4:	return slsDetectorDefs::V_DAC4;
-		case 5:	return slsDetectorDefs::V_DAC5;
-		case 6:	return slsDetectorDefs::V_DAC6;
-		case 7:	return slsDetectorDefs::V_DAC7;
-		case 8:	return slsDetectorDefs::TEMPERATURE_ADC;
-		case 9:return slsDetectorDefs::TEMPERATURE_FPGA;
+			case slsDetectorDefs::MOENCH:
+				switch(index){
+				case 0:	return slsDetectorDefs::V_DAC0;
+				case 1:	return slsDetectorDefs::V_DAC1;
+				case 2:	return slsDetectorDefs::V_DAC2;
+				case 3:	return slsDetectorDefs::V_DAC3;
+				case 4:	return slsDetectorDefs::V_DAC4;
+				case 5:	return slsDetectorDefs::V_DAC5;
+				case 6:	return slsDetectorDefs::V_DAC6;
+				case 7:	return slsDetectorDefs::V_DAC7;
+				case 8:	return slsDetectorDefs::TEMPERATURE_ADC;
+				case 9:return slsDetectorDefs::TEMPERATURE_FPGA;
 
-		default:
-			qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error. Index:"+ index,"qTabDeveloper::getSLSIndex");
-			Refresh();
-			break;
-		}
-		break;
-	case slsDetectorDefs::PROPIX:
-	case slsDetectorDefs::GOTTHARD:
-		switch(index){
-		case 0:	return slsDetectorDefs::G_VREF_DS;
-		case 1:	return slsDetectorDefs::G_VCASCN_PB;
-		case 2:	return slsDetectorDefs::G_VCASCP_PB;
-		case 3:	return slsDetectorDefs::G_VOUT_CM;
-		case 4:	return slsDetectorDefs::G_VCASC_OUT;
-		case 5:	return slsDetectorDefs::G_VIN_CM;
-		case 6:	return slsDetectorDefs::G_VREF_COMP;
-		case 7:	return slsDetectorDefs::G_IB_TESTC;
-		case 8:	return slsDetectorDefs::TEMPERATURE_ADC;
-		case 9:return slsDetectorDefs::TEMPERATURE_FPGA;
-		default:
-			qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error Index:"+ index,"qTabDeveloper::getSLSIndex");
-			Refresh();
-			break;
-		}
-		break;
-	default:
+				default:
+					qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error. Index:"+ index,"qTabDeveloper::getSLSIndex");
+					Refresh();
+					break;
+				}
+				break;
+				case slsDetectorDefs::PROPIX:
+				case slsDetectorDefs::GOTTHARD:
+					switch(index){
+					case 0:	return slsDetectorDefs::G_VREF_DS;
+					case 1:	return slsDetectorDefs::G_VCASCN_PB;
+					case 2:	return slsDetectorDefs::G_VCASCP_PB;
+					case 3:	return slsDetectorDefs::G_VOUT_CM;
+					case 4:	return slsDetectorDefs::G_VCASC_OUT;
+					case 5:	return slsDetectorDefs::G_VIN_CM;
+					case 6:	return slsDetectorDefs::G_VREF_COMP;
+					case 7:	return slsDetectorDefs::G_IB_TESTC;
+					case 8:	return slsDetectorDefs::TEMPERATURE_ADC;
+					case 9:return slsDetectorDefs::TEMPERATURE_FPGA;
+					default:
+						qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error Index:"+ index,"qTabDeveloper::getSLSIndex");
+						Refresh();
+						break;
+					}
+					break;
+					case slsDetectorDefs::JUNGFRAU:
+						switch(index){
+						case 0:
+						case 1:
+						case 2:
+						case 3:
+						case 4:
+						case 5:
+						case 6:
+						case 7:
+						case 8:
+						case 9:
+						case 10:
+						case 11:
+						case 12:
+						case 13:
+						case 14:
+						case 15:
+							return (slsDetectorDefs::dacIndex)index;
+							break;
+						default:
+							qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error Index:"+ index,"qTabDeveloper::getSLSIndex");
+							Refresh();
+							break;
+						}
+						break;
+						default:
 		cout << "Unknown detector type:" + myDet->slsDetectorBase::getDetectorType(detType) << endl;
 		qDefs::Message(qDefs::CRITICAL,string("Unknown detector type:")+myDet->slsDetectorBase::getDetectorType(detType),"qTabDeveloper::getSLSIndex");
 		qDefs::checkErrorMessage(myDet,"qTabDeveloper::getSLSIndex");

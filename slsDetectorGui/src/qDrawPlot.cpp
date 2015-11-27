@@ -69,6 +69,7 @@ void qDrawPlot::SetupWidgetWindow(){
 	case slsDetectorDefs::GOTTHARD:	originally2D = false; 	break;
 	case slsDetectorDefs::PROPIX:	originally2D = true; 	break;
 	case slsDetectorDefs::MOENCH:	originally2D = true; 	break;
+	case slsDetectorDefs::JUNGFRAU:	originally2D = true; 	break;
 	default:
 		cout << "ERROR: Detector Type is Generic" << endl;
 		exit(-1);

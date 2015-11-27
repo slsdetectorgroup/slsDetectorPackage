@@ -177,6 +177,7 @@ void qTabPlot::SetupWidgetWindow(){
 		break;
 	case slsDetectorDefs::PROPIX:
 	case slsDetectorDefs::MOENCH:
+	case slsDetectorDefs::JUNGFRAU:
 		isOriginallyOneD = false;
 		break;
 	default:
@@ -788,6 +789,7 @@ void qTabPlot::EnableScanBox(){
 	pageAccumulate_2->setEnabled(true);
 	if((myDet->getDetectorsType() == slsDetectorDefs::GOTTHARD) ||
 			(myDet->getDetectorsType() == slsDetectorDefs::PROPIX) ||
+			(myDet->getDetectorsType() == slsDetectorDefs::JUNGFRAU) ||
 			(myDet->getDetectorsType() == slsDetectorDefs::MOENCH)){
 		pagePedestal->setEnabled(true);
 		pagePedestal_2->setEnabled(true);

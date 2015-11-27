@@ -106,6 +106,15 @@ void qTabAdvanced::SetupWidgetWindow(){
 		dispMAC->setEnabled(true);
 		boxRxr->setEnabled(true);
 		break;
+	case slsDetectorDefs::JUNGFRAU:
+		isEnergy = false;
+		isAngular = false;
+		lblIP->setEnabled(true);
+		lblMAC->setEnabled(true);
+		dispIP->setEnabled(true);
+		dispMAC->setEnabled(true);
+		boxRxr->setEnabled(true);
+		break;
 	default: break;
 	}
 
@@ -249,7 +258,8 @@ void qTabAdvanced::Initialization(){
 	if((detType==slsDetectorDefs::GOTTHARD) ||
 			(detType==slsDetectorDefs::MOENCH) ||
 			(detType==slsDetectorDefs::PROPIX) ||
-			(detType==slsDetectorDefs::EIGER)){
+			(detType==slsDetectorDefs::PROPIX) ||
+			(detType==slsDetectorDefs::JUNGFRAU)){
 
 		//network
 		connect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
@@ -1238,6 +1248,7 @@ void qTabAdvanced::Refresh(){
 	if ((detType==slsDetectorDefs::GOTTHARD) ||
 			(detType==slsDetectorDefs::MOENCH)||
 			(detType==slsDetectorDefs::PROPIX)||
+			(detType==slsDetectorDefs::JUNGFRAU)||
 			(detType==slsDetectorDefs::EIGER)){
 		//disconnect
 		disconnect(spinTCPPort,			SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));

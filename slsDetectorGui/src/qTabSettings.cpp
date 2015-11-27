@@ -100,7 +100,7 @@ void qTabSettings::GetDynamicRange(int setvalue){
 
 void qTabSettings::SetupDetectorSettings(){
 	// Get detector settings from detector
-	slsDetectorDefs::detectorSettings sett = myDet->getSettings();
+	slsDetectorDefs::detectorSettings sett = myDet->getSettings();cout<<"sett:"<<sett<<endl;
 	qDefs::checkErrorMessage(myDet,"qTabSettings::SetupDetectorSettings");
 	if(sett==-1) sett = slsDetectorDefs::UNDEFINED;
 	// To be able to index items on a combo box
@@ -142,6 +142,16 @@ void qTabSettings::SetupDetectorSettings(){
 			item[(int)LowGain]->setEnabled(true);
 			item[(int)MediumGain]->setEnabled(true);
 			item[(int)VeryHighGain]->setEnabled(true);
+			item[(int)LowNoise]->setEnabled(false);
+			break;
+		case slsDetectorDefs::JUNGFRAU:
+			item[(int)Standard]->setEnabled(false);
+			item[(int)Fast]->setEnabled(false);
+			item[(int)HighGain]->setEnabled(true);
+			item[(int)DynamicGain]->setEnabled(false);
+			item[(int)LowGain]->setEnabled(false);
+			item[(int)MediumGain]->setEnabled(false);
+			item[(int)VeryHighGain]->setEnabled(false);
 			item[(int)LowNoise]->setEnabled(false);
 			break;
 		default:

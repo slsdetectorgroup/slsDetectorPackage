@@ -276,7 +276,10 @@ void qDetectorMain::SetUpDetector(const string fName){
 	case slsDetectorDefs::GOTTHARD:
 	case slsDetectorDefs::AGIPD:
 	case slsDetectorDefs::PROPIX:
-	case slsDetectorDefs::MOENCH:	actionLoadTrimbits->setText("Load Settings");  actionSaveTrimbits->setText("Save Settings"); break;
+	case slsDetectorDefs::MOENCH:
+	case slsDetectorDefs::JUNGFRAU:
+		actionLoadTrimbits->setText("Load Settings");  actionSaveTrimbits->setText("Save Settings");
+		break;
 	default:
 		string detName = myDet->slsDetectorBase::getDetectorType(detType);
 		qDefs::checkErrorMessage(myDet,"qDetectorMain::SetUpDetector");
@@ -647,7 +650,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 void qDetectorMain::ExecuteHelp(QAction *action){
 	if(action==actionAbout){
 #ifdef VERBOSE
-		cout << "About: Common GUI for Mythen, Eiger, Gotthard and Propix detectors" << endl;
+		cout << "About: Common GUI for Mythen, Eiger, Gotthard, Jungfrau, Moench and Propix detectors" << endl;
 #endif
 		char version[200];
 		int64_t retval= SVNREV;
@@ -664,7 +667,7 @@ void qDetectorMain::ExecuteHelp(QAction *action){
 				"SLS Detector GUI version:&nbsp;&nbsp;&nbsp;" + thisGUIVersion+"<br>"
 				"SLS Detector Client version:  "+thisClientVersion+"<br><br>"
 				"Common GUI to control the SLS Detectors: "
-				"Mythen, Eiger, Gotthard and Propix.<br><br>"
+				"Mythen, Eiger, Gotthard, Jungfrau, Moench and Propix.<br><br>"
 				"It can be operated in parallel with the command line interface:<br>"
 				"sls_detector_put,<br>sls_detector_get,<br>sls_detector_acquire and<br>sls_detector_help.<br><br>"
 				"The GUI Software is still in progress. "

@@ -6846,6 +6846,13 @@ int* slsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex, int
 					disconnectData();
 					return NULL;
 				}
+
+				//jungfrau masking adcval
+				if(thisDetector->myDetectorType == JUNGFRAU){
+					for(unsigned int i=0;i<nel;i++){
+						retval[i] = (retval[i] & 0x3FFF3FFF);
+					}
+				}
 			}
 			disconnectData();
 		}

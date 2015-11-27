@@ -4618,7 +4618,6 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex
 		acquisitionIndex = -1;
 		return NULL;
 	}
-
 	int n,complete=OK;
 	int i,k,offsetX, offsetY, maxX, maxY; double dr;
 	int* retval=new int[nel];

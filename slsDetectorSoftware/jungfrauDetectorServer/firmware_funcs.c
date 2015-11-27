@@ -1211,7 +1211,7 @@ int64_t setFrames(int64_t value){
 }
 
 int64_t getFrames(){
-  printf("gf");
+  /*printf("gf");*/
   return get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG);
 }
 
@@ -1671,7 +1671,8 @@ int configureMAC(uint32_t destip,uint64_t destmac,uint64_t  sourcemac,int source
 //int configureMAC(int ipad,long long int macad,long long int detectormacad, int detipad, int ival, int udpport){
 
   uint32_t sourceport  =  0x7e9a; // 0xE185;
-  //setheader(0xF452142F3200,0x00ad29ae39fd,0x0a000264,0x0A00020d ,0x8436, 0x7e9a);
+
+   //setheader(0xF452142F3200,0x00ad29ae39fd,0x0a000264,0x0A00020d ,0x8436, 0x7e9a);
 
 /* void setheader(uint64_t destmac, uint64_t  sourcemac, uint32_t destip, uint32_t sourceip, uint32_t destport, */
 /*        uint32_t sourceport){ */
@@ -1717,7 +1718,11 @@ ip.ip_destip         = destip;
   bus_w(RX_UDPMACL_AREG,(destmac)&0xFFFFFFFF);//rx_udpmacL_AReg_c
   bus_w(DETECTORMACH_AREG,(sourcemac>>32)&0xFFFFFFFF);//detectormacH_AReg_c
   bus_w(DETECTORMACL_AREG,(sourcemac)&0xFFFFFFFF);//detectormacL_AReg_c
+#ifdef JUNGFRAU_DHANYA
+  bus_w(UDPPORTS_AREG,((sourceport&0xFFFF)<<16)+(destport&0xFFFF));//udpports_AReg_c
+#else
   bus_w(UDPPORTS_AREG,((destport&0xFFFF)<<16)+(sourceport&0xFFFF));//udpports_AReg_c
+#endif
   bus_w(IPCHKSUM_AREG,(checksum&0xFFFF));//ipchksum_AReg_c
 
   bus_w(CONTROL_REG,GB10_RESET_BIT);
@@ -2102,12 +2107,12 @@ u_int16_t* fifo_read_event(int ns)
 {
   int i=0;//, j=0;
 /*   volatile u_int16_t volatile *dum; */
-   volatile u_int16_t a; 
-   volatile u_int32_t val; 
+   volatile u_int16_t a;
+   volatile u_int32_t val;
   // volatile u_int32_t volatile *dum;
      //  volatile u_int32_t a;
 
-  bus_w16(DUMMY_REG,0); // 
+  bus_w16(DUMMY_REG,0); //
 /* #ifdef TIMEDBG  */
 /*   gettimeofday(&tse,NULL); */
 /* #endif    */
@@ -2122,9 +2127,9 @@ u_int16_t* fifo_read_event(int ns)
 	printf("no frame found and acquisition finished - exiting\n");
 	printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 	return NULL;
-	} else { 
-	  //	printf("status idle, look at me %x status %x\n", bus_r(LOOK_AT_ME_REG),runState()); 
-	  break; 
+	} else {
+	  //	printf("status idle, look at me %x status %x\n", bus_r(LOOK_AT_ME_REG),runState());
+	  break;
 	}
       }
       a = bus_r(LOOK_AT_ME_REG);
@@ -2136,19 +2141,19 @@ u_int16_t* fifo_read_event(int ns)
 /*     //    tsss=tss; */
 /*     gettimeofday(&tss,NULL); */
 /*     printf("look for data  = %ld usec\n", (tss.tv_usec) - (tse.tv_usec));  */
-   
+
 /*   #endif  */
 
   }
    //  printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 /*   dma_memcpy(now_ptr,values ,dataBytes); */
 /* #else */
-  
+
   bus_w16(DUMMY_REG,1<<8); // read strobe to all fifos
-   bus_w16(DUMMY_REG,0); 
+   bus_w16(DUMMY_REG,0);
     // i=0;//
 /*   for (i=0; i<32; i++) { */
-   
+
 /* /\*   while (((adcDisableMask&(3<<((i)*2)))>>((i)*2))==3) { *\/ */
 /* /\*     i++; *\/ */
 /* /\*     if (i>15) *\/ */
@@ -2158,12 +2163,12 @@ u_int16_t* fifo_read_event(int ns)
 /*     bus_w16(DUMMY_REG,i); */
 /*   } */
 /*   val=*values; */
-  
 
-  // bus_w16(DUMMY_REG,0); // 
-    for (i=0; i<16; i++) { 
 
-    
+  // bus_w16(DUMMY_REG,0); //
+    for (i=0; i<16; i++) {
+
+
      //  bus_w16(DUMMY_REG,i);
      //   bus_r16(DUMMY_REG);
 /*     dum=(((u_int16_t*)(now_ptr))+i); */
@@ -2174,36 +2179,36 @@ u_int16_t* fifo_read_event(int ns)
       //  a=*values;//bus_r(FIFO_DATA_REG);
       // if ((adcDisableMask&(3<<(i*2)))==0) {
 	    *((u_int32_t*)now_ptr)=*values;//bus_r(FIFO_DATA_REG);
-	    
-	    
+
+
 	    if (i!=0 || ns!=0) {
 	      a=0;
 	      while (*((u_int32_t*)now_ptr)==*((u_int32_t*)(now_ptr)-1) && a++<10) {
-		
+
 		//	  printf("******************** %d: fifo %d: new %08x old %08x\n ",ns, i, *((u_int32_t*)now_ptr),*((u_int32_t*)(now_ptr)-1));
 		*((u_int32_t*)now_ptr)=*values;
 		//  printf("%d-",i);
-		
+
 	      }
 	    }
 	    now_ptr+=4;
-	    //  }   
+	    //  }
 /*       while (((adcDisableMask&(3<<((i+1)*2)))>>((i+1)*2))==3) { */
 /* 	i++; */
 /*       } */
 
       //      if (((adcDisableMask&(3<<((i+1)*2)))>>((i+1)*2))!=3) {
-      
+
 	bus_w16(DUMMY_REG,i+1);
 	// }
      // *(((u_int16_t*)(now_ptr))+i)=bus_r16(FIFO_DATA_REG);
-    } 
-    //  bus_w16(DUMMY_REG,0); // 
+    }
+    //  bus_w16(DUMMY_REG,0); //
 /* #ifdef TIMEDBG  */
-  
+
 /*   gettimeofday(&tss,NULL); */
 /*   printf("read data loop  = %ld usec\n",(tss.tv_usec) - (tse.tv_usec));  */
-   
+
 /* #endif  */
 #ifdef VERBOSE
   printf("*");

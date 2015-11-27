@@ -1854,7 +1854,35 @@ int get_run_status(int file_des) {
 
   retval= runState();
   printf("\n\nSTATUS=%08x\n",retval);
+#ifdef JUNGFRAU_DHANYA
+  if(!(retval&RUN_BUSY_BIT)){
 
+	  if((retval&READMACHINE_BUSY_BIT)  ){
+		  printf("-----------------------------------READ MACHINE BUSY--------------------------\n");
+		  s=TRANSMITTING;
+	  }
+	  //and readbusy=0,idle
+	  else if((!(retval&0xffff))||(retval==SOME_FIFO_FULL_BIT)){
+		  printf("-----------------------------------IDLE--------------------------------------\n");
+		  s=IDLE;
+	  } else {
+		  printf("-----------------------------------Unknown status %08x--------------------------------------\n", retval);
+		  s=ERROR;
+		  ret=FAIL;
+	  }
+  }
+  //if runbusy=1
+  else {
+	  if (retval&WAITING_FOR_TRIGGER_BIT){
+		  printf("-----------------------------------WAITING-----------------------------------\n");
+		  s=WAITING;
+	  }
+	  else{
+		  printf("-----------------------------------RUNNING-----------------------------------\n");
+		  s=RUNNING;
+	  }
+  }
+#else
   //error
   if(retval&SOME_FIFO_FULL_BIT){
 	  printf("-----------------------------------ERROR--------------------------------------x%0x\n",retval);
@@ -1900,7 +1928,7 @@ int get_run_status(int file_des) {
 	  }
   }
 
-
+#endif
 
 
   if (ret!=OK) {
@@ -1931,7 +1959,8 @@ int read_frame(int file_des) {
 
   if (differentClients==1 && lockStatus==1) {
     dataret=FAIL;
-    sprintf(mess,"Detector locked by %s\n",lastClientIP);  
+    sprintf(mess,"Detector locked by %s\n",lastClientIP);
+    printf("Warning: %s\n",mess);
     sendDataOnly(file_des,&dataret,sizeof(dataret));
     sendDataOnly(file_des,mess,sizeof(mess));
 #ifdef VERBOSE
@@ -1940,6 +1969,29 @@ int read_frame(int file_des) {
     return dataret;
 
   }
+
+
+#ifdef JUNGFRAU_DHANYA1
+  while(runBusy()){
+	  usleep(0);
+	  if (getFrames() <= -1) {
+		  printf("no frames left, but still busy\n");
+	  }
+  }
+  if (getFrames() > -1) {
+	  dataret=FAIL;
+	  sprintf(mess,"no data and run stopped: %d frames left\n",(int)(getFrames()));
+	  printf("Warning: %s\n",mess);
+  }else{
+	  dataret = FINISHED;
+	  sprintf(mess,"acquisition successfully finished\n");
+	  printf("%s\n",mess);
+  }
+  sendDataOnly(file_des,&dataret,sizeof(dataret));
+  sendDataOnly(file_des,mess,sizeof(mess));
+  //dataret is never ok to send databytes for jungfrau (not reading from fifo)
+#else
+
   p=fifo_read_frame();
   if (p) {
     nframes++;
@@ -1971,6 +2023,10 @@ int read_frame(int file_des) {
       sendDataOnly(file_des,&dataret,sizeof(dataret));
       sendDataOnly(file_des,mess,sizeof(mess));
   }
+
+#endif
+
+
   return dataret;
       
 }

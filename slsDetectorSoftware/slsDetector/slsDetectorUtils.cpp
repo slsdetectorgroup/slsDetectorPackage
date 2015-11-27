@@ -362,7 +362,7 @@ int  slsDetectorUtils::acquire(int delflag){
 	    usleep(100000);
 	  }*/
 
-	  if ((getDetectorsType()==GOTTHARD) || (getDetectorsType()==MOENCH)){
+	  if ((getDetectorsType()==GOTTHARD) || (getDetectorsType()==MOENCH) || (getDetectorsType()==JUNGFRAU) ){
 		  if((*correctionMask)&(1<<WRITE_FILE))
 			  closeDataFile();
 	  }
@@ -836,6 +836,7 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
 		break;
   case GOTTHARD:
   case PROPIX:
+  case JUNGFRAU:
   names[nvar++]="flags";
 		names[nvar++]="delay";
 		names[nvar++]="gates";
@@ -920,6 +921,7 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
   case MYTHEN:
   case GOTTHARD:
   case PROPIX:
+  case JUNGFRAU:
   names[nvar++]="flatfield";
   names[nvar++]="badchannels";
   break;

@@ -6,10 +6,10 @@
 CROSS  = bfin-uclinux-
 CC    = $(CROSS)gcc
 
-CFLAGS += -Wall -DMOENCHD -DMCB_FUNCS -DDACS_INT  -DDEBUG -DV1#-DVERBOSE #-DVERYVERBOSE  #-DVIRTUAL  #-DDACS_INT_CSERVER
+CFLAGS += -Wall -DMOENCHD -DMCB_FUNCS -DDACS_INT  -DDEBUG -DV1 -DJUNGFRAU_DHANYA #-DVERBOSE #-DVERYVERBOSE  #-DVIRTUAL  #-DDACS_INT_CSERVER
 
 
-PROGS= 	 jungfrauDetectorServer
+PROGS= 	 jungfrauDetectorServerTest
 INSTDIR= 	/tftpboot
 INSTMODE= 	0777
 
@@ -26,6 +26,11 @@ all:	clean $(PROGS)
 test: 	clean jungfrauADCTEst
 
 boot: $(OBJS)
+
+jungfrauDetectorServerTest: $(OBJS)
+	echo $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@)
+
 
 jungfrauDetectorServer: $(OBJS)
 	echo $(OBJS)

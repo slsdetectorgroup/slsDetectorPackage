@@ -725,9 +725,9 @@ int setSettings(int i, int imod) {
     }
   }
   thisSettings=isett;
-#ifdef VERBOSE
+//#ifdef VERBOSE
   printf("detector settings are %d\n",thisSettings);
-#endif
+//#endif
   return thisSettings;
 }
 

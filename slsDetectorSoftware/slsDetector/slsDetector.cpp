@@ -72,6 +72,14 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
     ng=0;
     no=0;
     break;
+  case JUNGFRAU:
+    nch=256*256;
+    nm=1; //modules/detector
+    nc=8; //chips
+    nd=16; //dacs+adcs
+    ng=0;
+    no=0;
+    break;
   case JUNGFRAUCTB:
     nch=32;
     nm=1; //modules/detector
@@ -612,6 +620,19 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->nModMax[Y]=1;
       thisDetector->dynamicRange=16;
       break;
+    case JUNGFRAU:
+      thisDetector->nChan[X]=256;
+      thisDetector->nChan[Y]=256;
+      thisDetector->nChip[X]=4;
+      thisDetector->nChip[Y]=2;
+      thisDetector->nDacs=16;
+      thisDetector->nAdcs=0;
+      thisDetector->nGain=0;
+      thisDetector->nOffset=0;
+      thisDetector->nModMax[X]=1;
+      thisDetector->nModMax[Y]=1;
+      thisDetector->dynamicRange=16;
+      break;
     case JUNGFRAUCTB:
       thisDetector->nChan[X]=32;
       thisDetector->nChan[Y]=1;
@@ -837,6 +858,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 	  setFramesPerFile(MAX_FRAMES_PER_FILE);
   if (thisDetector->myDetectorType==MOENCH)
 	  setFramesPerFile(MOENCH_MAX_FRAMES_PER_FILE);
+  if (thisDetector->myDetectorType==JUNGFRAU)
+	  setFramesPerFile(JFRAU_MAX_FRAMES_PER_FILE);
   if (thisDetector->myDetectorType==JUNGFRAUCTB)
 	  setFramesPerFile(JFCTB_MAX_FRAMES_PER_FILE);
   thisReceiver = new receiverInterface(dataSocket);
@@ -971,6 +994,13 @@ slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType t)
     nc=1; //chips
     nd=8; //dacs
     na=1;
+    break;
+  case JUNGFRAU:
+    nch=256*256;//32;
+    nm=1;
+    nc=4*2;
+    nd=16; // dacs+adcs
+    na=0;
     break;
   case JUNGFRAUCTB:
     nch=32;//32;
@@ -3342,6 +3372,7 @@ int slsDetector::updateDetectorNoWait() {
 
   if((thisDetector->myDetectorType!= GOTTHARD)&&
 		  (thisDetector->myDetectorType!= PROPIX)&&
+		  (thisDetector->myDetectorType!= JUNGFRAU)&&
 		  (thisDetector->myDetectorType!= MOENCH)){
     //thr=getThresholdEnergy();
     n = 	controlSocket->ReceiveDataOnly( &thr,sizeof(thr));
@@ -3600,7 +3631,7 @@ int* slsDetector::getDataFromDetector(int *retval){
 		std::cout<< "Received "<< n << " data bytes" << std::endl;
 #endif
 		if (n!=thisDetector->dataBytes) {
-			std::cout<< "wrong data size received: received " << n << " but expected " << thisDetector->dataBytes << std::endl;
+			std::cout<< "wrong data size received from detector: received " << n << " but expected " << thisDetector->dataBytes << std::endl;
 			thisDetector->stoppedFlag=1;
 			ret=FAIL;
 			if (r==NULL) {
@@ -3821,6 +3852,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	thisDetector->timerValue[index]=t;
       if((thisDetector->myDetectorType==GOTTHARD)||
     		  (thisDetector->myDetectorType==PROPIX)||
+			  (thisDetector->myDetectorType==JUNGFRAU)||
     		  (thisDetector->myDetectorType==MOENCH))
     	  thisDetector->timerValue[PROBES_NUMBER]=0;
     }
@@ -5948,6 +5980,7 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
 
   if ((thisDetector->myDetectorType==GOTTHARD)||
 		  (thisDetector->myDetectorType==PROPIX)||
+		  (thisDetector->myDetectorType==JUNGFRAU)||
 		  (thisDetector->myDetectorType==MOENCH)) {
 	names[0]= "hostname";
 	names[1]= "port";
@@ -6589,7 +6622,7 @@ int slsDetector::startReceiver(){
 				setErrorMask((getErrorMask())|(COULDNOT_START_RECEIVER));
 		}
 	}
-	if((ret==OK))//&& (thisDetector->myDetectorType != EIGER))
+	if((ret==OK) && (thisDetector->myDetectorType != JUNGFRAU))
 		ret=detectorSendToReceiver(true);
 
 	return ret;
@@ -6603,7 +6636,7 @@ int slsDetector::stopReceiver(){
 	int ret = FAIL;
 	char mess[] = "";
 
-	if(thisDetector->myDetectorType != EIGER)
+	if(thisDetector->myDetectorType != EIGER && thisDetector->myDetectorType != JUNGFRAU)
 		detectorSendToReceiver(false);
 
 	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
@@ -6780,7 +6813,6 @@ int* slsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex, int
 	int ret=FAIL;
 	int n;
 	char mess[100]="Nothing";
-
 
 	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 #ifdef VERBOSE

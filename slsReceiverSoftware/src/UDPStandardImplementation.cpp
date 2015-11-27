@@ -1393,12 +1393,15 @@ int UDPStandardImplementation::createNewFile(){
 			previousFrameNumber = -1;
 			cout << "File: " << completeFileName << endl;
 		}else{
+			if (previousFrameNumber == -1)
+				previousFrameNumber = startFrameIndex-1;
+
 			cout << completeFileName
 					<< "\tPacket Loss: " << setw(4)<<fixed << setprecision(4) << dec <<
 					(int)((( (currentFrameNumber-previousFrameNumber) - ((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame))/
 							 (double)(currentFrameNumber-previousFrameNumber))*100.000)
 					<< "%\tFramenumber: " << currentFrameNumber
-				  //<< "\t\t PreviousFrameNumber: " << previousFrameNumber
+				  << "\t\t PreviousFrameNumber: " << previousFrameNumber
 					<< "\tIndex " << dec << index
 					<< "\tLost " << dec << ( ((int)(currentFrameNumber-previousFrameNumber)) -
 							                 ((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame)) << endl;
@@ -2587,16 +2590,23 @@ void UDPStandardImplementation::writeFileWithoutCompression(char* wbuffer[],uint
 			//new file
 			if(packetsInFile >= (uint32_t)maxPacketsPerFile){
 				//for packet loss, because currframenum is the latest one for eiger
+				//get frame number (eiger already gets it when it does packet to packet processing)
 				if(myDetectorType != EIGER){
 					lastpacket = (((packetsToSave - 1) * onePacketSize) + offset);
+					if(myDetectorType == JUNGFRAU){
+						jfrau_packet_header_t* header = (jfrau_packet_header_t*) (wbuffer[0] + lastpacket);
+						currentFrameNumber = (*( (uint64_t*) header->frameNumber));
+					}else{
+						tempframenumber = ((uint32_t)(*((uint32_t*)(wbuffer[0] + lastpacket))));
+						//for gotthard and normal frame, increment frame number to separate fnum and pnum
+						if (myDetectorType == PROPIX ||(myDetectorType == GOTTHARD && shortFrameEnable == -1))
+							tempframenumber++;
+						//get frame number
+						currentFrameNumber = (tempframenumber & frameIndexMask) >> frameIndexOffset;
+					}
 
-					//get frame number (eiger already gets it when it does packet to packet processing)
-					tempframenumber = ((uint32_t)(*((uint32_t*)(wbuffer[0] + lastpacket))));
-					//for gotthard and normal frame, increment frame number to separate fnum and pnum
-					if (myDetectorType == PROPIX ||(myDetectorType == GOTTHARD && shortFrameEnable == -1))
-						tempframenumber++;
-					//get frame number
-					currentFrameNumber = (tempframenumber & frameIndexMask) >> frameIndexOffset;
+
+
 					//set indices
 					acquisitionIndex = currentFrameNumber - startAcquisitionIndex;
 					frameIndex = currentFrameNumber - startFrameIndex;

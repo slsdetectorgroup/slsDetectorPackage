@@ -102,6 +102,31 @@
       </item>
       <item>
        <property name="text">
+        <string>Dynamic HG0</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Fix Gain 1</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Fix Gain 2</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Force Switch G1</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Force Switch G2</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
         <string>Undefined</string>
        </property>
       </item>

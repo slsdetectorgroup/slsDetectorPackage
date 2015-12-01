@@ -57,7 +57,9 @@ private:
 	/** expert mode */
 	bool expertMode;
 
-	enum{Standard,Fast,HighGain,DynamicGain,LowGain,MediumGain,VeryHighGain,LowNoise,Undefined,Uninitialized,NumSettings};
+	enum{Standard,Fast,HighGain,DynamicGain,LowGain,MediumGain,VeryHighGain,LowNoise,
+		DynamicHG0,FixGain1,FixGain2,ForceSwitchG1,ForceSwitchG2,
+		Undefined,Uninitialized,NumSettings};
 
 	/** To be able to index items on a combo box */
 	QStandardItemModel* model;

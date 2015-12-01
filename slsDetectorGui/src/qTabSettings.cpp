@@ -121,6 +121,11 @@ void qTabSettings::SetupDetectorSettings(){
 			item[(int)MediumGain]->setEnabled(false);
 			item[(int)VeryHighGain]->setEnabled(false);
 			item[(int)LowNoise]->setEnabled(false);
+			item[(int)DynamicHG0]->setEnabled(false);
+			item[(int)FixGain1]->setEnabled(false);
+			item[(int)FixGain2]->setEnabled(false);
+			item[(int)ForceSwitchG1]->setEnabled(false);
+			item[(int)ForceSwitchG2]->setEnabled(false);
 			break;
 		case slsDetectorDefs::EIGER:
 			item[(int)Standard]->setEnabled(true);
@@ -131,6 +136,11 @@ void qTabSettings::SetupDetectorSettings(){
 			item[(int)MediumGain]->setEnabled(false);
 			item[(int)VeryHighGain]->setEnabled(false);
 			item[(int)LowNoise]->setEnabled(false);
+			item[(int)DynamicHG0]->setEnabled(false);
+			item[(int)FixGain1]->setEnabled(false);
+			item[(int)FixGain2]->setEnabled(false);
+			item[(int)ForceSwitchG1]->setEnabled(false);
+			item[(int)ForceSwitchG2]->setEnabled(false);
 			break;
 		case slsDetectorDefs::MOENCH:
 		case slsDetectorDefs::PROPIX:
@@ -143,16 +153,26 @@ void qTabSettings::SetupDetectorSettings(){
 			item[(int)MediumGain]->setEnabled(true);
 			item[(int)VeryHighGain]->setEnabled(true);
 			item[(int)LowNoise]->setEnabled(false);
+			item[(int)DynamicHG0]->setEnabled(false);
+			item[(int)FixGain1]->setEnabled(false);
+			item[(int)FixGain2]->setEnabled(false);
+			item[(int)ForceSwitchG1]->setEnabled(false);
+			item[(int)ForceSwitchG2]->setEnabled(false);
 			break;
 		case slsDetectorDefs::JUNGFRAU:
 			item[(int)Standard]->setEnabled(false);
 			item[(int)Fast]->setEnabled(false);
-			item[(int)HighGain]->setEnabled(true);
-			item[(int)DynamicGain]->setEnabled(false);
+			item[(int)HighGain]->setEnabled(false);
+			item[(int)DynamicGain]->setEnabled(true);
 			item[(int)LowGain]->setEnabled(false);
 			item[(int)MediumGain]->setEnabled(false);
 			item[(int)VeryHighGain]->setEnabled(false);
 			item[(int)LowNoise]->setEnabled(false);
+			item[(int)DynamicHG0]->setEnabled(true);
+			item[(int)FixGain1]->setEnabled(true);
+			item[(int)FixGain2]->setEnabled(true);
+			item[(int)ForceSwitchG1]->setEnabled(true);
+			item[(int)ForceSwitchG2]->setEnabled(true);
 			break;
 		default:
 			cout << "Unknown detector type. Exiting GUI." << endl;

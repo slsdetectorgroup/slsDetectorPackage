@@ -521,7 +521,7 @@ private:
 	uint64_t currentFrameNumber;
 
 	/** Previous Frame number from buffer to calculate loss */
-	uint64_t previousFrameNumber;
+	int64_t previousFrameNumber;
 
 	/* Acquisition started */
 	bool acqStarted;

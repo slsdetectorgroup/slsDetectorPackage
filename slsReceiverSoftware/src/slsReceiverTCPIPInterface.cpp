@@ -1938,7 +1938,7 @@ int	slsReceiverTCPIPInterface::jungfrau_read_frame(){
 					currentPacket--;
 					continue;
 				}
-				if(ipnum!= currentPacket){
+				if((int64_t)ipnum!= currentPacket){
 					cout << "current packet " << currentPacket << " Wrong packet number " << ipnum << ", copying blank packet" << endl;
 					memcpy(retval+offsetdest,blackpacket,oneDataSize);
 					offsetdest += oneDataSize;

@@ -364,6 +364,11 @@ enum detectorSettings{
   MEDIUMGAIN,       /**< medium gain  settings */
   VERYHIGHGAIN,     /**< very high gain  settings */
   LOWNOISE,	    	/**< low noise settings */
+  DYNAMICHG0,		/**< dynamic high gain 0 */
+  FIXGAIN1,			/**< fix gain 1 */
+  FIXGAIN2,			/**< fix gain 2 */
+  FORCESWITCHG1,	/**< force switch gain 1 */
+  FORCESWITCHG2,	/**< force switch gain 2 */
   UNDEFINED,        /**< undefined or custom  settings */
   UNINITIALIZED     /**< uninitialiazed (status at startup) */
 };

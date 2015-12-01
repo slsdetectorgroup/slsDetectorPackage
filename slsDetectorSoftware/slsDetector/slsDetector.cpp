@@ -3128,6 +3128,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 	case DYNAMICGAIN:
 		if ((thisDetector->myDetectorType == GOTTHARD) ||
 			(thisDetector->myDetectorType == PROPIX) ||
+			(thisDetector->myDetectorType == JUNGFRAU) ||
 			(thisDetector->myDetectorType == MOENCH)) {
 			ssettings="/dynamicgain";
 			thisDetector->currentSettings=DYNAMICGAIN;
@@ -3159,6 +3160,36 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 		}
 		break;
 	case LOWNOISE:
+		break;
+	case DYNAMICHG0:
+		if (thisDetector->myDetectorType == JUNGFRAU) {
+			ssettings="/dynamichg0";
+			thisDetector->currentSettings=DYNAMICHG0;
+		}
+		break;
+	case FIXGAIN1:
+		if (thisDetector->myDetectorType == JUNGFRAU) {
+			ssettings="/fixgain1";
+			thisDetector->currentSettings=FIXGAIN1;
+		}
+		break;
+	case FIXGAIN2:
+		if (thisDetector->myDetectorType == JUNGFRAU) {
+			ssettings="/fixgain2";
+			thisDetector->currentSettings=FIXGAIN2;
+		}
+		break;
+	case FORCESWITCHG1:
+		if (thisDetector->myDetectorType == JUNGFRAU) {
+			ssettings="/forceswitchg1";
+			thisDetector->currentSettings=FORCESWITCHG1;
+		}
+		break;
+	case FORCESWITCHG2:
+		if (thisDetector->myDetectorType == JUNGFRAU) {
+			ssettings="/forceswitchg2";
+			thisDetector->currentSettings=FORCESWITCHG2;
+		}
 		break;
 	default:
 		break;
@@ -3194,6 +3225,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 			case MOENCH:
 			case GOTTHARD:
 			case PROPIX:
+			case JUNGFRAU:
 			case JUNGFRAUCTB:
 				//settings is saved in myMod.reg
 				myMod->reg=thisDetector->currentSettings;
@@ -3221,6 +3253,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 				case MOENCH:
 				case GOTTHARD:
 				case PROPIX:
+				case JUNGFRAU:
 				case JUNGFRAUCTB:
 					ostfn_default << thisDetector->settingsDir << ssettings << ssettings << ".settings";
 					break;

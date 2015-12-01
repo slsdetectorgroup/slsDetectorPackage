@@ -139,7 +139,7 @@ int init_detector(int b, int checkType) {
     // setSettings(GET_SETTINGS,-1); 
 
     initDac(0);    initDac(8); //initializes the two dacs
- 
+
     //Initialization
     setFrames(-1);
     setTrains(-1);
@@ -160,6 +160,70 @@ int init_detector(int b, int checkType) {
   // getDynamicRange();
   setROI(-1,NULL,&retvalsize,&ret);
   allocateRAM();
+
+#ifdef JUNGFRAU_DHANYA
+  if(myDetectorType==JUNGFRAU){
+	  //set dacs
+	  int retval = -1;
+	  int dacvalues[14][2]={
+			  {0,	1250},	//vout_cm
+			  {10, 	1053},	//vin_com
+			  {1, 	600},	//vb_sda
+			  {11, 	1000},	//vb_colbuf
+			  {2, 	3000},	//vb_test_cur
+			  {3, 	830},	//vcascp_pixbuf
+			  {4, 	1630},	//vcascn_pixbuf
+			  {12, 	750},	//vb_pixbuf
+			  {6,	480},	//vref_ds
+			  {5,	1000},	//vb_ds
+			  {7, 	400},	//vref_comp
+			  {13, 1220},	//vb_comp
+			  {8, 	1500},	//vref_prech
+			  {9, 	3000},	//vdd_prot
+	  };
+	  for(i=0;i<14;++i){
+		  retval=setDac(dacvalues[i][0], dacvalues[i][1]);
+		  if(retval!=dacvalues[i][1])
+			  printf("Error: Setting dac %d failed, wrote %d, read %d\n",dacvalues[i][0],dacvalues[i][1],retval);
+	  }
+
+	  //power on the chips
+	  bus_w(POWER_ON_REG,0x1);
+
+	  //reset adc
+	  writeADC(ADCREG1,0x3); writeADC(ADCREG1,0x0);
+	  writeADC(ADCREG2,0x40);
+	  writeADC(ADCREG3,0xf);
+	  writeADC(ADCREG4,0x3f);
+	  //vrefs - configurable?
+	  writeADC(ADCREG_VREFS,0x2);
+
+
+	  //set ADCINVERSionreg (by trial and error)
+	  bus_w(ADC_INVERSION_REG,0x453b2a9c);
+
+	  //set adc_pipeline
+	  bus_w(ADC_PIPELINE_REG,0x20);
+
+	  //set dbit_pipeline
+	  bus_w(DBIT_PIPELINE_REG,0x100e);
+	  usleep(1000000);//1s
+
+	  //reset mem machine fifos fifos
+	  bus_w(MEM_MACHINE_FIFOS_REG,0x4000);
+	  bus_w(MEM_MACHINE_FIFOS_REG,0x0);
+
+	  //reset run control
+	  bus_w(MEM_MACHINE_FIFOS_REG,0x0400);
+	  bus_w(MEM_MACHINE_FIFOS_REG,0x0);
+
+	  //set default setting
+	  setSettings(DYNAMICGAIN,-1);
+  }
+#endif
+
+
+
   return OK;
 }
 
@@ -955,7 +1019,7 @@ int read_register(int file_des) {
 
 int set_dac(int file_des) {
 	//default:all mods
-  int retval, retval1;
+	int retval, retval1;
 	int ret=OK;
 	int arg[3];
 	enum dacIndex ind;
@@ -989,8 +1053,8 @@ int set_dac(int file_des) {
 	if (imod<0)
 		imod=ALLMOD;
 
-	
-	
+
+
 
 #ifdef MCB_FUNCS
 
@@ -999,66 +1063,67 @@ int set_dac(int file_des) {
 			ret=FAIL;
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		} else{
-		  
-		  if (ind<16) {
 
-		    if (mV) {
-		      if (val>2500)
-			val=-1;
-		    printf("%d mV is ",val);
-		    if (val>0)
-		      val=4095*val/2500;
-		    printf("%d DACu\n", val);
-		    } else if (val>4095)
-		      val=-1;
-		    
-		    
-		  retval=setDac(ind,val);
-		  /* 			if(idac==HIGH_VOLTAGE) */
-		  /* 				retval=initHighVoltageByModule(val,imod); */
-		  /* 			else */
-		  /* 				retval=initDACbyIndexDACU(idac,val,imod); */
-		  }
-		  else if (ind==ADC_VPP) {
-		    printf("Setting ADC VPP to %d\n",val);
-		    if (val>4 || val<0)
-		      printf("Cannot set ADC VPP to %d\n",val);
-		    else {
-		      writeADC(0x18,val);
-		      adcvpp=val;
-		    }
-		    retval=adcvpp;;
+			if (ind<16) {
 
-		  }
+				if (mV) {
+					if (val>2500)
+						val=-1;
+					printf("%d mV is ",val);
+					if (val>0)
+						val=4095*val/2500;
+					printf("%d DACu\n", val);
+				} else if (val>4095)
+					val=-1;
+
+
+				retval=setDac(ind,val);
+				/* 			if(idac==HIGH_VOLTAGE) */
+				/* 				retval=initHighVoltageByModule(val,imod); */
+				/* 			else */
+				/* 				retval=initDACbyIndexDACU(idac,val,imod); */
+			}
+			else if (ind==ADC_VPP) {
+				printf("Setting ADC VPP to %d\n",val);
+				if (val>4 || val<0)
+					printf("Cannot set ADC VPP to %d\n",val);
+				else {
+					writeADC(0x18,val);
+					adcvpp=val;
+				}
+				retval=adcvpp;;
+
+			}
 		}
 	}
 	if(ret==OK){
-	/* 	ret=FAIL; */
-/* 		if(idac==HIGH_VOLTAGE){ */
-/* 			if(retval==-2) */
-/* 				strcpy(mess,"Invalid Voltage.Valid values are 0,90,110,120,150,180,200"); */
-/* 			else if(retval==-3) */
-/* 				strcpy(mess,"Weird value read back or it has not been set yet\n"); */
-/* 			else */
-/* 				ret=OK; */
-/* 		}//since v r saving only msb */
-/* 		else if ((retval-val)<=3 || val==-1) */
-/* 		ret=OK; */
-	    if (ind<16) {	
-	  if (mV) {
-	    
-	    printf("%d DACu is ",retval);
-	    retval1=2500*retval/16535;
-	    printf("%d mV \n",retval1);
-	  } else
-	    retval1=retval;
+		/* 	ret=FAIL; */
+		/* 		if(idac==HIGH_VOLTAGE){ */
+		/* 			if(retval==-2) */
+		/* 				strcpy(mess,"Invalid Voltage.Valid values are 0,90,110,120,150,180,200"); */
+		/* 			else if(retval==-3) */
+		/* 				strcpy(mess,"Weird value read back or it has not been set yet\n"); */
+		/* 			else */
+		/* 				ret=OK; */
+		/* 		}//since v r saving only msb */
+		/* 		else if ((retval-val)<=3 || val==-1) */
+		/* 		ret=OK; */
+		if (ind<16) {
+			if (mV) {
+
+				printf("%d DACu is ",retval);
+				retval1=2500*retval/16535;
+				printf("%d mV \n",retval1);
+			} else
+				retval1=retval;
+		}
 	}
 #endif
 
 #ifdef VERBOSE
 	printf("DAC set to %d V\n",  retval);
 #endif  
-	}
+
 	if(ret==FAIL)
 		printf("Setting dac %d of module %d: wrote %d but read %d\n", ind, imod, val, retval);
 	else{
@@ -1433,8 +1498,8 @@ int set_module(int file_des) {
   sls_detector_module myModule;
   int *myChip=malloc(NCHIP*sizeof(int));
   int *myChan=malloc(NCHIP*NCHAN*sizeof(int));
-  int *myDac=malloc(NDAC*sizeof(int));/**dhanya*/
-  int *myAdc=malloc(NADC*sizeof(int));/**dhanya*/
+  int *myDac=malloc(NDAC*sizeof(int));
+  int *myAdc=malloc(NADC*sizeof(int));
   int retval, n;
   int ret=OK;
   int dr;// ow;
@@ -1503,6 +1568,8 @@ int set_module(int file_des) {
     } else {
 #ifdef MCB_FUNCS
     retval=initModulebyNumber(myModule);
+    if(retval != myModule.reg)
+    	ret = FAIL;
 #endif
     }
   }

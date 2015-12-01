@@ -1576,37 +1576,19 @@ int initHighVoltage(int val, int imod){
 
 int initConfGain(int isettings,int val,int imod){
   int retval;
-  u_int32_t addr=GAIN_REG;
-
-  if(val!=-1){
-#ifdef VERBOSE
-    printf("Setting Gain of module:%d with val:%d\n",imod,val);
-#endif
-    bus_w(addr,((val<<GAIN_OFFSET)|(bus_r(addr)&~GAIN_MASK)));
-  }
-  retval=(bus_r(addr)&GAIN_MASK);
-#ifdef VERBOSE
-  printf("Value read from Gain reg is %d\n",retval);
-#endif 
-  if((val!=-1)&&(retval!=val))
-    return -1;
+  u_int32_t addr=CONFGAIN_REG;
 
   if(isettings!=-1){
 #ifdef VERBOSE
-    printf("Writing Settings of module:%d with val:%d\n",imod,isettings);
+    printf("Setting Gain of module:%d with val:%d\n",imod,val);
 #endif
-    bus_w(addr,((isettings<<SETTINGS_OFFSET)|(bus_r(addr)&~SETTINGS_MASK)));
+    bus_w(addr,val);
   }
-      retval=((bus_r(addr)&SETTINGS_MASK)>>SETTINGS_OFFSET);
+  retval=(bus_r(addr));
 #ifdef VERBOSE
-    printf("Settings read from reg is %d\n",retval);
+  printf("Value read from Gain reg is %d\n",retval);
 #endif 
-    if((isettings!=-1)&&(retval!=isettings)){
-      printf("\n\nSettings r\n\n");
-    return -1;
-    }
-
-   return retval;
+    return retval;
 }
 
 

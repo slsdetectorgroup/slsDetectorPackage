@@ -215,6 +215,24 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 		break;
 	case EIGER:
 		break;
+	case JUNGFRAU:
+		names[id++]="VDAC0";
+		names[id++]="VDAC1";
+		names[id++]="VDAC2";
+		names[id++]="VDAC3";
+		names[id++]="VDAC4";
+		names[id++]="VDAC5";
+		names[id++]="VDAC6";
+		names[id++]="VDAC7";
+		names[id++]="VDAC8";
+		names[id++]="VDAC9";
+		names[id++]="VDAC10";
+		names[id++]="VDAC11";
+		names[id++]="VDAC12";
+		names[id++]="VDAC13";
+		names[id++]="VDAC14";
+		names[id++]="VDAC15";
+		break;
 	default:
 		cout << "Unknown detector type - unknown format for settings file" << endl;
 		return NULL;
@@ -359,6 +377,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 	case MOENCH:
 	case GOTTHARD:
 	case PROPIX:
+	case JUNGFRAU:
 		//---------------dacs---------------
 		infile.open(myfname.c_str(), ios_base::in);
 		if (infile.is_open()) {
@@ -457,6 +476,24 @@ int energyConversion::writeSettingsFile(string fname, detectorType myDetectorTyp
 		names[id++]="Vib_test";
 		break;
 	case EIGER:
+		break;
+	case JUNGFRAU:
+		names[id++]="VDAC0";
+		names[id++]="VDAC1";
+		names[id++]="VDAC2";
+		names[id++]="VDAC3";
+		names[id++]="VDAC4";
+		names[id++]="VDAC5";
+		names[id++]="VDAC6";
+		names[id++]="VDAC7";
+		names[id++]="VDAC8";
+		names[id++]="VDAC9";
+		names[id++]="VDAC10";
+		names[id++]="VDAC11";
+		names[id++]="VDAC12";
+		names[id++]="VDAC13";
+		names[id++]="VDAC14";
+		names[id++]="VDAC15";
 		break;
 	default:
 		cout << "Unknown detector type - unknown format for settings file" << endl;

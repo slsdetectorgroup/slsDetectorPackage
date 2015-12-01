@@ -9,9 +9,6 @@
 #define RGSH1VALS {300,200,400}
 #define RGSH2VALS {260,300,260}
 
-//high,dynamic,low,medium,very high
-#define CONF_GAIN     {0,0,  0,  1,  6,  2,  1}//dynamic gain confgain yet to be figured out-probably 8 or 16
- 
 
 #define DEFAULTGAIN {11.66,9.32,14.99}
 #define DEFAULTOFFSET {817.5,828.6,804.2}

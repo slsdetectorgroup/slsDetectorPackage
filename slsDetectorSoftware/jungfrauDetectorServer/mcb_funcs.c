@@ -847,38 +847,51 @@ int setSettings(int i, int imod) {
 	else
 		printf("\ninside set settings wit settings=%d...\n",i);
 #endif
-  int confgain[] = CONF_GAIN;
-  int isett=-2,retval;
+	int isett=-1,val=-1,retval=-1;
+	enum conf_gain {
+		dynamic = 0x0f00,	//dynamic
+		dynamichighgain0 =	0x0f01,	//dynamichighgain0
+		fixgain1 = 0x0f02,	//fixgain1
+		fixgain2 = 0x0f06,	//fixgain2
+		forceswitchgain1 = 0x1f00,	//forceswitchgain1
+		forceswitchgain2 = 0x3f00	//forceswitchgain2
+	};
 
-  //reading settings
-  if(i==GET_SETTINGS){
-    retval=initConfGainByModule(i,i,imod);
-    if(retval==i)
-      isett=UNDEFINED;
-  }
-  //writing settings  
-  else{
-    retval=initConfGainByModule(i,confgain[i],imod);
-    if(retval!=i)
-      isett=UNDEFINED;
-  }
-  //if error while read/writing
-  if(isett==UNDEFINED)
-    printf("Error:Weird Value read back from the Gain/Settings Reg\n");
-  else{
-    //validating the settings read back
-    if((retval>=HIGHGAIN)&&(retval<=VERYHIGHGAIN))
-      isett=retval; 
-    else{
-      isett=UNDEFINED;
-      printf("Error:Wrong Settings Read out:%d\n",retval);
-    }
-  }
-  thisSettings=isett;
+	//determine conf value to write
+	if(i!=GET_SETTINGS){
+		switch(i){
+		case DYNAMICGAIN: 	val = dynamic;break;
+		case DYNAMICHG0: 	val = dynamichighgain0;break;
+		case FIXGAIN1: 		val = fixgain1;break;
+		case FIXGAIN2: 		val = fixgain2;break;
+		case FORCESWITCHG1: val = forceswitchgain1;break;
+		case FORCESWITCHG2: val = forceswitchgain2;break;
+		default:
+			printf("Error: This settings is not defined for this detector %d\n",i);
+			return GET_SETTINGS;
+		}
+	}
+
+	retval=initConfGainByModule(i,val,imod);
+
+	switch(retval){
+	case dynamic: isett=DYNAMICGAIN;	break;
+	case dynamichighgain0: isett=DYNAMICHG0;	break;
+	case fixgain1: isett=FIXGAIN1;		break;
+	case fixgain2: isett=FIXGAIN2;		break;
+	case forceswitchgain1: isett=FORCESWITCHG1;	break;
+	case forceswitchgain2: isett=FORCESWITCHG2;	break;
+	default:
+		isett=UNDEFINED;
+		printf("Error:Wrong settings read out from Gain Reg 0x%x\n",retval);
+		break;
+	}
+
+	thisSettings=isett;
 #ifdef VERBOSE
-  printf("detector settings are %d\n",thisSettings);
+	printf("detector settings are %d\n",thisSettings);
 #endif
-  return thisSettings;
+	return thisSettings;
 }
 
 
@@ -1530,7 +1543,8 @@ int initModulebyNumber(sls_detector_module myMod) {
   int imod;
  // int obe;
  // int ow;
-  int v[NDAC];
+ /* int v[NDAC];*/
+  int retval =-1, idac;
 
 
   nchip=myMod.nchip;
@@ -1559,7 +1573,7 @@ int initModulebyNumber(sls_detector_module myMod) {
     v[idac]=(myMod.dacs)[idac];
   */
 
-
+/*
   v[VDAC0]=(myMod.dacs)[0];
   v[VDAC1]=(myMod.dacs)[1];
   v[VDAC2]=(myMod.dacs)[2];
@@ -1580,11 +1594,19 @@ int initModulebyNumber(sls_detector_module myMod) {
   printf("vdac6=%d\n",v[VDAC6]);
   printf("vdac7=%d\n",v[VDAC7]);
 #endif
- 
+ */
 
   //  initDACs(v,imod);
   // initMCBregisters(myMod.reg,imod);
  
+  for (idac=0; idac<NDAC; idac++){
+	  retval = setDac(idac,(myMod.dacs)[idac]);
+	  if(retval ==(myMod.dacs)[idac])
+		  printf("Setting dac % to %d\n",idac,retval);
+	  else
+		  printf("Error: Could not set dac %d, wrote %d but read %d\n",idac,(myMod.dacs)[idac],retval);
+  }
+
   if (detectorModules) {
     for (im=modmi; im<modma; im++) {  
 #ifdef VERBOSE
@@ -1597,7 +1619,7 @@ int initModulebyNumber(sls_detector_module myMod) {
   //setting the conf gain and the settings register
   setSettings(myMod.reg,imod);
   
-  return myMod.reg;
+  return thisSettings;
 }
 
 

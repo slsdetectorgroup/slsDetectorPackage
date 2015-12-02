@@ -568,7 +568,7 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b){
 		frameSize			= onePacketSize * packetsPerFrame;
 		bufferSize 			= onePacketSize;
 		maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
-
+		footerOffset		= EIGER_PACKET_HEADER_SIZE + oneDataSize;
 		FILE_LOG(logDEBUG) << dec <<
 				"packetsPerFrame:" << packetsPerFrame <<
 				"\nonePacketSize:" << onePacketSize <<
@@ -1586,11 +1586,12 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int lSize, in
 #ifdef MANUALDEBUG
 	eiger_packet_header_t* header = (eiger_packet_header_t*) (buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS);
 	eiger_packet_footer_t* footer = (eiger_packet_footer_t*)(buffer[ithread] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
-	cprintf(GREEN,"thread:%d subframenum:%d oldpacketnum:%d new pnum:%d\n",
-			ithread,
+	cprintf(GREEN,"thread:%d footeroffset:%dsubframenum:%d oldpacketnum:%d new pnum:%d new fnum:%d\n",
+		ithread,footerOffset,
 			(*( (unsigned int*) header->subFameNumber)),
 			(*( (uint8_t*) header->dynamicRange)),
-			(*( (uint16_t*) footer->packetNumber)));
+		(*( (uint16_t*) footer->packetNumber)),
+		(uint32_t)(*( (uint64_t*) footer)));
 #endif
 
 

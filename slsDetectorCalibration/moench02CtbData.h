@@ -41,7 +41,6 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
     int iadc;
     int ix, iy;
     maplength=this->getDataSize()/2;
-    cerr<<"Map Array Length: "<<maplength<<endl;
     
 
     for (iadc=0; iadc<nadc; iadc++) {
@@ -70,7 +69,7 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
       }
     }
     iframe=0;
-    //  cout << "data struct created" << endl;
+    cout << "data struct created" << endl;
   };
     
   void getPixel(int ip, int &x, int &y) {
@@ -138,7 +137,7 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
 	}
 	if (ib>0) {
 	  iframe++;
-	  cout << ib << "-" << endl;
+	  //cout << ib << "-" << endl;
 	  return (char*)afifo_cont;
 	} else {
 	  delete [] afifo_cont;

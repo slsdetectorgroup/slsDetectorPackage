@@ -103,13 +103,11 @@ int initDetector() {
   /* dynamicRange=getDynamicRange(); //always 16 not required commented out
      nModX=setNMod(-1);*/
 
-  //dataBytes=nModX*NCHIP*NCHAN*4;
   // dynamicRange=32;
   // initChip(0, 0,ALLMOD);
   //nModX=n; 
   //
   allocateRAM();
-
 
   return OK;
 }
@@ -899,7 +897,7 @@ int setSettings(int i, int imod) {
 
 /* Initialization*/
 
-int initChannelbyNumber(sls_detector_channel myChan) {
+int initChannelbyNumber(sls_detector_channel myChan) {printf("in init channel by number\n");
   int reg=myChan.reg;
   int ft=reg & TRIM_DR;
   int cae=(reg>>(NTRIMBITS))&1;
@@ -1535,8 +1533,8 @@ int initMCBregisters(int cm, int imod){
 
 int initModulebyNumber(sls_detector_module myMod) { 
 
-  printf("\ninside initmoduleynumber..\n");
- 
+  printf("\ninside initmoduleynumberrrr..\n");
+  printf("000\n");
   int nchip,nchan;//int ichip, nchip, ichan, nchan;
   int im, modmi,modma;
  // int ft,  cae, ae, coe, ocoe, counts, chanreg;
@@ -1545,7 +1543,7 @@ int initModulebyNumber(sls_detector_module myMod) {
  // int ow;
  /* int v[NDAC];*/
   int retval =-1, idac;
-
+printf("111\n");
 
   nchip=myMod.nchip;
   nchan=(myMod.nchan)/nchip;
@@ -1567,13 +1565,11 @@ int initModulebyNumber(sls_detector_module myMod) {
     modma=sMod+1;
   }
 
-
+  printf("222\n");
   /*
   for (idac=0; idac<NDAC; idac++)
     v[idac]=(myMod.dacs)[idac];
-  */
 
-/*
   v[VDAC0]=(myMod.dacs)[0];
   v[VDAC1]=(myMod.dacs)[1];
   v[VDAC2]=(myMod.dacs)[2];
@@ -1595,30 +1591,29 @@ int initModulebyNumber(sls_detector_module myMod) {
   printf("vdac7=%d\n",v[VDAC7]);
 #endif
  */
-
+  printf("ndac:%d\n",NDAC);
   //  initDACs(v,imod);
   // initMCBregisters(myMod.reg,imod);
- 
   for (idac=0; idac<NDAC; idac++){
 	  retval = setDac(idac,(myMod.dacs)[idac]);
 	  if(retval ==(myMod.dacs)[idac])
-		  printf("Setting dac % to %d\n",idac,retval);
+		  cprintf(BLUE,"Setting dac %d to %d\n",idac,retval);
 	  else
 		  printf("Error: Could not set dac %d, wrote %d but read %d\n",idac,(myMod.dacs)[idac],retval);
   }
-
+  printf("before copy\n");
   if (detectorModules) {
-    for (im=modmi; im<modma; im++) {  
+    for (im=modmi; im<modma; im++) {
 #ifdef VERBOSE
       printf("im=%d\n",im);
 #endif
       copyModule(detectorModules+im,&myMod);
     }
-  } 
-
+  }
+  printf("after copy\n");
   //setting the conf gain and the settings register
   setSettings(myMod.reg,imod);
-  
+  printf("after settings\n");
   return thisSettings;
 }
 

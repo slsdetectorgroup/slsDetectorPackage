@@ -121,7 +121,9 @@ int init_detector(int b, int checkType) {
 
 #ifdef MCB_FUNCS
 	 printf("\nBoard Revision:0x%x\n",(bus_r(PCB_REV_REG)&BOARD_REVISION_MASK));
-	 //  initDetector();
+#ifdef JUNGFRAU_DHANYA
+	 initDetector();
+#endif
     printf("Initializing Detector\n");
     //bus_w16(CONTROL_REG, SYNC_RESET); // reset registers
 #endif
@@ -222,8 +224,6 @@ int init_detector(int b, int checkType) {
   }
 #endif
 
-
-
   return OK;
 }
 
@@ -231,9 +231,9 @@ int init_detector(int b, int checkType) {
 int decode_function(int file_des) {
   int fnum,n;
   int retval=FAIL;
-#ifdef VERBOSE
+//#ifdef VERBOSE
   printf( "receive data\n");
-#endif 
+//#endif
   n = receiveDataOnly(file_des,&fnum,sizeof(fnum));
   if (n <= 0) {
 #ifdef VERBOSE
@@ -254,6 +254,7 @@ int decode_function(int file_des) {
   retval=(*flist[fnum])(file_des);
   if (retval==FAIL)
     printf( "Error executing the function = %d \n",fnum);
+  printf("retval:%d\n",retval);
   return retval;
 }
 
@@ -1504,7 +1505,7 @@ int set_module(int file_des) {
   int ret=OK;
   int dr;// ow;
 
-  dr=setDynamicRange(-1);
+  dr=setDynamicRange(-1);  cprintf(BLUE,"drr:%d\n",dr);
 
   if (myDac)
     myModule.dacs=myDac;
@@ -1530,16 +1531,14 @@ int set_module(int file_des) {
     sprintf(mess,"could not allocate chans\n");
     ret=FAIL;
   }
-
   myModule.ndac=NDAC;
   myModule.nchip=NCHIP;
   myModule.nchan=NCHAN*NCHIP;
   myModule.nadc=NADC;
   
-  
 #ifdef VERBOSE
   printf("Setting module\n");
-#endif 
+#endif
   ret=receiveModule(file_des, &myModule);
 
   if (ret>=0)
@@ -1595,8 +1594,8 @@ int set_module(int file_des) {
   free(myAdc);
 
   //  setDynamicRange(dr);  always 16 commented out
+printf("freed\n");
 
-  
   return ret;
 }
 

@@ -7,14 +7,22 @@
 
 
 // Hardware definitions
-
+#ifdef JUNGFRAU_DHANYA
+#define NCHAN 			(256*256)
+#define NCHIP 			8
+#define NADC			0
+#else
 #define NCHAN 32
 #define NCHIP 1
+#define NADC 1
+#endif
+
+#define NDAC 16
 #define NMAXMODX  1
 #define NMAXMODY 1
 #define NMAXMOD (NMAXMODX*NMAXMODY)
-#define NDAC 16
-#define NADC 1
+
+
 
 /**when moench readout tested with gotthard module*/
 #define GOTTHARDNCHAN 128

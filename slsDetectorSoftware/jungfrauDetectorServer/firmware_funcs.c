@@ -1138,7 +1138,11 @@ u_int32_t testRAM(void) {
 }
 
 int getNModBoard() {
+#ifdef JUNGFRAU_DHANYA
+	return 1;
+#else
   return 32;//nModX;
+#endif
 }
 
 int setNMod(int n) {
@@ -2316,7 +2320,6 @@ u_int32_t* decode_data(int *datain)
 
 
 int setDynamicRange(int dr) {
-
   if (dr%16==0 && dr>0) {
     dynamicRange=16;
     nSamples=dr/16;

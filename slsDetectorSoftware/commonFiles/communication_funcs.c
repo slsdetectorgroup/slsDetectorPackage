@@ -535,7 +535,7 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
   ts+=receiveData(file_des,myMod->chanregs,sizeof(myMod->nchan),INT32);
   ts+=receiveData(file_des,&(myMod->gain), sizeof(myMod->gain),OTHER);
   ts+=receiveData(file_des,&(myMod->offset), sizeof(myMod->offset),OTHER);
-
+printf(RED,"ts:%d\n",ts);
   myMod->dacs=dacptr;
   myMod->adcs=adcptr;
   myMod->chipregs=chipptr;

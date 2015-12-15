@@ -110,24 +110,21 @@ int slsDetectorUsers::getPositions(double *pos){
 }
 
 int slsDetectorUsers::setDetectorSize(int x0, int y0, int nx, int ny){
-  int nmodx=nx/(myDetector->getChansPerMod(0));
-  int nmody=ny/(myDetector->getChansPerMod(0));
-  myDetector->setNumberOfModules(nmodx, slsDetectorDefs::X);
-  myDetector->setNumberOfModules(nmody, slsDetectorDefs::Y);
-  return nmodx*myDetector->getChansPerMod(0);
-}
+  int nmod=nx/(myDetector->getChansPerMod(0));
+  cout << myDetector->getChansPerMod(0) << " " << nx << " " << nmod << endl;
+  return myDetector->setNumberOfModules(nmod)*myDetector->getChansPerMod(0);}
 
 int slsDetectorUsers::getDetectorSize(int &x0, int &y0, int &nx, int &ny){ 
   y0=0; 
-  ny=myDetector->getTotalNumberOfChannels(slsDetectorDefs::Y); 
+  ny=1; 
   x0=0; 
-  nx=myDetector->getTotalNumberOfChannels(slsDetectorDefs::X);
+  nx=myDetector->setNumberOfModules()*myDetector->getChansPerMod(0); 
   return nx;
 }
 
 int slsDetectorUsers::getMaximumDetectorSize(int &nx, int &ny){
-  nx=myDetector->getMaxNumberOfChannels(slsDetectorDefs::X);
-  ny=myDetector->getMaxNumberOfChannels(slsDetectorDefs::Y);
+  ny=1;
+  nx=myDetector->getMaxNumberOfModules()*myDetector->getChansPerMod(0); 
   return nx;
 }
 

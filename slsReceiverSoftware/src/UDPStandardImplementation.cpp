@@ -827,7 +827,8 @@ int UDPStandardImplementation::startReceiver(char *c){
 		//stop udp socket
 		shutDownUDPSockets();
 		sprintf(c,"Could not create file %s.",completeFileName);
-		FILE_LOG(logERROR) << c;
+		//FILE_LOG(logERROR) << c;
+		for(int i=0; i < numberofWriterThreads; i++)	sem_post(&writerSemaphore[i]);
 		return FAIL;
 	}
 
@@ -1308,8 +1309,10 @@ int UDPStandardImplementation::setupWriter(){
 #endif
 	}
 
-	FILE_LOG(logDEBUG) << "Successfully created file(s)";
-	cout << "Writer Ready ..." << endl;
+	if(fileCreateSuccess == OK){
+		FILE_LOG(logDEBUG) << "Successfully created file(s)";
+		cout << "Writer Ready ..." << endl;
+	}
 
 	return fileCreateSuccess;
 }

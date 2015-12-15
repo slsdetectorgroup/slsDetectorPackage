@@ -1777,13 +1777,13 @@ int Feb_Control_PulseChip(int npulses){
 			cprintf(RED,"some wait error\n");
 	}
 	Feb_Control_SetExternalEnableMode(on,1);
-	counter_bit = ~0;
+	counter_bit = (on?0:1);
 	printf("counter_bit:%d\n",counter_bit);
 
 	if(on)
-		printf("Pulse chip success\n");
+		printf("Pulse chip success\n\n");
 	else
-		printf("Reset to normal mode success\n");
+		printf("Reset to normal mode success\n\n");
 	return 1;
 }
 

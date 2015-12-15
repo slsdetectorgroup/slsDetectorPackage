@@ -110,6 +110,8 @@ int slsDetectorUsers::getPositions(double *pos){
 }
 
 int slsDetectorUsers::setDetectorSize(int x0, int y0, int nx, int ny){
+  if(myDetector->getTotalNumberOfChannels(slsDetectorDefs::Y)>1)
+	return 1;
   int nmod=nx/(myDetector->getChansPerMod(0));
   cout << myDetector->getChansPerMod(0) << " " << nx << " " << nmod << endl;
   return myDetector->setNumberOfModules(nmod)*myDetector->getChansPerMod(0);}

@@ -172,7 +172,7 @@ int Feb_Control_GetModuleNumber();
 
   //functions for testing
   /*int Feb_Control_SetTestModeVariable(int on=1);*/
-  int Feb_Control_SetInTestModeVariable(int on);
+  int Feb_Control_SetTestModeVariable(int on);
   int Feb_Control_GetTestModeVariable();
 
   void Feb_Control_Set_Counter_Bit(int value);

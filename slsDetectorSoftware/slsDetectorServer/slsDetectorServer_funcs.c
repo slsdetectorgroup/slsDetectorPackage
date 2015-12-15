@@ -3778,7 +3778,7 @@ int pulse_chip(int file_des) {
 
 	sprintf(mess,"pulse chip failed\n");
 
-	n = receiveData(file_des,&arg,sizeof(arg),INT32);
+	n = receiveData(file_des,arg,sizeof(arg),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;

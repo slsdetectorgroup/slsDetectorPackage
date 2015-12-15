@@ -155,10 +155,6 @@ int  slsDetectorUtils::acquire(int delflag){
 	  		 *stoppedFlag=1;
 	  	}
 
-	  //resets frames caught in receiver
-	  resetFramesCaught();
-
-
 	  if(setReceiverOnline()==OFFLINE_FLAG)
 		  *stoppedFlag=1;
   }
@@ -180,6 +176,11 @@ int  slsDetectorUtils::acquire(int delflag){
 #ifdef VERBOSE
     cout << " starting measurement "<< im << " of " << nm << endl;
 #endif
+
+    //resets frames caught in receiver
+    if(receiver){
+    	resetFramesCaught();
+    }
 
     //cout << "data thread started " << endl;
  

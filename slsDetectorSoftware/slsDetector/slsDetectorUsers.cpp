@@ -117,8 +117,8 @@ int slsDetectorUsers::setDetectorSize(int x0, int y0, int nx, int ny){
 int slsDetectorUsers::getDetectorSize(int &x0, int &y0, int &nx, int &ny){ 
   y0=0; 
   x0=0; 
-  nx=getTotalNumberOfChannels(slsDetectorDefs::X);
-  ny=getTotalNumberOfChannels(slsDetectorDefs::Y);
+  nx=myDetector->getTotalNumberOfChannels(slsDetectorDefs::X);
+  ny=myDetector->getTotalNumberOfChannels(slsDetectorDefs::Y);
   return nx*ny;
 }
 

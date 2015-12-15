@@ -312,10 +312,11 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 
 	/**
 	 * Set Number of Frames expected by receiver from detector
-	 * The data receiver status will change from running to idle when it gets this number of frames FIXME: (Not implemented)
+	 * The data receiver status will change from running to idle when it gets this number of frames
 	 * @param i number of frames expected
+	 * @return OK or FAIL
 	 */
-	void setNumberOfFrames(const uint64_t i);
+	int setNumberOfFrames(const uint64_t i);
 
 	/**
 	 * Set Dynamic Range or Number of Bits Per Pixel

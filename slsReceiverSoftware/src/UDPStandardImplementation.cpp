@@ -282,23 +282,11 @@ int UDPStandardImplementation::setupFifoStructure(){
 
 	// fifo depth
 	uint32_t oldFifoSize = fifoSize;
-	//default
-	if(!fifoDepth){
-		switch(myDetectorType){
-		case GOTTHARD:	fifoSize = GOTTHARD_FIFO_SIZE;	break;
-		case MOENCH:	fifoSize = MOENCH_FIFO_SIZE;	break;
-		case PROPIX:	fifoSize = PROPIX_FIFO_SIZE;	break;
-		case EIGER:		fifoSize = EIGER_FIFO_SIZE  * packetsPerFrame;	break;//listens to 1 packet at a time and size depends on packetsperframe
-		default: break;
-		}
-	}
 
-	//change by user
-	else{
-		if(myDetectorType == EIGER)
-			fifoSize = fifoDepth * packetsPerFrame;
-		else fifoSize = fifoDepth;
-	}
+	if(myDetectorType == EIGER)
+		fifoSize = fifoDepth * packetsPerFrame;//listens to 1 packet at a time and size depends on packetsperframe
+	else
+		fifoSize = fifoDepth;
 
 	//reduce fifo depth if > 1 numberofJobsPerBuffer
 	if(fifoSize % numberofJobsPerBuffer)
@@ -313,6 +301,11 @@ int UDPStandardImplementation::setupFifoStructure(){
 
 
 
+	//delete threads
+	if(threadStarted){
+		createListeningThreads(true);
+		createWriterThreads(true);
+	}
 
 
 	//set up fifo structure
@@ -357,6 +350,18 @@ int UDPStandardImplementation::setupFifoStructure(){
 		}
 	}
 	cout << "Fifo structure(s) reconstructed" << endl;
+
+	//create threads
+	if(createListeningThreads() == FAIL){
+		FILE_LOG(logERROR) << "Could not create listening thread";
+		return FAIL;
+	}
+	if(createWriterThreads() == FAIL){
+		FILE_LOG(logERROR) << "Could not create writer threads";
+		return FAIL;
+	}
+	setThreadPriorities();
+
 	return OK;
 }
 
@@ -483,11 +488,25 @@ int UDPStandardImplementation::setAcquisitionPeriod(const uint64_t i){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	acquisitionPeriod = i;
-	if(setupFifoStructure() == FAIL)
-		return FAIL;
+	if((myDetectorType == GOTTHARD) && (myDetectorType == MOENCH))
+		if(setupFifoStructure() == FAIL)
+			return FAIL;
 
 	FILE_LOG(logINFO) << "Acquisition Period: " << (double)acquisitionPeriod/(1E9) << "s";
 
+	return OK;
+}
+
+
+int UDPStandardImplementation::setNumberOfFrames(const uint64_t i){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
+	numberOfFrames = i;
+	if((myDetectorType == GOTTHARD) && (myDetectorType == MOENCH))
+		if(setupFifoStructure() == FAIL)
+			return FAIL;
+
+	FILE_LOG(logINFO) << "Number of Frames:" << numberOfFrames;
 
 	return OK;
 }
@@ -511,30 +530,15 @@ int UDPStandardImplementation::setDynamicRange(const uint32_t i){
 		//new dynamic range, then restart threads and resetup fifo structure
 		if(oldDynamicRange != dynamicRange){
 
-			//delete threads
-			if(threadStarted){
-				createListeningThreads(true);
-				createWriterThreads(true);
-			}
-
 			//gui buffer
 			if(latestData){delete[] latestData; latestData = NULL;}
 			latestData = new char[frameSize];
 
 			//restructure fifo
+			numberofJobsPerBuffer = -1;
 			if(setupFifoStructure() == FAIL)
 				return FAIL;
 
-			//create threads
-			if(createListeningThreads() == FAIL){
-				FILE_LOG(logERROR) << "Could not create listening thread";
-				return FAIL;
-			}
-			if(createWriterThreads() == FAIL){
-				FILE_LOG(logERROR) << "Could not create writer threads";
-				return FAIL;
-			}
-			setThreadPriorities();
 		}
 
 	}
@@ -582,12 +586,6 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b){
 		//new enable, then restart threads and resetup fifo structure
 		if(oldTenGigaEnable != tengigaEnable){
 
-			//delete threads
-			if(threadStarted){
-				createListeningThreads(true);
-				createWriterThreads(true);
-			}
-
 			//gui buffer
 			if(latestData){delete[] latestData; latestData = NULL;}
 			latestData = new char[frameSize];
@@ -596,16 +594,6 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b){
 			if(setupFifoStructure() == FAIL)
 				return FAIL;
 
-			//create threads
-			if(createListeningThreads() == FAIL){
-				FILE_LOG(logERROR) << "Could not create listening thread";
-				return FAIL;
-			}
-			if(createWriterThreads() == FAIL){
-				FILE_LOG(logERROR) << "Could not create writer threads";
-				return FAIL;
-			}
-			setThreadPriorities();
 		}
 
 	}
@@ -674,6 +662,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 		packetIndexMask 	= GOTTHARD_PACKET_INDEX_MASK;
 		maxPacketsPerFile	= MAX_FRAMES_PER_FILE * GOTTHARD_PACKETS_PER_FRAME;
 		fifoSize			= GOTTHARD_FIFO_SIZE;
+		fifoDepth			= GOTTHARD_FIFO_SIZE;
 		//footerOffset		= Not applicable;
 		break;
 	case PROPIX:
@@ -687,6 +676,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 		packetIndexMask 	= PROPIX_PACKET_INDEX_MASK;
 		maxPacketsPerFile	= MAX_FRAMES_PER_FILE * PROPIX_PACKETS_PER_FRAME;
 		fifoSize			= PROPIX_FIFO_SIZE;
+		fifoDepth			= PROPIX_FIFO_SIZE;
 		//footerOffset		= Not applicable;
 		break;
 	case MOENCH:
@@ -700,6 +690,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 		packetIndexMask 	= MOENCH_PACKET_INDEX_MASK;
 		maxPacketsPerFile	= MOENCH_MAX_FRAMES_PER_FILE * MOENCH_PACKETS_PER_FRAME;
 		fifoSize			= MOENCH_FIFO_SIZE;
+		fifoDepth 			= MOENCH_FIFO_SIZE;
 		//footerOffset		= Not applicable;
 		break;
 	case EIGER:
@@ -714,6 +705,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 		packetIndexMask 	= EIGER_PACKET_INDEX_MASK;
 		maxPacketsPerFile	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
 		fifoSize			= EIGER_FIFO_SIZE;
+		fifoDepth			= EIGER_FIFO_SIZE;
 		footerOffset		= EIGER_PACKET_HEADER_SIZE + oneDataSize;
 		break;
 	case JUNGFRAUCTB:
@@ -728,6 +720,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 		packetIndexMask 	= JCTB_PACKET_INDEX_MASK;
 		maxPacketsPerFile	= JFCTB_MAX_FRAMES_PER_FILE * JCTB_PACKETS_PER_FRAME;
 		fifoSize			= JCTB_FIFO_SIZE;
+		fifoDepth			= JCTB_FIFO_SIZE;
 		//footerOffset		= Not applicable;
 		break;
 	default:
@@ -748,17 +741,6 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 	//set up fifo structure -1 for numberofJobsPerBuffer ensure it is done
 	numberofJobsPerBuffer = -1;
 	setupFifoStructure();
-
-	//create threads
-	if(createListeningThreads() == FAIL){
-		FILE_LOG(logERROR) << "Could not create listening thread";
-		return FAIL;
-	}
-	if(createWriterThreads() == FAIL){
-		FILE_LOG(logERROR) << "Could not create writer threads";
-		return FAIL;
-	}
-	setThreadPriorities();
 
 	//allocate for latest data (frame copy for gui)
 	latestData = new char[frameSize];

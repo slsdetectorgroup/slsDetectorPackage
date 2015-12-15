@@ -334,11 +334,14 @@ int UDPBaseImplementation::setAcquisitionPeriod(const uint64_t i){
 	return OK;
 }
 
-void UDPBaseImplementation::setNumberOfFrames(const uint64_t i){
+int UDPBaseImplementation::setNumberOfFrames(const uint64_t i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	numberOfFrames = i;
 	FILE_LOG(logINFO) << "Number of Frames:" << numberOfFrames;
+
+	//overrridden child classes might return FAIL
+	return OK;
 }
 
 int UDPBaseImplementation::setDynamicRange(const uint32_t i){

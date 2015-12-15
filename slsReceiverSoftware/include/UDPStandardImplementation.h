@@ -104,6 +104,15 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 
 	/**
 	 * Overridden method
+	 * Set Number of Frames expected by receiver from detector
+	 * The data receiver status will change from running to idle when it gets this number of frames
+	 * @param i number of frames expected
+	 * @return OK or FAIL
+	 */
+	int setNumberOfFrames(const uint64_t i);
+
+	/**
+	 * Overridden method
 	 * Set Dynamic Range or Number of Bits Per Pixel
 	 * @param i dynamic range that is 4, 8, 16 or 32
 	 * @return OK or FAIL
@@ -253,6 +262,8 @@ private:
 	/**
 	 * Set up the Fifo Structure for processing buffers
 	 * between listening and writer threads
+	 * When the parameters ahve been determined and if fifostructure needs to be changes,
+	 * the listerning and writing threads are also destroyed together with this
 	 * @return OK or FAIL
 	 */
 	int setupFifoStructure();

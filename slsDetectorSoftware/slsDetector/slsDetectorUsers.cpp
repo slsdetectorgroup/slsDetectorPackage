@@ -116,16 +116,16 @@ int slsDetectorUsers::setDetectorSize(int x0, int y0, int nx, int ny){
 
 int slsDetectorUsers::getDetectorSize(int &x0, int &y0, int &nx, int &ny){ 
   y0=0; 
-  ny=1; 
   x0=0; 
-  nx=myDetector->setNumberOfModules()*myDetector->getChansPerMod(0); 
-  return nx;
+  nx=getTotalNumberOfChannels(slsDetectorDefs::X);
+  ny=getTotalNumberOfChannels(slsDetectorDefs::Y);
+  return nx*ny;
 }
 
 int slsDetectorUsers::getMaximumDetectorSize(int &nx, int &ny){
   nx=myDetector->getMaxNumberOfChannelsPerDetector(slsDetectorDefs::X);
   ny=myDetector->getMaxNumberOfChannelsPerDetector(slsDetectorDefs::Y);
-  return nx;
+  return nx*ny;
 }
 
 int slsDetectorUsers::setBitDepth(int i){

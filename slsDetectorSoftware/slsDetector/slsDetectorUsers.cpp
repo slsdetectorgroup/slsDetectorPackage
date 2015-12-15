@@ -123,8 +123,8 @@ int slsDetectorUsers::getDetectorSize(int &x0, int &y0, int &nx, int &ny){
 }
 
 int slsDetectorUsers::getMaximumDetectorSize(int &nx, int &ny){
-  ny=1;
-  nx=myDetector->getMaxNumberOfModules()*myDetector->getChansPerMod(0); 
+  nx=myDetector->getMaxNumberOfChannelsPerDetector(slsDetectorDefs::X);
+  ny=myDetector->getMaxNumberOfChannelsPerDetector(slsDetectorDefs::Y);
   return nx;
 }
 

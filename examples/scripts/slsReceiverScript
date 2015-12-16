@@ -1,0 +1,23 @@
+#!/bin/bash
+
+STARTPORT=$1
+AMOUNT=$2
+
+if [ "$2" == "" ]; then
+	echo Syntax: $0 STARTPORT AMOUNT
+	echo Example: $0 1991 8    gives you 8 receivers starting with port 1991
+fi
+
+declare -A ARG
+
+count=0
+for i in `seq $STARTPORT $((STARTPORT+$((AMOUNT-1))))`; do
+	if [ "$((count%2))" == "0" ]; then
+		ARG[$count]="slsReceiver --rx_tcpport $i"
+	else
+		ARG[$count]="slsReceiver --rx_tcpport $i --mode 1"
+	fi
+	count=$((count+1))
+done
+
+xterms -k "${ARG[@]}"

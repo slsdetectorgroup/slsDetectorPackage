@@ -421,6 +421,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   virtual int* startAndReadAll()=0;
 
   virtual int getTotalNumberOfChannels()=0;
+  virtual int getTotalNumberOfChannels(dimension d)=0;
   virtual int getMaxNumberOfChannels()=0;
   virtual int getMaxNumberOfChannels(dimension d)=0;
 

@@ -1113,7 +1113,7 @@ string slsDetectorCommand::helpLine(int narg, char *args[], int action) {
   if (narg==0) {
     os << "Command can be: " << endl;
     for(int i=0; i<numberOfCommands; ++i) {  
-      os << descrToFuncMap[i].m_pFuncName << "\t" ;
+      os << descrToFuncMap[i].m_pFuncName << "\n" ;
     }
     os << endl;
     return os.str();

@@ -645,7 +645,7 @@ Advanced settings changing the analog or digital performance of the acquisition.
 \item[vpreamp]  Returns the DAC value of the preamp feedback  to n.
 \item[vshaper1]  Returns the DAC value of the shaper1 feedback  to n.  
 \item[vshaper2]  Returns the DAC value of the shaper2 feedback  to n.      
-\item[vhighvoltage]   CHIPTEST BOARD ONLY - Returns the DAC value of the high voltage to n.           
+\item[vhighvoltage]  Returns the DAC value of the high voltage to n.           
 \item[vapower]   CHIPTEST BOARD ONLY - Returns the DAC value of the analog voltage to n. 
 \item[vddpower]     CHIPTEST BOARD ONLY - Returns the DAC value of the analog voltage to n.      
 \item[vshpower]     CHIPTEST BOARD ONLY - Returns the comparator power supply in dac units (0-1024).   
@@ -697,6 +697,13 @@ To do that:
 sls_detector_put config mydetector.config
 \end{verbatim}
 Refere to sample configuration files to produce the appropiate one for your detector.
+
+One can configure all the detector settings in a parameter file {\tt{setup.det}}, which is loaded by doing:
+\begin{verbatim}
+sls_detector_put parameters setup.det
+\end{verbatim}
+
+In the case of \E, the parameter file ({\tt{setup.det}} needs to setup the proper bias voltage of the sensor, i.e. needs to contain the line {\tt{vhighvoltage 150}}.
 
 \subsection{Standard acquisition}
 

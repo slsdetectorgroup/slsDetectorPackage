@@ -3145,7 +3145,8 @@ string slsDetectorCommand::helpSettings(int narg, char *args[], int action) {
 
   ostringstream os;  
   if (action==PUT_ACTION || action==HELP_ACTION) {
-    os << "settings s \n sets the settings of the detector - can be standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain"<< std::endl;
+    os << "settings s \n sets the settings of the detector - can be standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain"
+    		"lownoise, dynamichg0,fixgain1,fixgain2,forceswitchg1, forceswitchg2"<< std::endl;
     os << "threshold eV\n sets the detector threshold in eV"<< std::endl;
     os << "trimbits fname\n loads the trimfile fname to the detector. If no extension is specified, the serial number of each module will be attached."<< std::endl;
     os << "trim:mode fname\n trims the detector according to mode (can be noise, beam, improve, fix) and saves the resulting trimbits to file fname."<< std::endl;

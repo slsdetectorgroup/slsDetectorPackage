@@ -680,8 +680,8 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
     if (s=="dynamichg0") 	return DYNAMICHG0;				\
     if (s=="fixgain1") 		return FIXGAIN1;				\
     if (s=="fixgain2") 		return FIXGAIN2;				\
-    if (s=="forceswitchg2") return FORCESWITCHG1;			\
-    if (s=="lownoise") 		return FORCESWITCHG2;			\
+    if (s=="forceswitchg1") return FORCESWITCHG1;			\
+    if (s=="forceswitchg2")	return FORCESWITCHG2;			\
     return GET_SETTINGS;									\
   };
 

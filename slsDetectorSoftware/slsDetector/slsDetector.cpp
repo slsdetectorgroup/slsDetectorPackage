@@ -1075,19 +1075,19 @@ int slsDetector::sendChip(sls_detector_chip *myChip) {
 int slsDetector::sendModule(sls_detector_module *myMod) {
 	int ts=0;
 	//send module structure
-	ts+=controlSocket->SendDataOnly(&(myMod->module),sizeof(myMod->module));
-	ts+=controlSocket->SendDataOnly(&(myMod->serialnumber),sizeof(myMod->serialnumber));
-	ts+=controlSocket->SendDataOnly(&(myMod->nchan),sizeof(myMod->nchan));
-	ts+=controlSocket->SendDataOnly(&(myMod->nchip),sizeof(myMod->nchip));
-	ts+=controlSocket->SendDataOnly(&(myMod->ndac),sizeof(myMod->ndac));
-	ts+=controlSocket->SendDataOnly(&(myMod->nadc),sizeof(myMod->nadc));
-	ts+=controlSocket->SendDataOnly(&(myMod->reg),sizeof(myMod->reg));
-	ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(myMod->ndac));
-	ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(myMod->nadc));
-	ts+=controlSocket->SendDataOnly(myMod->chipregs,sizeof(myMod->nchip));
-	ts+=controlSocket->SendDataOnly(myMod->chanregs,sizeof(myMod->nchan));
-	ts+=controlSocket->SendDataOnly(&(myMod->gain), sizeof(myMod->gain));
-	ts+=controlSocket->SendDataOnly(&(myMod->offset), sizeof(myMod->offset));
+	ts+=controlSocket->SendDataOnly(&(myMod->module),sizeof(myMod->module));cout<<"module:"<<(myMod->module)<<endl;
+	ts+=controlSocket->SendDataOnly(&(myMod->serialnumber),sizeof(myMod->serialnumber));cout<<"serial number:"<<(myMod->serialnumber)<<endl;
+	ts+=controlSocket->SendDataOnly(&(myMod->nchan),sizeof(myMod->nchan));cout<<"nchan :"<<(myMod->nchan)<<endl;
+	ts+=controlSocket->SendDataOnly(&(myMod->nchip),sizeof(myMod->nchip));cout<<"nchip :"<<(myMod->nchip)<<endl;
+	ts+=controlSocket->SendDataOnly(&(myMod->ndac),sizeof(myMod->ndac));cout<<"ndac :"<<(myMod->ndac)<<endl;
+	ts+=controlSocket->SendDataOnly(&(myMod->nadc),sizeof(myMod->nadc));cout<<"nadc :"<<(myMod->nadc)<<endl;
+	ts+=controlSocket->SendDataOnly(&(myMod->reg),sizeof(myMod->reg));cout<<"reg :"<<(myMod->reg)<<endl;
+	ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(myMod->ndac));cout<<"dacs :"<<(myMod->dacs[0])<<endl;
+	ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(myMod->nadc));cout<<"adcs :none"<<endl;
+	ts+=controlSocket->SendDataOnly(myMod->chipregs,sizeof(myMod->nchip));cout<<"chipregs :"<<(myMod->serialnumber)<<endl;
+	ts+=controlSocket->SendDataOnly(myMod->chanregs,sizeof(myMod->nchan));cout<<"chanregs :"<<(myMod->serialnumber)<<endl;
+	ts+=controlSocket->SendDataOnly(&(myMod->gain), sizeof(myMod->gain));cout<<"gain :"<<(myMod->gain)<<endl;
+	ts+=controlSocket->SendDataOnly(&(myMod->offset), sizeof(myMod->offset));cout<<"offset :"<<(myMod->offset)<<endl;
 
 	ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(dacs_t)*(myMod->ndac));
 	ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(dacs_t)*(myMod->nadc));

@@ -15,16 +15,22 @@
 
 
 /* examples*/
+#ifdef JUNGFRAU_DHANYA
+#define NCHAN 			(256*256)
+#define NCHIP 			8
+#define NADC			0
+#else
 #define NCHAN 			1
 #define NCHIP 			1
 #define NDAC 			1
 #define NADC			1
+#endif
+
 #define NMAXMODX  		1
 #define NMAXMODY 		1
 #define NMAXMOD 		NMAXMODX*NMAXMODY
 #define NCHANS 			NCHAN*NCHIP*NMAXMOD
 #define NDACS 			NDAC*NMAXMOD
-
 
 
 

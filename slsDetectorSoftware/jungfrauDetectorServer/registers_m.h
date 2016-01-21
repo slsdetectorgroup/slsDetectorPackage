@@ -31,7 +31,8 @@
 #define DBIT_PIPELINE_REG 		0x59<<11
 #define MEM_MACHINE_FIFOS_REG 	0x4f<<11
 #define CONFGAIN_REG 			0x5d<<11 /** was actually GAIN_REG which seems to be set to 0 later in this file*/
-
+#else
+#define ADC_INVERSION_REG      67<<11 /** picked up from after ADC_OFFSET_REG*/
 #endif
 
  
@@ -130,7 +131,7 @@
 //#define HV_REG                67<<11//0x20<<11
 
 #define ADC_OFFSET_REG      66<<11
-#define ADC_INVERSION_REG      67<<11
+
 
 //#define MUTIME_REG            0x1a<<11
 //temperature

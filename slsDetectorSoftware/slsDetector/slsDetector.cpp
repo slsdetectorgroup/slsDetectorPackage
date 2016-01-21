@@ -1075,25 +1075,29 @@ int slsDetector::sendChip(sls_detector_chip *myChip) {
 int slsDetector::sendModule(sls_detector_module *myMod) {
 	int ts=0;
 	//send module structure
-	ts+=controlSocket->SendDataOnly(&(myMod->module),sizeof(myMod->module));cout<<"module:"<<(myMod->module)<<endl;
-	ts+=controlSocket->SendDataOnly(&(myMod->serialnumber),sizeof(myMod->serialnumber));cout<<"serial number:"<<(myMod->serialnumber)<<endl;
-	ts+=controlSocket->SendDataOnly(&(myMod->nchan),sizeof(myMod->nchan));cout<<"nchan :"<<(myMod->nchan)<<endl;
-	ts+=controlSocket->SendDataOnly(&(myMod->nchip),sizeof(myMod->nchip));cout<<"nchip :"<<(myMod->nchip)<<endl;
-	ts+=controlSocket->SendDataOnly(&(myMod->ndac),sizeof(myMod->ndac));cout<<"ndac :"<<(myMod->ndac)<<endl;
-	ts+=controlSocket->SendDataOnly(&(myMod->nadc),sizeof(myMod->nadc));cout<<"nadc :"<<(myMod->nadc)<<endl;
-	ts+=controlSocket->SendDataOnly(&(myMod->reg),sizeof(myMod->reg));cout<<"reg :"<<(myMod->reg)<<endl;
-	ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(myMod->ndac));cout<<"dacs :"<<(myMod->dacs[0])<<endl;
-	ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(myMod->nadc));cout<<"adcs :none"<<endl;
-	ts+=controlSocket->SendDataOnly(myMod->chipregs,sizeof(myMod->nchip));cout<<"chipregs :"<<(myMod->serialnumber)<<endl;
-	ts+=controlSocket->SendDataOnly(myMod->chanregs,sizeof(myMod->nchan));cout<<"chanregs :"<<(myMod->serialnumber)<<endl;
-	ts+=controlSocket->SendDataOnly(&(myMod->gain), sizeof(myMod->gain));cout<<"gain :"<<(myMod->gain)<<endl;
-	ts+=controlSocket->SendDataOnly(&(myMod->offset), sizeof(myMod->offset));cout<<"offset :"<<(myMod->offset)<<endl;
+	ts+=controlSocket->SendDataOnly(&(myMod->module),sizeof(myMod->module));
+	ts+=controlSocket->SendDataOnly(&(myMod->serialnumber),sizeof(myMod->serialnumber));
+	ts+=controlSocket->SendDataOnly(&(myMod->nchan),sizeof(myMod->nchan));
+	ts+=controlSocket->SendDataOnly(&(myMod->nchip),sizeof(myMod->nchip));
+	ts+=controlSocket->SendDataOnly(&(myMod->ndac),sizeof(myMod->ndac));
+	ts+=controlSocket->SendDataOnly(&(myMod->nadc),sizeof(myMod->nadc));
+	ts+=controlSocket->SendDataOnly(&(myMod->reg),sizeof(myMod->reg));
+	ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(myMod->ndac));
 
+	if(thisDetector->myDetectorType != JUNGFRAU){
+		ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(myMod->nadc));
+		ts+=controlSocket->SendDataOnly(myMod->chipregs,sizeof(myMod->nchip));
+		ts+=controlSocket->SendDataOnly(myMod->chanregs,sizeof(myMod->nchan));
+	}
+	ts+=controlSocket->SendDataOnly(&(myMod->gain),sizeof(myMod->gain));
+	ts+=controlSocket->SendDataOnly(&(myMod->offset), sizeof(myMod->offset));
 	ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(dacs_t)*(myMod->ndac));
-	ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(dacs_t)*(myMod->nadc));
-	ts+=controlSocket->SendDataOnly(myMod->chipregs,sizeof(int)*(myMod->nchip));
-	ts+=controlSocket->SendDataOnly(myMod->chanregs,sizeof(int)*(myMod->nchan));
 
+	if(thisDetector->myDetectorType != JUNGFRAU){
+		ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(dacs_t)*(myMod->nadc));
+		ts+=controlSocket->SendDataOnly(myMod->chipregs,sizeof(int)*(myMod->nchip));
+		ts+=controlSocket->SendDataOnly(myMod->chanregs,sizeof(int)*(myMod->nchan));
+	}
 	return ts;
 }
 
@@ -1147,17 +1151,19 @@ int  slsDetector::receiveModule(sls_detector_module* myMod) {
 	ts+=controlSocket->ReceiveDataOnly(&(myMod->nadc),sizeof(myMod->nadc));
 	ts+=controlSocket->ReceiveDataOnly(&(myMod->reg),sizeof(myMod->reg));
 	ts+=controlSocket->ReceiveDataOnly(myMod->dacs,sizeof(myMod->ndac));
-	ts+=controlSocket->ReceiveDataOnly(myMod->adcs,sizeof(myMod->nadc));
-	ts+=controlSocket->ReceiveDataOnly(myMod->chipregs,sizeof(myMod->nchip));
-	ts+=controlSocket->ReceiveDataOnly(myMod->chanregs,sizeof(myMod->nchan));
+	if(thisDetector->myDetectorType != JUNGFRAU){
+		ts+=controlSocket->ReceiveDataOnly(myMod->adcs,sizeof(myMod->nadc));
+		ts+=controlSocket->ReceiveDataOnly(myMod->chipregs,sizeof(myMod->nchip));
+		ts+=controlSocket->ReceiveDataOnly(myMod->chanregs,sizeof(myMod->nchan));
+	}
 	ts+=controlSocket->ReceiveDataOnly(&(myMod->gain), sizeof(myMod->gain));
 	ts+=controlSocket->ReceiveDataOnly(&(myMod->offset), sizeof(myMod->offset));
 
 
-  myMod->dacs=dacptr;
-  myMod->adcs=adcptr;
-  myMod->chipregs=chipptr;
-  myMod->chanregs=chanptr;
+	myMod->dacs=dacptr;
+	myMod->adcs=adcptr;
+	myMod->chipregs=chipptr;
+	myMod->chanregs=chanptr;
 
 #ifdef VERBOSE
   std::cout<< "received module " << myMod->module << " of size "<< ts << " register " << myMod->reg << std::endl;
@@ -1166,21 +1172,24 @@ int  slsDetector::receiveModule(sls_detector_module* myMod) {
 #ifdef VERBOSE
   std::cout<< "received dacs " << myMod->module << " of size "<< ts << std::endl;
 #endif
-  ts+=controlSocket->ReceiveDataOnly(myMod->adcs,sizeof(dacs_t)*(myMod->nadc));
-#ifdef VERBOSE
-  std::cout<< "received adcs " << myMod->module << " of size "<< ts << std::endl;
-#endif
-  ts+=controlSocket->ReceiveDataOnly(myMod->chipregs,sizeof(int)*(myMod->nchip));
-#ifdef VERBOSE
-  std::cout<< "received chips " << myMod->module << " of size "<< ts << std::endl;
-#endif
-  ts+=controlSocket->ReceiveDataOnly(myMod->chanregs,sizeof(int)*(myMod->nchan));
-#ifdef VERBOSE
-  std::cout<< "nchans= " << thisDetector->nChans << " nchips= " << thisDetector->nChips;
-  std::cout<< "mod - nchans= " << myMod->nchan << " nchips= " <<myMod->nchip;
 
-  std::cout<< "received chans " << myMod->module << " of size "<< ts << std::endl;
+  if(thisDetector->myDetectorType != JUNGFRAU){
+	  ts+=controlSocket->ReceiveDataOnly(myMod->adcs,sizeof(dacs_t)*(myMod->nadc));
+#ifdef VERBOSE
+	  std::cout<< "received adcs " << myMod->module << " of size "<< ts << std::endl;
 #endif
+	  ts+=controlSocket->ReceiveDataOnly(myMod->chipregs,sizeof(int)*(myMod->nchip));
+#ifdef VERBOSE
+	  std::cout<< "received chips " << myMod->module << " of size "<< ts << std::endl;
+#endif
+	  ts+=controlSocket->ReceiveDataOnly(myMod->chanregs,sizeof(int)*(myMod->nchan));
+#ifdef VERBOSE
+	  std::cout<< "nchans= " << thisDetector->nChans << " nchips= " << thisDetector->nChips;
+	  std::cout<< "mod - nchans= " << myMod->nchan << " nchips= " <<myMod->nchip;
+	  std::cout<< "received chans " << myMod->module << " of size "<< ts << std::endl;
+#endif
+  }
+
 #ifdef VERBOSE
   std::cout<< "received module " << myMod->module << " of size "<< ts << " register " << myMod->reg << std::endl;
 #endif
@@ -2774,23 +2783,26 @@ int slsDetector::setModule(sls_detector_module module, int* gainval, int* offset
 	thisDetector->nDacs=module.ndac;
 	thisDetector->nAdcs=module.nadc;
 
-	for (int ichip=0; ichip<thisDetector->nChips; ichip++) {
-	  if (chipregs)
-	    chipregs[ichip+thisDetector->nChips*imod]=module.chipregs[ichip];
+	if(thisDetector->myDetectorType != JUNGFRAU){
+		for (int ichip=0; ichip<thisDetector->nChips; ichip++) {
+			if (chipregs)
+				chipregs[ichip+thisDetector->nChips*imod]=module.chipregs[ichip];
 
-	  if (chanregs) {
-	    for (int i=0; i<thisDetector->nChans; i++) {
-	      chanregs[i+ichip*thisDetector->nChans+thisDetector->nChips*thisDetector->nChans*imod]=module.chanregs[ichip*thisDetector->nChans+i];
-	    }
-	  }
+			if (chanregs) {
+				for (int i=0; i<thisDetector->nChans; i++) {
+					chanregs[i+ichip*thisDetector->nChans+thisDetector->nChips*thisDetector->nChans*imod]=module.chanregs[ichip*thisDetector->nChans+i];
+				}
+			}
+		}
+		if (adcs) {
+			for (int i=0; i<thisDetector->nAdcs; i++)
+				adcs[i+imod*thisDetector->nAdcs]=module.adcs[i];
+		}
 	}
+
 	if (dacs) {
 	  for (int i=0; i<thisDetector->nDacs; i++)
 	    dacs[i+imod*thisDetector->nDacs]=module.dacs[i];
-	}
-	if (adcs) {
-	  for (int i=0; i<thisDetector->nAdcs; i++)
-	    adcs[i+imod*thisDetector->nAdcs]=module.adcs[i];
 	}
 
 	(detectorModules+imod)->gain=module.gain;
@@ -2899,25 +2911,28 @@ slsDetectorDefs::sls_detector_module  *slsDetector::getModule(int imod){
 				thisDetector->nDacs=myMod->ndac;
 				thisDetector->nAdcs=myMod->nadc;
 
-				for (int ichip=0; ichip<thisDetector->nChips; ichip++) {
-					if (chipregs)
-						chipregs[ichip+thisDetector->nChips*imod]=myMod->chipregs[ichip];
+				if(thisDetector->myDetectorType != JUNGFRAU){
+					for (int ichip=0; ichip<thisDetector->nChips; ichip++) {
+						if (chipregs)
+							chipregs[ichip+thisDetector->nChips*imod]=myMod->chipregs[ichip];
 
-					if (chanregs) {
-						for (int i=0; i<thisDetector->nChans; i++) {
-							chanregs[i+ichip*thisDetector->nChans+thisDetector->nChips*thisDetector->nChans*imod]=myMod->chanregs[ichip*thisDetector->nChans+i];
+						if (chanregs) {
+							for (int i=0; i<thisDetector->nChans; i++) {
+								chanregs[i+ichip*thisDetector->nChans+thisDetector->nChips*thisDetector->nChans*imod]=myMod->chanregs[ichip*thisDetector->nChans+i];
+							}
 						}
 					}
+
+					if (adcs) {
+						for (int i=0; i<thisDetector->nAdcs; i++)
+							adcs[i+imod*thisDetector->nAdcs]=myMod->adcs[i];
+					}
 				}
+
 				if (dacs) {
 					for (int i=0; i<thisDetector->nDacs; i++)
 						dacs[i+imod*thisDetector->nDacs]=myMod->dacs[i];
 				}
-				if (adcs) {
-					for (int i=0; i<thisDetector->nAdcs; i++)
-						adcs[i+imod*thisDetector->nAdcs]=myMod->adcs[i];
-				}
-
 				(detectorModules+imod)->gain=myMod->gain;
 				(detectorModules+imod)->offset=myMod->offset;
 				(detectorModules+imod)->serialnumber=myMod->serialnumber;

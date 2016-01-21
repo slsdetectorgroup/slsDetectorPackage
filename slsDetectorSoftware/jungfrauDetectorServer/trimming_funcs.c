@@ -155,6 +155,10 @@ int calccal_from_vthr(int vthr) {
 
 int choose_vthresh_and_vtrim(int countlim,  int nsigma, int im) {
   int retval=OK;
+#ifdef JUNGFRAU_DHANYA
+  cprintf(RED,"choose_vthresh_and_vtrim Not implemented for JungFrau\n");//did not want to fix warnings
+#else
+
 #ifdef MCB_FUNCS
   int modma, modmi, nm;
   int thr, thrstep=5, nthr=31;
@@ -316,6 +320,7 @@ int choose_vthresh_and_vtrim(int countlim,  int nsigma, int im) {
   free(thrma);
 
 #endif
+#endif
   return retval;
 }
 
@@ -324,11 +329,14 @@ int choose_vthresh_and_vtrim(int countlim,  int nsigma, int im) {
 
 
 int trim_with_level(int countlim, int im) {
+	  int retval=OK;
+#ifdef JUNGFRAU_DHANYA
+  cprintf(RED,"trim_with_level Not implemented for JungFrau\n"); //did not want to fix warnings
+#else
   int ich, itrim, ichan, ichip, imod;
   u_int32_t *scan;
   int *inttrim;
   int modma, modmi, nm;
-  int retval=OK;
   int *fifodata;
   sls_detector_channel myChan;
   printf("trimming module number %d", im);
@@ -428,6 +436,7 @@ int trim_with_level(int countlim, int im) {
   free(inttrim);
   
 #endif
+#endif
   return retval;
 }
 
@@ -474,6 +483,9 @@ int ave(int *a, int n)
 int choose_vthresh() {
 
   int retval=OK;
+#ifdef JUNGFRAU_DHANYA
+  cprintf(RED,"choose_vthresh Not implemented for JungFrau\n"); //did not want to fix warnings
+#else
 #ifdef MCB_FUNCS
   int imod,  ichan;
   u_int32_t  *scan, *scan1;
@@ -600,6 +612,7 @@ int choose_vthresh() {
     free(scan1);
   }
 #endif
+#endif
   return retval;
 }
 
@@ -611,7 +624,9 @@ int trim_with_median(int stop, int im) {
  
  
   int retval=OK;
-
+#ifdef JUNGFRAU_DHANYA
+  cprintf(RED,"trim_with_median Not implemented for JungFrau\n"); //did not want to fix warnings
+#else
 #ifdef MCB_FUNCS
   int  ichan, imod, ichip, ich;
   u_int32_t  *scan, *scan1;
@@ -744,6 +759,7 @@ int trim_with_median(int stop, int im) {
   }
   free(olddiff);
   free(direction);
+#endif
 #endif
   return retval;
 }

@@ -55,25 +55,33 @@ int initDetector() {
 #ifdef VERBOSE
   printf("Board is for %d modules\n",n);
 #endif
+
   detectorModules=malloc(n*sizeof(sls_detector_module));
+  detectorDacs=malloc(n*NDAC*sizeof(int));
+#ifndef JUNGFRAU_DHANYA
   detectorChips=malloc(n*NCHIP*sizeof(int));
   detectorChans=malloc(n*NCHIP*NCHAN*sizeof(int));
-  detectorDacs=malloc(n*NDAC*sizeof(int));
   detectorAdcs=malloc(n*NADC*sizeof(int));
+#endif
+
 #ifdef VERBOSE
   printf("modules from 0x%x to 0x%x\n",(unsigned int)(detectorModules), (unsigned int)(detectorModules+n));
+  printf("dacs from 0x%x to 0x%x\n",(unsigned int)(detectorDacs), (unsigned int)(detectorDacs+n*NDAC));
+#ifndef JUNGFRAU_DHANYA
   printf("chips from 0x%x to 0x%x\n",(unsigned int)(detectorChips), (unsigned int)(detectorChips+n*NCHIP));
   printf("chans from 0x%x to 0x%x\n",(unsigned int)(detectorChans), (unsigned int)(detectorChans+n*NCHIP*NCHAN));
-  printf("dacs from 0x%x to 0x%x\n",(unsigned int)(detectorDacs), (unsigned int)(detectorDacs+n*NDAC));
   printf("adcs from 0x%x to 0x%x\n",(unsigned int)(detectorAdcs), (unsigned int)(detectorAdcs+n*NADC));
 #endif
-  for (imod=0; imod<n; imod++) {
+#endif
 
- 
+
+  for (imod=0; imod<n; imod++) {
     (detectorModules+imod)->dacs=detectorDacs+imod*NDAC;
+#ifndef JUNGFRAU_DHANYA
     (detectorModules+imod)->adcs=detectorAdcs+imod*NADC;
     (detectorModules+imod)->chipregs=detectorChips+imod*NCHIP;
     (detectorModules+imod)->chanregs=detectorChans+imod*NCHIP*NCHAN;
+#endif
     (detectorModules+imod)->ndac=NDAC;
     (detectorModules+imod)->nadc=NADC;
     (detectorModules+imod)->nchip=NCHIP;
@@ -209,6 +217,7 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
  
   // printf("copying gain and offset %f %f to %f %f\n",srcMod->gain,srcMod->offset,destMod->gain,destMod->offset);
  
+#ifndef JUNGFRAU_DHANYA
   for (ichip=0; ichip<(srcMod->nchip); ichip++) {
     if (*((srcMod->chipregs)+ichip)>=0)
 	*((destMod->chipregs)+ichip)=*((srcMod->chipregs)+ichip);
@@ -217,14 +226,19 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
     if (*((srcMod->chanregs)+ichan)>=0)
 	*((destMod->chanregs)+ichan)=*((srcMod->chanregs)+ichan);
   }
+#endif
+
   for (idac=0; idac<(srcMod->ndac); idac++) {
     if (*((srcMod->dacs)+idac)>=0)
 	*((destMod->dacs)+idac)=*((srcMod->dacs)+idac);
   }
+
+#ifndef JUNGFRAU_DHANYA
   for (iadc=0; iadc<(srcMod->nadc); iadc++) {
     if (*((srcMod->adcs)+iadc)>=0)
 	*((destMod->adcs)+iadc)=*((srcMod->adcs)+iadc);
   }
+#endif
   return ret;
 }
 
@@ -1543,7 +1557,7 @@ int initModulebyNumber(sls_detector_module myMod) {
  // int ow;
  /* int v[NDAC];*/
   int retval =-1, idac;
-printf("111\n");
+
 
   nchip=myMod.nchip;
   nchan=(myMod.nchan)/nchip;
@@ -1597,11 +1611,11 @@ printf("111\n");
   for (idac=0; idac<NDAC; idac++){
 	  retval = setDac(idac,(myMod.dacs)[idac]);
 	  if(retval ==(myMod.dacs)[idac])
-		  cprintf(BLUE,"Setting dac %d to %d\n",idac,retval);
+		  printf("Setting dac %d to %d\n",idac,retval);
 	  else
 		  printf("Error: Could not set dac %d, wrote %d but read %d\n",idac,(myMod.dacs)[idac],retval);
   }
-  printf("before copy\n");
+
   if (detectorModules) {
     for (im=modmi; im<modma; im++) {
 #ifdef VERBOSE
@@ -1610,10 +1624,8 @@ printf("111\n");
       copyModule(detectorModules+im,&myMod);
     }
   }
-  printf("after copy\n");
   //setting the conf gain and the settings register
   setSettings(myMod.reg,imod);
-  printf("after settings\n");
   return thisSettings;
 }
 

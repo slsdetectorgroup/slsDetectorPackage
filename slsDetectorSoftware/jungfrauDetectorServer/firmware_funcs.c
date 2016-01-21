@@ -64,7 +64,11 @@ struct timeval tss,tse,tsss; //for timing
 
 
 //for memory mapping
+#ifdef JUNGFRAU_DHANYA
+u_int32_t CSP0BASE;
+#else
 u_int64_t CSP0BASE;
+#endif
 
 FILE *debugfp, *datafp;
 
@@ -155,8 +159,8 @@ int mapCSP0(void) {
     return FAIL;
   }
 #endif
-  printf("CSPObase is 0x%x \n",CSP0BASE);
-  printf("CSPOBASE=from %08x to %x\n",CSP0BASE,CSP0BASE+MEM_SIZE);
+  printf("CSPObase is 0x%08x \n",CSP0BASE);
+  printf("CSPOBASE=from %08x to %08x\n",CSP0BASE,CSP0BASE+MEM_SIZE);
 
   u_int32_t address;
   address = FIFO_DATA_REG;//_OFF;
@@ -383,7 +387,6 @@ u_int32_t setPllReconfigReg(u_int32_t reg, u_int32_t val, int trig) {
 
 u_int32_t getPllReconfigReg(u_int32_t reg, int trig) {
   
-  int i;
   u_int32_t val=reg<<PLL_CNTR_ADDR_OFF;
   u_int32_t vv;
 
@@ -431,7 +434,7 @@ void configurePll(int i) {
   u_int32_t l=0x0c;
   u_int32_t h=0x0d;
   u_int32_t val;
-  int32_t phase=0, inv=0, ic=0;
+  int32_t phase=0, inv=0;
 
   u_int32_t tot;
   u_int32_t odd=1;//0;
@@ -543,13 +546,10 @@ void configurePll(int i) {
 u_int32_t setClockDivider(int d, int ic) {
 
 
-   u_int32_t l=0x0c;
-   u_int32_t h=0x0d;
-  u_int32_t val;
-  int i;
+   //u_int32_t l=0x0c;
+   //u_int32_t h=0x0d;
 
   u_int32_t tot= PLL_VCO_FREQ_MHZ/d;
-  u_int32_t odd=0;
 
   //	int ic=0  is run clk; ic=1 is adc clk 
   printf("set clk divider %d to %d\n", ic, d);
@@ -581,7 +581,6 @@ u_int32_t setClockDivider(int d, int ic) {
 
 int phaseStep(int st){
   
-  int i;
   if (st>65535 || st<-65535) 
     return clkPhase[0];
 
@@ -1128,14 +1127,19 @@ u_int32_t testFpga(void) {
 // for fpga test 
 u_int32_t testRAM(void) {
   int result=OK;
+#ifdef JUNGFRAU_DHANYA
+  cprintf(RED,"TestRAM not implemented for Jungfrau\n");
+#else
   int i=0;
   allocateRAM();
   //  while(i<100000) {
     memcpy(ram_values, values, dataBytes);
     printf ("Testing RAM:\t%d: copied fifo %x to memory %x size %d\n",i++, (unsigned int)(values), (unsigned int)(ram_values), dataBytes);
     // }
+#endif
   return result;
 }
+
 
 int getNModBoard() {
 #ifdef JUNGFRAU_DHANYA
@@ -1341,11 +1345,15 @@ int64_t getFramesFromStart(){
 
 
 ROI *setROI(int nroi,ROI* arg,int *retvalsize, int *ret) {
+#ifdef JUNGFRAU_DHANYA
+	cprintf(RED,"ROI Not implemented for Jungfrau yet\n");
+	return NULL;
+#else
+
   ROI retval[MAX_ROIS];
   int i, ich;
+  adcDisableMask=0xfffffffff; /**has one f too many?, dhanya*/
 
-  adcDisableMask=0xfffffffff;
-  
   printf("Setting ROI\n");
   if (nroi>=0) {
     if (nroi==0) {
@@ -1398,10 +1406,14 @@ ROI *setROI(int nroi,ROI* arg,int *retvalsize, int *ret) {
    }
    getDynamicRange();
    return retval;
+#endif
 }
 
 
 int loadImage(int index, short int ImageVals[]){
+#ifdef JUNGFRAU_DHANYA
+	cprintf(RED,"loadImage Not implemented for Jungfrau yet\n"); //compiler warnings on 1st argument of memcpy(ptr,ImageVals ,dataBytes);
+#else
 	u_int32_t address;
 	switch (index) {
 	case DARK_IMAGE :
@@ -1421,6 +1433,7 @@ int loadImage(int index, short int ImageVals[]){
 	memcpy(ptr,ImageVals ,dataBytes);
 #ifdef VERBOSE
 	printf("\nLoaded x%08x address with image of index %d\n",(unsigned int)(ptr),index);
+#endif
 #endif
 	return OK;
 }
@@ -1694,7 +1707,7 @@ ip.ip_destip         = destip;
   while (sum>>16) sum = (sum & 0xffff) + (sum >> 16);// Fold 32-bit sum to 16 bits
   checksum = (~sum)&0xffff;
 
-  printf("IP checksum is 0x%x\n",checksum);
+  printf("IP checksum is 0x%lx\n",checksum);
 
 
   bus_w(DETECTORIP_AREG,sourceip);//detectorip_AReg_c
@@ -1718,7 +1731,7 @@ ip.ip_destip         = destip;
   bus_w(CONFIG_REG,conf | GB10_NOT_CPU_BIT);
   printf("System status register is %08x\n",bus_r(SYSTEM_STATUS_REG));
 
-return;
+return 0; //any value doesnt matter - dhanya
 /* } */
 
 /* #ifdef DDEBUG */
@@ -2094,7 +2107,7 @@ u_int16_t* fifo_read_event(int ns)
   int i=0;//, j=0;
 /*   volatile u_int16_t volatile *dum; */
    volatile u_int16_t a;
-   volatile u_int32_t val;
+   /*volatile u_int32_t val;*/
   // volatile u_int32_t volatile *dum;
      //  volatile u_int32_t a;
 
@@ -2337,12 +2350,15 @@ int setDynamicRange(int dr) {
 
 
 int getDynamicRange() {
-  //	dynamicRange=16;
+#ifdef JUNGFRAU_DHANYA
+	dynamicRange=16;
+	return dynamicRange;
+#else
   nSamples=bus_r(NSAMPLES_REG);
   getChannels();
   dataBytes=nModX*NCHIP*getChannels()*2;
   return dynamicRange*bus_r(NSAMPLES_REG);//nSamples;
-
+#endif
 }
 
 int testBus() {
@@ -2418,7 +2434,7 @@ int allocateRAM() {
 
 
     //#ifdef VERBOSE
-      printf("reallocating ram %x, size %d\n",(unsigned int)ram_values, size);
+      printf("reallocating ram %x, size %d\n",(unsigned int)ram_values, (int)size);
     //#endif
     //+2 was added since dma_memcpy would switch the 16 bit values and the mem is 32 bit   
 
@@ -2456,7 +2472,7 @@ int writeADC(int addr, int val) {
 
 
   u_int32_t valw,codata,csmask;              
-  int i,cdx,ddx,j;
+  int i,cdx,ddx;
    cdx=0; ddx=1;
    csmask=0xfc; //  1111100
    
@@ -2503,8 +2519,8 @@ int writeADC(int addr, int val) {
 
 int prepareADC(){
   printf("Preparing ADC\n");
-  u_int32_t valw,codata,csmask;              
-  int i,cdx,ddx,j;
+  u_int32_t codata,csmask;
+  int cdx,ddx;
    cdx=0; ddx=1;
    csmask=0x7c; //  1111100
    
@@ -2563,8 +2579,11 @@ int prepareADC(){
 
     bus_w(ADC_OFFSET_REG,0xbbbbbbbb);
     //   bus_w(ADC_INVERSION_REG,0x1f6170c6);
-
+#ifndef JUNGFRAU_DHANYA
     return;
+#else
+    return OK;
+#endif
 }
 
 
@@ -2993,7 +3012,7 @@ int calibratePedestal(int frames){
 
       int a;
       for (a=0;a<1280; a++){
-	unsigned short v = (frame[a] << 8) + (frame[a] >> 8);
+	//unsigned short v = (frame[a] << 8) + (frame[a] >> 8);
 	//	  printf("%i: %i %i\n",a, frame[a],v);
 	avg[a] += ((double)frame[a])/(double)frames;
 	//if(frame[a] == 8191)
@@ -3020,7 +3039,7 @@ int calibratePedestal(int frames){
 
   
 
-  double nf = (double)numberFrames;
+  //double nf = (double)numberFrames;
   for(i =0; i < 1280; i++){
     adc = i / 256;
     adcCh = (i - adc * 256) / 32;
@@ -3193,7 +3212,6 @@ int setPatternLoop(int level, int *start, int *stop, int *n) {
 
 
 int setPatternWaitAddress(int level, int addr) { 
-  int ret=-1;
   int reg;
 
   switch (level) {
@@ -3222,7 +3240,6 @@ int setPatternWaitAddress(int level, int addr) {
 
 
 uint64_t setPatternWaitTime(int level, uint64_t t) { 
-  uint64_t ret=-1;
   int reglsb;
   int regmsb;
 
@@ -3256,7 +3273,7 @@ void initDac(int dacnum) {
 
   u_int32_t offw,codata;
   u_int16_t valw; 
-  int iru,i,ddx,csdx,cdx;
+  int i,ddx,csdx,cdx;
  
     
 
@@ -3343,8 +3360,7 @@ int setDac(int dacnum,int dacvalue){
 
   u_int32_t offw,codata;
   u_int16_t valw; 
-  int iru,i,ddx,csdx,cdx;
-  int retval;
+  int i,ddx,csdx,cdx;
 
   int dacch=0;
 

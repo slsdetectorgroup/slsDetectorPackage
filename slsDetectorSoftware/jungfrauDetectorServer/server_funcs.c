@@ -59,7 +59,9 @@ int adcvpp=0x4;
 int init_detector(int b, int checkType) {
   
   int i;
+#ifndef JUNGFRAU_DHANYA
   int retvalsize,ret;
+#endif
   if (mapCSP0()==FAIL) { printf("Could not map memory\n");
     exit(1);  
   }
@@ -112,8 +114,7 @@ int init_detector(int b, int checkType) {
   if (b) {
 
 
-    resetPLL();
-
+  resetPLL();
   bus_w16(CONTROL_REG, SYNC_RESET);
   bus_w16(CONTROL_REG, 0);
   bus_w16(CONTROL_REG, GB10_RESET_BIT);
@@ -142,6 +143,71 @@ int init_detector(int b, int checkType) {
 
     initDac(0);    initDac(8); //initializes the two dacs
 
+#ifdef JUNGFRAU_DHANYA
+
+    if(myDetectorType==JUNGFRAU){
+    	//set dacs
+    	int retval = -1;
+    	int dacvalues[14][2]={
+    			{0,	1250},	//vout_cm
+				{10, 	1053},	//vin_com
+				{1, 	600},	//vb_sda
+				{11, 	1000},	//vb_colbuf
+				{2, 	3000},	//vb_test_cur
+				{3, 	830},	//vcascp_pixbuf
+				{4, 	1630},	//vcascn_pixbuf
+				{12, 	750},	//vb_pixbuf
+				{6,	480},	//vref_ds
+				{5,	1000},	//vb_ds
+				{7, 	400},	//vref_comp
+				{13, 1220},	//vb_comp
+				{8, 	1500},	//vref_prech
+				{9, 	3000},	//vdd_prot
+    	};
+    	for(i=0;i<14;++i){
+    		retval=setDac(dacvalues[i][0], dacvalues[i][1]);
+    		if(retval!=dacvalues[i][1])
+    			printf("Error: Setting dac %d failed, wrote %d, read %d\n",dacvalues[i][0],dacvalues[i][1],retval);
+    	}
+
+    	//power on the chips
+    	bus_w(POWER_ON_REG,0x1);
+
+    	//reset adc
+    	writeADC(ADCREG1,0x3); writeADC(ADCREG1,0x0);
+    	writeADC(ADCREG2,0x40);
+    	writeADC(ADCREG3,0xf);
+    	writeADC(ADCREG4,0x3f);
+    	//vrefs - configurable?
+    	writeADC(ADCREG_VREFS,0x2);
+
+
+    	//set ADCINVERSionreg (by trial and error)
+    	bus_w(ADC_INVERSION_REG,0x453b2a9c);
+
+    	//set adc_pipeline
+    	bus_w(ADC_PIPELINE_REG,0x20);
+
+    	//set dbit_pipeline
+    	bus_w(DBIT_PIPELINE_REG,0x100e);
+    	usleep(1000000);//1s
+
+    	//reset mem machine fifos fifos
+    	bus_w(MEM_MACHINE_FIFOS_REG,0x4000);
+    	bus_w(MEM_MACHINE_FIFOS_REG,0x0);
+
+    	//reset run control
+    	bus_w(MEM_MACHINE_FIFOS_REG,0x0400);
+    	bus_w(MEM_MACHINE_FIFOS_REG,0x0);
+
+    	//set default setting
+    	setSettings(DYNAMICGAIN,-1);
+    	cprintf(BLUE,"set to dynamic gain\n");
+    }
+
+#endif
+
+
     //Initialization
     setFrames(-1);
     setTrains(-1);
@@ -155,74 +221,19 @@ int init_detector(int b, int checkType) {
     setSynchronization(GET_SYNCHRONIZATION_MODE);
     startReceiver(0); //firmware
   }
+  else printf("\n\n");
+
   strcpy(mess,"dummy message");
   strcpy(lastClientIP,"none");
   strcpy(thisClientIP,"none1");
   lockStatus=0;
   // getDynamicRange();
+#ifndef JUNGFRAU_DHANYA
   setROI(-1,NULL,&retvalsize,&ret);
-  allocateRAM();
-
-#ifdef JUNGFRAU_DHANYA
-  if(myDetectorType==JUNGFRAU){
-	  //set dacs
-	  int retval = -1;
-	  int dacvalues[14][2]={
-			  {0,	1250},	//vout_cm
-			  {10, 	1053},	//vin_com
-			  {1, 	600},	//vb_sda
-			  {11, 	1000},	//vb_colbuf
-			  {2, 	3000},	//vb_test_cur
-			  {3, 	830},	//vcascp_pixbuf
-			  {4, 	1630},	//vcascn_pixbuf
-			  {12, 	750},	//vb_pixbuf
-			  {6,	480},	//vref_ds
-			  {5,	1000},	//vb_ds
-			  {7, 	400},	//vref_comp
-			  {13, 1220},	//vb_comp
-			  {8, 	1500},	//vref_prech
-			  {9, 	3000},	//vdd_prot
-	  };
-	  for(i=0;i<14;++i){
-		  retval=setDac(dacvalues[i][0], dacvalues[i][1]);
-		  if(retval!=dacvalues[i][1])
-			  printf("Error: Setting dac %d failed, wrote %d, read %d\n",dacvalues[i][0],dacvalues[i][1],retval);
-	  }
-
-	  //power on the chips
-	  bus_w(POWER_ON_REG,0x1);
-
-	  //reset adc
-	  writeADC(ADCREG1,0x3); writeADC(ADCREG1,0x0);
-	  writeADC(ADCREG2,0x40);
-	  writeADC(ADCREG3,0xf);
-	  writeADC(ADCREG4,0x3f);
-	  //vrefs - configurable?
-	  writeADC(ADCREG_VREFS,0x2);
-
-
-	  //set ADCINVERSionreg (by trial and error)
-	  bus_w(ADC_INVERSION_REG,0x453b2a9c);
-
-	  //set adc_pipeline
-	  bus_w(ADC_PIPELINE_REG,0x20);
-
-	  //set dbit_pipeline
-	  bus_w(DBIT_PIPELINE_REG,0x100e);
-	  usleep(1000000);//1s
-
-	  //reset mem machine fifos fifos
-	  bus_w(MEM_MACHINE_FIFOS_REG,0x4000);
-	  bus_w(MEM_MACHINE_FIFOS_REG,0x0);
-
-	  //reset run control
-	  bus_w(MEM_MACHINE_FIFOS_REG,0x0400);
-	  bus_w(MEM_MACHINE_FIFOS_REG,0x0);
-
-	  //set default setting
-	  setSettings(DYNAMICGAIN,-1);
-  }
+  allocateRAM(); //dhanya - already being done.. and all this should be inside if (b){} ??
 #endif
+
+
 
   return OK;
 }
@@ -231,9 +242,9 @@ int init_detector(int b, int checkType) {
 int decode_function(int file_des) {
   int fnum,n;
   int retval=FAIL;
-//#ifdef VERBOSE
+#ifdef VERBOSE
   printf( "receive data\n");
-//#endif
+#endif
   n = receiveDataOnly(file_des,&fnum,sizeof(fnum));
   if (n <= 0) {
 #ifdef VERBOSE
@@ -246,15 +257,14 @@ int decode_function(int file_des) {
     printf("size of data received %d\n",n);
 #endif
 
-  //#ifdef VERBOSE
+#ifdef VERBOSE
   printf( "calling function fnum = %d %x %x %x\n",fnum,(unsigned int)(flist[fnum]), (unsigned int)(flist[F_READ_REGISTER]),(unsigned int)(&read_register));
-  //#endif
+#endif
   if (fnum<0 || fnum>255)
     fnum=255;
   retval=(*flist[fnum])(file_des);
   if (retval==FAIL)
     printf( "Error executing the function = %d \n",fnum);
-  printf("retval:%d\n",retval);
   return retval;
 }
 
@@ -1027,7 +1037,6 @@ int set_dac(int file_des) {
 	int imod;
 	int n;
 	int val;
-	int idac=0;
 	int mV=0;
 	sprintf(mess,"Can't set DAC\n");
 
@@ -1497,15 +1506,17 @@ int get_chip(int file_des) {
 }
 int set_module(int file_des) {
   sls_detector_module myModule;
+  int *myDac=malloc(NDAC*sizeof(int));
+#ifndef JUNGFRAU_DHANYA
   int *myChip=malloc(NCHIP*sizeof(int));
   int *myChan=malloc(NCHIP*NCHAN*sizeof(int));
-  int *myDac=malloc(NDAC*sizeof(int));
   int *myAdc=malloc(NADC*sizeof(int));
+#endif
   int retval, n;
   int ret=OK;
   int dr;// ow;
 
-  dr=setDynamicRange(-1);  cprintf(BLUE,"drr:%d\n",dr);
+  dr=setDynamicRange(-1);
 
   if (myDac)
     myModule.dacs=myDac;
@@ -1513,6 +1524,8 @@ int set_module(int file_des) {
     sprintf(mess,"could not allocate dacs\n");
     ret=FAIL;
   }
+
+#ifndef JUNGFRAU_DHANYA
   if (myAdc)
     myModule.adcs=myAdc;
   else {
@@ -1531,6 +1544,12 @@ int set_module(int file_des) {
     sprintf(mess,"could not allocate chans\n");
     ret=FAIL;
   }
+#else
+  myModule.adcs=NULL;
+  myModule.chipregs=NULL;
+  myModule.chanregs=NULL;
+#endif
+
   myModule.ndac=NDAC;
   myModule.nchip=NCHIP;
   myModule.nchan=NCHAN*NCHIP;
@@ -1588,10 +1607,16 @@ int set_module(int file_des) {
   } else {
     n += sendDataOnly(file_des,mess,sizeof(mess));
   }
+
+  free(myDac);
+#ifndef JUNGFRAU_DHANYA
   free(myChip);
   free(myChan);
-  free(myDac);
   free(myAdc);
+#endif
+
+
+
 
   //  setDynamicRange(dr);  always 16 commented out
 printf("freed\n");
@@ -1615,11 +1640,12 @@ int get_module(int file_des) {
   
 
   sls_detector_module myModule;
+  int *myDac=malloc(NDAC*sizeof(int));
+#ifndef JUNGFRAU_DHANYA
   int *myChip=malloc(NCHIP*sizeof(int));
   int *myChan=malloc(NCHIP*NCHAN*sizeof(int));
-  int *myDac=malloc(NDAC*sizeof(int));/**dhanya*/
-  int *myAdc=malloc(NADC*sizeof(int));/**dhanya*/
-
+  int *myAdc=malloc(NADC*sizeof(int));
+#endif
 
   if (myDac)
     myModule.dacs=myDac;
@@ -1627,6 +1653,8 @@ int get_module(int file_des) {
     sprintf(mess,"could not allocate dacs\n");
     ret=FAIL;
   }
+
+#ifndef JUNGFRAU_DHANYA
   if (myAdc)
     myModule.adcs=myAdc;
   else {
@@ -1645,7 +1673,11 @@ int get_module(int file_des) {
     sprintf(mess,"could not allocate chans\n");
     ret=FAIL;
   }
-
+#else
+  myModule.adcs=NULL;
+  myModule.chipregs=NULL;
+  myModule.chanregs=NULL;
+#endif
   myModule.ndac=NDAC;
   myModule.nchip=NCHIP;
   myModule.nchan=NCHAN*NCHIP;
@@ -1690,13 +1722,12 @@ int get_module(int file_des) {
     n += sendDataOnly(file_des,mess,sizeof(mess));
   }
 
-  
-
+  free(myDac);
+#ifndef JUNGFRAU_DHANYA
   free(myChip);
   free(myChan);
-  free(myDac);
   free(myAdc);
-
+#endif
 
   /*return ok/fail*/
   return ret; 
@@ -2019,7 +2050,6 @@ int get_run_status(int file_des) {
 int read_frame(int file_des) {
 
 
-  int ns=0;
   u_int16_t* p=NULL;
 
 
@@ -2410,7 +2440,6 @@ int set_roi(int file_des) {
 	int retvalsize=0;
 	ROI arg[MAX_ROIS];
 	ROI* retval=0;
-	int iroi;
 	strcpy(mess,"Could not set/get roi\n");
 
 
@@ -2423,12 +2452,20 @@ int set_roi(int file_des) {
 		ret=FAIL;
 	}
 
+#ifdef JUNGFRAU_DHANYA
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
+	printf("Error:Set ROI-%s",mess);
+#else
+
+
 	if(nroi>=0){
 		n = receiveDataOnly(file_des,arg,nroi*sizeof(ROI));
 		if (n != (nroi*sizeof(ROI))) {
 			sprintf(mess,"Received wrong number of bytes for ROI\n");
 			ret=FAIL;
 		}
+
 //#ifdef VERBOSE
 		
 		printf("Setting ROI to:");
@@ -2459,7 +2496,7 @@ int set_roi(int file_des) {
 			sprintf(mess,"Could not set all roi, should have set %d rois, but only set %d rois\n",nroi,retvalsize);
 		}
 	}
-
+#endif
 
 	if(ret==OK && differentClients){
 		printf("Force update\n");
@@ -2612,7 +2649,6 @@ int set_speed(int file_des) {
 int set_readout_flags(int file_des) {
 
   enum readOutFlags arg;
-  int n;
   int ret=FAIL;
   
 
@@ -3441,7 +3477,6 @@ int write_adc_register(int file_des) {
   int arg[2]; 
   int addr, val;
   int n;
-  u_int32_t address;
 
   sprintf(mess,"Can't write to register\n");
 

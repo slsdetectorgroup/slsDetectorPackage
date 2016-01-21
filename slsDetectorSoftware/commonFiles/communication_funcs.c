@@ -421,9 +421,11 @@ int sendModule(int file_des, sls_detector_module *myMod) {
   ts+=sendData(file_des,&(myMod->nadc),sizeof(myMod->nadc),INT32);
   ts+=sendData(file_des,&(myMod->reg),sizeof(myMod->reg),INT32);
   ts+=sendData(file_des,myMod->dacs,sizeof(myMod->ndac),OTHER);
+#ifndef JUNGFRAU_DHANYA
   ts+=sendData(file_des,myMod->adcs,sizeof(myMod->nadc),OTHER);
   ts+=sendData(file_des,myMod->chipregs,sizeof(myMod->nchip),OTHER);
   ts+=sendData(file_des,myMod->chanregs,sizeof(myMod->nchan),OTHER);
+#endif
   ts+=sendData(file_des,&(myMod->gain), sizeof(myMod->gain),OTHER);
   ts+=sendData(file_des,&(myMod->offset), sizeof(myMod->offset),OTHER);
 
@@ -436,6 +438,8 @@ int sendModule(int file_des, sls_detector_module *myMod) {
   for (idac=0; idac< nDacs; idac++) 
     printf("dac %d is %d\n",idac,(int)myMod->dacs[idac]);
 #endif
+
+#ifndef JUNGFRAU_DHANYA
   ts+= sendData(file_des,myMod->adcs,sizeof(dacs_t)*nAdcs,INT32);
 #ifdef VERBOSE
   printf("adcs %d of size %d sent\n",myMod->module, ts);
@@ -448,6 +452,8 @@ int sendModule(int file_des, sls_detector_module *myMod) {
 #ifdef VERBOSE
   printf("chans %d of size %d sent - %d\n",myMod->module, ts, myMod->nchan);
 #endif
+#endif
+
 #ifdef VERBOSE
   printf("module %d of size %d sent register %x\n",myMod->module, ts, myMod->reg);
 #endif
@@ -508,12 +514,10 @@ int receiveChip(int file_des, sls_detector_chip* myChip) {
 }
 
 int  receiveModule(int file_des, sls_detector_module* myMod) {
-
- 
+  int ts=0;
   dacs_t *dacptr=myMod->dacs;
   dacs_t *adcptr=myMod->adcs;
   int *chipptr=myMod->chipregs, *chanptr=myMod->chanregs;
-  int ts=0;
   int nChips, nchipold=myMod->nchip, nchipdiff;
   int nChans, nchanold=myMod->nchan, nchandiff;
   int nDacs, ndold=myMod->ndac, ndacdiff;
@@ -530,17 +534,19 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
   ts+=receiveData(file_des,&(myMod->nadc),sizeof(myMod->nadc),INT32);
   ts+=receiveData(file_des,&(myMod->reg),sizeof(myMod->reg),INT32);
   ts+=receiveData(file_des,myMod->dacs,sizeof(myMod->ndac),INT32);
+#ifndef JUNGFRAU_DHANYA
   ts+=receiveData(file_des,myMod->adcs,sizeof(myMod->nadc),INT32);
   ts+=receiveData(file_des,myMod->chipregs,sizeof(myMod->nchip),INT32);
   ts+=receiveData(file_des,myMod->chanregs,sizeof(myMod->nchan),INT32);
+#endif
   ts+=receiveData(file_des,&(myMod->gain), sizeof(myMod->gain),OTHER);
   ts+=receiveData(file_des,&(myMod->offset), sizeof(myMod->offset),OTHER);
-printf(RED,"ts:%d\n",ts);
+
   myMod->dacs=dacptr;
   myMod->adcs=adcptr;
   myMod->chipregs=chipptr;
   myMod->chanregs=chanptr;
-    
+
   nChips=myMod->nchip;
   nchipdiff=nChips-nchipold;
   if (nchipold!=nChips) {
@@ -585,6 +591,7 @@ printf(RED,"ts:%d\n",ts);
     ts+=receiveData(file_des,myMod->dacs, sizeof(dacs_t)*nDacs,INT32);
 #ifdef VERBOSE
     printf("dacs received\n");
+    int id;
     for (id=0; id<nDacs; id++)
       printf("dac %d val %d\n",id,  (int)myMod->dacs[id]);
 
@@ -599,9 +606,10 @@ printf(RED,"ts:%d\n",ts);
     return FAIL;
   }
 
+#ifndef JUNGFRAU_DHANYA
   if (nadcdiff<=0) {
     ts+=receiveData(file_des,myMod->adcs, sizeof(dacs_t)*nAdcs,INT32);
-#ifdef VERBOSE 
+#ifdef VERBOSE
     printf("adcs received\n");
 #endif
   } else {
@@ -615,7 +623,7 @@ printf(RED,"ts:%d\n",ts);
 
   if (nchipdiff<=0) {
     ts+=receiveData(file_des,myMod->chipregs, sizeof(int)*nChips,INT32);
-#ifdef VERBOSE 
+#ifdef VERBOSE
     printf("chips received\n");
 #endif
   } else {
@@ -629,7 +637,7 @@ printf(RED,"ts:%d\n",ts);
 
   if (nchandiff<=0) {
     ts+=receiveData(file_des,myMod->chanregs, sizeof(int)*nChans,INT32);
-#ifdef VERBOSE 
+#ifdef VERBOSE
     printf("chans received\n");
 #endif
   } else {
@@ -640,8 +648,10 @@ printf(RED,"ts:%d\n",ts);
     free(chanptr);
     return FAIL;
   }
+#endif
 #ifdef VERBOSE
   printf("received module %d of size %d register %x\n",myMod->module,ts,myMod->reg);
 #endif
+
   return ts;
 }

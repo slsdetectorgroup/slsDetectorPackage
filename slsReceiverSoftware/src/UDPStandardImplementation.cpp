@@ -1568,7 +1568,6 @@ void UDPStandardImplementation::startListening(){
 
 int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int lSize, int cSize, char* temp){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
-	int testbit = 0;
 
 	//listen to UDP packets
 	if(cSize)
@@ -1580,9 +1579,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int lSize, in
 	while(status != TRANSMITTING && myDetectorType == EIGER && receivedSize != onePacketSize) {
 		if(receivedSize != EIGER_HEADER_LENGTH){
 			cprintf(RED,"Listening_Thread %d: Listened to a weird packet size %d\n",ithread, receivedSize);
-		}/*else{
-			testbit = 1;
-		}*/
+		}
 #ifdef DEBUG
 		else
 			cprintf(BLUE,"Listening_Thread %d: Listened to a header packet\n",ithread);
@@ -1590,11 +1587,6 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int lSize, in
 		receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS);
 	}
 	totalListeningFrameCount[ithread] += (receivedSize/onePacketSize);
-	/*if(testbit == 1){
-		testbit = 0;
-		eiger_packet_footer_t* footer = (eiger_packet_footer_t*)(buffer[ithread] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
-		cprintf(CYAN,"Listening_Thread %d: fnum:%d\n",ithread,(uint32_t)(*( (uint64_t*) footer)));
-	}*/
 
 #ifdef MANUALDEBUG
 	eiger_packet_header_t* header = (eiger_packet_header_t*) (buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS);
@@ -2099,7 +2091,7 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 						numberofMissingPackets[i] = (LAST_PACKET_VALUE - lastPacketNumber[i]);
 					else
 						numberofMissingPackets[i] = (currentPacketNumber[i] - lastPacketNumber[i] - 1);
-
+					numMissingPackets += numberofMissingPackets[i];
 
 #ifdef DEBUG4
 					if(numPackets[i] == dummyPacketValue)
@@ -2118,7 +2110,6 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 					for(int j=0;j<numberofMissingPackets[i];++j){
 
 						blankoffset = frameBufferoffset[i];
-						//cout<<"blank offset:"<<blankoffset<<endl;
 						frameBuffer[frameBufferoffset[i]] = blankframe[blankoffset];
 						eiger_packet_header_t* frameBuffer_header = (eiger_packet_header_t*) frameBuffer[frameBufferoffset[i]];
 						if (*( (uint16_t*) frameBuffer_header->missingPacket)!= missingPacketValue){
@@ -2137,10 +2128,10 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 									*( (uint16_t*) frameBuffer_header->missingPacket));
 #endif
 							frameBufferoffset[i]=frameBufferoffset[i]+1;
-							//blankoffset++;
 						}
 					}
 
+					//missed packets/future packet: do not pop over and determine fullframe--------------------
 					popReady[i] = false;
 					if((numPackets[i] == dummyPacketValue) ||(threadFrameNumber[i] != presentFrameNumber))
 						fullframe[i] = true;
@@ -2149,24 +2140,8 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 					if(threadFrameNumber[i] != presentFrameNumber)
 						threadFrameNumber[i] = presentFrameNumber;
 
-					//missed packets/future packet: do not pop over and determine fullframe--------------------
-					if(numberofMissingPackets[i]){
-						//popReady[i] = false;
-						//if((numPackets[i] == dummyPacketValue) ||(threadFrameNumber[i] != presentFrameNumber))
-						//	fullframe[i] = true;
-						//else{
-						//	fullframe[i] = false;
-							//update last packet
-							//lastPacketNumber[i] = currentPacketNumber[i] - 1;
-						//}
-						//if(threadFrameNumber[i] != presentFrameNumber)
-						//	threadFrameNumber[i] = presentFrameNumber;
-						numMissingPackets += numberofMissingPackets[i];
-					}
-
 
 					//add current packet--------------------------------------------------------------
-
 					if(fullframe[i] == false){
 						if(currentPacketNumber[i] != (uint32_t)(frameBufferoffset[i]-(i*packetsPerFrame/numberofListeningThreads))+1){
 							cprintf(BG_RED, "Fifo %d: Correct Packet Offset Error: "
@@ -2545,11 +2520,11 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 
 
 	//copy frame for gui
-	/*if(npackets >= packetsPerFrame)
+	if(npackets >= packetsPerFrame)
 		copyFrameToGui(wbuffer);
 #ifdef DEBUG4
 	cprintf(GREEN,"Writing_Thread: Copied frame\n");
-#endif*/
+#endif
 
 
 	//free fifo addresses (eiger frees for each packet later)
@@ -2708,8 +2683,8 @@ void UDPStandardImplementation::createHeaders(char* wbuffer[]){
 			}
 
 			//add frame number
-			/**( (uint64_t*) wbuf_footer) = (currentFrameNumber+1) | (((uint64_t)(*( (uint16_t*) wbuf_footer->packetNumber)))<<0x30);*/
-			//*( (uint16_t*) wbuf_footer->packetNumber) = (i+1);
+			( (uint64_t*) wbuf_footer) = (currentFrameNumber+1) | (((uint64_t)(*( (uint16_t*) wbuf_footer->packetNumber)))<<0x30);
+			//*( (uint16_t*) wbuf_footer->packetNumber) = (i+1); // missing frames already have the right packet number
 #ifdef DEBUG4
 			cprintf(RED, "Missing Packet Loop index:%d fnum:%d Pnum:%d\n",i,
 					(uint32_t)(*( (uint64_t*) wbuf_footer)),
@@ -2731,13 +2706,17 @@ void UDPStandardImplementation::createHeaders(char* wbuffer[]){
 				exitVal =1;
 			}
 
-			/*uint16_t p = *( (uint16_t*) wbuf_footer->packetNumber);
+			uint16_t p = *( (uint16_t*) wbuf_footer->packetNumber);
 			//correct the packet numbers of port2 so that port1 and 2 are not the same
-			if(port)  *( (uint16_t*) wbuf_footer->packetNumber) = (p +(packetsPerFrame/2));*/
+			if(port)  *( (uint16_t*) wbuf_footer->packetNumber) = (p +(packetsPerFrame/2));
 
 		}
 
-		/*//DEBUGGING
+		//overwriting port number and dynamic range
+		( (uint8_t*) wbuf_header->portIndex) = (uint8_t)port;
+		*( (uint8_t*) wbuf_header->dynamicRange) = (uint8_t)dynamicRange;
+
+		//DEBUGGING
 		if(*( (uint16_t*) wbuf_footer->packetNumber) != (i+1)){
 			cprintf(BG_RED, "Writing_Thread: Packet Number Mismatch! "
 					"i %d, real pnum %d, real fnum %d, missingPacket 0x%x\n",
@@ -2746,10 +2725,7 @@ void UDPStandardImplementation::createHeaders(char* wbuffer[]){
 					(uint32_t)(*( (uint64_t*) wbuf_footer)),
 					*( (uint16_t*) wbuf_header->missingPacket));
 			exitVal =1;
-		}*/
-		//overwriting port number and dynamic range
-		/**( (uint8_t*) wbuf_header->portIndex) = (uint8_t)port;
-		*( (uint8_t*) wbuf_header->dynamicRange) = (uint8_t)dynamicRange;*/
+		}
 	}
 
 	if(exitVal){exit(-1);}

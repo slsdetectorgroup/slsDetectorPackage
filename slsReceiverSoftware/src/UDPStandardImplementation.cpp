@@ -2683,7 +2683,7 @@ void UDPStandardImplementation::createHeaders(char* wbuffer[]){
 			}
 
 			//add frame number
-			( (uint64_t*) wbuf_footer) = (currentFrameNumber+1) | (((uint64_t)(*( (uint16_t*) wbuf_footer->packetNumber)))<<0x30);
+			*( (uint64_t*) wbuf_footer) = (currentFrameNumber+1) | (((uint64_t)(*( (uint16_t*) wbuf_footer->packetNumber)))<<0x30);
 			//*( (uint16_t*) wbuf_footer->packetNumber) = (i+1); // missing frames already have the right packet number
 #ifdef DEBUG4
 			cprintf(RED, "Missing Packet Loop index:%d fnum:%d Pnum:%d\n",i,
@@ -2713,7 +2713,7 @@ void UDPStandardImplementation::createHeaders(char* wbuffer[]){
 		}
 
 		//overwriting port number and dynamic range
-		( (uint8_t*) wbuf_header->portIndex) = (uint8_t)port;
+		*( (uint8_t*) wbuf_header->portIndex) = (uint8_t)port;
 		*( (uint8_t*) wbuf_header->dynamicRange) = (uint8_t)dynamicRange;
 
 		//DEBUGGING

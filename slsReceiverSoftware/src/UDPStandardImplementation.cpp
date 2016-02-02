@@ -861,8 +861,8 @@ int UDPStandardImplementation::startReceiver(char *c){
 	for(int i=0;i<numberofListeningThreads;i++)		sem_post(&listenSemaphore[i]);
 	for(int i=0; i < numberofWriterThreads; i++)	sem_post(&writerSemaphore[i]);
 
-	cout << "Receiver Started" << endl;
-	cout << "Status: " << runStatusType(status) << endl;
+	FILE_LOG(logINFO)  << "Receiver Started";
+	FILE_LOG(logINFO)  << "Status: " << runStatusType(status);
 
 	return OK;
 }
@@ -894,8 +894,8 @@ void UDPStandardImplementation::stopReceiver(){
 	status = IDLE;
 	pthread_mutex_unlock(&(statusMutex));
 
-	cout << "Receiver Stopped" << endl;
-	cout << "Status: " << runStatusType(status) << endl;
+	FILE_LOG(logINFO)  << "Receiver Stopped";
+	FILE_LOG(logINFO)  << "Status: " << runStatusType(status);
 	cout << endl << endl;
 }
 
@@ -911,7 +911,7 @@ int UDPStandardImplementation::shutDownUDPSockets(){
 	for(int i=0;i<numberofListeningThreads;i++){
 		if(udpSocket[i]){
 			udpSocket[i]->ShutDownSocket();
-			FILE_LOG(logINFO) << "Info: Shut down UDP Socket " << i << endl;
+			FILE_LOG(logINFO) << "Shut down UDP Socket " << i;
 			delete udpSocket[i];
 			udpSocket[i] = NULL;
 		}
@@ -929,7 +929,7 @@ int UDPStandardImplementation::shutDownUDPSockets(){
 void UDPStandardImplementation::startReadout(){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
-	FILE_LOG(logDEBUG) << "Info: Transmitting last data";
+	FILE_LOG(logDEBUG) << "Transmitting last data";
 
 	if(status == RUNNING){
 
@@ -944,9 +944,9 @@ void UDPStandardImplementation::startReadout(){
 			prev = -1;
 			//wait as long as there is change from prev totalP
 			while(prev != totalP){
-//#ifdef DEBUG5
+#ifdef DEBUG5
 				cprintf(MAGENTA,"waiting for all packets totalP:%d\n",totalP);
-//#endif
+#endif
 
 				usleep(5000);/* Need to find optimal time (exposure time and acquisition period) **/
 				prev = totalP;
@@ -963,7 +963,8 @@ void UDPStandardImplementation::startReadout(){
 		pthread_mutex_lock(&statusMutex);
 		status = TRANSMITTING;
 		pthread_mutex_unlock(&statusMutex);
-		cout << "Status: Transmitting" << endl;
+
+		FILE_LOG(logINFO) << "Status: Transmitting";
 	}
 
 	//shut down udp sockets and make listeners push dummy (end) packets for writers
@@ -1658,9 +1659,9 @@ void UDPStandardImplementation::startFrameIndices(int ithread){
 void UDPStandardImplementation::stopListening(int ithread, int numbytes){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
-//#ifdef DEBUG4
-	cprintf(BG_RED,"Listening_Thread %d: Stop Listening\nStatus: %s numbytes:%d\n", ithread, runStatusType(status).c_str(),numbytes);
-//#endif
+#ifdef DEBUG4
+	cprintf(BLUE,"Listening_Thread %d: Stop Listening\nStatus: %s numbytes:%d\n", ithread, runStatusType(status).c_str(),numbytes);
+#endif
 
 	//less than 1 packet size (especially for eiger), ignore the buffer (so that 2 dummy buffers are not sent with pc=0)
 	if(numbytes < onePacketSize)
@@ -1669,7 +1670,7 @@ void UDPStandardImplementation::stopListening(int ithread, int numbytes){
 
 	//free empty buffer
 	if(numbytes <= 0){
-		cprintf(BLUE,"Listening_Thread %d :End of Acquisition\n", ithread);
+		FILE_LOG(logINFO) << "Listening "<< ithread << ": End of Acquisition";
 		while(!fifoFree[ithread]->push(buffer[ithread]));
 #ifdef EVERYFIFODEBUG
 		if(fifoFree[ithread]->getSemValue()<100)
@@ -1688,10 +1689,10 @@ void UDPStandardImplementation::stopListening(int ithread, int numbytes){
 	else{
 		(*((uint32_t*)(buffer[ithread]))) = numbytes/onePacketSize;
 		totalListeningFrameCount[ithread] += (numbytes/onePacketSize);
-//#ifdef DEBUG
+#ifdef DEBUG
 		cprintf(BLUE,"Listening_Thread %d: Last Buffer numBytes:%d\n",ithread, numbytes);
 		cprintf(BLUE,"Listening_Thread %d: Last Buffer packet count:%d\n",ithread, numbytes/onePacketSize);
-//#endif
+#endif
 		while(!fifo[ithread]->push(buffer[ithread]));
 #ifdef EVERYFIFODEBUG
 		if(fifo[ithread]->getSemValue()>(fifoSize-100))
@@ -2035,27 +2036,6 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 		//until mask unset (udp sockets shut down by client)
 		while((1 << ithread) & writerThreadsMask){
 
-			/*
-			for(int iloop=0;iloop<frameBufferoffset[0];iloop++){
-				eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(frameBuffer[iloop] + footerOffset);eiger_packet_header_t* wbuf_header = (eiger_packet_header_t*) frameBuffer[iloop];
-				cprintf(BLUE,"pnum of %d:%d fnum:%d mbuffer:0x%x fbuffer:0x%p\n",
-						iloop, *( (uint16_t*) wbuf_footer->packetNumber),
-						(uint32_t)(*( (uint64_t*) wbuf_footer)),
-						*( (uint16_t*) wbuf_header->missingPacket),
-						(void*)frameBuffer[iloop]);
-				cout<<flush;
-			}
-			for(int iloop=64;iloop<frameBufferoffset[1];iloop++){
-				eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(frameBuffer[iloop] + footerOffset);eiger_packet_header_t* wbuf_header = (eiger_packet_header_t*) frameBuffer[iloop];
-				cprintf(BLUE,"pnum of %d:%d fnum:%d mbuffer:0x%x fbuffer:0x%p\n",
-						iloop, *( (uint16_t*) wbuf_footer->packetNumber),
-						(uint32_t)(*( (uint64_t*) wbuf_footer)),
-						*( (uint16_t*) wbuf_header->missingPacket),
-						(void*)frameBuffer[iloop]);
-				cout<<flush;
-			}
-*/
-
 
 			//pop fifo and if end of acquisition
 			//cprintf(BLUE,"popready[0]:%d popready[1]:%d\n",popReady[0],popReady[1]);
@@ -2073,25 +2053,6 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 #ifdef DEBUG4
 			else{cprintf(BLUE,"POPped but i see?\n");}
 #endif
-			/*
-			for(int iloop=0;iloop<frameBufferoffset[0];iloop++){
-				eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(frameBuffer[iloop] + footerOffset);eiger_packet_header_t* wbuf_header = (eiger_packet_header_t*) frameBuffer[iloop];
-				cprintf(BLUE,"after pop:pnum of %d:%d fnum:%d mbuffer:0x%x\n",
-						iloop, *( (uint16_t*) wbuf_footer->packetNumber),
-						(uint32_t)(*( (uint64_t*) wbuf_footer)),
-						*( (uint16_t*) wbuf_header->missingPacket));
-				cout<<flush;
-			}
-			for(int iloop=64;iloop<frameBufferoffset[1];iloop++){
-				eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(frameBuffer[iloop] + footerOffset);eiger_packet_header_t* wbuf_header = (eiger_packet_header_t*) frameBuffer[iloop];
-				cprintf(BLUE,"after pop:pnum of %d:%d fnum:%d mbuffer:0x%x\n",
-						iloop, *( (uint16_t*) wbuf_footer->packetNumber),
-						(uint32_t)(*( (uint64_t*) wbuf_footer)),
-						*( (uint16_t*) wbuf_header->missingPacket));
-				cout<<flush;
-			}
-*/
-
 
 			//get a full frame-------------------------------------------------------------------------------------------------------
 			for(int i=0;i<numberofListeningThreads;++i){
@@ -2139,25 +2100,6 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 					else
 						numberofMissingPackets[i] = (currentPacketNumber[i] - lastPacketNumber[i] - 1);
 
-					/*if(!i){
-					for(int iloop=0;iloop<frameBufferoffset[0];iloop++){
-						eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(frameBuffer[iloop] + footerOffset);eiger_packet_header_t* wbuf_header = (eiger_packet_header_t*) frameBuffer[iloop];
-						cprintf(BLUE,"before calc print:pnum of %d:%d fnum:%d mbuffer:0x%x\n",
-						iloop, *( (uint16_t*) wbuf_footer->packetNumber),
-						(uint32_t)(*( (uint64_t*) wbuf_footer)),
-						*( (uint16_t*) wbuf_header->missingPacket));
-						cout<<flush;
-					}
-					}else{
-					for(int iloop=64;iloop<frameBufferoffset[1];iloop++){
-						eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(frameBuffer[iloop] + footerOffset);eiger_packet_header_t* wbuf_header = (eiger_packet_header_t*) frameBuffer[iloop];
-						cprintf(BLUE,"before calc print:pnum of %d:%d fnum:%d mbuffer:0x%x\n",
-						iloop, *( (uint16_t*) wbuf_footer->packetNumber),
-						(uint32_t)(*( (uint64_t*) wbuf_footer)),
-						*( (uint16_t*) wbuf_header->missingPacket));
-						cout<<flush;
-					}
-					}*/
 
 #ifdef DEBUG4
 					if(numPackets[i] == dummyPacketValue)
@@ -2170,25 +2112,7 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 								currentPacketNumber[i],lastPacketNumber[i],frameBufferoffset[i],numberofMissingPackets[i]);
 					}
 #endif
-					/*if(!i){
-					for(int iloop=0;iloop<frameBufferoffset[0];iloop++){
-						eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(frameBuffer[iloop] + footerOffset);eiger_packet_header_t* wbuf_header = (eiger_packet_header_t*) frameBuffer[iloop];
-						cprintf(BLUE,"before missing:pnum of %d:%d fnum:%d mbuffer:0x%x\n",
-						iloop, *( (uint16_t*) wbuf_footer->packetNumber),
-						(uint32_t)(*( (uint64_t*) wbuf_footer)),
-						*( (uint16_t*) wbuf_header->missingPacket));
-						cout<<flush;
-					}
-					}else{
-					for(int iloop=64;iloop<frameBufferoffset[1];iloop++){
-						eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(frameBuffer[iloop] + footerOffset);eiger_packet_header_t* wbuf_header = (eiger_packet_header_t*) frameBuffer[iloop];
-						cprintf(BLUE,"before missing:pnum of %d:%d fnum:%d mbuffer:0x%x\n",
-						iloop, *( (uint16_t*) wbuf_footer->packetNumber),
-						(uint32_t)(*( (uint64_t*) wbuf_footer)),
-						*( (uint16_t*) wbuf_header->missingPacket));
-						cout<<flush;
-					}
-					}*/
+
 
 					//add missing packets---------------------------------------------------------------------
 					for(int j=0;j<numberofMissingPackets[i];++j){
@@ -2239,25 +2163,7 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 						//	threadFrameNumber[i] = presentFrameNumber;
 						numMissingPackets += numberofMissingPackets[i];
 					}
-					/*if(!i){
-					for(int iloop=0;iloop<frameBufferoffset[0];iloop++){
-						eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(frameBuffer[iloop] + footerOffset);eiger_packet_header_t* wbuf_header = (eiger_packet_header_t*) frameBuffer[iloop];
-						cprintf(BLUE,"after missing: pnum of %d:%d fnum:%d mbuffer:0x%x\n",
-						iloop, *( (uint16_t*) wbuf_footer->packetNumber),
-						(uint32_t)(*( (uint64_t*) wbuf_footer)),
-						*( (uint16_t*) wbuf_header->missingPacket));
-						cout<<flush;
-					}
-					}else{
-					for(int iloop=64;iloop<frameBufferoffset[1];iloop++){
-						eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(frameBuffer[iloop] + footerOffset);eiger_packet_header_t* wbuf_header = (eiger_packet_header_t*) frameBuffer[iloop];
-						cprintf(BLUE,"after missing: pnum of %d:%d fnum:%d mbuffer:0x%x\n",
-						iloop, *( (uint16_t*) wbuf_footer->packetNumber),
-						(uint32_t)(*( (uint64_t*) wbuf_footer)),
-						*( (uint16_t*) wbuf_header->missingPacket));
-						cout<<flush;
-					}
-					}*/
+
 
 					//add current packet--------------------------------------------------------------
 
@@ -2304,22 +2210,6 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 				}//end of if(!fullframe)
 			}//end of for listening threads
 
-			/*for(int iloop=0;iloop<frameBufferoffset[0];iloop++){
-				eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(frameBuffer[iloop] + footerOffset);eiger_packet_header_t* wbuf_header = (eiger_packet_header_t*) frameBuffer[iloop];
-				cprintf(BLUE,"after current:pnum of %d:%d fnum:%d mbuffer:0x%x\n",
-						iloop, *( (uint16_t*) wbuf_footer->packetNumber),
-						(uint32_t)(*( (uint64_t*) wbuf_footer)),
-						*( (uint16_t*) wbuf_header->missingPacket));
-				cout<<flush;
-			}
-			for(int iloop=64;iloop<frameBufferoffset[1];iloop++){
-				eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(frameBuffer[iloop] + footerOffset);eiger_packet_header_t* wbuf_header = (eiger_packet_header_t*) frameBuffer[iloop];
-				cprintf(BLUE,"after current:pnum of %d:%d fnum:%d mbuffer:0x%x\n",
-						iloop, *( (uint16_t*) wbuf_footer->packetNumber),
-						(uint32_t)(*( (uint64_t*) wbuf_footer)),
-						*( (uint16_t*) wbuf_header->missingPacket));
-				cout<<flush;
-			}*/
 
 			//full frame
 			if(fullframe[0] && fullframe[1]){
@@ -2327,14 +2217,18 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 				numTotMissingPacketsInFile += numMissingPackets;
 				numTotMissingPackets += numMissingPackets;
 
-
-				cprintf(GREEN,"**framenum:%lld\n ",(long long int)currentFrameNumber);
+/*
+				cprintf(CYAN,"**framenum:%lld\n ",(long long int)currentFrameNumber);
+				if(currentFrameNumber>500){
+					cprintf(BG_RED,"too high frame number %lld \n",(long long int)currentFrameNumber );
+					exit(-1);
+				}
 				for(int i=0;i<numberofListeningThreads;i++){
 					eiger_packet_footer_t* wbuf_footer1 = (eiger_packet_footer_t*)(packetBuffer[i] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
 					cprintf(GREEN,"Fifo %d:End of loop popready %d, threadfnum:%d fnum:%d, pnum:%d, add0x%p\n",
 							i,popReady[i],threadFrameNumber[i],(uint32_t)(*( (uint64_t*) wbuf_footer1)),
 							*( (uint16_t*) wbuf_footer1->packetNumber),	(void*)(packetBuffer[i]));
-				}
+				}*/
 #ifdef DEBUG4
 				cprintf(BLUE," nummissingpackets:%d\n",numMissingPackets);
 #endif
@@ -2351,43 +2245,31 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 					}
 				}
 #endif
-			/*	for(int iloop=0;iloop<frameBufferoffset[0];iloop++){
-					eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(frameBuffer[iloop] + footerOffset);eiger_packet_header_t* wbuf_header = (eiger_packet_header_t*) frameBuffer[iloop];
-					cprintf(BLUE,"before handle:pnum of %d:%d fnum:%d mbuffer:0x%x\n",
-						iloop, *( (uint16_t*) wbuf_footer->packetNumber),
-						(uint32_t)(*( (uint64_t*) wbuf_footer)),
-						*( (uint16_t*) wbuf_header->missingPacket));
-					cout<<flush;
-				}
-				for(int iloop=64;iloop<frameBufferoffset[1];iloop++){
-					eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(frameBuffer[iloop] + footerOffset);eiger_packet_header_t* wbuf_header = (eiger_packet_header_t*) frameBuffer[iloop];
-					cprintf(BLUE,"before handle:pnum of %d:%d fnum:%d mbuffer:0x%x\n",
-						iloop, *( (uint16_t*) wbuf_footer->packetNumber),
-						(uint32_t)(*( (uint64_t*) wbuf_footer)),
-						*( (uint16_t*) wbuf_header->missingPacket));
-					cout<<flush;
-				}*/
-
 
 				//write and copy to gui
 				handleWithoutDataCompression(ithread,frameBuffer,packetsPerFrame);
 
-				/*for(int iloop=0;iloop<frameBufferoffset[0];iloop++){
-					eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(frameBuffer[iloop] + footerOffset);eiger_packet_header_t* wbuf_header = (eiger_packet_header_t*) frameBuffer[iloop];
-					cprintf(BLUE,"after handle:pnum of %d:%d fnum:%d mbuffer:0x%x\n",
-						iloop, *( (uint16_t*) wbuf_footer->packetNumber),
-						(uint32_t)(*( (uint64_t*) wbuf_footer)),
-						*( (uint16_t*) wbuf_header->missingPacket));
-					cout<<flush;
+				//reset a few stuff
+				presentFrameNumber++;
+				for(int i=0; i<numberofListeningThreads; ++i){
+					fullframe[i] = false;
+
+					//ensuring last packet got is not of some other future frame but of the current one
+					eiger_packet_footer_t* wbuf_footer1 = (eiger_packet_footer_t*)(packetBuffer[i] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
+					uint64_t packfnum = (((uint32_t)(*( (uint64_t*) wbuf_footer1)))+(startFrameIndex - 1));
+
+					//to reset to get new frame: not dummy and the last packet
+					if((numPackets[i] != dummyPacketValue) && (currentPacketNumber[i] == LAST_PACKET_VALUE) && (packfnum == currentFrameNumber) )
+						popReady[i] = true;
+					frameBufferoffset[i] = (i*packetsPerFrame/numberofListeningThreads);
+					//blankoffset = 0;
+					lastPacketNumber[i] = 0;
+					currentPacketNumber[i] = 0;
+					numberofMissingPackets[i] = 0;
+#ifdef DEBUG4
+					cprintf(GREEN,"popready[%d]: %d\n",i,popReady[i]);
+#endif
 				}
-				for(int iloop=64;iloop<frameBufferoffset[1];iloop++){
-					eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(frameBuffer[iloop] + footerOffset);eiger_packet_header_t* wbuf_header = (eiger_packet_header_t*) frameBuffer[iloop];
-					cprintf(BLUE,"after handle:pnum of %d:%d fnum:%d mbuffer:0x%x\n",
-						iloop, *( (uint16_t*) wbuf_footer->packetNumber),
-						(uint32_t)(*( (uint64_t*) wbuf_footer)),
-						*( (uint16_t*) wbuf_header->missingPacket));
-					cout<<flush;
-				}*/
 
 
 				//freeing
@@ -2411,82 +2293,12 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 #endif
 					}
 				}
-
-
-
 #ifdef DEBUG4
 				cprintf(GREEN,"Writing_Thread: finished freeing\n");
 #endif
 
 
-				//reset a few stuff
-				presentFrameNumber++;
-				for(int i=0; i<numberofListeningThreads; ++i){
-					fullframe[i] = false;
-
-					//ensuring last packet got is not of some other future frame but of the current one
-					eiger_packet_footer_t* wbuf_footer1 = (eiger_packet_footer_t*)(packetBuffer[i] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
-					uint64_t packfnum = (((uint32_t)(*( (uint64_t*) wbuf_footer1)))+(startFrameIndex - 1));
-
-					//to reset to get new frame: not dummy and the last packet
-					if((numPackets[i] != dummyPacketValue) && (currentPacketNumber[i] == LAST_PACKET_VALUE) && (packfnum == currentFrameNumber) )
-						popReady[i] = true;
-					frameBufferoffset[i] = (i*packetsPerFrame/numberofListeningThreads);
-					//blankoffset = 0;
-					lastPacketNumber[i] = 0;
-					currentPacketNumber[i] = 0;
-					numberofMissingPackets[i] = 0;
-				}
-
-
-
 			}//end of full frame
-
-			/*for(int iloop=0;iloop<frameBufferoffset[0];iloop++){
-				eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(frameBuffer[iloop] + footerOffset);eiger_packet_header_t* wbuf_header = (eiger_packet_header_t*) frameBuffer[iloop];
-				cprintf(BLUE,"before summary :pnum of %d:%d fnum:%d mbuffer:0x%x\n",
-						iloop, *( (uint16_t*) wbuf_footer->packetNumber),
-						(uint32_t)(*( (uint64_t*) wbuf_footer)),
-						*( (uint16_t*) wbuf_header->missingPacket));
-				cout<<flush;
-			}
-			for(int iloop=64;iloop<frameBufferoffset[1];iloop++){
-				eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(frameBuffer[iloop] + footerOffset);eiger_packet_header_t* wbuf_header = (eiger_packet_header_t*) frameBuffer[iloop];
-				cprintf(BLUE,"before summary :pnum of %d:%d fnum:%d mbuffer:0x%x\n",
-						iloop, *( (uint16_t*) wbuf_footer->packetNumber),
-						(uint32_t)(*( (uint64_t*) wbuf_footer)),
-						*( (uint16_t*) wbuf_header->missingPacket));
-				cout<<flush;
-			}*/
-
-#ifdef DEBUG4
-			for(int i=0;i<numberofListeningThreads;i++){
-				eiger_packet_footer_t* wbuf_footer1 = (eiger_packet_footer_t*)(packetBuffer[i] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
-				cprintf(GREEN,"Fifo %d:End of loop popready %d, fnum %d, pnum %d, add0x%p\n",
-						i,popReady[i],(uint32_t)(*( (uint64_t*) wbuf_footer1)),
-						*( (uint16_t*) wbuf_footer1->packetNumber),	(void*)(packetBuffer[i]));
-			}
-#endif
-			/*for(int iloop=0;iloop<frameBufferoffset[0];iloop++){
-				eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(frameBuffer[iloop] + footerOffset);eiger_packet_header_t* wbuf_header = (eiger_packet_header_t*) frameBuffer[iloop];
-				cprintf(BLUE,"am ende:pnum of %d:%d fnum:%d mbuffer:0x%x fbuffer:0x%p\n",
-						iloop, *( (uint16_t*) wbuf_footer->packetNumber),
-						(uint32_t)(*( (uint64_t*) wbuf_footer)),
-						*( (uint16_t*) wbuf_header->missingPacket),
-						(void*)frameBuffer[iloop]);
-				cout<<flush;
-			}
-			for(int iloop=64;iloop<frameBufferoffset[1];iloop++){
-				eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(frameBuffer[iloop] + footerOffset);eiger_packet_header_t* wbuf_header = (eiger_packet_header_t*) frameBuffer[iloop];
-				cprintf(BLUE,"am ende:pnum of %d:%d fnum:%d mbuffer:0x%x fbuffer:0x%p\n",
-						iloop, *( (uint16_t*) wbuf_footer->packetNumber),
-						(uint32_t)(*( (uint64_t*) wbuf_footer)),
-						*( (uint16_t*) wbuf_header->missingPacket),
-						(void*)frameBuffer[iloop]);
-				cout<<flush;
-			}*/
-
-
 
 		}/*--end of loop for each buffer (inner loop)*/
 
@@ -2591,9 +2403,9 @@ bool UDPStandardImplementation::popAndCheckEndofAcquisition(int ithread, char* w
 			//dummy-end buffer
 			if(nP[i] == dummyPacketValue){
 				ready[i] = false;
-//#ifdef DEBUG3
+#ifdef DEBUG3
 				cprintf(GREEN,"Writing_Thread %d: Dummy frame popped out of FIFO %d",ithread, i);
-//#endif
+#endif
 			}
 			//normal buffer popped out
 			else{
@@ -2608,14 +2420,6 @@ bool UDPStandardImplementation::popAndCheckEndofAcquisition(int ithread, char* w
 					//}
 				}
 #endif
-				/*moved to current packet addition
-				 * if(myDetectorType == EIGER){
-					while(!fifoTempFree[i]->push(wbuffer[i]));
-#ifdef EVERYFIFODEBUG
-					if(fifoTempFree[i]->getSemValue()>((packetsPerFrame/numberofListeningThreads)-3))
-					cprintf(YELLOW,"FifoTempfree[%d]: value:%d, push 0x%x\n",i,fifoTempFree[i]->getSemValue(),(void*)(wbuffer[i]));
-#endif
-				}*/
 			}
 		}
 		//when both are not popped but curretn frame number is being processed
@@ -2633,7 +2437,7 @@ bool UDPStandardImplementation::popAndCheckEndofAcquisition(int ithread, char* w
 void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer[]){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
-	cprintf(GREEN,"Info: Writing_Thread %d: End of Acquisition\n",ithread);
+	FILE_LOG(logINFO) << "Writing "<< ithread << ": End of Acquisition";
 
 	//free fifo
 	for(int i=0; i<numberofListeningThreads; ++i){
@@ -2681,7 +2485,7 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer[]){
 		pthread_mutex_unlock(&(statusMutex));
 
 		//statistics
-		cprintf(GREEN, "Status: Run Finished\n");
+		FILE_LOG(logINFO) << "Status: Run Finished";
 		if(numTotMissingPackets){
 			cprintf(RED, "Total Missing Packets padded: %d\n",numTotMissingPackets);
 			cprintf(RED, "Total Packets Caught: %lld\n",(long long int)totalPacketsCaught);
@@ -2835,7 +2639,6 @@ void UDPStandardImplementation::writeFileWithoutCompression(char* wbuffer[],uint
 #ifdef DEBUG3
 				cprintf(GREEN,"Writing_Thread: Current Frame Number:%d\n",currentFrameNumber);
 #endif
-				cprintf(BG_RED,"CREATE NEW FILE %lld \n",(long long int)currentFrameNumber );exit(-1);
 				createNewFile();
 			}
 

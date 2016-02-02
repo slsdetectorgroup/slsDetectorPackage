@@ -2,6 +2,8 @@
 \usepackage{amssymb}
 \usepackage[dvips]{graphicx}
 \usepackage{verbatim}
+\usepackage{xspace}
+\newcommand{\E}{EIGER\xspace}  
 \begin{document}
 
 \title{SLS Detector text clients manual}
@@ -74,7 +76,8 @@ The syntax of the commands in the parameter file is exactly the same as for the 
 \item[settings sett] 
 Configures the settings of the detector. Refere to detailed detector documentation for more details:   \\
 for MYTHEN sett can be: standard, fast, highgain;\\
-for GOTTHARD sett can be: veryhighgain, highgain, mediumgain, lowgain, dynamicgain.
+for GOTTHARD sett can be: veryhighgain, highgain, mediumgain, lowgain, dynamicgain;\\
+for \E sett can be: standard, highgain, lowgain.
 \item[threshold ev] 
 For photon counting detectors, sets the detector threshold in eV. The detector should be properly calibrated, otherwise standard calibration coefficents are used, which can give an uncertainty up to a few keVs.  
 \item[timing sync]   
@@ -93,12 +96,14 @@ where: \\
 \textit{p} is the position index, if different positions are configured;\\
 \textit{f} is the frame index of the first frame stored in the file, if many frames and cycles are configured;\\
 \textit{i} is the file index;\\
-\textit{ext} is the file extension e.g. \textit{.raw} for MYTHEN raw data, \textit{.dat} for MYTHEN processed data.
+\textit{ext} is the file extension e.g. \textit{.raw} for MYTHEN and \E raw data, \textit{.dat} for MYTHEN processed data.
 \item[index i] Sets the starting index of the file i at the beginning of the acquisition (automatically incremented for each measurement).    
 \item[enablefwrite b] Enables (1) or disables (0) file writing. 
 \item[exptime ts] 
 Sets the exposure time of a single acquisition to ts (in s). It is overridden in case the detector is in gating mode.  \\
 Refere to detailed documentation to understand how the different timing modes work.
+\item[subexptime ts] 
+Sets the subexposure time of a single subacquisition to ts (in s) in \E autosumming mode (=\textit{dr 32}). Refere to detailed documentation to understand how the different timing modes work.
 \item[period ts]  
 Sets the frames period (in s). It is overridden in case the detector is in gating mode. \\
 Refere to detailed documentation to understand how the different timing modes work. 
@@ -118,11 +123,12 @@ Note that the total number of images will be by frames times cycles.   Refere to
 Refere to detailed documentation to understand how the different timing modes work.
 \item[measurements] Sets the number of repetitions of the acquisitions (non real time!). The file index in the file name will be automotically incremented.\\
 Refere to detailed documentation to understand how the different timing modes work.
-\item[dr n] Sets the dynamic range n (in bits) of the data for a photon counting detector. 
-\item[flags s] Sets some particular flags for your detector. For MYTHEN s can be \textit{none}, \textit{storeinram} (for buffered readout) or \textit{tot} (for time over threshold). 
+\item[dr n] Sets the dynamic range n (in bits) of the data for a photon counting detector. For \E it can be set to 4, 8, 16 (but the real counter depth will still be limited to 12 bits) or 32 when one wants to activate the internal subframe summing mode.
+
+\item[flags s] Sets some particular flags for your detector. For MYTHEN s can be \textit{none}, \textit{storeinram} (for buffered readout) or \textit{tot} (for time over threshold). For \E, s can be {\it{continous}} (for continous readout), \textit{storeinram} (for buffered readout), \textit{parallel} for parallel exposure to the next frame and readout of the previous frame, \textit{nonparallel} to decouple sequentially readout and exposure, \textit{safe} (rowclock interleaved).  
 %\item[timestamp] 
 \item[help cmd]  Returns the help for command cmd.
-\item[lock] Locks (1) or unlocks (0) the detector to this particular control PC. CAn be unlocked again only from the same PC or by rebooting the detector.
+\item[lock] Locks (1) or unlocks (0) the detector to this particular control PC. An be unlocked again only from the same PC or by rebooting the detector.
 %\item[lastclient]
 \item[nmod n] Sets the number of modules for the detector to n for partial readout. Will be replaced by ROI.
 %\item[maxmod]  
@@ -206,9 +212,9 @@ See SLS Detectors Documentation for a detailed description of the acquisition fl
 This operations should be performed only rarely to configure the detector
 
 \begin{description}
-   \item[trim:mode fname]  Trims the detector according to mode (can be noise, beam, improve, fix) and saves the resulting trimbits to file fname. Take care to set a proper exptime and vthreshold before trimming. 
-   \item[encallog b] Sets (1) or unsets (0) the logging for energy calibration.
-    \item[angcallog b]       Sets (1) or unsets (0) the logging for angular calibration.
+  \item[trim:mode fname] Trims the detector according to mode (can be noise, beam, improve, fix) and saves the resulting trimbits to file fname. Take care to set a proper exptime and vthreshold before trimming. 
+  \item[encallog b] Sets (1) or unsets (0) the logging for energy calibration.
+  \item[angcallog b] Sets (1) or unsets (0) the logging for angular calibration.
 \end{description}
 
 
@@ -226,6 +232,7 @@ It is normally reccomended to use \verb=sls\_detector\_acquire [j-]=, which take
 %\item[checkonline] 
 %\item[readctr i fname] GOTTHARD related - reads counter in detector to file fname, restarts acquisition if i=1
 \item[resetctr i] GOTTHARD- ADVANCED- resets counter in detector, restarts acquisition if i=1
+\item[setctrbit 1] \E - ADVANCED - resets counter in detector before each acquisition. Default settings. \textit{setctrbit 0} does not reset the counter bit before the acquisition. Note that in \E the counter is always reset after the acquisition.
 %\item[exptimel]        
 %\item[periodl] 
 %\item[delayl]  
@@ -271,7 +278,7 @@ Please refer to SLS Detectors FAQ documentation for more detailed informations a
 \end{description}
 
 
-\subsubsection{Receiver -  GOTTHARD only}
+\subsubsection{Receiver - GOTTHARD/\E}
 \begin{description}
 \begin{comment}
 
@@ -287,9 +294,7 @@ Please refer to SLS Detectors FAQ documentation for more detailed informations a
 \item[rx\_udpport i] sets the communication port between detector and receiver. Should be left to the configuration file. 
 \item[rx\_hostname s] sets the hostname (or IP address) of the receiver for the TCP/IP interface with the client.
 \item[rx\_udpip ip] sets the IP address of the receiver for the UDP interface with the detector.
-
-
-
+\item[rx\_fifodepth v] sets receiver fifo depth to value v. Default for \E is 100.
 \item[r\_online b] sets the receiver in online (1) or offline (0) mode.           
 %\item[r\_checkonline]      
 %\item[framescaught]         
@@ -319,7 +324,13 @@ Some advanced commands to configure data postprocessing.
 \item[d:moveflag i]  Related to a single controller d. 1 if the detector modules move with the angular encoder, 0 if they are static (useful for multidetector systems). Normally left to the configuration file.
 \end{description}
 
-
+\subsubsection{Testing - \E specific}
+Some VERY ADVANCED testing functions implemente for \E:
+\begin{description}
+\item [pulsechip n] sets the chip into test mode with \textit{ctrbit} = 0 and \textit{externalenable} =1.  Pulses chip by togglying the enable n number of times. The acquire is then done with no pixel matrix reset before the acquisition. If n$=-1$, the chip will be set into normal mode. This is necessary to restore normal chip operations after the test.
+\item[pulse n x y] Pulses pixel at coordinates (x,y) n number of times. 
+\item[pulsenmove n x y] Pulses pixel n number of times and moves relatively by x value (x axis) and y value (y axis)
+\end{description}
 
 \subsection{Detector settings}
 Advanced settings changing the analog or digital performance of the acquisition. Use them only if you are sure of what you are doing!
@@ -343,11 +354,28 @@ Advanced settings changing the analog or digital performance of the acquisition.
 \item[vcasc\_out n]  Sets  vcasc\_out    
 \item[vin\_cm n]  Sets vin\_cm
 \item[vref\_comp n]  Sets vref\_comp     
-\item[ib\_test\_c n]   Sets ib\_test\_c    
+\item[ib\_test\_c n]   Sets ib\_test\_c  
+\item[vsvp n] Sets vsvp DAC to n 
+\item [vsvn n] Sets vsvn DAC to n 
+\item [vtr n] Sets vtr DAC to n 
+\item [vrf n] Sets vrf DAC to n 
+\item [vrs n] Sets vrs DAC to n 
+\item [vtgstv n] Sets vtgstv DAC to n 
+\item[vcmp\_ll n] Sets vcmp\_ll DAC to n 
+\item [vcmp\_lr n] Sets vcmp\_lr DAC to n 
+\item [vcmp\_rl n] Sets vcmp\_rl DAC to n 
+\item [vcmp\_rr n] Sets vcmp\_rr DAC to n 
+\item [vcall n] Sets vcall DAC to n 
+\item [rxb\_rb n] Sets rxb\_rb DAC to n 
+\item [rxb\_lb n] Sets rxb\_rb DAC to n 
+\item [vcp n] Sets vcp DAC to n 
+\item [vcn n] Sets vcn DAC to n 
+\item [vis n] Sets vis DAC to n 
+\item [iodelay n] Sets iodelay to n 
 %\item[temp\_adc n]    Sets     
 %\item[temp\_fpga n]
 \item[reg a d]   Write to register of address a the data d  
-\item[clkdivider n]  Sets the clock divider for the readout. Can be increased for longer cables. 
+\item[clkdivider n]  Sets the clock divider for the readout. Can be increased for longer cables. For EIGER options are 0 (full speed), 1 (half speed), 2 (quarter speed), and 3 (slow).
 \item[setlength n]  Changes the length of the set/reset signals in the acquisition. Never reduce it!     
 \item[waitstates n] Sets the wait states for CPU/FPGA communication. Do not change it!
 \item[totdivider n]  Sets the tot clock divider.
@@ -617,7 +645,7 @@ Advanced settings changing the analog or digital performance of the acquisition.
 \item[vpreamp]  Returns the DAC value of the preamp feedback  to n.
 \item[vshaper1]  Returns the DAC value of the shaper1 feedback  to n.  
 \item[vshaper2]  Returns the DAC value of the shaper2 feedback  to n.      
-\item[vhighvoltage]   CHIPTEST BOARD ONLY - Returns the DAC value of the high voltage to n.           
+\item[vhighvoltage]  Returns the DAC value of the high voltage to n.           
 \item[vapower]   CHIPTEST BOARD ONLY - Returns the DAC value of the analog voltage to n. 
 \item[vddpower]     CHIPTEST BOARD ONLY - Returns the DAC value of the analog voltage to n.      
 \item[vshpower]     CHIPTEST BOARD ONLY - Returns the comparator power supply in dac units (0-1024).   
@@ -630,6 +658,23 @@ Advanced settings changing the analog or digital performance of the acquisition.
 \item[vin\_cm]  Returns vin\_cm
 \item[vref\_comp]  Returns vref\_comp     
 \item[ib\_test\_c]   Returns ib\_test\_c    
+\item[vsvp] Returns vsvp 
+\item [vsvn] Returns vsvn 
+\item [vtr] Returns vtr 
+\item [vrf] Returns vrf 
+\item [vrs] Returns vrs
+\item [vtgstv] Returns vtgstv
+\item[vcmp\_ll] Returns vcmp\_ll 
+\item [vcmp\_lr] Returns vcmp\_lr
+\item [vcmp\_rl] Returns vcmp\_rl
+\item [vcmp\_rr] Returns vcmp\_rr 
+\item [vcall] Returns vcall 
+\item [rxb\_rb] Returns rxb\_rb 
+\item [rxb\_lb] Returns rxb\_rb
+\item [vcp] Returns vcp 
+\item [vcn] Returns vcn 
+\item [vis] Returns vis 
+\item [iodelay] Returns iodelay 
 \item[temp\_adc]    Returns the temperature of the ADCs     
 \item[temp\_fpga] Returns the temperature of the FPGA.
 \item[reg a]   Write to register of address a the data d  
@@ -652,6 +697,13 @@ To do that:
 sls_detector_put config mydetector.config
 \end{verbatim}
 Refere to sample configuration files to produce the appropiate one for your detector.
+
+One can configure all the detector settings in a parameter file {\tt{setup.det}}, which is loaded by doing:
+\begin{verbatim}
+sls_detector_put parameters setup.det
+\end{verbatim}
+
+In the case of \E, the parameter file ({\tt{setup.det}} needs to setup the proper bias voltage of the sensor, i.e. needs to contain the line {\tt{vhighvoltage 150}}.
 
 \subsection{Standard acquisition}
 

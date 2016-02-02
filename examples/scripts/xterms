@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# This script starts several xterms, one for each argument
+# If the first argument is -k the script waits for you pressing Ctr-C and kills all started xterms afterwards.
+#
+# example:
+# xterms "ls -lah; sleep 4" "runprogramm -f 2"
+
+if [ "$1" == "-k" ]; then
+	DOKILL=1
+	shift
+fi
+
+LINE=0
+COLUMN=-330
+for i in `seq 1 $#`; do
+	COLUMN=$((COLUMN+$((i%2))*330))
+	echo xterm -g 50x20+${COLUMN}+${LINE} -e ${!i}  &
+	xterm -g 50x20+${COLUMN}+${LINE} -e ${!i}  &
+	PID[$i]=$!
+	LINE=$((i%2*330))
+done
+
+
+#for i in `seq 0 $(($#-1))`; do
+#	LINES=$(((i-i%4)/4))
+#	arg=$((i+1))
+#	xterm -g 50x20+$(((i%4)*330))+$((LINES*330)) -e ${!arg}  &
+#	PID[$i]=$!
+#done
+
+if [ "$DOKILL" != "1" ]; then
+	exit
+fi
+
+while (true); do
+	read
+done
+
+for i in ${PID[@]}; do
+	kill $i
+done

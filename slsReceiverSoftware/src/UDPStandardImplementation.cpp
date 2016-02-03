@@ -741,6 +741,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 		frameIndexOffset 	= JFRAU_FRAME_INDEX_OFFSET;
 		packetIndexMask 	= JFRAU_PACKET_INDEX_MASK;
 		maxPacketsPerFile	= JFRAU_MAX_FRAMES_PER_FILE * JFRAU_PACKETS_PER_FRAME;
+		fifoDepth			= JFRAU_FIFO_SIZE;
 		fifoSize			= JFRAU_FIFO_SIZE;
 		//footerOffset		= Not applicable;
 		break;

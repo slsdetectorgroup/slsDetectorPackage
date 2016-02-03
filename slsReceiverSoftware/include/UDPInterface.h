@@ -371,8 +371,9 @@ class UDPInterface {
 	 * Set Number of Frames expected by receiver from detector
 	 * The data receiver status will change from running to idle when it gets this number of frames FIXME: (Not implemented)
 	 * @param i number of frames expected
+	 * @return OK or FAIL
 	 */
-	virtual void setNumberOfFrames(const uint64_t i) = 0;
+	virtual int setNumberOfFrames(const uint64_t i) = 0;
 
 	/**
 	 * Set Dynamic Range or Number of Bits Per Pixel

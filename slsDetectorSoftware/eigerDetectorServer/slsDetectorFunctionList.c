@@ -51,9 +51,24 @@ unsigned int nimages_per_request=1;
 int  on_dst=0;
 int dst_requested[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-//char  Module_dac_names[16][10]= {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};;
-
-int default_dac_values[16] = {0,2480,3300,1400,4000,2556,1000,1000,4000,1000,1000,1000,1000,200,2000,1550};
+int default_dac_values[16] = {
+		0, 		//SvP
+		2480, 	//Vtr
+		3300, 	//Vrf
+		1400, 	//Vrs
+		4000, 	//SvN
+		2556, 	//Vtgstv
+		1000, 	//Vcmp_ll
+		1000, 	//Vcmp_lr
+		4000, 	//cal
+		1000, 	//Vcmp_rl
+		1100, 	//rxb_rb
+		1100, 	//rxb_lb
+		1000, 	//Vcmp_rr
+		200, 	//Vcp
+		2000, 	//Vcn
+		1550 	//Vis
+};
 int default_gain_values[3] = {517000,517000,517000};
 int default_offset_values[3] = {3851000,3851000,3851000};
 
@@ -145,7 +160,7 @@ int initDetector(){
 	setReadOutFlags(NONPARALLEL);
 	setSpeed(0,1);//clk_devider,half speed
 	setHighVolage(0,0);
-	setIODelay(675,0);
+	setIODelay(650,0);
 	setTiming(AUTO_TIMING);
 	//SetPhotonEnergyCalibrationParameters(-5.8381e-5,1.838515,5.09948e-7,-4.32390e-11,1.32527e-15);
 	//SetRateCorrection(0); //deactivate rate correction
@@ -279,6 +294,9 @@ u_int64_t  getDetectorMAC() {
 		pch = strtok (NULL, ":");
 	}
 	sscanf(mac,"%llx",&res);
+	//increment by 1 for 10g
+	if(send_to_ten_gig)
+		res++;
 	//printf("mac:%llx\n",res);
 
 	return res;
@@ -911,15 +929,15 @@ int executeTrimming(enum trimMode mode, int par1, int par2, int imod){
 
 
 int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int udpport, int udpport2, int ival){
+	if (detectormacadd != getDetectorMAC()){
+		printf("*************************************************\n");
+		printf("WARNING: actual detector mac address %llx does not match the one from client %llx\n",getDetectorMAC(),detectormacadd);
+		detectormacadd = getDetectorMAC();
+		printf("WARNING: Matched detectormac to the hardware mac now\n");
+		printf("*************************************************\n");
+	}
 	//only for 1Gbe
 	if(!send_to_ten_gig){
-		if (detectormacadd != getDetectorMAC()){
-			printf("*************************************************\n");
-			printf("WARNING: actual detector mac address %llx does not match the one from client %llx\n",getDetectorMAC(),detectormacadd);
-			detectormacadd = getDetectorMAC();
-			printf("WARNING: Matched detectormac to the hardware mac now\n");
-			printf("*************************************************\n");
-		}
 		if (detipad != getDetectorIP()){
 			printf("*************************************************\n");
 			printf("WARNING: actual detector ip address %x does not match the one from client %x\n",getDetectorIP(),detipad);

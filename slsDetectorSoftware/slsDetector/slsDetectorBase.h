@@ -234,7 +234,11 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
      \returns total number of channels
   */
   virtual int getTotalNumberOfChannels()=0;
-    
+
+  /**
+     \returns total number of channels for each dimension
+  */
+  virtual int getTotalNumberOfChannels(dimension d)=0;
 
   /** generates file name without extension */
   virtual string createFileName()=0;

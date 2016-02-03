@@ -1501,7 +1501,7 @@ void UDPStandardImplementation::startListening(){
 
 			//udpsocket doesnt exist
 			if(udpSocket[ithread] == NULL){
-				FILE_LOG(logERROR) << "Listening_Thread " << ithread << ": UDP Socket not created";
+				FILE_LOG(logERROR) << "Listening_Thread " << ithread << ": UDP Socket not created or shut down earlier";
 				stopListening(ithread,0);
 				continue;
 			}
@@ -2461,7 +2461,7 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer[]){
 
 		//statistics
 		FILE_LOG(logINFO) << "Status: Run Finished";
-		if(numTotMissingPackets){
+		if(totalPacketsCaught != (numberOfFrames*packetsPerFrame)){
 			cprintf(RED, "Total Missing Packets padded: %d\n",numTotMissingPackets);
 			cprintf(RED, "Total Packets Caught: %lld\n",(long long int)totalPacketsCaught);
 			cprintf(RED, "Total Frames Caught: %lld\n",(long long int)(totalPacketsCaught/packetsPerFrame));

@@ -955,7 +955,7 @@ void UDPStandardImplementation::startReadout(){
 					totalP += totalListeningFrameCount[i];
 				}
 			}
-		}//else cprintf(MAGENTA,"***Got all packets without waiting****\n");
+		}
 
 
 

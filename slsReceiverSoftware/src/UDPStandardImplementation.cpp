@@ -1591,7 +1591,6 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int lSize, in
 
 	int receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + cSize, lSize + cSize);
 
-
 	//throw away packets that is not one packet size, need to check status if socket is shut down
 	while(status != TRANSMITTING && myDetectorType == EIGER && receivedSize != onePacketSize) {
 		if(receivedSize != EIGER_HEADER_LENGTH){
@@ -1606,19 +1605,25 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int lSize, in
 	totalListeningFrameCount[ithread] += (receivedSize/onePacketSize);
 
 #ifdef MANUALDEBUG
-	if(myDetectorType == JUNGFRAU){
-		jfrau_packet_header_t* header = (jfrau_packet_header_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS);
-		cprintf(RED,"framenumber:%llu\n",(long long unsigned int)(*( (uint64_t*) header->frameNumber)));
-		cprintf(RED,"packetnumber:%llu\n",(long long unsigned int)(*( (uint64_t*) header->packetNumber)));
-	}else if(myDetectorType == EIGER){
-		eiger_packet_header_t* header = (eiger_packet_header_t*) (buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS);
-		eiger_packet_footer_t* footer = (eiger_packet_footer_t*)(buffer[ithread] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
-		cprintf(GREEN,"thread:%d footeroffset:%dsubframenum:%d oldpacketnum:%d new pnum:%d new fnum:%d\n",
-			ithread,footerOffset,
-				(*( (unsigned int*) header->subFameNumber)),
-				(*( (uint8_t*) header->dynamicRange)),
-			(*( (uint16_t*) footer->packetNumber)),
-			(uint32_t)(*( (uint64_t*) footer)));
+	if(receivedSize>0){
+		if(myDetectorType == JUNGFRAU){
+			jfrau_packet_header_t* header;
+
+			for(int iloop=0;iloop<2;iloop++){
+				header = (jfrau_packet_header_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + iloop * (JFRAU_HEADER_LENGTH+JFRAU_ONE_DATA_SIZE));
+				cprintf(RED,"[%d]: packetnumber:%x\n",iloop, (*( (uint8_t*) header->packetNumber)));
+				cprintf(RED,"    : framenumber :%x\n",       (*( (uint32_t*) header->frameNumber))&0xffffff);
+			}
+		}else if(myDetectorType == EIGER){
+			eiger_packet_header_t* header = (eiger_packet_header_t*) (buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS);
+			eiger_packet_footer_t* footer = (eiger_packet_footer_t*)(buffer[ithread] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
+			cprintf(GREEN,"thread:%d footeroffset:%dsubframenum:%d oldpacketnum:%d new pnum:%d new fnum:%d\n",
+					ithread,footerOffset,
+					(*( (unsigned int*) header->subFrameNumber)),
+					(*( (uint8_t*) header->dynamicRange)),
+					(*( (uint16_t*) footer->packetNumber)),
+					(uint32_t)(*( (uint64_t*) footer)));
+		}
 	}
 #endif
 
@@ -1645,7 +1650,7 @@ void UDPStandardImplementation::startFrameIndices(int ithread){
 		break;
 	case JUNGFRAU:
 		header = (jfrau_packet_header_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS);
-		startFrameIndex = (*( (uint64_t*) header->frameNumber));
+		startFrameIndex = (*( (uint32_t*) header->frameNumber))&0xffffff;
 		break;
 	default:
 		if(shortFrameEnable < 0){
@@ -1859,31 +1864,31 @@ uint32_t UDPStandardImplementation::processListeningBuffer(int ithread, int cSiz
 		lastPacketOffset = (((numberofJobsPerBuffer * packetsPerFrame - 1) * onePacketSize) + HEADER_SIZE_NUM_TOT_PACKETS);
 #ifdef DEBUG4
 		header = (jfrau_packet_header_t*) (buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS);
-		cprintf(BLUE, "Listening_Thread: First Header:%llu\t First Packet:%llu\n",
-				(long long unsigned int)(*( (uint64_t*) header->frameNumber)),
-				(long long unsigned int)(*( (uint64_t*) header->packetNumber)));
+		cprintf(BLUE, "Listening_Thread: First Header:%d\t First Packet:%d\n",
+				(*( (uint32_t*) header->frameNumber))&0xffffff,
+				(*( (uint8_t*) header->packetNumber)));
 #endif
 		header = (jfrau_packet_header_t*) (buffer[ithread]+lastPacketOffset);
 #ifdef DEBUG4
-		cprintf(BLUE, "Listening_Thread: Last Header:%llu\t Last Packet:%llu\n",
-				(long long unsigned int)(*( (uint64_t*) header->frameNumber)),
-				(long long unsigned int)(*( (uint64_t*) header->packetNumber)));
+		cprintf(BLUE, "Listening_Thread: Last Header:%du\t Last Packet:%d\n",
+				(*( (uint32_t*) header->frameNumber))&0xffffff,
+				(*( (uint8_t*) header->packetNumber)));
 #endif
 		//jungfrau last packet value is 0, so find the last packet and store the others in a temp storage
-		if(*( (uint64_t*) header->packetNumber)){
+		if((*( (uint8_t*) header->packetNumber))){
 			cprintf(RED,"entering missing packet zone\n");
-			lastFrameHeader64 = (*( (uint64_t*) header->frameNumber));
+			lastFrameHeader64 = (*( (uint32_t*) header->frameNumber))&0xffffff;
 			cSize += onePacketSize;
 			lastPacketOffset -= onePacketSize;
 			--packetCount;
-			while (lastFrameHeader64 == (*( (uint64_t*) header->frameNumber))){
+			while (lastFrameHeader64 == (*( (uint32_t*) header->frameNumber))&0xffffff){
 				cSize += onePacketSize;
 				lastPacketOffset -= onePacketSize;
 				header = (jfrau_packet_header_t*) (buffer[ithread]+lastPacketOffset);
 #ifdef DEBUG4
-				cprintf(RED,"new header:%llu new packet:%llu\n",
-						(long long unsigned int)(*( (uint64_t*) header->frameNumber)),
-						(long long unsigned int)(*( (uint64_t*) header->packetNumber)));
+				cprintf(RED,"new header:%d new packet:%d\n",
+						(*( (uint32_t*) header->frameNumber))&0xffffff,
+						(*( (uint8_t*) header->packetNumber)));
 #endif
 				--packetCount;
 			}
@@ -2529,7 +2534,7 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer[]){
 
 		//statistics
 		FILE_LOG(logINFO) << "Status: Run Finished";
-		if(totalPacketsCaught != (numberOfFrames*packetsPerFrame)){
+		if(totalPacketsCaught != ((uint64_t)numberOfFrames*packetsPerFrame)){
 			cprintf(RED, "Total Missing Packets padded: %d\n",numTotMissingPackets);
 			cprintf(RED, "Total Packets Caught: %lld\n",(long long int)totalPacketsCaught);
 			cprintf(RED, "Total Frames Caught: %lld\n",(long long int)(totalPacketsCaught/packetsPerFrame));
@@ -2555,7 +2560,7 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 	if(myDetectorType != EIGER){
 		if(myDetectorType == JUNGFRAU){
 			jfrau_packet_header_t* header = (jfrau_packet_header_t*)(wbuffer[0] + HEADER_SIZE_NUM_TOT_PACKETS);
-			currentFrameNumber = (*( (uint64_t*) header->frameNumber));
+			currentFrameNumber = (*( (uint32_t*) header->frameNumber))&0xffffff;
 		}else{
 			uint64_t tempframenumber = ((uint32_t)(*((uint32_t*)(wbuffer[0] + HEADER_SIZE_NUM_TOT_PACKETS))));
 			//for gotthard and normal frame, increment frame number to separate fnum and pnum
@@ -2677,7 +2682,7 @@ void UDPStandardImplementation::writeFileWithoutCompression(char* wbuffer[],uint
 					lastpacket = (((packetsToSave - 1) * onePacketSize) + offset);
 					if(myDetectorType == JUNGFRAU){
 						jfrau_packet_header_t* header = (jfrau_packet_header_t*) (wbuffer[0] + lastpacket);
-						currentFrameNumber = (*( (uint64_t*) header->frameNumber));
+						currentFrameNumber = (*( (uint32_t*) header->frameNumber))&0xffffff;
 					}else{
 						tempframenumber = ((uint32_t)(*((uint32_t*)(wbuffer[0] + lastpacket))));
 						//for gotthard and normal frame, increment frame number to separate fnum and pnum

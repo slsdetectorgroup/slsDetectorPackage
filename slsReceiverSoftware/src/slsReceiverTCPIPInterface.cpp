@@ -1858,7 +1858,7 @@ int	slsReceiverTCPIPInterface::jungfrau_read_frame(){
 	char fName[MAX_STR_LENGTH]="";
 	int acquisitionIndex = -1;
 	int frameIndex= -1;
-	uint64_t currentIndex=0;
+	int64_t currentIndex=0;
 	uint64_t startAcquisitionIndex=0;
 	uint64_t startFrameIndex=0;
 	strcpy(mess,"Could not read frame\n");
@@ -1915,7 +1915,7 @@ int	slsReceiverTCPIPInterface::jungfrau_read_frame(){
 
 			//fixed frame number
 			jfrau_packet_header_t* header = (jfrau_packet_header_t*) origVal;
-			currentIndex = (*( (uint64_t*) header->frameNumber));
+			currentIndex = (*( (uint32_t*) header->frameNumber))&0xffffff;
 #ifdef VERYVERBOSE
 			cout << "currentIndex:" << dec << currentIndex << endl;
 #endif
@@ -1923,13 +1923,13 @@ int	slsReceiverTCPIPInterface::jungfrau_read_frame(){
 			int64_t currentPacket = packetsPerFrame-1;
 			int offsetsrc = 0;
 			int offsetdest = 0;
-			uint64_t ifnum=-1;
-			uint64_t ipnum=-1;
+			int64_t ifnum=-1;
+			int64_t ipnum=-1;
 
 			while(currentPacket >= 0){
 				header = (jfrau_packet_header_t*) (origVal + offsetsrc);
-				ifnum = (*( (uint64_t*) header->frameNumber));
-				ipnum = (*( (uint64_t*) header->packetNumber));
+				ifnum = (*( (uint32_t*) header->frameNumber))&0xffffff;
+				ipnum = (*( (uint8_t*) header->packetNumber));
 				if(ifnum != currentIndex) {
 					cout << "current packet " << currentPacket << " Wrong Frame number " << ifnum << ", copying blank packet" << endl;
 					memcpy(retval+offsetdest,blackpacket,oneDataSize);
@@ -1938,7 +1938,7 @@ int	slsReceiverTCPIPInterface::jungfrau_read_frame(){
 					currentPacket--;
 					continue;
 				}
-				if((int64_t)ipnum!= currentPacket){
+				if(ipnum!= currentPacket){
 					cout << "current packet " << currentPacket << " Wrong packet number " << ipnum << ", copying blank packet" << endl;
 					memcpy(retval+offsetdest,blackpacket,oneDataSize);
 					offsetdest += oneDataSize;

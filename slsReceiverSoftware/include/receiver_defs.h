@@ -37,8 +37,10 @@ typedef struct	{
  */
 typedef struct {
 	unsigned char emptyHeader[6];
-	unsigned char frameNumber[8];
-	unsigned char packetNumber[8];
+	unsigned char reserved[4];
+	unsigned char packetNumber[1];
+	unsigned char frameNumber[3];
+	unsigned char bunchid[8];
 } jfrau_packet_header_t;
 
 

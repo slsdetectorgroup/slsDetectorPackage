@@ -69,9 +69,8 @@ int setContinousReadOut(int d);
 int startReceiver(int d);
 
 int setDACRegister(int idac, int val, int imod);
-#ifdef JUNGFRAU_DHANYA
 int getDacRegister(int dacnum);
-#endif
+
 
 int getTemperature(int tempSensor,int imod);
 int initHighVoltage(int val,int imod);
@@ -85,9 +84,8 @@ int getAdcConfigured();
 
 u_int64_t getDetectorNumber();
 u_int32_t getFirmwareVersion();
-#ifdef JUNGFRAU_DHANYA
 u_int32_t  getFirmwareSVNVersion();
-#endif
+
 int testFifos(void);
 u_int32_t testFpga(void);
 u_int32_t testRAM(void);
@@ -150,16 +148,15 @@ int setDynamicRange(int dr);
 int getDynamicRange();
 int getNModBoard();
 int setNMod(int n);
-#ifdef JUNGFRAU_DHANYA
 int getNMod();
-#endif
+
 int setStoreInRAM(int b);
 int allocateRAM();
 
-#ifdef JUNGFRAU_DHANYA
+
 int writeADC(int addr, int val);
 int prepareADC();
-#endif
+
 
 int clearRAM();
 

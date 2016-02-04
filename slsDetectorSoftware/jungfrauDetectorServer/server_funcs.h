@@ -69,9 +69,6 @@ int set_dynamic_range(int);
 int set_roi(int);
 int get_roi(int);
 int set_speed(int);
-#ifndef JUNGFRAU_DHANYA
-void prepareADC(void);
-#endif
 int set_readout_flags(int);
 int execute_trimming(int);
 int lock_server(int);

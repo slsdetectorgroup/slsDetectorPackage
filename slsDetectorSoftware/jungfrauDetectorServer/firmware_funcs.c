@@ -64,11 +64,8 @@ struct timeval tss,tse,tsss; //for timing
 
 
 //for memory mapping
-#ifdef JUNGFRAU_DHANYA
 u_int32_t CSP0BASE;
-#else
-u_int64_t CSP0BASE;
-#endif
+
 
 FILE *debugfp, *datafp;
 
@@ -1127,16 +1124,17 @@ u_int32_t testFpga(void) {
 // for fpga test 
 u_int32_t testRAM(void) {
   int result=OK;
-#ifdef JUNGFRAU_DHANYA
-  cprintf(RED,"TestRAM not implemented for Jungfrau\n");
-#else
-  int i=0;
+
+  printf("TestRAM not implemented\n");
+
+/*  int i=0;
   allocateRAM();
   //  while(i<100000) {
     memcpy(ram_values, values, dataBytes);
     printf ("Testing RAM:\t%d: copied fifo %x to memory %x size %d\n",i++, (unsigned int)(values), (unsigned int)(ram_values), dataBytes);
     // }
-#endif
+     *
+*/
   return result;
 }
 
@@ -1411,9 +1409,12 @@ ROI *setROI(int nroi,ROI* arg,int *retvalsize, int *ret) {
 
 
 int loadImage(int index, short int ImageVals[]){
-#ifdef JUNGFRAU_DHANYA
-	cprintf(RED,"loadImage Not implemented for Jungfrau yet\n"); //compiler warnings on 1st argument of memcpy(ptr,ImageVals ,dataBytes);
-#else
+
+	index;
+	Imagevals;
+	printf("loadImage Not implemented yet\n");
+
+	/*
 	u_int32_t address;
 	switch (index) {
 	case DARK_IMAGE :
@@ -1434,7 +1435,8 @@ int loadImage(int index, short int ImageVals[]){
 #ifdef VERBOSE
 	printf("\nLoaded x%08x address with image of index %d\n",(unsigned int)(ptr),index);
 #endif
-#endif
+	*/
+
 	return OK;
 }
 
@@ -1717,11 +1719,7 @@ ip.ip_destip         = destip;
   bus_w(RX_UDPMACL_AREG,(destmac)&0xFFFFFFFF);//rx_udpmacL_AReg_c
   bus_w(DETECTORMACH_AREG,(sourcemac>>32)&0xFFFFFFFF);//detectormacH_AReg_c
   bus_w(DETECTORMACL_AREG,(sourcemac)&0xFFFFFFFF);//detectormacL_AReg_c
-#ifdef JUNGFRAU_DHANYA
   bus_w(UDPPORTS_AREG,((sourceport&0xFFFF)<<16)+(destport&0xFFFF));//udpports_AReg_c
-#else
-  bus_w(UDPPORTS_AREG,((destport&0xFFFF)<<16)+(sourceport&0xFFFF));//udpports_AReg_c
-#endif
   bus_w(IPCHKSUM_AREG,(checksum&0xFFFF));//ipchksum_AReg_c
 
   bus_w(CONTROL_REG,GB10_RESET_BIT);
@@ -2579,11 +2577,9 @@ int prepareADC(){
 
     bus_w(ADC_OFFSET_REG,0xbbbbbbbb);
     //   bus_w(ADC_INVERSION_REG,0x1f6170c6);
-#ifndef JUNGFRAU_DHANYA
-    return;
-#else
+
     return OK;
-#endif
+
 }
 
 

@@ -110,9 +110,9 @@ int selMod(int mod,int imod );
 /* int getThresholdEnergy(); */
 /* int setThresholdEnergy(int ethr); */
 
-#ifdef JUNGFRAU_DHANYA
+
 int setSettings(int i,int imod);
-#endif
+
 
 /* Other DAC index routines*/
 int getTemperatureByModule(int tempSensor, int imod);

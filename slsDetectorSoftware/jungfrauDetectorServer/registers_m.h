@@ -26,14 +26,15 @@
 #define ADCREG3 				0x4
 #define ADCREG4 				0x5
 #define ADCREG_VREFS 			0x18
-#define ADC_INVERSION_REG 		0x43<<11
-#define ADC_PIPELINE_REG 		0x42<<11
+#define ADC_PIPELINE_REG 		0x42<<11 // adc_offset_reg
 #define DBIT_PIPELINE_REG 		0x59<<11
 #define MEM_MACHINE_FIFOS_REG 	0x4f<<11
 #define CONFGAIN_REG 			0x5d<<11 /** was actually GAIN_REG which seems to be set to 0 later in this file*/
-#else
-#define ADC_INVERSION_REG      67<<11 /** picked up from after ADC_OFFSET_REG*/
 #endif
+
+
+#define ADC_INVERSION_REG      67<<11 /** picked up from after ADC_OFFSET_REG*/
+
 
  
 /*   constant FPGAVersionReg_c  : integer:= 0; */

@@ -55,6 +55,14 @@ extern int withGotthard;
 
 int adcvpp=0x4;
 
+/** for jungfrau reinitializing macro later */
+int N_CHAN=NCHAN;
+int N_CHIP=NCHIP;
+int N_DAC=NDAC;
+int N_ADC=NADC;
+int N_CHANS=NCHANS;
+
+
 int init_detector(int b, int checkType) {
   
   int i;
@@ -118,6 +126,7 @@ int init_detector(int b, int checkType) {
 	 printf("\nBoard Revision:0x%x\n",(bus_r(PCB_REV_REG)&BOARD_REVISION_MASK));
 	 if(myDetectorType == JUNGFRAU)
 		 initDetector(); /*allocating detectorModules, detectorsDacs etc for "settings", also does allocate RAM*/
+	 dataBytes=NMAXMOD*N_CHIP*N_CHAN*2; /**Nchip and Nchan real values get assigned in initDetector()*/
     printf("Initializing Detector\n");
     //bus_w16(CONTROL_REG, SYNC_RESET); // reset registers
 #endif
@@ -135,6 +144,14 @@ int init_detector(int b, int checkType) {
     initDac(0);    initDac(8); //initializes the two dacs
 
     if(myDetectorType==JUNGFRAU){
+    	/** for jungfrau reinitializing macro */
+    	N_CHAN=JUNGFRAU_NCHAN;
+    	N_CHIP=JUNGFRAU_NCHIP;
+    	N_DAC=JUNGFRAU_NDAC;
+    	N_ADC=JUNGFRAU_NADC;
+    	N_CHANS=JUNGFRAU_NCHANS;
+
+
     	//set dacs
     	int retval = -1;
     	int dacvalues[14][2]={
@@ -1242,13 +1259,13 @@ int set_channel(int file_des) {
 #ifdef VERBOSE
   printf("channel number is %d, chip number is %d, module number is %d, register is %lld\n", myChan.chan,myChan.chip, myChan.module, myChan.reg);
 #endif
-  
+
   if (ret==OK) {
     if (myChan.module>=getNModBoard()) 
       ret=FAIL;
-    if (myChan.chip>=NCHIP) 
+    if (myChan.chip>=N_CHIP)
       ret=FAIL;
-    if (myChan.chan>=NCHAN) 
+    if (myChan.chan>=N_CHAN)
       ret=FAIL;
     if (myChan.module<0)
       myChan.module=ALLMOD;
@@ -1322,13 +1339,13 @@ int get_channel(int file_des) {
   }  
   if (ret==OK) {
     ret=FAIL;
-    if (ichip>=0 && ichip<NCHIP) {
+    if (ichip>=0 && ichip<N_CHIP) {
       ret=OK;
     }
   }   
   if (ret==OK) {
     ret=FAIL;
-    if (ichan>=0 && ichan<NCHAN) {
+    if (ichan>=0 && ichan<N_CHAN) {
       ret=OK;
     }
   }   
@@ -1368,12 +1385,12 @@ int get_channel(int file_des) {
 int set_chip(int file_des) {
 
   sls_detector_chip myChip;
-  int ch[NCHAN];
+  int ch[N_CHAN];
   int n, retval;
   int ret=OK;
   
 
-  myChip.nchan=NCHAN;
+  myChip.nchan=N_CHAN;
   myChip.chanregs=ch;
 
 
@@ -1400,7 +1417,7 @@ int set_chip(int file_des) {
       ret=FAIL;
     if  (myChip.module<0) 
       myChip.module=ALLMOD;
-    if (myChip.chip>=NCHIP) 
+    if (myChip.chip>=N_CHIP)
       ret=FAIL;
   }
     if (differentClients==1 && lockStatus==1) {
@@ -1456,7 +1473,7 @@ int get_chip(int file_des) {
   }  
   if (ret==OK) {
     ret=FAIL;
-    if (ichip>=0 && ichip<NCHIP) {
+    if (ichip>=0 && ichip<N_CHIP) {
       ret=OK;
     }
   }   
@@ -1499,14 +1516,14 @@ int set_module(int file_des) {
   int ret=OK;
   int dr;
   sls_detector_module myModule;
-  int *myDac=malloc(NDAC*sizeof(int));
-  int *myAdc=malloc(NADC*sizeof(int));
+  int *myDac=malloc(N_DAC*sizeof(int));
+  int *myAdc=malloc(N_ADC*sizeof(int));
   int *myChip=NULL;
   int *myChan=NULL;
   /*not required for jungfrau. so save memory*/
   if(myDetectorType != JUNGFRAU){
-	  myChip=malloc(NCHIP*sizeof(int));
-	  myChan=malloc(NCHIP*NCHAN*sizeof(int));
+	  myChip=malloc(N_CHIP*sizeof(int));
+	  myChan=malloc(N_CHIP*N_CHAN*sizeof(int));
   }
 
   dr=setDynamicRange(-1); /* move this down to after initialization?*/
@@ -1543,10 +1560,10 @@ int set_module(int file_des) {
 	}
 }
 
-  myModule.ndac=NDAC;
-  myModule.nchip=NCHIP;
-  myModule.nchan=NCHAN*NCHIP;
-  myModule.nadc=NADC;
+  myModule.ndac=N_DAC;
+  myModule.nchip=N_CHIP;
+  myModule.nchan=N_CHAN*N_CHIP;
+  myModule.nadc=N_ADC;
   
 #ifdef VERBOSE
   printf("Setting module\n");
@@ -1626,16 +1643,16 @@ int get_module(int file_des) {
   int   imod;
   int n;
   sls_detector_module myModule;
-  int *myDac=malloc(NDAC*sizeof(int));
+  int *myDac=malloc(N_DAC*sizeof(int));
   int *myChip=NULL;
   int *myChan=NULL;
   int *myAdc=NULL;
   
   /*not required for jungfrau. so save memory*/
   if(myDetectorType != JUNGFRAU){
-	myChip=malloc(NCHIP*sizeof(int));
-	myChan=malloc(NCHIP*NCHAN*sizeof(int));
-	myAdc=malloc(NADC*sizeof(int));
+	myChip=malloc(N_CHIP*sizeof(int));
+	myChan=malloc(N_CHIP*N_CHAN*sizeof(int));
+	myAdc=malloc(N_ADC*sizeof(int));
   }
 
 
@@ -1672,10 +1689,10 @@ int get_module(int file_des) {
     }
   }
 
-  myModule.ndac=NDAC;
-  myModule.nchip=NCHIP;
-  myModule.nchan=NCHAN*NCHIP;
-  myModule.nadc=NADC;
+  myModule.ndac=N_DAC;
+  myModule.nchip=N_CHIP;
+  myModule.nchan=N_CHAN*N_CHIP;
+  myModule.nadc=N_ADC;
   
 
 
@@ -2901,7 +2918,7 @@ int load_image(int file_des) {
 	int ret=OK;
 	int n;
 	enum imageType index;
-	short int ImageVals[NCHAN*NCHIP];
+	short int ImageVals[N_CHAN*N_CHIP];
 
 	sprintf(mess,"Loading image failed\n");
 
@@ -3066,7 +3083,7 @@ int read_counter_block(int file_des) {
 	int n;
 	int startACQ;
 	//char *retval=NULL;
-	short int CounterVals[NCHAN*NCHIP];
+	short int CounterVals[N_CHAN*N_CHIP];
 
 	sprintf(mess,"Read counter block failed\n");
 

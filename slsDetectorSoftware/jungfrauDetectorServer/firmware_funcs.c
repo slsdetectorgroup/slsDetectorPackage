@@ -110,22 +110,20 @@ enum externalSignalFlag  signals[4]={EXT_SIG_OFF, EXT_SIG_OFF, EXT_SIG_OFF, EXT_
 
 int withGotthard = 0;
 
-#ifdef MCB_FUNCS
-extern const int nChans;
-extern const int nChips;
-//extern const int nDacs;
-//extern const int nAdcs;
-#endif
-#ifndef MCB_FUNCS
-
-const int nChans=NCHAN;
-const int nChips=NCHIP;
-const int nDacs=NDAC;
-const int nAdcs=NADC;
-#endif
+/**is not const because this value will change after initDetector, is removed from mcb_funcs.c cuz its not used anywhere
+ * why is this used anywhere instead of macro*/
+int nChans=NCHAN;
+int nChips=NCHIP;
+int nDacs=NDAC;
+int nAdcs=NADC;
 
 extern enum detectorType myDetectorType;
-
+/** for jungfrau reinitializing macro later  in server_funcs.c in initDetector*/
+extern int N_CHAN;
+extern int N_CHIP;
+extern int N_DAC;
+extern int N_ADC;
+extern int N_CHANS;
 
 int mapCSP0(void) {
   printf("Mapping memory\n");
@@ -1360,7 +1358,7 @@ ROI *setROI(int nroi,ROI* arg,int *retvalsize, int *ret) {
       for (i=0; i<nroi; i++) {
 	printf("iroi: %d  - %d %d %d %d\n",i, arg[i].xmin, arg[i].xmax, arg[i].ymin, arg[i].ymax);
 	for (ich=arg[i].xmin; ich<=arg[i].xmax; ich++) {
-	  if (ich>=0 && ich<NCHAN)
+	  if (ich>=0 && ich<N_CHAN)
 	    adcDisableMask&=~(1<<ich);
 	  else
 	    break;
@@ -1379,7 +1377,7 @@ ROI *setROI(int nroi,ROI* arg,int *retvalsize, int *ret) {
    *retvalsize=0;
    retval[0].xmin=0;
    retval[0].xmax=0; 
-   for (ich=0 ; ich<NCHAN ; ich++) {
+   for (ich=0 ; ich<N_CHAN ; ich++) {
      if ((~adcDisableMask)&(1<<ich)) {
        if (ich==0) {
 	 *retvalsize+=1;
@@ -1636,8 +1634,8 @@ int setADC(int adc){
 		ipPacketSize= DEFAULT_IP_PACKETSIZE;
 		udpPacketSize=DEFAULT_UDP_PACKETSIZE;
 		//set channel mask
-		nchips = NCHIP;
-		nchans = NCHANS;
+		nchips = N_CHIP;
+		nchans = N_CHANS;
 		mask = ACTIVE_ADC_MASK;
 	}/*
 	//with moench module 1 adc -- NOT IMPLEMENTED
@@ -2353,7 +2351,7 @@ int getDynamicRange() {
 
   nSamples=bus_r(NSAMPLES_REG);
   getChannels();
-  dataBytes=nModX*NCHIP*getChannels()*2;
+  dataBytes=nModX*N_CHIP*getChannels()*2;
   return dynamicRange*bus_r(NSAMPLES_REG);//nSamples;
 }
 
@@ -2402,7 +2400,7 @@ int setStoreInRAM(int b) {
 int getChannels() {
   int nch=32;
   int i;
-  for (i=0; i<NCHAN; i++) {
+  for (i=0; i<N_CHAN; i++) {
     if (adcDisableMask & (1<<i)) nch--;
   }
   return nch;

@@ -7,20 +7,22 @@
 
 
 // Hardware definitions
-#ifdef JUNGFRAU_DHANYA
-#define NCHAN 			(256*256)
-#define NCHIP 			8
-#define NADC			0
-#else
+#define NMAXMODY 1
+#define NMAXMOD (NMAXMODX*NMAXMODY)
+
 #define NCHAN 32
 #define NCHIP 1
 #define NADC 1
-#endif
-
 #define NDAC 16
 #define NMAXMODX  1
-#define NMAXMODY 1
-#define NMAXMOD (NMAXMODX*NMAXMODY)
+#define NCHANS (NCHAN*NCHIP*NMAXMOD)
+#define NDACS (NDAC*NMAXMOD)
+
+#define JUNGFRAU_NCHAN 			(256*256)
+#define JUNGFRAU_NCHIP 			8
+#define JUNGFRAU_NADC			0
+#define JUNGFRAU_NDAC 			16
+#define JUNGFRAU_NCHANS 		(JUNGFRAU_NCHAN*JUNGFRAU_NCHIP*NMAXMOD)
 
 
 
@@ -28,11 +30,6 @@
 #define GOTTHARDNCHAN 128
 #define GOTTHARDNCHIP 10
 
-
-
-
-#define NCHANS (NCHAN*NCHIP*NMAXMOD)
-#define NDACS (NDAC*NMAXMOD)
 
 #define NTRIMBITS 6
 #define NCOUNTBITS 24

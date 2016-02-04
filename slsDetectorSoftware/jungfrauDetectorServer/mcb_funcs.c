@@ -43,6 +43,7 @@ int *detectorAdcs=NULL;
 
 ROI rois[MAX_ROIS];
 int nROI=0;
+extern enum detectorType myDetectorType;
 
 
 int initDetector() {
@@ -58,30 +59,33 @@ int initDetector() {
 
   detectorModules=malloc(n*sizeof(sls_detector_module));
   detectorDacs=malloc(n*NDAC*sizeof(int));
-#ifndef JUNGFRAU_DHANYA
-  detectorChips=malloc(n*NCHIP*sizeof(int));
-  detectorChans=malloc(n*NCHIP*NCHAN*sizeof(int));
   detectorAdcs=malloc(n*NADC*sizeof(int));
-#endif
+  detectorChips=NULL;
+  detectorChans=NULL;
+  detectorAdcs=NULL;
+  if(myDetectorType != JUNGFRAU){
+	  detectorChips=malloc(n*NCHIP*sizeof(int));
+	  detectorChans=malloc(n*NCHIP*NCHAN*sizeof(int));
+  }
 
 #ifdef VERBOSE
   printf("modules from 0x%x to 0x%x\n",(unsigned int)(detectorModules), (unsigned int)(detectorModules+n));
   printf("dacs from 0x%x to 0x%x\n",(unsigned int)(detectorDacs), (unsigned int)(detectorDacs+n*NDAC));
-#ifndef JUNGFRAU_DHANYA
-  printf("chips from 0x%x to 0x%x\n",(unsigned int)(detectorChips), (unsigned int)(detectorChips+n*NCHIP));
-  printf("chans from 0x%x to 0x%x\n",(unsigned int)(detectorChans), (unsigned int)(detectorChans+n*NCHIP*NCHAN));
   printf("adcs from 0x%x to 0x%x\n",(unsigned int)(detectorAdcs), (unsigned int)(detectorAdcs+n*NADC));
-#endif
+  if(myDetectorType != JUNGFRAU){
+	  printf("chips from 0x%x to 0x%x\n",(unsigned int)(detectorChips), (unsigned int)(detectorChips+n*NCHIP));
+	  printf("chans from 0x%x to 0x%x\n",(unsigned int)(detectorChans), (unsigned int)(detectorChans+n*NCHIP*NCHAN));
+  }
 #endif
 
 
   for (imod=0; imod<n; imod++) {
     (detectorModules+imod)->dacs=detectorDacs+imod*NDAC;
-#ifndef JUNGFRAU_DHANYA
-    (detectorModules+imod)->adcs=detectorAdcs+imod*NADC;
-    (detectorModules+imod)->chipregs=detectorChips+imod*NCHIP;
-    (detectorModules+imod)->chanregs=detectorChans+imod*NCHIP*NCHAN;
-#endif
+	(detectorModules+imod)->adcs=detectorAdcs+imod*NADC;
+    if(myDetectorType != JUNGFRAU){
+    	(detectorModules+imod)->chipregs=detectorChips+imod*NCHIP;
+    	(detectorModules+imod)->chanregs=detectorChans+imod*NCHIP*NCHAN;
+    }
     (detectorModules+imod)->ndac=NDAC;
     (detectorModules+imod)->nadc=NADC;
     (detectorModules+imod)->nchip=NCHIP;
@@ -217,28 +221,27 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
  
   // printf("copying gain and offset %f %f to %f %f\n",srcMod->gain,srcMod->offset,destMod->gain,destMod->offset);
  
-#ifndef JUNGFRAU_DHANYA
-  for (ichip=0; ichip<(srcMod->nchip); ichip++) {
-    if (*((srcMod->chipregs)+ichip)>=0)
-	*((destMod->chipregs)+ichip)=*((srcMod->chipregs)+ichip);
+  if(myDetectorType != JUNGFRAU){
+    for (ichip=0; ichip<(srcMod->nchip); ichip++) {
+      if (*((srcMod->chipregs)+ichip)>=0)
+	  *((destMod->chipregs)+ichip)=*((srcMod->chipregs)+ichip);
+    }
+    for (ichan=0; ichan<(srcMod->nchan); ichan++) {
+      if (*((srcMod->chanregs)+ichan)>=0)
+	  *((destMod->chanregs)+ichan)=*((srcMod->chanregs)+ichan);
+    }
   }
-  for (ichan=0; ichan<(srcMod->nchan); ichan++) {
-    if (*((srcMod->chanregs)+ichan)>=0)
-	*((destMod->chanregs)+ichan)=*((srcMod->chanregs)+ichan);
-  }
-#endif
 
   for (idac=0; idac<(srcMod->ndac); idac++) {
     if (*((srcMod->dacs)+idac)>=0)
 	*((destMod->dacs)+idac)=*((srcMod->dacs)+idac);
   }
 
-#ifndef JUNGFRAU_DHANYA
   for (iadc=0; iadc<(srcMod->nadc); iadc++) {
     if (*((srcMod->adcs)+iadc)>=0)
 	*((destMod->adcs)+iadc)=*((srcMod->adcs)+iadc);
   }
-#endif
+
   return ret;
 }
 
@@ -900,9 +903,9 @@ int setSettings(int i, int imod) {
 	}
 
 	thisSettings=isett;
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	printf("detector settings are %d\n",thisSettings);
-#endif
+//#endif
 	return thisSettings;
 }
 

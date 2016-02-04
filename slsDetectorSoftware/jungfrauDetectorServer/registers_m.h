@@ -19,21 +19,21 @@
 #define FPGA_INIT_PAT     0x60008
 #define FPGA_INIT_ADDR    0xb0000000
 
-#ifdef JUNGFRAU_DHANYA
-#define POWER_ON_REG 			0x5e<<11
-#define ADCREG1 				0x08
-#define ADCREG2 				0x14
-#define ADCREG3 				0x4
-#define ADCREG4 				0x5
-#define ADCREG_VREFS 			0x18
-#define ADC_PIPELINE_REG 		0x42<<11 // adc_offset_reg
-#define DBIT_PIPELINE_REG 		0x59<<11
-#define MEM_MACHINE_FIFOS_REG 	0x4f<<11
-#define CONFGAIN_REG 			0x5d<<11 /** was actually GAIN_REG which seems to be set to 0 later in this file*/
-#endif
+//#ifdef JUNGFRAU_DHANYA
+#define POWER_ON_REG 				0x5e<<11
+#define ADCREG1 					8  //same as PLL_BANDWIDTH_REG
+#define ADCREG2 					20 //0x14
+#define ADCREG3 					4  //same as PLL_M_COUNTER_REG
+#define ADCREG4 					5  //same as PLL_C_COUNTER_REG
+#define ADCREG_VREFS 				24 //0x18
+#define DBIT_PIPELINE_REG 			89<<11 //0x59 same PATTERN_N_LOOP2_REG
+#define MEM_MACHINE_FIFOS_REG 		79<<11 //0x4f same as CONTROL_REG
+#define CONFGAIN_REG 				93<<11 //0x5d same as DAQ_REG
+#define ADC_PIPELINE_REG 			66<<11 //0x42 same as ADC_OFFSET_REG
+//#endif
 
-
-#define ADC_INVERSION_REG      67<<11 /** picked up from after ADC_OFFSET_REG*/
+#define ADC_OFFSET_REG      		66<<11 //same as ADC_PIPELINE_REG
+#define ADC_INVERSION_REG   		67<<11
 
 
  
@@ -131,7 +131,7 @@
 //#define ADC_SYNC_REG          66<<11//0x19<<11
 //#define HV_REG                67<<11//0x20<<11
 
-#define ADC_OFFSET_REG      66<<11
+
 
 
 //#define MUTIME_REG            0x1a<<11

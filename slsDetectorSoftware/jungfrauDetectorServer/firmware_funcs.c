@@ -124,7 +124,7 @@ const int nDacs=NDAC;
 const int nAdcs=NADC;
 #endif
 
-
+extern enum detectorType myDetectorType;
 
 
 int mapCSP0(void) {
@@ -1140,11 +1140,10 @@ u_int32_t testRAM(void) {
 
 
 int getNModBoard() {
-#ifdef JUNGFRAU_DHANYA
+if(myDetectorType == JUNGFRAU)
 	return 1;
-#else
+else
   return 32;//nModX;
-#endif
 }
 
 int setNMod(int n) {
@@ -1343,14 +1342,15 @@ int64_t getFramesFromStart(){
 
 
 ROI *setROI(int nroi,ROI* arg,int *retvalsize, int *ret) {
-#ifdef JUNGFRAU_DHANYA
+
+  if(myDetectorType == JUNGFRAU)
 	cprintf(RED,"ROI Not implemented for Jungfrau yet\n");
-	return NULL;
-#else
+  return NULL;
+
 
   ROI retval[MAX_ROIS];
   int i, ich;
-  adcDisableMask=0xfffffffff; /**has one f too many?, dhanya*/
+  adcDisableMask=0xfffffffff; /*warning: integer constant is too large for ‘long’ type,warning: large integer implicitly truncated to unsigned type*/
 
   printf("Setting ROI\n");
   if (nroi>=0) {
@@ -1403,15 +1403,13 @@ ROI *setROI(int nroi,ROI* arg,int *retvalsize, int *ret) {
      }
    }
    getDynamicRange();
-   return retval;
-#endif
+   return retval;/*warning: function returns address of local variable*/
+
 }
 
 
 int loadImage(int index, short int ImageVals[]){
 
-	index;
-	Imagevals;
 	printf("loadImage Not implemented yet\n");
 
 	/*
@@ -1700,7 +1698,7 @@ ip.ip_destip         = destip;
 
 
  count=sizeof(ip);
-  addr=&(ip);
+  addr=&(ip); /* warning: assignment from incompatible pointer type */
   while( count > 1 )  {
     sum += *addr++;
     count -= 2;
@@ -2348,15 +2346,15 @@ int setDynamicRange(int dr) {
 
 
 int getDynamicRange() {
-#ifdef JUNGFRAU_DHANYA
+  if(myDetectorType == JUNGFRAU){
 	dynamicRange=16;
-	return dynamicRange;
-#else
+    return dynamicRange;
+  }
+
   nSamples=bus_r(NSAMPLES_REG);
   getChannels();
   dataBytes=nModX*NCHIP*getChannels()*2;
   return dynamicRange*bus_r(NSAMPLES_REG);//nSamples;
-#endif
 }
 
 int testBus() {
@@ -2866,7 +2864,7 @@ int readCounterBlock(int startACQ, short int CounterVals[]){
 		printf("Value of multipurpose reg:%d\n",bus_r(MULTI_PURPOSE_REG));
 #endif
 
-		memcpy(CounterVals,ptr,dataBytes);
+		memcpy(CounterVals,ptr,dataBytes); /*warning: passing argument 2 of ‘memcpy’ discards qualifiers from pointer target type*/
 #ifdef VERBOSE
 		int i;
 		printf("Copied counter memory block with size of %d bytes..\n",dataBytes);
@@ -2936,7 +2934,7 @@ int resetCounterBlock(int startACQ){
 #endif
 
 
-		memcpy(counterVals,ptr,dataBytes);
+		memcpy(counterVals,ptr,dataBytes);/*warning: passing argument 2 of ‘memcpy’ discards qualifiers from pointer target type*/
 #ifdef VERBOSE
 		int i;
 		printf("Copied counter memory block with size of %d bytes..\n",(int)sizeof(counterVals));
@@ -3128,7 +3126,7 @@ uint64_t writePatternWord(int addr, uint64_t word) {
   return readPatternWord(addr);
 }
 uint64_t writePatternIOControl(uint64_t word) {
-  if (word!=0xffffffffffffffff) {
+  if (word!=0xffffffffffffffff) { /*warning: integer constant is too large for ‘long’ type*/
     //    printf("%llx %llx %lld",get64BitReg(PATTERN_IOCTRL_REG_LSB,PATTERN_IOCTRL_REG_MSB),word);
     set64BitReg(word,PATTERN_IOCTRL_REG_LSB,PATTERN_IOCTRL_REG_MSB);
     //  printf("************ write IOCTRL (%x)\n",PATTERN_IOCTRL_REG_MSB);
@@ -3137,7 +3135,7 @@ uint64_t writePatternIOControl(uint64_t word) {
     
 }
 uint64_t writePatternClkControl(uint64_t word) {
-  if (word!=0xffffffffffffffff) set64BitReg(word,PATTERN_IOCLKCTRL_REG_LSB,PATTERN_IOCLKCTRL_REG_MSB);
+  if (word!=0xffffffffffffffff) set64BitReg(word,PATTERN_IOCLKCTRL_REG_LSB,PATTERN_IOCLKCTRL_REG_MSB);/*warning: integer constant is too large for ‘long’ type*/
   return get64BitReg(PATTERN_IOCLKCTRL_REG_LSB,PATTERN_IOCLKCTRL_REG_MSB);
     
 }
@@ -3282,7 +3280,7 @@ void initDac(int dacnum) {
 
 
     printf("data bit=%d, clkbit=%d, csbit=%d",ddx,cdx,csdx);
-    codata=((((0x6)<<4)+((0xf))<<16)+((0x0<<4)&0xfff0));  
+    codata=((((0x6)<<4)+((0xf))<<16)+((0x0<<4)&0xfff0));  /*warning: suggest parentheses around + or - inside shift*/
   
       valw=0xffff; bus_w(offw,(valw)); // start point
       valw=((valw&(~(0x1<<csdx))));bus_w(offw,valw); //chip sel bar down

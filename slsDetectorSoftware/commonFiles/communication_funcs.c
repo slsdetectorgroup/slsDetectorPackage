@@ -403,7 +403,13 @@ int sendChip(int file_des, sls_detector_chip *myChip) {
   return ts;			  
 }
 
+
 int sendModule(int file_des, sls_detector_module *myMod) {
+	return sendModuleGeneral(file_des, myMod, 1);
+}
+
+
+int sendModuleGeneral(int file_des, sls_detector_module *myMod, int sendAll) {
   int ts=0;
 #ifdef VERBOSE
   int idac;
@@ -421,11 +427,12 @@ int sendModule(int file_des, sls_detector_module *myMod) {
   ts+=sendData(file_des,&(myMod->nadc),sizeof(myMod->nadc),INT32);
   ts+=sendData(file_des,&(myMod->reg),sizeof(myMod->reg),INT32);
   ts+=sendData(file_des,myMod->dacs,sizeof(myMod->ndac),OTHER);
-#ifndef JUNGFRAU_DHANYA
   ts+=sendData(file_des,myMod->adcs,sizeof(myMod->nadc),OTHER);
-  ts+=sendData(file_des,myMod->chipregs,sizeof(myMod->nchip),OTHER);
-  ts+=sendData(file_des,myMod->chanregs,sizeof(myMod->nchan),OTHER);
-#endif
+  /*some detectors dont require sending all trimbits etc.*/
+  if(sendAll){
+    ts+=sendData(file_des,myMod->chipregs,sizeof(myMod->nchip),OTHER);
+    ts+=sendData(file_des,myMod->chanregs,sizeof(myMod->nchan),OTHER);
+  }
   ts+=sendData(file_des,&(myMod->gain), sizeof(myMod->gain),OTHER);
   ts+=sendData(file_des,&(myMod->offset), sizeof(myMod->offset),OTHER);
 
@@ -438,21 +445,22 @@ int sendModule(int file_des, sls_detector_module *myMod) {
   for (idac=0; idac< nDacs; idac++) 
     printf("dac %d is %d\n",idac,(int)myMod->dacs[idac]);
 #endif
-
-#ifndef JUNGFRAU_DHANYA
   ts+= sendData(file_des,myMod->adcs,sizeof(dacs_t)*nAdcs,INT32);
 #ifdef VERBOSE
   printf("adcs %d of size %d sent\n",myMod->module, ts);
 #endif
-  ts+=sendData(file_des,myMod->chipregs,sizeof(int)*nChips,INT32);
+
+  /*some detectors dont require sending all trimbits etc.*/
+  if(sendAll){
+    ts+=sendData(file_des,myMod->chipregs,sizeof(int)*nChips,INT32);
 #ifdef VERBOSE
-  printf("chips %d of size %d sent\n",myMod->module, ts);
+    printf("chips %d of size %d sent\n",myMod->module, ts);
 #endif
-  ts+=sendData(file_des,myMod->chanregs,sizeof(int)*nChans,INT32);
+    ts+=sendData(file_des,myMod->chanregs,sizeof(int)*nChans,INT32);
 #ifdef VERBOSE
-  printf("chans %d of size %d sent - %d\n",myMod->module, ts, myMod->nchan);
+    printf("chans %d of size %d sent - %d\n",myMod->module, ts, myMod->nchan);
 #endif
-#endif
+  }
 
 #ifdef VERBOSE
   printf("module %d of size %d sent register %x\n",myMod->module, ts, myMod->reg);
@@ -513,7 +521,12 @@ int receiveChip(int file_des, sls_detector_chip* myChip) {
   return ts;
 }
 
+
 int  receiveModule(int file_des, sls_detector_module* myMod) {
+	return receiveModuleGeneral(file_des,myMod,1);
+}
+
+int  receiveModuleGeneral(int file_des, sls_detector_module* myMod, int receiveAll) {
   int ts=0;
   dacs_t *dacptr=myMod->dacs;
   dacs_t *adcptr=myMod->adcs;
@@ -534,11 +547,12 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
   ts+=receiveData(file_des,&(myMod->nadc),sizeof(myMod->nadc),INT32);
   ts+=receiveData(file_des,&(myMod->reg),sizeof(myMod->reg),INT32);
   ts+=receiveData(file_des,myMod->dacs,sizeof(myMod->ndac),INT32);
-#ifndef JUNGFRAU_DHANYA
   ts+=receiveData(file_des,myMod->adcs,sizeof(myMod->nadc),INT32);
-  ts+=receiveData(file_des,myMod->chipregs,sizeof(myMod->nchip),INT32);
-  ts+=receiveData(file_des,myMod->chanregs,sizeof(myMod->nchan),INT32);
-#endif
+  /*some detectors dont require sending all trimbits etc.*/
+  if(receiveAll){
+    ts+=receiveData(file_des,myMod->chipregs,sizeof(myMod->nchip),INT32);
+    ts+=receiveData(file_des,myMod->chanregs,sizeof(myMod->nchan),INT32);
+  }
   ts+=receiveData(file_des,&(myMod->gain), sizeof(myMod->gain),OTHER);
   ts+=receiveData(file_des,&(myMod->offset), sizeof(myMod->offset),OTHER);
 
@@ -606,7 +620,6 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
     return FAIL;
   }
 
-#ifndef JUNGFRAU_DHANYA
   if (nadcdiff<=0) {
     ts+=receiveData(file_des,myMod->adcs, sizeof(dacs_t)*nAdcs,INT32);
 #ifdef VERBOSE
@@ -621,34 +634,38 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
     return FAIL;
   }
 
-  if (nchipdiff<=0) {
-    ts+=receiveData(file_des,myMod->chipregs, sizeof(int)*nChips,INT32);
-#ifdef VERBOSE
-    printf("chips received\n");
-#endif
-  } else {
-    chipptr=(int*)malloc(nchipdiff*sizeof(int));
-    myMod->nchip=nchipold;
-    ts+=receiveData(file_des,myMod->chipregs, sizeof(int)*nchipold,INT32);
-    ts+=receiveData(file_des,chipptr, sizeof(int)*nchipdiff,INT32);
-    free(chipptr);
-    return FAIL;
-  }
 
-  if (nchandiff<=0) {
-    ts+=receiveData(file_des,myMod->chanregs, sizeof(int)*nChans,INT32);
+  /*some detectors dont require sending all trimbits etc.*/
+  if(receiveAll){
+
+    if (nchipdiff<=0) {
+      ts+=receiveData(file_des,myMod->chipregs, sizeof(int)*nChips,INT32);
 #ifdef VERBOSE
-    printf("chans received\n");
+      printf("chips received\n");
 #endif
-  } else {
-    chanptr=(int*)malloc(nchandiff*sizeof(int));
-    myMod->nchan=nchanold;
-    ts+=receiveData(file_des,myMod->chanregs, sizeof(int)*nchanold,INT32);
-    ts+=receiveData(file_des,chanptr, sizeof(int)*nchandiff,INT32);
-    free(chanptr);
-    return FAIL;
+    } else {
+      chipptr=(int*)malloc(nchipdiff*sizeof(int));
+      myMod->nchip=nchipold;
+      ts+=receiveData(file_des,myMod->chipregs, sizeof(int)*nchipold,INT32);
+      ts+=receiveData(file_des,chipptr, sizeof(int)*nchipdiff,INT32);
+      free(chipptr);
+      return FAIL;
+    }
+
+    if (nchandiff<=0) {
+      ts+=receiveData(file_des,myMod->chanregs, sizeof(int)*nChans,INT32);
+#ifdef VERBOSE
+      printf("chans received\n");
+#endif
+    } else {
+      chanptr=(int*)malloc(nchandiff*sizeof(int));
+      myMod->nchan=nchanold;
+      ts+=receiveData(file_des,myMod->chanregs, sizeof(int)*nchanold,INT32);
+      ts+=receiveData(file_des,chanptr, sizeof(int)*nchandiff,INT32);
+      free(chanptr);
+      return FAIL;
+    }
   }
-#endif
 #ifdef VERBOSE
   printf("received module %d of size %d register %x\n",myMod->module,ts,myMod->reg);
 #endif

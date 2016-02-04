@@ -1083,18 +1083,18 @@ int slsDetector::sendModule(sls_detector_module *myMod) {
 	ts+=controlSocket->SendDataOnly(&(myMod->nadc),sizeof(myMod->nadc));
 	ts+=controlSocket->SendDataOnly(&(myMod->reg),sizeof(myMod->reg));
 	ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(myMod->ndac));
+	ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(myMod->nadc));
 
 	if(thisDetector->myDetectorType != JUNGFRAU){
-		ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(myMod->nadc));
 		ts+=controlSocket->SendDataOnly(myMod->chipregs,sizeof(myMod->nchip));
 		ts+=controlSocket->SendDataOnly(myMod->chanregs,sizeof(myMod->nchan));
 	}
 	ts+=controlSocket->SendDataOnly(&(myMod->gain),sizeof(myMod->gain));
 	ts+=controlSocket->SendDataOnly(&(myMod->offset), sizeof(myMod->offset));
 	ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(dacs_t)*(myMod->ndac));
+	ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(dacs_t)*(myMod->nadc));
 
 	if(thisDetector->myDetectorType != JUNGFRAU){
-		ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(dacs_t)*(myMod->nadc));
 		ts+=controlSocket->SendDataOnly(myMod->chipregs,sizeof(int)*(myMod->nchip));
 		ts+=controlSocket->SendDataOnly(myMod->chanregs,sizeof(int)*(myMod->nchan));
 	}
@@ -1151,8 +1151,9 @@ int  slsDetector::receiveModule(sls_detector_module* myMod) {
 	ts+=controlSocket->ReceiveDataOnly(&(myMod->nadc),sizeof(myMod->nadc));
 	ts+=controlSocket->ReceiveDataOnly(&(myMod->reg),sizeof(myMod->reg));
 	ts+=controlSocket->ReceiveDataOnly(myMod->dacs,sizeof(myMod->ndac));
+	ts+=controlSocket->ReceiveDataOnly(myMod->adcs,sizeof(myMod->nadc));
+
 	if(thisDetector->myDetectorType != JUNGFRAU){
-		ts+=controlSocket->ReceiveDataOnly(myMod->adcs,sizeof(myMod->nadc));
 		ts+=controlSocket->ReceiveDataOnly(myMod->chipregs,sizeof(myMod->nchip));
 		ts+=controlSocket->ReceiveDataOnly(myMod->chanregs,sizeof(myMod->nchan));
 	}
@@ -1172,12 +1173,12 @@ int  slsDetector::receiveModule(sls_detector_module* myMod) {
 #ifdef VERBOSE
   std::cout<< "received dacs " << myMod->module << " of size "<< ts << std::endl;
 #endif
+  ts+=controlSocket->ReceiveDataOnly(myMod->adcs,sizeof(dacs_t)*(myMod->nadc));
+#ifdef VERBOSE
+  std::cout<< "received adcs " << myMod->module << " of size "<< ts << std::endl;
+#endif
 
   if(thisDetector->myDetectorType != JUNGFRAU){
-	  ts+=controlSocket->ReceiveDataOnly(myMod->adcs,sizeof(dacs_t)*(myMod->nadc));
-#ifdef VERBOSE
-	  std::cout<< "received adcs " << myMod->module << " of size "<< ts << std::endl;
-#endif
 	  ts+=controlSocket->ReceiveDataOnly(myMod->chipregs,sizeof(int)*(myMod->nchip));
 #ifdef VERBOSE
 	  std::cout<< "received chips " << myMod->module << " of size "<< ts << std::endl;

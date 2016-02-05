@@ -169,7 +169,10 @@ int  slsDetectorUtils::acquire(int delflag){
   cout << " starting thread " << endl;
 #endif
 
-
+  //resets frames caught in receiver
+  if(receiver){
+    resetFramesCaught();
+  }
 
   for(int im=0;im<nm;im++) {
 
@@ -177,10 +180,6 @@ int  slsDetectorUtils::acquire(int delflag){
     cout << " starting measurement "<< im << " of " << nm << endl;
 #endif
 
-    //resets frames caught in receiver
-    if(receiver){
-    	resetFramesCaught();
-    }
 
     //cout << "data thread started " << endl;
  

@@ -2518,7 +2518,7 @@ int set_timer(int file_des) {
 			switch(ind) {
 #ifdef EIGERD
 			case SUBFRAME_ACQUISITION_TIME:
-				if (tns > MAX_SUBFRAME_EXPOSURE_VAL ){
+				if (tns > (MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) ){
 					ret=FAIL;
 					strcpy(mess,"Sub Frame exposure time should not exceed 5.368 seconds\n");
 					break;

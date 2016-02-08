@@ -22,7 +22,7 @@
 #define HEADERLENGTH 12
 
 #define DEFAULT_SUBFRAME_EXPOSURE_VAL 2621440 /** default value for sub frame value 2.6ms*/
-#define MAX_SUBFRAME_EXPOSURE_VAL	0x1FFFFFFF /** 29 bit register for max subframe exposure value */
+#define MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS	0x1FFFFFFF /** 29 bit register for max subframe exposure value */
 
 /** maximum rois */
 #define MAX_ROIS 100

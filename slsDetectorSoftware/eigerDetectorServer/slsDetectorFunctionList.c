@@ -489,6 +489,15 @@ int pulseChip(int n){
 	return OK;
 }
 
+int setRateCorrection(int n){
+	if(n>=0){
+;
+		Feb_Control_PrintCorrectedValues();
+	}
+
+	return 0;
+}
+
 
 
 int setModule(sls_detector_module myMod, int* gain, int* offset){

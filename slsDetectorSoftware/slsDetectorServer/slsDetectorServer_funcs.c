@@ -179,6 +179,7 @@ int function_table() {
 	flist[F_PULSE_PIXEL]=&pulse_pixel;
 	flist[F_PULSE_PIXEL_AND_MOVE]=&pulse_pixel_and_move;
 	flist[F_PULSE_CHIP]=&pulse_chip;
+	flist[F_SET_RATE_CORRECT]=&rate_correct;
 
 
 #ifdef VERBOSE
@@ -3815,3 +3816,59 @@ int pulse_chip(int file_des) {
 
 }
 
+
+
+
+int rate_correct(int file_des) {
+	int64_t tau_ns=-1;
+	int n;
+	int64_t retval=-1;
+	int ret=OK,ret1=OK;
+
+	sprintf(mess,"can't set/unset rate correction\n");
+
+	n = receiveData(file_des,&tau_ns,sizeof(tau_ns),INT64);
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		cprintf(RED,"%s",mess);
+		ret=FAIL;
+	}
+
+#ifndef EIGERD
+	sprintf(mess,"Rate Correction not implemented for this detector\n");
+	cprintf(RED,"%s",mess);
+	ret=FAIL;
+#endif
+
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+	if (ret==OK) {
+#ifdef VERBOSE
+		printf("setting rate correction to %lld ns\n",tau_ns);
+#endif
+		if (differentClients==1 && lockStatus==1 && tau_ns!=-1) {
+			ret=FAIL;
+			sprintf(mess,"Detector locked by %s\n",lastClientIP);
+		}  else {
+			retval = setRateCorrection(tau_ns);
+			if((tau_ns >= 0) && (retval != tau_ns)){
+				cprintf(RED,"%s",mess);
+				ret=FAIL;
+			}
+		}
+	}
+#endif
+	if ((ret==OK) && (differentClients))
+		ret=FORCE_UPDATE;
+
+
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
+	if (ret==FAIL) {
+		n = sendData(file_des,mess,sizeof(mess),OTHER);
+	} else {
+		n = sendData(file_des,&retval,sizeof(retval),INT64);
+	}
+
+	return ret;
+}

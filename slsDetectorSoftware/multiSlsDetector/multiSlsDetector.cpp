@@ -2414,26 +2414,30 @@ int multiSlsDetector::flatFieldCorrect(double* datain, double *errin, double* da
 
 
 int multiSlsDetector::setRateCorrection(double t){
-  // double tdead[]=defaultTDead;
+	// double tdead[]=defaultTDead;
 
-  if (t==0) {
-    thisMultiDetector->correctionMask&=~(1<<RATE_CORRECTION);
-  } else {
-    thisMultiDetector->correctionMask|=(1<<RATE_CORRECTION);
-    
-    for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
-      
-      if (detectors[idet]) {
-	detectors[idet]->setRateCorrection(t);
-	if(detectors[idet]->getErrorMask())
-	  setErrorMask(getErrorMask()|(1<<idet));
-      }
-    }
+	if (t==0) {
+		thisMultiDetector->correctionMask&=~(1<<RATE_CORRECTION);
+
+		if(getDetectorsType() == MYTHEN)
+			return thisMultiDetector->correctionMask&(1<<RATE_CORRECTION);
+
+	} else
+		thisMultiDetector->correctionMask|=(1<<RATE_CORRECTION);
+
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+
+		if (detectors[idet]) {
+			detectors[idet]->setRateCorrection(t);
+			if(detectors[idet]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<idet));
+		}
+	}
 #ifdef VERBOSE
-    std::cout<< "Setting rate correction with dead time "<< thisMultiDetector->tDead << std::endl;
+	std::cout<< "Setting rate correction with dead time "<< thisMultiDetector->tDead << std::endl;
 #endif
-  }
-  return thisMultiDetector->correctionMask&(1<<RATE_CORRECTION);
+
+	return thisMultiDetector->correctionMask&(1<<RATE_CORRECTION);
 }
 
 
@@ -2443,7 +2447,6 @@ int multiSlsDetector::getRateCorrection(double &t){
 #ifdef VERBOSE
     std::cout<< "Rate correction is enabled with dead time "<< thisMultiDetector->tDead << std::endl;
 #endif
-    //which t should we return if they are all different?
     return 1;
   } else
     t=0;
@@ -2460,7 +2463,6 @@ double multiSlsDetector::getRateCorrectionTau(){
 #ifdef VERBOSE
     std::cout<< "Rate correction is enabled with dead time "<< thisMultiDetector->tDead << std::endl;
 #endif
-    //which t should we return if they are all different?
 
     for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
       if (detectors[idet]) {

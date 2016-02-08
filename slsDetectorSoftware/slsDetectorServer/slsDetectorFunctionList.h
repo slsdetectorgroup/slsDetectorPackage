@@ -51,6 +51,7 @@ int setCounterBit(int val);
 int pulsePixel(int n, int x, int y);
 int pulsePixelNMove(int n, int x, int y);
 int pulseChip(int n);
+int setRateCorrection(int n);
 #endif
 
 #if defined(MYTHEND) || defined(GOTTHARDD)

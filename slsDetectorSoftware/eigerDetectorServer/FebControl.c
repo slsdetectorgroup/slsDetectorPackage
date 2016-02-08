@@ -55,7 +55,11 @@ unsigned int* Feb_Control_last_downloaded_trimbits;
 int Feb_Control_module_number;
 int Feb_Control_current_index;
 
-int counter_bit = 1;
+int Feb_Control_counter_bit = 1;
+
+
+unsigned int Feb_Control_rate_correction_table[1024];
+double Feb_Control_rate_meas[16384];
 
 
 void Module_Module(struct Module* mod,unsigned int number, unsigned int address_top){
@@ -1545,7 +1549,7 @@ int Feb_Control_PrepareForAcquisition(){//return 1;
 	}
 
 	int ret=0;
-	if(counter_bit)
+	if(Feb_Control_counter_bit)
 		ret = Feb_Control_ResetChipCompletely();
 	else
 		ret = Feb_Control_ResetChipPartially();
@@ -1648,11 +1652,11 @@ int Feb_Control_SaveAllTrimbitsTo(int value){
 
 
 void Feb_Control_Set_Counter_Bit(int value){
-	counter_bit = value;
+	Feb_Control_counter_bit = value;
 }
 
 int Feb_Control_Get_Counter_Bit(){
-	return counter_bit;
+	return Feb_Control_counter_bit;
 }
 
 int Feb_Control_Pulse_Pixel(int npulses, int x, int y){
@@ -1777,8 +1781,8 @@ int Feb_Control_PulseChip(int npulses){
 			cprintf(RED,"some wait error\n");
 	}
 	Feb_Control_SetExternalEnableMode(on,1);
-	counter_bit = (on?0:1);
-	printf("counter_bit:%d\n",counter_bit);
+	Feb_Control_counter_bit = (on?0:1);
+	printf("Feb_Control_counter_bit:%d\n",Feb_Control_counter_bit);
 
 	if(on)
 		printf("Pulse chip success\n\n");
@@ -1788,10 +1792,153 @@ int Feb_Control_PulseChip(int npulses){
 }
 
 
+int Feb_Control_PrintCorrectedValues(){
+	int i;
+	int delta, slope, base, lsb, corr;
+	for (i=0; i < 4096; i++)
+	{
+		lsb   = i&3;
+		base  = Feb_Control_rate_correction_table[i>>2] & 0x3fff;
+		slope = ((Feb_Control_rate_correction_table[i>>2] & 0x3c000) >> 14);
+		delta = slope*lsb;
+		corr  = delta+base;
+		printf("Readout Input: %d,\tBase:%d,\tSlope:%d,\tLSB:%d,\tDelta:%d\tResult:%d\tReal:%f\n",
+				i, base, slope, lsb, delta, corr, Feb_Control_rate_meas[i]);
+	}
+	return 1;
+}
 
 
 
+void Feb_Control_SetRateCorrectionVariable(int activate_rate_correction){
+  if(activate_rate_correction){
+	  Feb_Control_subFrameMode |= DAQ_NEXPOSURERS_ACTIVATE_RATE_CORRECTION;
+	  printf("Rate correction activated.\n");
+	  printf("Note, the rate correction will only be applied when the detector is run in auto summing 12 bit mode.\n");
+  }else{
+	  Feb_Control_subFrameMode &= ~DAQ_NEXPOSURERS_ACTIVATE_RATE_CORRECTION;
+	  printf("Rate correction deactivated.\n");
+  }
+}
 
+
+int Feb_Control_SetRateCorrectionTable(unsigned int *table){
+  if(!table){
+	  printf("Error: could not set rate correction table, point is zero.\n");
+	  Feb_Control_SetRateCorrectionVariable(0);
+    return 0;
+  }
+
+  printf("Setting rate correction table. %d %d %d %d ....\n",
+		  table[0],table[1],table[2],table[3]);
+
+  if(Module_TopAddressIsValid(&modules[1])){
+	  if(!Feb_Interface_WriteMemoryInLoops(Module_GetTopLeftAddress(&modules[Feb_Control_current_index]),1,0,1024,Feb_Control_rate_correction_table)||
+			  !Feb_Interface_WriteMemoryInLoops(Module_GetTopRightAddress(&modules[Feb_Control_current_index]),1,0,1024,Feb_Control_rate_correction_table)||
+			  !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+		  printf(" some errror!\n");
+		  return 0;
+	  }
+  }else{
+	  if(!Feb_Interface_WriteMemoryInLoops(Module_GetBottomLeftAddress(&modules[Feb_Control_current_index]),1,0,1024,Feb_Control_rate_correction_table)||
+			  !Feb_Interface_WriteMemoryInLoops(Module_GetBottomRightAddress(&modules[Feb_Control_current_index]),1,0,1024,Feb_Control_rate_correction_table)||
+			  !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+		  printf(" some errror!\n");
+		  return 0;
+	  }
+  }
+
+
+  SetRateCorrectionVariable(1,print_info);
+  return 1;
+}
+
+
+int Feb_Control_SetRateCorrectionTau(double tau){
+	//sub_expure_time should be known
+
+	unsigned int np = 16384; //max slope 16 * 1024
+	double b0[1024];
+	double m[1024];
+
+	if(tau<0||sub_expure_time<0)
+	{
+		printf("Error tau %f and sub_expure_time %f must be greater than 0.\n", tau, sub_expure_time);
+		return 0;
+	}
+
+	printf("\tCalculating table for tau of %f ns.\n", tau*1e9);
+
+	// Basic rate correction table
+	for(int i=0;i<np;i++)
+		meas[i]  = i*exp(-i/sub_expure_time*tau);
+
+
+	// b  :  index/address of block ram/rate correction table
+	// b0 :  base in vhdl
+	// m  :  slope in vhdl
+	//
+	// Firmware:
+	//    data_in(11..2) -> memory address  --> memory
+	//    data_in( 1..0) -> lsb
+	//
+	//    mem_data_out(13.. 0) -> base
+	//    mem_data_out(17..14) -> slope
+	//
+	//    delta = slope*lsb
+	//    corr  = base+delta
+
+	int next_i=0;
+
+	b0[0] = 0;
+	m[0]  = 1;
+
+	for(int b=1;b<1024;b++)
+	{
+		if(m[b-1]<14.5)
+		{
+			double s=0,sx=0,sy=0,sxx=0,sxy=0;
+			for(;;next_i++)
+			{
+				if(next_i>=np)
+				{
+					printf("Error bin problem ???????\n");
+					return 0;
+				}
+
+				double x    = meas[next_i] - b*4;
+				double y    = next_i;
+				printf("Start Loop  x: %f,\t y: %f,\t  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  next_i: %d,\t  b: %d,\t  meas[next_i]: %f\n", x, y, s, sx, sy, sxx, sxy, next_i, b, meas[next_i]);
+
+				if(x < -0.5) continue;
+				if(x >  3.5) break;
+				s   += 1;
+				sx  += x;
+				sy  += y;
+				sxx += x*x;
+				sxy += x*y;
+				printf("End   Loop  x: %f,\t y: %f,\t  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  next_i: %d,\t  b: %d,\t  meas[next_i]: %f\n", x, y, s, sx, sy, sxx, sxy, next_i, b, meas[next_i]);
+			}
+			double delta = s*sxx - sx*sx;
+			b0[b] = (sxx*sy - sx*sxy)/delta;
+			m[b]  = (s*sxy  - sx*sy) /delta;
+
+			if(m[b]<0||m[b]>15)
+				m[b]=15;
+			printf("After Loop  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  next_i: %d,\t  b: %d,\t  meas[next_i]: %f\n", s, sx, sy, sxx, sxy, next_i, b, meas[next_i]);
+			//	cout<<s<<"   "<<sx<<"   "<<sy<<"   "<<sxx<<"   "<<"   "<<sxy<<"   "<<delta<<"   "<<m[b]<<"    "<<b0[b]<<endl;
+		}else
+		{
+			b0[b] = b0[b-1] + 4*m[b-1];
+			m[b]  = m[b-1];
+			printf("else\n");
+		}
+		rate_correction_table[b]  = (((int)(m[b]+0.5)&0xf)<<14) | ((int)(b0[b]+0.5)&0x3fff);
+		printf("After Loop  4*b: %d\tbase:%d\tslope:%d\n",4*b, (int)(b0[b]+0.5), (int)(m[b]+0.5) );
+	}
+
+	return 1;
+}
 
 
 

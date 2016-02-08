@@ -811,7 +811,7 @@ void postProcessing::initDataset(int r) {
   }
 
   double tdead;
-  if (*correctionMask&(1<<RATE_CORRECTION)) {
+  if ((getDetectorsType()==MYTHEN) && (*correctionMask&(1<<RATE_CORRECTION))) {
 #ifdef VERBOSE
   cout << "get tau "  << endl;
 #endif

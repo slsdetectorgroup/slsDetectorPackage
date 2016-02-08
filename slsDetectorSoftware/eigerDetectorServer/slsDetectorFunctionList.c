@@ -140,7 +140,7 @@ int initDetector(){
 	getModuleConfiguration();
 	Feb_Interface_FebInterface();
 	Feb_Control_FebControl();
-	Feb_Control_Init(master,top);
+	Feb_Control_Init(master,top,getDetectorNumber());
 	printf("FEB Initialization done\n");
 	Beb_Beb();
 	printf("BEB Initialization done\n");
@@ -181,7 +181,7 @@ int initDetectorStop(){
 	getModuleConfiguration();
 	Feb_Interface_FebInterface();
 	Feb_Control_FebControl();
-	Feb_Control_Init(master,top);
+	Feb_Control_Init(master,top,getDetectorNumber());
 	printf("FEB Initialization done\n");
 	/* Beb_Beb(-1);
     printf("BEB constructor done\n");*/

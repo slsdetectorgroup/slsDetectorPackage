@@ -2534,7 +2534,7 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer[]){
 
 		//statistics
 		FILE_LOG(logINFO) << "Status: Run Finished";
-		if(totalPacketsCaught != ((uint64_t)numberOfFrames*packetsPerFrame)){
+		if(totalPacketsCaught < ((uint64_t)numberOfFrames*packetsPerFrame)){
 			cprintf(RED, "Total Missing Packets padded: %d\n",numTotMissingPackets);
 			cprintf(RED, "Total Packets Caught: %lld\n",(long long int)totalPacketsCaught);
 			cprintf(RED, "Total Frames Caught: %lld\n",(long long int)(totalPacketsCaught/packetsPerFrame));

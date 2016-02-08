@@ -2416,27 +2416,44 @@ int multiSlsDetector::flatFieldCorrect(double* datain, double *errin, double* da
 int multiSlsDetector::setRateCorrection(double t){
 	// double tdead[]=defaultTDead;
 
-	if (t==0) {
-		thisMultiDetector->correctionMask&=~(1<<RATE_CORRECTION);
-
-		if(getDetectorsType() == MYTHEN)
+	if (getDetectorsType() == MYTHEN){
+		if (t==0) {
+			thisMultiDetector->correctionMask&=~(1<<RATE_CORRECTION);
 			return thisMultiDetector->correctionMask&(1<<RATE_CORRECTION);
+		} else
+			thisMultiDetector->correctionMask|=(1<<RATE_CORRECTION);
+	}
 
-	} else
-		thisMultiDetector->correctionMask|=(1<<RATE_CORRECTION);
 
+	int ret, ret1=-100;
 	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
-
 		if (detectors[idet]) {
-			detectors[idet]->setRateCorrection(t);
+			ret=detectors[idet]->setRateCorrection(t);
 			if(detectors[idet]->getErrorMask())
 				setErrorMask(getErrorMask()|(1<<idet));
+			if (ret1==-100)
+				ret1=ret;
+			else if (ret!=ret1)
+				ret1=-1;
 		}
 	}
+
 #ifdef VERBOSE
-	std::cout<< "Setting rate correction with dead time "<< thisMultiDetector->tDead << std::endl;
+	if(getDetectorsType() == MYTHEN)
+		std::cout<< "Setting rate correction with dead time "<< thisMultiDetector->tDead << std::endl;
 #endif
 
+	//mismatch between detectors
+	if(ret1 == -1)
+		return ret1;
+
+	if (getDetectorsType() != MYTHEN){
+		if (ret1==0) {
+			thisMultiDetector->correctionMask&=~(1<<RATE_CORRECTION);
+			return thisMultiDetector->correctionMask&(1<<RATE_CORRECTION);
+		} else
+			thisMultiDetector->correctionMask|=(1<<RATE_CORRECTION);
+	}
 	return thisMultiDetector->correctionMask&(1<<RATE_CORRECTION);
 }
 

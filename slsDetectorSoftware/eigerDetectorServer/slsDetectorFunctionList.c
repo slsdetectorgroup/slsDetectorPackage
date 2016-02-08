@@ -163,7 +163,7 @@ int initDetector(){
 	setIODelay(650,0);
 	setTiming(AUTO_TIMING);
 	//SetPhotonEnergyCalibrationParameters(-5.8381e-5,1.838515,5.09948e-7,-4.32390e-11,1.32527e-15);
-	//SetRateCorrection(0); //deactivate rate correction
+	setRateCorrection(0); //deactivate rate correction
 	int enable[2] = {0,1};
 	setExternalGating(enable);//disable external gating
 	Feb_Control_SetInTestModeVariable(0);
@@ -491,11 +491,34 @@ int pulseChip(int n){
 
 int setRateCorrection(int n){
 	if(n>=0){
-;
-		Feb_Control_PrintCorrectedValues();
+		if(n>0){
+			int tau_in_nsec = Feb_Control_Get_RateTable_Tau_in_nsec();
+			int subexp_in_nsec = Feb_Control_Get_RateTable_Subexptime_in_nsec();
+			//same setting
+			if(tau_in_nsec == n) && (subexp_in_nsec == Feb_Control_GetSubFrameExposureTime()){
+				printf("Same Tau %dns, Same subexptime %dns = Same setting, not rewriting rate correction table\n");
+			}
+			//different setting, calculate table
+			else if(!Feb_Control_SetRateCorrectionTau(n)){
+				cprintf(RED,"Rate correction failed. Deactivating rate correction\n");
+				SetRateCorrectionVariable(0);
+				return 0;
+			}
+			//activating rate correction
+			SetRateCorrectionVariable(1);
+			Feb_Control_PrintCorrectedValues();
+		}else{
+			//deactivating rate correction
+			SetRateCorrectionVariable(0);
+		}
 	}
 
-	return 0;
+	//return tau if it is a valid value (written to memory properly)
+	int tau_in_nsec = Feb_Control_GetTau_in_nsec();
+	if(tau_in_nsec>=0)
+		return tau_in_nsec;
+	else
+		return 0;
 }
 
 
@@ -788,7 +811,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 			printf(" Setting sub exp time: %dns\n",(int)val/10);
 			Feb_Control_SetSubFrameExposureTime(val/10);
 		}
-		return (Feb_Control_GetSubFrameExposureTime()*10);
+		return (Feb_Control_GetSubFrameExposureTime());
 
 
 	case FRAME_PERIOD:

@@ -174,7 +174,7 @@ void Feb_Control_FebControl(){
 
 
 
-int Feb_Control_Init(int master, int top){
+int Feb_Control_Init(int master, int top, int module_num){
 	unsigned int i;
 	Feb_Control_module_number = 0;
 	Feb_Control_current_index = 0;
@@ -182,19 +182,7 @@ int Feb_Control_Init(int master, int top){
 	//global send
 	Feb_Control_AddModule1(0,1,0xff,0,1);
 	Feb_Control_PrintModuleList();
-
-	//get module nummber
-	int res=0;
-	char hostname[100];
-	if (gethostname(hostname, sizeof hostname) == 0)
-		puts(hostname);
-	else
-		perror("gethostname");
-	char *pch;
-	pch = strtok(hostname,"0");
-	pch = strtok(NULL,"0");
-	sscanf(pch,"%d",&res);
-	Feb_Control_module_number = (res & 0xFF);
+	Feb_Control_module_number = (module_num & 0xFF);
 
 	int serial = !top;
 

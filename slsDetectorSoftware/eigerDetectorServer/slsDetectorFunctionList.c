@@ -489,36 +489,37 @@ int pulseChip(int n){
 	return OK;
 }
 
-int setRateCorrection(int n){
-	if(n>=0){
-		if(n>0){
-			int tau_in_nsec = Feb_Control_Get_RateTable_Tau_in_nsec();
-			int subexp_in_nsec = Feb_Control_Get_RateTable_Subexptime_in_nsec();
-			//same setting
-			if(tau_in_nsec == n) && (subexp_in_nsec == Feb_Control_GetSubFrameExposureTime()){
-				printf("Same Tau %dns, Same subexptime %dns = Same setting, not rewriting rate correction table\n");
-			}
-			//different setting, calculate table
-			else if(!Feb_Control_SetRateCorrectionTau(n)){
-				cprintf(RED,"Rate correction failed. Deactivating rate correction\n");
-				SetRateCorrectionVariable(0);
-				return 0;
-			}
-			//activating rate correction
-			SetRateCorrectionVariable(1);
-			Feb_Control_PrintCorrectedValues();
-		}else{
-			//deactivating rate correction
-			SetRateCorrectionVariable(0);
-		}
+int setRateCorrection(int64_t custom_tau_in_nsec){//in nanosec (will never be -1)
+
+	//deactivating rate correction
+	if(custom_tau_in_nsec==0){
+		Feb_Control_SetRateCorrectionVariable(0);
+		return 0;
 	}
 
-	//return tau if it is a valid value (written to memory properly)
-	int tau_in_nsec = Feb_Control_GetTau_in_nsec();
-	if(tau_in_nsec>=0)
-		return tau_in_nsec;
-	else
-		return 0;
+	int64_t tau_in_nsec = Feb_Control_Get_RateTable_Tau_in_nsec();
+	int64_t subexp_in_nsec = Feb_Control_Get_RateTable_Subexptime_in_nsec();
+	//same setting
+	if((tau_in_nsec == custom_tau_in_nsec) && (subexp_in_nsec == Feb_Control_GetSubFrameExposureTime())){
+		printf("Rate Table already created before: Same Tau %lldns, Same subexptime %lldns\n",
+				tau_in_nsec,subexp_in_nsec);
+	}
+	//different setting, calculate table
+	else{
+		int ret = Feb_Control_SetRateCorrectionTau(custom_tau_in_nsec);
+		if(ret<=0){
+			cprintf(RED,"Rate correction failed. Deactivating rate correction\n");
+			Feb_Control_SetRateCorrectionVariable(0);
+			return ret;//-1 is for tau/subexptime error, 0 for all other errors
+		}
+	}
+	//activating rate correction
+	Feb_Control_SetRateCorrectionVariable(1);
+#ifdef VERBOSE
+	Feb_Control_PrintCorrectedValues();
+#endif
+
+	return Feb_Control_Get_RateTable_Tau_in_nsec();
 }
 
 
@@ -575,6 +576,7 @@ int setModule(sls_detector_module myMod, int* gain, int* offset){
 		cprintf(BG_RED,"Could not set trimbits\n");
 		return FAIL;
 	}
+
 
 	return 0;
 }

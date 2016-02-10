@@ -49,8 +49,8 @@ double Feb_Control_exposure_time_in_sec;
 int Feb_Control_subframe_exposure_time_in_10nsec;
 double Feb_Control_exposure_period_in_sec;
 
-int Feb_Control_RateTable_Tau_in_nsec = -1;
-int Feb_Control_RateTable_Subexptime_in_nsec = -1;
+int64_t Feb_Control_RateTable_Tau_in_nsec = -1;
+int64_t Feb_Control_RateTable_Subexptime_in_nsec = -1;
 
 unsigned int   Feb_Control_trimbit_size;
 unsigned int* Feb_Control_last_downloaded_trimbits;
@@ -1797,10 +1797,11 @@ int Feb_Control_PulseChip(int npulses){
 
 
 
-int Feb_Control_Get_RateTable_Tau_in_nsec(){ return Feb_Control_RateTable_Tau_in_nsec;}
-int Feb_Control_Get_RateTable_Subexptime_in_nsec(){ return Feb_Control_RateTable_Subexptime_in_nsec;}
+int64_t Feb_Control_Get_RateTable_Tau_in_nsec(){ return Feb_Control_RateTable_Tau_in_nsec;}
+int64_t Feb_Control_Get_RateTable_Subexptime_in_nsec(){ return Feb_Control_RateTable_Subexptime_in_nsec;}
 
-int Feb_Control_SetRateCorrectionTau(int tau_in_Nsec){
+//returns -1 if slope is too high
+int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec){
 
 	double sub_expure_time_in_sec = (double)(Feb_Control_GetSubFrameExposureTime())/(double)1e9;
 	double tau_in_sec = (double)tau_in_Nsec/(double)1e9;
@@ -1814,9 +1815,9 @@ int Feb_Control_SetRateCorrectionTau(int tau_in_Nsec){
 		return 0;
 	}
 
-	printf("\tCalculating table for tau of %f ns.\n", tau_in_Nsec);
-
-	for(int i=0;i<np;i++)
+	printf("\tCalculating table for tau of %lld ns.\n", tau_in_Nsec);
+	int i;
+	for(i=0;i<np;i++)
 		Feb_Control_rate_meas[i]  = i*exp(-i/sub_expure_time_in_sec*tau_in_sec);
 
 	/*
@@ -1839,21 +1840,21 @@ int Feb_Control_SetRateCorrectionTau(int tau_in_Nsec){
 
 	b0[0] = 0;
 	m[0]  = 1;
-
-	for(int b=1;b<1024;b++){
+	int b;
+	for(b=1;b<1024;b++){
 		if(m[b-1]<14.5){
 			double s=0,sx=0,sy=0,sxx=0,sxy=0;
 			for(;;next_i++){
 				if(next_i>=np){
-					cprintf(BG_RED,"Error bin problem ???\n");
-					return 0;
+					cprintf(RED,"Error: (tau/subexptime) must be < 0.0015 \n");
+					return -1;
 				}
 
 				double x    = Feb_Control_rate_meas[next_i] - b*4;
 				double y    = next_i;
-				printf("Start Loop  x: %f,\t y: %f,\t  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  "
+				/*printf("Start Loop  x: %f,\t y: %f,\t  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  "
 						"next_i: %d,\t  b: %d,\t  Feb_Control_rate_meas[next_i]: %f\n",
-						x, y, s, sx, sy, sxx, sxy, next_i, b, Feb_Control_rate_meas[next_i]);
+						x, y, s, sx, sy, sxx, sxy, next_i, b, Feb_Control_rate_meas[next_i]);*/
 
 				if(x < -0.5) continue;
 				if(x >  3.5) break;
@@ -1862,9 +1863,9 @@ int Feb_Control_SetRateCorrectionTau(int tau_in_Nsec){
 				sy  += y;
 				sxx += x*x;
 				sxy += x*y;
-				printf("End   Loop  x: %f,\t y: %f,\t  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  "
+				/*printf("End   Loop  x: %f,\t y: %f,\t  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  "
 						"next_i: %d,\t  b: %d,\t  Feb_Control_rate_meas[next_i]: %f\n",
-						x, y, s, sx, sy, sxx, sxy, next_i, b, Feb_Control_rate_meas[next_i]);
+						x, y, s, sx, sy, sxx, sxy, next_i, b, Feb_Control_rate_meas[next_i]);*/
 			}
 			double delta = s*sxx - sx*sx;
 			b0[b] = (sxx*sy - sx*sxy)/delta;
@@ -1872,20 +1873,20 @@ int Feb_Control_SetRateCorrectionTau(int tau_in_Nsec){
 
 			if(m[b]<0||m[b]>15)
 				m[b]=15;
-			printf("After Loop  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  "
+			/*printf("After Loop  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  "
 					"next_i: %d,\t  b: %d,\t  Feb_Control_rate_meas[next_i]: %f\n",
-					s, sx, sy, sxx, sxy, next_i, b, Feb_Control_rate_meas[next_i]);
+					s, sx, sy, sxx, sxy, next_i, b, Feb_Control_rate_meas[next_i]);*/
 			//	cout<<s<<"   "<<sx<<"   "<<sy<<"   "<<sxx<<"   "<<"   "<<sxy<<"   "<<delta<<"   "<<m[b]<<"    "<<b0[b]<<endl;
 		}else{
 			b0[b] = b0[b-1] + 4*m[b-1];
 			m[b]  = m[b-1];
-			printf("else\n");
+			/*printf("else\n");*/
 		}
 		Feb_Control_rate_correction_table[b]  = (((int)(m[b]+0.5)&0xf)<<14) | ((int)(b0[b]+0.5)&0x3fff);
-		printf("After Loop  4*b: %d\tbase:%d\tslope:%d\n",4*b, (int)(b0[b]+0.5), (int)(m[b]+0.5) );
+		/*printf("After Loop  4*b: %d\tbase:%d\tslope:%d\n",4*b, (int)(b0[b]+0.5), (int)(m[b]+0.5) );*/
 	}
 
-	if(SetRateCorrectionTable(Feb_Control_rate_correction_table)){
+	if(Feb_Control_SetRateCorrectionTable(Feb_Control_rate_correction_table)){
 		Feb_Control_RateTable_Tau_in_nsec = tau_in_Nsec;
 		Feb_Control_RateTable_Subexptime_in_nsec = Feb_Control_GetSubFrameExposureTime();
 		return 1;
@@ -1931,12 +1932,13 @@ int Feb_Control_SetRateCorrectionTable(unsigned int *table){
 }
 
 
+int Feb_Control_GetRateCorrectionVariable(){ return (Feb_Control_subFrameMode&DAQ_NEXPOSURERS_ACTIVATE_RATE_CORRECTION);}
+
 
 void Feb_Control_SetRateCorrectionVariable(int activate_rate_correction){
   if(activate_rate_correction){
 	  Feb_Control_subFrameMode |= DAQ_NEXPOSURERS_ACTIVATE_RATE_CORRECTION;
-	  printf("Rate correction activated.\n");
-	  printf("Note, the rate correction will only be applied when the detector is run in auto summing 12 bit mode.\n");
+	  printf("Rate correction activated. Note: the rate correction applied only when run in auto summing mode.\n");
   }else{
 	  Feb_Control_subFrameMode &= ~DAQ_NEXPOSURERS_ACTIVATE_RATE_CORRECTION;
 	  printf("Rate correction deactivated.\n");

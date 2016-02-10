@@ -2771,6 +2771,11 @@ int slsDetector::setModule(sls_detector_module module, int* gainval, int* offset
     }
   }
 
+  if(ret == FAIL && thisDetector->myDetectorType == EIGER && strcasestr(mess,"tau")){
+	  setErrorMask((getErrorMask())|(COULD_NOT_SET_RATE_CORRECTION));
+	  thisDetector->correctionMask&=~(1<<RATE_CORRECTION);
+	  thisDetector->tDead = 0;
+  }
 
   if (ret!=FAIL) {
     if (detectorModules) {
@@ -5005,25 +5010,27 @@ int slsDetector::setRateCorrection(double t){
 #ifdef VERBOSE
 	std::cout<< "Setting Rate Correction to " << arg << endl;
 #endif
-	if (thisDetector->onlineFlag==ONLINE_FLAG) {
+	if (setOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 		if (connectControl() == OK){
 			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 			controlSocket->SendDataOnly(&arg,sizeof(arg));
 			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
 			if (ret!=FAIL) {
 				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-				if(retval<0)
+				if(retval<0){
 					thisDetector->correctionMask&=~(1<<RATE_CORRECTION);
-				else if(retval>0)
-					thisDetector->correctionMask|=(1<<RATE_CORRECTION);
-				else
-					thisDetector->correctionMask&=~(1<<RATE_CORRECTION);
-
-				thisDetector->tDead = (double)retval/(double)1e9;
-
+					thisDetector->tDead = 0;
+				}else{
+					if(retval>0)
+						thisDetector->correctionMask|=(1<<RATE_CORRECTION);
+					else
+						thisDetector->correctionMask&=~(1<<RATE_CORRECTION);
+					thisDetector->tDead = (double)retval/(double)1e9;
+				}
 			} else {
 				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 				std::cout<< "Detector returned error: " << mess << std::endl;
+			    setErrorMask((getErrorMask())|(COULD_NOT_SET_RATE_CORRECTION));
 				thisDetector->correctionMask&=~(1<<RATE_CORRECTION);
 				thisDetector->tDead = 0;
 			}
@@ -5032,6 +5039,7 @@ int slsDetector::setRateCorrection(double t){
 				updateDetector();
 		}
 	}
+
 	return thisDetector->correctionMask&(1<<RATE_CORRECTION);
 }
 

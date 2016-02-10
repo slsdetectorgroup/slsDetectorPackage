@@ -1941,7 +1941,7 @@ string slsDetectorCommand::cmdRateCorr(int narg, char *args[], int action){
   } 
   double t;
   if (myDet->getRateCorrection(t)) {
-    sprintf(answer,"%f",t);
+    sprintf(answer,"%0.9f",t);
   } else {
     sprintf(answer,"%f",0.);
   }
@@ -1954,7 +1954,7 @@ string slsDetectorCommand::helpRateCorr(int narg, char *args[], int action){
   if (action==GET_ACTION || action==HELP_ACTION)
     os << string("ratecorr \t  returns the dead time used for rate correections in ns \n");
   if (action==PUT_ACTION || action==HELP_ACTION)
-    os << string("ratecorr  ns \t  sets the deadtime correction constant in ns\n");
+    os << string("ratecorr  ns \t  sets the deadtime correction constant in ns, -1 in Eiger will set it to default tau of that settings\n");
   return os.str();
   
 }
@@ -3053,7 +3053,7 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
   myDet->setOnline(ONLINE_FLAG);
 
   if (cmd=="settings") {
-    if (action==PUT_ACTION) 
+    if (action==PUT_ACTION)
       myDet->setSettings(myDet->getDetectorSettings(string(args[1])));
     return myDet->getDetectorSettings(myDet->getSettings());
   } else if (cmd=="threshold") {

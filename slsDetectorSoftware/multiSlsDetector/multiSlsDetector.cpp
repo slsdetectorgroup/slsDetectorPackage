@@ -1143,6 +1143,7 @@ slsDetectorDefs::detectorSettings multiSlsDetector::setSettings(detectorSettings
    
   }
   thisMultiDetector->currentSettings=ret1;
+
   return ret1;
 
 }
@@ -1629,6 +1630,15 @@ int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t){
   
   thisMultiDetector->timerValue[index]=ret1;
   
+
+  if (getDetectorsType() == EIGER) {
+	  //if subexptime set, update rate correction in server and update result in multi client
+	  double r;
+	  if((index == SUBFRAME_ACQUISITION_TIME) && (t>=0) && getRateCorrection(r)){
+		  setRateCorrection(r);
+	  }
+  }
+
   return ret1;
 };
 
@@ -2417,6 +2427,9 @@ int multiSlsDetector::setRateCorrection(double t){
 	// double tdead[]=defaultTDead;
 
 	if (getDetectorsType() == MYTHEN){
+#ifdef VERBOSE
+		std::cout<< "Setting rate correction with dead time "<< thisMultiDetector->tDead << std::endl;
+#endif
 		if (t==0) {
 			thisMultiDetector->correctionMask&=~(1<<RATE_CORRECTION);
 			return thisMultiDetector->correctionMask&(1<<RATE_CORRECTION);
@@ -2438,22 +2451,13 @@ int multiSlsDetector::setRateCorrection(double t){
 		}
 	}
 
-#ifdef VERBOSE
-	if(getDetectorsType() == MYTHEN)
-		std::cout<< "Setting rate correction with dead time "<< thisMultiDetector->tDead << std::endl;
-#endif
-
-	//mismatch between detectors
-	if(ret1 == -1)
-		return ret1;
-
 	if (getDetectorsType() != MYTHEN){
-		if (ret1==0) {
+		if (ret1<=0)
 			thisMultiDetector->correctionMask&=~(1<<RATE_CORRECTION);
-			return thisMultiDetector->correctionMask&(1<<RATE_CORRECTION);
-		} else
+		 else
 			thisMultiDetector->correctionMask|=(1<<RATE_CORRECTION);
 	}
+
 	return thisMultiDetector->correctionMask&(1<<RATE_CORRECTION);
 }
 
@@ -2464,6 +2468,10 @@ int multiSlsDetector::getRateCorrection(double &t){
 #ifdef VERBOSE
     std::cout<< "Rate correction is enabled with dead time "<< thisMultiDetector->tDead << std::endl;
 #endif
+
+    if (getDetectorsType() != MYTHEN)
+    	t = getRateCorrectionTau();
+
     return 1;
   } else
     t=0;

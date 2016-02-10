@@ -32,6 +32,7 @@ const enum detectorType myDetectorType=PICASSO;
 const enum detectorType myDetectorType=GENERIC;
 #endif
 
+extern enum detectorSettings thisSettings;
 
 //global variables for optimized readout
 char mess[MAX_STR_LENGTH];
@@ -1792,8 +1793,13 @@ int get_chip(int file_des) {
 
 
 }
+
+
+
+
+
 int set_module(int file_des) {
-	int retval, n,i;
+	int retval, n;
 	int ret=OK,ret1=OK;
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
@@ -1862,15 +1868,28 @@ int set_module(int file_des) {
 		ret=FAIL;
 
 
-//#ifdef VERBOSE
+#ifdef VERBOSE
 	printf("module number is %d,register is %d, nchan %d, nchip %d, ndac %d, nadc %d, gain %f, offset %f\n",myModule.module, myModule.reg, myModule.nchan, myModule.nchip, myModule.ndac,  myModule.nadc, myModule.gain,myModule.offset);
 #ifdef EIGERD
+	int i;
 	for(i=0;i<getNumberOfGainsPerModule();i++)
 		printf("gain[%d]:%d\t%f\n",i,myGain[i],((double)myGain[i]/1000));
 	for(i=0;i<getNumberOfOffsetsPerModule();i++)
 		printf("offset[%d]:%d\t%f\n",i,myOffset[i],((double)myOffset[i]/1000));
 #endif
-//#endif
+#endif
+
+	switch(myModule.reg){
+	case STANDARD:
+	case HIGHGAIN:
+	case LOWGAIN:
+		break;
+	default:
+		sprintf(mess,"This setting %d does not exist for this detector\n",myModule.reg);
+		ret = FAIL;
+		cprintf(RED,"%s",mess);
+		break;
+	}
 
 
 	if (ret==OK) {
@@ -3841,16 +3860,31 @@ int rate_correct(int file_des) {
 #endif
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
+	//tau = -1, use default tau of settings
+	if((ret==OK)&&(tau_ns<0)){
+		switch(thisSettings){
+		case STANDARD:	tau_ns = STANDARD_TAU;	break;
+		case HIGHGAIN:	tau_ns = HIGHGAIN_TAU;	break;
+		case LOWGAIN:	tau_ns = LOWGAIN_TAU; 	break;
+		default:
+			ret = FAIL;
+			sprintf(mess,"Cannot set rate correction. Settings %d not recognized by detector\n",thisSettings);
+			cprintf(RED,"%s",mess);
+		}
+	}
+
+
 	if (ret==OK) {
-#ifdef VERBOSE
-		printf("setting rate correction to %lld ns\n",tau_ns);
-#endif
+		printf("Setting rate correction to %lld ns\n",tau_ns);
+
 		if (differentClients==1 && lockStatus==1 && tau_ns!=-1) {
 			ret=FAIL;
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		}  else {
-			retval = setRateCorrection(tau_ns);
-			if((tau_ns >= 0) && (retval != tau_ns)){
+			retval = setRateCorrection(tau_ns); //tau_ns will not be -1 here
+			if(tau_ns != retval){
+				if(retval == -1)
+					strcpy(mess,"Rate correction Deactivated, (tau/subexptime) must be < 0.0015\n");
 				cprintf(RED,"%s",mess);
 				ret=FAIL;
 			}

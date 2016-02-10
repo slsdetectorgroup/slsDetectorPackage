@@ -3864,124 +3864,120 @@ int slsDetector::startAndReadAllNoWait(){
 int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 
 
-  int fnum=F_SET_TIMER,fnum2=F_SET_RECEIVER_TIMER;
-  int64_t retval = -1;
-  int64_t ut = -2;
-  char mess[100];
-  int ret=OK;
-  int n=0;
+	int fnum=F_SET_TIMER,fnum2=F_SET_RECEIVER_TIMER;
+	int64_t retval = -1;
+	int64_t ut = -2;
+	char mess[100];
+	int ret=OK;
+	int n=0;
 
-  if (index!=MEASUREMENTS_NUMBER) {
+	if (index!=MEASUREMENTS_NUMBER) {
 
 
 #ifdef VERBOSE
-    std::cout<< "Setting timer "<< index << " to " <<  t << "ns/value" << std::endl;
+		std::cout<< "Setting timer "<< index << " to " <<  t << "ns/value" << std::endl;
 #endif
-    if (thisDetector->onlineFlag==ONLINE_FLAG) {
-      if (connectControl() == OK){
-	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-	controlSocket->SendDataOnly(&index,sizeof(index));
-	n=controlSocket->SendDataOnly(&t,sizeof(t));
-	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==FAIL) {
-	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-	  std::cout<< "Detector returned error: " << mess << std::endl;
-	  setErrorMask((getErrorMask())|(DETECTOR_TIMER_VALUE_NOT_SET));
+		if (thisDetector->onlineFlag==ONLINE_FLAG) {
+			if (connectControl() == OK){
+				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+				controlSocket->SendDataOnly(&index,sizeof(index));
+				n=controlSocket->SendDataOnly(&t,sizeof(t));
+				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret==FAIL) {
+					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Detector returned error: " << mess << std::endl;
+					setErrorMask((getErrorMask())|(DETECTOR_TIMER_VALUE_NOT_SET));
+				} else {
+					controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+					thisDetector->timerValue[index]=retval;
+				}
+				disconnectControl();
+				if (ret==FORCE_UPDATE) {
+					updateDetector();
+#ifdef VERBOSE
+					std::cout<< "Updated!" << std::endl;
+#endif
+
+				}
+			}
+		} else {
+			//std::cout<< "offline " << std::endl;
+			if (t>=0)
+				thisDetector->timerValue[index]=t;
+			if((thisDetector->myDetectorType==GOTTHARD)||
+					(thisDetector->myDetectorType==PROPIX)||
+					(thisDetector->myDetectorType==JUNGFRAU)||
+					(thisDetector->myDetectorType==MOENCH))
+				thisDetector->timerValue[PROBES_NUMBER]=0;
+		}
 	} else {
-	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-	  thisDetector->timerValue[index]=retval;
+		if (t>=0)
+			thisDetector->timerValue[index]=t;
 	}
-	disconnectControl();
-	if (ret==FORCE_UPDATE) {
-	  updateDetector();
 #ifdef VERBOSE
-	  std::cout<< "Updated!" << std::endl;
+	std::cout<< "Timer " << index << " set to  "<< thisDetector->timerValue[index] << "ns"  << std::endl;
 #endif
 
+	if ((thisDetector->myDetectorType==MYTHEN)&&(index==PROBES_NUMBER)) {
+		setDynamicRange();
+		//cout << "Changing probes: data size = " << thisDetector->dataBytes <<endl;
 	}
-      }
-    } else {
-      //std::cout<< "offline " << std::endl;
-      if (t>=0)
-	thisDetector->timerValue[index]=t;
-      if((thisDetector->myDetectorType==GOTTHARD)||
-    		  (thisDetector->myDetectorType==PROPIX)||
-			  (thisDetector->myDetectorType==JUNGFRAU)||
-    		  (thisDetector->myDetectorType==MOENCH))
-    	  thisDetector->timerValue[PROBES_NUMBER]=0;
-    }
-  } else {
-    if (t>=0)
-      thisDetector->timerValue[index]=t;
-  }
+
+	/* set progress */
+	if ((index==FRAME_NUMBER) || (index==CYCLES_NUMBER)) {
+		setTotalProgress();
+	}
+
+
+
+	//send acquisiton period/frame number to receiver
+	if((index==FRAME_NUMBER)||(index==FRAME_PERIOD)||(index==CYCLES_NUMBER)){
+		if(ret != FAIL){
+			if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+				int64_t args[2];
+				args[1] = retval;
+				if(t == -1)  args[1] = -1;
+
+				if((index==FRAME_NUMBER)||(index==CYCLES_NUMBER)){
 #ifdef VERBOSE
-  std::cout<< "Timer " << index << " set to  "<< thisDetector->timerValue[index] << "ns"  << std::endl;
+					std::cout << "Setting/Getting number of frames " << index <<" to/from receiver " << args[1] << std::endl;
 #endif
-
-  if ((thisDetector->myDetectorType==MYTHEN)&&(index==PROBES_NUMBER)) {
-    setDynamicRange();
-    //cout << "Changing probes: data size = " << thisDetector->dataBytes <<endl;
-  }
-
-  /* set progress */
-  if ((index==FRAME_NUMBER) || (index==CYCLES_NUMBER)) {
-    setTotalProgress();
-  }
-
-
-
-  //send acquisiton period/frame number to receiver
-  if((index==FRAME_NUMBER)||(index==FRAME_PERIOD))
-  {
-	  if(ret != FAIL){
-		  if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
-			  int64_t args[2];
-			  args[1] = retval;
-			  if(t == -1)
-				  args[1] = -1;
-
-
-			  if(index==FRAME_NUMBER){
+					args[0] = FRAME_NUMBER;
+					retval = thisDetector->timerValue[FRAME_NUMBER]*thisDetector->timerValue[CYCLES_NUMBER];
+					if(args[1] != -1)	  args[1]=retval;
+				}else{
 #ifdef VERBOSE
-
-				  std::cout << "Setting/Getting number of frames " << index <<" to/from receiver " << args[1] << std::endl;
+					std::cout << "Setting/Getting acquisition period " << index << " to/from receiver " << args[1] << std::endl;
 #endif
-				  args[0] = FRAME_NUMBER;
-			  }else{
-#ifdef VERBOSE
-				  std::cout << "Setting/Getting acquisition period " << index << " to/from receiver " << args[1] << std::endl;
-#endif
-				  args[0] = FRAME_PERIOD;
-				  //if acquisition period is zero, then #frames/buffer depends on exposure time and not acq period
-				  if(!retval)
-					  args[1] = timerValue[ACQUISITION_TIME];
-			  }
+					args[0] = FRAME_PERIOD;
+					//if acquisition period is zero, then #frames/buffer depends on exposure time and not acq period
+					if(!retval)  args[1] = timerValue[ACQUISITION_TIME];
+				}
 
 
-			  if (connectData() == OK)
-				  ret=thisReceiver->sendIntArray(fnum2,ut,args);
-			  disconnectData();
-			  if((ut != retval)|| (ret==FAIL)){
-				  ret = FAIL;
-				  if(index==FRAME_PERIOD){
-					  //exptime sent if acq period = 0
-					  if(retval){
-						  cout << "ERROR:Acquisition Period in receiver set incorrectly to " << ut << " instead of " << retval << endl;
-						  setErrorMask((getErrorMask())|(RECEIVER_ACQ_PERIOD_NOT_SET));
-					  }
-				  }else{
-					  cout << "ERROR:Number of Frames in receiver set incorrectly to " << ut << " instead of " << retval << endl;
-					  setErrorMask((getErrorMask())|(RECEIVER_FRAME_NUM_NOT_SET));
-				  }
-			  }
+				if (connectData() == OK)
+					ret=thisReceiver->sendIntArray(fnum2,ut,args);
+				disconnectData();
+				if((ut != retval)|| (ret==FAIL)){
+					ret = FAIL;
+					if(index==FRAME_PERIOD){
+						//exptime sent if acq period = 0
+						if(retval){
+							cout << "ERROR:Acquisition Period in receiver set incorrectly to " << ut << " instead of " << retval << endl;
+							setErrorMask((getErrorMask())|(RECEIVER_ACQ_PERIOD_NOT_SET));
+						}
+					}else{
+						cout << "ERROR:Number of Frames (* Number of cycles) in receiver set incorrectly to " << ut << " instead of " << retval << endl;
+						setErrorMask((getErrorMask())|(RECEIVER_FRAME_NUM_NOT_SET));
+					}
+				}
 
-			  if(ret==FORCE_UPDATE)
-				  updateReceiver();
-		  }
-	  }
-}
-  return thisDetector->timerValue[index];
-
+				if(ret==FORCE_UPDATE)
+					updateReceiver();
+			}
+		}
+	}
+	return thisDetector->timerValue[index];
 };
 
 int slsDetector::lockServer(int lock) {

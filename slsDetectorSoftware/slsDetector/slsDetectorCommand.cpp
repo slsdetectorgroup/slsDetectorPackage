@@ -1954,7 +1954,7 @@ string slsDetectorCommand::helpRateCorr(int narg, char *args[], int action){
   if (action==GET_ACTION || action==HELP_ACTION)
     os << string("ratecorr \t  returns the dead time used for rate correections in ns \n");
   if (action==PUT_ACTION || action==HELP_ACTION)
-    os << string("ratecorr  ns \t  sets the deadtime correction constant in ns, -1 in Eiger will set it to default tau of that settings\n");
+    os << string("ratecorr  ns \t  sets the deadtime correction constant in ns, -1 in Eiger will set it to default tau of settings\n");
   return os.str();
   
 }

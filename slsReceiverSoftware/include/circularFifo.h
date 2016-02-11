@@ -78,7 +78,6 @@ int CircularFifo<Element>::getSemValue()
 template<typename Element>
 bool CircularFifo<Element>::push(Element*& item_)
 {
-
    int nextTail = increment(tail);
    if(nextTail != head)
    {
@@ -87,7 +86,6 @@ bool CircularFifo<Element>::push(Element*& item_)
       sem_post(&free_mutex);
       return true;
    }
-
    // queue was full
    return false;
 }

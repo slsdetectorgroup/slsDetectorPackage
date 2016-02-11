@@ -163,7 +163,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdCounter;
   i++;
 
-  descrToFuncMap[i].m_pFuncName="setctrbit"; //
+  descrToFuncMap[i].m_pFuncName="resmat"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdCounter;
   i++;
 
@@ -2247,10 +2247,10 @@ string slsDetectorCommand::cmdCounter(int narg, char *args[], int action){
       retval=myDet->resetCounterBlock(ival);
   }
 
-  else if (string(args[0])==string("setctrbit")){
+  else if (string(args[0])==string("resmat")){
 	  if (action==PUT_ACTION){
 		  if (!sscanf(args[1],"%d",&ival))
-			  return string("Could not scan resetctrbit input ")+string(args[1]);
+			  return string("Could not scan resmat input ")+string(args[1]);
 		  if(ival>=0)
 			  sprintf(answer,"%d",myDet->setCounterBit(ival));
 	  }else
@@ -2271,12 +2271,12 @@ string slsDetectorCommand::helpCounter(int narg, char *args[], int action){
   if (action==PUT_ACTION || action==HELP_ACTION){
     os << "readctr \t  Cannot put"<< std::endl;
     os << "resetctr i \t  resets counter in detector, restarts acquisition if i=1"<< std::endl;
-    os << "setctrbit i \t  sets/resets counter bit in detector"<< std::endl;
+    os << "resmat i \t  sets/resets counter bit in detector"<< std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION){
 	  os << "readctr i fname\t  reads counter in detector to file fname, restarts acquisition if i=1"<< std::endl;
 	  os << "resetctr \t  Cannot get"<< std::endl;
-	  os << "setctrbit i \t  gets the counter bit in detector"<< std::endl;
+	  os << "resmat i \t  gets the counter bit in detector"<< std::endl;
   }
   return os.str();
 }

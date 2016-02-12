@@ -3943,7 +3943,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 					std::cout << "Setting/Getting number of frames " << index <<" to/from receiver " << args[1] << std::endl;
 #endif
 					args[0] = FRAME_NUMBER;
-					retval = thisDetector->timerValue[FRAME_NUMBER]*thisDetector->timerValue[CYCLES_NUMBER];
+					retval = abs(thisDetector->timerValue[FRAME_NUMBER]*thisDetector->timerValue[CYCLES_NUMBER]);
 					if(args[1] != -1)	  args[1]=retval;
 				}else{
 #ifdef VERBOSE

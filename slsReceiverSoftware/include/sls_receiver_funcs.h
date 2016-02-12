@@ -48,7 +48,8 @@ enum {
 	F_ENABLE_RECEIVER_COMPRESSION,	/**< enable compression in receiver */
 	F_ENABLE_RECEIVER_OVERWRITE,		/**< set overwrite flag in receiver */
 
-	F_ENABLE_RECEIVER_TEN_GIGA		/**< enable 10Gbe in receiver */
+	F_ENABLE_RECEIVER_TEN_GIGA,		/**< enable 10Gbe in receiver */
+	F_SET_RECEIVER_FIFO_DEPTH		/**< set receiver fifo depth */
 
 	/* Always append functions hereafter!!! */
 };

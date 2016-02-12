@@ -93,19 +93,7 @@ enum communicationProtocol{
   UDP /**< UDP */
 };
 
-typedef struct
-{
-	unsigned char header_before[20];
-	unsigned char  fnum[4];
-	unsigned char  header_after[24];
-} eiger_image_header;
 
-typedef struct
-{
-	unsigned char header_before[19];
-	unsigned char  fnum[4];
-	unsigned char  header_after[25];
-} eiger_image_header32;
 
  genericSocket(const char* const host_ip_or_name, unsigned short int const port_number, communicationProtocol p, int ps = DEFAULT_PACKET_SIZE) :
    //   portno(port_number), 
@@ -123,6 +111,12 @@ typedef struct
 	// serverAddress = {0};
 	// clientAddress = {0};
 	  //   strcpy(hostname,host_ip_or_name);
+
+	 strcpy(lastClientIP,"none");
+	 strcpy(thisClientIP,"none1");
+	 strcpy(dummyClientIP,"dummy");
+	 differentClients = 0;
+
      struct hostent *hostInfo = gethostbyname(host_ip_or_name);
      if (hostInfo == NULL){
        cerr << "Exiting: Problem interpreting host: " << host_ip_or_name << "\n";
@@ -177,15 +171,16 @@ typedef struct
 	 nsent(0),
 	 total_sent(0)
    {
-		 //memset(&serverAddress, 0, sizeof(sockaddr_in));
-		// memset(&clientAddress, 0, sizeof(sockaddr_in));
-		// serverAddress = {0};
-		// clientAddress = {0};
-/* // you can specify an IP address: */
-/*  */
 
+/* // you can specify an IP address: */
 /* // or you can let it automatically select one: */
 /* myaddr.sin_addr.s_addr = INADDR_ANY; */
+
+
+		 strcpy(lastClientIP,"none");
+		 strcpy(thisClientIP,"none1");
+		 strcpy(dummyClientIP,"dummy");
+		 differentClients = 0;
 
 	 if(serverAddress.sin_port == htons(port_number)){
 		 socketDescriptor = -10;
@@ -582,45 +577,43 @@ typedef struct
 
     
      int ReceiveDataOnly(void* buf,int length=0){
-   
 
-       if (buf==NULL) return -1;
-       
 
-       total_sent=0;
-       
-       switch(protocol) {
-       case TCP:
-	 if (file_des<0) return -1;
-	 while(length>0){
-	   nsending = (length>packet_size) ? packet_size:length;
-	   nsent = read(file_des,(char*)buf+total_sent,nsending); 
-	   if(!nsent) break;
-	   length-=nsent;
-	   total_sent+=nsent;
-	 }
-	 break;
-       case UDP:
-	 if (socketDescriptor<0) return -1;
+    	 if (buf==NULL) return -1;
 
-/*
-	 cout <<"******listening inside genericsocket"<<endl;
-	 for(int i=0;i<10000;i++){
-		 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,5000, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
-		cout<<i<<":"<<nsent<<"\t\t";
-	 }
-	exit(-1);
-*/
 
-	 //if length given, listens to length, else listens for packetsize till length is reached
-	 if(length){
-/*int k = 0;*/
+    	 total_sent=0;
 
-		 while(length>0){
-			 nsending = (length>packet_size) ? packet_size:length;
+    	 switch(protocol) {
+    	 case TCP:
+    		 if (file_des<0) return -1;
+    		 while(length>0){
+    			 nsending = (length>packet_size) ? packet_size:length;
+    			 nsent = read(file_des,(char*)buf+total_sent,nsending);
+    			 if(!nsent) break;
+    			 length-=nsent;
+    			 total_sent+=nsent;
+    		 }
 
-			 /*
+    		 if (total_sent>0)
+    			 strcpy(thisClientIP,dummyClientIP);
 
+    		 if (strcmp(lastClientIP,thisClientIP))
+    			 differentClients=1;
+    		 else
+    			 differentClients=0;
+
+    		 break;
+    	 case UDP:
+    		 if (socketDescriptor<0) return -1;
+
+    		 //if length given, listens to length, else listens for packetsize till length is reached
+    		 if(length){
+    			 /*int k = 0;*/
+
+    			 while(length>0){
+    				 nsending = (length>packet_size) ? packet_size:length;
+    				 /*
 			 //created for debugging on 11.05.2015
 			 nsending=5000;
 			 nsent = recvfrom(socketDescriptor,(char*)buf,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
@@ -636,44 +629,32 @@ typedef struct
 			 }
 			 else
 				 k++;
-	 */
-
-			 
-
-			 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
-			 if(!nsent) break;
-			 if(nsent == 16) {
-				 //cout << ".";
-				 continue;
-			 }
-			 length-=nsent;
-			 total_sent+=nsent;
-		 }
-	 }
-	 //listens to only 1 packet
-	 else{
-		  //normal
-		 nsending=packet_size;
-		 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
-		 total_sent+=nsent;
-	 }
-	 break;
-       default:
-	 ;
-       }
+    				  */
+    				 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
+    				 if(!nsent) break;
+    				 length-=nsent;
+    				 total_sent+=nsent;
+    			 }
+    		 }
+    		 //listens to only 1 packet
+    		 else{
+    			 //normal
+    			 nsending=packet_size;
+    			nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
+    			//nsent = 1040;
+    			total_sent+=nsent;
+    		 }
+    		 break;
+    	 default:
+    		 ;
+    	 }
 #ifdef VERY_VERBOSE
-       cout << "sent "<< total_sent << " Bytes" << endl; 
+    	 cout << "sent "<< total_sent << " Bytes" << endl;
 #endif
-       if (total_sent>0)
-         strcpy(thisClientIP,dummyClientIP);
 
-       if (strcmp(lastClientIP,thisClientIP))
-         differentClients=1;
-       else
-         differentClients=0;
 
-       return total_sent;
-       
+    	 return total_sent;
+
 
 
      }
@@ -729,21 +710,12 @@ typedef struct
  protected:
 
   communicationProtocol protocol; 
-
-
-  
   int is_a_server;
-
-
   int socketDescriptor;
   int file_des;
-
   int packet_size;
-
   struct sockaddr_in clientAddress, serverAddress;
   socklen_t clientAddress_length;
-
-
   char dummyClientIP[INET_ADDRSTRLEN];
 
 

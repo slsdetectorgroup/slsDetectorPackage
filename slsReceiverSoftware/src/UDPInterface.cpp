@@ -5,10 +5,10 @@
  ***********************************************/
 
 
-
-#include <string.h>
 #include <iostream>
+#include <string.h>
 using namespace std;
+
 
 #include "UDPInterface.h"
 #include "UDPBaseImplementation.h"
@@ -20,11 +20,10 @@ using namespace std;
 
 using namespace std;
 
-// TODO: I do not really like passing a bottom-top boolean to the constructor...
 UDPInterface * UDPInterface::create(string receiver_type){
 	
 	if (receiver_type == "standard"){
-		cout << "Starting " << receiver_type << endl;
+		FILE_LOG(logINFO) << "Starting " << receiver_type;
 		return new UDPStandardImplementation();
 	}
 #ifdef REST

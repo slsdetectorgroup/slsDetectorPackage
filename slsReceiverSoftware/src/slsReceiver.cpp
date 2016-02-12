@@ -29,6 +29,9 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 	 * @return 
 	 */
 	
+	udp_interface = NULL;
+	tcpipInterface = NULL;
+
 	//creating base receiver
 	map<string, string> configuration_map;
 	int tcpip_port_no = 1954;
@@ -55,7 +58,8 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
         };
 	/* getopt_long stores the option index here. */
 	int option_index = 0;
-	int c;
+	int c=0;
+	optind = 1;
 
 	while ( c != -1 ){
 		c = getopt_long (argc, argv, "mbfhtr", long_options, &option_index);
@@ -162,7 +166,7 @@ void slsReceiver::closeFile(int p) {
 
 
 int64_t slsReceiver::getReceiverVersion(){
-	tcpipInterface->getReceiverVersion();
+	return tcpipInterface->getReceiverVersion();
 }
 
 

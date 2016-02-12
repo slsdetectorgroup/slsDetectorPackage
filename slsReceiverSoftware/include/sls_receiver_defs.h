@@ -8,7 +8,11 @@
 #endif
 
 #include <stdint.h> 
+#ifdef __cplusplus
+#include <string>
+#endif
 #include "ansi.h"
+
 
 typedef  double double32_t;
 typedef  float float32_t;
@@ -19,8 +23,8 @@ typedef  int int32_t;
 #define MAX_FRAMES_PER_FILE			20000
 #define SHORT_MAX_FRAMES_PER_FILE	100000
 #define MOENCH_MAX_FRAMES_PER_FILE	1000
-#define EIGER_MAX_FRAMES_PER_FILE	20000
-#define JFCTB_MAX_FRAMES_PER_FILE      100000
+#define EIGER_MAX_FRAMES_PER_FILE	2000
+#define JFCTB_MAX_FRAMES_PER_FILE   100000
 
 
 /** 
@@ -110,7 +114,67 @@ public:
 		RUNNING /**< acquisition  running, no data in memory */
 	};
 
+#ifdef __cplusplus
+	  /** returns string from enabled/disabled
+	      \param b true or false
+	      \returns string enabled, disabled
+	  */
+	  static std::string stringEnable(bool b){\
+		if(b) return std::string("enabled"); \
+		else return std::string("disabled"); \
+	  };
 
+	  /** returns detector type string from detector type index
+	      \param t string can be Mythen, Pilatus, Eiger, Gotthard, Agipd, Unknown
+	      \returns MYTHEN, PILATUS, EIGER, GOTTHARD, AGIPD, MÖNCH, GENERIC
+	  */
+	  static std::string getDetectorType(detectorType t){	\
+	    switch (t) {										\
+	    case MYTHEN:    	return std::string("Mythen");	\
+	    case PILATUS:   	return std::string("Pilatus");	\
+	    case EIGER:    		return std::string("Eiger");	\
+	    case GOTTHARD:    	return std::string("Gotthard");	\
+	    case AGIPD:    		return std::string("Agipd");	\
+	    case MOENCH:    	return std::string("Moench");	\
+	    case JUNGFRAU:    	return std::string("Jungfrau");	\
+	    case JUNGFRAUCTB:   return std::string("JungfrauCTB");	\
+	    case PROPIX:    	return std::string("Propix");	\
+	    default:    		return std::string("Unknown");	\
+	    }};
+
+	  /** returns detector type index from detector type string
+	      \param type can be MYTHEN, PILATUS, EIGER, GOTTHARD, AGIPD, GENERIC
+	      \returns Mythen, Pilatus, Eiger, Gotthard, Agipd, Mönch, Unknown
+	  */
+	  static detectorType getDetectorType(std::string const type){\
+	    if (type=="Mythen")      	return MYTHEN;		\
+	    if (type=="Pilatus")      	return PILATUS;		\
+	    if (type=="Eiger")    		return EIGER;		\
+	    if (type=="Gotthard")    	return GOTTHARD;	\
+	    if (type=="Agipd")    		return AGIPD;		\
+	    if (type=="Moench")    		return MOENCH;		\
+	    if (type=="Jungfrau")    	return JUNGFRAU;	\
+	    if (type=="JungfrauCTB") 	return JUNGFRAUCTB;	\
+	    if (type=="Propix")    		return PROPIX;		\
+	    							return GENERIC;		\
+	  };
+
+
+	  /** returns string from run status index
+	      \param s can be ERROR, WAITING, RUNNING, TRANSMITTING, RUN_FINISHED
+	      \returns string error, waiting, running, data, finished
+	  */
+	  static std::string runStatusType(runStatus s){\
+	    switch (s) {				\
+	    case ERROR:       	return std::string("error");	\
+	    case  WAITING:      return std::string("waiting");	\
+	    case RUNNING:      	return std::string("running");	\
+	    case TRANSMITTING:  return std::string("data");		\
+	    case  RUN_FINISHED: return std::string("finished");	\
+	    default:       		return std::string("idle");		\
+	    }};
+
+#endif
 
 #ifdef __cplusplus
 protected:

@@ -232,7 +232,7 @@ It is normally recommended to use \verb=sls\_detector\_acquire [j-]=, which take
 %\item[checkonline] 
 %\item[readctr i fname] GOTTHARD related - reads counter in detector to file fname, restarts acquisition if i=1
 \item[resetctr i] GOTTHARD- ADVANCED- resets counter in detector, restarts acquisition if i=1
-\item[resmat 1] \E - ADVANCED - resets counter in detector before each acquisition. Default settings. \textit{resmat 0} does not reset the counter bit before the acquisition. Note that in \E the counter is always reset after the acquisition.
+\item[resmat i] \E - ADVANCED - resets counter in detector before the following acquisition. Default settings is \textit{resmat 1}. \textit{resmat 0} does not reset the counter bit before the acquisition. Note that in \E the counter is always reset after the acquisition.
 %\item[exptimel]        
 %\item[periodl] 
 %\item[delayl]  
@@ -248,7 +248,7 @@ It is normally recommended to use \verb=sls\_detector\_acquire [j-]=, which take
 \subsubsection{Configuration}
 Advanced commands to configure the detector system. Should be left to the configuration file
 \begin{description}
-\item[type s] Sets the types of detector controllers in the system. Can be Mythen, Gotthard, Eiger and multiple controllers should be catenated with a + (e.g. Mythen+Mythen for 2 Mythen controllers).
+\item[type s] Sets the types of detector controllers in the system. Can be Mythen, Gotthard, \E and multiple controllers should be catenated with a + (e.g. Mythen+Mythen for 2 Mythen controllers).
 \item[d:hostname s] Sets the hostname or IP address for the controller d, where d is the controller index within the detector structure.    
 \item[d:extsig:i s] Configures the usage of the external IO signals to synchronize the detectors. s can be:  off, gate\_in\_active\_high, gate\_in\_active\_low, trigger\_in\_rising\_edge,
                          trigger\_in\_falling\_edge,
@@ -375,7 +375,7 @@ Advanced settings changing the analog or digital performance of the acquisition.
 %\item[temp\_adc n]    Sets     
 %\item[temp\_fpga n]
 \item[reg a d]   Write to register of address a the data d  
-\item[clkdivider n]  Sets the clock divider for the readout. Can be increased for longer cables. For EIGER options are 0 (full speed), 1 (half speed), 2 (quarter speed), and 3 (slow).
+\item[clkdivider n]  Sets the clock divider for the readout. Can be increased for longer cables. For \E options are 0 (full speed), 1 (half speed), 2 (quarter speed), and 3 (slow).
 \item[setlength n]  Changes the length of the set/reset signals in the acquisition. Never reduce it!     
 \item[waitstates n] Sets the wait states for CPU/FPGA communication. Do not change it!
 \item[totdivider n]  Sets the tot clock divider.

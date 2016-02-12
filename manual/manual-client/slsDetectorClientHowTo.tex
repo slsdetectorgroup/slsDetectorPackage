@@ -15,9 +15,9 @@
 \section{Introduction}
 
 This program is intended to control the SLS detectors via command line interface.\\
-This is the only way to access all possible functionalities of the detectors, however it is often reccomendable to avoid changing the most dvanced settings, rather leaving the task to configuration files, as when using the GUI or the API provided.
+This is the only way to access all possible functionality of the detectors, however it is often recommendable to avoid changing the most advanced settings, rather leaving the task to configuration files, as when using the GUI or the API provided.
 
-The command line interface consists in four main funtions:
+The command line interface consists in four main functions:
 \begin{description}
 \item[sls\_detector\_acquire] to acquire data from the detector
 \item[sls\_detector\_put] to set detector parameters
@@ -33,14 +33,14 @@ For commands addressing a single controller of your detector, the command  \verb
 \verb=sls_detector_clnt i:cmd=\\
 where \verb=sls_detector_clnt= is the text client (put, get, acquire, help).
 
-In case more than one detector is configured on the control PC, the command  \verb=cmd= should be called with their respectived index  \verb=j=:
+In case more than one detector is configured on the control PC, the command  \verb=cmd= should be called with their respective index  \verb=j=:
 \verb=sls_detector_clnt j-cmd=\\
 where \verb=sls_detector_clnt= is the text client (put, get, acquire, help).
 
 To address a specific controller \verb=i= of detector \verb=j= use:\\
 \verb=sls_detector_clnt j-i:cmd=
 
-For additional questions concerning the indexing of the detector, please refere to the \textit{SLS Detectors FAQ} documentation.
+For additional questions concerning the indexing of the detector, please refer to the \textit{SLS Detectors FAQ} documentation.
 
 
 \section{Acquisition}
@@ -54,7 +54,7 @@ By calling:\\
 the detector \verb=j= is started and the data are acquired, postprocessed and written to file according to the configuration and setup of the measurements.\\
 A progress index of the acquisition in percentage is shown on the command line.
 
-For additional questions concerning the acquisition flow, please refere to the \textit{SLS Detectors FAQ} documentation.
+For additional questions concerning the acquisition flow, please refer to the \textit{SLS Detectors FAQ} documentation.
 
 \section{Detector setup}
 
@@ -74,15 +74,15 @@ Examples of configuration files are available in the directory \verb=examples=. 
 Load the parameter file fname. \\
 The syntax of the commands in the parameter file is exactly the same as for the command line interface. Can be used to load a standard mode of acquisition and/or to hide advanced parameters from the final user. Examples of parameter files are available in the directory \verb=examples=.     
 \item[settings sett] 
-Configures the settings of the detector. Refere to detailed detector documentation for more details:   \\
+Configures the settings of the detector. Refer to detailed detector documentation for more details:   \\
 for MYTHEN sett can be: standard, fast, highgain;\\
 for GOTTHARD sett can be: veryhighgain, highgain, mediumgain, lowgain, dynamicgain;\\
 for \E sett can be: standard, highgain, lowgain.
 \item[threshold ev] 
-For photon counting detectors, sets the detector threshold in eV. The detector should be properly calibrated, otherwise standard calibration coefficents are used, which can give an uncertainty up to a few keVs.  
+For photon counting detectors, sets the detector threshold in eV. The detector should be properly calibrated, otherwise standard calibration coefficients are used, which can give an uncertainty up to a few keVs.  
 \item[timing sync]   
-Sets the timing mode of the detector. Can be auto, gating (works only if at least one of the signals is configured as gate\_in), trigger (works only if at least one of the signals is configured as trigger\_in), ro\_trigger (works only if at least one of the signals is configured as ro\_trigger\_in), triggered\_gating (works only if one ofthe signals is configured as gate\_in and one as trigger\_in). \\
-Refere to the detailed documentation to understand how the different timing modes work.
+Sets the timing mode of the detector. Can be auto, gating (works only if at least one of the signals is configured as gate\_in), trigger (works only if at least one of the signals is configured as trigger\_in), ro\_trigger (works only if at least one of the signals is configured as ro\_trigger\_in), triggered\_gating (works only if one of the signals is configured as gate\_in and one as trigger\_in). \\
+Refer to the detailed documentation to understand how the different timing modes work.
 \item[outdir path] 
 Defines the path where the output files will be saved to.
 \item[fname prefix]
@@ -103,26 +103,26 @@ where: \\
 Sets the exposure time of a single acquisition to ts (in s). It is overridden in case the detector is in gating mode.  \\
 Refere to detailed documentation to understand how the different timing modes work.
 \item[subexptime ts] 
-Sets the subexposure time of a single subacquisition to ts (in s) in \E autosumming mode (=\textit{dr 32}). Refere to detailed documentation to understand how the different timing modes work.
+Sets the subexposure time of a single subacquisition to ts (in s) in \E autosumming mode (=\textit{dr 32}). Refer to detailed documentation to understand how the different timing modes work.
 \item[period ts]  
 Sets the frames period (in s). It is overridden in case the detector is in gating mode. \\
-Refere to detailed documentation to understand how the different timing modes work. 
+Refer to detailed documentation to understand how the different timing modes work. 
 \item[delay ts] 
 Sets the delay after trigger in triggered mode (in s).\\
-Refere to the detailed documentation to understand how the different timing modes work.
+Refer to the detailed documentation to understand how the different timing modes work.
 \item[gates n] 
 Sets the number of gates per frame in gated (stroboscopic) mode.\\
-Refere to the detailed documentation to understand how the different timing modes work.
+Refer to the detailed documentation to understand how the different timing modes work.
 \item[frames n]  
 Sets the number of frames acquired sequentially per cycle (e.g. after each trigger), with the exposure time defined by exptime and the period defined by period (unless in gated mode). The frame index in the output file name will automatically be incremented.\\
-Note that the total number of images will be  frames times cycles.  Refere to detailed documentation to understand how the different timing modes work. 
+Note that the total number of images will be  frames times cycles.  Refer to detailed documentation to understand how the different timing modes work. 
 \item[cycles n] 
 Sets the number of cycles (e.g. number of triggers). The frame index in the output file name will automatically be incremented. \\ 
-Note that the total number of images will be by frames times cycles.   Refere to the detailed documentation to understand how the different timing modes work.
+Note that the total number of images will be by frames times cycles.   Refer to the detailed documentation to understand how the different timing modes work.
 \item[probes]  Sets the number of probes to accumulate for stroboscopic measurements. \\
-Refere to detailed documentation to understand how the different timing modes work.
-\item[measurements] Sets the number of repetitions of the acquisitions (non real time!). The file index in the file name will be automotically incremented.\\
-Refere to detailed documentation to understand how the different timing modes work.
+Refer to detailed documentation to understand how the different timing modes work.
+\item[measurements] Sets the number of repetitions of the acquisitions (non real time!). The file index in the file name will be automatically incremented.\\
+Refer to detailed documentation to understand how the different timing modes work.
 \item[dr n] Sets the dynamic range n (in bits) of the data for a photon counting detector. For \E it can be set to 4, 8, 16 (but the real counter depth will still be limited to 12 bits) or 32 when one wants to activate the internal subframe summing mode.
 
 \item[flags s] Sets some particular flags for your detector. For MYTHEN s can be \textit{none}, \textit{storeinram} (for buffered readout) or \textit{tot} (for time over threshold). For \E, s can be {\it{continous}} (for continous readout), \textit{storeinram} (for buffered readout), \textit{parallel} for parallel exposure to the next frame and readout of the previous frame, \textit{nonparallel} to decouple sequentially readout and exposure, \textit{safe} (rowclock interleaved).  
@@ -222,7 +222,7 @@ This operations should be performed only rarely to configure the detector
 
 \subsubsection{Acquisition}
 
-It is normally reccomended to use \verb=sls\_detector\_acquire [j-]=, which takes care of everything
+It is normally recommended to use \verb=sls\_detector\_acquire [j-]=, which takes care of everything
 \begin{description}
 %\item[acquire] It is normally reccomended to use \verb=sls\_detector\_acquire [j-]=, which takes care of everything
 %\item[data] 
@@ -232,7 +232,7 @@ It is normally reccomended to use \verb=sls\_detector\_acquire [j-]=, which take
 %\item[checkonline] 
 %\item[readctr i fname] GOTTHARD related - reads counter in detector to file fname, restarts acquisition if i=1
 \item[resetctr i] GOTTHARD- ADVANCED- resets counter in detector, restarts acquisition if i=1
-\item[setctrbit 1] \E - ADVANCED - resets counter in detector before each acquisition. Default settings. \textit{setctrbit 0} does not reset the counter bit before the acquisition. Note that in \E the counter is always reset after the acquisition.
+\item[resmat 1] \E - ADVANCED - resets counter in detector before each acquisition. Default settings. \textit{resmat 0} does not reset the counter bit before the acquisition. Note that in \E the counter is always reset after the acquisition.
 %\item[exptimel]        
 %\item[periodl] 
 %\item[delayl]  
@@ -248,7 +248,7 @@ It is normally reccomended to use \verb=sls\_detector\_acquire [j-]=, which take
 \subsubsection{Configuration}
 Advanced commands to configure the detector system. Should be left to the configuration file
 \begin{description}
-\item[type s] Sets the types of detector controlelrs in the system. Can be Mythen, Gotthard, Eiger and multiple controllers should be catenated with a + (e.g. Mythen+Mythen for 2 Mythen controllers).
+\item[type s] Sets the types of detector controllers in the system. Can be Mythen, Gotthard, Eiger and multiple controllers should be catenated with a + (e.g. Mythen+Mythen for 2 Mythen controllers).
 \item[d:hostname s] Sets the hostname or IP address for the controller d, where d is the controller index within the detector structure.    
 \item[d:extsig:i s] Configures the usage of the external IO signals to synchronize the detectors. s can be:  off, gate\_in\_active\_high, gate\_in\_active\_low, trigger\_in\_rising\_edge,
                          trigger\_in\_falling\_edge,
@@ -259,11 +259,11 @@ Advanced commands to configure the detector system. Should be left to the config
                          trigger\_out\_rising\_edge,
                          trigger\_out\_falling\_edge,
                          ro\_trigger\_out\_rising\_edge,
-                         ro\_trigger\_out\_falling\_edge, sync. \\Usually left to the configuration file. Gating, trigegring etc. are enabled only by calling the timing command. \\
-Please refer to SLS Detectors FAQ documentation for more detailed informations about the usage.
+                         ro\_trigger\_out\_falling\_edge, sync. \\Usually left to the configuration file. Gating, triggering etc. are enabled only by calling the timing command. \\
+Please refer to SLS Detectors FAQ documentation for more detailed information about the usage.
       
-\item[master i] Sets the master of a multi-controller detector to the controller with index i. -1 removes master. Setting a master is useful only if the controllers are synchronized via harware using the external IO signals. Usually left to the configuration file. Please refer to SLS Detectors FAQ documentation for more detailed informations about the usage.  
-\item[sync s] Sets the synchronization mode of the various controller within a detector structure. s acn be none, gating, trigger, complementary. Check that the detectors are correctly connected to avoid freezing of the acquisition. Usually left to the configuration file. Please refer to SLS Detectors FAQ documentation for more detailed informations about the usage.
+\item[master i] Sets the master of a multi-controller detector to the controller with index i. -1 removes master. Setting a master is useful only if the controllers are synchronized via hardware using the external IO signals. Usually left to the configuration file. Please refer to SLS Detectors FAQ documentation for more detailed information about the usage.  
+\item[sync s] Sets the synchronization mode of the various controller within a detector structure. s acn be none, gating, trigger, complementary. Check that the detectors are correctly connected to avoid freezing of the acquisition. Usually left to the configuration file. Please refer to SLS Detectors FAQ documentation for more detailed information about the usage.
 \item[trimdir s] Obsolete. Same ad settingsdir.
 \item[settingsdir s] Sets the path of the drectory where the trim/settings files are stored. Usually left to the configuration file.
 \item[caldir s]    Sets the path of the drectory where the calibration files are stored. Can be the same as settingsdir. Usually left to the configuration file. 
@@ -310,7 +310,7 @@ Some advanced commands to configure data postprocessing.
 \item[darkimage fname] GOTTHARD- ADVANCED- Sets fname as dark image file for the detector.       
 \item[gainimage fname] GOTTHARD- ADVANCED- Sets fname as gain image file for the detector. 
 \item[badchannels fname] Sets the bad channel file to fname. Bad channels will be omitted in the .dat file.  \textit{none} to unset.  Normally left to the configuration file.   
-\item[threaded b] Avoid changing it. Sets if the data are written to disk in parallel with the acquisition (1) or after the acquistion (0).    Normally left to the configuration file.      
+\item[threaded b] Avoid changing it. Sets if the data are written to disk in parallel with the acquisition (1) or after the acquisition (0).    Normally left to the configuration file.      
 \end{description}
 
 
@@ -325,9 +325,9 @@ Some advanced commands to configure data postprocessing.
 \end{description}
 
 \subsubsection{Testing - \E specific}
-Some VERY ADVANCED testing functions implemente for \E:
+Some VERY ADVANCED testing functions implemented for \E:
 \begin{description}
-\item [pulsechip n] sets the chip into test mode with \textit{ctrbit} = 0 and \textit{externalenable} =1.  Pulses chip by togglying the enable n number of times. The acquire is then done with no pixel matrix reset before the acquisition. If n$=-1$, the chip will be set into normal mode. This is necessary to restore normal chip operations after the test.
+\item [pulsechip n] sets the chip into test mode with \textit{resmat} = 0 and \textit{externalenable} =1.  Pulses chip by togglying the enable n number of times. The acquire is then done with no pixel matrix reset before the acquisition. If n$=-1$, the chip will be set into normal mode. This is necessary to restore normal chip operations after the test.
 \item[pulse n x y] Pulses pixel at coordinates (x,y) n number of times. 
 \item[pulsenmove n x y] Pulses pixel n number of times and moves relatively by x value (x axis) and y value (y axis)
 \end{description}
@@ -408,14 +408,14 @@ For some commands, an additional argument \verb=arg= is needed.
 \item[config fname] 
 Dumps the current configuration of the detector to the file fname.
 \item[parameters fname]
- Dumps the current acquistion parameters of the detector to the file fname.
+ Dumps the current acquisition parameters of the detector to the file fname.
 \item[settings] 
 Returns the current settings of the detector.
 \item[threshold] 
 For photon counting detectors, returns the detector threshold in eV, -1 if undefined.
 \item[timing]   
-Returns the acquistion timing mode of the detector.
-Refere to the detailed documentation to understand how the different timing modes work.
+Returns the acquisition timing mode of the detector.
+Refer to the detailed documentation to understand how the different timing modes work.
 \item[outdir] 
 Returns the path where the output files are saved to.
 \item[fname]
@@ -423,28 +423,28 @@ Returns the prefix of the file name for the data output.
 \item[enablefwrite] Returns if data are written to file (1) or not (0).
 \item[exptime] 
 Returns the exposure time of a single acquisition in seconds. 
-Refere to detailed documentation to understand how the different timing modes work. 
+Refer to detailed documentation to understand how the different timing modes work. 
 \item[period]  
 Returns the frames period (in s). 
-Refere to detailed documentation to understand how the different timing modes work.
+Refer to detailed documentation to understand how the different timing modes work.
 \item[delay] 
 Returns the delay after trigger in triggered mode (in s). 
-Refere to detailed documentation to understand how the different timing modes work.
+Refer to detailed documentation to understand how the different timing modes work.
 \item[gates] 
 Returns the number of gates per frame in gated (stroboscopic) mode. 
-Refere to detailed documentation to understand how the different timing modes work.
+Refer to detailed documentation to understand how the different timing modes work.
 \item[frames]  
 Returns the number of frames acquired sequentially per cycle (e.g. after each trigger), with the exposure time defined by exptime and the period defined by period (unless in gated mode).
 Note that the total number of images is  frames times cycles.  
-Refere to detailed documentation to understand how the different timing modes work. 
+Refer to detailed documentation to understand how the different timing modes work. 
 \item[cycles n] 
 Returns the number of cycles (e.g. number of triggers). 
 Note that the total number of images is  frames times cycles. 
-Refere to detailed documentation to understand how the different timing modes work.  
+Refer to detailed documentation to understand how the different timing modes work.  
 \item[probes]  Returns the number of probes to accumulate for stroboscopic measurements.  
-Refere to detailed documentation to understand how the different timing modes work.
+Refer to detailed documentation to understand how the different timing modes work.
 \item[measurements] Returns the number of repetitions of the acquisitions (non real time!). 
-Refere to detailed documentation to understand how the different timing modes work.
+Refer to detailed documentation to understand how the different timing modes work.
 \item[dr] Returns the dynamic range n (in bits) of the data for a photon counting detector. 
 \item[flags s] Returns the flags set for your detector. 
 \item[help cmd]  Returns the help for command cmd.
@@ -505,7 +505,7 @@ See SLS Detectors Documentation for a detailed description of the acquisition fl
 \end{description}
 
 \subsection{Debug}
-Commands to be used to retrieve informations about the detector version or perform tests.
+Commands to be used to retrieve information about the detector version or perform tests.
 \subsubsection{Version}
 \begin{description}
 \item[moduleversion[:i]]   Returns the version of the module firmware.
@@ -545,7 +545,7 @@ This operations should be performed only rarely to configure the detector
 
 \subsubsection{Acquisition commands}
 
-It is normally reccomended to use \verb=sls\_detector\_acquire [j-]=, which takes care of everything
+It is normally recommended to use \verb=sls\_detector\_acquire [j-]=, which takes care of everything
 \begin{description}
 \item[acquire] Same as \verb=sls\_detector\_acquire=
 \item[data] Gets, saves and processes all data stored on the detector, if any.
@@ -570,14 +570,14 @@ It is normally reccomended to use \verb=sls\_detector\_acquire [j-]=, which take
 \subsubsection{Configuration}
 Advanced commands to configure the detector system. Should be left to the configuration file
 \begin{description}
-\item[type] Returns the types of detector controlelrs in the system. 
+\item[type] Returns the types of detector controllers in the system. 
 \item[hostname] Returns the hostnames or IP addresses for the detector
 \item[d:extsig:i] Returns the usage of the external IO signal i of the controller d.
 \item[master] Returns the master of the acquisition in a multicontroller detector. -1 is none.
 \item[sync] Returns the synchronization mode of the various controller within a detector structure. 
 \item[trimdir] Same ad settingsdir.
-\item[settingsdir] Returns the path of the drectory where the trim/settings files are stored.
-\item[caldir]   Returns the path of the drectory where the calibration files are stored. 
+\item[settingsdir] Returns the path of the directory where the trim/settings files are stored.
+\item[caldir]   Returns the path of the directory where the calibration files are stored. 
 \item[trimen n e1 e2 ...en] Unused. Returns the list of energies for which trimfiles exist.
 \item[port] Returns the port used by the sockets to control the detector. 
 \item[stopport]Returns the port used by the sockets to stop/get the status of the detector.
@@ -607,7 +607,7 @@ Advanced commands to configure the detector system. Should be left to the config
 \item[r\_checkonline]       Returns whether the receiver in online (1) or offline (0) mode.   
 \item[framescaught]       Returns the number of frames received.      
 \item[frameindex]     Returns the index of the last frame received.      
-\item[r\_lock] Returns whether the reciever is locked (1) or unlocked (0).   
+\item[r\_lock] Returns whether the receiver is locked (1) or unlocked (0).   
 \item[r\_lastclient]    Returns the IP of the last client which connected to the receiver. 
 %\item[receiver s ] starts/stops the receiver to listen to detector packets. - can be start or stop
 \end{description} 
@@ -619,7 +619,7 @@ Some advanced commands to configure data postprocessing.
 \item[darkimage fname] GOTTHARD- ADVANCED- Returns the dark image file for the detector.       
 \item[gainimage fname] GOTTHARD- ADVANCED- Returns gain image file for the detector. 
 \item[badchannels fname] Returns bad channel file to fname.    
-\item[threaded b] Returns whether the data are written to disk in parallel with the acquisition (1) or after the acquistion (0).      
+\item[threaded b] Returns whether the data are written to disk in parallel with the acquisition (1) or after the acquisition (0).      
 \end{description}
 
 
@@ -628,7 +628,7 @@ Some advanced commands to configure data postprocessing.
 \begin{description}
 \item[globaloff]   Returns the  offset  of the beamline i.e. angular position of channel 0 when angular encoder at 0. 
 \item[angconv] Returns the file used for the coefficients for angular conversion.
-\item[binsize] Returns the size of the angular bins for angular coversion. 
+\item[binsize] Returns the size of the angular bins for angular conversion. 
 \item[angdir] Returns the angular direction of the detector (1 means channel number in the same direction as the angular encoder, -1 different direction). 
 \item[d:moveflag]  Related to a single controller d. Returns 1 if the detector modules move with the angular encoder, 0 if they are static (useful for multidetector systems).
 \end{description}
@@ -696,7 +696,7 @@ To do that:
 \begin{verbatim}
 sls_detector_put config mydetector.config
 \end{verbatim}
-Refere to sample configuration files to produce the appropiate one for your detector.
+Refer to sample configuration files to produce the appropriate one for your detector.
 
 One can configure all the detector settings in a parameter file {\tt{setup.det}}, which is loaded by doing:
 \begin{verbatim}
@@ -722,7 +722,7 @@ sls_detector_put outdir /scratch
 sls_detector_put fname run
 sls_detector_put index 0
 \end{verbatim}
-this way your files will al be named /scratch/run\_fj\_i.dat where j goes between 0 and 9 and is relative to the frame number, i starts from 0 and is automatically incremented. The next acquistion it will be 1.
+this way your files will all be named /scratch/run\_fj\_i.dat where j goes between 0 and 9 and is relative to the frame number, i starts from 0 and is automatically incremented. The next acquisition it will be 1.
 
 
 To acquire simply type
@@ -738,7 +738,7 @@ sls_detector_get status
 
 
 \subsection{Data processing}
-Flat field and rate corrections can be applied direcly by simply selecting:
+Flat field and rate corrections can be applied directly by simply selecting:
 \begin{verbatim}
 sls_detector_put flatield myflatfield.raw
 sls_detector_put ratecorr -1

@@ -5017,11 +5017,17 @@ int slsDetector::setRateCorrection(double t){
 					thisDetector->correctionMask&=~(1<<RATE_CORRECTION);
 					thisDetector->tDead = 0;
 				}else{
-					if(retval>0)
+					if(retval>0){
 						thisDetector->correctionMask|=(1<<RATE_CORRECTION);
-					else
+						if(t < 0)
+							thisDetector->tDead = -1;
+						else
+							thisDetector->tDead = (double)retval/(double)1e9;
+					}
+					else{
 						thisDetector->correctionMask&=~(1<<RATE_CORRECTION);
-					thisDetector->tDead = (double)retval/(double)1e9;
+						thisDetector->tDead = (double)retval/(double)1e9;
+					}
 				}
 			} else {
 				controlSocket->ReceiveDataOnly(mess,sizeof(mess));

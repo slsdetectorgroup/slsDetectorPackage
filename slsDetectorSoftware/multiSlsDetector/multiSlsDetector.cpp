@@ -2452,7 +2452,7 @@ int multiSlsDetector::setRateCorrection(double t){
 	}
 
 	if (getDetectorsType() != MYTHEN){
-		if (ret1<=0)
+		if (ret1==0)
 			thisMultiDetector->correctionMask&=~(1<<RATE_CORRECTION);
 		 else
 			thisMultiDetector->correctionMask|=(1<<RATE_CORRECTION);
@@ -2464,14 +2464,15 @@ int multiSlsDetector::setRateCorrection(double t){
 
 int multiSlsDetector::getRateCorrection(double &t){
 
+  if (getDetectorsType() != MYTHEN){
+	t = getRateCorrectionTau();
+	return getRateCorrection();
+  }
+
   if (thisMultiDetector->correctionMask&(1<<RATE_CORRECTION)) {
 #ifdef VERBOSE
     std::cout<< "Rate correction is enabled with dead time "<< thisMultiDetector->tDead << std::endl;
 #endif
-
-    if (getDetectorsType() != MYTHEN)
-    	t = getRateCorrectionTau();
-
     return 1;
   } else
     t=0;
@@ -2484,20 +2485,36 @@ int multiSlsDetector::getRateCorrection(double &t){
 double multiSlsDetector::getRateCorrectionTau(){
 
   double ret1=-100,ret;
+  for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+	  if (detectors[idet]) {
+		  ret=detectors[idet]->getRateCorrectionTau();
+		  if (ret1==-100)
+			  ret1=ret;
+		  else if (ret!=ret1){
+			  std::cout<< "Rate correction is different for different readouts " << std::endl;
+			  if(getDetectorsType() == EIGER)
+				  ret1=-2;
+			  else
+				  ret1=-1; //same settings also return -1
+		  }
+	  }
+  }
+
+  if (getDetectorsType() != MYTHEN){
+	  cout<<"ret1:"<<ret1<<endl;
+	  //if set by the slsDetector
+	  if(ret1 == 0)
+		  thisMultiDetector->correctionMask&=~(1<<RATE_CORRECTION);
+	  else
+		  thisMultiDetector->correctionMask|=(1<<RATE_CORRECTION);
+	  return ret1;
+  }
+
+  //only mythen
   if (thisMultiDetector->correctionMask&(1<<RATE_CORRECTION)) {
 #ifdef VERBOSE
     std::cout<< "Rate correction is enabled with dead time "<< thisMultiDetector->tDead << std::endl;
 #endif
-
-    for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
-      if (detectors[idet]) {
-        ret=detectors[idet]->getRateCorrectionTau();
-    	if (ret1==-100)
-    	  ret1=ret;
-    	else if (ret!=ret1)
-    	  ret1=-1;
-      }
-    }
   } else {
 #ifdef VERBOSE
     std::cout<< "Rate correction is disabled " << std::endl;

@@ -1926,7 +1926,6 @@ int Feb_Control_SetRateCorrectionTable(unsigned int *table){
 		  return 0;
 	  }
   }
-cprintf(BLUE, "done with writing to memory\n");
    return 1;
 }
 

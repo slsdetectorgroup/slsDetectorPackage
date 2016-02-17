@@ -2773,6 +2773,8 @@ int slsDetector::setModule(sls_detector_module module, int* gainval, int* offset
 
   if(ret == FAIL && thisDetector->myDetectorType == EIGER && strcasestr(mess,"Rate")){
 	  setErrorMask((getErrorMask())|(COULD_NOT_SET_RATE_CORRECTION));
+	    if(strcasestr(mess,"tau/subexptime"))
+	    	 setErrorMask((getErrorMask())|(RATE_CORRECTION_TAU_SUBEXPOSURE));
 	  thisDetector->correctionMask&=~(1<<RATE_CORRECTION);
 	  thisDetector->tDead = 0;
   }
@@ -5033,6 +5035,8 @@ int slsDetector::setRateCorrection(double t){
 				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 				std::cout<< "Detector returned error: " << mess << std::endl;
 			    setErrorMask((getErrorMask())|(COULD_NOT_SET_RATE_CORRECTION));
+			    if(strcasestr(mess,"tau/subexptime"))
+			    	 setErrorMask((getErrorMask())|(RATE_CORRECTION_TAU_SUBEXPOSURE));
 				thisDetector->correctionMask&=~(1<<RATE_CORRECTION);
 				thisDetector->tDead = 0;
 			}

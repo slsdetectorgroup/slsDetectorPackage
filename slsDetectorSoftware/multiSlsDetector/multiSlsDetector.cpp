@@ -2501,7 +2501,6 @@ double multiSlsDetector::getRateCorrectionTau(){
   }
 
   if (getDetectorsType() != MYTHEN){
-	  cout<<"ret1:"<<ret1<<endl;
 	  //if set by the slsDetector
 	  if(ret1 == 0)
 		  thisMultiDetector->correctionMask&=~(1<<RATE_CORRECTION);

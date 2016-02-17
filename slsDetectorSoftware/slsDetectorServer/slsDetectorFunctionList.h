@@ -52,6 +52,8 @@ int pulsePixel(int n, int x, int y);
 int pulsePixelNMove(int n, int x, int y);
 int pulseChip(int n);
 int setRateCorrection(int64_t custom_tau_in_nsec);
+int getRateCorrectionEnable();
+int getDefaultSettingsTau_in_nsec();
 #endif
 
 #if defined(MYTHEND) || defined(GOTTHARDD)

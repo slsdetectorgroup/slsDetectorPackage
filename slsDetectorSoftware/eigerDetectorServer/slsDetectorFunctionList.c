@@ -522,6 +522,18 @@ int setRateCorrection(int64_t custom_tau_in_nsec){//in nanosec (will never be -1
 	return Feb_Control_Get_RateTable_Tau_in_nsec();
 }
 
+int getRateCorrectionEnable(){
+	return Feb_Control_GetRateCorrectionVariable();
+}
+
+int getDefaultSettingsTau_in_nsec(){
+	switch(thisSettings){
+	case STANDARD:	return STANDARD_TAU;
+	case HIGHGAIN:	return HIGHGAIN_TAU;
+	case LOWGAIN:	return LOWGAIN_TAU;
+	default:		return -1;
+	}
+}
 
 
 int setModule(sls_detector_module myMod, int* gain, int* offset){
@@ -576,7 +588,6 @@ int setModule(sls_detector_module myMod, int* gain, int* offset){
 		cprintf(BG_RED,"Could not set trimbits\n");
 		return FAIL;
 	}
-
 
 	return 0;
 }

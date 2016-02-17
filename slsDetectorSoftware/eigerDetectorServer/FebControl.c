@@ -60,7 +60,7 @@ int Feb_Control_module_number;
 int Feb_Control_current_index;
 
 int Feb_Control_counter_bit = 1;
-
+int Feb_control_master = 0;
 
 unsigned int Feb_Control_rate_correction_table[1024];
 double Feb_Control_rate_meas[16384];
@@ -138,17 +138,17 @@ unsigned int Module_GetBottomLeftAddress(struct Module* mod)  {return mod->botto
 unsigned int Module_GetBottomRightAddress(struct Module* mod) {return mod->bottom_right_address;}
 
 unsigned int Module_SetTopIDelay(struct Module* mod,unsigned int chip,unsigned int value)    { return Module_TopAddressIsValid(mod) &&chip<4        ? (mod->idelay_top[chip]=value)    : 0;} //chip 0=ll,1=lr,0=rl,1=rr
-unsigned int Module_GetTopIDelay(struct Module* mod,unsigned int chip)                       { return chip<4                              ?  mod->idelay_top[chip]           : 0;} //chip 0=ll,1=lr,0=rl,1=rr
+unsigned int Module_GetTopIDelay(struct Module* mod,unsigned int chip)                       { return chip<4                              			?  mod->idelay_top[chip]           : 0;} //chip 0=ll,1=lr,0=rl,1=rr
 unsigned int Module_SetBottomIDelay(struct Module* mod,unsigned int chip,unsigned int value) { return Module_BottomAddressIsValid(mod) &&chip<4     ? (mod->idelay_bottom[chip]=value) : 0;} //chip 0=ll,1=lr,0=rl,1=rr
-unsigned int Module_GetBottomIDelay(struct Module* mod,unsigned int chip)                    { return chip<4                              ?  mod->idelay_bottom[chip]        : 0;} //chip 0=ll,1=lr,0=rl,1=rr
+unsigned int Module_GetBottomIDelay(struct Module* mod,unsigned int chip)                    { return chip<4                              			?  mod->idelay_bottom[chip]        : 0;} //chip 0=ll,1=lr,0=rl,1=rr
 
-float        Module_SetHighVoltage(struct Module* mod,float value)                           { return Module_TopAddressIsValid(mod)                 ? (mod->high_voltage=value) : -1;}
-float        Module_GetHighVoltage(struct Module* mod)                                      { return mod->high_voltage;}
+float        Module_SetHighVoltage(struct Module* mod,float value)                  { return Feb_control_master ? (mod->high_voltage=value) : -1;}// Module_TopAddressIsValid(mod) ? (mod->high_voltage=value) : -1;}
+float        Module_GetHighVoltage(struct Module* mod)                              { return mod->high_voltage;}
 
-int          Module_SetTopDACValue(struct Module* mod,unsigned int i, int value)             { return (i<Module_ndacs && Module_TopAddressIsValid(mod))    ? (mod->top_dac[i]=value)    : -1;}
-int          Module_GetTopDACValue(struct Module* mod,unsigned int i)                        { return (i<Module_ndacs) ? mod->top_dac[i]:-1;}
-int          Module_SetBottomDACValue(struct Module* mod,unsigned int i, int value)          { return (i<Module_ndacs && Module_BottomAddressIsValid(mod)) ? (mod->bottom_dac[i]=value) : -1;}
-int          Module_GetBottomDACValue(struct Module* mod,unsigned int i)                     { return (i<Module_ndacs) ? mod->bottom_dac[i]:-1;}
+int          Module_SetTopDACValue(struct Module* mod,unsigned int i, int value) 	{ return (i<Module_ndacs && Module_TopAddressIsValid(mod))		? (mod->top_dac[i]=value)   : -1;}
+int          Module_GetTopDACValue(struct Module* mod,unsigned int i)               { return (i<Module_ndacs) 										? mod->top_dac[i]			: -1;}
+int          Module_SetBottomDACValue(struct Module* mod,unsigned int i, int value) { return (i<Module_ndacs && Module_BottomAddressIsValid(mod)) 	? (mod->bottom_dac[i]=value): -1;}
+int          Module_GetBottomDACValue(struct Module* mod,unsigned int i)            { return (i<Module_ndacs) 									   	? mod->bottom_dac[i]		: -1;}
 
 
 
@@ -178,6 +178,7 @@ int Feb_Control_Init(int master, int top, int module_num){
 	unsigned int i;
 	Feb_Control_module_number = 0;
 	Feb_Control_current_index = 0;
+	Feb_control_master = master;
 
 	//global send
 	Feb_Control_AddModule1(0,1,0xff,0,1);
@@ -534,7 +535,7 @@ int Feb_Control_ReadSetUpFile(unsigned int module_num, char* file_name){
 }
 
 
-int Feb_Control_CheckSetup(){
+int Feb_Control_CheckSetup(int master){
 	printf("Checking Set up\n");
 	unsigned int i,j;
 	int ok = 1;
@@ -552,7 +553,7 @@ int Feb_Control_CheckSetup(){
 			ok=0;
 		}
 	}
-	if(Module_GetHighVoltage(&modules[i])<0){
+	if((Feb_control_master) &&(Module_GetHighVoltage(&modules[i])<0)){
 		cprintf(RED,"Warning: module %d's high voltage not set.\n",Module_GetModuleNumber(&modules[i]));
 		ok=0;
 	}
@@ -705,7 +706,7 @@ int Feb_Control_SetHighVoltage1(unsigned int module_num,float value){
 	unsigned int module_index=0;
 	unsigned int i;
 
-	if(Module_TopAddressIsValid(&modules[module_index])){
+	if(Feb_control_master){//if(Module_TopAddressIsValid(&modules[module_index])){
 		if(!Feb_Control_GetModuleIndex(module_num,&module_index)){/*||!Module_TopAddressIsValid(&modules[module_index])){*/
 			cprintf(RED,"Error could not set high voltage module number %d invalid.\n",module_num);
 			return 0;
@@ -958,7 +959,9 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits){
 	for(l_r=0;l_r<2;l_r++){ // l_r loop
 		//printf("\nl_r:%d\t\t",l_r);
 		unsigned int disable_chip_mask = l_r ? DAQ_CS_BAR_LEFT : DAQ_CS_BAR_RIGHT;
-		if(!(Feb_Interface_WriteRegister(0xfff,DAQ_REG_STATIC_BITS,disable_chip_mask|DAQ_STATIC_BIT_PROGRAM|DAQ_STATIC_BIT_M8,0,0)&&Feb_Control_SetCommandRegister(DAQ_SET_STATIC_BIT)&&Feb_Control_StartDAQOnlyNWaitForFinish(5000))){
+		if(!(Feb_Interface_WriteRegister(0xfff,DAQ_REG_STATIC_BITS,disable_chip_mask|DAQ_STATIC_BIT_PROGRAM|DAQ_STATIC_BIT_M8,0,0)
+				&&Feb_Control_SetCommandRegister(DAQ_SET_STATIC_BIT)
+				&&Feb_Control_StartDAQOnlyNWaitForFinish(5000))){
 			printf("Could not select chips\n");
 			return 0;
 		}
@@ -1183,7 +1186,7 @@ int Feb_Control_WaitForStartedFlag(int sleep_time_us, int prev_flag){
 }
 
 
-int Feb_Control_Reset(){
+int Feb_Control_Reset(){printf("Reset daq\n");
 	if(!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CTRL,0,0,0) || !Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CTRL,DAQ_CTRL_RESET,0,0) || !Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CTRL,0,0,0)){
 		cprintf(RED,"Warning: Could not reset daq, no response.\n");
 		return 0;
@@ -1897,8 +1900,16 @@ int Feb_Control_SetRateCorrectionTable(unsigned int *table){
     return 0;
   }
 
+
   printf("Setting rate correction table. %d %d %d %d ....\n",
 		  table[0],table[1],table[2],table[3]);
+
+  //was added otherwise after an acquire, startdaqonlywatiforfinish waits forever
+  if(!Feb_Control_SetCommandRegister(DAQ_RESET_COMPLETELY)){
+	  cprintf(RED,"Warning: Could not Feb_Control_SetCommandRegister for loading trim bits.\n");
+	  return 0;
+  }
+  printf("daq reset completely\n");
 
   if(Module_TopAddressIsValid(&modules[1])){
 	  if(!Feb_Interface_WriteMemoryInLoops(Module_GetTopLeftAddress(&modules[Feb_Control_current_index]),1,0,1024,Feb_Control_rate_correction_table)||
@@ -1915,7 +1926,7 @@ int Feb_Control_SetRateCorrectionTable(unsigned int *table){
 		  return 0;
 	  }
   }
-
+cprintf(BLUE, "done with writing to memory\n");
    return 1;
 }
 

@@ -2771,7 +2771,7 @@ int slsDetector::setModule(sls_detector_module module, int* gainval, int* offset
     }
   }
 
-  if(ret == FAIL && thisDetector->myDetectorType == EIGER && strcasestr(mess,"tau")){
+  if(ret == FAIL && thisDetector->myDetectorType == EIGER && strcasestr(mess,"Rate")){
 	  setErrorMask((getErrorMask())|(COULD_NOT_SET_RATE_CORRECTION));
 	  thisDetector->correctionMask&=~(1<<RATE_CORRECTION);
 	  thisDetector->tDead = 0;

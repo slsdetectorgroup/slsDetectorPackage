@@ -1899,6 +1899,25 @@ int set_module(int file_des) {
 		} else {
 #ifdef EIGERD
 			ret=setModule(myModule, myGain, myOffset);
+			//rate correction
+			if(getRateCorrectionEnable()){
+				int64_t tau_ns = getDefaultSettingsTau_in_nsec();
+				if(tau_ns < 0){
+					sprintf(mess,"Cannot set Rate correction. Rate correction Deactivated, settings %d not recognized by detector\n",thisSettings);
+					cprintf(RED,"%s",mess);
+					ret = FAIL;
+					setRateCorrection(0);
+				}
+				retval = setRateCorrection(tau_ns); //tau_ns will not be -1 here
+				if(tau_ns != retval){
+					if(retval == -1)
+						strcpy(mess,"Could not set Rate correction. Rate correction Deactivated, (tau/subexptime) must be < 0.0015\n");
+					else
+						strcpy(mess,"Could not set Rate correction. Rate correction Deactivated\n");
+					cprintf(RED,"%s",mess);
+					ret = FAIL;
+				}
+			}
 #else
 			ret=setModule(myModule);
 #endif
@@ -3860,13 +3879,11 @@ int rate_correct(int file_des) {
 #endif
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
+
 	//tau = -1, use default tau of settings
 	if((ret==OK)&&(tau_ns<0)){
-		switch(thisSettings){
-		case STANDARD:	tau_ns = STANDARD_TAU;	break;
-		case HIGHGAIN:	tau_ns = HIGHGAIN_TAU;	break;
-		case LOWGAIN:	tau_ns = LOWGAIN_TAU; 	break;
-		default:
+		tau_ns = getDefaultSettingsTau_in_nsec();
+		if(tau_ns < 0){
 			ret = FAIL;
 			sprintf(mess,"Cannot set rate correction. Settings %d not recognized by detector\n",thisSettings);
 			cprintf(RED,"%s",mess);

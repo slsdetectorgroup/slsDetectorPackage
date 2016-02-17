@@ -5,8 +5,6 @@
  *      Author: l_maliakal_d
  */
 /**********************************************************************
- * TO DO
- * 1. Rate correction auto: for eiger depends on settings, tdeadtime{vv,vv,vv} in postprocessing.h
  * ********************************************************************/
 
 #include "qTabDataOutput.h"
@@ -155,7 +153,7 @@ void qTabDataOutput::Initialization(){
 	connect(chkRate,			SIGNAL(toggled(bool)), 			this,	SLOT(SetRateCorrection()));
 	connect(radioAuto,			SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
 	connect(radioDeadTime,		SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
-	connect(spinDeadTime,		SIGNAL(valueChanged(double)), 	this, 	SLOT(SetRateCorrection()));
+	connect(spinDeadTime,		SIGNAL(editingFinished()), 	this, 	SLOT(SetRateCorrection()));
 	//angular correction
 	connect(chkAngular,			SIGNAL(toggled(bool)), 	this, 	SLOT(SetAngularCorrection()));
 	//discard bad channels
@@ -230,7 +228,7 @@ void qTabDataOutput::SetFlatField(){
 
 			chkFlatField->setToolTip(flatFieldTip);
 			dispFlatField->setToolTip(flatFieldTip);
-			chkFlatField->setPalette(chkRate->palette());
+			chkFlatField->setPalette(chkDiscardBad->palette());
 			chkFlatField->setText("Flat Field File:");
 			//set ff dir
 			myDet->setFlatFieldCorrectionDir(dir.toAscii().constData());
@@ -261,7 +259,7 @@ void qTabDataOutput::SetFlatField(){
 	}else{
 		chkFlatField->setToolTip(flatFieldTip);
 		dispFlatField->setToolTip(flatFieldTip);
-		chkFlatField->setPalette(chkRate->palette());
+		chkFlatField->setPalette(chkDiscardBad->palette());
 		chkFlatField->setText("Flat Field File:");
 		//Unsetting flat field
 		myDet->setFlatFieldCorrectionFile("");
@@ -298,7 +296,7 @@ void qTabDataOutput::UpdateFlatFieldFromServer(){
 
 	chkFlatField->setToolTip(flatFieldTip);
 	dispFlatField->setToolTip(flatFieldTip);
-	chkFlatField->setPalette(chkRate->palette());
+	chkFlatField->setPalette(chkDiscardBad->palette());
 	chkFlatField->setText("Flat Field File:");
 
 	connect(dispFlatField,		SIGNAL(editingFinished()),	this,	SLOT(SetFlatField()));
@@ -330,7 +328,7 @@ void qTabDataOutput::BrowseFlatFieldPath(){
 void qTabDataOutput::SetRateCorrection(){
 	disconnect(radioAuto,		SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
 	disconnect(radioDeadTime,	SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
-	disconnect(spinDeadTime,	SIGNAL(valueChanged(double)), 	this, 	SLOT(SetRateCorrection()));
+	disconnect(spinDeadTime,	SIGNAL(editingFinished()),	 	this, 	SLOT(SetRateCorrection()));
 
 #ifdef VERBOSE
 	cout << "Entering Set Rate Correction function" << endl;
@@ -352,7 +350,10 @@ void qTabDataOutput::SetRateCorrection(){
 		}//custom dead time
 		else{
 			spinDeadTime->setEnabled(true);
-			myDet->setRateCorrection((double)spinDeadTime->value());
+			if(spinDeadTime->value()>=-1)
+				myDet->setRateCorrection((double)spinDeadTime->value());
+			else
+				qDefs::Message(qDefs::WARNING,"Dead time is inconsistent for all detectors. Returned Value: -2.","qTabDataOutput::SetRateCorrection");
 #ifdef VERBOSE
 			cout << "Setting rate corrections with dead time "<< spinDeadTime->value() << endl;
 #endif
@@ -371,9 +372,11 @@ void qTabDataOutput::SetRateCorrection(){
 	}
 	connect(radioAuto,		SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
 	connect(radioDeadTime,	SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
-	connect(spinDeadTime,	SIGNAL(valueChanged(double)), 	this, 	SLOT(SetRateCorrection()));
+	connect(spinDeadTime,	SIGNAL(editingFinished()),	 	this, 	SLOT(SetRateCorrection()));
 
 	qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetRateCorrection");
+
+
 }
 
 
@@ -384,7 +387,7 @@ void qTabDataOutput::UpdateRateCorrectionFromServer(){
 	disconnect(chkRate,			SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
 	disconnect(radioAuto,		SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
 	disconnect(radioDeadTime,	SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
-	disconnect(spinDeadTime,	SIGNAL(valueChanged(double)), 	this, 	SLOT(SetRateCorrection()));
+	disconnect(spinDeadTime,	SIGNAL(editingFinished()),	 	this, 	SLOT(SetRateCorrection()));
 
 	double rate;
 	rate = (double)myDet->getRateCorrectionTau();
@@ -399,35 +402,53 @@ void qTabDataOutput::UpdateRateCorrectionFromServer(){
 		radioAuto->setEnabled(false);
 		radioDeadTime->setEnabled(false);
 		spinDeadTime->setEnabled(false);
-
 		chkRate->setChecked(false);
-	}else if(rate<0){
+	}else if(rate==-1){
 #ifdef VERBOSE
 	cout << "Auto" << endl;
 #endif
 		radioAuto->setEnabled(true);
 		radioDeadTime->setEnabled(true);
 		spinDeadTime->setEnabled(false);
-
 		chkRate->setChecked(true);
 		radioAuto->setChecked(true);
 	}else{
 #ifdef VERBOSE
 	cout << "Custom" << endl;
-#endif
+#endif\
 		radioAuto->setEnabled(true);
 		radioDeadTime->setEnabled(true);
 		spinDeadTime->setEnabled(true);
-
 		chkRate->setChecked(true);
 		radioDeadTime->setChecked(true);
 		spinDeadTime->setValue((double)rate);
 	}
 
+	if(rate == -2){
+		qDefs::Message(qDefs::WARNING,"Dead time is inconsistent for all detectors. Returned Value: -2.","qTabDataOutput::UpdateRateCorrectionFromServer");
+		QString errorTip = QString("<nobr>Rate Corrections.</nobr><br>"
+				"<nobr> #ratecorr# tau in seconds</nobr><br><br>")+
+				QString("<nobr><font color=\"red\">"
+						"Dead time is inconsistent for all detectors.</font></nobr>");
+		chkRate->setToolTip(errorTip);
+		radioDeadTime->setToolTip(errorTip);
+		spinDeadTime->setToolTip(errorTip);
+		chkRate->setPalette(red);
+		chkRate->setText("Rate:*");
+	}else{
+		QString normalTip = QString("<nobr>Rate Corrections.</nobr><br>"
+				"<nobr> #ratecorr# tau in seconds</nobr><br><br>");
+		chkRate->setToolTip(normalTip);
+		radioDeadTime->setToolTip(normalTip);
+		spinDeadTime->setToolTip(normalTip);
+		chkRate->setPalette(chkDiscardBad->palette());
+		chkRate->setText("Rate:");
+	}
+
 	connect(chkRate,		SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
 	connect(radioAuto,		SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
 	connect(radioDeadTime,	SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
-	connect(spinDeadTime,	SIGNAL(valueChanged(double)), 	this, 	SLOT(SetRateCorrection()));
+	connect(spinDeadTime,	SIGNAL(editingFinished()),	 	this, 	SLOT(SetRateCorrection()));
 }
 
 

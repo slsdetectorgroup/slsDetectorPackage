@@ -80,7 +80,7 @@ Directory where one saves the data.
        <x>10</x>
        <y>10</y>
        <width>716</width>
-       <height>86</height>
+       <height>92</height>
       </rect>
      </property>
      <layout class="QGridLayout" name="gridLayout">
@@ -396,7 +396,10 @@ Compression using Root. Available only for Gotthard in Expert Mode.
         <string> ns</string>
        </property>
        <property name="decimals">
-        <number>6</number>
+        <number>9</number>
+       </property>
+       <property name="minimum">
+        <double>-2.000000000000000</double>
        </property>
        <property name="maximum">
         <double>2000000000.000000000000000</double>

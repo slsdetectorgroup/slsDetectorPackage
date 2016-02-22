@@ -111,7 +111,8 @@ public:
 		WAITING, /**< waiting for trigger or gate signal */
 		RUN_FINISHED, /**< acquisition not running but data in memory */
 		TRANSMITTING, /**< acquisition running and data in memory */
-		RUNNING /**< acquisition  running, no data in memory */
+		RUNNING, /**< acquisition  running, no data in memory */
+		STOPPED /**< received external stop */
 	};
 
 #ifdef __cplusplus

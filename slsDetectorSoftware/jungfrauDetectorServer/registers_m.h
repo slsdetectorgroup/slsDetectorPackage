@@ -20,96 +20,6 @@
 #define FPGA_INIT_ADDR    0xb0000000
 
 
-
- 
-/*   constant FPGAVersionReg_c  : integer:= 0; */
-/*   constant FixedPatternReg_c : integer:= 1; */
-/*   constant StatusReg_c     : integer:= 2; */
-/*   constant LookAtMeReg_c   : integer:= 3; */
-/*   constant SystemStatusReg_c : integer:= 4; */
- 
-/*   constant PLL_ParamOutReg_c : integer:=5;  -- RO register to check control signals going to the chip */
- 
- 
-/*  --time registers use only even numbers! */
-/*   constant TimeFromStartReg_c : integer:= 16; */
-/*   --constant TimeFromStartReg_c : integer:= 17; MSB */
-/*   constant GetDelayReg_c   : integer:= 18; */
-/*   --constant GetDelayReg_c   : integer:= 19; MSB */
-/*   constant GetCyclesReg_c  : integer:= 20; */
-/*   --constant GetTrainsReg_c   : integer:= 21; MSB */
-/*   constant GetFramesReg_c  : integer:= 22; */
-/*   --constant GetFramesReg_c   : integer:= 23; MSB */
-/*   constant GetPeriodReg_c  : integer:= 24; */
-/*   --constant GetPeriodReg_c   : integer:= 25; MSB */
-/*   constant GetExpTimeReg_c  : integer:= 26; */
-/*   --constant GetExpTimeReg_c   : integer:= 27; MSB */
-/*   constant GetGatesReg_c   : integer:= 28;  */
-/*   --constant GetGatesReg_c   : integer:= 29; MSB */
-  
-  
-  
-  
-  
-/*  -----rw: */
- 
-/*   constant DACReg_c          : integer:= 64; */
-/*   constant ADCWriteReg_c     : integer:= 65; */
-/*   constant ADCsyncReg_c      : integer:= 66; */
-/*   constant HVReg_c           : integer:= 67; */
-/*   constant DummyReg_c        : integer:= 68; */
-
-/*   constant rx_udpip_AReg_c     : integer:= 69; */
-/*   constant udpports_AReg_c   : integer:= 70; */
-/*   constant rx_udpmacL_AReg_c   : integer:= 71; */
-/*   constant rx_udpmacH_AReg_c   : integer:= 72; */
-/*   constant detectormacL_AReg_c : integer:= 73; */
-/*   constant detectormacH_AReg_c : integer:= 74; */
-/*   constant detectorip_AReg_c   : integer:= 75; */
-/*   constant ipchksum_AReg_c : integer:= 76; */
-
-/*   constant ConfigReg_c     : integer:= 77; */
-/*   constant ExtSignalReg_c  : integer:= 78; */
-/*   constant ControlReg_c    : integer:= 79; */
-  
-  
- 
-/*   constant PLL_ParamReg_c : integer:= 80; */
-/*   constant PLL_CntrlReg_c : integer:=81; */
-
-   
-  
-
-/*   --time registers use only even numbers! */
-/* --     DELAY_AFTER_TRIGGER, */
-/*   constant SetDelayReg_c   : integer:= 96; */
-/*   --constant SetDelayReg_c   : integer:= 97; MSB */
-/* --    CYCLES_NUMBER, */
-/*   constant SetCyclesReg_c  : integer:= 98; */
-/*   --constant SetCyclesReg_c : integer:= 99;MSB */
-/*   -- FRAME_NUMBER, */
-/*   constant SetFramesReg_c  : integer:= 100; */
-/*   --constant SetFramesReg_c : integer:= 101; MSB */
-/* --     FRAME_PERIOD, */
-/*   constant SetPeriodReg_c   : integer:= 102; */
-/*   --constant SetPeriodReg_c : integer:= 103; MSB */
-/* --     ACQUISITION_TIME, */
-/*   constant SetExpTimeReg_c : integer:= 104; */
-/*   --constant SetExpTimeReg_c : integer:= 105; MSB */
-/* --     GATES_NUMBER, */
-/*   constant SetGatesReg_c   : integer:= 106; */
-/*   --constant SetGatesReg_c : integer:= 107; MSB */
-
-
-
-
-
-
-
-
-
-
-
 #define DAC_REG     64<<11//0x17<<11// control the dacs
 //ADC
 #define ADC_WRITE_REG         65<<11//0x18<<11
@@ -223,16 +133,21 @@
 #define PLL_CNTRL_REG 81<<11//0x34<<11
 
 
+#ifdef NEW_GBE_INTERFACE
+#define GBE_PARAM_OUT_REG 40<<11
+#define GBE_PARAM_REG 69<<11
+#define GBE_CNTRL_REG 70<<11
+#else
+#define RX_UDP_AREG    69<<11 //rx_udpip_AReg_c     : integer:= 69; *\/ 
+#define UDPPORTS_AREG 70<<11// udpports_AReg_c   : integer:= 70; *\/
+#define RX_UDPMACL_AREG 71<<11//rx_udpmacL_AReg_c   : integer:= 71; *\/ 
+#define RX_UDPMACH_AREG 72<<11//rx_udpmacH_AReg_c   : integer:= 72; *\/
+#define DETECTORMACL_AREG 73<<11//detectormacL_AReg_c : integer:= 73; *\/
+#define DETECTORMACH_AREG 74<<11//detectormacH_AReg_c : integer:= 74; *\/ 
+#define DETECTORIP_AREG 75<<11//detectorip_AReg_c   : integer:= 75; *\/
+#define IPCHKSUM_AREG 76<<11//ipchksum_AReg_c : integer:= 76; *\/ */
+#endif
 
-
-#define RX_UDP_AREG    69<<11 //rx_udpip_AReg_c     : integer:= 69; */
-#define UDPPORTS_AREG 70<<11// udpports_AReg_c   : integer:= 70; */
-#define RX_UDPMACL_AREG 71<<11//rx_udpmacL_AReg_c   : integer:= 71; */
-#define RX_UDPMACH_AREG 72<<11//rx_udpmacH_AReg_c   : integer:= 72; */
-#define DETECTORMACL_AREG 73<<11//detectormacL_AReg_c : integer:= 73; */
-#define DETECTORMACH_AREG 74<<11//detectormacH_AReg_c : integer:= 74; */
-#define DETECTORIP_AREG 75<<11//detectorip_AReg_c   : integer:= 75; */
-#define IPCHKSUM_AREG 76<<11//ipchksum_AReg_c : integer:= 76; */
 
 #define PATTERN_CNTRL_REG 82<<11
 #define PATTERN_LIMITS_AREG 83<<11
@@ -255,6 +170,7 @@
 #define DAQ_REG   93<<11
 #define ADC_LATCH_DISABLE_REG   94<<11
 
+#define HV_REG 95<<11
    
 #define PATTERN_IOCTRL_REG_LSB 108<<11
 #define PATTERN_IOCTRL_REG_MSB 109<<11
@@ -367,14 +283,16 @@
 #define READSTATE_0_BIT    		 0x00000100
 #define READSTATE_1_BIT    		 0x00000200
 #define READSTATE_2_BIT    		 0x00000400
-#define PLL_RECONFIG_BUSY     		 0x00100000
+#define SOME_FIFO_FULL_BIT       0x00000800 // error!
+
 #define RUNSTATE_0_BIT     		 0x00001000
 #define RUNSTATE_1_BIT    		 0x00002000
 #define RUNSTATE_2_BIT    		 0x00004000
-#define SOME_FIFO_FULL_BIT       0x00008000 // error!
+#define STOPPED_BIT       0x00008000 // error!
 #define ALL_FIFO_EMPTY_BIT       0x00010000 // data ready
 #define RUNMACHINE_BUSY_BIT      0x00020000
 #define READMACHINE_BUSY_BIT     0x00040000
+#define PLL_RECONFIG_BUSY     	 0x00100000
 
 
 
@@ -536,9 +454,41 @@
 #define PPL_BW_PARAM_DEFAULT 0x2EE0
 #define PPL_VCO_PARAM_DEFAULT 0x1
 
+#define NEW_PLL_RECONFIG
+
+#ifdef NEW_PLL_RECONFIG
+#define PLL_VCO_FREQ_MHZ 400//480//800
+#else
 #define PLL_VCO_FREQ_MHZ 480//800
+#endif
 
 
+
+
+
+/*
+  GBE parameter and control registers definitions
+*/
+
+#define GBE_CTRL_WSTROBE 0 
+#define GBE_CTRL_VAR_OFFSET 16
+#define GBE_CTRL_VAR_MASK 0XF
+#define GBE_CTRL_RAMADDR_OFFSET 24
+#define GBE_CTRL_RAMADDR_MASK 0X3F
+#define GBE_CTRL_INTERFACE 23
+
+#define RX_UDP_IP_ADDR 0
+#define RX_UDP_PORTS_ADDR 1
+#define RX_UDP_MAC_L_ADDR 2
+#define RX_UDP_MAC_H_ADDR 3
+#define IPCHECKSUM_ADDR 4
+#define GBE_DELAY_ADDR 5
+#define GBE_RESERVED1_ADDR 6
+#define GBE_RESERVED2_ADDR 7
+#define DETECTOR_MAC_L_ADDR 8
+#define DETECTOR_MAC_H_ADDR 9
+#define DETECTOR_IP_ADDR 10
+   
 
 
 /**------------------

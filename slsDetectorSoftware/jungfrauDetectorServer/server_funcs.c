@@ -1029,30 +1029,23 @@ int set_dac(int file_des) {
 		    }
 		    retval=adcvpp;;
 
-		  }
+		  } else if (ind==HV_NEW )
+		    retval=initHighVoltageByModule(val,imod);
+		  else
+		    printf("**********No dac with index %d\n",ind);
 		}
 	}
 	if(ret==OK){
-	/* 	ret=FAIL; */
-/* 		if(idac==HIGH_VOLTAGE){ */
-/* 			if(retval==-2) */
-/* 				strcpy(mess,"Invalid Voltage.Valid values are 0,90,110,120,150,180,200"); */
-/* 			else if(retval==-3) */
-/* 				strcpy(mess,"Weird value read back or it has not been set yet\n"); */
-/* 			else */
-/* 				ret=OK; */
-/* 		}//since v r saving only msb */
-/* 		else if ((retval-val)<=3 || val==-1) */
-/* 		ret=OK; */
-	    if (ind<16) {	
-	  if (mV) {
+	  if (ind<16) {	
+	    if (mV) {
 	    
-	    printf("%d DACu is ",retval);
-	    retval1=2500*retval/16535;
-	    printf("%d mV \n",retval1);
-	  } else
+	      printf("%d DACu is ",retval);
+	      retval1=2500*retval/16535;
+	      printf("%d mV \n",retval1);
+	    } else
+	      retval1=retval;
+	  } else 
 	    retval1=retval;
-	}
 #endif
 
 #ifdef VERBOSE
@@ -1864,10 +1857,13 @@ int get_run_status(int file_des) {
   // else if(!(retval&RUNMACHINE_BUSY_BIT)){ //commented by Anna 24.10.2012
     else if(!(retval&RUN_BUSY_BIT)){ // by Anna 24.10.2012
     
+ if((retval&STOPPED_BIT)  ){ //
 
 
-	  //and readbusy=1, its last frame read
-      if((retval&READMACHINE_BUSY_BIT)  ){ //
+		  printf("-----------------------------------STOPPED--------------------------\n");
+		  s=STOPPED;
+ } else if((retval&READMACHINE_BUSY_BIT)  ){ // ///and readbusy=1, its last frame read
+      
 
 
 		  printf("-----------------------------------READ MACHINE BUSY--------------------------\n");
@@ -1898,7 +1894,7 @@ int get_run_status(int file_des) {
 		  printf("-----------------------------------RUNNING-----------------------------------\n");
 		  s=RUNNING;
 	  }
-  }
+    }
 
 
 

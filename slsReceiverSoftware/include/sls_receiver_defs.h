@@ -112,7 +112,8 @@ public:
 		WAITING, /**< waiting for trigger or gate signal */
 		RUN_FINISHED, /**< acquisition not running but data in memory */
 		TRANSMITTING, /**< acquisition running and data in memory */
-		RUNNING /**< acquisition  running, no data in memory */
+		RUNNING, /**< acquisition  running, no data in memory */
+		STOPPED /**< acquisition stopped externally */
 	};
 
 #ifdef __cplusplus
@@ -172,6 +173,7 @@ public:
 	    case RUNNING:      	return std::string("running");	\
 	    case TRANSMITTING:  return std::string("data");		\
 	    case  RUN_FINISHED: return std::string("finished");	\
+	    case  STOPPED: return std::string("stopped");	\
 	    default:       		return std::string("idle");		\
 	    }};
 

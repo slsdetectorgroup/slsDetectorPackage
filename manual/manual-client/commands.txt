@@ -30,7 +30,8 @@
  "gainimage"; // sets/gets the gainimage for the Gotthard detector
  "readctr"; // read counters for the Gotthard detector
  "resetctr"; //resets counters for the Gotthard detector
-  /* trim/cal directories */
+ "resmat"; //reset or not the counter before the following acquisition (at the end of the acquisoition the counter is always reset) (very advanced! EIGER only)
+ /* trim/cal directories */
  "settingsdir"; //sets/gets the directory where the settings files are
  "trimdir"; // as settingsdir
  "caldir"; //sets/gets the directory where the calibration files are
@@ -172,3 +173,6 @@
  "ib_test_c"; // sets/get ib_test_c value  (advanced! Gotthard) 
  "temp_adc"; // get adc temperature  (advanced! Gotthard) 
  "temp_fpga"; //get fpga temperature  (advanced! Gotthard) 
+ "pulsechip n"; //advanc ed! EIGER: pulses the chip $n$ times with the enable. If n$=-1$, the chip will be set into normal mode. 
+ "pulse n x y"; //  Pulses pixel at coordinates (x,y) $n$-times. 
+ "pulsenmove n x y"; //Pulses pixel $n$-times and moves relatively by x value (x axis) and y value (y axis)

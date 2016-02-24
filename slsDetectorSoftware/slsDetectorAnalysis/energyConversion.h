@@ -81,21 +81,23 @@ class energyConversion
      \param fname name of the file to be read
      \param myDetectorType detector type (needed for number of channels, chips, dacs etc.)
      \param myMod pointer to the module structure which has to be set. <BR> If it is NULL a new module structure will be created
+     \param iodelay io delay (detector specific)
      \returns the pointer to myMod or NULL if reading the file failed
   */
 
-  sls_detector_module* readSettingsFile(string fname, detectorType myDetectorType, sls_detector_module* myMod=NULL);
+  sls_detector_module* readSettingsFile(string fname, detectorType myDetectorType, sls_detector_module* myMod=NULL, int* iodelay=0);
 
   /**
      writes a trim/settings file
      \param fname name of the file to be written
      \param myDetectorType detector type (needed for number of channels, chips, dacs etc.)
      \param mod module structure which has to be written to file
+     \param iodelay io delay (detector specific)
      \returns OK or FAIL if the file could not be written
 
      \sa ::sls_detector_module mythenDetector::writeSettingsFile(string, sls_detector_module)
   */
-  int writeSettingsFile(string fname, detectorType myDetectorType, sls_detector_module mod);
+  int writeSettingsFile(string fname, detectorType myDetectorType, sls_detector_module mod, int* iodelay=0);
   
   /** allocates the momery for a detector module structure
       \param myDetectorType detector type (needed for number of channels, chips, dacs etc.)

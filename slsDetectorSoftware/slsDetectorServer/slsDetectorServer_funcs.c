@@ -1807,6 +1807,7 @@ int set_module(int file_des) {
 #ifdef EIGERD
 	int *myGain = (int*)malloc(getNumberOfGainsPerModule()*sizeof(int));
 	int *myOffset = (int*)malloc(getNumberOfOffsetsPerModule()*sizeof(int));
+	int *myIODelay = (int*)malloc(sizeof(int));
 #endif
 	int *myChip=(int*)malloc(getNumberOfChipsPerModule()*sizeof(int));
 	int *myChan=(int*)malloc(getNumberOfChannelsPerModule()*sizeof(int));
@@ -1861,6 +1862,7 @@ int set_module(int file_des) {
 #ifdef EIGERD
 	n = receiveData(file_des,myGain,sizeof(int)*getNumberOfGainsPerModule(),INT32);
 	n = receiveData(file_des,myOffset,sizeof(int)*getNumberOfOffsetsPerModule(),INT32);
+	n = receiveData(file_des,myIODelay,sizeof(int),INT32);
 #endif
 	if (ret>=0)
 		ret=OK;
@@ -1876,6 +1878,7 @@ int set_module(int file_des) {
 		printf("gain[%d]:%d\t%f\n",i,myGain[i],((double)myGain[i]/1000));
 	for(i=0;i<getNumberOfOffsetsPerModule();i++)
 		printf("offset[%d]:%d\t%f\n",i,myOffset[i],((double)myOffset[i]/1000));
+	printf("IO Delay:%d\n",i,*myIODelay);
 #endif
 #endif
 
@@ -1898,7 +1901,7 @@ int set_module(int file_des) {
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		} else {
 #ifdef EIGERD
-			ret=setModule(myModule, myGain, myOffset);
+			ret=setModule(myModule, myGain, myOffset,myIODelay);
 			//rate correction
 			if(getRateCorrectionEnable()){
 				int64_t tau_ns = getDefaultSettingsTau_in_nsec();

@@ -536,7 +536,7 @@ int getDefaultSettingsTau_in_nsec(){
 }
 
 
-int setModule(sls_detector_module myMod, int* gain, int* offset){
+int setModule(sls_detector_module myMod, int* gain, int* offset,int* delay){
 	int retval[2];
 	int i;
 
@@ -560,6 +560,12 @@ int setModule(sls_detector_module myMod, int* gain, int* offset){
 			printf("offset[%d]:%d\n",i,detectorOffset[i]);
 		}else cprintf(RED,"offset not set\n");
 	}
+
+	if(setIODelay(*delay, -1)!= (*delay)){
+		cprintf(RED,"could not set iodelay %d\n",*delay);
+		return FAIL;
+	}
+
 	//copy module locally
 	if (detectorModules)
 		copyModule(detectorModules,&myMod);

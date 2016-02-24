@@ -2658,6 +2658,7 @@ int slsDetector::setModule(int reg, int imod){
   sls_detector_module myModule;
   int* g=0;
   int* o=0;
+  int* iod=0;
 
 #ifdef VERBOSE
   std::cout << "slsDetector set module " << std::endl;
@@ -2726,14 +2727,14 @@ int slsDetector::setModule(int reg, int imod){
 	ads[i]=-1;
       myModule.adcs=ads;
     }
-    ret=setModule(myModule,g,o);
+    ret=setModule(myModule,g,o,iod);
   }
   return ret;
 
 
 };
 
-int slsDetector::setModule(sls_detector_module module, int* gainval, int* offsetval){
+int slsDetector::setModule(sls_detector_module module, int* gainval, int* offsetval, int* iodelay){
 
   int fnum=F_SET_MODULE;
   int retval;
@@ -2757,6 +2758,8 @@ int slsDetector::setModule(sls_detector_module module, int* gainval, int* offset
     	  controlSocket->SendDataOnly(gainval,sizeof(int)*thisDetector->nGain);
       if((thisDetector->nOffset) && (offsetval))
     	  controlSocket->SendDataOnly(offsetval,sizeof(int)*thisDetector->nOffset);
+      if(thisDetector->myDetectorType == EIGER)
+    	  controlSocket->SendDataOnly(iodelay,sizeof(int));
 
       controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
       if (ret!=FAIL) {
@@ -3116,10 +3119,13 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 	string ssettings;
 
 	int* gainval=0, *offsetval=0;
+	int* iodelay=0;
 	if(thisDetector->nGain)
 		gainval=new int[thisDetector->nGain];
 	if(thisDetector->nOffset)
 		offsetval=new int[thisDetector->nOffset];
+	if(thisDetector->myDetectorType == EIGER)
+		iodelay = new int;
 
 	int ret=0;
 
@@ -3269,7 +3275,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 #ifdef VERBOSE
 			cout << "the settings file name is "<<settingsfname << endl;
 #endif
-			if (!readSettingsFile(settingsfname,thisDetector->myDetectorType, myMod)) {
+			if (!readSettingsFile(settingsfname,thisDetector->myDetectorType, myMod,iodelay)) {
 				//if it didnt open, try default settings file
 				ostringstream ostfn_default;
 				switch(thisDetector->myDetectorType){
@@ -3289,7 +3295,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 #ifdef VERBOSE
 				cout << settingsfname << endl;
 #endif
-				if (!readSettingsFile(settingsfname,thisDetector->myDetectorType, myMod)) {
+				if (!readSettingsFile(settingsfname,thisDetector->myDetectorType, myMod,iodelay)) {
 					//if default doesnt work, return error
 					std::cout << "Could not open settings file" << endl;
 					setErrorMask((getErrorMask())|(SETTINGS_FILE_NOT_OPEN));
@@ -3334,7 +3340,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 			}
 
 			//if everything worked, set module****
-			setModule(*myMod,gainval,offsetval);
+			setModule(*myMod,gainval,offsetval,iodelay);
 		}
 	}
 
@@ -6155,9 +6161,9 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
 
 
 
-int slsDetector::writeSettingsFile(string fname, int imod){
+int slsDetector::writeSettingsFile(string fname, int imod, int* iodelay){
 
-  return writeSettingsFile(fname,thisDetector->myDetectorType, detectorModules[imod]);
+  return writeSettingsFile(fname,thisDetector->myDetectorType, detectorModules[imod], iodelay);
 
 };
 
@@ -6168,6 +6174,7 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
 
   sls_detector_module  *myMod=NULL;
   int* gainval=0; int* offsetval=0;
+  int *iodelay=0;
   if(thisDetector->nGain){
 	  gainval=new int[thisDetector->nGain];
 	  for(int i=0;i<thisDetector->nGain;i++)
@@ -6178,6 +6185,8 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
 	  for(int i=0;i<thisDetector->nOffset;i++)
 		  offsetval[i] = -1;
   }
+  if(thisDetector->myDetectorType == EIGER)
+     iodelay = new int;*iodelay=0;
   string fn=fname;
   fn=fname;
   int mmin=0, mmax=setNumberOfModules();
@@ -6197,13 +6206,14 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
       ostfn << ".sn"  << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER, im);
       fn=ostfn.str();
     }
-    myMod=readSettingsFile(fn, thisDetector->myDetectorType);
+    myMod=readSettingsFile(fn, thisDetector->myDetectorType,myMod,iodelay);
+
     if (myMod) {
       myMod->module=im;
       //settings is saved in myMod.reg for all except mythen
       if(thisDetector->myDetectorType!=MYTHEN)
 	myMod->reg=thisDetector->currentSettings;
-      setModule(*myMod,gainval,offsetval);
+      setModule(*myMod,gainval,offsetval,iodelay);
       deleteModule(myMod);
       if(gainval) delete[] gainval;
       if(offsetval) delete[] offsetval;
@@ -6216,9 +6226,9 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
 
 int slsDetector::saveSettingsFile(string fname, int imod) {
 
-
   sls_detector_module  *myMod=NULL;
   int ret=FAIL;
+  int *iod = 0;
 
   int mmin=0,  mmax=setNumberOfModules();
   if (imod>=0) {
@@ -6227,13 +6237,18 @@ int slsDetector::saveSettingsFile(string fname, int imod) {
   }
   for (int im=mmin; im<mmax; im++) {
     ostringstream ostfn;
-    if(thisDetector->myDetectorType == EIGER)
+    if(thisDetector->myDetectorType == EIGER){
     	ostfn << fname << ".sn"  << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER);
-    else
+    } else
     	ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER,im);
     if ((myMod=getModule(im))) {
-      ret=writeSettingsFile(ostfn.str(), thisDetector->myDetectorType, *myMod);
-      deleteModule(myMod);
+
+    	 if(thisDetector->myDetectorType == EIGER){
+    		 iod = new int;
+    		 *iod = (int)setDAC((dacs_t)-1,IO_DELAY,0,-1);
+    	 }
+   		 ret=writeSettingsFile(ostfn.str(), thisDetector->myDetectorType, *myMod,iod);
+   		 deleteModule(myMod);
     }
   }
   return ret;
@@ -6284,6 +6299,7 @@ int slsDetector::loadCalibrationFile(string fname, int imod) {
   string fn=fname;
 
   int* gainval=0; int* offsetval=0;
+  int* iodelay=0;
   if(thisDetector->nGain){
 	  gainval=new int[thisDetector->nGain];
 	  for(int i=0;i<thisDetector->nGain;i++)
@@ -6315,7 +6331,8 @@ int slsDetector::loadCalibrationFile(string fname, int imod) {
     }
     fn=ostfn.str();
     if((myMod=getModule(im))){
-
+    	iodelay = new int;
+    	 *iodelay = (int)setDAC(-1,IO_DELAY,0);
       //extra gain and offset
       if(thisDetector->nGain){
     	  if(readCalibrationFile(fn,gainval, offsetval,thisDetector->myDetectorType)==FAIL)
@@ -6325,7 +6342,7 @@ int slsDetector::loadCalibrationFile(string fname, int imod) {
     	  if(readCalibrationFile(fn,myMod->gain, myMod->offset)==FAIL)
     		  return FAIL;
       }
-      setModule(*myMod,gainval,offsetval);
+      setModule(*myMod,gainval,offsetval,iodelay);
 
       deleteModule(myMod);
       if(gainval) delete[]gainval;

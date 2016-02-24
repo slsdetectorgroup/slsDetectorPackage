@@ -3070,7 +3070,7 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
       string sval=string(args[1]);
 #ifdef VERBOSE
       std::cout<< " trimfile " << sval << std::endl;
-#endif 
+#endif
       if (action==GET_ACTION) {
 	//create file names
 	myDet->saveSettingsFile(sval, -1);

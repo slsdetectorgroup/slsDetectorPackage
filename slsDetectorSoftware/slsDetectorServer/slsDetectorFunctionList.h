@@ -70,7 +70,7 @@ int getChip(sls_detector_chip *myChip);
 
 
 #ifdef EIGERD
-int setModule(sls_detector_module myMod, int* gain, int* offset);
+int setModule(sls_detector_module myMod, int* gain, int* offset,int* delay);
 int getModule(sls_detector_module *myMod, int* gain, int* offset);
 #else
 int setModule(sls_detector_module myMod);

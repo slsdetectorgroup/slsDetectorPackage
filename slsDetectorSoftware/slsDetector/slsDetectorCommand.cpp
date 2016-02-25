@@ -163,7 +163,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdCounter;
   i++;
 
-  descrToFuncMap[i].m_pFuncName="setctrbit"; //
+  descrToFuncMap[i].m_pFuncName="resmat"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdCounter;
   i++;
 
@@ -1113,7 +1113,7 @@ string slsDetectorCommand::helpLine(int narg, char *args[], int action) {
   if (narg==0) {
     os << "Command can be: " << endl;
     for(int i=0; i<numberOfCommands; ++i) {  
-      os << descrToFuncMap[i].m_pFuncName << "\t" ;
+      os << descrToFuncMap[i].m_pFuncName << "\n" ;
     }
     os << endl;
     return os.str();
@@ -1247,7 +1247,7 @@ string slsDetectorCommand::cmdStatus(int narg, char *args[], int action) {
       return string("unknown action");
   } else if (action==HELP_ACTION) {
     return helpStatus(narg,args,HELP_ACTION);
-  } 
+  }
   runStatus s=myDet->getRunStatus();
   return myDet->runStatusType(s);
 
@@ -1941,7 +1941,7 @@ string slsDetectorCommand::cmdRateCorr(int narg, char *args[], int action){
   } 
   double t;
   if (myDet->getRateCorrection(t)) {
-    sprintf(answer,"%f",t);
+    sprintf(answer,"%0.9f",t);
   } else {
     sprintf(answer,"%f",0.);
   }
@@ -1954,7 +1954,7 @@ string slsDetectorCommand::helpRateCorr(int narg, char *args[], int action){
   if (action==GET_ACTION || action==HELP_ACTION)
     os << string("ratecorr \t  returns the dead time used for rate correections in ns \n");
   if (action==PUT_ACTION || action==HELP_ACTION)
-    os << string("ratecorr  ns \t  sets the deadtime correction constant in ns\n");
+    os << string("ratecorr  ns \t  sets the deadtime correction constant in ns, -1 in Eiger will set it to default tau of settings\n");
   return os.str();
   
 }
@@ -2247,10 +2247,10 @@ string slsDetectorCommand::cmdCounter(int narg, char *args[], int action){
       retval=myDet->resetCounterBlock(ival);
   }
 
-  else if (string(args[0])==string("setctrbit")){
+  else if (string(args[0])==string("resmat")){
 	  if (action==PUT_ACTION){
 		  if (!sscanf(args[1],"%d",&ival))
-			  return string("Could not scan resetctrbit input ")+string(args[1]);
+			  return string("Could not scan resmat input ")+string(args[1]);
 		  if(ival>=0)
 			  sprintf(answer,"%d",myDet->setCounterBit(ival));
 	  }else
@@ -2271,12 +2271,12 @@ string slsDetectorCommand::helpCounter(int narg, char *args[], int action){
   if (action==PUT_ACTION || action==HELP_ACTION){
     os << "readctr \t  Cannot put"<< std::endl;
     os << "resetctr i \t  resets counter in detector, restarts acquisition if i=1"<< std::endl;
-    os << "setctrbit i \t  sets/resets counter bit in detector"<< std::endl;
+    os << "resmat i \t  sets/resets counter bit in detector"<< std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION){
 	  os << "readctr i fname\t  reads counter in detector to file fname, restarts acquisition if i=1"<< std::endl;
 	  os << "resetctr \t  Cannot get"<< std::endl;
-	  os << "setctrbit i \t  gets the counter bit in detector"<< std::endl;
+	  os << "resmat i \t  gets the counter bit in detector"<< std::endl;
   }
   return os.str();
 }
@@ -3053,7 +3053,7 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
   myDet->setOnline(ONLINE_FLAG);
 
   if (cmd=="settings") {
-    if (action==PUT_ACTION) 
+    if (action==PUT_ACTION)
       myDet->setSettings(myDet->getDetectorSettings(string(args[1])));
     return myDet->getDetectorSettings(myDet->getSettings());
   } else if (cmd=="threshold") {
@@ -3070,7 +3070,7 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
       string sval=string(args[1]);
 #ifdef VERBOSE
       std::cout<< " trimfile " << sval << std::endl;
-#endif 
+#endif
       if (action==GET_ACTION) {
 	//create file names
 	myDet->saveSettingsFile(sval, -1);
@@ -3145,7 +3145,8 @@ string slsDetectorCommand::helpSettings(int narg, char *args[], int action) {
 
   ostringstream os;  
   if (action==PUT_ACTION || action==HELP_ACTION) {
-    os << "settings s \n sets the settings of the detector - can be standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain"<< std::endl;
+    os << "settings s \n sets the settings of the detector - can be standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain"
+    		"lownoise, dynamichg0,fixgain1,fixgain2,forceswitchg1, forceswitchg2"<< std::endl;
     os << "threshold eV\n sets the detector threshold in eV"<< std::endl;
     os << "trimbits fname\n loads the trimfile fname to the detector. If no extension is specified, the serial number of each module will be attached."<< std::endl;
     os << "trim:mode fname\n trims the detector according to mode (can be noise, beam, improve, fix) and saves the resulting trimbits to file fname."<< std::endl;

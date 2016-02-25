@@ -22,7 +22,7 @@
 #define HEADERLENGTH 12
 
 #define DEFAULT_SUBFRAME_EXPOSURE_VAL 2621440 /** default value for sub frame value 2.6ms*/
-#define MAX_SUBFRAME_EXPOSURE_VAL	0x1FFFFFFF /** 29 bit register for max subframe exposure value */
+#define MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS	0x1FFFFFFF /** 29 bit register for max subframe exposure value */
 
 /** maximum rois */
 #define MAX_ROIS 100
@@ -348,7 +348,8 @@ enum dacIndex {
   E_Vcn,		/**< eiger */
   E_Vis,		/**< eiger */
   IO_DELAY,		/**< eiger io delay */
-  ADC_VPP		/**< adc vpp for jctb */
+  ADC_VPP,		/**< adc vpp for jctb */
+  HV_NEW             /**< new hv index for jungfrau & c */
 };
 
 /**
@@ -364,6 +365,11 @@ enum detectorSettings{
   MEDIUMGAIN,       /**< medium gain  settings */
   VERYHIGHGAIN,     /**< very high gain  settings */
   LOWNOISE,	    	/**< low noise settings */
+  DYNAMICHG0,		/**< dynamic high gain 0 */
+  FIXGAIN1,			/**< fix gain 1 */
+  FIXGAIN2,			/**< fix gain 2 */
+  FORCESWITCHG1,	/**< force switch gain 1 */
+  FORCESWITCHG2,	/**< force switch gain 2 */
   UNDEFINED,        /**< undefined or custom  settings */
   UNINITIALIZED     /**< uninitialiazed (status at startup) */
 };

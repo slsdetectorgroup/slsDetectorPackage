@@ -137,7 +137,7 @@ void postProcessing::processFrame(int *myData, int delflag, int jctb) {
 
 	//	cout << "callback arg "<< getCurrentProgress()<< " " << (fname+string(".raw")).c_str() << " " << getTotalNumberOfChannels() << endl;
 	//	cout << "DATAREADY 1" <<endl;
-	thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),(fname+string(".raw")).c_str(),getTotalNumberOfChannels()); 
+	thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),(fname+string(".raw")).c_str(),getTotalNumberOfChannels()); //only 1d detectors
 	dataReady(thisData, currentFrameIndex, -1, pCallbackArg);
 	delete thisData;
 	fdata=NULL;
@@ -280,7 +280,7 @@ data queue size unlock
 	if (dataReady) {
 	  //	  cout << "callback arg "<< getCurrentProgress()<< " " << (fname+ext).c_str() << " " << np << endl;
 	  //cout << "ADATREADY 2 " << endl;
-	  thisData=new detectorData(val,err,ang,getCurrentProgress(),(fname+ext).c_str(),np);
+	  thisData=new detectorData(val,err,ang,getCurrentProgress(),(fname+ext).c_str(),np);//only 1d detectors
 	  dataReady(thisData, currentFrameIndex, -1, pCallbackArg);
 	  delete thisData;
 	  ang=NULL;
@@ -493,7 +493,8 @@ void* postProcessing::processData(int delflag) {
 		int currentSubFrameIndex = -1;
 		bool newData = false;
 		int nthframe = setReadReceiverFrequency(0);
-
+		int nx =getTotalNumberOfChannels(slsDetectorDefs::X);
+		int ny =getTotalNumberOfChannels(slsDetectorDefs::Y);
 
 #ifdef VERBOSE
 		std::cout << "receiver read freq:" << nthframe << std::endl;
@@ -640,7 +641,7 @@ void* postProcessing::processData(int delflag) {
 							delete [] receiverData;
 							if ((fdata) && (dataReady)){
 								//  cout << "DATAREADY 3" << endl;
-								thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentfName,getTotalNumberOfChannels());
+								thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentfName,nx,ny);
 								dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);
 								delete thisData;
 								fdata = NULL;
@@ -810,7 +811,7 @@ void postProcessing::initDataset(int r) {
   }
 
   double tdead;
-  if (*correctionMask&(1<<RATE_CORRECTION)) {
+  if ((getDetectorsType()==MYTHEN) && (*correctionMask&(1<<RATE_CORRECTION))) {
 #ifdef VERBOSE
   cout << "get tau "  << endl;
 #endif

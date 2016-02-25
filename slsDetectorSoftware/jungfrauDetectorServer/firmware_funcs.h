@@ -69,6 +69,8 @@ int setContinousReadOut(int d);
 int startReceiver(int d);
 
 int setDACRegister(int idac, int val, int imod);
+int getDacRegister(int dacnum);
+
 
 int getTemperature(int tempSensor,int imod);
 int initHighVoltage(int val,int imod);
@@ -82,6 +84,8 @@ int getAdcConfigured();
 
 u_int64_t getDetectorNumber();
 u_int32_t getFirmwareVersion();
+u_int32_t  getFirmwareSVNVersion();
+
 int testFifos(void);
 u_int32_t testFpga(void);
 u_int32_t testRAM(void);
@@ -144,8 +148,16 @@ int setDynamicRange(int dr);
 int getDynamicRange();
 int getNModBoard();
 int setNMod(int n);
+int getNMod();
+
 int setStoreInRAM(int b);
 int allocateRAM();
+
+
+int writeADC(int addr, int val);
+int prepareADC();
+
+
 int clearRAM();
 
 

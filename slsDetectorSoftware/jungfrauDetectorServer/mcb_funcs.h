@@ -9,9 +9,6 @@
 #define RGSH1VALS {300,200,400}
 #define RGSH2VALS {260,300,260}
 
-//high,dynamic,low,medium,very high
-#define CONF_GAIN     {0,0,  0,  1,  6,  2,  1}//dynamic gain confgain yet to be figured out-probably 8 or 16
- 
 
 #define DEFAULTGAIN {11.66,9.32,14.99}
 #define DEFAULTOFFSET {817.5,828.6,804.2}
@@ -107,12 +104,15 @@ int selMod(int mod,int imod );
 /* int set_one_dac(int imod); */
 /* int initDAC(int dac_addr, int value,int imod ); */
 /* int initDACs(int* v,int imod ); */
-/* int setSettings(int i,int imod); */
 /* int initDACbyIndex(int ind,int val, int imod); */
 /* int initDACbyIndexDACU(int ind,int val, int imod); */
 /* int getDACbyIndexDACU(int ind,  int imod); */
 /* int getThresholdEnergy(); */
 /* int setThresholdEnergy(int ethr); */
+
+
+int setSettings(int i,int imod);
+
 
 /* Other DAC index routines*/
 int getTemperatureByModule(int tempSensor, int imod);

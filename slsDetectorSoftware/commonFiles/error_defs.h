@@ -56,6 +56,8 @@ using namespace std;
 #define COULD_NOT_PULSE_PIXEL				0x0000000000040000ULL
 #define COULD_NOT_PULSE_PIXEL_NMOVE			0x0000000000080000ULL
 #define COULD_NOT_PULSE_CHIP				0x0000000000100000ULL
+#define COULD_NOT_SET_RATE_CORRECTION		0x0000000000200000ULL
+#define RATE_CORRECTION_TAU_SUBEXPOSURE		0x0000000000400000ULL
 
 //											0x00000000FFFFFFFFULL
 /** @short class returning all error messages for error mask */
@@ -176,6 +178,16 @@ public:
 
 		if(slsErrorMask&COULD_NOT_PULSE_CHIP)
 			retval.append("Could not pulse chip\n");
+
+		if(slsErrorMask&COULD_NOT_SET_RATE_CORRECTION)
+			retval.append("Could not set rate correction\n");
+
+		if(slsErrorMask&RATE_CORRECTION_TAU_SUBEXPOSURE)
+			retval.append("Rate Correction Deactivated: (tau/subexptime) must be less than 0.0015\n");
+
+
+		//------------------------------------------------------ length of message
+
 
 		return retval;
 

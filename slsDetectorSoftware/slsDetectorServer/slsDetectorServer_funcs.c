@@ -32,6 +32,7 @@ const enum detectorType myDetectorType=PICASSO;
 const enum detectorType myDetectorType=GENERIC;
 #endif
 
+extern enum detectorSettings thisSettings;
 
 //global variables for optimized readout
 char mess[MAX_STR_LENGTH];
@@ -46,7 +47,7 @@ void checkFirmwareCompatibility(){
 	cprintf(BLUE,"\n\n********************************************************\n"
 			   "**********************EIGER Server**********************\n"
 			   "********************************************************\n");
-	cprintf(BLUE,"\nFirmware Version: %llx\nSoftware Version: %llx\n\n",
+	cprintf(BLUE,"\nFirmware Version: %lld\nSoftware Version: %lld\n\n",
 			getDetectorId(DETECTOR_FIRMWARE_VERSION), getDetectorId(DETECTOR_SOFTWARE_VERSION));
 
 	//check for firmware version compatibility
@@ -179,6 +180,7 @@ int function_table() {
 	flist[F_PULSE_PIXEL]=&pulse_pixel;
 	flist[F_PULSE_PIXEL_AND_MOVE]=&pulse_pixel_and_move;
 	flist[F_PULSE_CHIP]=&pulse_chip;
+	flist[F_SET_RATE_CORRECT]=&rate_correct;
 
 
 #ifdef VERBOSE
@@ -1791,8 +1793,13 @@ int get_chip(int file_des) {
 
 
 }
+
+
+
+
+
 int set_module(int file_des) {
-	int retval, n,i;
+	int retval, n;
 	int ret=OK,ret1=OK;
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
@@ -1800,6 +1807,7 @@ int set_module(int file_des) {
 #ifdef EIGERD
 	int *myGain = (int*)malloc(getNumberOfGainsPerModule()*sizeof(int));
 	int *myOffset = (int*)malloc(getNumberOfOffsetsPerModule()*sizeof(int));
+	int *myIODelay = (int*)malloc(sizeof(int));
 #endif
 	int *myChip=(int*)malloc(getNumberOfChipsPerModule()*sizeof(int));
 	int *myChan=(int*)malloc(getNumberOfChannelsPerModule()*sizeof(int));
@@ -1854,6 +1862,7 @@ int set_module(int file_des) {
 #ifdef EIGERD
 	n = receiveData(file_des,myGain,sizeof(int)*getNumberOfGainsPerModule(),INT32);
 	n = receiveData(file_des,myOffset,sizeof(int)*getNumberOfOffsetsPerModule(),INT32);
+	n = receiveData(file_des,myIODelay,sizeof(int),INT32);
 #endif
 	if (ret>=0)
 		ret=OK;
@@ -1861,15 +1870,29 @@ int set_module(int file_des) {
 		ret=FAIL;
 
 
-//#ifdef VERBOSE
+#ifdef VERBOSE
 	printf("module number is %d,register is %d, nchan %d, nchip %d, ndac %d, nadc %d, gain %f, offset %f\n",myModule.module, myModule.reg, myModule.nchan, myModule.nchip, myModule.ndac,  myModule.nadc, myModule.gain,myModule.offset);
 #ifdef EIGERD
+	int i;
 	for(i=0;i<getNumberOfGainsPerModule();i++)
 		printf("gain[%d]:%d\t%f\n",i,myGain[i],((double)myGain[i]/1000));
 	for(i=0;i<getNumberOfOffsetsPerModule();i++)
 		printf("offset[%d]:%d\t%f\n",i,myOffset[i],((double)myOffset[i]/1000));
+	printf("IO Delay:%d\n",i,*myIODelay);
 #endif
-//#endif
+#endif
+
+	switch(myModule.reg){
+	case STANDARD:
+	case HIGHGAIN:
+	case LOWGAIN:
+		break;
+	default:
+		sprintf(mess,"This setting %d does not exist for this detector\n",myModule.reg);
+		ret = FAIL;
+		cprintf(RED,"%s",mess);
+		break;
+	}
 
 
 	if (ret==OK) {
@@ -1878,7 +1901,26 @@ int set_module(int file_des) {
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		} else {
 #ifdef EIGERD
-			ret=setModule(myModule, myGain, myOffset);
+			ret=setModule(myModule, myGain, myOffset,myIODelay);
+			//rate correction
+			if(getRateCorrectionEnable()){
+				int64_t tau_ns = getDefaultSettingsTau_in_nsec();
+				if(tau_ns < 0){
+					sprintf(mess,"Cannot set Rate correction. Rate correction Deactivated, settings %d not recognized by detector\n",thisSettings);
+					cprintf(RED,"%s",mess);
+					ret = FAIL;
+					setRateCorrection(0);
+				}
+				retval = setRateCorrection(tau_ns); //tau_ns will not be -1 here
+				if(tau_ns != retval){
+					if(retval == -1)
+						strcpy(mess,"Could not set Rate correction. Rate correction Deactivated, (tau/subexptime) must be < 0.0015\n");
+					else
+						strcpy(mess,"Could not set Rate correction. Rate correction Deactivated\n");
+					cprintf(RED,"%s",mess);
+					ret = FAIL;
+				}
+			}
 #else
 			ret=setModule(myModule);
 #endif
@@ -2518,7 +2560,7 @@ int set_timer(int file_des) {
 			switch(ind) {
 #ifdef EIGERD
 			case SUBFRAME_ACQUISITION_TIME:
-				if (tns > MAX_SUBFRAME_EXPOSURE_VAL ){
+				if (tns > (MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) ){
 					ret=FAIL;
 					strcpy(mess,"Sub Frame exposure time should not exceed 5.368 seconds\n");
 					break;
@@ -3815,3 +3857,72 @@ int pulse_chip(int file_des) {
 
 }
 
+
+
+
+int rate_correct(int file_des) {
+	int64_t tau_ns=-1;
+	int n;
+	int64_t retval=-1;
+	int ret=OK,ret1=OK;
+
+	sprintf(mess,"can't set/unset rate correction\n");
+
+	n = receiveData(file_des,&tau_ns,sizeof(tau_ns),INT64);
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		cprintf(RED,"%s",mess);
+		ret=FAIL;
+	}
+
+#ifndef EIGERD
+	sprintf(mess,"Rate Correction not implemented for this detector\n");
+	cprintf(RED,"%s",mess);
+	ret=FAIL;
+#endif
+
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+
+	//tau = -1, use default tau of settings
+	if((ret==OK)&&(tau_ns<0)){
+		tau_ns = getDefaultSettingsTau_in_nsec();
+		if(tau_ns < 0){
+			ret = FAIL;
+			sprintf(mess,"Cannot set rate correction. Settings %d not recognized by detector\n",thisSettings);
+			cprintf(RED,"%s",mess);
+		}
+	}
+
+
+	if (ret==OK) {
+		printf("Setting rate correction to %lld ns\n",tau_ns);
+
+		if (differentClients==1 && lockStatus==1 && tau_ns!=-1) {
+			ret=FAIL;
+			sprintf(mess,"Detector locked by %s\n",lastClientIP);
+		}  else {
+			retval = setRateCorrection(tau_ns); //tau_ns will not be -1 here
+			if(tau_ns != retval){
+				if(retval == -1)
+					strcpy(mess,"Rate correction Deactivated, (tau/subexptime) must be < 0.0015\n");
+				cprintf(RED,"%s",mess);
+				ret=FAIL;
+			}
+		}
+	}
+#endif
+	if ((ret==OK) && (differentClients))
+		ret=FORCE_UPDATE;
+
+
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
+	if (ret==FAIL) {
+		n = sendData(file_des,mess,sizeof(mess),OTHER);
+	} else {
+		n = sendData(file_des,&retval,sizeof(retval),INT64);
+	}
+
+	return ret;
+}

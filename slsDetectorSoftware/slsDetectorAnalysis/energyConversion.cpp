@@ -163,7 +163,7 @@ int energyConversion::writeCalibrationFile(string fname, int *gain, int *offset,
 /* I/O */
 
 
-slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string fname,  detectorType myDetectorType, sls_detector_module *myMod){
+slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string fname,  detectorType myDetectorType, sls_detector_module *myMod, int* iodelay){
 
 
 
@@ -214,6 +214,24 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 		names[id++]="Vib_test";
 		break;
 	case EIGER:
+		break;
+	case JUNGFRAU:
+		names[id++]="VDAC0";
+		names[id++]="VDAC1";
+		names[id++]="VDAC2";
+		names[id++]="VDAC3";
+		names[id++]="VDAC4";
+		names[id++]="VDAC5";
+		names[id++]="VDAC6";
+		names[id++]="VDAC7";
+		names[id++]="VDAC8";
+		names[id++]="VDAC9";
+		names[id++]="VDAC10";
+		names[id++]="VDAC11";
+		names[id++]="VDAC12";
+		names[id++]="VDAC13";
+		names[id++]="VDAC14";
+		names[id++]="VDAC15";
 		break;
 	default:
 		cout << "Unknown detector type - unknown format for settings file" << endl;
@@ -335,10 +353,12 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 		infile.open(myfname.c_str(),ifstream::binary);
 		if (infile.is_open()) {
 			infile.read((char*) myMod->dacs,sizeof(dacs_t)*(myMod->ndac));
+			infile.read((char*) iodelay,sizeof(iodelay));
 			infile.read((char*) myMod->chanregs,sizeof(int)*(myMod->nchan));
 #ifdef VERBOSE
 			for(int i=0;i<myMod->ndac;i++)
 				std::cout << "dac " << i << ":" << myMod->dacs[i] << std::endl;
+			std::cout << "iodelay:" << *iodelay << std::endl;
 #endif
 			if(infile.eof()){
 				cout<<endl<<"Error, could not load trimbits end of file, "<<myfname<<", reached."<<endl<<endl;
@@ -359,6 +379,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 	case MOENCH:
 	case GOTTHARD:
 	case PROPIX:
+	case JUNGFRAU:
 		//---------------dacs---------------
 		infile.open(myfname.c_str(), ios_base::in);
 		if (infile.is_open()) {
@@ -417,7 +438,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 };
 
 
-int energyConversion::writeSettingsFile(string fname, detectorType myDetectorType, sls_detector_module mod){
+int energyConversion::writeSettingsFile(string fname, detectorType myDetectorType, sls_detector_module mod, int* iodelay){
 
 	ofstream outfile;
 
@@ -458,6 +479,24 @@ int energyConversion::writeSettingsFile(string fname, detectorType myDetectorTyp
 		break;
 	case EIGER:
 		break;
+	case JUNGFRAU:
+		names[id++]="VDAC0";
+		names[id++]="VDAC1";
+		names[id++]="VDAC2";
+		names[id++]="VDAC3";
+		names[id++]="VDAC4";
+		names[id++]="VDAC5";
+		names[id++]="VDAC6";
+		names[id++]="VDAC7";
+		names[id++]="VDAC8";
+		names[id++]="VDAC9";
+		names[id++]="VDAC10";
+		names[id++]="VDAC11";
+		names[id++]="VDAC12";
+		names[id++]="VDAC13";
+		names[id++]="VDAC14";
+		names[id++]="VDAC15";
+		break;
 	default:
 		cout << "Unknown detector type - unknown format for settings file" << endl;
 		return FAIL;
@@ -475,8 +514,10 @@ int energyConversion::writeSettingsFile(string fname, detectorType myDetectorTyp
 #ifdef VERBOSE
 			for(int i=0;i<mod.ndac;i++)
 				std::cout << "dac " << i << ":" << mod.dacs[i] << std::endl;
+			std::cout << "iodelay: " << *iodelay << std::endl;
 #endif
 			outfile.write((char*)mod.dacs, sizeof(dacs_t)*(mod.ndac));
+			outfile.write((char*)iodelay, sizeof(iodelay));
 			outfile.write((char*)mod.chanregs, sizeof(int)*(mod.nchan));
 
 			outfile.close();

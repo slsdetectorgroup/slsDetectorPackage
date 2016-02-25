@@ -4,7 +4,6 @@
 #include "server_defs.h"
 #include "firmware_funcs.h"
 #include "mcb_funcs.h"
-#include "trimming_funcs.h"
 #include "registers_m.h"
 #include "gitInfoMoench.h"
 
@@ -56,19 +55,26 @@ extern int withGotthard;
 
 int adcvpp=0x4;
 
+/** for jungfrau reinitializing macro later */
+int N_CHAN=NCHAN;
+int N_CHIP=NCHIP;
+int N_DAC=NDAC;
+int N_ADC=NADC;
+int N_CHANS=NCHANS;
+
+
 int init_detector(int b, int checkType) {
   
   int i;
-  int retvalsize,ret;
   if (mapCSP0()==FAIL) { printf("Could not map memory\n");
     exit(1);  
   }
 
-  //
-  
+  //print version
   printf("v: 0x%x\n",bus_r(FPGA_VERSION_REG));
   printf("fp: 0x%x\n",bus_r(FIX_PATT_REG));
   
+  //checktype
   if (checkType) {
     printf("Bus test... (checktype is %d; b is %d)",checkType,b );
     for (i=0; i<1000000; i++) {
@@ -80,7 +86,9 @@ int init_detector(int b, int checkType) {
     printf("Finished\n");
   }else
     printf("(checktype is %d; b is %d)",checkType,b );
-  //confirm if it is really moench
+
+
+  //confirm the detector type
   switch ((bus_r(PCB_REV_REG) & DETECTOR_TYPE_MASK)>>DETECTOR_TYPE_OFFSET) {
   case MOENCH03_MODULE_ID:
     myDetectorType=MOENCH;
@@ -100,20 +108,15 @@ int init_detector(int b, int checkType) {
   default:
     myDetectorType=GENERIC;
     printf("Unknown detector type %02x\n",(bus_r(PCB_REV_REG) & DETECTOR_TYPE_MASK)>>DETECTOR_TYPE_OFFSET);
-
+    break;
 
   }
-
   printf("Detector type is %d\n", myDetectorType);
 
-  
-  //  return OK;
 
+  //control server only--
   if (b) {
-
-
-    resetPLL();
-
+  resetPLL();
   bus_w16(CONTROL_REG, SYNC_RESET);
   bus_w16(CONTROL_REG, 0);
   bus_w16(CONTROL_REG, GB10_RESET_BIT);
@@ -121,26 +124,94 @@ int init_detector(int b, int checkType) {
 
 #ifdef MCB_FUNCS
 	 printf("\nBoard Revision:0x%x\n",(bus_r(PCB_REV_REG)&BOARD_REVISION_MASK));
-	 //  initDetector();
+	 if(myDetectorType == JUNGFRAU)
+		 initDetector(); /*allocating detectorModules, detectorsDacs etc for "settings", also does allocate RAM*/
+	 dataBytes=NMAXMOD*N_CHIP*N_CHAN*2; /**Nchip and Nchan real values get assigned in initDetector()*/
     printf("Initializing Detector\n");
     //bus_w16(CONTROL_REG, SYNC_RESET); // reset registers
 #endif
-
 
     // testFpga();
     // testRAM();
     // printf("ADC_SYNC_REG:%x\n",bus_r(ADC_SYNC_REG));
     //moench specific
-  
-    //  setPhaseShiftOnce(); //firmware.h
-
-    prepareADC(); // server_funcs
+    //  setPhaseShiftOnce();
+    /*some registers set, which is in common with jungfrau, please check */
+    prepareADC();
     //setADC(-1); //already does setdaqreg and clean fifo 
     // setSettings(GET_SETTINGS,-1); 
-
+    /*some registers set, which is in common with jungfrau, please check */
     initDac(0);    initDac(8); //initializes the two dacs
- 
-    //Initialization
+
+    if(myDetectorType==JUNGFRAU){
+    	/** for jungfrau reinitializing macro */
+    	N_CHAN=JUNGFRAU_NCHAN;
+    	N_CHIP=JUNGFRAU_NCHIP;
+    	N_DAC=JUNGFRAU_NDAC;
+    	N_ADC=JUNGFRAU_NADC;
+    	N_CHANS=JUNGFRAU_NCHANS;
+
+
+    	//set dacs
+    	int retval = -1;
+    	int dacvalues[14][2]={
+    			{0,	1250},	//vout_cm
+				{10, 	1053},	//vin_com
+				{1, 	600},	//vb_sda
+				{11, 	1000},	//vb_colbuf
+				{2, 	3000},	//vb_test_cur
+				{3, 	830},	//vcascp_pixbuf
+				{4, 	1630},	//vcascn_pixbuf
+				{12, 	750},	//vb_pixbuf
+				{6,	480},	//vref_ds
+				{5,	1000},	//vb_ds
+				{7, 	400},	//vref_comp
+				{13, 1220},	//vb_comp
+				{8, 	1500},	//vref_prech
+				{9, 	3000},	//vdd_prot
+    	};
+    	for(i=0;i<14;++i){
+    		retval=setDac(dacvalues[i][0], dacvalues[i][1]);
+    		if(retval!=dacvalues[i][1])
+    			printf("Error: Setting dac %d failed, wrote %d, read %d\n",dacvalues[i][0],dacvalues[i][1],retval);
+    	}
+
+    	//power on the chips
+    	bus_w(POWER_ON_REG,0x1);
+
+    	//reset adc
+    	writeADC(ADCREG1,0x3); writeADC(ADCREG1,0x0);
+    	writeADC(ADCREG2,0x40);
+    	writeADC(ADCREG3,0xf);
+    	writeADC(ADCREG4,0x3f);
+    	//vrefs - configurable?
+    	writeADC(ADCREG_VREFS,0x2);
+
+
+    	//set ADCINVERSionreg (by trial and error)
+    	bus_w(ADC_INVERSION_REG,0x453b2a9c);
+
+    	//set adc_pipeline
+    	bus_w(ADC_PIPELINE_REG,0x20); //same as ADC_OFFSET_REG
+
+    	//set dbit_pipeline
+    	bus_w(DBIT_PIPELINE_REG,0x100e);
+    	usleep(1000000);//1s
+
+    	//reset mem machine fifos fifos
+    	bus_w(MEM_MACHINE_FIFOS_REG,0x4000);
+    	bus_w(MEM_MACHINE_FIFOS_REG,0x0);
+
+    	//reset run control
+    	bus_w(MEM_MACHINE_FIFOS_REG,0x0400);
+    	bus_w(MEM_MACHINE_FIFOS_REG,0x0);
+
+    	//set default setting
+    	setSettings(DYNAMICGAIN,-1);
+    }
+
+
+    //Initialization of acquistion parameters
     setFrames(-1);
     setTrains(-1);
     setExposureTime(-1);
@@ -152,14 +223,24 @@ int init_detector(int b, int checkType) {
     setMaster(GET_MASTER);
     setSynchronization(GET_SYNCHRONIZATION_MODE);
     startReceiver(0); //firmware
-  }
+  }//end of control server only--
+  else printf("\n\n");
+
+
+  //common for both control and stop server
   strcpy(mess,"dummy message");
   strcpy(lastClientIP,"none");
   strcpy(thisClientIP,"none1");
   lockStatus=0;
   // getDynamicRange();
-  setROI(-1,NULL,&retvalsize,&ret);
-  allocateRAM();
+
+  /* both these functions setROI and allocateRAM should go into the control server part. */
+  if(myDetectorType!=JUNGFRAU){
+	  int retvalsize,ret;
+	  setROI(-1,NULL,&retvalsize,&ret);
+	  allocateRAM();
+  }
+
   return OK;
 }
 
@@ -169,7 +250,7 @@ int decode_function(int file_des) {
   int retval=FAIL;
 #ifdef VERBOSE
   printf( "receive data\n");
-#endif 
+#endif
   n = receiveDataOnly(file_des,&fnum,sizeof(fnum));
   if (n <= 0) {
 #ifdef VERBOSE
@@ -182,9 +263,9 @@ int decode_function(int file_des) {
     printf("size of data received %d\n",n);
 #endif
 
-  //#ifdef VERBOSE
+#ifdef VERBOSE
   printf( "calling function fnum = %d %x %x %x\n",fnum,(unsigned int)(flist[fnum]), (unsigned int)(flist[F_READ_REGISTER]),(unsigned int)(&read_register));
-  //#endif
+#endif
   if (fnum<0 || fnum>255)
     fnum=255;
   retval=(*flist[fnum])(file_des);
@@ -955,14 +1036,13 @@ int read_register(int file_des) {
 
 int set_dac(int file_des) {
 	//default:all mods
-  int retval, retval1;
+	int retval, retval1;
 	int ret=OK;
 	int arg[3];
 	enum dacIndex ind;
 	int imod;
 	int n;
 	int val;
-	int idac=0;
 	int mV=0;
 	sprintf(mess,"Can't set DAC\n");
 
@@ -989,8 +1069,8 @@ int set_dac(int file_des) {
 	if (imod<0)
 		imod=ALLMOD;
 
-	
-	
+
+
 
 #ifdef MCB_FUNCS
 
@@ -998,8 +1078,7 @@ int set_dac(int file_des) {
 		if (differentClients==1 && lockStatus==1) {
 			ret=FAIL;
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
-		} else{
-		  
+		} else{		  
 		  if (ind<16) {
 
 		    if (mV) {
@@ -1029,36 +1108,30 @@ int set_dac(int file_des) {
 		    }
 		    retval=adcvpp;;
 
-		  }
+		  } else if (ind==HV_NEW )
+		    retval=initHighVoltageByModule(val,imod);
+		  else
+		    printf("**********No dac with index %d\n",ind);
 		}
 	}
 	if(ret==OK){
-	/* 	ret=FAIL; */
-/* 		if(idac==HIGH_VOLTAGE){ */
-/* 			if(retval==-2) */
-/* 				strcpy(mess,"Invalid Voltage.Valid values are 0,90,110,120,150,180,200"); */
-/* 			else if(retval==-3) */
-/* 				strcpy(mess,"Weird value read back or it has not been set yet\n"); */
-/* 			else */
-/* 				ret=OK; */
-/* 		}//since v r saving only msb */
-/* 		else if ((retval-val)<=3 || val==-1) */
-/* 		ret=OK; */
-	    if (ind<16) {	
-	  if (mV) {
+	  if (ind<16) {	
+	    if (mV) {
 	    
-	    printf("%d DACu is ",retval);
-	    retval1=2500*retval/16535;
-	    printf("%d mV \n",retval1);
-	  } else
+	      printf("%d DACu is ",retval);
+	      retval1=2500*retval/16535;
+	      printf("%d mV \n",retval1);
+	    } else
+	      retval1=retval;
+	  } else 
 	    retval1=retval;
-	}
+
 #endif
 
 #ifdef VERBOSE
 	printf("DAC set to %d V\n",  retval);
 #endif  
-	}
+
 	if(ret==FAIL)
 		printf("Setting dac %d of module %d: wrote %d but read %d\n", ind, imod, val, retval);
 	else{
@@ -1178,13 +1251,13 @@ int set_channel(int file_des) {
 #ifdef VERBOSE
   printf("channel number is %d, chip number is %d, module number is %d, register is %lld\n", myChan.chan,myChan.chip, myChan.module, myChan.reg);
 #endif
-  
+
   if (ret==OK) {
     if (myChan.module>=getNModBoard()) 
       ret=FAIL;
-    if (myChan.chip>=NCHIP) 
+    if (myChan.chip>=N_CHIP)
       ret=FAIL;
-    if (myChan.chan>=NCHAN) 
+    if (myChan.chan>=N_CHAN)
       ret=FAIL;
     if (myChan.module<0)
       myChan.module=ALLMOD;
@@ -1258,13 +1331,13 @@ int get_channel(int file_des) {
   }  
   if (ret==OK) {
     ret=FAIL;
-    if (ichip>=0 && ichip<NCHIP) {
+    if (ichip>=0 && ichip<N_CHIP) {
       ret=OK;
     }
   }   
   if (ret==OK) {
     ret=FAIL;
-    if (ichan>=0 && ichan<NCHAN) {
+    if (ichan>=0 && ichan<N_CHAN) {
       ret=OK;
     }
   }   
@@ -1304,12 +1377,12 @@ int get_channel(int file_des) {
 int set_chip(int file_des) {
 
   sls_detector_chip myChip;
-  int ch[NCHAN];
+  int ch[N_CHAN];
   int n, retval;
   int ret=OK;
   
 
-  myChip.nchan=NCHAN;
+  myChip.nchan=N_CHAN;
   myChip.chanregs=ch;
 
 
@@ -1336,7 +1409,7 @@ int set_chip(int file_des) {
       ret=FAIL;
     if  (myChip.module<0) 
       myChip.module=ALLMOD;
-    if (myChip.chip>=NCHIP) 
+    if (myChip.chip>=N_CHIP)
       ret=FAIL;
   }
     if (differentClients==1 && lockStatus==1) {
@@ -1392,7 +1465,7 @@ int get_chip(int file_des) {
   }  
   if (ret==OK) {
     ret=FAIL;
-    if (ichip>=0 && ichip<NCHIP) {
+    if (ichip>=0 && ichip<N_CHIP) {
       ret=OK;
     }
   }   
@@ -1430,17 +1503,24 @@ int get_chip(int file_des) {
 
 }
 int set_module(int file_des) {
-  sls_detector_module myModule;
-  int *myChip=malloc(NCHIP*sizeof(int));
-  int *myChan=malloc(NCHIP*NCHAN*sizeof(int));
-  int *myDac=malloc(NDAC*sizeof(int));/**dhanya*/
-  int *myAdc=malloc(NADC*sizeof(int));/**dhanya*/
+
   int retval, n;
   int ret=OK;
-  int dr;// ow;
+  int dr;
+  sls_detector_module myModule;
+  int *myDac=malloc(N_DAC*sizeof(int));
+  int *myAdc=malloc(N_ADC*sizeof(int));
+  int *myChip=NULL;
+  int *myChan=NULL;
+  /*not required for jungfrau. so save memory*/
+  if(myDetectorType != JUNGFRAU){
+	  myChip=malloc(N_CHIP*sizeof(int));
+	  myChan=malloc(N_CHIP*N_CHAN*sizeof(int));
+  }
 
-  dr=setDynamicRange(-1);
+  dr=setDynamicRange(-1); /* move this down to after initialization?*/
 
+  //initialize myModule values
   if (myDac)
     myModule.dacs=myDac;
   else {
@@ -1448,34 +1528,43 @@ int set_module(int file_des) {
     ret=FAIL;
   }
   if (myAdc)
-    myModule.adcs=myAdc;
-  else {
-    sprintf(mess,"could not allocate adcs\n");
-    ret=FAIL;
-  }
-  if (myChip)
-    myModule.chipregs=myChip;
-  else {
-    sprintf(mess,"could not allocate chips\n");
-    ret=FAIL;
-  }
-  if (myChan)
-    myModule.chanregs=myChan;
-  else {
-    sprintf(mess,"could not allocate chans\n");
-    ret=FAIL;
+	  myModule.adcs=myAdc;
+	else {
+	  sprintf(mess,"could not allocate adcs\n");
+	  ret=FAIL;
   }
 
-  myModule.ndac=NDAC;
-  myModule.nchip=NCHIP;
-  myModule.nchan=NCHAN*NCHIP;
-  myModule.nadc=NADC;
-  
+  myModule.chipregs=NULL;
+  myModule.chanregs=NULL;
+  /*not required for jungfrau. so save memory*/
+  if(myDetectorType != JUNGFRAU){
+	if (myChip)
+	  myModule.chipregs=myChip;
+	else {
+	  sprintf(mess,"could not allocate chips\n");
+	  ret=FAIL;
+	}
+	if (myChan)
+	  myModule.chanregs=myChan;
+	else {
+	  sprintf(mess,"could not allocate chans\n");
+	  ret=FAIL;
+	}
+}
+
+  myModule.ndac=N_DAC;
+  myModule.nchip=N_CHIP;
+  myModule.nchan=N_CHAN*N_CHIP;
+  myModule.nadc=N_ADC;
   
 #ifdef VERBOSE
   printf("Setting module\n");
-#endif 
-  ret=receiveModule(file_des, &myModule);
+#endif
+
+  if(myDetectorType != JUNGFRAU)
+	  ret=receiveModuleGeneral(file_des, &myModule, 1); //1 is to receive everything
+  else
+	  ret=receiveModuleGeneral(file_des, &myModule, 0); //0 is to receive partially (without trimbits etc.)
 
   if (ret>=0)
     ret=OK;
@@ -1503,6 +1592,8 @@ int set_module(int file_des) {
     } else {
 #ifdef MCB_FUNCS
     retval=initModulebyNumber(myModule);
+    if(retval != myModule.reg)
+    	ret = FAIL;
 #endif
     }
   }
@@ -1522,14 +1613,15 @@ int set_module(int file_des) {
   } else {
     n += sendDataOnly(file_des,mess,sizeof(mess));
   }
-  free(myChip);
-  free(myChan);
+
   free(myDac);
-  free(myAdc);
+  if(myAdc != NULL) 	free(myAdc);
+  if(myChip != NULL) 	free(myChip);
+  if(myChan != NULL) 	free(myChan);
 
-  //  setDynamicRange(dr);  always 16 commented out
 
-  
+  //setDynamicRange(dr);  always 16 commented out
+
   return ret;
 }
 
@@ -1538,21 +1630,22 @@ int set_module(int file_des) {
 
 int get_module(int file_des) {
 
-  
   int ret=OK;
-
-
   int arg;
   int   imod;
   int n;
-
-  
-
   sls_detector_module myModule;
-  int *myChip=malloc(NCHIP*sizeof(int));
-  int *myChan=malloc(NCHIP*NCHAN*sizeof(int));
-  int *myDac=malloc(NDAC*sizeof(int));/**dhanya*/
-  int *myAdc=malloc(NADC*sizeof(int));/**dhanya*/
+  int *myDac=malloc(N_DAC*sizeof(int));
+  int *myChip=NULL;
+  int *myChan=NULL;
+  int *myAdc=NULL;
+  
+  /*not required for jungfrau. so save memory*/
+  if(myDetectorType != JUNGFRAU){
+	myChip=malloc(N_CHIP*sizeof(int));
+	myChan=malloc(N_CHIP*N_CHAN*sizeof(int));
+	myAdc=malloc(N_ADC*sizeof(int));
+  }
 
 
   if (myDac)
@@ -1561,32 +1654,38 @@ int get_module(int file_des) {
     sprintf(mess,"could not allocate dacs\n");
     ret=FAIL;
   }
-  if (myAdc)
-    myModule.adcs=myAdc;
-  else {
-    sprintf(mess,"could not allocate adcs\n");
-    ret=FAIL;
-  }
-  if (myChip)
-    myModule.chipregs=myChip;
-  else {
-    sprintf(mess,"could not allocate chips\n");
-    ret=FAIL;
-  }
-  if (myChan)
-    myModule.chanregs=myChan;
-  else {
-    sprintf(mess,"could not allocate chans\n");
-    ret=FAIL;
+
+
+  myModule.adcs=NULL;
+  myModule.chipregs=NULL;
+  myModule.chanregs=NULL;
+  /*not required for jungfrau. so save memory*/
+  if(myDetectorType != JUNGFRAU){
+    if (myAdc)
+      myModule.adcs=myAdc;
+    else {
+      sprintf(mess,"could not allocate adcs\n");
+     ret=FAIL;
+    }
+    if (myChip)
+      myModule.chipregs=myChip;
+    else {
+      sprintf(mess,"could not allocate chips\n");
+      ret=FAIL;
+    }
+    if (myChan)
+      myModule.chanregs=myChan;
+    else {
+      sprintf(mess,"could not allocate chans\n");
+      ret=FAIL;
+    }
   }
 
-  myModule.ndac=NDAC;
-  myModule.nchip=NCHIP;
-  myModule.nchan=NCHAN*NCHIP;
-  myModule.nadc=NADC;
+  myModule.ndac=N_DAC;
+  myModule.nchip=N_CHIP;
+  myModule.nchan=N_CHAN*N_CHIP;
+  myModule.nadc=N_ADC;
   
-
-
 
 
   n = receiveDataOnly(file_des,&arg,sizeof(arg));
@@ -1619,17 +1718,18 @@ int get_module(int file_des) {
   n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret!=FAIL) {
     /* send return argument */  
-    ret=sendModule(file_des, &myModule);
+	if(myDetectorType != JUNGFRAU)
+	  ret=sendModuleGeneral(file_des, &myModule,1);  //1 is to send everything
+	else
+      ret=sendModuleGeneral(file_des, &myModule,0);  //0 is to send partially (without trimbits etc.)
   } else {
     n += sendDataOnly(file_des,mess,sizeof(mess));
   }
 
-  
-
-  free(myChip);
-  free(myChan);
   free(myDac);
-  free(myAdc);
+  if(myChip != NULL) 	free(myChip);
+  if(myChan != NULL) 	free(myChan);
+  if(myAdc != NULL) 	free(myAdc);
 
 
   /*return ok/fail*/
@@ -1854,7 +1954,35 @@ int get_run_status(int file_des) {
 
   retval= runState();
   printf("\n\nSTATUS=%08x\n",retval);
+  if(myDetectorType == JUNGFRAU){
+  if(!(retval&RUN_BUSY_BIT)){
 
+	  if((retval&READMACHINE_BUSY_BIT)  ){
+		  printf("-----------------------------------READ MACHINE BUSY--------------------------\n");
+		  s=TRANSMITTING;
+	  }
+	  //and readbusy=0,idle
+	  else if((!(retval&0xffff))||(retval==SOME_FIFO_FULL_BIT)){
+		  printf("-----------------------------------IDLE--------------------------------------\n");
+		  s=IDLE;
+	  } else {
+		  printf("-----------------------------------Unknown status %08x--------------------------------------\n", retval);
+		  s=ERROR;
+		  ret=FAIL;
+	  }
+  }
+  //if runbusy=1
+  else {
+	  if (retval&WAITING_FOR_TRIGGER_BIT){
+		  printf("-----------------------------------WAITING-----------------------------------\n");
+		  s=WAITING;
+	  }
+	  else{
+		  printf("-----------------------------------RUNNING-----------------------------------\n");
+		  s=RUNNING;
+	  }
+  }
+}else{
   //error
   if(retval&SOME_FIFO_FULL_BIT){
 	  printf("-----------------------------------ERROR--------------------------------------x%0x\n",retval);
@@ -1864,10 +1992,13 @@ int get_run_status(int file_des) {
   // else if(!(retval&RUNMACHINE_BUSY_BIT)){ //commented by Anna 24.10.2012
     else if(!(retval&RUN_BUSY_BIT)){ // by Anna 24.10.2012
     
+ if((retval&STOPPED_BIT)  ){ //
 
 
-	  //and readbusy=1, its last frame read
-      if((retval&READMACHINE_BUSY_BIT)  ){ //
+		  printf("-----------------------------------STOPPED--------------------------\n");
+		  s=STOPPED;
+ } else if((retval&READMACHINE_BUSY_BIT)  ){ // ///and readbusy=1, its last frame read
+      
 
 
 		  printf("-----------------------------------READ MACHINE BUSY--------------------------\n");
@@ -1898,9 +2029,9 @@ int get_run_status(int file_des) {
 		  printf("-----------------------------------RUNNING-----------------------------------\n");
 		  s=RUNNING;
 	  }
-  }
+    }
 
-
+}
 
 
   if (ret!=OK) {
@@ -1924,14 +2055,12 @@ int get_run_status(int file_des) {
 
 int read_frame(int file_des) {
 
-
-  int ns=0;
   u_int16_t* p=NULL;
-
 
   if (differentClients==1 && lockStatus==1) {
     dataret=FAIL;
-    sprintf(mess,"Detector locked by %s\n",lastClientIP);  
+    sprintf(mess,"Detector locked by %s\n",lastClientIP);
+    printf("Warning: %s\n",mess);
     sendDataOnly(file_des,&dataret,sizeof(dataret));
     sendDataOnly(file_des,mess,sizeof(mess));
 #ifdef VERBOSE
@@ -1940,6 +2069,7 @@ int read_frame(int file_des) {
     return dataret;
 
   }
+
   p=fifo_read_frame();
   if (p) {
     nframes++;
@@ -1971,6 +2101,10 @@ int read_frame(int file_des) {
       sendDataOnly(file_des,&dataret,sizeof(dataret));
       sendDataOnly(file_des,mess,sizeof(mess));
   }
+
+
+
+
   return dataret;
       
 }
@@ -2288,12 +2422,8 @@ int set_roi(int file_des) {
 	int retvalsize=0;
 	ROI arg[MAX_ROIS];
 	ROI* retval=0;
-	int iroi;
 	strcpy(mess,"Could not set/get roi\n");
-
-
 	//	u_int32_t disable_reg=0;
-
 
 	n = receiveDataOnly(file_des,&nroi,sizeof(nroi));
 	if (n < 0) {
@@ -2301,40 +2431,39 @@ int set_roi(int file_des) {
 		ret=FAIL;
 	}
 
-	if(nroi>=0){
-		n = receiveDataOnly(file_des,arg,nroi*sizeof(ROI));
-		if (n != (nroi*sizeof(ROI))) {
-			sprintf(mess,"Received wrong number of bytes for ROI\n");
+	if(myDetectorType == JUNGFRAU){
+		ret = FAIL;
+		strcpy(mess,"Not applicable/implemented for this detector\n");
+		printf("Error:Set ROI-%s",mess);
+	}
+
+	else{
+
+		if(nroi>=0){
+			n = receiveDataOnly(file_des,arg,nroi*sizeof(ROI));
+			if (n != (nroi*sizeof(ROI))) {
+				sprintf(mess,"Received wrong number of bytes for ROI\n");
+				ret=FAIL;
+			}
+
+			printf("Setting ROI to:");
+			for( i=0;i<nroi;i++)
+				printf("%d\t%d\t%d\t%d\n",arg[i].xmin,arg[i].xmax,arg[i].ymin,arg[i].ymax);
+			printf("Error: Function 41 or Setting ROI is not yet implemented in Moench!\n");
+
+		}
+
+		/* execute action if the arguments correctly arrived*/
+		if (lockStatus==1 && differentClients==1){//necessary???
+			sprintf(mess,"Detector locked by %s\n", lastClientIP);
 			ret=FAIL;
 		}
-//#ifdef VERBOSE
-		
-		printf("Setting ROI to:");
-		for( i=0;i<nroi;i++)
-			printf("%d\t%d\t%d\t%d\n",arg[i].xmin,arg[i].xmax,arg[i].ymin,arg[i].ymax);
-
-
-
-		//
-		printf("Error: Function 41 or Setting ROI is not yet implemented in Moench!\n");
-//#endif
-	}
-	/* execute action if the arguments correctly arrived*/
-
-
-
-	
-
-	if (lockStatus==1 && differentClients==1){//necessary???
-		sprintf(mess,"Detector locked by %s\n", lastClientIP);
-		ret=FAIL;
-	}
-	else{
-		retval=setROI(nroi,arg,&retvalsize,&ret);
-
-		if (ret==FAIL){
-			printf("mess:%s\n",mess);
-			sprintf(mess,"Could not set all roi, should have set %d rois, but only set %d rois\n",nroi,retvalsize);
+		else{
+			retval=setROI(nroi,arg,&retvalsize,&ret);
+			if (ret==FAIL){
+				printf("mess:%s\n",mess);
+				sprintf(mess,"Could not set all roi, should have set %d rois, but only set %d rois\n",nroi,retvalsize);
+			}
 		}
 	}
 
@@ -2490,7 +2619,6 @@ int set_speed(int file_des) {
 int set_readout_flags(int file_des) {
 
   enum readOutFlags arg;
-  int n;
   int ret=FAIL;
   
 
@@ -2785,7 +2913,7 @@ int load_image(int file_des) {
 	int ret=OK;
 	int n;
 	enum imageType index;
-	short int ImageVals[NCHAN*NCHIP];
+	short int ImageVals[N_CHAN*N_CHIP];
 
 	sprintf(mess,"Loading image failed\n");
 
@@ -2950,7 +3078,7 @@ int read_counter_block(int file_des) {
 	int n;
 	int startACQ;
 	//char *retval=NULL;
-	short int CounterVals[NCHAN*NCHIP];
+	short int CounterVals[N_CHAN*N_CHIP];
 
 	sprintf(mess,"Read counter block failed\n");
 
@@ -3319,7 +3447,6 @@ int write_adc_register(int file_des) {
   int arg[2]; 
   int addr, val;
   int n;
-  u_int32_t address;
 
   sprintf(mess,"Can't write to register\n");
 

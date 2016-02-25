@@ -1143,6 +1143,7 @@ slsDetectorDefs::detectorSettings multiSlsDetector::setSettings(detectorSettings
    
   }
   thisMultiDetector->currentSettings=ret1;
+
   return ret1;
 
 }
@@ -1255,6 +1256,7 @@ int multiSlsDetector::stopAcquisition(){
     }
   }
   *stoppedFlag=1;
+  setAcquiringFlag(false);
   return ret1;
 
 
@@ -1628,6 +1630,15 @@ int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t){
   
   thisMultiDetector->timerValue[index]=ret1;
   
+
+  if (getDetectorsType() == EIGER) {
+	  //if subexptime set, update rate correction in server and update result in multi client
+	  double r;
+	  if((index == SUBFRAME_ACQUISITION_TIME) && (t>=0) && getRateCorrection(r)){
+		  setRateCorrection(r);
+	  }
+  }
+
   return ret1;
 };
 
@@ -2413,36 +2424,55 @@ int multiSlsDetector::flatFieldCorrect(double* datain, double *errin, double* da
 
 
 int multiSlsDetector::setRateCorrection(double t){
-  // double tdead[]=defaultTDead;
+	// double tdead[]=defaultTDead;
 
-  if (t==0) {
-    thisMultiDetector->correctionMask&=~(1<<RATE_CORRECTION);
-  } else {
-    thisMultiDetector->correctionMask|=(1<<RATE_CORRECTION);
-    
-    for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
-      
-      if (detectors[idet]) {
-	detectors[idet]->setRateCorrection(t);
-	if(detectors[idet]->getErrorMask())
-	  setErrorMask(getErrorMask()|(1<<idet));
-      }
-    }
+	if (getDetectorsType() == MYTHEN){
 #ifdef VERBOSE
-    std::cout<< "Setting rate correction with dead time "<< thisMultiDetector->tDead << std::endl;
+		std::cout<< "Setting rate correction with dead time "<< thisMultiDetector->tDead << std::endl;
 #endif
-  }
-  return thisMultiDetector->correctionMask&(1<<RATE_CORRECTION);
+		if (t==0) {
+			thisMultiDetector->correctionMask&=~(1<<RATE_CORRECTION);
+			return thisMultiDetector->correctionMask&(1<<RATE_CORRECTION);
+		} else
+			thisMultiDetector->correctionMask|=(1<<RATE_CORRECTION);
+	}
+
+
+	int ret, ret1=-100;
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+		if (detectors[idet]) {
+			ret=detectors[idet]->setRateCorrection(t);
+			if(detectors[idet]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<idet));
+			if (ret1==-100)
+				ret1=ret;
+			else if (ret!=ret1)
+				ret1=-1;
+		}
+	}
+
+	if (getDetectorsType() != MYTHEN){
+		if (ret1==0)
+			thisMultiDetector->correctionMask&=~(1<<RATE_CORRECTION);
+		 else
+			thisMultiDetector->correctionMask|=(1<<RATE_CORRECTION);
+	}
+
+	return thisMultiDetector->correctionMask&(1<<RATE_CORRECTION);
 }
 
 
 int multiSlsDetector::getRateCorrection(double &t){
 
+  if (getDetectorsType() != MYTHEN){
+	t = getRateCorrectionTau();
+	return getRateCorrection();
+  }
+
   if (thisMultiDetector->correctionMask&(1<<RATE_CORRECTION)) {
 #ifdef VERBOSE
     std::cout<< "Rate correction is enabled with dead time "<< thisMultiDetector->tDead << std::endl;
 #endif
-    //which t should we return if they are all different?
     return 1;
   } else
     t=0;
@@ -2455,21 +2485,35 @@ int multiSlsDetector::getRateCorrection(double &t){
 double multiSlsDetector::getRateCorrectionTau(){
 
   double ret1=-100,ret;
+  for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+	  if (detectors[idet]) {
+		  ret=detectors[idet]->getRateCorrectionTau();
+		  if (ret1==-100)
+			  ret1=ret;
+		  else if (ret!=ret1){
+			  std::cout<< "Rate correction is different for different readouts " << std::endl;
+			  if(getDetectorsType() == EIGER)
+				  ret1=-2;
+			  else
+				  ret1=-1; //same settings also return -1
+		  }
+	  }
+  }
+
+  if (getDetectorsType() != MYTHEN){
+	  //if set by the slsDetector
+	  if(ret1 == 0)
+		  thisMultiDetector->correctionMask&=~(1<<RATE_CORRECTION);
+	  else
+		  thisMultiDetector->correctionMask|=(1<<RATE_CORRECTION);
+	  return ret1;
+  }
+
+  //only mythen
   if (thisMultiDetector->correctionMask&(1<<RATE_CORRECTION)) {
 #ifdef VERBOSE
     std::cout<< "Rate correction is enabled with dead time "<< thisMultiDetector->tDead << std::endl;
 #endif
-    //which t should we return if they are all different?
-
-    for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
-      if (detectors[idet]) {
-        ret=detectors[idet]->getRateCorrectionTau();
-    	if (ret1==-100)
-    	  ret1=ret;
-    	else if (ret!=ret1)
-    	  ret1=-1;
-      }
-    }
   } else {
 #ifdef VERBOSE
     std::cout<< "Rate correction is disabled " << std::endl;
@@ -4617,7 +4661,6 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex
 		acquisitionIndex = -1;
 		return NULL;
 	}
-
 	int n,complete=OK;
 	int i,k,offsetX, offsetY, maxX, maxY; double dr;
 	int* retval=new int[nel];

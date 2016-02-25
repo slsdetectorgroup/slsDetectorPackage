@@ -110,22 +110,24 @@ int slsDetectorUsers::getPositions(double *pos){
 }
 
 int slsDetectorUsers::setDetectorSize(int x0, int y0, int nx, int ny){
+  if(myDetector->getTotalNumberOfChannels(slsDetectorDefs::Y)>1)
+	return 1;
   int nmod=nx/(myDetector->getChansPerMod(0));
   cout << myDetector->getChansPerMod(0) << " " << nx << " " << nmod << endl;
   return myDetector->setNumberOfModules(nmod)*myDetector->getChansPerMod(0);}
 
 int slsDetectorUsers::getDetectorSize(int &x0, int &y0, int &nx, int &ny){ 
   y0=0; 
-  ny=1; 
   x0=0; 
-  nx=myDetector->setNumberOfModules()*myDetector->getChansPerMod(0); 
-  return nx;
+  nx=myDetector->getTotalNumberOfChannels(slsDetectorDefs::X);
+  ny=myDetector->getTotalNumberOfChannels(slsDetectorDefs::Y);
+  return nx*ny;
 }
 
 int slsDetectorUsers::getMaximumDetectorSize(int &nx, int &ny){
-  ny=1;
-  nx=myDetector->getMaxNumberOfModules()*myDetector->getChansPerMod(0); 
-  return nx;
+  nx=myDetector->getMaxNumberOfChannelsPerDetector(slsDetectorDefs::X);
+  ny=myDetector->getMaxNumberOfChannelsPerDetector(slsDetectorDefs::Y);
+  return nx*ny;
 }
 
 int slsDetectorUsers::setBitDepth(int i){

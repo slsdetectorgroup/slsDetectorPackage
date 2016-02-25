@@ -43,10 +43,14 @@ unsigned int Feb_Control_triggerMode;         //internal timer, external start, 
 unsigned int Feb_Control_externalEnableMode;  //external enabling engaged and it's polarity
 unsigned int Feb_Control_subFrameMode;
 
+
 unsigned int Feb_Control_nimages;
 double Feb_Control_exposure_time_in_sec;
 int Feb_Control_subframe_exposure_time_in_10nsec;
 double Feb_Control_exposure_period_in_sec;
+
+int64_t Feb_Control_RateTable_Tau_in_nsec = -1;
+int64_t Feb_Control_RateTable_Subexptime_in_nsec = -1;
 
 unsigned int   Feb_Control_trimbit_size;
 unsigned int* Feb_Control_last_downloaded_trimbits;
@@ -55,7 +59,11 @@ unsigned int* Feb_Control_last_downloaded_trimbits;
 int Feb_Control_module_number;
 int Feb_Control_current_index;
 
-int counter_bit = 1;
+int Feb_Control_counter_bit = 1;
+int Feb_control_master = 0;
+
+unsigned int Feb_Control_rate_correction_table[1024];
+double Feb_Control_rate_meas[16384];
 
 
 void Module_Module(struct Module* mod,unsigned int number, unsigned int address_top){
@@ -130,17 +138,17 @@ unsigned int Module_GetBottomLeftAddress(struct Module* mod)  {return mod->botto
 unsigned int Module_GetBottomRightAddress(struct Module* mod) {return mod->bottom_right_address;}
 
 unsigned int Module_SetTopIDelay(struct Module* mod,unsigned int chip,unsigned int value)    { return Module_TopAddressIsValid(mod) &&chip<4        ? (mod->idelay_top[chip]=value)    : 0;} //chip 0=ll,1=lr,0=rl,1=rr
-unsigned int Module_GetTopIDelay(struct Module* mod,unsigned int chip)                       { return chip<4                              ?  mod->idelay_top[chip]           : 0;} //chip 0=ll,1=lr,0=rl,1=rr
+unsigned int Module_GetTopIDelay(struct Module* mod,unsigned int chip)                       { return chip<4                              			?  mod->idelay_top[chip]           : 0;} //chip 0=ll,1=lr,0=rl,1=rr
 unsigned int Module_SetBottomIDelay(struct Module* mod,unsigned int chip,unsigned int value) { return Module_BottomAddressIsValid(mod) &&chip<4     ? (mod->idelay_bottom[chip]=value) : 0;} //chip 0=ll,1=lr,0=rl,1=rr
-unsigned int Module_GetBottomIDelay(struct Module* mod,unsigned int chip)                    { return chip<4                              ?  mod->idelay_bottom[chip]        : 0;} //chip 0=ll,1=lr,0=rl,1=rr
+unsigned int Module_GetBottomIDelay(struct Module* mod,unsigned int chip)                    { return chip<4                              			?  mod->idelay_bottom[chip]        : 0;} //chip 0=ll,1=lr,0=rl,1=rr
 
-float        Module_SetHighVoltage(struct Module* mod,float value)                           { return Module_TopAddressIsValid(mod)                 ? (mod->high_voltage=value) : -1;}
-float        Module_GetHighVoltage(struct Module* mod)                                      { return mod->high_voltage;}
+float        Module_SetHighVoltage(struct Module* mod,float value)                  { return Feb_control_master ? (mod->high_voltage=value) : -1;}// Module_TopAddressIsValid(mod) ? (mod->high_voltage=value) : -1;}
+float        Module_GetHighVoltage(struct Module* mod)                              { return mod->high_voltage;}
 
-int          Module_SetTopDACValue(struct Module* mod,unsigned int i, int value)             { return (i<Module_ndacs && Module_TopAddressIsValid(mod))    ? (mod->top_dac[i]=value)    : -1;}
-int          Module_GetTopDACValue(struct Module* mod,unsigned int i)                        { return (i<Module_ndacs) ? mod->top_dac[i]:-1;}
-int          Module_SetBottomDACValue(struct Module* mod,unsigned int i, int value)          { return (i<Module_ndacs && Module_BottomAddressIsValid(mod)) ? (mod->bottom_dac[i]=value) : -1;}
-int          Module_GetBottomDACValue(struct Module* mod,unsigned int i)                     { return (i<Module_ndacs) ? mod->bottom_dac[i]:-1;}
+int          Module_SetTopDACValue(struct Module* mod,unsigned int i, int value) 	{ return (i<Module_ndacs && Module_TopAddressIsValid(mod))		? (mod->top_dac[i]=value)   : -1;}
+int          Module_GetTopDACValue(struct Module* mod,unsigned int i)               { return (i<Module_ndacs) 										? mod->top_dac[i]			: -1;}
+int          Module_SetBottomDACValue(struct Module* mod,unsigned int i, int value) { return (i<Module_ndacs && Module_BottomAddressIsValid(mod)) 	? (mod->bottom_dac[i]=value): -1;}
+int          Module_GetBottomDACValue(struct Module* mod,unsigned int i)            { return (i<Module_ndacs) 									   	? mod->bottom_dac[i]		: -1;}
 
 
 
@@ -166,27 +174,16 @@ void Feb_Control_FebControl(){
 
 
 
-int Feb_Control_Init(int master, int top){
+int Feb_Control_Init(int master, int top, int module_num){
 	unsigned int i;
 	Feb_Control_module_number = 0;
 	Feb_Control_current_index = 0;
+	Feb_control_master = master;
 
 	//global send
 	Feb_Control_AddModule1(0,1,0xff,0,1);
 	Feb_Control_PrintModuleList();
-
-	//get module nummber
-	int res=0;
-	char hostname[100];
-	if (gethostname(hostname, sizeof hostname) == 0)
-		puts(hostname);
-	else
-		perror("gethostname");
-	char *pch;
-	pch = strtok(hostname,"0");
-	pch = strtok(NULL,"0");
-	sscanf(pch,"%d",&res);
-	Feb_Control_module_number = (res & 0xFF);
+	Feb_Control_module_number = (module_num & 0xFF);
 
 	int serial = !top;
 
@@ -538,7 +535,7 @@ int Feb_Control_ReadSetUpFile(unsigned int module_num, char* file_name){
 }
 
 
-int Feb_Control_CheckSetup(){
+int Feb_Control_CheckSetup(int master){
 	printf("Checking Set up\n");
 	unsigned int i,j;
 	int ok = 1;
@@ -556,7 +553,7 @@ int Feb_Control_CheckSetup(){
 			ok=0;
 		}
 	}
-	if(Module_GetHighVoltage(&modules[i])<0){
+	if((Feb_control_master) &&(Module_GetHighVoltage(&modules[i])<0)){
 		cprintf(RED,"Warning: module %d's high voltage not set.\n",Module_GetModuleNumber(&modules[i]));
 		ok=0;
 	}
@@ -709,7 +706,7 @@ int Feb_Control_SetHighVoltage1(unsigned int module_num,float value){
 	unsigned int module_index=0;
 	unsigned int i;
 
-	if(Module_TopAddressIsValid(&modules[module_index])){
+	if(Feb_control_master){//if(Module_TopAddressIsValid(&modules[module_index])){
 		if(!Feb_Control_GetModuleIndex(module_num,&module_index)){/*||!Module_TopAddressIsValid(&modules[module_index])){*/
 			cprintf(RED,"Error could not set high voltage module number %d invalid.\n",module_num);
 			return 0;
@@ -962,7 +959,9 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits){
 	for(l_r=0;l_r<2;l_r++){ // l_r loop
 		//printf("\nl_r:%d\t\t",l_r);
 		unsigned int disable_chip_mask = l_r ? DAQ_CS_BAR_LEFT : DAQ_CS_BAR_RIGHT;
-		if(!(Feb_Interface_WriteRegister(0xfff,DAQ_REG_STATIC_BITS,disable_chip_mask|DAQ_STATIC_BIT_PROGRAM|DAQ_STATIC_BIT_M8,0,0)&&Feb_Control_SetCommandRegister(DAQ_SET_STATIC_BIT)&&Feb_Control_StartDAQOnlyNWaitForFinish(5000))){
+		if(!(Feb_Interface_WriteRegister(0xfff,DAQ_REG_STATIC_BITS,disable_chip_mask|DAQ_STATIC_BIT_PROGRAM|DAQ_STATIC_BIT_M8,0,0)
+				&&Feb_Control_SetCommandRegister(DAQ_SET_STATIC_BIT)
+				&&Feb_Control_StartDAQOnlyNWaitForFinish(5000))){
 			printf("Could not select chips\n");
 			return 0;
 		}
@@ -1187,7 +1186,7 @@ int Feb_Control_WaitForStartedFlag(int sleep_time_us, int prev_flag){
 }
 
 
-int Feb_Control_Reset(){
+int Feb_Control_Reset(){printf("Reset daq\n");
 	if(!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CTRL,0,0,0) || !Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CTRL,DAQ_CTRL_RESET,0,0) || !Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CTRL,0,0,0)){
 		cprintf(RED,"Warning: Could not reset daq, no response.\n");
 		return 0;
@@ -1378,7 +1377,7 @@ int Feb_Control_SetSubFrameExposureTime(int the_subframe_exposure_time_in_10nsec
 	printf("Sub Frame Exposure time set to: %d\n",Feb_Control_subframe_exposure_time_in_10nsec);
 	return 1;
 }
-int Feb_Control_GetSubFrameExposureTime(){return Feb_Control_subframe_exposure_time_in_10nsec;}
+int Feb_Control_GetSubFrameExposureTime(){return Feb_Control_subframe_exposure_time_in_10nsec*10;}
 
 int Feb_Control_SetExposurePeriod(double the_exposure_period_in_sec){
 	Feb_Control_exposure_period_in_sec = the_exposure_period_in_sec;
@@ -1545,7 +1544,7 @@ int Feb_Control_PrepareForAcquisition(){//return 1;
 	}
 
 	int ret=0;
-	if(counter_bit)
+	if(Feb_Control_counter_bit)
 		ret = Feb_Control_ResetChipCompletely();
 	else
 		ret = Feb_Control_ResetChipPartially();
@@ -1648,11 +1647,11 @@ int Feb_Control_SaveAllTrimbitsTo(int value){
 
 
 void Feb_Control_Set_Counter_Bit(int value){
-	counter_bit = value;
+	Feb_Control_counter_bit = value;
 }
 
 int Feb_Control_Get_Counter_Bit(){
-	return counter_bit;
+	return Feb_Control_counter_bit;
 }
 
 int Feb_Control_Pulse_Pixel(int npulses, int x, int y){
@@ -1777,8 +1776,8 @@ int Feb_Control_PulseChip(int npulses){
 			cprintf(RED,"some wait error\n");
 	}
 	Feb_Control_SetExternalEnableMode(on,1);
-	counter_bit = (on?0:1);
-	printf("counter_bit:%d\n",counter_bit);
+	Feb_Control_counter_bit = (on?0:1);
+	printf("Feb_Control_counter_bit:%d\n",Feb_Control_counter_bit);
 
 	if(on)
 		printf("Pulse chip success\n\n");
@@ -1789,10 +1788,174 @@ int Feb_Control_PulseChip(int npulses){
 
 
 
+int64_t Feb_Control_Get_RateTable_Tau_in_nsec(){ return Feb_Control_RateTable_Tau_in_nsec;}
+int64_t Feb_Control_Get_RateTable_Subexptime_in_nsec(){ return Feb_Control_RateTable_Subexptime_in_nsec;}
+
+//returns -1 if slope is too high
+int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec){
+
+	double sub_expure_time_in_sec = (double)(Feb_Control_GetSubFrameExposureTime())/(double)1e9;
+	double tau_in_sec = (double)tau_in_Nsec/(double)1e9;
+	unsigned int np = 16384; //max slope 16 * 1024
+	double b0[1024];
+	double m[1024];
+
+
+	if(tau_in_sec<0||sub_expure_time_in_sec<0){
+		printf("Error tau %f and sub_expure_time %f must be greater than 0.\n", tau_in_sec, sub_expure_time_in_sec);
+		return 0;
+	}
+
+	printf("\tCalculating table for tau of %lld ns.\n", tau_in_Nsec);
+	int i;
+	for(i=0;i<np;i++)
+		Feb_Control_rate_meas[i]  = i*exp(-i/sub_expure_time_in_sec*tau_in_sec);
+
+	/*
+	 b  :  index/address of block ram/rate correction table
+	 b0 :  base in vhdl
+	 m  :  slope in vhdl
+
+	 Firmware:
+	    data_in(11..2) -> memory address  --> memory
+	    data_in( 1..0) -> lsb
+
+	    mem_data_out(13.. 0) -> base
+	    mem_data_out(17..14) -> slope
+
+	    delta = slope*lsb
+	    corr  = base+delta
+	 */
+
+	int next_i=0;
+
+	b0[0] = 0;
+	m[0]  = 1;
+	int b;
+	for(b=1;b<1024;b++){
+		if(m[b-1]<14.5){
+			double s=0,sx=0,sy=0,sxx=0,sxy=0;
+			for(;;next_i++){
+				if(next_i>=np){
+					cprintf(RED,"Error: (tau/subexptime) must be < 0.0015 \n");
+					return -1;
+				}
+
+				double x    = Feb_Control_rate_meas[next_i] - b*4;
+				double y    = next_i;
+				/*printf("Start Loop  x: %f,\t y: %f,\t  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  "
+						"next_i: %d,\t  b: %d,\t  Feb_Control_rate_meas[next_i]: %f\n",
+						x, y, s, sx, sy, sxx, sxy, next_i, b, Feb_Control_rate_meas[next_i]);*/
+
+				if(x < -0.5) continue;
+				if(x >  3.5) break;
+				s   += 1;
+				sx  += x;
+				sy  += y;
+				sxx += x*x;
+				sxy += x*y;
+				/*printf("End   Loop  x: %f,\t y: %f,\t  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  "
+						"next_i: %d,\t  b: %d,\t  Feb_Control_rate_meas[next_i]: %f\n",
+						x, y, s, sx, sy, sxx, sxy, next_i, b, Feb_Control_rate_meas[next_i]);*/
+			}
+			double delta = s*sxx - sx*sx;
+			b0[b] = (sxx*sy - sx*sxy)/delta;
+			m[b]  = (s*sxy  - sx*sy) /delta;
+
+			if(m[b]<0||m[b]>15)
+				m[b]=15;
+			/*printf("After Loop  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  "
+					"next_i: %d,\t  b: %d,\t  Feb_Control_rate_meas[next_i]: %f\n",
+					s, sx, sy, sxx, sxy, next_i, b, Feb_Control_rate_meas[next_i]);*/
+			//	cout<<s<<"   "<<sx<<"   "<<sy<<"   "<<sxx<<"   "<<"   "<<sxy<<"   "<<delta<<"   "<<m[b]<<"    "<<b0[b]<<endl;
+		}else{
+			b0[b] = b0[b-1] + 4*m[b-1];
+			m[b]  = m[b-1];
+			/*printf("else\n");*/
+		}
+		Feb_Control_rate_correction_table[b]  = (((int)(m[b]+0.5)&0xf)<<14) | ((int)(b0[b]+0.5)&0x3fff);
+		/*printf("After Loop  4*b: %d\tbase:%d\tslope:%d\n",4*b, (int)(b0[b]+0.5), (int)(m[b]+0.5) );*/
+	}
+
+	if(Feb_Control_SetRateCorrectionTable(Feb_Control_rate_correction_table)){
+		Feb_Control_RateTable_Tau_in_nsec = tau_in_Nsec;
+		Feb_Control_RateTable_Subexptime_in_nsec = Feb_Control_GetSubFrameExposureTime();
+		return 1;
+	}else{
+		Feb_Control_RateTable_Tau_in_nsec = -1;
+		Feb_Control_RateTable_Subexptime_in_nsec = -1;
+		return 0;
+	}
+
+
+}
 
 
 
 
+int Feb_Control_SetRateCorrectionTable(unsigned int *table){
+  if(!table){
+	  printf("Error: could not set rate correction table, point is zero.\n");
+	  Feb_Control_SetRateCorrectionVariable(0);
+    return 0;
+  }
 
 
+  printf("Setting rate correction table. %d %d %d %d ....\n",
+		  table[0],table[1],table[2],table[3]);
+
+  //was added otherwise after an acquire, startdaqonlywatiforfinish waits forever
+  if(!Feb_Control_SetCommandRegister(DAQ_RESET_COMPLETELY)){
+	  cprintf(RED,"Warning: Could not Feb_Control_SetCommandRegister for loading trim bits.\n");
+	  return 0;
+  }
+  printf("daq reset completely\n");
+
+  if(Module_TopAddressIsValid(&modules[1])){
+	  if(!Feb_Interface_WriteMemoryInLoops(Module_GetTopLeftAddress(&modules[Feb_Control_current_index]),1,0,1024,Feb_Control_rate_correction_table)||
+			  !Feb_Interface_WriteMemoryInLoops(Module_GetTopRightAddress(&modules[Feb_Control_current_index]),1,0,1024,Feb_Control_rate_correction_table)||
+			  !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+		  cprintf(BG_RED,"Error in Top Writing to Memory ::Feb_Control_SetRateCorrectionTable\n");
+		  return 0;
+	  }
+  }else{
+	  if(!Feb_Interface_WriteMemoryInLoops(Module_GetBottomLeftAddress(&modules[Feb_Control_current_index]),1,0,1024,Feb_Control_rate_correction_table)||
+			  !Feb_Interface_WriteMemoryInLoops(Module_GetBottomRightAddress(&modules[Feb_Control_current_index]),1,0,1024,Feb_Control_rate_correction_table)||
+			  !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+		  cprintf(BG_RED,"Error in Bottom Writing to Memory ::Feb_Control_SetRateCorrectionTable\n");
+		  return 0;
+	  }
+  }
+   return 1;
+}
+
+
+int Feb_Control_GetRateCorrectionVariable(){ return (Feb_Control_subFrameMode&DAQ_NEXPOSURERS_ACTIVATE_RATE_CORRECTION);}
+
+
+void Feb_Control_SetRateCorrectionVariable(int activate_rate_correction){
+  if(activate_rate_correction){
+	  Feb_Control_subFrameMode |= DAQ_NEXPOSURERS_ACTIVATE_RATE_CORRECTION;
+	  printf("Rate correction activated. Note: the rate correction applied only when run in auto summing mode.\n");
+  }else{
+	  Feb_Control_subFrameMode &= ~DAQ_NEXPOSURERS_ACTIVATE_RATE_CORRECTION;
+	  printf("Rate correction deactivated.\n");
+  }
+}
+
+
+int Feb_Control_PrintCorrectedValues(){
+	int i;
+	int delta, slope, base, lsb, corr;
+	for (i=0; i < 4096; i++){
+		lsb   = i&3;
+		base  = Feb_Control_rate_correction_table[i>>2] & 0x3fff;
+		slope = ((Feb_Control_rate_correction_table[i>>2] & 0x3c000) >> 14);
+		delta = slope*lsb;
+		corr  = delta+base;
+		printf("Readout Input: %d,\tBase:%d,\tSlope:%d,\tLSB:%d,\tDelta:%d\tResult:%d\tReal:%f\n",
+				i, base, slope, lsb, delta, corr, Feb_Control_rate_meas[i]);
+	}
+	return 1;
+}
 

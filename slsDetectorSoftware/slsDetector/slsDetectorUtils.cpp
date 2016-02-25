@@ -44,14 +44,12 @@ slsDetectorUtils::slsDetectorUtils()  {
 int  slsDetectorUtils::acquire(int delflag){
 
   //ensure acquire isnt started multiple times by same client
-  pthread_mutex_lock(&mp);
   if(getAcquiringFlag() == false)
     setAcquiringFlag(true);
   else{
 	  std::cout << "Error: Acquire has already been started." << std::endl;
 	  return FAIL;
   }
-  pthread_mutex_unlock(&mp);
 
 
   bool receiver = (setReceiverOnline()==ONLINE_FLAG);
@@ -157,10 +155,6 @@ int  slsDetectorUtils::acquire(int delflag){
 	  		 *stoppedFlag=1;
 	  	}
 
-	  //resets frames caught in receiver
-	  resetFramesCaught();
-
-
 	  if(setReceiverOnline()==OFFLINE_FLAG)
 		  *stoppedFlag=1;
   }
@@ -175,13 +169,17 @@ int  slsDetectorUtils::acquire(int delflag){
   cout << " starting thread " << endl;
 #endif
 
-
+  //resets frames caught in receiver
+  if(receiver){
+    resetFramesCaught();
+  }
 
   for(int im=0;im<nm;im++) {
 
 #ifdef VERBOSE
     cout << " starting measurement "<< im << " of " << nm << endl;
 #endif
+
 
     //cout << "data thread started " << endl;
  
@@ -364,7 +362,7 @@ int  slsDetectorUtils::acquire(int delflag){
 	    usleep(100000);
 	  }*/
 
-	  if ((getDetectorsType()==GOTTHARD) || (getDetectorsType()==MOENCH)){
+	  if ((getDetectorsType()==GOTTHARD) || (getDetectorsType()==MOENCH) || (getDetectorsType()==JUNGFRAU) ){
 		  if((*correctionMask)&(1<<WRITE_FILE))
 			  closeDataFile();
 	  }
@@ -838,6 +836,7 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
 		break;
   case GOTTHARD:
   case PROPIX:
+  case JUNGFRAU:
   names[nvar++]="flags";
 		names[nvar++]="delay";
 		names[nvar++]="gates";
@@ -922,6 +921,7 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
   case MYTHEN:
   case GOTTHARD:
   case PROPIX:
+  case JUNGFRAU:
   names[nvar++]="flatfield";
   names[nvar++]="badchannels";
   break;

@@ -23,10 +23,6 @@
 extern int nModX;
 //extern int dataBytes;
 extern int dynamicRange;
-const int nChans=NCHAN;
-const int nChips=NCHIP;
-const int nDacs=NDAC;
-const int nAdcs=NADC;
 enum detectorSettings thisSettings;
 
 int sChan, sChip, sMod, sDac, sAdc;
@@ -43,7 +39,19 @@ int *detectorAdcs=NULL;
 
 ROI rois[MAX_ROIS];
 int nROI=0;
+extern enum detectorType myDetectorType;
 
+/** for jungfrau reinitializing macro later  in server_funcs.c in initDetector*/
+extern int N_CHAN;
+extern int N_CHIP;
+extern int N_DAC;
+extern int N_ADC;
+extern int N_CHANS;
+
+extern int nChans;
+extern int nChips;
+extern int nDacs;
+extern int nAdcs;
 
 int initDetector() {
 
@@ -55,29 +63,53 @@ int initDetector() {
 #ifdef VERBOSE
   printf("Board is for %d modules\n",n);
 #endif
+
+  if(myDetectorType == JUNGFRAU){
+	  N_CHAN=JUNGFRAU_NCHAN;
+	  N_CHIP=JUNGFRAU_NCHIP;
+	  N_DAC=JUNGFRAU_NDAC;
+	  N_ADC=JUNGFRAU_NADC;
+	  N_CHANS=JUNGFRAU_NCHANS;
+
+	  nChans=N_CHAN;
+	  nChips=N_CHIP;
+	  nDacs=N_DAC;
+	  nAdcs=N_ADC;
+  }
+
   detectorModules=malloc(n*sizeof(sls_detector_module));
-  detectorChips=malloc(n*NCHIP*sizeof(int));
-  detectorChans=malloc(n*NCHIP*NCHAN*sizeof(int));
-  detectorDacs=malloc(n*NDAC*sizeof(int));
-  detectorAdcs=malloc(n*NADC*sizeof(int));
+  detectorDacs=malloc(n*N_DAC*sizeof(int));
+  detectorAdcs=malloc(n*N_ADC*sizeof(int));
+  detectorChips=NULL;
+  detectorChans=NULL;
+  detectorAdcs=NULL;
+  if(myDetectorType != JUNGFRAU){
+	  detectorChips=malloc(n*N_CHIP*sizeof(int));
+	  detectorChans=malloc(n*N_CHIP*N_CHAN*sizeof(int));
+  }
+
 #ifdef VERBOSE
   printf("modules from 0x%x to 0x%x\n",(unsigned int)(detectorModules), (unsigned int)(detectorModules+n));
-  printf("chips from 0x%x to 0x%x\n",(unsigned int)(detectorChips), (unsigned int)(detectorChips+n*NCHIP));
-  printf("chans from 0x%x to 0x%x\n",(unsigned int)(detectorChans), (unsigned int)(detectorChans+n*NCHIP*NCHAN));
-  printf("dacs from 0x%x to 0x%x\n",(unsigned int)(detectorDacs), (unsigned int)(detectorDacs+n*NDAC));
-  printf("adcs from 0x%x to 0x%x\n",(unsigned int)(detectorAdcs), (unsigned int)(detectorAdcs+n*NADC));
+  printf("dacs from 0x%x to 0x%x\n",(unsigned int)(detectorDacs), (unsigned int)(detectorDacs+n*N_DAC));
+  printf("adcs from 0x%x to 0x%x\n",(unsigned int)(detectorAdcs), (unsigned int)(detectorAdcs+n*N_ADC));
+  if(myDetectorType != JUNGFRAU){
+	  printf("chips from 0x%x to 0x%x\n",(unsigned int)(detectorChips), (unsigned int)(detectorChips+n*N_CHIP));
+	  printf("chans from 0x%x to 0x%x\n",(unsigned int)(detectorChans), (unsigned int)(detectorChans+n*N_CHIP*N_CHAN));
+  }
 #endif
-  for (imod=0; imod<n; imod++) {
 
- 
-    (detectorModules+imod)->dacs=detectorDacs+imod*NDAC;
-    (detectorModules+imod)->adcs=detectorAdcs+imod*NADC;
-    (detectorModules+imod)->chipregs=detectorChips+imod*NCHIP;
-    (detectorModules+imod)->chanregs=detectorChans+imod*NCHIP*NCHAN;
-    (detectorModules+imod)->ndac=NDAC;
-    (detectorModules+imod)->nadc=NADC;
-    (detectorModules+imod)->nchip=NCHIP;
-    (detectorModules+imod)->nchan=NCHIP*NCHAN;
+
+  for (imod=0; imod<n; imod++) {
+    (detectorModules+imod)->dacs=detectorDacs+imod*N_DAC;
+	(detectorModules+imod)->adcs=detectorAdcs+imod*N_ADC;
+    if(myDetectorType != JUNGFRAU){
+    	(detectorModules+imod)->chipregs=detectorChips+imod*N_CHIP;
+    	(detectorModules+imod)->chanregs=detectorChans+imod*N_CHIP*N_CHAN;
+    }
+    (detectorModules+imod)->ndac=N_DAC;
+    (detectorModules+imod)->nadc=N_ADC;
+    (detectorModules+imod)->nchip=N_CHIP;
+    (detectorModules+imod)->nchan=N_CHIP*N_CHAN;
     (detectorModules+imod)->module=imod;
     (detectorModules+imod)->gain=0;
     (detectorModules+imod)->offset=0;
@@ -103,13 +135,11 @@ int initDetector() {
   /* dynamicRange=getDynamicRange(); //always 16 not required commented out
      nModX=setNMod(-1);*/
 
-  //dataBytes=nModX*NCHIP*NCHAN*4;
   // dynamicRange=32;
   // initChip(0, 0,ALLMOD);
   //nModX=n; 
   //
   allocateRAM();
-
 
   return OK;
 }
@@ -211,22 +241,27 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
  
   // printf("copying gain and offset %f %f to %f %f\n",srcMod->gain,srcMod->offset,destMod->gain,destMod->offset);
  
-  for (ichip=0; ichip<(srcMod->nchip); ichip++) {
-    if (*((srcMod->chipregs)+ichip)>=0)
-	*((destMod->chipregs)+ichip)=*((srcMod->chipregs)+ichip);
+  if(myDetectorType != JUNGFRAU){
+    for (ichip=0; ichip<(srcMod->nchip); ichip++) {
+      if (*((srcMod->chipregs)+ichip)>=0)
+	  *((destMod->chipregs)+ichip)=*((srcMod->chipregs)+ichip);
+    }
+    for (ichan=0; ichan<(srcMod->nchan); ichan++) {
+      if (*((srcMod->chanregs)+ichan)>=0)
+	  *((destMod->chanregs)+ichan)=*((srcMod->chanregs)+ichan);
+    }
   }
-  for (ichan=0; ichan<(srcMod->nchan); ichan++) {
-    if (*((srcMod->chanregs)+ichan)>=0)
-	*((destMod->chanregs)+ichan)=*((srcMod->chanregs)+ichan);
-  }
+
   for (idac=0; idac<(srcMod->ndac); idac++) {
     if (*((srcMod->dacs)+idac)>=0)
 	*((destMod->dacs)+idac)=*((srcMod->dacs)+idac);
   }
+
   for (iadc=0; iadc<(srcMod->nadc); iadc++) {
     if (*((srcMod->adcs)+iadc)>=0)
 	*((destMod->adcs)+iadc)=*((srcMod->adcs)+iadc);
   }
+
   return ret;
 }
 
@@ -480,15 +515,15 @@ int selChip(const int chip,int imod) {
 /*       sMod=allSelected; */
     
 /*     if (imod>=0 && imod<nModX) { */
-/*       detectorDacs[idac+NDAC*imod]=v; */
+/*       detectorDacs[idac+N_DAC*imod]=v; */
 /* #ifdef VERBOSE */
-/*       printf("module=%d index=%d, val=%d addr=%x\n",imod, idac, v, (unsigned int)(detectorDacs+idac+NDAC*imod)); */
+/*       printf("module=%d index=%d, val=%d addr=%x\n",imod, idac, v, (unsigned int)(detectorDacs+idac+N_DAC*imod)); */
 /* #endif */
 
 /*       setDACRegister(idac,v,imod); */
 /*     } else if (imod==ALLMOD) { */
 /*       for (im=0; im<nModX; im++) { */
-/* 	detectorDacs[idac+NDAC*im]=v; */
+/* 	detectorDacs[idac+N_DAC*im]=v; */
 /* 	setDACRegister(idac,v,im); */
 /*       } */
 /*     } */
@@ -544,9 +579,9 @@ int selChip(const int chip,int imod) {
 
 /* int initDACbyIndex(int ind,int val, int imod) { */
 /*   int v; */
-/*   const int partref[NDAC]=PARTREF; */
-/*   const int partr1[NDAC]=PARTR1; */
-/*   const int partr2[NDAC]=PARTR2; */
+/*   const int partref[N_DAC]=PARTREF; */
+/*   const int partr1[N_DAC]=PARTR1; */
+/*   const int partr2[N_DAC]=PARTR2; */
  
 /*   int ref=partref[ind]; */
 /*   int r1=partr1[ind]; */
@@ -561,8 +596,8 @@ int selChip(const int chip,int imod) {
 
 /* int initDACbyIndexDACU(int ind, int val, int imod) { */
  
-/*   //  const double daccs[NDAC]=DACCS; */
-/*   //  const double dacaddr[NDAC]=DACADDR; */
+/*   //  const double daccs[N_DAC]=DACCS; */
+/*   //  const double dacaddr[N_DAC]=DACADDR; */
  
 /*   //  int cs=daccs[ind]; */
 /*   //  int addr=dacaddr[ind]; */
@@ -573,7 +608,7 @@ int selChip(const int chip,int imod) {
 /*     initDAC(ind,val, imod); */
  
 /*   if (imod>=0 && imod<nModX) { */
-/*     // return detectorDacs[ind+imod*NDAC]; */
+/*     // return detectorDacs[ind+imod*N_DAC]; */
 /*     return setDACRegister(ind,  -1, imod); */
 /*   } */
 /*   else { */
@@ -585,7 +620,7 @@ int selChip(const int chip,int imod) {
 /* #ifdef VERBOSE */
 /*       printf("mod %d dac %d val %d\n",im,ind,setDACRegister(ind,  -1, im)); */
 /* #endif */
-/*       //if (detectorDacs[ind+im*NDAC]!=detectorDacs[ind]) { */
+/*       //if (detectorDacs[ind+im*N_DAC]!=detectorDacs[ind]) { */
 	
 /*       if (setDACRegister(ind,  -1, im)!=setDACRegister(ind,  -1, 0)) { */
 /* #ifdef VERBOSE */
@@ -636,7 +671,7 @@ int selChip(const int chip,int imod) {
 /*       } */
 
 /*       if (myg>0 && myo>0) { */
-/* 	//ethr=(myo-detectorDacs[VTHRESH+imod*NDAC])*1000/myg; */
+/* 	//ethr=(myo-detectorDacs[VTHRESH+imod*N_DAC])*1000/myg; */
       
 /* 	ethr=(myo-setDACRegister(VDAC0,-1,imod))*1000/myg;//edited by dhanya */
 /* 	// else */
@@ -644,7 +679,7 @@ int selChip(const int chip,int imod) {
       
 /*       } */
 /* #ifdef VERBOSE */
-/*       //printf("module=%d gain=%f, offset=%f, dacu=%f\n",imod, myg, myo, detectorDacs[VTHRESH+imod*NDAC]); */
+/*       //printf("module=%d gain=%f, offset=%f, dacu=%f\n",imod, myg, myo, detectorDacs[VTHRESH+imod*N_DAC]); */
 /*       printf("module=%d gain=%f, offset=%f, dacu=%d\n",imod, myg, myo,(int)(setDACRegister(VDAC0,-1,imod)));//edited by dhanya */
 /*       printf("Threshold energy of module %d is %d eV\n", imod, ethr); */
 /* #endif  */
@@ -722,7 +757,7 @@ int selChip(const int chip,int imod) {
 /*   if (detectorDacs) { */
 /*     if (imod<getNModBoard()) */
 /*       if (ind<(detectorModules+imod)->ndac) */
-/* 	return (detectorDacs[ind+imod*NDAC]); */
+/* 	return (detectorDacs[ind+imod*N_DAC]); */
 /*   }   */
 /*   return FAIL; */
 /*   *\/ */
@@ -847,38 +882,51 @@ int setSettings(int i, int imod) {
 	else
 		printf("\ninside set settings wit settings=%d...\n",i);
 #endif
-  int confgain[] = CONF_GAIN;
-  int isett=-2,retval;
+	int isett=-1,val=-1,retval=-1;
+	enum conf_gain {
+		dynamic = 0x0f00,	//dynamic
+		dynamichighgain0 =	0x0f01,	//dynamichighgain0
+		fixgain1 = 0x0f02,	//fixgain1
+		fixgain2 = 0x0f06,	//fixgain2
+		forceswitchgain1 = 0x1f00,	//forceswitchgain1
+		forceswitchgain2 = 0x3f00	//forceswitchgain2
+	};
 
-  //reading settings
-  if(i==GET_SETTINGS){
-    retval=initConfGainByModule(i,i,imod);
-    if(retval==i)
-      isett=UNDEFINED;
-  }
-  //writing settings  
-  else{
-    retval=initConfGainByModule(i,confgain[i],imod);
-    if(retval!=i)
-      isett=UNDEFINED;
-  }
-  //if error while read/writing
-  if(isett==UNDEFINED)
-    printf("Error:Weird Value read back from the Gain/Settings Reg\n");
-  else{
-    //validating the settings read back
-    if((retval>=HIGHGAIN)&&(retval<=VERYHIGHGAIN))
-      isett=retval; 
-    else{
-      isett=UNDEFINED;
-      printf("Error:Wrong Settings Read out:%d\n",retval);
-    }
-  }
-  thisSettings=isett;
-#ifdef VERBOSE
-  printf("detector settings are %d\n",thisSettings);
-#endif
-  return thisSettings;
+	//determine conf value to write
+	if(i!=GET_SETTINGS){
+		switch(i){
+		case DYNAMICGAIN: 	val = dynamic;break;
+		case DYNAMICHG0: 	val = dynamichighgain0;break;
+		case FIXGAIN1: 		val = fixgain1;break;
+		case FIXGAIN2: 		val = fixgain2;break;
+		case FORCESWITCHG1: val = forceswitchgain1;break;
+		case FORCESWITCHG2: val = forceswitchgain2;break;
+		default:
+			printf("Error: This settings is not defined for this detector %d\n",i);
+			return GET_SETTINGS;
+		}
+	}
+
+	retval=initConfGainByModule(i,val,imod);
+
+	switch(retval){
+	case dynamic: isett=DYNAMICGAIN;	break;
+	case dynamichighgain0: isett=DYNAMICHG0;	break;
+	case fixgain1: isett=FIXGAIN1;		break;
+	case fixgain2: isett=FIXGAIN2;		break;
+	case forceswitchgain1: isett=FORCESWITCHG1;	break;
+	case forceswitchgain2: isett=FORCESWITCHG2;	break;
+	default:
+		isett=UNDEFINED;
+		printf("Error:Wrong settings read out from Gain Reg 0x%x\n",retval);
+		break;
+	}
+
+	thisSettings=isett;
+//#ifdef VERBOSE
+	printf("detector settings are %d\n",thisSettings);
+//#endif
+	return thisSettings;
 }
 
 
@@ -886,7 +934,7 @@ int setSettings(int i, int imod) {
 
 /* Initialization*/
 
-int initChannelbyNumber(sls_detector_channel myChan) {
+int initChannelbyNumber(sls_detector_channel myChan) {printf("in init channel by number\n");
   int reg=myChan.reg;
   int ft=reg & TRIM_DR;
   int cae=(reg>>(NTRIMBITS))&1;
@@ -930,7 +978,7 @@ int getChannelbyNumber(sls_detector_channel* myChan) {
   if (detectorChans) {
     if (imod<nModX && imod>=0) {
       if (ichip<(detectorModules+imod)->nchip && ichan<(detectorModules+imod)->nchan/(detectorModules+imod)->nchip)
-	myChan->reg=detectorChans[imod*NCHAN*NCHIP+ichip*NCHAN+ichan];
+	myChan->reg=detectorChans[imod*N_CHAN*N_CHIP+ichip*N_CHAN+ichan];
       return OK;
     }
   } 
@@ -942,7 +990,7 @@ int getTrimbit(int imod, int ichip, int ichan) {
   if (detectorChans) {
     if (imod<getNModBoard() && imod>=0)
       if (ichip<(detectorModules+imod)->nchip && ichan<(detectorModules+imod)->nchan/(detectorModules+imod)->nchip)
-	return (detectorChans[imod*NCHAN*NCHIP+ichip*NCHAN+ichan] & TRIM_DR);
+	return (detectorChans[imod*N_CHAN*N_CHIP+ichip*N_CHAN+ichan] & TRIM_DR);
   }
 
   return -1;
@@ -966,8 +1014,8 @@ int initChannel(int ft,int cae, int ae, int coe, int ocoe, int counts, int imod)
   if (sChan==allSelected) {
     //    printf("initializing all channels ft=%d coe=%d\n",ft,coe);
     chanmi=0;
-    chanma=NCHAN;
-  } else if (sChan==noneSelected || sChan>NCHAN || sChan<0) {
+    chanma=N_CHAN;
+  } else if (sChan==noneSelected || sChan>N_CHAN || sChan<0) {
     //  printf("initializing no channels ft=%d coe=%d\n",ft,coe);
     chanmi=0;
     chanma=-1;
@@ -980,8 +1028,8 @@ int initChannel(int ft,int cae, int ae, int coe, int ocoe, int counts, int imod)
   if (sChip==allSelected) {
     // printf("initializing all chips\n");
     chipmi=0;
-    chipma=NCHIP;
-  } else if (sChip==noneSelected || sChip>NCHIP || sChip<0) {
+    chipma=N_CHIP;
+  } else if (sChip==noneSelected || sChip>N_CHIP || sChip<0) {
     // printf("initializing no chips\n");
     chipmi=0;
     chipma=-1;
@@ -1009,12 +1057,12 @@ int initChannel(int ft,int cae, int ae, int coe, int ocoe, int counts, int imod)
       for (ichip=chipmi; ichip<chipma; ichip++) {
 	for (ichan=chanmi; ichan<chanma; ichan++) {
 #ifdef VERBOSE
-	  //  printf("im=%d ichi=%d icha=%d tot=%d reg=%x\n",im,ichip, ichan, im*NCHAN*NCHIP+ichip*NCHAN+ichan,detectorChans[im*NCHAN*NCHIP+ichip*NCHAN+ichan]);
+	  //  printf("im=%d ichi=%d icha=%d tot=%d reg=%x\n",im,ichip, ichan, im*N_CHAN*N_CHIP+ichip*N_CHAN+ichan,detectorChans[im*N_CHAN*N_CHIP+ichip*N_CHAN+ichan]);
 #endif
-	 detectorChans[im*NCHAN*NCHIP+ichip*NCHAN+ichan]= ft | (cae<<(NTRIMBITS+1)) | (ae<<(NTRIMBITS+2)) | (coe<<(NTRIMBITS+3)) | (ocoe<<(NTRIMBITS+4)) | (counts<<(NTRIMBITS+5));
+	 detectorChans[im*N_CHAN*N_CHIP+ichip*N_CHAN+ichan]= ft | (cae<<(NTRIMBITS+1)) | (ae<<(NTRIMBITS+2)) | (coe<<(NTRIMBITS+3)) | (ocoe<<(NTRIMBITS+4)) | (counts<<(NTRIMBITS+5));
 #ifdef VERBOSE
-	 //printf("imod=%d ichip=%d ichan=%d addr=%x reg=%x\n",im,ichip,ichan,detectorChans+im*NCHAN*NCHIP+ichip*NCHAN+ichan, detectorChans[im*NCHAN*NCHIP+ichip*NCHAN+ichan]);
-	  // printf("imod=%d ichip=%d ichan=%d addr=%x reg=%x\n",im,ichip,ichan,detectorChans+im*NCHAN*NCHIP+ichip*NCHAN+ichan, detectorChans[im*NCHAN*NCHIP+ichip*NCHAN+ichan]);
+	 //printf("imod=%d ichip=%d ichan=%d addr=%x reg=%x\n",im,ichip,ichan,detectorChans+im*N_CHAN*N_CHIP+ichip*N_CHAN+ichan, detectorChans[im*N_CHAN*N_CHIP+ichip*N_CHAN+ichan]);
+	  // printf("imod=%d ichip=%d ichan=%d addr=%x reg=%x\n",im,ichip,ichan,detectorChans+im*N_CHAN*N_CHIP+ichip*N_CHAN+ichan, detectorChans[im*N_CHAN*N_CHIP+ichip*N_CHAN+ichan]);
 #endif
 	}
       }
@@ -1214,9 +1262,9 @@ int getChipbyNumber(sls_detector_chip* myChip){
   if (detectorChips) {
     if (imod<nModX)
       if (ichip<(detectorModules+imod)->nchip) {
-	myChip->reg=detectorChips[ichip+imod*NCHIP];
-	myChip->nchan=NCHAN;
-	myChip->chanregs=detectorChans+imod*NCHAN*NCHIP+ichip*NCHIP;
+	myChip->reg=detectorChips[ichip+imod*N_CHIP];
+	myChip->nchan=N_CHAN;
+	myChip->chanregs=detectorChans+imod*N_CHAN*N_CHIP+ichip*N_CHIP;
 	return OK;
       }
   }
@@ -1322,8 +1370,8 @@ int initChip(int obe, int ow,int imod){
  
   if (sChip==allSelected) {
     chipmi=0;
-    chipma=NCHIP;
-  } else if (sChip==noneSelected || sChip>NCHIP || sChip<0) {
+    chipma=N_CHIP;
+  } else if (sChip==noneSelected || sChip>N_CHIP || sChip<0) {
     chipmi=0;
     chipma=-1;
   } else {
@@ -1347,9 +1395,9 @@ int initChip(int obe, int ow,int imod){
     for (im=modmi; im<modma; im++) {
       for (ichip=chipmi; ichip<chipma; ichip++) {
 	//	printf("imod %d ichip %d\n",im,ichip);
-	detectorChips[im*NCHIP+ichip]=obe | (ow<<1);
+	detectorChips[im*N_CHIP+ichip]=obe | (ow<<1);
 #ifdef VERBOSE
-	//printf("imod=%d ichip=%d reg=%d (%x)\n",im,ichip,detectorChips[im*NCHIP+ichip],detectorChips+im*NCHIP+ichip);
+	//printf("imod=%d ichip=%d reg=%d (%x)\n",im,ichip,detectorChips[im*N_CHIP+ichip],detectorChips+im*N_CHIP+ichip);
 #endif
       }
     }
@@ -1422,8 +1470,8 @@ int initChipWithProbes(int obe, int ow,int nprobes, int imod){
  
   if (sChip==allSelected) {
     chipmi=0;
-    chipma=NCHIP;
-  } else if (sChip==noneSelected || sChip>NCHIP || sChip<0) {
+    chipma=N_CHIP;
+  } else if (sChip==noneSelected || sChip>N_CHIP || sChip<0) {
     chipmi=0;
     chipma=-1;
   } else {
@@ -1447,9 +1495,9 @@ int initChipWithProbes(int obe, int ow,int nprobes, int imod){
     for (im=modmi; im<modma; im++) {
       for (ichip=chipmi; ichip<chipma; ichip++) {
 	//	printf("imod %d ichip %d\n",im,ichip);
-	detectorChips[im*NCHIP+ichip]=obe | (ow<<1);
+	detectorChips[im*N_CHIP+ichip]=obe | (ow<<1);
 #ifdef VERBOSE
-	//printf("imod=%d ichip=%d reg=%d (%x)\n",im,ichip,detectorChips[im*NCHIP+ichip],detectorChips+im*NCHIP+ichip);
+	//printf("imod=%d ichip=%d reg=%d (%x)\n",im,ichip,detectorChips[im*N_CHIP+ichip],detectorChips+im*N_CHIP+ichip);
 #endif
       }
     }
@@ -1522,15 +1570,16 @@ int initMCBregisters(int cm, int imod){
 
 int initModulebyNumber(sls_detector_module myMod) { 
 
-  printf("\ninside initmoduleynumber..\n");
- 
+  printf("\ninside initmoduleynumberrrr..\n");
+  printf("000\n");
   int nchip,nchan;//int ichip, nchip, ichan, nchan;
   int im, modmi,modma;
  // int ft,  cae, ae, coe, ocoe, counts, chanreg;
   int imod;
  // int obe;
  // int ow;
-  int v[NDAC];
+ /* int v[N_DAC];*/
+  int retval =-1, idac;
 
 
   nchip=myMod.nchip;
@@ -1553,12 +1602,10 @@ int initModulebyNumber(sls_detector_module myMod) {
     modma=sMod+1;
   }
 
-
+  printf("222\n");
   /*
-  for (idac=0; idac<NDAC; idac++)
+  for (idac=0; idac<N_DAC; idac++)
     v[idac]=(myMod.dacs)[idac];
-  */
-
 
   v[VDAC0]=(myMod.dacs)[0];
   v[VDAC1]=(myMod.dacs)[1];
@@ -1580,24 +1627,29 @@ int initModulebyNumber(sls_detector_module myMod) {
   printf("vdac6=%d\n",v[VDAC6]);
   printf("vdac7=%d\n",v[VDAC7]);
 #endif
- 
-
+ */
+  printf("ndac:%d\n",N_DAC);
   //  initDACs(v,imod);
   // initMCBregisters(myMod.reg,imod);
- 
+  for (idac=0; idac<N_DAC; idac++){
+	  retval = setDac(idac,(myMod.dacs)[idac]);
+	  if(retval ==(myMod.dacs)[idac])
+		  printf("Setting dac %d to %d\n",idac,retval);
+	  else
+		  printf("Error: Could not set dac %d, wrote %d but read %d\n",idac,(myMod.dacs)[idac],retval);
+  }
+
   if (detectorModules) {
-    for (im=modmi; im<modma; im++) {  
+    for (im=modmi; im<modma; im++) {
 #ifdef VERBOSE
       printf("im=%d\n",im);
 #endif
       copyModule(detectorModules+im,&myMod);
     }
-  } 
-
+  }
   //setting the conf gain and the settings register
   setSettings(myMod.reg,imod);
-  
-  return myMod.reg;
+  return thisSettings;
 }
 
 
@@ -1739,11 +1791,11 @@ int readOutChan(int *val) {
     for (k=0; k<nModX; k++) {
       v=readin(k);
       //v=bus_r(MCB_DOUT_REG_OFF+(k<<SHIFTMOD)) & 0x3ff;
-      for (j=0; j<NCHIP; j++) {
+      for (j=0; j<N_CHIP; j++) {
 	if (i==0) 
-	  *(val+j+k*NCHIP)=0;
+	  *(val+j+k*N_CHIP)=0;
 	if (v & (1<<j)) { 
-	  *(val+j+k*NCHIP)= *(val+j+k*NCHIP) | (1 << i);
+	  *(val+j+k*N_CHIP)= *(val+j+k*N_CHIP) | (1 << i);
 	} 
       }
     }
@@ -1877,7 +1929,7 @@ int testShiftStSel(int imod) {
   int val,i,j,k;
   printf("testing shift stsel for module %d\n", imod);
   setCSregister(ALLMOD);  
-  for (i=0; i<NCHAN; i++) {
+  for (i=0; i<N_CHAN; i++) {
     if (i%2) {
       putout("0100011000000000",ALLMOD);  
       putout("0110011000000000",ALLMOD);  
@@ -1889,7 +1941,7 @@ int testShiftStSel(int imod) {
     }
   }
   putout("0010011000000000",ALLMOD); 
-  for (i=0; i<NCHAN; i++) {
+  for (i=0; i<N_CHAN; i++) {
     putout("0000011000000000",ALLMOD); 
 
 
@@ -1897,7 +1949,7 @@ int testShiftStSel(int imod) {
     //for (k=0; k<nModX; k++) {
     val=readin(k);
     //val=bus_r(MCB_DOUT_REG_OFF+(k<<SHIFTMOD)) & 0x3ff;
-	for (j=0; j<NCHIP; j++) {	
+	for (j=0; j<N_CHIP; j++) {
 	  if ( (val & 1<<j)>0 && i%2==0) {   
 	    printf("Shift stsel: module %d chip %i bit %d read %d instead of %d \n",k,j,i,val & 1<< j, i%2);
 	    result++;
@@ -1926,7 +1978,7 @@ int testShiftStSel(int imod) {
 
 
 int testDataInOut(int num, int imod) {
-  int val[NCHIP*nModX], result=OK;
+  int val[N_CHIP*nModX], result=OK;
   int ich, ichip;
   setCSregister(ALLMOD);
   printf("Testing data in out for module %d pattern 0x%x\n", imod, num);
@@ -1936,14 +1988,14 @@ int testDataInOut(int num, int imod) {
   setCSregister(ALLMOD);
   initChip(0, 0,ALLMOD);
   clearSSregister(ALLMOD);
-  for (ich=0; ich<NCHAN; ich++) {
+  for (ich=0; ich<N_CHAN; ich++) {
     nextStrip(ALLMOD);
     readOutChan(val);
     //imod=0;
     //for (imod=0; imod<nModX; imod++) {
-      for (ichip=0; ichip<NCHIP; ichip++) {
-	if (val[ichip+imod*NCHIP]!=num) {
-	  printf("Test datain out: Channel %d read %x instead of %x\n", (imod*NCHIP+ichip)*NCHAN+ich, val[ichip+NCHIP*imod], num);
+      for (ichip=0; ichip<N_CHIP; ichip++) {
+	if (val[ichip+imod*N_CHIP]!=num) {
+	  printf("Test datain out: Channel %d read %x instead of %x\n", (imod*N_CHIP+ichip)*N_CHAN+ich, val[ichip+N_CHIP*imod], num);
 	result++;
 	}
       }
@@ -1970,7 +2022,7 @@ int testExtPulse(int imod) {
   putout("0000000000000000",ALLMOD);
   putout("0000100000000000",ALLMOD);
   putout("0000000000000000",ALLMOD);
-  for (i=0; i<NCHAN; i++) {
+  for (i=0; i<N_CHAN; i++) {
     putout("0000000000000000",ALLMOD);
     putout("0000000000001000",ALLMOD);
     putout("0000000000000000",ALLMOD);
@@ -1989,11 +2041,11 @@ int testExtPulse(int imod) {
   // val1=fifo_read_event();
   //imod=0;
   //for (imod=0; imod<nModX; imod++) {
-  for (ichip=0; ichip<NCHIP; ichip++) {
-      for (ichan=0; ichan<NCHAN; ichan++) {//
-	if ((*(val1+ichan+(ichip+imod*NCHIP)*NCHAN))!=ichan) {
+  for (ichip=0; ichip<N_CHIP; ichip++) {
+      for (ichan=0; ichan<N_CHAN; ichan++) {//
+	if ((*(val1+ichan+(ichip+imod*N_CHIP)*N_CHAN))!=ichan) {
 	  result++;
-	  printf("Counter test: channel %d read %d instead of %d\n",ichan+(ichip+imod*NCHIP)*NCHAN, val1[ichan+(ichip+imod*NCHIP)*NCHAN], ichan);
+	  printf("Counter test: channel %d read %d instead of %d\n",ichan+(ichip+imod*N_CHIP)*N_CHAN, val1[ichan+(ichip+imod*N_CHIP)*N_CHAN], ichan);
 	  }
       }
   }
@@ -2035,9 +2087,9 @@ int testExtPulseMux(int imod, int ow) {
   counterClear(ALLMOD); 
   initChipWithProbes(0, ow,0,ALLMOD); 
   //  initChip(0, ow,ALLMOD);
-  for (ichip=0; ichip<NCHIP; ichip++) {
+  for (ichip=0; ichip<N_CHIP; ichip++) {
   setSSregister(ALLMOD);
-    for (i=0; i<NCHAN; i++) {
+    for (i=0; i<N_CHAN; i++) {
       putout("0000000000000000",ALLMOD);
       putout("0000000000001000",ALLMOD);
       putout("0000000000000000",ALLMOD);
@@ -2061,16 +2113,16 @@ int testExtPulseMux(int imod, int ow) {
     printf("no data found in fifos\n");
     return 1;
   }
-  for (ichip=0; ichip<NCHIP; ichip++) {
+  for (ichip=0; ichip<N_CHIP; ichip++) {
     chipr=0;
-      for (ichan=0; ichan<NCHAN; ichan++) { 
-	ind=ichan+(ichip+imod*NCHIP)*NCHAN;
+      for (ichan=0; ichan<N_CHAN; ichan++) {
+	ind=ichan+(ichip+imod*N_CHIP)*N_CHAN;
 	v=values[ind];
 	vright=(ichan*(ichip+1))&nbit_mask;
 	if (v!=vright) {
 	  result++;
 	  chipr++;
-	  printf("Counter test mux %d mode: channel %d chip %d read %d instead of %d\n",ow, ichan+(ichip+imod*NCHIP)*NCHAN, ichip, v, vright);
+	  printf("Counter test mux %d mode: channel %d chip %d read %d instead of %d\n",ow, ichan+(ichip+imod*N_CHIP)*N_CHAN, ichip, v, vright);
 	  //break;
 	}
 	//printf("\n");
@@ -2136,15 +2188,15 @@ int testDataInOutMux(int imod, int ow, int num) {
     printf("no data found in fifos\n");
     return 1;
   }
-  for (ichip=0; ichip<NCHIP; ichip++) {
+  for (ichip=0; ichip<N_CHIP; ichip++) {
     chipr=0;
-      for (ichan=0; ichan<NCHAN; ichan++) { 
-	ind=ichan+(ichip+imod*NCHIP)*NCHAN;
+      for (ichan=0; ichan<N_CHAN; ichan++) {
+	ind=ichan+(ichip+imod*N_CHIP)*N_CHAN;
 	v=values[ind];
 	if (v!=vright) {
 	  result++;
 	  chipr++;
-	  printf("DataInOut test mux %d mode: channel %d chip %d  read %d instead of %d\n",ow, ichan+(ichip+imod*NCHIP)*NCHAN, ichip, v, vright);
+	  printf("DataInOut test mux %d mode: channel %d chip %d  read %d instead of %d\n",ow, ichan+(ichip+imod*N_CHIP)*N_CHAN, ichip, v, vright);
 	  //break;
 	}
 	//printf("\n");
@@ -2231,7 +2283,7 @@ int testOutMux(int imod) {
 #ifdef DEBUGOUT
       printf("%d %x\n",i*dist,val);     
 #endif
-      for (j=0; j<NCHIP; j++) {
+      for (j=0; j<N_CHIP; j++) {
 	v=val & 1<< j;
 	if (pat & (1<<(i*dist))) {
 	  if (v==0) {
@@ -2259,7 +2311,7 @@ int testOutMux(int imod) {
 #ifdef DEBUGOUT
       printf("%d %x\n",i*dist, val);
 #endif
-      for (j=0; j<NCHIP; j++) {
+      for (j=0; j<N_CHIP; j++) {
 	v=val & 1<< j;
 	if (pat & (1<<(i*dist))) {
 	  if (v==0) {
@@ -2292,7 +2344,7 @@ int testOutMux(int imod) {
 #ifdef DEBUGOUT
       printf("%d %x\n",i*dist, val);
 #endif
-      for (j=0; j<NCHIP; j++) {
+      for (j=0; j<N_CHIP; j++) {
 	v=val & 1<< j;
 	if (pat & (1<<(i*dist))) {
 	  if (v==0) {
@@ -2320,7 +2372,7 @@ int testOutMux(int imod) {
 #ifdef DEBUGOUT
       printf("%d %x\n",i*dist, val);
 #endif
-      for (j=0; j<NCHIP; j++) {
+      for (j=0; j<N_CHIP; j++) {
 	v=val & 1<< j;
 	if (pat & (1<<(i*dist))) {
 	  if (v==0) {
@@ -2488,9 +2540,9 @@ int calibration_sensor(int num, int *v, int *dacs) {
       selChip(ichip,imod);
       for (ich=0; ich<128; ich++){ 
 	selChannel(ich,imod);
-	initChannel(*(dacs+ichip*NCHAN+ich),0,0,0,0,0,imod); //disable channel; 
+	initChannel(*(dacs+ichip*N_CHAN+ich),0,0,0,0,0,imod); //disable channel;
 	clearCounter(imod);      
-	//initChannel(*(dacs+ichip*NCHAN+ich),FALSE,FALSE,TRUE,FALSE,0); //disable channel;  
+	//initChannel(*(dacs+ichip*N_CHAN+ich),FALSE,FALSE,TRUE,FALSE,0); //disable channel;
       }
     }
   }
@@ -2498,11 +2550,11 @@ int calibration_sensor(int num, int *v, int *dacs) {
   for (imod=0; imod<nModX; imod++) {
     //selMod(imod);
     initMCBregisters(1,imod);
-    for (ich=0; ich<NCHAN; ich++){  
-      for (ichip=0; ichip<NCHIP; ichip++) {
+    for (ich=0; ich<N_CHAN; ich++){
+      for (ichip=0; ichip<N_CHIP; ichip++) {
 	selChip(ichip,imod); // select channel 
 	selChannel(ich,imod); // select channel 
-	initChannel(*(dacs+imod*NCHAN*NCHIP+ichip*NCHAN+ich),0,0,1,0,0,imod); // enable channel
+	initChannel(*(dacs+imod*N_CHAN*N_CHIP+ichip*N_CHAN+ich),0,0,1,0,0,imod); // enable channel
 	clearCounter(imod);      
       }
       setCSregister(imod); 
@@ -2516,11 +2568,11 @@ int calibration_sensor(int num, int *v, int *dacs) {
     } 
     readOutChan(val); // readout channel
     for (imod=0; imod<nModX; imod++) {
-      for (ichip=0; ichip<NCHIP; ichip++) { 
-	*(v+(ichip+imod*NCHIP)*NCHAN+ich)=val[ichip+imod*NCHIP];
+      for (ichip=0; ichip<N_CHIP; ichip++) {
+	*(v+(ichip+imod*N_CHIP)*N_CHAN+ich)=val[ichip+imod*N_CHIP];
 	selChip(ichip,imod); // select channel 
 	selChannel(ich,imod); // select channel 
-	initChannel(*(dacs+ichip*NCHAN+ich),0,0,0,0,0,imod); //disable channel;  
+	initChannel(*(dacs+ichip*N_CHAN+ich),0,0,0,0,0,imod); //disable channel;
       }
     }
   }
@@ -2542,17 +2594,17 @@ int calibration_chip(int num, int *v, int *dacs) {
       for (ich=0; ich<128; ich++){ 
 	selChannel(ich,imod);
 	clearCounter(imod); 
-	initChannel(*(dacs+ichip*NCHAN+ich),0,0,0,0,0,imod); //disable channel;  
+	initChannel(*(dacs+ichip*N_CHAN+ich),0,0,0,0,0,imod); //disable channel;
       }
     }
   }
-  for (ich=0; ich<NCHAN; ich++){  
+  for (ich=0; ich<N_CHAN; ich++){
     for (imod=0; imod<nModX; imod++) {
       //selMod(imod);
-      for (ichip=0; ichip<NCHIP; ichip++) {
+      for (ichip=0; ichip<N_CHIP; ichip++) {
 	selChip(ichip,imod); // select channel 
 	selChannel(ich,imod); // select channel 
-	initChannel(*(dacs+imod*NCHAN*NCHIP+ichip*NCHAN+ich),1,0,1,0,0,imod); // enable channel
+	initChannel(*(dacs+imod*N_CHAN*N_CHIP+ichip*N_CHAN+ich),1,0,1,0,0,imod); // enable channel
 	clearCounter(imod);      
       }
     }
@@ -2568,10 +2620,10 @@ int calibration_chip(int num, int *v, int *dacs) {
     for (imod=0; imod<nModX; imod++) {
       //selMod(imod);
       for (ichip=0; ichip<10; ichip++) {
-	*(v+(ichip+imod*NCHIP)*NCHAN+ich)=val[ichip+imod*NCHIP]; 
+	*(v+(ichip+imod*N_CHIP)*N_CHAN+ich)=val[ichip+imod*N_CHIP];
 	selChip(ichip,imod); // select chip 
 	selChannel(ich,imod); // select channel 
-	initChannel(*(dacs+imod*NCHAN*NCHIP+ichip*NCHAN+ich),0,0,0,0,0,imod); //disable channel;
+	initChannel(*(dacs+imod*N_CHAN*N_CHIP+ichip*N_CHAN+ich),0,0,0,0,0,imod); //disable channel;
       }
     }
   }

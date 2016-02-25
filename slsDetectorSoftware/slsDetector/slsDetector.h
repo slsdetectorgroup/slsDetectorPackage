@@ -494,11 +494,12 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      writes a trim/settings file for module number imod - the values will be read from the current detector structure
      \param fname name of the file to be written
      \param imod module number
+     \param iodelay io delay (detector specific)
      \returns OK or FAIL if the file could not be written   
      \sa ::sls_detector_module sharedSlsDetector mythenDetector::writeSettingsFile(string, int)
   */
   using energyConversion::writeSettingsFile;
-  int writeSettingsFile(string fname, int imod);
+  int writeSettingsFile(string fname, int imod, int* iodelay=0);
 
 
   /**
@@ -908,10 +909,11 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
       \param module module to be set - must contain correct module number and also channel and chip registers
       \param gainval pointer to extra gain values
       \param offsetval pointer to extra offset values
+      \param iodelay iodelay (detector specific)
       \returns current register value
       \sa ::sls_detector_module
   */
-  int setModule(sls_detector_module module, int* gainval, int* offsetval);
+  int setModule(sls_detector_module module, int* gainval, int* offsetval,int* iodelay);
   //virtual int setModule(sls_detector_module module);
 
   /**

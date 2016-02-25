@@ -234,7 +234,11 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
      \returns total number of channels
   */
   virtual int getTotalNumberOfChannels()=0;
-    
+
+  /**
+     \returns total number of channels for each dimension
+  */
+  virtual int getTotalNumberOfChannels(dimension d)=0;
 
   /** generates file name without extension */
   virtual string createFileName()=0;
@@ -638,37 +642,51 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
     return GET_EXTERNAL_SIGNAL_FLAG ;};
 
   /** returns detector settings string from index
-      \param s can be STANDARD, FAST, HIGHGAIN, DYNAMICGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN, GET_SETTINGS
-      \returns standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, undefined
+      \param s can be STANDARD, FAST, HIGHGAIN, DYNAMICGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN, LOWNOISE,
+       DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2, GET_SETTINGS
+      \returns standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, lownoise,
+      dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2, undefined
   */
   static string getDetectorSettings(detectorSettings s){\
-    switch(s) {\
-    case STANDARD:      return string("standard");\
-    case FAST:      return string("fast");\
-    case HIGHGAIN:      return string("highgain");\
-    case DYNAMICGAIN:    return string("dynamicgain");	\
-    case LOWGAIN:    return string("lowgain");		\
+    switch(s) {											\
+    case STANDARD:      return string("standard");		\
+    case FAST:      	return string("fast");			\
+    case HIGHGAIN:      return string("highgain");		\
+    case DYNAMICGAIN:   return string("dynamicgain");	\
+    case LOWGAIN:    	return string("lowgain");		\
     case MEDIUMGAIN:    return string("mediumgain");	\
-    case VERYHIGHGAIN:    return string("veryhighgain");	\
+    case VERYHIGHGAIN:  return string("veryhighgain");	\
     case LOWNOISE:      return  string("lownoise");		\
-    default:    return string("undefined");			\
+    case DYNAMICHG0:    return  string("dynamichg0");	\
+    case FIXGAIN1:      return  string("fixgain1");		\
+    case FIXGAIN2:      return  string("fixgain2");		\
+    case FORCESWITCHG1: return  string("forceswitchg1");\
+    case FORCESWITCHG2: return  string("forceswitchg2");\
+    default:    		return string("undefined");		\
     }};
 
   /** returns detector settings string from index
-      \param s can be standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, undefined
-      \returns   setting index STANDARD, FAST, HIGHGAIN, DYNAMICGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN, GET_SETTINGS
+      \param s can be standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, lownoise,
+      dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2, undefined
+      \returns   setting index STANDARD, FAST, HIGHGAIN, DYNAMICGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN,LOWNOISE,
+      DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2, GET_SETTINGS
   */
 
   static detectorSettings getDetectorSettings(string s){	\
-    if (s=="standard") return STANDARD;				\
-    if (s=="fast") return FAST;			\
-    if (s=="highgain") return HIGHGAIN;		\
-    if (s=="dynamicgain") return DYNAMICGAIN;		\
-    if (s=="lowgain") return LOWGAIN;			\
-    if (s=="mediumgain") return MEDIUMGAIN;		\
-    if (s=="veryhighgain") return VERYHIGHGAIN;		\
-    if (s=="lownoise") return LOWNOISE;		\
- return GET_SETTINGS;						\
+    if (s=="standard") 		return STANDARD;				\
+    if (s=="fast") 			return FAST;					\
+    if (s=="highgain") 		return HIGHGAIN;				\
+    if (s=="dynamicgain") 	return DYNAMICGAIN;				\
+    if (s=="lowgain") 		return LOWGAIN;					\
+    if (s=="mediumgain") 	return MEDIUMGAIN;				\
+    if (s=="veryhighgain") 	return VERYHIGHGAIN;			\
+    if (s=="lownoise") 		return LOWNOISE;				\
+    if (s=="dynamichg0") 	return DYNAMICHG0;				\
+    if (s=="fixgain1") 		return FIXGAIN1;				\
+    if (s=="fixgain2") 		return FIXGAIN2;				\
+    if (s=="forceswitchg1") return FORCESWITCHG1;			\
+    if (s=="forceswitchg2")	return FORCESWITCHG2;			\
+    return GET_SETTINGS;									\
   };
 
 

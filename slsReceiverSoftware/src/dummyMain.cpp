@@ -18,24 +18,26 @@ int main(int argc, char *argv[]) {
   bool bottom = false; 
   cout << "CCCCCC" << endl;
   dummyUDPInterface *udp=new dummyUDPInterface();
-  slsReceiverTCPIPInterface *tcpipInterface = new slsReceiverTCPIPInterface(success, udp, tcpip_port_no, bottom);
+//   slsReceiverTCPIPInterface *tcpipInterface = new slsReceiverTCPIPInterface(success, udp, tcpip_port_no, bottom);
 
   
   
   
-	if(tcpipInterface->start() == slsReceiverDefs::OK){
-		cout << "DONE!" << endl;
-		string str;
-		cin>>str;
-		//wait and look for an exit keyword
-		while(str.find("exit") == string::npos)
-			cin>>str;
-		//stop tcp server thread, stop udp socket
-		tcpipInterface->stop();
-	}
+// 	if(tcpipInterface->start() == slsReceiverDefs::OK){
+// 		cout << "DONE!" << endl;
+// 		string str;
+// 		cin>>str;
+// 		//wait and look for an exit keyword
+// 		while(str.find("exit") == string::npos)
+// 			cin>>str;
+// 		//stop tcp server thread, stop udp socket
+// 		tcpipInterface->stop();
+// 	}
 
-  if (tcpipInterface)
-    delete tcpipInterface;
+//   if (tcpipInterface)
+//     delete tcpipInterface;
+
+  udp->startReceiver();
    if(udp)
      delete udp;
   return 0;

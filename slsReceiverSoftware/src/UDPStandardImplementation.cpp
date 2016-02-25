@@ -1876,7 +1876,7 @@ uint32_t UDPStandardImplementation::processListeningBuffer(int ithread, int cSiz
 #endif
 		//jungfrau last packet value is 0, so find the last packet and store the others in a temp storage
 		if((*( (uint8_t*) header->packetNumber))){
-			cprintf(RED,"entering missing packet zone\n");
+			//cprintf(RED,"entering missing packet zone\n");
 			lastFrameHeader64 = (*( (uint32_t*) header->frameNumber))&0xffffff;
 			cSize += onePacketSize;
 			lastPacketOffset -= onePacketSize;

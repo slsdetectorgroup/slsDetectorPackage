@@ -151,7 +151,6 @@ typedef struct {
 
 #define JCTB_FIFO_SIZE						2500 //cannot be less than max jobs per thread = 1000
 /*#define MOENCH_ALIGNED_FRAME_SIZE			65536*/
-//<<<<<<< HEAD
 #define JCTB_PACKETS_PER_FRAME			        1
 #define JCTB_ONE_PACKET_SIZE				8224
 #define JCTB_BUFFER_SIZE 				(JCTB_ONE_PACKET_SIZE*40) 	
@@ -160,16 +159,7 @@ typedef struct {
 #define JCTB_FRAME_INDEX_MASK			0xFFFFFFFF
 #define JCTB_FRAME_INDEX_OFFSET			6+8
 #define JCTB_PACKET_INDEX_MASK			0xFFFFFFFF
-//=======
-#define JCTB_PACKETS_PER_FRAME			    50
-#define JCTB_ONE_PACKET_SIZE				8214
-#define JCTB_BUFFER_SIZE 					(MOENCH_ONE_PACKET_SIZE*MOENCH_PACKETS_PER_FRAME)
-#define JCTB_DATA_BYTES	 					(JCTB_BUFFER_PER_FRAME)
 
-#define JCTB_FRAME_INDEX_MASK				0xFFFFFF00
-#define JCTB_FRAME_INDEX_OFFSET				8
-#define JCTB_PACKET_INDEX_MASK				0xFF
-//>>>>>>> 8bad1d33fcf4601752bb6722a9eca00aa2cd4ed2
 
 #define JCTB_BYTES_PER_ADC		        	(2)
 #define JCTB_PIXELS_IN_ONE_ROW				32

@@ -251,7 +251,7 @@ int UDPStandardImplementation::setupFifoStructure(){
 	int64_t i;
 	int oldNumberofJobsPerBuffer = numberofJobsPerBuffer;
 	//eiger always listens to 1 packet at a time
-	if((myDetectorType == EIGER) || (myDetectorType = JUNGFRAU)){
+	if((myDetectorType == EIGER) || (myDetectorType == JUNGFRAU)){
 		numberofJobsPerBuffer = 1;
 		FILE_LOG(logDEBUG) << "Info: 1 packet per buffer";
 	}

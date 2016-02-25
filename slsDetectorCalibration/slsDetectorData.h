@@ -43,6 +43,7 @@ class slsDetectorData {
     xmap=new int[dsize/sizeof(dataType)];
     ymap=new int[dsize/sizeof(dataType)];
 
+
     dataMask=new dataType*[ny];
     for(int i = 0; i < ny; i++) {
       dataMask[i] = new dataType[nx];
@@ -191,7 +192,7 @@ class slsDetectorData {
   int setDataSize(int d) {dataSize=d; return dataSize;};
 
 
-  /**
+  /** 
 
      Returns the value of the selected channel for the given dataset. Virtual function, can be overloaded.
      \param data pointer to the dataset (including headers etc)

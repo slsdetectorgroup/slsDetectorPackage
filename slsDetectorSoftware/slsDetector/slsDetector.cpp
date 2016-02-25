@@ -2217,6 +2217,7 @@ dacs_t slsDetector::setDAC(dacs_t val, dacIndex index, int mV, int imod){
   char mess[100];
   int arg[3];
 
+
   if (    (thisDetector->myDetectorType != GOTTHARD) &&  (thisDetector->myDetectorType != PROPIX) && index==HV_POT)
     index=HV_NEW;
 

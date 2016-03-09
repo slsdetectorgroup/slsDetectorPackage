@@ -41,7 +41,7 @@ int getADC(enum detDacIndex ind,  int imod);
 
 
 #if defined(EIGERD) || defined(GOTTHARD)
-int setHighVolage(int val, int imod);
+int setHighVoltage(int val, int imod);
 #endif
 
 #ifdef EIGERD

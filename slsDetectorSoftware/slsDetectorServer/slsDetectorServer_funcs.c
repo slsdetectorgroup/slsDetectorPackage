@@ -1197,7 +1197,7 @@ int set_dac(int file_des) {
 	case E_Vis:
 		idac = VIS;
 		break;
-	case HV_POT:
+	case HV_NEW:
 		break;
 	case IO_DELAY:
 		break;
@@ -1217,8 +1217,8 @@ int set_dac(int file_des) {
 			ret=FAIL;
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		} else{
-			if(ind == HV_POT)
-				retval[0] = setHighVolage(val,imod);
+			if((ind == HV_POT) ||(ind == HV_NEW))
+				retval[0] = setHighVoltage(val,imod);
 			else if(ind == IO_DELAY)
 				retval[0] = setIODelay(val,imod);
 			else

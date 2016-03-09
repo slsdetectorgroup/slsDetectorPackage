@@ -159,7 +159,7 @@ int initDetector(){
 	eiger_photonenergy = -1;
 	setReadOutFlags(NONPARALLEL);
 	setSpeed(0,1);//clk_devider,half speed
-	setHighVolage(0,0);
+	setHighVoltage(0,0);
 	setIODelay(650,0);
 	setTiming(AUTO_TIMING);
 	//SetPhotonEnergyCalibrationParameters(-5.8381e-5,1.838515,5.09948e-7,-4.32390e-11,1.32527e-15);
@@ -418,10 +418,12 @@ void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]){
 }
 
 
-int setHighVolage(int val, int imod){
+int setHighVoltage(int val, int imod){
 	if(val!=-1){
 		printf(" Setting High Voltage: %d\n",val);
-		if(Feb_Control_SetHighVoltage(val))
+		if(!top)
+			eiger_highvoltage = val;
+		else if(Feb_Control_SetHighVoltage(val))
 			eiger_highvoltage = val;
 	}
 	return eiger_highvoltage;

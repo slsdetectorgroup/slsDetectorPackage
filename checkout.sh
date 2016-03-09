@@ -12,3 +12,4 @@ git clone $1@git.psi.ch:sls_detectors_software/sls_detector_calibration.git slsD
 
 git clone $1@git.psi.ch:sls_detectors_software/sls_image_reconstruction.git slsImageReconstruction
 
+git clone $1@git.psi.ch:sls_detectors_software/calibration_wizards.git calibrationWizards

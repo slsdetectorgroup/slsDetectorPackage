@@ -16,6 +16,7 @@ ID:         $Id$
 #include "slsDetectorUtils.h"
 
 class slsDetector;
+class ThreadPool;
 
 //#include "sls_detector_defs.h"
 
@@ -240,6 +241,14 @@ class multiSlsDetector  : public slsDetectorUtils {
   /** destructor */ 
   virtual ~multiSlsDetector();
   
+  /**
+   * Creates all the threads in the threadpool
+    \returns OK or FAIL
+  */
+  int createThreadPool();
+
+  /** destroys all the threads in the threadpool */
+  void destroyThreadPool();
   
   /** frees the shared memory occpied by the sharedMultiSlsDetector structure */
   int freeSharedMemory() ;
@@ -1362,6 +1371,8 @@ class multiSlsDetector  : public slsDetectorUtils {
   /** Shared memory structure */
   sharedMultiSlsDetector *thisMultiDetector;
 
+ private:
+  ThreadPool* threadpool;
 
 
 

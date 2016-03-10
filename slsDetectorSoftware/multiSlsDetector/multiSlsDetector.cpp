@@ -16,6 +16,8 @@ ID:         $Id$
 #include "multiSlsDetectorClient.h"
 #include "postProcessingFuncs.h"
 #include "usersFunctions.h"
+#include "ThreadPool.h"
+
 #include  <sys/types.h>
 #include  <sys/ipc.h>
 #include  <sys/shm.h>
@@ -265,12 +267,49 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
   getNMods();
   getMaxMods();
 
+	if(createThreadPool() == FAIL)
+		exit(-1);
+
 }
 
 multiSlsDetector::~multiSlsDetector() {
   //removeSlsDetector();
-
+	destroyThreadPool();
 }
+
+
+int multiSlsDetector::createThreadPool(){
+	if(threadpool){
+		threadpool->destroy_threadpool();
+		threadpool=0;
+	}
+	if(thisMultiDetector->numberOfDetectors < 1){
+		cout << "No detectors attached to create threadpool" << endl;
+		return OK;
+	}
+	threadpool = new ThreadPool(thisMultiDetector->numberOfDetectors);
+	switch(threadpool->initialize_threadpool()){
+	case 0:
+		cerr << "Failed to initialize thread pool!" << endl;
+		return FAIL;
+	case 1:
+		cout << "Not initializing threads, only one detector" << endl;
+		break;
+	default:
+		cout << "Initialized Threadpool" << endl;
+		break;
+	}
+	return OK;
+}
+
+void multiSlsDetector::destroyThreadPool(){
+	if(threadpool){
+		threadpool->destroy_threadpool();
+		threadpool=0;
+		cout<<"Destroyed Threadpool"<<endl;
+	}
+}
+
 
 int multiSlsDetector::addSlsDetector(int id, int pos) {
   int j=thisMultiDetector->numberOfDetectors;
@@ -1088,7 +1127,7 @@ int multiSlsDetector::setThresholdEnergy(int e_eV, int pos, detectorSettings ise
 slsDetectorDefs::detectorSettings multiSlsDetector::getSettings(int pos) {
 
   int i, posmin, posmax;
-  detectorSettings ret1=GET_SETTINGS, ret;
+  int ret1=-100, ret=-1;
 
   if (pos<0) {
     posmin=0;
@@ -1098,21 +1137,49 @@ slsDetectorDefs::detectorSettings multiSlsDetector::getSettings(int pos) {
     posmax=pos+1;
   }
 
-  for (i=posmin; i<posmax; i++) {
-    if (detectors[i]) {
-      ret=detectors[i]->getSettings();
-      if(detectors[i]->getErrorMask())
-	setErrorMask(getErrorMask()|(1<<i));
-      if (ret1==GET_SETTINGS)
-	ret1=ret;
-      else if (ret!=ret1)
-	ret1=GET_SETTINGS;
-      
-    }
-   
+/*
+	if(!threadpool){cout << "Error in creating threadpool. Exiting" << endl;return GET_SETTINGS;}
+	else{
+		//return storage values
+		int* iret[posmax-posmin];
+		for(int idet=posmin; idet<posmax; idet++){
+			if(detectors[idet]){
+				iret[idet]= new int(-1);
+				Task* task = new Task(new func_t<detectorSettings,slsDetector,int,int>(&slsDetector::getSettings,
+						detectors[idet],-1,iret[idet]));
+				threadpool->add_task(task);
+			}
+		}
+		threadpool->wait_for_tasks_to_complete();
+		for(int idet=posmin; idet<posmax; idet++){cout<<"final iret:"<<*iret[idet]<<endl;
+			if(detectors[idet]){
+				if(iret[idet] != NULL){
+					ret1 = *iret[idet];
+					delete iret[idet];
+				}
+				if (ret==-100)
+					ret=ret1;
+				else if (ret!=ret1)
+					ret=GET_SETTINGS;
+			}
+		}
+	}
+	*/
+
+	for (i=posmin; i<posmax; i++) {
+		if (detectors[i]) {
+			ret1=detectors[i]->getSettings();
+			if(detectors[i]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<i));
+			if (ret==GET_SETTINGS)
+				ret=ret;
+			else if (ret!=ret1)
+				ret=GET_SETTINGS;
+
+		}
   }
-  thisMultiDetector->currentSettings=ret1;
-  return ret1;
+  thisMultiDetector->currentSettings=(detectorSettings)ret;
+  return (detectorSettings)ret;
 }
 
 slsDetectorDefs::detectorSettings multiSlsDetector::setSettings(detectorSettings isettings, int pos) {

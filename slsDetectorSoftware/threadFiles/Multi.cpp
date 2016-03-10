@@ -94,7 +94,7 @@ int Multi::printNumber(int inum){
 			iret[i]= new int(-1);
 			//func_t <int,Single,int, int>* binder =
 			//		new func_t<int, Single,int, int>(&Single::printNumber,singles[i],inum,iret[i]);
-			Task* task = new Task(new func_t<int, Single,int, int>(&Single::printNumber,singles[i],inum,iret[i]));
+			Task* task = new Task(new func1_t<int, Single,int, int>(&Single::printNumber,singles[i],inum,iret[i]));
 			threadpool->add_task(task);
 		}
 		threadpool->wait_for_tasks_to_complete();
@@ -125,8 +125,8 @@ string Multi::printString(string s){
 
 		for(int i=0;i<numSingles;i++){
 			sret[i]= new string("sss");
-			func_t <string,Single,string,string>* binder =
-					new func_t<string,Single,string,string>(&Single::printString,singles[i],s,sret[i]);
+			func1_t <string,Single,string,string>* binder =
+					new func1_t<string,Single,string,string>(&Single::printString,singles[i],s,sret[i]);
 			Task* task = new Task(binder);
 			threadpool->add_task(task);
 		}
@@ -164,8 +164,8 @@ char* Multi::printCharArray(char a[]){
 		for(int i=0;i<numSingles;i++){
 			sret[i]= new string("sss");
 			//std::fill_n(cret[i],1000,0);
-			func_t <char*,Single,char*,string>* binder =
-					new func_t <char*,Single,char*,string>(&Single::printCharArray,singles[i],a,sret[i]);
+			func1_t <char*,Single,char*,string>* binder =
+					new func1_t <char*,Single,char*,string>(&Single::printCharArray,singles[i],a,sret[i]);
 			Task* task = new Task(binder);
 			threadpool->add_task(task);
 		}

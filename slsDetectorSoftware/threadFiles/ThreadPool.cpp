@@ -3,7 +3,9 @@
 
 ThreadPool::ThreadPool(int pool_size) : m_pool_size(pool_size)
 {
+#ifdef VERBOSE
   cout << "Constructed ThreadPool of size " << m_pool_size << endl;
+#endif
   m_tasks_loaded = false;
   thread_started = false;
   current_thread_number = -1;
@@ -49,8 +51,9 @@ int ThreadPool::initialize_threadpool()
     m_threads.push_back(tid);
     while(!thread_started);
   }
+#ifdef VERBOSE
   cout << m_pool_size << " threads created by the thread pool" << endl;
-
+#endif
   return m_pool_size;
 }
 

@@ -293,10 +293,14 @@ int multiSlsDetector::createThreadPool(){
 		cerr << "Failed to initialize thread pool!" << endl;
 		return FAIL;
 	case 1:
+#ifdef VERBOSE
 		cout << "Not initializing threads, only one detector" << endl;
+#endif
 		break;
 	default:
+#ifdef VERBOSE
 		cout << "Initialized Threadpool" << endl;
+#endif
 		break;
 	}
 	return OK;
@@ -306,7 +310,9 @@ void multiSlsDetector::destroyThreadPool(){
 	if(threadpool){
 		threadpool->destroy_threadpool();
 		threadpool=0;
+#ifdef VERBOSE
 		cout<<"Destroyed Threadpool"<<endl;
+#endif
 	}
 }
 
@@ -1127,7 +1133,7 @@ int multiSlsDetector::setThresholdEnergy(int e_eV, int pos, detectorSettings ise
 slsDetectorDefs::detectorSettings multiSlsDetector::getSettings(int pos) {
 
   int i, posmin, posmax;
-  int ret1=-100, ret=-1;
+  int ret1=-1, ret=-100;
 
   if (pos<0) {
     posmin=0;
@@ -1137,21 +1143,22 @@ slsDetectorDefs::detectorSettings multiSlsDetector::getSettings(int pos) {
     posmax=pos+1;
   }
 
-/*
-	if(!threadpool){cout << "Error in creating threadpool. Exiting" << endl;return GET_SETTINGS;}
-	else{
+	if(!threadpool){
+		cout << "Error in creating threadpool. Exiting" << endl;
+		return GET_SETTINGS;
+	}else{
 		//return storage values
 		int* iret[posmax-posmin];
 		for(int idet=posmin; idet<posmax; idet++){
 			if(detectors[idet]){
 				iret[idet]= new int(-1);
-				Task* task = new Task(new func_t<detectorSettings,slsDetector,int,int>(&slsDetector::getSettings,
+				Task* task = new Task(new func1_t<detectorSettings,slsDetector,int,int>(&slsDetector::getSettings,
 						detectors[idet],-1,iret[idet]));
 				threadpool->add_task(task);
 			}
 		}
 		threadpool->wait_for_tasks_to_complete();
-		for(int idet=posmin; idet<posmax; idet++){cout<<"final iret:"<<*iret[idet]<<endl;
+		for(int idet=posmin; idet<posmax; idet++){
 			if(detectors[idet]){
 				if(iret[idet] != NULL){
 					ret1 = *iret[idet];
@@ -1164,20 +1171,7 @@ slsDetectorDefs::detectorSettings multiSlsDetector::getSettings(int pos) {
 			}
 		}
 	}
-	*/
 
-	for (i=posmin; i<posmax; i++) {
-		if (detectors[i]) {
-			ret1=detectors[i]->getSettings();cout<<"ret1:"<<ret1<<endl;
-			if(detectors[i]->getErrorMask())
-				setErrorMask(getErrorMask()|(1<<i));
-			if (ret==GET_SETTINGS)
-				ret=ret;
-			else if (ret!=ret1)
-				ret=GET_SETTINGS;
-
-		}
-  }
   thisMultiDetector->currentSettings=(detectorSettings)ret;
   return (detectorSettings)ret;
 }
@@ -3837,7 +3831,7 @@ int multiSlsDetector::executeTrimming(trimMode mode, int par1, int par2, int imo
 
 
 int multiSlsDetector::loadSettingsFile(string fname, int imod) {
-  int id, im, ret;
+  int id, im, ret=-100,ret1=-1;
 
   if (decodeNMod(imod, id, im)>=0) {
     if (detectors[id]) {
@@ -3847,13 +3841,47 @@ int multiSlsDetector::loadSettingsFile(string fname, int imod) {
       return ret;
     }
   } else if (imod<0) {
+
+
+	  if(!threadpool){
+		  cout << "Error in creating threadpool. Exiting" << endl;
+		  return -1;
+	  }else{
+		  //return storage values
+		  int* iret[thisMultiDetector->numberOfDetectors];
+		  for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
+			  if(detectors[idet]){
+				  iret[idet]= new int(-1);
+				  Task* task = new Task(new func2_t <int,slsDetector,string,int,int>(&slsDetector::loadSettingsFile,
+						  detectors[idet],fname,imod,iret[idet]));
+				  threadpool->add_task(task);
+			  }
+		  }
+		  threadpool->wait_for_tasks_to_complete();
+		  for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
+			  if(detectors[idet]){
+				  if(iret[idet] != NULL){
+					  ret1 = *iret[idet];
+					  delete iret[idet];
+				  }
+				  if(detectors[idet]->getErrorMask())
+					  setErrorMask(getErrorMask()|(1<<idet));
+				  if (ret==-100)
+					  ret=ret1;
+				  else if (ret!=ret1)
+					  ret=-1;
+			  }
+		  }
+	  }
+/*
+
     for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
       if (detectors[idet]) {
 	ret=detectors[idet]->loadSettingsFile(fname, imod);
 	if(detectors[idet]->getErrorMask())
 	  setErrorMask(getErrorMask()|(1<<idet));
       }
-    }
+    }*/
     return ret;
   }
   return -1;

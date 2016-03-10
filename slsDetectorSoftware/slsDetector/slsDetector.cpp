@@ -3099,9 +3099,9 @@ slsDetectorDefs::detectorSettings  slsDetector::getSettings(int imod){
       } else{
 	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 	thisDetector->currentSettings=(detectorSettings)retval;
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	std::cout<< "Settings are "<< retval << std::endl;
-#endif
+//#endif
       }
       disconnectControl();
       if (ret==FORCE_UPDATE)

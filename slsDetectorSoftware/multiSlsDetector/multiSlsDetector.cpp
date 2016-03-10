@@ -1168,7 +1168,7 @@ slsDetectorDefs::detectorSettings multiSlsDetector::getSettings(int pos) {
 
 	for (i=posmin; i<posmax; i++) {
 		if (detectors[i]) {
-			ret1=detectors[i]->getSettings();
+			ret1=detectors[i]->getSettings();cout<<"ret1:"<<ret1<<endl;
 			if(detectors[i]->getErrorMask())
 				setErrorMask(getErrorMask()|(1<<i));
 			if (ret==GET_SETTINGS)

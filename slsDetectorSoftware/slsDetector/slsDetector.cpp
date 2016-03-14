@@ -3132,6 +3132,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 	if(thisDetector->myDetectorType == EIGER)
 		iodelay = new int;
 
+
 	int ret=0;
 
 

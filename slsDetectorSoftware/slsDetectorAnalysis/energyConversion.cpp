@@ -353,7 +353,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 		infile.open(myfname.c_str(),ifstream::binary);
 		if (infile.is_open()) {
 			infile.read((char*) myMod->dacs,sizeof(dacs_t)*(myMod->ndac));
-			infile.read((char*) iodelay,sizeof(iodelay));
+			infile.read((char*) iodelay,sizeof(*iodelay));
 			infile.read((char*) myMod->chanregs,sizeof(int)*(myMod->nchan));
 #ifdef VERBOSE
 			for(int i=0;i<myMod->ndac;i++)
@@ -517,7 +517,7 @@ int energyConversion::writeSettingsFile(string fname, detectorType myDetectorTyp
 			std::cout << "iodelay: " << *iodelay << std::endl;
 #endif
 			outfile.write((char*)mod.dacs, sizeof(dacs_t)*(mod.ndac));
-			outfile.write((char*)iodelay, sizeof(iodelay));
+			outfile.write((char*)iodelay, sizeof(*iodelay));
 			outfile.write((char*)mod.chanregs, sizeof(int)*(mod.nchan));
 
 			outfile.close();

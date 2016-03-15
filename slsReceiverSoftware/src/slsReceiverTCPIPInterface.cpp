@@ -42,6 +42,14 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 				bottom(bot),
 				socket(NULL){
 
+	//***callback parameters***
+	startAcquisitionCallBack = NULL;
+	pStartAcquisition = NULL;
+	acquisitionFinishedCallBack = NULL;
+	pAcquisitionFinished = NULL;
+	rawDataReadyCallBack = NULL;
+	pRawDataReady = NULL;
+
 	int port_no=portNumber;
 	if(receiverBase == NULL) receiverBase = 0;
 
@@ -362,6 +370,12 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 			if(ret != FAIL){
 #ifndef REST
 			  receiverBase = UDPInterface::create("standard");
+			  if(startAcquisitionCallBack)
+				  receiverBase->registerCallBackStartAcquisition(startAcquisitionCallBack,pStartAcquisition);
+			  if(acquisitionFinishedCallBack)
+				  receiverBase->registerCallBackAcquisitionFinished(acquisitionFinishedCallBack,pAcquisitionFinished);
+			  if(rawDataReadyCallBack)
+				  receiverBase->registerCallBackRawDataReady(rawDataReadyCallBack,pRawDataReady);
 #endif
 			  myDetectorType = dr;
 			  ret=receiverBase->setDetectorType(myDetectorType);
@@ -3008,6 +3022,24 @@ int slsReceiverTCPIPInterface::exec_command() {
 
 	//return ok/fail
 	return ret;
+}
+
+
+
+/***callback functions***/
+void slsReceiverTCPIPInterface::registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){
+	startAcquisitionCallBack=func;
+	pStartAcquisition=arg;
+}
+
+void slsReceiverTCPIPInterface::registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){
+	acquisitionFinishedCallBack=func;
+	pAcquisitionFinished=arg;
+}
+
+void slsReceiverTCPIPInterface::registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg){
+	rawDataReadyCallBack=func;
+	pRawDataReady=arg;
 }
 
 

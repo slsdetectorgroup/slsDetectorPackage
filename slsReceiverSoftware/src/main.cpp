@@ -22,6 +22,28 @@ void closeFile(int p){
 	deleteReceiver(receiver);
 }
 
+/*
+int startAcquisitionCallBack(char* filePath, char* fileName, int fileIndex, int bufferSize, void* context) {
+  cout << "#### startAcquisitionCallBack ####" << endl;
+  cout << "* filePath: " << filePath << endl;
+  cout << "* fileName: " << fileName << endl;
+  cout << "* fileIndex: " << fileIndex << endl;
+  cout << "* bufferSize: " << bufferSize << endl;
+  return 1;
+}
+
+void acquisitionFinishedCallBack(int totalFramesCaught, void* context) {
+  cout << "#### acquisitionFinishedCallBack ####" << endl;
+  cout << "* totalFramesCaught: " << totalFramesCaught << endl;
+}
+
+void rawDataReadyCallBack(int currFrameNum, char* dataPointer, int dataSize, FILE* file, char* guiDataPointer, void* context) {
+  cout << "#### rawDataReadyCallBack ####" << endl;
+  cout << "* currFrameNum: " << currFrameNum << endl;
+  cout << "* dataSize: " << dataSize << endl;
+}
+*/
+
 int main(int argc, char *argv[]) {
 
 	//Catch signal SIGINT to close files properly
@@ -52,7 +74,7 @@ int main(int argc, char *argv[]) {
 
 	   registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg);
 	 */
-	//receiver->registerCallBackStartAcquisition(func,arg);
+	//receiver->registerCallBackStartAcquisition(startAcquisitionCallBack,NULL);
 
 
 	/**
@@ -60,7 +82,7 @@ int main(int argc, char *argv[]) {
 	  total farmes caught
 	  registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg);
 	 */
-	//receiver->registerCallBackAcquisitionFinished(func,arg);
+	//receiver->registerCallBackAcquisitionFinished(acquisitionFinishedCallBack,NULL);
 
 
 	/**
@@ -73,7 +95,7 @@ int main(int argc, char *argv[]) {
 	  REMEMBER THAT THE CALLBACK IS BLOCKING
 	  registerCallBackRawDataReady(void (*func)(int, char*, FILE*, char*, void*),void *arg);
 	 */
-	//receiver->registerCallBackRawDataReady(func,arg);
+	//receiver->registerCallBackRawDataReady(rawDataReadyCallBack,NULL);
 
 
 

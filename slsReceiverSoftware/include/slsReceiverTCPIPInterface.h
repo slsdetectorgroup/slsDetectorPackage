@@ -57,45 +57,39 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	/** gets version */
 	int64_t getReceiverVersion();
 
-/* 	/\** */
-/* 	   callback arguments are */
-/* 	   filepath */
-/* 	   filename */
-/* 	   fileindex */
-/* 	   data size */
+	//***callback functions***
+	/**
+	 * Call back for start acquisition
+	 * callback arguments are
+	 * filepath
+	 * filename
+	 * fileindex
+	 * datasize
+	 *
+	 * return value is the action which decides what the user and default responsibilities to save data are
+	 * 0 callback takes care of open,close,wrie file
+	 * 1 callback writes file, we have to open, close it
+	 * 2 we open, close, write file, callback does not do anything
+	 */
+	void registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg);
 
-/* 	   return value is  */
-/* 	   0 callback takes care of open,close,wrie file */
-/* 	   1 callback writes file, we have to open, close it */
-/* 	   2 we open, close, write file, callback does not do anything */
+	/**
+	 * Call back for acquisition finished
+	 * callback argument is
+	 * total frames caught
+	 */
+	void registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg);
 
-/* 	 *\/ */
-
-/* 	void registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){receiverBase->registerCallBackStartAcquisition(func,arg);};; */
-
-
-/* 	/\** */
-/* 	  callback argument is */
-/* 	  toatal farmes caught */
-
-/* 	 *\/ */
-
-
-/* 	void registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){receiverBase->registerCallBackAcquisitionFinished(func,arg);}; */
-
-
-
-/* 	/\** */
-/* 	  args to raw data ready callback are */
-/* 	  framenum */
-/* 	  datapointer */
-/* 	  datasize in bytes */
-/* 	  file descriptor */
-/* 	  guidatapointer (NULL, no data required) */
-/* 	 *\/ */
-
-/* 	void registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg){receiverBase->registerCallBackRawDataReady(func,arg);}; */
-
+	/**
+	 * Call back for raw data
+	 * args to raw data ready callback are
+	 * framenum
+	 * datapointer
+	 * datasize in bytes
+	 * file descriptor
+	 * guidatapointer (NULL, no data required)
+	 */
+	void registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg);
 
 private:
 
@@ -282,6 +276,45 @@ private:
 
 	/** true if bottom half module for eiger */
 	bool bottom;
+
+
+	//***callback parameters***
+	/**
+	 * function being called back for start acquisition
+	 * callback arguments are
+	 * filepath
+	 * filename
+	 * fileindex
+	 * datasize
+	 *
+	 * return value is
+	 * 0 callback takes care of open,close,wrie file
+	 * 1 callback writes file, we have to open, close it
+	 * 2 we open, close, write file, callback does not do anything
+	 */
+	int (*startAcquisitionCallBack)(char*, char*,int, int, void*);
+	void *pStartAcquisition;
+
+	/**
+	 * function being called back for acquisition finished
+	 * callback argument is
+	 * total frames caught
+	 */
+	void (*acquisitionFinishedCallBack)(int, void*);
+	void *pAcquisitionFinished;
+
+
+	/**
+	 * function being called back for raw data
+	 * args to raw data ready callback are
+	 * framenum
+	 * datapointer
+	 * datasize in bytes
+	 * file descriptor
+	 * guidatapointer (NULL, no data required)
+	 */
+	void (*rawDataReadyCallBack)(int, char*, int, FILE*, char*, void*);
+	void *pRawDataReady;
 
 
 protected:

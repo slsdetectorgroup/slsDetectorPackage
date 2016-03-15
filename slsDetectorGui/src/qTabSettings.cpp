@@ -102,7 +102,9 @@ void qTabSettings::SetupDetectorSettings(){
 	// Get detector settings from detector
 	slsDetectorDefs::detectorSettings sett = myDet->getSettings();cout<<"sett:"<<sett<<endl;
 	qDefs::checkErrorMessage(myDet,"qTabSettings::SetupDetectorSettings");
-	if(sett==-1) sett = slsDetectorDefs::UNDEFINED;
+	if(sett==-1) sett = Undefined;
+	else if(sett == slsDetectorDefs::UNDEFINED) sett = Undefined;
+	else if(sett == slsDetectorDefs::UNINITIALIZED) sett = Uninitialized;
 	// To be able to index items on a combo box
 	model = qobject_cast<QStandardItemModel*>(comboSettings->model());
 	if (model) {
@@ -216,7 +218,9 @@ void qTabSettings::setSettings(int index){
 		qDefs::Message(qDefs::WARNING,"Cannot change settings to Undefined or Uninitialized.","qTabSettings::setSettings");
 		disconnect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
 		int sett = (int)myDet->getSettings();
-		if(sett==-1) sett = slsDetectorDefs::UNDEFINED;
+		if(sett==-1) sett = Undefined;
+		else if(sett == slsDetectorDefs::UNDEFINED) sett = Undefined;
+		else if(sett == slsDetectorDefs::UNINITIALIZED) sett = Uninitialized;
 		comboSettings->setCurrentIndex(sett);
 		connect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
 	}
@@ -331,7 +335,9 @@ void qTabSettings::Refresh(){
 	cout  << "Getting settings" << endl;
 #endif
 	int sett = (int)myDet->getSettings();
-	if(sett==-1) sett = slsDetectorDefs::UNDEFINED;
+	if(sett==-1) sett = Undefined;//slsDetectorDefs::UNDEFINED;
+	else if(sett == slsDetectorDefs::UNDEFINED) sett = Undefined;
+	else if(sett == slsDetectorDefs::UNINITIALIZED) sett = Uninitialized;
 	comboSettings->setCurrentIndex(sett);
 
 

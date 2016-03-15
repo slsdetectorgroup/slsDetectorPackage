@@ -100,7 +100,7 @@ void qTabSettings::GetDynamicRange(int setvalue){
 
 void qTabSettings::SetupDetectorSettings(){
 	// Get detector settings from detector
-	slsDetectorDefs::detectorSettings sett = myDet->getSettings();cout<<"sett:"<<sett<<endl;
+	int sett = (int)myDet->getSettings();cout<<"sett:"<<sett<<endl;
 	qDefs::checkErrorMessage(myDet,"qTabSettings::SetupDetectorSettings");
 	if(sett==-1) sett = Undefined;
 	else if(sett == slsDetectorDefs::UNDEFINED) sett = Undefined;
@@ -185,7 +185,7 @@ void qTabSettings::SetupDetectorSettings(){
 		// detector settings selected NOT ENABLED.
 		// This should not happen -only if the server and gui has a mismatch
 		// on which all modes are allowed in detectors
-		if(!(item[(int)sett]->isEnabled())){
+		if(!(item[sett]->isEnabled())){
 			qDefs::Message(qDefs::CRITICAL,"Unknown Detector Settings retrieved from detector. Exiting GUI.","qTabSettings::SetupDetectorSettings");
 #ifdef VERBOSE
 			cout << "ERROR:  Unknown Detector Settings retrieved from detector." << endl;
@@ -193,7 +193,7 @@ void qTabSettings::SetupDetectorSettings(){
 			exit(-1);
 		}
 		// Setting the detector settings
-		else	comboSettings->setCurrentIndex((int)sett);
+		else	comboSettings->setCurrentIndex(sett);
 	}
 }
 

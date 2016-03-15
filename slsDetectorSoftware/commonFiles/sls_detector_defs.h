@@ -32,10 +32,6 @@ typedef char mystring[MAX_STR_LENGTH];
 typedef double mysteps[MAX_SCAN_STEPS];
 
 
-typedef  double double32_t;
-typedef  float float32_t;
-typedef  int int32_t;
-
 
 #ifndef DACS_FLOAT
 typedef int dacs_t;

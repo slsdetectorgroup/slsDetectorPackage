@@ -46,6 +46,22 @@ private:
 	_Store* m_store;
 };
 
+template<typename _Ret, typename _Class,typename _Arg1, typename _Arg2, typename _Arg3, typename _Store>
+class func3_t{
+public:
+	func3_t(_Ret (_Class::*fn)(_Arg1,_Arg2,_Arg3),_Class* ptr,_Arg1 arg1,_Arg2 arg2,_Arg3 arg3,_Store* sto):
+		m_fn(fn),m_ptr(ptr),m_arg1(arg1),m_arg2(arg2),m_arg3(arg3),m_store(sto){}
+	~func3_t() {}
+	void operator()() const {*m_store = ((m_ptr->*m_fn)(m_arg1,m_arg2,m_arg3));}
+private:
+	_Class* m_ptr;
+	_Ret (_Class::*m_fn)(_Arg1,_Arg2,_Arg3);
+	_Arg1 m_arg1;
+	_Arg2 m_arg2;
+	_Arg3 m_arg3;
+	_Store* m_store;
+};
+
 template<typename _Ret, typename _Class,typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4,typename _Store>
 class func4_t{
 public:
@@ -65,42 +81,53 @@ private:
 
 class Task:  public virtual slsDetectorDefs{
 public:
-	Task(func1_t <int,slsDetector,int,int>* t):
-		m_int1(t),m_string1(0),m_chararr1(0),m_f2_1(0),m_settings(0){};
-	Task(func1_t <string,slsDetector,string,string>* t):
-		m_int1(0),m_string1(t),m_chararr1(0),m_f2_1(0),m_settings(0){};
-	Task(func1_t <char*,slsDetector,char*,string>* t):
-		m_int1(0),m_string1(0),m_chararr1(t),m_f2_1(0),m_settings(0){};
+	/* Return: int, Param: int */
+	Task(func1_t <int,slsDetector,int,int>* t):									m1(t),m2(0),m3(0),m4(0),m5(0),m6(0),m7(0),m8(0){};
+	/* Return: int, Param: string,int */
+	Task(func2_t <int,slsDetector,string,int,int>* t):							m1(0),m2(t),m3(0),m4(0),m5(0),m6(0),m7(0),m8(0){};
+	/* Return: string, Param: string */
+	Task(func1_t <string,slsDetector,string,string>* t):						m1(0),m2(0),m3(t),m4(0),m5(0),m6(0),m7(0),m8(0){};
+	/* Return: char*, Param: char* */
+	Task(func1_t <char*,slsDetector,char*,string>* t):							m1(0),m2(0),m3(0),m4(t),m5(0),m6(0),m7(0),m8(0){};
+	/* Return: detectorSettings, Param: int */
+	Task(func1_t <detectorSettings,slsDetector,int,int>* t):					m1(0),m2(0),m3(0),m4(0),m5(t),m6(0),m7(0),m8(0){};
+	/* Return: detectorSettings, Param: detectorSettings,int */
+	Task(func2_t <detectorSettings,slsDetector,detectorSettings,int,int>* t):	m1(0),m2(0),m3(0),m4(0),m5(0),m6(t),m7(0),m8(0){};
+	/* Return: int, Param: int,int */
+	Task(func2_t <int,slsDetector,int,int,int>* t):	 							m1(0),m2(0),m3(0),m4(0),m5(0),m6(0),m7(t),m8(0){};
+	/* Return: int, Param: int,int */
+	Task(func3_t <int,slsDetector,int,int,int,int>* t): 						m1(0),m2(0),m3(0),m4(0),m5(0),m6(0),m7(0),m8(t){};
 
-	Task(func2_t <int,slsDetector,string,int,int>* t):
-		m_int1(0),m_string1(0),m_chararr1(0),m_f2_1(t),m_settings(0){};
-
-	//specialized
-	Task(func1_t <detectorSettings,slsDetector,int,int>* t):
-		m_int1(0),m_string1(0),m_chararr1(0),m_f2_1(0),m_settings(t){};
 
 	~Task(){}
 
 	void operator()(){
-		if(m_int1)			(*m_int1)();
-		else if(m_string1)	(*m_string1)();
-		else if(m_chararr1)	(*m_chararr1)();
-
-		else if(m_f2_1)	(*m_f2_1)();
-
-		//specialized
-		else if(m_settings)	(*m_settings)();
+		if(m1)			(*m1)();
+		else if(m2)		(*m2)();
+		else if(m3)		(*m3)();
+		else if(m4)		(*m4)();
+		else if(m5)		(*m5)();
+		else if(m6)		(*m6)();
+		else if(m7)		(*m7)();
 	}
 
 private:
-	func1_t <int,slsDetector,int,int>* m_int1;
-	func1_t <string,slsDetector,string,string>* m_string1;
-	func1_t <char*,slsDetector,char*,string>* m_chararr1;
-	func2_t <int,slsDetector,string,int,int>* m_f2_1;
-
-	//specialized
-	func1_t <detectorSettings,slsDetector,int,int>* m_settings;
-
+	/* Return: int, Param: int */
+	func1_t <int,slsDetector,int,int>* m1;
+	/* Return: int, Param: string,int */
+	func2_t <int,slsDetector,string,int,int>* m2;
+	/* Return: string, Param: string */
+	func1_t <string,slsDetector,string,string>* m3;
+	/* Return: char*, Param: char* */
+	func1_t <char*,slsDetector,char*,string>* m4;
+	/* Return: detectorSettings, Param: int */
+	func1_t <detectorSettings,slsDetector,int,int>* m5;
+	/* Return: detectorSettings, Param: detectorSettings,int */
+	func2_t <detectorSettings,slsDetector,detectorSettings,int,int>* m6;
+	/* Return: int, Param: int,int */
+	func2_t <int,slsDetector,int,int,int>* m7;
+	/* Return: int, Param: int,int */
+	func3_t <int,slsDetector,int,int,int,int>* m8;
 };
 
 

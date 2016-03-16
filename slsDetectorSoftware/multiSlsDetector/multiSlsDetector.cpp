@@ -3819,27 +3819,51 @@ int multiSlsDetector::digitalTest(digitalTestMode mode, int imod) {
 
 
 int multiSlsDetector::executeTrimming(trimMode mode, int par1, int par2, int imod) {
-  int id, im, ret;
+	int id, im, ret1=-1,ret=100;
 
 
-  if (decodeNMod(imod, id, im)>=0) {
-    if (detectors[id]) {
-      ret = detectors[id]->executeTrimming(mode, par1, par2, im);
-      if(detectors[id]->getErrorMask())
-	setErrorMask(getErrorMask()|(1<<id));
-      return ret;
-    }
-  }  else if (imod<0) {
-    for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
-      if (detectors[idet]) {
-	ret=detectors[idet]->executeTrimming(mode, par1, par2, imod);
-	if(detectors[idet]->getErrorMask())
-	  setErrorMask(getErrorMask()|(1<<idet));
-      }
-    }
-    return ret;
-  }
-  return -1;
+	if (decodeNMod(imod, id, im)>=0) {
+		if (detectors[id]) {
+			ret = detectors[id]->executeTrimming(mode, par1, par2, im);
+			if(detectors[id]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<id));
+			return ret;
+		}
+	}  else if (imod<0) {
+
+		if(!threadpool){
+			cout << "Error in creating threadpool. Exiting" << endl;
+			return -1;
+		}else{
+			//return storage values
+			int* iret[thisMultiDetector->numberOfDetectors];
+			for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
+				if(detectors[idet]){
+					iret[idet]= new int(-1);
+					Task* task = new Task(new func4_t <int,slsDetector,trimMode,int,int,int,int>(&slsDetector::executeTrimming,
+							detectors[idet],mode,par1,par2,imod,iret[idet]));
+					threadpool->add_task(task);
+				}
+			}
+			threadpool->wait_for_tasks_to_complete();
+			for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
+				if(detectors[idet]){
+					if(iret[idet] != NULL){
+						ret1 = *iret[idet];
+						delete iret[idet];
+					}
+					if(detectors[idet]->getErrorMask())
+						setErrorMask(getErrorMask()|(1<<idet));
+					if (ret==-100)
+						ret=ret1;
+					else if (ret!=ret1)
+						ret=-1;
+				}
+			}
+		}
+		return ret;
+	}
+	return -1;
 }
 
 

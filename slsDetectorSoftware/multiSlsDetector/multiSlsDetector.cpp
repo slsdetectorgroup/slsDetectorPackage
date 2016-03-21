@@ -1832,11 +1832,11 @@ int multiSlsDetector::setDynamicRange(int n, int pos){
 
   //for usability for the user
   if (getDetectorsType() == EIGER){
-	  if(thisMultiDetector->dataBytes == 32){
+	  if(n == 32){
 		  std::cout << "Setting Clock to Quarter Speed to cope with Dynamic Range of 32" << std::endl;
 		  setSpeed(CLOCK_DIVIDER,2);
 	  }
-	  else if(thisMultiDetector->dataBytes == 16){
+	  else if(n == 16){
 		  std::cout << "Setting Clock to Half Speed for Dynamic Range of 16" << std::endl;
 		  setSpeed(CLOCK_DIVIDER,1);
 	  }
@@ -3617,6 +3617,17 @@ int multiSlsDetector::setDynamicRange(int p) {
     }
   }
  
+  //for usability for the user
+  if (getDetectorsType() == EIGER){
+	  if(p == 32){
+		  std::cout << "Setting Clock to Quarter Speed to cope with Dynamic Range of 32" << std::endl;
+		  setSpeed(CLOCK_DIVIDER,2);
+	  }
+	  else if(p == 16){
+		  std::cout << "Setting Clock to Half Speed for Dynamic Range of 16" << std::endl;
+		  setSpeed(CLOCK_DIVIDER,1);
+	  }
+  }
   return ret;
 
 }

@@ -1125,7 +1125,7 @@ int set_dac(int file_des) {
 	      retval1=retval;
 	  } else 
 	    retval1=retval;
-
+	}
 #endif
 
 #ifdef VERBOSE

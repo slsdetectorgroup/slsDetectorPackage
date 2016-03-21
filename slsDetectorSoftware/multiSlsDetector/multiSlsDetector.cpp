@@ -266,7 +266,7 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
 
   getNMods();
   getMaxMods();
-
+  threadpool = 0;
 	if(createThreadPool() == FAIL)
 		exit(-1);
 

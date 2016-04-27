@@ -24,7 +24,7 @@ The command line interface consists in four main functions:
 \item[sls\_detector\_get] to retrieve detector parameters
 \item[sls\_detector\_help] to get help concerning the text commands
 \end{description}
-Additionally the program \textbf{slsReciever} should be started on the machine expected to receive the data from the detector.
+Additionally the program \textbf{slsReceiver} should be started on the machine expected to receive the data from the detector.
 
 
 If you need control a single detector, the use of the command line interface does not need any additional arguments.
@@ -134,19 +134,12 @@ Refer to detailed documentation to understand how the different timing modes wor
 %\item[maxmod]  
 \end{description}
 
-
-
-
-
-
-
-
 \subsection{Postprocessing commands}
 \begin{description}      
 \item[flatfield fname] Sets the flat field file name. File ffdir/fname will be used to calculate the flat field coefficients. \textit{none} to unset flat field corrections. 
-\item[ratecorr ns] Sets the deadtime to be used for rate corrections in ns. 0 to unset, -1 to use default dead time for the actual settings.
+\item[ratecorr ns] Sets the deadtime to be used for rate corrections in ns. 0 to unset, -1 to use default dead time for the actual settings.In the case of \E, as online data rate correctiosn are applied, then a correction table has to be calculated every time the rate correction  $\tau$ is changed, activated, or the subexposure time is changed.
+ 
 \end{description}
-
 
 \subsubsection{Angular conversion}
 

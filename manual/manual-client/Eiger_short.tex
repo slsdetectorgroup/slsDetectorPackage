@@ -1,0 +1,190 @@
+\documentclass{article}
+\usepackage{amssymb}
+\usepackage[dvips]{graphicx}
+\usepackage{verbatim}
+\usepackage{xspace}
+\newcommand{\E}{EIGER\xspace}  
+\begin{document}
+
+\title{\E - short manual}
+\date{\today}
+\maketitle
+
+\section{Usage}
+
+\subsection{Mandatory setup - Receiver}
+
+The receiver is a process run on a PC closely connecvted to the detector. Open one receiver for every half module board (remember, a module has two receivers!!!) . Go to {\tt{slsDetectorsPackage/bin/}}, \textbf{slsReceiver} should be started on the machine expected to receive the data from the detector.
+
+\begin{itemize}
+\item {\tt{./slsReceiver --rx\_tcpport xxxx}} 
+\item {\tt{./slsReceiver --rx\_tcpport yyyy --mode 1}}
+\end{itemize}
+
+where xxxx, yyyy are the tcp port numbers. Use 1955 and 1956 for example. Note that {\tt{--mode 1}} is used only for the ``bottom'' half module. \\ Open as many receiver as half module boards. A single module has two half module boards.
+
+\underline{In the case of cSAXS, the detector software is installed on the x12sa-ed-1 machine:}\\
+\underline{/sls/X12SA/data/x12saop/EigerPackage/slsDetectorsPackage}
+
+The command line interface consists in these main functions:
+\begin{description}
+\item[sls\_detector\_acquire] to acquire data from the detector
+\item[sls\_detector\_put] to set detector parameters
+\item[sls\_detector\_get] to retrieve detector parameters
+\end{description}
+
+\subsection{Mandatory setup}
+First, your detector should always be configured for each PC that you might want to use for controlling the detector.
+To do that:
+\begin{verbatim}
+sls_detector_put config mydetector.config
+\end{verbatim}
+Refer to sample configuration files to produce the appropriate one for your detector.
+\underline{In the case of cSAXS the {\tt{mydetector.config}} *at present* is:}\\ 
+\underline{/sls/X12SA/data/x12saop/EigerPackage/beb\_1.5M\_1Gb\_fiber.config}
+
+One can configure all the detector settings in a parameter file {\tt{setup.det}}, which is loaded by doing:
+\begin{verbatim}
+sls_detector_put parameters setup.det
+\end{verbatim}
+
+In the case of \E, the proper bias voltage of the sensor has to be setup, i.e. the {\tt{setup.det}} file needs to contain the line {\tt{vhighvoltage 150}}. Other detector functionalities that are rarely changed can be setup here. 
+Other important settings that are configured in the {\tt{setup.det}} file are:
+\begin{itemize}
+\item {\tt{tengiga 0/1}}, which sets whether the detector is enabled to send data through the 1~or the 10~Gb Ethernet.
+\item {\tt{flags parallel/nonparallel}}, which sets whether the detector is set in parallel acquisition and readout or in sequential mode. This changes the readout time of the chip and affects the frame rate capability (faster is {\tt{parallel}}, with higher noise but needed when the frame rate is $>2$~kHz. 
+\item {\tt{dr 32/16}} sets the detector in autosumming mode (32 bit counter or not autosumming, 12 bit out of the chip). This is strictly connected to what is required for the readout clock of chip. See next point.
+\item {\tt{clkdivider 0/1/2}}. Changes the readout clock: 200, 100, 50~MHz. Note that autosumming mode ({\tt{dr 32}} works only at {clkdivider 2}. Refer to readout timing specifications for how to set the detector. 
+\item {\tt{flags continuous/storeinram}}. Allows to take frame continuously or storing them on memory. Normally {\tt{continuous}} should be used, unless very fast frame rate needs to be achieved. Refer to readout timing specifications for how to set the detector.
+\end{itemize}
+
+One should notice that, by default, by choosing the option {\tt{dr 32}}, then the software automatically sets the detector to  {\tt{clkdivider 2}}. By choosing the option {\tt{dr 16}}, the software automatically sets the detector to  {\tt{clkdivider 1}}. One needs to choose {\tt{clkdivider 0}} after setting the {\tt{dr 16}} option to have the fastest frame rate. 
+We would reccommend expert users (beamline people) to write their paramaters file for the users. 
+
+\subsection{Standard acquisition}
+
+You will then need to setup the detector threshold and settings, the exposure time, the number of real time frames and eventually how many real time frames should be acquired:
+\begin{verbatim}
+sls_detector_put settings standard
+sls_detector_put threshold 6000
+sls_detector_put exptime 1.
+sls_detector_put frames 10
+\end{verbatim}
+In this case 10 consecutive 1s frames will be acquired.\\
+
+For \E, at the moment 3 settings are possible: {\tt{standard}}, {\tt{lowgain}} and {\tt{highgain}}. According to the setting chosen, one can reach different energies. Refer to the settings requirements for your detector.\\ 
+Notice that the option  {\tt{settings standard/highgain/lowgain}} actually loads the trimbit files so it is time consuming. Only setting the {\tt{threshold}} does not load trimbit files.  
+
+\underline{At cSAXS, the {\tt{settingsdir}} and {\tt{caldir}} are in}\\\underline{/sls/X12SA/data/x12saop/EigerPackage/calibrations/}\\ 
+
+You need to setup where the files will be written to
+\begin{verbatim}
+sls_detector_put outdir /scratch
+sls_detector_put fname run
+sls_detector_put index 0
+\end{verbatim}
+this way your files will all be named /scratch/run\_fj\_i.dat where j goes between 0 and 9 and is relative to the frame number, i starts from 0 and is automatically incremented. The next acquisition it will be 1.
+
+To acquire simply type
+\begin{verbatim}
+sls_detector_acquire
+\end{verbatim}
+
+You can poll the detector status using
+\begin{verbatim}
+sls_detector_get status 
+\end{verbatim}
+
+\subsection{Readout timing- maximum frame rate}
+Short summary of readout timing. Some performances are not finalized yet.
+
+In the case of {\tt{continuos}} readout, i.e. continuos read/write on the memories:
+\begin{itemize}
+\item 1~GbE, {\tt{dr 16}}, {\tt{flags continous}}, \textbf{235~Hz} 
+\item 1~GbE, {\tt{dr 32}}, {\tt{flags continous}},{\tt{clkdivider 2}}, \textbf{117~Hz}
+\item 10~GbE, {\tt{dr 16}}, {\tt{flags continous}}, {\tt{flags parallel}},{\tt{clkdivider 0}}, \textbf{2.34~kHz}  
+\item 10~GbE, {\tt{dr 32}}, {\tt{flags continuous}}, {\tt{clkdivider 2}}, \textbf{1.17~kHz}  
+\end{itemize}
+Note that in {\tt{continuos}} mode still higher frame rate can be achieved as a memory buffering is still implemented. But according on the requested frame rate, the memories could fill up at a higher rate the are read and freed. 
+
+In all cases, when a frame rate \textbf{$>2$~kHz} is wanted, use the {\tt{flag parallel}}.\\
+
+
+Enabling the  {\tt{stroreinram}} mode allows you to obtain the maximumm frame rate, but at the expenses to have to receive the data all at the end of the acquisition. The maximum frame rate achievable with 10~GbE,  {\tt{dr 16}}, {\tt{flags storeinram}}, {\tt{flags parallel}},{\tt{clkdivider 0}}, \textbf{5.9~kHz}. This is currently limited by the connection between the Front End Board and the Backend board. We expect the 32 bit mode limit to be approximately \textbf{3~kHz}.
+ In dynamic range {\tt{dr 8}} the frame rate is \textbf{11~kHz} and for{\tt{dr 4}} is \textbf{22~kHz}. For 4 and 8 bit mode the frame rate are directly limited by the speed of the detector chip and not by the readout boards.    
+
+To achieve very high frame rates (maximum \textbf{$2$~kHz ?}) in 32 bit mode (autosumming), it will be needed to use the {\tt{stroreinram}} mode, as the memories cannot be accessed in read and write mode so fast.  
+
+
+\subsection{External triggering options}
+The detector can be setup such to receive external triggers. Connect a LEMO signal to the TRIGGER IN connector in the Power Distribution Board. Use a signal above 2.5~V. By default the positive polarity is used.  
+\begin{verbatim}
+sls_detector_put timing [auto/trigger/ro_trigger/gating]
+sls_detector_put extsig:0 trigger_in_rising_edge
+sls_detector_put frames x
+sls_detector_put cycles y
+sls_detector_acquire
+\end{verbatim}
+
+Here are the implemented options (note that the names are completely misleading and will be changed):
+\begin{itemize}
+\item {\tt{auto}} is the software controlled acquisition, where {\tt{exptime}} and {\tt{period}} have to be set.
+\item {\tt{trigger}} 1 frame taken for 1 trigger. You {\tt{frames}} needs to be  1 always, {\tt{cycles}} can be changed and defines how many triggers are considered. In teh GUI this is called trigger exposure series. 
+\item {\tt{ro\_trigger}} gets only 1 trigger, but allows to take many frames. With {\tt{frames}} one can change the number of frames. {\tt{cycles}} needs to be 1. In the gui it is called trigger readout.
+\item{\tt{gating}} allows to get a frame only when the trigger pulse is gating. Note that in this case the exp time and period only depend on the gating signal. {\tt{cycles}} allows to select how many gates to consider. 
+\end{itemize}
+
+We are planning to change some functionalities and the misleasding names. 
+ 
+
+\subsection{Advanced autosumming and rate corrections}
+
+In the case of autosumming mode, i.e, {\tt{dr 32}}, the acquisition time ({\tt{exptime}} is broken in as many subframes as they fit into the acquisition time minus all the subframes readout times. By defaut the {\tt{subexptime}} is set to 2.61~ms. This implies that 12 bit counter of \E will saturate when the rate is above or equal to 1.57~MHz/pixel.\\
+
+The subframe length can be changed by the user by doing: 
+\begin{verbatim}
+sls_detector_put subexptime [time_in_s] 
+\end{verbatim}
+
+One needs to realize that the readout time, for each subtrame is 10.5~$\mu$s if the detector is in parallel mode. 500~$\mu$s if the detector is in non parallel mode.\\
+
+Online rate corrections can be activated. They are particularly useful in the autosumming mode, i.e. when {\tt{dr 32}} is activated as  every single subframe is corrected before summing it. To correct for rate, the subframe duration has to be known to the correction algorithm.    
+To activate the rate corrections, one should do:\\
+\begin{verbatim}
+sls_detector_put ratecorr [tauval_in_ns]
+\end{verbatim}
+To deactivate:
+\begin{verbatim}
+sls_detector_put ratecorr 0
+\end{verbatim}
+To activate the rate corrections, but mantain the default tau settings, now at $\tau$standard=290~ns, $\tau$highgain=410~ns, $\tau$lowgain=180~ns:
+\begin{verbatim}
+sls_detector_put ratecorr -1
+\end{verbatim}
+
+Every time either the rate corrections are activated, $\tau$ is changed or the subframe length is changed, then a new correction table is evaluated. Note that computing the correction table is time consuming. 
+
+\subsection{Offline image reconstruction}
+The offline image reconstruction is in {\tt{slsDetectorsPackage/slsImageReconstruction}}.
+
+The detector writes a raw file per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce cbf files. The executable uses the CBFlib-0.9.5 library (downloaded form the web).\\
+\underline{At cSAXS, the CBFlib-0.9.5 has been compiled -such that the required packages are}\\\underline{ downloaded in /sls/X12SA/data/x12saop/EigerPackage/CBFlib-0.9.5.}\\ 
+
+To use it for a single module:
+\begin{verbatim}
+cbfMaker [filename with dir]
+\end{verbatim}
+eg.
+{\tt{cbfMaker /scratch/run\_63\_d1\_f000000000000\_3.raw}}\\
+
+To use it for a 1.5 multi modules:
+\begin{verbatim}
+cbfMaker [filename] [tengiga enabled] [pixels x] [pixels y] [start det]
+\end{verbatim}
+eg.
+{\tt cbfMaker /scratch/run\_63\_d0\_f000000000000\_3.raw  0  3072 512 0}.\\
+\underline{The executable {\tt{bcfMakerMulti [file\_name\_with\_dir]}} contains the hardcoded}\\\underline{ geometry for the 1.5M at CSAXS, with 1~GB readout.} 
+
+
+\end{document}
+

@@ -32,10 +32,10 @@ INCLUDES	?= 	$(LIBRARYDIR)/commonFiles -I$(LIBRARYRXRDIR)/MySocketTCP  -I$(LIBRA
 all: lib $(PROG) Makefile.gui guiclient
 
 lib:
-	cd ../ && make lib
+	cd ../ && $(MAKE) lib
 
 clean: 
-	if test -e Makefile.gui; then make -f Makefile.gui clean; make -f Makefile.gui mocclean; 	rm Makefile.gui; else 	make Makefile.gui; 	make -f Makefile.gui clean; make -f Makefile.gui mocclean;  fi
+	if test -e Makefile.gui; then $(MAKE) -f Makefile.gui clean; $(MAKE) -f Makefile.gui mocclean; 	rm Makefile.gui; else 	$(MAKE) Makefile.gui; 	$(MAKE) -f Makefile.gui clean; $(MAKE) -f Makefile.gui mocclean;  fi
 	cd client &&  $(MAKE) clean
 #	cd manual && make clean
 
@@ -46,13 +46,13 @@ mm:
 	qmake -set QT_INSTALL_PREFIX $(QTDIR) && qmake -o Makefile.gui INCLUDES='$(INCLUDES)' DESTDIR=$(DESTDIR) SLSDETLIB=$(LIBDIR) SUBLIBS='$(LDFLAGDET)'
 
 doc:
-	cd manual && make DESTDIR=$(DOCDIR)
+	cd manual && $(MAKE) DESTDIR=$(DOCDIR)
 
 htmldoc:
-	cd manual && make html DESTDIR=$(DOCDIR)
+	cd manual && $(MAKE) html DESTDIR=$(DOCDIR)
 
 $(PROG): Makefile.gui $(DIR)
-	make -f Makefile.gui SLSDETLIB=$(LIBDIR) DESTDIR=$(DESTDIR) SUBLIBS='$(LDFLAGDET)' INCLUDES='$(INCLUDES)'
+	$(MAKE) -f Makefile.gui SLSDETLIB=$(LIBDIR) DESTDIR=$(DESTDIR) SUBLIBS='$(LDFLAGDET)' INCLUDES='$(INCLUDES)'
 
 guiclient:
 	echo $(WD)

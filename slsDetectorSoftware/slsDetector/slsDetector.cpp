@@ -5015,7 +5015,7 @@ int slsDetector::setRateCorrection(double t){
 	int fnum=F_SET_RATE_CORRECT;
 	int ret=FAIL;
 	char mess[1000]="";
-	int64_t arg = t/**1e9*/;
+	int64_t arg = t;
 	int64_t retval = -1;
 #ifdef VERBOSE
 	std::cout<< "Setting Rate Correction to " << arg << endl;
@@ -5036,11 +5036,11 @@ int slsDetector::setRateCorrection(double t){
 						if(t < 0)
 							thisDetector->tDead = -1;
 						else
-						  thisDetector->tDead = (double)retval/*/(double)1e9*/;
+						  thisDetector->tDead = (double)retval;
 					}
 					else{
 						thisDetector->correctionMask&=~(1<<RATE_CORRECTION);
-						thisDetector->tDead = (double)retval/*/(double)1e9*/;
+						thisDetector->tDead = (double)retval;
 					}
 				}
 			} else {

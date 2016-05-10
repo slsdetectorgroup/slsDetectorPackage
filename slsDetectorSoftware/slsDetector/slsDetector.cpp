@@ -1678,6 +1678,10 @@ int slsDetector::setNumberOfModules(int n, dimension d){
     std::cout<< "nModX " << thisDetector->nMod[X] << " nModY " << thisDetector->nMod[Y] << " nChips " << thisDetector->nChips << " nChans " << thisDetector->nChans<< " dr " << dr << std::endl;
 #endif
   }
+
+  if(n != GET_FLAG)
+	  parentDet->updateOffsets();
+
   return thisDetector->nMod[d];
 };
 
@@ -5328,16 +5332,20 @@ char* slsDetector::getNetworkParameter(networkParameter index) {
 char* slsDetector::setDetectorMAC(string detectorMAC){
   if(detectorMAC.length()==17){
     if((detectorMAC[2]==':')&&(detectorMAC[5]==':')&&(detectorMAC[8]==':')&&
-       (detectorMAC[11]==':')&&(detectorMAC[14]==':'))
+       (detectorMAC[11]==':')&&(detectorMAC[14]==':')){
       strcpy(thisDetector->detectorMAC,detectorMAC.c_str());
-    else{
+      if(!strcmp(thisDetector->receiver_hostname,"none"))
+    	  std::cout << "Warning: UDP Set up failed. Receiver hostname not set." << endl;
+      else if(setUDPConnection()==FAIL)
+	    std::cout<< "Warning: UDP connection set up failed" << std::endl;
+    }else{
       setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
-      return("server MAC Address should be in xx:xx:xx:xx:xx:xx format");
+      std::cout << "Warning: server MAC Address should be in xx:xx:xx:xx:xx:xx format" << endl;
     }
   }
   else{
 	  setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
-	  return("server MAC Address should be in xx:xx:xx:xx:xx:xx format");
+	  std::cout << "Warning: server MAC Address should be in xx:xx:xx:xx:xx:xx format" << std::endl;
   }
 
   return thisDetector->detectorMAC;
@@ -5351,11 +5359,15 @@ char* slsDetector::setDetectorIP(string detectorIP){
 	if(detectorIP.length()){
 		if(detectorIP.length()<16){
 			int result = inet_pton(AF_INET, detectorIP.c_str(), &(sa.sin_addr));
-			if(result!=0)
+			if(result!=0){
 				strcpy(thisDetector->detectorIP,detectorIP.c_str());
-			else{
+				if(!strcmp(thisDetector->receiver_hostname,"none"))
+					std::cout << "Warning: UDP Set up failed. Receiver hostname not set." << endl;
+				else if(setUDPConnection()==FAIL)
+					std::cout<< "Warning: UDP connection set up failed" << std::endl;
+			}else{
 				 setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
-				return ("Detector IP Address should be VALID and in xxx.xxx.xxx.xxx format");
+				std::cout << "Warning: Detector IP Address should be VALID and in xxx.xxx.xxx.xxx format" << std::endl;
 			}
 		}
 	}
@@ -5409,8 +5421,6 @@ char* slsDetector::setReceiver(string receiverIP){
 			setUDPConnection();
 			if(thisDetector->myDetectorType == EIGER)
 				enableTenGigabitEthernet(thisDetector->tenGigaEnable);
-
-			printReceiverConfiguration();
 		}
 	}
 
@@ -5426,11 +5436,16 @@ char* slsDetector::setReceiverUDPIP(string udpip){
 	if(udpip.length()){
 		if(udpip.length()<16){
 			int result = inet_pton(AF_INET, udpip.c_str(), &(sa.sin_addr));
-			if(result!=0)
+			if(result==0){
+				setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
+				std::cout << "Warning: Receiver UDP IP Address should be VALID and in xxx.xxx.xxx.xxx format" << std::endl;
+			}else{
 				strcpy(thisDetector->receiverUDPIP,udpip.c_str());
-			else{
-				 setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
-				return ("Receiver UDP IP Address should be VALID and in xxx.xxx.xxx.xxx format");
+				if(!strcmp(thisDetector->receiver_hostname,"none"))
+					std::cout << "Warning: UDP Set up failed. Receiver hostname not set." << endl;
+				else if(setUDPConnection()==FAIL){
+					std::cout<< "Warning: UDP connection set up failed" << std::endl;
+				}
 			}
 		}
 	}
@@ -5441,19 +5456,25 @@ char* slsDetector::setReceiverUDPIP(string udpip){
 
 
 char* slsDetector::setReceiverUDPMAC(string udpmac){
-  if(udpmac.length()==17){
-    if((udpmac[2]==':')&&(udpmac[5]==':')&&(udpmac[8]==':')&&
-       (udpmac[11]==':')&&(udpmac[14]==':'))
-      strcpy(thisDetector->receiverUDPMAC,udpmac.c_str());
-    else{
-    	setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
-      return("receiver udp mac address should be in xx:xx:xx:xx:xx:xx format");
-    }
+  if(udpmac.length()!=17){
+	setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
+	std::cout << "Warning: receiver udp mac address should be in xx:xx:xx:xx:xx:xx format" << std::endl;
   }
   else{
-	  setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
-    return("receiver udp mac address should be in xx:xx:xx:xx:xx:xx format");
+    if((udpmac[2]==':')&&(udpmac[5]==':')&&(udpmac[8]==':')&&
+       (udpmac[11]==':')&&(udpmac[14]==':')){
+      strcpy(thisDetector->receiverUDPMAC,udpmac.c_str());
+      if(!strcmp(thisDetector->receiver_hostname,"none"))
+    	  std::cout << "Warning: UDP Set up failed. Receiver hostname not set." << endl;
+      else  if(setUDPConnection()==FAIL){
+    	  std::cout<< "Warning: UDP connection set up failed" << std::endl;
+      }
+    }else{
+      setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
+      std::cout << "Warning: receiver udp mac address should be in xx:xx:xx:xx:xx:xx format" << std::endl;
+    }
   }
+
 
   return thisDetector->receiverUDPMAC;
 }
@@ -5462,11 +5483,21 @@ char* slsDetector::setReceiverUDPMAC(string udpmac){
 
 int slsDetector::setReceiverUDPPort(int udpport){
 	thisDetector->receiverUDPPort = udpport;
+	if(!strcmp(thisDetector->receiver_hostname,"none"))
+		std::cout << "Warning: UDP Set up failed. Receiver hostname not set." << endl;
+	else if(setUDPConnection()==FAIL){
+		std::cout<< "Warning: UDP connection set up failed" << std::endl;
+    }
 	return thisDetector->receiverUDPPort;
 }
 
 int slsDetector::setReceiverUDPPort2(int udpport){
 	thisDetector->receiverUDPPort2 = udpport;
+	if(!strcmp(thisDetector->receiver_hostname,"none"))
+		std::cout << "Warning: UDP Set up failed. Receiver hostname not set." << endl;
+	else if(setUDPConnection()==FAIL){
+      std::cout<< "Warning: UDP connection set up failed" << std::endl;
+    }
 	return thisDetector->receiverUDPPort2;
 }
 
@@ -5478,6 +5509,11 @@ int slsDetector::setUDPConnection(){
 	char args[3][MAX_STR_LENGTH];
 	char retval[MAX_STR_LENGTH]="";
 
+	//called before set up
+	if(!strcmp(thisDetector->receiver_hostname,"none")){
+		std::cout << "Warning: UDP Set up failed. Receiver hostname not set." << endl;
+		return FAIL;
+	}
 
 	//if no udp ip given, use hostname
 	if(!strcmp(thisDetector->receiverUDPIP,"none")){
@@ -5488,6 +5524,7 @@ int slsDetector::setUDPConnection(){
 		else{
 			struct hostent *he = gethostbyname(thisDetector->receiver_hostname);
 			if (he == NULL){
+				cout<<"rx_hostname:"<<thisDetector->receiver_hostname<<endl;
 				std::cout << "no rx_udpip given and could not convert receiver hostname to ip" << endl;
 				return FAIL;
 			}else
@@ -5532,6 +5569,7 @@ int slsDetector::setUDPConnection(){
 	}else
 		ret=FAIL;
 
+	printReceiverConfiguration();
 
 	return ret;
 }

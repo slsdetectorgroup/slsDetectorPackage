@@ -277,6 +277,9 @@ private:
 	/** true if bottom half module for eiger */
 	bool bottom;
 
+	/** Receiver not setup error message */
+	char SET_RECEIVER_ERR_MESSAGE[MAX_STR_LENGTH];
+
 
 	//***callback parameters***
 	/**

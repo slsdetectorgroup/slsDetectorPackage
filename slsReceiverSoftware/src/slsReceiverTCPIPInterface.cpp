@@ -22,7 +22,6 @@ using namespace std;
 
 
 
-
 slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 	stop();
 	if(socket) {delete socket; socket=NULL;}
@@ -41,6 +40,8 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 				portNumber(DEFAULT_PORTNO+2),
 				bottom(bot),
 				socket(NULL){
+
+	strcpy(SET_RECEIVER_ERR_MESSAGE,"Receiver not set up. Please use rx_hostname first.\n");
 
 	//***callback parameters***
 	startAcquisitionCallBack = NULL;
@@ -438,7 +439,7 @@ int slsReceiverTCPIPInterface::set_file_name() {
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
-			strcpy(mess,"Receiver not set up\n");
+			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
 		else{
@@ -510,7 +511,7 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 			ret = FAIL;
 		}*/
 		else if (receiverBase == NULL){
-			strcpy(mess,"Receiver not set up\n");
+			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
 		else{
@@ -579,7 +580,7 @@ int slsReceiverTCPIPInterface::set_file_index() {
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
-			strcpy(mess,"Receiver not set up\n");
+			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
 		else{
@@ -643,7 +644,7 @@ int slsReceiverTCPIPInterface::set_frame_index() {
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
-			strcpy(mess,"Receiver not set up\n");
+			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
 		else{
@@ -720,7 +721,7 @@ int slsReceiverTCPIPInterface::setup_udp(){
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
-			strcpy(mess,"Receiver not set up\n");
+			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
 		else if(receiverBase->getStatus()==RUNNING){
@@ -804,12 +805,12 @@ int slsReceiverTCPIPInterface::start_receiver(){
 	}
 	/*
 	else if(!strlen(receiverBase->getFilePath())){
-		strcpy(mess,"receiver not set up. set receiver ip again.\n");
+		strcpy(mess,SET_RECEIVER_ERR_MESSAGE");
 		ret = FAIL;
 	}
 	 */
 	else if (receiverBase == NULL){
-		strcpy(mess,"Receiver not set up\n");
+		strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 		ret=FAIL;
 	}
 	else {
@@ -853,7 +854,7 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 		ret=FAIL;
 	}
 	else if (receiverBase == NULL){
-		strcpy(mess,"Receiver not set up\n");
+		strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 		ret=FAIL;
 	}
 	else{
@@ -894,7 +895,7 @@ int	slsReceiverTCPIPInterface::get_status(){
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL){
-		strcpy(mess,"Receiver not set up\n");
+		strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 		ret=FAIL;
 	}else retval=receiverBase->getStatus();
 #endif
@@ -925,7 +926,7 @@ int	slsReceiverTCPIPInterface::get_frames_caught(){
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL){
-		strcpy(mess,"Receiver not set up\n");
+		strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 		ret=FAIL;
 	}else retval=receiverBase->getTotalFramesCaught();
 #endif
@@ -955,7 +956,7 @@ int	slsReceiverTCPIPInterface::get_frame_index(){
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL){
-		strcpy(mess,"Receiver not set up\n");
+		strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 		ret=FAIL;
 	}else
 		retval=receiverBase->getAcquisitionIndex();
@@ -994,7 +995,7 @@ int	slsReceiverTCPIPInterface::reset_frames_caught(){
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
-			strcpy(mess,"Receiver not set up\n");
+			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
 		else
@@ -1051,7 +1052,7 @@ int slsReceiverTCPIPInterface::set_short_frame() {
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
-			strcpy(mess,"Receiver not set up\n");
+			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
 		else if(receiverBase->getStatus()==RUNNING){
@@ -1135,7 +1136,7 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL){
-		strcpy(mess,"Receiver not set up\n");
+		strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 		ret=FAIL;
 	}
 	/**send garbage with -1 index to try again*/
@@ -1324,7 +1325,7 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 
 	if (receiverBase == NULL){
-		strcpy(mess,"Receiver not set up\n");
+		strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 		ret=FAIL;
 	}
 
@@ -1499,7 +1500,7 @@ int	slsReceiverTCPIPInterface::propix_read_frame(){
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 
 	if (receiverBase == NULL){
-		strcpy(mess,"Receiver not set up\n");
+		strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 		ret=FAIL;
 	}
 
@@ -1650,7 +1651,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 
 	if (receiverBase == NULL){
-		strcpy(mess,"Receiver not set up\n");
+		strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 		ret=FAIL;
 	}
 
@@ -1895,7 +1896,7 @@ int	slsReceiverTCPIPInterface::jungfrau_read_frame(){
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 
 	if (receiverBase == NULL){
-		strcpy(mess,"Receiver not set up\n");
+		strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 		ret=FAIL;
 	}
 
@@ -2048,7 +2049,7 @@ int slsReceiverTCPIPInterface::set_read_frequency(){
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
-			strcpy(mess,"Receiver not set up\n");
+			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
 		/*
@@ -2113,7 +2114,7 @@ int slsReceiverTCPIPInterface::enable_file_write(){
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
-			strcpy(mess,"Receiver not set up\n");
+			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
 		else{
@@ -2185,7 +2186,7 @@ int	slsReceiverTCPIPInterface::start_readout(){
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL){
-		strcpy(mess,"Receiver not set up\n");
+		strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 		ret=FAIL;
 	}else{
 		receiverBase->startReadout();
@@ -2240,7 +2241,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
-			strcpy(mess,"Receiver not set up\n");
+			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
 		else{
@@ -2315,7 +2316,7 @@ int slsReceiverTCPIPInterface::enable_compression() {
 				ret=FAIL;
 			}
 			else if (receiverBase == NULL){
-				strcpy(mess,"Receiver not set up\n");
+				strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 				ret=FAIL;
 			}
 			else if(receiverBase->getStatus()==RUNNING){
@@ -2330,7 +2331,7 @@ int slsReceiverTCPIPInterface::enable_compression() {
 
 		if(ret != FAIL){
 			if (receiverBase == NULL){
-				strcpy(mess,"Receiver not set up\n");
+				strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 				ret=FAIL;
 			}else{
 				retval = receiverBase->getDataCompressionEnable();
@@ -2384,7 +2385,7 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
-			strcpy(mess,"Receiver not set up\n");
+			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
 		else{
@@ -2466,7 +2467,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 		}
 		if(ret!=FAIL){
 			if (receiverBase == NULL){
-				strcpy(mess,"Receiver not set up\n");
+				strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 				ret=FAIL;
 			}else{
 				if(dr > 0){
@@ -2542,7 +2543,7 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
-			strcpy(mess,"Receiver not set up\n");
+			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
 		else{
@@ -2605,7 +2606,7 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
-			strcpy(mess,"Receiver not set up\n");
+			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
 		else{
@@ -2670,7 +2671,7 @@ int slsReceiverTCPIPInterface::set_fifo_depth() {
 				ret=FAIL;
 			}
 			else if (receiverBase == NULL){
-				strcpy(mess,"Receiver not set up\n");
+				strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 				ret=FAIL;
 			}
 			else if(receiverBase->getStatus()==RUNNING){
@@ -2686,7 +2687,7 @@ int slsReceiverTCPIPInterface::set_fifo_depth() {
 
 
 		if (receiverBase == NULL){
-			strcpy(mess,"Receiver not set up\n");
+			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}else{
 			retval = receiverBase->getFifoDepth();
@@ -2948,7 +2949,7 @@ int slsReceiverTCPIPInterface::send_update() {
 int slsReceiverTCPIPInterface::update_client() {
 	ret=OK;
 	if (receiverBase == NULL){
-		strcpy(mess,"Receiver not set up\n");
+		strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 		ret=FAIL;
 	}
 	socket->SendDataOnly(&ret,sizeof(ret));

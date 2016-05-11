@@ -805,6 +805,11 @@ void qTabPlot::EnableScanBox(){
 		boxScan->setChecked(false);
 		boxScan->setEnabled(false);
 
+		/**Newly added*/
+		// To remind the updateplot in qdrawplot to set range after updating plot
+		if(!isOriginallyOneD)
+			myPlot->SetXYRange(true);
+
 		//2d scans read every frame, not compulsory, but for historgrams
 		if((!isOriginallyOneD) && (mode0 || mode1)){
 			//read every frame

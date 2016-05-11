@@ -3669,12 +3669,12 @@ int multiSlsDetector::getMaxMods() {
   int multiSlsDetector::getTotalNumberOfChannels(){thisMultiDetector->numberOfChannels=0; for (int id=0; id< thisMultiDetector->numberOfDetectors; id++) thisMultiDetector->numberOfChannels+=detectors[id]->getTotalNumberOfChannels(); return thisMultiDetector->numberOfChannels;};
 
   //int multiSlsDetector::getTotalNumberOfChannels(dimension d){thisMultiDetector->numberOfChannel[d]=0; for (int id=0; id< thisMultiDetector->numberOfDetectors; id++) thisMultiDetector->numberOfChannel[d]+=detectors[id]->getTotalNumberOfChannels(d); return thisMultiDetector->numberOfChannel[d];};
-  int multiSlsDetector::getTotalNumberOfChannels(dimension d){updateOffsets();return thisMultiDetector->numberOfChannel[d];};
+  int multiSlsDetector::getTotalNumberOfChannels(dimension d){return thisMultiDetector->numberOfChannel[d];};
 
   int multiSlsDetector::getMaxNumberOfChannels(){thisMultiDetector->maxNumberOfChannels=0; for (int id=0; id< thisMultiDetector->numberOfDetectors; id++) thisMultiDetector->maxNumberOfChannels+=detectors[id]->getMaxNumberOfChannels();return thisMultiDetector->maxNumberOfChannels;};
 
  // int multiSlsDetector::getMaxNumberOfChannels(dimension d){thisMultiDetector->maxNumberOfChannel[d]=0; for (int id=0; id< thisMultiDetector->numberOfDetectors; id++) thisMultiDetector->maxNumberOfChannel[d]+=detectors[id]->getMaxNumberOfChannels(d);return thisMultiDetector->maxNumberOfChannel[d];};
-  int multiSlsDetector::getMaxNumberOfChannels(dimension d){updateOffsets();return thisMultiDetector->maxNumberOfChannel[d];};
+  int multiSlsDetector::getMaxNumberOfChannels(dimension d){return thisMultiDetector->maxNumberOfChannel[d];};
 
 
 
@@ -4624,8 +4624,6 @@ string multiSlsDetector::setFileName(string s) {
 
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     if (detectors[idet]) {
-      if((getNumberOfDetectors()>1) && (setReceiverOnline()==ONLINE_FLAG))
-        setDetectorIndex(idet);
       ret1=detectors[idet]->setFileName(s);
       if(detectors[idet]->getErrorMask())
 	setErrorMask(getErrorMask()|(1<<idet));

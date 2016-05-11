@@ -6699,9 +6699,12 @@ string slsDetector::setFileName(string s) {
 	char arg[MAX_STR_LENGTH];
 	char retval[MAX_STR_LENGTH]="";
 
-
 	if(!s.empty()){
 		fileIO::setFileName(s);
+		if(thisDetector->myDetectorType == EIGER)
+			parentDet->setDetectorIndex(detId);
+		else if(parentDet->getNumberOfDetectors()>1)
+			parentDet->setDetectorIndex(detId);
 		s=parentDet->createReceiverFilePrefix();
 	}
 

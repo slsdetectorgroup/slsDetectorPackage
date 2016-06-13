@@ -417,7 +417,7 @@ void multiSlsDetector::updateOffsets(){
 
 	for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
 		if (detectors[i]) {
-
+		  cout<<"offsetY:"<<offsetY<<" prevChanY:"<<prevChanY<<" totalchan:"<< detectors[i]->getTotalNumberOfChannels(Y) <<" maxChanY:"<<maxChanY<<endl;
 			//incrementing in both direction
 			if(firstTime){
 				//incrementing in both directions
@@ -449,6 +449,9 @@ void multiSlsDetector::updateOffsets(){
 				if((maxChanX > 0) && ((offsetX + prevChanX + detectors[i]->getTotalNumberOfChannels(X)) > maxChanX))
 					cout<<"\nDetector[" << i << "] exceeds maximum channels allowed for complete detector set in X dimension!" << endl;
 				offsetY = 0;
+				prevChanY = 0;
+				numY = 0; //assuming symmetry with this statement. whats on 1st column should be on 2nd column
+				maxY = 0;
 				offsetX += prevChanX;
 				prevChanX = detectors[i]->getTotalNumberOfChannels(X);
 				numX += detectors[i]->getTotalNumberOfChannels(X);

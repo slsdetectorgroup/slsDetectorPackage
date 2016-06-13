@@ -1,11 +1,11 @@
 //#define SVNPATH ""
-#define SVNURL "maliakal_d@gitorious.psi.ch:sls_det_software/sls_detector_software.git/eigerDetectorServer"
+#define SVNURL "git@git.psi.ch:sls_detectors_software/sls_detector_software.git/eigerDetectorServer"
 //#define SVNREPPATH ""
-#define SVNREPUUID "3b5e43dfbd7f3819ace58ad8cd0aefd0ba0034c3"
-//#define SVNREV 0x300
+#define SVNREPUUID "c5eb9dba43284c8002dceda00d8243a53260aa37"
+//#define SVNREV 0x321
 //#define SVNKIND ""
 //#define SVNSCHED ""
 #define SVNAUTH "Dhanya_Maliakal"
-#define SVNREV 0x300
-#define SVNDATE 0x20150622
+#define SVNREV 0x321
+#define SVNDATE 0x20160613
 //

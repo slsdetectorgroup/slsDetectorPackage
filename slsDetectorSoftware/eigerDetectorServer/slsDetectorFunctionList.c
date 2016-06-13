@@ -421,7 +421,7 @@ void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]){
 int setHighVoltage(int val, int imod){
 	if(val!=-1){
 		printf(" Setting High Voltage: %d\n",val);
-		if(!top)
+		if(!master)
 			eiger_highvoltage = val;
 		else if(Feb_Control_SetHighVoltage(val))
 			eiger_highvoltage = val;

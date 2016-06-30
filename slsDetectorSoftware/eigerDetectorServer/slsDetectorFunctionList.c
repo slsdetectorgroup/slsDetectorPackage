@@ -65,7 +65,7 @@ int default_dac_values[16] = {
 		1100, 	//rxb_rb
 		1100, 	//rxb_lb
 		1000, 	//Vcmp_rr
-		200, 	//Vcp
+		1000, 	//Vcp
 		2000, 	//Vcn
 		1550 	//Vis
 };
@@ -366,7 +366,7 @@ int detectorTest( enum digitalTestMode arg){
 void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]){
 
 	if(ind == VTHRESHOLD){
-		int ret[4];
+		int ret[5];
 		setDAC(VCMP_LL,val,imod,mV,retval);
 			ret[0] = retval[mV];
 		setDAC(VCMP_LR,val,imod,mV,retval);
@@ -375,15 +375,19 @@ void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]){
 			ret[2] = retval[mV];
 		setDAC(VCMP_RR,val,imod,mV,retval);
 			ret[3] = retval[mV];
+		setDAC(VCP,val,imod,mV,retval);
+			ret[4] = retval[mV];
+
 
 		if((ret[0]== ret[1])&&
 				(ret[1]==ret[2])&&
-				(ret[2]==ret[3]))
-			cprintf(GREEN,"vthreshold match\n");
+				(ret[2]==ret[3]) && 
+		   (ret[3]==ret[4]))
+		  cprintf(GREEN,"vthreshold match\n");
 		else{
-			retval[0] = -1;retval[1] = -1;
-			cprintf(RED,"vthreshold mismatch 0:%d 1:%d 2:%d 3:%d\n",
-				ret[0],ret[1],ret[2],ret[3]);
+		  retval[0] = -1;retval[1] = -1;
+		  cprintf(RED,"vthreshold mismatch 0:%d 1:%d 2:%d 3:%d\n",
+			  ret[0],ret[1],ret[2],ret[3]);
 		}
 		return;
 	}
@@ -657,25 +661,38 @@ int setThresholdEnergy(int ev, int imod){
 	printf(" Setting threshold energy:%d\n",ev);
 	int retval[2],i;
 	int thrvalue[NGAIN];
+	int average=0;
+	if(ev >= 0) {
 
-	if(ev >= 0){
-		eiger_photonenergy = ev;
-		//calculate thrvalues for dacs
-		for(i=0;i<NGAIN;i++){
-			thrvalue[i] = (int) (( ((double)detectorGain[i]/1000) * (-1) * ((double)ev/1000)) + ((double)detectorOffset[i]/1000));
-			printf("detectorGain[i]:%d detectorOffset[i]:%d thrvalue[i]:%d\n",detectorGain[i],detectorOffset[i],thrvalue[i]);
-		}
+	  enum detDacIndex ind[NGAIN]={VCMP_LL,VCMP_LR,VCMP_RL, VCMP_RR}; 
+	  char* vcmp={"vcmp_ll","vcmp_lr","vcmp_rl","vcmp_rr"};
+	  int valid=0;
+	  
+	  //calculate thrvalues for dacs
+	  for(i=0;i<NGAIN;i++){
+	    
+	    thrvalue[i] = (int) (( ((double)detectorGain[i]/1000) * (-1) * ((double)ev/1000)) + ((double)detectorOffset[i]/1000));
+	    printf("detectorGain[i]:%d detectorOffset[i]:%d thrvalue[i]:%d\n",detectorGain[i],detectorOffset[i],thrvalue[i]);
+	    //put limits (VCMP SHOUDL ALWAYS BE BETWEEN 0 AND 2000
+	   
+	    //setdacs
+	    if(thrvalue[i]>=0 && thrvalue[i]<2001)valid++;
+	  }//ngains
 
-		//setdacs
-		setDAC(VCMP_LL,thrvalue[0],-1,0,retval);if(retval[0] != thrvalue[0]) cprintf(BG_RED,"Failed to set vcmp_ll to %d, got %d\n",retval[0],thrvalue[0]);
-		setDAC(VCMP_LR,thrvalue[1],-1,0,retval);if(retval[0] != thrvalue[1]) cprintf(BG_RED,"Failed to set vcmp_lr to %d, got %d\n",retval[0],thrvalue[1]);
-		setDAC(VCMP_RL,thrvalue[2],-1,0,retval);if(retval[0] != thrvalue[2]) cprintf(BG_RED,"Failed to set vcmp_rl to %d, got %d\n",retval[0],thrvalue[2]);
-		setDAC(VCMP_RR,thrvalue[3],-1,0,retval);if(retval[0] != thrvalue[3]) cprintf(BG_RED,"Failed to set vcmp_rr to %d, got %d\n",retval[0],thrvalue[3]);
+	  if( valid == NGAIN){
+	    eiger_photonenergy = ev;	 
+	    for(i=0;i<NGAIN;i++) {
+	      average+= thrvalue[i];
+	      setDAC(ind[i],thrvalue[i],-1,0,retval);
+	      if(retval[0] != thrvalue[i]) cprintf(BG_RED,"Failed to set %s to %d, got %d\n",vcmp[i], thrvalue[i],retval[0]);
+	    }
+	    average=(int) ((float)average/4.+0.5);
+	    setDAC(VCP,average,-1,0,retval);
+	    if(retval[0] != average) cprintf(BG_RED,"Failed to set VCP to %d, got %d\n",average, retval[0]);
+	  }
 	}
 	return  getThresholdEnergy(imod);
 }
-
-
 
 enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 	if(sett != GET_SETTINGS)

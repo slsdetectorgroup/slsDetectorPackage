@@ -1817,7 +1817,8 @@ slsDetectorDefs::externalSignalFlag slsDetector::setExternalSignalFlags(external
    GATE_FIX_NUMBER,
    GATE_FIX_DURATION,
    GATE_WITH_START_TRIGGER,
-   GATE_COINCIDENCE_WITH_INTERNAL_ENABLE
+   BURST_TRIGGER,
+   //GATE_COINCIDENCE_WITH_INTERNAL_ENABLE
    };
 
 */

@@ -451,7 +451,7 @@ enum externalSignalFlag setExtSignal(int signalindex,  enum externalSignalFlag f
 			break;
 		case RO_TRIGGER_IN_RISING_EDGE:
 		case RO_TRIGGER_IN_FALLING_EDGE:
-			if (timingMode==TRIGGER_READOUT)
+			if (timingMode==BURST_TRIGGER)
 				setFPGASignal(signalindex,flag);
 			else
 				setFPGASignal(signalindex,SIGNAL_OFF);

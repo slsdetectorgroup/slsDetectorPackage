@@ -692,7 +692,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
 
   /**
      returns external communication mode string from index
-     \param f can be AUTO_TIMING, TRIGGER_EXPOSURE, TRIGGER_READOUT, GATE_FIX_NUMBER, GATE_WITH_START_TRIGGER, GET_EXTERNAL_COMMUNICATION_MODE
+     \param f can be AUTO_TIMING, TRIGGER_EXPOSURE, TRIGGER_READOUT, GATE_FIX_NUMBER, GATE_WITH_START_TRIGGER, BURST_TRIGGER, GET_EXTERNAL_COMMUNICATION_MODE
      \returns  auto, trigger, ro_trigger, gating, triggered_gating, unknown
   */
 
@@ -703,6 +703,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
     case TRIGGER_READOUT: return string("ro_trigger");			\
     case GATE_FIX_NUMBER: return string("gating");			\
     case GATE_WITH_START_TRIGGER: return string("triggered_gating");	\
+    case BURST_TRIGGER: return string("burst_trigger");	\
     default:    return string( "unknown");				\
     }    };
   
@@ -711,7 +712,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   /**
      returns external communication mode index from string
      \param sval can be auto, trigger, ro_trigger, gating, triggered_gating
-     \returns AUTO_TIMING, TRIGGER_EXPOSURE, TRIGGER_READOUT, GATE_FIX_NUMBER, GATE_WITH_START_TRIGGER, GET_EXTERNAL_COMMUNICATION_MODE
+     \returns AUTO_TIMING, TRIGGER_EXPOSURE, TRIGGER_READOUT, GATE_FIX_NUMBER, GATE_WITH_START_TRIGGER, BURST_TRIGGER, GET_EXTERNAL_COMMUNICATION_MODE
   */
 
   static externalCommunicationMode externalCommunicationType(string sval){\
@@ -720,6 +721,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
     if  (sval=="ro_trigger") return TRIGGER_READOUT;\
     if  (sval=="gating") return GATE_FIX_NUMBER;\
     if  (sval=="triggered_gating") return GATE_WITH_START_TRIGGER;\
+    if  (sval=="burst_trigger") return BURST_TRIGGER;\
     return GET_EXTERNAL_COMMUNICATION_MODE;			\
   };
 

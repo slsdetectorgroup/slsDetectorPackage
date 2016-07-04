@@ -665,7 +665,7 @@ int setThresholdEnergy(int ev, int imod){
 	if(ev >= 0) {
 
 	  enum detDacIndex ind[NGAIN]={VCMP_LL,VCMP_LR,VCMP_RL, VCMP_RR}; 
-	  char* vcmp={"vcmp_ll","vcmp_lr","vcmp_rl","vcmp_rr"};
+	  const char* vcmp[4]={"vcmp_ll","vcmp_lr","vcmp_rl","vcmp_rr"};
 	  int valid=0;
 	  
 	  //calculate thrvalues for dacs
@@ -1199,7 +1199,7 @@ enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
 		switch((int)arg){
 		case AUTO_TIMING:			ret = 0;	break;
 		case TRIGGER_EXPOSURE:		ret = 2;	break;
-		case TRIGGER_READOUT:		ret = 1;	break;
+		case BURST_TRIGGER:			ret = 1;	break;
 		case GATE_FIX_NUMBER:		ret = 3;	break;
 		}
 		printf(" Setting Triggering Mode: %d\n",(int)ret);
@@ -1211,7 +1211,7 @@ enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
 	switch((int)ret){
 	case 0:		ret = AUTO_TIMING;		break;
 	case 2:		ret = TRIGGER_EXPOSURE; break;
-	case 1:		ret = TRIGGER_READOUT;	break;
+	case 1:		ret = BURST_TRIGGER;	break;
 	case 3:		ret = GATE_FIX_NUMBER;	break;
 	default:
 		printf("Unknown trigger mode found %d\n",ret);

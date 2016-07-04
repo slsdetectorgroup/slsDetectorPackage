@@ -263,7 +263,8 @@ enum externalCommunicationMode{
   TRIGGER_EXPOSURE, /**< trigger mode i.e. exposure is triggered */
   TRIGGER_READOUT, /**< stop trigger mode i.e. readout is triggered by external signal */
   GATE_FIX_NUMBER, /**< gated and reads out after a fixed number of gates */
-  GATE_WITH_START_TRIGGER /**< gated with start trigger */
+  GATE_WITH_START_TRIGGER, /**< gated with start trigger */
+  BURST_TRIGGER	/**< trigger a burst of frames */
 };
 /**
     detector IDs/versions

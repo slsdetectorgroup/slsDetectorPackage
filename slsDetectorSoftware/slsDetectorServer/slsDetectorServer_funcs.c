@@ -816,7 +816,8 @@ enum externalCommunicationMode{
   GATE_FIX_NUMBER,
   GATE_FIX_DURATION,
   GATE_WITH_START_TRIGGER,
-  GATE_COINCIDENCE_WITH_INTERNAL_ENABLE
+ // GATE_COINCIDENCE_WITH_INTERNAL_ENABLE,
+  BURST_TRIGGER
 };
 	 */
 #ifdef SLS_DETECTOR_FUNCTION_LIST
@@ -827,7 +828,7 @@ enum externalCommunicationMode{
 		case GET_EXTERNAL_COMMUNICATION_MODE:
 		case AUTO_TIMING:
 		case TRIGGER_EXPOSURE:
-		case TRIGGER_READOUT:
+		case BURST_TRIGGER:
 		case GATE_FIX_NUMBER:
 			break;
 #endif
@@ -2560,7 +2561,7 @@ int set_timer(int file_des) {
 			switch(ind) {
 #ifdef EIGERD
 			case SUBFRAME_ACQUISITION_TIME:
-				if (tns > (MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) ){
+				if (tns > ((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) ){
 					ret=FAIL;
 					strcpy(mess,"Sub Frame exposure time should not exceed 5.368 seconds\n");
 					break;

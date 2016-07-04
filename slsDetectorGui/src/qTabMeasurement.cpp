@@ -137,12 +137,14 @@ void qTabMeasurement::SetupTimingMode(){
 			item[(int)Trigger_Readout]->setEnabled(true);
 			item[(int)Gated]->setEnabled(true);
 			item[(int)Gated_Start]->setEnabled(true);
+			item[(int)Burst_Trigger]->setEnabled(false);
 			break;
 		case slsDetectorDefs::EIGER:
 			item[(int)Trigger_Exp_Series]->setEnabled(true);
-			item[(int)Trigger_Readout]->setEnabled(true);
+			item[(int)Trigger_Readout]->setEnabled(false);
 			item[(int)Gated]->setEnabled(true);
 			item[(int)Gated_Start]->setEnabled(false);
+			item[(int)Burst_Trigger]->setEnabled(true);
 			break;
 		case slsDetectorDefs::MOENCH:
 		case slsDetectorDefs::PROPIX:
@@ -152,6 +154,7 @@ void qTabMeasurement::SetupTimingMode(){
 			item[(int)Trigger_Readout]->setEnabled(false);
 			item[(int)Gated]->setEnabled(false);
 			item[(int)Gated_Start]->setEnabled(false);
+			item[(int)Burst_Trigger]->setEnabled(false);
 			break;
 		default:
 			cout << "Unknown detector type." << endl;
@@ -175,7 +178,7 @@ void qTabMeasurement::GetModeFromDetector(bool startup){
 	slsDetectorDefs::externalCommunicationMode mode = myDet->setExternalCommunicationMode();
 
 	//Setting the timing mode in gui
-	if(model && model->itemFromIndex(model->index(mode,comboTimingMode->modelColumn(), comboTimingMode->rootModelIndex()))->isEnabled()){
+	if(model && model->itemFromIndex(model->index(mode+1,comboTimingMode->modelColumn(), comboTimingMode->rootModelIndex()))->isEnabled()){
 
 		//these are things checked in setuptimingmode
 
@@ -229,7 +232,7 @@ void qTabMeasurement::GetModeFromDetector(bool startup){
 			cout << "The detector(s)  " << offline << "  is/are not connected. Exiting GUI." << endl;
 			exit(-1);
 		}
-
+		cout << "Unknown Timing Mode " << mode << " detected from detector" << endl;
 		qDefs::Message(qDefs::WARNING,"Unknown Timing Mode detected from detector."
 				"\n\nSetting the following defaults:\nTiming Mode \t: None\n"
 				"Number of Frames \t: 1\nNumber of Triggers \t: 1","qTabMeasurement::GetModeFromDetector");
@@ -655,9 +658,6 @@ void qTabMeasurement::SetTimingMode(int mode){
 			success = true;
 		break;
 	case Trigger_Readout://#Frames, ExpTime, Period, (Delay)
-		if(detType != slsDetectorDefs::EIGER){
-		  lblDelay->setEnabled(true);		spinDelay->setEnabled(true);			comboDelayUnit->setEnabled(true);
-		}
 		spinNumTriggers->setValue(1);
 		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
 		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
@@ -683,6 +683,17 @@ void qTabMeasurement::SetTimingMode(int mode){
 		lblNumTriggers->setEnabled(true);	spinNumTriggers->setEnabled(true);
 		lblNumGates->setEnabled(true);		spinNumGates->setEnabled(true);
 		if(myDet->setExternalCommunicationMode(slsDetectorDefs::GATE_WITH_START_TRIGGER)==slsDetectorDefs::GATE_WITH_START_TRIGGER)
+			success = true;
+		break;
+	case Burst_Trigger://#Frames, ExpTime, Period, (Delay)
+		spinNumTriggers->setValue(1);
+		if(detType != slsDetectorDefs::EIGER){
+			lblDelay->setEnabled(true);			spinDelay->setEnabled(true);			comboDelayUnit->setEnabled(true);
+		}
+		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
+		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
+		lblPeriod->setEnabled(true);		spinPeriod->setEnabled(true);			comboPeriodUnit->setEnabled(true);
+		if(myDet->setExternalCommunicationMode(slsDetectorDefs::BURST_TRIGGER)==slsDetectorDefs::BURST_TRIGGER)
 			success = true;
 		break;
 	default:

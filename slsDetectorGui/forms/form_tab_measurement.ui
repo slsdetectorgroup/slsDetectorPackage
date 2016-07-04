@@ -538,6 +538,11 @@ Maximum value is 3. &lt;br&gt;
          <string>Gated with Start Trigger</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>Burst Trigger</string>
+        </property>
+       </item>
       </widget>
      </item>
      <item row="1" column="0">
@@ -862,7 +867,7 @@ Frame period between exposures.
     </property>
     <layout class="QGridLayout" name="gridLayout">
      <property name="verticalSpacing">
-      <number>-1</number>
+      <number>6</number>
      </property>
      <item row="0" column="0">
       <widget class="QLabel" name="label_5">

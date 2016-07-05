@@ -55,16 +55,19 @@ class energyConversion
       \param fname file to be read
       \param gain reference to the gain variable
       \offset reference to the offset variable
+      \tau tau
+      \tau tau
   */
-  static int readCalibrationFile(string fname, int *gain, int *offset, detectorType myDetectorType);
+  static int readCalibrationFile(string fname, int *gain, int *offset, int64_t &tau, detectorType myDetectorType);
   
   /**
       writes a calibration file 
       \param fname file to be written
       \param gain 
       \param offset
+      \param tau
   */
-  static int writeCalibrationFile(string fname, int *gain, int *offset, detectorType myDetectorType);
+  static int writeCalibrationFile(string fname, int *gain, int *offset, int64_t tau, detectorType myDetectorType);
 
 
 

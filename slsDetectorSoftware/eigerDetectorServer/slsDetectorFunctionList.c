@@ -495,7 +495,7 @@ int pulseChip(int n){
 	return OK;
 }
 
-int setRateCorrection(int64_t custom_tau_in_nsec){//in nanosec (will never be -1)
+int64_t setRateCorrection(int64_t custom_tau_in_nsec){//in nanosec (will never be -1)
 
 	//deactivating rate correction
 	if(custom_tau_in_nsec==0){
@@ -521,6 +521,7 @@ int setRateCorrection(int64_t custom_tau_in_nsec){//in nanosec (will never be -1
 	}
 	//activating rate correction
 	Feb_Control_SetRateCorrectionVariable(1);
+	printf("Rate Correction Value set to %lld ns\n",(long long int)Feb_Control_Get_RateTable_Tau_in_nsec());
 #ifdef VERBOSE
 	Feb_Control_PrintCorrectedValues();
 #endif
@@ -542,7 +543,7 @@ int getDefaultSettingsTau_in_nsec(){
 }
 
 
-int setModule(sls_detector_module myMod, int* gain, int* offset,int* delay){
+int setModule(sls_detector_module myMod, int* gain, int* offset,int* delay, int64_t tau_ns){
 	int retval[2];
 	int i;
 
@@ -553,18 +554,44 @@ int setModule(sls_detector_module myMod, int* gain, int* offset,int* delay){
 	//set the settings variable
 	setSettings( (enum detectorSettings)myMod.reg,-1);
 
+
+	//rate correction  (ignore -2: from load settings)
+	if(tau_ns > -2){
+		//set settings, with no tau in calib file
+		if(tau_ns == -1){
+			tau_ns = getDefaultSettingsTau_in_nsec();
+			//incorrect settings
+			if(tau_ns < 0)
+				return -1;
+		}
+		//set the tau for all
+		int64_t rate_retval = setRateCorrection(tau_ns); //tau_ns will not be -1 here
+		if(tau_ns != rate_retval){
+			if(rate_retval == -1)
+				return -2;
+			else
+				return -3;
+		}
+		//set settings, with no tau in calib file :
+		//only setting tau, rate correction should be off
+		//(in previous "error" returns, its switched off anyway)
+		if(tau_ns == -1)
+			setRateCorrection(0);
+	}else cprintf(RED,"rate not changed\n");
+
+
 	//set the gains and offset variables locally
 	for(i=0;i<NGAIN;i++){
 		if(gain[i]>=0){
 			detectorGain[i] = gain[i];
 			printf("gain[%d]:%d\n",i,detectorGain[i]);
-		}else cprintf(RED,"gain not set\n");
+		}else cprintf(RED,"gain not changed\n");
 	}
 	for(i=0;i<NOFFSET;i++){
 		if(offset[i]>=0){
 			detectorOffset[i] = offset[i];
 			printf("offset[%d]:%d\n",i,detectorOffset[i]);
-		}else cprintf(RED,"offset not set\n");
+		}else cprintf(RED,"offset not changed\n");
 	}
 
 	if(setIODelay(*delay, -1)!= (*delay)){

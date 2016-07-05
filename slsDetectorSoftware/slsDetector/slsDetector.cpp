@@ -2669,6 +2669,7 @@ int slsDetector::setModule(int reg, int imod){
   int* g=0;
   int* o=0;
   int* iod=0;
+  int64_t tau=-1;
 
 #ifdef VERBOSE
   std::cout << "slsDetector set module " << std::endl;
@@ -2737,14 +2738,14 @@ int slsDetector::setModule(int reg, int imod){
 	ads[i]=-1;
       myModule.adcs=ads;
     }
-    ret=setModule(myModule,g,o,iod);
+    ret=setModule(myModule,g,o,iod,tau);
   }
   return ret;
 
 
 };
 
-int slsDetector::setModule(sls_detector_module module, int* gainval, int* offsetval, int* iodelay){
+int slsDetector::setModule(sls_detector_module module, int* gainval, int* offsetval, int* iodelay, int64_t tau){
 
   int fnum=F_SET_MODULE;
   int retval;
@@ -2770,6 +2771,8 @@ int slsDetector::setModule(sls_detector_module module, int* gainval, int* offset
     	  controlSocket->SendDataOnly(offsetval,sizeof(int)*thisDetector->nOffset);
       if(thisDetector->myDetectorType == EIGER)
     	  controlSocket->SendDataOnly(iodelay,sizeof(int));
+      if(thisDetector->myDetectorType == EIGER)
+    	  controlSocket->SendDataOnly(&tau,sizeof(tau));
 
       controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
       if (ret!=FAIL) {
@@ -3136,6 +3139,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 		offsetval=new int[thisDetector->nOffset];
 	if(thisDetector->myDetectorType == EIGER)
 		iodelay = new int;
+	int64_t tau=-1;
 
 
 	int ret=0;
@@ -3323,7 +3327,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 #endif
 			//extra gain and offset
 			if(thisDetector->nGain)
-				ret = readCalibrationFile(calfname,gainval, offsetval,thisDetector->myDetectorType );
+				ret = readCalibrationFile(calfname,gainval, offsetval, tau, thisDetector->myDetectorType );
 			//normal gain and offset inside sls_detector_module
 			else
 				ret = readCalibrationFile(calfname,myMod->gain, myMod->offset);
@@ -3338,7 +3342,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 #endif
 				//extra gain and offset
 				if(thisDetector->nGain)
-					ret = readCalibrationFile(calfname,gainval, offsetval,thisDetector->myDetectorType );
+					ret = readCalibrationFile(calfname,gainval, offsetval, tau, thisDetector->myDetectorType );
 				//normal gain and offset inside sls_detector_module
 				else
 					ret = readCalibrationFile(calfname,myMod->gain, myMod->offset);
@@ -3351,7 +3355,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 			}
 
 			//if everything worked, set module****
-			setModule(*myMod,gainval,offsetval,iodelay);
+			setModule(*myMod,gainval,offsetval,iodelay, tau);
 		}
 	}
 
@@ -6218,6 +6222,9 @@ int slsDetector::writeSettingsFile(string fname, int imod, int* iodelay){
 int slsDetector::loadSettingsFile(string fname, int imod) {
 
   sls_detector_module  *myMod=NULL;
+
+  //tau set to -2 to not affect in any way (-1 for set settings)
+  int64_t tau =-2;
   int* gainval=0; int* offsetval=0;
   int *iodelay=0;
   if(thisDetector->nGain){
@@ -6257,8 +6264,8 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
       myMod->module=im;
       //settings is saved in myMod.reg for all except mythen
       if(thisDetector->myDetectorType!=MYTHEN)
-	myMod->reg=thisDetector->currentSettings;
-      setModule(*myMod,gainval,offsetval,iodelay);
+    	myMod->reg=thisDetector->currentSettings;
+      setModule(*myMod,gainval,offsetval,iodelay,tau);
       deleteModule(myMod);
       if(gainval) delete[] gainval;
       if(offsetval) delete[] offsetval;
@@ -6343,6 +6350,7 @@ int slsDetector::loadCalibrationFile(string fname, int imod) {
   sls_detector_module  *myMod=NULL;
   string fn=fname;
 
+  int64_t tau = -1;
   int* gainval=0; int* offsetval=0;
   int* iodelay=0;
   if(thisDetector->nGain){
@@ -6380,14 +6388,14 @@ int slsDetector::loadCalibrationFile(string fname, int imod) {
     	 *iodelay = (int)setDAC(-1,IO_DELAY,0);
       //extra gain and offset
       if(thisDetector->nGain){
-    	  if(readCalibrationFile(fn,gainval, offsetval,thisDetector->myDetectorType)==FAIL)
+    	  if(readCalibrationFile(fn,gainval, offsetval,tau, thisDetector->myDetectorType)==FAIL)
     		  return FAIL;
       } //normal gain and offset inside sls_detector_module
       else{
     	  if(readCalibrationFile(fn,myMod->gain, myMod->offset)==FAIL)
     		  return FAIL;
       }
-      setModule(*myMod,gainval,offsetval,iodelay);
+      setModule(*myMod,gainval,offsetval,iodelay,tau);
 
       deleteModule(myMod);
       if(gainval) delete[]gainval;
@@ -6419,7 +6427,7 @@ int slsDetector::saveCalibrationFile(string fname, int imod) {
     if ((myMod=getModule(im))) {
         //extra gain and offset
         if(thisDetector->nGain)
-        	ret=writeCalibrationFile(ostfn.str(),gain, offset,thisDetector->myDetectorType);
+        	ret=writeCalibrationFile(ostfn.str(),gain, offset,(int64_t)thisDetector->tDead, thisDetector->myDetectorType);
          //normal gain and offset inside sls_detector_module
         else
         	ret=writeCalibrationFile(ostfn.str(),myMod->gain, myMod->offset);

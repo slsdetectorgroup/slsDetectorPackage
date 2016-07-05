@@ -910,10 +910,11 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
       \param gainval pointer to extra gain values
       \param offsetval pointer to extra offset values
       \param iodelay iodelay (detector specific)
+      \param tau tau (detector specific)
       \returns current register value
       \sa ::sls_detector_module
   */
-  int setModule(sls_detector_module module, int* gainval, int* offsetval,int* iodelay);
+  int setModule(sls_detector_module module, int* gainval, int* offsetval,int* iodelay, int64_t tau);
   //virtual int setModule(sls_detector_module module);
 
   /**

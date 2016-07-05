@@ -1809,6 +1809,7 @@ int set_module(int file_des) {
 	int *myGain = (int*)malloc(getNumberOfGainsPerModule()*sizeof(int));
 	int *myOffset = (int*)malloc(getNumberOfOffsetsPerModule()*sizeof(int));
 	int *myIODelay = (int*)malloc(sizeof(int));
+	int64_t myTau=-1;
 #endif
 	int *myChip=(int*)malloc(getNumberOfChipsPerModule()*sizeof(int));
 	int *myChan=(int*)malloc(getNumberOfChannelsPerModule()*sizeof(int));
@@ -1864,6 +1865,7 @@ int set_module(int file_des) {
 	n = receiveData(file_des,myGain,sizeof(int)*getNumberOfGainsPerModule(),INT32);
 	n = receiveData(file_des,myOffset,sizeof(int)*getNumberOfOffsetsPerModule(),INT32);
 	n = receiveData(file_des,myIODelay,sizeof(int),INT32);
+	n = receiveData(file_des,&myTau,sizeof(myTau),INT64);
 #endif
 	if (ret>=0)
 		ret=OK;
@@ -1879,7 +1881,8 @@ int set_module(int file_des) {
 		printf("gain[%d]:%d\t%f\n",i,myGain[i],((double)myGain[i]/1000));
 	for(i=0;i<getNumberOfOffsetsPerModule();i++)
 		printf("offset[%d]:%d\t%f\n",i,myOffset[i],((double)myOffset[i]/1000));
-	printf("IO Delay:%d\n",i,*myIODelay);
+	printf("IO Delay:%d\n",*myIODelay);
+	printf("Tau:%lld\n",(long long int)myTau);
 #endif
 #endif
 
@@ -1902,25 +1905,24 @@ int set_module(int file_des) {
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		} else {
 #ifdef EIGERD
-			ret=setModule(myModule, myGain, myOffset,myIODelay);
-			//rate correction
-			if(getRateCorrectionEnable()){
-				int64_t tau_ns = getDefaultSettingsTau_in_nsec();
-				if(tau_ns < 0){
-					sprintf(mess,"Cannot set Rate correction. Rate correction Deactivated, settings %d not recognized by detector\n",thisSettings);
-					cprintf(RED,"%s",mess);
-					ret = FAIL;
-					setRateCorrection(0);
-				}
-				retval = setRateCorrection(tau_ns); //tau_ns will not be -1 here
-				if(tau_ns != retval){
-					if(retval == -1)
-						strcpy(mess,"Could not set Rate correction. Rate correction Deactivated, (tau/subexptime) must be < 0.0015\n");
-					else
-						strcpy(mess,"Could not set Rate correction. Rate correction Deactivated\n");
-					cprintf(RED,"%s",mess);
-					ret = FAIL;
-				}
+			ret=setModule(myModule, myGain, myOffset,myIODelay,myTau);
+			//rate correction errors
+			switch(ret){
+			case -1:
+				sprintf(mess,"Cannot set Rate correction. Rate correction Deactivated, settings %d not recognized by detector\n",thisSettings);
+				cprintf(RED,"%s",mess);
+				ret = FAIL;
+				break;
+			case -2:
+				strcpy(mess,"Could not set Rate correction. Rate correction Deactivated, (tau/subexptime) must be < 0.0015\n");
+				cprintf(RED,"%s",mess);
+				ret = FAIL;
+				break;
+			case -3:
+				strcpy(mess,"Could not set Rate correction. Rate correction Deactivated\n");
+				cprintf(RED,"%s",mess);
+				ret = FAIL;
+				break;
 			}
 #else
 			ret=setModule(myModule);

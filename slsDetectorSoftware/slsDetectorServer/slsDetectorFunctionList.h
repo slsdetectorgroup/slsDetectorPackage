@@ -51,7 +51,7 @@ int setCounterBit(int val);
 int pulsePixel(int n, int x, int y);
 int pulsePixelNMove(int n, int x, int y);
 int pulseChip(int n);
-int setRateCorrection(int64_t custom_tau_in_nsec);
+int64_t setRateCorrection(int64_t custom_tau_in_nsec);
 int getRateCorrectionEnable();
 int getDefaultSettingsTau_in_nsec();
 #endif
@@ -70,7 +70,7 @@ int getChip(sls_detector_chip *myChip);
 
 
 #ifdef EIGERD
-int setModule(sls_detector_module myMod, int* gain, int* offset,int* delay);
+int setModule(sls_detector_module myMod, int* gain, int* offset,int* delay, int64_t tau_ns);
 int getModule(sls_detector_module *myMod, int* gain, int* offset);
 #else
 int setModule(sls_detector_module myMod);

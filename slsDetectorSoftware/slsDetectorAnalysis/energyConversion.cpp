@@ -69,7 +69,7 @@ int energyConversion::writeCalibrationFile(string fname, double gain, double off
 };
 
 
-int energyConversion::readCalibrationFile(string fname, int *gain, int *offset, detectorType myDetectorType){
+int energyConversion::readCalibrationFile(string fname, int *gain, int *offset, int64_t &tau, detectorType myDetectorType){
 
 
 
@@ -87,6 +87,7 @@ int energyConversion::readCalibrationFile(string fname, int *gain, int *offset, 
 #endif
 		infile.open(fname.c_str(), ios_base::in);
 		if (infile.is_open()) {
+			//get gain and offset
 			for (ig=0; ig<4; ig++) {
 				//while ( (getline(infile,str)) > -1) {
 				getline(infile,str);
@@ -100,6 +101,16 @@ int energyConversion::readCalibrationFile(string fname, int *gain, int *offset, 
 				// ig++;
 				if (ig>=4)
 					break;
+			}
+			//get tau
+			if (myDetectorType == EIGER) {
+				if(getline(infile,str)){
+					istringstream ssstr(str);
+					ssstr >> tau;
+#ifdef VERBOSE
+					std::cout<< "tau:" << tau << std::endl;
+#endif
+				}
 			}
 			infile.close();
 			cout << "Calibration file loaded: " << fname << endl;
@@ -124,7 +135,7 @@ int energyConversion::readCalibrationFile(string fname, int *gain, int *offset, 
 
 };
 
-int energyConversion::writeCalibrationFile(string fname, int *gain, int *offset, detectorType myDetectorType){
+int energyConversion::writeCalibrationFile(string fname, int *gain, int *offset, int64_t tau, detectorType myDetectorType){
   //std::cout<< "Function not yet implemented " << std::endl;
   ofstream outfile;	
   switch (myDetectorType) {
@@ -136,6 +147,7 @@ int energyConversion::writeCalibrationFile(string fname, int *gain, int *offset,
   if (outfile.is_open()) {
     for (int ig=0; ig<4; ig++)
       outfile << ((double)offset[ig]/1000) << " " << ((double)gain[ig]/1000) << std::endl;
+    outfile << tau << std::endl;
   } else {
     std::cout<< "Could not open calibration file "<< fname << " for writing" << std::endl;
 #ifndef MYROOT

@@ -1,11 +1,11 @@
 //#define SVNPATH ""
 #define SVNURL "git@git.psi.ch:sls_detectors_software/sls_detector_software.git/gotthardDetectorServer"
 //#define SVNREPPATH ""
-#define SVNREPUUID "980a1d7024e5609ba4393da2af182b029e83dff0"
-//#define SVNREV 0x323
+#define SVNREPUUID "0ca2aea706396b1caffed99fecc3b1bd1f88ff09"
+//#define SVNREV 0x324
 //#define SVNKIND ""
 //#define SVNSCHED ""
 #define SVNAUTH "Dhanya_Maliakal"
-#define SVNREV 0x323
-#define SVNDATE 0x20160704
+#define SVNREV 0x324
+#define SVNDATE 0x20160705
 //

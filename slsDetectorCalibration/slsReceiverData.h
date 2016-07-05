@@ -48,16 +48,6 @@ public:
 	virtual int getPacketNumber(char *buff){return (*(int*)buff)&0xff;};
 
 
-	/** gets the dynamic range for offline processing
-     	 \param buff pointer to the memory
-     	 \returns dynamic range
-	 *
-	 */
-	//virtual int getDynamicRange(char *buff){return 16;};
-
-
-
-
 
 	/**
 

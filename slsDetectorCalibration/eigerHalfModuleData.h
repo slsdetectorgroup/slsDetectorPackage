@@ -193,18 +193,6 @@ public:
 
 
 
-	/** gets the dynamic range for offline processing
-     	 \param buff pointer to the memory
-     	 \returns dynamic range
-	 */
-	static int getDynamicRange(char *buff){
-		eiger_packet_header_t* header_t;
-		header_t = (eiger_packet_header_t*)buff;
-		return(*( (uint8_t*) header_t->dynamicrange));
-	};
-
-
-
 	/**
     returns the pixel value as double correcting for the output buffer crosstalk
      \param data pointer to the memory

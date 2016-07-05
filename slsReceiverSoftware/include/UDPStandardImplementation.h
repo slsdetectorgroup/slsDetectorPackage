@@ -441,6 +441,11 @@ private:
 	void createHeaders(char* wbuffer[]);
 
 	/**
+	 * Updates the file header char aray, each time the corresp parameter is changed
+	 */
+	void updateFileHeader();
+
+	/**
 	 * Called by handleWithoutDataCompression and handleWithCompression after writing to file
 	 * Copy frames for GUI and updates appropriate parameters for frequency frames to gui
 	 * Uses semaphore for nth frame mode
@@ -464,6 +469,7 @@ private:
 	 * @param nf number of frames
 	 */
 	void handleDataCompression(int ithread, char* wbuffer[], uint64_t &nf);
+
 
 
 
@@ -514,6 +520,8 @@ private:
 
 	/** If file created successfully for all Writer Threads */
 	bool fileCreateSuccess;
+
+	char fileHeader[1000];
 
 
 

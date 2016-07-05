@@ -138,6 +138,7 @@ void UDPStandardImplementation::initializeMembers(){
 	strcpy(completeFileName,"");
 	maxPacketsPerFile = 0;
 	fileCreateSuccess = false;
+	strcpy(fileHeader,"");
 
 	//***acquisition indices parameters***
 	startAcquisitionIndex = 0;
@@ -536,6 +537,8 @@ int UDPStandardImplementation::setDynamicRange(const uint32_t i){
 		frameSize			= onePacketSize * packetsPerFrame;
 		maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
 
+		updateFileHeader();
+
 		//new dynamic range, then restart threads and resetup fifo structure
 		if(oldDynamicRange != dynamicRange){
 
@@ -591,6 +594,7 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b){
 				"\nmaxPacketsPerFile:" << maxPacketsPerFile;
 
 
+		updateFileHeader();
 
 		//new enable, then restart threads and resetup fifo structure
 		if(oldTenGigaEnable != tengigaEnable){
@@ -766,6 +770,10 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 
 	//allocate for latest data (frame copy for gui)
 	latestData = new char[frameSize];
+
+	//updates File Header
+	if(myDetectorType == EIGER)
+		updateFileHeader();
 
 	FILE_LOG(logDEBUG) << " Detector type set to " << getDetectorType(d);
 
@@ -1412,6 +1420,10 @@ int UDPStandardImplementation::createNewFile(){
 		packetsInFile = 0;
 		numTotMissingPacketsInFile = 0;
 	}
+
+	//write file header
+	if(myDetectorType == EIGER)
+		fwrite((void*)fileHeader, 1, strlen(fileHeader), sfilefd);
 
 	return OK;
 }
@@ -2801,7 +2813,7 @@ void UDPStandardImplementation::createHeaders(char* wbuffer[]){
 
 		//overwriting port number and dynamic range
 		*( (uint8_t*) wbuf_header->portIndex) = (uint8_t)port;
-		*( (uint8_t*) wbuf_header->dynamicRange) = (uint8_t)dynamicRange;
+		//*( (uint8_t*) wbuf_header->dynamicRange) = (uint8_t)dynamicRange;
 
 		//DEBUGGING
 		if(*( (uint16_t*) wbuf_footer->packetNumber) != (i+1)){
@@ -2816,6 +2828,48 @@ void UDPStandardImplementation::createHeaders(char* wbuffer[]){
 	}
 
 	if(exitVal){exit(-1);}
+
+}
+
+
+void UDPStandardImplementation::updateFileHeader(){
+	int xpix=-1,ypix=-1;
+
+	//create detector specific packet header
+	char packetheader[1000];
+	strcpy(packetheader,"");
+
+	//only for eiger right now
+	/*switch(myDetectorType){
+	case EIGER:
+	*/	sprintf(packetheader,"#Packet Header\n"
+				"Sub Frame Number 4 bytes\n"
+				"Missing Packet\t 2 bytes\n"
+				"Port Number\t 1 byte\n"
+				"Unused\t\t 1 byte\n\n"
+				"#Packet Footer\n"
+				"Frame Number\t 6 bytes\n"
+				"Packet Number\t 2 bytes\n");
+		xpix = EIGER_PIXELS_IN_ONE_ROW;
+		ypix = EIGER_PIXELS_IN_ONE_COL;
+	/*	break;
+	default:
+		break;
+	}
+*/
+
+	//update file header
+	int length = sizeof(fileHeader);
+	while(length!=strlen(fileHeader)){
+		length = strlen(fileHeader);
+		sprintf(fileHeader,"Header\t\t %d bytes\n"
+				"Dynamic Range\t %d\n"
+				"Packet\t\t %d bytes\n"
+				"x\t\t %d pixels\n"
+				"y\t\t %d pixels\n\n"
+				"%s",
+				length,dynamicRange,onePacketSize,xpix,ypix,packetheader);
+	}
 
 }
 

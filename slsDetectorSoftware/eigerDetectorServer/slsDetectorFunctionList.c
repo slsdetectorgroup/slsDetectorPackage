@@ -241,6 +241,7 @@ int64_t getDetectorId(enum idMode arg){
 	case DETECTOR_SOFTWARE_VERSION:
 		retval= SVNREV;
 		retval= (retval <<32) | SVNDATE;
+		//cprintf(BLUE,"git date:%x, git rev:%x\n",SVNDATE,SVNREV);
 		break;
 	default:
 		break;

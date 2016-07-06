@@ -47,7 +47,7 @@ void checkFirmwareCompatibility(){
 	cprintf(BLUE,"\n\n********************************************************\n"
 			   "**********************EIGER Server**********************\n"
 			   "********************************************************\n");
-	cprintf(BLUE,"\nFirmware Version: %lld\nSoftware Version: %lld\n\n",
+	cprintf(BLUE,"\nFirmware Version: %lld\nSoftware Version: %llx\n\n",
 			getDetectorId(DETECTOR_FIRMWARE_VERSION), getDetectorId(DETECTOR_SOFTWARE_VERSION));
 
 	//check for firmware version compatibility

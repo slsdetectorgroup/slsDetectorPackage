@@ -16,6 +16,7 @@
 #include <iostream>
 #include <string.h>
 #include <stdint.h>
+#include <ctime>
 using namespace std;
 
 #define WRITE_HEADERS
@@ -2859,16 +2860,19 @@ void UDPStandardImplementation::updateFileHeader(){
 */
 
 	//update file header
+	time_t t = time(0);
 	int length = sizeof(fileHeader);
 	while(length!=strlen(fileHeader)){
 		length = strlen(fileHeader);
-		sprintf(fileHeader,"Header\t\t %d bytes\n"
+		sprintf(fileHeader,"\nHeader\t\t %d bytes\n"
 				"Dynamic Range\t %d\n"
 				"Packet\t\t %d bytes\n"
 				"x\t\t %d pixels\n"
-				"y\t\t %d pixels\n\n"
+				"y\t\t %d pixels\n"
+				"Timestamp\t %s\n\n"
 				"%s",
-				length,dynamicRange,onePacketSize,xpix,ypix,packetheader);
+				length,dynamicRange,onePacketSize,xpix,ypix,ctime(&t),
+				packetheader);
 	}
 
 }

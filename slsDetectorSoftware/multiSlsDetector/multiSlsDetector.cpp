@@ -3929,7 +3929,7 @@ int multiSlsDetector::executeTrimming(trimMode mode, int par1, int par2, int imo
 
 
 int multiSlsDetector::loadSettingsFile(string fname, int imod) {
-  int id, im, ret=-100;
+  int id, im, ret=OK;
 
   if (decodeNMod(imod, id, im)>=0) {
     if (detectors[id]) {
@@ -3948,7 +3948,7 @@ int multiSlsDetector::loadSettingsFile(string fname, int imod) {
 		  int* iret[thisMultiDetector->numberOfDetectors];
 		  for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
 			  if(detectors[idet]){
-				  iret[idet]= new int(-1);
+				  iret[idet]= new int(OK);
 				  Task* task = new Task(new func2_t <int,slsDetector,string,int,int>(&slsDetector::loadSettingsFile,
 						  detectors[idet],fname,imod,iret[idet]));
 				  threadpool->add_task(task);
@@ -3957,13 +3957,11 @@ int multiSlsDetector::loadSettingsFile(string fname, int imod) {
 		  threadpool->wait_for_tasks_to_complete();
 		  for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
 			  if(detectors[idet]){
-				  if(iret[idet] != NULL){
-					  if (ret==-100)
-						  ret=*iret[idet];
-					  else if (ret!=*iret[idet])
-						  ret=-1;
-					  delete iret[idet];
-				  }else ret=-1;
+					if(iret[idet] != NULL){
+						if(*iret[idet] != OK)
+							ret = FAIL;
+						delete iret[idet];
+					}else  ret = FAIL;
 				  if(detectors[idet]->getErrorMask())
 					  setErrorMask(getErrorMask()|(1<<idet));
 			  }
@@ -3971,7 +3969,6 @@ int multiSlsDetector::loadSettingsFile(string fname, int imod) {
 	  }
 
 	  return ret;
-
   }
   return -1;
 
@@ -4055,27 +4052,47 @@ int multiSlsDetector::setAllTrimbits(int val, int imod){
 
 
 int multiSlsDetector::loadCalibrationFile(string fname, int imod) {
-  int id, im, ret;
+	int id, im, ret = OK;
 
-  if (decodeNMod(imod, id, im)>=0) {
-    if (detectors[id]) {
-      ret = detectors[id]->loadCalibrationFile(fname, im);
-      if(detectors[id]->getErrorMask())
-	setErrorMask(getErrorMask()|(1<<id));
-      return ret;
-    }
-  } else if (imod<0) {
-    for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
-      if (detectors[idet]) {
-	ret=detectors[idet]->loadCalibrationFile(fname, imod);
-	if(detectors[idet]->getErrorMask())
-	  setErrorMask(getErrorMask()|(1<<idet));
-      }
-    }
-    return ret;
-  }
-    return -1;
+	if (decodeNMod(imod, id, im)>=0) {
+		if (detectors[id]) {
+			ret = detectors[id]->loadCalibrationFile(fname, im);
+			if(detectors[id]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<id));
+			return ret;
+		}
+	} else if (imod<0) {
 
+		if(!threadpool){
+			cout << "Error in creating threadpool. Exiting" << endl;
+			return -1;
+		}else{
+			//return storage values
+			int* iret[thisMultiDetector->numberOfDetectors];
+			for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
+				if(detectors[idet]){
+					iret[idet]= new int(OK);
+					Task* task = new Task(new func2_t <int,slsDetector,string,int,int>(&slsDetector::loadCalibrationFile,
+							detectors[idet],fname,imod,iret[idet]));
+					threadpool->add_task(task);
+				}
+			}
+			threadpool->wait_for_tasks_to_complete();
+			for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
+				if(detectors[idet]){
+					if(iret[idet] != NULL){
+						if(*iret[idet] != OK)
+							ret = FAIL;
+						delete iret[idet];
+					}else  ret = FAIL;
+					if(detectors[idet]->getErrorMask())
+						setErrorMask(getErrorMask()|(1<<idet));
+				}
+			}
+		}
+		return ret;
+	}
+	return -1;
 }
 
 

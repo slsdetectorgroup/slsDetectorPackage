@@ -851,6 +851,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
   settingsFile=thisDetector->settingsFile;
 
   filePath=thisDetector->filePath;
+  pthread_mutex_lock(&ms);
   fileName=parentDet->fileName;
   fileIndex=parentDet->fileIndex;
   framesPerFile=parentDet->framesPerFile;
@@ -862,6 +863,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 	  setFramesPerFile(JFRAU_MAX_FRAMES_PER_FILE);
   if (thisDetector->myDetectorType==JUNGFRAUCTB)
 	  setFramesPerFile(JFCTB_MAX_FRAMES_PER_FILE);
+  pthread_mutex_unlock(&ms);
   thisReceiver = new receiverInterface(dataSocket);
 
   //  setAngularConversionPointer(thisDetector->angOff,&thisDetector->nMods, thisDetector->nChans*thisDetector->nChips);
@@ -1679,8 +1681,11 @@ int slsDetector::setNumberOfModules(int n, dimension d){
 #endif
   }
 
-  if(n != GET_FLAG)
+  if(n != GET_FLAG){
+	  pthread_mutex_lock(&ms);
 	  parentDet->updateOffsets();
+	  pthread_mutex_unlock(&ms);
+  }
 
   return thisDetector->nMod[d];
 };
@@ -5397,8 +5402,10 @@ char* slsDetector::setReceiver(string receiverIP){
 		std::cout << "file path:" << fileIO::getFilePath() << endl;
 		std::cout << "file name:" << fileIO::getFileName() << endl;
 		std::cout << "file index:" << fileIO::getFileIndex() << endl;
+		pthread_mutex_lock(&ms);
 		std::cout << "write enable:" << parentDet->enableWriteToFileMask() << endl;
 		std::cout << "overwrite enable:" << parentDet->enableOverwriteMask() << endl;
+		pthread_mutex_unlock(&ms);
 		std::cout << "frame index needed:" <<  ((thisDetector->timerValue[FRAME_NUMBER]*thisDetector->timerValue[CYCLES_NUMBER])>1) << endl;
 		std::cout << "frame period:" << thisDetector->timerValue[FRAME_PERIOD] << endl;
 		std::cout << "frame number:" << thisDetector->timerValue[FRAME_NUMBER] << endl;
@@ -5411,9 +5418,14 @@ char* slsDetector::setReceiver(string receiverIP){
 			setFilePath(fileIO::getFilePath());
 			setFileName(fileIO::getFileName());
 			setFileIndex(fileIO::getFileIndex());
-			enableWriteToFile(parentDet->enableWriteToFileMask());
-			overwriteFile(parentDet->enableOverwriteMask());
-
+			pthread_mutex_lock(&ms);
+			int imask = parentDet->enableWriteToFileMask();
+			pthread_mutex_unlock(&ms);
+			enableWriteToFile(imask);
+			pthread_mutex_lock(&ms);
+			imask = parentDet->enableOverwriteMask();
+			pthread_mutex_unlock(&ms);
+			overwriteFile(imask);
 			if ((thisDetector->timerValue[FRAME_NUMBER]*thisDetector->timerValue[CYCLES_NUMBER])>1)
 				setFrameIndex(0);
 			else
@@ -5706,11 +5718,12 @@ int slsDetector::configureMAC(){
   }
   else if (thisDetector->myDetectorType==GOTTHARD){
     //set frames per file - only for gotthard
+	pthread_mutex_lock(&ms);
     if(retval==-1)
       setFramesPerFile(MAX_FRAMES_PER_FILE);
     else
       setFramesPerFile(SHORT_MAX_FRAMES_PER_FILE);
-
+	pthread_mutex_unlock(&ms);
     //connect to receiver
     if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
       if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
@@ -6709,12 +6722,14 @@ string slsDetector::setFileName(string s) {
 	char retval[MAX_STR_LENGTH]="";
 
 	if(!s.empty()){
+		pthread_mutex_lock(&ms);
 		fileIO::setFileName(s);
 		if(thisDetector->myDetectorType == EIGER)
 			parentDet->setDetectorIndex(detId);
 		else if(parentDet->getNumberOfDetectors()>1)
 			parentDet->setDetectorIndex(detId);
 		s=parentDet->createReceiverFilePrefix();
+		pthread_mutex_unlock(&ms);
 	}
 
 	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
@@ -6730,7 +6745,10 @@ string slsDetector::setFileName(string s) {
 #ifdef VERBOSE
 				std::cout << "Complete file prefix from receiver: " << retval << std::endl;
 #endif
+				pthread_mutex_lock(&ms);
 				fileIO::setFileName(parentDet->getNameFromReceiverFilePrefix(string(retval)));
+				pthread_mutex_unlock(&ms);
+
 			}
 			if(ret==FORCE_UPDATE)
 				updateReceiver();
@@ -6752,8 +6770,11 @@ int slsDetector::setFileIndex(int i) {
 
 
 	if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG){
-		if(i>=0)
+		if(i>=0){
+			pthread_mutex_lock(&ms);
 			fileIO::setFileIndex(i);
+			pthread_mutex_unlock(&ms);
+		}
 	}
 
 	else if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
@@ -6763,8 +6784,11 @@ int slsDetector::setFileIndex(int i) {
 		if (connectData() == OK)
 			ret=thisReceiver->sendInt(fnum,retval,arg);
 		 disconnectData();
-		if(ret!=FAIL)
+		if(ret!=FAIL){
+			pthread_mutex_lock(&ms);
 			fileIO::setFileIndex(retval);
+			pthread_mutex_unlock(&ms);
+		}
 		if(ret==FORCE_UPDATE)
 			updateReceiver();
 	}
@@ -7102,11 +7126,15 @@ int slsDetector::updateReceiverNoWait() {
   cout << "Updating receiver last modified by " << lastClientIP << std::endl;
 #endif
   n = 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
+	pthread_mutex_lock(&ms);
   fileIO::setFileIndex(ind);
+	pthread_mutex_unlock(&ms);
   n = 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);
   fileIO::setFilePath(path);
   n = 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);
+  pthread_mutex_lock(&ms);
   fileIO::setFileName(path);
+  pthread_mutex_unlock(&ms);
   return OK;
 
 }
@@ -7176,8 +7204,11 @@ int slsDetector::enableWriteToFile(int enable){
 
 
 	if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG){
-		if(enable>=0)
+		if(enable>=0){
+			pthread_mutex_lock(&ms);
 			parentDet->enableWriteToFileMask(enable);
+			pthread_mutex_unlock(&ms);
+		}
 	}
 
 	else if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
@@ -7187,13 +7218,20 @@ int slsDetector::enableWriteToFile(int enable){
 		if (connectData() == OK)
 			ret=thisReceiver->sendInt(fnum,retval,arg);
 		 disconnectData();
-		if(ret!=FAIL)
+		if(ret!=FAIL){
+			pthread_mutex_lock(&ms);
 			parentDet->enableWriteToFileMask(retval);
+			pthread_mutex_unlock(&ms);
+		}
 		if(ret==FORCE_UPDATE)
 			updateReceiver();
 	}
 
-	return parentDet->enableWriteToFileMask();
+	pthread_mutex_lock(&ms);
+	retval = parentDet->enableWriteToFileMask();
+	pthread_mutex_unlock(&ms);
+
+	return retval;
 }
 
 
@@ -7207,8 +7245,11 @@ int slsDetector::overwriteFile(int enable){
 
 
 	if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG){
-		if(enable>=0)
+		if(enable>=0){
+		    pthread_mutex_lock(&ms);
 			parentDet->enableOverwriteMask(enable);
+			pthread_mutex_unlock(&ms);
+		}
 	}
 
 	else if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
@@ -7218,13 +7259,20 @@ int slsDetector::overwriteFile(int enable){
 		if (connectData() == OK)
 			ret=thisReceiver->sendInt(fnum,retval,arg);
 		 disconnectData();
-		if(ret!=FAIL)
+		if(ret!=FAIL){
+			pthread_mutex_lock(&ms);
 			parentDet->enableOverwriteMask(retval);
+			pthread_mutex_unlock(&ms);
+		}
 		if(ret==FORCE_UPDATE)
 			updateReceiver();
 	}
 
-	return parentDet->enableOverwriteMask();
+	pthread_mutex_lock(&ms);
+	retval = parentDet->enableOverwriteMask();
+	pthread_mutex_unlock(&ms);
+
+	return retval;
 }
 
 
@@ -7291,10 +7339,14 @@ int slsDetector::calibratePedestal(int frames){
 
 int64_t slsDetector::clearAllErrorMask(){
 	clearErrorMask();
+
+	 pthread_mutex_lock(&ms);
 	for(int i=0;i<parentDet->getNumberOfDetectors();i++){
 		if(parentDet->getDetectorId(i) == getDetectorId())
 			parentDet->setErrorMask(parentDet->getErrorMask()|(0<<i));
 	}
+	 pthread_mutex_unlock(&ms);
+
 	return getErrorMask();
 }
 

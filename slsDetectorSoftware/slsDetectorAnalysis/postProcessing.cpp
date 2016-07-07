@@ -31,6 +31,9 @@ postProcessing::postProcessing(): expTime(NULL), ang(NULL), val(NULL), err(NULL)
   pthread_mutex_init(&mp, NULL);  
   mg=mp1;
   pthread_mutex_init(&mg, NULL);
+  ms=mp1;
+  pthread_mutex_init(&ms, NULL);
+
   //cout << "reg callback "<< endl;
   dataReady = 0;
   pCallbackArg = 0; 

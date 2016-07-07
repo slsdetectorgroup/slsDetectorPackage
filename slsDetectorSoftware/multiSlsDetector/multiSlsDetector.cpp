@@ -3278,34 +3278,55 @@ char* multiSlsDetector::getNetworkParameter(networkParameter p) {
 */
 char* multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 
-  if (s.find('+')==string::npos) {
-    for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
-      if (detectors[idet]) {
-	    detectors[idet]->setNetworkParameter(p,s);
-	    if(detectors[idet]->getErrorMask())
-		  setErrorMask(getErrorMask()|(1<<idet));
-      }
-    }
-  } else {
-    size_t p1=0;
-    size_t p2=s.find('+',p1);
-    int id=0;
-    while (p2!=string::npos) {
+	if (s.find('+')==string::npos) {
 
-      if (detectors[id]) {
-    	  detectors[id]->setNetworkParameter(p,s.substr(p1,p2-p1));
-    	  if(detectors[id]->getErrorMask())
-    		  setErrorMask(getErrorMask()|(1<<id));
-      }
-      id++;
-      s=s.substr(p2+1);
-      p2=s.find('+');
-      if (id>=thisMultiDetector->numberOfDetectors)
-	break;
-    }
+		int posmin=0, posmax=thisMultiDetector->numberOfDetectors;
 
-  }
-  return getNetworkParameter(p);
+		if(!threadpool){
+			cout << "Error in creating threadpool. Exiting" << endl;
+			return getNetworkParameter(p);
+		}else{
+			string* sret[thisMultiDetector->numberOfDetectors];
+			for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
+				if(detectors[idet]){
+					sret[idet]=new string("error");
+					Task* task = new Task(new func2_t <char*,slsDetector,networkParameter,string,string>(&slsDetector::setNetworkParameter,
+							detectors[idet],p,s,sret[idet]));
+					threadpool->add_task(task);
+				}
+			}
+			threadpool->wait_for_tasks_to_complete();
+			for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
+				if(detectors[idet]){
+					//doing nothing with the return values
+					if(detectors[idet]->getErrorMask())
+						setErrorMask(getErrorMask()|(1<<idet));
+				}
+			}
+		}
+
+
+
+	} else {
+		size_t p1=0;
+		size_t p2=s.find('+',p1);
+		int id=0;
+		while (p2!=string::npos) {
+
+			if (detectors[id]) {
+				detectors[id]->setNetworkParameter(p,s.substr(p1,p2-p1));
+				if(detectors[id]->getErrorMask())
+					setErrorMask(getErrorMask()|(1<<id));
+			}
+			id++;
+			s=s.substr(p2+1);
+			p2=s.find('+');
+			if (id>=thisMultiDetector->numberOfDetectors)
+				break;
+		}
+
+	}
+	return getNetworkParameter(p);
 
 } 
 

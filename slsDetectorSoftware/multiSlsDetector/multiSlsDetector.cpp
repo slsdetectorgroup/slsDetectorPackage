@@ -392,6 +392,10 @@ int multiSlsDetector::addSlsDetector(int id, int pos) {
 
   //set offsets
   updateOffsets();
+  destroyThreadPool();
+  if(createThreadPool() == FAIL)
+	exit(-1);
+
 
   return thisMultiDetector->numberOfDetectors;
 
@@ -859,6 +863,9 @@ int multiSlsDetector::removeSlsDetector(int pos) {
   }
 
   updateOffsets();
+  destroyThreadPool();
+  if(createThreadPool() == FAIL)
+	exit(-1);
 
   return thisMultiDetector->numberOfDetectors;
 }

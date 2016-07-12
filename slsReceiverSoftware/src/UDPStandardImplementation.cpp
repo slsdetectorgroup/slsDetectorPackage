@@ -147,10 +147,12 @@ void UDPStandardImplementation::initializeMembers(){
 	frameIndex = 0;
 	currentFrameNumber = 0;
 	previousFrameNumber = -1;
+	lastFrameIndex = 0;
 	acqStarted = false;
 	measurementStarted = false;
-	for(int i = 0; i < MAX_NUMBER_OF_LISTENING_THREADS; ++i)
+	for(int i = 0; i < MAX_NUMBER_OF_LISTENING_THREADS; ++i){
 		totalListeningFrameCount[i] = 0;
+	}
 	packetsInFile = 0;
 	numMissingPackets = 0;
 	numTotMissingPackets = 0;
@@ -2106,7 +2108,8 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 				*(blankframe_data) = 0xFF;
 			}
 		}
-
+		//last frame read out
+		lastFrameIndex = -1;
 
 
 
@@ -2162,6 +2165,8 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 						}
 						//frame number
 						threadFrameNumber[i] = (uint32_t)(*( (uint64_t*) packetBuffer_footer));
+						//last frame read out
+						lastFrameIndex = threadFrameNumber[i];
 						threadFrameNumber[i] +=	(startFrameIndex - 1);
 
 						//packet number
@@ -2548,6 +2553,7 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer[]){
 
 		//statistics
 		FILE_LOG(logINFO) << "Status: Run Finished";
+		FILE_LOG(logINFO) << "Last Frame Number Caught:" << lastFrameIndex;
 		if(totalPacketsCaught < ((uint64_t)numberOfFrames*packetsPerFrame)){
 			cprintf(RED, "Total Missing Packets padded: %d\n",numTotMissingPackets);
 			cprintf(RED, "Total Packets Caught: %lld\n",(long long int)totalPacketsCaught);

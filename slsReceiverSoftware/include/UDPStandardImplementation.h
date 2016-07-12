@@ -542,6 +542,9 @@ private:
 	/** Previous Frame number from buffer to calculate loss */
 	int64_t previousFrameNumber;
 
+	/** Last Frame Index Listened To */
+	int32_t lastFrameIndex;
+
 	/* Acquisition started */
 	bool acqStarted;
 

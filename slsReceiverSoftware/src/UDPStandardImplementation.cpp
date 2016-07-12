@@ -1413,6 +1413,9 @@ int UDPStandardImplementation::createNewFile(){
 
 		}
 
+		//write file header
+		if(myDetectorType == EIGER)
+			fwrite((void*)fileHeader, 1, strlen(fileHeader), sfilefd);
 	}
 
 	//reset counters for each new file
@@ -1422,9 +1425,7 @@ int UDPStandardImplementation::createNewFile(){
 		numTotMissingPacketsInFile = 0;
 	}
 
-	//write file header
-	if(myDetectorType == EIGER)
-		fwrite((void*)fileHeader, 1, strlen(fileHeader), sfilefd);
+
 
 	return OK;
 }

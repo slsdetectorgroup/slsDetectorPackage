@@ -48,14 +48,14 @@ One can configure all the detector settings in a parameter file {\tt{setup.det}}
 sls_detector_put parameters setup.det
 \end{verbatim}
 
-In the case of \E, the proper bias voltage of the sensor has to be setup, i.e. the {\tt{setup.det}} file needs to contain the line {\tt{vhighvoltage 150}}. Other detector functionalities that are rarely changed can be setup here. 
+In the case of \E, the proper bias voltage of the sensor has to be setup, i.e. the {\tt{setup.det}} file needs to contain the line {\tt{vhighvoltage 150}}. Other detector functionality, which are rarely changed can be setup here. 
 Other important settings that are configured in the {\tt{setup.det}} file are:
 \begin{itemize}
 \item {\tt{tengiga 0/1}}, which sets whether the detector is enabled to send data through the 1~or the 10~Gb Ethernet.
 \item {\tt{flags parallel/nonparallel}}, which sets whether the detector is set in parallel acquisition and readout or in sequential mode. This changes the readout time of the chip and affects the frame rate capability (faster is {\tt{parallel}}, with higher noise but needed when the frame rate is $>2$~kHz. 
 \item {\tt{dr 32/16}} sets the detector in autosumming mode (32 bit counter or not autosumming, 12 bit out of the chip). This is strictly connected to what is required for the readout clock of chip. See next point.
-\item {\tt{clkdivider 0/1/2}}. Changes the readout clock: 200, 100, 50~MHz. Note that autosumming mode ({\tt{dr 32}} works only at {clkdivider 2}. Refer to readout timing specifications for how to set the detector. 
-\item {\tt{flags continuous/storeinram}}. Allows to take frame continuously or storing them on memory. Normally {\tt{continuous}} should be used, unless very fast frame rate needs to be achieved. Refer to readout timing specifications for how to set the detector.
+\item {\tt{clkdivider 0/1/2}}. Changes the readout clock: 200, 100, 50~MHz. Note that autosumming mode ({\tt{dr 32}} works only at {clkdivider 2}. Refer to readout timing specifications in~section\ref{timing} for how to set the detector. 
+\item {\tt{flags continuous/storeinram}}. Allows to take frame continuously or storing them on memory. Normally {\tt{continuous}} should be used. Enabling the  {\tt{stroreinram}} mode allows you to obtain the maximum frame rate, but at the expenses to have to receive the data all at the end of the acquisition. Refer to readout timing specifications in section~\ref{timing} for how to set the detector.
 \end{itemize}
 
 One should notice that, by default, by choosing the option {\tt{dr 32}}, then the software automatically sets the detector to  {\tt{clkdivider 2}}. By choosing the option {\tt{dr 16}}, the software automatically sets the detector to  {\tt{clkdivider 1}}. One needs to choose {\tt{clkdivider 0}} after setting the {\tt{dr 16}} option to have the fastest frame rate. 
@@ -95,68 +95,81 @@ You can poll the detector status using
 sls_detector_get status 
 \end{verbatim}
 
-\subsection{Readout timing- maximum frame rate}
-Short summary of readout timing. Some performances are not finalized yet.
+\subsection{Readout timing- maximum frame rate}\label{timing}
+IMPORTANT: to have faster readout and smaller dead time, one can configure {\tt{clkdivider}}, i.e. the speed at which the data are read, i.e. 200/100/50~MHz for {\tt{clkdivider 0/1/2}} and the dead time between frames through {\tt{flags parallel}}, i.e. acquire and read at the same time or acquire and then read out.
+The configuration of this timing variables allows to achieve different frame rates. NOTE THAT IN EIGER, WHATEVER YOU DO, THE FRAME RATE LIMITATIONS COME FROM THE NETWORK BOTTLENECK AS THE HARDWARE GOES FASTER THAN THE DATA OUT.
 
-In the case of {\tt{continuos}} readout, i.e. continuos read/write on the memories:
+In the case of REAL CONTINUOS readout, i.e. continuous acquire and readout from the boards (independent on how the chip is set):
 \begin{itemize}
 \item 1~GbE, {\tt{dr 16}}, {\tt{flags continous}}, \textbf{235~Hz} 
 \item 1~GbE, {\tt{dr 32}}, {\tt{flags continous}}, {\tt{clkdivider 2}}, \textbf{117~Hz}
 \item 10~GbE, {\tt{dr 16}}, {\tt{flags continous}}, {\tt{flags parallel}},{\tt{clkdivider 0}}, \textbf{2.34~kHz}  
 \item 10~GbE, {\tt{dr 32}}, {\tt{flags continuous}}, {\tt{clkdivider 2}}, \textbf{1.17~kHz}  
 \end{itemize}
-Note that in {\tt{continuos}} mode still higher frame rate can be achieved as a memory buffering is still implemented. But according on the requested frame rate, the memories could fill up at a higher rate the are read and freed. 
-
-In all cases, when a frame rate \textbf{$>2$~kHz} is wanted, use the {\tt{flag parallel}}.\\
-
-Enabling the  {\tt{stroreinram}} mode allows you to obtain the maximumm frame rate, but at the expenses to have to receive the data all at the end of the acquisition. The maximum frame rate achievable with 10~GbE,  {\tt{dr 16}}, {\tt{flags storeinram}}, {\tt{flags parallel}},{\tt{clkdivider 0}}, \textbf{5.9~kHz}. This is currently limited by the connection between the Front End Board and the Backend board. We expect the 32 bit mode limit to be approximately \textbf{3~kHz}.
- In dynamic range {\tt{dr 8}} the frame rate is \textbf{11~kHz} and for{\tt{dr 4}} is \textbf{22~kHz}. For 4 and 8 bit mode the frame rate are directly limited by the speed of the detector chip and not by the readout boards.    
-
-To achieve very high frame rates (maximum \textbf{$2$~kHz ?}) in 32 bit mode (autosumming), it will be needed to use the {\tt{stroreinram}} mode, as the memories cannot be accessed in read and write mode so fast.  
-
-Here is a list of all the readout times in the different configurations:
+Note that in the {\tt{continuous}} mode, some buffering is still done on the memories, so a higher frame rate than the proper real continuos one can be achieved. Still, this extra buffering is possible till the memories are not saturated. 
+The number of images that can be stored on memories are:
 \ \\
-\begin{tabular}{|c|c|c|c|}
+\begin{tabular}{|c|c|}
 \hline
-dynamic range & clkdivider & mode & readout time ($\mu$s)\\
+dynamic range & images\\
 \hline
-16 & 0 & parallel & 2.75\\
+4 & 30000\\
 \hline
-16 & 0 & nonparallel &  126\\
+8 & 15000\\
 \hline
-16 & 1 & parallel &  5.36\\
-\hline
-16 & 1 & nonparallel & 252\\
-\hline
-16 & 2 & parallel &  10.6\\
-\hline
-16 & 2 & nonparallel & 504\\
-\hline
-32 & 2 & parallel &  10.6\\
-\hline
-32 & 2 & nonparallel & 504\\
+16 & 7600\\
 \hline
 \end{tabular}
 
+The maximum frame rate achievable with 10~GbE, {\tt{dr 16}}, {\tt{flags continuous}}, {\tt{flags parallel}},{\tt{clkdivider 0}}, \textbf{6.1~kHz}. This is currently limited by the connection between the Front End Board and the Backend board. We expect the 32 bit mode limit to be \textbf{2~kHz} ({\tt{clkdivider 2}}).
+ In dynamic range {\tt{dr 8}} the frame rate is \textbf{11~kHz} and for{\tt{dr 4}} is \textbf{22~kHz}. For 4 and 8 bit mode the frame rate are directly limited by the speed of the detector chip and not by the readout boards.    
+
+Here is a list of all the readout times in the different configurations:
+\ \\
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+dynamic range & clkdivider & mode & readout time ($\mu$s) & max frame rate (kHz)\\
+\hline
+16 & 0 & parallel & 2.75 & 6\\
+\hline
+16 & 0 & nonparallel &  126 & 3.4\\
+\hline
+16 & 1 & parallel &  5.36 & 2.9\\
+\hline
+16 & 1 & nonparallel & 252 & 1.7\\
+\hline
+16 & 2 & parallel &  10.6 & 1.5\\
+\hline
+16 & 2 & nonparallel & 504 & 0.85\\
+\hline
+32 & 2 & parallel &  10.6 & 2\\
+\hline
+32 & 2 & nonparallel & 504 & $<2$\\
+\hline
+\end{tabular}
+
+\textbf{As if you run too fast, the detector could become noisier, it is important to match the detector settings to your frame rate. This can be done having more parameters files and load the one suitable with your experiment.} We experienced that {\tt{highgain}} settings could not be used at 6~kHz.
+
+
 \subsection{External triggering options}
-The detector can be setup such to receive external triggers. Connect a LEMO signal to the TRIGGER IN connector in the Power Distribution Board. Use a signal above 2.5~V. By default the positive polarity is used.  
+The detector can be setup such to receive external triggers. Connect a LEMO signal to the TRIGGER IN connector in the Power Distribution Board. Use a signal above 2.~V. By default the positive polarity is used (negative should not be passed to the board).  
 \begin{verbatim}
-sls_detector_put timing [auto/trigger/ro_trigger/gating]
+sls_detector_put timing [auto/trigger/burst/gating]
 sls_detector_put extsig:0 trigger_in_rising_edge
 sls_detector_put frames x
 sls_detector_put cycles y
 sls_detector_acquire
 \end{verbatim}
 
-Here are the implemented options (note that the names are completely misleading and will be changed):
+Here are the implemented options so far:
 \begin{itemize}
 \item {\tt{auto}} is the software controlled acquisition, where {\tt{exptime}} and {\tt{period}} have to be set.
 \item {\tt{trigger}} 1 frame taken for 1 trigger. You {\tt{frames}} needs to be  1 always, {\tt{cycles}} can be changed and defines how many triggers are considered. In the GUI this is called trigger exposure series. 
-\item {\tt{ro\_trigger}} gets only 1 trigger, but allows to take many frames. With {\tt{frames}} one can change the number of frames. {\tt{cycles}} needs to be 1. In the gui it is called trigger readout.
+\item {\tt{burst}} gets only 1 trigger, but allows to take many frames. With {\tt{frames}} one can change the number of frames. {\tt{cycles}} needs to be 1. In the gui it is called trigger readout.
 \item{\tt{gating}} allows to get a frame only when the trigger pulse is gating. Note that in this case the exp time and period only depend on the gating signal. {\tt{cycles}} allows to select how many gates to consider. 
 \end{itemize}
 
-We are planning to change some functionalities and the misleading names. 
+We are planning to change some functionality, i.e. unify the {\tt{trigger}} and {\tt{burst}} trigger modes and make both {\tt{frames}} and {\tt{cycles}} configurable at the same time.
  
 
 \subsection{Advanced autosumming and rate corrections}
@@ -168,7 +181,7 @@ The subframe length can be changed by the user by doing:
 sls_detector_put subexptime [time_in_s] 
 \end{verbatim}
 
-One needs to realize that the readout time, for each subtrame is 10.5~$\mu$s if the detector is in parallel mode. 500~$\mu$s if the detector is in non parallel mode. Note that in {\tt{dr 32}}, as the single frame readout from the chip is 500~$\mu$s, no {\tt{subexptime}}$<$500~$\mu$s can be set in {\tt{parallel}} mode. To have smaller {\tt{subexptime}}, you need the {\tt{nonparallel}} mode, although thsi will have a larger deadtime than the acquisition time.\\
+One needs to realize that the readout time, for each subtrame is 10.5~$\mu$s if the detector is in parallel mode. 500~$\mu$s if the detector is in non parallel mode. Note that in {\tt{dr 32}}, as the single frame readout from the chip is 500~$\mu$s, no {\tt{subexptime}}$<$500~$\mu$s can be set in {\tt{parallel}} mode. To have smaller {\tt{subexptime}}, you need the {\tt{nonparallel}} mode, although this will have a larger deadtime than the acquisition time.\\
 
 Online rate corrections can be activated. They are particularly useful and implemented \textbf{only} in the autosumming mode, i.e. when {\tt{dr 32}} is activated as  every single subframe is corrected before summing it. To correct for rate, the subframe duration has to be known to the correction algorithm.    
 To activate the rate corrections, one should do:\\
@@ -189,7 +202,7 @@ Every time either the rate corrections are activated, $\tau$ is changed or the s
 \subsection{Offline image reconstruction}
 The offline image reconstruction is in {\tt{slsDetectorsPackage/slsImageReconstruction}}.
 
-The detector writes a raw file per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce cbf files. The executable uses the CBFlib-0.9.5 library (downloaded form the web).\\
+The detector writes a raw file per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce cbf files. The executable uses the CBFlib-0.9.5 library (downloaded from the web as it download some architecture dependent packages at installation).\\
 \underline{At cSAXS, the CBFlib-0.9.5 has been compiled -such that the required packages are}\\\underline{ downloaded in /sls/X12SA/data/x12saop/EigerPackage/CBFlib-0.9.5.}\\ 
 
 To use it for a single module:

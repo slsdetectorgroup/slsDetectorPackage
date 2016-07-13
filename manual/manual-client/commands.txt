@@ -123,7 +123,9 @@
  "cyclesl"; // gets number of cycles left
  "now"; // gets time stamp from the dteector
  "timestamp"; // gets time stamp for the frames (fifo-style)
-  /* speed */
+ "framescaught";// gets the entire frames caught by receiver
+  "resetframescaught x"; resets the value of framescaught to x 
+ /* speed */
  "clkdivider"; // sets/gets readout clock divider (advanced!)
  "setlength";// sets/gets readout set/clear length (advanced!)
  "waitstates"; // sets/gets CPU waitstates (advanced!)

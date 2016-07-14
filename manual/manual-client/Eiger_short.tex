@@ -65,7 +65,7 @@ We would recommend expert users (beamline people) to write their parameters file
 
 You will then need to setup the detector threshold and settings, the exposure time, the number of real time frames and eventually how many real time frames should be acquired:
 \begin{verbatim}
-sls_detector_put settings standard
+sls_detector_put settings [standard/highgain/lowgain]
 sls_detector_put threshold 6000
 sls_detector_put exptime 1.
 sls_detector_put frames 10
@@ -74,6 +74,8 @@ In this case 10 consecutive 1s frames will be acquired.\\
 
 For \E, at the moment 3 settings are possible: {\tt{standard}}, {\tt{lowgain}} and {\tt{highgain}}. According to the setting chosen, one can reach different energies. Refer to the settings requirements for your detector.\\ 
 Notice that the option  {\tt{settings standard/highgain/lowgain}} actually loads the trimbit files so it is time consuming. Only setting the {\tt{threshold}} does not load trimbit files.  
+
+The threshold is expressed in (eV) as the proper threshold setting, i.e. normally is set to 50\% of the beam energy.  
 
 \underline{At cSAXS, the {\tt{settingsdir}} and {\tt{caldir}} are in}\\\underline{/sls/X12SA/data/x12saop/EigerPackage/calibrations/}\\ 
 

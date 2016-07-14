@@ -180,7 +180,8 @@ int function_table() {
 	flist[F_PULSE_PIXEL]=&pulse_pixel;
 	flist[F_PULSE_PIXEL_AND_MOVE]=&pulse_pixel_and_move;
 	flist[F_PULSE_CHIP]=&pulse_chip;
-	flist[F_SET_RATE_CORRECT]=&rate_correct;
+	flist[F_SET_RATE_CORRECT]=&set_rate_correct;
+	flist[F_GET_RATE_CORRECT]=&get_rate_correct;
 
 
 #ifdef VERBOSE
@@ -1803,6 +1804,8 @@ int set_module(int file_des) {
 	int retval, n;
 	int ret=OK,ret1=OK;
 
+	strcpy(mess,"could not set module.");
+
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	sls_detector_module myModule;
 #ifdef EIGERD
@@ -1905,29 +1908,43 @@ int set_module(int file_des) {
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		} else {
 #ifdef EIGERD
-			ret=setModule(myModule, myGain, myOffset,myIODelay,myTau);
-			//rate correction errors
-			switch(ret){
-			case -1:
-				sprintf(mess,"Cannot set Rate correction. Rate correction Deactivated, settings %d not recognized by detector\n",thisSettings);
-				cprintf(RED,"%s",mess);
-				ret = FAIL;
-				break;
-			case -2:
-				strcpy(mess,"Could not set Rate correction. Rate correction Deactivated, (tau/subexptime) must be < 0.0015\n");
-				cprintf(RED,"%s",mess);
-				ret = FAIL;
-				break;
-			case -3:
-				strcpy(mess,"Could not set Rate correction. Rate correction Deactivated\n");
-				cprintf(RED,"%s",mess);
-				ret = FAIL;
-				break;
+			ret=setModule(myModule, myGain, myOffset,myIODelay);
+			//rate correction
+			if(myTau > -2){	//ignore -2: from load settings)
+
+				//set default tau value (-1 or a normal value)
+				setDefaultSettingsTau_in_nsec(myTau);
+
+				//switch off rate correction: no value read from load calib/load settings)
+				if(myTau == -1){
+					ret = FAIL;
+					if(getRateCorrectionEnable()){
+						setRateCorrection(0);
+						strcat(mess," Cannot set Rate correction. No default tau provided. Deactivating Rate Correction\n");
+					}else{
+						strcat(mess," Cannot set Rate correction. No default tau provided\n");
+					}
+					cprintf(RED,"%s",mess);
+				}
+
+
+				//normal tau value (only if enabled)
+				else if (getRateCorrectionEnable()){
+					int64_t retvalTau = setRateCorrection(myTau); //myTau will not be -1 here
+					if(myTau != retvalTau){
+						if(retvalTau == -1)
+							strcat(mess," Rate correction Deactivated, (tau/subexptime) must be < 0.0015\n");
+						cprintf(RED,"%s",mess);
+						ret=FAIL;
+					}
+				}
 			}
+			retval = getSettings();
+
 #else
 			ret=setModule(myModule);
-#endif
 			retval = ret;
+#endif
 		}
 	}
 #endif
@@ -3863,10 +3880,9 @@ int pulse_chip(int file_des) {
 
 
 
-int rate_correct(int file_des) {
+int set_rate_correct(int file_des) {
 	int64_t tau_ns=-1;
 	int n;
-	int64_t retval=-1;
 	int ret=OK,ret1=OK;
 
 	sprintf(mess,"can't set/unset rate correction\n");
@@ -3886,30 +3902,39 @@ int rate_correct(int file_des) {
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 
-	//tau = -1, use default tau of settings
-	if((ret==OK)&&(tau_ns<0)){
-		tau_ns = getDefaultSettingsTau_in_nsec();
-		if(tau_ns < 0){
-			ret = FAIL;
-			sprintf(mess,"Cannot set rate correction. Settings %d not recognized by detector\n",thisSettings);
-			cprintf(RED,"%s",mess);
-		}
-	}
-
-
 	if (ret==OK) {
 		printf("Setting rate correction to %lld ns\n",tau_ns);
 
-		if (differentClients==1 && lockStatus==1 && tau_ns!=-1) {
+		if (differentClients==1 && lockStatus==1) {
 			ret=FAIL;
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		}  else {
-			retval = setRateCorrection(tau_ns); //tau_ns will not be -1 here
-			if(tau_ns != retval){
-				if(retval == -1)
-					strcpy(mess,"Rate correction Deactivated, (tau/subexptime) must be < 0.0015\n");
+
+			//tau = -1, use default tau of settings
+			if((ret==OK)&&(tau_ns<0)){
+				tau_ns = getDefaultSettingsTau_in_nsec();
+			}
+			//still negative (not set)
+			if(tau_ns < 0){
+				ret = FAIL;
+				if(getRateCorrectionEnable()){
+					setRateCorrection(0);
+					strcpy(mess,"Cannot set rate correction as default tau not provided. Switching off Rate Correction\n");
+				}else{
+					strcpy(mess,"Cannot set rate correction as default tau not provided\n");
+				}
 				cprintf(RED,"%s",mess);
-				ret=FAIL;
+			}
+
+			//set rate
+			else{
+				int64_t retval = setRateCorrection(tau_ns); //tau_ns will not be -1 here
+				if(tau_ns != retval){
+					if(retval == -1)
+						strcpy(mess,"Rate correction Deactivated, (tau/subexptime) must be < 0.0015\n");
+					cprintf(RED,"%s",mess);
+					ret=FAIL;
+				}
 			}
 		}
 	}
@@ -3923,8 +3948,45 @@ int rate_correct(int file_des) {
 	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret==FAIL) {
 		n = sendData(file_des,mess,sizeof(mess),OTHER);
+	}
+
+	return ret;
+}
+
+
+
+
+int get_rate_correct(int file_des) {
+	int64_t retval=-1;
+	int ret=OK,ret1=OK;
+
+	sprintf(mess,"can't get rate correction\n");
+
+
+#ifndef EIGERD
+	sprintf(mess,"Rate Correction not implemented for this detector\n");
+	cprintf(RED,"%s",mess);
+	ret=FAIL;
+#endif
+
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+
+	if (ret==OK) {
+		retval = getCurrentTau();
+		printf("Getting rate correction %lld\n",(long long int)retval);
+	}
+#endif
+	if ((ret==OK) && (differentClients))
+		ret=FORCE_UPDATE;
+
+
+	//ret could be swapped during sendData
+	ret1 = ret;
+	sendData(file_des,&ret1,sizeof(ret),INT32);
+	if (ret==FAIL) {
+		sendData(file_des,mess,sizeof(mess),OTHER);
 	} else {
-		n = sendData(file_des,&retval,sizeof(retval),INT64);
+		sendData(file_des,&retval,sizeof(retval),INT64);
 	}
 
 	return ret;

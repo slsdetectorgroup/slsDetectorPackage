@@ -2752,111 +2752,105 @@ int slsDetector::setModule(int reg, int imod){
 
 int slsDetector::setModule(sls_detector_module module, int* gainval, int* offsetval, int* iodelay, int64_t tau){
 
-  int fnum=F_SET_MODULE;
-  int retval;
-  int ret=FAIL;
-  char mess[100];
+	int fnum=F_SET_MODULE;
+	int retval;
+	int ret=FAIL;
+	char mess[100];
 
-  int imod=module.module;
+	int imod=module.module;
 
 
 #ifdef VERBOSE
-  std::cout << "slsDetector set module " << std::endl;
+	std::cout << "slsDetector set module " << std::endl;
 #endif
 
-  if (thisDetector->onlineFlag==ONLINE_FLAG) {
-    if (connectControl() == OK){
-      controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-      sendModule(&module);
+	if (thisDetector->onlineFlag==ONLINE_FLAG) {
+		if (connectControl() == OK){
+			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+			sendModule(&module);
 
-  	  //extra gain and offset - eiger
-      if((thisDetector->nGain) && (gainval))
-    	  controlSocket->SendDataOnly(gainval,sizeof(int)*thisDetector->nGain);
-      if((thisDetector->nOffset) && (offsetval))
-    	  controlSocket->SendDataOnly(offsetval,sizeof(int)*thisDetector->nOffset);
-      if(thisDetector->myDetectorType == EIGER)
-    	  controlSocket->SendDataOnly(iodelay,sizeof(int));
-      if(thisDetector->myDetectorType == EIGER)
-    	  controlSocket->SendDataOnly(&tau,sizeof(tau));
+			//extra gain and offset - eiger
+			if((thisDetector->nGain) && (gainval))
+				controlSocket->SendDataOnly(gainval,sizeof(int)*thisDetector->nGain);
+			if((thisDetector->nOffset) && (offsetval))
+				controlSocket->SendDataOnly(offsetval,sizeof(int)*thisDetector->nOffset);
+			if(thisDetector->myDetectorType == EIGER){
+				controlSocket->SendDataOnly(iodelay,sizeof(int));
+				controlSocket->SendDataOnly(&tau,sizeof(tau));
+			}
 
-      controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-      if (ret!=FAIL) {
-	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-      } else {
-	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-	std::cout<< "Detector returned error: " << mess << std::endl;
-      }
-      disconnectControl();
-      if (ret==FORCE_UPDATE)
-	updateDetector();
-    }
-  }
+			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			if (ret!=FAIL)
+				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+			else {
+				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+				std::cout<< "Detector returned error: " << mess << std::endl;
+			}
+			disconnectControl();
+			if (ret==FORCE_UPDATE)
+				updateDetector();
+		}
+	}
 
-  if(ret == FAIL && thisDetector->myDetectorType == EIGER && strcasestr(mess,"Rate")){
-	  setErrorMask((getErrorMask())|(COULD_NOT_SET_RATE_CORRECTION));
-	    if(strcasestr(mess,"tau/subexptime"))
-	    	 setErrorMask((getErrorMask())|(RATE_CORRECTION_TAU_SUBEXPOSURE));
-	  thisDetector->correctionMask&=~(1<<RATE_CORRECTION);
-	  thisDetector->tDead = 0;
-  }
 
-  if (ret!=FAIL) {
-    if (detectorModules) {
-      if (imod>=0 && imod<thisDetector->nMod[X]*thisDetector->nMod[Y]) {
-	(detectorModules+imod)->nchan=module.nchan;
-	(detectorModules+imod)->nchip=module.nchip;
-	(detectorModules+imod)->ndac=module.ndac;
-	(detectorModules+imod)->nadc=module.nadc;
-	thisDetector->nChips=module.nchip;
-	thisDetector->nChans=module.nchan/module.nchip;
-	thisDetector->nDacs=module.ndac;
-	thisDetector->nAdcs=module.nadc;
+	if (ret!=FAIL) {
+		if (detectorModules) {
+			if (imod>=0 && imod<thisDetector->nMod[X]*thisDetector->nMod[Y]) {
+				(detectorModules+imod)->nchan=module.nchan;
+				(detectorModules+imod)->nchip=module.nchip;
+				(detectorModules+imod)->ndac=module.ndac;
+				(detectorModules+imod)->nadc=module.nadc;
+				thisDetector->nChips=module.nchip;
+				thisDetector->nChans=module.nchan/module.nchip;
+				thisDetector->nDacs=module.ndac;
+				thisDetector->nAdcs=module.nadc;
 
-	if(thisDetector->myDetectorType != JUNGFRAU){
-		for (int ichip=0; ichip<thisDetector->nChips; ichip++) {
-			if (chipregs)
-				chipregs[ichip+thisDetector->nChips*imod]=module.chipregs[ichip];
+				if(thisDetector->myDetectorType != JUNGFRAU){
+					for (int ichip=0; ichip<thisDetector->nChips; ichip++) {
+						if (chipregs)
+							chipregs[ichip+thisDetector->nChips*imod]=module.chipregs[ichip];
 
-			if (chanregs) {
-				for (int i=0; i<thisDetector->nChans; i++) {
-					chanregs[i+ichip*thisDetector->nChans+thisDetector->nChips*thisDetector->nChans*imod]=module.chanregs[ichip*thisDetector->nChans+i];
+						if (chanregs) {
+							for (int i=0; i<thisDetector->nChans; i++) {
+								chanregs[i+ichip*thisDetector->nChans+thisDetector->nChips*thisDetector->nChans*imod]=module.chanregs[ichip*thisDetector->nChans+i];
+							}
+						}
+					}
+					if (adcs) {
+						for (int i=0; i<thisDetector->nAdcs; i++)
+							adcs[i+imod*thisDetector->nAdcs]=module.adcs[i];
+					}
 				}
+
+				if (dacs) {
+					for (int i=0; i<thisDetector->nDacs; i++)
+						dacs[i+imod*thisDetector->nDacs]=module.dacs[i];
+				}
+
+				(detectorModules+imod)->gain=module.gain;
+				(detectorModules+imod)->offset=module.offset;
+				(detectorModules+imod)->serialnumber=module.serialnumber;
+				(detectorModules+imod)->reg=module.reg;
 			}
 		}
-		if (adcs) {
-			for (int i=0; i<thisDetector->nAdcs; i++)
-				adcs[i+imod*thisDetector->nAdcs]=module.adcs[i];
+
+		if ((thisDetector->nGain) && (gainval) && (gain)) {
+			for (int i=0; i<thisDetector->nGain; i++)
+				gain[i+imod*thisDetector->nGain]=gainval[i];
 		}
-	}
 
-	if (dacs) {
-	  for (int i=0; i<thisDetector->nDacs; i++)
-	    dacs[i+imod*thisDetector->nDacs]=module.dacs[i];
-	}
+		if ((thisDetector->nOffset) && (offsetval) && (offset))  {
+			for (int i=0; i<thisDetector->nOffset; i++)
+				offset[i+imod*thisDetector->nOffset]=offsetval[i];
+		}
 
-	(detectorModules+imod)->gain=module.gain;
-	(detectorModules+imod)->offset=module.offset;
-	(detectorModules+imod)->serialnumber=module.serialnumber;
-	(detectorModules+imod)->reg=module.reg;
-      }
-    }
-
-	if ((thisDetector->nGain) && (gainval) && (gain)) {
-	  for (int i=0; i<thisDetector->nGain; i++)
-	    gain[i+imod*thisDetector->nGain]=gainval[i];
 	}
-
-	if ((thisDetector->nOffset) && (offsetval) && (offset))  {
-	  for (int i=0; i<thisDetector->nOffset; i++)
-		  offset[i+imod*thisDetector->nOffset]=offsetval[i];
-	}
-  }
 
 #ifdef VERBOSE
-  std::cout<< "Module register returned "<<  retval << std::endl;
+	std::cout<< "Module register returned "<<  retval << std::endl;
 #endif
 
-  return retval;
+	return retval;
 };
 
 
@@ -3956,7 +3950,10 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 		setTotalProgress();
 	}
 
-
+	double r;
+	if((index == SUBFRAME_ACQUISITION_TIME) && (thisDetector->myDetectorType == EIGER)  && (t>=0) && getRateCorrection(r)){
+		setRateCorrection(r);
+	}
 
 	//send acquisiton period/frame number to receiver
 	if((index==FRAME_NUMBER)||(index==FRAME_PERIOD)||(index==CYCLES_NUMBER)){
@@ -5001,110 +4998,126 @@ int slsDetector::flatFieldCorrect(double* datain, double *errin, double* dataout
 
 int slsDetector::setRateCorrection(double t){
 
-	if (getDetectorsType() == MYTHEN){
-		double tdead[]=defaultTDead;
-		if (t==0) {
+	if (getDetectorsType() == EIGER){
+		int fnum=F_SET_RATE_CORRECT;
+		int ret=FAIL;
+		char mess[1000]="";
+		int64_t arg = t;
+		int64_t retval = -1;
 #ifdef VERBOSE
-			std::cout<< "unsetting rate correction" << std::endl;
+		std::cout<< "Setting Rate Correction to " << arg << endl;
 #endif
-			thisDetector->correctionMask&=~(1<<RATE_CORRECTION);
-		} else {
-			thisDetector->correctionMask|=(1<<RATE_CORRECTION);
-			if (t>0)
-				thisDetector->tDead=t;
-			else {
-				if (thisDetector->currentSettings<3 && thisDetector->currentSettings>-1)
-					thisDetector->tDead=tdead[thisDetector->currentSettings];
-				else
-					thisDetector->tDead=0;
-			}
-#ifdef VERBOSE
-			std::cout<< "Setting rate correction with dead time "<< thisDetector->tDead << std::endl;
-#endif
-		}
-		return thisDetector->correctionMask&(1<<RATE_CORRECTION);
-	}
-
-
-	int fnum=F_SET_RATE_CORRECT;
-	int ret=FAIL;
-	char mess[1000]="";
-	int64_t arg = t;
-	int64_t retval = -1;
-#ifdef VERBOSE
-	std::cout<< "Setting Rate Correction to " << arg << endl;
-#endif
-	if (setOnline(ONLINE_FLAG)==ONLINE_FLAG) {
-		if (connectControl() == OK){
-			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-			controlSocket->SendDataOnly(&arg,sizeof(arg));
-			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-			if (ret!=FAIL) {
-				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-				if(retval<0){
-					thisDetector->correctionMask&=~(1<<RATE_CORRECTION);
-					thisDetector->tDead = 0;
-				}else{
-					if(retval>0){
-						thisDetector->correctionMask|=(1<<RATE_CORRECTION);
-						if(t < 0)
-							thisDetector->tDead = -1;
-						else
-						  thisDetector->tDead = (double)retval;
-					}
-					else{
-						thisDetector->correctionMask&=~(1<<RATE_CORRECTION);
-						thisDetector->tDead = (double)retval;
-					}
+		if (setOnline(ONLINE_FLAG)==ONLINE_FLAG) {
+			if (connectControl() == OK){
+				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+				controlSocket->SendDataOnly(&arg,sizeof(arg));
+				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret==FAIL) {
+					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Detector returned error: " << mess << std::endl;
+					setErrorMask((getErrorMask())|(COULD_NOT_SET_RATE_CORRECTION));
+					if(strcasestr(mess,"tau/subexptime"))
+						setErrorMask((getErrorMask())|(RATE_CORRECTION_TAU_SUBEXPOSURE));
 				}
-			} else {
-				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-				std::cout<< "Detector returned error: " << mess << std::endl;
-			    setErrorMask((getErrorMask())|(COULD_NOT_SET_RATE_CORRECTION));
-			    if(strcasestr(mess,"tau/subexptime"))
-			    	 setErrorMask((getErrorMask())|(RATE_CORRECTION_TAU_SUBEXPOSURE));
-				thisDetector->correctionMask&=~(1<<RATE_CORRECTION);
-				thisDetector->tDead = 0;
+				disconnectControl();
+				if (ret==FORCE_UPDATE)
+					updateDetector();
 			}
-			disconnectControl();
-			if (ret==FORCE_UPDATE)
-				updateDetector();
 		}
+		return ret;  //only success/fail
 	}
 
+
+	//mythen
+	double tdead[]=defaultTDead;
+	if (t==0) {
+#ifdef VERBOSE
+		std::cout<< "unsetting rate correction" << std::endl;
+#endif
+		thisDetector->correctionMask&=~(1<<RATE_CORRECTION);
+	} else {
+		thisDetector->correctionMask|=(1<<RATE_CORRECTION);
+		if (t>0)
+			thisDetector->tDead=t;
+		else {
+			if (thisDetector->currentSettings<3 && thisDetector->currentSettings>-1)
+				thisDetector->tDead=tdead[thisDetector->currentSettings];
+			else
+				thisDetector->tDead=0;
+		}
+#ifdef VERBOSE
+		std::cout<< "Setting rate correction with dead time "<< thisDetector->tDead << std::endl;
+#endif
+	}
 	return thisDetector->correctionMask&(1<<RATE_CORRECTION);
+
+
 }
 
 
 int slsDetector::getRateCorrection(double &t){
 
-  if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
+	if (thisDetector->myDetectorType == EIGER){
+		t = getRateCorrectionTau();
+		return t;
+	}
+
+	if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
 #ifdef VERBOSE
-    std::cout<< "Rate correction is enabled with dead time "<< thisDetector->tDead << std::endl;
+		std::cout<< "Rate correction is enabled with dead time "<< thisDetector->tDead << std::endl;
 #endif
-    t=thisDetector->tDead;
-    return 1;
-  } else
-    t=0;
+		t=thisDetector->tDead;
+		return 1;
+	} else
+		t=0;
 #ifdef VERBOSE
-  std::cout<< "Rate correction is disabled " << std::endl;
+	std::cout<< "Rate correction is disabled " << std::endl;
 #endif
-  return 0;
+	return 0;
 };
 
 double slsDetector::getRateCorrectionTau(){
 
-  if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
+	if(thisDetector->myDetectorType == EIGER){
+		int fnum=F_GET_RATE_CORRECT;
+		int ret=FAIL;
+		char mess[1000]="";
+		int64_t retval = -1;
+	#ifdef VERBOSE
+		std::cout<< "Setting Rate Correction to " << arg << endl;
+	#endif
+		if (setOnline(ONLINE_FLAG)==ONLINE_FLAG) {
+			if (connectControl() == OK){
+				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret!=FAIL)
+					controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+				else {
+					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Detector returned error: " << mess << std::endl;
+				}
+				disconnectControl();
+				if (ret==FORCE_UPDATE)
+					updateDetector();
+			}
+		}
+
+		return double(retval);
+	}
+
+
+	//mythen only
+	if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
 #ifdef VERBOSE
-    std::cout<< "Rate correction is enabled with dead time "<< thisDetector->tDead << std::endl;
+		std::cout<< "Rate correction is enabled with dead time "<< thisDetector->tDead << std::endl;
 #endif
-    return thisDetector->tDead;
-    //return 1;
-  } else
+		return thisDetector->tDead;
+		//return 1;
+	} else
 #ifdef VERBOSE
-    std::cout<< "Rate correction is disabled " << std::endl;
+		std::cout<< "Rate correction is disabled " << std::endl;
 #endif
-  return 0;
+	return 0;
 };
 
 
@@ -5112,6 +5125,11 @@ double slsDetector::getRateCorrectionTau(){
 
 
 int slsDetector::getRateCorrection(){
+
+	if (thisDetector->myDetectorType == EIGER){
+		double t = getRateCorrectionTau();
+		return (int)t;
+	}
 
   if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
     return 1;

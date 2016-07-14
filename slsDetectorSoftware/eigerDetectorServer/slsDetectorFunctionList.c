@@ -12,6 +12,8 @@
 #include "FebControl.h"
 #include "Beb.h"
 
+int default_tau_from_file= -1;
+
 #define BEB_NUM 34
 
 enum detectorSettings thisSettings;
@@ -535,16 +537,21 @@ int getRateCorrectionEnable(){
 }
 
 int getDefaultSettingsTau_in_nsec(){
-	switch(thisSettings){
-	case STANDARD:	return STANDARD_TAU;
-	case HIGHGAIN:	return HIGHGAIN_TAU;
-	case LOWGAIN:	return LOWGAIN_TAU;
-	default:		return -1;
-	}
+	return default_tau_from_file;
 }
 
+int64_t getCurrentTau(){
+	if(!getRateCorrectionEnable())
+		return 0;
+	else
+		return Feb_Control_Get_RateTable_Tau_in_nsec();
+}
 
-int setModule(sls_detector_module myMod, int* gain, int* offset,int* delay, int64_t tau_ns){
+void setDefaultSettingsTau_in_nsec(int t){
+	default_tau_from_file = t;
+}
+
+int setModule(sls_detector_module myMod, int* gain, int* offset,int* delay){
 	int retval[2];
 	int i;
 
@@ -554,32 +561,6 @@ int setModule(sls_detector_module myMod, int* gain, int* offset,int* delay, int6
 
 	//set the settings variable
 	setSettings( (enum detectorSettings)myMod.reg,-1);
-
-
-	//rate correction  (ignore -2: from load settings)
-	if(tau_ns > -2){
-		//set settings, with no tau in calib file
-		if(tau_ns == -1){
-			tau_ns = getDefaultSettingsTau_in_nsec();
-			//incorrect settings
-			if(tau_ns < 0)
-				return -1;
-		}
-		//set the tau for all
-		int64_t rate_retval = setRateCorrection(tau_ns); //tau_ns will not be -1 here
-		if(tau_ns != rate_retval){
-			if(rate_retval == -1)
-				return -2;
-			else
-				return -3;
-		}
-		//set settings, with no tau in calib file :
-		//only setting tau, rate correction should be off
-		//(in previous "error" returns, its switched off anyway)
-		if(tau_ns == -1)
-			setRateCorrection(0);
-	}else cprintf(RED,"rate not changed\n");
-
 
 	//set the gains and offset variables locally
 	for(i=0;i<NGAIN;i++){
@@ -629,7 +610,7 @@ int setModule(sls_detector_module myMod, int* gain, int* offset,int* delay, int6
 		return FAIL;
 	}
 
-	return 0;
+	return thisSettings;
 }
 
 
@@ -728,6 +709,9 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 	return thisSettings;
 }
 
+enum detectorSettings getSettings(){
+	return thisSettings;
+}
 
 int startReceiver(int d){
 	printf("Going to prepare for acquisition with counter_bit:%d\n",Feb_Control_Get_Counter_Bit());

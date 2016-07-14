@@ -100,7 +100,8 @@ enum {
   F_PULSE_PIXEL_AND_MOVE,	/** < pulse pixel n number of times and move relatively by x and y */
   F_PULSE_CHIP,				/** < pulse chip n number of times */
 
-  F_SET_RATE_CORRECT		/** < set/reset rate correction tau */
+  F_SET_RATE_CORRECT,		/** < set/reset rate correction tau */
+  F_GET_RATE_CORRECT,		/** < get rate correction tau */
 
   /* Always append functions hereafter!!! */
 

@@ -54,6 +54,8 @@ int pulseChip(int n);
 int64_t setRateCorrection(int64_t custom_tau_in_nsec);
 int getRateCorrectionEnable();
 int getDefaultSettingsTau_in_nsec();
+void setDefaultSettingsTau_in_nsec(int t);
+int64_t getCurrentTau();
 #endif
 
 #if defined(MYTHEND) || defined(GOTTHARDD)
@@ -70,7 +72,7 @@ int getChip(sls_detector_chip *myChip);
 
 
 #ifdef EIGERD
-int setModule(sls_detector_module myMod, int* gain, int* offset,int* delay, int64_t tau_ns);
+int setModule(sls_detector_module myMod, int* gain, int* offset,int* delay);
 int getModule(sls_detector_module *myMod, int* gain, int* offset);
 #else
 int setModule(sls_detector_module myMod);
@@ -79,6 +81,7 @@ int getModule(sls_detector_module *myMod);
 
 
 enum detectorSettings setSettings(enum detectorSettings sett, int imod);
+enum detectorSettings getSettings();
 
 #if defined(MYTHEND) || defined(EIGERD)
 int getThresholdEnergy(int imod);

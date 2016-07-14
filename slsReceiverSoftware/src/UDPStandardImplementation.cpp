@@ -2663,6 +2663,33 @@ void UDPStandardImplementation::writeFileWithoutCompression(char* wbuffer[],uint
 		//loop to take care of creating new files when it reaches max packets per file
 		while(numpackets > 0){
 
+			//new file
+			if(packetsInFile >= (uint32_t)maxPacketsPerFile){
+				//for packet loss, because currframenum is the latest one for eiger
+				//get frame number (eiger already gets it when it does packet to packet processing)
+				if(myDetectorType != EIGER){
+					lastpacket = (((packetsToSave - 1) * onePacketSize) + offset);
+					if(myDetectorType == JUNGFRAU){
+						jfrau_packet_header_t* header = (jfrau_packet_header_t*) (wbuffer[0] + lastpacket);
+						currentFrameNumber = (*( (uint32_t*) header->frameNumber))&0xffffff;
+					}else{
+						tempframenumber = ((uint32_t)(*((uint32_t*)(wbuffer[0] + lastpacket))));
+						//for gotthard and normal frame, increment frame number to separate fnum and pnum
+						if (myDetectorType == PROPIX ||(myDetectorType == GOTTHARD && shortFrameEnable == -1))
+							tempframenumber++;
+						//get frame number
+						currentFrameNumber = (tempframenumber & frameIndexMask) >> frameIndexOffset;
+					}
+
+					//set indices
+					acquisitionIndex = currentFrameNumber - startAcquisitionIndex;
+					frameIndex = currentFrameNumber - startFrameIndex;
+				}
+#ifdef DEBUG3
+				cprintf(GREEN,"Writing_Thread: Current Frame Number:%d\n",currentFrameNumber);
+#endif
+				createNewFile();
+			}
 			//to create new file when max reached
 			packetsToSave = maxPacketsPerFile - packetsInFile;
 			if(packetsToSave > numpackets)
@@ -2693,36 +2720,6 @@ void UDPStandardImplementation::writeFileWithoutCompression(char* wbuffer[],uint
 #ifdef DEBUG4
 			cprintf(GREEN,"Writing Thread: packetscaught:%d totalPacketsCaught:%d\n", packetsCaught,totalPacketsCaught);
 #endif
-
-			//new file
-			if(packetsInFile >= (uint32_t)maxPacketsPerFile){
-				//for packet loss, because currframenum is the latest one for eiger
-				//get frame number (eiger already gets it when it does packet to packet processing)
-				if(myDetectorType != EIGER){
-					lastpacket = (((packetsToSave - 1) * onePacketSize) + offset);
-					if(myDetectorType == JUNGFRAU){
-						jfrau_packet_header_t* header = (jfrau_packet_header_t*) (wbuffer[0] + lastpacket);
-						currentFrameNumber = (*( (uint32_t*) header->frameNumber))&0xffffff;
-					}else{
-						tempframenumber = ((uint32_t)(*((uint32_t*)(wbuffer[0] + lastpacket))));
-						//for gotthard and normal frame, increment frame number to separate fnum and pnum
-						if (myDetectorType == PROPIX ||(myDetectorType == GOTTHARD && shortFrameEnable == -1))
-							tempframenumber++;
-						//get frame number
-						currentFrameNumber = (tempframenumber & frameIndexMask) >> frameIndexOffset;
-					}
-
-
-
-					//set indices
-					acquisitionIndex = currentFrameNumber - startAcquisitionIndex;
-					frameIndex = currentFrameNumber - startFrameIndex;
-				}
-#ifdef DEBUG3
-				cprintf(GREEN,"Writing_Thread: Current Frame Number:%d\n",currentFrameNumber);
-#endif
-				createNewFile();
-			}
 
 			//increase offset
 			if(myDetectorType != EIGER)

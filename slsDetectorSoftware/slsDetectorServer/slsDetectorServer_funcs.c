@@ -2585,14 +2585,11 @@ int set_timer(int file_des) {
 					strcpy(mess,"Sub Frame exposure time should not exceed 5.368 seconds\n");
 					break;
 				}
-#endif
 				retval = setTimer(ind,tns);
 				break;
+#endif
+#ifdef MYTHEN
 			case PROBES_NUMBER:
-#ifndef MYTHEND
-				ret=FAIL;
-				strcpy(mess,"Not applicable/implemented for this detector\n");
-				break;
 #endif
 			case FRAME_NUMBER:
 			case ACQUISITION_TIME:

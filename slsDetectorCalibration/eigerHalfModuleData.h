@@ -93,8 +93,13 @@ public:
 			iPacket1 = (totalNumberOfBytes/2) - numbytesperlineperport - 8;
 			iPacket2 = totalNumberOfBytes - numbytesperlineperport - 8;
 			if (dynamicRange == 32){
-				iPacket1 -= 16;
-				iPacket2 -= 16;
+				if(numbytesperlineperport>actualDataSize){ //1Giga
+					iPacket1 -= 16;
+					iPacket2 -= 16;
+				}else{ //10Giga
+					;//iPacket1 -= numbytesperlineperport;
+					//iPacket2 -= numbytesperlineperport;
+				}
 			}
 
 			for (int ir=0; ir<ypixels; ir++) {
@@ -104,43 +109,75 @@ public:
 						dMap[ir][ic]  = iPacket1;
 						iPacket1 += increment;
 						iData1 += increment;
+
+						//--------------------32 bit -------------------------
 						if(dynamicRange == 32){
-							if(iData1 == numbytesperlineperport){
-								iPacket1 -= (numbytesperlineperport*2 + 16*3);
-								iData1 = 0;
+							if(numbytesperlineperport>actualDataSize){ //1Giga
+								if(iData1 == numbytesperlineperport){
+									iPacket1 -= (numbytesperlineperport*2 + 16*3);//1giga
+									iData1 = 0;
+								}
+								if(iData1 == actualDataSize){
+									iPacket1 += 16;
+								}
+							}else{ //10Giga
+								if((iData1 % numbytesperlineperport)==0){
+									iPacket1 -= (numbytesperlineperport*2);
+								}
+								if(iData1 == actualDataSize){
+									iPacket1 -= 16;
+									iData1 = 0;
+								}
 							}
-							if(iData1 == actualDataSize){
-								iPacket1 += 16;
-							}
-						}else if((iData1 % numbytesperlineperport) == 0){
+						}//------------end of 32 bit -------------------------
+
+						else if((iData1 % numbytesperlineperport) == 0){
 							iPacket1 -= (numbytesperlineperport*2);
 							if(iData1 == actualDataSize){
 								iPacket1 -= 16;
 								iData1 = 0;
 							}
-
 						}
+						//------------end of other bits -------------------------
+
 					}
 					//other port
 					else{
 						dMap[ir][ic]  = iPacket2;
 						iPacket2 += increment;
 						iData2 += increment;
+
+
+						//--------------------32 bit -------------------------
 						if(dynamicRange == 32){
-							if(iData2 == numbytesperlineperport){
-								iPacket2 -= (numbytesperlineperport*2 + 16*3);
-								iData2 = 0;
+							if(numbytesperlineperport>actualDataSize){ //1Giga
+								if(iData2 == numbytesperlineperport){
+									iPacket2 -= (numbytesperlineperport*2 + 16*3);
+									iData2 = 0;
+								}
+								if(iData2 == actualDataSize){
+									iPacket2 += 16;
+								}
+							}else{//10Giga
+								if((iData2 % numbytesperlineperport)==0){
+									iPacket2 -= (numbytesperlineperport*2);
+								}
+								if(iData2 == actualDataSize){
+									iPacket2 -= 16;
+									iData2 = 0;
+								}
 							}
-							if(iData2 == actualDataSize){
-								iPacket2 += 16;
-							}
-						}else if((iData2 % numbytesperlineperport) == 0){
+						}//------------end of 32 bit -------------------------
+
+						else if((iData2 % numbytesperlineperport) == 0){
 							iPacket2 -= (numbytesperlineperport*2);
 							if(iData2 == actualDataSize){
 								iPacket2 -= 16;
 								iData2 = 0;
 							}
 						}
+						//------------end of other bits -------------------------
+
 					}
 				}
 			}

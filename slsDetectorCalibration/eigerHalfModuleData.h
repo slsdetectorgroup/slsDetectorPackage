@@ -300,7 +300,7 @@ public:
 				newiy = (iy - (iy%linesperpacket));
 
 			header_t = (eiger_packet_header_t*)((char*)(data +(dataMap[newiy][newix]-8)));
-			if(*( (uint16_t*) header_t->missingpacket)==0xFFFFFFFF){
+			if(*( (uint16_t*) header_t->missingpacket)==0xFFFF){
 			  //	cprintf(RED,"missing packet\n");
 			  return -1;
 			}

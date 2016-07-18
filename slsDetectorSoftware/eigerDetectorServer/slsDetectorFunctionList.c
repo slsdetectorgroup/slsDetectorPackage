@@ -858,7 +858,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 
 	case SUBFRAME_ACQUISITION_TIME:
 		if(val >= 0){
-			printf(" Setting sub exp time: %dns\n",(int)val/10);
+			printf(" Setting sub exp time: %lldns\n",(long long int)val/10);
 			Feb_Control_SetSubFrameExposureTime(val/10);
 		}
 		return (Feb_Control_GetSubFrameExposureTime());

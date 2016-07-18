@@ -46,7 +46,7 @@ unsigned int Feb_Control_subFrameMode;
 
 unsigned int Feb_Control_nimages;
 double Feb_Control_exposure_time_in_sec;
-int Feb_Control_subframe_exposure_time_in_10nsec;
+int64_t Feb_Control_subframe_exposure_time_in_10nsec;
 double Feb_Control_exposure_period_in_sec;
 
 int64_t Feb_Control_RateTable_Tau_in_nsec = -1;
@@ -1372,12 +1372,12 @@ int Feb_Control_SetExposureTime(double the_exposure_time_in_sec){
 }
 double Feb_Control_GetExposureTime(){return Feb_Control_exposure_time_in_sec;}
 
-int Feb_Control_SetSubFrameExposureTime(int the_subframe_exposure_time_in_10nsec){
+int Feb_Control_SetSubFrameExposureTime(int64_t the_subframe_exposure_time_in_10nsec){
 	Feb_Control_subframe_exposure_time_in_10nsec = the_subframe_exposure_time_in_10nsec;
-	printf("Sub Frame Exposure time set to: %d\n",Feb_Control_subframe_exposure_time_in_10nsec);
+	printf("Sub Frame Exposure time set to: %lld\n",(long long int)Feb_Control_subframe_exposure_time_in_10nsec);
 	return 1;
 }
-int Feb_Control_GetSubFrameExposureTime(){return Feb_Control_subframe_exposure_time_in_10nsec*10;}
+int64_t Feb_Control_GetSubFrameExposureTime(){return Feb_Control_subframe_exposure_time_in_10nsec*10;}
 
 int Feb_Control_SetExposurePeriod(double the_exposure_period_in_sec){
 	Feb_Control_exposure_period_in_sec = the_exposure_period_in_sec;

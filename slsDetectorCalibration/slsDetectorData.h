@@ -88,10 +88,7 @@ class slsDetectorData {
   /**
      defines the data map (as offset) - no error checking if datasize and offsets are compatible!
      \param dMap array of size nx*ny storing the pointers to the data in the dataset (as offset). If NULL (default),the data are arranged as if read out row by row (dataMap[iy][ix]=(iy*nx+ix)*sizeof(dataType);)
-
   */
-
-
   void setDataMap(int **dMap=NULL) {
 
    /* int ip;*/
@@ -123,8 +120,6 @@ class slsDetectorData {
      \param dMask Array of size nx*ny storing the polarity of the data in the dataset (should be 0 if no inversion is required, 0xffffffff is inversion is required)
 
   */
-
-
   void setDataMask(dataType **dMask=NULL){
 
     if (dMask!=NULL) {
@@ -143,7 +138,6 @@ class slsDetectorData {
      \param dROI Array of size nx*ny. The lements are 1s if the channel is good or in the ROI, 0 is bad or out of the ROI. NULL (default) means all 1s. 
 
   */
-
   void setDataROIMask(int **dROI=NULL){
 
     if (dROI!=NULL) {
@@ -188,12 +182,12 @@ class slsDetectorData {
 
   /** Returns the size of the data frame */
   int getDataSize() {return dataSize;};
+
   /** changes the size of the data frame */
   int setDataSize(int d) {dataSize=d; return dataSize;};
 
 
   /** 
-
      Returns the value of the selected channel for the given dataset. Virtual function, can be overloaded.
      \param data pointer to the dataset (including headers etc)
      \param ix pixel number in the x direction
@@ -201,8 +195,6 @@ class slsDetectorData {
      \returns data for the selected channel, with inversion if required
 
   */
-
-
   virtual dataType getChannel(char *data, int ix, int iy=0) {
     dataType m=0, d=0;
     if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
@@ -212,23 +204,21 @@ class slsDetectorData {
     return d^m;
   };
 
-
-
-
   /**
 
      Returns the value of the selected channel for the given dataset. Virtual function, can be overloaded.
      \param data pointer to the dataset (including headers etc)
      \param ix pixel number in the x direction
      \param iy pixel number in the y direction
-     \param dr dynamic range
-     \returns data for the selected channel, with inversion if required
+     \returns data for the selected channel, with inversion if required or -1 if its a missing packet
 
   */
 
-  virtual int getChannel(char *data, int ix, int iy, int dr) {
+  virtual int getChannelwithMissingPackets(char *data, int ix, int iy) {
 	  return 0;
   };
+
+
 
   /**
      Returns the value of the selected channel for the given dataset as double.
@@ -240,29 +230,13 @@ class slsDetectorData {
   */
   virtual double getValue(char *data, int ix, int iy=0) {return (double)getChannel(data, ix, iy);};
 
-  /**
-
-     Returns the value of the selected channel for the given dataset as double.
-     \param data pointer to the dataset (including headers etc)
-     \param ix pixel number in the x direction
-     \param iy pixel number in the y direction
-     \param dr dynamic range
-     \returns data for the selected channel, with inversion if required as double
-
-  */
-  virtual double getValue(char *data, int ix, int iy, int dr) {
-	  return ((double)getChannel(data, ix, iy, dr));
-  };
 
    /**
-
      Returns the frame number for the given dataset. Purely virtual func.
      \param buff pointer to the dataset
      \returns frame number
 
   */
-
-
   virtual  int getFrameNumber(char *buff)=0;   
 
   /**

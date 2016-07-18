@@ -22,6 +22,9 @@ public:
 	eigerHalfModuleData(int dr, int np, int bsize, int dsize, bool top, double c=0): slsReceiverData<uint32_t>(xpixels, ypixels, np, bsize),
 	xtalk(c), bufferSize(bsize), actualDataSize(dsize), dynamicRange(dr), numberOfPackets(np), top(top),header_t(0), footer_t(0){
 
+		tenGiga = false;
+		if(actualDataSize == TEN_GIGA_PACKET_SIZE)
+			tenGiga = true;
 
 		int **dMap;
 		uint32_t **dMask;
@@ -203,7 +206,6 @@ public:
 
 
 
-
 	/** Returns the frame number for the given dataset.
 	     \param buff pointer to the dataset
 	     \returns frame number
@@ -212,8 +214,6 @@ public:
 		footer_t = (eiger_packet_footer_t*)(buff + actualDataSize + sizeof(eiger_packet_header_t));
 		return ((uint32_t)(*( (uint64_t*) footer_t)));
 	};
-
-
 
 
 
@@ -241,9 +241,9 @@ public:
 	double getValue(char *data, int ix, int iy=0) {
 		//  cout << "##" << (void*)data << " " << ix << " " <<iy << endl;
 		if (xtalk==0)
-			return getChannel(data, ix, iy, dynamicRange);
+			return getChannelwithMissingPackets(data, ix, iy);
 		else
-			return getChannel(data, ix, iy,dynamicRange)-xtalk * getChannel(data, ix-1, iy,dynamicRange);
+			return getChannelwithMissingPackets(data, ix, iy)-xtalk * getChannelwithMissingPackets(data, ix-1, iy);
 	};
 
 
@@ -253,12 +253,11 @@ public:
 	     \param data pointer to the dataset (including headers etc)
 	     \param ix pixel number in the x direction
 	     \param iy pixel number in the y direction
-	     \param dr dynamic range
 	     \returns data for the selected channel, with inversion if required
 
 	 */
 
-	virtual int getChannel(char *data, int ix, int iy, int dr) {
+	virtual int getChannelwithMissingPackets(char *data, int ix, int iy) {
 		uint32_t m=0, n = 0;
 		int linesperpacket,newix, newiy,origX;
 
@@ -270,23 +269,30 @@ public:
 
 			//pixelpos1d = (nx * iy + ix);
 
-			switch(dr){
-			case 4: linesperpacket=4;break;
-			case 8: linesperpacket=2;break;
-			case 16: linesperpacket=1;break;
-			case 32: linesperpacket=2;break;
+			switch(dynamicRange){
+			case 4: 	if(tenGiga) linesperpacket=16;	else linesperpacket=4;break;
+			case 8: 	if(tenGiga) linesperpacket=8; 	else linesperpacket=2;break;
+			case 16: 	if(tenGiga) linesperpacket=4; 	else linesperpacket=1;break;
+			case 32:	if(tenGiga) linesperpacket=2; 	else linesperpacket=1;break;
 			}
+
+
 
 			//each byte is shared by 2 pixels for 4 bit mode
 			origX = ix;
-			if((dr == 4) && (ix%2))
+			if((dynamicRange == 4) && (ix%2))
 				ix--;
 
 
-			//check if missing packet, get to pixel at start of packet
 
-			//to get the starting of a packet, ix is divided by 512pixels because of 2 ports
+			// ------check if missing packet, get to pixel at start of packet-----------------
+
+			//to get the starting of a packet, ix is divided by 512pixels because of 2 ports (except 1g 32 bit)
 			newix = ix - (ix%512);
+			// 0.5 Lines per packet for 1g 32 bit
+			if(dynamicRange ==32 && !tenGiga)
+				newix = ix - (ix%256);
+
 			//iy divided by linesperpacket depending on bitmode
 			if(!(iy%linesperpacket))
 				newiy = iy;
@@ -298,7 +304,7 @@ public:
 			  //	cprintf(RED,"missing packet\n");
 			  return -1;
 			}
-
+			// -----END OF CHECK -------------------------------------------------------------
 
 
 		}else{
@@ -310,13 +316,13 @@ public:
 		n = ((uint32_t)(*((uint32_t*)(((char*)data)+(dataMap[iy][ix])))));
 
 		//each byte is shared by 2 pixels for 4 bit mode
-		if(dr == 4){
+		if(dynamicRange == 4){
 			if(ix != origX)
 				return ((n & 0xf0)>>4)^m;
 			return (n & 0xf)^m;
 		}
-		else if(dr == 8)	return (n & 0xff)^m;
-		else if(dr == 16)	return (n & 0xffff)^m;
+		else if(dynamicRange == 8)	return (n & 0xff)^m;
+		else if(dynamicRange == 16)	return (n & 0xffff)^m;
 		else				return (n & 0xffffffff)^m;
 
 
@@ -353,6 +359,8 @@ private:
 	const int dynamicRange;
 	const int numberOfPackets;
 	bool top;
+	bool tenGiga;
+	static const int TEN_GIGA_PACKET_SIZE = 4096;
 
 
 	/** structure of an eiger packet*/

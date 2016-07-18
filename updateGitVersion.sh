@@ -1,11 +1,5 @@
 # Script to create gitInfo.txt files and export software
 
-#git clone git@gitorious.psi.ch:sls_det_software/sls_detectors_package.git slsDetectorsPackage
-#cd slsDetectorsPackage
-#git clone git@gitorious.psi.ch:sls_det_software/sls_detector_software.git slsDetectorSoftware
-#git clone git@gitorious.psi.ch:sls_det_software/sls_detector_gui.git slsDetectorGui
-#git clone git@gitorious.psi.ch:sls_det_software/sls_receiver_software.git slsReceiverSoftware
-#git clone git@gitorious.psi.ch:sls_det_software/calibration_wizards.git calibrationWizards
 
 #folders
 MAINDIR=slsDetectorsPackage
@@ -46,13 +40,19 @@ FOLDERREV2=" | wc -l"  #used for all the individual server folders
 REV1='git log --oneline  '
 REV2=" | wc -l"
 RDATE1='git log --pretty=format:"%ci" -1'
-
+COMMIT_TITLE_SCRIPT='git log --pretty=format:"%s" -1'
 
 
 #create gitInfo.txt
 #have to go into path to execute some git commands, different variables are upto Revision
 
 cd $LIBPATH
+echo -e "\nIn slsDetectorSoftware"
+COMMIT_TITLE=`eval $COMMIT_TITLE_SCRIPT`
+echo $COMMIT_TITLE
+if [ "$COMMIT_TITLE" == "updaterev" ]; then
+echo "No update"
+else
 GITREPO=`eval $GITREPO1  $GITREPO2`
 BRANCH=`eval $BRANCH1  $BRANCH2`
 REPUID=`eval $REPUID1`
@@ -61,8 +61,19 @@ AUTH2=`eval $AUTH2_1  $AUTH2_2`
 REV=`eval $REV1  $REV2`
 RDATE=`eval $RDATE1`
 echo Path: ${MAINDIR}/${LIBDIR}  $'\n'URL: ${GITREPO}  $'\n'Repository Root: ${GITREPO}  $'\n'Repsitory UUID: ${REPUID}  $'\n'Revision: ${REV}  $'\n'Branch: ${BRANCH}  $'\n'Last Changed Author: ${AUTH1}_${AUTH2}  $'\n'Last Changed Rev: ${REV}  $'\n'Last Changed Date: ${RDATE} > gitInfo.txt 
+cd $WD
+./genVersionHeader.sh $LIBDIR/gitInfo.txt $LIBDIR/slsDetector/gitInfoLibTmp.h $LIBDIR/slsDetector/gitInfoLib.h 
+echo "Revision Updated"
+fi
+
 
 cd $RXRPATH
+echo -e "\nIn slsReceiverSoftware"
+COMMIT_TITLE=`eval $COMMIT_TITLE_SCRIPT`
+echo $COMMIT_TITLE
+if [ "$COMMIT_TITLE" == "updaterev" ]; then
+echo "No update"
+else
 GITREPO=`eval $GITREPO1  $GITREPO2`
 BRANCH=`eval $BRANCH1  $BRANCH2`
 REPUID=`eval $REPUID1`
@@ -71,8 +82,19 @@ AUTH2=`eval $AUTH2_1  $AUTH2_2`
 REV=`eval $REV1  $REV2`
 RDATE=`eval $RDATE1`
 echo Path: ${MAINDIR}/${RXRDIR}  $'\n'URL: ${GITREPO}  $'\n'Repository Root: ${GITREPO}  $'\n'Repsitory UUID: ${REPUID}  $'\n'Revision: ${REV}  $'\n'Branch: ${BRANCH}  $'\n'Last Changed Author: ${AUTH1}_${AUTH2}  $'\n'Last Changed Rev: ${REV}  $'\n'Last Changed Date: ${RDATE} > gitInfo.txt 
+cd $WD
+./genVersionHeader.sh $RXRDIR/gitInfo.txt $RXRDIR/include/gitInfoReceiverTmp.h $RXRDIR/include/gitInfoReceiver.h
+echo "Revision Updated"
+fi
+
 
 cd $GUIPATH
+echo -e "\nIn slsDetectorGui"
+COMMIT_TITLE=`eval $COMMIT_TITLE_SCRIPT`
+echo $COMMIT_TITLE
+if [ "$COMMIT_TITLE" == "updaterev" ]; then
+echo "No update"
+else
 GITREPO=`eval $GITREPO1  $GITREPO2`
 BRANCH=`eval $BRANCH1  $BRANCH2`
 REPUID=`eval $REPUID1`
@@ -81,8 +103,19 @@ AUTH2=`eval $AUTH2_1  $AUTH2_2`
 REV=`eval $REV1  $REV2`
 RDATE=`eval $RDATE1`
 echo Path: ${MAINDIR}/${GUIDIR}  $'\n'URL: ${GITREPO}  $'\n'Repository Root: ${GITREPO}  $'\n'Repsitory UUID: ${REPUID}  $'\n'Revision: ${REV}  $'\n'Branch: ${BRANCH}  $'\n'Last Changed Author: ${AUTH1}_${AUTH2}  $'\n'Last Changed Rev: ${REV}  $'\n'Last Changed Date: ${RDATE} > gitInfo.txt 
+cd $WD
+./genVersionHeader.sh $GUIDIR/gitInfo.txt $GUIDIR/include/gitInfoGuiTmp.h $GUIDIR/include/gitInfoGui.h 
+echo "Revision Updated"
+fi
+
 
 cd $CALWIZPATH
+echo -e "\nIn calibrationWizards"
+COMMIT_TITLE=`eval $COMMIT_TITLE_SCRIPT`
+echo $COMMIT_TITLE
+if [ "$COMMIT_TITLE" == "updaterev" ]; then
+echo "No update"
+else
 GITREPO=`eval $GITREPO1  $GITREPO2`
 BRANCH=`eval $BRANCH1  $BRANCH2`
 REPUID=`eval $REPUID1`
@@ -91,8 +124,21 @@ AUTH2=`eval $AUTH2_1  $AUTH2_2`
 REV=`eval $REV1  $REV2`
 RDATE=`eval $RDATE1`
 echo Path: ${MAINDIR}/${CALWIZDIR}  $'\n'URL: ${GITREPO}  $'\n'Repository Root: ${GITREPO}  $'\n'Repsitory UUID: ${REPUID}  $'\n'Revision: ${REV}  $'\n'Branch: ${BRANCH}  $'\n'Last Changed Author: ${AUTH1}_${AUTH2}  $'\n'Last Changed Rev: ${REV}  $'\n'Last Changed Date: ${RDATE} > gitInfo.txt 
+cd $WD
+./genVersionHeader.sh $CALWIZDIR/gitInfo.txt $CALWIZDIR/gitInfoCalWizTmp.h $CALWIZDIR/gitInfoCalWiz.h 
+echo "Revision Updated"
+fi
+
 
 cd $LIBPATH/mythenDetectorServer
+echo -e "\nIn mythenDetectorServer"
+COMMIT_TITLE=`eval $COMMIT_TITLE_SCRIPT`
+echo $COMMIT_TITLE
+if [ "$COMMIT_TITLE" == "updaterevmythen" ]; then
+echo "No update"
+elif [ "$COMMIT_TITLE" == "updaterev" ]; then
+echo "No update"
+else
 GITREPO=`eval $GITREPO1  $GITREPO2`
 BRANCH=`eval $BRANCH1  $BRANCH2`
 REPUID=`eval $REPUID1`
@@ -101,8 +147,21 @@ AUTH2=`eval $AUTH2_1  $AUTH2_2`
 FOLDERREV=`eval $FOLDERREV1  $FOLDERREV2`
 RDATE=`eval $RDATE1`
 echo Path: ${MAINDIR}/${LIBDIR}/mythenDetectorServer  $'\n'URL: ${GITREPO}/mythenDetectorServer  $'\n'Repository Root: ${GITREPO}  $'\n'Repsitory UUID: ${REPUID}  $'\n'Revision: ${FOLDERREV}  $'\n'Branch: ${BRANCH}  $'\n'Last Changed Author: ${AUTH1}_${AUTH2}  $'\n'Last Changed Rev: ${REV}  $'\n'Last Changed Date: ${RDATE} > gitInfo.txt 
+cd $WD
+./genVersionHeader.sh $LIBDIR/mythenDetectorServer/gitInfo.txt $LIBDIR/mythenDetectorServer/gitInfoMythenTmp.h $LIBDIR/mythenDetectorServer/gitInfoMythen.h 
+echo "Revision Updated"
+fi
+
 
 cd $LIBPATH/gotthardDetectorServer
+echo -e "\nIn gotthardDetectorServer"
+COMMIT_TITLE=`eval $COMMIT_TITLE_SCRIPT`
+echo $COMMIT_TITLE
+if [ "$COMMIT_TITLE" == "updaterevgotthard" ]; then
+echo "No update"
+elif [ "$COMMIT_TITLE" == "updaterev" ]; then
+echo "No update"
+else
 GITREPO=`eval $GITREPO1  $GITREPO2`
 BRANCH=`eval $BRANCH1  $BRANCH2`
 REPUID=`eval $REPUID1`
@@ -111,8 +170,21 @@ AUTH2=`eval $AUTH2_1  $AUTH2_2`
 FOLDERREV=`eval $FOLDERREV1  $FOLDERREV2`
 RDATE=`eval $RDATE1`
 echo Path: ${MAINDIR}/${LIBDIR}/gotthardDetectorServer  $'\n'URL: ${GITREPO}/gotthardDetectorServer  $'\n'Repository Root: ${GITREPO}  $'\n'Repsitory UUID: ${REPUID}  $'\n'Revision: ${FOLDERREV}  $'\n'Branch: ${BRANCH}  $'\n'Last Changed Author: ${AUTH1}_${AUTH2}  $'\n'Last Changed Rev: ${REV}  $'\n'Last Changed Date: ${RDATE} > gitInfo.txt 
+cd $WD
+./genVersionHeader.sh $LIBDIR/gotthardDetectorServer/gitInfo.txt $LIBDIR/gotthardDetectorServer/gitInfoGotthardTmp.h $LIBDIR/gotthardDetectorServer/gitInfoGotthard.h 
+echo "Revision Updated"
+fi
+
 
 cd $LIBPATH/moenchDetectorServer
+echo -e "\nIn moenchDetectorServer"
+COMMIT_TITLE=`eval $COMMIT_TITLE_SCRIPT`
+echo $COMMIT_TITLE
+if [ "$COMMIT_TITLE" == "updaterevmoench" ]; then
+echo "No update"
+elif [ "$COMMIT_TITLE" == "updaterev" ]; then
+echo "No update"
+else
 GITREPO=`eval $GITREPO1  $GITREPO2`
 BRANCH=`eval $BRANCH1  $BRANCH2`
 REPUID=`eval $REPUID1`
@@ -121,8 +193,20 @@ AUTH2=`eval $AUTH2_1  $AUTH2_2`
 FOLDERREV=`eval $FOLDERREV1  $FOLDERREV2`
 RDATE=`eval $RDATE1`
 echo Path: ${MAINDIR}/${LIBDIR}/moenchDetectorServer  $'\n'URL: ${GITREPO}/moenchDetectorServer  $'\n'Repository Root: ${GITREPO}  $'\n'Repsitory UUID: ${REPUID}  $'\n'Revision: ${FOLDERREV}  $'\n'Branch: ${BRANCH}  $'\n'Last Changed Author: ${AUTH1}_${AUTH2}  $'\n'Last Changed Rev: ${REV}  $'\n'Last Changed Date: ${RDATE} > gitInfo.txt 
+cd $WD
+./genVersionHeader.sh $LIBDIR/moenchDetectorServer/gitInfo.txt $LIBDIR/moenchDetectorServer/gitInfoMoenchTmp.h $LIBDIR/moenchDetectorServer/gitInfoMoench.h 
+echo "Revision Updated"
+fi
 
 cd $LIBPATH/eigerDetectorServer
+echo -e "\nIn eigerDetectorServer"
+COMMIT_TITLE=`eval $COMMIT_TITLE_SCRIPT`
+echo $COMMIT_TITLE
+if [ "$COMMIT_TITLE" == "updatereveiger" ]; then
+echo "No update"
+elif [ "$COMMIT_TITLE" == "updaterev" ]; then
+echo "No update"
+else
 GITREPO=`eval $GITREPO1  $GITREPO2`
 BRANCH=`eval $BRANCH1  $BRANCH2`
 REPUID=`eval $REPUID1`
@@ -131,21 +215,12 @@ AUTH2=`eval $AUTH2_1  $AUTH2_2`
 FOLDERREV=`eval $FOLDERREV1  $FOLDERREV2`
 RDATE=`eval $RDATE1`
 echo Path: ${MAINDIR}/${LIBDIR}/eigerDetectorServer  $'\n'URL: ${GITREPO}/eigerDetectorServer  $'\n'Repository Root: ${GITREPO}  $'\n'Repsitory UUID: ${REPUID}  $'\n'Revision: ${FOLDERREV}  $'\n'Branch: ${BRANCH}  $'\n'Last Changed Author: ${AUTH1}_${AUTH2}  $'\n'Last Changed Rev: ${REV}  $'\n'Last Changed Date: ${RDATE} > gitInfo.txt 
-
-
-
-
-
-#creating the header files
 cd $WD
-./genVersionHeader.sh $LIBDIR/gitInfo.txt $LIBDIR/slsDetector/gitInfoLibTmp.h $LIBDIR/slsDetector/gitInfoLib.h 
-./genVersionHeader.sh $RXRDIR/gitInfo.txt $RXRDIR/include/gitInfoReceiverTmp.h $RXRDIR/include/gitInfoReceiver.h
-./genVersionHeader.sh $GUIDIR/gitInfo.txt $GUIDIR/include/gitInfoGuiTmp.h $GUIDIR/include/gitInfoGui.h 
-./genVersionHeader.sh $CALWIZDIR/gitInfo.txt $CALWIZDIR/gitInfoCalWizTmp.h $CALWIZDIR/gitInfoCalWiz.h 
-./genVersionHeader.sh $LIBDIR/mythenDetectorServer/gitInfo.txt $LIBDIR/mythenDetectorServer/gitInfoMythenTmp.h $LIBDIR/mythenDetectorServer/gitInfoMythen.h 
-./genVersionHeader.sh $LIBDIR/gotthardDetectorServer/gitInfo.txt $LIBDIR/gotthardDetectorServer/gitInfoGotthardTmp.h $LIBDIR/gotthardDetectorServer/gitInfoGotthard.h 
-./genVersionHeader.sh $LIBDIR/moenchDetectorServer/gitInfo.txt $LIBDIR/moenchDetectorServer/gitInfoMoenchTmp.h $LIBDIR/moenchDetectorServer/gitInfoMoench.h 
 ./genVersionHeader.sh $LIBDIR/eigerDetectorServer/gitInfo.txt $LIBDIR/eigerDetectorServer/gitInfoEigerTmp.h $LIBDIR/eigerDetectorServer/gitInfoEiger.h 
+echo "Revision Updated"
+fi
+
+
 
 
 exit 0

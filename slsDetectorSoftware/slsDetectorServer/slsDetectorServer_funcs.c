@@ -1917,14 +1917,12 @@ int set_module(int file_des) {
 
 				//switch off rate correction: no value read from load calib/load settings)
 				if(myTau == -1){
-					ret = FAIL;
 					if(getRateCorrectionEnable()){
+						ret = FAIL;
 						setRateCorrection(0);
 						strcat(mess," Cannot set Rate correction. No default tau provided. Deactivating Rate Correction\n");
-					}else{
-						strcat(mess," Cannot set Rate correction. No default tau provided\n");
+						cprintf(RED,"%s",mess);
 					}
-					cprintf(RED,"%s",mess);
 				}
 
 

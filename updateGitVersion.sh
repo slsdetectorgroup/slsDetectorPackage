@@ -130,8 +130,9 @@ echo "Revision Updated"
 fi
 
 
-cd $LIBPATH/mythenDetectorServer
+cd $LIBPATH
 echo -e "\nIn mythenDetectorServer"
+COMMIT_TITLE_SCRIPT='git log --pretty=format:"%s" -1 mythenDetectorServer'
 COMMIT_TITLE=`eval $COMMIT_TITLE_SCRIPT`
 echo $COMMIT_TITLE
 if [ "$COMMIT_TITLE" == "updaterevmythen" ]; then
@@ -139,6 +140,7 @@ echo "No update"
 elif [ "$COMMIT_TITLE" == "updaterev" ]; then
 echo "No update"
 else
+cd $LIBPATH/mythenDetectorServer
 GITREPO=`eval $GITREPO1  $GITREPO2`
 BRANCH=`eval $BRANCH1  $BRANCH2`
 REPUID=`eval $REPUID1`
@@ -153,8 +155,9 @@ echo "Revision Updated"
 fi
 
 
-cd $LIBPATH/gotthardDetectorServer
+cd $LIBPATH
 echo -e "\nIn gotthardDetectorServer"
+COMMIT_TITLE_SCRIPT='git log --pretty=format:"%s" -1 gotthardDetectorServer'
 COMMIT_TITLE=`eval $COMMIT_TITLE_SCRIPT`
 echo $COMMIT_TITLE
 if [ "$COMMIT_TITLE" == "updaterevgotthard" ]; then
@@ -162,6 +165,7 @@ echo "No update"
 elif [ "$COMMIT_TITLE" == "updaterev" ]; then
 echo "No update"
 else
+cd $LIBPATH/gotthardDetectorServer
 GITREPO=`eval $GITREPO1  $GITREPO2`
 BRANCH=`eval $BRANCH1  $BRANCH2`
 REPUID=`eval $REPUID1`
@@ -176,8 +180,9 @@ echo "Revision Updated"
 fi
 
 
-cd $LIBPATH/moenchDetectorServer
+cd $LIBPATH
 echo -e "\nIn moenchDetectorServer"
+COMMIT_TITLE_SCRIPT='git log --pretty=format:"%s" -1 moenchDetectorServer'
 COMMIT_TITLE=`eval $COMMIT_TITLE_SCRIPT`
 echo $COMMIT_TITLE
 if [ "$COMMIT_TITLE" == "updaterevmoench" ]; then
@@ -185,6 +190,7 @@ echo "No update"
 elif [ "$COMMIT_TITLE" == "updaterev" ]; then
 echo "No update"
 else
+cd $LIBPATH/moenchDetectorServer
 GITREPO=`eval $GITREPO1  $GITREPO2`
 BRANCH=`eval $BRANCH1  $BRANCH2`
 REPUID=`eval $REPUID1`
@@ -198,8 +204,9 @@ cd $WD
 echo "Revision Updated"
 fi
 
-cd $LIBPATH/eigerDetectorServer
+cd $LIBPATH
 echo -e "\nIn eigerDetectorServer"
+COMMIT_TITLE_SCRIPT='git log --pretty=format:"%s" -1 eigerDetectorServer'
 COMMIT_TITLE=`eval $COMMIT_TITLE_SCRIPT`
 echo $COMMIT_TITLE
 if [ "$COMMIT_TITLE" == "updatereveiger" ]; then
@@ -207,6 +214,7 @@ echo "No update"
 elif [ "$COMMIT_TITLE" == "updaterev" ]; then
 echo "No update"
 else
+cd $LIBPATH/eigerDetectorServer
 GITREPO=`eval $GITREPO1  $GITREPO2`
 BRANCH=`eval $BRANCH1  $BRANCH2`
 REPUID=`eval $REPUID1`
@@ -220,7 +228,9 @@ cd $WD
 echo "Revision Updated"
 fi
 
-
+cd $WD
+echo -e "\n\nPrinting Status"
+sh gitall.sh status
 
 
 exit 0

@@ -1,6 +1,6 @@
 # Script to create gitInfo.txt files and export software
 
-
+ 
 #folders
 MAINDIR=slsDetectorsPackage
 LIBDIR=slsDetectorSoftware

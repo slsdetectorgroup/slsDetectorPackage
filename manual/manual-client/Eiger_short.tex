@@ -184,6 +184,8 @@ Here are the implemented options so far:
 \item{\tt{gating}} allows to get a frame only when the trigger pulse is gating. Note that in this case the exp time and period only depend on the gating signal. {\tt{cycles}} allows to select how many gates to consider. 
 \end{itemize}
 
+Hardware-wise, the ENABLE OUT signal outputs when the chips are really acquiring. This means that the single subframes will be outputted in 32 bit mode. The TRIGGER OUT outputs the sum-up-signal at the moment (which is useless). This will be changed in the future to output the envelop of the enable signal. 
+
 We are planning to change some functionality, i.e. unify the {\tt{trigger}} and {\tt{burst}} trigger modes and make both {\tt{frames}} and {\tt{cycles}} configurable at the same time.
  
 

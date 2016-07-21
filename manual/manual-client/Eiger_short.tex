@@ -170,7 +170,6 @@ dynamic range & clkdivider & mode & readout time ($\mu$s) & max frame rate (kHz)
 The detector can be setup such to receive external triggers. Connect a LEMO signal to the TRIGGER IN connector in the Power Distribution Board. Use a signal above 2.~V. By default the positive polarity is used (negative should not be passed to the board).  
 \begin{verbatim}
 sls_detector_put 0-timing [auto/trigger/burst_trigger/gating]
-sls_detector_put 0-extsig:0 trigger_in_rising_edge
 sls_detector_put 0-frames x
 sls_detector_put 0-cycles y
 sls_detector_acquire 0-

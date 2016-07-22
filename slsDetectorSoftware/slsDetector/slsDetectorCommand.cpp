@@ -727,6 +727,26 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="temp_fpgaext"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="temp_10ge"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="temp_dcdc"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="temp_sodl"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="temp_sodr"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
+  i++;
+
   /* r/w timers */
 
   descrToFuncMap[i].m_pFuncName="timing"; //
@@ -3753,17 +3773,29 @@ string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
     adc=TEMPERATURE_ADC;
   else if (cmd=="temp_fpga")
     adc=TEMPERATURE_FPGA;
+  else if (cmd=="temp_fpgaext")
+	  adc=TEMPERATURE_FPGAEXT;
+  else if (cmd=="temp_10ge")
+	  adc=TEMPERATURE_10GE;
+  else if (cmd=="temp_dcdc")
+	  adc=TEMPERATURE_DCDC;
+  else if (cmd=="temp_sodl")
+	  adc=TEMPERATURE_SODL;
+  else if (cmd=="temp_sodr")
+	  adc=TEMPERATURE_SODR;
   else
     return string("cannot decode adc ")+cmd;
 
   myDet->setOnline(ONLINE_FLAG);
 #ifdef DACS_INT
-  sprintf(answer,"%d",myDet->getADC(adc));
+  if (myDet->getDetectorsType() == EIGER)
+	  sprintf(answer,"%.2f",(double)myDet->getADC(adc)/1000.00);
+  else sprintf(answer,"%d",myDet->getADC(adc));
 #else
   sprintf(answer,"%f",myDet->getADC(adc));
 #endif
-  if ((adc == TEMPERATURE_ADC) || (adc == TEMPERATURE_FPGA))
-	  strcat(answer,"°C");
+  //if ((adc == TEMPERATURE_ADC) || (adc == TEMPERATURE_FPGA))
+  strcat(answer,"°C");
   return string(answer);
 
 }
@@ -3774,10 +3806,20 @@ string slsDetectorCommand::helpADC(int narg, char *args[], int action) {
   if (action==PUT_ACTION || action==HELP_ACTION) {
     os << "temp_adc " << "Cannot be set" << std::endl;
     os << "temp_fpga " << "Cannot be set" << std::endl;
+    os << "temp_fpgaext " << "Cannot be set" << std::endl;
+    os << "temp_10ge " << "Cannot be set" << std::endl;
+    os << "temp_dcdc " << "Cannot be set" << std::endl;
+    os << "temp_sodl " << "Cannot be set" << std::endl;
+    os << "temp_sodr " << "Cannot be set" << std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
     os << "temp_adc " << "\t gets the temperature of the adc" << std::endl;
     os << "temp_fpga " << "\t gets the temperature of the fpga" << std::endl;
+    os << "temp_fpgaext " << "\t gets the temperature close to the fpga" << std::endl;
+    os << "temp_10ge " << "\t gets the temperature close to the 10GE" << std::endl;
+    os << "temp_dcdc " << "\t gets the temperature close to the dc dc converter" << std::endl;
+    os << "temp_sodl " << "\t gets the temperature close to the left so-dimm memory" << std::endl;
+    os << "temp_sodr " << "\t gets the temperature close to the right so-dimm memory" << std::endl;
   }
   return os.str();
 }

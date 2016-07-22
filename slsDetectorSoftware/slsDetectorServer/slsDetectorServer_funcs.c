@@ -1280,7 +1280,7 @@ int get_adc(int file_des) {
 	enum dacIndex ind;
 	int imod;
 	int n;
-	enum detDacIndex idac=0;
+	enum detAdcIndex iadc=0;
 
 	sprintf(mess,"Can't read ADC\n");
 
@@ -1299,16 +1299,29 @@ int get_adc(int file_des) {
 		sprintf(mess,"Module number %d out of range\n",imod);
 	}
 #endif
-
 	switch (ind) {
 #ifdef EIGERD
-	case TEMPERATURE_FPGA:	//dac = TEMP_FPGA;
-		retval=getBebFPGATemp();
-		printf("Temperature: %d°C\n",retval);
+	case TEMPERATURE_FPGA:
+		iadc = TEMP_FPGA;
+		break;
+	case TEMPERATURE_FPGAEXT:
+		iadc = TEMP_FPGAEXT;
+		break;
+	case TEMPERATURE_10GE:
+		iadc = TEMP_10GE;
+		break;
+	case TEMPERATURE_DCDC:
+		iadc = TEMP_DCDC;
+		break;
+	case TEMPERATURE_SODL:
+		iadc = TEMP_SODL;
+		break;
+	case TEMPERATURE_SODR:
+		iadc = TEMP_SODR;
 		break;
 #endif
 #ifdef GOTTHARDD
-	case TEMPERATURE_FPGA:	//dac = TEMP_FPGA;
+	case TEMPERATURE_FPGA:
 		break;
 	case TEMPERATURE_ADC:
 		break;
@@ -1316,23 +1329,23 @@ int get_adc(int file_des) {
 	default:
 		printf("Unknown DAC index %d\n",ind);
 		ret=FAIL;
-		sprintf(mess,"Unknown ADC index %d\n",ind);
+		sprintf(mess,"Unknown ADC index %d. Not implemented for this detector\n",ind);
 		break;
 	}
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-	if ((ret==OK) && (retval==-1)) {
-		retval=getADC(idac,imod);
+	if (ret==OK)  {
+		retval=getADC(iadc,imod);
 	}
 #endif
 #ifdef VERBOSE
-	printf("Getting ADC %d of module %d\n", idac, imod);
+	printf("Getting ADC %d of module %d\n", iadc, imod);
 #endif 
 
 #ifdef VERBOSE
 	printf("ADC is %f V\n",  retval);
 #endif  
 	if (ret==FAIL) {
-		printf("Getting adc %d of module %d failed\n", idac, imod);
+		printf("Getting adc %d of module %d failed\n", iadc, imod);
 	}
 
 

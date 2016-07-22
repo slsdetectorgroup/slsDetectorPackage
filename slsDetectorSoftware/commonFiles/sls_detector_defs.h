@@ -351,7 +351,12 @@ enum dacIndex {
   E_Vis,		/**< eiger */
   IO_DELAY,		/**< eiger io delay */
   ADC_VPP,		/**< adc vpp for jctb */
-  HV_NEW             /**< new hv index for jungfrau & c */
+  HV_NEW,             /**< new hv index for jungfrau & c */
+  TEMPERATURE_FPGAEXT,	/**< temperature sensor (close to fpga) */
+  TEMPERATURE_10GE,		/**< temperature sensor (close to 10GE) */
+  TEMPERATURE_DCDC,		/**< temperature sensor (close to DCDC) */
+  TEMPERATURE_SODL,		/**< temperature sensor (close to SODL) */
+  TEMPERATURE_SODR		/**< temperature sensor (close to SODR) */
 };
 
 /**

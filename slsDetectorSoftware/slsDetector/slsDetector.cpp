@@ -2325,6 +2325,7 @@ dacs_t slsDetector::getADC(dacIndex index, int imod){
   if (ret==FAIL) {
     std::cout<< "Get ADC failed " << std::endl;
   }
+
   return retval;
 
 

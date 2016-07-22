@@ -37,7 +37,7 @@ int detectorTest( enum digitalTestMode arg);
 
 
 void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]);
-int getADC(enum detDacIndex ind,  int imod);
+int getADC(enum detAdcIndex ind,  int imod);
 
 
 #if defined(EIGERD) || defined(GOTTHARD)

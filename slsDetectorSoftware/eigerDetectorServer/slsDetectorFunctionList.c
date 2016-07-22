@@ -437,9 +437,33 @@ int setHighVoltage(int val, int imod){
 }
 
 
-int getADC(enum detDacIndex ind,  int imod){
-	//get adc value
-	return 0;
+int getADC(enum detAdcIndex ind,  int imod){
+	int retval = -1;
+	char tempnames[6][20]={"FPGA EXT", "10GE","DCDC", "SODL", "SODR", "FPGA"};
+	char cstore[255];
+
+	switch(ind){
+		case TEMP_FPGA:
+			retval=getBebFPGATemp()*1000;
+			break;
+		case TEMP_FPGAEXT:
+		case TEMP_10GE:
+		case TEMP_DCDC:
+		case TEMP_SODL:
+		case TEMP_SODR:
+			sprintf(cstore,"more  /sys/class/hwmon/hwmon%d/device/temp1_input",ind);
+			FILE* sysFile = popen(cstore, "r");
+			fgets(cstore, sizeof(cstore), sysFile);
+			pclose(sysFile);
+			sscanf(cstore,"%d",&retval);
+			break;
+		default:
+			return -1;
+	}
+
+	printf("Temperature %s: %f°C\n",tempnames[ind],(double)retval/1000.00);
+
+	return retval;
 }
 
 

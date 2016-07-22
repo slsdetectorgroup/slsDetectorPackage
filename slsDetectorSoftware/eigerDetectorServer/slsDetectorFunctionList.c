@@ -240,6 +240,8 @@ int64_t getDetectorId(enum idMode arg){
 		break;
 	case DETECTOR_FIRMWARE_VERSION:
 		return (int64_t)Beb_GetFirmwareRevision();
+	case SOFTWARE_FIRMWARE_API_VERSION:
+		return (int64_t)Beb_GetFirmwareSoftwareAPIVersion();
 	case DETECTOR_SOFTWARE_VERSION:
 		retval= SVNREV;
 		retval= (retval <<32) | SVNDATE;

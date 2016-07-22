@@ -44,18 +44,40 @@ int dataBytes = 10;
 
 
 void checkFirmwareCompatibility(){
+	int64_t fwversion = getDetectorId(DETECTOR_FIRMWARE_VERSION);
+	int64_t swversion = getDetectorId(DETECTOR_SOFTWARE_VERSION);
+	int64_t sw_fw_apiversion = getDetectorId(SOFTWARE_FIRMWARE_API_VERSION);
+
 	cprintf(BLUE,"\n\n********************************************************\n"
 			   "**********************EIGER Server**********************\n"
 			   "********************************************************\n");
-	cprintf(BLUE,"\nFirmware Version: %lld\nSoftware Version: %llx\n\n",
-			getDetectorId(DETECTOR_FIRMWARE_VERSION), getDetectorId(DETECTOR_SOFTWARE_VERSION));
+	cprintf(BLUE,"\n"
+			"Firmware Version:\t\t %lld\n"
+			"Software Version:\t\t %llx\n"
+			"F/w-S/w API Version:\t\t %lld\n"
+			"Required Firmware Version:\t %d\n"
+			"\n********************************************************\n",
+			fwversion,swversion,sw_fw_apiversion,REQUIRED_FIRMWARE_VERSION);
 
-	//check for firmware version compatibility
-	if(getDetectorId(DETECTOR_FIRMWARE_VERSION) < REQUIRED_FIRMWARE_VERSION){
+	//cant read versions
+	if(!fwversion || !sw_fw_apiversion){
+		cprintf(RED,"FATAL ERROR: Cant read versions from FPGA. Please update firmware\n");
+		cprintf(RED,"Exiting Server. Goodbye!\n\n");
+		exit(-1);
+	}
+
+	//check for API compatibility - old server
+	if(sw_fw_apiversion > REQUIRED_FIRMWARE_VERSION){
+		cprintf(RED,"FATAL ERROR: This software version is incompatible.\n"
+				"Please update it to be compatible with this firmware\n\n");
+		cprintf(RED,"Exiting Server. Goodbye!\n\n");
+		exit(-1);
+	}
+
+	//check for firmware compatibility - old firmware
+	if( REQUIRED_FIRMWARE_VERSION > fwversion){
 		cprintf(RED,"FATAL ERROR: This firmware version is incompatible.\n"
-				"Please update it to v%d to be compatible with this server\n\n",
-				REQUIRED_FIRMWARE_VERSION);
-
+				"Please update it to v%d to be compatible with this server\n\n", REQUIRED_FIRMWARE_VERSION);
 		cprintf(RED,"Exiting Server. Goodbye!\n\n");
 		exit(-1);
 	}

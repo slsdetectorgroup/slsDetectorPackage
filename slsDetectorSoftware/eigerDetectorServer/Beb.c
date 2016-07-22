@@ -178,22 +178,10 @@ u_int32_t Beb_GetFirmwareRevision(){
 	int fd = Beb_open(XPAR_VERSION,&baseaddr);
 	if(fd < 0)
 		cprintf(BG_RED,"Firmware Revision Read FAIL\n");
-
 	else{
-		//read revision existing bit
-		value = Beb_Read32(baseaddr, REVISION_EXISTING_OFFSET);
-		//printf("Firmware Revision Read OK\n");
-		//error reading
-		if(!(value&REVISION_EXISTING_BIT)){
+		value = Beb_Read32(baseaddr, FIRMWARE_VERSION_OFFSET);
+		if(!value)
 			cprintf(BG_RED,"Firmware Revision Number does not exist in this version\n");
-			value = 0;
-		}else{
-			//read revision number
-			value = Beb_Read32(baseaddr, 0);
-			//printf("Firmware Revision Number Read OK\n");
-			//printf("Rev: 0x%x.%x\n\n",value & REVISION_MASK,value & SUB_REVISION_MASK);
-			value &= REVISION_MASK;
-		}
 	}
 
 	//close file pointer
@@ -203,6 +191,27 @@ u_int32_t Beb_GetFirmwareRevision(){
 	return value;
 }
 
+
+u_int32_t Beb_GetFirmwareSoftwareAPIVersion(){
+	//mapping new memory
+	u_int32_t baseaddr, value = 0;
+
+	//open file pointer
+	int fd = Beb_open(XPAR_VERSION,&baseaddr);
+	if(fd < 0)
+		cprintf(BG_RED,"Firmware Revision Read FAIL\n");
+	else{
+		value = Beb_Read32(baseaddr, FIRMWARESOFTWARE_API_OFFSET);
+		if(!value)
+			cprintf(BG_RED,"Firmware Software API Version does not exist in this version\n");
+	}
+
+	//close file pointer
+	if(fd > 0)
+		Beb_close(fd);
+
+	return value;
+}
 
 void Beb_ResetFrameNumber(){
 	//mapping new memory to read master top module configuration

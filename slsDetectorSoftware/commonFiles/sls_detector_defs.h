@@ -10,7 +10,7 @@
 //#include <stdint.h>
 #include "sls_receiver_defs.h"
 
-#define REQUIRED_FIRMWARE_VERSION 11
+#define REQUIRED_FIRMWARE_VERSION 14
 
 /** default maximum string length */
 #define MAX_SCAN_STEPS 2000
@@ -276,7 +276,8 @@ enum idMode{
   DETECTOR_FIRMWARE_VERSION,  /**<return detector system firmware version */
   DETECTOR_SOFTWARE_VERSION,   /**<return detector system software version */
   THIS_SOFTWARE_VERSION,  /**<return this software version */
-  RECEIVER_VERSION		 /**<return receiver software version */
+  RECEIVER_VERSION,		 /**<return receiver software version */
+  SOFTWARE_FIRMWARE_API_VERSION		/** return software firmware API version **/
 };
 /**
     detector digital test modes

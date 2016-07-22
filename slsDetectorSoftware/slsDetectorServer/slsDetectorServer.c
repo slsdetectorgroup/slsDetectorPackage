@@ -23,12 +23,12 @@ int main(int argc, char *argv[]){
 	int retval=OK;
 	int sd, fd;
 
-	checkFirmwareCompatibility();
-
 #ifdef STOP_SERVER
 	char cmd[100];
 #endif
 	if (argc==1) {
+
+		checkFirmwareCompatibility();
 //#endif
 		portno = DEFAULT_PORTNO;
 		printf("opening control server on port %d\n",portno );

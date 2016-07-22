@@ -81,7 +81,7 @@ void qTabDeveloper::SetupWidgetWindow(){
 		break;
 	case slsDetectorDefs::EIGER:
 		NUM_DAC_WIDGETS = 17;
-		NUM_ADC_WIDGETS = 0;
+		NUM_ADC_WIDGETS = 6;
 
 		dacNames.push_back("v SvP:");
 		dacNames.push_back("v SvN");
@@ -101,7 +101,12 @@ void qTabDeveloper::SetupWidgetWindow(){
 		dacNames.push_back("v Vcmp_rr:");
 		dacNames.push_back("v threshold:");
 
-
+		adcNames.push_back("Temperature FPGA Ext:");
+		adcNames.push_back("Temperature 10GE:");
+		adcNames.push_back("Temperature DCDC:");
+		adcNames.push_back("Temperature SODL:");
+		adcNames.push_back("Temperature SODR:");
+		adcNames.push_back("Temperature FPGA:");
 
 		break;
 	case slsDetectorDefs::PROPIX:
@@ -228,16 +233,19 @@ void qTabDeveloper::SetupWidgetWindow(){
 	//adcs
 	if((detType==slsDetectorDefs::GOTTHARD) ||
 			(detType==slsDetectorDefs::PROPIX) ||
-			(detType==slsDetectorDefs::MOENCH)){
+			(detType==slsDetectorDefs::MOENCH)||
+			(detType==slsDetectorDefs::EIGER))		{
 	    setFixedHeight(20+(50+(NUM_DAC_WIDGETS/2)*35)+(50+(NUM_ADC_WIDGETS/2)*35));
 		boxAdcs = new QGroupBox("ADCs",this);
 		boxAdcs->setFixedHeight(25+(NUM_ADC_WIDGETS/2)*35);
 		layout->addWidget(boxAdcs,2,0);
 		CreateADCWidgets();
 		//to make the adcs at the bottom most
-		int diff = 340-height();
-		setFixedHeight(340);
-		layout->setVerticalSpacing(diff/2);
+		if(detType!=slsDetectorDefs::EIGER) {
+			int diff = 340-height();
+			setFixedHeight(340);
+			layout->setVerticalSpacing(diff/2);
+		}
 		//timer to check adcs
 		adcTimer = new QTimer(this);
 	}
@@ -295,9 +303,11 @@ void qTabDeveloper::CreateADCWidgets(){
 		lblAdcs[i] 	= new QLabel(QString(adcNames[i].c_str()),boxAdcs);
 		spinAdcs[i]	= new QDoubleSpinBox(boxAdcs);
 		spinAdcs[i]->setMaximum(10000);
+		spinAdcs[i]->setMinimum(-1);
 		if((detType==slsDetectorDefs::GOTTHARD) ||
 				(detType==slsDetectorDefs::PROPIX) ||
-				(detType==slsDetectorDefs::MOENCH))
+				(detType==slsDetectorDefs::MOENCH)||
+				(detType==slsDetectorDefs::EIGER))
 			spinAdcs[i]->setSuffix(0x00b0+QString("C"));
 
 		adcLayout->addWidget(lblAdcs[i],(int)(i/2),((i%2)==0)?1:4);
@@ -422,8 +432,12 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 			case 14:return slsDetectorDefs::E_Vcmp_rl;
 			case 15:return slsDetectorDefs::E_Vcmp_rr;
 			case 16:return slsDetectorDefs::THRESHOLD;
-
-
+			case 17:return slsDetectorDefs::TEMPERATURE_FPGAEXT;
+			case 18:return slsDetectorDefs::TEMPERATURE_10GE;
+			case 19:return slsDetectorDefs::TEMPERATURE_DCDC;
+			case 20:return slsDetectorDefs::TEMPERATURE_SODL;
+			case 21:return slsDetectorDefs::TEMPERATURE_SODR;
+			case 22:return slsDetectorDefs::TEMPERATURE_FPGA;
 			default:
 				qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error Index:"+ index,"qTabDeveloper::getSLSIndex");
 				Refresh();
@@ -520,11 +534,25 @@ void qTabDeveloper::RefreshAdcs(){
 
 	for(int i=0;i<NUM_ADC_WIDGETS;i++){
 		//all detectors
-		if(!detid)
-			spinAdcs[i]->setValue((double)myDet->getADC(getSLSIndex(i+NUM_DAC_WIDGETS)));
+		if(!detid){
+			if(detType == slsDetectorDefs::EIGER){
+				double value = (double)myDet->getADC(getSLSIndex(i+NUM_DAC_WIDGETS));
+				if(value == -1)
+					spinAdcs[i]->setValue(value);
+				else
+					spinAdcs[i]->setValue(value/1000.00);
+
+			}
+			else
+				spinAdcs[i]->setValue((double)myDet->getADC(getSLSIndex(i+NUM_DAC_WIDGETS)));
+		}
 		//specific detector
-		else
-			spinAdcs[i]->setValue((double)det->getADC(getSLSIndex(i+NUM_DAC_WIDGETS)));
+		else{
+			if(detType == slsDetectorDefs::EIGER)
+				spinAdcs[i]->setValue((double)det->getADC(getSLSIndex(i+NUM_DAC_WIDGETS))/1000.00);
+			else
+				spinAdcs[i]->setValue((double)det->getADC(getSLSIndex(i+NUM_DAC_WIDGETS)));
+		}
 	}
 
 

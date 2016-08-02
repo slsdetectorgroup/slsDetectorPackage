@@ -175,6 +175,7 @@ int initDetector(){
 	printf("mac read from detector: %llx\n",getDetectorMAC());
 	printf("ip read from detector: %x\n",getDetectorIP());
 
+
 	printf("\n");
 	return 1;
 }
@@ -1305,5 +1306,11 @@ int getBebFPGATemp()
 {
 	return Beb_GetBebFPGATemp();
 }
+
+
+int activate(int enable){
+	return Beb_Activate(enable);
+}
+
 
 #endif

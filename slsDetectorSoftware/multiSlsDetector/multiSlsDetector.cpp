@@ -1064,6 +1064,25 @@ string multiSlsDetector::checkOnline() {
 
 
 
+int multiSlsDetector::activate(int const enable){
+	int i;
+	int64_t ret1=-100, ret;
+
+	for (i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+		if (detectors[i]) {
+			ret=detectors[i]->activate(enable);
+			if(detectors[i]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<i));
+			if (ret1==-100)
+				ret1=ret;
+			else if (ret!=ret1)
+				ret1=-1;
+		}
+	}
+
+	return ret1;
+}
+
 
 
 int multiSlsDetector::exists() {

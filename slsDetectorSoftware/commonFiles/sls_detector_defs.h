@@ -10,8 +10,6 @@
 //#include <stdint.h>
 #include "sls_receiver_defs.h"
 
-#define REQUIRED_FIRMWARE_VERSION 14
-
 /** default maximum string length */
 #define MAX_SCAN_STEPS 2000
 /** maxmimum number of modules per controller*/

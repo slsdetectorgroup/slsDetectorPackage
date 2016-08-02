@@ -48,6 +48,10 @@ struct BebInfo{
 
 
   void Beb_GetModuleCopnfiguration(int* master, int* top);
+  int Beb_SetMasterViaSoftware();
+  int Beb_SetSlaveViaSoftware();
+  int Beb_Activate(int enable);
+  int Beb_ResetToHardwareSettings();
   u_int32_t Beb_GetFirmwareRevision();
   u_int32_t Beb_GetFirmwareSoftwareAPIVersion();
   void Beb_ResetFrameNumber();

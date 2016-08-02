@@ -89,5 +89,6 @@ int pulse_pixel_and_move(int);
 int pulse_chip(int);
 int set_rate_correct(int);
 int get_rate_correct(int);
+int set_activate(int);
 
 #endif

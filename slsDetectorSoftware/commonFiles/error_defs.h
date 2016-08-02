@@ -32,6 +32,7 @@ using namespace std;
 #define RECEIVER_DET_HOSTNAME_NOT_SET		0x0040000000000000ULL
 #define RECEIVER_DET_HOSTTYPE_NOT_SET		0x0020000000000000ULL
 #define DETECTOR_TEN_GIGA					0x0010000000000000ULL
+#define DETECTOR_ACTIVATE					0x0008000000000000ULL
 
 //											0xFFFFFFFF00000000ULL
 
@@ -112,6 +113,10 @@ public:
 
 		if(slsErrorMask&DETECTOR_TEN_GIGA)
 			retval.append("Could not enable/disable 10GbE in the detector.\n");
+
+		if(slsErrorMask&DETECTOR_ACTIVATE)
+			retval.append("Could not activate/deactivate detector\n");
+
 
 
 

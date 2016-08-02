@@ -116,6 +116,11 @@
 #define MASTER_BIT_MASK				0x200
 // Master Slave Top Bottom Definition
 #define MODULE_CONFIGURATION_MASK 0x84
+//Software Configuration
+#define MASTERCONFIG_OFFSET			0x160		//0x20 * 11 (P11)
+#define MASTER_BIT					0x1
+#define	OVERWRITE_HARDWARE_BIT		0x2
+#define DEACTIVATE_BIT				0x4
 
 //command memory
 #define LEFT_OFFSET					0x0

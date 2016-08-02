@@ -207,6 +207,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="activate"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
+  i++;
+
   descrToFuncMap[i].m_pFuncName="enablefwrite"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdEnablefwrite;
   i++;
@@ -2884,6 +2888,17 @@ string slsDetectorCommand::cmdOnline(int narg, char *args[], int action) {
       strcpy(ans,"All online");
     else
       strcat(ans," :Not online");
+  }
+  else if(cmd=="activate"){
+	  myDet->setOnline(ONLINE_FLAG);
+	  if (action==PUT_ACTION) {
+		  if (!sscanf(args[1],"%d",&ival))
+			  return string("Could not scan activate mode ")+string(args[1]);
+		/*  if(dynamic_cast<slsDetector*>(myDet) != NULL)
+			  return string("Can only set it from the multiDetector mode");*/
+		  myDet->activate(ival);
+	  }
+	  sprintf(ans,"%d",myDet->activate());
   }
   else if(cmd=="r_online"){
     if (action==PUT_ACTION) {

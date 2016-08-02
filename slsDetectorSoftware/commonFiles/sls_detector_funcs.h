@@ -103,6 +103,8 @@ enum {
   F_SET_RATE_CORRECT,		/** < set/reset rate correction tau */
   F_GET_RATE_CORRECT,		/** < get rate correction tau */
 
+  F_ACTIVATE			/** < activate/deactivate readout */
+
   /* Always append functions hereafter!!! */
 
 };

@@ -394,6 +394,11 @@ class multiSlsDetector  : public slsDetectorUtils {
   */
   string checkOnline();
 
+  /**  @short activates the detector (detector specific)
+       \param enable can be: -1 returns wether the detector is in active (1) or inactive (0) state
+       \returns 0 (inactive) or 1 (active)
+  */
+  int activate(int const enable=GET_ONLINE_FLAG);
 
   /**
      \returns 1 if the detector structure has already be initlialized with the given id and belongs to this multiDetector instance, 0 otherwise */

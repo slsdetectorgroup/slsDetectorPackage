@@ -204,6 +204,7 @@ int function_table() {
 	flist[F_PULSE_CHIP]=&pulse_chip;
 	flist[F_SET_RATE_CORRECT]=&set_rate_correct;
 	flist[F_GET_RATE_CORRECT]=&get_rate_correct;
+	flist[F_ACTIVATE]=&set_activate;
 
 
 #ifdef VERBOSE
@@ -4021,3 +4022,63 @@ int get_rate_correct(int file_des) {
 
 	return ret;
 }
+
+
+
+
+
+
+int set_activate(int file_des) {
+
+	int arg, n;
+	int ret=OK,ret1=OK;
+	int retval;
+
+	sprintf(mess,"can't activate/deactivate detector\n");
+
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+
+#ifdef VERBOSE
+	printf("Setting activate mode of detector to %d\n",arg);
+#endif
+	if (ret==OK) {
+
+		if (differentClients==1 && lockStatus==1 && arg>=0) {
+			ret=FAIL;
+			sprintf(mess,"Detector locked by %s\n",lastClientIP);
+		}  else {
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+#ifdef EIGERD
+			retval=activate(arg);
+#else
+			sprintf(mess,"Deactivate/Activate Not implemented for this detector\n");
+			ret=FAIL;
+#endif
+#endif
+		}
+		if (ret==OK){
+			if ((retval!=arg) && (arg!=-1)) {
+				ret=FAIL;
+				sprintf(mess,"Could not set activate mode to %d, is set to %d\n",arg, retval);
+			}else if (differentClients)
+				ret=FORCE_UPDATE;
+
+		}
+	}
+
+
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
+	if (ret==FAIL) {
+		n = sendData(file_des,mess,sizeof(mess),OTHER);
+	} else {
+		n = sendData(file_des,&retval,sizeof(retval),INT32);
+	}
+	return ret;
+}
+

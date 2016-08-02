@@ -1257,6 +1257,48 @@ string slsDetector::checkOnline() {
 
 
 
+int slsDetector::activate(int const enable){
+	int fnum = F_ACTIVATE;
+	int retval = -1;
+	int arg = enable;
+	char mess[1000]="";
+	int ret = OK;
+#ifdef VERBOSE
+	if(!enable)
+		std::cout<< "Deactivating Detector" << std::endl;
+	else if(enable == -1)
+		std::cout<< "Getting Detector activate mode" << std::endl;
+	else
+		std::cout<< "Activating Detector" << std::endl;
+#endif
+	if (thisDetector->onlineFlag==ONLINE_FLAG) {
+		if (connectControl() == OK){
+			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+			controlSocket->SendDataOnly(&arg,sizeof(arg));
+			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			if (ret==FAIL) {
+				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+				std::cout<< "Detector returned error: " << mess << std::endl;
+				setErrorMask((getErrorMask())|(DETECTOR_ACTIVATE));
+			} else {
+				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+			}
+			disconnectControl();
+			if (ret==FORCE_UPDATE)
+				updateDetector();
+		}
+	}
+#ifdef VERBOSE
+	if(retval)
+		std::cout << "Detector Activated"  << std::endl;
+	else
+		std::cout << "Detector Deactivated" << std::endl;
+#endif
+	return retval;
+
+}
+
+
 /*
    configure the socket communication and check that the server exists
    enum communicationProtocol{

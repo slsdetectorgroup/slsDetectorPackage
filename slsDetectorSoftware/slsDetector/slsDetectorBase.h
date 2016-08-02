@@ -394,6 +394,14 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
        \returns 0 (offline) or 1 (online)
   */
   virtual int setOnline(int const online=-1)=0;
+
+  /**  @short activates the detector (detector specific)
+       \param enable can be: -1 returns wether the detector is in active (1) or inactive (0) state
+       \returns 0 (inactive) or 1 (active)
+  */
+  virtual int activate(int const enable=GET_ONLINE_FLAG)=0;
+
+
   /**
      @short set detector settings
      \param isettings  settings index (-1 gets)

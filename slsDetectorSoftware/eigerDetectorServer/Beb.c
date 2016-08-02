@@ -169,6 +169,128 @@ void Beb_GetModuleCopnfiguration(int* master, int* top){
 		}
 }
 
+/* do not work at the moment */
+int Beb_SetMasterViaSoftware(){
+	//mapping new memory
+	u_int32_t baseaddr, value = 0, ret = 1;
+
+	//open file pointer
+	int fd = Beb_open(XPAR_PLB_GPIO_SYS_BASEADDR,&baseaddr);
+	if(fd < 0)
+		cprintf(BG_RED,"Set Master FAIL\n");
+	else{
+		value = Beb_Read32(baseaddr, MASTERCONFIG_OFFSET);
+		value|=MASTER_BIT;
+		value|=OVERWRITE_HARDWARE_BIT;
+		int newval = Beb_Write32(baseaddr, MASTERCONFIG_OFFSET,value);
+		if(newval!=value)
+			cprintf(BG_RED,"Could not set Master via Software\n");
+		else
+			ret = 0;
+	}
+
+	//close file pointer
+	if(fd > 0)
+		Beb_close(fd);
+
+	return ret;
+}
+
+/* do not work at the moment */
+int Beb_SetSlaveViaSoftware(){
+	//mapping new memory
+	u_int32_t baseaddr, value = 0, ret = 1;
+
+	//open file pointer
+	int fd = Beb_open(XPAR_PLB_GPIO_SYS_BASEADDR,&baseaddr);
+	if(fd < 0)
+		cprintf(BG_RED,"Set Slave FAIL\n");
+	else{
+		value = Beb_Read32(baseaddr, MASTERCONFIG_OFFSET);
+		value&=~MASTER_BIT;
+		value|=OVERWRITE_HARDWARE_BIT;
+		int newval = Beb_Write32(baseaddr, MASTERCONFIG_OFFSET,value);
+		if(newval!=value)
+			cprintf(BG_RED,"Could not set Slave via Software\n");
+		else
+			ret = 0;
+	}
+
+	//close file pointer
+	if(fd > 0)
+		Beb_close(fd);
+
+	return ret;
+}
+
+int Beb_Activate(int enable){
+	//mapping new memory
+	u_int32_t baseaddr, value = 0, ret = -1;
+
+	//open file pointer
+	int fd = Beb_open(XPAR_PLB_GPIO_SYS_BASEADDR,&baseaddr);
+	if(fd < 0)
+		cprintf(BG_RED,"Deactivate FAIL\n");
+	else{
+		if(enable > -1){
+			value = Beb_Read32(baseaddr, MASTERCONFIG_OFFSET);
+			printf("Deactivate register value before:%d\n",value);
+			if(enable)
+				value&=~DEACTIVATE_BIT;
+			else
+				value|=DEACTIVATE_BIT;
+
+			int newval = Beb_Write32(baseaddr, MASTERCONFIG_OFFSET,value);
+			if(newval!=value){
+				if(enable)
+					cprintf(BG_RED,"Could not activate via Software\n");
+				else
+					cprintf(BG_RED,"Could not deactivate via Software\n");
+			}
+		}
+
+		value = Beb_Read32(baseaddr, MASTERCONFIG_OFFSET);
+		if(value&DEACTIVATE_BIT) ret = 0;
+		else ret = 1;
+		if(enable == -1){
+			if(ret)
+				cprintf(BLUE,"Detector is active. Register value:%d\n", value);
+			else
+				cprintf(BG_RED,"Detector is deactivated! Register value:%d\n", value);
+		}
+
+	}
+	//close file pointer
+	if(fd > 0)
+		Beb_close(fd);
+
+	return ret;
+}
+
+int Beb_ResetToHardwareSettings(){
+	//mapping new memory
+	u_int32_t baseaddr, value = 0, ret = 1;
+
+	//open file pointer
+	int fd = Beb_open(XPAR_PLB_GPIO_SYS_BASEADDR,&baseaddr);
+	if(fd < 0)
+		cprintf(BG_RED,"Reset to Hardware Settings FAIL\n");
+	else{
+		value = Beb_Write32(baseaddr, MASTERCONFIG_OFFSET,0);
+		if(value)
+			cprintf(BG_RED,"Could not reset to hardware settings\n");
+		else
+			ret = 0;
+	}
+
+	//close file pointer
+	if(fd > 0)
+		Beb_close(fd);
+
+	return ret;
+}
+
+
 
 u_int32_t Beb_GetFirmwareRevision(){
 	//mapping new memory
@@ -199,7 +321,7 @@ u_int32_t Beb_GetFirmwareSoftwareAPIVersion(){
 	//open file pointer
 	int fd = Beb_open(XPAR_VERSION,&baseaddr);
 	if(fd < 0)
-		cprintf(BG_RED,"Firmware Revision Read FAIL\n");
+		cprintf(BG_RED,"Firmware Software API Version Read FAIL\n");
 	else{
 		value = Beb_Read32(baseaddr, FIRMWARESOFTWARE_API_OFFSET);
 		if(!value)

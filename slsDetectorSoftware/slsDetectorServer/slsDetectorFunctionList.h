@@ -153,6 +153,7 @@ void setExternalGating(int enable[]);
 void setAllTrimbits(int val);
 int getAllTrimbits();
 int getBebFPGATemp();
+int activate(int enable);
 #endif
 
 

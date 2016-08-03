@@ -1800,7 +1800,6 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec){
 	double b0[1024];
 	double m[1024];
 
-
 	if(tau_in_sec<0||sub_expure_time_in_sec<0){
 		printf("Error tau %f and sub_expure_time %f must be greater than 0.\n", tau_in_sec, sub_expure_time_in_sec);
 		return 0;
@@ -1809,69 +1808,77 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec){
 	printf("\tCalculating table for tau of %lld ns.\n", tau_in_Nsec);
 	int i;
 	for(i=0;i<np;i++)
-		Feb_Control_rate_meas[i]  = i*exp(-i/sub_expure_time_in_sec*tau_in_sec);
+	  Feb_Control_rate_meas[i]  = i*exp(-i/sub_expure_time_in_sec*tau_in_sec);
 
 	/*
-	 b  :  index/address of block ram/rate correction table
-	 b0 :  base in vhdl
-	 m  :  slope in vhdl
-
-	 Firmware:
-	    data_in(11..2) -> memory address  --> memory
-	    data_in( 1..0) -> lsb
-
-	    mem_data_out(13.. 0) -> base
-	    mem_data_out(17..14) -> slope
-
-	    delta = slope*lsb
-	    corr  = base+delta
-	 */
-
+	  b  :  index/address of block ram/rate correction table
+	  b0 :  base in vhdl
+	  m  :  slope in vhdl
+	  
+	  Firmware:
+	  data_in(11..2) -> memory address  --> memory
+	  data_in( 1..0) -> lsb
+	  
+	  mem_data_out(13.. 0) -> base
+	  mem_data_out(17..14) -> slope
+	  
+	  delta = slope*lsb
+	  corr  = base+delta
+	*/
+	
 	int next_i=0;
-
 	b0[0] = 0;
 	m[0]  = 1;
-	int b;
+	
+	for(i=0; i<1024; i++) 
+	  	Feb_Control_rate_correction_table[i]  =  65535;
+	
+		Feb_Control_rate_correction_table[0]  = (((int)(m[0]+0.5)&0xf)<<14) | ((int)(b0[0]+0.5)&0x3fff);
+
+	int b=0;
 	for(b=1;b<1024;b++){
-		if(m[b-1]<14.5){
+		if(m[b-1]<15){
 			double s=0,sx=0,sy=0,sxx=0,sxy=0;
 			for(;;next_i++){
-				if(next_i>=np){
-					cprintf(RED,"Error: (tau/subexptime) must be < 0.0015 \n");
-					return -1;
-				}
-
-				double x    = Feb_Control_rate_meas[next_i] - b*4;
-				double y    = next_i;
-				/*printf("Start Loop  x: %f,\t y: %f,\t  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  "
-						"next_i: %d,\t  b: %d,\t  Feb_Control_rate_meas[next_i]: %f\n",
-						x, y, s, sx, sy, sxx, sxy, next_i, b, Feb_Control_rate_meas[next_i]);*/
-
-				if(x < -0.5) continue;
-				if(x >  3.5) break;
-				s   += 1;
-				sx  += x;
-				sy  += y;
-				sxx += x*x;
-				sxy += x*y;
-				/*printf("End   Loop  x: %f,\t y: %f,\t  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  "
-						"next_i: %d,\t  b: %d,\t  Feb_Control_rate_meas[next_i]: %f\n",
+			  if(next_i>=np){
+			    b=1024;
+			    b0[b] = 16383;
+			    m[b]  = 15; 
+			    break;
+			  }
+			  
+			  double x    = Feb_Control_rate_meas[next_i] - b*4;
+			  double y    = next_i;
+			  /*printf("Start Loop  x: %f,\t y: %f,\t  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  "
+			    "next_i: %d,\t  b: %d,\t  Feb_Control_rate_meas[next_i]: %f\n",
+			    x, y, s, sx, sy, sxx, sxy, next_i, b, Feb_Control_rate_meas[next_i]);*/
+			  
+			  if(x < -0.5) continue;
+			  if(x >  3.5) break;
+			  s   += 1;
+			  sx  += x;
+			  sy  += y;
+			  sxx += x*x;
+			  sxy += x*y;
+			  /*printf("End   Loop  x: %f,\t y: %f,\t  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  "
+			    "next_i: %d,\t  b: %d,\t  Feb_Control_rate_meas[next_i]: %f\n",
 						x, y, s, sx, sy, sxx, sxy, next_i, b, Feb_Control_rate_meas[next_i]);*/
 			}
 			double delta = s*sxx - sx*sx;
 			b0[b] = (sxx*sy - sx*sxy)/delta;
 			m[b]  = (s*sxy  - sx*sy) /delta;
-
-			if(m[b]<0||m[b]>15)
-				m[b]=15;
+			
+			if(m[b]<0||m[b]>15){
+			  m[b]=15;
+			  b0[b]=16383;
+			}
 			/*printf("After Loop  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  "
-					"next_i: %d,\t  b: %d,\t  Feb_Control_rate_meas[next_i]: %f\n",
-					s, sx, sy, sxx, sxy, next_i, b, Feb_Control_rate_meas[next_i]);*/
+			  "next_i: %d,\t  b: %d,\t  Feb_Control_rate_meas[next_i]: %f\n",
+			  s, sx, sy, sxx, sxy, next_i, b, Feb_Control_rate_meas[next_i]);*/
 			//	cout<<s<<"   "<<sx<<"   "<<sy<<"   "<<sxx<<"   "<<"   "<<sxy<<"   "<<delta<<"   "<<m[b]<<"    "<<b0[b]<<endl;
 		}else{
-			b0[b] = b0[b-1] + 4*m[b-1];
-			m[b]  = m[b-1];
-			/*printf("else\n");*/
+		  b0[b] = 16383;
+		  m[b]  = 15;
 		}
 		Feb_Control_rate_correction_table[b]  = (((int)(m[b]+0.5)&0xf)<<14) | ((int)(b0[b]+0.5)&0x3fff);
 		/*printf("After Loop  4*b: %d\tbase:%d\tslope:%d\n",4*b, (int)(b0[b]+0.5), (int)(m[b]+0.5) );*/
@@ -1953,8 +1960,10 @@ int Feb_Control_PrintCorrectedValues(){
 		slope = ((Feb_Control_rate_correction_table[i>>2] & 0x3c000) >> 14);
 		delta = slope*lsb;
 		corr  = delta+base;
+		if(base==16383 && slope==15) corr=4095;
+		
 		printf("Readout Input: %d,\tBase:%d,\tSlope:%d,\tLSB:%d,\tDelta:%d\tResult:%d\tReal:%f\n",
-				i, base, slope, lsb, delta, corr, Feb_Control_rate_meas[i]);
+		       i, base, slope, lsb, delta, corr, Feb_Control_rate_meas[i]);
 	}
 	return 1;
 }

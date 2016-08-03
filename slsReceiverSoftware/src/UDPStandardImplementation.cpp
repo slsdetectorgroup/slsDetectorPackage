@@ -1897,7 +1897,7 @@ uint32_t UDPStandardImplementation::processListeningBuffer(int ithread, int cSiz
 			cSize += onePacketSize;
 			lastPacketOffset -= onePacketSize;
 			--packetCount;
-			while (lastFrameHeader64 == (*( (uint32_t*) header->frameNumber))&0xffffff){
+			while (lastFrameHeader64 == ((*( (uint32_t*) header->frameNumber))&0xffffff)){
 				cSize += onePacketSize;
 				lastPacketOffset -= onePacketSize;
 				header = (jfrau_packet_header_t*) (buffer[ithread]+lastPacketOffset);
@@ -2866,7 +2866,7 @@ void UDPStandardImplementation::updateFileHeader(){
 	//update file header
 	time_t t = time(0);
 	int length = sizeof(fileHeader);
-	while(length!=strlen(fileHeader)){
+	while((unsigned int)length!=strlen(fileHeader)){
 		length = strlen(fileHeader);
 		sprintf(fileHeader,"\nHeader\t\t %d bytes\n"
 				"Dynamic Range\t %d\n"

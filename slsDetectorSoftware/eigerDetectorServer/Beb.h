@@ -51,6 +51,7 @@ struct BebInfo{
   int Beb_SetMasterViaSoftware();
   int Beb_SetSlaveViaSoftware();
   int Beb_Activate(int enable);
+  int Beb_SetTransmissionDelay(int delay);
   int Beb_ResetToHardwareSettings();
   u_int32_t Beb_GetFirmwareRevision();
   u_int32_t Beb_GetFirmwareSoftwareAPIVersion();

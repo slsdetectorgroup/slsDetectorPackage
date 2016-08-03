@@ -122,6 +122,8 @@
 #define	OVERWRITE_HARDWARE_BIT		0x2
 #define DEACTIVATE_BIT				0x4
 
+#define TXM_DELAY_LEFT_OFFSET		0x180
+
 //command memory
 #define LEFT_OFFSET					0x0
 #define RIGHT_OFFSET				0x100

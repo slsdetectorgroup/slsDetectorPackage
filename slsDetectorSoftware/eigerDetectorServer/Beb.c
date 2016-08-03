@@ -267,6 +267,35 @@ int Beb_Activate(int enable){
 	return ret;
 }
 
+
+int Beb_SetTransmissionDelay(int delay){
+	//mapping new memory
+	u_int32_t baseaddr, value = 0;
+
+	//open file pointer
+	int fd = Beb_open(XPAR_PLB_GPIO_SYS_BASEADDR,&baseaddr);
+	if(fd < 0){
+		cprintf(BG_RED,"Deactivate FAIL\n");
+		return -1;
+	}
+	else{
+		if(delay > -1){
+			value = Beb_Read32(baseaddr, TXM_DELAY_LEFT_OFFSET);
+			cprintf(BLUE, "Transmission Delay value before:%d\n",value);
+			Beb_Write32(baseaddr, TXM_DELAY_LEFT_OFFSET,delay);
+		}
+
+		value = Beb_Read32(baseaddr, TXM_DELAY_LEFT_OFFSET);
+		cprintf(BLUE,"Transmission Delay value:%d\n", value);
+	}
+	//close file pointer
+	if(fd > 0)
+		Beb_close(fd);
+
+	return 0;
+}
+
+
 int Beb_ResetToHardwareSettings(){
 	//mapping new memory
 	u_int32_t baseaddr, value = 0, ret = 1;

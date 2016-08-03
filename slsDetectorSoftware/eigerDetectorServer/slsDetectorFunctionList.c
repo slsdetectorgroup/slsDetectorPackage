@@ -741,6 +741,7 @@ enum detectorSettings getSettings(){
 }
 
 int startReceiver(int d){
+
 	printf("Going to prepare for acquisition with counter_bit:%d\n",Feb_Control_Get_Counter_Bit());
 	Feb_Control_PrepareForAcquisition();
 	printf("Going to reset Frame Number\n");

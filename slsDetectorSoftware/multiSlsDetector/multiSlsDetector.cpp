@@ -2077,7 +2077,7 @@ slsDetectorDefs::ROI* multiSlsDetector::getROI(int &n){
 	int maxroi = ndet*MAX_ROIS;
 	ROI temproi;
 	ROI roiLimits[maxroi];
-	ROI retval[maxroi];
+	ROI* retval = new ROI[maxroi];
 	ROI* temp=0;
 	int index=0;
 

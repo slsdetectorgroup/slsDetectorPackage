@@ -1673,6 +1673,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   int setReceiverUDPPort(int udpport);
   /** sets the receiver udp port2 for Eiger \sa sharedSlsDetector  */
   int setReceiverUDPPort2(int udpport);
+  /** sets the transmission delay for left or right port or for an entire frame*/
+  char* setTransmissionDelay(networkParameter index, int delay);
 
   /** Sets the read receiver frequency
    	  if Receiver read upon gui request, readRxrFrequency=0,

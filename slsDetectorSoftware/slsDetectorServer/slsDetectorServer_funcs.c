@@ -205,6 +205,7 @@ int function_table() {
 	flist[F_SET_RATE_CORRECT]=&set_rate_correct;
 	flist[F_GET_RATE_CORRECT]=&get_rate_correct;
 	flist[F_ACTIVATE]=&set_activate;
+	flist[F_SET_TRANSMISSION_DELAY]=&set_transmission_delay;
 
 
 #ifdef VERBOSE
@@ -4084,3 +4085,80 @@ int set_activate(int file_des) {
 	return ret;
 }
 
+
+
+
+
+
+
+
+int set_transmission_delay(int file_des) {
+
+	enum transmissionDelayIndex index;
+	enum networkParameter mode;
+	int delay = -1;
+	int ret=OK,ret1=OK;
+	int retval = -1,n;
+
+	sprintf(mess,"can't set transmission delay\n");
+	n = receiveData(file_des,&mode,sizeof(mode),INT32);
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+	n = receiveData(file_des,&delay,sizeof(delay),INT32);
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+
+#ifdef VERBOSE
+	printf("setting transmission delay mode %d to %d\n",(int)mode,delay);
+#endif
+	if (ret==OK) {
+		if (differentClients==1 && lockStatus==1 && delay>=0) {
+			ret=FAIL;
+			sprintf(mess,"Detector locked by %s\n",lastClientIP);
+		}  else {
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+			switch (mode) {
+#ifdef EIGERD
+			case DETECTOR_TXN_DELAY_LEFT:
+				index = TXN_LEFT;
+				break;
+			case DETECTOR_TXN_DELAY_RIGHT:
+				index = TXN_RIGHT;
+				break;
+			case DETECTOR_TXN_DELAY_FRAME:
+				index = TXN_FRAME;
+				break;
+#endif
+			default:
+				sprintf(mess,"unknown transmission mode %d for this detector\n",mode);
+				ret=FAIL;
+				break;
+			}
+			if (ret==OK)
+				retval=setTransmissionDelay(index, delay);
+#endif
+		}
+		if (ret==OK){
+			if ((retval!=delay) && (delay>=0)) {
+				ret=FAIL;
+				sprintf(mess,"could not change transmission mode %d: should be %d but is %d \n",index, delay, retval);
+				printf(RED, mess);
+			}else if (differentClients)
+				ret=FORCE_UPDATE;
+		}
+	}
+
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
+	if (ret==FAIL)
+		n = sendData(file_des,mess,sizeof(mess),OTHER);
+	else
+		n = sendData(file_des,&retval,sizeof(retval),INT32);
+
+	return ret;
+}

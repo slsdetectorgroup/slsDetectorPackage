@@ -5366,8 +5366,13 @@ char* slsDetector::setNetworkParameter(networkParameter index, string value) {
 		if(thisDetector->myDetectorType == EIGER)
 			return getReceiverUDPPort2();
 		return getReceiverUDPPort();
+	case DETECTOR_TXN_DELAY_LEFT:
+	case DETECTOR_TXN_DELAY_RIGHT:
+	case DETECTOR_TXN_DELAY_FRAME:
+		sscanf(value.c_str(),"%d",&i);
+		return setTransmissionDelay(index, i);
   default:
-    return ("unknown network parameter");
+    return (char*)("unknown network parameter");
   }
 
 }
@@ -5398,14 +5403,15 @@ char* slsDetector::getNetworkParameter(networkParameter index) {
   case RECEIVER_UDP_PORT2:
     return getReceiverUDPPort2();
     break;
+  case DETECTOR_TXN_DELAY_LEFT:
+  case DETECTOR_TXN_DELAY_RIGHT:
+  case DETECTOR_TXN_DELAY_FRAME:
+	  return setTransmissionDelay(index, -1);
   default:
-    return ("unknown network parameter");
+    return (char*)("unknown network parameter");
   }
 
 }
-
-
-
 
 char* slsDetector::setDetectorMAC(string detectorMAC){
   if(detectorMAC.length()==17){
@@ -5584,6 +5590,43 @@ int slsDetector::setReceiverUDPPort2(int udpport){
       std::cout<< "Warning: UDP connection set up failed" << std::endl;
     }
 	return thisDetector->receiverUDPPort2;
+}
+
+
+char* slsDetector::setTransmissionDelay(networkParameter index, int delay){
+	int fnum = F_SET_TRANSMISSION_DELAY;
+	char* cretval = new char[MAX_STR_LENGTH];
+	int ret = FAIL;
+	int retval = -1;
+	char mess[MAX_STR_LENGTH]="";
+
+#ifdef VERBOSE
+	std::cout<< "Setting Transmission delay of mode "<< index << " to " <<  delay << std::endl;
+#endif
+	if (thisDetector->onlineFlag==ONLINE_FLAG) {
+		if (connectControl() == OK){
+			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+			controlSocket->SendDataOnly(&index,sizeof(index));
+			controlSocket->SendDataOnly(&delay,sizeof(delay));
+			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			if (ret==FAIL) {
+				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+				std::cout<< "Detector returned error: " << mess << std::endl;
+				setErrorMask((getErrorMask())|(TRANSMISSION_DELAY));
+			} else
+				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+			disconnectControl();
+			if (ret==FORCE_UPDATE)
+				updateDetector();
+		}
+	}
+#ifdef VERBOSE
+	std::cout<< "Speed set to  "<< retval  << std::endl;
+#endif
+
+
+	sprintf(cretval,"%d",retval);
+	return cretval;
 }
 
 

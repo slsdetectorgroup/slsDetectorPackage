@@ -1303,8 +1303,7 @@ int getAllTrimbits(){
 	return *((detectorModules->chanregs));
 }
 
-int getBebFPGATemp()
-{
+int getBebFPGATemp(){
 	return Beb_GetBebFPGATemp();
 }
 
@@ -1313,5 +1312,9 @@ int activate(int enable){
 	return Beb_Activate(enable);
 }
 
+
+int setTransmissionDelay(enum transmissionDelayIndex mode, int delay){
+	return Beb_SetTransmissionDelay(mode, delay);
+}
 
 #endif

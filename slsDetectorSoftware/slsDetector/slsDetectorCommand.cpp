@@ -363,6 +363,18 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="txndelay_left"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="txndelay_right"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="txndelay_frame"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
+  i++;
+
   descrToFuncMap[i].m_pFuncName="configuremac"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdConfigureMac;
   i++;
@@ -2650,41 +2662,59 @@ string slsDetectorCommand::helpScans(int narg, char *args[], int action) {
 
 string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int action) {
 
-  networkParameter t;
-  int i;
-  if (action==HELP_ACTION)
-    return helpNetworkParameter(narg,args,action);
+	networkParameter t;
+	int i;
+	if (action==HELP_ACTION)
+		return helpNetworkParameter(narg,args,action);
 
-  myDet->setOnline(ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG);
 
-  if (cmd=="detectormac") {
-	t=DETECTOR_MAC;
-  }	else if (cmd=="detectorip") {
-	t=DETECTOR_IP;
-  } else if (cmd=="rx_hostname") {
-    t=RECEIVER_HOSTNAME;
-  } else if (cmd=="rx_udpip") {
-    t=RECEIVER_UDP_IP;
-  } else if (cmd=="rx_udpmac") {
-    t=RECEIVER_UDP_MAC;
-  } else if (cmd=="rx_udpport") {
-    t=RECEIVER_UDP_PORT;
-    if (action==PUT_ACTION){
-      if (!(sscanf(args[1],"%d",&i)))
-        return ("cannot parse argument") + string(args[1]);
-    }
-  } else if (cmd=="rx_udpport2") {
-	t=RECEIVER_UDP_PORT2;
-	if (action==PUT_ACTION){
-	   if (!(sscanf(args[1],"%d",&i)))
-	     return ("cannot parse argument") + string(args[1]);
-	}
-  } else return ("unknown network parameter")+cmd;
+	if (cmd=="detectormac") {
+		t=DETECTOR_MAC;
+	}	else if (cmd=="detectorip") {
+		t=DETECTOR_IP;
+	} else if (cmd=="rx_hostname") {
+		t=RECEIVER_HOSTNAME;
+	} else if (cmd=="rx_udpip") {
+		t=RECEIVER_UDP_IP;
+	} else if (cmd=="rx_udpmac") {
+		t=RECEIVER_UDP_MAC;
+	} else if (cmd=="rx_udpport") {
+		t=RECEIVER_UDP_PORT;
+		if (action==PUT_ACTION){
+			if (!(sscanf(args[1],"%d",&i)))
+				return ("cannot parse argument") + string(args[1]);
+		}
+	} else if (cmd=="rx_udpport2") {
+		t=RECEIVER_UDP_PORT2;
+		if (action==PUT_ACTION){
+			if (!(sscanf(args[1],"%d",&i)))
+				return ("cannot parse argument") + string(args[1]);
+		}
+	} else if (cmd=="txndelay_left") {
+		t=DETECTOR_TXN_DELAY_LEFT;
+		if (action==PUT_ACTION){
+			if (!(sscanf(args[1],"%d",&i)))
+				return ("cannot parse argument") + string(args[1]);
+		}
+	} else if (cmd=="txndelay_right") {
+		t=DETECTOR_TXN_DELAY_RIGHT;
+		if (action==PUT_ACTION){
+			if (!(sscanf(args[1],"%d",&i)))
+				return ("cannot parse argument") + string(args[1]);
+		}
+	} else if (cmd=="txndelay_frame") {
+		t=DETECTOR_TXN_DELAY_FRAME;
+		if (action==PUT_ACTION){
+			if (!(sscanf(args[1],"%d",&i)))
+				return ("cannot parse argument") + string(args[1]);
+		}
+	} else return ("unknown network parameter")+cmd;
 
-  if (action==PUT_ACTION)
-	  myDet->setNetworkParameter(t, args[1]);
+	if (action==PUT_ACTION)
+		myDet->setNetworkParameter(t, args[1]);
 
-  return myDet->getNetworkParameter(t);
+	return myDet->getNetworkParameter(t);
 
 }
 
@@ -2701,6 +2731,9 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
     os << "rx_udpmac mac \n sets receiver udp mac to mac"<< std::endl;
     os << "rx_udpport port \n sets receiver udp port to port"<< std::endl;
     os << "rx_udpport2 port \n sets receiver udp port to port. For Eiger, it is the second half module and for other detectors, same as rx_udpport"<< std::endl;
+    os << "txndelay_left port \n sets detector transmission delay of the left port"<< std::endl;
+    os << "txndelay_right port \n sets detector transmission delay of the right port"<< std::endl;
+    os << "txndelay_frame port \n sets detector transmission delay of the entire frame"<< std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
 	os << "detectormac \n gets detector mac "<< std::endl;
@@ -2709,7 +2742,9 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
     os << "rx_udpmac \n gets receiver udp mac "<< std::endl;
     os << "rx_udpport \n gets receiver udp port "<< std::endl;
     os << "rx_udpport2 \n gets receiver udp port. For Eiger, it is the second half module and for other detectors, same as rx_udpport"<< std::endl;
-
+    os << "txndelay_left \n gets detector transmission delay of the left port"<< std::endl;
+    os << "txndelay_right \n gets detector transmission delay of the right port"<< std::endl;
+    os << "txndelay_frame \n gets detector transmission delay of the entire frame"<< std::endl;
   } 
   return os.str();
 

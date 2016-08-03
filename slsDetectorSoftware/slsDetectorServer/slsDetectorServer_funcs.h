@@ -90,5 +90,6 @@ int pulse_chip(int);
 int set_rate_correct(int);
 int get_rate_correct(int);
 int set_activate(int);
+int set_transmission_delay(int);
 
 #endif

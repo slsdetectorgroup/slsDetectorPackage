@@ -268,10 +268,27 @@ int Beb_Activate(int enable){
 }
 
 
-int Beb_SetTransmissionDelay(int delay){
+int Beb_SetTransmissionDelay(enum transmissionDelayIndex mode, int delay){
 	//mapping new memory
 	u_int32_t baseaddr, value = 0;
+	u_int32_t offset = TXM_DELAY_LEFT_OFFSET;
+	char modename[100] = "";
 
+	switch(mode){
+	case TXN_LEFT:
+		offset = TXM_DELAY_LEFT_OFFSET;
+		strcpy(modename,"Transmission Delay Left");
+		break;
+	case TXN_RIGHT:
+		offset = TXM_DELAY_RIGHT_OFFSET;
+		 strcpy(modename,"Transmission Delay Right");
+		break;
+	case TXN_FRAME:
+		offset = TXM_DELAY_FRAME_OFFSET;
+		 strcpy(modename,"Transmission Delay Frame");
+		break;
+	default: cprintf(BG_RED,"Unrecognized mode in transmission delay: %d\n",mode); return -1;
+	}
 	//open file pointer
 	int fd = Beb_open(XPAR_PLB_GPIO_SYS_BASEADDR,&baseaddr);
 	if(fd < 0){
@@ -280,19 +297,19 @@ int Beb_SetTransmissionDelay(int delay){
 	}
 	else{
 		if(delay > -1){
-			value = Beb_Read32(baseaddr, TXM_DELAY_LEFT_OFFSET);
-			cprintf(BLUE, "Transmission Delay value before:%d\n",value);
-			Beb_Write32(baseaddr, TXM_DELAY_LEFT_OFFSET,delay);
+			value = Beb_Read32(baseaddr, offset);
+			cprintf(BLUE, "%s value before:%d\n",modename,value);
+			Beb_Write32(baseaddr, offset,delay);
 		}
 
-		value = Beb_Read32(baseaddr, TXM_DELAY_LEFT_OFFSET);
-		cprintf(BLUE,"Transmission Delay value:%d\n", value);
+		value = Beb_Read32(baseaddr, offset);
+		cprintf(BLUE,"%s value:%d\n", modename,value);
 	}
 	//close file pointer
 	if(fd > 0)
 		Beb_close(fd);
 
-	return 0;
+	return value;
 }
 
 

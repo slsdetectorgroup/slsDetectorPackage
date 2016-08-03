@@ -183,7 +183,10 @@ enum networkParameter {
   RECEIVER_UDP_IP,		/**< receiever UDP IP */
   RECEIVER_UDP_PORT,	/**< receiever UDP Port */
   RECEIVER_UDP_MAC,		/**< receiever UDP MAC */
-  RECEIVER_UDP_PORT2	/**< receiever UDP Port of second half module for eiger */
+  RECEIVER_UDP_PORT2,	/**< receiever UDP Port of second half module for eiger */
+  DETECTOR_TXN_DELAY_LEFT, /**< transmission delay on the (left) port for next frame */
+  DETECTOR_TXN_DELAY_RIGHT,/**< transmission delay on the right port for next frame  */
+  DETECTOR_TXN_DELAY_FRAME /**< transmission delay of a whole frame for all the ports */
 };
 
 /**
@@ -521,7 +524,6 @@ enum angleConversionParameter {
   SAMPLE_X, /**< sample displacement in the beam direction */
   SAMPLE_Y /**< sample displacement orthogonal to the beam */
 };
-
 
 
 //typedef struct  {

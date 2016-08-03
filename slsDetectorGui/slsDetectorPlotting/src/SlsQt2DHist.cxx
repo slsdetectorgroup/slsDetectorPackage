@@ -6,7 +6,7 @@
 
 
 #include <iostream>
-
+#include <cmath>
 #include "SlsQt2DHist.h"
   
 using std::cout;
@@ -125,7 +125,7 @@ double SlsQt2DHist::GetMean(){
 }
 
 double SlsQt2DHist::SetMinimumToFirstGreaterThanZero(){
-  z_min=abs(z_max)+1;
+  z_min=fabs(z_max)+1;
   for(int i=0;i<nb;i++){
     if(data[i]>0 && data[i]<z_min) z_min=data[i];
   }

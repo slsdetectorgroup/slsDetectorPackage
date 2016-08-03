@@ -257,7 +257,8 @@ void qTabActions::CreatePositionsWidget(){
 	layout->addWidget(lblPosList,0,4);
 	comboPos = new QComboBox(this);
 	comboPos->setEditable(true);
-	comboPos->setCompleter(false);
+//	comboPos->setCompleter(false);
+	comboPos->setCompleter(NULL);
 	normal = comboPos->palette();
 	comboPos->setEnabled(false);
 	QDoubleValidator *validate = new QDoubleValidator(comboPos);

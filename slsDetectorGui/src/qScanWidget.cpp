@@ -138,7 +138,7 @@ void qScanWidget::SetupWidgetWindow(){
 	btnCustom = new QPushButton("Delete  ",widgetCustom);
 	btnCustom->setIcon(QIcon( ":/icons/images/close.png" ));
 	comboCustom->setEditable(true);
-	comboCustom->setCompleter(false);
+	comboCustom->setCompleter(NULL);
 	comboCustom->setValidator(new QDoubleValidator(comboCustom));
 	comboCustom->setToolTip(customTip);
 	btnCustom->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);

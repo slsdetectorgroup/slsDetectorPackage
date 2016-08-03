@@ -653,7 +653,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
       \param s can be STANDARD, FAST, HIGHGAIN, DYNAMICGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN, LOWNOISE,
        DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2, GET_SETTINGS
       \returns standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, lownoise,
-      dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2, undefined
+      dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2, verylowgain, undefined
   */
   static string getDetectorSettings(detectorSettings s){\
     switch(s) {											\
@@ -670,6 +670,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
     case FIXGAIN2:      return  string("fixgain2");		\
     case FORCESWITCHG1: return  string("forceswitchg1");\
     case FORCESWITCHG2: return  string("forceswitchg2");\
+    case VERYLOWGAIN: return  string("verylowgain");\
     default:    		return string("undefined");		\
     }};
 
@@ -677,7 +678,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
       \param s can be standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, lownoise,
       dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2, undefined
       \returns   setting index STANDARD, FAST, HIGHGAIN, DYNAMICGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN,LOWNOISE,
-      DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2, GET_SETTINGS
+      DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2, VERYLOWGAIN, GET_SETTINGS
   */
 
   static detectorSettings getDetectorSettings(string s){	\
@@ -694,6 +695,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
     if (s=="fixgain2") 		return FIXGAIN2;				\
     if (s=="forceswitchg1") return FORCESWITCHG1;			\
     if (s=="forceswitchg2")	return FORCESWITCHG2;			\
+    if (s=="verylowgain")	return VERYLOWGAIN;				\
     return GET_SETTINGS;									\
   };
 

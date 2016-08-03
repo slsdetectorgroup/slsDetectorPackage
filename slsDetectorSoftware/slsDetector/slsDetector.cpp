@@ -3240,7 +3240,8 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 	case VERYHIGHGAIN:
 		if ((thisDetector->myDetectorType == GOTTHARD) ||
 			(thisDetector->myDetectorType == PROPIX) ||
-			(thisDetector->myDetectorType == MOENCH)) {
+			(thisDetector->myDetectorType == MOENCH)||
+			(thisDetector->myDetectorType == EIGER)) {
 			ssettings="/veryhighgain";
 			thisDetector->currentSettings=VERYHIGHGAIN;
 		}
@@ -3275,6 +3276,12 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 		if (thisDetector->myDetectorType == JUNGFRAU) {
 			ssettings="/forceswitchg2";
 			thisDetector->currentSettings=FORCESWITCHG2;
+		}
+		break;
+	case VERYLOWGAIN:
+		if (thisDetector->myDetectorType == EIGER) {
+			ssettings="/verylowgain";
+			thisDetector->currentSettings=VERYLOWGAIN;
 		}
 		break;
 	default:

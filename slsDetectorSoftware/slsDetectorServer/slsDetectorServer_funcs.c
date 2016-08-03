@@ -1929,6 +1929,8 @@ int set_module(int file_des) {
 	case STANDARD:
 	case HIGHGAIN:
 	case LOWGAIN:
+	case VERYHIGHGAIN:
+	case VERYLOWGAIN:
 		break;
 	default:
 		sprintf(mess,"This setting %d does not exist for this detector\n",myModule.reg);

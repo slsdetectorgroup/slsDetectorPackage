@@ -376,6 +376,7 @@ enum detectorSettings{
   FIXGAIN2,			/**< fix gain 2 */
   FORCESWITCHG1,	/**< force switch gain 1 */
   FORCESWITCHG2,	/**< force switch gain 2 */
+  VERYLOWGAIN,		/**< very low gain settings */
   UNDEFINED=200,    /**< undefined or custom  settings */
   UNINITIALIZED     /**< uninitialiazed (status at startup) */
 };

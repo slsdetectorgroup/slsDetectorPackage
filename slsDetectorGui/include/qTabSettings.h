@@ -58,7 +58,7 @@ private:
 	bool expertMode;
 
 	enum{Standard,Fast,HighGain,DynamicGain,LowGain,MediumGain,VeryHighGain,LowNoise,
-		DynamicHG0,FixGain1,FixGain2,ForceSwitchG1,ForceSwitchG2,
+		DynamicHG0,FixGain1,FixGain2,ForceSwitchG1,ForceSwitchG2, VeryLowGain,
 		Undefined,Uninitialized,NumSettings};
 
 	/** To be able to index items on a combo box */

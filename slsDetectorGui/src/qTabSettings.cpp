@@ -128,6 +128,7 @@ void qTabSettings::SetupDetectorSettings(){
 			item[(int)FixGain2]->setEnabled(false);
 			item[(int)ForceSwitchG1]->setEnabled(false);
 			item[(int)ForceSwitchG2]->setEnabled(false);
+			item[(int)VeryLowGain]->setEnabled(false);
 			break;
 		case slsDetectorDefs::EIGER:
 			item[(int)Standard]->setEnabled(true);
@@ -136,13 +137,14 @@ void qTabSettings::SetupDetectorSettings(){
 			item[(int)DynamicGain]->setEnabled(false);
 			item[(int)LowGain]->setEnabled(true);
 			item[(int)MediumGain]->setEnabled(false);
-			item[(int)VeryHighGain]->setEnabled(false);
+			item[(int)VeryHighGain]->setEnabled(true);
 			item[(int)LowNoise]->setEnabled(false);
 			item[(int)DynamicHG0]->setEnabled(false);
 			item[(int)FixGain1]->setEnabled(false);
 			item[(int)FixGain2]->setEnabled(false);
 			item[(int)ForceSwitchG1]->setEnabled(false);
 			item[(int)ForceSwitchG2]->setEnabled(false);
+			item[(int)VeryLowGain]->setEnabled(true);
 			break;
 		case slsDetectorDefs::MOENCH:
 		case slsDetectorDefs::PROPIX:
@@ -160,6 +162,7 @@ void qTabSettings::SetupDetectorSettings(){
 			item[(int)FixGain2]->setEnabled(false);
 			item[(int)ForceSwitchG1]->setEnabled(false);
 			item[(int)ForceSwitchG2]->setEnabled(false);
+			item[(int)VeryLowGain]->setEnabled(false);
 			break;
 		case slsDetectorDefs::JUNGFRAU:
 			item[(int)Standard]->setEnabled(false);
@@ -175,6 +178,7 @@ void qTabSettings::SetupDetectorSettings(){
 			item[(int)FixGain2]->setEnabled(true);
 			item[(int)ForceSwitchG1]->setEnabled(true);
 			item[(int)ForceSwitchG2]->setEnabled(true);
+			item[(int)VeryLowGain]->setEnabled(false);
 			break;
 		default:
 			cout << "Unknown detector type. Exiting GUI." << endl;

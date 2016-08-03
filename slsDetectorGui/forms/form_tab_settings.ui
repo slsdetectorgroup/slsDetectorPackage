@@ -127,6 +127,11 @@
       </item>
       <item>
        <property name="text">
+        <string>Very Low Gain</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
         <string>Undefined</string>
        </property>
       </item>

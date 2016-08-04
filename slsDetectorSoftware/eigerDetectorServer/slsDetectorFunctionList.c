@@ -546,7 +546,7 @@ int64_t setRateCorrection(int64_t custom_tau_in_nsec){//in nanosec (will never b
 		if(ret<=0){
 			cprintf(RED,"Rate correction failed. Deactivating rate correction\n");
 			Feb_Control_SetRateCorrectionVariable(0);
-			return ret;//-1 is for tau/subexptime error, 0 for all other errors
+			return ret;
 		}
 	}
 	//activating rate correction

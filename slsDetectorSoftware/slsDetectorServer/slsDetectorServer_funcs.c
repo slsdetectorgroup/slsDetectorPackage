@@ -1969,8 +1969,6 @@ int set_module(int file_des) {
 				else if (getRateCorrectionEnable()){
 					int64_t retvalTau = setRateCorrection(myTau); //myTau will not be -1 here
 					if(myTau != retvalTau){
-						if(retvalTau == -1)
-							strcat(mess," Rate correction Deactivated, (tau/subexptime) must be < 0.0015\n");
 						cprintf(RED,"%s",mess);
 						ret=FAIL;
 					}

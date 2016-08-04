@@ -5066,8 +5066,6 @@ int slsDetector::setRateCorrection(double t){
 					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 					std::cout<< "Detector returned error: " << mess << std::endl;
 					setErrorMask((getErrorMask())|(COULD_NOT_SET_RATE_CORRECTION));
-					if(strcasestr(mess,"tau/subexptime"))
-						setErrorMask((getErrorMask())|(RATE_CORRECTION_TAU_SUBEXPOSURE));
 				}
 				disconnectControl();
 				if (ret==FORCE_UPDATE)

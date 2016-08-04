@@ -205,7 +205,7 @@ int function_table() {
 	flist[F_SET_RATE_CORRECT]=&set_rate_correct;
 	flist[F_GET_RATE_CORRECT]=&get_rate_correct;
 	flist[F_ACTIVATE]=&set_activate;
-	flist[F_SET_TRANSMISSION_DELAY]=&set_transmission_delay;
+	flist[F_SET_NETWORK_PARAMETER]=&set_network_parameter;
 
 
 #ifdef VERBOSE
@@ -4092,31 +4092,31 @@ int set_activate(int file_des) {
 
 
 
-int set_transmission_delay(int file_des) {
+int set_network_parameter(int file_des) {
 
-	enum transmissionDelayIndex index;
+	enum detNetworkParameter index;
 	enum networkParameter mode;
-	int delay = -1;
+	int value = -1;
 	int ret=OK,ret1=OK;
 	int retval = -1,n;
 
-	sprintf(mess,"can't set transmission delay\n");
+	sprintf(mess,"can't set network parameter\n");
 	n = receiveData(file_des,&mode,sizeof(mode),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
-	n = receiveData(file_des,&delay,sizeof(delay),INT32);
+	n = receiveData(file_des,&value,sizeof(value),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
 
 #ifdef VERBOSE
-	printf("setting transmission delay mode %d to %d\n",(int)mode,delay);
+	printf("setting network parameter mode %d to %d\n",(int)mode,value);
 #endif
 	if (ret==OK) {
-		if (differentClients==1 && lockStatus==1 && delay>=0) {
+		if (differentClients==1 && lockStatus==1 && value>=0) {
 			ret=FAIL;
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		}  else {
@@ -4132,21 +4132,24 @@ int set_transmission_delay(int file_des) {
 			case DETECTOR_TXN_DELAY_FRAME:
 				index = TXN_FRAME;
 				break;
+			case FLOW_CONTROL_10G:
+				index = FLOWCTRL_10G;
+				break;
 #endif
 			default:
-				sprintf(mess,"unknown transmission mode %d for this detector\n",mode);
+				sprintf(mess,"unknown network parameter %d for this detector\n",mode);
 				ret=FAIL;
 				break;
 			}
 			if (ret==OK)
-				retval=setTransmissionDelay(index, delay);
+				retval=setNetworkParameter(index, value);
 #endif
 		}
 		if (ret==OK){
-			if ((retval!=delay) && (delay>=0)) {
+			if ((retval!=value) && (value>=0)) {
 				ret=FAIL;
-				sprintf(mess,"could not change transmission mode %d: should be %d but is %d \n",index, delay, retval);
-				printf(RED, mess);
+				sprintf(mess,"could not change network parameter mode %d: should be %d but is %d \n",index, value, retval);
+				cprintf(RED, "%s",mess);
 			}else if (differentClients)
 				ret=FORCE_UPDATE;
 		}

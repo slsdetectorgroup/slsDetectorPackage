@@ -5369,8 +5369,9 @@ char* slsDetector::setNetworkParameter(networkParameter index, string value) {
 	case DETECTOR_TXN_DELAY_LEFT:
 	case DETECTOR_TXN_DELAY_RIGHT:
 	case DETECTOR_TXN_DELAY_FRAME:
+	case FLOW_CONTROL_10G:
 		sscanf(value.c_str(),"%d",&i);
-		return setTransmissionDelay(index, i);
+		return setDetectorNetworkParameter(index, i);
   default:
     return (char*)("unknown network parameter");
   }
@@ -5406,7 +5407,8 @@ char* slsDetector::getNetworkParameter(networkParameter index) {
   case DETECTOR_TXN_DELAY_LEFT:
   case DETECTOR_TXN_DELAY_RIGHT:
   case DETECTOR_TXN_DELAY_FRAME:
-	  return setTransmissionDelay(index, -1);
+  case FLOW_CONTROL_10G:
+	  return setDetectorNetworkParameter(index, -1);
   default:
     return (char*)("unknown network parameter");
   }
@@ -5593,8 +5595,8 @@ int slsDetector::setReceiverUDPPort2(int udpport){
 }
 
 
-char* slsDetector::setTransmissionDelay(networkParameter index, int delay){
-	int fnum = F_SET_TRANSMISSION_DELAY;
+char* slsDetector::setDetectorNetworkParameter(networkParameter index, int delay){
+	int fnum = F_SET_NETWORK_PARAMETER;
 	char* cretval = new char[MAX_STR_LENGTH];
 	int ret = FAIL;
 	int retval = -1;
@@ -5612,7 +5614,7 @@ char* slsDetector::setTransmissionDelay(networkParameter index, int delay){
 			if (ret==FAIL) {
 				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 				std::cout<< "Detector returned error: " << mess << std::endl;
-				setErrorMask((getErrorMask())|(TRANSMISSION_DELAY));
+				setErrorMask((getErrorMask())|(DETECTOR_NETWORK_PARAMETER));
 			} else
 				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 			disconnectControl();

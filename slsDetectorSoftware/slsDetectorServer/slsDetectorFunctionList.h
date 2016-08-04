@@ -154,7 +154,7 @@ void setAllTrimbits(int val);
 int getAllTrimbits();
 int getBebFPGATemp();
 int activate(int enable);
-int setTransmissionDelay(enum transmissionDelayIndex mode, int delay);
+int setNetworkParameter(enum detNetworkParameter mode, int value);
 #endif
 
 

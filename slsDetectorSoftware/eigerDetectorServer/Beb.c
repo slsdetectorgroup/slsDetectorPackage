@@ -268,9 +268,9 @@ int Beb_Activate(int enable){
 }
 
 
-int Beb_SetTransmissionDelay(enum transmissionDelayIndex mode, int delay){
+int Beb_SetNetworkParameter(enum detNetworkParameter mode, int val){
 	//mapping new memory
-	u_int32_t baseaddr, value = 0;
+	u_int32_t baseaddr, valueread = 0;
 	u_int32_t offset = TXM_DELAY_LEFT_OFFSET;
 	char modename[100] = "";
 
@@ -281,35 +281,41 @@ int Beb_SetTransmissionDelay(enum transmissionDelayIndex mode, int delay){
 		break;
 	case TXN_RIGHT:
 		offset = TXM_DELAY_RIGHT_OFFSET;
-		 strcpy(modename,"Transmission Delay Right");
+		strcpy(modename,"Transmission Delay Right");
 		break;
 	case TXN_FRAME:
 		offset = TXM_DELAY_FRAME_OFFSET;
-		 strcpy(modename,"Transmission Delay Frame");
+		strcpy(modename,"Transmission Delay Frame");
 		break;
-	default: cprintf(BG_RED,"Unrecognized mode in transmission delay: %d\n",mode); return -1;
+	case FLOWCTRL_10G:
+		offset = TXM_FLOW_CONTROL_10G;
+		strcpy(modename,"Flow Control for 10G");
+		if(val>0) val = 1;
+		break;
+	default: cprintf(BG_RED,"Unrecognized mode in network parameter: %d\n",mode); return -1;
 	}
 	//open file pointer
 	int fd = Beb_open(XPAR_PLB_GPIO_SYS_BASEADDR,&baseaddr);
 	if(fd < 0){
-		cprintf(BG_RED,"Deactivate FAIL\n");
+		cprintf(BG_RED,"Could not read register to set network parameter. FAIL\n");
 		return -1;
 	}
 	else{
-		if(delay > -1){
-			value = Beb_Read32(baseaddr, offset);
-			cprintf(BLUE, "%s value before:%d\n",modename,value);
-			Beb_Write32(baseaddr, offset,delay);
+		if(val > -1){
+			valueread = Beb_Read32(baseaddr, offset);
+			//cprintf(BLUE, "%s value before:%d\n",modename,valueread);
+			Beb_Write32(baseaddr, offset,val);
+			cprintf(BLUE,"%s value:%d\n", modename,valueread);
 		}
 
-		value = Beb_Read32(baseaddr, offset);
-		cprintf(BLUE,"%s value:%d\n", modename,value);
+		valueread = Beb_Read32(baseaddr, offset);
+		//cprintf(BLUE,"%s value:%d\n", modename,valueread);
 	}
 	//close file pointer
 	if(fd > 0)
 		Beb_close(fd);
 
-	return value;
+	return valueread;
 }
 
 

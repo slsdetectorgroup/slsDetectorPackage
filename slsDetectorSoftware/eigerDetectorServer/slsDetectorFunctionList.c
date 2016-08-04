@@ -1313,8 +1313,8 @@ int activate(int enable){
 }
 
 
-int setTransmissionDelay(enum transmissionDelayIndex mode, int delay){
-	return Beb_SetTransmissionDelay(mode, delay);
+int setNetworkParameter(enum detNetworkParameter mode, int value){
+	return Beb_SetNetworkParameter(mode, value);
 }
 
 #endif

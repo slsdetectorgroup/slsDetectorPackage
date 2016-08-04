@@ -125,6 +125,7 @@
 #define TXM_DELAY_LEFT_OFFSET		0x180
 #define TXM_DELAY_RIGHT_OFFSET		0x1A0
 #define TXM_DELAY_FRAME_OFFSET		0x1C0
+#define TXM_FLOW_CONTROL_10G		0x140
 
 //command memory
 #define LEFT_OFFSET					0x0

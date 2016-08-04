@@ -59,7 +59,7 @@ using namespace std;
 #define COULD_NOT_PULSE_CHIP				0x0000000000100000ULL
 #define COULD_NOT_SET_RATE_CORRECTION		0x0000000000200000ULL
 #define RATE_CORRECTION_TAU_SUBEXPOSURE		0x0000000000400000ULL
-#define TRANSMISSION_DELAY					0x0000000000800000ULL
+#define DETECTOR_NETWORK_PARAMETER			0x0000000000800000ULL
 
 //											0x00000000FFFFFFFFULL
 /** @short class returning all error messages for error mask */
@@ -191,8 +191,8 @@ public:
 		if(slsErrorMask&RATE_CORRECTION_TAU_SUBEXPOSURE)
 			retval.append("Rate Correction Deactivated: (tau/subexptime) must be less than 0.0015\n");
 
-		if(slsErrorMask&TRANSMISSION_DELAY)
-			retval.append("Could not set/get transmission delay\n");
+		if(slsErrorMask&DETECTOR_NETWORK_PARAMETER)
+			retval.append("Could not set/get detector network parameter\n");
 
 
 

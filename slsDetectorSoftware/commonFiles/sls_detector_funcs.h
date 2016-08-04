@@ -103,7 +103,8 @@ enum {
   F_SET_RATE_CORRECT,		/** < set/reset rate correction tau */
   F_GET_RATE_CORRECT,		/** < get rate correction tau */
 
-  F_ACTIVATE			/** < activate/deactivate readout */
+  F_ACTIVATE,					/** < activate/deactivate readout */
+  F_SET_NETWORK_PARAMETER		/**< set network parameters such as transmission delay, flow control */
 
   /* Always append functions hereafter!!! */
 

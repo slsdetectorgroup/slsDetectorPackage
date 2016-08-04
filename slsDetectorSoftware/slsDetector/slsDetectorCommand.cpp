@@ -375,6 +375,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="flowcontrol_10g"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
+  i++;
+
   descrToFuncMap[i].m_pFuncName="configuremac"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdConfigureMac;
   i++;
@@ -2709,7 +2713,13 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
 			if (!(sscanf(args[1],"%d",&i)))
 				return ("cannot parse argument") + string(args[1]);
 		}
-	} else return ("unknown network parameter")+cmd;
+	} else if (cmd=="flowcontrol_10g") {
+		t=FLOW_CONTROL_10G;
+		if (action==PUT_ACTION){
+			if (!(sscanf(args[1],"%d",&i)))
+				return ("cannot parse argument") + string(args[1]);
+		}
+	}else return ("unknown network parameter")+cmd;
 
 	if (action==PUT_ACTION)
 		myDet->setNetworkParameter(t, args[1]);
@@ -2734,6 +2744,7 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
     os << "txndelay_left port \n sets detector transmission delay of the left port"<< std::endl;
     os << "txndelay_right port \n sets detector transmission delay of the right port"<< std::endl;
     os << "txndelay_frame port \n sets detector transmission delay of the entire frame"<< std::endl;
+    os << "flowcontrol_10g port \n sets flow control for 10g for eiger"<< std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
 	os << "detectormac \n gets detector mac "<< std::endl;
@@ -2745,6 +2756,7 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
     os << "txndelay_left \n gets detector transmission delay of the left port"<< std::endl;
     os << "txndelay_right \n gets detector transmission delay of the right port"<< std::endl;
     os << "txndelay_frame \n gets detector transmission delay of the entire frame"<< std::endl;
+    os << "flowcontrol_10g \n sets flow control for 10g for eiger"<< std::endl;
   } 
   return os.str();
 

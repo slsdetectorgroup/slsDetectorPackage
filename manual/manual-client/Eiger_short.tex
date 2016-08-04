@@ -116,10 +116,12 @@ The configuration of this timing variables allows to achieve different frame rat
 
 In the case of REAL CONTINUOUS readout, i.e. continuous acquire and readout from the boards (independent on how the chip is set):
 \begin{itemize}
-\item 1~GbE, {\tt{dr 16}}, {\tt{flags continous}}, \textbf{235~Hz} 
-\item 1~GbE, {\tt{dr 32}}, {\tt{flags continous}}, {\tt{clkdivider 2}}, \textbf{117~Hz}
-\item 10~GbE, {\tt{dr 16}}, {\tt{flags continous}}, {\tt{flags parallel}},{\tt{clkdivider 0}}, \textbf{2.34~kHz}  
-\item 10~GbE, {\tt{dr 32}}, {\tt{flags continuous}}, {\tt{clkdivider 2}}, \textbf{1.17~kHz}  
+\item 1~GbE, {\tt{dr 16}}, {\tt{flags continous}}, \textbf{256~Hz} 
+\item 1~GbE, {\tt{dr 32}}, {\tt{flags continous}}, {\tt{clkdivider 2}}, \textbf{128~Hz}
+\item 10~GbE, {\tt{dr 16}}, {\tt{flags continous}}, {\tt{flags parallel}},{\tt{clkdivider 0}}, \textbf{2.56~kHz}  
+\item 10~GbE, {\tt{dr 32}}, {\tt{flags continuous}}, {\tt{clkdivider 2}}, \textbf{1.28~kHz}  
+\item 10~GbE, {\tt{dr 8}}, {\tt{flags continous}}, {\tt{flags parallel}},{\tt{clkdivider 0}}, \textbf{5.12~kHz}
+\item 10~GbE, {\tt{dr 4}}, {\tt{flags continous}}, {\tt{flags parallel}},{\tt{clkdivider 0}}, \textbf{10.24~kHz}
 \end{itemize}
 Note that in the {\tt{continuous}} mode, some buffering is still done on the memories, so a higher frame rate than the proper real continuos one can be achieved. Still, this extra buffering is possible till the memories are not saturated. 
 The number of images that can be stored on memories are:
@@ -167,7 +169,7 @@ dynamic range & clkdivider & mode & readout time ($\mu$s) & max frame rate (kHz)
 
 
 \subsection{External triggering options}
-The detector can be setup such to receive external triggers. Connect a LEMO signal to the TRIGGER IN connector in the Power Distribution Board. Use a signal above 2.~V. By default the positive polarity is used (negative should not be passed to the board).  
+The detector can be setup such to receive external triggers. Connect a LEMO signal to the TRIGGER IN connector in the Power Distribution Board. The logic 0 for the board is passed by low level 0$-$0.7~V, the logic 1 is passed to the board with a signal between 1.2$-$5~V. Eiger is 50~$\Omega$ terminated. By default the positive polarity is used (negative should not be passed to the board).  
 \begin{verbatim}
 sls_detector_put 0-timing [auto/trigger/burst_trigger/gating]
 sls_detector_put 0-frames x

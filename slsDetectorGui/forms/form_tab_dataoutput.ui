@@ -399,7 +399,7 @@ Compression using Root. Available only for Gotthard in Expert Mode.
         <number>9</number>
        </property>
        <property name="minimum">
-        <double>-2.000000000000000</double>
+        <double>-1.000000000000000</double>
        </property>
        <property name="maximum">
         <double>2000000000.000000000000000</double>
@@ -622,6 +622,52 @@ Compression using Root. Available only for Gotthard in Expert Mode.
       </item>
      </layout>
     </widget>
+   </widget>
+   <widget class="QWidget" name="horizontalLayoutWidget_2">
+    <property name="geometry">
+     <rect>
+      <x>384</x>
+      <y>60</y>
+      <width>348</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QDoubleSpinBox" name="spinDeadTimeonly">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+       <property name="suffix">
+        <string> ns</string>
+       </property>
+       <property name="decimals">
+        <number>9</number>
+       </property>
+       <property name="minimum">
+        <double>-1.000000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>2000000000.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
  </widget>

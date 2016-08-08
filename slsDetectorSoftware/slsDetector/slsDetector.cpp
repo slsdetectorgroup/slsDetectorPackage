@@ -3661,9 +3661,9 @@ slsDetectorDefs::runStatus slsDetector::getRunStatus(){
   char mess[MAX_STR_LENGTH]="";
   strcpy(mess,"aaaaa");
   runStatus retval=ERROR;
-  //#ifdef VERBOSE
+#ifdef VERBOSE
   std::cout<< "Getting status "<< std::endl;
-  //#endif
+#endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (stopSocket) {
       if  (connectStop() == OK) {

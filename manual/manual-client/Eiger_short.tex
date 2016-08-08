@@ -1,6 +1,8 @@
+%\pdfoutput=1 % only if pdf/png/jpg images are used
 \documentclass{article}
 \usepackage{amssymb}
-\usepackage[dvips]{graphicx}
+%\usepackage[dvips]{graphicx}
+\usepackage{graphicx}
 \usepackage{verbatim}
 \usepackage{xspace}
 \newcommand{\E}{EIGER\xspace}  
@@ -12,8 +14,29 @@
 
 \section{Usage}
 
-\subsection{Mandatory setup - Receiver}
+\subsection{Mandatory setup - Hardware}
+A EIGER single module (500~kpixels) needs:
+\begin{itemize}
+\item A chilled (water+alcohol) at approximately 21~$^{\circ}$C, which needs to dissipate 85~W.
+\item A power supply (12~V, 8~A).
+\item 2$\times$1~Gb/s ethernet connectors to control the detector and, optionally, receive data at low rate. A DHCP server that gives IPs to the 1~Gb/s connectors of the detector is needed.
+\item 2$\times$10~Gb/s transceivers to optionally, receive data at high rate.
+ \end{itemize}
 
+Figure~\ref{fig:1} shows the relationship between the \textbf{Client} (which sits on a beamline control PC), the \textbf{Receiver} (which can run in multiple instances on one or more PCs which receive data from the detector. The receiver(s) does not necessary have to be running on the same PC as the client.) It is important that the receiver is closely connected to the detector.
+
+\begin{figure}[t]
+\begin{center}
+\includegraphics[width=.8\textwidth]{Client2}
+\end{center}
+\caption{Communications protocol between the Client PC, the receiver pc and the detector.}
+\label{fig:1}
+\end{figure}
+
+The Client talks to control over 1~Gb ethernet connection using TCP/IP to the detector and to the receiver. The detector sends data in UDP packets to the receiver. This data sending can be done over 1~Gb/s or 10~Gb/s. 
+ 
+
+\subsection{Mandatory setup - Receiver}
 
 The receiver is a process run on a PC closely connected to the detector. Open one receiver for every half module board (remember, a module has two receivers!!!) . Go to {\tt{slsDetectorsPackage/bin/}}, \textbf{slsReceiver} should be started on the machine expected to receive the data from the detector.
 
@@ -23,6 +46,8 @@ The receiver is a process run on a PC closely connected to the detector. Open on
 \end{itemize}
 
 where xxxx, yyyy are the tcp port numbers. Use 1955 and 1956 for example. Note that {\tt{--mode 1}} is used only for the ``bottom'' half module. \\ Open as many receiver as half module boards. A single module has two half module boards.
+
+\subsection{Mandatory setup - Client}
 
 \underline{In the case of cSAXS, the detector software is installed on the x12sa-ed-1 machine:}\\
 \underline{/sls/X12SA/data/x12saop/EigerPackage/slsDetectorsPackage}
@@ -34,7 +59,7 @@ The command line interface consists in these main functions:
 \item[sls\_detector\_get] to retrieve detector parameters
 \end{description}
 
-\subsection{Mandatory setup}
+
 First, your detector should always be configured for each PC that you might want to use for controlling the detector. All the examples given here show the command {\tt{0-}}, which could be omitted for the EIGER system $0$. In the case more EIGER systems are controlled at once, the call of {\tt{1-}},.. becomes compulsory.
 
 To make sure the shared memory is cleaned, before starting, one should do:  
@@ -57,7 +82,7 @@ sls_detector_put 0-parameters setup.det
 In the case of \E, the proper bias voltage of the sensor has to be setup, i.e. the {\tt{setup.det}} file needs to contain the line {\tt{vhighvoltage 150}}. Other detector functionality, which are rarely changed can be setup here. 
 Other important settings that are configured in the {\tt{setup.det}} file are:
 \begin{itemize}
-\item {\tt{tengiga 0/1}}, which sets whether the detector is enabled to send data through the 1~or the 10~Gb Ethernet.
+\item {\tt{tengiga 0/1}}, which sets whether the detector is enabled to send data through the 1~or the 10~Gb ethernet.
 \item {\tt{flags parallel/nonparallel}}, which sets whether the detector is set in parallel acquisition and readout or in sequential mode. This changes the readout time of the chip and affects the frame rate capability (faster is {\tt{parallel}}, with higher noise but needed when the frame rate is $>2$~kHz. 
 \item {\tt{dr 32/16}} sets the detector in autosumming mode (32 bit counter or not autosumming, 12 bit out of the chip). This is strictly connected to what is required for the readout clock of chip. See next point.
 \item {\tt{clkdivider 0/1/2}}. Changes the readout clock: 200, 100, 50~MHz. Note that autosumming mode ({\tt{dr 32}} only works at {clkdivider 2}). By selecting Refer to readout timing specifications in~section\ref{timing} for how to set the detector. 
@@ -116,10 +141,12 @@ The configuration of this timing variables allows to achieve different frame rat
 
 In the case of REAL CONTINUOUS readout, i.e. continuous acquire and readout from the boards (independent on how the chip is set):
 \begin{itemize}
-\item 1~GbE, {\tt{dr 16}}, {\tt{flags continous}}, \textbf{235~Hz} 
-\item 1~GbE, {\tt{dr 32}}, {\tt{flags continous}}, {\tt{clkdivider 2}}, \textbf{117~Hz}
-\item 10~GbE, {\tt{dr 16}}, {\tt{flags continous}}, {\tt{flags parallel}},{\tt{clkdivider 0}}, \textbf{2.34~kHz}  
-\item 10~GbE, {\tt{dr 32}}, {\tt{flags continuous}}, {\tt{clkdivider 2}}, \textbf{1.17~kHz}  
+\item 1~GbE, {\tt{dr 16}}, {\tt{flags continous}}, \textbf{256~Hz} 
+\item 1~GbE, {\tt{dr 32}}, {\tt{flags continous}}, {\tt{clkdivider 2}}, \textbf{128~Hz}
+\item 10~GbE, {\tt{dr 16}}, {\tt{flags continous}}, {\tt{flags parallel}},{\tt{clkdivider 0}}, \textbf{2.56~kHz}  
+\item 10~GbE, {\tt{dr 32}}, {\tt{flags continuous}}, {\tt{clkdivider 2}}, \textbf{1.28~kHz}  
+\item 10~GbE, {\tt{dr 8}}, {\tt{flags continous}}, {\tt{flags parallel}},{\tt{clkdivider 0}}, \textbf{5.12~kHz}
+\item 10~GbE, {\tt{dr 4}}, {\tt{flags continous}}, {\tt{flags parallel}},{\tt{clkdivider 0}}, \textbf{10.24~kHz}
 \end{itemize}
 Note that in the {\tt{continuous}} mode, some buffering is still done on the memories, so a higher frame rate than the proper real continuos one can be achieved. Still, this extra buffering is possible till the memories are not saturated. 
 The number of images that can be stored on memories are:
@@ -167,7 +194,7 @@ dynamic range & clkdivider & mode & readout time ($\mu$s) & max frame rate (kHz)
 
 
 \subsection{External triggering options}
-The detector can be setup such to receive external triggers. Connect a LEMO signal to the TRIGGER IN connector in the Power Distribution Board. Use a signal above 2.~V. By default the positive polarity is used (negative should not be passed to the board).  
+The detector can be setup such to receive external triggers. Connect a LEMO signal to the TRIGGER IN connector in the Power Distribution Board. The logic 0 for the board is passed by low level 0$-$0.7~V, the logic 1 is passed to the board with a signal between 1.2$-$5~V. Eiger is 50~$\Omega$ terminated. By default the positive polarity is used (negative should not be passed to the board).  
 \begin{verbatim}
 sls_detector_put 0-timing [auto/trigger/burst_trigger/gating]
 sls_detector_put 0-frames x

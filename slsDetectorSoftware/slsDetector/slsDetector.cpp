@@ -1261,7 +1261,7 @@ int slsDetector::activate(int const enable){
 	int fnum = F_ACTIVATE;
 	int retval = -1;
 	int arg = enable;
-	char mess[1000]="";
+	char mess[MAX_STR_LENGTH]="";
 	int ret = OK;
 #ifdef VERBOSE
 	if(!enable)
@@ -1541,7 +1541,7 @@ int slsDetector::setDetectorType(detectorType const type){
   int fnum=F_GET_DETECTOR_TYPE,fnum2=F_GET_RECEIVER_TYPE;
   arg=int(type);
   detectorType retType=type;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
   strcpy(mess,"dummy");
 
 
@@ -1623,7 +1623,7 @@ int slsDetector::setNumberOfModules(int n, dimension d){
   int arg[2], retval=1;
   int fnum=F_SET_NUMBER_OF_MODULES;
   int ret=FAIL;
-  char mess[100]="dummy";
+  char mess[MAX_STR_LENGTH]="dummy";
   int connect;
   int num;
 
@@ -1739,7 +1739,7 @@ int slsDetector::getMaxNumberOfModules(dimension d){
   int retval;
   int fnum=F_GET_MAX_NUMBER_OF_MODULES;
   int ret=FAIL;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
   if (d<X || d>Y) {
     std::cout<< "Get max number of modules in wrong dimension " << d << std::endl;
@@ -1808,7 +1808,7 @@ slsDetectorDefs::externalSignalFlag slsDetector::setExternalSignalFlags(external
   externalSignalFlag  retval;
   int ret=FAIL;
   int fnum=F_SET_EXTERNAL_SIGNAL_FLAG;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
   arg[0]=signalindex;
   arg[1]=pol;
@@ -1878,7 +1878,7 @@ slsDetectorDefs::externalCommunicationMode slsDetector::setExternalCommunication
   int arg[1];
   externalCommunicationMode  retval;
   int fnum=F_SET_EXTERNAL_COMMUNICATION_MODE;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
   arg[0]=pol;
 
@@ -1943,7 +1943,7 @@ int64_t slsDetector::getId( idMode mode, int imod){
   int64_t retval=-1;
   int fnum=F_GET_ID,fnum2 = F_GET_RECEIVER_ID;
   int ret=FAIL;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
 #ifdef VERBOSE
   std::cout<< std::endl;
@@ -2022,7 +2022,7 @@ int slsDetector::digitalTest( digitalTestMode mode, int imod){
   int retval;
   int fnum=F_DIGITAL_TEST;
   int ret=FAIL;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
 #ifdef VERBOSE
   std::cout<< std::endl;
@@ -2111,7 +2111,7 @@ int slsDetector::writeRegister(int addr, int val){
   int fnum=F_WRITE_REGISTER;
   int ret=FAIL;
 
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
   int arg[2];
   arg[0]=addr;
@@ -2156,7 +2156,7 @@ int slsDetector::writeAdcRegister(int addr, int val){
   int fnum=F_WRITE_ADC_REG;
   int ret=FAIL;
 
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
   int arg[2];
   arg[0]=addr;
@@ -2203,7 +2203,7 @@ int slsDetector::readRegister(int addr){
   int fnum=F_READ_REGISTER;
   int ret=FAIL;
 
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
   int arg;
   arg=addr;
@@ -2266,7 +2266,7 @@ dacs_t slsDetector::setDAC(dacs_t val, dacIndex index, int mV, int imod){
   retval[1] = -1;
   int fnum=F_SET_DAC;
   int ret=FAIL;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
   int arg[3];
 
 
@@ -2330,7 +2330,7 @@ dacs_t slsDetector::getADC(dacIndex index, int imod){
   dacs_t retval;
   int fnum=F_GET_ADC;
   int ret=FAIL;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
   int arg[2];
   arg[0]=index;
@@ -2429,7 +2429,7 @@ int slsDetector::setChannel(sls_detector_channel chan){
   int fnum=F_SET_CHANNEL;
   int retval;
   int ret=FAIL;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
   int ichan=chan.chan;
   int ichip=chan.chip;
@@ -2522,7 +2522,7 @@ slsDetectorDefs::sls_detector_channel  slsDetector::getChannel(int ichan, int ic
   sls_detector_channel myChan;
   int arg[3];
   int ret=FAIL;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
   arg[0]=ichan;
   arg[1]=ichip;
   arg[2]=imod;
@@ -2609,7 +2609,7 @@ int slsDetector::setChip(sls_detector_chip chip){
   int fnum=F_SET_CHIP;
   int retval;
   int ret=FAIL;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
   int ichi=chip.chip;
   int im=chip.module;
@@ -2655,7 +2655,7 @@ slsDetectorDefs::sls_detector_chip slsDetector::getChip(int ichip, int imod){
   int chanreg[thisDetector->nChans];
 
   int ret=FAIL;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
 
   myChip.chip=ichip;
@@ -2798,7 +2798,7 @@ int slsDetector::setModule(sls_detector_module module, int* gainval, int* offset
 	int fnum=F_SET_MODULE;
 	int retval;
 	int ret=FAIL;
-	char mess[100];
+	char mess[MAX_STR_LENGTH]="";
 
 	int imod=module.module;
 
@@ -2828,6 +2828,8 @@ int slsDetector::setModule(sls_detector_module module, int* gainval, int* offset
 			else {
 				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 				std::cout<< "Detector returned error: " << mess << std::endl;
+				if(strstr(mess,"default tau")!=NULL)
+					setErrorMask((getErrorMask())|(RATE_CORRECTION_NO_TAU_PROVIDED));
 			}
 			disconnectControl();
 			if (ret==FORCE_UPDATE)
@@ -2922,7 +2924,7 @@ slsDetectorDefs::sls_detector_module  *slsDetector::getModule(int imod){
 	//double dac[thisDetector->nDacs], adc[thisDetector->nAdcs];
 
 	int ret=FAIL;
-	char mess[100];
+	char mess[MAX_STR_LENGTH]="";
 	// int n;
 
 #ifdef VERBOSE
@@ -3059,7 +3061,7 @@ int slsDetector::getThresholdEnergy(int imod){
   int fnum=  F_GET_THRESHOLD_ENERGY;
   int retval;
   int ret=FAIL;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 #ifdef VERBOSE
   std::cout<< "Getting threshold energy "<< std::endl;
 #endif
@@ -3090,7 +3092,7 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
   int fnum=  F_SET_THRESHOLD_ENERGY;
   int retval;
   int ret=FAIL;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 #ifdef VERBOSE
   std::cout<< "Setting threshold energy "<< std::endl;
 #endif
@@ -3130,7 +3132,7 @@ slsDetectorDefs::detectorSettings  slsDetector::getSettings(int imod){
 
   int fnum=F_SET_SETTINGS;
   int ret=FAIL;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
   int  retval;
   int arg[2];
   arg[0]=GET_SETTINGS;
@@ -3547,7 +3549,7 @@ int slsDetector::updateDetectorNoWait() {
 int slsDetector::updateDetector() {
   int fnum=F_UPDATE_CLIENT;
   int ret=OK;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (connectControl() == OK){
@@ -3574,7 +3576,7 @@ int slsDetector::startAcquisition(){
 
   int fnum=F_START_ACQUISITION;
   int ret=FAIL;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
 #ifdef VERBOSE
   std::cout<< "Starting acquisition "<< std::endl;
@@ -3603,7 +3605,7 @@ int slsDetector::stopAcquisition(){
 
   int fnum=F_STOP_ACQUISITION;
   int ret=FAIL;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
 #ifdef VERBOSE
   std::cout<< "Stopping acquisition "<< std::endl;
@@ -3631,7 +3633,7 @@ int slsDetector::startReadOut(){
 
   int fnum=F_START_READOUT;
   int ret=FAIL;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
 #ifdef VERBOSE
   std::cout<< "Starting readout "<< std::endl;
@@ -3656,7 +3658,7 @@ int slsDetector::startReadOut(){
 slsDetectorDefs::runStatus slsDetector::getRunStatus(){
   int fnum=F_GET_RUN_STATUS;
   int ret=FAIL;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
   strcpy(mess,"aaaaa");
   runStatus retval=ERROR;
   //#ifdef VERBOSE
@@ -3724,7 +3726,7 @@ int* slsDetector::getDataFromDetector(int *retval){
 		retval=new int[nel];
 
 	int ret=FAIL;
-	char mess[100]="Nothing";
+	char mess[MAX_STR_LENGTH]="Nothing";
 
 #ifdef VERBOSE
 	std::cout<< "getting data "<< thisDetector->dataBytes << " " << nel<< std::endl;
@@ -3939,7 +3941,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	int fnum=F_SET_TIMER,fnum2=F_SET_RECEIVER_TIMER;
 	int64_t retval = -1;
 	int64_t ut = -2;
-	char mess[100];
+	char mess[MAX_STR_LENGTH]="";
 	int ret=OK;
 	int n=0;
 
@@ -4059,7 +4061,7 @@ int slsDetector::lockServer(int lock) {
   int fnum=F_LOCK_SERVER;
   int retval=-1;
   int ret=OK;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (connectControl() == OK){
@@ -4088,7 +4090,7 @@ string slsDetector::getLastClientIP() {
 
   int fnum=F_GET_LAST_CLIENT_IP;
   char clientName[INET_ADDRSTRLEN];
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
   int ret=OK;
 
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
@@ -4117,7 +4119,7 @@ int slsDetector::setPort(portType index, int num){
 	int fnum=F_SET_PORT, fnum2 = F_SET_RECEIVER_PORT;
 	int retval;
 	//  uint64_t ut;
-	char mess[100];
+	char mess[MAX_STR_LENGTH]="";
 	int ret=FAIL;
 	bool online=false;
 	MySocketTCP *s;
@@ -4406,7 +4408,7 @@ int slsDetector::setSpeed(speedVariable sp, int value) {
 
   int fnum=F_SET_SPEED;
   int retval=-1;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
   int ret=OK;
   int n=0;
 #ifdef VERBOSE
@@ -4448,7 +4450,7 @@ int64_t slsDetector::getTimeLeft(timerIndex index){
 
   int fnum=F_GET_TIME_LEFT;
   int64_t retval;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
   int ret=OK;
 
 #ifdef VERBOSE
@@ -4484,8 +4486,8 @@ int slsDetector::setDynamicRange(int n){
   // cout << "single "  << endl;
   int fnum=F_SET_DYNAMIC_RANGE,fnum2=F_SET_RECEIVER_DYNAMIC_RANGE;
   int retval=-1,retval1;
-  char mess[100];
-  int ret=OK;
+  char mess[MAX_STR_LENGTH]="";
+  int ret=OK, rateret=OK;
 
 #ifdef VERBOSE
   std::cout<< "Setting dynamic range to "<< n << std::endl;
@@ -4499,6 +4501,16 @@ int slsDetector::setDynamicRange(int n){
     if (connectControl() == OK){
       controlSocket->SendDataOnly(&fnum,sizeof(fnum));
       controlSocket->SendDataOnly(&n,sizeof(n));
+      //rate correction is switched off if not 32 bit mode
+      if(thisDetector->myDetectorType == EIGER){
+    	  controlSocket->ReceiveDataOnly(&rateret,sizeof(rateret));
+    	  if (rateret==FAIL) {
+    		  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+    		  std::cout<< "Detector returned error: " << mess << std::endl;
+    		  if(strstr(mess,"Rate Correction")!=NULL)
+    			  setErrorMask((getErrorMask())|(RATE_CORRECTION_NOT_32BIT));
+    	  }
+      }
       controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
       if (ret==FAIL) {
 	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
@@ -4605,7 +4617,7 @@ slsDetectorDefs::ROI* slsDetector::getROI(int &n){
 int slsDetector::sendROI(int n,ROI roiLimits[]){
   int ret=FAIL;
   int fnum=F_SET_ROI;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
   int arg = n;
   int retvalsize=0;
   ROI retval[MAX_ROIS];
@@ -4679,7 +4691,7 @@ int slsDetector::setReadOutFlags(readOutFlags flag){
 
   int fnum=F_SET_READOUT_FLAGS;
   readOutFlags retval;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
   int ret=OK;
 
 #ifdef VERBOSE
@@ -4728,7 +4740,7 @@ int slsDetector::executeTrimming(trimMode mode, int par1, int par2, int imod){
 
   int fnum= F_EXECUTE_TRIMMING;
   int retval=FAIL;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
   int ret=OK;
   int arg[3];
   arg[0]=imod;
@@ -5051,7 +5063,7 @@ int slsDetector::setRateCorrection(double t){
 	if (getDetectorsType() == EIGER){
 		int fnum=F_SET_RATE_CORRECT;
 		int ret=FAIL;
-		char mess[1000]="";
+		char mess[MAX_STR_LENGTH]="";
 		int64_t arg = t;
 		int64_t retval = -1;
 #ifdef VERBOSE
@@ -5065,7 +5077,12 @@ int slsDetector::setRateCorrection(double t){
 				if (ret==FAIL) {
 					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 					std::cout<< "Detector returned error: " << mess << std::endl;
-					setErrorMask((getErrorMask())|(COULD_NOT_SET_RATE_CORRECTION));
+					if(strstr(mess,"default tau")!=NULL)
+						setErrorMask((getErrorMask())|(RATE_CORRECTION_NO_TAU_PROVIDED));
+					if(strstr(mess,"32")!=NULL)
+						setErrorMask((getErrorMask())|(RATE_CORRECTION_NOT_32BIT));
+					else
+						setErrorMask((getErrorMask())|(COULD_NOT_SET_RATE_CORRECTION));
 				}
 				disconnectControl();
 				if (ret==FORCE_UPDATE)
@@ -5129,7 +5146,7 @@ double slsDetector::getRateCorrectionTau(){
 	if(thisDetector->myDetectorType == EIGER){
 		int fnum=F_GET_RATE_CORRECT;
 		int ret=FAIL;
-		char mess[1000]="";
+		char mess[MAX_STR_LENGTH]="";
 		int64_t retval = -1;
 	#ifdef VERBOSE
 		std::cout<< "Setting Rate Correction to " << arg << endl;
@@ -5708,7 +5725,7 @@ int slsDetector::configureMAC(){
   int i;
   int ret=FAIL;
   int fnum=F_CONFIGURE_MAC,fnum2=F_RECEIVER_SHORT_FRAME;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
   char arg[6][50];
   char cword[50]="", *pcword;
   string sword;
@@ -5942,7 +5959,7 @@ int slsDetector::sendImageToDetector(imageType index,short int imageVals[]){
   int ret=FAIL;
   int retval;
   int fnum=F_LOAD_IMAGE;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
 #ifdef VERBOSE
   std::cout<<"Sending image to detector " <<std::endl;
@@ -5972,7 +5989,7 @@ int slsDetector::getCounterBlock(short int arg[],int startACQ){
 
   int ret=FAIL;
   int fnum=F_READ_COUNTER_BLOCK;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (connectControl() == OK){
@@ -6019,7 +6036,7 @@ int slsDetector::resetCounterBlock(int startACQ){
 
   int ret=FAIL;
   int fnum=F_RESET_COUNTER_BLOCK;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
 #ifdef VERBOSE
   std::cout<< std::endl<< "Resetting Counter";
@@ -6052,7 +6069,7 @@ int slsDetector::setCounterBit(int i){
 	int fnum=F_SET_COUNTER_BIT;
 	int ret = FAIL;
 	int retval=-1;
-	char mess[100];
+	char mess[MAX_STR_LENGTH]="";
 
 	if(thisDetector->onlineFlag==ONLINE_FLAG){
 #ifdef VERBOSE
@@ -6435,7 +6452,7 @@ int slsDetector::saveSettingsFile(string fname, int imod) {
 int slsDetector::setAllTrimbits(int val, int imod){
 	int fnum=F_SET_ALL_TRIMBITS;
 	int retval;
-	char mess[100];
+	char mess[MAX_STR_LENGTH]="";
 	int ret=OK;
 
 #ifdef VERBOSE
@@ -6575,7 +6592,7 @@ slsDetectorDefs::masterFlags  slsDetector::setMaster(masterFlags flag) {
 
   int fnum=F_SET_MASTER;
   masterFlags retval=GET_MASTER;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
   int ret=OK;
 
 #ifdef VERBOSE
@@ -6619,7 +6636,7 @@ slsDetectorDefs::synchronizationMode slsDetector::setSynchronization(synchroniza
 
   int fnum=F_SET_SYNCHRONIZATION_MODE;
   synchronizationMode retval=GET_SYNCHRONIZATION_MODE;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
   int ret=OK;
 
 #ifdef VERBOSE
@@ -6946,7 +6963,7 @@ int slsDetector::startReceiver(){
 int slsDetector::stopReceiver(){
 	int fnum=F_STOP_RECEIVER;
 	int ret = FAIL;
-	char mess[] = "";
+	char mess[MAX_STR_LENGTH] = "";
 
 	if(thisDetector->myDetectorType != EIGER && thisDetector->myDetectorType != JUNGFRAU)
 		detectorSendToReceiver(false);
@@ -6998,7 +7015,7 @@ int slsDetector::detectorSendToReceiver(bool set){
   if(set)	fnum=F_START_RECEIVER;
   else	fnum=F_STOP_RECEIVER;
   int ret = FAIL;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
 #ifdef VERBOSE
@@ -7098,7 +7115,7 @@ int slsDetector::getReceiverCurrentFrameIndex(){
 int slsDetector::resetFramesCaught(){
 	int fnum=F_RESET_RECEIVER_FRAMES_CAUGHT;
 	int ret = FAIL;
-	char mess[] = "";
+	char mess[MAX_STR_LENGTH] = "";
 
 	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 #ifdef VERBOSE
@@ -7124,7 +7141,7 @@ int* slsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex, int
 	int* retval=new int[nel];
 	int ret=FAIL;
 	int n;
-	char mess[100]="Nothing";
+	char mess[MAX_STR_LENGTH]="Nothing";
 
 	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 #ifdef VERBOSE
@@ -7257,7 +7274,7 @@ int slsDetector::updateReceiverNoWait() {
 int slsDetector::updateReceiver() {
 	int fnum=F_UPDATE_RECEIVER_CLIENT;
 	int ret=OK;
-	char mess[100];
+	char mess[MAX_STR_LENGTH]="";
 
 	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 		if (connectData() == OK){
@@ -7420,7 +7437,7 @@ int slsDetector::calibratePedestal(int frames){
   int ret=FAIL;
   int retval=-1;
   int fnum=F_CALIBRATE_PEDESTAL;
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
 #ifdef VERBOSE
   std::cout<<"Calibrating Pedestal " <<std::endl;
@@ -7538,7 +7555,7 @@ int slsDetector::enableTenGigabitEthernet(int i){
 	int ret=FAIL;
 	int retval = -1;
 	int fnum=F_ENABLE_TEN_GIGA,fnum2 = F_ENABLE_RECEIVER_TEN_GIGA;
-	char mess[100];
+	char mess[MAX_STR_LENGTH]="";
 
 #ifdef VERBOSE
 	std::cout<< std::endl<< "Enabling / Disabling 10Gbe" << endl;
@@ -7681,7 +7698,7 @@ uint64_t slsDetector::setCTBWord(int addr,uint64_t word) {
   int fnum=F_SET_CTB_PATTERN;
   int mode=0; //sets word
 
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
 #ifdef VERBOSE
   std::cout<<"Setting CTB word" <<std::endl;
@@ -7733,7 +7750,7 @@ int slsDetector::setCTBPatLoops(int level,int &start, int &stop, int &n) {
   int fnum=F_SET_CTB_PATTERN;
   int mode=1; //sets loop
 
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
 #ifdef VERBOSE
   std::cout<<"Setting CTB word" <<std::endl;
@@ -7783,7 +7800,7 @@ int slsDetector::setCTBPatWaitAddr(int level, int addr) {
   int fnum=F_SET_CTB_PATTERN;
   int mode=2; //sets loop
 
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
 #ifdef VERBOSE
   std::cout<<"Setting CTB word" <<std::endl;
@@ -7833,7 +7850,7 @@ int slsDetector::setCTBPatWaitTime(int level, uint64_t t) {
   int fnum=F_SET_CTB_PATTERN;
   int mode=3; //sets loop
 
-  char mess[100];
+  char mess[MAX_STR_LENGTH]="";
 
 #ifdef VERBOSE
   std::cout<<"Setting CTB word" <<std::endl;
@@ -7866,7 +7883,7 @@ int slsDetector::setCTBPatWaitTime(int level, uint64_t t) {
 int slsDetector::pulsePixel(int n,int x,int y) {
 	int ret=FAIL;
 	int fnum=F_PULSE_PIXEL;
-	char mess[100];
+	char mess[MAX_STR_LENGTH]="";
 	int arg[3];
 	arg[0] = n; arg[1] = x; arg[2] = y;
 
@@ -7897,7 +7914,7 @@ int slsDetector::pulsePixel(int n,int x,int y) {
 int slsDetector::pulsePixelNMove(int n,int x,int y) {
 	int ret=FAIL;
 	int fnum=F_PULSE_PIXEL_AND_MOVE;
-	char mess[100];
+	char mess[MAX_STR_LENGTH]="";
 	int arg[3];
 	arg[0] = n; arg[1] = x; arg[2] = y;
 
@@ -7929,7 +7946,7 @@ int slsDetector::pulsePixelNMove(int n,int x,int y) {
 int slsDetector::pulseChip(int n) {
 	int ret=FAIL;
 	int fnum=F_PULSE_CHIP;
-	char mess[100];
+	char mess[MAX_STR_LENGTH]="";
 
 
 #ifdef VERBOSE

@@ -37,7 +37,7 @@ extern int differentClients;
 extern int *ram_values;
 char *dataretval=NULL;
 int nframes, iframes, dataret;
-char mess[1000]; 
+char mess[MAX_STR_LENGTH];
 
 
 

@@ -46,7 +46,7 @@ extern int differentClients;
 extern unsigned int *ram_values;
 char *dataretval=NULL;
 int nframes, iframes, dataret;
-char mess[1000]; 
+char mess[MAX_STR_LENGTH];
 
 int digitalTestBit = 0;
 

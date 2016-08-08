@@ -1959,7 +1959,7 @@ int set_module(int file_des) {
 					if(getRateCorrectionEnable()){
 						ret = FAIL;
 						setRateCorrection(0);
-						strcat(mess," Cannot set Rate correction. No default tau provided. Deactivating Rate Correction\n");
+						strcat(mess,"Cannot set Rate correction. No default tau provided. Deactivating Rate Correction\n");
 						cprintf(RED,"%s",mess);
 					}
 				}
@@ -2762,6 +2762,7 @@ int set_dynamic_range(int file_des) {
 	int n;
 	int retval;
 	int ret=OK,ret1=OK;
+	int rateret=OK,rateret1=OK;
 
 	sprintf(mess,"can't set dynamic range\n");
 
@@ -2784,28 +2785,43 @@ int set_dynamic_range(int file_des) {
 		}
 #endif
 	}
-	if(ret == OK)
+	if(ret == OK){
 		retval=setDynamicRange(dr);
+		if (dr>=0 && retval!=dr)
+			ret=FAIL;
+		//look at rate correction only if dr change worked
+		if((ret==OK)  && (dr!=32)  && (dr!=-1) && (getRateCorrectionEnable())){
+			setRateCorrection(0);
+			strcpy(mess,"Switching off Rate Correction. Must be in 32 bit mode\n");
+			cprintf(RED,"%s",mess);
+			rateret = FAIL;
+		}
+	}
 #endif
 	if (dr>=0 && retval!=dr)
 		ret=FAIL;
-	if (ret!=OK) {
-		sprintf(mess,"set dynamic range failed\n");
-	} else if (differentClients)
+	if ((ret==OK) && (differentClients))
 		ret=FORCE_UPDATE;
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (dr>=0) dataBytes=calculateDataBytes();
 #endif
 
+	//rate correction ret
+	//ret could be swapped during sendData
+	rateret1 = rateret;
+	n = sendData(file_des,&rateret1,sizeof(rateret),INT32);
+	if (rateret==FAIL)
+		n = sendData(file_des,mess,sizeof(mess),OTHER);
+
+	//dynamic range ret
 	//ret could be swapped during sendData
 	ret1 = ret;
 	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	if (ret==FAIL) {
+	if (ret==FAIL)
 		n = sendData(file_des,mess,sizeof(mess),OTHER);
-	} else {
+	else
 		n = sendData(file_des,&retval,sizeof(retval),INT32);
-	}
 	return ret;
 }
 
@@ -3960,12 +3976,19 @@ int set_rate_correct(int file_des) {
 
 			//set rate
 			else{
-				int64_t retval = setRateCorrection(tau_ns); //tau_ns will not be -1 here
-				if(tau_ns != retval){
-					if(retval == -1)
-						strcpy(mess,"Rate correction Deactivated, (tau/subexptime) must be < 0.0015\n");
+				//not 32 bit mode
+				if((setDynamicRange(-1)!=32) && (tau_ns!=0)){
+					strcpy(mess,"Rate correction Deactivated, must be in 32 bit mode\n");
 					cprintf(RED,"%s",mess);
 					ret=FAIL;
+				}
+				//32 bit mode
+				else{
+					int64_t retval = setRateCorrection(tau_ns); //tau_ns will not be -1 here
+					if(tau_ns != retval){
+						cprintf(RED,"%s",mess);
+						ret=FAIL;
+					}
 				}
 			}
 		}

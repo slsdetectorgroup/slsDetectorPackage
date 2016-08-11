@@ -46,7 +46,6 @@ void qTabDataOutput::SetupWidgetWindow(){
 	// Detector Type
 	detType=myDet->getDetectorsType();
 	widgetEiger->setVisible(false);
-	spinDeadTimeonly->setVisible(false);
 
 	//rate correction  - not for charge integrating detectors
 	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::EIGER))
@@ -56,12 +55,9 @@ void qTabDataOutput::SetupWidgetWindow(){
 		chkAngular->setEnabled(true);
 
 	if(detType == slsDetectorDefs::EIGER){
+		chkRate->setEnabled(true);
 		chkTenGiga->setEnabled(true);
 		widgetEiger->setVisible(true);
-		spinDeadTimeonly->setVisible(true);
-		radioAuto->setVisible(false);
-		radioDeadTime->setVisible(false);
-		spinDeadTime->setVisible(false);
 	}
 
 	/** error message **/
@@ -154,14 +150,10 @@ void qTabDataOutput::Initialization(){
 	connect(chkFlatField,		SIGNAL(toggled(bool)), 		this, 	SLOT(SetFlatField()));
 	connect(btnFlatField,		SIGNAL(clicked()), 			this, 	SLOT(BrowseFlatFieldPath()));
 	//rate correction
-	connect(chkRate,			SIGNAL(toggled(bool)), 			this,	SLOT(SetRateCorrection()));
-	if(detType == slsDetectorDefs::EIGER)
-		connect(spinDeadTimeonly,		SIGNAL(editingFinished()), 	this, 	SLOT(SetRateCorrection()));
-	else{
-		connect(radioAuto,			SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
-		connect(radioDeadTime,		SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
-		connect(spinDeadTime,		SIGNAL(editingFinished()), 	this, 	SLOT(SetRateCorrection()));
-	}
+	connect(chkRate,			SIGNAL(toggled(bool)), 		this,	SLOT(SetRateCorrection()));
+	connect(btnDefaultRate,		SIGNAL(clicked()), 			this, 	SLOT(SetDefaultRateCorrection()));
+	connect(spinDeadTime,		SIGNAL(editingFinished()), 	this, 	SLOT(SetRateCorrection()));
+
 	//angular correction
 	connect(chkAngular,			SIGNAL(toggled(bool)), 	this, 	SLOT(SetAngularCorrection()));
 	//discard bad channels
@@ -333,81 +325,69 @@ void qTabDataOutput::BrowseFlatFieldPath(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabDataOutput::SetRateCorrection(){
-	if(detType == slsDetectorDefs::EIGER)
-		disconnect(spinDeadTimeonly,	SIGNAL(editingFinished()),	 	this, 	SLOT(SetRateCorrection()));
-	else{
-		disconnect(radioAuto,		SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
-		disconnect(radioDeadTime,	SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
-		disconnect(spinDeadTime,	SIGNAL(editingFinished()),	 	this, 	SLOT(SetRateCorrection()));
-	}
+void qTabDataOutput::SetRateCorrection(int deadtime){
+	disconnect(btnDefaultRate,	SIGNAL(clicked()), 			this, 	SLOT(SetDefaultRateCorrection()));
+	disconnect(spinDeadTime,	SIGNAL(editingFinished()), 	this, 	SLOT(SetRateCorrection()));
 
 #ifdef VERBOSE
 	cout << "Entering Set Rate Correction function" << endl;
 #endif
 
 	if(chkRate->isChecked()){
-		if(detType == slsDetectorDefs::EIGER){
-			spinDeadTimeonly->setEnabled(true);
-			myDet->setRateCorrection((double)spinDeadTimeonly->value());
+		if(!btnDefaultRate->isEnabled()){
+			btnDefaultRate->setEnabled(true);
+			lblDeadTime->setEnabled(true);
+			spinDeadTime->setEnabled(true);
 		}
-		else{
-			radioAuto->setEnabled(true);
-			radioDeadTime->setEnabled(true);
-			//set auto as default if nothing selected
-			if(!radioAuto->isChecked()&&!radioDeadTime->isChecked())
-				radioAuto->setChecked(true);
-			//auto mode
-			if(radioAuto->isChecked()){
-				spinDeadTime->setEnabled(false);
-				myDet->setRateCorrection(-1);
+
+		if(deadtime!=-1){
+			deadtime = (double)spinDeadTime->value();
 #ifdef VERBOSE
-				cout << "Setting rate corrections with default dead time"  << endl;
+			cout << "Setting rate corrections with custom dead time: "  << deadtime << endl;
 #endif
-			}
-			//custom dead time
-			else{
-				spinDeadTime->setEnabled(true);
-				myDet->setRateCorrection((double)spinDeadTime->value());
+		}else{;
 #ifdef VERBOSE
-				cout << "Setting rate corrections with dead time "<< spinDeadTime->value() << endl;
+		cout << "Setting rate corrections with default dead time"  <<  endl;
 #endif
-			}
 		}
-	}//unsetting
+		myDet->setRateCorrection(deadtime);
+
+	}//unsetting rate correction
 	else{
-		if(detType == slsDetectorDefs::EIGER)
-			spinDeadTimeonly->setEnabled(false);
-		else{
-			radioAuto->setEnabled(false);
-			radioDeadTime->setEnabled(false);
-			spinDeadTime->setEnabled(false);
-		}
-		//Unsetting rate correction
+		btnDefaultRate->setEnabled(false);
+		lblDeadTime->setEnabled(false);
+		spinDeadTime->setEnabled(false);
 		myDet->setRateCorrection(0);
 #ifdef VERBOSE
 		cout << "Unsetting rate correction" << endl;
 #endif
 	}
-
 	qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetRateCorrection");
 
 	//update just the value
 	double rate = (double)myDet->getRateCorrectionTau();
-	if(spinDeadTime->isEnabled())
-		spinDeadTime->setValue((double)rate);
-	else if(spinDeadTimeonly->isEnabled())
-		spinDeadTimeonly->setValue((double)rate);
-
-
-	if(detType == slsDetectorDefs::EIGER)
-		connect(spinDeadTimeonly,	SIGNAL(editingFinished()),	 	this, 	SLOT(SetRateCorrection()));
-	else{
-		connect(radioAuto,		SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
-		connect(radioDeadTime,	SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
-		connect(spinDeadTime,	SIGNAL(editingFinished()),	 	this, 	SLOT(SetRateCorrection()));
+	spinDeadTime->setValue((double)rate);
+	if(rate == -1){
+		qDefs::Message(qDefs::WARNING,"Dead time is inconsistent for all detectors. Returned Value: -1.","qTabDataOutput::UpdateRateCorrectionFromServer");
+		QString errorTip = QString("<nobr>Rate Corrections.</nobr><br>"
+				"<nobr> #ratecorr# tau in seconds</nobr><br><br>")+
+				QString("<nobr><font color=\"red\">"
+						"Dead time is inconsistent for all detectors.</font></nobr>");
+		chkRate->setToolTip(errorTip);
+		spinDeadTime->setToolTip(errorTip);
+		chkRate->setPalette(red);
+		chkRate->setText("Rate:*");
+	}else{
+		QString normalTip = QString("<nobr>Rate Corrections.</nobr><br>"
+				"<nobr> #ratecorr# tau in seconds</nobr><br><br>");
+		chkRate->setToolTip(normalTip);
+		spinDeadTime->setToolTip(normalTip);
+		chkRate->setPalette(chkDiscardBad->palette());
+		chkRate->setText("Rate:");
 	}
 
+	connect(btnDefaultRate,	SIGNAL(clicked()), 			this, 	SLOT(SetDefaultRateCorrection()));
+	connect(spinDeadTime,	SIGNAL(editingFinished()), 	this, 	SLOT(SetRateCorrection()));
 
 }
 
@@ -415,94 +395,62 @@ void qTabDataOutput::SetRateCorrection(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabDataOutput::UpdateRateCorrectionFromServer(){
-	disconnect(chkRate,			SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
+void qTabDataOutput::SetDefaultRateCorrection(){
+	SetRateCorrection(-1);
+}
 
-	if(detType == slsDetectorDefs::EIGER)
-		disconnect(spinDeadTimeonly,	SIGNAL(editingFinished()),	 	this, 	SLOT(SetRateCorrection()));
-	else{
-		disconnect(radioAuto,		SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
-		disconnect(radioDeadTime,	SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
-		disconnect(spinDeadTime,	SIGNAL(editingFinished()),	 	this, 	SLOT(SetRateCorrection()));
-	}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabDataOutput::UpdateRateCorrectionFromServer(){
+	disconnect(chkRate,			SIGNAL(toggled(bool)), 		this,	SLOT(SetRateCorrection()));
+	disconnect(btnDefaultRate,	SIGNAL(clicked()), 			this, 	SLOT(SetDefaultRateCorrection()));
+	disconnect(spinDeadTime,	SIGNAL(editingFinished()), 	this, 	SLOT(SetRateCorrection()));
+
 	double rate;
 	rate = (double)myDet->getRateCorrectionTau();
 	qDefs::checkErrorMessage(myDet,"qTabDataOutput::UpdateRateCorrectionFromServer");
 #ifdef VERBOSE
-	cout << "Getting rate correction from server:" << rate << " : ";
+	cout << "Getting rate correction from server: " << rate << endl;
 #endif
 	if(rate==0){
-#ifdef VERBOSE
-		cout << "None" << endl;
-#endif
 		chkRate->setChecked(false);
-		if(detType == slsDetectorDefs::EIGER)
-			spinDeadTimeonly->setEnabled(false);
-		else{
-			radioAuto->setEnabled(false);
-			radioDeadTime->setEnabled(false);
-			spinDeadTime->setEnabled(false);
-		}
+		btnDefaultRate->setEnabled(false);
+		lblDeadTime->setEnabled(false);
+		spinDeadTime->setEnabled(false);
 	}
 
 	else{
 		chkRate->setChecked(true);
-
-		if(detType == slsDetectorDefs::EIGER){
-			spinDeadTimeonly->setEnabled(true);
-			spinDeadTimeonly->setValue((double)rate);
-		}
-		//mythen
-		else{
-			radioAuto->setEnabled(true);
-			radioDeadTime->setEnabled(true);
-			chkRate->setChecked(true);
-			if(rate == -1){
-#ifdef VERBOSE
-			cout << "Auto" << endl;
-#endif
-				spinDeadTime->setEnabled(false);
-				radioAuto->setChecked(true);
-			}else{
-#ifdef VERBOSE
-	cout << "Custom" << endl;
-#endif
-				radioDeadTime->setChecked(true);
-				spinDeadTime->setEnabled(true);
-				spinDeadTime->setValue((double)rate);
-			}
-		}
+		btnDefaultRate->setEnabled(true);
+		lblDeadTime->setEnabled(true);
+		spinDeadTime->setEnabled(true);
+		spinDeadTime->setValue((double)rate);
 	}
 
-
-	if(detType == slsDetectorDefs::EIGER && rate == -1){
+	if(rate == -1){
 		qDefs::Message(qDefs::WARNING,"Dead time is inconsistent for all detectors. Returned Value: -1.","qTabDataOutput::UpdateRateCorrectionFromServer");
 		QString errorTip = QString("<nobr>Rate Corrections.</nobr><br>"
 				"<nobr> #ratecorr# tau in seconds</nobr><br><br>")+
 				QString("<nobr><font color=\"red\">"
 						"Dead time is inconsistent for all detectors.</font></nobr>");
 		chkRate->setToolTip(errorTip);
-		spinDeadTimeonly->setToolTip(errorTip);
+		spinDeadTime->setToolTip(errorTip);
 		chkRate->setPalette(red);
 		chkRate->setText("Rate:*");
 	}else{
 		QString normalTip = QString("<nobr>Rate Corrections.</nobr><br>"
 				"<nobr> #ratecorr# tau in seconds</nobr><br><br>");
 		chkRate->setToolTip(normalTip);
-		spinDeadTimeonly->setToolTip(normalTip);
+		spinDeadTime->setToolTip(normalTip);
 		chkRate->setPalette(chkDiscardBad->palette());
 		chkRate->setText("Rate:");
 	}
 
-	connect(chkRate,		SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
-
-	if(detType == slsDetectorDefs::EIGER)
-		disconnect(spinDeadTimeonly,	SIGNAL(editingFinished()),	 	this, 	SLOT(SetRateCorrection()));
-	else{
-		connect(radioAuto,		SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
-		connect(radioDeadTime,	SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
-		connect(spinDeadTime,	SIGNAL(editingFinished()),	 	this, 	SLOT(SetRateCorrection()));
-	}
+	connect(chkRate,		SIGNAL(toggled(bool)), 		this,	SLOT(SetRateCorrection()));
+	connect(btnDefaultRate,	SIGNAL(clicked()), 			this, 	SLOT(SetDefaultRateCorrection()));
+	connect(spinDeadTime,	SIGNAL(editingFinished()), 	this, 	SLOT(SetRateCorrection()));
 }
 
 

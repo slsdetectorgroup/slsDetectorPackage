@@ -87,25 +87,6 @@ Directory where one saves the data.
       <property name="verticalSpacing">
        <number>4</number>
       </property>
-      <item row="2" column="3">
-       <widget class="QPushButton" name="btnOutputBrowse">
-        <property name="toolTip">
-         <string>&lt;nobr&gt;
-Directory where one saves the data.
-&lt;/nobr&gt;&lt;br&gt;
- #outdir#
-&lt;br&gt;
-</string>
-        </property>
-        <property name="text">
-         <string>Browse</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../include/icons.qrc">
-          <normaloff>:/icons/images/browse.png</normaloff>:/icons/images/browse.png</iconset>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="2">
        <widget class="QLineEdit" name="dispReadOutputDir">
         <property name="focusPolicy">
@@ -127,21 +108,6 @@ Directory where one saves the data.
         </property>
         <property name="readOnly">
          <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="2">
-       <widget class="QLineEdit" name="dispOutputDir">
-        <property name="focusPolicy">
-         <enum>Qt::StrongFocus</enum>
-        </property>
-        <property name="toolTip">
-         <string>&lt;nobr&gt;
-Directory where one saves the data.
-&lt;/nobr&gt;&lt;br&gt;
- #outdir#
-&lt;br&gt;
-</string>
         </property>
        </widget>
       </item>
@@ -203,6 +169,21 @@ Directory where one saves the data.
         </property>
        </widget>
       </item>
+      <item row="2" column="2">
+       <widget class="QLineEdit" name="dispOutputDir">
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
+        <property name="toolTip">
+         <string>&lt;nobr&gt;
+Directory where one saves the data.
+&lt;/nobr&gt;&lt;br&gt;
+ #outdir#
+&lt;br&gt;
+</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="2">
        <widget class="QComboBox" name="comboDetector">
         <property name="sizePolicy">
@@ -234,6 +215,25 @@ Directory where one saves the data.
          </size>
         </property>
        </spacer>
+      </item>
+      <item row="2" column="3">
+       <widget class="QPushButton" name="btnOutputBrowse">
+        <property name="toolTip">
+         <string>&lt;nobr&gt;
+Directory where one saves the data.
+&lt;/nobr&gt;&lt;br&gt;
+ #outdir#
+&lt;br&gt;
+</string>
+        </property>
+        <property name="text">
+         <string>Browse</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../include/icons.qrc">
+          <normaloff>:/icons/images/browse.png</normaloff>:/icons/images/browse.png</iconset>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -320,24 +320,40 @@ Compression using Root. Available only for Gotthard in Expert Mode.
       <x>255</x>
       <y>21</y>
       <width>476</width>
-      <height>66</height>
+      <height>76</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_2">
      <property name="verticalSpacing">
       <number>6</number>
      </property>
-     <item row="1" column="2">
-      <widget class="QRadioButton" name="radioAuto">
+     <item row="1" column="4">
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>10</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="1" column="0">
+      <widget class="QCheckBox" name="chkRate">
        <property name="enabled">
         <bool>false</bool>
        </property>
        <property name="text">
-        <string>Auto</string>
+        <string>Rate:</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="6">
+     <item row="0" column="8">
       <widget class="QPushButton" name="btnFlatField">
        <property name="enabled">
         <bool>false</bool>
@@ -361,62 +377,7 @@ Compression using Root. Available only for Gotthard in Expert Mode.
        </property>
       </widget>
      </item>
-     <item row="0" column="0">
-      <widget class="QCheckBox" name="chkFlatField">
-       <property name="toolTip">
-        <string>Flat field corrections. 
- #flatfield# filename</string>
-       </property>
-       <property name="text">
-        <string>Flat Field File:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="4" colspan="3">
-      <widget class="QDoubleSpinBox" name="spinDeadTime">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>100</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-       <property name="suffix">
-        <string> ns</string>
-       </property>
-       <property name="decimals">
-        <number>9</number>
-       </property>
-       <property name="minimum">
-        <double>-1.000000000000000</double>
-       </property>
-       <property name="maximum">
-        <double>2000000000.000000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QCheckBox" name="chkRate">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Rate:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2" colspan="4">
+     <item row="0" column="2" colspan="6">
       <widget class="QLineEdit" name="dispFlatField">
        <property name="enabled">
         <bool>false</bool>
@@ -430,13 +391,14 @@ Compression using Root. Available only for Gotthard in Expert Mode.
        </property>
       </widget>
      </item>
-     <item row="1" column="3">
-      <widget class="QRadioButton" name="radioDeadTime">
-       <property name="enabled">
-        <bool>false</bool>
+     <item row="0" column="0">
+      <widget class="QCheckBox" name="chkFlatField">
+       <property name="toolTip">
+        <string>Flat field corrections. 
+ #flatfield# filename</string>
        </property>
        <property name="text">
-        <string>Custom dead time:</string>
+        <string>Flat Field File:</string>
        </property>
       </widget>
      </item>
@@ -455,6 +417,120 @@ Compression using Root. Available only for Gotthard in Expert Mode.
         </size>
        </property>
       </spacer>
+     </item>
+     <item row="1" column="5">
+      <widget class="QLabel" name="lblDeadTime">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="palette">
+        <palette>
+         <active>
+          <colorrole role="WindowText">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>2</red>
+             <green>2</green>
+             <blue>2</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </active>
+         <inactive>
+          <colorrole role="WindowText">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>0</red>
+             <green>0</green>
+             <blue>0</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </inactive>
+         <disabled>
+          <colorrole role="WindowText">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>119</red>
+             <green>119</green>
+             <blue>119</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </disabled>
+        </palette>
+       </property>
+       <property name="toolTip">
+        <string>&lt;nobr&gt;
+Directory where one saves the data.
+&lt;/nobr&gt;&lt;br&gt;
+ #outdir#
+&lt;br&gt;
+</string>
+       </property>
+       <property name="text">
+        <string>Dead Time:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="6" colspan="3">
+      <widget class="QSpinBox" name="spinDeadTime">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="suffix">
+        <string>ns</string>
+       </property>
+       <property name="minimum">
+        <number>-1</number>
+       </property>
+       <property name="maximum">
+        <number>200000000</number>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2" colspan="2">
+      <widget class="QPushButton" name="btnDefaultRate">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>&lt;nobr&gt;
+Directory where one saves the data.
+&lt;/nobr&gt;&lt;br&gt;
+ #outdir#
+&lt;br&gt;
+</string>
+       </property>
+       <property name="text">
+        <string>Default</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../include/icons.qrc">
+         <normaloff>:/icons/images/calculate.png</normaloff>:/icons/images/calculate.png</iconset>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>
@@ -623,53 +699,10 @@ Compression using Root. Available only for Gotthard in Expert Mode.
      </layout>
     </widget>
    </widget>
-   <widget class="QWidget" name="horizontalLayoutWidget_2">
-    <property name="geometry">
-     <rect>
-      <x>384</x>
-      <y>60</y>
-      <width>348</width>
-      <height>27</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QDoubleSpinBox" name="spinDeadTimeonly">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>100</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-       <property name="suffix">
-        <string> ns</string>
-       </property>
-       <property name="decimals">
-        <number>9</number>
-       </property>
-       <property name="minimum">
-        <double>-1.000000000000000</double>
-       </property>
-       <property name="maximum">
-        <double>2000000000.000000000000000</double>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
   </widget>
+  <zorder>boxOutDir</zorder>
+  <zorder>boxCorrection_2</zorder>
+  <zorder>btnOutputBrowse</zorder>
  </widget>
  <tabstops>
   <tabstop>dispReadOutputDir</tabstop>
@@ -677,9 +710,6 @@ Compression using Root. Available only for Gotthard in Expert Mode.
   <tabstop>dispFlatField</tabstop>
   <tabstop>btnFlatField</tabstop>
   <tabstop>chkRate</tabstop>
-  <tabstop>radioAuto</tabstop>
-  <tabstop>radioDeadTime</tabstop>
-  <tabstop>spinDeadTime</tabstop>
  </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>

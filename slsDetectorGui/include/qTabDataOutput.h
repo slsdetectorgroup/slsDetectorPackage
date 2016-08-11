@@ -110,7 +110,10 @@ void UpdateFlatFieldFromServer();
 void BrowseFlatFieldPath();
 
 /**rate correction*/
-void SetRateCorrection();
+void SetRateCorrection(int deadtime=0);
+
+/** default rate correction */
+void SetDefaultRateCorrection();
 
 /** update rate correction from server */
 void UpdateRateCorrectionFromServer();

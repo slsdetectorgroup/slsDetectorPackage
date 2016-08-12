@@ -176,6 +176,7 @@ void UDPStandardImplementation::initializeMembers(){
 	guiDataReady = false;
 	guiData = NULL;
 	strcpy(guiFileName,"");
+	frametoGuiCounter = 0;
 
 	//***general and listening thread parameters***
 	threadStarted = false;
@@ -804,6 +805,7 @@ int UDPStandardImplementation::startReceiver(char *c){
 
 	//RESET
 	//reset measurement variables
+	frametoGuiCounter = 0;
 	measurementStarted = false;
 	startFrameIndex = 0;
 	frameIndex = 0;
@@ -2897,6 +2899,9 @@ void UDPStandardImplementation::copyFrameToGui(char* buffer[]){
 		pthread_mutex_unlock(&dataReadyMutex);
 	}
 
+	//if nthe frame, wait for your turn (1st frame always shown as its zero)
+	else if(FrameToGuiFrequency && ((frametoGuiCounter)%FrameToGuiFrequency));
+
 	//random read (gui ready) or nth frame read: gui needs data now or it is the first frame
 	else{
 #ifdef DEBUG4
@@ -2936,6 +2941,12 @@ void UDPStandardImplementation::copyFrameToGui(char* buffer[]){
 		}
 
 	}
+
+	//update the counter for nth frame
+	if(FrameToGuiFrequency)
+		frametoGuiCounter++;
+
+
 }
 
 

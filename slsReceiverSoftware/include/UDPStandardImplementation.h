@@ -601,6 +601,8 @@ private:
 	/** Dummy Packet identifier value */
 	const static uint32_t dummyPacketValue = 0xFFFFFFFF;
 
+
+
 	//***receiver to GUI parameters***
 	/** Current Frame copied for GUI */
 	char* latestData;
@@ -617,6 +619,8 @@ private:
 	/** Semaphore to synchronize Writer and GuiReader threads*/
 	sem_t writerGuiSemaphore;
 
+	/** counter for nth frame to gui */
+	int frametoGuiCounter;
 
 
 

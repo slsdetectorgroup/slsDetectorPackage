@@ -1608,6 +1608,36 @@ int* multiSlsDetector::startAndReadAll(){
 
 
 int multiSlsDetector::startAndReadAllNoWait(){
+
+	int i=0;
+	int ret=OK, ret1=OK;
+
+	for (i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+		if (i!=thisMultiDetector->masterPosition)
+			if (detectors[i]) {
+				ret=detectors[i]->startAndReadAllNoWait();cout<<"returned from det "<<i<<endl;
+				if(detectors[i]->getErrorMask())
+					setErrorMask(getErrorMask()|(1<<i));
+				if (ret!=OK)
+					ret1=FAIL;
+			}
+	}
+	cout<<"returned from all dets"<<endl;
+
+	i=thisMultiDetector->masterPosition;
+	if (thisMultiDetector->masterPosition>=0) {cout<<"shouldnt be here"<<endl;
+	if (detectors[i]) {
+		ret=detectors[i]->startAndReadAllNoWait();
+		if(detectors[i]->getErrorMask())
+			setErrorMask(getErrorMask()|(1<<i));
+		if (ret!=OK)
+			ret1=FAIL;
+	}
+	}
+
+	return ret1;
+
+	/* hanging randomly around 4000-5000 frames at 1sec exptime (threads dont return)
 	int i=0;
 	int ret=OK;
 	int posmin=0, posmax=thisMultiDetector->numberOfDetectors;
@@ -1653,6 +1683,7 @@ int multiSlsDetector::startAndReadAllNoWait(){
 	}
 
 	return ret;
+	 */
 }
 
 
@@ -2291,8 +2322,9 @@ double* multiSlsDetector::decodeData(int *datain, double *fdata) {
 
 
 int multiSlsDetector::setFlatFieldCorrection(string fname){
-  double data[thisMultiDetector->numberOfChannels];//,  xmed[thisMultiDetector->numberOfChannels];
-  double ffcoefficients[thisMultiDetector->numberOfChannels], fferrors[thisMultiDetector->numberOfChannels];
+  double* data = new double[thisMultiDetector->numberOfChannels];//  xmed[thisMultiDetector->numberOfChannels];
+  double* ffcoefficients = new double[thisMultiDetector->numberOfChannels];
+  double*fferrors = new double[thisMultiDetector->numberOfChannels];
   // int nmed=0;
   // int idet=0, ichdet=-1;
   char ffffname[MAX_STR_LENGTH*2];

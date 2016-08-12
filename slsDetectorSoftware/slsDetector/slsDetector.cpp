@@ -801,6 +801,13 @@ int slsDetector::initializeDetectorSize(detectorType type) {
   //   for (int imod=0; imod< thisDetector->nModsMax; imod++)
   //  std::cout<< hex << detectorModules+imod << dec <<std::endl;
 #endif
+
+  nBadChans=&thisDetector->nBadChans;
+  badChansList=thisDetector->badChansList;
+  badChanFile=thisDetector->badChanFile;
+  nBadFF=&thisDetector->nBadFF;
+  badFFList=thisDetector->badFFList;
+
   dacs=(dacs_t*)(goff+thisDetector->dacoff);
   adcs=(dacs_t*)(goff+thisDetector->adcoff);
   chipregs=(int*)(goff+thisDetector->chipoff);

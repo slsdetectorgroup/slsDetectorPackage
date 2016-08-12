@@ -1367,7 +1367,7 @@ unsigned int Feb_Control_GetNExposures(){return Feb_Control_nimages;}
 
 int Feb_Control_SetExposureTime(double the_exposure_time_in_sec){
 	Feb_Control_exposure_time_in_sec = the_exposure_time_in_sec;
-	printf("Exposure time set to: %f\n",Feb_Control_exposure_time_in_sec);
+	printf("Exposure time set to: %fs\n",Feb_Control_exposure_time_in_sec);
 	return 1;
 }
 double Feb_Control_GetExposureTime(){return Feb_Control_exposure_time_in_sec;}

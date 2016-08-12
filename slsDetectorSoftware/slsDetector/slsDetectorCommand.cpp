@@ -3964,7 +3964,6 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
   if (index==ACQUISITION_TIME || index==SUBFRAME_ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER)
     rval=(double)ret*1E-9;
   else rval=ret;
-  
 
   //set frame index
   if (index==FRAME_NUMBER || index==CYCLES_NUMBER ){

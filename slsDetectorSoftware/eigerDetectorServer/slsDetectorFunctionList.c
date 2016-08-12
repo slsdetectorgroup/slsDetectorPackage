@@ -896,7 +896,8 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 		if(val >= 0){
 			printf(" Setting acq period: %fs\n",val/(1E9));
 			Feb_Control_SetExposurePeriod(val/(1E9));
-		}return (Feb_Control_GetExposurePeriod()*(1E9));
+		}
+		return (Feb_Control_GetExposurePeriod()*(1E9));
 		/*	case DELAY_AFTER_TRIGGER:
 		if(val >= 0)
 			EigerSetNumberOfExposures((unsigned int)val);

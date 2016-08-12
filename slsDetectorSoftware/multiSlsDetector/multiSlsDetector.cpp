@@ -1636,8 +1636,8 @@ int multiSlsDetector::startAndReadAllNoWait(){
 	}
 
 	return ret1;
-
-	/* hanging randomly around 4000-5000 frames at 1sec exptime (threads dont return)
+/*
+	// hanging randomly around 4000-5000 frames at 1sec exptime (threads dont return)
 	int i=0;
 	int ret=OK;
 	int posmin=0, posmax=thisMultiDetector->numberOfDetectors;
@@ -1683,7 +1683,7 @@ int multiSlsDetector::startAndReadAllNoWait(){
 	}
 
 	return ret;
-	 */
+*/
 }
 
 

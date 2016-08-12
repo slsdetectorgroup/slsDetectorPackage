@@ -4017,10 +4017,11 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	//send acquisiton period/frame number to receiver
 	if((index==FRAME_NUMBER)||(index==FRAME_PERIOD)||(index==CYCLES_NUMBER)){
 		if(ret != FAIL){
+			retval = thisDetector->timerValue[index];
 			if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
 				int64_t args[2];
 				args[1] = retval;
-				if(t == -1)  args[1] = -1;
+				if((t == -1) && (ret!= FORCE_UPDATE)) args[1] = -1;
 
 				if((index==FRAME_NUMBER)||(index==CYCLES_NUMBER)){
 #ifdef VERBOSE
@@ -4047,11 +4048,11 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 					if(index==FRAME_PERIOD){
 						//exptime sent if acq period = 0
 						if(retval){
-							cout << "ERROR:Acquisition Period in receiver set incorrectly to " << ut << " instead of " << retval << endl;
+							cout << "ERROR:Acquisition Period in receiver set incorrectly to " << ut << " instead of " << thisDetector->timerValue[index] << endl;
 							setErrorMask((getErrorMask())|(RECEIVER_ACQ_PERIOD_NOT_SET));
 						}
 					}else{
-						cout << "ERROR:Number of Frames (* Number of cycles) in receiver set incorrectly to " << ut << " instead of " << retval << endl;
+						cout << "ERROR:Number of Frames (* Number of cycles) in receiver set incorrectly to " << ut << " instead of " << thisDetector->timerValue[index] << endl;
 						setErrorMask((getErrorMask())|(RECEIVER_FRAME_NUM_NOT_SET));
 					}
 				}

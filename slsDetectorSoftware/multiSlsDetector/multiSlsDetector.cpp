@@ -1615,17 +1615,17 @@ int multiSlsDetector::startAndReadAllNoWait(){
 	for (i=0; i<thisMultiDetector->numberOfDetectors; i++) {
 		if (i!=thisMultiDetector->masterPosition)
 			if (detectors[i]) {
-				ret=detectors[i]->startAndReadAllNoWait();cout<<"returned from det "<<i<<endl;
+				ret=detectors[i]->startAndReadAllNoWait();
 				if(detectors[i]->getErrorMask())
 					setErrorMask(getErrorMask()|(1<<i));
 				if (ret!=OK)
 					ret1=FAIL;
 			}
 	}
-	cout<<"returned from all dets"<<endl;
+
 
 	i=thisMultiDetector->masterPosition;
-	if (thisMultiDetector->masterPosition>=0) {cout<<"shouldnt be here"<<endl;
+	if (thisMultiDetector->masterPosition>=0) {
 	if (detectors[i]) {
 		ret=detectors[i]->startAndReadAllNoWait();
 		if(detectors[i]->getErrorMask())

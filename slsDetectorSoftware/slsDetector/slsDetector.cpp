@@ -4569,6 +4569,8 @@ int slsDetector::setDynamicRange(int n){
 
   //receiver
   if(ret != FAIL){
+	  retval = thisDetector->dynamicRange;
+	  if((n==-1) && (ret!= FORCE_UPDATE)) n =-1;
 	  if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
 #ifdef VERBOSE
 			  std::cout << "Sending/Getting dynamic range to/from receiver " << n << std::endl;

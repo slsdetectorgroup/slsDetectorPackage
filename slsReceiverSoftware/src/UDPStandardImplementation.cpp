@@ -140,28 +140,31 @@ void UDPStandardImplementation::initializeMembers(){
 	}
 #endif
 	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++){
-	strcpy(completeFileName[i],"");
-	strcpy(fileHeader[i],"");
+		strcpy(completeFileName[i],"");
+		strcpy(fileHeader[i],"");
 	}
 	maxPacketsPerFile = 0;
 	fileCreateSuccess = false;
 
 	//***acquisition indices parameters***
-	startAcquisitionIndex = 0;
-	startFrameIndex = 0;
-	frameIndex = 0;
-	currentFrameNumber = 0;
-	previousFrameNumber = -1;
-	lastFrameIndex = 0;
-	acqStarted = false;
-	measurementStarted = false;
 	for(int i = 0; i < MAX_NUMBER_OF_LISTENING_THREADS; ++i){
+		startAcquisitionIndex[i] = 0;
+		startFrameIndex[i] = 0;
+		acqStarted[i] = false;
+		measurementStarted[i] = false;
 		totalListeningFrameCount[i] = 0;
 	}
-	packetsInFile = 0;
-	numMissingPackets = 0;
-	numTotMissingPackets = 0;
-	numTotMissingPacketsInFile = 0;
+	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++){
+		frameIndex[i] = 0;
+		currentFrameNumber[i] = 0;
+		previousFrameNumber[i] = -1;
+		lastFrameIndex[i] = 0;
+		packetsInFile[i] = 0;
+		numMissingPackets[i] = 0;
+		numTotMissingPackets[i] = 0;
+		numTotMissingPacketsInFile[i] = 0;
+	}
+
 
 
 	//***receiver parameters***
@@ -172,16 +175,20 @@ void UDPStandardImplementation::initializeMembers(){
 		fifoFree[i] = NULL;
 		udpSocket[i] = NULL;
 	}
-	sfilefd = NULL;
+	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++){
+		sfilefd[i] = NULL;
+	}
 	numberofJobsPerBuffer = -1;
 	fifoSize = 0;
 
 	//***receiver to GUI parameters***
-	latestData = NULL;
-	guiDataReady = false;
-	guiData = NULL;
-	strcpy(guiFileName,"");
-	frametoGuiCounter = 0;
+	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++){
+		latestData[i] = NULL;
+		guiDataReady[i] = false;
+		guiData[i] = NULL;
+		strcpy(guiFileName[i],"");
+		frametoGuiCounter[i] = 0;
+	}
 
 	//***general and listening thread parameters***
 	threadStarted = false;
@@ -552,9 +559,10 @@ int UDPStandardImplementation::setDynamicRange(const uint32_t i){
 		if(oldDynamicRange != dynamicRange){
 
 			//gui buffer
-			if(latestData){delete[] latestData; latestData = NULL;}
-			latestData = new char[frameSize];
-
+			for(int i=0;i<numberofWriterThreads;i++){
+				if(latestData[i]){delete[] latestData[i]; latestData[i] = NULL;}
+				latestData[i] = new char[frameSize];
+			}
 			//restructure fifo
 			numberofJobsPerBuffer = -1;
 			if(setupFifoStructure() == FAIL)
@@ -609,8 +617,10 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b){
 		if(oldTenGigaEnable != tengigaEnable){
 
 			//gui buffer
-			if(latestData){delete[] latestData; latestData = NULL;}
-			latestData = new char[frameSize];
+			for(int i=0;i<numberofWriterThreads;i++){
+				if(latestData[i]){delete[] latestData[i]; latestData[i] = NULL;}
+				latestData[i] = new char[frameSize];
+			}
 
 			//restructure fifo
 			if(setupFifoStructure() == FAIL)
@@ -767,10 +777,14 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 	if(myDetectorType == EIGER){
 		pthread_mutex_lock(&statusMutex);
 		listeningThreadsMask = 0x0;
+		writerThreadsMask = 0x0;
 		pthread_mutex_unlock(&(statusMutex));
-		if(threadStarted)
+		if(threadStarted){
 			createListeningThreads(true);
+			createWriterThreads(true);
+		}
 		numberofListeningThreads = MAX_NUMBER_OF_LISTENING_THREADS;
+		numberofWriterThreads = MAX_NUMBER_OF_WRITER_THREADS;
 	}
 
 	//set up fifo structure -1 for numberofJobsPerBuffer ensure it is done

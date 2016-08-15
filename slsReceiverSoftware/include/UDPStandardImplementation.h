@@ -550,10 +550,10 @@ private:
 
 
 	/** Previous Frame number from buffer to calculate loss */
-	int64_t previousFrameNumber;
+	int64_t previousFrameNumber[MAX_NUMBER_OF_WRITER_THREADS];
 
 	/** Last Frame Index Listened To */
-	int32_t lastFrameIndex;
+	int32_t lastFrameIndex[MAX_NUMBER_OF_WRITER_THREADS];
 
 
 	/* Acquisition started */
@@ -625,7 +625,7 @@ private:
 	char* guiData[MAX_NUMBER_OF_WRITER_THREADS];
 
 	/** Pointer to file name to be sent to GUI */
-	char guiFileName[MAX_STR_LENGTH];
+	char guiFileName[MAX_NUMBER_OF_WRITER_THREADS][MAX_STR_LENGTH];
 
 	/** Semaphore to synchronize Writer and GuiReader threads*/
 	sem_t writerGuiSemaphore[MAX_NUMBER_OF_WRITER_THREADS];

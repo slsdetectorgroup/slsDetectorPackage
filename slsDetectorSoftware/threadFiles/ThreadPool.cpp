@@ -121,29 +121,29 @@ void* ThreadPool::execute_thread()
     /*cout << "Unlocking: " << pthread_self() << endl;*/
     m_task_mutex.unlock();
 
-    //cout << "Executing thread " << pthread_self() << endl;
+    cout << ithread <<" Executing thread " << pthread_self() << endl;
     // execute the task
     (*task)(); // could also do task->run(arg);
-    //cout << "Done executing thread " << pthread_self() << endl;
+    cout << ithread <<" Done executing thread " << pthread_self() << endl;
 
     m_all_tasks_mutex.lock();
-    number_of_ongoing_tasks--;   // cout<<"number_of_ongoing_tasks:"<<number_of_ongoing_tasks<<endl;
+    number_of_ongoing_tasks--;    cout<<ithread <<" number_of_ongoing_tasks:"<<number_of_ongoing_tasks<<endl;
     m_all_tasks_mutex.unlock();
 
     //if all required tasks done
-    if(!ithread && m_tasks_loaded && (m_tasks.empty())){
+    if(!ithread && m_tasks_loaded && (m_tasks.empty())){cout<<ithread <<" waiting for all tasks to be done"<<endl;
     	while(number_of_ongoing_tasks)
     		usleep(5000);
-
-    	m_all_tasks_mutex.lock();
-    	m_tasks_loaded = false;    	//cout<<"all tasks done"<<endl;
-    	m_all_tasks_cond_var.signal(); // wake up thread that is waiting for all tasks to be complete
-    	m_all_tasks_mutex.unlock();
+cout<<ithread <<" all tasks done. gonna lock"<<endl;
+    	m_all_tasks_mutex.lock();	cout<<ithread <<" all tasks done"<<endl;
+    	m_tasks_loaded = false;    	cout<<ithread <<" task loaded set to false"<<endl;
+    	m_all_tasks_cond_var.signal(); 	cout<<ithread <<" wake up signal sent"<<endl;// wake up thread that is waiting for all tasks to be complete
+    	m_all_tasks_mutex.unlock();cout<<ithread <<" unlocked"<<endl;
     }
 
 
 
-    delete task;
+    delete task;cout<<ithread <<" task deleted"<<endl;
   }
   return NULL;
 }
@@ -167,12 +167,12 @@ void ThreadPool::wait_for_tasks_to_complete(){
 	if(m_pool_size == 1)
 		return;
 
-	m_all_tasks_mutex.lock();
+	m_all_tasks_mutex.lock();cout<<"waiting for tasks: locked. gonna wait" <<endl;
 	m_tasks_loaded = true;
-	 while ((m_pool_state != STOPPED) && m_tasks_loaded) {
-		 m_all_tasks_cond_var.wait(m_all_tasks_mutex.get_mutex_ptr());
-	 }
-	 m_all_tasks_mutex.unlock();
+	 while ((m_pool_state != STOPPED) && m_tasks_loaded) {cout<<"waiting for tasks: checking should be locked most likely, m_tasks_loaded:"<<m_tasks_loaded <<endl;
+		 m_all_tasks_cond_var.wait(m_all_tasks_mutex.get_mutex_ptr());cout<<"waiting for tasks: out of the wait loop, m_tasks_loaded:"<< m_tasks_loaded<<endl;
+	 }cout<<"waiting for tasks:totall out, must be locked again" <<endl;
+	 m_all_tasks_mutex.unlock();cout<<"waiting for tasks: unlocked and done" <<endl;
 
 }
 

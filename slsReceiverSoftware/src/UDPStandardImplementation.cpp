@@ -791,7 +791,11 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 	numberofJobsPerBuffer = -1;
 	setupFifoStructure();
 
-	//allocate for latest data (frame copy for gui)
+	//allocate for latest data (frame copy for gui), free variables
+	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++){
+		if(latestData[i]) 	{delete[] latestData; 	latestData = NULL;}
+		guiData[i] = NULL;
+	}
 	latestData = new char[frameSize];
 
 	//updates File Header

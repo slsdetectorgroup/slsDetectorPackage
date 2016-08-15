@@ -56,7 +56,8 @@ UDPStandardImplementation::UDPStandardImplementation(){
 
 UDPStandardImplementation::~UDPStandardImplementation(){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
-	closeFile();
+	for(int i=0;i<MAX_NUMBER_OF_WRITER_THREADS; i++)
+		closeFile(i);
 	deleteMembers();
 }
 
@@ -76,13 +77,15 @@ void UDPStandardImplementation::deleteMembers(){
 	closeFile();
 	//filter
 	deleteFilter();
-	for(int i=0; i<numberofListeningThreads; i++){
+	for(int i=0; i<MAX_NUMBER_OF_LISTENING_THREADS; i++){
 		if(mem0[i])			{free(mem0[i]);			mem0[i] = NULL;}
 		if(fifo[i])			{delete fifo[i];		fifo[i] = NULL;}
 		if(fifoFree[i])		{delete fifoFree[i];	fifoFree[i] = NULL;}
 	}
-	if(latestData) 	{delete[] latestData; 	latestData = NULL;}
-	guiData = NULL;
+	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++){
+		if(latestData[i]) 	{delete[] latestData; 	latestData = NULL;}
+		guiData[i] = NULL;
+	}
 	//kill threads
 	if(threadStarted){
 		createListeningThreads(true);
@@ -136,10 +139,12 @@ void UDPStandardImplementation::initializeMembers(){
 		myFile[i] = (NULL);
 	}
 #endif
-	strcpy(completeFileName,"");
+	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++){
+	strcpy(completeFileName[i],"");
+	strcpy(fileHeader[i],"");
+	}
 	maxPacketsPerFile = 0;
 	fileCreateSuccess = false;
-	strcpy(fileHeader,"");
 
 	//***acquisition indices parameters***
 	startAcquisitionIndex = 0;

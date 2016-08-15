@@ -477,6 +477,15 @@ private:
 	 * Class Members *********************************************************
 	 *************************************************************************/
 
+	/** Maximum Number of Writer Threads */
+
+#ifdef DCOMPRESS
+	/**** most likely not used ***/
+	const static int MAX_NUMBER_OF_WRITER_THREADS = 15;
+#else
+	const static int MAX_NUMBER_OF_WRITER_THREADS = 2;
+#endif
+
 	//**detector parameters***
 	/** Size of 1 Frame including headers */
 	int frameSize;
@@ -513,7 +522,7 @@ private:
 #endif
 
 	/** Complete File name */
-	char completeFileName[MAX_STR_LENGTH];
+	char completeFileName[MAX_NUMBER_OF_WRITER_THREADS][MAX_STR_LENGTH];
 
 		/** Maximum Packets Per File **/
 	int maxPacketsPerFile;
@@ -521,23 +530,24 @@ private:
 	/** If file created successfully for all Writer Threads */
 	bool fileCreateSuccess;
 
-	char fileHeader[1000];
+	char fileHeader[MAX_NUMBER_OF_WRITER_THREADS][MAX_STR_LENGTH];
 
 
 
 
 	//***acquisition indices/count parameters***
 	/** Frame Number of First Frame of an entire Acquisition (including all scans) */
-	uint64_t startAcquisitionIndex;
+	uint64_t startAcquisitionIndex[MAX_NUMBER_OF_LISTENING_THREADS];
 
 	/** Frame index at start of each real time acquisition (eg. for each scan) */
-	uint64_t startFrameIndex;
+	uint64_t startFrameIndex[MAX_NUMBER_OF_LISTENING_THREADS];
 
 	/** Actual current frame index of each time acquisition (eg. for each scan) */
-	uint64_t frameIndex;
+	uint64_t frameIndex[MAX_NUMBER_OF_WRITER_THREADS];
 
 	/** Current Frame Number */
-	uint64_t currentFrameNumber;
+	uint64_t currentFrameNumber[MAX_NUMBER_OF_WRITER_THREADS];
+
 
 	/** Previous Frame number from buffer to calculate loss */
 	int64_t previousFrameNumber;
@@ -545,26 +555,27 @@ private:
 	/** Last Frame Index Listened To */
 	int32_t lastFrameIndex;
 
+
 	/* Acquisition started */
-	bool acqStarted;
+	bool acqStarted[MAX_NUMBER_OF_LISTENING_THREADS];
 
 	/* Measurement started */
-	bool measurementStarted;
+	bool measurementStarted[MAX_NUMBER_OF_LISTENING_THREADS];
 
 	/** Total Frame Count listened to by listening threads */
 	int totalListeningFrameCount[MAX_NUMBER_OF_LISTENING_THREADS];
 
 	/** Pckets currently in current file, starts new file when it reaches max */
-	uint32_t packetsInFile;
+	uint32_t packetsInFile[MAX_NUMBER_OF_WRITER_THREADS];
 
 	/** Number of Missing Packets per buffer*/
-	uint32_t numMissingPackets;
+	uint32_t numMissingPackets[MAX_NUMBER_OF_WRITER_THREADS];
 
 	/** Total Number of Missing Packets in acquisition*/
-	uint32_t numTotMissingPackets;
+	uint32_t numTotMissingPackets[MAX_NUMBER_OF_WRITER_THREADS];
 
 	/** Number of Missing Packets in file */
-	uint32_t numTotMissingPacketsInFile;
+	uint32_t numTotMissingPacketsInFile[MAX_NUMBER_OF_WRITER_THREADS];
 
 
 
@@ -587,7 +598,7 @@ private:
 	genericSocket* udpSocket[MAX_NUMBER_OF_LISTENING_THREADS];
 
 	/** File Descriptor */
-	FILE *sfilefd;
+	FILE *sfilefd[MAX_NUMBER_OF_WRITER_THREADS];
 
 	/** Number of Jobs Per Buffer */
 	int numberofJobsPerBuffer;
@@ -605,22 +616,22 @@ private:
 
 	//***receiver to GUI parameters***
 	/** Current Frame copied for GUI */
-	char* latestData;
+	char* latestData[MAX_NUMBER_OF_WRITER_THREADS];
 
 	/** If Data to be sent to GUI is ready */
-	bool guiDataReady;
+	bool guiDataReady[MAX_NUMBER_OF_WRITER_THREADS];
 
 	/** Pointer to data to be sent to GUI */
-	char* guiData;
+	char* guiData[MAX_NUMBER_OF_WRITER_THREADS];
 
 	/** Pointer to file name to be sent to GUI */
 	char guiFileName[MAX_STR_LENGTH];
 
 	/** Semaphore to synchronize Writer and GuiReader threads*/
-	sem_t writerGuiSemaphore;
+	sem_t writerGuiSemaphore[MAX_NUMBER_OF_WRITER_THREADS];
 
 	/** counter for nth frame to gui */
-	int frametoGuiCounter;
+	int frametoGuiCounter[MAX_NUMBER_OF_WRITER_THREADS];
 
 
 
@@ -653,9 +664,6 @@ private:
 
 
 	//***writer thread parameters***
-	/** Maximum Number of Writer Threads */
-	const static int MAX_NUMBER_OF_WRITER_THREADS = 15;
-
 	/** Number of Writer Threads */
 	int numberofWriterThreads;
 

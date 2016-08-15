@@ -557,10 +557,10 @@ private:
 
 
 	/* Acquisition started */
-	bool acqStarted[MAX_NUMBER_OF_LISTENING_THREADS];
+	bool acqStarted;
 
 	/* Measurement started */
-	bool measurementStarted[MAX_NUMBER_OF_LISTENING_THREADS];
+	bool measurementStarted;
 
 	/** Total Frame Count listened to by listening threads */
 	int totalListeningFrameCount[MAX_NUMBER_OF_LISTENING_THREADS];

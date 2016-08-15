@@ -150,10 +150,10 @@ void UDPStandardImplementation::initializeMembers(){
 	for(int i = 0; i < MAX_NUMBER_OF_LISTENING_THREADS; ++i){
 		startAcquisitionIndex[i] = 0;
 		startFrameIndex[i] = 0;
-		acqStarted[i] = false;
-		measurementStarted[i] = false;
 		totalListeningFrameCount[i] = 0;
 	}
+	acqStarted = false;
+	measurementStarted = false;
 	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++){
 		frameIndex[i] = 0;
 		currentFrameNumber[i] = 0;
@@ -795,8 +795,9 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++){
 		if(latestData[i]) 	{delete[] latestData; 	latestData = NULL;}
 		guiData[i] = NULL;
+		latestData[i] = new char[frameSize];
 	}
-	latestData = new char[frameSize];
+
 
 	//updates File Header
 	if(myDetectorType == EIGER)

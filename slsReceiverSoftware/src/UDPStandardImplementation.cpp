@@ -833,53 +833,53 @@ int UDPStandardImplementation::startReceiver(char *c){
 	
 	FILE_LOG(logINFO)  << "Stopping Receiver";
 
+	//reseting variables
 
-	//RESET
-	//reset measurement variables
 	pthread_mutex_lock(&progressMutex);
 	measurementStarted = false;
 	pthread_mutex_unlock(&progressMutex);
-
-	for(int i=0;i<numberofListeningThreads;i++)
-		startFrameIndex[i] = 0;
-
-	for(int i=0;i<numberofWriterThreads;i++)
-		frametoGuiCounter[i] = 0;
-		frameIndex[i] = 0;
-
-
-
-
+	//for every acquisition start (not every scan)
 	if(!acqStarted){
 		pthread_mutex_lock(&progressMutex);
 		acquisitionIndex = 0;
 		pthread_mutex_unlock(&progressMutex);
 
-		currentFrameNumber = 0;		//has to be zero to add to startframeindex for each scan
-		frameIndex = 0;
+		for(int i=0;i<numberofWriterThreads;i++){
+			currentFrameNumber[i] = 0;		//has to be zero to add to startframeindex for each scan
+			frameIndex[i] = 0;
+		}
 	}
-	for(int i = 0; i < numberofListeningThreads; ++i)
+	for(int i=0;i<numberofListeningThreads;i++){
+		startFrameIndex[i] = 0;
 		totalListeningFrameCount[i] = 0;
-	packetsCaught = 0;
-	numMissingPackets = 0;
-	numTotMissingPackets = 0;
-	numTotMissingPacketsInFile = 0;
-	//reset file parameters
-	packetsInFile = 0;
-	if(sfilefd){
-		fclose(sfilefd);
-		sfilefd = NULL;
 	}
-	//reset gui variables
-	guiData = NULL;
-	guiDataReady=0;
-	strcpy(guiFileName,"");
+	for(int i=0;i<numberofWriterThreads;i++){
+		frametoGuiCounter[i] = 0;
+		frameIndex[i] = 0;
+		numMissingPackets[i] = 0;
+		numTotMissingPackets[i] = 0;
+		numTotMissingPacketsInFile[i] = 0;
+		//reset file parameters
+		packetsInFile[i] = 0;
+		if(sfilefd[i]){
+			fclose(sfilefd[i]);
+			sfilefd[i] = NULL;
+		}
+		//reset gui variables
+		guiData[i] = NULL;
+		guiDataReady[i]=0;
+		strcpy(guiFileName[i],"");
+	}
+	pthread_mutex_lock(&writeMutex);
+	packetsCaught = 0;
+	pthread_mutex_unlock(&writeMutex);
 	//reset masks
 	pthread_mutex_lock(&statusMutex);
 	writerThreadsMask = 0x0;
 	createFileMask = 0x0;
 	fileCreateSuccess = false;
 	pthread_mutex_unlock(&statusMutex);
+
 
 
 	//Print Receiver Configuration
@@ -905,31 +905,37 @@ int UDPStandardImplementation::startReceiver(char *c){
 	if(setupWriter() == FAIL){
 		//stop udp socket
 		shutDownUDPSockets();
-		sprintf(c,"Could not create file %s.",completeFileName);
+		sprintf(c,"Could not create file");
 		//FILE_LOG(logERROR) << c;
-		for(int i=0; i < numberofWriterThreads; i++)	sem_post(&writerSemaphore[i]);
+		for(int i=0; i < numberofWriterThreads; i++)
+			sem_post(&writerSemaphore[i]);
 		return FAIL;
 	}
 
 
 	//For compression, just for gui purposes
 	if(dataCompressionEnable)
-		sprintf(completeFileName, "%s/%s_fxxx_%lld_xx.root", filePath,fileName,(long long int)fileIndex);
+		sprintf(completeFileName[0], "%s/%s_fxxx_%lld_xx.root", filePath,fileName,(long long int)fileIndex);
 
 	//initialize semaphore to synchronize between writer and gui reader threads
-	sem_init(&writerGuiSemaphore,1,0);
+	for(int i=0;i<numberofWriterThreads;i++)
+		sem_init(&writerGuiSemaphore[i],1,0);
 
 	//status and thread masks
 	pthread_mutex_lock(&statusMutex);
 	status = RUNNING;
-	for(int i=0;i<numberofListeningThreads;i++)		listeningThreadsMask|=(1<<i);
-	for(int i=0;i<numberofWriterThreads;i++)		writerThreadsMask|=(1<<i);
+	for(int i=0;i<numberofListeningThreads;i++)
+		listeningThreadsMask|=(1<<i);
+	for(int i=0;i<numberofWriterThreads;i++)
+		writerThreadsMask|=(1<<i);
 	pthread_mutex_unlock(&(statusMutex));
 
 
 	//start listening /writing
-	for(int i=0;i<numberofListeningThreads;i++)		sem_post(&listenSemaphore[i]);
-	for(int i=0; i < numberofWriterThreads; i++)	sem_post(&writerSemaphore[i]);
+	for(int i=0;i<numberofListeningThreads;i++)
+		sem_post(&listenSemaphore[i]);
+	for(int i=0; i < numberofWriterThreads; i++)
+		sem_post(&writerSemaphore[i]);
 
 	FILE_LOG(logINFO)  << "Receiver Started";
 	FILE_LOG(logINFO)  << "Status: " << runStatusType(status);

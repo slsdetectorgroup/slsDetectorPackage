@@ -813,9 +813,16 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 void UDPStandardImplementation::resetAcquisitionCount(){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
-	totalPacketsCaught = 0;
+	for(int i=0;i<numberofListeningThreads;i++)
+		startAcquisitionIndex[i] = 0;
+
+	pthread_mutex_lock(&progressMutex);
 	acqStarted = false;
-	startAcquisitionIndex = 0;
+	pthread_mutex_unlock(&progressMutex);
+
+	pthread_mutex_lock(&writeMutex);
+	totalPacketsCaught = 0;
+	pthread_mutex_unlock(&writeMutex);
 
 	FILE_LOG(logINFO) << "Acquisition Count has been reset";
 }
@@ -829,13 +836,26 @@ int UDPStandardImplementation::startReceiver(char *c){
 
 	//RESET
 	//reset measurement variables
-	frametoGuiCounter = 0;
+	pthread_mutex_lock(&progressMutex);
 	measurementStarted = false;
-	startFrameIndex = 0;
-	frameIndex = 0;
+	pthread_mutex_unlock(&progressMutex);
+
+	for(int i=0;i<numberofListeningThreads;i++)
+		startFrameIndex[i] = 0;
+
+	for(int i=0;i<numberofWriterThreads;i++)
+		frametoGuiCounter[i] = 0;
+		frameIndex[i] = 0;
+
+
+
+
 	if(!acqStarted){
-		currentFrameNumber = 0;		//has to be zero to add to startframeindex for each scan
+		pthread_mutex_lock(&progressMutex);
 		acquisitionIndex = 0;
+		pthread_mutex_unlock(&progressMutex);
+
+		currentFrameNumber = 0;		//has to be zero to add to startframeindex for each scan
 		frameIndex = 0;
 	}
 	for(int i = 0; i < numberofListeningThreads; ++i)

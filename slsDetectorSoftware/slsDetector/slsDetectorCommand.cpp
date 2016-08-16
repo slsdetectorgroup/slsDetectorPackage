@@ -737,6 +737,26 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   i++;
 
 
+  descrToFuncMap[i].m_pFuncName="v_b"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="v_c"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="v_d"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="v_io"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="v_chip"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
   /* r/w timers */
 
   descrToFuncMap[i].m_pFuncName="temp_adc"; //
@@ -3562,7 +3582,7 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
   else if (cmd=="vshaper2")
     dac=SHAPER2;
   else if (cmd=="vhighvoltage")
-    dac=HV_POT;
+    dac=HV_NEW;
   else if (cmd=="vapower")
     dac=VA_POT;
   else if (cmd=="vddpower")
@@ -3641,7 +3661,19 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
   else if (cmd== "vis")
 	  dac=E_Vis;
   else if (cmd== "iodelay")
-	  dac=IO_DELAY;
+	  dac=IO_DELAY; 
+  else if (cmd== "v_a")
+	  dac=V_POWER_A;
+  else if (cmd== "v_b")
+	  dac=V_POWER_B;
+  else if (cmd== "v_c")
+	  dac=V_POWER_C;
+  else if (cmd== "v_d")
+	  dac=V_POWER_D;
+  else if (cmd== "v_io")
+	  dac=V_POWER_IO;
+  else if (cmd== "v_chip")
+	  dac=V_POWER_CHIP;
   else
     return string("cannot decode dac ")+cmd;
   

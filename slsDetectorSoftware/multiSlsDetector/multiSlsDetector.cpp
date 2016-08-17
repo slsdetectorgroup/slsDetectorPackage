@@ -1608,36 +1608,7 @@ int* multiSlsDetector::startAndReadAll(){
 
 
 int multiSlsDetector::startAndReadAllNoWait(){
-/*
-	int i=0;
-	int ret=OK, ret1=OK;
 
-	for (i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-		if (i!=thisMultiDetector->masterPosition)
-			if (detectors[i]) {
-				ret=detectors[i]->startAndReadAllNoWait();
-				if(detectors[i]->getErrorMask())
-					setErrorMask(getErrorMask()|(1<<i));
-				if (ret!=OK)
-					ret1=FAIL;
-			}
-	}
-
-
-	i=thisMultiDetector->masterPosition;
-	if (thisMultiDetector->masterPosition>=0) {
-	if (detectors[i]) {
-		ret=detectors[i]->startAndReadAllNoWait();
-		if(detectors[i]->getErrorMask())
-			setErrorMask(getErrorMask()|(1<<i));
-		if (ret!=OK)
-			ret1=FAIL;
-	}
-	}
-
-	return ret1;
-*/
-	// hanging randomly around 4000-5000 frames at 1sec exptime (threads dont return)
 	int i=0;
 	int ret=OK;
 	int posmin=0, posmax=thisMultiDetector->numberOfDetectors;
@@ -1653,10 +1624,9 @@ int multiSlsDetector::startAndReadAllNoWait(){
 				Task* task = new Task(new func0_t<int,slsDetector,int>(&slsDetector::startAndReadAllNoWait,
 						detectors[idet],iret[idet]));
 				threadpool->add_task(task);
-				cprintf(GREEN,"task addeD\n");
 			}
-		}cout<<"waiting for tasks to copmlete"<<endl;
-		threadpool->wait_for_tasks_to_complete();cout<<"returned!"<<endl;
+		}
+		threadpool->wait_for_tasks_to_complete();
 		for(int idet=posmin; idet<posmax; idet++){
 			if((idet!=thisMultiDetector->masterPosition) && (detectors[idet])){
 				if(iret[idet] != NULL){
@@ -1673,7 +1643,7 @@ int multiSlsDetector::startAndReadAllNoWait(){
 	//master
 	int ret1=OK;
 	i=thisMultiDetector->masterPosition;
-	if (thisMultiDetector->masterPosition>=0) {cout<<"should never be here"<<endl;
+	if (thisMultiDetector->masterPosition>=0) {
 		if (detectors[i]) {
 			ret1=detectors[i]->startAndReadAllNoWait();
 			if(detectors[i]->getErrorMask())

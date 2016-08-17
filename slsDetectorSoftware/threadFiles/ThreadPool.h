@@ -13,7 +13,7 @@
 #include "Task.h"
 #include "CondVar.h"
 #include "Global.h"
-
+#include <semaphore.h>
 using namespace std;
 
 
@@ -44,5 +44,8 @@ private:
 
   //volatile uint64_t tasks_done_mask;
   volatile int number_of_ongoing_tasks;
+
+ sem_t semStart;
+
 };
 

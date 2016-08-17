@@ -361,7 +361,13 @@ enum dacIndex {
   TEMPERATURE_10GE,		/**< temperature sensor (close to 10GE) */
   TEMPERATURE_DCDC,		/**< temperature sensor (close to DCDC) */
   TEMPERATURE_SODL,		/**< temperature sensor (close to SODL) */
-  TEMPERATURE_SODR		/**< temperature sensor (close to SODR) */
+  TEMPERATURE_SODR,		/**< temperature sensor (close to SODR) */
+  V_POWER_A = 100, /**new chiptest board */
+  V_POWER_B = 101, /**new chiptest board */
+  V_POWER_C = 102, /**new chiptest board */
+  V_POWER_D = 103, /**new chiptest board */
+  V_POWER_IO =104, /**new chiptest board */
+  V_POWER_CHIP=105 /**new chiptest board */
 };
 
 /**

@@ -413,9 +413,9 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 
 	/**
 	 * Closes file / all files(if multiple files)
-	 * @param i thread index (if multiple files used  eg. root files) -1 for all threads
+	 * @param i writer thread index
 	 */
-	void closeFile(int i = -1);
+	void closeFile(int i = 0);
 
 
 	//***callback functions***

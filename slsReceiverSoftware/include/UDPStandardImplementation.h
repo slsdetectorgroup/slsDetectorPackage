@@ -210,9 +210,9 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 * Overridden method
 	 * Closes file / all files(data compression involves multiple files)
 	 * TCPIPInterface can also call this in case of illegal shutdown of receiver
-	 * @param i thread index valid for datacompression using root files, -1 for all threads
+	 * @param i writer thread index
 	 */
-	void closeFile(int i = -1);
+	void closeFile(int i = 0);
 
 private:
 	/*************************************************************************
@@ -307,9 +307,10 @@ private:
 
 	/**
 	 * Creates new file and reset some parameters
+	 * @param ithread writer thread index
 	 * @return OK or FAIL
 	 */
-	int createNewFile();
+	int createNewFile(int ithread);
 
 	/**
 	 * Creates new tree and file for compression
@@ -428,10 +429,11 @@ private:
 	/**
 	 * Calle by handleWithoutDataCompression
 	 * Creating headers Writing to file without compression
+	 * @param ithread writer thread index
 	 * @param wbuffer is the address of buffer popped out of FIFO
 	 * @param numpackets is the number of packets
 	 */
-	void writeFileWithoutCompression(char* wbuffer[],uint32_t numpackets);
+	void writeFileWithoutCompression(int ithread, char* wbuffer[],uint32_t numpackets);
 
 	/**
 	 * Called by writeToFileWithoutCompression
@@ -523,6 +525,9 @@ private:
 
 	/** Complete File name */
 	char completeFileName[MAX_NUMBER_OF_WRITER_THREADS][MAX_STR_LENGTH];
+
+	/** File Prefix with detector index */
+	char receiverFilePrefix[MAX_NUMBER_OF_WRITER_THREADS][MAX_STR_LENGTH];
 
 		/** Maximum Packets Per File **/
 	int maxPacketsPerFile;

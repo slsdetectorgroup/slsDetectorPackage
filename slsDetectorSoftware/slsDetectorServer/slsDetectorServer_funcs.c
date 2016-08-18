@@ -2526,9 +2526,10 @@ int read_frame(int file_des) {
 	if (differentClients==1 && lockStatus==1) {
 		dataret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
+		cprintf(RED,"%s",mess);
 		//dataret could be swapped during sendData
 		dataret1 = dataret;
-		sendData(file_des,&dataret1,sizeof(dataret),INT32);
+		sendData(file_des,&dataret1,sizeof(dataret1),INT32);
 		sendData(file_des,mess,sizeof(mess),OTHER);
 		printf("dataret %d\n",dataret);
 		return dataret;
@@ -2541,11 +2542,11 @@ int read_frame(int file_des) {
 
 	//dataret could be swapped during sendData
 	dataret1 = dataret;
-	sendData(file_des,&dataret1,sizeof(dataret),INT32);
+	sendData(file_des,&dataret1,sizeof(dataret1),INT32);
 	if (dataret==FAIL)
 		sendData(file_des,mess,sizeof(mess),OTHER);//sizeof(mess));//sizeof(mess));
-	else
-		sendData(file_des,dataretval,dataBytes,OTHER);
+	else if(dataret==OK){printf("shouldnt be sending anything but i am\n");
+		sendData(file_des,dataretval,dataBytes,OTHER);}
 
 	printf("dataret %d\n",dataret);
 	return dataret;

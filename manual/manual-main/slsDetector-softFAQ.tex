@@ -396,3 +396,43 @@ where the default functions performing these actions are implemented and modify 
 A simple high-level solution in case you need to maintain the software for several beamlines and don't want to recompile for all of them is to call external scripts.
 
 
+\section{In which data format are written the data?} \label{sec:dataFormat}
+
+For MYTHEN the data are writen in ASCII fomat, one file per frame, in columns, either channel number - counts for the \textit{.raw} files or angle (or channel number)-counts-error for the \textit{.dat} files.
+
+For the other detectors the files are written in binary format, and must be decoded depending on the detector.
+
+\subsection{GOTTHARD}
+Each files contains 100 frames.
+\begin{description}
+\item[Normal mode]
+Each frame is split into 2 packets of 1286 bytes each, where actual data is 1280 bytes each. Both the packets (incl header and footer) are written one after the other into the file.
+
+Representation of each packet:
+\begin{itemize}
+\item
+The first 4 bytes represents a number from which, the frame number and packet number can be derived.
+If the number was 108601, increment it by 1 to get 108602.\\
+Then this $(108602\&0xFFFFFFFE)>>1 = 54301$ is the frame number
+and  $(108602\&0x1) =0$ is the packet number.\\
+0 is the packet on the left and 1 is the packet on the right.\\
+On a side note, when you use the data call back, we also give you the derived frame number as an argument.
+
+\item Data of 1280 bytes. 16 bits per pixel.
+
+\item  2 bytes of insignificant footer.
+\end{itemize}
+
+\item[Short Frame Mode]
+One Frame has only one packet of 518 bytes, where actual data is 512 bytes.
+\begin{itemize}
+\item   first 4 bytes is the frame number. There is no increment like the previous ones.
+\item   Data of 512 bytes.
+\item   2 bytes of insignificant footer.
+\end{itemize}
+
+\end{description}
+
+\subsection{EIGER}
+
+\subsection{JUNGFRAU}

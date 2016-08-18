@@ -44,7 +44,7 @@
 		  unsigned int* Beb_recv_data;
 
 		  short Beb_bit_mode;
-
+		  int BEB_MMAP_SIZE = 0x1000;
 
 
 void BebInfo_BebInfo(struct BebInfo* bebInfo, unsigned int beb_num){
@@ -144,20 +144,19 @@ void Beb_Beb(){
 }
 
 
-
 void Beb_GetModuleCopnfiguration(int* master, int* top){
 	*top = 0;
 	*master = 0;
 	  //mapping new memory to read master top module configuration
-		u_int32_t baseaddr;
+		u_int32_t* csp0base=0;
 		int ret;
 		//open file pointer
-		int fd = Beb_open(XPAR_PLB_GPIO_SYS_BASEADDR,&baseaddr);
+		int fd = Beb_open(&csp0base,XPAR_PLB_GPIO_SYS_BASEADDR);
 		if(fd < 0){
 			 cprintf(BG_RED,"Module Configuration FAIL\n");
 		}else{
 			//read data
-			ret = Beb_Read32(baseaddr, MODULE_CONFIGURATION_MASK);
+			ret = Beb_Read32(csp0base, MODULE_CONFIGURATION_MASK);
 			printf("Module Configuration OK\n");
 			printf("Beb: value =0x%x\n",ret);
 			if(ret&TOP_BIT_MASK)
@@ -165,24 +164,25 @@ void Beb_GetModuleCopnfiguration(int* master, int* top){
 			if(ret&MASTER_BIT_MASK)
 				*master = 1;
 			//close file pointer
-			Beb_close(fd);
+			Beb_close(fd,csp0base);
 		}
 }
 
 /* do not work at the moment */
 int Beb_SetMasterViaSoftware(){
 	//mapping new memory
-	u_int32_t baseaddr, value = 0, ret = 1;
+	u_int32_t* csp0base=0;
+	u_int32_t value = 0, ret = 1;
 
 	//open file pointer
-	int fd = Beb_open(XPAR_PLB_GPIO_SYS_BASEADDR,&baseaddr);
+	int fd = Beb_open(&csp0base,XPAR_PLB_GPIO_SYS_BASEADDR);
 	if(fd < 0)
 		cprintf(BG_RED,"Set Master FAIL\n");
 	else{
-		value = Beb_Read32(baseaddr, MASTERCONFIG_OFFSET);
+		value = Beb_Read32(csp0base, MASTERCONFIG_OFFSET);
 		value|=MASTER_BIT;
 		value|=OVERWRITE_HARDWARE_BIT;
-		int newval = Beb_Write32(baseaddr, MASTERCONFIG_OFFSET,value);
+		int newval = Beb_Write32(csp0base, MASTERCONFIG_OFFSET,value);
 		if(newval!=value)
 			cprintf(BG_RED,"Could not set Master via Software\n");
 		else
@@ -191,7 +191,7 @@ int Beb_SetMasterViaSoftware(){
 
 	//close file pointer
 	if(fd > 0)
-		Beb_close(fd);
+		Beb_close(fd,csp0base);
 
 	return ret;
 }
@@ -199,17 +199,18 @@ int Beb_SetMasterViaSoftware(){
 /* do not work at the moment */
 int Beb_SetSlaveViaSoftware(){
 	//mapping new memory
-	u_int32_t baseaddr, value = 0, ret = 1;
+	u_int32_t* csp0base=0;
+	u_int32_t value = 0, ret = 1;
 
 	//open file pointer
-	int fd = Beb_open(XPAR_PLB_GPIO_SYS_BASEADDR,&baseaddr);
+	int fd = Beb_open(&csp0base,XPAR_PLB_GPIO_SYS_BASEADDR);
 	if(fd < 0)
 		cprintf(BG_RED,"Set Slave FAIL\n");
 	else{
-		value = Beb_Read32(baseaddr, MASTERCONFIG_OFFSET);
+		value = Beb_Read32(csp0base, MASTERCONFIG_OFFSET);
 		value&=~MASTER_BIT;
 		value|=OVERWRITE_HARDWARE_BIT;
-		int newval = Beb_Write32(baseaddr, MASTERCONFIG_OFFSET,value);
+		int newval = Beb_Write32(csp0base, MASTERCONFIG_OFFSET,value);
 		if(newval!=value)
 			cprintf(BG_RED,"Could not set Slave via Software\n");
 		else
@@ -218,29 +219,30 @@ int Beb_SetSlaveViaSoftware(){
 
 	//close file pointer
 	if(fd > 0)
-		Beb_close(fd);
+		Beb_close(fd,csp0base);
 
 	return ret;
 }
 
 int Beb_Activate(int enable){
 	//mapping new memory
-	u_int32_t baseaddr, value = 0, ret = -1;
+	u_int32_t* csp0base=0;
+	u_int32_t value = 0, ret = -1;
 
 	//open file pointer
-	int fd = Beb_open(XPAR_PLB_GPIO_SYS_BASEADDR,&baseaddr);
+	int fd = Beb_open(&csp0base,XPAR_PLB_GPIO_SYS_BASEADDR);
 	if(fd < 0)
 		cprintf(BG_RED,"Deactivate FAIL\n");
 	else{
 		if(enable > -1){
-			value = Beb_Read32(baseaddr, MASTERCONFIG_OFFSET);
+			value = Beb_Read32(csp0base, MASTERCONFIG_OFFSET);
 			printf("Deactivate register value before:%d\n",value);
 			if(enable)
 				value&=~DEACTIVATE_BIT;
 			else
 				value|=DEACTIVATE_BIT;
 
-			int newval = Beb_Write32(baseaddr, MASTERCONFIG_OFFSET,value);
+			int newval = Beb_Write32(csp0base, MASTERCONFIG_OFFSET,value);
 			if(newval!=value){
 				if(enable)
 					cprintf(BG_RED,"Could not activate via Software\n");
@@ -249,7 +251,7 @@ int Beb_Activate(int enable){
 			}
 		}
 
-		value = Beb_Read32(baseaddr, MASTERCONFIG_OFFSET);
+		value = Beb_Read32(csp0base, MASTERCONFIG_OFFSET);
 		if(value&DEACTIVATE_BIT) ret = 0;
 		else ret = 1;
 		if(enable == -1){
@@ -262,7 +264,7 @@ int Beb_Activate(int enable){
 	}
 	//close file pointer
 	if(fd > 0)
-		Beb_close(fd);
+		Beb_close(fd,csp0base);
 
 	return ret;
 }
@@ -270,7 +272,8 @@ int Beb_Activate(int enable){
 
 int Beb_SetNetworkParameter(enum detNetworkParameter mode, int val){
 	//mapping new memory
-	u_int32_t baseaddr, valueread = 0;
+	u_int32_t* csp0base=0;
+	u_int32_t valueread = 0;
 	u_int32_t offset = TXM_DELAY_LEFT_OFFSET;
 	char modename[100] = "";
 
@@ -295,40 +298,40 @@ int Beb_SetNetworkParameter(enum detNetworkParameter mode, int val){
 	default: cprintf(BG_RED,"Unrecognized mode in network parameter: %d\n",mode); return -1;
 	}
 	//open file pointer
-	int fd = Beb_open(XPAR_PLB_GPIO_SYS_BASEADDR,&baseaddr);
+	int fd = Beb_open(&csp0base,XPAR_PLB_GPIO_SYS_BASEADDR);
 	if(fd < 0){
 		cprintf(BG_RED,"Could not read register to set network parameter. FAIL\n");
 		return -1;
 	}
 	else{
 		if(val > -1){
-			valueread = Beb_Read32(baseaddr, offset);
+			valueread = Beb_Read32(csp0base, offset);
 			//cprintf(BLUE, "%s value before:%d\n",modename,valueread);
-			Beb_Write32(baseaddr, offset,val);
+			Beb_Write32(csp0base, offset,val);
 			cprintf(BLUE,"%s value:%d\n", modename,valueread);
 		}
 
-		valueread = Beb_Read32(baseaddr, offset);
+		valueread = Beb_Read32(csp0base, offset);
 		//cprintf(BLUE,"%s value:%d\n", modename,valueread);
 	}
 	//close file pointer
 	if(fd > 0)
-		Beb_close(fd);
+		Beb_close(fd,csp0base);
 
 	return valueread;
 }
 
-
 int Beb_ResetToHardwareSettings(){
 	//mapping new memory
-	u_int32_t baseaddr, value = 0, ret = 1;
+	u_int32_t* csp0base=0;
+	u_int32_t value = 0, ret = 1;
 
 	//open file pointer
-	int fd = Beb_open(XPAR_PLB_GPIO_SYS_BASEADDR,&baseaddr);
+	int fd = Beb_open(&csp0base,XPAR_PLB_GPIO_SYS_BASEADDR);
 	if(fd < 0)
 		cprintf(BG_RED,"Reset to Hardware Settings FAIL\n");
 	else{
-		value = Beb_Write32(baseaddr, MASTERCONFIG_OFFSET,0);
+		value = Beb_Write32(csp0base, MASTERCONFIG_OFFSET,0);
 		if(value)
 			cprintf(BG_RED,"Could not reset to hardware settings\n");
 		else
@@ -337,7 +340,7 @@ int Beb_ResetToHardwareSettings(){
 
 	//close file pointer
 	if(fd > 0)
-		Beb_close(fd);
+		Beb_close(fd,csp0base);
 
 	return ret;
 }
@@ -346,21 +349,22 @@ int Beb_ResetToHardwareSettings(){
 
 u_int32_t Beb_GetFirmwareRevision(){
 	//mapping new memory
-	u_int32_t baseaddr, value = 0;
+	u_int32_t* csp0base=0;
+	u_int32_t value = 0;
 
 	//open file pointer
-	int fd = Beb_open(XPAR_VERSION,&baseaddr);
+	int fd = Beb_open(&csp0base,XPAR_VERSION);
 	if(fd < 0)
 		cprintf(BG_RED,"Firmware Revision Read FAIL\n");
 	else{
-		value = Beb_Read32(baseaddr, FIRMWARE_VERSION_OFFSET);
+		value = Beb_Read32(csp0base, FIRMWARE_VERSION_OFFSET);
 		if(!value)
 			cprintf(BG_RED,"Firmware Revision Number does not exist in this version\n");
 	}
 
 	//close file pointer
 	if(fd > 0)
-		Beb_close(fd);
+		Beb_close(fd,csp0base);
 
 	return value;
 }
@@ -368,41 +372,42 @@ u_int32_t Beb_GetFirmwareRevision(){
 
 u_int32_t Beb_GetFirmwareSoftwareAPIVersion(){
 	//mapping new memory
-	u_int32_t baseaddr, value = 0;
+	u_int32_t* csp0base=0;
+	u_int32_t value = 0;
 
 	//open file pointer
-	int fd = Beb_open(XPAR_VERSION,&baseaddr);
+	int fd = Beb_open(&csp0base,XPAR_VERSION);
 	if(fd < 0)
 		cprintf(BG_RED,"Firmware Software API Version Read FAIL\n");
 	else{
-		value = Beb_Read32(baseaddr, FIRMWARESOFTWARE_API_OFFSET);
+		value = Beb_Read32(csp0base, FIRMWARESOFTWARE_API_OFFSET);
 		if(!value)
 			cprintf(BG_RED,"Firmware Software API Version does not exist in this version\n");
 	}
 
 	//close file pointer
 	if(fd > 0)
-		Beb_close(fd);
+		Beb_close(fd,csp0base);
 
 	return value;
 }
 
 void Beb_ResetFrameNumber(){
 	//mapping new memory to read master top module configuration
-	u_int32_t baseaddr;
+	u_int32_t* csp0base=0;
 	//open file pointer
-	int fd = Beb_open(XPAR_PLB_GPIO_SYS_BASEADDR,&baseaddr);
+	int fd = Beb_open(&csp0base,XPAR_PLB_GPIO_SYS_BASEADDR);
 	if(fd < 0){
 		cprintf(BG_RED,"Reset Frame Number FAIL\n");
 	}else{
 		//write a 1
-		Beb_Write32(baseaddr, FRAME_NUM_RESET_OFFSET, 1);
+		Beb_Write32(csp0base, FRAME_NUM_RESET_OFFSET, 1);
 		usleep(100000); //100ms
 		//write a 0
-		Beb_Write32(baseaddr, FRAME_NUM_RESET_OFFSET, 0);
+		Beb_Write32(csp0base, FRAME_NUM_RESET_OFFSET, 0);
 		printf("Frame Number Reset OK\n");
 		//close file pointer
-		Beb_close(fd);
+		Beb_close(fd,csp0base);
 	}
 }
 
@@ -583,8 +588,7 @@ int Beb_SetByteOrder(){
 
 int Beb_SetUpUDPHeader(unsigned int beb_number, int ten_gig, unsigned int header_number, char* dst_mac, char* dst_ip, unsigned int dst_port){
 	u_int32_t bram_phy_addr;
-	volatile u_int32_t* bram_ptr;
-	bram_ptr = NULL;
+	u_int32_t* csp0base=0;
 	if (ten_gig) 
 		bram_phy_addr = 0xC6002000;
 	else
@@ -592,27 +596,20 @@ int Beb_SetUpUDPHeader(unsigned int beb_number, int ten_gig, unsigned int header
 
 	if(!Beb_SetHeaderData(beb_number,ten_gig,dst_mac,dst_ip,dst_port)) return 0;
 
-	int fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
-	if (fd == -1)
-		cprintf(BG_RED,"\nCan't find /dev/mem!\n");
-	else{
-#ifdef VERBOSE
-		printf("/dev/mem opened\n");
-#endif
-		bram_ptr = mmap(0, 0x1000, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, bram_phy_addr);
-		if (bram_ptr == MAP_FAILED) {
-			cprintf(BG_RED,"\nCan't map memmory area!!\n");
-			fd = -1;
-		}
-#ifdef VERBOSE
-		else printf("CSP0 mapped\n");
-#endif
-	}
 
-	memcpy(bram_ptr+header_number*16, &udp_header, sizeof(udp_header));
-	close(fd);
+
+	int fd = Beb_open(&csp0base,bram_phy_addr);
+	if(fd < 0){
+		cprintf(BG_RED,"Set up UDP Header FAIL\n");
+	}else{
+		//read data
+		memcpy(csp0base+header_number*16, &udp_header, sizeof(udp_header));
+		//close file pointer
+		Beb_close(fd,csp0base);
+	}
 	return 1;
 }
+
 
 
 //int Beb_SetUpUDPHeader(unsigned int beb_number, int ten_gig, unsigned int header_number, char* dst_mac, char* dst_ip, unsigned int dst_port){
@@ -814,27 +811,27 @@ int Beb_SetUpTransferParameters(short the_bit_mode){
 
 int Beb_StopAcquisition()
 {
-	u_int32_t baseaddr;
+	u_int32_t* csp0base=0;
 	volatile u_int32_t valuel,valuer;
 	//open file pointer
-	int fd = Beb_open(XPAR_CMD_GENERATOR,&baseaddr);
+	int fd = Beb_open(&csp0base,XPAR_CMD_GENERATOR);
 	if(fd < 0){
 		cprintf(BG_RED,"Beb Stop Acquisition FAIL\n");
 		return 0;
 	}else{
 		//find value
-		valuel = Beb_Read32(baseaddr, (LEFT_OFFSET+STOP_ACQ_OFFSET));
-		valuer = Beb_Read32(baseaddr, (RIGHT_OFFSET+STOP_ACQ_OFFSET));
+		valuel = Beb_Read32(csp0base, (LEFT_OFFSET+STOP_ACQ_OFFSET));
+		valuer = Beb_Read32(csp0base, (RIGHT_OFFSET+STOP_ACQ_OFFSET));
 		//high
-		Beb_Write32(baseaddr, (LEFT_OFFSET + STOP_ACQ_OFFSET),(valuel|STOP_ACQ_BIT));
-		Beb_Write32(baseaddr, (RIGHT_OFFSET + STOP_ACQ_OFFSET),(valuer|STOP_ACQ_BIT));
+		Beb_Write32(csp0base, (LEFT_OFFSET + STOP_ACQ_OFFSET),(valuel|STOP_ACQ_BIT));
+		Beb_Write32(csp0base, (RIGHT_OFFSET + STOP_ACQ_OFFSET),(valuer|STOP_ACQ_BIT));
 		//low
-		Beb_Write32(baseaddr, (LEFT_OFFSET + STOP_ACQ_OFFSET),(valuel&(~STOP_ACQ_BIT)));
-		Beb_Write32(baseaddr, (RIGHT_OFFSET + STOP_ACQ_OFFSET),(valuer&(~STOP_ACQ_BIT)));
+		Beb_Write32(csp0base, (LEFT_OFFSET + STOP_ACQ_OFFSET),(valuel&(~STOP_ACQ_BIT)));
+		Beb_Write32(csp0base, (RIGHT_OFFSET + STOP_ACQ_OFFSET),(valuer&(~STOP_ACQ_BIT)));
 
 		printf("Beb Stop Acquisition OK\n");
 		//close file pointer
-		Beb_close(fd);
+		Beb_close(fd,csp0base);
 	}
 	return 1;
 }
@@ -889,10 +886,10 @@ int Beb_RequestNImages(unsigned int beb_number, int ten_gig, unsigned int dst_nu
 
 
 	u_int32_t right_port_value = 0x2000;
-	u_int32_t baseaddr;
+	u_int32_t* csp0base=0;
 	volatile u_int32_t value;
 	//open file pointer
-	int fd = Beb_open(XPAR_CMD_GENERATOR,&baseaddr);
+	int fd = Beb_open(&csp0base,XPAR_CMD_GENERATOR);
 	if(fd < 0){
 		cprintf(BG_RED,"Beb Request N Images FAIL\n");
 		return 0;
@@ -915,27 +912,27 @@ int Beb_RequestNImages(unsigned int beb_number, int ten_gig, unsigned int dst_nu
 
 		//"0x20 << 8" is dst_number (0x00 for left, 0x20 for right)
 		//Left
-		Beb_Write32(baseaddr, (LEFT_OFFSET + FIRST_CMD_PART1_OFFSET),0);
-		Beb_Write32(baseaddr, (LEFT_OFFSET + FIRST_CMD_PART2_OFFSET),send_header_command);
-		Beb_Write32(baseaddr, (LEFT_OFFSET + SECOND_CMD_PART1_OFFSET),0);
-		Beb_Write32(baseaddr, (LEFT_OFFSET + SECOND_CMD_PART2_OFFSET),send_frame_command);
-		value = Beb_Read32(baseaddr,(LEFT_OFFSET + TWO_REQUESTS_OFFSET));
-		if(in_two_requests)	Beb_Write32(baseaddr, (LEFT_OFFSET + TWO_REQUESTS_OFFSET),(value | TWO_REQUESTS_BIT));
-		else				Beb_Write32(baseaddr, (LEFT_OFFSET + TWO_REQUESTS_OFFSET),(value &~(TWO_REQUESTS_BIT)));
+		Beb_Write32(csp0base, (LEFT_OFFSET + FIRST_CMD_PART1_OFFSET),0);
+		Beb_Write32(csp0base, (LEFT_OFFSET + FIRST_CMD_PART2_OFFSET),send_header_command);
+		Beb_Write32(csp0base, (LEFT_OFFSET + SECOND_CMD_PART1_OFFSET),0);
+		Beb_Write32(csp0base, (LEFT_OFFSET + SECOND_CMD_PART2_OFFSET),send_frame_command);
+		value = Beb_Read32(csp0base,(LEFT_OFFSET + TWO_REQUESTS_OFFSET));
+		if(in_two_requests)	Beb_Write32(csp0base, (LEFT_OFFSET + TWO_REQUESTS_OFFSET),(value | TWO_REQUESTS_BIT));
+		else				Beb_Write32(csp0base, (LEFT_OFFSET + TWO_REQUESTS_OFFSET),(value &~(TWO_REQUESTS_BIT)));
 
 		// Right
-		Beb_Write32(baseaddr, (RIGHT_OFFSET + FIRST_CMD_PART1_OFFSET),0);
-		Beb_Write32(baseaddr, (RIGHT_OFFSET + FIRST_CMD_PART2_OFFSET),send_header_command | right_port_value);
-		Beb_Write32(baseaddr, (RIGHT_OFFSET + SECOND_CMD_PART1_OFFSET),0);
-		Beb_Write32(baseaddr, (RIGHT_OFFSET + SECOND_CMD_PART2_OFFSET),send_frame_command | right_port_value);
-		value = Beb_Read32(baseaddr,(RIGHT_OFFSET + TWO_REQUESTS_OFFSET));
-		if(in_two_requests)	Beb_Write32(baseaddr, (RIGHT_OFFSET + TWO_REQUESTS_OFFSET),(value | TWO_REQUESTS_BIT));
-		else				Beb_Write32(baseaddr, (RIGHT_OFFSET + TWO_REQUESTS_OFFSET),(value &~(TWO_REQUESTS_BIT)));
+		Beb_Write32(csp0base, (RIGHT_OFFSET + FIRST_CMD_PART1_OFFSET),0);
+		Beb_Write32(csp0base, (RIGHT_OFFSET + FIRST_CMD_PART2_OFFSET),send_header_command | right_port_value);
+		Beb_Write32(csp0base, (RIGHT_OFFSET + SECOND_CMD_PART1_OFFSET),0);
+		Beb_Write32(csp0base, (RIGHT_OFFSET + SECOND_CMD_PART2_OFFSET),send_frame_command | right_port_value);
+		value = Beb_Read32(csp0base,(RIGHT_OFFSET + TWO_REQUESTS_OFFSET));
+		if(in_two_requests)	Beb_Write32(csp0base, (RIGHT_OFFSET + TWO_REQUESTS_OFFSET),(value | TWO_REQUESTS_BIT));
+		else				Beb_Write32(csp0base, (RIGHT_OFFSET + TWO_REQUESTS_OFFSET),(value &~(TWO_REQUESTS_BIT)));
 
 
 		// Set number of frames
-		Beb_Write32(baseaddr, (LEFT_OFFSET + COMMAND_COUNTER_OFFSET), nimages*(2+in_two_requests));
-		Beb_Write32(baseaddr, (RIGHT_OFFSET + COMMAND_COUNTER_OFFSET), nimages*(2+in_two_requests));
+		Beb_Write32(csp0base, (LEFT_OFFSET + COMMAND_COUNTER_OFFSET), nimages*(2+in_two_requests));
+		Beb_Write32(csp0base, (RIGHT_OFFSET + COMMAND_COUNTER_OFFSET), nimages*(2+in_two_requests));
 
 #ifdef MARTIN
 		for (i=0; i < 10; i++)
@@ -943,7 +940,7 @@ int Beb_RequestNImages(unsigned int beb_number, int ten_gig, unsigned int dst_nu
 		printf("%d\n",in_two_requests);
 #endif
 
-		Beb_close(fd);
+		Beb_close(fd,csp0base);
 
 #ifdef MARTIN
 		printf("----Beb_RequestNImages----\n");
@@ -991,30 +988,21 @@ int Beb_Test(unsigned int beb_number){
 // Temperature value is cropped and not well rounded
 int Beb_GetBebFPGATemp()
 {
+
+	u_int32_t* csp0base=0;
 	int temperature=0;
-	volatile u_int32_t *ptr1;
-	int fd;
-	
-	fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
-	if (fd == -1)
-	{
-		printf("\nCan't find /dev/mem!\n");
-		return 0;
+	int ret;
+	//open file pointer
+	int fd = Beb_open(&csp0base,XPAR_SYSMON_0_BASEADDR);
+	if(fd < 0){
+		 cprintf(BG_RED,"Module Configuration FAIL\n");
+	}else{
+		//read data
+		ret = Beb_Read32(csp0base, FPGA_TEMP_OFFSET);
+		temperature = ((((float)(ret)/65536.0f)/0.00198421639f ) - 273.15f); // Static conversation, copied from xps sysmon standalone driver
+		//close file pointer
+		Beb_close(fd,csp0base);
 	}
-
-	u_int32_t CSP0BASE = (u_int32_t)mmap(0, 0x1000, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, XPAR_SYSMON_0_BASEADDR );
-
-	if (CSP0BASE == (u_int32_t)MAP_FAILED)
-	{
-		printf("\nCan't map memmory area!!\n");
-		return 0;
-	}
-
-	ptr1=(u_int32_t*)(CSP0BASE + 0x200);	// temperature register in xps sysmon core is at 0x200
-	close(fd);
-
-	temperature = ((((float)(*ptr1)/65536.0f)/0.00198421639f ) - 273.15f); // Static conversation, copied from xps sysmon standalone driver
-
 
 	return temperature;
 }
@@ -1023,7 +1011,7 @@ int Beb_GetBebFPGATemp()
 
 
 
-int Beb_open(u_int32_t baseaddr, u_int32_t* csp0base){
+int Beb_open(u_int32_t** csp0base, u_int32_t offset){
 
 	int fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
 	if (fd == -1)
@@ -1032,33 +1020,34 @@ int Beb_open(u_int32_t baseaddr, u_int32_t* csp0base){
 #ifdef VERBOSE
 		printf("/dev/mem opened\n");
 #endif
-		*csp0base = (u_int32_t)mmap(0, 0x1000, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, baseaddr);
-		if (*csp0base == (u_int32_t)MAP_FAILED) {
+		*csp0base = (u_int32_t*)mmap(0, BEB_MMAP_SIZE, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, offset);
+		if (*csp0base == MAP_FAILED) {
 			cprintf(BG_RED,"\nCan't map memmory area!!\n");
 			fd = -1;
 		}
 #ifdef VERBOSE
-		else printf("CSP0 mapped\n");
+		else printf("CSP0 mapped %p\n",(void*)*csp0base);
 #endif
 	}
 	return fd;
 }
 
-u_int32_t Beb_Read32 (u_int32_t baseaddr, u_int32_t offset){
-	volatile u_int32_t *ptr1;
-	ptr1=(u_int32_t*)(baseaddr + offset);
-	return *ptr1;
+u_int32_t Beb_Read32 (u_int32_t* baseaddr, u_int32_t offset){
+	volatile u_int32_t value;
+	value=* (u_int32_t*)(baseaddr + offset/(sizeof(u_int32_t)));
+	return value;
 }
 
 
-u_int32_t Beb_Write32 (u_int32_t baseaddr, u_int32_t offset, u_int32_t data){
+u_int32_t Beb_Write32 (u_int32_t* baseaddr, u_int32_t offset, u_int32_t data){
 	volatile u_int32_t *ptr1;
-	ptr1=(u_int32_t*)(baseaddr + offset);
+	ptr1=(u_int32_t*)(baseaddr + offset/(sizeof(u_int32_t)));
 	*ptr1 = data;
 	return *ptr1;
 }
 
-void Beb_close(int fd){
+void Beb_close(int fd,u_int32_t* csp0base){
 	if(fd >= 0)
 		close(fd);
+	munmap(csp0base,BEB_MMAP_SIZE);
 }

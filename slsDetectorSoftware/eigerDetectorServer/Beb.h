@@ -88,10 +88,11 @@ struct BebInfo{
 
   int Beb_GetBebFPGATemp();
 
-  int Beb_open(u_int32_t baseaddr, u_int32_t* csp0base);
-  u_int32_t Beb_Read32 (u_int32_t baseaddr, u_int32_t offset);
-  u_int32_t Beb_Write32 (u_int32_t baseaddr, u_int32_t offset, u_int32_t data);
-  void Beb_close(int fd);
+  int Beb_open(u_int32_t** csp0base, u_int32_t offset);
+  u_int32_t Beb_Read32 (u_int32_t* baseaddr, u_int32_t offset);
+  u_int32_t Beb_Write32 (u_int32_t* baseaddr, u_int32_t offset, u_int32_t data);
+  void Beb_close(int fd,u_int32_t* csp0base);
+
 
 #endif 
 

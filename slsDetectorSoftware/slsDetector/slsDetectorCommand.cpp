@@ -737,6 +737,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   i++;
 
 
+  descrToFuncMap[i].m_pFuncName="v_a"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
   descrToFuncMap[i].m_pFuncName="v_b"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
   i++;

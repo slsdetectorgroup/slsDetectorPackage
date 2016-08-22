@@ -1610,35 +1610,6 @@ int* multiSlsDetector::startAndReadAll(){
 int multiSlsDetector::startAndReadAllNoWait(){
 
 	int i=0;
-	int ret=OK, ret1=OK;
-
-	for (i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-		if (i!=thisMultiDetector->masterPosition)
-			if (detectors[i]) {
-				ret=detectors[i]->startAndReadAllNoWait();
-				if(detectors[i]->getErrorMask())
-					setErrorMask(getErrorMask()|(1<<i));
-				if (ret!=OK)
-					ret1=FAIL;
-			}
-	}
-
-
-	i=thisMultiDetector->masterPosition;
-	if (thisMultiDetector->masterPosition>=0) {
-	if (detectors[i]) {
-		ret=detectors[i]->startAndReadAllNoWait();
-		if(detectors[i]->getErrorMask())
-			setErrorMask(getErrorMask()|(1<<i));
-		if (ret!=OK)
-			ret1=FAIL;
-	}
-	}
-
-	return ret1;
-/*
-	// hanging randomly around 4000-5000 frames at 1sec exptime (threads dont return)
-	int i=0;
 	int ret=OK;
 	int posmin=0, posmax=thisMultiDetector->numberOfDetectors;
 
@@ -1683,7 +1654,7 @@ int multiSlsDetector::startAndReadAllNoWait(){
 	}
 
 	return ret;
-*/
+
 }
 
 

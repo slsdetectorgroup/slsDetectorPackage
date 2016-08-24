@@ -24,6 +24,8 @@ class multiSlsDetector;
 #include <QTimer>
 #include <QString>
 #include <QPalette>
+class qDetectorMain;
+
 /** C++ Include Headers */
 #include <string>
 #include <vector>
@@ -62,7 +64,7 @@ public:
 	 *    @param parent is the parent tab widget
 	 *    @param detector is the detector returned from the detector tab
 	 */
-	qTabDeveloper(QWidget *parent,multiSlsDetector*& detector);
+	qTabDeveloper(qDetectorMain *parent,multiSlsDetector*& detector);
 
 	/** Destructor
 	 */
@@ -73,6 +75,8 @@ public:
 	void StopADCTimer(){if(adcTimer) adcTimer->stop();};
 
 private:
+	/** parent widget */
+	qDetectorMain *thisParent;
 	/** The sls detector object */
 	multiSlsDetector *myDet;
 	/** The sls detector object */

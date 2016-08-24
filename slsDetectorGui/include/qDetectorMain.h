@@ -83,6 +83,8 @@ public:
 	/** Verifies if output directories for all the receivers exist */
 	int DoesOutputDirExist(){return tab_dataoutput->VerifyOutputDirectory();};
 
+	bool isCurrentlyTabDeveloper();
+
 private:
 	/** The Qt Application */
 	QApplication *theApp;

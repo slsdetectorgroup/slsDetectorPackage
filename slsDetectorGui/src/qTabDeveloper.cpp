@@ -5,6 +5,7 @@
  *      Author: l_maliakal_d
  */
 #include "qTabDeveloper.h"
+#include "qDetectorMain.h"
 //Project Class Headers
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
@@ -24,8 +25,8 @@ int qTabDeveloper::NUM_ADC_WIDGETS(0);
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-qTabDeveloper::qTabDeveloper(QWidget *parent,multiSlsDetector*& detector):
-						QWidget(parent),
+qTabDeveloper::qTabDeveloper(qDetectorMain *parent,multiSlsDetector*& detector):
+						thisParent(parent),
 						myDet(detector),
 						det(0),
 						boxDacs(0),
@@ -52,6 +53,7 @@ qTabDeveloper::qTabDeveloper(QWidget *parent,multiSlsDetector*& detector):
 qTabDeveloper::~qTabDeveloper(){
 	delete myDet;
 	if(det) delete det;
+	if(thisParent) delete thisParent;
 }
 
 
@@ -523,6 +525,9 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 
 
 void qTabDeveloper::RefreshAdcs(){
+	if(!thisParent->isCurrentlyTabDeveloper())
+		return;
+
 #ifdef VERYVERBOSE
 	cout << "Updating ADCs" <<endl;
 #endif

@@ -8,3 +8,8 @@ slsReceiverSoftware/
 slsDetectorCalibration/
 slsImageReconstruction/
 .settings
+JCTBGui/
+*.aux
+*.log
+*.out
+*.toc

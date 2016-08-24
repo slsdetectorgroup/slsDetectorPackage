@@ -199,20 +199,21 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	/**
 	 * Overridden method
 	 * Get the buffer-current frame read by receiver
+	 * @param ithread writer thread
 	 * @param c pointer to current file name
 	 * @param raw address of pointer, pointing to current frame to send to gui
 	 * @param startAcq start index of the acquisition
 	 * @param startFrame start index of the scan
 	 */
-	void readFrame(char* c,char** raw, uint64_t &startAcq, uint64_t &startFrame);
+	void readFrame(int ithread, char* c,char** raw, uint64_t &startAcq, uint64_t &startFrame);
 
 	/**
 	 * Overridden method
 	 * Closes file / all files(data compression involves multiple files)
 	 * TCPIPInterface can also call this in case of illegal shutdown of receiver
-	 * @param i writer thread index
+	 * @param ithread writer thread index
 	 */
-	void closeFile(int i = 0);
+	void closeFile(int ithread = 0);
 
 private:
 	/*************************************************************************
@@ -444,16 +445,18 @@ private:
 
 	/**
 	 * Updates the file header char aray, each time the corresp parameter is changed
+	 * @param ithread writer thread index
 	 */
-	void updateFileHeader();
+	void updateFileHeader(int ithread);
 
 	/**
 	 * Called by handleWithoutDataCompression and handleWithCompression after writing to file
 	 * Copy frames for GUI and updates appropriate parameters for frequency frames to gui
 	 * Uses semaphore for nth frame mode
+	 * @param ithread writer thread index
 	 * @param buffer buffer to copy
 	 */
-	void copyFrameToGui(char* buffer[]);
+	void copyFrameToGui(int ithread, char* buffer[]);
 
 	void processWritingBuffer(int ithread);
 
@@ -526,9 +529,6 @@ private:
 	/** Complete File name */
 	char completeFileName[MAX_NUMBER_OF_WRITER_THREADS][MAX_STR_LENGTH];
 
-	/** File Prefix with detector index */
-	char receiverFilePrefix[MAX_NUMBER_OF_WRITER_THREADS][MAX_STR_LENGTH];
-
 		/** Maximum Packets Per File **/
 	int maxPacketsPerFile;
 
@@ -542,10 +542,10 @@ private:
 
 	//***acquisition indices/count parameters***
 	/** Frame Number of First Frame of an entire Acquisition (including all scans) */
-	uint64_t startAcquisitionIndex[MAX_NUMBER_OF_LISTENING_THREADS];
+	uint64_t startAcquisitionIndex;
 
 	/** Frame index at start of each real time acquisition (eg. for each scan) */
-	uint64_t startFrameIndex[MAX_NUMBER_OF_LISTENING_THREADS];
+	uint64_t startFrameIndex[MAX_NUMBER_OF_WRITER_THREADS];
 
 	/** Actual current frame index of each time acquisition (eg. for each scan) */
 	uint64_t frameIndex[MAX_NUMBER_OF_WRITER_THREADS];
@@ -564,8 +564,8 @@ private:
 	/* Acquisition started */
 	bool acqStarted;
 
-	/* Measurement started */
-	bool measurementStarted;
+	/* Measurement started - for each thread to get progress print outs*/
+	bool measurementStarted[MAX_NUMBER_OF_LISTENING_THREADS];
 
 	/** Total Frame Count listened to by listening threads */
 	int totalListeningFrameCount[MAX_NUMBER_OF_LISTENING_THREADS];
@@ -581,6 +581,10 @@ private:
 
 	/** Number of Missing Packets in file */
 	uint32_t numTotMissingPacketsInFile[MAX_NUMBER_OF_WRITER_THREADS];
+
+	/** packets caught per thread */
+	uint64_t packetsCaughtPerThread[MAX_NUMBER_OF_WRITER_THREADS];
+
 
 
 
@@ -719,6 +723,9 @@ private:
 
 	/** Progress (currentFrameNumber) Mutex  */
 	pthread_mutex_t progressMutex;
+
+	/** Progress (currentFrameNumber) Mutex  */
+	pthread_mutex_t udpSocketMutex[MAX_NUMBER_OF_LISTENING_THREADS];
 
 	//***callback***
 	/** The action which decides what the user and default responsibilities to save data are

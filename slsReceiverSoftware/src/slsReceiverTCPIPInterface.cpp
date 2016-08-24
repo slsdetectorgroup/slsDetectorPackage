@@ -370,6 +370,7 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 			}
 			if(ret != FAIL){
 #ifndef REST
+			  if(receiverBase) delete receiverBase;
 			  receiverBase = UDPInterface::create("standard");
 			  if(startAcquisitionCallBack)
 				  receiverBase->registerCallBackStartAcquisition(startAcquisitionCallBack,pStartAcquisition);
@@ -996,6 +997,10 @@ int	slsReceiverTCPIPInterface::reset_frames_caught(){
 		}
 		else if (receiverBase == NULL){
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
+			ret=FAIL;
+		}
+		else if(receiverBase->getStatus()==RUNNING){
+			strcpy(mess,"Cannot reset frames caught while status is running\n");
 			ret=FAIL;
 		}
 		else

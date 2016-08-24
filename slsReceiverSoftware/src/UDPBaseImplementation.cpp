@@ -442,7 +442,7 @@ void UDPBaseImplementation::abort(){
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
 }
 
-void UDPBaseImplementation::closeFile(int i){
+void UDPBaseImplementation::closeFile(int ithread){
 	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
 }

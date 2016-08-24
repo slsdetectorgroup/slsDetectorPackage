@@ -470,9 +470,9 @@ class UDPInterface {
 
 	/**
 	 * Closes file / all files(if multiple files)
-	 * @param i writer thread index
+	 * @param ithread writer thread index
 	 */
-	virtual void closeFile(int i = 0) = 0;
+	virtual void closeFile(int ithread = 0) = 0;
 
 
 	//***callback functions***

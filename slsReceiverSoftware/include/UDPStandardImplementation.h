@@ -348,12 +348,11 @@ private:
 	 * Also copies carryovers from previous frame in front of buffer (gotthard and moench)
 	 * For eiger, it ignores packets less than onePacketSize
 	 * @param ithread listening thread index
-	 * @param lSize number of bytes to listen to
 	 * @param cSize number of bytes carried on from previous buffer
 	 * @param temp temporary storage of previous buffer
 	 * @return the number of bytes actually received
 	 */
-	int prepareAndListenBuffer(int ithread, int lSize, int cSize, char* temp);
+	int prepareAndListenBuffer(int ithread, int cSize, char* temp);
 
 	/**
 	 * Called by startListening
@@ -380,9 +379,10 @@ private:
 	 * @param ithread listening thread index
 	 * @param cSize number of bytes carried over to the next buffer to reunite with split frame
 	 * @param temp temporary buffer to store the split frame
+	 * @param rc number of bytes received
 	 * @return packet count
 	 */
-	uint32_t processListeningBuffer(int ithread, int cSize,char* temp);
+	uint32_t processListeningBuffer(int ithread, int &cSize,char* temp, int rc);
 
 	/**
 	 * Thread started which writes packets to file.
@@ -415,7 +415,7 @@ private:
 	 * @param ithread writing thread index
 	 * @param wbuffer writing buffer popped out from FIFO
 	 */
-	void stopWriting(int ithread, char* wbuffer[]);
+	void stopWriting(int ithread, char* wbuffer);
 
 	/**
 	 * Called by processWritingBuffer and processWritingBufferPacketByPacket
@@ -425,7 +425,7 @@ private:
 	 * @param wbuffer writing buffer popped out from FIFO
 	 * @param npackets number of packets
 	 */
-	void handleWithoutDataCompression(int ithread, char* wbuffer[],uint32_t npackets);
+	void handleWithoutDataCompression(int ithread, char* wbuffer,uint32_t npackets);
 
 	/**
 	 * Calle by handleWithoutDataCompression
@@ -492,9 +492,6 @@ private:
 #endif
 
 	//**detector parameters***
-	/** Size of 1 Frame including headers */
-	int frameSize;
-
 	/** Size of 1 buffer processed at a time */
 	int bufferSize;
 
@@ -529,8 +526,8 @@ private:
 	/** Complete File name */
 	char completeFileName[MAX_NUMBER_OF_WRITER_THREADS][MAX_STR_LENGTH];
 
-		/** Maximum Packets Per File **/
-	int maxPacketsPerFile;
+		/** Maximum Frames Per File **/
+	int maxFramesPerFile;
 
 	/** If file created successfully for all Writer Threads */
 	bool fileCreateSuccess;
@@ -545,7 +542,7 @@ private:
 	uint64_t startAcquisitionIndex;
 
 	/** Frame index at start of each real time acquisition (eg. for each scan) */
-	uint64_t startFrameIndex[MAX_NUMBER_OF_WRITER_THREADS];
+	uint64_t startFrameIndex;
 
 	/** Actual current frame index of each time acquisition (eg. for each scan) */
 	uint64_t frameIndex[MAX_NUMBER_OF_WRITER_THREADS];
@@ -577,7 +574,7 @@ private:
 	uint32_t numMissingPackets[MAX_NUMBER_OF_WRITER_THREADS];
 
 	/** Total Number of Missing Packets in acquisition*/
-	uint32_t numTotMissingPackets[MAX_NUMBER_OF_WRITER_THREADS];
+	uint32_t numTotMissingPackets;
 
 	/** Number of Missing Packets in file */
 	uint32_t numTotMissingPacketsInFile[MAX_NUMBER_OF_WRITER_THREADS];

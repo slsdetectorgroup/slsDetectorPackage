@@ -425,25 +425,39 @@ int Beb_InitBebInfos(){//file name at some point
 	Beb_ClearBebInfos();
 
 
-  struct BebInfo b0;
-  BebInfo_BebInfo(&b0,0);
-    if(BebInfo_SetSerialAddress(&b0,0xff)) { //all bebs for reset and possibly get request data?
-    	beb_infos[bebInfoSize] = b0;
-    	bebInfoSize++;
-    }
-    
-    if(!Beb_ReadSetUpFromFile("/home/root/executables/setup_beb.txt")) return 0;
-/*
+	struct BebInfo b0;
+	BebInfo_BebInfo(&b0,0);
+	if(BebInfo_SetSerialAddress(&b0,0xff)) { //all bebs for reset and possibly get request data?
+		beb_infos[bebInfoSize] = b0;
+		bebInfoSize++;
+	}
+
+	int i0=34,i1=0;
+	if(Beb_GetBebInfoIndex(i0)){
+		printf("Error adding beb 34(random), beb number %d already added.\n",i0);
+		exit(0);
+	}
+	struct BebInfo b1;
+	BebInfo_BebInfo(&b1,i0);
+	BebInfo_SetSerialAddress(&b1,i1);
+	BebInfo_SetHeaderInfo(&b1,0,(char*)"00:50:c2:46:d9:34",(char*)"129.129.205.78",42000+i0);
+	BebInfo_SetHeaderInfo(&b1,1,(char*)"00:50:c2:46:d9:35",(char*)"10.0.26.1",52000+i0);
+	beb_infos[bebInfoSize] = b1;
+	bebInfoSize++;
+
+
+	//if(!Beb_ReadSetUpFromFile("/home/root/executables/setup_beb.txt")) return 0;
+	/*
   //loop through file to fill vector.
   BebInfo* b = new BebInfo(26);
     b->SetSerialAddress(0); //0xc4000000
     b->SetHeaderInfo(0,"00:50:c2:46:d9:34","129.129.205.78",42000 + 26); // 1 GbE, ip address can be acquire from the network "arp"
     b->SetHeaderInfo(1,"00:50:c2:46:d9:35","10.0.26.1",52000 + 26); //10 GbE, everything calculable/setable
     beb_infos.push_back(b);
-*/
+	 */
 
 
-  return Beb_CheckSourceStuffBebInfo();
+	return Beb_CheckSourceStuffBebInfo();
 }
 
 

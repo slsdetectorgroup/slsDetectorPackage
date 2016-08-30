@@ -10,8 +10,6 @@
 #include "gotthardModuleData.h"
 #include "gotthardShortModuleData.h"
 
-#include "fileIOStatic.h"
-
 #include <stdlib.h>			// exit()
 #include <iomanip>			//set precision for printing parameters for create new file
 #include <map>				//map
@@ -38,8 +36,6 @@ UDPStandardImplementation::UDPStandardImplementation(){
 	pthread_mutex_init(&writeMutex,NULL);
 	pthread_mutex_init(&dataReadyMutex,NULL);
 	pthread_mutex_init(&progressMutex,NULL);
-	for(int i=0;i<MAX_NUMBER_OF_LISTENING_THREADS;i++)
-		pthread_mutex_init(&udpSocketMutex[i],NULL);
 
 	//to increase socket receiver buffer size and max length of input queue by changing kernel settings
 	if(myDetectorType == EIGER);
@@ -88,7 +84,7 @@ void UDPStandardImplementation::deleteMembers(){
 		if(fifoFree[i])		{delete fifoFree[i];	fifoFree[i] = NULL;}
 	}
 	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++){
-		if(latestData[i]) 	{delete[] latestData; 	latestData = NULL;}
+		if(latestData[i]) 	{delete[] latestData[i]; 	latestData[i] = NULL;}
 		guiData[i] = NULL;
 	}
 	//kill threads
@@ -157,17 +153,15 @@ void UDPStandardImplementation::initializeMembers(){
 	startFrameIndex = 0;
 	for(int i = 0; i < MAX_NUMBER_OF_LISTENING_THREADS; ++i){
 		measurementStarted[i] = false;
-		totalListeningFrameCount[i] = 0;
+		totalListeningPacketCount[i] = 0;
 	}
-	numTotMissingPackets = 0;
 	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++){
 		frameIndex[i] = 0;
 		currentFrameNumber[i] = 0;
-		previousFrameNumber[i] = -1;
+		frameNumberInPreviousFile[i] = -1;
 		lastFrameIndex[i] = 0;
-		packetsInFile[i] = 0;
-		numMissingPackets[i] = 0;
-		numTotMissingPacketsInFile[i] = 0;
+		lastFrameNumberInFile[i] = 0;
+		totalPacketsInFile[i] = 0;
 	}
 
 
@@ -458,6 +452,17 @@ int UDPStandardImplementation::setDataCompressionEnable(const bool b){
 	return OK;
 }
 
+/***acquisition count parameters***/
+uint64_t UDPStandardImplementation::getTotalFramesCaught() const{
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	return (totalPacketsCaught/(packetsPerFrame*numberofListeningThreads));
+}
+
+uint64_t UDPStandardImplementation::getFramesCaught() const{
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	return (packetsCaught/(packetsPerFrame*numberofListeningThreads));
+}
 
 /***acquisition parameters***/
 void UDPStandardImplementation::setShortFrameEnable(const int i){
@@ -546,6 +551,7 @@ int UDPStandardImplementation::setDynamicRange(const uint32_t i){
 		//set parameters depending on new dynamic range.
 		packetsPerFrame 	= (tengigaEnable ? EIGER_TEN_GIGA_CONSTANT : EIGER_ONE_GIGA_CONSTANT) * dynamicRange;
 		bufferSize			= onePacketSize * packetsPerFrame;
+		cout<<"packetsPerFrame:"<<packetsPerFrame<<" bufferSize:"<<bufferSize<<endl;
 
 		for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++)
 			updateFileHeader(i);
@@ -585,11 +591,11 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b){
 
 		//set parameters depending on 10g
 		if(tengigaEnable){
-			packetsPerFrame = EIGER_TEN_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
+			packetsPerFrame = EIGER_TEN_GIGA_CONSTANT * dynamicRange;
 			onePacketSize  	= EIGER_TEN_GIGA_ONE_PACKET_SIZE;
 			oneDataSize 	= EIGER_TEN_GIGA_ONE_DATA_SIZE;
 		}else{
-			packetsPerFrame = EIGER_ONE_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
+			packetsPerFrame = EIGER_ONE_GIGA_CONSTANT * dynamicRange;
 			onePacketSize  	= EIGER_ONE_GIGA_ONE_PACKET_SIZE;
 			oneDataSize		= EIGER_ONE_GIGA_ONE_DATA_SIZE;
 		}
@@ -600,6 +606,7 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b){
 				"\nonePacketSize:" << onePacketSize <<
 				"\noneDataSize:" << oneDataSize <<
 				"\nbufferSize:" << bufferSize;
+
 
 		for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++)
 			updateFileHeader(i);
@@ -778,7 +785,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 
 	//allocate for latest data (frame copy for gui), free variables
 	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++){
-		if(latestData[i]) 	{delete[] latestData; 	latestData = NULL;}
+		if(latestData[i]) 	{delete[] latestData[i]; 	latestData[i] = NULL;}
 		guiData[i] = NULL;
 		latestData[i] = new char[bufferSize];
 	}
@@ -815,7 +822,7 @@ void UDPStandardImplementation::resetAcquisitionCount(){
 int UDPStandardImplementation::startReceiver(char *c){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 	
-	FILE_LOG(logINFO)  << "Stopping Receiver";
+	FILE_LOG(logINFO)  << "Starting Receiver";
 
 	//reseting variables
 
@@ -836,15 +843,15 @@ int UDPStandardImplementation::startReceiver(char *c){
 	pthread_mutex_unlock(&progressMutex);
 	for(int i=0;i<numberofListeningThreads;i++){
 		measurementStarted[i] = false;
-		totalListeningFrameCount[i] = 0;
+		totalListeningPacketCount[i] = 0;
 	}
-	numTotMissingPackets = 0;
+
 	for(int i=0;i<numberofWriterThreads;i++){
 		frameIndex[i] = 0;
-		numMissingPackets[i] = 0;
-		numTotMissingPacketsInFile[i] = 0;
+		lastFrameIndex[i]=-1;
 		//reset file parameters
-		packetsInFile[i] = 0;
+		lastFrameNumberInFile[i] = 0;
+		totalPacketsInFile[i] = 0;
 		if(sfilefd[i]){
 			fclose(sfilefd[i]);
 			sfilefd[i] = NULL;
@@ -854,10 +861,11 @@ int UDPStandardImplementation::startReceiver(char *c){
 		guiData[i] = NULL;
 		guiDataReady[i]=0;
 		strcpy(guiFileName[i],"");
-		packetsCaughtPerThread[i] = 0;
+
 	}
 	pthread_mutex_lock(&writeMutex);
 	packetsCaught = 0;
+	totalPacketsCaught = 0;
 	pthread_mutex_unlock(&writeMutex);
 	//reset masks
 	pthread_mutex_lock(&statusMutex);
@@ -869,8 +877,9 @@ int UDPStandardImplementation::startReceiver(char *c){
 
 
 	//Print Receiver Configuration
-	if(myDetectorType != EIGER)
+	if(myDetectorType != EIGER){
 		FILE_LOG(logINFO) << "Data Compression has been " << stringEnable(dataCompressionEnable);
+	}
 	FILE_LOG(logINFO) << "Number of Jobs Per Buffer: " << numberofJobsPerBuffer;
 	FILE_LOG(logINFO) << "Max Frames Per File:" << maxFramesPerFile;
 	if(FrameToGuiFrequency)
@@ -899,7 +908,7 @@ int UDPStandardImplementation::startReceiver(char *c){
 
 	//For compression, just for gui purposes
 	if(dataCompressionEnable)
-		sprintf(completeFileName[0], "%s/%s_fxxx_%lld_xx.root", filePath,fileName[0],(long long int)fileIndex);
+		sprintf(completeFileName[0], "%s/%s_fxxx_%lld_xx.root", filePath,fileNamePerThread[0],(long long int)fileIndex);
 
 	//initialize semaphore to synchronize between writer and gui reader threads
 	for(int i=0;i<numberofWriterThreads;i++)
@@ -970,12 +979,10 @@ int UDPStandardImplementation::shutDownUDPSockets(){
 
 	for(int i=0;i<numberofListeningThreads;i++){
 		if(udpSocket[i]){
-			pthread_mutex_lock(&udpSocketMutex[i]);
 			udpSocket[i]->ShutDownSocket();
 			FILE_LOG(logINFO) << "Shut down UDP Socket " << i;
 			delete udpSocket[i];
 			udpSocket[i] = NULL;
-			pthread_mutex_unlock(&udpSocketMutex[i]);
 		}
 	}
 	return OK;
@@ -998,10 +1005,10 @@ void UDPStandardImplementation::startReadout(){
 		//check if all packets got
 		int totalP = 0,prev,i;
 		for(i=0; i<numberofListeningThreads; ++i){
-			totalP += totalListeningFrameCount[i];
+			totalP += totalListeningPacketCount[i];
 		}
 		//wait for all packets
-		if(totalP!=numberOfFrames*packetsPerFrame){
+		if(totalP!=numberOfFrames*packetsPerFrame*numberofListeningThreads){
 
 			prev = -1;
 			//wait as long as there is change from prev totalP
@@ -1014,7 +1021,7 @@ void UDPStandardImplementation::startReadout(){
 				prev = totalP;
 				totalP=0;
 				for(i=0; i<numberofListeningThreads; ++i){
-					totalP += totalListeningFrameCount[i];
+					totalP += totalListeningPacketCount[i];
 				}
 			}
 		}
@@ -1310,14 +1317,14 @@ int UDPStandardImplementation::createUDPSockets(){
 		FILE_LOG(logWARNING) << "eth is empty. Listening to all";
 
 		for(int i=0;i<numberofListeningThreads;i++)
-			udpSocket[i] = new genericSocket(port[i],genericSocket::UDP,bufferSize);
+			udpSocket[i] = new genericSocket(port[i],genericSocket::UDP,onePacketSize);
 	}
 	//normal socket
 	else{
 		FILE_LOG(logINFO) << "Ethernet Interface:" << eth;
 
 		for(int i=0;i<numberofListeningThreads;i++)
-			udpSocket[i] = new genericSocket(port[i],genericSocket::UDP,bufferSize,eth);
+			udpSocket[i] = new genericSocket(port[i],genericSocket::UDP,onePacketSize,eth);
 	}
 
 	//error
@@ -1346,7 +1353,7 @@ int UDPStandardImplementation::setupWriter(){
 	//acquisition start call back returns enable write
 	cbAction = DO_EVERYTHING;
 	if (startAcquisitionCallBack)
-		cbAction=startAcquisitionCallBack(filePath,fileName[0],(int)fileIndex,bufferSize,pStartAcquisition);
+		cbAction=startAcquisitionCallBack(filePath,fileNamePerThread[0],(int)fileIndex,bufferSize,pStartAcquisition);
 
 
 	if(cbAction < DO_EVERYTHING){
@@ -1388,18 +1395,17 @@ int UDPStandardImplementation::setupWriter(){
 
 int UDPStandardImplementation::createNewFile(int ithread){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
+	if(!ithread) cout<<ithread <<" ****Creating new file" << endl;
 
 	int index = 0;
-	if(packetsCaughtPerThread[ithread])
+	if(packetsCaught)
 		index = frameIndex[ithread];
 
 	//create file name
 	if(!frameIndexEnable)
-		sprintf(completeFileName[ithread], "%s/%s_%lld.raw", filePath,fileName[ithread],(long long int)fileIndex);
-	else if (myDetectorType == EIGER)
-		sprintf(completeFileName[ithread], "%s/%s_f%012lld_%lld.raw", filePath,fileName[ithread],(long long int)currentFrameNumber[ithread],(long long int)fileIndex);
+		sprintf(completeFileName[ithread], "%s/%s_%lld.raw", filePath,fileNamePerThread[ithread],(long long int)fileIndex);
 	else
-		sprintf(completeFileName[ithread], "%s/%s_f%012lld_%lld.raw", filePath,fileName[ithread],(long long int)(packetsCaught[ithread]/packetsPerFrame),(long long int)fileIndex);
+		sprintf(completeFileName[ithread], "%s/%s_f%012lld_%lld.raw", filePath,fileNamePerThread[ithread],(long long int)lastFrameNumberInFile[ithread],(long long int)fileIndex);
 
 #ifdef DEBUG4
 	FILE_LOG(logINFO) << completefileName;
@@ -1429,23 +1435,23 @@ int UDPStandardImplementation::createNewFile(int ithread){
 
 
 		//Print packet loss and filenames
-		if(!packetsCaughtPerThread[ithread]){
-			previousFrameNumber[ithread] = -1;
+		if(!packetsCaught){
+			frameNumberInPreviousFile[ithread] = -1;
 			cout << "File: " << completeFileName[ithread] << endl;
 		}else{
 			//Assumption for startFrameindex usign ithread: datacompression never enters here and therefore is always same number of listening and writing threads to use ithread
-			if (previousFrameNumber[ithread] == -1)
-				previousFrameNumber[ithread] = startFrameIndex-1;
+			if (frameNumberInPreviousFile[ithread] == -1)
+				frameNumberInPreviousFile[ithread] = startFrameIndex-1;
 
 			cout << completeFileName[ithread]
 					<< "\tPacket Loss: " << setw(4)<<fixed << setprecision(4) << dec <<
-					(int)((( (currentFrameNumber[ithread]-previousFrameNumber[ithread]) - ((packetsInFile[ithread]-numTotMissingPacketsInFile[ithread])/packetsPerFrame))/
-							 (double)(currentFrameNumber[ithread]-previousFrameNumber[ithread]))*100.000)
+					(int)((( (currentFrameNumber[ithread]-frameNumberInPreviousFile[ithread]) - ((totalPacketsInFile[ithread])/packetsPerFrame))/
+							 (double)(currentFrameNumber[ithread]-frameNumberInPreviousFile[ithread]))*100.000)
 					<< "%\tFramenumber: " << currentFrameNumber[ithread]
-				  << "\t\t PreviousFrameNumber: " << previousFrameNumber[ithread]
+				  << "\t\t frameNumberInPreviousFile: " << frameNumberInPreviousFile[ithread]
 					<< "\tIndex " << dec << index
-					<< "\tLost " << dec << ( ((int)(currentFrameNumber[ithread]-previousFrameNumber[ithread])) -
-							                 ((packetsInFile[ithread]-numTotMissingPacketsInFile[ithread])/packetsPerFrame)) << endl;
+					<< "\tLost " << dec << ( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousFile[ithread])) -
+							                 ((totalPacketsInFile[ithread])/packetsPerFrame)) << endl;
 
 		}
 
@@ -1455,10 +1461,10 @@ int UDPStandardImplementation::createNewFile(int ithread){
 	}
 
 	//reset counters for each new file
-	if(packetsCaughtPerThread[ithread]){
-		previousFrameNumber[ithread] = currentFrameNumber[ithread];
-		packetsInFile[ithread] = 0;
-		numTotMissingPacketsInFile[ithread] = 0;
+	if(packetsCaught){
+		frameNumberInPreviousFile[ithread] = currentFrameNumber[ithread];
+		lastFrameNumberInFile[ithread] = 0;
+		totalPacketsInFile[ithread] = 0;
 	}
 
 
@@ -1475,12 +1481,12 @@ int UDPStandardImplementation::createCompressionFile(int ithread, int iframe){
 #ifdef MYROOT1
 	char temp[MAX_STR_LENGTH];
 		//create file name for gui purposes, and set up acquistion parameters
-		sprintf(temp, "%s/%s_fxxx_%d_%d.root", filePath,fileName[ithread],fileIndex,ithread);
+		sprintf(temp, "%s/%s_fxxx_%d_%d.root", filePath,fileNamePerThread[ithread],fileIndex,ithread);
 		//file
 		myFile[ithread] = new TFile(temp,"RECREATE");/** later  return error if it exists */
 		cprintf(GREEN,"Writing_Thread %d: Created Compression File: %s\n",ithread, temp);
 		//tree
-		sprintf(temp, "%s_fxxx_%d_%d",fileName[ithread],fileIndex,ithread);
+		sprintf(temp, "%s_fxxx_%d_%d",fileNamePerThread[ithread],fileIndex,ithread);
 		myTree[ithread]=singlePhotonDetectorObject[ithread]->initEventTree(temp, &iframe);
 		//resets the pedestalSubtraction array and the commonModeSubtraction
 		singlePhotonDetectorObject[ithread]->newDataSet();
@@ -1564,19 +1570,15 @@ void UDPStandardImplementation::startListening(){
 #endif
 
 
-			pthread_mutex_lock(&udpSocketMutex[ithread]);
 			//udpsocket doesnt exist
-			if(udpSocket[ithread] == NULL){
+			if(status == TRANSMITTING){
 				FILE_LOG(logERROR) << "Listening_Thread " << ithread << ": UDP Socket not created or shut down earlier";
 				stopListening(ithread,0);
-				pthread_mutex_unlock(&udpSocketMutex[ithread]);
 				continue;
 			}
 
 			rc = prepareAndListenBuffer(ithread, carryonBufferSize, tempBuffer);
 			carryonBufferSize = 0;
-
-			pthread_mutex_unlock(&udpSocketMutex[ithread]);
 
 			//start indices for each start of scan/acquisition
 			if((!measurementStarted) && (rc > 0))
@@ -1589,7 +1591,7 @@ void UDPStandardImplementation::startListening(){
 
 			//write packet count to buffer
 			if(myDetectorType == EIGER)
-				(*((uint32_t*)(buffer[ithread]))) = rc/onePacketSize;
+				(*((uint32_t*)(buffer[ithread]))) = (rc/onePacketSize);
 
 			if(dataCompressionEnable)
 				(*((uint32_t*)(buffer[ithread]))) = processListeningBuffer(ithread, carryonBufferSize, tempBuffer, rc);
@@ -1634,12 +1636,18 @@ void UDPStandardImplementation::startListening(){
 int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, char* temp){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
+	int receivedSize = 0;
+
 	//carry over from previous buffer
 	if(cSize)	memcpy(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS, temp, cSize);
 
-	int receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + cSize, (bufferSize * numberofJobsPerBuffer) - cSize);
+	if(status != TRANSMITTING)
+		receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + cSize, (bufferSize * numberofJobsPerBuffer) - cSize);
+
 	//throw away packets that is not one packet size
-	while(myDetectorType == EIGER && receivedSize != onePacketSize) {
+	while((myDetectorType == EIGER) &&
+			(receivedSize != ((bufferSize * numberofJobsPerBuffer) - cSize)) &&
+			(status != TRANSMITTING)) {
 		if(receivedSize != EIGER_HEADER_LENGTH)
 			cprintf(RED,"Listening_Thread %d: Listened to a weird packet size %d\n",ithread, receivedSize);
 #ifdef DEBUG
@@ -1647,10 +1655,12 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 			cprintf(BLUE,"Listening_Thread %d: Listened to a header packet\n",ithread);
 #endif
 		//listen again
-		receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS);
+		if(status != TRANSMITTING)
+			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + cSize, (bufferSize * numberofJobsPerBuffer) - cSize);
+		//cout<<ithread<<" receivedSize:"<<receivedSize<<endl;
 	}
 
-	totalListeningFrameCount[ithread] += (receivedSize/onePacketSize);
+	totalListeningPacketCount[ithread] += (receivedSize/onePacketSize);
 
 #ifdef MANUALDEBUG
 	if(receivedSize>0){
@@ -1761,7 +1771,7 @@ void UDPStandardImplementation::stopListening(int ithread, int numbytes){
 	//push last non empty buffer into fifo
 	else{
 		(*((uint32_t*)(buffer[ithread]))) = numbytes/onePacketSize;
-		totalListeningFrameCount[ithread] += (numbytes/onePacketSize);
+		totalListeningPacketCount[ithread] += (numbytes/onePacketSize);
 #ifdef DEBUG
 		cprintf(BLUE,"Listening_Thread %d: Last Buffer numBytes:%d\n",ithread, numbytes);
 		cprintf(BLUE,"Listening_Thread %d: Last Buffer packet count:%d\n",ithread, numbytes/onePacketSize);
@@ -1813,7 +1823,7 @@ void UDPStandardImplementation::stopListening(int ithread, int numbytes){
 	listeningThreadsMask^=(1<<ithread);
 #ifdef DEBUG4
 	cprintf(BLUE,"Listening_Thread %d: Resetting mask of listening thread. New Mask: 0x%x", ithread, listeningThreadsMask);
-	cprintf(BLUE,"Listening_Thread %d: Frames listened to :%d\n",ithread, ((totalListeningFrameCount[ithread]*numberofListeningThreads)/packetsPerFrame));
+	cprintf(BLUE,"Listening_Thread %d: Frames listened to :%d\n",ithread, (totalListeningPacketCount[ithread]/packetsPerFrame));
 #endif
 	pthread_mutex_unlock(&(statusMutex));
 
@@ -1829,8 +1839,8 @@ void UDPStandardImplementation::stopListening(int ithread, int numbytes){
 #ifdef DEBUG4
 		int t=0;
 		for(i=0;i<numberofListeningThreads;++i)
-			t += totalListeningFrameCount[i];
-		cprintf(BLUE,"Listening_Thread %d :Total Frames listened to %d\n", ithread,(t/packetsPerFrame));
+			t += totalListeningPacketCount[i];
+		cprintf(BLUE,"Listening_Thread %d :Total Frames listened to %d\n", ithread,(t/(packetsPerFrame*numberofListeningThreads)));
 #endif
 	}
 }
@@ -1845,7 +1855,7 @@ uint32_t UDPStandardImplementation::processListeningBuffer(int ithread, int &cSi
 	int lastPacketOffset;		//the offset of the last packet
 	uint32_t lastFrameHeader;		//frame number of last packet in buffer
 	uint64_t lastFrameHeader64;		//frame number of last packet in buffer
-	uint32_t packetCount = rc;//(packetsPerFrame/numberofListeningThreads) * numberofJobsPerBuffer;		//packets received
+	uint32_t packetCount = (rc/onePacketSize);//(packetsPerFrame/numberofListeningThreads) * numberofJobsPerBuffer;		//packets received
 	cSize = 0;					//reset size
 	jfrau_packet_header_t* header;
 
@@ -1854,7 +1864,7 @@ uint32_t UDPStandardImplementation::processListeningBuffer(int ithread, int &cSi
 	case PROPIX:
 		//for short frames, 1 packet/frame, so split frames is not a topic
 		if(shortFrameEnable == -1){
-			lastPacketOffset = (((numberofJobsPerBuffer * packetsPerFrame - 1) * onePacketSize) + HEADER_SIZE_NUM_TOT_PACKETS);
+			lastPacketOffset = (((packetCount - 1) * onePacketSize) + HEADER_SIZE_NUM_TOT_PACKETS);
 #ifdef DEBUG4
 			cprintf(BLUE, "Listening_Thread %d: Last Packet Offset:%d\n",ithread, lastPacketOffset);
 #endif
@@ -1877,7 +1887,7 @@ uint32_t UDPStandardImplementation::processListeningBuffer(int ithread, int &cSi
 		break;
 
 	case MOENCH:
-		lastPacketOffset = (((numberofJobsPerBuffer * packetsPerFrame - 1) * onePacketSize) + HEADER_SIZE_NUM_TOT_PACKETS);
+		lastPacketOffset = (((packetCount - 1) * onePacketSize) + HEADER_SIZE_NUM_TOT_PACKETS);
 #ifdef DEBUG4
 		cprintf(BLUE, "Listening_Thread %d: First Header:%d\t First Packet:%d\t Last Header:%d\t Last Packet:%d\tLast Packet Offset:%d\n",
 				(((((uint32_t)(*((uint32_t*)(buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS))))) & (frameIndexMask)) >> frameIndexOffset),
@@ -1909,7 +1919,7 @@ uint32_t UDPStandardImplementation::processListeningBuffer(int ithread, int &cSi
 
 
 	case JUNGFRAU:
-		lastPacketOffset = (((numberofJobsPerBuffer * packetsPerFrame - 1) * onePacketSize) + HEADER_SIZE_NUM_TOT_PACKETS);
+		lastPacketOffset = (((packetCount - 1) * onePacketSize) + HEADER_SIZE_NUM_TOT_PACKETS);
 #ifdef DEBUG4
 		header = (jfrau_packet_header_t*) (buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS);
 		cprintf(BLUE, "Listening_Thread: First Header:%d\t First Packet:%d\n",
@@ -1971,22 +1981,6 @@ void UDPStandardImplementation::startWriting(){
 	//let calling function know thread started and obtained current
 	threadStarted = 1;
 
-	switch(myDetectorType){
-	case EIGER:
-		processWritingBufferPacketByPacket(ithread);
-		break;
-	default:
-		processWritingBuffer(ithread);
-		break;
-	}
-
-}
-
-
-
-void UDPStandardImplementation::processWritingBuffer(int ithread){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-
 	//variable definitions
 	char* wbuf;											//buffer popped from FIFO
 	sfilefd[ithread] = NULL;							//file pointer
@@ -2000,7 +1994,7 @@ void UDPStandardImplementation::processWritingBuffer(int ithread){
 
 		//--reset parameters before acquisition
 		nf = 0;
-		guiData[ithread] = latestData[ithread];  							//so that the first frame is always copied
+		guiData[ithread] = latestData[ithread];  		//so that the first frame is always copied
 		if(dataCompressionEnable)
 			listenfifoIndex = 0;						//compression has only one listening thread
 
@@ -2060,361 +2054,6 @@ void UDPStandardImplementation::processWritingBuffer(int ithread){
 
 
 
-void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	//variable definitions
-	char* packetBuffer[numberofListeningThreads];		//buffer popped from FIFO
-	sfilefd = NULL;										//file pointer
-	bool popReady[numberofListeningThreads];			//if the FIFO can be popped
-	uint32_t numPackets[numberofListeningThreads];		//number of packets popped from the FIFO
-
-	int MAX_NUM_PACKETS = 1024;							//highest 32 bit has 1024 number of packets
-	uint32_t LAST_PACKET_VALUE;							//last packet number
-
-	CircularFifo<char>* fifoTempFree[numberofListeningThreads];//ciruclar fifo to keep track of one frame packets to be freed and reused later
-	char* temp = NULL;
-
-	char* frameBuffer[MAX_NUM_PACKETS];					//buffer offset created for a whole frame
-	int frameBufferoffset[numberofListeningThreads];	//buffer offset created for a whole frame for both listening threads
-	char* blankframe[MAX_NUM_PACKETS];					//blank buffer for a whole frame with missing packets
-	int blankoffset;									//blank buffer offset
-
-	bool fullframe[numberofListeningThreads];			//if full frame processed for each listening thread
-	volatile uint32_t threadFrameNumber[numberofListeningThreads];	//thread frame number for each listening thread buffer popped out
-	volatile uint32_t presentFrameNumber;							//the  current frame number aiming to be built
-	volatile uint32_t lastPacketNumber[numberofListeningThreads];	//last packet number got
-	volatile uint32_t currentPacketNumber[numberofListeningThreads];//current packet number
-	volatile int numberofMissingPackets[numberofListeningThreads];	// number of missing packets in this buffer
-
-	for(int i=0; i<MAX_NUM_PACKETS; ++i){
-		frameBuffer[i] = NULL;
-		blankframe[i] = NULL;
-	}
-	for(int i=0; i<numberofListeningThreads; ++i){
-		fifoTempFree[i] = NULL;
-	}
-
-	/* outer loop - loops once for each acquisition */
-	//infinite loop, exited only to change dynamic range, 10G parameters etc (then recreated again)
-	while(true){
-
-		//--reset parameters before acquisition
-		presentFrameNumber = 0;
-		blankoffset = 0;		//blank frame - initializing with missing packet values
-		guiData = latestData;     //so that the first frame is always copied
-		LAST_PACKET_VALUE = (packetsPerFrame/numberofListeningThreads);
-
-		for(int i=0; i<numberofListeningThreads; ++i){
-			packetBuffer[i] = NULL;
-			popReady[i] = true;
-			numPackets[i] = 0;
-			frameBufferoffset[i] = (i*packetsPerFrame/numberofListeningThreads);
-			fullframe[i] = false;
-			threadFrameNumber[i] = 0;
-			lastPacketNumber[i] = 0;
-			currentPacketNumber[i] = 0;
-			numberofMissingPackets[i] = 0;
-
-			//circular temp fifo between getting a whole frame and freeing them
-			if(fifoTempFree[i]){
-				while(!fifoTempFree[i]->isEmpty()){
-					fifoTempFree[i]->pop(temp);
-#ifdef EVERYFIFODEBUG
-					if(fifoTempFree[i]->getSemValue()>((packetsPerFrame/numberofListeningThreads)-3))
-					cprintf(RED,"FifoTempFree[%d]: value:%d, pop 0x%x\n",i,fifoTempFree[i]->getSemValue(),(void*)(temp));
-#endif
-				}
-				delete fifoTempFree[i];
-				fifoTempFree[i] = NULL;
-			}
-			fifoTempFree[i] = new CircularFifo<char>(MAX_NUM_PACKETS);
-		}
-
-		for(uint32_t i=0; i<packetsPerFrame; ++i){
-			if(blankframe[i]){delete [] blankframe[i]; blankframe[i] = NULL;}
-			blankframe[i] = new char[onePacketSize];
-			//set missing packet to 0xff
-			eiger_packet_header_t* blankframe_header = (eiger_packet_header_t*) blankframe[i];
-			eiger_packet_footer_t* blankframe_footer = (eiger_packet_footer_t*)(blankframe[i] + footerOffset);
-			*( (uint16_t*) blankframe_header->missingPacket) = missingPacketValue;
-			*( (uint16_t*) blankframe_footer->packetNumber) = i+1;
-
-			//set each value inside blank frame to 0xff
-			for(int j=0;j<(oneDataSize);++j){
-				unsigned char* blankframe_data = (unsigned char*)blankframe[i] + sizeof(eiger_packet_header_t) + j;
-				*(blankframe_data) = 0xFF;
-			}
-		}
-		//last frame read out
-		lastFrameIndex = -1;
-
-
-
-
-		/* inner loop - loop for each buffer */
-		//until mask unset (udp sockets shut down by client)
-		while((1 << ithread) & writerThreadsMask){
-
-
-			//pop fifo and if end of acquisition
-			//cprintf(BLUE,"popready[0]:%d popready[1]:%d\n",popReady[0],popReady[1]);
-			if(popAndCheckEndofAcquisition(ithread, packetBuffer, popReady, numPackets,fifoTempFree)){
-#ifdef DEBUG4
-				cprintf(GREEN,"Writing_Thread All dummy-end buffers popped\n");
-#endif
-				//finish missing packets
-				if(((frameBufferoffset[0]!=0) || (frameBufferoffset[1]!=((int)packetsPerFrame/numberofListeningThreads))));
-				else{
-					stopWriting(ithread,packetBuffer);
-					continue;
-				}
-			}
-#ifdef DEBUG4
-			else{cprintf(BLUE,"POPped but i see?\n");}
-#endif
-
-			//get a full frame-------------------------------------------------------------------------------------------------------
-			for(int i=0;i<numberofListeningThreads;++i){
-
-				numberofMissingPackets[i] = 0;
-
-
-				//dummy done-----------------------------------------------------------------------------------------------------------
-				if(numPackets[i] == dummyPacketValue && frameBufferoffset[i] == (((i+1)*(int)packetsPerFrame/numberofListeningThreads))){
-#ifdef DEBUG4
-					cprintf(RED,"dummy done\n");
-#endif
-					continue;
-				}
-
-
-				//not full frame
-				else if(!fullframe[i]){
-
-					//update frame number and packet number
-					if(numPackets[i] != dummyPacketValue){
-						eiger_packet_footer_t* packetBuffer_footer = (eiger_packet_footer_t*)(packetBuffer[i] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
-
-						if(!((uint32_t)(*( (uint64_t*) packetBuffer_footer)))){
-							FILE_LOG(logERROR) << "Fifo "<< i << ": Frame Number is zero from firmware. popready[" << i << "]:" << popReady[i];
-							popReady[i]=true;
-							continue;
-						}
-						//frame number
-						threadFrameNumber[i] = (uint32_t)(*( (uint64_t*) packetBuffer_footer));
-						//last frame read out
-						lastFrameIndex = threadFrameNumber[i];
-						threadFrameNumber[i] +=	(startFrameIndex - 1);
-
-						//packet number
-						currentPacketNumber[i] = *( (uint16_t*) packetBuffer_footer->packetNumber);
-#ifdef DEBUG4
-						cprintf(MAGENTA,"Fifo %d: threadframenumber original:%d currentpacketnumber real:%d\n",
-								i,threadFrameNumber[i],currentPacketNumber[i]);
-#endif
-					}
-
-					//calculate number of missing packets-----------------------------------------------------
-					numberofMissingPackets[i] = 0;
-					if((numPackets[i] == dummyPacketValue) || (threadFrameNumber[i] != presentFrameNumber))
-						numberofMissingPackets[i] = (LAST_PACKET_VALUE - lastPacketNumber[i]);
-					else
-						numberofMissingPackets[i] = (currentPacketNumber[i] - lastPacketNumber[i] - 1);
-					numMissingPackets += numberofMissingPackets[i];
-
-#ifdef DEBUG4
-					if(numPackets[i] == dummyPacketValue)
-						cprintf(GREEN, "Fifo %d: Calc missing packets (Dummy): Adding missing packets %d to the last frame\n",
-								i, numberofMissingPackets[i]);
-					else{
-						cprintf(GREEN,"Fifo %d: Calc missing packets: fnum %d, fnum_thread %d, "
-								"pnum %d, last_pnum %d, pnum_offset %d missing_packets %d\n",
-								i,presentFrameNumber,threadFrameNumber[i],
-								currentPacketNumber[i],lastPacketNumber[i],frameBufferoffset[i],numberofMissingPackets[i]);
-					}
-#endif
-
-
-					//add missing packets---------------------------------------------------------------------
-					for(int j=0;j<numberofMissingPackets[i];++j){
-
-						blankoffset = frameBufferoffset[i];
-						frameBuffer[frameBufferoffset[i]] = blankframe[blankoffset];
-						eiger_packet_header_t* frameBuffer_header = (eiger_packet_header_t*) frameBuffer[frameBufferoffset[i]];
-						if (*( (uint16_t*) frameBuffer_header->missingPacket)!= missingPacketValue){
-							eiger_packet_header_t* blankframe_header = (eiger_packet_header_t*) blankframe[blankoffset];
-							cprintf(BG_RED, "Fifo %d: Add Missing Packet Error: "
-									"pnum_offset %d, pnum %d, fnum_thread %d, missingpacket_buffer 0x%x, missingpacket_blank 0x%x\n",
-									i,frameBufferoffset[i],currentPacketNumber[i],threadFrameNumber[i],
-									*( (uint16_t*) frameBuffer_header->missingPacket),
-									*( (uint16_t*) blankframe_header->missingPacket));
-							exit(-1);
-						}else{
-#ifdef DEBUG4
-							cprintf(RED, "Fifo %d: Add Missing Packet success: "
-									"pnum_offset %d, pnum_got %d, fnum_thread %d, missingpacket_buffer 0x%x\n",
-									i,frameBufferoffset[i],currentPacketNumber[i],threadFrameNumber[i],
-									*( (uint16_t*) frameBuffer_header->missingPacket));
-#endif
-							frameBufferoffset[i]=frameBufferoffset[i]+1;
-						}
-					}
-
-					//missed packets/future packet: do not pop over and determine fullframe--------------------
-					popReady[i] = false;
-					if((numPackets[i] == dummyPacketValue) ||(threadFrameNumber[i] != presentFrameNumber))
-						fullframe[i] = true;
-					else
-						fullframe[i] = false;
-					if(threadFrameNumber[i] != presentFrameNumber)
-						threadFrameNumber[i] = presentFrameNumber;
-
-
-					//add current packet--------------------------------------------------------------
-					if(fullframe[i] == false){
-						if(currentPacketNumber[i] != (uint32_t)(frameBufferoffset[i]-(i*packetsPerFrame/numberofListeningThreads))+1){
-							cprintf(BG_RED, "Fifo %d: Correct Packet Offset Error: "
-									"pnum_offset %d,pnum %d fnum_thread %d\n",
-									i,frameBufferoffset[i],currentPacketNumber[i],threadFrameNumber[i]);
-							exit(-1);
-						}
-
-
-						while(!fifoTempFree[i]->push(packetBuffer[i]));
-#ifdef EVERYFIFODEBUG
-						if(fifoTempFree[i]->getSemValue()>((packetsPerFrame/numberofListeningThreads)-3))
-							cprintf(YELLOW,"FifoTempfree[%d]: value:%d, push 0x%x\n",i,fifoTempFree[i]->getSemValue(),(void*)(wbuffer[i]));
-#endif
-
-
-
-						//cprintf(RED,"Current Packet frameBufferoffset[i]:%d\n",frameBufferoffset[i]);
-						frameBuffer[frameBufferoffset[i]] = (packetBuffer[i] + HEADER_SIZE_NUM_TOT_PACKETS);
-#ifdef DEBUG4
-						eiger_packet_header_t* frameBuffer_header = (eiger_packet_header_t*) frameBuffer[frameBufferoffset[i]];
-						eiger_packet_footer_t* frameBuffer_footer = (eiger_packet_footer_t*) (frameBuffer[frameBufferoffset[i]] + footerOffset);
-						cprintf(GREEN, "Fifo %d: Current Packet added success:"
-								"pnum_offset %d, pnum %d, real pnum %d fnum_thread %d, missingpacket_buffer 0x%x\n",
-								i,frameBufferoffset[i],currentPacketNumber[i],*( (uint16_t*) frameBuffer_footer->packetNumber),threadFrameNumber[i],
-								*( (uint16_t*) frameBuffer_header->missingPacket));
-#endif
-						frameBufferoffset[i]=frameBufferoffset[i]+1;
-						//update last packet
-						lastPacketNumber[i] = currentPacketNumber[i];
-						popReady[i] = true;
-						fullframe[i] = false;
-						if(currentPacketNumber[i] == LAST_PACKET_VALUE){
-#ifdef DEBUG4
-							cprintf(GREEN, "Fifo %d: Got last packet\n",i);
-#endif
-							popReady[i] = false;
-							fullframe[i] = true;
-						} //end of last packet
-					}//end of add current packet
-				}//end of if(!fullframe)
-			}//end of for listening threads
-
-
-			//full frame
-			if(fullframe[0] && fullframe[1]){
-				currentFrameNumber = presentFrameNumber;
-				numTotMissingPacketsInFile += numMissingPackets;
-				numTotMissingPackets += numMissingPackets;/**requires a lock*/
-
-/*
-				cprintf(CYAN,"**framenum:%lld\n ",(long long int)currentFrameNumber);
-				if(currentFrameNumber>500){
-					cprintf(BG_RED,"too high frame number %lld \n",(long long int)currentFrameNumber );
-					exit(-1);
-				}
-				for(int i=0;i<numberofListeningThreads;i++){
-					eiger_packet_footer_t* wbuf_footer1 = (eiger_packet_footer_t*)(packetBuffer[i] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
-					cprintf(GREEN,"Fifo %d:End of loop popready %d, threadfnum:%d fnum:%d, pnum:%d, add0x%p\n",
-							i,popReady[i],threadFrameNumber[i],(uint32_t)(*( (uint64_t*) wbuf_footer1)),
-							*( (uint16_t*) wbuf_footer1->packetNumber),	(void*)(packetBuffer[i]));
-				}*/
-#ifdef DEBUG4
-				cprintf(BLUE," nummissingpackets:%d\n",numMissingPackets);
-#endif
-#ifdef FNUM_DEBUG
-				cprintf(GREEN,"**fnum:%lld**\n",(long long int)currentFrameNumber);
-#endif
-#ifdef MISSINGP_DEBUG
-				if(numMissingPackets){
-					cprintf(RED, "Total missing packets %d for fnum %d\n",numMissingPackets,currentFrameNumber);
-					for (int j=0;j<packetsPerFrame;++j){
-						eiger_packet_header_t* frameBuffer_header = (eiger_packet_header_t*) frameBuffer[j];
-						if (*( (uint16_t*) frameBuffer_header->missingPacket)==missingPacketValue)
-							cprintf(RED,"Found missing packet at pnum %d\n",j);
-					}
-				}
-#endif
-
-				//write and copy to gui
-				handleWithoutDataCompression(ithread,frameBuffer,packetsPerFrame);
-
-				//reset a few stuff
-				presentFrameNumber++;
-				for(int i=0; i<numberofListeningThreads; ++i){
-					fullframe[i] = false;
-
-					//ensuring last packet got is not of some other future frame but of the current one
-					eiger_packet_footer_t* wbuf_footer1 = (eiger_packet_footer_t*)(packetBuffer[i] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
-					uint64_t packfnum = (((uint32_t)(*( (uint64_t*) wbuf_footer1)))+(startFrameIndex - 1));
-
-					//to reset to get new frame: not dummy and the last packet
-					if((numPackets[i] != dummyPacketValue) && (currentPacketNumber[i] == LAST_PACKET_VALUE) && (packfnum == currentFrameNumber) )
-						popReady[i] = true;
-					frameBufferoffset[i] = (i*packetsPerFrame/numberofListeningThreads);
-					//blankoffset = 0;
-					lastPacketNumber[i] = 0;
-					currentPacketNumber[i] = 0;
-					numberofMissingPackets[i] = 0;
-#ifdef DEBUG4
-					cprintf(GREEN,"popready[%d]: %d\n",i,popReady[i]);
-#endif
-				}
-
-
-				//freeing
-				for(int i=0; i<numberofListeningThreads; ++i){
-					while(!fifoTempFree[i]->isEmpty()){
-						fifoTempFree[i]->pop(temp);
-#ifdef EVERYFIFODEBUG
-						if(fifoTempFree[i]->getSemValue()>((packetsPerFrame/numberofListeningThreads)-3))
-						cprintf(GRAY,"FifoTempFree[%d]: value:%d, pop 0x%x\n",i,fifoTempFree[i]->getSemValue(),(void*)(temp));
-#endif
-						while(!fifoFree[i]->push(temp));
-#ifdef EVERYFIFODEBUG
-						if(fifoFree[i]->getSemValue()<100)
-						cprintf(GREEN,"FifoFree[%d]: value:%d, push 0x%x\n",i,fifoFree[i]->getSemValue(),(void*)(temp));
-#endif
-#ifdef CFIFODEBUG
-						if(i==0)
-							cprintf(CYAN,"Fifo %d: Writing_Thread freed: pushed into fifofree %p\n",i, (void*)(temp));
-						else
-							cprintf(YELLOW,"Fifo %d: Writing_Thread freed: pushed into fifofree %p\n",i, (void*)(temp));
-#endif
-					}
-				}
-#ifdef DEBUG4
-				cprintf(GREEN,"Writing_Thread: finished freeing\n");
-#endif
-
-
-			}//end of full frame
-
-		}/*--end of loop for each buffer (inner loop)*/
-
-		waitWritingBufferForNextAcquisition(ithread);
-
-	}/*--end of loop for each acquisition (outer loop) */
-}
-
-
-
-
 void UDPStandardImplementation::waitWritingBufferForNextAcquisition(int ithread){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
@@ -2451,24 +2090,20 @@ void UDPStandardImplementation::waitWritingBufferForNextAcquisition(int ithread)
 		//change the detector index in the file names
 		if(myDetectorType == EIGER){
 			int detindex = -1;
-			string tempname(fileName[ithread]);
-			cout<<"tempname:"<<tempname<<endl;
+			string tempname(fileName);
 
 			size_t uscore=tempname.rfind("_");
 			if (uscore!=string::npos){
-				if (sscanf(tempname.substr(uscore+1,tempname.size()-uscore-1).c_str(),"%d",&detindex)) {
-					cout<<"got detindex :" << detindex<< endl;
+				if (sscanf(tempname.substr(uscore+1,tempname.size()-uscore-1).c_str(),"d%d",&detindex)) {
 					tempname=tempname.substr(0,uscore);
-					cout<<"truncate fname to :"<<tempname<<endl;
-					sprintf(fileName[ithread],"%s_%d",tempname,detindex*2+ithread);
-					cout<<"new fname:"<<fileName[ithread]<<endl;
+					sprintf(fileNamePerThread[ithread],"%s_d%d",tempname.c_str(),detindex*2+ithread);
 				}
 			}
 
-			if(detindex == -1){
-				sprintf(fileName[ithread],"%s_%d",fileName[ithread],ithread);
-				cout<<"only one det. so added:"<<fileName[ithread]<<endl;
-			}
+			if(detindex == -1)
+				sprintf(fileNamePerThread[ithread],"%s_d%d",fileName,ithread);
+
+			cout << "file name changed to include det Id:" << fileNamePerThread[ithread] << endl;
 		}
 
 		if(dataCompressionEnable){
@@ -2515,61 +2150,6 @@ void UDPStandardImplementation::waitWritingBufferForNextAcquisition(int ithread)
 #endif
 
 
-}
-
-
-bool UDPStandardImplementation::popAndCheckEndofAcquisition(int ithread, char* wbuffer[], bool ready[], uint32_t nP[],CircularFifo<char>* fifoTempFree[]){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	bool endofAcquisition = true;
-	for(int i=0; i<numberofListeningThreads; ++i){
-		//pop if ready
-		if(ready[i]){
-			fifo[i]->pop(wbuffer[i]);
-#ifdef EVERYFIFODEBUG
-			if(fifo[i]->getSemValue()>(fifoSize-100))
-			cprintf(CYAN,"Fifo[%d]: value:%d, pop 0x%x\n",i,fifo[i]->getSemValue(),(void*)(wbuffer[i]));
-#endif
-#ifdef CFIFODEBUG
-			if(i == 0)
-				cprintf(CYAN,"Writing_Thread %d: Popped %p from FIFO %d\n", ithread, (void*)(wbuffer[i]),i);
-			else
-				cprintf(YELLOW,"Writing_Thread %d: Popped %p from FIFO %d\n", ithread, (void*)(wbuffer[i]),i);
-#endif
-			nP[i] = (uint32_t)(*((uint32_t*)wbuffer[i]));
-#ifdef DEBUG4
-			cprintf(GREEN,"Writing_Thread %d: Number of Packets: %d for FIFO %d\n", ithread, nP[i], i);
-#endif
-			//dummy-end buffer
-			if(nP[i] == dummyPacketValue){
-				ready[i] = false;
-#ifdef DEBUG3
-				cprintf(GREEN,"Writing_Thread %d: Dummy frame popped out of FIFO %d",ithread, i);
-#endif
-			}
-			//normal buffer popped out
-			else{
-				endofAcquisition = false;
-#ifdef DEBUG4
-				if(myDetectorType == EIGER){
-					eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(wbuffer[i] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
-					//cprintf(BLUE,"footer value:0x%x\n",i,(uint64_t)(*( (uint64_t*) wbuf_footer)));
-					//if(*( (uint16_t*) wbuf_footer->packetNumber) == 1){
-					cprintf(BLUE,"Fnum[%d]:%d\n",i,(uint32_t)(*( (uint64_t*) wbuf_footer)));
-					cprintf(BLUE,"Pnum[%d]:%d\n",i,*( (uint16_t*) wbuf_footer->packetNumber));
-					//}
-				}
-#endif
-			}
-		}
-		//when both are not popped but curretn frame number is being processed
-		else{
-			if(nP[i] != dummyPacketValue)
-				endofAcquisition = false;
-		}
-	}
-
-	return endofAcquisition;
 }
 
 
@@ -2626,293 +2206,199 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 		//statistics
 		FILE_LOG(logINFO) << "Status: Run Finished";
 		FILE_LOG(logINFO) << "Last Frame Number Caught:" << lastFrameIndex[ithread];
-		if(totalPacketsCaught < ((uint64_t)numberOfFrames*packetsPerFrame)){
-			cprintf(RED, "Total Missing Packets padded: %d\n",numTotMissingPackets);
+		if(totalPacketsCaught < ((uint64_t)numberOfFrames*packetsPerFrame*numberofListeningThreads)){
+			cprintf(RED, "Total Missing Packets: %lld\n",(long long int)numberOfFrames*packetsPerFrame*numberofListeningThreads-totalPacketsCaught);
 			cprintf(RED, "Total Packets Caught: %lld\n",(long long int)totalPacketsCaught);
-			cprintf(RED, "Total Frames Caught: %lld\n",(long long int)(totalPacketsCaught/packetsPerFrame));
+			cprintf(RED, "Total Frames Caught: %lld\n",(long long int)(totalPacketsCaught/(packetsPerFrame*numberofListeningThreads)));
 		}else{
-			cprintf(GREEN, "Total Missing Packets padded: %d\n",numTotMissingPackets);
-			cprintf(GREEN, "Total Packets Caught:%lld\n", (long long int)totalPacketsCaught);
-			cprintf(GREEN, "Total Frames Caught:%lld\n",(long long int)(totalPacketsCaught/packetsPerFrame));
+			cprintf(GREEN, "Total Missing Packets: %lld\n",(long long int)numberOfFrames*packetsPerFrame*numberofListeningThreads-totalPacketsCaught);
+			cprintf(GREEN, "Total Packets Caught: %lld\n",(long long int)totalPacketsCaught);
+			cprintf(GREEN, "Total Frames Caught: %lld\n",(long long int)(totalPacketsCaught/(packetsPerFrame*numberofListeningThreads)));
 		}
 		//acquisition end
 		if (acquisitionFinishedCallBack)
-			acquisitionFinishedCallBack((int)(totalPacketsCaught/packetsPerFrame), pAcquisitionFinished);
+			acquisitionFinishedCallBack((int)totalPacketsCaught, pAcquisitionFinished);
 	}
 }
 
 
 
 
-void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* wbuffer,uint32_t npackets){
+void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* wbuffer, uint32_t npackets){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 
-	//get frame number (eiger already gets it when it does packet to packet processing)
-	if(myDetectorType != EIGER){
-		if(myDetectorType == JUNGFRAU){
-			jfrau_packet_header_t* header = (jfrau_packet_header_t*)(wbuffer[0] + HEADER_SIZE_NUM_TOT_PACKETS);
-			currentFrameNumber = (*( (uint32_t*) header->frameNumber))&0xffffff;
-		}else{
-			uint64_t tempframenumber = ((uint32_t)(*((uint32_t*)(wbuffer[0] + HEADER_SIZE_NUM_TOT_PACKETS))));
-			//for gotthard and normal frame, increment frame number to separate fnum and pnum
-			if (myDetectorType == PROPIX ||(myDetectorType == GOTTHARD && shortFrameEnable == -1))
-				tempframenumber++;
-			//get frame number
-			currentFrameNumber = (tempframenumber & frameIndexMask) >> frameIndexOffset;
-		}
-		//set indices
-		acquisitionIndex = currentFrameNumber - startAcquisitionIndex;
-		frameIndex = currentFrameNumber - startFrameIndex;
+	//get current frame number
+	uint64_t tempframenumber;
+	if(getFrameNumber(ithread, wbuffer + HEADER_SIZE_NUM_TOT_PACKETS,tempframenumber) == FAIL){
+		//error in frame number sent by fpga
+		while(!fifoFree[ithread]->push(wbuffer));
+
+		return;
 	}
+	//update current frame number
+	lastFrameIndex[ithread] = tempframenumber;
+	if(myDetectorType == EIGER)
+		currentFrameNumber[ithread] =  tempframenumber + (startFrameIndex - 1);
+	else
+		currentFrameNumber[ithread] = tempframenumber-startFrameIndex;
 
 
-
+	//set indices
+	pthread_mutex_lock(&progressMutex);
+	if((currentFrameNumber[ithread] - startAcquisitionIndex) > acquisitionIndex)
+		acquisitionIndex = currentFrameNumber[ithread] - startAcquisitionIndex;
+	if((currentFrameNumber[ithread] - startFrameIndex) > frameIndex[ithread])
+		frameIndex[ithread] = currentFrameNumber[ithread] - startFrameIndex;
+	pthread_mutex_unlock(&progressMutex);
 
 	//callback to write data
-	if (cbAction < DO_EVERYTHING){
-		switch(myDetectorType){
-		case EIGER:
-			for(uint32_t i=0;i<npackets;++i)
-				rawDataReadyCallBack((int)currentFrameNumber, wbuffer[i], onePacketSize, sfilefd, guiData, pRawDataReady);
-			break;
-		default:
-			rawDataReadyCallBack((int)currentFrameNumber, wbuffer[0] + HEADER_SIZE_NUM_TOT_PACKETS, npackets * onePacketSize,
-					sfilefd, guiData,pRawDataReady);
-			break;
-		}
-	}
+	if (cbAction < DO_EVERYTHING)
+		rawDataReadyCallBack((int)currentFrameNumber[ithread], wbuffer + HEADER_SIZE_NUM_TOT_PACKETS, npackets * onePacketSize,
+				sfilefd[ithread], guiData[ithread],pRawDataReady);//know which thread from sfilefd
+
+
 
 	//write to file if enabled and update write parameters
 	if(npackets > 0)
-		writeFileWithoutCompression(wbuffer, npackets);
+		writeFileWithoutCompression(ithread, wbuffer, npackets);
 #ifdef DEBUG4
 	cprintf(GREEN,"Writing_Thread: Writing done\nGoing to copy frame\n");
 #endif
 
 
 	//copy frame for gui
-	if(npackets >= packetsPerFrame)
-		copyFrameToGui(wbuffer);
+	if(npackets >= packetsPerFrame)/**needs to be reworked*/
+		copyFrameToGui(ithread, wbuffer);
 #ifdef DEBUG4
 	cprintf(GREEN,"Writing_Thread: Copied frame\n");
 #endif
 
 
-	//free fifo addresses (eiger frees for each packet later)
-	if(myDetectorType != EIGER){
-		while(!fifoFree[0]->push(wbuffer[0]));
+	//free fifo addresses
+	int listenfifoThread = ithread;
+	if(dataCompressionEnable)
+		listenfifoThread = 0;
+	while(!fifoFree[listenfifoThread]->push(wbuffer));
 #ifdef EVERYFIFODEBUG
-		if(fifoFree[0]->getSemValue()<100)
-		cprintf(GREEN,"FifoFree[%d]: value:%d, push 0x%x\n",0,fifoFree[0]->getSemValue(),(void*)(wbuffer[0]));
+	if(fifoFree[listenfifoThread]->getSemValue()<100)
+		cprintf(GREEN,"FifoFree[%d]: value:%d, push 0x%x\n",listenfifoThread,fifoFree[listenfifoThread]->getSemValue(),(void*)(wbuffer));
 #endif
 #ifdef DEBUG5
-			cprintf(GREEN,"Writing_Thread %d: Freed buffer, pushed into fifofree %p for listener 0\n",ithread, (void*)(wbuffer[0]));
+	cprintf(GREEN,"Writing_Thread %d: Freed buffer, pushed into fifofree %p for listener %d \n",listenfifoThread, (void*)(wbuffer), listenfifoThread);
 #endif
-	}
+
 }
 
 
 
 
-void UDPStandardImplementation::writeFileWithoutCompression(int ithread, char* wbuffer[],uint32_t numpackets){
+void UDPStandardImplementation::writeFileWithoutCompression(int ithread, char* wbuffer,uint32_t numpackets){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
-
-	//create headers for eiger
-#ifdef WRITE_HEADERS
-	if (myDetectorType == EIGER && cbAction == DO_EVERYTHING)
-		createHeaders(wbuffer);
-#endif
-
 	//if write enabled
-	if((fileWriteEnable) && (sfilefd)){
-		int offset = HEADER_SIZE_NUM_TOT_PACKETS; 		//offset (not eiger) to keep track of how many packets saved
-		uint32_t packetsToSave;								//how many packets to save at a time
-		volatile uint64_t tempframenumber;
-		int lastpacket;
+	if((fileWriteEnable) && (sfilefd[ithread])){
+cout<<ithread<<" numpackets:"<<numpackets<<" lastFrameNumberInFile[ithread]:"<<lastFrameNumberInFile[ithread]<<endl;
+		if(numpackets){
+			int offset = HEADER_SIZE_NUM_TOT_PACKETS;
+			uint64_t nextFileFrameNumber;
+			int packetsWritten = 0;
 
-		//loop to take care of creating new files when it reaches max packets per file
-		while(numpackets > 0){
 
-			//new file
-			if(packetsInFile >= (uint32_t)maxPacketsPerFile){
-				//for packet loss, because currframenum is the latest one for eiger
-				//get frame number (eiger already gets it when it does packet to packet processing)
-				if(myDetectorType != EIGER){
-					lastpacket = (((packetsToSave - 1) * onePacketSize) + offset);
-					if(myDetectorType == JUNGFRAU){
-						jfrau_packet_header_t* header = (jfrau_packet_header_t*) (wbuffer[0] + lastpacket);
-						currentFrameNumber = (*( (uint32_t*) header->frameNumber))&0xffffff;
-					}else{
-						tempframenumber = ((uint32_t)(*((uint32_t*)(wbuffer[0] + lastpacket))));
-						//for gotthard and normal frame, increment frame number to separate fnum and pnum
-						if (myDetectorType == PROPIX ||(myDetectorType == GOTTHARD && shortFrameEnable == -1))
-							tempframenumber++;
-						//get frame number
-						currentFrameNumber = (tempframenumber & frameIndexMask) >> frameIndexOffset;
-					}
-
-					//set indices
-					acquisitionIndex = currentFrameNumber - startAcquisitionIndex;
-					frameIndex = currentFrameNumber - startFrameIndex;
+			//handle half frames from previous buffer
+			//second part to not check when there has been something written previously
+			if(numpackets &&(lastFrameNumberInFile[ithread])){
+				//get start frame (required to create new file at the right juncture)
+				uint64_t startframe =-1;
+				if(getFrameNumber(ithread, wbuffer + offset, startframe) == FAIL){
+					//error in frame number sent by fpga
+					while(!fifoFree[ithread]->push(wbuffer));
+					return;
 				}
-#ifdef DEBUG3
-				cprintf(GREEN,"Writing_Thread: Current Frame Number:%d\n",currentFrameNumber);
-#endif
-				createNewFile(ithread);
-			}
-			//to create new file when max reached
-			packetsToSave = maxPacketsPerFile - packetsInFile;
-			if(packetsToSave > numpackets)
-				packetsToSave = numpackets;
+				cout<<"222"<<endl;
+				if(startframe == lastFrameNumberInFile[ithread]-1){
+					if(writeUptoFrameNumber(ithread, wbuffer, offset, startframe+1, numpackets, packetsWritten) == FAIL)
+						//weird frame number of zero from fpga
+						return;
 
-			//write to file
-			if(cbAction == DO_EVERYTHING){
-				switch(myDetectorType){
-				case EIGER:
-					for(uint32_t i=0; i<packetsToSave; ++i)
-						fwrite((void*)wbuffer[i], 1, onePacketSize, sfilefd);
-					break;
-				default:
-					fwrite(wbuffer[0] + offset, 1, packetsToSave * onePacketSize, sfilefd);
-					break;
+					//update stats
+					numpackets -= packetsWritten;
+					totalPacketsInFile[ithread]  += packetsWritten;
+					pthread_mutex_lock(&writeMutex);
+					packetsCaught += packetsWritten;
+					totalPacketsCaught  += packetsWritten;
+					cout<<"totalpacketscaught:"<<totalPacketsCaught<<" packetscaught:" <<packetsCaught <<endl;
+					pthread_mutex_unlock(&writeMutex);
 				}
 			}
 
-			//update parameters
-			packetsInFile += packetsToSave;
-#ifdef DEBUG4
-			cprintf(GREEN,"Writing Thread: packetsCaught till now:%d packetsToSave:%d numMissingPackets:%d packetsCaught now:%d\n",
-					packetsCaughtPerThread[ithread],packetsToSave,numMissingPackets,(packetsToSave - numMissingPackets));
-#endif
-			packetsCaughtPerThread[ithread] += (packetsToSave - numMissingPackets);
-			pthread_mutex_lock(&progressMutex);
-			packetsCaught += (packetsToSave - numMissingPackets);
-			pthread_mutex_unlock(&progressMutex);
-			totalPacketsCaught += (packetsToSave - numMissingPackets);
-			numMissingPackets = 0;
-#ifdef DEBUG4
-			cprintf(GREEN,"Writing Thread: packetscaught:%d totalPacketsCaught:%d\n", packetsCaughtPerThread[ithread],totalPacketsCaught);
-#endif
 
-			//increase offset
-			if(myDetectorType != EIGER)
-				offset += (packetsToSave * onePacketSize);
-			numpackets -= packetsToSave;
+			while(numpackets){
+				if(!ithread)	cout<<ithread<<" loop: lastFrameNumberInFile[ithread]:"<<lastFrameNumberInFile[ithread]<<endl;
+				//new file
+				//create new file only if something has been written and modulus works
+				if((lastFrameNumberInFile[ithread]) &&(!(lastFrameNumberInFile[ithread] % maxFramesPerFile))){
+					if(!ithread) cout<<ithread <<" *** gonna create a new file!!"<<endl;
+					createNewFile(ithread);
+				}
+
+				//frames to save in one file
+				nextFileFrameNumber =   lastFrameNumberInFile[ithread] +
+						(maxFramesPerFile - (lastFrameNumberInFile[ithread]%maxFramesPerFile));
+				if(!ithread)	cout<<ithread<<" nextFileFrameNumber:"<<nextFileFrameNumber<<endl;
+				if(!ithread)	cout<<ithread<<" offset:"<<offset<<endl;
+
+				if(writeUptoFrameNumber(ithread, wbuffer, offset, nextFileFrameNumber, numpackets, packetsWritten) == FAIL)
+					//weird frame number of zero from fpga
+					return;
+
+				//update stats
+				numpackets -= packetsWritten;
+				totalPacketsInFile[ithread]  += packetsWritten;
+				pthread_mutex_lock(&writeMutex);
+				packetsCaught += packetsWritten;
+				totalPacketsCaught  += packetsWritten;
+
+				pthread_mutex_unlock(&writeMutex);
+				currentFrameNumber[ithread] += lastFrameNumberInFile[ithread]-1;
+			}
 		}
 	}
 
 	//only update parameters
 	else{
+
+		if(numpackets){
+			//get last frame number
+			uint64_t finalLastFrameNumberToSave = 0;
+			if(getFrameNumber(ithread, wbuffer + HEADER_SIZE_NUM_TOT_PACKETS + ((numpackets - 1) * onePacketSize), finalLastFrameNumberToSave) == FAIL){
+				//error in frame number sent by fpga
+				while(!fifoFree[ithread]->push(wbuffer));
+				return;
+			}
+			totalPacketsInFile[ithread] += numpackets;
+			lastFrameNumberInFile[ithread] = finalLastFrameNumberToSave+1;
+			currentFrameNumber[ithread] = finalLastFrameNumberToSave;
+		}
+
 		if(numberofWriterThreads > 1) pthread_mutex_lock(&writeMutex);
-		packetsInFile += numpackets;
-		packetsCaughtPerThread[ithread] += (numpackets - numMissingPackets);
-		pthread_mutex_lock(&progressMutex);
-		packetsCaught += (numpackets - numMissingPackets);
-		pthread_mutex_unlock(&progressMutex);
-		totalPacketsCaught += (numpackets - numMissingPackets);
-		numMissingPackets = 0;
+		packetsCaught += numpackets;
+		totalPacketsCaught += numpackets;
 		if(numberofWriterThreads > 1) pthread_mutex_unlock(&writeMutex);
 	}
 
+	//set indices
+	pthread_mutex_lock(&progressMutex);
+	if((currentFrameNumber[ithread] - startAcquisitionIndex) > acquisitionIndex)
+		acquisitionIndex = currentFrameNumber[ithread] - startAcquisitionIndex;
+	if((currentFrameNumber[ithread] - startFrameIndex) > frameIndex[ithread])
+		frameIndex[ithread] = currentFrameNumber[ithread] - startFrameIndex;
+	pthread_mutex_unlock(&progressMutex);
 }
 
 
 
 
-
-void UDPStandardImplementation::createHeaders(char* wbuffer[]){
-
-
-	int port = 0, missingPacket;
-	bool exitVal = 0;
-	eiger_packet_header_t* wbuf_header;
-	eiger_packet_footer_t* wbuf_footer;
-
-	for (uint32_t i = 0; i < packetsPerFrame; i++){
-
-
-		wbuf_header = (eiger_packet_header_t*) wbuffer[i];
-		wbuf_footer = (eiger_packet_footer_t*)(wbuffer[i] + footerOffset);
-#ifdef DEBUG4
-		cprintf(GREEN, "Loop index:%d Pnum:%d real fnum %d,missingPacket 0x%x\n",
-				i,
-				*( (uint16_t*) wbuf_footer->packetNumber),
-				(uint32_t)(*( (uint64_t*) wbuf_footer)),
-				*( (uint16_t*) wbuf_header->missingPacket)
-				); cout <<flush;
-#endif
-		//which port
-		if (i ==(packetsPerFrame/2))	port = 1;
-
-		//missing packet
-		if (*( (uint16_t*) wbuf_header->missingPacket)== missingPacketValue){
-#ifdef DEBUG4
-			cprintf(RED,"-Missing packet at Loop Index %d\n", i);
-#endif
-			missingPacket = 1;
-
-			//DEBUGGING
-			if(*( (uint16_t*) wbuf_footer->packetNumber) != (i+1)){
-				cprintf(BG_RED, "Writing_Thread: Packet Number Mismatch (missing p)! "
-						"i %d, real pnum %d, real fnum %d, missingPacket 0x%x\n",
-						i,
-						*( (uint16_t*) wbuf_footer->packetNumber),
-						(uint32_t)(*( (uint64_t*) wbuf_footer)),
-						*( (uint16_t*) wbuf_header->missingPacket));
-				exitVal =1;
-			}
-
-			//add frame number
-			*( (uint64_t*) wbuf_footer) = (currentFrameNumber+1) | (((uint64_t)(*( (uint16_t*) wbuf_footer->packetNumber)))<<0x30);
-			//*( (uint16_t*) wbuf_footer->packetNumber) = (i+1); // missing frames already have the right packet number
-#ifdef DEBUG4
-			cprintf(RED, "Missing Packet Loop index:%d fnum:%d Pnum:%d\n",i,
-					(uint32_t)(*( (uint64_t*) wbuf_footer)),
-					*( (uint16_t*) wbuf_footer->packetNumber));
-#endif
-		}
-		//normal packet
-		else{
-			missingPacket = 0;
-
-			//DEBUGGING
-			if(*( (uint16_t*) wbuf_footer->packetNumber) != ( (i>((packetsPerFrame/2)-1)?(i-(packetsPerFrame/2)+1):i+1)  )){
-				cprintf(BG_RED, "Writing_Thread: Packet Number Mismatch! "
-						"i %d, real pnum %d, real fnum %d, missingPacket 0x%x\n",
-						i,
-						*( (uint16_t*) wbuf_footer->packetNumber),
-						(uint32_t)(*( (uint64_t*) wbuf_footer)),
-						*( (uint16_t*) wbuf_header->missingPacket));
-				exitVal =1;
-			}
-
-			uint16_t p = *( (uint16_t*) wbuf_footer->packetNumber);
-			//correct the packet numbers of port2 so that port1 and 2 are not the same
-			if(port)  *( (uint16_t*) wbuf_footer->packetNumber) = (p +(packetsPerFrame/2));
-
-		}
-
-		//overwriting port number and dynamic range
-		*( (uint8_t*) wbuf_header->portIndex) = (uint8_t)port;
-		//*( (uint8_t*) wbuf_header->dynamicRange) = (uint8_t)dynamicRange;
-
-		//DEBUGGING
-		if(*( (uint16_t*) wbuf_footer->packetNumber) != (i+1)){
-			cprintf(BG_RED, "Writing_Thread: Packet Number Mismatch! "
-					"i %d, real pnum %d, real fnum %d, missingPacket 0x%x\n",
-					i,
-					*( (uint16_t*) wbuf_footer->packetNumber),
-					(uint32_t)(*( (uint64_t*) wbuf_footer)),
-					*( (uint16_t*) wbuf_header->missingPacket));
-			exitVal =1;
-		}
-	}
-
-	if(exitVal){exit(-1);}
-
-}
 
 
 void UDPStandardImplementation::updateFileHeader(int ithread){
@@ -2960,23 +2446,23 @@ void UDPStandardImplementation::updateFileHeader(int ithread){
 }
 
 
-void UDPStandardImplementation::copyFrameToGui(char* buffer[]){
+void UDPStandardImplementation::copyFrameToGui(int ithread, char* buffer){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 
 	//random read (gui not ready)
 	//need to toggle guiDataReady or the second frame wont be copied
-	if((!FrameToGuiFrequency) && (!guiData)){
+	if((!FrameToGuiFrequency) && (!guiData[ithread])){
 #ifdef DEBUG4
 		cprintf(GREEN,"Writing_Thread: CopyingFrame: Resetting guiDataReady\n");
 #endif
 		pthread_mutex_lock(&dataReadyMutex);
-		guiDataReady=0;
+		guiDataReady[ithread]=0;
 		pthread_mutex_unlock(&dataReadyMutex);
 	}
 
 	//if nthe frame, wait for your turn (1st frame always shown as its zero)
-	else if(FrameToGuiFrequency && ((frametoGuiCounter)%FrameToGuiFrequency));
+	else if(FrameToGuiFrequency && ((frametoGuiCounter[ithread])%FrameToGuiFrequency));
 
 	//random read (gui ready) or nth frame read: gui needs data now or it is the first frame
 	else{
@@ -2984,22 +2470,15 @@ void UDPStandardImplementation::copyFrameToGui(char* buffer[]){
 		cprintf(GREEN,"Writing_Thread: CopyingFrame: Gui needs data now OR 1st frame\n");
 #endif
 		pthread_mutex_lock(&dataReadyMutex);
-		guiDataReady=0;
+		guiDataReady[ithread]=0;
 #ifdef DEBUG4
 		cprintf(GREEN,"Writing_Thread: CopyingFrame: guidataready is  0, Copying data\n");
 #endif
-		switch(myDetectorType){
-		case EIGER:
-			for(uint32_t i=0; i<packetsPerFrame; ++i)
-				memcpy((((char*)latestData)+i * onePacketSize) ,buffer[i],onePacketSize);
-			break;
-		default:
-			memcpy(latestData,buffer[0] + HEADER_SIZE_NUM_TOT_PACKETS,bufferSize);
-			break;
-		}
+		memcpy(latestData[ithread],buffer + HEADER_SIZE_NUM_TOT_PACKETS,bufferSize);
 
-		strcpy(guiFileName,completeFileName);
-		guiDataReady=1;
+
+		strcpy(guiFileName[ithread],completeFileName[ithread]);
+		guiDataReady[ithread]=1;
 		pthread_mutex_unlock(&dataReadyMutex);
 #ifdef DEBUG4
 		cprintf(GREEN,"Writing_Thread: CopyingFrame: Copied Data, guidataready is 1\n");
@@ -3010,7 +2489,7 @@ void UDPStandardImplementation::copyFrameToGui(char* buffer[]){
 #ifdef DEBUG4
 			cprintf(GREEN,"Writing_Thread: CopyingFrame: Waiting after copying\n");
 #endif
-			sem_wait(&writerGuiSemaphore);
+			sem_wait(&writerGuiSemaphore[ithread]);
 #ifdef DEBUG4
 			cprintf(GREEN,"Writing_Thread: CopyingFrame: Done waiting\n");
 #endif
@@ -3020,7 +2499,7 @@ void UDPStandardImplementation::copyFrameToGui(char* buffer[]){
 
 	//update the counter for nth frame
 	if(FrameToGuiFrequency)
-		frametoGuiCounter++;
+		frametoGuiCounter[ithread]++;
 
 
 }
@@ -3029,32 +2508,32 @@ void UDPStandardImplementation::copyFrameToGui(char* buffer[]){
 
 
 
-void UDPStandardImplementation::handleDataCompression(int ithread, char* wbuffer[], uint64_t &nf){
+void UDPStandardImplementation::handleDataCompression(int ithread, char* wbuffer, uint64_t &nf){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
-	//frame number
-	uint64_t tempframenumber = ((uint32_t)(*((uint32_t*)(wbuffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))));
-	//for gotthard and normal frame, increment frame number to separate fnum and pnum
-	if (myDetectorType == PROPIX ||(myDetectorType == GOTTHARD && shortFrameEnable == -1))
-		tempframenumber++;
 	//get frame number
-	tempframenumber = (tempframenumber & frameIndexMask) >> frameIndexOffset;
-	//handle multi threads
-	pthread_mutex_lock(&progressMutex);
-	if(tempframenumber > currentFrameNumber)
-		currentFrameNumber = tempframenumber;
-	pthread_mutex_unlock(&progressMutex);
-	//set indices
-	acquisitionIndex = currentFrameNumber - startAcquisitionIndex;
-	frameIndex = currentFrameNumber - startFrameIndex;
+	uint64_t tempframenumber=-1;
+	if(getFrameNumber(ithread, wbuffer + HEADER_SIZE_NUM_TOT_PACKETS, tempframenumber) == FAIL){
+		//error in frame number sent by fpga
+		while(!fifoFree[ithread]->push(wbuffer));
+		return;
+	}
+	currentFrameNumber[ithread] = tempframenumber;
 
+	//set indices
+	pthread_mutex_lock(&progressMutex);
+	if((currentFrameNumber[ithread] - startAcquisitionIndex) > acquisitionIndex)
+		acquisitionIndex = currentFrameNumber[ithread] - startAcquisitionIndex;
+	if((currentFrameNumber[ithread] - startFrameIndex) > frameIndex[ithread])
+		frameIndex[ithread] = currentFrameNumber[ithread] - startFrameIndex;
+	pthread_mutex_unlock(&progressMutex);
 
 	//variable definitions
 	char* buff[2]={0,0};										//an array just to be compatible with copyframetogui
-	char* data = wbuffer[0]+ HEADER_SIZE_NUM_TOT_PACKETS;	//data pointer to the next memory to be analysed
+	char* data = wbuffer+ HEADER_SIZE_NUM_TOT_PACKETS;	//data pointer to the next memory to be analysed
 	int ndata;												//size of data returned
 	uint32_t np;													//remaining number of packets returned
-	uint32_t npackets = (uint32_t)(*((uint32_t*)wbuffer[0]));	//number of total packets
+	uint32_t npackets = (uint32_t)(*((uint32_t*)wbuffer));	//number of total packets
 	int remainingsize = npackets * onePacketSize;			//size of the memory slot to be analyzed
 
 	eventType thisEvent = PEDESTAL;
@@ -3120,8 +2599,8 @@ void UDPStandardImplementation::handleDataCompression(int ithread, char* wbuffer
 							//cout << "Fill in event: frmNr: " << iFrame <<  " ix " << ix << " iy " << iy << " type " <<  thisEvent << endl;
 #else
 							pthread_mutex_lock(&writeMutex);
-							if((fileWriteEnable) && (sfilefd))
-								singlePhotonDetectorObject[ithread]->writeCluster(sfilefd);
+							if((fileWriteEnable) && (sfilefd[0]))
+								singlePhotonDetectorObject[ithread]->writeCluster(sfilefd[0]);
 							pthread_mutex_unlock(&writeMutex);
 #endif
 						}
@@ -3129,38 +2608,229 @@ void UDPStandardImplementation::handleDataCompression(int ithread, char* wbuffer
 				}
 
 			nf++;
+
+
 #ifndef ALLFILE
-			pthread_mutex_lock(&progressMutex);
-			packetsInFile += packetsPerFrame;
-			packetsCaughtPerThread[0] += packetsPerFrame;
-			packetsCaught += packetsPerFrame;
-			totalPacketsCaught += packetsPerFrame;
-			if(packetsInFile >= (uint32_t)maxPacketsPerFile)
-				createNewFile(0);
-			pthread_mutex_unlock(&progressMutex);
+			totalPacketsInFile[ithread] += (bufferSize/packetsPerFrame);
+			pthread_mutex_lock(&writeMutex);
+			if((packetsCaught%packetsPerFrame) >= (uint32_t)maxFramesPerFile)
+				createNewFile(ithread);
+			packetsCaught += (bufferSize/packetsPerFrame);
+			totalPacketsCaught += (bufferSize/packetsPerFrame);
+			pthread_mutex_unlock(&writeMutex);
+
 
 #endif
 			if(!once){
-				copyFrameToGui(buff);
+				copyFrameToGui(ithread, buff[0]);
 				once = 1;
 			}
 		}
 
 		remainingsize -= ((buff[0] + ndata) - data);
 		data = buff[0] + ndata;
-		if(data > (wbuffer[0] + HEADER_SIZE_NUM_TOT_PACKETS + npackets * onePacketSize) )
+		if(data > (wbuffer + HEADER_SIZE_NUM_TOT_PACKETS + npackets * onePacketSize) )
 			cprintf(BG_RED,"Writing_Thread %d: Error: Compression data goes out of bounds!\n", ithread);
 	}
 
 
-	while(!fifoFree[0]->push(wbuffer[0]));
+	while(!fifoFree[0]->push(wbuffer));
 #ifdef EVERYFIFODEBUG
 	if(fifoFree[0]->getSemValue()<100)
-	cprintf(GREEN,"FifoFree[%d]: value:%d, push 0x%x\n",0,fifoFree[0]->getSemValue(),(void*)(wbuffer[0]));
+	cprintf(GREEN,"FifoFree[%d]: value:%d, push 0x%x\n",0,fifoFree[0]->getSemValue(),(void*)(wbuffer));
 #endif
 #ifdef DEBUG5
-	cprintf(GREEN,"Writing_Thread %d: Compression free pushed into fifofree %p for listerner 0\n", ithread, (void*)(wbuffer[0]));
+	cprintf(GREEN,"Writing_Thread %d: Compression free pushed into fifofree %p for listerner 0\n", ithread, (void*)(wbuffer));
 #endif
 }
+
+
+
+int UDPStandardImplementation::getFrameNumber(int ithread, char* wbuffer, uint64_t &tempframenumber){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
+	eiger_packet_footer_t* footer=0;
+	jfrau_packet_header_t* header=0;
+	int pnum=-1;
+
+	switch(myDetectorType){
+
+	case EIGER:
+		footer = (eiger_packet_footer_t*)(wbuffer + footerOffset);
+		tempframenumber = (uint32_t)(*( (uint64_t*) footer));
+		//error in frame number sent by fpga
+		if(!((uint32_t)(*( (uint64_t*) footer)))){
+			tempframenumber = -1;
+			FILE_LOG(logERROR) << "Fifo "<< ithread << ": Frame Number is zero from firmware.";
+			return FAIL;
+		}
+//#ifdef DEBUG4
+		if(!ithread) cprintf(GREEN,"Writing_Thread %d: fnum:%lld pnum:%d FPGA_fnum:%d footeroffset:%d\n",
+				ithread,
+				(long long int)tempframenumber,
+				(*( (uint16_t*) footer->packetNumber)),
+				(uint32_t)(*( (uint64_t*) footer)),
+				footerOffset);
+//#endif
+		break;
+
+	case JUNGFRAU:
+		header = (jfrau_packet_header_t*)(wbuffer);
+		tempframenumber = (*( (uint32_t*) header->frameNumber))&frameIndexMask;
+#ifdef DEBUG4
+		cprintf(GREEN, "Writing_Thread %d: fnum:%lld\t pnum:%d\n",
+				(long long int)tempframenumber,
+				(*( (uint8_t*) header->packetNumber)));
+#endif
+		break;
+
+	default:
+		tempframenumber = ((uint32_t)(*((uint32_t*)(wbuffer))));
+		//for gotthard and normal frame, increment frame number to separate fnum and pnum
+		if (myDetectorType == PROPIX ||(myDetectorType == GOTTHARD && shortFrameEnable == -1))
+			tempframenumber++;
+		pnum = tempframenumber&packetIndexMask;
+		tempframenumber = (tempframenumber & frameIndexMask) >> frameIndexOffset;
+#ifdef DEBUG4
+		cprintf(GREEN, "Writing_Thread %d: fnum:%lld\t pnum:%d\n",
+				(long long int)tempframenumber,
+				pnum);
+#endif
+
+		break;
+	}
+	return OK;
+}
+
+
+
+
+
+int UDPStandardImplementation::writeUptoFrameNumber(int ithread, char* wbuffer, int &offset, uint64_t nextFrameNumber, uint32_t numpackets, int &numPacketsWritten){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
+
+	bool expectedoffsetATlastpacket = false;
+	int startoffset = offset;
+	if(!ithread)	cout<<ithread<<" startoffset:"<<startoffset<<endl;
+	int endoffset = startoffset + numpackets * onePacketSize;
+	if(!ithread)	cout<<ithread<<" endoffset:"<<endoffset<<endl;
+
+	if(!ithread)	cout<<ithread<<" nextFrameNumber:"<<nextFrameNumber<<endl;
+	if(!ithread)	cout<<ithread<<" lastFrameNumberInFile[ithread]:"<<lastFrameNumberInFile[ithread]<<endl;
+
+	int expectedoffset = startoffset + ((nextFrameNumber - lastFrameNumberInFile[ithread]) * onePacketSize);
+	if(!ithread)	cout<<ithread<<" expected offset before:"<<expectedoffset<<endl;
+
+	if(expectedoffset >= endoffset){
+		expectedoffset = startoffset + ((numpackets -1) * onePacketSize);
+		expectedoffsetATlastpacket = true;
+	}
+	offset = expectedoffset;
+	if(!ithread)	cout<<ithread<<" expected offset:"<<expectedoffset<<endl;
+
+
+	//get frame number at expected offset
+	uint64_t tempframenumber=-1;
+	if(getFrameNumber(ithread, wbuffer + expectedoffset, tempframenumber) == FAIL){
+		//error in frame number sent by fpga
+		while(!fifoFree[ithread]->push(wbuffer));
+		return FAIL;
+	}
+	if(!ithread)	cout<<ithread<<" tempframenumber:"<<tempframenumber<<endl;
+
+	//last packet in buffer does not reach the nextframenumber, write all
+	if(expectedoffsetATlastpacket && tempframenumber < nextFrameNumber){
+		offset += onePacketSize;
+		if(!ithread)	cout<<ithread<<" final offset:"<<offset<<endl;
+	}else{
+
+		//if tempframenumber is too high, go backwards fast (by frame) and then slowly (by each packet) frontwards
+		if(tempframenumber>=nextFrameNumber){
+			if(!ithread)	cout<<ithread<<" too high, so going backwards fast:"<<endl;
+			while(tempframenumber>=nextFrameNumber){
+				offset -= (onePacketSize*packetsPerFrame);/** its ok..if jonbsperthread is 1, go packet by packet*/
+				if(!ithread)	cout<<ithread<<" offset:"<<offset<<endl;
+				if(offset<startoffset){
+					if(!ithread)	cout<<ithread<<" offset less than endoffset, breaking out"<<endl;
+					break;
+				}if(getFrameNumber(ithread, wbuffer + offset, tempframenumber) == FAIL){
+					//error in frame number sent by fpga
+					while(!fifoFree[ithread]->push(wbuffer));
+					return FAIL;
+				}
+				if(!ithread)	cout<<ithread<<" tempframenumber:"<<tempframenumber<<endl;
+			}
+			if(offset<startoffset){
+				offset = startoffset;
+				if(!ithread)	cout<<ithread<<" offset < start offset so offset now:"<<offset<<endl;
+			}
+			if(!ithread)	cout<<ithread<<" lower, so going forwards slow"<<endl;
+			while(tempframenumber<nextFrameNumber){
+				offset += onePacketSize;
+				if(!ithread)	cout<<ithread<<" offset:"<<offset<<endl;
+				if(getFrameNumber(ithread, wbuffer + offset, tempframenumber) == FAIL){
+					//error in frame number sent by fpga
+					while(!fifoFree[ithread]->push(wbuffer));
+					return FAIL;
+				}
+				if(!ithread)	cout<<ithread<<" tempframenumber:"<<tempframenumber<<endl;
+			}
+			if(!ithread)	cout<<ithread<<" final offset:"<<offset<<endl;
+			/** here*/
+		}
+
+		//if tempframenumber is too low, go forwards fast (by frame) and then slowly (by each packet) backwards
+		else{
+			if(!ithread)	cout<<ithread<<" too low, so going forwards fast:"<<endl;
+			while(tempframenumber<nextFrameNumber){
+				offset += (onePacketSize*packetsPerFrame);
+				if(!ithread)	cout<<ithread<<" offset:"<<offset<<endl;
+				if(offset>endoffset){if(!ithread)	cout<<ithread<<" offset greater than endoffset, breaking out"<<endl;
+				break;}
+				if(getFrameNumber(ithread, wbuffer + offset, tempframenumber) == FAIL){
+					//error in frame number sent by fpga
+					while(!fifoFree[ithread]->push(wbuffer));
+					return FAIL;
+				}
+				if(!ithread)	cout<<ithread<<" tempframenumber:"<<tempframenumber<<endl;
+			}
+			if(offset>endoffset){
+				offset = endoffset;
+				if(!ithread)	cout<<ithread<<" offset > end offset so offset now:"<<offset<<endl;
+			}
+			if(!ithread)	cout<<ithread<<" higher, so going backewards slow"<<endl;
+			while(tempframenumber>nextFrameNumber){
+				offset -= onePacketSize;
+				if(!ithread)	cout<<ithread<<" offset:"<<offset<<endl;
+				if(getFrameNumber(ithread, wbuffer + offset, tempframenumber) == FAIL){
+					//error in frame number sent by fpga
+					while(!fifoFree[ithread]->push(wbuffer));
+					return FAIL;
+				}
+				if(!ithread)	cout<<ithread<<" tempframenumber:"<<tempframenumber<<endl;
+			}
+			offset += onePacketSize;
+			if(!ithread)	cout<<ithread<<" final offset:"<<offset<<endl;
+			/** here*/
+		}
+	}
+
+
+	fwrite(wbuffer + startoffset, 1, offset-startoffset, sfilefd[ithread]);
+	if(!ithread)	cout<<" written "<<offset-startoffset<<" bytes"<<endl;
+	numPacketsWritten += ((offset-startoffset)/onePacketSize);
+	if(!ithread)	cout<<" numPacketsWritten:"<<numPacketsWritten<<endl;
+	lastFrameNumberInFile[ithread] += tempframenumber;
+	if(!ithread)	cout<<" lastFrameNumberInFile[ithread]:"<<lastFrameNumberInFile[ithread]<<endl;
+
+	return OK;
+}
+
+
+
+
+
+
 
 

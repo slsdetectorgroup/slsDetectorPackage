@@ -613,25 +613,13 @@ enum communicationProtocol{
 
     			 while(length>0){
     				 nsending = (length>packet_size) ? packet_size:length;
-    				 /*
-			 //created for debugging on 11.05.2015
-			 nsending=5000;
-			 nsent = recvfrom(socketDescriptor,(char*)buf,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
-			 if(nsent <1000){
-				 if(nsent < 48){
-					 cout << " "<<dec<<nsent<<" ";
-				 }else{
-					 cout << "nsent: " << dec<<nsent << "\tfnum:" <<
-						 htonl(*(unsigned int*)((eiger_image_header32 *)((char*)(buf)))->fnum)<< "\t";
-				 	 cout << k <<" packets" << endl;
-				 	 k = 0;
-				 }
-			 }
-			 else
-				 k++;
-    				  */
     				 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
-    				 if(!nsent) break;
+    				 if(nsent < packet_size) {
+    					 if(nsent){
+    						 cout << "Incomplete Packet size " << nsent << endl;
+    					 }
+    					 break;
+    				 }
     				 length-=nsent;
     				 total_sent+=nsent;
     			 }

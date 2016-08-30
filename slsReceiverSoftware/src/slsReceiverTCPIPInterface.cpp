@@ -930,6 +930,7 @@ int	slsReceiverTCPIPInterface::get_frames_caught(){
 		strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 		ret=FAIL;
 	}else retval=receiverBase->getTotalFramesCaught();
+	cout<<"frames caught sent:"<<retval<<endl;
 #endif
 	if(ret==OK && socket->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
@@ -2487,9 +2488,9 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 					dynamicrange = retval;
 					if(myDetectorType == EIGER){
 						if(!tenGigaEnable)
-							packetsPerFrame = EIGER_ONE_GIGA_CONSTANT * dynamicrange * EIGER_MAX_PORTS;
+							packetsPerFrame = EIGER_ONE_GIGA_CONSTANT * dynamicrange;
 						else
-							packetsPerFrame = EIGER_TEN_GIGA_CONSTANT * dynamicrange * EIGER_MAX_PORTS;
+							packetsPerFrame = EIGER_TEN_GIGA_CONSTANT * dynamicrange;
 					}else if (myDetectorType == JUNGFRAU)
 						packetsPerFrame = JFRAU_PACKETS_PER_FRAME;
 				}

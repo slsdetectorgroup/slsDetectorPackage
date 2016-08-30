@@ -78,6 +78,19 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 */
 	int setDataCompressionEnable(const bool b);
 
+	//***acquisition count parameters***
+	/**
+	 * Get Total Frames Caught for an entire acquisition (including all scans)
+	 * @return total number of frames caught for entire acquisition
+	 */
+	uint64_t getTotalFramesCaught() const;
+
+	/**
+	 * Get Frames Caught for each real time acquisition (eg. for each scan)
+	 * @return number of frames caught for each scan
+	 */
+	uint64_t getFramesCaught() const;
+
 	//***acquisition parameters***
 	/**
 	 * Overridden method
@@ -396,18 +409,6 @@ private:
 
 	/**
 	 * Called by processWritingBuffer and processWritingBufferPacketByPacket
-	 * Pops buffer from all the FIFOs and checks for dummy frames and end of acquisition
-	 * @param ithread current thread index
-	 * @param wbuffer the buffer array that is popped from all the FIFOs
-	 * @param ready if that FIFO is allowed to pop (depends on if dummy buffer already popped/ waiting for other FIFO to finish a frame(eiger))
-	 * @param nP number of packets in the buffer popped out
-	 * @param fifoTempFree circular fifo to save addresses of packets adding upto a frame before pushing into fifofree (eiger specific)
-	 * @return true if end of acquisition else false
-	 */
-	bool popAndCheckEndofAcquisition(int ithread, char* wbuffer[], bool ready[], uint32_t nP[],CircularFifo<char>* fifoTempFree[]);
-
-	/**
-	 * Called by processWritingBuffer and processWritingBufferPacketByPacket
 	 * When dummy-end buffers are popped from all FIFOs (acquisition over), this is called
 	 * It frees the FIFO addresses, closes all files
 	 * For data compression, it waits for all threads to be done
@@ -434,14 +435,14 @@ private:
 	 * @param wbuffer is the address of buffer popped out of FIFO
 	 * @param numpackets is the number of packets
 	 */
-	void writeFileWithoutCompression(int ithread, char* wbuffer[],uint32_t numpackets);
+	void writeFileWithoutCompression(int ithread, char* wbuffer,uint32_t numpackets);
 
 	/**
 	 * Called by writeToFileWithoutCompression
 	 * Create headers for file writing (at the moment, this is eiger specific)
 	 * @param wbuffer writing buffer popped from FIFOs
 	 */
-	void createHeaders(char* wbuffer[]);
+	void createHeaders(char* wbuffer);
 
 	/**
 	 * Updates the file header char aray, each time the corresp parameter is changed
@@ -456,11 +457,7 @@ private:
 	 * @param ithread writer thread index
 	 * @param buffer buffer to copy
 	 */
-	void copyFrameToGui(int ithread, char* buffer[]);
-
-	void processWritingBuffer(int ithread);
-
-	void processWritingBufferPacketByPacket(int ithread);
+	void copyFrameToGui(int ithread, char* buffer);
 
 	void waitWritingBufferForNextAcquisition(int ithread);
 
@@ -473,10 +470,28 @@ private:
 	 * @param wbuffer writer buffer
 	 * @param nf number of frames
 	 */
-	void handleDataCompression(int ithread, char* wbuffer[], uint64_t &nf);
+	void handleDataCompression(int ithread, char* wbuffer, uint64_t &nf);
 
 
+	/**
+	 * Get Frame Number
+	 * @param ithread writer thread index
+	 * @param wbuffer writer buffer
+	 * @param tempframenumber reference to the frame number
+	 * @return OK or FAIL
+	 */
+	int getFrameNumber(int ithread, char* wbuffer, uint64_t &tempframenumber);
 
+	/**
+	 * Find offset upto this frame number and write it to file
+	 * @param ithread writer thread index
+	 * @param wbuffer writer buffer
+	 * @param offset reference of offset to look from and replaces offset to starting of nextframenumber
+	 * @param nextFrameNumber frame number up to which data written
+	 * @param numpackets number of packets in buffer
+	 * @param numPacketsWritten number of packets written to file
+	 */
+	int writeUptoFrameNumber(int ithread, char* wbuffer, int &offset, uint64_t nextFrameNumber, uint32_t numpackets, int &numPacketsWritten);
 
 	/*************************************************************************
 	 * Class Members *********************************************************
@@ -526,8 +541,11 @@ private:
 	/** Complete File name */
 	char completeFileName[MAX_NUMBER_OF_WRITER_THREADS][MAX_STR_LENGTH];
 
+	/** File Name without frame index, file index and extension (_d0_f000000000000_8.raw)*/
+	char fileNamePerThread[MAX_NUMBER_OF_WRITER_THREADS][MAX_STR_LENGTH];
+
 		/** Maximum Frames Per File **/
-	int maxFramesPerFile;
+	uint64_t maxFramesPerFile;
 
 	/** If file created successfully for all Writer Threads */
 	bool fileCreateSuccess;
@@ -550,12 +568,12 @@ private:
 	/** Current Frame Number */
 	uint64_t currentFrameNumber[MAX_NUMBER_OF_WRITER_THREADS];
 
-
 	/** Previous Frame number from buffer to calculate loss */
-	int64_t previousFrameNumber[MAX_NUMBER_OF_WRITER_THREADS];
+	int64_t frameNumberInPreviousFile[MAX_NUMBER_OF_WRITER_THREADS];
 
 	/** Last Frame Index Listened To */
-	int32_t lastFrameIndex[MAX_NUMBER_OF_WRITER_THREADS];
+	int64_t lastFrameIndex[MAX_NUMBER_OF_WRITER_THREADS];
+
 
 
 	/* Acquisition started */
@@ -564,25 +582,14 @@ private:
 	/* Measurement started - for each thread to get progress print outs*/
 	bool measurementStarted[MAX_NUMBER_OF_LISTENING_THREADS];
 
-	/** Total Frame Count listened to by listening threads */
-	int totalListeningFrameCount[MAX_NUMBER_OF_LISTENING_THREADS];
+	/** Total packet Count listened to by listening threads */
+	int totalListeningPacketCount[MAX_NUMBER_OF_LISTENING_THREADS];
 
 	/** Pckets currently in current file, starts new file when it reaches max */
-	uint32_t packetsInFile[MAX_NUMBER_OF_WRITER_THREADS];
+	uint64_t lastFrameNumberInFile[MAX_NUMBER_OF_WRITER_THREADS];
 
-	/** Number of Missing Packets per buffer*/
-	uint32_t numMissingPackets[MAX_NUMBER_OF_WRITER_THREADS];
-
-	/** Total Number of Missing Packets in acquisition*/
-	uint32_t numTotMissingPackets;
-
-	/** Number of Missing Packets in file */
-	uint32_t numTotMissingPacketsInFile[MAX_NUMBER_OF_WRITER_THREADS];
-
-	/** packets caught per thread */
-	uint64_t packetsCaughtPerThread[MAX_NUMBER_OF_WRITER_THREADS];
-
-
+	/** packets in current file */
+	uint64_t totalPacketsInFile[MAX_NUMBER_OF_WRITER_THREADS];
 
 
 
@@ -721,8 +728,6 @@ private:
 	/** Progress (currentFrameNumber) Mutex  */
 	pthread_mutex_t progressMutex;
 
-	/** Progress (currentFrameNumber) Mutex  */
-	pthread_mutex_t udpSocketMutex[MAX_NUMBER_OF_LISTENING_THREADS];
 
 	//***callback***
 	/** The action which decides what the user and default responsibilities to save data are

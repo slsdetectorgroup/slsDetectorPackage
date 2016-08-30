@@ -513,7 +513,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	//***acquisition count parameters***
 	/** Total packets caught for an entire acquisition (including all scans) */
 	uint64_t totalPacketsCaught;
-	/** Frames Caught for each real time acquisition (eg. for each scan) */
+	/** Packets Caught for each real time acquisition (eg. for each scan) */
 	uint64_t packetsCaught;
 
 	//***acquisition indices parameters***

@@ -139,7 +139,7 @@ typedef struct {
 #define JFRAU_BUFFER_SIZE 					(JFRAU_ONE_PACKET_SIZE*JFRAU_PACKETS_PER_FRAME) 	//8214*128
 
 
-#define JFRAU_FRAME_INDEX_MASK				0x0 //Not Applicable, use struct
+#define JFRAU_FRAME_INDEX_MASK				0xffffff //mask after using struct (48 bit)
 #define JFRAU_FRAME_INDEX_OFFSET			0x0 //Not Applicable, use struct
 #define JFRAU_PACKET_INDEX_MASK				0x0//Not Applicable, use struct
 

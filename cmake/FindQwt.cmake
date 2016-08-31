@@ -1,0 +1,19 @@
+FIND_PATH (QWT_INCLUDE_DIR 
+    NAMES 
+        qwt.h 
+    HINTS
+        $ENV{QWTDIR}/src
+        /usr/include/qwt
+)
+
+FIND_LIBRARY (QWT_LIBRARY
+    NAMES qwt
+    HINTS
+        $ENV{QWTDIR}/lib
+)
+
+SET (QWT_LIBRARIES ${QWT_LIBRARY})
+
+INCLUDE ( FindPackageHandleStandardArgs )
+FIND_PACKAGE_HANDLE_STANDARD_ARGS( QWT DEFAULT_MSG QWT_LIBRARIES QWT_INCLUDE_DIR )
+

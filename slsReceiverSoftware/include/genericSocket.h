@@ -3,7 +3,7 @@
 #define GENERIC_SOCKET_H
 
 
-
+#include "ansi.h"
 
 
 /**
@@ -105,7 +105,8 @@ enum communicationProtocol{
 	 packet_size(ps),
 	 nsending(0),
 	 nsent(0),
-	 total_sent(0)// sender (client): where to? ip
+	 total_sent(0),// sender (client): where to? ip
+	 header_packet_size(0)
    { 
 	 //memset(&serverAddress, 0, sizeof(sockaddr_in));
 	 //memset(&clientAddress, 0, sizeof(sockaddr_in));
@@ -161,7 +162,7 @@ enum communicationProtocol{
 
   */
   
-   genericSocket(unsigned short int const port_number, communicationProtocol p, int ps = DEFAULT_PACKET_SIZE, const char *eth=NULL):
+   genericSocket(unsigned short int const port_number, communicationProtocol p, int ps = DEFAULT_PACKET_SIZE, const char *eth=NULL, int hsize=0):
      //portno(port_number),
      protocol(p),
      is_a_server(1),
@@ -170,7 +171,8 @@ enum communicationProtocol{
      packet_size(ps),
 	 nsending(0),
 	 nsent(0),
-	 total_sent(0)
+	 total_sent(0),
+	 header_packet_size(hsize)
    {
 
 /* // you can specify an IP address: */
@@ -616,7 +618,8 @@ enum communicationProtocol{
     				 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
     				 if(nsent < packet_size) {
     					 if(nsent){
-    						 cout << "Incomplete Packet size " << nsent << endl;
+    						 if(nsent != header_packet_size)
+    							 cprintf(RED,"Incomplete Packet size %d\n",nsent);
     					 }
     					 break;
     				 }
@@ -690,6 +693,11 @@ enum communicationProtocol{
 
      }
 
+
+     int getCurrentTotalReceived(){
+    	 return total_sent;
+     }
+
      char lastClientIP[INET_ADDRSTRLEN];
      char thisClientIP[INET_ADDRSTRLEN];
      int differentClients;
@@ -712,7 +720,7 @@ enum communicationProtocol{
   int nsending;
   int nsent;
   int total_sent;
-  
+  int header_packet_size;
        
 
   // pthread_mutex_t mp;

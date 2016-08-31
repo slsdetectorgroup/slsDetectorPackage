@@ -218,7 +218,7 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 * @param startAcq start index of the acquisition
 	 * @param startFrame start index of the scan
 	 */
-	void readFrame(int ithread, char* c,char** raw, uint64_t &startAcq, uint64_t &startFrame);
+	void readFrame(int ithread, char* c,char** raw, int64_t &startAcq, int64_t &startFrame);
 
 	/**
 	 * Overridden method
@@ -571,8 +571,6 @@ private:
 	/** Previous Frame number from buffer to calculate loss */
 	int64_t frameNumberInPreviousFile[MAX_NUMBER_OF_WRITER_THREADS];
 
-	/** Last Frame Index Listened To */
-	int64_t lastFrameIndex[MAX_NUMBER_OF_WRITER_THREADS];
 
 
 
@@ -586,7 +584,7 @@ private:
 	int totalListeningPacketCount[MAX_NUMBER_OF_LISTENING_THREADS];
 
 	/** Pckets currently in current file, starts new file when it reaches max */
-	uint64_t lastFrameNumberInFile[MAX_NUMBER_OF_WRITER_THREADS];
+	int64_t lastFrameNumberInFile[MAX_NUMBER_OF_WRITER_THREADS];
 
 	/** packets in current file */
 	uint64_t totalPacketsInFile[MAX_NUMBER_OF_WRITER_THREADS];

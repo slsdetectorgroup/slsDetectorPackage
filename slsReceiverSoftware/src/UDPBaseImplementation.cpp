@@ -431,7 +431,7 @@ int UDPBaseImplementation::shutDownUDPSockets(){
 	return OK;
 }
 
-void UDPBaseImplementation::readFrame(char* c,char** raw, uint64_t &startAcquisitionIndex, uint64_t &startFrameIndex){
+void UDPBaseImplementation::readFrame(int ithread, char* c,char** raw, int64_t &startAcquisitionIndex, int64_t &startFrameIndex){
 	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
 }

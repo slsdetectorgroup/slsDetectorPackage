@@ -1643,23 +1643,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 
 	if(status != TRANSMITTING)
 		receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + cSize, (bufferSize * numberofJobsPerBuffer) - cSize);
-
-	//throw away packets that is not one packet size
-	while((myDetectorType == EIGER) &&
-			(receivedSize != ((bufferSize * numberofJobsPerBuffer) - cSize)) &&
-			(status != TRANSMITTING)) {
-		if(receivedSize != EIGER_HEADER_LENGTH)
-			cprintf(RED,"Listening_Thread %d: Listened to a weird packet size %d\n",ithread, receivedSize);
-#ifdef DEBUG
-		else
-			cprintf(BLUE,"Listening_Thread %d: Listened to a header packet\n",ithread);
-#endif
-		//listen again
-		if(status != TRANSMITTING)
-			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + cSize, (bufferSize * numberofJobsPerBuffer) - cSize);
-		//cout<<ithread<<" receivedSize:"<<receivedSize<<endl;
-	}
-
+	cout<<ithread<<" receivedSize:"<<receivedSize<<endl;
 	totalListeningPacketCount[ithread] += (receivedSize/onePacketSize);
 
 #ifdef MANUALDEBUG

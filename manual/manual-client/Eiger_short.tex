@@ -96,7 +96,7 @@ We would recommend expert users (beamline people) to write their parameters file
 
 You will then need to setup the detector threshold and settings, the exposure time, the number of real time frames and eventually how many real time frames should be acquired:
 \begin{verbatim}
-sls_detector_put 0-settings [standard/highgain/lowgain]
+sls_detector_put 0-settings [veryhighgain/highgain/standard/lowgain/verylowgain]
 sls_detector_put 0-threshold 6000
 sls_detector_put 0-exptime 1[time_is_s]
 sls_detector_put 0-frames 10
@@ -104,8 +104,8 @@ sls_detector_put 0-period 0[time_is_s]
 \end{verbatim}
 In this case 10 consecutive 1~s frames will be acquired. Note that {\tt{period}} defines the sum of the acquisition time and the desired dead time before the next frame. If {\tt{period}} is set to 0, then the next frame will start as soon as the detector is ready to take another acquisition. \\
 
-For \E, at the moment 3 settings are possible: {\tt{standard}}, {\tt{lowgain}} and {\tt{highgain}}. According to the setting chosen, one can reach different energies. Refer to the settings requirements for your detector.\\ 
-Notice that the option  {\tt{settings standard/highgain/lowgain}} actually loads the trimbit files so it is time consuming. Only setting the {\tt{threshold}} does not load trimbit files.  
+For \E, at the moment 5 settings are possible: {\tt{standard}}, {\tt{lowgain}}, {\tt{verylowgain}}, {\tt{veryhighgain}} and {\tt{highgain}}. According to the setting chosen, one can reach different energies. Refer to the settings requirements for your detector.\\ 
+Notice that the option {\tt{settings standard/highgain/lowgain/veryhighgain/verylowgain}} actually loads the trimbit files so it is time consuming. Only setting the {\tt{threshold}} does not load trimbit files.  
 
 The threshold is expressed in (eV) as the proper threshold setting, i.e. normally is set to 50\% of the beam energy.  
 

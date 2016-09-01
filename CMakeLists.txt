@@ -2,14 +2,14 @@ cmake_minimum_required(VERSION 2.8)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 find_package(Qt4)
-find_package(Qwt)
+find_package(Qwt 6)
 find_package(CBF)
 find_package(Doxygen)
 
 add_subdirectory(slsDetectorSoftware)
 add_subdirectory(slsReceiverSoftware)
 add_subdirectory(slsImageReconstruction)
-if (QWT_FOUND)
+if (QWT_FOUND AND QWT_VERSION_STRING VERSION_LESS 6.1)
     add_subdirectory(slsDetectorGui)
 endif()
 

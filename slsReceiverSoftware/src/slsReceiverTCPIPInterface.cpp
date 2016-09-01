@@ -1685,9 +1685,25 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 				startAcquisitionIndex = -1;
 #ifdef VERYVERBOSE
 				cout<<"data not ready for gui yet"<<endl;
+				break;
 #endif
 			}
 			else{
+				eiger_packet_footer_t* wbuf_footer;
+				wbuf_footer = (eiger_packet_footer_t*)(raw + oneDataSize + sizeof(eiger_packet_header_t));
+				index =(uint32_t)(*( (uint64_t*) wbuf_footer));
+				index += (startFrameIndex-1);
+				if(dynamicrange == 32){
+					eiger_packet_header_t* wbuf_header;
+					wbuf_header = (eiger_packet_header_t*) raw;
+					subframenumber = *( (uint32_t*) wbuf_header->subFrameNumber);
+				}
+#ifdef VERYVERBOSE
+				cout << "index:" << dec << index << endl;
+				if(index>10000) exit(-1);
+				cout << "subframenumber:" << dec << subframenumber << endl;
+#endif
+
 				memcpy(((char*)origVal)+(i*onePacketSize*packetsPerFrame),raw,(frameSize/EIGER_MAX_PORTS));
 				raw=NULL;
 			}
@@ -1696,20 +1712,6 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 		if(startAcquisitionIndex != -1){
 			//cout<<"**** got proper frame ******"<<endl;
 
-			eiger_packet_footer_t* wbuf_footer;
-			wbuf_footer = (eiger_packet_footer_t*)(((char*)origVal) + oneDataSize + sizeof(eiger_packet_header_t));
-			index =(uint32_t)(*( (uint64_t*) wbuf_footer));
-			index += (startFrameIndex-1);
-			if(dynamicrange == 32){
-				eiger_packet_header_t* wbuf_header;
-				wbuf_header = (eiger_packet_header_t*) ((char*)origVal);
-				subframenumber = *( (uint32_t*) wbuf_header->subFrameNumber);
-			}
-
-//#ifdef VERYVERBOSE
-			cout << "index:" << dec << index << endl;
-			cout << "subframenumber:" << dec << subframenumber << endl;
-//#endif
 
 
 
@@ -1824,18 +1826,18 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 				startFrameIndex = -1;
 			else
 				frameIndex = index-startFrameIndex;
-//#ifdef VERY_VERY_DEBUG
+#ifdef VERY_VERY_DEBUG
 			cout << "acquisitionIndex calculated is:" << acquisitionIndex << endl;
 			cout << "frameIndex calculated is:" << frameIndex << endl;
 			cout << "index:" << index << endl;
 			cout << "startAcquisitionIndex:" << startAcquisitionIndex << endl;
 			cout << "startFrameIndex:" << startFrameIndex << endl;
 			cout << "subframenumber:" << subframenumber << endl;
-//#endif
+#endif
 		}
 	}
 
-//#ifdef VERYVERBOSE
+#ifdef VERYVERBOSE
 	if(frameIndex!=-1){
 		cout << "fName:" << fName << endl;
 		cout << "acquisitionIndex:" << acquisitionIndex << endl;
@@ -1844,7 +1846,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 		cout << "startFrameIndex:" << startFrameIndex << endl;
 		cout << "subframenumber:" << subframenumber << endl;
 	}
-//#endif
+#endif
 
 
 

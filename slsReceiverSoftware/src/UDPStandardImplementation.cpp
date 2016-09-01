@@ -1660,7 +1660,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 
 	totalListeningPacketCount[ithread] += (receivedSize/onePacketSize);
 
-#ifdef MANUALDEBUG
+//#ifdef MANUALDEBUG
 	if(receivedSize>0){
 		if(myDetectorType == JUNGFRAU){
 			jfrau_packet_header_t* header;
@@ -1681,7 +1681,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 					(uint32_t)(*( (uint64_t*) footer)));
 		}
 	}
-#endif
+//#endif
 #ifdef DEBUG
 	cprintf(BLUE, "Listening_Thread %d : Received bytes: %d. Expected bytes: %d\n", ithread, receivedSize, bufferSize * numberofJobsPerBuffer-cSize);
 #endif
@@ -2309,20 +2309,20 @@ void UDPStandardImplementation::writeFileWithoutCompression(int ithread, char* w
 			int offset = HEADER_SIZE_NUM_TOT_PACKETS;
 			uint64_t nextFileFrameNumber;
 			int packetsWritten = 0;
-
+			//if(ithread) cout<<"numpackets:"<<numpackets<<"lastframenumberinfile:"<<lastFrameNumberInFile[ithread]<<endl;
 
 			//handle half frames from previous buffer
 			//second part to not check when there has been something written previously
 			if(numpackets &&(lastFrameNumberInFile[ithread]>=0)){
 				//get start frame (required to create new file at the right juncture)
 				uint64_t startframe =-1;
-				//cout<<"getting start frame number"<<endl;
+				//if(ithread) cout<<"getting start frame number"<<endl;
 				if(getFrameNumber(ithread, wbuffer + offset, startframe) == FAIL){
 					//error in frame number sent by fpga
 					while(!fifoFree[ithread]->push(wbuffer));
 					return;
 				}
-				//cout<<"done getting start frame number"<<endl;
+				//if(ithread) cout<<"done getting start frame number"<<endl;
 				if(startframe == lastFrameNumberInFile[ithread]){
 					if(writeUptoFrameNumber(ithread, wbuffer, offset, startframe+1, numpackets, packetsWritten) == FAIL)
 						//weird frame number of zero from fpga
@@ -2711,7 +2711,7 @@ int UDPStandardImplementation::getFrameNumber(int ithread, char* wbuffer, uint64
 
 int UDPStandardImplementation::writeUptoFrameNumber(int ithread, char* wbuffer, int &offset, uint64_t nextFrameNumber, uint32_t numpackets, int &numPacketsWritten){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
-	//cout<<"at writeUptoFrameNumber" << endl;
+	//if(ithread) cout<<"at writeUptoFrameNumber " << nextFrameNumber<< endl;
 
 	int bigIncrements = onePacketSize * packetsPerFrame; //a frame at a time
 	if(numberofJobsPerBuffer == 1)	bigIncrements = onePacketSize; //a packet at a time as we listen to only one frame in a buffer
@@ -2730,7 +2730,7 @@ int UDPStandardImplementation::writeUptoFrameNumber(int ithread, char* wbuffer, 
 
 	//get frame number at expected offset
 	uint64_t tempframenumber=-1;
-	uint64_t frameNumberWritten=-1;//cout<<"frame number at expected ofset"<<endl;
+	uint64_t frameNumberWritten=-1;//if(ithread) cout<<"frame number at expected ofset"<<endl;
 	if(getFrameNumber(ithread, wbuffer + expectedoffset, tempframenumber) == FAIL){
 		//error in frame number sent by fpga
 		while(!fifoFree[ithread]->push(wbuffer));
@@ -2748,7 +2748,7 @@ int UDPStandardImplementation::writeUptoFrameNumber(int ithread, char* wbuffer, 
 			while(tempframenumber>=nextFrameNumber){
 				offset -= bigIncrements;
 				if(offset<startoffset)
-					break;//cout<<"frame number at going backwards fast"<<endl;
+					break;//if(ithread) cout<<"frame number at going backwards fast f#:"<<tempframenumber<< " offset:"<<offset<<endl;
 				if(getFrameNumber(ithread, wbuffer + offset, tempframenumber) == FAIL){
 					//error in frame number sent by fpga
 					while(!fifoFree[ithread]->push(wbuffer));
@@ -2756,7 +2756,7 @@ int UDPStandardImplementation::writeUptoFrameNumber(int ithread, char* wbuffer, 
 				}
 			}
 			if(offset<startoffset){
-				offset = startoffset;//cout<<"offset < start offset"<<endl;
+				offset = startoffset;//if(ithread) cout<<"offset < start offset f#:"<<tempframenumber<< " offset:"<<offset<<endl;
 				if(getFrameNumber(ithread, wbuffer + offset, tempframenumber) == FAIL){
 					//error in frame number sent by fpga
 					while(!fifoFree[ithread]->push(wbuffer));
@@ -2764,7 +2764,7 @@ int UDPStandardImplementation::writeUptoFrameNumber(int ithread, char* wbuffer, 
 				}
 			}
 			while(tempframenumber<nextFrameNumber){
-				offset += onePacketSize;//cout<<"frame number at going forwards slow"<<endl;
+				offset += onePacketSize;//if(ithread) cout<<"frame number at going forwards slow f#:"<<tempframenumber<< " offset:"<<offset<<endl;
 				if(getFrameNumber(ithread, wbuffer + offset, tempframenumber) == FAIL){
 					//error in frame number sent by fpga
 					while(!fifoFree[ithread]->push(wbuffer));
@@ -2778,7 +2778,7 @@ int UDPStandardImplementation::writeUptoFrameNumber(int ithread, char* wbuffer, 
 			while(tempframenumber<nextFrameNumber){
 				offset += bigIncrements;
 				if(offset>endoffset)
-					break;//cout<<"frame number at going forwards fast"<<endl;
+					break;//if(ithread) cout<<"frame number at going forwards fast f#:"<<tempframenumber<< " offset:"<<offset<<endl;
 				if(getFrameNumber(ithread, wbuffer + offset, tempframenumber) == FAIL){
 					//error in frame number sent by fpga
 					while(!fifoFree[ithread]->push(wbuffer));
@@ -2786,7 +2786,7 @@ int UDPStandardImplementation::writeUptoFrameNumber(int ithread, char* wbuffer, 
 				}
 			}
 			if(offset>endoffset){
-				offset = endoffset;//cout<<"frame number at offset>endoffset"<<endl;
+				offset = endoffset;//if(ithread) cout<<"frame number at offset>endoffset f#:"<<tempframenumber<< " offset:"<<offset<<endl;
 				if(getFrameNumber(ithread, wbuffer + offset, tempframenumber) == FAIL){
 					//error in frame number sent by fpga
 					while(!fifoFree[ithread]->push(wbuffer));
@@ -2794,7 +2794,7 @@ int UDPStandardImplementation::writeUptoFrameNumber(int ithread, char* wbuffer, 
 				}
 			}
 			while(tempframenumber>nextFrameNumber){
-				offset -= onePacketSize;//cout<<"frame number at going bacckwards slow"<<endl;
+				offset -= onePacketSize;//if(ithread) cout<<"frame number at going bacckwards slow f#:"<<tempframenumber<< " offset:"<<offset<<endl;
 				if(getFrameNumber(ithread, wbuffer + offset, tempframenumber) == FAIL){
 					//error in frame number sent by fpga
 					while(!fifoFree[ithread]->push(wbuffer));
@@ -2810,7 +2810,7 @@ int UDPStandardImplementation::writeUptoFrameNumber(int ithread, char* wbuffer, 
 	fwrite(wbuffer + startoffset, 1, offset-startoffset, sfilefd[ithread]);
 	numPacketsWritten += ((offset-startoffset)/onePacketSize);
 	lastFrameNumberInFile[ithread] = frameNumberWritten;
-	//cout<<"done with writeUptoFrameNumber" << endl;
+	//if(ithread) cout<<"done with writeUptoFrameNumber" << endl;
 	return OK;
 }
 

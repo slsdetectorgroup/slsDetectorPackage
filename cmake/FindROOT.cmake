@@ -4,6 +4,7 @@
 # ROOT_FOUND          If the ROOT is found
 # ROOT_INCLUDE_DIR    PATH to the include directory
 # ROOT_LIBRARIES      Most common libraries
+# ROOT_GUI_LIBRARIES  Most common libraries + GUI
 # ROOT_LIBRARY_DIR    PATH to the library directory 
 
 
@@ -35,8 +36,13 @@ else()
     OUTPUT_VARIABLE ROOT_LIBRARIES
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-  set(ROOT_LIBRARIES ${ROOT_LIBRARIES} -lThread -lMinuit -lHtml -lVMC -lEG -lGeom -lTreePlayer -lXMLIO -lProof)
-  set(ROOT_LIBRARIES ${ROOT_LIBRARIES} -lProofPlayer -lMLP -lSpectrum -lEve -lRGL -lGed -lXMLParser -lPhysics)
+  execute_process(
+    COMMAND ${ROOT_CONFIG_EXECUTABLE} --glibs
+    OUTPUT_VARIABLE ROOT_GUI_LIBRARIES
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  #set(ROOT_LIBRARIES ${ROOT_LIBRARIES} -lThread -lMinuit -lHtml -lVMC -lEG -lGeom -lTreePlayer -lXMLIO -lProof)
+  #set(ROOT_LIBRARIES ${ROOT_LIBRARIES} -lProofPlayer -lMLP -lSpectrum -lEve -lRGL -lGed -lXMLParser -lPhysics)
   set(ROOT_LIBRARY_DIR ${ROOTSYS}/lib)
 
   # Make variables changeble to the advanced user

@@ -30,7 +30,11 @@ class SlsQt2DZoomer:public QwtPlotZoomer{
   SlsQt2DHist* hist;
 
  public:
+#if QWT_VERSION < 0x060100
   SlsQt2DZoomer(QwtPlotCanvas *canvas):QwtPlotZoomer(canvas){
+#else
+  SlsQt2DZoomer(QWidget *canvas):QwtPlotZoomer(canvas){
+#endif
     setTrackerMode(AlwaysOn);
   }
 

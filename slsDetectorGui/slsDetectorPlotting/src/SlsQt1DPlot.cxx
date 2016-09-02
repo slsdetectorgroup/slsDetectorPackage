@@ -16,6 +16,10 @@
 #include <qwt_math.h>
 #include "SlsQt1DPlot.h"
 
+#if QWT_VERSION >= 0x060100
+#define QwtLog10ScaleEngine QwtLogScaleEngine
+#endif
+
 using namespace std;
 
 SlsQtH1D::SlsQtH1D(QString title,int n, double min, double max, double* data):QwtPlotCurve(title){
@@ -417,7 +421,7 @@ void SlsQt1DPlot::SetupZoom(){
 #endif
   zoomer->setMousePattern(QwtEventPattern::MouseSelect3,Qt::RightButton);
 
-  panner = new QwtPlotPanner(canvas());
+  panner = new QwtPlotPanner((QwtPlotCanvas*)canvas());
     panner->setAxisEnabled(QwtPlot::yRight, false);
     panner->setMouseButton(Qt::MidButton);
 
@@ -440,8 +444,8 @@ void SlsQt1DPlot::alignScales(){
     // the canvas frame, but is also a good example demonstrating
     // why the spreaded API needs polishing.
 
-    canvas()->setFrameStyle(QFrame::Box | QFrame::Plain );
-    canvas()->setLineWidth(1);
+    ((QwtPlotCanvas*)canvas())->setFrameStyle(QFrame::Box | QFrame::Plain );
+    ((QwtPlotCanvas*)canvas())->setLineWidth(1);
 
     for(int i = 0; i < QwtPlot::axisCnt; i++ ){
       QwtScaleWidget *scaleWidget = (QwtScaleWidget *)axisWidget(i);
@@ -460,7 +464,7 @@ void SlsQt1DPlot::UnknownStuff(){
   canvas()->setPaintAttribute(QwtPlotCanvas::PaintPacked, false);
 #else
   // We don't need the cache here
-   canvas()->setPaintAttribute(QwtPlotCanvas::BackingStore, false);
+   ((QwtPlotCanvas*)canvas())->setPaintAttribute(QwtPlotCanvas::BackingStore, false);
 
 #endif
 

@@ -38,9 +38,12 @@ void SlsQt1DZoomer::SetZoomBase(double xmin,double ymin,double x_width, double y
       #if QWT_VERSION < 0x50200
         float xmin_curr = plot()->axisScaleDiv(QwtPlot::xBottom)->lBound();
         float xmax_curr = plot()->axisScaleDiv(QwtPlot::xBottom)->hBound();
-      #else
+      #elif QWT_VERSION < 0x060100
         float xmin_curr = plot()->axisScaleDiv(QwtPlot::xBottom)->lowerBound();
         float xmax_curr = plot()->axisScaleDiv(QwtPlot::xBottom)->upperBound();
+      #else
+        float xmin_curr = plot()->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+        float xmax_curr = plot()->axisScaleDiv(QwtPlot::xBottom).upperBound();
       #endif
       if(xmin_curr<xmin)         xmin_curr=xmin;
       if(xmax_curr>xmin+x_width) xmax_curr=xmin+x_width;
@@ -50,9 +53,12 @@ void SlsQt1DZoomer::SetZoomBase(double xmin,double ymin,double x_width, double y
       #if QWT_VERSION < 0x50200
         float ymin_curr = plot()->axisScaleDiv(QwtPlot::yLeft)->lBound();
         float ymax_curr = plot()->axisScaleDiv(QwtPlot::yLeft)->hBound();
-      #else
+      #elif QWT_VERSION < 0x060100
         float ymin_curr = plot()->axisScaleDiv(QwtPlot::yLeft)->lowerBound();
         float ymax_curr = plot()->axisScaleDiv(QwtPlot::yLeft)->upperBound();
+      #else
+        float ymin_curr = plot()->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+        float ymax_curr = plot()->axisScaleDiv(QwtPlot::yLeft).upperBound();
       #endif
       if(ymin_curr<ymin)         ymin_curr=ymin;
       if(ymax_curr>ymin+y_width) ymax_curr=ymin+y_width;

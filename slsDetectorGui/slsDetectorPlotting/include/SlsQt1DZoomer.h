@@ -27,7 +27,11 @@ class SlsQt1DZoomer:public QwtPlotZoomer{
   bool xIsLog,yIsLog;
 
  public:
+#if QWT_VERSION < 0x060100
   SlsQt1DZoomer(QwtPlotCanvas *canvas):QwtPlotZoomer(canvas){
+#else
+  SlsQt1DZoomer(QWidget *canvas):QwtPlotZoomer(canvas){
+#endif
     setTrackerMode(AlwaysOn);
     xIsLog=yIsLog=0;
   }

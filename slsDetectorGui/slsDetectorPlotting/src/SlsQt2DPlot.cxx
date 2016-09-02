@@ -5,6 +5,7 @@
  */
 
 
+#include <cmath>
 #include <iostream>
 #include <qprinter.h>
 #include <qtoolbutton.h>
@@ -23,6 +24,10 @@
 #include <qwt_scale_engine.h>
 
 #include "SlsQt2DPlot.h"
+
+#if QWT_VERSION >= 0x060100
+#define QwtLog10ScaleEngine QwtLogScaleEngine
+#endif
 
 using namespace std;
 

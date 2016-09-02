@@ -220,6 +220,8 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 */
 	void readFrame(int ithread, char* c,char** raw, int64_t &startAcq, int64_t &startFrame);
 
+
+	void resetGuiPointer(int ithread);
 	/**
 	 * Overridden method
 	 * Closes file / all files(data compression involves multiple files)
@@ -456,8 +458,9 @@ private:
 	 * Uses semaphore for nth frame mode
 	 * @param ithread writer thread index
 	 * @param buffer buffer to copy
+	 * @param numpackets number of packets to copy
 	 */
-	void copyFrameToGui(int ithread, char* buffer);
+	void copyFrameToGui(int ithread, char* buffer, uint32_t numpackets);
 
 	void waitWritingBufferForNextAcquisition(int ithread);
 
@@ -588,6 +591,9 @@ private:
 
 	/** packets in current file */
 	uint64_t totalPacketsInFile[MAX_NUMBER_OF_WRITER_THREADS];
+
+	/**Total packet count written by each writing thread */
+	uint64_t totalWritingPacketCount[MAX_NUMBER_OF_LISTENING_THREADS];
 
 
 

@@ -9,7 +9,7 @@ find_package(Doxygen)
 add_subdirectory(slsDetectorSoftware)
 add_subdirectory(slsReceiverSoftware)
 add_subdirectory(slsImageReconstruction)
-if (QWT_FOUND AND QWT_VERSION_STRING VERSION_LESS 6.1)
+if (QT4_FOUND AND QWT_FOUND)
     add_subdirectory(slsDetectorGui)
 endif()
 

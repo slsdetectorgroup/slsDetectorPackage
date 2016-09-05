@@ -791,6 +791,11 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="adc"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
+  i++;
+
+
   /* r/w timers */
 
   descrToFuncMap[i].m_pFuncName="timing"; //
@@ -3859,6 +3864,7 @@ string slsDetectorCommand::helpDAC(int narg, char *args[], int action) {
 string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
 
   dacIndex adc;
+  int idac;
   //  double val=-1;
   char answer[1000];
   
@@ -3866,8 +3872,11 @@ string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
     return helpADC(narg, args, action);
   else if (action==PUT_ACTION)
     return string("cannot set ")+cmd;
-  
-  if (cmd=="temp_adc")
+    
+  if (sscanf(args[0],"adc:%d",&idac)==1) {
+    printf("chiptestboard!\n");
+    adc=(dacIndex)(idac+1000);
+  } else if (cmd=="temp_adc")
     adc=TEMPERATURE_ADC;
   else if (cmd=="temp_fpga")
     adc=TEMPERATURE_FPGA;
@@ -3893,7 +3902,11 @@ string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
   sprintf(answer,"%f",myDet->getADC(adc));
 #endif
   //if ((adc == TEMPERATURE_ADC) || (adc == TEMPERATURE_FPGA))
-  strcat(answer,"°C");
+  if (adc<1000)
+    strcat(answer,"°C");
+  else
+    strcat(answer,"mV");
+    
   return string(answer);
 
 }
@@ -4001,12 +4014,13 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
     rval=(double)ret*1E-9;
   else rval=ret;
 
+  //  cout << "here!"<< endl;
   //set frame index
   if (index==FRAME_NUMBER || index==CYCLES_NUMBER ){
-	  if ((myDet->setTimer(FRAME_NUMBER,-1)*myDet->setTimer(CYCLES_NUMBER,-1))>1)
-		  myDet->setFrameIndex(0);
-	  else
-		  myDet->setFrameIndex(-1);
+    if ((myDet->setTimer(FRAME_NUMBER,-1)*myDet->setTimer(CYCLES_NUMBER,-1))>1) {
+      myDet->setFrameIndex(0);
+    } else
+      myDet->setFrameIndex(-1);
   }
 
 

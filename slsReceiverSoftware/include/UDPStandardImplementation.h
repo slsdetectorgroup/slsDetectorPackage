@@ -289,6 +289,12 @@ private:
 	/*************************************************************************
 	 * Listening and Writing Threads *****************************************
 	 *************************************************************************/
+	/**
+	 * Create Data Call Back Threads
+	 * @param destroy is true to destroy all the threads
+	 * @return OK or FAIL
+	 */
+	int createDataCallbackThreads(bool destroy = false);
 
 	/**
 	 *  Create Listening Threads
@@ -302,6 +308,9 @@ private:
 	 * @return OK or FAIL
 	 */
 	int createWriterThreads(bool destroy = false);
+
+
+
 
 	/**
 	 * Set Thread Priorities
@@ -337,6 +346,12 @@ private:
 	int createCompressionFile(int ithread, int iframe);
 
 	/**
+	 * Static function - Starts Data Callback Thread of this object
+	 * @param this_pointer pointer to this object
+	 */
+	static void* startDataCallbackThread(void *this_pointer);
+
+	/**
 	 * Static function - Starts Listening Thread of this object
 	 * @param this_pointer pointer to this object
 	 */
@@ -347,6 +362,11 @@ private:
 	 * @param this_pointer pointer to this object
 	 */
 	static void* startWritingThread(void *this_pointer);
+
+	/**
+	 * Thread that sends data packets to client
+	 */
+	void startDataCallback();
 
 	/**
 	 * Thread that listens to packets
@@ -652,6 +672,24 @@ private:
 
 
 
+	//***data call back thread parameters***
+	/** Number of data callback Threads */
+	int numberofDataCallbackThreads;
+
+	/** Data Callback Threads */
+	pthread_t dataCallbackThreads[MAX_NUMBER_OF_LISTENING_THREADS];
+
+	/** Semaphores Synchronizing DataCallback Threads */
+	sem_t dataCallbackSemaphore[MAX_NUMBER_OF_LISTENING_THREADS];
+
+	/** Mask with each bit indicating status of each data callback thread  */
+	volatile uint32_t dataCallbackThreadsMask;
+
+	/** Set to self-terminate data callback threads waiting for semaphores */
+	bool killAllDataCallbackThreads;
+
+	bool dataCallbackEnabled;
+
 
 	//***general and listening thread parameters***
 	/** Ensures if threads created successfully */
@@ -668,9 +706,6 @@ private:
 
 	/** Semaphores Synchronizing Listening Threads */
 	sem_t listenSemaphore[MAX_NUMBER_OF_LISTENING_THREADS];
-
-	/** Current Listening Thread Index*/
-	int currentListeningThreadIndex;
 
 	/** Mask with each bit indicating status of each listening thread  */
 	volatile uint32_t listeningThreadsMask;

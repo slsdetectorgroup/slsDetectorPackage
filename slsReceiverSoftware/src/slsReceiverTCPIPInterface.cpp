@@ -353,6 +353,10 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
 		}
+		else if((receiverBase)&&(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING)){
+			strcpy(mess,"Can not set detector type while receiver not idle\n");
+			ret = FAIL;
+		}
 		else{
 
 			switch(dr){
@@ -443,6 +447,10 @@ int slsReceiverTCPIPInterface::set_file_name() {
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set file name while receiver not idle\n");
+			ret = FAIL;
+		}
 		else{
 			receiverBase->setFileName(fName);
 			retval = receiverBase->getFileName();
@@ -506,14 +514,14 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 		if (lockStatus==1 && socket->differentClients==1){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
-		}/*
-		else if((strlen(fPath))&&(receiverBase->getStatus()==RUNNING)){
-			strcpy(mess,"Can not set file path while receiver running\n");
-			ret = FAIL;
-		}*/
+		}
 		else if (receiverBase == NULL){
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
+		}
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set file path while receiver not idle\n");
+			ret = FAIL;
 		}
 		else{
 			receiverBase->setFilePath(fPath);
@@ -584,6 +592,10 @@ int slsReceiverTCPIPInterface::set_file_index() {
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set file index while receiver not idle\n");
+			ret = FAIL;
+		}
 		else{
 			if(index >= 0)
 				receiverBase->setFileIndex(index);
@@ -647,6 +659,10 @@ int slsReceiverTCPIPInterface::set_frame_index() {
 		else if (receiverBase == NULL){
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
+		}
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set frame index while receiver not idle\n");
+			ret = FAIL;
 		}
 		else{
 			//client sets to 0, but for receiver it is just an enable
@@ -725,9 +741,9 @@ int slsReceiverTCPIPInterface::setup_udp(){
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
-		else if(receiverBase->getStatus()==RUNNING){
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set up udp while receiver not idle\n");
 			ret = FAIL;
-			strcpy(mess,"cannot set up udp when receiver is running\n");
 		}
 		else{
 			//set up udp port
@@ -859,9 +875,12 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 		ret=FAIL;
 	}
 	else{
-		if(receiverBase->getStatus()!=IDLE)
+		if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
 			receiverBase->stopReceiver();
+			cout<<"receiver stopped"<<endl;
+		}
 		s = receiverBase->getStatus();
+		cout<<"to stop, receiver status:"<<s<<endl;
 		if(s==IDLE)
 			ret = OK;
 		else{
@@ -1060,7 +1079,7 @@ int slsReceiverTCPIPInterface::set_short_frame() {
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
-		else if(receiverBase->getStatus()==RUNNING){
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
 			strcpy(mess,"Cannot set short frame while status is running\n");
 			ret=FAIL;
 		}
@@ -2077,6 +2096,10 @@ int slsReceiverTCPIPInterface::set_read_frequency(){
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set receiver frequency mode while receiver not idle\n");
+			ret = FAIL;
+		}
 		/*
 		else if((receiverBase->getStatus()==RUNNING) && (index >= 0)){
 			ret = FAIL;
@@ -2141,6 +2164,10 @@ int slsReceiverTCPIPInterface::enable_file_write(){
 		else if (receiverBase == NULL){
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
+		}
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set file write mode while receiver not idle\n");
+			ret = FAIL;
 		}
 		else{
 			if(enable >= 0)
@@ -2213,7 +2240,12 @@ int	slsReceiverTCPIPInterface::start_readout(){
 	if (receiverBase == NULL){
 		strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 		ret=FAIL;
-	}else{
+	}
+	else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+		strcpy(mess,"Can not start receiver readout while receiver not idle\n");
+		ret = FAIL;
+	}
+	else{
 		receiverBase->startReadout();
 		retval = receiverBase->getStatus();
 		if((retval == TRANSMITTING) || (retval == RUN_FINISHED) || (retval == IDLE))
@@ -2268,6 +2300,10 @@ int slsReceiverTCPIPInterface::set_timer() {
 		else if (receiverBase == NULL){
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
+		}
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set timer while receiver not idle\n");
+			ret = FAIL;
 		}
 		else{
 			if(index[0] == FRAME_PERIOD){
@@ -2344,7 +2380,7 @@ int slsReceiverTCPIPInterface::enable_compression() {
 				strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 				ret=FAIL;
 			}
-			else if(receiverBase->getStatus()==RUNNING){
+			else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
 				strcpy(mess,"Cannot enable/disable compression while status is running\n");
 				ret=FAIL;
 			}
@@ -2412,6 +2448,10 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 		else if (receiverBase == NULL){
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
+		}
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set detector hostname while receiver not idle\n");
+			ret = FAIL;
 		}
 		else{
 			receiverBase->initialize(hostname);
@@ -2494,7 +2534,12 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 			if (receiverBase == NULL){
 				strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 				ret=FAIL;
-			}else{
+			}
+			else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+				strcpy(mess,"Can not set dynamic range while receiver not idle\n");
+				ret = FAIL;
+			}
+			else{
 				if(dr > 0){
 					ret = receiverBase->setDynamicRange(dr);
 					if(ret == FAIL)
@@ -2571,6 +2616,10 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set overwrite mode while receiver not idle\n");
+			ret = FAIL;
+		}
 		else{
 			if(index >= 0)
 				receiverBase->setOverwriteEnable(index);
@@ -2633,6 +2682,10 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 		else if (receiverBase == NULL){
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
+		}
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set up 1Giga/10Giga mode while receiver not idle\n");
+			ret = FAIL;
 		}
 		else{
 			if(val >= 0)
@@ -2699,7 +2752,7 @@ int slsReceiverTCPIPInterface::set_fifo_depth() {
 				strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 				ret=FAIL;
 			}
-			else if(receiverBase->getStatus()==RUNNING){
+			else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
 				strcpy(mess,"Cannot set/get fifo depth while status is running\n");
 				ret=FAIL;
 			}

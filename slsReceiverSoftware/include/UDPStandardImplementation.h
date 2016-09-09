@@ -71,6 +71,13 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 
 	//*** file parameters***
 	/**
+	 * Set File Name Prefix (without frame index, file index and extension (_d0_f000000000000_8.raw))
+	 * Does not check for file existence since it is created only at startReceiver
+	 * @param c file name (max of 1000 characters)
+	 */
+	void setFileName(const char c[]);
+
+	/**
 	 * Overridden method
 	 * Set data compression, by saving only hits (so far implemented only for Moench and Gotthard)
 	 * @param b true for data compression enable, else false
@@ -500,10 +507,11 @@ private:
 	 * Get Frame Number
 	 * @param ithread writer thread index
 	 * @param wbuffer writer buffer
-	 * @param tempframenumber reference to the frame number
+	 * @param framenumber reference to the frame number
+	 * @param packetnumber reference to the packet number
 	 * @return OK or FAIL
 	 */
-	int getFrameNumber(int ithread, char* wbuffer, uint64_t &tempframenumber);
+	int getFrameandPacketNumber(int ithread, char* wbuffer, uint64_t &framenumber, uint32_t &packetnumber);
 
 	/**
 	 * Find offset upto this frame number and write it to file
@@ -530,6 +538,9 @@ private:
 #endif
 
 	//**detector parameters***
+	/*Detector Readout ID*/
+	int detID;
+
 	/** Size of 1 buffer processed at a time */
 	int bufferSize;
 
@@ -655,17 +666,17 @@ private:
 	/** Current Frame copied for GUI */
 	char* latestData[MAX_NUMBER_OF_WRITER_THREADS];
 
-	/** If Data to be sent to GUI is ready */
-	bool guiDataReady[MAX_NUMBER_OF_WRITER_THREADS];
-
-	/** Pointer to data to be sent to GUI */
-	char* guiData[MAX_NUMBER_OF_WRITER_THREADS];
-
 	/** Pointer to file name to be sent to GUI */
 	char guiFileName[MAX_NUMBER_OF_WRITER_THREADS][MAX_STR_LENGTH];
 
+	/** Number of packets copied to be sent to gui (others padded) */
+	int guiNumPackets[MAX_NUMBER_OF_WRITER_THREADS];
+
 	/** Semaphore to synchronize Writer and GuiReader threads*/
-	sem_t writerGuiSemaphore[MAX_NUMBER_OF_WRITER_THREADS];
+	sem_t writerGuiSemaphore[MAX_NUMBER_OF_WRITER_THREADS]; //datacompression, only first thread sends to gui
+
+	/** Semaphore to synchronize Writer and GuiReader threads*/
+	sem_t dataCallbackWriterSemaphore[MAX_NUMBER_OF_WRITER_THREADS]; //datacompression, only first thread sends to gui
 
 	/** counter for nth frame to gui */
 	int frametoGuiCounter[MAX_NUMBER_OF_WRITER_THREADS];
@@ -673,6 +684,9 @@ private:
 
 
 	//***data call back thread parameters***
+	/** Ensures if zmq threads created successfully */
+	bool zmqThreadStarted;
+
 	/** Number of data callback Threads */
 	int numberofDataCallbackThreads;
 

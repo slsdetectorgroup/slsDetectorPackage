@@ -29,7 +29,7 @@ extern "C" {
 #include <sstream>
 #include <queue>
 #include <math.h>
-
+#include <semaphore.h>
 using namespace std;
 
 
@@ -641,14 +641,9 @@ virtual int getReceiverCurrentFrameIndex()=0;
 virtual int resetFramesCaught()=0;
 
 /**
- * Reads a frame from receiver
- * @param fName file name of current frame()
- * @param acquisitionIndex current acquisition index
- * @param frameIndex current frame index (for each scan)
- * @param subFrameIndex current sub frame index (for 32 bit mode for eiger)
- /returns a frame read from recever
+ * Reads frames from receiver through a constant socket
 */
-virtual int* readFrameFromReceiver(char* fName, int &acquisitionIndex, int &frameIndex, int &subFrameIndex)=0;
+virtual void readFrameFromReceiver()=0;
 
 
 /**
@@ -850,6 +845,14 @@ virtual int setReceiverFifoDepth(int i = -1)=0;
   int (*progress_call)(double,void*);
   void *pProgressCallArg;
   
+  public:
+  //data call back
+  //individual sls and multi
+  sem_t sem_slsdone[MAXDET];
+  sem_t sem_slswait[MAXDET];
+  int* slsframe[MAXDET];
+
+
 };
 
 

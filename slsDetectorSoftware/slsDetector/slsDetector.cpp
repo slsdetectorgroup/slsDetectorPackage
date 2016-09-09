@@ -10,7 +10,7 @@
 #include <cstdlib>
 #include <math.h>
 #include "gitInfoLib.h"
-
+#include <zmq.h>
 
 int slsDetector::initSharedMemory(detectorType type, int id) {
 
@@ -7145,58 +7145,125 @@ int slsDetector::resetFramesCaught(){
 
 
 
-int* slsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex, int &frameIndex, int &subFrameIndex){
-	int fnum=F_READ_RECEIVER_FRAME;
-	int nel=thisDetector->dataBytes/sizeof(int);
-	int* retval=new int[nel];
-	int ret=FAIL;
-	int n;
-	char mess[MAX_STR_LENGTH]="Nothing";
+void slsDetector::readFrameFromReceiver(){
 
-	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
-#ifdef VERBOSE
-		std::cout<< "slsDetector: Reading frame from receiver "<< thisDetector->dataBytes << " " <<nel <<std::endl;
-#endif
-		if (connectData() == OK){
-			dataSocket->SendDataOnly(&fnum,sizeof(fnum));
-			dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+	//determine number of half readouts
+	int numReadout = 1;
+	if(thisDetector->myDetectorType == EIGER)	numReadout = 2;
+	int readoutId = detId*numReadout;
+	volatile uint64_t runningMask = 0x0;
 
-			if (ret==FAIL) {
-				n= dataSocket->ReceiveDataOnly(mess,sizeof(mess));
-				std::cout<< "Detector returned: " << mess << " " << n << std::endl;
-				delete [] retval;
-				disconnectData();
-				return NULL;
-			} else {
-				n=dataSocket->ReceiveDataOnly(fName,MAX_STR_LENGTH);
-				n=dataSocket->ReceiveDataOnly(&acquisitionIndex,sizeof(acquisitionIndex));
-				n=dataSocket->ReceiveDataOnly(&frameIndex,sizeof(frameIndex));
-				if(thisDetector->myDetectorType == EIGER)
-					n=dataSocket->ReceiveDataOnly(&subFrameIndex,sizeof(subFrameIndex));
-				n=dataSocket->ReceiveDataOnly(retval,thisDetector->dataBytes);
+	//server details
+	char hostname[numReadout][100];
+	int portno[numReadout];
+	int nel=(thisDetector->dataBytes/numReadout)/sizeof(int);
+	for(int i=0;i<numReadout;++i){
+		portno[i] = DEFAULT_ZMQ_PORTNO + (readoutId+i);
+		sprintf(hostname[i], "%s%d", "tcp://127.0.0.1:",portno[i]);
+		//cout << "ZMQ Client of " << readoutId+i << " at " << hostname[i] << endl;
 
-#ifdef VERBOSE
-				std::cout<< "Received "<< n << " data bytes" << std::endl;
-#endif
-				if (n!=thisDetector->dataBytes) {
-					std::cout<<endl<< "wrong data size received: received " << n << " but expected from receiver " << thisDetector->dataBytes << std::endl;
-					ret=FAIL;
-					delete [] retval;
-					disconnectData();
-					return NULL;
-				}
-
-				//jungfrau masking adcval
-				if(thisDetector->myDetectorType == JUNGFRAU){
-					for(unsigned int i=0;i<nel;i++){
-						retval[i] = (retval[i] & 0x3FFF3FFF);
-					}
-				}
-			}
-			disconnectData();
-		}
+		parentDet->slsframe[readoutId+i]=new int[nel];
 	}
-	return retval;
+
+
+	//loop though the half readouts to start sockets
+	void *context[numReadout];
+	void *zmqsocket[numReadout];
+	for(int i=0;i<numReadout;++i){
+		context[i] = zmq_ctx_new();
+		zmqsocket[i] = zmq_socket(context[i], ZMQ_SUB);
+		// an empty string implies receiving any messages
+		zmq_setsockopt(zmqsocket[i], ZMQ_SUBSCRIBE, "", 0);
+		// connect to publisher
+		// the publisher server does not have to be started
+		zmq_connect(zmqsocket[i], hostname[i]);
+
+		runningMask|=(1<<(i));
+
+	}
+
+
+	//receive msgs and let multi know
+	zmq_msg_t message;
+	int len,idet = 0;
+	int framecount=0;
+
+
+	while(true){
+
+
+		for(int idet=0; idet<numReadout; ++idet){
+			if((1 << idet) & runningMask){
+
+
+
+				sem_wait(&parentDet->sem_slswait[readoutId+idet]);//wait for it to be copied
+
+
+				//update indices
+				if(!idet)	framecount++; //count only once
+
+				// receive a message, this is a blocking function
+				len = zmq_msg_init (&message); /* is this required? Xiaoqiang didnt have it*/
+				if(len) {cprintf(RED,"Failed to initialize message %d for %d\n",len,readoutId+idet); continue; }//error
+				len = zmq_msg_recv(&message, zmqsocket[idet], 0);
+
+						 //int size = zmq_msg_size (&message);
+				if (len <= 3 ) {
+					if(!len) cprintf(RED,"Received no data in socket for %d\n", readoutId+idet);
+					cout<<readoutId+idet <<" sls Received end data"<<endl;
+
+					parentDet->slsframe[readoutId+idet] = NULL;
+					sem_post(&parentDet->sem_slsdone[readoutId+idet]);//let multi know is ready
+
+					runningMask^=(1<<idet);
+					//all done, get out
+					if(!runningMask){
+						break;
+					}
+					continue;
+				}
+
+				cout<<"Received on " << readoutId+idet << " for frame " << framecount << endl;
+
+				if(zmq_msg_data(&message)==NULL)
+						cprintf(RED,"GOT NULL FROM ZMQ\n");
+				//if(len == thisDetector->dataBytes/numReadout){//hoow to solve this
+					memcpy((char*)(parentDet->slsframe[readoutId+idet]),(char*)zmq_msg_data(&message),thisDetector->dataBytes/numReadout);
+					//memcpy((char*)(parentDet->slsframe[readoutId+idet]),zmq_msg_data(&message[idet]),thisDetector->dataBytes);
+					//check header, if incorrect frame, copy somewhere and assign a blank subframe
+					//parentDet->slsframe[readoutId+idet] = (int*)zmq_msg_data(&message[idet]);
+
+					//jungfrau masking adcval
+					if(thisDetector->myDetectorType == JUNGFRAU){
+						for(unsigned int i=0;i<nel;i++){
+							parentDet->slsframe[readoutId+idet][i] = (parentDet->slsframe[readoutId+idet][i] & 0x3FFF3FFF);
+						}
+					}
+				//}
+				sem_post(&parentDet->sem_slsdone[readoutId+idet]);//let multi know is ready
+
+			}
+		}//end of for loop
+
+		if(!runningMask){
+			break;
+		}
+
+	}
+	zmq_msg_close(&message);
+
+
+
+	//close socket
+	for(int i=0;i<numReadout;i++){
+
+		zmq_disconnect(zmqsocket[i], hostname[i]);
+		zmq_close(zmqsocket[i]);
+		zmq_ctx_destroy(context[i]);
+		delete [] parentDet->slsframe[readoutId+i];
+	}
+
 };
 
 

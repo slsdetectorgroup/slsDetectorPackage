@@ -507,14 +507,9 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
 
 
   /**
-   * Reads a frame from receiver
-   * @param fName file name of current frame()
-   * @param acquisitionIndex current acquisition index
-   * @param frameIndex current frame index (for each scan)
-   * @param subFrameIndex current sub frame index (for 32 bit mode for eiger)
-   /returns a frame read from recever
+   * Reads frames from receiver through a constant socket
   */
-  virtual int* readFrameFromReceiver(char* fName, int &acquisitionIndex, int &frameIndex, int &subFrameIndex)=0;
+  virtual void readFrameFromReceiver()=0;
 
 
   /** Sets the read receiver frequency

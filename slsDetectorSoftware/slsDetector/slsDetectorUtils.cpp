@@ -72,10 +72,6 @@ int  slsDetectorUtils::acquire(int delflag){
 
   int multiframe = nc*nf;
 
-  pthread_mutex_lock(&mg);
-  acquiringDone = 0;
-  pthread_mutex_unlock(&mg);
-
   // setTotalProgress();
   //moved these 2 here for measurement change
   progressIndex=0;
@@ -162,7 +158,6 @@ int  slsDetectorUtils::acquire(int delflag){
 
 
   if (*threadedProcessing) {
-	sem_init(&sem_queue,0,0);
     startThread(delflag);
   }
 #ifdef VERBOSE
@@ -341,53 +336,17 @@ int  slsDetectorUtils::acquire(int delflag){
 
 	  //offline
 	  if(setReceiverOnline()==OFFLINE_FLAG){
-	  // wait until data processing thread has finished the data
-		  pthread_mutex_lock(&mg);
-		  acquiringDone = 1;
-		  pthread_mutex_unlock(&mg);
-		  if (*threadedProcessing) {
-			  sem_wait(&sem_queue);
-			  pthread_mutex_lock(&mg);
-			  acquiringDone = 0;
-			  pthread_mutex_unlock(&mg);
+		  if ((getDetectorsType()==GOTTHARD) || (getDetectorsType()==MOENCH) || (getDetectorsType()==JUNGFRAU) ){
+			  if((*correctionMask)&(1<<WRITE_FILE))
+				  closeDataFile();
 		  }
-
-#ifdef VERBOSE
-	  cout << "check data queue size " << endl;
-#endif
-	  /*while (dataQueueSize()){
-	    //#ifdef VERBOSE
-	    cout << "AAAAAAAAA check data queue size " << endl;
-	    //#endif
-	    usleep(100000);
-	  }*/
-
-	  if ((getDetectorsType()==GOTTHARD) || (getDetectorsType()==MOENCH) || (getDetectorsType()==JUNGFRAU) ){
-		  if((*correctionMask)&(1<<WRITE_FILE))
-			  closeDataFile();
 	  }
-
-	  }
-
-
 	  //online
 	  else{
-		  pthread_mutex_lock(&mg);
-		  acquiringDone = 1;
-		  pthread_mutex_unlock(&mg);
-
-		  // wait until data processing thread has taken the last frame
-		  if (*threadedProcessing) {
-			  sem_wait(&sem_queue);
-			  pthread_mutex_lock(&mg);
-			  acquiringDone = 0;
-			  pthread_mutex_unlock(&mg);
-		  }
 		  pthread_mutex_lock(&mg);
 		  stopReceiver();
 		  pthread_mutex_unlock(&mg);
 	  }
-
 
 
 
@@ -506,7 +465,6 @@ int  slsDetectorUtils::acquire(int delflag){
 #endif
     setJoinThread(1);
     pthread_join(dataProcessingThread, &status);
-    sem_destroy(&sem_queue);
 #ifdef VERBOSE
     cout << "data processing thread joined" << endl;
 #endif

@@ -267,28 +267,30 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
   getNMods();
   getMaxMods();
   threadpool = 0;
-	if(createThreadPool() == FAIL)
+  zmqthreadpool = 0;
+	if(createThreadPool(&threadpool) == FAIL)
 		exit(-1);
 
 }
 
 multiSlsDetector::~multiSlsDetector() {
   //removeSlsDetector();
-	destroyThreadPool();
+	destroyThreadPool(&threadpool);
+	destroyThreadPool(&zmqthreadpool);
 }
 
 
-int multiSlsDetector::createThreadPool(){
-	if(threadpool){
-		threadpool->destroy_threadpool();
-		threadpool=0;
+int multiSlsDetector::createThreadPool(ThreadPool** t){
+	if(*t){
+		(ThreadPool*)(*t)->destroy_threadpool();
+		*t=0;
 	}
 	if(thisMultiDetector->numberOfDetectors < 1){
 		cout << "No detectors attached to create threadpool" << endl;
 		return OK;
 	}
-	threadpool = new ThreadPool(thisMultiDetector->numberOfDetectors);
-	switch(threadpool->initialize_threadpool()){
+	*t = new ThreadPool(thisMultiDetector->numberOfDetectors);
+	switch(((ThreadPool*)(*t))->initialize_threadpool()){
 	case 0:
 		cerr << "Failed to initialize thread pool!" << endl;
 		return FAIL;
@@ -299,19 +301,19 @@ int multiSlsDetector::createThreadPool(){
 		break;
 	default:
 #ifdef VERBOSE
-		cout << "Initialized Threadpool" << endl;
+		cout << "Initialized Threadpool " << *t << endl;
 #endif
 		break;
 	}
 	return OK;
 }
 
-void multiSlsDetector::destroyThreadPool(){
-	if(threadpool){
-		threadpool->destroy_threadpool();
-		threadpool=0;
+void multiSlsDetector::destroyThreadPool(ThreadPool** t){
+	if(*t){
+		(ThreadPool*)(*t)->destroy_threadpool();
+		*t=0;
 #ifdef VERBOSE
-		cout<<"Destroyed Threadpool"<<endl;
+		cout<<"Destroyed Threadpool "<< *t << endl;
 #endif
 	}
 }
@@ -392,8 +394,7 @@ int multiSlsDetector::addSlsDetector(int id, int pos) {
 
   //set offsets
   updateOffsets();
-  destroyThreadPool();
-  if(createThreadPool() == FAIL)
+  if(createThreadPool(&threadpool) == FAIL)
 	exit(-1);
 
 
@@ -864,8 +865,7 @@ int multiSlsDetector::removeSlsDetector(int pos) {
   }
 
   updateOffsets();
-  destroyThreadPool();
-  if(createThreadPool() == FAIL)
+  if(createThreadPool(&threadpool) == FAIL)
 	exit(-1);
 
   return thisMultiDetector->numberOfDetectors;
@@ -1196,6 +1196,7 @@ slsDetectorDefs::detectorSettings multiSlsDetector::getSettings(int pos) {
 				threadpool->add_task(task);
 			}
 		}
+		threadpool->startExecuting();
 		threadpool->wait_for_tasks_to_complete();
 		for(int idet=posmin; idet<posmax; idet++){
 			if(detectors[idet]){
@@ -1243,6 +1244,7 @@ slsDetectorDefs::detectorSettings multiSlsDetector::setSettings(detectorSettings
 				threadpool->add_task(task);
 			}
 		}
+		threadpool->startExecuting();
 		threadpool->wait_for_tasks_to_complete();
 		for(int idet=posmin; idet<posmax; idet++){
 			if(detectors[idet]){
@@ -1626,6 +1628,7 @@ int multiSlsDetector::startAndReadAllNoWait(){
 				threadpool->add_task(task);
 			}
 		}
+		threadpool->startExecuting();
 		threadpool->wait_for_tasks_to_complete();
 		for(int idet=posmin; idet<posmax; idet++){
 			if((idet!=thisMultiDetector->masterPosition) && (detectors[idet])){
@@ -3318,6 +3321,7 @@ char* multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 					threadpool->add_task(task);
 				}
 			}
+			threadpool->startExecuting();
 			threadpool->wait_for_tasks_to_complete();
 			for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
 				if(detectors[idet]){
@@ -3926,6 +3930,7 @@ int multiSlsDetector::executeTrimming(trimMode mode, int par1, int par2, int imo
 					threadpool->add_task(task);
 				}
 			}
+			threadpool->startExecuting();
 			threadpool->wait_for_tasks_to_complete();
 			for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
 				if(detectors[idet]){
@@ -3977,6 +3982,7 @@ int multiSlsDetector::loadSettingsFile(string fname, int imod) {
 				  threadpool->add_task(task);
 			  }
 		  }
+			threadpool->startExecuting();
 		  threadpool->wait_for_tasks_to_complete();
 		  for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
 			  if(detectors[idet]){
@@ -4051,6 +4057,7 @@ int multiSlsDetector::setAllTrimbits(int val, int imod){
 					threadpool->add_task(task);
 				}
 			}
+			threadpool->startExecuting();
 			threadpool->wait_for_tasks_to_complete();
 			for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
 				if(detectors[idet]){
@@ -4100,6 +4107,7 @@ int multiSlsDetector::loadCalibrationFile(string fname, int imod) {
 					threadpool->add_task(task);
 				}
 			}
+			threadpool->startExecuting();
 			threadpool->wait_for_tasks_to_complete();
 			for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
 				if(detectors[idet]){
@@ -4752,6 +4760,7 @@ int multiSlsDetector::startReceiver(){
 				threadpool->add_task(task);
 			}
 		}
+		threadpool->startExecuting();
 		threadpool->wait_for_tasks_to_complete();
 		for(int idet=posmin; idet<posmax; idet++){
 			if((idet!=thisMultiDetector->masterPosition) && (detectors[idet])){
@@ -4813,6 +4822,7 @@ int multiSlsDetector::stopReceiver(){
 				threadpool->add_task(task);
 			}
 		}
+		threadpool->startExecuting();
 		threadpool->wait_for_tasks_to_complete();
 		for(int idet=posmin; idet<posmax; idet++){
 			if((idet!=thisMultiDetector->masterPosition) && (detectors[idet])){
@@ -4948,7 +4958,173 @@ int multiSlsDetector::resetFramesCaught() {
 
 
 
-int* multiSlsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex, int &frameIndex, int &subFrameIndex){
+void multiSlsDetector::readFrameFromReceiver(){
+	int value;
+	if(createThreadPool(&zmqthreadpool) == FAIL){
+		cprintf(BG_RED,"Error: Could not create the zmq threads\n");
+		return;
+	}
+	zmqthreadpool->setzeromqThread();
+
+	//determine number of half readouts and maxX and maxY
+	int maxX=0,maxY=0;
+	int numReadout = 1;
+	if(getDetectorsType() == EIGER){
+		numReadout = 2;
+		maxX = thisMultiDetector->numberOfChannel[X];
+		maxY = thisMultiDetector->numberOfChannel[Y];
+	}
+
+	//Note:num threads correspond to num detectors as task calls each slsdet
+	//(eiger udp ports/half readouts will have to do it serially)
+
+	//start all socket tasks
+	volatile uint64_t runningMask = 0x0;
+	int slsdatabytes = 0, slsmaxchannels = 0, bytesperchannel = 0, slsmaxX = 0, slsmaxY=0;
+	if(!zmqthreadpool){
+		cout << "Error in creating threadpool. Exiting" << endl;
+		return;
+	}else{
+		for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
+			if(detectors[idet]){
+				sem_init(&sem_slswait[idet*numReadout],1,0);
+				sem_init(&sem_slsdone[idet*numReadout],1,0);
+				if(numReadout>1){
+					sem_init(&sem_slswait[idet*numReadout+1],1,0);
+					sem_init(&sem_slsdone[idet*numReadout+1],1,0);
+				}
+				Task* task = new Task(new func00_t<void, slsDetector>(&slsDetector::readFrameFromReceiver,detectors[idet]));
+				zmqthreadpool->add_task(task);
+				if(!slsdatabytes){
+					slsdatabytes = detectors[idet]->getDataBytes();
+					slsmaxchannels = detectors[idet]->getMaxNumberOfChannels();
+					bytesperchannel = slsdatabytes/slsmaxchannels;
+					slsmaxX = detectors[idet]->getTotalNumberOfChannels(X);
+					slsmaxY = detectors[idet]->getTotalNumberOfChannels(Y);
+				}
+				//set mask
+				runningMask|=(1<<(idet*numReadout));
+				if(numReadout>1)
+					runningMask|=(1<<(idet*numReadout+1));
+
+			}
+		}
+	}
+
+	zmqthreadpool->startExecuting();//tell them to start
+
+
+	int nel=(thisMultiDetector->dataBytes)/sizeof(int);
+
+	if(nel <= 0){
+		cout << "Multislsdetector databytes not valid :" << thisMultiDetector->dataBytes << endl;
+		return;
+	}
+	int* multiframe=new int[nel];
+	int* p = multiframe;
+	int idet,offsetY,offsetX;
+	int halfreadoutoffset =  (slsmaxX/numReadout);
+	//after reconstruction
+	int framecount=0;
+	int nx =getTotalNumberOfChannels(slsDetectorDefs::X);
+	int ny =getTotalNumberOfChannels(slsDetectorDefs::Y);
+
+
+
+	while(true){
+		memset(((char*)multiframe),0x0,slsdatabytes*thisMultiDetector->numberOfDetectors);
+
+		for(int ireadout=0; ireadout<thisMultiDetector->numberOfDetectors*numReadout; ++ireadout){
+			idet = ireadout/numReadout;
+
+			if(detectors[idet]){
+				if((1 << ireadout) & runningMask){
+
+
+					sem_post(&sem_slswait[ireadout]);	//sls to continue
+					sem_wait(&sem_slsdone[ireadout]);	//wait for sls to copy
+
+					//this socket closed
+					if(slsframe[ireadout] == NULL){
+						runningMask^=(1<<ireadout);
+						//all done, get out
+						if(!runningMask){
+							break;
+						}
+						continue;
+					}
+
+
+					//assemble data
+					//eiger, so interleaving
+					if(maxX){
+
+						if(ireadout == 3){
+							offsetY = (maxY - (thisMultiDetector->offsetY[idet] + slsmaxY)) * maxX * bytesperchannel;
+							if(!(ireadout%numReadout)) 	offsetX = thisMultiDetector->offsetX[idet];
+							else 		offsetX = thisMultiDetector->offsetX[idet] + halfreadoutoffset;
+							offsetX *= bytesperchannel;
+							cprintf(BLUE,"offsetx:%d offsety:%d maxx:%d slsmaxX:%d slsmaxY:%d bytesperchannel:%d\n",
+									offsetX,offsetY,maxX,slsmaxX,slsmaxY,bytesperchannel);
+
+							cprintf(BLUE,"copying bytes:%d\n", (slsmaxX/numReadout)*bytesperchannel);
+							//itnerleaving with other detectors
+							for(int i=0;i<slsmaxY;i++){
+							memcpy(((char*)multiframe) + offsetY + offsetX + (i*maxX*bytesperchannel),
+									(char*)slsframe[ireadout]+ i*(slsmaxX/numReadout)*bytesperchannel,
+									(slsmaxX/numReadout)*bytesperchannel);
+
+							}
+
+
+						}//end of ireadout
+
+					}
+					//no interleaving, just add to the end
+					//numReadout always 1 here
+					else{
+						memcpy(p,multiframe,slsdatabytes);
+						p+=slsdatabytes/sizeof(int);
+					}
+
+
+
+				}
+			}
+		}//end of for loop
+
+		if(!runningMask){
+			break;
+		}
+
+		//send data to callback
+
+		fdata = decodeData(multiframe);
+		if ((fdata) && (dataReady)){
+			thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),"noname.raw",nx,ny);
+			dataReady(thisData, framecount, framecount, pCallbackArg);//should be fnum and subfnum from json header
+			delete thisData;
+			fdata = NULL;
+			cout<<"Send frame #"<< framecount << " to gui"<<endl;
+		}
+
+		framecount++;
+		setCurrentProgress(framecount);
+
+	}
+
+	zmqthreadpool->wait_for_tasks_to_complete();
+	destroyThreadPool(&zmqthreadpool);
+	delete[] multiframe;
+
+
+
+
+
+
+
+
+/*
 	int nel=(thisMultiDetector->dataBytes)/sizeof(int);
 	if(nel <= 0){
 		cout << "Multislsdetector databytes not valid :" << thisMultiDetector->dataBytes << endl;
@@ -5039,6 +5215,7 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex
 	if((getDetectorsType() == EIGER) &&(complete ==FAIL))
 		acquisitionIndex = -1;
 	return retval;
+	*/
 };
 
 
@@ -5468,6 +5645,7 @@ int multiSlsDetector::pulsePixel(int n,int x,int y) {
 				threadpool->add_task(task);
 			}
 		}
+		threadpool->startExecuting();
 		threadpool->wait_for_tasks_to_complete();
 		for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
 			if(detectors[idet]){
@@ -5504,6 +5682,7 @@ int multiSlsDetector::pulsePixelNMove(int n,int x,int y) {
 				threadpool->add_task(task);
 			}
 		}
+		threadpool->startExecuting();
 		threadpool->wait_for_tasks_to_complete();
 		for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
 			if(detectors[idet]){
@@ -5540,6 +5719,7 @@ int multiSlsDetector::pulseChip(int n) {
 				threadpool->add_task(task);
 			}
 		}
+		threadpool->startExecuting();
 		threadpool->wait_for_tasks_to_complete();
 		for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
 			if(detectors[idet]){

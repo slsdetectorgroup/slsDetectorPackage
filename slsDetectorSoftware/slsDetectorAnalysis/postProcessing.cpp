@@ -7,6 +7,7 @@
 #include "usersFunctions.h"
 #endif
 
+
 //#define VERBOSE
 
 static void* startProcessData(void *n){
@@ -461,12 +462,7 @@ void* postProcessing::processData(int delflag) {
 			
 			
 			}
-				/** IF detector acquisition is done, let the acquire() thread know to finish up and force join thread */
-			if(acquiringDone){
-			  sem_post(&sem_queue);
-			  //	cout << "Sem posted" << endl;
-			} //else
-				// cout << "Sem not posted" << endl;
+
 			/* IF THERE ARE NO DATA look if acquisition is finished */
 			if (checkJoinThread()) {
 			  if (dataQueueSize()==0) {
@@ -488,6 +484,14 @@ void* postProcessing::processData(int delflag) {
 	else{
 
 
+
+		readFrameFromReceiver();
+
+
+
+
+
+/*
 		int progress = 0;
 		char currentfName[MAX_STR_LENGTH]="";
 		int caught = -1;
@@ -663,6 +667,8 @@ void* postProcessing::processData(int delflag) {
 			}
 
 		}
+*/
+
 	}
 
 	return 0;

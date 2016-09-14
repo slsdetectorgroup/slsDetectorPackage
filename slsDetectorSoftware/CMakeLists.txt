@@ -35,6 +35,9 @@ usersFunctions
 ../slsReceiverSoftware/MySocketTCP 
 )
 
+add_definitions(
+    -DDACS_INT
+)
 
 add_library(slsDetectorStatic STATIC
     ${SOURCES}

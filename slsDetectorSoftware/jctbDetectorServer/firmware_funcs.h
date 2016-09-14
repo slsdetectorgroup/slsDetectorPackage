@@ -156,6 +156,7 @@ int allocateRAM();
 
 int writeADC(int addr, int val);
 int prepareADC();
+int prepareSlowADC();
 
 
 int clearRAM();

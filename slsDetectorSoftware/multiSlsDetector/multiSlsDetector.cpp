@@ -5059,7 +5059,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 					//eiger, so interleaving
 					if(maxX){
 
-						if(ireadout == 3){
+						//if(ireadout == 3){
 							offsetY = (maxY - (thisMultiDetector->offsetY[idet] + slsmaxY)) * maxX * bytesperchannel;
 							if(!(ireadout%numReadout)) 	offsetX = thisMultiDetector->offsetX[idet];
 							else 		offsetX = thisMultiDetector->offsetX[idet] + halfreadoutoffset;
@@ -5077,7 +5077,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 							}
 
 
-						}//end of ireadout
+						//}//end of ireadout
 
 					}
 					//no interleaving, just add to the end

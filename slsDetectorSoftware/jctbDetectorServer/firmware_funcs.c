@@ -1212,6 +1212,7 @@ int64_t set64BitReg(int64_t value, int aLSB, int aMSB){
     v64=value>> 32;
     vMSB=v64&(0xffffffff);
     bus_w(aMSB,vMSB);
+    printf("Wreg64(%x,%x) %08x %08x %016llx\n", aLSB>>11, aMSB>>11, vLSB, vMSB, value);
   }
   return get64BitReg(aLSB, aMSB);
 
@@ -1295,6 +1296,7 @@ int64_t getDelay(){
 }
 
 int64_t setTrains(int64_t value){
+  printf("Set cycles %lld\n",value);
   return set64BitReg(value,  SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
 }
 
@@ -2075,12 +2077,21 @@ u_int16_t* fifo_read_event(int ns)
 /*   dma_memcpy(now_ptr,values ,dataBytes); */
 /* #else */
 
-      a = bus_r(LOOK_AT_ME_REG);
+  a = bus_r(LOOK_AT_ME_REG);
       //#ifdef VERBOSE
-      printf("%08x\n",a);
+      //  printf("%d %08x\n",ns,a);
   bus_w16(DUMMY_REG,1<<8); // read strobe to all fifos
-   bus_w16(DUMMY_REG,0);
-    // i=0;//
+
+  bus_w16(DUMMY_REG,0);
+   
+   /* for (i=0; i<32; i++) {  */
+   /*   bus_w16(DUMMY_REG,i); */
+   /*   printf("%04x ",bus_r16(FIFO_STATUS_REG)); */
+   /*   //	a = bus_r(LOOK_AT_ME_REG); */
+   /*   //	printf("%d %08x\n",i,a); */
+   /* } */
+   /* printf("\n"); */
+   // i=0;//
 /*   for (i=0; i<32; i++) { */
 
 /* /\*   while (((adcDisableMask&(3<<((i)*2)))>>((i)*2))==3) { *\/ */
@@ -2110,13 +2121,13 @@ u_int16_t* fifo_read_event(int ns)
       *((u_int16_t*)now_ptr)=bus_r16(FIFO_DATA_REG);//*values;//bus_r(FIFO_DATA_REG);
 
 
-	    if (i!=0 || ns!=0) {
+	     if (i!=0 || ns!=0) { 
 	      a=0;
 	      while (*((u_int16_t*)now_ptr)==*((u_int16_t*)(now_ptr)-1) && a++<10) {
 
-		//	  printf("******************** %d: fifo %d: new %08x old %08x\n ",ns, i, *((u_int32_t*)now_ptr),*((u_int32_t*)(now_ptr)-1));
-		*((u_int16_t*)now_ptr)=bus_r16(FIFO_DATA_REG);//*values;
-		//  printf("%d-",i);
+	    	//	  printf("******************** %d: fifo %d: new %08x old %08x\n ",ns, i, *((u_int32_t*)now_ptr),*((u_int32_t*)(now_ptr)-1));
+	    	*((u_int16_t*)now_ptr)=bus_r16(FIFO_DATA_REG);//*values;
+	    	//  printf("%d-",i);
 
 	      }
 	    }
@@ -2130,9 +2141,9 @@ u_int16_t* fifo_read_event(int ns)
 
 	bus_w16(DUMMY_REG,i+1);
 
-	a = bus_r(LOOK_AT_ME_REG);
+	//	a = bus_r(LOOK_AT_ME_REG);
+	//	printf("%d %08x\n",i,a);
 	//#ifdef VERBOSE
-	printf("%d %08x\n",i,a);
 	// }
      // *(((u_int16_t*)(now_ptr))+i)=bus_r16(FIFO_DATA_REG);
     }
@@ -2449,6 +2460,95 @@ int writeADC(int addr, int val) {
    return OK;
 }
 
+int prepareSlowADC() {
+
+
+
+  u_int16_t vv;
+  u_int16_t codata;
+
+  u_int32_t valw;              
+  int i, j;
+
+  int cnv_bit=16, sdi_bit=17, sck_bit=18;
+  
+  for (j=0; j<2; j++) {
+
+
+  valw=(1<<cnv_bit) | (1<<sdi_bit);
+  bus_w(ADC_WRITE_REG,valw);
+
+  usleep(20);
+
+  valw=(1<<sdi_bit);
+  bus_w(ADC_WRITE_REG,(valw));
+  
+
+  
+
+   for (i=0;i<16;i++) {
+     //cldwn
+     valw=0;
+     bus_w(ADC_WRITE_REG,valw);
+     // usleep(0);
+     bus_w(ADC_WRITE_REG,valw|(1<<sck_bit));
+     // usleep(0);
+     bus_w(ADC_WRITE_REG,valw);
+   }
+  }
+
+}
+
+
+
+
+int readSlowADC(int ichan) {
+
+
+  u_int16_t vv=0x3c40;
+  u_int16_t codata=vv | (ichan<<7);
+
+  u_int32_t valw;              
+  int i, obit;
+
+  int cnv_bit=16, sdi_bit=17, sck_bit=18;
+
+
+
+
+  for (ichan=0; ichan<8; ichan++) {
+ 
+    //convert
+    valw=(1<<cnv_bit);
+    bus_w(ADC_WRITE_REG,valw);
+    
+    usleep(20);
+    
+    valw=(1<<sdi_bit);
+    bus_w(ADC_WRITE_REG,(valw));
+    
+
+    printf("Channel %d ",ichan);
+    //read
+    for (i=0;i<16;i++) {
+      //cldwn
+      valw=0;
+      bus_w(ADC_WRITE_REG,valw);
+      // usleep(0);
+      bus_w(ADC_WRITE_REG,valw|(1<<sck_bit));
+      bus_w(ADC_WRITE_REG,valw);
+      
+      obit=bus_r16(SLOW_ADC_REG)&0x1;
+      printf("%d",obit);
+      //write data (i)
+      // usleep(0);
+    }
+    printf("\n");
+    
+  }
+ 
+   return OK;
+}
 
 
 int prepareADC(){
@@ -3401,8 +3501,8 @@ int setPower(int ind, int val) {
   
   if (pwrindex>=0) {
     if (bus_r(POWER_ON_REG)&(1<<(16+pwrindex))){
-	retval1=vmax-(retval*1900)/4095;
-	vmax=2700-(getDacRegister(19)*1000)/4095-200;
+      vmax=2700-(getDacRegister(19)*1000)/4095-200;
+      retval1=vmax-(retval*(vmax-vmin))/4095;
 	if (retval1>vmax)
 	  retval1=vmax;
 	if (retval1<vmin)

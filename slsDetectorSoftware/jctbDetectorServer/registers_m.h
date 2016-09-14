@@ -139,7 +139,7 @@
 #define FRAMES_FROM_START_PG_LSB_REG 36<<11
 #define FRAMES_FROM_START_PG_MSB_REG 37<<11
 
-
+#define SLOW_ADC_REG 43<<11
  
    
 

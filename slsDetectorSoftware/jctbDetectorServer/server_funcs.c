@@ -131,6 +131,7 @@ int init_detector(int b, int checkType) {
     //bus_w16(CONTROL_REG, SYNC_RESET); // reset registers
 #endif
 
+    prepareSlowADC();
     // testFpga();
     // testRAM();
     // printf("ADC_SYNC_REG:%x\n",bus_r(ADC_SYNC_REG));
@@ -1222,10 +1223,11 @@ int get_adc(int file_des) {
 		idac=TEMP_ADC;
 		break;
 	default:
-		printf("Unknown DAC index %d\n",ind);
-		sprintf(mess,"Unknown DAC index %d\n",ind);
-		ret=FAIL;
-	    break;
+	  readSlowADC(ind);
+	  printf("Unknown DAC index %d\n",ind);
+	  sprintf(mess,"Unknown DAC index %d\n",ind);
+	  ret=FAIL;
+	  break;
 	}
 
 	if (ret==OK)
@@ -2234,8 +2236,8 @@ int set_timer(int file_des) {
 	retval=setGates(tns);
 	break;
       case PROBES_NUMBER: 
-    sprintf(mess,"can't set timer for moench\n");
-    ret=FAIL;
+	sprintf(mess,"can't set timer for moench\n");
+	ret=FAIL;
 	break;
       case CYCLES_NUMBER: 
 	retval=setTrains(tns);

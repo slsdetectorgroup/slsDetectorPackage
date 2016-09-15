@@ -1664,7 +1664,7 @@ void UDPStandardImplementation::startDataCallback(){cprintf(MAGENTA,"start data 
 
 		void *context = zmq_ctx_new();
 		// create a publisher
-		void *zmqsocket = zmq_socket(context, ZMQ_PUB);
+		void *zmqsocket = zmq_socket(context, ZMQ_PUSH);
 		// bind
 		zmq_bind(zmqsocket,hostName);
 
@@ -1685,8 +1685,11 @@ void UDPStandardImplementation::startDataCallback(){cprintf(MAGENTA,"start data 
 
 				 /**suing this in clientzmq_msg_more,
 				  * in serve use zmq_msg_send (&message, sender, ZMQ_SNDMORE); and 0 for last packet, but better to check lengt*/
+				/*if (checkJoinThread()){for different scans
+					break;
+				}*/
 				zmq_send (zmqsocket, "end", 3, 0);
-				cprintf(BLUE,"sent done\n");
+				//cprintf(BLUE,"sent done\n");
 
 				pthread_mutex_lock(&statusMutex);
 				dataCallbackThreadsMask^=(1<<ithread);

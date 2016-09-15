@@ -877,10 +877,8 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 	else{
 		if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
 			receiverBase->stopReceiver();
-			cout<<"receiver stopped"<<endl;
 		}
 		s = receiverBase->getStatus();
-		cout<<"to stop, receiver status:"<<s<<endl;
 		if(s==IDLE)
 			ret = OK;
 		else{

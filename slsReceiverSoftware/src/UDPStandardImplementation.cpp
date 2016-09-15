@@ -450,10 +450,12 @@ void UDPStandardImplementation::setFileName(const char c[]){
 			createDataCallbackThreads(true);
 			zmqThreadStarted = false;
 		}
+		cout<<"***datacallback threads destroyed"<<endl;
 		numberofDataCallbackThreads = MAX_NUMBER_OF_LISTENING_THREADS;
 		if(createDataCallbackThreads() == FAIL){
 			cprintf(BG_RED,"Error: Could not create data callback threads\n");
 		}
+		cout<<"data call back threads created"<<endl;
 	}
 
 
@@ -1684,7 +1686,7 @@ void UDPStandardImplementation::startDataCallback(){cprintf(MAGENTA,"start data 
 				 /**suing this in clientzmq_msg_more,
 				  * in serve use zmq_msg_send (&message, sender, ZMQ_SNDMORE); and 0 for last packet, but better to check lengt*/
 				zmq_send (zmqsocket, "end", 3, 0);
-
+				cprintf(BLUE,"sent done\n");
 
 				pthread_mutex_lock(&statusMutex);
 				dataCallbackThreadsMask^=(1<<ithread);
@@ -1740,6 +1742,7 @@ void UDPStandardImplementation::startDataCallback(){cprintf(MAGENTA,"start data 
 		}/*--end of loop for each buffer (inner loop)*/
 
 		//free resources
+		usleep(1000*1000);
 		delete[] buffer;
 	    zmq_unbind(zmqsocket, hostName);
 	    zmq_close(zmqsocket);

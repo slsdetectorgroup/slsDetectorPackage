@@ -1570,7 +1570,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
  /** Reads frames from receiver through a constant socket
  */
- void readFrameFromReceiver();
+ void readFrameFromReceiver(){};
 
   /** Locks/Unlocks the connection to the receiver
       /param lock sets (1), usets (0), gets (-1) the lock

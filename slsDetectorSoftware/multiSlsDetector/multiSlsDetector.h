@@ -245,10 +245,10 @@ class multiSlsDetector  : public slsDetectorUtils {
    * Creates all the threads in the threadpool
     \returns OK or FAIL
   */
-  int createThreadPool(ThreadPool** t);
+  int createThreadPool();
 
   /** destroys all the threads in the threadpool */
-  void destroyThreadPool(ThreadPool** t);
+  void destroyThreadPool();
   
   /** frees the shared memory occpied by the sharedMultiSlsDetector structure */
   int freeSharedMemory() ;
@@ -1352,11 +1352,27 @@ class multiSlsDetector  : public slsDetectorUtils {
   bool getAcquiringFlag();
 
 
+private:
+	/**
+	 * Static function - Starts Data Thread of this object
+	 * @param this_pointer pointer to this object
+	 */
+	static void* startReceivingDataThread(void *this_pointer);
 
+	/**
+	 * Thread that receives data packets from receiver
+	 */
+	void startReceivingData();
 
-
-
-
+	  sem_t sem_singledone[MAXDET];
+	  sem_t sem_singlewait[MAXDET];
+	  int* singleframe[MAXDET];
+	  /** Ensures if threads created successfully */
+	  bool threadStarted;
+	  /** Current Thread Index*/
+	  int currentThreadIndex;
+	  /** Mask with each bit indicating status of each receiving data thread  */
+	  volatile uint64_t receivingDataThreadMask;
 
  protected:
  
@@ -1372,7 +1388,6 @@ class multiSlsDetector  : public slsDetectorUtils {
 
  private:
   ThreadPool* threadpool;
-  ThreadPool* zmqthreadpool;
 
 
 };

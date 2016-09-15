@@ -350,6 +350,7 @@ int  slsDetectorUtils::acquire(int delflag){
 		  pthread_mutex_lock(&mg);
 		  stopReceiver();
 		  pthread_mutex_unlock(&mg);
+		 // cout<<"***********receiver stopped"<<endl;
 	  }
 
 

@@ -845,14 +845,6 @@ virtual int setReceiverFifoDepth(int i = -1)=0;
   int (*progress_call)(double,void*);
   void *pProgressCallArg;
   
-  public:
-  //data call back
-  //individual sls and multi
-  sem_t sem_slsdone[MAXDET];
-  sem_t sem_slswait[MAXDET];
-  sem_t sem_multiwait[MAXDET];
-  int* slsframe[MAXDET];
-
 
 
 };

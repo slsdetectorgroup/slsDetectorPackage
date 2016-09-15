@@ -4959,27 +4959,27 @@ int multiSlsDetector::resetFramesCaught() {
 
 
 void multiSlsDetector::readFrameFromReceiver(){
-	int value;
+	//Note:num threads  = (num slsDets = num tasks)
+	//so, half slsdet readouts read serially in each task (eiger udp ports)
+
+	//create zmq threads
 	if(createThreadPool(&zmqthreadpool) == FAIL){
 		cprintf(BG_RED,"Error: Could not create the zmq threads\n");
 		return;
 	}
-	zmqthreadpool->setzeromqThread();
+	zmqthreadpool->setzeromqThread(); //for debugging
 
 	//determine number of half readouts and maxX and maxY
 	int maxX=0,maxY=0;
-	int numReadout = 1;
-	bool checkbottom = false;
-
+	int numReadoutPerDetector = 1;
 	if(getDetectorsType() == EIGER){
-		numReadout = 2;
+		numReadoutPerDetector = 2;
 		maxX = thisMultiDetector->numberOfChannel[X];
 		maxY = thisMultiDetector->numberOfChannel[Y];
-		checkbottom = true;
 	}
+	int numReadouts = numReadoutPerDetector * thisMultiDetector->numberOfDetectors;
 
-	//Note:num threads correspond to num detectors as task calls each slsdet
-	//(eiger udp ports/half readouts will have to do it serially)
+
 
 	//start all socket tasks
 	volatile uint64_t runningMask = 0x0;
@@ -4990,11 +4990,13 @@ void multiSlsDetector::readFrameFromReceiver(){
 	}else{
 		for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
 			if(detectors[idet]){
-				sem_init(&sem_slswait[idet*numReadout],1,0);
-				sem_init(&sem_slsdone[idet*numReadout],1,0);
-				if(numReadout>1){
-					sem_init(&sem_slswait[idet*numReadout+1],1,0);
-					sem_init(&sem_slsdone[idet*numReadout+1],1,0);
+				sem_init(&sem_slswait[idet*numReadoutPerDetector],1,0);
+				sem_init(&sem_slsdone[idet*numReadoutPerDetector],1,0);
+				sem_init(&sem_multiwait[idet*numReadoutPerDetector],1,0);
+				if(numReadoutPerDetector>1){
+					sem_init(&sem_slswait[idet*numReadoutPerDetector+1],1,0);
+					sem_init(&sem_slsdone[idet*numReadoutPerDetector+1],1,0);
+					sem_init(&sem_multiwait[idet*numReadoutPerDetector+1],1,0);
 				}
 				Task* task = new Task(new func00_t<void, slsDetector>(&slsDetector::readFrameFromReceiver,detectors[idet]));
 				zmqthreadpool->add_task(task);
@@ -5006,19 +5008,21 @@ void multiSlsDetector::readFrameFromReceiver(){
 					slsmaxY = detectors[idet]->getTotalNumberOfChannels(Y);
 				}
 				//set mask
-				runningMask|=(1<<(idet*numReadout));
-				if(numReadout>1)
-					runningMask|=(1<<(idet*numReadout+1));
+				runningMask|=(1<<(idet*numReadoutPerDetector));
+				if(numReadoutPerDetector>1)
+					runningMask|=(1<<(idet*numReadoutPerDetector+1));
 
 			}
 		}
 	}
+	zmqthreadpool->startExecuting();	//tell them to start
+	for(int i=0;i<numReadouts;++i)	//wait for all of them to have started
+		sem_wait(&sem_multiwait[i]);
+	sem_post(&dataThreadStartedSemaphore);	//let utils:acquire continue to start measurement/acquisition
 
-	zmqthreadpool->startExecuting();//tell them to start
 
 
 	int nel=(thisMultiDetector->dataBytes)/sizeof(int);
-
 	if(nel <= 0){
 		cout << "Multislsdetector databytes not valid :" << thisMultiDetector->dataBytes << endl;
 		return;
@@ -5026,51 +5030,43 @@ void multiSlsDetector::readFrameFromReceiver(){
 	int* multiframe=new int[nel];
 	int* p = multiframe;
 	int idet,offsetY,offsetX;
-	int halfreadoutoffset =  (slsmaxX/numReadout);
+	int halfreadoutoffset =  (slsmaxX/numReadoutPerDetector);
 	//after reconstruction
 	int framecount=0;
 	int nx =getTotalNumberOfChannels(slsDetectorDefs::X);
 	int ny =getTotalNumberOfChannels(slsDetectorDefs::Y);
 
 
-
-
+	//construct complete image and send to callback
 	while(true){
-		memset(((char*)multiframe),0x0,slsdatabytes*thisMultiDetector->numberOfDetectors);
-
-		for(int ireadout=0; ireadout<thisMultiDetector->numberOfDetectors*numReadout; ++ireadout){
-			idet = ireadout/numReadout;
-
+		memset(((char*)multiframe),0x0,slsdatabytes*thisMultiDetector->numberOfDetectors);	//reset frame memory
+		for(int ireadout=0; ireadout<numReadouts; ++ireadout){
+			idet = ireadout/numReadoutPerDetector;
 			if(detectors[idet]){
-				if((1 << ireadout) & runningMask){
-
-
+				if((1 << ireadout) & runningMask){		//if running
 					sem_post(&sem_slswait[ireadout]);	//sls to continue
 					sem_wait(&sem_slsdone[ireadout]);	//wait for sls to copy
 
 					//this socket closed
 					if(slsframe[ireadout] == NULL){
 						runningMask^=(1<<ireadout);
-						//all done, get out
-						if(!runningMask){
+						if(!runningMask){			//all done, get out
 							break;
 						}
 						continue;
 					}
 
-
 					//assemble data
-					//eiger, so interleaving between ports in one readout itself
-					if(maxX){
-
-						//if(ireadout == 3){
+					if(maxX){		//eiger, so interleaving between ports in one readout itself
 							offsetY = (maxY - (thisMultiDetector->offsetY[idet] + slsmaxY)) * maxX * bytesperchannel;
-							if(!(ireadout%numReadout)) 	offsetX = thisMultiDetector->offsetX[idet];
-							else 		offsetX = thisMultiDetector->offsetX[idet] + halfreadoutoffset;
+							//the left half or right half
+							if(!(ireadout%numReadoutPerDetector))
+								offsetX = thisMultiDetector->offsetX[idet];
+							else
+								offsetX = thisMultiDetector->offsetX[idet] + halfreadoutoffset;
 							offsetX *= bytesperchannel;
 							//cprintf(BLUE,"offsetx:%d offsety:%d maxx:%d slsmaxX:%d slsmaxY:%d bytesperchannel:%d\n",
 								//	offsetX,offsetY,maxX,slsmaxX,slsmaxY,bytesperchannel);
-
 							//cprintf(BLUE,"copying bytes:%d\n", (slsmaxX/numReadout)*bytesperchannel);
 							//itnerleaving with other detectors
 
@@ -5078,21 +5074,16 @@ void multiSlsDetector::readFrameFromReceiver(){
 							if(((idet+1)%2) == 0){
 								for(int i=0;i<slsmaxY;++i)
 									memcpy(((char*)multiframe) + offsetY + offsetX + ((slsmaxY-i)*maxX*bytesperchannel),
-											(char*)slsframe[ireadout]+ i*(slsmaxX/numReadout)*bytesperchannel,
-											(slsmaxX/numReadout)*bytesperchannel);
+											(char*)slsframe[ireadout]+ i*(slsmaxX/numReadoutPerDetector)*bytesperchannel,
+											(slsmaxX/numReadoutPerDetector)*bytesperchannel);
 							}
 							//top
 							else{
 								for(int i=0;i<slsmaxY;++i)
 									memcpy(((char*)multiframe) + offsetY + offsetX + (i*maxX*bytesperchannel),
-											(char*)slsframe[ireadout]+ i*(slsmaxX/numReadout)*bytesperchannel,
-											(slsmaxX/numReadout)*bytesperchannel);
-
-
+											(char*)slsframe[ireadout]+ i*(slsmaxX/numReadoutPerDetector)*bytesperchannel,
+											(slsmaxX/numReadoutPerDetector)*bytesperchannel);
 							}
-
-						//}//end of ireadout
-
 					}
 					//no interleaving, just add to the end
 					//numReadout always 1 here
@@ -5100,9 +5091,6 @@ void multiSlsDetector::readFrameFromReceiver(){
 						memcpy(p,multiframe,slsdatabytes);
 						p+=slsdatabytes/sizeof(int);
 					}
-
-
-
 				}
 			}
 		}//end of for loop
@@ -5112,7 +5100,6 @@ void multiSlsDetector::readFrameFromReceiver(){
 		}
 
 		//send data to callback
-
 		fdata = decodeData(multiframe);
 		if ((fdata) && (dataReady)){
 			thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),"noname.raw",nx,ny);
@@ -5121,116 +5108,19 @@ void multiSlsDetector::readFrameFromReceiver(){
 			fdata = NULL;
 			//cout<<"Send frame #"<< framecount << " to gui"<<endl;
 		}
-
 		framecount++;
 		setCurrentProgress(framecount);
-
 	}
 
 	zmqthreadpool->wait_for_tasks_to_complete();
+	for(int i=0;i<numReadouts;++i){
+		sem_destroy(&sem_slsdone[i]);
+		sem_destroy(&sem_slswait[i]);
+		sem_destroy(&sem_multiwait[i]);
+	}
 	destroyThreadPool(&zmqthreadpool);
 	delete[] multiframe;
-
-
-
-
-
-
-
-
-/*
-	int nel=(thisMultiDetector->dataBytes)/sizeof(int);
-	if(nel <= 0){
-		cout << "Multislsdetector databytes not valid :" << thisMultiDetector->dataBytes << endl;
-		acquisitionIndex = -1;
-		return NULL;
-	}
-	int n,complete=OK;
-	int i,k,offsetX, offsetY, maxX, maxY; double dr;
-	int* retval=new int[nel];
-	int *retdet = NULL, *p=retval;
-	string fullFName="";
-	string ext="";
-	int index=-1,f_index=-1,p_index=-1,det_index=-1;
-	double sv0=-1,sv1=-1;
-
-	if(getDetectorsType() == EIGER){
-		maxX = thisMultiDetector->numberOfChannel[X];
-		maxY = thisMultiDetector->numberOfChannel[Y];
-	}
-
-
-	for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
-		if (detectors[id]) {
-			n=detectors[id]->getDataBytes();
-			retdet=detectors[id]->readFrameFromReceiver(fName, acquisitionIndex, frameIndex, subFrameIndex);
-			if(detectors[id]->getErrorMask())
-			  setErrorMask(getErrorMask()|(1<<id));
-			if (retdet){
-				if (acquisitionIndex==-1){
-					complete = FAIL;
-					delete [] retdet;
-				}else{
-					n=detectors[id]->getDataBytes();
-					if(getDetectorsType() == EIGER){
-						//cout << "fname:"<<fName<<" findex:"<<fIndex<<endl;//cout<<"n:"<<n<<endl;//cout<<"maxchan:"<<detectors[id]->getMaxNumberOfChannels()<<" n:"<<n<<endl;
-						dr = (double)n/detectors[id]->getMaxNumberOfChannels();
-						k=(int)(detectors[id]->getMaxNumberOfChannels(X)*dr);//bit mode
-						//cout << "dr:"<<dr<<endl;//cout << "k:"<<k<<endl;
-						offsetY = (int)(((maxY - (thisMultiDetector->offsetY[id] + detectors[id]->getMaxNumberOfChannels(Y))) * maxX)*dr);//bit mode
-						offsetX = (int)(thisMultiDetector->offsetX[id]*dr);
-						//cout << "offsetY"<<offsetY<< " offsetX:"<<offsetX<<endl;
-						for(i=0; i< 256;i++){
-							memcpy((((char*)p) + offsetY + offsetX + ((int)(i*maxX*dr))) ,(((char*)retdet) + (i*k)),k);//bit mode
-						}
-					}
-					else{
-						memcpy(p,retdet,n);
-						p+=n/sizeof(int);
-					}
-
-					delete [] retdet;
-					//concatenate filenames
-					if(!fullFName.length()){
-						//assign file prefix
-						fullFName.assign(fileIO::getFileName());
-						if (strrchr(fName,'.')!=NULL){
-							ext.assign(fName);
-							size_t dot = ext.rfind(".");
-							if(dot != string::npos)
-								ext = ext.erase(0,dot);
-							else
-								ext = "";
-
-							//get variables
-							fileIOStatic::getVariablesFromFileName(fName,index, f_index, p_index, sv0, sv1, det_index);
-							//append scan and det variables
-							fullFName.append(fileIOStatic::getReceiverFileNameToConcatenate(fName));
-						}
-					}
-					//append only if scan variables are different
-					if(!fileIOStatic::verifySameFrame(fName,index,f_index, p_index, sv0, sv1, det_index)){
-						fullFName.append(fileIOStatic::getReceiverFileNameToConcatenate(fName));
-					}
-				}
-			}else {
-#ifdef VERBOSE
-				cout << "Receiver for detector " << id << " does not have data left " << endl;
-#endif
-				delete [] retval;
-				return NULL;
-			}
-		}
-	}
-	//append extension
-	fullFName.append(ext);
-	strcpy(fName,fullFName.c_str());
-	//if some of the receivers did not give data, dont count it
-	if((getDetectorsType() == EIGER) &&(complete ==FAIL))
-		acquisitionIndex = -1;
-	return retval;
-	*/
-};
+}
 
 
 

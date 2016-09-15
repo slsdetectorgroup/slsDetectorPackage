@@ -1568,8 +1568,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
  */
  int resetFramesCaught();
 
- /**
-  * Reads frames from receiver through a constant socket
+ /** Reads frames from receiver through a constant socket
  */
  void readFrameFromReceiver();
 

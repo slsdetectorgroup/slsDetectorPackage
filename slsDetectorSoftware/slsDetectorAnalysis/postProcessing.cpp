@@ -483,12 +483,36 @@ void* postProcessing::processData(int delflag) {
 	//receiver
 	else{
 
-
 		if(dataReady){
-			startdatathreads();
-			sem_post(&dataThreadStartedSemaphore);
+			readFrameFromReceiver();
 		}
-		readFrameFromReceiver();
+
+		//only update progress
+		else{
+			int caught = -1;
+			while(true){
+				cout.flush();
+				cout<<flush;
+				usleep(20000); //20ms need this else connecting error to receiver (too fast)
+
+				//get progress
+				if(setReceiverOnline() == ONLINE_FLAG){
+					pthread_mutex_lock(&mg);
+					caught = getFramesCaughtByReceiver();
+					pthread_mutex_unlock(&mg);
+				}
+				//updating progress
+				if(caught!= -1){
+					setCurrentProgress(caught);
+	#ifdef VERY_VERY_DEBUG
+				cout << "caught:" << caught << endl;
+	#endif
+				}
+				if (checkJoinThread()){
+					break;
+				}
+			}
+		}
 
 		cout<<"exiting from proccessing thread"<<endl;
 

@@ -506,8 +506,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   virtual int lockReceiver(int lock=-1)=0;
 
 
-  /**
-   * Reads frames from receiver through a constant socket
+  /** Reads frames from receiver through a constant socket
   */
   virtual void readFrameFromReceiver()=0;
 

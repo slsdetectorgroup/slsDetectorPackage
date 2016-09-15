@@ -640,8 +640,8 @@ virtual int getReceiverCurrentFrameIndex()=0;
 */
 virtual int resetFramesCaught()=0;
 
-/**
- * Reads frames from receiver through a constant socket
+
+/** Reads frames from receiver through a constant socket
 */
 virtual void readFrameFromReceiver()=0;
 
@@ -850,7 +850,9 @@ virtual int setReceiverFifoDepth(int i = -1)=0;
   //individual sls and multi
   sem_t sem_slsdone[MAXDET];
   sem_t sem_slswait[MAXDET];
+  sem_t sem_multiwait[MAXDET];
   int* slsframe[MAXDET];
+
 
 
 };

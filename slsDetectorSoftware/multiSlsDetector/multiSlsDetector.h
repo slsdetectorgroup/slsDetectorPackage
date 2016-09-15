@@ -1179,8 +1179,7 @@ class multiSlsDetector  : public slsDetectorUtils {
  */
  int resetFramesCaught();
 
- /**
-  * Reads frames from receiver through a constant socket
+ /** Reads frames from receiver through a constant socket
  */
  void readFrameFromReceiver();
 

@@ -156,8 +156,8 @@ int  slsDetectorUtils::acquire(int delflag){
   }
 
 
-
   if (*threadedProcessing) {
+	  sem_init(&dataThreadStartedSemaphore,1,0);
     startThread(delflag);
   }
 #ifdef VERBOSE
@@ -169,6 +169,8 @@ int  slsDetectorUtils::acquire(int delflag){
     resetFramesCaught();
   }
 
+  if(*threadedProcessing && dataReady)
+	  sem_wait(&dataThreadStartedSemaphore);
   for(int im=0;im<nm;im++) {
 
 #ifdef VERBOSE
@@ -346,6 +348,7 @@ int  slsDetectorUtils::acquire(int delflag){
 		  pthread_mutex_lock(&mg);
 		  stopReceiver();
 		  pthread_mutex_unlock(&mg);
+		  cout<<"receiver stopped"<<endl;
 	  }
 
 
@@ -468,6 +471,8 @@ int  slsDetectorUtils::acquire(int delflag){
 #ifdef VERBOSE
     cout << "data processing thread joined" << endl;
 #endif
+    if(dataReady)
+  	  sem_destroy(&dataThreadStartedSemaphore);
   }
 
 

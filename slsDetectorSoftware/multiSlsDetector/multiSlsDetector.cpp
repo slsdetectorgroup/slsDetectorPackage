@@ -4969,10 +4969,13 @@ void multiSlsDetector::readFrameFromReceiver(){
 	//determine number of half readouts and maxX and maxY
 	int maxX=0,maxY=0;
 	int numReadout = 1;
+	bool checkbottom = false;
+
 	if(getDetectorsType() == EIGER){
 		numReadout = 2;
 		maxX = thisMultiDetector->numberOfChannel[X];
 		maxY = thisMultiDetector->numberOfChannel[Y];
+		checkbottom = true;
 	}
 
 	//Note:num threads correspond to num detectors as task calls each slsdet
@@ -5031,6 +5034,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 
 
+
 	while(true){
 		memset(((char*)multiframe),0x0,slsdatabytes*thisMultiDetector->numberOfDetectors);
 
@@ -5056,7 +5060,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 
 					//assemble data
-					//eiger, so interleaving
+					//eiger, so interleaving between ports in one readout itself
 					if(maxX){
 
 						//if(ireadout == 3){
@@ -5064,18 +5068,28 @@ void multiSlsDetector::readFrameFromReceiver(){
 							if(!(ireadout%numReadout)) 	offsetX = thisMultiDetector->offsetX[idet];
 							else 		offsetX = thisMultiDetector->offsetX[idet] + halfreadoutoffset;
 							offsetX *= bytesperchannel;
-							cprintf(BLUE,"offsetx:%d offsety:%d maxx:%d slsmaxX:%d slsmaxY:%d bytesperchannel:%d\n",
-									offsetX,offsetY,maxX,slsmaxX,slsmaxY,bytesperchannel);
+							//cprintf(BLUE,"offsetx:%d offsety:%d maxx:%d slsmaxX:%d slsmaxY:%d bytesperchannel:%d\n",
+								//	offsetX,offsetY,maxX,slsmaxX,slsmaxY,bytesperchannel);
 
-							cprintf(BLUE,"copying bytes:%d\n", (slsmaxX/numReadout)*bytesperchannel);
+							//cprintf(BLUE,"copying bytes:%d\n", (slsmaxX/numReadout)*bytesperchannel);
 							//itnerleaving with other detectors
-							for(int i=0;i<slsmaxY;i++){
-							memcpy(((char*)multiframe) + offsetY + offsetX + (i*maxX*bytesperchannel),
-									(char*)slsframe[ireadout]+ i*(slsmaxX/numReadout)*bytesperchannel,
-									(slsmaxX/numReadout)*bytesperchannel);
+
+							//bottom
+							if(((idet+1)%2) == 0){
+								for(int i=0;i<slsmaxY;++i)
+									memcpy(((char*)multiframe) + offsetY + offsetX + ((slsmaxY-i)*maxX*bytesperchannel),
+											(char*)slsframe[ireadout]+ i*(slsmaxX/numReadout)*bytesperchannel,
+											(slsmaxX/numReadout)*bytesperchannel);
+							}
+							//top
+							else{
+								for(int i=0;i<slsmaxY;++i)
+									memcpy(((char*)multiframe) + offsetY + offsetX + (i*maxX*bytesperchannel),
+											(char*)slsframe[ireadout]+ i*(slsmaxX/numReadout)*bytesperchannel,
+											(slsmaxX/numReadout)*bytesperchannel);
+
 
 							}
-
 
 						//}//end of ireadout
 
@@ -5105,7 +5119,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 			dataReady(thisData, framecount, framecount, pCallbackArg);//should be fnum and subfnum from json header
 			delete thisData;
 			fdata = NULL;
-			cout<<"Send frame #"<< framecount << " to gui"<<endl;
+			//cout<<"Send frame #"<< framecount << " to gui"<<endl;
 		}
 
 		framecount++;

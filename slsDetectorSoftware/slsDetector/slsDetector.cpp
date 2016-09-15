@@ -3955,9 +3955,9 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	if (index!=MEASUREMENTS_NUMBER) {
 
 
-	  //#ifdef VERBOSE
+#ifdef VERBOSE
 		std::cout<< "Setting timer "<< index << " to " <<  t << "ns/value" << std::endl;
-		//#endif
+#endif
 		if (thisDetector->onlineFlag==ONLINE_FLAG) {
 			if (connectControl() == OK){
 				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
@@ -7181,7 +7181,7 @@ void slsDetector::readFrameFromReceiver(){
 		runningMask|=(1<<(i));
 
 	}
-
+	cout<<detId<<" started"<<endl;
 
 	//receive msgs and let multi know
 	zmq_msg_t message;
@@ -7211,14 +7211,16 @@ void slsDetector::readFrameFromReceiver(){
 						 //int size = zmq_msg_size (&message);
 				if (len <= 3 ) {
 					if(!len) cprintf(RED,"Received no data in socket for %d\n", readoutId+idet);
-					cout<<readoutId+idet <<" sls Received end data"<<endl;
+					//cout<<readoutId+idet <<" sls Received end data"<<endl;
 
 					parentDet->slsframe[readoutId+idet] = NULL;
 					sem_post(&parentDet->sem_slsdone[readoutId+idet]);//let multi know is ready
 
 					runningMask^=(1<<idet);
+					cout<<detId<<" " << idet << " finished"<<endl;
 					//all done, get out
 					if(!runningMask){
+						cout<<detId<<" all done"<<endl;
 						break;
 					}
 					continue;

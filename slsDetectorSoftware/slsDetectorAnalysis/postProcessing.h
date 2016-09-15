@@ -17,7 +17,7 @@
 #include <sstream>
 #include <queue>
 #include <math.h>
-
+#include <semaphore.h>
 
 class postProcessingFuncs;
 
@@ -334,6 +334,8 @@ s
   void *pCallbackArg; 
   detectorData *thisData;
   
+  sem_t dataThreadStartedSemaphore;
+
  private:
  // double *fdata;
 

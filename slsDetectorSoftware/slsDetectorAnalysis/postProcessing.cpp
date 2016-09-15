@@ -484,10 +484,13 @@ void* postProcessing::processData(int delflag) {
 	else{
 
 
-
+		if(dataReady){
+			startdatathreads();
+			sem_post(&dataThreadStartedSemaphore);
+		}
 		readFrameFromReceiver();
 
-
+		cout<<"exiting from proccessing thread"<<endl;
 
 
 

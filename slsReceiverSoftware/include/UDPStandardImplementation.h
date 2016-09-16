@@ -107,12 +107,18 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	void setShortFrameEnable(const int i);
 
 	/**
-	 * Overridden method
 	 * Set the Frequency of Frames Sent to GUI
-	 * @param i 0 for random frame requests, n for nth frame frequency
+	 * @param freq 0 for random frame requests, n for nth frame frequency
 	 * @return OK or FAIL
 	 */
-	int setFrameToGuiFrequency(const uint32_t i);
+	int setFrameToGuiFrequency(const uint32_t freq);
+
+	/**
+	 * Set the data stream enable
+	 * @param enable 0 to disable, 1 to enable
+	 * @return OK or FAIL
+	 */
+	uint32_t setDataStreamEnable(const uint32_t enable);
 
 	/**
 	 * Overridden method
@@ -702,7 +708,6 @@ private:
 	/** Set to self-terminate data callback threads waiting for semaphores */
 	bool killAllDataCallbackThreads;
 
-	bool dataCallbackEnabled;
 
 
 	//***general and listening thread parameters***

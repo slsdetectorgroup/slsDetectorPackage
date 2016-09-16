@@ -155,6 +155,13 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	uint32_t getFrameToGuiFrequency() const;
 
 	/**
+	 * Get the data stream enable
+	 * @return 1 to send via zmq, else 0
+	 */
+	uint32_t getDataStreamEnable() const;
+
+
+	/**
 	 * Get Acquisition Period
 	 * @return acquisition period
 	 */
@@ -298,10 +305,17 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 
 	/**
 	 * Set the Frequency of Frames Sent to GUI
-	 * @param i 0 for random frame requests, n for nth frame frequency
+	 * @param freq 0 for random frame requests, n for nth frame frequency
 	 * @return OK or FAIL
 	 */
-	int setFrameToGuiFrequency(const uint32_t i);
+	int setFrameToGuiFrequency(const uint32_t freq);
+
+	/**
+	 * Set the data stream enable
+	 * @param enable 0 to disable, 1 to enable
+	 * @return OK or FAIL
+	 */
+	uint32_t setDataStreamEnable(const uint32_t enable);
 
 	/**
 	 * Set Acquisition Period
@@ -525,7 +539,9 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	/* Short Frame Enable or index of adc enabled, else -1 if all enabled (gotthard specific) TODO: move to setROI */
 	int shortFrameEnable;
 	/** Frequency of Frames sent to GUI */
-	uint32_t FrameToGuiFrequency;
+	uint32_t frameToGuiFrequency;
+	/** Data Stream Enable from Receiver */
+	int32_t dataStreamEnable;
 
 
 

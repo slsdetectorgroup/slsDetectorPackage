@@ -262,7 +262,7 @@ int slsReceiverTCPIPInterface::function_table(){
 
 	flist[F_ENABLE_RECEIVER_TEN_GIGA]		= 	&slsReceiverTCPIPInterface::enable_tengiga;
 	flist[F_SET_RECEIVER_FIFO_DEPTH]		= 	&slsReceiverTCPIPInterface::set_fifo_depth;
-
+	flist[F_STREAM_DATA_FROM_RECEIVER]		= 	&slsReceiverTCPIPInterface::set_data_stream_enable;
 
 #ifdef VERYVERBOSE
 	for (int i=0;i<numberOfFunctions;i++)
@@ -2096,22 +2096,23 @@ int slsReceiverTCPIPInterface::set_read_frequency(){
 		}
 		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
 			strcpy(mess,"Can not set receiver frequency mode while receiver not idle\n");
+			cprintf(RED,"%s\n",mess);
 			ret = FAIL;
 		}
-		/*
-		else if((receiverBase->getStatus()==RUNNING) && (index >= 0)){
-			ret = FAIL;
-			strcpy(mess,"cannot set up receiver mode when receiver is running\n");
-		}*/
 		else{
-			if(index >= 0){
+			if(index >= 0 ){
 				ret = receiverBase->setFrameToGuiFrequency(index);
-				if(ret == FAIL)
+				if(ret == FAIL){
 					strcpy(mess, "Could not allocate memory for listening fifo\n");
+					cprintf(RED,"%s\n",mess);
+				}
 			}
 			retval=receiverBase->getFrameToGuiFrequency();
-			if(index>=0 && retval!=index)
+			if(index>=0 && retval!=index){
+				strcpy(mess,"Could not set frame to gui frequency");
+				cprintf(RED,"%s\n",mess);
 				ret = FAIL;
+			}
 		}
 	}
 
@@ -2134,6 +2135,69 @@ int slsReceiverTCPIPInterface::set_read_frequency(){
 	return ret;
 }
 
+
+
+
+
+int slsReceiverTCPIPInterface::set_data_stream_enable(){
+	ret=OK;
+	int retval=-1;
+	int index;
+	strcpy(mess,"Could not set data stream enable\n");
+
+
+	// receive arguments
+	if(socket->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
+		strcpy(mess,"Error reading from socket\n");
+		ret = FAIL;
+	}
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	if (ret==OK) {
+		if (lockStatus==1 && socket->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			ret=FAIL;
+		}
+		else if (receiverBase == NULL){
+			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
+			ret=FAIL;
+		}
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set data stream enable while receiver not idle\n");
+			cprintf(RED,"%s\n",mess);
+			ret = FAIL;
+		}
+		else{
+			if(index >= 0 )
+				ret = receiverBase->setDataStreamEnable(index);
+			retval=receiverBase->getDataStreamEnable();
+			if(index>=0 && retval!=index){
+				strcpy(mess,"Could not set data stream enable");
+				cprintf(RED,"%s\n",mess);
+				ret = FAIL;
+			}
+		}
+	}
+
+#endif
+
+	if(ret==OK && socket->differentClients){
+		FILE_LOG(logDEBUG) << "Force update";
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL){
+		cprintf(RED,"%s\n",mess);
+		socket->SendDataOnly(mess,sizeof(mess));
+	}
+	socket->SendDataOnly(&retval,sizeof(retval));
+
+	//return ok/fail
+	return ret;
+}
 
 
 

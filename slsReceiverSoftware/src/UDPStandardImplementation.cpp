@@ -195,7 +195,8 @@ void UDPStandardImplementation::initializeMembers(){
 	numberofDataCallbackThreads = 1;
 	dataCallbackThreadsMask = 0x0;
 	killAllDataCallbackThreads = false;
-	dataCallbackEnabled = true;  /**false*/
+	dataStreamEnable = false;
+
 
 	//***general and listening thread parameters***
 	threadStarted = false;
@@ -282,8 +283,8 @@ int UDPStandardImplementation::setupFifoStructure(){
 	//else calculate best possible number of frames to listen to at a time (for fast readouts like gotthard)
 	else{
 		//if frequency to gui is not random (every nth frame), then listen to only n frames per buffer
-		if(FrameToGuiFrequency)
-			numberofJobsPerBuffer = FrameToGuiFrequency;
+		if(frameToGuiFrequency)
+			numberofJobsPerBuffer = frameToGuiFrequency;
 		//random frame sent to gui, then frames per buffer depends on acquisition period
 		else{
 			//calculate 100ms/period to get frames to listen to at a time
@@ -445,17 +446,13 @@ void UDPStandardImplementation::setFileName(const char c[]){
 	}
 
 
-	if(dataCallbackEnabled && (strcmp(oldfilename,fileName))){cout<<"***Going to destroy data callback threads and create!!!"<<endl;
-		if(zmqThreadStarted){
+	if(dataStreamEnable && (strcmp(oldfilename,fileName))){
+		if(zmqThreadStarted)
 			createDataCallbackThreads(true);
-			zmqThreadStarted = false;
-		}
-		cout<<"***datacallback threads destroyed"<<endl;
 		numberofDataCallbackThreads = MAX_NUMBER_OF_LISTENING_THREADS;
 		if(createDataCallbackThreads() == FAIL){
 			cprintf(BG_RED,"Error: Could not create data callback threads\n");
 		}
-		cout<<"data call back threads created"<<endl;
 	}
 
 
@@ -552,17 +549,50 @@ void UDPStandardImplementation::setShortFrameEnable(const int i){
 }
 
 
-int UDPStandardImplementation::setFrameToGuiFrequency(const uint32_t i){
+int UDPStandardImplementation::setFrameToGuiFrequency(const uint32_t freq){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
-	FrameToGuiFrequency = i;
+	frameToGuiFrequency = freq;
 	if(setupFifoStructure() == FAIL)
 		return FAIL;
 
-	FILE_LOG(logINFO) << "Frame to Gui Frequency: " << FrameToGuiFrequency;
+	FILE_LOG(logINFO) << "Frame to Gui Frequency: " << frameToGuiFrequency;
 
 	return OK;
 }
+
+
+
+uint32_t UDPStandardImplementation::setDataStreamEnable(const uint32_t enable){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
+
+	cout<<"************datasend:"<<enable<<endl;
+
+	int olddatasend = dataStreamEnable;
+	dataStreamEnable = enable;
+	//if there is a change
+	if(olddatasend != dataStreamEnable){
+		cout<<"***Going to destroy data callback threads and create!!!"<<endl;
+		if(zmqThreadStarted)
+			createDataCallbackThreads(true);
+		cout<<"***datacallback threads destroyed"<<endl;
+
+		if(dataStreamEnable){
+			numberofDataCallbackThreads = MAX_NUMBER_OF_LISTENING_THREADS;
+			if(createDataCallbackThreads() == FAIL){
+				cprintf(BG_RED,"Error: Could not create data callback threads\n");
+			}
+			cout<<"data call back threads created"<<endl;
+		}
+	}
+
+	FILE_LOG(logINFO) << "Data Send to Gui: " << dataStreamEnable;
+
+
+	return OK;
+}
+
 
 
 int UDPStandardImplementation::setAcquisitionPeriod(const uint64_t i){
@@ -839,7 +869,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 	setupFifoStructure();
 
 	numberofDataCallbackThreads = MAX_NUMBER_OF_LISTENING_THREADS;
-	if(dataCallbackEnabled)
+	if(dataStreamEnable)
 		createDataCallbackThreads();
 
 	//allocate for latest data (frame copy for gui), free variables
@@ -939,8 +969,8 @@ int UDPStandardImplementation::startReceiver(char *c){
 	}
 	FILE_LOG(logINFO) << "Number of Jobs Per Buffer: " << numberofJobsPerBuffer;
 	FILE_LOG(logINFO) << "Max Frames Per File:" << maxFramesPerFile;
-	if(FrameToGuiFrequency)
-		FILE_LOG(logINFO) << "Frequency of frames sent to gui: " << FrameToGuiFrequency;
+	if(frameToGuiFrequency)
+		FILE_LOG(logINFO) << "Frequency of frames sent to gui: " << frameToGuiFrequency;
 	else
 		FILE_LOG(logINFO) << "Frequency of frames sent to gui: Random";
 
@@ -980,7 +1010,7 @@ int UDPStandardImplementation::startReceiver(char *c){
 		listeningThreadsMask|=(1<<i);
 	for(int i=0;i<numberofWriterThreads;i++)
 		writerThreadsMask|=(1<<i);
-	if(dataCallbackEnabled){
+	if(dataStreamEnable){
 		for(int i=0;i<numberofDataCallbackThreads;i++)
 			dataCallbackThreadsMask|=(1<<i);
 	}
@@ -992,7 +1022,7 @@ int UDPStandardImplementation::startReceiver(char *c){
 		sem_post(&listenSemaphore[i]);
 	for(int i=0; i < numberofWriterThreads; i++)
 		sem_post(&writerSemaphore[i]);
-	if(dataCallbackEnabled){
+	if(dataStreamEnable){
 		for(int i=0;i<numberofDataCallbackThreads;i++)
 			sem_post(&dataCallbackSemaphore[i]);
 	}
@@ -1639,8 +1669,7 @@ void UDPStandardImplementation::startDataCallback(){cprintf(MAGENTA,"start data 
 
 	//set current thread value  index
 	int ithread = currentThreadIndex;
-	//let calling function know thread started and obtained current
-	zmqThreadStarted = 1;
+
 
     // server address to bind
     char hostName[100] = "tcp://127.0.0.1:";
@@ -1668,6 +1697,9 @@ void UDPStandardImplementation::startDataCallback(){cprintf(MAGENTA,"start data 
 		// bind
 		zmq_bind(zmqsocket,hostName);
 
+		//let calling function know thread started and obtained current (after sockets created)
+		if(!zmqThreadStarted)
+			zmqThreadStarted = true;
 
 		currentfnum = -1;
 		/* inner loop - loop for each buffer */
@@ -2404,7 +2436,7 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 		cprintf(YELLOW,"Writing_Thread %d: Freeing dummy-end buffer. Pushed into fifofree %p for listener %d\n", ithread,(void*)(wbuffer),ithread);
 #endif
 
-	if(dataCallbackEnabled){
+	if(dataStreamEnable){
 		//ensure previous frame was processed
 		sem_wait(&writerGuiSemaphore[ithread]);
 		guiNumPackets[ithread] = dummyPacketValue;
@@ -2518,7 +2550,7 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 
 	//copy frame for gui
 	//if(npackets >= (packetsPerFrame/numberofListeningThreads))
-	if(dataCallbackEnabled && npackets)
+	if(dataStreamEnable && npackets)
 		copyFrameToGui(ithread, wbuffer,npackets);
 #ifdef DEBUG4
 	cprintf(GREEN,"Writing_Thread: Copied frame\n");
@@ -2700,7 +2732,7 @@ void UDPStandardImplementation::copyFrameToGui(int ithread, char* buffer, uint32
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//if nthe frame, wait for your turn (1st frame always shown as its zero)
-	if(FrameToGuiFrequency && ((frametoGuiCounter[ithread])%FrameToGuiFrequency));
+	if(frameToGuiFrequency && ((frametoGuiCounter[ithread])%frameToGuiFrequency));
 
 	//random read (gui ready) or nth frame read: gui needs data now or it is the first frame
 	else{
@@ -2725,7 +2757,7 @@ void UDPStandardImplementation::copyFrameToGui(int ithread, char* buffer, uint32
 	}
 
 	//update the counter for nth frame
-	if(FrameToGuiFrequency)
+	if(frameToGuiFrequency)
 		frametoGuiCounter[ithread]++;
 
 
@@ -2852,7 +2884,7 @@ void UDPStandardImplementation::handleDataCompression(int ithread, char* wbuffer
 
 #endif
 			if(!once){
-				if(dataCallbackEnabled)
+				if(dataStreamEnable)
 					copyFrameToGui(ithread, buff[0],(uint32_t)packetsPerFrame);
 				once = 1;
 			}

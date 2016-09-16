@@ -215,6 +215,12 @@ class UDPInterface {
 	virtual uint32_t getFrameToGuiFrequency() const = 0;
 
 	/**
+	 * Get the data stream enable
+	 * @return 1 to send via zmq, else 0
+	 */
+	virtual uint32_t getDataStreamEnable() const = 0;
+
+	/**
 	 * Get Acquisition Period
 	 * @return acquisition period
 	 */
@@ -355,10 +361,17 @@ class UDPInterface {
 
 	/**
 	 * Set the Frequency of Frames Sent to GUI
-	 * @param i 0 for random frame requests, n for nth frame frequency
+	 * @param freq 0 for random frame requests, n for nth frame frequency
 	 * @return OK or FAIL
 	 */
-	virtual int setFrameToGuiFrequency(const uint32_t i) = 0;
+	virtual int setFrameToGuiFrequency(const uint32_t freq) = 0;
+
+	/**
+	 * Set the data stream enable
+	 * @param enable 0 to disable, 1 to enable
+	 * @return OK or FAIL
+	 */
+	virtual uint32_t setDataStreamEnable(const uint32_t enable) = 0;
 
 	/**
 	 * Set Acquisition Period

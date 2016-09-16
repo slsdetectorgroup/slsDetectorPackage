@@ -18,6 +18,12 @@ include_directories(
     ../slsDetectorCalibration
 )
 
+add_library(zmq STATIC IMPORTED )
+
+set_target_properties(zmq PROPERTIES
+    IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/include/libzmq.a
+)
+
 add_library(slsReceiverStatic STATIC
     ${SOURCES}
     ${HEADERS}
@@ -45,4 +51,6 @@ set_target_properties(slsReceiver PROPERTIES
 target_link_libraries(slsReceiver
     slsReceiverShared
     pthread
+    zmq
+    rt
 )

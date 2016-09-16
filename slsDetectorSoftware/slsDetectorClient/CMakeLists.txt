@@ -18,6 +18,8 @@ add_executable(sls_detector_get
 target_link_libraries(sls_detector_get
    slsDetectorShared
    pthread
+   zmq
+   rt
 )
 set_target_properties(sls_detector_get PROPERTIES 
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
@@ -30,6 +32,8 @@ add_executable(sls_detector_put
 target_link_libraries(sls_detector_put
    slsDetectorShared
    pthread
+   zmq
+   rt
 )
 set_target_properties(sls_detector_put PROPERTIES 
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
@@ -42,6 +46,8 @@ add_executable(sls_detector_acquire
 target_link_libraries(sls_detector_acquire
    slsDetectorShared
    pthread
+   zmq
+   rt
 )
 set_target_properties(sls_detector_acquire PROPERTIES 
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
@@ -54,6 +60,8 @@ add_executable(sls_detector_help
 target_link_libraries(sls_detector_help
    slsDetectorShared
    pthread
+   zmq
+   rt
 )
 set_target_properties(sls_detector_help PROPERTIES 
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin

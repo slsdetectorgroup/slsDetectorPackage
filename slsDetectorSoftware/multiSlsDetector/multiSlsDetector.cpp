@@ -24,6 +24,7 @@ ID:         $Id$
 #include  <iostream>
 #include  <string>
 #include <zmq.h>
+#include <rapidjson/document.h> //to scan json header in zmq stream
 using namespace std;
 
 
@@ -5012,16 +5013,44 @@ void multiSlsDetector::startReceivingData(){
 
 		if(!idet)	framecount++; //update indices, count only once
 
-		// receive a message, this is a blocking function
-		len = zmq_msg_init (&message); 			/* is this required? Xiaoqiang didnt have it*/
-		if(len) {cprintf(RED,"Failed to initialize message %d for %d\n",len,ithread); continue; }	//error
+
+		//scan header--------------------------------------------------------
+		zmq_msg_init (&message);
+		len = zmq_msg_recv(&message, zmqsocket, 0);
+        if (len == -1) {
+            zmq_msg_close(&message);
+            cprintf(RED, "%d message null\n",ithread);
+            continue;
+        }
+        rapidjson::Document d;
+        d.Parse((char*)zmq_msg_data(&message));
+        // htype is an array of strings
+        rapidjson::Value::Array htype = d["htype"].GetArray();
+        		for(int i=0; i< htype.Size(); i++)
+        			cout << ithread << "htype: " << htype[i].GetString() << endl;/*print*/
+        // shape is an array of ints
+        rapidjson::Value::Array shape = d["shape"].GetArray();
+        		cout << ithread << "shape: ";	/*print*/
+        		for(int i=0; i< shape.Size(); i++)
+        			cout << ithread << shape[i].GetInt() << " ";/*print*/
+        		cout << endl;
+
+        cout << ithread << "type: " << d["type"].GetString() << endl;/*print*/
+        // close the message
+        zmq_msg_close(&message);
+
+
+		//scan data--------------------------------------------------------
+		zmq_msg_init (&message);
 		len = zmq_msg_recv(&message, zmqsocket, 0);
 
-		//if(len<1024*256)
-			//cprintf(RED,"got less than planned for socket %d\n",ithread);
+		//last one
+		if(len<1024*256){
+			cprintf(RED,"got less than planned for socket %d\n",ithread);
 		//end of socket
-		if (len <= 3 ) {
+		//if (len <= 3 ) {
 			if(!len) cprintf(RED,"Received no data in socket for %d\n", ithread);
+			zmq_msg_close(&message);
 			//cout<<ithread <<" sls Received end data"<<endl;
 			singleframe[ithread] = NULL;
 			pthread_mutex_lock(&ms);
@@ -5035,8 +5064,7 @@ void multiSlsDetector::startReceivingData(){
 			break;
 		}
 
-		if(zmq_msg_data(&message)==NULL)	cprintf(RED,"GOT NULL FROM ZMQ\n"); /*not needed most likely*/
-
+		//actual data
 		//cout<<"Received on " << ithread << " for frame " << framecount << endl;
 		//if(len == singleDatabytes/numReadoutPerDetector){//hoow to solve this
 		memcpy((char*)(singleframe[ithread]),(char*)zmq_msg_data(&message),singleDatabytes/numReadoutPerDetector);
@@ -5052,8 +5080,9 @@ void multiSlsDetector::startReceivingData(){
 		sem_post(&sem_singledone[ithread]);//let multi know is ready
 		//cprintf(GREEN,"single %d posted done for multi\n",ithread);
 
+        // close the message
+        zmq_msg_close(&message);
 	}
-	zmq_msg_close(&message);
 
 	//close socket
 	zmq_disconnect(zmqsocket, hostname);

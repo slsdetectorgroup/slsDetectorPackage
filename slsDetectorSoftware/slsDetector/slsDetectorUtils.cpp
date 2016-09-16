@@ -521,7 +521,7 @@ int  slsDetectorUtils::acquire(int delflag){
   setAcquiringFlag(false);
 
   clock_gettime(CLOCK_REALTIME, &end);
-  cprintf(BLUE,"Elapsed time:%f seconds\n",( end.tv_sec - begin.tv_sec )	+ ( end.tv_nsec - begin.tv_nsec ) / 1000000000.0);
+  cout << "Elapsed time for acquisition:" << (( end.tv_sec - begin.tv_sec )	+ ( end.tv_nsec - begin.tv_nsec ) / 1000000000.0) << " seconds" << endl;
 
   return OK;
 

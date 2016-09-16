@@ -645,7 +645,6 @@ virtual int resetFramesCaught()=0;
 */
 virtual void readFrameFromReceiver()=0;
 
-
 /**
     Turns off the receiver server!
 */
@@ -688,14 +687,20 @@ virtual int setROI(int n=-1,ROI roiLimits[]=NULL)=0;
 virtual ROI* getROI(int &n)=0;
 
 /** Sets the read receiver frequency
- 	  if Receiver read upon gui request, readRxrFrequency=0,
+ 	  if data required from receiver randomly readRxrFrequency=0,
  	   else every nth frame to be sent to gui
  	   @param getFromReceiver is 1 if it should ask the receiver,
- 	   0 if it can get it from multislsdetecter
- 	   @param i is the receiver read frequency
+ 	   	   0 if it can get it from multi structure
+ 	   @param freq is the receiver read frequency
  	   /returns read receiver frequency
  */
-virtual int setReadReceiverFrequency(int getFromReceiver, int i=-1)=0;
+virtual int setReadReceiverFrequency(int getFromReceiver, int freq=-1)=0;
+
+/** Enable or disable streaming of data from receiver to client
+ * 	@param enable 0 to disable 1 to enable -1 to only get the value
+ * 	@returns data streaming
+*/
+virtual int setDataStreamingFromReceiver(int enable=-1)=0;
 
 
 /** enable/disable or get data compression in receiver

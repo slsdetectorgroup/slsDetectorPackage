@@ -338,7 +338,6 @@ s
 
  private:
  // double *fdata;
-
  // int (*dataReady)(detectorData*,int, int,void*);
  // void *pCallbackArg;
 

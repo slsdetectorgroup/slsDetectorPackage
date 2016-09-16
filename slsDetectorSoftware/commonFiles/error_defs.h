@@ -61,6 +61,7 @@ using namespace std;
 #define DETECTOR_NETWORK_PARAMETER			0x0000000000400000ULL
 #define RATE_CORRECTION_NOT_32BIT			0x0000000000800000ULL
 #define RATE_CORRECTION_NO_TAU_PROVIDED		0x0000000001000000ULL
+#define DATA_STREAMING_IN_RECEIVER			0x0000000002000000ULL
 
 //											0x00000000FFFFFFFFULL
 /** @short class returning all error messages for error mask */
@@ -198,7 +199,8 @@ public:
 		if(slsErrorMask&RATE_CORRECTION_NO_TAU_PROVIDED)
 			retval.append("Rate correction Deactivated. No default tau provided in file\n");
 
-
+		if(slsErrorMask&DATA_STREAMING_IN_RECEIVER)
+			retval.append("Could not set/reset Data Streaming in Receiver\n");
 
 
 

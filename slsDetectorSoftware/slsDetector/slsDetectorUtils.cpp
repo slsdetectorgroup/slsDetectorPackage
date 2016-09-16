@@ -8,7 +8,7 @@
 #include  <cstdlib>
 #include  <sys/ipc.h>
 #include  <sys/shm.h>
-
+#include <time.h> //clock()
 using namespace std;
 slsDetectorUtils::slsDetectorUtils()  {
 
@@ -42,6 +42,8 @@ slsDetectorUtils::slsDetectorUtils()  {
 
 
 int  slsDetectorUtils::acquire(int delflag){
+	struct timespec begin,end;
+	clock_gettime(CLOCK_REALTIME, &begin);
 
   //ensure acquire isnt started multiple times by same client
   if(getAcquiringFlag() == false)
@@ -58,11 +60,25 @@ int  slsDetectorUtils::acquire(int delflag){
   }else{
 	  //put receiver read frequency to random if no gui
 	  int ret = setReadReceiverFrequency(0);
-	  if(ret>0 && (acquisition_finished == NULL)){
-		  std::cout << "Error: receiver read frequency is set to " << ret << " but should be > 0 only when using gui." << std::endl;
+	  if(ret>0 && (dataReady == NULL)){
 		  ret = setReadReceiverFrequency(1,0);
-		  std::cout << "Current receiver read frequency: " << ret << std::endl;
+		  std::cout << "No Data call back and hence receiver read frequency reset to " << ret <<" (Random)" << std::endl;
 	  }
+
+	  //start data streaming threads in receiver if enabled
+	  ret = setDataStreamingFromReceiver(-1);
+	  if(dataReady == NULL){
+		  if(ret){
+			  cout << "Disabling Data Streaming from Receiver" << endl;
+			  setDataStreamingFromReceiver(0); //no call back but streaming enabled, then dont stream.
+		  }
+	  }else{
+		  if(*threadedProcessing && (!ret)){
+			  cout << "Enabling Data Streaming from Receiver" << endl;
+			  setDataStreamingFromReceiver(1); //call back exists, threaded but streaming disabled, then stream.
+		  }
+	  }
+
   }
 
   int nc=setTimer(CYCLES_NUMBER,-1);
@@ -475,6 +491,7 @@ int  slsDetectorUtils::acquire(int delflag){
 #endif
     if(dataReady)
   	  sem_destroy(&dataThreadStartedSemaphore);
+
   }
 
 
@@ -502,6 +519,10 @@ int  slsDetectorUtils::acquire(int delflag){
 #endif
 
   setAcquiringFlag(false);
+
+  clock_gettime(CLOCK_REALTIME, &end);
+  cprintf(BLUE,"Elapsed time:%f seconds\n",( end.tv_sec - begin.tv_sec )	+ ( end.tv_nsec - begin.tv_nsec ) / 1000000000.0);
+
   return OK;
 
 }

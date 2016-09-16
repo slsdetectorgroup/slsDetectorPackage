@@ -7431,18 +7431,18 @@ int64_t slsDetector::clearAllErrorMask(){
 
 
 
-int slsDetector::setReadReceiverFrequency(int getFromReceiver,int i){
+int slsDetector::setReadReceiverFrequency(int getFromReceiver, int freq){
 	int fnum=F_READ_RECEIVER_FREQUENCY;
 	int ret = FAIL;
 	int retval=-1;
-	int arg = i;
+	int arg = freq;
 
 	if(!getFromReceiver)
 		return retval;
 
 	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
 #ifdef VERBOSE
-		std::cout << "Sending read frequency to receiver " << arg << std::endl;
+		std::cout << "Sending read frequency to receiver " << arg  << std::endl;
 #endif
 		if (connectData() == OK)
 			ret=thisReceiver->sendInt(fnum,retval,arg);
@@ -7453,12 +7453,42 @@ int slsDetector::setReadReceiverFrequency(int getFromReceiver,int i){
 			updateReceiver();
 	}
 
-	if ((i > 0) && (retval != i)){
-		cout << "could not set receiver read frequency:" << retval << endl;
+	if ((freq > 0) && (retval != freq)){
+		cout << "could not set receiver read frequency to " << freq <<" Returned:" << retval << endl;
 		setErrorMask((getErrorMask())|(RECEIVER_READ_FREQUENCY));
 	}
 	return retval;
 }
+
+
+
+int slsDetector::setDataStreamingFromReceiver(int enable){
+	int fnum=F_STREAM_DATA_FROM_RECEIVER;
+	int ret = FAIL;
+	int retval=-1;
+	int arg = enable;
+
+
+	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+#ifdef VERBOSE
+		std::cout << "***************Sending Data Streaming in Receiver " << arg  << std::endl;
+#endif
+		if (connectData() == OK)
+			ret=thisReceiver->sendInt(fnum,retval,arg);
+		 disconnectData();
+		if(ret==FAIL)
+			retval = -1;
+		if(ret==FORCE_UPDATE)
+			updateReceiver();
+	}
+
+	if ((enable > 0) && (retval != enable)){
+		cout << "could not set data streaming in receiver to " << enable <<" Returned:" << retval << endl;
+		setErrorMask((getErrorMask())|(RECEIVER_READ_FREQUENCY));
+	}
+	return retval;
+}
+
 
 
 int slsDetector::enableReceiverCompression(int i){

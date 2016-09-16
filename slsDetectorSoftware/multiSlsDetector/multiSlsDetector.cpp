@@ -3352,6 +3352,7 @@ char* multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 		}
 
 	}
+
 	return getNetworkParameter(p);
 
 } 
@@ -5421,7 +5422,7 @@ int multiSlsDetector::calibratePedestal(int frames){
 	return ret;
 }
 
-int multiSlsDetector::setReadReceiverFrequency(int getFromReceiver,int i){
+int multiSlsDetector::setReadReceiverFrequency(int getFromReceiver, int freq){
 	int ret=-100, ret1;
 
 	if(!getFromReceiver)
@@ -5429,7 +5430,7 @@ int multiSlsDetector::setReadReceiverFrequency(int getFromReceiver,int i){
 
 	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
 		if (detectors[idet]) {
-			ret1=detectors[idet]->setReadReceiverFrequency(getFromReceiver,i);
+			ret1=detectors[idet]->setReadReceiverFrequency(getFromReceiver,freq);
 			if(detectors[idet]->getErrorMask())
 				setErrorMask(getErrorMask()|(1<<idet));
 			if (ret==-100)
@@ -5445,6 +5446,24 @@ int multiSlsDetector::setReadReceiverFrequency(int getFromReceiver,int i){
 }
 
 
+
+int multiSlsDetector::setDataStreamingFromReceiver(int enable){
+	int ret=-100, ret1;
+
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+		if (detectors[idet]) {
+			ret1=detectors[idet]->setDataStreamingFromReceiver(enable);
+			if(detectors[idet]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<idet));
+			if (ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+	}
+
+	return ret;
+}
 
 int multiSlsDetector::enableReceiverCompression(int i){
 	int ret=-100,ret1;

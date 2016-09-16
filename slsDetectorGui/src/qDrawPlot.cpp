@@ -1165,7 +1165,9 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 
 int qDrawPlot::GetAcquisitionFinishedCallBack(double currentProgress,int detectorStatus, void *this_pointer){
 	((qDrawPlot*)this_pointer)->AcquisitionFinished(currentProgress,detectorStatus);
+#ifdef VERYVERBOSE
 	cout << "acquisition finished callback worked ok" << endl;
+#endif
 	return 0;
 }
 

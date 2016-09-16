@@ -88,6 +88,11 @@ include_directories(
     ${QWT_INCLUDE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+add_definitions(
+    -DDACS_INT -DVERBOSE -DPRINT_LOG
+)
+
 add_executable(slsDetectorGui
     ${SOURCES}
     ${HEADERS}
@@ -100,12 +105,20 @@ set_target_properties(slsDetectorGui PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
+add_library(zmq STATIC IMPORTED )
+
+set_target_properties(zmq PROPERTIES
+    IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../slsReceiverSoftware/include/libzmq.a
+)
+
 target_link_libraries(slsDetectorGui 
     slsDetectorShared
     ${QT_QTCORE_LIBRARIES}
     ${QT_QTGUI_LIBRARIES}
     ${QWT_LIBRARIES}
     pthread
+    zmq
+    rt
 )
 
 add_executable(gui_client

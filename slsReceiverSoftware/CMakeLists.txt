@@ -9,6 +9,10 @@ set(SOURCES
     src/utilities.cpp
 )
 
+add_definitions(
+    -DDACS_INT  -DSLS_RECEIVER_UDP_FUNCTIONS
+)
+
 include_directories(
     include
     ../slsDetectorCalibration

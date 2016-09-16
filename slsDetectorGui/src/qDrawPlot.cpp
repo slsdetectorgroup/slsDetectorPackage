@@ -333,6 +333,9 @@ void qDrawPlot::SetupWidgetWindow(){
 	myDet->registerMeasurementFinishedCallback(&(GetMeasurementFinishedCallBack),this);
 	//Setting the callback function to get progress from detector class(using receivers)
 	myDet->registerProgressCallback(&(GetProgressCallBack),this);
+	//stream data to the gui
+	myDet->setDataStreamingFromReceiver(1);
+
 
 	qDefs::checkErrorMessage(myDet,"qDrawPlot::SetupWidgetWindow");
 }
@@ -1946,7 +1949,7 @@ void qDrawPlot::SetFrameFactor(int frame){
 	frameFactor = frame;
 	if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG){
 		frame = myDet->setReadReceiverFrequency(1,frame);
-		if(frame > 0) frameFactor = 1;
+		/*if(frame > 0) frameFactor = 1;*//**what is this*/
 #ifdef VERBOSE
 		cout << "Receiver read frequency set to : " << frame << endl;
 #endif

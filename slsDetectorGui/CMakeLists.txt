@@ -105,6 +105,7 @@ target_link_libraries(slsDetectorGui
     ${QT_QTCORE_LIBRARIES}
     ${QT_QTGUI_LIBRARIES}
     ${QWT_LIBRARIES}
+    pthread
 )
 
 add_executable(gui_client

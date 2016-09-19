@@ -1370,9 +1370,17 @@ private:
 	 */
 	void startReceivingData();
 
+	  /* synchronizing between zmq threads */
 	  sem_t sem_singledone[MAXDET];
 	  sem_t sem_singlewait[MAXDET];
 	  int* singleframe[MAXDET];
+
+	  /* Parameters given to the gui picked up from zmq threads*/
+	  int currentAcquisitionIndex;
+	  int currentFrameIndex;
+	  int currentSubFrameIndex;
+	  char currentFileName[MAX_STR_LENGTH];
+
 	  /** Ensures if threads created successfully */
 	  bool threadStarted;
 	  /** Current Thread Index*/

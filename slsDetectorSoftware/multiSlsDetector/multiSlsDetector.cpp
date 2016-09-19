@@ -5022,20 +5022,25 @@ void multiSlsDetector::startReceivingData(){
             cprintf(RED, "%d message null\n",ithread);
             continue;
         }
+
+
         rapidjson::Document d;
-        d.Parse((char*)zmq_msg_data(&message));
+      //  d.Parse((char*)zmq_msg_data(&message));
+        d.Parse( (char*)zmq_msg_data(&message), zmq_msg_size(&message));
+
         // htype is an array of strings
         rapidjson::Value::Array htype = d["htype"].GetArray();
         		for(int i=0; i< htype.Size(); i++)
-        			cout << ithread << "htype: " << htype[i].GetString() << endl;/*print*/
+        			std::cout << ithread << "htype: " << htype[i].GetString() << std::endl;
         // shape is an array of ints
         rapidjson::Value::Array shape = d["shape"].GetArray();
-        		cout << ithread << "shape: ";	/*print*/
+        		cout << ithread << "shape: ";
         		for(int i=0; i< shape.Size(); i++)
-        			cout << ithread << shape[i].GetInt() << " ";/*print*/
+        			cout << ithread << shape[i].GetInt() << " ";
         		cout << endl;
 
-        cout << ithread << "type: " << d["type"].GetString() << endl;/*print*/
+        cout << ithread << "type: " << d["type"].GetString() << endl;
+
         // close the message
         zmq_msg_close(&message);
 
@@ -5046,7 +5051,7 @@ void multiSlsDetector::startReceivingData(){
 
 		//last one
 		if(len<1024*256){
-			cprintf(RED,"got less than planned for socket %d\n",ithread);
+			cprintf(RED,"got less than planned for socket %d, length:%d\n",ithread,len);
 		//end of socket
 		//if (len <= 3 ) {
 			if(!len) cprintf(RED,"Received no data in socket for %d\n", ithread);

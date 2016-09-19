@@ -1053,6 +1053,7 @@ void UDPStandardImplementation::stopReceiver(){
 	}
 
 	//semaphore destroy
+	cout<<"gonna destroy writerguisemphore"<<endl;
 	for(int i=0; i < numberofWriterThreads; i++){
 		sem_destroy(&writerGuiSemaphore[i]);
 		sem_destroy(&dataCallbackWriterSemaphore[i]);
@@ -1665,18 +1666,19 @@ void* UDPStandardImplementation::startWritingThread(void* this_pointer){
 
 
 
-void UDPStandardImplementation::startDataCallback(){cprintf(MAGENTA,"start data call back thread started %d\n",currentThreadIndex);
+void UDPStandardImplementation::startDataCallback(){
+	cprintf(MAGENTA,"start data call back thread started %d\n",currentThreadIndex);
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//set current thread value  index
 	int ithread = currentThreadIndex;
 	struct timespec begin,end;
 
-    // server address to bind
-    char hostName[100] = "tcp://127.0.0.1:";
-    int portno = DEFAULT_ZMQ_PORTNO + (detID*2+ithread);
-    sprintf(hostName,"%s%d",hostName,portno);
-    FILE_LOG(logINFO) << "Thread" << ithread << ": ZMQ Server at " << hostName;
+	// server address to bind
+	char hostName[100] = "tcp://127.0.0.1:";
+	int portno = DEFAULT_ZMQ_PORTNO + (detID*2+ithread);
+	sprintf(hostName,"%s%d",hostName,portno);
+	FILE_LOG(logINFO) << "Thread" << ithread << ": ZMQ Server at " << hostName;
 
 	/* outer loop - loops once for each acquisition */
 	//infinite loop, exited only to change dynamic range, 10G parameters etc (then recreated again)
@@ -1702,8 +1704,8 @@ void UDPStandardImplementation::startDataCallback(){cprintf(MAGENTA,"start data 
 		if(!zmqThreadStarted)
 			zmqThreadStarted = true;
 
-	    const char *type = "float64";
-	    const char *shape= "[1024, 512]";
+		const char *type = "float64";
+		const char *shape= "[1024, 512]";
 
 		/* inner loop - loop for each buffer */
 		//until mask reset (dummy pcaket got by writer)
@@ -1711,6 +1713,7 @@ void UDPStandardImplementation::startDataCallback(){cprintf(MAGENTA,"start data 
 
 			//let the writer thread continue, while we process carry over if any
 			sem_post(&writerGuiSemaphore[ithread]);
+			if(!ithread) cout<<"*** posted writerguisemiphore (callback)"<<endl;
 			//wait for receiver to send more data
 			sem_wait(&dataCallbackWriterSemaphore[ithread]);
 
@@ -1718,25 +1721,29 @@ void UDPStandardImplementation::startDataCallback(){cprintf(MAGENTA,"start data 
 			if(guiNumPackets[ithread] == dummyPacketValue){
 
 
-				 /**suing this in clientzmq_msg_more,
-				  * in serve use zmq_msg_send (&message, sender, ZMQ_SNDMORE); and 0 for last packet, but better to check lengt*/
+				/**suing this in clientzmq_msg_more,
+				 * in serve use zmq_msg_send (&message, sender, ZMQ_SNDMORE); and 0 for last packet, but better to check lengt*/
 				/*if (checkJoinThread()){for different scans
 					break;
 				}*/
+
 				ostringstream header;
-			    header << "{\"htype\":[\"chunk-1.0\"], "
-			           << "\"type\":" << "\"" << type << "\", "
-			           << "\"shape\":" << shape
-			           << "}";
-			    //send header
-			    zmq_send(zmqsocket, header.str().c_str(), header.str().length(), ZMQ_SNDMORE);
-			    sleep(1);
-			    //send data
+				header << "{\"htype\":[\"chunk-1.0\"], "
+						<< "\"type\":" << "\"" << type << "\", "
+						<< "\"shape\":" << shape
+						<< "}";
+				//cout<<ithread << "header:"<< header.str()<<endl;
+				//send header
+				zmq_send(zmqsocket, header.str().c_str(), header.str().length(), ZMQ_SNDMORE);
+				//send data
 				zmq_send (zmqsocket, "end", 3, 0);
 
 				pthread_mutex_lock(&statusMutex);
 				dataCallbackThreadsMask^=(1<<ithread);
 				pthread_mutex_unlock(&statusMutex);
+
+				sem_post(&writerGuiSemaphore[ithread]);
+				if(!ithread) cout<<"*** posted writerguisemiphore (callback dummy)"<<endl;
 				continue;
 			}
 
@@ -1780,14 +1787,14 @@ void UDPStandardImplementation::startDataCallback(){cprintf(MAGENTA,"start data 
 					memcpy(buffer+((pnum-1)*oneDataSize), latestData[ithread]+offset+8,oneDataSize);
 					offset+= onePacketSize;
 					ostringstream header;
-				    header << "{\"htype\":[\"chunk-1.0\"], "
-				           << "\"type\":" << "\"" << type << "\", "
-				           << "\"shape\":" << shape
-				           << "}";
-				    //send header
-				    zmq_send(zmqsocket, header.str().c_str(), header.str().length(), ZMQ_SNDMORE);
-				    sleep(1);
-				    //send data
+					header << "{\"htype\":[\"chunk-1.0\"], "
+							<< "\"type\":" << "\"" << type << "\", "
+							<< "\"shape\":" << shape
+							<< "}";
+					//cout<<ithread << "header:"<< header.str()<<endl;
+					//send header
+					zmq_send(zmqsocket, header.str().c_str(), header.str().length(), ZMQ_SNDMORE);
+					//send data
 					zmq_send(zmqsocket, buffer, oneframesize, 0);
 #ifdef DEBUG
 					cprintf(BLUE,"%d sent (last packet)\n",ithread);
@@ -1805,17 +1812,17 @@ void UDPStandardImplementation::startDataCallback(){cprintf(MAGENTA,"start data 
 					//next frame
 					if(fnum > currentfnum){
 						ostringstream header;
-					    header << "{\"htype\":[\"chunk-1.0\"], "
-					           << "\"type\":" << "\"" << type << "\", "
-					           << "\"shape\":" << shape
-					           << "}";
-					    //send header
-					    zmq_send(zmqsocket, header.str().c_str(), header.str().length(), ZMQ_SNDMORE);
-					    sleep(1);
-					    //send data
+						header << "{\"htype\":[\"chunk-1.0\"], "
+								<< "\"type\":" << "\"" << type << "\", "
+								<< "\"shape\":" << shape
+								<< "}";
+						//cout<<ithread << "header:"<< header.str()<<endl;
+						//send header
+						zmq_send(zmqsocket, header.str().c_str(), header.str().length(), ZMQ_SNDMORE);
+						//send data
 						zmq_send(zmqsocket, buffer, oneframesize, 0);
 #ifdef DEBUG
-					cprintf(BLUE,"%d sent (last packet)\n",ithread);
+						cprintf(BLUE,"%d sent (last packet)\n",ithread);
 #endif
 						//start clock after sending
 						if(!frameToGuiFrequency){
@@ -1836,17 +1843,16 @@ void UDPStandardImplementation::startDataCallback(){cprintf(MAGENTA,"start data 
 
 		}/*--end of loop for each buffer (inner loop)*/
 
-		//free resources
-		usleep(1000*1000);
-		delete[] buffer;
-	    zmq_unbind(zmqsocket, hostName);
-	    zmq_close(zmqsocket);
-	    zmq_ctx_destroy(context);
-
 
 
 		//end of acquisition, wait for next acquisition/change of parameters
 		sem_wait(&dataCallbackSemaphore[ithread]);
+
+		//free resources (only at the next start so that socket not closed before client gets end of packet)
+		delete[] buffer;
+		zmq_unbind(zmqsocket, hostName);
+		zmq_close(zmqsocket);
+		zmq_ctx_destroy(context);
 
 
 		//check to exit thread (for change of parameters) - only EXIT possibility
@@ -2498,7 +2504,9 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 
 	if(dataStreamEnable){
 		//ensure previous frame was processed
+		if(!ithread) cout<<"*** waiting for writerguisemiphore (stopwriting)"<<endl;
 		sem_wait(&writerGuiSemaphore[ithread]);
+		if(!ithread) cout<<"*** got post for writerguisemiphore (stopwriting)"<<endl;
 		guiNumPackets[ithread] = dummyPacketValue;
 		//let it know its got data
 		sem_post(&dataCallbackWriterSemaphore[ithread]);
@@ -2801,8 +2809,9 @@ void UDPStandardImplementation::copyFrameToGui(int ithread, char* buffer, uint32
 		cprintf(GREEN,"Writing_Thread: CopyingFrame: Going to copy data\n");
 #endif
 		//ensure previous frame was processed
+		if(!ithread) cout<<"*** waiting for writerguisemiphore (copyfrmae)"<<endl;
 		sem_wait(&writerGuiSemaphore[ithread]);
-
+		if(!ithread) cout<<"*** got post for writerguisemiphore (copyframe)"<<endl;
 		//copy date
 		guiNumPackets[ithread] = numpackets;
 		strcpy(guiFileName[ithread],completeFileName[ithread]);

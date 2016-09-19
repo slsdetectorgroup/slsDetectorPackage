@@ -515,9 +515,10 @@ private:
 	 * @param wbuffer writer buffer
 	 * @param framenumber reference to the frame number
 	 * @param packetnumber reference to the packet number
+	 * @param subframenumber reference to the subframe number
 	 * @return OK or FAIL
 	 */
-	int getFrameandPacketNumber(int ithread, char* wbuffer, uint64_t &framenumber, uint32_t &packetnumber);
+	int getFrameandPacketNumber(int ithread, char* wbuffer, uint64_t &framenumber, uint32_t &packetnumber, uint32_t &subframenumber);
 
 	/**
 	 * Find offset upto this frame number and write it to file

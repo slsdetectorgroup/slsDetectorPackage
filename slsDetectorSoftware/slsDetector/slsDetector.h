@@ -1684,7 +1684,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
    * 	@param enable 0 to disable 1 to enable -1 to only get the value
    * 	@returns data streaming
   */
-  int setDataStreamingFromReceiver(int enable=-1);
+  int enableDataStreamingFromReceiver(int enable=-1);
 
   /** enable/disable or get data compression in receiver
    * @param i is -1 to get, 0 to disable and 1 to enable

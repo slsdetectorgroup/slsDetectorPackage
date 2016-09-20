@@ -1255,7 +1255,7 @@ class multiSlsDetector  : public slsDetectorUtils {
    * 	@param enable 0 to disable 1 to enable -1 to only get the value
    * 	@returns data streaming
   */
-  int setDataStreamingFromReceiver(int enable=-1);
+  int enableDataStreamingFromReceiver(int enable=-1);
 
   /** updates the multidetector offsets */
   void updateOffsets();

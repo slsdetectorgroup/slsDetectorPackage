@@ -700,7 +700,7 @@ virtual int setReadReceiverFrequency(int getFromReceiver, int freq=-1)=0;
  * 	@param enable 0 to disable 1 to enable -1 to only get the value
  * 	@returns data streaming
 */
-virtual int setDataStreamingFromReceiver(int enable=-1)=0;
+virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
 
 
 /** enable/disable or get data compression in receiver

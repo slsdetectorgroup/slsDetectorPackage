@@ -5046,7 +5046,9 @@ void multiSlsDetector::startReceivingData(){
             cout << "Subframe index: " << currentSubFrameIndex << endl;
             cout << "File name: " << currentFileName << endl;
 #endif
+            if(currentFrameIndex ==-1) cprintf(RED,"multi frame index -1!!\n");
         }
+
         // close the message
         zmq_msg_close(&message);
 
@@ -5058,9 +5060,9 @@ void multiSlsDetector::startReceivingData(){
 		//end of socket ("end")
 		if (len < 1024*256 ) {
 			if(!len) cprintf(RED,"Received no data in socket for %d\n", ithread);
-#ifdef VERYVERBOSE
+//#ifdef VERYVERBOSE
 			cprintf(RED,"End of socket for %d\n", ithread);
-#endif
+//#endif
 			zmq_msg_close(&message);
 			singleframe[ithread] = NULL;
 			pthread_mutex_lock(&ms);
@@ -5173,6 +5175,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 		//get each frame
 		for(int ireadout=0; ireadout<numReadouts; ++ireadout){
+			//cprintf(BLUE,"multi checking %d mask:0x%x\n",ireadout,receivingDataThreadMask);
 			idet = ireadout/numReadoutPerDetector;
 			if((1 << ireadout) & receivingDataThreadMask){		//if running
 
@@ -5240,7 +5243,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 		setCurrentProgress(currentAcquisitionIndex+1);
 	}
-
+	cout << "All zmq sockets closed" << endl;
 
 	//free resources
 	for(int i = 0; i < numReadouts; ++i){
@@ -5474,12 +5477,12 @@ int multiSlsDetector::setReadReceiverFrequency(int getFromReceiver, int freq){
 
 
 
-int multiSlsDetector::setDataStreamingFromReceiver(int enable){
+int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
 	int ret=-100, ret1;
 
 	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
 		if (detectors[idet]) {
-			ret1=detectors[idet]->setDataStreamingFromReceiver(enable);
+			ret1=detectors[idet]->enableDataStreamingFromReceiver(enable);
 			if(detectors[idet]->getErrorMask())
 				setErrorMask(getErrorMask()|(1<<idet));
 			if (ret==-100)

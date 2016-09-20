@@ -7462,7 +7462,7 @@ int slsDetector::setReadReceiverFrequency(int getFromReceiver, int freq){
 
 
 
-int slsDetector::setDataStreamingFromReceiver(int enable){
+int slsDetector::enableDataStreamingFromReceiver(int enable){
 	int fnum=F_STREAM_DATA_FROM_RECEIVER;
 	int ret = FAIL;
 	int retval=-1;

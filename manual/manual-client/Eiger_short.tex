@@ -19,7 +19,7 @@ A EIGER single module (500~kpixels) needs:
 \begin{itemize}
 \item A chilled (water+alcohol) at approximately 21~$^{\circ}$C, which needs to dissipate 85~W.
 \item A power supply (12~V, 8~A).
-\item 2$\times$1~Gb/s ethernet connectors to control the detector and, optionally, receive data at low rate. A DHCP server that gives IPs to the 1~Gb/s connectors of the detector is needed.
+\item 2$\times$1~Gb/s ethernet connectors to control the detector and, optionally, receive data at low rate. A DHCP server that gives IPs to the 1~Gb/s connectors of the detector is needed. Note that flow control has to be enabled on the switch you are using.
 \item 2$\times$10~Gb/s transceivers to optionally, receive data at high rate.
  \end{itemize}
 
@@ -264,6 +264,48 @@ eg.
 {\tt cbfMaker /scratch/run\_63\_d0\_f000000000000\_3.raw  3072 512 0}.\\
 \underline{The executable {\tt{bcfMakerMulti [file\_name\_with\_dir]}} contains the hardcoded}\\\underline{ geometry for the 1.5M at CSAXS.} 
 Missing packets in a frame and border pixels ($\times 2$ and $/times 4$ are given with value $-1$ at the present mode.
+
+
+\appendix
+
+\section{Kill the server, copy a new server, start the server}
+All the below operations are form a terminal and assume you login to the boards.\\
+Kill current server:
+\begin{verbatim}
+ssh root@bebxxx #password is root
+killall eigerDetectorServer # kill server and stopserver
+\end{verbatim}
+Copy a new version of the server (if necessary, otherwise skip it):
+\begin{verbatim}
+cd executables
+scp user@pc:/path/eigerDetectorServerNewVersion .
+chmod 777 eigerDetectorServerNewVersion
+mv eigerDetectorServerNewVersion eigerDetectorServer
+sync
+\end{verbatim}
+Start the server again:
+\begin{verbatim}
+./eigerDetectorServer &
+\end{verbatim}
+
+
+\section{Loading firmware bitfiles}
+
+A \textbf{bcp} executable (which needs \textbf{tftp} installed on the PC, is needed. First of all, you need to press something on the detector: to programm bitfiles (firmware files), do a hard reset with a pin/thin stuff in the holes at the very back of the module. They are between the top 7 LED and the bottom 1 and opposite for the otehr side. Push hard till all LEDs are alternating green and red. After booting only the central one should be on green and red alternating. From a terminal, do:
+\begin{verbatim}
+nc -p 3000 -u bebxxx 3000 
+\end{verbatim} 
+where {\tt{xxx}} is the board number. It is enough top monitor with {\tt{nc}} only one board. Pres enter twice (till you see a prompt with the baord hostname printed) and keep this terminal to monitor. It takes a bit of time to load the bitfiles, but the terminal tells you.\\
+From another terminal you do:
+\begin{verbatim}
+./bcp feb_left.bit bebxxx:/febl
+sleep 300; #or till the screen over netcat has told you OK
+./bcp feb_right.bit bebxxx:/febr
+sleep 300; #or till the screen over netcat has told you OK
+./bcp download.bit bebxxx:/fw0
+sleep 300; #or till the screen over netcat has told you OK
+\end{verbatim}
+do the same for the other boards. You can programm in parallel many boards, but ou cannot load two bitfiles on the same board till loading and copying one process has finished. So load all left febs together, then proceed to the left febs, then the bebs. Power off completely everything. Power it on.
 
 \end{document}
 

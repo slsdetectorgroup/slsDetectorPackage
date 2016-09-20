@@ -1684,7 +1684,7 @@ void UDPStandardImplementation::startDataCallback(){
 		int bufferoffset = 0;
 		int size = 0;
 		int offset = 0;
-		int currentfnum = -1;
+		int currentfnum = 0;
 		uint64_t fnum = 0;
 		uint32_t pnum = 0;
 		uint32_t snum = 0;
@@ -1695,7 +1695,7 @@ void UDPStandardImplementation::startDataCallback(){
 		void *context = zmq_ctx_new();
 		void *zmqsocket = zmq_socket(context, ZMQ_PUSH);		// create a publisher
 		int val = -1;
-		//zmq_setsockopt(zmq_socket, ZMQ_LINGER, &val,sizeof(val)); // wait for the unsent packets  before closing socket
+		zmq_setsockopt(zmqsocket, ZMQ_LINGER, &val,sizeof(val)); // wait for the unsent packets  before closing socket
 		zmq_bind(zmqsocket,hostName);		// bind
 		//let calling function know thread started and obtained current (after sockets created)
 		if(!zmqThreadStarted)
@@ -1708,6 +1708,7 @@ void UDPStandardImplementation::startDataCallback(){
 		int acquisitionIndex = -1;
 		int frameIndex = -1;
 		int subframeIndex = -1;
+		bool newFrame = false;
 
 		/* inner loop - loop for each buffer */
 		//until mask reset (dummy pcaket got by writer)
@@ -1721,17 +1722,33 @@ void UDPStandardImplementation::startDataCallback(){
 			//everything is done
 			if(guiNumPackets[ithread] == dummyPacketValue){
 
-				/**suing this in clientzmq_msg_more,
-				 * in serve use zmq_msg_send (&message, sender, ZMQ_SNDMORE); and 0 for last packet, but better to check lengt*/
-				/*if (checkJoinThread()){for different scans
-					break;
-				}*/
 
-				/*send half  frames from before if any */
-				//send header
+				//sending previous half frames if any
+				if(newFrame){cout<<"dummy but something remaining"<<endl;
+					//send header
+					//update frame details
+					frameIndex = fnum;
+					acquisitionIndex = fnum - startAcquisitionIndex;
+					if(dynamicRange == 32) subframeIndex = snum;
+					int len = sprintf(buf,jsonFmt,type,shape, acquisitionIndex, frameIndex, subframeIndex,completeFileName[ithread]);
+					zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);
+					//send data
+					zmq_send(zmqsocket, buffer, oneframesize, 0);
+					newFrame = false;
+				}
+
+
+				//send final header
+				//update frame details
+#ifdef DEBUG
+				cout << "sending dummy" << endl;
+#endif
+				frameIndex = -1;
+				acquisitionIndex = -1;
+				subframeIndex = -1;
 				int len = sprintf(buf,jsonFmt,type,shape, acquisitionIndex, frameIndex, subframeIndex,completeFileName[ithread]);
 				zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);
-				//send data
+				//send final data
 				zmq_send (zmqsocket, "end", 3, 0);
 
 				pthread_mutex_lock(&statusMutex);
@@ -1771,58 +1788,62 @@ void UDPStandardImplementation::startDataCallback(){
 				if(offset >= size)
 					break;
 
-				//new frame
-				if(currentfnum==-1){
-					currentfnum = fnum;
+
+				//last packet of same frame
+				if(fnum == currentfnum && pnum == packetsPerFrame){
+					memcpy(buffer+((pnum-1)*oneDataSize), latestData[ithread]+offset+8,oneDataSize);
+					offset+= onePacketSize;
+					//send header
 					//update frame details
 					frameIndex = fnum;
 					acquisitionIndex = fnum - startAcquisitionIndex;
 					if(dynamicRange == 32) subframeIndex = snum;
-				}
-
-				//last packet
-				if(pnum == packetsPerFrame){
-					memcpy(buffer+((pnum-1)*oneDataSize), latestData[ithread]+offset+8,oneDataSize);
-					offset+= onePacketSize;
-					//send header
 					int len = sprintf(buf,jsonFmt,type,shape, acquisitionIndex, frameIndex, subframeIndex,completeFileName[ithread]);
 					zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);
 					//send data
 					zmq_send(zmqsocket, buffer, oneframesize, 0);
+					newFrame = false;
 #ifdef DEBUG
 					if(!ithread)cprintf(BLUE,"%d sent (last packet)\n",ithread);
 #endif
+					currentfnum++;
 					//start clock after sending
 					if(!frameToGuiFrequency){
 						randomSendNow = false;
 						clock_gettime(CLOCK_REALTIME, &begin);
 					}
 					memset(buffer,0xFF,oneframesize);
-					currentfnum = -1;
+
 				}
 				//same frame (not last) or next frame
 				else {
 					//next frame
-					if(fnum > currentfnum){
+					while(fnum > currentfnum){
 						//send header
+						//update frame details
+						frameIndex = fnum;
+						acquisitionIndex = fnum - startAcquisitionIndex;
+						if(dynamicRange == 32) subframeIndex = snum;
 						int len = sprintf(buf,jsonFmt,type,shape, acquisitionIndex, frameIndex, subframeIndex,completeFileName[ithread]);
 						zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);
 						//send data
 						zmq_send(zmqsocket, buffer, oneframesize, 0);
+						newFrame = false;
 #ifdef DEBUG
 						cprintf(BLUE,"%d sent (last packet of previous frame)\n",ithread);
 #endif
+						currentfnum++;
 						//start clock after sending
 						if(!frameToGuiFrequency){
 							randomSendNow = false;
 							clock_gettime(CLOCK_REALTIME, &begin);
 						}
 						memset(buffer,0xFF,oneframesize);
-						currentfnum = fnum;
 					}
 
 					memcpy(buffer+((pnum-1)*oneDataSize), latestData[ithread]+offset+8,oneDataSize);
 					offset+= onePacketSize;
+					newFrame = true;
 				}
 
 			}

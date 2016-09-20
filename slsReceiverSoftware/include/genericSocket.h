@@ -619,7 +619,7 @@ enum communicationProtocol{
     				 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
     				 if(nsent < packet_size) {
     					 if(nsent){
-    						 if(nsent != header_packet_size)
+    						 if((nsent != header_packet_size) && (nsent != -1))
     							 cprintf(RED,"Incomplete Packet size %d\n",nsent);
     					 }
     					 break;

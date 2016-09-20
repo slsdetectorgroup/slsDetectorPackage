@@ -2163,7 +2163,7 @@ int slsReceiverTCPIPInterface::set_data_stream_enable(){
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
-		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+		else if((index >= 0) && (receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING)){
 			strcpy(mess,"Can not set data stream enable while receiver not idle\n");
 			cprintf(RED,"%s\n",mess);
 			ret = FAIL;

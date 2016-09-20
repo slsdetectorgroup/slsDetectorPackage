@@ -13,3 +13,5 @@ JCTBGui/
 *.log
 *.out
 *.toc
+build
+tests

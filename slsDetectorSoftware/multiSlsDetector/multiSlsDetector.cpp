@@ -5040,10 +5040,12 @@ void multiSlsDetector::startReceivingData(){
         	currentFrameIndex 			= d["fIndex"].GetInt();
         	currentSubFrameIndex 		= d["subfnum"].GetInt();
         	strcpy(currentFileName		 ,d["fname"].GetString());
-            cout << ithread << "Acquisition index: " << currentAcquisitionIndex << endl;
-            cout << ithread << "Frame index: " << currentFrameIndex << endl;
-            cout << ithread << "Subframe index: " << currentSubFrameIndex << endl;
-            cout << ithread << "File name: " << currentFileName << endl;
+#ifdef VERYVERBOSE
+            cout << "Acquisition index: " << currentAcquisitionIndex << endl;
+            cout << "Frame index: " << currentFrameIndex << endl;
+            cout << "Subframe index: " << currentSubFrameIndex << endl;
+            cout << "File name: " << currentFileName << endl;
+#endif
         }
         // close the message
         zmq_msg_close(&message);
@@ -5056,7 +5058,9 @@ void multiSlsDetector::startReceivingData(){
 		//end of socket ("end")
 		if (len < 1024*256 ) {
 			if(!len) cprintf(RED,"Received no data in socket for %d\n", ithread);
+#ifdef VERYVERBOSE
 			cprintf(RED,"End of socket for %d\n", ithread);
+#endif
 			zmq_msg_close(&message);
 			singleframe[ithread] = NULL;
 			pthread_mutex_lock(&ms);
@@ -5158,7 +5162,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 	//construct complete image and send to callback
 	while(true){
-		memset(((char*)multiframe),0x0,slsdatabytes*thisMultiDetector->numberOfDetectors);	//reset frame memory
+		memset(((char*)multiframe),0xFF,slsdatabytes*thisMultiDetector->numberOfDetectors);	//reset frame memory
 
 		//post all of them to start
 		for(int ireadout=0; ireadout<numReadouts; ++ireadout){

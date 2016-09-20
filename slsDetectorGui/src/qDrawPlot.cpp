@@ -334,7 +334,7 @@ void qDrawPlot::SetupWidgetWindow(){
 	//Setting the callback function to get progress from detector class(using receivers)
 	myDet->registerProgressCallback(&(GetProgressCallBack),this);
 	//stream data to the gui
-	myDet->setDataStreamingFromReceiver(1);
+	myDet->enableDataStreamingFromReceiver(1);
 
 
 	qDefs::checkErrorMessage(myDet,"qDrawPlot::SetupWidgetWindow");

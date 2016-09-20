@@ -1,6 +1,5 @@
 
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
 
 set(SOURCES
     slsDetectorPlotting/src/SlsQt1DPlot.cxx
@@ -71,6 +70,7 @@ set(HEADERS
 set(RESOURCES
     include/icons.qrc
 )
+qt4_add_resources(RESOURCES_SRCS ${RESOURCES})
 
 include_directories(
     include
@@ -97,7 +97,7 @@ add_executable(slsDetectorGui
     ${SOURCES}
     ${HEADERS}
     ${FORMS_H}
-    ${RESOURCES}
+    ${RESOURCES_SRCS}
 )
 
 set_target_properties(slsDetectorGui PROPERTIES

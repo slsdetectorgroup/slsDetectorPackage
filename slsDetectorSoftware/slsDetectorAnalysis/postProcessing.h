@@ -333,7 +333,6 @@ s
   int (*dataReady)(detectorData*,int, int,void*);
   void *pCallbackArg; 
   detectorData *thisData;
-  
   sem_t dataThreadStartedSemaphore;
 
  private:

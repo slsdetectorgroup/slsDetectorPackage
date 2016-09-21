@@ -1176,8 +1176,22 @@ class multiSlsDetector  : public slsDetectorUtils {
  /**
   * resets framescaught
   * @param index frames caught by receiver
- */
+  */
  int resetFramesCaught();
+
+ /**
+  * Create Receiving Data Threads
+  * @param destroy is true to destroy all the threads
+  * @return OK or FAIL
+  */
+ int createReceivingDataThreads(bool destroy = false);
+
+ /**
+  * Start Receiving Data Threads
+  * @return OK or FAIL
+  */
+ int startReceivingData();
+
 
  /** Reads frames from receiver through a constant socket
  */
@@ -1368,7 +1382,7 @@ private:
 	/**
 	 * Thread that receives data packets from receiver
 	 */
-	void startReceivingData();
+	void startReceivingDataThread();
 
 	  /* synchronizing between zmq threads */
 	  sem_t sem_singledone[MAXDET];
@@ -1381,12 +1395,18 @@ private:
 	  int currentSubFrameIndex;
 	  char currentFileName[MAX_STR_LENGTH];
 
+	  pthread_t receivingDataThreads[MAXDET];
+	  sem_t receivingDataSemaphore[MAXDET];
 	  /** Ensures if threads created successfully */
 	  bool threadStarted;
 	  /** Current Thread Index*/
 	  int currentThreadIndex;
 	  /** Mask with each bit indicating status of each receiving data thread  */
 	  volatile uint64_t receivingDataThreadMask;
+	  /** Semaphore indicating socket created for each receiving data thread  */
+	  sem_t receivingDataSocketsCreatedSemaphore[MAXDET];
+	  /** Set to self-terminate data receiving threads waiting for semaphores */
+	  bool killAllReceivingDataThreads;
 
  protected:
  

@@ -640,6 +640,18 @@ virtual int getReceiverCurrentFrameIndex()=0;
 */
 virtual int resetFramesCaught()=0;
 
+/**
+ * Create Receiving Data Threads
+ * @param destroy is true to destroy all the threads
+ * @return OK or FAIL
+ */
+virtual int createReceivingDataThreads(bool destroy = false)=0;
+
+/**
+ * Start Receiving Data Threads
+ * @return OK or FAIL
+ */
+virtual int startReceivingData()=0;
 
 /** Reads frames from receiver through a constant socket
 */

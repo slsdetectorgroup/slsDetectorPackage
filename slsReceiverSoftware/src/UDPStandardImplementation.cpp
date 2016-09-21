@@ -1254,7 +1254,7 @@ int UDPStandardImplementation::createDataCallbackThreads(bool destroy){
 			zmqThreadStarted = false;
 			currentThreadIndex = i;
 			if(pthread_create(&dataCallbackThreads[i], NULL,startDataCallbackThread, (void*) this)){
-				FILE_LOG(logERROR) << "Could not create listening thread with index " << i;
+				FILE_LOG(logERROR) << "Could not create data call back thread with index " << i;
 				return FAIL;
 			}
 			while(!zmqThreadStarted);

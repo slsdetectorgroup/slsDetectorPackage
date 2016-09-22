@@ -130,7 +130,7 @@ int initDetector(){
 		detectorGain[i] = default_gain_values[(int)STANDARD];
 	for(i=0;i<NOFFSET;i++)
 		detectorOffset[i] = default_offset_values[(int)STANDARD];
-	thisSettings = STANDARD;/**UNITIALIZED*/
+	thisSettings = UNINITIALIZED;
 	/*sChan=noneSelected;
   sChip=noneSelected;
   sMod=noneSelected;
@@ -731,7 +731,9 @@ int setThresholdEnergy(int ev, int imod){
 }
 
 enum detectorSettings setSettings(enum detectorSettings sett, int imod){
-	if(sett != GET_SETTINGS)
+	if(sett == UNINITIALIZED){
+		return thisSettings;
+	}if(sett != GET_SETTINGS)
 		thisSettings = sett;
 	return thisSettings;
 }

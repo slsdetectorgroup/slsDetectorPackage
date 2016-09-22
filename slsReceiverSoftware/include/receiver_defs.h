@@ -169,7 +169,9 @@ typedef struct {
 
 
 #define EIGER_MAX_PORTS 					2
-#define EIGER_HEADER_LENGTH					48
+#define EIGER_HEADER_PACKET_LENGTH			48
+
+#define EIGER_HEADER_SIZE					8
 
 #define EIGER_FIFO_SIZE						100
 /*#define EIGER_ALIGNED_FRAME_SIZE			65536*/

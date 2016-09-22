@@ -1219,7 +1219,7 @@ void UDPStandardImplementation::closeFile(int ithread){
 
 int UDPStandardImplementation::createDataCallbackThreads(bool destroy){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
-
+	if(!destroy) cprintf(MAGENTA,"Data Callback thread created\n"); else cprintf(MAGENTA,"Data Callback thread destroyed\n");
 	//reset masks
 	killAllDataCallbackThreads = false;
 	pthread_mutex_lock(&statusMutex);
@@ -1270,7 +1270,7 @@ int UDPStandardImplementation::createDataCallbackThreads(bool destroy){
 
 int UDPStandardImplementation::createListeningThreads(bool destroy){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
-
+	if(!destroy) cprintf(BLUE,"Listening thread created\n"); else cprintf(BLUE,"Listening thread destroyed\n");
 	//reset masks
 	killAllListeningThreads = false;
 	pthread_mutex_lock(&statusMutex);
@@ -1321,7 +1321,7 @@ int UDPStandardImplementation::createListeningThreads(bool destroy){
 
 int UDPStandardImplementation::createWriterThreads(bool destroy){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
-
+	if(!destroy) cprintf(GREEN,"Writer thread created\n"); else cprintf(GREEN,"Writer thread destroyed\n");
 	//reset masks
 	killAllWritingThreads = false;
 	pthread_mutex_lock(&statusMutex);
@@ -1439,7 +1439,7 @@ int UDPStandardImplementation::createUDPSockets(){
 	shutDownUDPSockets();
 	int headerpacketsize = 0;
 	if(myDetectorType == EIGER)
-		headerpacketsize = EIGER_HEADER_LENGTH;
+		headerpacketsize = EIGER_HEADER_PACKET_LENGTH;
 
 	//if no eth, listen to all
 	if(!strlen(eth)){
@@ -1668,6 +1668,15 @@ void UDPStandardImplementation::startDataCallback(){
 	sprintf(hostName,"%s%d",hostName,portno);
 	FILE_LOG(logINFO) << "Thread" << ithread << ": ZMQ Server at " << hostName;
 
+
+	int headersize=0;
+	switch(myDetectorType){
+	case EIGER:
+		headersize = EIGER_HEADER_SIZE; break;
+
+	}
+
+
 	/* outer loop - loops once for each acquisition */
 	//infinite loop, exited only to change dynamic range, 10G parameters etc (then recreated again)
 	while(true){
@@ -1705,7 +1714,7 @@ void UDPStandardImplementation::startDataCallback(){
 		int frameIndex = -1;
 		int subframeIndex = -1;
 #ifdef DEBUG
-		int oldpnum = 0;
+		int oldpnum = -1;
 #endif
 		int datapacketscaught = 0;
 
@@ -1797,11 +1806,11 @@ void UDPStandardImplementation::startDataCallback(){
 
 
 				//last packet of same frame
-				if(fnum == currentfnum && pnum == packetsPerFrame){
+				if(fnum == currentfnum && pnum == (packetsPerFrame-1)){
 #ifdef DEBUG
 					oldpnum=0;
 #endif
-					memcpy(buffer+((pnum-1)*oneDataSize), latestData[ithread]+offset+8,oneDataSize);
+					memcpy(buffer+(pnum*oneDataSize), latestData[ithread]+offset+headersize,oneDataSize);
 					offset+= onePacketSize;
 					//send header
 					//update frame details
@@ -1861,7 +1870,7 @@ void UDPStandardImplementation::startDataCallback(){
 						memset(buffer,0xFF,oneframesize);
 					}
 
-					memcpy(buffer+((pnum-1)*oneDataSize), latestData[ithread]+offset+8,oneDataSize);
+					memcpy(buffer+(pnum*oneDataSize), latestData[ithread]+offset+headersize,oneDataSize);
 					offset+= onePacketSize;
 					newFrame = true;
 				}
@@ -3030,7 +3039,7 @@ int UDPStandardImplementation::getFrameandPacketNumber(int ithread, char* wbuffe
 			FILE_LOG(logERROR) << "Fifo "<< ithread << ": Frame Number is zero from firmware.";
 			return FAIL;
 		}
-		packetnumber = (*( (uint16_t*) footer->packetNumber));
+		packetnumber = (*( (uint16_t*) footer->packetNumber))-1;
 		e_header = (eiger_packet_header_t*) (wbuffer);
 		subframenumber = *( (uint32_t*) e_header->subFrameNumber);
 #ifdef DEBUG4

@@ -159,6 +159,7 @@ int Feb_Control_GetModuleNumber();
   unsigned int Feb_Control_GetNExposures();
   int Feb_Control_SetExposureTime(double the_exposure_time_in_sec);
   double Feb_Control_GetExposureTime();
+  int64_t Feb_Control_GetExposureTime_in_nsec();
   int Feb_Control_SetSubFrameExposureTime(int64_t the_subframe_exposure_time_in_10nsec);
   int64_t Feb_Control_GetSubFrameExposureTime();
   int Feb_Control_SetExposurePeriod(double the_exposure_period_in_sec);
@@ -186,6 +187,7 @@ int Feb_Control_GetModuleNumber();
 
   int64_t Feb_Control_Get_RateTable_Tau_in_nsec();
   int64_t Feb_Control_Get_RateTable_Subexptime_in_nsec();
+  int64_t Feb_Control_Get_RateTable_Exptime_in_nsec();
   int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec);
   int Feb_Control_SetRateCorrectionTable(unsigned int *table);
   int Feb_Control_GetRateCorrectionVariable();

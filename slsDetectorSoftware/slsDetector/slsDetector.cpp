@@ -4009,8 +4009,16 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	  setTotalProgress();
 	}
 
+	//if eiger, rate corr on, a put statement, dr=32 &setting subexp or dr =16 & setting exptime, set ratecorr to update table
 	double r;
-	if((index == SUBFRAME_ACQUISITION_TIME) && (thisDetector->myDetectorType == EIGER)  && (t>=0) && getRateCorrection(r)){
+	if( (thisDetector->myDetectorType == EIGER) &&
+			 getRateCorrection(r) &&
+			 (t>=0) &&
+
+			(((index == SUBFRAME_ACQUISITION_TIME) && (thisDetector->dynamicRange == 32))||
+			((index == ACQUISITION_TIME) && (thisDetector->dynamicRange == 16)))
+
+			&& (t>=0) && getRateCorrection(r)){
 		setRateCorrection(r);
 	}
 
@@ -4515,8 +4523,12 @@ int slsDetector::setDynamicRange(int n){
     	  if (rateret==FAIL) {
     		  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
     		  std::cout<< "Detector returned error: " << mess << std::endl;
-    		  if(strstr(mess,"Rate Correction")!=NULL)
-    			  setErrorMask((getErrorMask())|(RATE_CORRECTION_NOT_32BIT));
+    		  if(strstr(mess,"Rate Correction")!=NULL){
+    			  if(strstr(mess,"32")!=NULL)
+    				  setErrorMask((getErrorMask())|(RATE_CORRECTION_NOT_32or16BIT));
+    			  else
+    				  setErrorMask((getErrorMask())|(COULD_NOT_SET_RATE_CORRECTION));
+    		  }
     	  }
       }
       controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
@@ -5090,7 +5102,7 @@ int slsDetector::setRateCorrection(double t){
 					if(strstr(mess,"default tau")!=NULL)
 						setErrorMask((getErrorMask())|(RATE_CORRECTION_NO_TAU_PROVIDED));
 					if(strstr(mess,"32")!=NULL)
-						setErrorMask((getErrorMask())|(RATE_CORRECTION_NOT_32BIT));
+						setErrorMask((getErrorMask())|(RATE_CORRECTION_NOT_32or16BIT));
 					else
 						setErrorMask((getErrorMask())|(COULD_NOT_SET_RATE_CORRECTION));
 				}

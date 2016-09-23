@@ -59,7 +59,7 @@ using namespace std;
 #define COULD_NOT_PULSE_CHIP				0x0000000000100000ULL
 #define COULD_NOT_SET_RATE_CORRECTION		0x0000000000200000ULL
 #define DETECTOR_NETWORK_PARAMETER			0x0000000000400000ULL
-#define RATE_CORRECTION_NOT_32BIT			0x0000000000800000ULL
+#define RATE_CORRECTION_NOT_32or16BIT		0x0000000000800000ULL
 #define RATE_CORRECTION_NO_TAU_PROVIDED		0x0000000001000000ULL
 
 //											0x00000000FFFFFFFFULL
@@ -192,8 +192,8 @@ public:
 		if(slsErrorMask&DETECTOR_NETWORK_PARAMETER)
 			retval.append("Could not set/get detector network parameter\n");
 
-		if(slsErrorMask&RATE_CORRECTION_NOT_32BIT)
-			retval.append("Rate correction Deactivated, must be in 32 bit mode\n");
+		if(slsErrorMask&RATE_CORRECTION_NOT_32or16BIT)
+			retval.append("Rate correction Deactivated, must be in 32 or 16 bit mode\n");
 
 		if(slsErrorMask&RATE_CORRECTION_NO_TAU_PROVIDED)
 			retval.append("Rate correction Deactivated. No default tau provided in file\n");

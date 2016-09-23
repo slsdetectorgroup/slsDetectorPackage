@@ -2788,15 +2788,26 @@ int set_dynamic_range(int file_des) {
 #endif
 	}
 	if(ret == OK){
+		int old_dr = setDynamicRange(-1);
 		retval=setDynamicRange(dr);
 		if (dr>=0 && retval!=dr)
 			ret=FAIL;
 		//look at rate correction only if dr change worked
-		if((ret==OK)  && (dr!=32)  && (dr!=-1) && (getRateCorrectionEnable())){
+		if((ret==OK)  && (dr!=32) && (dr!=16)   && (dr!=-1) && (getRateCorrectionEnable())){
 			setRateCorrection(0);
-			strcpy(mess,"Switching off Rate Correction. Must be in 32 bit mode\n");
+			strcpy(mess,"Switching off Rate Correction. Must be in 32 or 16 bit mode\n");
 			cprintf(RED,"%s",mess);
 			rateret = FAIL;
+		}else{
+			//setting it if dr changed from 16 to 32 or vice versa with tau value as in rate table
+			if((dr!=-1) && (old_dr != dr) && getRateCorrectionEnable() && (dr == 16 || dr == 32)){
+				setRateCorrection(-1); //tau_ns will not be -1 here
+				if(!getRateCorrectionEnable()){
+					strcpy(mess,"Deactivating Rate Correction. Could not set it.\n");
+					cprintf(RED,"%s",mess);
+					ret=FAIL;
+				}
+			}
 		}
 	}
 #endif
@@ -3978,9 +3989,9 @@ int set_rate_correct(int file_des) {
 
 			//set rate
 			else{
-				//not 32 bit mode
-				if((setDynamicRange(-1)!=32) && (tau_ns!=0)){
-					strcpy(mess,"Rate correction Deactivated, must be in 32 bit mode\n");
+				//not 32 or 16 bit mode
+				if((setDynamicRange(-1)!=32) && (setDynamicRange(-1)!=16) && (tau_ns!=0)){
+					strcpy(mess,"Rate correction Deactivated, must be in 32 or 16 bit mode\n");
 					cprintf(RED,"%s",mess);
 					ret=FAIL;
 				}

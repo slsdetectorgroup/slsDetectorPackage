@@ -51,6 +51,7 @@ double Feb_Control_exposure_period_in_sec;
 
 int64_t Feb_Control_RateTable_Tau_in_nsec = -1;
 int64_t Feb_Control_RateTable_Subexptime_in_nsec = -1;
+int64_t Feb_Control_RateTable_Exptime_in_nsec = -1;
 
 unsigned int   Feb_Control_trimbit_size;
 unsigned int* Feb_Control_last_downloaded_trimbits;
@@ -1371,6 +1372,7 @@ int Feb_Control_SetExposureTime(double the_exposure_time_in_sec){
 	return 1;
 }
 double Feb_Control_GetExposureTime(){return Feb_Control_exposure_time_in_sec;}
+int64_t Feb_Control_GetExposureTime_in_nsec(){return (int64_t)(Feb_Control_exposure_time_in_sec*(1E9));}
 
 int Feb_Control_SetSubFrameExposureTime(int64_t the_subframe_exposure_time_in_10nsec){
 	Feb_Control_subframe_exposure_time_in_10nsec = the_subframe_exposure_time_in_10nsec;
@@ -1790,25 +1792,39 @@ int Feb_Control_PulseChip(int npulses){
 
 int64_t Feb_Control_Get_RateTable_Tau_in_nsec(){ return Feb_Control_RateTable_Tau_in_nsec;}
 int64_t Feb_Control_Get_RateTable_Subexptime_in_nsec(){ return Feb_Control_RateTable_Subexptime_in_nsec;}
+int64_t Feb_Control_Get_RateTable_Exptime_in_nsec(){ return Feb_Control_RateTable_Exptime_in_nsec;}
 
 //returns -1 if slope is too high
 int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec){
 
+	double exptime_in_sec = Feb_Control_GetExposureTime();
 	double sub_expure_time_in_sec = (double)(Feb_Control_GetSubFrameExposureTime())/(double)1e9;
+
+
+	int dr = Feb_Control_GetDynamicRange();
+	double period_in_sec = sub_expure_time_in_sec;
+	if(dr == 16)
+		period_in_sec = exptime_in_sec;
+
 	double tau_in_sec = (double)tau_in_Nsec/(double)1e9;
 	unsigned int np = 16384; //max slope 16 * 1024
 	double b0[1024];
 	double m[1024];
 
-	if(tau_in_sec<0||sub_expure_time_in_sec<0){
-		printf("Error tau %f and sub_expure_time %f must be greater than 0.\n", tau_in_sec, sub_expure_time_in_sec);
+
+	if(tau_in_sec<0||period_in_sec<0){
+		if(dr == 32)
+			printf("Error tau %f and sub_exposure_time %f must be greater than 0.\n", tau_in_sec, sub_expure_time_in_sec);
+		else
+			printf("Error tau %f and exposure_time %f must be greater than 0.\n", tau_in_sec, exptime_in_sec);
 		return 0;
 	}
 
 	printf("\tCalculating table for tau of %lld ns.\n", tau_in_Nsec);
 	int i;
 	for(i=0;i<np;i++)
-	  Feb_Control_rate_meas[i]  = i*exp(-i/sub_expure_time_in_sec*tau_in_sec);
+
+	  Feb_Control_rate_meas[i]  = i*exp(-i/period_in_sec*tau_in_sec);
 
 	/*
 	  b  :  index/address of block ram/rate correction table
@@ -1886,11 +1902,18 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec){
 
 	if(Feb_Control_SetRateCorrectionTable(Feb_Control_rate_correction_table)){
 		Feb_Control_RateTable_Tau_in_nsec = tau_in_Nsec;
-		Feb_Control_RateTable_Subexptime_in_nsec = Feb_Control_GetSubFrameExposureTime();
+		if(dr == 32){
+			Feb_Control_RateTable_Subexptime_in_nsec = Feb_Control_GetSubFrameExposureTime();
+			Feb_Control_RateTable_Exptime_in_nsec = -1;
+		}else{
+			Feb_Control_RateTable_Exptime_in_nsec = Feb_Control_GetExposureTime_in_nsec();
+			Feb_Control_RateTable_Subexptime_in_nsec = -1;
+		}
 		return 1;
 	}else{
 		Feb_Control_RateTable_Tau_in_nsec = -1;
 		Feb_Control_RateTable_Subexptime_in_nsec = -1;
+		Feb_Control_RateTable_Exptime_in_nsec = -1;
 		return 0;
 	}
 

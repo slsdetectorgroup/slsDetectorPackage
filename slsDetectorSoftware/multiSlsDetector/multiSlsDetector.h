@@ -488,6 +488,11 @@ class multiSlsDetector  : public slsDetectorUtils {
 
   int decodeNMod(int i, int &idet, int &imod);
 
+  /** programs FPGA with pof file
+      \param fname file name
+      \returns OK or FAIL
+  */
+  int programFPGA(string fname);
 
   /** loads the modules settings/trimbits reading from a file -  file name extension is automatically generated! */
   int loadSettingsFile(string fname, int nmod=0);

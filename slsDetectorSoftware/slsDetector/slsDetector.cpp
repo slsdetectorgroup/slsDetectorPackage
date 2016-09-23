@@ -6382,6 +6382,70 @@ int slsDetector::writeSettingsFile(string fname, int imod, int* iodelay){
 
 
 
+int slsDetector::programFPGA(string fname){
+
+	if(thisDetector->myDetectorType != EIGER){/**jungfrau*/
+		std::cout << "Not implemented for this detector" << std::endl;
+		return FAIL;
+	}
+
+	//check if it exists
+	struct stat st;
+	if(stat(fname.c_str(),&st)){
+		std::cout << "Programming file does not exist" << endl;
+		setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+		return FAIL;
+	}
+
+	//convert it to rawbin
+	string destfname = fname;
+	destfname.replace(destfname.end()-4,destfname.end(),".rawbin"); //replace .pof with .rawbin
+//#ifdef VERBOSE
+	std::cout << "Converting " << fname << " to " <<  destfname << std::endl;
+//#endif
+	int filepos,x,y,i;
+	FILE* src = fopen(fname.c_str(),"rb");
+	FILE* dst = fopen(destfname.c_str(),"wb");
+	// Remove header (0...11C)
+	for (filepos=0; filepos < 0x11C; filepos++)
+		fgetc(src);
+	// Write 0x80 times 0xFF (0...7F)
+	for (filepos=0; filepos < 0x80; filepos++)
+		fputc(0xFF,dst);
+	// Swap bits and write to file
+	for (filepos=0x80; filepos < 0x1000000; filepos++)	{
+		x = fgetc(src);
+		if (x < 0) break;
+
+		y=0;
+		for (i=0; i < 8; i++)
+			y=y| (   (( x & (1<<i) ) >> i)    << (7-i)     );	// This swaps the bits
+
+		fputc(y,dst);
+	}
+	if (filepos < 0x1000000){
+		std::cout << "ERROR: EOF before end of flash" << std::endl;
+		setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+		return FAIL;
+	}
+//#ifdef VERBOSE
+	std::cout << "File has been converted to "  <<  destfname << ". Sending it to /tftpboot" << std::endl;
+//#endif
+	string onlyfilename = destfname;
+	size_t foundSlash = onlyfilename.rfind('/');
+	if(foundSlash != string::npos)
+		onlyfilename.erase(onlyfilename.begin(),onlyfilename.begin()+foundSlash+1);
+	cout<<"\nonly file name:"<<onlyfilename<<endl;
+
+	//string message = "cp " + destfname
+
+
+
+	return OK;
+}
+
+
+
 int slsDetector::loadSettingsFile(string fname, int imod) {
 
   sls_detector_module  *myMod=NULL;

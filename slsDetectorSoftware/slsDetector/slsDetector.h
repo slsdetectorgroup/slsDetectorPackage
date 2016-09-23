@@ -522,7 +522,12 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   };
 
 
- 
+  /** programs FPGA with pof file
+      \param fname file name
+      \returns OK or FAIL
+  */
+  int programFPGA(string fname);
+
   /** loads the modules settings/trimbits reading from a file  
       \param fname file name . If not specified, extension is automatically generated!
       \param imod module number, -1 means all modules

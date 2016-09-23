@@ -50,8 +50,7 @@ int64_t Feb_Control_subframe_exposure_time_in_10nsec;
 double Feb_Control_exposure_period_in_sec;
 
 int64_t Feb_Control_RateTable_Tau_in_nsec = -1;
-int64_t Feb_Control_RateTable_Subexptime_in_nsec = -1;
-int64_t Feb_Control_RateTable_Exptime_in_nsec = -1;
+int64_t Feb_Control_RateTable_Period_in_nsec = -1;
 
 unsigned int   Feb_Control_trimbit_size;
 unsigned int* Feb_Control_last_downloaded_trimbits;
@@ -1791,34 +1790,32 @@ int Feb_Control_PulseChip(int npulses){
 
 
 int64_t Feb_Control_Get_RateTable_Tau_in_nsec(){ return Feb_Control_RateTable_Tau_in_nsec;}
-int64_t Feb_Control_Get_RateTable_Subexptime_in_nsec(){ return Feb_Control_RateTable_Subexptime_in_nsec;}
-int64_t Feb_Control_Get_RateTable_Exptime_in_nsec(){ return Feb_Control_RateTable_Exptime_in_nsec;}
+int64_t Feb_Control_Get_RateTable_Period_in_nsec(){ return Feb_Control_RateTable_Period_in_nsec;}
 
 //returns -1 if slope is too high
 int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec){
 
-	double exptime_in_sec = Feb_Control_GetExposureTime();
-	double sub_expure_time_in_sec = (double)(Feb_Control_GetSubFrameExposureTime())/(double)1e9;
-
-
+	//period = exptime if 16bit, period = subexptime if 32 bit
 	int dr = Feb_Control_GetDynamicRange();
-	double period_in_sec = sub_expure_time_in_sec;
+	double period_in_sec = (double)(Feb_Control_GetSubFrameExposureTime())/(double)1e9;
 	if(dr == 16)
-		period_in_sec = exptime_in_sec;
+		period_in_sec = Feb_Control_GetExposureTime();
+
 
 	double tau_in_sec = (double)tau_in_Nsec/(double)1e9;
 	unsigned int np = 16384; //max slope 16 * 1024
 	double b0[1024];
 	double m[1024];
 
-
 	if(tau_in_sec<0||period_in_sec<0){
 		if(dr == 32)
-			printf("Error tau %f and sub_exposure_time %f must be greater than 0.\n", tau_in_sec, sub_expure_time_in_sec);
+			printf("Error tau %f and sub_exposure_time %f must be greater than 0.\n", tau_in_sec, period_in_sec);
 		else
-			printf("Error tau %f and exposure_time %f must be greater than 0.\n", tau_in_sec, exptime_in_sec);
+			printf("Error tau %f and exposure_time %f must be greater than 0.\n", tau_in_sec, period_in_sec);
 		return 0;
 	}
+
+	cprintf(BLUE, "Changing Rate Correction Table tau:%f sec, period:%f sec",tau_in_sec,period_in_sec);
 
 	printf("\tCalculating table for tau of %lld ns.\n", tau_in_Nsec);
 	int i;
@@ -1902,18 +1899,11 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec){
 
 	if(Feb_Control_SetRateCorrectionTable(Feb_Control_rate_correction_table)){
 		Feb_Control_RateTable_Tau_in_nsec = tau_in_Nsec;
-		if(dr == 32){
-			Feb_Control_RateTable_Subexptime_in_nsec = Feb_Control_GetSubFrameExposureTime();
-			Feb_Control_RateTable_Exptime_in_nsec = -1;
-		}else{
-			Feb_Control_RateTable_Exptime_in_nsec = Feb_Control_GetExposureTime_in_nsec();
-			Feb_Control_RateTable_Subexptime_in_nsec = -1;
-		}
+		Feb_Control_RateTable_Period_in_nsec = period_in_sec;
 		return 1;
 	}else{
 		Feb_Control_RateTable_Tau_in_nsec = -1;
-		Feb_Control_RateTable_Subexptime_in_nsec = -1;
-		Feb_Control_RateTable_Exptime_in_nsec = -1;
+		Feb_Control_RateTable_Period_in_nsec = -1;
 		return 0;
 	}
 
@@ -1966,7 +1956,7 @@ int Feb_Control_GetRateCorrectionVariable(){ return (Feb_Control_subFrameMode&DA
 void Feb_Control_SetRateCorrectionVariable(int activate_rate_correction){
   if(activate_rate_correction){
 	  Feb_Control_subFrameMode |= DAQ_NEXPOSURERS_ACTIVATE_RATE_CORRECTION;
-	  printf("Rate correction activated. Note: the rate correction applied only when run in auto summing mode.\n");
+	  printf("Rate correction activated.\n");
   }else{
 	  Feb_Control_subFrameMode &= ~DAQ_NEXPOSURERS_ACTIVATE_RATE_CORRECTION;
 	  printf("Rate correction deactivated.\n");

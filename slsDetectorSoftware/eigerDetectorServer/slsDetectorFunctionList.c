@@ -537,16 +537,16 @@ int64_t setRateCorrection(int64_t custom_tau_in_nsec){//in nanosec (will never b
 	else if(custom_tau_in_nsec == -1)
 		custom_tau_in_nsec = Feb_Control_Get_RateTable_Tau_in_nsec();
 
-	int64_t tau_in_nsec = Feb_Control_Get_RateTable_Tau_in_nsec();
+
 	int dr = Feb_Control_GetDynamicRange();
-	//default for 32 bit
-	int64_t ratetable_period_in_nsec = Feb_Control_Get_RateTable_Subexptime_in_nsec();
+	//get period = subexptime if 32bit , else period = exptime if 16 bit
 	int64_t actual_period = Feb_Control_GetSubFrameExposureTime(); //already in nsec
-	//16 bit mode
-	if(dr == 16){
-		ratetable_period_in_nsec = Feb_Control_Get_RateTable_Exptime_in_nsec();
+	if(dr == 16)
 		actual_period = Feb_Control_GetExposureTime_in_nsec();
-	}
+
+	int64_t ratetable_period_in_nsec = Feb_Control_Get_RateTable_Period_in_nsec();
+	int64_t tau_in_nsec = Feb_Control_Get_RateTable_Tau_in_nsec();
+
 
 	//same setting
 	if((tau_in_nsec == custom_tau_in_nsec) && (ratetable_period_in_nsec == actual_period)){

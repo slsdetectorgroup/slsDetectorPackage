@@ -186,8 +186,7 @@ int Feb_Control_GetModuleNumber();
   int Feb_Control_PulseChip(int npulses);
 
   int64_t Feb_Control_Get_RateTable_Tau_in_nsec();
-  int64_t Feb_Control_Get_RateTable_Subexptime_in_nsec();
-  int64_t Feb_Control_Get_RateTable_Exptime_in_nsec();
+  int64_t Feb_Control_Get_RateTable_Period_in_nsec();
   int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec);
   int Feb_Control_SetRateCorrectionTable(unsigned int *table);
   int Feb_Control_GetRateCorrectionVariable();

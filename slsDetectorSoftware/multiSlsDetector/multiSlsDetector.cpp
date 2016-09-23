@@ -3949,6 +3949,21 @@ int multiSlsDetector::executeTrimming(trimMode mode, int par1, int par2, int imo
 
 
 
+int multiSlsDetector::programFPGA(string fname){
+	int ret=OK, ret1=OK;
+
+	for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+		if (detectors[i]) {
+			ret=detectors[i]->programFPGA(fname);
+			if(detectors[i]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<i));
+			if (ret!=OK)
+				ret1=FAIL;
+		}
+	}
+	return ret1;
+}
+
 
 
 int multiSlsDetector::loadSettingsFile(string fname, int imod) {

@@ -6431,13 +6431,14 @@ int slsDetector::programFPGA(string fname){
 //#ifdef VERBOSE
 	std::cout << "File has been converted to "  <<  destfname << ". Sending it to /tftpboot" << std::endl;
 //#endif
-	string onlyfilename = destfname;
-	size_t foundSlash = onlyfilename.rfind('/');
-	if(foundSlash != string::npos)
-		onlyfilename.erase(onlyfilename.begin(),onlyfilename.begin()+foundSlash+1);
-	cout<<"\nonly file name:"<<onlyfilename<<endl;
 
-	//string message = "cp " + destfname
+	string copytoTftpboot = "cp " + destfname + " /tftpboot";
+	system(copytoTftpboot.c_str());
+//#ifdef VERBOSE
+	std::cout << "File has been copied to /tftpboot" << std::endl;
+//#endif
+
+
 
 
 

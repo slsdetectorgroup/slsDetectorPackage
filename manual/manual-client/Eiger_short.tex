@@ -243,6 +243,7 @@ sls_detector_put 0-ratecorr -1
 
 Every time either the rate corrections are activated, $\tau$ is changed or the subframe length is changed, then a new correction table is evaluated. Note that computing the correction table is time consuming. 
 
+
 \subsection{Offline image reconstruction}
 The offline image reconstruction is in {\tt{slsDetectorsPackage/slsImageReconstruction}}.
 
@@ -258,12 +259,36 @@ eg.
 
 To use it for a 1.5 multi modules:
 \begin{verbatim}
-cbfMaker [filename] [pixels x] [pixels y] [start det]
+cbfMaker [filename] [pixels x] [pixels y] ([singlemodulelongside_x] [start det])
 \end{verbatim}
 eg.
-{\tt cbfMaker /scratch/run\_63\_d0\_f000000000000\_3.raw  3072 512 0}.\\
-\underline{The executable {\tt{bcfMakerMulti [file\_name\_with\_dir]}} contains the hardcoded}\\\underline{ geometry for the 1.5M at CSAXS.} 
+{\tt cbfMaker /scratch/run\_63\_d0\_f000000000000\_3.raw  3072 512 1 0}.\\
+The {\tt{[singlemodulelongside\_x]}} and {\tt{[start det]}} param are optional. Defaults are ``1'', the detector long side is on the x coordinate and start to reconstruct from module 0. 
+The executables: 
+\begin{verbatim}
+bcfMaker1.5M [file\_name\_with\_dir]
+bcfMaker9M [file\_name\_with\_dir]
+\end{verbatim}
+contain the hardcoded geometry for the 1.5M (3 modules horizontal on the long side) and for the 9M at cSAXS: 6(short side)x3 (lomg side) modules.\\ 
 Missing packets in a frame and border pixels ($\times 2$ and $/times 4$ are given with value $-1$ at the present mode.
+
+It is important to know, that the pixels at the edge between 2 chips count more as double size. We can virtually introduced 1 virtual poixel per double larger pixel, so to have an even number of counts everywhere. Virtual pixels (not filled ) between module gaps are also inserted.
+
+ \begin{verbatim}
+   GapPixelsBetweenChips_x = 2;
+   GapPixelsBetweenChips_y = 2;
+   GapPixelsBetweenModules_x = 8;
+   GapPixelsBetweenModules_y = 36;
+\end{verbatim}
+
+\subsection{Read temperatures from boards}
+
+
+
+\subsection{Delays in sending for 1Gb/s, 10Gb/s, 10Gb flow control}
+
+
+
 
 
 \appendix

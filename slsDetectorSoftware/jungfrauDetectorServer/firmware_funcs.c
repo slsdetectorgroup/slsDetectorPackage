@@ -114,6 +114,8 @@ int masterMode=NO_MASTER, syncMode=NO_SYNCHRONIZATION, timingMode=AUTO_TIMING;
 enum externalSignalFlag  signals[4]={EXT_SIG_OFF, EXT_SIG_OFF, EXT_SIG_OFF, EXT_SIG_OFF};
 
 int withGotthard = 0;
+char mtdvalue[10];
+
 
 /**is not const because this value will change after initDetector, is removed from mcb_funcs.c cuz its not used anywhere
  * why is this used anywhere instead of macro*/
@@ -3374,6 +3376,122 @@ int setDac(int dacnum,int dacvalue){
 
 
   return getDacRegister(dacnum); 
+}
+
+
+void eraseFlash(){
+#ifdef VERY_VERBOSE
+	printf("\n at eraseFlash \n");
+#endif
+
+	char command[255];
+	sprintf(command,"flash_eraseall %s",mtdvalue);
+	system(command);
+	printf("flash erased\n");
+}
+
+
+int startWritingFPGAprogram(FILE** filefp){
+#ifdef VERY_VERBOSE
+	printf("\n at startWritingFPGAprogram \n");
+#endif
+
+	//getting the drive
+	char output[255];
+	FILE* fp = popen("awk \'$4== \"\\\"bitfile(spi)\\\"\" {print $1}\' /proc/mtd", "r");
+	fgets(output, sizeof(output), fp);
+	pclose(fp);
+	strcpy(mtdvalue,"/dev/");
+	char* pch = strtok(output,":");
+	if(pch == NULL){
+		cprintf(RED,"Could not get mtd value\n");
+		return FAIL;
+	}
+	strcat(mtdvalue,pch);
+	printf ("\nWriting FPGA program to flash.\nThe drive is %s\n",mtdvalue);
+
+
+	//tell FPGA to not touch flash
+	system("echo 0 > /sys/class/gpio/gpio9/value");
+	/*
+	char output2[255];
+	fp = popen("echo 0 > /sys/class/gpio/gpio9/value","r");
+	fgets(output2, sizeof(output2), fp);
+	pclose(fp);
+	printf("strlen output %d\n", strlen(output2)); //always 1
+	printf("output got:%s\n",output2);
+	if(strstr (output2,"No such file or directory")!= NULL){ //doesnt notice
+		printf("matched!\n");
+		return -1;
+	}
+	printf("not matched\n");
+*/
+
+
+	//writing the program to flash
+	*filefp = fopen(mtdvalue, "w");
+	if(*filefp == NULL){
+		cprintf(RED,"Unable to open %s in write mode\n",mtdvalue);
+		return FAIL;
+	}
+	printf("flash ready for writing\n");
+
+	return OK;
+}
+
+int stopWritingFPGAprogram(FILE* filefp){
+#ifdef VERY_VERBOSE
+	printf("\n at stopWritingFPGAprogram \n");
+#endif
+
+	int wait = 0;
+	if(filefp!= NULL){
+		fclose(filefp);
+		wait = 1;
+	}
+
+
+	//tell FPGA to touch flash to program itself
+	system("echo 1 > /sys/class/gpio/gpio9/value");
+
+	if(wait){
+#ifdef VERY_VERBOSE
+		printf("Waiting for FPGA to program from flash\n");
+#endif
+		//waiting for success or done
+		char output[255];
+		int res=0;
+		while(res == 0){
+			FILE* sysFile = popen("cat /sys/class/gpio/gpio7/value", "r");
+			fgets(output, sizeof(output), sysFile);
+			pclose(sysFile);
+			sscanf(output,"%d",&res);
+#ifdef VERY_VERBOSE
+			printf("gpi07 returned %d\n",res);
+#endif
+		}
+	}
+	printf("FPGA has picked up the program from flash\n\n");
+
+	return OK;
+}
+
+int writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp){
+#ifdef VERY_VERBOSE
+	printf("\n at writeFPGAProgram \n");
+	cprintf(BLUE,"address of fpgasrc:%p\n",(void *)fpgasrc);
+	cprintf(BLUE,"fsize:%d\n",fsize);
+	cprintf(BLUE,"pointer:%p\n",(void*)filefp);
+#endif
+
+	if(fwrite((void*)fpgasrc , sizeof(char) , fsize , filefp )!= fsize){
+		cprintf(RED,"Could not write FPGA source to flash\n");
+		return FAIL;
+	}
+#ifdef VERY_VERBOSE
+	cprintf(BLUE,"program written to flash\n");
+#endif
+	return OK;
 }
 
 

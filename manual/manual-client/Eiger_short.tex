@@ -11,6 +11,7 @@
 \title{\E - short manual}
 \date{\today}
 \maketitle
+\tableofcontents
 
 \section{Usage}
 
@@ -92,7 +93,7 @@ Other important settings that are configured in the {\tt{setup.det}} file are:
 One should notice that, by default, by choosing the option {\tt{dr 32}}, then the software automatically sets the detector to  {\tt{clkdivider 2}}. By choosing the option {\tt{dr 16}}, the software automatically sets the detector to  {\tt{clkdivider 1}}. One needs to choose {\tt{clkdivider 0}} after setting the {\tt{dr 16}} option to have the fastest frame rate. 
 We would recommend expert users (beamline people) to write their parameters file for the users. 
 
-\subsection{Standard acquisition}
+\section{Standard acquisition}
 
 You will then need to setup the detector threshold and settings, the exposure time, the number of real time frames and eventually how many real time frames should be acquired:
 \begin{verbatim}
@@ -135,7 +136,7 @@ sls_detector_put 0-status stop
 \end{verbatim}
 this same command can be used after a non proper abortion of the acquisition to reset to normal status the detector.
 
-\subsection{Readout timing- maximum frame rate}\label{timing}
+\section{Readout timing- maximum frame rate}\label{timing}
 IMPORTANT: to have faster readout and smaller dead time, one can configure {\tt{clkdivider}}, i.e. the speed at which the data are read, i.e. 200/100/50~MHz for {\tt{clkdivider 0/1/2}} and the dead time between frames through {\tt{flags parallel}}, i.e. acquire and read at the same time or acquire and then read out.
 The configuration of this timing variables allows to achieve different frame rates. NOTE THAT IN EIGER, WHATEVER YOU DO, THE FRAME RATE LIMITATIONS COME FROM THE NETWORK BOTTLENECK AS THE HARDWARE GOES FASTER THAN THE DATA OUT.
 
@@ -193,7 +194,7 @@ dynamic range & clkdivider & mode & readout time ($\mu$s) & max frame rate (kHz)
 \textbf{As if you run too fast, the detector could become noisier, it is important to match the detector settings to your frame rate. This can be done having more parameters files and load the one suitable with your experiment.} We experienced that {\tt{highgain}} settings could not be used at 6~kHz.
 
 
-\subsection{External triggering options}
+\section{External triggering options}
 The detector can be setup such to receive external triggers. Connect a LEMO signal to the TRIGGER IN connector in the Power Distribution Board. The logic 0 for the board is passed by low level 0$-$0.7~V, the logic 1 is passed to the board with a signal between 1.2$-$5~V. Eiger is 50~$\Omega$ terminated. By default the positive polarity is used (negative should not be passed to the board).  
 \begin{verbatim}
 sls_detector_put 0-timing [auto/trigger/burst_trigger/gating]
@@ -214,36 +215,8 @@ Here are the implemented options so far:
 Hardware-wise, the ENABLE OUT signal outputs when the chips are really acquiring. This means that the single subframes will be outputted in 32 bit mode. The TRIGGER OUT outputs the sum-up-signal at the moment (which is useless). This will be changed in the future to output the envelop of the enable signal. 
 
 We are planning to change some functionality, i.e. unify the {\tt{trigger}} and {\tt{burst}} trigger modes and make both {\tt{frames}} and {\tt{cycles}} configurable at the same time.
- 
 
-\subsection{Advanced autosumming and rate corrections}
-
-In the case of autosumming mode, i.e, {\tt{dr 32}}, the acquisition time ({\tt{exptime}} is broken in as many subframes as they fit into the acquisition time minus all the subframes readout times. By default the {\tt{subexptime}} is set to 2.621440~ms. This implies that 12 bit counter of \E will saturate when the rate is above or equal to 1.57~MHz/pixel. The minimum value is of order of 10~ns (although as explained values smaller than 500~$\mu$s do not make sense). The maximum value is 5.2~s.
-
-The subframe length can be changed by the user by doing: 
-\begin{verbatim}
-sls_detector_put 0-subexptime [time_in_s] 
-\end{verbatim}
-
-One needs to realize that the readout time, for each subframe is 10.5~$\mu$s if the detector is in parallel mode. 500~$\mu$s if the detector is in non parallel mode. Note that in {\tt{dr 32}}, as the single frame readout from the chip is 500~$\mu$s, no {\tt{subexptime}}$<$500~$\mu$s can be set in {\tt{parallel}} mode. To have smaller {\tt{subexptime}}, you need the {\tt{nonparallel}} mode, although this will have a larger deadtime than the acquisition time.\\
-
-Online rate corrections can be activated. They are particularly useful and implemented \textbf{only} in the autosumming mode, i.e. when {\tt{dr 32}} is activated as  every single subframe is corrected before summing it. To correct for rate, the subframe duration has to be known to the correction algorithm.    
-To activate the rate corrections, one should do:\\
-\begin{verbatim}
-sls_detector_put 0-ratecorr [tauval_in_ns]
-\end{verbatim}
-To deactivate:
-\begin{verbatim}
-sls_detector_put 0-ratecorr 0
-\end{verbatim}
-Default values for tau can be loaded from the calibration files. In this case, one needs to make sure the appropriate tau value is written in the calibration file, then need to load the appropriate {\tt{settings}} or {\tt{calibrations}} at least once before. Now to activate the rate corrections with the value written in the calibrations, once would do: 
-\begin{verbatim}
-sls_detector_put 0-ratecorr -1
-\end{verbatim}
-
-Every time either the rate corrections are activated, $\tau$ is changed or the subframe length is changed, then a new correction table is evaluated. Note that computing the correction table is time consuming. 
-
-
+\section{Offline processing and monitoring}
 \subsection{Offline image reconstruction}
 The offline image reconstruction is in {\tt{slsDetectorsPackage/slsImageReconstruction}}.
 
@@ -283,12 +256,88 @@ It is important to know, that the pixels at the edge between 2 chips count more 
 
 \subsection{Read temperatures from boards}
 
+With an updated kernel on the linux boards (ask to the SLS detector roup for specifications), it is possible to monitor the temperature on the Back End Boards: 
+\begin{verbatim}
+temp_fpga 	 #gets the temperature of the fpga
+temp_fpgaext 	 #gets the temperature close to the fpga
+temp_10ge 	 #gets the temperature close to the 10GE
+temp_dcdc 	 #gets the temperature close to the dc dc converter
+temp_sodl 	 #gets the temperature close to the left so-dimm memory
+temp_sodr 	 #gets the temperature close to the right so-dimm memory
+\end{verbatim}
+You need to use the command specifying from which board you desire the temperature readings, for example:
+
+\begin{verbatim}
+./sls_detector_get 0:temp_fpga
+./sls_detector_get 1:temp_fpga
+\end{verbatim}
+
+ 
+\section{Advanced functionalities}
+\subsection{Autosumming and rate corrections}
+
+In the case of autosumming mode, i.e, {\tt{dr 32}}, the acquisition time ({\tt{exptime}} is broken in as many subframes as they fit into the acquisition time minus all the subframes readout times. By default the {\tt{subexptime}} is set to 2.621440~ms. This implies that 12 bit counter of \E will saturate when the rate is above or equal to 1.57~MHz/pixel. The minimum value is of order of 10~ns (although as explained values smaller than 500~$\mu$s do not make sense). The maximum value is 5.2~s.
+
+The subframe length can be changed by the user by doing: 
+\begin{verbatim}
+sls_detector_put 0-subexptime [time_in_s] 
+\end{verbatim}
+
+One needs to realize that the readout time, for each subframe is 10.5~$\mu$s if the detector is in parallel mode. 500~$\mu$s if the detector is in non parallel mode. Note that in {\tt{dr 32}}, as the single frame readout from the chip is 500~$\mu$s, no {\tt{subexptime}}$<$500~$\mu$s can be set in {\tt{parallel}} mode. To have smaller {\tt{subexptime}}, you need the {\tt{nonparallel}} mode, although this will have a larger deadtime than the acquisition time.\\
+
+Online rate corrections can be activated. They are particularly useful and implemented \textbf{only} in the autosumming mode, i.e. when {\tt{dr 32}} is activated as  every single subframe is corrected before summing it. To correct for rate, the subframe duration has to be known to the correction algorithm.    
+To activate the rate corrections, one should do:\\
+\begin{verbatim}
+sls_detector_put 0-ratecorr [tauval_in_ns]
+\end{verbatim}
+To deactivate:
+\begin{verbatim}
+sls_detector_put 0-ratecorr 0
+\end{verbatim}
+Default values for tau can be loaded from the calibration files. In this case, one needs to make sure the appropriate tau value is written in the calibration file, then need to load the appropriate {\tt{settings}} or {\tt{calibrations}} at least once before. Now to activate the rate corrections with the value written in the calibrations, once would do: 
+\begin{verbatim}
+sls_detector_put 0-ratecorr -1
+\end{verbatim}
+
+Every time either the rate corrections are activated, $\tau$ is changed or the subframe length is changed, then a new correction table is evaluated. Note that computing the correction table is time consuming. 
 
 
-\subsection{Delays in sending for 1Gb/s, 10Gb/s, 10Gb flow control}
 
+\subsection{Delays in sending for 1Gb/s, 10Gb/s, 10Gb flow control, receiver fifo}
 
+Extremely advanced options allow to:
+\begin{itemize}
+\item Activate the flow control for 10~Gb/s~E (by default the 1~Gb/s~E is always active and cannot be switched off:
+\begin{verbatim}
+./sls_detector_put flowcontrol_10g 1
+\end{verbatim}
+\item  Delay the transmission of the left port. This delay option is useful in the case of many simultaneuous receivers runnning, such taht reduced the threoughput to receivers all at the same time. To be used board by board with different units:
+\begin{verbatim}
+./sls_detector_put 0:txndelay_left xxxx 
+\end{verbatim}
+\item  Transmission delay of the right port, same as above. The value here should be different from the left port to spread the transmission even more 
+\begin{verbatim}
+./sls_detector_put 0:txndelay_right yyyy
+\end{verbatim}
+As example:
+\begin{verbatim}
+X=0; do ./sls_detector_put \$X:txndelay_left \$((X*100000));
+ \end{verbatim}
+\begin{verbatim}
+./sls_detector_put \$X:txndelay_right \$((X*100000)); X=\$((X+1)); done
+\end{verbatim}
+%%X=0; for i in 96 97 70 61 90 112 119 55 116 107 54 104 125 124 84 86 100 103 76 78 56 101 106 127 59 58 91 92 29 40 122 113 105 121 111 120 ; do ./sls_detector_put $X:txndelay_left $((X*100000)); ./sls_detector_put $X:txndelay_right $((X*100000)); X=$((X+1)); done
 
+\item Set transmission delay of the entire frame (left and right)
+\begin{verbatim}
+./sls_detector_put txndelay_frame xxxx
+\end{verbatim}
+\item Readjust the size of the fifo of the receiver between listening and writing (useful when writing is limited)
+\begin{verbatim}
+./sls_detector_put rx_fifodepth xxxx
+\end{verbatim}
+ {\tt{xxxx}} is 100 images by default.
+\end{itemize}
 
 
 \appendix

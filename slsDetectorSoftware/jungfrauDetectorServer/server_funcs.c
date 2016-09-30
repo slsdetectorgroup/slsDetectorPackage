@@ -3534,16 +3534,9 @@ int program_fpga(int file_des) {
 #endif
 
 	//opening file pointer to flash and telling FPGA to not touch flash
-	int startret = startWritingFPGAprogram(&fp);
-	/*printf("startret:%d\n",startret);*/
-	if(startret != OK){
-		if(startret == FAIL){
+	if(startWritingFPGAprogram(&fp) != OK){
 		sprintf(mess,"Could not write to flash. Error at startup.\n");
 		cprintf(RED,"%s",mess);
-		}/*else if (startret == -1){
-			cprintf(RED,"Error: Please define the gpio pins and their direction in /etc/rc before rebooting\n");
-			cprintf(RED,"%s",mess);
-		}*/
 		ret=FAIL;
 		filesize = 0;
 	}

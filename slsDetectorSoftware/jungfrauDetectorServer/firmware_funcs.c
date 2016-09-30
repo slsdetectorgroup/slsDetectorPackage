@@ -3408,25 +3408,17 @@ int startWritingFPGAprogram(FILE** filefp){
 		return FAIL;
 	}
 	strcat(mtdvalue,pch);
-	printf ("\nWriting FPGA program to flash.\nThe drive is %s\n",mtdvalue);
+	printf ("\nFlash drive found: %s\n",mtdvalue);
 
 
+	//define the gpio pins
+	system("echo 7 > /sys/class/gpio/export");
+	system("echo 9 > /sys/class/gpio/export");
+	//define their direction
+	system("echo in  > /sys/class/gpio/gpio7/direction");
+	system("echo out > /sys/class/gpio/gpio9/direction");
 	//tell FPGA to not touch flash
 	system("echo 0 > /sys/class/gpio/gpio9/value");
-	/*
-	char output2[255];
-	fp = popen("echo 0 > /sys/class/gpio/gpio9/value","r");
-	fgets(output2, sizeof(output2), fp);
-	pclose(fp);
-	printf("strlen output %d\n", strlen(output2)); //always 1
-	printf("output got:%s\n",output2);
-	if(strstr (output2,"No such file or directory")!= NULL){ //doesnt notice
-		printf("matched!\n");
-		return -1;
-	}
-	printf("not matched\n");
-*/
-
 
 	//writing the program to flash
 	*filefp = fopen(mtdvalue, "w");
@@ -3472,6 +3464,11 @@ int stopWritingFPGAprogram(FILE* filefp){
 		}
 	}
 	printf("FPGA has picked up the program from flash\n\n");
+
+	//undefine the pins
+	system("echo 7 > /sys/class/gpio/unexport");
+	system("echo 9 > /sys/class/gpio/unexport");
+
 
 	return OK;
 }

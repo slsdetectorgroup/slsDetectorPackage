@@ -6477,7 +6477,7 @@ int slsDetector::programFPGA(string fname){
 		return FAIL;
 	}
 #ifdef VERBOSE
-	std::cout << "Successfully loaded the rawbin file" << std::endl;
+	std::cout << "Successfully loaded the rawbin file to program memory" << std::endl;
 #endif
 
 	const size_t maxprogramsize = 2 * 1024 *1024;
@@ -6509,7 +6509,8 @@ int slsDetector::programFPGA(string fname){
 				std::cout<< "This can take awhile. Please be patient..." << endl;
 				printf("Erasing Flash:%d%%\r",0);
 				std::cout << flush;
-				int count = 65;
+				//erasing takes 65 seconds, printing here (otherwise need threads in server-unnecessary)
+				int count = 66;
 				while(count>0){
 					usleep(1 * 1000 * 1000);
 					count--;
@@ -6521,7 +6522,7 @@ int slsDetector::programFPGA(string fname){
 				std::cout << flush;
 			}
 
-
+			//sending program in parts of 2mb each
 			while(filesize > 0){
 
 				unitprogramsize = maxprogramsize;  //2mb
@@ -6536,13 +6537,14 @@ int slsDetector::programFPGA(string fname){
 					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 					std::cout<< "Detector returned error: " << mess << std::endl;
 					setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+					//stops writing
 					break;
 				}
 				filesize-=unitprogramsize;
 				currentPointer+=unitprogramsize;
 
 				//print progress
-				printf("Writing Program to Flash:%d%%\r",(int) (((double)(totalsize-filesize)/totalsize)*100));
+				printf("Writing to Flash:%d%%\r",(int) (((double)(totalsize-filesize)/totalsize)*100));
 				std::cout << flush;
 
 			}

@@ -1527,9 +1527,6 @@ void UDPStandardImplementation::startListening(){
 			tempBuffer = new char[onePacketSize * (packetsPerFrame - 1)]; 	//store maximum of 1 packets less in a frame
 		}
 
-		if(!activated)
-			usleep(1* 1000 * 1000);
-
 		/* inner loop - loop for each buffer */
 		//until mask unset (udp sockets shut down by client)
 		while((1 << ithread) & listeningThreadsMask){

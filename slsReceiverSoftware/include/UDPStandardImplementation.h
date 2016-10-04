@@ -597,6 +597,7 @@ private:
 
 	/** Missing Packet identifier value */
 	const static uint16_t missingPacketValue = 0xFFFF;
+	const static uint16_t deactivatedPacketValue = 0xFEFE;
 
 	/** Dummy Packet identifier value */
 	const static uint32_t dummyPacketValue = 0xFFFFFFFF;
@@ -675,6 +676,9 @@ private:
 	bool killAllWritingThreads;
 
 
+	//***deactivated parameters***
+	uint64_t deactivated_framenumber[MAX_NUMBER_OF_LISTENING_THREADS];
+	uint32_t deactivated_packetnumber[MAX_NUMBER_OF_LISTENING_THREADS];
 
 
 

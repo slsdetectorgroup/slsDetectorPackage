@@ -193,6 +193,14 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	runStatus getStatus() const;
 
+	/**
+	 * Get activate
+	 * If deactivated, receiver will write dummy packets 0xFF
+	 * (as it will receive nothing from detector)
+	 * @return 0 for deactivated, 1 for activated
+	 */
+	int getActivate() const;
+
 
 
 
@@ -417,6 +425,13 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	void closeFile(int i = -1);
 
+	/**
+	 * Activate / Deactivate Receiver
+	 * If deactivated, receiver will write dummy packets 0xFF
+	 * (as it will receive nothing from detector)
+	 */
+	int setActivate(int enable = -1);
+
 
 	//***callback functions***
 	/**
@@ -485,6 +500,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	const static int MAX_NUMBER_OF_LISTENING_THREADS = 2;
 	/** Receiver Status */
 	runStatus status;
+	/** Activated/Deactivated */
+	int activated;
 
 	//***connection parameters***
 	/** Ethernet Interface */
@@ -525,6 +542,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	int shortFrameEnable;
 	/** Frequency of Frames sent to GUI */
 	uint32_t FrameToGuiFrequency;
+
 
 
 

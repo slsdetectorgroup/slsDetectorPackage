@@ -46,6 +46,8 @@
 		  short Beb_bit_mode;
 		  int BEB_MMAP_SIZE = 0x1000;
 
+		  int Beb_activated = 1;
+
 
 
 void BebInfo_BebInfo(struct BebInfo* bebInfo, unsigned int beb_num){
@@ -172,6 +174,10 @@ void Beb_GetModuleCopnfiguration(int* master, int* top){
 
 /* do not work at the moment */
 int Beb_SetMasterViaSoftware(){
+
+	if(!Beb_activated)
+		return 0;
+
 	//mapping new memory
 	u_int32_t* csp0base=0;
 	u_int32_t value = 0, ret = 1;
@@ -200,6 +206,10 @@ int Beb_SetMasterViaSoftware(){
 
 /* do not work at the moment */
 int Beb_SetSlaveViaSoftware(){
+
+	if(!Beb_activated)
+		return 0;
+
 	//mapping new memory
 	u_int32_t* csp0base=0;
 	u_int32_t value = 0, ret = 1;
@@ -268,11 +278,18 @@ int Beb_Activate(int enable){
 	if(fd > 0)
 		Beb_close(fd,csp0base);
 
+	Beb_activated = ret;
+
 	return ret;
 }
 
 
 int Beb_SetNetworkParameter(enum detNetworkParameter mode, int val){
+
+	if(!Beb_activated)
+		return val;
+
+
 	//mapping new memory
 	u_int32_t* csp0base=0;
 	u_int32_t valueread = 0;
@@ -325,6 +342,10 @@ int Beb_SetNetworkParameter(enum detNetworkParameter mode, int val){
 
 
 int Beb_ResetToHardwareSettings(){
+
+	if(!Beb_activated)
+		return 1;
+
 	//mapping new memory
 	u_int32_t* csp0base=0;
 	u_int32_t value = 0, ret = 1;
@@ -396,6 +417,10 @@ u_int32_t Beb_GetFirmwareSoftwareAPIVersion(){
 }
 
 void Beb_ResetFrameNumber(){
+
+	if(!Beb_activated)
+		return;
+
 	//mapping new memory to read master top module configuration
 	u_int32_t* csp0base=0;
 	//open file pointer
@@ -446,7 +471,6 @@ int Beb_InitBebInfos(){//file name at some point
 	bebInfoSize++;
 
 
-	//if(!Beb_ReadSetUpFromFile("/home/root/executables/setup_beb.txt")) return 0;
 	/*
   //loop through file to fill vector.
   BebInfo* b = new BebInfo(26);
@@ -477,52 +501,6 @@ int Beb_SetBebSrcHeaderInfos(unsigned int beb_number, int ten_gig, char* src_mac
 }
 
 
-int Beb_ReadSetUpFromFile(char* file_name){
-	char line[100];
-	char str[100];
-
-	int i0,i1;
-	char mac0[50],mac1[50],ip0[50],ip1[0];
-	FILE* fp = fopen(file_name, "r");
-	if( fp == NULL ){
-		perror("Error while opening the beb setup file.\n");
-		return 0;
-	}
-
-	printf("Setting up beb side of detector:\n");
-	while ( fgets (line , 255 , fp) != NULL ){
-		if(strlen(line)<=1)
-			continue;
-		sscanf (line, "%s", str);
-		if (str[0]=='#')
-			continue;
-
-		if(!strcmp(str,"add_beb")){
-			if( sscanf (line,"%s %d %d %s %s %s %s",str,&i0,&i1,mac0,ip0,mac1,ip1) < 7){
-				printf("Error adding beb from %s.\n",file_name);
-				exit(0);
-			}
-
-			printf ("Read: %s %d %d %s %s %s %s\n", str,i0,i1,mac0,ip0,mac1,ip1);
-
-			if(Beb_GetBebInfoIndex(i0)){
-				printf("Error adding beb from %s, beb number %d already added.\n",file_name,i0);
-				exit(0);
-			}
-
-			struct BebInfo b0;
-			BebInfo_BebInfo(&b0,i0);
-			BebInfo_SetSerialAddress(&b0,i1);
-			BebInfo_SetHeaderInfo(&b0,0,mac0,ip0,42000+i0);
-			BebInfo_SetHeaderInfo(&b0,1,mac1,ip1,52000+i0);
-			beb_infos[bebInfoSize] = b0;
-			bebInfoSize++;
-		}
-	}
-	fclose(fp);
-	return 1;
-}
-
 
 
 int Beb_CheckSourceStuffBebInfo(){
@@ -552,6 +530,10 @@ unsigned int Beb_GetBebInfoIndex(unsigned int beb_numb){
 
 
 int Beb_WriteTo(unsigned int index){
+
+	if(!Beb_activated)
+		return 1;
+
   if(index>=bebInfoSize){
     printf("WriteTo index error.\n");
     return 0;
@@ -575,35 +557,15 @@ void Beb_SwapDataFun(int little_endian, unsigned int n, unsigned int *d){
 
 
 int Beb_SetByteOrder(){
-/*
-	Beb_send_data_raw[0] = 0x8fff0000;
-  if(Local_Write(ll_beb,4,Beb_send_data_raw)!=4) return 0;
-  
-  while((Local_Read(ll_beb,Beb_recv_buffer_size*4,Beb_recv_data_raw)/4)>0) printf("\t) Cleanning buffer ...\n");
-
-  if(bebInfoSize<2) return 0;
-
-  Beb_send_ndata   = 3;
-  Beb_send_data[0] = 0x000c0000;
-  Beb_send_data[1] = 0;
-  Beb_send_data[2] = 0;
-  Beb_WriteTo(0);
-
-  //using little endian for data, big endian not fully tested, swap on 16 bit boundary.
-  Beb_send_ndata   = 3;
-  Beb_send_data[0] = 0x000c0000;
-  Beb_send_data[1] = 1;
-  Beb_send_data[2] = 0;
-  Beb_SwapDataFun(0,2,&(Beb_send_data[1]));
-  Beb_WriteTo(0);
-   
-  printf("\tSetting Byte Order ..............        ok\n");
-*/
   return 1;
 }
 
 
 int Beb_SetUpUDPHeader(unsigned int beb_number, int ten_gig, unsigned int header_number, char* dst_mac, char* dst_ip, unsigned int dst_port){
+
+	if(!Beb_activated)
+		return 1;
+
 	u_int32_t bram_phy_addr;
 	u_int32_t* csp0base=0;
 	/*u_int32_t* bram_ptr = NULL;*/
@@ -809,7 +771,9 @@ int Beb_SendMultiReadRequest(unsigned int beb_number, unsigned int left_right, i
 	cprintf(GREEN, "Beb_send_data[1] Swapped:%X\n",Beb_send_data[1]);
 #endif
 
-    if(!Beb_WriteTo(i)) return 0;
+	if(Beb_activated){
+		if(!Beb_WriteTo(i)) return 0;
+	}
 
   return 1;
 }
@@ -828,6 +792,9 @@ int Beb_SetUpTransferParameters(short the_bit_mode){
 
 int Beb_StopAcquisition()
 {
+	if(!Beb_activated)
+		return 1;
+
 	u_int32_t* csp0base=0;
 	volatile u_int32_t valuel,valuer;
 	//open file pointer
@@ -854,6 +821,10 @@ int Beb_StopAcquisition()
 }
 
 int Beb_RequestNImages(unsigned int beb_number, int ten_gig, unsigned int dst_number, unsigned int nimages, int test_just_send_out_packets_no_wait){
+
+	if(!Beb_activated)
+		return 1;
+
 	if(dst_number>64) return 0;
 
 	unsigned int     header_size  = 4; //4*64 bits

@@ -374,14 +374,15 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 			}
 			if(ret != FAIL){
 #ifndef REST
-			  if(receiverBase) delete receiverBase;
-			  receiverBase = UDPInterface::create("standard");
-			  if(startAcquisitionCallBack)
-				  receiverBase->registerCallBackStartAcquisition(startAcquisitionCallBack,pStartAcquisition);
-			  if(acquisitionFinishedCallBack)
-				  receiverBase->registerCallBackAcquisitionFinished(acquisitionFinishedCallBack,pAcquisitionFinished);
-			  if(rawDataReadyCallBack)
-				  receiverBase->registerCallBackRawDataReady(rawDataReadyCallBack,pRawDataReady);
+				if(receiverBase == NULL){
+					receiverBase = UDPInterface::create("standard");
+					if(startAcquisitionCallBack)
+						receiverBase->registerCallBackStartAcquisition(startAcquisitionCallBack,pStartAcquisition);
+					if(acquisitionFinishedCallBack)
+						receiverBase->registerCallBackAcquisitionFinished(acquisitionFinishedCallBack,pAcquisitionFinished);
+					if(rawDataReadyCallBack)
+						receiverBase->registerCallBackRawDataReady(rawDataReadyCallBack,pRawDataReady);
+				}
 #endif
 			  myDetectorType = dr;
 			  ret=receiverBase->setDetectorType(myDetectorType);

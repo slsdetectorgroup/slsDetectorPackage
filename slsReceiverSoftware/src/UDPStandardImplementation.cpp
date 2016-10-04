@@ -191,6 +191,12 @@ void UDPStandardImplementation::initializeMembers(){
 	createFileMask = 0x0;
 	killAllWritingThreads = false;
 
+	//***deactivated parameters***
+	for(int i=0; i < MAX_NUMBER_OF_LISTENING_THREADS; i++){
+		deactivated_framenumber[i] = 0;
+		deactivated_packetnumber[i] = 0;
+	}
+
 	//***filter parameters***
 	commonModeSubtractionEnable = false;
 	moenchCommonModeSubtraction = NULL;
@@ -837,6 +843,11 @@ int UDPStandardImplementation::startReceiver(char *c){
 	fileCreateSuccess = false;
 	pthread_mutex_unlock(&statusMutex);
 
+	//deactivated parameters
+	for(int i = 0; i < numberofListeningThreads; ++i){
+		deactivated_framenumber[i] = 0;
+		deactivated_packetnumber[i] = 0;
+	}
 
 	//Print Receiver Configuration
 	if(myDetectorType != EIGER){
@@ -959,30 +970,32 @@ void UDPStandardImplementation::startReadout(){
 
 	if(status == RUNNING){
 
-		//check if all packets got
-		int totalP = 0,prev,i;
-		for(i=0; i<numberofListeningThreads; ++i){
-			totalP += totalListeningFrameCount[i];
-		}
-		//wait for all packets
-		if(totalP!=numberOfFrames*packetsPerFrame){
+		//needs to wait for packets only if activated
+		if(activated){
+			//check if all packets got
+			int totalP = 0,prev,i;
+			for(i=0; i<numberofListeningThreads; ++i){
+				totalP += totalListeningFrameCount[i];
+			}
+			//wait for all packets
+			if(totalP!=numberOfFrames*packetsPerFrame){
 
-			prev = -1;
-			//wait as long as there is change from prev totalP
-			while(prev != totalP){
+				prev = -1;
+				//wait as long as there is change from prev totalP
+				while(prev != totalP){
 #ifdef DEBUG5
-				cprintf(MAGENTA,"waiting for all packets totalP:%d\n",totalP);
+					cprintf(MAGENTA,"waiting for all packets totalP:%d\n",totalP);
 #endif
 
-				usleep(5000);/* Need to find optimal time (exposure time and acquisition period) **/
-				prev = totalP;
-				totalP=0;
-				for(i=0; i<numberofListeningThreads; ++i){
-					totalP += totalListeningFrameCount[i];
+					usleep(50000);/* Need to find optimal time (exposure time and acquisition period) **/
+					prev = totalP;
+					totalP=0;
+					for(i=0; i<numberofListeningThreads; ++i){
+						totalP += totalListeningFrameCount[i];
+					}
 				}
 			}
 		}
-
 
 
 		//set status
@@ -1514,6 +1527,9 @@ void UDPStandardImplementation::startListening(){
 			tempBuffer = new char[onePacketSize * (packetsPerFrame - 1)]; 	//store maximum of 1 packets less in a frame
 		}
 
+		if(!activated)
+			usleep(1* 1000 * 1000);
+
 		/* inner loop - loop for each buffer */
 		//until mask unset (udp sockets shut down by client)
 		while((1 << ithread) & listeningThreadsMask){
@@ -1552,7 +1568,7 @@ void UDPStandardImplementation::startListening(){
 
 
 			//problem in receiving or end of acquisition
-			if (status == TRANSMITTING){
+			if ((status == TRANSMITTING)||(rc == 0 && activated == 0)){
 				stopListening(ithread,rc);
 				continue;
 			}
@@ -1607,6 +1623,39 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int lSize, in
 	if(cSize)
 		memcpy(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS, temp, cSize);
 
+	if(!activated){
+		//first time
+		if(!deactivated_framenumber[ithread])
+			deactivated_framenumber[ithread]++;
+
+		//new frame
+		if(deactivated_packetnumber[ithread] == (packetsPerFrame/numberofListeningThreads)){
+			deactivated_packetnumber[ithread] = 0;
+			deactivated_framenumber[ithread]++;
+			//last time
+			if(deactivated_framenumber[ithread] == (numberOfFrames+1))
+				return 0;
+		}
+		deactivated_packetnumber[ithread]++;
+
+		//copy dummy packet
+		memset(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + cSize, 0xFF,onePacketSize);
+		eiger_packet_header_t* header = (eiger_packet_header_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + cSize);
+		eiger_packet_footer_t* footer = (eiger_packet_footer_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + cSize + footerOffset);
+		*( (uint16_t*) header->missingPacket) = deactivatedPacketValue;
+		*( (uint64_t*) footer) = deactivated_framenumber[ithread];
+		*( (uint16_t*) footer->packetNumber) = deactivated_packetnumber[ithread];
+		//*( (uint16_t*) footer->packetNumber) = ithread*(packetsPerFrame/numberofListeningThreads)+deactivated_packetnumber[ithread];
+#ifdef MANUALDEBUG
+		eiger_packet_footer_t* efooter = (eiger_packet_footer_t*)(buffer[ithread] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
+		cprintf(GREEN,"thread:%d pnum:%d fnum:%d\n",
+				ithread,
+				(*( (uint16_t*) efooter->packetNumber)),
+				(uint32_t)(*( (uint64_t*) efooter)));
+#endif
+		return onePacketSize;
+	}
+
 	int receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + cSize, lSize + cSize);
 
 	//throw away packets that is not one packet size, need to check status if socket is shut down
@@ -1621,6 +1670,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int lSize, in
 		receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS);
 	}
 	totalListeningFrameCount[ithread] += (receivedSize/onePacketSize);
+
 
 #ifdef MANUALDEBUG
 	if(receivedSize>0){
@@ -2565,6 +2615,8 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer[]){
 			cprintf(GREEN, "Total Packets Caught:%lld\n", (long long int)totalPacketsCaught);
 			cprintf(GREEN, "Total Frames Caught:%lld\n",(long long int)(totalPacketsCaught/packetsPerFrame));
 		}
+		if(!activated)
+			cprintf(RED,"Note: Deactivated Receiver\n");
 		//acquisition end
 		if (acquisitionFinishedCallBack)
 			acquisitionFinishedCallBack((int)(totalPacketsCaught/packetsPerFrame), pAcquisitionFinished);

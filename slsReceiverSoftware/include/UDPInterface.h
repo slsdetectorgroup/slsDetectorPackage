@@ -252,6 +252,14 @@ class UDPInterface {
 	 */
 	virtual slsReceiverDefs::runStatus getStatus() const = 0;
 
+	/**
+	 * Get activate
+	 * If deactivated, receiver will write dummy packets 0xFF
+	 * (as it will receive nothing from detector)
+	 * @return 0 for deactivated, 1 for activated
+	 */
+	virtual int getActivate() const = 0;
+
 
 
 
@@ -473,6 +481,13 @@ class UDPInterface {
 	 * @param i thread index (if multiple files used  eg. root files) -1 for all threads
 	 */
 	virtual void closeFile(int i = -1) = 0;
+
+	/**
+	 * Activate / Deactivate Receiver
+	 * If deactivated, receiver will write dummy packets 0xFF
+	 * (as it will receive nothing from detector)
+	 */
+	virtual int setActivate(int enable = -1) = 0;
 
 
 	//***callback functions***

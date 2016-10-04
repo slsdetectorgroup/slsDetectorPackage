@@ -1312,7 +1312,9 @@ int getBebFPGATemp(){
 
 
 int activate(int enable){
-	return Beb_Activate(enable);
+	int ret = Beb_Activate(enable);
+	Feb_Control_activate(ret);
+	return ret;
 }
 
 

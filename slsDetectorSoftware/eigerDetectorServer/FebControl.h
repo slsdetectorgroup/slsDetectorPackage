@@ -64,6 +64,7 @@ int          Module_GetBottomDACValue(struct Module* mod,unsigned int i);
 
 
 
+void Feb_Control_activate(int activate);
 
 int Feb_Control_IsBottomModule();
 int Feb_Control_GetModuleNumber();
@@ -112,8 +113,6 @@ int Feb_Control_GetModuleNumber();
 
   void Feb_Control_FebControl();
   int Feb_Control_Init(int master, int top, int module_num);
-  int Feb_Control_ReadSetUpFileToAddModules(char* file_name);
-  int Feb_Control_ReadSetUpFile(unsigned int module_num, char* file_name);
   int Feb_Control_CheckSetup();
 
   unsigned int Feb_Control_GetNModules();

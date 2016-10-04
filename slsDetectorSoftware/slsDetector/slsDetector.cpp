@@ -1269,6 +1269,13 @@ int slsDetector::activate(int const enable){
 	int arg = enable;
 	char mess[MAX_STR_LENGTH]="";
 	int ret = OK;
+
+	if(thisDetector->myDetectorType != EIGER){
+		std::cout<< "Not implemented for this detector" << std::endl;
+		setErrorMask((getErrorMask())|(DETECTOR_ACTIVATE));
+		return -1;
+	}
+
 #ifdef VERBOSE
 	if(!enable)
 		std::cout<< "Deactivating Detector" << std::endl;
@@ -1295,11 +1302,36 @@ int slsDetector::activate(int const enable){
 		}
 	}
 #ifdef VERBOSE
-	if(retval)
+	if(retval==1)
 		std::cout << "Detector Activated"  << std::endl;
-	else
+	else if(retval==0)
 		std::cout << "Detector Deactivated" << std::endl;
+	else
+		std::cout << "Detector Activation unknown:" << retval << std::endl;
 #endif
+
+	if(ret!=FAIL){
+		if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+#ifdef VERBOSE
+			std::cout << "Activating/Deactivating Receiver: " << retval << std::endl;
+#endif
+			if (connectData() == OK)
+				ret=thisReceiver->sendInt(fnum,retval,retval);
+			disconnectData();
+			if(ret==FAIL)
+				setErrorMask((getErrorMask())|(RECEIVER_ACTIVATE));
+		}
+	}
+#ifdef VERBOSE
+	if(retval==1)
+		std::cout << "Receiver Activated"  << std::endl;
+	else if(retval==0)
+		std::cout << "Receiver Deactivated" << std::endl;
+	else
+		std::cout << "Receiver Activation unknown:" << retval << std::endl;
+#endif
+
+
 	return retval;
 
 }
@@ -5546,6 +5578,7 @@ char* slsDetector::setReceiver(string receiverIP){
 			setTimer(FRAME_PERIOD,thisDetector->timerValue[FRAME_PERIOD]);
 			setTimer(FRAME_NUMBER,thisDetector->timerValue[FRAME_NUMBER]);
 			setDynamicRange(thisDetector->dynamicRange);
+			activate(-1);
 			//set scan tag
 			setUDPConnection();
 			if(thisDetector->myDetectorType == EIGER)

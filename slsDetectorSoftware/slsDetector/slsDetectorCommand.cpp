@@ -441,6 +441,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="programfpga";
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
+  i++;
+
   /* versions/ serial numbers  getId */
 
   descrToFuncMap[i].m_pFuncName="moduleversion"; //
@@ -4259,80 +4263,97 @@ string slsDetectorCommand::helpSpeed(int narg, char *args[], int action) {
 
 string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action) {
 
-int retval;
-char answer[1000]="";
+	int retval;
+	char answer[1000]="";
 
-  if (action==HELP_ACTION)
-    return helpAdvanced(narg, args, action);
-  
-  if (cmd=="flags") {
+	if (action==HELP_ACTION)
+		return helpAdvanced(narg, args, action);
 
-    readOutFlags flag=GET_READOUT_FLAGS;
+	if (cmd=="flags") {
 
-    if (action==PUT_ACTION) {
-      string sval=string(args[1]);
-      if (sval=="none")
-	flag=NORMAL_READOUT;
-      else if (sval=="storeinram")
-	flag=STORE_IN_RAM;
-      else if (sval=="tot")
-	flag=TOT_MODE;
-      else if (sval=="continous")
-	flag=CONTINOUS_RO;
-      else if (sval=="parallel")
-	flag=PARALLEL;
-      else if (sval=="nonparallel")
-	flag=NONPARALLEL;
-      else if (sval=="safe")
-	flag=SAFE;
-      else
-	return string("could not scan flag ")+string(args[1]);
-    }
-  
+		readOutFlags flag=GET_READOUT_FLAGS;
 
-    myDet->setOnline(ONLINE_FLAG);
+		if (action==PUT_ACTION) {
+			string sval=string(args[1]);
+			if (sval=="none")
+				flag=NORMAL_READOUT;
+			else if (sval=="storeinram")
+				flag=STORE_IN_RAM;
+			else if (sval=="tot")
+				flag=TOT_MODE;
+			else if (sval=="continous")
+				flag=CONTINOUS_RO;
+			else if (sval=="parallel")
+				flag=PARALLEL;
+			else if (sval=="nonparallel")
+				flag=NONPARALLEL;
+			else if (sval=="safe")
+				flag=SAFE;
+			else
+				return string("could not scan flag ")+string(args[1]);
+		}
 
-    retval = myDet->setReadOutFlags(flag);
 
-    if(retval == NORMAL_READOUT)
-    	return string("none");
+		myDet->setOnline(ONLINE_FLAG);
 
-    if(retval & STORE_IN_RAM)
-    	strcat(answer,"storeinram ");
-    if(retval & TOT_MODE)
-    	strcat(answer,"tot ");
-    if(retval & CONTINOUS_RO)
-    	strcat(answer,"continous ");
-    if(retval & PARALLEL)
-    	strcat(answer,"parallel ");
-    if(retval & NONPARALLEL)
-    	strcat(answer,"nonparallel ");
-    if(retval & SAFE)
-    	strcat(answer,"safe ");
-    if(strlen(answer))
-    	return string(answer);
+		retval = myDet->setReadOutFlags(flag);
 
-    return string("unknown");
+		if(retval == NORMAL_READOUT)
+			return string("none");
 
-  }  else if (cmd=="extsig") {
-    externalSignalFlag flag=GET_EXTERNAL_SIGNAL_FLAG;
-    int is=-1;
-    if (sscanf(args[0],"extsig:%d",&is))
-      ;
-    else
-      return string("could not scan signal number ")+string(args[0]);
-	
-    if (action==PUT_ACTION) {
-      flag=myDet->externalSignalType(args[1]);
-      if (flag==GET_EXTERNAL_SIGNAL_FLAG)
-	return string("could not scan external signal mode ")+string(args[1]);
-    }
-    myDet->setOnline(ONLINE_FLAG);
-    
-    return myDet->externalSignalType(myDet->setExternalSignalFlags(flag,is));
+		if(retval & STORE_IN_RAM)
+			strcat(answer,"storeinram ");
+		if(retval & TOT_MODE)
+			strcat(answer,"tot ");
+		if(retval & CONTINOUS_RO)
+			strcat(answer,"continous ");
+		if(retval & PARALLEL)
+			strcat(answer,"parallel ");
+		if(retval & NONPARALLEL)
+			strcat(answer,"nonparallel ");
+		if(retval & SAFE)
+			strcat(answer,"safe ");
+		if(strlen(answer))
+			return string(answer);
 
-  } else
-    return string("could not decode flag ")+cmd;
+		return string("unknown");
+
+	}  else if (cmd=="extsig") {
+		externalSignalFlag flag=GET_EXTERNAL_SIGNAL_FLAG;
+		int is=-1;
+		if (sscanf(args[0],"extsig:%d",&is))
+			;
+		else
+			return string("could not scan signal number ")+string(args[0]);
+
+		if (action==PUT_ACTION) {
+			flag=myDet->externalSignalType(args[1]);
+			if (flag==GET_EXTERNAL_SIGNAL_FLAG)
+				return string("could not scan external signal mode ")+string(args[1]);
+		}
+		myDet->setOnline(ONLINE_FLAG);
+
+		return myDet->externalSignalType(myDet->setExternalSignalFlags(flag,is));
+
+	}  else if (cmd=="programfpga") {
+		if (action==GET_ACTION)
+			return string("cannot get");
+
+		if (narg<2)
+			return string("wrong usage: should specify programming file");
+		if(strstr(args[1],".pof")==NULL)
+			return string("wrong usage: should specify programming file with .pof extension");
+
+		string sval=string(args[1]);
+#ifdef VERBOSE
+		std::cout<< " programming file " << sval << std::endl;
+#endif
+		if(myDet->programFPGA(sval) == OK)
+			return string("programming successful");
+		return string("programming unsuccessful");
+	}
+	else
+		return string("could not decode flag ")+cmd;
 
 }
 
@@ -4344,6 +4365,7 @@ string slsDetectorCommand::helpAdvanced(int narg, char *args[], int action) {
 
     os << "extsig:i mode \t sets the mode of the external signal i. can be  \n \t \t \t off, \n \t \t \t gate_in_active_high, \n \t \t \t gate_in_active_low, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t ro_trigger_in_rising_edge, \n \t \t \t ro_trigger_in_falling_edge, \n \t \t \t gate_out_active_high, \n \t \t \t gate_out_active_low, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge, \n \t \t \t ro_trigger_out_rising_edge, \n \t \t \t ro_trigger_out_falling_edge" << std::endl;
     os << "flags mode \t sets the readout flags to mode. can be none, storeinram, tot, continous, parallel, nonparallel, safe, unknown" << std::endl;
+    os << "programfpga f \t programs the fpga with file f with .pof" << std::endl;
     
   }
   if (action==GET_ACTION || action==HELP_ACTION) {

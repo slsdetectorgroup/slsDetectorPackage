@@ -4008,8 +4008,16 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	  setTotalProgress();
 	}
 
+	//if eiger, rate corr on, a put statement, dr=32 &setting subexp or dr =16 & setting exptime, set ratecorr to update table
 	double r;
-	if((index == SUBFRAME_ACQUISITION_TIME) && (thisDetector->myDetectorType == EIGER)  && (t>=0) && getRateCorrection(r)){
+	if( (thisDetector->myDetectorType == EIGER) &&
+			 getRateCorrection(r) &&
+			 (t>=0) &&
+
+			(((index == SUBFRAME_ACQUISITION_TIME) && (thisDetector->dynamicRange == 32))||
+			((index == ACQUISITION_TIME) && (thisDetector->dynamicRange == 16)))
+
+			&& (t>=0) && getRateCorrection(r)){
 		setRateCorrection(r);
 	}
 
@@ -4514,8 +4522,12 @@ int slsDetector::setDynamicRange(int n){
     	  if (rateret==FAIL) {
     		  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
     		  std::cout<< "Detector returned error: " << mess << std::endl;
-    		  if(strstr(mess,"Rate Correction")!=NULL)
-    			  setErrorMask((getErrorMask())|(RATE_CORRECTION_NOT_32BIT));
+    		  if(strstr(mess,"Rate Correction")!=NULL){
+    			  if(strstr(mess,"32")!=NULL)
+    				  setErrorMask((getErrorMask())|(RATE_CORRECTION_NOT_32or16BIT));
+    			  else
+    				  setErrorMask((getErrorMask())|(COULD_NOT_SET_RATE_CORRECTION));
+    		  }
     	  }
       }
       controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
@@ -5089,7 +5101,7 @@ int slsDetector::setRateCorrection(double t){
 					if(strstr(mess,"default tau")!=NULL)
 						setErrorMask((getErrorMask())|(RATE_CORRECTION_NO_TAU_PROVIDED));
 					if(strstr(mess,"32")!=NULL)
-						setErrorMask((getErrorMask())|(RATE_CORRECTION_NOT_32BIT));
+						setErrorMask((getErrorMask())|(RATE_CORRECTION_NOT_32or16BIT));
 					else
 						setErrorMask((getErrorMask())|(COULD_NOT_SET_RATE_CORRECTION));
 				}
@@ -6366,6 +6378,197 @@ int slsDetector::writeSettingsFile(string fname, int imod, int* iodelay){
 
 };
 
+
+
+
+int slsDetector::programFPGA(string fname){
+	int ret=FAIL;
+
+	if(thisDetector->myDetectorType != JUNGFRAU){
+		std::cout << "Not implemented for this detector" << std::endl;
+		return FAIL;
+	}
+
+	//check if it exists
+	struct stat st;
+	if(stat(fname.c_str(),&st)){
+		std::cout << "Programming file does not exist" << endl;
+		setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+		return FAIL;
+	}
+
+	//create destination file name,replaces original filename with Jungfrau.rawbin
+	string destfname;
+	size_t found = fname.find_last_of("/\\");
+	if(found == string::npos)
+		destfname = "";
+	else
+		destfname = fname.substr(0,found+1);
+	destfname.append("Jungfrau_MCB.rawbin");
+
+
+#ifdef VERBOSE
+	std::cout << "Converting " << fname << " to " <<  destfname << std::endl;
+#endif
+	int filepos,x,y,i;
+	FILE* src = fopen(fname.c_str(),"rb");
+	FILE* dst = fopen(destfname.c_str(),"wb");
+	// Remove header (0...11C)
+	for (filepos=0; filepos < 0x11C; filepos++)
+		fgetc(src);
+	// Write 0x80 times 0xFF (0...7F)
+	for (filepos=0; filepos < 0x80; filepos++)
+		fputc(0xFF,dst);
+	// Swap bits and write to file
+	for (filepos=0x80; filepos < 0x1000000; filepos++)	{
+		x = fgetc(src);
+		if (x < 0) break;
+
+		y=0;
+		for (i=0; i < 8; i++)
+			y=y| (   (( x & (1<<i) ) >> i)    << (7-i)     );	// This swaps the bits
+
+		fputc(y,dst);
+	}
+	if (filepos < 0x1000000){
+		std::cout << "Could not convert programming file. EOF before end of flash" << std::endl;
+		setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+		return FAIL;
+	}
+#ifdef VERBOSE
+	std::cout << "File has been converted to "  <<  destfname << std::endl;
+#endif
+
+	//loading file to memory
+	FILE* fp = fopen(destfname.c_str(),"r");
+	if(fp == NULL){
+		std::cout << "Could not open rawbin file" << std::endl;
+		setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+		return FAIL;
+	}
+	if(fseek(fp,0,SEEK_END)){
+		std::cout << "Seek error in rawbin file" << std::endl;
+		setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+		return FAIL;
+	}
+	size_t filesize = ftell(fp);
+	if(filesize == -1){
+		std::cout << "Could not get length of rawbin file" << std::endl;
+		setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+		return FAIL;
+	}
+	rewind(fp);
+	char* fpgasrc = (char*)malloc(filesize+1);
+	if(fpgasrc == NULL){
+		std::cout << "Could not allocate size of program" << std::endl;
+		setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+		return FAIL;
+	}
+	if(fread(fpgasrc, sizeof(char), filesize, fp) != filesize){
+		std::cout << "Could not read rawbin file" << std::endl;
+		setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+		return FAIL;
+	}
+
+	if(fclose(fp)){
+		std::cout << "Could not close rawbin file" << std::endl;
+		setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+		return FAIL;
+	}
+#ifdef VERBOSE
+	std::cout << "Successfully loaded the rawbin file to program memory" << std::endl;
+#endif
+
+	const size_t maxprogramsize = 2 * 1024 *1024;
+	size_t unitprogramsize = 0;
+	int currentPointer = 0;
+	size_t totalsize = filesize;
+
+	int fnum=F_PROGRAM_FPGA;
+	char mess[MAX_STR_LENGTH]="";
+	int64_t retval = -1;
+#ifdef VERBOSE
+	std::cout<< "Sending programming binary to detector " << endl;
+#endif
+	if (setOnline(ONLINE_FLAG)==ONLINE_FLAG) {
+		if (connectControl() == OK){
+			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+			controlSocket->SendDataOnly(&filesize,sizeof(filesize));
+
+			//check opening error
+			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			if (ret==FAIL) {
+				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+				std::cout<< "Detector returned error: " << mess << std::endl;
+				setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+				filesize = 0;
+			}
+
+			if(ret!=FAIL){
+				std::cout<< "This can take awhile. Please be patient..." << endl;
+				printf("Erasing Flash:%d%%\r",0);
+				std::cout << flush;
+				//erasing takes 65 seconds, printing here (otherwise need threads in server-unnecessary)
+				int count = 66;
+				while(count>0){
+					usleep(1 * 1000 * 1000);
+					count--;
+					printf("Erasing Flash:%d%%\r",(int) (((double)(65-count)/65)*100));
+					std::cout << flush;
+				}
+				std::cout<<std::endl;
+				printf("Writing to Flash:%d%%\r",0);
+				std::cout << flush;
+			}
+
+			//sending program in parts of 2mb each
+			while(filesize > 0){
+
+				unitprogramsize = maxprogramsize;  //2mb
+				if(unitprogramsize > filesize) //less than 2mb
+					unitprogramsize = filesize;
+#ifdef VERBOSE
+				std::cout << "unitprogramsize:" << unitprogramsize << "\t filesize:" << filesize << std::endl;
+#endif
+				controlSocket->SendDataOnly(fpgasrc+currentPointer,unitprogramsize);
+				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret==FAIL) {
+					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Detector returned error: " << mess << std::endl;
+					setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+					//stops writing
+					break;
+				}
+				filesize-=unitprogramsize;
+				currentPointer+=unitprogramsize;
+
+				//print progress
+				printf("Writing to Flash:%d%%\r",(int) (((double)(totalsize-filesize)/totalsize)*100));
+				std::cout << flush;
+
+			}
+			std::cout<<std::endl;
+
+			//check ending error
+			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			if (ret==FAIL) {
+				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+				std::cout<< "Detector returned error: " << mess << std::endl;
+				setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+			}
+
+
+			disconnectControl();
+			if (ret==FORCE_UPDATE)
+				updateDetector();
+		}
+	}
+
+	//free resources
+	free(fpgasrc);
+
+	return ret;
+}
 
 
 

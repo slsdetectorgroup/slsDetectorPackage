@@ -50,7 +50,7 @@ int64_t Feb_Control_subframe_exposure_time_in_10nsec;
 double Feb_Control_exposure_period_in_sec;
 
 int64_t Feb_Control_RateTable_Tau_in_nsec = -1;
-int64_t Feb_Control_RateTable_Subexptime_in_nsec = -1;
+int64_t Feb_Control_RateTable_Period_in_nsec = -1;
 
 unsigned int   Feb_Control_trimbit_size;
 unsigned int* Feb_Control_last_downloaded_trimbits;
@@ -64,7 +64,7 @@ int Feb_control_master = 0;
 
 unsigned int Feb_Control_rate_correction_table[1024];
 double Feb_Control_rate_meas[16384];
-
+double ratemax=-1;
 
 void Module_Module(struct Module* mod,unsigned int number, unsigned int address_top){
 	unsigned int i;
@@ -1371,6 +1371,7 @@ int Feb_Control_SetExposureTime(double the_exposure_time_in_sec){
 	return 1;
 }
 double Feb_Control_GetExposureTime(){return Feb_Control_exposure_time_in_sec;}
+int64_t Feb_Control_GetExposureTime_in_nsec(){return (int64_t)(Feb_Control_exposure_time_in_sec*(1E9));}
 
 int Feb_Control_SetSubFrameExposureTime(int64_t the_subframe_exposure_time_in_10nsec){
 	Feb_Control_subframe_exposure_time_in_10nsec = the_subframe_exposure_time_in_10nsec;
@@ -1789,26 +1790,40 @@ int Feb_Control_PulseChip(int npulses){
 
 
 int64_t Feb_Control_Get_RateTable_Tau_in_nsec(){ return Feb_Control_RateTable_Tau_in_nsec;}
-int64_t Feb_Control_Get_RateTable_Subexptime_in_nsec(){ return Feb_Control_RateTable_Subexptime_in_nsec;}
+int64_t Feb_Control_Get_RateTable_Period_in_nsec(){ return Feb_Control_RateTable_Period_in_nsec;}
 
-//returns -1 if slope is too high
 int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec){
 
-	double sub_expure_time_in_sec = (double)(Feb_Control_GetSubFrameExposureTime())/(double)1e9;
+	//period = exptime if 16bit, period = subexptime if 32 bit
+	int dr = Feb_Control_GetDynamicRange();
+	double period_in_sec = (double)(Feb_Control_GetSubFrameExposureTime())/(double)1e9;
+	if(dr == 16)
+		period_in_sec = Feb_Control_GetExposureTime();
+
+
 	double tau_in_sec = (double)tau_in_Nsec/(double)1e9;
+	printf(" tau %lf %lf ", (double)tau_in_Nsec, (double) tau_in_sec); 
+
 	unsigned int np = 16384; //max slope 16 * 1024
 	double b0[1024];
 	double m[1024];
 
-	if(tau_in_sec<0||sub_expure_time_in_sec<0){
-		printf("Error tau %f and sub_expure_time %f must be greater than 0.\n", tau_in_sec, sub_expure_time_in_sec);
+	if(tau_in_sec<0||period_in_sec<0){
+		if(dr == 32)
+			printf("Error tau %lf and sub_exposure_time %lf must be greater than 0.\n", tau_in_sec, period_in_sec);
+		else
+			printf("Error tau %lf and exposure_time %lf must be greater than 0.\n", tau_in_sec, period_in_sec);
 		return 0;
 	}
 
+	cprintf(BLUE, "Changing Rate Correction Table tau:%0.8f sec, period:%f sec",tau_in_sec,period_in_sec);
+
 	printf("\tCalculating table for tau of %lld ns.\n", tau_in_Nsec);
 	int i;
-	for(i=0;i<np;i++)
-	  Feb_Control_rate_meas[i]  = i*exp(-i/sub_expure_time_in_sec*tau_in_sec);
+	for(i=0;i<np;i++){
+	  Feb_Control_rate_meas[i]  = i*exp(-i/period_in_sec*tau_in_sec);
+	  if(Feb_Control_rate_meas[i] > ratemax) ratemax= Feb_Control_rate_meas[i];
+	}
 
 	/*
 	  b  :  index/address of block ram/rate correction table
@@ -1827,13 +1842,11 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec){
 	*/
 	
 	int next_i=0;
+	double beforemax;
 	b0[0] = 0;
 	m[0]  = 1;
 	
-	for(i=0; i<1024; i++) 
-	  	Feb_Control_rate_correction_table[i]  =  65535;
-	
-		Feb_Control_rate_correction_table[0]  = (((int)(m[0]+0.5)&0xf)<<14) | ((int)(b0[0]+0.5)&0x3fff);
+	Feb_Control_rate_correction_table[0]  = (((int)(m[0]+0.5)&0xf)<<14) | ((int)(b0[0]+0.5)&0x3fff);
 
 	int b=0;
 	for(b=1;b<1024;b++){
@@ -1841,9 +1854,13 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec){
 			double s=0,sx=0,sy=0,sxx=0,sxy=0;
 			for(;;next_i++){
 			  if(next_i>=np){
+			    for(; b<1024; b++){
+			      if(beforemax>ratemax) b0[b] = beforemax;
+			      else b0[b] = ratemax;
+			      m[b]  = 15; 
+			      Feb_Control_rate_correction_table[b]  = (((int)(m[b]+0.5)&0xf)<<14) | ((int)(b0[b]+0.5)&0x3fff);
+			    }
 			    b=1024;
-			    b0[b] = 16383;
-			    m[b]  = 15; 
 			    break;
 			  }
 			  
@@ -1867,17 +1884,20 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec){
 			double delta = s*sxx - sx*sx;
 			b0[b] = (sxx*sy - sx*sxy)/delta;
 			m[b]  = (s*sxy  - sx*sy) /delta;
-			
+			beforemax= b0[b];
+
 			if(m[b]<0||m[b]>15){
 			  m[b]=15;
-			  b0[b]=16383;
+			  if(beforemax>ratemax) b0[b] = beforemax;
+			  else b0[b] = ratemax;
 			}
 			/*printf("After Loop  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  "
 			  "next_i: %d,\t  b: %d,\t  Feb_Control_rate_meas[next_i]: %f\n",
 			  s, sx, sy, sxx, sxy, next_i, b, Feb_Control_rate_meas[next_i]);*/
 			//	cout<<s<<"   "<<sx<<"   "<<sy<<"   "<<sxx<<"   "<<"   "<<sxy<<"   "<<delta<<"   "<<m[b]<<"    "<<b0[b]<<endl;
 		}else{
-		  b0[b] = 16383;
+		  if(beforemax>ratemax) b0[b] = beforemax;
+		  else b0[b] = ratemax;
 		  m[b]  = 15;
 		}
 		Feb_Control_rate_correction_table[b]  = (((int)(m[b]+0.5)&0xf)<<14) | ((int)(b0[b]+0.5)&0x3fff);
@@ -1886,11 +1906,11 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec){
 
 	if(Feb_Control_SetRateCorrectionTable(Feb_Control_rate_correction_table)){
 		Feb_Control_RateTable_Tau_in_nsec = tau_in_Nsec;
-		Feb_Control_RateTable_Subexptime_in_nsec = Feb_Control_GetSubFrameExposureTime();
+		Feb_Control_RateTable_Period_in_nsec = period_in_sec;
 		return 1;
 	}else{
 		Feb_Control_RateTable_Tau_in_nsec = -1;
-		Feb_Control_RateTable_Subexptime_in_nsec = -1;
+		Feb_Control_RateTable_Period_in_nsec = -1;
 		return 0;
 	}
 
@@ -1943,7 +1963,7 @@ int Feb_Control_GetRateCorrectionVariable(){ return (Feb_Control_subFrameMode&DA
 void Feb_Control_SetRateCorrectionVariable(int activate_rate_correction){
   if(activate_rate_correction){
 	  Feb_Control_subFrameMode |= DAQ_NEXPOSURERS_ACTIVATE_RATE_CORRECTION;
-	  printf("Rate correction activated. Note: the rate correction applied only when run in auto summing mode.\n");
+	  printf("Rate correction activated.\n");
   }else{
 	  Feb_Control_subFrameMode &= ~DAQ_NEXPOSURERS_ACTIVATE_RATE_CORRECTION;
 	  printf("Rate correction deactivated.\n");
@@ -1958,11 +1978,12 @@ int Feb_Control_PrintCorrectedValues(){
 		lsb   = i&3;
 		base  = Feb_Control_rate_correction_table[i>>2] & 0x3fff;
 		slope = ((Feb_Control_rate_correction_table[i>>2] & 0x3c000) >> 14);
-		delta = slope*lsb;
-		corr  = delta+base;
-		if(base==16383 && slope==15) corr=4095;
 		
-		printf("Readout Input: %d,\tBase:%d,\tSlope:%d,\tLSB:%d,\tDelta:%d\tResult:%d\tReal:%f\n",
+		delta = slope*lsb;
+		corr  = delta+base;		
+		if(slope==15) corr= 3*slope+base;
+
+		printf("Readout Input: %d,\tBase:%d,\tSlope:%d,\tLSB:%d,\tDelta:%d\tResult:%d\tReal:%lf\n",
 		       i, base, slope, lsb, delta, corr, Feb_Control_rate_meas[i]);
 	}
 	return 1;

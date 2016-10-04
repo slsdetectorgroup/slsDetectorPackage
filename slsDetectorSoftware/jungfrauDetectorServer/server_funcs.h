@@ -95,4 +95,6 @@ int set_roi(int);
 int set_ctb_pattern(int);
 
 int write_adc_register(int);;
+
+int program_fpga(int);
 #endif

@@ -331,6 +331,7 @@ int function_table() {
   flist[F_CALIBRATE_PEDESTAL]=&calibrate_pedestal;
   flist[F_SET_CTB_PATTERN]=&set_ctb_pattern;
   flist[F_WRITE_ADC_REG]=&write_adc_register;
+  flist[F_PROGRAM_FPGA]=&program_fpga;
   return OK;
 }
 
@@ -3500,4 +3501,130 @@ int write_adc_register(int file_des) {
   /*return ok/fail*/
   return ret; 
 
+}
+
+
+
+
+
+int program_fpga(int file_des) {
+	int ret=OK;
+	int n;
+	const size_t maxprogramsize = 2 * 1024 *1024;
+	size_t unitprogramsize = 0;
+	int currentPointer = 0;
+
+	char* fpgasrc = (char*)malloc(maxprogramsize);
+	size_t filesize = 0;
+	size_t totalsize = 0;
+
+	FILE* fp = NULL;
+
+	sprintf(mess,"Program FPGA\n");
+
+	//filesize
+	n = receiveDataOnly(file_des,&filesize,sizeof(filesize));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+	totalsize = filesize;
+#ifdef VERY_VERBOSE
+	printf("\n\n Total size is:%d\n",totalsize);
+#endif
+
+	//opening file pointer to flash and telling FPGA to not touch flash
+	if(startWritingFPGAprogram(&fp) != OK){
+		sprintf(mess,"Could not write to flash. Error at startup.\n");
+		cprintf(RED,"%s",mess);
+		ret=FAIL;
+		filesize = 0;
+	}
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret==FAIL)
+		n += sendDataOnly(file_des,mess,sizeof(mess));
+
+
+	//erasing flash
+	if(ret != FAIL)
+		eraseFlash();
+
+
+	//writing to flash part by part
+	while(filesize){
+
+		unitprogramsize = maxprogramsize;  //2mb
+		if(unitprogramsize > filesize) //less than 2mb
+			unitprogramsize = filesize;
+#ifdef VERY_VERBOSE
+		printf("unit size to receive is:%d\n",unitprogramsize);
+		printf("filesize:%d currentpointer:%d\n",filesize,currentPointer);
+#endif
+		//receive
+		n = receiveDataOnly(file_des,fpgasrc,unitprogramsize);
+		if (n < 0) {
+			sprintf(mess,"Error reading from socket\n");
+			ret=FAIL;
+		}
+
+
+		if(!(unitprogramsize - filesize)){
+			fpgasrc[unitprogramsize]='\0';
+			filesize-=unitprogramsize;
+			unitprogramsize++;
+		}else
+			filesize-=unitprogramsize;
+
+
+		if (ret==OK) {
+			if (differentClients==1 && lockStatus==1) {
+				ret=FAIL;
+				sprintf(mess,"Detector locked by %s\n",lastClientIP);
+			} else{
+				ret = writeFPGAProgram(fpgasrc,unitprogramsize,fp);
+			}
+		}
+
+		if(ret!=FAIL){
+			if (differentClients)
+				ret=FORCE_UPDATE;
+		}
+
+		/* send answer */
+		/* send OK/failed */
+		n = sendDataOnly(file_des,&ret,sizeof(ret));
+		if (ret==FAIL) {
+			n += sendDataOnly(file_des,mess,sizeof(mess));
+			cprintf(RED,"Failure: Breaking out of program receiving\n");
+			break;
+		}
+
+		//print progress
+		printf("Writing to Flash:%d%%\r",(int) (((double)(totalsize-filesize)/totalsize)*100) );
+		fflush(stdout);
+
+	}
+	printf("\n");
+
+	//closing file pointer to flash and informing FPGA
+	if(stopWritingFPGAprogram(fp) == FAIL){
+		sprintf(mess,"Could not write to flash. Error at end.\n");
+		cprintf(RED,"%s",mess);
+		ret=FAIL;
+	}
+
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret==FAIL)
+		n += sendDataOnly(file_des,mess,sizeof(mess));
+
+
+	//free resources
+	free(fpgasrc);
+	if(fp!=NULL)
+		fclose(fp);
+#ifdef VERY_VERBOSE
+	printf("Done with program receiving command\n");
+#endif
+	/*return ok/fail*/
+	return ret;
 }

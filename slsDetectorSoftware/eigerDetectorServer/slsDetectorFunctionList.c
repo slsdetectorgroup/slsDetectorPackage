@@ -130,7 +130,7 @@ int initDetector(){
 		detectorGain[i] = default_gain_values[(int)STANDARD];
 	for(i=0;i<NOFFSET;i++)
 		detectorOffset[i] = default_offset_values[(int)STANDARD];
-	thisSettings = STANDARD;/**UNITIALIZED*/
+	thisSettings = UNINITIALIZED;
 	/*sChan=noneSelected;
   sChip=noneSelected;
   sMod=noneSelected;
@@ -533,12 +533,29 @@ int64_t setRateCorrection(int64_t custom_tau_in_nsec){//in nanosec (will never b
 		return 0;
 	}
 
+	//when dynamic range changes, use old tau
+	else if(custom_tau_in_nsec == -1)
+		custom_tau_in_nsec = Feb_Control_Get_RateTable_Tau_in_nsec();
+
+
+	int dr = Feb_Control_GetDynamicRange();
+	//get period = subexptime if 32bit , else period = exptime if 16 bit
+	int64_t actual_period = Feb_Control_GetSubFrameExposureTime(); //already in nsec
+	if(dr == 16)
+		actual_period = Feb_Control_GetExposureTime_in_nsec();
+
+	int64_t ratetable_period_in_nsec = Feb_Control_Get_RateTable_Period_in_nsec();
 	int64_t tau_in_nsec = Feb_Control_Get_RateTable_Tau_in_nsec();
-	int64_t subexp_in_nsec = Feb_Control_Get_RateTable_Subexptime_in_nsec();
+
+
 	//same setting
-	if((tau_in_nsec == custom_tau_in_nsec) && (subexp_in_nsec == Feb_Control_GetSubFrameExposureTime())){
+	if((tau_in_nsec == custom_tau_in_nsec) && (ratetable_period_in_nsec == actual_period)){
+		if(dr == 32)
 		printf("Rate Table already created before: Same Tau %lldns, Same subexptime %lldns\n",
-				tau_in_nsec,subexp_in_nsec);
+				tau_in_nsec,ratetable_period_in_nsec);
+		else
+			printf("Rate Table already created before: Same Tau %lldns, Same exptime %lldns\n",
+					tau_in_nsec,ratetable_period_in_nsec);
 	}
 	//different setting, calculate table
 	else{
@@ -731,7 +748,9 @@ int setThresholdEnergy(int ev, int imod){
 }
 
 enum detectorSettings setSettings(enum detectorSettings sett, int imod){
-	if(sett != GET_SETTINGS)
+	if(sett == UNINITIALIZED){
+		return thisSettings;
+	}if(sett != GET_SETTINGS)
 		thisSettings = sett;
 	return thisSettings;
 }

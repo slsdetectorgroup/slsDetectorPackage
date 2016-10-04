@@ -184,6 +184,11 @@ int setDac(int dacnum,int dacvalue);
 ROI *setROI(int nroi,ROI* arg,int *retvalsize, int *ret);
 int getChannels();
 
+void eraseFlash();
+int startWritingFPGAprogram(FILE** filefp);
+int stopWritingFPGAprogram(FILE* filefp);
+int writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp);
+
 /*
 
 u_int32_t setNBits(u_int32_t);

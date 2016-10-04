@@ -491,6 +491,12 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual int loadSettingsFile(string fname, int imod=-1)=0;
 
+  /** programs FPGA with pof file
+      \param fname file name
+      \returns OK or FAIL
+  */
+  virtual int programFPGA(string fname)=0;
+
 
 
   /** saves the modules settings/trimbits writing to  a file

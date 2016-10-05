@@ -95,12 +95,9 @@ void UDPStandardImplementation::deleteMembers(){
 	if(threadStarted){
 		createListeningThreads(true);
 		createWriterThreads(true);
-		threadStarted = false;
 	}
-	if(zmqThreadStarted){
+	if(zmqThreadStarted)
 		createDataCallbackThreads(true);
-		zmqThreadStarted = false;
-	}
 }
 
 void UDPStandardImplementation::deleteFilter(){
@@ -338,7 +335,6 @@ int UDPStandardImplementation::setupFifoStructure(){
 	if(threadStarted){
 		createListeningThreads(true);
 		createWriterThreads(true);
-		threadStarted = false;
 	}
 
 
@@ -456,16 +452,6 @@ void UDPStandardImplementation::setFileName(const char c[]){
 			detID = 0;
 	}
 
-	if(dataStreamEnable && (strcmp(oldfilename,fileName))){
-		if(zmqThreadStarted)
-			createDataCallbackThreads(true);
-		numberofDataCallbackThreads = MAX_NUMBER_OF_LISTENING_THREADS;
-		if(createDataCallbackThreads() == FAIL){
-			cprintf(BG_RED,"Error: Could not create data callback threads\n");
-		}
-	}
-
-
 	FILE_LOG(logINFO) << "File name:" << fileName;
 }
 
@@ -576,21 +562,17 @@ int UDPStandardImplementation::setFrameToGuiFrequency(const uint32_t freq){
 uint32_t UDPStandardImplementation::setDataStreamEnable(const uint32_t enable){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
-
-	int olddatasend = dataStreamEnable;
 	dataStreamEnable = enable;
 	FILE_LOG(logINFO) << "Data Send to Gui: " << dataStreamEnable;
 
-	//if there is a change
-	if(olddatasend != dataStreamEnable){
-		if(zmqThreadStarted)
-			createDataCallbackThreads(true);
+	//data sockets have to be created again as the client ones are
+	if(zmqThreadStarted)
+		createDataCallbackThreads(true);
 
-		if(dataStreamEnable){
-			numberofDataCallbackThreads = MAX_NUMBER_OF_LISTENING_THREADS;
-			if(createDataCallbackThreads() == FAIL){
-				cprintf(BG_RED,"Error: Could not create data callback threads\n");
-			}
+	if(dataStreamEnable){
+		numberofDataCallbackThreads = MAX_NUMBER_OF_LISTENING_THREADS;
+		if(createDataCallbackThreads() == FAIL){
+			cprintf(BG_RED,"Error: Could not create data callback threads\n");
 		}
 	}
 
@@ -1690,7 +1672,8 @@ void UDPStandardImplementation::startDataCallback(){
 	switch(myDetectorType){
 	case EIGER:
 		headersize = EIGER_HEADER_SIZE; break;
-
+	default:
+		headersize = 0; break;
 	}
 
 

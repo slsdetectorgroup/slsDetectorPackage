@@ -63,7 +63,7 @@ using namespace std;
 #define RATE_CORRECTION_NO_TAU_PROVIDED		0x0000000001000000ULL
 #define PROGRAMMING_ERROR					0x0000000002000000ULL
 #define RECEIVER_ACTIVATE					0x0000000004000000ULL
-#define DATA_STREAMING_IN_RECEIVER			0x0000000008000000ULL
+#define DATA_STREAMING						0x0000000008000000ULL
 
 //											0x00000000FFFFFFFFULL
 /** @short class returning all error messages for error mask */
@@ -207,8 +207,8 @@ public:
 		if(slsErrorMask&RECEIVER_ACTIVATE)
 			retval.append("Could not activate/deactivate receiver\n");
 
-		if(slsErrorMask&DATA_STREAMING_IN_RECEIVER)
-			retval.append("Could not set/reset Data Streaming in Receiver\n");
+		if(slsErrorMask&DATA_STREAMING)
+			retval.append("Could not set/reset Data Streaming\n");
 
 
 

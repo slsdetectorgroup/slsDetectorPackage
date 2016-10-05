@@ -653,11 +653,6 @@ virtual int resetFramesCaught()=0;
  */
 virtual int createReceivingDataThreads(bool destroy = false)=0;
 
-/**
- * Start Receiving Data Threads
- * @return OK or FAIL
- */
-virtual int startReceivingData()=0;
 
 /** Reads frames from receiver through a constant socket
 */

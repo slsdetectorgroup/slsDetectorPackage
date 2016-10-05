@@ -7720,7 +7720,7 @@ int slsDetector::enableDataStreamingFromReceiver(int enable){
 
 	if ((enable > 0) && (retval != enable)){
 		cout << "could not set data streaming in receiver to " << enable <<" Returned:" << retval << endl;
-		setErrorMask((getErrorMask())|(RECEIVER_READ_FREQUENCY));
+		setErrorMask((getErrorMask())|(DATA_STREAMING));
 	}
 	return retval;
 }

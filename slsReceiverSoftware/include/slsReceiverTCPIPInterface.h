@@ -210,6 +210,10 @@ private:
 	/** set fifo depth */
 	int set_fifo_depth();
 
+	/** activate/ deactivate */
+	int set_activate();
+
+
 	//General Functions
 	/** Locks Receiver */
 	int	lock_receiver();

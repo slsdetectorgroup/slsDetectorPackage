@@ -49,6 +49,7 @@ void UDPBaseImplementation::initializeMembers(){
 
 	//***receiver parameters***
 	status = IDLE;
+	activated = true;
 
 	//***connection parameters***
 	strcpy(eth,"");
@@ -190,7 +191,7 @@ uint32_t UDPBaseImplementation::getFifoDepth() const{	FILE_LOG(logDEBUG) << __AT
 /***receiver status***/
 slsReceiverDefs::runStatus UDPBaseImplementation::getStatus() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return status;}
 
-
+int UDPBaseImplementation::getActivate() const{FILE_LOG(logDEBUG) << __AT__ << " starting"; return activated;}
 
 
 /*************************************************************************
@@ -463,6 +464,17 @@ void UDPBaseImplementation::closeFile(int ithread){
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
 }
 
+
+int UDPBaseImplementation::setActivate(int enable){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	if(enable != -1){
+		activated = enable;
+		FILE_LOG(logINFO) << "Activation: " << stringEnable(activated);
+	}
+
+	return activated;
+}
 
 /***callback functions***/
 void UDPBaseImplementation::registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){

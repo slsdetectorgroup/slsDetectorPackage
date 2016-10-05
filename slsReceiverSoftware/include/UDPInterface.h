@@ -258,6 +258,13 @@ class UDPInterface {
 	 */
 	virtual slsReceiverDefs::runStatus getStatus() const = 0;
 
+	/**
+	 * Get activate
+	 * If deactivated, receiver will write dummy packets 0xFF
+	 * (as it will receive nothing from detector)
+	 * @return 0 for deactivated, 1 for activated
+	 */
+	virtual int getActivate() const = 0;
 
 
 
@@ -488,6 +495,13 @@ class UDPInterface {
 	 */
 	virtual void closeFile(int ithread = 0) = 0;
 
+
+	/**
+	 * Activate / Deactivate Receiver
+	 * If deactivated, receiver will write dummy packets 0xFF
+	 * (as it will receive nothing from detector)
+	 */
+	virtual int setActivate(int enable = -1) = 0;
 
 	//***callback functions***
 	/**

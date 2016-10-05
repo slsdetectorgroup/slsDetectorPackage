@@ -97,6 +97,10 @@ void UDPStandardImplementation::deleteMembers(){
 		createWriterThreads(true);
 		threadStarted = false;
 	}
+	if(zmqThreadStarted){
+		createDataCallbackThreads(true);
+		zmqThreadStarted = false;
+	}
 }
 
 void UDPStandardImplementation::deleteFilter(){
@@ -452,7 +456,6 @@ void UDPStandardImplementation::setFileName(const char c[]){
 			detID = 0;
 	}
 
-
 	if(dataStreamEnable && (strcmp(oldfilename,fileName))){
 		if(zmqThreadStarted)
 			createDataCallbackThreads(true);
@@ -576,6 +579,8 @@ uint32_t UDPStandardImplementation::setDataStreamEnable(const uint32_t enable){
 
 	int olddatasend = dataStreamEnable;
 	dataStreamEnable = enable;
+	FILE_LOG(logINFO) << "Data Send to Gui: " << dataStreamEnable;
+
 	//if there is a change
 	if(olddatasend != dataStreamEnable){
 		if(zmqThreadStarted)
@@ -588,9 +593,6 @@ uint32_t UDPStandardImplementation::setDataStreamEnable(const uint32_t enable){
 			}
 		}
 	}
-
-	FILE_LOG(logINFO) << "Data Send to Gui: " << dataStreamEnable;
-
 
 	return OK;
 }
@@ -1968,7 +1970,7 @@ void UDPStandardImplementation::startListening(){
 
 
 			//udpsocket doesnt exist
-			if ((status == TRANSMITTING)||(rc == 0 && activated == 0)){
+			if(activated && udpSocket[ithread] == NULL){
 				FILE_LOG(logERROR) << "Listening_Thread " << ithread << ": UDP Socket not created or shut down earlier";
 				stopListening(ithread,0);
 				continue;
@@ -1981,7 +1983,7 @@ void UDPStandardImplementation::startListening(){
 			if((!measurementStarted) && (rc > 0))
 				startFrameIndices(ithread);
 			//problem in receiving or end of acquisition
-			if (status == TRANSMITTING){
+			if (status == TRANSMITTING||(rc == 0 && activated == 0)){
 				stopListening(ithread,rc);
 				continue;
 			}
@@ -2040,20 +2042,25 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 
 
 	if(!activated){
+
 		//cSize = 0 for deactivated
 		int framestoclone = 0;
+		//first
+		if(deactivatedFrameNumber[ithread]==0)
+			deactivatedFrameNumber[ithread]++;
 		//done
-		if(deactivatedFrameNumber[ithread] == numberOfFrames)
+		if(deactivatedFrameNumber[ithread] == (numberOfFrames+1))
 			return 0;
 		//last
-		if((deactivatedFrameNumber[ithread] + deactivatedFrameIncrement) > numberOfFrames)
-			framestoclone = numberOfFrames - deactivatedFrameNumber[ithread];
+		if((deactivatedFrameNumber[ithread] + deactivatedFrameIncrement) > (numberOfFrames+1))
+			framestoclone = (numberOfFrames+1) - deactivatedFrameNumber[ithread];
 		//in progress
 		else
 			framestoclone = deactivatedFrameIncrement;
 
 		//copy dummy packets
-		memset(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS, 0xFF,framestoclone*packetsPerFrame*onePacketSize);
+		receivedSize = framestoclone*packetsPerFrame*onePacketSize;
+		memset(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS, 0xFF,receivedSize);
 
 		//set fnum, pnum and deactivatedpacket label
 		eiger_packet_header_t* header;
@@ -2061,24 +2068,28 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 		int pnum=0;
 		//loop by each packet
 		for(int offset=HEADER_SIZE_NUM_TOT_PACKETS;
-				offset<framestoclone*packetsPerFrame*onePacketSize;
+				offset<receivedSize;
 				offset+=onePacketSize){
 			header = (eiger_packet_header_t*)(buffer[ithread] + offset);
 			footer = (eiger_packet_footer_t*)(buffer[ithread] + offset + footerOffset);
-			*( (uint64_t*) footer) = ++deactivatedFrameNumber[ithread];
+			*( (uint64_t*) footer) = deactivatedFrameNumber[ithread];
 			*( (uint16_t*) footer->packetNumber) = ++pnum;
 			*( (uint16_t*) header->missingPacket) = deactivatedPacketValue;
 #ifdef MANUALDEBUG
-			cprintf(GREEN,"thread:%d pnum:%d fnum:%d\n",
-					ithread,
-					(*( (uint16_t*) footer->packetNumber)),
-					(uint32_t)(*( (uint64_t*) footer)));
+			if(!ithread){
+				cprintf(GREEN,"thread:%d pnum:%d fnum:%d\n",
+						ithread,
+						(*( (uint16_t*) footer->packetNumber)),
+						(uint32_t)(*( (uint64_t*) footer)));
+			}
 #endif
-			if(pnum == packetsPerFrame)
+			if(pnum == packetsPerFrame){
 				pnum = 0;
+				deactivatedFrameNumber[ithread]++;
+			}
 		}
 
-		return framestoclone*onePacketSize;
+		return receivedSize;
 	}
 
 

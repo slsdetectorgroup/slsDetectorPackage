@@ -877,7 +877,7 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 		ret=FAIL;
 	}
 	else{
-		if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+		if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING || receiverBase->getStatus()==RUN_FINISHED){
 			receiverBase->stopReceiver();
 		}
 		s = receiverBase->getStatus();

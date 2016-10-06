@@ -5536,12 +5536,13 @@ int multiSlsDetector::setReadReceiverFrequency(int getFromReceiver, int freq){
 int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
 
 	if(enable >= 0){
+
 		//destroy data threads
 		if(threadStarted)
 			createReceivingDataThreads(true);
 
-		//create data threads if enable is 1
-		if(enable == 1)
+		//create data threads
+		if(enable > 0){
 			if(createReceivingDataThreads() == FAIL){
 				std::cout << "Could not create data threads in client. Aborting creating data threads in receiver" << std::endl;
 				//only for the first det as theres no general one
@@ -5549,24 +5550,25 @@ int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
 				detectors[0]->setErrorMask((detectors[0]->getErrorMask())|(DATA_STREAMING));
 				return -1;
 			}
-	}
-
-
-	int ret=-100, ret1;
-	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
-		if (detectors[idet]) {
-			ret1=detectors[idet]->enableDataStreamingFromReceiver(enable);
-			if(detectors[idet]->getErrorMask())
-				setErrorMask(getErrorMask()|(1<<idet));
-			if (ret==-100)
-				ret=ret1;
-			else if (ret!=ret1)
-				ret=-1;
 		}
+
+
+		int ret=-100, ret1;
+		for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+			if (detectors[idet]) {
+				ret1=detectors[idet]->enableDataStreamingFromReceiver(enable);
+				if(detectors[idet]->getErrorMask())
+					setErrorMask(getErrorMask()|(1<<idet));
+				if (ret==-100)
+					ret=ret1;
+				else if (ret!=ret1)
+					ret=-1;
+			}
+		}
+
 	}
-
-
-	return ret;
+	cprintf(BLUE,"threadStarted:%d\n",threadStarted);
+	return threadStarted;
 }
 
 int multiSlsDetector::enableReceiverCompression(int i){

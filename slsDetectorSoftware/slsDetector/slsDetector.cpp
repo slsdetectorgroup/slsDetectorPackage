@@ -5555,6 +5555,7 @@ char* slsDetector::setReceiver(string receiverIP){
 		std::cout << "frame number:" << thisDetector->timerValue[FRAME_NUMBER] << endl;
 		std::cout << "dynamic range:" << thisDetector->dynamicRange << endl << endl;
 		std::cout << "10GbE:" << thisDetector->tenGigaEnable << endl << endl;
+		std::cout << "dataStreaming:" << enableDataStreamingFromReceiver(-1) << endl << endl;
 /** enable compresison, */
 #endif
 		if(setDetectorType()!= GENERIC){
@@ -5579,6 +5580,8 @@ char* slsDetector::setReceiver(string receiverIP){
 			setTimer(FRAME_NUMBER,thisDetector->timerValue[FRAME_NUMBER]);
 			setDynamicRange(thisDetector->dynamicRange);
 			activate(-1);
+			std::cout << "***********************************dataStreaming:" << parentDet->enableDataStreamingFromReceiver(-1) << endl << endl;
+			parentDet->enableDataStreamingFromReceiver(parentDet->enableDataStreamingFromReceiver(-1));
 			//set scan tag
 			setUDPConnection();
 			if(thisDetector->myDetectorType == EIGER)

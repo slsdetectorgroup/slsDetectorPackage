@@ -529,6 +529,9 @@ void qTabActions::Refresh(){
 #ifdef VERBOSE
 	cout << "**Updated all action widgets: " << endl << endl;
 #endif
+
+	myDet->enableDataStreamingFromReceiver(1);
+
 	qDefs::checkErrorMessage(myDet,"qTabActions::Refresh");
 }
 

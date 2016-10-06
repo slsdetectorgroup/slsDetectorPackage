@@ -5014,13 +5014,12 @@ int multiSlsDetector::createReceivingDataThreads(bool destroy){
 #endif
 		//reset current index
 		currentThreadIndex = -1;
-cout<<"numreadouts:"<<numReadouts<<endl;
-		for(int i = 0; i < 1;++i){//numReadouts; ++i){
+		for(int i = 0; i < numReadouts; ++i){
 			sem_init(&sem_singlewait[i],1,0);
 			sem_init(&sem_singledone[i],1,0);
 			threadStarted = false;
 			currentThreadIndex = i;
-			if(pthread_create(&receivingDataThreads[i], NULL,startReceivingDataThread, (void*) this)){
+			if(pthread_create(&receivingDataThreads[i], NULL,staticstartReceivingDataThread, (void*) this)){
 				cprintf(RED, "Could not create receiving data thread with index %d\n",i);
 				return FAIL;
 			}
@@ -5037,9 +5036,9 @@ cout<<"numreadouts:"<<numReadouts<<endl;
 
 
 
-void* multiSlsDetector::startReceivingDataThread(void* this_pointer){
-	//((multiSlsDetector*)this_pointer)->startReceivingDataThread();
-	while(true);
+void* multiSlsDetector::staticstartReceivingDataThread(void* this_pointer){
+	((multiSlsDetector*)this_pointer)->startReceivingDataThread();
+	//while(true);
 
 	return this_pointer;
 }
@@ -5048,25 +5047,11 @@ void* multiSlsDetector::startReceivingDataThread(void* this_pointer){
 void multiSlsDetector::startReceivingDataThread(){
 
 	int ithread = currentThreadIndex;		//set current thread value  index
-	cprintf(BLUE,"thread created %d\n",ithread);
-
-	//number of readouts
-	int numReadoutPerDetector = 1;
-	bool jungfrau = false;
-	if(getDetectorsType() == EIGER){
-		numReadoutPerDetector = 2;
-	}else if(getDetectorsType() == JUNGFRAU)
-		jungfrau = true;
 
 	//server details
-	char hostname[100];
-	int portno;
-	int singleDatabytes = detectors[ithread/numReadoutPerDetector]->getDataBytes();
-	int nel=(singleDatabytes/numReadoutPerDetector)/sizeof(int);
-	portno = DEFAULT_ZMQ_PORTNO + (ithread);
-	sprintf(hostname, "%s%d", "tcp://127.0.0.1:",portno);
-	cout << "ZMQ Client of " << ithread << " at " << hostname << endl;
-
+	char hostname[100] = "tcp://127.0.0.1:";
+	int portno = DEFAULT_ZMQ_PORTNO + ithread;
+	sprintf(hostname,"%s%d",hostname,portno);
 
 	//socket details
 	zmq_msg_t message;
@@ -5075,11 +5060,23 @@ void multiSlsDetector::startReceivingDataThread(){
 	context = zmq_ctx_new();
 	zmqsocket = zmq_socket(context, ZMQ_PULL);
 	zmq_connect(zmqsocket, hostname);
-	threadStarted = true;					//let calling function know thread started and obtained current
+	cout << "ZMQ Client of " << ithread << " at " << hostname << endl;
+	cprintf(BLUE,"%d Created socket\n",ithread);
 
 	//initializations
+	int numReadoutPerDetector = 1;
+	bool jungfrau = false;
+	if(getDetectorsType() == EIGER){
+		numReadoutPerDetector = 2;
+	}else if(getDetectorsType() == JUNGFRAU)
+		jungfrau = true;
+	int singleDatabytes = detectors[ithread/numReadoutPerDetector]->getDataBytes();
+	int nel=(singleDatabytes/numReadoutPerDetector)/sizeof(int);
 	singleframe[ithread]=new int[nel];
 	int len,idet = 0;
+
+	threadStarted = true;					//let calling function know thread started and obtained current
+
 
 	//infinite loop, exited only (if gui restarted/ enabledatastreaming called)
 	while(true){
@@ -5151,33 +5148,33 @@ void multiSlsDetector::startReceivingDataThread(){
 			//#endif
 			zmq_msg_close(&message);
 			singleframe[ithread] = NULL;
-			sem_post(&sem_singledone[ithread]);	//let multi know is ready
-			break;
+			//break;
 		}
-		//actual data
-		//cout << ithread << "data " << endl;
-		memcpy((char*)(singleframe[ithread]),(char*)zmq_msg_data(&message),singleDatabytes/numReadoutPerDetector);
+		if(singleframe[ithread]!= NULL){
+			//actual data
+			//cout << ithread << "data " << endl;
+			memcpy((char*)(singleframe[ithread]),(char*)zmq_msg_data(&message),singleDatabytes/numReadoutPerDetector);
 
 
-		//jungfrau masking adcval
-		if(jungfrau){
-			for(unsigned int i=0;i<nel;i++){
-				singleframe[ithread][i] = (singleframe[ithread][i] & 0x3FFF3FFF);
+			//jungfrau masking adcval
+			if(jungfrau){
+				for(unsigned int i=0;i<nel;i++){
+					singleframe[ithread][i] = (singleframe[ithread][i] & 0x3FFF3FFF);
+				}
 			}
 		}
-
 		sem_post(&sem_singledone[ithread]);//let multi know is ready
 		zmq_msg_close(&message); // close the message
 	}
 
-
+	cprintf(RED,"%d Closing socket\n",ithread);
 	//close socket
 	zmq_disconnect(zmqsocket, hostname);
 	zmq_close(zmqsocket);
 	zmq_ctx_destroy(context);
 
 #ifdef DEBUG
-			cprintf(MAGENTA,"Receiving Data Thread %d:Goodbye!\n",ithread);
+	cprintf(MAGENTA,"Receiving Data Thread %d:Goodbye!\n",ithread);
 #endif
 
 }

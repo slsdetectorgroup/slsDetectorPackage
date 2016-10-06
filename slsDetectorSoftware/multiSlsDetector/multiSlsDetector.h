@@ -1377,7 +1377,7 @@ private:
 	 * Static function - Starts Data Thread of this object
 	 * @param this_pointer pointer to this object
 	 */
-	static void* startReceivingDataThread(void *this_pointer);
+	static void* staticstartReceivingDataThread(void *this_pointer);
 
 	/**
 	 * Thread that receives data packets from receiver

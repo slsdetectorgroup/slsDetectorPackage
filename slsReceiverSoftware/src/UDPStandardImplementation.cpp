@@ -1665,7 +1665,7 @@ void UDPStandardImplementation::startDataCallback(){
 	char hostName[100] = "tcp://127.0.0.1:";
 	int portno = DEFAULT_ZMQ_PORTNO + (detID*2+ithread);
 	sprintf(hostName,"%s%d",hostName,portno);
-	FILE_LOG(logINFO) << "Thread" << ithread << ": ZMQ Server at " << hostName;
+
 
 
 	int headersize=0;
@@ -1700,6 +1700,7 @@ void UDPStandardImplementation::startDataCallback(){
 		int val = -1;
 		zmq_setsockopt(zmqsocket, ZMQ_LINGER, &val,sizeof(val)); // wait for the unsent packets  before closing socket
 		zmq_bind(zmqsocket,hostName);		// bind
+		FILE_LOG(logINFO) << "Thread" << ithread << ": ZMQ Server at " << hostName;
 
 		//let calling function know thread started and obtained current (after sockets created)
 		if(!zmqThreadStarted)

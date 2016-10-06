@@ -4674,7 +4674,8 @@ string multiSlsDetector::checkReceiverOnline() {
 string multiSlsDetector::setFilePath(string s) {
 
 	string ret="errorerror", ret1;
-	if(!s.empty()){
+	//if the sls file paths are different, it should be realized by always using setfilepath even if string empty
+	//if(!s.empty()){
 
 		for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
 			if (detectors[idet]) {
@@ -4688,7 +4689,7 @@ string multiSlsDetector::setFilePath(string s) {
 			}
 		}
 		fileIO::setFilePath(ret);
-	}
+	//}
 
 	return fileIO::getFilePath();
 }

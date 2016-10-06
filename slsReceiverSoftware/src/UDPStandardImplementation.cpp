@@ -1666,6 +1666,13 @@ void UDPStandardImplementation::startDataCallback(){
 	int portno = DEFAULT_ZMQ_PORTNO + (detID*2+ithread);
 	sprintf(hostName,"%s%d",hostName,portno);
 
+	//socket details
+	void *context = zmq_ctx_new();
+	void *zmqsocket = zmq_socket(context, ZMQ_PUSH);		// create a publisher
+	int val = -1;
+	zmq_setsockopt(zmqsocket, ZMQ_LINGER, &val,sizeof(val)); // wait for the unsent packets  before closing socket
+	zmq_bind(zmqsocket,hostName);		// bind
+	FILE_LOG(logINFO) << "Thread" << ithread << ": ZMQ Server at " << hostName;
 
 
 	int headersize=0;
@@ -1676,6 +1683,9 @@ void UDPStandardImplementation::startDataCallback(){
 		headersize = 0; break;
 	}
 
+	//let calling function know thread started and obtained current (after sockets created)
+	if(!zmqThreadStarted)
+		zmqThreadStarted = true;
 
 	/* outer loop - loops once for each acquisition */
 	//infinite loop, exited only to change dynamic range, 10G parameters etc (then recreated again)
@@ -1694,17 +1704,7 @@ void UDPStandardImplementation::startDataCallback(){
 		bool randomSendNow = true;
 		bool newFrame = false;
 
-		//socket details
-		void *context = zmq_ctx_new();
-		void *zmqsocket = zmq_socket(context, ZMQ_PUSH);		// create a publisher
-		int val = -1;
-		zmq_setsockopt(zmqsocket, ZMQ_LINGER, &val,sizeof(val)); // wait for the unsent packets  before closing socket
-		zmq_bind(zmqsocket,hostName);		// bind
-		FILE_LOG(logINFO) << "Thread" << ithread << ": ZMQ Server at " << hostName;
 
-		//let calling function know thread started and obtained current (after sockets created)
-		if(!zmqThreadStarted)
-			zmqThreadStarted = true;
 
 		//header details
 		const char *type = "float64";
@@ -1884,24 +1884,24 @@ void UDPStandardImplementation::startDataCallback(){
 
 		//free resources
 		delete[] buffer;
-		zmq_unbind(zmqsocket, hostName); /* will this be too soon and cut the sending*/
-		zmq_close(zmqsocket);
-		zmq_ctx_destroy(context);
 
 		//end of acquisition, wait for next acquisition/change of parameters
 		sem_wait(&dataCallbackSemaphore[ithread]);
 
 
-
-
 		//check to exit thread (for change of parameters) - only EXIT possibility
 		if(killAllDataCallbackThreads){
-			cprintf(MAGENTA,"DataCallback_Thread %d:Goodbye!\n",ithread);
-			pthread_exit(NULL);
+			break;//pthread_exit(NULL);
 		}
 
 	}/*--end of loop for each acquisition (outer loop) */
 
+
+	//free resources
+	zmq_unbind(zmqsocket, hostName); /* will this be too soon and cut the sending*/
+	zmq_close(zmqsocket);
+	zmq_ctx_destroy(context);
+	cprintf(MAGENTA,"DataCallback_Thread %d:Goodbye!\n",ithread);
 }
 
 

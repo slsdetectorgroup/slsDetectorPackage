@@ -562,17 +562,21 @@ int UDPStandardImplementation::setFrameToGuiFrequency(const uint32_t freq){
 uint32_t UDPStandardImplementation::setDataStreamEnable(const uint32_t enable){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
+	int oldvalue = dataStreamEnable;
 	dataStreamEnable = enable;
 	FILE_LOG(logINFO) << "Data Send to Gui: " << dataStreamEnable;
 
-	//data sockets have to be created again as the client ones are
-	if(zmqThreadStarted)
-		createDataCallbackThreads(true);
 
-	if(dataStreamEnable){
-		numberofDataCallbackThreads = MAX_NUMBER_OF_LISTENING_THREADS;
-		if(createDataCallbackThreads() == FAIL){
-			cprintf(BG_RED,"Error: Could not create data callback threads\n");
+	if(oldvalue!=dataStreamEnable){
+		//data sockets have to be created again as the client ones are
+		if(zmqThreadStarted)
+			createDataCallbackThreads(true);
+
+		if(dataStreamEnable){
+			numberofDataCallbackThreads = MAX_NUMBER_OF_LISTENING_THREADS;
+			if(createDataCallbackThreads() == FAIL){
+				cprintf(BG_RED,"Error: Could not create data callback threads\n");
+			}
 		}
 	}
 

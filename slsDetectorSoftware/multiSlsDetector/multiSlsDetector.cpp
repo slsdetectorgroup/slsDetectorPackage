@@ -4974,10 +4974,14 @@ int multiSlsDetector::resetFramesCaught() {
 
 
 int multiSlsDetector::createReceivingDataThreads(bool destroy){
+	if(!destroy) cprintf(MAGENTA,"Going to create data threads\n");
+	else cprintf(MAGENTA,"Going to destroy data threads\n");
+
 
 	int numReadouts = thisMultiDetector->numberOfDetectors;
 	if(getDetectorsType() == EIGER)
 		numReadouts *= 2;
+
 
 	//reset masks
 	killAllReceivingDataThreads = false;
@@ -5010,8 +5014,8 @@ int multiSlsDetector::createReceivingDataThreads(bool destroy){
 #endif
 		//reset current index
 		currentThreadIndex = -1;
-
-		for(int i = 0; i < numReadouts; ++i){
+cout<<"numreadouts:"<<numReadouts<<endl;
+		for(int i = 0; i < 1;++i){//numReadouts; ++i){
 			sem_init(&sem_singlewait[i],1,0);
 			sem_init(&sem_singledone[i],1,0);
 			threadStarted = false;
@@ -5034,7 +5038,9 @@ int multiSlsDetector::createReceivingDataThreads(bool destroy){
 
 
 void* multiSlsDetector::startReceivingDataThread(void* this_pointer){
-	((multiSlsDetector*)this_pointer)->startReceivingDataThread();
+	//((multiSlsDetector*)this_pointer)->startReceivingDataThread();
+	while(true);
+
 	return this_pointer;
 }
 
@@ -5042,7 +5048,7 @@ void* multiSlsDetector::startReceivingDataThread(void* this_pointer){
 void multiSlsDetector::startReceivingDataThread(){
 
 	int ithread = currentThreadIndex;		//set current thread value  index
-	//cout << ithread << " thread created" << endl;
+	cprintf(BLUE,"thread created %d\n",ithread);
 
 	//number of readouts
 	int numReadoutPerDetector = 1;

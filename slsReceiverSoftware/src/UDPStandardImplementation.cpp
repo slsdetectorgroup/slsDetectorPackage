@@ -2250,7 +2250,7 @@ void UDPStandardImplementation::stopListening(int ithread, int numbytes){
 	listeningThreadsMask^=(1<<ithread);
 //#ifdef DEBUG4
 	//cprintf(BLUE,"Listening_Thread %d: Resetting mask of listening thread. New Mask: 0x%x", ithread, listeningThreadsMask);
-	cprintf(BLUE,"Listening_Thread %d: Packets listened to :%d\n",ithread, (totalListeningPacketCount[ithread]));
+	FILE_LOG(logINFO) << "Listening Thread of " << udpPortNum[ithread] << "got " << totalListeningPacketCount[ithread] << " packets";
 	//cprintf(BLUE,"Listening_Thread %d: Frames listened to :%d\n",ithread, (totalListeningPacketCount[ithread]/packetsPerFrame));
 //#endif
 	pthread_mutex_unlock(&(statusMutex));

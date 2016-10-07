@@ -4485,7 +4485,8 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
       if(!strcasecmp(args[1],"start"))
     	  myDet->startReceiver();
       else if(!strcasecmp(args[1],"stop")){
-    	  myDet->startReceiverReadout();
+    	  //myDet->stopReceiver();
+    	 // myDet->startReceiverReadout();
     	  /*runStatus s = myDet->getReceiverStatus();
     	  while(s != RUN_FINISHED){
     		  usleep(50000);

@@ -5552,7 +5552,7 @@ int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
 			}
 		}
 
-
+	}
 		int ret=-100, ret1;
 		for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
 			if (detectors[idet]) {
@@ -5566,9 +5566,10 @@ int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
 			}
 		}
 
-	}
-	cprintf(BLUE,"threadStarted:%d\n",threadStarted);
-	return threadStarted;
+	if (ret < 0)
+		return -1;
+	else
+		return (ret & threadStarted);
 }
 
 int multiSlsDetector::enableReceiverCompression(int i){

@@ -69,24 +69,6 @@ int  slsDetectorUtils::acquire(int delflag){
 	  ret = enableDataStreamingFromReceiver(-1);
 	  cout<<"getting datastream:"<<ret<<endl;
 	  cout<<"result of enabledatastream:"<<enableDataStreamingFromReceiver(ret)<<endl;
-
-
-	  /*
-	  ret = enableDataStreamingFromReceiver(-1);
-	  cout<<"ret of datastream:"<<ret<<endl;
-	  if(dataReady == NULL){cout<<"dataready is null"<<endl;
-		  if(ret){
-			  cout << "Disabling Data Streaming from Receiver" << endl;
-			  enableDataStreamingFromReceiver(0); //no call back but streaming enabled, then dont stream.
-		  }
-	  }else{cout<<"dataeady is not nul"<<endl;
-		  if(*threadedProcessing && (ret <= 0)){
-			  cout << "Enabling Data Streaming from Receiver" << endl;
-			  enableDataStreamingFromReceiver(1); //call back exists, threaded but streaming disabled, then stream.
-		  }
-	  }
-*/
-
   }
 
   int nc=setTimer(CYCLES_NUMBER,-1);
@@ -188,7 +170,9 @@ int  slsDetectorUtils::acquire(int delflag){
 
   //resets frames caught in receiver
   if(receiver){
+	  pthread_mutex_lock(&mg);
 	  resetFramesCaught();
+	  pthread_mutex_unlock(&mg);
   }
 
 
@@ -297,7 +281,7 @@ int  slsDetectorUtils::acquire(int delflag){
 
 
 	    if(receiver){
-	    	pthread_mutex_unlock(&mg);//unlock previous
+	    	pthread_mutex_unlock(&mg);
 	    	pthread_mutex_lock(&mp);
 	    	createFileName();
 	    	pthread_mutex_unlock(&mp);
@@ -357,6 +341,7 @@ int  slsDetectorUtils::acquire(int delflag){
 	    break;
 
 
+	  pthread_mutex_lock(&mg);
 	  //offline
 	  if(setReceiverOnline()==OFFLINE_FLAG){
 		  if ((getDetectorsType()==GOTTHARD) || (getDetectorsType()==MOENCH) || (getDetectorsType()==JUNGFRAU) ){
@@ -366,12 +351,10 @@ int  slsDetectorUtils::acquire(int delflag){
 	  }
 	  //online
 	  else{
-		  pthread_mutex_lock(&mg);
 		  stopReceiver();
-		  pthread_mutex_unlock(&mg);
 		 // cout<<"***********receiver stopped"<<endl;
 	  }
-
+	  pthread_mutex_unlock(&mg);
 
 
 

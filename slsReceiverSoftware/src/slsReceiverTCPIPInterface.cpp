@@ -2305,10 +2305,10 @@ int	slsReceiverTCPIPInterface::start_readout(){cprintf(BLUE,"In start readout!\n
 		strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 		ret=FAIL;
 	}
-	else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+	/*else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
 		strcpy(mess,"Can not start receiver readout while receiver not idle\n");
 		ret = FAIL;
-	}
+	}*/
 	else{
 		receiverBase->startReadout();
 		retval = receiverBase->getStatus();

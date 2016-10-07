@@ -94,6 +94,7 @@
 //status flags
 #define DAQ_STATUS_DAQ_RUNNING        0x01
 #define DAQ_DATA_COLLISION_ERROR      0x02
+#define FEB_REG_STATUS                10
 
 #define DAQ_STATUS_CURRENT_M4         0x04 
 #define DAQ_STATUS_CURRENT_M8         0x08
@@ -148,4 +149,7 @@
 #define FIRMWARESOFTWARE_API_OFFSET 0x0
 
 #define FRAME_NUM_RESET_OFFSET		0xA0
+
+//temp so far
+#define FEB_REG_STATUS              0xa
 

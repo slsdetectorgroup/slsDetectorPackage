@@ -5058,7 +5058,7 @@ void multiSlsDetector::startReceivingDataThread(){
 	void *context;
 	void *zmqsocket;
 	context = zmq_ctx_new();
-	zmqsocket = zmq_socket(context, ZMQ_PULL);
+	zmqsocket = zmq_socket(context, ZMQ_SUB);
 	zmq_connect(zmqsocket, hostname);
 	cout << "ZMQ Client of " << ithread << " at " << hostname << endl;
 	cprintf(BLUE,"%d Created socket\n",ithread);

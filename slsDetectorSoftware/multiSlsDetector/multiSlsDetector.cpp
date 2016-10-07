@@ -5058,7 +5058,7 @@ void multiSlsDetector::startReceivingDataThread(){
 	void *context;
 	void *zmqsocket;
 	context = zmq_ctx_new();
-	zmqsocket = zmq_socket(context, ZMQ_SUB);
+	zmqsocket = zmq_socket(context, ZMQ_PULL);
 	zmq_connect(zmqsocket, hostname);
 	cout << "ZMQ Client of " << ithread << " at " << hostname << endl;
 	cprintf(BLUE,"%d Created socket\n",ithread);
@@ -5537,39 +5537,41 @@ int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
 
 	if(enable >= 0){
 
-		//destroy data threads
-		if(threadStarted)
-			createReceivingDataThreads(true);
+		if(threadStarted != enable){
+			//destroy data threads
+			if(threadStarted)
+				createReceivingDataThreads(true);
 
-		//create data threads
-		if(enable > 0){
-			if(createReceivingDataThreads() == FAIL){
-				std::cout << "Could not create data threads in client. Aborting creating data threads in receiver" << std::endl;
-				//only for the first det as theres no general one
-				setErrorMask(getErrorMask()|(1<<0));
-				detectors[0]->setErrorMask((detectors[0]->getErrorMask())|(DATA_STREAMING));
-				return -1;
+			//create data threads
+			if(enable > 0){
+				if(createReceivingDataThreads() == FAIL){
+					std::cout << "Could not create data threads in client. Aborting creating data threads in receiver" << std::endl;
+					//only for the first det as theres no general one
+					setErrorMask(getErrorMask()|(1<<0));
+					detectors[0]->setErrorMask((detectors[0]->getErrorMask())|(DATA_STREAMING));
+					return -1;
+				}
 			}
 		}
 
 	}
-		int ret=-100, ret1;
-		for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
-			if (detectors[idet]) {
-				ret1=detectors[idet]->enableDataStreamingFromReceiver(enable);
-				if(detectors[idet]->getErrorMask())
-					setErrorMask(getErrorMask()|(1<<idet));
-				if (ret==-100)
-					ret=ret1;
-				else if (ret!=ret1)
-					ret=-1;
-			}
+	int ret=-100, ret1;
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+		if (detectors[idet]) {
+			ret1=detectors[idet]->enableDataStreamingFromReceiver(enable);
+			if(detectors[idet]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<idet));
+			if (ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
 		}
+	}
 
-	if (ret < 0)
-		return -1;
+	if(enable == -1)
+		return threadStarted;
 	else
-		return (ret & threadStarted);
+		return (threadStarted & ret);
 }
 
 int multiSlsDetector::enableReceiverCompression(int i){

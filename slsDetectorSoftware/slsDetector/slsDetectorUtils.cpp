@@ -67,17 +67,25 @@ int  slsDetectorUtils::acquire(int delflag){
 
 	  //start data streaming threads in receiver if enabled
 	  ret = enableDataStreamingFromReceiver(-1);
-	  if(dataReady == NULL){
+	  cout<<"getting datastream:"<<ret<<endl;
+	  cout<<"result of enabledatastream:"<<enableDataStreamingFromReceiver(ret)<<endl;
+
+
+	  /*
+	  ret = enableDataStreamingFromReceiver(-1);
+	  cout<<"ret of datastream:"<<ret<<endl;
+	  if(dataReady == NULL){cout<<"dataready is null"<<endl;
 		  if(ret){
 			  cout << "Disabling Data Streaming from Receiver" << endl;
 			  enableDataStreamingFromReceiver(0); //no call back but streaming enabled, then dont stream.
 		  }
-	  }else{
-		  if(*threadedProcessing && (!ret || ret == -1)){
+	  }else{cout<<"dataeady is not nul"<<endl;
+		  if(*threadedProcessing && (ret <= 0)){
 			  cout << "Enabling Data Streaming from Receiver" << endl;
 			  enableDataStreamingFromReceiver(1); //call back exists, threaded but streaming disabled, then stream.
 		  }
 	  }
+*/
 
   }
 

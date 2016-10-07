@@ -65,10 +65,10 @@ int  slsDetectorUtils::acquire(int delflag){
 		  std::cout << "No Data call back and hence receiver read frequency reset to " << ret <<" (Random)" << std::endl;
 	  }
 
-	  //start data streaming threads in receiver if enabled
+	  //start/stop data streaming threads if threads in client enabled/disabled
 	  ret = enableDataStreamingFromReceiver(-1);
-	  cout<<"getting datastream:"<<ret<<endl;
-	  cout<<"result of enabledatastream:"<<enableDataStreamingFromReceiver(ret)<<endl;
+	  //cout<<"getting datastream:"<<ret<<endl;
+	  //cout<<"result of enabledatastream:"<<enableDataStreamingFromReceiver(ret)<<endl;
   }
 
   int nc=setTimer(CYCLES_NUMBER,-1);

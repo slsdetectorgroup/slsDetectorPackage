@@ -5083,9 +5083,9 @@ void multiSlsDetector::startReceivingDataThread(){
 		jungfrau = true;
 	int singleDatabytes = detectors[ithread/numReadoutPerDetector]->getDataBytes();
 	int nel=(singleDatabytes/numReadoutPerDetector)/sizeof(int);
-	singleframe[ithread]=new int[nel];
+	int* image = new int[nel];
 	int len,idet = 0;
-
+	singleframe[ithread]=NULL;
 	threadStarted = true;					//let calling function know thread started and obtained current
 
 
@@ -5111,7 +5111,7 @@ void multiSlsDetector::startReceivingDataThread(){
 
 		// error if you print it
 		// cout << ithread << " header len:"<<len<<" value:"<< (char*)zmq_msg_data(&message)<<endl;
-		//cout << ithread << "header " << endl;
+		//cprintf(BLUE,"%d header %d\n",ithread,len);
 		rapidjson::Document d;
 		d.Parse( (char*)zmq_msg_data(&message), zmq_msg_size(&message));
 #ifdef VERYVERBOSE
@@ -5142,6 +5142,7 @@ void multiSlsDetector::startReceivingDataThread(){
 #endif
 			if(currentFrameIndex ==-1) cprintf(RED,"multi frame index -1!!\n");
 		}
+		singleframe[ithread]=image;
 
 		// close the message
 		zmq_msg_close(&message);
@@ -5151,6 +5152,7 @@ void multiSlsDetector::startReceivingDataThread(){
 		zmq_msg_init (&message);
 		len = zmq_msg_recv(&message, zmqsocket, 0);
 
+		//cprintf(BLUE,"%d data %d\n",ithread,len);
 		//end of socket ("end")
 		if (len < 1024*256 ) {
 			if(!len) cprintf(RED,"Received no data in socket for %d\n", ithread);
@@ -5161,9 +5163,9 @@ void multiSlsDetector::startReceivingDataThread(){
 			singleframe[ithread] = NULL;
 			//break;
 		}
-		if(singleframe[ithread]!= NULL){
+		else{
 			//actual data
-			//cout << ithread << "data " << endl;
+			//cprintf(BLUE,"%d actual dataaa\n",ithread);
 			memcpy((char*)(singleframe[ithread]),(char*)zmq_msg_data(&message),singleDatabytes/numReadoutPerDetector);
 
 

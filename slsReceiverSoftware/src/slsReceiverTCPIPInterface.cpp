@@ -2295,7 +2295,7 @@ int64_t slsReceiverTCPIPInterface::getReceiverVersion(){
 
 
 
-int	slsReceiverTCPIPInterface::start_readout(){
+int	slsReceiverTCPIPInterface::start_readout(){cprintf(BLUE,"In start readout!\n");
 	ret=OK;
 	enum runStatus retval;
 

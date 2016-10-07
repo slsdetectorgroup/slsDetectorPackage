@@ -1672,8 +1672,8 @@ void UDPStandardImplementation::startDataCallback(){
 
 	//socket details
 	void *context = zmq_ctx_new();
-	void *zmqsocket = zmq_socket(context, ZMQ_PUB);		// create a publisher
-	int val = 100;
+	void *zmqsocket = zmq_socket(context, ZMQ_PUSH);		// create a publisher
+	int val = -1;
 	zmq_setsockopt(zmqsocket, ZMQ_LINGER, &val,sizeof(val)); // wait for the unsent packets  before closing socket
 	zmq_bind(zmqsocket,hostName);		// bind
 	FILE_LOG(logINFO) << "Thread" << ithread << ": ZMQ Server at " << hostName;
@@ -1746,6 +1746,7 @@ void UDPStandardImplementation::startDataCallback(){
 					zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);
 					//send data
 					zmq_send(zmqsocket, buffer, oneframesize, 0);
+					cout<<"sent last dummy"<<endl;
 					newFrame = false;
 				}
 

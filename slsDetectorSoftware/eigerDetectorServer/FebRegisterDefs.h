@@ -149,3 +149,5 @@
 
 #define FRAME_NUM_RESET_OFFSET		0xA0
 
+//temp so far
+#define FEB_REG_STATUS              0xa

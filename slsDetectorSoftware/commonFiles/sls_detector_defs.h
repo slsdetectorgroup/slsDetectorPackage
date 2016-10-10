@@ -362,6 +362,8 @@ enum dacIndex {
   TEMPERATURE_DCDC,		/**< temperature sensor (close to DCDC) */
   TEMPERATURE_SODL,		/**< temperature sensor (close to SODL) */
   TEMPERATURE_SODR,		/**< temperature sensor (close to SODR) */
+  TEMPERATURE_FPGA2, /**< temperature sensor (fpga2 (eiger:febl) */
+  TEMPERATURE_FPGA3, /**< temperature sensor (fpga3 (eiger:febr) */
   V_POWER_A = 100, /**new chiptest board */
   V_POWER_B = 101, /**new chiptest board */
   V_POWER_C = 102, /**new chiptest board */

@@ -192,4 +192,7 @@ int Feb_Control_GetModuleNumber();
   void Feb_Control_SetRateCorrectionVariable(int activate_rate_correction);
   int Feb_Control_PrintCorrectedValues();
 
-#endif
+  int Feb_Control_GetLeftFPGATemp();
+  int Feb_Control_GetRightFPGATemp();
+
+  #endif

@@ -671,7 +671,7 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b){
 			oneDataSize		= EIGER_ONE_GIGA_ONE_DATA_SIZE;
 		}
 		bufferSize			= onePacketSize * packetsPerFrame;
-		footerOffset		= EIGER_PACKET_HEADER_SIZE + oneDataSize;
+		footerOffset		= EIGER_DATA_PACKET_HEADER_SIZE + oneDataSize;
 		FILE_LOG(logDEBUG) << dec <<
 				"packetsPerFrame:" << packetsPerFrame <<
 				"\nonePacketSize:" << onePacketSize <<
@@ -803,7 +803,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 		maxFramesPerFile	= EIGER_MAX_FRAMES_PER_FILE;
 		fifoSize			= EIGER_FIFO_SIZE;
 		fifoDepth			= EIGER_FIFO_SIZE;
-		footerOffset		= EIGER_PACKET_HEADER_SIZE + oneDataSize;
+		footerOffset		= EIGER_DATA_PACKET_HEADER_SIZE + oneDataSize;
 		break;
 	case JUNGFRAUCTB:
 		packetsPerFrame		= JCTB_PACKETS_PER_FRAME;
@@ -1682,7 +1682,7 @@ void UDPStandardImplementation::startDataCallback(){
 	int headersize=0;
 	switch(myDetectorType){
 	case EIGER:
-		headersize = EIGER_HEADER_SIZE; break;
+		headersize = EIGER_DATA_PACKET_HEADER_SIZE; break;
 	default:
 		headersize = 0; break;
 	}
@@ -2884,13 +2884,23 @@ void UDPStandardImplementation::updateFileHeader(int ithread){
 	while((unsigned int)length!=strlen(fileHeader[ithread])){
 		length = strlen(fileHeader[ithread]);
 		sprintf(fileHeader[ithread],"\nHeader\t\t %d bytes\n"
+				"Top\t\t %d\n"
+				"Left\t\t %d\n"
 				"Dynamic Range\t %d\n"
+				"Ten Giga\t %d\n"
 				"Packet\t\t %d bytes\n"
+				"Data\t\t %d bytes\n"
 				"x\t\t %d pixels\n"
 				"y\t\t %d pixels\n"
 				"Timestamp\t %s\n\n"
 				"%s",
-				length,dynamicRange,onePacketSize,xpix,ypix,ctime(&t),
+				length,
+				(bottomEnable?0:1),(ithread?0:1),
+				dynamicRange,tengigaEnable,
+				onePacketSize,oneDataSize,
+				xpix,ypix,
+
+				ctime(&t),
 				packetheader);
 	}
 

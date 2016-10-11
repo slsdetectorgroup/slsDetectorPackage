@@ -214,6 +214,7 @@ public:
 					} else {
 						//  cout << "." << endl;;
 						np++;
+						//cout<<"np:"<<np<<endl;
 					}
 				}
 			}

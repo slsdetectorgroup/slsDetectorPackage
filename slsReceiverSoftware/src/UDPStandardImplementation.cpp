@@ -1810,6 +1810,9 @@ void UDPStandardImplementation::startDataCallback(){
 				if(offset >= size)
 					break;
 
+				if(!frameToGuiFrequency)
+					currentfnum = fnum;
+
 
 				//last packet of same frame
 				if(fnum == currentfnum && pnum == (packetsPerFrame-1)){

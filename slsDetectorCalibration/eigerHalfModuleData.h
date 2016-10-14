@@ -23,8 +23,7 @@ public:
 		slsReceiverData<uint32_t>(x, y, npf, psize),
 		top(t), left(l),
 		dynamicRange(dr), tenGiga(tg),
-		packetSize(psize), dataSize(dsize), numberofPacketsPerFrame(npf),
-		xpixels(x),ypixels(y),
+		packetSize(psize), onepacketdataSize(dsize), numberofPacketsPerFrame(npf),
 		xtalk(c),
 		header_t(0), footer_t(0){
 
@@ -32,13 +31,13 @@ public:
 		int **dMap;
 		uint32_t **dMask;
 
-		dMap=new int*[ypixels];
-		dMask=new uint32_t*[ypixels];
+		dMap=new int*[ny];
+		dMask=new uint32_t*[ny];
 
 
-		for (int i = 0; i < ypixels; i++) {
-			dMap[i] = new int[xpixels];
-			dMask[i] = new uint32_t[xpixels];
+		for (int i = 0; i < ny; i++) {
+			dMap[i] = new int[nx];
+			dMask[i] = new uint32_t[nx];
 		}
 
 		//Map
@@ -53,13 +52,13 @@ public:
 		}
 
 		if(top){
-			for (int ir=0; ir<ypixels; ir++) {
-				for (int ic=0; ic<xpixels; ic = ic + ic_increment) {
+			for (int ir=0; ir<ny; ir++) {
+				for (int ic=0; ic<nx; ic = ic + ic_increment) {
 					dMap[ir][ic]  = iPacket;
 					iPacket += increment;
 					iData += increment;
 					//increment header
-					if(iData >= dataSize){
+					if(iData >= onepacketdataSize){
 						iPacket += 16;
 						iData = 0;
 					}
@@ -82,8 +81,8 @@ public:
 			if((dynamicRange == 32) && (!tenGiga))
 					iPacket -= 16;
 
-			for (int ir=0; ir<ypixels; ir++) {
-				for (int ic=0; ic<xpixels; ic = ic + ic_increment) {
+			for (int ir=0; ir<ny; ir++) {
+				for (int ic=0; ic<nx; ic = ic + ic_increment) {
 					dMap[ir][ic]  = iPacket;
 					iPacket += increment;
 					iData += increment;
@@ -93,13 +92,13 @@ public:
 							iPacket -= (numbytesperline*2 + 16*3);
 							iData = 0;
 						}
-						if(iData == dataSize){
+						if(iData == onepacketdataSize){
 							iPacket += 16;
 						}
 					}//------------end of 32 bit -------------------------
 					else if((iData % numbytesperline) == 0){
 						iPacket -= (numbytesperline*2);
-						if(iData == dataSize){
+						if(iData == onepacketdataSize){
 							iPacket -= 16;
 							iData = 0;
 						}
@@ -113,8 +112,8 @@ public:
 
 
 		//Mask
-		for(int ir=0; ir<ypixels; ++ir)
-			for(int ic=0; ic<xpixels; ++ic)
+		for(int ir=0; ir<ny; ++ir)
+			for(int ic=0; ic<nx; ++ic)
 				dMask[ir][ic] = 0x0;
 
 		setDataMap(dMap);
@@ -131,7 +130,7 @@ public:
 	     \returns frame number
 	 */
 	int getFrameNumber(char *buff){
-		footer_t = (eiger_packet_footer_t*)(buff + dataSize + sizeof(eiger_packet_header_t));
+		footer_t = (eiger_packet_footer_t*)(buff + onepacketdataSize + sizeof(eiger_packet_header_t));
 		return ((uint32_t)(*( (uint64_t*) footer_t)));
 	};
 
@@ -144,7 +143,7 @@ public:
      	 \returns packet number
 	 */
 	int getPacketNumber(char *buff){
-		footer_t = (eiger_packet_footer_t*)(buff + dataSize + sizeof(eiger_packet_header_t));
+		footer_t = (eiger_packet_footer_t*)(buff + onepacketdataSize + sizeof(eiger_packet_header_t));
 		return(*( (uint16_t*) footer_t->packetnum));
 	};
 
@@ -222,14 +221,10 @@ public:
 			header_t = (eiger_packet_header_t*)((char*)(data +(dataMap[newiy][newix]-8)));
 			uint16_t identifier = (uint16_t)*( (uint16_t*) header_t->missingpacket);
 
-			if(identifier==missingPacketValue){
-			  //	cprintf(RED,"missing packet\n");
-			  return -1;
+			if(identifier==deactivatedPacketValue){
+				//	cprintf(RED,"deactivated packet\n");
+				return -2;
 			}
-			else if(identifier==deactivatedPacketValue){
-				  //	cprintf(RED,"deactivated packet\n");
-				  return -2;
-				}
 			// -----END OF CHECK -------------------------------------------------------------
 
 
@@ -268,80 +263,187 @@ public:
 	 */
 	double getXTalk() {return xtalk;}
 
+	void getChannelArray(double* data, char* buffer){
+		for(int iy = 0; iy < ny; iy++){
+			for(int ix = 0; ix < nx; ix++){
+				data[iy*nx+ix] = getValue((char*)buffer,ix,iy);
+				//cprintf(BLUE,"%d,%d :%f\n",ix,iy,value);
+			}
+		}
+	}
 
-	//have to make the frame here itself as 1 frame will have less packets than trying to read
 
-	char *readNextFrame(ifstream &filebin, int& fnum) {
+	int* decodeData(int *datain) {
 
-		char *data=new char[packetSize*numberofPacketsPerFrame];
-		char *retval=0;
-		int np=0, nd;
+		int dataBytes = numberofPacketsPerFrame * onepacketdataSize;
+		int nch = nx*ny;
+		int* dataout = new int [nch];
+		char *ptr=(char*)datain;
+		char iptr;
+
+		const int bytesize=8;
+		int ival=0;
+		int  ipos=0, ichan=0, ibyte;
+
+		switch (dynamicRange) {
+		case 4:
+			for (ibyte=0; ibyte<dataBytes; ++ibyte) {//for every byte (1 pixel = 1/2 byte)
+				iptr=ptr[ibyte]&0xff;				//???? a byte mask
+				for (ipos=0; ipos<2; ++ipos) {		//loop over the 8bit (twice)
+					ival=(iptr>>(ipos*4))&0xf;		//pick the right 4bit
+					dataout[ichan]=ival;
+					ichan++;
+				}
+			}
+			break;
+		case 8:
+			for (ichan=0; ichan<dataBytes; ++ichan) {//for every pixel (1 pixel = 1 byte)
+				ival=ptr[ichan]&0xff;				//????? a byte mask
+				dataout[ichan]=ival;
+			}
+			break;
+		case 16:
+			for (ichan=0; ichan<nch; ++ichan) { 	//for every pixel
+				ival=0;
+				for (ibyte=0; ibyte<2; ++ibyte) { 	//for each byte (concatenate 2 bytes to get 16 bit value)
+					iptr=ptr[ichan*2+ibyte];
+					ival|=((iptr<<(ibyte*bytesize))&(0xff<<(ibyte*bytesize)));
+				}
+				dataout[ichan]=ival;
+			}
+			break;
+		default:
+													//for every 32 bit (every element in datain array)
+			for (ichan=0; ichan<nch; ++ichan) { 	//for every pixel
+				ival=datain[ichan]&0xffffff;
+				dataout[ichan]=ival;
+			}
+		}
+
+
+
+		return dataout;
+
+	};
+
+
+	int* readNextFrameOnlyData(ifstream &filebin, int& fnum) {
+		int framesize = numberofPacketsPerFrame * onepacketdataSize;
+
+		int* data = new int[framesize/(sizeof(int))];
+		char *packet=new char[packetSize];
 		fnum = -1;
-		int pnum=-1;
+		int pn=-1;
+		int dataoffset = 0;
+
+		if (filebin.is_open()) {
+
+			while (filebin.read(packet,packetSize)) {
+
+				fnum = getFrameNumber(packet); //cout << "fn:"<<fn<<endl;
+				pn = getPacketNumber(packet); //cout << "pn:"<<pn<<endl;
+
+				memcpy(((char*)data)+dataoffset,packet+DATA_PACKET_HEADER_SIZE,onepacketdataSize);
+				dataoffset+=onepacketdataSize;
+				if(pn == numberofPacketsPerFrame)
+					break;
+			}
+		}
+
+		delete [] packet;
+		if(!dataoffset){
+			delete [] data;
+			return NULL;
+		}
+
+		return data;
+
+	}
+	/*
+	when u get packet form next frames
+	//to remember the position to read next frame
+	filebin.seekg (position, filebin.beg);
+	position = filebin.tellg();
+
+	*/
+
+	int *readNextFramewithMissingPackets(ifstream &filebin, int& fnum) {
+
+		int* data = new int[(numberofPacketsPerFrame * onepacketdataSize)/(sizeof(int))];
+		char *packet=new char[packetSize];
+		fnum = -1;
+		int pnum = 0;
+		int fn = -1;
+		int pn =-1;
+		int dataoffset = 0;
+		int missingpackets;
 
 
 		if (filebin.is_open()) {
 
-			while (filebin.read(data+np*packetSize,packetSize)) {
+			while (filebin.read(packet,packetSize)) {
 
-				fnum = getFrameNumber(data); cout << "fnum:"<<fnum<<endl;
-				pnum = getPacketNumber(data); cout << "pnum:"<<pnum<<endl;
+				fn = getFrameNumber(packet); //cout << "fn:"<<fn<<endl;
+				pn = getPacketNumber(packet); //cout << "pn:"<<pn<<endl;
 
-				if (np==(numberofPacketsPerFrame-1)) {cout<<"last packet"<<endl;
-
-					fnum=getFrameNumber(data); //cout << "fnum:"<<fnum<<endl;
-					retval=findNextFrame(data,nd,packetSize*numberofPacketsPerFrame);
-					np=nd/packetSize;
-					cout << "got this mnany packets:"<<np << endl;
-
-
-					if (retval==data && np==numberofPacketsPerFrame) {
-						//      cout << "-" << endl;
-						return data;
-
-					} else if (np>numberofPacketsPerFrame) {
-						cout << "too many packets!!!!!!!!!!" << endl;
-						delete [] data;
-						return NULL;
-					} else if (retval!=NULL) {
-						//  cout << "+" << endl;;
-						for (int ip=0; ip<np; ip++)
-							memcpy(data+ip*packetSize,retval+ip*packetSize,packetSize);
-					}
-
-				} else if (np>numberofPacketsPerFrame) {
-					cout << "*******too many packets!!!!!!!!!!" << endl;
-					delete [] data;
-					return NULL;
-				} else {
-					//  cout << "." << endl;;
-					np++;
-					cout<<"np:"<<np<<endl;
+				//first packet
+				if(fnum == -1){
+					fnum = fn;
 				}
+				//next frame packet
+				else if (fnum != fn){
+					//set file reading to the last frame's packet in file
+					filebin.seekg(-packetSize, ios::cur);//filebin.beg
+					break;
+				}
+
+				//missing packets
+				missingpackets = pn - pnum - 1;
+				if(missingpackets){
+					memset(((char*)data)+dataoffset,0xFF,missingpackets*onepacketdataSize);
+					dataoffset+=(missingpackets*onepacketdataSize);
+					pnum+=missingpackets;
+				}
+
+				memcpy(((char*)data)+dataoffset,packet+DATA_PACKET_HEADER_SIZE,onepacketdataSize);
+				dataoffset+=onepacketdataSize;
+				pnum++;
+				if(pnum == numberofPacketsPerFrame)
+					break;
+
 			}
 		}
-		delete [] data;
-		return NULL;
-	}
 
+		delete [] packet;
+		if(!pnum){
+			delete [] data;
+			return NULL;
+		}
+
+		//missing packets (added here to also catch end of file)
+		missingpackets = numberofPacketsPerFrame - pnum;
+		if(missingpackets){
+			memset(((char*)data)+dataoffset,0xFF,missingpackets*onepacketdataSize);
+			dataoffset+=(missingpackets*onepacketdataSize);
+		}
+
+		return data;
+	}
 
 
 
 private:
 	/** Missing Packet identifier value */
-	const static uint16_t missingPacketValue = 0xFFFF;
 	const static uint16_t deactivatedPacketValue = 0xFEFE;
 
-
+	const static int DATA_PACKET_HEADER_SIZE = 8;
 	const bool top;
 	const bool left;
 	const int dynamicRange;
 	const bool tenGiga;
 	const int packetSize;
-	const int dataSize;
+	const int onepacketdataSize;
 	const int numberofPacketsPerFrame;
-	const int xpixels;
-	const int ypixels;
 	double xtalk; /**<output buffer crosstalk correction parameter */
 
 

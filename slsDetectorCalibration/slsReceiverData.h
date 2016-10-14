@@ -222,7 +222,10 @@ public:
 			return NULL;
 		};
 
-
+		virtual int* readNextFramewithMissingPackets(ifstream &filebin, int& fnum) {return NULL;}
+		virtual void getChannelArray(double* data, char* buffer){};
+		virtual int* readNextFrameOnlyData(ifstream &filebin, int& fnum) {return NULL;};
+		virtual int* decodeData(int* datain) {return NULL;};
 
 private:
 	const int nPackets; /**<number of UDP packets constituting one frame */

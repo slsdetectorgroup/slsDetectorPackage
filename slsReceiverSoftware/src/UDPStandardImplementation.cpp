@@ -1586,7 +1586,7 @@ int UDPStandardImplementation::createNewFile(int ithread){
 
 		//write file header
 		if(myDetectorType == EIGER)
-			fwrite((void*)fileHeader[ithread], 1, strlen(fileHeader[ithread]), sfilefd[ithread]);
+			fwrite((void*)fileHeader[ithread], 1, FILE_HEADER_SIZE, sfilefd[ithread]);
 	}
 
 	//reset counters for each new file
@@ -1823,7 +1823,7 @@ void UDPStandardImplementation::startDataCallback(){
 					offset+= onePacketSize;
 					//send header
 					//update frame details
-					frameIndex = fnum;if(frameIndex==-1) cprintf(RED,"frameindex = -1, 222\n");
+					frameIndex = fnum;
 					acquisitionIndex = fnum - startAcquisitionIndex;
 					if(dynamicRange == 32) subframeIndex = snum;
 					int len = sprintf(buf,jsonFmt,type,shape, acquisitionIndex, frameIndex, subframeIndex,completeFileName[ithread]);
@@ -1859,7 +1859,7 @@ void UDPStandardImplementation::startDataCallback(){
 #endif
 						//send header
 						//update frame details
-						frameIndex = fnum;if(frameIndex==-1) cprintf(RED,"frameindex = -1, 333\n");
+						frameIndex = fnum;
 						acquisitionIndex = fnum - startAcquisitionIndex;
 						if(dynamicRange == 32) subframeIndex = snum;
 						int len = sprintf(buf,jsonFmt,type,shape, acquisitionIndex, frameIndex, subframeIndex,completeFileName[ithread]);
@@ -2066,7 +2066,6 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 			footer = (eiger_packet_footer_t*)(buffer[ithread] + offset + footerOffset);
 			*( (uint64_t*) footer) = deactivatedFrameNumber[ithread];
 			*( (uint16_t*) footer->packetNumber) = ++pnum;
-			*( (uint16_t*) header->missingPacket) = deactivatedPacketValue;
 #ifdef MANUALDEBUG
 			if(!ithread){
 				cprintf(GREEN,"thread:%d pnum:%d fnum:%d\n",
@@ -2613,6 +2612,12 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 
 
 	//all threads need to close file, reset mask and exit loop
+	missingPacketinFile = (long long int)numberOfFrames*packetsPerFrame-totalWritingPacketCount[ithread];
+	if(missingPacketinFile){
+		updateFileHeader(ithread);
+		fseek(sfilefd[ithread],0,0);
+		fwrite((void*)fileHeader[ithread], 1, FILE_HEADER_SIZE, sfilefd[ithread]);
+	}
 	closeFile(ithread);
 	pthread_mutex_lock(&statusMutex);
 	writerThreadsMask^=(1<<ithread);
@@ -2856,56 +2861,43 @@ void UDPStandardImplementation::writeFileWithoutCompression(int ithread, char* w
 
 
 void UDPStandardImplementation::updateFileHeader(int ithread){
-	int xpix=-1,ypix=-1;
-
-	//create detector specific packet header
-	char packetheader[1000];
-	strcpy(packetheader,"");
-
-	//only for eiger right now
-	/*switch(myDetectorType){
-	case EIGER:
-	*/	sprintf(packetheader,"#Packet Header\n"
-				"Sub Frame Number 4 bytes\n"
-				"Missing Packet\t 2 bytes\n"
-				"Port Number\t 1 byte\n"
-				"Unused\t\t 1 byte\n\n"
-				"#Packet Footer\n"
-				"Frame Number\t 6 bytes\n"
-				"Packet Number\t 2 bytes\n");
-		xpix = EIGER_PIXELS_IN_ONE_ROW;
-		ypix = EIGER_PIXELS_IN_ONE_COL;
-	/*	break;
-	default:
-		break;
-	}
-*/
-
 	//update file header
 	time_t t = time(0);
-	int length = sizeof(fileHeader[ithread]);
-	while((unsigned int)length!=strlen(fileHeader[ithread])){
-		length = strlen(fileHeader[ithread]);
-		sprintf(fileHeader[ithread],"\nHeader\t\t %d bytes\n"
-				"Top\t\t %d\n"
-				"Left\t\t %d\n"
-				"Dynamic Range\t %d\n"
-				"Ten Giga\t %d\n"
-				"Packet\t\t %d bytes\n"
-				"Data\t\t %d bytes\n"
-				"x\t\t %d pixels\n"
-				"y\t\t %d pixels\n"
-				"Timestamp\t %s\n\n"
-				"%s",
-				length,
-				(bottomEnable?0:1),(ithread?0:1),
-				dynamicRange,tengigaEnable,
-				onePacketSize,oneDataSize,
-				xpix,ypix,
+	sprintf(fileHeader[ithread],
+			"\nHeader\t\t %d bytes\n"
+			"Top\t\t %d\n"
+			"Left\t\t %d\n"
+			"Active\t\t %d\n"
+			"Packets Lost\t %d\n"
+			"Dynamic Range\t %d\n"
+			"Ten Giga\t %d\n"
+			"Packet\t\t %d bytes\n"
+			"Data\t\t %d bytes\n"
+			"x\t\t %d pixels\n"
+			"y\t\t %d pixels\n"
+			"Timestamp\t %s\n\n"
 
-				ctime(&t),
-				packetheader);
-	}
+			//only for eiger right now
+			"#Packet Header\n"
+			"Sub Frame Number 4 bytes\n"
+			"Unused\t\t 2 bytes\n"
+			"Port Number\t 1 byte\n"
+			"Unused\t\t 1 byte\n\n"
+			"#Packet Footer\n"
+			"Frame Number\t 6 bytes\n"
+			"Packet Number\t 2 bytes\n",
+			FILE_HEADER_SIZE,
+			(bottomEnable?0:1),(ithread?0:1),
+			activated,
+			missingPacketinFile,
+			dynamicRange,tengigaEnable,
+			onePacketSize,oneDataSize,
+			//only for eiger right now
+			EIGER_PIXELS_IN_ONE_ROW,EIGER_PIXELS_IN_ONE_COL,
+			ctime(&t));
+	if(strlen(fileHeader[ithread]) > FILE_HEADER_SIZE)
+		cprintf(BG_RED,"File Header Size is too small for file header\n");
+
 
 }
 

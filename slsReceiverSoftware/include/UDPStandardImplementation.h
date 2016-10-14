@@ -591,7 +591,9 @@ private:
 	/** If file created successfully for all Writer Threads */
 	bool fileCreateSuccess;
 
-	char fileHeader[MAX_NUMBER_OF_WRITER_THREADS][MAX_STR_LENGTH];
+	const static int FILE_HEADER_SIZE = 400;
+
+	char fileHeader[MAX_NUMBER_OF_WRITER_THREADS][FILE_HEADER_SIZE];
 
 
 
@@ -661,9 +663,8 @@ private:
 	/** Total fifo size */
 	uint32_t fifoSize;
 
-	/** Missing Packet identifier value */
-	const static uint16_t missingPacketValue = 0xFFFF;
-	const static uint16_t deactivatedPacketValue = 0xFEFE;
+	/** Missing Packet  */
+	int missingPacketinFile;
 
 	/** Dummy Packet identifier value */
 	const static uint32_t dummyPacketValue = 0xFFFFFFFF;

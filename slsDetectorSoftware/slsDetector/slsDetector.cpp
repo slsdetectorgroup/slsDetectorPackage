@@ -1246,18 +1246,16 @@ string slsDetector::checkOnline() {
       delete controlSocket;
       controlSocket=NULL;
       retval = string(thisDetector->hostname);
-      thisDetector->onlineFlag=OFFLINE_FLAG;
-#ifdef VERBOSE
+//#ifdef VERBOSE
       std::cout<< "offline!" << std::endl;
-#endif
+//#endif
     }  else {
       thisDetector->onlineFlag=ONLINE_FLAG;
       controlSocket->SetTimeOut(100);
       disconnectControl();
-      thisDetector->onlineFlag=ONLINE_FLAG;
-#ifdef VERBOSE
+//#ifdef VERBOSE
       std::cout<< "online!" << std::endl;
-#endif
+//#endif
     }
   }
   return retval;

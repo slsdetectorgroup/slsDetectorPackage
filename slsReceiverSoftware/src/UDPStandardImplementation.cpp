@@ -2618,7 +2618,7 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 
 	//all threads need to close file, reset mask and exit loop
 	missingPacketinFile = (long long int)numberOfFrames*packetsPerFrame-totalWritingPacketCount[ithread];
-	if(missingPacketinFile){
+	if(fileWriteEnable && (cbAction > DO_NOTHING) && missingPacketinFile){
 		updateFileHeader(ithread);
 		fseek(sfilefd[ithread],0,0);
 		fwrite((void*)fileHeader[ithread], 1, FILE_HEADER_SIZE, sfilefd[ithread]);

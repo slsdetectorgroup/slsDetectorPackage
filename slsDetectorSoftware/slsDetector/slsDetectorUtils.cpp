@@ -154,7 +154,7 @@ int  slsDetectorUtils::acquire(int delflag){
 	  if(setReceiverOnline()==OFFLINE_FLAG){
 		  *stoppedFlag=1;
 			///*
-			 receiverStoppedFlag = 0;
+			 receiverStoppedFlag = 1;
 			 //*/
 	  }
 	  //multi detectors shouldnt have different receiver read frequencies enabled/disabled
@@ -162,14 +162,14 @@ int  slsDetectorUtils::acquire(int delflag){
 	  		std::cout << "Error: The receiver read frequency is invalid:" << setReadReceiverFrequency(0) << std::endl;
 	  		*stoppedFlag=1;
 	  		///*
-	  		 receiverStoppedFlag = 0;
+	  		 receiverStoppedFlag = 1;
 	  		 //*/
 	  	}
 
 	  if(setReceiverOnline()==OFFLINE_FLAG){
 		  *stoppedFlag=1;
 			///*
-			 receiverStoppedFlag = 0;
+			 receiverStoppedFlag = 1;
 			 //*/
 	  }
   }
@@ -305,7 +305,7 @@ int  slsDetectorUtils::acquire(int delflag){
 	    		stopReceiver();
 	    		*stoppedFlag=1;
 	    		///*
-	    		 receiverStoppedFlag = 0;
+	    		 receiverStoppedFlag = 1;
 	    		 //*/
 	    		pthread_mutex_unlock(&mg);
 	    		break;
@@ -315,7 +315,7 @@ int  slsDetectorUtils::acquire(int delflag){
 	    		stopReceiver();
 	    		*stoppedFlag=1;
 	    		///*
-	    		 receiverStoppedFlag = 0;
+	    		 receiverStoppedFlag = 1;
 	    		 //*/
 	    		pthread_mutex_unlock(&mg);
 	    		break;
@@ -364,7 +364,7 @@ int  slsDetectorUtils::acquire(int delflag){
 	  //offline
 	  if(setReceiverOnline()==OFFLINE_FLAG){
 			///*
-			 receiverStoppedFlag = 0;
+			 receiverStoppedFlag = 1;
 			 //*/
 		  if ((getDetectorsType()==GOTTHARD) || (getDetectorsType()==MOENCH) || (getDetectorsType()==JUNGFRAU) ){
 			  if((*correctionMask)&(1<<WRITE_FILE))
@@ -375,7 +375,7 @@ int  slsDetectorUtils::acquire(int delflag){
 	  else{
 		  stopReceiver();
 			///*
-			 receiverStoppedFlag = 0;
+			 receiverStoppedFlag = 1;
 			 //*/
 		 // cout<<"***********receiver stopped"<<endl;
 	  }

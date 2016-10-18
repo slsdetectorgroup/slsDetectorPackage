@@ -5212,7 +5212,6 @@ void multiSlsDetector::startReceivingDataThread(){
 			//end of socket ("end")
 			if (len < 1024*256 ) {
 				/*
-			}
 				if(!len) cprintf(RED,"Received no data in socket for %d\n", ithread);
 				//#ifdef VERYVERBOSE
 				cprintf(RED,"End of socket for %d\n", ithread);

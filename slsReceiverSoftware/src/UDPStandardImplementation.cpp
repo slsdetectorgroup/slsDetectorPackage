@@ -1673,8 +1673,10 @@ void UDPStandardImplementation::startDataCallback(){
 	//socket details
 	void *context = zmq_ctx_new();
 	void *zmqsocket = zmq_socket(context, ZMQ_PUSH);		// create a publisher
-	int val = -1;
+	int val = 4;
 	zmq_setsockopt(zmqsocket, ZMQ_LINGER, &val,sizeof(val)); // wait for the unsent packets  before closing socket
+	//val = 10;
+	//zmq_setsockopt(zmqsocket,ZMQ_SNDHWM,&val,sizeof(val)); //set SEND HIGH WATER MARK (8-9ms slower)
 	zmq_bind(zmqsocket,hostName);		// bind
 	FILE_LOG(logINFO) << "Thread" << ithread << ": ZMQ Server at " << hostName;
 
@@ -1750,6 +1752,8 @@ void UDPStandardImplementation::startDataCallback(){
 					newFrame = false;
 				}
 
+
+				/*
 				//send final header
 				//update frame details
 #ifdef DEBUG
@@ -1762,6 +1766,7 @@ void UDPStandardImplementation::startDataCallback(){
 				zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);
 				//send final data
 				zmq_send (zmqsocket, "end", 3, 0);
+				 */
 
 				pthread_mutex_lock(&statusMutex);
 				dataCallbackThreadsMask^=(1<<ithread);

@@ -514,20 +514,6 @@ string multiSlsDetector::setHostname(const char* name, int pos){
   cout << "-----------------------------set online!" << endl;
 #endif
   setOnline(ONLINE_FLAG);
-  if(pos>=0){
-	if(detectors[pos]->getErrorMask())
-	  setErrorMask(getErrorMask()|(1<<pos));
-  }else{
-	  cprintf(BLUE,"Checking all the detectors %d\n",thisMultiDetector->numberOfDetectors);
-	  for (int ip=0; ip<thisMultiDetector->numberOfDetectors; ip++) {
-		  if (detectors[ip]) {
-			  if(detectors[ip]->getErrorMask()){
-			  	  setErrorMask(getErrorMask()|(1<<ip));
-			  	  cprintf(BG_RED,"Setting error mask for %d\n",ip);
-			  }
-		  }
-	  }
-  }
 
   return getHostname(pos);
 }

@@ -5090,7 +5090,9 @@ void multiSlsDetector::startReceivingDataThread(){
 	int* image = new int[nel];
 	int len,idet = 0;
 	singleframe[ithread]=NULL;
-/*	int datavalue = 2;*/
+///*
+ 	 int datavalue = 2;
+ // */
 	threadStarted = true;					//let calling function know thread started and obtained current
 
 
@@ -5108,6 +5110,7 @@ void multiSlsDetector::startReceivingDataThread(){
 		//scan header-------------------------------------------------------------------
 		zmq_msg_init (&message);
 
+		/*
 		//---- with end
 		len = zmq_msg_recv(&message, zmqsocket, 0);
 		if (len == -1) {
@@ -5116,8 +5119,10 @@ void multiSlsDetector::startReceivingDataThread(){
 			continue;
 		}
 		//----
+		 */
 
-/*
+
+
 		while(1){
 
 			len = zmq_msg_recv(&message, zmqsocket, ZMQ_DONTWAIT);
@@ -5150,16 +5155,16 @@ void multiSlsDetector::startReceivingDataThread(){
 			usleep(4000);
 		}
 
-		*/
 
-		/*if(datavalue){
+
+		if(datavalue){
 			//len = zmq_msg_recv(&message, zmqsocket, 0);
 			if (len == -1) {
 				zmq_msg_close(&message);
 				cprintf(RED, "%d message null\n",ithread);
 				continue;
 			}
-*/
+
 			// error if you print it
 			// cout << ithread << " header len:"<<len<<" value:"<< (char*)zmq_msg_data(&message)<<endl;
 			//cprintf(BLUE,"%d header %d\n",ithread,len);
@@ -5206,6 +5211,8 @@ void multiSlsDetector::startReceivingDataThread(){
 			//cprintf(BLUE,"%d data %d\n",ithread,len);
 			//end of socket ("end")
 			if (len < 1024*256 ) {
+				/*
+			}
 				if(!len) cprintf(RED,"Received no data in socket for %d\n", ithread);
 				//#ifdef VERYVERBOSE
 				cprintf(RED,"End of socket for %d\n", ithread);
@@ -5213,12 +5220,12 @@ void multiSlsDetector::startReceivingDataThread(){
 				zmq_msg_close(&message);
 				singleframe[ithread] = NULL;
 				//break;
+				 */
 
 
-				/*
 				cprintf(RED,"Received weird packet size %d in socket for %d\n", len, ithread);
 				memset((char*)(singleframe[ithread]),0xFF,singleDatabytes/numReadoutPerDetector);
-				*/
+
 			}
 			else{
 				//actual data
@@ -5235,10 +5242,14 @@ void multiSlsDetector::startReceivingDataThread(){
 			}
 
 
-	/*	}*/
+	///*
+	  }
+	//  */
 		sem_post(&sem_singledone[ithread]);//let multi know is ready
 		zmq_msg_close(&message); // close the message
-	/*	datavalue = 2;*/
+	///*
+	  datavalue = 2;
+	 // */
 	}
 
 	cprintf(RED,"%d Closing socket\n",ithread);

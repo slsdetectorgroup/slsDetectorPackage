@@ -58,6 +58,7 @@ int  slsDetectorUtils::acquire(int delflag){
   if(!receiver){
 	  setDetectorIndex(-1);
   }else{
+	receiverStoppedFlag = 0;
 	  //put receiver read frequency to random if no gui
 	  int ret = setReadReceiverFrequency(0);
 	  if(ret>0 && (dataReady == NULL)){
@@ -148,17 +149,21 @@ int  slsDetectorUtils::acquire(int delflag){
   if(receiver){
 	  if(getReceiverStatus()!=IDLE)
 		  stopReceiver();
-	  if(setReceiverOnline()==OFFLINE_FLAG)
+	  if(setReceiverOnline()==OFFLINE_FLAG){
 		  *stoppedFlag=1;
-
+		  receiverStoppedFlag = 1;
+	  }
 	  //multi detectors shouldnt have different receiver read frequencies enabled/disabled
     	if(setReadReceiverFrequency(0) < 0){
 	  		std::cout << "Error: The receiver read frequency is invalid:" << setReadReceiverFrequency(0) << std::endl;
-	  		 *stoppedFlag=1;
+	  		*stoppedFlag=1;
+	  		receiverStoppedFlag = 1;
 	  	}
 
-	  if(setReceiverOnline()==OFFLINE_FLAG)
+	  if(setReceiverOnline()==OFFLINE_FLAG){
 		  *stoppedFlag=1;
+		  receiverStoppedFlag = 1;
+	  }
   }
 
 
@@ -291,6 +296,7 @@ int  slsDetectorUtils::acquire(int delflag){
 	    	if(setReceiverOnline()==OFFLINE_FLAG){
 	    		stopReceiver();
 	    		*stoppedFlag=1;
+	    		receiverStoppedFlag = 1;
 	    		pthread_mutex_unlock(&mg);
 	    		break;
 	    	}
@@ -298,6 +304,7 @@ int  slsDetectorUtils::acquire(int delflag){
 	    	if(startReceiver() == FAIL) {
 	    		stopReceiver();
 	    		*stoppedFlag=1;
+	    		receiverStoppedFlag = 1;
 	    		pthread_mutex_unlock(&mg);
 	    		break;
 	    	}
@@ -344,6 +351,7 @@ int  slsDetectorUtils::acquire(int delflag){
 	  pthread_mutex_lock(&mg);
 	  //offline
 	  if(setReceiverOnline()==OFFLINE_FLAG){
+		  receiverStoppedFlag = 1;
 		  if ((getDetectorsType()==GOTTHARD) || (getDetectorsType()==MOENCH) || (getDetectorsType()==JUNGFRAU) ){
 			  if((*correctionMask)&(1<<WRITE_FILE))
 				  closeDataFile();
@@ -352,6 +360,7 @@ int  slsDetectorUtils::acquire(int delflag){
 	  //online
 	  else{
 		  stopReceiver();
+		  receiverStoppedFlag = 1;
 		 // cout<<"***********receiver stopped"<<endl;
 	  }
 	  pthread_mutex_unlock(&mg);

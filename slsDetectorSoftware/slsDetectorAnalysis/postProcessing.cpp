@@ -481,7 +481,8 @@ void* postProcessing::processData(int delflag) {
 		}
 		}
 	//receiver
-	else{cprintf(RED,"In post processing threads\n");
+	else{
+		//cprintf(RED,"In post processing threads\n");
 
 
 		if(dataReady){
@@ -517,7 +518,7 @@ void* postProcessing::processData(int delflag) {
 
 		//cout<<"exiting from proccessing thread"<<endl;
 
-		cprintf(RED,"Exiting post processing thread\n");
+		//cprintf(RED,"Exiting post processing thread\n");
 	}
 
 	return 0;

@@ -5126,9 +5126,9 @@ void multiSlsDetector::startReceivingDataThread(){
 				datavalue--;
 
 				if(!datavalue){
-					//#ifdef VERYVERBOSE
+#ifdef VERYVERBOSE
 					cprintf(RED,"End of socket for %d\n", ithread);
-					//#endif
+#endif
 					singleframe[ithread] = NULL;
 					break;
 				}
@@ -5602,7 +5602,7 @@ int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
 			}
 		}
 
-	}
+	}else enable = threadStarted;
 	int ret=-100, ret1;
 	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
 		if (detectors[idet]) {
@@ -5616,10 +5616,7 @@ int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
 		}
 	}
 
-	if(enable == -1)
-		return threadStarted;
-	else
-		return (threadStarted & ret);
+	return (threadStarted & ret);
 }
 
 int multiSlsDetector::enableReceiverCompression(int i){

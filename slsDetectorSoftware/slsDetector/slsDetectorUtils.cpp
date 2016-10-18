@@ -68,8 +68,8 @@ int  slsDetectorUtils::acquire(int delflag){
 
 	  //start/stop data streaming threads if threads in client enabled/disabled
 	  ret = enableDataStreamingFromReceiver(-1);
-	  //cout<<"getting datastream:"<<ret<<endl;
-	  //cout<<"result of enabledatastream:"<<enableDataStreamingFromReceiver(ret)<<endl;
+	 // cout<<"getting datastream:"<<ret<<endl;
+	 // cout<<"result of enabledatastream:"<<enableDataStreamingFromReceiver(ret)<<endl;
   }
 
   int nc=setTimer(CYCLES_NUMBER,-1);

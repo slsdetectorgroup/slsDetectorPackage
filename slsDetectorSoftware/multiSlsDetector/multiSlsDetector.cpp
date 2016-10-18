@@ -1037,10 +1037,8 @@ int multiSlsDetector::setOnline(int off) {
     for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
       if (detectors[i]){
         detectors[i]->setOnline(off);
-	    if(detectors[i]->getErrorMask()){
+	    if(detectors[i]->getErrorMask())
 		  setErrorMask(getErrorMask()|(1<<i));
-		  cprintf(BG_RED,"Setting error mask for %d\n",i);
-	    }
       }
     }
   }

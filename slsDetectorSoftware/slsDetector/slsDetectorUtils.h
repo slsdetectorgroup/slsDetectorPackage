@@ -837,10 +837,6 @@ virtual int setReceiverFifoDepth(int i = -1)=0;
  
   //protected:
   int *stoppedFlag;	 
- ///*
-  int receiverStoppedFlag;
- // */
-
   int64_t *timerValue;
   detectorSettings *currentSettings;
   int *currentThresholdEV;

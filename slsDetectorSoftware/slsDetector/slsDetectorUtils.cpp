@@ -171,7 +171,9 @@ int  slsDetectorUtils::acquire(int delflag){
 
   //resets frames caught in receiver
   if(receiver){
+	pthread_mutex_lock(&mg);
     resetFramesCaught();
+    pthread_mutex_unlock(&mg);
   }
 
   for(int im=0;im<nm;im++) {
@@ -340,9 +342,9 @@ int  slsDetectorUtils::acquire(int delflag){
 
 
 	  //offline
+	  pthread_mutex_lock(&mg);
 	  if(setReceiverOnline()==OFFLINE_FLAG){
 	  // wait until data processing thread has finished the data
-		  pthread_mutex_lock(&mg);
 		  acquiringDone = 1;
 		  pthread_mutex_unlock(&mg);
 		  if (*threadedProcessing) {
@@ -372,7 +374,6 @@ int  slsDetectorUtils::acquire(int delflag){
 
 	  //online
 	  else{
-		  pthread_mutex_lock(&mg);
 		  acquiringDone = 1;
 		  pthread_mutex_unlock(&mg);
 

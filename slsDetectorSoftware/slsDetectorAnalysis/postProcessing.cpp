@@ -512,12 +512,10 @@ void* postProcessing::processData(int delflag) {
 			usleep(20000); //20ms need this else connecting error to receiver (too fast)
 
 			//get progress
-			if(setReceiverOnline() == ONLINE_FLAG){
-				pthread_mutex_lock(&mg);
+			pthread_mutex_lock(&mg);
+			if(setReceiverOnline() == ONLINE_FLAG)
 				caught = getFramesCaughtByReceiver();
-				pthread_mutex_unlock(&mg);
-			}
-
+			pthread_mutex_unlock(&mg);
 			//updating progress
 			if(caught!= -1){
 				setCurrentProgress(caught);
@@ -609,13 +607,12 @@ void* postProcessing::processData(int delflag) {
 				}
 				//gui
 				else{
+					pthread_mutex_lock(&mg);
 					if(setReceiverOnline()==ONLINE_FLAG){
 						//get data
 						strcpy(currentfName,"");
-						pthread_mutex_lock(&mg);
 						//int* receiverData = new int [getTotalNumberOfChannels()];
 						int* receiverData = readFrameFromReceiver(currentfName,currentAcquisitionIndex,currentFrameIndex,currentSubFrameIndex);
-						pthread_mutex_unlock(&mg);
 
 						//if detector returned null
 						if(setReceiverOnline()==OFFLINE_FLAG)
@@ -659,6 +656,7 @@ void* postProcessing::processData(int delflag) {
 							}
 						}
 					}
+					pthread_mutex_unlock(&mg);
 				}
 			}
 

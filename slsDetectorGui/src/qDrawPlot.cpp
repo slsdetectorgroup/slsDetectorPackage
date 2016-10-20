@@ -333,6 +333,9 @@ void qDrawPlot::SetupWidgetWindow(){
 	myDet->registerMeasurementFinishedCallback(&(GetMeasurementFinishedCallBack),this);
 	//Setting the callback function to get progress from detector class(using receivers)
 	myDet->registerProgressCallback(&(GetProgressCallBack),this);
+	//stream data to the gui
+	myDet->enableDataStreamingFromReceiver(1);
+
 
 	qDefs::checkErrorMessage(myDet,"qDrawPlot::SetupWidgetWindow");
 }
@@ -1162,7 +1165,9 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 
 int qDrawPlot::GetAcquisitionFinishedCallBack(double currentProgress,int detectorStatus, void *this_pointer){
 	((qDrawPlot*)this_pointer)->AcquisitionFinished(currentProgress,detectorStatus);
+#ifdef VERYVERBOSE
 	cout << "acquisition finished callback worked ok" << endl;
+#endif
 	return 0;
 }
 
@@ -1946,7 +1951,7 @@ void qDrawPlot::SetFrameFactor(int frame){
 	frameFactor = frame;
 	if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG){
 		frame = myDet->setReadReceiverFrequency(1,frame);
-		if(frame > 0) frameFactor = 1;
+		/*if(frame > 0) frameFactor = 1;*//**what is this*/
 #ifdef VERBOSE
 		cout << "Receiver read frequency set to : " << frame << endl;
 #endif

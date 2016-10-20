@@ -529,6 +529,7 @@ void qTabActions::Refresh(){
 #ifdef VERBOSE
 	cout << "**Updated all action widgets: " << endl << endl;
 #endif
+
 	qDefs::checkErrorMessage(myDet,"qTabActions::Refresh");
 }
 

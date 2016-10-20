@@ -1007,7 +1007,7 @@ void qTabPlot::SetScanArgument(){
 
 	}
 
-	cout <<"min:"<<min<<" max:"<<max<<" size:"<<size<<endl;
+	//cout <<"min:"<<min<<" max:"<<max<<" size:"<<size<<endl;
 	myPlot->SetHistogram(radioHistogram->isChecked(),histArg,min,max,size);
 
 

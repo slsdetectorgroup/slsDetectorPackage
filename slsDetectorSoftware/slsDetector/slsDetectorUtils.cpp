@@ -342,7 +342,6 @@ int  slsDetectorUtils::acquire(int delflag){
 
 	  pthread_mutex_lock(&mg);
 	  //offline
-	  pthread_mutex_lock(&mg);
 	  if(setReceiverOnline()==OFFLINE_FLAG){
 		  if ((getDetectorsType()==GOTTHARD) || (getDetectorsType()==MOENCH) || (getDetectorsType()==JUNGFRAU) ){
 			  if((*correctionMask)&(1<<WRITE_FILE))

@@ -2580,7 +2580,7 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer[]){
 		//		dec <<	(int)((( (currentFrameNumber-1-previousFrameNumber) - ((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame))/
 		//		 (double)(currentFrameNumber-1-previousFrameNumber))*100.000)
 		//		<< "%\t"
-		<< 		"Packets Lost:" << dec << ( ((int)(currentFrameNumber-1-previousFrameNumber)) -
+		<< 		"Packets Lost:" << dec << ( ((int)(currentFrameNumber-previousFrameNumber)) -
 				((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame))
 				<<		"\tCurrentFrameNumber:" << currentFrameNumber
 				<< 		"\tPreviousFrameNumber:" << previousFrameNumber

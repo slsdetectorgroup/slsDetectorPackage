@@ -2574,6 +2574,7 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer[]){
 
 	//all threads need to close file, reset mask and exit loop
 	if(packetsCaught){
+		cout << endl << "File:" << completeFileName <<endl;
 		cout 	//<< "Packet Loss:" <<
 		//		setw(4)<<fixed << setprecision(4) <<
 		//		dec <<	(int)((( (currentFrameNumber-1-previousFrameNumber) - ((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame))/

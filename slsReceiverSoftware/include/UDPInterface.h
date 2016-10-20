@@ -215,6 +215,12 @@ class UDPInterface {
 	virtual uint32_t getFrameToGuiFrequency() const = 0;
 
 	/**
+	 * Get the data stream enable
+	 * @return 1 to send via zmq, else 0
+	 */
+	virtual uint32_t getDataStreamEnable() const = 0;
+
+	/**
 	 * Get Acquisition Period
 	 * @return acquisition period
 	 */
@@ -259,8 +265,6 @@ class UDPInterface {
 	 * @return 0 for deactivated, 1 for activated
 	 */
 	virtual int getActivate() const = 0;
-
-
 
 
 	/*************************************************************************
@@ -363,10 +367,17 @@ class UDPInterface {
 
 	/**
 	 * Set the Frequency of Frames Sent to GUI
-	 * @param i 0 for random frame requests, n for nth frame frequency
+	 * @param freq 0 for random frame requests, n for nth frame frequency
 	 * @return OK or FAIL
 	 */
-	virtual int setFrameToGuiFrequency(const uint32_t i) = 0;
+	virtual int setFrameToGuiFrequency(const uint32_t freq) = 0;
+
+	/**
+	 * Set the data stream enable
+	 * @param enable 0 to disable, 1 to enable
+	 * @return OK or FAIL
+	 */
+	virtual uint32_t setDataStreamEnable(const uint32_t enable) = 0;
 
 	/**
 	 * Set Acquisition Period
@@ -463,12 +474,13 @@ class UDPInterface {
 
 	/**
 	 * Get the buffer-current frame read by receiver
+	 * @param ithread port thread index
 	 * @param c pointer to current file name
 	 * @param raw address of pointer, pointing to current frame to send to gui
 	 * @param startAcq start index of the acquisition
 	 * @param startFrame start index of the scan
 	 */
-	virtual void readFrame(char* c,char** raw, uint64_t &startAcq, uint64_t &startFrame)=0;
+	virtual void readFrame(int ithread, char* c,char** raw, int64_t &startAcq, int64_t &startFrame)=0;
 
 	/**
 	 * abort acquisition with minimum damage: close open files, cleanup.
@@ -478,9 +490,9 @@ class UDPInterface {
 
 	/**
 	 * Closes file / all files(if multiple files)
-	 * @param i thread index (if multiple files used  eg. root files) -1 for all threads
+	 * @param ithread writer thread index
 	 */
-	virtual void closeFile(int i = -1) = 0;
+	virtual void closeFile(int ithread = 0) = 0;
 
 	/**
 	 * Activate / Deactivate Receiver
@@ -489,6 +501,13 @@ class UDPInterface {
 	 */
 	virtual int setActivate(int enable = -1) = 0;
 
+
+	/**
+	 * Activate / Deactivate Receiver
+	 * If deactivated, receiver will write dummy packets 0xFF
+	 * (as it will receive nothing from detector)
+	 */
+	virtual int setActivate(int enable = -1) = 0;
 
 	//***callback functions***
 	/**

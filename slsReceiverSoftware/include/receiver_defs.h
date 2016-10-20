@@ -139,7 +139,7 @@ typedef struct {
 #define JFRAU_BUFFER_SIZE 					(JFRAU_ONE_PACKET_SIZE*JFRAU_PACKETS_PER_FRAME) 	//8214*128
 
 
-#define JFRAU_FRAME_INDEX_MASK				0x0 //Not Applicable, use struct
+#define JFRAU_FRAME_INDEX_MASK				0xffffff //mask after using struct (48 bit)
 #define JFRAU_FRAME_INDEX_OFFSET			0x0 //Not Applicable, use struct
 #define JFRAU_PACKET_INDEX_MASK				0x0//Not Applicable, use struct
 
@@ -169,7 +169,8 @@ typedef struct {
 
 
 #define EIGER_MAX_PORTS 					2
-#define EIGER_HEADER_LENGTH					48
+#define EIGER_HEADER_PACKET_LENGTH			48
+
 
 #define EIGER_FIFO_SIZE						100
 /*#define EIGER_ALIGNED_FRAME_SIZE			65536*/
@@ -180,7 +181,7 @@ typedef struct {
 #define EIGER_ONE_GIGA_ONE_DATA_SIZE		1024
 #define EIGER_TEN_GIGA_ONE_PACKET_SIZE		4112
 #define EIGER_TEN_GIGA_ONE_DATA_SIZE		4096
-#define EIGER_PACKET_HEADER_SIZE			8
+#define EIGER_DATA_PACKET_HEADER_SIZE		8
 //#define EIGER_BUFFER_SIZE_CONSTANT			(EIGER_ONE_PACKET_SIZE*EIGER_PACKETS_PER_FRAME_COSTANT)//1040*16*2//*bit mode
 //#define EIGER_DATA_BYTES_CONSTANT 			(EIGER_ONE_DATA_SIZE*EIGER_PACKETS_PER_FRAME_COSTANT)	//1024*16*2//*bit mode
 
@@ -188,9 +189,8 @@ typedef struct {
 #define EIGER_FRAME_INDEX_OFFSET			0
 #define EIGER_PACKET_INDEX_MASK				0x0
 
-#define EIGER_IMAGE_HEADER_SIZE				48
-
-#define EIGER_PIXELS_IN_ONE_ROW				(256*4)
+//for each thread
+#define EIGER_PIXELS_IN_ONE_ROW				(256*2)
 #define EIGER_PIXELS_IN_ONE_COL				(256)
 
 

@@ -3,7 +3,7 @@
 #define GENERIC_SOCKET_H
 
 
-
+#include "ansi.h"
 
 
 /**
@@ -81,6 +81,7 @@ using namespace std;
 #define DEFAULT_BACKLOG 5
 #define DEFAULT_UDP_PORTNO 50001
 #define DEFAULT_GUI_PORTNO 65000
+#define DEFAULT_ZMQ_PORTNO 70001
 
 class genericSocket{
 
@@ -105,7 +106,8 @@ enum communicationProtocol{
 	 packet_size(ps),
 	 nsending(0),
 	 nsent(0),
-	 total_sent(0)// sender (client): where to? ip
+	 total_sent(0),// sender (client): where to? ip
+	 header_packet_size(0)
    { 
 	 //memset(&serverAddress, 0, sizeof(sockaddr_in));
 	 //memset(&clientAddress, 0, sizeof(sockaddr_in));
@@ -161,7 +163,7 @@ enum communicationProtocol{
 
   */
   
-   genericSocket(unsigned short int const port_number, communicationProtocol p, int ps = DEFAULT_PACKET_SIZE, const char *eth=NULL):
+   genericSocket(unsigned short int const port_number, communicationProtocol p, int ps = DEFAULT_PACKET_SIZE, const char *eth=NULL, int hsize=0):
      //portno(port_number),
      protocol(p),
      is_a_server(1),
@@ -170,7 +172,8 @@ enum communicationProtocol{
      packet_size(ps),
 	 nsending(0),
 	 nsent(0),
-	 total_sent(0)
+	 total_sent(0),
+	 header_packet_size(hsize)
    {
 
 /* // you can specify an IP address: */
@@ -613,25 +616,14 @@ enum communicationProtocol{
 
     			 while(length>0){
     				 nsending = (length>packet_size) ? packet_size:length;
-    				 /*
-			 //created for debugging on 11.05.2015
-			 nsending=5000;
-			 nsent = recvfrom(socketDescriptor,(char*)buf,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
-			 if(nsent <1000){
-				 if(nsent < 48){
-					 cout << " "<<dec<<nsent<<" ";
-				 }else{
-					 cout << "nsent: " << dec<<nsent << "\tfnum:" <<
-						 htonl(*(unsigned int*)((eiger_image_header32 *)((char*)(buf)))->fnum)<< "\t";
-				 	 cout << k <<" packets" << endl;
-				 	 k = 0;
-				 }
-			 }
-			 else
-				 k++;
-    				  */
     				 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
-    				 if(!nsent) break;
+    				 if(nsent < packet_size) {
+    					 if(nsent){
+    						 if((nsent != header_packet_size) && (nsent != -1))
+    							 cprintf(RED,"Incomplete Packet size %d\n",nsent);
+    					 }
+    					 break;
+    				 }
     				 length-=nsent;
     				 total_sent+=nsent;
     			 }
@@ -702,6 +694,11 @@ enum communicationProtocol{
 
      }
 
+
+     int getCurrentTotalReceived(){
+    	 return total_sent;
+     }
+
      char lastClientIP[INET_ADDRSTRLEN];
      char thisClientIP[INET_ADDRSTRLEN];
      int differentClients;
@@ -724,7 +721,7 @@ enum communicationProtocol{
   int nsending;
   int nsent;
   int total_sent;
-  
+  int header_packet_size;
        
 
   // pthread_mutex_t mp;

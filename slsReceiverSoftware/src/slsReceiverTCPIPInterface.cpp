@@ -263,6 +263,7 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_ENABLE_RECEIVER_TEN_GIGA]		= 	&slsReceiverTCPIPInterface::enable_tengiga;
 	flist[F_SET_RECEIVER_FIFO_DEPTH]		= 	&slsReceiverTCPIPInterface::set_fifo_depth;
 	flist[F_ACTIVATE]						= 	&slsReceiverTCPIPInterface::set_activate;
+	flist[F_STREAM_DATA_FROM_RECEIVER]		= 	&slsReceiverTCPIPInterface::set_data_stream_enable;
 
 
 #ifdef VERYVERBOSE
@@ -353,6 +354,10 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 		if (lockStatus==1 && socket->differentClients==1){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
+		}
+		else if((receiverBase)&&(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING)){
+			strcpy(mess,"Can not set detector type while receiver not idle\n");
+			ret = FAIL;
 		}
 		else{
 
@@ -445,6 +450,10 @@ int slsReceiverTCPIPInterface::set_file_name() {
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set file name while receiver not idle\n");
+			ret = FAIL;
+		}
 		else{
 			receiverBase->setFileName(fName);
 			retval = receiverBase->getFileName();
@@ -508,14 +517,14 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 		if (lockStatus==1 && socket->differentClients==1){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
-		}/*
-		else if((strlen(fPath))&&(receiverBase->getStatus()==RUNNING)){
-			strcpy(mess,"Can not set file path while receiver running\n");
-			ret = FAIL;
-		}*/
+		}
 		else if (receiverBase == NULL){
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
+		}
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set file path while receiver not idle\n");
+			ret = FAIL;
 		}
 		else{
 			receiverBase->setFilePath(fPath);
@@ -586,6 +595,10 @@ int slsReceiverTCPIPInterface::set_file_index() {
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set file index while receiver not idle\n");
+			ret = FAIL;
+		}
 		else{
 			if(index >= 0)
 				receiverBase->setFileIndex(index);
@@ -649,6 +662,10 @@ int slsReceiverTCPIPInterface::set_frame_index() {
 		else if (receiverBase == NULL){
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
+		}
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set frame index while receiver not idle\n");
+			ret = FAIL;
 		}
 		else{
 			//client sets to 0, but for receiver it is just an enable
@@ -727,9 +744,9 @@ int slsReceiverTCPIPInterface::setup_udp(){
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
-		else if(receiverBase->getStatus()==RUNNING){
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set up udp while receiver not idle\n");
 			ret = FAIL;
-			strcpy(mess,"cannot set up udp when receiver is running\n");
 		}
 		else{
 			//set up udp port
@@ -861,8 +878,9 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 		ret=FAIL;
 	}
 	else{
-		if(receiverBase->getStatus()!=IDLE)
+		if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING || receiverBase->getStatus()==RUN_FINISHED){
 			receiverBase->stopReceiver();
+		}
 		s = receiverBase->getStatus();
 		if(s==IDLE)
 			ret = OK;
@@ -1001,6 +1019,10 @@ int	slsReceiverTCPIPInterface::reset_frames_caught(){
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
+		else if(receiverBase->getStatus()==RUNNING){
+			strcpy(mess,"Cannot reset frames caught while status is running\n");
+			ret=FAIL;
+		}
 		else
 			receiverBase->resetAcquisitionCount();
 	}
@@ -1058,7 +1080,7 @@ int slsReceiverTCPIPInterface::set_short_frame() {
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
-		else if(receiverBase->getStatus()==RUNNING){
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
 			strcpy(mess,"Cannot set short frame while status is running\n");
 			ret=FAIL;
 		}
@@ -1129,8 +1151,8 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 
 	char* raw;
 
-	uint64_t startAcquisitionIndex=0;
-	uint64_t startFrameIndex=0;
+	int64_t startAcquisitionIndex=0;
+	int64_t startFrameIndex=0;
 	uint32_t index = -1,bindex = 0, offset=0;
 
 	strcpy(mess,"Could not read frame\n");
@@ -1150,7 +1172,7 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 
 	else{
 		ret = OK;
-		receiverBase->readFrame(fName,&raw,startAcquisitionIndex,startFrameIndex);
+		receiverBase->readFrame(0,fName,&raw,startAcquisitionIndex,startFrameIndex);
 
 		/**send garbage with -1 index to try again*/
 		if (raw == NULL){
@@ -1162,7 +1184,7 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 
 		else{
 			bindex = ((uint32_t)(*((uint32_t*)raw)));
-			memcpy(origVal,raw,bufferSize);
+			memcpy(origVal,raw + HEADER_SIZE_NUM_TOT_PACKETS,bufferSize);
 			raw=NULL;
 
 			//************** packet number order**********************
@@ -1318,8 +1340,8 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 	uint32_t index=-1,index2=0;
 	uint32_t pindex=0,pindex2=0;
 	uint32_t bindex=0,bindex2=0;
-	uint64_t startAcquisitionIndex=0;
-	uint64_t startFrameIndex=0;
+	int64_t startAcquisitionIndex=0;
+	int64_t startFrameIndex=0;
 
 	strcpy(mess,"Could not read frame\n");
 
@@ -1338,7 +1360,7 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 		cout<<"haven't caught any frame yet"<<endl;
 	}else{
 		ret = OK;
-		receiverBase->readFrame(fName,&raw,startAcquisitionIndex,startFrameIndex);
+		receiverBase->readFrame(0,fName,&raw,startAcquisitionIndex,startFrameIndex);
 
 		/**send garbage with -1 index to try again*/
 		if (raw == NULL){
@@ -1367,7 +1389,7 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 #endif
 			}
 
-			memcpy(origVal,raw,bufferSize);
+			memcpy(origVal,raw + HEADER_SIZE_NUM_TOT_PACKETS,bufferSize);
 			raw=NULL;
 
 
@@ -1493,8 +1515,8 @@ int	slsReceiverTCPIPInterface::propix_read_frame(){
 	uint32_t index=-1,index2=0;
 	uint32_t pindex=0,pindex2=0;
 	uint32_t bindex=0,bindex2=0;
-	uint64_t startAcquisitionIndex=0;
-	uint64_t startFrameIndex=0;
+	int64_t startAcquisitionIndex=0;
+	int64_t startFrameIndex=0;
 
 	strcpy(mess,"Could not read frame\n");
 
@@ -1513,7 +1535,7 @@ int	slsReceiverTCPIPInterface::propix_read_frame(){
 		cout<<"haven't caught any frame yet"<<endl;
 	}else{
 		ret = OK;
-		receiverBase->readFrame(fName,&raw,startAcquisitionIndex,startFrameIndex);
+		receiverBase->readFrame(0,fName,&raw,startAcquisitionIndex,startFrameIndex);
 
 		/**send garbage with -1 index to try again*/
 		if (raw == NULL){
@@ -1533,7 +1555,7 @@ int	slsReceiverTCPIPInterface::propix_read_frame(){
 			cout << "index2:" << hex << index << endl;
 #endif
 
-			memcpy(origVal,raw,bufferSize);
+			memcpy(origVal,raw + HEADER_SIZE_NUM_TOT_PACKETS,bufferSize);
 			raw=NULL;
 
 			/*//ignore if half frame is missing
@@ -1631,22 +1653,27 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	char fName[MAX_STR_LENGTH]="";
 	int acquisitionIndex = -1;
 	int frameIndex= -1;
-	uint32_t index=0;
-	uint32_t subframenumber=-1;
+	int index=0;
+	int subframenumber=-1;
 
-	int frameSize   = EIGER_ONE_GIGA_ONE_PACKET_SIZE * packetsPerFrame;
-	int dataSize 	= EIGER_ONE_GIGA_ONE_DATA_SIZE * packetsPerFrame;
+	int frameSize   = EIGER_ONE_GIGA_ONE_PACKET_SIZE * packetsPerFrame * EIGER_MAX_PORTS;
+	int dataSize 	= EIGER_ONE_GIGA_ONE_DATA_SIZE * packetsPerFrame * EIGER_MAX_PORTS;
 	int oneDataSize = EIGER_ONE_GIGA_ONE_DATA_SIZE;
+	int onePacketSize = EIGER_ONE_GIGA_ONE_PACKET_SIZE;
 	if(tenGigaEnable){
-		frameSize  	= EIGER_TEN_GIGA_ONE_PACKET_SIZE * packetsPerFrame;
-		dataSize	= EIGER_TEN_GIGA_ONE_DATA_SIZE * packetsPerFrame;
+		frameSize  	= EIGER_TEN_GIGA_ONE_PACKET_SIZE * packetsPerFrame * EIGER_MAX_PORTS;
+		dataSize	= EIGER_TEN_GIGA_ONE_DATA_SIZE * packetsPerFrame * EIGER_MAX_PORTS;
 		oneDataSize = EIGER_TEN_GIGA_ONE_DATA_SIZE;
+		onePacketSize = EIGER_TEN_GIGA_ONE_PACKET_SIZE;
 	}
 	char* raw;
 	char* origVal 	= new char[frameSize];
 	char* retval 	= new char[dataSize];
-	uint64_t startAcquisitionIndex=0;
-	uint64_t startFrameIndex=0;
+	memset(origVal,0xFF,frameSize);
+	memset(retval,0xFF,dataSize);
+
+	int64_t startAcquisitionIndex=0;
+	int64_t startFrameIndex=0;
 	strcpy(mess,"Could not read frame\n");
 
 
@@ -1670,36 +1697,51 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	// acq started
 	else{
 		ret = OK;
+		int fnum[EIGER_MAX_PORTS];
+		for(int i=0;i<EIGER_MAX_PORTS;i++)
+			fnum[i] = -1;
 		//read a frame
-		receiverBase->readFrame(fName,&raw,startAcquisitionIndex,startFrameIndex);
-		//send garbage with -1 index to try again
-		if (raw == NULL){
-			startAcquisitionIndex = -1;
+		for(int i=0;i<EIGER_MAX_PORTS;i++){
+			receiverBase->readFrame(i,fName,&raw,startAcquisitionIndex,startFrameIndex);
+			//send garbage with -1 index to try again
+			if (raw == NULL){
+				startAcquisitionIndex = -1;
 #ifdef VERYVERBOSE
-			cout<<"data not ready for gui yet"<<endl;
+				cout<<"data not ready for gui yet for "<< i << endl;
 #endif
-		}
-
-		//proper frame
-		else{//cout<<"**** got proper frame ******"<<endl;
-
-			eiger_packet_footer_t* wbuf_footer;
-			wbuf_footer = (eiger_packet_footer_t*)(raw + oneDataSize + sizeof(eiger_packet_header_t));
-			index =(uint32_t)(*( (uint64_t*) wbuf_footer));
-			index += (startFrameIndex-1);
-			if(dynamicrange == 32){
-				eiger_packet_header_t* wbuf_header;
-				wbuf_header = (eiger_packet_header_t*) raw;
-				subframenumber = *( (uint32_t*) wbuf_header->subFrameNumber);
+				raw=NULL;
+				break;
 			}
-
+			else{
+				eiger_packet_footer_t* wbuf_footer;
+				wbuf_footer = (eiger_packet_footer_t*)(raw + HEADER_SIZE_NUM_TOT_PACKETS + oneDataSize + sizeof(eiger_packet_header_t));
+				index =(uint32_t)(*( (uint64_t*) wbuf_footer));
+				index += (startFrameIndex-1);
+				fnum[i] = index;
+				if(dynamicrange == 32){
+					eiger_packet_header_t* wbuf_header;
+					wbuf_header = (eiger_packet_header_t*) (raw + HEADER_SIZE_NUM_TOT_PACKETS);
+					subframenumber = *( (uint32_t*) wbuf_header->subFrameNumber);
+				}
 #ifdef VERYVERBOSE
-			cout << "index:" << dec << index << endl;
-			cout << "subframenumber:" << dec << subframenumber << endl;
+				cout << "index:" << dec << index << endl;
+				cout << "subframenumber:" << dec << subframenumber << endl;
 #endif
+				int numpackets = (uint32_t)(*( (uint32_t*) raw));
+				memcpy(((char*)origVal)+(i*onePacketSize*packetsPerFrame),raw + HEADER_SIZE_NUM_TOT_PACKETS,numpackets*onePacketSize);
+				raw=NULL;
+			}
+		}
+		//proper frame
+		if(startAcquisitionIndex != -1){
+			//cout<<"**** got proper frame ******"<<endl;
 
-			memcpy(origVal,raw,frameSize);
-			raw=NULL;
+			//let them continue
+			//for(int i=0;i<EIGER_MAX_PORTS;++i)
+				//receiverBase->resetGuiPointer(i);
+
+			if(fnum[0]!=fnum[1])
+				cprintf(BG_RED,"Fnums differ %d and %d\n",fnum[0],fnum[1]);
 
 			int c1=8;//first port
 			int c2=(frameSize/2) + 8; //second port
@@ -1877,8 +1919,8 @@ int	slsReceiverTCPIPInterface::jungfrau_read_frame(){
 	int acquisitionIndex = -1;
 	int frameIndex= -1;
 	int64_t currentIndex=0;
-	uint64_t startAcquisitionIndex=0;
-	uint64_t startFrameIndex=0;
+	int64_t startAcquisitionIndex=0;
+	int64_t startFrameIndex=0;
 	strcpy(mess,"Could not read frame\n");
 
 
@@ -1916,7 +1958,7 @@ int	slsReceiverTCPIPInterface::jungfrau_read_frame(){
 	else{
 		ret = OK;
 		//read a frame
-		receiverBase->readFrame(fName,&raw,startAcquisitionIndex,startFrameIndex);
+		receiverBase->readFrame(0,fName,&raw,startAcquisitionIndex,startFrameIndex);
 		//send garbage with -1 index to try again
 		if (raw == NULL){
 			startAcquisitionIndex = -1;
@@ -1928,7 +1970,7 @@ int	slsReceiverTCPIPInterface::jungfrau_read_frame(){
 		//proper frame
 		else{
 			//cout<<"**** got proper frame ******"<<endl;
-			memcpy(origVal,raw,frameSize);
+			memcpy(origVal,raw + HEADER_SIZE_NUM_TOT_PACKETS,frameSize);
 			raw=NULL;
 
 			//fixed frame number
@@ -2055,20 +2097,25 @@ int slsReceiverTCPIPInterface::set_read_frequency(){
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
 		}
-		/*
-		else if((receiverBase->getStatus()==RUNNING) && (index >= 0)){
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set receiver frequency mode while receiver not idle\n");
+			cprintf(RED,"%s\n",mess);
 			ret = FAIL;
-			strcpy(mess,"cannot set up receiver mode when receiver is running\n");
-		}*/
+		}
 		else{
-			if(index >= 0){
+			if(index >= 0 ){
 				ret = receiverBase->setFrameToGuiFrequency(index);
-				if(ret == FAIL)
+				if(ret == FAIL){
 					strcpy(mess, "Could not allocate memory for listening fifo\n");
+					cprintf(RED,"%s\n",mess);
+				}
 			}
 			retval=receiverBase->getFrameToGuiFrequency();
-			if(index>=0 && retval!=index)
+			if(index>=0 && retval!=index){
+				strcpy(mess,"Could not set frame to gui frequency");
+				cprintf(RED,"%s\n",mess);
 				ret = FAIL;
+			}
 		}
 	}
 
@@ -2091,6 +2138,69 @@ int slsReceiverTCPIPInterface::set_read_frequency(){
 	return ret;
 }
 
+
+
+
+
+int slsReceiverTCPIPInterface::set_data_stream_enable(){
+	ret=OK;
+	int retval=-1;
+	int index;
+	strcpy(mess,"Could not set data stream enable\n");
+
+
+	// receive arguments
+	if(socket->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
+		strcpy(mess,"Error reading from socket\n");
+		ret = FAIL;
+	}
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	if (ret==OK) {
+		if (lockStatus==1 && socket->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			ret=FAIL;
+		}
+		else if (receiverBase == NULL){
+			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
+			ret=FAIL;
+		}
+		else if((index >= 0) && (receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING)){
+			strcpy(mess,"Can not set data stream enable while receiver not idle\n");
+			cprintf(RED,"%s\n",mess);
+			ret = FAIL;
+		}
+		else{
+			if(index >= 0 )
+				ret = receiverBase->setDataStreamEnable(index);
+			retval=receiverBase->getDataStreamEnable();
+			if(index>=0 && retval!=index){
+				strcpy(mess,"Could not set data stream enable");
+				cprintf(RED,"%s\n",mess);
+				ret = FAIL;
+			}
+		}
+	}
+
+#endif
+
+	if(ret==OK && socket->differentClients){
+		FILE_LOG(logDEBUG) << "Force update";
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL){
+		cprintf(RED,"%s\n",mess);
+		socket->SendDataOnly(mess,sizeof(mess));
+	}
+	socket->SendDataOnly(&retval,sizeof(retval));
+
+	//return ok/fail
+	return ret;
+}
 
 
 
@@ -2119,6 +2229,10 @@ int slsReceiverTCPIPInterface::enable_file_write(){
 		else if (receiverBase == NULL){
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
+		}
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set file write mode while receiver not idle\n");
+			ret = FAIL;
 		}
 		else{
 			if(enable >= 0)
@@ -2182,7 +2296,7 @@ int64_t slsReceiverTCPIPInterface::getReceiverVersion(){
 
 
 
-int	slsReceiverTCPIPInterface::start_readout(){
+int	slsReceiverTCPIPInterface::start_readout(){cprintf(BLUE,"In start readout!\n");
 	ret=OK;
 	enum runStatus retval;
 
@@ -2191,7 +2305,12 @@ int	slsReceiverTCPIPInterface::start_readout(){
 	if (receiverBase == NULL){
 		strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 		ret=FAIL;
-	}else{
+	}
+	/*else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+		strcpy(mess,"Can not start receiver readout while receiver not idle\n");
+		ret = FAIL;
+	}*/
+	else{
 		receiverBase->startReadout();
 		retval = receiverBase->getStatus();
 		if((retval == TRANSMITTING) || (retval == RUN_FINISHED) || (retval == IDLE))
@@ -2246,6 +2365,10 @@ int slsReceiverTCPIPInterface::set_timer() {
 		else if (receiverBase == NULL){
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
+		}
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set timer while receiver not idle\n");
+			ret = FAIL;
 		}
 		else{
 			if(index[0] == FRAME_PERIOD){
@@ -2322,7 +2445,7 @@ int slsReceiverTCPIPInterface::enable_compression() {
 				strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 				ret=FAIL;
 			}
-			else if(receiverBase->getStatus()==RUNNING){
+			else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
 				strcpy(mess,"Cannot enable/disable compression while status is running\n");
 				ret=FAIL;
 			}
@@ -2390,6 +2513,10 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 		else if (receiverBase == NULL){
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
+		}
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set detector hostname while receiver not idle\n");
+			ret = FAIL;
 		}
 		else{
 			receiverBase->initialize(hostname);
@@ -2472,7 +2599,12 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 			if (receiverBase == NULL){
 				strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 				ret=FAIL;
-			}else{
+			}
+			else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+				strcpy(mess,"Can not set dynamic range while receiver not idle\n");
+				ret = FAIL;
+			}
+			else{
 				if(dr > 0){
 					ret = receiverBase->setDynamicRange(dr);
 					if(ret == FAIL)
@@ -2485,9 +2617,9 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 					dynamicrange = retval;
 					if(myDetectorType == EIGER){
 						if(!tenGigaEnable)
-							packetsPerFrame = EIGER_ONE_GIGA_CONSTANT * dynamicrange * EIGER_MAX_PORTS;
+							packetsPerFrame = EIGER_ONE_GIGA_CONSTANT * dynamicrange;
 						else
-							packetsPerFrame = EIGER_TEN_GIGA_CONSTANT * dynamicrange * EIGER_MAX_PORTS;
+							packetsPerFrame = EIGER_TEN_GIGA_CONSTANT * dynamicrange;
 					}else if (myDetectorType == JUNGFRAU)
 						packetsPerFrame = JFRAU_PACKETS_PER_FRAME;
 				}
@@ -2548,6 +2680,10 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 		else if (receiverBase == NULL){
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
+		}
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set overwrite mode while receiver not idle\n");
+			ret = FAIL;
 		}
 		else{
 			if(index >= 0)
@@ -2611,6 +2747,10 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 		else if (receiverBase == NULL){
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
+		}
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set up 1Giga/10Giga mode while receiver not idle\n");
+			ret = FAIL;
 		}
 		else{
 			if(val >= 0)
@@ -2677,7 +2817,7 @@ int slsReceiverTCPIPInterface::set_fifo_depth() {
 				strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 				ret=FAIL;
 			}
-			else if(receiverBase->getStatus()==RUNNING){
+			else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
 				strcpy(mess,"Cannot set/get fifo depth while status is running\n");
 				ret=FAIL;
 			}
@@ -2734,6 +2874,77 @@ int slsReceiverTCPIPInterface::set_activate() {
 		cprintf(RED,"%s",mess);
 		ret = FAIL;
 	}
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	if (ret==OK) {
+		if (lockStatus==1 && socket->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			ret=FAIL;
+		}
+
+		if(ret!=FAIL){
+			if (receiverBase == NULL){
+				strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
+				cprintf(RED,"%s",mess);
+				ret=FAIL;
+			}else if(receiverBase->getStatus()==RUNNING){
+				strcpy(mess,"Cannot activate/deactivate while status is running\n");
+				cprintf(RED,"%s",mess);
+				ret=FAIL;
+			}else{
+				if(enable != -1)
+					receiverBase->setActivate(enable);
+				retval = receiverBase->getActivate();
+				if(enable >= 0 && retval != enable){
+					sprintf(mess,"Tried to set activate to %d, but returned %d\n",enable,retval);
+					ret = FAIL;
+					cprintf(RED,"%s",mess);
+				}
+			}
+		}
+	}
+#endif
+#ifdef VERYVERBOSE
+	if(ret!=FAIL)
+		cout << "Activate: " << retval << endl;
+	else
+		cout << mess << endl;
+#endif
+
+
+	if(ret==OK && socket->differentClients){
+		FILE_LOG(logDEBUG) << "Force update";
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL){
+		cprintf(RED,"%s\n",mess);
+		socket->SendDataOnly(mess,sizeof(mess));
+	}
+	socket->SendDataOnly(&retval,sizeof(retval));
+
+	//return ok/fail
+	return ret;
+}
+
+
+int slsReceiverTCPIPInterface::set_activate() {
+	ret=OK;
+	int retval=-1;
+	int enable;
+	strcpy(mess,"Could not activate/deactivate\n");
+
+
+	// receive arguments
+	if(socket->ReceiveDataOnly(&enable,sizeof(enable)) < 0 ){
+		strcpy(mess,"Error reading from socket\n");
+		cprintf(RED,"%s",mess);
+		ret = FAIL;
+	}
+
 
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS

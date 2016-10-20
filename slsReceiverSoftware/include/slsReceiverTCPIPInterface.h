@@ -176,6 +176,9 @@ private:
 	/** Sets the receiver to send every nth frame to gui, or only upon gui request */
 	int set_read_frequency();
 
+	/* Set the data stream enable */
+	int set_data_stream_enable();
+
 	/** Enable File Write*/
 	int enable_file_write();
 

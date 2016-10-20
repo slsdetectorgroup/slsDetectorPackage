@@ -76,7 +76,8 @@ void UDPBaseImplementation::initializeMembers(){
 
 	//***acquisition parameters***
 	shortFrameEnable = -1;
-	FrameToGuiFrequency = 0;
+	frameToGuiFrequency = 0;
+	dataStreamEnable = false;
 }
 
 UDPBaseImplementation::~UDPBaseImplementation(){}
@@ -173,7 +174,9 @@ char *UDPBaseImplementation::getEthernetInterface() const{
 /***acquisition parameters***/
 int UDPBaseImplementation::getShortFrameEnable() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return shortFrameEnable;}
 
-uint32_t UDPBaseImplementation::getFrameToGuiFrequency() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return FrameToGuiFrequency;}
+uint32_t UDPBaseImplementation::getFrameToGuiFrequency() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return frameToGuiFrequency;}
+
+uint32_t UDPBaseImplementation::getDataStreamEnable() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return dataStreamEnable;}
 
 uint64_t UDPBaseImplementation::getAcquisitionPeriod() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return acquisitionPeriod;}
 
@@ -315,15 +318,27 @@ void UDPBaseImplementation::setShortFrameEnable(const int i){
 	FILE_LOG(logINFO) << "Short Frame Enable: " << stringEnable(shortFrameEnable);
 }
 
-int UDPBaseImplementation::setFrameToGuiFrequency(const uint32_t i){
+int UDPBaseImplementation::setFrameToGuiFrequency(const uint32_t freq){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
-	FrameToGuiFrequency = i;
-	FILE_LOG(logINFO) << "Frame To Gui Frequency:" << FrameToGuiFrequency;
+	frameToGuiFrequency = freq;
+	FILE_LOG(logINFO) << "Frame To Gui Frequency:" << frameToGuiFrequency;
 
 	//overrridden child classes might return FAIL
 	return OK;
 }
+
+
+uint32_t UDPBaseImplementation::setDataStreamEnable(const uint32_t enable){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	dataStreamEnable = enable;
+	FILE_LOG(logINFO) << "Streaming Data from Receiver:" << dataStreamEnable;
+
+	//overrridden child classes might return FAIL
+	return OK;
+}
+
 
 int UDPBaseImplementation::setAcquisitionPeriod(const uint64_t i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
@@ -432,10 +447,11 @@ int UDPBaseImplementation::shutDownUDPSockets(){
 	return OK;
 }
 
-void UDPBaseImplementation::readFrame(char* c,char** raw, uint64_t &startAcquisitionIndex, uint64_t &startFrameIndex){
+void UDPBaseImplementation::readFrame(int ithread, char* c,char** raw, int64_t &startAcquisitionIndex, int64_t &startFrameIndex){
 	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
 }
+
 
 //FIXME: needed, isnt stopReceiver enough?
 void UDPBaseImplementation::abort(){
@@ -443,7 +459,7 @@ void UDPBaseImplementation::abort(){
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
 }
 
-void UDPBaseImplementation::closeFile(int i){
+void UDPBaseImplementation::closeFile(int ithread){
 	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
 }

@@ -502,13 +502,6 @@ class UDPInterface {
 	virtual int setActivate(int enable = -1) = 0;
 
 
-	/**
-	 * Activate / Deactivate Receiver
-	 * If deactivated, receiver will write dummy packets 0xFF
-	 * (as it will receive nothing from detector)
-	 */
-	virtual int setActivate(int enable = -1) = 0;
-
 	//***callback functions***
 	/**
 	 * Call back for start acquisition

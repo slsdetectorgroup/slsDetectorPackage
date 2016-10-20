@@ -1531,7 +1531,7 @@ int UDPStandardImplementation::createNewFile(int ithread){
 	int index = 0;
 	if(totalWritingPacketCount[ithread]){
 		index = frameIndex[ithread];
-		cout << "\nThread " << ithread << "\tFile:" << completeFileName <<endl;
+		cout << "\nThread " << ithread << "\tFile:" << completeFileName[ithread] <<endl;
 	}
 
 	//create file name
@@ -2626,18 +2626,21 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 		fseek(sfilefd[ithread],0,0);
 		fwrite((void*)fileHeader[ithread], 1, FILE_HEADER_SIZE, sfilefd[ithread]);
 	}
-	cout << "\nThread " << ithread << "\tFile:" << completeFileName <<endl;
-			//<< "Packet Loss:" <<
-			//setw(4)<<fixed << setprecision(4) <<
-			//dec <<	(int)((( (currentFrameNumber-1-previousFrameNumber) - ((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame))/
-			//		 (double)(currentFrameNumber-1-previousFrameNumber))*100.000)
-			//<< "%\t"
-	cout 	<<		"\tPackets Lost:" << dec << ( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousFile[ithread])*packetsPerFrame) -
-						totalPacketsInFile[ithread])
-			<<		"\tCurrentFrameNumber:" << currentFrameNumber[ithread]
-			<< 		"\tPreviousFrameNumber:" << frameNumberInPreviousFile[ithread]
-			//<< 	"\tIndex:" << dec << index
-			<< endl;
+
+	if(totalWritingPacketCount[ithread]){
+		cout << "\nThread " << ithread << "\tFile:" << completeFileName[ithread] <<endl;
+				//<< "Packet Loss:" <<
+				//setw(4)<<fixed << setprecision(4) <<
+				//dec <<	(int)((( (currentFrameNumber-1-previousFrameNumber) - ((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame))/
+				//		 (double)(currentFrameNumber-1-previousFrameNumber))*100.000)
+				//<< "%\t"
+		cout 	<<		"\tPackets Lost:" << dec << ( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousFile[ithread])*packetsPerFrame) -
+							totalPacketsInFile[ithread])
+				 <<		"\tCurrentFrameNumber:" << currentFrameNumber[ithread]
+				 << 	"\tPreviousFrameNumber:" << frameNumberInPreviousFile[ithread]
+				//<< 	"\tIndex:" << dec << index
+				<< endl;
+	}
 	closeFile(ithread);
 	pthread_mutex_lock(&statusMutex);
 	writerThreadsMask^=(1<<ithread);

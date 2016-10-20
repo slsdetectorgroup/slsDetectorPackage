@@ -1373,8 +1373,10 @@ int UDPStandardImplementation::createNewFile(){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	int index = 0;
-	if(packetsCaught)
+	if(packetsCaught){
 		index = frameIndex;
+		cout << endl << "File:" << completeFileName <<endl;
+	}
 
 	//create file name
 	if(!frameIndexEnable)
@@ -1413,21 +1415,19 @@ int UDPStandardImplementation::createNewFile(){
 		//Print packet loss and filenames
 		if(!packetsCaught){
 			previousFrameNumber = -1;
-			cout << "File: " << completeFileName << endl;
+			cout << "File:" << completeFileName << endl;
 		}else{
-			if (previousFrameNumber == -1)
-				previousFrameNumber = startFrameIndex-1;
-
-			cout << completeFileName
-					<< "\tPacket Loss: " << setw(4)<<fixed << setprecision(4) << dec <<
-					(int)((( (currentFrameNumber-previousFrameNumber) - ((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame))/
-							 (double)(currentFrameNumber-previousFrameNumber))*100.000)
-					<< "%\tFramenumber: " << currentFrameNumber
-				  << "\t\t PreviousFrameNumber: " << previousFrameNumber
-					<< "\tIndex " << dec << index
-					<< "\tLost " << dec << ( ((int)(currentFrameNumber-previousFrameNumber)) -
-							                 ((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame)) << endl;
-
+			cout 	//<< "Packet Loss:" <<
+			//		setw(4)<<fixed << setprecision(4) <<
+			//		dec <<	(int)((( (currentFrameNumber-1-previousFrameNumber) - ((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame))/
+			//		 (double)(currentFrameNumber-1-previousFrameNumber))*100.000)
+			//		<< "%\t"
+					<< 		"Packets Lost:" << dec << ( ((int)(currentFrameNumber-1-previousFrameNumber)) -
+									((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame))
+					<<		"\tCurrentFrameNumber:" << currentFrameNumber
+					<< 		"\tPreviousFrameNumber:" << previousFrameNumber
+					//<< 	"\tIndex:" << dec << index
+					<< endl;
 		}
 
 		//write file header
@@ -1437,7 +1437,7 @@ int UDPStandardImplementation::createNewFile(){
 
 	//reset counters for each new file
 	if(packetsCaught){
-		previousFrameNumber = currentFrameNumber;
+		previousFrameNumber = currentFrameNumber-1;
 		packetsInFile = 0;
 		numTotMissingPacketsInFile = 0;
 	}
@@ -2330,6 +2330,8 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 			//full frame
 			if(fullframe[0] && fullframe[1]){
 				currentFrameNumber = presentFrameNumber;
+				acquisitionIndex = currentFrameNumber - startAcquisitionIndex;
+				frameIndex = currentFrameNumber - startFrameIndex;
 				numTotMissingPacketsInFile += numMissingPackets;
 				numTotMissingPackets += numMissingPackets;
 
@@ -2571,6 +2573,19 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer[]){
 	}
 
 	//all threads need to close file, reset mask and exit loop
+	if(packetsCaught){
+		cout 	//<< "Packet Loss:" <<
+		//		setw(4)<<fixed << setprecision(4) <<
+		//		dec <<	(int)((( (currentFrameNumber-1-previousFrameNumber) - ((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame))/
+		//		 (double)(currentFrameNumber-1-previousFrameNumber))*100.000)
+		//		<< "%\t"
+		<< 		"Packets Lost:" << dec << ( ((int)(currentFrameNumber-1-previousFrameNumber)) -
+				((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame))
+				<<		"\tCurrentFrameNumber:" << currentFrameNumber
+				<< 		"\tPreviousFrameNumber:" << previousFrameNumber
+				//<< 	"\tIndex:" << dec << index
+				<< endl;
+	}
 	closeFile(ithread);
 	pthread_mutex_lock(&statusMutex);
 	writerThreadsMask^=(1<<ithread);

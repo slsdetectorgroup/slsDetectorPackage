@@ -795,7 +795,16 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
   i++;
 
+
   descrToFuncMap[i].m_pFuncName="adc"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="temp_fpgafl"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="temp_fpgafr"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
   i++;
 
@@ -3894,6 +3903,10 @@ string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
 	  adc=TEMPERATURE_SODL;
   else if (cmd=="temp_sodr")
 	  adc=TEMPERATURE_SODR;
+  else if (cmd=="temp_fpgafl")
+	  adc=TEMPERATURE_FPGA2;
+  else if (cmd=="temp_fpgafr")
+	  adc=TEMPERATURE_FPGA3;
   else
     return string("cannot decode adc ")+cmd;
 
@@ -3926,6 +3939,8 @@ string slsDetectorCommand::helpADC(int narg, char *args[], int action) {
     os << "temp_dcdc " << "Cannot be set" << std::endl;
     os << "temp_sodl " << "Cannot be set" << std::endl;
     os << "temp_sodr " << "Cannot be set" << std::endl;
+    os << "temp_fpgafl " << "Cannot be set" << std::endl;
+    os << "temp_fpgafr " << "Cannot be set" << std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
     os << "temp_adc " << "\t gets the temperature of the adc" << std::endl;
@@ -3935,6 +3950,8 @@ string slsDetectorCommand::helpADC(int narg, char *args[], int action) {
     os << "temp_dcdc " << "\t gets the temperature close to the dc dc converter" << std::endl;
     os << "temp_sodl " << "\t gets the temperature close to the left so-dimm memory" << std::endl;
     os << "temp_sodr " << "\t gets the temperature close to the right so-dimm memory" << std::endl;
+    os << "temp_fpgafl " << "\t gets the temperature of the left front end board fpga" << std::endl;
+    os << "temp_fpgafr " << "\t gets the temperature of the left front end board fpga" << std::endl;
   }
   return os.str();
 }

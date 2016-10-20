@@ -694,6 +694,8 @@ int multiSlsDetector::addSlsDetector(const char *name, int pos) {
       t=slsDetector::getDetectorType(name, DEFAULT_PORTNO);
       if (t==GENERIC) {
 	cout << "Detector " << name << "does not exist in shared memory and could not connect to it to determine the type (which is not specified)!" << endl;
+	setErrorMask(getErrorMask()|MULTI_DETECTORS_NOT_ADDED);
+	appendNotAddedList(name);
 	return -1;
       }
 #ifdef VERBOSE
@@ -4358,8 +4360,12 @@ int multiSlsDetector::readConfigurationFile(string const fname){
   setNumberOfModules(-1);
   getMaxNumberOfModules();
 
-  if (getErrorMask())
+  if (getErrorMask()){
+	  int c;
+	  cprintf(RED,"\n----------------\n Error Messages\n----------------\n%s\n",
+			  getErrorMessage(c).c_str());
 	  return FAIL;
+  }
 
   return OK;
 
@@ -4689,7 +4695,8 @@ string multiSlsDetector::checkReceiverOnline() {
 string multiSlsDetector::setFilePath(string s) {
 
 	string ret="errorerror", ret1;
-	if(!s.empty()){
+	//if the sls file paths are different, it should be realized by always using setfilepath even if string empty
+	//if(!s.empty()){
 
 		for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
 			if (detectors[idet]) {
@@ -4703,7 +4710,7 @@ string multiSlsDetector::setFilePath(string s) {
 			}
 		}
 		fileIO::setFilePath(ret);
-	}
+	//}
 
 	return fileIO::getFilePath();
 }
@@ -4910,19 +4917,30 @@ slsDetectorDefs::runStatus multiSlsDetector::getReceiverStatus(){
 
 
 int multiSlsDetector::getFramesCaughtByReceiver() {
-  int ret=0,ret1=0;
-  for (int i=0; i<thisMultiDetector->numberOfDetectors; i++)
-    if (detectors[i]){
-      ret1+=detectors[i]->getFramesCaughtByReceiver();
-      if(detectors[i]->getErrorMask())
-	setErrorMask(getErrorMask()|(1<<i));
- 
-    }
-  if(!thisMultiDetector->numberOfDetectors)
-	  return ret;
-  ret=(int)(ret1/thisMultiDetector->numberOfDetectors);
+	int ret=0,ret1=0;
 
-  return ret;
+
+	if(thisMultiDetector->numberOfDetectors>10) {
+		if (detectors[0]){
+			ret =detectors[0]->getFramesCaughtByReceiver();
+			if(detectors[0]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<0));
+		}
+		return ret;
+	}
+
+	for (int i=0; i<thisMultiDetector->numberOfDetectors; i++)
+		if (detectors[i]){
+			ret1+=detectors[i]->getFramesCaughtByReceiver();
+			if(detectors[i]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<i));
+
+		}
+	if(!thisMultiDetector->numberOfDetectors)
+		return ret;
+	ret=(int)(ret1/thisMultiDetector->numberOfDetectors);
+
+	return ret;
 }
 
 
@@ -4946,6 +4964,7 @@ int multiSlsDetector::getReceiverCurrentFrameIndex() {
 
 int multiSlsDetector::resetFramesCaught() {
 	int ret=-100, ret1;
+
 	for (int i=0; i<thisMultiDetector->numberOfDetectors; i++){
 		if (detectors[i]){
 			ret1=detectors[i]->resetFramesCaught();
@@ -5196,6 +5215,9 @@ string multiSlsDetector::getErrorMessage(int &critical){
 
 	multiMask = getErrorMask();
 	if(multiMask){
+		 if(multiMask & MULTI_DETECTORS_NOT_ADDED)
+			 retval.append("Detectors not added:\n"+string(getNotAddedList())+string("\n"));
+
 		  for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
 		    if (detectors[idet]) {
 		    	//if the detector has error
@@ -5226,6 +5248,7 @@ string multiSlsDetector::getErrorMessage(int &critical){
 
 int64_t multiSlsDetector::clearAllErrorMask(){
 	clearErrorMask();
+	clearNotAddedList();
 	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++)
 		if (detectors[idet])
 			detectors[idet]->clearErrorMask();

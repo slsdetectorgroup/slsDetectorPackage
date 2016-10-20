@@ -10,6 +10,7 @@
 
 
 #include <string>
+#include <cstring>
 using namespace std;
 
 
@@ -18,7 +19,11 @@ using namespace std;
 
 
 /** Error flags */
+/*Assumption: Only upto 63 detectors */
 #define CRITICAL_ERROR_MASK 0xFFFFFFFF
+
+#define MULTI_DETECTORS_NOT_ADDED			0x8000000000000000ULL
+
 
 #define CANNOT_CONNECT_TO_DETECTOR  		0x8000000000000000ULL
 #define CANNOT_CONNECT_TO_RECEIVER  		0x4000000000000000ULL
@@ -72,7 +77,9 @@ class errorDefs {
 public:
 
 	/** Constructor */
-	errorDefs():errorMask(0){};
+	errorDefs():errorMask(0){
+		strcpy(notAddedList,"");
+	};
 
 	/** Gets the error message
 	 * param errorMask error mask
@@ -229,12 +236,29 @@ public:
 	   */
 	   int64_t clearErrorMask(){errorMask=0;return errorMask;};
 
+	   /** Gets the not added detector list
+	   	      /returns list
+	    */
+	   char* getNotAddedList(){return notAddedList;};
+
+	   /** Append the detector to not added detector list
+	    * @param name append to the list
+	   	      /returns list
+	    */
+	   void appendNotAddedList(const char* name){strcat(notAddedList,name);strcat(notAddedList,"+");};
+
+	   /** Clears not added detector list
+	   	      /returns error mask
+	    */
+	   void clearNotAddedList(){strcpy(notAddedList,"");};
 
 protected:
 
 	  /** Error Mask */
 	  int64_t errorMask;
 
+	  /** Detectors Not added List */
+	  char notAddedList[MAX_STR_LENGTH];
 };
 
 #endif /* ERROR_DEFS_H_ */

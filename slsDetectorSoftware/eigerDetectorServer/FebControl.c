@@ -1676,3 +1676,22 @@ int Feb_Control_PrintCorrectedValues(){
 	return 1;
 }
 
+
+int Feb_Control_GetLeftFPGATemp(){
+	unsigned int temperature=0;
+	Feb_Interface_ReadRegister(Module_GetTopLeftAddress (&modules[1]),FEB_REG_STATUS, &temperature);
+	temperature = temperature >> 16;
+	//division done in client to send int over network
+	return (int)temperature;
+}
+
+int Feb_Control_GetRightFPGATemp(){
+	unsigned int temperature=0;
+	Feb_Interface_ReadRegister(Module_GetTopRightAddress (&modules[1]),FEB_REG_STATUS, &temperature);
+	temperature = temperature >> 16;
+	//division done in client to send int over network
+	return (int)temperature;
+}
+
+
+

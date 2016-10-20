@@ -449,6 +449,12 @@ int getADC(enum detAdcIndex ind,  int imod){
 		case TEMP_FPGA:
 			retval=getBebFPGATemp()*1000;
 			break;
+		case TEMP_FPGAFEBL:
+			retval=Feb_Control_GetLeftFPGATemp();
+			break;
+		case TEMP_FPGAFEBR:
+			retval=Feb_Control_GetRightFPGATemp();
+			break;
 		case TEMP_FPGAEXT:
 		case TEMP_10GE:
 		case TEMP_DCDC:

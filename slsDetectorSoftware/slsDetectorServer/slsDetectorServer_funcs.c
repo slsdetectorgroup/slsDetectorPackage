@@ -1325,9 +1325,6 @@ int get_adc(int file_des) {
 #endif
 	switch (ind) {
 #ifdef EIGERD
-	case TEMPERATURE_FPGA:
-		iadc = TEMP_FPGA;
-		break;
 	case TEMPERATURE_FPGAEXT:
 		iadc = TEMP_FPGAEXT;
 		break;
@@ -1342,6 +1339,15 @@ int get_adc(int file_des) {
 		break;
 	case TEMPERATURE_SODR:
 		iadc = TEMP_SODR;
+		break;
+	case TEMPERATURE_FPGA:
+		iadc = TEMP_FPGA;
+		break;
+	case TEMPERATURE_FPGA2:
+		iadc = TEMP_FPGAFEBL;
+		break;
+	case TEMPERATURE_FPGA3:
+		iadc = TEMP_FPGAFEBR;
 		break;
 #endif
 #ifdef GOTTHARDD

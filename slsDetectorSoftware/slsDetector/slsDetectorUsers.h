@@ -450,6 +450,15 @@ class slsDetectorUsers
   
   virtual void finalizeDataset(double *a, double *v, double *e, int &np); 
 
+
+  /**
+   	 Enable data streaming from receiver (zmq)
+   	 \param i 1 to set, 0 to reset and -1 to get
+   	 \returns data streaming enable
+   */
+   int enableDataStreamingFromReceiver(int i=-1);
+
+
   /**
      get get Module Firmware Version
      \returns id

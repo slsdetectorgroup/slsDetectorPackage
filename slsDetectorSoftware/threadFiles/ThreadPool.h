@@ -26,7 +26,9 @@ public:
   int destroy_threadpool();
   void* execute_thread();
   int add_task(Task* task);
+  void startExecuting();
   void wait_for_tasks_to_complete();
+  void setzeromqThread();
 
 private:
   int m_pool_size;
@@ -36,16 +38,16 @@ private:
   std::deque<Task*> m_tasks;
   volatile int m_pool_state;
 
-  Mutex m_all_tasks_mutex;
-  CondVar m_all_tasks_cond_var;
   bool m_tasks_loaded;
   bool thread_started;
   int current_thread_number;
 
   //volatile uint64_t tasks_done_mask;
   volatile int number_of_ongoing_tasks;
+  volatile int number_of_total_tasks;
 
  sem_t semStart;
-
+ sem_t semDone;
+ bool zmqthreadpool;
 };
 

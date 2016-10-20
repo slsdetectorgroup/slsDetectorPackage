@@ -240,7 +240,9 @@ int slsDetectorUsers::setReceiverMode(int n){
 	return myDetector->setReadReceiverFrequency(1,n);
 }
 
-
+int slsDetectorUsers::enableDataStreamingFromReceiver(int i){
+	return myDetector->enableDataStreamingFromReceiver(i);
+}
 
 
 int64_t slsDetectorUsers::getModuleFirmwareVersion(){

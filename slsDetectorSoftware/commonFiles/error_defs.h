@@ -15,7 +15,8 @@ using namespace std;
 
 
 #include "sls_detector_defs.h"
-
+#include <cstring>
+#include <iostream>
 
 
 /** Error flags */
@@ -68,6 +69,7 @@ using namespace std;
 #define RATE_CORRECTION_NO_TAU_PROVIDED		0x0000000001000000ULL
 #define PROGRAMMING_ERROR					0x0000000002000000ULL
 #define RECEIVER_ACTIVATE					0x0000000004000000ULL
+#define DATA_STREAMING						0x0000000008000000ULL
 
 //											0x00000000FFFFFFFFULL
 /** @short class returning all error messages for error mask */
@@ -213,6 +215,10 @@ public:
 		if(slsErrorMask&RECEIVER_ACTIVATE)
 			retval.append("Could not activate/deactivate receiver\n");
 
+		if(slsErrorMask&DATA_STREAMING)
+			retval.append("Could not set/reset Data Streaming\n");
+
+
 
 		//------------------------------------------------------ length of message
 
@@ -237,20 +243,21 @@ public:
 	   int64_t clearErrorMask(){errorMask=0;return errorMask;};
 
 	   /** Gets the not added detector list
-	   	      /returns list
-	    */
+	      /returns list
+	   */
 	   char* getNotAddedList(){return notAddedList;};
 
 	   /** Append the detector to not added detector list
 	    * @param name append to the list
-	   	      /returns list
-	    */
+	      /returns list
+	   */
 	   void appendNotAddedList(const char* name){strcat(notAddedList,name);strcat(notAddedList,"+");};
 
 	   /** Clears not added detector list
-	   	      /returns error mask
-	    */
+	      /returns error mask
+	   */
 	   void clearNotAddedList(){strcpy(notAddedList,"");};
+
 
 protected:
 
@@ -259,6 +266,7 @@ protected:
 
 	  /** Detectors Not added List */
 	  char notAddedList[MAX_STR_LENGTH];
+
 };
 
 #endif /* ERROR_DEFS_H_ */

@@ -300,11 +300,7 @@ s
  /** data queue size */
   int queuesize;
 
-  /** queue mutex */
-  sem_t sem_queue;
 
-  /** set when detector finishes acquiring */
-  int acquiringDone;
 
 
   /**
@@ -333,18 +329,22 @@ s
 
 
 
- private:
   double *fdata;
-  
   int (*dataReady)(detectorData*,int, int,void*);
   void *pCallbackArg; 
-  
+  detectorData *thisData;
+
+ private:
+ // double *fdata;
+ // int (*dataReady)(detectorData*,int, int,void*);
+ // void *pCallbackArg;
+
   int (*rawDataReady)(double*,int,void*); 
   void *pRawDataArg; 
   
   
   postProcessingFuncs *ppFun;
-  detectorData *thisData;
+  //detectorData *thisData;
   
 
   double *ang;
@@ -371,6 +371,7 @@ s
 /*   pthread_exit(NULL);\ */
 
 /* }; */
+
 
 
 

@@ -11,7 +11,6 @@
 #include <math.h>
 #include "gitInfoLib.h"
 
-
 int slsDetector::initSharedMemory(detectorType type, int id) {
 
 
@@ -3987,9 +3986,9 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	if (index!=MEASUREMENTS_NUMBER) {
 
 
-	  //#ifdef VERBOSE
+#ifdef VERBOSE
 		std::cout<< "Setting timer "<< index << " to " <<  t << "ns/value" << std::endl;
-		//#endif
+#endif
 		if (thisDetector->onlineFlag==ONLINE_FLAG) {
 			if (connectControl() == OK){
 				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
@@ -5556,6 +5555,7 @@ char* slsDetector::setReceiver(string receiverIP){
 		std::cout << "frame number:" << thisDetector->timerValue[FRAME_NUMBER] << endl;
 		std::cout << "dynamic range:" << thisDetector->dynamicRange << endl << endl;
 		std::cout << "10GbE:" << thisDetector->tenGigaEnable << endl << endl;
+		//std::cout << "dataStreaming:" << enableDataStreamingFromReceiver(-1) << endl << endl;
 /** enable compresison, */
 #endif
 		if(setDetectorType()!= GENERIC){
@@ -5580,6 +5580,8 @@ char* slsDetector::setReceiver(string receiverIP){
 			setTimer(FRAME_NUMBER,thisDetector->timerValue[FRAME_NUMBER]);
 			setDynamicRange(thisDetector->dynamicRange);
 			activate(-1);
+			//std::cout << "***********************************dataStreaming:" << parentDet->enableDataStreamingFromReceiver(-1) << endl << endl;
+			//parentDet->enableDataStreamingFromReceiver(parentDet->enableDataStreamingFromReceiver(-1));
 			//set scan tag
 			setUDPConnection();
 			if(thisDetector->myDetectorType == EIGER)
@@ -7381,64 +7383,6 @@ int slsDetector::resetFramesCaught(){
 
 
 
-int* slsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex, int &frameIndex, int &subFrameIndex){
-	int fnum=F_READ_RECEIVER_FRAME;
-	int nel=thisDetector->dataBytes/sizeof(int);
-	int* retval=new int[nel];
-	int ret=FAIL;
-	int n;
-	char mess[MAX_STR_LENGTH]="Nothing";
-
-	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
-#ifdef VERBOSE
-		std::cout<< "slsDetector: Reading frame from receiver "<< thisDetector->dataBytes << " " <<nel <<std::endl;
-#endif
-		if (connectData() == OK){
-			dataSocket->SendDataOnly(&fnum,sizeof(fnum));
-			dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
-
-			if (ret==FAIL) {
-				n= dataSocket->ReceiveDataOnly(mess,sizeof(mess));
-				std::cout<< "Detector returned: " << mess << " " << n << std::endl;
-				delete [] retval;
-				disconnectData();
-				return NULL;
-			} else {
-				n=dataSocket->ReceiveDataOnly(fName,MAX_STR_LENGTH);
-				n=dataSocket->ReceiveDataOnly(&acquisitionIndex,sizeof(acquisitionIndex));
-				n=dataSocket->ReceiveDataOnly(&frameIndex,sizeof(frameIndex));
-				if(thisDetector->myDetectorType == EIGER)
-					n=dataSocket->ReceiveDataOnly(&subFrameIndex,sizeof(subFrameIndex));
-				n=dataSocket->ReceiveDataOnly(retval,thisDetector->dataBytes);
-
-#ifdef VERBOSE
-				std::cout<< "Received "<< n << " data bytes" << std::endl;
-#endif
-				if (n!=thisDetector->dataBytes) {
-					std::cout<<endl<< "wrong data size received: received " << n << " but expected from receiver " << thisDetector->dataBytes << std::endl;
-					ret=FAIL;
-					delete [] retval;
-					disconnectData();
-					return NULL;
-				}
-
-				//jungfrau masking adcval
-				if(thisDetector->myDetectorType == JUNGFRAU){
-					for(unsigned int i=0;i<nel;i++){
-						retval[i] = (retval[i] & 0x3FFF3FFF);
-					}
-				}
-			}
-			disconnectData();
-		}
-	}
-	return retval;
-};
-
-
-
-
-
 
 int slsDetector::lockReceiver(int lock){
 	int fnum=F_LOCK_RECEIVER;
@@ -7726,18 +7670,18 @@ int64_t slsDetector::clearAllErrorMask(){
 
 
 
-int slsDetector::setReadReceiverFrequency(int getFromReceiver,int i){
+int slsDetector::setReadReceiverFrequency(int getFromReceiver, int freq){
 	int fnum=F_READ_RECEIVER_FREQUENCY;
 	int ret = FAIL;
 	int retval=-1;
-	int arg = i;
+	int arg = freq;
 
 	if(!getFromReceiver)
 		return retval;
 
 	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
 #ifdef VERBOSE
-		std::cout << "Sending read frequency to receiver " << arg << std::endl;
+		std::cout << "Sending read frequency to receiver " << arg  << std::endl;
 #endif
 		if (connectData() == OK)
 			ret=thisReceiver->sendInt(fnum,retval,arg);
@@ -7748,12 +7692,42 @@ int slsDetector::setReadReceiverFrequency(int getFromReceiver,int i){
 			updateReceiver();
 	}
 
-	if ((i > 0) && (retval != i)){
-		cout << "could not set receiver read frequency:" << retval << endl;
+	if ((freq > 0) && (retval != freq)){
+		cout << "could not set receiver read frequency to " << freq <<" Returned:" << retval << endl;
 		setErrorMask((getErrorMask())|(RECEIVER_READ_FREQUENCY));
 	}
 	return retval;
 }
+
+
+
+int slsDetector::enableDataStreamingFromReceiver(int enable){
+	int fnum=F_STREAM_DATA_FROM_RECEIVER;
+	int ret = FAIL;
+	int retval=-1;
+	int arg = enable;
+
+
+	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+#ifdef VERBOSE
+		std::cout << "***************Sending Data Streaming in Receiver " << arg  << std::endl;
+#endif
+		if (connectData() == OK)
+			ret=thisReceiver->sendInt(fnum,retval,arg);
+		 disconnectData();
+		if(ret==FAIL)
+			retval = -1;
+		if(ret==FORCE_UPDATE)
+			updateReceiver();
+	}
+
+	if ((enable > 0) && (retval != enable)){
+		cout << "could not set data streaming in receiver to " << enable <<" Returned:" << retval << endl;
+		setErrorMask((getErrorMask())|(DATA_STREAMING));
+	}
+	return retval;
+}
+
 
 
 int slsDetector::enableReceiverCompression(int i){

@@ -16,7 +16,7 @@
 #define FEB_PORT		43210
 #define BEB_PORT		43212
 
-#define REQUIRED_FIRMWARE_VERSION 14
+#define REQUIRED_FIRMWARE_VERSION 16
 
 #define FIRMWAREREV		0xcaba	   //temporary should be in firmware
 

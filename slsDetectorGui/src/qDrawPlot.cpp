@@ -1155,7 +1155,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 	}
 
 
-	if(frameFactor)
+	//if(frameFactor)
 
 #ifdef VERYVERBOSE
 	cout << "Exiting GetData function" << endl;

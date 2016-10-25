@@ -1575,18 +1575,25 @@ int UDPStandardImplementation::createNewFile(int ithread){
 			if(frameNumberInPreviousFile[ithread] == -1)
 				frameNumberInPreviousFile[ithread] = startFrameIndex;
 
-			cout
+			printf("\nThread %d\tFile:%s\n"
+					"\tPackets Lost:%d\tCurrentFrameNumber:%lld\tPreviousFrameNumber:%lld\n",
+					ithread,completeFileName[ithread],
+					( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousFile[ithread])*packetsPerFrame) - totalPacketsInFile[ithread]),
+					currentFrameNumber[ithread],frameNumberInPreviousFile[ithread]);
+			/*
+			cout << "\nThread " << ithread << "\tFile:" << completeFileName[ithread] <<endl;
 					//<< "Packet Loss:" <<
 					//setw(4)<<fixed << setprecision(4) <<
 					//dec <<	(int)((( (currentFrameNumber-1-previousFrameNumber) - ((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame))/
 					//		 (double)(currentFrameNumber-1-previousFrameNumber))*100.000)
 					//<< "%\t"
-					<< 		"\tPackets Lost:" << dec << ( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousFile[ithread])*packetsPerFrame) -
+			cout<< 		"\tPackets Lost:" << dec << ( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousFile[ithread])*packetsPerFrame) -
 								totalPacketsInFile[ithread])
 					<<		"\tCurrentFrameNumber:" << currentFrameNumber[ithread]
 					<< 		"\tPreviousFrameNumber:" << frameNumberInPreviousFile[ithread]
 					//<< 	"\tIndex:" << dec << index
 					<< endl;
+					*/
 		}
 
 		//write file header
@@ -2633,6 +2640,12 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 	if(totalWritingPacketCount[ithread]){
 		if(frameNumberInPreviousFile[ithread]==-1)
 			frameNumberInPreviousFile[ithread] = startFrameIndex;
+		printf("\nThread %d\tFile:%s\n"
+				"\tPackets Lost:%d\tCurrentFrameNumber:%lld\tPreviousFrameNumber:%lld\n",
+				ithread,completeFileName[ithread],
+				( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousFile[ithread])*packetsPerFrame) - totalPacketsInFile[ithread]),
+				currentFrameNumber[ithread],frameNumberInPreviousFile[ithread]);
+		/*
 		cout << "\nThread " << ithread << "\tFile:" << completeFileName[ithread] <<endl;
 				//<< "Packet Loss:" <<
 				//setw(4)<<fixed << setprecision(4) <<
@@ -2645,6 +2658,7 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 				 << 	"\tPreviousFrameNumber:" << frameNumberInPreviousFile[ithread]
 				//<< 	"\tIndex:" << dec << index
 				<< endl;
+				*/
 	}
 	closeFile(ithread);
 	pthread_mutex_lock(&statusMutex);

@@ -495,7 +495,7 @@ void* postProcessing::processData(int delflag) {
 			while(true){
 				cout.flush();
 				cout<<flush;
-				usleep(40000); //20ms need this else connecting error to receiver (too fast)
+				usleep(20000); //20ms need this else connecting error to receiver (too fast)
 
 				if (checkJoinThread()){
 					break;

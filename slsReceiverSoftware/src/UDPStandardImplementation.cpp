@@ -1567,7 +1567,7 @@ int UDPStandardImplementation::createNewFile(int ithread){
 			printf("Thread:%d File:%s\n",ithread,completeFileName[ithread]);
 		}else{
 			if(frameNumberInPreviousFile[ithread] == -1)
-				frameNumberInPreviousFile[ithread] = startFrameIndex;
+				frameNumberInPreviousFile[ithread] = startFrameIndex -1;
 
 			printf("\nThread:%d File:%s\n"
 					"\ttotalpacketsinfile:%d\tPackets Lost:%d\tCurrentFrameNumber:%lld\tPreviousFrameNumber:%lld\n",
@@ -2620,7 +2620,7 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 
 	if(totalWritingPacketCount[ithread]){
 		if(frameNumberInPreviousFile[ithread]==-1)
-			frameNumberInPreviousFile[ithread] = startFrameIndex;
+			frameNumberInPreviousFile[ithread] = startFrameIndex-1;
 
 		printf("\nThread:%d File:%s\n"
 				"\ttotalpacketsinfile:%d\tPackets Lost:%d\tCurrentFrameNumber:%lld\tPreviousFrameNumber:%lld\n",

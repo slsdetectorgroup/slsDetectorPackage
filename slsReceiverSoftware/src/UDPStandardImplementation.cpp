@@ -1573,7 +1573,7 @@ int UDPStandardImplementation::createNewFile(int ithread){
 			cout << "Thread " << ithread << "  File:" << completeFileName[ithread] << endl;
 		}else{
 			if(frameNumberInPreviousFile[ithread] == -1)
-				frameNumberInPreviousFile[ithread] = startFrameIndex - 1;
+				frameNumberInPreviousFile[ithread] = startFrameIndex;
 
 			cout
 					//<< "Packet Loss:" <<
@@ -2632,7 +2632,7 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 
 	if(totalWritingPacketCount[ithread]){
 		if(frameNumberInPreviousFile[ithread]==-1)
-			frameNumberInPreviousFile[ithread] = startFrameIndex - 1;
+			frameNumberInPreviousFile[ithread] = startFrameIndex;
 		cout << "\nThread " << ithread << "\tFile:" << completeFileName[ithread] <<endl;
 				//<< "Packet Loss:" <<
 				//setw(4)<<fixed << setprecision(4) <<

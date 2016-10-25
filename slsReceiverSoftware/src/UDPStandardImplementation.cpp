@@ -1570,11 +1570,15 @@ int UDPStandardImplementation::createNewFile(int ithread){
 				frameNumberInPreviousFile[ithread] = startFrameIndex -1;
 
 			printf("\nThread:%d File:%s\n"
-					"\ttotalpacketsinfile:%d\tPackets Lost:%d\tCurrentFrameNumber:%lld\tPreviousFrameNumber:%lld\n",
+					//"\ttotalpacketsinfile:%d\t"
+					"Packets Lost:%d"
+					//"\tCurrentFrameNumber:%lld\tPreviousFrameNumber:%lld"
+					"\n",
 					ithread,completeFileName[ithread],
-					totalPacketsInFile[ithread],
-					( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousFile[ithread])*packetsPerFrame) - totalPacketsInFile[ithread]),
-					currentFrameNumber[ithread],frameNumberInPreviousFile[ithread]);
+					//totalPacketsInFile[ithread],
+					( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousFile[ithread])*packetsPerFrame) - totalPacketsInFile[ithread])
+					//,currentFrameNumber[ithread],frameNumberInPreviousFile[ithread]
+					);
 		}
 
 		//write file header
@@ -2251,7 +2255,7 @@ void UDPStandardImplementation::stopListening(int ithread, int numbytes){
 	listeningThreadsMask^=(1<<ithread);
 //#ifdef DEBUG4
 	//cprintf(BLUE,"Listening_Thread %d: Resetting mask of listening thread. New Mask: 0x%x", ithread, listeningThreadsMask);
-	FILE_LOG(logINFO) << "Listening Thread of " << udpPortNum[ithread] << "got " << totalListeningPacketCount[ithread] << " packets";
+	FILE_LOG(logINFO) << "Listening Thread of " << udpPortNum[ithread] << " got " << totalListeningPacketCount[ithread] << " packets";
 	//cprintf(BLUE,"Listening_Thread %d: Frames listened to :%d\n",ithread, (totalListeningPacketCount[ithread]/packetsPerFrame));
 //#endif
 	pthread_mutex_unlock(&(statusMutex));
@@ -2623,11 +2627,15 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 			frameNumberInPreviousFile[ithread] = startFrameIndex-1;
 
 		printf("\nThread:%d File:%s\n"
-				"\ttotalpacketsinfile:%d\tPackets Lost:%d\tCurrentFrameNumber:%lld\tPreviousFrameNumber:%lld\n",
+				//"\ttotalpacketsinfile:%d\t"
+				"Packets Lost:%d"
+				//"\tCurrentFrameNumber:%lld\tPreviousFrameNumber:%lld"
+				"\n",
 				ithread,completeFileName[ithread],
-				totalPacketsInFile[ithread],
-				( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousFile[ithread])*packetsPerFrame) - totalPacketsInFile[ithread]),
-				currentFrameNumber[ithread],frameNumberInPreviousFile[ithread]);
+				//totalPacketsInFile[ithread],
+				( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousFile[ithread])*packetsPerFrame) - totalPacketsInFile[ithread])
+				//,currentFrameNumber[ithread],frameNumberInPreviousFile[ithread]
+				);
 	}
 	closeFile(ithread);
 	pthread_mutex_lock(&statusMutex);
@@ -2815,10 +2823,7 @@ void UDPStandardImplementation::writeFileWithoutCompression(int ithread, char* w
 				packetsCaught += packetsWritten;
 				totalPacketsCaught  += packetsWritten;
 				pthread_mutex_unlock(&writeMutex);
-				currentFrameNumber[ithread] += lastFrameNumberInFile[ithread];
-				if(!ithread)cprintf(BLUE,"currentFrameNumber[ithread]:%d\n",currentFrameNumber[ithread]);
-
-
+				currentFrameNumber[ithread] = lastFrameNumberInFile[ithread];
 			}
 		}
 	}

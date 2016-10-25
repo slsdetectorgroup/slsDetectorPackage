@@ -5167,7 +5167,7 @@ void multiSlsDetector::startReceivingDataThread(){
 		//end of socket ("end")
 		if (len < 1024*256 ) {
 			if(len == 3){
-				//cprintf(RED,"Received end of acquisition for socket %d\n", ithread);
+				cprintf(RED,"%d Received end of acquisition\n", ithread);
 				singleframe[ithread] = NULL;
 				//break;
 			}else{
@@ -5252,7 +5252,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 	for(int i = 0; i < numReadouts; ++i)
 		dataThreadMask|=(1<<i);
 
-
+	printf("dataThreadMask:%x\n",dataThreadMask);
 
 	//construct complete image and send to callback
 	while(true){
@@ -5276,6 +5276,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 				//this socket closed
 				if(singleframe[ireadout] == NULL){		//if got nothing
 					dataThreadMask^=(1<<ireadout);
+					printf("dataThreadMask:%x\n",dataThreadMask);
 					continue;
 				}
 

@@ -5167,7 +5167,7 @@ void multiSlsDetector::startReceivingDataThread(){
 		//end of socket ("end")
 		if (len < 1024*256 ) {
 			if(len == 3){
-				cprintf(RED,"%d Received end of acquisition\n", ithread);
+				//cprintf(RED,"%d Received end of acquisition\n", ithread);
 				singleframe[ithread] = NULL;
 				//break;
 			}else{
@@ -5249,11 +5249,9 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 
 	volatile uint64_t dataThreadMask = 0x0;
-	cout<<"numreadouts:"<<numReadouts<<endl;
 	for(int i = 0; i < numReadouts; ++i)
 		dataThreadMask|=(1<<i);
 
-	printf("dataThreadMask:%x\n",dataThreadMask);
 
 	//construct complete image and send to callback
 	while(true){
@@ -5277,7 +5275,6 @@ void multiSlsDetector::readFrameFromReceiver(){
 				//this socket closed
 				if(singleframe[ireadout] == NULL){		//if got nothing
 					dataThreadMask^=(1<<ireadout);
-					printf("dataThreadMask:%x\n",dataThreadMask);
 					continue;
 				}
 
@@ -5331,7 +5328,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 			dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);//should be fnum and subfnum from json header
 			delete thisData;
 			fdata = NULL;
-			//cout<<"Send frame #"<< currentFrameIndex << " to gui"<<endl;
+			cout<<"Send frame #"<< currentFrameIndex << " to gui"<<endl;
 		}
 		setCurrentProgress(currentAcquisitionIndex+1);
 	}

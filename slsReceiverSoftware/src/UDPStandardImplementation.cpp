@@ -1564,7 +1564,7 @@ int UDPStandardImplementation::createNewFile(int ithread){
 		//Print packet loss and filenames
 		if(!totalWritingPacketCount[ithread]){
 			frameNumberInPreviousFile[ithread] = -1;
-			printf("\nThread:%d File:%s\n",ithread,completeFileName[ithread]);
+			printf("Thread:%d File:%s\n",ithread,completeFileName[ithread]);
 		}else{
 			if(frameNumberInPreviousFile[ithread] == -1)
 				frameNumberInPreviousFile[ithread] = startFrameIndex;
@@ -2816,6 +2816,7 @@ void UDPStandardImplementation::writeFileWithoutCompression(int ithread, char* w
 				totalPacketsCaught  += packetsWritten;
 				pthread_mutex_unlock(&writeMutex);
 				currentFrameNumber[ithread] += lastFrameNumberInFile[ithread];
+				if(!ithread)cprintf(BLUE,"currentFrameNumber[ithread]:%d\n",currentFrameNumber[ithread]);
 
 
 			}

@@ -1572,13 +1572,16 @@ int UDPStandardImplementation::createNewFile(int ithread){
 			frameNumberInPreviousFile[ithread] = -1;
 			cout << "Thread " << ithread << "  File:" << completeFileName[ithread] << endl;
 		}else{
+			if(frameNumberInPreviousFile[ithread] == -1)
+				frameNumberInPreviousFile[ithread] = startFrameIndex - 1;
+
 			cout
 					//<< "Packet Loss:" <<
 					//setw(4)<<fixed << setprecision(4) <<
 					//dec <<	(int)((( (currentFrameNumber-1-previousFrameNumber) - ((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame))/
 					//		 (double)(currentFrameNumber-1-previousFrameNumber))*100.000)
 					//<< "%\t"
-					<< 		"\tPackets Lost:" << dec << ( ((int)(currentFrameNumber[ithread]-1-frameNumberInPreviousFile[ithread])*packetsPerFrame) -
+					<< 		"\tPackets Lost:" << dec << ( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousFile[ithread])*packetsPerFrame) -
 								totalPacketsInFile[ithread])
 					<<		"\tCurrentFrameNumber:" << currentFrameNumber[ithread]
 					<< 		"\tPreviousFrameNumber:" << frameNumberInPreviousFile[ithread]
@@ -1593,7 +1596,7 @@ int UDPStandardImplementation::createNewFile(int ithread){
 
 	//reset counters for each new file
 	if(totalWritingPacketCount[ithread]){
-		frameNumberInPreviousFile[ithread] = currentFrameNumber[ithread]-1;
+		frameNumberInPreviousFile[ithread] = currentFrameNumber[ithread];
 		totalPacketsInFile[ithread] = 0;
 	}
 
@@ -2628,6 +2631,8 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 	}
 
 	if(totalWritingPacketCount[ithread]){
+		if(frameNumberInPreviousFile[ithread]==-1)
+			frameNumberInPreviousFile[ithread] = startFrameIndex - 1;
 		cout << "\nThread " << ithread << "\tFile:" << completeFileName[ithread] <<endl;
 				//<< "Packet Loss:" <<
 				//setw(4)<<fixed << setprecision(4) <<

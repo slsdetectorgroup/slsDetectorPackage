@@ -2733,20 +2733,10 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 
 		return;
 	}
-	//update current frame number
-	currentFrameNumber[ithread] =  tempframenumber;
-
-	//set indices
-	pthread_mutex_lock(&progressMutex);
-	if((currentFrameNumber[ithread] - startAcquisitionIndex) > acquisitionIndex)
-		acquisitionIndex = currentFrameNumber[ithread] - startAcquisitionIndex;
-	if((currentFrameNumber[ithread] - startFrameIndex) > frameIndex[ithread])
-		frameIndex[ithread] = currentFrameNumber[ithread] - startFrameIndex;
-	pthread_mutex_unlock(&progressMutex);
 
 	//callback to write data
 	if (cbAction < DO_EVERYTHING)
-		rawDataReadyCallBack((int)currentFrameNumber[ithread], wbuffer + HEADER_SIZE_NUM_TOT_PACKETS, npackets * onePacketSize,
+		rawDataReadyCallBack((int)tempframenumber, wbuffer + HEADER_SIZE_NUM_TOT_PACKETS, npackets * onePacketSize,
 				sfilefd[ithread], latestData[ithread],pRawDataReady);//know which thread from sfilefd
 
 
@@ -2852,6 +2842,8 @@ void UDPStandardImplementation::writeFileWithoutCompression(int ithread, char* w
 				totalPacketsCaught  += packetsWritten;
 				pthread_mutex_unlock(&writeMutex);
 				currentFrameNumber[ithread] += lastFrameNumberInFile[ithread];
+
+
 			}
 		}
 	}

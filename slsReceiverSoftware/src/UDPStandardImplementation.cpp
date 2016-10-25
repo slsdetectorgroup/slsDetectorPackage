@@ -1528,12 +1528,6 @@ int UDPStandardImplementation::setupWriter(){
 int UDPStandardImplementation::createNewFile(int ithread){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
-	int index = 0;
-	if(totalWritingPacketCount[ithread]){
-		index = frameIndex[ithread];
-		cout << "\nThread " << ithread << "\tFile:" << completeFileName[ithread] <<endl;
-	}
-
 	//create file name
 	if(!frameIndexEnable)
 		sprintf(completeFileName[ithread], "%s/%s_%lld.raw", filePath,fileNamePerThread[ithread],(long long int)fileIndex);
@@ -1570,6 +1564,7 @@ int UDPStandardImplementation::createNewFile(int ithread){
 		//Print packet loss and filenames
 		if(!totalWritingPacketCount[ithread]){
 			frameNumberInPreviousFile[ithread] = -1;
+			printf("\nThread:%d File:%s\n",ithread,completeFileName[ithread]);
 		}else{
 			if(frameNumberInPreviousFile[ithread] == -1)
 				frameNumberInPreviousFile[ithread] = startFrameIndex;
@@ -1580,16 +1575,6 @@ int UDPStandardImplementation::createNewFile(int ithread){
 					totalPacketsInFile[ithread],
 					( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousFile[ithread])*packetsPerFrame) - totalPacketsInFile[ithread]),
 					currentFrameNumber[ithread],frameNumberInPreviousFile[ithread]);
-			/*
-			cout << "\nThread " << ithread << "\tFile:" << completeFileName[ithread] <<endl;
-					//<< "Packet Loss:" <<
-					//setw(4)<<fixed << setprecision(4) <<
-					//dec <<	(int)((( (currentFrameNumber-1-previousFrameNumber) - ((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame))/
-					//		 (double)(currentFrameNumber-1-previousFrameNumber))*100.000)
-					//<< "%\t"
-					//<< 	"\tIndex:" << dec << index
-					<< endl;
-					*/
 		}
 
 		//write file header
@@ -2643,16 +2628,6 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 				totalPacketsInFile[ithread],
 				( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousFile[ithread])*packetsPerFrame) - totalPacketsInFile[ithread]),
 				currentFrameNumber[ithread],frameNumberInPreviousFile[ithread]);
-		/*
-		cout << "\nThread " << ithread << "\tFile:" << completeFileName[ithread] <<endl;
-				//<< "Packet Loss:" <<
-				//setw(4)<<fixed << setprecision(4) <<
-				//dec <<	(int)((( (currentFrameNumber-1-previousFrameNumber) - ((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame))/
-				//		 (double)(currentFrameNumber-1-previousFrameNumber))*100.000)
-				//<< "%\t"
-				//<< 	"\tIndex:" << dec << index
-				<< endl;
-				*/
 	}
 	closeFile(ithread);
 	pthread_mutex_lock(&statusMutex);

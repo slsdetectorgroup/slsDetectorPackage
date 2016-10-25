@@ -144,39 +144,33 @@ int init_detector(int b, int checkType) {
     initDac(0);    initDac(8); //initializes the two dacs
 
     if(myDetectorType==JUNGFRAU){
-    	/** for jungfrau reinitializing macro */
+    	//reinitialize macro
     	N_CHAN=JUNGFRAU_NCHAN;
     	N_CHIP=JUNGFRAU_NCHIP;
     	N_DAC=JUNGFRAU_NDAC;
     	N_ADC=JUNGFRAU_NADC;
     	N_CHANS=JUNGFRAU_NCHANS;
 
-
     	//set dacs
+    	enum dacNames{VB_COMP,VDD_PROT,VIN_COM,VREF_PRECH,VB_PIXBUF,VB_DS,VREF_DS,VREF_COMP};
     	int retval = -1;
     	int dacvalues[14][2]={
-    			{0,	1250},	//vout_cm
-				{10, 	1053},	//vin_com
-				{1, 	600},	//vb_sda
-				{11, 	1000},	//vb_colbuf
-				{2, 	3000},	//vb_test_cur
-				{3, 	830},	//vcascp_pixbuf
-				{4, 	1630},	//vcascn_pixbuf
-				{12, 	750},	//vb_pixbuf
-				{6,	480},	//vref_ds
-				{5,	1000},	//vb_ds
-				{7, 	400},	//vref_comp
-				{13, 1220},	//vb_comp
-				{8, 	1500},	//vref_prech
-				{9, 	3000},	//vdd_prot
+				{VB_DS,		1000},
+    			{VB_COMP,	1220},
+				{VB_PIXBUF, 750},
+				{VREF_DS,	480},
+				{VREF_COMP, 400},
+				{VREF_PRECH,1550},
+				{VIN_COM, 	1053},
+				{VDD_PROT, 	3000},
     	};
-    	for(i=0;i<14;++i){
+    	for(i=0;i<8;++i){
     		retval=setDac(dacvalues[i][0], dacvalues[i][1]);
     		if(retval!=dacvalues[i][1])
     			printf("Error: Setting dac %d failed, wrote %d, read %d\n",dacvalues[i][0],dacvalues[i][1],retval);
     	}
 
-    	//power on the chips
+    	//power of the chips
     	bus_w(POWER_ON_REG,0x1);
 
     	//reset adc
@@ -187,7 +181,6 @@ int init_detector(int b, int checkType) {
     	//vrefs - configurable?
     	writeADC(ADCREG_VREFS,0x2);
 
-
     	//set ADCINVERSionreg (by trial and error)
     	bus_w(ADC_INVERSION_REG,0x453b2a9c);
 
@@ -195,8 +188,11 @@ int init_detector(int b, int checkType) {
     	bus_w(ADC_PIPELINE_REG,0x20); //same as ADC_OFFSET_REG
 
     	//set dbit_pipeline
-    	bus_w(DBIT_PIPELINE_REG,0x100e);
-    	usleep(1000000);//1s
+    	bus_w(DBIT_PIPELINE_REG,0x7f7c);
+
+
+    	//set adc_clock_phase in unit of 1/(52) clock period (by trial and error)
+    	adcPhase(65);
 
     	//reset mem machine fifos fifos
     	bus_w(MEM_MACHINE_FIFOS_REG,0x4000);
@@ -208,16 +204,17 @@ int init_detector(int b, int checkType) {
 
     	//set default setting
     	setSettings(DYNAMICGAIN,-1);
+    	/*setting the 4bits to 0x0 (MSB)*/
     }
 
 
     //Initialization of acquistion parameters
-    setFrames(-1);
+    setFrames(1*1000*1000);
     setTrains(-1);
-    setExposureTime(-1);
-    setPeriod(-1);
-    setDelay(-1);
-    setGates(-1);
+    setExposureTime(10*1000);
+    setPeriod(2*1000*1000);
+    setDelay(0);
+    setGates(0);
 
     setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
     setMaster(GET_MASTER);
@@ -1957,8 +1954,10 @@ int get_run_status(int file_des) {
   printf("\n\nSTATUS=%08x\n",retval);
   if(myDetectorType == JUNGFRAU){
   if(!(retval&RUN_BUSY_BIT)){
-
-	  if((retval&READMACHINE_BUSY_BIT)  ){
+	  if((retval&STOPPED_BIT)  ){ //
+	      printf("-----------------------------------STOPPED--------------------------\n");
+	  	  s=STOPPED;
+	  } else if((retval&READMACHINE_BUSY_BIT)  ){
 		  printf("-----------------------------------READ MACHINE BUSY--------------------------\n");
 		  s=TRANSMITTING;
 	  }
@@ -2494,125 +2493,158 @@ int get_roi(int file_des) {
 
 int set_speed(int file_des) {
 
-  enum speedVariable arg;
-  int val,n;
-  int ret=OK;
-  int retval;
-  
-  n=receiveDataOnly(file_des,&arg,sizeof(arg));
-  if (n < 0) {
-    sprintf(mess,"Error reading from socket\n");
-    ret=FAIL;
-  }
-  n=receiveDataOnly(file_des,&val,sizeof(val));
-   if (n < 0) {
-     sprintf(mess,"Error reading from socket\n");
-     ret=FAIL;
-   }
-  
-  
-  
-  if (ret==OK) {
+	enum speedVariable arg;
+	int val,n;
+	int ret=OK;
+	int retval=-1;
 
-    if (arg==PHASE_SHIFT || arg==ADC_PHASE) {
-      
-      
-      retval=phaseStep(val);
-
-    } else {
-
-
-    if (val!=-1) {
-
-
-      if (differentClients==1 && lockStatus==1 && val>=0) {
-	ret=FAIL;
-	sprintf(mess,"Detector locked by %s\n",lastClientIP);
-      }  else {
-	switch (arg) {
-	case CLOCK_DIVIDER:
-	  retval=setClockDivider(val,0);
-	  break;
-
-/* 	case PHASE_SHIFT: */
-/* 	  retval=phaseStep(val,0); */
-/* 	  break; */
-
-	case OVERSAMPLING:
-	  retval=setOversampling(val);
-	  break;
-
-	case ADC_CLOCK:
-	  retval=setClockDivider(val,1);
-	  break;
-
-/* 	case ADC_PHASE: */
-/* 	  retval=phaseStep(val,1); */
-/* 	  break; */
-
-
-	case ADC_PIPELINE:
-	  retval=adcPipeline(val);
-	  break;
-
-
-
-	default:
-	  ret=FAIL;
-	  sprintf(mess,"Unknown speed parameter %d",arg);
+	n=receiveDataOnly(file_des,&arg,sizeof(arg));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
 	}
-      }
-    }
+	n=receiveDataOnly(file_des,&val,sizeof(val));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+
+	if (ret==OK) {
 
 
-    }
+		if (val!=-1) {
+			if (differentClients==1 && lockStatus==1 && val>=0) {
+				ret=FAIL;
+				sprintf(mess,"Detector locked by %s\n",lastClientIP);
+			}  else {
+				switch (arg) {
+				case CLOCK_DIVIDER:
+					if(myDetectorType == JUNGFRAU){
+						switch(val){
+						case 0:
+							ret=FAIL;
+							sprintf(mess,"Full speed not implemented yet. Available options: 1 for half speed and 2 for quarter speed");
+							break;
+						case 1:
+						case 2:
+							break;
+						default:
+							ret=FAIL;
+							sprintf(mess,"Unknown clock options %d. Available options: 1 for half speed and 2 for quarter speed",arg);
+							break;
+						}
+					}
+					setClockDivider(val,0);
+					break;
+
+				case PHASE_SHIFT:
+					if(myDetectorType == JUNGFRAU){
+						ret=FAIL;
+						sprintf(mess,"Unknown speed parameter %d for this detector",arg);
+						break;
+					}
+					phaseStep(val);
+					break;
+
+				case OVERSAMPLING:
+					setOversampling(val);
+					break;
+
+				case ADC_CLOCK:
+					if(myDetectorType == JUNGFRAU){
+						ret=FAIL;
+						sprintf(mess,"Unknown speed parameter %d for this detector",arg);
+						break;
+					}
+					setClockDivider(val,1);
+					break;
+
+				case ADC_PHASE:
+					if(myDetectorType == JUNGFRAU){
+						adcPhase(val);
+						break;
+					}
+					phaseStep(val);
+					break;
+
+				case ADC_PIPELINE:
+					if(myDetectorType == JUNGFRAU){
+						ret=FAIL;
+						sprintf(mess,"Unknown speed parameter %d for this detector",arg);
+						break;
+					}
+					adcPipeline(val);
+					break;
 
 
-    switch (arg) {
-    case CLOCK_DIVIDER:
-      retval=getClockDivider(0);
-      break;
-
-    case PHASE_SHIFT:
-      retval=getPhase();
-      // retval=phaseStep(-1);
-      //ret=FAIL;
-      //sprintf(mess,"Cannot read phase",arg);
-      break;
-
-    case OVERSAMPLING:
-      retval=setOversampling(-1);
-      break;
-
-    case ADC_CLOCK:
-      retval=getClockDivider(1);
-      break;
-
-    case ADC_PHASE:
-      retval=getPhase();
-      break;
+				default:
+					ret=FAIL;
+					sprintf(mess,"Unknown speed parameter %d",arg);
+				}
+			}
+		}
+	}
 
 
-    case ADC_PIPELINE:
-      retval=adcPipeline(-1);
-      break;
-      
 
-    default:
-      ret=FAIL;
-      sprintf(mess,"Unknown speed parameter %d",arg);
-    }
-  }
+	if (ret==OK) {
+		switch (arg) {
+		case CLOCK_DIVIDER:
+			retval=getClockDivider(0);
+			break;
 
-  
+		case PHASE_SHIFT:
+			if(myDetectorType == JUNGFRAU){
+				ret=FAIL;
+				sprintf(mess,"Unknown speed parameter %d for this detector",arg);
+				break;
+			}
+			retval=getPhase();
+			break;
 
-  n = sendDataOnly(file_des,&ret,sizeof(ret));
-  if (ret==FAIL) {
-    n = sendDataOnly(file_des,mess,sizeof(mess));
-  } else {
-    n = sendDataOnly(file_des,&retval,sizeof(retval));
-  }
-  return ret; 
+		case OVERSAMPLING:
+			retval=setOversampling(-1);
+			break;
+
+		case ADC_CLOCK:
+			if(myDetectorType == JUNGFRAU){
+				ret=FAIL;
+				sprintf(mess,"Unknown speed parameter %d for this detector",arg);
+				break;
+			}
+			retval=getClockDivider(1);
+			break;
+
+		case ADC_PHASE:
+			retval=getPhase();
+			break;
+
+
+		case ADC_PIPELINE:
+			if(myDetectorType == JUNGFRAU){
+				ret=FAIL;
+				sprintf(mess,"Unknown speed parameter %d for this detector",arg);
+				break;
+			}
+			retval=adcPipeline(-1);
+			break;
+
+
+		default:
+			ret=FAIL;
+			sprintf(mess,"Unknown speed parameter %d",arg);
+		}
+	}
+
+
+
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret==FAIL) {
+		n = sendDataOnly(file_des,mess,sizeof(mess));
+	} else {
+		n = sendDataOnly(file_des,&retval,sizeof(retval));
+	}
+	return ret;
 }
 
 

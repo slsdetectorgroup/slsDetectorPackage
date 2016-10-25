@@ -103,6 +103,7 @@ u_int32_t clkDivider[2]={32,16};
 #else
 u_int32_t clkDivider[2]={40,20};
 #endif
+static const int JUNGFRAU_CLOCK = 1;
 int32_t clkPhase[2]={0,0};
 
 u_int32_t adcDisableMask=0;
@@ -288,7 +289,7 @@ int cleanFifo(){
 int setDAQRegister()
 {
 /* 	u_int32_t addr, reg, val; */
-/* 	addr=DAQ_REG; */
+/* 	addr=CONFGAIN_REG; */
 
 /* 	//depended on adcval */
 /* 	int packetlength=0x7f; */
@@ -450,8 +451,10 @@ void configurePll(int i) {
 
 
   if (i<2) {
-
-    tot= PLL_VCO_FREQ_MHZ/clkDivider[i];
+	if(myDetectorType == JUNGFRAU)
+	  tot= PLL_VCO_FREQ_MHZ/clkDivider[JUNGFRAU_CLOCK];
+	else
+      tot= PLL_VCO_FREQ_MHZ/clkDivider[i];
     l=tot/2;
     h=l;
     if (tot>2*l) {
@@ -553,6 +556,41 @@ void configurePll(int i) {
 
 u_int32_t setClockDivider(int d, int ic) {
 
+	if(myDetectorType == JUNGFRAU){
+
+		enum clkspeed{FULL,HALF,QUARTER};
+		switch((clkspeed)d){
+
+		//stop state machine if running
+		if(runBusy())
+			stopStateMachine();
+
+		case FULL:
+			printf("Setting Half Speed (40 MHz)\n");
+			/**to be done*/
+			break;
+		case HALF:
+			printf("Setting Half Speed (20 MHz)\n");
+
+			sls_detector_put reg 0x59 0x7f7c
+			sls_detector_put reg 0x42 0x20
+			sls_detector_put status stop
+			sls_detector_put reg 0x5d  0x00000f00
+			sls_detector_put adcphase 65
+			sls_detector_put status start
+			break;
+		case QUARTER:
+			printf("Setting Half Speed (10 MHz)\n");
+
+			sls_detector_put reg 0x59 0x8981
+			sls_detector_put reg 0x42 0x10
+			sls_detector_put reg 0x5d  0xf0000f00
+			sls_detector_put adcphase 25
+			sls_detector_put status start
+			break;
+		}
+
+	}
 
    //u_int32_t l=0x0c;
    //u_int32_t h=0x0d;
@@ -560,7 +598,10 @@ u_int32_t setClockDivider(int d, int ic) {
   u_int32_t tot= PLL_VCO_FREQ_MHZ/d;
 
   //	int ic=0  is run clk; ic=1 is adc clk 
-  printf("set clk divider %d to %d\n", ic, d);
+  if(myDetectorType == JUNGFRAU)
+  	printf("set clk divider to %d\n", ic, d);
+  else{
+	printf("set clk divider %d to %d\n", ic, d);
   if (ic>1)
     return -1;
 
@@ -575,7 +616,7 @@ u_int32_t setClockDivider(int d, int ic) {
 
   if (tot<1)
     return -1;
-
+  }
 
 
   clkDivider[ic]=d;
@@ -584,6 +625,10 @@ u_int32_t setClockDivider(int d, int ic) {
   
   
  return clkDivider[ic];
+}
+
+int adcPhase(int st){
+	return phaseStep(st); //name is wrong, but it resets pll and set the phase as st
 }
 
 
@@ -662,6 +707,12 @@ u_int32_t adcPipeline(int d) {
   return bus_r(DAQ_REG)&0xff;
 }
 
+
+u_int32_t dbitPipeline(int d){
+  if (d>=0)
+    bus_w(DAQ_REG, d);
+  return bus_r(DAQ_REG)&0xff;
+}
 
 u_int32_t setSetLength(int d) {
 	 return 0;

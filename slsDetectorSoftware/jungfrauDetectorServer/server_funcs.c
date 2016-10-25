@@ -14,21 +14,7 @@
 int (*flist[256])(int);
 
 
-//defined in the detector specific file
-/* #ifdef MYTHEND */
-/* const enum detectorType myDetectorType=MYTHEN; */
-/* #elif GOTTHARDD */
-/* const enum detectorType myDetectorType=GOTTHARD; */
-/* #elif EIGERD */
-/* const enum detectorType myDetectorType=EIGER; */
-/* #elif PICASSOD */
-/* const enum detectorType myDetectorType=PICASSO; */
-/* #elif MOENCHD */
-/* const enum detectorType myDetectorType=MOENCH; */
-/* #else */
 enum detectorType myDetectorType=GENERIC;
-/* #endif */
-
 
 extern int nModX;
 extern int nModY;
@@ -55,12 +41,22 @@ extern int withGotthard;
 
 int adcvpp=0x4;
 
-/** for jungfrau reinitializing macro later */
+// for jungfrau reinitializing macro later
 int N_CHAN=NCHAN;
 int N_CHIP=NCHIP;
 int N_DAC=NDAC;
 int N_ADC=NADC;
 int N_CHANS=NCHANS;
+
+//jungfrau specific
+const static int JUNGFRAU_HALFSPEED_DBIT_PIPELINE = 0x7f7c;
+const static int JUNGFRAU_QUARTERSPEED_DBIT_PIPELINE = 0x8981;
+const static int JUNGFRAU_HALFSPEED_ADC_PIPELINE = 0x20;
+const static int JUNGFRAU_QUARTERSPEED_ADC_PIPELINE = 0x10;
+const static int JUNGFRAU_HALFSPEED_CONF = 0x0;
+const static int JUNGFRAU_QUARTERSPEED_CONF = 0xf;
+const static int JUNGFRAU_HALFSPEED_ADC_PHASE = 65;
+const static int JUNGFRAU_QUARTERSPEED_ADC_PHASE = 25;
 
 
 int init_detector(int b, int checkType) {
@@ -180,31 +176,23 @@ int init_detector(int b, int checkType) {
     	writeADC(ADCREG4,0x3f);
     	//vrefs - configurable?
     	writeADC(ADCREG_VREFS,0x2);
-
     	//set ADCINVERSionreg (by trial and error)
     	bus_w(ADC_INVERSION_REG,0x453b2a9c);
 
-    	//set adc_pipeline
-    	bus_w(ADC_PIPELINE_REG,0x20); //same as ADC_OFFSET_REG
-
-    	//set dbit_pipeline
-    	bus_w(DBIT_PIPELINE_REG,0x7f7c);
-
-
-    	//set adc_clock_phase in unit of 1/(52) clock period (by trial and error)
-    	adcPhase(65);
+    	adcPipeline(JUNGFRAU_HALFSPEED_ADC_PIPELINE);
+    	dbitPipeline(JUNGFRAU_HALFSPEED_DBIT_PIPELINE);
+    	adcPhase(JUNGFRAU_HALFSPEED_ADC_PHASE); //set adc_clock_phase in unit of 1/(52) clock period (by trial and error)
 
     	//reset mem machine fifos fifos
     	bus_w(MEM_MACHINE_FIFOS_REG,0x4000);
     	bus_w(MEM_MACHINE_FIFOS_REG,0x0);
-
     	//reset run control
     	bus_w(MEM_MACHINE_FIFOS_REG,0x0400);
     	bus_w(MEM_MACHINE_FIFOS_REG,0x0);
 
     	//set default setting
+    	initSpeedConfGain(JUNGFRAU_HALFSPEED_CONF);
     	setSettings(DYNAMICGAIN,-1);
-    	/*setting the 4bits to 0x0 (MSB)*/
     }
 
 

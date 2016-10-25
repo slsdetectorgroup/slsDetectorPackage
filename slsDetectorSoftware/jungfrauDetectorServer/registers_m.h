@@ -414,6 +414,11 @@
 #define SETTINGS_MASK                0x000000f0
 #define SETTINGS_OFFSET              4 
 
+#define JUNGFRAU_GAIN_MASK           0x0000ffff
+#define JUNGFRAU_SPEED_GAIN_MASK     0xf0000000
+#define JUNGFRAU_SPEED_GAIN_OFFSET   28
+
+
 
 /* CHIP_OF_INTRST_REG */
 #define CHANNEL_MASK 			    0xffff0000

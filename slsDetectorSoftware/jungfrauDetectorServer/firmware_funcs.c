@@ -553,44 +553,49 @@ void configurePll(int i) {
 
 
 
-
+//ic plays no role in jungfrau
 u_int32_t setClockDivider(int d, int ic) {
 
 	if(myDetectorType == JUNGFRAU){
 
 		enum clkspeed{FULL,HALF,QUARTER};
-		switch((clkspeed)d){
 
-		//stop state machine if running
-		if(runBusy())
-			stopStateMachine();
+		if(d!=-1){
+			switch((clkspeed)d){
+			//stop state machine if running
+			if(runBusy())
+				stopStateMachine();
 
-		case FULL:
-			printf("Setting Half Speed (40 MHz)\n");
-			/**to be done*/
-			break;
-		case HALF:
-			printf("Setting Half Speed (20 MHz)\n");
+			case FULL:
+				printf("Setting Half Speed (40 MHz)\n");
+				/**to be done*/
+				dbitPipeline(JUNGFRAU_HALFSPEED_DBIT_PIPELINE);
+				adcPipeline(JUNGFRAU_HALFSPEED_ADC_PIPELINE);
+				initSpeedConfGain(JUNGFRAU_HALFSPEED_CONF);
+				adcPhase(JUNGFRAU_HALFSPEED_ADC_PHASE);
+				break;
+			case HALF:
+				printf("Setting Half Speed (20 MHz)\n");
+				dbitPipeline(JUNGFRAU_HALFSPEED_DBIT_PIPELINE);
+				adcPipeline(JUNGFRAU_HALFSPEED_ADC_PIPELINE);
+				initSpeedConfGain(JUNGFRAU_HALFSPEED_CONF);
+				adcPhase(JUNGFRAU_HALFSPEED_ADC_PHASE);
+				break;
+			case QUARTER:
+				printf("Setting Half Speed (10 MHz)\n");
+				dbitPipeline(JUNGFRAU_QUARTERSPEED_DBIT_PIPELINE);
+				adcPipeline(JUNGFRAU_QUARTERSPEED_ADC_PIPELINE);
+				initSpeedConfGain(JUNGFRAU_QUARTERSPEED_CONF);
+				adcPhase(JUNGFRAU_QUARTERSPEED_ADC_PHASE);
+				break;
 
-			sls_detector_put reg 0x59 0x7f7c
-			sls_detector_put reg 0x42 0x20
-			sls_detector_put status stop
-			sls_detector_put reg 0x5d  0x00000f00
-			sls_detector_put adcphase 65
-			sls_detector_put status start
-			break;
-		case QUARTER:
-			printf("Setting Half Speed (10 MHz)\n");
-
-			sls_detector_put reg 0x59 0x8981
-			sls_detector_put reg 0x42 0x10
-			sls_detector_put reg 0x5d  0xf0000f00
-			sls_detector_put adcphase 25
-			sls_detector_put status start
-			break;
+			}
 		}
 
+		getClockDivider(ic);
 	}
+
+
 
    //u_int32_t l=0x0c;
    //u_int32_t h=0x0d;
@@ -598,10 +603,7 @@ u_int32_t setClockDivider(int d, int ic) {
   u_int32_t tot= PLL_VCO_FREQ_MHZ/d;
 
   //	int ic=0  is run clk; ic=1 is adc clk 
-  if(myDetectorType == JUNGFRAU)
-  	printf("set clk divider to %d\n", ic, d);
-  else{
-	printf("set clk divider %d to %d\n", ic, d);
+  printf("set clk divider %d to %d\n", ic, d);
   if (ic>1)
     return -1;
 
@@ -616,7 +618,7 @@ u_int32_t setClockDivider(int d, int ic) {
 
   if (tot<1)
     return -1;
-  }
+
 
 
   clkDivider[ic]=d;
@@ -665,6 +667,23 @@ int getPhase() {
 
 u_int32_t getClockDivider(int ic) {
 
+	if(myDetectorType == JUNGFRAU){
+		enum clkspeed{FULL,HALF,QUARTER};
+
+		switch(initSpeedConfGain(-1)){
+		//case JUNGFRAU_FULLSPEED_CONF:
+		//return FULL;
+		case JUNGFRAU_HALFSPEED_CONF:
+			return HALF;
+		case JUNGFRAU_QUARTERSPEED_CONF:
+			return QUARTER;
+		default:
+			return -1;
+		}
+	}
+
+
+
   if (ic>1)
     return -1;
   return clkDivider[ic];
@@ -702,6 +721,11 @@ u_int32_t getClockDivider(int ic) {
 
 
 u_int32_t adcPipeline(int d) {
+  if(myDetectorType == JUNGFRAU){
+	  if (d>=0)
+	    bus_w(ADC_PIPELINE_REG, d);
+	  return bus_r(ADC_PIPELINE_REG);
+  }
   if (d>=0)
     bus_w(DAQ_REG, d);
   return bus_r(DAQ_REG)&0xff;
@@ -709,9 +733,11 @@ u_int32_t adcPipeline(int d) {
 
 
 u_int32_t dbitPipeline(int d){
+  if(myDetectorType != JUNGFRAU)
+	return 0;
   if (d>=0)
-    bus_w(DAQ_REG, d);
-  return bus_r(DAQ_REG)&0xff;
+    bus_w(DBIT_PIPELINE_REG, d);
+  return bus_r(DBIT_PIPELINE_REG);
 }
 
 u_int32_t setSetLength(int d) {
@@ -1669,23 +1695,42 @@ int initHighVoltage(int val, int imod){
 
 
 
+/*used only by jungfrau */
 int initConfGain(int isettings,int val,int imod){
   int retval;
   u_int32_t addr=CONFGAIN_REG;
-
   if(isettings!=-1){
-#ifdef VERBOSE
-    printf("Setting Gain of module:%d with val:%d\n",imod,val);
-#endif
-    bus_w(addr,val);
+//#ifdef VERBOSE
+    printf("Setting Gain with val:%d\n",val);
+//#endif
+   	bus_w(addr,(val|(bus_r(addr)&~JUNGFRAU_GAIN_MASK)));
   }
-  retval=(bus_r(addr));
-#ifdef VERBOSE
+  retval=(bus_r(addr)&JUNGFRAU_GAIN_MASK);
+//#ifdef VERBOSE
   printf("Value read from Gain reg is %d\n",retval);
-#endif 
+  printf("Gain Reg Value is %d\n",bus_r(addr));
+//#endif
     return retval;
 }
 
+
+/*used only by jungfrau */
+int initSpeedConfGain(int val){
+	int retval;
+	u_int32_t addr=CONFGAIN_REG;
+	if(val!=-1){
+		//#ifdef VERBOSE
+		printf("Setting Speed of Gain reg with val:%d\n",val);
+		//#endif
+		bus_w(addr,((val<<JUNGFRAU_SPEED_GAIN_OFFSET)|(bus_r(addr)&~JUNGFRAU_SPEED_GAIN_MASK)));
+	}
+	retval=((bus_r(addr)&JUNGFRAU_SPEED_GAIN_MASK)>>JUNGFRAU_SPEED_GAIN_OFFSET);
+	//#ifdef VERBOSE
+	printf("Value read from Speed of Gain reg is %d\n",retval);
+	printf("Gain Reg Value is %d\n",bus_r(addr));
+	//#endif
+	return retval;
+}
 
 
 int setADC(int adc){

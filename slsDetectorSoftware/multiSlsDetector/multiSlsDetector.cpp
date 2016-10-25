@@ -5255,7 +5255,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 	//construct complete image and send to callback
 	while(true){
-		memset(((char*)multiframe),0xFF,slsdatabytes*thisMultiDetector->numberOfDetectors);	//reset frame memory
+		//memset(((char*)multiframe),0xFF,slsdatabytes*thisMultiDetector->numberOfDetectors);	//reset frame memory
 
 		//post all of them to start
 		for(int ireadout=0; ireadout<numReadouts; ++ireadout){

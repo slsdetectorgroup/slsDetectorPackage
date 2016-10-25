@@ -5249,6 +5249,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 
 	volatile uint64_t dataThreadMask = 0x0;
+	cout<<"numreadouts:"<<numReadouts<<endl;
 	for(int i = 0; i < numReadouts; ++i)
 		dataThreadMask|=(1<<i);
 

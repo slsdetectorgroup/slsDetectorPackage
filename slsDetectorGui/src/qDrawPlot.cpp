@@ -1260,8 +1260,8 @@ int qDrawPlot::MeasurementFinished(int currentMeasurementIndex, int fileIndex){
 #endif
 	//to make sure it plots the last frame before setting lastimagearray all to 0
 	//if(plot_in_scope==2)
-		usleep(5*1000*1000);
-
+		//usleep(5*1000*1000);
+	usleep(500*1000);
 	currentMeasurement = currentMeasurementIndex+1;
 	currentFileIndex = fileIndex;
 #ifdef VERBOSE

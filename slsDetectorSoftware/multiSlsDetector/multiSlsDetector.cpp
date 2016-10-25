@@ -5178,7 +5178,7 @@ void multiSlsDetector::startReceivingDataThread(){
 		}
 		else{
 			//actual data
-			//cprintf(BLUE,"%d actual dataaa\n",ithread);
+			cprintf(BLUE,"%d actual dataaa\n",ithread);
 			memcpy((char*)(singleframe[ithread]),(char*)zmq_msg_data(&message),singleDatabytes/numReadoutPerDetector);
 
 

@@ -29,7 +29,6 @@ u_int32_t bus_w(u_int32_t offset, u_int32_t data);
 u_int32_t bus_r(u_int32_t offset);
 
 int setPhaseShiftOnce();
-int phaseStep(int st);
 int adcPhase(int st);
 int getPhase();
 int cleanFifo();
@@ -37,8 +36,8 @@ int setDAQRegister();
 
 u_int32_t putout(char *s, int modnum);
 u_int32_t readin(int modnum);
-u_int32_t setClockDivider(int d, int ic);
-u_int32_t getClockDivider(int ic);
+u_int32_t setClockDivider(int d);
+u_int32_t getClockDivider();
 
 void resetPLL();
 u_int32_t setPllReconfigReg(u_int32_t reg, u_int32_t val, int trig);
@@ -68,7 +67,6 @@ int setTiming(int t);
 int setConfigurationRegister(int d);
 int setToT(int d);
 int setContinousReadOut(int d);
-int startReceiver(int d);
 
 int setDACRegister(int idac, int val, int imod);
 int getDacRegister(int dacnum);
@@ -142,9 +140,7 @@ u_int32_t fifoReadStatus();
 u_int32_t fifo_full(void);
 
 
-
-u_int16_t* fifo_read_event(int ns);
-u_int16_t* fifo_read_frame();
+void waitForAcquisitionEnd();
 u_int32_t* decode_data(int* datain);
 //u_int32_t move_data(u_int64_t* datain, u_int64_t* dataout);
 int setDynamicRange(int dr);

@@ -7,23 +7,15 @@
 
 
 // Hardware definitions
-#define NMAXMODY 1
-#define NMAXMOD (NMAXMODX*NMAXMODY)
-
-#define NCHAN 32
-#define NCHIP 1
-#define NADC 1
-#define NDAC 16
-#define NMAXMODX  1
-#define NCHANS (NCHAN*NCHIP*NMAXMOD)
-#define NDACS (NDAC*NMAXMOD)
-
-#define JUNGFRAU_NCHAN 			(256*256)
-#define JUNGFRAU_NCHIP 			8
-#define JUNGFRAU_NADC			0
-#define JUNGFRAU_NDAC 			16
-#define JUNGFRAU_NCHANS 		(JUNGFRAU_NCHAN*JUNGFRAU_NCHIP*NMAXMOD)
-
+#define NMAXMODY 	1
+#define NMAXMODX  	1
+#define NMAXMOD 	(NMAXMODX*NMAXMODY)
+#define NCHAN 		(256*256)
+#define NCHIP 		8
+#define NADC		0
+#define NDAC 		16
+#define NCHANS 		(NCHAN*NCHIP*NMAXMOD)
+#define NDACS 		(NDAC*NMAXMOD)
 
 
 /**when moench readout tested with gotthard module*/

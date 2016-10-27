@@ -10,6 +10,15 @@
 #define MEM_SIZE 0x100000 
 
 
+//Constants
+#define HALFSPEED_DBIT_PIPELINE 0x7f7c
+#define QUARTERSPEED_DBIT_PIPELINE 0x8981
+#define HALFSPEED_ADC_PIPELINE 0x20
+#define QUARTERSPEED_ADC_PIPELINE 0x10
+#define HALFSPEED_CONF 0x0
+#define QUARTERSPEED_CONF 0xf
+#define HALFSPEED_ADC_PHASE 65
+#define QUARTERSPEED_ADC_PHASE 25
 
 /* values defined for FPGA */
 #define MCSNUM            0x0
@@ -409,14 +418,10 @@
 
 
 /* settings/conf gain register */
-#define GAIN_MASK                    0x0000000f 
+#define GAIN_MASK                    0x0000ffff
 #define GAIN_OFFSET                  0  
-#define SETTINGS_MASK                0x000000f0
-#define SETTINGS_OFFSET              4 
-
-#define JUNGFRAU_GAIN_MASK           0x0000ffff
-#define JUNGFRAU_SPEED_GAIN_MASK     0xf0000000
-#define JUNGFRAU_SPEED_GAIN_OFFSET   28
+#define SPEED_GAIN_MASK     		0xf0000000
+#define SPEED_GAIN_OFFSET   		28
 
 
 

@@ -2097,10 +2097,50 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 
 	if(status != TRANSMITTING){
 		if(myDetectorType == JUNGFRAU){
+
 			jfrau_packet_header_t* header;
-			int pcount = packetsPerFrame-1;
-			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + fifoBufferHeaderSize, JFRAU_HEADER_LENGTH);
-			header = (jfrau_packet_header_t*)(buffer[ithread] + fifoBufferHeaderSize + iloop * (JFRAU_HEADER_LENGTH+JFRAU_ONE_DATA_SIZE));
+			int offset = fifoBufferHeaderSize;
+			int pnum = packetsPerFrame-1;
+			int currentpnum;
+
+			//read first packet header
+			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, JFRAU_HEADER_LENGTH);
+			if(!receivedSize) return 0;
+			header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
+			currentpnum = (*( (uint8_t*) header->packetNumber));
+
+			while(true){
+
+				//correct packet
+				if(currentpnum == pnum){
+					receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, oneDataSize);
+					if(!receivedSize) return 0;
+					offset+=oneDataSize;
+
+					//got a complete frame
+					if(pnum == 0)
+						break;
+					pnum --;
+				}
+
+				//wrong packet
+				else{
+					pnum = packetsPerFrame-1;
+					offset = fifoBufferHeaderSize;
+					//find the start of next image
+					while(currentpnum != (packetsPerFrame-1)){
+						receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, oneDataSize);
+						if(!receivedSize) return 0;
+						receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, JFRAU_HEADER_LENGTH);
+						if(!receivedSize) return 0;
+						header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
+						currentpnum = (*( (uint8_t*) header->packetNumber));
+					}
+
+				}
+			}//----- got a whole frame -------
+
+			receivedSize = oneDataSize * packetsPerFrame;
 		}
 		else{
 			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + fifoBufferHeaderSize + cSize, (bufferSize * numberofJobsPerBuffer) - cSize);

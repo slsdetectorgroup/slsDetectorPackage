@@ -2099,8 +2099,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 		if(myDetectorType == JUNGFRAU){
 			jfrau_packet_header_t* header;
 			int pcount = packetsPerFrame-1;
-			lSize = JFRAU_HEADER_LENGTH;
-			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + fifoBufferHeaderSize, lSize);
+			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + fifoBufferHeaderSize, JFRAU_HEADER_LENGTH);
 			header = (jfrau_packet_header_t*)(buffer[ithread] + fifoBufferHeaderSize + iloop * (JFRAU_HEADER_LENGTH+JFRAU_ONE_DATA_SIZE));
 		}
 		else{

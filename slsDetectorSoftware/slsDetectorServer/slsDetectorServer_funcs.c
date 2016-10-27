@@ -36,7 +36,6 @@ extern enum detectorSettings thisSettings;
 
 //global variables for optimized readout
 char mess[MAX_STR_LENGTH];
-char *dataretval=NULL;
 int dataret;
 //extern 
 int dataBytes = 10;
@@ -2527,9 +2526,8 @@ int start_and_read_all(int file_des) {
 
 
 int read_frame(int file_des) {
-
-	dataret=OK;
 	int dataret1;
+
 	if (differentClients==1 && lockStatus==1) {
 		dataret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
@@ -2538,25 +2536,28 @@ int read_frame(int file_des) {
 		dataret1 = dataret;
 		sendData(file_des,&dataret1,sizeof(dataret1),INT32);
 		sendData(file_des,mess,sizeof(mess),OTHER);
+#ifdef VERBOSE
 		printf("dataret %d\n",dataret);
+#endif
 		return dataret;
 	}
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-	dataretval=readFrame(&dataret, mess);
+		readFrame(&dataret, mess);
 #endif
 
-
-	//dataret could be swapped during sendData
-	dataret1 = dataret;
-	sendData(file_des,&dataret1,sizeof(dataret1),INT32);
-	if (dataret==FAIL)
-		sendData(file_des,mess,sizeof(mess),OTHER);//sizeof(mess));//sizeof(mess));
-	else if(dataret==OK){printf("shouldnt be sending anything but i am\n");
-		sendData(file_des,dataretval,dataBytes,OTHER);}
-
-	printf("dataret %d\n",dataret);
-	return dataret;
+ 		if (differentClients)
+ 			dataret=FORCE_UPDATE;
+		//dataret could be swapped during sendData
+		dataret1 = dataret;
+		sendData(file_des,&dataret1,sizeof(dataret1),INT32);
+		//always fail or finished
+		sendData(file_des,mess,sizeof(mess),OTHER);
+ 		if(dataret == FAIL)
+ 			cprintf(RED,"%s\n",mess);
+ 		else
+ 			cprintf(GREEN,"%s",mess);
+ 		return dataret;
 }
 
 

@@ -136,24 +136,24 @@ int init_detector(int b) {
 
 		printf("\nPowering on the chip\n");
 		bus_w(POWER_ON_REG,0x1);
-		printf("\nResetting ADC\n");
+		printf("Resetting ADC\n");
 		writeADC(ADCREG1,0x3); writeADC(ADCREG1,0x0);
 		writeADC(ADCREG2,0x40);
 		writeADC(ADCREG3,0xf);
 		writeADC(ADCREG4,0x3f);
-		printf("\nConfiguring Vrefs\n");
+		printf("Configuring Vrefs\n");
 		writeADC(ADCREG_VREFS,0x2);
-		printf("\nSetting ADC Inversion\n");// (by trial and error)
+		printf("Setting ADC Inversion\n");// (by trial and error)
 		bus_w(ADC_INVERSION_REG,0x453b2a9c);
 
 		adcPipeline(HALFSPEED_ADC_PIPELINE);
 		dbitPipeline(HALFSPEED_DBIT_PIPELINE);
 		adcPhase(HALFSPEED_ADC_PHASE); //set adc_clock_phase in unit of 1/(52) clock period (by trial and error)
 
-		printf("\nReset mem machine fifos\n");
+		printf("Reset mem machine fifos\n");
 		bus_w(MEM_MACHINE_FIFOS_REG,0x4000);
 		bus_w(MEM_MACHINE_FIFOS_REG,0x0);
-		printf("\nReset run control\n");
+		printf("Reset run control\n");
 		bus_w(MEM_MACHINE_FIFOS_REG,0x0400);
 		bus_w(MEM_MACHINE_FIFOS_REG,0x0);
 		initSpeedConfGain(HALFSPEED_CONF);

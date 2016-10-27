@@ -5579,7 +5579,8 @@ char* slsDetector::setReceiver(string receiverIP){
 			setTimer(FRAME_PERIOD,thisDetector->timerValue[FRAME_PERIOD]);
 			setTimer(FRAME_NUMBER,thisDetector->timerValue[FRAME_NUMBER]);
 			setDynamicRange(thisDetector->dynamicRange);
-			activate(-1);
+			if(thisDetector->myDetectorType == EIGER)
+				activate(-1);
 			//std::cout << "***********************************dataStreaming:" << parentDet->enableDataStreamingFromReceiver(-1) << endl << endl;
 			//parentDet->enableDataStreamingFromReceiver(parentDet->enableDataStreamingFromReceiver(-1));
 			//set scan tag

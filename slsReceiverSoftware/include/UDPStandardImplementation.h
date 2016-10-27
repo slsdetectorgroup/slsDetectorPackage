@@ -663,6 +663,9 @@ private:
 	/** Total fifo size */
 	uint32_t fifoSize;
 
+	/** fifo buffer header size */
+	uint32_t fifoBufferHeaderSize;
+
 	/** Missing Packet  */
 	int missingPacketinFile;
 

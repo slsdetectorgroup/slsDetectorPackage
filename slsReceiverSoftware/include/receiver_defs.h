@@ -129,7 +129,7 @@ typedef struct {
 
 
 
-
+#define JFRAU_FILE_FRAME_HEADER_LENGTH		16
 #define JFRAU_FIFO_SIZE						2500 //cannot be less than max jobs per thread = 1000
 #define JFRAU_PACKETS_PER_FRAME				128
 #define JFRAU_HEADER_LENGTH					22

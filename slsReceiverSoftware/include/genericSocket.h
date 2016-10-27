@@ -615,13 +615,14 @@ enum communicationProtocol{
     			 /*int k = 0;*/
 
     			 while(length>0){
-    				 nsending = (length>packet_size) ? packet_size:length;
+    				 if(length<packet_size)
+    					 nsending = length; //works for jungfrau to read packet header
+    				 else
+    					 nsending = (length>packet_size) ? packet_size:length; //works for eiger to get packets to discard image header packets
     				 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
-    				 if(nsent < packet_size) {
-    					 if(nsent){
-    						 if((nsent != header_packet_size) && (nsent != -1))
+    				 if(nsent != nsending){ //if((nsent != nsending)){ && (nsent < packet_size)){
+    					 if(nsent && (nsent != header_packet_size) && (nsent != -1))
     							 cprintf(RED,"Incomplete Packet size %d\n",nsent);
-    					 }
     					 break;
     				 }
     				 length-=nsent;

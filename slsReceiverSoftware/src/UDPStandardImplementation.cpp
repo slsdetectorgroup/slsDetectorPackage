@@ -1402,12 +1402,14 @@ void UDPStandardImplementation::setThreadPriorities(){
 				break;
 			}
 	}
-	for(int i = 0; i < numberofDataCallbackThreads; ++i){
-		if(rights)
-			if (pthread_setschedparam(dataCallbackThreads[i], SCHED_RR, &datacallback_param) == EPERM){
-				rights = false;
-				break;
-			}
+	if(dataStreamEnable){
+		for(int i = 0; i < numberofDataCallbackThreads; ++i){
+			if(rights)
+				if (pthread_setschedparam(dataCallbackThreads[i], SCHED_RR, &datacallback_param) == EPERM){
+					rights = false;
+					break;
+				}
+		}
 	}
 	if (pthread_setschedparam(pthread_self(),5 , &tcp_param) == EPERM)
 		rights = false;

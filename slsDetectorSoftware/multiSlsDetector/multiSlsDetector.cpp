@@ -4279,7 +4279,7 @@ int multiSlsDetector::readConfigurationFile(string const fname){
   multiSlsDetectorClient *cmd;
   // char ext[100];
 
-
+  setAcquiringFlag(false);
 
   string ans;
   string str;

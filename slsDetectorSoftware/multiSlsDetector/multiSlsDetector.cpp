@@ -1759,7 +1759,7 @@ int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t){
       if (ret1==-100)
 	ret1=ret;
       else if (ret!=ret1)
-	ret1=FAIL;
+	ret1=-1;
       
     }
   }

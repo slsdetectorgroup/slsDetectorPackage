@@ -1739,7 +1739,7 @@ int slsDetector::setNumberOfModules(int n, dimension d){
 
 
     int dr=thisDetector->dynamicRange;
-    if (dr==24)
+    if ((thisDetector->myDetectorType==MYTHEN) && (dr==24))
       dr=32;
 
     thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*dr/8;
@@ -4539,7 +4539,7 @@ int slsDetector::setDynamicRange(int n){
 #ifdef VERBOSE
   std::cout<< "Setting dynamic range to "<< n << std::endl;
 #endif
-  if (n==24)
+  if ((thisDetector->myDetectorType == MYTHEN) &&(n==24))
     n=32;
 
 

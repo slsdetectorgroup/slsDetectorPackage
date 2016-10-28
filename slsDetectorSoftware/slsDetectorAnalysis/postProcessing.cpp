@@ -497,6 +497,9 @@ void* postProcessing::processData(int delflag) {
 				cout<<flush;
 				usleep(20000); //20ms need this else connecting error to receiver (too fast)
 
+				if (checkJoinThread()){
+					break;
+				}
 				//get progress
 				if(setReceiverOnline() == ONLINE_FLAG){
 					pthread_mutex_lock(&mg);

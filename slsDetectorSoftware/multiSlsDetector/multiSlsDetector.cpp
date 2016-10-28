@@ -1759,7 +1759,7 @@ int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t){
       if (ret1==-100)
 	ret1=ret;
       else if (ret!=ret1)
-	ret1=FAIL;
+	ret1=-1;
       
     }
   }
@@ -4279,7 +4279,7 @@ int multiSlsDetector::readConfigurationFile(string const fname){
   multiSlsDetectorClient *cmd;
   // char ext[100];
 
-
+  setAcquiringFlag(false);
 
   string ans;
   string str;
@@ -5167,7 +5167,7 @@ void multiSlsDetector::startReceivingDataThread(){
 		//end of socket ("end")
 		if (len < 1024*256 ) {
 			if(len == 3){
-				//cprintf(RED,"Received end of acquisition for socket %d\n", ithread);
+				//cprintf(RED,"%d Received end of acquisition\n", ithread);
 				singleframe[ithread] = NULL;
 				//break;
 			}else{
@@ -5253,10 +5253,9 @@ void multiSlsDetector::readFrameFromReceiver(){
 		dataThreadMask|=(1<<i);
 
 
-
 	//construct complete image and send to callback
 	while(true){
-		memset(((char*)multiframe),0xFF,slsdatabytes*thisMultiDetector->numberOfDetectors);	//reset frame memory
+		//memset(((char*)multiframe),0xFF,slsdatabytes*thisMultiDetector->numberOfDetectors);	//reset frame memory
 
 		//post all of them to start
 		for(int ireadout=0; ireadout<numReadouts; ++ireadout){
@@ -5329,7 +5328,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 			dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);//should be fnum and subfnum from json header
 			delete thisData;
 			fdata = NULL;
-			//cout<<"Send frame #"<< currentFrameIndex << " to gui"<<endl;
+			cout<<"Send frame #"<< currentFrameIndex << " to gui"<<endl;
 		}
 		setCurrentProgress(currentAcquisitionIndex+1);
 	}

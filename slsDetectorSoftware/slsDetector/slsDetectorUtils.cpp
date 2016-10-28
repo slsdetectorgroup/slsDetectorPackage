@@ -448,7 +448,6 @@ int  slsDetectorUtils::acquire(int delflag){
   setFileIndex(fileIO::getFileIndex());
   pthread_mutex_unlock(&mg);
 
-
     if (measurement_finished){
     	  pthread_mutex_lock(&mg);
     	  measurement_finished(im,*fileIndex,measFinished_p);

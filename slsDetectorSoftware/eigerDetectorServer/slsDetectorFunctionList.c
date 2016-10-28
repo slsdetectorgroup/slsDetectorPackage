@@ -858,25 +858,22 @@ enum runStatus getRunStatus(){
 
 
 
-char *readFrame(int *ret, char *mess){
-	//if(master){
-		if(!Feb_Control_WaitForFinishedFlag(5000))
-			cprintf(RED,"Error: Waiting for finished flag\n");
-		cprintf(GREEN,"Acquisition finished***\n");
+void readFrame(int *ret, char *mess){
+	if(!Feb_Control_WaitForFinishedFlag(5000))
+		cprintf(RED,"Error: Waiting for finished flag\n");
+	cprintf(GREEN,"Acquisition finished***\n");
 
-		if(eiger_storeinmem){
-			printf("requesting images after storing in memory\n");
-			if(startReadOut() == FAIL){
-				cprintf(RED, "Could not read out images\n");
-				*ret = (int)FAIL;
-				return NULL;
-			}
+	if(eiger_storeinmem){
+		printf("requesting images after storing in memory\n");
+		if(startReadOut() == FAIL){
+			strcpy(mess,"Could not execute read image requests\n");
+			*ret = (int)FAIL;
+			return;
 		}
-		//usleep(1000000);
-		printf("*****Done Waiting...\n");
-	//}
-		*ret = (int)FINISHED;
-	return NULL;
+	}
+	printf("*****Done Waiting...\n");
+	*ret = (int)FINISHED;
+	strcpy(mess,"acquisition successfully finished\n");
 }
 
 

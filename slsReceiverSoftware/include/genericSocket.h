@@ -621,7 +621,7 @@ enum communicationProtocol{
     					 cprintf(BLUE,"will read %d\n",nsending);
     				 }
     				 else{
-    					 cprintf(BG_RED,"should not have been here length:%d packet_size:%d !!\n");
+    					 cprintf(BG_RED,"should not have been here length:%d packet_size:%d !!\n",length, packet_size);
     					 nsending = (length>packet_size) ? packet_size:length; //works for eiger to get packets to discard image header packets
     				 }
     				 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);

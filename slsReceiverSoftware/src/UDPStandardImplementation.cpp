@@ -2744,7 +2744,7 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 		for(int i=0;i<numberofListeningThreads;i++){
 			cout<<"i:"<<i<<endl;
 			cout<<"totalWritingPacketCount:"<<totalWritingPacketCount[i]<<endl;
-			cout<<"numberOfFrames:"<<(long long int)packetsPerFrame<<endl;
+			cout<<"numberOfFrames:"<<(long long int)numberOfFrames<<endl;
 			cout<<"packetsPerFrame:"<<packetsPerFrame<<endl;
 			cout<<"numberOfFrames*packetsPerFrame:"<<(long long int)numberOfFrames*packetsPerFrame<<endl;
 			cout<<"(long long int)numberOfFrames*packetsPerFrame-totalWritingPacketCount[i]:"<<(long long int)numberOfFrames*packetsPerFrame-totalWritingPacketCount[i]<<endl;

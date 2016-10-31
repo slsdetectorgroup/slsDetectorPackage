@@ -826,7 +826,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 	case JUNGFRAU:
 		packetsPerFrame		= JFRAU_PACKETS_PER_FRAME;
 		onePacketSize 		= JFRAU_ONE_PACKET_SIZE;
-		oneDataSize 		= JFRAU_DATA_BYTES;
+		oneDataSize 		= JFRAU_ONE_DATA_SIZE;
 		bufferSize 			= JFRAU_BUFFER_SIZE;
 		frameIndexMask 		= JFRAU_FRAME_INDEX_MASK;
 		frameIndexOffset 	= JFRAU_FRAME_INDEX_OFFSET;
@@ -2142,7 +2142,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 
 			receivedSize = oneDataSize * packetsPerFrame;
 		}
-		else{
+		else{cprintf(BG_RED,"for only eiger or other dets. should not be here!!\n");
 			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + fifoBufferHeaderSize + cSize, (bufferSize * numberofJobsPerBuffer) - cSize);
 			//eiger returns 0 when header packet caught
 			while(receivedSize < onePacketSize && status != TRANSMITTING)

@@ -2160,6 +2160,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 			receivedSize = oneDataSize * packetsPerFrame;
 		}
 		else{
+			cprintf(BG_RED,"should not be here, wrong det\n");
 			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + fifoBufferHeaderSize + cSize, (bufferSize * numberofJobsPerBuffer) - cSize);
 			//eiger returns 0 when header packet caught
 			while(receivedSize < onePacketSize && status != TRANSMITTING)

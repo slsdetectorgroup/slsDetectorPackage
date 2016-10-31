@@ -617,8 +617,10 @@ enum communicationProtocol{
     			 while(length>0){
     				 if(length<packet_size)
     					 nsending = length; //works for jungfrau to read packet header
-    				 else
+    				 else{
+    					 cprintf(BG_RED,"should not be here, wrong nsending\n");
     					 nsending = (length>packet_size) ? packet_size:length; //works for eiger to get packets to discard image header packets
+    				 }
     				 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
     				 cout<<"nsent:"<<nsent<<endl;
     				 if(nsent != nsending){ //if((nsent != nsending)){ && (nsent < packet_size)){
@@ -632,6 +634,7 @@ enum communicationProtocol{
     		 }
     		 //listens to only 1 packet
     		 else{
+    			 cprintf(BG_RED,"should not be here, length is zero\n");
     			 //normal
     			 nsending=packet_size;
     			nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
@@ -642,9 +645,9 @@ enum communicationProtocol{
     	 default:
     		 ;
     	 }
-#ifdef VERY_VERBOSE
+//#ifdef VERY_VERBOSE
     	 cout << "sent "<< total_sent << " Bytes" << endl;
-#endif
+//#endif
 
 
     	 return total_sent;

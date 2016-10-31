@@ -1991,7 +1991,10 @@ void UDPStandardImplementation::startListening(){
 			}
 
 			//write packet count to buffer
-			(*((uint32_t*)(buffer[ithread]))) = (rc/onePacketSize);
+			if(myDetectorType == JUNGFRAU)
+				(*((uint32_t*)(buffer[ithread]))) = (rc/oneDataSize);
+			else
+				(*((uint32_t*)(buffer[ithread]))) = (rc/onePacketSize);
 
 			if(dataCompressionEnable)
 				(*((uint32_t*)(buffer[ithread]))) = processListeningBuffer(ithread, carryonBufferSize, tempBuffer, rc);
@@ -2515,16 +2518,16 @@ void UDPStandardImplementation::startWriting(){
 			cprintf(GREEN,"Writing_Thread %d: Popped %p from FIFO %d\n", ithread, (void*)(wbuf),listenfifoIndex);
 #endif
 			uint32_t numPackets = (uint32_t)(*((uint32_t*)wbuf));
-#ifdef DEBUG4
+//#ifdef DEBUG4
 			cprintf(GREEN,"Writing_Thread %d: Number of Packets: %d for FIFO %d\n", ithread, numPackets, listenfifoIndex);
-#endif
+//#endif
 
 
 			//end of acquisition
 			if(numPackets == dummyPacketValue){
-#ifdef DEBUG4
+//#ifdef DEBUG4
 				cprintf(GREEN,"Writing_Thread %d: Dummy frame popped out of FIFO %d",ithread, listenfifoIndex);
-#endif
+//#endif
 				stopWriting(ithread,wbuf);
 				continue;
 			}

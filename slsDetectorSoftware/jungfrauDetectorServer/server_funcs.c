@@ -1876,9 +1876,9 @@ int read_frame(int file_des) {
 
 #ifdef MCB_FUNCS
 	waitForAcquisitionEnd();
-	if (getFrames()>-2) {
+	if (getFrames()+1>0) {
 		dataret=FAIL;
-		sprintf(mess,"no data and run stopped: %d frames left\n",(int)(getFrames()+2));
+		sprintf(mess,"no data and run stopped: %d frames left\n",(int)(getFrames()+1));
 	} else {
 		dataret=FINISHED;
 		sprintf(mess,"acquisition successfully finished\n");

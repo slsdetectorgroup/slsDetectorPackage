@@ -2106,12 +2106,13 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 			if(!receivedSize) return 0;
 			header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
 			currentpnum = (*( (uint8_t*) header->packetNumber));
-			cout<<"currentpnum:"<<currentpnum<<endl;
+			cout<<"1 currentpnum:"<<currentpnum<<endl;
 
 			while(true){
 
 				//correct packet
 				if(currentpnum == pnum){
+					cout<<"correct packet"<<endl;
 					//complete frame, get frame number while u can
 					if(pnum == 0){
 						(*((uint32_t*)(buffer[ithread]+8))) = (*( (uint32_t*) header->frameNumber))&frameIndexMask;
@@ -2119,16 +2120,23 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 					}
 					receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, oneDataSize);
 					if(!receivedSize) return 0;
+					cout<<"got data for " << pnum << endl;
 					offset+=oneDataSize;
 
 					//got a complete frame
 					if(pnum == 0)
 						break;
 					pnum --;
+					receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, JFRAU_HEADER_LENGTH);
+					if(!receivedSize) return 0;
+					header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
+					currentpnum = (*( (uint8_t*) header->packetNumber));
+					cout<<"next currentpnum:"<<currentpnum<<endl;
 				}
 
 				//wrong packet
 				else{
+					cout<<"wrong packet"<<endl;
 					pnum = packetsPerFrame-1;
 					offset = fifoBufferHeaderSize;
 					//find the start of next image
@@ -2139,7 +2147,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 						if(!receivedSize) return 0;
 						header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
 						currentpnum = (*( (uint8_t*) header->packetNumber));
-						cout<<"currentpnum:"<<currentpnum<<endl;
+						cout<<"trying to find currentpnum:"<<currentpnum<<endl;
 					}
 				}
 			}//----- got a whole frame -------

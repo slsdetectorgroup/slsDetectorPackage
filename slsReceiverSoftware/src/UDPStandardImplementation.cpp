@@ -2102,6 +2102,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 			int currentfnum=-1;
 
 			//read first packet header
+			cout<<"going to read header " << JFRAU_HEADER_LENGTH <<endl;
 			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, JFRAU_HEADER_LENGTH);
 			if(!receivedSize) return 0;
 			header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
@@ -2120,6 +2121,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 						cout<<"current fnum:"<<(*((uint32_t*)(buffer[ithread]+8)))<<endl;
 					}
 					//get data
+					cout<<"going to read data " << oneDataSize <<endl;
 					receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, oneDataSize);
 					if(!receivedSize) return 0;
 					cout<<"got data for " << pnum << endl;
@@ -2130,6 +2132,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 						break;
 					pnum --;
 
+					cout<<"going to read header " << JFRAU_HEADER_LENGTH <<endl;
 					receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, JFRAU_HEADER_LENGTH);
 					if(!receivedSize) return 0;
 					header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
@@ -2145,8 +2148,10 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 					offset = fifoBufferHeaderSize;
 					//find the start of next image
 					while(currentpnum != (packetsPerFrame-1)){
+						cout<<"going to read data " << oneDataSize <<endl;
 						receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, oneDataSize);
 						if(!receivedSize) return 0;
+						cout<<"going to read header " << JFRAU_HEADER_LENGTH <<endl;
 						receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, JFRAU_HEADER_LENGTH);
 						if(!receivedSize) return 0;
 						header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);

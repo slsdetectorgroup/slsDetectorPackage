@@ -2101,6 +2101,36 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 			int currentpnum;
 			int currentfnum=-1;
 
+
+
+			cout<<"going to read header " << JFRAU_HEADER_LENGTH <<endl;
+			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, JFRAU_HEADER_LENGTH);
+			cout<<"receivedsize:"<<receivedSize<<endl;
+			header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
+			currentpnum = (*( (uint8_t*) header->packetNumber));
+			cout<<"1 current fnum:"<< ((*( (uint32_t*) header->frameNumber))&frameIndexMask) <<endl;
+			cout<<"1 currentpnum:"<<currentpnum<<endl;
+
+			cout<<"going to read data " << oneDataSize <<endl;
+			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, oneDataSize);
+			cout<<"receivedsize:"<<receivedSize<<endl;
+			offset+=oneDataSize;
+
+
+			cout<<"going to read header " << JFRAU_HEADER_LENGTH <<endl;
+			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, JFRAU_HEADER_LENGTH);
+			cout<<"receivedsize:"<<receivedSize<<endl;
+			header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
+			currentpnum = (*( (uint8_t*) header->packetNumber));
+			cout<<"2 current fnum:"<< ((*( (uint32_t*) header->frameNumber))&frameIndexMask) <<endl;
+			cout<<"2 currentpnum:"<<currentpnum<<endl;
+
+			exit(-1);
+
+
+
+
+
 			//read first packet header
 			cout<<"going to read header " << JFRAU_HEADER_LENGTH <<endl;
 			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, JFRAU_HEADER_LENGTH);
@@ -2137,13 +2167,14 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 					if(!receivedSize) return 0;
 					header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
 					currentpnum = (*( (uint8_t*) header->packetNumber));
-					cout<<"next currentpnum:"<<currentpnum<<endl;
+					cout<<"offset:"<<offset<<endl;
+					cout<<"next currentpnum :"<<currentpnum<<endl;
 					cout<<"next current fnum:"<< ((*( (uint32_t*) header->frameNumber))&frameIndexMask) <<endl;
 				}
 
 				//wrong packet
 				else{
-					cout<<"wrong packet"<<endl;
+					cprintf(RED,"wrong packet\n");
 					pnum = packetsPerFrame-1;
 					offset = fifoBufferHeaderSize;
 					//find the start of next image

@@ -2106,14 +2106,17 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 			if(!receivedSize) return 0;
 			header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
 			currentpnum = (*( (uint8_t*) header->packetNumber));
+			cout<<"currentpnum:"<<currentpnum<<endl;
 
 			while(true){
 
 				//correct packet
 				if(currentpnum == pnum){
 					//complete frame, get frame number while u can
-					if(pnum == 0)
+					if(pnum == 0){
 						(*((uint32_t*)(buffer[ithread]+8))) = (*( (uint32_t*) header->frameNumber))&frameIndexMask;
+						cout<<"current fnum:"<<(*((uint32_t*)(buffer[ithread]+8)))<<endl;
+					}
 					receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, oneDataSize);
 					if(!receivedSize) return 0;
 					offset+=oneDataSize;
@@ -2136,6 +2139,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 						if(!receivedSize) return 0;
 						header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
 						currentpnum = (*( (uint8_t*) header->packetNumber));
+						cout<<"currentpnum:"<<currentpnum<<endl;
 					}
 				}
 			}//----- got a whole frame -------

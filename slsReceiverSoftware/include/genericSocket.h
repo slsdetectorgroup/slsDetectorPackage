@@ -618,13 +618,14 @@ enum communicationProtocol{
     			 while(length>0){
     				 if(length<packet_size){
     					 nsending = length; //works for jungfrau to read packet header
-    					 cprintf(BLUE,"Read %d\n",nsending);
+    					 cprintf(BLUE,"will read %d\n",nsending);
     				 }
     				 else{
-    					 cprintf(BG_RED,"should not have been here!!\n");
+    					 cprintf(BG_RED,"should not have been here length:%d packet_size:%d !!\n");
     					 nsending = (length>packet_size) ? packet_size:length; //works for eiger to get packets to discard image header packets
     				 }
     				 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
+    				 cprintf(BLUE,"read %d\n",nsending);
     				 if(nsent != nsending){ //if((nsent != nsending)){ && (nsent < packet_size)){
     					 if(nsent && (nsent != header_packet_size) && (nsent != -1))
     							 cprintf(RED,"Incomplete Packet size %d\n",nsent);

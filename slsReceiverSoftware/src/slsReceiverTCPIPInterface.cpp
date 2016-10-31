@@ -2354,7 +2354,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 		strcpy(mess,"Error reading from socket\n");
 		ret = FAIL;
 	}
-
+	printf("index[0]:%d index[1]:%d\n",index[0],index[1]);
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (ret==OK) {

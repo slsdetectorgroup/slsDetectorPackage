@@ -84,16 +84,6 @@ using namespace std;
 #define DEFAULT_ZMQ_PORTNO 70001
 
 
-typedef struct {
-	unsigned char emptyHeader[6];
-	unsigned char reserved[4];
-	unsigned char packetNumber[1];
-	unsigned char frameNumber[3];
-	unsigned char bunchid[8];
-} jfrau_packet_header_t1;
-
-
-
 
 class genericSocket{
 
@@ -625,49 +615,11 @@ enum communicationProtocol{
     		 //if length given, listens to length, else listens for packetsize till length is reached
     		 if(length){
 
-    			 jfrau_packet_header_t1* header;
-    			 int currentpnum;
-
-    				cout<<"\ngoing to read header " << endl;
-    				nsent = recv(socketDescriptor,(char*)buf,22, 0);
-       				cout<<"nsent:"<<nsent<<endl;
-    				header =  (jfrau_packet_header_t1*)(buf);
-    				currentpnum = (*( (uint8_t*) header->packetNumber));
-    				cout<<"1 current fnum:"<< ((*( (uint32_t*) header->frameNumber))&0xffffff) <<endl;
-    				cout<<"1 currentpnum:"<<currentpnum<<endl;
-
-    				cout<<"\ngoing to read data " << endl;
-    				nsent = recv(socketDescriptor,(char*)buf,8192, 0);
-       				cout<<"nsent:"<<nsent<<endl;
-
-
-    				cout<<"\ngoing to read header " << endl;
-    				nsent = recv(socketDescriptor,(char*)buf,22, 0);
-       				cout<<"nsent:"<<nsent<<endl;
-    				header =  (jfrau_packet_header_t1*)(buf);
-    				currentpnum = (*( (uint8_t*) header->packetNumber));
-    				cout<<"2 current fnum:"<< ((*( (uint32_t*) header->frameNumber))&0xffffff) <<endl;
-    				cout<<"3 currentpnum:"<<currentpnum<<endl;
-
-    				exit(-1);
-
-
-
-
-
-
-
     			 /*int k = 0;*/
 
     			 while(length>0){
-    				 if(length<packet_size)
-    					 nsending = length; //works for jungfrau to read packet header
-    				 else{
-    					 cprintf(BG_RED,"should not be here, wrong nsending\n");
-    					 nsending = (length>packet_size) ? packet_size:length; //works for eiger to get packets to discard image header packets
-    				 }
-    				 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
-    				 cprintf(BLUE,"read %d\n",nsent);
+   					 nsending = (length>packet_size) ? packet_size:length;
+    			     nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
     				 if(nsent != nsending){ //if((nsent != nsending)){ && (nsent < packet_size)){
     					 if(nsent && (nsent != header_packet_size) && (nsent != -1))
     							 cprintf(RED,"Incomplete Packet size %d\n",nsent);
@@ -679,7 +631,6 @@ enum communicationProtocol{
     		 }
     		 //listens to only 1 packet
     		 else{
-    			 cprintf(BG_RED,"should not be here, length is zero\n");
     			 //normal
     			 nsending=packet_size;
     			nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);

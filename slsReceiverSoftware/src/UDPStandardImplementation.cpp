@@ -2102,45 +2102,36 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 			int currentfnum=-1;
 
 
-			//read first packet header
-			cout<<"going to read header " << JFRAU_HEADER_LENGTH <<endl;
-			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, JFRAU_HEADER_LENGTH);
+			//read first packet
+			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, onePacketSize);
 			if(!receivedSize) return 0;
 			header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
 			currentpnum = (*( (uint8_t*) header->packetNumber));
-			cout<<"1 current fnum:"<< ((*( (uint32_t*) header->frameNumber))&frameIndexMask) <<endl;
 			cout<<"1 currentpnum:"<<currentpnum<<endl;
+
 
 			while(true){
 
 				//correct packet
 				if(currentpnum == pnum){
 					cout<<"correct packet"<<endl;
-					//complete frame, get frame number while u can
-					if(pnum == 0){
+					if(pnum == packetsPerFrame-1){
 						(*((uint32_t*)(buffer[ithread]+8))) = (*( (uint32_t*) header->frameNumber))&frameIndexMask;
 						cout<<"current fnum:"<<(*((uint32_t*)(buffer[ithread]+8)))<<endl;
 					}
-					//get data
-					cout<<"going to read data " << oneDataSize <<endl;
-					receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, oneDataSize);
-					if(!receivedSize) return 0;
-					cout<<"got data for " << pnum << endl;
+
+					memcpy(buffer[ithread] + offset,buffer[ithread] + JFRAU_HEADER_LENGTH, oneDataSize);
 					offset+=oneDataSize;
-					cout<<"offset now at:" << offset << endl;
 					//got a complete frame
 					if(pnum == 0)
 						break;
 					pnum --;
 
-					cout<<"going to read header " << JFRAU_HEADER_LENGTH <<endl;
-					receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, JFRAU_HEADER_LENGTH);
+					receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, onePacketSize);
 					if(!receivedSize) return 0;
 					header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
 					currentpnum = (*( (uint8_t*) header->packetNumber));
-					cout<<"offset:"<<offset<<endl;
 					cout<<"next currentpnum :"<<currentpnum<<endl;
-					cout<<"next current fnum:"<< ((*( (uint32_t*) header->frameNumber))&frameIndexMask) <<endl;
 				}
 
 				//wrong packet
@@ -2150,16 +2141,12 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 					offset = fifoBufferHeaderSize;
 					//find the start of next image
 					while(currentpnum != (packetsPerFrame-1)){
-						cout<<"going to read data " << oneDataSize <<endl;
-						receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, oneDataSize);
-						if(!receivedSize) return 0;
-						cout<<"going to read header " << JFRAU_HEADER_LENGTH <<endl;
-						receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, JFRAU_HEADER_LENGTH);
+
+						receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, onePacketSize);
 						if(!receivedSize) return 0;
 						header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
 						currentpnum = (*( (uint8_t*) header->packetNumber));
 						cout<<"trying to find currentpnum:"<<currentpnum<<endl;
-						cout<<"trying to find current fnum:"<< ((*( (uint32_t*) header->frameNumber))&frameIndexMask) <<endl;
 					}
 				}
 			}//----- got a whole frame -------

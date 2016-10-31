@@ -2701,14 +2701,14 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 			frameNumberInPreviousFile[ithread] = startFrameIndex-1;
 
 		printf("\nThread:%d File:%s\n"
-				//"\ttotalpacketsinfile:%d\t"
+				"\ttotalpacketsinfile:%d\t"
 				"Packets Lost:%d"
-				//"\tCurrentFrameNumber:%lld\tPreviousFrameNumber:%lld"
+				"\tCurrentFrameNumber:%lld\tPreviousFrameNumber:%lld"
 				"\n",
 				ithread,completeFileName[ithread],
-				//totalPacketsInFile[ithread],
+				totalPacketsInFile[ithread],
 				( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousFile[ithread])*packetsPerFrame) - totalPacketsInFile[ithread])
-				//,currentFrameNumber[ithread],frameNumberInPreviousFile[ithread]
+				,currentFrameNumber[ithread],frameNumberInPreviousFile[ithread]
 				);
 	}
 	closeFile(ithread);

@@ -2142,7 +2142,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 
 			receivedSize = oneDataSize * packetsPerFrame;
 		}
-		else{cprintf(BG_RED,"for only eiger or other dets. should not be here!!\n");
+		else{
 			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + fifoBufferHeaderSize + cSize, (bufferSize * numberofJobsPerBuffer) - cSize);
 			//eiger returns 0 when header packet caught
 			while(receivedSize < onePacketSize && status != TRANSMITTING)

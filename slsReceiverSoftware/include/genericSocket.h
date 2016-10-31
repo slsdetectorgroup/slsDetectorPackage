@@ -584,7 +584,6 @@ enum communicationProtocol{
      int ReceiveDataOnly(void* buf,int length=0){
 
     	 if (buf==NULL) return -1;
-    	 cprintf(RED,"length:%d\n",length);
 
     	 total_sent=0;
 
@@ -616,16 +615,11 @@ enum communicationProtocol{
     			 /*int k = 0;*/
 
     			 while(length>0){
-    				 if(length<packet_size){
+    				 if(length<packet_size)
     					 nsending = length; //works for jungfrau to read packet header
-    					 cprintf(BLUE,"will read %d\n",nsending);
-    				 }
-    				 else{
-    					 cprintf(BG_RED,"should not have been here length:%d packet_size:%d !!\n",length, packet_size);
+    				 else
     					 nsending = (length>packet_size) ? packet_size:length; //works for eiger to get packets to discard image header packets
-    				 }
     				 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
-    				 cprintf(BLUE,"read %d\n",nsending);
     				 if(nsent != nsending){ //if((nsent != nsending)){ && (nsent < packet_size)){
     					 if(nsent && (nsent != header_packet_size) && (nsent != -1))
     							 cprintf(RED,"Incomplete Packet size %d\n",nsent);

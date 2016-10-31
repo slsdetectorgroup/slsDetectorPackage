@@ -296,9 +296,9 @@ int slsReceiverTCPIPInterface::decode_function(){
 		cout << "size of data received " << n <<endl;
 #endif
 
-#ifdef VERYVERBOSE
-	cout <<  "calling function fnum = "<< fnum << hex << ":"<< flist[fnum] << endl;
-#endif
+//#ifdef VERYVERBOSE
+	cout <<  "calling function fnum = "<< fnum << dec << ":"<< flist[fnum] << endl;
+//#endif
 
 	if (fnum<0 || fnum>numberOfFunctions-1)
 		fnum = numberOfFunctions-1;

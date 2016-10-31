@@ -2103,24 +2103,23 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 
 
 
-			cout<<"going to read header " << JFRAU_HEADER_LENGTH <<endl;
-			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, JFRAU_HEADER_LENGTH);
+			cout<<"\ngoing to read header " << JFRAU_HEADER_LENGTH <<endl;
+			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread], JFRAU_HEADER_LENGTH);
 			cout<<"receivedsize:"<<receivedSize<<endl;
-			header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
+			header =  (jfrau_packet_header_t*)(buffer[ithread]);
 			currentpnum = (*( (uint8_t*) header->packetNumber));
 			cout<<"1 current fnum:"<< ((*( (uint32_t*) header->frameNumber))&frameIndexMask) <<endl;
 			cout<<"1 currentpnum:"<<currentpnum<<endl;
 
-			cout<<"going to read data " << oneDataSize <<endl;
-			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, oneDataSize);
+			cout<<"\ngoing to read data " << oneDataSize <<endl;
+			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread], oneDataSize);
 			cout<<"receivedsize:"<<receivedSize<<endl;
-			offset+=oneDataSize;
 
 
-			cout<<"going to read header " << JFRAU_HEADER_LENGTH <<endl;
-			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, JFRAU_HEADER_LENGTH);
+			cout<<"\ngoing to read header " << JFRAU_HEADER_LENGTH <<endl;
+			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread], JFRAU_HEADER_LENGTH);
 			cout<<"receivedsize:"<<receivedSize<<endl;
-			header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
+			header =  (jfrau_packet_header_t*)(buffer[ithread]);
 			currentpnum = (*( (uint8_t*) header->packetNumber));
 			cout<<"2 current fnum:"<< ((*( (uint32_t*) header->frameNumber))&frameIndexMask) <<endl;
 			cout<<"2 currentpnum:"<<currentpnum<<endl;

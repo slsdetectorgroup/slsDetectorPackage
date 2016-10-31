@@ -584,7 +584,7 @@ enum communicationProtocol{
      int ReceiveDataOnly(void* buf,int length=0){
 
     	 if (buf==NULL) return -1;
-
+    	 cprintf(RED,"length:%d\n",length);
 
     	 total_sent=0;
 

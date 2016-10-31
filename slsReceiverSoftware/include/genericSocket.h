@@ -616,10 +616,14 @@ enum communicationProtocol{
     			 /*int k = 0;*/
 
     			 while(length>0){
-    				 if(length<packet_size)
+    				 if(length<packet_size){
     					 nsending = length; //works for jungfrau to read packet header
-    				 else
+    					 cprintf(BLUE,"Read %d\n",nsending);
+    				 }
+    				 else{
+    					 cprintf(BG_RED,"should not have been here!!\n");
     					 nsending = (length>packet_size) ? packet_size:length; //works for eiger to get packets to discard image header packets
+    				 }
     				 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
     				 if(nsent != nsending){ //if((nsent != nsending)){ && (nsent < packet_size)){
     					 if(nsent && (nsent != header_packet_size) && (nsent != -1))

@@ -2704,14 +2704,14 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 			frameNumberInPreviousFile[ithread] = startFrameIndex-1;
 
 		printf("\nThread:%d File:%s\n"
-				"\ttotalpacketsinfile:%d\t"
+				//"\ttotalpacketsinfile:%d\t"
 				"Packets Lost:%d"
-				"\tCurrentFrameNumber:%lld\tPreviousFrameNumber:%lld"
+				//"\tCurrentFrameNumber:%lld\tPreviousFrameNumber:%lld"
 				"\n",
 				ithread,completeFileName[ithread],
-				totalPacketsInFile[ithread],
+				//totalPacketsInFile[ithread],
 				( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousFile[ithread])*packetsPerFrame) - totalPacketsInFile[ithread])
-				,currentFrameNumber[ithread],frameNumberInPreviousFile[ithread]
+				//,currentFrameNumber[ithread],frameNumberInPreviousFile[ithread]
 				);
 	}
 	closeFile(ithread);
@@ -2742,12 +2742,6 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 		//statistics
 		FILE_LOG(logINFO) << "Status: Run Finished";
 		for(int i=0;i<numberofListeningThreads;i++){
-			cout<<"i:"<<i<<endl;
-			cout<<"totalWritingPacketCount:"<<totalWritingPacketCount[i]<<endl;
-			cout<<"numberOfFrames:"<<(long long int)numberOfFrames<<endl;
-			cout<<"packetsPerFrame:"<<packetsPerFrame<<endl;
-			cout<<"numberOfFrames*packetsPerFrame:"<<(long long int)numberOfFrames*packetsPerFrame<<endl;
-			cout<<"(long long int)numberOfFrames*packetsPerFrame-totalWritingPacketCount[i]:"<<(long long int)numberOfFrames*packetsPerFrame-totalWritingPacketCount[i]<<endl;
 
 			if(totalWritingPacketCount[i] < ((uint64_t)numberOfFrames*packetsPerFrame)){
 				cprintf(RED, "\nPort %d\n",udpPortNum[i]);

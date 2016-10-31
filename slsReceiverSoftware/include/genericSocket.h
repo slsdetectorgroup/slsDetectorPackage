@@ -90,7 +90,7 @@ typedef struct {
 	unsigned char packetNumber[1];
 	unsigned char frameNumber[3];
 	unsigned char bunchid[8];
-} jfrau_packet_header_t;
+} jfrau_packet_header_t1;
 
 
 
@@ -625,13 +625,13 @@ enum communicationProtocol{
     		 //if length given, listens to length, else listens for packetsize till length is reached
     		 if(length){
 
-    			 jfrau_packet_header_t* header;
+    			 jfrau_packet_header_t1* header;
     			 int currentpnum;
 
     				cout<<"\ngoing to read header " << endl;
     				nsent = recvfrom(socketDescriptor,(char*)buf,22, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
        				cout<<"nsent:"<<nsent<<endl;
-    				header =  (jfrau_packet_header_t*)(buf);
+    				header =  (jfrau_packet_header_t1*)(buf);
     				currentpnum = (*( (uint8_t*) header->packetNumber));
     				cout<<"1 current fnum:"<< ((*( (uint32_t*) header->frameNumber))&0xffffff) <<endl;
     				cout<<"1 currentpnum:"<<currentpnum<<endl;
@@ -644,7 +644,7 @@ enum communicationProtocol{
     				cout<<"\ngoing to read header " << endl;
     				nsent = recvfrom(socketDescriptor,(char*)buf,22, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
        				cout<<"nsent:"<<nsent<<endl;
-    				header =  (jfrau_packet_header_t*)(buf);
+    				header =  (jfrau_packet_header_t1*)(buf);
     				currentpnum = (*( (uint8_t*) header->packetNumber));
     				cout<<"2 current fnum:"<< ((*( (uint32_t*) header->frameNumber))&0xffffff) <<endl;
     				cout<<"3 currentpnum:"<<currentpnum<<endl;

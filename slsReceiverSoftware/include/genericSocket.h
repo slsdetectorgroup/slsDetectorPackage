@@ -620,6 +620,7 @@ enum communicationProtocol{
     				 else
     					 nsending = (length>packet_size) ? packet_size:length; //works for eiger to get packets to discard image header packets
     				 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
+    				 cout<<"nsent:"<<nsent<<endl;
     				 if(nsent != nsending){ //if((nsent != nsending)){ && (nsent < packet_size)){
     					 if(nsent && (nsent != header_packet_size) && (nsent != -1))
     							 cprintf(RED,"Incomplete Packet size %d\n",nsent);

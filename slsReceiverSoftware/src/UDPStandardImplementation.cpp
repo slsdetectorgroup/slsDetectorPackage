@@ -2118,15 +2118,17 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 						(*((uint32_t*)(buffer[ithread]+8))) = (*( (uint32_t*) header->frameNumber))&frameIndexMask;
 						cout<<"current fnum:"<<(*((uint32_t*)(buffer[ithread]+8)))<<endl;
 					}
+					//get data
 					receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, oneDataSize);
 					if(!receivedSize) return 0;
 					cout<<"got data for " << pnum << endl;
 					offset+=oneDataSize;
-
+					cout<<"offset now at:" << offset << endl;
 					//got a complete frame
 					if(pnum == 0)
 						break;
 					pnum --;
+
 					receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, JFRAU_HEADER_LENGTH);
 					if(!receivedSize) return 0;
 					header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);

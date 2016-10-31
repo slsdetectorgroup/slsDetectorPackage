@@ -629,7 +629,7 @@ enum communicationProtocol{
     			 int currentpnum;
 
     				cout<<"\ngoing to read header " << endl;
-    				nsent = recvfrom(socketDescriptor,(char*)buf,22, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
+    				nsent = recv(socketDescriptor,(char*)buf,22, 0);
        				cout<<"nsent:"<<nsent<<endl;
     				header =  (jfrau_packet_header_t1*)(buf);
     				currentpnum = (*( (uint8_t*) header->packetNumber));
@@ -637,12 +637,12 @@ enum communicationProtocol{
     				cout<<"1 currentpnum:"<<currentpnum<<endl;
 
     				cout<<"\ngoing to read data " << endl;
-    				nsent = recvfrom(socketDescriptor,(char*)buf,8192, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
+    				nsent = recv(socketDescriptor,(char*)buf,8192, 0);
        				cout<<"nsent:"<<nsent<<endl;
 
 
     				cout<<"\ngoing to read header " << endl;
-    				nsent = recvfrom(socketDescriptor,(char*)buf,22, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
+    				nsent = recv(socketDescriptor,(char*)buf,22, 0);
        				cout<<"nsent:"<<nsent<<endl;
     				header =  (jfrau_packet_header_t1*)(buf);
     				currentpnum = (*( (uint8_t*) header->packetNumber));

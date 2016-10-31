@@ -2742,7 +2742,10 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 		//statistics
 		FILE_LOG(logINFO) << "Status: Run Finished";
 		for(int i=0;i<numberofListeningThreads;i++){
-			cout<<"totalWritingPacketCount["<<i<<"]:"<<totalWritingPacketCount[i]<<endl;
+			cout<<"i:"<<i<<endl;
+			cout<<"totalWritingPacketCount:"<<totalWritingPacketCount[i]<<endl;
+			cout<<"numberOfFrames*packetsPerFrame:"<<(long long int)numberOfFrames*packetsPerFrame<<endl;
+			cout<<"(long long int)numberOfFrames*packetsPerFrame-totalWritingPacketCount[i]:"<<(long long int)numberOfFrames*packetsPerFrame-totalWritingPacketCount[i]<<endl;
 
 			if(totalWritingPacketCount[i] < ((uint64_t)numberOfFrames*packetsPerFrame)){
 				cprintf(RED, "\nPort %d\n",udpPortNum[i]);

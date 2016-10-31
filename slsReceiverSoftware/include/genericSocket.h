@@ -83,6 +83,18 @@ using namespace std;
 #define DEFAULT_GUI_PORTNO 65000
 #define DEFAULT_ZMQ_PORTNO 70001
 
+
+typedef struct {
+	unsigned char emptyHeader[6];
+	unsigned char reserved[4];
+	unsigned char packetNumber[1];
+	unsigned char frameNumber[3];
+	unsigned char bunchid[8];
+} jfrau_packet_header_t;
+
+
+
+
 class genericSocket{
 
  public:
@@ -612,6 +624,39 @@ enum communicationProtocol{
 
     		 //if length given, listens to length, else listens for packetsize till length is reached
     		 if(length){
+
+    			 jfrau_packet_header_t* header;
+    			 int currentpnum;
+
+    				cout<<"\ngoing to read header " << endl;
+    				nsent = recvfrom(socketDescriptor,(char*)buf,22, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
+       				cout<<"nsent:"<<nsent<<endl;
+    				header =  (jfrau_packet_header_t*)(buf);
+    				currentpnum = (*( (uint8_t*) header->packetNumber));
+    				cout<<"1 current fnum:"<< ((*( (uint32_t*) header->frameNumber))&0xffffff) <<endl;
+    				cout<<"1 currentpnum:"<<currentpnum<<endl;
+
+    				cout<<"\ngoing to read data " << endl;
+    				nsent = recvfrom(socketDescriptor,(char*)buf,8192, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
+       				cout<<"nsent:"<<nsent<<endl;
+
+
+    				cout<<"\ngoing to read header " << endl;
+    				nsent = recvfrom(socketDescriptor,(char*)buf,22, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
+       				cout<<"nsent:"<<nsent<<endl;
+    				header =  (jfrau_packet_header_t*)(buf);
+    				currentpnum = (*( (uint8_t*) header->packetNumber));
+    				cout<<"2 current fnum:"<< ((*( (uint32_t*) header->frameNumber))&0xffffff) <<endl;
+    				cout<<"3 currentpnum:"<<currentpnum<<endl;
+
+    				exit(-1);
+
+
+
+
+
+
+
     			 /*int k = 0;*/
 
     			 while(length>0){

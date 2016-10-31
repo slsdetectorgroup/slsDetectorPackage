@@ -2099,6 +2099,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 			int offset = fifoBufferHeaderSize;
 			int pnum = packetsPerFrame-1;
 			int currentpnum;
+			int currentfnum=-1;
 
 			//read first packet header
 			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, JFRAU_HEADER_LENGTH);
@@ -2110,6 +2111,9 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 
 				//correct packet
 				if(currentpnum == pnum){
+					//complete frame, get frame number while u can
+					if(pnum == 0)
+						(*((uint32_t*)(buffer[ithread]+8))) = (*( (uint32_t*) header->frameNumber))&frameIndexMask;
 					receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, oneDataSize);
 					if(!receivedSize) return 0;
 					offset+=oneDataSize;
@@ -2133,7 +2137,6 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 						header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
 						currentpnum = (*( (uint8_t*) header->packetNumber));
 					}
-
 				}
 			}//----- got a whole frame -------
 
@@ -2516,8 +2519,11 @@ void UDPStandardImplementation::startWriting(){
 
 
 
+			//jungfrau
+			if(myDetectorType == JUNGFRAU)
+				handleWithoutMissingPackets(ithread, wbuf, numPackets);
 			//normal
-			if(!dataCompressionEnable)
+			else if(!dataCompressionEnable)
 				handleWithoutDataCompression(ithread, wbuf, numPackets);
 
 			//compression
@@ -2760,7 +2766,6 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* wbuffer, uint32_t npackets){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
-
 	//get current frame number
 	uint64_t tempframenumber;
 	uint32_t pnum;
@@ -2772,11 +2777,11 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 		return;
 	}
 
+
 	//callback to write data
 	if (cbAction < DO_EVERYTHING)
 		rawDataReadyCallBack((int)tempframenumber, wbuffer + fifoBufferHeaderSize, npackets * onePacketSize,
 				sfilefd[ithread], latestData[ithread],pRawDataReady);//know which thread from sfilefd
-
 
 
 	//write to file if enabled and update write parameters
@@ -2811,6 +2816,76 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 
 }
 
+
+
+
+void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* wbuffer, uint32_t npackets){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
+	//get current frame number
+	uint64_t tempframenumber;
+	tempframenumber = (*((uint32_t*)(buffer[ithread]+8)));
+	cout<<"handling: frame number:"<<tempframenumber<<endl;
+
+	if (cbAction < DO_EVERYTHING)
+		rawDataReadyCallBack((int)tempframenumber, wbuffer, npackets * onePacketSize,
+				sfilefd[ithread], latestData[ithread],pRawDataReady);//know which thread from sfilefd
+
+
+	//write to file if enabled and update write parameters
+	if(npackets > 0){
+		if((fileWriteEnable) && (sfilefd[ithread])){
+			if(tempframenumber >= maxFramesPerFile)
+				createNewFile(ithread);
+			fwrite(wbuffer, 1, oneDataSize*packetsPerFrame+fifoBufferHeaderSize, sfilefd[ithread]);
+		}
+
+		totalPacketsInFile[ithread] += npackets;
+		totalWritingPacketCount[ithread] += npackets;
+		lastFrameNumberInFile[ithread] = tempframenumber;
+		currentFrameNumber[ithread] = tempframenumber;
+
+		if(numberofWriterThreads > 1)
+			pthread_mutex_lock(&writeMutex);
+		packetsCaught += npackets;
+		totalPacketsCaught += npackets;
+		if((currentFrameNumber[ithread] - startAcquisitionIndex) > acquisitionIndex)
+			acquisitionIndex = currentFrameNumber[ithread] - startAcquisitionIndex;
+		if((currentFrameNumber[ithread] - startFrameIndex) > frameIndex[ithread])
+			frameIndex[ithread] = currentFrameNumber[ithread] - startFrameIndex;
+
+		if(numberofWriterThreads > 1)
+			pthread_mutex_unlock(&writeMutex);
+
+	}
+#ifdef DEBUG4
+	cprintf(GREEN,"Writing_Thread: Writing done\nGoing to copy frame\n");
+#endif
+
+
+	//copy frame for gui
+	//if(npackets >= (packetsPerFrame/numberofListeningThreads))
+	if(dataStreamEnable && npackets > 0)
+		copyFrameToGui(ithread, wbuffer,npackets);
+#ifdef DEBUG4
+	cprintf(GREEN,"Writing_Thread: Copied frame\n");
+#endif
+
+
+	//free fifo addresses
+	int listenfifoThread = ithread;
+	if(dataCompressionEnable)
+		listenfifoThread = 0;
+	while(!fifoFree[listenfifoThread]->push(wbuffer));
+#ifdef EVERYFIFODEBUG
+	if(fifoFree[listenfifoThread]->getSemValue()<100)
+		cprintf(GREEN,"FifoFree[%d]: value:%d, push 0x%x\n",listenfifoThread,fifoFree[listenfifoThread]->getSemValue(),(void*)(wbuffer));
+#endif
+#ifdef DEBUG5
+	cprintf(GREEN,"Writing_Thread %d: Freed buffer, pushed into fifofree %p for listener %d \n",listenfifoThread, (void*)(wbuffer), listenfifoThread);
+#endif
+
+}
 
 
 

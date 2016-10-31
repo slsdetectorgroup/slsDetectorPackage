@@ -464,6 +464,16 @@ private:
 	void handleWithoutDataCompression(int ithread, char* wbuffer,uint32_t npackets);
 
 	/**
+	 * Called by processWritingBuffer  for jungfrau
+	 * writes to dummy file, doesnt need to read packet numbers
+	 * Copies data for gui display and frees addresses popped from FIFOs
+	 * @param ithread writing thread index
+	 * @param wbuffer writing buffer popped out from FIFO
+	 * @param npackets number of packets
+	 */
+	void handleWithoutMissingPackets(int ithread, char* wbuffer,uint32_t npackets);
+
+	/**
 	 * Calle by handleWithoutDataCompression
 	 * Creating headers Writing to file without compression
 	 * @param ithread writer thread index

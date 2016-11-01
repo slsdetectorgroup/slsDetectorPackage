@@ -480,8 +480,8 @@ enum communicationProtocol{
 	 {
 	   cerr << "Error in setsockopt SO_RCVTIMEO "<< 0 << endl;
 	 }
-       tout.tv_sec  = 0;//ts;
-       tout.tv_usec = 500;//0;
+       tout.tv_sec  = ts;
+       tout.tv_usec = 0;
        if(::setsockopt(socketDescriptor, SOL_SOCKET, SO_SNDTIMEO, &tout, sizeof(struct timeval)) < 0)
 	 {
 	   cerr << "Error in setsockopt SO_SNDTIMEO " << ts <<  endl;

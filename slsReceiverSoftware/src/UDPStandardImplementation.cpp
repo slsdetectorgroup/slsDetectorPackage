@@ -1672,7 +1672,7 @@ void UDPStandardImplementation::startDataCallback(){
 
 	// server address to bind
 	char hostName[100] = "tcp://127.0.0.1:";
-	int portno = DEFAULT_ZMQ_PORTNO + (detID*2+ithread);
+	int portno = DEFAULT_ZMQ_PORTNO + (detID*numberofListeningThreads+ithread);
 	sprintf(hostName,"%s%d",hostName,portno);
 
 	//socket details

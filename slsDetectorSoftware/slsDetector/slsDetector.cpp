@@ -7180,7 +7180,8 @@ int slsDetector::startReceiver(){
 	int ret = FAIL;
 	char mess[MAX_STR_LENGTH] = "";
 
-	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
+	if (setReceiverOnline()==ONLINE_FLAG) {
+	//if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 #ifdef VERBOSE
 		std::cout << "Starting Receiver " << std::endl;
 #endif
@@ -7216,7 +7217,8 @@ int slsDetector::stopReceiver(){
 	if(thisDetector->myDetectorType != EIGER && thisDetector->myDetectorType != JUNGFRAU)
 		detectorSendToReceiver(false);
 
-	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
+	if (setReceiverOnline()==ONLINE_FLAG) {
+	//if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 #ifdef VERBOSE
 		std::cout << "Stopping Receiver " << std::endl;
 #endif
@@ -7322,7 +7324,8 @@ int slsDetector::getFramesCaughtByReceiver(){
 	int ret = FAIL;
 	int retval=-1;
 
-	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
+	if (setReceiverOnline()==ONLINE_FLAG) {
+	//if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 #ifdef VERBOSE
 		std::cout << "Getting Frames Caught by Receiver " << std::endl;
 #endif
@@ -7365,7 +7368,8 @@ int slsDetector::resetFramesCaught(){
 	int ret = FAIL;
 	char mess[MAX_STR_LENGTH] = "";
 
-	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
+	if (setReceiverOnline()==ONLINE_FLAG) {
+	//if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 #ifdef VERBOSE
 		std::cout << "Reset Frames Caught by Receiver" << std::endl;
 #endif

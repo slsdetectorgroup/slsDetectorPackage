@@ -933,7 +933,7 @@ int	slsReceiverTCPIPInterface::get_status(){
 		cprintf(RED, "%s\n", mess);
 		socket->SendDataOnly(mess,sizeof(mess));
 	}
-	retval = (runStatus(s))
+	retval = (runStatus(s));
 	socket->SendDataOnly(&retval,sizeof(retval));
 	//return ok/fail
 	return ret;

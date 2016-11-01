@@ -500,6 +500,8 @@ void* postProcessing::processData(int delflag) {
 				if (checkJoinThread()){
 					break;
 				}
+
+				/*
 				//get progress
 				if(setReceiverOnline() == ONLINE_FLAG){
 					pthread_mutex_lock(&mg);
@@ -516,6 +518,9 @@ void* postProcessing::processData(int delflag) {
 				if (checkJoinThread()){
 					break;
 				}
+				*/
+
+
 			}
 		}
 

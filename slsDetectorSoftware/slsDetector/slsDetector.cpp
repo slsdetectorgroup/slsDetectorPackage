@@ -5538,7 +5538,7 @@ char* slsDetector::setReceiver(string receiverIP){
 
 	strcpy(thisDetector->receiver_hostname,receiverIP.c_str());
 
-	if(setReceiverOnline()==ONLINE_FLAG){
+	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
 #ifdef VERBOSE
 		std::cout << "Setting up receiver with" << endl;
 		std::cout << "detector type:" << slsDetectorBase::getDetectorType(thisDetector->myDetectorType) << endl;

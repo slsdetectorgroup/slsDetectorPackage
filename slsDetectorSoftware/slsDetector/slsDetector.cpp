@@ -3560,6 +3560,7 @@ int slsDetector::updateDetectorNoWait() {
   //retval=setPeriod(tns);
   n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
   thisDetector->timerValue[FRAME_PERIOD]=retval;
+  cprintf(RED,"updated frame period to %lld\n", (long long int)thisDetector->timerValue[FRAME_PERIOD]);
   //retval=setDelay(tns);
   n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
   thisDetector->timerValue[DELAY_AFTER_TRIGGER]=retval;
@@ -5546,7 +5547,7 @@ char* slsDetector::setReceiver(string receiverIP){
 	strcpy(thisDetector->receiver_hostname,receiverIP.c_str());
 
 	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
-#ifdef VERBOSE
+//#ifdef VERBOSE
 		std::cout << "Setting up receiver with" << endl;
 		std::cout << "detector type:" << slsDetectorBase::getDetectorType(thisDetector->myDetectorType) << endl;
 		std::cout << "detector hostname:" << thisDetector->hostname << endl;
@@ -5564,7 +5565,7 @@ char* slsDetector::setReceiver(string receiverIP){
 		std::cout << "10GbE:" << thisDetector->tenGigaEnable << endl << endl;
 		//std::cout << "dataStreaming:" << enableDataStreamingFromReceiver(-1) << endl << endl;
 /** enable compresison, */
-#endif
+//#endif
 		if(setDetectorType()!= GENERIC){
 			setDetectorHostname();
 			setFilePath(fileIO::getFilePath());

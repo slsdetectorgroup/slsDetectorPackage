@@ -65,6 +65,7 @@ typedef struct ip_header_struct {
 
 
 struct timeval tss,tse,tsss; //for timing
+int gpiopinsdefined = 0;
 
 
 
@@ -1058,6 +1059,7 @@ int64_t setPeriod(int64_t value){
 		printf("\nSetting period to %lld\n",(long long int)value);
 		value*=(1E-3*clockdivider);
 	}
+
 	return set64BitReg(value,SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/(1E-3*clockdivider);//(1E-9*CLK_FREQ);
 }
 
@@ -1434,12 +1436,16 @@ int  writeGbeReg(int ivar,  uint32_t val, int addr, int interface) {
 int configureInterface(uint32_t destip,uint64_t destmac,uint64_t  sourcemac,int sourceip,int ival,uint32_t destport,  uint32_t sourceport, int interface) {
 	//int configureMAC(int ipad,long long int macad,long long int detectormacad, int detipad, int ival, int udpport){
 
-
+/*
+	if(!gpiopinsdefined){
+		defineGPIOpins();
+		gpiopinsdefined = 1;
+	}
 	//tell FPGA to not touch flash
 	system("echo 0 > /sys/class/gpio/gpio9/value");
 	//tell FPGA to touch flash to program itself
 	system("echo 1 > /sys/class/gpio/gpio9/value");
-
+*/
 
 
 	volatile u_int32_t conf= bus_r(CONFIG_REG);

@@ -3560,7 +3560,6 @@ int slsDetector::updateDetectorNoWait() {
   //retval=setPeriod(tns);
   n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
   thisDetector->timerValue[FRAME_PERIOD]=retval;
-  cprintf(RED,"updated frame period to %lld\n", (long long int)thisDetector->timerValue[FRAME_PERIOD]);
   //retval=setDelay(tns);
   n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
   thisDetector->timerValue[DELAY_AFTER_TRIGGER]=retval;
@@ -3986,9 +3985,9 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	if (index!=MEASUREMENTS_NUMBER) {
 
 
-//#ifdef VERBOSE
+#ifdef VERBOSE
 		std::cout<< "Setting timer "<< index << " to " <<  t << "ns/value" << std::endl;
-//#endif
+#endif
 		if (thisDetector->onlineFlag==ONLINE_FLAG) {
 			if (connectControl() == OK){
 				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
@@ -4026,9 +4025,9 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 		if (t>=0)
 			thisDetector->timerValue[index]=t;
 	}
-//#ifdef VERBOSE
+#ifdef VERBOSE
 	std::cout<< "Timer " << index << " set to  "<< thisDetector->timerValue[index] << "ns"  << std::endl;
-//#endif
+#endif
 
 	if ((thisDetector->myDetectorType==MYTHEN)&&(index==PROBES_NUMBER)) {
 		setDynamicRange();
@@ -4078,9 +4077,9 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 				}
 				//set period
 				else{
-//#ifdef VERBOSE
+#ifdef VERBOSE
 					std::cout << "Setting/Getting acquisition period " << index << " to/from receiver " << args[1] << std::endl;
-//#endif
+#endif
 					//if acquisition period is zero, then #frames/buffer depends on exposure time and not acq period
 					if(!args[1])
 						args[1] = timerValue[ACQUISITION_TIME];
@@ -5547,7 +5546,7 @@ char* slsDetector::setReceiver(string receiverIP){
 	strcpy(thisDetector->receiver_hostname,receiverIP.c_str());
 
 	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
-//#ifdef VERBOSE
+#ifdef VERBOSE
 		std::cout << "Setting up receiver with" << endl;
 		std::cout << "detector type:" << slsDetectorBase::getDetectorType(thisDetector->myDetectorType) << endl;
 		std::cout << "detector hostname:" << thisDetector->hostname << endl;
@@ -5565,7 +5564,7 @@ char* slsDetector::setReceiver(string receiverIP){
 		std::cout << "10GbE:" << thisDetector->tenGigaEnable << endl << endl;
 		//std::cout << "dataStreaming:" << enableDataStreamingFromReceiver(-1) << endl << endl;
 /** enable compresison, */
-//#endif
+#endif
 		if(setDetectorType()!= GENERIC){
 			setDetectorHostname();
 			setFilePath(fileIO::getFilePath());

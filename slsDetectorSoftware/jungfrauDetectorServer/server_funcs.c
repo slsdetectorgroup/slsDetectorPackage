@@ -97,9 +97,6 @@ int init_detector(int b) {
 		);
 
 
-		defineGPIOpins();
-
-
 		printf("Resetting PLL\n");
 		resetPLL();
 		bus_w16(CONTROL_REG, SYNC_RESET);
@@ -171,6 +168,7 @@ int init_detector(int b) {
 		setPeriod(2*1000*1000);
 		setDelay(0);
 		setGates(0);
+
 
 		setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
 		setMaster(GET_MASTER);
@@ -2461,6 +2459,7 @@ int send_update(int file_des) {
 	retval=setExposureTime(tns);
 	n = sendDataOnly(file_des,&retval,sizeof(int64_t));
 	retval=setPeriod(tns);
+	 cprintf(RED,"updated frame period from %lld tns:%d\n", (long long int)retval, tns);
 	n = sendDataOnly(file_des,&retval,sizeof(int64_t));
 	retval=setDelay(tns);
 	n = sendDataOnly(file_des,&retval,sizeof(int64_t));

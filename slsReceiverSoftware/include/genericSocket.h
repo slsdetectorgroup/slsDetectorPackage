@@ -448,7 +448,7 @@ enum communicationProtocol{
     				 close(file_des);
     			 }
     			 else {
-    				 while(!shutdown(socketDescriptor, SHUT_RDWR));
+    				 //while(!shutdown(socketDescriptor, SHUT_RDWR));
     				 close(socketDescriptor);
     				 socketDescriptor=-1;
     			 }

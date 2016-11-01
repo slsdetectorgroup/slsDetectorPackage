@@ -7143,7 +7143,11 @@ string slsDetector::setFileName(string s) {
 		}
 	}
 
-	return fileIO::getFileName();
+	pthread_mutex_lock(&ms);
+	s = fileIO::getFileName();
+	pthread_mutex_unlock(&ms);
+
+	return s;
 }
 
 

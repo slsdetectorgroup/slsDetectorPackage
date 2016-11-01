@@ -1743,7 +1743,7 @@ void UDPStandardImplementation::startDataCallback(){
 			if(guiNumPackets[ithread] == dummyPacketValue){
 
 				//sending previous half frames if any
-				if(newFrame){
+				if((myDetectorType != JUNGFRAU) && newFrame){
 					//send header
 					//update frame details
 					frameIndex = fnum;if(frameIndex==-1) cprintf(RED,"frameindex = -1, 111\n");
@@ -1797,76 +1797,61 @@ void UDPStandardImplementation::startDataCallback(){
 				}
 			}
 
-			size = guiNumPackets[ithread]*onePacketSize;
-			datapacketscaught+=guiNumPackets[ithread];
-			offset=0;
-
-			//copy packet by packet -getting rid of headers, -in the right order(padding missing packets)
-			while(offset < size){
-
-				//until getting frame number is not error
-				while((size>0) && (getFrameandPacketNumber(ithread, latestData[ithread]+offset, fnum, pnum,snum)==FAIL)){
-					offset+= onePacketSize;
+			if(myDetectorType == JUNGFRAU){
+				//send header
+				//update frame details
+				frameIndex = (*((uint32_t*)(latestData[ithread]+8)));
+				acquisitionIndex = frameIndex - startAcquisitionIndex;
+				subframeIndex = -1;
+				int len = sprintf(buf+JFRAU_FILE_FRAME_HEADER_LENGTH,jsonFmt,type,shape, acquisitionIndex, frameIndex, subframeIndex,completeFileName[ithread]);
+				zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);
+				//send data
+				zmq_send(zmqsocket, latestData[ithread]+JFRAU_FILE_FRAME_HEADER_LENGTH, oneframesize, 0);
+				//start clock after sending
+				if(!frameToGuiFrequency){
+					randomSendNow = false;
+					clock_gettime(CLOCK_REALTIME, &begin);
 				}
-				//if(!ithread) cout<< ithread <<" fnum:"<< fnum<<" pnum:"<<pnum<<endl;
-
-#ifdef DEBUG
-				if(pnum != (oldpnum+1)){
-					cprintf(RED,"%d - packets missing: %d (old pnum: %d, new pnum: %d)\n",ithread, pnum-oldpnum-1,oldpnum,pnum);
-				}
-				oldpnum=pnum;
-#endif
-				//end of buffer
-				if(offset >= size)
-					break;
-
-				if(!frameToGuiFrequency)
-					currentfnum = fnum;
+			}
 
 
-				//last packet of same frame
-				if(fnum == currentfnum && pnum == (packetsPerFrame-1)){
-#ifdef DEBUG
-					oldpnum=0;
-#endif
-					memcpy(buffer+(pnum*oneDataSize), latestData[ithread]+offset+headersize,oneDataSize);
-					offset+= onePacketSize;
-					//send header
-					//update frame details
-					frameIndex = fnum;
-					acquisitionIndex = fnum - startAcquisitionIndex;
-					if(dynamicRange == 32) subframeIndex = snum;
-					int len = sprintf(buf,jsonFmt,type,shape, acquisitionIndex, frameIndex, subframeIndex,completeFileName[ithread]);
-					zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);
-					//send data
-					zmq_send(zmqsocket, buffer, oneframesize, 0);
-					newFrame = false;
-#ifdef DEBUG
-					if(!ithread)cprintf(BLUE,"%d sent (last packet)\n",ithread);
-#endif
-					currentfnum++;
-					//start clock after sending
-					if(!frameToGuiFrequency){
-						randomSendNow = false;
-						clock_gettime(CLOCK_REALTIME, &begin);
+			//eiger
+			else{
+
+				size = guiNumPackets[ithread]*onePacketSize;
+				datapacketscaught+=guiNumPackets[ithread];
+				offset=0;
+
+				//copy packet by packet -getting rid of headers, -in the right order(padding missing packets)
+				while(offset < size){
+
+					//until getting frame number is not error
+					while((size>0) && (getFrameandPacketNumber(ithread, latestData[ithread]+offset, fnum, pnum,snum)==FAIL)){
+						offset+= onePacketSize;
 					}
-					memset(buffer,0xFF,oneframesize);
+					//if(!ithread) cout<< ithread <<" fnum:"<< fnum<<" pnum:"<<pnum<<endl;
 
-				}
-				//same frame (not last) or next frame
-				else {
-					//next frame
 #ifdef DEBUG
-					int once = true;
+					if(pnum != (oldpnum+1)){
+						cprintf(RED,"%d - packets missing: %d (old pnum: %d, new pnum: %d)\n",ithread, pnum-oldpnum-1,oldpnum,pnum);
+					}
+					oldpnum=pnum;
 #endif
-					while(fnum > currentfnum){
+					//end of buffer
+					if(offset >= size)
+						break;
+
+					if(!frameToGuiFrequency)
+						currentfnum = fnum;
+
+
+					//last packet of same frame
+					if(fnum == currentfnum && pnum == (packetsPerFrame-1)){
 #ifdef DEBUG
-						if(once){
-							if((fnum-currentfnum-1)>1) cprintf(RED,"%d Complete sub image missing:%d (cfnum:%d nfnum:%d)\n",
-									ithread,fnum-currentfnum-1,currentfnum,fnum);
-							once = false;
-						}
+						oldpnum=0;
 #endif
+						memcpy(buffer+(pnum*oneDataSize), latestData[ithread]+offset+headersize,oneDataSize);
+						offset+= onePacketSize;
 						//send header
 						//update frame details
 						frameIndex = fnum;
@@ -1878,7 +1863,7 @@ void UDPStandardImplementation::startDataCallback(){
 						zmq_send(zmqsocket, buffer, oneframesize, 0);
 						newFrame = false;
 #ifdef DEBUG
-						cprintf(BLUE,"%d sent (last packet of previous frame)\n",ithread);
+						if(!ithread)cprintf(BLUE,"%d sent (last packet)\n",ithread);
 #endif
 						currentfnum++;
 						//start clock after sending
@@ -1887,13 +1872,50 @@ void UDPStandardImplementation::startDataCallback(){
 							clock_gettime(CLOCK_REALTIME, &begin);
 						}
 						memset(buffer,0xFF,oneframesize);
+
+					}
+					//same frame (not last) or next frame
+					else {
+						//next frame
+#ifdef DEBUG
+						int once = true;
+#endif
+						while(fnum > currentfnum){
+#ifdef DEBUG
+							if(once){
+								if((fnum-currentfnum-1)>1) cprintf(RED,"%d Complete sub image missing:%d (cfnum:%d nfnum:%d)\n",
+										ithread,fnum-currentfnum-1,currentfnum,fnum);
+								once = false;
+							}
+#endif
+							//send header
+							//update frame details
+							frameIndex = fnum;
+							acquisitionIndex = fnum - startAcquisitionIndex;
+							if(dynamicRange == 32) subframeIndex = snum;
+							int len = sprintf(buf,jsonFmt,type,shape, acquisitionIndex, frameIndex, subframeIndex,completeFileName[ithread]);
+							zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);
+							//send data
+							zmq_send(zmqsocket, buffer, oneframesize, 0);
+							newFrame = false;
+#ifdef DEBUG
+							cprintf(BLUE,"%d sent (last packet of previous frame)\n",ithread);
+#endif
+							currentfnum++;
+							//start clock after sending
+							if(!frameToGuiFrequency){
+								randomSendNow = false;
+								clock_gettime(CLOCK_REALTIME, &begin);
+							}
+							memset(buffer,0xFF,oneframesize);
+						}
+
+						memcpy(buffer+(pnum*oneDataSize), latestData[ithread]+offset+headersize,oneDataSize);
+						offset+= onePacketSize;
+						newFrame = true;
 					}
 
-					memcpy(buffer+(pnum*oneDataSize), latestData[ithread]+offset+headersize,oneDataSize);
-					offset+= onePacketSize;
-					newFrame = true;
 				}
-
 			}
 
 
@@ -2110,17 +2132,17 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 			if(!receivedSize) return 0;
 			header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
 			currentpnum = (*( (uint8_t*) header->packetNumber));
-			cout<<"1 currentpnum:"<<currentpnum<<endl;
+			//cout<<"1 currentpnum:"<<currentpnum<<endl;
 
 
 			while(true){
 
 				//correct packet
 				if(currentpnum == pnum){
-					cout<<"correct packet"<<endl;
+					//cout<<"correct packet"<<endl;
 					if(pnum == packetsPerFrame-1){
 						(*((uint32_t*)(buffer[ithread]+8))) = (*( (uint32_t*) header->frameNumber))&frameIndexMask;
-						cout<<"current fnum:"<<(*((uint32_t*)(buffer[ithread]+8)))<<endl;
+						//cout<<"current fnum:"<<(*((uint32_t*)(buffer[ithread]+8)))<<endl;
 					}
 
 					memcpy(buffer[ithread] + offset,buffer[ithread] + JFRAU_HEADER_LENGTH, oneDataSize);
@@ -2134,7 +2156,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 					if(!receivedSize) return 0;
 					header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
 					currentpnum = (*( (uint8_t*) header->packetNumber));
-					cout<<"next currentpnum :"<<currentpnum<<endl;
+					//cout<<"next currentpnum :"<<currentpnum<<endl;
 				}
 
 				//wrong packet
@@ -2149,7 +2171,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 						if(!receivedSize) return 0;
 						header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
 						currentpnum = (*( (uint8_t*) header->packetNumber));
-						cout<<"trying to find currentpnum:"<<currentpnum<<endl;
+						//cout<<"trying to find currentpnum:"<<currentpnum<<endl;
 					}
 				}
 			}//----- got a whole frame -------
@@ -2157,7 +2179,6 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 			receivedSize = oneDataSize * packetsPerFrame;
 		}
 		else{
-			cprintf(BG_RED,"should not be here, wrong det\n");
 			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + fifoBufferHeaderSize + cSize, (bufferSize * numberofJobsPerBuffer) - cSize);
 			//eiger returns 0 when header packet caught
 			while(receivedSize < onePacketSize && status != TRANSMITTING)
@@ -3073,7 +3094,10 @@ void UDPStandardImplementation::copyFrameToGui(int ithread, char* buffer, uint32
 		//copy date
 		guiNumPackets[ithread] = numpackets;
 		strcpy(guiFileName[ithread],completeFileName[ithread]);
-		memcpy(latestData[ithread],buffer+ fifoBufferHeaderSize , numpackets*onePacketSize);
+		if(myDetectorType == JUNGFRAU)
+			memcpy(latestData[ithread],buffer, numpackets*onePacketSize);
+		else
+			memcpy(latestData[ithread],buffer+ fifoBufferHeaderSize , numpackets*onePacketSize);
 		//let it know its got data
 		sem_post(&dataCallbackWriterSemaphore[ithread]);
 

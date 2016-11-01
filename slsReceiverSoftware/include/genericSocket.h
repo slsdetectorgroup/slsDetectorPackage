@@ -404,10 +404,12 @@ enum communicationProtocol{
     		 cerr << "Can not create socket "<<endl;
     		 file_des = socketDescriptor;
     	 } else {
+    		cprintf(BLUE,"going to connect\n");
     		 if(connect(socketDescriptor,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
     			 cerr << "Can not connect to socket "<<endl;
     			 file_des = -1;
     		 } else{
+    			 cprintf(GREEN,"connected\n");
     			 file_des = socketDescriptor;
     		 }
     	 }
@@ -473,7 +475,7 @@ enum communicationProtocol{
        //cout << "socketdescriptor "<< socketDescriptor << endl; 
        struct timeval tout;
        tout.tv_sec  = 0;
-       tout.tv_usec = 500;//0;
+       tout.tv_usec = 0;
        if(::setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, &tout, sizeof(struct timeval)) <0)
 	 {
 	   cerr << "Error in setsockopt SO_RCVTIMEO "<< 0 << endl;
@@ -593,7 +595,9 @@ enum communicationProtocol{
     		 if (file_des<0) return -1;
     		 while(length>0){
     			 nsending = (length>packet_size) ? packet_size:length;
+    			 cout<<"going to read from " << serverAddress.sin_port <<  endl;
     			 nsent = read(file_des,(char*)buf+total_sent,nsending);
+    			 cout <<"read**" <<endl;
     			 if(!nsent) break;
     			 length-=nsent;
     			 total_sent+=nsent;
@@ -667,7 +671,9 @@ enum communicationProtocol{
 	 if (file_des<0) return -1;
 	 while(length>0){
 	   nsending = (length>packet_size) ? packet_size:length;
+	   cout<<"going to send to " << serverAddress.sin_port <<  endl;
 	   nsent = write(file_des,(char*)buf+total_sent,nsending); 
+	   cout<<"sent**" <<endl;
 	   if(!nsent) break;
 	   length-=nsent;
 	   total_sent+=nsent;

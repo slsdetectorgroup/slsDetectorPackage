@@ -4030,27 +4030,29 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	std::cout<< "Timer " << index << " set to  "<< thisDetector->timerValue[index] << "ns"  << std::endl;
 #endif
 
-	if ((thisDetector->myDetectorType==MYTHEN)&&(index==PROBES_NUMBER)) {
-	  setDynamicRange();
-	  //cout << "Changing probes: data size = " << thisDetector->dataBytes <<endl;
-	}
+	if(t!=-1){
+		if ((thisDetector->myDetectorType==MYTHEN)&&(index==PROBES_NUMBER)) {
+			setDynamicRange();
+			//cout << "Changing probes: data size = " << thisDetector->dataBytes <<endl;
+		}
 
-	/* set progress */
-	if ((index==FRAME_NUMBER) || (index==CYCLES_NUMBER)) {
-	  setTotalProgress();
-	}
+		/* set progress */
+		if ((index==FRAME_NUMBER) || (index==CYCLES_NUMBER)) {
+			setTotalProgress();
+		}
 
-	//if eiger, rate corr on, a put statement, dr=32 &setting subexp or dr =16 & setting exptime, set ratecorr to update table
-	double r;
-	if( (thisDetector->myDetectorType == EIGER) &&
-			 getRateCorrection(r) &&
-			 (t>=0) &&
+		//if eiger, rate corr on, a put statement, dr=32 &setting subexp or dr =16 & setting exptime, set ratecorr to update table
+		double r;
+		if( (thisDetector->myDetectorType == EIGER) &&
+				getRateCorrection(r) &&
+				(t>=0) &&
 
-			(((index == SUBFRAME_ACQUISITION_TIME) && (thisDetector->dynamicRange == 32))||
-			((index == ACQUISITION_TIME) && (thisDetector->dynamicRange == 16)))
+				(((index == SUBFRAME_ACQUISITION_TIME) && (thisDetector->dynamicRange == 32))||
+						((index == ACQUISITION_TIME) && (thisDetector->dynamicRange == 16)))
 
-			&& (t>=0) && getRateCorrection(r)){
-		setRateCorrection(r);
+						&& (t>=0) && getRateCorrection(r)){
+			setRateCorrection(r);
+		}
 	}
 
 	//send acquisiton period/frame number to receiver
@@ -7063,8 +7065,11 @@ string slsDetector::setFilePath(string s) {
 			if(stat(s.c_str(),&st)){
 				std::cout << "path does not exist" << endl;
 				setErrorMask((getErrorMask())|(FILE_PATH_DOES_NOT_EXIST));
-			}else
+			}else{
+				pthread_mutex_lock(&ms);
 				fileIO::setFilePath(s);
+				pthread_mutex_unlock(&ms);
+			}
 		}
 	}
 
@@ -7076,8 +7081,11 @@ string slsDetector::setFilePath(string s) {
 		if (connectData() == OK)
 			ret=thisReceiver->sendString(fnum,retval,arg);
 		 disconnectData();
-		if(ret!=FAIL)
+		if(ret!=FAIL){
+			pthread_mutex_lock(&ms);
 			fileIO::setFilePath(string(retval));
+			pthread_mutex_unlock(&ms);
+		}
 		else if(!s.empty()){
 			std::cout << "path does not exist" << endl;
 			setErrorMask((getErrorMask())|(FILE_PATH_DOES_NOT_EXIST));
@@ -7086,7 +7094,11 @@ string slsDetector::setFilePath(string s) {
 			updateReceiver();
 	}
 
-	return fileIO::getFilePath();
+	pthread_mutex_lock(&ms);
+	s = fileIO::getFilePath();
+	pthread_mutex_unlock(&ms);
+
+	return s;
 }
 
 
@@ -7443,16 +7455,22 @@ int slsDetector::updateReceiverNoWait() {
 #ifdef VERBOSE
   cout << "Updating receiver last modified by " << lastClientIP << std::endl;
 #endif
+
   n = 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
 	pthread_mutex_lock(&ms);
   fileIO::setFileIndex(ind);
 	pthread_mutex_unlock(&ms);
+
   n = 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);
+	pthread_mutex_lock(&ms);
   fileIO::setFilePath(path);
+	pthread_mutex_unlock(&ms);
+
   n = 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);
   pthread_mutex_lock(&ms);
   fileIO::setFileName(path);
   pthread_mutex_unlock(&ms);
+
   return OK;
 
 }
@@ -7603,7 +7621,9 @@ int slsDetector::setFrameIndex(int index){
 	int arg = index;
 
 	if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG){
-			fileIO::setFrameIndex(index);
+		pthread_mutex_lock(&ms);
+		fileIO::setFrameIndex(index);
+		pthread_mutex_unlock(&ms);
 	}
 
 	else if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
@@ -7612,14 +7632,20 @@ int slsDetector::setFrameIndex(int index){
 #endif
 		if (connectData() == OK)
 			ret=thisReceiver->sendInt(fnum,retval,arg);
-		 disconnectData();
-		if(ret!=FAIL)
+		disconnectData();
+		if(ret!=FAIL){
+			pthread_mutex_lock(&ms);
 			fileIO::setFrameIndex(retval);
+			pthread_mutex_unlock(&ms);
+		}
 		if(ret==FORCE_UPDATE)
 			updateReceiver();
 	}
+	pthread_mutex_lock(&ms);
+	retval = fileIO::getFrameIndex();
+	pthread_mutex_unlock(&ms);
 
-	return fileIO::getFrameIndex();
+	return retval;
 }
 
 

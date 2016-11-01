@@ -150,6 +150,19 @@ int mapCSP0(void) {
 	return OK;
 }
 
+
+
+void defineGPIOpins(){
+	//define the gpio pins
+	system("echo 7 > /sys/class/gpio/export");
+	system("echo 9 > /sys/class/gpio/export");
+	//define their direction
+	system("echo in  > /sys/class/gpio/gpio7/direction");
+	system("echo out > /sys/class/gpio/gpio9/direction");
+}
+
+
+
 u_int16_t bus_r16(u_int32_t offset){
 	volatile u_int16_t *ptr1;
 	ptr1=(u_int16_t*)(CSP0BASE+offset*2);
@@ -1421,6 +1434,14 @@ int  writeGbeReg(int ivar,  uint32_t val, int addr, int interface) {
 int configureInterface(uint32_t destip,uint64_t destmac,uint64_t  sourcemac,int sourceip,int ival,uint32_t destport,  uint32_t sourceport, int interface) {
 	//int configureMAC(int ipad,long long int macad,long long int detectormacad, int detipad, int ival, int udpport){
 
+
+	//tell FPGA to not touch flash
+	system("echo 0 > /sys/class/gpio/gpio9/value");
+	//tell FPGA to touch flash to program itself
+	system("echo 1 > /sys/class/gpio/gpio9/value");
+
+
+
 	volatile u_int32_t conf= bus_r(CONFIG_REG);
 	long int checksum=calcChecksum(sourceip, destip);
 #ifdef NEW_GBE_INTERFACE
@@ -1484,6 +1505,11 @@ int configureInterface(uint32_t destip,uint64_t destmac,uint64_t  sourcemac,int 
 
 int configureMAC(uint32_t destip,uint64_t destmac,uint64_t  sourcemac,int sourceip,int ival,uint32_t destport) {
 	//int configureMAC(int ipad,long long int macad,long long int detectormacad, int detipad, int ival, int udpport){
+
+
+
+
+
 
 	uint32_t sourceport  =  0x7e9a; // 0xE185;
 	int interface=0;

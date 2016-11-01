@@ -22,6 +22,7 @@
 
 
 int mapCSP0(void);
+void defineGPIOpins();
 
 u_int16_t bus_r16(u_int32_t offset);
 u_int16_t bus_w16(u_int32_t offset, u_int16_t data);//aldos function

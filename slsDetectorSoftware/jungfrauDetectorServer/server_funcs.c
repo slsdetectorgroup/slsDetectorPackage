@@ -97,6 +97,9 @@ int init_detector(int b) {
 		);
 
 
+		defineGPIOpins();
+
+
 		printf("Resetting PLL\n");
 		resetPLL();
 		bus_w16(CONTROL_REG, SYNC_RESET);

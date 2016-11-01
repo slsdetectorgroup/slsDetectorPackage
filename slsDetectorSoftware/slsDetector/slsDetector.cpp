@@ -4025,9 +4025,9 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 		if (t>=0)
 			thisDetector->timerValue[index]=t;
 	}
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	std::cout<< "Timer " << index << " set to  "<< thisDetector->timerValue[index] << "ns"  << std::endl;
-#endif
+//#endif
 
 	if ((thisDetector->myDetectorType==MYTHEN)&&(index==PROBES_NUMBER)) {
 		setDynamicRange();
@@ -4077,9 +4077,9 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 				}
 				//set period
 				else{
-#ifdef VERBOSE
+//#ifdef VERBOSE
 					std::cout << "Setting/Getting acquisition period " << index << " to/from receiver " << args[1] << std::endl;
-#endif
+//#endif
 					//if acquisition period is zero, then #frames/buffer depends on exposure time and not acq period
 					if(!args[1])
 						args[1] = timerValue[ACQUISITION_TIME];

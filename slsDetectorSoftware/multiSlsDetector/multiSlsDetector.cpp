@@ -5086,10 +5086,13 @@ void multiSlsDetector::startReceivingDataThread(){
 	//initializations
 	int numReadoutPerDetector = 1;
 	bool jungfrau = false;
+	int expectedsize = 1024*256;/**shouldnt work for other bit modes or anythign*/
 	if(getDetectorsType() == EIGER){
 		numReadoutPerDetector = 2;
-	}else if(getDetectorsType() == JUNGFRAU)
+	}else if(getDetectorsType() == JUNGFRAU){
 		jungfrau = true;
+		expectedsize = 8192*128;
+	}
 	int singleDatabytes = detectors[ithread/numReadoutPerDetector]->getDataBytes();
 	int nel=(singleDatabytes/numReadoutPerDetector)/sizeof(int);
 	int* image = new int[nel];
@@ -5165,7 +5168,7 @@ void multiSlsDetector::startReceivingDataThread(){
 
 		//cprintf(BLUE,"%d data %d\n",ithread,len);
 		//end of socket ("end")
-		if (len < 1024*256 ) {
+		if (len < expectedsize ) {
 			if(len == 3){
 				//cprintf(RED,"%d Received end of acquisition\n", ithread);
 				singleframe[ithread] = NULL;

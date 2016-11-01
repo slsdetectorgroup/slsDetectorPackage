@@ -1311,7 +1311,7 @@ int slsDetector::activate(int const enable){
 #endif
 
 	if(ret!=FAIL){
-		if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+		if(setReceiverOnline()==ONLINE_FLAG){
 #ifdef VERBOSE
 			std::cout << "Activating/Deactivating Receiver: " << retval << std::endl;
 #endif
@@ -1624,7 +1624,7 @@ int slsDetector::setDetectorType(detectorType const type){
   //receiver
   if((retType != GENERIC) && (setReceiverOnline()==ONLINE_FLAG)) {
 	  retval = FAIL;
-	  if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+	  if(setReceiverOnline()==ONLINE_FLAG){
 #ifdef VERBOSE
 		  std::cout << "Sending detector type to Receiver " << (int)thisDetector->myDetectorType << std::endl;
 #endif
@@ -1995,7 +1995,7 @@ int64_t slsDetector::getId( idMode mode, int imod){
     retval=SVNREVLIB;
     retval=(retval<<32) | SVNDATELIB;
   } else if (mode==RECEIVER_VERSION) {
-    if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
+    if (setReceiverOnline()==ONLINE_FLAG) {
       if (connectData() == OK)
     	  ret=thisReceiver->getInt(fnum2,retval);
       disconnectData();
@@ -4057,7 +4057,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	if((index==FRAME_NUMBER)||(index==FRAME_PERIOD)||(index==CYCLES_NUMBER)){
 	  if(ret != FAIL){
 	    retval = thisDetector->timerValue[index];
-	    if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+	    if(setReceiverOnline()==ONLINE_FLAG){
 	      int64_t args[2];
 	      args[1] = retval;
 	      if((t == -1) && (ret!= FORCE_UPDATE)) args[1] = -1;
@@ -4614,7 +4614,7 @@ int slsDetector::setDynamicRange(int n){
   if(ret != FAIL){
 	  retval = thisDetector->dynamicRange;
 	  if((n==-1) && (ret!= FORCE_UPDATE)) n =-1;
-	  if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+	  if(setReceiverOnline()==ONLINE_FLAG){
 #ifdef VERBOSE
 			  std::cout << "Sending/Getting dynamic range to/from receiver " << n << std::endl;
 #endif
@@ -5538,7 +5538,7 @@ char* slsDetector::setReceiver(string receiverIP){
 
 	strcpy(thisDetector->receiver_hostname,receiverIP.c_str());
 
-	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+	if(setReceiverOnline()==ONLINE_FLAG){
 #ifdef VERBOSE
 		std::cout << "Setting up receiver with" << endl;
 		std::cout << "detector type:" << slsDetectorBase::getDetectorType(thisDetector->myDetectorType) << endl;
@@ -5746,7 +5746,7 @@ int slsDetector::setUDPConnection(){
 #endif
 
 	//set up receiver for UDP Connection and get receivermac address
-	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+	if(setReceiverOnline()==ONLINE_FLAG){
 #ifdef VERBOSE
 		std::cout << "Setting up UDP Connection for Receiver " << args[0] << "\t" << args[1] << std::endl;
 #endif
@@ -5911,7 +5911,7 @@ int slsDetector::configureMAC(){
 	pthread_mutex_unlock(&ms);
     //connect to receiver
     if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
-      if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+      if(setReceiverOnline()==ONLINE_FLAG){
 #ifdef VERBOSE
 	std::cout << "Sending adc val to receiver " << retval << std::endl;
 #endif
@@ -7068,7 +7068,7 @@ string slsDetector::setFilePath(string s) {
 		}
 	}
 
-	else if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+	else if(setReceiverOnline()==ONLINE_FLAG){
 		strcpy(arg,s.c_str());
 #ifdef VERBOSE
 		std::cout << "Sending file path to receiver " << arg << std::endl;
@@ -7109,7 +7109,7 @@ string slsDetector::setFileName(string s) {
 	}
 
 	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
-		if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+		if(setReceiverOnline()==ONLINE_FLAG){
 			strcpy(arg,s.c_str());
 #ifdef VERBOSE
 			std::cout << "Sending file name to receiver " << arg << std::endl;
@@ -7153,7 +7153,7 @@ int slsDetector::setFileIndex(int i) {
 		}
 	}
 
-	else if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+	else if(setReceiverOnline()==ONLINE_FLAG){
 #ifdef VERBOSE
 		std::cout << "Sending file index to receiver " << arg << std::endl;
 #endif
@@ -7181,7 +7181,6 @@ int slsDetector::startReceiver(){
 	char mess[MAX_STR_LENGTH] = "";
 
 	if (setReceiverOnline()==ONLINE_FLAG) {
-	//if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 #ifdef VERBOSE
 		std::cout << "Starting Receiver " << std::endl;
 #endif
@@ -7218,7 +7217,6 @@ int slsDetector::stopReceiver(){
 		detectorSendToReceiver(false);
 
 	if (setReceiverOnline()==ONLINE_FLAG) {
-	//if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 #ifdef VERBOSE
 		std::cout << "Stopping Receiver " << std::endl;
 #endif
@@ -7243,7 +7241,7 @@ slsDetectorDefs::runStatus slsDetector::startReceiverReadout(){
 	int retval=-1;
 	runStatus s=ERROR;
 
-	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
+	if (setReceiverOnline()==ONLINE_FLAG) {
 #ifdef VERBOSE
 		std::cout << "Starting Receiver Readout" << std::endl;
 #endif
@@ -7300,7 +7298,7 @@ slsDetectorDefs::runStatus slsDetector::getReceiverStatus(){
 	int retval=-1;
 	runStatus s=ERROR;
 
-	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
+	if (setReceiverOnline()==ONLINE_FLAG) {
 #ifdef VERBOSE
 		std::cout << "Getting Receiver Status" << std::endl;
 #endif
@@ -7325,7 +7323,6 @@ int slsDetector::getFramesCaughtByReceiver(){
 	int retval=-1;
 
 	if (setReceiverOnline()==ONLINE_FLAG) {
-	//if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 #ifdef VERBOSE
 		std::cout << "Getting Frames Caught by Receiver " << std::endl;
 #endif
@@ -7346,7 +7343,7 @@ int slsDetector::getReceiverCurrentFrameIndex(){
 	int ret = FAIL;
 	int retval=-1;
 
-	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
+	if (setReceiverOnline()==ONLINE_FLAG) {
 #ifdef VERBOSE
 		std::cout << "Getting Current Frame Index of Receiver " << std::endl;
 #endif
@@ -7369,7 +7366,6 @@ int slsDetector::resetFramesCaught(){
 	char mess[MAX_STR_LENGTH] = "";
 
 	if (setReceiverOnline()==ONLINE_FLAG) {
-	//if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 #ifdef VERBOSE
 		std::cout << "Reset Frames Caught by Receiver" << std::endl;
 #endif
@@ -7395,7 +7391,7 @@ int slsDetector::lockReceiver(int lock){
 	int arg=lock;
 
 
-	if(setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG){
+	if(setReceiverOnline()!=ONLINE_FLAG){
 #ifdef VERBOSE
 		std::cout << "Locking or Unlocking Receiver " << std::endl;
 #endif
@@ -7419,7 +7415,7 @@ string slsDetector::getReceiverLastClientIP(){
 	int ret = FAIL;
 	char retval[INET_ADDRSTRLEN]="";
 
-	if(setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG){
+	if(setReceiverOnline()!=ONLINE_FLAG){
 #ifdef VERBOSE
 		std::cout << "Geting Last Client IP connected to Receiver " << std::endl;
 #endif
@@ -7470,7 +7466,7 @@ int slsDetector::updateReceiver() {
 	int ret=OK;
 	char mess[MAX_STR_LENGTH]="";
 
-	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
+	if (setReceiverOnline()==ONLINE_FLAG) {
 		if (connectData() == OK){
 			dataSocket->SendDataOnly(&fnum,sizeof(fnum));
 			dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
@@ -7497,7 +7493,7 @@ int slsDetector::exitReceiver(){
   int retval;
   int fnum=F_EXIT_RECEIVER;
 
-  if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
+  if (setReceiverOnline()==ONLINE_FLAG) {
     if (dataSocket) {
     	dataSocket->Connect();
     	dataSocket->SendDataOnly(&fnum,sizeof(fnum));
@@ -7533,7 +7529,7 @@ int slsDetector::enableWriteToFile(int enable){
 		}
 	}
 
-	else if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+	else if(setReceiverOnline()==ONLINE_FLAG){
 #ifdef VERBOSE
 		std::cout << "Sending enable file write to receiver " << arg << std::endl;
 #endif
@@ -7574,7 +7570,7 @@ int slsDetector::overwriteFile(int enable){
 		}
 	}
 
-	else if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+	else if(setReceiverOnline()==ONLINE_FLAG){
 #ifdef VERBOSE
 		std::cout << "Sending enable file write to receiver " << arg << std::endl;
 #endif
@@ -7610,7 +7606,7 @@ int slsDetector::setFrameIndex(int index){
 			fileIO::setFrameIndex(index);
 	}
 
-	else if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+	else if(setReceiverOnline()==ONLINE_FLAG){
 #ifdef VERBOSE
 		std::cout << "Sending frame index to receiver " << arg << std::endl;
 #endif
@@ -7683,7 +7679,7 @@ int slsDetector::setReadReceiverFrequency(int getFromReceiver, int freq){
 	if(!getFromReceiver)
 		return retval;
 
-	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+	if(setReceiverOnline()==ONLINE_FLAG){
 #ifdef VERBOSE
 		std::cout << "Sending read frequency to receiver " << arg  << std::endl;
 #endif
@@ -7712,7 +7708,7 @@ int slsDetector::enableDataStreamingFromReceiver(int enable){
 	int arg = enable;
 
 
-	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+	if(setReceiverOnline()==ONLINE_FLAG){
 #ifdef VERBOSE
 		std::cout << "***************Sending Data Streaming in Receiver " << arg  << std::endl;
 #endif
@@ -7740,7 +7736,7 @@ int slsDetector::enableReceiverCompression(int i){
 	int retval=-1;
 
 
-	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+	if(setReceiverOnline()==ONLINE_FLAG){
 #ifdef VERBOSE
 		std::cout << "Getting/Enabling/Disabling Receiver Compression with argument " << i << std::endl;
 #endif
@@ -7761,7 +7757,7 @@ void slsDetector::setDetectorHostname(){
 	char retval[MAX_STR_LENGTH]="";
 
 
-	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+	if(setReceiverOnline()==ONLINE_FLAG){
 #ifdef VERBOSE
 		std::cout << "Sending detector hostname to Receiver " << thisDetector->hostname << std::endl;
 #endif

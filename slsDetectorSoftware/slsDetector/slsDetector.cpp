@@ -3985,9 +3985,9 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	if (index!=MEASUREMENTS_NUMBER) {
 
 
-#ifdef VERBOSE
+//#ifdef VERBOSE
 		std::cout<< "Setting timer "<< index << " to " <<  t << "ns/value" << std::endl;
-#endif
+//#endif
 		if (thisDetector->onlineFlag==ONLINE_FLAG) {
 			if (connectControl() == OK){
 				controlSocket->SendDataOnly(&fnum,sizeof(fnum));

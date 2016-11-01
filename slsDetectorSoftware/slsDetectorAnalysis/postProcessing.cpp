@@ -497,15 +497,15 @@ void* postProcessing::processData(int delflag) {
 			int caught = -1;
 			while(true){
 
-				cout.flush();
-				cout<<flush;
+				//cout.flush();
+				//cout<<flush;
 				usleep(40000); //20ms need this else connecting error to receiver (too fast)
 
 				if (checkJoinThread()){
 					break;
 				}
 
-
+/*
 				//get progress
 				pthread_mutex_lock(&mg);
 				if(setReceiverOnline() == ONLINE_FLAG){
@@ -524,7 +524,7 @@ void* postProcessing::processData(int delflag) {
 				if (checkJoinThread()){
 					break;
 				}
-
+*/
 
 
 			}

@@ -871,6 +871,11 @@ void readFrame(int *ret, char *mess){
 			return;
 		}
 	}
+
+	//wait for detector to send
+	Beb_EndofDataSend(send_to_ten_gig);
+
+
 	printf("*****Done Waiting...\n");
 	*ret = (int)FINISHED;
 	strcpy(mess,"acquisition successfully finished\n");

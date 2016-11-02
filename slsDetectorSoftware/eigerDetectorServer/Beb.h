@@ -46,6 +46,8 @@ struct BebInfo{
 
 
   void Beb_GetModuleCopnfiguration(int* master, int* top);
+  void Beb_EndofDataSend(int tengiga);
+
   int Beb_SetMasterViaSoftware();
   int Beb_SetSlaveViaSoftware();
   int Beb_Activate(int enable);

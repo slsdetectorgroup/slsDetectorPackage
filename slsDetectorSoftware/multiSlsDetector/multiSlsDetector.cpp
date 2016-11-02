@@ -268,6 +268,7 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
 
   getNMods();
   getMaxMods();
+  threadStarted = false;
   threadpool = 0;
 	if(createThreadPool() == FAIL)
 		exit(-1);
@@ -4937,6 +4938,7 @@ int multiSlsDetector::getFramesCaughtByReceiver() {
 		}
 		return ret;
 	}
+
 
 	for (int i=0; i<thisMultiDetector->numberOfDetectors; i++)
 		if (detectors[i]){

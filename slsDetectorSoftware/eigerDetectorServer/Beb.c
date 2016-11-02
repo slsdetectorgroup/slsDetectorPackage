@@ -24,6 +24,7 @@
 
 #include "Beb.h"
 
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
 
 	 struct BebInfo beb_infos[10];
@@ -171,6 +172,111 @@ void Beb_GetModuleCopnfiguration(int* master, int* top){
 			Beb_close(fd,csp0base);
 		}
 }
+
+
+
+void Beb_EndofDataSend(int tengiga){
+	//mapping new memory
+	u_int32_t* csp0base=0;
+	int l_framepktcounter2, l_txndelaycounter, l_framedelaycounter, r_framepktcounter2, r_txndelaycounter, r_framedelaycounter;
+	int l_framepktcounter2_new, l_txndelaycounter_new, l_framedelaycounter_new, r_framepktcounter2_new, r_txndelaycounter_new, r_framedelaycounter_new;
+	int addr_l_framepktcounter2,  addr_l_txndelaycounter,  addr_l_framedelaycounter,  addr_r_framepktcounter2,  addr_r_txndelaycounter,  addr_r_framedelaycounter;
+
+	switch(tengiga){
+	case 0:
+		addr_l_framepktcounter2 = ONE_GIGA_LEFT_PKT_SEND_COUNTER;
+		addr_l_txndelaycounter = ONE_GIGA_LEFT_TXN_DELAY_COUNTER;
+		addr_l_framedelaycounter = ONE_GIGA_LEFT_FRAME_DELAY_COUNTER;
+		addr_r_framepktcounter2 = ONE_GIGA_RIGHT_PKT_SEND_COUNTER;
+		addr_r_txndelaycounter = ONE_GIGA_RIGHT_TXN_DELAY_COUNTER;
+		addr_r_framedelaycounter = ONE_GIGA_RIGHT_FRAME_DELAY_COUNTER;
+		break;
+	case 1:
+		addr_l_framepktcounter2 = TEN_GIGA_LEFT_PKT_SEND_COUNTER;
+		addr_l_txndelaycounter = TEN_GIGA_LEFT_TXN_DELAY_COUNTER;
+		addr_l_framedelaycounter = TEN_GIGA_LEFT_FRAME_DELAY_COUNTER;
+		addr_r_framepktcounter2 = TEN_GIGA_RIGHT_PKT_SEND_COUNTER;
+		addr_r_txndelaycounter = TEN_GIGA_RIGHT_TXN_DELAY_COUNTER;
+		addr_r_framedelaycounter = TEN_GIGA_RIGHT_FRAME_DELAY_COUNTER;
+		break;
+	}
+
+
+	//open file pointer
+	int fd = Beb_open(&csp0base,XPAR_COUNTER_BASEADDR);
+	if(fd < 0){
+		cprintf(BG_RED,"Delay read counter fail\n");
+		return;
+	}else{
+		//read data first time
+		l_framepktcounter2 = Beb_Read32(csp0base, addr_l_framepktcounter2);
+		l_txndelaycounter = Beb_Read32(csp0base, addr_l_txndelaycounter);
+		l_framedelaycounter = Beb_Read32(csp0base, addr_l_framedelaycounter);
+		r_framepktcounter2 = Beb_Read32(csp0base, addr_r_framepktcounter2);
+		r_txndelaycounter = Beb_Read32(csp0base, addr_r_txndelaycounter);
+		r_framedelaycounter = Beb_Read32(csp0base, addr_r_framedelaycounter);
+//#ifdef VERBOSE
+		printf("\nLeft\n"
+				"Framepacketcounter: %d\n"
+				"Txndelaycounter:%d\n"
+				"Framedelaycounter:%d\n"
+				"\nRight\n"
+				"Framepacketcounter: %d\n"
+				"Txndelaycounter:%d\n"
+				"Framedelaycounter:%d\n\n",
+				l_framepktcounter2,l_txndelaycounter,l_framedelaycounter,
+				r_framepktcounter2,r_txndelaycounter,r_framedelaycounter);
+//#endif
+
+		//keep comparing with previous values
+		int maxtimer;
+		while(1){
+			maxtimer = MAX(MAX(l_txndelaycounter,l_framedelaycounter),MAX(r_txndelaycounter,r_framedelaycounter));
+			maxtimer /= 100;
+			printf("Will wait for %d us\n",maxtimer);
+			usleep(maxtimer);
+
+			//read new values
+			l_framepktcounter2_new = Beb_Read32(csp0base, addr_l_framepktcounter2);
+			l_txndelaycounter_new = Beb_Read32(csp0base, addr_l_txndelaycounter);
+			l_framedelaycounter_new = Beb_Read32(csp0base, addr_l_framedelaycounter);
+			r_framepktcounter2_new = Beb_Read32(csp0base, addr_r_framepktcounter2);
+			r_txndelaycounter_new = Beb_Read32(csp0base, addr_r_txndelaycounter);
+			r_framedelaycounter_new = Beb_Read32(csp0base, addr_r_framedelaycounter);
+//#ifdef VERBOSE
+			printf("\nLeft\n"
+					"Framepacketcounter: %d\n"
+					"Txndelaycounter:%d\n"
+					"Framedelaycounter:%d\n"
+					"\nRight\n"
+					"Framepacketcounter: %d\n"
+					"Txndelaycounter:%d\n"
+					"Framedelaycounter:%d\n\n",
+					l_framepktcounter2_new,l_txndelaycounter_new,l_framedelaycounter_new,
+					r_framepktcounter2_new,r_txndelaycounter_new,r_framedelaycounter_new);
+//#endif
+
+			if ((l_framepktcounter2 == l_framepktcounter2_new) && (r_framepktcounter2 == r_framepktcounter2_new))
+				break;
+
+			//update old values
+			l_framepktcounter2 = l_framepktcounter2_new;
+			l_txndelaycounter = l_txndelaycounter_new;
+			l_framedelaycounter = l_framedelaycounter_new;
+			r_framepktcounter2 = r_framepktcounter2_new;
+			r_txndelaycounter = r_txndelaycounter_new;
+			r_framedelaycounter = r_framedelaycounter_new;
+
+		}
+
+		printf("Detector has send all data\n");
+		//close file pointer
+		Beb_close(fd,csp0base);
+	}
+}
+
+
+
 
 /* do not work at the moment */
 int Beb_SetMasterViaSoftware(){

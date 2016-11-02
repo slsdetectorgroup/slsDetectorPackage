@@ -146,18 +146,17 @@ int  slsDetectorUtils::acquire(int delflag){
   }
 
   if(receiver){
+	  pthread_mutex_lock(&mg);
 	  if(getReceiverStatus()!=IDLE)
 		  stopReceiver();
-	  if(setReceiverOnline()==OFFLINE_FLAG)
-		  *stoppedFlag=1;
 	  //multi detectors shouldnt have different receiver read frequencies enabled/disabled
     	if(setReadReceiverFrequency(0) < 0){
 	  		std::cout << "Error: The receiver read frequency is invalid:" << setReadReceiverFrequency(0) << std::endl;
 	  		*stoppedFlag=1;
 	  	}
-
 	  if(setReceiverOnline()==OFFLINE_FLAG)
 		  *stoppedFlag=1;
+	  pthread_mutex_unlock(&mg);
   }
 
 

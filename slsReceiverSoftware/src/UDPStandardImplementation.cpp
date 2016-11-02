@@ -2871,7 +2871,7 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 	//write to file if enabled and update write parameters
 	if(npackets > 0){
 		if((fileWriteEnable) && (sfilefd[ithread])){
-			if((tempframenumber%maxFramesPerFile) == 0){
+			if(tempframenumber && (tempframenumber%maxFramesPerFile) == 0){
 				exit(-1);
 				createNewFile(ithread);
 			}

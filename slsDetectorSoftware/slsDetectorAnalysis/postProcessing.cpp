@@ -6,6 +6,7 @@
 #elif EXTPP
 #include "usersFunctions.h"
 #endif
+#include <time.h>
 
 
 //#define VERBOSE
@@ -24,6 +25,17 @@ static void* startProcessDataNoDelete(void *n){
 
 };
 
+
+int postProcessing::kbhit(){
+  struct timeval tv;
+  fd_set fds;
+  tv.tv_sec = 0;
+  tv.tv_usec = 0;
+  FD_ZERO(&fds);
+  FD_SET(STDIN_FILENO, &fds); //STDIN_FILENO is 0
+  select(STDIN_FILENO+1, &fds, NULL, NULL, &tv);
+  return FD_ISSET(STDIN_FILENO, &fds);
+}
 
 
 postProcessing::postProcessing(): expTime(NULL), ang(NULL), val(NULL), err(NULL), numberOfChannels(0), badChannelMask(NULL){
@@ -496,10 +508,11 @@ void* postProcessing::processData(int delflag) {
 		else{
 			int caught = -1;
 			char c;
+			int ifp;
 			while(true){
 
-				cout.flush();
-				cout<<flush;
+				//cout.flush();
+				//cout<<flush;
 				usleep(100 * 1000); //20ms need this else connecting error to receiver (too fast)
 
 				if (checkJoinThread()){
@@ -507,10 +520,13 @@ void* postProcessing::processData(int delflag) {
 				}
 
 
-				c=fgetc(stdin);
-				if (c=='q') {
-				 	cout<<"gonna stop"<<endl;
-				 	stopAcquisition();
+				ifp=kbhit();
+				if (ifp!=0){
+					c=fgetc(stdin);
+					if (c=='q') {
+						cout<<"gonna stop"<<endl;
+						stopAcquisition();
+					}
 				}
 
 

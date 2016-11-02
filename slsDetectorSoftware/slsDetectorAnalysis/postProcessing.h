@@ -335,6 +335,8 @@ s
   detectorData *thisData;
 
  private:
+  int kbhit(void);
+
  // double *fdata;
  // int (*dataReady)(detectorData*,int, int,void*);
  // void *pCallbackArg;

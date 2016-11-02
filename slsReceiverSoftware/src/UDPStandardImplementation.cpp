@@ -2161,17 +2161,17 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 
 				//wrong packet
 				else{
-					cprintf(RED,"wrong packet\n");
+					cprintf(RED,"wrong packet fnum of last good one:%d\n",(*((uint32_t*)(buffer[ithread]+8))));
 					pnum = packetsPerFrame-1;
 					offset = fifoBufferHeaderSize;
 					//find the start of next image
-					while(currentpnum != (packetsPerFrame-1)){
+					while(currentpnum != pnum){
 
 						receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, onePacketSize);
 						if(!receivedSize) return 0;
 						header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
 						currentpnum = (*( (uint8_t*) header->packetNumber));
-						//cout<<"trying to find currentpnum:"<<currentpnum<<endl;
+						//cout<<"trying to find: currentpnum:"<<currentpnum<<endl;
 					}
 				}
 			}//----- got a whole frame -------
@@ -2871,6 +2871,7 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 	if(npackets > 0){
 		if((fileWriteEnable) && (sfilefd[ithread])){
 			if(tempframenumber && (tempframenumber%maxFramesPerFile) == 0){
+				cout<<"going to create new file: frame number:"<<tempframenumber<<endl;
 				createNewFile(ithread);
 			}
 			fwrite(wbuffer, 1, oneDataSize*packetsPerFrame+fifoBufferHeaderSize, sfilefd[ithread]);

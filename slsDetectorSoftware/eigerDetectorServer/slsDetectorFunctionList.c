@@ -873,7 +873,7 @@ void readFrame(int *ret, char *mess){
 	}
 
 	//wait for detector to send
-
+	Beb_EndofDataSend(send_to_ten_gig);
 
 
 	printf("*****Done Waiting...\n");

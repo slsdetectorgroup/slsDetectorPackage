@@ -2142,7 +2142,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 					//cout<<"correct packet"<<endl;
 					if(pnum == packetsPerFrame-1){
 						(*((uint32_t*)(buffer[ithread]+8))) = ((*( (uint32_t*) header->frameNumber))&frameIndexMask);
-						cout<<"current fnum:"<<(*((uint32_t*)(buffer[ithread]+8)))<<endl;
+						//cout<<"current fnum:"<<(*((uint32_t*)(buffer[ithread]+8)))<<endl;
 					}
 
 					memcpy(buffer[ithread] + offset,buffer[ithread] + JFRAU_HEADER_LENGTH, oneDataSize);
@@ -2859,9 +2859,8 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 	//get current frame number
 	uint64_t tempframenumber;
 	tempframenumber = (*((uint32_t*)(wbuffer+8)));
-	cout<<"handling: frame number:"<<tempframenumber<<endl;
 	tempframenumber -= startFrameIndex;
-	cout<<"handling: new frame number:"<<tempframenumber<<endl;
+	//cout<<"handling: frame number:"<<tempframenumber<<endl;
 
 	if (cbAction < DO_EVERYTHING)
 		rawDataReadyCallBack((int)tempframenumber, wbuffer, npackets * onePacketSize,
@@ -2872,7 +2871,6 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 	if(npackets > 0){
 		if((fileWriteEnable) && (sfilefd[ithread])){
 			if(tempframenumber && (tempframenumber%maxFramesPerFile) == 0){
-				exit(-1);
 				createNewFile(ithread);
 			}
 			fwrite(wbuffer, 1, oneDataSize*packetsPerFrame+fifoBufferHeaderSize, sfilefd[ithread]);

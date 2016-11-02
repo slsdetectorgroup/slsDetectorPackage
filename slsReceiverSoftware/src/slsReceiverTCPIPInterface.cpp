@@ -911,14 +911,15 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 
 int	slsReceiverTCPIPInterface::get_status(){
 	ret=OK;
-	enum runStatus retval = ERROR;
+	int retval=-1;
+	enum runStatus s=ERROR;
 
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL){
 		strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 		ret=FAIL;
-	}else retval=receiverBase->getStatus();
+	}else s=receiverBase->getStatus();
 #endif
 
 	if(ret==OK && socket->differentClients){
@@ -932,6 +933,7 @@ int	slsReceiverTCPIPInterface::get_status(){
 		cprintf(RED, "%s\n", mess);
 		socket->SendDataOnly(mess,sizeof(mess));
 	}
+	retval = (runStatus(s));
 	socket->SendDataOnly(&retval,sizeof(retval));
 	//return ok/fail
 	return ret;

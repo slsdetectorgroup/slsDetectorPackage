@@ -2858,8 +2858,10 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 
 	//get current frame number
 	uint64_t tempframenumber;
-	tempframenumber = (*((uint32_t*)(buffer[ithread]+8))) - startFrameIndex;
+	tempframenumber = (*((uint32_t*)(buffer[ithread]+8)));
 	cout<<"handling: frame number:"<<tempframenumber<<endl;
+	tempframenumber -= startFrameIndex;
+	cout<<"handling: new frame number:"<<tempframenumber<<endl;
 
 	if (cbAction < DO_EVERYTHING)
 		rawDataReadyCallBack((int)tempframenumber, wbuffer, npackets * onePacketSize,
@@ -2870,6 +2872,7 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 	if(npackets > 0){
 		if((fileWriteEnable) && (sfilefd[ithread])){
 			if((tempframenumber%maxFramesPerFile) == 0){
+				exit(-1);
 				createNewFile(ithread);
 			}
 			fwrite(wbuffer, 1, oneDataSize*packetsPerFrame+fifoBufferHeaderSize, sfilefd[ithread]);

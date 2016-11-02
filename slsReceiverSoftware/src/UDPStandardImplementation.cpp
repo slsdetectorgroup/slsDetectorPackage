@@ -1533,7 +1533,7 @@ int UDPStandardImplementation::setupWriter(){
 
 
 
-int UDPStandardImplementation::createNewFile(int ithread){
+int UDPStandardImplementation::createNewFile(int ithread){cprintf(BLUE,"Creating new file\n");
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//create file name
@@ -2141,8 +2141,8 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 				if(currentpnum == pnum){
 					//cout<<"correct packet"<<endl;
 					if(pnum == packetsPerFrame-1){
-						(*((uint32_t*)(buffer[ithread]+8))) = ((*( (uint32_t*) header->frameNumber))&frameIndexMask)-startFrameIndex;
-						//cout<<"current fnum:"<<(*((uint32_t*)(buffer[ithread]+8)))<<endl;
+						(*((uint32_t*)(buffer[ithread]+8))) = ((*( (uint32_t*) header->frameNumber))&frameIndexMask);
+						cout<<"current fnum:"<<(*((uint32_t*)(buffer[ithread]+8)))<<endl;
 					}
 
 					memcpy(buffer[ithread] + offset,buffer[ithread] + JFRAU_HEADER_LENGTH, oneDataSize);
@@ -2233,8 +2233,7 @@ void UDPStandardImplementation::startFrameIndices(int ithread){
 		startFrameIndex = 0;	//frame number always resets
 		break;
 	case JUNGFRAU:
-		header = (jfrau_packet_header_t*)(buffer[ithread] + fifoBufferHeaderSize);
-		startFrameIndex = (*( (uint32_t*) header->frameNumber))&frameIndexMask;
+		startFrameIndex = (*((uint32_t*)(buffer[ithread]+8)));
 		break;
 	default:
 		if(shortFrameEnable < 0){
@@ -2870,8 +2869,9 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 	//write to file if enabled and update write parameters
 	if(npackets > 0){
 		if((fileWriteEnable) && (sfilefd[ithread])){
-			if((tempframenumber%maxFramesPerFile) == 0)
+			if((tempframenumber%maxFramesPerFile) == 0){
 				createNewFile(ithread);
+			}
 			fwrite(wbuffer, 1, oneDataSize*packetsPerFrame+fifoBufferHeaderSize, sfilefd[ithread]);
 		}
 

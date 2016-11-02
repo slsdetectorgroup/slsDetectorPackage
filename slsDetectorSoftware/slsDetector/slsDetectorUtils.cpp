@@ -160,12 +160,12 @@ int  slsDetectorUtils::acquire(int delflag){
   }
 
 
-  /*if (*threadedProcessing)
+  if (*threadedProcessing)
 	    startThread(delflag);
 #ifdef VERBOSE
   cout << " starting thread " << endl;
 #endif
-*/
+
   //resets frames caught in receiver
   if(receiver){
 	  pthread_mutex_lock(&mg);
@@ -326,7 +326,7 @@ int  slsDetectorUtils::acquire(int delflag){
 	    cout << "done! " << endl;
 #endif
  
-/*
+
 	    if (*threadedProcessing==0){
 #ifdef VERBOSE
 	      cout << "start unthreaded process data " << endl;
@@ -334,7 +334,7 @@ int  slsDetectorUtils::acquire(int delflag){
 
 	      processData(delflag); 
 	    } 
-*/
+
 	  } else
 	    break;
 
@@ -461,7 +461,7 @@ int  slsDetectorUtils::acquire(int delflag){
     // loop measurements
   }
 
-/*
+
   // waiting for the data processing thread to finish!
   if (*threadedProcessing) {
 #ifdef VERBOSE
@@ -473,7 +473,7 @@ int  slsDetectorUtils::acquire(int delflag){
     cout << "data processing thread joined" << endl;
 #endif
   }
-*/
+
 
   if(progress_call)
 	progress_call(getCurrentProgress(),pProgressCallArg);

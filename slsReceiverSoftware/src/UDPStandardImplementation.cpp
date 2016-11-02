@@ -2141,7 +2141,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 				if(currentpnum == pnum){
 					//cout<<"correct packet"<<endl;
 					if(pnum == packetsPerFrame-1){
-						(*((uint32_t*)(buffer[ithread]+8))) = (*( (uint32_t*) header->frameNumber))&frameIndexMask;
+						(*((uint32_t*)(buffer[ithread]+8))) = ((*( (uint32_t*) header->frameNumber))&frameIndexMask)-startFrameIndex;
 						//cout<<"current fnum:"<<(*((uint32_t*)(buffer[ithread]+8)))<<endl;
 					}
 
@@ -2539,16 +2539,16 @@ void UDPStandardImplementation::startWriting(){
 			cprintf(GREEN,"Writing_Thread %d: Popped %p from FIFO %d\n", ithread, (void*)(wbuf),listenfifoIndex);
 #endif
 			uint32_t numPackets = (uint32_t)(*((uint32_t*)wbuf));
-//#ifdef DEBUG4
+#ifdef DEBUG4
 			cprintf(GREEN,"Writing_Thread %d: Number of Packets: %d for FIFO %d\n", ithread, numPackets, listenfifoIndex);
-//#endif
+#endif
 
 
 			//end of acquisition
 			if(numPackets == dummyPacketValue){
-//#ifdef DEBUG4
+#ifdef DEBUG4
 				cprintf(GREEN,"Writing_Thread %d: Dummy frame popped out of FIFO %d",ithread, listenfifoIndex);
-//#endif
+#endif
 				stopWriting(ithread,wbuf);
 				continue;
 			}
@@ -2870,7 +2870,7 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 	//write to file if enabled and update write parameters
 	if(npackets > 0){
 		if((fileWriteEnable) && (sfilefd[ithread])){
-			if(tempframenumber >= maxFramesPerFile)
+			if((tempframenumber%maxFramesPerFile) == 0)
 				createNewFile(ithread);
 			fwrite(wbuffer, 1, oneDataSize*packetsPerFrame+fifoBufferHeaderSize, sfilefd[ithread]);
 		}

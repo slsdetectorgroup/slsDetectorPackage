@@ -2858,7 +2858,7 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 
 	//get current frame number
 	uint64_t tempframenumber;
-	tempframenumber = (*((uint32_t*)(buffer[ithread]+8)));
+	tempframenumber = (*((uint32_t*)(buffer[ithread]+8))) - startFrameIndex;
 	cout<<"handling: frame number:"<<tempframenumber<<endl;
 
 	if (cbAction < DO_EVERYTHING)

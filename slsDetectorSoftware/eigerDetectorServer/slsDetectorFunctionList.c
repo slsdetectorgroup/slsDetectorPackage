@@ -871,6 +871,11 @@ void readFrame(int *ret, char *mess){
 			return;
 		}
 	}
+
+	//wait for detector to send
+
+
+
 	printf("*****Done Waiting...\n");
 	*ret = (int)FINISHED;
 	strcpy(mess,"acquisition successfully finished\n");

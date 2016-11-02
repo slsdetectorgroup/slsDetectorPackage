@@ -495,14 +495,22 @@ void* postProcessing::processData(int delflag) {
 		//only update progress
 		else{
 			int caught = -1;
+			char c;
 			while(true){
 
-				//cout.flush();
-				//cout<<flush;
-				usleep(40000); //20ms need this else connecting error to receiver (too fast)
+				cout.flush();
+				cout<<flush;
+				usleep(100 * 1000); //20ms need this else connecting error to receiver (too fast)
 
 				if (checkJoinThread()){
 					break;
+				}
+
+
+				c=fgetc(stdin);
+				if (c=='q') {
+				 	cout<<"gonna stop"<<endl;
+				 	stopAcquisition();
 				}
 
 

@@ -2132,7 +2132,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 			if(!receivedSize) return 0;
 			header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
 			currentpnum = (*( (uint8_t*) header->packetNumber));
-			cout<<"1 currentpnum:"<<currentpnum<<endl;
+			//cout<<"1 currentpnum:"<<currentpnum<<endl;
 
 
 			while(true){
@@ -2142,7 +2142,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 					//cout<<"correct packet"<<endl;
 					if(pnum == packetsPerFrame-1){
 						(*((uint32_t*)(buffer[ithread]+8))) = ((*( (uint32_t*) header->frameNumber))&frameIndexMask);
-						cout<<"current fnum:"<<(*((uint32_t*)(buffer[ithread]+8)))<<endl;
+						//cout<<"current fnum:"<<(*((uint32_t*)(buffer[ithread]+8)))<<endl;
 					}
 
 					memcpy(buffer[ithread] + offset,buffer[ithread] + JFRAU_HEADER_LENGTH, oneDataSize);
@@ -2156,7 +2156,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 					if(!receivedSize) return 0;
 					header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
 					currentpnum = (*( (uint8_t*) header->packetNumber));
-					cout<<"next currentpnum :"<<currentpnum<<endl;
+					//cout<<"next currentpnum :"<<currentpnum<<endl;
 				}
 
 				//wrong packet
@@ -2171,7 +2171,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 						if(!receivedSize) return 0;
 						header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
 						currentpnum = (*( (uint8_t*) header->packetNumber));
-						cout<<"trying to find: currentpnum:"<<currentpnum<<endl;
+						//cout<<"trying to find: currentpnum:"<<currentpnum<<endl;
 					}
 				}
 			}//----- got a whole frame -------

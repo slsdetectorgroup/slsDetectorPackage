@@ -65,7 +65,7 @@ typedef struct ip_header_struct {
 
 
 struct timeval tss,tse,tsss; //for timing
-int gpiopinsdefined = 0;
+
 
 
 
@@ -160,6 +160,32 @@ void defineGPIOpins(){
 	//define their direction
 	system("echo in  > /sys/class/gpio/gpio7/direction");
 	system("echo out > /sys/class/gpio/gpio9/direction");
+}
+
+void resetFPGA(){
+	FPGAdontTouchFlash();
+	FPGATouchFlash();
+}
+
+void FPGAdontTouchFlash(){
+	//tell FPGA to not touch flash
+	system("echo 0 > /sys/class/gpio/gpio9/value");
+}
+
+void FPGATouchFlash(){
+	//tell FPGA to touch flash to program itself
+	system("echo 1 > /sys/class/gpio/gpio9/value");
+}
+
+void powerChip (int on){
+	if(on){
+		printf("\nPowering on the chip\n");
+		bus_w(POWER_ON_REG,0x1);
+	}
+	else{
+		printf("\nPowering off the chip\n");
+		bus_w(POWER_ON_REG,0x0);
+	}
 }
 
 
@@ -1436,17 +1462,6 @@ int  writeGbeReg(int ivar,  uint32_t val, int addr, int interface) {
 int configureInterface(uint32_t destip,uint64_t destmac,uint64_t  sourcemac,int sourceip,int ival,uint32_t destport,  uint32_t sourceport, int interface) {
 	//int configureMAC(int ipad,long long int macad,long long int detectormacad, int detipad, int ival, int udpport){
 
-/*
-	if(!gpiopinsdefined){
-		defineGPIOpins();
-		gpiopinsdefined = 1;
-	}
-	//tell FPGA to not touch flash
-	system("echo 0 > /sys/class/gpio/gpio9/value");
-	//tell FPGA to touch flash to program itself
-	system("echo 1 > /sys/class/gpio/gpio9/value");
-*/
-
 
 	volatile u_int32_t conf= bus_r(CONFIG_REG);
 	long int checksum=calcChecksum(sourceip, destip);
@@ -2722,14 +2737,7 @@ int startWritingFPGAprogram(FILE** filefp){
 	printf ("\nFlash drive found: %s\n",mtdvalue);
 
 
-	//define the gpio pins
-	system("echo 7 > /sys/class/gpio/export");
-	system("echo 9 > /sys/class/gpio/export");
-	//define their direction
-	system("echo in  > /sys/class/gpio/gpio7/direction");
-	system("echo out > /sys/class/gpio/gpio9/direction");
-	//tell FPGA to not touch flash
-	system("echo 0 > /sys/class/gpio/gpio9/value");
+	FPGAdontTouchFlash();
 
 	//writing the program to flash
 	*filefp = fopen(mtdvalue, "w");
@@ -2753,9 +2761,8 @@ int stopWritingFPGAprogram(FILE* filefp){
 		wait = 1;
 	}
 
-
-	//tell FPGA to touch flash to program itself
-	system("echo 1 > /sys/class/gpio/gpio9/value");
+	//touch and program
+	FPGATouchFlash();
 
 	if(wait){
 #ifdef VERY_VERBOSE
@@ -2775,10 +2782,6 @@ int stopWritingFPGAprogram(FILE* filefp){
 		}
 	}
 	printf("FPGA has picked up the program from flash\n\n");
-
-	//undefine the pins
-	system("echo 7 > /sys/class/gpio/unexport");
-	system("echo 9 > /sys/class/gpio/unexport");
 
 
 	return OK;

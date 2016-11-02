@@ -56,6 +56,12 @@ int adcvpp=0x4;
 
 int init_detector(int b) {
 
+	if(b){
+		defineGPIOpins();
+		resetFPGA();
+		usleep(250*1000);
+	}
+
 	int i;
 	if (mapCSP0()==FAIL) {
 		printf("Could not map memory\n");
@@ -134,8 +140,10 @@ int init_detector(int b) {
 				printf("Error: Setting dac %d failed, wrote %d, read %d\n",dacvalues[i][0],dacvalues[i][1],retval);
 		}
 
+
 		printf("\nPowering on the chip\n");
 		bus_w(POWER_ON_REG,0x1);
+
 		printf("Resetting ADC\n");
 		writeADC(ADCREG1,0x3); writeADC(ADCREG1,0x0);
 		writeADC(ADCREG2,0x40);

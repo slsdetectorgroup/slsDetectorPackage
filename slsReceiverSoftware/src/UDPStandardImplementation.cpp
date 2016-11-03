@@ -574,7 +574,7 @@ uint32_t UDPStandardImplementation::setDataStreamEnable(const uint32_t enable){
 			createDataCallbackThreads(true);
 
 		if(dataStreamEnable){
-			numberofDataCallbackThreads = MAX_NUMBER_OF_LISTENING_THREADS;
+			numberofDataCallbackThreads = numberofListeningThreads;
 			if(createDataCallbackThreads() == FAIL){
 				cprintf(BG_RED,"Error: Could not create data callback threads\n");
 			}
@@ -865,7 +865,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 	numberofJobsPerBuffer = -1;
 	setupFifoStructure();
 
-	numberofDataCallbackThreads = MAX_NUMBER_OF_LISTENING_THREADS;
+	numberofDataCallbackThreads = numberofListeningThreads;
 	if(dataStreamEnable)
 		createDataCallbackThreads();
 

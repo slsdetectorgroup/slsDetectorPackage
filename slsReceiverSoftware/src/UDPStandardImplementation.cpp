@@ -2885,7 +2885,7 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 	//cout<<"handling: frame number:"<<tempframenumber<<endl;
 
 	if (cbAction < DO_EVERYTHING)
-		rawDataReadyCallBack((int)currentFrameNumber, wbuffer, npackets * onePacketSize,
+		rawDataReadyCallBack((int)currentFrameNumber[ithread], wbuffer+HEADER_SIZE_NUM_TOT_PACKETS, npackets * onePacketSize+JFRAU_FILE_FRAME_HEADER_LENGTH,
 				sfilefd[ithread], latestData[ithread],pRawDataReady);//know which thread from sfilefd
 
 

@@ -2901,6 +2901,7 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 		totalWritingPacketCount[ithread] += npackets;
 		lastFrameNumberInFile[ithread] = tempframenumber;
 		currentFrameNumber[ithread] = tempframenumber;
+		cout<<"curentframenumber:"<<currentFrameNumber[ithread]<<endl;
 
 		if(numberofWriterThreads > 1)
 			pthread_mutex_lock(&writeMutex);

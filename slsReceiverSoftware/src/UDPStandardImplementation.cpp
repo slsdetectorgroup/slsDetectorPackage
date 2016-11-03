@@ -2246,7 +2246,7 @@ void UDPStandardImplementation::startFrameIndices(int ithread){
 		startFrameIndex = 0;	//frame number always resets
 		break;
 	case JUNGFRAU:
-		startFrameIndex = (*((uint32_t*)(buffer[ithread]+8)));
+		startFrameIndex = (*((uint32_t*)(buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS)));
 		break;
 	default:
 		if(shortFrameEnable < 0){

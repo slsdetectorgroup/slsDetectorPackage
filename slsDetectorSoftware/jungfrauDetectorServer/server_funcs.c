@@ -124,15 +124,15 @@ int init_detector(int b) {
 		printf("Setting Default Dac values\n");
 		enum dacNames{VB_COMP,VDD_PROT,VIN_COM,VREF_PRECH,VB_PIXBUF,VB_DS,VREF_DS,VREF_COMP};
 		int retval = -1;
-		int dacvalues[14][2]={
-				{VB_DS,		1000},
+		int dacvalues[8][2]={
 				{VB_COMP,	1220},
-				{VB_PIXBUF, 750},
-				{VREF_DS,	480},
-				{VREF_COMP, 400},
-				{VREF_PRECH,1550},
-				{VIN_COM, 	1053},
 				{VDD_PROT, 	3000},
+				{VIN_COM, 	1053},
+				{VREF_PRECH,1450},
+				{VB_PIXBUF, 750},
+				{VB_DS,		1000},
+				{VREF_DS,	480},
+				{VREF_COMP, 420},
 		};
 		for(i=0;i<8;++i){
 			retval=setDac(dacvalues[i][0], dacvalues[i][1]);
@@ -143,6 +143,9 @@ int init_detector(int b) {
 
 		printf("\nPowering on the chip\n");
 		bus_w(POWER_ON_REG,0x1);
+
+		/* Only once */
+		bus_w(CONFGAIN_REG,0x0);
 
 		printf("Resetting ADC\n");
 		writeADC(ADCREG1,0x3); writeADC(ADCREG1,0x0);
@@ -1456,9 +1459,9 @@ int set_module(int file_des) {
 	myModule.nchan=NCHAN*NCHIP;
 	myModule.nadc=NADC;
 
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	printf("Setting module\n");
-#endif
+//#endif
 
 	ret=receiveModuleGeneral(file_des, &myModule, 0); //0 is to receive partially (without trimbits etc.)
 
@@ -1468,9 +1471,9 @@ int set_module(int file_des) {
 		ret=FAIL;
 
 
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	printf("module number is %d,register is %d, nchan %d, nchip %d, ndac %d, nadc %d, gain %f, offset %f\n",myModule.module, myModule.reg, myModule.nchan, myModule.nchip, myModule.ndac,  myModule.nadc, myModule.gain,myModule.offset);
-#endif
+//#endif
 
 	if (ret==OK) {
 		if (myModule.module>=getNModBoard()) {
@@ -2467,7 +2470,6 @@ int send_update(int file_des) {
 	retval=setExposureTime(tns);
 	n = sendDataOnly(file_des,&retval,sizeof(int64_t));
 	retval=setPeriod(tns);
-	 cprintf(RED,"updated frame period from %lld tns:%d\n", (long long int)retval, tns);
 	n = sendDataOnly(file_des,&retval,sizeof(int64_t));
 	retval=setDelay(tns);
 	n = sendDataOnly(file_des,&retval,sizeof(int64_t));

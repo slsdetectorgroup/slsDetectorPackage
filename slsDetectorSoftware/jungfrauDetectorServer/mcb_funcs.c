@@ -133,6 +133,8 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 /* #endif */
     destMod->serialnumber=srcMod->serialnumber;
   }
+
+  /*
   if ((srcMod->nchip)>(destMod->nchip)) {
     printf("Number of chip of source is larger than number of chips of destination\n");
     return FAIL;
@@ -141,6 +143,8 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
     printf("Number of channels of source is larger than number of channels of destination\n");
     return FAIL;
   }
+  */
+
   if ((srcMod->ndac)>(destMod->ndac)) {
     printf("Number of dacs of source is larger than number of dacs of destination\n");
     return FAIL;
@@ -153,8 +157,8 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 #ifdef VERBOSE
    printf("DACs: src %d, dest %d\n",srcMod->ndac,destMod->ndac);
   printf("ADCs: src %d, dest %d\n",srcMod->nadc,destMod->nadc);
-  printf("Chips: src %d, dest %d\n",srcMod->nchip,destMod->nchip);
-  printf("Chans: src %d, dest %d\n",srcMod->nchan,destMod->nchan);
+  //printf("Chips: src %d, dest %d\n",srcMod->nchip,destMod->nchip);
+  //printf("Chans: src %d, dest %d\n",srcMod->nchan,destMod->nchan);
 
 #endif
 
@@ -162,8 +166,8 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 
   destMod->ndac=srcMod->ndac;
   destMod->nadc=srcMod->nadc;
-  destMod->nchip=srcMod->nchip;
-  destMod->nchan=srcMod->nchan;
+ // destMod->nchip=srcMod->nchip;
+  //destMod->nchan=srcMod->nchan;
   if (srcMod->reg>=0)
     destMod->reg=srcMod->reg;
 #ifdef VERBOSE
@@ -1081,7 +1085,7 @@ int initMCBregisters(int cm, int imod){
 }
 
 int initModulebyNumber(sls_detector_module myMod) { 
-
+ printf("\nInitializing Module\n");
   int nchip,nchan;//int ichip, nchip, ichan, nchan;
   int im, modmi,modma;
  // int ft,  cae, ae, coe, ocoe, counts, chanreg;
@@ -1110,6 +1114,7 @@ int initModulebyNumber(sls_detector_module myMod) {
   }
 
   //printf("ndac:%d\n",NDAC);
+
   for (idac=0; idac<NDAC; idac++){
 	  retval = setDac(idac,(myMod.dacs)[idac]);
 	  if(retval ==(myMod.dacs)[idac])
@@ -1128,6 +1133,8 @@ int initModulebyNumber(sls_detector_module myMod) {
   }
   //setting the conf gain and the settings register
   setSettings(myMod.reg,imod);
+
+  printf("Done Initializing Module\n");
   return thisSettings;
 }
 

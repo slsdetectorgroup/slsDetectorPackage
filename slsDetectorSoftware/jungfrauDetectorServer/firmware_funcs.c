@@ -90,7 +90,7 @@ u_int32_t progressMask=0;
 int phase_shift=0;//DEFAULT_PHASE_SHIFT;
 int ipPacketSize=DEFAULT_IP_PACKETSIZE;
 int udpPacketSize=DEFAULT_UDP_PACKETSIZE;
-int clockdivider;
+int clockdivider = 20;
 /*
 #ifndef NEW_PLL_RECONFIG
 u_int32_t clkDivider[2]={32,16};
@@ -539,7 +539,6 @@ u_int32_t adcPipeline(int d) {
 	if (d>=0){
 		printf("Setting ADC Pipeline to 0x%x\n",d);
 		bus_w(ADC_PIPELINE_REG, d);
-		clockdivider = d;
 	}
 	return bus_r(ADC_PIPELINE_REG);
 
@@ -1504,12 +1503,12 @@ int configureInterface(uint32_t destip,uint64_t destmac,uint64_t  sourcemac,int 
 #endif
 
 	bus_w(CONTROL_REG,GB10_RESET_BIT);
-	sleep(1);
+	usleep(500 * 1000);
 	bus_w(CONTROL_REG,0);
-	usleep(10000);
+	usleep(10* 1000);
 	bus_w(CONFIG_REG,conf | GB10_NOT_CPU_BIT);
 	printf("System status register is %08x\n",bus_r(SYSTEM_STATUS_REG));
-
+	usleep(500 * 1000);
 	return 0; //any value doesnt matter - dhanya
 
 }
@@ -1550,7 +1549,7 @@ int configureMAC(uint32_t destip,uint64_t destmac,uint64_t  sourcemac,int source
 
 	bus_w(CONTROL_REG,GB10_RESET_BIT);
 	bus_w(CONTROL_REG,0);
-	usleep(10000);
+	usleep(10 * 1000);
 	bus_w(CONFIG_REG,conf | GB10_NOT_CPU_BIT);
 	printf("System status register is %08x\n",bus_r(SYSTEM_STATUS_REG));
 	return OK;

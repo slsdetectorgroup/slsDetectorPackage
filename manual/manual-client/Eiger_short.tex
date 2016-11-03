@@ -20,7 +20,7 @@ A EIGER single module (500~kpixels) needs:
 \begin{itemize}
 \item A chilled (water+alcohol) at approximately 21~$^{\circ}$C, which needs to dissipate 85~W.
 \item A power supply (12~V, 8~A).
-\item 2$\times$1~Gb/s ethernet connectors to control the detector and, optionally, receive data at low rate. A DHCP server that gives IPs to the 1~Gb/s connectors of the detector is needed. Note that flow control has to be enabled on the switch you are using.
+\item 2$\times$1~Gb/s Ethernet connectors to control the detector and, optionally, receive data at low rate. A DHCP server that gives IPs to the 1~Gb/s connectors of the detector is needed. Note that flow control has to be enabled on the switch you are using.
 \item 2$\times$10~Gb/s transceivers to optionally, receive data at high rate.
  \end{itemize}
 
@@ -34,7 +34,7 @@ Figure~\ref{fig:1} shows the relationship between the \textbf{Client} (which sit
 \label{fig:1}
 \end{figure}
 
-The Client talks to control over 1~Gb ethernet connection using TCP/IP to the detector and to the receiver. The detector sends data in UDP packets to the receiver. This data sending can be done over 1~Gb/s or 10~Gb/s. 
+The Client talks to control over 1~Gb Ethernet connection using TCP/IP to the detector and to the receiver. The detector sends data in UDP packets to the receiver. This data sending can be done over 1~Gb/s or 10~Gb/s. 
  
 
 \subsection{Mandatory setup - Receiver}
@@ -83,7 +83,7 @@ sls_detector_put 0-parameters setup.det
 In the case of \E, the proper bias voltage of the sensor has to be setup, i.e. the {\tt{setup.det}} file needs to contain the line {\tt{vhighvoltage 150}}. Other detector functionality, which are rarely changed can be setup here. 
 Other important settings that are configured in the {\tt{setup.det}} file are:
 \begin{itemize}
-\item {\tt{tengiga 0/1}}, which sets whether the detector is enabled to send data through the 1~or the 10~Gb ethernet.
+\item {\tt{tengiga 0/1}}, which sets whether the detector is enabled to send data through the 1~or the 10~Gb Ethernet.
 \item {\tt{flags parallel/nonparallel}}, which sets whether the detector is set in parallel acquisition and readout or in sequential mode. This changes the readout time of the chip and affects the frame rate capability (faster is {\tt{parallel}}, with higher noise but needed when the frame rate is $>2$~kHz. 
 \item {\tt{dr 32/16}} sets the detector in autosumming mode (32 bit counter or not autosumming, 12 bit out of the chip). This is strictly connected to what is required for the readout clock of chip. See next point.
 \item {\tt{clkdivider 0/1/2}}. Changes the readout clock: 200, 100, 50~MHz. Note that autosumming mode ({\tt{dr 32}} only works at {clkdivider 2}). By selecting Refer to readout timing specifications in~section\ref{timing} for how to set the detector. 
@@ -245,34 +245,36 @@ bcfMaker9M [file\_name\_with\_dir]
 contain the hardcoded geometry for the 1.5M (3 modules horizontal on the long side) and for the 9M at cSAXS: 6(short side)x3 (lomg side) modules.\\ 
 Missing packets in a frame and border pixels ($\times 2$ and $/times 4$ are given with value $-1$ at the present mode.
 
-It is important to know, that the pixels at the edge between 2 chips count more as double size. We can virtually introduced 1 virtual poixel per double larger pixel, so to have an even number of counts everywhere. Virtual pixels (not filled ) between module gaps are also inserted.
+It is important to know, that the pixels at the edge between 2 chips count more as double size. We can virtually introduced 1 virtual pixel per double larger pixel, so to have an even number of counts everywhere. Virtual pixels (not filled ) between module gaps are also inserted.
 
  \begin{verbatim}
    GapPixelsBetweenChips_x = 2;
    GapPixelsBetweenChips_y = 2;
    GapPixelsBetweenModules_x = 8;
    GapPixelsBetweenModules_y = 36;
-\end{verbatim}
+ \end{verbatim}
 
 \subsection{Read temperatures from boards}
 
-With an updated kernel on the linux boards (ask to the SLS detector roup for specifications), it is possible to monitor the temperature on the Back End Boards: 
+With an updated kernel on the linux boards (ask to the SLS detector group for specifications), it is possible to monitor the temperature on the Back End Boards: 
 \begin{verbatim}
-temp_fpga 	 #gets the temperature of the fpga
-temp_fpgaext 	 #gets the temperature close to the fpga
-temp_10ge 	 #gets the temperature close to the 10GE
-temp_dcdc 	 #gets the temperature close to the dc dc converter
-temp_sodl 	 #gets the temperature close to the left so-dimm memory
-temp_sodr 	 #gets the temperature close to the right so-dimm memory
-\end{verbatim}
-You need to use the command specifying from which board you desire the temperature readings, for example:
+temp_fpga   #gets the temperature of the fpga
+temp_fpgaext   #gets the temperature close to the fpga
+temp_10ge   #gets the temperature close to the 10GE
+temp_dcdc   #gets the temperature close to the dc dc converter
+temp_sodl   #gets the temperature close to the left so-dimm memory
+temp_sodr   #gets the temperature close to the right so-dimm memory
+temp_fpgafl   #gets the temperature of the left front end board fpga
+temp_fpgafr   #gets the temperature of the left front end board fpga
 
+\end{verbatim}
+
+You need to use the command specifying from which board you desire the temperature readings, for example:
 \begin{verbatim}
 ./sls_detector_get 0:temp_fpga
 ./sls_detector_get 1:temp_fpga
 \end{verbatim}
 
- 
 \section{Advanced functionalities}
 \subsection{Autosumming and rate corrections}
 
@@ -301,8 +303,6 @@ sls_detector_put 0-ratecorr -1
 
 Every time either the rate corrections are activated, $\tau$ is changed or the subframe length is changed, then a new correction table is evaluated. Note that computing the correction table is time consuming. 
 
-
-
 \subsection{Delays in sending for 1Gb/s, 10Gb/s, 10Gb flow control, receiver fifo}
 
 Extremely advanced options allow to:
@@ -311,34 +311,45 @@ Extremely advanced options allow to:
 \begin{verbatim}
 ./sls_detector_put flowcontrol_10g 1
 \end{verbatim}
-\item  Delay the transmission of the left port. This delay option is useful in the case of many simultaneuous receivers runnning, such taht reduced the threoughput to receivers all at the same time. To be used board by board with different units:
+\item  Delay the transmission of the left port. This delay option is useful in the case of many simultaneous receivers running, such that it reduces the throughput to the receivers all at the same time. To be used board by board (i.e {\tt{X:, Y:,etc..}} with different units:
 \begin{verbatim}
-./sls_detector_put 0:txndelay_left xxxx 
+./sls_detector_put X:txndelay_left xxxx 
 \end{verbatim}
 \item  Transmission delay of the right port, same as above. The value here should be different from the left port to spread the transmission even more 
 \begin{verbatim}
-./sls_detector_put 0:txndelay_right yyyy
+./sls_detector_put X:txndelay_right yyyy
 \end{verbatim}
 As example:
 \begin{verbatim}
-X=0; do ./sls_detector_put \$X:txndelay_left \$((X*100000));
+for X in \$(seq 0 4); do ./sls_detector_put \$X:txndelay_left \$((X*100000)); done
  \end{verbatim}
 \begin{verbatim}
 ./sls_detector_put \$X:txndelay_right \$((X*100000)); X=\$((X+1)); done
 \end{verbatim}
-%%X=0; for i in 96 97 70 61 90 112 119 55 116 107 54 104 125 124 84 86 100 103 76 78 56 101 106 127 59 58 91 92 29 40 122 113 105 121 111 120 ; do ./sls_detector_put $X:txndelay_left $((X*100000)); ./sls_detector_put $X:txndelay_right $((X*100000)); X=$((X+1)); done
 
-\item Set transmission delay of the entire frame (left and right)
+\item Set transmission delay of the entire frame. This is required as you want to finish sending the first frame to all receivers before starting sending the second frame to the receivers with shorter delay time.  This value has to be greater than the maximum of the transmission delays of each port.      
 \begin{verbatim}
-./sls_detector_put txndelay_frame xxxx
+./sls_detector_put txndelay_frame zzzz
 \end{verbatim}
+In the example before, it would be: $zzzz$=4*100000+ 100000
+
 \item Readjust the size of the fifo of the receiver between listening and writing (useful when writing is limited)
 \begin{verbatim}
 ./sls_detector_put rx_fifodepth xxxx
 \end{verbatim}
  {\tt{xxxx}} is 100 images by default.
-\end{itemize}
+\item Deactivate a half module (for ROI or debugging):
+\begin{verbatim}
+./sls_detector_put X:activated 0 
+\end{verbatim}
+where $X$ is the half module you want to deactivate.
+The receiver at this point will return fake data (overflow) for this module. If you wish to eliminate the receiver overall for this module, then you need to run a configuration file where this module has been removed.
+To activate back a module, do:
+\begin{verbatim}
+./sls_detector_put X:activated 1
+\end{verbatim}
 
+\end{itemize}
 
 \appendix
 
@@ -373,13 +384,39 @@ where {\tt{xxx}} is the board number. It is enough top monitor with {\tt{nc}} on
 From another terminal you do:
 \begin{verbatim}
 ./bcp feb_left.bit bebxxx:/febl
-sleep 300; #or till the screen over netcat has told you OK
+sleep 300; #or till the screen over netcat has told you Successuful
 ./bcp feb_right.bit bebxxx:/febr
-sleep 300; #or till the screen over netcat has told you OK
+sleep 300; #or till the screen over netcat has told you Successuful
 ./bcp download.bit bebxxx:/fw0
-sleep 300; #or till the screen over netcat has told you OK
+sleep 300; #or till the screen over netcat has told you Successuful
 \end{verbatim}
-do the same for the other boards. You can programm in parallel many boards, but ou cannot load two bitfiles on the same board till loading and copying one process has finished. So load all left febs together, then proceed to the left febs, then the bebs. Power off completely everything. Power it on.
+If you need to program a new kernel (only needed when told to do so):
+\begin{verbatim}
+ ./bcp kernel_local bebxxx:/kernel
+sleep 300; #or till the screen over netcat has told you Successuful
+\end{verbatim}
+
+do the same for the other boards. You can program in parallel many boards, but you cannot load two bitfiles on the same board till loading and copying one process has finished. So load all left febs together, then proceed to the left febs, then the bebs. Power off completely everything. Power it on.
+
+\section{Setting up 10Gb correctly: experience so far}
+
+For configuring well the 10Gb card not to loose packets, as root, do:
+\begin{verbatim}
+ ethtool -G xth1 rx 4096, ethtool -C xth1 rx-usecs 100 
+\end{verbatim}
+where {\tt{xth1}} can be replaced with the correct 10Gb device. To minimise loosing packets, priorities are set better as root user, so have the receiver as root.
+To try to bypass being root, we trued something like this:
+\begin{verbatim}
+/etc/security/limits.conf  username – rtprio 99
+\end{verbatim}
+but somehow it did  not fully worked  so we kept the trick of being root.
+
+Very important is to activate the flow control in 10Gb (in 1Gb it is on by default and not configurable)
+\begin{verbatim}
+./sls_detector_put flowcontrol_10g 1
+\end{verbatim}
+Set the transmission delays as explained in the manual.
+
 
 \end{document}
 

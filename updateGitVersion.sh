@@ -146,6 +146,7 @@ BRANCH=`eval $BRANCH1  $BRANCH2`
 REPUID=`eval $REPUID1`
 AUTH1=`eval $AUTH1_1  $AUTH1_2`
 AUTH2=`eval $AUTH2_1  $AUTH2_2`
+REV=`eval $REV1  $REV2`
 FOLDERREV=`eval $FOLDERREV1  $FOLDERREV2`
 RDATE=`eval $RDATE1`
 echo Path: ${MAINDIR}/${LIBDIR}/mythenDetectorServer  $'\n'URL: ${GITREPO}/mythenDetectorServer  $'\n'Repository Root: ${GITREPO}  $'\n'Repsitory UUID: ${REPUID}  $'\n'Revision: ${FOLDERREV}  $'\n'Branch: ${BRANCH}  $'\n'Last Changed Author: ${AUTH1}_${AUTH2}  $'\n'Last Changed Rev: ${REV}  $'\n'Last Changed Date: ${RDATE} > gitInfo.txt 
@@ -171,6 +172,7 @@ BRANCH=`eval $BRANCH1  $BRANCH2`
 REPUID=`eval $REPUID1`
 AUTH1=`eval $AUTH1_1  $AUTH1_2`
 AUTH2=`eval $AUTH2_1  $AUTH2_2`
+REV=`eval $REV1  $REV2`
 FOLDERREV=`eval $FOLDERREV1  $FOLDERREV2`
 RDATE=`eval $RDATE1`
 echo Path: ${MAINDIR}/${LIBDIR}/gotthardDetectorServer  $'\n'URL: ${GITREPO}/gotthardDetectorServer  $'\n'Repository Root: ${GITREPO}  $'\n'Repsitory UUID: ${REPUID}  $'\n'Revision: ${FOLDERREV}  $'\n'Branch: ${BRANCH}  $'\n'Last Changed Author: ${AUTH1}_${AUTH2}  $'\n'Last Changed Rev: ${REV}  $'\n'Last Changed Date: ${RDATE} > gitInfo.txt 
@@ -196,6 +198,7 @@ BRANCH=`eval $BRANCH1  $BRANCH2`
 REPUID=`eval $REPUID1`
 AUTH1=`eval $AUTH1_1  $AUTH1_2`
 AUTH2=`eval $AUTH2_1  $AUTH2_2`
+REV=`eval $REV1  $REV2`
 FOLDERREV=`eval $FOLDERREV1  $FOLDERREV2`
 RDATE=`eval $RDATE1`
 echo Path: ${MAINDIR}/${LIBDIR}/moenchDetectorServer  $'\n'URL: ${GITREPO}/moenchDetectorServer  $'\n'Repository Root: ${GITREPO}  $'\n'Repsitory UUID: ${REPUID}  $'\n'Revision: ${FOLDERREV}  $'\n'Branch: ${BRANCH}  $'\n'Last Changed Author: ${AUTH1}_${AUTH2}  $'\n'Last Changed Rev: ${REV}  $'\n'Last Changed Date: ${RDATE} > gitInfo.txt 
@@ -220,6 +223,7 @@ BRANCH=`eval $BRANCH1  $BRANCH2`
 REPUID=`eval $REPUID1`
 AUTH1=`eval $AUTH1_1  $AUTH1_2`
 AUTH2=`eval $AUTH2_1  $AUTH2_2`
+REV=`eval $REV1  $REV2`
 FOLDERREV=`eval $FOLDERREV1  $FOLDERREV2`
 RDATE=`eval $RDATE1`
 echo Path: ${MAINDIR}/${LIBDIR}/eigerDetectorServer  $'\n'URL: ${GITREPO}/eigerDetectorServer  $'\n'Repository Root: ${GITREPO}  $'\n'Repsitory UUID: ${REPUID}  $'\n'Revision: ${FOLDERREV}  $'\n'Branch: ${BRANCH}  $'\n'Last Changed Author: ${AUTH1}_${AUTH2}  $'\n'Last Changed Rev: ${REV}  $'\n'Last Changed Date: ${RDATE} > gitInfo.txt 
@@ -245,6 +249,7 @@ BRANCH=`eval $BRANCH1  $BRANCH2`
 REPUID=`eval $REPUID1`
 AUTH1=`eval $AUTH1_1  $AUTH1_2`
 AUTH2=`eval $AUTH2_1  $AUTH2_2`
+REV=`eval $REV1  $REV2`
 FOLDERREV=`eval $FOLDERREV1  $FOLDERREV2`
 RDATE=`eval $RDATE1`
 echo Path: ${MAINDIR}/${LIBDIR}/jungfrauDetectorServer  $'\n'URL: ${GITREPO}/jungfrauDetectorServer  $'\n'Repository Root: ${GITREPO}  $'\n'Repsitory UUID: ${REPUID}  $'\n'Revision: ${FOLDERREV}  $'\n'Branch: ${BRANCH}  $'\n'Last Changed Author: ${AUTH1}_${AUTH2}  $'\n'Last Changed Rev: ${REV}  $'\n'Last Changed Date: ${RDATE} > gitInfo.txt 

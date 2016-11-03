@@ -1574,7 +1574,7 @@ int UDPStandardImplementation::createNewFile(int ithread){
 		//Print packet loss and filenames
 		if(!totalWritingPacketCount[ithread]){
 			frameNumberInPreviousFile[ithread] = -1;
-			printf("Thread:%d File:%s\n",ithread,completeFileName[ithread]);
+			//printf("Thread:%d File:%s\n",ithread,completeFileName[ithread]);
 		}else{
 			if(frameNumberInPreviousFile[ithread] == -1)
 				frameNumberInPreviousFile[ithread] = startFrameIndex -1;
@@ -2881,10 +2881,11 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 	uint64_t tempframenumber;
 	tempframenumber = (*((uint32_t*)(wbuffer+HEADER_SIZE_NUM_TOT_PACKETS)));
 	tempframenumber -= startFrameIndex;
+	currentFrameNumber[ithread] = tempframenumber;
 	//cout<<"handling: frame number:"<<tempframenumber<<endl;
 
 	if (cbAction < DO_EVERYTHING)
-		rawDataReadyCallBack((int)tempframenumber, wbuffer, npackets * onePacketSize,
+		rawDataReadyCallBack((int)currentFrameNumber, wbuffer, npackets * onePacketSize,
 				sfilefd[ithread], latestData[ithread],pRawDataReady);//know which thread from sfilefd
 
 
@@ -2892,7 +2893,6 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 	if(npackets > 0){
 		if((fileWriteEnable) && (sfilefd[ithread])){
 			if(tempframenumber && (tempframenumber%maxFramesPerFile) == 0){
-				cout<<"going to create new file: frame number:"<<tempframenumber<<endl;
 				createNewFile(ithread);
 			}
 			fwrite(wbuffer + HEADER_SIZE_NUM_TOT_PACKETS, 1, oneDataSize*packetsPerFrame+fifoBufferHeaderSize-HEADER_SIZE_NUM_TOT_PACKETS, sfilefd[ithread]);
@@ -2901,7 +2901,6 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 		totalPacketsInFile[ithread] += npackets;
 		totalWritingPacketCount[ithread] += npackets;
 		lastFrameNumberInFile[ithread] = tempframenumber;
-		currentFrameNumber[ithread] = tempframenumber;
 
 		if(numberofWriterThreads > 1)
 			pthread_mutex_lock(&writeMutex);

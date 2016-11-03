@@ -835,7 +835,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 		maxFramesPerFile	= JFRAU_MAX_FRAMES_PER_FILE;
 		fifoDepth			= JFRAU_FIFO_SIZE;
 		fifoSize			= JFRAU_FIFO_SIZE;
-		fifoBufferHeaderSize= JFRAU_FILE_FRAME_HEADER_LENGTH;
+		fifoBufferHeaderSize= (HEADER_SIZE_NUM_TOT_PACKETS + JFRAU_FILE_FRAME_HEADER_LENGTH);
 		//footerOffset		= Not applicable;
 		break;
 	default:
@@ -1535,7 +1535,7 @@ int UDPStandardImplementation::setupWriter(){
 
 
 
-int UDPStandardImplementation::createNewFile(int ithread){cprintf(BLUE,"Creating new file\n");
+int UDPStandardImplementation::createNewFile(int ithread){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//create file name
@@ -2143,7 +2143,8 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 				if(currentpnum == pnum){
 					//cout<<"correct packet"<<endl;
 					if(pnum == packetsPerFrame-1){
-						(*((uint32_t*)(buffer[ithread]+8))) = ((*( (uint32_t*) header->frameNumber))&frameIndexMask);
+						(*((uint32_t*)(buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS))) = ((*( (uint32_t*) header->frameNumber))&frameIndexMask);
+						(*((uint64_t*)(buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS+JFRAU_FILE_HEADER_BUNCHID_OFFSET))) = (*( (uint64_t*) header->bunchid));
 						//cout<<"current fnum:"<<(*((uint32_t*)(buffer[ithread]+8)))<<endl;
 					}
 
@@ -2166,7 +2167,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 
 				//wrong packet
 				else{
-					cprintf(RED,"wrong packet %d, expected packet %d fnum of last good one:%d\n",currentpnum,pnum,(*((uint32_t*)(buffer[ithread]+8))));
+					//cprintf(RED,"wrong packet %d, expected packet %d fnum of last good one:%d\n",currentpnum,pnum,(*((uint32_t*)(buffer[ithread]+8))));
 
 					totalIgnoredPacketCount[ithread] += (packetsPerFrame - pnum -1); //extra 1 subtracted now to be added in the while loop anyway
 					pnum = packetsPerFrame-1;
@@ -2725,7 +2726,7 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 
 	//all threads need to close file, reset mask and exit loop
 	missingPacketinFile = (long long int)numberOfFrames*packetsPerFrame-totalWritingPacketCount[ithread];
-	if(fileWriteEnable && (cbAction > DO_NOTHING) && missingPacketinFile){
+	if(myDetectorType == EIGER && fileWriteEnable && (cbAction > DO_NOTHING) && missingPacketinFile){
 		updateFileHeader(ithread);
 		fseek(sfilefd[ithread],0,0);
 		fwrite((void*)fileHeader[ithread], 1, FILE_HEADER_SIZE, sfilefd[ithread]);
@@ -2894,7 +2895,7 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 				cout<<"going to create new file: frame number:"<<tempframenumber<<endl;
 				createNewFile(ithread);
 			}
-			fwrite(wbuffer, 1, oneDataSize*packetsPerFrame+fifoBufferHeaderSize, sfilefd[ithread]);
+			fwrite(wbuffer + HEADER_SIZE_NUM_TOT_PACKETS, 1, oneDataSize*packetsPerFrame+fifoBufferHeaderSize-HEADER_SIZE_NUM_TOT_PACKETS, sfilefd[ithread]);
 		}
 
 		totalPacketsInFile[ithread] += npackets;

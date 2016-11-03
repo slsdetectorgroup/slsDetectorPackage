@@ -636,6 +636,9 @@ private:
 	/** Total packet Count listened to by listening threads */
 	int totalListeningPacketCount[MAX_NUMBER_OF_LISTENING_THREADS];
 
+	/** Total packet Count ignored by listening threads */
+	int totalIgnoredPacketCount[MAX_NUMBER_OF_LISTENING_THREADS];
+
 	/** Pckets currently in current file, starts new file when it reaches max */
 	int64_t lastFrameNumberInFile[MAX_NUMBER_OF_WRITER_THREADS];
 

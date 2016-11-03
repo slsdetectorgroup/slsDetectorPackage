@@ -828,7 +828,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 		packetsPerFrame		= JFRAU_PACKETS_PER_FRAME;
 		onePacketSize 		= JFRAU_ONE_PACKET_SIZE;
 		oneDataSize 		= JFRAU_ONE_DATA_SIZE;
-		bufferSize 			= JFRAU_BUFFER_SIZE;
+		bufferSize 			= oneDataSize * packetsPerFrame;
 		frameIndexMask 		= JFRAU_FRAME_INDEX_MASK;
 		frameIndexOffset 	= JFRAU_FRAME_INDEX_OFFSET;
 		packetIndexMask 	= JFRAU_PACKET_INDEX_MASK;
@@ -2146,7 +2146,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 						//cout<<"current fnum:"<<(*((uint32_t*)(buffer[ithread]+8)))<<endl;
 					}
 
-					memcpy(buffer[ithread] + offset,buffer[ithread] + JFRAU_HEADER_LENGTH, oneDataSize);
+					memcpy(buffer[ithread] + offset,buffer[ithread] + offset + JFRAU_HEADER_LENGTH, oneDataSize);
 					offset+=oneDataSize;
 					//got a complete frame
 					if(pnum == 0)

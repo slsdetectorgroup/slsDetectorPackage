@@ -1,9 +1,9 @@
-Path: slsDetectorsPackage/slsDetectorSoftware/moenchDetectorServer 
-URL: origin git@gitorious.psi.ch:sls_det_software/sls_detector_software.git/moenchDetectorServer 
-Repository Root: origin git@gitorious.psi.ch:sls_det_software/sls_detector_software.git 
-Repsitory UUID: 046a469b1e6582c4c55bd6eaeb4818b618d0a9a9 
-Revision: 55 
-Branch: separate_receiver 
-Last Changed Author: Maliakal_Dhanya 
-Last Changed Rev: 14 
-Last Changed Date: 2014-06-03 12:26:45 +0200
+Path: slsDetectorsPackage/slsDetectorSoftware/jungfrauDetectorServer 
+URL: origin git@git.psi.ch:sls_detectors_software/sls_detector_software.git/jungfrauDetectorServer 
+Repository Root: origin git@git.psi.ch:sls_detectors_software/sls_detector_software.git 
+Repsitory UUID: 1f1b31ddf2516a8b2fe51c02dc3602b5fe24faa4 
+Revision: 43 
+Branch: developer 
+Last Changed Author: Dhanya_Maliakal 
+Last Changed Rev: 1283 
+Last Changed Date: 2016-11-03 12:32:59 +0100

@@ -1682,7 +1682,7 @@ void UDPStandardImplementation::startDataCallback(){
 	zmq_setsockopt(zmqsocket, ZMQ_LINGER, &val,sizeof(val)); // wait for the unsent packets  before closing socket
 	//val = 10;
 	//zmq_setsockopt(zmqsocket,ZMQ_SNDHWM,&val,sizeof(val)); //set SEND HIGH WATER MARK (8-9ms slower)
-	zmq_bind(zmqsocket,hostName);		// bind
+	cprintf(RED,"bind ret: %d\n",zmq_bind(zmqsocket,hostName));		// bind
 	FILE_LOG(logINFO) << "Thread" << ithread << ": ZMQ Server at " << hostName;
 
 

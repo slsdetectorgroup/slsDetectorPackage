@@ -2782,9 +2782,10 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 				cprintf(RED, "Packets Caught \t\t: %lld\n",(long long int)totalWritingPacketCount[i]);
 				cprintf(RED, "Frames Caught  \t\t: %lld\n",(long long int)(totalWritingPacketCount[i]/packetsPerFrame));
 				int64_t lastFrameNumber = 0;
-				lastFrameNumber = lastFrameNumberInFile[i] - startFrameIndex;//lastFrameNumberInFile updated even if not written
+				lastFrameNumber = lastFrameNumberInFile[i];//lastFrameNumberInFile updated even if not written
 				if(myDetectorType == EIGER)
-					lastFrameNumber+= 1;
+					lastFrameNumber= lastFrameNumberInFile[i] - startFrameIndex + 1;
+
 				cprintf(RED, "Last Frame Number Caught :%lld\n",(long long int)lastFrameNumber);
 			}else{
 				cprintf(GREEN, "\nPort %d\n",udpPortNum[i]);
@@ -2796,9 +2797,9 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 				cprintf(GREEN, "Packets Caught \t\t: %lld\n",(long long int)totalWritingPacketCount[i]);
 				cprintf(GREEN, "Frames Caught  \t\t: %lld\n",(long long int)(totalWritingPacketCount[i]/packetsPerFrame));
 				int64_t lastFrameNumber = 0;
-				lastFrameNumber = lastFrameNumberInFile[i] - startFrameIndex;//lastFrameNumberInFile updated even if not written
+				lastFrameNumber = lastFrameNumberInFile[i];//lastFrameNumberInFile updated even if not written
 				if(myDetectorType == EIGER)
-					lastFrameNumber+= 1;
+					lastFrameNumber= lastFrameNumberInFile[i] - startFrameIndex + 1;
 				cprintf(GREEN, "Last Frame Number Caught: %lld\n",(long long int)lastFrameNumber);
 			}
 

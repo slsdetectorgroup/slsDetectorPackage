@@ -1806,7 +1806,7 @@ void UDPStandardImplementation::startDataCallback(){
 				subframeIndex = -1;
 				int len = sprintf(buf,jsonFmt,type,shape, acquisitionIndex, frameIndex, subframeIndex,completeFileName[ithread]);
 				cout<<"buf:"<<buf<<endl;
-				zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);
+				cout<<"zmqsend return val:"<<zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE)<<endl;
 				cout<<"sent header"<<endl;
 				//send data
 				zmq_send(zmqsocket, latestData[ithread]+JFRAU_FILE_FRAME_HEADER_LENGTH, oneframesize, 0);

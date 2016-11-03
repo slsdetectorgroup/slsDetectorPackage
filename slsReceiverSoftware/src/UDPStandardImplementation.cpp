@@ -2004,7 +2004,7 @@ void UDPStandardImplementation::startListening(){
 
 			rc = prepareAndListenBuffer(ithread, carryonBufferSize, tempBuffer);
 			carryonBufferSize = 0;
-
+			cout<<"measurement started:"<<measurementStarted<<" rc:"<<rc<<endl;
 			//start indices for each start of scan/acquisition
 			if((!measurementStarted) && (rc > 0))
 				startFrameIndices(ithread);
@@ -2236,7 +2236,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 
 
 
-void UDPStandardImplementation::startFrameIndices(int ithread){
+void UDPStandardImplementation::startFrameIndices(int ithread){cprintf(RED,"at startframeindeices\n");
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//determine startFrameIndex

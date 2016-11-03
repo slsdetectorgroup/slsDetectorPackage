@@ -441,7 +441,20 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
   i++;
 
+
+  /* fpga */
+
   descrToFuncMap[i].m_pFuncName="programfpga";
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="resetfpga";
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
+  i++;
+
+
+  /* chip */
+  descrToFuncMap[i].m_pFuncName="powerchip";
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
   i++;
 
@@ -4352,25 +4365,52 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action) {
 
 		return myDet->externalSignalType(myDet->setExternalSignalFlags(flag,is));
 
-	}  else if (cmd=="programfpga") {
+	}
+
+
+	else if (cmd=="programfpga") {
 		if (action==GET_ACTION)
 			return string("cannot get");
-
-		if (narg<2)
-			return string("wrong usage: should specify programming file");
 		if(strstr(args[1],".pof")==NULL)
-			return string("wrong usage: should specify programming file with .pof extension");
-
+			return string("wrong usage: programming file should have .pof extension");
 		string sval=string(args[1]);
 #ifdef VERBOSE
 		std::cout<< " programming file " << sval << std::endl;
 #endif
+		myDet->setOnline(ONLINE_FLAG);
 		if(myDet->programFPGA(sval) == OK)
-			return string("programming successful");
-		return string("programming unsuccessful");
+			return string("successful");
+		return string("unsuccessful");
+	}
+
+
+	else if (cmd=="resetfpga") {
+		if (action==GET_ACTION)
+			return string("cannot get");
+#ifdef VERBOSE
+		std::cout<< " resetting fpga " << sval << std::endl;
+#endif
+		myDet->setOnline(ONLINE_FLAG);
+		if(myDet->resetFPGA() == OK)
+			return string("successful");
+		return string("unsuccessful");
+	}
+
+
+	  else if (cmd=="powerchip") {
+		  char ans[100];
+		  myDet->setOnline(ONLINE_FLAG);
+		  if (action==PUT_ACTION){
+			  int ival = -1;
+			  if (!sscanf(args[1],"%d",&ival))
+				  return string("could not scan powerchip parameter " + string(args[1]));
+			  myDet->powerChip(ival);
+		  }
+		  sprintf(ans,"%d",myDet->powerChip());
+		  return string(ans);
 	}
 	else
-		return string("could not decode flag ")+cmd;
+		return string("unknown command ")+cmd;
 
 }
 
@@ -4382,8 +4422,8 @@ string slsDetectorCommand::helpAdvanced(int narg, char *args[], int action) {
 
     os << "extsig:i mode \t sets the mode of the external signal i. can be  \n \t \t \t off, \n \t \t \t gate_in_active_high, \n \t \t \t gate_in_active_low, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t ro_trigger_in_rising_edge, \n \t \t \t ro_trigger_in_falling_edge, \n \t \t \t gate_out_active_high, \n \t \t \t gate_out_active_low, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge, \n \t \t \t ro_trigger_out_rising_edge, \n \t \t \t ro_trigger_out_falling_edge" << std::endl;
     os << "flags mode \t sets the readout flags to mode. can be none, storeinram, tot, continous, parallel, nonparallel, safe, unknown" << std::endl;
-    os << "programfpga f \t programs the fpga with file f with .pof" << std::endl;
-    
+    os << "programfpga f \t programs the fpga with file f (with .pof extension)." << std::endl;
+    os << "resetfpga f \t resets fpga, f can be any value" << std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
 

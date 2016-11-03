@@ -97,4 +97,6 @@ int set_ctb_pattern(int);
 int write_adc_register(int);;
 
 int program_fpga(int);
+int reset_fpga(int);
+int power_chip(int);
 #endif

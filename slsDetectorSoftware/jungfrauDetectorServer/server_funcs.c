@@ -55,147 +55,25 @@ int adcvpp=0x4;
 
 
 int init_detector(int b) {
-
 	if(b){
 		defineGPIOpins();
 		resetFPGA();
 		usleep(250*1000);
 	}
 
-	int i;
 	if (mapCSP0()==FAIL) {
 		printf("Could not map memory\n");
 		exit(1);
 	}
 
-	//------control server -------
-	if (b) {
-		//printf("Bus test... ");
-		for (i=0; i<1000000; i++) {
-			bus_w(SET_DELAY_LSB_REG, i*100);
-			bus_r(FPGA_VERSION_REG);
-			if (i*100!=bus_r(SET_DELAY_LSB_REG))
-				cprintf(RED,"Bus Test ERROR: wrote 0x%x, read 0x%x\n",i*100,bus_r(SET_DELAY_LSB_REG));
-		}
-		//printf("Finished\n");
-
-		//confirm the detector type
-		if (((bus_r(PCB_REV_REG) & DETECTOR_TYPE_MASK)>>DETECTOR_TYPE_OFFSET) != JUNGFRAU_MODULE_ID){
-			cprintf(BG_RED,"This is not a Jungfrau Server (enum:%d)\n",myDetectorType);
-			exit(-1);
-		}
-		cprintf(BLUE,"\n\n********************************************************\n"
-				"*********************Jungfrau Server********************\n"
-				"********************************************************\n");
-
-		//print version
-		cprintf(BLUE,"\n"
-				"Firmware Version:\t 0x%x\n"
-				"Software Version:\t %llx\n"
-				//"F/w-S/w API Version:\t\t %lld\n"
-				//"Required Firmware Version:\t %d\n"
-				"Fixed Pattern:\t\t 0x%x\n"
-				"Board Revision:\t\t 0x%x\n"
-				"\n********************************************************\n",
-				bus_r(FPGA_VERSION_REG),(long long unsigned int)(((int64_t)SVNREV <<32) | (int64_t)SVNDATE)
-				//,sw_fw_apiversion,	REQUIRED_FIRMWARE_VERSION
-				,bus_r(FIX_PATT_REG),(bus_r(PCB_REV_REG)&BOARD_REVISION_MASK)
-		);
-
-
-		printf("Resetting PLL\n");
-		resetPLL();
-		bus_w16(CONTROL_REG, SYNC_RESET);
-		bus_w16(CONTROL_REG, 0);
-		bus_w16(CONTROL_REG, GB10_RESET_BIT);
-		bus_w16(CONTROL_REG, 0);
-
-#ifdef MCB_FUNCS
-		initDetector();
-#endif
-		printf("Initializing Detector\n");
-		/*some registers set, which is in common with jungfrau, please check */
-		prepareADC();
-		/*some registers set, which is in common with jungfrau, please check */
-		initDac(0);    initDac(8); //initializes the two dacs
-
-
-		//set dacs
-		printf("Setting Default Dac values\n");
-		enum dacNames{VB_COMP,VDD_PROT,VIN_COM,VREF_PRECH,VB_PIXBUF,VB_DS,VREF_DS,VREF_COMP};
-		int retval = -1;
-		int dacvalues[8][2]={
-				{VB_COMP,	1220},
-				{VDD_PROT, 	3000},
-				{VIN_COM, 	1053},
-				{VREF_PRECH,1450},
-				{VB_PIXBUF, 750},
-				{VB_DS,		1000},
-				{VREF_DS,	480},
-				{VREF_COMP, 420},
-		};
-		for(i=0;i<8;++i){
-			retval=setDac(dacvalues[i][0], dacvalues[i][1]);
-			if(retval!=dacvalues[i][1])
-				printf("Error: Setting dac %d failed, wrote %d, read %d\n",dacvalues[i][0],dacvalues[i][1],retval);
-		}
-
-
-		printf("\nPowering on the chip\n");
-		bus_w(POWER_ON_REG,0x1);
-
-		/* Only once */
-		bus_w(CONFGAIN_REG,0x0);
-
-		printf("Resetting ADC\n");
-		writeADC(ADCREG1,0x3); writeADC(ADCREG1,0x0);
-		writeADC(ADCREG2,0x40);
-		writeADC(ADCREG3,0xf);
-		writeADC(ADCREG4,0x3f);
-		printf("Configuring Vrefs\n");
-		writeADC(ADCREG_VREFS,0x2);
-		printf("Setting ADC Inversion\n");// (by trial and error)
-		bus_w(ADC_INVERSION_REG,0x453b2a9c);
-
-		adcPipeline(HALFSPEED_ADC_PIPELINE);
-		dbitPipeline(HALFSPEED_DBIT_PIPELINE);
-		adcPhase(HALFSPEED_ADC_PHASE); //set adc_clock_phase in unit of 1/(52) clock period (by trial and error)
-
-		printf("Reset mem machine fifos\n");
-		bus_w(MEM_MACHINE_FIFOS_REG,0x4000);
-		bus_w(MEM_MACHINE_FIFOS_REG,0x0);
-		printf("Reset run control\n");
-		bus_w(MEM_MACHINE_FIFOS_REG,0x0400);
-		bus_w(MEM_MACHINE_FIFOS_REG,0x0);
-		initSpeedConfGain(HALFSPEED_CONF);
-		setSettings(DYNAMICGAIN,-1);
-
-
-
-		//Initialization of acquistion parameters
-		setFrames(1*1000*1000);
-		setTrains(-1);
-		setExposureTime(10*1000);
-		setPeriod(2*1000*1000);
-		setDelay(0);
-		setGates(0);
-
-
-		setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
-		setMaster(GET_MASTER);
-		setSynchronization(GET_SYNCHRONIZATION_MODE);
-	}
-	//------ end of control server ------
-
+	if (b)
+		initializeDetector();
 
 	//common for both control and stop server
 	strcpy(mess,"dummy message");
 	strcpy(lastClientIP,"none");
 	strcpy(thisClientIP,"none1");
 	lockStatus=0;
-
-
-
 	return OK;
 }
 
@@ -287,6 +165,9 @@ int function_table() {
 	flist[F_SET_CTB_PATTERN]=&set_ctb_pattern;
 	flist[F_WRITE_ADC_REG]=&write_adc_register;
 	flist[F_PROGRAM_FPGA]=&program_fpga;
+	flist[F_RESET_FPGA]=&reset_fpga;
+	flist[F_POWER_CHIP]=&power_chip;
+
 	return OK;
 }
 
@@ -3154,15 +3035,13 @@ int write_adc_register(int file_des) {
 int program_fpga(int file_des) {
 	int ret=OK;
 	int n;
-	const size_t maxprogramsize = 2 * 1024 *1024;
-	size_t unitprogramsize = 0;
-	char* fpgasrc = (char*)malloc(maxprogramsize);
+	sprintf(mess,"Program FPGA unsuccessful\n");
+	char* fpgasrc = NULL;
+	FILE* fp = NULL;
 	size_t filesize = 0;
+	size_t unitprogramsize = 0;
 	size_t totalsize = 0;
 
-	FILE* fp = NULL;
-
-	sprintf(mess,"Program FPGA\n");
 
 	//filesize
 	n = receiveDataOnly(file_des,&filesize,sizeof(filesize));
@@ -3175,33 +3054,48 @@ int program_fpga(int file_des) {
 	printf("\n\n Total size is:%d\n",totalsize);
 #endif
 
+	//lock
+	if (ret==OK && differentClients==1 && lockStatus==1) {
+		ret=FAIL;
+		sprintf(mess,"Detector locked by %s\n",lastClientIP);
+		filesize = 0;
+	}
+
 	//opening file pointer to flash and telling FPGA to not touch flash
-	if(startWritingFPGAprogram(&fp) != OK){
+	if(ret == OK && startWritingFPGAprogram(&fp) != OK){
 		sprintf(mess,"Could not write to flash. Error at startup.\n");
 		cprintf(RED,"%s",mess);
 		ret=FAIL;
 		filesize = 0;
 	}
+
+	//---------------- first ret ----------------
 	n = sendDataOnly(file_des,&ret,sizeof(ret));
 	if (ret==FAIL)
 		n += sendDataOnly(file_des,mess,sizeof(mess));
+	//---------------- first ret ----------------
 
 
 	//erasing flash
-	if(ret != FAIL)
+	if(ret != FAIL){
 		eraseFlash();
+		fpgasrc = (char*)malloc(MAX_FPGAPROGRAMSIZE);
+	}
+
 
 
 	//writing to flash part by part
-	while(filesize){
+	while(ret != FAIL && filesize){
 
-		unitprogramsize = maxprogramsize;  //2mb
+		unitprogramsize = MAX_FPGAPROGRAMSIZE;  //2mb
 		if(unitprogramsize > filesize) //less than 2mb
 			unitprogramsize = filesize;
 #ifdef VERY_VERBOSE
 		printf("unit size to receive is:%d\n",unitprogramsize);
 		printf("filesize:%d currentpointer:%d\n",filesize,currentPointer);
 #endif
+
+
 		//receive
 		n = receiveDataOnly(file_des,fpgasrc,unitprogramsize);
 		if (n < 0) {
@@ -3210,42 +3104,37 @@ int program_fpga(int file_des) {
 		}
 
 
-		if(!(unitprogramsize - filesize)){
-			fpgasrc[unitprogramsize]='\0';
-			filesize-=unitprogramsize;
-			unitprogramsize++;
-		}else
-			filesize-=unitprogramsize;
-
-
 		if (ret==OK) {
-			if (differentClients==1 && lockStatus==1) {
-				ret=FAIL;
-				sprintf(mess,"Detector locked by %s\n",lastClientIP);
-			} else{
-				ret = writeFPGAProgram(fpgasrc,unitprogramsize,fp);
-			}
+			if(!(unitprogramsize - filesize)){
+				fpgasrc[unitprogramsize]='\0';
+				filesize-=unitprogramsize;
+				unitprogramsize++;
+			}else
+				filesize-=unitprogramsize;
+
+			ret = writeFPGAProgram(fpgasrc,unitprogramsize,fp);
 		}
 
-		if(ret!=FAIL){
-			if (differentClients)
-				ret=FORCE_UPDATE;
-		}
 
-		/* send answer */
-		/* send OK/failed */
+		//---------------- middle rets ----------------
 		n = sendDataOnly(file_des,&ret,sizeof(ret));
 		if (ret==FAIL) {
 			n += sendDataOnly(file_des,mess,sizeof(mess));
 			cprintf(RED,"Failure: Breaking out of program receiving\n");
-			break;
+		}
+		//---------------- middle rets ----------------
+
+
+		if(ret != FAIL){
+			//print progress
+			printf("Writing to Flash:%d%%\r",(int) (((double)(totalsize-filesize)/totalsize)*100) );
+			fflush(stdout);
 		}
 
-		//print progress
-		printf("Writing to Flash:%d%%\r",(int) (((double)(totalsize-filesize)/totalsize)*100) );
-		fflush(stdout);
-
 	}
+
+
+
 	printf("\n");
 
 	//closing file pointer to flash and informing FPGA
@@ -3255,18 +3144,96 @@ int program_fpga(int file_des) {
 		ret=FAIL;
 	}
 
+	if(ret!=FAIL){
+		ret=FORCE_UPDATE;
+	}
+
+
+	//---------------- last ret ----------------
 	n = sendDataOnly(file_des,&ret,sizeof(ret));
 	if (ret==FAIL)
 		n += sendDataOnly(file_des,mess,sizeof(mess));
+	//---------------- last ret ----------------
 
 
 	//free resources
-	free(fpgasrc);
+	if(fpgasrc != NULL)
+		free(fpgasrc);
 	if(fp!=NULL)
 		fclose(fp);
 #ifdef VERY_VERBOSE
 	printf("Done with program receiving command\n");
 #endif
 	/*return ok/fail*/
+	return ret;
+}
+
+
+
+int reset_fpga(int file_des) {
+	int ret=OK;
+	int n;
+	sprintf(mess,"Reset FPGA unsuccessful\n");
+
+	resetFPGA();
+	usleep(250*1000);
+	initializeDetector();
+
+	ret = FORCE_UPDATE;
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret==FAIL)
+		n += sendDataOnly(file_des,mess,sizeof(mess));
+
+	/*return ok/fail*/
+	return ret;
+}
+
+
+
+int power_chip(int file_des) {
+
+	int retval=-1;
+	int ret=OK;
+	int arg=-1;
+	int n;
+
+	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+
+
+#ifdef VERBOSE
+	printf("Power chip to %d\n", arg);
+#endif
+
+	if (differentClients==1 && lockStatus==1 && arg!=-1) {
+		ret=FAIL;
+		sprintf(mess,"Detector locked by %s\n",lastClientIP);
+	} else {
+		retval=powerChip(arg);
+#ifdef VERBOSE
+		printf("Chip powered: %d\n",retval);
+#endif
+
+		if (retval==arg || arg<0) {
+			ret=OK;
+		} else {
+			ret=FAIL;
+			printf("Powering chip failed, wrote %d but read %d\n", arg, retval);
+		}
+
+	}
+	if (ret==OK && differentClients==1)
+		ret=FORCE_UPDATE;
+
+	/* send answer */
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret==FAIL) {
+		n += sendDataOnly(file_des,mess,sizeof(mess));
+	} else
+		n += sendDataOnly(file_des,&retval,sizeof(retval));
+
 	return ret;
 }

@@ -5499,7 +5499,7 @@ char* slsDetector::setDetectorMAC(string detectorMAC){
        (detectorMAC[11]==':')&&(detectorMAC[14]==':')){
       strcpy(thisDetector->detectorMAC,detectorMAC.c_str());
       if(!strcmp(thisDetector->receiver_hostname,"none"))
-    	  std::cout << "Warning: UDP Set up failed. Receiver hostname not set." << endl;
+    	  std::cout << "Warning: Receiver hostname not set yet." << endl;
       else if(setUDPConnection()==FAIL)
 	    std::cout<< "Warning: UDP connection set up failed" << std::endl;
     }else{
@@ -5526,7 +5526,7 @@ char* slsDetector::setDetectorIP(string detectorIP){
 			if(result!=0){
 				strcpy(thisDetector->detectorIP,detectorIP.c_str());
 				if(!strcmp(thisDetector->receiver_hostname,"none"))
-					std::cout << "Warning: UDP Set up failed. Receiver hostname not set." << endl;
+					std::cout << "Warning: Receiver hostname not set yet." << endl;
 				else if(setUDPConnection()==FAIL)
 					std::cout<< "Warning: UDP connection set up failed" << std::endl;
 			}else{
@@ -5618,7 +5618,7 @@ char* slsDetector::setReceiverUDPIP(string udpip){
 			}else{
 				strcpy(thisDetector->receiverUDPIP,udpip.c_str());
 				if(!strcmp(thisDetector->receiver_hostname,"none"))
-					std::cout << "Warning: UDP Set up failed. Receiver hostname not set." << endl;
+					std::cout << "Warning: Receiver hostname not set yet." << endl;
 				else if(setUDPConnection()==FAIL){
 					std::cout<< "Warning: UDP connection set up failed" << std::endl;
 				}
@@ -5641,7 +5641,7 @@ char* slsDetector::setReceiverUDPMAC(string udpmac){
        (udpmac[11]==':')&&(udpmac[14]==':')){
       strcpy(thisDetector->receiverUDPMAC,udpmac.c_str());
       if(!strcmp(thisDetector->receiver_hostname,"none"))
-    	  std::cout << "Warning: UDP Set up failed. Receiver hostname not set." << endl;
+    	  std::cout << "Warning: Receiver hostname not set yet." << endl;
       else  if(setUDPConnection()==FAIL){
     	  std::cout<< "Warning: UDP connection set up failed" << std::endl;
       }
@@ -5660,7 +5660,7 @@ char* slsDetector::setReceiverUDPMAC(string udpmac){
 int slsDetector::setReceiverUDPPort(int udpport){
 	thisDetector->receiverUDPPort = udpport;
 	if(!strcmp(thisDetector->receiver_hostname,"none"))
-		std::cout << "Warning: UDP Set up failed. Receiver hostname not set." << endl;
+		std::cout << "Warning: Receiver hostname not set yet." << endl;
 	else if(setUDPConnection()==FAIL){
 		std::cout<< "Warning: UDP connection set up failed" << std::endl;
     }
@@ -5670,7 +5670,7 @@ int slsDetector::setReceiverUDPPort(int udpport){
 int slsDetector::setReceiverUDPPort2(int udpport){
 	thisDetector->receiverUDPPort2 = udpport;
 	if(!strcmp(thisDetector->receiver_hostname,"none"))
-		std::cout << "Warning: UDP Set up failed. Receiver hostname not set." << endl;
+		std::cout << "Warning:  Receiver hostname not set yet." << endl;
 	else if(setUDPConnection()==FAIL){
       std::cout<< "Warning: UDP connection set up failed" << std::endl;
     }
@@ -5724,7 +5724,7 @@ int slsDetector::setUDPConnection(){
 
 	//called before set up
 	if(!strcmp(thisDetector->receiver_hostname,"none")){
-		std::cout << "Warning: UDP Set up failed. Receiver hostname not set." << endl;
+		std::cout << "Warning: Receiver hostname not set yet." << endl;
 		return FAIL;
 	}
 
@@ -6430,11 +6430,17 @@ int slsDetector::writeSettingsFile(string fname, int imod, int* iodelay){
 
 int slsDetector::programFPGA(string fname){
 	int ret=FAIL;
+	int fnum=F_PROGRAM_FPGA;
+	char mess[MAX_STR_LENGTH]="";
+	int64_t retval = -1;
+	size_t filesize=0;
+	char* fpgasrc = NULL;
 
 	if(thisDetector->myDetectorType != JUNGFRAU){
 		std::cout << "Not implemented for this detector" << std::endl;
 		return FAIL;
 	}
+
 
 	//check if it exists
 	struct stat st;
@@ -6443,7 +6449,6 @@ int slsDetector::programFPGA(string fname){
 		setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
 		return FAIL;
 	}
-
 	//create destination file name,replaces original filename with Jungfrau.rawbin
 	string destfname;
 	size_t found = fname.find_last_of("/\\");
@@ -6452,8 +6457,6 @@ int slsDetector::programFPGA(string fname){
 	else
 		destfname = fname.substr(0,found+1);
 	destfname.append("Jungfrau_MCB.rawbin");
-
-
 #ifdef VERBOSE
 	std::cout << "Converting " << fname << " to " <<  destfname << std::endl;
 #endif
@@ -6470,11 +6473,9 @@ int slsDetector::programFPGA(string fname){
 	for (filepos=0x80; filepos < 0x1000000; filepos++)	{
 		x = fgetc(src);
 		if (x < 0) break;
-
 		y=0;
 		for (i=0; i < 8; i++)
 			y=y| (   (( x & (1<<i) ) >> i)    << (7-i)     );	// This swaps the bits
-
 		fputc(y,dst);
 	}
 	if (filepos < 0x1000000){
@@ -6485,7 +6486,6 @@ int slsDetector::programFPGA(string fname){
 #ifdef VERBOSE
 	std::cout << "File has been converted to "  <<  destfname << std::endl;
 #endif
-
 	//loading file to memory
 	FILE* fp = fopen(destfname.c_str(),"r");
 	if(fp == NULL){
@@ -6498,14 +6498,14 @@ int slsDetector::programFPGA(string fname){
 		setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
 		return FAIL;
 	}
-	size_t filesize = ftell(fp);
-	if(filesize == -1){
+	filesize = ftell(fp);
+	if(filesize <= 0){
 		std::cout << "Could not get length of rawbin file" << std::endl;
 		setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
 		return FAIL;
 	}
 	rewind(fp);
-	char* fpgasrc = (char*)malloc(filesize+1);
+	fpgasrc = (char*)malloc(filesize+1);
 	if(fpgasrc == NULL){
 		std::cout << "Could not allocate size of program" << std::endl;
 		setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
@@ -6526,14 +6526,8 @@ int slsDetector::programFPGA(string fname){
 	std::cout << "Successfully loaded the rawbin file to program memory" << std::endl;
 #endif
 
-	const size_t maxprogramsize = 2 * 1024 *1024;
-	size_t unitprogramsize = 0;
-	int currentPointer = 0;
-	size_t totalsize = filesize;
 
-	int fnum=F_PROGRAM_FPGA;
-	char mess[MAX_STR_LENGTH]="";
-	int64_t retval = -1;
+
 #ifdef VERBOSE
 	std::cout<< "Sending programming binary to detector " << endl;
 #endif
@@ -6541,7 +6535,6 @@ int slsDetector::programFPGA(string fname){
 		if (connectControl() == OK){
 			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 			controlSocket->SendDataOnly(&filesize,sizeof(filesize));
-
 			//check opening error
 			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
 			if (ret==FAIL) {
@@ -6551,6 +6544,8 @@ int slsDetector::programFPGA(string fname){
 				filesize = 0;
 			}
 
+
+			//erasing flash
 			if(ret!=FAIL){
 				std::cout<< "This can take awhile. Please be patient..." << endl;
 				printf("Erasing Flash:%d%%\r",0);
@@ -6568,10 +6563,14 @@ int slsDetector::programFPGA(string fname){
 				std::cout << flush;
 			}
 
-			//sending program in parts of 2mb each
-			while(filesize > 0){
 
-				unitprogramsize = maxprogramsize;  //2mb
+			//sending program in parts of 2mb each
+			size_t unitprogramsize = 0;
+			int currentPointer = 0;
+			size_t totalsize= filesize;
+			while(ret != FAIL && (filesize > 0)){
+
+				unitprogramsize = MAX_FPGAPROGRAMSIZE;  //2mb
 				if(unitprogramsize > filesize) //less than 2mb
 					unitprogramsize = filesize;
 #ifdef VERBOSE
@@ -6579,20 +6578,18 @@ int slsDetector::programFPGA(string fname){
 #endif
 				controlSocket->SendDataOnly(fpgasrc+currentPointer,unitprogramsize);
 				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-				if (ret==FAIL) {
+				if (ret!=FAIL) {
+					filesize-=unitprogramsize;
+					currentPointer+=unitprogramsize;
+
+					//print progress
+					printf("Writing to Flash:%d%%\r",(int) (((double)(totalsize-filesize)/totalsize)*100));
+					std::cout << flush;
+				}else{
 					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 					std::cout<< "Detector returned error: " << mess << std::endl;
 					setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
-					//stops writing
-					break;
 				}
-				filesize-=unitprogramsize;
-				currentPointer+=unitprogramsize;
-
-				//print progress
-				printf("Writing to Flash:%d%%\r",(int) (((double)(totalsize-filesize)/totalsize)*100));
-				std::cout << flush;
-
 			}
 			std::cout<<std::endl;
 
@@ -6603,8 +6600,6 @@ int slsDetector::programFPGA(string fname){
 				std::cout<< "Detector returned error: " << mess << std::endl;
 				setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
 			}
-
-
 			disconnectControl();
 			if (ret==FORCE_UPDATE)
 				updateDetector();
@@ -6612,13 +6607,81 @@ int slsDetector::programFPGA(string fname){
 	}
 
 	//free resources
-	free(fpgasrc);
+	if(fpgasrc != NULL)
+		free(fpgasrc);
 
 	return ret;
 }
 
 
+int slsDetector::resetFPGA(){
+	int ret=FAIL;
+	int fnum=F_RESET_FPGA;
+	char mess[MAX_STR_LENGTH]="";
 
+	if(thisDetector->myDetectorType != JUNGFRAU){
+		std::cout << "Not implemented for this detector" << std::endl;
+		return FAIL;
+	}
+#ifdef VERBOSE
+	std::cout<< "Sending reset to FPGA " << endl;
+#endif
+	if (setOnline(ONLINE_FLAG)==ONLINE_FLAG) {
+		if (connectControl() == OK){
+			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+
+			//check opening error
+			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			if (ret==FAIL) {
+				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+				std::cout<< "Detector returned error: " << mess << std::endl;
+				setErrorMask((getErrorMask())|(RESET_ERROR));
+			}
+
+			disconnectControl();
+			if (ret==FORCE_UPDATE)
+				updateDetector();
+		}
+	}
+	return ret;
+
+}
+
+
+
+int slsDetector::powerChip(int ival){
+	int ret=FAIL;
+	int fnum=F_POWER_CHIP;
+	char mess[MAX_STR_LENGTH]="";
+	int retval=-1;
+
+	if(thisDetector->myDetectorType != JUNGFRAU){
+		std::cout << "Not implemented for this detector" << std::endl;
+		return FAIL;
+	}
+#ifdef VERBOSE
+	std::cout<< "Sending power on/off/get to the chip " << endl;
+#endif
+	if (setOnline(ONLINE_FLAG)==ONLINE_FLAG) {
+		if (connectControl() == OK){
+			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+			controlSocket->SendDataOnly(&ival,sizeof(ival));
+			//check opening error
+			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			if (ret==FAIL) {
+				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+				std::cout<< "Detector returned error: " << mess << std::endl;
+				setErrorMask((getErrorMask())|(POWER_CHIP));
+			}else
+				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+			disconnectControl();
+			if (ret==FORCE_UPDATE)
+				updateDetector();
+		}
+	}
+	return retval;
+
+}
 int slsDetector::loadSettingsFile(string fname, int imod) {
 
   sls_detector_module  *myMod=NULL;

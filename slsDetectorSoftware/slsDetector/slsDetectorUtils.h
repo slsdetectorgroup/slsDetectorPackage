@@ -497,7 +497,16 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual int programFPGA(string fname)=0;
 
+  /** resets FPGA
+      \returns OK or FAIL
+  */
+  virtual int resetFPGA()=0;
 
+  /** power on/off the chip
+     \param ival on is 1, off is 0, -1 to get
+      \returns OK or FAIL
+  */
+  virtual int powerChip(int ival= -1)=0;
 
   /** saves the modules settings/trimbits writing to  a file
       \param fname file name . Axtension is automatically generated!

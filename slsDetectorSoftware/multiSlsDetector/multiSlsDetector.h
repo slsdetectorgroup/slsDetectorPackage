@@ -494,6 +494,17 @@ class multiSlsDetector  : public slsDetectorUtils {
   */
   int programFPGA(string fname);
 
+  /** resets FPGA
+      \returns OK or FAIL
+  */
+  int resetFPGA();
+
+  /** power on/off the chip
+     \param ival on is 1, off is 0, -1 to get
+      \returns OK or FAIL
+  */
+  int powerChip(int ival= -1);
+
   /** loads the modules settings/trimbits reading from a file -  file name extension is automatically generated! */
   int loadSettingsFile(string fname, int nmod=0);
 

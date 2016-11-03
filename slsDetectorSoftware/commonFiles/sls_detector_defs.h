@@ -25,6 +25,9 @@
 /** maximum rois */
 #define MAX_ROIS 100
 
+/** maximum unit size of program sent to detector */
+#define MAX_FPGAPROGRAMSIZE (2 * 1024 *1024)
+
 
 typedef char mystring[MAX_STR_LENGTH];
 typedef double mysteps[MAX_SCAN_STEPS];

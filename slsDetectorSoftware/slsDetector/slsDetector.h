@@ -528,6 +528,18 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   */
   int programFPGA(string fname);
 
+  /** resets FPGA
+      \returns OK or FAIL
+  */
+  int resetFPGA();
+
+  /** power on/off the chip
+     \param ival on is 1, off is 0, -1 to get
+      \returns OK or FAIL
+  */
+  int powerChip(int ival= -1);
+
+
   /** loads the modules settings/trimbits reading from a file  
       \param fname file name . If not specified, extension is automatically generated!
       \param imod module number, -1 means all modules

@@ -70,7 +70,8 @@ using namespace std;
 #define PROGRAMMING_ERROR					0x0000000002000000ULL
 #define RECEIVER_ACTIVATE					0x0000000004000000ULL
 #define DATA_STREAMING						0x0000000008000000ULL
-
+#define RESET_ERROR						    0x0000000010000000ULL
+#define POWER_CHIP						    0x0000000020000000ULL
 //											0x00000000FFFFFFFFULL
 /** @short class returning all error messages for error mask */
 class errorDefs {
@@ -218,7 +219,11 @@ public:
 		if(slsErrorMask&DATA_STREAMING)
 			retval.append("Could not set/reset Data Streaming\n");
 
+		if(slsErrorMask&RESET_ERROR)
+			retval.append("Could not reset the FPGA\n");
 
+		if(slsErrorMask&POWER_CHIP)
+			retval.append("Could not power on/off/get the chip\n");
 
 		//------------------------------------------------------ length of message
 

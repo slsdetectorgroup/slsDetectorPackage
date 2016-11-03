@@ -3965,13 +3965,46 @@ int multiSlsDetector::programFPGA(string fname){
 			ret=detectors[i]->programFPGA(fname);
 			if(detectors[i]->getErrorMask())
 				setErrorMask(getErrorMask()|(1<<i));
-			if (ret!=OK)
+			if (ret==FAIL)
 				ret1=FAIL;
 		}
 	}
 	return ret1;
 }
 
+
+
+int multiSlsDetector::resetFPGA(){
+	int ret=OK, ret1=OK;
+
+	for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+		if (detectors[i]) {
+			ret=detectors[i]->resetFPGA();
+			if(detectors[i]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<i));
+			if (ret==FAIL)
+				ret1=FAIL;
+		}
+	}
+	return ret1;
+}
+
+
+
+int multiSlsDetector::powerChip(int ival){
+	int ret=OK, ret1=OK;
+
+	for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+		if (detectors[i]) {
+			ret=detectors[i]->powerChip(ival);
+			if(detectors[i]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<i));
+			if (ret==FAIL)
+				ret1=FAIL;
+		}
+	}
+	return ret1;
+}
 
 
 int multiSlsDetector::loadSettingsFile(string fname, int imod) {

@@ -106,9 +106,9 @@ enum {
 
   F_SET_NETWORK_PARAMETER,		/**< set network parameters such as transmission delay, flow control */
 
-  F_PROGRAM_FPGA				/**< program FPGA */
-
-
+  F_PROGRAM_FPGA,			/**< program FPGA */
+  F_RESET_FPGA,				/**< reset FPGA */
+  F_POWER_CHIP				/**< power chip */
   /* Always append functions hereafter!!! */
 
 };

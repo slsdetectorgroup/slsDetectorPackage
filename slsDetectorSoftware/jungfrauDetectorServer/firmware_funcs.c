@@ -1676,7 +1676,7 @@ int configureMAC(uint32_t destip,uint64_t destmac,uint64_t  sourcemac,int source
 
 	bus_w(CONTROL_REG,GB10_RESET_BIT);
 	bus_w(CONTROL_REG,0);
-	usleep(10 * 1000);
+	usleep(500 * 1000);
 	bus_w(CONFIG_REG,conf | GB10_NOT_CPU_BIT);
 	printf("System status register is %08x\n",bus_r(SYSTEM_STATUS_REG));
 	return OK;

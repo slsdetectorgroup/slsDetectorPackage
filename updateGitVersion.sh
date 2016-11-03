@@ -228,6 +228,31 @@ cd $WD
 echo "Revision Updated"
 fi
 
+
+cd $LIBPATH
+echo -e "\nIn jungfrauDetectorServer"
+COMMIT_TITLE_SCRIPT='git log --pretty=format:"%s" -1 jungfrauDetectorServer'
+COMMIT_TITLE=`eval $COMMIT_TITLE_SCRIPT`
+echo $COMMIT_TITLE
+if [ "$COMMIT_TITLE" == "updaterevjungfrau" ]; then
+echo "No update"
+elif [ "$COMMIT_TITLE" == "updaterev" ]; then
+echo "No update"
+else
+cd $LIBPATH/jungfrauDetectorServer
+GITREPO=`eval $GITREPO1  $GITREPO2`
+BRANCH=`eval $BRANCH1  $BRANCH2`
+REPUID=`eval $REPUID1`
+AUTH1=`eval $AUTH1_1  $AUTH1_2`
+AUTH2=`eval $AUTH2_1  $AUTH2_2`
+FOLDERREV=`eval $FOLDERREV1  $FOLDERREV2`
+RDATE=`eval $RDATE1`
+echo Path: ${MAINDIR}/${LIBDIR}/jungfrauDetectorServer  $'\n'URL: ${GITREPO}/jungfrauDetectorServer  $'\n'Repository Root: ${GITREPO}  $'\n'Repsitory UUID: ${REPUID}  $'\n'Revision: ${FOLDERREV}  $'\n'Branch: ${BRANCH}  $'\n'Last Changed Author: ${AUTH1}_${AUTH2}  $'\n'Last Changed Rev: ${REV}  $'\n'Last Changed Date: ${RDATE} > gitInfo.txt 
+cd $WD
+./genVersionHeader.sh $LIBDIR/jungfrauDetectorServer/gitInfo.txt $LIBDIR/jungfrauDetectorServer/gitInfoJungfrauTmp.h $LIBDIR/jungfrauDetectorServer/gitInfoJungfrau.h 
+echo "Revision Updated"
+fi
+
 cd $WD
 echo -e "\n\nPrinting Status"
 sh gitall.sh status

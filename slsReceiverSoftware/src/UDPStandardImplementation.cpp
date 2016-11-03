@@ -2166,7 +2166,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 
 				//wrong packet
 				else{
-					cprintf(RED,"wrong packet fnum of last good one:%d\n",(*((uint32_t*)(buffer[ithread]+8))));
+					cprintf(RED,"wrong packet %d, expected packet %d fnum of last good one:%d\n",currentpnum,pnum,(*((uint32_t*)(buffer[ithread]+8))));
 
 					totalIgnoredPacketCount[ithread] += (packetsPerFrame - pnum -1); //extra 1 subtracted now to be added in the while loop anyway
 					pnum = packetsPerFrame-1;

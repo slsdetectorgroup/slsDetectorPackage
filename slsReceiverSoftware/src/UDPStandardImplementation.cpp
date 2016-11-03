@@ -2879,7 +2879,7 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 
 	//get current frame number
 	uint64_t tempframenumber;
-	tempframenumber = (*((uint32_t*)(wbuffer+8)));
+	tempframenumber = (*((uint32_t*)(wbuffer+HEADER_SIZE_NUM_TOT_PACKETS)));
 	tempframenumber -= startFrameIndex;
 	//cout<<"handling: frame number:"<<tempframenumber<<endl;
 

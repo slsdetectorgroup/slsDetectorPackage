@@ -1576,8 +1576,6 @@ int UDPStandardImplementation::createNewFile(int ithread){
 			frameNumberInPreviousFile[ithread] = -1;
 			//printf("Thread:%d File:%s\n",ithread,completeFileName[ithread]);
 		}else{
-			if(frameNumberInPreviousFile[ithread] == -1)
-				frameNumberInPreviousFile[ithread] = startFrameIndex -1;
 
 			printf("\nThread:%d File:%s\n"
 					//"\ttotalpacketsinfile:%d\t"
@@ -2236,7 +2234,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 
 
 
-void UDPStandardImplementation::startFrameIndices(int ithread){cprintf(RED,"at startframeindeices\n");
+void UDPStandardImplementation::startFrameIndices(int ithread){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//determine startFrameIndex
@@ -2733,8 +2731,6 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 	}
 
 	if(totalWritingPacketCount[ithread]){
-		if(frameNumberInPreviousFile[ithread]==-1)
-			frameNumberInPreviousFile[ithread] = startFrameIndex-1;
 
 		printf("\nThread:%d File:%s\n"
 				"\ttotalpacketsinfile:%d\t"

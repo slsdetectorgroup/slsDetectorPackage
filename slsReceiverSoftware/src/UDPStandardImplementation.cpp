@@ -2791,7 +2791,11 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 				cprintf(RED, "Last Frame Number Caught :%lld\n",(long long int)lastFrameNumber);
 			}else{
 				cprintf(GREEN, "\nPort %d\n",udpPortNum[i]);
-				cprintf(GREEN, "Missing Packets   \t: %lld\n",(long long int)numberOfFrames*packetsPerFrame-totalWritingPacketCount[i]);
+				if(myDetectorType == JUNGFRAU){
+					cprintf(GREEN, "Ignored Packets   \t: %lld\n",(long long int)totalIgnoredPacketCount[i]);
+					cprintf(GREEN, "Missing Packets   \t: %lld\n",(long long int)numberOfFrames*packetsPerFrame-totalWritingPacketCount[i]-totalIgnoredPacketCount[i]);
+				}else
+					cprintf(GREEN, "Missing Packets   \t: %lld\n",(long long int)numberOfFrames*packetsPerFrame-totalWritingPacketCount[i]);
 				cprintf(GREEN, "Packets Caught \t\t: %lld\n",(long long int)totalWritingPacketCount[i]);
 				cprintf(GREEN, "Frames Caught  \t\t: %lld\n",(long long int)(totalWritingPacketCount[i]/packetsPerFrame));
 				int64_t lastFrameNumber = 0;

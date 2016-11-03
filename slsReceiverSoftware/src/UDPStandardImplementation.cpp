@@ -2876,9 +2876,9 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 	//get current frame number
 	uint64_t tempframenumber;
 	tempframenumber = (*((uint32_t*)(wbuffer+HEADER_SIZE_NUM_TOT_PACKETS)));
-	cout<<"handling: before frame number:"<<tempframenumber<<endl;
+	//cout<<"handling: before frame number:"<<tempframenumber<<endl;
 	tempframenumber -= startFrameIndex;
-	cout<<"handling: frame number:"<<tempframenumber<<endl;
+	//cout<<"handling: frame number:"<<tempframenumber<<endl;
 
 	if (cbAction < DO_EVERYTHING)
 		rawDataReadyCallBack((int)tempframenumber, wbuffer+HEADER_SIZE_NUM_TOT_PACKETS, npackets * onePacketSize+JFRAU_FILE_FRAME_HEADER_LENGTH,

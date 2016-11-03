@@ -2004,9 +2004,9 @@ void UDPStandardImplementation::startListening(){
 
 			rc = prepareAndListenBuffer(ithread, carryonBufferSize, tempBuffer);
 			carryonBufferSize = 0;
-			cout<<"measurement started:"<<measurementStarted<<" rc:"<<rc<<endl;
+
 			//start indices for each start of scan/acquisition
-			if((!measurementStarted) && (rc > 0))
+			if((!measurementStarted[ithread]) && (rc > 0))
 				startFrameIndices(ithread);
 			//problem in receiving or end of acquisition
 			if (status == TRANSMITTING||(rc == 0 && activated == 0)){

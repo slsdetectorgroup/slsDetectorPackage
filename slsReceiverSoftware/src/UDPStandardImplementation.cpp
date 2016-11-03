@@ -1761,9 +1761,9 @@ void UDPStandardImplementation::startDataCallback(){
 
 				//send final header
 				//update frame details
-#ifdef DEBUG
+//#ifdef DEBUG
 				cout << "sending dummy" << endl;
-#endif
+//#endif
 				frameIndex = -9;
 				acquisitionIndex = -9;
 				subframeIndex = -9;
@@ -1771,14 +1771,14 @@ void UDPStandardImplementation::startDataCallback(){
 				zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);
 				//send final data
 				zmq_send (zmqsocket, "end", 3, 0);
-
+				cout<<"dummy sent"<<endl;
 
 				pthread_mutex_lock(&statusMutex);
 				dataCallbackThreadsMask^=(1<<ithread);
 				pthread_mutex_unlock(&statusMutex);
-#ifdef DEBUG
+//#ifdef DEBUG
 				cprintf(GREEN,"Data Streaming %d: packets sent:%d\n",ithread,datapacketscaught);
-#endif
+//#endif
 				continue;
 			}
 
@@ -1800,13 +1800,15 @@ void UDPStandardImplementation::startDataCallback(){
 			if(myDetectorType == JUNGFRAU){
 				//send header
 				//update frame details
-				frameIndex = (*((uint32_t*)(latestData[ithread]+8)));
+				frameIndex = (*((uint32_t*)(latestData[ithread])));
+				cout<<"frameindex:"<<frameIndex<<endl;
 				acquisitionIndex = frameIndex - startAcquisitionIndex;
 				subframeIndex = -1;
-				int len = sprintf(buf+JFRAU_FILE_FRAME_HEADER_LENGTH,jsonFmt,type,shape, acquisitionIndex, frameIndex, subframeIndex,completeFileName[ithread]);
+				int len = sprintf(buf,jsonFmt,type,shape, acquisitionIndex, frameIndex, subframeIndex,completeFileName[ithread]);
 				zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);
 				//send data
 				zmq_send(zmqsocket, latestData[ithread]+JFRAU_FILE_FRAME_HEADER_LENGTH, oneframesize, 0);
+				cout<<"send data"<<endl;
 				//start clock after sending
 				if(!frameToGuiFrequency){
 					randomSendNow = false;
@@ -3115,9 +3117,9 @@ void UDPStandardImplementation::copyFrameToGui(int ithread, char* buffer, uint32
 		//copy date
 		guiNumPackets[ithread] = numpackets;
 		strcpy(guiFileName[ithread],completeFileName[ithread]);
-		if(myDetectorType == JUNGFRAU)
-			memcpy(latestData[ithread],buffer, numpackets*onePacketSize);
-		else
+		if(myDetectorType == JUNGFRAU) //copy also the header
+			memcpy(latestData[ithread],buffer+HEADER_SIZE_NUM_TOT_PACKETS, numpackets*onePacketSize+fifoBufferHeaderSize-HEADER_SIZE_NUM_TOT_PACKETS);
+		else //copy only the data
 			memcpy(latestData[ithread],buffer+ fifoBufferHeaderSize , numpackets*onePacketSize);
 		//let it know its got data
 		sem_post(&dataCallbackWriterSemaphore[ithread]);

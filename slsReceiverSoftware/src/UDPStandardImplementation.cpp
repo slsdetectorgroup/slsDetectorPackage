@@ -1555,14 +1555,14 @@ int UDPStandardImplementation::createNewFile(int ithread){	cprintf(RED,"createne
 #endif
 
 	//filewrite enable & we allowed to create/close files
-	if(fileWriteEnable && cbAction > DO_NOTHING){
+	if(fileWriteEnable && cbAction > DO_NOTHING){cprintf(RED,"createnewfile11:\n");
 
 		//close file pointers
 		if(sfilefd[ithread]){
 			fclose(sfilefd[ithread]);
 			sfilefd[ithread] = 0;
 		}
-
+		cprintf(RED,"createnewfile 222:\n");
 		//create file
 		if(!overwriteEnable){
 			if (NULL == (sfilefd[ithread] = fopen((const char *) (completeFileName[ithread]), "wx"))){

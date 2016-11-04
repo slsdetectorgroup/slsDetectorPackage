@@ -749,7 +749,7 @@ int qDrawPlot::GetDataCallBack(detectorData *data, int fIndex, int subIndex, voi
 
 
 int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
-#ifdef VERYVERBOSE
+//#ifdef VERYVERBOSE
 	cout << "******Entering GetDatafunction********" << endl;
 	cout << "fIndex " << fIndex << endl;
 	cout << "subIndex " << subIndex << endl;
@@ -760,7 +760,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 	cout << "values " << data->values << endl;
 	cout << "errors " << data->errors << endl;
 	cout << "angle " << data->angles << endl;
-#endif
+//#endif
 	if(!stop_signal){
 
 		//set progress

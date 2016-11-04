@@ -1801,7 +1801,7 @@ void UDPStandardImplementation::startDataCallback(){
 				//send header
 				//update frame details
 				frameIndex = (*((uint32_t*)(latestData[ithread]))) - startFrameIndex;
-				acquisitionIndex = frameIndex - startAcquisitionIndex;
+				acquisitionIndex = (*((uint32_t*)(latestData[ithread]))) - startAcquisitionIndex;
 				subframeIndex = -1;
 				int len = sprintf(buf,jsonFmt,type,shape, acquisitionIndex, frameIndex, subframeIndex,completeFileName[ithread]);
 				zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);

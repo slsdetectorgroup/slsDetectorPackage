@@ -1541,7 +1541,7 @@ int UDPStandardImplementation::setupWriter(){
 
 
 
-int UDPStandardImplementation::createNewFile(int ithread){
+int UDPStandardImplementation::createNewFile(int ithread){	cprintf(RED,"createnewfile:\n");
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//create file name

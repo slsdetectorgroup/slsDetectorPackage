@@ -1761,7 +1761,6 @@ void UDPStandardImplementation::startDataCallback(){
 					zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);
 					//send data
 					zmq_send(zmqsocket, buffer, oneframesize, 0);
-					cout<<"sent last dummy"<<endl;
 					newFrame = false;
 				}
 
@@ -1769,9 +1768,9 @@ void UDPStandardImplementation::startDataCallback(){
 
 				//send final header
 				//update frame details
-//#ifdef DEBUG
+#ifdef DEBUG
 				cout << "sending dummy" << endl;
-//#endif
+#endif
 				frameIndex = -9;
 				acquisitionIndex = -9;
 				subframeIndex = -9;
@@ -1779,14 +1778,13 @@ void UDPStandardImplementation::startDataCallback(){
 				zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);
 				//send final data
 				zmq_send (zmqsocket, "end", 3, 0);
-				cout<<"dummy sent"<<endl;
 
 				pthread_mutex_lock(&statusMutex);
 				dataCallbackThreadsMask^=(1<<ithread);
 				pthread_mutex_unlock(&statusMutex);
-//#ifdef DEBUG
+#ifdef DEBUG
 				cprintf(GREEN,"Data Streaming %d: packets sent:%d\n",ithread,datapacketscaught);
-//#endif
+#endif
 				continue;
 			}
 
@@ -1813,10 +1811,8 @@ void UDPStandardImplementation::startDataCallback(){
 				subframeIndex = -1;
 				int len = sprintf(buf,jsonFmt,type,shape, acquisitionIndex, frameIndex, subframeIndex,completeFileName[ithread]);
 				zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);
-				cout<<"sent header"<<endl;
 				//send data
 				zmq_send(zmqsocket, latestData[ithread]+JFRAU_FILE_FRAME_HEADER_LENGTH, oneframesize, 0);
-				cout<<"sent data"<<endl;
 				//start clock after sending
 				if(!frameToGuiFrequency){
 					randomSendNow = false;

@@ -632,8 +632,10 @@ int UDPStandardImplementation::setDynamicRange(const uint32_t i){
 		if(oldDynamicRange != dynamicRange){
 
 			//gui buffer
-			for(int i=0;i<numberofWriterThreads;i++){
+			for(int i=0;i<MAX_NUMBER_OF_WRITER_THREADS;i++){
 				if(latestData[i]){delete[] latestData[i]; latestData[i] = 0;}
+			}
+			for(int i=0;i<numberofWriterThreads;i++){
 				latestData[i] = new char[bufferSize];
 			}
 			//restructure fifo
@@ -687,8 +689,10 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b){
 		if(oldTenGigaEnable != tengigaEnable){
 
 			//gui buffer
-			for(int i=0;i<numberofWriterThreads;i++){
+			for(int i=0;i<MAX_NUMBER_OF_WRITER_THREADS;i++){
 				if(latestData[i]){delete[] latestData[i]; latestData[i] = 0;}
+			}
+			for(int i=0;i<numberofWriterThreads;i++){
 				latestData[i] = new char[bufferSize];
 			}
 
@@ -872,6 +876,8 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 	//allocate for latest data (frame copy for gui), free variables
 	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++){
 		if(latestData[i]) 	{delete[] latestData[i]; 	latestData[i] = 0;}
+	}
+	for(int i=0; i<numberofWriterThreads; i++){
 		latestData[i] = new char[bufferSize];
 	}
 

@@ -359,7 +359,7 @@ int UDPStandardImplementation::setupFifoStructure(){
 			delete fifo[i];
 			fifo[i] = 0;
 		}
-		if(!mem0[i]){
+		if(mem0[i]){
 			free(mem0[i]);
 			mem0[i] = 0;
 		}

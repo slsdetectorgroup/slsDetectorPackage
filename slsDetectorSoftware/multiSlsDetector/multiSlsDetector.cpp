@@ -2231,7 +2231,6 @@ slsDetectorDefs::ROI* multiSlsDetector::getROI(int &n){
 
 double* multiSlsDetector::decodeData(int *datain, double *fdata) {
   double *dataout;
-  cprintf(GREEN,"numchanensl:%d\n",thisMultiDetector->numberOfChannels);
 
   if (fdata)
     dataout=fdata;
@@ -5167,7 +5166,6 @@ void multiSlsDetector::startReceivingDataThread(){
 
 		//scan header-------------------------------------------------------------------
 		zmq_msg_init (&message);
-		cprintf(BLUE,"waiting to listen to header\n");
 		len = zmq_msg_recv(&message, zmqsocket, 0);
 		if (len == -1) {
 			cprintf(BG_RED,"Could not read header for socket %d\n",ithread);
@@ -5179,7 +5177,7 @@ void multiSlsDetector::startReceivingDataThread(){
 
 		// error if you print it
 		// cout << ithread << " header len:"<<len<<" value:"<< (char*)zmq_msg_data(&message)<<endl;
-		cprintf(BLUE,"%d header %d\n",ithread,len);
+		//cprintf(BLUE,"%d header %d\n",ithread,len);
 		rapidjson::Document d;
 		d.Parse( (char*)zmq_msg_data(&message), zmq_msg_size(&message));
 #ifdef VERYVERBOSE
@@ -5201,13 +5199,13 @@ void multiSlsDetector::startReceivingDataThread(){
 			currentAcquisitionIndex 	= d["acqIndex"].GetInt();
 			currentFrameIndex 			= d["fIndex"].GetInt();
 			currentSubFrameIndex 		= d["subfnum"].GetInt();
-			//currentFileName 			= d["fname"].GetString();
-//#ifdef VERYVERBOSE
+			currentFileName 			= d["fname"].GetString();
+#ifdef VERYVERBOSE
 			cout << "Acquisition index: " << currentAcquisitionIndex << endl;
 			cout << "Frame index: " << currentFrameIndex << endl;
 			cout << "Subframe index: " << currentSubFrameIndex << endl;
-			//cout << "File name: " << currentFileName << endl;
-//#endif
+			cout << "File name: " << currentFileName << endl;
+#endif
 			if(currentFrameIndex ==-1) cprintf(RED,"multi frame index -1!!\n");
 		}
 		singleframe[ithread]=image;
@@ -5220,7 +5218,7 @@ void multiSlsDetector::startReceivingDataThread(){
 		zmq_msg_init (&message);
 		len = zmq_msg_recv(&message, zmqsocket, 0);
 
-		cprintf(BLUE,"%d data %d\n",ithread,len);
+		//cprintf(BLUE,"%d data %d\n",ithread,len);
 		//end of socket ("end")
 		if (len < expectedsize ) {
 			if(len == 3){
@@ -5235,7 +5233,7 @@ void multiSlsDetector::startReceivingDataThread(){
 		}
 		else{
 			//actual data
-			cprintf(BLUE,"%d actual dataaa\n",ithread);
+			//cprintf(BLUE,"%d actual dataaa\n",ithread);
 			memcpy((char*)(singleframe[ithread]),(char*)zmq_msg_data(&message),singleDatabytes/numReadoutPerDetector);
 
 
@@ -5298,12 +5296,10 @@ void multiSlsDetector::readFrameFromReceiver(){
 		return;
 	}
 	int* multiframe=new int[nel];
-	int* p = multiframe;
 	int idet,offsetY,offsetX;
 	int halfreadoutoffset =  (slsmaxX/numReadoutPerDetector);
 	int nx =getTotalNumberOfChannels(slsDetectorDefs::X);
 	int ny =getTotalNumberOfChannels(slsDetectorDefs::Y);
-
 
 	volatile uint64_t dataThreadMask = 0x0;
 	for(int i = 0; i < numReadouts; ++i)
@@ -5367,8 +5363,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 				//no interleaving, just add to the end
 				//numReadout always 1 here
 				else{
-					memcpy(p,multiframe,slsdatabytes);
-					p+=slsdatabytes/sizeof(int);
+					memcpy((char*)multiframe,(char*)singleframe[ireadout],slsdatabytes);
 				}
 			}
 		}
@@ -5381,22 +5376,8 @@ void multiSlsDetector::readFrameFromReceiver(){
 		//send data to callback
 		fdata = decodeData(multiframe);
 		if ((fdata) && (dataReady)){
-			//cprintf(BLUE,"progress:%d\n",getCurrentProgress());
-			//cprintf(BLUE,"f:%d\n",currentFrameIndex);
-			//cprintf(BLUE,"progress:%d\n",getCurrentProgress());
-
-		//	cprintf(BLUE,"filename:%s\n",currentFileName);
-
-			//cprintf(BLUE,"progress:%d\n",getCurrentProgress());
-			//cprintf(BLUE,"f:%d\n",currentFrameIndex);
-			currentFileName = "/external_pool/jungfrau_data/softwaretest/dhanya/run_f000000000000_0.raw";
 			thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),nx,ny);
-			//cprintf(BLUE,"progress:%d\n",getCurrentProgress());
-		//	cprintf(BLUE,"f:%d\n",currentFrameIndex);
-			//cprintf(BLUE,"progress:%d\n",getCurrentProgress());
-			//cprintf(BLUE,"filenameeeeeeeeeee:%s\n",thisData->fileName);
-			dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);//should be fnum and subfnum from json header
-			delete thisData;
+			dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);
 			fdata = NULL;
 			cout<<"Send frame #"<< currentFrameIndex << " to gui"<<endl;
 		}

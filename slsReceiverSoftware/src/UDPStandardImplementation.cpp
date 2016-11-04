@@ -1578,7 +1578,7 @@ int UDPStandardImplementation::createNewFile(int ithread){
 		//setting file buffer size to 16mb
 		setvbuf(sfilefd[ithread],NULL,_IOFBF,BUF_SIZE);
 
-
+		cprintf(RED,"totalWritingPacketCount:%d\n",totalWritingPacketCount[ithread]);
 		//Print packet loss and filenames
 		if(!totalWritingPacketCount[ithread]){
 			frameNumberInPreviousFile[ithread] = -1;

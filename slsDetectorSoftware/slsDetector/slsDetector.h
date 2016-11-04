@@ -1590,7 +1590,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   * @param destroy is true to destroy all the threads
   * @return OK or FAIL
   */
- int createReceivingDataThreads(bool destroy = false){};
+ int createReceivingDataThreads(bool destroy = false){return 0;};
 
 
  /** Reads frames from receiver through a constant socket

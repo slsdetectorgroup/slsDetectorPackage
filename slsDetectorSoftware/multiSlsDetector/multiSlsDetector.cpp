@@ -2231,17 +2231,18 @@ slsDetectorDefs::ROI* multiSlsDetector::getROI(int &n){
 
 double* multiSlsDetector::decodeData(int *datain, double *fdata) {
   double *dataout;
+  cprintf(GREEN,"numchanensl:%d\n",thisMultiDetector->numberOfChannels);
+
   if (fdata)
     dataout=fdata;
   else
     dataout=new double[thisMultiDetector->numberOfChannels];
-  
+
   // int ich=0;
 
   double *detp=dataout;
   int  *datap=datain;
 
-  
   for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
     if (detectors[i]) {
       detectors[i]->decodeData(datap, detp);
@@ -5100,8 +5101,24 @@ void multiSlsDetector::startReceivingDataThread(){
 
 	int ithread = currentThreadIndex;		//set current thread value  index
 
+	char hostname[100] = "tcp://";
+
+	char rx_hostname[100];
+	strcpy(rx_hostname, detectors[ithread]->getReceiver());
+	cout<<"rx_hostname:"<<rx_hostname<<endl;
+	if(strchr(rx_hostname,'.')!=NULL)
+		strcat(hostname,rx_hostname);
+	else{
+		struct hostent *he = gethostbyname(rx_hostname);
+		if (he == NULL){
+			cprintf(RED,"ERROR: could not convert receiver hostname to ip\n");
+			exit(-1);
+		}else
+			strcat(hostname,inet_ntoa(*(struct in_addr*)he->h_addr));
+	}
+	strcat(hostname,":");
 	//server details
-	char hostname[100] = "tcp://127.0.0.1:";
+	//char hostname[100] = "tcp://127.0.0.1:";
 	int portno = DEFAULT_ZMQ_PORTNO + ithread;
 	sprintf(hostname,"%s%d",hostname,portno);
 
@@ -5113,7 +5130,7 @@ void multiSlsDetector::startReceivingDataThread(){
 	zmqsocket = zmq_socket(context, ZMQ_PULL);
 	//int hwmval = 10;
 	//zmq_setsockopt(zmqsocket,ZMQ_RCVHWM,&hwmval,sizeof(hwmval)); //set receive HIGH WATER MARK (8-9ms slower//should not drop last packets)
-	zmq_connect(zmqsocket, hostname);
+	cprintf(RED,"connect ret:%d\n",zmq_connect(zmqsocket, hostname));
 	cout << "ZMQ Client of " << ithread << " at " << hostname << endl;
 	cprintf(BLUE,"%d Created socket\n",ithread);
 
@@ -5124,6 +5141,7 @@ void multiSlsDetector::startReceivingDataThread(){
 	int expectedsize = 1024*256;/**shouldnt work for other bit modes or anythign*/
 	if(getDetectorsType() == EIGER){
 		numReadoutPerDetector = 2;
+		expectedsize = 1024*256;
 	}else if(getDetectorsType() == JUNGFRAU){
 		jungfrau = true;
 		expectedsize = 8192*128;
@@ -5149,6 +5167,7 @@ void multiSlsDetector::startReceivingDataThread(){
 
 		//scan header-------------------------------------------------------------------
 		zmq_msg_init (&message);
+		cprintf(BLUE,"waiting to listen to header\n");
 		len = zmq_msg_recv(&message, zmqsocket, 0);
 		if (len == -1) {
 			cprintf(BG_RED,"Could not read header for socket %d\n",ithread);
@@ -5160,7 +5179,7 @@ void multiSlsDetector::startReceivingDataThread(){
 
 		// error if you print it
 		// cout << ithread << " header len:"<<len<<" value:"<< (char*)zmq_msg_data(&message)<<endl;
-		//cprintf(BLUE,"%d header %d\n",ithread,len);
+		cprintf(BLUE,"%d header %d\n",ithread,len);
 		rapidjson::Document d;
 		d.Parse( (char*)zmq_msg_data(&message), zmq_msg_size(&message));
 #ifdef VERYVERBOSE
@@ -5178,17 +5197,17 @@ void multiSlsDetector::startReceivingDataThread(){
 		cout << ithread << "type: " << d["type"].GetString() << endl;
 
 #endif
-		if(!ithread){
+		if(!ithread && (d["acqIndex"].GetInt()!=-9)){
 			currentAcquisitionIndex 	= d["acqIndex"].GetInt();
 			currentFrameIndex 			= d["fIndex"].GetInt();
 			currentSubFrameIndex 		= d["subfnum"].GetInt();
-			strcpy(currentFileName		 ,d["fname"].GetString());
-#ifdef VERYVERBOSE
+			//currentFileName 			= d["fname"].GetString();
+//#ifdef VERYVERBOSE
 			cout << "Acquisition index: " << currentAcquisitionIndex << endl;
 			cout << "Frame index: " << currentFrameIndex << endl;
 			cout << "Subframe index: " << currentSubFrameIndex << endl;
-			cout << "File name: " << currentFileName << endl;
-#endif
+			//cout << "File name: " << currentFileName << endl;
+//#endif
 			if(currentFrameIndex ==-1) cprintf(RED,"multi frame index -1!!\n");
 		}
 		singleframe[ithread]=image;
@@ -5201,11 +5220,11 @@ void multiSlsDetector::startReceivingDataThread(){
 		zmq_msg_init (&message);
 		len = zmq_msg_recv(&message, zmqsocket, 0);
 
-		//cprintf(BLUE,"%d data %d\n",ithread,len);
+		cprintf(BLUE,"%d data %d\n",ithread,len);
 		//end of socket ("end")
 		if (len < expectedsize ) {
 			if(len == 3){
-				//cprintf(RED,"%d Received end of acquisition\n", ithread);
+				cprintf(RED,"%d Received end of acquisition\n", ithread);
 				singleframe[ithread] = NULL;
 				//break;
 			}else{
@@ -5216,7 +5235,7 @@ void multiSlsDetector::startReceivingDataThread(){
 		}
 		else{
 			//actual data
-			//cprintf(BLUE,"%d actual dataaa\n",ithread);
+			cprintf(BLUE,"%d actual dataaa\n",ithread);
 			memcpy((char*)(singleframe[ithread]),(char*)zmq_msg_data(&message),singleDatabytes/numReadoutPerDetector);
 
 
@@ -5258,7 +5277,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 	int numReadouts = numReadoutPerDetector * thisMultiDetector->numberOfDetectors;
 
 	//initializing variables
-	strcpy(currentFileName,"");
+	currentFileName="";
 	currentAcquisitionIndex = -1;
 	currentFrameIndex = -1;
 	currentSubFrameIndex = -1;
@@ -5362,7 +5381,20 @@ void multiSlsDetector::readFrameFromReceiver(){
 		//send data to callback
 		fdata = decodeData(multiframe);
 		if ((fdata) && (dataReady)){
-			thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentFileName,nx,ny);
+			//cprintf(BLUE,"progress:%d\n",getCurrentProgress());
+			//cprintf(BLUE,"f:%d\n",currentFrameIndex);
+			//cprintf(BLUE,"progress:%d\n",getCurrentProgress());
+
+		//	cprintf(BLUE,"filename:%s\n",currentFileName);
+
+			//cprintf(BLUE,"progress:%d\n",getCurrentProgress());
+			//cprintf(BLUE,"f:%d\n",currentFrameIndex);
+			currentFileName = "/external_pool/jungfrau_data/softwaretest/dhanya/run_f000000000000_0.raw";
+			thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),nx,ny);
+			//cprintf(BLUE,"progress:%d\n",getCurrentProgress());
+		//	cprintf(BLUE,"f:%d\n",currentFrameIndex);
+			//cprintf(BLUE,"progress:%d\n",getCurrentProgress());
+			//cprintf(BLUE,"filenameeeeeeeeeee:%s\n",thisData->fileName);
 			dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);//should be fnum and subfnum from json header
 			delete thisData;
 			fdata = NULL;

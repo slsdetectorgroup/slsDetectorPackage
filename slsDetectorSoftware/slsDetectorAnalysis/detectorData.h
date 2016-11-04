@@ -17,7 +17,9 @@ class detectorData {
       \param np number of points in x coordinate defaults to the number of detector channels (1D detector)
       \param ny dimension in y (1D detector)
   */
-  detectorData(double *val=NULL, double *err=NULL, double *ang=NULL,  double p_ind=-1, const char *fname="", int np=-1, int ny=1) : values(val), errors(err), angles(ang),  progressIndex(p_ind), npoints(np), npy(ny){strcpy(fileName,fname);};
+  detectorData(double *val=NULL, double *err=NULL, double *ang=NULL,  double p_ind=-1, const char *fname="", int np=-1, int ny=1) : values(val), errors(err), angles(ang),  progressIndex(p_ind), npoints(np), npy(ny){
+	 strcpy(fileName,fname);
+  };
     /** 
 	@short The destructor
 	deletes also the arrays pointing to data/errors/angles if not NULL

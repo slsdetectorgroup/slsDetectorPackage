@@ -1404,7 +1404,7 @@ private:
 	  int currentAcquisitionIndex;
 	  int currentFrameIndex;
 	  int currentSubFrameIndex;
-	  char currentFileName[MAX_STR_LENGTH];
+	  string currentFileName;
 
 	  pthread_t receivingDataThreads[MAXDET];
 	  /** Ensures if threads created successfully */

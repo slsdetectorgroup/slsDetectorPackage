@@ -5545,6 +5545,7 @@ char* slsDetector::setReceiver(string receiverIP){
 		cprintf(RED,"Acquisition already running, Stopping it.\n");
 		stopAcquisition();
 	}
+	updateDetector();
 
 	strcpy(thisDetector->receiver_hostname,receiverIP.c_str());
 

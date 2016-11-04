@@ -2024,7 +2024,7 @@ int set_dynamic_range(int file_des) {
 	int retval;
 	int ret=OK;
 
-	printf("Set dynamic range?\n");
+	printf("Set dynamic range\n");
 	sprintf(mess,"can't set dynamic range\n");
 
 

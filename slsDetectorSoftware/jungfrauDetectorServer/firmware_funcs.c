@@ -1630,12 +1630,30 @@ int configureInterface(uint32_t destip,uint64_t destmac,uint64_t  sourcemac,int 
 #endif
 
 	bus_w(CONTROL_REG,GB10_RESET_BIT);
-	usleep(500 * 1000);
+	//usleep(50 * 1000);
 	bus_w(CONTROL_REG,0);
-	usleep(10* 1000);
+	//usleep(500* 1000);
+	//bus_w(CONFIG_REG,conf | GB10_NOT_CPU_BIT);
+	printf("System status register is %08x\n",bus_r(SYSTEM_STATUS_REG));
+
+
+	/*
+	bus_w(CONTROL_REG,GB10_RESET_BIT);
+	bus_w(CONTROL_REG,0);
+	usleep(500 * 1000);
 	bus_w(CONFIG_REG,conf | GB10_NOT_CPU_BIT);
 	printf("System status register is %08x\n",bus_r(SYSTEM_STATUS_REG));
+	*/
+
+	printf("Reset mem machine fifos\n");
+	bus_w(MEM_MACHINE_FIFOS_REG,0x4000);
+	bus_w(MEM_MACHINE_FIFOS_REG,0x0);
+	printf("Reset run control\n");
+	bus_w(MEM_MACHINE_FIFOS_REG,0x0400);
+	bus_w(MEM_MACHINE_FIFOS_REG,0x0);
+
 	usleep(500 * 1000);
+
 	return 0; //any value doesnt matter - dhanya
 
 }
@@ -1674,11 +1692,7 @@ int configureMAC(uint32_t destip,uint64_t destmac,uint64_t  sourcemac,int source
 	for (interface=0; interface <ngb; interface++)
 		configureInterface(destip, destmac, sourcemac+interface, sourceip+interface, ival, destport+interface, sourceport+interface, interface);
 
-	bus_w(CONTROL_REG,GB10_RESET_BIT);
-	bus_w(CONTROL_REG,0);
-	usleep(500 * 1000);
-	bus_w(CONFIG_REG,conf | GB10_NOT_CPU_BIT);
-	printf("System status register is %08x\n",bus_r(SYSTEM_STATUS_REG));
+
 	return OK;
 
 }

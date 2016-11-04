@@ -5101,7 +5101,6 @@ void multiSlsDetector::startReceivingDataThread(){
 	int ithread = currentThreadIndex;		//set current thread value  index
 
 	char hostname[100] = "tcp://";
-
 	char rx_hostname[100];
 	strcpy(rx_hostname, detectors[ithread]->getReceiver());
 	cout<<"rx_hostname:"<<rx_hostname<<endl;
@@ -5159,10 +5158,8 @@ void multiSlsDetector::startReceivingDataThread(){
 
 		sem_wait(&sem_singlewait[ithread]);	//wait for it to be copied
 		//check to exit thread
-		if(killAllReceivingDataThreads){
-			delete [] singleframe[ithread];
+		if(killAllReceivingDataThreads)
 			break;
-		}
 
 		//scan header-------------------------------------------------------------------
 		zmq_msg_init (&message);
@@ -5222,7 +5219,7 @@ void multiSlsDetector::startReceivingDataThread(){
 		//end of socket ("end")
 		if (len < expectedsize ) {
 			if(len == 3){
-				cprintf(RED,"%d Received end of acquisition\n", ithread);
+				//cprintf(RED,"%d Received end of acquisition\n", ithread);
 				singleframe[ithread] = NULL;
 				//break;
 			}else{
@@ -5254,6 +5251,9 @@ void multiSlsDetector::startReceivingDataThread(){
 	zmq_disconnect(zmqsocket, hostname);
 	zmq_close(zmqsocket);
 	zmq_ctx_destroy(context);
+
+	//free resources
+	delete [] image;
 
 #ifdef DEBUG
 	cprintf(MAGENTA,"Receiving Data Thread %d:Goodbye!\n",ithread);
@@ -5363,7 +5363,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 				//no interleaving, just add to the end
 				//numReadout always 1 here
 				else{
-					memcpy((char*)multiframe,(char*)singleframe[ireadout],slsdatabytes);
+					memcpy((char*)multiframe+slsdatabytes*ireadout,(char*)singleframe[ireadout],slsdatabytes);
 				}
 			}
 		}
@@ -5378,8 +5378,9 @@ void multiSlsDetector::readFrameFromReceiver(){
 		if ((fdata) && (dataReady)){
 			thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),nx,ny);
 			dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);
+			delete thisData;
 			fdata = NULL;
-			cout<<"Send frame #"<< currentFrameIndex << " to gui"<<endl;
+			//cout<<"Send frame #"<< currentFrameIndex << " to gui"<<endl;
 		}
 		setCurrentProgress(currentAcquisitionIndex+1);
 	}

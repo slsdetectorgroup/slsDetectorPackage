@@ -370,7 +370,7 @@ int UDPStandardImplementation::setupFifoStructure(){
 
 		//allocate memory
 		mem0[i] = (char*)malloc((bufferSize * numberofJobsPerBuffer + fifoBufferHeaderSize) * fifoSize);
-		if (mem0[i]){
+		if (mem0[i] == NULL){
 			cprintf(BG_RED,"Error: Could not allocate memory for listening \n");
 			return FAIL;
 		}

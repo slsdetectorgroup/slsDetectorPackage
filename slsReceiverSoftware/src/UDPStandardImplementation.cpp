@@ -1541,7 +1541,7 @@ int UDPStandardImplementation::setupWriter(){
 
 
 
-int UDPStandardImplementation::createNewFile(int ithread){	cprintf(RED,"createnewfile:\n");
+int UDPStandardImplementation::createNewFile(int ithread){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//create file name
@@ -1553,7 +1553,6 @@ int UDPStandardImplementation::createNewFile(int ithread){	cprintf(RED,"createne
 #ifdef DEBUG4
 	FILE_LOG(logINFO) << completefileName;
 #endif
-	cprintf(RED,"fileWriteEnable:%d cbAction:%d\n",fileWriteEnable,cbAction);
 
 	//filewrite enable & we allowed to create/close files
 	if(fileWriteEnable && cbAction > DO_NOTHING){cprintf(RED,"createnewfile11:\n");
@@ -1579,11 +1578,9 @@ int UDPStandardImplementation::createNewFile(int ithread){	cprintf(RED,"createne
 		//setting file buffer size to 16mb
 		setvbuf(sfilefd[ithread],NULL,_IOFBF,BUF_SIZE);
 
-		cprintf(RED,"totalWritingPacketCount:%d\n",totalWritingPacketCount[ithread]);
 		//Print packet loss and filenames
 		if(!totalWritingPacketCount[ithread]){
 			frameNumberInPreviousFile[ithread] = -1;
-			cprintf(RED,"frameNumberInPreviousFile:%d\n",frameNumberInPreviousFile[ithread]);
 			//printf("Thread:%d File:%s\n",ithread,completeFileName[ithread]);
 		}else{
 
@@ -1608,7 +1605,8 @@ int UDPStandardImplementation::createNewFile(int ithread){	cprintf(RED,"createne
 	if(totalWritingPacketCount[ithread]){
 		frameNumberInPreviousFile[ithread] = currentFrameNumber[ithread];
 		totalPacketsInFile[ithread] = 0;
-	}
+	}else
+		frameNumberInPreviousFile[ithread] = -1;
 
 
 

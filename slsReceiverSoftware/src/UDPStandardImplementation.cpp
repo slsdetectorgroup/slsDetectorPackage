@@ -1553,6 +1553,7 @@ int UDPStandardImplementation::createNewFile(int ithread){	cprintf(RED,"createne
 #ifdef DEBUG4
 	FILE_LOG(logINFO) << completefileName;
 #endif
+	cprintf(RED,"fileWriteEnable:%d cbAction:%d\n",fileWriteEnable,cbAction);
 
 	//filewrite enable & we allowed to create/close files
 	if(fileWriteEnable && cbAction > DO_NOTHING){cprintf(RED,"createnewfile11:\n");

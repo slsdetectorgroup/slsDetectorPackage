@@ -1350,7 +1350,6 @@ int multiSlsDetector::startAcquisition(){
 
 
 int multiSlsDetector::stopAcquisition(){
-
   int i=0;
   int ret=OK, ret1=OK;  
 
@@ -1447,7 +1446,8 @@ int* multiSlsDetector::getDataFromDetector() {
 	}
 
 	//eiger returns only null
-	if(getDetectorsType() == EIGER)
+	detectorType types = getDetectorsType();
+	if(types == EIGER || types == JUNGFRAU)
 		return NULL;
 
 	if (nodatadet>=0) {

@@ -3640,7 +3640,6 @@ int slsDetector::startAcquisition(){
 };
 int slsDetector::stopAcquisition(){
 
-
   int fnum=F_STOP_ACQUISITION;
   int ret=FAIL;
   char mess[MAX_STR_LENGTH]="";
@@ -4088,20 +4087,22 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 						args[1] = timerValue[ACQUISITION_TIME];
 				}
 
-
+				char mess[MAX_STR_LENGTH]="";
 				if (connectData() == OK)
-					ret=thisReceiver->sendIntArray(fnum2,retval,args);
+					ret=thisReceiver->sendIntArray(fnum2,retval,args,mess);
 				disconnectData();
 				if((args[1] != retval)|| (ret==FAIL)){
 					ret = FAIL;
 					if(index==FRAME_PERIOD){
 						//exptime sent if acq period = 0
 						if(retval){
-							cout << "ERROR:Acquisition Period in receiver set incorrectly to " << retval << " instead of " << args[1] << endl;
+							if(strstr(mess,"receiver not idle")==NULL)
+								cout << "ERROR:Acquisition Period in receiver set incorrectly to " << retval << " instead of " << args[1] << endl;
 							setErrorMask((getErrorMask())|(RECEIVER_ACQ_PERIOD_NOT_SET));
 						}
 					}else{
-						cout << "ERROR:Number of Frames (* Number of cycles) in receiver set incorrectly to " << retval << " instead of " << args[1] << endl;
+						if(strstr(mess,"receiver not idle")==NULL)
+							cout << "ERROR:Number of Frames (* Number of cycles) in receiver set incorrectly to " << retval << " instead of " << args[1] << endl;
 						setErrorMask((getErrorMask())|(RECEIVER_FRAME_NUM_NOT_SET));
 					}
 				}

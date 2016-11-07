@@ -1177,7 +1177,10 @@ int64_t get64BitReg(int aLSB, int aMSB){
 int64_t setFrames(int64_t value){
 	if(value!=-1)
 		printf("\nSetting number of frames to %lld\n",(long long int)value);
-	return set64BitReg(value,  SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
+
+	int64_t retval = set64BitReg(value,  SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
+	printf("Getting number of frames: %lld\n",(long long int)retval);
+	return retval;
 }
 
 int64_t getFrames(){
@@ -1186,10 +1189,12 @@ int64_t getFrames(){
 
 int64_t setExposureTime(int64_t value){
 	if (value!=-1){
-		printf("\nSetting exptime to %lld\n",(long long int)value);
+		printf("\nSetting exptime to %lldns\n",(long long int)value);
 		value*=(1E-3*clockdivider);
 	}
-	return set64BitReg(value,SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG)/(1E-3*clockdivider);//(1E-9*CLK_FREQ);
+	int64_t retval = set64BitReg(value,SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG)/(1E-3*clockdivider);//(1E-9*CLK_FREQ);
+	printf("Getting exptime: %lldns\n",(long long int)retval);
+	return retval;
 }
 
 int64_t getExposureTime(){
@@ -1199,7 +1204,10 @@ int64_t getExposureTime(){
 int64_t setGates(int64_t value){
 	if(value!=-1)
 		printf("\nSetting number of gates to %lld\n",(long long int)value);
-	return set64BitReg(value, SET_GATES_LSB_REG, SET_GATES_MSB_REG);
+
+	int64_t retval = set64BitReg(value, SET_GATES_LSB_REG, SET_GATES_MSB_REG);
+	printf("Getting number of gates: %lld\n",(long long int)retval);
+	return retval;
 }
 
 int64_t getGates(){
@@ -1208,11 +1216,13 @@ int64_t getGates(){
 
 int64_t setPeriod(int64_t value){
 	if (value!=-1){
-		printf("\nSetting period to %lld\n",(long long int)value);
+		printf("\nSetting period to %lldns\n",(long long int)value);
 		value*=(1E-3*clockdivider);
 	}
 
-	return set64BitReg(value,SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/(1E-3*clockdivider);//(1E-9*CLK_FREQ);
+	int64_t retval = set64BitReg(value,SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/(1E-3*clockdivider);//(1E-9*CLK_FREQ);
+	printf("Getting period: %lldns\n",(long long int)retval);
+	return retval;
 }
 
 int64_t getPeriod(){
@@ -1221,10 +1231,13 @@ int64_t getPeriod(){
 
 int64_t setDelay(int64_t value){
 	if (value!=-1){
-		printf("\nSetting delay to %lld\n",(long long int)value);
+		printf("\nSetting delay to %lldns\n",(long long int)value);
 		value*=(1E-3*clockdivider);
 	}
-	return set64BitReg(value,SET_DELAY_LSB_REG, SET_DELAY_MSB_REG)/(1E-3*clockdivider);//(1E-9*CLK_FREQ);
+
+	int64_t retval = set64BitReg(value,SET_DELAY_LSB_REG, SET_DELAY_MSB_REG)/(1E-3*clockdivider);//(1E-9*CLK_FREQ);
+	printf("Getting delay: %lldns\n",(long long int)retval);
+	return retval;
 }
 
 int64_t getDelay(){
@@ -1234,7 +1247,10 @@ int64_t getDelay(){
 int64_t setTrains(int64_t value){
 	if(value!=-1)
 		printf("\nSetting number of cycles to %lld\n",(long long int)value);
-	return set64BitReg(value,  SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
+
+	int64_t retval = set64BitReg(value,  SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
+	printf("Getting number of cycles: %lld\n",(long long int)retval);
+	return retval;
 }
 
 int64_t getTrains(){
@@ -1589,7 +1605,7 @@ int configureInterface(uint32_t destip,uint64_t destmac,uint64_t  sourcemac,int 
 	//int configureMAC(int ipad,long long int macad,long long int detectormacad, int detipad, int ival, int udpport){
 
 
-	volatile u_int32_t conf= bus_r(CONFIG_REG);
+	/*volatile u_int32_t conf= bus_r(CONFIG_REG);*/
 	long int checksum=calcChecksum(sourceip, destip);
 #ifdef NEW_GBE_INTERFACE
 
@@ -1679,7 +1695,6 @@ int configureMAC(uint32_t destip,uint64_t destmac,uint64_t  sourcemac,int source
 	uint32_t sourceport  =  0x7e9a; // 0xE185;
 	int interface=0;
 	int ngb;
-	volatile u_int32_t conf= bus_r(CONFIG_REG);
 
 #ifdef NEW_GBE_INTERFACE
 	ngb=2;
@@ -1760,7 +1775,7 @@ int startStateMachine(){
 
 int stopStateMachine(){
 	//#ifdef VERBOSE
-	printf("*******Stopping State Machine*******\n");
+	cprintf(BG_RED,"*******Stopping State Machine*******\n");
 	//#endif
 #ifdef SHAREDMEMORY
 	write_stop_sm(1);

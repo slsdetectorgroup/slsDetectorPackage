@@ -1603,7 +1603,12 @@ int start_acquisition(int file_des) {
 	if (differentClients==1 && lockStatus==1) {
 		ret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
-	} else {
+	} else if (setPeriod(-1)==0){
+		ret=FAIL;
+		sprintf(mess,"Frame Period is 0. Set it to start acquisition\n");
+		cprintf(RED,"%s",mess);
+	}
+	 else {
 		ret=startStateMachine();
 	}
 	if (ret==FAIL)
@@ -1754,7 +1759,7 @@ int get_run_status(int file_des) {
 }
 
 int read_frame(int file_des) {
-
+	dataret=FAIL;
 	if (differentClients==1 && lockStatus==1) {
 		dataret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
@@ -1772,19 +1777,17 @@ int read_frame(int file_des) {
 	if (getFrames()+1>0) {
 		dataret=FAIL;
 		sprintf(mess,"no data and run stopped: %d frames left\n",(int)(getFrames()+1));
+		cprintf(RED,"%s\n",mess);
 	} else {
 		dataret=FINISHED;
 		sprintf(mess,"acquisition successfully finished\n");
+		printf("%s",mess);
 		if (differentClients)
 			dataret=FORCE_UPDATE;
 	}
 #endif
 	sendDataOnly(file_des,&dataret,sizeof(dataret));
 	sendDataOnly(file_des,mess,sizeof(mess));
-	if(dataret == FAIL)
-		cprintf(RED,"%s\n",mess);
-	else
-		printf("%s",mess);
 	return dataret;
 }
 
@@ -1832,7 +1835,6 @@ int set_timer(int file_des) {
 	int n;
 	int64_t retval;
 	int ret=OK;
-
 
 	sprintf(mess,"can't set timer\n");
 
@@ -1891,16 +1893,19 @@ int set_timer(int file_des) {
 			}
 		}
 	}
-	if (ret!=OK) {
-		printf(mess);
-		if (differentClients)
-			ret=FORCE_UPDATE;
+
+	if(ret == OK && (retval!=tns) && (tns != -1)){
+		ret = FAIL;
+		sprintf(mess,"Setting timer %d of failed: wrote %lld but read %lld\n", ind, (long long int)tns, (long long int)retval);
+		cprintf(RED,"%s",mess);
+	}else if (ret!=OK) {
+		cprintf(RED,"%s",mess);
+		cprintf(RED,"set timer failed\n");
 	}
 
-	if (ret!=OK) {
-		printf(mess);
-		printf("set timer failed\n");
-	}
+	if (ret==OK && differentClients)
+			ret=FORCE_UPDATE;
+
 
 	n = sendDataOnly(file_des,&ret,sizeof(ret));
 	if (ret==FAIL) {
@@ -2024,7 +2029,6 @@ int set_dynamic_range(int file_des) {
 	int retval;
 	int ret=OK;
 
-	printf("Set dynamic range\n");
 	sprintf(mess,"can't set dynamic range\n");
 
 

@@ -1438,8 +1438,8 @@ int* multiSlsDetector::getDataFromDetector() {
 #ifdef VERBOSE
 				cout << "Detector " << id << " does not have data left " << endl;
 #endif
-				if((detectors[id]->getDetectorsType() != EIGER)||(detectors[id]->getDetectorsType() != JUNGFRAU))
-					break;
+				/*if((detectors[id]->getDetectorsType() != EIGER)||(detectors[id]->getDetectorsType() != JUNGFRAU))
+					break;*/
 			}
 			p+=n/sizeof(int);
 		}
@@ -1447,9 +1447,10 @@ int* multiSlsDetector::getDataFromDetector() {
 
 	//eiger returns only null
 	detectorType types = getDetectorsType();
-	//if(types == EIGER )
-	if(types == EIGER || types == JUNGFRAU)
+	if(types == EIGER || types == JUNGFRAU){
+		delete [] retval;
 		return NULL;
+	}
 
 	if (nodatadet>=0) {
 		for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {

@@ -222,7 +222,8 @@ inline void Output2FILE::Output(const std::string& msg, TLogLevel level)
     switch(level){
     case logERROR:		cprintf(RED BOLD,"%s",msg.c_str()); 	break;
     case logWARNING:	cprintf(YELLOW BOLD,"%s",msg.c_str()); 	break;
-    case logINFO:		cprintf(DARKGRAY BOLD,"%s",msg.c_str()); 		break;
+    case logINFO:		cprintf(GRAY,"%s",msg.c_str());break;
+   // case logINFO:		cprintf(DARKGRAY BOLD,"%s",msg.c_str());break;
     default: 			fprintf(pStream,"%s",msg.c_str()); 		break;
     }
     fflush(pStream);

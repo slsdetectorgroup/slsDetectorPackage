@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
 	//Catch signal SIGINT to close files properly
 	signal(SIGINT,closeFile);
 
-	system("setterm -background white");
+	//system("setterm -linux term -background white -clear");
 
 	int ret = slsReceiverDefs::OK;
 	receiver = new slsReceiverUsers(argc, argv, ret);

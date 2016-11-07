@@ -1438,7 +1438,7 @@ int* multiSlsDetector::getDataFromDetector() {
 #ifdef VERBOSE
 				cout << "Detector " << id << " does not have data left " << endl;
 #endif
-				if(detectors[id]->getDetectorsType() != EIGER)
+				if((detectors[id]->getDetectorsType() != EIGER)||(detectors[id]->getDetectorsType() != JUNGFRAU))
 					break;
 			}
 			p+=n/sizeof(int);
@@ -1447,6 +1447,7 @@ int* multiSlsDetector::getDataFromDetector() {
 
 	//eiger returns only null
 	detectorType types = getDetectorsType();
+	//if(types == EIGER )
 	if(types == EIGER || types == JUNGFRAU)
 		return NULL;
 
@@ -1454,9 +1455,9 @@ int* multiSlsDetector::getDataFromDetector() {
 		for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
 			if (id!=nodatadet) {
 				if (detectors[id]) {
-#ifdef VERBOSE
+//#ifdef VERBOSE
 					cout << "Stopping detector "<< id << endl;
-#endif
+//#endif
 					detectors[id]->stopAcquisition();
 					if(detectors[id]->getErrorMask())
 						setErrorMask(getErrorMask()|(1<<id));

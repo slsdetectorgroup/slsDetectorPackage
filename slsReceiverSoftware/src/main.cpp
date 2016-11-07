@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string.h>
 #include  <signal.h>	//SIGINT
+#include <cstdlib>		//system
 
 #include "utilities.h"
 #include "logger.h"
@@ -48,6 +49,8 @@ int main(int argc, char *argv[]) {
 
 	//Catch signal SIGINT to close files properly
 	signal(SIGINT,closeFile);
+
+	system("setterm -term linux -back black");
 
 	int ret = slsReceiverDefs::OK;
 	receiver = new slsReceiverUsers(argc, argv, ret);

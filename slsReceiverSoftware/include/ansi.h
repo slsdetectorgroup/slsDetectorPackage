@@ -5,6 +5,7 @@
 #define MAGENTA 	"\x1b[35m"
 #define CYAN    	"\x1b[36m"
 #define GRAY		"\x1b[37m"
+#define DARKGRAY	"\x1b[30m"
 #define BG_RED     	"\x1b[41m"
 #define BG_GREEN   	"\x1b[42m"
 #define BG_YELLOW  	"\x1b[43m"

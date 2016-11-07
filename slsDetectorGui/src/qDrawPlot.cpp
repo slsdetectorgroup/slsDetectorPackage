@@ -459,6 +459,7 @@ int qDrawPlot::ResetDaqForGui(){
 	if(!StopDaqForGui()) return 0;
 	cout << "Resetting image number" << endl;
 	lastImageNumber = 0;
+	last_plot_number = -1;
 	return 1;
 }
 
@@ -495,6 +496,7 @@ bool qDrawPlot::StartOrStopThread(bool start){
 		plot2D->GetPlot()->SetZoom(-0.5,startPixel,nPixelsX,endPixel-startPixel);
 		plot2D->GetPlot()->UnZoom();
 		/*XYRangeChanged = true;*/
+		boxPlot->setTitle("Old_Plot.raw");
 
 		cout << "Starting new acquisition thread ...." << endl;
 		// Start acquiring data from server
@@ -971,7 +973,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 		  plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
 		  // only if you got the lock, do u need to remember lastimagenumber to plot
 		  lastImageNumber= currentFrame+1;
-
+			cout<<"got last imagenumber:"<<lastImageNumber<<endl;
 			//1d
 			if(plot_in_scope==1){
 				// Titles
@@ -1273,8 +1275,8 @@ int qDrawPlot::MeasurementFinished(int currentMeasurementIndex, int fileIndex){
 #endif
 	emit SetCurrentMeasurementSignal(currentMeasurement);
 	SetupMeasurement();
-	if((myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG) && (myDet->getFramesCaughtByReceiver() == 0))
-		boxPlot->setTitle("OLD_plot.raw");
+	/*if((myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG) && (myDet->getFramesCaughtByReceiver() == 0))
+		boxPlot->setTitle("OLD_plot.raw");*/
 	return 0;
 }
 
@@ -1335,10 +1337,9 @@ void qDrawPlot::UpdatePlot(){
 	if(plotEnable){
 		LockLastImageArray();
 		//so that it doesnt plot every single thing
-		if(lastImageNumber!=last_plot_number){
+		if(lastImageNumber && lastImageNumber!=last_plot_number){
 			//1-d plot stuff
 			if(plot_in_scope==1){
-				if(lastImageNumber){
 #ifdef VERYVERBOSE
 					cout << "Last Image Number:" << lastImageNumber << endl;
 #endif
@@ -1419,12 +1420,10 @@ void qDrawPlot::UpdatePlot(){
 						if(saveAll) SavePlotAutomatic();
 
 					}
-				}
 			}//2-d plot stuff
 			else{
 				if(lastImageArray){
-					if(lastImageNumber&&last_plot_number!=(int)lastImageNumber && //there is a new plot
-							nPixelsX>0&&nPixelsY>0){
+					if(nPixelsX>0&&nPixelsY>0){
 						plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,startPixel,endPixel,lastImageArray);
 						plot2D->setTitle(GetImageTitle());
 						plot2D->SetXTitle(imageXAxisTitle);

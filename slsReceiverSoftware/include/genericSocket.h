@@ -130,6 +130,7 @@ enum communicationProtocol{
        serverAddress.sin_family = hostInfo->h_addrtype;
        memcpy((char *) &serverAddress.sin_addr.s_addr,
 	      hostInfo->h_addr_list[0], hostInfo->h_length);
+       ((char *) &serverAddress.sin_addr.s_addr)[hostInfo->h_length]='\0'; //a fix for valgrind
        serverAddress.sin_port = htons(port_number);   
        socketDescriptor=0; //You can use send and recv, //would it work?????
      } 

@@ -1604,9 +1604,10 @@ int UDPStandardImplementation::createNewFile(int ithread){
 	if(totalWritingPacketCount[ithread]){
 		frameNumberInPreviousFile[ithread] = currentFrameNumber[ithread];
 		totalPacketsInFile[ithread] = 0;
-	}else
+	}else{
 		frameNumberInPreviousFile[ithread] = -1;
-
+		frameNumberInPreviousCheck[ithread] = -1;
+	}
 
 
 
@@ -2905,6 +2906,30 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 			fwrite(wbuffer + HEADER_SIZE_NUM_TOT_PACKETS, 1, oneDataSize*packetsPerFrame+fifoBufferHeaderSize-HEADER_SIZE_NUM_TOT_PACKETS, sfilefd[ithread]);
 		}
 
+
+
+		//Print packet loss and filenames
+		if( (currentFrameNumber[ithread]%(maxFramesPerFile/10)) == 0){
+			printf("\nThread:%d"
+					"\t\tPackets Lost:%d"
+					"\tPacketsFromLastCheck:%lld"
+					"\tCurrentFrameNumber:%lld"
+					"\tPreviousFrameNumber:%lld\n",
+					ithread,
+					( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousCheck[ithread])*packetsPerFrame) - totalWritingPacketCountFromLastCheck[ithread]),
+					totalWritingPacketCountFromLastCheck[ithread],
+					currentFrameNumber[ithread],
+					frameNumberInPreviousCheck[ithread]
+			);
+
+			//reset counters for each new file
+			frameNumberInPreviousCheck[ithread] = currentFrameNumber[ithread];
+			totalWritingPacketCountFromLastCheck[ithread] = 0;
+		}
+
+
+		if(npackets!=128) exit(-1);/******************/
+		totalWritingPacketCountFromLastCheck[ithread]+= npackets;
 		totalPacketsInFile[ithread] += npackets;
 		totalWritingPacketCount[ithread] += npackets;
 		lastFrameNumberInFile[ithread] = tempframenumber;
@@ -2922,34 +2947,6 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 
 		if(numberofWriterThreads > 1)
 			pthread_mutex_unlock(&writeMutex);
-
-
-		//Print packet loss and filenames
-		if(totalWritingPacketCountFromLastCheck[ithread] && (currentFrameNumber[ithread]%(maxFramesPerFile/10)) == 0){
-			printf("\nThread:%d"
-					"\t\tPackets Lost:%d"
-					"\tPacketsFromLastCheck:%lld"
-					"\tCurrentFrameNumber:%lld"
-					"\tPreviousFrameNumber:%lld\n",
-					ithread,
-					( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousCheck[ithread])*packetsPerFrame) - totalWritingPacketCountFromLastCheck[ithread]),
-					totalWritingPacketCountFromLastCheck[ithread],
-					currentFrameNumber[ithread],
-					frameNumberInPreviousCheck[ithread]
-			);
-
-			//reset counters for each new file
-			if(totalWritingPacketCountFromLastCheck[ithread]){
-				frameNumberInPreviousCheck[ithread] = currentFrameNumber[ithread];
-				totalWritingPacketCountFromLastCheck[ithread] = 0;
-			}else
-				frameNumberInPreviousCheck[ithread] = -1;
-		}
-
-		if(npackets!=128) exit(-1);/******************/
-		totalWritingPacketCountFromLastCheck[ithread]+= npackets;
-
-
 
 	}
 #ifdef DEBUG4

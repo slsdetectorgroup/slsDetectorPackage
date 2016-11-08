@@ -125,7 +125,7 @@ inline std::string NowTime()
 
 inline std::string NowTime()
 {
-    char buffer[11];cout<<"111"<<endl;
+	char buffer[100];// char buffer[11];
     time_t t;
     time(&t);
     tm r = {0};

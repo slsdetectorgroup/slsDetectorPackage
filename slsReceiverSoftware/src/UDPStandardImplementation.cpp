@@ -3125,7 +3125,7 @@ void UDPStandardImplementation::copyFrameToGui(int ithread, char* buffer, uint32
 		guiNumPackets[ithread] = numpackets;
 		strcpy(guiFileName[ithread],completeFileName[ithread]);
 		if(myDetectorType == JUNGFRAU) //copy also the header
-			memcpy(latestData[ithread],buffer+HEADER_SIZE_NUM_TOT_PACKETS, numpackets*onePacketSize+fifoBufferHeaderSize-HEADER_SIZE_NUM_TOT_PACKETS);
+			memcpy(latestData[ithread],buffer+HEADER_SIZE_NUM_TOT_PACKETS, bufferSize+fifoBufferHeaderSize-HEADER_SIZE_NUM_TOT_PACKETS);
 		else //copy only the data
 			memcpy(latestData[ithread],buffer+ fifoBufferHeaderSize , numpackets*onePacketSize);
 		//let it know its got data

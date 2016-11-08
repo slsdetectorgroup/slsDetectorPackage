@@ -125,18 +125,15 @@ inline std::string NowTime()
 
 inline std::string NowTime()
 {
-	cout<<"111"<<endl;
-	char buffer[11];
-    time_t t;cout<<"222"<<endl;
-    time(&t);cout<<"333"<<endl;
-    tm r = {0};cout<<"444"<<endl;
-    strftime(buffer, sizeof(buffer), "%X", localtime_r(&t, &r));cout<<"555"<<endl;
-    struct timeval tv;cout<<"666"<<endl;
-    gettimeofday(&tv, 0);cout<<"777"<<endl;
-    char result[100] = {0};cout<<"888"<<endl;
+    char buffer[11];
+    time_t t;
+    time(&t);
+    tm r = {0};
+    strftime(buffer, sizeof(buffer), "%X", localtime_r(&t, &r));
+    struct timeval tv;
+    gettimeofday(&tv, 0);
+    char result[100] = {0};
     sprintf(result, "%s.%03ld", buffer, (long)tv.tv_usec / 1000);
-    cout<<"result:"<<endl;
-    cout<<"r:"<<result<<endl;
     return result;
 }
 
@@ -147,8 +144,8 @@ template <typename T> Log<T>::Log():lev(logDEBUG){}
 
 template <typename T> std::ostringstream& Log<T>::Get(TLogLevel level)
 {
-	lev = level;cout<<"gonna do nowtime"<<endl;
-    os << "- " << NowTime();cout<<"did nowtime"<<endl;
+	lev = level;
+    os << "- " << NowTime();
     os << " " << ToString(level) << ": ";
     os << std::string(level > logDEBUG ? level - logDEBUG : 0, '\t');
     return os;

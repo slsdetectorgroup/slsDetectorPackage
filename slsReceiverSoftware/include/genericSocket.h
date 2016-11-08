@@ -618,11 +618,12 @@ enum communicationProtocol{
     			 /*int k = 0;*/
 
     			 while(length>0){
+    				 cprintf(RED,"packet_size:%d Length:%d nsending:%d\n",packet_size,length,nsending);
    					 nsending = (length>packet_size) ? packet_size:length;
     			     nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
     				 if(nsent != nsending){ //if((nsent != nsending)){ && (nsent < packet_size)){
     					 if(nsent && (nsent != header_packet_size) && (nsent != -1))
-    							 cprintf(RED,"Incomplete Packet size %d\n",nsent);
+    							 cprintf(RED,"packet_size:%d Length:%d nsending:%d Incomplete Packet size %d\n",packet_size,length,nsending,nsent);
     					 break;
     				 }
     				 length-=nsent;

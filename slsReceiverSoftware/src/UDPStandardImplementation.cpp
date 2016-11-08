@@ -2905,7 +2905,6 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 			fwrite(wbuffer + HEADER_SIZE_NUM_TOT_PACKETS, 1, oneDataSize*packetsPerFrame+fifoBufferHeaderSize-HEADER_SIZE_NUM_TOT_PACKETS, sfilefd[ithread]);
 		}
 
-		if(npackets!=128) exit(-1);
 		totalPacketsInFile[ithread] += npackets;
 		totalWritingPacketCount[ithread] += npackets;
 		lastFrameNumberInFile[ithread] = tempframenumber;
@@ -2938,14 +2937,17 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 					currentFrameNumber[ithread],
 					frameNumberInPreviousCheck[ithread]
 			);
+
+			//reset counters for each new file
+			if(totalWritingPacketCountFromLastCheck[ithread]){
+				frameNumberInPreviousCheck[ithread] = currentFrameNumber[ithread];
+				totalWritingPacketCountFromLastCheck[ithread] = 0;
+			}else
+				frameNumberInPreviousCheck[ithread] = -1;
 		}
 
-		//reset counters for each new file
-		if(totalWritingPacketCountFromLastCheck[ithread]){
-			frameNumberInPreviousCheck[ithread] = currentFrameNumber[ithread];
-			totalWritingPacketCountFromLastCheck[ithread] = 0;
-		}else
-			frameNumberInPreviousCheck[ithread] = -1;
+		if(npackets!=128) exit(-1);/******************/
+		totalWritingPacketCountFromLastCheck[ithread]+= npackets;
 
 
 

@@ -1050,7 +1050,7 @@ int UDPStandardImplementation::startReceiver(char *c){
 void UDPStandardImplementation::stopReceiver(){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
-	//FILE_LOG(logINFO)  << "Stopping Receiver";
+	FILE_LOG(logINFO)  << "Stopping Receiver";
 
 	//set status to transmitting
 	startReadout();

@@ -145,9 +145,9 @@ template <typename T> Log<T>::Log():lev(logDEBUG){}
 template <typename T> std::ostringstream& Log<T>::Get(TLogLevel level)
 {
 	lev = level;
-    os << "- " << NowTime();cout<<"111 "<<os<<endl;
-    os << " " << ToString(level) << ": ";cout<<"222 " <<os<<endl;
-    os << std::string(level > logDEBUG ? level - logDEBUG : 0, '\t');cout<<"333 "<<os<<endl;
+    os << "- " << NowTime();
+    os << " " << ToString(level) << ": ";
+    os << std::string(level > logDEBUG ? level - logDEBUG : 0, '\t');
     return os;
 }
 

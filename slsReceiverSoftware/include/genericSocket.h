@@ -177,7 +177,7 @@ enum communicationProtocol{
 	 total_sent(0),
 	 header_packet_size(hsize)
    {
-
+cprintf(RED,"packet_soze:%d\n",packet_size);
 /* // you can specify an IP address: */
 /* // or you can let it automatically select one: */
 /* myaddr.sin_addr.s_addr = INADDR_ANY; */
@@ -618,12 +618,11 @@ enum communicationProtocol{
     			 /*int k = 0;*/
 
     			 while(length>0){
-    				 cprintf(RED,"packet_size:%d Length:%d nsending:%d\n",packet_size,length,nsending);
    					 nsending = (length>packet_size) ? packet_size:length;
     			     nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
     				 if(nsent != nsending){ //if((nsent != nsending)){ && (nsent < packet_size)){
     					 if(nsent && (nsent != header_packet_size) && (nsent != -1))
-    							 cprintf(RED,"packet_size:%d Length:%d nsending:%d Incomplete Packet size %d\n",packet_size,length,nsending,nsent);
+    							 cprintf(RED,"Incomplete Packet size %d\n",nsent);
     					 break;
     				 }
     				 length-=nsent;

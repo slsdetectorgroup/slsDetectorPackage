@@ -125,7 +125,7 @@ inline std::string NowTime()
 
 inline std::string NowTime()
 {
-	char buffer[100];// char buffer[11];
+	char buffer[11];
     time_t t;
     time(&t);
     tm r = {0};
@@ -134,6 +134,8 @@ inline std::string NowTime()
     gettimeofday(&tv, 0);
     char result[100] = {0};
     sprintf(result, "%s.%03ld", buffer, (long)tv.tv_usec / 1000); 
+    cout<<"result:"<<endl;
+    cout<<"r:"<<result<<endl;
     return result;
 }
 

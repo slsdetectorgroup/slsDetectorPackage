@@ -2909,7 +2909,7 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 
 
 		//Print packet loss and filenames
-		if( (tempframenumber%(maxFramesPerFile/10)) == 0){
+		if(tempframenumber &&  (tempframenumber%(maxFramesPerFile/10)) == 0){
 			printf("\nTThread:%d"
 					"\t\tPackets Lost:%d"
 					"\tPacketsFromLastCheck:%lld"

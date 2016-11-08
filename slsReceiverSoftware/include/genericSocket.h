@@ -111,11 +111,9 @@ enum communicationProtocol{
 	 total_sent(0),// sender (client): where to? ip
 	 header_packet_size(0)
    { 
-	 //memset(&serverAddress, 0, sizeof(sockaddr_in));
-	 //memset(&clientAddress, 0, sizeof(sockaddr_in));
-	// serverAddress = {0};
-	// clientAddress = {0};
-	  //   strcpy(hostname,host_ip_or_name);
+	 memset(&serverAddress, 0, sizeof(serverAddress));
+	 memset(&clientAddress, 0, sizeof(clientAddress));
+  //   strcpy(hostname,host_ip_or_name);
 
 	 strcpy(lastClientIP,"none");
 	 strcpy(thisClientIP,"none1");
@@ -128,8 +126,7 @@ enum communicationProtocol{
      } else {
        // Set some fields in the serverAddress structure.  
        serverAddress.sin_family = hostInfo->h_addrtype;
-       memcpy((char *) &serverAddress.sin_addr.s_addr,
-	      hostInfo->h_addr_list[0], hostInfo->h_length);
+       memcpy((char *) &serverAddress.sin_addr.s_addr, hostInfo->h_addr_list[0], hostInfo->h_length);
        //((char *) &serverAddress.sin_addr.s_addr)[hostInfo->h_length]='\0'; //a fix for valgrind
        serverAddress.sin_port = htons(port_number);   
        socketDescriptor=0; //You can use send and recv, //would it work?????
@@ -179,6 +176,8 @@ enum communicationProtocol{
 	 header_packet_size(hsize)
    {
 
+	  memset(&serverAddress, 0, sizeof(serverAddress));
+	  memset(&clientAddress, 0, sizeof(clientAddress));
 /* // you can specify an IP address: */
 /* // or you can let it automatically select one: */
 /* myaddr.sin_addr.s_addr = INADDR_ANY; */

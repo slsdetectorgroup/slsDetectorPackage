@@ -2133,7 +2133,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 			int currentfnum=-1;
 
 			//read first packet
-			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, onePacketSize);
+			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset);
 			if(!receivedSize) return 0;
 			header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
 			currentpnum = (*( (uint8_t*) header->packetNumber));
@@ -2159,7 +2159,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 						break;
 					pnum --;
 
-					receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, onePacketSize);
+					receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset);
 					if(!receivedSize){
 						totalIgnoredPacketCount[ithread] += (packetsPerFrame - pnum);
 						return 0;
@@ -2180,7 +2180,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 					//find the start of next image
 					while(currentpnum != pnum){
 						totalIgnoredPacketCount[ithread]++;
-						receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset, onePacketSize);
+						receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset);
 						if(!receivedSize) return 0;
 						header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
 						currentpnum = (*( (uint8_t*) header->packetNumber));

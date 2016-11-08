@@ -611,7 +611,7 @@ cprintf(RED,"packet_soze:%d\n",packet_size);
     		 break;
     	 case UDP:
     		 if (socketDescriptor<0) return -1;
-
+cprintf(RED,"length:%d packetsize:%d\n",length,packet_size);
     		 //if length given, listens to length, else listens for packetsize till length is reached
     		 if(length){
 

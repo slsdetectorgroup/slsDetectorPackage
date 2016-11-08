@@ -312,7 +312,7 @@
 #define RUNSTATE_0_BIT     		 0x00001000
 #define RUNSTATE_1_BIT    		 0x00002000
 #define RUNSTATE_2_BIT    		 0x00004000
-#define STOPPED_BIT       0x00008000 // error!
+#define STOPPED_BIT       		 0x00008000 // stopped!
 #define ALL_FIFO_EMPTY_BIT       0x00010000 // data ready
 #define RUNMACHINE_BUSY_BIT      0x00020000
 #define READMACHINE_BUSY_BIT     0x00040000

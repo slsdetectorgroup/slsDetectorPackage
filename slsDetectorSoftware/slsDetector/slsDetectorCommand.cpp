@@ -37,6 +37,9 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdStatus;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="datastream"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDataStream;
+  i++;
 
   /* Detector structure configuration and debugging commands */
 
@@ -1359,6 +1362,44 @@ string slsDetectorCommand::helpStatus(int narg, char *args[], int action) {
     os << string("status \t controls the detector acquisition - can be start or stop \n");
   return os.str();
 }
+
+
+
+string slsDetectorCommand::cmdDataStream(int narg, char *args[], int action) {
+
+#ifdef VERBOSE
+  cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
+#endif
+  int ival=-1;
+  char ans[100]="";
+
+  myDet->setOnline(ONLINE_FLAG);
+  myDet->setReceiverOnline(ONLINE_FLAG);
+
+  if (action==HELP_ACTION)
+      return helpStatus(narg,args,HELP_ACTION);
+
+  if (action==PUT_ACTION) {
+	  if (!sscanf(args[1],"%d",&ival))
+		  return string ("cannot scan datastream mode");
+
+	  myDet->enableDataStreamingFromReceiver(ival);
+  }
+  sprintf(ans,"%d",myDet->enableDataStreamingFromReceiver());
+  return string(ans);
+}
+
+
+string slsDetectorCommand::helpDataStream(int narg, char *args[], int action) {
+
+  ostringstream os;
+  if (action==GET_ACTION || action==HELP_ACTION)
+    os << string("datastream \t gets if zmq data stream from receiver is enabled. \n");
+  if (action==PUT_ACTION || action==HELP_ACTION)
+    os << string("datastream i\t enables/disables the zmq data stream from receiver. \n");
+  return os.str();
+}
+
 
 
 string slsDetectorCommand::cmdFree(int narg, char *args[], int action) {

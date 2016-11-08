@@ -58,8 +58,8 @@ int init_detector(int b) {
 	if(b){
 		defineGPIOpins();
 		resetFPGA();
-		usleep(250*1000);
-	}
+	}else
+		usleep(300*1000);
 
 	if (mapCSP0()==FAIL) {
 		printf("Could not map memory\n");
@@ -3180,7 +3180,6 @@ int reset_fpga(int file_des) {
 	sprintf(mess,"Reset FPGA unsuccessful\n");
 
 	resetFPGA();
-	usleep(250*1000);
 	initializeDetector();
 
 	ret = FORCE_UPDATE;

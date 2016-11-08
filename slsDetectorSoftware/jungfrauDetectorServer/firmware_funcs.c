@@ -167,11 +167,13 @@ void resetFPGA(){
 	cprintf(BLUE,"\n*** Reseting FPGA ***\n");
 	FPGAdontTouchFlash();
 	FPGATouchFlash();
+	usleep(250*1000);
 }
 
 void FPGAdontTouchFlash(){
 	//tell FPGA to not touch flash
 	system("echo 0 > /sys/class/gpio/gpio9/value");
+	//usleep(100*1000);
 }
 
 void FPGATouchFlash(){
@@ -1645,7 +1647,7 @@ int configureInterface(uint32_t destip,uint64_t destmac,uint64_t  sourcemac,int 
 
 #endif
 
-	bus_w(CONTROL_REG,GB10_RESET_BIT);
+	//bus_w(CONTROL_REG,GB10_RESET_BIT);
 	//usleep(50 * 1000);
 	bus_w(CONTROL_REG,0);
 	//usleep(500* 1000);
@@ -1691,7 +1693,7 @@ int configureMAC(uint32_t destip,uint64_t destmac,uint64_t  sourcemac,int source
 
 
 
-
+	/*volatile u_int32_t conf= bus_r(CONFIG_REG);*/
 	uint32_t sourceport  =  0x7e9a; // 0xE185;
 	int interface=0;
 	int ngb;

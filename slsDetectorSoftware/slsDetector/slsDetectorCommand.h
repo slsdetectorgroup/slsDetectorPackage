@@ -38,6 +38,7 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   static string helpData(int narg, char *args[], int action);
   static string helpFrame(int narg, char *args[], int action);
   static string helpStatus(int narg, char *args[], int action);
+  static string helpDataStream(int narg, char *args[], int action);
   static string helpFree(int narg, char *args[], int action);
   static string helpAdd(int narg, char *args[], int action);
   static string helpRemove(int narg, char *args[], int action);
@@ -109,6 +110,7 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   string cmdData(int narg, char *args[], int action); 
   string cmdFrame(int narg, char *args[], int action); 
   string cmdStatus(int narg, char *args[], int action); 
+  string cmdDataStream(int narg, char *args[], int action);
   string cmdFree(int narg, char *args[], int action);
   string cmdAdd(int narg, char *args[], int action);
   string cmdRemove(int narg, char *args[], int action);

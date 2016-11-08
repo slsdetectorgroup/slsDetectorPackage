@@ -624,7 +624,10 @@ private:
 	/** Previous Frame number from buffer to calculate loss */
 	int64_t frameNumberInPreviousFile[MAX_NUMBER_OF_WRITER_THREADS];
 
-
+	/** Previous Frame number from last check to calculate loss */
+	int64_t frameNumberInPreviousCheck[MAX_NUMBER_OF_WRITER_THREADS];
+	/** total packet count from last check */
+	int64_t totalWritingPacketCountFromLastCheck[MAX_NUMBER_OF_WRITER_THREADS];
 
 
 	/* Acquisition started */

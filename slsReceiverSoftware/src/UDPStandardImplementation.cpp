@@ -167,9 +167,11 @@ void UDPStandardImplementation::initializeMembers(){
 		frameIndex[i] = 0;
 		currentFrameNumber[i] = 0;
 		frameNumberInPreviousFile[i] = 0;
+		frameNumberInPreviousCheck[i] = 0;
 		lastFrameNumberInFile[i] = -1;
 		totalPacketsInFile[i] = 0;
 		totalWritingPacketCount[i] = 0;
+		totalWritingPacketCountFromLastCheck[i] = 0;
 	}
 
 
@@ -947,6 +949,7 @@ int UDPStandardImplementation::startReceiver(char *c){
 		lastFrameNumberInFile[i] = -1;
 		totalPacketsInFile[i] = 0;
 		totalWritingPacketCount[i] = 0;
+		totalWritingPacketCountFromLastCheck[i] = 0;
 		if(sfilefd[i]){
 			fclose(sfilefd[i]);
 			sfilefd[i] = 0;
@@ -1582,11 +1585,7 @@ int UDPStandardImplementation::createNewFile(int ithread){
 		setvbuf(sfilefd[ithread],NULL,_IOFBF,BUF_SIZE);
 
 		//Print packet loss and filenames
-		if(!totalWritingPacketCount[ithread]){
-			frameNumberInPreviousFile[ithread] = -1;
-			//printf("Thread:%d File:%s\n",ithread,completeFileName[ithread]);
-		}else{
-
+		if(totalWritingPacketCount[ithread]){
 			printf("\nThread:%d File:%s\n"
 					"Packets Lost:%d"
 					"\t\tPacketsInFile:%lld\tCurrentFrameNumber:%lld\tPreviousFrameNumber:%lld\n",
@@ -1607,6 +1606,7 @@ int UDPStandardImplementation::createNewFile(int ithread){
 		totalPacketsInFile[ithread] = 0;
 	}else
 		frameNumberInPreviousFile[ithread] = -1;
+
 
 
 
@@ -2738,15 +2738,21 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 		fwrite((void*)fileHeader[ithread], 1, FILE_HEADER_SIZE, sfilefd[ithread]);
 	}
 
-	if(totalWritingPacketCount[ithread]){
-		printf("\nThread:%d File:%s\n"
-				"Packets Lost:%d"
-				"\t\tPacketsInFile:%lld\tCurrentFrameNumber:%lld\tPreviousFrameNumber:%lld\n",
-				ithread,completeFileName[ithread],
-				( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousFile[ithread])*packetsPerFrame) - totalPacketsInFile[ithread]),
-				totalPacketsInFile[ithread],currentFrameNumber[ithread],frameNumberInPreviousFile[ithread]
-				);
+	//Print packet loss
+	if(totalWritingPacketCountFromLastCheck[ithread]){
+		printf("\nThread:%d"
+				"\t\tPackets Lost:%d"
+				"\tPacketsFromLastCheck:%lld"
+				"\tCurrentFrameNumber:%lld"
+				"\tPreviousFrameNumber:%lld\n",
+				ithread,
+				( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousCheck[ithread])*packetsPerFrame) - totalWritingPacketCountFromLastCheck[ithread]),
+				totalWritingPacketCountFromLastCheck[ithread],
+				currentFrameNumber[ithread],
+				frameNumberInPreviousCheck[ithread]
+		);
 	}
+
 	closeFile(ithread);
 	pthread_mutex_lock(&statusMutex);
 	writerThreadsMask^=(1<<ithread);
@@ -2917,6 +2923,31 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 
 		if(numberofWriterThreads > 1)
 			pthread_mutex_unlock(&writeMutex);
+
+
+		//Print packet loss and filenames
+		if(totalWritingPacketCountFromLastCheck[ithread] && (currentFrameNumber[ithread]%(maxFramesPerFile/10)) == 0){
+			printf("\nThread:%d"
+					"\t\tPackets Lost:%d"
+					"\tPacketsFromLastCheck:%lld"
+					"\tCurrentFrameNumber:%lld"
+					"\tPreviousFrameNumber:%lld\n",
+					ithread,
+					( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousCheck[ithread])*packetsPerFrame) - totalWritingPacketCountFromLastCheck[ithread]),
+					totalWritingPacketCountFromLastCheck[ithread],
+					currentFrameNumber[ithread],
+					frameNumberInPreviousCheck[ithread]
+			);
+		}
+
+		//reset counters for each new file
+		if(totalWritingPacketCountFromLastCheck[ithread]){
+			frameNumberInPreviousCheck[ithread] = currentFrameNumber[ithread];
+			totalWritingPacketCountFromLastCheck[ithread] = 0;
+		}else
+			frameNumberInPreviousCheck[ithread] = -1;
+
+
 
 	}
 #ifdef DEBUG4

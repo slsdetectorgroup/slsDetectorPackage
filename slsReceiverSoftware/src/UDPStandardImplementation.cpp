@@ -878,7 +878,10 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 		if(latestData[i]) 	{delete[] latestData[i]; 	latestData[i] = 0;}
 	}
 	for(int i=0; i<numberofWriterThreads; i++){
-		latestData[i] = new char[bufferSize];
+		if(myDetectorType == JUNGFRAU)
+			latestData[i] = new char[bufferSize+fifoBufferHeaderSize-HEADER_SIZE_NUM_TOT_PACKETS];
+		else
+			latestData[i] = new char[bufferSize];
 	}
 
 

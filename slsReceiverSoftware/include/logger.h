@@ -46,7 +46,6 @@ void error(const char *location, const char *msg){
 inline std::string NowTime();
 
 enum TLogLevel {logERROR, logWARNING, logINFO, logDEBUG, logDEBUG1, logDEBUG2, logDEBUG3, logDEBUG4, logDEBUG5};
-static const char TLevelValues[] = {"ERROR", "WARNING", "INFO", "DEBUG", "DEBUG1", "DEBUG2", "DEBUG3", "DEBUG4","DEBUG5"};
 
 template <typename T> class Log{
  public:
@@ -170,9 +169,8 @@ template <typename T> TLogLevel& Log<T>::ReportingLevel()
 
 template <typename T> std::string Log<T>::ToString(TLogLevel level)
 {
-	static const char*  buffer[9][] = {"ERROR", "WARNING", "INFO", "DEBUG", "DEBUG1", "DEBUG2", "DEBUG3", "DEBUG4","DEBUG5"};
+	static const char* const buffer[] = {"ERROR", "WARNING", "INFO", "DEBUG", "DEBUG1", "DEBUG2", "DEBUG3", "DEBUG4","DEBUG5"};
     return buffer[level];
-    //return TLevelValues[level];
 }
 
 template <typename T>

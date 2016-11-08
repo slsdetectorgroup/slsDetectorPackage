@@ -125,7 +125,7 @@ inline std::string NowTime()
 
 inline std::string NowTime()
 {
-    char buffer[11];
+    char buffer[11];cout<<"111"<<endl;
     time_t t;
     time(&t);
     tm r = {0};
@@ -145,9 +145,9 @@ template <typename T> Log<T>::Log():lev(logDEBUG){}
 template <typename T> std::ostringstream& Log<T>::Get(TLogLevel level)
 {
 	lev = level;
-    os << "- " << NowTime();
-    os << " " << ToString(level) << ": ";
-    os << std::string(level > logDEBUG ? level - logDEBUG : 0, '\t');
+    os << "- " << NowTime();cout<<"111 "<<os<<endl;
+    os << " " << ToString(level) << ": ";cout<<"222 " <<os<<endl;
+    os << std::string(level > logDEBUG ? level - logDEBUG : 0, '\t');cout<<"333 "<<os<<endl;
     return os;
 }
 

@@ -2899,6 +2899,7 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 			fwrite(wbuffer + HEADER_SIZE_NUM_TOT_PACKETS, 1, oneDataSize*packetsPerFrame+fifoBufferHeaderSize-HEADER_SIZE_NUM_TOT_PACKETS, sfilefd[ithread]);
 		}
 
+		if(npackets!=128) exit(-1);
 		totalPacketsInFile[ithread] += npackets;
 		totalWritingPacketCount[ithread] += npackets;
 		lastFrameNumberInFile[ithread] = tempframenumber;

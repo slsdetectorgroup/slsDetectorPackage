@@ -1382,7 +1382,6 @@ string slsDetectorCommand::cmdDataStream(int narg, char *args[], int action) {
   if (action==PUT_ACTION) {
 	  if (!sscanf(args[1],"%d",&ival))
 		  return string ("cannot scan datastream mode");
-
 	  myDet->enableDataStreamingFromReceiver(ival);
   }
   sprintf(ans,"%d",myDet->enableDataStreamingFromReceiver());

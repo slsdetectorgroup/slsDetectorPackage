@@ -5639,6 +5639,7 @@ int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
 		}
 
 	}else enable = threadStarted;
+
 	int ret=-100, ret1;
 	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
 		if (detectors[idet]) {

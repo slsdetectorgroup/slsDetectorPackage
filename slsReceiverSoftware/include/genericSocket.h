@@ -492,7 +492,7 @@ enum communicationProtocol{
      };
 
    
-     int setPacketSize(int i=-1) { if (i>=0) packet_size=i;cprintf(RED,"changed packet_soze:%d\n",packet_size); return packet_size;};
+     int setPacketSize(int i=-1) { if (i>=0) packet_size=i;return packet_size;};
 
   
 

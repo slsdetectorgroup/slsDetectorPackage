@@ -2909,8 +2909,8 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 
 
 		//Print packet loss and filenames
-		if( (currentFrameNumber[ithread]%(maxFramesPerFile/10)) == 0){
-			printf("\nThread:%d"
+		if( (tempframenumber%(maxFramesPerFile/10)) == 0){
+			printf("\nTThread:%d"
 					"\t\tPackets Lost:%d"
 					"\tPacketsFromLastCheck:%lld"
 					"\tCurrentFrameNumber:%lld"

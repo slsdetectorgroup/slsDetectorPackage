@@ -239,11 +239,11 @@ eg.
 The {\tt{[singlemodulelongside\_x]}} and {\tt{[start det]}} param are optional. Defaults are ``1'', the detector long side is on the x coordinate and start to reconstruct from module 0. 
 The executables: 
 \begin{verbatim}
-bcfMaker1.5M [file\_name\_with\_dir]
-bcfMaker9M [file\_name\_with\_dir]
+bcfMaker1.5M [file_name_with_dir]
+bcfMaker9M [file_name_with_dir]
 \end{verbatim}
-contain the hardcoded geometry for the 1.5M (3 modules horizontal on the long side) and for the 9M at cSAXS: 6(short side)x3 (lomg side) modules.\\ 
-Missing packets in a frame and border pixels ($\times 2$ and $/times 4$ are given with value $-1$ at the present mode.
+contain the hardcoded geometry for the 1.5M (3 modules horizontal on the long side) and for the 9M at cSAXS: 6(short side)$\times$3 (long side) modules.\\ 
+Missing packets in a frame and border pixels ($\times 2$ and $\times 4$ are given with value $-1$ at the present time.
 
 It is important to know, that the pixels at the edge between 2 chips count more as double size. We can virtually introduced 1 virtual pixel per double larger pixel, so to have an even number of counts everywhere. Virtual pixels (not filled ) between module gaps are also inserted.
 

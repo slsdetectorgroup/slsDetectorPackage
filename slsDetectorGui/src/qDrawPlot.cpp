@@ -973,7 +973,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 		  plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
 		  // only if you got the lock, do u need to remember lastimagenumber to plot
 		  lastImageNumber= currentFrame+1;
-			cout<<"got last imagenumber:"<<lastImageNumber<<endl;
+			//cout<<"got last imagenumber:"<<lastImageNumber<<endl;
 			//1d
 			if(plot_in_scope==1){
 				// Titles

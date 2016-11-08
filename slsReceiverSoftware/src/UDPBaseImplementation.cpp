@@ -38,7 +38,7 @@ void UDPBaseImplementation::initializeMembers(){
 	FILE_LOG(logDEBUG) << "Info: Initializing base members";
 	//**detector parameters***
 	myDetectorType = GENERIC;
-	strcpy(detHostname,"\0");
+	strcpy(detHostname,"");
 	packetsPerFrame = 0;
 	acquisitionPeriod = 0;
 	numberOfFrames = 0;

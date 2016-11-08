@@ -2526,9 +2526,9 @@ void UDPStandardImplementation::startWriting(){
 	threadStarted = 1;
 
 	//variable definitions
-	char* wbuf;											//buffer popped from FIFO
+	char* wbuf=NULL;											//buffer popped from FIFO
 	sfilefd[ithread] = 0;							//file pointer
-	uint64_t nf;										//for compression, number of frames
+	uint64_t nf=0;										//for compression, number of frames
 	int listenfifoIndex = ithread;
 
 

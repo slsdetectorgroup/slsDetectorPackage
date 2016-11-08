@@ -2141,10 +2141,9 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 			header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
 			currentpnum = (*( (uint8_t*) header->packetNumber));
 			//cout<<"1 currentpnum:"<<currentpnum<<endl;
-
+			totalListeningPacketCount[ithread]++;
 
 			while(true){
-				totalListeningPacketCount[ithread]++;
 
 				//correct packet
 				if(currentpnum == pnum){
@@ -2167,6 +2166,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 						totalIgnoredPacketCount[ithread] += (packetsPerFrame - pnum);
 						return 0;
 					}
+					totalListeningPacketCount[ithread]++;
 					header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
 					currentpnum = (*( (uint8_t*) header->packetNumber));
 					//cout<<"next currentpnum :"<<currentpnum<<endl;
@@ -2185,9 +2185,11 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 						totalIgnoredPacketCount[ithread]++;
 						receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset);
 						if(!receivedSize) return 0;
+						totalListeningPacketCount[ithread]++;
 						header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
 						currentpnum = (*( (uint8_t*) header->packetNumber));
 						//cout<<"trying to find: currentpnum:"<<currentpnum<<endl;
+
 					}
 				}
 			}//----- got a whole frame -------

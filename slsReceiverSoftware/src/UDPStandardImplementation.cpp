@@ -2748,16 +2748,29 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 
 	//Print packet loss
 	if(totalWritingPacketCountFromLastCheck[ithread]){
-		thread/****/
-		printf("\nPackets Lost:%d"
-				"\tPacketsFromLastCheck:%lld"
-				"\tCurrentFrameNumber:%lld"
-				"\tPreviousFrameNumber:%lld\n",
-				( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousCheck[ithread])*packetsPerFrame) - totalWritingPacketCountFromLastCheck[ithread]),
-				totalWritingPacketCountFromLastCheck[ithread],
-				currentFrameNumber[ithread],
-				frameNumberInPreviousCheck[ithread]
-		);
+		if(numberofWriterThreads>1){
+			printf("\nThread:%d"
+					"\tPackets Lost:%d"
+					"\tPacketsFromLastCheck:%lld"
+					"\tCurrentFrameNumber:%lld"
+					"\tPreviousFrameNumber:%lld\n",
+					ithread,
+					( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousCheck[ithread])*packetsPerFrame) - totalWritingPacketCountFromLastCheck[ithread]),
+					totalWritingPacketCountFromLastCheck[ithread],
+					currentFrameNumber[ithread],
+					frameNumberInPreviousCheck[ithread]
+			);
+		}else{
+			printf("\nPackets Lost:%d"
+					"\tPacketsFromLastCheck:%lld"
+					"\tCurrentFrameNumber:%lld"
+					"\tPreviousFrameNumber:%lld\n",
+					( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousCheck[ithread])*packetsPerFrame) - totalWritingPacketCountFromLastCheck[ithread]),
+					totalWritingPacketCountFromLastCheck[ithread],
+					currentFrameNumber[ithread],
+					frameNumberInPreviousCheck[ithread]
+			);
+		}
 	}
 
 	closeFile(ithread);
@@ -2916,12 +2929,10 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 
 		//Print packet loss and filenames
 		if(tempframenumber &&  (tempframenumber%(maxFramesPerFile/10)) == 0){
-			cprintf(BLUE,"\nThread:%d"
-					"\t\tPackets Lost:%d"
+			cprintf(BLUE,"\nPackets Lost:%d"
 					"\tPacketsFromLastCheck:%lld"
 					"\tCurrentFrameNumber:%lld"
 					"\tPreviousFrameNumber:%lld\n",
-					ithread,
 					( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousCheck[ithread])*packetsPerFrame) - totalWritingPacketCountFromLastCheck[ithread]),
 					totalWritingPacketCountFromLastCheck[ithread],
 					currentFrameNumber[ithread],

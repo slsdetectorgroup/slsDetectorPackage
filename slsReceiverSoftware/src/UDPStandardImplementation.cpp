@@ -1586,7 +1586,7 @@ int UDPStandardImplementation::createNewFile(int ithread){
 
 		//Print packet loss and filenames
 		if(totalWritingPacketCount[ithread]){
-			printf("\nThread:%d File:%s\n"
+			cprintf(BLUE,"\nThread:%d File:%s\n"
 					"Packets Lost:%d"
 					"\t\tPacketsInFile:%lld\tCurrentFrameNumber:%lld\tPreviousFrameNumber:%lld\n",
 					ithread,completeFileName[ithread],
@@ -2929,7 +2929,7 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 
 		//Print packet loss and filenames
 		if(tempframenumber &&  (tempframenumber%(maxFramesPerFile/10)) == 0){
-			cprintf(BLUE,"\nPackets Lost:%d"
+			printf("\nPackets Lost:%d"
 					"\tPacketsFromLastCheck:%lld"
 					"\tCurrentFrameNumber:%lld"
 					"\tPreviousFrameNumber:%lld\n",

@@ -1586,13 +1586,30 @@ int UDPStandardImplementation::createNewFile(int ithread){
 
 		//Print packet loss and filenames
 		if(totalWritingPacketCount[ithread]){
-			cprintf(BLUE,"\nThread:%d File:%s\n"
-					"Packets Lost:%d"
-					"\t\tPacketsInFile:%lld\tCurrentFrameNumber:%lld\tPreviousFrameNumber:%lld\n",
-					ithread,completeFileName[ithread],
-					( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousFile[ithread])*packetsPerFrame) - totalPacketsInFile[ithread]),
-					totalPacketsInFile[ithread],currentFrameNumber[ithread],frameNumberInPreviousFile[ithread]
-					);
+			if(numberofWriterThreads>1){
+				cprintf(BLUE,"\nThread:%d File:%s"
+						"\nLost:%d"
+						"\tPackets:%lld"
+						"\tFrame#:%lld"
+						"\tPFrame#:%lld\n",
+						ithread,completeFileName[ithread],
+						( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousFile[ithread])*packetsPerFrame) - totalPacketsInFile[ithread]),
+						totalPacketsInFile[ithread],currentFrameNumber[ithread],frameNumberInPreviousFile[ithread]
+						);
+			}else{
+				cprintf(BLUE,"\nFile:%s"
+						"\nLost:%d"
+						"\tPackets:%lld"
+						"\tFrame#:%lld"
+						"\tPFrame#:%lld\n",
+						completeFileName[ithread],
+						( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousFile[ithread])*packetsPerFrame) - totalPacketsInFile[ithread]),
+						totalPacketsInFile[ithread],
+						currentFrameNumber[ithread],
+						frameNumberInPreviousFile[ithread]
+						);
+			}
+
 		}
 
 		//write file header

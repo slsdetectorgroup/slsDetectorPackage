@@ -131,6 +131,16 @@ extern int N_DAC;
 extern int N_ADC;
 extern int N_CHANS;
 
+
+int analogEnable=1;
+int digitalEnable=0;
+
+
+
+
+
+
+
 int mapCSP0(void) {
   printf("Mapping memory\n");
 #ifndef VIRTUAL
@@ -1002,6 +1012,51 @@ int setToT(int d) {
     return 0;
 }
 
+/* int setOutputMode(int d) { */
+/*  //int ret=0; */
+/*  int reg; */
+/*  int v; */
+/*  //#ifdef VERBOSE */
+/*   printf("Setting readout flags to to %d\n",d); */
+/*   //#endif */
+/*   reg=bus_r(CONFIG_REG); */
+/*   //#ifdef VERBOSE */
+/*   printf("Before: config reg is %x\n", reg); */
+/*   //#endif */
+/*   if (d>=0) { */
+/*     reg=reg & ~(3<<8); */
+/*     if (d==DIGITAL_ONLY) */
+/*       reg=reg | (3<<8); */
+/*     else if (d==ANALOG_AND_DIGITAL) */
+/*       reg=reg | (2<<8); */
+  
+/*     bus_w(CONFIG_REG,reg); */
+    
+/*   } */
+
+/*   reg=bus_r(CONFIG_REG); */
+/*   //#ifdef VERBOSE */
+/*   printf("After: config reg is %x\n", reg); */
+/*   //#endif */
+/*   if ((reg&(2<<8))) { */
+/*     if (reg&(1<<8)) { */
+/*       digitalEnable=1; */
+/*       analogEnable=0; */
+/*       return DIGITAL_ONLY; */
+/*     }    else { */
+/*       digitalEnable=1; */
+/*       analogEnable=0; */
+/*       return ANALOG_AND_DIGITAL; */
+/*     } */
+/*   } else */
+/*     if (reg&(1<<8)) */
+/*       return -1; */
+/*     else */
+/*       return NORMAL_READOUT; */
+
+
+/* } */
+
 int setContinousReadOut(int d) {
  //int ret=0;
  int reg;
@@ -1012,6 +1067,9 @@ int setContinousReadOut(int d) {
 #ifdef VERBOSE
   printf("Before: Continous readout is %x\n", reg);
 #endif
+
+
+
   if (d>0) {
     bus_w(CONFIG_REG,reg|CONT_RO_ENABLE_BIT);
   } else if (d==0) {
@@ -1030,12 +1088,12 @@ int setContinousReadOut(int d) {
 
 int startReceiver(int start) {
 	u_int32_t addr=CONFIG_REG;
-#ifdef VERBOSE
+	//#ifdef VERBOSE
 	if(start)
 		printf("Setting up detector to send to Receiver\n");
 	else
 		printf("Setting up detector to send to CPU\n");
-#endif
+	//#endif
 	int reg=bus_r(addr);
 	//for start recever, write 0 and for stop, write 1
 	if (!start)
@@ -1049,10 +1107,13 @@ int startReceiver(int start) {
 //#endif
 	int d =reg&GB10_NOT_CPU_BIT;
 	if(d!=0) d=1;
+
+	printf("Value is %d expected %d\n", d, start);
+
 	if(d!=start)
-		return OK;
-	else
 		return FAIL;
+	else
+		return OK;
 }
 
 
@@ -1276,11 +1337,24 @@ int64_t setPeriod(int64_t value){
     printf("Period already even is %08llx\n ", value);
 
 
-  return set64BitReg(value,SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/(1E-3*clkDivider[0]);//(1E-9*CLK_FREQ);
+  return set64BitReg(value,SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/(1E-3*clkDivider[1]);//(1E-9*CLK_FREQ);
 }
 
+
+
+
 int64_t getPeriod(){
-  return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG)/(1E-3*clkDivider[0]);//(1E-9*CLK_FREQ);
+  return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG)/(1E-3*clkDivider[1]);//(1E-9*CLK_FREQ);
+}
+int64_t setSamples(int64_t value){
+  if (value>=0) {
+    nSamples=value;
+    bus_w(NSAMPLES_REG,nSamples);
+  }
+  getDynamicRange();
+  allocateRAM();
+  //printf("Setting dataBytes to %d: dr %d; samples %d\n",dataBytes, dynamicRange, nSamples);
+  return nSamples;
 }
 
 int64_t setDelay(int64_t value){
@@ -1362,14 +1436,11 @@ int64_t getFramesFromStart(){
 }
 
 
-ROI *setROI(int nroi,ROI* arg,int *retvalsize, int *ret) {
+int setROI(int nroi,ROI* arg,int *retvalsize, int *ret) {
 
-  if(myDetectorType == JUNGFRAU)
-	cprintf(RED,"ROI Not implemented for Jungfrau yet\n");
-  return NULL;
+ 
 
-
-  ROI retval[MAX_ROIS];
+  // ROI retval[MAX_ROIS];
   int i, ich;
   adcDisableMask=0xfffffffff; /*warning: integer constant is too large for ‘long’ type,warning: large integer implicitly truncated to unsigned type*/
 
@@ -1398,9 +1469,11 @@ ROI *setROI(int nroi,ROI* arg,int *retvalsize, int *ret) {
 
    printf("read adc disable mask %08x\n",adcDisableMask); 
    *retvalsize=0;
-   retval[0].xmin=0;
-   retval[0].xmax=0; 
+   if (adcDisableMask==0) return *retvalsize;
+   arg[0].xmin=0;
+   arg[0].xmax=0; 
    for (ich=0 ; ich<N_CHAN ; ich++) {
+     
      if ((~adcDisableMask)&(1<<ich)) {
        if (ich==0) {
 	 *retvalsize+=1;
@@ -1408,23 +1481,29 @@ ROI *setROI(int nroi,ROI* arg,int *retvalsize, int *ret) {
 	   *retvalsize-=1;
 	   break;
 	 }
-	 retval[*retvalsize-1].xmin=ich;
-	 retval[*retvalsize-1].xmax=ich; 
-       } else {
+	 arg[*retvalsize-1].xmin=ich;
+	 arg[*retvalsize-1].xmax=ich; 
+       } 
+       else {
 	 if  ((adcDisableMask)&(1<<(ich-1))) {
 	   *retvalsize+=1;
 	   if (*retvalsize>MAX_ROIS) {
 	     *retvalsize-=1;
 	     break;
 	   }
-	   retval[*retvalsize-1].xmin=ich;
+	   arg[*retvalsize-1].xmin=ich;
 	 }
-	 retval[*retvalsize-1].xmax=ich; 	 
+	 arg[*retvalsize-1].xmax=ich; 	 
        }
      }
    }
+
+   for (ich=0; ich<*retvalsize; ich++) {
+     printf("%d xmin %d xmax %d\n", ich, arg[ich].xmin, arg[ich].xmax);
+   }
+
    getDynamicRange();
-   return retval;/*warning: function returns address of local variable*/
+   return *retvalsize;/*warning: function returns address of local variable*/
 
 }
 
@@ -2032,21 +2111,11 @@ u_int32_t  fifo_full(void)
 
 u_int16_t* fifo_read_event(int ns)
 {
-  int i=0;//, j=0;
-/*   volatile u_int16_t volatile *dum; */
-   volatile u_int16_t a;
-   /*volatile u_int32_t val;*/
-  // volatile u_int32_t volatile *dum;
-     //  volatile u_int32_t a;
-
-  bus_w16(DUMMY_REG,0); //
-/* #ifdef TIMEDBG  */
-/*   gettimeofday(&tse,NULL); */
-/* #endif    */
+  int i=0, j, mask=1;
+  volatile u_int16_t a;
+  bus_w16(DUMMY_REG,0); 
   if (ns==0) {
     a=bus_r16(LOOK_AT_ME_REG);
-    //  volatile u_int32_t t = bus_r16(LOOK_AT_ME_REG);
-  //   bus_w(DUMMY_REG,0);
     while(a==0) {
       if (runBusy()==0) {
 	a = bus_r(LOOK_AT_ME_REG);
@@ -2055,13 +2124,12 @@ u_int16_t* fifo_read_event(int ns)
 	printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 	return NULL;
 	} else {
-	  //	printf("status idle, look at me %x status %x\n", bus_r(LOOK_AT_ME_REG),runState());
 	  break;
 	}
       }
       a = bus_r(LOOK_AT_ME_REG);
       //#ifdef VERBOSE
-      printf(".");
+      //printf(".");
       //#endif
     }
 /* #ifdef TIMEDBG  */
@@ -2073,16 +2141,13 @@ u_int16_t* fifo_read_event(int ns)
 
     //   printf("LAM: %08x\n",a);
   }
-   //  printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
-/*   dma_memcpy(now_ptr,values ,dataBytes); */
-/* #else */
+
 
   a = bus_r(LOOK_AT_ME_REG);
-      //#ifdef VERBOSE
-      //  printf("%d %08x\n",ns,a);
-  bus_w16(DUMMY_REG,1<<8); // read strobe to all fifos
 
-  bus_w16(DUMMY_REG,0);
+  if (analogEnable) {
+    bus_w16(DUMMY_REG,1<<8); // read strobe to all fifos
+    bus_w16(DUMMY_REG,0);
    
    /* for (i=0; i<32; i++) {  */
    /*   bus_w16(DUMMY_REG,i); */
@@ -2103,50 +2168,49 @@ u_int16_t* fifo_read_event(int ns)
 /*     bus_w16(DUMMY_REG,i); */
 /*   } */
 /*   val=*values; */
-
+  //printf("sample %d ",ns);   
 
   // bus_w16(DUMMY_REG,0); //
     for (i=0; i<32; i++) {
-
-
-     //  bus_w16(DUMMY_REG,i);
-     //   bus_r16(DUMMY_REG);
-/*     dum=(((u_int16_t*)(now_ptr))+i); */
-/*     *dum=bus_r16(FIFO_DATA_REG);  */
-/*      a=bus_r16(FIFO_DATA_REG);   */
-      //dum=(((u_int32_t*)(now_ptr))+i);
-
-      //  a=*values;//bus_r(FIFO_DATA_REG);
-      // if ((adcDisableMask&(3<<(i*2)))==0) {
-      *((u_int16_t*)now_ptr)=bus_r16(FIFO_DATA_REG);//*values;//bus_r(FIFO_DATA_REG);
-
-
-	     if (i!=0 || ns!=0) { 
-	      a=0;
+      
+      
+    
+      
+      if (~(mask&adcDisableMask)) {
+	*((u_int16_t*)now_ptr)=*values;//bus_r16(FIFO_DATA_REG);//*values;//bus_r(FIFO_DATA_REG);
+	
+	
+	if (i!=0 || ns!=0) { 
+	  a=0;
 	      while (*((u_int16_t*)now_ptr)==*((u_int16_t*)(now_ptr)-1) && a++<10) {
-
+		
 	    	//	  printf("******************** %d: fifo %d: new %08x old %08x\n ",ns, i, *((u_int32_t*)now_ptr),*((u_int32_t*)(now_ptr)-1));
-	    	*((u_int16_t*)now_ptr)=bus_r16(FIFO_DATA_REG);//*values;
-	    	//  printf("%d-",i);
-
+	    	*((u_int16_t*)now_ptr)=*values;
+		//	printf(".",i);
+		
 	      }
 	    }
-	    now_ptr+=2;//4;
-	    //  }
-/*       while (((adcDisableMask&(3<<((i+1)*2)))>>((i+1)*2))==3) { */
-/* 	i++; */
-/*       } */
-
-      //      if (((adcDisableMask&(3<<((i+1)*2)))>>((i+1)*2))!=3) {
-
-	bus_w16(DUMMY_REG,i+1);
-
-	//	a = bus_r(LOOK_AT_ME_REG);
-	//	printf("%d %08x\n",i,a);
+	now_ptr+=2;
+      } 
+      mask=mask<<1;
+      //   if (~(mask&adcDisableMask)
+      bus_w16(DUMMY_REG,i+1);
+      
+      //	a = bus_r(LOOK_AT_ME_REG);
+      //	printf("%d %08x\n",i,a);
 	//#ifdef VERBOSE
 	// }
-     // *(((u_int16_t*)(now_ptr))+i)=bus_r16(FIFO_DATA_REG);
+      // *(((u_int16_t*)(now_ptr))+i)=bus_r16(FIFO_DATA_REG);
     }
+  }
+  if (digitalEnable) {
+    
+     bus_w16(DUMMY_REG,1<<9); // read strobe to digital fifo
+     bus_w16(DUMMY_REG,0<<9); // read strobe to digital fifo
+     *((u_int64_t*)now_ptr)=get64BitReg(FIFO_DIGITAL_DATA_LSB_REG,FIFO_DIGITAL_DATA_MSB_REG);
+     now_ptr+=8;
+     
+  }
     //  bus_w16(DUMMY_REG,0); //
 /* #ifdef TIMEDBG  */
 
@@ -2157,6 +2221,7 @@ u_int16_t* fifo_read_event(int ns)
 //#ifdef VERBOSE
       // printf("*");
   //#endif
+    //    printf("\n"); 
   return ram_values;
 }
 
@@ -2296,14 +2361,15 @@ int setDynamicRange(int dr) {
 
 int getDynamicRange() {
   if(myDetectorType == JUNGFRAU){
-	dynamicRange=16;
+    dynamicRange=16;
     return dynamicRange;
   }
 
   nSamples=bus_r(NSAMPLES_REG);
   getChannels();
-  dataBytes=nModX*N_CHIP*getChannels()*2;
-  return dynamicRange*bus_r(NSAMPLES_REG);//nSamples;
+  dataBytes=nModX*N_CHIP*getChannels()*2*nSamples;
+  printf("data bytes is:%d\n",dataBytes);
+  return dynamicRange;//nSamples;
 }
 
 int testBus() {
@@ -2349,11 +2415,17 @@ int setStoreInRAM(int b) {
 }
 
 int getChannels() {
-  int nch=32;
+  int nch=0;
   int i;
-  for (i=0; i<N_CHAN; i++) {
-    if (adcDisableMask & (1<<i)) nch--;
+  
+  if (analogEnable) {
+    nch+=32;
+    for (i=0; i<N_CHAN; i++) {
+      if (adcDisableMask & (1<<i)) nch--;
+    }
   }
+  if (digitalEnable)
+    nch+=4;
   return nch;
 }
 
@@ -2362,7 +2434,7 @@ int allocateRAM() {
   getDynamicRange();
 
   //adcDisableMask 
-  size=dataBytes*nSamples;
+  size=dataBytes;//*nSamples
   
 #ifdef VERBOSE
   printf("\nnmodx=%d nmody=%d dynamicRange=%d dataBytes=%d nFrames=%d nTrains=%d, size=%d\n",nModX,nModY,dynamicRange,dataBytes,nf,nt,(int)size );
@@ -2460,42 +2532,132 @@ int writeADC(int addr, int val) {
    return OK;
 }
 
-int prepareSlowADC() {
+int prepareSlowADCSeq() {
 
-
-
-  u_int16_t vv;
-  u_int16_t codata;
+  u_int16_t vv=0x3c40;
+  u_int16_t codata=( 1<<13) | (7<<10)  | (7<<7) | (1<<6) | (0<<3) | (2<<1) | 1;
 
   u_int32_t valw;              
-  int i, j;
+  int i, obit, ibit;
 
   int cnv_bit=16, sdi_bit=17, sck_bit=18;
   
-  for (j=0; j<2; j++) {
+
+  int oval=0;
 
 
-  valw=(1<<cnv_bit) | (1<<sdi_bit);
-  bus_w(ADC_WRITE_REG,valw);
-
+  printf("Codata is %04x\n",codata);
+  
+   /* //convert */
+  valw=(1<<cnv_bit); 
+  bus_w(ADC_WRITE_REG,valw); 
+  
   usleep(20);
-
-  valw=(1<<sdi_bit);
-  bus_w(ADC_WRITE_REG,(valw));
   
-
+  valw=0; 
+  bus_w(ADC_WRITE_REG,(valw)); 
   
+  usleep(20);
+    
+  for (ibit=0; ibit<14; ibit++) {
+    obit=((codata >> (13-ibit)) & 1);
+    //   printf("%d",obit);
+    valw = obit << sdi_bit;
+    
+    bus_w(ADC_WRITE_REG,valw);
+    
+    usleep(20);
+    
+    bus_w(ADC_WRITE_REG,valw|(1<<sck_bit));
+    
+    usleep(20);
+    
+    bus_w(ADC_WRITE_REG,valw);
 
-   for (i=0;i<16;i++) {
-     //cldwn
-     valw=0;
-     bus_w(ADC_WRITE_REG,valw);
-     // usleep(0);
-     bus_w(ADC_WRITE_REG,valw|(1<<sck_bit));
-     // usleep(0);
-     bus_w(ADC_WRITE_REG,valw);
-   }
   }
+  //   printf("\n");
+  
+
+
+  bus_w(ADC_WRITE_REG,0);
+
+   /* //convert */
+  valw=(1<<cnv_bit); 
+  bus_w(ADC_WRITE_REG,valw); 
+  
+  usleep(20);
+  
+  valw=0; 
+  bus_w(ADC_WRITE_REG,(valw)); 
+  
+  usleep(20);
+    
+
+}
+
+int prepareSlowADC(int ichan) {
+
+  u_int16_t vv=0x3c40;
+  // u_int16_t codata=( 1<<13) | (7<<10)  | (7<<7) | (1<<6) | (0<<3) | (2<<1) | 1;
+
+    u_int16_t codata=(1<<13) | (7<<10)  | (ichan<<7) | (1<<6) | (0<<3) | (0<<1) | 1; //read single channel
+    if (ichan<0) codata=( 1<<13) | (3<<10)  | (7<7) | (1<<6) | (0<<3) | (0<<1) | 1;
+
+    u_int32_t valw;              
+  int i, obit, ibit;
+
+  int cnv_bit=16, sdi_bit=17, sck_bit=18;
+  
+
+  int oval=0;
+
+
+  printf("Codata is %04x\n",codata);
+  
+   /* //convert */
+  valw=(1<<cnv_bit); 
+  bus_w(ADC_WRITE_REG,valw); 
+  
+  usleep(20);
+  
+  valw=0; 
+  bus_w(ADC_WRITE_REG,(valw)); 
+  
+  usleep(20);
+    
+  for (ibit=0; ibit<14; ibit++) {
+    obit=((codata >> (13-ibit)) & 1);
+    //   printf("%d",obit);
+    valw = obit << sdi_bit;
+    
+    bus_w(ADC_WRITE_REG,valw);
+    
+    usleep(20);
+    
+    bus_w(ADC_WRITE_REG,valw|(1<<sck_bit));
+    
+    usleep(20);
+    
+    bus_w(ADC_WRITE_REG,valw);
+
+  }
+  //   printf("\n");
+  
+
+
+  bus_w(ADC_WRITE_REG,0);
+
+   /* //convert */
+  valw=(1<<cnv_bit); 
+  bus_w(ADC_WRITE_REG,valw); 
+  
+  usleep(20);
+  
+  valw=0; 
+  bus_w(ADC_WRITE_REG,(valw)); 
+  
+  usleep(20);
+    
 
 }
 
@@ -2506,48 +2668,104 @@ int readSlowADC(int ichan) {
 
 
   u_int16_t vv=0x3c40;
-  u_int16_t codata=vv | (ichan<<7);
+  //  u_int16_t codata=( 1<<13) | (7<<10)  | (ichan<<7) | (1<<6) | (0<<3) | (0<<1) | 1; //read single channel
 
   u_int32_t valw;              
-  int i, obit;
+  int i, obit, ibit;
 
   int cnv_bit=16, sdi_bit=17, sck_bit=18;
+  
+
+  int oval=0;
+
+  printf("DAC index is %d\n",ichan);
+
+  if (ichan<-1 || ichan>7)
+    return -1;
 
 
+  prepareSlowADC(ichan);
 
 
-  for (ichan=0; ichan<8; ichan++) {
+  /* printf("Codata is %04x\n",codata); */
+  
+  /*  /\* //convert *\/ */
+  /* valw=(1<<cnv_bit);  */
+  /* bus_w(ADC_WRITE_REG,valw);  */
+  
+  /* usleep(20); */
+  
+  /* valw=0;  */
+  /* bus_w(ADC_WRITE_REG,(valw));  */
+  
+  /* usleep(20); */
+    
+  /* for (ibit=0; ibit<14; ibit++) { */
+  /*   obit=((codata >> (13-ibit)) & 1); */
+  /*   //   printf("%d",obit); */
+  /*   valw = obit << sdi_bit; */
+    
+  /*   bus_w(ADC_WRITE_REG,valw); */
+    
+  /*   usleep(20); */
+    
+  /*   bus_w(ADC_WRITE_REG,valw|(1<<sck_bit)); */
+    
+  /*   usleep(20); */
+    
+  /*   bus_w(ADC_WRITE_REG,valw); */
+
+  /* } */
+  /* //   printf("\n"); */
+  
+
+
+  /* bus_w(ADC_WRITE_REG,0); */
+
+
+  
+
+
+  for (ichan=0; ichan<9; ichan++) {
  
-    //convert
+ 
+   /* //convert */
     valw=(1<<cnv_bit);
     bus_w(ADC_WRITE_REG,valw);
     
     usleep(20);
     
-    valw=(1<<sdi_bit);
+    valw=0;
     bus_w(ADC_WRITE_REG,(valw));
     
 
-    printf("Channel %d ",ichan);
+    usleep(20);
+    //  printf("Channel %d ",ichan);
     //read
+    oval=0;
     for (i=0;i<16;i++) {
       //cldwn
       valw=0;
       bus_w(ADC_WRITE_REG,valw);
-      // usleep(0);
       bus_w(ADC_WRITE_REG,valw|(1<<sck_bit));
+      usleep(20);
       bus_w(ADC_WRITE_REG,valw);
+      usleep(20);
       
       obit=bus_r16(SLOW_ADC_REG)&0x1;
-      printf("%d",obit);
+      //  printf("%d",obit);
       //write data (i)
       // usleep(0);
+      oval|=obit<<(15-i);
+      
     }
-    printf("\n");
+    printf("\t");
+    printf("Value %d  is %d\n",ichan, oval);
     
   }
  
-   return OK;
+ 
+  return 2500*oval/65535;
 }
 
 
@@ -3502,7 +3720,9 @@ int setPower(int ind, int val) {
   if (pwrindex>=0) {
     if (bus_r(POWER_ON_REG)&(1<<(16+pwrindex))){
       vmax=2700-(getDacRegister(19)*1000)/4095-200;
+      printf("Vchip id %d mV\n",vmax+200);
       retval1=vmax-(retval*(vmax-vmin))/4095;
+      printf("Vdac id %d mV\n",retval1);
 	if (retval1>vmax)
 	  retval1=vmax;
 	if (retval1<vmin)
@@ -3512,9 +3732,10 @@ int setPower(int ind, int val) {
     } else
       retval1=0;
   } else {
-    if (retval>=0)
+    if (retval>=0) {
       retval1=2700-(retval*1000)/4095;
-    else
+      printf("Vchip id %d mV\n",vmax);
+    } else
       retval1=-1;
   }
 
@@ -3760,5 +3981,55 @@ int setDac(int dacnum,int dacvalue){
 
   return getDacRegister(dacnum); 
 
+
+}
+
+int setReadOutMode(int arg) {
+
+  //#define ADC_OUTPUT_DISABLE_BIT 0x00100
+  //#define DIGITAL_OUTPUT_ENABLE_BIT 0x00200
+  int v=bus_r(CONFIG_REG)&(~ADC_OUTPUT_DISABLE_BIT)&(~DIGITAL_OUTPUT_ENABLE_BIT);
+  int v1;
+  printf("before: %x %x\n",bus_r(CONFIG_REG),v);
+  switch (arg) {
+  case NORMAL_READOUT:
+    bus_w(CONFIG_REG, v);
+    break;
+  case DIGITAL_ONLY:
+    bus_w(CONFIG_REG,v|ADC_OUTPUT_DISABLE_BIT|DIGITAL_OUTPUT_ENABLE_BIT);
+    break;
+  case ANALOG_AND_DIGITAL:
+    bus_w(CONFIG_REG,v|DIGITAL_OUTPUT_ENABLE_BIT);
+    break;
+  default:
+    ;
+  }
+  
+  printf("after: %x\n",bus_r(CONFIG_REG));
+
+  switch((bus_r(CONFIG_REG)>>8)&0x3) {
+  case 0:
+    analogEnable=1;
+    digitalEnable=0;
+    v1=NORMAL_READOUT;
+    break;
+  case 3: 
+    analogEnable=0;
+    digitalEnable=1;
+    v1=DIGITAL_ONLY;
+    break;
+  case 2:
+    analogEnable=1;
+    digitalEnable=1;
+    v1=ANALOG_AND_DIGITAL;
+    break;
+  default:
+    printf("Unknown readout mode for analog and digital fifos %d\n",(bus_r(CONFIG_REG)>>8)&0x3);
+    v1=GET_READOUT_FLAGS;
+  }
+  getDynamicRange();
+  allocateRAM();
+  printf("dataBytes is %d\n",dataBytes);
+  return v1;
 
 }

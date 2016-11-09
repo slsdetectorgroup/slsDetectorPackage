@@ -2180,6 +2180,7 @@ int set_timer(int file_des) {
   int ret=OK;
   
 
+  printf("set\n");
   sprintf(mess,"can't set timer\n");
   
   n = receiveDataOnly(file_des,&ind,sizeof(ind));
@@ -2224,15 +2225,18 @@ int set_timer(int file_des) {
 	retval=setGates(tns);
 	break;
       case PROBES_NUMBER: 
-    sprintf(mess,"can't set timer for moench\n");
-    ret=FAIL;
+	sprintf(mess,"can't set timer for moench\n");
+	ret=FAIL;
 	break;
       case CYCLES_NUMBER: 
 	retval=setTrains(tns);
 	break;
+      case SAMPLES_JCTB:
+	retval=setSamples(tns);
+	break;
       default:
 	ret=FAIL;
-	sprintf(mess,"timer index unknown %d\n",ind);
+	sprintf(mess,"t timer index unknown %d\n",ind);
     break;
       }
     }
@@ -2246,10 +2250,10 @@ int set_timer(int file_des) {
   if (ret!=OK) {
     printf(mess);
     printf("set timer failed\n");
-  } else if (ind==FRAME_NUMBER) {
-    //  ret=allocateRAM();
-    // if (ret!=OK) 
-    //   sprintf(mess, "could not allocate RAM for %lld frames\n", tns);
+  } else if (ind==SAMPLES_JCTB) {
+    ret=allocateRAM();
+    if (ret!=OK) 
+      sprintf(mess, "could not allocate RAM for %lld frames\n", tns);
   }
 
   n = sendDataOnly(file_des,&ret,sizeof(ret));
@@ -2280,7 +2284,7 @@ int get_time_left(int file_des) {
   int n;
   int64_t retval;
   int ret=OK;
-  
+  printf("get\n");
   sprintf(mess,"can't get timer\n");
   n = receiveDataOnly(file_des,&ind,sizeof(ind));
   if (n < 0) {
@@ -2331,9 +2335,12 @@ int get_time_left(int file_des) {
     case FRAMES_FROM_START_PG:
       retval=getFramesFromStart();
       break;
+    case SAMPLES_JCTB:
+      retval=getSamples();
+      break;
     default:
       ret=FAIL;
-      sprintf(mess,"timer index unknown %d\n",ind);
+      sprintf(mess,"tl timer index unknown %d\n",ind);
       break;
     }
   }

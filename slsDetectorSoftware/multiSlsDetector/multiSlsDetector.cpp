@@ -1417,6 +1417,7 @@ int* multiSlsDetector::getDataFromDetector() {
 	int *retdet, *p=retval;
 	int nodata=1, nodatadet=-1;;
 
+	//	cout << "multi: " << thisMultiDetector->dataBytes << endl;
 
 	for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
 		if (detectors[id]) {
@@ -1759,6 +1760,8 @@ int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t){
       
     }
   }
+  if (index==SAMPLES_JCTB)
+    setDynamicRange();
   // check return values!!!
   
   thisMultiDetector->timerValue[index]=ret1;
@@ -2224,30 +2227,40 @@ slsDetectorDefs::ROI* multiSlsDetector::getROI(int &n){
 
 
 
-double* multiSlsDetector::decodeData(int *datain, double *fdata) {
+double* multiSlsDetector::decodeData(int *datain, int &nn, double *fdata) {
   double *dataout;
   if (fdata)
     dataout=fdata;
-  else
-    dataout=new double[thisMultiDetector->numberOfChannels];
-  
+  else {
+    if (detectors[0]->getDetectorsType()==JUNGFRAUCTB) {
+      dataout=new double[thisMultiDetector->dataBytes/2];
+      nn=thisMultiDetector->dataBytes/2;
+    } else {
+      dataout=new double[thisMultiDetector->numberOfChannels];
+      nn=thisMultiDetector->numberOfChannels;
+    }
+  }
   // int ich=0;
-
+  int n;
   double *detp=dataout;
   int  *datap=datain;
 
   
   for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
     if (detectors[i]) {
-      detectors[i]->decodeData(datap, detp);
+      detectors[i]->decodeData(datap, n, detp);
       if(detectors[i]->getErrorMask())
 	setErrorMask(getErrorMask()|(1<<i));
 #ifdef VERBOSE
       cout << "increment pointers " << endl;
-#endif
+#endif   
       datap+=detectors[i]->getDataBytes()/sizeof(int);
-      detp+=detectors[i]->getTotalNumberOfChannels();
-
+      detp+=n;
+      // if (detectors[0]->getDetectorsType()==JUNGFRAUCTB) {
+      // 	detp+=detectors[i]->getDataBytes()/2;
+      // } else {
+      // 	detp+=detectors[i]->getTotalNumberOfChannels();
+      // }
 #ifdef VERBOSE
       cout << "done " << endl;
 #endif
@@ -3680,6 +3693,7 @@ int multiSlsDetector::setDynamicRange(int p) {
       if(detectors[idet]->getErrorMask())
 	setErrorMask(getErrorMask()|(1<<idet));
       thisMultiDetector->dataBytes+=detectors[idet]->getDataBytes();
+      //   cout << "db " << idet << " " << detectors[idet]->getDataBytes() << endl;
       thisMultiDetector->numberOfChannels+=detectors[idet]->getTotalNumberOfChannels();
       if (ret==-100)
 	ret=ret1;

@@ -10,9 +10,9 @@
 #define NMAXMODY 1
 #define NMAXMOD (NMAXMODX*NMAXMODY)
 
-#define NCHAN 32
+#define NCHAN 36
 #define NCHIP 1
-#define NADC 1
+#define NADC 9 //
 
 #ifdef CTB
 #define NDAC 24

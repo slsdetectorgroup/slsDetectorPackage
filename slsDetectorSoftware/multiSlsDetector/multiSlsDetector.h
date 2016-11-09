@@ -807,7 +807,7 @@ class multiSlsDetector  : public slsDetectorUtils {
       \param datain data from the detector
       \returns pointer to a double array with a data per channel
   */
-  double* decodeData(int *datain, double *fdata=NULL);
+  double* decodeData(int *datain, int &nn, double *fdata=NULL);
 
   
   

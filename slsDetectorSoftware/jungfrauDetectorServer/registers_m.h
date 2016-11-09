@@ -62,7 +62,7 @@
 #define CONTROL_REG           79<<11//0x24<<11
 #define STATUS_REG            2<<11 //0x25<<11
 #define CONFIG_REG            77<<11//0x26<<11
-#define EXT_SIGNAL_REG        78<<11//	  0x27<<11
+#define EXT_SIGNAL_REG        78<<11//	  0x4E<<11
 #define FPGA_SVN_REG    	  0x29<<11
 
 

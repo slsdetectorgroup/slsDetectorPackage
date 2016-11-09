@@ -449,11 +449,13 @@ enum readOutFlags {
   ZERO_COMPRESSION=0x4,/**< returned data are 0-compressed */
   PUMP_PROBE_MODE=0x8,/**<pump-probe mode */
   BACKGROUND_CORRECTIONS=0x1000, /**<background corrections */
-  TOT_MODE=0x2000,/**<pump-probe mode */
-  CONTINOUS_RO=0x4000,/**<pump-probe mode */
-  PARALLEL=0x10000,/** <eiger parallel mode */
-  NONPARALLEL=0x20000,/** <eiger serial mode */
-  SAFE=0x40000/** <eiger safe mode */
+  TOT_MODE=0x2000,/**< pump-probe mode */
+  CONTINOUS_RO=0x4000,/**< pump-probe mode */
+  PARALLEL=0x10000,/**< eiger parallel mode */
+  NONPARALLEL=0x20000,/**< eiger serial mode */
+  SAFE=0x40000/**< eiger safe mode */,
+  DIGITAL_ONLY=0x80000, /** chiptest board read only digital bits (not adc values)*/
+  ANALOG_AND_DIGITAL=0x100000 /** chiptest board read adc values and digital bits digital bits */
 };
 /**
    trimming modes

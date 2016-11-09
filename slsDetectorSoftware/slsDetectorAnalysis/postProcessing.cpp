@@ -71,6 +71,7 @@ postProcessing::~postProcessing(){
 void postProcessing::processFrame(int *myData, int delflag, int jctb) {
 
   string fname;
+  int nn;
   //double *fdata=NULL;
   
 #ifdef VERBOSE
@@ -85,20 +86,22 @@ void postProcessing::processFrame(int *myData, int delflag, int jctb) {
  
  /** decode data */
  
+  // cout << "decode 0"<< endl;
  // if (getDetectorsType()==MYTHEN) {
-  fdata=decodeData(myData, fdata);
+  fdata=decodeData(myData,nn, fdata);
     
-#ifdef VERBOSE
-    cout << "decode"<< endl;
-#endif
+  //#ifdef VERBOSE
+    // cout << "decode 1"<< endl;
+    //#endif
     // } else
   //  fdata=NULL;
-
   if (rawDataReady) {
-    #ifdef VERBOSE
+#ifdef VERBOSE
+    cout << "decoded data size is "<<nn << endl;
     cout << "raw data ready..." << endl;
-    #endif
-    rawDataReady(fdata,numberOfChannels, pRawDataArg);
+#endif
+    // rawDataReady(fdata,numberOfChannels, pRawDataArg);
+     rawDataReady(fdata,nn, pRawDataArg);
 #ifdef VERBOSE
     cout << "done" << endl;
     cout << "NO FILE WRITING AND/OR DATA PROCESSING DONE BY SLS DETECTOR SOFTWARE!!!" << endl;   
@@ -140,7 +143,8 @@ void postProcessing::processFrame(int *myData, int delflag, int jctb) {
 
 	//	cout << "callback arg "<< getCurrentProgress()<< " " << (fname+string(".raw")).c_str() << " " << getTotalNumberOfChannels() << endl;
 	//	cout << "DATAREADY 1" <<endl;
-	thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),(fname+string(".raw")).c_str(),getTotalNumberOfChannels()); //only 1d detectors
+	//	thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),(fname+string(".raw")).c_str(),getTotalNumberOfChannels()); //only 1d detectors
+	thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),(fname+string(".raw")).c_str(),nn); //only 1d detectors
 	dataReady(thisData, currentFrameIndex, -1, pCallbackArg);
 	delete thisData;
 	fdata=NULL;
@@ -428,14 +432,14 @@ void* postProcessing::processData(int delflag) {
 		  //	  cout << "loop" << endl;
 			while((queuesize=dataQueueSize())>0) {
 				/** Pop data queue */
-			  //#ifdef VERBOSE
+			  #ifdef VERBOSE
 				cout << "data found"<< endl<<endl;;
-				//#endif
+			#endif
 
 				myData=dataQueueFront(); // get the data from the queue
-#ifdef VERBOSE
-				cout << "got them"<< endl;
-#endif
+				//#ifdef VERBOSE
+				  //	cout << "got them"<< endl;
+				//#endif
 
 				if (myData) {
 				  
@@ -486,7 +490,7 @@ void* postProcessing::processData(int delflag) {
 		}
 	//receiver
 	else{
-
+	  int nn;
 
 		int progress = 0;
 		char currentfName[MAX_STR_LENGTH]="";
@@ -640,7 +644,7 @@ void* postProcessing::processData(int delflag) {
 #ifdef VERY_VERY_DEBUG
 							cout << "GOT data" << endl;
 #endif
-							fdata = decodeData(receiverData);
+							fdata = decodeData(receiverData, nn);
 							delete [] receiverData;
 							if ((fdata) && (dataReady)){
 								//  cout << "DATAREADY 3" << endl;

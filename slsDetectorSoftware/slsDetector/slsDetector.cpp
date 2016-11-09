@@ -24,7 +24,7 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
   int sz;
 
   //shmId=-1;
-
+  cout << "init shm"<< endl;
   switch(type) {
   case MYTHEN:
     nch=128; // complete mythen system
@@ -81,7 +81,7 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
     no=0;
     break;
   case JUNGFRAUCTB:
-    nch=32;
+    nch=36; //36? is using digital value as well
     nm=1; //modules/detector
     nc=1; //chips
     nd=16; //dacs+adcs
@@ -242,6 +242,7 @@ slsDetector::slsDetector(detectorType type, int id,multiSlsDetector *p): slsDete
 
   /**Initializes the detector stucture \sa initializeDetectorSize
    */
+  cout << "init det size"<< endl;
   initializeDetectorSize(type);
 
 
@@ -634,12 +635,12 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->dynamicRange=16;
       break;
     case JUNGFRAUCTB:
-      thisDetector->nChan[X]=32;
+      thisDetector->nChan[X]=36;
       thisDetector->nChan[Y]=1;
       thisDetector->nChip[X]=1;
       thisDetector->nChip[Y]=1;
       thisDetector->nDacs=16;
-      thisDetector->nAdcs=1;
+      thisDetector->nAdcs=9;
       thisDetector->nGain=0;
       thisDetector->nOffset=0;
       thisDetector->nModMax[X]=1;
@@ -684,12 +685,14 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->timerValue[FRAME_NUMBER]=1;
     thisDetector->timerValue[MEASUREMENTS_NUMBER]=1;
     thisDetector->timerValue[CYCLES_NUMBER]=1;
+    thisDetector->timerValue[SAMPLES_JCTB]=1;
 
     thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*thisDetector->dynamicRange/8;
 
     if(thisDetector->myDetectorType==JUNGFRAUCTB) {
-      thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChans*thisDetector->dynamicRange/8;
-      
+      cout << "here1" << endl;
+      getTotalNumberOfChannels();
+      //      thisDetector->dataBytes=getTotalNumberOfChannels()*thisDetector->dynamicRange/8*thisDetector->timerValue[SAMPLES_JCTB];
     }
     if(thisDetector->myDetectorType==MYTHEN){
     	if (thisDetector->dynamicRange==24 || thisDetector->timerValue[PROBES_NUMBER]>0)
@@ -789,6 +792,15 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 
     //update?!?!?!?
 
+    if(thisDetector->myDetectorType==JUNGFRAUCTB) {
+      cout << "here2" << endl;
+      getTotalNumberOfChannels();
+	//thisDetector->nChan[X]=32;
+	//thisDetector->nChans=thisDetector->nChan[X]*thisDetector->nChan[Y];
+
+	//thisDetector->dataBytes=getTotalNumberOfChannels()*thisDetector->dynamicRange/8*thisDetector->timerValue[SAMPLES_JCTB];
+      
+    }
 
   }
 
@@ -1012,7 +1024,7 @@ slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType t)
     na=0;
     break;
   case JUNGFRAUCTB:
-    nch=32;//32;
+    nch=36;
     nm=1;
     nc=1;
     nd=8; // dacs+adcs
@@ -1621,7 +1633,55 @@ slsDetectorDefs::detectorType slsDetector::getDetectorsType(int pos){
 }
 
 
+    // /** number of rois defined */
+    // int nROI;
+    // /** list of rois */
+    // ROI roiLimits[MAX_ROIS];
+  
+    // /** readout flags */
+    // readOutFlags roFlags;
 
+
+int slsDetector::getTotalNumberOfChannels() {  
+  cout << "total number of channels" << endl; 
+  if(thisDetector->myDetectorType==JUNGFRAUCTB){
+    if (thisDetector->roFlags&DIGITAL_ONLY)
+      thisDetector->nChan[X]=4;
+    else if (thisDetector->roFlags&ANALOG_AND_DIGITAL)
+      thisDetector->nChan[X]=36;
+    else
+      thisDetector->nChan[X]=32;
+      
+    if (thisDetector->nChan[X]>=32) {
+      if (thisDetector->nROI>0) {
+	thisDetector->nChan[X]-=32;
+	for (int iroi=0; iroi<thisDetector->nROI; iroi++)
+	  thisDetector->nChan[X]+=thisDetector->roiLimits[iroi].xmax-thisDetector->roiLimits[iroi].xmin+1;
+      }
+    }
+    thisDetector->nChans=thisDetector->nChan[X];
+    thisDetector->dataBytes=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods*2*thisDetector->timerValue[SAMPLES_JCTB];
+    cout << "Total number of channels is "<< thisDetector->nChans*thisDetector->nChips*thisDetector->nMods << " data bytes is " << thisDetector->dataBytes << endl;
+  }
+  return thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;
+};
+
+int slsDetector::getTotalNumberOfChannels(dimension d) {
+  getTotalNumberOfChannels();
+  return thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nMod[d];
+};
+
+
+
+int slsDetector::getMaxNumberOfChannels(){
+  if(thisDetector->myDetectorType==JUNGFRAUCTB) return 36*thisDetector->nChips*thisDetector->nModsMax;
+  return thisDetector->nChans*thisDetector->nChips*thisDetector->nModsMax;
+};
+
+int slsDetector::getMaxNumberOfChannels(dimension d){  
+  if(thisDetector->myDetectorType==JUNGFRAUCTB) if (d==X) return 36*thisDetector->nChip[d]*thisDetector->nModMax[d]; else return 1*thisDetector->nChip[d]*thisDetector->nModMax[d];
+  return thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nModMax[d];
+};
 
 /* needed to set/get the size of the detector */
 // if n=GET_FLAG returns the number of installed modules,
@@ -1699,14 +1759,6 @@ int slsDetector::setNumberOfModules(int n, dimension d){
     if (thisDetector->nModMax[Y]<thisDetector->nMod[Y])
       thisDetector->nModMax[Y]=thisDetector->nMod[Y];
 
-
-
-
-
-
-
-
-
     int dr=thisDetector->dynamicRange;
     if (dr==24)
       dr=32;
@@ -1719,8 +1771,8 @@ int slsDetector::setNumberOfModules(int n, dimension d){
     }
 
     if(thisDetector->myDetectorType==JUNGFRAUCTB){
-
-    thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChans*dr/8;
+      getTotalNumberOfChannels();
+      //thisDetector->dataBytes=getTotalNumberOfChannels()*thisDetector->nChans*dr/8*thisDetector->nChips*thisDetector->timerValue[SAMPLES_JCTB];
 
     }
 
@@ -3461,6 +3513,7 @@ int slsDetector::getChanRegs(double* retval,bool fromDetector){
 
 int slsDetector::updateDetectorNoWait() {
 
+  enum readOutFlags ro;
   // int ret=OK;
   enum detectorSettings t;
   int thr, n, nm;
@@ -3508,7 +3561,7 @@ int slsDetector::updateDetectorNoWait() {
   if((thisDetector->myDetectorType!= GOTTHARD)&&
 		  (thisDetector->myDetectorType!= PROPIX)&&
 		  (thisDetector->myDetectorType!= JUNGFRAU)&&
-		  (thisDetector->myDetectorType!= MOENCH)){
+		  (thisDetector->myDetectorType!= MOENCH) && (thisDetector->myDetectorType!= JUNGFRAUCTB)){
     //thr=getThresholdEnergy();
     n = 	controlSocket->ReceiveDataOnly( &thr,sizeof(thr));
     thisDetector->currentThresholdEV=thr;
@@ -3542,10 +3595,26 @@ int slsDetector::updateDetectorNoWait() {
     thisDetector->timerValue[PROBES_NUMBER]=retval;
   }
 
+
   //retval=setTrains(tns);
   n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
   thisDetector->timerValue[CYCLES_NUMBER]=retval;
 
+  //retval=setProbes(tns);
+  if (thisDetector->myDetectorType == JUNGFRAUCTB){
+     n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+     if (retval>=0)
+       thisDetector->timerValue[SAMPLES_JCTB]=retval;
+     n = controlSocket->ReceiveDataOnly( &ro,sizeof(ro));
+
+     thisDetector->roFlags=ro;
+
+     //retval=setProbes(tns);
+     getTotalNumberOfChannels();
+    
+     //    thisDetector->dataBytes=getTotalNumberOfChannels()*thisDetector->dynamicRange/8*thisDetector->timerValue[SAMPLES_JCTB];
+     
+  }
   return OK;
 
 }
@@ -3729,15 +3798,16 @@ int* slsDetector::getDataFromDetector(int *retval){
 
 	//	int* retval=new int[nel];
 
-	if (retval==NULL)
+	if (retval==NULL) {
 		retval=new int[nel];
-
+		//		cout << "*****"<<endl;
+	} //else	cout <<"----"<< retval  <<endl;
 	int ret=FAIL;
 	char mess[MAX_STR_LENGTH]="Nothing";
 
-#ifdef VERBOSE
+	//#ifdef VERBOSE
 	std::cout<< "getting data "<< thisDetector->dataBytes << " " << nel<< std::endl;
-#endif
+	//#endif
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
 #ifdef VERBOSE
 	cout << "ret=" << ret << endl;
@@ -3762,9 +3832,9 @@ int* slsDetector::getDataFromDetector(int *retval){
 	} else {
 		n=controlSocket->ReceiveDataOnly(retval,thisDetector->dataBytes);
 
-#ifdef VERBOSE
+		//#ifdef VERBOSE
 		std::cout<< "Received "<< n << " data bytes" << std::endl;
-#endif
+		//#endif
 		if (n!=thisDetector->dataBytes) {
 			std::cout<< "wrong data size received from detector: received " << n << " but expected " << thisDetector->dataBytes << std::endl;
 			thisDetector->stoppedFlag=1;
@@ -3775,7 +3845,7 @@ int* slsDetector::getDataFromDetector(int *retval){
 			return NULL;
 		}
 	}
-	//  cout << "get data returning " << endl;
+	//	cout << "get data returning " << endl;
 	return retval;
 
 };
@@ -3800,22 +3870,22 @@ int* slsDetector::readAll(){
 
       while ((retval=getDataFromDetector())){
 	i++;
-	//#ifdef VERBOSE
+	#ifdef VERBOSE
 	std::cout<< i << std::endl;
 	//#else
 	//std::cout << "-" << flush ;
-	//#endif
+	#endif
 	dataQueue.push(retval);
-	std::cout<< "pushed" << std::endl;
+	//	std::cout<< "pushed" << std::endl;
       }
       disconnectControl();
     }
   }
-#ifdef VERBOSE
+ #ifdef VERBOSE
   std::cout<< "received "<< i<< " frames" << std::endl;
   //#else
   // std::cout << std::endl;
-#endif
+  #endif
   return dataQueue.front(); // check what we return!
 
 };
@@ -3849,24 +3919,26 @@ int slsDetector::readAllNoWait(){
 
 
 int* slsDetector::startAndReadAll(){
-
+  //cout << "Start and read all "<< endl;
 
   int* retval;
-#ifdef VERBOSE
+  //#ifdef VERBOSE
   int i=0;
-#endif
+  //#endif
   startAndReadAllNoWait();
   //#ifdef VERBOSE
   // std::cout<< "started" << std::endl;
   //#endif
   while ((retval=getDataFromDetector())){
-#ifdef VERBOSE
+    #ifdef VERBOSE
     i++;
     std::cout<< i << std::endl;
     //#else
     //std::cout<< "-" << flush;
-#endif
+    #endif
     dataQueue.push(retval);
+    
+    //std::cout<< "pushed" << std::endl;
   }
   disconnectControl();
 
@@ -3990,6 +4062,10 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 			   (thisDetector->myDetectorType==JUNGFRAU)||
 			   (thisDetector->myDetectorType==MOENCH))
 			  thisDetector->timerValue[PROBES_NUMBER]=0;
+			if(thisDetector->myDetectorType==JUNGFRAUCTB && index==SAMPLES_JCTB) {
+			  getTotalNumberOfChannels();
+			  //			  thisDetector->dataBytes=getTotalNumberOfChannels()*thisDetector->dynamicRange/8*thisDetector->timerValue[SAMPLES_JCTB];
+			}
 		}
 	} else {
 	  if (t>=0)
@@ -4003,7 +4079,11 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	  setDynamicRange();
 	  //cout << "Changing probes: data size = " << thisDetector->dataBytes <<endl;
 	}
-
+	if ((thisDetector->myDetectorType==JUNGFRAUCTB) && (index==SAMPLES_JCTB)) {
+	  setDynamicRange();
+	  cout << "Changing samples: data size = " << thisDetector->dataBytes <<endl;
+	}
+	
 	/* set progress */
 	if ((index==FRAME_NUMBER) || (index==CYCLES_NUMBER)) {
 	  setTotalProgress();
@@ -4535,7 +4615,7 @@ int slsDetector::setDynamicRange(int n){
       thisDetector->dynamicRange=n;
     retval=thisDetector->dynamicRange;
   }
-
+  //cout << "detector returned dynamic range " << retval << endl;
   if (ret!=FAIL && retval>0) {
     /* checking the number of probes to chose the data size */
 
@@ -4544,9 +4624,12 @@ int slsDetector::setDynamicRange(int n){
     thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*retval/8;
 
     if (thisDetector->myDetectorType==JUNGFRAUCTB) {
-      thisDetector->nChip[X]=retval/16;
-      thisDetector->nChips=thisDetector->nChip[X]*thisDetector->nChip[Y];
-      thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChans*retval/8;
+      // thisDetector->nChip[X]=retval/16;
+      // thisDetector->nChips=thisDetector->nChip[X]*thisDetector->nChip[Y];
+      // cout << thisDetector->nMod[X]*thisDetector->nMod[Y] << " " << thisDetector->nChans*thisDetector->nChips << " " << retval<< " ";
+      getTotalNumberOfChannels();
+      //thisDetector->dataBytes=getTotalNumberOfChannels()*retval/8*thisDetector->timerValue[SAMPLES_JCTB];
+      //cout << "data bytes: "<< thisDetector->dataBytes << endl;
     } 
     if(thisDetector->myDetectorType==MYTHEN){
       if (thisDetector->timerValue[PROBES_NUMBER]!=0)
@@ -4598,29 +4681,40 @@ int slsDetector::setROI(int n,ROI roiLimits[]){
 	int ret = FAIL;
 	//sort ascending order
 	int temp;
+
 	for(int i=0;i<n;i++){
+	  
+	  //	  cout << "*** ROI "<< i << " xmin " << roiLimits[i].xmin << " xmax "<< roiLimits[i].xmax << endl;
 		for(int j=i+1;j<n;j++){
 			if(roiLimits[j].xmin<roiLimits[i].xmin){
-				temp=roiLimits[i].xmin;roiLimits[i].xmin=roiLimits[j].xmin;roiLimits[j].xmin=temp;
-				temp=roiLimits[i].xmax;roiLimits[i].xmax=roiLimits[j].xmax;roiLimits[j].xmax=temp;
-				temp=roiLimits[i].ymin;roiLimits[i].ymin=roiLimits[j].ymin;roiLimits[j].ymin=temp;
-				temp=roiLimits[i].ymax;roiLimits[i].ymax=roiLimits[j].ymax;roiLimits[j].ymax=temp;
+	
+			  temp=roiLimits[i].xmin;roiLimits[i].xmin=roiLimits[j].xmin;roiLimits[j].xmin=temp;
+
+			  temp=roiLimits[i].xmax;roiLimits[i].xmax=roiLimits[j].xmax;roiLimits[j].xmax=temp;
+
+			  temp=roiLimits[i].ymin;roiLimits[i].ymin=roiLimits[j].ymin;roiLimits[j].ymin=temp;
+
+			  temp=roiLimits[i].ymax;roiLimits[i].ymax=roiLimits[j].ymax;roiLimits[j].ymax=temp;
 			}
 		}
+		//	cout << "UUU ROI "<< i << " xmin " << roiLimits[i].xmin << " xmax "<< roiLimits[i].xmax  << endl;
 	}
 
 	ret = sendROI(n,roiLimits);
 	if(ret==FAIL)
 		setErrorMask((getErrorMask())|(COULDNOT_SET_ROI));
 
+	
+	if(thisDetector->myDetectorType==JUNGFRAUCTB) getTotalNumberOfChannels();
 	return ret;
 }
 
 
 slsDetectorDefs::ROI* slsDetector::getROI(int &n){
-	sendROI();
-	n=thisDetector->nROI;
-	return thisDetector->roiLimits;
+  sendROI(-1,NULL);
+  n=thisDetector->nROI;
+  if(thisDetector->myDetectorType==JUNGFRAUCTB) getTotalNumberOfChannels();
+  return thisDetector->roiLimits;
 }
 
 
@@ -4632,7 +4726,8 @@ int slsDetector::sendROI(int n,ROI roiLimits[]){
   int retvalsize=0;
   ROI retval[MAX_ROIS];
   int nrec=-1;
-
+  if (roiLimits==NULL)
+    roiLimits=thisDetector->roiLimits;
 
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (connectControl() == OK){
@@ -4674,10 +4769,10 @@ int slsDetector::sendROI(int n,ROI roiLimits[]){
     thisDetector->nROI = retvalsize;
   }
 
-#ifdef VERBOSE
+  //#ifdef VERBOSE
   for(int j=0;j<thisDetector->nROI;j++)
-    cout<<roiLimits[j].xmin<<"\t"<<roiLimits[j].xmax<<"\t"<<roiLimits[j].ymin<<"\t"<<roiLimits[j].ymax<<endl;
-#endif
+    cout<<"get"<< roiLimits[j].xmin<<"\t"<<roiLimits[j].xmax<<"\t"<<roiLimits[j].ymin<<"\t"<<roiLimits[j].ymax<<endl;
+  //#endif
 
   return ret;
 }
@@ -4720,6 +4815,11 @@ int slsDetector::setReadOutFlags(readOutFlags flag){
       } else {
 	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 	thisDetector->roFlags=retval;
+	if (thisDetector->myDetectorType==JUNGFRAUCTB) {
+
+	  getTotalNumberOfChannels();
+	  //thisDetector->dataBytes=getTotalNumberOfChannels()*thisDetector->dynamicRange/8*thisDetector->timerValue[SAMPLES_JCTB];
+	}
       }
       disconnectControl();
       if (ret==FORCE_UPDATE)
@@ -4794,15 +4894,22 @@ int slsDetector::executeTrimming(trimMode mode, int par1, int par2, int imod){
 
 };
 
-double* slsDetector::decodeData(int *datain, double *fdata) {
+double* slsDetector::decodeData(int *datain, int &nn, double *fdata) {
 
   double *dataout;
   if (fdata) {
     dataout=fdata;
     //    printf("not allocating fdata!\n");
   }
-  else {
-    dataout=new double[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
+  else { 
+    if (thisDetector->myDetectorType==JUNGFRAUCTB) {
+      dataout=new double[thisDetector->dataBytes/2];
+      nn=thisDetector->dataBytes/2;
+    }    else {
+      dataout=new double[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
+      nn=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;
+    }
+    
     //  printf("allocating fdata!\n");
   }
   const int bytesize=8;
@@ -4817,20 +4924,21 @@ double* slsDetector::decodeData(int *datain, double *fdata) {
 
   if (thisDetector->timerValue[PROBES_NUMBER]==0) {
     if (thisDetector->myDetectorType==JUNGFRAUCTB) {
-      
-      for (ichan=0; ichan<nch; ichan++) {
-	// dataout[ichan]=0;
-	ival=0;
-	//	for (ibyte=0; ibyte<2; ibyte++) {
-	ibyte=0;
-	iptr=ptr[ichan*2+ibyte];
-	ival|=((iptr<<(ibyte*bytesize))&(0xff<<(ibyte*bytesize)));
-	ibyte=1;
-	iptr=ptr[ichan*2+ibyte];
-	ival|=((iptr<<(ibyte*bytesize))&(0x3f<<(ibyte*bytesize)));
+      // cout << "nch " << nch << endl;
+      for (ichan=0; ichan<thisDetector->dataBytes/2; ichan++) {
+	// // dataout[ichan]=0;
+	// ival=0;
+	// //	for (ibyte=0; ibyte<2; ibyte++) {
+	// ibyte=0;
+	// iptr=ptr[ichan*2+ibyte];
+	// ival|=((iptr<<(ibyte*bytesize))&(0xff<<(ibyte*bytesize)));
+	// ibyte=1;
+	// iptr=ptr[ichan*2+ibyte];
+	// ival|=((iptr<<(ibyte*bytesize))&(0x3f<<(ibyte*bytesize)));
 	
-	  //	}
-	dataout[ichan]=ival;
+	//   //	}
+	dataout[ichan]=*((u_int16_t*)ptr);
+	ptr+=2;
       }
     } else {
     switch (nbits) {
@@ -4980,7 +5088,7 @@ int slsDetector::fillModuleMask(int *mM){
 
 int slsDetector::setFlatFieldCorrection(double *corr, double *ecorr) {
   if (corr!=NULL) {
-    for (int ichan=0; ichan<thisDetector->nMod[X]*thisDetector->nChans*thisDetector->nChips; ichan++) {
+    for (int ichan=0; ichan<thisDetector->nMod[Y]*thisDetector->nMod[X]*thisDetector->nChans*thisDetector->nChips; ichan++) {
       // #ifdef VERBOSE
       //       std::cout<< ichan << " "<< corr[ichan] << std::endl;
       // #endif
@@ -5944,7 +6052,7 @@ int slsDetector:: writeAngularConversion(ofstream &ofs) {
 int slsDetector::loadImageToDetector(imageType index,string const fname){
 
   int ret=FAIL;
-  short int arg[thisDetector->nChans*thisDetector->nChips];
+  short int arg[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
 
 #ifdef VERBOSE
   std::cout<< std::endl<< "Loading ";
@@ -6025,7 +6133,7 @@ int slsDetector::getCounterBlock(short int arg[],int startACQ){
 int slsDetector::writeCounterBlockFile(string const fname,int startACQ){
 
   int ret=FAIL;
-  short int counterVals[thisDetector->nChans*thisDetector->nChips];
+  short int counterVals[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
 
 #ifdef VERBOSE
   std::cout<< std::endl<< "Reading Counter to \""<<fname;
@@ -6947,11 +7055,13 @@ int slsDetector::startReceiver(){
 		std::cout << "Starting Receiver " << std::endl;
 #endif
 		if (connectData() == OK)
-			ret=thisReceiver->executeFunction(fnum,mess);
-		 disconnectData();
-		if(ret==FORCE_UPDATE)
-			ret=updateReceiver();
-		else if (ret == FAIL){
+		  ret=thisReceiver->executeFunction(fnum,mess);
+		disconnectData();
+		if(ret==FORCE_UPDATE) {
+		  ret=updateReceiver();
+		  //  cout<< "FU"<<endl;
+		}	else if (ret == FAIL){
+		  //  cout << mess <<endl;
 			if(strstr(mess,"UDP")!=NULL)
 				setErrorMask((getErrorMask())|(COULDNOT_CREATE_UDP_SOCKET));
 			else if(strstr(mess,"file")!=NULL)
@@ -6961,7 +7071,7 @@ int slsDetector::startReceiver(){
 		}
 	}
 	//let detector prepare anyway even if receiver didnt work
-	if((thisDetector->myDetectorType != JUNGFRAU))
+	if((thisDetector->myDetectorType !=JUNGFRAU))
 		ret=detectorSendToReceiver(true);
 
 	return ret;

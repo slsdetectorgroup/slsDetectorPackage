@@ -104,9 +104,15 @@ enum {
   F_GET_RATE_CORRECT,		/** < get rate correction tau */
 
   F_ACTIVATE,					/** < activate/deactivate readout */
-  F_SET_NETWORK_PARAMETER		/**< set network parameters such as transmission delay, flow control */
+  F_SET_NETWORK_PARAMETER,		/**< set network parameters such as transmission delay, flow control */
 
   /* Always append functions hereafter!!! */
+
+
+
+  /* Always append functions before!!! */
+  TOO_MANY_FUNCTIONS_DEFINED=128 //you should get a compilation error if there are already so many functions defined. It conflicts with sls_receiver_funcs.h
+
 
 };
 

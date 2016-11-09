@@ -632,13 +632,24 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   int getMaxMods(){return thisDetector->nModsMax;}; //
 
 
-  int getTotalNumberOfChannels(){return thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;};
+    /** number of rois defined */
+    int nROI;
+    /** list of rois */
+    ROI roiLimits[MAX_ROIS];
+  
+    /** readout flags */
+    readOutFlags roFlags;
 
-  int getTotalNumberOfChannels(dimension d){return thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nMod[d];};
 
-  int getMaxNumberOfChannels(){return thisDetector->nChans*thisDetector->nChips*thisDetector->nModsMax;};
+    int getTotalNumberOfChannels();
+    //{return thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;};
 
-  int getMaxNumberOfChannels(dimension d){return thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nModMax[d];};
+ int getTotalNumberOfChannels(dimension d);
+ //{return thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nMod[d];};
+
+ int getMaxNumberOfChannels();//{return thisDetector->nChans*thisDetector->nChips*thisDetector->nModsMax;};
+
+ int getMaxNumberOfChannels(dimension d);//{return thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nModMax[d];};
 
   /** Returns number of rois */
   int getNRoi(){return thisDetector->nROI;};
@@ -1253,7 +1264,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
       \param datain data from the detector
       \returns pointer to a double array with a data per channel
   */
-  double* decodeData(int *datain, double *fdata=NULL);
+  double* decodeData(int *datain, int &nn, double *fdata=NULL);
 
   
   

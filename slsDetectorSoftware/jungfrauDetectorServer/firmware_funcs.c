@@ -1028,12 +1028,12 @@ int setContinousReadOut(int d) {
 
 int startReceiver(int start) {
 	u_int32_t addr=CONFIG_REG;
-#ifdef VERBOSE
+	//#ifdef VERBOSE
 	if(start)
 		printf("Setting up detector to send to Receiver\n");
 	else
 		printf("Setting up detector to send to CPU\n");
-#endif
+	//#endif
 	int reg=bus_r(addr);
 	//for start recever, write 0 and for stop, write 1
 	if (!start)
@@ -1048,9 +1048,9 @@ int startReceiver(int start) {
 	int d =reg&GB10_NOT_CPU_BIT;
 	if(d!=0) d=1;
 	if(d!=start)
-		return OK;
+	  return OK;
 	else
-		return FAIL;
+	 return FAIL;
 }
 
 
@@ -1298,6 +1298,17 @@ int64_t setTrains(int64_t value){
 
 int64_t getTrains(){
   return get64BitReg(GET_CYCLES_LSB_REG, GET_CYCLES_MSB_REG);
+}
+
+
+int64_t setSamples(int64_t value){
+  if (value>=0)
+    bus_w(NSAMPLES_REG,value);
+  return bus_r(NSAMPLES_REG);
+}
+
+int64_t getSamples(){
+  return bus_r(NSAMPLES_REG);//get64BitReg(GET_CYCLES_LSB_REG, GET_CYCLES_MSB_REG);
 }
 
 
@@ -2089,7 +2100,7 @@ u_int16_t* fifo_read_event(int ns)
 
 
   // bus_w16(DUMMY_REG,0); //
-    for (i=0; i<16; i++) {
+    for (i=0; i<32; i++) {
 
 
      //  bus_w16(DUMMY_REG,i);
@@ -2121,7 +2132,7 @@ u_int16_t* fifo_read_event(int ns)
 /*       } */
 
       //      if (((adcDisableMask&(3<<((i+1)*2)))>>((i+1)*2))!=3) {
-
+	    printf("sample %d fifo %d status %08x\n",ns,i,bus_r16(FIFO_STATUS_REG));   
 	bus_w16(DUMMY_REG,i+1);
 	// }
      // *(((u_int16_t*)(now_ptr))+i)=bus_r16(FIFO_DATA_REG);
@@ -2259,8 +2270,8 @@ u_int32_t* decode_data(int *datain)
 int setDynamicRange(int dr) {
   if (dr%16==0 && dr>0) {
     dynamicRange=16;
-    nSamples=dr/16;
-    bus_w(NSAMPLES_REG,nSamples);
+    // nSamples=dr/16;
+    // bus_w(NSAMPLES_REG,nSamples);
   } 
   getDynamicRange();
   allocateRAM();
@@ -2281,8 +2292,8 @@ int getDynamicRange() {
 
   nSamples=bus_r(NSAMPLES_REG);
   getChannels();
-  dataBytes=nModX*N_CHIP*getChannels()*2;
-  return dynamicRange*bus_r(NSAMPLES_REG);//nSamples;
+  dataBytes=nModX*N_CHIP*getChannels()*2*nSamples;
+  return dynamicRange;//*bus_r(NSAMPLES_REG);//nSamples;
 }
 
 int testBus() {

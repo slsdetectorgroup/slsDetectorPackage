@@ -839,6 +839,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="samples"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
+  i++;
+
   /* read only timers */
 
   descrToFuncMap[i].m_pFuncName="exptimel"; //
@@ -3992,6 +3996,8 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
     index=PROBES_NUMBER;
   else if (cmd=="measurements")
     index=MEASUREMENTS_NUMBER;
+  else if (cmd=="samples")
+    index=SAMPLES_JCTB;
   else
     return string("could not decode timer ")+cmd;
 
@@ -4044,6 +4050,7 @@ string slsDetectorCommand::helpTimer(int narg, char *args[], int action) {
     os << "frames t \t sets the number of frames per cycle (e.g. after each trigger)" << std::endl;
     os << "cycles t \t sets the number of cycles (e.g. number of triggers)" << std::endl;
     os << "probes t \t sets the number of probes to accumulate (max 3! cycles should be set to 1, frames to the number of pump-probe events)" << std::endl;
+    os << "samples t \t sets the number of samples expected from the jctb" << std::endl;
     os << std::endl;
 
 
@@ -4057,6 +4064,8 @@ string slsDetectorCommand::helpTimer(int narg, char *args[], int action) {
     os << "frames  \t gets the number of frames per cycle (e.g. after each trigger)" << std::endl;
     os << "cycles  \t gets the number of cycles (e.g. number of triggers)" << std::endl;
     os << "probes  \t gets the number of probes to accumulate" << std::endl;
+       os << "samples t \t gets the number of samples expected from the jctb" << std::endl;
+ 
     os << std::endl;
 
   } 
@@ -4285,6 +4294,10 @@ char answer[1000]="";
 	flag=NONPARALLEL;
       else if (sval=="safe")
 	flag=SAFE;
+      else if (sval=="digital")
+	flag=DIGITAL_ONLY;
+      else if  (sval=="analog_digital")
+	flag=ANALOG_AND_DIGITAL; 
       else
 	return string("could not scan flag ")+string(args[1]);
     }
@@ -4293,6 +4306,8 @@ char answer[1000]="";
     myDet->setOnline(ONLINE_FLAG);
 
     retval = myDet->setReadOutFlags(flag);
+
+    // cout << hex << flag << " " << retval << endl;
 
     if(retval == NORMAL_READOUT)
     	return string("none");
@@ -4308,7 +4323,11 @@ char answer[1000]="";
     if(retval & NONPARALLEL)
     	strcat(answer,"nonparallel ");
     if(retval & SAFE)
-    	strcat(answer,"safe ");
+    	strcat(answer,"safe "); 
+    if (retval & DIGITAL_ONLY)
+      strcat(answer,"digital " );
+    if  (retval & ANALOG_AND_DIGITAL) 
+      strcat(answer,"analog_digital ");
     if(strlen(answer))
     	return string(answer);
 
@@ -4343,13 +4362,13 @@ string slsDetectorCommand::helpAdvanced(int narg, char *args[], int action) {
   if (action==PUT_ACTION || action==HELP_ACTION) {
 
     os << "extsig:i mode \t sets the mode of the external signal i. can be  \n \t \t \t off, \n \t \t \t gate_in_active_high, \n \t \t \t gate_in_active_low, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t ro_trigger_in_rising_edge, \n \t \t \t ro_trigger_in_falling_edge, \n \t \t \t gate_out_active_high, \n \t \t \t gate_out_active_low, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge, \n \t \t \t ro_trigger_out_rising_edge, \n \t \t \t ro_trigger_out_falling_edge" << std::endl;
-    os << "flags mode \t sets the readout flags to mode. can be none, storeinram, tot, continous, parallel, nonparallel, safe, unknown" << std::endl;
+    os << "flags mode \t sets the readout flags to mode. can be none, storeinram, tot, continous, parallel, nonparallel, safe, digital, analog_digital, unknown" << std::endl;
     
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
 
     os << "extsig:i \t gets the mode of the external signal i. can be  \n \t \t \t off, \n \t \t \t gate_in_active_high, \n \t \t \t gate_in_active_low, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t ro_trigger_in_rising_edge, \n \t \t \t ro_trigger_in_falling_edge, \n \t \t \t gate_out_active_high, \n \t \t \t gate_out_active_low, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge, \n \t \t \t ro_trigger_out_rising_edge, \n \t \t \t ro_trigger_out_falling_edge" << std::endl;
-    os << "flags \t gets the readout flags. can be none, storeinram, tot, continous, parallel, nonparallel, safe, unknown" << std::endl;
+    os << "flags \t gets the readout flags. can be none, storeinram, tot, continous, parallel, nonparallel, safe, digital, analog_digital, unknown" << std::endl;
 
   } 
   return os.str();
@@ -5056,6 +5075,10 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
    os << hex << myDet->readRegister(67) << dec; 
 
   } else if  (cmd=="adcdisable") {
+
+    int nroi=0;
+    ROI roiLimits[MAX_ROIS];
+
    if (action==PUT_ACTION) {
      
       if (sscanf(args[1],"%x",&addr))
@@ -5063,19 +5086,69 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
     else
       return string("Could not scan adcdisable reg ")+string(args[1]);
 
-    
-      myDet->writeRegister(94,addr);
+    /******USE ROI?!?!?!?*********/
+    // roiLimits[i].xmin;roiLimits[i].xmax;roiLimits[i].ymin;roiLimits[i].ymin;roiLimits[i].ymax
+    //int mask=1;
+    int ii=0;
+    while (ii<32) {
+      nroi++;
+      roiLimits[nroi-1].xmin=ii;
+      roiLimits[nroi-1].ymin=0;
+      roiLimits[nroi-1].ymax=0;
+      while ((addr&(1<<ii))) {
+	ii++;
+	if (ii>=32)
+	  break;
+      }
+      if (ii>=32) {
+	break;
+	cout << "ROI "<< nroi << " xmin "<<roiLimits[nroi-1].xmin << " xmax "<< roiLimits[nroi-1].xmax << endl;
+	roiLimits[nroi-1].xmax=31;
+	break;
+      }
+      roiLimits[nroi-1].xmin=ii;
+      while ((addr&(1<<ii))==0) {
+	ii++;
+	if (ii>=32)
+	  break;
+      }
+      roiLimits[nroi-1].xmax=ii-1;
+      if (ii>=32) {
+	cout << "ROI "<< nroi << " xmin "<<roiLimits[nroi-1].xmin << " xmax "<< roiLimits[nroi-1].xmax << endl;
+	nroi++;
+	break;
+      }
+      cout << "ROI "<< nroi << " xmin "<<roiLimits[nroi-1].xmin << " xmax "<< roiLimits[nroi-1].xmax << endl;
     }
+    cout << "********ROI "<< nroi << endl; 
+    myDet->setROI(nroi-1,roiLimits);
+    //  myDet->writeRegister(94,addr);  
+    // myDet->writeRegister(120,addr);
+   }
 
+   ROI  *aa=myDet->getROI(nroi);
+   
+   int reg=0xffffffff;
+   if (nroi<1)
+     reg=0;
+   else {
+   for (int iroi=0; iroi<nroi; iroi++) {
+     cout << iroi << " xmin "<< (aa+iroi)->xmin<< " xmax "<< (aa+iroi)->xmax<< endl;
+     for (int ich=(aa+iroi)->xmin; ich<=(aa+iroi)->xmax; ich++) {
+       reg&=~(1<<ich);
+     }
+   }
+   }
+   os << hex << reg << dec;
 
     
-   os << hex << myDet->readRegister(94) << dec; 
+   //os <<" "<< hex << myDet->readRegister(120) << dec; 
 
   } 
 
 
 
-else  return helpPattern(narg, args, action);
+  else  return helpPattern(narg, args, action);
   
 
 

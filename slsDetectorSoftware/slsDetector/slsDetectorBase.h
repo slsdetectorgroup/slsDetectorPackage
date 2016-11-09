@@ -251,7 +251,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   virtual int setTotalProgress()=0;
 
 
-  virtual double* decodeData(int *datain, double *fdata=NULL)=0;
+  virtual double* decodeData(int *datain, int &nn, double *fdata=NULL)=0;
 
 
   virtual string getCurrentFileName()=0;

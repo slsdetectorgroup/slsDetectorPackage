@@ -184,7 +184,7 @@ int setDac(int dacnum,int dacvalue);
 
 int setPower(int ind, int val);
 
-ROI *setROI(int nroi,ROI* arg,int *retvalsize, int *ret);
+int setROI(int nroi,ROI* arg,int *retvalsize, int *ret);
 int getChannels();
 
 /*
@@ -211,5 +211,9 @@ int calibration_sensor(int num, int *values, int *dacs) ;
 int calibration_chip(int num, int *values, int *dacs);
 */
 
-
+int64_t setSamples(int64_t value);
+//int setOutputMode(int d);
+int prepareSlowADCSeq();
+int readSlowADC(int ichan);
+int setReadOutMode(int arg);
 #endif

@@ -328,20 +328,20 @@ int receiveData(int file_des, void* buf,int length, intType itype){
   int nreceiving;
   int nreceived;
   if (file_des<0) return -1;
-#ifdef VERY_VERBOSE
+  //#ifdef VERY_VERBOSE
   printf("want to receive %d Bytes\n", length); 
-#endif
+  //#endif
 
   while(length>0){
     nreceiving = (length>send_rec_max_size) ? send_rec_max_size:length;
 
-#ifdef VERY_VERBOSE
-  printf("want to receive %d Bytes\n", nreceiving); 
-#endif
+    //#ifdef VERY_VERBOSE
+    // printf("want to receive %d Bytes\n", nreceiving); 
+  //#endif
     nreceived = read(file_des,(char*)buf+total_received,nreceiving); 
-#ifdef VERY_VERBOSE
-  printf("read %d \n", nreceived); 
-#endif
+    //#ifdef VERY_VERBOSE
+    // printf("read %d \n", nreceived); 
+  //#endif
   if(!nreceived) break;
   //  if(nreceived<0) break;
     length-=nreceived;
@@ -349,9 +349,9 @@ int receiveData(int file_des, void* buf,int length, intType itype){
     //    cout<<"nrec: "<<nreceived<<" waiting for ("<<length<<")"<<endl;
   }
  
-#ifdef VERY_VERBOSE
-  printf("received %d Bytes\n", total_received); 
-#endif
+  //#ifdef VERY_VERBOSE
+  // printf("received %d Bytes\n", total_received); 
+  //#endif
 
   if (total_received>0)
     strcpy(thisClientIP,dummyClientIP);

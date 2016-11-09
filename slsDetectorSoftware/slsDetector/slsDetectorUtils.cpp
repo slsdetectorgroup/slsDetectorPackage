@@ -301,14 +301,14 @@ int  slsDetectorUtils::acquire(int delflag){
 	    	}
 	    	pthread_mutex_unlock(&mg);
 	    }
-#ifdef VERBOSE
+	    #ifdef VERBOSE
 	    cout << "Acquiring " << endl;
-#endif
+	   #endif
 	    startAndReadAll();
-#ifdef VERBOSE
+	   #ifdef VERBOSE
 	    cout << "finished " << endl;
 	    cout << "returned! " << endl;
-#endif
+	   #endif
        
 
 

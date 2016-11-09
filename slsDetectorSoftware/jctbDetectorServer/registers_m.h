@@ -75,6 +75,9 @@
 #define FIFO_DATA_REG 6<<11
 #define FIFO_STATUS_REG  7<<11
 
+//   constant FifoDigitalInReg_c : integer := 60;
+#define FIFO_DIGITAL_DATA_LSB_REG 60<<11
+#define FIFO_DIGITAL_DATA_MSB_REG 61<<11
 
 #define FIFO_DATA_REG_OFF     0x50<<11 ///////
 //to read back dac registers
@@ -94,7 +97,7 @@
 #define GET_ACTUAL_TIME_MSB_REG     17<<11
 
 #define GET_MEASUREMENT_TIME_LSB_REG     38<<11
-#define GET_MEASUREMENT_TIME_MSB_REG     38<<11
+#define GET_MEASUREMENT_TIME_MSB_REG     39<<11
 
 
 #define SET_DELAY_LSB_REG     96<<11 //0x68<<11
@@ -333,7 +336,8 @@
 #define TIMED_GATE_BIT           0x00000004
 #define CONT_RO_ENABLE_BIT       0x00080000
 #define GB10_NOT_CPU_BIT		 0x00001000
-
+#define ADC_OUTPUT_DISABLE_BIT 0x00100
+#define DIGITAL_OUTPUT_ENABLE_BIT 0x00200
 
 
 /* for speed register */

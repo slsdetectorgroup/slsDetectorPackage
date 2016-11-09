@@ -2749,11 +2749,11 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 	//Print packet loss
 	if(totalWritingPacketCountFromLastCheck[ithread]){
 		if(numberofWriterThreads>1){
-			printf("\nThread:%d"
-					"\tPackets Lost:%d"
-					"\tPacketsFromLastCheck:%lld"
-					"\tCurrentFrameNumber:%lld"
-					"\tPreviousFrameNumber:%lld\n",
+			printf("Thread:%d"
+					"\tLost:%d"
+					"\tPackets:%lld"
+					"\tFrame#:%lld"
+					"\tPFrame#r:%lld\n",
 					ithread,
 					( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousCheck[ithread])*packetsPerFrame) - totalWritingPacketCountFromLastCheck[ithread]),
 					totalWritingPacketCountFromLastCheck[ithread],
@@ -2761,10 +2761,10 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 					frameNumberInPreviousCheck[ithread]
 			);
 		}else{
-			printf("\nPackets Lost:%d"
-					"\tPacketsFromLastCheck:%lld"
-					"\tCurrentFrameNumber:%lld"
-					"\tPreviousFrameNumber:%lld\n",
+			printf("Lost:%d"
+					"\tPackets:%lld"
+					"\tFrame#:%lld"
+					"\tPFrame#:%lld\n",
 					( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousCheck[ithread])*packetsPerFrame) - totalWritingPacketCountFromLastCheck[ithread]),
 					totalWritingPacketCountFromLastCheck[ithread],
 					currentFrameNumber[ithread],
@@ -2929,10 +2929,10 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 
 		//Print packet loss and filenames
 		if(tempframenumber &&  (tempframenumber%(maxFramesPerFile/10)) == 0){
-			printf("\nPackets Lost:%d"
-					"\tPacketsFromLastCheck:%lld"
-					"\tCurrentFrameNumber:%lld"
-					"\tPreviousFrameNumber:%lld\n",
+			printf("Lost:%d"
+					"\tPackets:%lld"
+					"\tFrame#:%lld"
+					"\tPFrame#:%lld\n",
 					( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousCheck[ithread])*packetsPerFrame) - totalWritingPacketCountFromLastCheck[ithread]),
 					totalWritingPacketCountFromLastCheck[ithread],
 					currentFrameNumber[ithread],

@@ -1139,7 +1139,7 @@ void UDPStandardImplementation::startReadout(){
 
 #endif
 
-					usleep(5*1000);/* Need to find optimal time (exposure time and acquisition period) **/
+					usleep(5*1000*1000);/* Need to find optimal time (exposure time and acquisition period) **/
 					prev = totalP;
 					totalP = 0;
 					for(i=0; i<numberofListeningThreads; ++i)
@@ -2124,7 +2124,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 		return receivedSize;
 	}
 
-	if(status != TRANSMITTING){
+
 		if(myDetectorType == JUNGFRAU){
 
 			jfrau_packet_header_t* header;
@@ -2134,7 +2134,9 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 			int currentfnum=-1;
 
 			//read first packet
-			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset);
+			receivedSize=0;
+			if(status != TRANSMITTING)
+				receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset);
 			if(!receivedSize) return 0;
 			header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
 			currentpnum = (*( (uint8_t*) header->packetNumber));
@@ -2159,7 +2161,9 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 						break;
 					pnum --;
 
-					receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset);
+					receivedSize=0;
+					if(status != TRANSMITTING)
+						receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset);
 					if(!receivedSize){
 						totalIgnoredPacketCount[ithread] += (packetsPerFrame - pnum);
 						return 0;
@@ -2181,7 +2185,10 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 					//find the start of next image
 					while(currentpnum != pnum){
 						totalIgnoredPacketCount[ithread]++;
-						receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset);
+
+						receivedSize=0;
+						if(status != TRANSMITTING)
+							receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + offset);
 						if(!receivedSize) return 0;
 						totalListeningPacketCount[ithread]++;
 						header =  (jfrau_packet_header_t*)(buffer[ithread] + offset);
@@ -2198,16 +2205,16 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int cSize, ch
 
 
 		//other detectors
-		else{
+		if(status != TRANSMITTING){
 			receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + fifoBufferHeaderSize + cSize, (bufferSize * numberofJobsPerBuffer) - cSize);
 			//eiger returns 0 when header packet caught
 			while(receivedSize < onePacketSize && status != TRANSMITTING)
 				receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + fifoBufferHeaderSize + cSize, (bufferSize * numberofJobsPerBuffer) - cSize);
 
-		}
-	}
 
-	totalListeningPacketCount[ithread] += (receivedSize/onePacketSize);
+		}
+
+		totalListeningPacketCount[ithread] += (receivedSize/onePacketSize);
 
 
 #ifdef MANUALDEBUG
@@ -2741,12 +2748,11 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 
 	//Print packet loss
 	if(totalWritingPacketCountFromLastCheck[ithread]){
-		printf("\nThread:%d"
-				"\t\tPackets Lost:%d"
+		thread/****/
+		printf("\nPackets Lost:%d"
 				"\tPacketsFromLastCheck:%lld"
 				"\tCurrentFrameNumber:%lld"
 				"\tPreviousFrameNumber:%lld\n",
-				ithread,
 				( ((int)(currentFrameNumber[ithread]-frameNumberInPreviousCheck[ithread])*packetsPerFrame) - totalWritingPacketCountFromLastCheck[ithread]),
 				totalWritingPacketCountFromLastCheck[ithread],
 				currentFrameNumber[ithread],
@@ -2910,7 +2916,7 @@ void UDPStandardImplementation::handleWithoutMissingPackets(int ithread, char* w
 
 		//Print packet loss and filenames
 		if(tempframenumber &&  (tempframenumber%(maxFramesPerFile/10)) == 0){
-			printf("\nTThread:%d"
+			cprintf(BLUE,"\nThread:%d"
 					"\t\tPackets Lost:%d"
 					"\tPacketsFromLastCheck:%lld"
 					"\tCurrentFrameNumber:%lld"

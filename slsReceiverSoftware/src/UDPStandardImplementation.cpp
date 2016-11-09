@@ -1139,7 +1139,7 @@ void UDPStandardImplementation::startReadout(){
 
 #endif
 
-					usleep(5*1000*1000);/* Need to find optimal time (exposure time and acquisition period) **/
+					usleep(5*1000);/* Need to find optimal time (exposure time and acquisition period) **/
 					prev = totalP;
 					totalP = 0;
 					for(i=0; i<numberofListeningThreads; ++i)

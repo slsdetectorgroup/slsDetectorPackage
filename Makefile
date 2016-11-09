@@ -3,7 +3,7 @@
 # Include common definitions
 include Makefile.include
 
-INSTALLROOT	?=	$(PWD)
+INSTALLROOT	?=	$(PWD) 
 BINDIR	?=	$(INSTALLROOT)/bin
 DOCDIR	?=	$(INSTALLROOT)/docs
 LIBDIR	?=	$(INSTALLROOT)/bin

@@ -2177,9 +2177,9 @@ int slsReceiverTCPIPInterface::set_read_receiver_timer(){
 		}
 		else{
 			if(index >= 0 ){
-				receiverBase->setDataStreamTimer(index);
+				receiverBase->setFrameToGuiTimer(index);
 			}
-			retval=receiverBase->getDataStreamTimer();
+			retval=receiverBase->getFrameToGuiTimer();
 			if(index>=0 && retval!=index){
 				strcpy(mess,"Could not set datastream timer");
 				cprintf(RED,"%s\n",mess);

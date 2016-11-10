@@ -155,6 +155,12 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	uint32_t getFrameToGuiFrequency() const;
 
 	/**
+	 * Gets the timer between frames streamed when frequency is set to 0
+	 * @return timer between frames streamed
+	 */
+	uint32_t getFrameToGuiTimer() const;
+
+	/**
 	 * Get the data stream enable
 	 * @return 1 to send via zmq, else 0
 	 */
@@ -316,6 +322,12 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * @return OK or FAIL
 	 */
 	int setFrameToGuiFrequency(const uint32_t freq);
+
+	/**
+	 * Sets the timer between frames streamed when frequency is set to 0
+	 * @param time_in_ms timer between frames streamed
+	 */
+	void setFrameToGuiTimer(const uint32_t time_in_ms);
 
 	/**
 	 * Set the data stream enable
@@ -555,8 +567,11 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	int shortFrameEnable;
 	/** Frequency of Frames sent to GUI */
 	uint32_t frameToGuiFrequency;
+	/** Timer of Frames sent to GUI when frequency is 0 */
+	uint32_t frameToGuiTimerinMS;
 	/** Data Stream Enable from Receiver */
 	int32_t dataStreamEnable;
+	static const int DEFAULT_STREAMING_TIMER = 500;
 
 
 

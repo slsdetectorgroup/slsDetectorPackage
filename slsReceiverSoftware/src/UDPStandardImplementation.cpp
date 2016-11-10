@@ -1814,7 +1814,7 @@ void UDPStandardImplementation::startDataCallback(){
 					cprintf(BLUE,"%d Elapsed time:%f seconds\n",ithread,( end.tv_sec - begin.tv_sec )	+ ( end.tv_nsec - begin.tv_nsec ) / 1000000000.0);
 #endif
 					//still less than 250 ms, keep waiting
-					if((( end.tv_sec - begin.tv_sec )	+ ( end.tv_nsec - begin.tv_nsec ) / 1000000000.0) < 0.5)/**fixed 250 ms*/
+					if((( end.tv_sec - begin.tv_sec )	+ ( end.tv_nsec - begin.tv_nsec ) / 1000000000.0) < (frameToGuiTimerinMS/1000))
 						continue;
 					//done with timer, look into data
 					randomSendNow = true;

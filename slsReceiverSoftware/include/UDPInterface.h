@@ -215,6 +215,13 @@ class UDPInterface {
 	virtual uint32_t getFrameToGuiFrequency() const = 0;
 
 	/**
+	 * Gets the timer between frames streamed when frequency is set to 0
+	 * @return timer between frames streamed
+	 */
+	virtual uint32_t getFrameToGuiTimer() const = 0;
+
+
+	/**
 	 * Get the data stream enable
 	 * @return 1 to send via zmq, else 0
 	 */
@@ -371,6 +378,12 @@ class UDPInterface {
 	 * @return OK or FAIL
 	 */
 	virtual int setFrameToGuiFrequency(const uint32_t freq) = 0;
+
+	/**
+	 * Sets the timer between frames streamed when frequency is set to 0
+	 * @param time_in_ms timer between frames streamed
+	 */
+	virtual void setFrameToGuiTimer(const uint32_t time_in_ms) = 0;
 
 	/**
 	 * Set the data stream enable

@@ -77,6 +77,7 @@ void UDPBaseImplementation::initializeMembers(){
 	//***acquisition parameters***
 	shortFrameEnable = -1;
 	frameToGuiFrequency = 0;
+	frameToGuiTimerinMS = DEFAULT_STREAMING_TIMER;
 	dataStreamEnable = false;
 }
 
@@ -175,6 +176,8 @@ char *UDPBaseImplementation::getEthernetInterface() const{
 int UDPBaseImplementation::getShortFrameEnable() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return shortFrameEnable;}
 
 uint32_t UDPBaseImplementation::getFrameToGuiFrequency() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return frameToGuiFrequency;}
+
+uint32_t UDPBaseImplementation::getFrameToGuiTimer() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return frameToGuiTimerinMS;}
 
 uint32_t UDPBaseImplementation::getDataStreamEnable() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return dataStreamEnable;}
 
@@ -326,6 +329,13 @@ int UDPBaseImplementation::setFrameToGuiFrequency(const uint32_t freq){
 
 	//overrridden child classes might return FAIL
 	return OK;
+}
+
+void UDPBaseImplementation::setFrameToGuiTimer(const uint32_t time_in_ms){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	frameToGuiTimerinMS = time_in_ms;
+	FILE_LOG(logINFO) << "Frame To Gui Timer:" << frameToGuiTimerinMS;
 }
 
 

@@ -479,11 +479,8 @@ double XYRangeValues[4];
 bool IsXYRange[4];
 
 /** Default timer between plots*/
-//#if __GNUC__ > 4 || (__GNUC__  == 4 && __GNUC_MINOR__ > 6)
-//static constexpr double PLOT_TIMER_MS = 200;
-//#else
-static const double PLOT_TIMER_MS = 200;
-//#endif
+static const double PLOT_TIMER_MS;
+
 /** Specific timer value between plots */
 double timerValue;
 /** every nth frame when to plot */

@@ -164,7 +164,7 @@ void qDrawPlot::SetupWidgetWindow(){
 	IsXYRange[2] = false;
 	IsXYRange[3] = false;
 
-	timerValue = (double)PLOT_TIMER_MS;
+	timerValue = PLOT_TIMER_MS;
 	frameFactor=0;
 	isFrameEnabled = false;
 	isTriggerEnabled = false;

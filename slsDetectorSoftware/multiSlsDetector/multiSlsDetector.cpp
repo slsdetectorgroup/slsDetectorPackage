@@ -5102,9 +5102,27 @@ void multiSlsDetector::startReceivingDataThread(){
 
 	int ithread = currentThreadIndex;		//set current thread value  index
 
+	//initializations
+	int numReadoutPerDetector = 1;
+	bool jungfrau = false;
+	int expectedsize = 1024*256;/**shouldnt work for other bit modes or anythign*/
+	if(getDetectorsType() == EIGER){
+		numReadoutPerDetector = 2;
+		expectedsize = 1024*256;
+	}else if(getDetectorsType() == JUNGFRAU){
+		jungfrau = true;
+		expectedsize = 8192*128;
+	}
+	int singleDatabytes = detectors[ithread/numReadoutPerDetector]->getDataBytes();
+	int nel=(singleDatabytes/numReadoutPerDetector)/sizeof(int);
+	int* image = new int[nel];
+	int len,idet = 0;
+	singleframe[ithread]=NULL;
+
+
 	char hostname[100] = "tcp://";
 	char rx_hostname[100];
-	strcpy(rx_hostname, detectors[ithread]->getReceiver());
+	strcpy(rx_hostname, detectors[ithread/numReadoutPerDetector]->getReceiver());
 	cout<<"rx_hostname:"<<rx_hostname<<endl;
 	if(strchr(rx_hostname,'.')!=NULL)
 		strcat(hostname,rx_hostname);
@@ -5135,22 +5153,7 @@ void multiSlsDetector::startReceivingDataThread(){
 	cprintf(BLUE,"%d Created socket\n",ithread);
 
 
-	//initializations
-	int numReadoutPerDetector = 1;
-	bool jungfrau = false;
-	int expectedsize = 1024*256;/**shouldnt work for other bit modes or anythign*/
-	if(getDetectorsType() == EIGER){
-		numReadoutPerDetector = 2;
-		expectedsize = 1024*256;
-	}else if(getDetectorsType() == JUNGFRAU){
-		jungfrau = true;
-		expectedsize = 8192*128;
-	}
-	int singleDatabytes = detectors[ithread/numReadoutPerDetector]->getDataBytes();
-	int nel=(singleDatabytes/numReadoutPerDetector)/sizeof(int);
-	int* image = new int[nel];
-	int len,idet = 0;
-	singleframe[ithread]=NULL;
+
 	threadStarted = true;					//let calling function know thread started and obtained current
 
 

@@ -72,6 +72,7 @@ using namespace std;
 #define DATA_STREAMING						0x0000000008000000ULL
 #define RESET_ERROR						    0x0000000010000000ULL
 #define POWER_CHIP						    0x0000000020000000ULL
+#define RECEIVER_READ_TIMER				    0x0000000040000000ULL
 //											0x00000000FFFFFFFFULL
 /** @short class returning all error messages for error mask */
 class errorDefs {
@@ -224,6 +225,9 @@ public:
 
 		if(slsErrorMask&POWER_CHIP)
 			retval.append("Could not power on/off/get the chip\n");
+
+		if(slsErrorMask&RECEIVER_READ_TIMER)
+			retval.append("Could not set receiver read timer\n");
 
 		//------------------------------------------------------ length of message
 

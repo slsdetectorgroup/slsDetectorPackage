@@ -1315,9 +1315,10 @@ int slsDetector::activate(int const enable){
 #ifdef VERBOSE
 			std::cout << "Activating/Deactivating Receiver: " << retval << std::endl;
 #endif
-			if (connectData() == OK)
+			if (connectData() == OK){
 				ret=thisReceiver->sendInt(fnum,retval,retval);
-			disconnectData();
+				disconnectData();
+			}
 			if(ret==FAIL)
 				setErrorMask((getErrorMask())|(RECEIVER_ACTIVATE));
 		}
@@ -1628,9 +1629,10 @@ int slsDetector::setDetectorType(detectorType const type){
 #ifdef VERBOSE
 		  std::cout << "Sending detector type to Receiver " << (int)thisDetector->myDetectorType << std::endl;
 #endif
-		  if (connectData() == OK)
+		  if (connectData() == OK){
 			  retval=thisReceiver->sendInt(fnum2,arg,(int)thisDetector->myDetectorType);
-		  disconnectData();
+			  disconnectData();
+		  }
 		  if(retval==FAIL){
 			  cout << "ERROR: Could not send detector type to receiver" << endl;
 			  setErrorMask((getErrorMask())|(RECEIVER_DET_HOSTTYPE_NOT_SET));
@@ -1996,9 +1998,10 @@ int64_t slsDetector::getId( idMode mode, int imod){
     retval=(retval<<32) | SVNDATELIB;
   } else if (mode==RECEIVER_VERSION) {
     if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
-      if (connectData() == OK)
-    	  ret=thisReceiver->getInt(fnum2,retval);
-      disconnectData();
+    	if (connectData() == OK){
+    		ret=thisReceiver->getInt(fnum2,retval);
+    		disconnectData();
+    	}
       if(ret==FORCE_UPDATE)
 	ret=updateReceiver();
     }
@@ -4088,9 +4091,10 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 				}
 
 				char mess[MAX_STR_LENGTH]="";
-				if (connectData() == OK)
+				if (connectData() == OK){
 					ret=thisReceiver->sendIntArray(fnum2,retval,args,mess);
-				disconnectData();
+					disconnectData();
+				}
 				if((args[1] != retval)|| (ret==FAIL)){
 					ret = FAIL;
 					if(index==FRAME_PERIOD){
@@ -4629,9 +4633,10 @@ int slsDetector::setDynamicRange(int n){
 #ifdef VERBOSE
 			  std::cout << "Sending/Getting dynamic range to/from receiver " << n << std::endl;
 #endif
-		  if (connectData() == OK)
-			  ret=thisReceiver->sendInt(fnum2,retval1,n);
-		  disconnectData();
+			  if (connectData() == OK){
+				  ret=thisReceiver->sendInt(fnum2,retval1,n);
+				  disconnectData();
+			  }
 		  if ((ret==FAIL) || (retval1 != retval)){
 			  ret = FAIL;
 			  cout << "ERROR:Dynamic range in receiver set incorrectly to " << retval1 << " instead of " << retval << endl;
@@ -5763,9 +5768,10 @@ int slsDetector::setUDPConnection(){
 #ifdef VERBOSE
 		std::cout << "Setting up UDP Connection for Receiver " << args[0] << "\t" << args[1] << std::endl;
 #endif
-		if (connectData() == OK)
+		if (connectData() == OK){
 			ret=thisReceiver->sendUDPDetails(fnum,retval,args);
-		 disconnectData();
+			disconnectData();
+		}
 		if(ret!=FAIL){
 			strcpy(thisDetector->receiverUDPMAC,retval);
 
@@ -5928,9 +5934,10 @@ int slsDetector::configureMAC(){
 #ifdef VERBOSE
 	std::cout << "Sending adc val to receiver " << retval << std::endl;
 #endif
-	if (connectData() == OK)
+	if (connectData() == OK){
 		ret=thisReceiver->sendInt(fnum2,retval,retval);
-	 disconnectData();
+		disconnectData();
+	}
 	if(ret==FAIL)
 	  setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
       }
@@ -7152,9 +7159,10 @@ string slsDetector::setFilePath(string s) {
 #ifdef VERBOSE
 		std::cout << "Sending file path to receiver " << arg << std::endl;
 #endif
-		if (connectData() == OK)
+		if (connectData() == OK){
 			ret=thisReceiver->sendString(fnum,retval,arg);
-		 disconnectData();
+			disconnectData();
+		}
 		if(ret!=FAIL){
 			pthread_mutex_lock(&ms);
 			fileIO::setFilePath(string(retval));
@@ -7200,9 +7208,10 @@ string slsDetector::setFileName(string s) {
 #ifdef VERBOSE
 			std::cout << "Sending file name to receiver " << arg << std::endl;
 #endif
-			if (connectData() == OK)
+			if (connectData() == OK){
 				ret=thisReceiver->sendString(fnum,retval,arg);
-			 disconnectData();
+				disconnectData();
+			}
 			if(ret!=FAIL){
 #ifdef VERBOSE
 				std::cout << "Complete file prefix from receiver: " << retval << std::endl;
@@ -7247,9 +7256,10 @@ int slsDetector::setFileIndex(int i) {
 #ifdef VERBOSE
 		std::cout << "Sending file index to receiver " << arg << std::endl;
 #endif
-		if (connectData() == OK)
+		if (connectData() == OK){
 			ret=thisReceiver->sendInt(fnum,retval,arg);
-		 disconnectData();
+			disconnectData();
+		}
 		if(ret!=FAIL){
 			pthread_mutex_lock(&ms);
 			fileIO::setFileIndex(retval);
@@ -7274,9 +7284,10 @@ int slsDetector::startReceiver(){
 #ifdef VERBOSE
 		std::cout << "Starting Receiver " << std::endl;
 #endif
-		if (connectData() == OK)
+		if (connectData() == OK){
 			ret=thisReceiver->executeFunction(fnum,mess);
-		 disconnectData();
+			disconnectData();
+		}
 		if(ret==FORCE_UPDATE)
 			ret=updateReceiver();
 		else if (ret == FAIL){
@@ -7310,9 +7321,10 @@ int slsDetector::stopReceiver(){
 #ifdef VERBOSE
 		std::cout << "Stopping Receiver " << std::endl;
 #endif
-		if (connectData() == OK)
+		if (connectData() == OK){
 			ret=thisReceiver->executeFunction(fnum,mess);
-		 disconnectData();
+			disconnectData();
+		}
 		if(ret==FORCE_UPDATE)
 			ret=updateReceiver();
 		else if (ret == FAIL)
@@ -7335,9 +7347,10 @@ slsDetectorDefs::runStatus slsDetector::startReceiverReadout(){
 #ifdef VERBOSE
 		std::cout << "Starting Receiver Readout" << std::endl;
 #endif
-		if (connectData() == OK)
+		if (connectData() == OK){
 			ret=thisReceiver->getInt(fnum,retval);
-		 disconnectData();
+			disconnectData();
+		}
 		if(retval!=-1)
 			s=(runStatus)retval;
 		if(ret==FORCE_UPDATE)
@@ -7392,9 +7405,10 @@ slsDetectorDefs::runStatus slsDetector::getReceiverStatus(){
 #ifdef VERBOSE
 		std::cout << "Getting Receiver Status" << std::endl;
 #endif
-		if (connectData() == OK)
+		if (connectData() == OK){
 			ret=thisReceiver->getInt(fnum,retval);
-		 disconnectData();
+			disconnectData();
+		}
 		if(retval!=-1)
 			s=(runStatus)retval;
 		if(ret==FORCE_UPDATE)
@@ -7416,9 +7430,10 @@ int slsDetector::getFramesCaughtByReceiver(){
 #ifdef VERBOSE
 		std::cout << "Getting Frames Caught by Receiver " << std::endl;
 #endif
-		if (connectData() == OK)
+		if (connectData() == OK){
 			ret=thisReceiver->getInt(fnum,retval);
-		 disconnectData();
+			disconnectData();
+		}
 		if(ret==FORCE_UPDATE)
 			ret=updateReceiver();
 	}
@@ -7437,9 +7452,10 @@ int slsDetector::getReceiverCurrentFrameIndex(){
 #ifdef VERBOSE
 		std::cout << "Getting Current Frame Index of Receiver " << std::endl;
 #endif
-		if (connectData() == OK)
+		if (connectData() == OK){
 			ret=thisReceiver->getInt(fnum,retval);
-		 disconnectData();
+			disconnectData();
+		}
 		if(ret==FORCE_UPDATE)
 			ret=updateReceiver();
 	}
@@ -7459,9 +7475,10 @@ int slsDetector::resetFramesCaught(){
 #ifdef VERBOSE
 		std::cout << "Reset Frames Caught by Receiver" << std::endl;
 #endif
-		if (connectData() == OK)
+		if (connectData() == OK){
 			ret=thisReceiver->executeFunction(fnum,mess);
-		 disconnectData();
+			disconnectData();
+		}
 		if(ret==FORCE_UPDATE)
 			ret=updateReceiver();
 	}
@@ -7485,9 +7502,10 @@ int slsDetector::lockReceiver(int lock){
 #ifdef VERBOSE
 		std::cout << "Locking or Unlocking Receiver " << std::endl;
 #endif
-		if (connectData() == OK)
+		if (connectData() == OK){
 			ret=thisReceiver->sendInt(fnum,retval,arg);
-		 disconnectData();
+			disconnectData();
+		}
 		if(ret==FORCE_UPDATE)
 			updateReceiver();
 	}
@@ -7509,9 +7527,10 @@ string slsDetector::getReceiverLastClientIP(){
 #ifdef VERBOSE
 		std::cout << "Geting Last Client IP connected to Receiver " << std::endl;
 #endif
-		if (connectData() == OK)
+		if (connectData() == OK){
 			ret=thisReceiver->getLastClientIP(fnum,retval);
-		 disconnectData();
+			disconnectData();
+		}
 		if(ret==FORCE_UPDATE)
 			updateReceiver();
 	}
@@ -7629,9 +7648,10 @@ int slsDetector::enableWriteToFile(int enable){
 #ifdef VERBOSE
 		std::cout << "Sending enable file write to receiver " << arg << std::endl;
 #endif
-		if (connectData() == OK)
+		if (connectData() == OK){
 			ret=thisReceiver->sendInt(fnum,retval,arg);
-		 disconnectData();
+			disconnectData();
+		}
 		if(ret!=FAIL){
 			pthread_mutex_lock(&ms);
 			parentDet->enableWriteToFileMask(retval);
@@ -7670,9 +7690,10 @@ int slsDetector::overwriteFile(int enable){
 #ifdef VERBOSE
 		std::cout << "Sending enable file write to receiver " << arg << std::endl;
 #endif
-		if (connectData() == OK)
+		if (connectData() == OK){
 			ret=thisReceiver->sendInt(fnum,retval,arg);
-		 disconnectData();
+			disconnectData();
+		}
 		if(ret!=FAIL){
 			pthread_mutex_lock(&ms);
 			parentDet->enableOverwriteMask(retval);
@@ -7708,9 +7729,10 @@ int slsDetector::setFrameIndex(int index){
 #ifdef VERBOSE
 		std::cout << "Sending frame index to receiver " << arg << std::endl;
 #endif
-		if (connectData() == OK)
+		if (connectData() == OK){
 			ret=thisReceiver->sendInt(fnum,retval,arg);
-		disconnectData();
+			disconnectData();
+		}
 		if(ret!=FAIL){
 			pthread_mutex_lock(&ms);
 			fileIO::setFrameIndex(retval);
@@ -7787,9 +7809,10 @@ int slsDetector::setReadReceiverFrequency(int getFromReceiver, int freq){
 #ifdef VERBOSE
 		std::cout << "Sending read frequency to receiver " << arg  << std::endl;
 #endif
-		if (connectData() == OK)
+		if (connectData() == OK){
 			ret=thisReceiver->sendInt(fnum,retval,arg);
-		 disconnectData();
+			disconnectData();
+		}
 		if(ret==FAIL)
 			retval = -1;
 		if(ret==FORCE_UPDATE)
@@ -7799,6 +7822,33 @@ int slsDetector::setReadReceiverFrequency(int getFromReceiver, int freq){
 	if ((freq > 0) && (retval != freq)){
 		cout << "could not set receiver read frequency to " << freq <<" Returned:" << retval << endl;
 		setErrorMask((getErrorMask())|(RECEIVER_READ_FREQUENCY));
+	}
+	return retval;
+}
+
+
+
+int slsDetector::setReceiverReadTimer(int time_in_ms){
+	int fnum=F_READ_RECEIVER_TIMER;
+	int ret = FAIL;
+	int arg = time_in_ms;
+	int retval = -1;
+
+	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+#ifdef VERBOSE
+		std::cout << "Sending read timer to receiver " << arg  << std::endl;
+#endif
+		if (connectData() == OK){
+			ret=thisReceiver->sendInt(fnum,retval,arg);
+			disconnectData();
+		}
+		if(ret==FORCE_UPDATE)
+			updateReceiver();
+	}
+
+	if ((time_in_ms > 0) && (retval != time_in_ms)){
+		cout << "could not set receiver read timer to " << time_in_ms <<" Returned:" << retval << endl;
+		setErrorMask((getErrorMask())|(RECEIVER_READ_TIMER));
 	}
 	return retval;
 }
@@ -7816,9 +7866,10 @@ int slsDetector::enableDataStreamingFromReceiver(int enable){
 #ifdef VERBOSE
 		std::cout << "***************Sending Data Streaming in Receiver " << arg  << std::endl;
 #endif
-		if (connectData() == OK)
+		if (connectData() == OK){
 			ret=thisReceiver->sendInt(fnum,retval,arg);
-		 disconnectData();
+			disconnectData();
+		}
 		if(ret==FAIL)
 			retval = -1;
 		if(ret==FORCE_UPDATE)
@@ -7844,9 +7895,10 @@ int slsDetector::enableReceiverCompression(int i){
 #ifdef VERBOSE
 		std::cout << "Getting/Enabling/Disabling Receiver Compression with argument " << i << std::endl;
 #endif
-		if (connectData() == OK)
+		if (connectData() == OK){
 			ret=thisReceiver->sendInt(fnum,retval,i);
-		 disconnectData();
+			disconnectData();
+		}
 		if(ret==FAIL)
 			setErrorMask((getErrorMask())|(COULDNOT_ENABLE_COMPRESSION));
 	}
@@ -7865,9 +7917,10 @@ void slsDetector::setDetectorHostname(){
 #ifdef VERBOSE
 		std::cout << "Sending detector hostname to Receiver " << thisDetector->hostname << std::endl;
 #endif
-		if (connectData() == OK)
+		if (connectData() == OK){
 			ret=thisReceiver->sendString(fnum,retval,thisDetector->hostname);
-		 disconnectData();
+			disconnectData();
+		}
 		if((ret==FAIL) || (strcmp(retval,thisDetector->hostname)))
 			setErrorMask((getErrorMask())|(RECEIVER_DET_HOSTNAME_NOT_SET));
 	}
@@ -7913,9 +7966,10 @@ int slsDetector::enableTenGigabitEthernet(int i){
 #ifdef VERBOSE
 					std::cout << "Enabling / Disabling 10Gbe in receiver: " << i << std::endl;
 #endif
-					if (connectData() == OK)
+					if (connectData() == OK){
 						ret=thisReceiver->sendInt(fnum2,retval,i);
-					 disconnectData();
+						disconnectData();
+					}
 					if(ret==FAIL)
 						setErrorMask((getErrorMask())|(RECEIVER_TEN_GIGA));
 				}
@@ -7943,9 +7997,10 @@ int slsDetector::setReceiverFifoDepth(int i){
 		else
 			std::cout<< "Setting Receiver Fifo Depth to " << i << endl;
 #endif
-		if (connectData() == OK)
+		if (connectData() == OK){
 			ret=thisReceiver->sendInt(fnum,retval,i);
-		 disconnectData();
+			disconnectData();
+		}
 		if(ret==FAIL)
 			setErrorMask((getErrorMask())|(COULD_NOT_SET_FIFO_DEPTH));
 	}

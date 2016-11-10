@@ -1276,6 +1276,14 @@ class multiSlsDetector  : public slsDetectorUtils {
    */
   int setReadReceiverFrequency(int getFromReceiver, int freq=-1);
 
+  /** Sets the read receiver timer
+   	  if data required from receiver randomly readRxrFrequency=0,
+   	   then the timer between each data stream is set with time_in_ms
+   	   @param time_in_ms timer between frames
+   	   /returns read receiver timer
+   */
+  int setReceiverReadTimer(int time_in_ms=500);
+
   /** Enable or disable streaming data from receiver to client
    * 	@param enable 0 to disable 1 to enable -1 to only get the value
    * 	@returns data streaming

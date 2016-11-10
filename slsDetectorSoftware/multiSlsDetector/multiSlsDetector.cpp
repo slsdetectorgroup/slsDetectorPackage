@@ -5619,6 +5619,26 @@ int multiSlsDetector::setReadReceiverFrequency(int getFromReceiver, int freq){
 }
 
 
+
+int multiSlsDetector::setReceiverReadTimer(int time_in_ms){
+	int ret=-100, ret1;
+
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+		if (detectors[idet]) {
+			ret1=detectors[idet]->setReceiverReadTimer(time_in_ms);
+			if(detectors[idet]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<idet));
+			if (ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+	}
+
+	return ret;
+}
+
+
 // only called from gui or that wants zmq data packets
 int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
 

@@ -99,7 +99,7 @@ public:
 	void IsXYRangeValues(bool changed,qDefs::range xy){IsXYRange[xy]=changed;};
 
 	/** Get minimum Plot timer - between plots */
-	double GetMinimumPlotTimer(){return PLOT_TIMER_MS;};
+	double GetMinimumPlotTimer(){return (double)PLOT_TIMER_MS;};
 	/** Set Plot timer - between plots in ms*/
 	void SetPlotTimer(double time);
 	/** Set  Plot frame factor - between plots, also for receiver if exists */
@@ -482,7 +482,7 @@ bool IsXYRange[4];
 //#if __GNUC__ > 4 || (__GNUC__  == 4 && __GNUC_MINOR__ > 6)
 //static constexpr double PLOT_TIMER_MS = 200;
 //#else
-static const double PLOT_TIMER_MS = 200;
+static const int PLOT_TIMER_MS = 200;
 //#endif
 /** Specific timer value between plots */
 double timerValue;

@@ -23,7 +23,7 @@ QMAKE_LIBS 			= 	-L$(QTDIR)/lib
 DEFINES 			+= 	 VERBOSE DACS_INT PRINT_LOG  #VERYVERBOSE CHECKINFERROR 
 LIBS				=	-L$(QWTDIR)/lib	  -lqwt -L$(QWT3D)/lib 
 
-CXXFLAGS			+=  -g
+CXXFLAGS			+=  -std=c++11 -g
 
 
 QMAKE_CXXFLAGS_WARN_ON = 	-w 

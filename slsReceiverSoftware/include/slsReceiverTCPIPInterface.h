@@ -176,6 +176,9 @@ private:
 	/** Sets the receiver to send every nth frame to gui, or only upon gui request */
 	int set_read_frequency();
 
+	/** Sets the timer between frames streamed by receiver when frequency is set to 0 */
+	int set_read_receiver_timer();
+
 	/* Set the data stream enable */
 	int set_data_stream_enable();
 

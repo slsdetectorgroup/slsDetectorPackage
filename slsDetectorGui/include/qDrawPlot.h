@@ -101,7 +101,7 @@ public:
 	/** Get minimum Plot timer - between plots */
 	double GetMinimumPlotTimer(){return PLOT_TIMER_MS;};
 	/** Set Plot timer - between plots in ms*/
-	void SetPlotTimer(double time){timerValue = time;};
+	void SetPlotTimer(double time);
 	/** Set  Plot frame factor - between plots, also for receiver if exists */
 	void SetFrameFactor(int frame);
 
@@ -293,9 +293,6 @@ private slots:
 /** To update plot
  * */
 void UpdatePlot();
-/** To stop updating plot
- * */
-void StopUpdatePlot();
 /** To start or stop acquisition
  * @param start is 1 to start and 0 to stop acquisition
  * */
@@ -322,6 +319,8 @@ private:
 /** The sls detector object */
 multiSlsDetector *myDet;
 
+/** detectot type */
+slsDetectorDefs::detectorType detType;
 
 
 /** Widgets needed to plot the clone */
@@ -423,7 +422,6 @@ double pixelWidth;
 
 /**	Current Image Number */
 unsigned int lastImageNumber;
-int last_plot_number;
 
 /**	Number of graphs in 1D */
 unsigned int nHists;
@@ -586,6 +584,7 @@ void ResetZMinZMaxSignal(bool,bool,double,double);
 void SetCurrentMeasurementSignal(int);
 void saveErrorSignal(QString);
 void AcquisitionErrorSignal(QString);
+void UpdatePlotSignal();
 };
 
 

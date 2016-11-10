@@ -571,7 +571,8 @@ QwtPlotHistogram	*plotHistogram;
 QVector<QwtIntervalSample> histogramSamples;
 
 
-bool firstPlot;
+bool plotRequired;
+
 
 signals:
 void UpdatingPlotFinished();

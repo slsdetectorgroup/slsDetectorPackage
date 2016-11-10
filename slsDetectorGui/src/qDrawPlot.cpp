@@ -90,7 +90,7 @@ void qDrawPlot::SetupWidgetWindow(){
 	acquisitionPeriod = 0;
 	exposureTime = 0;
 	currentFileIndex = 0;
-	currentFrameIndex = -1;
+	currentFrameIndex = 0;
 
 	stop_signal = 0;
 	pthread_mutex_init(&last_image_complete_mutex,NULL);
@@ -215,7 +215,7 @@ void qDrawPlot::SetupWidgetWindow(){
 	plotHistogram->setStyle(QwtPlotHistogram::Columns);//Options:Outline,Columns, Lines
 
 
-	firstPlot = false;
+	plotRequired = false;
 
 //widget related initialization
 
@@ -415,7 +415,7 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 		fileName = QString(myDet->getFileName().c_str());
 		//update index
 		currentFileIndex = myDet->getFileIndex();
-		currentFrameIndex = -1;
+		currentFrameIndex = 0;
 
 		StartDaq(true);
 		running=!running;
@@ -497,7 +497,6 @@ bool qDrawPlot::StartOrStopThread(bool start){
 		// Start acquiring data from server
 		if(!firstTime) pthread_join(gui_acquisition_thread,NULL);//wait until he's finished, ie. exits
 		pthread_create(&gui_acquisition_thread, NULL,DataStartAcquireThread, (void*) this);
-		firstPlot = true;
 		// This is set here and later reset to zero when all the plotting is done
 		// This is manually done instead of keeping track of thread because
 		// this thread returns immediately after executing the acquire command
@@ -637,7 +636,7 @@ void qDrawPlot::SetupMeasurement(){
 	// Defaults
 	if(!running)
 		stop_signal = 0;
-	currentFrameIndex = -1;
+	plotRequired = 0;
 	currentFrame = 0;
 	//for 2d scans
 	currentScanDivLevel = 0;
@@ -791,6 +790,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 		if(!plotEnable)
 			return 0;
 
+
 		//angle plotting
 		if(anglePlot){
 			LockLastImageArray();
@@ -849,6 +849,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 			cout << "Exiting GetData Function " << endl;
 #endif
 			emit UpdatePlotSignal();
+			plotRequired = true;
 			return 0;
 		}
 
@@ -896,6 +897,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 			currentFrame++;
 			currentScanDivLevel++;
 			emit UpdatePlotSignal();
+			plotRequired = true;
 			return 0;
 		}
 		//file index
@@ -914,6 +916,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 			currentFrame++;
 			currentScanDivLevel++;
 			emit UpdatePlotSignal();
+			plotRequired = true;
 			return 0;
 		}
 		//level0
@@ -938,6 +941,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 			UnlockLastImageArray();
 			currentFrame++;
 			emit UpdatePlotSignal();
+			plotRequired = true;
 			return 0;
 		}
 		//level1
@@ -962,6 +966,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 			UnlockLastImageArray();
 			currentFrame++;
 			emit UpdatePlotSignal();
+			plotRequired = true;
 			return 0;
 		}
 
@@ -1157,6 +1162,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 		cprintf(BLUE,"currentframe:%d \tcurrentframeindex:%d\n",currentFrame,currentFrameIndex);
 #endif
 		emit UpdatePlotSignal();
+		plotRequired = true;
 		currentFrame++;
 	}
 
@@ -1268,7 +1274,7 @@ int qDrawPlot::MeasurementFinished(int currentMeasurementIndex, int fileIndex){
 #endif
 
 	//to make sure it plots the last frame
-	while(currentFrameIndex!=-1){
+	while(plotRequired){
 		usleep(2000);
 	}
 
@@ -1336,7 +1342,7 @@ void qDrawPlot::UpdatePlot(){
 	cout << "Entering UpdatePlot function" << endl;
 #endif
 	// only if no plot isnt enabled
-	if(plotEnable){
+	if(plotEnable && plotRequired){
 		LockLastImageArray();
 		//so that it doesnt plot every single thing
 #ifdef VERYVERBOSE
@@ -1387,13 +1393,13 @@ void qDrawPlot::UpdatePlot(){
 								//h->setTitle(GetHistTitle(hist_num));
 								h->Attach(plot1D);
 								//refixing all the zooming
-								if((firstPlot) || (anglePlot)){
+								//if((firstPlot) || (anglePlot)){
 									/*plot1D->SetXMinMax(h->minXValue(),h->maxXValue());
 									plot1D->SetYMinMax(h->minYValue(),h->maxYValue());
 									plot1D->SetZoomBase(h->minXValue(),h->minYValue(),
 											h->maxXValue()-h->minXValue(),h->maxYValue()-h->minYValue());*/
-									firstPlot = false;
-								}
+								//	firstPlot = false;
+								//}
 							}
 						}
 
@@ -1460,7 +1466,8 @@ void qDrawPlot::UpdatePlot(){
 			}
 			//set plot title
 			boxPlot->setTitle(plotTitle);
-			currentFrameIndex = -1;
+			//to notify the measurement finished when its done
+			plotRequired = false;
 		UnlockLastImageArray();
 	}
 
@@ -1937,13 +1944,13 @@ void qDrawPlot::ResetAccumulate(){
 
 void qDrawPlot::SetPlotTimer(double time){
 	timerValue = time;
-	/*if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG){
+	if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG){
 		time = myDet->setReceiverReadTimer(timerValue);
 #ifdef VERBOSE
 		cout << "Receiver read timer set to : " << time << endl;
 #endif
 		qDefs::checkErrorMessage(myDet,"qDrawPlot::SetPlotTimer");
-	}*/
+	}
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

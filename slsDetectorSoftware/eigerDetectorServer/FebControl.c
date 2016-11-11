@@ -61,6 +61,7 @@ int Feb_Control_current_index;
 
 int Feb_Control_counter_bit = 1;
 int Feb_control_master = 0;
+int Feb_control_normal = 0;
 
 unsigned int Feb_Control_rate_correction_table[1024];
 double Feb_Control_rate_meas[16384];
@@ -181,11 +182,12 @@ void Feb_Control_FebControl(){
 
 
 
-int Feb_Control_Init(int master, int top, int module_num){
+int Feb_Control_Init(int master, int top, int normal, int module_num){
 	unsigned int i;
 	Feb_Control_module_number = 0;
 	Feb_Control_current_index = 0;
 	Feb_control_master = master;
+	Feb_control_normal =  normal;
 
 	//global send
 	Feb_Control_AddModule1(0,1,0xff,0,1);
@@ -492,57 +494,92 @@ float Feb_Control_DACToVoltage(unsigned int digital,unsigned int nsteps,float vm
 }
 
 
-int Feb_Control_SetHighVoltage(float value){
-	return Feb_Control_SetHighVoltage1(Feb_Control_module_number,value);
-}
+//only master gets to call this function
+int Feb_Control_SetHighVoltage(int value){
 
-int Feb_Control_SetHighVoltage1(unsigned int module_num,float value){
-	unsigned int module_index=0;
-	unsigned int i;
-
-	if(Feb_control_master){//if(Module_TopAddressIsValid(&modules[module_index])){
-		if(!Feb_Control_GetModuleIndex(module_num,&module_index)){/*||!Module_TopAddressIsValid(&modules[module_index])){*/
-			cprintf(RED,"Error could not set high voltage module number %d invalid.\n",module_num);
-			return 0;
-		}
-	}else
+	if(!Feb_control_normal){
+		cprintf(RED,"\nError: Setting High Voltage not implemented for special modules\n");
 		return 0;
+	}
 
-	if(!Feb_Control_SendHighVoltage(Module_GetTopRightAddress(&modules[module_index]),&value)) return 0;
-
-	if(module_index!=0)  Module_SetHighVoltage(&modules[module_index],value);
-	else for(i=0;i<moduleSize;i++) Module_SetHighVoltage(&modules[i],value);
-
-	printf("\tHigh voltage of dst %d set to %f.\n",Module_GetTopRightAddress(&modules[module_index]),Module_GetHighVoltage(&modules[module_index]));
-	return 1;
-}
-
-
-int Feb_Control_SendHighVoltage(unsigned int dst_num,float* value){
-	//  printf("sending high voltage to dst_num "<<dst_num<<".\n");;
+	printf(" Setting High Voltage: %d(v)\t",value);
 
 	static const unsigned int nsteps = 256;
 	static const float vmin=0;
 	static const float vmax=300;
+	unsigned int dacval = 0;
 
-	unsigned int b = 0;
-	if(!Feb_Control_VoltageToDAC(*value,&b,nsteps,vmin,vmax)){
-		printf("Waring: SetHighVoltage bad value, %f.  The range is 0 to 300 V.\n",*value);
+	//open file
+	FILE* fd=fopen("/sys/class/hwmon/hwmon5/device/out0_output","w");
+	if(fd==NULL){
+		cprintf(RED,"\nWarning: Could not open file for writing to set high voltage\n");
 		return 0;
 	}
-
-	unsigned int r = 0x20000000 | (b&0xff);
-	if(Feb_Control_activated){
-		if(!Feb_Interface_WriteRegister(dst_num,0,r,0,0)){
-			cprintf(RED,"Warning: trouble setting high voltage for dst_num %d.\n",dst_num);
-			return 0;
-		}
+	//calculate dac value
+	if(!Feb_Control_VoltageToDAC(value,&dacval,nsteps,vmin,vmax)){
+		cprintf(RED,"\nWarning: SetHighVoltage bad value, %d.  The range is 0 to 300 V.\n",value);
+		return 0;
 	}
+	//convert to string, add 0 and write to file
+	fprintf(fd, "%d0\n", dacval);
 
-	*value = Feb_Control_DACToVoltage(b,nsteps,vmin,vmax);
+	printf("%d(dac)\n", dacval);
+	fclose(fd);
 
 	return 1;
 }
+
+
+int Feb_Control_GetHighVoltage(int* value){
+
+	if(!Feb_control_normal){
+		cprintf(RED,"\nError: Getting High Voltage not implemented for special modules\n");
+		return 0;
+	}
+
+	printf(" Getting High Voltage: ");
+	static const unsigned int nsteps = 256;
+	static const float vmin=0;
+	static const float vmax=300;
+
+	unsigned int dacval = 0;
+
+	size_t readbytes=0;
+	char* line=NULL;
+
+	//open file
+	FILE* fd=fopen("/sys/class/hwmon/hwmon5/device/in0_input","r");
+	if(fd==NULL){
+		cprintf(RED,"\nWarning: Could not open file for writing to get high voltage\n");
+		return 0;
+	}
+	// Read twice, since the first value is sometimes outdated
+	if(getline(&line, &readbytes, fd) == -1){
+		cprintf(RED,"\nWarning: could not read file to get high voltage\n");
+		return 0;
+	}
+	rewind(fd);
+	free(line);
+	readbytes=0;
+	readbytes = getline(&line, &readbytes, fd);
+	if(readbytes == -1){
+		cprintf(RED,"\nWarning: could not read file to get high voltage\n");
+		return 0;
+	}
+
+	// Remove the trailing 0
+	dacval = atoi(line)/10;
+	//convert dac to v
+	*value = (int)(Feb_Control_DACToVoltage(dacval,nsteps,vmin,vmax)+0.5);
+	printf("%d(v)\t%d(dac)\n", *value, dacval);
+	free(line);
+	fclose(fd);
+
+	return 1;
+}
+
+
+
 
 
 

@@ -84,7 +84,6 @@ int Feb_Control_GetModuleNumber();
   int  Feb_Control_VoltageToDAC(float value, unsigned int* digital, unsigned int nsteps, float vmin, float vmax);
   float Feb_Control_DACToVoltage(unsigned int digital,unsigned int nsteps,float vmin,float vmax);
 
-  int Feb_Control_SendHighVoltage(unsigned int module_index, float* value);
 
   int Feb_Control_SendIDelays(unsigned int dst_num, int chip_lr, unsigned int channels, unsigned int ndelay_units);
 
@@ -112,15 +111,14 @@ int Feb_Control_GetModuleNumber();
 
 
   void Feb_Control_FebControl();
-  int Feb_Control_Init(int master, int top, int module_num);
+  int Feb_Control_Init(int master, int top, int normal, int module_num);
   int Feb_Control_CheckSetup();
 
   unsigned int Feb_Control_GetNModules();
   unsigned int Feb_Control_GetNHalfModules();
 
-  int Feb_Control_SetHighVoltage(float value);
-  int Feb_Control_SetHighVoltage1(unsigned int module_num,float value);
-
+  int Feb_Control_SetHighVoltage(int value);
+  int Feb_Control_GetHighVoltage(int* value);
 
   int Feb_Control_SetIDelays(unsigned int module_num, unsigned int  ndelay_units);
   int Feb_Control_SetIDelays1(unsigned int module_num, unsigned int chip_pos, unsigned int ndelay_units);

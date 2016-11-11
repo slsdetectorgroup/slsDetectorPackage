@@ -597,6 +597,10 @@ int UDPStandardImplementation::setAcquisitionPeriod(const uint64_t i){
 
 	FILE_LOG(logINFO) << "Acquisition Period: " << (double)acquisitionPeriod/(1E9) << "s";
 
+	if(myDetectorType == EIGER)
+		for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++)
+			updateFileHeader(i);
+
 	return OK;
 }
 
@@ -609,6 +613,10 @@ int UDPStandardImplementation::setNumberOfFrames(const uint64_t i){
 		return FAIL;
 
 	FILE_LOG(logINFO) << "Number of Frames:" << numberOfFrames;
+
+	if(myDetectorType == EIGER)
+		for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++)
+			updateFileHeader(i);
 
 	return OK;
 }
@@ -1233,6 +1241,21 @@ void UDPStandardImplementation::closeFile(int ithread){
 	}
 }
 
+
+//eiger only
+int UDPStandardImplementation::setActivate(int enable){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	if(enable != -1){
+		activated = enable;
+		FILE_LOG(logINFO) << "Activation: " << stringEnable(activated);
+	}
+
+	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++)
+		updateFileHeader(i);
+
+	return activated;
+}
 
 
 
@@ -3139,6 +3162,8 @@ void UDPStandardImplementation::updateFileHeader(int ithread){
 			"Data\t\t: %d bytes\n"
 			"x\t\t: %d pixels\n"
 			"y\t\t: %d pixels\n"
+			"Frames\t\t: %lld\n"
+			"Period (ns)\t: %lld\n"
 			"Timestamp\t: %s\n\n"
 
 			//only for eiger right now
@@ -3158,9 +3183,11 @@ void UDPStandardImplementation::updateFileHeader(int ithread){
 			onePacketSize,oneDataSize,
 			//only for eiger right now
 			EIGER_PIXELS_IN_ONE_ROW,EIGER_PIXELS_IN_ONE_COL,
+			(long long int)numberOfFrames,
+			(long long int)acquisitionPeriod,
 			ctime(&t));
 	if(strlen(fileHeader[ithread]) > FILE_HEADER_SIZE)
-		cprintf(BG_RED,"File Header Size is too small for file header\n");
+		cprintf(BG_RED,"File Header Size %d is too small for fixed file header size %d\n",strlen(fileHeader[ithread]),FILE_HEADER_SIZE);
 
 
 }

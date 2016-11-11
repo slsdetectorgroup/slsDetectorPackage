@@ -243,6 +243,13 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 */
 	void closeFile(int ithread = 0);
 
+	/**
+	 * Activate / Deactivate Receiver
+	 * If deactivated, receiver will write dummy packets 0xFF
+	 * (as it will receive nothing from detector)
+	 */
+	int setActivate(int enable = -1);
+
 private:
 	/*************************************************************************
 	 * Getters ***************************************************************
@@ -601,7 +608,7 @@ private:
 	/** If file created successfully for all Writer Threads */
 	bool fileCreateSuccess;
 
-	const static int FILE_HEADER_SIZE = 400;
+	const static int FILE_HEADER_SIZE = 500;
 
 	char fileHeader[MAX_NUMBER_OF_WRITER_THREADS][FILE_HEADER_SIZE];
 

@@ -3128,28 +3128,28 @@ void UDPStandardImplementation::updateFileHeader(int ithread){
 	//update file header
 	time_t t = time(0);
 	sprintf(fileHeader[ithread],
-			"\nHeader\t\t %d bytes\n"
-			"Top\t\t %d\n"
-			"Left\t\t %d\n"
-			"Active\t\t %d\n"
-			"Packets Lost\t %d\n"
-			"Dynamic Range\t %d\n"
-			"Ten Giga\t %d\n"
-			"Packet\t\t %d bytes\n"
-			"Data\t\t %d bytes\n"
-			"x\t\t %d pixels\n"
-			"y\t\t %d pixels\n"
-			"Timestamp\t %s\n\n"
+			"\nHeader\t\t: %d bytes\n"
+			"Top\t\t: %d\n"
+			"Left\t\t: %d\n"
+			"Active\t\t: %d\n"
+			"Packets Lost\t: %d\n"
+			"Dynamic Range\t: %d\n"
+			"Ten Giga\t: %d\n"
+			"Packet\t\t: %d bytes\n"
+			"Data\t\t: %d bytes\n"
+			"x\t\t: %d pixels\n"
+			"y\t\t: %d pixels\n"
+			"Timestamp\t: %s\n\n"
 
 			//only for eiger right now
 			"#Packet Header\n"
-			"Sub Frame Number 4 bytes\n"
-			"Unused\t\t 2 bytes\n"
-			"Port Number\t 1 byte\n"
-			"Unused\t\t 1 byte\n\n"
+			"Subframe Number\t: 4 bytes\n"
+			"Unused\t\t: 2 bytes\n"
+			"Port Number\t: 1 byte\n"
+			"Unused\t\t: 1 byte\n\n"
 			"#Packet Footer\n"
-			"Frame Number\t 6 bytes\n"
-			"Packet Number\t 2 bytes\n",
+			"Frame Number\t: 6 bytes\n"
+			"Packet Number\t: 2 bytes\n",
 			FILE_HEADER_SIZE,
 			(bottomEnable?0:1),(ithread?0:1),
 			activated,

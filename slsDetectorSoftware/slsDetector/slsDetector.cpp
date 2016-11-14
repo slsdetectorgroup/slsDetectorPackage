@@ -4061,7 +4061,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 
 
 	//send acquisiton period/frame number to receiver
-	if((index==FRAME_NUMBER)||(index==FRAME_PERIOD)||(index==CYCLES_NUMBER)){
+	if((index==FRAME_NUMBER)||(index==FRAME_PERIOD)||(index==CYCLES_NUMBER)||(index==ACQUISITION_TIME)){
 		if(ret != FAIL){
 			int64_t args[2];
 			retval = -1;
@@ -4073,21 +4073,21 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 				//set #frames, #cycles
 				if((index==FRAME_NUMBER)||(index==CYCLES_NUMBER)){
 #ifdef VERBOSE
-					std::cout << "Setting/Getting number of frames " << index <<" to/from receiver " << args[1] << std::endl;
+					std::cout << "Setting/Getting number of frames*cycles " << index <<" to/from receiver " << args[1] << std::endl;
 #endif
 					if(thisDetector->timerValue[CYCLES_NUMBER]==0)
 						args[1] = thisDetector->timerValue[FRAME_NUMBER];
 					else
 						args[1] = thisDetector->timerValue[FRAME_NUMBER]*thisDetector->timerValue[CYCLES_NUMBER];
 				}
-				//set period
+				//set period/exptime
 				else{
 #ifdef VERBOSE
-					std::cout << "Setting/Getting acquisition period " << index << " to/from receiver " << args[1] << std::endl;
+					if(index==ACQUISITION_TIME)
+						std::cout << "Setting/Getting acquisition time " << index << " to/from receiver " << args[1] << std::endl;
+					else
+						std::cout << "Setting/Getting acquisition period " << index << " to/from receiver " << args[1] << std::endl;
 #endif
-					//if acquisition period is zero, then #frames/buffer depends on exposure time and not acq period
-					if(!args[1])
-						args[1] = timerValue[ACQUISITION_TIME];
 				}
 
 				char mess[MAX_STR_LENGTH]="";
@@ -4097,20 +4097,20 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 				}
 				if((args[1] != retval)|| (ret==FAIL)){
 					ret = FAIL;
-					if(index==FRAME_PERIOD){
-						//exptime sent if acq period = 0
-						if(retval){
-							if(strstr(mess,"receiver not idle")==NULL)
-								cout << "ERROR:Acquisition Period in receiver set incorrectly to " << retval << " instead of " << args[1] << endl;
-							setErrorMask((getErrorMask())|(RECEIVER_ACQ_PERIOD_NOT_SET));
-						}
+					if(index==ACQUISITION_TIME){
+						if(strstr(mess,"receiver not idle")==NULL)
+							cout << "ERROR:Acquisition Time in receiver set incorrectly to " << retval << " instead of " << args[1] << endl;
+						setErrorMask((getErrorMask())|(RECEIVER_ACQ_TIME_NOT_SET));
+					}else if(index==FRAME_PERIOD){
+						if(strstr(mess,"receiver not idle")==NULL)
+							cout << "ERROR:Acquisition Period in receiver set incorrectly to " << retval << " instead of " << args[1] << endl;
+						setErrorMask((getErrorMask())|(RECEIVER_ACQ_PERIOD_NOT_SET));
 					}else{
 						if(strstr(mess,"receiver not idle")==NULL)
 							cout << "ERROR:Number of Frames (* Number of cycles) in receiver set incorrectly to " << retval << " instead of " << args[1] << endl;
 						setErrorMask((getErrorMask())|(RECEIVER_FRAME_NUM_NOT_SET));
 					}
 				}
-
 				if(ret==FORCE_UPDATE)
 					updateReceiver();
 			}

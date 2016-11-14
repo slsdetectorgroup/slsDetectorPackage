@@ -173,6 +173,12 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	uint64_t getAcquisitionPeriod() const;
 
+	/**
+	 * Get Acquisition Time
+	 * @return acquisition time
+	 */
+	uint64_t getAcquisitionTime() const;
+
 	/*
 	 * Get Number of Frames expected by receiver from detector
 	 * The data receiver status will change from running to idle when it gets this number of frames FIXME: (Not implemented)
@@ -344,6 +350,13 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	int setAcquisitionPeriod(const uint64_t i);
 
 	/**
+	 * Set Acquisition Time
+	 * @param i acquisition time
+	 * @return OK or FAIL
+	 */
+	int setAcquisitionTime(const uint64_t i);
+
+	/**
 	 * Set Number of Frames expected by receiver from detector
 	 * The data receiver status will change from running to idle when it gets this number of frames
 	 * @param i number of frames expected
@@ -508,9 +521,11 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	/** Number of Packets per Frame*/
 	uint32_t packetsPerFrame;
 	/** Acquisition Period */
-	int64_t acquisitionPeriod;
+	uint64_t acquisitionPeriod;
+	/** Acquisition Time */
+	uint64_t acquisitionTime;
 	/** Frame Number */
-	int64_t numberOfFrames;
+	uint64_t numberOfFrames;
 	/** Dynamic Range */
 	uint32_t dynamicRange;
 	/** Ten Giga Enable*/

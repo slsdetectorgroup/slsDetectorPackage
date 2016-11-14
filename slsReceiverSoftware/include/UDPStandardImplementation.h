@@ -129,6 +129,13 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	int setAcquisitionPeriod(const uint64_t i);
 
 	/**
+	 * Set Acquisition Time
+	 * @param i acquisition time
+	 * @return OK or FAIL
+	 */
+	int setAcquisitionTime(const uint64_t i);
+
+	/**
 	 * Overridden method
 	 * Set Number of Frames expected by receiver from detector
 	 * The data receiver status will change from running to idle when it gets this number of frames
@@ -608,7 +615,7 @@ private:
 	/** If file created successfully for all Writer Threads */
 	bool fileCreateSuccess;
 
-	const static int FILE_HEADER_SIZE = 500;
+	const static unsigned int FILE_HEADER_SIZE = 500;
 
 	char fileHeader[MAX_NUMBER_OF_WRITER_THREADS][FILE_HEADER_SIZE];
 
@@ -705,7 +712,7 @@ private:
 	char guiFileName[MAX_NUMBER_OF_WRITER_THREADS][MAX_STR_LENGTH];
 
 	/** Number of packets copied to be sent to gui (others padded) */
-	int guiNumPackets[MAX_NUMBER_OF_WRITER_THREADS];
+	uint32_t guiNumPackets[MAX_NUMBER_OF_WRITER_THREADS];
 
 	/** Semaphore to synchronize Writer and GuiReader threads*/
 	sem_t writerGuiSemaphore[MAX_NUMBER_OF_WRITER_THREADS]; //datacompression, only first thread sends to gui

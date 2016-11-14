@@ -2439,7 +2439,14 @@ int slsReceiverTCPIPInterface::set_timer() {
 			ret = FAIL;
 		}
 		else{
-			if(index[0] == FRAME_PERIOD){
+			if(index[0] == ACQUISITION_TIME){
+				if(index[1]>=0){
+					ret = receiverBase->setAcquisitionTime(index[1]);
+					if(ret == FAIL)
+						strcpy(mess,"Could not allocate memory for listening fifo\n");
+				}
+				retval=receiverBase->getAcquisitionTime();
+			}else if(index[0] == FRAME_PERIOD){
 				if(index[1]>=0){
 					ret = receiverBase->setAcquisitionPeriod(index[1]);
 					if(ret == FAIL)
@@ -2457,7 +2464,9 @@ int slsReceiverTCPIPInterface::set_timer() {
 	}
 #ifdef VERYVERBOSE
 	if(ret!=FAIL){
-		if(index[0] == FRAME_PERIOD)
+		if(index[0] == ACQUISITION_TIME)
+			cout << "acquisition time:" << retval << endl;
+		else if(index[0] == FRAME_PERIOD)
 			cout << "acquisition period:" << retval << endl;
 		else
 			cout << "frame number:" << retval << endl;

@@ -233,6 +233,12 @@ class UDPInterface {
 	 */
 	virtual uint64_t getAcquisitionPeriod() const = 0;
 
+	/**
+	 * Get Acquisition Time
+	 * @return acquisition time
+	 */
+	virtual uint64_t getAcquisitionTime() const = 0;
+
 	/*
 	 * Get Number of Frames expected by receiver from detector
 	 * The data receiver status will change from running to idle when it gets this number of frames FIXME: (Not implemented)
@@ -398,6 +404,13 @@ class UDPInterface {
 	 * @return OK or FAIL
 	 */
 	virtual int setAcquisitionPeriod(const uint64_t i) = 0;
+
+	/**
+	 * Set Acquisition Time
+	 * @param i acquisition time
+	 * @return OK or FAIL
+	 */
+	virtual int setAcquisitionTime(const uint64_t i) = 0;
 
 	/**
 	 * Set Number of Frames expected by receiver from detector

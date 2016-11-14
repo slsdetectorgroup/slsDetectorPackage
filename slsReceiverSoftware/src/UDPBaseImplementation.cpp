@@ -41,6 +41,7 @@ void UDPBaseImplementation::initializeMembers(){
 	strcpy(detHostname,"");
 	packetsPerFrame = 0;
 	acquisitionPeriod = 0;
+	acquisitionTime = 0;
 	numberOfFrames = 0;
 	dynamicRange = 16;
 	tengigaEnable = false;
@@ -182,6 +183,8 @@ uint32_t UDPBaseImplementation::getFrameToGuiTimer() const{	FILE_LOG(logDEBUG) <
 uint32_t UDPBaseImplementation::getDataStreamEnable() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return dataStreamEnable;}
 
 uint64_t UDPBaseImplementation::getAcquisitionPeriod() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return acquisitionPeriod;}
+
+uint64_t UDPBaseImplementation::getAcquisitionTime() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return acquisitionTime;}
 
 uint64_t UDPBaseImplementation::getNumberOfFrames() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return numberOfFrames;}
 
@@ -355,6 +358,16 @@ int UDPBaseImplementation::setAcquisitionPeriod(const uint64_t i){
 
 	acquisitionPeriod = i;
 	FILE_LOG(logINFO) << "Acquisition Period:" <<  (double)acquisitionPeriod/(1E9) << "s";
+
+	//overrridden child classes might return FAIL
+	return OK;
+}
+
+int UDPBaseImplementation::setAcquisitionTime(const uint64_t i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	acquisitionTime = i;
+	FILE_LOG(logINFO) << "Acquisition Time:" <<  (double)acquisitionTime/(1E9) << "s";
 
 	//overrridden child classes might return FAIL
 	return OK;

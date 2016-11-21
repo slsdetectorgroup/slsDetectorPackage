@@ -4855,103 +4855,108 @@ int slsDetector::executeTrimming(trimMode mode, int par1, int par2, int imod){
 
 double* slsDetector::decodeData(int *datain, double *fdata) {
 
-  double *dataout;
-  if (fdata) {
-    dataout=fdata;
-    //    printf("not allocating fdata!\n");
-  }
-  else {
-    dataout=new double[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
-    //  printf("allocating fdata!\n");
-  }
-  const int bytesize=8;
-
-  int ival=0;
-  char *ptr=(char*)datain;
-  char iptr;
-
-  int nbits=thisDetector->dynamicRange;
-  int nch=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;
-  int  ipos=0, ichan=0, ibyte;
-
-  if (thisDetector->timerValue[PROBES_NUMBER]==0) {
-    if (thisDetector->myDetectorType==JUNGFRAUCTB) {
-      
-      for (ichan=0; ichan<nch; ichan++) {
-	// dataout[ichan]=0;
-	ival=0;
-	//	for (ibyte=0; ibyte<2; ibyte++) {
-	ibyte=0;
-	iptr=ptr[ichan*2+ibyte];
-	ival|=((iptr<<(ibyte*bytesize))&(0xff<<(ibyte*bytesize)));
-	ibyte=1;
-	iptr=ptr[ichan*2+ibyte];
-	ival|=((iptr<<(ibyte*bytesize))&(0x3f<<(ibyte*bytesize)));
-	
-	  //	}
-	dataout[ichan]=ival;
-      }
-    } else {
-    switch (nbits) {
-    case 1:
-      for (ibyte=0; ibyte<thisDetector->dataBytes; ibyte++) {
-	iptr=ptr[ibyte]&0x1;
-	for (ipos=0; ipos<8; ipos++) {
-	  //	dataout[ibyte*2+ichan]=((iptr&((0xf)<<ichan))>>ichan)&0xf;
-	  ival=(iptr>>(ipos))&0x1;
-	  dataout[ichan]=ival;
-	  ichan++;
+	double *dataout;
+	if (fdata) {
+		dataout=fdata;
+		//    printf("not allocating fdata!\n");
 	}
-      }
-      break;
-    case 4:
-      for (ibyte=0; ibyte<thisDetector->dataBytes; ibyte++) {
-	iptr=ptr[ibyte]&0xff;
-	for (ipos=0; ipos<2; ipos++) {
-	  //	dataout[ibyte*2+ichan]=((iptr&((0xf)<<ichan))>>ichan)&0xf;
-	  ival=(iptr>>(ipos*4))&0xf;
-	  dataout[ichan]=ival;
-	  ichan++;
+	else {
+		dataout=new double[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
+		//  printf("allocating fdata!\n");
 	}
-      }
-      break;
-    case 8:
-      for (ichan=0; ichan<thisDetector->dataBytes; ichan++) {
-	ival=ptr[ichan]&0xff;
-	dataout[ichan]=ival;
-      }
-      break;
-    case 16:
-      for (ichan=0; ichan<nch; ichan++) {
-	// dataout[ichan]=0;
-	ival=0;
-	for (ibyte=0; ibyte<2; ibyte++) {
-	  iptr=ptr[ichan*2+ibyte];
-	  ival|=((iptr<<(ibyte*bytesize))&(0xff<<(ibyte*bytesize)));
+	const int bytesize=8;
+
+	int ival=0;
+	char *ptr=(char*)datain;
+	char iptr;
+
+	int nbits=thisDetector->dynamicRange;
+	int nch=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;
+	int  ipos=0, ichan=0, ibyte;
+
+	if (thisDetector->timerValue[PROBES_NUMBER]==0) {
+		if (thisDetector->myDetectorType==JUNGFRAUCTB) {
+
+			for (ichan=0; ichan<nch; ichan++) {
+				// dataout[ichan]=0;
+				ival=0;
+				//	for (ibyte=0; ibyte<2; ibyte++) {
+				ibyte=0;
+				iptr=ptr[ichan*2+ibyte];
+				ival|=((iptr<<(ibyte*bytesize))&(0xff<<(ibyte*bytesize)));
+				ibyte=1;
+				iptr=ptr[ichan*2+ibyte];
+				ival|=((iptr<<(ibyte*bytesize))&(0x3f<<(ibyte*bytesize)));
+
+				//	}
+				dataout[ichan]=ival;
+			}
+		} else {
+			switch (nbits) {
+			case 1:
+				for (ibyte=0; ibyte<thisDetector->dataBytes; ibyte++) {
+					iptr=ptr[ibyte]&0x1;
+					for (ipos=0; ipos<8; ipos++) {
+						//	dataout[ibyte*2+ichan]=((iptr&((0xf)<<ichan))>>ichan)&0xf;
+						ival=(iptr>>(ipos))&0x1;
+						dataout[ichan]=ival;
+						ichan++;
+					}
+				}
+				break;
+			case 4:
+				for (ibyte=0; ibyte<thisDetector->dataBytes; ibyte++) {
+					iptr=ptr[ibyte]&0xff;
+					for (ipos=0; ipos<2; ipos++) {
+						//	dataout[ibyte*2+ichan]=((iptr&((0xf)<<ichan))>>ichan)&0xf;
+						ival=(iptr>>(ipos*4))&0xf;
+						dataout[ichan]=ival;
+						ichan++;
+					}
+				}
+				break;
+			case 8:
+				for (ichan=0; ichan<thisDetector->dataBytes; ichan++) {
+					ival=ptr[ichan]&0xff;
+					dataout[ichan]=ival;
+				}
+				break;
+			case 16:
+				for (ichan=0; ichan<nch; ichan++) {
+					// dataout[ichan]=0;
+					ival=0;
+					for (ibyte=0; ibyte<2; ibyte++) {
+						iptr=ptr[ichan*2+ibyte];
+						ival|=((iptr<<(ibyte*bytesize))&(0xff<<(ibyte*bytesize)));
+					}
+					dataout[ichan]=ival;
+				}
+				break;
+			default:
+				if(thisDetector->myDetectorType == MYTHEN){
+					for (ichan=0; ichan<nch; ichan++) {
+						ival=datain[ichan]&0xffffff;
+						dataout[ichan]=ival;
+					}
+				}
+				for (ichan=0; ichan<nch; ichan++) {
+					dataout[ichan]=ival;
+				}
+			}
+		}
+	} else {
+		for (ichan=0; ichan<nch; ichan++) {
+			dataout[ichan]=datain[ichan];
+		}
 	}
-	dataout[ichan]=ival;
-      }
-      break;
-    default:
-      for (ichan=0; ichan<nch; ichan++) {
-	ival=datain[ichan]&0xffffff;
-	dataout[ichan]=ival;
-      }
-    }
-    }
-  } else {
-    for (ichan=0; ichan<nch; ichan++) {
-      dataout[ichan]=datain[ichan];
-    }
-  }
 
 
 #ifdef VERBOSE
-  std::cout<< "decoded "<< ichan << " channels" << std::endl;
+	std::cout<< "decoded "<< ichan << " channels" << std::endl;
 #endif
 
 
-  return dataout;
+	return dataout;
 }
 
 //Correction

@@ -91,7 +91,7 @@ u_int32_t progressMask=0;
 int phase_shift=0;//DEFAULT_PHASE_SHIFT;
 int ipPacketSize=DEFAULT_IP_PACKETSIZE;
 int udpPacketSize=DEFAULT_UDP_PACKETSIZE;
-int clockdivider = 20;
+int clockdivider = 40;
 /*
 #ifndef NEW_PLL_RECONFIG
 u_int32_t clkDivider[2]={32,16};

@@ -5105,16 +5105,15 @@ void multiSlsDetector::startReceivingDataThread(){
 	//initializations
 	int numReadoutPerDetector = 1;
 	bool jungfrau = false;
-	int expectedsize = 1024*256;/**shouldnt work for other bit modes or anythign*/
 	if(getDetectorsType() == EIGER){
 		numReadoutPerDetector = 2;
-		expectedsize = 1024*256;
 	}else if(getDetectorsType() == JUNGFRAU){
 		jungfrau = true;
-		expectedsize = 8192*128;
+		//expectedsize = 8192*128;
 	}
 	int singleDatabytes = detectors[ithread/numReadoutPerDetector]->getDataBytes();
 	int nel=(singleDatabytes/numReadoutPerDetector)/sizeof(int);
+	int expectedsize = singleDatabytes/numReadoutPerDetector;//8192*128; //1024*256
 	int* image = new int[nel];
 	int len,idet = 0;
 	singleframe[ithread]=NULL;
@@ -5160,8 +5159,9 @@ void multiSlsDetector::startReceivingDataThread(){
 	//infinite loop, exited only (if gui restarted/ enabledatastreaming called)
 	while(true){
 
-
+		//cprintf(GREEN,"%d waiting to copy\n",ithread);
 		sem_wait(&sem_singlewait[ithread]);	//wait for it to be copied
+		//cprintf(GREEN,"%d gonna copy\n",ithread);
 		//check to exit thread
 		if(killAllReceivingDataThreads)
 			break;
@@ -5210,8 +5210,14 @@ void multiSlsDetector::startReceivingDataThread(){
 #endif
 			if(currentFrameIndex ==-1) cprintf(RED,"multi frame index -1!!\n");
 		}
+		if(singleframe[ithread]==NULL){
+			singleDatabytes = detectors[ithread/numReadoutPerDetector]->getDataBytes();
+			nel=(singleDatabytes/numReadoutPerDetector)/sizeof(int);
+			delete [] image;
+			image = new int[nel];
+			expectedsize = singleDatabytes/numReadoutPerDetector;
+		}
 		singleframe[ithread]=image;
-
 		// close the message
 		zmq_msg_close(&message);
 
@@ -5236,9 +5242,15 @@ void multiSlsDetector::startReceivingDataThread(){
 		else{
 			//actual data
 			//cprintf(BLUE,"%d actual dataaa\n",ithread);
+			//memset((char*)(singleframe[ithread]),0xFF,singleDatabytes/numReadoutPerDetector);
 			memcpy((char*)(singleframe[ithread]),(char*)zmq_msg_data(&message),singleDatabytes/numReadoutPerDetector);
+			//cprintf(GREEN,"%d copied data %d\n",ithread,singleDatabytes/numReadoutPerDetector);
 
+			if(!ithread){
+				for(int i=0;i<30;i++)
+				cprintf(BLUE,"value[%d]:%d\n",i,(short int)singleframe[ithread][i]);
 
+			}
 			//jungfrau masking adcval
 			if(jungfrau){
 				for(unsigned int i=0;i<nel;i++){
@@ -5294,8 +5306,11 @@ void multiSlsDetector::readFrameFromReceiver(){
 		bytesperchannel = slsdatabytes/slsmaxchannels;
 		slsmaxX = detectors[0]->getTotalNumberOfChannels(X);
 		slsmaxY = detectors[0]->getTotalNumberOfChannels(Y);
+		//cprintf(BLUE,"slsdatabytes:%d slsmaxchannels:%d bytesperchannel:%d slsmaxX:%d slsmaxY:%d\n",
+		//		slsdatabytes,slsmaxchannels,bytesperchannel,slsmaxX,slsmaxY);
 	}
 	int nel=(thisMultiDetector->dataBytes)/sizeof(int);
+	//cprintf(BLUE,"multi databytes:%d\n",thisMultiDetector->dataBytes);
 	if(nel <= 0){
 		cprintf(RED,"Error: Multislsdetector databytes not valid : %d\n", thisMultiDetector->dataBytes);
 		return;
@@ -5337,7 +5352,8 @@ void multiSlsDetector::readFrameFromReceiver(){
 				}
 
 				//assemble data
-				if(maxX){		//eiger, so interleaving between ports in one readout itself
+				if(maxX){
+					//eiger, so interleaving between ports in one readout itself
 					offsetY = (maxY - (thisMultiDetector->offsetY[idet] + slsmaxY)) * maxX * bytesperchannel;
 					//the left half or right half
 					if(!(ireadout%numReadoutPerDetector))
@@ -5345,24 +5361,34 @@ void multiSlsDetector::readFrameFromReceiver(){
 					else
 						offsetX = thisMultiDetector->offsetX[idet] + halfreadoutoffset;
 					offsetX *= bytesperchannel;
-					//cprintf(BLUE,"offsetx:%d offsety:%d maxx:%d slsmaxX:%d slsmaxY:%d bytesperchannel:%d\n",
-					//	offsetX,offsetY,maxX,slsmaxX,slsmaxY,bytesperchannel);
+					//cprintf(BLUE,"ireadout:%d, offsetx:%d offsety:%d maxx:%d slsmaxX:%d slsmaxY:%d bytesperchannel:%d\n",
+					//		ireadout, offsetX,offsetY,maxX,slsmaxX,slsmaxY,bytesperchannel);
 					//	cprintf(BLUE,"copying bytes:%d\n", (slsmaxX/numReadoutPerDetector)*bytesperchannel);
-					//itnerleaving with other detectors
+
+					//interleaving with other detectors
 
 					//bottom
 					if(((idet+1)%2) == 0){
-						for(int i=0;i<slsmaxY;++i)
+						for(int i=0;i<slsmaxY;++i){
+						//	cprintf(BLUE,"%d i:%d gonna copy sourceoffset:%d destoffset:%d\n",ireadout,i,
+							//			i*(slsmaxX/numReadoutPerDetector)*bytesperchannel,
+							//			offsetY + offsetX +((slsmaxY-i)*maxX*bytesperchannel));
 							memcpy(((char*)multiframe) + offsetY + offsetX + ((slsmaxY-i)*maxX*bytesperchannel),
 									(char*)singleframe[ireadout]+ i*(slsmaxX/numReadoutPerDetector)*bytesperchannel,
 									(slsmaxX/numReadoutPerDetector)*bytesperchannel);
+						}
 					}
 					//top
 					else{
-						for(int i=0;i<slsmaxY;++i)
+						for(int i=0;i<slsmaxY;++i){
+							//cprintf(BLUE,"%d i:%d gonna copy sourceoffset:%d destoffset:%d \n",ireadout,i,
+							//		i*(slsmaxX/numReadoutPerDetector)*bytesperchannel,
+							//		offsetY + offsetX + (i*maxX*bytesperchannel));
+
 							memcpy(((char*)multiframe) + offsetY + offsetX + (i*maxX*bytesperchannel),
 									(char*)singleframe[ireadout]+ i*(slsmaxX/numReadoutPerDetector)*bytesperchannel,
 									(slsmaxX/numReadoutPerDetector)*bytesperchannel);
+						}
 					}
 				}
 				//no interleaving, just add to the end

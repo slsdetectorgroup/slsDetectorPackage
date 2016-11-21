@@ -2266,6 +2266,7 @@ double* multiSlsDetector::decodeData(int *datain, double *fdata) {
     }
   }
 
+
   return dataout;
 }
  
@@ -5246,11 +5247,6 @@ void multiSlsDetector::startReceivingDataThread(){
 			memcpy((char*)(singleframe[ithread]),(char*)zmq_msg_data(&message),singleDatabytes/numReadoutPerDetector);
 			//cprintf(GREEN,"%d copied data %d\n",ithread,singleDatabytes/numReadoutPerDetector);
 
-			if(!ithread){
-				for(int i=0;i<30;i++)
-				cprintf(BLUE,"value[%d]:%d\n",i,(short int)singleframe[ithread][i]);
-
-			}
 			//jungfrau masking adcval
 			if(jungfrau){
 				for(unsigned int i=0;i<nel;i++){
@@ -5353,6 +5349,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 				//assemble data
 				if(maxX){
+
 					//eiger, so interleaving between ports in one readout itself
 					offsetY = (maxY - (thisMultiDetector->offsetY[idet] + slsmaxY)) * maxX * bytesperchannel;
 					//the left half or right half
@@ -5361,19 +5358,12 @@ void multiSlsDetector::readFrameFromReceiver(){
 					else
 						offsetX = thisMultiDetector->offsetX[idet] + halfreadoutoffset;
 					offsetX *= bytesperchannel;
-					//cprintf(BLUE,"ireadout:%d, offsetx:%d offsety:%d maxx:%d slsmaxX:%d slsmaxY:%d bytesperchannel:%d\n",
-					//		ireadout, offsetX,offsetY,maxX,slsmaxX,slsmaxY,bytesperchannel);
-					//	cprintf(BLUE,"copying bytes:%d\n", (slsmaxX/numReadoutPerDetector)*bytesperchannel);
-
 					//interleaving with other detectors
 
 					//bottom
 					if(((idet+1)%2) == 0){
 						for(int i=0;i<slsmaxY;++i){
-						//	cprintf(BLUE,"%d i:%d gonna copy sourceoffset:%d destoffset:%d\n",ireadout,i,
-							//			i*(slsmaxX/numReadoutPerDetector)*bytesperchannel,
-							//			offsetY + offsetX +((slsmaxY-i)*maxX*bytesperchannel));
-							memcpy(((char*)multiframe) + offsetY + offsetX + ((slsmaxY-i)*maxX*bytesperchannel),
+							memcpy(((char*)multiframe) + offsetY + offsetX + ((slsmaxY-1-i)*maxX*bytesperchannel),
 									(char*)singleframe[ireadout]+ i*(slsmaxX/numReadoutPerDetector)*bytesperchannel,
 									(slsmaxX/numReadoutPerDetector)*bytesperchannel);
 						}
@@ -5381,10 +5371,6 @@ void multiSlsDetector::readFrameFromReceiver(){
 					//top
 					else{
 						for(int i=0;i<slsmaxY;++i){
-							//cprintf(BLUE,"%d i:%d gonna copy sourceoffset:%d destoffset:%d \n",ireadout,i,
-							//		i*(slsmaxX/numReadoutPerDetector)*bytesperchannel,
-							//		offsetY + offsetX + (i*maxX*bytesperchannel));
-
 							memcpy(((char*)multiframe) + offsetY + offsetX + (i*maxX*bytesperchannel),
 									(char*)singleframe[ireadout]+ i*(slsmaxX/numReadoutPerDetector)*bytesperchannel,
 									(slsmaxX/numReadoutPerDetector)*bytesperchannel);
@@ -5403,9 +5389,10 @@ void multiSlsDetector::readFrameFromReceiver(){
 		if(!dataThreadMask)
 			break;
 
-
 		//send data to callback
 		fdata = decodeData(multiframe);
+
+
 		if ((fdata) && (dataReady)){
 			thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),nx,ny);
 			dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);

@@ -4940,7 +4940,7 @@ double* slsDetector::decodeData(int *datain, double *fdata) {
 					}
 				}
 				for (ichan=0; ichan<nch; ichan++) {
-					dataout[ichan]=ival;
+					dataout[ichan]=datain[ichan];
 				}
 			}
 		}
@@ -4954,7 +4954,6 @@ double* slsDetector::decodeData(int *datain, double *fdata) {
 #ifdef VERBOSE
 	std::cout<< "decoded "<< ichan << " channels" << std::endl;
 #endif
-
 
 	return dataout;
 }

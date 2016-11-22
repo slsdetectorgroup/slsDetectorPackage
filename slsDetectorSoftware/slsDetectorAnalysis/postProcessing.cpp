@@ -524,7 +524,7 @@ void* postProcessing::processData(int delflag) {
 				if (ifp!=0){
 					c=fgetc(stdin);
 					if (c=='q') {
-						cout<<"gonna stop"<<endl;
+						cout<<"Caught the command to stop acquisition"<<endl;
 						stopAcquisition();
 					}
 				}

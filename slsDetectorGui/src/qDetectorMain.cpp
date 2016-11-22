@@ -680,6 +680,9 @@ void qDetectorMain::ExecuteHelp(QAction *action){
 
 
 void qDetectorMain::Refresh(int index){
+	myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
+	myDet->setReceiverOnline(slsDetectorDefs::ONLINE_FLAG);
+	qDefs::checkErrorMessage(myDet,"qDetectorMain::Refresh");
 	if(!tabs->isTabEnabled(index))
 		tabs->setCurrentIndex((index++)<(tabs->count()-1)?index:Measurement);
 	else{

@@ -1755,7 +1755,7 @@ void UDPStandardImplementation::startDataCallback(){
 	zmq_setsockopt(zmqsocket, ZMQ_LINGER, &val,sizeof(val)); // wait for the unsent packets  before closing socket
 	//val = 10;
 	//zmq_setsockopt(zmqsocket,ZMQ_SNDHWM,&val,sizeof(val)); //set SEND HIGH WATER MARK (8-9ms slower)
-	cprintf(RED,"bind ret: %d\n",zmq_bind(zmqsocket,hostName));		// bind
+	zmq_bind(zmqsocket,hostName);							// bind
 	FILE_LOG(logINFO) << "Thread" << ithread << ": ZMQ Server at " << hostName;
 
 
@@ -3210,7 +3210,7 @@ void UDPStandardImplementation::updateFileHeader(int ithread){
 			(long long int)acquisitionPeriod,
 			ctime(&t));
 	if(strlen(fileHeader[ithread]) > FILE_HEADER_SIZE)
-		cprintf(BG_RED,"File Header Size %d is too small for fixed file header size %d\n",strlen(fileHeader[ithread]),(int)FILE_HEADER_SIZE);
+		cprintf(BG_RED,"File Header Size %d is too small for fixed file header size %d\n",(int)strlen(fileHeader[ithread]),(int)FILE_HEADER_SIZE);
 
 
 }

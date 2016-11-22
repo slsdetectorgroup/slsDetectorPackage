@@ -332,8 +332,9 @@ void qDrawPlot::SetupWidgetWindow(){
 	myDet->registerMeasurementFinishedCallback(&(GetMeasurementFinishedCallBack),this);
 	//Setting the callback function to get progress from detector class(using receivers)
 	myDet->registerProgressCallback(&(GetProgressCallBack),this);
-	//stream data to the gui
-	myDet->enableDataStreamingFromReceiver(1);
+	//stream data from receiver to the gui
+	if(detType != slsDetectorDefs::MYTHEN)
+		myDet->enableDataStreamingFromReceiver(1);
 
 
 	qDefs::checkErrorMessage(myDet,"qDrawPlot::SetupWidgetWindow");

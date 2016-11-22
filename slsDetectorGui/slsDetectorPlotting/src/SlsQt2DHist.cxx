@@ -13,13 +13,14 @@ using std::cout;
 using std::endl;
 
 SlsQt2DHist::SlsQt2DHist(int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, double* d,double zmin,double zmax):QwtRasterData(){    
+  x_min=0;x_max=0;y_min=0;y_max=0;
   interp=0;
   nx_array=ny_array=0;data=0;
   SetData(nbinsx,xmin,xmax,nbinsy,ymin,ymax,d,zmin,zmax);
 }
 
 
-SlsQt2DHist::~SlsQt2DHist(){if(data) delete data;}
+SlsQt2DHist::~SlsQt2DHist(){if(data) delete [] data;}
 
 int SlsQt2DHist::GetBinIndex(int bx, int by){
   int b = bx*ny+by;
@@ -72,7 +73,7 @@ void SlsQt2DHist::SetData(int nbinsx, double xmin, double xmax, int nbinsy,doubl
   }
 
   if(nbinsx*nbinsy>nx_array*ny_array){
-    if(data) delete data;
+    if(data) delete [] data;
     data = new double [nbinsx*nbinsy+1];  //one for under/overflow bin
     nx_array = nbinsx;
     ny_array = nbinsy;

@@ -756,8 +756,11 @@ void qDetectorMain::EnableTabs(){
 #ifdef VERBOSE
 	cout << "Entering EnableTabs function" << endl;
 #endif
+
+
 	bool enable;
 	enable=!(tabs->isTabEnabled(DataOutput));
+
 
 	// or use the Enable/Disable button
 	// normal tabs
@@ -790,6 +793,9 @@ void qDetectorMain::EnableTabs(){
 
 	//moved to here, so that its all in order, instead of signals and different threads
 	if(!enable) {
+		myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
+		myDet->setReceiverOnline(slsDetectorDefs::ONLINE_FLAG);
+		qDefs::checkErrorMessage(myDet,"qDetectorMain::EnableTabs");
 		//refresh all the required tabs
 		tab_actions->Refresh();// angular, positions,
 

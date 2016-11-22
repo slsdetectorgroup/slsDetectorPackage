@@ -391,6 +391,7 @@ void qTabMeasurement::SetCurrentMeasurement(int val){
 void qTabMeasurement::UpdateProgress(){
 	progressBar->setValue((int)myPlot->GetProgress());
 	lblProgressIndex->setText(QString::number(myPlot->GetFrameIndex()));
+	qDefs::checkErrorMessage(myDet,"qTabMeasurement::UpdateProgress");
 }
 
 

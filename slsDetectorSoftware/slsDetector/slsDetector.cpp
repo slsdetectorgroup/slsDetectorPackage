@@ -5730,7 +5730,7 @@ int slsDetector::setUDPConnection(){
 
 	int ret = FAIL;
 	int fnum = F_SETUP_RECEIVER_UDP;
-	char args[3][MAX_STR_LENGTH];
+	char args[3][MAX_STR_LENGTH]={"","",""};
 	char retval[MAX_STR_LENGTH]="";
 
 	//called before set up
@@ -5806,7 +5806,7 @@ int slsDetector::configureMAC(){
   int ret=FAIL;
   int fnum=F_CONFIGURE_MAC,fnum2=F_RECEIVER_SHORT_FRAME;
   char mess[MAX_STR_LENGTH]="";
-  char arg[6][50];
+  char arg[6][50]={"","","","","",""};
   char cword[50]="", *pcword;
   string sword;
   int retval=-1;
@@ -7141,7 +7141,7 @@ int slsDetector::setReceiverTCPSocket(string const name, int const receiver_port
 string slsDetector::setFilePath(string s) {
 	int fnum = F_SET_RECEIVER_FILE_PATH;
 	int ret = FAIL;
-	char arg[MAX_STR_LENGTH];
+	char arg[MAX_STR_LENGTH]="";
 	char retval[MAX_STR_LENGTH] = "";
 	struct stat st;
 
@@ -7192,7 +7192,7 @@ string slsDetector::setFilePath(string s) {
 string slsDetector::setFileName(string s) {
 	int fnum=F_SET_RECEIVER_FILE_NAME;
 	int ret = FAIL;
-	char arg[MAX_STR_LENGTH];
+	char arg[MAX_STR_LENGTH]="";
 	char retval[MAX_STR_LENGTH]="";
 
 	if(!s.empty()){

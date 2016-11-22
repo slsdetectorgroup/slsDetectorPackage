@@ -1196,11 +1196,11 @@ class multiSlsDetector  : public slsDetectorUtils {
  int resetFramesCaught();
 
  /**
-  * Create Receiving Data Threads
-  * @param destroy is true to destroy all the threads
+  * Create Receiving Data Sockets
+  * @param destroy is true to destroy all the sockets
   * @return OK or FAIL
   */
- int createReceivingDataThreads(bool destroy = false);
+ int createReceivingDataSockets(bool destroy = false);
 
 
 
@@ -1392,35 +1392,17 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
 private:
-	/**
-	 * Static function - Starts Data Thread of this object
-	 * @param this_pointer pointer to this object
-	 */
-	static void* staticstartReceivingDataThread(void *this_pointer);
 
 	/**
-	 * Thread that receives data packets from receiver
+	 * Gets data from socket
 	 */
-	void startReceivingDataThread();
+	int getData(int isocket, bool masking, int* image, int size, int &acqIndex, int &frameIndex, int &subframeIndex, string &filename);
 
-	  /* synchronizing between zmq threads */
-	  sem_t sem_singledone[MAXDET];
-	  sem_t sem_singlewait[MAXDET];
-	  int* singleframe[MAXDET];
-
-	  /* Parameters given to the gui picked up from zmq threads*/
-	  int currentAcquisitionIndex;
-	  int currentFrameIndex;
-	  int currentSubFrameIndex;
-	  string currentFileName;
-
-	  pthread_t receivingDataThreads[MAXDET];
-	  /** Ensures if threads created successfully */
-	  bool threadStarted;
-	  /** Current Thread Index*/
-	  int currentThreadIndex;
-	  /** Set to self-terminate data receiving threads waiting for semaphores */
-	  bool killAllReceivingDataThreads;
+	/** Ensures if sockets created successfully */
+	bool dataSocketsStarted;
+	void *context[MAXDET];
+	void *zmqsocket[MAXDET];
+	char dataSocketServerDetails[MAXDET][100];
 
  protected:
  

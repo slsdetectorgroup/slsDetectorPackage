@@ -268,7 +268,12 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
 
   getNMods();
   getMaxMods();
-  threadStarted = false;
+  dataSocketsStarted = false;
+  for(int i=0;i<MAXDET;++i){
+	  context[i] = NULL;
+	  zmqsocket[i] = NULL;
+	  strcpy(dataSocketServerDetails[i],"");
+  }
   threadpool = 0;
 	if(createThreadPool() == FAIL)
 		exit(-1);
@@ -5028,361 +5033,282 @@ int multiSlsDetector::resetFramesCaught() {
 }
 
 
-int multiSlsDetector::createReceivingDataThreads(bool destroy){
-	if(!destroy) cprintf(MAGENTA,"Going to create data threads\n");
-	else cprintf(MAGENTA,"Going to destroy data threads\n");
 
+int multiSlsDetector::createReceivingDataSockets(bool destroy){
 
-	int numReadouts = thisMultiDetector->numberOfDetectors;
+	//number of sockets
+	int numSockets = thisMultiDetector->numberOfDetectors;
 	if(getDetectorsType() == EIGER)
-		numReadouts *= 2;
+		numSockets *= 2;
 
 
-	//reset masks
-	killAllReceivingDataThreads = false;
-
-	//destroy
 	if(destroy){
-#ifdef DEBUG
-		cout << "Destroying Receiving Data Thread(s)" << endl;
-#endif
-		killAllReceivingDataThreads = true;
-		for(int i = 0; i < numReadouts; ++i){
-			sem_post(&sem_singlewait[i]);
-			pthread_join(receivingDataThreads[i],NULL);
-			sem_destroy(&sem_singlewait[i]);
-			sem_destroy(&sem_singledone[i]);
-#ifdef DEBUG
-			cout << "." << flush << endl;
-#endif
-		}
-		killAllReceivingDataThreads = false;
-		threadStarted = false;
+		 cprintf(MAGENTA,"Going to destroy data sockets\n");
+		 //close socket
+		 for(int i=0;i<numSockets; ++i){
+			 if(strlen(dataSocketServerDetails[i])){
+				 zmq_disconnect(zmqsocket[i], dataSocketServerDetails[i]);
+				 zmq_close(zmqsocket[i]);
+				 zmq_ctx_destroy(context[i]);
+				 context[i] = NULL;
+				 zmqsocket[i] = NULL;
+				 strcpy(dataSocketServerDetails[i],"");
+			 }
+		 }
 
-		cout << "Destroyed Receiving Data Thread(s)" << endl;
+			dataSocketsStarted = false;
+		 cout << "Destroyed Receiving Data Socket(s)" << endl;
+		 return OK;
 	}
 
-	//create
+	cprintf(MAGENTA,"Going to create data sockets\n");
+
+	for(int i=0;i<numSockets; ++i){
+		//get name of rx_hostname
+		char rx_hostname[100];
+		strcpy(dataSocketServerDetails[i],"tcp://");
+		strcpy(rx_hostname, detectors[i/numSockets]->getReceiver());
+		cout<<"rx_hostname:"<<rx_hostname<<endl;
+		//append it (first into ip) to tcp://
+		if(strchr(rx_hostname,'.')!=NULL)
+			strcat(dataSocketServerDetails[i],rx_hostname);
+		else{
+			//convert hostname to ip
+			struct hostent *he = gethostbyname(rx_hostname);
+			if (he == NULL){
+				cprintf(RED,"ERROR: could not convert receiver hostname to ip\n");
+				exit(-1);
+			}else
+				strcat(dataSocketServerDetails[i],inet_ntoa(*(struct in_addr*)he->h_addr));
+		}
+		//add port
+		sprintf(dataSocketServerDetails[i],"%s:%d",dataSocketServerDetails[i],DEFAULT_ZMQ_PORTNO + i);
+
+		//create context
+		context[i] = zmq_ctx_new();
+		//create socket
+		zmqsocket[i] = zmq_socket(context[i], ZMQ_PULL);
+		//connect socket
+		zmq_connect(zmqsocket[i], dataSocketServerDetails[i]);
+		//int hwmval = 10;
+		//zmq_setsockopt(zmqsocket[i],ZMQ_RCVHWM,&hwmval,sizeof(hwmval)); //set receive HIGH WATER MARK (8-9ms slower//should not drop last packets)
+		cout << "ZMQ Client[" << i << "] from " << dataSocketServerDetails[i] << endl;
+	}
+
+	dataSocketsStarted = true;
+	cout << "Receiving Data Socket(s) created" << endl;
+	return OK;
+}
+
+
+
+
+
+
+
+
+
+int multiSlsDetector::getData(int isocket, bool masking, int* image, int size, int &acqIndex, int &frameIndex, int &subframeIndex, string &filename){
+
+	zmq_msg_t message;
+
+	//scan header-------------------------------------------------------------------
+	zmq_msg_init (&message);
+	int len = zmq_msg_recv(&message, zmqsocket[isocket], 0);
+	if (len == -1) {
+		cprintf(BG_RED,"Could not read header for socket %d\n",isocket);
+		zmq_msg_close(&message);
+		cprintf(RED, "%d message null\n",isocket);
+		return FAIL;
+	}
+
+
+	// error if you print it
+	// cout << isocket << " header len:"<<len<<" value:"<< (char*)zmq_msg_data(&message)<<endl;
+	//cprintf(BLUE,"%d header %d\n",isocket,len);
+	rapidjson::Document d;
+	d.Parse( (char*)zmq_msg_data(&message), zmq_msg_size(&message));
+#ifdef VERYVERBOSE
+	// htype is an array of strings
+	rapidjson::Value::Array htype = d["htype"].GetArray();
+	for(int i=0; i< htype.Size(); i++)
+		std::cout << isocket << "htype: " << htype[i].GetString() << std::endl;
+	// shape is an array of ints
+	rapidjson::Value::Array shape = d["shape"].GetArray();
+	cout << isocket << "shape: ";
+	for(int i=0; i< shape.Size(); i++)
+		cout << isocket << shape[i].GetInt() << " ";
+	cout << endl;
+
+	cout << isocket << "type: " << d["type"].GetString() << endl;
+
+#endif
+	if(d["acqIndex"].GetInt()!=-9){ //!isocket &&
+		acqIndex 		= d["acqIndex"].GetInt();
+		frameIndex 		= d["fIndex"].GetInt();
+		subframeIndex 	= d["subfnum"].GetInt();
+		filename 		= d["fname"].GetString();
+#ifdef VERYVERBOSE
+		cout << "Acquisition index: " << acqIndex << endl;
+		cout << "Frame index: " << frameIndex << endl;
+		cout << "Subframe index: " << subframeIndex << endl;
+		cout << "File name: " << filename << endl;
+#endif
+		if(frameIndex ==-1) cprintf(RED,"multi frame index -1!!\n");
+	}
+	// close the message
+	zmq_msg_close(&message);
+
+
+	//scan data-------------------------------------------------------------------
+	zmq_msg_init (&message);
+	len = zmq_msg_recv(&message, zmqsocket[isocket], 0);
+	//cprintf(BLUE,"%d data %d\n",isocket,len);
+
+	//end of socket ("end")
+	if(len == 3){
+		//cprintf(RED,"%d Received end of acquisition\n", isocket);
+		return FAIL;
+	}
+
+	//crappy image
+	if (len < size ) {
+		cprintf(RED,"Received weird packet size %d in socket for %d\n", len, isocket);
+		memset((char*)image,0xFF,size);
+	}
+	//actual image
 	else{
-#ifdef DEBUG
-		cout << "Creating Receiving Data Thread(s)" << endl;
-#endif
-		//reset current index
-		currentThreadIndex = -1;
-		for(int i = 0; i < numReadouts; ++i){
-			sem_init(&sem_singlewait[i],1,0);
-			sem_init(&sem_singledone[i],1,0);
-			threadStarted = false;
-			currentThreadIndex = i;
-			if(pthread_create(&receivingDataThreads[i], NULL,staticstartReceivingDataThread, (void*) this)){
-				cprintf(RED, "Could not create receiving data thread with index %d\n",i);
-				return FAIL;
+		//actual data
+		//cprintf(BLUE,"%d actual dataaa\n",isocket);
+		memcpy((char*)image,(char*)zmq_msg_data(&message),size);
+
+		//jungfrau masking adcval
+		if(masking){
+			int snel = size/sizeof(int);
+			for(unsigned int i=0;i<snel;++i){
+				image[i] = (image[i] & 0x3FFF3FFF);
 			}
-			while(!threadStarted);
-#ifdef DEBUG
-				cout << "." << flush << endl;
-#endif
 		}
-		cout << "Receiving Data Thread(s) created" << endl;
 	}
+
+	zmq_msg_close(&message); // close the message
 
 	return OK;
 }
 
 
 
-void* multiSlsDetector::staticstartReceivingDataThread(void* this_pointer){
-	((multiSlsDetector*)this_pointer)->startReceivingDataThread();
-	//while(true);
-
-	return this_pointer;
-}
-
-
-void multiSlsDetector::startReceivingDataThread(){
-
-	int ithread = currentThreadIndex;		//set current thread value  index
-
-	//initializations
-	int numReadoutPerDetector = 1;
-	bool jungfrau = false;
-	if(getDetectorsType() == EIGER){
-		numReadoutPerDetector = 2;
-	}else if(getDetectorsType() == JUNGFRAU){
-		jungfrau = true;
-		//expectedsize = 8192*128;
-	}
-	int singleDatabytes = detectors[ithread/numReadoutPerDetector]->getDataBytes();
-	int nel=(singleDatabytes/numReadoutPerDetector)/sizeof(int);
-	int expectedsize = singleDatabytes/numReadoutPerDetector;//8192*128; //1024*256
-	int* image = new int[nel];
-	int len,idet = 0;
-	singleframe[ithread]=NULL;
-
-
-	char hostname[100] = "tcp://";
-	char rx_hostname[100];
-	strcpy(rx_hostname, detectors[ithread/numReadoutPerDetector]->getReceiver());
-	cout<<"rx_hostname:"<<rx_hostname<<endl;
-	if(strchr(rx_hostname,'.')!=NULL)
-		strcat(hostname,rx_hostname);
-	else{
-		struct hostent *he = gethostbyname(rx_hostname);
-		if (he == NULL){
-			cprintf(RED,"ERROR: could not convert receiver hostname to ip\n");
-			exit(-1);
-		}else
-			strcat(hostname,inet_ntoa(*(struct in_addr*)he->h_addr));
-	}
-	strcat(hostname,":");
-	//server details
-	//char hostname[100] = "tcp://127.0.0.1:";
-	int portno = DEFAULT_ZMQ_PORTNO + ithread;
-	sprintf(hostname,"%s%d",hostname,portno);
-
-	//socket details
-	zmq_msg_t message;
-	void *context;
-	void *zmqsocket;
-	context = zmq_ctx_new();
-	zmqsocket = zmq_socket(context, ZMQ_PULL);
-	//int hwmval = 10;
-	//zmq_setsockopt(zmqsocket,ZMQ_RCVHWM,&hwmval,sizeof(hwmval)); //set receive HIGH WATER MARK (8-9ms slower//should not drop last packets)
-	cprintf(RED,"connect ret:%d\n",zmq_connect(zmqsocket, hostname));
-	cout << "ZMQ Client of " << ithread << " at " << hostname << endl;
-	cprintf(BLUE,"%d Created socket\n",ithread);
-
-
-
-	threadStarted = true;					//let calling function know thread started and obtained current
-
-
-	//infinite loop, exited only (if gui restarted/ enabledatastreaming called)
-	while(true){
-
-		//cprintf(GREEN,"%d waiting to copy\n",ithread);
-		sem_wait(&sem_singlewait[ithread]);	//wait for it to be copied
-		//cprintf(GREEN,"%d gonna copy\n",ithread);
-		//check to exit thread
-		if(killAllReceivingDataThreads)
-			break;
-
-		//scan header-------------------------------------------------------------------
-		zmq_msg_init (&message);
-		len = zmq_msg_recv(&message, zmqsocket, 0);
-		if (len == -1) {
-			cprintf(BG_RED,"Could not read header for socket %d\n",ithread);
-			zmq_msg_close(&message);
-			cprintf(RED, "%d message null\n",ithread);
-			continue;
-		}
-
-
-		// error if you print it
-		// cout << ithread << " header len:"<<len<<" value:"<< (char*)zmq_msg_data(&message)<<endl;
-		//cprintf(BLUE,"%d header %d\n",ithread,len);
-		rapidjson::Document d;
-		d.Parse( (char*)zmq_msg_data(&message), zmq_msg_size(&message));
-#ifdef VERYVERBOSE
-		// htype is an array of strings
-		rapidjson::Value::Array htype = d["htype"].GetArray();
-		for(int i=0; i< htype.Size(); i++)
-			std::cout << ithread << "htype: " << htype[i].GetString() << std::endl;
-		// shape is an array of ints
-		rapidjson::Value::Array shape = d["shape"].GetArray();
-		cout << ithread << "shape: ";
-		for(int i=0; i< shape.Size(); i++)
-			cout << ithread << shape[i].GetInt() << " ";
-		cout << endl;
-
-		cout << ithread << "type: " << d["type"].GetString() << endl;
-
-#endif
-		if(!ithread && (d["acqIndex"].GetInt()!=-9)){
-			currentAcquisitionIndex 	= d["acqIndex"].GetInt();
-			currentFrameIndex 			= d["fIndex"].GetInt();
-			currentSubFrameIndex 		= d["subfnum"].GetInt();
-			currentFileName 			= d["fname"].GetString();
-#ifdef VERYVERBOSE
-			cout << "Acquisition index: " << currentAcquisitionIndex << endl;
-			cout << "Frame index: " << currentFrameIndex << endl;
-			cout << "Subframe index: " << currentSubFrameIndex << endl;
-			cout << "File name: " << currentFileName << endl;
-#endif
-			if(currentFrameIndex ==-1) cprintf(RED,"multi frame index -1!!\n");
-		}
-		if(singleframe[ithread]==NULL){
-			singleDatabytes = detectors[ithread/numReadoutPerDetector]->getDataBytes();
-			nel=(singleDatabytes/numReadoutPerDetector)/sizeof(int);
-			delete [] image;
-			image = new int[nel];
-			expectedsize = singleDatabytes/numReadoutPerDetector;
-		}
-		singleframe[ithread]=image;
-		// close the message
-		zmq_msg_close(&message);
-
-
-		//scan data-------------------------------------------------------------------
-		zmq_msg_init (&message);
-		len = zmq_msg_recv(&message, zmqsocket, 0);
-
-		//cprintf(BLUE,"%d data %d\n",ithread,len);
-		//end of socket ("end")
-		if (len < expectedsize ) {
-			if(len == 3){
-				//cprintf(RED,"%d Received end of acquisition\n", ithread);
-				singleframe[ithread] = NULL;
-				//break;
-			}else{
-				cprintf(RED,"Received weird packet size %d in socket for %d\n", len, ithread);
-				memset((char*)(singleframe[ithread]),0xFF,singleDatabytes/numReadoutPerDetector);
-			}
-
-		}
-		else{
-			//actual data
-			//cprintf(BLUE,"%d actual dataaa\n",ithread);
-			//memset((char*)(singleframe[ithread]),0xFF,singleDatabytes/numReadoutPerDetector);
-			memcpy((char*)(singleframe[ithread]),(char*)zmq_msg_data(&message),singleDatabytes/numReadoutPerDetector);
-			//cprintf(GREEN,"%d copied data %d\n",ithread,singleDatabytes/numReadoutPerDetector);
-
-			//jungfrau masking adcval
-			if(jungfrau){
-				for(unsigned int i=0;i<nel;i++){
-					singleframe[ithread][i] = (singleframe[ithread][i] & 0x3FFF3FFF);
-				}
-			}
-		}
-
-		sem_post(&sem_singledone[ithread]);//let multi know is ready
-		zmq_msg_close(&message); // close the message
-	}
-
-	cprintf(RED,"%d Closing socket\n",ithread);
-	//close socket
-	zmq_disconnect(zmqsocket, hostname);
-	zmq_close(zmqsocket);
-	zmq_ctx_destroy(context);
-
-	//free resources
-	delete [] image;
-
-#ifdef DEBUG
-	cprintf(MAGENTA,"Receiving Data Thread %d:Goodbye!\n",ithread);
-#endif
-
-}
-
 
 void multiSlsDetector::readFrameFromReceiver(){
 
 	//determine number of half readouts and maxX and maxY
 	int maxX=0,maxY=0;
-	int numReadoutPerDetector = 1;
-	if(getDetectorsType() == EIGER){
-		numReadoutPerDetector = 2;
+	int numSockets = thisMultiDetector->numberOfDetectors;
+	int numSocketsPerSLSDetector = 1;
+	bool jungfrau = false;
+	switch(getDetectorsType()){
+	case EIGER:
+		numSocketsPerSLSDetector = 2;
+		numSockets *= numSocketsPerSLSDetector;
 		maxX = thisMultiDetector->numberOfChannel[X];
 		maxY = thisMultiDetector->numberOfChannel[Y];
+		break;
+	case JUNGFRAU:
+		jungfrau = true;
+		break;
+	default:
+		break;
 	}
-	int numReadouts = numReadoutPerDetector * thisMultiDetector->numberOfDetectors;
 
-	//initializing variables
-	currentFileName="";
-	currentAcquisitionIndex = -1;
-	currentFrameIndex = -1;
-	currentSubFrameIndex = -1;
+	//gui variables
+	int currentAcquisitionIndex = -1;
+	int currentFrameIndex = -1;
+	int currentSubFrameIndex = -1;
+	string currentFileName = "";
 
-
-	//getting values
-	int slsdatabytes = 0, slsmaxchannels = 0, bytesperchannel = 0, slsmaxX = 0, slsmaxY=0;
+	//getting sls values
+	int slsdatabytes = 0, slsmaxchannels = 0, bytesperchannel = 0, slsmaxX = 0, slsmaxY=0, nx=0, ny=0;
 	if(detectors[0]){
 		slsdatabytes = detectors[0]->getDataBytes();
 		slsmaxchannels = detectors[0]->getMaxNumberOfChannels();
 		bytesperchannel = slsdatabytes/slsmaxchannels;
 		slsmaxX = detectors[0]->getTotalNumberOfChannels(X);
 		slsmaxY = detectors[0]->getTotalNumberOfChannels(Y);
-		//cprintf(BLUE,"slsdatabytes:%d slsmaxchannels:%d bytesperchannel:%d slsmaxX:%d slsmaxY:%d\n",
-		//		slsdatabytes,slsmaxchannels,bytesperchannel,slsmaxX,slsmaxY);
 	}
+	//getting multi values
+	nx = getTotalNumberOfChannels(slsDetectorDefs::X);
+	ny = getTotalNumberOfChannels(slsDetectorDefs::Y);
+	//calculating offsets (for eiger interleaving ports)
+	int offsetX[numSockets]; int offsetY[numSockets];
+	if(maxX){
+		for(int i=0; i<numSockets; ++i){
+			offsetY[i] = (maxY - (thisMultiDetector->offsetY[i/numSocketsPerSLSDetector] + slsmaxY)) * maxX * bytesperchannel;
+			//the left half or right half
+			if(!(i%numSocketsPerSLSDetector))
+				offsetX[i] = thisMultiDetector->offsetX[i/numSocketsPerSLSDetector];
+			else
+				offsetX[i] = thisMultiDetector->offsetX[i/numSocketsPerSLSDetector] + (slsmaxX/numSocketsPerSLSDetector);
+			offsetX[i] *= bytesperchannel;
+		}
+	}
+
+	int expectedslssize = slsdatabytes/numSocketsPerSLSDetector;
+	int* image = new int[(expectedslssize/sizeof(int))]();
 	int nel=(thisMultiDetector->dataBytes)/sizeof(int);
-	//cprintf(BLUE,"multi databytes:%d\n",thisMultiDetector->dataBytes);
 	if(nel <= 0){
 		cprintf(RED,"Error: Multislsdetector databytes not valid : %d\n", thisMultiDetector->dataBytes);
 		return;
 	}
-	int* multiframe=new int[nel];
-	int idet,offsetY,offsetX;
-	int halfreadoutoffset =  (slsmaxX/numReadoutPerDetector);
-	int nx =getTotalNumberOfChannels(slsDetectorDefs::X);
-	int ny =getTotalNumberOfChannels(slsDetectorDefs::Y);
+	int* multiframe=new int[nel]();
+
 
 	volatile uint64_t dataThreadMask = 0x0;
-	for(int i = 0; i < numReadouts; ++i)
+	for(int i = 0; i < numSockets; ++i)
 		dataThreadMask|=(1<<i);
 
-
-	//construct complete image and send to callback
+	//exit when last message for each socket received
 	while(true){
 		//memset(((char*)multiframe),0xFF,slsdatabytes*thisMultiDetector->numberOfDetectors);	//reset frame memory
 
-		//post all of them to start
-		for(int ireadout=0; ireadout<numReadouts; ++ireadout){
-			if((1 << ireadout) & dataThreadMask){
-				sem_post(&sem_singlewait[ireadout]);	//sls to continue
-			}
-		}
-
 		//get each frame
-		for(int ireadout=0; ireadout<numReadouts; ++ireadout){
-			//cprintf(BLUE,"multi checking %d mask:0x%x\n",ireadout,receivingDataThreadMask);
-			idet = ireadout/numReadoutPerDetector;
-			if((1 << ireadout) & dataThreadMask){		//if running
+		for(int isocket=0; isocket<numSockets; ++isocket){
 
-				sem_wait(&sem_singledone[ireadout]);	//wait for sls to copy
+			//if running
+			if((1 << isocket) & dataThreadMask){
 
-				//this socket closed
-				if(singleframe[ireadout] == NULL){		//if got nothing
-					dataThreadMask^=(1<<ireadout);
+				//get individual images
+				if(FAIL == getData(isocket, jungfrau, image, expectedslssize, currentAcquisitionIndex,currentFrameIndex,currentSubFrameIndex,currentFileName)){
+					dataThreadMask^=(1<<isocket);
 					continue;
 				}
 
-				//assemble data
+				//assemble data with interleaving
 				if(maxX){
 
-					//eiger, so interleaving between ports in one readout itself
-					offsetY = (maxY - (thisMultiDetector->offsetY[idet] + slsmaxY)) * maxX * bytesperchannel;
-					//the left half or right half
-					if(!(ireadout%numReadoutPerDetector))
-						offsetX = thisMultiDetector->offsetX[idet];
-					else
-						offsetX = thisMultiDetector->offsetX[idet] + halfreadoutoffset;
-					offsetX *= bytesperchannel;
-					//interleaving with other detectors
-
 					//bottom
-					if(((idet+1)%2) == 0){
+					if((((isocket/numSocketsPerSLSDetector)+1)%2) == 0){
 						for(int i=0;i<slsmaxY;++i){
-							memcpy(((char*)multiframe) + offsetY + offsetX + ((slsmaxY-1-i)*maxX*bytesperchannel),
-									(char*)singleframe[ireadout]+ i*(slsmaxX/numReadoutPerDetector)*bytesperchannel,
-									(slsmaxX/numReadoutPerDetector)*bytesperchannel);
+							memcpy(((char*)multiframe) + offsetY[isocket] + offsetX[isocket] + ((slsmaxY-1-i)*maxX*bytesperchannel),
+									(char*)image+ i*(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel,
+									(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel);
 						}
 					}
 					//top
 					else{
 						for(int i=0;i<slsmaxY;++i){
-							memcpy(((char*)multiframe) + offsetY + offsetX + (i*maxX*bytesperchannel),
-									(char*)singleframe[ireadout]+ i*(slsmaxX/numReadoutPerDetector)*bytesperchannel,
-									(slsmaxX/numReadoutPerDetector)*bytesperchannel);
+							memcpy(((char*)multiframe) + offsetY[isocket] + offsetX[isocket] + (i*maxX*bytesperchannel),
+									(char*)image+ i*(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel,
+									(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel);
 						}
 					}
 				}
-				//no interleaving, just add to the end
-				//numReadout always 1 here
+
+				//assemble data with no interleaving, assumed detectors appended vertically
 				else{
-					memcpy((char*)multiframe+slsdatabytes*ireadout,(char*)singleframe[ireadout],slsdatabytes);
+					memcpy((char*)multiframe+slsdatabytes*isocket,(char*)image,slsdatabytes);
 				}
 			}
+
 		}
 
 		//all done
@@ -5391,19 +5317,19 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 		//send data to callback
 		fdata = decodeData(multiframe);
-
-
 		if ((fdata) && (dataReady)){
 			thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),nx,ny);
 			dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);
 			delete thisData;
 			fdata = NULL;
 			//cout<<"Send frame #"<< currentFrameIndex << " to gui"<<endl;
-		}
+			}
 		setCurrentProgress(currentAcquisitionIndex+1);
+
 	}
 
 	//free resources
+	delete [] image;
 	delete[] multiframe;
 }
 
@@ -5656,16 +5582,15 @@ int multiSlsDetector::setReceiverReadTimer(int time_in_ms){
 int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
 
 	if(enable >= 0){
-
-		if(threadStarted != enable){
+		if(dataSocketsStarted != enable){
 			//destroy data threads
-			if(threadStarted)
-				createReceivingDataThreads(true);
+			if(dataSocketsStarted)
+				createReceivingDataSockets(true);
 
 			//create data threads
 			if(enable > 0){
-				if(createReceivingDataThreads() == FAIL){
-					std::cout << "Could not create data threads in client. Aborting creating data threads in receiver" << std::endl;
+				if(createReceivingDataSockets() == FAIL){
+					std::cout << "Could not create data threads in client. Aborting creating data sockets in receiver" << std::endl;
 					//only for the first det as theres no general one
 					setErrorMask(getErrorMask()|(1<<0));
 					detectors[0]->setErrorMask((detectors[0]->getErrorMask())|(DATA_STREAMING));
@@ -5674,7 +5599,7 @@ int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
 			}
 		}
 
-	}else enable = threadStarted;
+	}else enable = dataSocketsStarted;
 
 	int ret=-100, ret1;
 	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
@@ -5690,9 +5615,9 @@ int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
 	}
 	/*
 	if(enable == -1)
-		return threadStarted;
+		return dataSocketsStarted;
 	*/
-	return (threadStarted & ret);
+	return (dataSocketsStarted & ret);
 }
 
 int multiSlsDetector::enableReceiverCompression(int i){

@@ -5034,7 +5034,7 @@ int multiSlsDetector::resetFramesCaught() {
 
 
 
-int multiSlsDetector::createReceivingDataSockets(bool destroy){
+int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 
 	//number of sockets
 	int numSockets = thisMultiDetector->numberOfDetectors;
@@ -5108,7 +5108,7 @@ int multiSlsDetector::createReceivingDataSockets(bool destroy){
 
 
 
-int multiSlsDetector::getData(int isocket, bool masking, int* image, int size, int &acqIndex, int &frameIndex, int &subframeIndex, string &filename){
+int multiSlsDetector::getData(const int isocket, const bool masking, int* image, const int size, int &acqIndex, int &frameIndex, int &subframeIndex, string &filename){
 
 	zmq_msg_t message;
 

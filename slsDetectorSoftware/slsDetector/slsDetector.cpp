@@ -5599,6 +5599,7 @@ char* slsDetector::setReceiver(string receiverIP){
 
 			setTimer(FRAME_PERIOD,thisDetector->timerValue[FRAME_PERIOD]);
 			setTimer(FRAME_NUMBER,thisDetector->timerValue[FRAME_NUMBER]);
+			setTimer(ACQUISITION_TIME,thisDetector->timerValue[ACQUISITION_TIME]);
 			setDynamicRange(thisDetector->dynamicRange);
 			if(thisDetector->myDetectorType == EIGER)
 				activate(-1);

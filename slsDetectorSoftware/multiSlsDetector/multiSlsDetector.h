@@ -1200,7 +1200,7 @@ class multiSlsDetector  : public slsDetectorUtils {
   * @param destroy is true to destroy all the sockets
   * @return OK or FAIL
   */
- int createReceivingDataSockets(bool destroy = false);
+ int createReceivingDataSockets(const bool destroy = false);
 
 
 
@@ -1396,7 +1396,7 @@ private:
 	/**
 	 * Gets data from socket
 	 */
-	int getData(int isocket, bool masking, int* image, int size, int &acqIndex, int &frameIndex, int &subframeIndex, string &filename);
+	int getData(const int isocket, const bool masking, int* image, const int size, int &acqIndex, int &frameIndex, int &subframeIndex, string &filename);
 
 	/** Ensures if sockets created successfully */
 	bool dataSocketsStarted;

@@ -660,7 +660,7 @@ virtual int resetFramesCaught()=0;
  * @param destroy is true to destroy all the sockets
  * @return OK or FAIL
  */
-virtual int createReceivingDataSockets(bool destroy = false)=0;
+virtual int createReceivingDataSockets(const bool destroy = false)=0;
 
 
 /** Reads frames from receiver through a constant socket

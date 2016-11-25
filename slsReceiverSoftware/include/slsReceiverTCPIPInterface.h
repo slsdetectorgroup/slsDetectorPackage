@@ -332,7 +332,7 @@ private:
 
 protected:
 	/** Socket */
-	MySocketTCP* socket;
+	MySocketTCP* mySock;
 };
 
 

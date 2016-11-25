@@ -418,6 +418,24 @@ private:
 
 	/**
 	 * Called by startListening
+	 * Creates the packets
+	 * @param ithread listening thread index
+	 * @return the number of bytes actually received
+	 */
+	int prepareAndListenBufferDeactivated(int ithread);
+
+
+	/**
+	 * Called by startListening
+	 * Listens to each packet and copies only complete frames
+	 * until all receiver or shutdownUDPsocket called by client
+	 * @param ithread listening thread index
+	 * @return the number of bytes copied to buffer
+	 */
+	int prepareAndListenBufferCompleteFrames(int ithread);
+
+	/**
+	 * Called by startListening
 	 * Its called for the first packet of a scan or acquistion
 	 * Sets the startframeindices and the variables to know if acquisition started
 	 * @param ithread listening thread number
@@ -478,14 +496,13 @@ private:
 	void handleWithoutDataCompression(int ithread, char* wbuffer,uint32_t npackets);
 
 	/**
-	 * Called by processWritingBuffer  for jungfrau
-	 * writes to dummy file, doesnt need to read packet numbers
+	 * Called by startWriting for jungfrau and eiger
+	 * writes complete frames to file
 	 * Copies data for gui display and frees addresses popped from FIFOs
 	 * @param ithread writing thread index
 	 * @param wbuffer writing buffer popped out from FIFO
-	 * @param npackets number of packets
 	 */
-	void handleWithoutMissingPackets(int ithread, char* wbuffer,uint32_t npackets);
+	void handleCompleteFramesOnly(int ithread, char* wbuffer);
 
 	/**
 	 * Calle by handleWithoutDataCompression
@@ -540,9 +557,10 @@ private:
 	 * @param framenumber reference to the frame number
 	 * @param packetnumber reference to the packet number
 	 * @param subframenumber reference to the subframe number
+	 * @oaram bunchid reference to the bunch id
 	 * @return OK or FAIL
 	 */
-	int getFrameandPacketNumber(int ithread, char* wbuffer, uint64_t &framenumber, uint32_t &packetnumber, uint32_t &subframenumber);
+	int getFrameandPacketNumber(int ithread, char* wbuffer, uint64_t &framenumber, uint32_t &packetnumber, uint32_t &subframenumber, uint64_t &bunchid);
 
 	/**
 	 * Find offset upto this frame number and write it to file
@@ -593,6 +611,9 @@ private:
 	/** Footer offset from start of Packet*/
 	int footerOffset;
 
+	/** variable to exclude missing packet */
+	bool excludeMissingPackets;
+
 
 	//***File parameters***
 #ifdef MYROOT1
@@ -611,15 +632,17 @@ private:
 
 		/** Maximum Frames Per File **/
 	uint64_t maxFramesPerFile;
+	const static int progressFrequency = 10;
 
 	/** If file created successfully for all Writer Threads */
 	bool fileCreateSuccess;
 
+	/** File header */
 	const static unsigned int FILE_HEADER_SIZE = 500;
-
 	char fileHeader[MAX_NUMBER_OF_WRITER_THREADS][FILE_HEADER_SIZE];
 
-
+	/** File Descriptor */
+	FILE *sfilefd[MAX_NUMBER_OF_WRITER_THREADS];
 
 
 	//***acquisition indices/count parameters***
@@ -640,8 +663,18 @@ private:
 
 	/** Previous Frame number from last check to calculate loss */
 	int64_t frameNumberInPreviousCheck[MAX_NUMBER_OF_WRITER_THREADS];
+
 	/** total packet count from last check */
 	int64_t totalWritingPacketCountFromLastCheck[MAX_NUMBER_OF_WRITER_THREADS];
+
+	/** Pckets currently in current file, starts new file when it reaches max */
+	int64_t lastFrameNumberInFile[MAX_NUMBER_OF_WRITER_THREADS];
+
+	/** packets in current file */
+	uint64_t totalPacketsInFile[MAX_NUMBER_OF_WRITER_THREADS];
+
+	/**Total packet count written by each writing thread */
+	uint64_t totalWritingPacketCount[MAX_NUMBER_OF_LISTENING_THREADS];
 
 
 	/* Acquisition started */
@@ -656,14 +689,7 @@ private:
 	/** Total packet Count ignored by listening threads */
 	int totalIgnoredPacketCount[MAX_NUMBER_OF_LISTENING_THREADS];
 
-	/** Pckets currently in current file, starts new file when it reaches max */
-	int64_t lastFrameNumberInFile[MAX_NUMBER_OF_WRITER_THREADS];
 
-	/** packets in current file */
-	uint64_t totalPacketsInFile[MAX_NUMBER_OF_WRITER_THREADS];
-
-	/**Total packet count written by each writing thread */
-	uint64_t totalWritingPacketCount[MAX_NUMBER_OF_LISTENING_THREADS];
 
 
 
@@ -684,9 +710,6 @@ private:
 	/** UDP Sockets - Detector to Receiver */
 	genericSocket* udpSocket[MAX_NUMBER_OF_LISTENING_THREADS];
 
-	/** File Descriptor */
-	FILE *sfilefd[MAX_NUMBER_OF_WRITER_THREADS];
-
 	/** Number of Jobs Per Buffer */
 	int numberofJobsPerBuffer;
 
@@ -695,9 +718,6 @@ private:
 
 	/** fifo buffer header size */
 	uint32_t fifoBufferHeaderSize;
-
-	/** Missing Packet  */
-	int missingPacketinFile;
 
 	/** Dummy Packet identifier value */
 	const static uint32_t dummyPacketValue = 0xFFFFFFFF;
@@ -788,16 +808,6 @@ private:
 
 	/** Set to self-terminate writer threads waiting for semaphores */
 	bool killAllWritingThreads;
-
-
-	//***deactivated parameters***
-	uint64_t deactivated_framenumber[MAX_NUMBER_OF_LISTENING_THREADS];
-	uint32_t deactivated_packetnumber[MAX_NUMBER_OF_LISTENING_THREADS];
-
-	//***deactivated parameters***
-	uint64_t deactivatedFrameNumber[MAX_NUMBER_OF_LISTENING_THREADS];
-	int deactivatedFrameIncrement;
-
 
 
 	//***filter parameters***

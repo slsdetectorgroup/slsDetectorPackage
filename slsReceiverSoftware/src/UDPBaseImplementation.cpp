@@ -98,7 +98,7 @@ char *UDPBaseImplementation::getDetectorHostname() const{
 	if(!strlen(detHostname))
 		return NULL;
 
-	char* output = new char[MAX_STR_LENGTH];
+	char* output = new char[MAX_STR_LENGTH]();
 	strcpy(output,detHostname);
 	//freed by calling function
 	return output;
@@ -113,7 +113,7 @@ char *UDPBaseImplementation::getFileName() const{
 	if(!strlen(fileName))
 		return NULL;
 
-	char* output = new char[MAX_STR_LENGTH];
+	char* output = new char[MAX_STR_LENGTH]();
 	strcpy(output,fileName);
 	//freed by calling function
 	return output;
@@ -126,7 +126,7 @@ char *UDPBaseImplementation::getFilePath() const{
 	if(!strlen(filePath))
 		return NULL;
 
-	char* output = new char[MAX_STR_LENGTH];
+	char* output = new char[MAX_STR_LENGTH]();
 	strcpy(output,filePath);
 	//freed by calling function
 	return output;
@@ -166,7 +166,7 @@ uint32_t UDPBaseImplementation::getUDPPortNumber2() const{	FILE_LOG(logDEBUG) <<
 char *UDPBaseImplementation::getEthernetInterface() const{
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
-	char* output = new char[MAX_STR_LENGTH];
+	char* output = new char[MAX_STR_LENGTH]();
 	strcpy(output,eth);
 	//freed by calling function
 	return output;

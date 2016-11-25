@@ -24,7 +24,7 @@ using namespace std;
 
 slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 	stop();
-	if(socket) {delete socket; socket=NULL;}
+	if(mySock) {delete mySock; mySock=NULL;}
 }
 
 slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface* rbase, int pn, bool bot):
@@ -39,7 +39,7 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 				tenGigaEnable(0),
 				portNumber(DEFAULT_PORTNO+2),
 				bottom(bot),
-				socket(NULL){
+				mySock(NULL){
 
 	strcpy(SET_RECEIVER_ERR_MESSAGE,"Receiver not set up. Please use rx_hostname first.\n");
 
@@ -51,7 +51,7 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 	rawDataReadyCallBack = NULL;
 	pRawDataReady = NULL;
 
-	int port_no=portNumber;
+	unsigned short int port_no=portNumber;
 	if(receiverBase == NULL) receiverBase = 0;
 
 	if (pn>0)
@@ -61,16 +61,16 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 
 	//create socket
 	if(success == OK){
-		socket = new MySocketTCP(port_no);
-		if (socket->getErrorStatus()) {
+		mySock = new MySocketTCP(port_no);
+		if (mySock->getErrorStatus()) {
 			success = FAIL;
-			delete socket;
-			socket=NULL;
+			delete mySock;
+			mySock=NULL;
 		}	else {
 			portNumber=port_no;
 			//initialize variables
-			strcpy(socket->lastClientIP,"none");
-			strcpy(socket->thisClientIP,"none1");
+			strcpy(mySock->lastClientIP,"none");
+			strcpy(mySock->thisClientIP,"none1");
 			strcpy(mess,"dummy message");
 			function_table();
 #ifdef VERYVERBOSE
@@ -96,13 +96,13 @@ int slsReceiverTCPIPInterface::setPortNumber(int pn){
 			cout << mess << endl;
 		} else {
 
-			oldsocket=socket;
-			socket = new MySocketTCP(p_number);
-			if(socket){
-				sd = socket->getErrorStatus();
+			oldsocket=mySock;
+			mySock = new MySocketTCP(p_number);
+			if(mySock){
+				sd = mySock->getErrorStatus();
 				if (!sd){
 					portNumber=p_number;
-					strcpy(socket->lastClientIP,oldsocket->lastClientIP);
+					strcpy(mySock->lastClientIP,oldsocket->lastClientIP);
 					delete oldsocket;
 				} else {
 					cout << "Could not bind port " << p_number << endl;
@@ -110,13 +110,13 @@ int slsReceiverTCPIPInterface::setPortNumber(int pn){
 
 						cout << "Port "<< p_number << " already set" << endl;
 					} else {
-						delete socket;
-						socket=oldsocket;
+						delete mySock;
+						mySock=oldsocket;
 					}
 				}
 
 			} else {
-				socket=oldsocket;
+				mySock=oldsocket;
 			}
 		}
 	}
@@ -143,7 +143,7 @@ int slsReceiverTCPIPInterface::start(){
 void slsReceiverTCPIPInterface::stop(){
 	cout << "Shutting down UDP Socket" << endl;
 	killTCPServerThread = 1;
-	if(socket)	socket->ShutDownSocket();
+	if(mySock)	mySock->ShutDownSocket();
 	cout<<"Socket closed"<<endl;
 	pthread_join(TCPServer_thread, NULL);
 	killTCPServerThread = 0;
@@ -175,7 +175,7 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 #ifdef VERY_VERBOSE
 		cout << "Waiting for client call" << endl;
 #endif
-		if(socket->Connect()>=0){
+		if(mySock->Connect()>=0){
 #ifdef VERY_VERBOSE
 			cout << "Conenction accepted" << endl;
 #endif
@@ -183,7 +183,7 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 #ifdef VERY_VERBOSE
 			cout << "function executed" << endl;
 #endif
-			socket->Disconnect();
+			mySock->Disconnect();
 #ifdef VERY_VERBOSE
 			cout << "connection closed" << endl;
 #endif
@@ -199,7 +199,7 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 				receiverBase->closeFile();
 			}
 
-			socket->exitServer();
+			mySock->exitServer();
 			pthread_exit(NULL);
 		}
 
@@ -285,7 +285,7 @@ int slsReceiverTCPIPInterface::decode_function(){
 #ifdef VERYVERBOSE
 	cout <<  "receive data" << endl;
 #endif
-	n = socket->ReceiveDataOnly(&fnum,sizeof(fnum));
+	n = mySock->ReceiveDataOnly(&fnum,sizeof(fnum));
 	if (n <= 0) {
 #ifdef VERYVERBOSE
 		cout << "ERROR reading from socket " << n << ", " << fnum << endl;
@@ -322,8 +322,8 @@ int slsReceiverTCPIPInterface::M_nofunc(){
 	sprintf(mess,"Unrecognized Function\n");
 	cout << mess << endl;
 
-	socket->SendDataOnly(&ret,sizeof(ret));
-	socket->SendDataOnly(mess,sizeof(mess));
+	mySock->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(mess,sizeof(mess));
 
 	return GOODBYE;
 }
@@ -344,7 +344,7 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 
 
 	// receive arguments
-	if(socket->ReceiveDataOnly(&dr,sizeof(dr)) < 0 ){
+	if(mySock->ReceiveDataOnly(&dr,sizeof(dr)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
 		ret = FAIL;
 	}
@@ -352,8 +352,8 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){
-			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+		if (lockStatus==1 && mySock->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
 			ret=FAIL;
 		}
 		else if((receiverBase)&&(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING)){
@@ -405,16 +405,16 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 	//#endif
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL)
-		socket->SendDataOnly(mess,sizeof(mess));
-	socket->SendDataOnly(&retval,sizeof(retval));
+		mySock->SendDataOnly(mess,sizeof(mess));
+	mySock->SendDataOnly(&retval,sizeof(retval));
 
 	//return ok/fail
 	return ret;
@@ -434,7 +434,7 @@ int slsReceiverTCPIPInterface::set_file_name() {
 	strcpy(mess,"Could not set file name");
 
 	// receive arguments
-	if(socket->ReceiveDataOnly(fName,MAX_STR_LENGTH) < 0 ){
+	if(mySock->ReceiveDataOnly(fName,MAX_STR_LENGTH) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
 		ret = FAIL;
 	}
@@ -443,8 +443,8 @@ int slsReceiverTCPIPInterface::set_file_name() {
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (ret==OK) {
 
-		if (lockStatus==1 && socket->differentClients==1){
-			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+		if (lockStatus==1 && mySock->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
@@ -471,21 +471,21 @@ int slsReceiverTCPIPInterface::set_file_name() {
 #endif
 
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED, "%s\n", mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	if(retval == NULL)
-		socket->SendDataOnly(defaultVal,MAX_STR_LENGTH);
+		mySock->SendDataOnly(defaultVal,MAX_STR_LENGTH);
 	else{
-		socket->SendDataOnly(retval,MAX_STR_LENGTH);
+		mySock->SendDataOnly(retval,MAX_STR_LENGTH);
 		delete[] retval;
 	}
 
@@ -507,7 +507,7 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 	strcpy(mess,"Could not set file path\n");
 
 	// receive arguments
-	if(socket->ReceiveDataOnly(fPath,MAX_STR_LENGTH) < 0 ){
+	if(mySock->ReceiveDataOnly(fPath,MAX_STR_LENGTH) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
 		ret = FAIL;
 	}
@@ -515,8 +515,8 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){
-			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+		if (lockStatus==1 && mySock->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
@@ -545,21 +545,21 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 #endif
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED, "%s\n", mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	if(retval == NULL)
-		socket->SendDataOnly(defaultVal,MAX_STR_LENGTH);
+		mySock->SendDataOnly(defaultVal,MAX_STR_LENGTH);
 	else{
-		socket->SendDataOnly(retval,MAX_STR_LENGTH);
+		mySock->SendDataOnly(retval,MAX_STR_LENGTH);
 		delete[] retval;
 	}
 
@@ -580,7 +580,7 @@ int slsReceiverTCPIPInterface::set_file_index() {
 
 
 	// receive arguments
-	if(socket->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
+	if(mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
 		ret = FAIL;
 	}
@@ -588,8 +588,8 @@ int slsReceiverTCPIPInterface::set_file_index() {
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){
-			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+		if (lockStatus==1 && mySock->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
@@ -616,18 +616,18 @@ int slsReceiverTCPIPInterface::set_file_index() {
 #endif
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED, "%s\n", mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
-	socket->SendDataOnly(&retval,sizeof(retval));
+	mySock->SendDataOnly(&retval,sizeof(retval));
 
 	//return ok/fail
 	return ret;
@@ -648,7 +648,7 @@ int slsReceiverTCPIPInterface::set_frame_index() {
 
 
 	// receive arguments
-	if(socket->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
+	if(mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
 		ret = FAIL;
 	}
@@ -656,8 +656,8 @@ int slsReceiverTCPIPInterface::set_frame_index() {
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){
-			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+		if (lockStatus==1 && mySock->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
@@ -693,18 +693,18 @@ int slsReceiverTCPIPInterface::set_frame_index() {
 #endif
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED, "%s\n", mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
-	socket->SendDataOnly(&retval,sizeof(retval));
+	mySock->SendDataOnly(&retval,sizeof(retval));
 
 	//return ok/fail
 	return ret;
@@ -729,7 +729,7 @@ int slsReceiverTCPIPInterface::setup_udp(){
 
 	// receive arguments
 
-	if(socket->ReceiveDataOnly(args,sizeof(args)) < 0 ){
+	if(mySock->ReceiveDataOnly(args,sizeof(args)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
 		ret = FAIL;
 	}
@@ -737,8 +737,8 @@ int slsReceiverTCPIPInterface::setup_udp(){
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){
-			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+		if (lockStatus==1 && mySock->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
@@ -790,18 +790,18 @@ int slsReceiverTCPIPInterface::setup_udp(){
 	}
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		FILE_LOG(logERROR) << mess;
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
-	socket->SendDataOnly(retval,MAX_STR_LENGTH);
+	mySock->SendDataOnly(retval,MAX_STR_LENGTH);
 
 	//return ok/fail
 	return ret;
@@ -820,8 +820,8 @@ int slsReceiverTCPIPInterface::start_receiver(){
 
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (lockStatus==1 && socket->differentClients==1){
-		sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+	if (lockStatus==1 && mySock->differentClients==1){
+		sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
 		ret=FAIL;
 	}
 	/*
@@ -845,16 +845,16 @@ int slsReceiverTCPIPInterface::start_receiver(){
 	}
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED, "Error:%s\n", mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	//return ok/fail
 	return ret;
@@ -870,8 +870,8 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (lockStatus==1 && socket->differentClients==1){
-		sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+	if (lockStatus==1 && mySock->differentClients==1){
+		sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
 		ret=FAIL;
 	}
 	else if (receiverBase == NULL){
@@ -892,16 +892,16 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 	}
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED, "%s\n", mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	//return ok/fail
 	return ret;
@@ -923,19 +923,19 @@ int	slsReceiverTCPIPInterface::get_status(){
 	}else s=receiverBase->getStatus();
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED, "%s\n", mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	retval = (runStatus(s));
-	socket->SendDataOnly(&retval,sizeof(retval));
+	mySock->SendDataOnly(&retval,sizeof(retval));
 	//return ok/fail
 	return ret;
 
@@ -954,18 +954,18 @@ int	slsReceiverTCPIPInterface::get_frames_caught(){
 		ret=FAIL;
 	}else retval=receiverBase->getTotalFramesCaught();
 #endif
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED, "%s\n", mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
-	socket->SendDataOnly(&retval,sizeof(retval));
+	mySock->SendDataOnly(&retval,sizeof(retval));
 	//return ok/fail
 	return ret;
 
@@ -986,18 +986,18 @@ int	slsReceiverTCPIPInterface::get_frame_index(){
 		retval=receiverBase->getAcquisitionIndex();
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED, "%s\n", mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
-	socket->SendDataOnly(&retval,sizeof(retval));
+	mySock->SendDataOnly(&retval,sizeof(retval));
 	//return ok/fail
 	return ret;
 
@@ -1014,8 +1014,8 @@ int	slsReceiverTCPIPInterface::reset_frames_caught(){
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){
-			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+		if (lockStatus==1 && mySock->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
@@ -1031,16 +1031,16 @@ int	slsReceiverTCPIPInterface::reset_frames_caught(){
 	}
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED, "%s\n", mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	//return ok/fail
 	return ret;
@@ -1066,7 +1066,7 @@ int slsReceiverTCPIPInterface::set_short_frame() {
 	}
 
 	// receive arguments
-	if(socket->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
+	if(mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
 		ret = FAIL;
 	}
@@ -1075,8 +1075,8 @@ int slsReceiverTCPIPInterface::set_short_frame() {
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){
-			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+		if (lockStatus==1 && mySock->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
@@ -1099,18 +1099,18 @@ int slsReceiverTCPIPInterface::set_short_frame() {
 	}
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED, "%s\n", mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
-	socket->SendDataOnly(&retval,sizeof(retval));
+	mySock->SendDataOnly(&retval,sizeof(retval));
 
 	//return ok/fail
 	return ret;
@@ -1281,22 +1281,22 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED,"%s\n",mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	else{
-		socket->SendDataOnly(fName,MAX_STR_LENGTH);
-		socket->SendDataOnly(&acquisitionIndex,sizeof(acquisitionIndex));
-		socket->SendDataOnly(&frameIndex,sizeof(frameIndex));
-		socket->SendDataOnly(retval,MOENCH_DATA_BYTES);
+		mySock->SendDataOnly(fName,MAX_STR_LENGTH);
+		mySock->SendDataOnly(&acquisitionIndex,sizeof(acquisitionIndex));
+		mySock->SendDataOnly(&frameIndex,sizeof(frameIndex));
+		mySock->SendDataOnly(retval,MOENCH_DATA_BYTES);
 	}
 	//return ok/fail
 
@@ -1462,22 +1462,22 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED,"%s\n",mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	else{
-		socket->SendDataOnly(fName,MAX_STR_LENGTH);
-		socket->SendDataOnly(&acquisitionIndex,sizeof(acquisitionIndex));
-		socket->SendDataOnly(&frameIndex,sizeof(frameIndex));
-		socket->SendDataOnly(retval,GOTTHARD_DATA_BYTES);
+		mySock->SendDataOnly(fName,MAX_STR_LENGTH);
+		mySock->SendDataOnly(&acquisitionIndex,sizeof(acquisitionIndex));
+		mySock->SendDataOnly(&frameIndex,sizeof(frameIndex));
+		mySock->SendDataOnly(retval,GOTTHARD_DATA_BYTES);
 	}
 
 	delete [] retval;
@@ -1616,22 +1616,22 @@ int	slsReceiverTCPIPInterface::propix_read_frame(){
 
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED,"%s\n",mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	else{
-		socket->SendDataOnly(fName,MAX_STR_LENGTH);
-		socket->SendDataOnly(&acquisitionIndex,sizeof(acquisitionIndex));
-		socket->SendDataOnly(&frameIndex,sizeof(frameIndex));
-		socket->SendDataOnly(retval,PROPIX_DATA_BYTES);
+		mySock->SendDataOnly(fName,MAX_STR_LENGTH);
+		mySock->SendDataOnly(&acquisitionIndex,sizeof(acquisitionIndex));
+		mySock->SendDataOnly(&frameIndex,sizeof(frameIndex));
+		mySock->SendDataOnly(retval,PROPIX_DATA_BYTES);
 	}
 
 	delete [] retval;
@@ -1670,8 +1670,8 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 		onePacketSize = EIGER_TEN_GIGA_ONE_PACKET_SIZE;
 	}
 	char* raw;
-	char* origVal 	= new char[frameSize];
-	char* retval 	= new char[dataSize];
+	char* origVal 	= new char[frameSize]();
+	char* retval 	= new char[dataSize]();
 	memset(origVal,0xFF,frameSize);
 	memset(retval,0xFF,dataSize);
 
@@ -1883,23 +1883,23 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED,"%s\n",mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	else{
-		socket->SendDataOnly(fName,MAX_STR_LENGTH);
-		socket->SendDataOnly(&acquisitionIndex,sizeof(acquisitionIndex));
-		socket->SendDataOnly(&frameIndex,sizeof(frameIndex));
-		socket->SendDataOnly(&subframenumber,sizeof(subframenumber));
-		socket->SendDataOnly(retval,dataSize);
+		mySock->SendDataOnly(fName,MAX_STR_LENGTH);
+		mySock->SendDataOnly(&acquisitionIndex,sizeof(acquisitionIndex));
+		mySock->SendDataOnly(&frameIndex,sizeof(frameIndex));
+		mySock->SendDataOnly(&subframenumber,sizeof(subframenumber));
+		mySock->SendDataOnly(retval,dataSize);
 	}
 
 	delete [] retval;
@@ -1932,9 +1932,9 @@ int	slsReceiverTCPIPInterface::jungfrau_read_frame(){
 	int oneDataSize = JFRAU_ONE_DATA_SIZE;
 
 	char* raw;
-	char* origVal 	= new char[frameSize];
-	char* retval 	= new char[dataSize];
-	char* blackpacket = new char[oneDataSize];
+	char* origVal 	= new char[frameSize]();
+	char* retval 	= new char[dataSize]();
+	char* blackpacket = new char[oneDataSize]();
 
 	for(int i=0;i<oneDataSize;i++)
 		blackpacket[i]='0';
@@ -2046,22 +2046,22 @@ int	slsReceiverTCPIPInterface::jungfrau_read_frame(){
 
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED,"%s\n",mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	else{
-		socket->SendDataOnly(fName,MAX_STR_LENGTH);
-		socket->SendDataOnly(&acquisitionIndex,sizeof(acquisitionIndex));
-		socket->SendDataOnly(&frameIndex,sizeof(frameIndex));
-		socket->SendDataOnly(retval,dataSize);
+		mySock->SendDataOnly(fName,MAX_STR_LENGTH);
+		mySock->SendDataOnly(&acquisitionIndex,sizeof(acquisitionIndex));
+		mySock->SendDataOnly(&frameIndex,sizeof(frameIndex));
+		mySock->SendDataOnly(retval,dataSize);
 	}
 
 	delete [] retval;
@@ -2084,7 +2084,7 @@ int slsReceiverTCPIPInterface::set_read_frequency(){
 
 
 	// receive arguments
-	if(socket->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
+	if(mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
 		ret = FAIL;
 	}
@@ -2092,8 +2092,8 @@ int slsReceiverTCPIPInterface::set_read_frequency(){
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){
-			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+		if (lockStatus==1 && mySock->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
@@ -2124,18 +2124,18 @@ int slsReceiverTCPIPInterface::set_read_frequency(){
 
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED,"%s\n",mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
-	socket->SendDataOnly(&retval,sizeof(retval));
+	mySock->SendDataOnly(&retval,sizeof(retval));
 
 	//return ok/fail
 	return ret;
@@ -2154,7 +2154,7 @@ int slsReceiverTCPIPInterface::set_read_receiver_timer(){
 
 
 	// receive arguments
-	if(socket->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
+	if(mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
 		ret = FAIL;
 	}
@@ -2162,8 +2162,8 @@ int slsReceiverTCPIPInterface::set_read_receiver_timer(){
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){
-			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+		if (lockStatus==1 && mySock->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
@@ -2190,18 +2190,18 @@ int slsReceiverTCPIPInterface::set_read_receiver_timer(){
 
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED,"%s\n",mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
-	socket->SendDataOnly(&retval,sizeof(retval));
+	mySock->SendDataOnly(&retval,sizeof(retval));
 
 	//return ok/fail
 	return ret;
@@ -2218,7 +2218,7 @@ int slsReceiverTCPIPInterface::set_data_stream_enable(){
 
 
 	// receive arguments
-	if(socket->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
+	if(mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
 		ret = FAIL;
 	}
@@ -2226,8 +2226,8 @@ int slsReceiverTCPIPInterface::set_data_stream_enable(){
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){
-			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+		if (lockStatus==1 && mySock->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
@@ -2253,18 +2253,18 @@ int slsReceiverTCPIPInterface::set_data_stream_enable(){
 
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED,"%s\n",mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
-	socket->SendDataOnly(&retval,sizeof(retval));
+	mySock->SendDataOnly(&retval,sizeof(retval));
 
 	//return ok/fail
 	return ret;
@@ -2282,7 +2282,7 @@ int slsReceiverTCPIPInterface::enable_file_write(){
 
 
 	// receive arguments
-	if(socket->ReceiveDataOnly(&enable,sizeof(enable)) < 0 ){
+	if(mySock->ReceiveDataOnly(&enable,sizeof(enable)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
 		ret = FAIL;
 	}
@@ -2290,8 +2290,8 @@ int slsReceiverTCPIPInterface::enable_file_write(){
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){
-			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+		if (lockStatus==1 && mySock->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
@@ -2312,18 +2312,18 @@ int slsReceiverTCPIPInterface::enable_file_write(){
 	}
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED,"%s\n",mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
-	socket->SendDataOnly(&retval,sizeof(retval));
+	mySock->SendDataOnly(&retval,sizeof(retval));
 
 	//return ok/fail
 	return ret;
@@ -2340,14 +2340,14 @@ int slsReceiverTCPIPInterface::get_id(){
 	retval = getReceiverVersion();
 #endif
 
-	if(socket->differentClients){
+	if(mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
-	socket->SendDataOnly(&retval,sizeof(retval));
+	mySock->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&retval,sizeof(retval));
 
 	//return ok/fail
 	return ret;
@@ -2388,18 +2388,18 @@ int	slsReceiverTCPIPInterface::start_readout(){cprintf(BLUE,"In start readout!\n
 	}
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED,"%s\n",mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
-	socket->SendDataOnly(&retval,sizeof(retval));
+	mySock->SendDataOnly(&retval,sizeof(retval));
 	//return ok/fail
 	return ret;
 
@@ -2418,7 +2418,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 
 
 	// receive arguments
-	if(socket->ReceiveDataOnly(index,sizeof(index)) < 0 ){
+	if(mySock->ReceiveDataOnly(index,sizeof(index)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
 		ret = FAIL;
 	}
@@ -2426,8 +2426,8 @@ int slsReceiverTCPIPInterface::set_timer() {
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){
-			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+		if (lockStatus==1 && mySock->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
@@ -2475,18 +2475,18 @@ int slsReceiverTCPIPInterface::set_timer() {
 #endif
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED,"%s\n",mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
-	socket->SendDataOnly(&retval,sizeof(retval));
+	mySock->SendDataOnly(&retval,sizeof(retval));
 
 	//return ok/fail
 	return ret;
@@ -2504,7 +2504,7 @@ int slsReceiverTCPIPInterface::enable_compression() {
 	strcpy(mess,"Could not enable/disable compression for receiver\n");
 
 	// receive arguments
-	if(socket->ReceiveDataOnly(&enable,sizeof(enable)) < 0 ){
+	if(mySock->ReceiveDataOnly(&enable,sizeof(enable)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
 		ret = FAIL;
 	}
@@ -2514,8 +2514,8 @@ int slsReceiverTCPIPInterface::enable_compression() {
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (ret==OK) {
 		if(enable >= 0){
-			if (lockStatus==1 && socket->differentClients==1){
-				sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			if (lockStatus==1 && mySock->differentClients==1){
+				sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
 				ret=FAIL;
 			}
 			else if (receiverBase == NULL){
@@ -2546,18 +2546,18 @@ int slsReceiverTCPIPInterface::enable_compression() {
 	}
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED,"%s\n",mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
-	socket->SendDataOnly(&retval,sizeof(retval));
+	mySock->SendDataOnly(&retval,sizeof(retval));
 
 	//return ok/fail
 	return ret;
@@ -2574,7 +2574,7 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 	strcpy(mess,"Could not set detector hostname");
 
 	// receive arguments
-	if(socket->ReceiveDataOnly(hostname,MAX_STR_LENGTH) < 0 ){
+	if(mySock->ReceiveDataOnly(hostname,MAX_STR_LENGTH) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
 		ret = FAIL;
 	}
@@ -2583,8 +2583,8 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (ret==OK) {
 
-		if (lockStatus==1 && socket->differentClients==1){
-			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+		if (lockStatus==1 && mySock->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
@@ -2611,21 +2611,21 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 #endif
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED, "%s\n", mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	if(retval == NULL)
-		socket->SendDataOnly(defaultVal,MAX_STR_LENGTH);
+		mySock->SendDataOnly(defaultVal,MAX_STR_LENGTH);
 	else{
-		socket->SendDataOnly(retval,MAX_STR_LENGTH);
+		mySock->SendDataOnly(retval,MAX_STR_LENGTH);
 		delete[] retval;
 	}
 
@@ -2647,7 +2647,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 
 
 	// receive arguments
-	if(socket->ReceiveDataOnly(&dr,sizeof(dr)) < 0 ){
+	if(mySock->ReceiveDataOnly(&dr,sizeof(dr)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
 		ret = FAIL;
 	}
@@ -2655,8 +2655,8 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){
-			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+		if (lockStatus==1 && mySock->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
 			ret=FAIL;
 		}
 		else if (dr>0) {
@@ -2711,18 +2711,18 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 #endif
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED,"%s\n",mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
-	socket->SendDataOnly(&retval,sizeof(retval));
+	mySock->SendDataOnly(&retval,sizeof(retval));
 
 	//return ok/fail
 	return ret;
@@ -2742,7 +2742,7 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 
 
 	// receive arguments
-	if(socket->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
+	if(mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
 		ret = FAIL;
 	}
@@ -2750,8 +2750,8 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){
-			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+		if (lockStatus==1 && mySock->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
@@ -2778,18 +2778,18 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 #endif
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED,"%s\n",mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
-	socket->SendDataOnly(&retval,sizeof(retval));
+	mySock->SendDataOnly(&retval,sizeof(retval));
 
 	//return ok/fail
 	return ret;
@@ -2809,7 +2809,7 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 
 
 	// receive arguments
-	if(socket->ReceiveDataOnly(&val,sizeof(val)) < 0 ){
+	if(mySock->ReceiveDataOnly(&val,sizeof(val)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
 		ret = FAIL;
 	}
@@ -2817,8 +2817,8 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){
-			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+		if (lockStatus==1 && mySock->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
 			ret=FAIL;
 		}
 		else if (receiverBase == NULL){
@@ -2847,18 +2847,18 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 #endif
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED,"%s\n",mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
-	socket->SendDataOnly(&retval,sizeof(retval));
+	mySock->SendDataOnly(&retval,sizeof(retval));
 
 	//return ok/fail
 	return ret;
@@ -2876,7 +2876,7 @@ int slsReceiverTCPIPInterface::set_fifo_depth() {
 	strcpy(mess,"Could not set/get fifo depth for receiver\n");
 
 	// receive arguments
-	if(socket->ReceiveDataOnly(&value,sizeof(value)) < 0 ){
+	if(mySock->ReceiveDataOnly(&value,sizeof(value)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
 		ret = FAIL;
 	}
@@ -2886,8 +2886,8 @@ int slsReceiverTCPIPInterface::set_fifo_depth() {
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (ret==OK) {
 		if(value >= 0){
-			if (lockStatus==1 && socket->differentClients==1){
-				sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			if (lockStatus==1 && mySock->differentClients==1){
+				sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
 				ret=FAIL;
 			}
 			else if (receiverBase == NULL){
@@ -2918,18 +2918,18 @@ int slsReceiverTCPIPInterface::set_fifo_depth() {
 	}
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED,"%s\n",mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
-	socket->SendDataOnly(&retval,sizeof(retval));
+	mySock->SendDataOnly(&retval,sizeof(retval));
 
 	//return ok/fail
 	return ret;
@@ -2947,7 +2947,7 @@ int slsReceiverTCPIPInterface::set_activate() {
 
 
 	// receive arguments
-	if(socket->ReceiveDataOnly(&enable,sizeof(enable)) < 0 ){
+	if(mySock->ReceiveDataOnly(&enable,sizeof(enable)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
 		cprintf(RED,"%s",mess);
 		ret = FAIL;
@@ -2957,8 +2957,8 @@ int slsReceiverTCPIPInterface::set_activate() {
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){
-			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+		if (lockStatus==1 && mySock->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
 			ret=FAIL;
 		}
 
@@ -2992,18 +2992,18 @@ int slsReceiverTCPIPInterface::set_activate() {
 #endif
 
 
-	if(ret==OK && socket->differentClients){
+	if(ret==OK && mySock->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED,"%s\n",mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
-	socket->SendDataOnly(&retval,sizeof(retval));
+	mySock->SendDataOnly(&retval,sizeof(retval));
 
 	//return ok/fail
 	return ret;
@@ -3045,7 +3045,7 @@ int slsReceiverTCPIPInterface::lock_receiver() {
 	int lock;
 
 	// receive arguments
-	if(socket->ReceiveDataOnly(&lock,sizeof(lock)) < 0 ){
+	if(mySock->ReceiveDataOnly(&lock,sizeof(lock)) < 0 ){
 		sprintf(mess,"Error reading from socket\n");
 		cout << "Error reading from socket (lock)" << endl;
 		ret=FAIL;
@@ -3053,27 +3053,27 @@ int slsReceiverTCPIPInterface::lock_receiver() {
 	// execute action if the arguments correctly arrived
 	if(ret==OK){
 		if (lock>=0) {
-			if (lockStatus==0 || strcmp(socket->lastClientIP,socket->thisClientIP)==0 || strcmp(socket->lastClientIP,"none")==0) {
+			if (lockStatus==0 || strcmp(mySock->lastClientIP,mySock->thisClientIP)==0 || strcmp(mySock->lastClientIP,"none")==0) {
 				lockStatus=lock;
-				strcpy(socket->lastClientIP,socket->thisClientIP);
+				strcpy(mySock->lastClientIP,mySock->thisClientIP);
 			}   else {
 				ret=FAIL;
-				sprintf(mess,"Receiver already locked by %s\n", socket->lastClientIP);
+				sprintf(mess,"Receiver already locked by %s\n", mySock->lastClientIP);
 			}
 		}
 	}
 
-	if (socket->differentClients && ret==OK)
+	if (mySock->differentClients && ret==OK)
 		ret=FORCE_UPDATE;
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED,"%s\n",mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	else
-		socket->SendDataOnly(&lockStatus,sizeof(lockStatus));
+		mySock->SendDataOnly(&lockStatus,sizeof(lockStatus));
 
 	//return ok/fail
 	return ret;
@@ -3094,13 +3094,13 @@ int slsReceiverTCPIPInterface::set_port() {
 	int p_number;
 
 	// receive arguments
-	if(socket->ReceiveDataOnly(&p_type,sizeof(p_type)) < 0 ){
+	if(mySock->ReceiveDataOnly(&p_type,sizeof(p_type)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
 		cout << mess << endl;
 		ret=FAIL;
 	}
 
-	if(socket->ReceiveDataOnly(&p_number,sizeof(p_number)) < 0 ){
+	if(mySock->ReceiveDataOnly(&p_number,sizeof(p_number)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
 		cout << mess << endl;
 		ret=FAIL;
@@ -3108,9 +3108,9 @@ int slsReceiverTCPIPInterface::set_port() {
 
 	// execute action if the arguments correctly arrived
 	if (ret==OK) {
-		if (socket->differentClients==1 && lockStatus==1 ) {
+		if (mySock->differentClients==1 && lockStatus==1 ) {
 			ret=FAIL;
-			sprintf(mess,"Detector locked by %s\n",socket->lastClientIP);
+			sprintf(mess,"Detector locked by %s\n",mySock->lastClientIP);
 		}
 		else {
 			if (p_number<1024) {
@@ -3119,14 +3119,14 @@ int slsReceiverTCPIPInterface::set_port() {
 				ret=FAIL;
 			}
 			cout << "set port " << p_type << " to " << p_number <<endl;
-			strcpy(oldLastClientIP, socket->lastClientIP);
+			strcpy(oldLastClientIP, mySock->lastClientIP);
 			mySocket = new MySocketTCP(p_number);
 		}
 		if(mySocket){
 			sd = mySocket->getErrorStatus();
 			if (!sd){
 				ret=OK;
-				strcpy(socket->lastClientIP,oldLastClientIP);
+				strcpy(mySock->lastClientIP,oldLastClientIP);
 				if (mySocket->differentClients)
 					ret=FORCE_UPDATE;
 			} else {
@@ -3142,16 +3142,16 @@ int slsReceiverTCPIPInterface::set_port() {
 	}
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED,"%s\n",mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 	}else {
-		socket->SendDataOnly(&p_number,sizeof(p_number));
+		mySock->SendDataOnly(&p_number,sizeof(p_number));
 		if(sd>=0){
-			socket->Disconnect();
-			delete socket;
-			socket = mySocket;
+			mySock->Disconnect();
+			delete mySock;
+			mySock = mySocket;
 		}
 	}
 
@@ -3167,11 +3167,11 @@ int slsReceiverTCPIPInterface::set_port() {
 int slsReceiverTCPIPInterface::get_last_client_ip() {
 	ret=OK;
 
-	if (socket->differentClients )
+	if (mySock->differentClients )
 		ret=FORCE_UPDATE;
 
-	socket->SendDataOnly(&ret,sizeof(ret));
-	socket->SendDataOnly(socket->lastClientIP,sizeof(socket->lastClientIP));
+	mySock->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(mySock->lastClientIP,sizeof(mySock->lastClientIP));
 
 	return ret;
 }
@@ -3188,14 +3188,14 @@ int slsReceiverTCPIPInterface::send_update() {
 	char defaultVal[MAX_STR_LENGTH]="";
 	char* path = NULL;
 
-	socket->SendDataOnly(socket->lastClientIP,sizeof(socket->lastClientIP));
+	mySock->SendDataOnly(mySock->lastClientIP,sizeof(mySock->lastClientIP));
 
 	//index
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 
 	ind=receiverBase->getFileIndex();
 
-	socket->SendDataOnly(&ind,sizeof(ind));
+	mySock->SendDataOnly(&ind,sizeof(ind));
 #endif
 
 	//filepath
@@ -3203,9 +3203,9 @@ int slsReceiverTCPIPInterface::send_update() {
 	path = receiverBase->getFilePath();
 #endif
 	if(path == NULL)
-		socket->SendDataOnly(defaultVal,MAX_STR_LENGTH);
+		mySock->SendDataOnly(defaultVal,MAX_STR_LENGTH);
 	else{
-		socket->SendDataOnly(path,MAX_STR_LENGTH);
+		mySock->SendDataOnly(path,MAX_STR_LENGTH);
 		delete[] path;
 	}
 
@@ -3215,14 +3215,14 @@ int slsReceiverTCPIPInterface::send_update() {
 	path = receiverBase->getFileName();
 #endif
 	if(path == NULL)
-		socket->SendDataOnly(defaultVal,MAX_STR_LENGTH);
+		mySock->SendDataOnly(defaultVal,MAX_STR_LENGTH);
 	else{
-		socket->SendDataOnly(path,MAX_STR_LENGTH);
+		mySock->SendDataOnly(path,MAX_STR_LENGTH);
 		delete[] path;
 	}
 
 	if (lockStatus==0) {
-		strcpy(socket->lastClientIP,socket->thisClientIP);
+		strcpy(mySock->lastClientIP,mySock->thisClientIP);
 	}
 
 	return ret;
@@ -3241,10 +3241,10 @@ int slsReceiverTCPIPInterface::update_client() {
 		strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 		ret=FAIL;
 	}
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
 		cprintf(RED,"%s\n",mess);
-		socket->SendDataOnly(mess,sizeof(mess));
+		mySock->SendDataOnly(mess,sizeof(mess));
 		return ret;
 	}
 
@@ -3259,9 +3259,9 @@ int slsReceiverTCPIPInterface::update_client() {
 
 int slsReceiverTCPIPInterface::exit_server() {
 	ret=GOODBYE;
-	socket->SendDataOnly(&ret,sizeof(ret));
+	mySock->SendDataOnly(&ret,sizeof(ret));
 	strcpy(mess,"closing server");
-	socket->SendDataOnly(mess,sizeof(mess));
+	mySock->SendDataOnly(mess,sizeof(mess));
 	cprintf(RED,"%s\n",mess);
 	return ret;
 }
@@ -3277,7 +3277,7 @@ int slsReceiverTCPIPInterface::exec_command() {
 	int sysret=0;
 
 	// receive arguments
-	if(socket->ReceiveDataOnly(cmd,MAX_STR_LENGTH) < 0 ){
+	if(mySock->ReceiveDataOnly(cmd,MAX_STR_LENGTH) < 0 ){
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
@@ -3287,14 +3287,14 @@ int slsReceiverTCPIPInterface::exec_command() {
 #ifdef VERYVERBOSE
 		cout << "executing command " << cmd << endl;
 #endif
-		if (lockStatus==0 || socket->differentClients==0)
+		if (lockStatus==0 || mySock->differentClients==0)
 			sysret=system(cmd);
 
 		//should be replaced by popen
 		if (sysret==0) {
 			strcpy(answer,"Succeeded\n");
-			if (lockStatus==1 && socket->differentClients==1)
-				sprintf(answer,"Detector locked by %s\n", socket->lastClientIP);
+			if (lockStatus==1 && mySock->differentClients==1)
+				sprintf(answer,"Detector locked by %s\n", mySock->lastClientIP);
 		} else {
 			strcpy(answer,"Failed\n");
 			ret=FAIL;
@@ -3304,8 +3304,8 @@ int slsReceiverTCPIPInterface::exec_command() {
 
 
 	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
-	if(socket->SendDataOnly(answer,MAX_STR_LENGTH) < 0){
+	mySock->SendDataOnly(&ret,sizeof(ret));
+	if(mySock->SendDataOnly(answer,MAX_STR_LENGTH) < 0){
 		strcpy(mess,"Error writing to socket");
 		ret=FAIL;
 	}

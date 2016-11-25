@@ -632,7 +632,13 @@ enum communicationProtocol{
     		 else{
     			 //normal
     			 nsending=packet_size;
-    			nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
+    			 while(1){
+    				 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
+      				 if(nsent<=0 || nsent == packet_size)
+    					 break;
+    				 if(nsent != packet_size && nsent != header_packet_size)
+    						cprintf(RED,"Incomplete Packet size %d\n",nsent);
+    			 }
     			//nsent = 1040;
     			total_sent+=nsent;
     		 }

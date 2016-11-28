@@ -3112,32 +3112,27 @@ void UDPStandardImplementation::updateFileHeader(int ithread){
 			"Frames Lost\t: %d\n"
 			"Dynamic Range\t: %d\n"
 			"Ten Giga\t: %d\n"
-			"Packet\t\t: %d bytes\n"
-			"Data\t\t: %d bytes\n"
+			"Image Size\t: %d bytes\n"
 			"x\t\t: %d pixels\n"
 			"y\t\t: %d pixels\n"
 			"Total Frames\t: %lld\n"
 			"Exptime (ns)\t: %lld\n"
 			"Period (ns)\t: %lld\n"
 			"Timestamp\t: %s\n\n"
-			//only for eiger right now
-			"#Packet Header\n"
-			"Subframe Number\t: 4 bytes\n"
-			"Unused\t\t: 2 bytes\n"
-			"Port Number\t: 1 byte\n"
-			"Unused\t\t: 1 byte\n\n"
-			"#Packet Footer\n"
-			"Frame Number\t: 6 bytes\n"
-			"Packet Number\t: 2 bytes\n",
+
+			"#Frame Header\n"
+			"Frame Number\t: 8 bytes\n"
+			"Bunch ID\t: 8 bytes\n",
 			FILE_HEADER_SIZE,
-			(bottomEnable?0:1),(ithread?0:1),
+			(bottomEnable?0:1),
+			(ithread?0:1),
 			activated,
 			(long long int)(totalPacketsInFile[ithread]/packetsPerFrame),
 			((frameNumberInPreviousFile[ithread]+1+maxFramesPerFile)>numberOfFrames)
 				?(long long int)((numberOfFrames-(frameNumberInPreviousFile[ithread]+1)) - (totalPacketsInFile[ithread]/packetsPerFrame))
 			    :(long long int)((frameNumberInPreviousFile[ithread]+maxFramesPerFile - frameNumberInPreviousFile[ithread]) - (totalPacketsInFile[ithread]/packetsPerFrame)),
 			dynamicRange,tengigaEnable,
-			onePacketSize,oneDataSize,
+			bufferSize,
 			//only for eiger right now
 			EIGER_PIXELS_IN_ONE_ROW,EIGER_PIXELS_IN_ONE_COL,
 			(long long int)numberOfFrames,

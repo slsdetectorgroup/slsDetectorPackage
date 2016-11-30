@@ -416,23 +416,6 @@ int UDPStandardImplementation::setupFifoStructure(){
 
 
 
-void UDPStandardImplementation::configure(map<string, string> config_map){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
-
-	map<string, string>::const_iterator pos;
-	pos = config_map.find("mode");
-	if (pos != config_map.end() ){
-		int b;
-		if(!sscanf(pos->second.c_str(), "%d", &b)){
-			cout << "Warning: Could not parse mode. Assuming top mode." << endl;
-			b = 0;
-		}
-		bottomEnable = b!= 0;
-		FILE_LOG(logINFO) << "Bottom: " << stringEnable(bottomEnable);
-	}
-
-}
-
 
 void UDPStandardImplementation::setFileName(const char c[]){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
@@ -1489,11 +1472,7 @@ int UDPStandardImplementation::createUDPSockets(){
 	uint32_t port[2];
 	port[0]= udpPortNum[0];
 	port[1]= udpPortNum[1];
-	//port =  udpPortNum;
-	if(bottomEnable){
-		port[0] = udpPortNum[1];
-		port[1] = udpPortNum[0];
-	}
+
 
 	//if eth is mistaken with ip address
 	if (strchr(eth,'.') != NULL)
@@ -2420,10 +2399,8 @@ uint32_t UDPStandardImplementation::processListeningBuffer(int ithread, int &cSi
 
 	int lastPacketOffset;		//the offset of the last packet
 	uint32_t lastFrameHeader;		//frame number of last packet in buffer
-	uint64_t lastFrameHeader64;		//frame number of last packet in buffer
 	uint32_t packetCount = (rc/onePacketSize);//(packetsPerFrame/numberofListeningThreads) * numberofJobsPerBuffer;		//packets received
 	cSize = 0;					//reset size
-	jfrau_packet_header_t* header;
 
 	switch(myDetectorType){
 	case GOTTHARD:
@@ -2510,7 +2487,6 @@ void UDPStandardImplementation::startWriting(){
 	char* wbuf = NULL;								//buffer popped from FIFO
 	sfilefd[ithread] = 0;							//file pointer
 	uint64_t nf = 0;								//for compression, number of frames
-	int listenfifoIndex = ithread;
 
 
 	/* outer loop - loops once for each acquisition */
@@ -2532,14 +2508,14 @@ void UDPStandardImplementation::startWriting(){
 				fifo[0]->pop(wbuf);
 			uint32_t numPackets = (uint32_t)(*((uint32_t*)wbuf));
 #ifdef DEBUG4
-			cprintf(GREEN,"Writing_Thread %d: Number of Packets: %d for FIFO %d\n", ithread, numPackets, listenfifoIndex);
+			cprintf(GREEN,"Writing_Thread %d: Number of Packets: %d for FIFO %d\n", ithread, numPackets, dataCompressionEnable?0:ithread);
 #endif
 
 
 			//end of acquisition
 			if(numPackets == dummyPacketValue){
 #ifdef DEBUG4
-				cprintf(GREEN,"Writing_Thread %d: Dummy frame popped out of FIFO %d",ithread, listenfifoIndex);
+				cprintf(GREEN,"Writing_Thread %d: Dummy frame popped out of FIFO %d",ithread, dataCompressionEnable?0:ithread);
 #endif
 				stopWriting(ithread,wbuf);
 				continue;
@@ -3108,8 +3084,8 @@ void UDPStandardImplementation::updateFileHeader(int ithread){
 			"Top\t\t: %d\n"
 			"Left\t\t: %d\n"
 			"Active\t\t: %d\n"
-			"Frames Caught\t: %d\n"
-			"Frames Lost\t: %d\n"
+			"Frames Caught\t: %lld\n"
+			"Frames Lost\t: %lld\n"
 			"Dynamic Range\t: %d\n"
 			"Ten Giga\t: %d\n"
 			"Image Size\t: %d bytes\n"
@@ -3124,7 +3100,7 @@ void UDPStandardImplementation::updateFileHeader(int ithread){
 			"Frame Number\t: 8 bytes\n"
 			"Bunch ID\t: 8 bytes\n",
 			FILE_HEADER_SIZE,
-			(bottomEnable?0:1),
+			(flippedData[0]?0:1),
 			(ithread?0:1),
 			activated,
 			(long long int)(totalPacketsInFile[ithread]/packetsPerFrame),

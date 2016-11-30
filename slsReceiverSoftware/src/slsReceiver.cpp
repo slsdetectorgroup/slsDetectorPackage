@@ -41,14 +41,12 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 	string rest_hostname = "localhost:8081";
 	udp_interface = NULL;
 
-	bool bottom = false; //TODO: properly set new parameter -> mode?
 	//parse command line for config
 	static struct option long_options[] = {
 		/* These options set a flag. */
 		//{"verbose", no_argument,       &verbose_flag, 1},
 		/* These options don’t set a flag.
 		   We distinguish them by their indices. */
-		{"mode",     required_argument,       0, 'm'},
 		{"type",     required_argument,       0, 't'},
 		{"config",     required_argument,       0, 'f'},
 		{"rx_tcpport",  required_argument,       0, 'b'},
@@ -62,20 +60,13 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 	optind = 1;
 
 	while ( c != -1 ){
-		c = getopt_long (argc, argv, "mbfhtr", long_options, &option_index);
+		c = getopt_long (argc, argv, "bfhtr", long_options, &option_index);
 		
 		/* Detect the end of the options. */
 		if (c == -1)
 			break;
 	
 		switch(c){
-
-		case 'm':
-			int b;
-			sscanf(optarg, "%d", &b);
-			bottom = b != 0;
-			configuration_map["mode"] = optarg;
-			break;
 
 		case 'f':
 			fname = optarg;
@@ -98,7 +89,6 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 			string help_message = """\nSLS Receiver Server\n\n""";
 			help_message += """usage: slsReceiver --config config_fname [--rx_tcpport port]\n\n""";
 			help_message += """\t--config:\t configuration filename for SLS Detector receiver\n""";
-			help_message += """\t--mode:\t 1 for bottom and 0 for top\n""";
 			help_message += """\t--rx_tcpport:\t TCP Communication Port with the client. Default: 1954.\n\n""";
 			help_message += """\t--rest_hostname:\t Receiver hostname:port. It applies only to REST receivers, and indicates the hostname of the REST backend. Default: localhost:8081.\n\n""";
 
@@ -132,12 +122,12 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 	}
 
 	if (success==OK){
-		FILE_LOG(logINFO) << "SLS Receiver starting " << udp_interface_type << " on port " << tcpip_port_no << " with mode " << bottom << endl;
+		FILE_LOG(logINFO) << "SLS Receiver starting " << udp_interface_type << " on port " << tcpip_port_no << endl;
 #ifdef REST
 		udp_interface = UDPInterface::create(udp_interface_type);
 		udp_interface->configure(configuration_map);
 #endif
-		tcpipInterface = new slsReceiverTCPIPInterface(success, udp_interface, tcpip_port_no, bottom);
+		tcpipInterface = new slsReceiverTCPIPInterface(success, udp_interface, tcpip_port_no);
 	}
 }
 

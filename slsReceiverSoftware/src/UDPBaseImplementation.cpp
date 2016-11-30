@@ -46,7 +46,8 @@ void UDPBaseImplementation::initializeMembers(){
 	dynamicRange = 16;
 	tengigaEnable = false;
 	fifoDepth = 0;
-	bottomEnable = false;
+	flippedData[0] = false;
+	flippedData[1] = false;
 
 	//***receiver parameters***
 	status = IDLE;
@@ -102,6 +103,12 @@ char *UDPBaseImplementation::getDetectorHostname() const{
 	strcpy(output,detHostname);
 	//freed by calling function
 	return output;
+}
+
+int UDPBaseImplementation::getFlippedData(int axis) const{
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	if(axis<0 || axis > 1) return -1;
+	return flippedData[axis];
 }
 
 
@@ -211,11 +218,11 @@ void UDPBaseImplementation::configure(map<string, string> config_map){
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
 }
 
-void UDPBaseImplementation::setBottomEnable(const bool b){
+void UDPBaseImplementation::setFlippedData(int axis, int enable){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
-
-	bottomEnable = b;
-	FILE_LOG(logINFO)  << "Bottom - " << stringEnable(bottomEnable);
+	if(axis<0 || axis>1) return;
+	flippedData[axis] = enable;
+	FILE_LOG(logINFO)  << "Flipped Data: " << flippedData[0] << " , " << flippedData[1];
 }
 
 

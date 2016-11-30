@@ -50,6 +50,12 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	char *getDetectorHostname() const;
 
+	/*
+	 * Get flipped data across 'axis'
+	 * @return if data is flipped across 'axis'
+	 */
+	int getFlippedData(int axis=0) const;
+
 
 	//***file parameters***
 	/**
@@ -234,11 +240,11 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	void configure(map<string, string> config_map);
 
-	/**
-	 * Set Bottom Enable  (eiger specific, should be moved to configure, and later from client via TCPIP)
-	 * @param b is true for bottom enabled or false for bottom disabled
+	/*
+	 * Get flipped data across 'axis'
+	 * @return if data is flipped across 'axis'
 	 */
-	void setBottomEnable(const bool b);
+	void setFlippedData(int axis=0, int enable=-1);
 
 
 	//***file parameters***
@@ -532,8 +538,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	bool tengigaEnable;
 	/** Fifo Depth */
 	uint32_t fifoDepth;
-	/** Bottom Half Module Enable */
-	bool bottomEnable;
+	/** enable for flipping data across both axes */
+	bool flippedData[2];
 
 	//***receiver parameters***
 	/** Maximum Number of Listening Threads/ UDP Ports */

@@ -27,7 +27,7 @@ slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 	if(mySock) {delete mySock; mySock=NULL;}
 }
 
-slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface* rbase, int pn, bool bot):
+slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface* rbase, int pn):
 				myDetectorType(GOTTHARD),
 				receiverBase(rbase),
 				ret(OK),
@@ -38,7 +38,6 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 				killTCPServerThread(0),
 				tenGigaEnable(0),
 				portNumber(DEFAULT_PORTNO+2),
-				bottom(bot),
 				mySock(NULL){
 
 	strcpy(SET_RECEIVER_ERR_MESSAGE,"Receiver not set up. Please use rx_hostname first.\n");
@@ -265,7 +264,7 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_ACTIVATE]						= 	&slsReceiverTCPIPInterface::set_activate;
 	flist[F_STREAM_DATA_FROM_RECEIVER]		= 	&slsReceiverTCPIPInterface::set_data_stream_enable;
 	flist[F_READ_RECEIVER_TIMER]			= 	&slsReceiverTCPIPInterface::set_read_receiver_timer;
-
+	flist[F_SET_FLIPPED_DATA_RECEIVER]		= 	&slsReceiverTCPIPInterface::set_flipped_data;
 
 #ifdef VERYVERBOSE
 	for (int i=0;i<numberOfFunctions;i++)
@@ -390,9 +389,6 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 			  myDetectorType = dr;
 			  ret=receiverBase->setDetectorType(myDetectorType);
 			  retval = myDetectorType;
-#ifndef REST
-			  receiverBase->setBottomEnable(bottom);
-#endif
 			}
 			
 		}
@@ -1652,7 +1648,7 @@ int	slsReceiverTCPIPInterface::propix_read_frame(){
 
 int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	ret=OK;
-
+/*
 	char fName[MAX_STR_LENGTH]="";
 	int acquisitionIndex = -1;
 	int frameIndex= -1;
@@ -1905,7 +1901,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	delete [] retval;
 	delete [] origVal;
 	delete [] raw;
-
+*/
 	return ret;
 }
 
@@ -3009,6 +3005,68 @@ int slsReceiverTCPIPInterface::set_activate() {
 	return ret;
 }
 
+
+
+
+
+int slsReceiverTCPIPInterface::set_flipped_data(){
+	ret=OK;
+	int retval = -1;
+	int args[2]={0,-1};
+	strcpy(mess,"Could not set flipped data in receiver\n");
+
+
+	// receive arguments
+	if(mySock->ReceiveDataOnly(args,sizeof(args)) < 0 ){
+		strcpy(mess,"Error reading from socket\n");
+		ret = FAIL;
+	}
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	if (ret==OK) {
+		if (lockStatus==1 && mySock->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
+			ret=FAIL;
+		}
+		else if (receiverBase == NULL){
+			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
+			ret=FAIL;
+		}
+		else if(receiverBase->getStatus()==RUNNING || receiverBase->getStatus()==TRANSMITTING){
+			strcpy(mess,"Can not set flipped data while receiver not idle\n");
+			ret = FAIL;
+		}
+		else{
+			if(args[1] > -1)
+				receiverBase->setFlippedData(args[0],args[1]);
+			retval=receiverBase->getFlippedData(args[0]);
+		}
+	}
+#ifdef VERYVERBOSE
+	if(ret!=FAIL){
+		cout << "Flipped Data:" << retval << endl;
+	}else
+		cout << mess << endl;
+#endif
+#endif
+
+	if(ret==OK && mySock->differentClients){
+		FILE_LOG(logDEBUG) << "Force update";
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	mySock->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL){
+		cprintf(RED,"%s\n",mess);
+		mySock->SendDataOnly(mess,sizeof(mess));
+	}
+	mySock->SendDataOnly(&retval,sizeof(retval));
+
+	//return ok/fail
+	return ret;
+}
 
 
 

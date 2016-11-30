@@ -26,10 +26,9 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	 * @param succecc socket creation was successfull
 	 * @param rbase pointer to the receiver base
 	 * @param pn port number (defaults to default port number)
-	 * @param bot mode is bottom if true, else its a top half module
 	 */
 
-  slsReceiverTCPIPInterface(int &success, UDPInterface* rbase, int pn=-1, bool bot=false);
+  slsReceiverTCPIPInterface(int &success, UDPInterface* rbase, int pn=-1);
 
 	/**
 	 * Sets the port number to listen to. 
@@ -216,6 +215,9 @@ private:
 	/** activate/ deactivate */
 	int set_activate();
 
+	/** enable flipped data */
+	int set_flipped_data();
+
 
 	//General Functions
 	/** Locks Receiver */
@@ -283,9 +285,6 @@ private:
 
 	/** port number */
 	int portNumber;
-
-	/** true if bottom half module for eiger */
-	bool bottom;
 
 	/** Receiver not setup error message */
 	char SET_RECEIVER_ERR_MESSAGE[MAX_STR_LENGTH];

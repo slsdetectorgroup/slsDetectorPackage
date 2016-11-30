@@ -61,14 +61,6 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 *************************************************************************/
 
 	//**initial parameters***
-
-	/**
-	 * Overridden method
-	 * Configure command line parameters
-	 * @param config_map mapping of config parameters passed from command line arguments
-	 */
-	void configure(map<string, string> config_map);
-
 	//*** file parameters***
 	/**
 	 * Set File Name Prefix (without frame index, file index and extension (_d0_f000000000000_8.raw))

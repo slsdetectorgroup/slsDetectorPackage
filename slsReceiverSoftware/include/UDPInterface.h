@@ -103,12 +103,18 @@ class UDPInterface {
 	 * They access local cache of configuration or detector parameters *******
 	 *************************************************************************/
 
-	//**initial parameters***
+	//**initial/detector parameters***
 	/*
 	 * Get detector hostname
 	 * @return hostname or NULL if uninitialized, must be released by calling function  (max of 1000 characters)
 	 */
 	virtual char *getDetectorHostname() const  = 0;
+
+	/*
+	 * Get flipped data across 'axis'
+	 * @return if data is flipped across 'axis'
+	 */
+	virtual int getFlippedData(int axis=0) const = 0;
 
 
 	//***file parameters***
@@ -292,11 +298,11 @@ class UDPInterface {
 	 */
 	virtual void configure(map<string, string> config_map) = 0;
 
-	/**
-	 * Set Bottom Enable  (eiger specific, should be moved to configure, and later from client via TCPIP)
-	 * @param b is true for bottom enabled or false for bottom disabled
+	/*
+	 * Get flipped data across 'axis'
+	 * @return if data is flipped across 'axis'
 	 */
-	virtual void setBottomEnable(const bool b)= 0;
+	virtual void setFlippedData(int axis=0, int enable=-1) = 0;
 
 
 	//***file parameters***

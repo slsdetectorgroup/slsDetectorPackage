@@ -432,7 +432,13 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="flippeddatax"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
+  i++;
 
+  descrToFuncMap[i].m_pFuncName="flippeddatay"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
+  i++;
 
   /* flags */
 
@@ -3136,7 +3142,7 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 	if (action==HELP_ACTION)
 		return helpDetectorSize(narg,args,action);
 	int ret, val=-1, pos=-1,i;
-	char ans[1000], temp[100];
+	char ans[1000];
 
 	myDet->setOnline(ONLINE_FLAG);
 
@@ -3173,6 +3179,21 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 				myDet->setMaxNumberOfChannelsPerDetector(Y,val);
 		}
 
+		if(cmd=="flippeddatax"){
+			if ((!sscanf(args[1],"%d",&val)) ||  (val!=0 && val != 1))
+				return string ("cannot scan flippeddata x mode: must be 0 or 1");
+			myDet->setReceiverOnline(ONLINE_FLAG);
+			myDet->setFlippedData(X,val);
+		}
+
+		if(cmd=="flippeddatay"){
+			return string("Not required for this detector\n");
+			if ((!sscanf(args[1],"%d",&val)) ||  (val!=0 && val != 1))
+				return string ("cannot scan flippeddata y mode: must be 0 or 1");
+			myDet->setReceiverOnline(ONLINE_FLAG);
+			myDet->setFlippedData(Y,val);
+		}
+
 	}
 
 	if (cmd=="nmod" || cmd=="roimask") {
@@ -3185,10 +3206,18 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 	} else if (cmd=="roi") {
 		myDet->getROI(ret);
 	} else if (cmd=="detsizechan") {
-		sprintf(ans,"%d",myDet->getMaxNumberOfChannelsPerDetector(X));
-		sprintf(temp,"%d",myDet->getMaxNumberOfChannelsPerDetector(Y));
-		strcat(ans," ");
-		strcat(ans,temp);
+		sprintf(ans,"%d %d",myDet->getMaxNumberOfChannelsPerDetector(X),myDet->getMaxNumberOfChannelsPerDetector(Y));
+		return string(ans);
+	}
+	else if(cmd=="flippeddatax"){
+		myDet->setReceiverOnline(ONLINE_FLAG);
+		sprintf(ans,"%d",myDet->getFlippedData(X));
+		return string(ans);
+	}
+	else if(cmd=="flippeddatay"){
+		return string("Not required for this detector\n");
+		myDet->setReceiverOnline(ONLINE_FLAG);
+		sprintf(ans,"%d",myDet->getFlippedData(Y));
 		return string(ans);
 	}
 	else
@@ -3212,6 +3241,8 @@ string slsDetectorCommand::helpDetectorSize(int narg, char *args[], int action) 
     os << "dr i \n sets the dynamic range of the detector"<< std::endl;
     os << "roi i xmin xmax ymin ymax \n sets region of interest where i is number of rois;i=0 to clear rois"<< std::endl;
     os << "detsizechan x y \n sets the maximum number of channels for complete detector set in both directions; -1 is no limit"<< std::endl;
+    os << "flippeddatax x \n sets if the data should be flipped on the x axis"<< std::endl;
+    os << "flippeddatay y \n sets if the data should be flipped on the y axis"<< std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
     os << "nmod \n gets the number of modules of the detector"<< std::endl;
@@ -3219,7 +3250,8 @@ string slsDetectorCommand::helpDetectorSize(int narg, char *args[], int action) 
     os << "dr \n gets the dynamic range of the detector"<< std::endl;
     os << "roi \n gets region of interest"<< std::endl;
     os << "detsizechan \n gets the maximum number of channels for complete detector set in both directions; -1 is no limit"<< std::endl;
-
+    os << "flippeddatax\n gets if the data will be flipped on the x axis respectively"<< std::endl;
+    os << "flippeddatay\n gets if the data will be flipped on the y axis respectively"<< std::endl;
   } 
   return os.str();
 

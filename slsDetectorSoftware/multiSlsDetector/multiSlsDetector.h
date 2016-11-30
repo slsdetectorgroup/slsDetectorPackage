@@ -340,6 +340,12 @@ class multiSlsDetector  : public slsDetectorUtils {
 
   int getMaxNumberOfChannelsPerDetector(dimension d){return thisMultiDetector->maxNumberOfChannelsPerDetector[d];};
 
+  /** returns the enable if data will be flipped across x or y axis
+   *  \param d axis across which data is flipped
+   *  returns 1 or 0
+   */
+  int getFlippedData(dimension d=X);
+
   int setMaxNumberOfChannelsPerDetector(dimension d,int i){thisMultiDetector->maxNumberOfChannelsPerDetector[d]=i; return thisMultiDetector->maxNumberOfChannelsPerDetector[d];};
 
   double getScanStep(int index, int istep){return thisMultiDetector->scanSteps[index][istep];};
@@ -979,6 +985,14 @@ class multiSlsDetector  : public slsDetectorUtils {
   int configureMAC();
 
   int setNumberOfModules(int i=-1, dimension d=X);
+
+  /** sets the enable which determines if data will be flipped across x or y axis
+   *  \param d axis across which data is flipped
+   *  \param value 0 or 1 to reset/set or -1 to get value
+   *  \return enable flipped data across x or y axis
+   */
+  int setFlippedData(dimension d=X, int value=-1);
+
   int getMaxNumberOfModules(dimension d=X);
   int setDynamicRange(int i=-1);
 

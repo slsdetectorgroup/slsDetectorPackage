@@ -1826,6 +1826,57 @@ int slsDetector::getMaxNumberOfModules(dimension d){
 
 
 
+
+
+int slsDetector::setFlippedData(dimension d, int value){
+	int retval=-1;
+	int fnum=F_SET_FLIPPED_DATA_RECEIVER;
+	int ret=FAIL;
+	char mess[MAX_STR_LENGTH]="";
+	int args[2]={X,-1};
+
+
+	if(thisDetector->myDetectorType!= EIGER){
+		std::cout << "Flipped Data is not implemented in this detector" << std::endl;
+		setErrorMask((getErrorMask())|(RECEIVER_FLIPPED_DATA_NOT_SET));
+		return -1;
+	}
+
+#ifdef VERBOSE
+	std::cout << std::endl;
+	std::cout << "Setting/Getting flipped data across axis " << d <<" with value " << value << std::endl;
+#endif
+	if(value > -1){
+		thisDetector->flippedData[d] = value;
+		args[1] = value;
+	}else
+		args[1] = thisDetector->flippedData[d];
+
+	args[0] = d;
+
+	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
+		if (connectData() == OK){
+			ret=thisReceiver->sendIntArray(fnum,retval,args);
+
+			disconnectData();
+		}
+
+		if((args[1] != retval && args[1]>=0) || (ret==FAIL)){
+			ret = FAIL;
+			setErrorMask((getErrorMask())|(RECEIVER_FLIPPED_DATA_NOT_SET));
+		}
+
+		if(ret==FORCE_UPDATE)
+			updateReceiver();
+	}
+
+
+	return thisDetector->flippedData[d];
+}
+
+
+
+
 /*
   This function is used to set the polarity and meaning of the digital I/O signals (signal index)
 
@@ -5601,8 +5652,10 @@ char* slsDetector::setReceiver(string receiverIP){
 			setTimer(FRAME_NUMBER,thisDetector->timerValue[FRAME_NUMBER]);
 			setTimer(ACQUISITION_TIME,thisDetector->timerValue[ACQUISITION_TIME]);
 			setDynamicRange(thisDetector->dynamicRange);
-			if(thisDetector->myDetectorType == EIGER)
+			if(thisDetector->myDetectorType == EIGER){
+				setFlippedData(X,-1);
 				activate(-1);
+			}
 			//std::cout << "***********************************dataStreaming:" << parentDet->enableDataStreamingFromReceiver(-1) << endl << endl;
 			//parentDet->enableDataStreamingFromReceiver(parentDet->enableDataStreamingFromReceiver(-1));
 			//set scan tag

@@ -3794,6 +3794,20 @@ int multiSlsDetector::getMaxNumberOfModules(dimension d) {
 
 }
 
+
+int multiSlsDetector::getFlippedData(dimension d){
+	int ret=-100,ret1;
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++)
+		if (detectors[idet]){
+			ret1=detectors[idet]->getFlippedData(d);
+			if(ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+	return ret;
+}
+
 int multiSlsDetector::setNumberOfModules(int p, dimension d) {
 
   int ret=0;//, ret1;
@@ -3832,6 +3846,24 @@ int multiSlsDetector::setNumberOfModules(int p, dimension d) {
   return ret;
 
 }
+
+
+
+int multiSlsDetector::setFlippedData(dimension d, int value){
+	int ret=-100,ret1;
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++)
+		if (detectors[idet]){
+			ret1=detectors[idet]->setFlippedData(d,value);
+			if(ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+	return ret;
+}
+
+
+
 
 int multiSlsDetector::decodeNMod(int i, int &id, int &im) {
 #ifdef VERBOSE
@@ -5240,6 +5272,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 	ny = getTotalNumberOfChannels(slsDetectorDefs::Y);
 	//calculating offsets (for eiger interleaving ports)
 	int offsetX[numSockets]; int offsetY[numSockets];
+	bool bottom[numSockets];
 	if(maxX){
 		for(int i=0; i<numSockets; ++i){
 			offsetY[i] = (maxY - (thisMultiDetector->offsetY[i/numSocketsPerSLSDetector] + slsmaxY)) * maxX * bytesperchannel;
@@ -5249,6 +5282,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 			else
 				offsetX[i] = thisMultiDetector->offsetX[i/numSocketsPerSLSDetector] + (slsmaxX/numSocketsPerSLSDetector);
 			offsetX[i] *= bytesperchannel;
+			bottom[i] = detectors[i/numSocketsPerSLSDetector]->getFlippedData(X);/*only for eiger*/
 		}
 	}
 
@@ -5286,7 +5320,8 @@ void multiSlsDetector::readFrameFromReceiver(){
 				if(maxX){
 
 					//bottom
-					if((((isocket/numSocketsPerSLSDetector)+1)%2) == 0){
+					if(bottom[isocket]){
+					//if((((isocket/numSocketsPerSLSDetector)+1)%2) == 0){
 						for(int i=0;i<slsmaxY;++i){
 							memcpy(((char*)multiframe) + offsetY[isocket] + offsetX[isocket] + ((slsmaxY-1-i)*maxX*bytesperchannel),
 									(char*)image+ i*(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel,

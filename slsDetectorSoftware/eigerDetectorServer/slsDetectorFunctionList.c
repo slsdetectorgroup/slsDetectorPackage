@@ -1120,6 +1120,8 @@ int configureMAC(int ipad, long long int macad, long long int detectormacadd, in
 	int beb_num = BEB_NUM;//Feb_Control_GetModuleNumber();
 	int header_number = 0;
 	int dst_port = udpport;
+	if(!top)
+		dst_port = udpport2;
 
 	printf("dst_port:%d\n\n",dst_port);
 
@@ -1133,6 +1135,8 @@ int configureMAC(int ipad, long long int macad, long long int detectormacadd, in
 
 	header_number = 32;
 	dst_port = udpport2;
+	if(!top)
+		dst_port = udpport;
 	printf("dst_port:%d\n\n",dst_port);
 
 	/*for(i=0;i<32;i++){*//** modified for Aldo*/

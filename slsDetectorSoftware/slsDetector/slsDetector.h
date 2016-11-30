@@ -267,6 +267,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
     /** flag for acquiring */
     bool acquiringFlag;
+    /** flipped data across x or y axis */
+    bool flippedData[2];
 
   } sharedSlsDetector;
 
@@ -657,6 +659,12 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
   int getMaxNumberOfChannels(dimension d){return thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nModMax[d];};
 
+  /** returns the enable if data will be flipped across x or y axis
+   *  \param d axis across which data is flipped
+   *  returns 1 or 0
+   */
+  int getFlippedData(dimension d=X){return thisDetector->flippedData[d];};
+
   /** Returns number of rois */
   int getNRoi(){return thisDetector->nROI;};
 
@@ -722,6 +730,12 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   int setNumberOfModules(int n=GET_FLAG, dimension d=X); // if n=GET_FLAG returns the number of installed modules
 
 
+  /** sets the enable which determines if data will be flipped across x or y axis
+   *  \param d axis across which data is flipped
+   *  \param value 0 or 1 to reset/set or -1 to get value
+   *  \return enable flipped data across x or y axis
+   */
+  int setFlippedData(dimension d=X, int value=-1);
 
 
   /*
@@ -1584,18 +1598,6 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   * @param index frames caught by receiver
  */
  int resetFramesCaught();
-
- /**
-  * Create Receiving Data Sockets
-  * @param destroy is true to destroy all the sockets
-  * @return OK or FAIL
-  */
- int createReceivingDataSockets(const bool destroy = false){return 0;};
-
-
- /** Reads frames from receiver through a constant socket
- */
- void readFrameFromReceiver(){};
 
   /** Locks/Unlocks the connection to the receiver
       /param lock sets (1), usets (0), gets (-1) the lock

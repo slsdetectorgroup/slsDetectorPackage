@@ -75,6 +75,7 @@ using namespace std;
 #define POWER_CHIP						    0x0000000004000000ULL
 #define RECEIVER_READ_TIMER				    0x0000000008000000ULL
 #define RECEIVER_ACQ_TIME_NOT_SET			0x0000000010000000ULL
+#define RECEIVER_FLIPPED_DATA_NOT_SET		0x0000000020000000ULL
 
 //											0x00000000FFFFFFFFULL
 /** @short class returning all error messages for error mask */
@@ -231,6 +232,9 @@ public:
 
 		if(slsErrorMask&RECEIVER_READ_TIMER)
 			retval.append("Could not set receiver read timer\n");
+
+		if(slsErrorMask&RECEIVER_FLIPPED_DATA_NOT_SET)
+			retval.append("Could not set receiver flipped data/bottom\n");
 
 		//------------------------------------------------------ length of message
 

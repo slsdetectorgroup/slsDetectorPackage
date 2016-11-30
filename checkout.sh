@@ -10,6 +10,8 @@ git clone $1@git.psi.ch:sls_detectors_software/sls_receiver_software.git slsRece
 
 git clone $1@git.psi.ch:sls_detectors_software/sls_detector_calibration.git slsDetectorCalibration
 
-git clone $1@git.psi.ch:sls_detectors_software/sls_image_reconstruction.git slsImageReconstruction
+#git clone $1@git.psi.ch:sls_detectors_software/sls_image_reconstruction.git slsImageReconstruction
 
 git clone $1@git.psi.ch:sls_detectors_software/calibration_wizards.git calibrationWizards
+
+#git clone git@git.psi.ch:sls_detectors_software/tests.git tests

@@ -167,8 +167,8 @@ class RestHelper {
     string answer;
     int code = send_request(session, req, &answer);
     if(code == 0 ) {
-	    FILE_LOG(logDEBUG) << __AT__ << " REQUEST: " << " ANSWER: " << answer;
-	    json_value->loadFromString(answer);
+      //FILE_LOG(logDEBUG) << __AT__ << " REQUEST: " << " ANSWER: " << answer;
+      json_value->loadFromString(answer);
     }
     delete uri;
     return code;

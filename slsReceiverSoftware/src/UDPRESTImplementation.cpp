@@ -4,7 +4,6 @@
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
  ***********************************************/
 
-
 #include "UDPRESTImplementation.h"
 
 #include <stdlib.h>		// exit()
@@ -74,7 +73,7 @@ string UDPRESTImplementation::get_rest_state(RestHelper * rest/*, string *rest_s
 	
 	int code = rest->get_json("v1/state", &answer);
 	if ( code != -1 ){ 
-	  
+	  std::cout << answer << std::endl;
 	  rest_state = answer["global_state"].getString();
 	  std::cout << rest_state << std::endl;
 	}
@@ -327,8 +326,8 @@ int UDPRESTImplementation::shutDownUDPSockets(){
 	  code = rest->post_json("v1/state/reset", &answer);
 	  std::cout << code << " " << answer << std::endl;
 	  
-	  rest_state = get_rest_state(rest);
-	  std::cout << rest_state << std::endl;
+	  //rest_state = get_rest_state(rest);
+	  //std::cout << rest_state << std::endl;
 	}
 	status = slsReceiverDefs::RUN_FINISHED;
 	

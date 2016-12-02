@@ -754,6 +754,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 
     thisDetector->tenGigaEnable=0;
     thisDetector->acquiringFlag = false;
+    thisDetector->flippedData[0] = 0;
+    thisDetector->flippedData[1] = 0;
 
     for (int ia=0; ia<MAX_ACTIONS; ia++) {
       strcpy(thisDetector->actionScript[ia],"none");

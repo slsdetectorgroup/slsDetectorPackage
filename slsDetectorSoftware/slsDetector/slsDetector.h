@@ -268,7 +268,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     /** flag for acquiring */
     bool acquiringFlag;
     /** flipped data across x or y axis */
-    bool flippedData[2];
+    int flippedData[2];
 
   } sharedSlsDetector;
 

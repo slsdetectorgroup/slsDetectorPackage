@@ -5070,9 +5070,11 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 
 	//number of sockets
 	int numSockets = thisMultiDetector->numberOfDetectors;
-	if(getDetectorsType() == EIGER)
-		numSockets *= 2;
-
+	int numSocketsPerDetector = 1;
+	if(getDetectorsType() == EIGER){
+		numSocketsPerDetector = 2;
+	}
+	numSockets *= numSocketsPerDetector;
 
 	if(destroy){
 		 cprintf(MAGENTA,"Going to destroy data sockets\n");
@@ -5099,7 +5101,7 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 		//get name of rx_hostname
 		char rx_hostname[100];
 		strcpy(dataSocketServerDetails[i],"tcp://");
-		strcpy(rx_hostname, detectors[i/numSockets]->getReceiver());
+		strcpy(rx_hostname, detectors[i/numSocketsPerDetector]->getReceiver());
 		cout<<"rx_hostname:"<<rx_hostname<<endl;
 		//append it (first into ip) to tcp://
 		if(strchr(rx_hostname,'.')!=NULL)
@@ -5114,7 +5116,8 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 				strcat(dataSocketServerDetails[i],inet_ntoa(*(struct in_addr*)he->h_addr));
 		}
 		//add port
-		sprintf(dataSocketServerDetails[i],"%s:%d",dataSocketServerDetails[i],DEFAULT_ZMQ_PORTNO + i);
+		sprintf(dataSocketServerDetails[i],"%s:%d",dataSocketServerDetails[i],DEFAULT_ZMQ_PORTNO +
+				(detectors[i/numSocketsPerDetector]->getDetectorId())*numSocketsPerDetector + (i%numSocketsPerDetector));//using this instead of i in the offchance, detid doesnt start at 0 (shmget error)
 
 		//create context
 		context[i] = zmq_ctx_new();
@@ -5272,7 +5275,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 	ny = getTotalNumberOfChannels(slsDetectorDefs::Y);
 	//calculating offsets (for eiger interleaving ports)
 	int offsetX[numSockets]; int offsetY[numSockets];
-	bool bottom[numSockets];
+	int bottom[numSockets];
 	if(maxX){
 		for(int i=0; i<numSockets; ++i){
 			offsetY[i] = (maxY - (thisMultiDetector->offsetY[i/numSocketsPerSLSDetector] + slsmaxY)) * maxX * bytesperchannel;

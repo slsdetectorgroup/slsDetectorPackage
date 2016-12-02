@@ -73,9 +73,7 @@ string UDPRESTImplementation::get_rest_state(RestHelper * rest/*, string *rest_s
 	
 	int code = rest->get_json("v1/state", &answer);
 	if ( code != -1 ){ 
-	  std::cout << answer << std::endl;
 	  rest_state = answer["global_state"].getString();
-	  std::cout << rest_state << std::endl;
 	}
 	//rest_state = *prs;
 
@@ -89,16 +87,14 @@ void UDPRESTImplementation::initialize_REST(){
 	FILE_LOG(logDEBUG) << __AT__ << " REST status is initialized: " << isInitialized;
 
 	
-	std::cout<< fileIndex << " " << getUDPPortNumber()  << std::endl;
 	string rest_state = "";
 	std::string answer = "";
 
-	// HORRIBLE FIX ME ASAP!
-	if (getUDPPortNumber() == 50011){
+	// HORRIBLE FIX to get the main receiver
+	string filename = getFileName();
+	if (filename.substr(filename.length() - 2) == "d0"){
 	  is_main_receiver = true;
 	}
-	
-	//	if (is_main_receiver){
 	
 	if (rest_hostname.empty()) {
 	  FILE_LOG(logDEBUG) << __AT__ <<"can't initialize with empty string or NULL for detectorHostname";
@@ -124,8 +120,6 @@ void UDPRESTImplementation::initialize_REST(){
 	  
 	  try{
 	    rest_state = get_rest_state(rest);
-	    std::cout << "AAAAAAAa " << rest_state << std::endl;
-	    
 	    
 	    if (rest_state == ""){
 	      FILE_LOG(logERROR) << __AT__ << " REST state returned: " << rest_state;
@@ -200,8 +194,6 @@ int UDPRESTImplementation::startReceiver(char message[]){
 	initialize_REST();
 	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " initialized";
 
-	cout << "Starting Receiver" << endl;
-
 	std::string answer;
 	int code;
 	//char *intStr = itoa(a);
@@ -215,7 +207,6 @@ int UDPRESTImplementation::startReceiver(char message[]){
 	string str_n = ss2.str();
 
 
-	cout << "Starting Receiver" << endl;
 	string rest_state = "";
 	std::string request_body =  "{\"settings\": {\"bit_depth\": " + str_dr + ", \"n_frames\": " + str_n + "}}";
 	//std::string request_body =  "{\"settings\": {\"nimages\":1, \"scanid\":999, \"bit_depth\":16}}";
@@ -228,7 +219,6 @@ int UDPRESTImplementation::startReceiver(char message[]){
 	  rest_state = get_rest_state(rest);
 
 	  code = rest->post_json("v1/state/open", &answer);
-	  std::cout << "AAAAAA " << rest_state << std::endl;
 	}
 
 	status = RUNNING;
@@ -309,11 +299,9 @@ int UDPRESTImplementation::shutDownUDPSockets(){
 	  
 	  FILE_LOG(logWARNING) << "PLEASE WAIT WHILE CHECKING AND SHUTTING DOWN ALL CONNECTIONS!";
 	  rest_state = get_rest_state(rest);
-	  std::cout << rest_state << std::endl;
 	  
 	  while (rest_state != "OPEN"){
 	    rest_state = get_rest_state(rest);
-	    std::cout << rest_state << std::endl;
 	    usleep(10000);
 	  }
 	  //while (rest_state != "TRANSIENT"){
@@ -322,9 +310,7 @@ int UDPRESTImplementation::shutDownUDPSockets(){
 	  //}
 	  
 	  code = rest->post_json("v1/state/close", &answer);
-	  std::cout <<code << " " << answer << std::endl;
 	  code = rest->post_json("v1/state/reset", &answer);
-	  std::cout << code << " " << answer << std::endl;
 	  
 	  //rest_state = get_rest_state(rest);
 	  //std::cout << rest_state << std::endl;

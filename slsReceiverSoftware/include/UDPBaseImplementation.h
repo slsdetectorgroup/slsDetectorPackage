@@ -539,7 +539,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	/** Fifo Depth */
 	uint32_t fifoDepth;
 	/** enable for flipping data across both axes */
-	bool flippedData[2];
+	int flippedData[2];
 
 	//***receiver parameters***
 	/** Maximum Number of Listening Threads/ UDP Ports */

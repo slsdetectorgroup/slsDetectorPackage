@@ -89,7 +89,7 @@ void UDPStandardImplementation::deleteMembers(){
 		if(fifoFree[i])		{delete fifoFree[i];	fifoFree[i] = 0;}
 	}
 	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++){
-		if(latestData[i]) 	{delete[] latestData[i]; 	latestData[i] = 0;}
+		if(latestData[i]) 	{delete[] latestData[i]; latestData[i] = 0;}
 	}
 	//kill threads
 	if(threadStarted){
@@ -320,13 +320,12 @@ int UDPStandardImplementation::setupFifoStructure(){
 	// fifo depth
 	uint32_t oldFifoSize = fifoSize;
 
-	fifoSize = fifoDepth;
 
 	//reduce fifo depth if > 1 numberofJobsPerBuffer
-	if(fifoSize % numberofJobsPerBuffer)
-		fifoSize = (fifoSize/numberofJobsPerBuffer)+1;
+	if(fifoDepth % numberofJobsPerBuffer)
+		fifoSize = (fifoDepth/numberofJobsPerBuffer)+1;
 	else
-		fifoSize = fifoSize/numberofJobsPerBuffer;
+		fifoSize = fifoDepth/numberofJobsPerBuffer;
 
 	//do not rebuild fifo structure if it is the same (oldfifosize differs only for different packetsperframe)
 	if((oldNumberofJobsPerBuffer == numberofJobsPerBuffer) && (oldFifoSize == fifoSize))
@@ -343,7 +342,7 @@ int UDPStandardImplementation::setupFifoStructure(){
 
 
 	//set up fifo structure
-	for(int i=0;i<numberofListeningThreads;i++){
+	for(int i=0;i<MAX_NUMBER_OF_LISTENING_THREADS;i++){
 
 		//deleting
 		if(fifoFree[i]){
@@ -367,6 +366,10 @@ int UDPStandardImplementation::setupFifoStructure(){
 			mem0[i] = 0;
 		}
 
+	}
+
+
+	for(int i=0;i<numberofListeningThreads;i++){
 		//creating
 		fifoFree[i] 	= new CircularFifo<char>(fifoSize);
 		fifo[i] 		= new CircularFifo<char>(fifoSize);
@@ -382,7 +385,7 @@ int UDPStandardImplementation::setupFifoStructure(){
 		buffer[i]=mem0[i];
 		while (buffer[i] < (mem0[i]+(bufferSize * numberofJobsPerBuffer + fifoBufferHeaderSize) * (fifoSize-1))) {
 			//cprintf(BLUE,"fifofree %d: push 0x%p\n",i,(void*)buffer[i]);
-			/*for(int k=0;k<bufferSize;k=k+4){
+			/*for(int k=0;k<bufferSize;k=k+10){
 				sprintf(buffer[i]+fifoBufferHeaderSize+k,"mem%d",i);
 			}*/
 			sprintf(buffer[i],"mem%d",i);
@@ -644,10 +647,10 @@ int UDPStandardImplementation::setDynamicRange(const uint32_t i){
 
 			//gui buffer
 			for(int i=0;i<MAX_NUMBER_OF_WRITER_THREADS;i++){
-				if(latestData[i]){delete[] latestData[i]; latestData[i] = 0;}
+				if(latestData[i]){delete[] latestData[i];latestData[i] = 0;}
 			}
 			for(int i=0;i<numberofWriterThreads;i++){
-				latestData[i] = new char[bufferSize]();
+				latestData[i] = new char[bufferSize+FILE_FRAME_HEADER_LENGTH]();
 			}
 			//restructure fifo
 			numberofJobsPerBuffer = -1;
@@ -701,10 +704,10 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b){
 
 			//gui buffer
 			for(int i=0;i<MAX_NUMBER_OF_WRITER_THREADS;i++){
-				if(latestData[i]){delete[] latestData[i]; latestData[i] = 0;}
+				if(latestData[i]){delete[] latestData[i];latestData[i] = 0;}
 			}
 			for(int i=0;i<numberofWriterThreads;i++){
-				latestData[i] = new char[bufferSize]();
+				latestData[i] = new char[bufferSize+FILE_FRAME_HEADER_LENGTH]();
 			}
 
 			//restructure fifo
@@ -888,7 +891,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 
 	//allocate for latest data (frame copy for gui), free variables
 	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++){
-		if(latestData[i]) 	{delete[] latestData[i]; 	latestData[i] = 0;}
+		if(latestData[i]) 	{delete[] latestData[i];latestData[i] = 0;}
 	}
 	for(int i=0; i<numberofWriterThreads; i++){
 		if(excludeMissingPackets)
@@ -1862,7 +1865,7 @@ void UDPStandardImplementation::startDataCallback(){
 				int len = sprintf(buf,jsonFmt,type,shape, acquisitionIndex, frameIndex, subframeIndex,completeFileName[ithread]);
 				zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);
 				//send data
-				zmq_send(zmqsocket, latestData[ithread]+FILE_FRAME_HEADER_LENGTH, bufferSize, 0);
+				zmq_send(zmqsocket, (latestData[ithread]+FILE_FRAME_HEADER_LENGTH), bufferSize, 0);
 				//start clock after sending
 				if(!frameToGuiFrequency){
 					randomSendNow = false;
@@ -2507,6 +2510,7 @@ void UDPStandardImplementation::startWriting(){
 			else
 				fifo[0]->pop(wbuf);
 			uint32_t numPackets = (uint32_t)(*((uint32_t*)wbuf));
+
 #ifdef DEBUG4
 			cprintf(GREEN,"Writing_Thread %d: Number of Packets: %d for FIFO %d\n", ithread, numPackets, dataCompressionEnable?0:ithread);
 #endif
@@ -2880,7 +2884,7 @@ void UDPStandardImplementation::handleCompleteFramesOnly(int ithread, char* wbuf
 	if((fileWriteEnable) && (sfilefd[ithread])){
 		if(tempframenumber && (tempframenumber%maxFramesPerFile) == 0)
 			createNewFile(ithread);
-		fwrite(wbuffer + HEADER_SIZE_NUM_TOT_PACKETS, 1, bufferSize + FILE_FRAME_HEADER_LENGTH, sfilefd[ithread]);
+		fwrite(wbuffer + HEADER_SIZE_NUM_TOT_PACKETS, 1, (bufferSize + FILE_FRAME_HEADER_LENGTH), sfilefd[ithread]);
 	}
 
 
@@ -3140,6 +3144,7 @@ void UDPStandardImplementation::copyFrameToGui(int ithread, char* buffer, uint32
 		//copy date
 		guiNumPackets[ithread] = numpackets;
 		strcpy(guiFileName[ithread],completeFileName[ithread]);
+
 		if(excludeMissingPackets) //copy also the header
 			memcpy(latestData[ithread],buffer+HEADER_SIZE_NUM_TOT_PACKETS, bufferSize + FILE_FRAME_HEADER_LENGTH);
 		else //copy only the data

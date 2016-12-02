@@ -46,8 +46,8 @@ void UDPBaseImplementation::initializeMembers(){
 	dynamicRange = 16;
 	tengigaEnable = false;
 	fifoDepth = 0;
-	flippedData[0] = false;
-	flippedData[1] = false;
+	flippedData[0] = 0;
+	flippedData[1] = 0;
 
 	//***receiver parameters***
 	status = IDLE;
@@ -221,7 +221,7 @@ void UDPBaseImplementation::configure(map<string, string> config_map){
 void UDPBaseImplementation::setFlippedData(int axis, int enable){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 	if(axis<0 || axis>1) return;
-	flippedData[axis] = enable;
+	flippedData[axis] = enable==0?0:1;
 	FILE_LOG(logINFO)  << "Flipped Data: " << flippedData[0] << " , " << flippedData[1];
 }
 

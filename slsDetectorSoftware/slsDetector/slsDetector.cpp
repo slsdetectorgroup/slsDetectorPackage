@@ -3807,19 +3807,21 @@ int* slsDetector::readFrame(){
 
 
 int* slsDetector::getDataFromDetector(int *retval){
-	int nel=thisDetector->dataBytes/sizeof(int);
-	int n;
-
-	int *r=retval;
-
-
-	//	int* retval=new int[nel];
-
-	if (retval==NULL)
-		retval=new int[nel];
-
 	int ret=FAIL;
 	char mess[MAX_STR_LENGTH]="Nothing";
+	int nel=thisDetector->dataBytes/sizeof(int);
+	int n;
+	int *r=retval;
+
+	int nodatadetectortype = false;
+	detectorType types = getDetectorsType();
+	if(types == EIGER || types == JUNGFRAU){
+		nodatadetectortype = true;
+	}
+
+	if (!nodatadetectortype && retval==NULL)
+		retval=new int[nel];
+
 
 #ifdef VERBOSE
 	std::cout<< "getting data "<< thisDetector->dataBytes << " " << nel<< std::endl;
@@ -3841,11 +3843,12 @@ int* slsDetector::getDataFromDetector(int *retval){
 			std::cout<< "Detector successfully returned: " << mess << " " << n << std::endl;
 #endif
 		}
-		if (r==NULL) {
+		if ((!nodatadetectortype) && (r==NULL)){
 			delete [] retval;
 		}
 		return NULL;
-	} else {
+	} else 	if (!nodatadetectortype){
+
 		n=controlSocket->ReceiveDataOnly(retval,thisDetector->dataBytes);
 
 #ifdef VERBOSE

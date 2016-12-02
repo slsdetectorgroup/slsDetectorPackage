@@ -1420,40 +1420,45 @@ int multiSlsDetector::startReadOut(){
 int* multiSlsDetector::getDataFromDetector() {
 
 	int nel=thisMultiDetector->dataBytes/sizeof(int);
-	int n;
-	int* retval=new int[nel];
+	int n = 0;
+	int* retval= NULL;
 	int *retdet, *p=retval;
-	int nodata=1, nodatadet=-1;;
+	int nodata=1, nodatadet=-1;
+	int nodatadetectortype = false;
+	detectorType types = getDetectorsType();
+	if(types == EIGER || types == JUNGFRAU){
+		nodatadetectortype = true;
+	}
+
+	if(!nodatadetectortype)
+		retval=new int[nel];
 
 
 	for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
 		if (detectors[id]) {
 			retdet=detectors[id]->getDataFromDetector(p);
-			n=detectors[id]->getDataBytes();
 			if(detectors[id]->getErrorMask())
 				setErrorMask(getErrorMask()|(1<<id));
-
-			if (retdet) {
-				nodata=0;
+			if(!nodatadetectortype){
+				n=detectors[id]->getDataBytes();
+				if (retdet) {
+					nodata=0;
 #ifdef VERBOSE
-				cout << "Detector " << id << " returned " << n << " bytes " << endl;
+					cout << "Detector " << id << " returned " << n << " bytes " << endl;
 #endif
-			} else {
-				nodatadet=id;
+				} else {
+					nodatadet=id;
 #ifdef VERBOSE
-				cout << "Detector " << id << " does not have data left " << endl;
+					cout << "Detector " << id << " does not have data left " << endl;
 #endif
-				/*if((detectors[id]->getDetectorsType() != EIGER)||(detectors[id]->getDetectorsType() != JUNGFRAU))
-					break;*/
+				}
+				p+=n/sizeof(int);
 			}
-			p+=n/sizeof(int);
 		}
 	}
 
 	//eiger returns only null
-	detectorType types = getDetectorsType();
-	if(types == EIGER || types == JUNGFRAU){
-		delete [] retval;
+	if(nodatadetectortype){
 		return NULL;
 	}
 

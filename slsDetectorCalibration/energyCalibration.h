@@ -318,6 +318,16 @@ class energyCalibration  {
 
 
   /**
+     fits histogram with the spectrum
+     \param h1 1d-histogram to be fitted
+     \param mypar pointer to fit parameters array 
+     \param emypar pointer to fit parameter errors
+     \returns the fitted function - can be used e.g. to get the Chi2 or similar
+  */
+  TF1 *fitSpectrumPixel(TH1 *h1, Double_t *mypar, Double_t *emypar);
+
+
+  /**
      calculates gain and offset for the set of inflection points
      \param nscan number of energy scans
      \param en array of energies (nscan long)

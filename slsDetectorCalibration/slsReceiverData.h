@@ -97,7 +97,7 @@ public:
 					break;
 				}     else {
 					//cprintf(BG_RED, "Too many packets for this frame! fnum:%d, pnum:%d np:%d\n",fnum,pnum,np);
-					cout << "Too many packets for this frame! "<< fnum << " " << pnum << endl;cprintf(BG_RED,"Exiting\n");exit(-1);
+				  cout << "Too many packets for this frame! "<< fnum << " " << pnum << endl;//cprintf(BG_RED,"Exiting\n");exit(-1);
 					retval=NULL;
 				}
 			}
@@ -105,7 +105,7 @@ public:
 		if (np<nPackets) {
 			if (np>0){
 				//cprintf(BG_RED, "Too few packets for this frame! fnum:%d, pnum:%d np:%d\n",fnum,pnum,np);
-				cout << "Too few packets for this frame! "<< fnum << " " << pnum << " " << np <<endl;cprintf(BG_RED,"Exiting\n");exit(-1);
+			  cout << "Too few packets for this frame! "<< fnum << " " << pnum << " " << np <<endl;//cprintf(BG_RED,"Exiting\n");exit(-1);
 
 			}
 		}

@@ -228,7 +228,7 @@ class slsDetectorData {
      \returns data for the selected channel, with inversion if required as double
 
   */
-  virtual double getValue(char *data, int ix, int iy=0) {return (double)getChannel(data, ix, iy);};
+  virtual double getValue(char *data, int ix, int iy=0) {/* cout << " x "<< ix << " y"<< iy << " val " << getChannel(data, ix, iy)<< endl;*/return (double)getChannel(data, ix, iy);};
 
 
    /**

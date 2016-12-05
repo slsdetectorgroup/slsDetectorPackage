@@ -470,6 +470,13 @@ TF1* energyCalibration::fitSpectrum(TH1 *h1, Double_t *mypar, Double_t *emypar) 
 
 
 
+TF1* energyCalibration::fitSpectrumPixel(TH1 *h1, Double_t *mypar, Double_t *emypar) {
+  initFitFunction(fspixel,h1);
+  return fitFunction(fspixel, h1, mypar, emypar);
+}
+
+
+
 TGraphErrors* energyCalibration::linearCalibration(int nscan, Double_t *en, Double_t *een, Double_t *fl, Double_t *efl, Double_t &gain, Double_t &off, Double_t &egain, Double_t &eoff) { 
  
   TGraphErrors *gr;

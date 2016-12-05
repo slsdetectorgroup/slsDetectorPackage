@@ -19,169 +19,91 @@ public:
 	 */
 
 
-	eigerHalfModuleData(int dr, int np, int bsize, int dsize, bool top, double c=0): slsReceiverData<uint32_t>(xpixels, ypixels, np, bsize),
-	xtalk(c), bufferSize(bsize), actualDataSize(dsize), dynamicRange(dr), numberOfPackets(np), top(top),header_t(0), footer_t(0){
+	eigerHalfModuleData(bool t, bool l, int dr, int tg, int psize, int dsize, int npf, int x, int y, double c=0):
+		slsReceiverData<uint32_t>(x, y, npf, psize),
+		top(t), left(l),
+		dynamicRange(dr), tenGiga(tg),
+		packetSize(psize), onepacketdataSize(dsize), numberofPacketsPerFrame(npf),
+		xtalk(c),
+		header_t(0), footer_t(0){
 
-		tenGiga = false;
-		if(actualDataSize == TEN_GIGA_PACKET_SIZE)
-			tenGiga = true;
 
 		int **dMap;
 		uint32_t **dMask;
 
-		dMap=new int*[ypixels];
-		dMask=new uint32_t*[ypixels];
+		dMap=new int*[ny];
+		dMask=new uint32_t*[ny];
 
 
-		for (int i = 0; i < ypixels; i++) {
-			dMap[i] = new int[xpixels];
-			dMask[i] = new uint32_t[xpixels];
+		for (int i = 0; i < ny; i++) {
+			dMap[i] = new int[nx];
+			dMask[i] = new uint32_t[nx];
 		}
 
 		//Map
-		int totalNumberOfBytes = numberOfPackets * bufferSize;
-		int iPacket1 = 8;
-		int iPacket2 = (totalNumberOfBytes/2) + 8;
-		int iData1 = 0, iData2 = 0;
+		int totalNumberOfBytes = numberofPacketsPerFrame * packetSize;
+		int iPacket = 8;
+		int iData = 0;
 		int increment = (dynamicRange/8);
 		int ic_increment = 1;
 		if (dynamicRange == 4) {
 			increment = 1;
 			ic_increment = 2;
 		}
-		int iPort;
 
 		if(top){
-			for (int ir=0; ir<ypixels; ir++) {
-				for (int ic=0; ic<xpixels; ic = ic + ic_increment) {
-					iPort = ic / (xpixels/2);
-					if(!iPort){
-						dMap[ir][ic]  = iPacket1;
-						iPacket1 += increment;
-						iData1 += increment;
-						//increment header
-						if(iData1 >= actualDataSize){
-							iPacket1 += 16;
-							iData1 = 0;
-						}
-					}else{
-						dMap[ir][ic]  = iPacket2;
-						iPacket2 += increment;
-						iData2 += increment;
-						//increment header
-						if(iData2 >= actualDataSize){
-							iPacket2 += 16;
-							iData2 = 0;
-						}
+			for (int ir=0; ir<ny; ir++) {
+				for (int ic=0; ic<nx; ic = ic + ic_increment) {
+					dMap[ir][ic]  = iPacket;
+					iPacket += increment;
+					iData += increment;
+					//increment header
+					if(iData >= onepacketdataSize){
+						iPacket += 16;
+						iData = 0;
 					}
+
 				}
 			}
 		}
 
-
 		//bottom
 		else{
-			iData1 = 0; iData2 = 0;
-			int numbytesperlineperport;
-
+			iData = 0;
+			int numbytesperline;
 			switch(dynamicRange){
-				case 4: numbytesperlineperport = 256; break;
-				case 8:	numbytesperlineperport = 512; break;
-				case 16:numbytesperlineperport = 1024; break;
-				case 32:numbytesperlineperport = 2048; break;
+				case 4: numbytesperline = 256; break;
+				case 8:	numbytesperline = 512; break;
+				case 16:numbytesperline = 1024; break;
+				case 32:numbytesperline = 2048; break;
 			}
+			iPacket = totalNumberOfBytes - numbytesperline - 8;
+			if((dynamicRange == 32) && (!tenGiga))
+					iPacket -= 16;
 
-
-
-			iPacket1 = (totalNumberOfBytes/2) - numbytesperlineperport - 8;
-			iPacket2 = totalNumberOfBytes - numbytesperlineperport - 8;
-			if (dynamicRange == 32){
-				if(numbytesperlineperport>actualDataSize){ //1Giga
-					iPacket1 -= 16;
-					iPacket2 -= 16;
-				}else{ //10Giga
-					;//iPacket1 -= numbytesperlineperport;
-					//iPacket2 -= numbytesperlineperport;
-				}
-			}
-
-			for (int ir=0; ir<ypixels; ir++) {
-				for (int ic=0; ic<xpixels; ic = ic + ic_increment) {
-					iPort = ic / (xpixels/2);
-					if(!iPort){
-						dMap[ir][ic]  = iPacket1;
-						iPacket1 += increment;
-						iData1 += increment;
-
-						//--------------------32 bit -------------------------
-						if(dynamicRange == 32){
-							if(numbytesperlineperport>actualDataSize){ //1Giga
-								if(iData1 == numbytesperlineperport){
-									iPacket1 -= (numbytesperlineperport*2 + 16*3);//1giga
-									iData1 = 0;
-								}
-								if(iData1 == actualDataSize){
-									iPacket1 += 16;
-								}
-							}else{ //10Giga
-								if((iData1 % numbytesperlineperport)==0){
-									iPacket1 -= (numbytesperlineperport*2);
-								}
-								if(iData1 == actualDataSize){
-									iPacket1 -= 16;
-									iData1 = 0;
-								}
-							}
-						}//------------end of 32 bit -------------------------
-
-						else if((iData1 % numbytesperlineperport) == 0){
-							iPacket1 -= (numbytesperlineperport*2);
-							if(iData1 == actualDataSize){
-								iPacket1 -= 16;
-								iData1 = 0;
-							}
+			for (int ir=0; ir<ny; ir++) {
+				for (int ic=0; ic<nx; ic = ic + ic_increment) {
+					dMap[ir][ic]  = iPacket;
+					iPacket += increment;
+					iData += increment;
+					//--------------------32 bit 1giga -------------------
+					if((dynamicRange == 32) && (!tenGiga)){
+						if(iData == numbytesperline){
+							iPacket -= (numbytesperline*2 + 16*3);
+							iData = 0;
 						}
-						//------------end of other bits -------------------------
-
-					}
-					//other port
-					else{
-						dMap[ir][ic]  = iPacket2;
-						iPacket2 += increment;
-						iData2 += increment;
-
-
-						//--------------------32 bit -------------------------
-						if(dynamicRange == 32){
-							if(numbytesperlineperport>actualDataSize){ //1Giga
-								if(iData2 == numbytesperlineperport){
-									iPacket2 -= (numbytesperlineperport*2 + 16*3);
-									iData2 = 0;
-								}
-								if(iData2 == actualDataSize){
-									iPacket2 += 16;
-								}
-							}else{//10Giga
-								if((iData2 % numbytesperlineperport)==0){
-									iPacket2 -= (numbytesperlineperport*2);
-								}
-								if(iData2 == actualDataSize){
-									iPacket2 -= 16;
-									iData2 = 0;
-								}
-							}
-						}//------------end of 32 bit -------------------------
-
-						else if((iData2 % numbytesperlineperport) == 0){
-							iPacket2 -= (numbytesperlineperport*2);
-							if(iData2 == actualDataSize){
-								iPacket2 -= 16;
-								iData2 = 0;
-							}
+						if(iData == onepacketdataSize){
+							iPacket += 16;
 						}
-						//------------end of other bits -------------------------
-
+					}//------------end of 32 bit -------------------------
+					else if((iData % numbytesperline) == 0){
+						iPacket -= (numbytesperline*2);
+						if(iData == onepacketdataSize){
+							iPacket -= 16;
+							iData = 0;
+						}
 					}
+					//---------------------------------------------------
 				}
 			}
 		}
@@ -190,15 +112,12 @@ public:
 
 
 		//Mask
-		for(int ir=0; ir<ypixels; ++ir)
-			for(int ic=0; ic<xpixels; ++ic)
+		for(int ir=0; ir<ny; ++ir)
+			for(int ic=0; ic<nx; ++ic)
 				dMask[ir][ic] = 0x0;
 
 		setDataMap(dMap);
 		setDataMask(dMask);
-
-
-
 
 	};
 
@@ -211,7 +130,7 @@ public:
 	     \returns frame number
 	 */
 	int getFrameNumber(char *buff){
-		footer_t = (eiger_packet_footer_t*)(buff + actualDataSize + sizeof(eiger_packet_header_t));
+		footer_t = (eiger_packet_footer_t*)(buff + onepacketdataSize + sizeof(eiger_packet_header_t));
 		return ((uint32_t)(*( (uint64_t*) footer_t)));
 	};
 
@@ -224,7 +143,7 @@ public:
      	 \returns packet number
 	 */
 	int getPacketNumber(char *buff){
-		footer_t = (eiger_packet_footer_t*)(buff + actualDataSize + sizeof(eiger_packet_header_t));
+		footer_t = (eiger_packet_footer_t*)(buff + onepacketdataSize + sizeof(eiger_packet_header_t));
 		return(*( (uint16_t*) footer_t->packetnum));
 	};
 
@@ -287,10 +206,10 @@ public:
 
 			// ------check if missing packet, get to pixel at start of packet-----------------
 
-			//to get the starting of a packet, ix is divided by 512pixels because of 2 ports (except 1g 32 bit)
-			newix = ix - (ix%512);
+			//to get the starting of a packet (except 1g 32 bit)
+			newix = 0;
 			// 0.5 Lines per packet for 1g 32 bit
-			if(dynamicRange ==32 && !tenGiga)
+			if(dynamicRange == 32 && !tenGiga)
 				newix = ix - (ix%256);
 
 			//iy divided by linesperpacket depending on bitmode
@@ -300,9 +219,11 @@ public:
 				newiy = (iy - (iy%linesperpacket));
 
 			header_t = (eiger_packet_header_t*)((char*)(data +(dataMap[newiy][newix]-8)));
-			if(*( (uint16_t*) header_t->missingpacket)==0xFFFF){
-			  //	cprintf(RED,"missing packet\n");
-			  return -1;
+			uint16_t identifier = (uint16_t)*( (uint16_t*) header_t->missingpacket);
+
+			if(identifier==deactivatedPacketValue){
+				//	cprintf(RED,"deactivated packet\n");
+				return -2;
 			}
 			// -----END OF CHECK -------------------------------------------------------------
 
@@ -342,25 +263,188 @@ public:
 	 */
 	double getXTalk() {return xtalk;}
 
+	void getChannelArray(double* data, char* buffer){
+		for(int iy = 0; iy < ny; iy++){
+			for(int ix = 0; ix < nx; ix++){
+				data[iy*nx+ix] = getValue((char*)buffer,ix,iy);
+				//cprintf(BLUE,"%d,%d :%f\n",ix,iy,value);
+			}
+		}
+	}
+
+
+	int* decodeData(int *datain) {
+
+		int dataBytes = numberofPacketsPerFrame * onepacketdataSize;
+		int nch = nx*ny;
+		int* dataout = new int [nch];
+		char *ptr=(char*)datain;
+		char iptr;
+
+		const int bytesize=8;
+		int ival=0;
+		int  ipos=0, ichan=0, ibyte;
+
+		switch (dynamicRange) {
+		case 4:
+			for (ibyte=0; ibyte<dataBytes; ++ibyte) {//for every byte (1 pixel = 1/2 byte)
+				iptr=ptr[ibyte]&0xff;				//???? a byte mask
+				for (ipos=0; ipos<2; ++ipos) {		//loop over the 8bit (twice)
+					ival=(iptr>>(ipos*4))&0xf;		//pick the right 4bit
+					dataout[ichan]=ival;
+					ichan++;
+				}
+			}
+			break;
+		case 8:
+			for (ichan=0; ichan<dataBytes; ++ichan) {//for every pixel (1 pixel = 1 byte)
+				ival=ptr[ichan]&0xff;				//????? a byte mask
+				dataout[ichan]=ival;
+			}
+			break;
+		case 16:
+			for (ichan=0; ichan<nch; ++ichan) { 	//for every pixel
+				ival=0;
+				for (ibyte=0; ibyte<2; ++ibyte) { 	//for each byte (concatenate 2 bytes to get 16 bit value)
+					iptr=ptr[ichan*2+ibyte];
+					ival|=((iptr<<(ibyte*bytesize))&(0xff<<(ibyte*bytesize)));
+				}
+				dataout[ichan]=ival;
+			}
+			break;
+		default:
+													//for every 32 bit (every element in datain array)
+			for (ichan=0; ichan<nch; ++ichan) { 	//for every pixel
+				ival=datain[ichan]&0xffffff;
+				dataout[ichan]=ival;
+			}
+		}
 
 
 
+		return dataout;
+
+	};
+
+
+	int* readNextFrameOnlyData(ifstream &filebin, int& fnum) {
+		int framesize = numberofPacketsPerFrame * onepacketdataSize;
+
+		int* data = new int[framesize/(sizeof(int))];
+		char *packet=new char[packetSize];
+		fnum = -1;
+		int pn=-1;
+		int dataoffset = 0;
+
+		if (filebin.is_open()) {
+
+			while (filebin.read(packet,packetSize)) {
+
+				fnum = getFrameNumber(packet); //cout << "fn:"<<fn<<endl;
+				pn = getPacketNumber(packet); //cout << "pn:"<<pn<<endl;
+
+				memcpy(((char*)data)+dataoffset,packet+DATA_PACKET_HEADER_SIZE,onepacketdataSize);
+				dataoffset+=onepacketdataSize;
+				if(pn == numberofPacketsPerFrame)
+					break;
+			}
+		}
+
+		delete [] packet;
+		if(!dataoffset){
+			delete [] data;
+			return NULL;
+		}
+
+		return data;
+
+	}
+	/*
+	when u get packet form next frames
+	//to remember the position to read next frame
+	filebin.seekg (position, filebin.beg);
+	position = filebin.tellg();
+
+	*/
+
+	int *readNextFramewithMissingPackets(ifstream &filebin, int& fnum) {
+
+		int* data = new int[(numberofPacketsPerFrame * onepacketdataSize)/(sizeof(int))];
+		char *packet=new char[packetSize];
+		fnum = -1;
+		int pnum = 0;
+		int fn = -1;
+		int pn =-1;
+		int dataoffset = 0;
+		int missingpackets;
+
+
+		if (filebin.is_open()) {
+
+			while (filebin.read(packet,packetSize)) {
+
+				fn = getFrameNumber(packet); //cout << "fn:"<<fn<<endl;
+				pn = getPacketNumber(packet); //cout << "pn:"<<pn<<endl;
+
+				//first packet
+				if(fnum == -1){
+					fnum = fn;
+				}
+				//next frame packet
+				else if (fnum != fn){
+					//set file reading to the last frame's packet in file
+					filebin.seekg(-packetSize, ios::cur);//filebin.beg
+					break;
+				}
+
+				//missing packets
+				missingpackets = pn - pnum - 1;
+				if(missingpackets){
+					memset(((char*)data)+dataoffset,0xFF,missingpackets*onepacketdataSize);
+					dataoffset+=(missingpackets*onepacketdataSize);
+					pnum+=missingpackets;
+				}
+
+				memcpy(((char*)data)+dataoffset,packet+DATA_PACKET_HEADER_SIZE,onepacketdataSize);
+				dataoffset+=onepacketdataSize;
+				pnum++;
+				if(pnum == numberofPacketsPerFrame)
+					break;
+
+			}
+		}
+
+		delete [] packet;
+		if(!pnum){
+			delete [] data;
+			return NULL;
+		}
+
+		//missing packets (added here to also catch end of file)
+		missingpackets = numberofPacketsPerFrame - pnum;
+		if(missingpackets){
+			memset(((char*)data)+dataoffset,0xFF,missingpackets*onepacketdataSize);
+			dataoffset+=(missingpackets*onepacketdataSize);
+		}
+
+		return data;
+	}
 
 
 
 private:
+	/** Missing Packet identifier value */
+	const static uint16_t deactivatedPacketValue = 0xFEFE;
 
-	double xtalk; /**<output buffer crosstalk correction parameter */
-
-	const static int xpixels = 1024;
-	const static int ypixels = 256;
-	const int bufferSize;
-	const int actualDataSize;
+	const static int DATA_PACKET_HEADER_SIZE = 8;
+	const bool top;
+	const bool left;
 	const int dynamicRange;
-	const int numberOfPackets;
-	bool top;
-	bool tenGiga;
-	static const int TEN_GIGA_PACKET_SIZE = 4096;
+	const bool tenGiga;
+	const int packetSize;
+	const int onepacketdataSize;
+	const int numberofPacketsPerFrame;
+	double xtalk; /**<output buffer crosstalk correction parameter */
 
 
 	/** structure of an eiger packet*/

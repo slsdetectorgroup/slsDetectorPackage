@@ -7,7 +7,7 @@ CXX = $(CC)
 ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
 LDFLAGDET = -L$(LIBDIR)  -Wl,-rpath=$(LIBDIR) -lSlsDetector -L/usr/lib64/ -lpthread
 LDFLAGRXR = -L$(LIBDIR)  -Wl,-rpath=$(LIBDIR) -lSlsReceiver -L/usr/lib64/ -lpthread
-FLAGS= -Wall  #-DEIGER_DEBUG2 -DEIGER_DEBUG  -DEIGER_DEBUG3 #-DFIFO_DEBUG
+FLAGS= -Wall  -DHDF5C #-DEIGER_DEBUG2
 # -DVERBOSE 
 
 # Setting up the verbose flags
@@ -17,6 +17,20 @@ endif
 ifeq ($(DEBUG),2)
      FLAGS = -Wall -DVERYVERBOSE
 endif
+
+##############################################################
+# HDF5 specific. Set this to yes, if you want to compile
+# HDF5 code: in this case, you need HDF5 libraries
+##############################################################   
+
+HDF5 = yes
+HDF5_DIR = /opt/hdf5v1.10.0
+
+ifeq ($(HDF5),yes)
+	LDFLAGRXR = -L$(LIBDIR) -Wl,-rpath=$(LIBDIR) -lSlsReceiver -L$(HDF5_DIR)/lib -lhdf5 -lsz -lz -DHDF5C -L/usr/lib64/ -lpthread
+	INCLUDESRXR = -I$(HDF5_DIR)/include
+endif	
+
 
 ##############################################################
 # EigerSLS specific. Set this to yes, if you want to compile

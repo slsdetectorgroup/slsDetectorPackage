@@ -218,6 +218,10 @@ private:
 	/** enable flipped data */
 	int set_flipped_data();
 
+	/** set file format */
+	int set_file_format();
+
+
 
 	//General Functions
 	/** Locks Receiver */

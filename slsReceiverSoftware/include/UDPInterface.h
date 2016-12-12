@@ -119,6 +119,12 @@ class UDPInterface {
 
 	//***file parameters***
 	/**
+	 * Get File Format
+	 * @return file format
+	 */
+	virtual slsReceiverDefs::fileFormat getFileFormat() const = 0;
+
+	/**
 	 * Get File Name Prefix (without frame index, file index and extension (_d0_f000000000000_8.raw))
 	 * @return NULL or pointer to file name prefix, must be released by calling function (max of 1000 characters)
 	 */
@@ -306,6 +312,11 @@ class UDPInterface {
 
 
 	//***file parameters***
+	/**
+	 * Set File Format
+	 */
+	virtual void setFileFormat(slsReceiverDefs::fileFormat f) = 0;
+
 	/**
 	 * Set File Name Prefix (without frame index, file index and extension (_d0_f000000000000_8.raw))
 	 * Does not check for file existence since it is created only at startReceiver

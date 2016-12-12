@@ -60,6 +60,7 @@ void UDPBaseImplementation::initializeMembers(){
 	}
 
 	//***file parameters***
+	fileFormatType = BINARY;
 	strcpy(fileName,"run");
 	strcpy(filePath,"");
 	fileIndex = 0;
@@ -113,6 +114,9 @@ int UDPBaseImplementation::getFlippedData(int axis) const{
 
 
 /***file parameters***/
+slsReceiverDefs::fileFormat UDPBaseImplementation::getFileFormat() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return fileFormatType;}
+
+
 char *UDPBaseImplementation::getFileName() const{
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
@@ -227,6 +231,20 @@ void UDPBaseImplementation::setFlippedData(int axis, int enable){
 
 
 /***file parameters***/
+void UDPBaseImplementation::setFileFormat(const fileFormat f){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	if(f!=HDF5)
+		fileFormatType = f;
+#ifdef HDF5C
+	else if((f==HDF5) && (myDetectorType == EIGER || myDetectorType == JUNGFRAU))
+		fileFormatType = f;
+#endif
+
+	FILE_LOG(logINFO) << "File Index:" << fileIndex;
+}
+
+
 void UDPBaseImplementation::setFileName(const char c[]){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 

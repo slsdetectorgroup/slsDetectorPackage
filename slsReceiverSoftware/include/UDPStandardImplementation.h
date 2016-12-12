@@ -25,6 +25,9 @@
 #include <stdio.h>
 #include <semaphore.h>
 
+#ifdef HDF5C
+#include "hdf5.h"
+#endif
 
 /**
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
@@ -635,8 +638,17 @@ private:
 
 	/** File Descriptor */
 	FILE *sfilefd[MAX_NUMBER_OF_WRITER_THREADS];
+#ifdef HDF5C
+	H5File *hdf5_fileId[MAX_NUMBER_OF_WRITER_THREADS];
+	DataSpace *hdf5_dataspaceId[MAX_NUMBER_OF_WRITER_THREADS];
+	DataSet *hdf5_datasetId[MAX_NUMBER_OF_WRITER_THREADS];
+	hid_t hdf5_datatype;
 
-
+	/*hid_t hdf5fileId[MAX_NUMBER_OF_WRITER_THREADS];
+	hid_t hdf5DatasetId[MAX_NUMBER_OF_WRITER_THREADS];
+	hid_t hdf5DataspaceId[MAX_NUMBER_OF_WRITER_THREADS];
+	hid_t hdf5DataType;*/
+#endif
 	//***acquisition indices/count parameters***
 	/** Frame Number of First Frame of an entire Acquisition (including all scans) */
 	uint64_t startAcquisitionIndex;
@@ -801,6 +813,11 @@ private:
 	/** Set to self-terminate writer threads waiting for semaphores */
 	bool killAllWritingThreads;
 
+	//***data shape ***
+	/** Number of pixels in x axis */
+	int NX;
+	/** Number of pixels in y axis */
+	int NY;
 
 	//***filter parameters***
 	/** Common Mode Subtraction Enable FIXME: Always false, only moench uses, Ask Anna */

@@ -147,7 +147,7 @@ typedef struct {
 #define JFRAU_PACKET_INDEX_MASK				0x0//Not Applicable, use struct
 
 #define JFRAU_PIXELS_IN_ONE_ROW				(256*4)
-#define JFRAU_PIXELS_IN_ONE_COL				(256*2)
+#define JFRAU_PIXELS_IN_ONE_COL				(256)
 #define JFRAU_BYTES_IN_ONE_ROW				(JFRAU_PIXELS_IN_ONE_ROW*2)
 
 

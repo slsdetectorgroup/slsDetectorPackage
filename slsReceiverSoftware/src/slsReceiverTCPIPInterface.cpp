@@ -265,6 +265,9 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_STREAM_DATA_FROM_RECEIVER]		= 	&slsReceiverTCPIPInterface::set_data_stream_enable;
 	flist[F_READ_RECEIVER_TIMER]			= 	&slsReceiverTCPIPInterface::set_read_receiver_timer;
 	flist[F_SET_FLIPPED_DATA_RECEIVER]		= 	&slsReceiverTCPIPInterface::set_flipped_data;
+	flist[F_SET_RECEIVER_FILE_FORMAT]		= 	&slsReceiverTCPIPInterface::set_file_format;
+
+
 
 #ifdef VERYVERBOSE
 	for (int i=0;i<numberOfFunctions;i++)
@@ -3089,7 +3092,75 @@ int slsReceiverTCPIPInterface::set_flipped_data(){
 
 
 
+int slsReceiverTCPIPInterface::set_file_format() {
+	ret=OK;
+	fileFormat retval = GET_FILE_FORMAT;
+	fileFormat f = GET_FILE_FORMAT;
+	strcpy(mess,"Could not set/get file format\n");
 
+
+	// receive arguments
+	if(mySock->ReceiveDataOnly(&f,sizeof(f)) < 0 ){
+		strcpy(mess,"Error reading from socket\n");
+		cprintf(RED,"%s",mess);
+		ret = FAIL;
+	}
+
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	if (ret==OK) {
+		if (lockStatus==1 && mySock->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
+			ret=FAIL;
+		}
+
+		if(ret!=FAIL){
+			if (receiverBase == NULL){
+				strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
+				cprintf(RED,"%s",mess);
+				ret=FAIL;
+			}else if(receiverBase->getStatus()==RUNNING && (f>=0)){
+				strcpy(mess,"Cannot set file format while status is running\n");
+				cprintf(RED,"%s",mess);
+				ret=FAIL;
+			}else{
+				if(f != -1)
+					receiverBase->setFileFormat(f);
+				retval = receiverBase->getFileFormat();
+				if(f >= 0 && retval != f){
+					sprintf(mess,"Tried to set file format to %d, but returned %d\n",f,retval);
+					ret = FAIL;
+					cprintf(RED,"%s",mess);
+				}
+			}
+		}
+	}
+#endif
+#ifdef VERYVERBOSE
+	if(ret!=FAIL)
+		cout << "File Format: " << retval << endl;
+	else
+		cout << mess << endl;
+#endif
+
+
+	if(ret==OK && mySock->differentClients){
+		FILE_LOG(logDEBUG) << "Force update";
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	mySock->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL){
+		cprintf(RED,"%s\n",mess);
+		mySock->SendDataOnly(mess,sizeof(mess));
+	}
+	mySock->SendDataOnly(&retval,sizeof(retval));
+
+	//return ok/fail
+	return ret;
+}
 
 
 

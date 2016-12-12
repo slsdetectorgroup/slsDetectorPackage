@@ -59,6 +59,11 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 
 	//***file parameters***
 	/**
+	 * Get File Format
+	 * @return file format
+	 */
+	fileFormat getFileFormat() const;
+	/**
 	 * Get File Name Prefix (without frame index, file index and extension (_d0_f000000000000_8.raw))
 	 * @return NULL or file name prefix (max of 1000 characters)
 	 */
@@ -248,6 +253,11 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 
 
 	//***file parameters***
+	/**
+	 * Set File Format
+	 */
+	void setFileFormat(slsReceiverDefs::fileFormat f);
+
 	/**
 	 * Set File Name Prefix (without frame index, file index and extension (_d0_f000000000000_8.raw))
 	 * Does not check for file existence since it is created only at startReceiver
@@ -556,6 +566,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	uint32_t udpPortNum[MAX_NUMBER_OF_LISTENING_THREADS];
 
 	//***file parameters***
+	/** File format */
+	fileFormat fileFormatType;
 	/** File Name without frame index, file index and extension (_d0_f000000000000_8.raw)*/
 	char fileName[MAX_STR_LENGTH];
 	/** File Path */

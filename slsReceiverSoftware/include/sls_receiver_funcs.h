@@ -56,8 +56,9 @@ enum {
 
 	F_READ_RECEIVER_TIMER,			/** < sets the timer between each data stream in receiver */
 
-	F_SET_FLIPPED_DATA_RECEIVER		/** < sets the enable to flip data across x/y axis (bottom/top) */
+	F_SET_FLIPPED_DATA_RECEIVER,		/** < sets the enable to flip data across x/y axis (bottom/top) */
 
+	F_SET_RECEIVER_FILE_FORMAT		/** < sets the receiver file format */
 	/* Always append functions hereafter!!! */
 };
 

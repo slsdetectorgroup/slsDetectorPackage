@@ -116,6 +116,17 @@ public:
 		STOPPED /**< acquisition stopped externally */
 	};
 
+	/**
+    format
+     */
+	enum fileFormat {
+		GET_FILE_FORMAT=-1,/**< the receiver will return its file format */
+		BINARY, /**< binary format */
+		ASCII, /**< ascii format */
+		HDF5 /**< hdf5 format */
+	};
+
+
 #ifdef __cplusplus
 	  /** returns string from enabled/disabled
 	      \param b true or false

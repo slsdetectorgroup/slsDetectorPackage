@@ -863,15 +863,29 @@ int slsDetector::initializeDetectorSize(detectorType type) {
   fileName=parentDet->fileName;
   fileIndex=parentDet->fileIndex;
   framesPerFile=parentDet->framesPerFile;
-  if((thisDetector->myDetectorType==GOTTHARD)||(thisDetector->myDetectorType==PROPIX))
+  fileFormatType=parentDet->fileFormatType;
+  if((thisDetector->myDetectorType==GOTTHARD)||(thisDetector->myDetectorType==PROPIX)){
 	  setFramesPerFile(MAX_FRAMES_PER_FILE);
-  if (thisDetector->myDetectorType==MOENCH)
+	  pthread_mutex_unlock(&ms);
+	  setFileFormat(BINARY);
+  }else if (thisDetector->myDetectorType==EIGER){
+	  setFramesPerFile(EIGER_MAX_FRAMES_PER_FILE);
+	  pthread_mutex_unlock(&ms);
+	  setFileFormat(BINARY);
+  }else if (thisDetector->myDetectorType==MOENCH){
 	  setFramesPerFile(MOENCH_MAX_FRAMES_PER_FILE);
-  if (thisDetector->myDetectorType==JUNGFRAU)
+	  pthread_mutex_unlock(&ms);
+	  setFileFormat(BINARY);
+  }else if (thisDetector->myDetectorType==JUNGFRAU){
 	  setFramesPerFile(JFRAU_MAX_FRAMES_PER_FILE);
-  if (thisDetector->myDetectorType==JUNGFRAUCTB)
+	  pthread_mutex_unlock(&ms);
+	  setFileFormat(BINARY);
+  }else if (thisDetector->myDetectorType==JUNGFRAUCTB){
 	  setFramesPerFile(JFCTB_MAX_FRAMES_PER_FILE);
-  pthread_mutex_unlock(&ms);
+	  pthread_mutex_unlock(&ms);
+	  setFileFormat(BINARY);
+  }else
+	  pthread_mutex_unlock(&ms);
   thisReceiver = new receiverInterface(dataSocket);
 
   //  setAngularConversionPointer(thisDetector->angOff,&thisDetector->nMods, thisDetector->nChans*thisDetector->nChips);
@@ -5640,6 +5654,7 @@ char* slsDetector::setReceiver(string receiverIP){
 			setFilePath(fileIO::getFilePath());
 			setFileName(fileIO::getFileName());
 			setFileIndex(fileIO::getFileIndex());
+			setFileFormat(fileIO::getFileFormat());
 			pthread_mutex_lock(&ms);
 			int imask = parentDet->enableWriteToFileMask();
 			pthread_mutex_unlock(&ms);
@@ -7290,6 +7305,48 @@ string slsDetector::setFileName(string s) {
 	pthread_mutex_unlock(&ms);
 
 	return s;
+}
+
+
+
+
+slsReceiverDefs::fileFormat slsDetector::setFileFormat(fileFormat f){
+	int fnum=F_SET_RECEIVER_FILE_FORMAT;
+	int ret = FAIL;
+	int arg = -1;
+	int retval = -1;
+
+
+
+	if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG){
+		if(f>=0){
+			pthread_mutex_lock(&ms);
+			fileIO::setFileFormat(f);
+			pthread_mutex_unlock(&ms);
+		}
+	}
+
+	else{
+		arg = (int)f;
+#ifdef VERBOSE
+		std::cout << "Sending file format to receiver " << arg << std::endl;
+#endif
+		if (connectData() == OK){
+			ret=thisReceiver->sendInt(fnum,retval,arg);
+			disconnectData();
+		}
+		if(ret == FAIL)
+			setErrorMask((getErrorMask())|(RECEIVER_FILE_FORMAT));
+		else{
+			pthread_mutex_lock(&ms);
+			fileIO::setFileFormat(retval);
+			pthread_mutex_unlock(&ms);
+			if(ret==FORCE_UPDATE)
+				updateReceiver();
+		}
+	}
+
+	return fileIO::getFileFormat();
 }
 
 

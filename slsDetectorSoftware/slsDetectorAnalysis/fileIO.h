@@ -93,6 +93,15 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
   virtual  int setDetectorIndex(int i) {detIndex=i;return detIndex;};
 
   /**
+     sets the default file format
+     \param i file format to be set
+     \returns actual file frame format
+  */
+  virtual fileFormat setFileFormat(int i) {*fileFormatType=(fileFormat)i; return *fileFormatType;};
+
+
+
+  /**
      \returns the  output files path
      
   */
@@ -126,6 +135,11 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
      \returns the max frames per file
   */
   virtual int getFramesPerFile() {return *framesPerFile;};
+
+  /**
+     \returns the max frames per file
+  */
+  virtual fileFormat getFileFormat() {return *fileFormatType;};
 
 
   string createFileName();
@@ -306,8 +320,8 @@ yes  */
   int detIndex;
   /** frames per file */
   int *framesPerFile;
-
-  //  int *fileFormat;
+  /** file format */
+  fileFormat *fileFormatType;
 
  private:
 

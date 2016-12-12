@@ -121,6 +121,8 @@ class multiSlsDetector  : public slsDetectorUtils {
     char filePath[MAX_STR_LENGTH];
     /** max frames per file */
     int framesPerFile;
+    /** file format*/
+    fileFormat fileFormatType;
 
     /** corrections  to be applied to the data \see ::correctionFlags */
     int correctionMask;
@@ -1150,6 +1152,13 @@ class multiSlsDetector  : public slsDetectorUtils {
   string setFileName(string s="");
 
   /**
+     Sets up the file format
+     @param f file format
+     \returns file format
+  */
+  fileFormat setFileFormat(fileFormat f=GET_FILE_FORMAT);
+
+  /**
      Sets up the file index
      @param i file index
      \returns file index
@@ -1165,6 +1174,11 @@ class multiSlsDetector  : public slsDetectorUtils {
      \returns file name
   */
   string getFileName(){return setFileName();};
+
+  /**
+     \returns file name
+  */
+  fileFormat getFileFormat(){return setFileFormat();};
 
   /**
      \returns file index

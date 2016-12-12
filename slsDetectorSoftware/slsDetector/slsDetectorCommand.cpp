@@ -226,6 +226,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFileName;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="fileformat"; //OK
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFileName;
+  i++;
+
   /* Acquisition actions */
 
   descrToFuncMap[i].m_pFuncName="positions"; //
@@ -1883,7 +1887,18 @@ string slsDetectorCommand::cmdFileName(int narg, char *args[], int action){
 		myDet->setFileName(string(args[1]));
 
 	return string(myDet->getFileName());
-	} else
+	} else if(cmd=="fileformat") {
+		if (action==PUT_ACTION){
+		    if (string(args[1])=="binary")
+		      myDet->setFileFormat(BINARY);
+		    else if (string(args[1])=="ascii")
+		      myDet->setFileFormat(ASCII);
+		    else if (string(args[1])=="hdf5")
+		      myDet->setFileFormat(HDF5);
+		    else return string("could not scan file format mode\n");
+		}
+		return myDet->fileFormats(myDet->getFileFormat());
+	}
 	  return string(myDet->getCurrentFileName());
 	  
 }
@@ -1892,10 +1907,14 @@ string slsDetectorCommand::cmdFileName(int narg, char *args[], int action){
 
 string slsDetectorCommand::helpFileName(int narg, char *args[], int action){
   ostringstream os;
-  if (action==GET_ACTION || action==HELP_ACTION)
+  if (action==GET_ACTION || action==HELP_ACTION){
     os << string("fname \t  gets the filename for the data without index and extension\n");
-  if (action==PUT_ACTION || action==HELP_ACTION)
+    os << string("fileformat \t  gets the file format for data\n");
+  }
+  if (action==PUT_ACTION || action==HELP_ACTION){
     os << string("fname s \t  sets the filename for the data (index and extension will be automatically appended)\n");
+    os << string("fname s \t  sets the file format for the data (binary, ascii, hdf5)\n");
+  }
   return os.str();
 }
 

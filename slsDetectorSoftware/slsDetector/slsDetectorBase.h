@@ -743,6 +743,18 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
     default:       return string("idle");		\
     }};
 
+  /** returns string from file format index
+      \param s can be RAW, HDF5
+      \returns string raw, hdf5
+  */
+  static string fileFormats(fileFormat f){\
+    switch (f) {				\
+    case BINARY:       return string("binary");		\
+    case ASCII:       return string("ascii");		\
+    case HDF5:      return  string("hdf5");	\
+    default:       return string("unknown");		\
+    }};
+
 
 
 };

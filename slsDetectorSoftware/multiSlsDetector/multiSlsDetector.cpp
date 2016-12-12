@@ -140,6 +140,10 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
     thisMultiDetector->fileIndex=0;
     /** set frames per file to default to 1*/
     thisMultiDetector->framesPerFile=1;
+    /** set fileIndex to default to 0*/
+    thisMultiDetector->fileIndex=0;
+    /** set fileFormat to default to ascii*/
+    thisMultiDetector->fileFormatType=ASCII;
 
     /** set progress Index to default to 0*/
     thisMultiDetector->progressIndex=0;
@@ -245,6 +249,7 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
   fileName=thisMultiDetector->fileName;
   fileIndex=&thisMultiDetector->fileIndex;
   framesPerFile=&thisMultiDetector->framesPerFile;
+  fileFormatType=&thisMultiDetector->fileFormatType;
 
 
   for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
@@ -4820,6 +4825,25 @@ string multiSlsDetector::setFileName(string s) {
   }	
  
   return ret;
+}
+
+
+
+slsReceiverDefs::fileFormat multiSlsDetector::setFileFormat(fileFormat f) {
+	int ret=-100, ret1;
+
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+		if (detectors[idet]) {
+			ret1=(int)detectors[idet]->setFileFormat(f);
+			if(detectors[idet]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<idet));
+			if (ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+	}
+	return (fileFormat)ret;
 }
 
 

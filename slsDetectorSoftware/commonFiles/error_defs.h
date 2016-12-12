@@ -76,6 +76,7 @@ using namespace std;
 #define RECEIVER_READ_TIMER				    0x0000000008000000ULL
 #define RECEIVER_ACQ_TIME_NOT_SET			0x0000000010000000ULL
 #define RECEIVER_FLIPPED_DATA_NOT_SET		0x0000000020000000ULL
+#define RECEIVER_FILE_FORMAT				0x0000000040000000ULL
 
 //											0x00000000FFFFFFFFULL
 /** @short class returning all error messages for error mask */
@@ -235,6 +236,10 @@ public:
 
 		if(slsErrorMask&RECEIVER_FLIPPED_DATA_NOT_SET)
 			retval.append("Could not set receiver flipped data/bottom\n");
+
+
+		if(slsErrorMask&RECEIVER_FILE_FORMAT)
+			retval.append("Could not set receiver file format\n");
 
 		//------------------------------------------------------ length of message
 

@@ -643,6 +643,13 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   virtual string setFileName(string s="")=0;
 
   /**
+     Sets up the file format
+     @param f file format
+     \returns file format
+  */
+  virtual fileFormat setFileFormat(fileFormat f=GET_FILE_FORMAT)=0;
+
+  /**
      \returns file dir
   */
   virtual string getFilePath()=0;
@@ -651,6 +658,11 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
      \returns file name
   */
   virtual string getFileName()=0;
+
+  /**
+     \returns file name
+  */
+  virtual fileFormat getFileFormat()=0;
 
   /**
      \returns frames caught by receiver

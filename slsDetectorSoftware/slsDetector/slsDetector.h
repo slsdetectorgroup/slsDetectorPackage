@@ -270,6 +270,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     /** flipped data across x or y axis */
     int flippedData[2];
 
+
   } sharedSlsDetector;
 
 
@@ -1535,6 +1536,13 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   string setFileName(string s="");
 
   /**
+     Sets up the file format
+     @param f file format
+     \returns file format
+  */
+  fileFormat setFileFormat(fileFormat f=GET_FILE_FORMAT);
+
+  /**
      Sets up the file index
      @param i file index
      \returns file index
@@ -1550,6 +1558,11 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      \returns file name
   */
   string getFileName(){return setFileName();};
+
+  /**
+     \returns file name
+  */
+  fileFormat getFileFormat(){return setFileFormat();};
 
   /**
      \returns file index

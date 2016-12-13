@@ -256,7 +256,7 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
 #ifdef VERBOSE
     cout << thisMultiDetector->detectorIds[i] << endl;
 #endif
-    detectors[i]=new slsDetector(thisMultiDetector->detectorIds[i], this);
+    detectors[i]=new slsDetector(i, thisMultiDetector->detectorIds[i], this);
 
 
     //  setAngularConversionPointer(detectors[i]->getAngularConversionPointer(),detectors[i]->getNModsPointer(),detectors[i]->getNChans()*detectors[i]->getNChips(), i);
@@ -377,7 +377,7 @@ int multiSlsDetector::addSlsDetector(int id, int pos) {
   cout << "Creating new detector " << pos << endl;
 #endif
 
-  detectors[pos]=new slsDetector(id, this);
+  detectors[pos]=new slsDetector(pos, id, this);
   thisMultiDetector->detectorIds[pos]=detectors[pos]->getDetectorId();
   thisMultiDetector->numberOfDetectors++;
   
@@ -692,7 +692,7 @@ int multiSlsDetector::addSlsDetector(const char *name, int pos) {
 #ifdef VERBOSE
 	cout << "Detector " << id << " already exists" << endl;
 #endif
-	s=new slsDetector(id, this);
+	s=new slsDetector(pos, id, this);
 	if (s->getHostname()==string(name))
 	  break;
 	delete s;
@@ -733,7 +733,7 @@ int multiSlsDetector::addSlsDetector(const char *name, int pos) {
 #ifdef VERBOSE
     cout << "Creating detector " << id << " of type "  << getDetectorType(t) << endl;
 #endif
-    s=new slsDetector(t, id, this);
+    s=new slsDetector(pos, t, id, this);
     if (online) {
       s->setTCPSocket(name);
       setOnline(ONLINE_FLAG);
@@ -766,7 +766,7 @@ int multiSlsDetector::addSlsDetector(detectorType t, int pos) {
 #ifdef VERBOSE
   cout << "Creating detector " << id << " of type "  << getDetectorType(t) << endl;
 #endif
-  slsDetector *s=new slsDetector(t, id, this);
+  slsDetector *s=new slsDetector(pos, t, id, this);
   s=NULL;
 #ifdef VERBOSE
   cout << "Adding it to the multi detector structure" << endl;
@@ -5146,7 +5146,7 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 		}
 		//add port
 		sprintf(dataSocketServerDetails[i],"%s:%d",dataSocketServerDetails[i],DEFAULT_ZMQ_PORTNO +
-				(detectors[i/numSocketsPerDetector]->getDetectorId())*numSocketsPerDetector + (i%numSocketsPerDetector));//using this instead of i in the offchance, detid doesnt start at 0 (shmget error)
+				(i/numSocketsPerDetector)*numSocketsPerDetector + (i%numSocketsPerDetector));//using this instead of i in the offchance, detid doesnt start at 0 (shmget error)
 
 		//create context
 		context[i] = zmq_ctx_new();

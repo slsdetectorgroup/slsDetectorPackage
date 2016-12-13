@@ -152,9 +152,10 @@ int slsDetector::freeSharedMemory() {
 
 
 
-slsDetector::slsDetector(int id,multiSlsDetector *p) :slsDetectorUtils(),
+slsDetector::slsDetector(int pos, int id, multiSlsDetector *p) :slsDetectorUtils(),
 						      thisDetector(NULL),
 						      detId(id),
+							  posId(pos),
 							  parentDet(p),
 						      shmId(-1),
 						      controlSocket(NULL),
@@ -204,9 +205,10 @@ slsDetector::slsDetector(int id,multiSlsDetector *p) :slsDetectorUtils(),
 
 
 
-slsDetector::slsDetector(detectorType type, int id,multiSlsDetector *p): slsDetectorUtils(),
+slsDetector::slsDetector(int pos, detectorType type, int id, multiSlsDetector *p): slsDetectorUtils(),
 									 thisDetector(NULL),
 									 detId(id),
+									 posId(pos),
 								     parentDet(p),
 									 shmId(-1),
 									 controlSocket(NULL),
@@ -260,9 +262,10 @@ slsDetector::~slsDetector(){
 delete thisReceiver;
 };
 
-slsDetector::slsDetector(char *name, int id, int cport,multiSlsDetector *p) : slsDetectorUtils(),
+slsDetector::slsDetector(int pos, char *name, int id, int cport,multiSlsDetector *p) : slsDetectorUtils(),
 									      thisDetector(NULL),
 									      detId(id),
+										  posId(pos),
 									      parentDet(p),
 									      shmId(-1),
 									      controlSocket(NULL),
@@ -7271,9 +7274,9 @@ string slsDetector::setFileName(string s) {
 		pthread_mutex_lock(&ms);
 		fileIO::setFileName(s);
 		if(thisDetector->myDetectorType == EIGER)
-			parentDet->setDetectorIndex(detId);
+			parentDet->setDetectorIndex(posId);
 		else if(parentDet->getNumberOfDetectors()>1)
-			parentDet->setDetectorIndex(detId);
+			parentDet->setDetectorIndex(posId);
 		s=parentDet->createReceiverFilePrefix();
 		pthread_mutex_unlock(&ms);
 	}

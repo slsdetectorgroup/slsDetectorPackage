@@ -1009,19 +1009,6 @@ int UDPStandardImplementation::startReceiver(char *c){
 			pthread_mutex_unlock(&writeMutex);
 			return FAIL;
 		}
-		/*
-		if(hdf5DataspaceId[i]){
-			H5Sclose(hdf5DataspaceId[i]);
-			hdf5DataspaceId[i] = 0;
-		}
-		if(hdf5DatasetId[i]){
-			H5Dclose(hdf5DatasetId[i]);
-			hdf5DatasetId[i] = 0;
-		}
-		if(hdf5fileId[i]){
-			H5Fclose(hdf5fileId[i]);
-			hdf5fileId[i] = 0;
-		}*/
 		pthread_mutex_unlock(&writeMutex);
 #endif
 		//reset gui variables
@@ -1259,7 +1246,6 @@ void UDPStandardImplementation::closeFile(int ithread){
 		}
 #ifdef HDF5C
 		pthread_mutex_lock(&writeMutex);
-
 		try{
 			Exception::dontPrint(); //to handle errors
 			if(hdf5_dataspaceId[ithread]) 	{delete hdf5_dataspaceId[ithread]; 	hdf5_dataspaceId[ithread] = 0;}
@@ -1270,20 +1256,6 @@ void UDPStandardImplementation::closeFile(int ithread){
 			cprintf(RED,"Error in closing HDF5 handles\n");
 			error.printError();
 		}
-		/*
-		if(hdf5DataspaceId[ithread]){
-			H5Sclose(hdf5DataspaceId[ithread]);
-			hdf5DataspaceId[ithread] = 0;
-		}
-		if(hdf5DatasetId[ithread]){
-			H5Dclose(hdf5DatasetId[ithread]);
-			hdf5DatasetId[ithread] = 0;
-		}
-		if(hdf5fileId[ithread]){
-			H5Fclose(hdf5fileId[ithread]);
-			hdf5fileId[ithread] = 0;
-		}
-		*/
 		pthread_mutex_unlock(&writeMutex);
 #endif
 	}
@@ -1781,90 +1753,6 @@ int UDPStandardImplementation::createNewFile(int ithread){
 			}//end of creating file
 
 			pthread_mutex_unlock(&writeMutex);
-
-			/*
-			if(hdf5DataspaceId[ithread]){
-				H5Sclose(hdf5DataspaceId[ithread]);
-				hdf5DataspaceId[ithread] = 0;
-			}
-			if(hdf5DatasetId[ithread]){
-				H5Dclose(hdf5DatasetId[ithread]);
-				hdf5DatasetId[ithread] = 0;
-			}
-			if(hdf5fileId[ithread]){
-				// update attributes
-				bool error = true;
-				hsize_t dims = 1;
-				hid_t hdf5AttributeDataspaceId = H5Screate_simple (1, &dims, NULL);
-				if(hdf5AttributeDataspaceId>=0){
-					hid_t hdf5AttributeId = H5Acreate2(hdf5fileId[ithread],"Dynamic Range",H5T_STD_I32LE,hdf5AttributeDataspaceId,
-							H5P_DEFAULT, H5P_DEFAULT);
-					if(hdf5AttributeId>=0){
-						if(H5Awrite(hdf5AttributeId,H5T_STD_I32LE,&dynamicRange)>=0){
-							if(H5Aclose(hdf5AttributeId)>=0){
-								error = false;
-							}
-						}
-					}
-				}
-				if(error){
-					FILE_LOG(logERROR) << "Could not create attribute for " << completeFileName[ithread] << endl;
-					pthread_mutex_unlock(&writeMutex);
-					return FAIL;
-				}
-				H5Fclose(hdf5fileId[ithread]);
-				hdf5fileId[ithread] = 0;
-			}
-
-			//create file
-			if(!overwriteEnable){
-				hdf5fileId[ithread] = H5Fcreate(completeFileName[ithread], H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT);
-				if(hdf5fileId[ithread]<0){
-					FILE_LOG(logERROR) << "Could not create new file" << completeFileName[ithread] << ". Check if it exists or permissions" << endl;
-					pthread_mutex_unlock(&writeMutex);
-					return FAIL;
-				}
-			}else{
-				hdf5fileId[ithread] = H5Fcreate(completeFileName[ithread], H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-				if(hdf5fileId[ithread]<0){
-					FILE_LOG(logERROR) << "Could not create/overwrite new file" << completeFileName[ithread] << ". Check permissions" << endl;
-					pthread_mutex_unlock(&writeMutex);
-					return FAIL;
-				}
-			}
-
-
-
-			//create dataspace and dataset
-			hsize_t srcdims[3] = {NY,NX,numberOfFrames};
-			if(dynamicRange == 4)
-				srcdims[1] = NX/2;
-			hdf5DataspaceId[ithread] = H5Screate_simple (3, srcdims, NULL);
-			bool error = true;
-			if(hdf5DataspaceId[ithread]>=0){
-				//fillvalues
-				hid_t hdf5Dcpl = H5Pcreate(H5P_DATASET_CREATE);
-				if(hdf5Dcpl>=0){
-					//fill it
-					int fill_value = -1;
-					if(H5Pset_fill_value(hdf5Dcpl, hdf5DataType, &fill_value)>=0){
-						//dataset
-						hdf5DatasetId[ithread] = H5Dcreate2 (hdf5fileId[ithread],"run", hdf5DataType, hdf5DataspaceId[ithread],
-								H5P_DEFAULT, hdf5Dcpl, H5P_DEFAULT);
-						if(hdf5DatasetId[ithread]>=0){
-							error = false;
-						}else cprintf(RED, "error in dataset creation\n");
-					}else cprintf(RED, "error in filling values\n");
-				}else cprintf(RED, "error in fill value id creation\n");
-			}else cprintf(RED, "error in dataspace creation\n");
-			if(error){
-				FILE_LOG(logERROR) << "Could not create dataspace/dataset/attribute for thread " << ithread << endl;
-				pthread_mutex_unlock(&writeMutex);
-				return FAIL;
-			}
-
-			pthread_mutex_unlock(&writeMutex);
-			*/
 		}
 #endif
 
@@ -2950,27 +2838,6 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 					cprintf(RED,"Error in creating attributes in thread %d\n",ithread);
 					error.printError();
 				}
-*/
-				/*
-				bool error = true;
-				hsize_t dims = 1;
-				hid_t hdf5AttributeDataspaceId = H5Screate_simple (1, &dims, NULL);
-				if(hdf5AttributeDataspaceId>=0){
-					hid_t hdf5AttributeId = H5Acreate2(hdf5fileId[ithread],"Dynamic Range",H5T_STD_I32LE,hdf5AttributeDataspaceId,
-							H5P_DEFAULT, H5P_DEFAULT);
-					if(hdf5AttributeId>=0){
-						if(H5Awrite(hdf5AttributeId,H5T_STD_I32LE,&dynamicRange)>=0){
-							if(H5Aclose(hdf5AttributeId)>=0){
-								error = false;
-							}
-						}
-					}
-				}
-				if(error){
-					FILE_LOG(logERROR) << "Could not create attribute for " << completeFileName[ithread] << endl;
-				}
-				 */
-/*
 				pthread_mutex_unlock(&writeMutex);
 			}
 			*/

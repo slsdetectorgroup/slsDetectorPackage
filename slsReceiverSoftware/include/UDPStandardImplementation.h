@@ -27,10 +27,9 @@
 
 #ifdef HDF5C
 #include "H5Cpp.h"
-//#ifndef H5_NO_NAMESPACE
+#ifndef H5_NO_NAMESPACE
     using namespace H5;
-//#endif
-//#include "hdf5.h"
+#endif
 #endif
 
 /**
@@ -647,11 +646,6 @@ private:
 	DataSet *hdf5_datasetId[MAX_NUMBER_OF_WRITER_THREADS];
 	H5File *hdf5_fileId[MAX_NUMBER_OF_WRITER_THREADS];
 	hid_t hdf5_datatype;
-
-	/*hid_t hdf5fileId[MAX_NUMBER_OF_WRITER_THREADS];
-	hid_t hdf5DatasetId[MAX_NUMBER_OF_WRITER_THREADS];
-	hid_t hdf5DataspaceId[MAX_NUMBER_OF_WRITER_THREADS];
-	hid_t hdf5DataType;*/
 #endif
 	//***acquisition indices/count parameters***
 	/** Frame Number of First Frame of an entire Acquisition (including all scans) */

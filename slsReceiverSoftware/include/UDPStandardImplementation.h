@@ -26,7 +26,11 @@
 #include <semaphore.h>
 
 #ifdef HDF5C
-#include "hdf5.h"
+#include "H5Cpp.h"
+//#ifndef H5_NO_NAMESPACE
+    using namespace H5;
+//#endif
+//#include "hdf5.h"
 #endif
 
 /**
@@ -639,9 +643,9 @@ private:
 	/** File Descriptor */
 	FILE *sfilefd[MAX_NUMBER_OF_WRITER_THREADS];
 #ifdef HDF5C
-	H5File *hdf5_fileId[MAX_NUMBER_OF_WRITER_THREADS];
 	DataSpace *hdf5_dataspaceId[MAX_NUMBER_OF_WRITER_THREADS];
 	DataSet *hdf5_datasetId[MAX_NUMBER_OF_WRITER_THREADS];
+	H5File *hdf5_fileId[MAX_NUMBER_OF_WRITER_THREADS];
 	hid_t hdf5_datatype;
 
 	/*hid_t hdf5fileId[MAX_NUMBER_OF_WRITER_THREADS];

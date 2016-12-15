@@ -39,7 +39,10 @@ class pedestalSubtraction  {
     */
     virtual int SetNPedestals(int i=-1) {if (i>0) stat.SetN(i); return stat.GetN();};
     
+    /** sets the moving average */
+    virtual void setPedestal(double val) {stat.Set(val);}
 
+  
   
  private:
     MovingStat stat; /**< approximated moving average struct */

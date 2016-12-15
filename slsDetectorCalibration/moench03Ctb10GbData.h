@@ -211,6 +211,7 @@ class moench03Ctb10GbData : public slsReceiverData<uint16_t> {
 
 	};
 
+int getPacketNumber(int x, int y) {return dataMap[y][x]/8208;};
 
   	virtual char *readNextFrame(ifstream &filebin) {
 	  int fnum;

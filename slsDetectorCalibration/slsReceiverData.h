@@ -226,8 +226,9 @@ public:
 		virtual void getChannelArray(double* data, char* buffer){};
 		virtual int* readNextFrameOnlyData(ifstream &filebin, int& fnum) {return NULL;};
 		virtual int* decodeData(int* datain) {return NULL;};
+virtual int getPacketNumber(int x, int y) {return 0;};
 
-private:
+protected:
 	const int nPackets; /**<number of UDP packets constituting one frame */
 	const int packetSize; /**< size of a udp packet */
 };

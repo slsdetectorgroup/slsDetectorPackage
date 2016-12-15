@@ -4,7 +4,7 @@
 
 
 
-class moench03CtbData : public slsDetectorData<uint16_t> {
+class moench03TCtbData : public slsDetectorData<uint16_t> {
 
  private:
   
@@ -25,7 +25,7 @@ class moench03CtbData : public slsDetectorData<uint16_t> {
   */
   
 
-  moench03CtbData(int ns=5000): slsDetectorData<uint16_t>(400, 400, ns*2*32, NULL, NULL) , nadc(32), sc_width(25), sc_height(200) {
+  moench03TCtbData(int ns=5000): slsDetectorData<uint16_t>(400, 400, ns*2*32, NULL, NULL) , nadc(32), sc_width(25), sc_height(200) {
 
     
     int adc_nr[32]={200,225,250,275,300,325,350,375,\

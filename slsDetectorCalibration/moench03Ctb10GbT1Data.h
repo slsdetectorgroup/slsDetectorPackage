@@ -1,10 +1,10 @@
-#ifndef MOENCH03TCTB10GBDATA_H
-#define  MOENCH03TCTB10GBDATA_H
+#ifndef MOENCH03CTB10GBT1DATA_H
+#define  MOENCH03CTB10GBT1DATA_H
 #include "slsReceiverData.h"
 
 
 
-class moench03TCtb10GbData : public slsReceiverData<uint16_t> {
+class moench03Ctb10GbData : public slsReceiverData<uint16_t> {
  
  private:
   
@@ -25,13 +25,13 @@ class moench03TCtb10GbData : public slsReceiverData<uint16_t> {
   */
   
 
-  //  moench03TCtb10GbData(int ns=5000): slsDetectorData<uint16_t>(400, 400, 8208*40, NULL, NULL) , nadc(32), sc_width(25), sc_height(200) {
- moench03TCtb10GbData(int ns=5000): slsReceiverData<uint16_t>(400, 400, 40, 8208), nadc(32), sc_width(25), sc_height(200) {
+  //  moench03Ctb10GbData(int ns=5000): slsDetectorData<uint16_t>(400, 400, 8208*40, NULL, NULL) , nadc(32), sc_width(25), sc_height(200) {
+ moench03Ctb10GbT1Data(int ns=5000): slsReceiverData<uint16_t>(400, 400, 40, 8208), nadc(32), sc_width(25), sc_height(200) {
 
-    int adc_nr[32]={300,325,350,375,300,325,350,375,		\
-		    200,225,250,275,200,225,250,275,\
-		    100,125,150,175,100,125,150,175,\
-		    0,25,50,75,0,25,50,75};
+    int adc_nr[32]={200,225,250,275,300,325,350,375,\
+		    0,25,50,75,100,125,150,175,\
+		    175,150,125,100,75,50,25,0,\
+		    375,350,325,300,275,250,225,200};
     int row, col;
 
     int isample;
@@ -40,19 +40,18 @@ class moench03TCtb10GbData : public slsReceiverData<uint16_t> {
     
     int npackets=40;
     int i;
-    int adc4(0);
+
 
     for (int ip=0; ip<npackets; ip++) {
       for (int is=0; is<128; is++) {
 
 	for (iadc=0; iadc<nadc; iadc++) {
 	  i=128*ip+is;
-	  adc4=(int)iadc/4;
 	  if (i<sc_width*sc_height) {
 	    //  for (int i=0; i<sc_width*sc_height; i++) {
 	    col=adc_nr[iadc]+(i%sc_width);
-	    if (adc4%2==0) {
-	      row=199-i/sc_width; 	            
+	    if (iadc<16) {
+	      row=199-i/sc_width;
 	    } else {
 	      row=200+i/sc_width;
 	    }
@@ -67,7 +66,6 @@ class moench03TCtb10GbData : public slsReceiverData<uint16_t> {
     int ipacket;
     int ibyte;
     int ii=0;
-    
     for (int ipacket=0; ipacket<npackets; ipacket++) {
       for (int ibyte=0;  ibyte< 8208/2; ibyte++) {
 	i=ipacket*8208/2+ibyte;
@@ -79,20 +77,15 @@ class moench03TCtb10GbData : public slsReceiverData<uint16_t> {
 	  // ii=ibyte+128*32*ipacket;
 	  isample=ii/nadc;
 	  iadc=ii%nadc;
-	  adc4 = (int)iadc/4;
-
+	
 	  ix=isample%sc_width;
 	  iy=isample/sc_width;
-	  if (adc4%2==0) {
+	  if (iadc<(nadc/2)) {
 	    xmap[i]=adc_nr[iadc]+ix;
 	    ymap[i]=ny/2-1-iy;
-
-
-
 	  } else {
 	    xmap[i]=adc_nr[iadc]+ix;
 	    ymap[i]=ny/2+iy;
-
 	  }
 	  
 	ii++;
@@ -116,8 +109,18 @@ class moench03TCtb10GbData : public slsReceiverData<uint16_t> {
 
   */
 
+/* class jfrau_packet_header_t { */
+/*  public: */
+/* 	unsigned char emptyHeader[6]; */
+/* 	unsigned char reserved[4]; */
+/* 	unsigned char packetNumber[1]; */
+/* 	unsigned char frameNumber[3]; */
+/* 	unsigned char bunchid[8]; */
+/* }; */
 
-  int getFrameNumber(char *buff){return *((int*)buff)&0xffffffff;};   
+
+
+ int getFrameNumber(char *buff){return *((int*)(buff+5))&0xffffff;};   
 
   /**
 
@@ -172,71 +175,57 @@ class moench03TCtb10GbData : public slsReceiverData<uint16_t> {
 /*     }; */
 
 
-  virtual char *readNextFrame(ifstream &filebin, int& ff, int &np) {
+  	virtual char *readNextFrame(ifstream &filebin, int& fnum) {
 	  char *data=new char[packetSize*nPackets];
 	  char *retval=0;
-	  int nd;
-	  np=0;
+	  int np=0, nd;
+	  fnum = -1;
 	  int  pn;
-	  char aa[8224]={0};
+	  char aa[8224];
 	  char *packet=(char *)aa;
-	  int  fnum = -1;
-	  
-	  if (ff>=0)
-	    fnum=ff;
 
 	  if (filebin.is_open()) {
 
 
-	    cout << "+";
 
-	    while(filebin.read((char*)packet, 8208)){
-	      
+
+	    while(filebin.read((char*)packet, 8208) && np<nPackets){
 	      pn=getPacketNumber(packet);
 	      
-	      if (fnum<0)
+	      if (pn==1 && fnum<0)
 		fnum= getFrameNumber(packet);
 	      
+	      // cout << "fn: " << fnum << "\t pn: " << pn << endl;
 	      if (fnum>=0) {
 		if (getFrameNumber(packet) !=fnum) { 
 		  
 		  if (np==0){
-		    cout << "-";
 		    delete [] data;
 		    return NULL;
 		  } else
-		    filebin.seekg(-8208,ios_base::cur);
-
 		    return data;
 		}
 		
 		memcpy(data+(pn-1)*packetSize, packet, packetSize);
 		np++;
-		if (np==nPackets)
-		  break;
-		if (pn==nPackets)
-		  break;
+		
 	      }
 	    }
 	    
 	  }
-	  
+
 	  if (np==0){
-	    cout << "?";
 	    delete [] data;
 	    return NULL;
-	  }// else if (np<nPackets)
-	    //  cout << "Frame " << fnum << " lost "  << nPackets-np << " packets " << endl;
+	  }
 
-	  return data;
-	  
 	};
 
 int getPacketNumber(int x, int y) {return dataMap[y][x]/8208;};
 
   	virtual char *readNextFrame(ifstream &filebin) {
-	  int fnum=-1, np;
-	  return readNextFrame(filebin, fnum, np);
+	  int fnum;
+	  return readNextFrame(filebin, fnum);
 	};
 
 };

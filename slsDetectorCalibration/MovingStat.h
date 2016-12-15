@@ -25,6 +25,16 @@ class MovingStat
 	  m_newM=0; 
 	  m_newM2=0;
         }
+
+	/**
+	   clears the moving average number of samples parameter, mean and standard deviation
+	*/
+        void Set(double val)
+        {
+	  m_n = n; 
+	  m_newM=val*n; 
+	  m_newM2=val*val*n;
+        }
 	
 	
 	/** sets number of samples parameter

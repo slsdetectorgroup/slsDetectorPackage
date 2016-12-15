@@ -150,6 +150,18 @@ class singlePhotonDetector {
        \param iy pixel y coordinate
     */
     double getPedestalRMS(int ix, int iy){if (ix>=0 && ix<nx && iy>=0 && iy<ny) return stat[iy][ix].getPedestalRMS();else return -1;};
+
+
+  /**
+       sets  pedestal
+       \param ix pixel x coordinate
+       \param iy pixel y coordinate
+       \param val value to set
+    */
+    virtual void setPedestal(int ix, int iy, double val){if (ix>=0 && ix<nx && iy>=0 && iy<ny) stat[iy][ix].setPedestal(val);};
+
+ 
+
   
 
     /** sets/gets number of rms threshold to detect photons

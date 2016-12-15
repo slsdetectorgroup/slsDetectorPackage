@@ -42,8 +42,8 @@ public:
 	/**
 	 * Get Rest State
 	 */
-	int get_rest_state(RestHelper * rest, string *rest_state);
-
+	string get_rest_state(RestHelper * rest/*, string *rest_state*/);
+	
 
 	/*************************************************************************
 	 * Setters ***************************************************************
@@ -138,12 +138,15 @@ public:
 	 */
 	void closeFile(int i = -1);
 
+	uint64_t getTotalFramesCaught() const;
+
+
 private:
-	
 	bool isInitialized;
 	RestHelper * rest ;
 	int rest_port;  		// receiver backend port
 	string rest_hostname;  	// receiver hostname
+	bool is_main_receiver;
 	
 };
 

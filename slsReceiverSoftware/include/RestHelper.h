@@ -18,6 +18,7 @@
 #include <Poco/Timespan.h>
 
 #include "JsonBox/Value.h"
+#include "JsonBox/JsonParsingError.h"
 
 //#include "logger.h"
 
@@ -167,8 +168,8 @@ class RestHelper {
     string answer;
     int code = send_request(session, req, &answer);
     if(code == 0 ) {
-	    FILE_LOG(logDEBUG) << __AT__ << " REQUEST: " << " ANSWER: " << answer;
-	    json_value->loadFromString(answer);
+      FILE_LOG(logDEBUG) << __AT__ << " REQUEST: " << " ANSWER: " << answer;
+      json_value->loadFromString(answer);
     }
     delete uri;
     return code;
@@ -220,7 +221,17 @@ class RestHelper {
     string answer;
     int code = send_request(session, req, &answer, request_body);
     if(code==0){
-	    json_value->loadFromString(answer);
+      try{
+	json_value->loadFromString(answer);
+      }
+      catch (JsonBox::JsonParsingError& e){
+	try{
+	  json_value->loadFromString("{\"global_state\":\"" + answer + "\"}");
+	}
+	catch(exception &e){
+	  FILE_LOG(logERROR) << "Exception converting answer: " << e.what() ;
+	}
+      }
     }
     delete uri;
     return code;

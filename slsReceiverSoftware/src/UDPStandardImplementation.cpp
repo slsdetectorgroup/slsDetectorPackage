@@ -160,7 +160,7 @@ void UDPStandardImplementation::initializeMembers(){
 #endif
 	}
 #ifdef HDF5C
-	hdf5_datatype = H5T_STD_U16LE;
+	hdf5_datatype = PredType::STD_U16LE;
 #endif
 	maxFramesPerFile = 0;
 	fileCreateSuccess = false;
@@ -648,9 +648,9 @@ int UDPStandardImplementation::setDynamicRange(const uint32_t i){
 #ifdef HDF5C
 	switch(dynamicRange){
 	case 4:
-	case 8: 	hdf5_datatype = H5T_STD_U8LE; 	break;
-	case 16:	hdf5_datatype = H5T_STD_U16LE; 	break;
-	case 32:	hdf5_datatype = H5T_STD_U32LE; 	break;
+	case 8: 	hdf5_datatype = PredType::STD_U8LE; 	break;
+	case 16:	hdf5_datatype = PredType::STD_U16LE; 	break;
+	case 32:	hdf5_datatype = PredType::STD_U32LE; 	break;
 	default:	cprintf(BG_RED,"unknown dynamic range\n");
 	}
 #endif
@@ -1718,10 +1718,27 @@ int UDPStandardImplementation::createNewFile(int ithread){
 			try{
 				Exception::dontPrint(); //to handle errors
 				//creating file
+				FileAccPropList flist;
+				flist.setFcloseDegree(H5F_CLOSE_STRONG);
 				if(!overwriteEnable)
-					hdf5_fileId[ithread] = new H5File( completeFileName[ithread], H5F_ACC_EXCL );
+					hdf5_fileId[ithread] = new H5File( completeFileName[ithread], H5F_ACC_EXCL, NULL,flist );
 				else
-					hdf5_fileId[ithread] = new H5File( completeFileName[ithread], H5F_ACC_TRUNC );
+					hdf5_fileId[ithread] = new H5File( completeFileName[ithread], H5F_ACC_TRUNC, NULL, flist );
+
+				//Create a group in the file
+				Group group1( hdf5_fileId[ithread]->createGroup( "entry" ));
+				Group group2(group1.createGroup("instrument"));
+					Group group3(group2.createGroup("detector"));
+				Group group4(group1.createGroup("data"));
+				Group group5(group1.createGroup("sample"));
+
+				//group4.link(H5G_LINK_HARD,"/entry/data","/entry/instrument/detector/data");
+				group1.close();
+				group2.close();
+				group3.close();
+				group4.close();
+				group5.close();
+
 				//create property list for a dataset and set up fill values
 				int fillvalue = -1;
 				DSetCreatPropList plist;
@@ -1731,9 +1748,14 @@ int UDPStandardImplementation::createNewFile(int ithread){
 				if(dynamicRange == 4)
 					srcdims[1] = NX/2;
 				hdf5_dataspaceId[ithread] = new DataSpace (3,srcdims);
+
+
+				char dsetname[100];
+				sprintf(dsetname, "/entry/data/data_%06lld", (long long int)currentFrameNumber[ithread]+1);
+
 				//Create dataset and write it into the file
 				hdf5_datasetId[ithread] = new DataSet (hdf5_fileId[ithread]->createDataSet(
-				        "Data", hdf5_datatype, *hdf5_dataspaceId[ithread], plist));
+						dsetname, hdf5_datatype, *hdf5_dataspaceId[ithread], plist));
 
 				//create the data space for the attribute
 				hsize_t dims = 1;
@@ -3066,7 +3088,7 @@ void UDPStandardImplementation::handleCompleteFramesOnly(int ithread, char* wbuf
 		)){
 #endif
 
-		if(tempframenumber && (tempframenumber%maxFramesPerFile) == 0)
+		if(fileFormatType == BINARY && tempframenumber && (tempframenumber%maxFramesPerFile) == 0)
 			createNewFile(ithread);
 #ifdef HDF5C
 
@@ -3087,6 +3109,7 @@ void UDPStandardImplementation::handleCompleteFramesOnly(int ithread, char* wbuf
 				hdf5_dataspaceId[ithread]->selectHyperslab( H5S_SELECT_SET, count, start);
 				DataSpace memspace(2,dims2);
 				hdf5_datasetId[ithread]->write(wbuffer + fifoBufferHeaderSize, hdf5_datatype, memspace, *hdf5_dataspaceId[ithread]);
+				memspace.close();
 			}
 			catch(Exception error){
 					cprintf(RED,"Error in writing to file in thread %d\n",ithread);

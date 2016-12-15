@@ -645,7 +645,7 @@ private:
 	DataSpace *hdf5_dataspaceId[MAX_NUMBER_OF_WRITER_THREADS];
 	DataSet *hdf5_datasetId[MAX_NUMBER_OF_WRITER_THREADS];
 	H5File *hdf5_fileId[MAX_NUMBER_OF_WRITER_THREADS];
-	hid_t hdf5_datatype;
+	DataType hdf5_datatype;
 #endif
 	//***acquisition indices/count parameters***
 	/** Frame Number of First Frame of an entire Acquisition (including all scans) */

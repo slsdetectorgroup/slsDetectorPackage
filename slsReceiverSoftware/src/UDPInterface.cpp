@@ -28,6 +28,7 @@ UDPInterface * UDPInterface::create(string receiver_type){
 	}
 #ifdef REST
 	else if (receiver_type == "REST"){
+		FILE_LOG(logINFO) << "Starting " << receiver_type;
 		return new UDPRESTImplementation();
 	}
 #endif

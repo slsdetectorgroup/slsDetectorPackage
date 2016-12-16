@@ -1369,9 +1369,11 @@ void qDrawPlot::UpdatePlot(){
 							histFrameIndexTitle->setText(GetHistTitle(0));
 							plotHistogram->attach(plot1D);
 							//refixing all the zooming
+
 							plot1D->SetXMinMax(startPixel,endPixel);
 							plot1D->SetYMinMax(0,plotHistogram->boundingRect().height());
 							plot1D->SetZoomBase(startPixel,0,endPixel-startPixel,plotHistogram->boundingRect().height());
+
 						}
 						//not histogram
 						else{
@@ -1403,33 +1405,35 @@ void qDrawPlot::UpdatePlot(){
 								//	firstPlot = false;
 								//}
 							}
+
+							/**moved from below (had applied to histograms as well) to here, */
+							// update range if required
+							if(XYRangeChanged){
+								if(!IsXYRange[qDefs::XMINIMUM])		XYRangeValues[qDefs::XMINIMUM]= plot1D->GetXMinimum();
+								if(!IsXYRange[qDefs::XMAXIMUM])		XYRangeValues[qDefs::XMAXIMUM]= plot1D->GetXMaximum();
+								if(!IsXYRange[qDefs::YMINIMUM])		XYRangeValues[qDefs::YMINIMUM]= plot1D->GetYMinimum();
+								if(!IsXYRange[qDefs::YMAXIMUM])		XYRangeValues[qDefs::YMAXIMUM]= plot1D->GetYMaximum();
+								plot1D->SetXMinMax(XYRangeValues[qDefs::XMINIMUM],XYRangeValues[qDefs::XMAXIMUM]);
+								plot1D->SetYMinMax(XYRangeValues[qDefs::YMINIMUM],XYRangeValues[qDefs::YMAXIMUM]);
+								//Should not be reset for histogram,
+								//that is the only way to zoom in (new plots are zoomed out as its different each time)
+								if(!histogram)
+									XYRangeChanged	= false;
+							}
+							/**moved from below (had applied to histograms as well) to here, */
+							//Display Statistics
+							if(displayStatistics){
+								double min=0,max=0,sum=0;
+								if(anglePlot)
+									GetStatistics(min,max,sum,histYAngleAxis,histNBins);
+								else
+									GetStatistics(min,max,sum,histYAxis[0],histNBins);
+								lblMinDisp->setText(QString("%1").arg(min));
+								lblMaxDisp->setText(QString("%1").arg(max));
+								lblSumDisp->setText(QString("%1").arg(sum));
+							}
 						}
 
-
-						// update range if required
-						if(XYRangeChanged){
-							if(!IsXYRange[qDefs::XMINIMUM])		XYRangeValues[qDefs::XMINIMUM]= plot1D->GetXMinimum();
-							if(!IsXYRange[qDefs::XMAXIMUM])		XYRangeValues[qDefs::XMAXIMUM]= plot1D->GetXMaximum();
-							if(!IsXYRange[qDefs::YMINIMUM])		XYRangeValues[qDefs::YMINIMUM]= plot1D->GetYMinimum();
-							if(!IsXYRange[qDefs::YMAXIMUM])		XYRangeValues[qDefs::YMAXIMUM]= plot1D->GetYMaximum();
-							plot1D->SetXMinMax(XYRangeValues[qDefs::XMINIMUM],XYRangeValues[qDefs::XMAXIMUM]);
-							plot1D->SetYMinMax(XYRangeValues[qDefs::YMINIMUM],XYRangeValues[qDefs::YMAXIMUM]);
-							//Should not be reset for histogram,
-							//that is the only way to zoom in (new plots are zoomed out as its different each time)
-							if(!histogram)
-								XYRangeChanged	= false;
-						}
-						//Display Statistics
-						if(displayStatistics){
-							double min=0,max=0,sum=0;
-							if(anglePlot)
-								GetStatistics(min,max,sum,histYAngleAxis,histNBins);
-							else
-								GetStatistics(min,max,sum,histYAxis[0],histNBins);
-							lblMinDisp->setText(QString("%1").arg(min));
-							lblMaxDisp->setText(QString("%1").arg(max));
-							lblSumDisp->setText(QString("%1").arg(sum));
-						}
 						if(saveAll) SavePlotAutomatic();
 
 					}

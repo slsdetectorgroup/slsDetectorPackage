@@ -8,6 +8,7 @@
 #ifndef QDEFS_H
 #define QDEFS_H
 
+#include "ansi.h"
 #include "sls_detector_defs.h"
 #include "slsDetector.h"
 #include "multiSlsDetector.h"

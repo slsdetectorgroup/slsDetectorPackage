@@ -45,6 +45,7 @@ int  slsDetectorUtils::acquire(int delflag){
 	struct timespec begin,end;
 	clock_gettime(CLOCK_REALTIME, &begin);
 
+
   //ensure acquire isnt started multiple times by same client
   if(getAcquiringFlag() == false)
     setAcquiringFlag(true);
@@ -52,6 +53,10 @@ int  slsDetectorUtils::acquire(int delflag){
 	  std::cout << "Error: Acquire has already been started." << std::endl;
 	  return FAIL;
   }
+
+	//not in the loop for real time acqusition yet,
+	//in the real time acquisition loop, processing thread will wait for a post each time
+	sem_init(&sem_newRTAcquisition,1,0);
 
 
   bool receiver = (setReceiverOnline()==ONLINE_FLAG);
@@ -220,6 +225,10 @@ int  slsDetectorUtils::acquire(int delflag){
 	ResetPositionIndex();
      
 	for (int ip=0; ip<np; ip++) {
+
+		//let processing thread listen to these packets
+		sem_post(&sem_newRTAcquisition);
+
 	  //   cout << "positions " << endl;
 	  if (*stoppedFlag==0) {
 	    if  (getNumberOfPositions()>0) {
@@ -462,6 +471,9 @@ int  slsDetectorUtils::acquire(int delflag){
   }
 
 
+	//let processing thread continue and checkjointhread
+	sem_post(&sem_newRTAcquisition);
+
   // waiting for the data processing thread to finish!
   if (*threadedProcessing) {
 #ifdef VERBOSE
@@ -499,6 +511,7 @@ int  slsDetectorUtils::acquire(int delflag){
 #endif
 
   setAcquiringFlag(false);
+  sem_destroy(&sem_newRTAcquisition);
 
   clock_gettime(CLOCK_REALTIME, &end);
   cout << "Elapsed time for acquisition:" << (( end.tv_sec - begin.tv_sec )	+ ( end.tv_nsec - begin.tv_nsec ) / 1000000000.0) << " seconds" << endl;

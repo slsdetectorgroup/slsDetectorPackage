@@ -471,8 +471,6 @@ int  slsDetectorUtils::acquire(int delflag){
   }
 
 
-	//let processing thread continue and checkjointhread
-	sem_post(&sem_newRTAcquisition);
 
   // waiting for the data processing thread to finish!
   if (*threadedProcessing) {
@@ -480,6 +478,10 @@ int  slsDetectorUtils::acquire(int delflag){
     cout << "wait for data processing thread" << endl;
 #endif
     setJoinThread(1);
+
+	//let processing thread continue and checkjointhread
+	sem_post(&sem_newRTAcquisition);
+
     pthread_join(dataProcessingThread, &status);
 #ifdef VERBOSE
     cout << "data processing thread joined" << endl;

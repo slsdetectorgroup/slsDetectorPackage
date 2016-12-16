@@ -890,12 +890,10 @@ virtual int setReceiverFifoDepth(int i = -1)=0;
   int (*acquisition_finished)(double,int,void*);
   int (*measurement_finished)(int,int,void*);
   void *acqFinished_p, *measFinished_p;
-
-
-
   int (*progress_call)(double,void*);
   void *pProgressCallArg;
   
+  sem_t sem_newRTAcquisition;
 
 
 };

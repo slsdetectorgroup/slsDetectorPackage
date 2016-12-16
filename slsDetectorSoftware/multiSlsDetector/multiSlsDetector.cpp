@@ -5329,11 +5329,18 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 
 	volatile uint64_t dataThreadMask = 0x0;
+
+	//wait for real time acquisition to start
+	bool running = true;
+	sem_wait(&sem_newRTAcquisition);
+	if(checkJoinThread())
+		running = false;
+
 	for(int i = 0; i < numSockets; ++i)
 		dataThreadMask|=(1<<i);
 
 	//exit when last message for each socket received
-	while(true){
+	while(running){
 		//memset(((char*)multiframe),0xFF,slsdatabytes*thisMultiDetector->numberOfDetectors);	//reset frame memory
 
 		//get each frame
@@ -5378,21 +5385,36 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 		}
 
+
 		//all done
-		if(!dataThreadMask)
-			break;
+		if(!dataThreadMask){
+			sem_wait(&sem_newRTAcquisition);
+			//done with complete acquisition
+			if(checkJoinThread())
+				break;
+			else{
+				//starting a new scan/measurement
+				for(int i = 0; i < numSockets; ++i)
+					dataThreadMask|=(1<<i);
+				running = false;
+			}
+		}
 
 		//send data to callback
-		fdata = decodeData(multiframe);
-		if ((fdata) && (dataReady)){
-			thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),nx,ny);
-			dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);
-			delete thisData;
-			fdata = NULL;
-			//cout<<"Send frame #"<< currentFrameIndex << " to gui"<<endl;
+		if(running){
+			fdata = decodeData(multiframe);
+			if ((fdata) && (dataReady)){
+				thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),nx,ny);
+				dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);
+				delete thisData;
+				fdata = NULL;
+				//cout<<"Send frame #"<< currentFrameIndex << " to gui"<<endl;
 			}
-		setCurrentProgress(currentAcquisitionIndex+1);
+			setCurrentProgress(currentAcquisitionIndex+1);
+		}
 
+		//setting it back for each scan/measurement
+		running = true;
 	}
 
 	//free resources

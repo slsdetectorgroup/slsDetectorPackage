@@ -508,8 +508,8 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
 
   /** Reads frames from receiver through a constant socket
   */
-  virtual int* readFrameFromReceiver(char* fName, int &acquisitionIndex, int &frameIndex, int &subFrameIndex)=0;
-
+  //  virtual int* readFrameFromReceiver(char* fName, int &acquisitionIndex, int &frameIndex, int &subFrameIndex)=0;
+virtual void readFrameFromReceiver()=0;
 
   /** Sets the read receiver frequency
    	  if data required from receiver randomly readRxrFrequency=0,

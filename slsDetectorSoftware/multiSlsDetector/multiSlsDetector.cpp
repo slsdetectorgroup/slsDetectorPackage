@@ -5319,7 +5319,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 		return;
 	}
 	int* multiframe=new int[nel]();
-
+	int nch;
 
 	volatile uint64_t dataThreadMask = 0x0;
 
@@ -5395,7 +5395,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 		//send data to callback
 		if(running){
-			fdata = decodeData(multiframe);
+		  fdata = decodeData(multiframe,nch);
 			if ((fdata) && (dataReady)){
 				thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),nx,ny);
 				dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);

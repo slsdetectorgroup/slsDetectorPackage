@@ -7663,54 +7663,54 @@ int slsDetector::resetFramesCaught(){
 }
 
 
- int* slsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex, int &frameIndex, int &subFrameIndex){ 	
-   int fnum=F_READ_RECEIVER_FRAME; 	
-   int nel=thisDetector->dataBytes/sizeof(int); 	
-   int* retval=new int[nel]; 	
-   int ret=FAIL; 	
-   int n; 	
-   char mess[MAX_STR_LENGTH]="Nothing"; 	
-   if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) { 
-#ifdef VERBOSE 		
-     std::cout<< "slsDetector: Reading frame from receiver "<< thisDetector->dataBytes << " " <<nel <<std::endl; 
-#endif 		
-     if (connectData() == OK){ 			
-       dataSocket->SendDataOnly(&fnum,sizeof(fnum)); 			
-       dataSocket->ReceiveDataOnly(&ret,sizeof(ret)); 			
-       if (ret==FAIL) { 				
-	 n= dataSocket->ReceiveDataOnly(mess,sizeof(mess)); 				
-	 std::cout<< "Detector returned: " << mess << " " << n << std::endl; 				
-	 delete [] retval; 				
-	 disconnectData(); 				
-	 return NULL; 			
-       } else { 				
-	 n=dataSocket->ReceiveDataOnly(fName,MAX_STR_LENGTH); 				
-	 n=dataSocket->ReceiveDataOnly(&acquisitionIndex,sizeof(acquisitionIndex)); 				
-	 n=dataSocket->ReceiveDataOnly(&frameIndex,sizeof(frameIndex)); 				
-	 if(thisDetector->myDetectorType == EIGER) 					
-	   n=dataSocket->ReceiveDataOnly(&subFrameIndex,sizeof(subFrameIndex)); 				
-	 n=dataSocket->ReceiveDataOnly(retval,thisDetector->dataBytes); 
-#ifdef VERBOSE 				
-	 std::cout<< "Received "<< n << " data bytes" << std::endl; 
-#endif 				
-	 if (n!=thisDetector->dataBytes) { 					
-	   std::cout<<endl<< "wrong data size received: received " << n << " but expected from receiver " << thisDetector->dataBytes << std::endl; 					
-	   ret=FAIL; 					
-	   delete [] retval; 					
-	   disconnectData(); 					
-	   return NULL; 				} 				
-	 //jungfrau masking adcval 				
-	 if(thisDetector->myDetectorType == JUNGFRAU){ 					
-	 for(unsigned int i=0;i<nel;i++){ 						
-	 retval[i] = (retval[i] & 0x3FFF3FFF); 					
-       } 				
-       } 			
-       } 			
-	 disconnectData(); 		
-       } 	
-       } 	
-	 return retval; 
-       }; 
+//  int* slsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex, int &frameIndex, int &subFrameIndex){ 	
+//    int fnum=F_READ_RECEIVER_FRAME; 	
+//    int nel=thisDetector->dataBytes/sizeof(int); 	
+//    int* retval=new int[nel]; 	
+//    int ret=FAIL; 	
+//    int n; 	
+//    char mess[MAX_STR_LENGTH]="Nothing"; 	
+//    if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) { 
+// #ifdef VERBOSE 		
+//      std::cout<< "slsDetector: Reading frame from receiver "<< thisDetector->dataBytes << " " <<nel <<std::endl; 
+// #endif 		
+//      if (connectData() == OK){ 			
+//        dataSocket->SendDataOnly(&fnum,sizeof(fnum)); 			
+//        dataSocket->ReceiveDataOnly(&ret,sizeof(ret)); 			
+//        if (ret==FAIL) { 				
+// 	 n= dataSocket->ReceiveDataOnly(mess,sizeof(mess)); 				
+// 	 std::cout<< "Detector returned: " << mess << " " << n << std::endl; 				
+// 	 delete [] retval; 				
+// 	 disconnectData(); 				
+// 	 return NULL; 			
+//        } else { 				
+// 	 n=dataSocket->ReceiveDataOnly(fName,MAX_STR_LENGTH); 				
+// 	 n=dataSocket->ReceiveDataOnly(&acquisitionIndex,sizeof(acquisitionIndex)); 				
+// 	 n=dataSocket->ReceiveDataOnly(&frameIndex,sizeof(frameIndex)); 				
+// 	 if(thisDetector->myDetectorType == EIGER) 					
+// 	   n=dataSocket->ReceiveDataOnly(&subFrameIndex,sizeof(subFrameIndex)); 				
+// 	 n=dataSocket->ReceiveDataOnly(retval,thisDetector->dataBytes); 
+// #ifdef VERBOSE 				
+// 	 std::cout<< "Received "<< n << " data bytes" << std::endl; 
+// #endif 				
+// 	 if (n!=thisDetector->dataBytes) { 					
+// 	   std::cout<<endl<< "wrong data size received: received " << n << " but expected from receiver " << thisDetector->dataBytes << std::endl; 					
+// 	   ret=FAIL; 					
+// 	   delete [] retval; 					
+// 	   disconnectData(); 					
+// 	   return NULL; 				} 				
+// 	 //jungfrau masking adcval 				
+// 	 if(thisDetector->myDetectorType == JUNGFRAU){ 					
+// 	 for(unsigned int i=0;i<nel;i++){ 						
+// 	 retval[i] = (retval[i] & 0x3FFF3FFF); 					
+//        } 				
+//        } 			
+//        } 			
+// 	 disconnectData(); 		
+//        } 	
+//        } 	
+// 	 return retval; 
+//        }; 
 
 
 

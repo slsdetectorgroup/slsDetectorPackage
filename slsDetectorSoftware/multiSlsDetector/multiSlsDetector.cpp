@@ -140,8 +140,6 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
     thisMultiDetector->fileIndex=0;
     /** set frames per file to default to 1*/
     thisMultiDetector->framesPerFile=1;
-    /** set fileIndex to default to 0*/
-    thisMultiDetector->fileIndex=0;
     /** set fileFormat to default to ascii*/
     thisMultiDetector->fileFormatType=ASCII;
 
@@ -4364,6 +4362,7 @@ int multiSlsDetector::readConfigurationFile(string const fname){
   // char ext[100];
 
   setAcquiringFlag(false);
+  clearAllErrorMask();
 
   string ans;
   string str;

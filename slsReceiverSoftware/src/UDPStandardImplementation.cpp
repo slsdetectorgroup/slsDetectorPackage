@@ -1727,17 +1727,18 @@ int UDPStandardImplementation::createNewFile(int ithread){
 
 				//Create a group in the file
 				Group group1( hdf5_fileId[ithread]->createGroup( "entry" ));
-				Group group2(group1.createGroup("instrument"));
-					Group group3(group2.createGroup("detector"));
-				Group group4(group1.createGroup("data"));
-				Group group5(group1.createGroup("sample"));
+					Group group2(group1.createGroup("data"));
+					Group group3(group1.createGroup("instrument"));
+						Group group4(group3.createGroup("detector"));
+
+					//Group group5(group1.createGroup("sample"));
 
 				//group4.link(H5G_LINK_HARD,"/entry/data","/entry/instrument/detector/data");
 				group1.close();
 				group2.close();
 				group3.close();
 				group4.close();
-				group5.close();
+				//group5.close();
 
 				//create property list for a dataset and set up fill values
 				int fillvalue = -1;
@@ -1757,6 +1758,7 @@ int UDPStandardImplementation::createNewFile(int ithread){
 				hdf5_datasetId[ithread] = new DataSet (hdf5_fileId[ithread]->createDataSet(
 						dsetname, hdf5_datatype, *hdf5_dataspaceId[ithread], plist));
 
+				/*
 				//create the data space for the attribute
 				hsize_t dims = 1;
 				DataSpace attr_dataspace = DataSpace (1, &dims);
@@ -1765,7 +1767,7 @@ int UDPStandardImplementation::createNewFile(int ithread){
 						PredType::STD_I32LE, attr_dataspace);
 				//write the attribute data
 				attribute.write(PredType::STD_I32LE, &dynamicRange);
-
+				 */
 			}
 			catch(Exception error){
 				cprintf(RED,"Error in creating HDF5 handles in thread %d\n",ithread);

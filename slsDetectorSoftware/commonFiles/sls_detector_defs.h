@@ -25,6 +25,9 @@
 /** maximum rois */
 #define MAX_ROIS 100
 
+/** maximum unit size of program sent to detector */
+#define MAX_FPGAPROGRAMSIZE (2 * 1024 *1024)
+
 
 typedef char mystring[MAX_STR_LENGTH];
 typedef double mysteps[MAX_SCAN_STEPS];
@@ -362,6 +365,8 @@ enum dacIndex {
   TEMPERATURE_DCDC,		/**< temperature sensor (close to DCDC) */
   TEMPERATURE_SODL,		/**< temperature sensor (close to SODL) */
   TEMPERATURE_SODR,		/**< temperature sensor (close to SODR) */
+  TEMPERATURE_FPGA2, /**< temperature sensor (fpga2 (eiger:febl) */
+  TEMPERATURE_FPGA3, /**< temperature sensor (fpga3 (eiger:febr) */
   V_POWER_A = 100, /**new chiptest board */
   V_POWER_B = 101, /**new chiptest board */
   V_POWER_C = 102, /**new chiptest board */
@@ -434,7 +439,10 @@ enum speedVariable {
   OVERSAMPLING, /**< oversampling for analog detectors */
   ADC_CLOCK, /**< adc clock divider */
   ADC_PHASE, /**< adc clock phase */
-  ADC_PIPELINE /**< adc pipeline */
+  ADC_PIPELINE, /**< adc pipeline */
+  DBIT_CLOCK, /**< adc clock divider */
+  DBIT_PHASE, /**< adc clock phase */
+  DBIT_PIPELINE /**< adc pipeline */
 };
 
 

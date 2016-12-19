@@ -41,12 +41,13 @@ struct BebInfo{
 
   void Beb_ClearBebInfos();
   int Beb_InitBebInfos();
-  int Beb_ReadSetUpFromFile(char* file_name);
   int Beb_CheckSourceStuffBebInfo();
   unsigned int Beb_GetBebInfoIndex(unsigned int beb_numb);
 
 
   void Beb_GetModuleCopnfiguration(int* master, int* top);
+  void Beb_EndofDataSend(int tengiga);
+
   int Beb_SetMasterViaSoftware();
   int Beb_SetSlaveViaSoftware();
   int Beb_Activate(int enable);

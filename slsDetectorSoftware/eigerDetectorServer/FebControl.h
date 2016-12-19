@@ -64,6 +64,7 @@ int          Module_GetBottomDACValue(struct Module* mod,unsigned int i);
 
 
 
+void Feb_Control_activate(int activate);
 
 int Feb_Control_IsBottomModule();
 int Feb_Control_GetModuleNumber();
@@ -112,8 +113,6 @@ int Feb_Control_GetModuleNumber();
 
   void Feb_Control_FebControl();
   int Feb_Control_Init(int master, int top, int module_num);
-  int Feb_Control_ReadSetUpFileToAddModules(char* file_name);
-  int Feb_Control_ReadSetUpFile(unsigned int module_num, char* file_name);
   int Feb_Control_CheckSetup();
 
   unsigned int Feb_Control_GetNModules();
@@ -159,6 +158,7 @@ int Feb_Control_GetModuleNumber();
   unsigned int Feb_Control_GetNExposures();
   int Feb_Control_SetExposureTime(double the_exposure_time_in_sec);
   double Feb_Control_GetExposureTime();
+  int64_t Feb_Control_GetExposureTime_in_nsec();
   int Feb_Control_SetSubFrameExposureTime(int64_t the_subframe_exposure_time_in_10nsec);
   int64_t Feb_Control_GetSubFrameExposureTime();
   int Feb_Control_SetExposurePeriod(double the_exposure_period_in_sec);
@@ -185,11 +185,14 @@ int Feb_Control_GetModuleNumber();
   int Feb_Control_PulseChip(int npulses);
 
   int64_t Feb_Control_Get_RateTable_Tau_in_nsec();
-  int64_t Feb_Control_Get_RateTable_Subexptime_in_nsec();
+  int64_t Feb_Control_Get_RateTable_Period_in_nsec();
   int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec);
   int Feb_Control_SetRateCorrectionTable(unsigned int *table);
   int Feb_Control_GetRateCorrectionVariable();
   void Feb_Control_SetRateCorrectionVariable(int activate_rate_correction);
   int Feb_Control_PrintCorrectedValues();
+
+  int Feb_Control_GetLeftFPGATemp();
+  int Feb_Control_GetRightFPGATemp();
 
 #endif

@@ -7,8 +7,10 @@ ThreadPool::ThreadPool(int pool_size) : m_pool_size(pool_size){
 #endif
 	m_tasks_loaded = false;
 	thread_started = false;
+	zmqthreadpool = false;
 	current_thread_number = -1;
 	number_of_ongoing_tasks = 0;
+	number_of_total_tasks = 0;
 }
 
 ThreadPool::~ThreadPool(){
@@ -34,6 +36,7 @@ int ThreadPool::initialize_threadpool(){
 	m_pool_state = STARTED;
 	int ret = -1;
 	sem_init(&semStart,1,0);
+	sem_init(&semDone,1,0);
 	for (int i = 0; i < m_pool_size; i++) {
 		pthread_t tid;
 		thread_started = false;
@@ -68,12 +71,15 @@ int ThreadPool::destroy_threadpool(){
 	for (int i = 0; i < m_pool_size; i++) {
 		void* result;
 		sem_post(&semStart);
+		sem_post(&semDone);
 		ret = pthread_join(m_threads[i], &result);
 		/*cout << "pthread_join() returned " << ret << ": " << strerror(errno) << endl;*/
 		m_task_cond_var.broadcast(); // try waking up a bunch of threads that are still waiting
 	}
 	sem_destroy(&semStart);
+	sem_destroy(&semDone);
 	number_of_ongoing_tasks = 0;
+	number_of_total_tasks = 0;
 	/* cout << m_pool_size << " threads exited from the thread pool" << endl;*/
 	return 0;
 }
@@ -109,25 +115,28 @@ void* ThreadPool::execute_thread(){
 		/*cout << "Unlocking: " << pthread_self() << endl;*/
 		m_task_mutex.unlock();
 
+		//if(zmqthreadpool) cout<<"***"<<ithread<<" semaphore start address wait:"<<&semStart<<endl;
 		sem_wait(&semStart);
+
+		//cout<<"***"<<ithread<<" checking out semaphore done address:"<<&semDone<<endl;
 
 		/*cout << ithread <<" Executing thread " << pthread_self() << endl;*/
 		// execute the task
 		(*task)(); // could also do task->run(arg);
 		/*cout << ithread <<" Done executing thread " << pthread_self() << endl;*/
 
-		m_all_tasks_mutex.lock();
+		m_task_mutex.lock();
 		number_of_ongoing_tasks--;
-		m_all_tasks_mutex.unlock();
+		m_task_mutex.unlock();
 
+		//if(zmqthreadpool) cout<<ithread <<" task  done: "<<number_of_ongoing_tasks<<endl;
 		//last task and check m_tasks_loaded to ensure done only once
 		if((!number_of_ongoing_tasks) && m_tasks_loaded){
-			/*cout << ithread << " all tasks done."<<endl;*/
-			m_all_tasks_mutex.lock();
+			//if(zmqthreadpool) cout << ithread << " all tasks done."<<endl;
 			m_tasks_loaded = false;
-			m_all_tasks_cond_var.signal();// wake up thread that is waiting for all tasks to be complete
-			m_all_tasks_mutex.unlock();
 		}
+		//if(zmqthreadpool) cout<<"***"<<ithread<<" semaphore done address post:"<<&semDone<<endl;
+		sem_post(&semDone);
 		delete task;
 		/*cout << ithread << " task deleted" << endl;*/
 	}
@@ -143,28 +152,37 @@ int ThreadPool::add_task(Task* task){
 	// TODO: put a limit on how many tasks can be added at most
 	m_tasks.push_back(task);
 	number_of_ongoing_tasks++;
+	number_of_total_tasks++;
 	m_task_cond_var.signal(); // wake up one thread that is waiting for a task to be available
 	m_task_mutex.unlock();
 	return 0;
 }
 
+void ThreadPool::startExecuting(){
+	if(m_pool_size == 1)
+			return;
+
+		/*cout << "waiting for tasks: locked. gonna wait" << endl;*/
+		m_tasks_loaded = true;
+
+		//giving all threads permission to start as all tasks have been added
+		//if(zmqthreadpool) cout<<"*** semaphore start address post:"<<&semStart<<endl;
+		for(int i=0;i<number_of_total_tasks;i++)
+			sem_post(&semStart);
+
+}
+
 void ThreadPool::wait_for_tasks_to_complete(){
 	if(m_pool_size == 1)
 		return;
-	m_all_tasks_mutex.lock();
-	/*cout << "waiting for tasks: locked. gonna wait" << endl;*/
-	m_tasks_loaded = true;
-
-	//giving all threads permission to start as all tasks have been added
-	//using a different variable as number_of_ongoing_tasks is likely to change during the loop
-	int totalnumtasks = number_of_ongoing_tasks;
-	for(int i=0;i<totalnumtasks;i++)
-		sem_post(&semStart);
-
-	while ((m_pool_state != STOPPED) && m_tasks_loaded) {
-	m_all_tasks_cond_var.wait(m_all_tasks_mutex.get_mutex_ptr());
-	}
-	/*cout << "waiting for tasks:totall out, must be locked again" << endl;*/
-	m_all_tasks_mutex.unlock();
+	//if(zmqthreadpool) cout<<"waiting for all tasks to be done "<<endl;
+	//if(zmqthreadpool) cout<<"*** semaphore done address wait:"<<&semDone<<endl;
+	for(int i=0;i<number_of_total_tasks;i++)
+		sem_wait(&semDone);
+	number_of_total_tasks = 0;
+	//if(zmqthreadpool) cout<<"complete"<<endl<<endl;
 }
 
+void ThreadPool::setzeromqThread(){
+	zmqthreadpool = true;
+}

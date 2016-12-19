@@ -16,6 +16,18 @@ using namespace std;
 
 class slsDetector;
 
+template<typename _Ret, typename _Class>
+class func00_t{
+public:
+	func00_t(_Ret (_Class::*fn)(),_Class* ptr):
+		m_fn(fn),m_ptr(ptr){}
+	~func00_t() {}
+	void operator()() const {((m_ptr->*m_fn)());}
+private:
+	_Class* m_ptr;
+	_Ret (_Class::*m_fn)();
+};
+
 template<typename _Ret, typename _Class, typename _Store>
 class func0_t{
 public:
@@ -94,27 +106,32 @@ private:
 class Task:  public virtual slsDetectorDefs{
 public:
 	/* Return: int, Param: int */
-	Task(func1_t <int,slsDetector,int,int>* t):									m1(t),m2(0),m3(0),m4(0),m5(0),m6(0),m7(0),m8(0),m9(0),m10(0),m11(0){};
+	Task(func1_t <int,slsDetector,int,int>* t):									m1(t),m2(0),m3(0),m4(0),m5(0),m6(0),m7(0),m8(0),m9(0),m10(0),m11(0),m12(0){};
 	/* Return: int, Param: string,int */
-	Task(func2_t <int,slsDetector,string,int,int>* t):							m1(0),m2(t),m3(0),m4(0),m5(0),m6(0),m7(0),m8(0),m9(0),m10(0),m11(0){};
+	Task(func2_t <int,slsDetector,string,int,int>* t):							m1(0),m2(t),m3(0),m4(0),m5(0),m6(0),m7(0),m8(0),m9(0),m10(0),m11(0),m12(0){};
 	/* Return: string, Param: string */
-	Task(func1_t <string,slsDetector,string,string>* t):						m1(0),m2(0),m3(t),m4(0),m5(0),m6(0),m7(0),m8(0),m9(0),m10(0),m11(0){};
+	Task(func1_t <string,slsDetector,string,string>* t):						m1(0),m2(0),m3(t),m4(0),m5(0),m6(0),m7(0),m8(0),m9(0),m10(0),m11(0),m12(0){};
 	/* Return: char*, Param: char* */
-	Task(func1_t <char*,slsDetector,char*,string>* t):							m1(0),m2(0),m3(0),m4(t),m5(0),m6(0),m7(0),m8(0),m9(0),m10(0),m11(0){};
+	Task(func1_t <char*,slsDetector,char*,string>* t):							m1(0),m2(0),m3(0),m4(t),m5(0),m6(0),m7(0),m8(0),m9(0),m10(0),m11(0),m12(0){};
 	/* Return: detectorSettings, Param: int */
-	Task(func1_t <detectorSettings,slsDetector,int,int>* t):					m1(0),m2(0),m3(0),m4(0),m5(t),m6(0),m7(0),m8(0),m9(0),m10(0),m11(0){};
+	Task(func1_t <detectorSettings,slsDetector,int,int>* t):					m1(0),m2(0),m3(0),m4(0),m5(t),m6(0),m7(0),m8(0),m9(0),m10(0),m11(0),m12(0){};
 	/* Return: detectorSettings, Param: detectorSettings,int */
-	Task(func2_t <detectorSettings,slsDetector,detectorSettings,int,int>* t):	m1(0),m2(0),m3(0),m4(0),m5(0),m6(t),m7(0),m8(0),m9(0),m10(0),m11(0){};
+	Task(func2_t <detectorSettings,slsDetector,detectorSettings,int,int>* t):	m1(0),m2(0),m3(0),m4(0),m5(0),m6(t),m7(0),m8(0),m9(0),m10(0),m11(0),m12(0){};
 	/* Return: int, Param: int,int */
-	Task(func2_t <int,slsDetector,int,int,int>* t):	 							m1(0),m2(0),m3(0),m4(0),m5(0),m6(0),m7(t),m8(0),m9(0),m10(0),m11(0){};
+	Task(func2_t <int,slsDetector,int,int,int>* t):	 							m1(0),m2(0),m3(0),m4(0),m5(0),m6(0),m7(t),m8(0),m9(0),m10(0),m11(0),m12(0){};
 	/* Return: int, Param: int,int */
-	Task(func3_t <int,slsDetector,int,int,int,int>* t): 						m1(0),m2(0),m3(0),m4(0),m5(0),m6(0),m7(0),m8(t),m9(0),m10(0),m11(0){};
+	Task(func3_t <int,slsDetector,int,int,int,int>* t): 						m1(0),m2(0),m3(0),m4(0),m5(0),m6(0),m7(0),m8(t),m9(0),m10(0),m11(0),m12(0){};
 	/* Return: int, Param: trimMode,int,int,int */
-	Task(func4_t <int,slsDetector,trimMode,int,int,int,int>* t):				m1(0),m2(0),m3(0),m4(0),m5(0),m6(0),m7(0),m8(0),m9(t),m10(0),m11(0){};
-	/* Return: int, Param: int */
-	Task(func0_t <int,slsDetector,int>* t):										m1(0),m2(0),m3(0),m4(0),m5(0),m6(0),m7(0),m8(0),m9(0),m10(t),m11(0){};
+	Task(func4_t <int,slsDetector,trimMode,int,int,int,int>* t):				m1(0),m2(0),m3(0),m4(0),m5(0),m6(0),m7(0),m8(0),m9(t),m10(0),m11(0),m12(0){};
+	/* Return: int, Param: none */
+	Task(func0_t <int,slsDetector,int>* t):										m1(0),m2(0),m3(0),m4(0),m5(0),m6(0),m7(0),m8(0),m9(0),m10(t),m11(0),m12(0){};
 	/* Return: char*, Param: networkParameter,string,string */
-	Task(func2_t <char*,slsDetector,networkParameter,string,string>* t):		m1(0),m2(0),m3(0),m4(0),m5(0),m6(0),m7(0),m8(0),m9(0),m10(0),m11(t){};
+	Task(func2_t <char*,slsDetector,networkParameter,string,string>* t):		m1(0),m2(0),m3(0),m4(0),m5(0),m6(0),m7(0),m8(0),m9(0),m10(0),m11(t),m12(0){};
+	/* Return: void, Param: none */
+	Task(func00_t <void,slsDetector>* t):										m1(0),m2(0),m3(0),m4(0),m5(0),m6(0),m7(0),m8(0),m9(0),m10(0),m11(0),m12(t){};
+
+
+
 	~Task(){}
 
 	void operator()(){
@@ -129,6 +146,7 @@ public:
 		else if(m9)		(*m9)();
 		else if(m10)	(*m10)();
 		else if(m11)	(*m11)();
+		else if(m12)	(*m12)();
 	}
 
 private:
@@ -154,6 +172,8 @@ private:
 	func0_t <int,slsDetector,int>* m10;
 	/* Return: char*, Param: networkParameter,string,string */
 	func2_t <char*,slsDetector,networkParameter,string,string>* m11;
+	/* Return: void, Param: none */
+	func00_t <void,slsDetector>* m12;
 };
 
 

@@ -22,6 +22,12 @@
 
 
 int mapCSP0(void);
+void defineGPIOpins();
+void resetFPGA();
+void FPGAdontTouchFlash();
+void FPGATouchFlash();
+int powerChip (int on);
+void initializeDetector();
 
 u_int16_t bus_r16(u_int32_t offset);
 u_int16_t bus_w16(u_int32_t offset, u_int16_t data);//aldos function
@@ -29,15 +35,15 @@ u_int32_t bus_w(u_int32_t offset, u_int32_t data);
 u_int32_t bus_r(u_int32_t offset);
 
 int setPhaseShiftOnce();
-int phaseStep(int st);
+int adcPhase(int st);
 int getPhase();
 int cleanFifo();
 int setDAQRegister();
 
 u_int32_t putout(char *s, int modnum);
 u_int32_t readin(int modnum);
-u_int32_t setClockDivider(int d, int ic);
-u_int32_t getClockDivider(int ic);
+u_int32_t setClockDivider(int d);
+u_int32_t getClockDivider();
 
 void resetPLL();
 u_int32_t setPllReconfigReg(u_int32_t reg, u_int32_t val, int trig);
@@ -53,6 +59,7 @@ u_int32_t setTotDutyCycle(int d);
 u_int32_t getTotDutyCycle();
 u_int32_t setOversampling(int d);
 u_int32_t adcPipeline(int d);
+u_int32_t dbitPipeline(int d);
 
 u_int32_t setExtSignal(int d, enum externalSignalFlag  mode);
 int  getExtSignal(int d);
@@ -66,7 +73,6 @@ int setTiming(int t);
 int setConfigurationRegister(int d);
 int setToT(int d);
 int setContinousReadOut(int d);
-int startReceiver(int d);
 
 int setDACRegister(int idac, int val, int imod);
 int getDacRegister(int dacnum);
@@ -75,6 +81,7 @@ int getDacRegister(int dacnum);
 int getTemperature(int tempSensor,int imod);
 int initHighVoltage(int val,int imod);
 int initConfGain(int isettings,int val,int imod);
+int initSpeedConfGain(int val);
 
 int setADC(int adc);
 //int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int ival, int udpport);
@@ -143,9 +150,7 @@ u_int32_t fifoReadStatus();
 u_int32_t fifo_full(void);
 
 
-
-u_int16_t* fifo_read_event(int ns);
-u_int16_t* fifo_read_frame();
+void waitForAcquisitionEnd();
 u_int32_t* decode_data(int* datain);
 //u_int32_t move_data(u_int64_t* datain, u_int64_t* dataout);
 int setDynamicRange(int dr);
@@ -187,6 +192,11 @@ int setDac(int dacnum,int dacvalue);
 
 ROI *setROI(int nroi,ROI* arg,int *retvalsize, int *ret);
 int getChannels();
+
+void eraseFlash();
+int startWritingFPGAprogram(FILE** filefp);
+int stopWritingFPGAprogram(FILE* filefp);
+int writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp);
 
 /*
 

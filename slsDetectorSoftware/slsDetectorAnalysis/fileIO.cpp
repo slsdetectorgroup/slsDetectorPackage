@@ -120,7 +120,7 @@ int fileIO::writeDataFile(void *data, int iframe) {
 
 
 int fileIO::closeDataFile() {
-  // cout << "close file...." << endl;
+  cout << "close file...." << endl;
   if (filefd)
       fclose(filefd);
     filefd=NULL;

@@ -571,8 +571,14 @@ u_int32_t setClockDivider(int d, int ic) {
 
   //	int ic=0  is run clk; ic=1 is adc clk 
   printf("set clk divider %d to %d\n", ic, d);
-  if (ic>1)
+  if (ic>2)
     return -1;
+
+  if (ic==2) {
+    printf("dbit clock is the same as adc clk\n");
+    ic=1;
+
+  }
 
   if (ic==1 && d>40)
     return -1;
@@ -621,6 +627,17 @@ int phaseStep(int st){
   return clkPhase[0];
 }
 
+int dbitPhaseStep(int st){
+  
+    printf("dbit clock is the same as adc clk\n");
+    return phaseStep(st);
+}
+
+
+
+
+
+
 
 int getPhase() {
     return clkPhase[0];
@@ -628,10 +645,25 @@ int getPhase() {
 };
 
 
+
+int getDbitPhase() {
+  
+  printf("dbit clock is the same as adc clk\n");
+  return getPhase();
+    
+};
+
+
 u_int32_t getClockDivider(int ic) {
 
-  if (ic>1)
+  if (ic>2)
     return -1;
+  
+  if (ic==2) {
+    printf("dbit clock is the same as adc clk\n");
+    ic=1;
+
+  }
   return clkDivider[ic];
   
 
@@ -667,9 +699,24 @@ u_int32_t getClockDivider(int ic) {
 
 
 u_int32_t adcPipeline(int d) {
-  if (d>=0)
-    bus_w(DAQ_REG, d);
-  return bus_r(DAQ_REG)&0xff;
+  u_int32_t v;
+  if (d>=0) {
+    v=bus_r(ADC_PIPELINE_REG)&0x00ff0000;
+    bus_w(ADC_PIPELINE_REG, d|v);
+  }
+  return bus_r(ADC_PIPELINE_REG)&0xff;
+}
+
+
+u_int32_t dbitPipeline(int d) {
+  u_int32_t v;
+  if (d>=0) {
+    v=bus_r(ADC_PIPELINE_REG)&0x000000ff;
+    bus_w(ADC_PIPELINE_REG, v|(d<<16));
+
+  }
+  v=bus_r(ADC_PIPELINE_REG)>>16;
+  return v&0xff;
 }
 
 
@@ -1273,7 +1320,7 @@ int64_t set64BitReg(int64_t value, int aLSB, int aMSB){
     v64=value>> 32;
     vMSB=v64&(0xffffffff);
     bus_w(aMSB,vMSB);
-    printf("Wreg64(%x,%x) %08x %08x %016llx\n", aLSB>>11, aMSB>>11, vLSB, vMSB, value);
+    //   printf("Wreg64(%x,%x) %08x %08x %016llx\n", aLSB>>11, aMSB>>11, vLSB, vMSB, value);
   }
   return get64BitReg(aLSB, aMSB);
 
@@ -1287,7 +1334,7 @@ int64_t get64BitReg(int aLSB, int aMSB){
   v64=vMSB;
   v64=(v64<<32) | vLSB;
 
-  printf("reg64(%x,%x) %x %x %llx\n", aLSB, aMSB, vLSB, vMSB, v64);
+  // printf("reg64(%x,%x) %x %x %llx\n", aLSB, aMSB, vLSB, vMSB, v64);
 
   return v64;
 }
@@ -2142,52 +2189,20 @@ u_int16_t* fifo_read_event(int ns)
     //   printf("LAM: %08x\n",a);
   }
 
-
+  // printf(".");
   a = bus_r(LOOK_AT_ME_REG);
 
   if (analogEnable) {
+  printf("*");
     bus_w16(DUMMY_REG,1<<8); // read strobe to all fifos
     bus_w16(DUMMY_REG,0);
-   
-   /* for (i=0; i<32; i++) {  */
-   /*   bus_w16(DUMMY_REG,i); */
-   /*   printf("%04x ",bus_r16(FIFO_STATUS_REG)); */
-   /*   //	a = bus_r(LOOK_AT_ME_REG); */
-   /*   //	printf("%d %08x\n",i,a); */
-   /* } */
-   /* printf("\n"); */
-   // i=0;//
-/*   for (i=0; i<32; i++) { */
-
-/* /\*   while (((adcDisableMask&(3<<((i)*2)))>>((i)*2))==3) { *\/ */
-/* /\*     i++; *\/ */
-/* /\*     if (i>15) *\/ */
-/* /\*       break; *\/ */
-/* /\*   } *\/ */
-/* /\*   if (i<16) {    *\/ */
-/*     bus_w16(DUMMY_REG,i); */
-/*   } */
-/*   val=*values; */
-  //printf("sample %d ",ns);   
-
-  // bus_w16(DUMMY_REG,0); //
     for (i=0; i<32; i++) {
-      
-      
-    
-      
       if (~(mask&adcDisableMask)) {
-	*((u_int16_t*)now_ptr)=*values;//bus_r16(FIFO_DATA_REG);//*values;//bus_r(FIFO_DATA_REG);
-	
-	
+	*((u_int16_t*)now_ptr)=*values;//bus_r16(FIFO_DATA_REG);
 	if (i!=0 || ns!=0) { 
 	  a=0;
 	      while (*((u_int16_t*)now_ptr)==*((u_int16_t*)(now_ptr)-1) && a++<10) {
-		
-	    	//	  printf("******************** %d: fifo %d: new %08x old %08x\n ",ns, i, *((u_int32_t*)now_ptr),*((u_int32_t*)(now_ptr)-1));
 	    	*((u_int16_t*)now_ptr)=*values;
-		//	printf(".",i);
-		
 	      }
 	    }
 	now_ptr+=2;
@@ -2195,15 +2210,10 @@ u_int16_t* fifo_read_event(int ns)
       mask=mask<<1;
       //   if (~(mask&adcDisableMask)
       bus_w16(DUMMY_REG,i+1);
-      
-      //	a = bus_r(LOOK_AT_ME_REG);
-      //	printf("%d %08x\n",i,a);
-	//#ifdef VERBOSE
-	// }
-      // *(((u_int16_t*)(now_ptr))+i)=bus_r16(FIFO_DATA_REG);
     }
   }
   if (digitalEnable) {
+  printf("+");
     
      bus_w16(DUMMY_REG,1<<9); // read strobe to digital fifo
      bus_w16(DUMMY_REG,0<<9); // read strobe to digital fifo
@@ -2776,8 +2786,13 @@ int prepareADC(){
    cdx=0; ddx=1;
    csmask=0x7c; //  1111100
    
+/* #define ADCREG1 			0x08   */
+/* #define ADCREG2 			0x14//20  */
+/* #define ADCREG3 			0x4   */
+/* #define ADCREG4 			0x5   */
     codata=0;    
-    writeADC(ADCREG1,0x3); writeADC(ADCREG1,0x0);
+    writeADC(ADCREG1,0x3); 
+writeADC(ADCREG1,0x0);
     
 
     	writeADC(ADCREG3,0xf);
@@ -2831,9 +2846,9 @@ int prepareADC(){
 
 
     bus_w(ADC_LATCH_DISABLE_REG,0x0); // enable all ADCs
-    bus_w(DAQ_REG,0x12); //adc pipeline=18
+    //  bus_w(DAQ_REG,0x12); //adc pipeline=18
 
-    bus_w(DAQ_REG,0xbbbbbbbb);
+    //bus_w(DAQ_REG,0xbbbbbbbb);
     //   bus_w(ADC_INVERSION_REG,0x1f6170c6);
 
     return OK;
@@ -3764,7 +3779,23 @@ int setPower(int ind, int val) {
 
 
 
+int powerChip(int arg) {
+  //#ifndef CTB
+    u_int32_t preg=bus_r(POWER_ON_REG); 
+  if (arg>=0) {
+    if (arg)
+      bus_w(POWER_ON_REG,preg|0xffff0000);
+    else
+      bus_w(POWER_ON_REG,preg&0x0000ffff);
+    preg=bus_r(POWER_ON_REG);
+  }
 
+  printf("Power register is %08x\n",preg);
+  if (preg&0xffff0000)
+    return 1;
+  else
+    return 0;
+}
 
 
 
@@ -3798,12 +3829,12 @@ int nextDac(){
     valw=0xffff&(~(0x1<<csdx));
 
     
-#ifdef CTB 
+ if  (myDetectorType==JUNGFRAUCTB)
     for (i=0;i<8;i++) {
       valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
       valw=((valw&(~(0x1<<cdx)))+(0x1<<cdx));bus_w(offw,valw);//clkup
     }
-#endif 
+
 
     codata=((0xf)<<DAC_CMD_OFF); // no operation  
     //   printf("%08x\n",codata);
@@ -3851,23 +3882,25 @@ int setThisDac(int dacnum,int dacvalue){
   int dacch=0;
 
     ddx=0; cdx=1;
-#ifdef CTB 
-   csdx=2; 
-#else
-   csdx=dacnum/8+2; 
-#endif
+
+
+  if  (myDetectorType==JUNGFRAUCTB)
+    csdx=2; 
+  else
+    csdx=dacnum/8+2; 
+
     dacch=dacnum%8;
   //setting int reference 
   offw=DAC_REG;
 
   valw=0xffff&(~(0x1<<csdx));
 
-#ifdef CTB 
-     for (i=0;i<8;i++) {
-	valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
-	valw=((valw&(~(0x1<<cdx)))+(0x1<<cdx));bus_w(offw,valw);//clkup
-     }
-#endif 
+  /* if  (myDetectorType==JUNGFRAUCTB) */
+  /*   for (i=0;i<8;i++) { */
+  /* 	valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn */
+  /* 	valw=((valw&(~(0x1<<cdx)))+(0x1<<cdx));bus_w(offw,valw);//clkup */
+  /*   } */
+  
   //  printf("**************************************************set dac\n");
   if (dacvalue>=0) {
     
@@ -3892,15 +3925,15 @@ int setThisDac(int dacnum,int dacvalue){
   //printf("%08x\n",codata);
 
 
-      for (i=1;i<25;i++) {
-	//   printf("%d",((codata>>(24-i)))&0x1);
-	valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn	
-	valw=((valw&(~(0x1<<ddx)))+(((codata>>(24-i))&0x1)<<ddx));bus_w(offw,valw);//write data (i)
+  for (i=1;i<25;i++) {
+    //   printf("%d",((codata>>(24-i)))&0x1);
+    valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn	
+    valw=((valw&(~(0x1<<ddx)))+(((codata>>(24-i))&0x1)<<ddx));bus_w(offw,valw);//write data (i)
 	//	printf("%d ", ((codata>>(24-i))&0x1));
-        
-
-	valw=((valw&(~(0x1<<cdx)))+(0x1<<cdx));bus_w(offw,valw);//clkup
-      }
+    
+    
+    valw=((valw&(~(0x1<<cdx)))+(0x1<<cdx));bus_w(offw,valw);//clkup
+  }
   
       //      printf("\n ");
     
@@ -3930,17 +3963,22 @@ int setDac(int dacnum,int dacvalue){
   int i,ddx,csdx,cdx;
 
   int dacch=0;
-
-  ichip=2-dacnum/8;
+  if  (myDetectorType==JUNGFRAUCTB)
+    ichip=2-dacnum/8;
+  else 
+     ichip=dacnum/8;
   
+  if  (myDetectorType==JUNGFRAUCTB) printf("This is a CTB\n");
+  else printf("This is not a CTB\n");
+
+
   if (dacvalue!=-1) {
-    printf("************************************************** set dac %d chip %d value %d ------ %d\n", dacnum, ichip, dacvalue, DAC_CMD_OFF);
+    printf("************** set dac %d chip %d value %d ------ %d\n", dacnum, ichip, dacvalue, DAC_CMD_OFF);
     ddx=0; cdx=1;
-#ifdef CTB 
-   csdx=2; 
-#else
-   csdx=dacnum/8+2; 
-#endif
+    if  (myDetectorType==JUNGFRAUCTB) 
+      csdx=2; 
+    else 
+      csdx=ichip+2; 
   //setting int reference 
   offw=DAC_REG;
 
@@ -3949,21 +3987,20 @@ int setDac(int dacnum,int dacvalue){
     valw=((valw&(~(0x1<<csdx))));bus_w(offw,valw); //chip sel bar down
     valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
 
-#ifdef CTB 
-    for (i=0; i<ichip; i++) {
-      //   printf("--------before %d ",i);
-      nextDac();
-    }
-#endif
-    //  printf("--------thisdac %d ",i);
+    //#ifdef CTB  
+    if  (myDetectorType==JUNGFRAUCTB) for (i=0; i<ichip; i++) {nextDac();printf("next DAC\n");}
+    
+    //#endif
+      printf("--------thisdac %d ",i);
     setThisDac(dacnum,dacvalue);
     //    printf("--------thisdac %d ",i);
-#ifdef CTB 
-    for (i=ichip+1; i<3; i++) {
+
       //    printf("--------after %d ",i);
+    
+    if  (myDetectorType==JUNGFRAUCTB) {
       nextDac();
+      printf("next DAC\n");
     }
-#endif
     valw=bus_r(offw);
     valw=(valw|(0x1<<csdx));bus_w(offw,valw); //csup
 

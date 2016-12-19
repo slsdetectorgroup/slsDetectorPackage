@@ -24,6 +24,7 @@
 
 #include "Beb.h"
 
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
 
 	 struct BebInfo beb_infos[10];
@@ -45,6 +46,8 @@
 
 		  short Beb_bit_mode;
 		  int BEB_MMAP_SIZE = 0x1000;
+
+		  int Beb_activated = 1;
 
 
 
@@ -170,8 +173,117 @@ void Beb_GetModuleCopnfiguration(int* master, int* top){
 		}
 }
 
+
+
+void Beb_EndofDataSend(int tengiga){
+	//mapping new memory
+	u_int32_t* csp0base=0;
+	int l_framepktcounter2, l_txndelaycounter, l_framedelaycounter, r_framepktcounter2, r_txndelaycounter, r_framedelaycounter;
+	int l_framepktcounter2_new, l_txndelaycounter_new, l_framedelaycounter_new, r_framepktcounter2_new, r_txndelaycounter_new, r_framedelaycounter_new;
+	int addr_l_framepktcounter2,  addr_l_txndelaycounter,  addr_l_framedelaycounter,  addr_r_framepktcounter2,  addr_r_txndelaycounter,  addr_r_framedelaycounter;
+
+	switch(tengiga){
+	case 0:
+		addr_l_framepktcounter2 = ONE_GIGA_LEFT_PKT_SEND_COUNTER;
+		addr_l_txndelaycounter = ONE_GIGA_LEFT_TXN_DELAY_COUNTER;
+		addr_l_framedelaycounter = ONE_GIGA_LEFT_FRAME_DELAY_COUNTER;
+		addr_r_framepktcounter2 = ONE_GIGA_RIGHT_PKT_SEND_COUNTER;
+		addr_r_txndelaycounter = ONE_GIGA_RIGHT_TXN_DELAY_COUNTER;
+		addr_r_framedelaycounter = ONE_GIGA_RIGHT_FRAME_DELAY_COUNTER;
+		break;
+	case 1:
+		addr_l_framepktcounter2 = TEN_GIGA_LEFT_PKT_SEND_COUNTER;
+		addr_l_txndelaycounter = TEN_GIGA_LEFT_TXN_DELAY_COUNTER;
+		addr_l_framedelaycounter = TEN_GIGA_LEFT_FRAME_DELAY_COUNTER;
+		addr_r_framepktcounter2 = TEN_GIGA_RIGHT_PKT_SEND_COUNTER;
+		addr_r_txndelaycounter = TEN_GIGA_RIGHT_TXN_DELAY_COUNTER;
+		addr_r_framedelaycounter = TEN_GIGA_RIGHT_FRAME_DELAY_COUNTER;
+		break;
+	}
+
+
+	//open file pointer
+	int fd = Beb_open(&csp0base,XPAR_COUNTER_BASEADDR);
+	if(fd < 0){
+		cprintf(BG_RED,"Delay read counter fail\n");
+		return;
+	}else{
+		//read data first time
+		l_framepktcounter2 = Beb_Read32(csp0base, addr_l_framepktcounter2);
+		l_txndelaycounter = Beb_Read32(csp0base, addr_l_txndelaycounter);
+		l_framedelaycounter = Beb_Read32(csp0base, addr_l_framedelaycounter);
+		r_framepktcounter2 = Beb_Read32(csp0base, addr_r_framepktcounter2);
+		r_txndelaycounter = Beb_Read32(csp0base, addr_r_txndelaycounter);
+		r_framedelaycounter = Beb_Read32(csp0base, addr_r_framedelaycounter);
+//#ifdef VERBOSE
+		printf("\nLeft\n"
+				"Framepacketcounter: %d\n"
+				"Txndelaycounter:%d\n"
+				"Framedelaycounter:%d\n"
+				"\nRight\n"
+				"Framepacketcounter: %d\n"
+				"Txndelaycounter:%d\n"
+				"Framedelaycounter:%d\n\n",
+				l_framepktcounter2,l_txndelaycounter,l_framedelaycounter,
+				r_framepktcounter2,r_txndelaycounter,r_framedelaycounter);
+//#endif
+
+		//keep comparing with previous values
+		int maxtimer;
+		while(1){
+			maxtimer = MAX(MAX(l_txndelaycounter,l_framedelaycounter),MAX(r_txndelaycounter,r_framedelaycounter));
+			maxtimer /= 100;
+			printf("Will wait for %d us\n",maxtimer);
+			usleep(maxtimer);
+
+			//read new values
+			l_framepktcounter2_new = Beb_Read32(csp0base, addr_l_framepktcounter2);
+			l_txndelaycounter_new = Beb_Read32(csp0base, addr_l_txndelaycounter);
+			l_framedelaycounter_new = Beb_Read32(csp0base, addr_l_framedelaycounter);
+			r_framepktcounter2_new = Beb_Read32(csp0base, addr_r_framepktcounter2);
+			r_txndelaycounter_new = Beb_Read32(csp0base, addr_r_txndelaycounter);
+			r_framedelaycounter_new = Beb_Read32(csp0base, addr_r_framedelaycounter);
+//#ifdef VERBOSE
+			printf("\nLeft\n"
+					"Framepacketcounter: %d\n"
+					"Txndelaycounter:%d\n"
+					"Framedelaycounter:%d\n"
+					"\nRight\n"
+					"Framepacketcounter: %d\n"
+					"Txndelaycounter:%d\n"
+					"Framedelaycounter:%d\n\n",
+					l_framepktcounter2_new,l_txndelaycounter_new,l_framedelaycounter_new,
+					r_framepktcounter2_new,r_txndelaycounter_new,r_framedelaycounter_new);
+//#endif
+
+			if ((l_framepktcounter2 == l_framepktcounter2_new) && (r_framepktcounter2 == r_framepktcounter2_new))
+				break;
+
+			//update old values
+			l_framepktcounter2 = l_framepktcounter2_new;
+			l_txndelaycounter = l_txndelaycounter_new;
+			l_framedelaycounter = l_framedelaycounter_new;
+			r_framepktcounter2 = r_framepktcounter2_new;
+			r_txndelaycounter = r_txndelaycounter_new;
+			r_framedelaycounter = r_framedelaycounter_new;
+
+		}
+
+		printf("Detector has send all data\n");
+		//close file pointer
+		Beb_close(fd,csp0base);
+	}
+}
+
+
+
+
 /* do not work at the moment */
 int Beb_SetMasterViaSoftware(){
+
+	if(!Beb_activated)
+		return 0;
+
 	//mapping new memory
 	u_int32_t* csp0base=0;
 	u_int32_t value = 0, ret = 1;
@@ -200,6 +312,10 @@ int Beb_SetMasterViaSoftware(){
 
 /* do not work at the moment */
 int Beb_SetSlaveViaSoftware(){
+
+	if(!Beb_activated)
+		return 0;
+
 	//mapping new memory
 	u_int32_t* csp0base=0;
 	u_int32_t value = 0, ret = 1;
@@ -268,11 +384,18 @@ int Beb_Activate(int enable){
 	if(fd > 0)
 		Beb_close(fd,csp0base);
 
+	Beb_activated = ret;
+
 	return ret;
 }
 
 
 int Beb_SetNetworkParameter(enum detNetworkParameter mode, int val){
+
+	if(!Beb_activated)
+		return val;
+
+
 	//mapping new memory
 	u_int32_t* csp0base=0;
 	u_int32_t valueread = 0;
@@ -325,6 +448,10 @@ int Beb_SetNetworkParameter(enum detNetworkParameter mode, int val){
 
 
 int Beb_ResetToHardwareSettings(){
+
+	if(!Beb_activated)
+		return 1;
+
 	//mapping new memory
 	u_int32_t* csp0base=0;
 	u_int32_t value = 0, ret = 1;
@@ -396,6 +523,10 @@ u_int32_t Beb_GetFirmwareSoftwareAPIVersion(){
 }
 
 void Beb_ResetFrameNumber(){
+
+	if(!Beb_activated)
+		return;
+
 	//mapping new memory to read master top module configuration
 	u_int32_t* csp0base=0;
 	//open file pointer
@@ -446,7 +577,6 @@ int Beb_InitBebInfos(){//file name at some point
 	bebInfoSize++;
 
 
-	//if(!Beb_ReadSetUpFromFile("/home/root/executables/setup_beb.txt")) return 0;
 	/*
   //loop through file to fill vector.
   BebInfo* b = new BebInfo(26);
@@ -477,52 +607,6 @@ int Beb_SetBebSrcHeaderInfos(unsigned int beb_number, int ten_gig, char* src_mac
 }
 
 
-int Beb_ReadSetUpFromFile(char* file_name){
-	char line[100];
-	char str[100];
-
-	int i0,i1;
-	char mac0[50],mac1[50],ip0[50],ip1[0];
-	FILE* fp = fopen(file_name, "r");
-	if( fp == NULL ){
-		perror("Error while opening the beb setup file.\n");
-		return 0;
-	}
-
-	printf("Setting up beb side of detector:\n");
-	while ( fgets (line , 255 , fp) != NULL ){
-		if(strlen(line)<=1)
-			continue;
-		sscanf (line, "%s", str);
-		if (str[0]=='#')
-			continue;
-
-		if(!strcmp(str,"add_beb")){
-			if( sscanf (line,"%s %d %d %s %s %s %s",str,&i0,&i1,mac0,ip0,mac1,ip1) < 7){
-				printf("Error adding beb from %s.\n",file_name);
-				exit(0);
-			}
-
-			printf ("Read: %s %d %d %s %s %s %s\n", str,i0,i1,mac0,ip0,mac1,ip1);
-
-			if(Beb_GetBebInfoIndex(i0)){
-				printf("Error adding beb from %s, beb number %d already added.\n",file_name,i0);
-				exit(0);
-			}
-
-			struct BebInfo b0;
-			BebInfo_BebInfo(&b0,i0);
-			BebInfo_SetSerialAddress(&b0,i1);
-			BebInfo_SetHeaderInfo(&b0,0,mac0,ip0,42000+i0);
-			BebInfo_SetHeaderInfo(&b0,1,mac1,ip1,52000+i0);
-			beb_infos[bebInfoSize] = b0;
-			bebInfoSize++;
-		}
-	}
-	fclose(fp);
-	return 1;
-}
-
 
 
 int Beb_CheckSourceStuffBebInfo(){
@@ -552,6 +636,10 @@ unsigned int Beb_GetBebInfoIndex(unsigned int beb_numb){
 
 
 int Beb_WriteTo(unsigned int index){
+
+	if(!Beb_activated)
+		return 1;
+
   if(index>=bebInfoSize){
     printf("WriteTo index error.\n");
     return 0;
@@ -575,35 +663,15 @@ void Beb_SwapDataFun(int little_endian, unsigned int n, unsigned int *d){
 
 
 int Beb_SetByteOrder(){
-/*
-	Beb_send_data_raw[0] = 0x8fff0000;
-  if(Local_Write(ll_beb,4,Beb_send_data_raw)!=4) return 0;
-  
-  while((Local_Read(ll_beb,Beb_recv_buffer_size*4,Beb_recv_data_raw)/4)>0) printf("\t) Cleanning buffer ...\n");
-
-  if(bebInfoSize<2) return 0;
-
-  Beb_send_ndata   = 3;
-  Beb_send_data[0] = 0x000c0000;
-  Beb_send_data[1] = 0;
-  Beb_send_data[2] = 0;
-  Beb_WriteTo(0);
-
-  //using little endian for data, big endian not fully tested, swap on 16 bit boundary.
-  Beb_send_ndata   = 3;
-  Beb_send_data[0] = 0x000c0000;
-  Beb_send_data[1] = 1;
-  Beb_send_data[2] = 0;
-  Beb_SwapDataFun(0,2,&(Beb_send_data[1]));
-  Beb_WriteTo(0);
-   
-  printf("\tSetting Byte Order ..............        ok\n");
-*/
   return 1;
 }
 
 
 int Beb_SetUpUDPHeader(unsigned int beb_number, int ten_gig, unsigned int header_number, char* dst_mac, char* dst_ip, unsigned int dst_port){
+
+	if(!Beb_activated)
+		return 1;
+
 	u_int32_t bram_phy_addr;
 	u_int32_t* csp0base=0;
 	/*u_int32_t* bram_ptr = NULL;*/
@@ -809,7 +877,9 @@ int Beb_SendMultiReadRequest(unsigned int beb_number, unsigned int left_right, i
 	cprintf(GREEN, "Beb_send_data[1] Swapped:%X\n",Beb_send_data[1]);
 #endif
 
-    if(!Beb_WriteTo(i)) return 0;
+	if(Beb_activated){
+		if(!Beb_WriteTo(i)) return 0;
+	}
 
   return 1;
 }
@@ -828,6 +898,9 @@ int Beb_SetUpTransferParameters(short the_bit_mode){
 
 int Beb_StopAcquisition()
 {
+	if(!Beb_activated)
+		return 1;
+
 	u_int32_t* csp0base=0;
 	volatile u_int32_t valuel,valuer;
 	//open file pointer
@@ -854,6 +927,10 @@ int Beb_StopAcquisition()
 }
 
 int Beb_RequestNImages(unsigned int beb_number, int ten_gig, unsigned int dst_number, unsigned int nimages, int test_just_send_out_packets_no_wait){
+
+	if(!Beb_activated)
+		return 1;
+
 	if(dst_number>64) return 0;
 
 	unsigned int     header_size  = 4; //4*64 bits

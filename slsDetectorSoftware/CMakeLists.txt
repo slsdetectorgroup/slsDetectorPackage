@@ -35,6 +35,15 @@ usersFunctions
 ../slsReceiverSoftware/MySocketTCP 
 )
 
+add_definitions(
+    -DDACS_INT
+)
+
+add_library(zmq STATIC IMPORTED )
+
+set_target_properties(zmq PROPERTIES
+    IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../slsReceiverSoftware/include/libzmq.a
+)
 
 add_library(slsDetectorStatic STATIC
     ${SOURCES}

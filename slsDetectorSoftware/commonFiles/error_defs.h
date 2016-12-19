@@ -10,15 +10,21 @@
 
 
 #include <string>
+#include <cstring>
 using namespace std;
 
 
 #include "sls_detector_defs.h"
-
+#include <cstring>
+#include <iostream>
 
 
 /** Error flags */
+/*Assumption: Only upto 63 detectors */
 #define CRITICAL_ERROR_MASK 0xFFFFFFFF
+
+#define MULTI_DETECTORS_NOT_ADDED			0x8000000000000000ULL
+
 
 #define CANNOT_CONNECT_TO_DETECTOR  		0x8000000000000000ULL
 #define CANNOT_CONNECT_TO_RECEIVER  		0x4000000000000000ULL
@@ -59,9 +65,13 @@ using namespace std;
 #define COULD_NOT_PULSE_CHIP				0x0000000000100000ULL
 #define COULD_NOT_SET_RATE_CORRECTION		0x0000000000200000ULL
 #define DETECTOR_NETWORK_PARAMETER			0x0000000000400000ULL
-#define RATE_CORRECTION_NOT_32BIT			0x0000000000800000ULL
+#define RATE_CORRECTION_NOT_32or16BIT		0x0000000000800000ULL
 #define RATE_CORRECTION_NO_TAU_PROVIDED		0x0000000001000000ULL
-
+#define PROGRAMMING_ERROR					0x0000000002000000ULL
+#define RECEIVER_ACTIVATE					0x0000000004000000ULL
+#define DATA_STREAMING						0x0000000008000000ULL
+#define RESET_ERROR						    0x0000000010000000ULL
+#define POWER_CHIP						    0x0000000020000000ULL
 //											0x00000000FFFFFFFFULL
 /** @short class returning all error messages for error mask */
 class errorDefs {
@@ -70,7 +80,9 @@ class errorDefs {
 public:
 
 	/** Constructor */
-	errorDefs():errorMask(0){};
+	errorDefs():errorMask(0){
+		strcpy(notAddedList,"");
+	};
 
 	/** Gets the error message
 	 * param errorMask error mask
@@ -192,15 +204,26 @@ public:
 		if(slsErrorMask&DETECTOR_NETWORK_PARAMETER)
 			retval.append("Could not set/get detector network parameter\n");
 
-		if(slsErrorMask&RATE_CORRECTION_NOT_32BIT)
-			retval.append("Rate correction Deactivated, must be in 32 bit mode\n");
+		if(slsErrorMask&RATE_CORRECTION_NOT_32or16BIT)
+			retval.append("Rate correction Deactivated, must be in 32 or 16 bit mode\n");
 
 		if(slsErrorMask&RATE_CORRECTION_NO_TAU_PROVIDED)
 			retval.append("Rate correction Deactivated. No default tau provided in file\n");
 
+		if(slsErrorMask&PROGRAMMING_ERROR)
+			retval.append("Could not program FPGA\n");
 
+		if(slsErrorMask&RECEIVER_ACTIVATE)
+			retval.append("Could not activate/deactivate receiver\n");
 
+		if(slsErrorMask&DATA_STREAMING)
+			retval.append("Could not set/reset Data Streaming\n");
 
+		if(slsErrorMask&RESET_ERROR)
+			retval.append("Could not reset the FPGA\n");
+
+		if(slsErrorMask&POWER_CHIP)
+			retval.append("Could not power on/off/get the chip\n");
 
 		//------------------------------------------------------ length of message
 
@@ -224,11 +247,30 @@ public:
 	   */
 	   int64_t clearErrorMask(){errorMask=0;return errorMask;};
 
+	   /** Gets the not added detector list
+	      /returns list
+	   */
+	   char* getNotAddedList(){return notAddedList;};
+
+	   /** Append the detector to not added detector list
+	    * @param name append to the list
+	      /returns list
+	   */
+	   void appendNotAddedList(const char* name){strcat(notAddedList,name);strcat(notAddedList,"+");};
+
+	   /** Clears not added detector list
+	      /returns error mask
+	   */
+	   void clearNotAddedList(){strcpy(notAddedList,"");};
+
 
 protected:
 
 	  /** Error Mask */
 	  int64_t errorMask;
+
+	  /** Detectors Not added List */
+	  char notAddedList[MAX_STR_LENGTH];
 
 };
 

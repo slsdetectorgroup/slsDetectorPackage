@@ -130,7 +130,7 @@ int initDetector(){
 		detectorGain[i] = default_gain_values[(int)STANDARD];
 	for(i=0;i<NOFFSET;i++)
 		detectorOffset[i] = default_offset_values[(int)STANDARD];
-	thisSettings = STANDARD;/**UNITIALIZED*/
+	thisSettings = UNINITIALIZED;
 	/*sChan=noneSelected;
   sChip=noneSelected;
   sMod=noneSelected;
@@ -449,6 +449,12 @@ int getADC(enum detAdcIndex ind,  int imod){
 		case TEMP_FPGA:
 			retval=getBebFPGATemp()*1000;
 			break;
+		case TEMP_FPGAFEBL:
+			retval=Feb_Control_GetLeftFPGATemp();
+			break;
+		case TEMP_FPGAFEBR:
+			retval=Feb_Control_GetRightFPGATemp();
+			break;
 		case TEMP_FPGAEXT:
 		case TEMP_10GE:
 		case TEMP_DCDC:
@@ -533,12 +539,29 @@ int64_t setRateCorrection(int64_t custom_tau_in_nsec){//in nanosec (will never b
 		return 0;
 	}
 
+	//when dynamic range changes, use old tau
+	else if(custom_tau_in_nsec == -1)
+		custom_tau_in_nsec = Feb_Control_Get_RateTable_Tau_in_nsec();
+
+
+	int dr = Feb_Control_GetDynamicRange();
+	//get period = subexptime if 32bit , else period = exptime if 16 bit
+	int64_t actual_period = Feb_Control_GetSubFrameExposureTime(); //already in nsec
+	if(dr == 16)
+		actual_period = Feb_Control_GetExposureTime_in_nsec();
+
+	int64_t ratetable_period_in_nsec = Feb_Control_Get_RateTable_Period_in_nsec();
 	int64_t tau_in_nsec = Feb_Control_Get_RateTable_Tau_in_nsec();
-	int64_t subexp_in_nsec = Feb_Control_Get_RateTable_Subexptime_in_nsec();
+
+
 	//same setting
-	if((tau_in_nsec == custom_tau_in_nsec) && (subexp_in_nsec == Feb_Control_GetSubFrameExposureTime())){
+	if((tau_in_nsec == custom_tau_in_nsec) && (ratetable_period_in_nsec == actual_period)){
+		if(dr == 32)
 		printf("Rate Table already created before: Same Tau %lldns, Same subexptime %lldns\n",
-				tau_in_nsec,subexp_in_nsec);
+				tau_in_nsec,ratetable_period_in_nsec);
+		else
+			printf("Rate Table already created before: Same Tau %lldns, Same exptime %lldns\n",
+					tau_in_nsec,ratetable_period_in_nsec);
 	}
 	//different setting, calculate table
 	else{
@@ -731,7 +754,9 @@ int setThresholdEnergy(int ev, int imod){
 }
 
 enum detectorSettings setSettings(enum detectorSettings sett, int imod){
-	if(sett != GET_SETTINGS)
+	if(sett == UNINITIALIZED){
+		return thisSettings;
+	}if(sett != GET_SETTINGS)
 		thisSettings = sett;
 	return thisSettings;
 }
@@ -833,25 +858,27 @@ enum runStatus getRunStatus(){
 
 
 
-char *readFrame(int *ret, char *mess){
-	//if(master){
-		if(!Feb_Control_WaitForFinishedFlag(5000))
-			cprintf(RED,"Error: Waiting for finished flag\n");
-		cprintf(GREEN,"Acquisition finished***\n");
+void readFrame(int *ret, char *mess){
+	if(!Feb_Control_WaitForFinishedFlag(5000))
+		cprintf(RED,"Error: Waiting for finished flag\n");
+	cprintf(GREEN,"Acquisition finished***\n");
 
-		if(eiger_storeinmem){
-			printf("requesting images after storing in memory\n");
-			if(startReadOut() == FAIL){
-				cprintf(RED, "Could not read out images\n");
-				*ret = (int)FAIL;
-				return NULL;
-			}
+	if(eiger_storeinmem){
+		printf("requesting images after storing in memory\n");
+		if(startReadOut() == FAIL){
+			strcpy(mess,"Could not execute read image requests\n");
+			*ret = (int)FAIL;
+			return;
 		}
-		//usleep(1000000);
-		printf("*****Done Waiting...\n");
-	//}
-		*ret = (int)FINISHED;
-	return NULL;
+	}
+
+	//wait for detector to send
+	Beb_EndofDataSend(send_to_ten_gig);
+
+
+	printf("*****Done Waiting...\n");
+	*ret = (int)FINISHED;
+	strcpy(mess,"acquisition successfully finished\n");
 }
 
 
@@ -1310,7 +1337,9 @@ int getBebFPGATemp(){
 
 
 int activate(int enable){
-	return Beb_Activate(enable);
+	int ret = Beb_Activate(enable);
+	Feb_Control_activate(ret);
+	return ret;
 }
 
 

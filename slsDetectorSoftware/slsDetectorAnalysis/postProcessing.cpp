@@ -6,6 +6,8 @@
 #elif EXTPP
 #include "usersFunctions.h"
 #endif
+#include <time.h>
+
 
 //#define VERBOSE
 
@@ -23,6 +25,17 @@ static void* startProcessDataNoDelete(void *n){
 
 };
 
+
+int postProcessing::kbhit(){
+  struct timeval tv;
+  fd_set fds;
+  tv.tv_sec = 0;
+  tv.tv_usec = 0;
+  FD_ZERO(&fds);
+  FD_SET(STDIN_FILENO, &fds); //STDIN_FILENO is 0
+  select(STDIN_FILENO+1, &fds, NULL, NULL, &tv);
+  return FD_ISSET(STDIN_FILENO, &fds);
+}
 
 
 postProcessing::postProcessing(): expTime(NULL), ang(NULL), val(NULL), err(NULL), numberOfChannels(0), badChannelMask(NULL){
@@ -398,7 +411,9 @@ int postProcessing::fillBadChannelMask() {
 
 
 void* postProcessing::processData(int delflag) {
+  	pthread_mutex_lock(&mg);
 	if(setReceiverOnline()==OFFLINE_FLAG){
+	  pthread_mutex_unlock(&mg);
 
 #ifdef VERBOSE
 		std::cout<< " ??????????????????????????????????????????? processing data - threaded mode " << *threadedProcessing << endl;
@@ -465,12 +480,7 @@ void* postProcessing::processData(int delflag) {
 			
 			
 			}
-				/** IF detector acquisition is done, let the acquire() thread know to finish up and force join thread */
-			if(acquiringDone){
-			  sem_post(&sem_queue);
-			  //	cout << "Sem posted" << endl;
-			} //else
-				// cout << "Sem not posted" << endl;
+
 			/* IF THERE ARE NO DATA look if acquisition is finished */
 			if (checkJoinThread()) {
 			  if (dataQueueSize()==0) {
@@ -487,115 +497,148 @@ void* postProcessing::processData(int delflag) {
 		  fdata = NULL;
 		  //cout << "delete done "<< endl;
 		}
-		}
-	//receiver
+	} //receiver 
 	else{
-	  int nn;
-
-		int progress = 0;
-		char currentfName[MAX_STR_LENGTH]="";
-		int caught = -1;
-		int currentAcquisitionIndex = -1;
-		int currentFrameIndex = -1;
-		int currentSubFrameIndex = -1;
-		bool newData = false;
-		int nthframe = setReadReceiverFrequency(0);
-		int nx =getTotalNumberOfChannels(slsDetectorDefs::X);
-		int ny =getTotalNumberOfChannels(slsDetectorDefs::Y);
-
-#ifdef VERBOSE
-		std::cout << "receiver read freq:" << nthframe << std::endl;
-#endif
+ 	  
+ 		 pthread_mutex_unlock(&mg);
+// 		//cprintf(RED,"In post processing threads\n");
 
 
-		//repeat forever until joined by the calling thread
-		while(1){
+// 		if(dataReady){
+// 			readFrameFromReceiver();
+// 		}
 
-			cout.flush();
-			cout<<flush;
-			usleep(20000); //20ms need this else connecting error to receiver (too fast)
+// 		//only update progress
+// 		else{
+// 			int caught = -1;
+// 			char c;
+// 			int ifp;
+// 			while(true){
 
-			//get progress
-			if(setReceiverOnline() == ONLINE_FLAG){
-				pthread_mutex_lock(&mg);
-				caught = getFramesCaughtByReceiver();
-				pthread_mutex_unlock(&mg);
-			}
+// 				//cout.flush();
+// 				//cout<<flush;
+// 				usleep(100 * 1000); //20ms need this else connecting error to receiver (too fast)
 
-			//updating progress
-			if(caught!= -1){
-				setCurrentProgress(caught);
-#ifdef VERY_VERY_DEBUG
-			cout << "caught:" << caught << endl;
-#endif
-			}
+// 				if (checkJoinThread()){
+// 					break;
+// 				}
 
 
+// 				ifp=kbhit();
+// 				if (ifp!=0){
+// 					c=fgetc(stdin);
+// 					if (c=='q') {
+// 						cout<<"gonna stop"<<endl;
+// 						stopAcquisition();
+// 					}
+// 				}
 
 
-			//detector acquistion done, wait for all frames received
-			if(acquiringDone > 0){
-#ifdef VERY_VERY_DEBUG
-				if(acquiringDone == 1)	cout << "acquiring seems to be done" << endl;
-#endif
+// 				//get progress
+// 				pthread_mutex_lock(&mg);
+// 				if(setReceiverOnline() == ONLINE_FLAG){
+// 					caught = getFramesCaughtByReceiver();
+// 				}
+// 				pthread_mutex_unlock(&mg);
 
 
-				//IF GUI, check for last frames (counter upto 5)
-				if(dataReady){
-					pthread_mutex_lock(&mg);
-					acquiringDone++;
-					pthread_mutex_unlock(&mg);
-#ifdef VERY_VERY_DEBUG
-				cout << "acquiringDone :" << acquiringDone << endl;
-#endif
-				}
-
-
-				//post to stopReceiver in acquire(), but continue reading frames
-				if (!dataReady || (acquiringDone >= 5)){
-					if(!dataReady || (!nthframe) ||(!newData)){
-#ifdef VERY_VERY_DEBUG
-						cout << "gonna post for it to end" << endl;
-#endif
-						sem_post(&sem_queue);
-#ifdef VERY_VERY_DEBUG
-						cout << "Sem posted" << endl;
-#endif
-					}
-				}
-			}
-			//random reads and for nthframe, checks if there is no new data
-			else if((!nthframe) ||(!newData)){
-				//cout <<"cecking now" << endl;
-				if (checkJoinThread()){
-					break;
-				}
-			}
+// 				//updating progress
+// 				if(caught!= -1){
+// 					setCurrentProgress(caught);
+// #ifdef VERY_VERY_DEBUG
+// 				cout << "caught:" << caught << endl;
+// #endif
+// 				}
+// 				if (checkJoinThread()){
+// 					break;
+// 				}
 
 
 
+// 			}
+// 		}
 
-
-			//for random reads, ask only if it has new data
-			if(!newData){
-				if(caught > progress){
-					newData = true;
-
-						// If new data and acquiringDone>0 (= det acq over), reset to get more frames
-						if(dataReady && (acquiringDone > 0)){
-							pthread_mutex_lock(&mg);
-							acquiringDone = 1;
-#ifdef VERY_VERY_DEBUG
-							cout << "Keeping acquiringDone at 1 " << endl;
-#endif
-							pthread_mutex_unlock(&mg);
-						}
-
-				}
-			}
-
-
-
+		//cout<<"exiting from proccessing thread"<<endl;
+ 		int progress = 0; 		
+		char currentfName[MAX_STR_LENGTH]=""; 		
+		int caught = -1; 		
+		int currentAcquisitionIndex = -1; 		
+		int currentFrameIndex = -1; 		
+		int currentSubFrameIndex = -1; 		
+		bool newData = false; 		
+		int nthframe = setReadReceiverFrequency(0); 		
+		int nx =getTotalNumberOfChannels(slsDetectorDefs::X); 		
+		int ny =getTotalNumberOfChannels(slsDetectorDefs::Y); 
+		int nn;
+#ifdef VERBOSE 		
+		std::cout << "receiver read freq:" << nthframe << std::endl; 
+#endif 		
+		//repeat forever until joined by the calling thread 		
+		while(1){ 			
+		  cout.flush(); 			
+		  //cout<<flush; 			
+		  usleep(20000); //20ms need this else connecting error to receiver (too fast) 			
+		  //get progress 			
+		  if(setReceiverOnline() == ONLINE_FLAG){ 				
+		    pthread_mutex_lock(&mg); 				
+		    caught = getFramesCaughtByReceiver(); 				
+		    pthread_mutex_unlock(&mg); 			} 			
+		  //updating progress 			
+		  if(caught!= -1){ 				
+		    setCurrentProgress(caught); 
+#ifdef VERY_VERY_DEBUG 			
+		    cout << "caught:" << caught << endl; 
+#endif 			
+		  } 			
+		    //detector acquistion done, wait for all frames received 			
+		    if(acquiringDone > 0){ 
+#ifdef VERY_VERY_DEBUG 				
+		      if(acquiringDone == 1)	
+			cout << "acquiring seems to be done" << endl; 
+#endif 				
+		      //IF GUI, check for last frames (counter upto 5) 				
+		      if(dataReady){ 					
+			pthread_mutex_lock(&mg); 					
+			acquiringDone++; 					
+			pthread_mutex_unlock(&mg); 
+#ifdef VERY_VERY_DEBUG 				
+			cout << "acquiringDone :" << acquiringDone << endl; 
+#endif 				
+		      } 				
+			//post to stopReceiver in acquire(), but continue reading frames 				
+			if (!dataReady || (acquiringDone >= 5)){ 					
+			  if(!dataReady || (!nthframe) ||(!newData)){ 
+#ifdef VERY_VERY_DEBUG 						
+			    cout << "gonna post for it to end" << endl; 
+#endif 						
+			    sem_post(&sem_queue); 
+#ifdef VERY_VERY_DEBUG 						
+						    cout << "Sem posted" << endl; 
+#endif 					
+										    } 				
+			} 			
+		      } 			
+		      //random reads and for nthframe, checks if there is no new data 			
+		      else if((!nthframe) ||(!newData)){ 				
+			//cout <<"cecking now" << endl; 				
+			if (checkJoinThread()){ 					
+			  break; 				
+			} 			
+		      } 			
+		      //for random reads, ask only if it has new data 			
+		      if(!newData){ 				
+			if(caught > progress){ 					
+			  newData = true; 						// If new data and acquiringDone>0 (= det acq over), reset to get more frames 						
+			  if(dataReady && (acquiringDone > 0)){ 							
+			    pthread_mutex_lock(&mg); 							
+			    acquiringDone = 1; 
+#ifdef VERY_VERY_DEBUG 							
+			    cout << "Keeping acquiringDone at 1 " << endl; 
+#endif 							
+			    pthread_mutex_unlock(&mg); 						
+			  } 				
+			} 			} 
+	
 			if(newData){
 #ifdef VERY_VERY_DEBUG
 				cout << "new data" << endl;
@@ -667,6 +710,9 @@ void* postProcessing::processData(int delflag) {
 			}
 
 		}
+
+		//cprintf(RED,"Exiting post processing thread\n");
+
 	}
 
 	return 0;

@@ -137,7 +137,7 @@ int acceptConnection(int socketDescriptor) {
 
 
   //socklen_t address_length;
-  size_t address_length=sizeof(struct sockaddr_in);
+  socklen_t address_length=sizeof(struct sockaddr_in);
   
   if (socketDescriptor<0)
     return -1;

@@ -8,7 +8,7 @@
 #include  <cstdlib>
 #include  <sys/ipc.h>
 #include  <sys/shm.h>
-
+#include <time.h> //clock()
 using namespace std;
 slsDetectorUtils::slsDetectorUtils()  {
 
@@ -42,6 +42,8 @@ slsDetectorUtils::slsDetectorUtils()  {
 
 
 int  slsDetectorUtils::acquire(int delflag){
+	struct timespec begin,end;
+	clock_gettime(CLOCK_REALTIME, &begin);
 
   //ensure acquire isnt started multiple times by same client
   if(getAcquiringFlag() == false)
@@ -58,11 +60,15 @@ int  slsDetectorUtils::acquire(int delflag){
   }else{
 	  //put receiver read frequency to random if no gui
 	  int ret = setReadReceiverFrequency(0);
-	  if(ret>0 && (acquisition_finished == NULL)){
-		  std::cout << "Error: receiver read frequency is set to " << ret << " but should be > 0 only when using gui." << std::endl;
+	  if(ret>0 && (dataReady == NULL)){
 		  ret = setReadReceiverFrequency(1,0);
-		  std::cout << "Current receiver read frequency: " << ret << std::endl;
+		  std::cout << "No Data call back and hence receiver read frequency reset to " << ret <<" (Random)" << std::endl;
 	  }
+
+	  //start/stop data streaming threads if threads in client enabled/disabled
+	  ret = enableDataStreamingFromReceiver(-1);
+	 // cout<<"getting datastream:"<<ret<<endl;
+	 // cout<<"result of enabledatastream:"<<enableDataStreamingFromReceiver(ret)<<endl;
   }
 
   int nc=setTimer(CYCLES_NUMBER,-1);
@@ -71,10 +77,6 @@ int  slsDetectorUtils::acquire(int delflag){
   if (nf==0) nf=1;
 
   int multiframe = nc*nf;
-
-  pthread_mutex_lock(&mg);
-  acquiringDone = 0;
-  pthread_mutex_unlock(&mg);
 
   // setTotalProgress();
   //moved these 2 here for measurement change
@@ -144,35 +146,33 @@ int  slsDetectorUtils::acquire(int delflag){
   }
 
   if(receiver){
+    pthread_mutex_lock(&mg); //cout << "lock"<< endl;
 	  if(getReceiverStatus()!=IDLE)
 		  stopReceiver();
-	  if(setReceiverOnline()==OFFLINE_FLAG)
-		  *stoppedFlag=1;
-
 	  //multi detectors shouldnt have different receiver read frequencies enabled/disabled
     	if(setReadReceiverFrequency(0) < 0){
 	  		std::cout << "Error: The receiver read frequency is invalid:" << setReadReceiverFrequency(0) << std::endl;
-	  		 *stoppedFlag=1;
+	  		*stoppedFlag=1;
 	  	}
-
 	  if(setReceiverOnline()==OFFLINE_FLAG)
 		  *stoppedFlag=1;
+	  pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
   }
 
 
-
-  if (*threadedProcessing) {
-	sem_init(&sem_queue,0,0);
-    startThread(delflag);
-  }
+  if (*threadedProcessing)
+	    startThread(delflag);
 #ifdef VERBOSE
   cout << " starting thread " << endl;
 #endif
 
   //resets frames caught in receiver
   if(receiver){
-    resetFramesCaught();
+    pthread_mutex_lock(&mg); //cout << "lock"<< endl;
+	  resetFramesCaught();
+	  pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
   }
+
 
   for(int im=0;im<nm;im++) {
 
@@ -271,7 +271,7 @@ int  slsDetectorUtils::acquire(int delflag){
 	    setCurrentFrameIndex(0);
 
 	    if(receiver)
-	    	pthread_mutex_lock(&mg);
+	      pthread_mutex_lock(&mg); //cout << "lock"<< endl;
 	    if (multiframe>1)
 	      setFrameIndex(0);
 	    else
@@ -279,34 +279,36 @@ int  slsDetectorUtils::acquire(int delflag){
 
 
 	    if(receiver){
-	    	pthread_mutex_unlock(&mg);//unlock previous
+	      pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
 	    	pthread_mutex_lock(&mp);
 	    	createFileName();
 	    	pthread_mutex_unlock(&mp);
 	    	//send receiver file name
-	    	pthread_mutex_lock(&mg);
+	    	pthread_mutex_lock(&mg); //cout << "lock"<< endl;
 	    	setFileName(fileIO::getFileName());
 	    	if(setReceiverOnline()==OFFLINE_FLAG){
 	    		stopReceiver();
 	    		*stoppedFlag=1;
-	    		pthread_mutex_unlock(&mg);
+	    		pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
 	    		break;
 	    	}
 	    	//start receiver
 	    	if(startReceiver() == FAIL) {
+		  cout << "Start receiver failed " << endl;
 	    		stopReceiver();
 	    		*stoppedFlag=1;
-	    		pthread_mutex_unlock(&mg);
+	    		pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
 	    		break;
 	    	}
-	    	pthread_mutex_unlock(&mg);
+		  cout << "Receiver started " << endl;
+		  pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
 	    }
 	    #ifdef VERBOSE
 	    cout << "Acquiring " << endl;
 	   #endif
 	    startAndReadAll();
+	    cout << "detector finished " << endl;
 	   #ifdef VERBOSE
-	    cout << "finished " << endl;
 	    cout << "returned! " << endl;
 	   #endif
        
@@ -339,56 +341,23 @@ int  slsDetectorUtils::acquire(int delflag){
 	    break;
 
 
+	  // cout << "mglock " << endl;;
+	  pthread_mutex_lock(&mg); //cout << "lock"<< endl;
+	  // cout << "done " << endl;;
 	  //offline
 	  if(setReceiverOnline()==OFFLINE_FLAG){
-	  // wait until data processing thread has finished the data
-		  pthread_mutex_lock(&mg);
-		  acquiringDone = 1;
-		  pthread_mutex_unlock(&mg);
-		  if (*threadedProcessing) {
-			  sem_wait(&sem_queue);
-			  pthread_mutex_lock(&mg);
-			  acquiringDone = 0;
-			  pthread_mutex_unlock(&mg);
+		  if ((getDetectorsType()==GOTTHARD) || (getDetectorsType()==MOENCH) || (getDetectorsType()==JUNGFRAU)|| (getDetectorsType()==JUNGFRAUCTB) ){
+			  if((*correctionMask)&(1<<WRITE_FILE))
+				  closeDataFile();
 		  }
-
-#ifdef VERBOSE
-	  cout << "check data queue size " << endl;
-#endif
-	  /*while (dataQueueSize()){
-	    //#ifdef VERBOSE
-	    cout << "AAAAAAAAA check data queue size " << endl;
-	    //#endif
-	    usleep(100000);
-	  }*/
-
-	  if ((getDetectorsType()==GOTTHARD) || (getDetectorsType()==MOENCH) || (getDetectorsType()==JUNGFRAU) ){
-		  if((*correctionMask)&(1<<WRITE_FILE))
-			  closeDataFile();
 	  }
-
-	  }
-
-
 	  //online
 	  else{
-		  pthread_mutex_lock(&mg);
-		  acquiringDone = 1;
-		  pthread_mutex_unlock(&mg);
-
-		  // wait until data processing thread has taken the last frame
-		  if (*threadedProcessing) {
-			  sem_wait(&sem_queue);
-			  pthread_mutex_lock(&mg);
-			  acquiringDone = 0;
-			  pthread_mutex_unlock(&mg);
-		  }
-		  pthread_mutex_lock(&mg);
+	    cout << "Stopping receiver " << endl;;
 		  stopReceiver();
-		  pthread_mutex_unlock(&mg);
+		  cout<<"***********receiver stopped"<<endl;
 	  }
-
-
+	  pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
 
 
 
@@ -466,9 +435,9 @@ int  slsDetectorUtils::acquire(int delflag){
  #endif
     if(*correctionMask&(1<<WRITE_FILE))
       IncrementFileIndex();
-    pthread_mutex_lock(&mg);
+    pthread_mutex_lock(&mg); //cout << "lock"<< endl;
     setFileIndex(fileIO::getFileIndex());
-    pthread_mutex_unlock(&mg);
+    pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
 
       break;
     }
@@ -479,15 +448,14 @@ int  slsDetectorUtils::acquire(int delflag){
 #endif
   if(*correctionMask&(1<<WRITE_FILE))
     IncrementFileIndex();
-  pthread_mutex_lock(&mg);
+  pthread_mutex_lock(&mg); //cout << "lock"<< endl;
   setFileIndex(fileIO::getFileIndex());
-  pthread_mutex_unlock(&mg);
-
+  pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
 
     if (measurement_finished){
-    	  pthread_mutex_lock(&mg);
+      pthread_mutex_lock(&mg); //cout << "lock"<< endl;
     	  measurement_finished(im,*fileIndex,measFinished_p);
-    	  pthread_mutex_unlock(&mg);
+    	  pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
     }
 
     if (*stoppedFlag) {
@@ -506,7 +474,6 @@ int  slsDetectorUtils::acquire(int delflag){
 #endif
     setJoinThread(1);
     pthread_join(dataProcessingThread, &status);
-    sem_destroy(&sem_queue);
 #ifdef VERBOSE
     cout << "data processing thread joined" << endl;
 #endif
@@ -537,6 +504,10 @@ int  slsDetectorUtils::acquire(int delflag){
 #endif
 
   setAcquiringFlag(false);
+
+  clock_gettime(CLOCK_REALTIME, &end);
+  cout << "Elapsed time for acquisition:" << (( end.tv_sec - begin.tv_sec )	+ ( end.tv_nsec - begin.tv_nsec ) / 1000000000.0) << " seconds" << endl;
+
   return OK;
 
 }

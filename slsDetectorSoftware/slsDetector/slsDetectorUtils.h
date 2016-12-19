@@ -29,7 +29,7 @@ extern "C" {
 #include <sstream>
 #include <queue>
 #include <math.h>
-
+#include <semaphore.h>
 using namespace std;
 
 
@@ -491,7 +491,22 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual int loadSettingsFile(string fname, int imod=-1)=0;
 
+  /** programs FPGA with pof file
+      \param fname file name
+      \returns OK or FAIL
+  */
+  virtual int programFPGA(string fname)=0;
 
+  /** resets FPGA
+      \returns OK or FAIL
+  */
+  virtual int resetFPGA()=0;
+
+  /** power on/off the chip
+     \param ival on is 1, off is 0, -1 to get
+      \returns OK or FAIL
+  */
+  virtual int powerChip(int ival= -1)=0;
 
   /** saves the modules settings/trimbits writing to  a file
       \param fname file name . Axtension is automatically generated!
@@ -641,16 +656,17 @@ virtual int getReceiverCurrentFrameIndex()=0;
 virtual int resetFramesCaught()=0;
 
 /**
- * Reads a frame from receiver
- * @param fName file name of current frame()
- * @param acquisitionIndex current acquisition index
- * @param frameIndex current frame index (for each scan)
- * @param subFrameIndex current sub frame index (for 32 bit mode for eiger)
- /returns a frame read from recever
+ * Create Receiving Data Threads
+ * @param destroy is true to destroy all the threads
+ * @return OK or FAIL
+ */
+virtual int createReceivingDataThreads(bool destroy = false)=0;
+
+
+/** Reads frames from receiver through a constant socket
 */
-virtual int* readFrameFromReceiver(char* fName, int &acquisitionIndex, int &frameIndex, int &subFrameIndex)=0;
-
-
+//virtual void readFrameFromReceiver()=0;
+virtual int* readFrameFromReceiver(char* fName, int &acquisitionIndex, int &frameIndex, int &subFrameIndex)=0; 
 /**
     Turns off the receiver server!
 */
@@ -693,14 +709,20 @@ virtual int setROI(int n=-1,ROI roiLimits[]=NULL)=0;
 virtual ROI* getROI(int &n)=0;
 
 /** Sets the read receiver frequency
- 	  if Receiver read upon gui request, readRxrFrequency=0,
+ 	  if data required from receiver randomly readRxrFrequency=0,
  	   else every nth frame to be sent to gui
  	   @param getFromReceiver is 1 if it should ask the receiver,
- 	   0 if it can get it from multislsdetecter
- 	   @param i is the receiver read frequency
+ 	   	   0 if it can get it from multi structure
+ 	   @param freq is the receiver read frequency
  	   /returns read receiver frequency
  */
-virtual int setReadReceiverFrequency(int getFromReceiver, int i=-1)=0;
+virtual int setReadReceiverFrequency(int getFromReceiver, int freq=-1)=0;
+
+/** Enable or disable streaming of data from receiver to client
+ * 	@param enable 0 to disable 1 to enable -1 to only get the value
+ * 	@returns data streaming
+*/
+virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
 
 
 /** enable/disable or get data compression in receiver
@@ -824,7 +846,6 @@ virtual int setReceiverFifoDepth(int i = -1)=0;
  
   //protected:
   int *stoppedFlag;	 
-
   int64_t *timerValue;
   detectorSettings *currentSettings;
   int *currentThresholdEV;
@@ -850,6 +871,8 @@ virtual int setReceiverFifoDepth(int i = -1)=0;
   int (*progress_call)(double,void*);
   void *pProgressCallArg;
   
+
+
 };
 
 

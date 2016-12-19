@@ -10,6 +10,15 @@
 #define MEM_SIZE 0x100000 
 
 
+//Constants
+#define HALFSPEED_DBIT_PIPELINE 0x7f7c
+#define QUARTERSPEED_DBIT_PIPELINE 0x8981
+#define HALFSPEED_ADC_PIPELINE 0x20
+#define QUARTERSPEED_ADC_PIPELINE 0x10
+#define HALFSPEED_CONF 0x0
+#define QUARTERSPEED_CONF 0xf
+#define HALFSPEED_ADC_PHASE 65
+#define QUARTERSPEED_ADC_PHASE 25
 
 /* values defined for FPGA */
 #define MCSNUM            0x0
@@ -21,23 +30,23 @@
 
 //#ifdef JUNGFRAU_DHANYA
 #define POWER_ON_REG 				0x5e<<11
-#define ADCREG1 					8  //same as PLL_BANDWIDTH_REG
-#define ADCREG2 					20 //0x14
-#define ADCREG3 					4  //same as PLL_M_COUNTER_REG
-#define ADCREG4 					5  //same as PLL_C_COUNTER_REG
-#define ADCREG_VREFS 				24 //0x18
-#define DBIT_PIPELINE_REG 			89<<11 //0x59 same PATTERN_N_LOOP2_REG
-#define MEM_MACHINE_FIFOS_REG 		79<<11 //0x4f same as CONTROL_REG
-#define CONFGAIN_REG 				93<<11 //0x5d same as DAQ_REG
-#define ADC_PIPELINE_REG 			66<<11 //0x42 same as ADC_OFFSET_REG
+#define ADCREG1 					0x8  //same as PLL_BANDWIDTH_REG
+#define ADCREG2 					0x14
+#define ADCREG3 					0x4  //same as PLL_M_COUNTER_REG
+#define ADCREG4 					0x5  //same as PLL_C_COUNTER_REG
+#define ADCREG_VREFS 				0x18
+#define DBIT_PIPELINE_REG 			0x59<<11 //same PATTERN_N_LOOP2_REG
+#define MEM_MACHINE_FIFOS_REG 		0x4f<<11 //same as CONTROL_REG
+#define CONFGAIN_REG 				0x5d<<11 //same as DAQ_REG
+#define ADC_PIPELINE_REG 			0x42<<11 //same as ADC_OFFSET_REG
 //#endif
 
-#define ADC_OFFSET_REG      		66<<11 //same as ADC_PIPELINE_REG
-#define ADC_INVERSION_REG   		67<<11
+//#define ADC_OFFSET_REG      		66<<11 //same as CONFGAIN_REG
+#define ADC_INVERSION_REG   		0x43<<11
 
-#define DAC_REG     64<<11//0x17<<11// control the dacs
+#define DAC_REG     				64<<11//0x17<<11// control the dacs
 //ADC
-#define ADC_WRITE_REG         65<<11//0x18<<11
+#define ADC_WRITE_REG         		65<<11//0x18<<11
 //#define ADC_SYNC_REG          66<<11//0x19<<11
 //#define HV_REG                67<<11//0x20<<11
 
@@ -55,7 +64,7 @@
 //HV
 
 
-#define DUMMY_REG             68<<11//0x21<<11
+#define DUMMY_REG             0x44<<11
 #define FPGA_VERSION_REG      0<<11 //0x22<<11
 #define PCB_REV_REG			  0<<11
 #define FIX_PATT_REG          1<<11 //0x23<<11
@@ -182,7 +191,7 @@
 
 
 
-#define DAQ_REG   93<<11
+//#define DAQ_REG   0x5d<<11 //same as CONFGAIN_REG
 #define ADC_LATCH_DISABLE_REG   94<<11
 
 #define HV_REG 95<<11
@@ -303,7 +312,7 @@
 #define RUNSTATE_0_BIT     		 0x00001000
 #define RUNSTATE_1_BIT    		 0x00002000
 #define RUNSTATE_2_BIT    		 0x00004000
-#define STOPPED_BIT       0x00008000 // error!
+#define STOPPED_BIT       		 0x00008000 // stopped!
 #define ALL_FIFO_EMPTY_BIT       0x00010000 // data ready
 #define RUNMACHINE_BUSY_BIT      0x00020000
 #define READMACHINE_BUSY_BIT     0x00040000
@@ -409,10 +418,11 @@
 
 
 /* settings/conf gain register */
-#define GAIN_MASK                    0x0000000f 
+#define GAIN_MASK                    0x0000ffff
 #define GAIN_OFFSET                  0  
-#define SETTINGS_MASK                0x000000f0
-#define SETTINGS_OFFSET              4 
+#define SPEED_GAIN_MASK     		0xf0000000
+#define SPEED_GAIN_OFFSET   		28
+
 
 
 /* CHIP_OF_INTRST_REG */

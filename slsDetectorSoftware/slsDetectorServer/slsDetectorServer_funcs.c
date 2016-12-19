@@ -36,7 +36,6 @@ extern enum detectorSettings thisSettings;
 
 //global variables for optimized readout
 char mess[MAX_STR_LENGTH];
-char *dataretval=NULL;
 int dataret;
 //extern 
 int dataBytes = 10;
@@ -1325,9 +1324,6 @@ int get_adc(int file_des) {
 #endif
 	switch (ind) {
 #ifdef EIGERD
-	case TEMPERATURE_FPGA:
-		iadc = TEMP_FPGA;
-		break;
 	case TEMPERATURE_FPGAEXT:
 		iadc = TEMP_FPGAEXT;
 		break;
@@ -1342,6 +1338,15 @@ int get_adc(int file_des) {
 		break;
 	case TEMPERATURE_SODR:
 		iadc = TEMP_SODR;
+		break;
+	case TEMPERATURE_FPGA:
+		iadc = TEMP_FPGA;
+		break;
+	case TEMPERATURE_FPGA2:
+		iadc = TEMP_FPGAFEBL;
+		break;
+	case TEMPERATURE_FPGA3:
+		iadc = TEMP_FPGAFEBR;
 		break;
 #endif
 #ifdef GOTTHARDD
@@ -1932,6 +1937,7 @@ int set_module(int file_des) {
 	case LOWGAIN:
 	case VERYHIGHGAIN:
 	case VERYLOWGAIN:
+	case UNINITIALIZED:
 		break;
 	default:
 		sprintf(mess,"This setting %d does not exist for this detector\n",myModule.reg);
@@ -2520,9 +2526,8 @@ int start_and_read_all(int file_des) {
 
 
 int read_frame(int file_des) {
-
-	dataret=OK;
 	int dataret1;
+
 	if (differentClients==1 && lockStatus==1) {
 		dataret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
@@ -2531,25 +2536,28 @@ int read_frame(int file_des) {
 		dataret1 = dataret;
 		sendData(file_des,&dataret1,sizeof(dataret1),INT32);
 		sendData(file_des,mess,sizeof(mess),OTHER);
+#ifdef VERBOSE
 		printf("dataret %d\n",dataret);
+#endif
 		return dataret;
 	}
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-	dataretval=readFrame(&dataret, mess);
+		readFrame(&dataret, mess);
 #endif
 
-
-	//dataret could be swapped during sendData
-	dataret1 = dataret;
-	sendData(file_des,&dataret1,sizeof(dataret1),INT32);
-	if (dataret==FAIL)
-		sendData(file_des,mess,sizeof(mess),OTHER);//sizeof(mess));//sizeof(mess));
-	else if(dataret==OK){printf("shouldnt be sending anything but i am\n");
-		sendData(file_des,dataretval,dataBytes,OTHER);}
-
-	printf("dataret %d\n",dataret);
-	return dataret;
+ 		if (differentClients)
+ 			dataret=FORCE_UPDATE;
+		//dataret could be swapped during sendData
+		dataret1 = dataret;
+		sendData(file_des,&dataret1,sizeof(dataret1),INT32);
+		//always fail or finished
+		sendData(file_des,mess,sizeof(mess),OTHER);
+ 		if(dataret == FAIL)
+ 			cprintf(RED,"%s\n",mess);
+ 		else
+ 			cprintf(GREEN,"%s",mess);
+ 		return dataret;
 }
 
 
@@ -2787,15 +2795,26 @@ int set_dynamic_range(int file_des) {
 #endif
 	}
 	if(ret == OK){
+		int old_dr = setDynamicRange(-1);
 		retval=setDynamicRange(dr);
 		if (dr>=0 && retval!=dr)
 			ret=FAIL;
 		//look at rate correction only if dr change worked
-		if((ret==OK)  && (dr!=32)  && (dr!=-1) && (getRateCorrectionEnable())){
+		if((ret==OK)  && (dr!=32) && (dr!=16)   && (dr!=-1) && (getRateCorrectionEnable())){
 			setRateCorrection(0);
-			strcpy(mess,"Switching off Rate Correction. Must be in 32 bit mode\n");
+			strcpy(mess,"Switching off Rate Correction. Must be in 32 or 16 bit mode\n");
 			cprintf(RED,"%s",mess);
 			rateret = FAIL;
+		}else{
+			//setting it if dr changed from 16 to 32 or vice versa with tau value as in rate table
+			if((dr!=-1) && (old_dr != dr) && getRateCorrectionEnable() && (dr == 16 || dr == 32)){
+				setRateCorrection(-1); //tau_ns will not be -1 here
+				if(!getRateCorrectionEnable()){
+					strcpy(mess,"Deactivating Rate Correction. Could not set it.\n");
+					cprintf(RED,"%s",mess);
+					ret=FAIL;
+				}
+			}
 		}
 	}
 #endif
@@ -3977,9 +3996,9 @@ int set_rate_correct(int file_des) {
 
 			//set rate
 			else{
-				//not 32 bit mode
-				if((setDynamicRange(-1)!=32) && (tau_ns!=0)){
-					strcpy(mess,"Rate correction Deactivated, must be in 32 bit mode\n");
+				//not 32 or 16 bit mode
+				if((setDynamicRange(-1)!=32) && (setDynamicRange(-1)!=16) && (tau_ns!=0)){
+					strcpy(mess,"Rate correction Deactivated, must be in 32 or 16 bit mode\n");
 					cprintf(RED,"%s",mess);
 					ret=FAIL;
 				}

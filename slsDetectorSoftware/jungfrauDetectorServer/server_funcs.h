@@ -23,7 +23,7 @@ int sockfd;
 int function_table();
 
 int decode_function(int);
-int init_detector(int,int);
+int init_detector(int);
 
 int M_nofunc(int);
 int exit_server(int);
@@ -95,4 +95,8 @@ int set_roi(int);
 int set_ctb_pattern(int);
 
 int write_adc_register(int);;
+
+int program_fpga(int);
+int reset_fpga(int);
+int power_chip(int);
 #endif

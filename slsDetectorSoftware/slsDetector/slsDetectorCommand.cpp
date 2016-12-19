@@ -37,6 +37,9 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdStatus;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="datastream"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDataStream;
+  i++;
 
   /* Detector structure configuration and debugging commands */
 
@@ -441,6 +444,23 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
   i++;
 
+
+  /* fpga */
+
+  descrToFuncMap[i].m_pFuncName="programfpga";
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="resetfpga";
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
+  i++;
+
+
+  /* chip */
+  descrToFuncMap[i].m_pFuncName="powerchip";
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
+  i++;
+
   /* versions/ serial numbers  getId */
 
   descrToFuncMap[i].m_pFuncName="moduleversion"; //
@@ -791,7 +811,16 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
   i++;
 
+
   descrToFuncMap[i].m_pFuncName="adc"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="temp_fpgafl"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="temp_fpgafr"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
   i++;
 
@@ -925,6 +954,20 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 
   descrToFuncMap[i].m_pFuncName="adcpipeline"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
+  i++;
+
+
+  descrToFuncMap[i].m_pFuncName="dbitclk"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="dbitphase"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
+  i++;
+
+
+  descrToFuncMap[i].m_pFuncName="dbitpipeline"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
   i++;
 
@@ -1337,6 +1380,43 @@ string slsDetectorCommand::helpStatus(int narg, char *args[], int action) {
     os << string("status \t controls the detector acquisition - can be start or stop \n");
   return os.str();
 }
+
+
+
+string slsDetectorCommand::cmdDataStream(int narg, char *args[], int action) {
+
+#ifdef VERBOSE
+  cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
+#endif
+  int ival=-1;
+  char ans[100]="";
+
+  myDet->setOnline(ONLINE_FLAG);
+  myDet->setReceiverOnline(ONLINE_FLAG);
+
+  if (action==HELP_ACTION)
+      return helpStatus(narg,args,HELP_ACTION);
+
+  if (action==PUT_ACTION) {
+	  if (!sscanf(args[1],"%d",&ival))
+		  return string ("cannot scan datastream mode");
+	  myDet->enableDataStreamingFromReceiver(ival);
+  }
+  sprintf(ans,"%d",myDet->enableDataStreamingFromReceiver());
+  return string(ans);
+}
+
+
+string slsDetectorCommand::helpDataStream(int narg, char *args[], int action) {
+
+  ostringstream os;
+  if (action==GET_ACTION || action==HELP_ACTION)
+    os << string("datastream \t gets if zmq data stream from receiver is enabled. \n");
+  if (action==PUT_ACTION || action==HELP_ACTION)
+    os << string("datastream i\t enables/disables the zmq data stream from receiver. \n");
+  return os.str();
+}
+
 
 
 string slsDetectorCommand::cmdFree(int narg, char *args[], int action) {
@@ -3894,6 +3974,10 @@ string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
 	  adc=TEMPERATURE_SODL;
   else if (cmd=="temp_sodr")
 	  adc=TEMPERATURE_SODR;
+  else if (cmd=="temp_fpgafl")
+	  adc=TEMPERATURE_FPGA2;
+  else if (cmd=="temp_fpgafr")
+	  adc=TEMPERATURE_FPGA3;
   else
     return string("cannot decode adc ")+cmd;
 
@@ -3926,6 +4010,8 @@ string slsDetectorCommand::helpADC(int narg, char *args[], int action) {
     os << "temp_dcdc " << "Cannot be set" << std::endl;
     os << "temp_sodl " << "Cannot be set" << std::endl;
     os << "temp_sodr " << "Cannot be set" << std::endl;
+    os << "temp_fpgafl " << "Cannot be set" << std::endl;
+    os << "temp_fpgafr " << "Cannot be set" << std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
     os << "temp_adc " << "\t gets the temperature of the adc" << std::endl;
@@ -3935,6 +4021,8 @@ string slsDetectorCommand::helpADC(int narg, char *args[], int action) {
     os << "temp_dcdc " << "\t gets the temperature close to the dc dc converter" << std::endl;
     os << "temp_sodl " << "\t gets the temperature close to the left so-dimm memory" << std::endl;
     os << "temp_sodr " << "\t gets the temperature close to the right so-dimm memory" << std::endl;
+    os << "temp_fpgafl " << "\t gets the temperature of the left front end board fpga" << std::endl;
+    os << "temp_fpgafr " << "\t gets the temperature of the left front end board fpga" << std::endl;
   }
   return os.str();
 }
@@ -4201,6 +4289,13 @@ string slsDetectorCommand::cmdSpeed(int narg, char *args[], int action) {
     index=ADC_CLOCK;
   else if (cmd=="adcphase") {
     index=ADC_PHASE;
+   t=100000;
+  }  else if (cmd=="adcpipeline")
+    index=ADC_PIPELINE;
+  else if (cmd=="dbitclk")
+    index=DBIT_CLOCK;
+  else if (cmd=="dbitphase") {
+    index=DBIT_PHASE;
     t=100000;
   }  else if (cmd=="adcpipeline")
     index=ADC_PIPELINE;
@@ -4268,15 +4363,16 @@ string slsDetectorCommand::helpSpeed(int narg, char *args[], int action) {
 
 string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action) {
 
-int retval;
-char answer[1000]="";
+	int retval;
+	char answer[1000]="";
 
-  if (action==HELP_ACTION)
-    return helpAdvanced(narg, args, action);
-  
-  if (cmd=="flags") {
+	if (action==HELP_ACTION)
+		return helpAdvanced(narg, args, action);
 
-    readOutFlags flag=GET_READOUT_FLAGS;
+	if (cmd=="flags") {
+
+		readOutFlags flag=GET_READOUT_FLAGS;
+
 
     if (action==PUT_ACTION) {
       string sval=string(args[1]);
@@ -4302,9 +4398,7 @@ char answer[1000]="";
 	return string("could not scan flag ")+string(args[1]);
     }
   
-
-    myDet->setOnline(ONLINE_FLAG);
-
+		myDet->setOnline(ONLINE_FLAG);
     retval = myDet->setReadOutFlags(flag);
 
     // cout << hex << flag << " " << retval << endl;
@@ -4333,25 +4427,67 @@ char answer[1000]="";
 
     return string("unknown");
 
-  }  else if (cmd=="extsig") {
-    externalSignalFlag flag=GET_EXTERNAL_SIGNAL_FLAG;
-    int is=-1;
-    if (sscanf(args[0],"extsig:%d",&is))
-      ;
-    else
-      return string("could not scan signal number ")+string(args[0]);
-	
-    if (action==PUT_ACTION) {
-      flag=myDet->externalSignalType(args[1]);
-      if (flag==GET_EXTERNAL_SIGNAL_FLAG)
-	return string("could not scan external signal mode ")+string(args[1]);
-    }
-    myDet->setOnline(ONLINE_FLAG);
-    
-    return myDet->externalSignalType(myDet->setExternalSignalFlags(flag,is));
+	}  else if (cmd=="extsig") {
+		externalSignalFlag flag=GET_EXTERNAL_SIGNAL_FLAG;
+		int is=-1;
+		if (sscanf(args[0],"extsig:%d",&is))
+			;
+		else
+			return string("could not scan signal number ")+string(args[0]);
 
-  } else
-    return string("could not decode flag ")+cmd;
+		if (action==PUT_ACTION) {
+			flag=myDet->externalSignalType(args[1]);
+			if (flag==GET_EXTERNAL_SIGNAL_FLAG)
+				return string("could not scan external signal mode ")+string(args[1]);
+		}
+		myDet->setOnline(ONLINE_FLAG);
+
+		return myDet->externalSignalType(myDet->setExternalSignalFlags(flag,is));
+
+
+	}	else if (cmd=="programfpga") {
+		if (action==GET_ACTION)
+			return string("cannot get");
+		if(strstr(args[1],".pof")==NULL)
+			return string("wrong usage: programming file should have .pof extension");
+		string sval=string(args[1]);
+#ifdef VERBOSE
+		std::cout<< " programming file " << sval << std::endl;
+#endif
+		myDet->setOnline(ONLINE_FLAG);
+		if(myDet->programFPGA(sval) == OK)
+			return string("successful");
+		return string("unsuccessful");
+	}
+
+
+	else if (cmd=="resetfpga") {
+		if (action==GET_ACTION)
+			return string("cannot get");
+#ifdef VERBOSE
+		std::cout<< " resetting fpga " << sval << std::endl;
+#endif
+		myDet->setOnline(ONLINE_FLAG);
+		if(myDet->resetFPGA() == OK)
+			return string("successful");
+		return string("unsuccessful");
+	}
+
+
+	  else if (cmd=="powerchip") {
+		  char ans[100];
+		  myDet->setOnline(ONLINE_FLAG);
+		  if (action==PUT_ACTION){
+			  int ival = -1;
+			  if (!sscanf(args[1],"%d",&ival))
+				  return string("could not scan powerchip parameter " + string(args[1]));
+			  myDet->powerChip(ival);
+		  }
+		  sprintf(ans,"%d",myDet->powerChip());
+		  return string(ans);
+	}
+	else
+		return string("unknown command ")+cmd;
 
 }
 
@@ -4363,7 +4499,9 @@ string slsDetectorCommand::helpAdvanced(int narg, char *args[], int action) {
 
     os << "extsig:i mode \t sets the mode of the external signal i. can be  \n \t \t \t off, \n \t \t \t gate_in_active_high, \n \t \t \t gate_in_active_low, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t ro_trigger_in_rising_edge, \n \t \t \t ro_trigger_in_falling_edge, \n \t \t \t gate_out_active_high, \n \t \t \t gate_out_active_low, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge, \n \t \t \t ro_trigger_out_rising_edge, \n \t \t \t ro_trigger_out_falling_edge" << std::endl;
     os << "flags mode \t sets the readout flags to mode. can be none, storeinram, tot, continous, parallel, nonparallel, safe, digital, analog_digital, unknown" << std::endl;
-    
+
+    os << "programfpga f \t programs the fpga with file f (with .pof extension)." << std::endl;
+    os << "resetfpga f \t resets fpga, f can be any value" << std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
 
@@ -4482,7 +4620,8 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
       if(!strcasecmp(args[1],"start"))
     	  myDet->startReceiver();
       else if(!strcasecmp(args[1],"stop")){
-    	  myDet->startReceiverReadout();
+    	  //myDet->stopReceiver();
+    	 // myDet->startReceiverReadout();
     	  /*runStatus s = myDet->getReceiverStatus();
     	  while(s != RUN_FINISHED){
     		  usleep(50000);

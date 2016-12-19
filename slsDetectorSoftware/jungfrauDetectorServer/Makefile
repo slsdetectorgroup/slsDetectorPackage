@@ -6,17 +6,17 @@
 CROSS  = bfin-uclinux-
 CC    = $(CROSS)gcc
 
-CFLAGS += -Wall -DMOENCHD -DMCB_FUNCS -DDACS_INT  -DDEBUG -DV1 #-DVERBOSE #-DVERYVERBOSE  #-DVIRTUAL  #-DDACS_INT_CSERVER
+CFLAGS += -Wall -DJUNGFRAUD -DMCB_FUNCS -DDACS_INT  -DDEBUG -DV1 #-DVERBOSE #-DVERYVERBOSE  #-DVIRTUAL 
 
 
-PROGS= 	 jungfrauDetectorServerTest
+PROGS= 	 jungfrauDetectorServer
 INSTDIR= 	/tftpboot
 INSTMODE= 	0777
 
 
 
 BINS = testlib_sharedlibc
-SRCS = server.c server_funcs.c communication_funcs.c firmware_funcs.c mcb_funcs.c  sharedmemory.c 
+SRCS = server.c server_funcs.c communication_funcs.c firmware_funcs.c mcb_funcs.c
 OBJS = $(SRCS:%.c=%.o) 
 
 
@@ -27,14 +27,10 @@ test: 	clean jungfrauADCTEst
 
 boot: $(OBJS)
 
-jungfrauDetectorServerTest: $(OBJS)
-	echo $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@)
-
-
 jungfrauDetectorServer: $(OBJS)
 	echo $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@)
+
 
 jungfrauADCTEst: $(OBJS)
 	echo $(OBJS)

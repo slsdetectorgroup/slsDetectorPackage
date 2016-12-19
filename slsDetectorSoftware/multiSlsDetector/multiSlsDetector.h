@@ -488,6 +488,22 @@ class multiSlsDetector  : public slsDetectorUtils {
 
   int decodeNMod(int i, int &idet, int &imod);
 
+  /** programs FPGA with pof file
+      \param fname file name
+      \returns OK or FAIL
+  */
+  int programFPGA(string fname);
+
+  /** resets FPGA
+      \returns OK or FAIL
+  */
+  int resetFPGA();
+
+  /** power on/off the chip
+     \param ival on is 1, off is 0, -1 to get
+      \returns OK or FAIL
+  */
+  int powerChip(int ival= -1);
 
   /** loads the modules settings/trimbits reading from a file -  file name extension is automatically generated! */
   int loadSettingsFile(string fname, int nmod=0);
@@ -1176,19 +1192,22 @@ class multiSlsDetector  : public slsDetectorUtils {
  /**
   * resets framescaught
   * @param index frames caught by receiver
- */
+  */
  int resetFramesCaught();
 
  /**
-  * Reads a frame from receiver
-  * @param fName file name of current frame()
-  * @param acquisitionIndex current acquisition index
-  * @param frameIndex current frame index (for each scan)
-  * @param subFrameIndex current sub frame index (for 32 bit mode for eiger)
-  /returns a frame read from recever
- */
- int* readFrameFromReceiver(char* fName, int &acquisitionIndex, int &frameIndex, int &subFrameIndex);
+  * Create Receiving Data Threads
+  * @param destroy is true to destroy all the threads
+  * @return OK or FAIL
+  */
+ int createReceivingDataThreads(bool destroy = false);
 
+
+
+ /** Reads frames from receiver through a constant socket
+ */
+ //void readFrameFromReceiver();
+ int* readFrameFromReceiver(char*, int&, int&, int&);
   /** Locks/Unlocks the connection to the receiver
       /param lock sets (1), usets (0), gets (-1) the lock
       /returns lock status of the receiver
@@ -1248,14 +1267,20 @@ class multiSlsDetector  : public slsDetectorUtils {
   int calibratePedestal(int frames = 0);
 
   /** Sets the read receiver frequency
-   	  if Receiver read upon gui request, readRxrFrequency=0,
+   	  if data required from receiver randomly readRxrFrequency=0,
    	   else every nth frame to be sent to gui
    	   @param getFromReceiver is 1 if it should ask the receiver,
-   	   0 if it can get it from multislsdetecter
-   	   @param i is the receiver read frequency
+   	   	   0 if it can get it from multi structure
+   	   @param freq is the receiver read frequency
    	   /returns read receiver frequency
    */
-  int setReadReceiverFrequency(int getFromReceiver, int i=-1);
+  int setReadReceiverFrequency(int getFromReceiver, int freq=-1);
+
+  /** Enable or disable streaming data from receiver to client
+   * 	@param enable 0 to disable 1 to enable -1 to only get the value
+   * 	@returns data streaming
+  */
+  int enableDataStreamingFromReceiver(int enable=-1);
 
   /** updates the multidetector offsets */
   void updateOffsets();
@@ -1358,11 +1383,36 @@ class multiSlsDetector  : public slsDetectorUtils {
   bool getAcquiringFlag();
 
 
+private:
+	/**
+	 * Static function - Starts Data Thread of this object
+	 * @param this_pointer pointer to this object
+	 */
+	static void* staticstartReceivingDataThread(void *this_pointer);
 
+	/**
+	 * Thread that receives data packets from receiver
+	 */
+	void startReceivingDataThread();
 
+	  /* synchronizing between zmq threads */
+	  sem_t sem_singledone[MAXDET];
+	  sem_t sem_singlewait[MAXDET];
+	  int* singleframe[MAXDET];
 
+	  /* Parameters given to the gui picked up from zmq threads*/
+	  int currentAcquisitionIndex;
+	  int currentFrameIndex;
+	  int currentSubFrameIndex;
+	  string currentFileName;
 
-
+	  pthread_t receivingDataThreads[MAXDET];
+	  /** Ensures if threads created successfully */
+	  bool threadStarted;
+	  /** Current Thread Index*/
+	  int currentThreadIndex;
+	  /** Set to self-terminate data receiving threads waiting for semaphores */
+	  bool killAllReceivingDataThreads;
 
  protected:
  
@@ -1378,7 +1428,6 @@ class multiSlsDetector  : public slsDetectorUtils {
 
  private:
   ThreadPool* threadpool;
-
 
 
 };

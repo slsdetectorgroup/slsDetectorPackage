@@ -92,7 +92,7 @@ int startStateMachine();
 int stopStateMachine();
 int startReadOut();
 enum runStatus getRunStatus();
-char *readFrame(int *ret, char *mess);
+void readFrame(int *ret, char *mess);
 
 
 int64_t setTimer(enum timerIndex ind, int64_t val);

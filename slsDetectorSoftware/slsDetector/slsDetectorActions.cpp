@@ -146,6 +146,7 @@ int slsDetectorActions::getActionMode(int iaction){
 int slsDetectorActions::setScan(int iscan, string script, int nvalues, double *values, string par, int precision) {
   if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
 
+    //   cout << "settings  script to " << script <<endl;
     if (script=="") {
       scanMode[iscan]=noScan;
     } else {
@@ -160,6 +161,8 @@ int slsDetectorActions::setScan(int iscan, string script, int nvalues, double *v
 	scanMode[iscan]=trimbitsScan;
       } else if (script=="position") {
 	scanMode[iscan]=positionScan;
+      } else if (script=="dac") {
+	scanMode[iscan]=dacScan;
       } else {
 	scanMode[iscan]=scriptScan;
       }  
@@ -202,15 +205,6 @@ int slsDetectorActions::setScan(int iscan, string script, int nvalues, double *v
 
       setTotalProgress();
 
-
-
-
-
-
-
-
-
-
       return scanMode[iscan];
   }  else 
     return -1;
@@ -233,6 +227,8 @@ int slsDetectorActions::setScanScript(int iscan, string script) {
 	scanMode[iscan]=trimbitsScan;
       } else if (script=="position") {
 	scanMode[iscan]=positionScan;
+      } else if (script=="dac") {
+	scanMode[iscan]=dacScan;
       } else {
 	scanMode[iscan]=scriptScan;
       }  
@@ -424,6 +420,9 @@ int slsDetectorActions::executeScan(int level, int istep) {
     break;
   case thresholdScan:
     setDAC((dacs_t)currentScanVariable[level],THRESHOLD,0); // threshold scan
+    break;
+  case dacScan:
+    setDAC((dacs_t)currentScanVariable[level],(slsDetectorDefs::dacIndex)atoi(getScanParameter(level).c_str()),0); 
     break;
   case trimbitsScan:
     trimbit=(int)currentScanVariable[level];

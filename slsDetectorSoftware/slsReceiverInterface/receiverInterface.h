@@ -91,9 +91,20 @@ public:
 	 * @param fnum function enum to determine what parameter
 	 * @param retval return value
 	 * @param arg values to send
+	 * @param mess message returned
 	 * \returns success of operation
 	 */
-	int sendIntArray(int fnum, int64_t &retval, int64_t arg[2]);
+	int sendIntArray(int fnum, int64_t &retval, int64_t arg[2],char mess[]);
+
+
+	/**
+	 * Send an integer to receiver
+	 * @param fnum function enum to determine what parameter
+	 * @param retval return value
+	 * @param arg values to send
+	 * \returns success of operation
+	 */
+	int sendIntArray(int fnum, int &retval, int arg[2]);
 
 	/**
 	 * Get an integer value from receiver

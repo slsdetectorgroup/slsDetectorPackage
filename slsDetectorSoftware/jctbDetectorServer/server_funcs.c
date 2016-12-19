@@ -14,6 +14,7 @@
 int (*flist[256])(int);
 
 
+
 //defined in the detector specific file
 /* #ifdef MYTHEND */
 /* const enum detectorType myDetectorType=MYTHEN; */
@@ -334,6 +335,7 @@ int function_table() {
   flist[F_CALIBRATE_PEDESTAL]=&calibrate_pedestal;
   flist[F_SET_CTB_PATTERN]=&set_ctb_pattern;
   flist[F_WRITE_ADC_REG]=&write_adc_register;
+  flist[F_POWER_CHIP]=&power_chip;
   return OK;
 }
 
@@ -420,7 +422,7 @@ int get_detector_type(int file_des) {
 
   /* receive arguments */
   /* execute action */
-  ret=myDetectorType;
+  ret=JUNGFRAUCTB;//myDetectorType;
 
 #ifdef VERBOSE
     printf("Returning detector type %d\n",ret);
@@ -2537,6 +2539,8 @@ int set_speed(int file_des) {
       
       retval=phaseStep(val);
 
+    } else if ( arg==DBIT_PHASE) {
+ 	  retval=dbitPhaseStep(val); 
     } else {
 
 
@@ -2564,13 +2568,19 @@ int set_speed(int file_des) {
 	  retval=setClockDivider(val,1);
 	  break;
 
-/* 	case ADC_PHASE: */
-/* 	  retval=phaseStep(val,1); */
-/* 	  break; */
+	case DBIT_CLOCK:
+	  retval=setClockDivider(val,2);
+	  break;
+
 
 
 	case ADC_PIPELINE:
 	  retval=adcPipeline(val);
+	  break;
+
+
+	case DBIT_PIPELINE:
+	  retval=dbitPipeline(val);
 	  break;
 
 
@@ -2606,13 +2616,26 @@ int set_speed(int file_des) {
       retval=getClockDivider(1);
       break;
 
+    case DBIT_CLOCK:
+      retval=getClockDivider(2);
+      break;
+
     case ADC_PHASE:
       retval=getPhase();
+      break;
+
+    case DBIT_PHASE:
+      retval=getDbitPhase();
       break;
 
 
     case ADC_PIPELINE:
       retval=adcPipeline(-1);
+      break;
+      
+
+    case DBIT_PIPELINE:
+      retval=dbitPipeline(-1);
       break;
       
 
@@ -3545,4 +3568,52 @@ int write_adc_register(int file_des) {
   /*return ok/fail*/
   return ret; 
 
+}
+
+int power_chip(int file_des) {
+
+	int retval=-1;
+	int ret=OK;
+	int arg=-1;
+	int n;
+
+	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+
+
+#ifdef VERBOSE
+	printf("Power chip to %d\n", arg);
+#endif
+
+	if (differentClients==1 && lockStatus==1 && arg!=-1) {
+		ret=FAIL;
+		sprintf(mess,"Detector locked by %s\n",lastClientIP);
+	} else {
+		retval=powerChip(arg);
+#ifdef VERBOSE
+		printf("Chip powered: %d\n",retval);
+#endif
+
+		if (retval==arg || arg<0) {
+			ret=OK;
+		} else {
+			ret=FAIL;
+			printf("Powering chip failed, wrote %d but read %d\n", arg, retval);
+		}
+
+	}
+	if (ret==OK && differentClients==1)
+		ret=FORCE_UPDATE;
+
+	/* send answer */
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret==FAIL) {
+		n += sendDataOnly(file_des,mess,sizeof(mess));
+	} else
+		n += sendDataOnly(file_des,&retval,sizeof(retval));
+
+	return ret;
 }

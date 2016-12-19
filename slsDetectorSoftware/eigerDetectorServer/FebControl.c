@@ -50,7 +50,7 @@ int64_t Feb_Control_subframe_exposure_time_in_10nsec;
 double Feb_Control_exposure_period_in_sec;
 
 int64_t Feb_Control_RateTable_Tau_in_nsec = -1;
-int64_t Feb_Control_RateTable_Subexptime_in_nsec = -1;
+int64_t Feb_Control_RateTable_Period_in_nsec = -1;
 
 unsigned int   Feb_Control_trimbit_size;
 unsigned int* Feb_Control_last_downloaded_trimbits;
@@ -64,6 +64,9 @@ int Feb_control_master = 0;
 
 unsigned int Feb_Control_rate_correction_table[1024];
 double Feb_Control_rate_meas[16384];
+
+double ratemax=-1;
+int Feb_Control_activated = 1;
 
 
 void Module_Module(struct Module* mod,unsigned int number, unsigned int address_top){
@@ -152,6 +155,10 @@ int          Module_GetBottomDACValue(struct Module* mod,unsigned int i)        
 
 
 
+void Feb_Control_activate(int activate){
+	Feb_Control_activated = activate;
+}
+
 int Feb_Control_IsBottomModule(){
 	if(Module_BottomAddressIsValid(&modules[Feb_Control_current_index]))
 		return 1;
@@ -186,40 +193,10 @@ int Feb_Control_Init(int master, int top, int module_num){
 	Feb_Control_module_number = (module_num & 0xFF);
 
 	int serial = !top;
-
-	/*
-    //for Gemmas modules: if master, serial 0, else 1
-    int serial = 1;
-    if(master)
-    	serial = 0;
-    switch(Feb_Control_module_number){
-    case 34: serial = 0; break; //martin half
-    case 26: serial = 0; break; //leo
-
-    case 31: serial = 0; break; //martin
-    case 32: serial = 1; break;
-    case 24: serial = 2; break;
-    case 25: serial = 3; break;
-
-    case 15: serial = 0; break; //dhanya
-    case 16: serial = 1; break;
-    case 30: serial = 2; break;
-    case 38: serial = 3; break;
-
-    case 49: serial = 0; break; // Gemma
-    case 48: serial = 1; break; // Gemma
-    }*/
 	printf("serial: %d\n",serial);
 
 	Feb_Control_current_index = 1;
 
-	/*for(i=1;i<moduleSize;i++){
-	  if(Module_GetModuleNumber(&modules[i])==Feb_Control_module_number)
-		  Feb_Control_current_index = i;
-  }
-printf("****current index:%d\n",i);
-	 */
-	//Feb_Control_ReadSetUpFileToAddModules("/home/root/executables/setup.txt");
 
 	//Add the half module
 	Feb_Control_AddModule1(Feb_Control_module_number,top,serial,serial,1);
@@ -242,113 +219,14 @@ printf("****current index:%d\n",i);
 	Feb_Interface_SendCompleteList(nfebs,feb_list);
 	free(feb_list);
 	printf("\n");
-	Feb_Interface_SetByteOrder();
+	if(Feb_Control_activated)
+		Feb_Interface_SetByteOrder();
 
 
 	return 1;
 }
 
 
-
-/*
-void Feb_Control_Set_Master(){
-	Feb_Control_am_i_master = 1;
-	unsigned int halfmastermodule = 0x80000000;
-	  unsigned int reg_nums[1];
-	  unsigned int reg_vals[1];
-	  reg_nums[0]=DAQ_REG_CHIP_CMDS;
-	  reg_vals[0]=(halfmastermodule|Feb_Control_acquireNReadoutMode|Feb_Control_triggerMode|Feb_Control_externalEnableMode|Feb_Control_subFrameMode);
-
-	  if(!Feb_Interface_WriteRegisters((Module_GetTopLeftAddress(&modules[1])|Module_GetTopRightAddress(&modules[1])),1,reg_nums,reg_vals,0,0)){
-		  printf("Trouble writing commands....\n");;
-		    return 0;
-	  }
-	  printf("master is set\n");
-}
-
- */
-
-
-
-int Feb_Control_ReadSetUpFileToAddModules(char* file_name){
-	char line[100];
-	char str[100];
-	int i0,i1,i2;
-	// int memaddress = 1;
-	FILE* fp = fopen(file_name, "r");
-	if( fp == NULL ){
-		perror("Error while opening the file.\n");
-		return 0;
-	}
-
-	printf("\nSetting up detectors:\n");
-
-	while ( fgets (line , 255 , fp) != NULL ){
-		if(strlen(line)<=1)
-			continue;
-		sscanf (line, "%s", str);
-		if (str[0]=='#')
-			continue;
-
-
-		if(!strcmp(str,"add_module")){
-			if( sscanf (line,"%s %d %d %d", str,&i0,&i1,&i2) < 4){
-				cprintf(RED,"Error adding module from %s.\n",file_name);
-				exit(0);
-			}
-			printf ("str:%s len:%d i0:%d i1:%d i2:%d\n", str, strlen(str),i0,i1,i2);
-			if(!Feb_Control_AddModule1(i0,1,i1,i2,0)){
-				cprintf(RED,"Error adding module, parameter was assigned twice in setup file: %s.\n",file_name);
-				exit(0);
-			}
-		}
-
-		else if(!strcmp(str,"add_half_module")){
-			if( sscanf (line,"%s %d %d %d", str,&i0,&i1,&i2) < 4){
-				cprintf(RED,"Error adding half module from %s.\n",file_name);
-				exit(0);
-			}
-			printf ("str:%s len:%d i0:%d i1:%d i2:%d\n", str, strlen(str),i0,i1,i2);
-
-			if(!Feb_Control_AddModule1(i0,i1,i2,i2,1)){
-				cprintf(RED,"Error adding module, parameter was assigned twice in setup file: %s.\n",file_name);
-				exit(0);
-			}
-
-			//memaddress++;
-			Feb_Control_PrintModuleList();
-
-			/*  if(!Feb_Control_AddModule1(i0,i1)){
-				  cprintf(RED,"Error adding module, parameter was assigned twice in setup file: %s.\n",file_name);
-				  exit(0);
-			  }*/
-		}
-	}
-	fclose(fp);
-
-
-	Feb_Control_PrintModuleList();
-	unsigned int nfebs = 0;
-	unsigned int* feb_list = malloc(moduleSize*4 * sizeof(unsigned int));
-	unsigned int i;
-	for(i=1;i<moduleSize;i++){
-		if(Module_TopAddressIsValid(&modules[i])){
-			feb_list[nfebs++] = Module_GetTopRightAddress(&modules[i]);
-			feb_list[nfebs++] = Module_GetTopLeftAddress(&modules[i]);
-		}
-		if(Module_BottomAddressIsValid(&modules[i])){
-			feb_list[nfebs++] = Module_GetBottomRightAddress(&modules[i]);
-			feb_list[nfebs++] = Module_GetBottomLeftAddress(&modules[i]);
-		}
-	}
-
-	Feb_Interface_SendCompleteList(nfebs,feb_list);
-	free(feb_list);
-
-	printf("\n");
-
-	return Feb_Interface_SetByteOrder();
-}
 
 void Feb_Control_PrintModuleList(){
 	unsigned int i;
@@ -447,92 +325,6 @@ int Feb_Control_AddModule1(unsigned int module_number, int top_enable, unsigned 
 	return parameters_ok;
 }
 
-/* not called anywhere**/
-int Feb_Control_ReadSetUpFile(unsigned int module_num, char* file_name){
-	printf("Reading Setup file for module number:%d\n",module_num);
-	char line[100];
-	char str[100];
-	int i0;
-	float f0;
-
-	FILE* fp = fopen(file_name, "r");
-	if( fp == NULL ){
-		perror("Error while opening the file.\n");
-		return 0;
-	}
-
-	while ( fgets (line , 255 , fp) != NULL ){
-		if(strlen(line)<=1)
-			continue;
-		sscanf (line, "%s", str);
-		if ((str[0]=='#') || (!strcmp(str,"add_module")) || (!strcmp(str,"add_half_module")))
-			continue;
-
-		if(!strcmp("iodelay",str)){
-			if(sscanf (line,"%s %d", str,&i0) < 2){
-				cprintf(RED,"Error reading io_delay\n");
-				exit(0);
-			}
-			Feb_Control_SetIDelays(module_num,i0);
-		}
-
-		else if(!strcmp("high_voltage",str)){
-			if(sscanf (line,"%s %f", str,&f0) < 2){
-				cprintf(RED,"Error reading high_voltage\n");
-				exit(0);
-			}
-			Feb_Control_SetHighVoltage(f0);
-		}
-/*
-		else if(!strcmp("photon_energy",str)){
-			if(sscanf (line,"%s %f", str,&f0) < 2){
-				cprintf(RED,"Error reading photon_energy\n");
-				exit(0);
-			}
-			Feb_Control_SetPhotonEnergy(f0);
-		}*/
-
-		else if(!strcmp("dynamic_range",str)){
-			if(sscanf (line,"%s %d", str,&i0) < 2){
-				cprintf(RED,"Error reading dynamic_range\n");
-				exit(0);
-			}
-			Feb_Control_SetDynamicRange(i0);
-		}
-
-		else if(!strcmp("readout_speed",str)){
-			if(sscanf (line,"%s %d", str,&i0) < 2){
-				cprintf(RED,"Error reading readout_speed\n");
-				exit(0);
-			}
-			Feb_Control_SetReadoutSpeed(i0);
-		}
-
-		else if(!strcmp("readout_mode",str)){
-			if(sscanf (line,"%s %d", str,&i0) < 2){
-				cprintf(RED,"Error reading readout_mode\n");
-				exit(0);
-			}
-			Feb_Control_SetReadoutMode(i0);
-		}
-
-		else {
-			if( sscanf (line,"%s %f", str,&f0) < 2){
-				cprintf(RED,"Error reading dac\n");
-				exit(0);
-			}
-
-			if(module_num>0)
-				sprintf(str,"%s",str); /*sprintf(str,"mod%d::%s",module_num,str);*/
-			if(!Feb_Control_SetDAC(str,f0,1))
-				cprintf(RED,"Error in string: %s",str);
-
-		}
-	}
-	fclose(fp);
-	printf("Done reading set up file\n");
-	return 1;
-}
 
 
 int Feb_Control_CheckSetup(int master){
@@ -675,12 +467,14 @@ int Feb_Control_SendIDelays(unsigned int dst_num, int chip_lr, unsigned int chan
 
 	printf(", tracks 0x%x to: %d, %d clks and %d units.\n",channels,(((15-delay_data_valid_nclks)<<6)|ndelay_units),delay_data_valid_nclks,ndelay_units);
 
-	if(!Feb_Interface_WriteRegister(dst_num,CHIP_DATA_OUT_DELAY_REG2, 1<<31 | delay_data_valid_nclks<<16 | ndelay_units,0,0) || //the 1<<31 time enables the setting of the data valid delays
-			!Feb_Interface_WriteRegister(dst_num,CHIP_DATA_OUT_DELAY_REG3,set_left_delay_channels,0,0)  ||
-			!Feb_Interface_WriteRegister(dst_num,CHIP_DATA_OUT_DELAY_REG4,set_right_delay_channels,0,0) ||
-			!Feb_Interface_WriteRegister(dst_num,CHIP_DATA_OUT_DELAY_REG_CTRL,CHIP_DATA_OUT_DELAY_SET,1,1)){
-		cprintf(RED,"Warning: could not SetChipDataInputDelays(...).\n");
-		return 0;
+	if(Feb_Control_activated){
+		if(!Feb_Interface_WriteRegister(dst_num,CHIP_DATA_OUT_DELAY_REG2, 1<<31 | delay_data_valid_nclks<<16 | ndelay_units,0,0) || //the 1<<31 time enables the setting of the data valid delays
+				!Feb_Interface_WriteRegister(dst_num,CHIP_DATA_OUT_DELAY_REG3,set_left_delay_channels,0,0)  ||
+				!Feb_Interface_WriteRegister(dst_num,CHIP_DATA_OUT_DELAY_REG4,set_right_delay_channels,0,0) ||
+				!Feb_Interface_WriteRegister(dst_num,CHIP_DATA_OUT_DELAY_REG_CTRL,CHIP_DATA_OUT_DELAY_SET,1,1)){
+			cprintf(RED,"Warning: could not SetChipDataInputDelays(...).\n");
+			return 0;
+		}
 	}
 
 	return 1;
@@ -738,9 +532,11 @@ int Feb_Control_SendHighVoltage(unsigned int dst_num,float* value){
 	}
 
 	unsigned int r = 0x20000000 | (b&0xff);
-	if(!Feb_Interface_WriteRegister(dst_num,0,r,0,0)){
-		cprintf(RED,"Warning: trouble setting high voltage for dst_num %d.\n",dst_num);
-		return 0;
+	if(Feb_Control_activated){
+		if(!Feb_Interface_WriteRegister(dst_num,0,r,0,0)){
+			cprintf(RED,"Warning: trouble setting high voltage for dst_num %d.\n",dst_num);
+			return 0;
+		}
 	}
 
 	*value = Feb_Control_DACToVoltage(b,nsteps,vmin,vmax);
@@ -752,42 +548,14 @@ int Feb_Control_SendHighVoltage(unsigned int dst_num,float* value){
 
 int Feb_Control_DecodeDACString(char* dac_str, unsigned int* module_index, int* top, int* bottom, unsigned int* dac_ch){
 	char*       local_s = dac_str;
-	//char temp[50];
 	*module_index  = Feb_Control_current_index;
-
-	/*
-  char* p1 = strstr(local_s,"mod");//size_t p1 = local_s.find("mod");
-  char* p2 = strstr(local_s,"::");//size_t p2 =local_s.find("::");
-  if(p1!=NULL&&p2!=NULL&&(p1+3)<p2){//if(p1!=string::npos&&p2!=string::npos&&(p1+3)<p2){
-	  strncpy(temp, p1+3, (p2-p1));
-	  temp[p2-p1] = '\0';
-	  unsigned int number = atoi(temp); //unsigned int number = atoi((local_s.substr(p1+3,p2-3)).c_str());
-
-    if(!Feb_Control_GetModuleIndex(number,module_index)){
-      cprintf(RED,"Error in dac_name \"%s\", module number %d not in list.\n",dac_str,number);
-      return 0;
-    }
-    strcpy(local_s,p2+2);//local_s    = local_s.substr(p2+2);
-  }
-	 */
-
 	*top    = 1;//make them both 1 instead of this
 	*bottom = 1;
-	/*if(p1 = strstr(local_s,"top::")!=NULL){
-    strcpy(local_s,p1+5);
-	 *bottom=0;
-  }else if(p1 = strstr(local_s,"bottom::")!=NULL){
-    strcpy(local_s,p1+8);
-	 *top=0;
-  }*/
 
 	if(Module_BottomAddressIsValid(&modules[*module_index]))
 		*top=0;
 	else
 		*bottom=0;
-
-
-
 
 	*dac_ch = 0;
 	if(!Feb_Control_GetDACNumber(local_s,dac_ch)){
@@ -799,37 +567,6 @@ int Feb_Control_DecodeDACString(char* dac_str, unsigned int* module_index, int* 
 }
 
 int Feb_Control_SetDAC(char* dac_str, int value, int is_a_voltage_mv){
-	/*
-  string       local_s = dac_str;
-  unsigned int module_index  = 0;
-
-  size_t p1 = local_s.find("mod");
-  size_t p2 = local_s.find("::");
-  if(p1!=string::npos&&p2!=string::npos&&(p1+3)<p2){
-    unsigned int number = atoi((local_s.substr(p1+3,p2-3)).c_str());
-    if(!GetModuleIndex(number,module_index)){
-      cprintf(RED,"Error in dac_name \""<<dac_str<<"\", module number "<<number<<" not in list.\n");;
-      return 0;
-    }
-    local_s    = local_s.substr(p2+2);
-  }
-
-  int top    = 1;
-  int bottom = 1;
-  if((p1 = local_s.find("top::"))!=string::npos){
-    local_s = local_s.substr(p1+5);
-    bottom=0;
-  }else if((p1 = local_s.find("bottom::"))!=string::npos){
-    local_s = local_s.substr(p1+8);
-    top=0;
-  }
-
-  unsigned int dac_ch = 0;
-  if(!GetDACNumber(local_s,dac_ch)){
-    cprintf(RED,"Error in dac_name: "<<dac_str<<"  ("<<local_s<<")\n");;
-    return 0;
-  }
-	 */
 	unsigned int i;
 	unsigned int module_index, dac_ch;
 	int top, bottom;
@@ -901,10 +638,6 @@ int Feb_Control_GetDACNumber(char* s, unsigned int* n){
 
 int Feb_Control_SendDACValue(unsigned int dst_num, unsigned int ch, unsigned int* value){
 
-	//static unsigned int nsteps = 4096; //12 bit dac
-	//static float vmin = 0;
-	//static float vmax = 2;
-
 	if(ch<0||ch>15){
 		cprintf(RED,"Warning invalid ch for SetDAC.\n");
 		return 0;
@@ -918,9 +651,11 @@ int Feb_Control_SendDACValue(unsigned int dst_num, unsigned int ch, unsigned int
 	unsigned int r      = dac_ic<<30 | 3<<16 | dac_ch<<12 | *value; //3 write and power up
 
 
-	if(!Feb_Interface_WriteRegister(dst_num,0,r,1,0)){
-		cprintf(RED,"Warning: trouble setting dac %d voltage.\n",ch);
-		return 0;
+	if(Feb_Control_activated){
+		if(!Feb_Interface_WriteRegister(dst_num,0,r,1,0)){
+			cprintf(RED,"Warning: trouble setting dac %d voltage.\n",ch);
+			return 0;
+		}
 	}
 
 	float voltage=Feb_Control_DACToVoltage(*value,4096,0,2048);
@@ -929,14 +664,7 @@ int Feb_Control_SendDACValue(unsigned int dst_num, unsigned int ch, unsigned int
 	return 1;
 }
 
-/*
-float GetDAC(string s){
-  static unsigned int n;
-  if(!GetDACNumber(s,n)) return 0;
 
-  return dac[n];
-}
- */
 
 int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits){
 	printf("Setting Trimbits\n");
@@ -959,12 +687,15 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits){
 	for(l_r=0;l_r<2;l_r++){ // l_r loop
 		//printf("\nl_r:%d\t\t",l_r);
 		unsigned int disable_chip_mask = l_r ? DAQ_CS_BAR_LEFT : DAQ_CS_BAR_RIGHT;
-		if(!(Feb_Interface_WriteRegister(0xfff,DAQ_REG_STATIC_BITS,disable_chip_mask|DAQ_STATIC_BIT_PROGRAM|DAQ_STATIC_BIT_M8,0,0)
-				&&Feb_Control_SetCommandRegister(DAQ_SET_STATIC_BIT)
-				&&Feb_Control_StartDAQOnlyNWaitForFinish(5000))){
-			printf("Could not select chips\n");
-			return 0;
+		if(Feb_Control_activated){
+			if(!(Feb_Interface_WriteRegister(0xfff,DAQ_REG_STATIC_BITS,disable_chip_mask|DAQ_STATIC_BIT_PROGRAM|DAQ_STATIC_BIT_M8,0,0)
+					&&Feb_Control_SetCommandRegister(DAQ_SET_STATIC_BIT)
+					&&Feb_Control_StartDAQOnlyNWaitForFinish(5000))){
+				printf("Could not select chips\n");
+				return 0;
+			}
 		}
+
 		int row_set;
 		for(row_set=0;row_set<16;row_set++){ //16 rows at a time
 			//printf("row_set:%d\t\t",row_set);
@@ -1020,22 +751,26 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits){
 			} //end row loop
 
 			if(Module_TopAddressIsValid(&modules[1])){
-				if(!Feb_Interface_WriteMemoryInLoops(Module_GetTopLeftAddress(&modules[Feb_Control_current_index]),0,0,1024,trimbits_to_load_l)||
-						!Feb_Interface_WriteMemoryInLoops(Module_GetTopRightAddress(&modules[Feb_Control_current_index]),0,0,1024,trimbits_to_load_r)||
-						//if(!Feb_Interface_WriteMemory(Module_GetTopLeftAddress(&modules[0]),0,0,1023,trimbits_to_load_r)||
-						//	!Feb_Interface_WriteMemory(Module_GetTopRightAddress(&modules[0]),0,0,1023,trimbits_to_load_l)||
-						!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
-					printf(" some errror!\n");
-					return 0;
+				if(Feb_Control_activated){
+					if(!Feb_Interface_WriteMemoryInLoops(Module_GetTopLeftAddress(&modules[Feb_Control_current_index]),0,0,1024,trimbits_to_load_l)||
+							!Feb_Interface_WriteMemoryInLoops(Module_GetTopRightAddress(&modules[Feb_Control_current_index]),0,0,1024,trimbits_to_load_r)||
+							//if(!Feb_Interface_WriteMemory(Module_GetTopLeftAddress(&modules[0]),0,0,1023,trimbits_to_load_r)||
+							//	!Feb_Interface_WriteMemory(Module_GetTopRightAddress(&modules[0]),0,0,1023,trimbits_to_load_l)||
+							!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+						printf(" some errror!\n");
+						return 0;
+					}
 				}
 			}else{
-				if(!Feb_Interface_WriteMemoryInLoops(Module_GetBottomLeftAddress(&modules[Feb_Control_current_index]),0,0,1024,trimbits_to_load_l)||
-						!Feb_Interface_WriteMemoryInLoops(Module_GetBottomRightAddress(&modules[Feb_Control_current_index]),0,0,1024,trimbits_to_load_r)||
-						//if(!Feb_Interface_WriteMemory(Module_GetTopLeftAddress(&modules[0]),0,0,1023,trimbits_to_load_r)||
-						//	!Feb_Interface_WriteMemory(Module_GetTopRightAddress(&modules[0]),0,0,1023,trimbits_to_load_l)||
-						!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
-					printf(" some errror!\n");
-					return 0;
+				if(Feb_Control_activated){
+					if(!Feb_Interface_WriteMemoryInLoops(Module_GetBottomLeftAddress(&modules[Feb_Control_current_index]),0,0,1024,trimbits_to_load_l)||
+							!Feb_Interface_WriteMemoryInLoops(Module_GetBottomRightAddress(&modules[Feb_Control_current_index]),0,0,1024,trimbits_to_load_r)||
+							//if(!Feb_Interface_WriteMemory(Module_GetTopLeftAddress(&modules[0]),0,0,1023,trimbits_to_load_r)||
+							//	!Feb_Interface_WriteMemory(Module_GetTopRightAddress(&modules[0]),0,0,1023,trimbits_to_load_l)||
+							!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+						printf(" some errror!\n");
+						return 0;
+					}
 				}
 			}
 
@@ -1077,14 +812,20 @@ return Module_GetTopLeftAddress(&modules[1])|Module_GetTopRightAddress(&modules[
 }
 
 int Feb_Control_SetCommandRegister(unsigned int cmd){
-	return Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CHIP_CMDS,cmd,0,0);
+	if(Feb_Control_activated)
+		return Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CHIP_CMDS,cmd,0,0);
+	else
+		return 1;
 }
 
 
 int Feb_Control_GetDAQStatusRegister(unsigned int dst_address, unsigned int* ret_status){
-	if(!Feb_Interface_ReadRegister(dst_address,DAQ_REG_STATUS,ret_status)){
-		cprintf(RED,"Error: reading status register.\n");
-		return 0;
+	//if deactivated, should  be handled earlier and should not get into this function
+	if(Feb_Control_activated){
+		if(!Feb_Interface_ReadRegister(dst_address,DAQ_REG_STATUS,ret_status)){
+			cprintf(RED,"Error: reading status register.\n");
+			return 0;
+		}
 	}
 
 	*ret_status = (0x02FF0000 & *ret_status) >> 16;
@@ -1093,17 +834,22 @@ int Feb_Control_GetDAQStatusRegister(unsigned int dst_address, unsigned int* ret
 
 
 int Feb_Control_StartDAQOnlyNWaitForFinish(int sleep_time_us){
-	if(!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CTRL,0,0,0)||!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CTRL,DAQ_CTRL_START,0,0)){
-		cprintf(RED,"Warning: could not start.\n");
-		return 0;
+	if(Feb_Control_activated){
+		if(!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CTRL,0,0,0)||!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CTRL,DAQ_CTRL_START,0,0)){
+			cprintf(RED,"Warning: could not start.\n");
+			return 0;
+		}
 	}
-
 	return Feb_Control_WaitForFinishedFlag(sleep_time_us);
 }
 
 
 int Feb_Control_AcquisitionInProgress(){
 	unsigned int status_reg_r=0,status_reg_l=0;
+
+	//deactivated should return end of acquisition
+	if(!Feb_Control_activated)
+		return 0;
 
 	int ind = Feb_Control_current_index;
 	if(Module_BottomAddressIsValid(&modules[ind])){
@@ -1131,6 +877,10 @@ int Feb_Control_AcquisitionInProgress(){
 
 int Feb_Control_AcquisitionStartedBit(){
 	unsigned int status_reg_r=0,status_reg_l=0;
+
+	//deactivated should return acquisition started/ready
+	if(!Feb_Control_activated)
+		return 1;
 
 	int ind = Feb_Control_current_index;
 	if(Module_BottomAddressIsValid(&modules[ind])){
@@ -1172,6 +922,11 @@ int Feb_Control_WaitForFinishedFlag(int sleep_time_us){
 
 
 int Feb_Control_WaitForStartedFlag(int sleep_time_us, int prev_flag){
+
+	//deactivated dont wait (otherwise give a toggle value back)
+	if(!Feb_Control_activated)
+		return 1;
+
 	int value = prev_flag;
 	while(value == prev_flag){
 		usleep(sleep_time_us);
@@ -1186,10 +941,13 @@ int Feb_Control_WaitForStartedFlag(int sleep_time_us, int prev_flag){
 }
 
 
-int Feb_Control_Reset(){printf("Reset daq\n");
-	if(!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CTRL,0,0,0) || !Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CTRL,DAQ_CTRL_RESET,0,0) || !Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CTRL,0,0,0)){
-		cprintf(RED,"Warning: Could not reset daq, no response.\n");
-		return 0;
+int Feb_Control_Reset(){
+	printf("Reset daq\n");
+	if(Feb_Control_activated){
+		if(!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CTRL,0,0,0) || !Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CTRL,DAQ_CTRL_RESET,0,0) || !Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CTRL,0,0,0)){
+			cprintf(RED,"Warning: Could not reset daq, no response.\n");
+			return 0;
+		}
 	}
 
 	return Feb_Control_WaitForFinishedFlag(5000);
@@ -1199,10 +957,12 @@ int Feb_Control_Reset(){printf("Reset daq\n");
 
 
 int Feb_Control_SetStaticBits(){
-	//program=1,m4=2,m8=4,test=8,rotest=16,cs_bar_left=32,cs_bar_right=64
-	if(!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_STATIC_BITS,Feb_Control_staticBits,0,0) || !Feb_Control_SetCommandRegister(DAQ_SET_STATIC_BIT) || !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
-		cprintf(RED,"Warning: Could not set static bits\n");
-		return 0;
+	if(Feb_Control_activated){
+		//program=1,m4=2,m8=4,test=8,rotest=16,cs_bar_left=32,cs_bar_right=64
+		if(!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_STATIC_BITS,Feb_Control_staticBits,0,0) || !Feb_Control_SetCommandRegister(DAQ_SET_STATIC_BIT) || !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+			cprintf(RED,"Warning: Could not set static bits\n");
+			return 0;
+		}
 	}
 
 	return 1;
@@ -1371,6 +1131,7 @@ int Feb_Control_SetExposureTime(double the_exposure_time_in_sec){
 	return 1;
 }
 double Feb_Control_GetExposureTime(){return Feb_Control_exposure_time_in_sec;}
+int64_t Feb_Control_GetExposureTime_in_nsec(){return (int64_t)(Feb_Control_exposure_time_in_sec*(1E9));}
 
 int Feb_Control_SetSubFrameExposureTime(int64_t the_subframe_exposure_time_in_10nsec){
 	Feb_Control_subframe_exposure_time_in_10nsec = the_subframe_exposure_time_in_10nsec;
@@ -1447,13 +1208,7 @@ void Feb_Control_PrintAcquisitionSetup(){
 }
 
 int Feb_Control_SendBitModeToBebServer(){
-	/*
-  static int first_pass = 1;
-  static char buffer[1024];
 
-  if(first_pass&&!Feb_Control_SetupSendToSocket("localhost",43212)) return 0;
-  else first_pass=0;
-	 */
 	unsigned int just_bit_mode = (DAQ_STATIC_BIT_M4|DAQ_STATIC_BIT_M8) & Feb_Control_staticBits;
 	unsigned int bit_mode = 16; //default
 	if(just_bit_mode == DAQ_STATIC_BIT_M4)  bit_mode = 4;
@@ -1466,60 +1221,9 @@ int Feb_Control_SendBitModeToBebServer(){
 		return 0;
 	}
 
-	/*
-  bzero(buffer,1024);
-  sprintf(buffer,"setbitmode %d",bit_mode);
-
-  if(Feb_Control_WriteNRead(buffer,strlen(buffer),1024)<1||strncmp(buffer,"0",1)){
-    cprintf(RED,"Error: sending bit mode ...\n");
-    return 0;
-  }
-	 */
 	return 1;
 }
 
-/*
-int Feb_Control_SetupSendToSocket(const char* ip_address_hostname, unsigned short int port){
-
-    struct hostent *server;
-    if((server = gethostbyname(ip_address_hostname)) == NULL){  //or look into getaddrinfo(3)
-      fprintf(stderr,"ERROR, no such host\n");
-      return 0;
-    }
-
-    //struct sockaddr_in serv_addr;
-    bzero((char *) &Feb_Control_serv_addr, sizeof(Feb_Control_serv_addr));
-    Feb_Control_serv_addr.sin_family = AF_INET;
-      bcopy((char *)server->h_addr,(char *)&Feb_Control_serv_addr.sin_addr.s_addr,server->h_length);
-      Feb_Control_serv_addr.sin_port = htons(port);
-
-  return 1;
-}
-
-int Feb_Control_WriteNRead(char* message, int length, int max_length){
-
-  int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-  if(sockfd <0){
-    fprintf(stderr,"ERROR opening socket\n");
-    return 0;
-  }
-
-  if(connect(sockfd,(struct sockaddr *) &Feb_Control_serv_addr,sizeof(Feb_Control_serv_addr)) < 0){
-    fprintf(stderr,"ERROR connecting\n");
-    return 0;
-  }
-
-  int n = write(sockfd,message,length);
-    if(n<0) cprintf(RED,"Error writing to socket");
-
-  length = read(sockfd,message,max_length);
-    if(length<0) cprintf(RED,"Error reading to socket");
-
-  close(sockfd);
-
-  return length;
-}
- */
 
 int Feb_Control_PrepareForAcquisition(){//return 1;
 	static unsigned int reg_nums[20];
@@ -1567,29 +1271,12 @@ int Feb_Control_PrepareForAcquisition(){//return 1;
 	reg_nums[5]=DAQ_REG_SUBFRAME_EXPOSURES;
 	reg_vals[5]= Feb_Control_subframe_exposure_time_in_10nsec; //(1 means 10ns, 100 means 1000ns)
 	// if(!Feb_Interface_WriteRegisters((Module_GetTopLeftAddress(&modules[1])|Module_GetTopRightAddress(&modules[1])),20,reg_nums,reg_vals,0,0)){
-	if(!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(),6,reg_nums,reg_vals,0,0)){
-		printf("Trouble starting acquisition....\n");;
-		return 0;
+	if(Feb_Control_activated){
+		if(!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(),6,reg_nums,reg_vals,0,0)){
+			printf("Trouble starting acquisition....\n");;
+			return 0;
+		}
 	}
-
-
-/*
-	reg_nums[0]=DAQ_REG_NEXPOSURES;
-	reg_vals[0]=Feb_Control_nimages;
-	reg_nums[1]=DAQ_REG_EXPOSURE_TIMER;
-	reg_vals[1]=Feb_Control_ConvertTimeToRegister(Feb_Control_exposure_time_in_sec);
-	reg_nums[2]=DAQ_REG_EXPOSURE_REPEAT_TIMER;
-	reg_vals[2]=Feb_Control_ConvertTimeToRegister(Feb_Control_exposure_period_in_sec);
-	reg_nums[3]=DAQ_REG_CHIP_CMDS;
-	reg_vals[3]=(Feb_Control_acquireNReadoutMode|Feb_Control_triggerMode|Feb_Control_externalEnableMode|Feb_Control_subFrameMode);
-	reg_nums[4]=DAQ_REG_SUBFRAME_EXPOSURES;
-	reg_vals[4]= Feb_Control_subframe_exposure_time_in_10nsec; //(1 means 10ns, 100 means 1000ns)
-	// if(!Feb_Interface_WriteRegisters((Module_GetTopLeftAddress(&modules[1])|Module_GetTopRightAddress(&modules[1])),20,reg_nums,reg_vals,0,0)){
-	if(!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(),5,reg_nums,reg_vals,0,0)){
-		printf("Trouble starting acquisition....\n");;
-		return 0;
-	}
-*/
 
 	return 1;
 }
@@ -1611,22 +1298,13 @@ int Feb_Control_StartAcquisition(){
 	reg_nums[14]=DAQ_REG_CTRL;
 	reg_vals[14]=ACQ_CTRL_START;
 
-	if(!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(),15,reg_nums,reg_vals,0,0)){
-		cprintf(RED,"Trouble starting acquisition....\n");;
-		return 0;
+	if(Feb_Control_activated){
+		if(!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(),15,reg_nums,reg_vals,0,0)){
+			cprintf(RED,"Trouble starting acquisition....\n");;
+			return 0;
+		}
 	}
 
-/*
-	reg_nums[0]=DAQ_REG_CTRL;
-	reg_vals[0]=0;
-	reg_nums[1]=DAQ_REG_CTRL;
-	reg_vals[1]=ACQ_CTRL_START;
-
-	if(!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(),2,reg_nums,reg_vals,0,0)){
-		printf("Trouble starting acquisition....\n");;
-		return 0;
-	}
-*/
 
 	return 1;
 }
@@ -1705,11 +1383,13 @@ int Feb_Control_PulsePixelNMove(int npulses, int inc_x_pos, int inc_y_pos){
 	c |= (inc_x_pos) ? DAQ_CLK_MAIN_CLK_TO_SELECT_NEXT_PIXEL : 0;
 	c |= (inc_y_pos) ? DAQ_CLK_ROW_CLK_TO_SELECT_NEXT_ROW    : 0;
 
-	if(!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_SEND_N_TESTPULSES,npulses,0,0) ||
-			!Feb_Control_SetCommandRegister(c) ||
-			!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
-		cprintf(RED,"Warning: could not PulsePixelNMove(...).\n");
-		return 0;
+	if(Feb_Control_activated){
+		if(!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_SEND_N_TESTPULSES,npulses,0,0) ||
+				!Feb_Control_SetCommandRegister(c) ||
+				!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+			cprintf(RED,"Warning: could not PulsePixelNMove(...).\n");
+			return 0;
+		}
 	}
 
 	return 1;
@@ -1717,11 +1397,13 @@ int Feb_Control_PulsePixelNMove(int npulses, int inc_x_pos, int inc_y_pos){
 
 /**new*/
 int Feb_Control_Shift32InSerialIn(unsigned int value_to_shift_in){
-	if(!Feb_Control_SetCommandRegister(DAQ_SERIALIN_SHIFT_IN_32) ||
-			!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_SHIFT_IN_32,value_to_shift_in,0,0) ||
-			!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
-		cprintf(RED,"Warning: could not shift in 32.\n");
-		return 0;
+	if(Feb_Control_activated){
+		if(!Feb_Control_SetCommandRegister(DAQ_SERIALIN_SHIFT_IN_32) ||
+				!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_SHIFT_IN_32,value_to_shift_in,0,0) ||
+				!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+			cprintf(RED,"Warning: could not shift in 32.\n");
+			return 0;
+		}
 	}
 	return 1;
 }
@@ -1741,11 +1423,13 @@ int Feb_Control_ClockRowClock(unsigned int ntimes){
 		ntimes=1023;
 	}
 
-	if(!Feb_Control_SetCommandRegister(DAQ_CLK_ROW_CLK_NTIMES) ||
-			!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CLK_ROW_CLK_NTIMES,ntimes,0,0) ||
-			!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
-		cprintf(RED,"Warning: could not clock row clock.\n");
-		return 0;
+	if(Feb_Control_activated){
+		if(!Feb_Control_SetCommandRegister(DAQ_CLK_ROW_CLK_NTIMES) ||
+				!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CLK_ROW_CLK_NTIMES,ntimes,0,0) ||
+				!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+			cprintf(RED,"Warning: could not clock row clock.\n");
+			return 0;
+		}
 	}
 
 	return 1;
@@ -1789,26 +1473,40 @@ int Feb_Control_PulseChip(int npulses){
 
 
 int64_t Feb_Control_Get_RateTable_Tau_in_nsec(){ return Feb_Control_RateTable_Tau_in_nsec;}
-int64_t Feb_Control_Get_RateTable_Subexptime_in_nsec(){ return Feb_Control_RateTable_Subexptime_in_nsec;}
+int64_t Feb_Control_Get_RateTable_Period_in_nsec(){ return Feb_Control_RateTable_Period_in_nsec;}
 
-//returns -1 if slope is too high
 int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec){
 
-	double sub_expure_time_in_sec = (double)(Feb_Control_GetSubFrameExposureTime())/(double)1e9;
+	//period = exptime if 16bit, period = subexptime if 32 bit
+	int dr = Feb_Control_GetDynamicRange();
+	double period_in_sec = (double)(Feb_Control_GetSubFrameExposureTime())/(double)1e9;
+	if(dr == 16)
+		period_in_sec = Feb_Control_GetExposureTime();
+
+
 	double tau_in_sec = (double)tau_in_Nsec/(double)1e9;
+	printf(" tau %lf %lf ", (double)tau_in_Nsec, (double) tau_in_sec); 
+
 	unsigned int np = 16384; //max slope 16 * 1024
 	double b0[1024];
 	double m[1024];
 
-	if(tau_in_sec<0||sub_expure_time_in_sec<0){
-		printf("Error tau %f and sub_expure_time %f must be greater than 0.\n", tau_in_sec, sub_expure_time_in_sec);
+	if(tau_in_sec<0||period_in_sec<0){
+		if(dr == 32)
+			printf("Error tau %lf and sub_exposure_time %lf must be greater than 0.\n", tau_in_sec, period_in_sec);
+		else
+			printf("Error tau %lf and exposure_time %lf must be greater than 0.\n", tau_in_sec, period_in_sec);
 		return 0;
 	}
 
+	cprintf(BLUE, "Changing Rate Correction Table tau:%0.8f sec, period:%f sec",tau_in_sec,period_in_sec);
+
 	printf("\tCalculating table for tau of %lld ns.\n", tau_in_Nsec);
 	int i;
-	for(i=0;i<np;i++)
-	  Feb_Control_rate_meas[i]  = i*exp(-i/sub_expure_time_in_sec*tau_in_sec);
+	for(i=0;i<np;i++){
+	  Feb_Control_rate_meas[i]  = i*exp(-i/period_in_sec*tau_in_sec);
+	  if(Feb_Control_rate_meas[i] > ratemax) ratemax= Feb_Control_rate_meas[i];
+	}
 
 	/*
 	  b  :  index/address of block ram/rate correction table
@@ -1827,13 +1525,11 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec){
 	*/
 	
 	int next_i=0;
+	double beforemax;
 	b0[0] = 0;
 	m[0]  = 1;
 	
-	for(i=0; i<1024; i++) 
-	  	Feb_Control_rate_correction_table[i]  =  65535;
-	
-		Feb_Control_rate_correction_table[0]  = (((int)(m[0]+0.5)&0xf)<<14) | ((int)(b0[0]+0.5)&0x3fff);
+	Feb_Control_rate_correction_table[0]  = (((int)(m[0]+0.5)&0xf)<<14) | ((int)(b0[0]+0.5)&0x3fff);
 
 	int b=0;
 	for(b=1;b<1024;b++){
@@ -1841,9 +1537,13 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec){
 			double s=0,sx=0,sy=0,sxx=0,sxy=0;
 			for(;;next_i++){
 			  if(next_i>=np){
+			    for(; b<1024; b++){
+			      if(beforemax>ratemax) b0[b] = beforemax;
+			      else b0[b] = ratemax;
+			      m[b]  = 15; 
+			      Feb_Control_rate_correction_table[b]  = (((int)(m[b]+0.5)&0xf)<<14) | ((int)(b0[b]+0.5)&0x3fff);
+			    }
 			    b=1024;
-			    b0[b] = 16383;
-			    m[b]  = 15; 
 			    break;
 			  }
 			  
@@ -1867,17 +1567,20 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec){
 			double delta = s*sxx - sx*sx;
 			b0[b] = (sxx*sy - sx*sxy)/delta;
 			m[b]  = (s*sxy  - sx*sy) /delta;
-			
+			beforemax= b0[b];
+
 			if(m[b]<0||m[b]>15){
 			  m[b]=15;
-			  b0[b]=16383;
+			  if(beforemax>ratemax) b0[b] = beforemax;
+			  else b0[b] = ratemax;
 			}
 			/*printf("After Loop  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  "
 			  "next_i: %d,\t  b: %d,\t  Feb_Control_rate_meas[next_i]: %f\n",
 			  s, sx, sy, sxx, sxy, next_i, b, Feb_Control_rate_meas[next_i]);*/
 			//	cout<<s<<"   "<<sx<<"   "<<sy<<"   "<<sxx<<"   "<<"   "<<sxy<<"   "<<delta<<"   "<<m[b]<<"    "<<b0[b]<<endl;
 		}else{
-		  b0[b] = 16383;
+		  if(beforemax>ratemax) b0[b] = beforemax;
+		  else b0[b] = ratemax;
 		  m[b]  = 15;
 		}
 		Feb_Control_rate_correction_table[b]  = (((int)(m[b]+0.5)&0xf)<<14) | ((int)(b0[b]+0.5)&0x3fff);
@@ -1886,11 +1589,11 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec){
 
 	if(Feb_Control_SetRateCorrectionTable(Feb_Control_rate_correction_table)){
 		Feb_Control_RateTable_Tau_in_nsec = tau_in_Nsec;
-		Feb_Control_RateTable_Subexptime_in_nsec = Feb_Control_GetSubFrameExposureTime();
+		Feb_Control_RateTable_Period_in_nsec = period_in_sec;
 		return 1;
 	}else{
 		Feb_Control_RateTable_Tau_in_nsec = -1;
-		Feb_Control_RateTable_Subexptime_in_nsec = -1;
+		Feb_Control_RateTable_Period_in_nsec = -1;
 		return 0;
 	}
 
@@ -1919,18 +1622,22 @@ int Feb_Control_SetRateCorrectionTable(unsigned int *table){
   printf("daq reset completely\n");
 
   if(Module_TopAddressIsValid(&modules[1])){
-	  if(!Feb_Interface_WriteMemoryInLoops(Module_GetTopLeftAddress(&modules[Feb_Control_current_index]),1,0,1024,Feb_Control_rate_correction_table)||
-			  !Feb_Interface_WriteMemoryInLoops(Module_GetTopRightAddress(&modules[Feb_Control_current_index]),1,0,1024,Feb_Control_rate_correction_table)||
-			  !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
-		  cprintf(BG_RED,"Error in Top Writing to Memory ::Feb_Control_SetRateCorrectionTable\n");
-		  return 0;
+	  if(Feb_Control_activated){
+		  if(!Feb_Interface_WriteMemoryInLoops(Module_GetTopLeftAddress(&modules[Feb_Control_current_index]),1,0,1024,Feb_Control_rate_correction_table)||
+				  !Feb_Interface_WriteMemoryInLoops(Module_GetTopRightAddress(&modules[Feb_Control_current_index]),1,0,1024,Feb_Control_rate_correction_table)||
+				  !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+			  cprintf(BG_RED,"Error in Top Writing to Memory ::Feb_Control_SetRateCorrectionTable\n");
+			  return 0;
+		  }
 	  }
   }else{
-	  if(!Feb_Interface_WriteMemoryInLoops(Module_GetBottomLeftAddress(&modules[Feb_Control_current_index]),1,0,1024,Feb_Control_rate_correction_table)||
-			  !Feb_Interface_WriteMemoryInLoops(Module_GetBottomRightAddress(&modules[Feb_Control_current_index]),1,0,1024,Feb_Control_rate_correction_table)||
-			  !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
-		  cprintf(BG_RED,"Error in Bottom Writing to Memory ::Feb_Control_SetRateCorrectionTable\n");
-		  return 0;
+	  if(Feb_Control_activated){
+		  if(!Feb_Interface_WriteMemoryInLoops(Module_GetBottomLeftAddress(&modules[Feb_Control_current_index]),1,0,1024,Feb_Control_rate_correction_table)||
+				  !Feb_Interface_WriteMemoryInLoops(Module_GetBottomRightAddress(&modules[Feb_Control_current_index]),1,0,1024,Feb_Control_rate_correction_table)||
+				  !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+			  cprintf(BG_RED,"Error in Bottom Writing to Memory ::Feb_Control_SetRateCorrectionTable\n");
+			  return 0;
+		  }
 	  }
   }
    return 1;
@@ -1943,7 +1650,7 @@ int Feb_Control_GetRateCorrectionVariable(){ return (Feb_Control_subFrameMode&DA
 void Feb_Control_SetRateCorrectionVariable(int activate_rate_correction){
   if(activate_rate_correction){
 	  Feb_Control_subFrameMode |= DAQ_NEXPOSURERS_ACTIVATE_RATE_CORRECTION;
-	  printf("Rate correction activated. Note: the rate correction applied only when run in auto summing mode.\n");
+	  printf("Rate correction activated.\n");
   }else{
 	  Feb_Control_subFrameMode &= ~DAQ_NEXPOSURERS_ACTIVATE_RATE_CORRECTION;
 	  printf("Rate correction deactivated.\n");
@@ -1958,13 +1665,39 @@ int Feb_Control_PrintCorrectedValues(){
 		lsb   = i&3;
 		base  = Feb_Control_rate_correction_table[i>>2] & 0x3fff;
 		slope = ((Feb_Control_rate_correction_table[i>>2] & 0x3c000) >> 14);
-		delta = slope*lsb;
-		corr  = delta+base;
-		if(base==16383 && slope==15) corr=4095;
 		
-		printf("Readout Input: %d,\tBase:%d,\tSlope:%d,\tLSB:%d,\tDelta:%d\tResult:%d\tReal:%f\n",
+		delta = slope*lsb;
+		corr  = delta+base;		
+		if(slope==15) corr= 3*slope+base;
+
+		printf("Readout Input: %d,\tBase:%d,\tSlope:%d,\tLSB:%d,\tDelta:%d\tResult:%d\tReal:%lf\n",
 		       i, base, slope, lsb, delta, corr, Feb_Control_rate_meas[i]);
 	}
 	return 1;
 }
+
+
+int Feb_Control_GetLeftFPGATemp(){
+	unsigned int temperature=0;
+	if(Module_TopAddressIsValid(&modules[1]))
+		Feb_Interface_ReadRegister(Module_GetTopLeftAddress (&modules[1]),FEB_REG_STATUS, &temperature);
+	else
+		Feb_Interface_ReadRegister(Module_GetBottomLeftAddress (&modules[1]),FEB_REG_STATUS, &temperature);
+	temperature = temperature >> 16;
+	//division done in client to send int over network
+	return (int)temperature;
+}
+
+int Feb_Control_GetRightFPGATemp(){
+	unsigned int temperature=0;
+	if(Module_TopAddressIsValid(&modules[1]))
+		Feb_Interface_ReadRegister(Module_GetTopRightAddress (&modules[1]),FEB_REG_STATUS, &temperature);
+	else
+		Feb_Interface_ReadRegister(Module_GetBottomRightAddress (&modules[1]),FEB_REG_STATUS, &temperature);
+	temperature = temperature >> 16;
+	//division done in client to send int over network
+	return (int)temperature;
+}
+
+
 

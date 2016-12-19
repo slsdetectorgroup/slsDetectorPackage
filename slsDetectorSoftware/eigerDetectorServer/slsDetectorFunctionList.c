@@ -78,6 +78,7 @@ int default_offset_values[3] = {3851000,3851000,3851000};
 enum masterFlags  masterMode=IS_SLAVE;
 int top = 0;
 int master = 0;
+int normal = 0;
 
 
 #define TEN_GIGA_BUFFER_SIZE 4112
@@ -142,7 +143,7 @@ int initDetector(){
 	getModuleConfiguration();
 	Feb_Interface_FebInterface();
 	Feb_Control_FebControl();
-	Feb_Control_Init(master,top,getDetectorNumber());
+	Feb_Control_Init(master,top,normal, getDetectorNumber());
 	printf("FEB Initialization done\n");
 	Beb_Beb();
 	printf("BEB Initialization done\n");
@@ -184,7 +185,7 @@ int initDetectorStop(){
 	getModuleConfiguration();
 	Feb_Interface_FebInterface();
 	Feb_Control_FebControl();
-	Feb_Control_Init(master,top,getDetectorNumber());
+	Feb_Control_Init(master,top,normal,getDetectorNumber());
 	printf("FEB Initialization done\n");
 	/* Beb_Beb(-1);
     printf("BEB constructor done\n");*/
@@ -198,15 +199,18 @@ int initDetectorStop(){
 void getModuleConfiguration(){
 	int *m=&master;
 	int *t=&top;
+	int *n=&normal;
 	/*if(getDetectorNumber() == 0xbeb015){
 		master = 1;
 		top = 1;
 	}*/
-	Beb_GetModuleCopnfiguration(m,t);
+	Beb_GetModuleConfiguration(m,t,n);
 	if(top)	printf("*************** TOP ***************\n");
 	else	printf("*************** BOTTOM ***************\n");
 	if(master)	printf("*************** MASTER ***************\n");
 	else		printf("*************** SLAVE ***************\n");
+	if(normal)	printf("*************** NORMAL ***************\n");
+	else		printf("*************** SPECIAL ***************\n");
 }
 
 
@@ -428,13 +432,17 @@ void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]){
 }
 
 
+
 int setHighVoltage(int val, int imod){
 	if(val!=-1){
-		printf(" Setting High Voltage: %d\n",val);
-		if(!master)
-			eiger_highvoltage = val;
-		else if(Feb_Control_SetHighVoltage(val))
-			eiger_highvoltage = val;
+		eiger_highvoltage = val;
+		if(master)
+			Feb_Control_SetHighVoltage(val);
+	}
+
+	if(master && !Feb_Control_GetHighVoltage(&eiger_highvoltage)){
+		cprintf(RED,"Warning: Could not read high voltage\n");
+		return 0;
 	}
 	return eiger_highvoltage;
 }
@@ -1112,6 +1120,8 @@ int configureMAC(int ipad, long long int macad, long long int detectormacadd, in
 	int beb_num = BEB_NUM;//Feb_Control_GetModuleNumber();
 	int header_number = 0;
 	int dst_port = udpport;
+	if(!top)
+		dst_port = udpport2;
 
 	printf("dst_port:%d\n\n",dst_port);
 
@@ -1125,6 +1135,8 @@ int configureMAC(int ipad, long long int macad, long long int detectormacadd, in
 
 	header_number = 32;
 	dst_port = udpport2;
+	if(!top)
+		dst_port = udpport;
 	printf("dst_port:%d\n\n",dst_port);
 
 	/*for(i=0;i<32;i++){*//** modified for Aldo*/

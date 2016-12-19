@@ -149,7 +149,7 @@ void Beb_Beb(){
 
 
 
-void Beb_GetModuleCopnfiguration(int* master, int* top){
+void Beb_GetModuleConfiguration(int* master, int* top, int* normal){
 	*top = 0;
 	*master = 0;
 	  //mapping new memory to read master top module configuration
@@ -168,6 +168,8 @@ void Beb_GetModuleCopnfiguration(int* master, int* top){
 				*top = 1;
 			if(ret&MASTER_BIT_MASK)
 				*master = 1;
+			if(ret&NORMAL_MODULE_BIT_MASK)
+				*normal = 1;
 			//close file pointer
 			Beb_close(fd,csp0base);
 		}

@@ -267,6 +267,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
     /** flag for acquiring */
     bool acquiringFlag;
+    /** flipped data across x or y axis */
+    int flippedData[2];
 
   } sharedSlsDetector;
 
@@ -295,20 +297,22 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   /** (default) constructor 
       \param  type is needed to define the size of the detector shared memory 9defaults to GENERIC i.e. the largest shared memory needed by any slsDetector is allocated
       \param  id is the detector index which is needed to define the shared memory id. Different physical detectors should have different IDs in order to work independently
+      \param pos is the index of object in the parent multislsdet array
       \param  p is the parent multislsdet to access filename ,path etc
 
   */
 
-  slsDetector(detectorType type=GENERIC, int id=0, multiSlsDetector *p=NULL);
+  slsDetector(int pos, detectorType type=GENERIC, int id=0, multiSlsDetector *p=NULL);
 
   /** constructor
       \param  id is the detector index which is needed to define the shared memory id. Different physical detectors should have different IDs in order to work independently
+      \param pos is the index of object in the parent multislsdet array
       \param  p is the parent multislsdet to access filename ,path etc
   */
-  slsDetector(int id, multiSlsDetector *p=NULL);
+  slsDetector(int pos, int id, multiSlsDetector *p=NULL);
 
 
-  slsDetector(char *name, int id=0,  int cport=DEFAULT_PORTNO, multiSlsDetector *p=NULL);
+  slsDetector(int pos, char *name, int id=0, int cport=DEFAULT_PORTNO, multiSlsDetector *p=NULL);
   //slsDetector(string  const fname);
   //  ~slsDetector(){while(dataQueue.size()>0){}};
   /** destructor */ 
@@ -668,6 +672,12 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
  int getMaxNumberOfChannels(dimension d);//{return thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nModMax[d];};
 
+  /** returns the enable if data will be flipped across x or y axis
+   *  \param d axis across which data is flipped
+   *  returns 1 or 0
+   */
+  int getFlippedData(dimension d=X){return thisDetector->flippedData[d];};
+
   /** Returns number of rois */
   int getNRoi(){return thisDetector->nROI;};
 
@@ -733,6 +743,12 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   int setNumberOfModules(int n=GET_FLAG, dimension d=X); // if n=GET_FLAG returns the number of installed modules
 
 
+  /** sets the enable which determines if data will be flipped across x or y axis
+   *  \param d axis across which data is flipped
+   *  \param value 0 or 1 to reset/set or -1 to get value
+   *  \return enable flipped data across x or y axis
+   */
+  int setFlippedData(dimension d=X, int value=-1);
 
 
   /*
@@ -1412,6 +1428,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   */
 
   int getDetectorId(int i=-1) {return detId;};
+
   /** 
       Receives a data frame from the detector socket
       \returns pointer to the data (or NULL if failed)
@@ -1596,19 +1613,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
  */
  int resetFramesCaught();
 
- /**
-  * Create Receiving Data Threads
-  * @param destroy is true to destroy all the threads
-  * @return OK or FAIL
-  */
- int createReceivingDataThreads(bool destroy = false){return 0;};
 
-
- /** Reads frames from receiver through a constant socket
- */
- //void readFrameFromReceiver(){};
-
- int* readFrameFromReceiver(char*, int&, int&, int&);
   /** Locks/Unlocks the connection to the receiver
       /param lock sets (1), usets (0), gets (-1) the lock
       /returns lock status of the receiver
@@ -1716,6 +1721,14 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
    	   /returns read receiver frequency
    */
   int setReadReceiverFrequency(int getFromReceiver, int freq=-1);
+
+  /** Sets the read receiver timer
+   	  if data required from receiver randomly readRxrFrequency=0,
+   	   then the timer between each data stream is set with time_in_ms
+   	   @param time_in_ms timer between frames
+   	   /returns read receiver timer
+   */
+  int setReceiverReadTimer(int time_in_ms=500);
 
   /** Enable or disable streaming data from receiver to client
    * 	@param enable 0 to disable 1 to enable -1 to only get the value
@@ -1838,6 +1851,11 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   */
   int detId;
   
+  /**
+     position ID
+  */
+  int posId;
+
 
   /**
    * parent multi detector

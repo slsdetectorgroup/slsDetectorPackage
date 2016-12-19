@@ -1258,20 +1258,22 @@ int set_dac(int file_des) {
 	printf("DAC set to %d in dac units and %d mV\n",  retval[0],retval[1]);
 #endif
 
-	if(ret == OK){
+	//takes time to set high voltage, so no check for it
+	if(ret == OK && ind != HV_POT && ind != HV_NEW){
 		if(mV)
 			temp = retval[1];
 		else
 			temp = retval[0];
 		if ((abs(temp-val)<=5) || val==-1) {
 			ret=OK;
-			if (differentClients)
-				ret=FORCE_UPDATE;
 		} else {
 			ret=FAIL;
 			printf("Setting dac %d of module %d: wrote %d but read %d\n", idac, imod, val, temp);
 		}
 	}
+
+	if(ret == OK && differentClients)
+		ret=FORCE_UPDATE;
 
 
 	/* send answer */

@@ -432,7 +432,13 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="flippeddatax"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
+  i++;
 
+  descrToFuncMap[i].m_pFuncName="flippeddatay"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
+  i++;
 
   /* flags */
 
@@ -1251,12 +1257,13 @@ string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action) {
 
 
 	myDet->setOnline(ONLINE_FLAG);
+	myDet->setReceiverOnline(ONLINE_FLAG);
 
 	if(myDet->acquire() == FAIL)
 		return string("acquire unsuccessful");
 	if(myDet->setReceiverOnline()==ONLINE_FLAG){
 		char answer[100];
-	      sprintf(answer,"\n%d",myDet->getFramesCaughtByReceiver());
+	      sprintf(answer,"\nAcquired %d",myDet->getFramesCaughtByReceiver());
 	      return string(answer);
 	}
 
@@ -1295,6 +1302,7 @@ string slsDetectorCommand::cmdData(int narg, char *args[], int action) {
     b=myDet->setThreadedProcessing(-1);
     myDet->setThreadedProcessing(0);
     myDet->setOnline(ONLINE_FLAG);
+    myDet->setReceiverOnline(ONLINE_FLAG);
     myDet->readAll();
     //processdata in receiver is useful only for gui purposes
     if(myDet->setReceiverOnline()==OFFLINE_FLAG)
@@ -1329,6 +1337,7 @@ string slsDetectorCommand::cmdFrame(int narg, char *args[], int action) {
     b=myDet->setThreadedProcessing(-1);
     myDet->setThreadedProcessing(0);
     myDet->setOnline(ONLINE_FLAG);
+    myDet->setReceiverOnline(ONLINE_FLAG);
     myDet->readFrame();
     //processdata in receiver is useful only for gui purposes
     if(myDet->setReceiverOnline()==OFFLINE_FLAG)
@@ -1737,6 +1746,7 @@ string slsDetectorCommand::cmdExitServer(int narg, char *args[], int action){
 			  return string("Error closing server\n");
 	  }
 	  else if (cmd=="exitreceiver"){
+		  myDet->setReceiverOnline(ONLINE_FLAG);
 		  if(myDet->exitReceiver()!=OK)
 			  return string("Receiver shut down\n");
 		  else
@@ -1858,6 +1868,7 @@ string slsDetectorCommand::helpTrimEn(int narg, char *args[], int action) {
 
 
 string slsDetectorCommand::cmdOutDir(int narg, char *args[], int action){
+	  myDet->setReceiverOnline(ONLINE_FLAG);
 	if (action==HELP_ACTION)
 		return helpOutDir(narg, args, action);
 
@@ -1882,6 +1893,7 @@ string slsDetectorCommand::helpOutDir(int narg, char *args[], int action){
 
 
 string slsDetectorCommand::cmdFileName(int narg, char *args[], int action){
+	  myDet->setReceiverOnline(ONLINE_FLAG);
 	if (action==HELP_ACTION)
 		return helpFileName(narg, args, action);
 	if (cmd=="fname") {
@@ -1911,7 +1923,7 @@ string slsDetectorCommand::cmdEnablefwrite(int narg, char *args[], int action){
 
   int i;
   char ans[100];
-  
+  myDet->setReceiverOnline(ONLINE_FLAG);
   if (action==HELP_ACTION) {
     return helpEnablefwrite(narg, args, action);
   }
@@ -1943,7 +1955,7 @@ string slsDetectorCommand::cmdOverwrite(int narg, char *args[], int action){
 
   int i;
   char ans[100];
-
+  myDet->setReceiverOnline(ONLINE_FLAG);
   if (action==HELP_ACTION) {
     return helpOverwrite(narg, args, action);
   } 
@@ -1975,7 +1987,7 @@ string slsDetectorCommand::helpOverwrite(int narg, char *args[], int action){
 string slsDetectorCommand::cmdFileIndex(int narg, char *args[], int action){
 	char ans[100];
 	int i;
-
+	  myDet->setReceiverOnline(ONLINE_FLAG);
 	if (action==HELP_ACTION) {
 		return helpFileName(narg, args, action);
 	}
@@ -2087,6 +2099,8 @@ string slsDetectorCommand::cmdRateCorr(int narg, char *args[], int action){
   } 
   double fval;
   char answer[1000];
+
+ myDet->setOnline(ONLINE_FLAG);
 
   if (action==PUT_ACTION) {
     sscanf(args[1],"%lf",&fval);
@@ -2785,6 +2799,7 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
 		return helpNetworkParameter(narg,args,action);
 
 	myDet->setOnline(ONLINE_FLAG);
+	myDet->setReceiverOnline(ONLINE_FLAG);
 
 	if (cmd=="detectormac") {
 		t=DETECTOR_MAC;
@@ -2954,6 +2969,7 @@ string slsDetectorCommand::cmdLock(int narg, char *args[], int action) {
 
 
   else  if(cmd=="r_lock"){
+	  myDet->setReceiverOnline(ONLINE_FLAG);
     if (action==PUT_ACTION) {
       if (sscanf(args[1],"%d",&val))
     	 myDet->lockReceiver(val);
@@ -3004,8 +3020,10 @@ string slsDetectorCommand::cmdLastClient(int narg, char *args[], int action) {
     return myDet->getLastClientIP();
   }
 
-  else if(cmd=="r_lastclient")
+  else if(cmd=="r_lastclient"){
+	  myDet->setReceiverOnline(ONLINE_FLAG);
     return myDet->getReceiverLastClientIP();
+  }
 
   return string("cannot decode command");
 }
@@ -3051,6 +3069,7 @@ string slsDetectorCommand::cmdOnline(int narg, char *args[], int action) {
   }
   else if(cmd=="activate"){
 	  myDet->setOnline(ONLINE_FLAG);
+	  myDet->setReceiverOnline(ONLINE_FLAG);
 	  if (action==PUT_ACTION) {
 		  if (!sscanf(args[1],"%d",&ival))
 			  return string("Could not scan activate mode ")+string(args[1]);
@@ -3072,11 +3091,12 @@ string slsDetectorCommand::cmdOnline(int narg, char *args[], int action) {
   else{
     if (action==PUT_ACTION)
       return string("cannot set");
+    myDet->setReceiverOnline(ONLINE_FLAG);
     strcpy(ans,myDet->checkReceiverOnline().c_str());
     if(!strlen(ans))
       strcpy(ans,"All receiver online");
     else
-      strcat(ans," :Not receiver online");
+      strcat(ans," :Not all receiver online");
   }
 
   return ans;
@@ -3113,6 +3133,7 @@ string slsDetectorCommand::cmdConfigureMac(int narg, char *args[], int action) {
   
   if (action==PUT_ACTION){
     myDet->setOnline(ONLINE_FLAG);
+    myDet->setReceiverOnline(ONLINE_FLAG);
     ret=myDet->configureMAC();
   }
   else
@@ -3139,7 +3160,7 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 	if (action==HELP_ACTION)
 		return helpDetectorSize(narg,args,action);
 	int ret, val=-1, pos=-1,i;
-	char ans[1000], temp[100];
+	char ans[1000];
 
 	myDet->setOnline(ONLINE_FLAG);
 
@@ -3176,6 +3197,21 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 				myDet->setMaxNumberOfChannelsPerDetector(Y,val);
 		}
 
+		if(cmd=="flippeddatax"){
+			if ((!sscanf(args[1],"%d",&val)) ||  (val!=0 && val != 1))
+				return string ("cannot scan flippeddata x mode: must be 0 or 1");
+			myDet->setReceiverOnline(ONLINE_FLAG);
+			myDet->setFlippedData(X,val);
+		}
+
+		if(cmd=="flippeddatay"){
+			return string("Not required for this detector\n");
+			if ((!sscanf(args[1],"%d",&val)) ||  (val!=0 && val != 1))
+				return string ("cannot scan flippeddata y mode: must be 0 or 1");
+			myDet->setReceiverOnline(ONLINE_FLAG);
+			myDet->setFlippedData(Y,val);
+		}
+
 	}
 
 	if (cmd=="nmod" || cmd=="roimask") {
@@ -3183,14 +3219,23 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 	} else if (cmd=="maxmod") {
 		ret=myDet->getMaxNumberOfModules();
 	} else if (cmd=="dr") {
+		 myDet->setReceiverOnline(ONLINE_FLAG);
 		ret=myDet->setDynamicRange(val);
 	} else if (cmd=="roi") {
 		myDet->getROI(ret);
 	} else if (cmd=="detsizechan") {
-		sprintf(ans,"%d",myDet->getMaxNumberOfChannelsPerDetector(X));
-		sprintf(temp,"%d",myDet->getMaxNumberOfChannelsPerDetector(Y));
-		strcat(ans," ");
-		strcat(ans,temp);
+		sprintf(ans,"%d %d",myDet->getMaxNumberOfChannelsPerDetector(X),myDet->getMaxNumberOfChannelsPerDetector(Y));
+		return string(ans);
+	}
+	else if(cmd=="flippeddatax"){
+		myDet->setReceiverOnline(ONLINE_FLAG);
+		sprintf(ans,"%d",myDet->getFlippedData(X));
+		return string(ans);
+	}
+	else if(cmd=="flippeddatay"){
+		return string("Not required for this detector\n");
+		myDet->setReceiverOnline(ONLINE_FLAG);
+		sprintf(ans,"%d",myDet->getFlippedData(Y));
 		return string(ans);
 	}
 	else
@@ -3214,6 +3259,8 @@ string slsDetectorCommand::helpDetectorSize(int narg, char *args[], int action) 
     os << "dr i \n sets the dynamic range of the detector"<< std::endl;
     os << "roi i xmin xmax ymin ymax \n sets region of interest where i is number of rois;i=0 to clear rois"<< std::endl;
     os << "detsizechan x y \n sets the maximum number of channels for complete detector set in both directions; -1 is no limit"<< std::endl;
+    os << "flippeddatax x \n sets if the data should be flipped on the x axis"<< std::endl;
+    os << "flippeddatay y \n sets if the data should be flipped on the y axis"<< std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
     os << "nmod \n gets the number of modules of the detector"<< std::endl;
@@ -3221,7 +3268,8 @@ string slsDetectorCommand::helpDetectorSize(int narg, char *args[], int action) 
     os << "dr \n gets the dynamic range of the detector"<< std::endl;
     os << "roi \n gets region of interest"<< std::endl;
     os << "detsizechan \n gets the maximum number of channels for complete detector set in both directions; -1 is no limit"<< std::endl;
-
+    os << "flippeddatax\n gets if the data will be flipped on the x axis respectively"<< std::endl;
+    os << "flippeddatay\n gets if the data will be flipped on the y axis respectively"<< std::endl;
   } 
   return os.str();
 
@@ -3422,6 +3470,7 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
   }
 
   if (cmd=="receiverversion") {
+	myDet->setReceiverOnline(ONLINE_FLAG);
     sprintf(answer,"%llx",myDet->getId(RECEIVER_VERSION));
     return string(answer);
   }
@@ -4102,6 +4151,7 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
   
   
   myDet->setOnline(ONLINE_FLAG);
+  myDet->setReceiverOnline(ONLINE_FLAG);
 
   ret=myDet->setTimer(index,t);
   if (index==ACQUISITION_TIME || index==SUBFRAME_ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER)
@@ -4547,10 +4597,12 @@ string slsDetectorCommand::cmdConfiguration(int narg, char *args[], int action) 
     }  
     return sval;
   } else if (cmd=="rx_printconfig"){
+	  myDet->setReceiverOnline(ONLINE_FLAG);
 	  if (action==PUT_ACTION)
 		  return string("cannot put");
 	  return string(""+myDet->printReceiverConfiguration());
   }else if (cmd=="parameters") {
+	  myDet->setReceiverOnline(ONLINE_FLAG);
     if (action==PUT_ACTION) {
       sval=string(args[1]);
       myDet->retrieveDetectorSetup(sval);
@@ -4560,6 +4612,7 @@ string slsDetectorCommand::cmdConfiguration(int narg, char *args[], int action) 
     }  
     return sval;
   } else if (cmd=="setup") {
+	  myDet->setReceiverOnline(ONLINE_FLAG);
     if (action==PUT_ACTION) {
       sval=string(args[1]);
       myDet->retrieveDetectorSetup(sval,2);
@@ -4614,6 +4667,7 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 
 
   myDet->setOnline(ONLINE_FLAG);
+  myDet->setReceiverOnline(ONLINE_FLAG);
 
   if(cmd=="receiver"){
     if (action==PUT_ACTION) {

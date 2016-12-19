@@ -91,7 +91,8 @@ u_int32_t progressMask=0;
 int phase_shift=0;//DEFAULT_PHASE_SHIFT;
 int ipPacketSize=DEFAULT_IP_PACKETSIZE;
 int udpPacketSize=DEFAULT_UDP_PACKETSIZE;
-int clockdivider = 20;
+int clockdivider_exptime = 40;
+int clockdivider_fc = 20;
 /*
 #ifndef NEW_PLL_RECONFIG
 u_int32_t clkDivider[2]={32,16};
@@ -496,7 +497,7 @@ void configurePll(int i) {
 #endif
 
 	if (i<2) {
-		tot= PLL_VCO_FREQ_MHZ/clockdivider; /* check if it always reads clock */
+		tot= PLL_VCO_FREQ_MHZ/clockdivider_fc; /* which clock divider?????? Is it called? clean up!! */
 		l=tot/2;
 		h=l;
 		if (tot>2*l) {
@@ -1221,15 +1222,15 @@ int64_t getFrames(){
 int64_t setExposureTime(int64_t value){
 	if (value!=-1){
 		printf("\nSetting exptime to %lldns\n",(long long int)value);
-		value*=(1E-3*clockdivider);
+		value*=(1E-3*clockdivider_exptime);
 	}
-	int64_t retval = set64BitReg(value,SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG)/(1E-3*clockdivider);//(1E-9*CLK_FREQ);
+	int64_t retval = set64BitReg(value,SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG)/(1E-3*clockdivider_exptime);//(1E-9*CLK_FREQ);
 	printf("Getting exptime: %lldns\n",(long long int)retval);
 	return retval;
 }
 
 int64_t getExposureTime(){
-	return get64BitReg(GET_EXPTIME_LSB_REG, GET_EXPTIME_MSB_REG)/(1E-3*clockdivider);//(1E-9*CLK_FREQ);
+	return get64BitReg(GET_EXPTIME_LSB_REG, GET_EXPTIME_MSB_REG)/(1E-3*clockdivider_exptime);//(1E-9*CLK_FREQ);
 }
 
 int64_t setGates(int64_t value){
@@ -1248,31 +1249,31 @@ int64_t getGates(){
 int64_t setPeriod(int64_t value){
 	if (value!=-1){
 		printf("\nSetting period to %lldns\n",(long long int)value);
-		value*=(1E-3*clockdivider);
+		value*=(1E-3*clockdivider_fc);
 	}
 
-	int64_t retval = set64BitReg(value,SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/(1E-3*clockdivider);//(1E-9*CLK_FREQ);
+	int64_t retval = set64BitReg(value,SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/(1E-3*clockdivider_fc);//(1E-9*CLK_FREQ);
 	printf("Getting period: %lldns\n",(long long int)retval);
 	return retval;
 }
 
 int64_t getPeriod(){
-	return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG)/(1E-3*clockdivider);//(1E-9*CLK_FREQ);
+	return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG)/(1E-3*clockdivider_fc);//(1E-9*CLK_FREQ);
 }
 
 int64_t setDelay(int64_t value){
 	if (value!=-1){
 		printf("\nSetting delay to %lldns\n",(long long int)value);
-		value*=(1E-3*clockdivider);
+		value*=(1E-3*clockdivider_fc);
 	}
 
-	int64_t retval = set64BitReg(value,SET_DELAY_LSB_REG, SET_DELAY_MSB_REG)/(1E-3*clockdivider);//(1E-9*CLK_FREQ);
+	int64_t retval = set64BitReg(value,SET_DELAY_LSB_REG, SET_DELAY_MSB_REG)/(1E-3*clockdivider_fc);//(1E-9*CLK_FREQ);
 	printf("Getting delay: %lldns\n",(long long int)retval);
 	return retval;
 }
 
 int64_t getDelay(){
-	return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG)/(1E-3*clockdivider);//(1E-9*CLK_FREQ);
+	return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG)/(1E-3*clockdivider_fc);//(1E-9*CLK_FREQ);
 }
 
 int64_t setTrains(int64_t value){

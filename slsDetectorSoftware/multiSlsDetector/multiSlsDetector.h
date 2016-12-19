@@ -340,6 +340,12 @@ class multiSlsDetector  : public slsDetectorUtils {
 
   int getMaxNumberOfChannelsPerDetector(dimension d){return thisMultiDetector->maxNumberOfChannelsPerDetector[d];};
 
+  /** returns the enable if data will be flipped across x or y axis
+   *  \param d axis across which data is flipped
+   *  returns 1 or 0
+   */
+  int getFlippedData(dimension d=X);
+
   int setMaxNumberOfChannelsPerDetector(dimension d,int i){thisMultiDetector->maxNumberOfChannelsPerDetector[d]=i; return thisMultiDetector->maxNumberOfChannelsPerDetector[d];};
 
   double getScanStep(int index, int istep){return thisMultiDetector->scanSteps[index][istep];};
@@ -979,6 +985,14 @@ class multiSlsDetector  : public slsDetectorUtils {
   int configureMAC();
 
   int setNumberOfModules(int i=-1, dimension d=X);
+
+  /** sets the enable which determines if data will be flipped across x or y axis
+   *  \param d axis across which data is flipped
+   *  \param value 0 or 1 to reset/set or -1 to get value
+   *  \return enable flipped data across x or y axis
+   */
+  int setFlippedData(dimension d=X, int value=-1);
+
   int getMaxNumberOfModules(dimension d=X);
   int setDynamicRange(int i=-1);
 
@@ -1196,19 +1210,18 @@ class multiSlsDetector  : public slsDetectorUtils {
  int resetFramesCaught();
 
  /**
-  * Create Receiving Data Threads
-  * @param destroy is true to destroy all the threads
+  * Create Receiving Data Sockets
+  * @param destroy is true to destroy all the sockets
   * @return OK or FAIL
   */
- int createReceivingDataThreads(bool destroy = false);
+ int createReceivingDataSockets(const bool destroy = false);
 
 
 
  /** Reads frames from receiver through a constant socket
  */
- //void readFrameFromReceiver();
- int* readFrameFromReceiver(char*, int&, int&, int&);
-  /** Locks/Unlocks the connection to the receiver
+ void readFrameFromReceiver();
+   /** Locks/Unlocks the connection to the receiver
       /param lock sets (1), usets (0), gets (-1) the lock
       /returns lock status of the receiver
   */
@@ -1275,6 +1288,14 @@ class multiSlsDetector  : public slsDetectorUtils {
    	   /returns read receiver frequency
    */
   int setReadReceiverFrequency(int getFromReceiver, int freq=-1);
+
+  /** Sets the read receiver timer
+   	  if data required from receiver randomly readRxrFrequency=0,
+   	   then the timer between each data stream is set with time_in_ms
+   	   @param time_in_ms timer between frames
+   	   /returns read receiver timer
+   */
+  int setReceiverReadTimer(int time_in_ms=500);
 
   /** Enable or disable streaming data from receiver to client
    * 	@param enable 0 to disable 1 to enable -1 to only get the value
@@ -1384,35 +1405,17 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
 private:
-	/**
-	 * Static function - Starts Data Thread of this object
-	 * @param this_pointer pointer to this object
-	 */
-	static void* staticstartReceivingDataThread(void *this_pointer);
 
 	/**
-	 * Thread that receives data packets from receiver
+	 * Gets data from socket
 	 */
-	void startReceivingDataThread();
+	int getData(const int isocket, const bool masking, int* image, const int size, int &acqIndex, int &frameIndex, int &subframeIndex, string &filename);
 
-	  /* synchronizing between zmq threads */
-	  sem_t sem_singledone[MAXDET];
-	  sem_t sem_singlewait[MAXDET];
-	  int* singleframe[MAXDET];
-
-	  /* Parameters given to the gui picked up from zmq threads*/
-	  int currentAcquisitionIndex;
-	  int currentFrameIndex;
-	  int currentSubFrameIndex;
-	  string currentFileName;
-
-	  pthread_t receivingDataThreads[MAXDET];
-	  /** Ensures if threads created successfully */
-	  bool threadStarted;
-	  /** Current Thread Index*/
-	  int currentThreadIndex;
-	  /** Set to self-terminate data receiving threads waiting for semaphores */
-	  bool killAllReceivingDataThreads;
+	/** Ensures if sockets created successfully */
+	bool dataSocketsStarted;
+	void *context[MAXDET];
+	void *zmqsocket[MAXDET];
+	char dataSocketServerDetails[MAXDET][100];
 
  protected:
  

@@ -115,6 +115,8 @@
 //module configuration
 #define TOP_BIT_MASK				0x00f
 #define MASTER_BIT_MASK				0x200
+#define NORMAL_MODULE_BIT_MASK		0x400
+
 // Master Slave Top Bottom Definition
 #define MODULE_CONFIGURATION_MASK 0x84
 //Software Configuration

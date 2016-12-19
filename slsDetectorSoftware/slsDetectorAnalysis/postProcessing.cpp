@@ -524,14 +524,16 @@ void* postProcessing::processData(int delflag) {
 // 				}
 
 
-// 				ifp=kbhit();
-// 				if (ifp!=0){
-// 					c=fgetc(stdin);
-// 					if (c=='q') {
-// 						cout<<"gonna stop"<<endl;
-// 						stopAcquisition();
-// 					}
-// 				}
+
+				ifp=kbhit();
+				if (ifp!=0){
+					c=fgetc(stdin);
+					if (c=='q') {
+						cout<<"Caught the command to stop acquisition"<<endl;
+						stopAcquisition();
+					}
+				}
+
 
 
 // 				//get progress

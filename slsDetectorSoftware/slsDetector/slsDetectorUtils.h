@@ -70,6 +70,13 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
   virtual int setMaxNumberOfChannelsPerDetector(dimension d,int i){return -1;};
 
+  /** sets the enable which determines if data will be flipped across x or y axis
+   *  \param d axis across which data is flipped
+   *  \param value 0 or 1 to reset/set or -1 to get value
+   *  \return enable flipped data across x or y axis
+   */
+  virtual int setFlippedData(dimension d=X, int value=-1)=0;
+
   //int setPositions(int nPos, double *pos){return angularConversion::setPositions(nPos, pos);};
 
   // int getPositions(double *pos=NULL){return angularConversion::getPositions(pos);};
@@ -425,6 +432,12 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   virtual int getMaxNumberOfChannels()=0;
   virtual int getMaxNumberOfChannels(dimension d)=0;
 
+  /** returns the enable if data will be flipped across x or y axis
+   *  \param d axis across which data is flipped
+   *  returns 1 or 0
+   */
+  virtual int getFlippedData(dimension d=X)=0;
+
   //  virtual int getParameters();
   
 
@@ -656,17 +669,18 @@ virtual int getReceiverCurrentFrameIndex()=0;
 virtual int resetFramesCaught()=0;
 
 /**
- * Create Receiving Data Threads
- * @param destroy is true to destroy all the threads
+ * Create Receiving Data Sockets
+ * @param destroy is true to destroy all the sockets
  * @return OK or FAIL
  */
-virtual int createReceivingDataThreads(bool destroy = false)=0;
+virtual int createReceivingDataSockets(const bool destroy = false){return -1;};
 
 
 /** Reads frames from receiver through a constant socket
 */
-//virtual void readFrameFromReceiver()=0;
-virtual int* readFrameFromReceiver(char* fName, int &acquisitionIndex, int &frameIndex, int &subFrameIndex)=0; 
+
+virtual void readFrameFromReceiver(){};
+
 /**
     Turns off the receiver server!
 */
@@ -865,12 +879,10 @@ virtual int setReceiverFifoDepth(int i = -1)=0;
   int (*acquisition_finished)(double,int,void*);
   int (*measurement_finished)(int,int,void*);
   void *acqFinished_p, *measFinished_p;
-
-
-
   int (*progress_call)(double,void*);
   void *pProgressCallArg;
   
+  sem_t sem_newRTAcquisition;
 
 
 };

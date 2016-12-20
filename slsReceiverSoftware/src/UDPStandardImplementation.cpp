@@ -597,9 +597,9 @@ int UDPStandardImplementation::setAcquisitionPeriod(const uint64_t i){
 
 	FILE_LOG(logINFO) << "Acquisition Period: " << (double)acquisitionPeriod/(1E9) << "s";
 
-	if(myDetectorType == EIGER)
+	if(myDetectorType == EIGER && fileFormatType == BINARY)
 		for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++)
-			updateFileHeader(i);
+				updateFileHeader(i);
 
 	return OK;
 }
@@ -614,7 +614,7 @@ int UDPStandardImplementation::setAcquisitionTime(const uint64_t i){
 
 	FILE_LOG(logINFO) << "Acquisition Period: " << (double)acquisitionTime/(1E9) << "s";
 
-	if(myDetectorType == EIGER)
+	if(myDetectorType == EIGER && fileFormatType == BINARY)
 		for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++)
 			updateFileHeader(i);
 
@@ -631,7 +631,7 @@ int UDPStandardImplementation::setNumberOfFrames(const uint64_t i){
 
 	FILE_LOG(logINFO) << "Number of Frames:" << numberOfFrames;
 
-	if(myDetectorType == EIGER)
+	if(myDetectorType == EIGER && fileFormatType == BINARY)
 		for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++)
 			updateFileHeader(i);
 
@@ -662,7 +662,8 @@ int UDPStandardImplementation::setDynamicRange(const uint32_t i){
 		bufferSize			= oneDataSize * packetsPerFrame;
 
 		for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++)
-			updateFileHeader(i);
+			if(fileFormatType == BINARY)
+				updateFileHeader(i);
 
 		//new dynamic range, then restart threads and resetup fifo structure
 		if(oldDynamicRange != dynamicRange){
@@ -719,7 +720,8 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b){
 
 
 		for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++)
-			updateFileHeader(i);
+			if(fileFormatType == BINARY)
+				updateFileHeader(i);
 
 		//new enable, then restart threads and resetup fifo structure
 		if(oldTenGigaEnable != tengigaEnable){
@@ -928,7 +930,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 
 
 	//updates File Header
-	if(myDetectorType == EIGER){
+	if(myDetectorType == EIGER && fileFormatType == BINARY){
 		for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++)
 			updateFileHeader(i);
 	}
@@ -1309,8 +1311,9 @@ int UDPStandardImplementation::setActivate(int enable){
 		FILE_LOG(logINFO) << "Activation: " << stringEnable(activated);
 	}
 
-	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++)
-		updateFileHeader(i);
+	if(fileFormatType == BINARY)
+		for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++)
+			updateFileHeader(i);
 
 	return activated;
 }
@@ -1725,21 +1728,86 @@ int UDPStandardImplementation::createNewFile(int ithread){
 				else
 					hdf5_fileId[ithread] = new H5File( completeFileName[ithread], H5F_ACC_TRUNC, NULL, flist );
 
+				//create attributes
+				DataSpace dataspace = DataSpace (H5S_SCALAR);
+				Attribute attribute;
+				double dValue=0;
+
+				//version
+				dValue=WRITER_VERSION;
+				attribute = hdf5_fileId[ithread]->createAttribute("version",PredType::NATIVE_DOUBLE, dataspace);
+				attribute.write(PredType::NATIVE_DOUBLE, &dValue);
+
+
 				//Create a group in the file
 				Group group1( hdf5_fileId[ithread]->createGroup( "entry" ));
-					Group group2(group1.createGroup("data"));
-					Group group3(group1.createGroup("instrument"));
-						Group group4(group3.createGroup("detector"));
+				Group group2(group1.createGroup("data"));
+				Group group3(group1.createGroup("instrument"));
+				Group group4(group3.createGroup("detector"));
+					Group group5(group4.createGroup("detector specific"));
 
-					//Group group5(group1.createGroup("sample"));
+				int iValue=0;
+				StrType strdatatype(PredType::C_S1,256);
+				DataSet dataset;
+				//top
+				iValue = (flippedData[0]?0:1);
+				dataset = group5.createDataSet ( "top", PredType::NATIVE_INT, dataspace );
+				dataset.write ( &iValue, PredType::NATIVE_INT);
+				//left
+				iValue = (ithread?0:1);
+				dataset = group5.createDataSet ( "left", PredType::NATIVE_INT, dataspace );
+				dataset.write ( &iValue, PredType::NATIVE_INT);
+				//active
+				iValue = activated;
+				dataset = group5.createDataSet ( "active", PredType::NATIVE_INT, dataspace );
+				dataset.write ( &iValue, PredType::NATIVE_INT);
+				//Dynamic Range
+				dataset = group4.createDataSet ( "dynamic range", PredType::NATIVE_INT, dataspace );
+				dataset.write ( &dynamicRange, PredType::NATIVE_INT);
+				attribute = dataset.createAttribute("unit",strdatatype, dataspace);
+				attribute.write(strdatatype, string("bits"));
+				//Ten Giga
+				iValue = tengigaEnable;
+				dataset = group4.createDataSet ( "ten giga enable", PredType::NATIVE_INT, dataspace );
+				dataset.write ( &iValue, PredType::NATIVE_INT);
+				//Image Size
+				dataset = group4.createDataSet ( "image size", PredType::NATIVE_INT, dataspace );
+				dataset.write (  &bufferSize, PredType::NATIVE_INT);
+				attribute = dataset.createAttribute("unit",strdatatype, dataspace);
+				attribute.write(strdatatype, string("bytes"));
+				//x
+				dataset = group4.createDataSet ( "number of pixels in x axis", PredType::NATIVE_INT, dataspace );
+				dataset.write ( &NX, PredType::NATIVE_INT);
+				//y
+				dataset = group4.createDataSet ( "number of pixels in y axis", PredType::NATIVE_INT, dataspace );
+				dataset.write ( &NY, PredType::NATIVE_INT);
+				//Total Frames
+				dataset = group4.createDataSet ( "total frames", PredType::STD_U64LE, dataspace );
+				dataset.write ( &numberOfFrames, PredType::STD_U64LE);
+				//Exptime
+				dataset = group4.createDataSet ( "exposure time", PredType::STD_U64LE, dataspace );
+				dataset.write ( &acquisitionTime, PredType::STD_U64LE);
+				attribute = dataset.createAttribute("unit",strdatatype, dataspace);
+				attribute.write(strdatatype, string("ns"));
+				//Period
+				dataset = group4.createDataSet ( "acquisition period", PredType::STD_U64LE, dataspace );
+				dataset.write ( &acquisitionPeriod, PredType::STD_U64LE);
+				attribute = dataset.createAttribute("unit",strdatatype, dataspace);
+				attribute.write(strdatatype, string("ns"));
+				//Timestamp
+				time_t t = time(0);
+				dataset = group4.createDataSet ( "timestamp", strdatatype, dataspace );
+				dataset.write ( string(ctime(&t)), strdatatype );
+
 
 				//group4.link(H5G_LINK_HARD,"/entry/data","/entry/instrument/detector/data");
 				group1.close();
 				group2.close();
 				group3.close();
 				group4.close();
-				//group5.close();
+				group5.close();
 
+				//data
 				//create property list for a dataset and set up fill values
 				int fillvalue = -1;
 				DSetCreatPropList plist;
@@ -1749,25 +1817,11 @@ int UDPStandardImplementation::createNewFile(int ithread){
 				if(dynamicRange == 4)
 					srcdims[1] = NX/2;
 				hdf5_dataspaceId[ithread] = new DataSpace (3,srcdims);
-
-
 				char dsetname[100];
 				sprintf(dsetname, "/entry/data/data_%06lld", (long long int)currentFrameNumber[ithread]+1);
-
 				//Create dataset and write it into the file
 				hdf5_datasetId[ithread] = new DataSet (hdf5_fileId[ithread]->createDataSet(
 						dsetname, hdf5_datatype, *hdf5_dataspaceId[ithread], plist));
-
-				/*
-				//create the data space for the attribute
-				hsize_t dims = 1;
-				DataSpace attr_dataspace = DataSpace (1, &dims);
-				//create file attribute
-				Attribute attribute = hdf5_datasetId[ithread]->createAttribute("Dynamic Range",
-						PredType::STD_I32LE, attr_dataspace);
-				//write the attribute data
-				attribute.write(PredType::STD_I32LE, &dynamicRange);
-				 */
 			}
 			catch(Exception error){
 				cprintf(RED,"Error in creating HDF5 handles in thread %d\n",ithread);
@@ -2839,35 +2893,6 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 
 	//all threads need to close file, reset mask and exit loop
 	if(fileWriteEnable && (cbAction > DO_NOTHING)){
-
-#ifdef HDF5C
-		if(fileFormatType == HDF5){;
-/*
-			if(hdf5_datasetId[ithread]){
-				pthread_mutex_lock(&writeMutex);
-				try{
-					Exception::dontPrint(); //to handle errors
-					hsize_t dims = 1;
-					//create the data space for the attribute
-					DataSpace attr_dataspace = DataSpace (1, &dims);
-					//create file attribute
-					Attribute attribute = hdf5_datasetId[ithread]->createAttribute( "Dynamic Range",
-							PredType::STD_I32LE, attr_dataspace);
-					//write the attribute data
-					attribute.write( PredType::STD_I32LE, &dynamicRange);
-					delete hdf5_datasetId[ithread];
-					hdf5_datasetId[ithread] = 0;
-				}
-				catch(Exception error){
-					cprintf(RED,"Error in creating attributes in thread %d\n",ithread);
-					error.printError();
-				}
-				pthread_mutex_unlock(&writeMutex);
-			}
-			*/
-		}
-		else
-#endif
 			if(fileFormatType == BINARY && myDetectorType == EIGER){
 				updateFileHeader(ithread);
 				fseek(sfilefd[ithread],0,0);

@@ -44,6 +44,8 @@ typedef struct {
 } jfrau_packet_header_t;
 
 
+#define WRITER_VERSION 1.0
+
 #define GOODBYE 							-200
 
 #define DO_NOTHING		0

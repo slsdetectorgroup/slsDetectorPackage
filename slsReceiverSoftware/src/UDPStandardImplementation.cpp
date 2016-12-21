@@ -1036,7 +1036,8 @@ int UDPStandardImplementation::startReceiver(char *c){
 		FILE_LOG(logINFO) << "Data Compression has been " << stringEnable(dataCompressionEnable);
 	}
 	FILE_LOG(logINFO) << "Number of Jobs Per Buffer: " << numberofJobsPerBuffer;
-	FILE_LOG(logINFO) << "Max Frames Per File:" << maxFramesPerFile;
+	if(fileFormatType == BINARY)
+		FILE_LOG(logINFO) << "Max Frames Per File:" << maxFramesPerFile;
 	if(frameToGuiFrequency)
 		FILE_LOG(logINFO) << "Frequency of frames sent to gui: " << frameToGuiFrequency;
 	else
@@ -1638,9 +1639,12 @@ int UDPStandardImplementation::createNewFile(int ithread){
 	//create file name
 	if(!frameIndexEnable)
 		sprintf(completeFileName[ithread], "%s/%s_%lld", filePath,fileNamePerThread[ithread],(long long int)fileIndex);
-	else
-		sprintf(completeFileName[ithread], "%s/%s_f%012lld_%lld", filePath,fileNamePerThread[ithread],(long long int)lastFrameNumberInFile[ithread]+1,(long long int)fileIndex);
-
+	else{
+		if(fileFormatType == BINARY)
+			sprintf(completeFileName[ithread], "%s/%s_f%012lld_%lld", filePath,fileNamePerThread[ithread],(long long int)lastFrameNumberInFile[ithread]+1,(long long int)fileIndex);
+		else
+			sprintf(completeFileName[ithread], "%s/%s_%lld", filePath,fileNamePerThread[ithread],(long long int)fileIndex);
+	}
 	//file type
 	switch(fileFormatType){
 #ifdef HDF5C
@@ -1690,6 +1694,47 @@ int UDPStandardImplementation::createNewFile(int ithread){
 			}
 			//setting file buffer size to 16mb
 			setvbuf(sfilefd[ithread],NULL,_IOFBF,BUF_SIZE);
+
+
+			//Print packet loss and filenames
+			if(totalWritingPacketCount[ithread]){
+				if(numberofWriterThreads>1){
+					cprintf(BLUE,"File:%s"
+							"\nThread:%d"
+							"\tLost:%lld"
+							"\t\tPackets:%lld"
+							"\tFrame#:%lld"
+							"\tPFrame#:%lld\n",
+							completeFileName[ithread],ithread,
+							((frameNumberInPreviousFile[ithread]+1+maxFramesPerFile)>numberOfFrames)
+										?(long long int)((numberOfFrames-(frameNumberInPreviousFile[ithread]+1))*packetsPerFrame - totalPacketsInFile[ithread])
+									    :(long long int)((frameNumberInPreviousFile[ithread]+maxFramesPerFile - frameNumberInPreviousFile[ithread])*packetsPerFrame - totalPacketsInFile[ithread]),
+							(long long int)totalPacketsInFile[ithread],
+							(long long int)currentFrameNumber[ithread],
+							(long long int)frameNumberInPreviousFile[ithread]
+							);
+				}else{
+					cprintf(BLUE,"File:%s"
+							"\nLost:%lld"
+							"\t\tPackets:%lld"
+							"\tFrame#:%lld"
+							"\tPFrame#:%lld\n",
+							completeFileName[ithread],
+							((frameNumberInPreviousFile[ithread]+1+maxFramesPerFile)>numberOfFrames)
+										?(long long int)(numberOfFrames-(frameNumberInPreviousFile[ithread]+1))
+									    :(long long int)(frameNumberInPreviousFile[ithread]+maxFramesPerFile - frameNumberInPreviousFile[ithread]),
+							(long long int)totalPacketsInFile[ithread],
+							(long long int)currentFrameNumber[ithread],
+							(long long int)frameNumberInPreviousFile[ithread]
+							);
+				}
+
+			}else
+				printf("Thread:%d File opened:%s\n",ithread, completeFileName[ithread]);
+
+			//write file header
+			if(myDetectorType == EIGER)
+				fwrite((void*)fileHeader[ithread], 1, FILE_HEADER_SIZE, sfilefd[ithread]);
 		}
 
 
@@ -1749,18 +1794,20 @@ int UDPStandardImplementation::createNewFile(int ithread){
 				int iValue=0;
 				StrType strdatatype(PredType::C_S1,256);
 				DataSet dataset;
-				//top
-				iValue = (flippedData[0]?0:1);
-				dataset = group5.createDataSet ( "top", PredType::NATIVE_INT, dataspace );
-				dataset.write ( &iValue, PredType::NATIVE_INT);
-				//left
-				iValue = (ithread?0:1);
-				dataset = group5.createDataSet ( "left", PredType::NATIVE_INT, dataspace );
-				dataset.write ( &iValue, PredType::NATIVE_INT);
-				//active
-				iValue = activated;
-				dataset = group5.createDataSet ( "active", PredType::NATIVE_INT, dataspace );
-				dataset.write ( &iValue, PredType::NATIVE_INT);
+				if(myDetectorType == EIGER){
+					//top
+					iValue = (flippedData[0]?0:1);
+					dataset = group5.createDataSet ( "top", PredType::NATIVE_INT, dataspace );
+					dataset.write ( &iValue, PredType::NATIVE_INT);
+					//left
+					iValue = (ithread?0:1);
+					dataset = group5.createDataSet ( "left", PredType::NATIVE_INT, dataspace );
+					dataset.write ( &iValue, PredType::NATIVE_INT);
+					//active
+					iValue = activated;
+					dataset = group5.createDataSet ( "active", PredType::NATIVE_INT, dataspace );
+					dataset.write ( &iValue, PredType::NATIVE_INT);
+				}
 				//Dynamic Range
 				dataset = group4.createDataSet ( "dynamic range", PredType::NATIVE_INT, dataspace );
 				dataset.write ( &dynamicRange, PredType::NATIVE_INT);
@@ -1831,50 +1878,12 @@ int UDPStandardImplementation::createNewFile(int ithread){
 			}//end of creating file
 
 			pthread_mutex_unlock(&writeMutex);
+
+			if(!totalWritingPacketCount[ithread])
+				printf("Thread:%d File opened:%s\n",ithread, completeFileName[ithread]);
 		}
 #endif
 
-
-
-		//Print packet loss and filenames
-		if(totalWritingPacketCount[ithread]){
-			if(numberofWriterThreads>1){
-				cprintf(BLUE,"File:%s"
-						"\nThread:%d"
-						"\tLost:%lld"
-						"\t\tPackets:%lld"
-						"\tFrame#:%lld"
-						"\tPFrame#:%lld\n",
-						completeFileName[ithread],ithread,
-						((frameNumberInPreviousFile[ithread]+1+maxFramesPerFile)>numberOfFrames)
-									?(long long int)((numberOfFrames-(frameNumberInPreviousFile[ithread]+1))*packetsPerFrame - totalPacketsInFile[ithread])
-								    :(long long int)((frameNumberInPreviousFile[ithread]+maxFramesPerFile - frameNumberInPreviousFile[ithread])*packetsPerFrame - totalPacketsInFile[ithread]),
-						(long long int)totalPacketsInFile[ithread],
-						(long long int)currentFrameNumber[ithread],
-						(long long int)frameNumberInPreviousFile[ithread]
-						);
-			}else{
-				cprintf(BLUE,"File:%s"
-						"\nLost:%lld"
-						"\t\tPackets:%lld"
-						"\tFrame#:%lld"
-						"\tPFrame#:%lld\n",
-						completeFileName[ithread],
-						((frameNumberInPreviousFile[ithread]+1+maxFramesPerFile)>numberOfFrames)
-									?(long long int)(numberOfFrames-(frameNumberInPreviousFile[ithread]+1))
-								    :(long long int)(frameNumberInPreviousFile[ithread]+maxFramesPerFile - frameNumberInPreviousFile[ithread]),
-						(long long int)totalPacketsInFile[ithread],
-						(long long int)currentFrameNumber[ithread],
-						(long long int)frameNumberInPreviousFile[ithread]
-						);
-			}
-
-		}else
-			printf("Thread:%d File opened:%s\n",ithread, completeFileName[ithread]);
-
-		//write file header
-		if(myDetectorType == EIGER && fileFormatType == BINARY)
-			fwrite((void*)fileHeader[ithread], 1, FILE_HEADER_SIZE, sfilefd[ithread]);
 	}
 
 	//reset counters for each new file
@@ -2903,6 +2912,7 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 	//Print packet loss
 	//if(totalWritingPacketCountFromLastCheck[ithread]){
 #ifdef VERBOSE
+	if(fileFormatType == BINARY){
 		if(numberofWriterThreads>1){
 			printf("Thread:%d"
 					"\tLost:%lld"
@@ -2911,11 +2921,11 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 					"\tPFrame#:%lld\n",
 					ithread,
 					((frameNumberInPreviousCheck[ithread]+1+(maxFramesPerFile/progressFrequency))>numberOfFrames)
-						?(long long int)((numberOfFrames-(frameNumberInPreviousCheck[ithread]+1))*packetsPerFrame - totalWritingPacketCountFromLastCheck[ithread])
-						:(long long int)((frameNumberInPreviousCheck[ithread]+(maxFramesPerFile/progressFrequency) - frameNumberInPreviousCheck[ithread])*packetsPerFrame - totalWritingPacketCountFromLastCheck[ithread]),
-					(long long int)totalWritingPacketCountFromLastCheck[ithread],
-					(long long int)currentFrameNumber[ithread],
-					(long long int)frameNumberInPreviousCheck[ithread]
+					?(long long int)((numberOfFrames-(frameNumberInPreviousCheck[ithread]+1))*packetsPerFrame - totalWritingPacketCountFromLastCheck[ithread])
+							:(long long int)((frameNumberInPreviousCheck[ithread]+(maxFramesPerFile/progressFrequency) - frameNumberInPreviousCheck[ithread])*packetsPerFrame - totalWritingPacketCountFromLastCheck[ithread]),
+							 (long long int)totalWritingPacketCountFromLastCheck[ithread],
+							 (long long int)currentFrameNumber[ithread],
+							 (long long int)frameNumberInPreviousCheck[ithread]
 			);
 		}else{
 			printf("Lost:%lld"
@@ -2923,11 +2933,11 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 					"\tFrame#:%lld"
 					"\tPFrame#:%lld\n",
 					((frameNumberInPreviousCheck[ithread]+1+(maxFramesPerFile/progressFrequency))>numberOfFrames)
-						?(long long int)((numberOfFrames-(frameNumberInPreviousCheck[ithread]+1))*packetsPerFrame - totalWritingPacketCountFromLastCheck[ithread])
-						:(long long int)((frameNumberInPreviousCheck[ithread]+(maxFramesPerFile/progressFrequency) - frameNumberInPreviousCheck[ithread])*packetsPerFrame - totalWritingPacketCountFromLastCheck[ithread]),
-					(long long int)totalWritingPacketCountFromLastCheck[ithread],
-					(long long int)currentFrameNumber[ithread],
-					(long long int)frameNumberInPreviousCheck[ithread]
+					?(long long int)((numberOfFrames-(frameNumberInPreviousCheck[ithread]+1))*packetsPerFrame - totalWritingPacketCountFromLastCheck[ithread])
+							:(long long int)((frameNumberInPreviousCheck[ithread]+(maxFramesPerFile/progressFrequency) - frameNumberInPreviousCheck[ithread])*packetsPerFrame - totalWritingPacketCountFromLastCheck[ithread]),
+							 (long long int)totalWritingPacketCountFromLastCheck[ithread],
+							 (long long int)currentFrameNumber[ithread],
+							 (long long int)frameNumberInPreviousCheck[ithread]
 			);
 		}
 
@@ -2940,12 +2950,12 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 					"\tPFrame#:%lld\n",
 					completeFileName[ithread],ithread,
 					((frameNumberInPreviousFile[ithread]+1+maxFramesPerFile)>numberOfFrames)
-								?(long long int)((numberOfFrames-(frameNumberInPreviousFile[ithread]+1))*packetsPerFrame - totalPacketsInFile[ithread])
-							    :(long long int)((frameNumberInPreviousFile[ithread]+maxFramesPerFile - frameNumberInPreviousFile[ithread])*packetsPerFrame - totalPacketsInFile[ithread]),
-					(long long int)totalPacketsInFile[ithread],
-					(long long int)currentFrameNumber[ithread],
-					(long long int)frameNumberInPreviousFile[ithread]
-					);
+					?(long long int)((numberOfFrames-(frameNumberInPreviousFile[ithread]+1))*packetsPerFrame - totalPacketsInFile[ithread])
+							:(long long int)((frameNumberInPreviousFile[ithread]+maxFramesPerFile - frameNumberInPreviousFile[ithread])*packetsPerFrame - totalPacketsInFile[ithread]),
+							 (long long int)totalPacketsInFile[ithread],
+							 (long long int)currentFrameNumber[ithread],
+							 (long long int)frameNumberInPreviousFile[ithread]
+			);
 		}else{
 			cprintf(BLUE,"File:%s"
 					"\nLost:%lld"
@@ -2954,13 +2964,14 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 					"\tPFrame#:%lld\n",
 					completeFileName[ithread],
 					((frameNumberInPreviousFile[ithread]+1+maxFramesPerFile)>numberOfFrames)
-								?(long long int)(numberOfFrames-(frameNumberInPreviousFile[ithread]+1))
-							    :(long long int)(frameNumberInPreviousFile[ithread]+maxFramesPerFile - frameNumberInPreviousFile[ithread]),
-					(long long int)totalPacketsInFile[ithread],
-					(long long int)currentFrameNumber[ithread],
-					(long long int)frameNumberInPreviousFile[ithread]
-					);
+					?(long long int)(numberOfFrames-(frameNumberInPreviousFile[ithread]+1))
+							:(long long int)(frameNumberInPreviousFile[ithread]+maxFramesPerFile - frameNumberInPreviousFile[ithread]),
+							 (long long int)totalPacketsInFile[ithread],
+							 (long long int)currentFrameNumber[ithread],
+							 (long long int)frameNumberInPreviousFile[ithread]
+			);
 		}
+	}
 #endif
 	//}
 
@@ -3112,17 +3123,22 @@ void UDPStandardImplementation::handleCompleteFramesOnly(int ithread, char* wbuf
 #ifdef HDF5C
 									 ||hdf5_fileId[ithread])){
 #else
-		)){
+	)){
 #endif
 
-		if(fileFormatType == BINARY && tempframenumber && (tempframenumber%maxFramesPerFile) == 0)
-			createNewFile(ithread);
-#ifdef HDF5C
+		if(fileFormatType == BINARY){
+			if(tempframenumber && (tempframenumber%maxFramesPerFile) == 0)
+				createNewFile(ithread);
+			fwrite(wbuffer + HEADER_SIZE_NUM_TOT_PACKETS, 1, (bufferSize + FILE_FRAME_HEADER_LENGTH), sfilefd[ithread]);
+		}
 
-		if(fileFormatType == HDF5){
+
+
+#ifdef HDF5C
+		else if (fileFormatType == HDF5){
 			pthread_mutex_lock(&writeMutex);
 
-
+			//wite to file
 			hsize_t count[3] = {NY,NX,1};
 			hsize_t start[3] = {0, 0, tempframenumber};
 			hsize_t dims2[2]={NY,NX};
@@ -3139,16 +3155,14 @@ void UDPStandardImplementation::handleCompleteFramesOnly(int ithread, char* wbuf
 				memspace.close();
 			}
 			catch(Exception error){
-					cprintf(RED,"Error in writing to file in thread %d\n",ithread);
-					error.printError();
-				}
+				cprintf(RED,"Error in writing to file in thread %d\n",ithread);
+				error.printError();
+			}
 
 			pthread_mutex_unlock(&writeMutex);
-		}else
+		}
 #endif
 
-		if(fileFormatType == BINARY)
-			fwrite(wbuffer + HEADER_SIZE_NUM_TOT_PACKETS, 1, (bufferSize + FILE_FRAME_HEADER_LENGTH), sfilefd[ithread]);
 	}
 
 

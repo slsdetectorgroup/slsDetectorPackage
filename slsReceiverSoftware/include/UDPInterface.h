@@ -314,6 +314,7 @@ class UDPInterface {
 	//***file parameters***
 	/**
 	 * Set File Format
+	 * @param f fileformat binary or hdf5
 	 */
 	virtual void setFileFormat(slsReceiverDefs::fileFormat f) = 0;
 

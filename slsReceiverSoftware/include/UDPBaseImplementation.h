@@ -255,6 +255,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	//***file parameters***
 	/**
 	 * Set File Format
+	 * @param f fileformat binary or hdf5
 	 */
 	void setFileFormat(slsReceiverDefs::fileFormat f);
 

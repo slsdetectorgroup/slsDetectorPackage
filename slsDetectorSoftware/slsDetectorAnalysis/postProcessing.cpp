@@ -101,6 +101,13 @@ void postProcessing::processFrame(int *myData, int delflag, int jctb) {
  
   // cout << "decode 0"<< endl;
  // if (getDetectorsType()==MYTHEN) {
+
+  
+  // for (int ib=0; ib<1000; ib++)
+  //   cout << ((*(((u_int64_t*)myData)+ib))>>17&1) ;
+  // cout << endl;
+
+
   fdata=decodeData(myData,nn, fdata);
     
   //#ifdef VERBOSE

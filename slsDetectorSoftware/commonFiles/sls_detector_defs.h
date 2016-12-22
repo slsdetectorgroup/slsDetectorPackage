@@ -372,7 +372,8 @@ enum dacIndex {
   V_POWER_C = 102, /**new chiptest board */
   V_POWER_D = 103, /**new chiptest board */
   V_POWER_IO =104, /**new chiptest board */
-  V_POWER_CHIP=105 /**new chiptest board */
+  V_POWER_CHIP=105 ,/**new chiptest board */
+  V_LIMIT=106 /**new chiptest board */
 };
 
 /**

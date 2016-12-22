@@ -174,8 +174,8 @@ int  slsDetectorUtils::acquire(int delflag){
   //resets frames caught in receiver
   if(receiver){
     pthread_mutex_lock(&mg); //cout << "lock"<< endl;
-	  resetFramesCaught();
-	  pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
+    resetFramesCaught();
+    pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
   }
 
 
@@ -269,7 +269,7 @@ int  slsDetectorUtils::acquire(int delflag){
 	    	aclog->addStep(getCurrentPosition(), getCurrentFileName());
 
 	    if (eclog)
-			eclog->addStep(setDAC(-1,THRESHOLD,0), getCurrentFileName());
+		eclog->addStep(setDAC(-1,THRESHOLD,0), getCurrentFileName());
 
 
 	    if (*correctionMask&(1<< I0_NORMALIZATION)) {
@@ -344,7 +344,7 @@ int  slsDetectorUtils::acquire(int delflag){
 	  } else
 	    break;
 
-
+	  while (dataQueueSize()) usleep(100000);
 	  // cout << "mglock " << endl;;
 	  pthread_mutex_lock(&mg); //cout << "lock"<< endl;
 	  // cout << "done " << endl;;

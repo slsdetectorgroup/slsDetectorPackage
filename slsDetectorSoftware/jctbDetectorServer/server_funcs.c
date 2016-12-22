@@ -59,8 +59,9 @@ int adcvpp=0x4;
 /** for jungfrau reinitializing macro later */
 int N_CHAN=NCHAN;
 int N_CHIP=NCHIP;
-int N_DAC=NDAC;
+int N_DAC=24;
 int N_ADC=NADC;
+int N_PWR=5;
 int N_CHANS=NCHANS;
 
 
@@ -94,22 +95,30 @@ int init_detector(int b, int checkType) {
   case MOENCH03_MODULE_ID:
     myDetectorType=MOENCH;
     printf("This is a MOENCH03 module %d\n",MOENCH);
+    N_DAC=8;
+    N_PWR=0;
     break;
 
   case JUNGFRAU_MODULE_ID:
     myDetectorType=JUNGFRAU;
     printf("This is a Jungfrau module %d\n Not supported: exiting!", JUNGFRAU);
+    N_DAC=8;
+    N_PWR=0;
     exit(1);
     break;
 
   case JUNGFRAU_CTB_ID:
     myDetectorType=JUNGFRAUCTB;
     printf("This is a CTB %d\n", JUNGFRAUCTB);
+    N_DAC=24;
+    N_PWR=5;
     break;
 
   default:
     myDetectorType=GENERIC;
     printf("Unknown detector type %02x\n",(bus_r(PCB_REV_REG) & DETECTOR_TYPE_MASK)>>DETECTOR_TYPE_OFFSET);
+    N_DAC=8;
+    N_PWR=0;
     break;
 
   }
@@ -118,102 +127,25 @@ int init_detector(int b, int checkType) {
 
   //control server only--
   if (b) {
-  resetPLL();
-  bus_w16(CONTROL_REG, SYNC_RESET);
-  bus_w16(CONTROL_REG, 0);
-  bus_w16(CONTROL_REG, GB10_RESET_BIT);
-  bus_w16(CONTROL_REG, 0);
-
+    resetPLL();
+    bus_w16(CONTROL_REG, SYNC_RESET);
+    bus_w16(CONTROL_REG, 0);
+    bus_w16(CONTROL_REG, GB10_RESET_BIT);
+    bus_w16(CONTROL_REG, 0);
+    
 #ifdef MCB_FUNCS
-	 printf("\nBoard Revision:0x%x\n",(bus_r(PCB_REV_REG)&BOARD_REVISION_MASK));
-	 if(myDetectorType == JUNGFRAU)
-		 initDetector(); /*allocating detectorModules, detectorsDacs etc for "settings", also does allocate RAM*/
-	 dataBytes=NMAXMOD*N_CHIP*N_CHAN*2; /**Nchip and Nchan real values get assigned in initDetector()*/
+    printf("\nBoard Revision:0x%x\n",(bus_r(PCB_REV_REG)&BOARD_REVISION_MASK));
+    // if(myDetectorType == JUNGFRAU)
+    initDetector(); /*allocating detectorModules, detectorsDacs etc for "settings", also does allocate RAM*/
+    dataBytes=NMAXMOD*N_CHIP*N_CHAN*2; /**Nchip and Nchan real values get assigned in initDetector()*/
     printf("Initializing Detector\n");
     //bus_w16(CONTROL_REG, SYNC_RESET); // reset registers
 #endif
-
-    prepareSlowADCSeq();
-    // testFpga();
-    // testRAM();
-    // printf("ADC_SYNC_REG:%x\n",bus_r(ADC_SYNC_REG));
-    //moench specific
-    //  setPhaseShiftOnce();
-    /*some registers set, which is in common with jungfrau, please check */
+    if (myDetectorType==JUNGFRAUCTB) prepareSlowADCSeq();
+  
     prepareADC();
-    //setADC(-1); //already does setdaqreg and clean fifo 
-    // setSettings(GET_SETTINGS,-1); 
-    /*some registers set, which is in common with jungfrau, please check */
-    initDac(0);    initDac(8); //initializes the two dacs
-
-    if(myDetectorType==JUNGFRAU){
-    	/** for jungfrau reinitializing macro */
-    	N_CHAN=JUNGFRAU_NCHAN;
-    	N_CHIP=JUNGFRAU_NCHIP;
-    	N_DAC=JUNGFRAU_NDAC;
-    	N_ADC=JUNGFRAU_NADC;
-    	N_CHANS=JUNGFRAU_NCHANS;
-
-
-    	//set dacs
-    	int retval = -1;
-    	int dacvalues[14][2]={
-    			{0,	1250},	//vout_cm
-				{10, 	1053},	//vin_com
-				{1, 	600},	//vb_sda
-				{11, 	1000},	//vb_colbuf
-				{2, 	3000},	//vb_test_cur
-				{3, 	830},	//vcascp_pixbuf
-				{4, 	1630},	//vcascn_pixbuf
-				{12, 	750},	//vb_pixbuf
-				{6,	480},	//vref_ds
-				{5,	1000},	//vb_ds
-				{7, 	400},	//vref_comp
-				{13, 1220},	//vb_comp
-				{8, 	1500},	//vref_prech
-				{9, 	3000},	//vdd_prot
-    	};
-    	for(i=0;i<14;++i){
-    		retval=setDac(dacvalues[i][0], dacvalues[i][1]);
-    		if(retval!=dacvalues[i][1])
-    			printf("Error: Setting dac %d failed, wrote %d, read %d\n",dacvalues[i][0],dacvalues[i][1],retval);
-    	}
-
-    	//power on the chips
-    	bus_w(POWER_ON_REG,0x1);
-
-    	//reset adc
-    	writeADC(ADCREG1,0x3); writeADC(ADCREG1,0x0);
-    	writeADC(ADCREG2,0x40);
-    	writeADC(ADCREG3,0xf);
-    	writeADC(ADCREG4,0x3f);
-    	//vrefs - configurable?
-    	writeADC(ADCREG_VREFS,0x2);
-
-
-    	//set ADCINVERSionreg (by trial and error)
-    	bus_w(ADC_INVERSION_REG,0x453b2a9c);
-
-    	//set adc_pipeline
-    	bus_w(ADC_PIPELINE_REG,0x20); //same as ADC_OFFSET_REG
-
-    	//set dbit_pipeline
-    	bus_w(DBIT_PIPELINE_REG,0x100e);
-    	usleep(1000000);//1s
-
-    	//reset mem machine fifos fifos
-    	bus_w(MEM_MACHINE_FIFOS_REG,0x4000);
-    	bus_w(MEM_MACHINE_FIFOS_REG,0x0);
-
-    	//reset run control
-    	bus_w(MEM_MACHINE_FIFOS_REG,0x0400);
-    	bus_w(MEM_MACHINE_FIFOS_REG,0x0);
-
-    	//set default setting
-    	setSettings(DYNAMICGAIN,-1);
-    }
-
-
+  
+  
     //Initialization of acquistion parameters
     setFrames(-1);
     setTrains(-1);
@@ -221,7 +153,7 @@ int init_detector(int b, int checkType) {
     setPeriod(-1);
     setDelay(-1);
     setGates(-1);
-
+    
     setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
     setMaster(GET_MASTER);
     setSynchronization(GET_SYNCHRONIZATION_MODE);
@@ -238,13 +170,13 @@ int init_detector(int b, int checkType) {
   // getDynamicRange();
 
   /* both these functions setROI and allocateRAM should go into the control server part. */
-  if(myDetectorType!=JUNGFRAU){
-	  int retvalsize,ret;
-	  setROI(-1,NULL,&retvalsize,&ret);
-	  allocateRAM();
-  }
+
+  int retvalsize,ret;
+  setROI(-1,NULL,&retvalsize,&ret);
+  allocateRAM();
 
   setSamples(1);
+  bus_w(DAC_REG,0xffff);
   return OK;
 }
 
@@ -1049,6 +981,7 @@ int set_dac(int file_des) {
 	int n;
 	int val;
 	int mV=0;
+	int v;
 	sprintf(mess,"Can't set DAC\n");
 
 	n = receiveDataOnly(file_des,arg,sizeof(arg));
@@ -1085,27 +1018,35 @@ int set_dac(int file_des) {
 
 
 
-#ifdef MCB_FUNCS
 
 	if (ret==OK) {
 		if (differentClients==1 && lockStatus==1) {
 			ret=FAIL;
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		} else{		  
-		  if (ind<NDAC-NPWR) {
+		  if (ind<N_DAC-N_PWR) {
 		    
 		    if (mV) {
-		      if (val>2500)
+		      
+		      v=val;
+		      
+		      if (val>2500) 
 			val=-1;
 		      printf("%d mV is ",val);
 		      if (val>0)
 			val=val/2500*4095;
 		      printf("%d DACu\n", val);
-		    } else if (val>4095)
-		      val=-1;
+		    } else {
+		      v=val*2500/4095;
+		      if (val>4095) {
+			val=-1;
+		      }
+		    }
 		    
-		    
-		    retval=setDac(ind,val);
+		    if (vLimitCompliant(v))
+		      retval=setDac(ind,val);
+
+
 		  } else {
 		    switch (ind) {
 		    case ADC_VPP:
@@ -1131,22 +1072,35 @@ int set_dac(int file_des) {
 		    case V_POWER_IO:
 		    case V_POWER_CHIP:
 		      if (mV) {
+			if (vLimitCompliant(val))
+			  retval=setPower(ind,val);
+			else
+			  printf("********power %d exceeds voltage limits", ind);
+			  
+		      } else
+			printf("********power %d should be set in mV instead od DACu", ind);
+		      break;
+		      
+		    case V_LIMIT:
+		      if (mV) {
 			retval=setPower(ind,val);
 		      } else
 			printf("********power %d should be set in mV instead od DACu", ind);
 		      break;
 		      
-		      
 		    default:
 		      printf("**********No dac with index %d\n",ind);
+		      printf("**********%d %d\n",N_DAC,N_PWR);
 		      ret=FAIL;
 		    }
 		    
 		  }
 		}
 	}
+
+
 	if(ret==OK){
-	  if (ind<NDAC-NPWR) {	
+	  if (ind<N_DAC-N_PWR) {	
 	    if (mV) {
 	      printf("%d DACu is ",retval);
 	      retval1=2500*retval/4095;
@@ -1156,17 +1110,17 @@ int set_dac(int file_des) {
 	  } else 
 	    retval1=retval;
 	}
-#endif
 
-#ifdef VERBOSE
-	printf("DAC set to %d V\n",  retval);
-#endif  
+	//#ifdef VERBOSE
+	printf("DAC set to %d mV\n",  retval);
+	//#endif  
 	
 	if(ret==FAIL)
 	  printf("Setting dac %d of module %d: wrote %d but read %d\n", ind, imod, val, retval);
 	else{
 	  if (differentClients)
 	    ret=FORCE_UPDATE;
+
 	}
 	
 	

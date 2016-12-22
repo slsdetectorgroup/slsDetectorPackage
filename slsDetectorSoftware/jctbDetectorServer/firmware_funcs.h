@@ -219,4 +219,6 @@ int64_t setSamples(int64_t value);
 int prepareSlowADCSeq();
 int readSlowADC(int ichan);
 int setReadOutMode(int arg);
+int vLimitCompliant(int val_mV)
+
 #endif

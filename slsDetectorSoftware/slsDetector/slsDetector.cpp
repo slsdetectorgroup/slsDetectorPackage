@@ -801,7 +801,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     //update?!?!?!?
 
     if(thisDetector->myDetectorType==JUNGFRAUCTB) {
-      cout << "here2" << endl;
+      //  cout << "here2" << endl;
       getTotalNumberOfChannels();
 	//thisDetector->nChan[X]=32;
 	//thisDetector->nChans=thisDetector->nChan[X]*thisDetector->nChan[Y];
@@ -1703,8 +1703,9 @@ int slsDetector::getTotalNumberOfChannels() {
     }
     thisDetector->nChans=thisDetector->nChan[X];
     thisDetector->dataBytes=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods*2*thisDetector->timerValue[SAMPLES_JCTB];
-    cout << "Total number of channels is "<< thisDetector->nChans*thisDetector->nChips*thisDetector->nMods << " data bytes is " << thisDetector->dataBytes << endl;
-  }
+  } else
+    cout << "det type is "<< thisDetector->myDetectorType << endl;
+  cout << "Total number of channels is "<< thisDetector->nChans*thisDetector->nChips*thisDetector->nMods << " data bytes is " << thisDetector->dataBytes << endl;
   return thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;
 };
 
@@ -3928,9 +3929,9 @@ int* slsDetector::getDataFromDetector(int *retval){
 
 		n=controlSocket->ReceiveDataOnly(retval,thisDetector->dataBytes);
 
-		//#ifdef VERBOSE
+#ifdef VERBOSE
 		std::cout<< "Received "<< n << " data bytes" << std::endl;
-		//#endif
+#endif
 		if (n!=thisDetector->dataBytes) {
 			std::cout<< "wrong data size received from detector: received " << n << " but expected " << thisDetector->dataBytes << std::endl;
 			thisDetector->stoppedFlag=1;
@@ -3940,8 +3941,13 @@ int* slsDetector::getDataFromDetector(int *retval){
 			}
 			return NULL;
 		}
+		// for (int ib=0; ib<thisDetector->dataBytes/8; ib++)
+		//   cout << ((*(((u_int64_t*)retval)+ib))>>17&1) ;
+
+
 	}
 	//	cout << "get data returning " << endl;
+	//	cout << endl;
 	return retval;
 
 };
@@ -3956,8 +3962,8 @@ int* slsDetector::readAll(){
   int fnum=F_READ_ALL;
   int* retval; // check what we return!
 
-  int i=0;
 #ifdef VERBOSE
+  int i=0;
   std::cout<< "Reading all frames "<< std::endl;
 #endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
@@ -3965,23 +3971,18 @@ int* slsDetector::readAll(){
       controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 
       while ((retval=getDataFromDetector())){
+#ifdef VERBOSE
 	i++;
-	#ifdef VERBOSE
 	std::cout<< i << std::endl;
-	//#else
-	//std::cout << "-" << flush ;
-	#endif
+#endif
 	dataQueue.push(retval);
-	//	std::cout<< "pushed" << std::endl;
       }
       disconnectControl();
     }
   }
- #ifdef VERBOSE
+#ifdef VERBOSE
   std::cout<< "received "<< i<< " frames" << std::endl;
-  //#else
-  // std::cout << std::endl;
-  #endif
+#endif
   return dataQueue.front(); // check what we return!
 
 };
@@ -4019,19 +4020,21 @@ int* slsDetector::startAndReadAll(){
 
   int* retval;
   //#ifdef VERBOSE
+#ifdef VERBOSE
   int i=0;
+#endif
   //#endif
   startAndReadAllNoWait();
   //#ifdef VERBOSE
   // std::cout<< "started" << std::endl;
   //#endif
   while ((retval=getDataFromDetector())){
-    #ifdef VERBOSE
+#ifdef VERBOSE
     i++;
     std::cout<< i << std::endl;
     //#else
     //std::cout<< "-" << flush;
-    #endif
+#endif
     dataQueue.push(retval);
     
     //std::cout<< "pushed" << std::endl;
@@ -5029,14 +5032,17 @@ int slsDetector::executeTrimming(trimMode mode, int par1, int par2, int imod){
 double* slsDetector::decodeData(int *datain, int &nn, double *fdata) {
 
 
-	double *dataout;
-	if (fdata) {
-		dataout=fdata;
-		//    printf("not allocating fdata!\n");
-	} else { 
+  double *dataout;
+  if (fdata) {
+    dataout=fdata;
+    //    printf("not allocating fdata!\n");
+    if (thisDetector->myDetectorType==JUNGFRAUCTB) nn=thisDetector->dataBytes/2;
+  } else { 
     if (thisDetector->myDetectorType==JUNGFRAUCTB) {
-      dataout=new double[thisDetector->dataBytes/2];
       nn=thisDetector->dataBytes/2;
+      dataout=new double[nn];
+      
+      //  std::cout<< "nn is "<< nn  << std::endl;
     }    else {
       dataout=new double[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
       nn=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;
@@ -5044,30 +5050,31 @@ double* slsDetector::decodeData(int *datain, int &nn, double *fdata) {
     
     //  printf("allocating fdata!\n");
   }
-	const int bytesize=8;
-
-	int ival=0;
-	char *ptr=(char*)datain;
-	char iptr;
-
-	int nbits=thisDetector->dynamicRange;
-	int nch=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;
-	int  ipos=0, ichan=0, ibyte;
-
-	if (thisDetector->timerValue[PROBES_NUMBER]==0) {
-		if (thisDetector->myDetectorType==JUNGFRAUCTB) {
-
-      for (ichan=0; ichan<thisDetector->dataBytes/2; ichan++) {
+  const int bytesize=8;
+  
+  int ival=0;
+  char *ptr=(char*)datain;
+  char iptr;
+  
+  int nbits=thisDetector->dynamicRange;
+  int nch=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;
+  int  ipos=0, ichan=0, ibyte;
+  
+  if (thisDetector->timerValue[PROBES_NUMBER]==0) {
+    if (thisDetector->myDetectorType==JUNGFRAUCTB) {
+      
+      for (ichan=0; ichan<nn; ichan++) {
 	//   //	}
 	dataout[ichan]=*((u_int16_t*)ptr);
 	ptr+=2;
       }
-		
-		} else {
+
+      std::cout<< "decoded "<< ichan << " channels" << std::endl;		
+    } else {
 			switch (nbits) {
 			case 1:
 				for (ibyte=0; ibyte<thisDetector->dataBytes; ibyte++) {
-					iptr=ptr[ibyte]&0x1;
+				  iptr=ptr[ibyte];//&0x1;
 					for (ipos=0; ipos<8; ipos++) {
 						//	dataout[ibyte*2+ichan]=((iptr&((0xf)<<ichan))>>ichan)&0xf;
 						ival=(iptr>>(ipos))&0x1;
@@ -5078,7 +5085,7 @@ double* slsDetector::decodeData(int *datain, int &nn, double *fdata) {
 				break;
 			case 4:
 				for (ibyte=0; ibyte<thisDetector->dataBytes; ibyte++) {
-					iptr=ptr[ibyte]&0xff;
+					iptr=ptr[ibyte];
 					for (ipos=0; ipos<2; ipos++) {
 						//	dataout[ibyte*2+ichan]=((iptr&((0xf)<<ichan))>>ichan)&0xf;
 						ival=(iptr>>(ipos*4))&0xf;
@@ -5096,36 +5103,32 @@ double* slsDetector::decodeData(int *datain, int &nn, double *fdata) {
 			case 16:
 				for (ichan=0; ichan<nch; ichan++) {
 					// dataout[ichan]=0;
-					ival=0;
-					for (ibyte=0; ibyte<2; ibyte++) {
-						iptr=ptr[ichan*2+ibyte];
-						ival|=((iptr<<(ibyte*bytesize))&(0xff<<(ibyte*bytesize)));
-					}
-					dataout[ichan]=ival;
+					// ival=0;
+					// for (ibyte=0; ibyte<2; ibyte++) {
+					// 	iptr=ptr[ichan*2+ibyte];
+					// 	ival|=((iptr<<(ibyte*bytesize))&(0xff<<(ibyte*bytesize)));
+					// }
+					dataout[ichan]=*((u_int16_t*)ptr);
+					ptr+=2;
 				}
 				break;
 			default:
-				if(thisDetector->myDetectorType == MYTHEN){
-					for (ichan=0; ichan<nch; ichan++) {
-						ival=datain[ichan]&0xffffff;
-						dataout[ichan]=ival;
-					}
-				}
-				for (ichan=0; ichan<nch; ichan++) {
-					dataout[ichan]=datain[ichan];
-				}
+			  int mask=0xffffffff;
+			  if(thisDetector->myDetectorType == MYTHEN) mask=0xffffff;
+			  for (ichan=0; ichan<nch; ichan++) {
+			    dataout[ichan]=datain[ichan]&mask;
+			  }
 			}
-		}
-	} else {
-		for (ichan=0; ichan<nch; ichan++) {
-			dataout[ichan]=datain[ichan];
-		}
-	}
+    }
+  } else {
+    for (ichan=0; ichan<nch; ichan++) {
+      dataout[ichan]=datain[ichan];
+    }
+  }
 
 
-#ifdef VERBOSE
-	std::cout<< "decoded "<< ichan << " channels" << std::endl;
-#endif
+    //#ifdef VERBOSE
+	//#endif
 
 	return dataout;
 }

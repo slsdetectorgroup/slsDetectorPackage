@@ -1432,7 +1432,7 @@ int* multiSlsDetector::getDataFromDetector() {
 
 	if(!nodatadetectortype)
 		retval=new int[nel];
-
+	p=retval;
 	//	cout << "multi: " << thisMultiDetector->dataBytes << endl;
 
 	for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
@@ -2251,11 +2251,11 @@ double* multiSlsDetector::decodeData(int *datain, int &nn, double *fdata) {
     dataout=fdata;
   else {
     if (detectors[0]->getDetectorsType()==JUNGFRAUCTB) {
-      dataout=new double[thisMultiDetector->dataBytes/2];
       nn=thisMultiDetector->dataBytes/2;
+      dataout=new double[nn];
     } else {
-      dataout=new double[thisMultiDetector->numberOfChannels];
       nn=thisMultiDetector->numberOfChannels;
+      dataout=new double[nn];
     }
   }
 

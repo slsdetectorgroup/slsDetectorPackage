@@ -787,6 +787,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="v_limit"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
   /* r/w timers */
 
   descrToFuncMap[i].m_pFuncName="temp_adc"; //
@@ -3816,6 +3820,8 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
 	  dac=V_POWER_IO;
   else if (cmd== "v_chip")
 	  dac=V_POWER_CHIP;
+  else if (cmd== "v_limit")
+	  dac=V_LIMIT;
   else
     return string("cannot decode dac ")+cmd;
   
@@ -3849,7 +3855,7 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
   sprintf(answer,"%f",myDet->setDAC(-1,dac,mode));
 #endif
   if(mode)
-	  strcat(answer,"mV");
+	  strcat(answer," mV");
   return string(answer);
 
 }
@@ -4007,7 +4013,7 @@ string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
     return string("cannot set ")+cmd;
     
   if (sscanf(args[0],"adc:%d",&idac)==1) {
-    printf("chiptestboard!\n");
+    //  printf("chiptestboard!\n");
     adc=(dacIndex)(idac+1000);
   } else if (cmd=="temp_adc")
     adc=TEMPERATURE_ADC;

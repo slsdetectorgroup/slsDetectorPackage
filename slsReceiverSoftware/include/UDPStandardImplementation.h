@@ -647,6 +647,7 @@ private:
 	H5File *hdf5_fileId[MAX_NUMBER_OF_WRITER_THREADS];
 	DataType hdf5_datatype;
 	const static int MAX_IMAGES_IN_DATASET = 10000;
+	const static int MAX_CHUNKED_IMAGES = 1000;
 #endif
 	//***acquisition indices/count parameters***
 	/** Frame Number of First Frame of an entire Acquisition (including all scans) */

@@ -1855,11 +1855,6 @@ int UDPStandardImplementation::createNewFile(int ithread){
 				group5.close();
 
 				//data
-				//create property list for a dataset and set up fill values
-
-				/*int fillvalue = -1; //Aldo suggested its time consuming
-				DSetCreatPropList plist;
-				plist.setFillValue(hdf5_datatype, &fillvalue);*/
 				//create dataspace for the dataset in the file
 				int numimagesindataset = ((numberOfFrames < MAX_IMAGES_IN_DATASET)? numberOfFrames:MAX_IMAGES_IN_DATASET);
 				hsize_t srcdims[3] = {NY,NX,numimagesindataset};
@@ -1868,9 +1863,22 @@ int UDPStandardImplementation::createNewFile(int ithread){
 				hdf5_dataspaceId[ithread] = new DataSpace (3,srcdims);
 				char dsetname[100];
 				sprintf(dsetname, "/entry/data/data_%06lld", 0);//(long long int)currentFrameNumber[ithread]+1)
-				//Create dataset and write it into the file
-				hdf5_datasetId[ithread] = new DataSet (hdf5_fileId[ithread]->createDataSet(
-						dsetname, hdf5_datatype, *hdf5_dataspaceId[ithread]));/*, plist));*/
+
+				//create chunked dataset if greater than max_chunked_images
+				if(numimagesindataset > MAX_CHUNKED_IMAGES){
+					//create property list for a dataset
+					DSetCreatPropList plist;
+					/*//set up fill values
+					int fillvalue = -1; //Aldo suggested its time consuming
+					plist.setFillValue(hdf5_datatype, &fillvalue);*/
+					hsize_t chunk_dims[3] ={NY, srcdims[1],MAX_CHUNKED_IMAGES};
+					plist.setChunk(3, chunk_dims);
+					//Create dataset and write it into the file
+					hdf5_datasetId[ithread] = new DataSet (hdf5_fileId[ithread]->createDataSet(
+							dsetname, hdf5_datatype, *hdf5_dataspaceId[ithread], plist));
+				}else
+					hdf5_datasetId[ithread] = new DataSet (hdf5_fileId[ithread]->createDataSet(
+								dsetname, hdf5_datatype, *hdf5_dataspaceId[ithread]));
 			}
 			catch(Exception error){
 				cprintf(RED,"Error in creating HDF5 handles in thread %d\n",ithread);
@@ -3154,8 +3162,22 @@ void UDPStandardImplementation::handleCompleteFramesOnly(int ithread, char* wbuf
 							srcdims[1] = NX/2;
 						hdf5_dataspaceId[ithread] = new DataSpace (3,srcdims);
 					}
-					hdf5_datasetId[ithread] = new DataSet (hdf5_fileId[ithread]->createDataSet(
-											dsetname, hdf5_datatype, *hdf5_dataspaceId[ithread]));
+
+					//create chunked dataset if greater than max_chunked_images
+					if(numimagesindataset > MAX_CHUNKED_IMAGES){
+						DSetCreatPropList plist;
+						hsize_t chunk_dims[3] ={NY, NX, MAX_CHUNKED_IMAGES};
+						if(dynamicRange == 4)
+							chunk_dims[1] = NX/2;
+						plist.setChunk(3, chunk_dims);
+
+						hdf5_datasetId[ithread] = new DataSet (hdf5_fileId[ithread]->createDataSet(
+								dsetname, hdf5_datatype, *hdf5_dataspaceId[ithread],plist));
+					}
+					else
+						hdf5_datasetId[ithread] = new DataSet (hdf5_fileId[ithread]->createDataSet(
+									dsetname, hdf5_datatype, *hdf5_dataspaceId[ithread]));
+
 				}
 				catch(Exception error){
 					cprintf(RED,"Error in closing HDF5 dataset to create a new one in thread %d\n",ithread);

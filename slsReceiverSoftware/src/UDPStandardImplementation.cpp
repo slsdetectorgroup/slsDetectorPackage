@@ -1856,19 +1856,21 @@ int UDPStandardImplementation::createNewFile(int ithread){
 
 				//data
 				//create property list for a dataset and set up fill values
-				int fillvalue = -1;
+
+				/*int fillvalue = -1; //Aldo suggested its time consuming
 				DSetCreatPropList plist;
-				plist.setFillValue(hdf5_datatype, &fillvalue);
+				plist.setFillValue(hdf5_datatype, &fillvalue);*/
 				//create dataspace for the dataset in the file
-				hsize_t srcdims[3] = {NY,NX,numberOfFrames};
+				int numimagesindataset = ((numberOfFrames < MAX_IMAGES_IN_DATASET)? numberOfFrames:MAX_IMAGES_IN_DATASET);
+				hsize_t srcdims[3] = {NY,NX,numimagesindataset};
 				if(dynamicRange == 4)
 					srcdims[1] = NX/2;
 				hdf5_dataspaceId[ithread] = new DataSpace (3,srcdims);
 				char dsetname[100];
-				sprintf(dsetname, "/entry/data/data_%06lld", (long long int)currentFrameNumber[ithread]+1);
+				sprintf(dsetname, "/entry/data/data_%06lld", 0);//(long long int)currentFrameNumber[ithread]+1)
 				//Create dataset and write it into the file
 				hdf5_datasetId[ithread] = new DataSet (hdf5_fileId[ithread]->createDataSet(
-						dsetname, hdf5_datatype, *hdf5_dataspaceId[ithread], plist));
+						dsetname, hdf5_datatype, *hdf5_dataspaceId[ithread]));/*, plist));*/
 			}
 			catch(Exception error){
 				cprintf(RED,"Error in creating HDF5 handles in thread %d\n",ithread);
@@ -3138,9 +3140,32 @@ void UDPStandardImplementation::handleCompleteFramesOnly(int ithread, char* wbuf
 		else if (fileFormatType == HDF5){
 			pthread_mutex_lock(&writeMutex);
 
+			if(tempframenumber && (tempframenumber%MAX_IMAGES_IN_DATASET) == 0){
+				try{
+					Exception::dontPrint(); //to handle errors
+					if(hdf5_datasetId[ithread])		{delete hdf5_datasetId[ithread];	hdf5_datasetId[ithread] = 0;}
+					char dsetname[100];
+					sprintf(dsetname, "/entry/data/data_%06lld", (long long int)currentFrameNumber[ithread]+1);
+					//create new dataspace if fewer than max images/dataset
+					int numimagesindataset = (((numberOfFrames-tempframenumber) < MAX_IMAGES_IN_DATASET)? (numberOfFrames-tempframenumber):MAX_IMAGES_IN_DATASET);
+					if(numimagesindataset<MAX_IMAGES_IN_DATASET){
+						hsize_t srcdims[3] = {NY,NX,numimagesindataset};
+						if(dynamicRange == 4)
+							srcdims[1] = NX/2;
+						hdf5_dataspaceId[ithread] = new DataSpace (3,srcdims);
+					}
+					hdf5_datasetId[ithread] = new DataSet (hdf5_fileId[ithread]->createDataSet(
+											dsetname, hdf5_datatype, *hdf5_dataspaceId[ithread]));
+				}
+				catch(Exception error){
+					cprintf(RED,"Error in closing HDF5 dataset to create a new one in thread %d\n",ithread);
+					error.printError();
+				}
+			}
+
 			//wite to file
 			hsize_t count[3] = {NY,NX,1};
-			hsize_t start[3] = {0, 0, tempframenumber};
+			hsize_t start[3] = {0, 0, tempframenumber%MAX_IMAGES_IN_DATASET};
 			hsize_t dims2[2]={NY,NX};
 			if(dynamicRange == 4){
 				dims2[1] = NX/2;

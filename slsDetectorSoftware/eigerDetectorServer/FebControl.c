@@ -12,13 +12,7 @@
 #include <math.h>
 #include <string.h>
 #include <time.h>
-
-//#include <fstream>
-//#include <iomanip>
-//#include <sstream>
-//#include <time.h>
-
-
+#include <termios.h>  // POSIX terminal control definitions(CS8, CREAD, CLOCAL..)
 
 #include "FebRegisterDefs.h"
 #include "FebControl.h"
@@ -68,6 +62,7 @@ double Feb_Control_rate_meas[16384];
 
 double ratemax=-1;
 int Feb_Control_activated = 1;
+int Feb_Control_hv_fd = -1;
 
 
 void Module_Module(struct Module* mod,unsigned int number, unsigned int address_top){
@@ -224,10 +219,44 @@ int Feb_Control_Init(int master, int top, int normal, int module_num){
 	if(Feb_Control_activated)
 		Feb_Interface_SetByteOrder();
 
+	//master of 9M, set up high voltage serial communication to blackfin
+	if(Feb_control_master && !Feb_control_normal){
+		if(!Feb_Control_SetupSerialCommunication())
+			return 0;
+	}
 
 	return 1;
 }
 
+
+int Feb_Control_SetupSerialCommunication(){
+
+	Feb_Control_hv_fd = open(SPECIAL9M_HIGHVOLTAGE_PORT, O_RDWR | O_NOCTTY);
+	if(Feb_Control_hv_fd < 0){
+		cprintf(RED,"Warning: Unable to open port %s to set up high voltage serial communciation to the blackfin\n", SPECIAL9M_HIGHVOLTAGE_PORT);
+		return 0;
+	}
+
+	struct termios serial_conf;
+	// Get the current options for the port
+	tcgetattr(Feb_Control_hv_fd, &serial_conf);
+	// reset structure
+	memset(&serial_conf,0,sizeof(serial_conf));
+	// control options
+	serial_conf.c_cflag = B2400 | CS8 | CREAD | CLOCAL;//57600 too high
+	// input options
+	serial_conf.c_iflag = IGNPAR;
+	// output options
+	serial_conf.c_oflag = 0;
+	// line options
+	serial_conf.c_lflag = ICANON;
+	// flush input
+	tcflush(Feb_Control_hv_fd, TCIFLUSH);
+	// set new options for the port, TCSANOW:changes occur immediately without waiting for data to complete
+	tcsetattr(Feb_Control_hv_fd, TCSANOW, &serial_conf);
+
+	return 1;
+}
 
 
 void Feb_Control_PrintModuleList(){
@@ -496,89 +525,183 @@ float Feb_Control_DACToVoltage(unsigned int digital,unsigned int nsteps,float vm
 
 //only master gets to call this function
 int Feb_Control_SetHighVoltage(int value){
-
-	if(!Feb_control_normal){
-		cprintf(RED,"\nError: Setting High Voltage not implemented for special modules\n");
-		return 0;
-	}
-
-	printf(" Setting High Voltage: %d(v)\t",value);
-
-	static const unsigned int nsteps = 256;
-	static const float vmin=0;
-	static const float vmax=300;
+	printf(" Setting High Voltage: %dV\t",value);
+	/*
+	 * maximum voltage of the hv dc/dc converter:
+	 * 300 for single module power distribution board
+	 * 200 for 9M power distribution board
+	 * but limit is 200V for both
+	 */
+	const float vmin=0;
+	float vmax=200;
+	if(Feb_control_normal)
+		vmax=300;
+	const float vlimit=200;
+	const unsigned int ntotalsteps = 256;
+	unsigned int nsteps = ntotalsteps*vlimit/vmax;
 	unsigned int dacval = 0;
 
-	//open file
-	FILE* fd=fopen("/sys/class/hwmon/hwmon5/device/out0_output","w");
-	if(fd==NULL){
-		cprintf(RED,"\nWarning: Could not open file for writing to set high voltage\n");
-		return 0;
-	}
 	//calculate dac value
-	if(!Feb_Control_VoltageToDAC(value,&dacval,nsteps,vmin,vmax)){
-		cprintf(RED,"\nWarning: SetHighVoltage bad value, %d.  The range is 0 to 300 V.\n",value);
+	if(!Feb_Control_VoltageToDAC(value,&dacval,nsteps,vmin,vlimit)){
+		cprintf(RED,"\nWarning: SetHighVoltage bad value, %d.  The range is 0 to %d V.\n",value, (int)vlimit);
 		return 0;
 	}
-	//convert to string, add 0 and write to file
-	fprintf(fd, "%d0\n", dacval);
+	printf("(%d dac): ",dacval);
 
-	printf("%d(dac)\n", dacval);
-	fclose(fd);
-
-	return 1;
+	return Feb_Control_SendHighVoltage(dacval);
 }
 
 
 int Feb_Control_GetHighVoltage(int* value){
-
-	if(!Feb_control_normal){
-		cprintf(RED,"\nError: Getting High Voltage not implemented for special modules\n");
-		return 0;
-	}
-
-	printf(" Getting High Voltage: ");
-	static const unsigned int nsteps = 256;
-	static const float vmin=0;
-	static const float vmax=300;
-
+	printf(" Getting High Voltage:\t");
 	unsigned int dacval = 0;
 
-	size_t readbytes=0;
-	char* line=NULL;
+	if(!Feb_Control_ReceiveHighVoltage(&dacval))
+		return 0;
 
-	//open file
-	FILE* fd=fopen("/sys/class/hwmon/hwmon5/device/in0_input","r");
-	if(fd==NULL){
-		cprintf(RED,"\nWarning: Could not open file for writing to get high voltage\n");
-		return 0;
-	}
-	// Read twice, since the first value is sometimes outdated
-	if(getline(&line, &readbytes, fd) == -1){
-		cprintf(RED,"\nWarning: could not read file to get high voltage\n");
-		return 0;
-	}
-	rewind(fd);
-	free(line);
-	readbytes=0;
-	readbytes = getline(&line, &readbytes, fd);
-	if(readbytes == -1){
-		cprintf(RED,"\nWarning: could not read file to get high voltage\n");
-		return 0;
-	}
-
-	// Remove the trailing 0
-	dacval = atoi(line)/10;
-	//convert dac to v
-	*value = (int)(Feb_Control_DACToVoltage(dacval,nsteps,vmin,vmax)+0.5);
-	printf("%d(v)\t%d(dac)\n", *value, dacval);
-	free(line);
-	fclose(fd);
+	//ok, convert dac to v
+	/*
+	 * maximum voltage of the hv dc/dc converter:
+	 * 300 for single module power distribution board
+	 * 200 for 9M power distribution board
+	 * but limit is 200V for both
+	 */
+	const float vmin=0;
+	float vmax=200;
+	if(Feb_control_normal)
+		vmax=300;
+	const float vlimit=200;
+	const unsigned int ntotalsteps = 256;
+	unsigned int nsteps = ntotalsteps*vlimit/vmax;
+	*value = (int)(Feb_Control_DACToVoltage(dacval,nsteps,vmin,vlimit)+0.5);
+	printf("(%d dac)\t%dV\n", dacval, *value);
 
 	return 1;
 }
 
 
+int Feb_Control_SendHighVoltage(int dacvalue){
+	//normal
+	if(Feb_control_normal){
+		//open file
+		FILE* fd=fopen(NORMAL_HIGHVOLTAGE_OUTPUTPORT,"w");
+		if(fd==NULL){
+			cprintf(RED,"\nWarning: Could not open file for writing to set high voltage\n");
+			return 0;
+		}
+		//convert to string, add 0 and write to file
+		fprintf(fd, "%d0\n", dacvalue);
+		fclose(fd);
+	}
+
+	//9m
+	else{
+		if (Feb_Control_hv_fd == -1){
+			cprintf(RED,"\nWarning: High voltage serial communication not set up for 9m\n");
+			return 0;
+		}
+
+		char buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE]="";
+		buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE-1]='\n';
+		int n = 0;
+		sprintf(buffer,"p%d",dacvalue);
+		n = write(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
+#ifdef VERBOSE
+		cprintf(BLUE,"Sent %d Bytes\n", n);
+#endif
+
+		//ok/fail
+		n = read(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
+	#ifdef VERBOSE
+		cprintf(BLUE,"Received %d Bytes\n", n);
+	#endif
+		if(buffer[0] == 'f'){
+			cprintf(RED,"\nError: Failed to set high voltage\n");
+			return 0;
+		}
+		cprintf(GREEN,"%s\n",buffer);
+	}
+
+	return 1;
+}
+
+
+
+
+
+
+
+int Feb_Control_ReceiveHighVoltage(unsigned int* value){
+
+	//normal
+	if(Feb_control_normal){
+		//open file
+		FILE* fd=fopen(NORMAL_HIGHVOLTAGE_INPUTPORT,"r");
+		if(fd==NULL){
+			cprintf(RED,"\nWarning: Could not open file for writing to get high voltage\n");
+			return 0;
+		}
+
+		//read, assigning line to null and readbytes to 0 then getline allocates initial buffer
+		size_t readbytes=0;
+		char* line=NULL;
+		if(getline(&line, &readbytes, fd) == -1){
+			cprintf(RED,"\nWarning: could not read file to get high voltage\n");
+			return 0;
+		}
+		//read again to read the updated value
+		rewind(fd);
+		free(line);
+		readbytes=0;
+		readbytes = getline(&line, &readbytes, fd);
+		if(readbytes == -1){
+			cprintf(RED,"\nWarning: could not read file to get high voltage\n");
+			return 0;
+		}
+		// Remove the trailing 0
+		*value = atoi(line)/10;
+		free(line);
+		fclose(fd);
+	}
+
+
+	//9m
+	else{
+		if (Feb_Control_hv_fd == -1){
+			cprintf(RED,"\nWarning: High voltage serial communication not set up for 9m\n");
+			return 0;
+		}
+		char buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE]="";
+		buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE-1]='\n';
+		int n = 0;
+		//request
+		strcpy(buffer,"g");
+		n = write(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
+#ifdef VERBOSE
+		cprintf(BLUE,"Sent %d Bytes\n", n);
+#endif
+
+		//ok/fail
+		n = read(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
+#ifdef VERBOSE
+		cprintf(BLUE,"Received %d Bytes\n", n);
+#endif
+		if(buffer[0] == 'f'){
+			cprintf(RED,"\nWarning: failed to read high voltage\n");
+			return 0;
+		}
+
+		n = read(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
+#ifdef VERBOSE
+		cprintf(BLUE,"Received %d Bytes\n", n);
+#endif
+		if (!sscanf(buffer,"%d",value)){
+			cprintf(RED,"\nWarning: failed to scan high voltage read\n");
+			return 0;
+		}
+	}
+	return 1;
+}
 
 
 

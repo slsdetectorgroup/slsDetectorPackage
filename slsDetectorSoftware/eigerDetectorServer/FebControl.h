@@ -112,6 +112,7 @@ int Feb_Control_GetModuleNumber();
 
   void Feb_Control_FebControl();
   int Feb_Control_Init(int master, int top, int normal, int module_num);
+  int Feb_Control_SetupSerialCommunication();
   int Feb_Control_CheckSetup();
 
   unsigned int Feb_Control_GetNModules();
@@ -119,6 +120,9 @@ int Feb_Control_GetModuleNumber();
 
   int Feb_Control_SetHighVoltage(int value);
   int Feb_Control_GetHighVoltage(int* value);
+
+  int Feb_Control_SendHighVoltage(int dacvalue);
+  int Feb_Control_ReceiveHighVoltage(unsigned int* value);
 
   int Feb_Control_SetIDelays(unsigned int module_num, unsigned int  ndelay_units);
   int Feb_Control_SetIDelays1(unsigned int module_num, unsigned int chip_pos, unsigned int ndelay_units);

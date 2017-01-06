@@ -11,7 +11,7 @@
 
 #define PORTNAME 				"/dev/ttyBF1"
 #define GOODBYE 				200
-#define BUFFERSIZE 				255
+#define BUFFERSIZE 				16
 #define I2C_DEVICE_FILE			"/dev/i2c-0"
 #define I2C_DEVICE_ADDRESS		0x4C
 //#define I2C_DEVICE_ADDRESS	0x48
@@ -119,13 +119,12 @@ int main(int argc, char* argv[]) {
 	int ret = 0;
 	int n = 0;
 	int ival= 0;
-	char buffer[BUFFERSIZE]="";
+	char buffer[BUFFERSIZE];
+	buffer[BUFFERSIZE-2] = '\0';
+	buffer[BUFFERSIZE-1] = '\n';
 	cprintf(GREEN,"Ready...\n");
 
 	while(ret != GOODBYE){
-		memset(buffer, 0, BUFFERSIZE);
-		buffer[BUFFERSIZE-1]='\n';
-
 		n = read(fd,buffer,BUFFERSIZE);
 #ifdef VERBOSE
 		cprintf(BLUE,"Received %d Bytes\n", n);
@@ -140,9 +139,9 @@ int main(int argc, char* argv[]) {
 			}
 
 			if(i2c_write(ival)<0)
-				strcpy(buffer,"failed");
+				strcpy(buffer,"fail ");
 			else
-				strcpy(buffer,"successful");
+				strcpy(buffer,"success ");
 			cprintf(GREEN,"%s\n",buffer);
 			n = write(fd, buffer, BUFFERSIZE);
 #ifdef VERBOSE
@@ -154,9 +153,9 @@ int main(int argc, char* argv[]) {
 			ival = i2c_read();
 			//ok/ fail
 			if(ival < 0)
-				strcpy(buffer,"failed");
+				strcpy(buffer,"fail ");
 			else
-				strcpy(buffer,"successful");
+				strcpy(buffer,"success ");
 			n = write(fd, buffer, BUFFERSIZE);
 #ifdef VERBOSE
 			cprintf(BLUE,"Sent %d Bytes\n", n);
@@ -164,7 +163,7 @@ int main(int argc, char* argv[]) {
 			//value
 			if(ival >= 0){
 				cprintf(GREEN,"%d\n",ival);
-				sprintf(buffer,"%d\n",ival);
+				sprintf(buffer,"%d ",ival);
 				n = write(fd, buffer, BUFFERSIZE);
 #ifdef VERBOSE
 				cprintf(BLUE,"Sent %d Bytes\n", n);
@@ -177,7 +176,7 @@ int main(int argc, char* argv[]) {
 			ret = GOODBYE;
 			break;
 		default:
-			printf("Unknown Command\n");
+			printf("Unknown Command. buffer:%s\n",buffer);
 			break;
 		}
 	}

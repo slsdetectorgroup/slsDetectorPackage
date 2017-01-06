@@ -1,7 +1,7 @@
 CC			=	powerpc-4xx-softfloat-gcc
 CCX			=	powerpc-4xx-softfloat-g++
 BLACKFIN_CC = 	bfin-uclinux-gcc
-CFLAGS		+=  -Wall -DDACS_INT  -DEIGERD  -DSLS_DETECTOR_FUNCTION_LIST  -DDACS_INT -DSTOP_SERVER  #-DVERBOSE #-DVIRTUAL -DPCCOMPILE -DMARTIN
+CFLAGS		+=  -Wall -DDACS_INT  -DEIGERD  -DSLS_DETECTOR_FUNCTION_LIST  -DDACS_INT -DSTOP_SERVER #-DVERBOSEI #-DVERBOSE #-DVIRTUAL -DPCCOMPILE -DMARTIN
 LDLIBS		+= 	-lm  -lstdc++ 
 
 PROGS		= 	eigerDetectorServer 
@@ -36,7 +36,7 @@ beb_debug:$(SRC_CLNT3)
 	mv beb_debug $(DESTDIR)	
 	
 hv9m_blackfin_server:9mhvserial_bf.c
-	$(BLACKFIN_CC) -o hv9m_blackfin_server 9mhvserial_bf.c -Wall
+	$(BLACKFIN_CC) -o hv9m_blackfin_server 9mhvserial_bf.c -Wall #-DVERBOSE
 	mv hv9m_blackfin_server $(DESTDIR)	
 	rm hv9m_blackfin_server.gdb
 

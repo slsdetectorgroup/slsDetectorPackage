@@ -219,18 +219,14 @@ int Feb_Control_Init(int master, int top, int normal, int module_num){
 	if(Feb_Control_activated)
 		Feb_Interface_SetByteOrder();
 
-	//master of 9M, set up high voltage serial communication to blackfin
-	if(Feb_control_master && !Feb_control_normal){
-		if(!Feb_Control_SetupSerialCommunication())
-			return 0;
-	}
-
 	return 1;
 }
 
 
-int Feb_Control_SetupSerialCommunication(){
-
+int Feb_Control_OpenSerialCommunication(){
+	cprintf(BG_BLUE,"opening serial communication of hv\n");
+	if(Feb_Control_hv_fd != -1)
+		close(Feb_Control_hv_fd);
 	Feb_Control_hv_fd = open(SPECIAL9M_HIGHVOLTAGE_PORT, O_RDWR | O_NOCTTY);
 	if(Feb_Control_hv_fd < 0){
 		cprintf(RED,"Warning: Unable to open port %s to set up high voltage serial communciation to the blackfin\n", SPECIAL9M_HIGHVOLTAGE_PORT);
@@ -256,6 +252,11 @@ int Feb_Control_SetupSerialCommunication(){
 	tcsetattr(Feb_Control_hv_fd, TCSANOW, &serial_conf);
 
 	return 1;
+}
+
+void Feb_Control_CloseSerialCommunication(){
+	if(Feb_Control_hv_fd != -1)
+		close(Feb_Control_hv_fd);
 }
 
 
@@ -376,7 +377,8 @@ int Feb_Control_CheckSetup(int master){
 			ok=0;
 		}
 	}
-	if((Feb_control_master) &&(Module_GetHighVoltage(&modules[i])<0)){
+	int value = 0;
+	if((Feb_control_master) && (!Feb_Control_GetHighVoltage(&value))){
 		cprintf(RED,"Warning: module %d's high voltage not set.\n",Module_GetModuleNumber(&modules[i]));
 		ok=0;
 	}
@@ -525,7 +527,7 @@ float Feb_Control_DACToVoltage(unsigned int digital,unsigned int nsteps,float vm
 
 //only master gets to call this function
 int Feb_Control_SetHighVoltage(int value){
-	printf(" Setting High Voltage: %dV\t",value);
+	printf(" Setting High Voltage:\t");
 	/*
 	 * maximum voltage of the hv dc/dc converter:
 	 * 300 for single module power distribution board
@@ -544,9 +546,9 @@ int Feb_Control_SetHighVoltage(int value){
 	//calculate dac value
 	if(!Feb_Control_VoltageToDAC(value,&dacval,nsteps,vmin,vlimit)){
 		cprintf(RED,"\nWarning: SetHighVoltage bad value, %d.  The range is 0 to %d V.\n",value, (int)vlimit);
-		return 0;
+		return -1;
 	}
-	printf("(%d dac): ",dacval);
+	printf("(%d dac):\t%dV\n", dacval, value);
 
 	return Feb_Control_SendHighVoltage(dacval);
 }
@@ -596,30 +598,34 @@ int Feb_Control_SendHighVoltage(int dacvalue){
 
 	//9m
 	else{
+		/*Feb_Control_OpenSerialCommunication();*/
 		if (Feb_Control_hv_fd == -1){
 			cprintf(RED,"\nWarning: High voltage serial communication not set up for 9m\n");
 			return 0;
 		}
 
-		char buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE]="";
+		char buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE];
+		buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE-2]='\0';
 		buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE-1]='\n';
 		int n = 0;
-		sprintf(buffer,"p%d",dacvalue);
+		sprintf(buffer,"p%d ",dacvalue);
 		n = write(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
-#ifdef VERBOSE
+#ifdef VERBOSEI
 		cprintf(BLUE,"Sent %d Bytes\n", n);
 #endif
-
 		//ok/fail
 		n = read(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
-	#ifdef VERBOSE
+#ifdef VERBOSEI
 		cprintf(BLUE,"Received %d Bytes\n", n);
-	#endif
-		if(buffer[0] == 'f'){
+#endif
+		fflush(stdout);
+		/*Feb_Control_CloseSerialCommunication();*/
+		if(buffer[0] != 's'){
 			cprintf(RED,"\nError: Failed to set high voltage\n");
 			return 0;
 		}
 		cprintf(GREEN,"%s\n",buffer);
+
 	}
 
 	return 1;
@@ -667,34 +673,38 @@ int Feb_Control_ReceiveHighVoltage(unsigned int* value){
 
 	//9m
 	else{
+		/*Feb_Control_OpenSerialCommunication();*/
+
 		if (Feb_Control_hv_fd == -1){
 			cprintf(RED,"\nWarning: High voltage serial communication not set up for 9m\n");
 			return 0;
 		}
-		char buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE]="";
+		char buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE];
+		buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE-2]='\0';
 		buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE-1]='\n';
 		int n = 0;
 		//request
-		strcpy(buffer,"g");
+		strcpy(buffer,"g ");
 		n = write(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
-#ifdef VERBOSE
+#ifdef VERBOSEI
 		cprintf(BLUE,"Sent %d Bytes\n", n);
 #endif
 
 		//ok/fail
 		n = read(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
-#ifdef VERBOSE
+#ifdef VERBOSEI
 		cprintf(BLUE,"Received %d Bytes\n", n);
 #endif
-		if(buffer[0] == 'f'){
+		if(buffer[0] != 's'){
 			cprintf(RED,"\nWarning: failed to read high voltage\n");
 			return 0;
 		}
 
 		n = read(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
-#ifdef VERBOSE
+#ifdef VERBOSEI
 		cprintf(BLUE,"Received %d Bytes\n", n);
 #endif
+		/*Feb_Control_OpenSerialCommunication();*/
 		if (!sscanf(buffer,"%d",value)){
 			cprintf(RED,"\nWarning: failed to scan high voltage read\n");
 			return 0;

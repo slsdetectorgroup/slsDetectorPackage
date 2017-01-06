@@ -47,7 +47,7 @@ enum detNetworkParameter{TXN_LEFT, TXN_RIGHT, TXN_FRAME,FLOWCTRL_10G};
 #define NORMAL_HIGHVOLTAGE_INPUTPORT "/sys/class/hwmon/hwmon5/device/in0_input"
 #define NORMAL_HIGHVOLTAGE_OUTPUTPORT "/sys/class/hwmon/hwmon5/device/out0_output"
 #define SPECIAL9M_HIGHVOLTAGE_PORT "/dev/ttyS1"
-#define SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE 8
+#define SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE 16
 
 
 

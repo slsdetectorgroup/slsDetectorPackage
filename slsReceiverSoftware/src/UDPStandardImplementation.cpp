@@ -160,6 +160,7 @@ void UDPStandardImplementation::initializeMembers(){
 #endif
 	}
 #ifdef HDF5C
+	hdf5_masterFileId = 0;
 	hdf5_datatype = PredType::STD_U16LE;
 #endif
 	maxFramesPerFile = 0;
@@ -1020,6 +1021,18 @@ int UDPStandardImplementation::startReceiver(char *c){
 
 	}
 	pthread_mutex_lock(&writeMutex);
+#ifdef HDF5C
+	try{
+		Exception::dontPrint(); //to handle errors
+		if(hdf5_masterFileId) 		{delete hdf5_masterFileId; 		hdf5_masterFileId = 0;}
+	}
+	catch(Exception error){
+		cprintf(RED,"Error in closing master HDF5 handle\n");
+		error.printError();
+		pthread_mutex_unlock(&writeMutex);
+		return FAIL;
+	}
+#endif
 	packetsCaught = 0;
 	totalPacketsCaught = 0;
 	pthread_mutex_unlock(&writeMutex);
@@ -1036,13 +1049,14 @@ int UDPStandardImplementation::startReceiver(char *c){
 		FILE_LOG(logINFO) << "Data Compression has been " << stringEnable(dataCompressionEnable);
 	}
 	FILE_LOG(logINFO) << "Number of Jobs Per Buffer: " << numberofJobsPerBuffer;
-	if(fileFormatType == BINARY)
+	if(fileFormatType == BINARY){
 		FILE_LOG(logINFO) << "Max Frames Per File:" << maxFramesPerFile;
-	if(frameToGuiFrequency)
+	}
+	if(frameToGuiFrequency){
 		FILE_LOG(logINFO) << "Frequency of frames sent to gui: " << frameToGuiFrequency;
-	else
+	}else{
 		FILE_LOG(logINFO) << "Frequency of frames sent to gui: Random";
-
+	}
 
 
 	//create UDP sockets
@@ -1254,6 +1268,7 @@ void UDPStandardImplementation::closeFile(int ithread){
 			if(hdf5_dataspaceId[ithread]) 	{delete hdf5_dataspaceId[ithread]; 	hdf5_dataspaceId[ithread] = 0;}
 			if(hdf5_datasetId[ithread]) 	{delete hdf5_datasetId[ithread]; 	hdf5_datasetId[ithread] = 0;}
 			if(hdf5_fileId[ithread]) 		{delete hdf5_fileId[ithread]; 		hdf5_fileId[ithread] = 0;}
+			if(hdf5_masterFileId) 			{delete hdf5_masterFileId; 			hdf5_masterFileId = 0;}
 		}
 		catch(Exception error){
 			cprintf(RED,"Error in closing HDF5 handles\n");
@@ -1639,12 +1654,9 @@ int UDPStandardImplementation::createNewFile(int ithread){
 	//create file name
 	if(!frameIndexEnable)
 		sprintf(completeFileName[ithread], "%s/%s_%lld", filePath,fileNamePerThread[ithread],(long long int)fileIndex);
-	else{
-		if(fileFormatType == BINARY)
-			sprintf(completeFileName[ithread], "%s/%s_f%012lld_%lld", filePath,fileNamePerThread[ithread],(long long int)lastFrameNumberInFile[ithread]+1,(long long int)fileIndex);
-		else
-			sprintf(completeFileName[ithread], "%s/%s_%lld", filePath,fileNamePerThread[ithread],(long long int)fileIndex);
-	}
+	else
+		sprintf(completeFileName[ithread], "%s/%s_f%012lld_%lld", filePath,fileNamePerThread[ithread],(long long int)lastFrameNumberInFile[ithread]+1,(long long int)fileIndex);
+
 	//file type
 	switch(fileFormatType){
 #ifdef HDF5C
@@ -1693,7 +1705,7 @@ int UDPStandardImplementation::createNewFile(int ithread){
 				return FAIL;
 			}
 			//setting file buffer size to 16mb
-			setvbuf(sfilefd[ithread],NULL,_IOFBF,BUF_SIZE);
+			setvbuf(sfilefd[ithread],NULL,_IOFBF,FILE_BUF_SIZE);
 
 
 			//Print packet loss and filenames
@@ -1748,6 +1760,7 @@ int UDPStandardImplementation::createNewFile(int ithread){
 				if(hdf5_dataspaceId[ithread]) 	{delete hdf5_dataspaceId[ithread]; 	hdf5_dataspaceId[ithread] = 0;}
 				if(hdf5_datasetId[ithread])		{delete hdf5_datasetId[ithread];	hdf5_datasetId[ithread] = 0;}
 				if(hdf5_fileId[ithread])		{delete hdf5_fileId[ithread]; hdf5_fileId[ithread] = 0;	}
+				if(hdf5_masterFileId) 			{delete hdf5_masterFileId; 			hdf5_masterFileId = 0;}
 			}
 			catch(AttributeIException error){
 				cprintf(RED,"Error in creating attributes in thread %d\n",ithread);
@@ -1762,116 +1775,175 @@ int UDPStandardImplementation::createNewFile(int ithread){
 				return FAIL;
 			}//end of closing file
 
+			char masterFileName[1000]="";
+			sprintf(masterFileName, "%s/%s_master_%lld.h5", filePath,fileName,(long long int)fileIndex);
+
 			//creating file
 			try{
 				Exception::dontPrint(); //to handle errors
+
+				//creating master file with metadata
+				try{
+					if(!detID && !ithread){
+						//creating file
+						FileAccPropList flist;
+						flist.setFcloseDegree(H5F_CLOSE_STRONG);
+						if(!overwriteEnable)
+							hdf5_masterFileId = new H5File( masterFileName, H5F_ACC_EXCL, NULL, flist );
+						else
+							hdf5_masterFileId = new H5File( masterFileName, H5F_ACC_TRUNC, NULL, flist );
+
+						//create attributes
+						DataSpace dataspace = DataSpace (H5S_SCALAR);
+						Attribute attribute;
+						double dValue=0;
+
+						//version
+						dValue=HDF5_WRITER_VERSION;
+						attribute = hdf5_masterFileId->createAttribute("version",PredType::NATIVE_DOUBLE, dataspace);
+						attribute.write(PredType::NATIVE_DOUBLE, &dValue);
+
+
+						//Create a group in the file
+						Group group1( hdf5_masterFileId->createGroup( "entry" ) );
+						Group group2( group1.createGroup("data") );
+						Group group3( group1.createGroup("instrument") );
+						Group group4( group3.createGroup("beam") );
+						Group group5( group3.createGroup("detector") );
+						Group group6( group1.createGroup("sample") );
+
+
+						int iValue=0;
+						StrType strdatatype(PredType::C_S1,256);
+						DataSet dataset;
+
+						//Dynamic Range
+						dataset = group5.createDataSet ( "dynamic range", PredType::NATIVE_INT, dataspace );
+						dataset.write ( &dynamicRange, PredType::NATIVE_INT);
+						attribute = dataset.createAttribute("unit",strdatatype, dataspace);
+						attribute.write(strdatatype, string("bits"));
+						//Ten Giga
+						iValue = tengigaEnable;
+						dataset = group5.createDataSet ( "ten giga enable", PredType::NATIVE_INT, dataspace );
+						dataset.write ( &iValue, PredType::NATIVE_INT);
+						//Image Size
+						dataset = group5.createDataSet ( "image size", PredType::NATIVE_INT, dataspace );
+						dataset.write (  &bufferSize, PredType::NATIVE_INT);
+						attribute = dataset.createAttribute("unit",strdatatype, dataspace);
+						attribute.write(strdatatype, string("bytes"));
+						//x
+						dataset = group5.createDataSet ( "number of pixels in x axis", PredType::NATIVE_INT, dataspace );
+						dataset.write ( &NX, PredType::NATIVE_INT);
+						//y
+						dataset = group5.createDataSet ( "number of pixels in y axis", PredType::NATIVE_INT, dataspace );
+						dataset.write ( &NY, PredType::NATIVE_INT);
+						//Total Frames
+						dataset = group5.createDataSet ( "total frames", PredType::STD_U64LE, dataspace );
+						dataset.write ( &numberOfFrames, PredType::STD_U64LE);
+						//Exptime
+						dataset = group5.createDataSet ( "exposure time", PredType::STD_U64LE, dataspace );
+						dataset.write ( &acquisitionTime, PredType::STD_U64LE);
+						attribute = dataset.createAttribute("unit",strdatatype, dataspace);
+						attribute.write(strdatatype, string("ns"));
+						//Period
+						dataset = group5.createDataSet ( "acquisition period", PredType::STD_U64LE, dataspace );
+						dataset.write ( &acquisitionPeriod, PredType::STD_U64LE);
+						attribute = dataset.createAttribute("unit",strdatatype, dataspace);
+						attribute.write(strdatatype, string("ns"));
+						//Timestamp
+						time_t t = time(0);
+						dataset = group5.createDataSet ( "timestamp", strdatatype, dataspace );
+						dataset.write ( string(ctime(&t)), strdatatype );
+
+						group1.close();
+						group2.close();
+						group3.close();
+						group4.close();
+						group5.close();
+						group6.close();
+					}
+				}catch(Exception error){
+					cprintf(RED,"Error in creating HDF5 master file in thread %d\n",ithread);
+					error.printError();
+					pthread_mutex_unlock(&writeMutex);
+					return FAIL;
+				}
+
 				//creating file
 				FileAccPropList flist;
 				flist.setFcloseDegree(H5F_CLOSE_STRONG);
+				try{
 				if(!overwriteEnable)
 					hdf5_fileId[ithread] = new H5File( completeFileName[ithread], H5F_ACC_EXCL, NULL,flist );
 				else
 					hdf5_fileId[ithread] = new H5File( completeFileName[ithread], H5F_ACC_TRUNC, NULL, flist );
-
-				//create attributes
-				DataSpace dataspace = DataSpace (H5S_SCALAR);
-				Attribute attribute;
-				double dValue=0;
-
-				//version
-				dValue=WRITER_VERSION;
-				attribute = hdf5_fileId[ithread]->createAttribute("version",PredType::NATIVE_DOUBLE, dataspace);
-				attribute.write(PredType::NATIVE_DOUBLE, &dValue);
-
-
-				//Create a group in the file
-				Group group1( hdf5_fileId[ithread]->createGroup( "entry" ));
-				Group group2(group1.createGroup("data"));
-				Group group3(group1.createGroup("instrument"));
-				Group group4(group3.createGroup("detector"));
-					Group group5(group4.createGroup("detector specific"));
-
-				int iValue=0;
-				StrType strdatatype(PredType::C_S1,256);
-				DataSet dataset;
-				if(myDetectorType == EIGER){
-					//top
-					iValue = (flippedData[0]?0:1);
-					dataset = group5.createDataSet ( "top", PredType::NATIVE_INT, dataspace );
-					dataset.write ( &iValue, PredType::NATIVE_INT);
-					//left
-					iValue = (ithread?0:1);
-					dataset = group5.createDataSet ( "left", PredType::NATIVE_INT, dataspace );
-					dataset.write ( &iValue, PredType::NATIVE_INT);
-					//active
-					iValue = activated;
-					dataset = group5.createDataSet ( "active", PredType::NATIVE_INT, dataspace );
-					dataset.write ( &iValue, PredType::NATIVE_INT);
+				}catch(Exception error){
+					cprintf(RED,"Error in creating HDF5 file %s in thread %d\n",completeFileName[ithread], ithread);
+					error.printError();
+					hdf5_masterFileId->close();
+					pthread_mutex_unlock(&writeMutex);
+					return FAIL;
 				}
-				//Dynamic Range
-				dataset = group4.createDataSet ( "dynamic range", PredType::NATIVE_INT, dataspace );
-				dataset.write ( &dynamicRange, PredType::NATIVE_INT);
-				attribute = dataset.createAttribute("unit",strdatatype, dataspace);
-				attribute.write(strdatatype, string("bits"));
-				//Ten Giga
-				iValue = tengigaEnable;
-				dataset = group4.createDataSet ( "ten giga enable", PredType::NATIVE_INT, dataspace );
-				dataset.write ( &iValue, PredType::NATIVE_INT);
-				//Image Size
-				dataset = group4.createDataSet ( "image size", PredType::NATIVE_INT, dataspace );
-				dataset.write (  &bufferSize, PredType::NATIVE_INT);
-				attribute = dataset.createAttribute("unit",strdatatype, dataspace);
-				attribute.write(strdatatype, string("bytes"));
-				//x
-				dataset = group4.createDataSet ( "number of pixels in x axis", PredType::NATIVE_INT, dataspace );
-				dataset.write ( &NX, PredType::NATIVE_INT);
-				//y
-				dataset = group4.createDataSet ( "number of pixels in y axis", PredType::NATIVE_INT, dataspace );
-				dataset.write ( &NY, PredType::NATIVE_INT);
-				//Total Frames
-				dataset = group4.createDataSet ( "total frames", PredType::STD_U64LE, dataspace );
-				dataset.write ( &numberOfFrames, PredType::STD_U64LE);
-				//Exptime
-				dataset = group4.createDataSet ( "exposure time", PredType::STD_U64LE, dataspace );
-				dataset.write ( &acquisitionTime, PredType::STD_U64LE);
-				attribute = dataset.createAttribute("unit",strdatatype, dataspace);
-				attribute.write(strdatatype, string("ns"));
-				//Period
-				dataset = group4.createDataSet ( "acquisition period", PredType::STD_U64LE, dataspace );
-				dataset.write ( &acquisitionPeriod, PredType::STD_U64LE);
-				attribute = dataset.createAttribute("unit",strdatatype, dataspace);
-				attribute.write(strdatatype, string("ns"));
-				//Timestamp
-				time_t t = time(0);
-				dataset = group4.createDataSet ( "timestamp", strdatatype, dataspace );
-				dataset.write ( string(ctime(&t)), strdatatype );
+				//create attributes
+
+				try{
+					DataSpace dataspace = DataSpace (H5S_SCALAR);
+					Attribute attribute;
+					double dValue=0;
+
+					//version
+					dValue=HDF5_WRITER_VERSION;
+					attribute = hdf5_fileId[ithread]->createAttribute("version",PredType::NATIVE_DOUBLE, dataspace);
+					attribute.write(PredType::NATIVE_DOUBLE, &dValue);
 
 
-				//group4.link(H5G_LINK_HARD,"/entry/data","/entry/instrument/detector/data");
-				group1.close();
-				group2.close();
-				group3.close();
-				group4.close();
-				group5.close();
+					int iValue=0;
+					StrType strdatatype(PredType::C_S1,256);
+					DataSet dataset;
+					if(myDetectorType == EIGER){
+						//top
+						iValue = (flippedData[0]?0:1);
+						attribute = hdf5_fileId[ithread]->createAttribute("top",PredType::NATIVE_INT, dataspace);
+						attribute.write(PredType::NATIVE_INT, &iValue);
+						/*dataset = group5.createDataSet ( "top", PredType::NATIVE_INT, dataspace );dataset.write ( &iValue, PredType::NATIVE_INT);*/
+						//left
+						iValue = (ithread?0:1);
+						attribute = hdf5_fileId[ithread]->createAttribute("left",PredType::NATIVE_INT, dataspace);
+						attribute.write(PredType::NATIVE_INT, &iValue);
+						/*dataset = group5.createDataSet ( "left", PredType::NATIVE_INT, dataspace );dataset.write ( &iValue, PredType::NATIVE_INT);*/
+						//active
+						iValue = activated;
+						attribute = hdf5_fileId[ithread]->createAttribute("active",PredType::NATIVE_INT, dataspace);
+						attribute.write(PredType::NATIVE_INT, &iValue);
+						/*dataset = group5.createDataSet ( "active", PredType::NATIVE_INT, dataspace );dataset.write ( &iValue, PredType::NATIVE_INT);*/
+					}
 
+				}catch(Exception error){
+					cprintf(RED,"Error in creating attribute to file in thread %d\n", ithread);
+					error.printError();
+					hdf5_masterFileId->close();
+					pthread_mutex_unlock(&writeMutex);
+					return FAIL;
+				}
 				//data
 				//create dataspace for the dataset in the file
-				int numimagesindataset = ((numberOfFrames < MAX_IMAGES_IN_DATASET)? numberOfFrames:MAX_IMAGES_IN_DATASET);
-				hsize_t srcdims[3] = {NY,NX,numimagesindataset};
-				if(dynamicRange == 4)
-					srcdims[1] = NX/2;
-				hdf5_dataspaceId[ithread] = new DataSpace (3,srcdims);
 				char dsetname[100];
-				sprintf(dsetname, "/entry/data/data_%06lld", 0);//(long long int)currentFrameNumber[ithread]+1)
+				try{
+				int numimagesindataset = ((numberOfFrames < MAX_IMAGES_IN_DATASET)? numberOfFrames:MAX_IMAGES_IN_DATASET);
+				hsize_t srcdims[3] = {numimagesindataset,NY,NX};
+				if(dynamicRange == 4)
+					srcdims[2] = NX/2;
+				hdf5_dataspaceId[ithread] = new DataSpace (3,srcdims);
+				sprintf(dsetname, "/data_%012lld", (long long int)currentFrameNumber[ithread]+1);
 
 				//create chunked dataset if greater than max_chunked_images
 				if(numimagesindataset > MAX_CHUNKED_IMAGES){
 					//create property list for a dataset
 					DSetCreatPropList plist;
-					/*//set up fill values
-					int fillvalue = -1; //Aldo suggested its time consuming
-					plist.setFillValue(hdf5_datatype, &fillvalue);*/
-					hsize_t chunk_dims[3] ={NY, srcdims[1],MAX_CHUNKED_IMAGES};
+					//set up fill values
+					int fillvalue = -1; /*Aldo suggested its time consuming*/
+					plist.setFillValue(hdf5_datatype, &fillvalue);
+					hsize_t chunk_dims[3] ={MAX_CHUNKED_IMAGES, NY, srcdims[2]};
 					plist.setChunk(3, chunk_dims);
 					//Create dataset and write it into the file
 					hdf5_datasetId[ithread] = new DataSet (hdf5_fileId[ithread]->createDataSet(
@@ -1879,13 +1951,38 @@ int UDPStandardImplementation::createNewFile(int ithread){
 				}else
 					hdf5_datasetId[ithread] = new DataSet (hdf5_fileId[ithread]->createDataSet(
 								dsetname, hdf5_datatype, *hdf5_dataspaceId[ithread]));
+				}catch(Exception error){
+					cprintf(RED,"Error in creating dataset in thread %d\n",ithread);
+					error.printError();
+					hdf5_masterFileId->close();
+					pthread_mutex_unlock(&writeMutex);
+					return FAIL;
+				}
+
+				/*//link ... master file should create link to the virtual file..
+				try{
+				char linkPath[1000]="";
+				sprintf(linkPath,"/entry/data/%s",dsetname);
+				//herr_t H5Lcreate_external( const char *target_file_name, const char *target_obj_name, hid_t link_loc_id, const char *link_name, hid_t lcpl_id, hid_t lapl_id )
+				H5Lcreate_external(masterFileName,  dsetname, "/entry/data",dsetname,H5P_DEFAULT,H5P_DEFAULT
+				//hdf5_fileId[ithread]->link(H5G_LINK_HARD,dsetname,linkPath);
+				}catch(Exception error){
+					cprintf(RED,"Error in creating link in thread %d\n", ithread);
+					error.printError();
+					pthread_mutex_unlock(&writeMutex);
+					return FAIL;
+				}
+				*/
 			}
 			catch(Exception error){
 				cprintf(RED,"Error in creating HDF5 handles in thread %d\n",ithread);
 				error.printError();
+				hdf5_masterFileId->close();
 				pthread_mutex_unlock(&writeMutex);
 				return FAIL;
 			}//end of creating file
+
+			hdf5_masterFileId->close();
 
 			pthread_mutex_unlock(&writeMutex);
 
@@ -3153,22 +3250,22 @@ void UDPStandardImplementation::handleCompleteFramesOnly(int ithread, char* wbuf
 					Exception::dontPrint(); //to handle errors
 					if(hdf5_datasetId[ithread])		{delete hdf5_datasetId[ithread];	hdf5_datasetId[ithread] = 0;}
 					char dsetname[100];
-					sprintf(dsetname, "/entry/data/data_%06lld", (long long int)currentFrameNumber[ithread]+1);
+					sprintf(dsetname, "/entry/data/data_%012lld", (long long int)currentFrameNumber[ithread]+1);
 					//create new dataspace if fewer than max images/dataset
 					int numimagesindataset = (((numberOfFrames-tempframenumber) < MAX_IMAGES_IN_DATASET)? (numberOfFrames-tempframenumber):MAX_IMAGES_IN_DATASET);
 					if(numimagesindataset<MAX_IMAGES_IN_DATASET){
-						hsize_t srcdims[3] = {NY,NX,numimagesindataset};
+						hsize_t srcdims[3] = {numimagesindataset,NY,NX};
 						if(dynamicRange == 4)
-							srcdims[1] = NX/2;
+							srcdims[2] = NX/2;
 						hdf5_dataspaceId[ithread] = new DataSpace (3,srcdims);
 					}
 
 					//create chunked dataset if greater than max_chunked_images
 					if(numimagesindataset > MAX_CHUNKED_IMAGES){
 						DSetCreatPropList plist;
-						hsize_t chunk_dims[3] ={NY, NX, MAX_CHUNKED_IMAGES};
+						hsize_t chunk_dims[3] ={MAX_CHUNKED_IMAGES, NY, NX};
 						if(dynamicRange == 4)
-							chunk_dims[1] = NX/2;
+							chunk_dims[2] = NX/2;
 						plist.setChunk(3, chunk_dims);
 
 						hdf5_datasetId[ithread] = new DataSet (hdf5_fileId[ithread]->createDataSet(
@@ -3178,6 +3275,10 @@ void UDPStandardImplementation::handleCompleteFramesOnly(int ithread, char* wbuf
 						hdf5_datasetId[ithread] = new DataSet (hdf5_fileId[ithread]->createDataSet(
 									dsetname, hdf5_datatype, *hdf5_dataspaceId[ithread]));
 
+					//link
+					char linkPath[1000]="";
+					sprintf(linkPath,"/entry/data/%s",dsetname);
+					hdf5_fileId[ithread]->link(H5G_LINK_HARD,dsetname,linkPath);
 				}
 				catch(Exception error){
 					cprintf(RED,"Error in closing HDF5 dataset to create a new one in thread %d\n",ithread);
@@ -3186,8 +3287,8 @@ void UDPStandardImplementation::handleCompleteFramesOnly(int ithread, char* wbuf
 			}
 
 			//wite to file
-			hsize_t count[3] = {NY,NX,1};
-			hsize_t start[3] = {0, 0, tempframenumber%MAX_IMAGES_IN_DATASET};
+			hsize_t count[3] = {1, NY,NX};
+			hsize_t start[3] = {tempframenumber%MAX_IMAGES_IN_DATASET, 0 , 0};
 			hsize_t dims2[2]={NY,NX};
 			if(dynamicRange == 4){
 				dims2[1] = NX/2;

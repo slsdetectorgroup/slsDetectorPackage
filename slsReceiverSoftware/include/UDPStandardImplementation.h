@@ -645,9 +645,8 @@ private:
 	DataSpace *hdf5_dataspaceId[MAX_NUMBER_OF_WRITER_THREADS];
 	DataSet *hdf5_datasetId[MAX_NUMBER_OF_WRITER_THREADS];
 	H5File *hdf5_fileId[MAX_NUMBER_OF_WRITER_THREADS];
+	H5File* hdf5_masterFileId;
 	DataType hdf5_datatype;
-	const static int MAX_IMAGES_IN_DATASET = 10000;
-	const static int MAX_CHUNKED_IMAGES = 1000;
 #endif
 	//***acquisition indices/count parameters***
 	/** Frame Number of First Frame of an entire Acquisition (including all scans) */

@@ -6,7 +6,7 @@
 #include <errno.h>
 
 
-#define BUF_SIZE        (16*1024*1024) //16mb
+#define FILE_BUF_SIZE        (16*1024*1024) //16mb
 #define HEADER_SIZE_NUM_FRAMES	2
 #define HEADER_SIZE_NUM_PACKETS	1
 
@@ -206,7 +206,7 @@ int singlePhotonFilter::initTree(){
 	closeFile();
 	sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,nTotalHits,fileIndex);
 	myFile = fopen(savefilename, "w");
-	setvbuf(myFile,NULL,_IOFBF,BUF_SIZE);
+	setvbuf(myFile,NULL,_IOFBF,FILE_BUF_SIZE);
 	cout<<"File created: "<<savefilename<<endl;
 	nHitsPerFile = 0;
 #endif

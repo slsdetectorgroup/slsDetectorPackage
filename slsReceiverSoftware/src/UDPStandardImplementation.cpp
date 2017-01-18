@@ -161,6 +161,7 @@ void UDPStandardImplementation::initializeMembers(){
 	}
 #ifdef HDF5C
 	hdf5_masterFileId = 0;
+	hdf5_virtualFileId = 0;
 	hdf5_datatype = PredType::STD_U16LE;
 #endif
 	maxFramesPerFile = 0;
@@ -892,6 +893,9 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 		return FAIL;
 	}
 
+	TILE_NX = 2;	/** hard coded for a single module for now */
+	TILE_NX = 2;
+
 	//delete threads and set number of listening threads
 	if(myDetectorType == EIGER){
 		pthread_mutex_lock(&statusMutex);
@@ -1025,9 +1029,10 @@ int UDPStandardImplementation::startReceiver(char *c){
 	try{
 		Exception::dontPrint(); //to handle errors
 		if(hdf5_masterFileId) 		{delete hdf5_masterFileId; 		hdf5_masterFileId = 0;}
+		if(hdf5_virtualFileId) 		{delete hdf5_virtualFileId; 	hdf5_virtualFileId = 0;}
 	}
 	catch(Exception error){
-		cprintf(RED,"Error in closing master HDF5 handle\n");
+		cprintf(RED,"Error in closing master/virtual HDF5 handle\n");
 		error.printError();
 		pthread_mutex_unlock(&writeMutex);
 		return FAIL;
@@ -1269,6 +1274,7 @@ void UDPStandardImplementation::closeFile(int ithread){
 			if(hdf5_datasetId[ithread]) 	{delete hdf5_datasetId[ithread]; 	hdf5_datasetId[ithread] = 0;}
 			if(hdf5_fileId[ithread]) 		{delete hdf5_fileId[ithread]; 		hdf5_fileId[ithread] = 0;}
 			if(hdf5_masterFileId) 			{delete hdf5_masterFileId; 			hdf5_masterFileId = 0;}
+			if(hdf5_virtualFileId) 			{delete hdf5_virtualFileId; 		hdf5_virtualFileId = 0;}
 		}
 		catch(Exception error){
 			cprintf(RED,"Error in closing HDF5 handles\n");
@@ -1752,15 +1758,19 @@ int UDPStandardImplementation::createNewFile(int ithread){
 
 #ifdef HDF5C
 		else if(fileFormatType == HDF5){
-			pthread_mutex_lock(&writeMutex);
+			struct timespec begin,end;
 
+			pthread_mutex_lock(&writeMutex);
+			if(!ithread)
+				clock_gettime(CLOCK_REALTIME, &begin);
 			//closing file
 			try{
 				Exception::dontPrint(); //to handle errors
 				if(hdf5_dataspaceId[ithread]) 	{delete hdf5_dataspaceId[ithread]; 	hdf5_dataspaceId[ithread] = 0;}
 				if(hdf5_datasetId[ithread])		{delete hdf5_datasetId[ithread];	hdf5_datasetId[ithread] = 0;}
-				if(hdf5_fileId[ithread])		{delete hdf5_fileId[ithread]; hdf5_fileId[ithread] = 0;	}
+				if(hdf5_fileId[ithread])		{delete hdf5_fileId[ithread]; 		hdf5_fileId[ithread] = 0;	}
 				if(hdf5_masterFileId) 			{delete hdf5_masterFileId; 			hdf5_masterFileId = 0;}
+				if(hdf5_virtualFileId) 			{delete hdf5_virtualFileId; 		hdf5_virtualFileId = 0;}
 			}
 			catch(AttributeIException error){
 				cprintf(RED,"Error in creating attributes in thread %d\n",ithread);
@@ -1775,16 +1785,18 @@ int UDPStandardImplementation::createNewFile(int ithread){
 				return FAIL;
 			}//end of closing file
 
-			char masterFileName[1000]="";
-			sprintf(masterFileName, "%s/%s_master_%lld.h5", filePath,fileName,(long long int)fileIndex);
+			char masterFileName[1000]="", virtualFileName[1000]="";
+			sprintf(masterFileName, "%s/%s_master_%lld.h5", filePath,getNameFromReceiverFilePrefix(fileName).c_str(),(long long int)fileIndex);
+			sprintf(virtualFileName, "%s/%s_%lld.h5", filePath,getNameFromReceiverFilePrefix(fileName).c_str(),(long long int)fileIndex);
+
 
 			//creating file
 			try{
 				Exception::dontPrint(); //to handle errors
 
-				//creating master file with metadata
-				try{
-					if(!detID && !ithread){
+				if(!detID && !ithread){
+					//creating master file with metadata
+					try{
 						//creating file
 						FileAccPropList flist;
 						flist.setFcloseDegree(H5F_CLOSE_STRONG);
@@ -1861,13 +1873,112 @@ int UDPStandardImplementation::createNewFile(int ithread){
 						group4.close();
 						group5.close();
 						group6.close();
+
+					}catch(Exception error){
+						cprintf(RED,"Error in creating HDF5 master file in thread %d\n",ithread);
+						error.printError();
+						pthread_mutex_unlock(&writeMutex);
+						return FAIL;
 					}
+
+/*
+					// creating virtual file
+					try{
+						FileAccPropList flist;
+						flist.setFcloseDegree(H5F_CLOSE_STRONG);
+						if(!overwriteEnable)
+							hdf5_virtualFileId = new H5File( virtualFileName, H5F_ACC_EXCL, NULL,flist );
+						else
+							hdf5_virtualFileId = new H5File( virtualFileName, H5F_ACC_TRUNC, NULL, flist );
+
+						//create dataspace for the dataset in the file
+						char dsetname[100];
+						try{
+							int numimagesindataset = ((numberOfFrames < MAX_IMAGES_IN_DATASET)? numberOfFrames:MAX_IMAGES_IN_DATASET);
+							hsize_t srcdims[3] = { numimagesindataset, NY*TILE_NY, NX*TILE*NX };
+							if(dynamicRange == 4)
+								srcdims[2] = NX/2;
+							DataSpace dataspace(3,srcdims);
+							sprintf(dsetname, "/virtualdata_%012lld", (long long int)currentFrameNumber[ithread]+1);
+
+							//create property list for a dataset
+								DSetCreatPropList plist = H5P_DEFAULT;
+
+							//create chunked dataset if greater than max_chunked_images
+							if(numimagesindataset > MAX_CHUNKED_IMAGES){
+								//set up fill values
+								int fillvalue = -1; /*Aldo suggested its time consuming*/
+
+					/*
+								plist.setFillValue(hdf5_datatype, &fillvalue);
+								hsize_t chunk_dims[3] ={MAX_CHUNKED_IMAGES, srcdims[1], srcdims[2]};
+								plist.setChunk(3, chunk_dims);
+							}
+
+							//Create dataset and write it into the file
+							hdf5_datasetId[ithread] = new DataSet (hdf5_fileId[ithread]->createDataSet(
+									dsetname, hdf5_datatype, dataspace, plist));
+
+*/
+
+							/* fix this to mapp
+							hsize_t src_dims[1]={NZ};
+							hsize_t start[RANK]= {0,0,0},count[RANK] = {1,1,NZ};
+							for(int i=0;i<NX;++i){
+								for(int j=0;j<NY;++j){
+									hid_t src_space = H5Screate_simple(1,src_dims,NULL);
+									start[0] = i;
+									start[1] = j;
+									if(H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, NULL, count, NULL)<0){
+										cprintf(RED,"could not create hyperslab \n");
+										return -1;
+									}
+									if(H5Dwrite (dset, bitmode, src_space, dataspace, H5P_DEFAULT, &input[i*NY*NZ+j*NZ])<0){
+										cprintf(RED,"could not write dataset\n");
+										return -1;
+									}
+									//assuming time goes here in indexing through
+									H5Sclose(src_space);
+								}
+							}
+							*/
+
+
+/*
+
+						}catch(Exception error){
+							cprintf(RED,"Error in creating dataset in thread %d\n",ithread);
+							error.printError();
+							hdf5_masterFileId->close();
+							pthread_mutex_unlock(&writeMutex);
+							return FAIL;
+						}
+
+					}catch(Exception error){
+						cprintf(RED,"Error in creating HDF5 file %s in thread %d\n",completeFileName[ithread], ithread);
+						error.printError();
+						hdf5_masterFileId->close();
+						pthread_mutex_unlock(&writeMutex);
+						return FAIL;
+					}
+					*/
+
+					/*//link ... master file should create link to the virtual file..
+				try{
+				char linkPath[1000]="";
+				sprintf(linkPath,"/entry/data/%s",dsetname);
+				//herr_t H5Lcreate_external( const char *target_file_name, const char *target_obj_name, hid_t link_loc_id, const char *link_name, hid_t lcpl_id, hid_t lapl_id )
+				H5Lcreate_external(masterFileName,  dsetname, "/entry/data",dsetname,H5P_DEFAULT,H5P_DEFAULT
+				//hdf5_fileId[ithread]->link(H5G_LINK_HARD,dsetname,linkPath);
 				}catch(Exception error){
-					cprintf(RED,"Error in creating HDF5 master file in thread %d\n",ithread);
+					cprintf(RED,"Error in creating link in thread %d\n", ithread);
 					error.printError();
 					pthread_mutex_unlock(&writeMutex);
 					return FAIL;
 				}
+					 */
+				}
+
 
 				//creating file
 				FileAccPropList flist;
@@ -1929,28 +2040,35 @@ int UDPStandardImplementation::createNewFile(int ithread){
 				//create dataspace for the dataset in the file
 				char dsetname[100];
 				try{
-				int numimagesindataset = ((numberOfFrames < MAX_IMAGES_IN_DATASET)? numberOfFrames:MAX_IMAGES_IN_DATASET);
-				hsize_t srcdims[3] = {numimagesindataset,NY,NX};
-				if(dynamicRange == 4)
-					srcdims[2] = NX/2;
-				hdf5_dataspaceId[ithread] = new DataSpace (3,srcdims);
-				sprintf(dsetname, "/data_%012lld", (long long int)currentFrameNumber[ithread]+1);
 
-				//create chunked dataset if greater than max_chunked_images
-				if(numimagesindataset > MAX_CHUNKED_IMAGES){
-					//create property list for a dataset
-					DSetCreatPropList plist;
-					//set up fill values
-					int fillvalue = -1; /*Aldo suggested its time consuming*/
+					/*int numimagesindataset = ((numberOfFrames < MAX_IMAGES_IN_DATASET)? numberOfFrames:MAX_IMAGES_IN_DATASET);
+					hsize_t srcdims[3] = {numimagesindataset,NY,NX};
+					*/
+					hsize_t srcdims[3] = {numberOfFrames,NY,NX};
+
+
+					if(dynamicRange == 4)
+						srcdims[2] = NX/2;
+					hdf5_dataspaceId[ithread] = new DataSpace (3,srcdims);
+					sprintf(dsetname, "/data_%012lld", (long long int)currentFrameNumber[ithread]+1);
+
+					//create chunked dataset if greater than max_chunked_images
+					/*if(numimagesindataset > MAX_CHUNKED_IMAGES){*/
+						//create property list for a dataset
+						DSetCreatPropList plist;
+						//set up fill values
+						/*Aldo suggested its time consuming*/
+						int fillvalue = -1;
 					plist.setFillValue(hdf5_datatype, &fillvalue);
-					hsize_t chunk_dims[3] ={MAX_CHUNKED_IMAGES, NY, srcdims[2]};
-					plist.setChunk(3, chunk_dims);
-					//Create dataset and write it into the file
-					hdf5_datasetId[ithread] = new DataSet (hdf5_fileId[ithread]->createDataSet(
-							dsetname, hdf5_datatype, *hdf5_dataspaceId[ithread], plist));
-				}else
-					hdf5_datasetId[ithread] = new DataSet (hdf5_fileId[ithread]->createDataSet(
-								dsetname, hdf5_datatype, *hdf5_dataspaceId[ithread]));
+
+						hsize_t chunk_dims[3] ={MAX_CHUNKED_IMAGES, NY, srcdims[2]};
+						plist.setChunk(3, chunk_dims);
+						//Create dataset and write it into the file
+						hdf5_datasetId[ithread] = new DataSet (hdf5_fileId[ithread]->createDataSet(
+								dsetname, hdf5_datatype, *hdf5_dataspaceId[ithread], plist));
+					/*}else
+						hdf5_datasetId[ithread] = new DataSet (hdf5_fileId[ithread]->createDataSet(
+								dsetname, hdf5_datatype, *hdf5_dataspaceId[ithread]));*/
 				}catch(Exception error){
 					cprintf(RED,"Error in creating dataset in thread %d\n",ithread);
 					error.printError();
@@ -1959,20 +2077,6 @@ int UDPStandardImplementation::createNewFile(int ithread){
 					return FAIL;
 				}
 
-				/*//link ... master file should create link to the virtual file..
-				try{
-				char linkPath[1000]="";
-				sprintf(linkPath,"/entry/data/%s",dsetname);
-				//herr_t H5Lcreate_external( const char *target_file_name, const char *target_obj_name, hid_t link_loc_id, const char *link_name, hid_t lcpl_id, hid_t lapl_id )
-				H5Lcreate_external(masterFileName,  dsetname, "/entry/data",dsetname,H5P_DEFAULT,H5P_DEFAULT
-				//hdf5_fileId[ithread]->link(H5G_LINK_HARD,dsetname,linkPath);
-				}catch(Exception error){
-					cprintf(RED,"Error in creating link in thread %d\n", ithread);
-					error.printError();
-					pthread_mutex_unlock(&writeMutex);
-					return FAIL;
-				}
-				*/
 			}
 			catch(Exception error){
 				cprintf(RED,"Error in creating HDF5 handles in thread %d\n",ithread);
@@ -1982,8 +2086,17 @@ int UDPStandardImplementation::createNewFile(int ithread){
 				return FAIL;
 			}//end of creating file
 
-			hdf5_masterFileId->close();
+			if(!detID && !ithread){
+				if(hdf5_masterFileId)
+					hdf5_masterFileId->close();
+				if(hdf5_virtualFileId)
+					hdf5_virtualFileId->close();
+			}
 
+			if(!ithread){
+				clock_gettime(CLOCK_REALTIME, &end);
+				cprintf(RED,"%d Elapsed time:%f seconds\n",ithread,( end.tv_sec - begin.tv_sec )	+ ( end.tv_nsec - begin.tv_nsec ) / 1000000000.0);
+			}
 			pthread_mutex_unlock(&writeMutex);
 
 			if(!totalWritingPacketCount[ithread])
@@ -3245,7 +3358,7 @@ void UDPStandardImplementation::handleCompleteFramesOnly(int ithread, char* wbuf
 		else if (fileFormatType == HDF5){
 			pthread_mutex_lock(&writeMutex);
 
-			if(tempframenumber && (tempframenumber%MAX_IMAGES_IN_DATASET) == 0){
+		/*	if(tempframenumber && (tempframenumber%MAX_IMAGES_IN_DATASET) == 0){
 				try{
 					Exception::dontPrint(); //to handle errors
 					if(hdf5_datasetId[ithread])		{delete hdf5_datasetId[ithread];	hdf5_datasetId[ithread] = 0;}
@@ -3285,6 +3398,10 @@ void UDPStandardImplementation::handleCompleteFramesOnly(int ithread, char* wbuf
 					error.printError();
 				}
 			}
+*/
+			struct timespec begin,end;
+			if(!ithread && !tempframenumber)
+				clock_gettime(CLOCK_REALTIME, &begin);
 
 			//wite to file
 			hsize_t count[3] = {1, NY,NX};
@@ -3305,6 +3422,11 @@ void UDPStandardImplementation::handleCompleteFramesOnly(int ithread, char* wbuf
 			catch(Exception error){
 				cprintf(RED,"Error in writing to file in thread %d\n",ithread);
 				error.printError();
+			}
+
+			if(!ithread && !tempframenumber){
+				clock_gettime(CLOCK_REALTIME, &end);
+				cprintf(RED,"%d Writing packets Elapsed time:%f seconds\n",ithread,( end.tv_sec - begin.tv_sec )	+ ( end.tv_nsec - begin.tv_nsec ) / 1000000000.0);
 			}
 
 			pthread_mutex_unlock(&writeMutex);
@@ -3884,6 +4006,19 @@ int UDPStandardImplementation::writeUptoFrameNumber(int ithread, char* wbuffer, 
 
 
 
+
+/** function that returns the name variable from the receiver complete file name prefix
+    \param fname complete file name prefix
+    \returns file name
+*/
+string UDPStandardImplementation::getNameFromReceiverFilePrefix(string fname) {
+  int i;
+  string s=fname;
+  size_t uscore=s.rfind("_");
+  if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"d%d",&i))
+      s=fname.substr(0,uscore);
+  return s;
+};
 
 
 

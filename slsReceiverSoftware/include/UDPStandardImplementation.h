@@ -571,6 +571,12 @@ private:
 	 */
 	int writeUptoFrameNumber(int ithread, char* wbuffer, int &offset, uint64_t nextFrameNumber, uint32_t numpackets, int &numPacketsWritten);
 
+	/** function that returns the name variable from the receiver complete file name prefix
+	    @param fname complete file name prefix
+	    @returns file name
+	*/
+	string getNameFromReceiverFilePrefix(string fname);
+
 	/*************************************************************************
 	 * Class Members *********************************************************
 	 *************************************************************************/
@@ -646,6 +652,7 @@ private:
 	DataSet *hdf5_datasetId[MAX_NUMBER_OF_WRITER_THREADS];
 	H5File *hdf5_fileId[MAX_NUMBER_OF_WRITER_THREADS];
 	H5File* hdf5_masterFileId;
+	H5File* hdf5_virtualFileId;
 	DataType hdf5_datatype;
 #endif
 	//***acquisition indices/count parameters***
@@ -817,6 +824,9 @@ private:
 	int NX;
 	/** Number of pixels in y axis */
 	int NY;
+
+	int TILE_NX;
+	int TILE_NY;
 
 	//***filter parameters***
 	/** Common Mode Subtraction Enable FIXME: Always false, only moench uses, Ask Anna */

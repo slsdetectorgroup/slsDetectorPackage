@@ -1,0 +1,364 @@
+/************************************************
+ * @file GeneralData.h
+ * @short abstract for setting/getting properties of detector data
+ ***********************************************/
+#ifndef GENERAL_DATA_H
+#define GENERAL_DATA_H
+/**
+ *@short abstract for setting/getting properties of detector data
+ */
+
+
+typedef  double double32_t;
+typedef  float float32_t;
+typedef  int int32_t;
+
+
+class GeneralData {
+	
+public:
+
+	/** Number of Pixels in x axis */
+	uint32_t nPixelsX;
+
+	/** Number of Pixels in y axis */
+	uint32_t nPixelsY;
+
+	/** Size of just data in 1 packet (in bytes) */
+	uint32_t dataSize;
+
+	/** Size of 1 packet (in bytes) */
+	uint32_t packetSize;
+
+	/** Number of packets in an image (for each listening UDP port) */
+	uint32_t packetsPerFrame;
+
+	/** Image size (in bytes, for each listening UDP port) */
+	uint32_t imageSize;
+
+	/** Frame Number Mask */
+	uint64_t frameIndexMask;
+
+	/** Frame Index Offset */
+	uint32_t frameIndexOffset;
+
+	/** Packet Index Mask */
+	uint32_t packetIndexMask;
+
+	/** Packet Index Offset */
+	uint32_t packetIndexOffset;
+
+	/** Max Frames per binary file */
+	uint32_t maxFramesPerFile;
+
+	/** Data size that is saved into the fifo buffer at a time*/
+	uint32_t fifoBufferSize;
+
+	/** Header size of data saved into fifo buffer at a time*/
+	uint32_t fifoBufferHeaderSize;
+
+	/** Default Fifo depth */
+	uint32_t defaultFifoDepth;
+
+	/** Cosntructor */
+	GeneralData(){};
+
+	/** Destructor */
+	virtual ~GeneralData(){};
+
+	/**
+	 * Get Header Infomation (frame number, packet number)
+	 * @param index thread index for debugging purposes
+	 * @param packetData pointer to data
+	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
+	 * @param frameNumber frame number
+	 * @param packetNumber packet number
+	 * @param subFrameNumber sub frame number if applicable
+	 * @param bunchId bunch id
+	 */
+	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
+			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t bunchId) {
+		subFrameNumber = 0;
+		bunchId = 0;
+		frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
+		frameNumber++;
+		packetNumber = frameNumber&packetIndexMask;
+		frameNumber = (frameNumber & frameIndexMask) >> frameIndexOffset;
+	}
+};
+
+
+class GotthardData : public GeneralData {
+
+ public:
+
+	/** Constructor */
+	GotthardData(){
+		nPixelsX 			= 1280;
+		nPixelsY 			= 1;
+		dataSize 			= 1280;
+		packetSize 			= 1286;
+		packetsPerFrame 	= 2;
+		imageSize 			= dataSize*packetsPerFrame;
+		frameIndexMask 		= 0xFFFFFFFE;
+		frameIndexOffset 	= 1;
+		packetIndexMask 	= 1;
+		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
+		fifoBufferSize		= packetSize*packetsPerFrame;
+		fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS;
+		defaultFifoDepth 	= 25000;
+	};
+};
+
+
+class ShortGotthardData : public GeneralData {
+
+ public:
+
+	/** Constructor */
+	ShortGotthardData(){
+		nPixelsX 			= 256;
+		nPixelsY 			= 1;
+		dataSize 			= 512;
+		packetSize 			= 518;
+		packetsPerFrame 	= 1;
+		imageSize 			= dataSize*packetsPerFrame;
+		frameIndexMask 		= 0xFFFFFFFF;
+		maxFramesPerFile 	= SHORT_MAX_FRAMES_PER_FILE;
+		fifoBufferSize		= packetSize*packetsPerFrame;
+		fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS;
+		defaultFifoDepth 	= 25000;
+	};
+};
+
+
+class PropixData : public GeneralData {
+
+ private:
+
+	/** dynamic range for calculating image size */
+	const static uint32_t dynamicRange = 16;
+
+ public:
+
+	/** Constructor */
+	PropixData(){
+		nPixelsX 			= 22;
+		nPixelsY 			= 22;
+		dataSize 			= 1280;
+		packetSize 			= 1286;
+		packetsPerFrame 	= 2; //not really
+		imageSize 			= nPixelsX*nPixelsY*dynamicRange;
+		frameIndexMask 		= 0xFFFFFFFE;
+		frameIndexOffset 	= 1;
+		packetIndexMask 	= 1;
+		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
+		fifoBufferSize		= packetSize*packetsPerFrame;
+		fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS;
+		defaultFifoDepth 	= 25000;
+	};
+};
+
+
+class Moench02Data : public GeneralData {
+
+ public:
+
+	/** Bytes Per Adc */
+	const static uint32_t bytesPerAdc = (40*2);
+
+	/** Constructor */
+	Moench02Data(){
+		nPixelsX 			= 160;
+		nPixelsY 			= 160;
+		dataSize 			= 1280;
+		packetSize 			= 1286;
+		packetsPerFrame 	= 40;
+		imageSize 			= dataSize*packetsPerFrame;
+		frameIndexMask 		= 0xFFFFFF00;
+		frameIndexOffset 	= 8;
+		packetIndexMask 	= 0xFF;
+		maxFramesPerFile 	= MOENCH_MAX_FRAMES_PER_FILE;
+		fifoBufferSize		= packetSize*packetsPerFrame;
+		fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS + FILE_FRAME_HEADER_LENGTH;
+		defaultFifoDepth 	= 2500;
+	};
+};
+
+
+class Moench03Data : public GeneralData {
+
+ public:
+
+	/** Size of packet header */
+	const static uint32_t packetHeaderSize	= 22;
+
+	/** Constructor */
+	Moench03Data(){
+		nPixelsX 			= 400;
+		nPixelsY 			= 400;
+		dataSize 			= 8192;
+		packetSize 			= packetHeaderSize + dataSize;
+		packetsPerFrame 	= 40;
+		imageSize 			= dataSize*packetsPerFrame;
+		frameIndexMask 		= 0xFFFFFFFF;
+		frameIndexOffset 	= (6+8);
+		packetIndexMask 	= 0xFFFFFFFF;
+		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
+		fifoBufferSize		= packetSize*packetsPerFrame;
+		fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS + FILE_FRAME_HEADER_LENGTH;
+		defaultFifoDepth 	= 2500;
+	};
+};
+
+
+class JCTBData : public GeneralData {
+
+ public:
+
+	/** Bytes Per Adc */
+	const static uint32_t bytesPerAdc = 2;
+
+	/** Constructor */
+	JCTBData(){
+		nPixelsX 			= 32;
+		nPixelsY 			= 128;
+		dataSize 			= 8192;
+		packetSize 			= 8224;
+		packetsPerFrame 	= 1;
+		imageSize 			= dataSize*packetsPerFrame;
+		maxFramesPerFile 	= JFCTB_MAX_FRAMES_PER_FILE;
+		fifoBufferSize		= packetSize*packetsPerFrame;
+		fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS + FILE_FRAME_HEADER_LENGTH;
+		defaultFifoDepth 	= 2500;
+	};
+};
+
+
+class JungfrauData : public GeneralData {
+
+private:
+
+	/** Structure of an jungfrau packet header */
+	typedef struct {
+		unsigned char emptyHeader[6];
+		unsigned char reserved[4];
+		unsigned char packetNumber[1];
+		unsigned char frameNumber[3];
+		unsigned char bunchid[8];
+	} jfrau_packet_header_t;
+
+ public:
+
+	/** Size of packet header */
+	const static uint32_t packetHeaderSize	= 22;
+
+	/** Constructor */
+	JungfrauData(){
+		nPixelsX 			= (256*4);
+		nPixelsY 			= 256;
+		dataSize 			= 8192;
+		packetSize 			= packetHeaderSize + dataSize;
+		packetsPerFrame 	= 128;
+		imageSize 			= dataSize*packetsPerFrame;
+		frameIndexMask 		= 0xffffff;
+		frameIndexOffset 	= 0;
+		packetIndexMask 	= 0;
+		packetIndexOffset 	= 0;
+		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
+		fifoBufferSize		= packetSize*packetsPerFrame;
+		fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS + FILE_FRAME_HEADER_LENGTH;
+		defaultFifoDepth 	= 2500;
+	};
+
+	/**
+	 * Get Header Infomation (frame number, packet number)
+	 * @param index thread index for debugging purposes
+	 * @param packetData pointer to data
+	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
+	 * @param frameNumber frame number
+	 * @param packetNumber packet number
+	 * @param subFrameNumber sub frame number if applicable
+	 * @param bunchId bunch id
+	 */
+	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
+			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t bunchId) {
+		subFrameNumber = 0;
+		jfrau_packet_header_t* header = (jfrau_packet_header_t*)(packetData);
+		frameNumber = (*( (uint32_t*) header->frameNumber))&frameIndexMask;
+		packetNumber = (uint32_t)(*( (uint8_t*) header->packetNumber));
+		bunchId = (*((uint64_t*) header->bunchid));
+	}
+};
+
+
+class EigerData : public GeneralData {
+
+private:
+	/** Structure of an eiger packet header	 */
+	typedef struct {
+		unsigned char subFrameNumber[4];
+		unsigned char missingPacket[2];
+		unsigned char portIndex[1];
+		unsigned char dynamicRange[1];
+	} eiger_packet_header_t;
+
+	/** Structure of an eiger packet footer  */
+	typedef struct	{
+		unsigned char frameNumber[6];
+		unsigned char packetNumber[2];
+	} eiger_packet_footer_t;
+
+ public:
+
+	/** Size of packet header */
+	const static uint32_t packetHeaderSize	= 8;
+
+	/** Footer offset */
+	uint32_t footerOffset;
+
+	/** Constructor */
+	EigerData(){
+		nPixelsX 			= (256*2);
+		nPixelsY 			= 256;
+		dataSize 			= 1024;
+		packetSize 			= 1040;
+		packetsPerFrame 	= 1;
+		imageSize 			= dataSize*packetsPerFrame;
+		frameIndexMask 		= 0xFFFFFFFF;
+		frameIndexOffset 	= 0;
+		packetIndexMask 	= 0;
+		packetIndexOffset 	= 0;
+		maxFramesPerFile 	= EIGER_MAX_FRAMES_PER_FILE;
+		fifoBufferSize		= packetSize*packetsPerFrame;
+		fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS + FILE_FRAME_HEADER_LENGTH;
+		defaultFifoDepth 	= 100;
+		footerOffset		= packetHeaderSize+dataSize;
+	};
+
+	/**
+	 * Get Header Infomation (frame number, packet number)
+	 * @param index thread index for debugging purposes
+	 * @param packetData pointer to data
+	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
+	 * @param frameNumber frame number
+	 * @param packetNumber packet number
+	 * @param subFrameNumber sub frame number if applicable
+	 * @param bunchId bunch id
+	 */
+	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
+			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t bunchId) {
+		bunchId = 0;
+		subFrameNumber = 0;
+		eiger_packet_footer_t* footer = (eiger_packet_footer_t*)(packetData + footerOffset);
+		frameNumber = (uint64_t)(*( (uint64_t*) footer));
+		packetNumber = (*( (uint16_t*) footer->packetNumber))-1;
+		if (dynamicRange == 32) {
+			eiger_packet_header_t* header = (eiger_packet_header_t*) (packetData);
+			subFrameNumber = *( (uint32_t*) header->subFrameNumber);
+		}
+	}
+};
+
+
+#endif

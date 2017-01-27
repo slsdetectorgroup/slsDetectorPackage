@@ -235,9 +235,9 @@ class UDPInterface {
 
 	/**
 	 * Get the data stream enable
-	 * @return 1 to send via zmq, else 0
+	 * @return data stream enable
 	 */
-	virtual uint32_t getDataStreamEnable() const = 0;
+	virtual bool getDataStreamEnable() const = 0;
 
 	/**
 	 * Get Acquisition Period
@@ -393,8 +393,9 @@ class UDPInterface {
 	/**
 	 * Set Short Frame Enabled, later will be moved to getROI (so far only for gotthard)
 	 * @param i index of adc enabled, else -1 if all enabled
+	 * @return OK or FAIL
 	 */
-	virtual void setShortFrameEnable(const int i) = 0;
+	virtual int setShortFrameEnable(const int i) = 0;
 
 	/**
 	 * Set the Frequency of Frames Sent to GUI
@@ -411,10 +412,10 @@ class UDPInterface {
 
 	/**
 	 * Set the data stream enable
-	 * @param enable 0 to disable, 1 to enable
+	 * @param enable data stream enable
 	 * @return OK or FAIL
 	 */
-	virtual uint32_t setDataStreamEnable(const uint32_t enable) = 0;
+	virtual int setDataStreamEnable(const bool enable) = 0;
 
 	/**
 	 * Set Acquisition Period

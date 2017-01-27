@@ -191,7 +191,7 @@ uint32_t UDPBaseImplementation::getFrameToGuiFrequency() const{	FILE_LOG(logDEBU
 
 uint32_t UDPBaseImplementation::getFrameToGuiTimer() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return frameToGuiTimerinMS;}
 
-uint32_t UDPBaseImplementation::getDataStreamEnable() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return dataStreamEnable;}
+bool UDPBaseImplementation::getDataStreamEnable() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return dataStreamEnable;}
 
 uint64_t UDPBaseImplementation::getAcquisitionPeriod() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return acquisitionPeriod;}
 
@@ -342,11 +342,13 @@ void UDPBaseImplementation::setEthernetInterface(const char* c){
 
 
 /***acquisition parameters***/
-void UDPBaseImplementation::setShortFrameEnable(const int i){
+int UDPBaseImplementation::setShortFrameEnable(const int i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	shortFrameEnable = i;
 	FILE_LOG(logINFO) << "Short Frame Enable: " << stringEnable(shortFrameEnable);
+	//overrridden child classes might return FAIL
+	return OK;
 }
 
 int UDPBaseImplementation::setFrameToGuiFrequency(const uint32_t freq){
@@ -367,7 +369,7 @@ void UDPBaseImplementation::setFrameToGuiTimer(const uint32_t time_in_ms){
 }
 
 
-uint32_t UDPBaseImplementation::setDataStreamEnable(const uint32_t enable){
+int UDPBaseImplementation::setDataStreamEnable(const bool enable){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	dataStreamEnable = enable;

@@ -21,7 +21,10 @@ LIBZMQ =  -L$(LIBZMQDIR) -Wl,-rpath=$(LIBZMQDIR) -lzmq
 
 #-Iinclude -I../slsDetectorCalibration -I$(ASM) 
 
-SRC_CLNT = MySocketTCP.cpp UDPInterface.cpp  UDPBaseImplementation.cpp UDPStandardImplementation.cpp slsReceiverTCPIPInterface.cpp slsReceiver.cpp slsReceiverUsers.cpp utilities.cpp 
+SRC_CLNT = MySocketTCP.cpp  ThreadObject.cpp Listener.cpp DataProcessor.cpp DataStreamer.cpp Fifo.cpp FileWriter.cpp BinaryFileWriter.cpp UDPInterface.cpp  UDPBaseImplementation.cpp UDPStandardImplementation.cpp slsReceiverTCPIPInterface.cpp slsReceiver.cpp slsReceiverUsers.cpp utilities.cpp
+ifeq ($(HDF5),yes)
+	SRC_CLNT += HDF5FileWriter.cpp 
+endif
 
 ifeq ($(REST), yes)
 	SRC_CLNT += UDPRESTImplementation.cpp

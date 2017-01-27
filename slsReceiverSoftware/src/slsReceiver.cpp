@@ -127,6 +127,7 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 		udp_interface = UDPInterface::create(udp_interface_type);
 		udp_interface->configure(configuration_map);
 #endif
+		udp_interface = UDPInterface::create("standard");
 		tcpipInterface = new slsReceiverTCPIPInterface(success, udp_interface, tcpip_port_no);
 	}
 }

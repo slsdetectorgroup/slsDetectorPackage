@@ -1,5 +1,5 @@
-//#ifndef __LOG_H__
-//#define __LOG_H__
+#ifndef __LOG_H__
+#define __LOG_H__
 
 #include <sstream>
 #include <string>
@@ -243,4 +243,4 @@ inline void Output2FILE::Output(const std::string& msg, TLogLevel level)
 
 
 
-//#endif //__LOG_H__
+#endif //__LOG_H__

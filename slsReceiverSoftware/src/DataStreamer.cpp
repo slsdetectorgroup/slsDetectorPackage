@@ -20,8 +20,10 @@ uint64_t DataStreamer::RunningMask(0x0);
 pthread_mutex_t DataStreamer::Mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-DataStreamer::DataStreamer() : ThreadObject(NumberofDataStreamers) {
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+DataStreamer::DataStreamer() :
+		ThreadObject(NumberofDataStreamers)
+{
+	FILE_LOG (logDEBUG) << __AT__ << " called";
 
 	if(ThreadObject::CreateThread()){
 		pthread_mutex_lock(&Mutex);
@@ -30,12 +32,12 @@ DataStreamer::DataStreamer() : ThreadObject(NumberofDataStreamers) {
 	}
 
 	NumberofDataStreamers++;
-	FILE_LOG(logDEBUG) << "Number of DataStreamers: " << NumberofDataStreamers << endl;
+	FILE_LOG (logDEBUG) << "Number of DataStreamers: " << NumberofDataStreamers << endl;
 }
 
 
 DataStreamer::~DataStreamer() {
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG (logDEBUG) << __AT__ << " called";
 	ThreadObject::DestroyThread();
 	NumberofDataStreamers--;
 }
@@ -44,13 +46,13 @@ DataStreamer::~DataStreamer() {
 
 
 uint64_t DataStreamer::GetErrorMask() {
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG (logDEBUG) << __AT__ << " called";
 	return ErrorMask;
 }
 
 
 void DataStreamer::ResetRunningMask() {
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG (logDEBUG) << __AT__ << " called";
 	pthread_mutex_lock(&Mutex);
 	RunningMask = 0x0;
 	pthread_mutex_unlock(&Mutex);
@@ -66,13 +68,13 @@ string DataStreamer::GetType(){
 
 
 bool DataStreamer::IsRunning() {
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG (logDEBUG) << __AT__ << " called";
 	return ((1 << index) & RunningMask);
 }
 
 
 void DataStreamer::StartRunning() {
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG (logDEBUG) << __AT__ << " called";
 	pthread_mutex_lock(&Mutex);
 	RunningMask |= (1<<index);
 	pthread_mutex_unlock(&Mutex);
@@ -80,14 +82,14 @@ void DataStreamer::StartRunning() {
 
 
 void DataStreamer::StopRunning() {
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG (logDEBUG) << __AT__ << " called";
 	pthread_mutex_lock(&Mutex);
 	RunningMask ^= (1<<index);
 	pthread_mutex_unlock(&Mutex);
 }
 
 void DataStreamer::ThreadExecution() {
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG (logDEBUG) << __AT__ << " called";
 
 }
 

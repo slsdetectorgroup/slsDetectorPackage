@@ -60,8 +60,18 @@ public:
 	/** Default Fifo depth */
 	uint32_t defaultFifoDepth;
 
+	/** Threads per receiver */
+	uint32_t threadsPerReceiver;
+
+	/** Size of a header packet */
+	uint32_t headerPacketSize;
+
 	/** Cosntructor */
-	GeneralData(){};
+	GeneralData():
+		packetIndexMask(0),
+		packetIndexOffset(0),
+		threadsPerReceiver(1),
+		headerPacketSize(0){};
 
 	/** Destructor */
 	virtual ~GeneralData(){};
@@ -85,6 +95,24 @@ public:
 		packetNumber = frameNumber&packetIndexMask;
 		frameNumber = (frameNumber & frameIndexMask) >> frameIndexOffset;
 	}
+
+	/**
+	 * Setting dynamic range changes member variables
+	 * @param dr dynamic range
+	 * @param tgEnable true if 10GbE is enabled, else false
+	 */
+	virtual void SetDynamicRange(int dr, bool tgEnable) {
+		//This is a generic function that is overloaded by a dervied class
+	};
+
+	/**
+	 * Setting ten giga enable changes member variables
+	 * @param tgEnable true if 10GbE is enabled, else false
+	 * @param dr dynamic range
+	 */
+	virtual void SetTenGigaEnable(bool tgEnable, int dr) {
+		//This is a generic function that is overloaded by a dervied class
+	};
 };
 
 
@@ -105,7 +133,7 @@ class GotthardData : public GeneralData {
 		packetIndexMask 	= 1;
 		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= packetSize*packetsPerFrame;
-		fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS;
+		fifoBufferHeaderSize= FIFO_BUFFER_HEADER_SIZE;
 		defaultFifoDepth 	= 25000;
 	};
 };
@@ -126,7 +154,7 @@ class ShortGotthardData : public GeneralData {
 		frameIndexMask 		= 0xFFFFFFFF;
 		maxFramesPerFile 	= SHORT_MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= packetSize*packetsPerFrame;
-		fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS;
+		fifoBufferHeaderSize= FIFO_BUFFER_HEADER_SIZE;
 		defaultFifoDepth 	= 25000;
 	};
 };
@@ -154,7 +182,7 @@ class PropixData : public GeneralData {
 		packetIndexMask 	= 1;
 		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= packetSize*packetsPerFrame;
-		fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS;
+		fifoBufferHeaderSize= FIFO_BUFFER_HEADER_SIZE;
 		defaultFifoDepth 	= 25000;
 	};
 };
@@ -180,7 +208,7 @@ class Moench02Data : public GeneralData {
 		packetIndexMask 	= 0xFF;
 		maxFramesPerFile 	= MOENCH_MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= packetSize*packetsPerFrame;
-		fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS + FILE_FRAME_HEADER_LENGTH;
+		fifoBufferHeaderSize= FIFO_BUFFER_HEADER_SIZE + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 2500;
 	};
 };
@@ -206,7 +234,7 @@ class Moench03Data : public GeneralData {
 		packetIndexMask 	= 0xFFFFFFFF;
 		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= packetSize*packetsPerFrame;
-		fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS + FILE_FRAME_HEADER_LENGTH;
+		fifoBufferHeaderSize= FIFO_BUFFER_HEADER_SIZE + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 2500;
 	};
 };
@@ -229,7 +257,7 @@ class JCTBData : public GeneralData {
 		imageSize 			= dataSize*packetsPerFrame;
 		maxFramesPerFile 	= JFCTB_MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= packetSize*packetsPerFrame;
-		fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS + FILE_FRAME_HEADER_LENGTH;
+		fifoBufferHeaderSize= FIFO_BUFFER_HEADER_SIZE + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 2500;
 	};
 };
@@ -261,13 +289,9 @@ private:
 		packetSize 			= packetHeaderSize + dataSize;
 		packetsPerFrame 	= 128;
 		imageSize 			= dataSize*packetsPerFrame;
-		frameIndexMask 		= 0xffffff;
-		frameIndexOffset 	= 0;
-		packetIndexMask 	= 0;
-		packetIndexOffset 	= 0;
 		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= packetSize*packetsPerFrame;
-		fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS + FILE_FRAME_HEADER_LENGTH;
+		fifoBufferHeaderSize= FIFO_BUFFER_HEADER_SIZE + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 2500;
 	};
 
@@ -285,7 +309,7 @@ private:
 			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t bunchId) {
 		subFrameNumber = 0;
 		jfrau_packet_header_t* header = (jfrau_packet_header_t*)(packetData);
-		frameNumber = (*( (uint32_t*) header->frameNumber))&frameIndexMask;
+		frameNumber = (uint64_t)(*( (uint32_t*) header->frameNumber));
 		packetNumber = (uint32_t)(*( (uint8_t*) header->packetNumber));
 		bunchId = (*((uint64_t*) header->bunchid));
 	}
@@ -323,17 +347,16 @@ private:
 		nPixelsY 			= 256;
 		dataSize 			= 1024;
 		packetSize 			= 1040;
-		packetsPerFrame 	= 1;
+		packetsPerFrame 	= 256;
 		imageSize 			= dataSize*packetsPerFrame;
-		frameIndexMask 		= 0xFFFFFFFF;
-		frameIndexOffset 	= 0;
-		packetIndexMask 	= 0;
-		packetIndexOffset 	= 0;
+		frameIndexMask 		= 0xffffff;
 		maxFramesPerFile 	= EIGER_MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= packetSize*packetsPerFrame;
-		fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS + FILE_FRAME_HEADER_LENGTH;
+		fifoBufferHeaderSize= FIFO_BUFFER_HEADER_SIZE + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 100;
 		footerOffset		= packetHeaderSize+dataSize;
+		threadsPerReceiver	= 2;
+		headerPacketSize	= 48;
 	};
 
 	/**
@@ -351,13 +374,38 @@ private:
 		bunchId = 0;
 		subFrameNumber = 0;
 		eiger_packet_footer_t* footer = (eiger_packet_footer_t*)(packetData + footerOffset);
-		frameNumber = (uint64_t)(*( (uint64_t*) footer));
-		packetNumber = (*( (uint16_t*) footer->packetNumber))-1;
+		frameNumber = (uint64_t)((*( (uint64_t*) footer)) & frameIndexMask);
+		packetNumber = (uint32_t)(*( (uint16_t*) footer->packetNumber))-1;
 		if (dynamicRange == 32) {
 			eiger_packet_header_t* header = (eiger_packet_header_t*) (packetData);
-			subFrameNumber = *( (uint32_t*) header->subFrameNumber);
+			subFrameNumber = (uint64_t) *( (uint32_t*) header->subFrameNumber);
 		}
 	}
+
+	/**
+	 * Setting dynamic range changes member variables
+	 * @param dr dynamic range
+	 * @param tgEnable true if 10GbE is enabled, else false
+	 */
+	void SetDynamicRange(int dr, bool tgEnable) {
+		packetsPerFrame = (tgEnable ? 4 : 16) * dr;
+		imageSize 		= dataSize*packetsPerFrame;
+		fifoBufferSize	= packetSize*packetsPerFrame;
+	}
+
+	/**
+	 * Setting ten giga enable changes member variables
+	 * @param tgEnable true if 10GbE is enabled, else false
+	 * @param dr dynamic range
+	 */
+	void SetTenGigaEnable(bool tgEnable, int dr) {
+		dataSize 		= (tgEnable ? 4096 : 1024);
+		packetSize 		= (tgEnable ? 4112 : 1040);;
+		packetsPerFrame = (tgEnable ? 4 : 16) * dr;
+		imageSize 		= dataSize*packetsPerFrame;
+		fifoBufferSize	= packetSize*packetsPerFrame;
+		footerOffset	= packetHeaderSize+dataSize;
+	};
 };
 
 

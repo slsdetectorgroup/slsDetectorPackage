@@ -188,7 +188,7 @@ class UDPInterface {
 
 	/**
 	 * Get Current Frame Index for an entire  acquisition (including all scans)
-	 * @return current frame index (represents all scans too) or -1 if no packets caught
+	 * @return -1 if no frames have been caught, else  current frame index (represents all scans too) or -1 if no packets caught
 	 */
 	virtual int64_t getAcquisitionIndex() const = 0;
 
@@ -513,9 +513,8 @@ class UDPInterface {
 
 	/**
 	 * Shuts down and deletes UDP Sockets
-	 * @return OK or FAIL
 	 */
-	virtual int shutDownUDPSockets() = 0;
+	virtual void shutDownUDPSockets() = 0;
 
 	/**
 	 * Get the buffer-current frame read by receiver
@@ -534,10 +533,9 @@ class UDPInterface {
 	virtual void abort() = 0;  //FIXME: needed, isnt stopReceiver enough?
 
 	/**
-	 * Closes file / all files(if multiple files)
-	 * @param ithread writer thread index
+	 * Closes all files
 	 */
-	virtual void closeFile(int ithread = 0) = 0;
+	virtual void closeFiles() = 0;
 
 	/**
 	 * Activate / Deactivate Receiver

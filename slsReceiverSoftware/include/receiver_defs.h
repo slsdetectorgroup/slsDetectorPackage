@@ -4,21 +4,33 @@
 #include "sls_receiver_defs.h"
 #include <stdint.h> 
 
-
-#define GOODBYE 					-200
-
-//local network parameters
-#define RECEIVE_SOCKET_BUFFER_SIZE (100*1024*1024)
-#define MAX_SOCKET_INPUT_PACKET_QUEUE 250000
+//socket
+#define GOODBYE 						-200
+#define RECEIVE_SOCKET_BUFFER_SIZE 		(100*1024*1024)
+#define MAX_SOCKET_INPUT_PACKET_QUEUE 	250000
 
 //files
-#define DO_NOTHING					0
-#define CREATE_FILES				1
-#define DO_EVERYTHING				2
+#define DO_NOTHING						0
+#define CREATE_FILES					1
+#define DO_EVERYTHING					2
 
 //binary
+#define FILE_FRAME_HEADER_SIZE			16
+
+//fifo
+#define FIFO_BUFFER_HEADER_SIZE			4
+
+//parameters to calculate fifo depth
+#define SAMPLE_TIME_IN_NS				100000000//100ms
+#define MAX_JOBS_PER_THREAD				1000
+
+#define DUMMY_PACKET_VALUE				0xFFFFFFFF;
+
+
+
+/*
+//binary
 #define FILE_BUF_SIZE        		(16*1024*1024) //16mb
-#define FILE_FRAME_HEADER_LENGTH	16
 #define FILE_HEADER_BUNCHID_OFFSET	8
 
 //hdf5
@@ -30,8 +42,6 @@
 
 
 #define HEADER_SIZE_NUM_TOT_PACKETS	4
-#define SAMPLE_TIME_IN_NS			100000000//100ms
-#define MAX_JOBS_PER_THREAD			1000
 #define ALL_MASK_32					0xFFFFFFFF
 
 
@@ -142,43 +152,5 @@
 #define EIGER_PACKET_INDEX_MASK				0x0
 
 
-//data structures
-/**
- * structure of an eiger packet header
- * subframenum subframe number for 32 bit mode (already written by firmware)
- * missingpacket explicitly put to 0xFF to recognize it in file read (written by software)
- * portnum 0 for the first port and 1 for the second port (written by software to file)
- * dynamicrange dynamic range or bits per pixel (written by software to file)
- */
-typedef struct {
-	unsigned char subFrameNumber[4];
-	unsigned char missingPacket[2];
-	unsigned char portIndex[1];
-	unsigned char dynamicRange[1];
-} eiger_packet_header_t;
-
-/**
- * structure of an eiger packet footer
- * framenum 48 bit frame number (already written by firmware)
- * packetnum packet number (already written by firmware)
- */
-typedef struct	{
-	unsigned char frameNumber[6];
-	unsigned char packetNumber[2];
-} eiger_packet_footer_t;
-
-/**
- * structure of an jungfrau packet header
- * empty header
- * framenumber
- * packetnumber
- */
-typedef struct {
-	unsigned char emptyHeader[6];
-	unsigned char reserved[4];
-	unsigned char packetNumber[1];
-	unsigned char frameNumber[3];
-	unsigned char bunchid[8];
-} jfrau_packet_header_t;
-
+*/
 #endif

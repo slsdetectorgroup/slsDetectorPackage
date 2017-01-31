@@ -127,7 +127,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 
 	/**
 	 * Get Current Frame Index for an entire  acquisition (including all scans)
-	 * @return current frame index (represents all scans too)
+	 * @return -1 if no frames have been caught, else current frame index (represents all scans too)
 	 */
 	int64_t getAcquisitionIndex() const;
 
@@ -456,9 +456,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 
 	/**
 	 * Shuts down and deletes UDP Sockets
-	 * @return OK or FAIL
 	 */
-	int shutDownUDPSockets();
+	void shutDownUDPSockets();
 
 	/**
 	 * Get the buffer-current frame read by receiver
@@ -477,10 +476,9 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	void abort();  //FIXME: needed, isn't stopReceiver enough?
 
 	/**
-	 * Closes file / all files(if multiple files)
-	 * @param ithread writer thread index
+	 * Closes all files
 	 */
-	void closeFile(int ithread = 0);
+	void closeFiles();
 
 	/**
 	 * Activate / Deactivate Receiver
@@ -536,8 +534,6 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	detectorType myDetectorType;
 	/** detector hostname */
 	char detHostname[MAX_STR_LENGTH];
-	/** Number of Packets per Frame*/
-	uint32_t packetsPerFrame;
 	/** Acquisition Period */
 	uint64_t acquisitionPeriod;
 	/** Acquisition Time */
@@ -587,16 +583,6 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	/** Data Compression Enable - save only hits */
 	bool dataCompressionEnable;
 
-	//***acquisition count parameters***
-	/** Total packets caught for an entire acquisition (including all scans) */
-	uint64_t totalPacketsCaught;
-	/** Packets Caught for each real time acquisition (eg. for each scan) */
-	uint64_t packetsCaught;
-
-	//***acquisition indices parameters***
-	/** Actual current frame index of an entire acquisition (including all scans) */
-	uint64_t acquisitionIndex;
-
 	//***acquisition parameters***
 	/* Short Frame Enable or index of adc enabled, else -1 if all enabled (gotthard specific) TODO: move to setROI */
 	int shortFrameEnable;
@@ -607,8 +593,6 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	/** Data Stream Enable from Receiver */
 	bool dataStreamEnable;
 	static const int DEFAULT_STREAMING_TIMER = 500;
-
-
 
 
 	//***callback parameters***

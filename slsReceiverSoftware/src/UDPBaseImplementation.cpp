@@ -39,7 +39,6 @@ void UDPBaseImplementation::initializeMembers(){
 	//**detector parameters***
 	myDetectorType = GENERIC;
 	strcpy(detHostname,"");
-	packetsPerFrame = 0;
 	acquisitionPeriod = 0;
 	acquisitionTime = 0;
 	numberOfFrames = 0;
@@ -69,13 +68,6 @@ void UDPBaseImplementation::initializeMembers(){
 	fileWriteEnable = true;
 	overwriteEnable = true;
 	dataCompressionEnable = false;
-
-	//***acquisition count parameters***
-	totalPacketsCaught = 0;
-	packetsCaught = 0;
-
-	//***acquisition indices parameters***
-	acquisitionIndex = 0;
 
 	//***acquisition parameters***
 	shortFrameEnable = -1;
@@ -156,17 +148,11 @@ bool UDPBaseImplementation::getOverwriteEnable() const{	FILE_LOG(logDEBUG) << __
 bool UDPBaseImplementation::getDataCompressionEnable() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return dataCompressionEnable;}
 
 /***acquisition count parameters***/
-uint64_t UDPBaseImplementation::getTotalFramesCaught() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return (totalPacketsCaught/packetsPerFrame);}
+uint64_t UDPBaseImplementation::getTotalFramesCaught() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return 0;}
 
-uint64_t UDPBaseImplementation::getFramesCaught() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return (packetsCaught/packetsPerFrame);}
+uint64_t UDPBaseImplementation::getFramesCaught() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return 0;}
 
-int64_t UDPBaseImplementation::getAcquisitionIndex() const{
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
-
-	if(!totalPacketsCaught)
-		return -1;
-	return acquisitionIndex;
-}
+int64_t UDPBaseImplementation::getAcquisitionIndex() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return -1;}
 
 
 /***connection parameters***/
@@ -469,8 +455,7 @@ void UDPBaseImplementation::initialize(const char *c){
 void UDPBaseImplementation::resetAcquisitionCount(){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
-	totalPacketsCaught = 0;
-	FILE_LOG(logINFO) << "totalPacketsCaught:" << totalPacketsCaught;
+	//overriden by resetting of new acquisition parameters
 }
 
 int UDPBaseImplementation::startReceiver(char *c){
@@ -489,12 +474,9 @@ void UDPBaseImplementation::startReadout(){
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
 }
 
-int UDPBaseImplementation::shutDownUDPSockets(){
+void UDPBaseImplementation::shutDownUDPSockets(){
 	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
-
-	//overridden functions might return FAIL
-	return OK;
 }
 
 void UDPBaseImplementation::readFrame(int ithread, char* c,char** raw, int64_t &startAcquisitionIndex, int64_t &startFrameIndex){
@@ -509,7 +491,7 @@ void UDPBaseImplementation::abort(){
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
 }
 
-void UDPBaseImplementation::closeFile(int ithread){
+void UDPBaseImplementation::closeFiles(){
 	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
 }

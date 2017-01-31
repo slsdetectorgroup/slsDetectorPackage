@@ -269,15 +269,6 @@ private:
 	/** Lock Status if server locked to a client */
 	int lockStatus;
 
-	/** Short frame */
-	int shortFrame;
-
-	/** Packets per  frame */
-	int packetsPerFrame;
-
-	/** Dynamic Range */
-	int dynamicrange;
-
 	/** kill tcp server thread */
 	int killTCPServerThread;
 

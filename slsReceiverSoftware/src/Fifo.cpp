@@ -17,7 +17,7 @@ Fifo::Fifo(uint32_t fifoItemSize, uint32_t fifoDepth, bool &success):
 		memory(0),
 		fifoBound(0),
 		fifoFree(0) {
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG (logDEBUG) << __AT__ << " called";
 	index = NumberofFifoClassObjects++;
 	if(CreateFifos(fifoItemSize, fifoDepth) == FAIL)
 		success = false;
@@ -25,7 +25,7 @@ Fifo::Fifo(uint32_t fifoItemSize, uint32_t fifoDepth, bool &success):
 
 
 Fifo::~Fifo() {
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG (logDEBUG) << __AT__ << " called";
 	DestroyFifos();
 	NumberofFifoClassObjects--;
 }
@@ -33,7 +33,7 @@ Fifo::~Fifo() {
 
 
 int Fifo::CreateFifos(uint32_t fifoItemSize, uint32_t fifoDepth) {
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG (logDEBUG) << __AT__ << " called";
 
 	//destroy if not already
 	DestroyFifos();
@@ -43,7 +43,7 @@ int Fifo::CreateFifos(uint32_t fifoItemSize, uint32_t fifoDepth) {
 	//allocate memory
 	memory = (char*) calloc (fifoItemSize * fifoDepth, sizeof(char));
 	if (memory == NULL){
-		FILE_LOG(logERROR) << "Could not allocate memory for fifos";
+		FILE_LOG (logERROR) << "Could not allocate memory for fifos";
 		return FAIL;
 	}
 
@@ -58,13 +58,13 @@ int Fifo::CreateFifos(uint32_t fifoItemSize, uint32_t fifoDepth) {
 			buffer += fifoItemSize;
 		}
 	}
-	FILE_LOG(logINFO) << "Fifo Structure " << index << " reconstructed";
+	FILE_LOG (logINFO) << "Fifo Structure " << index << " reconstructed";
 	return OK;
 }
 
 
 void Fifo::DestroyFifos(){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG (logDEBUG) << __AT__ << " called";
 
 	if (fifoBound) {
 		delete fifoBound;

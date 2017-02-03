@@ -1867,10 +1867,9 @@ int set_module(int file_des) {
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	sls_detector_module myModule;
 #ifdef EIGERD
-	int *myGain = (int*)malloc(getNumberOfGainsPerModule()*sizeof(int));
-	int *myOffset = (int*)malloc(getNumberOfOffsetsPerModule()*sizeof(int));
-	int *myIODelay = (int*)malloc(sizeof(int));
-	int64_t myTau=-1;
+	int myIODelay = -1;
+	int myTau = -1;
+	int myEV = -1;
 #endif
 	int *myChip=(int*)malloc(getNumberOfChipsPerModule()*sizeof(int));
 	int *myChan=(int*)malloc(getNumberOfChannelsPerModule()*sizeof(int));
@@ -1902,16 +1901,6 @@ int set_module(int file_des) {
 		sprintf(mess,"could not allocate chans\n");
 		ret=FAIL;
 	}
-#ifdef EIGERD
-	if (!myGain){
-		sprintf(mess,"could not allocate gains\n");
-		ret=FAIL;
-	}
-	if (!myOffset){
-		sprintf(mess,"could not allocate offsets\n");
-		ret=FAIL;
-	}
-#endif
 	myModule.nchip=getNumberOfChipsPerModule();
 	myModule.nchan=getNumberOfChannelsPerModule();
 	myModule.ndac=getNumberOfDACsPerModule();
@@ -1923,10 +1912,9 @@ int set_module(int file_des) {
 #endif
 	ret=receiveModule(file_des, &myModule);
 #ifdef EIGERD
-	n = receiveData(file_des,myGain,sizeof(int)*getNumberOfGainsPerModule(),INT32);
-	n = receiveData(file_des,myOffset,sizeof(int)*getNumberOfOffsetsPerModule(),INT32);
-	n = receiveData(file_des,myIODelay,sizeof(int),INT32);
-	n = receiveData(file_des,&myTau,sizeof(myTau),INT64);
+	n = receiveData(file_des,&myIODelay,sizeof(myIODelay),INT32);
+	n = receiveData(file_des,&myTau,sizeof(myTau),INT32);
+	n = receiveData(file_des,&myEV,sizeof(myEV),INT32);
 #endif
 	if (ret>=0)
 		ret=OK;
@@ -1937,16 +1925,12 @@ int set_module(int file_des) {
 #ifdef VERBOSE
 	printf("module number is %d,register is %d, nchan %d, nchip %d, ndac %d, nadc %d, gain %f, offset %f\n",myModule.module, myModule.reg, myModule.nchan, myModule.nchip, myModule.ndac,  myModule.nadc, myModule.gain,myModule.offset);
 #ifdef EIGERD
-	int i;
-	for(i=0;i<getNumberOfGainsPerModule();i++)
-		printf("gain[%d]:%d\t%f\n",i,myGain[i],((double)myGain[i]/1000));
-	for(i=0;i<getNumberOfOffsetsPerModule();i++)
-		printf("offset[%d]:%d\t%f\n",i,myOffset[i],((double)myOffset[i]/1000));
-	printf("IO Delay:%d\n",*myIODelay);
-	printf("Tau:%lld\n",(long long int)myTau);
+	printf("IO Delay:%d\n",myIODelay);
+	printf("Tau:%d\n",myTau);
+	printf("eV:%d\n",myEV);
 #endif
 #endif
-
+#ifdef EIGERD
 	switch(myModule.reg){
 	case STANDARD:
 	case HIGHGAIN:
@@ -1961,7 +1945,7 @@ int set_module(int file_des) {
 		cprintf(RED,"%s",mess);
 		break;
 	}
-
+#endif
 
 	if (ret==OK) {
 		if (differentClients==1 && lockStatus==1) {
@@ -1969,33 +1953,31 @@ int set_module(int file_des) {
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		} else {
 #ifdef EIGERD
-			ret=setModule(myModule, myGain, myOffset,myIODelay);
+			//set threshhold
+			if (myEV >= 0) setThresholdEnergy(myEV,-1);
+			//set dacs, trimbits and iodelay
+			ret=setModule(myModule, myIODelay);
+
 			//rate correction
-			if(myTau > -2){	//ignore -2: from load settings)
-
-				//set default tau value (-1 or a normal value)
-				setDefaultSettingsTau_in_nsec(myTau);
-
-				//switch off rate correction: no value read from load calib/load settings)
-				if(myTau == -1){
-					if(getRateCorrectionEnable()){
-						ret = FAIL;
-						setRateCorrection(0);
-						strcat(mess,"Cannot set Rate correction. No default tau provided. Deactivating Rate Correction\n");
-						cprintf(RED,"%s",mess);
-					}
-				}
-
-
-				//normal tau value (only if enabled)
-				else if (getRateCorrectionEnable()){
-					int64_t retvalTau = setRateCorrection(myTau); //myTau will not be -1 here
-					if(myTau != retvalTau){
-						cprintf(RED,"%s",mess);
-						ret=FAIL;
-					}
+			//switch off rate correction: no value read from load calib/load settings)
+			if(myTau == -1){
+				if(getRateCorrectionEnable()){
+					ret = FAIL;
+					setRateCorrection(0);
+					strcat(mess,"Cannot set Rate correction. No default tau provided. Deactivating Rate Correction\n");
+					cprintf(RED,"%s",mess);
 				}
 			}
+
+			//normal tau value (only if enabled)
+			else if (getRateCorrectionEnable()){
+				int64_t retvalTau = setRateCorrection(myTau);
+				if(myTau != retvalTau){
+					cprintf(RED,"%s",mess);
+					ret=FAIL;
+				}
+			}
+
 			retval = getSettings();
 
 #else
@@ -2027,10 +2009,6 @@ int set_module(int file_des) {
 	free(myChan);
 	free(myDac);
 	free(myAdc);
-#ifdef EIGERD
-	free(myGain);
-	free(myOffset);
-#endif
 #endif
 	return ret;
 }
@@ -2048,10 +2026,6 @@ int get_module(int file_des) {
 	sls_detector_module myModule;
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-#ifdef EIGERD
-	int *myGain = (int*)malloc(getNumberOfGainsPerModule()*sizeof(int));
-	int *myOffset = (int*)malloc(getNumberOfOffsetsPerModule()*sizeof(int));
-#endif
 	int *myChip=(int*)malloc(getNumberOfChipsPerModule()*sizeof(int));
 	int *myChan=(int*)malloc(getNumberOfChannelsPerModule()*sizeof(int));
 	int *myDac=(int*)malloc(getNumberOfDACsPerModule()*sizeof(int));
@@ -2082,16 +2056,6 @@ int get_module(int file_des) {
 		sprintf(mess,"could not allocate chans\n");
 		ret=FAIL;
 	}
-#ifdef EIGERD
-	if (!myGain){
-		sprintf(mess,"could not allocate gains\n");
-		ret=FAIL;
-	}
-	if (!myOffset){
-		sprintf(mess,"could not allocate offsets\n");
-		ret=FAIL;
-	}
-#endif
 	myModule.ndac=getNumberOfDACsPerModule();
 	myModule.nchip=getNumberOfChipsPerModule();
 	myModule.nchan=getNumberOfChannelsPerModule();
@@ -2114,18 +2078,7 @@ int get_module(int file_des) {
 		if (imod>=0) {
 			ret=OK;
 			myModule.module=imod;
-#ifdef EIGERD
-			getModule(&myModule, myGain, myOffset);
-#ifdef VERBOSE
-			for(i=0;i<getNumberOfGainsPerModule();i++)
-				printf("gain[%d]:%d\t%f\n",i,myGain[i],((double)myGain[i]/1000));
-			for(i=0;i<getNumberOfOffsetsPerModule();i++)
-				printf("offset[%d]:%d\t%f\n",i,myOffset[i],((double)myOffset[i]/1000));
-#endif
-#else
 			getModule(&myModule);
-#endif
-
 
 #ifdef VERBOSE
 			printf("Returning module %d of register %x\n",  imod, myModule.reg);
@@ -2144,10 +2097,6 @@ int get_module(int file_des) {
 	if (ret!=FAIL) {
 		/* send return argument */
 		ret=sendModule(file_des, &myModule);
-#ifdef EIGERD
-	n = sendData(file_des,myGain,sizeof(int)*getNumberOfGainsPerModule(),INT32);
-	n = sendData(file_des,myOffset,sizeof(int)*getNumberOfOffsetsPerModule(),INT32);
-#endif
 	} else {
 		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
@@ -2157,10 +2106,6 @@ int get_module(int file_des) {
 	free(myChan);
 	free(myDac);
 	free(myAdc);
-#ifdef EIGERD
-	free(myGain);
-	free(myOffset);
-#endif
 #endif
 	/*return ok/fail*/
 	return ret;
@@ -2300,7 +2245,7 @@ int set_threshold_energy(int file_des) {
 	int ret=OK,ret1=OK;
 	int arg[3];
 	int n;
-#if defined(MYTHEND) || defined(EIGERD)
+#if defined(MYTHEND)
 	int ethr, imod;
 	enum detectorSettings isett;
 #endif
@@ -2311,7 +2256,7 @@ int set_threshold_energy(int file_des) {
 		ret=FAIL;
 	}
 
-#if defined(MYTHEND) || defined(EIGERD)
+#if defined(MYTHEND)
 	ethr=arg[0];
 	imod=arg[1];
 	isett=arg[2];
@@ -2338,6 +2283,14 @@ int set_threshold_energy(int file_des) {
 		sprintf(mess,"Setting threshold of module %d: wrote %d but read %d\n", imod, ethr, retval);
 	}
 #endif
+#elif defined(EIGERD)
+	sprintf(mess,"Setting Threshold only via settings implemented for this detector\n");
+	cprintf(RED, "%s",mess);
+	ret=FAIL;
+#else
+	sprintf(mess,"Not implemented for this detector\n");
+	cprintf(RED, "%s",mess);
+	ret=FAIL;
 #endif
 	if (ret==OK && differentClients==1)
 		ret=FORCE_UPDATE;
@@ -3994,20 +3947,14 @@ int set_rate_correct(int file_des) {
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		}  else {
 
-			//tau = -1, use default tau of settings
-			if((ret==OK)&&(tau_ns<0)){
-				tau_ns = getDefaultSettingsTau_in_nsec();
-			}
 			//still negative (not set)
 			if(tau_ns < 0){
 				ret = FAIL;
 				if(getRateCorrectionEnable()){
 					setRateCorrection(0);
-					strcpy(mess,"Cannot set rate correction as default tau not provided. Switching off Rate Correction\n");
-				}else{
-					strcpy(mess,"Cannot set rate correction as default tau not provided\n");
+					strcpy(mess,"Cannot set rate correction as tau must be >=0. Switching off Rate Correction\n");
+					cprintf(RED,"%s",mess);
 				}
-				cprintf(RED,"%s",mess);
 			}
 
 			//set rate
@@ -4020,7 +3967,7 @@ int set_rate_correct(int file_des) {
 				}
 				//32 bit mode
 				else{
-					int64_t retval = setRateCorrection(tau_ns); //tau_ns will not be -1 here
+					int64_t retval = setRateCorrection(tau_ns);
 					if(tau_ns != retval){
 						cprintf(RED,"%s",mess);
 						ret=FAIL;

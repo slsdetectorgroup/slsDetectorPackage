@@ -655,8 +655,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->nChip[Y]=1;
       thisDetector->nDacs=16;
       thisDetector->nAdcs=0;
-      thisDetector->nGain=4;
-      thisDetector->nOffset=4;
+      thisDetector->nGain=0;
+      thisDetector->nOffset=0;
       thisDetector->nModMax[X]=1;
       thisDetector->nModMax[Y]=1;
       thisDetector->dynamicRange=16;
@@ -2825,12 +2825,8 @@ slsDetectorDefs::sls_detector_chip slsDetector::getChip(int ichip, int imod){
 
 int slsDetector::setModule(int reg, int imod){
   sls_detector_module myModule;
-  int* g=0;
-  int* o=0;
-  int* iod=0;
-  int64_t tau=-1;
 
-#ifdef VERBOSE
+  #ifdef VERBOSE
   std::cout << "slsDetector set module " << std::endl;
 #endif
   int charegs[thisDetector->nChans*thisDetector->nChips];
@@ -2897,14 +2893,14 @@ int slsDetector::setModule(int reg, int imod){
 	ads[i]=-1;
       myModule.adcs=ads;
     }
-    ret=setModule(myModule,g,o,iod,tau);
+    ret=setModule(myModule,-1,-1,-1,0,0);
   }
   return ret;
 
 
 };
 
-int slsDetector::setModule(sls_detector_module module, int* gainval, int* offsetval, int* iodelay, int64_t tau){
+int slsDetector::setModule(sls_detector_module module, int iodelay, int tau, int e_eV, int* gainval, int* offsetval){
 
 	int fnum=F_SET_MODULE;
 	int retval;
@@ -2923,15 +2919,17 @@ int slsDetector::setModule(sls_detector_module module, int* gainval, int* offset
 			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 			sendModule(&module);
 
-			//extra gain and offset - eiger
-			if((thisDetector->nGain) && (gainval))
+			//not included in module
+			if(gainval && (thisDetector->nGain))
 				controlSocket->SendDataOnly(gainval,sizeof(int)*thisDetector->nGain);
-			if((thisDetector->nOffset) && (offsetval))
+			if(offsetval && (thisDetector->nOffset))
 				controlSocket->SendDataOnly(offsetval,sizeof(int)*thisDetector->nOffset);
-			if(thisDetector->myDetectorType == EIGER){
-				controlSocket->SendDataOnly(iodelay,sizeof(int));
+			if(thisDetector->myDetectorType == EIGER) {
+				controlSocket->SendDataOnly(&iodelay,sizeof(iodelay));
 				controlSocket->SendDataOnly(&tau,sizeof(tau));
+				controlSocket->SendDataOnly(&e_eV,sizeof(e_eV));
 			}
+
 
 			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
 			if (ret!=FAIL)
@@ -3129,13 +3127,14 @@ slsDetectorDefs::sls_detector_module  *slsDetector::getModule(int imod){
 				offset[i+imod*thisDetector->nOffset]=offsetval[i];
 		}
 
-		if(gainval) delete[]gainval;
-		if(offsetval) delete[]offsetval;
-
 	} else {
 		deleteModule(myMod);
 		myMod=NULL;
 	}
+
+	if(gainval) delete[]gainval;
+	if(offsetval) delete[]offsetval;
+
 	return myMod;
 }
 
@@ -3200,40 +3199,200 @@ int slsDetector::getThresholdEnergy(int imod){
 
 int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isettings){
 
-  int fnum=  F_SET_THRESHOLD_ENERGY;
-  int retval;
-  int ret=FAIL;
-  char mess[MAX_STR_LENGTH]="";
+	//currently only for eiger
+	if (thisDetector->myDetectorType == EIGER) {
+		setThresholdEnergyAndSettings(e_eV,isettings);
+			return  thisDetector->currentThresholdEV;
+	}
+
+	int fnum=  F_SET_THRESHOLD_ENERGY;
+	int retval;
+	int ret=FAIL;
+	char mess[MAX_STR_LENGTH]="";
 #ifdef VERBOSE
-  std::cout<< "Setting threshold energy "<< std::endl;
+	std::cout<< "Setting threshold energy "<< std::endl;
 #endif
-  if (thisDetector->onlineFlag==ONLINE_FLAG) {
-    if (connectControl() == OK){
-      controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-      controlSocket->SendDataOnly(&e_eV,sizeof(e_eV));
-      controlSocket->SendDataOnly(&imod,sizeof(imod));
-      controlSocket->SendDataOnly(&isettings,sizeof(isettings));
-      controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-      if (ret==FAIL) {
-	std::cout<< "Detector returned error: "<< std::endl;
-	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-	std::cout<<  mess << std::endl;
-      } else {
+	if (thisDetector->onlineFlag==ONLINE_FLAG) {
+		if (connectControl() == OK){
+			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+			controlSocket->SendDataOnly(&e_eV,sizeof(e_eV));
+			controlSocket->SendDataOnly(&imod,sizeof(imod));
+			controlSocket->SendDataOnly(&isettings,sizeof(isettings));
+			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			if (ret==FAIL) {
+				std::cout<< "Detector returned error: "<< std::endl;
+				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+				std::cout<<  mess << std::endl;
+			} else {
 #ifdef VERBOSE
-	std::cout<< "Detector returned OK "<< std::endl;
+				std::cout<< "Detector returned OK "<< std::endl;
 #endif
-	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-	thisDetector->currentThresholdEV=retval;
-      }
-      disconnectControl();
-      if (ret==FORCE_UPDATE)
-	updateDetector();
-    }
-  } else {
-    thisDetector->currentThresholdEV=e_eV;
-  }
-  return   thisDetector->currentThresholdEV;
+				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+				thisDetector->currentThresholdEV=retval;
+			}
+			disconnectControl();
+			if (ret==FORCE_UPDATE)
+				updateDetector();
+		}
+	} else {
+		thisDetector->currentThresholdEV=e_eV;
+	}
+	return   thisDetector->currentThresholdEV;
 };
+
+
+
+int slsDetector::setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings) {
+
+	//if settings provided, use that, else use the shared memory variable
+	detectorSettings is = ((isettings != GET_SETTINGS) ? isettings: thisDetector->currentSettings);
+	string ssettings;
+	switch (is) {
+	case STANDARD:
+		ssettings="/standard";
+		thisDetector->currentSettings=STANDARD;
+		break;
+	case HIGHGAIN:
+		ssettings="/highgain";
+		thisDetector->currentSettings=HIGHGAIN;
+		break;
+	case LOWGAIN:
+		ssettings="/lowgain";
+		thisDetector->currentSettings=LOWGAIN;
+		break;
+	case VERYHIGHGAIN:
+		ssettings="/veryhighgain";
+		thisDetector->currentSettings=VERYHIGHGAIN;
+		break;
+	case VERYLOWGAIN:
+		ssettings="/verylowgain";
+		thisDetector->currentSettings=VERYLOWGAIN;
+		break;
+	default:
+		printf("Error: Unknown settings %s for this detector!\n", getDetectorSettings(is).c_str());
+		setErrorMask((getErrorMask())|(SETTINGS_NOT_SET));
+		return FAIL;
+	}
+
+	//verify e_eV exists in trimEneregies[]
+	if (!thisDetector->nTrimEn ||
+			(e_eV < thisDetector->trimEnergies[0]) ||
+			(e_eV > thisDetector->trimEnergies[thisDetector->nTrimEn-1]) ) {
+		printf("Error: This energy %d not defined for this module!\n", e_eV);
+		setErrorMask((getErrorMask())|(SETTINGS_NOT_SET));
+		return FAIL;
+	}
+
+	//find if interpolation required
+	bool interpolate = true;
+	for (int i = 0; i < thisDetector->nTrimEn; ++i) {
+		if (thisDetector->trimEnergies[i] == e_eV) {
+			interpolate = false;
+			break;
+		}
+	}
+
+	//fill detector module structure
+	sls_detector_module *myMod = NULL;
+	int iodelay = -1;			//not included in the module
+	int tau = -1;			//not included in the module
+
+	//normal
+	if(!interpolate) {
+		//find their directory names
+		ostringstream ostfn;
+		ostfn << thisDetector->settingsDir << ssettings << "/" << e_eV << "eV" << "/noise.sn" << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER) << setbase(10);
+		string settingsfname = ostfn.str();
+#ifdef VERBOSE
+		printf("Settings File is %s\n", settingsfname1.c_str());
+#endif
+		//read the files
+		myMod=createModule();
+		if (NULL == readSettingsFile(settingsfname,thisDetector->myDetectorType, iodelay, tau, myMod)) {
+			if(myMod)deleteModule(myMod);
+			return FAIL;
+		}
+	}
+
+
+	//interpolate
+	else {
+		//find the trim values
+		int trim1 = -1, trim2 = -1;
+		for (int i = 0; i < thisDetector->nTrimEn; ++i) {
+			if (e_eV < thisDetector->trimEnergies[i]) {
+				trim2 = thisDetector->trimEnergies[i];
+				trim1 = thisDetector->trimEnergies[i-1];
+				break;
+			}
+		}
+		//find their directory names
+		ostringstream ostfn;
+		ostfn << thisDetector->settingsDir << ssettings << "/" << trim1 << "eV" << "/noise.sn" << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER) << setbase(10);
+		string settingsfname1 = ostfn.str();
+		ostfn.str(""); ostfn.clear();
+		ostfn << thisDetector->settingsDir << ssettings << "/" << trim2 << "eV" << "/noise.sn" << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER) << setbase(10);
+		string settingsfname2 = ostfn.str();
+		//read the files
+#ifdef VERBOSE
+		printf("Settings Files are %s and %s\n",settingsfname1.c_str(), settingsfname2.c_str());
+#endif
+		sls_detector_module *myMod1=createModule();
+		sls_detector_module *myMod2=createModule();
+		int iodelay1 = -1;			//not included in the module
+		int tau1 = -1;			//not included in the module
+		int iodelay2 = -1;			//not included in the module
+		int tau2 = -1;			//not included in the module
+		if (NULL == readSettingsFile(settingsfname1,thisDetector->myDetectorType, iodelay1, tau1, myMod1)) {
+			setErrorMask((getErrorMask())|(SETTINGS_FILE_NOT_OPEN));
+			deleteModule(myMod1);
+			deleteModule(myMod2);
+			return FAIL;
+		}
+		if (NULL == readSettingsFile(settingsfname2,thisDetector->myDetectorType, iodelay2, tau2, myMod2)) {
+			setErrorMask((getErrorMask())|(SETTINGS_FILE_NOT_OPEN));
+			deleteModule(myMod1);
+			deleteModule(myMod2);
+			return FAIL;
+		}
+		if (iodelay1 != iodelay2) {
+			printf("iodelays do not match between files\n");
+			setErrorMask((getErrorMask())|(SETTINGS_NOT_SET));
+			deleteModule(myMod1);
+			deleteModule(myMod2);
+			return FAIL;
+		}
+		iodelay = iodelay1;
+
+		//interpolate  module
+		myMod = interpolateTrim(thisDetector->myDetectorType, myMod1, myMod2, e_eV, trim1, trim2);
+		if (myMod == NULL) {
+			printf("Could not interpolate, different dac values in files\n");
+			setErrorMask((getErrorMask())|(SETTINGS_NOT_SET));
+		}
+		//interpolate tau
+		tau = linearInterpolation(e_eV, trim1, trim2, tau1, tau2);
+		printf("new tau:%d\n",tau);
+
+		deleteModule(myMod1);
+		deleteModule(myMod2);
+	}
+
+
+	myMod->module=0;
+	myMod->reg=thisDetector->currentSettings;
+	setModule(*myMod, iodelay, tau, e_eV, 0, 0);
+	deleteModule(myMod);
+	if (getSettings(-1) != is){
+		std::cout << "Could not set settings in detector" << endl;
+		setErrorMask((getErrorMask())|(SETTINGS_NOT_SET));
+		return FAIL;
+	}
+
+	return OK;
+}
+
+
 
 /*
   select detector settings
@@ -3281,20 +3440,36 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 #ifdef VERBOSE
 	std::cout<< "slsDetector setSettings "<< std::endl;
 #endif
+
+	//only set client shared memory variable for Eiger, settings threshold loads the module data (trimbits, dacs etc.)
+	if (thisDetector->myDetectorType == EIGER) {
+		switch(isettings) {
+		case STANDARD:
+		case HIGHGAIN:
+		case LOWGAIN:
+		case VERYHIGHGAIN:
+		case VERYLOWGAIN:
+			thisDetector->currentSettings = isettings;
+			break;
+		default:
+			printf("Unknown settings %s for this detector!\n", getDetectorSettings(isettings).c_str());
+		}
+		return thisDetector->currentSettings;
+	}
+
 	sls_detector_module *myMod=createModule();
 	int modmi=imod, modma=imod+1, im=imod;
 	string settingsfname, calfname;
 	string ssettings;
 
+	//not included in module structure
+	int iodelay = -1;
+	int tau = -1;
 	int* gainval=0, *offsetval=0;
-	int* iodelay=0;
 	if(thisDetector->nGain)
 		gainval=new int[thisDetector->nGain];
 	if(thisDetector->nOffset)
 		offsetval=new int[thisDetector->nOffset];
-	if(thisDetector->myDetectorType == EIGER)
-		iodelay = new int;
-	int64_t tau=-1;
 
 
 	int ret=0;
@@ -3452,7 +3627,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 #ifdef VERBOSE
 			cout << "the settings file name is "<<settingsfname << endl;
 #endif
-			if (!readSettingsFile(settingsfname,thisDetector->myDetectorType, myMod,iodelay)) {
+			if (NULL == readSettingsFile(settingsfname,thisDetector->myDetectorType, iodelay, tau, myMod)) {
 				//if it didnt open, try default settings file
 				ostringstream ostfn_default;
 				switch(thisDetector->myDetectorType){
@@ -3472,7 +3647,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 #ifdef VERBOSE
 				cout << settingsfname << endl;
 #endif
-				if (!readSettingsFile(settingsfname,thisDetector->myDetectorType, myMod,iodelay)) {
+				if (NULL == readSettingsFile(settingsfname,thisDetector->myDetectorType, iodelay, tau, myMod)) {
 					//if default doesnt work, return error
 					std::cout << "Could not open settings file" << endl;
 					setErrorMask((getErrorMask())|(SETTINGS_FILE_NOT_OPEN));
@@ -3483,41 +3658,43 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 
 
 			//calibration file****
-			calfname=oscfn.str();
+			if(thisDetector->myDetectorType != EIGER) {
+				calfname=oscfn.str();
 #ifdef VERBOSE
-			cout << "Specific file:"<< calfname << endl;
-#endif
-			//extra gain and offset
-			if(thisDetector->nGain)
-				ret = readCalibrationFile(calfname,gainval, offsetval, tau, thisDetector->myDetectorType );
-			//normal gain and offset inside sls_detector_module
-			else
-				ret = readCalibrationFile(calfname,myMod->gain, myMod->offset);
-
-			//if it didnt open, try default
-			if(ret != OK){
-				ostringstream oscfn_default;
-				oscfn_default << thisDetector->calDir << ssettings << ssettings << ".cal";
-				calfname=oscfn_default.str();
-#ifdef VERBOSE
-				cout << "Default file:" << calfname << endl;
+				cout << "Specific file:"<< calfname << endl;
 #endif
 				//extra gain and offset
 				if(thisDetector->nGain)
-					ret = readCalibrationFile(calfname,gainval, offsetval, tau, thisDetector->myDetectorType );
+					ret = readCalibrationFile(calfname,gainval, offsetval);
 				//normal gain and offset inside sls_detector_module
 				else
 					ret = readCalibrationFile(calfname,myMod->gain, myMod->offset);
-			}
-			//if default doesnt work, return error
-			if(ret != OK){
-				std::cout << "Could not open calibration file" << calfname << endl;
-				setErrorMask((getErrorMask())|(SETTINGS_FILE_NOT_OPEN));
-				return  thisDetector->currentSettings;
+
+				//if it didnt open, try default
+				if(ret != OK){
+					ostringstream oscfn_default;
+					oscfn_default << thisDetector->calDir << ssettings << ssettings << ".cal";
+					calfname=oscfn_default.str();
+#ifdef VERBOSE
+					cout << "Default file:" << calfname << endl;
+#endif
+					//extra gain and offset
+					if(thisDetector->nGain)
+						ret = readCalibrationFile(calfname,gainval, offsetval);
+					//normal gain and offset inside sls_detector_module
+					else
+						ret = readCalibrationFile(calfname,myMod->gain, myMod->offset);
+				}
+				//if default doesnt work, return error
+				if(ret != OK){
+					std::cout << "Could not open calibration file" << calfname << endl;
+					setErrorMask((getErrorMask())|(SETTINGS_FILE_NOT_OPEN));
+					return  thisDetector->currentSettings;
+				}
 			}
 
 			//if everything worked, set module****
-			setModule(*myMod,gainval,offsetval,iodelay, tau);
+			setModule(*myMod,iodelay,tau,-1,gainval,offsetval);
 		}
 	}
 
@@ -6507,9 +6684,9 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
 
 
 
-int slsDetector::writeSettingsFile(string fname, int imod, int* iodelay){
+int slsDetector::writeSettingsFile(string fname, int imod, int& iodelay, int& tau){
 
-  return writeSettingsFile(fname,thisDetector->myDetectorType, detectorModules[imod], iodelay);
+  return writeSettingsFile(fname,thisDetector->myDetectorType, detectorModules[imod], iodelay, tau);
 
 };
 
@@ -6774,22 +6951,9 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
 
   sls_detector_module  *myMod=NULL;
 
-  //tau set to -2 to not affect in any way (-1 for set settings)
-  int64_t tau =-2;
-  int* gainval=0; int* offsetval=0;
-  int *iodelay=0;
-  if(thisDetector->nGain){
-	  gainval=new int[thisDetector->nGain];
-	  for(int i=0;i<thisDetector->nGain;i++)
-		  gainval[i] = -1;
-  }
-  if(thisDetector->nOffset){
-	  offsetval=new int[thisDetector->nOffset];
-	  for(int i=0;i<thisDetector->nOffset;i++)
-		  offsetval[i] = -1;
-  }
-  if(thisDetector->myDetectorType == EIGER)
-     iodelay = new int;*iodelay=0;
+  int iodelay = -1;
+  int tau = -1;
+
   string fn=fname;
   fn=fname;
   int mmin=0, mmax=setNumberOfModules();
@@ -6809,17 +6973,15 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
       ostfn << ".sn"  << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER, im);
       fn=ostfn.str();
     }
-    myMod=readSettingsFile(fn, thisDetector->myDetectorType,myMod,iodelay);
+    myMod=readSettingsFile(fn, thisDetector->myDetectorType,iodelay, tau, myMod);
 
     if (myMod) {
       myMod->module=im;
       //settings is saved in myMod.reg for all except mythen
       if(thisDetector->myDetectorType!=MYTHEN)
     	myMod->reg=thisDetector->currentSettings;
-      setModule(*myMod,gainval,offsetval,iodelay,tau);
+      setModule(*myMod,iodelay,tau,-1,0,0);
       deleteModule(myMod);
-      if(gainval) delete[] gainval;
-      if(offsetval) delete[] offsetval;
     } else
       return FAIL;
   }
@@ -6831,7 +6993,8 @@ int slsDetector::saveSettingsFile(string fname, int imod) {
 
   sls_detector_module  *myMod=NULL;
   int ret=FAIL;
-  int *iod = 0;
+  int iodelay = -1;
+  int tau = -1;
 
   int mmin=0,  mmax=setNumberOfModules();
   if (imod>=0) {
@@ -6847,10 +7010,10 @@ int slsDetector::saveSettingsFile(string fname, int imod) {
     if ((myMod=getModule(im))) {
 
     	 if(thisDetector->myDetectorType == EIGER){
-    		 iod = new int;
-    		 *iod = (int)setDAC((dacs_t)-1,IO_DELAY,0,-1);
+    		 iodelay = (int)setDAC((dacs_t)-1,IO_DELAY,0,-1);
+    		 tau = (int64_t)getRateCorrectionTau();
     	 }
-   		 ret=writeSettingsFile(ostfn.str(), thisDetector->myDetectorType, *myMod,iod);
+   		 ret=writeSettingsFile(ostfn.str(), thisDetector->myDetectorType, *myMod, iodelay, tau);
    		 deleteModule(myMod);
     }
   }
@@ -6898,12 +7061,15 @@ int slsDetector::setAllTrimbits(int val, int imod){
 
 int slsDetector::loadCalibrationFile(string fname, int imod) {
 
+	if(thisDetector->myDetectorType == EIGER) {
+		std::cout << "Not required for this detector!" << std::endl;
+		return FAIL;
+	}
+
   sls_detector_module  *myMod=NULL;
   string fn=fname;
 
-  int64_t tau = -1;
   int* gainval=0; int* offsetval=0;
-  int* iodelay=0;
   if(thisDetector->nGain){
 	  gainval=new int[thisDetector->nGain];
 	  for(int i=0;i<thisDetector->nGain;i++)
@@ -6935,18 +7101,16 @@ int slsDetector::loadCalibrationFile(string fname, int imod) {
     }
     fn=ostfn.str();
     if((myMod=getModule(im))){
-    	iodelay = new int;
-    	 *iodelay = (int)setDAC(-1,IO_DELAY,0);
       //extra gain and offset
       if(thisDetector->nGain){
-    	  if(readCalibrationFile(fn,gainval, offsetval,tau, thisDetector->myDetectorType)==FAIL)
+    	  if(readCalibrationFile(fn,gainval, offsetval)==FAIL)
     		  return FAIL;
       } //normal gain and offset inside sls_detector_module
       else{
     	  if(readCalibrationFile(fn,myMod->gain, myMod->offset)==FAIL)
     		  return FAIL;
       }
-      setModule(*myMod,gainval,offsetval,iodelay,tau);
+      setModule(*myMod,-1,-1,-1,gainval,offsetval);
 
       deleteModule(myMod);
       if(gainval) delete[]gainval;
@@ -6978,7 +7142,7 @@ int slsDetector::saveCalibrationFile(string fname, int imod) {
     if ((myMod=getModule(im))) {
         //extra gain and offset
         if(thisDetector->nGain)
-        	ret=writeCalibrationFile(ostfn.str(),gain, offset,(int64_t)thisDetector->tDead, thisDetector->myDetectorType);
+        	ret=writeCalibrationFile(ostfn.str(),gain, offset);
          //normal gain and offset inside sls_detector_module
         else
         	ret=writeCalibrationFile(ostfn.str(),myMod->gain, myMod->offset);

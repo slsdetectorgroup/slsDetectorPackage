@@ -28,8 +28,6 @@ int *detectorChips=NULL;
 int *detectorChans=NULL;
 dacs_t *detectorDacs=NULL;
 dacs_t *detectorAdcs=NULL;
-int* detectorGain = NULL;
-int* detectorOffset = NULL;
 
 int eiger_highvoltage = 0;
 int eiger_iodelay = 0;
@@ -101,16 +99,12 @@ int initDetector(){
 	detectorChans=malloc(n*NCHIP*NCHAN*sizeof(int));
 	detectorDacs=malloc(n*NDAC*sizeof(dacs_t));
 	detectorAdcs=malloc(n*NADC*sizeof(dacs_t));
-	detectorGain=malloc(n*NGAIN*sizeof(int));
-	detectorOffset=malloc(n*NOFFSET*sizeof(int));
 #ifdef VERBOSE
 	printf("modules from 0x%x to 0x%x\n",detectorModules, detectorModules+n);
 	printf("chips from 0x%x to 0x%x\n",detectorChips, detectorChips+n*NCHIP);
 	printf("chans from 0x%x to 0x%x\n",detectorChans, detectorChans+n*NCHIP*NCHAN);
 	printf("dacs from 0x%x to 0x%x\n",detectorDacs, detectorDacs+n*NDAC);
 	printf("adcs from 0x%x to 0x%x\n",detectorAdcs, detectorAdcs+n*NADC);
-	printf("gains from 0x%x to 0x%x\n",detectorGain, detectorGain+n*NGAIN);
-	printf("offsets from 0x%x to 0x%x\n",detectorOffset, detectorOffset+n*NOFFSET);
 #endif
 	for (imod=0; imod<n; imod++) {
 		(detectorModules+imod)->dacs=detectorDacs+imod*NDAC;
@@ -125,19 +119,9 @@ int initDetector(){
 		(detectorModules+imod)->gain=0;
 		(detectorModules+imod)->offset=0;
 		(detectorModules+imod)->reg=0;
-		/* initialize registers, dacs, retrieve sn, adc values etc */
 	}
-	for(i=0;i<NGAIN;i++)
-		detectorGain[i] = default_gain_values[(int)STANDARD];
-	for(i=0;i<NOFFSET;i++)
-		detectorOffset[i] = default_offset_values[(int)STANDARD];
 	thisSettings = UNINITIALIZED;
-	/*sChan=noneSelected;
-  sChip=noneSelected;
-  sMod=noneSelected;
-  sDac=noneSelected;
-  sAdc=noneSelected;
-	 */
+
 
 	//Feb and Beb Initializations
 	getModuleConfiguration();
@@ -619,7 +603,7 @@ void setDefaultSettingsTau_in_nsec(int t){
 	default_tau_from_file = t;
 }
 
-int setModule(sls_detector_module myMod, int* gain, int* offset,int* delay){
+int setModule(sls_detector_module myMod, int delay){
 	int retval[2];
 	int i;
 
@@ -627,25 +611,10 @@ int setModule(sls_detector_module myMod, int* gain, int* offset,int* delay){
 	printf("Setting module with settings %d\n",myMod.reg);
 	//#endif
 
-	//set the settings variable
 	setSettings( (enum detectorSettings)myMod.reg,-1);
 
-	//set the gains and offset variables locally
-	for(i=0;i<NGAIN;i++){
-		if(gain[i]>=0){
-			detectorGain[i] = gain[i];
-			printf("gain[%d]:%d\n",i,detectorGain[i]);
-		}else cprintf(RED,"gain not changed\n");
-	}
-	for(i=0;i<NOFFSET;i++){
-		if(offset[i]>=0){
-			detectorOffset[i] = offset[i];
-			printf("offset[%d]:%d\n",i,detectorOffset[i]);
-		}else cprintf(RED,"offset not changed\n");
-	}
-
-	if(setIODelay(*delay, -1)!= (*delay)){
-		cprintf(RED,"could not set iodelay %d\n",*delay);
+	if(setIODelay(delay, -1)!= delay){
+		cprintf(RED,"could not set iodelay %d\n",delay);
 		return FAIL;
 	}
 
@@ -682,20 +651,13 @@ int setModule(sls_detector_module myMod, int* gain, int* offset,int* delay){
 }
 
 
-int getModule(sls_detector_module *myMod, int* gain, int* offset){
+int getModule(sls_detector_module *myMod){
 	int i;
 	int retval[2];
-	//printf("get gainval[0]:%d\n",detectorGain[0]);
 
 	//dacs
 	for(i=0;i<NDAC;i++)
 		setDAC((enum detDacIndex)i,-1,-1,0,retval);
-
-	//gains, offsets
-	for(i=0;i<NGAIN;i++)
-		gain[i] = detectorGain[i];
-	for(i=0;i<NOFFSET;i++)
-		offset[i] = detectorOffset[i];
 
 	//trimbits
 	unsigned int* tt;
@@ -736,38 +698,8 @@ int getThresholdEnergy(int imod){
 
 int setThresholdEnergy(int ev, int imod){
 	printf(" Setting threshold energy:%d\n",ev);
-	int retval[2],i;
-	int thrvalue[NGAIN];
-	int average=0;
-	if(ev >= 0) {
-
-	  enum detDacIndex ind[NGAIN]={VCMP_LL,VCMP_LR,VCMP_RL, VCMP_RR}; 
-	  const char* vcmp[4]={"vcmp_ll","vcmp_lr","vcmp_rl","vcmp_rr"};
-	  int valid=0;
-	  
-	  //calculate thrvalues for dacs
-	  for(i=0;i<NGAIN;i++){
-	    
-	    thrvalue[i] = (int) (( ((double)detectorGain[i]/1000) * (-1) * ((double)ev/1000)) + ((double)detectorOffset[i]/1000));
-	    printf("detectorGain[i]:%d detectorOffset[i]:%d thrvalue[i]:%d\n",detectorGain[i],detectorOffset[i],thrvalue[i]);
-	    //put limits (VCMP SHOUDL ALWAYS BE BETWEEN 0 AND 2000
-	   
-	    //setdacs
-	    if(thrvalue[i]>=0 && thrvalue[i]<2001)valid++;
-	  }//ngains
-
-	  if( valid == NGAIN){
-	    eiger_photonenergy = ev;	 
-	    for(i=0;i<NGAIN;i++) {
-	      average+= thrvalue[i];
-	      setDAC(ind[i],thrvalue[i],-1,0,retval);
-	      if(retval[0] != thrvalue[i]) cprintf(BG_RED,"Failed to set %s to %d, got %d\n",vcmp[i], thrvalue[i],retval[0]);
-	    }
-	    average=(int) ((float)average/4.+0.5);
-	    setDAC(VCP,average,-1,0,retval);
-	    if(retval[0] != average) cprintf(BG_RED,"Failed to set VCP to %d, got %d\n",average, retval[0]);
-	  }
-	}
+	if(ev >= 0)
+		eiger_photonenergy = ev;
 	return  getThresholdEnergy(imod);
 }
 

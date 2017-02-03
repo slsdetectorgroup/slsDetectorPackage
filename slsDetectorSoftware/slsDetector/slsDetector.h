@@ -507,11 +507,12 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      \param fname name of the file to be written
      \param imod module number
      \param iodelay io delay (detector specific)
+     \param tau tau (detector specific)
      \returns OK or FAIL if the file could not be written   
      \sa ::sls_detector_module sharedSlsDetector mythenDetector::writeSettingsFile(string, int)
   */
   using energyConversion::writeSettingsFile;
-  int writeSettingsFile(string fname, int imod, int* iodelay=0);
+  int writeSettingsFile(string fname, int imod, int& iodelay, int& tau);
 
 
   /**
@@ -948,14 +949,15 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   /** 
       configure chip
       \param module module to be set - must contain correct module number and also channel and chip registers
-      \param gainval pointer to extra gain values
-      \param offsetval pointer to extra offset values
       \param iodelay iodelay (detector specific)
       \param tau tau (detector specific)
+      \param e_eV threashold in eV (detector specific)
+      \param gainval pointer to extra gain values
+      \param offsetval pointer to extra offset values
       \returns current register value
       \sa ::sls_detector_module
   */
-  int setModule(sls_detector_module module, int* gainval, int* offsetval,int* iodelay, int64_t tau);
+  int setModule(sls_detector_module module, int iodelay, int tau, int e_eV, int* gainval=0, int* offsetval=0);
   //virtual int setModule(sls_detector_module module);
 
   /**
@@ -989,6 +991,14 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      \returns current threshold value for imod in ev (-1 failed)
   */
   int setThresholdEnergy(int e_eV, int imod=-1, detectorSettings isettings=GET_SETTINGS); 
+
+  /**
+     set threshold energy
+     \param e_eV threshold in eV
+     \param isettings ev. change settings
+     \returns OK if successful, else FAIL
+  */
+  int setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings);
  
   /**
      get detector settings

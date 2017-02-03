@@ -126,7 +126,7 @@ class slsDetectorDefs: public virtual slsReceiverDefs{
 typedef struct {
   int module; /**< is the module number */
   int serialnumber;  /**< is the module serial number */
-  int nchan; /**< is the number of channels per chip */
+  int nchan; /**< is the number of channels on the module*/
   int nchip; /**< is the number of chips on the module */
   int ndac; /**< is the number of dacs on the module */
   int nadc; /**< is the number of adcs on the module */

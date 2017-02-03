@@ -433,10 +433,6 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   int setThresholdEnergy(int e_eV){return setThresholdEnergy(e_eV,-1);};
 
 
-  //  int getBeamEnergy(){return 2*getThresholdEnergy();};
-  //int setBeamEnergy(int e){return 2*setThresholdEnergy(e/2);};
-
-
   /**
      Prints receiver configuration
      \returns OK or FAIL

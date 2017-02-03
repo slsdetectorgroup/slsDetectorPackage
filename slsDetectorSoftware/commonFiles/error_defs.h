@@ -19,11 +19,12 @@ using namespace std;
 
 /** Error flags */
 /*Assumption: Only upto 63 detectors */
-#define CRITICAL_ERROR_MASK 0xFFFFFFFF
 
 #define MULTI_DETECTORS_NOT_ADDED			0x8000000000000000ULL
 
+#define CRITICAL_ERROR_MASK 				0xFFFFFFFF
 
+//											0xFFFFFFFF00000000ULL
 #define CANNOT_CONNECT_TO_DETECTOR  		0x4000000000000000ULL
 #define CANNOT_CONNECT_TO_RECEIVER  		0x2000000000000000ULL
 #define COULDNOT_SET_CONTROL_PORT			0x1000000000000000ULL
@@ -40,10 +41,9 @@ using namespace std;
 #define COULD_NOT_CONFIGURE_MAC				0x0002000000000000ULL
 #define COULDNOT_START_RECEIVER				0x0001000000000000ULL // default error like starting threads
 #define COULDNOT_STOP_RECEIVER				0x0000800000000000ULL
-
 //											0xFFFFFFFF00000000ULL
 
-
+//											0x00000000FFFFFFFFULL
 #define COULDNOT_SET_NETWORK_PARAMETER		0x0000000000000001ULL
 #define COULDNOT_SET_ROI					0x0000000000000002ULL
 #define RECEIVER_READ_FREQUENCY				0x0000000000000004ULL
@@ -74,8 +74,9 @@ using namespace std;
 #define RECEIVER_READ_TIMER				    0x0000000008000000ULL
 #define RECEIVER_ACQ_TIME_NOT_SET			0x0000000010000000ULL
 #define RECEIVER_FLIPPED_DATA_NOT_SET		0x0000000020000000ULL
-
+#define THRESHOLD_NOT_SET					0x0000000040000000ULL
 //											0x00000000FFFFFFFFULL
+
 /** @short class returning all error messages for error mask */
 class errorDefs {
 
@@ -233,6 +234,9 @@ public:
 
 		if(slsErrorMask&RECEIVER_FLIPPED_DATA_NOT_SET)
 			retval.append("Could not set receiver flipped data/bottom\n");
+
+		if(slsErrorMask&THRESHOLD_NOT_SET)
+			retval.append("Could not set threshold\n");
 
 		//------------------------------------------------------ length of message
 

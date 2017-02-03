@@ -72,14 +72,12 @@ int getChip(sls_detector_chip *myChip);
 
 
 #ifdef EIGERD
-int setModule(sls_detector_module myMod, int* gain, int* offset,int* delay);
-int getModule(sls_detector_module *myMod, int* gain, int* offset);
+int setModule(sls_detector_module myMod, int delay);
 #else
 int setModule(sls_detector_module myMod);
-int getModule(sls_detector_module *myMod);
 #endif
 
-
+int getModule(sls_detector_module *myMod);
 enum detectorSettings setSettings(enum detectorSettings sett, int imod);
 enum detectorSettings getSettings();
 

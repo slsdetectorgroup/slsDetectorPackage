@@ -69,85 +69,58 @@ int energyConversion::writeCalibrationFile(string fname, double gain, double off
 };
 
 
-int energyConversion::readCalibrationFile(string fname, int *gain, int *offset, int64_t &tau, detectorType myDetectorType){
-
-
+int energyConversion::readCalibrationFile(string fname, int *gain, int *offset){
 
 	string str;
 	ifstream infile;
 	double o,g;
 	int ig=0;
-	switch (myDetectorType) {
-	case EIGER:
-
-
-
 #ifdef VERBOSE
-		std::cout<< "Opening file "<< fname << std::endl;
+	std::cout<< "Opening file "<< fname << std::endl;
 #endif
-		infile.open(fname.c_str(), ios_base::in);
-		if (infile.is_open()) {
-			//get gain and offset
-			for (ig=0; ig<4; ig++) {
-				//while ( (getline(infile,str)) > -1) {
-				getline(infile,str);
+	infile.open(fname.c_str(), ios_base::in);
+	if (infile.is_open()) {
+		//get gain and offset
+		for (ig=0; ig<4; ig++) {
+			//while ( (getline(infile,str)) > -1) {
+			getline(infile,str);
 #ifdef VERBOSE
-				std::cout<< str << std::endl;
+			std::cout<< str << std::endl;
 #endif
-				istringstream ssstr(str);
-				ssstr >> o >> g;
-				offset[ig]=(int)(o*1000);
-				gain[ig]=(int)(g*1000);
-				// ig++;
-				if (ig>=4)
-					break;
-			}
-			//get tau
-			if (myDetectorType == EIGER) {
-				if(getline(infile,str)){
-					istringstream ssstr(str);
-					ssstr >> tau;
-#ifdef VERBOSE
-					std::cout<< "tau:" << tau << std::endl;
-#endif
-				}
-			}
-			infile.close();
-			cout << "Calibration file loaded: " << fname << endl;
-		} else {
-			cout << "Could not open calibration file: "<< fname << std::endl;
-			gain[0]=0;
-			offset[0]=0;
-#ifndef MYROOT
-			return FAIL;
-#endif
-			return -1;
+			istringstream ssstr(str);
+			ssstr >> o >> g;
+			offset[ig]=(int)(o*1000);
+			gain[ig]=(int)(g*1000);
+			// ig++;
+			if (ig>=4)
+				break;
 		}
+		infile.close();
+		cout << "Calibration file loaded: " << fname << endl;
+	} else {
+		cout << "Could not open calibration file: "<< fname << std::endl;
+		gain[0]=0;
+		offset[0]=0;
 #ifndef MYROOT
-		return OK;
-#endif
-		return 0;
-		break;
-	default:
-		std::cout<< "Writing Calibration Files for this detector not defined\n" << std::endl;
 		return FAIL;
+#endif
+		return -1;
 	}
+#ifndef MYROOT
+	return OK;
+#endif
+	return 0;
 
 };
 
-int energyConversion::writeCalibrationFile(string fname, int *gain, int *offset, int64_t tau, detectorType myDetectorType){
+int energyConversion::writeCalibrationFile(string fname, int *gain, int *offset){
   //std::cout<< "Function not yet implemented " << std::endl;
   ofstream outfile;	
-  switch (myDetectorType) {
-  case EIGER:
-
   outfile.open (fname.c_str());
-
   // >> i/o operations here <<
   if (outfile.is_open()) {
     for (int ig=0; ig<4; ig++)
       outfile << ((double)offset[ig]/1000) << " " << ((double)gain[ig]/1000) << std::endl;
-    outfile << tau << std::endl;
   } else {
     std::cout<< "Could not open calibration file "<< fname << " for writing" << std::endl;
 #ifndef MYROOT
@@ -161,13 +134,45 @@ int energyConversion::writeCalibrationFile(string fname, int *gain, int *offset,
   return OK;
 #endif
   return 0;
-  break;
-  default:
-	std::cout<< "Writing Calibration Files for this detector not defined\n" << std::endl;
-    return FAIL;
-  }
-
 };
+
+
+
+slsDetectorDefs::sls_detector_module* energyConversion::interpolateTrim(detectorType myDetectorType, sls_detector_module* a, sls_detector_module* b, const int energy, const int e1, const int e2){
+	// only implemented for eiger currently (in terms of which dacs)
+	if(myDetectorType != EIGER) {
+		printf("Interpolation of Trim values not implemented for this detector!\n");
+		return NULL;
+	}
+
+	sls_detector_module*  myMod = createModule(myDetectorType);
+	enum eiger_DacIndex{SVP,VTR,VRF,VRS,SVN,VTGSTV,VCMP_LL,VCMP_LR,CAL,VCMP_RL,RXB_RB,RXB_LB,VCMP_RR,VCP,VCN,VIS};
+
+	//Copy other dacs
+	int num_dacs_to_copy = 10;
+	int dacs_to_copy[] = {SVP,VTR,VRS,SVN,VTGSTV,CAL,RXB_RB,RXB_LB,VCN,VIS};
+	for (int i = 0; i <  num_dacs_to_copy; ++i) {
+		if(a->dacs[dacs_to_copy[i]] != b->dacs[dacs_to_copy[i]]) {
+			deleteModule(myMod);
+			return NULL;
+		}
+		myMod->dacs[dacs_to_copy[i]] = a->dacs[dacs_to_copy[i]];
+	}
+
+	//Interpolate vrf, vcmp, vcp
+	int num_dacs_to_interpolate = 6;
+	int dacs_to_interpolate[] = {VRF,VCMP_LL,VCMP_LR,VCMP_RL,VCMP_RR,VCP};
+	for (int i = 0; i <  num_dacs_to_interpolate; ++i) {
+		myMod->dacs[dacs_to_interpolate[i]] = linearInterpolation(energy, e1, e2,
+				a->dacs[dacs_to_interpolate[i]], b->dacs[dacs_to_interpolate[i]]);
+	}
+
+	//Interpolate all trimbits
+	for (int i = 0; i<myMod->nchan; i++)
+		myMod->chanregs[i] = linearInterpolation(energy, e1, e2, a->chanregs[i], b->chanregs[i]);
+	return myMod;
+}
+
 
 
 #ifndef MYROOT
@@ -175,7 +180,7 @@ int energyConversion::writeCalibrationFile(string fname, int *gain, int *offset,
 /* I/O */
 
 
-slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string fname,  detectorType myDetectorType, sls_detector_module *myMod, int* iodelay){
+slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string fname, detectorType myDetectorType, int& iodelay, int& tau, sls_detector_module* myMod){
 
 
 
@@ -353,7 +358,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 
 			infile.close();
 			strcpy(settingsFile,fname.c_str());
-			cout << "Settings file loaded: " << settingsFile << endl;
+			printf("Settings file loaded: %s\n",settingsFile);
 			return myMod;
 
 		}
@@ -365,12 +370,14 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 		infile.open(myfname.c_str(),ifstream::binary);
 		if (infile.is_open()) {
 			infile.read((char*) myMod->dacs,sizeof(dacs_t)*(myMod->ndac));
-			infile.read((char*) iodelay,sizeof(*iodelay));
+			infile.read((char*)&iodelay,sizeof(iodelay));
+			infile.read((char*)&tau,sizeof(tau));
 			infile.read((char*) myMod->chanregs,sizeof(int)*(myMod->nchan));
 #ifdef VERBOSE
 			for(int i=0;i<myMod->ndac;i++)
 				std::cout << "dac " << i << ":" << myMod->dacs[i] << std::endl;
-			std::cout << "iodelay:" << *iodelay << std::endl;
+			std::cout << "iodelay:" << iodelay << std::endl;
+			std::cout << "tau:" << tau << std::endl;
 #endif
 			if(infile.eof()){
 				cout<<endl<<"Error, could not load trimbits end of file, "<<myfname<<", reached."<<endl<<endl;
@@ -381,7 +388,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 			}
 			infile.close();
 			strcpy(settingsFile,fname.c_str());
-			cout << "Settings file loaded: " << settingsFile << endl;
+			printf("Settings file loaded: %s\n",settingsFile);
 			return myMod;
 
 		}
@@ -423,7 +430,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 
 			infile.close();
 			strcpy(settingsFile,fname.c_str());
-			cout << "Settings file loaded: " << settingsFile << endl;
+			printf("Settings file loaded: %s\n",settingsFile);
 			return myMod;
 
 		}
@@ -439,7 +446,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 
 	}
 
-	std::cout<< "Error: Could not open settings file " <<  myfname << std::endl;
+	printf("Error: Could not open settings file %s\n",  myfname.c_str());
 	if (nflag)
 		deleteModule(myMod);
 
@@ -450,7 +457,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 };
 
 
-int energyConversion::writeSettingsFile(string fname, detectorType myDetectorType, sls_detector_module mod, int* iodelay){
+int energyConversion::writeSettingsFile(string fname, detectorType myDetectorType, sls_detector_module mod, int& iodelay, int& tau){
 
 	ofstream outfile;
 
@@ -526,17 +533,19 @@ int energyConversion::writeSettingsFile(string fname, detectorType myDetectorTyp
 #ifdef VERBOSE
 			for(int i=0;i<mod.ndac;i++)
 				std::cout << "dac " << i << ":" << mod.dacs[i] << std::endl;
-			std::cout << "iodelay: " << *iodelay << std::endl;
+			std::cout << "iodelay: " << iodelay << std::endl;
+			std::cout << "tau: " << tau << std::endl;
 #endif
 			outfile.write((char*)mod.dacs, sizeof(dacs_t)*(mod.ndac));
-			outfile.write((char*)iodelay, sizeof(*iodelay));
+			outfile.write((char*)iodelay, sizeof(iodelay));
+			outfile.write((char*)tau, sizeof(tau));
 			outfile.write((char*)mod.chanregs, sizeof(int)*(mod.nchan));
 
 			outfile.close();
 			return slsDetectorDefs::OK;
 		}
 
-		std::cout<< "could not open SETTINGS file " << fname << std::endl;
+		printf("Could not open Settings file %s\n", fname.c_str());
 		return slsDetectorDefs::FAIL;
 	default:
 

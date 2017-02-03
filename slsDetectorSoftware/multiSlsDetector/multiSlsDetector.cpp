@@ -1141,41 +1141,54 @@ int multiSlsDetector::getThresholdEnergy(int pos) {
 
 int multiSlsDetector::setThresholdEnergy(int e_eV, int pos, detectorSettings isettings) {
 
-  int i, posmin, posmax;
-  int ret1=-100, ret;
+	int posmin, posmax;
+	int ret=-100;
+	if (pos<0) {
+		posmin=0;
+		posmax=thisMultiDetector->numberOfDetectors;
+	} else {
+		posmin=pos;
+		posmax=pos+1;
+	}
 
-  if (pos<0) {
-    posmin=0;
-    posmax=thisMultiDetector->numberOfDetectors;
-  } else {
-    posmin=pos;
-    posmax=pos+1;
-  }
+	if(!threadpool){
+		cout << "Error in creating threadpool. Exiting" << endl;
+		return -1;
+	}else{
+		//return storage values
+		int* iret[posmax-posmin];
+		for(int idet=posmin; idet<posmax; idet++){
+			if(detectors[idet]){
+				iret[idet]= new int(-1);
+				Task* task = new Task(new func3_t<int,slsDetector,int,int,detectorSettings,int>(&slsDetector::setThresholdEnergy,
+						detectors[idet],e_eV,-1,isettings,iret[idet]));
+				threadpool->add_task(task);
+			}
+		}
+		threadpool->startExecuting();
+		threadpool->wait_for_tasks_to_complete();
+		for(int idet=posmin; idet<posmax; idet++){
+			if(detectors[idet]){
+				if(iret[idet] != NULL){
+					if (ret==-100)
+						ret=*iret[idet];
+					else if (ret<(*iret[idet]-200) || ret>(*iret[idet]+200))
+							ret=-1;
+					delete iret[idet];
+				}else ret=-1;
+				if(detectors[idet]->getErrorMask())
+					setErrorMask(getErrorMask()|(1<<idet));
+			}
+		}
+	}
 
-  for (i=posmin; i<posmax; i++) {
-    if (detectors[i]) {
-      ret=detectors[i]->setThresholdEnergy(e_eV,-1,isettings);
-      if(detectors[i]->getErrorMask())
-	setErrorMask(getErrorMask()|(1<<i));
-#ifdef VERBOSE
-      cout << "detetcor " << i << " threshold " << ret << endl;
-#endif
-      if (ret1==-100)
-	ret1=ret;
-      else if (ret<(ret1-200) || ret>(ret1+200))
-	ret1=FAIL;
-      
-#ifdef VERBOSE
-      cout << "return value " << ret1 << endl;
-#endif
-    }
-   
-  }
-  thisMultiDetector->currentThresholdEV=ret1;
-  return ret1;
-
+	thisMultiDetector->currentThresholdEV=ret;
+	return ret;
 }
  
+
+
+
 slsDetectorDefs::detectorSettings multiSlsDetector::getSettings(int pos) {
 
   int i, posmin, posmax;

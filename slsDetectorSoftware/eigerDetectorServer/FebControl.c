@@ -607,14 +607,22 @@ int Feb_Control_SendHighVoltage(int dacvalue){
 		char buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE];
 		buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE-2]='\0';
 		buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE-1]='\n';
-		int n = 0;
+		int n;
 		sprintf(buffer,"p%d ",dacvalue);
 		n = write(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
+		if (n < 0) {
+			cprintf(RED,"\nWarning: Error writing to i2c bus\n");
+			return 0;
+		}
 #ifdef VERBOSEI
 		cprintf(BLUE,"Sent %d Bytes\n", n);
 #endif
 		//ok/fail
 		n = read(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
+		if (n < 0) {
+			cprintf(RED,"\nWarning: Error reading from i2c bus\n");
+			return 0;
+		}
 #ifdef VERBOSEI
 		cprintf(BLUE,"Received %d Bytes\n", n);
 #endif
@@ -686,12 +694,20 @@ int Feb_Control_ReceiveHighVoltage(unsigned int* value){
 		//request
 		strcpy(buffer,"g ");
 		n = write(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
+		if (n < 0) {
+			cprintf(RED,"\nWarning: Error writing to i2c bus\n");
+			return 0;
+		}
 #ifdef VERBOSEI
 		cprintf(BLUE,"Sent %d Bytes\n", n);
 #endif
 
 		//ok/fail
 		n = read(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
+		if (n < 0) {
+			cprintf(RED,"\nWarning: Error reading from i2c bus\n");
+			return 0;
+		}
 #ifdef VERBOSEI
 		cprintf(BLUE,"Received %d Bytes\n", n);
 #endif
@@ -701,6 +717,10 @@ int Feb_Control_ReceiveHighVoltage(unsigned int* value){
 		}
 
 		n = read(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
+		if (n < 0) {
+			cprintf(RED,"\nWarning: Error reading from i2c bus\n");
+			return 0;
+		}
 #ifdef VERBOSEI
 		cprintf(BLUE,"Received %d Bytes\n", n);
 #endif

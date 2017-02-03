@@ -184,7 +184,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   i++;
 
   descrToFuncMap[i].m_pFuncName="trimen";
-  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdUnderDevelopment;
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTrimEn;
   i++;
 
 
@@ -3278,15 +3278,28 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
   myDet->setOnline(ONLINE_FLAG);
 
   if (cmd=="settings") {
-    if (action==PUT_ACTION)
-      myDet->setSettings(myDet->getDetectorSettings(string(args[1])));
+	detectorSettings sett = GET_SETTINGS;
+    if (action==PUT_ACTION) {
+      sett = myDet->setSettings(myDet->getDetectorSettings(string(args[1])));
+      if (myDet->getDetectorsType() == EIGER) {
+        return myDet->getDetectorSettings(sett);
+      }
+    }
     return myDet->getDetectorSettings(myDet->getSettings());
   } else if (cmd=="threshold") {
     if (action==PUT_ACTION) {
-      if (sscanf(args[1],"%d",&val))
-	myDet->setThresholdEnergy(val);
-      else
-	return string("invalid threshold value ")+cmd;
+      detectorType type = myDet->getDetectorsType();
+      if (!sscanf(args[1],"%d",&val)) {
+    	  return string("invalid threshold value");
+      }
+      if (type != EIGER || (type == EIGER && narg<=2)) {
+    	  myDet->setThresholdEnergy(val);
+      } else {
+        detectorSettings sett= myDet->getDetectorSettings(string(args[2]));
+        if(sett == -1)
+          return string("invalid settings value");
+        myDet->setThresholdEnergy(val, -1, sett);
+      }
     }
     sprintf(ans,"%d",myDet->getThresholdEnergy());
     return string(ans);

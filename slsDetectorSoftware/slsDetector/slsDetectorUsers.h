@@ -302,19 +302,6 @@ class slsDetectorUsers
   */
    int setThresholdEnergy(int e_eV);
 
-  /**
-     @short get beam energy -- only for dectris!
-    \returns current beam energy
-  */
-   int getBeamEnergy();  
-
-
-  /**
-     @short set beam energy -- only for dectris!
-    \param e_eV beam in eV
-    \returns current beam energyin ev (-1 failed)
-  */
-   int setBeamEnergy(int e_eV);
 
    /**
         @short set/get exposure time value

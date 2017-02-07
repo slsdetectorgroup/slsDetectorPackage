@@ -12,7 +12,11 @@
 
 #include "ThreadObject.h"
 
+class GeneralData;
 class Fifo;
+class FileWriter;
+
+#include <vector>
 
 class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	
@@ -21,8 +25,10 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * Constructor
 	 * Calls Base Class CreateThread(), sets ErrorMask if error and increments NumberofDataProcessors
 	 * @param f address of Fifo pointer
+	 * @param s pointer to receiver status
+	 * @param m pointer to mutex for status
 	 */
-	DataProcessor(Fifo*& f);
+	DataProcessor(Fifo*& f, runStatus* s, pthread_mutex_t* m);
 
 	/**
 	 * Destructor
@@ -48,6 +54,12 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @return measurement started flag
 	 */
 	static bool GetMeasurementStartedFlag();
+
+	/**
+	 * Set GeneralData pointer to the one given
+	 * @param g address of GeneralData (Detector Data) pointer
+	 */
+	static void SetGeneralData(GeneralData*& g);
 
 	/**
 	 * Get Total Complete Frames Caught for an entire acquisition (including all scans)
@@ -124,6 +136,13 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	void ThreadExecution();
 
+	/**
+	 * Frees dummy buffer,
+	 * reset running mask by calling StopRunning()
+	 * @param buf address of pointer
+	 */
+	void StopProcessing(char* buf);
+
 
 
 	/** type of thread */
@@ -141,6 +160,9 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	/** mutex to update static items among objects (threads)*/
 	static pthread_mutex_t Mutex;
 
+	/** GeneralData (Detector Data) object */
+	static const GeneralData* generalData;
+
 	/** Fifo structure */
 	Fifo* fifo;
 
@@ -151,6 +173,12 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** Measurement Started flag */
 	static bool measurementStartedFlag;
+
+	/** Receiver Status */
+	runStatus* status;
+
+	/** Status mutex */
+	pthread_mutex_t* statusMutex;
 
 	/**Number of complete frames caught for an entire acquisition (including all scans) */
 	uint64_t numTotalFramesCaught;
@@ -167,6 +195,8 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	/** Frame Number of latest processed frame number of an entire Acquisition (including all scans) */
 	uint64_t currentFrameIndex;
 
+	/** File writer implemented as binary or hdf5 filewriter */
+	std::vector <FileWriter*> fileWriter;
 };
 
 #endif

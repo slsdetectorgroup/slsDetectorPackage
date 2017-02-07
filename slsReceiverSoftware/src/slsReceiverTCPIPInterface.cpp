@@ -23,8 +23,8 @@ using namespace std;
 
 
 slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
-	/*stop();
-	if(mySock) {delete mySock; mySock=NULL;}*/
+	stop();
+	if(mySock) {delete mySock; mySock=NULL;}
 }
 
 slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface* rbase, int pn):
@@ -55,7 +55,7 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 
 	success=OK;
 
-	/*//create socket
+	//create socket
 	if(success == OK){
 		mySock = new MySocketTCP(port_no);
 		if (mySock->getErrorStatus()) {
@@ -73,7 +73,7 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 			cout << "Function table assigned." << endl;
 #endif
 		}
-	}*/
+	}
 
 }
 

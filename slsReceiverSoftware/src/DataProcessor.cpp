@@ -7,7 +7,12 @@
 
 
 #include "DataProcessor.h"
+#include "GeneralData.h"
 #include "Fifo.h"
+#include "BinaryFileWriter.h"
+#ifdef HDF5C
+#include "HDF5FileWriter.h"
+#endif
 
 #include <iostream>
 #include <cstring>
@@ -23,14 +28,18 @@ uint64_t DataProcessor::RunningMask(0x0);
 
 pthread_mutex_t DataProcessor::Mutex = PTHREAD_MUTEX_INITIALIZER;
 
+const GeneralData* DataProcessor::generalData(0);
+
 bool DataProcessor::acquisitionStartedFlag(false);
 
 bool DataProcessor::measurementStartedFlag(false);
 
 
-DataProcessor::DataProcessor(Fifo*& f) :
+DataProcessor::DataProcessor(Fifo*& f, runStatus* s, pthread_mutex_t* m) :
 		ThreadObject(NumberofDataProcessors),
 		fifo(f),
+		status(s),
+		statusMutex(m),
 		numTotalFramesCaught(0),
 		numFramesCaught(0),
 		firstAcquisitionIndex(0),
@@ -51,8 +60,14 @@ DataProcessor::DataProcessor(Fifo*& f) :
 
 DataProcessor::~DataProcessor() {
 	FILE_LOG (logDEBUG) << __AT__ << " called";
+
+	for (vector<FileWriter*>::const_iterator it = fileWriter.begin(); it != fileWriter.end(); ++it)
+		delete(*it);
+	fileWriter.clear();
+
 	ThreadObject::DestroyThread();
 	NumberofDataProcessors--;
+
 }
 
 /** static functions */
@@ -73,6 +88,15 @@ bool DataProcessor::GetAcquisitionStartedFlag(){
 bool DataProcessor::GetMeasurementStartedFlag(){
 	FILE_LOG (logDEBUG) << __AT__ << " called";
 	return measurementStartedFlag;
+}
+
+
+void DataProcessor::SetGeneralData(GeneralData*& g) {
+	FILE_LOG (logDEBUG) << __AT__ << " called";
+	generalData = g;
+#ifdef VERY_VERBOSE
+	generalData->Print();
+#endif
 }
 
 
@@ -163,22 +187,39 @@ void DataProcessor::ThreadExecution() {
 	char* buffer=0;
 	fifo->PopAddress(buffer);
 #ifdef FIFODEBUG
-	cprintf(BLUE,"DataProcessor %d, pop 0x%p buffer:%s\n", index,(void*)(buffer),buffer);
+	if (!index) cprintf(BLUE,"DataProcessor %d, pop 0x%p buffer:%s\n", index,(void*)(buffer),buffer);
 #endif
 	uint32_t numPackets = (uint32_t)(*((uint32_t*)buffer));
-
-	if(numPackets == DUMMY_PACKET_VALUE){
-		cprintf(GREEN,"DataProcessing %d: Got dummy value*****\n");
-		StopRunning();
-		fifo->FreeAddress(buffer);
+	if (numPackets == DUMMY_PACKET_VALUE) {
+		StopProcessing(buffer);
 		return;
 	}
 
 	uint64_t fnum; uint32_t pnum; uint32_t snum; uint64_t bcid;
-	GetHeaderInfo(index,buffer+generalData->fifoBufferHeaderSize,16,fnum,pnum,snum,bcid);
-	cprintf(GREEN,"DataProcessing %d: fnum:%lld, pnum:%d\n",(long long int)fnum, pnum);
+	generalData->GetHeaderInfo(index,buffer+generalData->fifoBufferHeaderSize,16,fnum,pnum,snum,bcid);
+	if (!index) cprintf(BLUE,"DataProcessing %d: fnum:%lld, pnum:%d\n", index, (long long int)fnum, pnum);
 
 	fifo->FreeAddress(buffer);
+}
+
+
+
+void DataProcessor::StopProcessing(char* buf) {
+	FILE_LOG (logDEBUG) << __AT__ << " called";
+
+	cprintf(BLUE,"%d: End of Processing\n", index);
+
+	fifo->FreeAddress(buf);
+	StopRunning();
+
+	if (!index) {
+		while (RunningMask)
+			usleep(5000);
+		pthread_mutex_lock(statusMutex);
+		*status = RUN_FINISHED;
+		pthread_mutex_unlock((statusMutex));
+		FILE_LOG(logINFO)  << "Status: " << runStatusType(*status);
+	}
 }
 
 

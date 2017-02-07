@@ -15,7 +15,6 @@ class Listener;
 class DataProcessor;
 class DataStreamer;
 class Fifo;
-class FileWriter;
 
 #include <vector>
 
@@ -179,6 +178,7 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 */
 	void closeFiles();
 
+
 private:
 
     /**
@@ -243,6 +243,10 @@ private:
 	/** Number of Jobs */
 	int numberofJobs;
 
+	//*** mutex ***
+	/** Status mutex */
+	pthread_mutex_t statusMutex;
+
 
 	//** class objects ***
 	/** General Data Properties */
@@ -260,8 +264,6 @@ private:
 	/** Fifo Structure to store addresses of memory writes */
 	std::vector <Fifo*> fifo;
 
-	/** File writer implemented as binary or hdf5 filewriter */
-	std::vector <FileWriter*> fileWriter;
 };
 
 

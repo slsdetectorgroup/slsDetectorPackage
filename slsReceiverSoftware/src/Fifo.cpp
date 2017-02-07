@@ -26,6 +26,7 @@ Fifo::Fifo(uint32_t fifoItemSize, uint32_t fifoDepth, bool &success):
 
 Fifo::~Fifo() {
 	FILE_LOG (logDEBUG) << __AT__ << " called";
+	cprintf(RED,"destroying fifos\n");
 	DestroyFifos();
 	NumberofFifoClassObjects--;
 }

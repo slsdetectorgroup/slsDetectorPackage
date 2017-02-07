@@ -10,10 +10,6 @@
 #include "DataProcessor.h"
 #include "DataStreamer.h"
 #include "Fifo.h"
-#include "BinaryFileWriter.h"
-#ifdef HDF5C
-#include "HDF5FileWriter.h"
-#endif
 
 #include <cstdlib>			//system
 #include <cstring>			//strcpy
@@ -39,11 +35,18 @@ void UDPStandardImplementation::DeleteMembers() {
 	FILE_LOG (logDEBUG) << __AT__ << " starting";
 
 	if (generalData) { delete generalData; generalData=0;}
+	for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
+		delete(*it);
 	listener.clear();
+	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
+		delete(*it);
 	dataProcessor.clear();
+	for (vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
+		delete(*it);
 	dataStreamer.clear();
+	for (vector<Fifo*>::const_iterator it = fifo.begin(); it != fifo.end(); ++it)
+		delete(*it);
 	fifo.clear();
-	fileWriter.clear();
 }
 
 
@@ -60,13 +63,11 @@ void UDPStandardImplementation::InitializeMembers() {
 	numThreads = 1;
 	numberofJobs = 1;
 
+	//*** mutex ***
+	pthread_mutex_init(&statusMutex,NULL);
+
 	//** class objects ***
 	generalData = 0;
-	listener.clear();
-	dataProcessor.clear();
-	dataStreamer.clear();
-	fifo.clear();
-	fileWriter.clear();
 }
 
 
@@ -142,6 +143,9 @@ int UDPStandardImplementation::setShortFrameEnable(const int i) {
 		numberofJobs = -1; //changes to imagesize has to be noted to recreate fifo structure
 		if (SetupFifoStructure() == FAIL)
 			return FAIL;
+
+		Listener::SetGeneralData(generalData);
+		DataProcessor::SetGeneralData(generalData);
 	}
 	FILE_LOG (logINFO) << "Short Frame Enable: " << shortFrameEnable;
 	return OK;
@@ -177,14 +181,18 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {
 		dataStreamEnable = enable;
 
 		//data sockets have to be created again as the client ones are
-		if (dataStreamer.size())
-			dataStreamer.clear();
+		for (vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
+			delete(*it);
+		dataStreamer.clear();
 
 		if (enable) {
 			for ( int i=0; i < numThreads; ++i ) {
 				dataStreamer.push_back(new DataStreamer());
 				if (DataStreamer::GetErrorMask()) {
 					cprintf(BG_RED,"Error: Could not create data callback threads\n");
+					for (vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
+						delete(*it);
+					dataStreamer.clear();
 					return FAIL;
 				}
 			}
@@ -316,7 +324,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 
 	FILE_LOG (logDEBUG) << "Setting receiver type";
 
-	DeleteMembers();
+	DeleteMembers();cout<<"size of fifo:"<<fifo.size()<<endl;
 	InitializeMembers();
 	myDetectorType = d;
 	switch(myDetectorType) {
@@ -344,23 +352,30 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	case JUNGFRAU:		generalData = new JungfrauData();	break;
 	default: break;
 	}
+	Listener::SetGeneralData(generalData);
+	DataProcessor::SetGeneralData(generalData);
 	numThreads = generalData->threadsPerReceiver;
+	fifoDepth = generalData->defaultFifoDepth;
 
+	//create fifo structure
+	numberofJobs = -1;
+	if (SetupFifoStructure() == FAIL) {
+		FILE_LOG (logERROR) << "Error: Could not allocate memory for fifo structure";
+		return FAIL;
+	}
 
+	//create threads
 	for ( int i=0; i < numThreads; ++i ) {
-
-		//create fifo structure
-		numberofJobs = -1;
-		if (SetupFifoStructure() == FAIL) {
-			FILE_LOG (logERROR) << "Error: Could not allocate memory for fifo (index:" << i << ")";
-			return FAIL;
-		}
-
-		//create threads
-		listener.push_back(new Listener(fifo[i]));
-		dataProcessor.push_back(new DataProcessor(fifo[i]));
+		listener.push_back(new Listener(fifo[i], &status, &udpPortNum[i]));
+		dataProcessor.push_back(new DataProcessor(fifo[i], &status, &statusMutex));
 		if (Listener::GetErrorMask() || DataProcessor::GetErrorMask()) {
 			FILE_LOG (logERROR) << "Error: Could not creates listener/dataprocessor threads (index:" << i << ")";
+			for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
+				delete(*it);
+			listener.clear();
+			for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
+				delete(*it);
+			dataProcessor.clear();
 			return FAIL;
 		}
 	}
@@ -407,6 +422,11 @@ int UDPStandardImplementation::startReceiver(char *c) {
 		}
 	}
 
+	//change status
+	pthread_mutex_lock(&statusMutex);
+	status = RUNNING;
+	pthread_mutex_unlock(&(statusMutex));
+
 	//Let Threads continue to be ready for acquisition
 	StartRunning();
 
@@ -428,11 +448,11 @@ void UDPStandardImplementation::stopReceiver(){
 		usleep(5000);
 	}
 
-/*	//change status
+	//change status
 	pthread_mutex_lock(&statusMutex);
 	status = IDLE;
 	pthread_mutex_unlock(&(statusMutex));
-*/
+
 	FILE_LOG(logINFO)  << "Receiver Stopped";
 	FILE_LOG(logINFO)  << "Status: " << runStatusType(status);
 	cout << endl << endl;
@@ -489,10 +509,10 @@ void UDPStandardImplementation::startReadout(){
 			}
 		}
 
-		/*//set status
+		//set status
 		pthread_mutex_lock(&statusMutex);
 		status = TRANSMITTING;
-		pthread_mutex_unlock(&statusMutex);*/
+		pthread_mutex_unlock(&statusMutex);
 
 		FILE_LOG(logINFO) << "Status: Transmitting";
 	}
@@ -515,7 +535,6 @@ void UDPStandardImplementation::closeFiles() {
 	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
 		(*it)->CloseFile();
 }
-
 
 
 
@@ -553,7 +572,7 @@ int UDPStandardImplementation::SetupFifoStructure() {
 
 
 	//recalculate number of jobs &  fifodepth, return if no change
-	if ((myDetectorType == GOTTHARD) || (myDetectorType = PROPIX)) {
+	if ((myDetectorType == GOTTHARD) || (myDetectorType == PROPIX)) {
 
 		int oldnumberofjobs = numberofJobs;
 		//listen to only n jobs at a time
@@ -585,24 +604,27 @@ int UDPStandardImplementation::SetupFifoStructure() {
 		numberofJobs = 1;
 
 
-	//create fifostructure
+	for (vector<Fifo*>::const_iterator it = fifo.begin(); it != fifo.end(); ++it)
+		delete(*it);
 	fifo.clear();
-	for ( int i=0; i < numThreads; i++ ) {
-
+	for ( int i = 0; i < numThreads; i++ ) {
 		//create fifo structure
 		bool success = true;
 		fifo.push_back( new Fifo (
 				(generalData->fifoBufferSize) * numberofJobs + (generalData->fifoBufferHeaderSize),
 				fifoDepth, success));
 		if (!success) {
-			cprintf(BG_RED,"Error: Could not allocate memory for listening \n");
+			cprintf(BG_RED,"Error: Could not allocate memory for fifo structure of index %d\n", i);
+			for (vector<Fifo*>::const_iterator it = fifo.begin(); it != fifo.end(); ++it)
+				delete(*it);
+			fifo.clear();
 			return FAIL;
 		}
-
 		//set the listener & dataprocessor threads to point to the right fifo
-		listener[i]->SetFifo(fifo[i]);
-		dataProcessor[i]->SetFifo(fifo[i]);
+		if(listener.size())listener[i]->SetFifo(fifo[i]);
+		if(dataProcessor.size())dataProcessor[i]->SetFifo(fifo[i]);
 	}
+
 	FILE_LOG (logINFO) << "Fifo structure(s) reconstructed";
 	return OK;
 }
@@ -633,8 +655,7 @@ int UDPStandardImplementation::CreateUDPSockets() {
 	}
 	bool error = false;
 	for (unsigned int i = 0; i < listener.size(); ++i)
-		if (listener[i]->CreateUDPSockets(udpPortNum[i], generalData->packetSize,
-				(strlen(eth)?eth:NULL), generalData->headerPacketSize) == FAIL) {
+		if (listener[i]->CreateUDPSockets((strlen(eth)?eth:NULL)) == FAIL) {
 			error = true;
 			break;
 		}

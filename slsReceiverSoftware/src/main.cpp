@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
 	//receiver->registerCallBackRawDataReady(rawDataReadyCallBack,NULL);
 
 
-/*
+
 	//start tcp server thread
 	if(receiver->start() == slsReceiverDefs::OK){
 		FILE_LOG(logDEBUG1) << "DONE!" << endl;
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
 		//stop tcp server thread, stop udp socket
 		receiver->stop();
 	}
-*/
+
 	deleteReceiver(receiver);
 	cout << "Goodbye!" << endl;
 	return 0;

@@ -12,6 +12,7 @@
 
 #include "ThreadObject.h"
 
+class GeneralData;
 class Fifo;
 class genericSocket;
 
@@ -22,8 +23,10 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * Constructor
 	 * Calls Base Class CreateThread(), sets ErrorMask if error and increments NumberofListerners
 	 * @param f address of Fifo pointer
+	 * @param s pointer to receiver status
+	 * @param portno pointer to udp port number
 	 */
-	Listener(Fifo*& f);
+	Listener(Fifo*& f, runStatus* s, uint32_t* portno);
 
 	/**
 	 * Destructor
@@ -51,6 +54,12 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	static bool GetMeasurementStartedFlag();
 
 	/**
+	 * Set GeneralData pointer to the one given
+	 * @param g address of GeneralData (Detector Data) pointer
+	 */
+	static void SetGeneralData(GeneralData*& g);
+
+	/**
 	 * Get Total Packets caught in an acquisition
 	 * @return Total Packets caught in an acquisition
 	 */
@@ -71,6 +80,7 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	void StopRunning();
 
+
 	/**
 	 * Set Fifo pointer to the one given
 	 * @param f address of Fifo pointer
@@ -89,13 +99,10 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 
 	/**
 	 * Creates UDP Sockets
-	 * @param portnumber udp port number
-	 * @param packetSize size of one packet
 	 * @param eth ethernet interface or null
-	 * @param headerPacketSize size of a header packet
 	 * @return OK or FAIL
 	 */
-	int CreateUDPSockets(uint32_t portnumber, uint32_t packetSize, const char* eth, uint32_t headerPacketSize);
+	int CreateUDPSockets(const char* eth);
 
 	/**
 	 * Shuts down and deletes UDP Sockets
@@ -126,6 +133,14 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	void ThreadExecution();
 
+	/**
+	 * Pushes non empty buffers into fifo/ frees empty buffer,
+	 * pushes dummy buffer into fifo
+	 * and reset running mask by calling StopRunning()
+	 * @param buf address of buffer
+	 */
+	void StopListening(char* buf);
+
 
 	/** type of thread */
 	static const std::string TypeName;
@@ -142,6 +157,9 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	/** Mutex to update static items among objects (threads)*/
 	static pthread_mutex_t Mutex;
 
+	/** GeneralData (Detector Data) object */
+	static const GeneralData* generalData;
+
 	/** Fifo structure */
 	Fifo* fifo;
 
@@ -152,6 +170,15 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** Measurement Started flag */
 	static bool measurementStartedFlag;
+
+	/** Receiver Status */
+	runStatus* status;
+
+	/** UDP Sockets - Detector to Receiver */
+	genericSocket* udpSocket;
+
+	/** UDP Port Number */
+	uint32_t* udpPortNumber;
 
 	/**Number of complete Packets caught for an entire acquisition (including all scans) */
 	uint64_t numTotalPacketsCaught;
@@ -165,8 +192,6 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	/** Frame Number of First Frame for each real time acquisition (eg. for each scan) */
 	uint64_t firstMeasurementIndex;
 
-	/** UDP Sockets - Detector to Receiver */
-	genericSocket* udpSocket;
 };
 
 #endif

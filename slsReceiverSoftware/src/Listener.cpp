@@ -7,6 +7,7 @@
 
 
 #include "Listener.h"
+#include "GeneralData.h"
 #include "Fifo.h"
 #include "genericSocket.h"
 
@@ -24,13 +25,18 @@ uint64_t Listener::RunningMask(0x0);
 
 pthread_mutex_t Listener::Mutex = PTHREAD_MUTEX_INITIALIZER;
 
+const GeneralData* Listener::generalData(0);
+
 bool Listener::acquisitionStartedFlag(false);
 
 bool Listener::measurementStartedFlag(false);
 
-Listener::Listener(Fifo*& f) :
+Listener::Listener(Fifo*& f, runStatus* s, uint32_t* portno) :
 		ThreadObject(NumberofListeners),
 		fifo(f),
+		status(s),
+		udpSocket(0),
+		udpPortNumber(portno),
 		numTotalPacketsCaught(0),
 		numPacketsCaught(0),
 		firstAcquisitionIndex(0),
@@ -72,6 +78,14 @@ bool Listener::GetAcquisitionStartedFlag(){
 bool Listener::GetMeasurementStartedFlag(){
 	FILE_LOG (logDEBUG) << __AT__ << " called";
 	return measurementStartedFlag;
+}
+
+void Listener::SetGeneralData(GeneralData*& g) {
+	FILE_LOG (logDEBUG) << __AT__ << " called";
+	generalData = g;
+//#ifdef VERY_VERBOSE
+	generalData->Print();
+//#endif
 }
 
 
@@ -157,43 +171,88 @@ void Listener::ThreadExecution() {
 	char* buffer;
 	fifo->GetNewAddress(buffer);
 #ifdef FIFODEBUG
-	cprintf(GREEN,"Listener %d, pop 0x%p buffer:%s\n", index,(void*)(buffer),buffer);
+	if (!index) cprintf(GREEN,"Listener %d, pop 0x%p buffer:%s\n", index,(void*)(buffer),buffer);
 #endif
 
-	int rc;
+	int rc = 0;
 
-	while ((rc>0 && rc < generalData->packetSize)) {
-		rc = udpSocket->ReceiveDataOnly(buffer + generalData->fifoBufferHeaderSize,fifoBufferSize);
-		cprintf(BLUE,"Listening %d: rc: %d\n",index,rc);
-		uint64_t fnum; uint32_t pnum; uint32_t snum; uint64_t bcid;
-		GetHeaderInfo(index,buffer,16,fnum,pnum,snum,bcid);
-		cprintf(BLUE,"Listening %d: fnum:%lld, pnum:%d\n",(long long int)fnum, pnum);
-		*((uint32_t*)(buffer[ithread])) = (rc/generalData->packetSize);
+	//udpsocket doesnt exist
+	if (!udpSocket) {
+		FILE_LOG(logERROR) << "Listening_Thread " << index << ": UDP Socket not created or shut down earlier";
+		(*((uint32_t*)buffer)) = 0;
+		StopListening(buffer);
+		return;
 	}
 
-	if(rc <=0 ){
-		cprintf(BLUE,"Listening %d: Gonna send dummy value*****\n");
-		(*((uint32_t*)buffer)) = DUMMY_PACKET_VALUE;
-		StopRunning();
+	//get data
+	if (*status != TRANSMITTING) {
+		rc = udpSocket->ReceiveDataOnly(buffer + generalData->fifoBufferHeaderSize,generalData->fifoBufferSize);
+		if (!index) cprintf(GREEN,"Listening %d: rc: %d\n",index,rc);
+		(*((uint32_t*)buffer)) = ((rc <= 0) ? 0 : rc);
 	}
 
+	//done acquiring
+	if (*status == TRANSMITTING) {
+		StopListening(buffer);
+		return;
+	}
+
+	uint64_t fnum; uint32_t pnum; uint32_t snum; uint64_t bcid=0;
+	generalData->GetHeaderInfo(index,buffer + generalData->fifoBufferHeaderSize,16,fnum,pnum,snum,bcid);
+	if (!index) cprintf(GREEN,"Listening %d: fnum:%lld, pnum:%d\n", index, (long long int)fnum, pnum);
+
+	//push into fifo
 	fifo->PushAddress(buffer);
 }
 
 
-int Listener::CreateUDPSockets(uint32_t portnumber, uint32_t packetSize, const char* eth, uint32_t headerPacketSize) {
+
+void Listener::StopListening(char* buf) {
 	FILE_LOG (logDEBUG) << __AT__ << " called";
 
-	udpSocket = new genericSocket(portnumber, genericSocket::UDP, packetSize, eth, headerPacketSize);
+	cprintf(BLUE,"%d: End of Listening\n", index);
+
+	uint32_t numPackets = (uint32_t)(*((uint32_t*)buf));
+
+	//incomplete packets
+	if (numPackets > 0) {
+		fifo->PushAddress(buf);
+		fifo->GetNewAddress(buf);
+#ifdef FIFODEBUG
+		if (!index) cprintf(GREEN,"Listener %d, Got incomplete, for dummy: pop 0x%p buffer:%s\n", index,(void*)(buf),buf);
+#endif
+	}
+
+	//dummy
+	(*((uint32_t*)buf)) = DUMMY_PACKET_VALUE;
+	fifo->PushAddress(buf);
+
+	StopRunning();
+
+//#ifdef DEBUG4
+	if (!index) FILE_LOG(logINFO) << "Listening Thread (" << *udpPortNumber << ")"
+			" Packets caught: " << numPacketsCaught;
+//#endif
+
+}
+
+
+
+int Listener::CreateUDPSockets(const char* eth) {
+	FILE_LOG (logDEBUG) << __AT__ << " called";
+
+	udpSocket = new genericSocket(*udpPortNumber, genericSocket::UDP,
+			generalData->packetSize, eth, generalData->headerPacketSize);
 	int iret = udpSocket->getErrorStatus();
 	if(!iret){
-		cout << "UDP port opened at port " << portnumber << endl;
+		cout << "UDP port opened at port " << *udpPortNumber << endl;
 	}else{
-		FILE_LOG(logERROR) << "Could not create UDP socket on port " << portnumber << " error: " << iret;
+		FILE_LOG(logERROR) << "Could not create UDP socket on port " << *udpPortNumber << " error: " << iret;
 		return FAIL;
 	}
 	return OK;
 }
+
 
 
 void Listener::ShutDownUDPSocket() {

@@ -8,10 +8,7 @@
  *@short abstract for setting/getting properties of detector data
  */
 
-
-typedef  double double32_t;
-typedef  float float32_t;
-typedef  int int32_t;
+#include "receiver_defs.h"
 
 
 class GeneralData {
@@ -87,7 +84,7 @@ public:
 	 * @param bunchId bunch id
 	 */
 	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
-			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t bunchId) {
+			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t bunchId) const {
 		subFrameNumber = 0;
 		bunchId = 0;
 		frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
@@ -112,6 +109,45 @@ public:
 	 */
 	virtual void SetTenGigaEnable(bool tgEnable, int dr) {
 		//This is a generic function that is overloaded by a dervied class
+	};
+
+	/**
+	 * Print all variables
+	 */
+	void Print() const {
+		printf("\n\nDetector Data Variables:\n");
+		printf(	"Pixels X: %d\n"
+				"Pixels Y: %d\n"
+				"Data Size: %d\n"
+				"Packet Size: %d\n"
+				"Packets per Frame: %d\n"
+				"Image Size: %d\n"
+				"Frame Index Mask: 0x%llx\n"
+				"Frame Index Offset: %d\n"
+				"Packet Index Mask: 0x%x\n"
+				"Packet Index Offset: %d\n"
+				"Max Frames Per File: %d\n"
+				"Fifo Buffer Size: %d\n"
+				"Fifo Buffer Header Size: %d\n"
+				"Default Fifo Depth: %d\n"
+				"Threads Per Receiver: %d\n"
+				"Header Packet Size: %d\n",
+				nPixelsX,
+				nPixelsY,
+				dataSize,
+				packetSize,
+				packetsPerFrame,
+				imageSize,
+				(long long int)frameIndexMask,
+				frameIndexOffset,
+				packetIndexMask,
+				packetIndexOffset,
+				maxFramesPerFile,
+				fifoBufferSize,
+				fifoBufferHeaderSize,
+				defaultFifoDepth,
+				threadsPerReceiver,
+				headerPacketSize);
 	};
 };
 
@@ -211,6 +247,14 @@ class Moench02Data : public GeneralData {
 		fifoBufferHeaderSize= FIFO_BUFFER_HEADER_SIZE + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 2500;
 	};
+
+	/**
+	 * Print all variables
+	 */
+	void Print() const {
+		GeneralData::Print();
+		printf("Bytes Per Adc: %d\n",bytesPerAdc);
+	}
 };
 
 
@@ -237,6 +281,14 @@ class Moench03Data : public GeneralData {
 		fifoBufferHeaderSize= FIFO_BUFFER_HEADER_SIZE + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 2500;
 	};
+
+	/**
+	 * Print all variables
+	 */
+	void Print() const {
+		GeneralData::Print();
+		printf("Packet Header Size: %d\n",packetHeaderSize);
+	}
 };
 
 
@@ -260,6 +312,14 @@ class JCTBData : public GeneralData {
 		fifoBufferHeaderSize= FIFO_BUFFER_HEADER_SIZE + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 2500;
 	};
+
+	/**
+	 * Print all variables
+	 */
+	void Print() const {
+		GeneralData::Print();
+		printf("Bytes Per Adc: %d\n",bytesPerAdc);
+	}
 };
 
 
@@ -306,12 +366,20 @@ private:
 	 * @param bunchId bunch id
 	 */
 	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
-			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t bunchId) {
+			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t bunchId) const {
 		subFrameNumber = 0;
 		jfrau_packet_header_t* header = (jfrau_packet_header_t*)(packetData);
 		frameNumber = (uint64_t)(*( (uint32_t*) header->frameNumber));
 		packetNumber = (uint32_t)(*( (uint8_t*) header->packetNumber));
 		bunchId = (*((uint64_t*) header->bunchid));
+	}
+
+	/**
+	 * Print all variables
+	 */
+	void Print() const {
+		GeneralData::Print();
+		printf("Packet Header Size: %d\n",packetHeaderSize);
 	}
 };
 
@@ -370,7 +438,7 @@ private:
 	 * @param bunchId bunch id
 	 */
 	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
-			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t bunchId) {
+			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t bunchId) const {
 		bunchId = 0;
 		subFrameNumber = 0;
 		eiger_packet_footer_t* footer = (eiger_packet_footer_t*)(packetData + footerOffset);
@@ -406,6 +474,17 @@ private:
 		fifoBufferSize	= packetSize*packetsPerFrame;
 		footerOffset	= packetHeaderSize+dataSize;
 	};
+
+	/**
+	 * Print all variables
+	 */
+	void Print() const {
+		GeneralData::Print();
+		printf(  "Packet Header Size: %d"
+				"Footer Offset : %d\n",
+				packetHeaderSize,
+				footerOffset);
+	}
 };
 
 

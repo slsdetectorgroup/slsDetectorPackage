@@ -1246,8 +1246,25 @@ int set_dac(int file_des) {
 				retval[0] = setHighVoltage(val,imod);
 			else if(ind == IO_DELAY)
 				retval[0] = setIODelay(val,imod);
-			else
+			else{
 				setDAC(idac,val,imod,mV,retval);
+				if(val != -1) {
+					//changing dac changes settings to undefined
+					switch(idac){
+					case VCMP_LL:
+					case VCMP_LR:
+					case VCMP_RL:
+					case VCMP_RR:
+					case VRF:
+					case VCP:
+						setSettings(UNDEFINED,-1);
+						cprintf(RED,"Settings has been changed to undefined (changed specific dacs)\n");
+						break;
+					default:
+						break;
+					}
+				}
+			}
 		}
 
 
@@ -1953,11 +1970,16 @@ int set_module(int file_des) {
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		} else {
 #ifdef EIGERD
-			//set threshhold
-			if (myEV >= 0) setThresholdEnergy(myEV,-1);
 			//set dacs, trimbits and iodelay
 			ret=setModule(myModule, myIODelay);
-
+			//set threshhold
+			if (myEV >= 0)
+				setThresholdEnergy(myEV,-1);
+			else {
+				//changes settings to undefined (loading a random trim file)
+				setSettings(UNDEFINED,-1);
+				cprintf(RED,"Settings has been changed to undefined (random trim file)\n");
+			}
 			//rate correction
 			//switch off rate correction: no value read from load calib/load settings)
 			if(myTau == -1){
@@ -1970,11 +1992,14 @@ int set_module(int file_des) {
 			}
 
 			//normal tau value (only if enabled)
-			else if (getRateCorrectionEnable()){
-				int64_t retvalTau = setRateCorrection(myTau);
-				if(myTau != retvalTau){
-					cprintf(RED,"%s",mess);
-					ret=FAIL;
+			else{
+				setDefaultSettingsTau_in_nsec(myTau);
+				if (getRateCorrectionEnable()){
+					int64_t retvalTau = setRateCorrection(myTau);
+					if(myTau != retvalTau){
+						cprintf(RED,"%s",mess);
+						ret=FAIL;
+					}
 				}
 			}
 
@@ -3694,8 +3719,12 @@ int set_all_trimbits(int file_des){
 			ret = FAIL;
 			strcpy(mess,"Cant set trimbits to this value\n");
 		}else {
-			if(arg >= 0)
-				setAllTrimbits(arg);
+			if(arg >= 0){
+				ret = setAllTrimbits(arg);
+				//changes settings to undefined
+				setSettings(UNDEFINED,-1);
+				cprintf(RED,"Settings has been changed to undefined (change all trimbits)\n");
+			}
 			retval = getAllTrimbits();
 		}
 	}
@@ -3946,32 +3975,27 @@ int set_rate_correct(int file_des) {
 			ret=FAIL;
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		}  else {
-
-			//still negative (not set)
-			if(tau_ns < 0){
-				ret = FAIL;
-				if(getRateCorrectionEnable()){
-					setRateCorrection(0);
-					strcpy(mess,"Cannot set rate correction as tau must be >=0. Switching off Rate Correction\n");
-					cprintf(RED,"%s",mess);
-				}
-			}
-
 			//set rate
+			//wrong bit mode
+			if((setDynamicRange(-1)!=32) && (setDynamicRange(-1)!=16) && (tau_ns!=0)){
+				strcpy(mess,"Rate correction Deactivated, must be in 32 or 16 bit mode\n");
+				cprintf(RED,"%s",mess);
+				ret=FAIL;
+			}
+			//16 or 32 bit mode
 			else{
-				//not 32 or 16 bit mode
-				if((setDynamicRange(-1)!=32) && (setDynamicRange(-1)!=16) && (tau_ns!=0)){
-					strcpy(mess,"Rate correction Deactivated, must be in 32 or 16 bit mode\n");
+				if(tau_ns < 0)
+					tau_ns = getDefaultSettingsTau_in_nsec();
+				else if(tau_ns > 0){
+					//changing tau to a user defined value changes settings to undefined
+					setSettings(UNDEFINED,-1);
+					cprintf(RED,"Settings has been changed to undefined (tau changed)\n");
+				}
+
+				int64_t retval = setRateCorrection(tau_ns);
+				if(tau_ns != retval){
 					cprintf(RED,"%s",mess);
 					ret=FAIL;
-				}
-				//32 bit mode
-				else{
-					int64_t retval = setRateCorrection(tau_ns);
-					if(tau_ns != retval){
-						cprintf(RED,"%s",mess);
-						ret=FAIL;
-					}
 				}
 			}
 		}

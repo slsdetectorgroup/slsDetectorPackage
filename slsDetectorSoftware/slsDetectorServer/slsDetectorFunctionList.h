@@ -148,7 +148,7 @@ enum synchronizationMode setSynchronization(enum synchronizationMode arg);
 #ifdef EIGERD
 int startReceiver(int d);
 void setExternalGating(int enable[]);
-void setAllTrimbits(int val);
+int setAllTrimbits(int val);
 int getAllTrimbits();
 int getBebFPGATemp();
 int activate(int enable);

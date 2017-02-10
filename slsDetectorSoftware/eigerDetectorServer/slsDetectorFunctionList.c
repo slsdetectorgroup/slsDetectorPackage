@@ -601,6 +601,7 @@ int64_t getCurrentTau(){
 
 void setDefaultSettingsTau_in_nsec(int t){
 	default_tau_from_file = t;
+	printf("Default tau set to %d\n",default_tau_from_file);
 }
 
 int setModule(sls_detector_module myMod, int delay){
@@ -708,6 +709,7 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 		return thisSettings;
 	}if(sett != GET_SETTINGS)
 		thisSettings = sett;
+	printf(" Settings: %d\n", thisSettings);
 	return thisSettings;
 }
 
@@ -1267,9 +1269,12 @@ enum synchronizationMode setSynchronization(enum synchronizationMode arg){
 	return NO_SYNCHRONIZATION;
 }
 
-void setAllTrimbits(int val){
+int setAllTrimbits(int val){
 	int ichan;
-	if(Feb_Control_SaveAllTrimbitsTo(val)){
+	if(!Feb_Control_SaveAllTrimbitsTo(val)){
+		cprintf(RED,"error in setting all trimbits to value\n");
+		return FAIL;
+	}else{
 #ifdef VERBOSE
 		printf("Copying register %x value %d\n",destMod->reg,val);
 #endif
@@ -1278,7 +1283,8 @@ void setAllTrimbits(int val){
 				*((detectorModules->chanregs)+ichan)=val;
 			}
 		}
-	}else printf("error in setting all trimbits to value\n");
+	}
+	return OK;
 }
 
 int getAllTrimbits(){

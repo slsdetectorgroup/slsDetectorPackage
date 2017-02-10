@@ -18,7 +18,7 @@
 #define FILE_FRAME_HEADER_SIZE			16
 
 //fifo
-#define FIFO_BUFFER_HEADER_SIZE			4
+#define FIFO_HEADER_NUMBYTES			4
 
 //parameters to calculate fifo depth
 #define SAMPLE_TIME_IN_NS				100000000//100ms

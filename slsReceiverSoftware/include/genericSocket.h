@@ -83,12 +83,6 @@ using namespace std;
 #define DEFAULT_GUI_PORTNO 65000
 #define DEFAULT_ZMQ_PORTNO 70001
 
-/** Structure of an eiger packet footer  */
-typedef struct	{
-	unsigned char frameNumber[6];
-	unsigned char packetNumber[2];
-} eiger_packet_footer_t;
-
 class genericSocket{
 
  public:
@@ -617,25 +611,16 @@ enum communicationProtocol{
     		 if (socketDescriptor<0) return -1;
     		 //if length given, listens to length, else listens for packetsize till length is reached
     		 if(length){
-
-    			 /*int k = 0;*/
-
     			 while(length>0){
    					 nsending = (length>packet_size) ? packet_size:length;
     			     nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
-    			   cprintf(CYAN,"nsent:%d\n",nsent);
-
     			     if(nsent == header_packet_size)
     			    	 continue;
-    				 if(nsent != nsending){ //if((nsent != nsending)){ && (nsent < packet_size)){
+    				 if(nsent != nsending){
     					 if(nsent && (nsent != -1))
     							 cprintf(RED,"Incomplete Packet size %d\n",nsent);
     					 break;
     				 }
-    				 eiger_packet_footer_t* footer = (eiger_packet_footer_t*)(buf + 1024+8);
-    	    				 cprintf(MAGENTA,"generic fnum:%lld, pnum:%d \n",
-    						 (long long int)(uint64_t)((*( (uint64_t*) footer)) ),
-							 (uint32_t)(*( (uint16_t*) footer->packetNumber)));
     				 length-=nsent;
     				 total_sent+=nsent;
     			 }
@@ -646,8 +631,10 @@ enum communicationProtocol{
     			 nsending=packet_size;
     			 while(1){
     				 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
-      				 if(nsent<=0 || nsent == packet_size)
+      				 //break out of loop only if read one packets size or read didnt work (cuz of shutdown)
+    				 if(nsent<=0 || nsent == packet_size)
     					 break;
+    				 //incomplete packets or header packets ignored and read buffer again
     				 if(nsent != packet_size && nsent != header_packet_size)
     						cprintf(RED,"Incomplete Packet size %d\n",nsent);
     			 }

@@ -77,20 +77,29 @@ public:
 	 * Get Header Infomation (frame number, packet number)
 	 * @param index thread index for debugging purposes
 	 * @param packetData pointer to data
+	 * @param frameNumber frame number
+	 * @param packetNumber packet number
+	 */
+	virtual void GetHeaderInfo(int index, char* packetData,	uint64_t& frameNumber, uint32_t& packetNumber) const {
+		frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
+		frameNumber++;
+		packetNumber = frameNumber&packetIndexMask;
+		frameNumber = (frameNumber & frameIndexMask) >> frameIndexOffset;
+	}
+
+	/**
+	 * Get Header Infomation (frame number, packet number)
+	 * @param index thread index for debugging purposes
+	 * @param packetData pointer to data
 	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
 	 * @param frameNumber frame number
 	 * @param packetNumber packet number
 	 * @param subFrameNumber sub frame number if applicable
 	 * @param bunchId bunch id
 	 */
-	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
+	virtual void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
 			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t bunchId) const {
-		subFrameNumber = 0;
-		bunchId = 0;
-		frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
-		frameNumber++;
-		packetNumber = frameNumber&packetIndexMask;
-		frameNumber = (frameNumber & frameIndexMask) >> frameIndexOffset;
+		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
 	}
 
 	/**
@@ -99,7 +108,7 @@ public:
 	 * @param tgEnable true if 10GbE is enabled, else false
 	 */
 	virtual void SetDynamicRange(int dr, bool tgEnable) {
-		//This is a generic function that is overloaded by a dervied class
+		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
 	};
 
 	/**
@@ -108,13 +117,13 @@ public:
 	 * @param dr dynamic range
 	 */
 	virtual void SetTenGigaEnable(bool tgEnable, int dr) {
-		//This is a generic function that is overloaded by a dervied class
+		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
 	};
 
 	/**
 	 * Print all variables
 	 */
-	void Print() const {
+	virtual void Print() const {
 		printf("\n\nDetector Data Variables:\n");
 		printf(	"Pixels X: %d\n"
 				"Pixels Y: %d\n"
@@ -169,7 +178,7 @@ class GotthardData : public GeneralData {
 		packetIndexMask 	= 1;
 		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= packetSize*packetsPerFrame;
-		fifoBufferHeaderSize= FIFO_BUFFER_HEADER_SIZE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES;
 		defaultFifoDepth 	= 25000;
 	};
 };
@@ -190,7 +199,7 @@ class ShortGotthardData : public GeneralData {
 		frameIndexMask 		= 0xFFFFFFFF;
 		maxFramesPerFile 	= SHORT_MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= packetSize*packetsPerFrame;
-		fifoBufferHeaderSize= FIFO_BUFFER_HEADER_SIZE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES;
 		defaultFifoDepth 	= 25000;
 	};
 };
@@ -218,7 +227,7 @@ class PropixData : public GeneralData {
 		packetIndexMask 	= 1;
 		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= packetSize*packetsPerFrame;
-		fifoBufferHeaderSize= FIFO_BUFFER_HEADER_SIZE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES;
 		defaultFifoDepth 	= 25000;
 	};
 };
@@ -244,7 +253,7 @@ class Moench02Data : public GeneralData {
 		packetIndexMask 	= 0xFF;
 		maxFramesPerFile 	= MOENCH_MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= packetSize*packetsPerFrame;
-		fifoBufferHeaderSize= FIFO_BUFFER_HEADER_SIZE + FILE_FRAME_HEADER_SIZE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 2500;
 	};
 
@@ -278,7 +287,7 @@ class Moench03Data : public GeneralData {
 		packetIndexMask 	= 0xFFFFFFFF;
 		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= packetSize*packetsPerFrame;
-		fifoBufferHeaderSize= FIFO_BUFFER_HEADER_SIZE + FILE_FRAME_HEADER_SIZE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 2500;
 	};
 
@@ -309,7 +318,7 @@ class JCTBData : public GeneralData {
 		imageSize 			= dataSize*packetsPerFrame;
 		maxFramesPerFile 	= JFCTB_MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= packetSize*packetsPerFrame;
-		fifoBufferHeaderSize= FIFO_BUFFER_HEADER_SIZE + FILE_FRAME_HEADER_SIZE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 2500;
 	};
 
@@ -351,7 +360,7 @@ private:
 		imageSize 			= dataSize*packetsPerFrame;
 		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= packetSize*packetsPerFrame;
-		fifoBufferHeaderSize= FIFO_BUFFER_HEADER_SIZE + FILE_FRAME_HEADER_SIZE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 2500;
 	};
 
@@ -420,12 +429,25 @@ private:
 		frameIndexMask 		= 0xffffff;
 		maxFramesPerFile 	= EIGER_MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= packetSize*packetsPerFrame;
-		fifoBufferHeaderSize= FIFO_BUFFER_HEADER_SIZE + FILE_FRAME_HEADER_SIZE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 100;
 		footerOffset		= packetHeaderSize+dataSize;
 		threadsPerReceiver	= 2;
 		headerPacketSize	= 48;
 	};
+
+	/**
+	 * Get Header Infomation (frame number, packet number)
+	 * @param index thread index for debugging purposes
+	 * @param packetData pointer to data
+	 * @param frameNumber frame number
+	 * @param packetNumber packet number
+	 */
+	void GetHeaderInfo(int index, char* packetData,	uint64_t& frameNumber, uint32_t& packetNumber) const {
+		eiger_packet_footer_t* footer = (eiger_packet_footer_t*)(packetData + footerOffset);
+		frameNumber = (uint64_t)((*( (uint64_t*) footer)) & frameIndexMask);
+		packetNumber = (uint32_t)(*( (uint16_t*) footer->packetNumber))-1;
+	}
 
 	/**
 	 * Get Header Infomation (frame number, packet number)
@@ -480,7 +502,7 @@ private:
 	 */
 	void Print() const {
 		GeneralData::Print();
-		printf(  "Packet Header Size: %d"
+		printf(  "Packet Header Size: %d\n"
 				"Footer Offset : %d\n",
 				packetHeaderSize,
 				footerOffset);

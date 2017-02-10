@@ -220,14 +220,17 @@ void UDPBaseImplementation::setFlippedData(int axis, int enable){
 void UDPBaseImplementation::setFileFormat(const fileFormat f){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
-	if(f!=HDF5)
-		fileFormatType = f;
+	switch(f){
 #ifdef HDF5C
-	else if((f==HDF5) && (myDetectorType == EIGER || myDetectorType == JUNGFRAU))
+	case HDF5:
 		fileFormatType = f;
 #endif
+	default:
+		fileFormatType = f;
+		break;
+	}
 
-	FILE_LOG(logINFO) << "File Index:" << fileIndex;
+	FILE_LOG(logINFO) << "File Format:" << getFileFormatType(fileFormatType);
 }
 
 

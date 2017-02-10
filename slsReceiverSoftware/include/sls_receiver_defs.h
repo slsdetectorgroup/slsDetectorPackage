@@ -188,6 +188,19 @@ public:
 	    default:       		return std::string("idle");		\
 	    }};
 
+
+	  /** returns string from file format index
+	      \param s can be BINARY, ASCII, HDF5
+	      \returns string binary, ascii, hdf5
+	  */
+	  static std::string getFileFormatType(fileFormat f){\
+	    switch (f) {				\
+	    case ASCII:     return std::string("ascii");	\
+	    case HDF5:      return std::string("hdf5");	\
+	    case BINARY:    return std::string("binary");	\
+	    default:       		return std::string("unknown");		\
+	    }};
+
 #endif
 
 #ifdef __cplusplus

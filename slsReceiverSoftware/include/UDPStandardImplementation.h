@@ -56,6 +56,12 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	int64_t getAcquisitionIndex() const;
 
 	/**
+	 * Set File Format
+	 * @param f fileformat binary or hdf5
+	 */
+	void setFileFormat(slsReceiverDefs::fileFormat f);
+
+	/**
 	 * Set File Name Prefix (without frame index, file index and extension (_f000000000000_8.raw))
 	 * Does not check for file existence since it is created only at startReceiver
 	 * @param c file name (max of 1000 characters)
@@ -242,6 +248,12 @@ private:
 
 	/** Number of Jobs */
 	int numberofJobs;
+
+	/** Pointer to the action which decides what the user and default responsibilities to save data are
+	 * 0 raw data ready callback takes care of open,close,write file
+	 * 1 callback writes file, we have to open, close it
+	 * 2 we open, close, write file, callback does not do anything */
+	int callbackAction;
 
 	//*** mutex ***
 	/** Status mutex */

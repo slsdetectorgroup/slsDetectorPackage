@@ -1,10 +1,10 @@
 /************************************************
- * @file FileWriter.h
+ * @file File.h
  * @short sets/gets properties for the file,
  * creates/closes the file and writes data to it
  ***********************************************/
-#ifndef FILE_WRITER_H
-#define FILE_WRITER_H
+#ifndef FILE_H
+#define FILE_H
 /**
  *@short sets/gets properties for the file, creates/closes the file and writes data to it
  */
@@ -15,7 +15,7 @@
 
 #include <string>
 
-class FileWriter : private virtual slsReceiverDefs {
+class File : private virtual slsReceiverDefs {
 	
  public:
 	/**
@@ -30,13 +30,13 @@ class FileWriter : private virtual slsReceiverDefs {
 	 * @param dindex pointer to detector index
 	 * @param nunits pointer to number of theads/ units per detector
 	 */
-	FileWriter(int ind, char* fname, char* fpath, uint64_t* findex,
+	File(int ind, char* fname, char* fpath, uint64_t* findex,
 			bool* frindexenable, bool* owenable, int* dindex, int* nunits);
 
 	/**
 	 * Destructor
 	 */
-	virtual ~FileWriter();
+	virtual ~File();
 
 	/**
 	 * Get Current File Name

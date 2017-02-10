@@ -1,18 +1,18 @@
 /************************************************
- * @file BinaryFileWriter.h
+ * @file BinaryFile.h
  * @short sets/gets properties for the binary file,
  * creates/closes the file and writes data to it
  ***********************************************/
-#ifndef BINARY_FILE_WRITER_H
-#define BINARY_FILE_WRITER_H
+#ifndef BINARY_FILE_H
+#define BINARY_FILE_H
 
-#include "FileWriter.h"
+#include "File.h"
 
 /**
  *@short sets/gets properties for the binary file, creates/closes the file and writes data to it
  */
 
-class BinaryFileWriter : private virtual slsReceiverDefs, public FileWriter {
+class BinaryFile : private virtual slsReceiverDefs, public File {
 	
  public:
 	/**
@@ -28,13 +28,13 @@ class BinaryFileWriter : private virtual slsReceiverDefs, public FileWriter {
 	 * @param nunits pointer to number of theads/ units per detector
 	 * @param maxf pointer to max frames per file
 	 */
-	BinaryFileWriter(int ind, char* fname, char* fpath, uint64_t* findex,
+	BinaryFile(int ind, char* fname, char* fpath, uint64_t* findex,
 			bool* frindexenable, bool* owenable, int* dindex, int* nunits, uint32_t maxf);
 
 	/**
 	 * Destructor
 	 */
-	~BinaryFileWriter();
+	~BinaryFile();
 
 	/**
 	 * Print all member values

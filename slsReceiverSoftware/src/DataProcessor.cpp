@@ -9,9 +9,9 @@
 #include "DataProcessor.h"
 #include "GeneralData.h"
 #include "Fifo.h"
-#include "BinaryFileWriter.h"
+#include "BinaryFile.h"
 #ifdef HDF5C
-#include "HDF5FileWriter.h"
+#include "HDF5File.h"
 #endif
 
 #include <iostream>
@@ -46,7 +46,7 @@ DataProcessor::DataProcessor(Fifo*& f, runStatus* s, pthread_mutex_t* m, fileFor
 		firstAcquisitionIndex(0),
 		firstMeasurementIndex(0),
 		currentFrameIndex(0),
-		fileWriter(0),
+		file(0),
 		fileFormatType(ftype),
 		fileWriteEnable(fwenable),
 		callbackAction(cbaction),
@@ -64,7 +64,7 @@ DataProcessor::DataProcessor(Fifo*& f, runStatus* s, pthread_mutex_t* m, fileFor
 
 
 DataProcessor::~DataProcessor() {
-	if (fileWriter) delete fileWriter;
+	if (file) delete file;
 	ThreadObject::DestroyThread();
 	NumberofDataProcessors--;
 }
@@ -181,8 +181,8 @@ void DataProcessor::RecordFirstIndices(uint64_t fnum) {
 
 
 void DataProcessor::SetMaxFramesPerFile() {
-	if (fileWriter->GetType() == BINARY)
-		fileWriter->SetMaxFramesPerFile(generalData->maxFramesPerFile);
+	if (file->GetType() == BINARY)
+		file->SetMaxFramesPerFile(generalData->maxFramesPerFile);
 }
 
 
@@ -202,7 +202,7 @@ void DataProcessor::SetFileFormat(const fileFormat f) {
 		//remember the pointer values before they are destroyed
 		char* fname=0; char* fpath=0; uint64_t* findex=0; bool* frindexenable=0;
 		bool* fwenable=0; bool* owenable=0; int* dindex=0; int* nunits=0;
-		fileWriter->GetMemberPointerValues(fname, fpath, findex, frindexenable, owenable, dindex, nunits);
+		file->GetMemberPointerValues(fname, fpath, findex, frindexenable, owenable, dindex, nunits);
 
 		SetupFileWriter(fname, fpath, findex, frindexenable, owenable, dindex, nunits);
 	}
@@ -214,18 +214,18 @@ void DataProcessor::SetupFileWriter(char* fname, char* fpath, uint64_t* findex,
 		bool* frindexenable, bool* owenable, int* dindex, int* nunits)
 {
 
-	if (fileWriter)
-		delete fileWriter;
+	if (file)
+		delete file;
 
 	switch(*fileFormatType){
 #ifdef HDF5C
 	case HDF5:
-		fileWriter = new HDF5FileWriter(index, fname, fpath, findex,
+		file = new HDF5File(index, fname, fpath, findex,
 				frindexenable, owenable, dindex, nunits);
 		break;
 #endif
 	default:
-		fileWriter = new BinaryFileWriter(index, fname, fpath, findex,
+		file = new BinaryFile(index, fname, fpath, findex,
 				frindexenable, owenable, dindex, nunits, generalData->maxFramesPerFile);
 		break;
 	}
@@ -233,9 +233,9 @@ void DataProcessor::SetupFileWriter(char* fname, char* fpath, uint64_t* findex,
 
 
 int DataProcessor::CreateNewFile() {
-	if (!fileWriter)
+	if (!file)
 		return FAIL;
-	if (fileWriter->CreateFile(currentFrameIndex) == FAIL)
+	if (file->CreateFile(currentFrameIndex) == FAIL)
 		return FAIL;
 	return OK;
 }
@@ -243,8 +243,8 @@ int DataProcessor::CreateNewFile() {
 
 
 void DataProcessor::CloseFile() {
-	if (fileWriter)
-		fileWriter->CloseFile();
+	if (file)
+		file->CloseFile();
 }
 
 

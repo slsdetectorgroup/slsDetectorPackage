@@ -14,7 +14,7 @@
 
 class GeneralData;
 class Fifo;
-class FileWriter;
+class File;
 
 #include <vector>
 
@@ -260,8 +260,8 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	/** Frame Number of latest processed frame number of an entire Acquisition (including all scans) */
 	uint64_t currentFrameIndex;
 
-	/** File writer implemented as binary or hdf5 filewriter */
-	FileWriter* fileWriter;
+	/** File writer implemented as binary or hdf5 File */
+	File* file;
 
 	/** File Format Type */
 	fileFormat* fileFormatType;

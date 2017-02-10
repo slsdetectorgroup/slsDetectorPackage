@@ -1,18 +1,18 @@
 /************************************************
- * @file HDF5FileWriter.h
+ * @file HDF5File.h
  * @short sets/gets properties for the HDF5 file,
  * creates/closes the file and writes data to it
  ***********************************************/
-#ifndef HDF5_FILE_WRITER_H
-#define HDF5_FILE_WRITER_H
+#ifndef HDF5_FILE_H
+#define HDF5_FILE_H
 
-#include "FileWriter.h"
+#include "File.h"
 
 /**
  *@short sets/gets properties for the HDF5 file, creates/closes the file and writes data to it
  */
 
-class HDF5FileWriter : private virtual slsReceiverDefs, public FileWriter {
+class HDF5File : private virtual slsReceiverDefs, public File {
 	
  public:
 	/**
@@ -26,13 +26,13 @@ class HDF5FileWriter : private virtual slsReceiverDefs, public FileWriter {
 	 * @param dindex pointer to detector index
 	 * @param nunits pointer to number of theads/ units per detector
 	 */
-	HDF5FileWriter(int ind, char* fname, char* fpath, uint64_t* findex,
+	HDF5File(int ind, char* fname, char* fpath, uint64_t* findex,
 			bool* frindexenable, bool* owenable, int* dindex, int* nunits);
 
 	/**
 	 * Destructor
 	 */
-	~HDF5FileWriter();
+	~HDF5File();
 
 	/**
 	 * Print all member values

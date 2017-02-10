@@ -1,16 +1,16 @@
 /************************************************
- * @file FileWriter.h
+ * @file File.h
  * @short sets/gets properties for the file,
  * creates/closes the file and writes data to it
  ***********************************************/
 
-#include "FileWriter.h"
+#include "File.h"
 
 #include <iostream>
 using namespace std;
 
 
-FileWriter::FileWriter(int ind, char* fname, char* fpath, uint64_t* findex,
+File::File(int ind, char* fname, char* fpath, uint64_t* findex,
 		bool* frindexenable, bool* owenable, int* dindex, int* nunits):
 			index(ind),
 			fileNamePrefix(fname),
@@ -21,18 +21,18 @@ FileWriter::FileWriter(int ind, char* fname, char* fpath, uint64_t* findex,
 			detIndex(dindex),
 			numUnitsPerDetector(nunits)
 {
-	printf("%d FileWriter constructor\n",index);
+	printf("%d File constructor\n",index);
 }
 
-FileWriter::~FileWriter() {
-	printf("%d FileWriter Destructor\n", index);
+File::~File() {
+	printf("%d File Destructor\n", index);
 }
 
-string FileWriter::GetCurrentFileName() {
+string File::GetCurrentFileName() {
 	return currentFileName;
 }
 
-void FileWriter::PrintMembers() {
+void File::PrintMembers() {
 	printf("\nGeneral Writer Variables:"
 			"Index: %d\n"
 			"File Name Prefix: %s\n"
@@ -53,7 +53,7 @@ void FileWriter::PrintMembers() {
 }
 
 
-void FileWriter::GetMemberPointerValues(char* fname, char* fpath, uint64_t* findex,
+void File::GetMemberPointerValues(char* fname, char* fpath, uint64_t* findex,
 		bool* frindexenable, bool* owenable, int* dindex, int* nunits)
 {
 	fname = fileNamePrefix;

@@ -21,6 +21,9 @@ public:
 	/** Number of Pixels in y axis */
 	uint32_t nPixelsY;
 
+	/** Size of header in Packet */
+	uint32_t headerSizeinPacket;
+
 	/** Size of just data in 1 packet (in bytes) */
 	uint32_t dataSize;
 
@@ -127,6 +130,7 @@ public:
 		printf("\n\nDetector Data Variables:\n");
 		printf(	"Pixels X: %d\n"
 				"Pixels Y: %d\n"
+				"Header Size in Packet: %d\n"
 				"Data Size: %d\n"
 				"Packet Size: %d\n"
 				"Packets per Frame: %d\n"
@@ -143,6 +147,7 @@ public:
 				"Header Packet Size: %d\n",
 				nPixelsX,
 				nPixelsY,
+				headerSizeinPacket,
 				dataSize,
 				packetSize,
 				packetsPerFrame,
@@ -169,6 +174,7 @@ class GotthardData : public GeneralData {
 	GotthardData(){
 		nPixelsX 			= 1280;
 		nPixelsY 			= 1;
+		headerSizeinPacket  = 4;
 		dataSize 			= 1280;
 		packetSize 			= 1286;
 		packetsPerFrame 	= 2;
@@ -177,7 +183,7 @@ class GotthardData : public GeneralData {
 		frameIndexOffset 	= 1;
 		packetIndexMask 	= 1;
 		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
-		fifoBufferSize		= packetSize*packetsPerFrame;
+		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES;
 		defaultFifoDepth 	= 25000;
 	};
@@ -192,13 +198,14 @@ class ShortGotthardData : public GeneralData {
 	ShortGotthardData(){
 		nPixelsX 			= 256;
 		nPixelsY 			= 1;
+		headerSizeinPacket  = 4;
 		dataSize 			= 512;
 		packetSize 			= 518;
 		packetsPerFrame 	= 1;
 		imageSize 			= dataSize*packetsPerFrame;
 		frameIndexMask 		= 0xFFFFFFFF;
 		maxFramesPerFile 	= SHORT_MAX_FRAMES_PER_FILE;
-		fifoBufferSize		= packetSize*packetsPerFrame;
+		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES;
 		defaultFifoDepth 	= 25000;
 	};
@@ -209,8 +216,8 @@ class PropixData : public GeneralData {
 
  private:
 
-	/** dynamic range for calculating image size */
-	const static uint32_t dynamicRange = 16;
+	/**bytes per pixel for calculating image size */
+	const static uint32_t bytesPerPixel = 2;
 
  public:
 
@@ -218,15 +225,16 @@ class PropixData : public GeneralData {
 	PropixData(){
 		nPixelsX 			= 22;
 		nPixelsY 			= 22;
+		headerSizeinPacket  = 4;
 		dataSize 			= 1280;
 		packetSize 			= 1286;
 		packetsPerFrame 	= 2; //not really
-		imageSize 			= nPixelsX*nPixelsY*dynamicRange;
+		imageSize 			= nPixelsX*nPixelsY*bytesPerPixel;
 		frameIndexMask 		= 0xFFFFFFFE;
 		frameIndexOffset 	= 1;
 		packetIndexMask 	= 1;
 		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
-		fifoBufferSize		= packetSize*packetsPerFrame;
+		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES;
 		defaultFifoDepth 	= 25000;
 	};
@@ -244,6 +252,7 @@ class Moench02Data : public GeneralData {
 	Moench02Data(){
 		nPixelsX 			= 160;
 		nPixelsY 			= 160;
+		headerSizeinPacket  = 4;
 		dataSize 			= 1280;
 		packetSize 			= 1286;
 		packetsPerFrame 	= 40;
@@ -252,7 +261,7 @@ class Moench02Data : public GeneralData {
 		frameIndexOffset 	= 8;
 		packetIndexMask 	= 0xFF;
 		maxFramesPerFile 	= MOENCH_MAX_FRAMES_PER_FILE;
-		fifoBufferSize		= packetSize*packetsPerFrame;
+		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 2500;
 	};
@@ -271,33 +280,23 @@ class Moench03Data : public GeneralData {
 
  public:
 
-	/** Size of packet header */
-	const static uint32_t packetHeaderSize	= 22;
-
 	/** Constructor */
 	Moench03Data(){
 		nPixelsX 			= 400;
 		nPixelsY 			= 400;
+		headerSizeinPacket  = 22;
 		dataSize 			= 8192;
-		packetSize 			= packetHeaderSize + dataSize;
+		packetSize 			= headerSizeinPacket + dataSize;
 		packetsPerFrame 	= 40;
 		imageSize 			= dataSize*packetsPerFrame;
 		frameIndexMask 		= 0xFFFFFFFF;
 		frameIndexOffset 	= (6+8);
 		packetIndexMask 	= 0xFFFFFFFF;
 		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
-		fifoBufferSize		= packetSize*packetsPerFrame;
+		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 2500;
 	};
-
-	/**
-	 * Print all variables
-	 */
-	void Print() const {
-		GeneralData::Print();
-		printf("Packet Header Size: %d\n",packetHeaderSize);
-	}
 };
 
 
@@ -312,12 +311,13 @@ class JCTBData : public GeneralData {
 	JCTBData(){
 		nPixelsX 			= 32;
 		nPixelsY 			= 128;
+		headerSizeinPacket  = 22;
 		dataSize 			= 8192;
-		packetSize 			= 8224;
+		packetSize 			= headerSizeinPacket + dataSize;
 		packetsPerFrame 	= 1;
 		imageSize 			= dataSize*packetsPerFrame;
 		maxFramesPerFile 	= JFCTB_MAX_FRAMES_PER_FILE;
-		fifoBufferSize		= packetSize*packetsPerFrame;
+		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 2500;
 	};
@@ -354,12 +354,13 @@ private:
 	JungfrauData(){
 		nPixelsX 			= (256*4);
 		nPixelsY 			= 256;
+		headerSizeinPacket  = 22;
 		dataSize 			= 8192;
-		packetSize 			= packetHeaderSize + dataSize;
+		packetSize 			= headerSizeinPacket + dataSize;
 		packetsPerFrame 	= 128;
 		imageSize 			= dataSize*packetsPerFrame;
 		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
-		fifoBufferSize		= packetSize*packetsPerFrame;
+		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 2500;
 	};
@@ -422,16 +423,17 @@ private:
 	EigerData(){
 		nPixelsX 			= (256*2);
 		nPixelsY 			= 256;
+		headerSizeinPacket  = 8;
 		dataSize 			= 1024;
-		packetSize 			= 1040;
+		packetSize 			= headerSizeinPacket + dataSize + 8;
 		packetsPerFrame 	= 256;
 		imageSize 			= dataSize*packetsPerFrame;
 		frameIndexMask 		= 0xffffff;
 		maxFramesPerFile 	= EIGER_MAX_FRAMES_PER_FILE;
-		fifoBufferSize		= packetSize*packetsPerFrame;
+		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 100;
-		footerOffset		= packetHeaderSize+dataSize;
+		footerOffset		= headerSizeinPacket + dataSize;
 		threadsPerReceiver	= 2;
 		headerPacketSize	= 48;
 	};

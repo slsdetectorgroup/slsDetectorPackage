@@ -19,20 +19,20 @@ using namespace std;
 /** cosntructor & destructor */
 
 UDPStandardImplementation::UDPStandardImplementation() {
-	FILE_LOG (logDEBUG) << __AT__ << " called";
+
 	InitializeMembers();
 
 }
 
 
 UDPStandardImplementation::~UDPStandardImplementation() {
-	FILE_LOG (logDEBUG) << __AT__ << " called";
+
 	DeleteMembers();
 }
 
 
 void UDPStandardImplementation::DeleteMembers() {
-	FILE_LOG (logDEBUG) << __AT__ << " starting";
+
 
 	if (generalData) { delete generalData; generalData=0;}
 	for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
@@ -51,7 +51,7 @@ void UDPStandardImplementation::DeleteMembers() {
 
 
 void UDPStandardImplementation::InitializeMembers() {
-	FILE_LOG (logDEBUG) << __AT__ << " starting";
+
 
 	UDPBaseImplementation::initializeMembers();
 	acquisitionPeriod = SAMPLE_TIME_IN_NS;
@@ -76,7 +76,7 @@ void UDPStandardImplementation::InitializeMembers() {
 /*** Overloaded Functions called by TCP Interface ***/
 
 uint64_t UDPStandardImplementation::getTotalFramesCaught() const {
-	FILE_LOG (logDEBUG) << __AT__ << " starting";
+
 
 	uint64_t sum = 0;
 	uint32_t flagsum = 0;
@@ -94,7 +94,7 @@ uint64_t UDPStandardImplementation::getTotalFramesCaught() const {
 }
 
 uint64_t UDPStandardImplementation::getFramesCaught() const {
-	FILE_LOG (logDEBUG) << __AT__ << " starting";
+
 
 	uint64_t sum = 0;
 	uint32_t flagsum = 0;
@@ -111,7 +111,7 @@ uint64_t UDPStandardImplementation::getFramesCaught() const {
 }
 
 int64_t UDPStandardImplementation::getAcquisitionIndex() const {
-	FILE_LOG (logDEBUG) << __AT__ << " starting";
+
 
 	uint64_t sum = 0;
 	uint32_t flagsum = 0;
@@ -131,6 +131,15 @@ int64_t UDPStandardImplementation::getAcquisitionIndex() const {
 void UDPStandardImplementation::setFileFormat(const fileFormat f){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
+	switch(f){
+#ifdef HDF5C
+	case HDF5:
+		fileFormatType = f;
+#endif
+	default:
+		fileFormatType = f;
+		break;
+	}
 	//destroy file writer, set file format and create file writer
 	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
 		(*it)->SetFileFormat(f);
@@ -141,7 +150,7 @@ void UDPStandardImplementation::setFileFormat(const fileFormat f){
 
 
 void UDPStandardImplementation::setFileName(const char c[]) {
-	FILE_LOG (logDEBUG) << __AT__ << " starting";
+
 
 	if (strlen(c)) {
 		strcpy(fileName, c); //automatically update fileName in Filewriter (pointer)
@@ -163,7 +172,7 @@ void UDPStandardImplementation::setFileName(const char c[]) {
 
 
 int UDPStandardImplementation::setShortFrameEnable(const int i) {
-	FILE_LOG (logDEBUG) << __AT__ << " called";
+
 
 	if (myDetectorType != GOTTHARD) {
 		cprintf(RED, "Error: Can not set short frame for this detector\n");
@@ -183,12 +192,10 @@ int UDPStandardImplementation::setShortFrameEnable(const int i) {
 		if (SetupFifoStructure() == FAIL)
 			return FAIL;
 
-		Listener::SetGeneralData(generalData);
-		DataProcessor::SetGeneralData(generalData);
-
-		for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it) {
-			(*it)->SetMaxFramesPerFile();
-		}
+		for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
+			(*it)->SetGeneralData(generalData);
+		for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
+			(*it)->SetGeneralData(generalData);
 	}
 	FILE_LOG (logINFO) << "Short Frame Enable: " << shortFrameEnable;
 	return OK;
@@ -196,7 +203,7 @@ int UDPStandardImplementation::setShortFrameEnable(const int i) {
 
 
 int UDPStandardImplementation::setFrameToGuiFrequency(const uint32_t freq) {
-	FILE_LOG (logDEBUG) << __AT__ << " called";
+
 
 	if (frameToGuiFrequency != freq) {
 		frameToGuiFrequency = freq;
@@ -218,7 +225,7 @@ int UDPStandardImplementation::setFrameToGuiFrequency(const uint32_t freq) {
 
 
 int UDPStandardImplementation::setDataStreamEnable(const bool enable) {
-	FILE_LOG (logDEBUG) << __AT__ << " called";
+
 
 	if (dataStreamEnable != enable) {
 		dataStreamEnable = enable;
@@ -247,7 +254,7 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {
 
 
 int UDPStandardImplementation::setAcquisitionPeriod(const uint64_t i) {
-	FILE_LOG (logDEBUG) << __AT__ << " called";
+
 
 	if (acquisitionPeriod != i) {
 		acquisitionPeriod = i;
@@ -269,7 +276,7 @@ int UDPStandardImplementation::setAcquisitionPeriod(const uint64_t i) {
 
 
 int UDPStandardImplementation::setAcquisitionTime(const uint64_t i) {
-	FILE_LOG (logDEBUG) << __AT__ << " called";
+
 
 	if (acquisitionTime != i) {
 		acquisitionTime = i;
@@ -291,7 +298,7 @@ int UDPStandardImplementation::setAcquisitionTime(const uint64_t i) {
 
 
 int UDPStandardImplementation::setNumberOfFrames(const uint64_t i) {
-	FILE_LOG (logDEBUG) << __AT__ << " called";
+
 
 	if (numberOfFrames != i) {
 		numberOfFrames = i;
@@ -313,10 +320,11 @@ int UDPStandardImplementation::setNumberOfFrames(const uint64_t i) {
 
 
 int UDPStandardImplementation::setDynamicRange(const uint32_t i) {
-	FILE_LOG (logDEBUG) << __AT__ << " called";
+
 
 	if (dynamicRange != i) {
 		dynamicRange = i;
+
 		//side effects
 		generalData->SetDynamicRange(i,tengigaEnable);
 
@@ -330,7 +338,7 @@ int UDPStandardImplementation::setDynamicRange(const uint32_t i) {
 
 
 int UDPStandardImplementation::setTenGigaEnable(const bool b) {
-	FILE_LOG (logDEBUG) << __AT__ << " called";
+
 
 	if (tengigaEnable != b) {
 		tengigaEnable = b;
@@ -347,7 +355,7 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b) {
 
 
 int UDPStandardImplementation::setFifoDepth(const uint32_t i) {
-	FILE_LOG (logDEBUG) << __AT__ << " called";
+
 
 	if (fifoDepth != i) {
 		fifoDepth = i;
@@ -363,7 +371,7 @@ int UDPStandardImplementation::setFifoDepth(const uint32_t i) {
 
 
 int UDPStandardImplementation::setDetectorType(const detectorType d) {
-	FILE_LOG (logDEBUG) << __AT__ << " starting";
+
 
 	FILE_LOG (logDEBUG) << "Setting receiver type";
 
@@ -395,8 +403,6 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	case JUNGFRAU:		generalData = new JungfrauData();	break;
 	default: break;
 	}
-	Listener::SetGeneralData(generalData);
-	DataProcessor::SetGeneralData(generalData);
 	numThreads = generalData->threadsPerReceiver;
 	fifoDepth = generalData->defaultFifoDepth;
 
@@ -428,11 +434,12 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	}
 
 	//set up writer and callbacks
-	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
-			(*it)->SetupFileWriter(fileName, filePath, &fileIndex, &frameIndexEnable,
-									&overwriteEnable, &detID, &numThreads);
-
-
+	for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
+		(*it)->SetGeneralData(generalData);
+	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it) {
+		(*it)->SetupFileWriter(fileName, filePath, &fileIndex, &frameIndexEnable,
+									&overwriteEnable, &detID, &numThreads, &numberOfFrames, &dynamicRange, generalData);
+	}
 	FILE_LOG (logDEBUG) << " Detector type set to " << getDetectorType(d);
 	return OK;
 }
@@ -440,7 +447,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 
 
 void UDPStandardImplementation::resetAcquisitionCount() {
-	FILE_LOG (logDEBUG) << __AT__ << " starting";
+
 
 	for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
 		(*it)->ResetParametersforNewAcquisition();
@@ -451,13 +458,39 @@ void UDPStandardImplementation::resetAcquisitionCount() {
 	FILE_LOG (logINFO) << "Acquisition Count has been reset";
 }
 
+int UDPStandardImplementation::VerifyCallBackAction() {
+	/** file path and file index not required?? or need to include detector index?  do they need the datasize? its given for write data anyway */
 
+	callbackAction=startAcquisitionCallBack(filePath, fileName, fileIndex,
+			(generalData->fifoBufferSize) * numberofJobs + (generalData->fifoBufferHeaderSize), pStartAcquisition);
+	switch(callbackAction) {
+	case 0:
+		if (acquisitionFinishedCallBack == NULL || rawDataReadyCallBack == NULL) {
+			FILE_LOG(logERROR) << "Callback action 0: All the call backs must be registered";
+			return FAIL;
+		}
+		cout << "Start Acquisition, Acquisition Finished and Data Write has been defined externally" << endl;
+		break;
+	case 1:
+		if (rawDataReadyCallBack == NULL) {
+			FILE_LOG(logERROR) << "Callback action 1: RawDataReady call backs must be registered";
+			return FAIL;
+		}
+		cout << "Data Write defined externally" << endl;
+		break;
+	case 2:break;
+	default:
+		cprintf(RED,"Error: Unknown call back action.\n");
+		return FAIL;
+	}
+	return OK;
+}
 
 int UDPStandardImplementation::startReceiver(char *c) {
-	FILE_LOG (logDEBUG) << __AT__ << " called";
 
 	ResetParametersforNewMeasurement();
 
+	//listener
 	if (CreateUDPSockets() == FAIL) {
 		strcpy(c,"Could not create UDP Socket(s).");
 		FILE_LOG(logERROR) << c;
@@ -465,33 +498,24 @@ int UDPStandardImplementation::startReceiver(char *c) {
 	}
 	cout << "Listener Ready ..." << endl;
 
-	if(fileWriteEnable){
-		if (SetupWriter() == FAIL) {
+	//callbacks
+	callbackAction = DO_EVERYTHING;
+	if (startAcquisitionCallBack)
+		if (VerifyCallBackAction() == FAIL)
+			return FAIL;
+
+	//processor->writer
+	if (fileWriteEnable) {
+		if (callbackAction > DO_NOTHING && SetupWriter() == FAIL) {
 			strcpy(c,"Could not create file.");
 			FILE_LOG(logERROR) << c;
 			return FAIL;
 		}
-	}
+	} else
+		cout << "Data will not be saved" << endl;
 	cout << "Processor Ready ..." << endl;
 
-
-	//callbacks
-	callbackAction = DO_EVERYTHING;
-
-	if (startAcquisitionCallBack) /** file path and file index not required?? or need to include detector index?  do they need the datasize? its given for write data anyway */
-		callbackAction=startAcquisitionCallBack(filePath, fileName, fileIndex,
-				(generalData->fifoBufferSize) * numberofJobs + (generalData->fifoBufferHeaderSize), pStartAcquisition);
-	if (callbackAction < DO_EVERYTHING) {
-		FILE_LOG(logINFO) << "Call back activated. Data saving must be taken care of by user in call back.";
-		if (rawDataReadyCallBack) {
-			FILE_LOG(logINFO) << "Data Write has been defined externally";
-		}
-	} else if(!fileWriteEnable) {
-		FILE_LOG(logINFO) << "Data will not be saved";
-	}
-
-
-	//change status
+	//status
 	pthread_mutex_lock(&statusMutex);
 	status = RUNNING;
 	pthread_mutex_unlock(&(statusMutex));
@@ -612,7 +636,7 @@ void UDPStandardImplementation::startReadout(){
 
 
 void UDPStandardImplementation::shutDownUDPSockets() {
-	FILE_LOG (logDEBUG) << __AT__ << " called";
+
 	for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
 		(*it)->ShutDownUDPSocket();
 }
@@ -620,15 +644,15 @@ void UDPStandardImplementation::shutDownUDPSockets() {
 
 
 void UDPStandardImplementation::closeFiles() {
-	FILE_LOG (logDEBUG) << __AT__ << " called";
+
 	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
-		(*it)->CloseFile();
+		(*it)->CloseFiles();
 }
 
 
 
 void UDPStandardImplementation::SetLocalNetworkParameters() {
-	FILE_LOG (logDEBUG) << __AT__ << " called";
+
 
 	//to increase socket receiver buffer size and max length of input queue by changing kernel settings
 	if (myDetectorType == EIGER)
@@ -657,7 +681,7 @@ void UDPStandardImplementation::SetLocalNetworkParameters() {
 
 
 int UDPStandardImplementation::SetupFifoStructure() {
-	FILE_LOG (logDEBUG) << __AT__ << " called";
+
 
 
 	//recalculate number of jobs &  fifodepth, return if no change
@@ -721,7 +745,7 @@ int UDPStandardImplementation::SetupFifoStructure() {
 
 
 void UDPStandardImplementation::ResetParametersforNewMeasurement() {
-	FILE_LOG (logDEBUG) << __AT__ << " called";
+
 	for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
 		(*it)->ResetParametersforNewMeasurement();
 	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
@@ -731,7 +755,7 @@ void UDPStandardImplementation::ResetParametersforNewMeasurement() {
 
 
 int UDPStandardImplementation::CreateUDPSockets() {
-	FILE_LOG (logDEBUG) << __AT__ << " called";
+
 
 	bool error = false;
 	for (unsigned int i = 0; i < listener.size(); ++i)
@@ -750,11 +774,11 @@ int UDPStandardImplementation::CreateUDPSockets() {
 
 
 int UDPStandardImplementation::SetupWriter() {
-	FILE_LOG (logDEBUG) << __AT__ << " called";
 
 	bool error = false;
 	for (unsigned int i = 0; i < dataProcessor.size(); ++i)
-		if (dataProcessor[i]->CreateNewFile() == FAIL) {
+		if (dataProcessor[i]->CreateNewFile(tengigaEnable,
+				numberOfFrames, acquisitionTime, acquisitionPeriod) == FAIL) {
 			error = true;
 			break;
 		}
@@ -770,7 +794,7 @@ int UDPStandardImplementation::SetupWriter() {
 
 
 void UDPStandardImplementation::StartRunning() {
-	FILE_LOG (logDEBUG) << __AT__ << " called";
+
 
 	//set running mask and post semaphore to start the inner loop in execution thread
 	for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it) {

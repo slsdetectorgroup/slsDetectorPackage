@@ -44,7 +44,8 @@ Listener::Listener(Fifo*& f, runStatus* s, uint32_t* portno, char* e) :
 		currentFrameIndex(0),
 		lastCaughtFrameIndex(0),
 		carryOverFlag(0),
-		carryOverPacket(0)
+		carryOverPacket(0),
+		listeningPacket(0)
 {
 	if(ThreadObject::CreateThread()){
 		pthread_mutex_lock(&Mutex);
@@ -58,6 +59,7 @@ Listener::Listener(Fifo*& f, runStatus* s, uint32_t* portno, char* e) :
 
 Listener::~Listener() {
 	if (carryOverPacket) delete carryOverPacket;
+	if (listeningPacket) delete listeningPacket;
 	ThreadObject::DestroyThread();
 	NumberofListeners--;
 }
@@ -145,6 +147,9 @@ void Listener::ResetParametersforNewMeasurement(){
 	if (carryOverPacket)
 		delete carryOverPacket;
 	carryOverPacket = new char[generalData->packetSize];
+	if (listeningPacket)
+		delete listeningPacket;
+	listeningPacket = new char[generalData->packetSize];
 
 	if(RunningMask){
 		pthread_mutex_lock(&Mutex);
@@ -167,7 +172,7 @@ void Listener::RecordFirstIndices(uint64_t fnum) {
 		acquisitionStartedFlag = true;
 		firstAcquisitionIndex = fnum;
 	}
-	if (!index) cprintf(GREEN,"%d First Acquisition Index:%lld\n"
+	if (!index) cprintf(MAGENTA,"%d First Acquisition Index:%lld\n"
 							  "%d First Measurement Index:%lld\n",
 			index, (long long int)firstAcquisitionIndex,
 			index, (long long int)firstMeasurementIndex);
@@ -266,12 +271,12 @@ void Listener::StopListening(char* buf) {
 uint32_t Listener::ListenToAnImage(char* buf) {
 	uint32_t rc = 0;
 	uint64_t fnum = 0; uint32_t pnum = 0;
-	uint32_t offset = 0;
-	uint32_t currentpnum = 0;
-	int psize = generalData->packetSize;
+	int dsize = generalData->dataSize;
+
 
 	//reset to -1
-	memset(buf,0xFF,psize);
+	memset(buf,0xFF,dsize);
+
 
 	//look for carry over
 	if (carryOverFlag) {
@@ -281,45 +286,41 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 			return generalData->imageSize;
 		}
 		carryOverFlag = false;
-		memcpy(buf,carryOverPacket, psize);
-		offset += psize;
+		memcpy(buf + (pnum * dsize), carryOverPacket + generalData->headerSizeinPacket, dsize);
+		(*((uint64_t*)(buf - FILE_FRAME_HEADER_SIZE))) = fnum;
 	}
 
-	while (offset < generalData->fifoBufferSize) {
+
+	while (pnum < (generalData->packetsPerFrame-1)) {
 
 		//listen to new packet
-		rc += udpSocket->ReceiveDataOnly(buf + offset);
+		rc += udpSocket->ReceiveDataOnly(listeningPacket);
 		if (rc <= 0) return 0;
+
 
 		//update parameters
 		numPacketsCaught++;		//record immediately to get more time before socket shutdown
 		numTotalPacketsCaught++;
-		generalData->GetHeaderInfo(index,buf + offset,fnum,pnum);
+		generalData->GetHeaderInfo(index,listeningPacket,fnum,pnum);
 		lastCaughtFrameIndex = fnum;
 //#ifdef VERBOSE
-		if (!index && !pnum) cprintf(BLUE,"Listening %d: fnum:%lld, pnum:%d\n", index, (long long int)fnum, pnum);
+		if (!index && !pnum) cprintf(GREEN,"Listening %d: fnum:%lld, pnum:%d\n", index, (long long int)fnum, pnum);
 //#endif
-
 		if (!measurementStartedFlag)
 			RecordFirstIndices(fnum);
+
 
 		//future packet
 		if(fnum != currentFrameIndex) {
 			carryOverFlag = true;
-			memcpy(carryOverPacket,buf + offset, psize);
+			memcpy(carryOverPacket,listeningPacket, generalData->packetSize);
 			return generalData->imageSize;
 		}
 
+		//copy packet and update fnum
+		memcpy(buf + (pnum * dsize), listeningPacket + generalData->headerSizeinPacket, dsize);
 		(*((uint64_t*)(buf - FILE_FRAME_HEADER_SIZE))) = fnum;
 
-		//future packet of same frame
-		if(pnum != currentpnum) {
-			memcpy(buf + (pnum * psize), buf + offset, psize);
-			memset(buf + offset, 0xFF, psize);
-		}
-
-		//update offset & current frame index
-		offset = (pnum + 1) * psize;
 	}
 
 	return generalData->imageSize;

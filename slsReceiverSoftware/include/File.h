@@ -29,9 +29,11 @@ class File : private virtual slsReceiverDefs {
 	 * @param owenable pointer to over write enable
 	 * @param dindex pointer to detector index
 	 * @param nunits pointer to number of theads/ units per detector
+	 * @param nf pointer to number of images in acquisition
+	 * @param dr dynamic range
 	 */
 	File(int ind, char* fname, char* fpath, uint64_t* findex,
-			bool* frindexenable, bool* owenable, int* dindex, int* nunits);
+			bool* frindexenable, bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr);
 
 	/**
 	 * Destructor
@@ -53,7 +55,7 @@ class File : private virtual slsReceiverDefs {
 	 * Get Type
 	 * @return type
 	 */
-	virtual fileFormat GetType() = 0;
+	virtual fileFormat GetFileType() = 0;
 
 	/**
 	 * Get Member Pointer Values before the object is destroyed
@@ -64,9 +66,11 @@ class File : private virtual slsReceiverDefs {
 	 * @param owenable pointer to over write enable
 	 * @param dindex pointer to detector index
 	 * @param nunits pointer to number of theads/ units per detector
+	 * @param nf pointer to number of images in acquisition
+	 * @param dr dynamic range
 	 */
-	void GetMemberPointerValues(char* fname, char* fpath, uint64_t* findex,
-			bool* frindexenable, bool* owenable, int* dindex, int* nunits);
+	void GetMemberPointerValues(char*& fname, char*& fpath, uint64_t*& findex,
+			bool*& frindexenable, bool*& owenable, int*& dindex, int*& nunits, uint64_t*& nf, uint32_t* dr);
 
 	/**
 	 * Create file
@@ -74,15 +78,49 @@ class File : private virtual slsReceiverDefs {
 	 * @returns OK or FAIL
 	 */
 	virtual int CreateFile(uint64_t fnum){
-		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+		cprintf(RED,"This is a generic function CreateFile that should be overloaded by a derived class\n");
 		return OK;
 	}
 
 	/**
-	 * Close File
+	 * Close Current File
 	 */
-	virtual void CloseFile() {
+	virtual void CloseCurrentFile() {
+		cprintf(RED,"This is a generic function CloseCurrentFile that should be overloaded by a derived class\n");
+	}
+
+	/**
+	 * Close Files
+	 */
+	virtual void CloseAllFiles() {
 		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+	}
+
+	/**
+	 * Write data to file
+	 * @param buffer buffer to write from
+	 * @param fnum current image number
+	 * @param OK or FAIL
+	 */
+	virtual int WriteToFile(char* buffer, int buffersize, uint64_t fnum) {
+		cprintf(RED,"This is a generic function WriteToFile that should be overloaded by a derived class\n");
+		return FAIL;
+	}
+
+	 /**
+	  * Create common files
+	  * @param en ten giga enable
+	  * @param size image size
+	  * @param nx number of pixels in x direction
+	  * @param ny number of pixels in y direction
+	  * @param at acquisition time
+	  * @param ap acquisition period
+	  * @returns OK or FAIL
+	  */
+	virtual int CreateCommonFiles(bool en, uint32_t size,
+				uint32_t nx, uint32_t ny, uint64_t at, uint64_t ap) {
+		cprintf(RED,"This is a generic function CreateCommonFiles that should be overloaded by a derived class\n");
+		return OK;
 	}
 
 
@@ -92,12 +130,25 @@ class File : private virtual slsReceiverDefs {
 	 * @param maxf maximum frames per file
 	 */
 	virtual void SetMaxFramesPerFile(uint32_t maxf) {
-		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+		cprintf(RED,"This is a generic function SetMaxFramesPerFile that should be overloaded by a derived class\n");
+	}
+
+	// HDf5 specific
+	/**
+	 * Set Number of pixels
+	 * @param nx number of pixels in x direction
+	 * @param ny number of pixels in y direction
+	 */
+	virtual void SetNumberofPixels(uint32_t nx, uint32_t ny) {
+		cprintf(RED,"This is a generic function SetNumberofPixels that should be overloaded by a derived class\n");
 	}
 
 
 
  protected:
+
+	/** master file writer/reader */
+	bool master;
 
 	/** Self Index */
 	int index;
@@ -125,6 +176,12 @@ class File : private virtual slsReceiverDefs {
 
 	/** Number of units per detector. Eg. Eiger has 2, others 1 */
 	int* numUnitsPerDetector;
+
+	/** Number of images in acquisition */
+	uint64_t* numImages;
+
+	/** Dynamic Range */
+	uint32_t* dynamicRange;
 
 	/** Current File Name */
 	std::string currentFileName;

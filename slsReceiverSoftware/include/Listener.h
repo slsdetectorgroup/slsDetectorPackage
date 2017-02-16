@@ -238,6 +238,10 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	/** Carry over packet buffer */
 	char* carryOverPacket;
 
+	/** Listening buffer for one packet - might be removed when we can peek and eiger fnum is in header */
+	char* listeningPacket;
+
+
 };
 
 #endif

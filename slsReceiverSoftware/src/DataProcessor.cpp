@@ -28,14 +28,13 @@ uint64_t DataProcessor::RunningMask(0x0);
 
 pthread_mutex_t DataProcessor::Mutex = PTHREAD_MUTEX_INITIALIZER;
 
-const GeneralData* DataProcessor::generalData(0);
-
 
 DataProcessor::DataProcessor(Fifo*& f, runStatus* s, pthread_mutex_t* m, fileFormat* ftype, bool* fwenable,
 		int* cbaction,
 		void (*dataReadycb)(int, char*, int, FILE*, char*, void*),
 		void *pDataReadycb) :
 		ThreadObject(NumberofDataProcessors),
+		generalData(0),
 		fifo(f),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
@@ -58,6 +57,7 @@ DataProcessor::DataProcessor(Fifo*& f, runStatus* s, pthread_mutex_t* m, fileFor
 		ErrorMask ^= (1<<index);
 		pthread_mutex_unlock(&Mutex);
 	}
+
 	NumberofDataProcessors++;
 	FILE_LOG (logDEBUG) << "Number of DataProcessors: " << NumberofDataProcessors << endl;
 }
@@ -78,14 +78,6 @@ uint64_t DataProcessor::GetErrorMask() {
 uint64_t DataProcessor::GetRunningMask() {
 	return RunningMask;
 }
-
-void DataProcessor::SetGeneralData(GeneralData*& g) {
-	generalData = g;
-#ifdef VERY_VERBOSE
-	generalData->Print();
-#endif
-}
-
 
 /** non static functions */
 /** getters */
@@ -136,10 +128,8 @@ void DataProcessor::StopRunning() {
 
 
 void DataProcessor::SetFifo(Fifo*& f) {
-
 	fifo = f;
 }
-
 
 void DataProcessor::ResetParametersforNewAcquisition() {
 	numTotalFramesCaught = 0;
@@ -180,39 +170,41 @@ void DataProcessor::RecordFirstIndices(uint64_t fnum) {
 }
 
 
-void DataProcessor::SetMaxFramesPerFile() {
-	if (file->GetType() == BINARY)
+void DataProcessor::SetGeneralData(GeneralData* g) {
+	generalData = g;
+#ifdef VERY_VERBOSE
+	generalData->Print();
+#endif
+	if (!file) {
+		cprintf(RED, "Error Calling SetGeneralData with no file object. Should not be here\n");
+		return;
+	}
+	if (file->GetFileType() == BINARY)
 		file->SetMaxFramesPerFile(generalData->maxFramesPerFile);
+	else if (file->GetFileType() == HDF5) {
+		file->SetNumberofPixels(generalData->nPixelsX, generalData->nPixelsY);
+	}
 }
 
 
 void DataProcessor::SetFileFormat(const fileFormat f) {
-
-	if (*fileFormatType != f) {
-		switch(f){
-#ifdef HDF5C
-		case HDF5:
-			*fileFormatType = f;
-#endif
-		default:
-			*fileFormatType = f;
-			break;
-		}
-
+	if (file->GetFileType() != f) {
 		//remember the pointer values before they are destroyed
 		char* fname=0; char* fpath=0; uint64_t* findex=0; bool* frindexenable=0;
-		bool* fwenable=0; bool* owenable=0; int* dindex=0; int* nunits=0;
-		file->GetMemberPointerValues(fname, fpath, findex, frindexenable, owenable, dindex, nunits);
-
-		SetupFileWriter(fname, fpath, findex, frindexenable, owenable, dindex, nunits);
+		bool* owenable=0; int* dindex=0; int* nunits=0; uint64_t* nf = 0; uint32_t* dr = 0;
+		file->GetMemberPointerValues(fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr);
+		//create file writer with same pointers
+		SetupFileWriter(fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr);
 	}
 }
 
 
 
 void DataProcessor::SetupFileWriter(char* fname, char* fpath, uint64_t* findex,
-		bool* frindexenable, bool* owenable, int* dindex, int* nunits)
+		bool* frindexenable, bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, GeneralData* g)
 {
+	if (g)
+		generalData = g;
 
 	if (file)
 		delete file;
@@ -221,19 +213,21 @@ void DataProcessor::SetupFileWriter(char* fname, char* fpath, uint64_t* findex,
 #ifdef HDF5C
 	case HDF5:
 		file = new HDF5File(index, fname, fpath, findex,
-				frindexenable, owenable, dindex, nunits);
+				frindexenable, owenable, dindex, nunits, nf, dr, generalData->nPixelsX, generalData->nPixelsY);
 		break;
 #endif
 	default:
 		file = new BinaryFile(index, fname, fpath, findex,
-				frindexenable, owenable, dindex, nunits, generalData->maxFramesPerFile);
+				frindexenable, owenable, dindex, nunits, nf, dr, generalData->maxFramesPerFile);
 		break;
 	}
 }
 
 
-int DataProcessor::CreateNewFile() {
-	if (!file)
+int DataProcessor::CreateNewFile(bool en, uint64_t nf, uint64_t at, uint64_t ap) {
+	file->CloseAllFiles();
+	if (file->CreateCommonFiles(en,	generalData->imageSize, generalData->nPixelsX, generalData->nPixelsY,
+			at, ap) == FAIL)
 		return FAIL;
 	if (file->CreateFile(currentFrameIndex) == FAIL)
 		return FAIL;
@@ -241,10 +235,9 @@ int DataProcessor::CreateNewFile() {
 }
 
 
-
-void DataProcessor::CloseFile() {
+void DataProcessor::CloseFiles() {
 	if (file)
-		file->CloseFile();
+		file->CloseAllFiles();
 }
 
 
@@ -272,7 +265,7 @@ void DataProcessor::ThreadExecution() {
 
 void DataProcessor::StopProcessing(char* buf) {
 	fifo->FreeAddress(buf);
-	CloseFile();
+	file->CloseCurrentFile();
 	StopRunning();
 	cprintf(BLUE,"%d: Processing Completed\n", index);
 }
@@ -282,11 +275,20 @@ void DataProcessor::ProcessAnImage(char* buf) {
 	numFramesCaught++;
 	numTotalFramesCaught++;
 
+
 	uint64_t fnum = (*((uint64_t*)buf));
-//#ifdef VERBOSE
+#ifdef VERBOSE
 	if (!index) cprintf(BLUE,"DataProcessing %d: fnum:%lld\n", index, (long long int)fnum);
-//#endif
-	if (!measurementStartedFlag)
+#endif
+
+	if (!measurementStartedFlag) {
+#ifdef VERBOSE
+		if (!index) cprintf(BLUE,"DataProcessing %d: fnum:%lld\n", index, (long long int)fnum);
+#endif
 		RecordFirstIndices(fnum);
+	}
+
+	if (fileWriteEnable && *callbackAction == DO_EVERYTHING)
+		file->WriteToFile(buf + FIFO_HEADER_NUMBYTES, generalData->fifoBufferSize + FILE_FRAME_HEADER_SIZE, fnum-firstMeasurementIndex);
 }
 

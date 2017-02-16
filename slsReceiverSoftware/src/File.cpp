@@ -11,7 +11,7 @@ using namespace std;
 
 
 File::File(int ind, char* fname, char* fpath, uint64_t* findex,
-		bool* frindexenable, bool* owenable, int* dindex, int* nunits):
+		bool* frindexenable, bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr):
 			index(ind),
 			fileNamePrefix(fname),
 			filePath(fpath),
@@ -19,14 +19,14 @@ File::File(int ind, char* fname, char* fpath, uint64_t* findex,
 			frameIndexEnable(frindexenable),
 			overWriteEnable(owenable),
 			detIndex(dindex),
-			numUnitsPerDetector(nunits)
+			numUnitsPerDetector(nunits),
+			numImages(nf),
+			dynamicRange(dr)
 {
-	printf("%d File constructor\n",index);
+	master = index?false:true;
 }
 
-File::~File() {
-	printf("%d File Destructor\n", index);
-}
+File::~File() {}
 
 string File::GetCurrentFileName() {
 	return currentFileName;
@@ -53,8 +53,8 @@ void File::PrintMembers() {
 }
 
 
-void File::GetMemberPointerValues(char* fname, char* fpath, uint64_t* findex,
-		bool* frindexenable, bool* owenable, int* dindex, int* nunits)
+void File::GetMemberPointerValues(char*& fname, char*& fpath, uint64_t*& findex,
+		bool*& frindexenable, bool*& owenable, int*& dindex, int*& nunits, uint64_t*& nf, uint32_t* dr)
 {
 	fname = fileNamePrefix;
 	fpath = filePath;
@@ -63,4 +63,6 @@ void File::GetMemberPointerValues(char* fname, char* fpath, uint64_t* findex,
 	owenable = overWriteEnable;
 	dindex = detIndex;
 	nunits = numUnitsPerDetector;
+	nf = numImages;
+	dr = dynamicRange;
 }

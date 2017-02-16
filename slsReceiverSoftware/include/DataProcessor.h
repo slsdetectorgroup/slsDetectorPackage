@@ -58,13 +58,6 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	static uint64_t GetRunningMask();
 
-	/**
-	 * Set GeneralData pointer to the one given
-	 * @param g address of GeneralData (Detector Data) pointer
-	 */
-	static void SetGeneralData(GeneralData*& g);
-
-
 
 	//*** non static functions ***
 	//*** getters ***
@@ -127,9 +120,10 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	void ResetParametersforNewMeasurement();
 
 	/**
-	 * Set Max frames per file
+	 * Set GeneralData pointer to the one given
+	 * @param g address of GeneralData (Detector Data) pointer
 	 */
-	void SetMaxFramesPerFile();
+	void SetGeneralData(GeneralData* g);
 
 	/**
 	 * Set File Format
@@ -146,20 +140,28 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param owenable pointer to over write enable
 	 * @param dindex pointer to detector index
 	 * @param nunits pointer to number of theads/ units per detector
+	 * @param nf pointer to number of images in acquisition
+	 * @param dr dynamic range
+	 * @param g address of GeneralData (Detector Data) pointer
 	 */
 	void SetupFileWriter(char* fname, char* fpath, uint64_t* findex,
-			bool* frindexenable, bool* owenable, int* dindex, int* nunits);
+			bool* frindexenable, bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, GeneralData* g = 0);
 
 
 	/**
 	 * Create New File
+	 * @param en ten giga enable
+	 * @param nf number of frames
+	 * @param at acquisition time
+	 * @param ap acquisition period
+	 * @returns OK or FAIL
 	 */
-	int CreateNewFile();
+	int CreateNewFile(bool en, uint64_t nf, uint64_t at, uint64_t ap);
 
 	/**
-	 * Closes file
+	 * Closes files
 	 */
-	void CloseFile();
+	void CloseFiles();
 
  private:
 
@@ -226,13 +228,14 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	static pthread_mutex_t Mutex;
 
 	/** GeneralData (Detector Data) object */
-	static const GeneralData* generalData;
+	const GeneralData* generalData;
 
 	/** Fifo structure */
 	Fifo* fifo;
 
 
 	// individual members
+
 	/** Aquisition Started flag */
 	bool acquisitionStartedFlag;
 

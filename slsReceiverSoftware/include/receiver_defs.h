@@ -16,6 +16,14 @@
 
 //binary
 #define FILE_FRAME_HEADER_SIZE			16
+#define FILE_BUFFER_SIZE        		(16*1024*1024) //16mb
+
+//hdf5
+#define MAX_CHUNKED_IMAGES 				1
+
+//versions
+#define HDF5_WRITER_VERSION 			1.0
+#define BINARY_WRITER_VERSION 			1.0 //1 decimal places
 
 //fifo
 #define FIFO_HEADER_NUMBYTES			4

@@ -15,9 +15,9 @@ using namespace std;
 
 FILE* BinaryFile::masterfd = 0;
 
-BinaryFile::BinaryFile(int ind, char* fname, char* fpath, uint64_t* findex,
+BinaryFile::BinaryFile(int ind, int* nd, char* fname, char* fpath, uint64_t* findex,
 		bool* frindexenable, bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t maxf):
-		File(ind, fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr),
+		File(ind, nd, fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr),
 		maxFramesPerFile(maxf),
 		filefd(0)
 {
@@ -27,6 +27,7 @@ BinaryFile::BinaryFile(int ind, char* fname, char* fpath, uint64_t* findex,
 }
 
 BinaryFile::~BinaryFile() {
+	CloseAllFiles();
 }
 
 void BinaryFile::PrintMembers() {
@@ -59,8 +60,8 @@ void BinaryFile::CloseCurrentFile() {
 
 void BinaryFile::CloseAllFiles() {
 	CloseDataFile(filefd);
-	if (master)
-		CloseCommonDataFiles();
+	if (master && (*detIndex==0))
+		CloseMasterDataFile();
 }
 
 int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum) {
@@ -71,15 +72,11 @@ int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum) {
 }
 
 
-int BinaryFile::CreateCommonFiles(bool en, uint32_t size,
+int BinaryFile::CreateMasterFile(bool en, uint32_t size,
 		uint32_t nx, uint32_t ny, uint64_t at, uint64_t ap) {
-	if (master) {
-		string masterFileName="";
-		CreateCommonFileNames(masterFileName, filePath, fileNamePrefix, *fileIndex);
-		printf("Master HDF5 File: %s\n", masterFileName.c_str());
-		//create common files
-		return CreateCommonDataFiles(masterFileName, *overWriteEnable,
-				en, size, nx, ny, at, ap);
+	if (master && (*detIndex==0)) {
+		CreateMasterFileName(filePath, fileNamePrefix, *fileIndex);
+		return CreateMasterDataFile(*overWriteEnable,en, size, nx, ny, at, ap);
 	}
 	return OK;
 }
@@ -128,33 +125,34 @@ int BinaryFile::WriteDataFile(FILE* fd, char* buf, int bsize, uint64_t fnum) {
 	return fwrite(buf, 1, bsize, fd);
 }
 
-void BinaryFile::CreateCommonFileNames(string& m, char* fpath, char* fnameprefix, uint64_t findex) {
+void BinaryFile::CreateMasterFileName(char* fpath, char* fnameprefix, uint64_t findex) {
 	ostringstream osfn;
 	osfn << fpath << "/" << fnameprefix;
 	osfn << "_master";
 	osfn << "_" << findex;
 	osfn << ".raw";
-	m = osfn.str();
+	masterFileName = osfn.str();
+	printf("Master HDF5 File: %s\n", masterFileName.c_str());
 }
 
-void BinaryFile::CloseCommonDataFiles() {
+void BinaryFile::CloseMasterDataFile() {
 	if(masterfd)
 		delete masterfd;
 	masterfd = 0;
 }
 
 
-int BinaryFile::CreateCommonDataFiles(string m, bool owenable,
+int BinaryFile::CreateMasterDataFile(bool owenable,
 				bool tengigaEnable,	uint32_t imageSize, uint32_t nPixelsX, uint32_t nPixelsY,
 				uint64_t acquisitionTime, uint64_t acquisitionPeriod) {
 	if(!owenable){
-		if (NULL == (masterfd = fopen((const char *) m.c_str(), "wx"))){
-			cprintf(RED,"Error in creating binary master file %s\n",m.c_str());
+		if (NULL == (masterfd = fopen((const char *) masterFileName.c_str(), "wx"))){
+			cprintf(RED,"Error in creating binary master file %s\n",masterFileName.c_str());
 			masterfd = 0;
 			return FAIL;
 		}
-	}else if (NULL == (masterfd = fopen((const char *) m.c_str(), "w"))){
-		cprintf(RED,"Error in creating binary master file %s\n",m.c_str());
+	}else if (NULL == (masterfd = fopen((const char *) masterFileName.c_str(), "w"))){
+		cprintf(RED,"Error in creating binary master file %s\n",masterFileName.c_str());
 		masterfd = 0;
 		return FAIL;
 	}
@@ -177,7 +175,7 @@ int BinaryFile::CreateCommonDataFiles(string m, bool owenable,
 			imageSize,
 			nPixelsX,
 			nPixelsY,
-			(long long int)numImages,
+			(long long int)*numImages,
 			(long long int)acquisitionTime,
 			(long long int)acquisitionPeriod,
 			ctime(&t));

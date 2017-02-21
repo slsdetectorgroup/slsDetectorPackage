@@ -22,6 +22,7 @@ class File : private virtual slsReceiverDefs {
 	 * Constructor
 	 * creates the File Writer
 	 * @param ind self index
+	 * @param nd pointer to number of detectors in each dimension
 	 * @param fname pointer to file name prefix
 	 * @param fpath pointer to file path
 	 * @param findex pointer to file index
@@ -32,7 +33,7 @@ class File : private virtual slsReceiverDefs {
 	 * @param nf pointer to number of images in acquisition
 	 * @param dr dynamic range
 	 */
-	File(int ind, char* fname, char* fpath, uint64_t* findex,
+	File(int ind, int* nd, char* fname, char* fpath, uint64_t* findex,
 			bool* frindexenable, bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr);
 
 	/**
@@ -59,6 +60,7 @@ class File : private virtual slsReceiverDefs {
 
 	/**
 	 * Get Member Pointer Values before the object is destroyed
+	 * @param nd pointer to number of detectors in each dimension
 	 * @param fname pointer to file name prefix
 	 * @param fpath pointer to file path
 	 * @param findex pointer to file index
@@ -69,8 +71,8 @@ class File : private virtual slsReceiverDefs {
 	 * @param nf pointer to number of images in acquisition
 	 * @param dr dynamic range
 	 */
-	void GetMemberPointerValues(char*& fname, char*& fpath, uint64_t*& findex,
-			bool*& frindexenable, bool*& owenable, int*& dindex, int*& nunits, uint64_t*& nf, uint32_t* dr);
+	void GetMemberPointerValues(int* nd, char*& fname, char*& fpath, uint64_t*& findex,
+			bool*& frindexenable, bool*& owenable, int*& dindex, int*& nunits, uint64_t*& nf, uint32_t*& dr);
 
 	/**
 	 * Create file
@@ -108,7 +110,7 @@ class File : private virtual slsReceiverDefs {
 	}
 
 	 /**
-	  * Create common files
+	  * Create master file
 	  * @param en ten giga enable
 	  * @param size image size
 	  * @param nx number of pixels in x direction
@@ -117,9 +119,9 @@ class File : private virtual slsReceiverDefs {
 	  * @param ap acquisition period
 	  * @returns OK or FAIL
 	  */
-	virtual int CreateCommonFiles(bool en, uint32_t size,
+	virtual int CreateMasterFile(bool en, uint32_t size,
 				uint32_t nx, uint32_t ny, uint64_t at, uint64_t ap) {
-		cprintf(RED,"This is a generic function CreateCommonFiles that should be overloaded by a derived class\n");
+		cprintf(RED,"This is a generic function CreateMasterFile that should be overloaded by a derived class\n");
 		return OK;
 	}
 
@@ -143,7 +145,9 @@ class File : private virtual slsReceiverDefs {
 		cprintf(RED,"This is a generic function SetNumberofPixels that should be overloaded by a derived class\n");
 	}
 
-
+	virtual void  CreateFinalFile(){
+		;
+	}
 
  protected:
 
@@ -152,6 +156,15 @@ class File : private virtual slsReceiverDefs {
 
 	/** Self Index */
 	int index;
+
+	/** Number of Detectors in X dimension */
+	int numDetX;
+
+	/** Number of Detectors in Y dimension */
+	int numDetY;
+
+	/** Master File Name */
+	std::string masterFileName;
 
 	/** File Name Prefix */
 	char* fileNamePrefix;

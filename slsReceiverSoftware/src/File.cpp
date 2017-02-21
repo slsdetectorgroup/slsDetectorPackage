@@ -10,9 +10,11 @@
 using namespace std;
 
 
-File::File(int ind, char* fname, char* fpath, uint64_t* findex,
+File::File(int ind, int* nd, char* fname, char* fpath, uint64_t* findex,
 		bool* frindexenable, bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr):
 			index(ind),
+			numDetX(nd[0]),
+			numDetY(nd[1]),
 			fileNamePrefix(fname),
 			filePath(fpath),
 			fileIndex(findex),
@@ -53,9 +55,11 @@ void File::PrintMembers() {
 }
 
 
-void File::GetMemberPointerValues(char*& fname, char*& fpath, uint64_t*& findex,
-		bool*& frindexenable, bool*& owenable, int*& dindex, int*& nunits, uint64_t*& nf, uint32_t* dr)
+void File::GetMemberPointerValues(int* nd, char*& fname, char*& fpath, uint64_t*& findex,
+		bool*& frindexenable, bool*& owenable, int*& dindex, int*& nunits, uint64_t*& nf, uint32_t*& dr)
 {
+	nd[0] = numDetX;
+	nd[1] = numDetY;
 	fname = fileNamePrefix;
 	fpath = filePath;
 	findex = fileIndex;

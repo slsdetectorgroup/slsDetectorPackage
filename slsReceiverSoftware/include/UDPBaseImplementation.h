@@ -45,6 +45,19 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 
 	//**initial parameters***
 	/*
+	 * Get multi detector size
+	 * @return pointer to array of multi detector size in every dimension
+	 */
+	int* getMultiDetectorSize() const;
+
+
+	/*
+	 * Get detector position id
+	 * @return detector position id
+	 */
+	int getDetectorPositionId() const;
+
+	/*
 	 * Get detector hostname
 	 * @return NULL or hostname or NULL if uninitialized (max of 1000 characters)
 	 */
@@ -246,6 +259,12 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	void configure(map<string, string> config_map);
 
 	/*
+	 * Set multi detector size
+	 * @param pointer to array of multi detector size in every dimension
+	 */
+	void setMultiDetectorSize(const int* size);
+
+	/*
 	 * Get flipped data across 'axis'
 	 * @return if data is flipped across 'axis'
 	 */
@@ -420,6 +439,12 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	int setDetectorType(const detectorType d);
 
 	/**
+	 * Set detector position id
+	 * @param i position id
+	 */
+	void setDetectorPositionId(const int i);
+
+	/**
 	 * Sets detector hostname (and corresponding detector variables in derived REST class)
 	 * It is second function called by the client when connecting to receiver.
 	 * you can call this function only once. //FIXME: is this still valid, this implemented in derived REST class?
@@ -532,6 +557,10 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	//**detector parameters***
 	/** detector type */
 	detectorType myDetectorType;
+	/** Number of Detectors in each dimension direction */
+	int numDet[MAX_DIMENSIONS];
+	/*Detector Readout ID*/
+	int detID;
 	/** detector hostname */
 	char detHostname[MAX_STR_LENGTH];
 	/** Acquisition Period */

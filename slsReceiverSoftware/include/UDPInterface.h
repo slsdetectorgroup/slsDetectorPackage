@@ -104,6 +104,19 @@ class UDPInterface {
 	 *************************************************************************/
 
 	//**initial/detector parameters***
+
+	/*
+	 * Get multi detector size
+	 * @return pointer to array of multi detector size in every dimension
+	 */
+	virtual int* getMultiDetectorSize() const  = 0;
+
+	/*
+	 * Get detector position id
+	 * @return detector position id
+	 */
+	virtual int getDetectorPositionId() const  = 0;
+
 	/*
 	 * Get detector hostname
 	 * @return hostname or NULL if uninitialized, must be released by calling function  (max of 1000 characters)
@@ -305,6 +318,12 @@ class UDPInterface {
 	virtual void configure(map<string, string> config_map) = 0;
 
 	/*
+	 * Set multi detector size
+	 * @param pointer to array of multi detector size in every dimension
+	 */
+	virtual void setMultiDetectorSize(const int* size) = 0;
+
+	/*
 	 * Get flipped data across 'axis'
 	 * @return if data is flipped across 'axis'
 	 */
@@ -475,6 +494,12 @@ class UDPInterface {
 	 * @return OK or FAIL
 	 */
 	virtual int setDetectorType(const slsReceiverDefs::detectorType d) = 0;
+
+	/**
+	 * Set detector position id
+	 * @param i position id
+	 */
+	virtual void setDetectorPositionId(const int i) = 0;
 
 	/**
 	 * Sets detector hostname (and corresponding detector variables in derived REST class)

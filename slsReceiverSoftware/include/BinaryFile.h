@@ -21,6 +21,7 @@ class BinaryFile : private virtual slsReceiverDefs, public File {
 	 * Constructor
 	 * creates the File Writer
 	 * @param ind self index
+	 * @param nd pointer to number of detectors in each dimension
 	 * @param fname pointer to file name prefix
 	 * @param fpath pointer to file path
 	 * @param findex pointer to file index
@@ -32,7 +33,7 @@ class BinaryFile : private virtual slsReceiverDefs, public File {
 	 * @param dr dynamic range
 	 * @param maxf max frames per file
 	 */
-	BinaryFile(int ind, char* fname, char* fpath, uint64_t* findex,
+	BinaryFile(int ind, int* nd, char* fname, char* fpath, uint64_t* findex,
 			bool* frindexenable, bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t maxf);
 
 	/**
@@ -119,7 +120,7 @@ class BinaryFile : private virtual slsReceiverDefs, public File {
 	static int WriteDataFile(FILE* fd, char* buf, int bsize, uint64_t fnum);
 
 	 /**
-	  * Create common files
+	  * Create master file
 	 * @param en ten giga enable
 	 * @param size image size
 	 * @param nx number of pixels in x direction
@@ -128,7 +129,7 @@ class BinaryFile : private virtual slsReceiverDefs, public File {
 	 * @param ap acquisition period
 	  * @returns OK or FAIL
 	  */
-	 int CreateCommonFiles(bool en, uint32_t size,
+	 int CreateMasterFile(bool en, uint32_t size,
 				uint32_t nx, uint32_t ny, uint64_t at, uint64_t ap);
 
 
@@ -140,32 +141,21 @@ class BinaryFile : private virtual slsReceiverDefs, public File {
 	 */
 	 fileFormat GetFileType();
 
-	/** Maximum frames per file */
-	uint32_t maxFramesPerFile;
-
-	/** File Descriptor */
-	FILE* filefd;
-
-	/** Master File Descriptor */
-	static FILE* masterfd;
-
 	/**
-	 * Create file names for master and virtual file
-	 * @param m master file name
+	 * Create file names for master file
 	 * @param fpath file path
 	 * @param fnameprefix file name prefix (includes scan and position variables)
 	 * @param findex file index
 	 */
-	void CreateCommonFileNames(std::string& m, char* fpath, char* fnameprefix, uint64_t findex);
+	void CreateMasterFileName(char* fpath, char* fnameprefix, uint64_t findex);
 
 	 /*
-	  * Close master and virtual files
+	  * Close master file
 	 */
-	void CloseCommonDataFiles();
+	void CloseMasterDataFile();
 
 	/**
-	 * Create master and virtual files
-	 * @param m master file name
+	 * Create master files
 	 * @param owenable overwrite enable
 	 * @param tengigaEnable ten giga enable
 	 * @param imageSize image size
@@ -175,10 +165,20 @@ class BinaryFile : private virtual slsReceiverDefs, public File {
 	 * @param acquisitionPeriod acquisition period
 	 * @returns OK or FAIL
 	 */
-	int CreateCommonDataFiles(std::string m, bool owenable,
+	int CreateMasterDataFile(bool owenable,
 			bool tengigaEnable, uint32_t imageSize, uint32_t nPixelsX, uint32_t nPixelsY,
 			uint64_t acquisitionTime, uint64_t acquisitionPeriod);
 
+
+
+	/** Maximum frames per file */
+	uint32_t maxFramesPerFile;
+
+	/** File Descriptor */
+	FILE* filefd;
+
+	/** Master File Descriptor */
+	static FILE* masterfd;
 
 };
 

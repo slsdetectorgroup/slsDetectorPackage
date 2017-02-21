@@ -175,14 +175,12 @@ void DataProcessor::SetGeneralData(GeneralData* g) {
 #ifdef VERY_VERBOSE
 	generalData->Print();
 #endif
-	if (!file) {
-		cprintf(RED, "Error Calling SetGeneralData with no file object. Should not be here\n");
-		return;
-	}
-	if (file->GetFileType() == BINARY)
-		file->SetMaxFramesPerFile(generalData->maxFramesPerFile);
-	else if (file->GetFileType() == HDF5) {
-		file->SetNumberofPixels(generalData->nPixelsX, generalData->nPixelsY);
+	if (file) {
+		if (file->GetFileType() == BINARY)
+			file->SetMaxFramesPerFile(generalData->maxFramesPerFile);
+		else if (file->GetFileType() == HDF5) {
+			file->SetNumberofPixels(generalData->nPixelsX, generalData->nPixelsY);
+		}
 	}
 }
 
@@ -190,17 +188,18 @@ void DataProcessor::SetGeneralData(GeneralData* g) {
 void DataProcessor::SetFileFormat(const fileFormat f) {
 	if (file->GetFileType() != f) {
 		//remember the pointer values before they are destroyed
+		int nd[MAX_DIMENSIONS];nd[0] = 0; nd[1] = 0;
 		char* fname=0; char* fpath=0; uint64_t* findex=0; bool* frindexenable=0;
 		bool* owenable=0; int* dindex=0; int* nunits=0; uint64_t* nf = 0; uint32_t* dr = 0;
-		file->GetMemberPointerValues(fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr);
+		file->GetMemberPointerValues(nd, fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr);
 		//create file writer with same pointers
-		SetupFileWriter(fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr);
+		SetupFileWriter(nd, fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr);
 	}
 }
 
 
 
-void DataProcessor::SetupFileWriter(char* fname, char* fpath, uint64_t* findex,
+void DataProcessor::SetupFileWriter(int* nd, char* fname, char* fpath, uint64_t* findex,
 		bool* frindexenable, bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, GeneralData* g)
 {
 	if (g)
@@ -212,12 +211,12 @@ void DataProcessor::SetupFileWriter(char* fname, char* fpath, uint64_t* findex,
 	switch(*fileFormatType){
 #ifdef HDF5C
 	case HDF5:
-		file = new HDF5File(index, fname, fpath, findex,
+		file = new HDF5File(index, nd, fname, fpath, findex,
 				frindexenable, owenable, dindex, nunits, nf, dr, generalData->nPixelsX, generalData->nPixelsY);
 		break;
 #endif
 	default:
-		file = new BinaryFile(index, fname, fpath, findex,
+		file = new BinaryFile(index, nd, fname, fpath, findex,
 				frindexenable, owenable, dindex, nunits, nf, dr, generalData->maxFramesPerFile);
 		break;
 	}
@@ -226,7 +225,7 @@ void DataProcessor::SetupFileWriter(char* fname, char* fpath, uint64_t* findex,
 
 int DataProcessor::CreateNewFile(bool en, uint64_t nf, uint64_t at, uint64_t ap) {
 	file->CloseAllFiles();
-	if (file->CreateCommonFiles(en,	generalData->imageSize, generalData->nPixelsX, generalData->nPixelsY,
+	if (file->CreateMasterFile(en,	generalData->imageSize, generalData->nPixelsX, generalData->nPixelsY,
 			at, ap) == FAIL)
 		return FAIL;
 	if (file->CreateFile(currentFrameIndex) == FAIL)
@@ -288,7 +287,13 @@ void DataProcessor::ProcessAnImage(char* buf) {
 		RecordFirstIndices(fnum);
 	}
 
+	/** bunch id pass as well and then do what with it */
 	if (fileWriteEnable && *callbackAction == DO_EVERYTHING)
-		file->WriteToFile(buf + FIFO_HEADER_NUMBYTES, generalData->fifoBufferSize + FILE_FRAME_HEADER_SIZE, fnum-firstMeasurementIndex);
+		file->WriteToFile(buf, generalData->fifoBufferSize + FILE_FRAME_HEADER_SIZE, fnum-firstMeasurementIndex);
 }
 
+
+void  DataProcessor::CreateFinalFile(){
+	if(file->GetFileType() == HDF5)
+		file->CreateFinalFile();
+}

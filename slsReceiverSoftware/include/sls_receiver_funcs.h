@@ -53,12 +53,12 @@ enum {
 
 	F_ACTIVATE,						/** < activate/deactivate readout */
 	F_STREAM_DATA_FROM_RECEIVER,		/**< stream data from receiver to client */
-
 	F_READ_RECEIVER_TIMER,			/** < sets the timer between each data stream in receiver */
-
 	F_SET_FLIPPED_DATA_RECEIVER,		/** < sets the enable to flip data across x/y axis (bottom/top) */
+	F_SET_RECEIVER_FILE_FORMAT,		/** < sets the receiver file format */
 
-	F_SET_RECEIVER_FILE_FORMAT		/** < sets the receiver file format */
+	F_SEND_RECEIVER_DETPOSID,		/** < sets the detector position id in the reveiver */
+	F_SEND_RECEIVER_MULTIDETSIZE    /** < sets the multi detector size to the receiver */
 	/* Always append functions hereafter!!! */
 };
 

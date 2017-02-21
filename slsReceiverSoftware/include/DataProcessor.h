@@ -133,6 +133,7 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 
 	/**
 	 * Set up file writer object and call backs
+	 * @param nd pointer to number of detectors in each dimension
 	 * @param fname pointer to file name prefix
 	 * @param fpath pointer to file path
 	 * @param findex pointer to file index
@@ -144,7 +145,7 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param dr dynamic range
 	 * @param g address of GeneralData (Detector Data) pointer
 	 */
-	void SetupFileWriter(char* fname, char* fpath, uint64_t* findex,
+	void SetupFileWriter(int* nd, char* fname, char* fpath, uint64_t* findex,
 			bool* frindexenable, bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, GeneralData* g = 0);
 
 
@@ -162,6 +163,9 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * Closes files
 	 */
 	void CloseFiles();
+
+
+	void  CreateFinalFile();
 
  private:
 

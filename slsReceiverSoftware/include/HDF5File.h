@@ -27,6 +27,7 @@ class HDF5File : private virtual slsReceiverDefs, public File {
 	 * Constructor
 	 * creates the File Writer
 	 * @param ind self index
+	 * @param nd pointer to number of detectors in each dimension
 	 * @param fname pointer to file name prefix
 	 * @param fpath pointer to file path
 	 * @param findex pointer to file index
@@ -39,7 +40,7 @@ class HDF5File : private virtual slsReceiverDefs, public File {
 	 * @param nx number of pixels in x direction
 	 * @param ny number of pixels in y direction
 	 */
-	HDF5File(int ind, char* fname, char* fpath, uint64_t* findex,
+	HDF5File(int ind, int* nd, char* fname, char* fpath, uint64_t* findex,
 			bool* frindexenable, bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr,
 			int nx, int ny);
 
@@ -84,7 +85,25 @@ class HDF5File : private virtual slsReceiverDefs, public File {
 	 * @param fnum current image number
 	 * @returns OK or FAIL
 	 */
-	 int WriteToFile(char* buffer, int bsize, uint64_t fnum);
+	int WriteToFile(char* buffer, int bsize, uint64_t fnum);
+
+	/**
+	 * Create master file
+	 * @param en ten giga enable
+	 * @param size image size
+	 * @param nx number of pixels in x direction
+	 * @param ny number of pixels in y direction
+	 * @param at acquisition time
+	 * @param ap acquisition period
+	 * @returns OK or FAIL
+	 */
+	int CreateMasterFile(bool en, uint32_t size,
+			uint32_t nx, uint32_t ny, uint64_t at, uint64_t ap);
+
+
+
+
+	//*** static functions ***
 
 	/**
 	 * Create File Name in format fpath/fnameprefix_fx_dy_z.raw,
@@ -103,31 +122,46 @@ class HDF5File : private virtual slsReceiverDefs, public File {
 			uint64_t fnum = 0, int dindex = -1, int numunits = 1, int unitindex = 0);
 
 	/**
-	 * Create File
-	 * @param ind object index for debugging
-	 * @param owenable overwrite enable
-	 * @param numf number of images
-	 * @param fname complete file name
-	 * @param fnum current image number
-	 * @param nx number of pixels in x dir
-	 * @param ny number of pixels in y dir
-	 * @param dtype data type
-	 * @param fd file pointer
-	 * @param dspace dataspace pointer
-	 * @param dset dataset pointer
-	 * @returns OK or FAIL
+	 * Create master file name
+	 * @param fpath file path
+	 * @param fnameprefix file name prefix (includes scan and position variables)
+	 * @param findex file index
+	 * @returns master file name
 	 */
-	static int CreateDataFile(int ind, bool owenable, uint64_t numf, std::string fname, uint64_t fnum, int nx, int ny,
-			DataType dtype, H5File*& fd, DataSpace*& dspace, DataSet*& dset);
+	static std::string CreateMasterFileName(char* fpath, char* fnameprefix, uint64_t findex);
+
+	/**
+	 * Create virtual file name
+	 * @param fpath file path
+	 * @param fnameprefix file name prefix (includes scan and position variables)
+	 * @param fnum current frame number
+	 * @param findex file index
+	 * @param frindexenable frame index enable
+	 * @param fnum frame number index
+	 * @returns virtual file name
+	 */
+	static std::string CreateVirtualFileName(char* fpath, char* fnameprefix, uint64_t findex, bool frindexenable,
+			uint64_t fnum);
 
 	/**
 	 * Close File
+	 * @param ind index for debugging
 	 * @param fd file pointer
 	 * @param dp dataspace pointer
 	 * @param ds dataset pointer
 	 */
 
-	static void CloseDataFile(H5File*& fd, DataSpace*& dp, DataSet*& ds);
+	static void CloseDataFile(int ind, H5File*& fd, DataSpace*& dp, DataSet*& ds);
+
+	/*
+	  * Close master file
+	 */
+	void CloseMasterDataFile();
+
+	 /*
+	  * Close virtual file
+	 */
+	void CloseVirtualDataFile();
 
 	/**
 	 * Write data to file
@@ -146,19 +180,89 @@ class HDF5File : private virtual slsReceiverDefs, public File {
 			DataSpace* dspace, DataSet* dset, DataType dtype);
 
 	/**
-	 * Create common files
-	 * @param en ten giga enable
+	 * Create master file
+	 * @param fname master file name
+	 * @param owenable overwrite enable
+	 * @param dr dynamic range
+	 * @param tenE ten giga enable
 	 * @param size image size
 	 * @param nx number of pixels in x direction
 	 * @param ny number of pixels in y direction
-	 * @param at acquisition time
-	 * @param ap acquisition period
+	 * @param nf number of images
+	 * @param acquisitionTime acquisition time
+	 * @param acquisitionPeriod acquisition period
 	 * @returns OK or FAIL
 	 */
-	int CreateCommonFiles(bool en, uint32_t size,
-				uint32_t nx, uint32_t ny, uint64_t at, uint64_t ap);
+	int CreateMasterDataFile(std::string fname, bool owenable,
+			uint32_t dr, bool tenE,	uint32_t size, uint32_t nx, uint32_t ny, uint64_t nf,
+			uint64_t acquisitionTime, uint64_t acquisitionPeriod);
+
+	/**
+	 * Create Virtual File
+	 * @param fnum frame number
+	 */
+	int CreateVirtualFile(uint64_t fnum);
+
+	/**
+	 * Create File
+	 * @param ind object index for debugging
+	 * @param owenable overwrite enable
+	 * @param numf number of images
+	 * @param fname complete file name
+	 * @param frindexenable frame index enable
+	 * @param fnum current image number
+	 * @param nx number of pixels in x dir
+	 * @param ny number of pixels in y dir
+	 * @param dtype data type
+	 * @param fd file pointer
+	 * @param dspace dataspace pointer
+	 * @param dset dataset pointer
+	 * @returns OK or FAIL
+	 */
+	static int CreateDataFile(int ind, bool owenable, uint64_t numf, std::string fname, bool frindexenable, uint64_t fnum, int nx, int ny,
+			DataType dtype, H5File*& fd, DataSpace*& dspace, DataSet*& dset);
+
+	/**
+	 * Create virtual file
+	 * @param virtualfname virtual file name
+	 * @param virtualDatasetname virtual dataset name
+	 * @param srcDatasetname source dataset name
+	 * @param numFiles number of files
+	 * @param fileNames array of file names
+	 * @param owenable overwrite enable
+	 * @param fnum current frame number
+	 * @param dtype datatype
+	 * @param srcNDimx source number of objects in x dimension (Number of images)
+	 * @param srcNDimy source number of objects in y dimension (Number of pixels in y dir)
+	 * @param srcNDimz source number of objects in z dimension (Number of pixels in x dir)
+	 * @param dstNDimx destination number of objects in x dimension (Number of images)
+	 * @param dstNDimy destination number of objects in y dimension (Number of pixels in y dir)
+	 * @param dstNDimz destination number of objects in z dimension (Number of pixels in x dir)
+	 * @returns OK or FAIL
+	 */
+	static int CreateVirtualDataFile(std::string virtualfname, std::string virtualDatasetname, std::string srcDatasetname,
+			int numFiles, std::string fileNames[], bool owenable, uint64_t fnum, hid_t dtype,
+			int srcNDimx, int srcNDimy, int srcNDimz, int dstNDimx, int dstNDimy, int dstNDimz);
+
+	/**
+	 * Copy file to another file (mainly to view virutal files in hdfviewer)
+	 * @param owenable overwrite enable
+	 * @param oldFileName file name including path of file to copy
+	 * @param oldDatasetName dataset name to copy
+	 * @param newFileName  file name including path of file to copy to
+	 * @param newDatasetName dataset name to copy to
+	 * @param nDimx Number of objects in x dimension
+	 * @param nDimy Number of objects in y dimension
+	 * @param nDimz Number of objects in z dimension
+	 * @param dataType data type
+	 * @returns OK or FAIL
+	 */
+	template <typename T>
+	static int CopyVirtualFile(bool owenable, std::string oldFileName, std::string oldDatasetName,
+			std::string newFileName, std::string newDatasetName, int nDimx, int nDimy, int nDimz, T datatype);
 
 
+	void  CreateFinalFile();
  private:
 
 	/**
@@ -172,37 +276,7 @@ class HDF5File : private virtual slsReceiverDefs, public File {
 	 */
 	void UpdateDataType();
 
-	/**
-	 * Create file names for master and virtual file
-	 * @param m master file name
-	 * @param v virtual file name
-	 * @param fpath file path
-	 * @param fnameprefix file name prefix (includes scan and position variables)
-	 * @param findex file index
-	 */
-	void CreateCommonFileNames(std::string& m, std::string& v, char* fpath, char* fnameprefix, uint64_t findex);
 
-	 /*
-	  * Close master and virtual files
-	 */
-	void CloseCommonDataFiles();
-
-	/**
-	 * Create master and virtual files
-	 * @param m master file name
-	 * @param v virtual file name
-	 * @param owenable overwrite enable
-	 * @param tengigaEnable ten giga enable
-	 * @param imageSize image size
-	 * @param nPixelsX number of pixels in x direction
-	 * @param nPixelsY number of pixels in y direction
-	 * @param acquisitionTime acquisition time
-	 * @param acquisitionPeriod acquisition period
-	 * @returns OK or FAIL
-	 */
-	int CreateCommonDataFiles(std::string m, std::string v, bool owenable,
-			bool tengigaEnable,	uint32_t imageSize, uint32_t nPixelsX, uint32_t nPixelsY,
-			uint64_t acquisitionTime, uint64_t acquisitionPeriod);
 
 
 	/** mutex to update static items among objects (threads)*/
@@ -211,8 +285,8 @@ class HDF5File : private virtual slsReceiverDefs, public File {
 	/** Master File handle */
 	static H5File* masterfd;
 
-	/** Virtual File handle */
-	static H5File* virtualfd;
+	/** Virtual File handle ( only file name because code in C as H5Pset_virtual doesnt exist yet in C++) */
+	static hid_t virtualfd;
 
 	/** File handle */
 	H5File* filefd;
@@ -231,6 +305,7 @@ class HDF5File : private virtual slsReceiverDefs, public File {
 
 	/** Number of pixels in y direction */
 	int nPixelsY;
+
 };
 
 //#endif

@@ -221,7 +221,11 @@ private:
 	/** set file format */
 	int set_file_format();
 
+	/** set position id */
+	int set_detector_posid();
 
+	/** set multi detector size */
+	int set_multi_detector_size();
 
 	//General Functions
 	/** Locks Receiver */

@@ -37,6 +37,9 @@ void UDPBaseImplementation::initializeMembers(){
 
 	FILE_LOG(logDEBUG) << "Info: Initializing base members";
 	//**detector parameters***
+	for (int i = 0; i < MAX_DIMENSIONS; ++i)
+		numDet[i] = 0;
+	detID = 0;
 	myDetectorType = GENERIC;
 	strcpy(detHostname,"");
 	acquisitionPeriod = 0;
@@ -85,6 +88,10 @@ UDPBaseImplementation::~UDPBaseImplementation(){}
  *************************************************************************/
 
 /**initial parameters***/
+int* UDPBaseImplementation::getMultiDetectorSize() const{	FILE_LOG(logDEBUG) << __AT__ << " starting"; return (int*) numDet;}
+
+int UDPBaseImplementation::getDetectorPositionId() const{	FILE_LOG(logDEBUG) << __AT__ << " starting"; return detID;}
+
 char *UDPBaseImplementation::getDetectorHostname() const{
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
@@ -206,6 +213,23 @@ int UDPBaseImplementation::getActivate() const{FILE_LOG(logDEBUG) << __AT__ << "
 void UDPBaseImplementation::configure(map<string, string> config_map){
 	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
+}
+
+void UDPBaseImplementation::setMultiDetectorSize(const int* size) {
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	char message[100];
+	strcpy(message, "Detector Size: (");
+	for (int i = 0; i < MAX_DIMENSIONS; ++i) {
+		if (myDetectorType == EIGER && (!i))
+			numDet[i] = size[i]*2;
+		else
+			numDet[i] = size[i];
+		sprintf(message,"%s%d",message,numDet[i]);
+		if (i < MAX_DIMENSIONS-1 )
+			strcat(message,",");
+	}
+	strcat(message,")");
+	FILE_LOG(logINFO)  << message;
 }
 
 void UDPBaseImplementation::setFlippedData(int axis, int enable){
@@ -443,6 +467,13 @@ int UDPBaseImplementation::setDetectorType(const detectorType d){
 	//if eiger, set numberofListeningThreads = 2;
 	FILE_LOG(logINFO) << "Detector Type:" << getDetectorType(d);
 	return OK;
+}
+
+void UDPBaseImplementation::setDetectorPositionId(const int i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	detID = i;
+	FILE_LOG(logINFO) << "Detector Position Id:" << detID;
 }
 
 void UDPBaseImplementation::initialize(const char *c){

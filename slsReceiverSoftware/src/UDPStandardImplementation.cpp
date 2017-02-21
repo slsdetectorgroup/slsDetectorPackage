@@ -56,9 +56,6 @@ void UDPStandardImplementation::InitializeMembers() {
 	UDPBaseImplementation::initializeMembers();
 	acquisitionPeriod = SAMPLE_TIME_IN_NS;
 
-	//*** detector parameters ***
-	detID = -1;
-
 	//*** receiver parameters ***
 	numThreads = 1;
 	numberofJobs = 1;
@@ -154,7 +151,7 @@ void UDPStandardImplementation::setFileName(const char c[]) {
 
 	if (strlen(c)) {
 		strcpy(fileName, c); //automatically update fileName in Filewriter (pointer)
-		int detindex = -1;
+		/*int detindex = -1;
 		string tempname(fileName);
 		size_t uscore=tempname.rfind("_");
 		if (uscore!=string::npos) {
@@ -165,7 +162,7 @@ void UDPStandardImplementation::setFileName(const char c[]) {
 			}
 		}
 		if (detindex == -1)
-			detID = 0;
+			detID = 0;*/
 	}
 	FILE_LOG (logINFO) << "File name:" << fileName;
 }
@@ -437,13 +434,25 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
 		(*it)->SetGeneralData(generalData);
 	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it) {
-		(*it)->SetupFileWriter(fileName, filePath, &fileIndex, &frameIndexEnable,
-									&overwriteEnable, &detID, &numThreads, &numberOfFrames, &dynamicRange, generalData);
+		(*it)->SetGeneralData(generalData);
 	}
 	FILE_LOG (logDEBUG) << " Detector type set to " << getDetectorType(d);
 	return OK;
 }
 
+
+
+
+void UDPStandardImplementation::setDetectorPositionId(const int i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	detID = i;
+	FILE_LOG(logINFO) << "Detector Position Id:" << detID;
+	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it) {
+		(*it)->SetupFileWriter((int*)numDet, fileName, filePath, &fileIndex, &frameIndexEnable,
+									&overwriteEnable, &detID, &numThreads, &numberOfFrames, &dynamicRange, generalData);
+	}
+}
 
 
 void UDPStandardImplementation::resetAcquisitionCount() {
@@ -515,6 +524,9 @@ int UDPStandardImplementation::startReceiver(char *c) {
 		cout << "Data will not be saved" << endl;
 	cout << "Processor Ready ..." << endl;
 
+	//for(int i=0;i<dataProcessor.size(); ++i)
+	//dataProcessor[i]->CreateFinalFile();
+
 	//status
 	pthread_mutex_lock(&statusMutex);
 	status = RUNNING;
@@ -544,6 +556,9 @@ void UDPStandardImplementation::stopReceiver(){
 	while(DataProcessor::GetRunningMask()){
 		usleep(5000);
 	}
+
+	for(unsigned int i=0;i<dataProcessor.size(); ++i)
+		dataProcessor[i]->CreateFinalFile();
 
 	pthread_mutex_lock(&statusMutex);
 	status = RUN_FINISHED;

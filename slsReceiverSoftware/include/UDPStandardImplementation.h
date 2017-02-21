@@ -141,6 +141,12 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	int setDetectorType(const detectorType d);
 
 	/**
+	 * Set detector position id and construct filewriter
+	 * @param i position id
+	 */
+	void setDetectorPositionId(const int i);
+
+	/**
 	 * Reset acquisition parameters such as total frames caught for an entire acquisition (including all scans)
 	 */
 	void resetAcquisitionCount();
@@ -243,10 +249,6 @@ private:
 
 	//*** Class Members ***
 
-
-	//*** detector parameters ***
-	/*Detector Readout ID*/
-	int detID;
 
 	//*** receiver parameters ***
 	/** Number of Threads */

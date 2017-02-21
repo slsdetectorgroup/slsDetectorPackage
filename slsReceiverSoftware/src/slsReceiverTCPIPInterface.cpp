@@ -263,7 +263,8 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_READ_RECEIVER_TIMER]			= 	&slsReceiverTCPIPInterface::set_read_receiver_timer;
 	flist[F_SET_FLIPPED_DATA_RECEIVER]		= 	&slsReceiverTCPIPInterface::set_flipped_data;
 	flist[F_SET_RECEIVER_FILE_FORMAT]		= 	&slsReceiverTCPIPInterface::set_file_format;
-
+	flist[F_SEND_RECEIVER_DETPOSID]			= 	&slsReceiverTCPIPInterface::set_detector_posid;
+	flist[F_SEND_RECEIVER_MULTIDETSIZE]		= 	&slsReceiverTCPIPInterface::set_multi_detector_size;
 
 
 #ifdef VERYVERBOSE
@@ -2242,6 +2243,138 @@ int slsReceiverTCPIPInterface::set_file_format() {
 	//return ok/fail
 	return ret;
 }
+
+
+
+
+int slsReceiverTCPIPInterface::set_detector_posid() {
+	ret=OK;
+	int retval=-1;
+	int arg=-1;
+	strcpy(mess,"Could not set detector position id\n");
+
+
+	// receive arguments
+	if(mySock->ReceiveDataOnly(&arg,sizeof(arg)) < 0 ){
+		strcpy(mess,"Error reading from socket\n");
+		ret = FAIL;
+	}
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	if (ret==OK) {
+		if (lockStatus==1 && mySock->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
+			ret=FAIL;
+		}
+		else if (receiverBase == NULL){
+			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
+			ret=FAIL;
+		}
+		else if(receiverBase->getStatus()!= IDLE){
+			strcpy(mess,"Can not set position file id while receiver not idle\n");
+			cprintf(RED,"%s",mess);
+			ret = FAIL;
+		}
+		else{
+			if(arg >= 0)
+				receiverBase->setDetectorPositionId(arg);
+			retval=receiverBase->getDetectorPositionId();
+			if(arg>=0 && retval!=arg)
+				ret = FAIL;
+		}
+	}
+#ifdef VERYVERBOSE
+	if(ret!=FAIL)
+		cout << "Position Id:" << retval << endl;
+	else
+		cout << mess << endl;
+#endif
+#endif
+
+	if(ret==OK && mySock->differentClients){
+		FILE_LOG(logDEBUG) << "Force update";
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	mySock->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL){
+		cprintf(RED, "%s\n", mess);
+		mySock->SendDataOnly(mess,sizeof(mess));
+	}
+	mySock->SendDataOnly(&retval,sizeof(retval));
+
+	//return ok/fail
+	return ret;
+}
+
+
+
+
+
+
+int slsReceiverTCPIPInterface::set_multi_detector_size() {
+	ret=OK;
+	int retval=-1;
+	int arg[2];
+	arg[0]=-1;
+	arg[1]=-1;
+	strcpy(mess,"Could not set multi detector size\n");
+
+
+	// receive arguments
+	if(mySock->ReceiveDataOnly(arg,sizeof(arg)) < 0 ){
+		strcpy(mess,"Error reading from socket\n");
+		ret = FAIL;
+	}
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	if (ret==OK) {
+		if (lockStatus==1 && mySock->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", mySock->lastClientIP);
+			ret=FAIL;
+		}
+		else if (receiverBase == NULL){
+			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
+			ret=FAIL;
+		}
+		else if(receiverBase->getStatus()!= IDLE){
+			strcpy(mess,"Can not set position file id while receiver not idle\n");
+			cprintf(RED,"%s",mess);
+			ret = FAIL;
+		}
+		else{
+			if((arg[0] > 0) && (arg[1] > 0))
+				receiverBase->setMultiDetectorSize(arg);
+		}
+	}
+#ifdef VERYVERBOSE
+	if(ret!=FAIL)
+		cout << "Multi Detector Size:" << retval << endl;
+	else
+		cout << mess << endl;
+#endif
+#endif
+
+	if(ret==OK && mySock->differentClients){
+		FILE_LOG(logDEBUG) << "Force update";
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	mySock->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL){
+		cprintf(RED, "%s\n", mess);
+		mySock->SendDataOnly(mess,sizeof(mess));
+	}
+	mySock->SendDataOnly(&retval,sizeof(retval));
+
+	//return ok/fail
+	return ret;
+}
+
 
 
 

@@ -322,6 +322,12 @@ class multiSlsDetector  : public slsDetectorUtils {
       \returns number of detectors */
   int getNumberOfDetectors() {return thisMultiDetector->numberOfDetectors;};
 
+  /** returns the number of detectors in each direction
+   	   \param nx number of detectors in x direction
+   	   \param ny number of detectors in y direction
+   */
+  void getNumberOfDetectors(int& nx, int& ny);
+
   int getMaxMods();
   int getNMods();
   int getMaxMod(dimension d);

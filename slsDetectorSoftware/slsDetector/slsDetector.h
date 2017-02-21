@@ -1753,7 +1753,17 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
    */
   int enableReceiverCompression(int i = -1);
 
-  /** send the detector host name to the eiger receiver
+  /**
+   * Send the multi detector size to the detector
+   */
+  void sendMultiDetectorSize();
+
+  /** send the detector pos id to the receiver
+   * for various file naming conventions for multi detectors in receiver
+   */
+  void setDetectorId();
+
+  /** send the detector host name to the  receiver
    * for various handshaking required with the detector
    */
   void setDetectorHostname();

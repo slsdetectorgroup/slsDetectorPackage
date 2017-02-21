@@ -776,7 +776,21 @@ int multiSlsDetector::addSlsDetector(detectorType t, int pos) {
 
 
 
+void multiSlsDetector::getNumberOfDetectors(int& nx, int& ny) {
+	nx = 0; ny = 0;
 
+	int offsetx = -1, offsety = -1;
+	for (int i = 0; i < thisMultiDetector->numberOfDetectors; ++i) {
+		if (thisMultiDetector->offsetX[i] > offsetx) {
+			nx++;
+			offsetx = thisMultiDetector->offsetX[i];
+		}
+		if (thisMultiDetector->offsetY[i] > offsety) {
+			ny++;
+			offsety = thisMultiDetector->offsetY[i];
+		}
+	}
+}
 
 
 

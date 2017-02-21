@@ -41,6 +41,9 @@ using namespace std;
 #define COULD_NOT_CONFIGURE_MAC				0x0002000000000000ULL
 #define COULDNOT_START_RECEIVER				0x0001000000000000ULL // default error like starting threads
 #define COULDNOT_STOP_RECEIVER				0x0000800000000000ULL
+#define RECEIVER_DET_POSID_NOT_SET			0x0000400000000000ULL
+#define RECEIVER_MULTI_DET_SIZE_NOT_SET		0x0000200000000000ULL
+
 //											0xFFFFFFF000000000ULL
 
 //											0x0000000FFFFFFFFFULL
@@ -135,6 +138,12 @@ public:
 
 		if(slsErrorMask&DETECTOR_ACTIVATE)
 			retval.append("Could not activate/deactivate detector\n");
+
+		if(slsErrorMask&RECEIVER_DET_POSID_NOT_SET)
+			retval.append("Could not set detector position id\n");
+
+		if(slsErrorMask&RECEIVER_MULTI_DET_SIZE_NOT_SET)
+			retval.append("Could not set multi detector size\n");
 
 
 

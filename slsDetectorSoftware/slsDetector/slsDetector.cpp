@@ -5813,6 +5813,7 @@ char* slsDetector::setReceiver(string receiverIP){
 #ifdef VERBOSE
 		std::cout << "Setting up receiver with" << endl;
 		std::cout << "detector type:" << slsDetectorBase::getDetectorType(thisDetector->myDetectorType) << endl;
+		std::cout << "detector id:" << posId << endl;
 		std::cout << "detector hostname:" << thisDetector->hostname << endl;
 		std::cout << "file path:" << fileIO::getFilePath() << endl;
 		std::cout << "file name:" << fileIO::getFileName() << endl;
@@ -5830,6 +5831,9 @@ char* slsDetector::setReceiver(string receiverIP){
 /** enable compresison, */
 #endif
 		if(setDetectorType()!= GENERIC){
+			if(!posId)
+				sendMultiDetectorSize();
+			setDetectorId();
 			setDetectorHostname();
 			setFilePath(fileIO::getFilePath());
 			setFileName(fileIO::getFileName());
@@ -7437,10 +7441,10 @@ string slsDetector::setFileName(string s) {
 	if(!s.empty()){
 		pthread_mutex_lock(&ms);
 		fileIO::setFileName(s);
-		if(thisDetector->myDetectorType == EIGER)
+		/*if(thisDetector->myDetectorType == EIGER)
 			parentDet->setDetectorIndex(posId);
 		else if(parentDet->getNumberOfDetectors()>1)
-			parentDet->setDetectorIndex(posId);
+			parentDet->setDetectorIndex(-1);*/
 		s=parentDet->createReceiverFilePrefix();
 		pthread_mutex_unlock(&ms);
 	}
@@ -8188,6 +8192,54 @@ int slsDetector::enableReceiverCompression(int i){
 	return retval;
 }
 
+
+
+void slsDetector::sendMultiDetectorSize(){
+	int fnum=F_SEND_RECEIVER_MULTIDETSIZE;
+	int ret = FAIL;
+	int retval = -1;
+	int arg[2];
+
+	pthread_mutex_lock(&ms);
+	parentDet->getNumberOfDetectors(arg[0],arg[1]);
+	pthread_mutex_unlock(&ms);
+
+	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+#ifdef VERBOSE
+		std::cout << "Sending multi detector size to Receiver (" << arg[0] << "," << arg[1] << ")" << std::endl;
+#endif
+		if (connectData() == OK){
+			ret=thisReceiver->sendIntArray(fnum,retval,arg);
+			disconnectData();
+		}
+		if((ret==FAIL)){
+			std::cout << "Could not set position Id" << std::endl;
+			setErrorMask((getErrorMask())|(RECEIVER_MULTI_DET_SIZE_NOT_SET));
+		}
+	}
+}
+
+
+void slsDetector::setDetectorId(){
+	int fnum=F_SEND_RECEIVER_DETPOSID;
+	int ret = FAIL;
+	int retval = -1;
+	int arg = posId;
+
+	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+#ifdef VERBOSE
+		std::cout << "Sending detector pos id to Receiver " << posId << std::endl;
+#endif
+		if (connectData() == OK){
+			ret=thisReceiver->sendInt(fnum,retval,arg);
+			disconnectData();
+		}
+		if((ret==FAIL) || (retval != arg)){
+			std::cout << "Could not set position Id" << std::endl;
+			setErrorMask((getErrorMask())|(RECEIVER_DET_POSID_NOT_SET));
+		}
+	}
+}
 
 
 void slsDetector::setDetectorHostname(){

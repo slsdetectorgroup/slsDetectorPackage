@@ -10,7 +10,7 @@
 //#include "sls_receiver_defs.h"
 #include "sls_detector_defs.h"
 //#endif
-
+#include <cmath>
 #include <string>
 
 using namespace std;
@@ -75,7 +75,7 @@ class energyConversion
   V linearInterpolation(const E x, const E x1, const E x2, const V y1, const V y2){
           double k = static_cast<double>(y2-y1)/(x2-x1);
           double m = y1-k*x1;
-          int y = round( k*x+m );
+          int y = std::round( k*x+m );
           return static_cast<V>(y);
   }
 

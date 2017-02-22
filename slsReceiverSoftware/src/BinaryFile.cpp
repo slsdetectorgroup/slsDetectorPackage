@@ -8,18 +8,17 @@
 #include "receiver_defs.h"
 
 #include <iostream>
-#include <iomanip>
-#include <string.h>
 using namespace std;
 
 
 FILE* BinaryFile::masterfd = 0;
 
 BinaryFile::BinaryFile(int ind, int* nd, char* fname, char* fpath, uint64_t* findex,
-		bool* frindexenable, bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t maxf):
-		File(ind, nd, fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr),
-		maxFramesPerFile(maxf),
-		filefd(0)
+		bool* frindexenable, bool* owenable, uint32_t maxf, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr):
+
+		File(ind, nd, fname, fpath, findex, frindexenable, owenable, maxf, dindex, nunits, nf, dr),
+		filefd(0),
+		numFramesInFile(0)
 {
 #ifdef VERBOSE
 	PrintMembers();
@@ -33,21 +32,20 @@ BinaryFile::~BinaryFile() {
 void BinaryFile::PrintMembers() {
 	File::PrintMembers();
 	printf("Max Frames Per File: %d\n",maxFramesPerFile);
+	printf("Number of Frames in File: %d\n",numFramesInFile);
 }
 
 slsReceiverDefs::fileFormat BinaryFile::GetFileType() {
 	return BINARY;
 }
 
-void BinaryFile::SetMaxFramesPerFile(uint32_t maxf) {
-	maxFramesPerFile = maxf;
-}
 
 int BinaryFile::CreateFile(uint64_t fnum) {
-	currentFileName = CreateFileName(filePath, fileNamePrefix, *fileIndex,
+	numFramesInFile = 0;
+	currentFileName = BinaryFileStatic::CreateFileName(filePath, fileNamePrefix, *fileIndex,
 			*frameIndexEnable, fnum, *detIndex, *numUnitsPerDetector, index);
 
-	if (CreateDataFile(filefd, *overWriteEnable, currentFileName) == FAIL)
+	if (BinaryFileStatic::CreateDataFile(filefd, *overWriteEnable, currentFileName, FILE_BUFFER_SIZE) == FAIL)
 		return FAIL;
 
 	printf("%d Binary File created: %s\n", index, currentFileName.c_str());
@@ -55,17 +53,22 @@ int BinaryFile::CreateFile(uint64_t fnum) {
 }
 
 void BinaryFile::CloseCurrentFile() {
-	CloseDataFile(filefd);
+	BinaryFileStatic::CloseDataFile(filefd);
 }
 
 void BinaryFile::CloseAllFiles() {
-	CloseDataFile(filefd);
+	BinaryFileStatic::CloseDataFile(filefd);
 	if (master && (*detIndex==0))
-		CloseMasterDataFile();
+		BinaryFileStatic::CloseDataFile(masterfd);
 }
 
 int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum) {
-	if (WriteDataFile(filefd, buffer, buffersize, fnum) == buffersize)
+	if (numFramesInFile >= maxFramesPerFile) {
+		CloseCurrentFile();
+		CreateFile(fnum);
+	}
+	numFramesInFile++;
+	if (BinaryFileStatic::WriteDataFile(filefd, buffer, buffersize, fnum) == buffersize)
 		return OK;
 	cprintf(RED,"%d Error: Write to file failed for image number %lld\n", index, (long long int)fnum);
 	return FAIL;
@@ -75,119 +78,13 @@ int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum) {
 int BinaryFile::CreateMasterFile(bool en, uint32_t size,
 		uint32_t nx, uint32_t ny, uint64_t at, uint64_t ap) {
 	if (master && (*detIndex==0)) {
-		CreateMasterFileName(filePath, fileNamePrefix, *fileIndex);
-		return CreateMasterDataFile(*overWriteEnable,en, size, nx, ny, at, ap);
+		masterFileName = BinaryFileStatic::CreateMasterFileName(filePath, fileNamePrefix, *fileIndex);
+		printf("Master File: %s\n", masterFileName.c_str());
+		return BinaryFileStatic::CreateMasterDataFile(masterfd, masterFileName, *overWriteEnable,
+				*dynamicRange, en, size, nx, ny, *numImages,
+				at, ap, BINARY_WRITER_VERSION);
 	}
 	return OK;
 }
 
-/*** static function ***/
-string BinaryFile::CreateFileName(char* fpath, char* fnameprefix, uint64_t findex,
-		bool frindexenable,	uint64_t fnum, int dindex, int numunits, int unitindex) {
-	ostringstream osfn;
-	osfn << fpath << "/" << fnameprefix;
-	if (dindex >= 0) osfn << "_d" << (dindex * numunits + unitindex);
-	if (frindexenable) osfn << "_f" << setfill('0') << setw(12) << fnum;
-	osfn << "_" << findex;
-	osfn << ".raw";
-	return osfn.str();
-}
 
-/*** static function ***/
-int BinaryFile::CreateDataFile(FILE*& fd, bool owenable, string fname) {
-	if(!owenable){
-		if (NULL == (fd = fopen((const char *) fname.c_str(), "wx"))){
-			FILE_LOG(logERROR) << "Could not create/overwrite file" << fname;
-			fd = 0;
-			return FAIL;
-		}
-	}else if (NULL == (fd = fopen((const char *) fname.c_str(), "w"))){
-		FILE_LOG(logERROR) << "Could not create file" << fname;
-		fd = 0;
-		return FAIL;
-	}
-	//setting file buffer size to 16mb
-	setvbuf(fd,NULL,_IOFBF,FILE_BUFFER_SIZE);
-	return OK;
-}
-
-/*** static function ***/
-void BinaryFile::CloseDataFile(FILE*& fd) {
-	if (fd)
-		fclose(fd);
-	fd = 0;
-}
-
-/*** static function ***/
-int BinaryFile::WriteDataFile(FILE* fd, char* buf, int bsize, uint64_t fnum) {
-	if (!fd)
-		return 0;
-	return fwrite(buf, 1, bsize, fd);
-}
-
-void BinaryFile::CreateMasterFileName(char* fpath, char* fnameprefix, uint64_t findex) {
-	ostringstream osfn;
-	osfn << fpath << "/" << fnameprefix;
-	osfn << "_master";
-	osfn << "_" << findex;
-	osfn << ".raw";
-	masterFileName = osfn.str();
-	printf("Master HDF5 File: %s\n", masterFileName.c_str());
-}
-
-void BinaryFile::CloseMasterDataFile() {
-	if(masterfd)
-		delete masterfd;
-	masterfd = 0;
-}
-
-
-int BinaryFile::CreateMasterDataFile(bool owenable,
-				bool tengigaEnable,	uint32_t imageSize, uint32_t nPixelsX, uint32_t nPixelsY,
-				uint64_t acquisitionTime, uint64_t acquisitionPeriod) {
-	if(!owenable){
-		if (NULL == (masterfd = fopen((const char *) masterFileName.c_str(), "wx"))){
-			cprintf(RED,"Error in creating binary master file %s\n",masterFileName.c_str());
-			masterfd = 0;
-			return FAIL;
-		}
-	}else if (NULL == (masterfd = fopen((const char *) masterFileName.c_str(), "w"))){
-		cprintf(RED,"Error in creating binary master file %s\n",masterFileName.c_str());
-		masterfd = 0;
-		return FAIL;
-	}
-	time_t t = time(0);
-	char message[MAX_STR_LENGTH];
-	sprintf(message,
-			"Version\t\t: %.1f\n"
-			"Dynamic Range\t: %d\n"
-			"Ten Giga\t: %d\n"
-			"Image Size\t: %d bytes\n"
-			"x\t\t: %d pixels\n"
-			"y\t\t: %d pixels\n"
-			"Total Frames\t: %lld\n"
-			"Exptime (ns)\t: %lld\n"
-			"Period (ns)\t: %lld\n"
-			"Timestamp\t: %s\n\n",
-			BINARY_WRITER_VERSION,
-			*dynamicRange,
-			tengigaEnable,
-			imageSize,
-			nPixelsX,
-			nPixelsY,
-			(long long int)*numImages,
-			(long long int)acquisitionTime,
-			(long long int)acquisitionPeriod,
-			ctime(&t));
-	if (strlen(message) > MAX_STR_LENGTH) {
-		cprintf(BG_RED,"Master File Size %d is greater than max str size %d\n",
-				(int)strlen(message), MAX_STR_LENGTH);
-		return FAIL;
-	}
-
-	if (fwrite((void*)message, 1, strlen(message), masterfd) !=  strlen(message))
-		return FAIL;
-
-	CloseDataFile(masterfd);
-	return OK;
-}

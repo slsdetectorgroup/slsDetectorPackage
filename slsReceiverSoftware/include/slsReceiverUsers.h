@@ -1,5 +1,4 @@
-#ifndef SLS_RECEIVER_USERS_H
-#define SLS_RECEIVER_USERS_H
+#pragma once
 
 #include <stdio.h>
 #include <stdint.h>
@@ -11,11 +10,7 @@ class slsReceiver;
 @short Class for implementing the SLS data receiver in the users application. Callbacks can be defined for processing and/or saving data
   */
 /** 
-
-
  @libdoc slsReceiverUsers is a class that can be instantiated in the users software to receive the data from the detectors. Callbacks can be defined for processing and/or saving data
-
-
  ***********************************************/
 
 class slsReceiverUsers {
@@ -87,5 +82,3 @@ public:
 	slsReceiver* receiver;
 };
 
-
-#endif

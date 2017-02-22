@@ -1,11 +1,10 @@
+#pragma once
 /************************************************
  * @file DataProcessor.h
  * @short creates data processor thread that
  * pulls pointers to memory addresses from fifos
  * and processes data stored in them & writes them to file
  ***********************************************/
-#ifndef DATAPROCESSOR_H
-#define DATAPROCESSOR_H
 /**
  *@short creates & manages a data processor thread each
  */
@@ -165,7 +164,6 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	void CloseFiles();
 
 
-	void  CreateFinalFile();
 
  private:
 
@@ -301,4 +299,3 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 
 };
 
-#endif

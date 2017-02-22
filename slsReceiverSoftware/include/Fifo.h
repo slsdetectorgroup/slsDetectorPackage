@@ -1,11 +1,10 @@
+#pragma once
 /************************************************
  * @file Fifo.h
  * @short constructs the fifo structure
  * which is a circular buffer with pointers to
  * parts of allocated memory
  ***********************************************/
-#ifndef FIFO_H
-#define FIFO_H
 /**
  *@short constructs the fifo structure
  */
@@ -84,5 +83,3 @@ class Fifo : private virtual slsReceiverDefs {
 	CircularFifo<char>* fifoFree;
 
 };
-
-#endif

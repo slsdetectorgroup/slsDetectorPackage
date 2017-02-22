@@ -1,3 +1,4 @@
+#pragma once
 /**
  * @file   RestHelper.h
  * @author Leonardo Sala <leonardo.sala@psi.ch>

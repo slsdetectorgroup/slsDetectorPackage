@@ -212,12 +212,13 @@ void DataProcessor::SetupFileWriter(int* nd, char* fname, char* fpath, uint64_t*
 #ifdef HDF5C
 	case HDF5:
 		file = new HDF5File(index, nd, fname, fpath, findex,
-				frindexenable, owenable, dindex, nunits, nf, dr, generalData->nPixelsX, generalData->nPixelsY);
+				frindexenable, owenable, generalData->maxFramesPerFile, dindex, nunits, nf, dr,
+				generalData->nPixelsX, generalData->nPixelsY);
 		break;
 #endif
 	default:
 		file = new BinaryFile(index, nd, fname, fpath, findex,
-				frindexenable, owenable, dindex, nunits, nf, dr, generalData->maxFramesPerFile);
+				frindexenable, owenable, generalData->maxFramesPerFile, dindex, nunits, nf, dr);
 		break;
 	}
 }
@@ -292,8 +293,3 @@ void DataProcessor::ProcessAnImage(char* buf) {
 		file->WriteToFile(buf, generalData->fifoBufferSize + FILE_FRAME_HEADER_SIZE, fnum-firstMeasurementIndex);
 }
 
-
-void  DataProcessor::CreateFinalFile(){
-	if(file->GetFileType() == HDF5)
-		file->CreateFinalFile();
-}

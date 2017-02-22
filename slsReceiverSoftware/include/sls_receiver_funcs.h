@@ -1,10 +1,10 @@
+#pragma once
 /** 
    @internal
    function indexes to call on the server
    All set functions with argument -1 work as get, when possible 
  */
-#ifndef SLS_RECEIVER_FUNCS_H
-#define SLS_RECEIVER_FUNCS_H
+
 
 enum {
 	//General functions
@@ -62,5 +62,3 @@ enum {
 	/* Always append functions hereafter!!! */
 };
 
-#endif
-/** @endinternal */

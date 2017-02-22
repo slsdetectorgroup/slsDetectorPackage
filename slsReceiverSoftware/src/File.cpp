@@ -11,7 +11,7 @@ using namespace std;
 
 
 File::File(int ind, int* nd, char* fname, char* fpath, uint64_t* findex,
-		bool* frindexenable, bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr):
+		bool* frindexenable, bool* owenable, uint32_t maxf, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr):
 			index(ind),
 			numDetX(nd[0]),
 			numDetY(nd[1]),
@@ -20,6 +20,7 @@ File::File(int ind, int* nd, char* fname, char* fpath, uint64_t* findex,
 			fileIndex(findex),
 			frameIndexEnable(frindexenable),
 			overWriteEnable(owenable),
+			maxFramesPerFile(maxf),
 			detIndex(dindex),
 			numUnitsPerDetector(nunits),
 			numImages(nf),
@@ -42,6 +43,7 @@ void File::PrintMembers() {
 			"File Index: %lld\n"
 			"Frame Index Enable: %d\n"
 			"Over Write Enable: %d\n"
+			"Max Frames Per File: %d\n"
 			"Detector Index: %d\n"
 			"Number of Units Per Detector: %d\n",
 			index,
@@ -50,6 +52,7 @@ void File::PrintMembers() {
 			(long long int)*fileIndex,
 			*frameIndexEnable,
 			*overWriteEnable,
+			maxFramesPerFile,
 			*detIndex,
 			*numUnitsPerDetector);
 }
@@ -69,4 +72,8 @@ void File::GetMemberPointerValues(int* nd, char*& fname, char*& fpath, uint64_t*
 	nunits = numUnitsPerDetector;
 	nf = numImages;
 	dr = dynamicRange;
+}
+
+void File::SetMaxFramesPerFile(uint32_t maxf) {
+	maxFramesPerFile = maxf;
 }

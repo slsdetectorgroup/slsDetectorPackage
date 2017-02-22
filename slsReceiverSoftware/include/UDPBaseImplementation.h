@@ -1,11 +1,8 @@
-//#ifdef UDP_BASE_IMPLEMENTATION
-#ifndef UDP_BASE_IMPLEMENTATION_H
-#define UDP_BASE_IMPLEMENTATION_H
+#pragma once
 /********************************************//**
  * @file UDPBaseImplementation.h
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
  ***********************************************/
-
 
 //#include "sls_receiver_defs.h"
 #include "UDPInterface.h"
@@ -666,8 +663,3 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 private:
 
 };
-
-
-#endif
-
-//#endif

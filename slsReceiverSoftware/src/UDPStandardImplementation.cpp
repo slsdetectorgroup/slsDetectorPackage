@@ -524,8 +524,6 @@ int UDPStandardImplementation::startReceiver(char *c) {
 		cout << "Data will not be saved" << endl;
 	cout << "Processor Ready ..." << endl;
 
-	//for(int i=0;i<dataProcessor.size(); ++i)
-	//dataProcessor[i]->CreateFinalFile();
 
 	//status
 	pthread_mutex_lock(&statusMutex);
@@ -557,8 +555,6 @@ void UDPStandardImplementation::stopReceiver(){
 		usleep(5000);
 	}
 
-	for(unsigned int i=0;i<dataProcessor.size(); ++i)
-		dataProcessor[i]->CreateFinalFile();
 
 	pthread_mutex_lock(&statusMutex);
 	status = RUN_FINISHED;

@@ -1,6 +1,4 @@
-#ifndef UDPINTERFACE_H
-#define UDPINTERFACE_H
-
+#pragma once
 /***********************************************
  * @file UDPInterface.h
  * @short Base class with all the functions for the UDP inteface of the receiver
@@ -609,5 +607,3 @@ class UDPInterface {
  private:
 	
 };
-
-#endif  /* #ifndef UDPINTERFACE_H */

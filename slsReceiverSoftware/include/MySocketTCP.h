@@ -1,10 +1,4 @@
-
-#ifndef MY_SOCKET_TCP_H
-#define MY_SOCKET_TCP_H 
-
-
-
-
+#pragma once
 /**
  * 
  * @libdoc The MySocketTCP class provides a simple interface for creating and sending/receiving data over a TCP socket.
@@ -13,11 +7,7 @@
  * @author Ian Johnson
  * @version 1.0
  */
-
-
-
 //version 1.0, base development, Ian 19/01/09
-
 /* Modified by anna on 19.01.2009 */
 /*
   canceled SetupParameters() and varaibles intialized in the constructors' headers;
@@ -38,8 +28,6 @@
   added a function which really does not close the socket between send/receive (senddataonly, receivedataonly)
 
 */
-
-
 /* Modified by Anna on 31.10.2012
 
 developed and 
@@ -76,4 +64,4 @@ class MySocketTCP: public genericSocket {
 
 
 };
-#endif
+

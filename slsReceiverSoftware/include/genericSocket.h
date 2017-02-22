@@ -1,11 +1,4 @@
-
-#ifndef GENERIC_SOCKET_H
-#define GENERIC_SOCKET_H
-
-
-#include "ansi.h"
-
-
+#pragma once
 /**
  * 
  * @libdoc genericSocket provides some functions to open/close sockets both TCP and UDP
@@ -14,11 +7,7 @@
  * @author Anna Bergamaschi
  * @version 0.0
  */
-
-
-
 //version 1.0, base development, Ian 19/01/09
-
 /* Modified by anna on 19.01.2009 */
 /*
   canceled SetupParameters() and varaibles intialized in the constructors' headers;
@@ -38,6 +27,8 @@
 
   added a function which really does not close the socket between send/receive (senddataonly, receivedataonly)
 */
+
+#include "ansi.h"
 
 #ifdef __CINT__
 //class  sockaddr_in;
@@ -731,4 +722,3 @@ enum communicationProtocol{
 
   // pthread_mutex_t mp;
 };
-#endif

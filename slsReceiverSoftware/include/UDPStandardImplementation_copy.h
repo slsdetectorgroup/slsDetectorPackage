@@ -1,6 +1,4 @@
-//#ifdef UDP_BASE_IMPLEMENTATION
-#ifndef UDP_STANDARD_IMPLEMENTATION_H
-#define UDP_STANDARD_IMPLEMENTATION_H
+#pragma once
 /********************************************//**
  * @file UDPBaseImplementation.h
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
@@ -867,7 +865,5 @@ private:
 
 };
 
-
-#endif
 
 //#endif

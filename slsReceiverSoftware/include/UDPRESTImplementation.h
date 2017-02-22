@@ -1,6 +1,5 @@
 //#ifdef REST
-#ifndef UDP_REST_IMPLEMENTATION_H
-#define UDP_REST_IMPLEMENTATION_H
+#pragma once
 /********************************************//**
  * @file UDPRESTImplementation.h
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
@@ -149,8 +148,5 @@ private:
 	bool is_main_receiver;
 	
 };
-
-
-#endif
 
 //#endif /*REST*/

@@ -1,9 +1,8 @@
+#pragma once
 /************************************************
  * @file ThreadObject.h
  * @short creates/destroys a thread
  ***********************************************/
-#ifndef THREADOBJECT_H
-#define THREADOBJECT_H
 /**
  *@short creates/destroys a thread
  */
@@ -108,4 +107,3 @@ class ThreadObject : private virtual slsReceiverDefs {
 
 };
 
-#endif

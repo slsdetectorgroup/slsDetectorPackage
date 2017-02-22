@@ -1,5 +1,4 @@
-#ifndef DUMMYUDPINTERFACE_H
-#define DUMMYUDPINTERFACE_H
+#pragma once
 
 /***********************************************
  * @file UDPInterface.h
@@ -433,4 +432,3 @@ bool dataCompression;
  int e10G;
 };
 
-#endif  /* #ifndef DUMMYUDPINTERFACE_H */

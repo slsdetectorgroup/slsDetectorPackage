@@ -1,11 +1,10 @@
+#pragma once
 /************************************************
  * @file Listener.h
  * @short creates the listener thread that
  * listens to udp sockets, writes data to memory
  * & puts pointers to their memory addresses into fifos
  ***********************************************/
-#ifndef LISTENER_H
-#define LISTENER_H
 /**
  *@short creates & manages a listener thread each
  */
@@ -244,4 +243,3 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 
 };
 
-#endif

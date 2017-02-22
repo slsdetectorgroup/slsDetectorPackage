@@ -1,9 +1,8 @@
+#pragma once
 /************************************************
  * @file DataStreamer.h
  * @short streams data from receiver via ZMQ
  ***********************************************/
-#ifndef DATASTREAMER_H
-#define DATASTREAMER_H
 /**
  *@short creates & manages a data streamer thread each
  */
@@ -87,4 +86,3 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	static pthread_mutex_t Mutex;
 };
 
-#endif

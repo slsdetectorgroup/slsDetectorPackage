@@ -1,5 +1,4 @@
-#ifndef SLS_RECEIVER_DEFS_H
-#define SLS_RECEIVER_DEFS_H
+#pragma once
 
 
 #ifdef __CINT__
@@ -213,7 +212,5 @@ protected:
 
 #ifdef __cplusplus
 };
-#endif
-;
 #endif
 ;

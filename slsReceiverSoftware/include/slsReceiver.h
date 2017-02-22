@@ -1,9 +1,9 @@
+#pragma once
 /********************************************//**
  * @file slsReceiver.h
  * @short creates the UDP and TCP class objects
  ***********************************************/
-#ifndef SLS_RECEIVER_H
-#define SLS_RECEIVER_H
+
 
 
 #include "slsReceiverTCPIPInterface.h"
@@ -87,5 +87,3 @@ class slsReceiver : private virtual slsReceiverDefs {
 	UDPInterface* udp_interface;
 };
 
-
-#endif

@@ -1,9 +1,8 @@
+#pragma once
 /************************************************
  * @file GeneralData.h
  * @short abstract for setting/getting properties of detector data
  ***********************************************/
-#ifndef GENERAL_DATA_H
-#define GENERAL_DATA_H
 /**
  *@short abstract for setting/getting properties of detector data
  */
@@ -429,7 +428,7 @@ private:
 		packetsPerFrame 	= 256;
 		imageSize 			= dataSize*packetsPerFrame;
 		frameIndexMask 		= 0xffffff;
-		maxFramesPerFile 	= EIGER_MAX_FRAMES_PER_FILE;
+		maxFramesPerFile 	= 5;//EIGER_MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 100;
@@ -511,5 +510,3 @@ private:
 	}
 };
 
-
-#endif

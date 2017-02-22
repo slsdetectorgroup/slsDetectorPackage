@@ -1,19 +1,11 @@
+#pragma once
 /* CircularFifo.h 
-* Not any company's property but Public-Domain
-* Do with source-code as you will. No requirement to keep this
-* header if need to use it/change it/ or do whatever with it
-*
-* Note that there is No guarantee that this code will work
-* and I take no responsibility for this code and any problems you
-* might get if using it. The code is highly platform dependent!
-*
 * Code & platform dependent issues with it was originally
 * published at http://www.kjellkod.cc/threadsafecircularqueue
 * 2009-11-02
-* @author Kjell Hedstr�m, hedstrom@kjellkod.cc */
-
-#ifndef CIRCULARFIFO_H_
-#define CIRCULARFIFO_H_
+* @author Kjell Hedstr�m, hedstrom@kjellkod.cc
+* modified by the sls detetor group
+* */
 
 //#include "sls_receiver_defs.h"
 #include <semaphore.h>
@@ -157,4 +149,3 @@ unsigned int CircularFifo<Element>::increment(unsigned int idx_) const
    return idx_;
 }
 
-#endif /* CIRCULARFIFO_H_ */

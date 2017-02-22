@@ -1,10 +1,9 @@
+#pragma once
 /************************************************
  * @file File.h
  * @short sets/gets properties for the file,
  * creates/closes the file and writes data to it
  ***********************************************/
-#ifndef FILE_H
-#define FILE_H
 /**
  *@short sets/gets properties for the file, creates/closes the file and writes data to it
  */
@@ -28,13 +27,14 @@ class File : private virtual slsReceiverDefs {
 	 * @param findex pointer to file index
 	 * @param frindexenable pointer to frame index enable
 	 * @param owenable pointer to over write enable
+	 * @param maxf max frames per file
 	 * @param dindex pointer to detector index
 	 * @param nunits pointer to number of theads/ units per detector
 	 * @param nf pointer to number of images in acquisition
 	 * @param dr dynamic range
 	 */
 	File(int ind, int* nd, char* fname, char* fpath, uint64_t* findex,
-			bool* frindexenable, bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr);
+			bool* frindexenable, bool* owenable, uint32_t maxf, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr);
 
 	/**
 	 * Destructor
@@ -73,6 +73,12 @@ class File : private virtual slsReceiverDefs {
 	 */
 	void GetMemberPointerValues(int* nd, char*& fname, char*& fpath, uint64_t*& findex,
 			bool*& frindexenable, bool*& owenable, int*& dindex, int*& nunits, uint64_t*& nf, uint32_t*& dr);
+
+	/**
+	 * Set Max frames per file
+	 * @param maxf maximum frames per file
+	 */
+	void SetMaxFramesPerFile(uint32_t maxf);
 
 	/**
 	 * Create file
@@ -125,16 +131,6 @@ class File : private virtual slsReceiverDefs {
 		return OK;
 	}
 
-
-	// Binary specific
-	/**
-	 * Set Max frames per file
-	 * @param maxf maximum frames per file
-	 */
-	virtual void SetMaxFramesPerFile(uint32_t maxf) {
-		cprintf(RED,"This is a generic function SetMaxFramesPerFile that should be overloaded by a derived class\n");
-	}
-
 	// HDf5 specific
 	/**
 	 * Set Number of pixels
@@ -145,9 +141,7 @@ class File : private virtual slsReceiverDefs {
 		cprintf(RED,"This is a generic function SetNumberofPixels that should be overloaded by a derived class\n");
 	}
 
-	virtual void  CreateFinalFile(){
-		;
-	}
+
 
  protected:
 
@@ -184,6 +178,9 @@ class File : private virtual slsReceiverDefs {
 	/** Over write enable */
 	bool* overWriteEnable;
 
+	/** Maximum frames per file */
+	uint32_t maxFramesPerFile;
+
 	/** Detector Index */
 	int* detIndex;
 
@@ -200,4 +197,3 @@ class File : private virtual slsReceiverDefs {
 	std::string currentFileName;
 };
 
-#endif

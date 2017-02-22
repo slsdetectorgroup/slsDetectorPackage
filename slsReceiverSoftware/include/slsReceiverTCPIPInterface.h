@@ -1,9 +1,8 @@
+#pragma once
 /********************************************//**
  * @file slsReceiverTCPIPInterface.h
  * @short interface between receiver and client
  ***********************************************/
-#ifndef SLS_RECEIVER_TCP_IP_INTERFACE_H
-#define SLS_RECEIVER_TCP_IP_INTERFACE_H
 
 
 #include "sls_receiver_defs.h"
@@ -332,6 +331,3 @@ protected:
 	/** Socket */
 	MySocketTCP* mySock;
 };
-
-
-#endif

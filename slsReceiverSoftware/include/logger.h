@@ -1,5 +1,4 @@
-#ifndef __LOG_H__
-#define __LOG_H__
+#pragma once
 
 #include <sstream>
 #include <string>
@@ -242,5 +241,3 @@ inline void Output2FILE::Output(const std::string& msg, TLogLevel level)
 #endif // _WIN32
 
 
-
-#endif //__LOG_H__

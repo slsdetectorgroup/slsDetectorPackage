@@ -438,6 +438,9 @@
 
 
 
+enum {run_clk_c, adc_clk_c, sync_clk_c, dbit_clk_c};
+
+
 
 
 #define PLL_CNTR_ADDR_OFF 16 //PLL_CNTR_REG bits 21 downto 16 represent the counter address

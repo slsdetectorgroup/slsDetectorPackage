@@ -1144,6 +1144,11 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
   i++;
 
+ 
+  descrToFuncMap[i].m_pFuncName="dut_clk"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
+  i++;
+
   
   /* pulse */
   
@@ -4353,8 +4358,8 @@ string slsDetectorCommand::cmdSpeed(int narg, char *args[], int action) {
   else if (cmd=="dbitphase") {
     index=DBIT_PHASE;
     t=100000;
-  }  else if (cmd=="adcpipeline")
-    index=ADC_PIPELINE;
+  }  else if (cmd=="dbitpipeline")
+    index=DBIT_PIPELINE;
   else
     return string("could not decode speed variable ")+cmd;
 
@@ -5273,6 +5278,21 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
     
    os << hex << myDet->readRegister(67) << dec; 
 
+  } else if  (cmd=="dut_clk") {
+   if (action==PUT_ACTION) {
+     
+      if (sscanf(args[1],"%x",&addr))
+      ;
+    else
+      return string("Could not scan dut_clk reg ")+string(args[1]);
+
+    
+      myDet->writeRegister(123,addr); //0x7b
+    }
+
+
+    
+   os << hex << myDet->readRegister(123) << dec; //0x7b
   } else if  (cmd=="adcdisable") {
 
     int nroi=0;

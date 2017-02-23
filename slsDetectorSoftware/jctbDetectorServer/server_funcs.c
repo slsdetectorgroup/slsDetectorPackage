@@ -2488,17 +2488,17 @@ int set_speed(int file_des) {
   
   if (ret==OK) {
 
-    if (arg==PHASE_SHIFT || arg==ADC_PHASE) {
+    /* if (arg==PHASE_SHIFT || arg==ADC_PHASE) { */
       
       
-      retval=phaseStep(val);
+    /*   retval=phaseStep(val); */
 
-    } else if ( arg==DBIT_PHASE) {
- 	  retval=dbitPhaseStep(val); 
-    } else {
+    /* } else if ( arg==DBIT_PHASE) { */
+    /* 	  retval=dbitPhaseStep(val);  */
+    /* } else { */
 
 
-    if (val!=-1) {
+    /* if (val!=-1) { */
 
 
       if (differentClients==1 && lockStatus==1 && val>=0) {
@@ -2506,8 +2506,23 @@ int set_speed(int file_des) {
 	sprintf(mess,"Detector locked by %s\n",lastClientIP);
       }  else {
 	switch (arg) {
+	case PHASE_SHIFT:
+	case ADC_PHASE:
+	  if (val==-1)
+	    retval=getPhase(run_clk_c);
+	  else
+	    retval=configurePhase(val,run_clk_c);
+	  break;
+
+	case DBIT_PHASE: 
+	  if (val==-1)
+	    retval=getPhase(dbit_clk_c);
+	  else
+	    retval=configurePhase(val,dbit_clk_c);
+	  break;
+
 	case CLOCK_DIVIDER:
-	  retval=setClockDivider(val,0);
+	  retval=configureFrequency(val,run_clk_c);//setClockDivider(val,0);
 	  break;
 
 /* 	case PHASE_SHIFT: */
@@ -2519,11 +2534,12 @@ int set_speed(int file_des) {
 	  break;
 
 	case ADC_CLOCK:
-	  retval=setClockDivider(val,1);
+	  retval=configureFrequency(val,adc_clk_c);//setClockDivider(val,1);
+	  configureFrequency(val,sync_clk_c);
 	  break;
 
 	case DBIT_CLOCK:
-	  retval=setClockDivider(val,2);
+	  retval=configureFrequency(val,dbit_clk_c);//setClockDivider(val,2);
 	  break;
 
 
@@ -2537,67 +2553,16 @@ int set_speed(int file_des) {
 	  retval=dbitPipeline(val);
 	  break;
 
-
-
 	default:
 	  ret=FAIL;
 	  sprintf(mess,"Unknown speed parameter %d",arg);
 	}
       }
-    }
+      // }
 
 
-    }
-
-
-    switch (arg) {
-    case CLOCK_DIVIDER:
-      retval=getClockDivider(0);
-      break;
-
-    case PHASE_SHIFT:
-      retval=getPhase();
-      // retval=phaseStep(-1);
-      //ret=FAIL;
-      //sprintf(mess,"Cannot read phase",arg);
-      break;
-
-    case OVERSAMPLING:
-      retval=setOversampling(-1);
-      break;
-
-    case ADC_CLOCK:
-      retval=getClockDivider(1);
-      break;
-
-    case DBIT_CLOCK:
-      retval=getClockDivider(2);
-      break;
-
-    case ADC_PHASE:
-      retval=getPhase();
-      break;
-
-    case DBIT_PHASE:
-      retval=getDbitPhase();
-      break;
-
-
-    case ADC_PIPELINE:
-      retval=adcPipeline(-1);
-      break;
-      
-
-    case DBIT_PIPELINE:
-      retval=dbitPipeline(-1);
-      break;
-      
-
-    default:
-      ret=FAIL;
-      sprintf(mess,"Unknown speed parameter %d",arg);
-    }
   }
+
 
   
 

@@ -464,7 +464,8 @@ enum readOutFlags {
   NONPARALLEL=0x20000,/**< eiger serial mode */
   SAFE=0x40000/**< eiger safe mode */,
   DIGITAL_ONLY=0x80000, /** chiptest board read only digital bits (not adc values)*/
-  ANALOG_AND_DIGITAL=0x100000 /** chiptest board read adc values and digital bits digital bits */
+  ANALOG_AND_DIGITAL=0x100000, /** chiptest board read adc values and digital bits digital bits */
+  DUT_CLK=0x200000, /** chiptest board fifo clock comes from device under test */
 };
 /**
    trimming modes

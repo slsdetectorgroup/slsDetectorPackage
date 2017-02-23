@@ -99,12 +99,13 @@ int phase_shift=0;//DEFAULT_PHASE_SHIFT;
 int ipPacketSize=DEFAULT_IP_PACKETSIZE;
 int udpPacketSize=DEFAULT_UDP_PACKETSIZE;
 
+
 #ifndef NEW_PLL_RECONFIG
-u_int32_t clkDivider[2]={32,16};
+u_int32_t clkDivider[4]={32,16,16,16};
 #else
-u_int32_t clkDivider[2]={40,20};
+u_int32_t clkDivider[4]={40,20,20,200};
 #endif
-int32_t clkPhase[2]={0,0};
+int32_t clkPhase[4]={0,0,0,0};
 
 u_int32_t adcDisableMask=0;
 
@@ -226,32 +227,6 @@ u_int32_t bus_r(u_int32_t offset) {
 }
 
 
-int setPhaseShiftOnce(){
-	u_int32_t addr, reg;
-	int i;
-	addr=MULTI_PURPOSE_REG;
-	reg=bus_r(addr);
-#ifdef VERBOSE
-	printf("Multipurpose reg:%x\n",reg);
-#endif
-
-	//Checking if it is power on(negative number)
-	// if(((reg&0xFFFF0000)>>16)>0){
-	//bus_w(addr,0x0);   //clear the reg
-
-	if(reg==0){
-		printf("\nImplementing phase shift of %d\n",phase_shift);
-		for (i=1;i<phase_shift;i++) {
-			bus_w(addr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|PHASE_STEP_BIT));//0x2821
-			bus_w(addr,(INT_RSTN_BIT|ENET_RESETN_BIT|(SW1_BIT&~PHASE_STEP_BIT)));//0x2820
-		}
-#ifdef VERBOSE
-		printf("Multipupose reg now:%x\n",bus_r(addr));
-#endif
-	}
-
-	return OK;
-}
 
 
 int cleanFifo(){
@@ -343,7 +318,7 @@ u_int32_t putout(char *s, int modnum) {
   //addr=DAC_REG+(modnum<<4);
   addr=DAC_REG;//+(modnum<<SHIFTMOD); commented by dhanya
   bus_w(addr, pat);
-
+  printf("ACHTUNG!!!!!!!!!!!!! Writing to DAc reg using putout!!!!!!!!!!!!!!!\n");
   return OK;
 }
 
@@ -440,262 +415,259 @@ void resetPLL() {
   bus_w(PLL_CNTRL_REG, 0);
 }
 
-void configurePll(int i) {
+int configurePhase(int val, int i) {
+  
 
 
   u_int32_t l=0x0c;
   u_int32_t h=0x0d;
-  u_int32_t val;
+  u_int32_t vv;
+  int32_t phase=0, inv=0;
+
+  u_int32_t tot;
+  u_int32_t odd=1;//0;
+
+  if (i<0 || i>3)
+    return -1;
+  
+  if (val>65535 || val<-65535) 
+    return clkPhase[i];
+
+  //   printf("PLL reconfig reset\N");   bus_w(PLL_CNTRL_REG,(1<<PLL_CNTR_RECONFIG_RESET_BIT));  usleep(100);  bus_w(PLL_CNTRL_REG, 0);
+   bus_w(PLL_CNTRL_REG,((1<<PLL_CNTR_PLL_RESET_BIT))); //reset PLL
+   usleep(100);
+   bus_w(PLL_CNTRL_REG, 0);
+    
+  setPllReconfigReg(PLL_MODE_REG,1,0);
+  printf("phase in %d\n",clkPhase[1]);
+
+  if (val>0) {
+    inv=0;
+    phase=val&0xffff;
+  }  else {
+    inv=0;
+    val=-1*val;
+    phase=(~val)&0xffff;
+  }
+
+
+  vv=phase | (i<<16);// | (inv<<21);
+
+  setPllReconfigReg(PLL_PHASE_SHIFT_REG,vv,0);
+  
+  clkPhase[i]=val;
+  return clkPhase[i];
+}
+
+
+int configureFrequency(int val, int i) {
+
+
+  u_int32_t l=0x0c;
+  u_int32_t h=0x0d;
+  u_int32_t vv;
   int32_t phase=0, inv=0;
 
   u_int32_t tot;
   u_int32_t odd=1;//0;
 
   //   printf("PLL reconfig reset\N");   bus_w(PLL_CNTRL_REG,(1<<PLL_CNTR_RECONFIG_RESET_BIT));  usleep(100);  bus_w(PLL_CNTRL_REG, 0);
-
-#ifndef NEW_PLL_RECONFIG
-  printf("PLL mode\n");   setPllReconfigReg(PLL_MODE_REG,1,0);
-  //  usleep(10000);
-#endif
-
-
-  if (i<2) {
-
-    tot= PLL_VCO_FREQ_MHZ/clkDivider[i];
-    l=tot/2;
-    h=l;
-    if (tot>2*l) {
-      h=l+1;
-      odd=1;
-    } 
-    printf("Counter %d: Low is %d, High is %d\n",i, l,h);
-
-
-  val= (i<<18)| (odd<<17) | l | (h<<8); 
-
-  printf("Counter %d, val: %08x\n", i,  val);  
-  setPllReconfigReg(PLL_C_COUNTER_REG, val,0);
-  //  usleep(20);
-  //change sync at the same time as 
-  if (i>0) {
-    val= (2<<18)| (odd<<17) | l | (h<<8); 
-
-    printf("Counter %d, val: %08x\n", i,  val);  
-    setPllReconfigReg(PLL_C_COUNTER_REG, val,0);
-    
-  }
-
-  } else {
-  //  if (mode==1) {
-    //  } else {
-    printf("phase in %d\n",clkPhase[1]);
-
-  if (clkPhase[1]>0) {
-    inv=0;
-    phase=clkPhase[1];
-  }  else {
-    inv=1;
-    phase=-1*clkPhase[1];
-  }
-
-  printf("phase out %d %08x\n",phase,phase);
-  if (inv) {
-    val=phase | (1<<16);// |  (inv<<21);
-  printf("**************** phase word %08x\n",val);
-
-  //  printf("Phase, val: %08x\n", val);   
-  setPllReconfigReg(PLL_PHASE_SHIFT_REG,val,0); //shifts counter 0
-  } else {
-
-
-    val=phase ;// |  (inv<<21);
-  printf("**************** phase word %08x\n",val);
-
-  //  printf("Phase, val: %08x\n", val);   
-  setPllReconfigReg(PLL_PHASE_SHIFT_REG,val,0); //shifts counter 0
-#ifndef NEW_PLL_RECONFIG
- printf("Start reconfig\n");  setPllReconfigReg(PLL_START_REG, 1,0);
-
- // bus_w(PLL_CNTRL_REG, 0);
- printf("Status register\n"); getPllReconfigReg(PLL_STATUS_REG,0);
-  // sleep(1);
+  if (i<0 || i>3)
+    return -1;
   
-   printf("PLL mode\n");   setPllReconfigReg(PLL_MODE_REG,1,0);
-  //  usleep(10000);
+  if (val<=0) 
+    return clkDivider[i];
 
-#endif
-  printf("**************** phase word %08x\n",val);
-
-  val=phase | (2<<16);// |  (inv<<21);
-  //  printf("Phase, val: %08x\n", val);   
-  setPllReconfigReg(PLL_PHASE_SHIFT_REG,val,0); //shifts counter 0
+  if (i==1 || i==2){
+    if (val>40) printf("Too high frequency %d MHz for these ADCs!\n", val);
   }
- 
-
-  }
-
-#ifndef NEW_PLL_RECONFIG
- printf("Start reconfig\n");  setPllReconfigReg(PLL_START_REG, 1,0);
-
- // bus_w(PLL_CNTRL_REG, 0);
- printf("Status register\n"); getPllReconfigReg(PLL_STATUS_REG,0);
-  // sleep(1);
-#endif 
-  //  printf("PLL mode\n");   setPllReconfigReg(PLL_MODE_REG,0,0);
-  usleep(10000);
-  if (i<2) { 
-     printf("reset pll\n"); 
-     bus_w(PLL_CNTRL_REG,((1<<PLL_CNTR_PLL_RESET_BIT))); //reset PLL
-     usleep(100);
-     bus_w(PLL_CNTRL_REG, 0);
-    
-    
+  
+  tot= PLL_VCO_FREQ_MHZ/val;
+  l=tot/2;
+  h=l;
+  if (tot>2*l) {
+    h=l+1;
+    odd=1;
   } 
-}
-
-
-
-
-
-
-
-
-
-u_int32_t setClockDivider(int d, int ic) {
-
-
-   //u_int32_t l=0x0c;
-   //u_int32_t h=0x0d;
-
-  u_int32_t tot= PLL_VCO_FREQ_MHZ/d;
-
-  //	int ic=0  is run clk; ic=1 is adc clk 
-  printf("set clk divider %d to %d\n", ic, d);
-  if (ic>2)
-    return -1;
-
-  if (ic==2) {
-    printf("dbit clock is the same as adc clk\n");
-    ic=1;
-
-  }
-
-  if (ic==1 && d>40)
-    return -1;
-
-  if (d>160)
-    return -1;
-
-  if (tot>510)
-    return -1;
-
-  if (tot<1)
-    return -1;
-
-
-
-  clkDivider[ic]=d;
-  configurePll(ic);
-
+	else
+	{
+		odd=0;
+	}
+  
+  printf("Counter %d: Low is %d, High is %d\n",i, l,h);
   
   
- return clkDivider[ic];
-}
-
-
-int phaseStep(int st){
+  vv= (i<<18)| (odd<<17) | l | (h<<8); 
   
-  if (st>65535 || st<-65535) 
-    return clkPhase[0];
-#ifdef NEW_PLL_RECONFIG
-     printf("reset pll\n"); 
-     bus_w(PLL_CNTRL_REG,((1<<PLL_CNTR_PLL_RESET_BIT))); //reset PLL
-     usleep(100);
-     bus_w(PLL_CNTRL_REG, 0);
+  printf("Counter %d, val: %08x\n", i,  vv);  
+  setPllReconfigReg(PLL_C_COUNTER_REG, vv,0);
+  /* //  usleep(20); */
+  /* //change sync at the same time as  */
+  /* if (i>0) { */
+  /*   val= (2<<18)| (odd<<17) | l | (h<<8);  */
+
+  /*   printf("Counter %d, val: %08x\n", i,  val);   */
+  /*   setPllReconfigReg(PLL_C_COUNTER_REG, val,0); */
     
-     clkPhase[1]=st;
-#else
-     clkPhase[1]=st-clkPhase[0];
-#endif
-  
-  printf("phase %d\n", clkPhase[1] );
+  /* } */
 
-  configurePll(2);
-
-  clkPhase[0]=st;
  
-  return clkPhase[0];
+  usleep(10000);
+ 
+  printf("reset pll\n"); 
+  bus_w(PLL_CNTRL_REG,((1<<PLL_CNTR_PLL_RESET_BIT))); //reset PLL
+  usleep(100);
+  bus_w(PLL_CNTRL_REG, 0);
+    
+  return clkDivider[i];   
 }
 
-int dbitPhaseStep(int st){
+
+
+
+
+
+
+
+
+/* u_int32_t setClockDivider(int d, int ic) { */
+
+
+/*    //u_int32_t l=0x0c; */
+/*    //u_int32_t h=0x0d; */
+
+/*   u_int32_t tot= PLL_VCO_FREQ_MHZ/d; */
+
+/*   //	int ic=0  is run clk; ic=1 is adc clk  */
+/*   printf("set clk divider %d to %d\n", ic, d); */
+/*   if (ic>2) */
+/*     return -1; */
+
+/*   if (ic==2) { */
+/*     printf("dbit clock is the same as adc clk\n"); */
+/*     ic=1; */
+
+/*   } */
+
+/*   if (ic==1 && d>40) */
+/*     return -1; */
+
+/*   if (d>160) */
+/*     return -1; */
+
+/*   if (tot>510) */
+/*     return -1; */
+
+/*   if (tot<1) */
+/*     return -1; */
+
+
+
+/*   clkDivider[ic]=d; */
+/*   configurePll(ic); */
+
   
-    printf("dbit clock is the same as adc clk\n");
-    return phaseStep(st);
-}
-
-
-
-
-
-
-
-int getPhase() {
-    return clkPhase[0];
-    
-};
-
-
-
-int getDbitPhase() {
   
-  printf("dbit clock is the same as adc clk\n");
-  return getPhase();
+/*  return clkDivider[ic]; */
+/* } */
+
+
+/* int phaseStep(int st){ */
+  
+/*   if (st>65535 || st<-65535)  */
+/*     return clkPhase[0]; */
+/* #ifdef NEW_PLL_RECONFIG */
+/*      printf("reset pll\n");  */
+/*      bus_w(PLL_CNTRL_REG,((1<<PLL_CNTR_PLL_RESET_BIT))); //reset PLL */
+/*      usleep(100); */
+/*      bus_w(PLL_CNTRL_REG, 0); */
     
-};
+/*      clkPhase[1]=st; */
+/* #else */
+/*      clkPhase[1]=st-clkPhase[0]; */
+/* #endif */
+  
+/*   printf("phase %d\n", clkPhase[1] ); */
+
+/*   configurePll(2); */
+
+/*   clkPhase[0]=st; */
+ 
+/*   return clkPhase[0]; */
+/* } */
+
+/* int dbitPhaseStep(int st){ */
+  
+/*     printf("dbit clock is the same as adc clk\n"); */
+/*     return phaseStep(st); */
+/* } */
 
 
-u_int32_t getClockDivider(int ic) {
 
-  if (ic>2)
+
+
+
+
+int getPhase(int i) {
+  if (i>=0 && i<4)
+    return clkPhase[i];
+  else
     return -1;
+    
+};
+
+
+
+/* int getDbitPhase() { */
   
-  if (ic==2) {
-    printf("dbit clock is the same as adc clk\n");
-    ic=1;
+/*   printf("dbit clock is the same as adc clk\n"); */
+/*   return getPhase(); */
+    
+/* }; */
 
-  }
-  return clkDivider[ic];
+
+/* u_int32_t getClockDivider(int ic) { */
+
+/*   if (ic>2) */
+/*     return -1; */
   
+/*   if (ic==2) { */
+/*     printf("dbit clock is the same as adc clk\n"); */
+/*     ic=1; */
 
-/*   int ic=0; */
-/*  u_int32_t val; */
-/*  u_int32_t l,h; */
-
-/*  printf("get clk divider\n"); */
-
-  
-/*   setPllReconfigReg(PLL_MODE_REG,1,0); */
-/*   getPllReconfigReg(PLL_MODE_REG,0); */
-  
-/*   u_int32_t addr=0xa; //c0 */
-/*   if (ic>0) */
-/*     addr=0xb; //c1 */
-
-/*   val=getPllReconfigReg(PLL_N_COUNTER_REG,0); */
-/*   printf("Getting N counter %08x\n",val); */
-
-/*   l=val&0xff; */
-/*   h=(val>>8)&0xff; */
-
-/*   //getPllReconfigReg(PLL_STATUS_REG,0); */
-/*   val=getPllReconfigReg(addr,0); */
-/*   printf("Getting C counter %08x\n",val); */
-
+/*   } */
+/*   return clkDivider[ic]; */
   
 
-/*   return 800/(l+h); */
+/* /\*   int ic=0; *\/ */
+/* /\*  u_int32_t val; *\/ */
+/* /\*  u_int32_t l,h; *\/ */
 
-}
+/* /\*  printf("get clk divider\n"); *\/ */
+
+  
+/* /\*   setPllReconfigReg(PLL_MODE_REG,1,0); *\/ */
+/* /\*   getPllReconfigReg(PLL_MODE_REG,0); *\/ */
+  
+/* /\*   u_int32_t addr=0xa; //c0 *\/ */
+/* /\*   if (ic>0) *\/ */
+/* /\*     addr=0xb; //c1 *\/ */
+
+/* /\*   val=getPllReconfigReg(PLL_N_COUNTER_REG,0); *\/ */
+/* /\*   printf("Getting N counter %08x\n",val); *\/ */
+
+/* /\*   l=val&0xff; *\/ */
+/* /\*   h=(val>>8)&0xff; *\/ */
+
+/* /\*   //getPllReconfigReg(PLL_STATUS_REG,0); *\/ */
+/* /\*   val=getPllReconfigReg(addr,0); *\/ */
+/* /\*   printf("Getting C counter %08x\n",val); *\/ */
+
+  
+
+/* /\*   return 800/(l+h); *\/ */
+
+/* } */
 
 
 u_int32_t adcPipeline(int d) {
@@ -729,11 +701,11 @@ u_int32_t getSetLength() {
 }
 
 u_int32_t setOversampling(int d) {
+  return 0;
+  /* if (d>=0 && d<=255) */
+  /*   bus_w(OVERSAMPLING_REG, d); */
 
-  if (d>=0 && d<=255)
-    bus_w(OVERSAMPLING_REG, d);
-
-  return bus_r(OVERSAMPLING_REG);
+  /* return bus_r(OVERSAMPLING_REG); */
 }
 
 
@@ -745,23 +717,6 @@ u_int32_t getWaitStates() {
 	 return 0;
 }
 
-
-u_int32_t setTotClockDivider(int d) {
-	 return 0;
-}
-
-u_int32_t getTotClockDivider() {
-	 return 0;
-}
-
-
-u_int32_t setTotDutyCycle(int d) {
-	 return 0;
-}
-
-u_int32_t getTotDutyCycle() {
-	 return 0;
-}
 
 
 u_int32_t setExtSignal(int d, enum externalSignalFlag  mode) {
@@ -1713,10 +1668,9 @@ int initHighVoltage(int val, int imod){
        ddx=8; csdx=10; cdx=9;
        codata=((dacvalue)&0xff);
      
-
     
-    
-       valw=0xef|bus_r(offw); bus_w(offw,(valw)); // start point
+       valw=bus_r(offw)&0x7fff; //switch off HV 
+       bus_w(offw,(valw)); // start point
        valw=((valw&(~(0x1<<csdx))));bus_w(offw,valw); //chip sel bar down
        for (i=0;i<8;i++) {
 	valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
@@ -1728,19 +1682,19 @@ int initHighVoltage(int val, int imod){
        valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
        
        
-       valw=0xff|bus_r(offw); bus_w(offw,(valw)); // stop point =start point of course */
-       
+       valw=0xff00|bus_r(offw); //switch on HV 
+       bus_w(offw,(valw)); // stop point =start point of course */
        
        printf("Writing %d in HVDAC  \n",dacvalue);
        
        bus_w(HV_REG,val);
        
      } else {
-       valw=bus_r(offw)&0xefff;
+       valw=bus_r(offw)&0x7fff;
        bus_w(offw,(valw));
        bus_w(HV_REG,0);
      }
-   }
+   } 
 
 
 
@@ -3568,28 +3522,28 @@ void initDac(int dacnum) {
     printf("data bit=%d, clkbit=%d, csbit=%d",ddx,cdx,csdx);
     codata=(((0x6)<<4)|((0xf)<<16)|((0x0<<4)&0xfff0));  
   
-      valw=0xffff; bus_w(offw,(valw)); // start point
-      valw=((valw&(~(0x1<<csdx))));bus_w(offw,valw); //chip sel bar down
-      for (i=1;i<25;i++) {
-
-	valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn	
-	valw=((valw&(~(0x1<<ddx)))+(((codata>>(24-i))&0x1)<<ddx));bus_w(offw,valw);//write data (i)
-	//	printf("%d ", ((codata>>(24-i))&0x1));
-        
-
-	valw=((valw&(~(0x1<<cdx)))+(0x1<<cdx));bus_w(offw,valw);//clkup
-      }
+    valw=0x00ff|(bus_r(offw)&0xff00); 
+    bus_w(offw,(valw)); // start point
+    valw=((valw&(~(0x1<<csdx))));bus_w(offw,valw); //chip sel bar down
+    for (i=1;i<25;i++) {
+      
+      valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn	
+      valw=((valw&(~(0x1<<ddx)))+(((codata>>(24-i))&0x1)<<ddx));bus_w(offw,valw);//write data (i)
+      //	printf("%d ", ((codata>>(24-i))&0x1));
+      valw=((valw&(~(0x1<<cdx)))+(0x1<<cdx));bus_w(offw,valw);//clkup
+    }
       // printf("\n ");
-     
-	
-       	valw=((valw&(~(0x1<<csdx)))+(0x1<<csdx));bus_w(offw,valw); //csup
-
-	valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
-
-
+    
+    
+    valw=((valw&(~(0x1<<csdx)))+(0x1<<csdx));bus_w(offw,valw); //csup
+    
+    valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
 
 
-      valw=0xffff; bus_w(offw,(valw)); // stop point =start point of course */
+
+
+    valw=0x00ff|(bus_r(offw)&0xff00);  
+    bus_w(offw,(valw)); // stop point =start point of course */
 
 
  //end of setting int reference 
@@ -4002,7 +3956,9 @@ int setDac(int dacnum,int dacvalue){
   offw=DAC_REG;
 
 
-  valw=bus_r(offw)|0xff; bus_w(offw,(valw)); // start point
+  valw=bus_r(offw)|0xff;
+  
+  bus_w(offw,(valw)); // start point
   valw=((valw&(~(0x1<<csdx))));bus_w(offw,valw); //chip sel bar down
   valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
 
@@ -4032,7 +3988,8 @@ int setDac(int dacnum,int dacvalue){
     valw=(valw|(0x1<<csdx));
     bus_w(offw,valw); //csup
     
-    valw=bus_r(offw)|0xff; bus_w(offw,(valw)); // stop point =start point of course */
+    valw=bus_r(offw)|0xff; 
+    bus_w(offw,(valw)); // stop point =start point of course */
      
 
     setDacRegister(dacnum,dacvalue); 

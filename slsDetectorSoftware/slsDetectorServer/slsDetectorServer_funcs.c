@@ -1259,16 +1259,30 @@ int set_dac(int file_des) {
 #endif
 
 	//takes time to set high voltage, so no check for it
-	if(ret == OK && ind != HV_POT && ind != HV_NEW){
-		if(mV)
-			temp = retval[1];
-		else
-			temp = retval[0];
-		if ((abs(temp-val)<=5) || val==-1) {
-			ret=OK;
-		} else {
-			ret=FAIL;
-			printf("Setting dac %d of module %d: wrote %d but read %d\n", idac, imod, val, temp);
+	if(ret == OK){
+		if(ind != HV_POT && ind != HV_NEW){
+
+			if(mV)
+				temp = retval[1];
+			else
+				temp = retval[0];
+			if ((abs(temp-val)<=5) || val==-1) {
+				ret=OK;
+			} else {
+				ret=FAIL;
+				printf("Setting dac %d of module %d: wrote %d but read %d\n", idac, imod, val, temp);
+			}
+		}else {
+			if(retval[0] < 0){
+				if(retval[0] == -1)
+					sprintf(mess, "Setting high voltage failed.Bad value %d. The range is from 0 to 200 V.\n",val);
+				else if(retval[0] == -2)
+					strcpy(mess, "Setting high voltage failed. Serial/i2c communication failed.\n");
+				else if(retval[0] == -3)
+					strcpy(mess, "Getting high voltage failed. Serial/i2c communication failed.\n");
+				ret = FAIL;
+			}
+
 		}
 	}
 

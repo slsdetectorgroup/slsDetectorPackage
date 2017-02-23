@@ -144,6 +144,11 @@ int initDetector(){
 	Feb_Interface_FebInterface();
 	Feb_Control_FebControl();
 	Feb_Control_Init(master,top,normal, getDetectorNumber());
+	//master of 9M, check high voltage serial communication to blackfin
+	if(master && !normal){
+		if(Feb_Control_OpenSerialCommunication())
+		;//	Feb_Control_CloseSerialCommunication();
+	}
 	printf("FEB Initialization done\n");
 	Beb_Beb();
 	printf("BEB Initialization done\n");
@@ -162,7 +167,6 @@ int initDetector(){
 	eiger_photonenergy = -1;
 	setReadOutFlags(NONPARALLEL);
 	setSpeed(0,1);//clk_devider,half speed
-	setHighVoltage(0,0);
 	setIODelay(650,0);
 	setTiming(AUTO_TIMING);
 	//SetPhotonEnergyCalibrationParameters(-5.8381e-5,1.838515,5.09948e-7,-4.32390e-11,1.32527e-15);
@@ -170,6 +174,7 @@ int initDetector(){
 	int enable[2] = {0,1};
 	setExternalGating(enable);//disable external gating
 	Feb_Control_SetInTestModeVariable(0);
+	setHighVoltage(0,0);
 	Feb_Control_CheckSetup();
 
 	//print detector mac and ip
@@ -436,13 +441,18 @@ void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]){
 int setHighVoltage(int val, int imod){
 	if(val!=-1){
 		eiger_highvoltage = val;
-		if(master)
-			Feb_Control_SetHighVoltage(val);
+		if(master){
+			int ret = Feb_Control_SetHighVoltage(val);
+			if(!ret)			//could not set
+				return -2;
+			else if (ret == -1) //outside range
+				return -1;
+		}
 	}
 
 	if(master && !Feb_Control_GetHighVoltage(&eiger_highvoltage)){
 		cprintf(RED,"Warning: Could not read high voltage\n");
-		return 0;
+		return -3;
 	}
 	return eiger_highvoltage;
 }

@@ -14,6 +14,7 @@
 class GeneralData;
 class Fifo;
 class File;
+class DataStreamer;
 
 #include <vector>
 
@@ -24,15 +25,14 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * Constructor
 	 * Calls Base Class CreateThread(), sets ErrorMask if error and increments NumberofDataProcessors
 	 * @param f address of Fifo pointer
-	 * @param s pointer to receiver status
-	 * @param m pointer to mutex for status
 	 * @param ftype pointer to file format type
 	 * @param fwenable pointer to file writer enable
+	 * @param dsEnable pointer to data stream enable
 	 * @param cbaction pointer to call back action
 	 * @param dataReadycb pointer to data ready call back function
 	 * @param pDataReadycb pointer to arguments of data ready call back function
 	 */
-	DataProcessor(Fifo*& f, runStatus* s, pthread_mutex_t* m, fileFormat* ftype, bool* fwenable,
+	DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* dsEnable,
 						int* cbaction,
 						void (*dataReadycb)(int, char*, int, FILE*, char*, void*),
 						void *pDataReadycb);
@@ -57,6 +57,10 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	static uint64_t GetRunningMask();
 
+	/**
+	 * Reset RunningMask
+	 */
+	static void ResetRunningMask();
 
 	//*** non static functions ***
 	//*** getters ***
@@ -123,6 +127,13 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param g address of GeneralData (Detector Data) pointer
 	 */
 	void SetGeneralData(GeneralData* g);
+
+	/**
+	 * Set thread priority
+	 * @priority priority
+	 * @returns OK or FAIL
+	 */
+	int SetThreadPriority(int priority);
 
 	/**
 	 * Set File Format
@@ -235,20 +246,14 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	/** Fifo structure */
 	Fifo* fifo;
 
-
-	// individual members
+	/** Data Stream Enable */
+	bool* dataStreamEnable;
 
 	/** Aquisition Started flag */
 	bool acquisitionStartedFlag;
 
 	/** Measurement Started flag */
 	bool measurementStartedFlag;
-
-	/** Receiver Status */
-	runStatus* status;
-
-	/** Status mutex */
-	pthread_mutex_t* statusMutex;
 
 	/**Number of complete frames caught for an entire acquisition (including all scans) */
 	uint64_t numTotalFramesCaught;

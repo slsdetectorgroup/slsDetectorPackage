@@ -16,6 +16,9 @@ DFLAGS= -g -DDACS_INT  -DSLS_RECEIVER_UDP_FUNCTIONS #-DVERBOSE
 
 INCLUDES?= $(INCLUDESRXR) -I include/ -I ../slsDetectorCalibration
 
+##############################################################
+# ZMQ specific: in this case, you need ZMQ libraries already included in this package
+###########################################################
 LIBZMQDIR = include
 LIBZMQ =  -L$(LIBZMQDIR) -Wl,-rpath=$(LIBZMQDIR) -lzmq
 

@@ -207,6 +207,11 @@ private:
 	void SetLocalNetworkParameters();
 
 	/**
+	 * Set Thread Priorities
+	 */
+	void SetThreadPriorities();
+
+	/**
 	 * Set up the Fifo Structure for processing buffers
 	 * between listening and dataprocessor threads
 	 * @return OK or FAIL

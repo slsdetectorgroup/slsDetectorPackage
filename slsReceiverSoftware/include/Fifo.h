@@ -32,14 +32,14 @@ class Fifo : private virtual slsReceiverDefs {
 	~Fifo();
 
 	/**
-	 * Pops free address from fifoFree
-	 */
-	void GetNewAddress(char*& address);
-
-	/**
 	 * Frees the bound address by pushing into fifoFree
 	 */
 	void FreeAddress(char*& address);
+
+	/**
+	 * Pops free address from fifoFree
+	 */
+	void GetNewAddress(char*& address);
 
 	/**
 	 * Pushes bound address into fifoBound
@@ -50,6 +50,16 @@ class Fifo : private virtual slsReceiverDefs {
 	 * Pops bound address from fifoBound to process data
 	 */
 	void PopAddress(char*& address);
+
+	/**
+	 * Pushes bound address into fifoStream
+	 */
+	void PushAddressToStream(char*& address);
+
+	/**
+	 * Pops bound address from fifoStream to stream data
+	 */
+	void PopAddressToStream(char*& address);
 
  private:
 
@@ -82,4 +92,6 @@ class Fifo : private virtual slsReceiverDefs {
 	/** Circular Fifo pointing to addresses of freed data in memory */
 	CircularFifo<char>* fifoFree;
 
+	/** Circular Fifo pointing to addresses of to be streamed data in memory */
+	CircularFifo<char>* fifoStream;
 };

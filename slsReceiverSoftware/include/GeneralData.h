@@ -428,7 +428,7 @@ private:
 		packetsPerFrame 	= 256;
 		imageSize 			= dataSize*packetsPerFrame;
 		frameIndexMask 		= 0xffffff;
-		maxFramesPerFile 	= 5;//EIGER_MAX_FRAMES_PER_FILE;
+		maxFramesPerFile 	= EIGER_MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 100;

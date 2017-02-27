@@ -447,10 +447,10 @@ public:
 														hid_t vdsdataset = H5Dcreate2 (fd, virtualDatasetname.c_str(), dtype, vdsDataspace, H5P_DEFAULT, dcpl, H5P_DEFAULT);
 														if (vdsdataset >= 0){
 
-															H5Sclose(vdsDataspace);
-															H5Sclose(srcDataspace);
-															H5Dclose(vdsdataset);
-															H5Fclose(fd);
+															H5Sclose(vdsDataspace);vdsDataspace = 0;
+															H5Sclose(srcDataspace);srcDataspace = 0;
+															H5Dclose(vdsdataset);vdsdataset = 0;
+															H5Fclose(fd);fd = 0;
 															return 0;
 
 														} else cprintf(RED, "could not create virtual dataset in virtual file %s\n", virtualfname.c_str());
@@ -468,6 +468,7 @@ public:
 		} else cprintf(RED, "could not create  dfal for virtual file %s\n", virtualfname.c_str());
 
 		H5Fclose(fd);
+		fd = 0;
 		return 1;
 	}
 

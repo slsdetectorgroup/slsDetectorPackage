@@ -12,6 +12,7 @@
 #include "genericSocket.h"
 
 #include <iostream>
+#include <errno.h>
 #include <cstring>
 using namespace std;
 
@@ -28,7 +29,7 @@ pthread_mutex_t Listener::Mutex = PTHREAD_MUTEX_INITIALIZER;
 const GeneralData* Listener::generalData(0);
 
 
-Listener::Listener(Fifo*& f, runStatus* s, uint32_t* portno, char* e) :
+Listener::Listener(Fifo*& f, runStatus* s, uint32_t* portno, char* e, int* act, uint64_t* nf) :
 		ThreadObject(NumberofListeners),
 		fifo(f),
 		acquisitionStartedFlag(false),
@@ -37,6 +38,8 @@ Listener::Listener(Fifo*& f, runStatus* s, uint32_t* portno, char* e) :
 		udpSocket(0),
 		udpPortNumber(portno),
 		eth(e),
+		activated(act),
+		numImages(nf),
 		numTotalPacketsCaught(0),
 		numPacketsCaught(0),
 		firstAcquisitionIndex(0),
@@ -53,7 +56,7 @@ Listener::Listener(Fifo*& f, runStatus* s, uint32_t* portno, char* e) :
 		pthread_mutex_unlock(&Mutex);
 	}
 	NumberofListeners++;
-	FILE_LOG (logDEBUG) << "Number of Listeners: " << NumberofListeners << endl;
+	FILE_LOG (logDEBUG) << "Number of Listeners: " << NumberofListeners;
 }
 
 
@@ -74,14 +77,9 @@ uint64_t Listener::GetRunningMask() {
 	return RunningMask;
 }
 
-void Listener::SetGeneralData(GeneralData*& g) {
-	FILE_LOG (logDEBUG) << __AT__ << " called";
-	generalData = g;
-#ifdef VERY_VERBOSE
-	generalData->Print();
-#endif
+void Listener::ResetRunningMask() {
+	RunningMask = 0x0;
 }
-
 
 
 /** non static functions */
@@ -150,12 +148,6 @@ void Listener::ResetParametersforNewMeasurement(){
 	if (listeningPacket)
 		delete listeningPacket;
 	listeningPacket = new char[generalData->packetSize];
-
-	if(RunningMask){
-		pthread_mutex_lock(&Mutex);
-		RunningMask = 0x0;
-		pthread_mutex_unlock(&Mutex);
-	}
 }
 
 
@@ -172,16 +164,34 @@ void Listener::RecordFirstIndices(uint64_t fnum) {
 		acquisitionStartedFlag = true;
 		firstAcquisitionIndex = fnum;
 	}
-	if (!index) cprintf(MAGENTA,"%d First Acquisition Index:%lld\n"
+	if (!index) cprintf(GREEN,"%d First Acquisition Index:%lld\n"
 							  "%d First Measurement Index:%lld\n",
 			index, (long long int)firstAcquisitionIndex,
 			index, (long long int)firstMeasurementIndex);
 }
 
 
+void Listener::SetGeneralData(GeneralData*& g) {
+	generalData = g;
+#ifdef VERY_VERBOSE
+	generalData->Print();
+#endif
+}
+
+
+int Listener::SetThreadPriority(int priority) {
+	struct sched_param param;
+	param.sched_priority = priority;
+	if (pthread_setschedparam(thread, SCHED_RR, &param) == EPERM)
+		return FAIL;
+	return OK;
+}
 
 int Listener::CreateUDPSockets() {
 	ShutDownUDPSocket();
+
+	if (!(*activated))
+		return OK;
 
 	//if eth is mistaken with ip address
 	if (strchr(eth,'.') != NULL){
@@ -226,7 +236,7 @@ void Listener::ThreadExecution() {
 #endif
 
 	//udpsocket doesnt exist
-	if (!udpSocket) {
+	if (*activated && !udpSocket) {
 		FILE_LOG(logERROR) << "Listening_Thread " << index << ": UDP Socket not created or shut down earlier";
 		(*((uint32_t*)buffer)) = 0;
 		StopListening(buffer);
@@ -234,17 +244,25 @@ void Listener::ThreadExecution() {
 	}
 
 	//get data
-	if (*status != TRANSMITTING)
-		rc = ListenToAnImage(buffer + generalData->fifoBufferHeaderSize);
+	if (*status != TRANSMITTING) {
+		if (*activated)
+			rc = ListenToAnImage(buffer + generalData->fifoBufferHeaderSize);
+		else
+			rc = CreateAnImage(buffer + generalData->fifoBufferHeaderSize);
+	}
 
 	//done acquiring
-	if (*status == TRANSMITTING) {
+	if (*status == TRANSMITTING || ((!(*activated)) && (rc == 0))) {
 		StopListening(buffer);
 		return;
 	}
 
 	//error check
-	if (rc <= 0) cprintf(BG_RED,"Error:(Weird), UDP Sockets not shut down, but received nothing\n");
+	if (rc <= 0) {
+		cprintf(BG_RED,"Error:(Weird), UDP Sockets not shut down, but received nothing\n");
+		fifo->FreeAddress(buffer);
+		return;
+	}
 
 	(*((uint32_t*)buffer)) = rc;
 	(*((uint64_t*)(buffer + FIFO_HEADER_NUMBYTES ))) = currentFrameIndex;
@@ -311,22 +329,34 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 
 		//future packet
-		if(fnum != currentFrameIndex) {
+		if (fnum != currentFrameIndex) {
 			carryOverFlag = true;
 			memcpy(carryOverPacket,listeningPacket, generalData->packetSize);
 			return generalData->imageSize;
 		}
 
-		//copy packet and update fnum
+		//copy packet
 		memcpy(buf + (pnum * dsize), listeningPacket + generalData->headerSizeinPacket, dsize);
-		(*((uint64_t*)(buf - FILE_FRAME_HEADER_SIZE))) = fnum;
-
 	}
 
 	return generalData->imageSize;
 }
 
 
+uint32_t Listener::CreateAnImage(char* buf) {
 
+	if (!measurementStartedFlag)
+		RecordFirstIndices(0);
 
+	if (currentFrameIndex == *numImages)
+		return 0;
 
+	//update parameters
+	numPacketsCaught++;		//record immediately to get more time before socket shutdown
+	numTotalPacketsCaught++;
+
+	//reset data to -1
+	memset(buf, 0xFF, generalData->dataSize);
+
+	return generalData->imageSize;
+}

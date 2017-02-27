@@ -16,7 +16,8 @@ int Fifo::NumberofFifoClassObjects(0);
 Fifo::Fifo(uint32_t fifoItemSize, uint32_t fifoDepth, bool &success):
 		memory(0),
 		fifoBound(0),
-		fifoFree(0) {
+		fifoFree(0),
+		fifoStream(0){
 	FILE_LOG (logDEBUG) << __AT__ << " called";
 	index = NumberofFifoClassObjects++;
 	if(CreateFifos(fifoItemSize, fifoDepth) == FAIL)
@@ -41,6 +42,7 @@ int Fifo::CreateFifos(uint32_t fifoItemSize, uint32_t fifoDepth) {
 	//create fifos
 	fifoBound = new CircularFifo<char>(fifoDepth);
 	fifoFree = new CircularFifo<char>(fifoDepth);
+	fifoStream = new CircularFifo<char>(fifoDepth);
 	//allocate memory
 	memory = (char*) calloc (fifoItemSize * fifoDepth, sizeof(char));
 	if (memory == NULL){
@@ -75,6 +77,10 @@ void Fifo::DestroyFifos(){
 		delete fifoFree;
 		fifoFree = 0;
 	}
+	if (fifoStream) {
+		delete fifoStream;
+		fifoStream = 0;
+	}
 	if(memory) {
 		free(memory);
 		memory = 0;
@@ -82,13 +88,12 @@ void Fifo::DestroyFifos(){
 }
 
 
+void Fifo::FreeAddress(char*& address) {
+	while(!fifoFree->push(address));
+}
 
 void Fifo::GetNewAddress(char*& address) {
 	fifoFree->pop(address);
-}
-
-void Fifo::FreeAddress(char*& address) {
-	while(!fifoFree->push(address));
 }
 
 void Fifo::PushAddress(char*& address) {
@@ -97,5 +102,13 @@ void Fifo::PushAddress(char*& address) {
 
 void Fifo::PopAddress(char*& address) {
 	fifoBound->pop(address);
+}
+
+void Fifo::PushAddressToStream(char*& address) {
+	while(!fifoStream->push(address));
+}
+
+void Fifo::PopAddressToStream(char*& address) {
+	fifoStream->pop(address);
 }
 

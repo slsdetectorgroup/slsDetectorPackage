@@ -25,8 +25,10 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param s pointer to receiver status
 	 * @param portno pointer to udp port number
 	 * @param e ethernet interface
+	 * @param act pointer to activated
+	 * @param nf pointer to number of images to catch
 	 */
-	Listener(Fifo*& f, runStatus* s, uint32_t* portno, char* e);
+	Listener(Fifo*& f, runStatus* s, uint32_t* portno, char* e, int* act, uint64_t* nf);
 
 	/**
 	 * Destructor
@@ -49,11 +51,9 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	static uint64_t GetRunningMask();
 
 	/**
-	 * Set GeneralData pointer to the one given
-	 * @param g address of GeneralData (Detector Data) pointer
+	 * Reset RunningMask
 	 */
-	static void SetGeneralData(GeneralData*& g);
-
+	static void ResetRunningMask();
 
 
 	//*** non static functions ***
@@ -94,7 +94,6 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	void StopRunning();
 
-
 	/**
 	 * Set Fifo pointer to the one given
 	 * @param f address of Fifo pointer
@@ -110,6 +109,19 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * Reset parameters for new measurement (eg. for each scan)
 	 */
 	void ResetParametersforNewMeasurement();
+
+	/**
+	 * Set GeneralData pointer to the one given
+	 * @param g address of GeneralData (Detector Data) pointer
+	 */
+	void SetGeneralData(GeneralData*& g);
+
+	/**
+	 * Set thread priority
+	 * @priority priority
+	 * @returns OK or FAIL
+	 */
+	int SetThreadPriority(int priority);
 
 	/**
 	 * Creates UDP Sockets
@@ -168,6 +180,13 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	uint32_t ListenToAnImage(char* buf);
 
+	/**
+	 * Create an image (for deactivated detectors),
+	 * @param buffer
+	 * @returns image size or 0
+	 */
+	uint32_t CreateAnImage(char* buf);
+
 
 
 	/** type of thread */
@@ -202,7 +221,7 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	/** Receiver Status */
 	runStatus* status;
 
-	/** UDP Sockets - Detector to Receiver */
+	/** UDP Socket - Detector to Receiver */
 	genericSocket* udpSocket;
 
 	/** UDP Port Number */
@@ -210,6 +229,12 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** ethernet interface */
 	char* eth;
+
+	/** if the detector is activated */
+	int* activated;
+
+	/** Number of Images to catch */
+	uint64_t* numImages;
 
 	/**Number of complete Packets caught for an entire acquisition (including all scans) */
 	uint64_t numTotalPacketsCaught;

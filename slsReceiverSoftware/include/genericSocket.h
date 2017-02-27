@@ -62,7 +62,6 @@ class sockaddr_in;
 #include <stdio.h>
 
 
-
 using namespace std;
 
 #define DEFAULT_PACKET_SIZE 1286
@@ -72,7 +71,7 @@ using namespace std;
 #define DEFAULT_BACKLOG 5
 #define DEFAULT_UDP_PORTNO 50001
 #define DEFAULT_GUI_PORTNO 65000
-#define DEFAULT_ZMQ_PORTNO 70001
+//#define DEFAULT_ZMQ_PORTNO 70001
 
 class genericSocket{
 
@@ -102,13 +101,10 @@ enum communicationProtocol{
    { 
 	 memset(&serverAddress, 0, sizeof(serverAddress));
 	 memset(&clientAddress, 0, sizeof(clientAddress));
-  //   strcpy(hostname,host_ip_or_name);
-
 	 strcpy(lastClientIP,"none");
 	 strcpy(thisClientIP,"none1");
 	 strcpy(dummyClientIP,"dummy");
 	 differentClients = 0;
-
      struct hostent *hostInfo = gethostbyname(host_ip_or_name);
      if (hostInfo == NULL){
        cerr << "Exiting: Problem interpreting host: " << host_ip_or_name << "\n";
@@ -170,12 +166,12 @@ enum communicationProtocol{
 /* // you can specify an IP address: */
 /* // or you can let it automatically select one: */
 /* myaddr.sin_addr.s_addr = INADDR_ANY; */
-
-
 		 strcpy(lastClientIP,"none");
 		 strcpy(thisClientIP,"none1");
 		 strcpy(dummyClientIP,"dummy");
 		 differentClients = 0;
+
+
 
 	 if(serverAddress.sin_port == htons(port_number)){
 		 socketDescriptor = -10;
@@ -209,8 +205,7 @@ enum communicationProtocol{
      
 
      if (string(ip)!=string("0.0.0.0")) {
-       if (inet_pton(AF_INET, ip, &(serverAddress.sin_addr)))
-	 ;
+       if (inet_pton(AF_INET, ip, &(serverAddress.sin_addr)));
        else
 	 serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
      }
@@ -718,7 +713,6 @@ enum communicationProtocol{
   int nsent;
   int total_sent;
   int header_packet_size;
-       
 
   // pthread_mutex_t mp;
 };

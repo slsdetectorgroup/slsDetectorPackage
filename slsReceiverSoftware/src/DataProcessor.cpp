@@ -13,8 +13,10 @@
 #ifdef HDF5C
 #include "HDF5File.h"
 #endif
+#include "DataStreamer.h"
 
 #include <iostream>
+#include <errno.h>
 #include <cstring>
 using namespace std;
 
@@ -29,17 +31,17 @@ uint64_t DataProcessor::RunningMask(0x0);
 pthread_mutex_t DataProcessor::Mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-DataProcessor::DataProcessor(Fifo*& f, runStatus* s, pthread_mutex_t* m, fileFormat* ftype, bool* fwenable,
+DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* dsEnable,
 		int* cbaction,
 		void (*dataReadycb)(int, char*, int, FILE*, char*, void*),
 		void *pDataReadycb) :
+
 		ThreadObject(NumberofDataProcessors),
 		generalData(0),
 		fifo(f),
+		dataStreamEnable(dsEnable),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
-		status(s),
-		statusMutex(m),
 		numTotalFramesCaught(0),
 		numFramesCaught(0),
 		firstAcquisitionIndex(0),
@@ -59,7 +61,7 @@ DataProcessor::DataProcessor(Fifo*& f, runStatus* s, pthread_mutex_t* m, fileFor
 	}
 
 	NumberofDataProcessors++;
-	FILE_LOG (logDEBUG) << "Number of DataProcessors: " << NumberofDataProcessors << endl;
+	FILE_LOG (logDEBUG) << "Number of DataProcessors: " << NumberofDataProcessors;
 }
 
 
@@ -77,6 +79,10 @@ uint64_t DataProcessor::GetErrorMask() {
 
 uint64_t DataProcessor::GetRunningMask() {
 	return RunningMask;
+}
+
+void DataProcessor::ResetRunningMask() {
+	RunningMask = 0x0;
 }
 
 /** non static functions */
@@ -126,7 +132,6 @@ void DataProcessor::StopRunning() {
 	pthread_mutex_unlock(&Mutex);
 }
 
-
 void DataProcessor::SetFifo(Fifo*& f) {
 	fifo = f;
 }
@@ -142,11 +147,6 @@ void DataProcessor::ResetParametersforNewMeasurement(){
 	numFramesCaught = 0;
 	firstMeasurementIndex = 0;
 	measurementStartedFlag = false;
-	if(RunningMask){
-		pthread_mutex_lock(&Mutex);
-		RunningMask = 0x0;
-		pthread_mutex_unlock(&Mutex);
-	}
 }
 
 
@@ -182,6 +182,15 @@ void DataProcessor::SetGeneralData(GeneralData* g) {
 			file->SetNumberofPixels(generalData->nPixelsX, generalData->nPixelsY);
 		}
 	}
+}
+
+
+int DataProcessor::SetThreadPriority(int priority) {
+	struct sched_param param;
+	param.sched_priority = priority;
+	if (pthread_setschedparam(thread, SCHED_RR, &param) == EPERM)
+		return FAIL;
+	return OK;
 }
 
 
@@ -257,14 +266,22 @@ void DataProcessor::ThreadExecution() {
 
 	ProcessAnImage(buffer + FIFO_HEADER_NUMBYTES);
 
-	//free
-	fifo->FreeAddress(buffer);
+	//stream or free
+	if (*dataStreamEnable)
+		fifo->PushAddressToStream(buffer);
+	else
+		fifo->FreeAddress(buffer);
 }
 
 
 
 void DataProcessor::StopProcessing(char* buf) {
-	fifo->FreeAddress(buf);
+	//stream or free
+	if (*dataStreamEnable)
+		fifo->PushAddressToStream(buf);
+	else
+		fifo->FreeAddress(buf);
+
 	file->CloseCurrentFile();
 	StopRunning();
 	cprintf(BLUE,"%d: Processing Completed\n", index);

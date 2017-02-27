@@ -80,7 +80,7 @@ void ThreadObject::RunningThread() {
 
 			ThreadExecution();
 
-		}/*--end of inner loop */
+		}//end of inner loop
 
 
 		//wait till the next acquisition
@@ -91,7 +91,7 @@ void ThreadObject::RunningThread() {
 			pthread_exit(NULL);
 		}
 
-	}/*--end of loop for each acquisition (outer loop) */
+	}//end of outer loop
 }
 
 

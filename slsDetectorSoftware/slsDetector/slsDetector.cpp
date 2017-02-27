@@ -6964,7 +6964,7 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
       myMod->module=im;
       //settings is saved in myMod.reg for all except mythen
       if(thisDetector->myDetectorType!=MYTHEN)
-    	myMod->reg=thisDetector->currentSettings;
+    	myMod->reg=-1;
       setModule(*myMod,iodelay,tau,-1,0,0);
       deleteModule(myMod);
     } else
@@ -7088,7 +7088,7 @@ int slsDetector::loadCalibrationFile(string fname, int imod) {
     if((myMod=getModule(im))){
       //extra gain and offset
       if(thisDetector->nGain){
-    	  if(readCalibrationFile(fn,gainval, offsetval)==FAIL)
+    	  if(readCalibrationFile(fn, gainval, offsetval)==FAIL)
     		  return FAIL;
       } //normal gain and offset inside sls_detector_module
       else{

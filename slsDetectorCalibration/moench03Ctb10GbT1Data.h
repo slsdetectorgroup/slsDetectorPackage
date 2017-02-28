@@ -4,7 +4,7 @@
 
 
 
-class moench03Ctb10GbData : public slsReceiverData<uint16_t> {
+class moench03Ctb10GbT1Data : public slsReceiverData<uint16_t> {
  
  private:
   
@@ -111,7 +111,6 @@ class moench03Ctb10GbData : public slsReceiverData<uint16_t> {
 
 /* class jfrau_packet_header_t { */
 /*  public: */
-/* 	unsigned char emptyHeader[6]; */
 /* 	unsigned char reserved[4]; */
 /* 	unsigned char packetNumber[1]; */
 /* 	unsigned char frameNumber[3]; */

@@ -5174,7 +5174,7 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 
 
 int multiSlsDetector::getData(const int isocket, const bool masking, int* image, const int size,
-		uint64_t &acqIndex, uint64_t &frameIndex, uint64_t &subframeIndex, string &filename){
+		uint64_t &acqIndex, uint64_t &frameIndex, uint32_t &subframeIndex, string &filename){
 
 	if (!zmqSocket[isocket]->ReceiveHeader(isocket, acqIndex, frameIndex, subframeIndex, filename))
 		return FAIL;
@@ -5220,7 +5220,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 	//gui variables
 	uint64_t currentAcquisitionIndex = -1;
 	uint64_t currentFrameIndex = -1;
-	uint64_t currentSubFrameIndex = -1;
+	uint32_t currentSubFrameIndex = -1;
 	string currentFileName = "";
 
 	//getting sls values

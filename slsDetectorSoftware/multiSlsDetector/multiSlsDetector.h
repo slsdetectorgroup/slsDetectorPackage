@@ -17,6 +17,7 @@ ID:         $Id$
 
 class slsDetector;
 class ThreadPool;
+class ZmqSocket;
 
 //#include "sls_detector_defs.h"
 
@@ -1429,14 +1430,23 @@ private:
 
 	/**
 	 * Gets data from socket
+	 * @param isocket socket index
+	 * @param masking if masking required (jungfrau)
+	 * @param image image buffer
+	 * @param size size of image
+	 * @param acqIndex address of acquisition index
+	 * @param frameIndex address of frame index
+	 * @param subframeIndex address of subframe index
+	 * @param filename address of file name
 	 */
-	int getData(const int isocket, const bool masking, int* image, const int size, int &acqIndex, int &frameIndex, int &subframeIndex, string &filename);
+	int getData(const int isocket, const bool masking, int* image, const int size,
+			uint64_t &acqIndex, uint64_t &frameIndex, uint64_t &subframeIndex, string &filename);
 
 	/** Ensures if sockets created successfully */
 	bool dataSocketsStarted;
-	void *context[MAXDET];
-	void *zmqsocket[MAXDET];
-	char dataSocketServerDetails[MAXDET][100];
+
+	/** ZMQ Socket - Receiver to Client */
+	ZmqSocket* zmqSocket[MAXDET];
 
  protected:
  

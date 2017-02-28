@@ -234,7 +234,7 @@ public:
 	 * @returns 0 if error, else 1
 	 */
 	int ReceiveHeader(const int index, uint64_t &acqIndex,
-			uint64_t &frameIndex, uint64_t &subframeIndex, string &filename)
+			uint64_t &frameIndex, uint32_t &subframeIndex, string &filename)
 	{
 		zmq_msg_init (&message);
 		if (ReceiveMessage(index) > 0) {
@@ -299,7 +299,7 @@ public:
 	 * @param filename address of file name
 	 */
 	int ParseHeader(const int index, uint64_t &acqIndex,
-			uint64_t &frameIndex, uint64_t &subframeIndex, string &filename)
+			uint64_t &frameIndex, uint32_t &subframeIndex, string &filename)
 	{
 		Document d;
 		if (d.Parse( (char*)zmq_msg_data(&message), zmq_msg_size(&message)).HasParseError()) {
@@ -307,23 +307,22 @@ public:
 			return 0;
 		}
 #ifdef VERYVERBOSE
-		// htype is an array of strings
-		rapidjson::Value::Array htype = d["htype"].GetArray();
-		for (int i = 0; i < htype.Size(); i++)
-			printf("%d: htype: %s\n", index, htype[i].GetString());
+		printf("version:%.1f\n", d["version"].GetDouble());
+
 		// shape is an array of ints
 		rapidjson::Value::Array shape = d["shape"].GetArray();
 		printf("%d: shape: ", index);
 		for (int i = 0; i < shape.Size(); i++)
 			printf("%d: %d ", index, shape[i].GetInt());
 		printf("\n");
+
 		printf("%d: type: %s\n", index, d["type"].GetString());
 #endif
 
 		if(d["acqIndex"].GetInt()!=-1){
-			acqIndex 		= d["acqIndex"].GetInt();
-			frameIndex 		= d["fIndex"].GetInt();
-			subframeIndex 	= d["subfnum"].GetInt();
+			acqIndex 		= d["acqIndex"].GetUint64();
+			frameIndex 		= d["fIndex"].GetUint64();
+			subframeIndex 	= d["subfnum"].GetUint();
 			filename 		= d["fname"].GetString();
 #ifdef VERYVERBOSE
 			cout << "Acquisition index: " << acqIndex << endl;

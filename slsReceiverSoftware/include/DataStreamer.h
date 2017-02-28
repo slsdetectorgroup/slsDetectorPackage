@@ -172,10 +172,11 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	/**
 	 * Create and send Json Header
 	 * @param fnum frame number
+	 * @param snum sub frame number
 	 * @param dummy true if its a dummy header
 	 * @returns 0 if error, else 1
 	 */
-	int SendHeader(uint64_t fnum, bool dummy = false);
+	int SendHeader(uint64_t fnum, uint32_t snum, bool dummy = false);
 
 	/** type of thread */
 	static const std::string TypeName;

@@ -307,7 +307,6 @@ void DataProcessor::ProcessAnImage(char* buf) {
 		RecordFirstIndices(fnum);
 	}
 
-	/** bunch id pass as well and then do what with it */
 	if (fileWriteEnable && *callbackAction == DO_EVERYTHING)
 		file->WriteToFile(buf, generalData->fifoBufferSize + FILE_FRAME_HEADER_SIZE, fnum-firstMeasurementIndex);
 }

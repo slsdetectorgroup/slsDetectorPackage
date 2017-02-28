@@ -265,6 +265,7 @@ void Listener::ThreadExecution() {
 	}
 
 	(*((uint32_t*)buffer)) = rc;
+	//for those returning earlier
 	(*((uint64_t*)(buffer + FIFO_HEADER_NUMBYTES ))) = currentFrameIndex;
 	currentFrameIndex++;
 
@@ -288,8 +289,10 @@ void Listener::StopListening(char* buf) {
 
 uint32_t Listener::ListenToAnImage(char* buf) {
 	uint32_t rc = 0;
-	uint64_t fnum = 0; uint32_t pnum = 0;
+	uint64_t fnum = 0, bid = 0;
+	uint32_t pnum = 0, snum = 0;
 	int dsize = generalData->dataSize;
+	bool isHeaderEmpty = true;
 
 
 	//reset to -1
@@ -299,13 +302,18 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 	//look for carry over
 	if (carryOverFlag) {
 		//check if its the current image packet
-		generalData->GetHeaderInfo(index,carryOverPacket,fnum,pnum);
+		generalData->GetHeaderInfo(index, carryOverPacket, fnum, pnum, snum, bid);
 		if (fnum != currentFrameIndex) {
 			return generalData->imageSize;
 		}
 		carryOverFlag = false;
 		memcpy(buf + (pnum * dsize), carryOverPacket + generalData->headerSizeinPacket, dsize);
-		(*((uint64_t*)(buf - FILE_FRAME_HEADER_SIZE))) = fnum;
+		if(isHeaderEmpty) {
+			(*((uint64_t*)(buf - FILE_FRAME_HEADER_SIZE))) = fnum;
+			(*((uint64_t*)(buf - FILE_FRAME_HEADER_SIZE + FILE_FRAME_HDR_FNUM_SIZE))) = snum;
+			(*((uint64_t*)(buf - FILE_FRAME_HEADER_SIZE + FILE_FRAME_HDR_FNUM_SIZE + FILE_FRAME_HDR_SNUM_SIZE))) = bid;
+			isHeaderEmpty = false;
+		}
 	}
 
 
@@ -319,14 +327,13 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		//update parameters
 		numPacketsCaught++;		//record immediately to get more time before socket shutdown
 		numTotalPacketsCaught++;
-		generalData->GetHeaderInfo(index,listeningPacket,fnum,pnum);
+		generalData->GetHeaderInfo(index, listeningPacket, fnum, pnum, snum, bid);
 		lastCaughtFrameIndex = fnum;
 #ifdef VERBOSE
 		if (!index && !pnum) cprintf(GREEN,"Listening %d: fnum:%lld, pnum:%d\n", index, (long long int)fnum, pnum);
 #endif
 		if (!measurementStartedFlag)
 			RecordFirstIndices(fnum);
-
 
 		//future packet
 		if (fnum != currentFrameIndex) {
@@ -337,6 +344,12 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 		//copy packet
 		memcpy(buf + (pnum * dsize), listeningPacket + generalData->headerSizeinPacket, dsize);
+		if(isHeaderEmpty) {
+			(*((uint64_t*)(buf - FILE_FRAME_HEADER_SIZE))) = fnum;
+			(*((uint64_t*)(buf - FILE_FRAME_HEADER_SIZE + FILE_FRAME_HDR_FNUM_SIZE))) = snum;
+			(*((uint64_t*)(buf - FILE_FRAME_HEADER_SIZE + FILE_FRAME_HDR_FNUM_SIZE + FILE_FRAME_HDR_SNUM_SIZE))) = bid;
+			isHeaderEmpty = false;
+		}
 	}
 
 	return generalData->imageSize;

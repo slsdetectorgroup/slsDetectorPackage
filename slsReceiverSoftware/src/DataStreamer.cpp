@@ -25,7 +25,7 @@ pthread_mutex_t DataStreamer::Mutex = PTHREAD_MUTEX_INITIALIZER;
 
 const char* DataStreamer::jsonHeaderFormat_part1 =
 		"{"
-		"\"htype\":[\"chunk-1.0\"], "
+		"\"version\":%.1f, "
 		"\"type\":\"%s\", "
 		"\"shape\":[%d, %d], ";
 
@@ -33,7 +33,7 @@ const char* DataStreamer::jsonHeaderFormat =
 		"%s"
 		"\"acqIndex\":%lld, "
 		"\"fIndex\":%lld, "
-		"\"subfnum\":%lld, "
+		"\"subfnum\":%u, "
 		"\"fname\":\"%s\"}";
 
 
@@ -132,7 +132,7 @@ void DataStreamer::ResetParametersforNewMeasurement(){
 void DataStreamer::CreateHeaderPart1() {
 	char type[10] = "";
 	switch (*dynamicRange) {
-	case 4:		strcpy(type, "uint8");	break;
+	case 4:		strcpy(type, "uint4");	break;
 	case 8:		strcpy(type, "uint8");	break;
 	case 16:	strcpy(type, "uint16");	break;
 	case 32:	strcpy(type, "uint32");	break;
@@ -143,7 +143,7 @@ void DataStreamer::CreateHeaderPart1() {
 	}
 
 	sprintf(currentHeader, jsonHeaderFormat_part1,
-			type, generalData->nPixelsX, generalData->nPixelsY);
+			STREAMER_VERSION, type, generalData->nPixelsX, generalData->nPixelsY);
 #ifdef VERBOSE
 	cprintf(BLUE, "%d currentheader: %s\n", index, currentHeader);
 #endif
@@ -233,7 +233,7 @@ void DataStreamer::StopProcessing(char* buf) {
 	if (!SendHeader(0, true))
 		cprintf(RED,"Error: Could not send zmq dummy header for streamer %d\n", index);
 
-	if (!zmqSocket->SendData(DUMMY_MSG, DUMMY_MSG_SIZE))
+	if (!zmqSocket->SendData((char*)DUMMY_MSG, DUMMY_MSG_SIZE))
 		cprintf(RED,"Error: Could not send zmq dummy message for streamer %d\n", index);
 
 	fifo->FreeAddress(buf);
@@ -246,6 +246,7 @@ void DataStreamer::StopProcessing(char* buf) {
 
 void DataStreamer::ProcessAnImage(char* buf) {
 	uint64_t fnum = (*((uint64_t*)buf));
+	uint32_t snum = (*((uint32_t*)(buf + FILE_FRAME_HDR_FNUM_SIZE)));
 #ifdef VERBOSE
 	if (!index) cprintf(MAGENTA,"DataStreamer %d: fnum:%lld\n", index, (long long int)fnum);
 #endif
@@ -270,7 +271,7 @@ void DataStreamer::ProcessAnImage(char* buf) {
 			return;
 	}
 
-	if (!SendHeader(fnum))
+	if (!SendHeader(fnum, snum))
 		cprintf(RED,"Error: Could not send zmq header for fnum %lld and streamer %d\n",
 				(long long int) fnum, index);
 
@@ -307,21 +308,21 @@ bool DataStreamer::CheckCount() {
 }
 
 
-int DataStreamer::SendHeader(uint64_t fnum, bool dummy) {
+int DataStreamer::SendHeader(uint64_t fnum, uint32_t snum, bool dummy) {
 	uint64_t frameIndex = -1;
 	uint64_t acquisitionIndex = -1;
-	uint64_t subframeIndex = -1;
+	uint32_t subframeIndex = -1;
 	char fname[MAX_STR_LENGTH] = "run";
 	char buf[1000] = "";
 
 	if (!dummy) {
 		frameIndex = fnum - firstMeasurementIndex;
 		acquisitionIndex = fnum - firstAcquisitionIndex;
-		subframeIndex = -1; /* subframe to be included in fifo buffer? */
+		subframeIndex = snum;
 		 /* fname to be included in fifo buffer? */
 	}
 
-	int len = sprintf(buf, jsonHeaderFormat, currentHeader, acquisitionIndex, frameIndex, subframeIndex,fname);
+	int len = sprintf(buf, jsonHeaderFormat, currentHeader, acquisitionIndex, frameIndex, subframeIndex, fname);
 #ifdef VERBOSE
 	printf("%d Streamer: buf:%s\n", index, buf);
 #endif

@@ -82,7 +82,8 @@ public:
 	 * @param frameNumber frame number
 	 * @param packetNumber packet number
 	 */
-	virtual void GetHeaderInfo(int index, char* packetData,	uint64_t& frameNumber, uint32_t& packetNumber) const {
+	virtual void GetHeaderInfo(int index, char* packetData,	uint64_t& frameNumber, uint32_t& packetNumber) const
+	{
 		frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
 		frameNumber++;
 		packetNumber = frameNumber&packetIndexMask;
@@ -93,15 +94,20 @@ public:
 	 * Get Header Infomation (frame number, packet number)
 	 * @param index thread index for debugging purposes
 	 * @param packetData pointer to data
-	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
 	 * @param frameNumber frame number
 	 * @param packetNumber packet number
 	 * @param subFrameNumber sub frame number if applicable
 	 * @param bunchId bunch id
 	 */
-	virtual void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
-			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t bunchId) const {
-		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+	virtual void GetHeaderInfo(int index, char* packetData, uint64_t& frameNumber,
+			uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t bunchId) const
+	{
+		subFrameNumber = -1;
+		bunchId = -1;
+		frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
+		frameNumber++;
+		packetNumber = frameNumber&packetIndexMask;
+		frameNumber = (frameNumber & frameIndexMask) >> frameIndexOffset;
 	}
 
 	/**
@@ -368,20 +374,35 @@ private:
 	 * Get Header Infomation (frame number, packet number)
 	 * @param index thread index for debugging purposes
 	 * @param packetData pointer to data
-	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
+	 * @param frameNumber frame number
+	 * @param packetNumber packet number
+	 */
+	virtual void GetHeaderInfo(int index, char* packetData,	uint64_t& frameNumber, uint32_t& packetNumber) const
+	{
+		jfrau_packet_header_t* header = (jfrau_packet_header_t*)(packetData);
+		frameNumber = (uint64_t)(*( (uint32_t*) header->frameNumber));
+		packetNumber = (uint32_t)(*( (uint8_t*) header->packetNumber));
+	}
+
+	/**
+	 * Get Header Infomation (frame number, packet number)
+	 * @param index thread index for debugging purposes
+	 * @param packetData pointer to data
 	 * @param frameNumber frame number
 	 * @param packetNumber packet number
 	 * @param subFrameNumber sub frame number if applicable
 	 * @param bunchId bunch id
 	 */
-	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
-			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t bunchId) const {
-		subFrameNumber = 0;
+	void GetHeaderInfo(int index, char* packetData, uint64_t& frameNumber,
+			uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t bunchId) const
+	{
+		subFrameNumber = -1;
 		jfrau_packet_header_t* header = (jfrau_packet_header_t*)(packetData);
 		frameNumber = (uint64_t)(*( (uint32_t*) header->frameNumber));
 		packetNumber = (uint32_t)(*( (uint8_t*) header->packetNumber));
 		bunchId = (*((uint64_t*) header->bunchid));
 	}
+
 
 	/**
 	 * Print all variables
@@ -454,23 +475,19 @@ private:
 	 * Get Header Infomation (frame number, packet number)
 	 * @param index thread index for debugging purposes
 	 * @param packetData pointer to data
-	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
 	 * @param frameNumber frame number
 	 * @param packetNumber packet number
 	 * @param subFrameNumber sub frame number if applicable
 	 * @param bunchId bunch id
 	 */
-	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
-			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t bunchId) const {
-		bunchId = 0;
-		subFrameNumber = 0;
+	void GetHeaderInfo(int index, char* packetData, uint64_t& frameNumber,
+			uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t bunchId) const {
+		bunchId = -1;
 		eiger_packet_footer_t* footer = (eiger_packet_footer_t*)(packetData + footerOffset);
 		frameNumber = (uint64_t)((*( (uint64_t*) footer)) & frameIndexMask);
 		packetNumber = (uint32_t)(*( (uint16_t*) footer->packetNumber))-1;
-		if (dynamicRange == 32) {
-			eiger_packet_header_t* header = (eiger_packet_header_t*) (packetData);
-			subFrameNumber = (uint64_t) *( (uint32_t*) header->subFrameNumber);
-		}
+		eiger_packet_header_t* header = (eiger_packet_header_t*) (packetData);
+		subFrameNumber = (uint64_t) *( (uint32_t*) header->subFrameNumber);
 	}
 
 	/**

@@ -164,7 +164,7 @@ void Listener::RecordFirstIndices(uint64_t fnum) {
 		acquisitionStartedFlag = true;
 		firstAcquisitionIndex = fnum;
 	}
-	if (!index) cprintf(GREEN,"%d First Acquisition Index:%lld\n"
+	if (!index) cprintf(BLUE,"%d First Acquisition Index:%lld\n"
 							  "%d First Measurement Index:%lld\n",
 			index, (long long int)firstAcquisitionIndex,
 			index, (long long int)firstMeasurementIndex);
@@ -205,7 +205,7 @@ int Listener::CreateUDPSockets() {
 			generalData->packetSize, (strlen(eth)?eth:NULL), generalData->headerPacketSize);
 	int iret = udpSocket->getErrorStatus();
 	if(!iret){
-		cout << "UDP port opened at port " << *udpPortNumber << endl;
+		cout << index << ": UDP port opened at port " << *udpPortNumber << endl;
 	}else{
 		FILE_LOG(logERROR) << "Could not create UDP socket on port " << *udpPortNumber << " error: " << iret;
 		return FAIL;
@@ -218,7 +218,7 @@ int Listener::CreateUDPSockets() {
 void Listener::ShutDownUDPSocket() {
 	if(udpSocket){
 		udpSocket->ShutDownSocket();
-		FILE_LOG(logINFO) << "Shut down UDP Socket " << index;
+		FILE_LOG(logINFO) << "Shut down of UDP port " << *udpPortNumber;
 		delete udpSocket;
 		udpSocket = 0;
 	}
@@ -280,8 +280,8 @@ void Listener::StopListening(char* buf) {
 	StopRunning();
 #ifdef VERBOSE
 	cprintf(GREEN,"%d: Listening Packets (%d) : %d\n", index, *udpPortNumber, numPacketsCaught);
+	printf("%d: Listening Completed\n", index);
 #endif
-	cprintf(GREEN,"%d: Listening Completed\n", index);
 }
 
 

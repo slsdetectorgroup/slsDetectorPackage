@@ -10,10 +10,15 @@
 #include "ansi.h"
 
 #include <zmq.h>
-#include <rapidjson/document.h> //json header in zmq stream
 #include <errno.h>
+#include <netdb.h>				//gethostbyname()
+#include <arpa/inet.h>			//inet_ntoa
+#include <rapidjson/document.h> //json header in zmq stream
+using namespace rapidjson;
 
-#define DEFAULT_ZMQ_PORTNO 70001
+#define DEFAULT_ZMQ_PORTNO 	70001
+#define DUMMY_MSG_SIZE 		3
+#define DUMMY_MSG			"end"
 
 class ZmqSocket {
 
@@ -33,20 +38,25 @@ public:
 	 * @param hostname hostname or ip of server
 	 * @param portnumber port number
 	 */
-	ZmqSocket (const char* const hostname, const uint32_t  portnumber):
+	ZmqSocket (const char* const hostname_or_ip, const uint32_t  portnumber):
 		portno (portnumber),
 		server (false),
 		contextDescriptor (NULL),
 		socketDescriptor (NULL)
 	{
+		char ip[MAX_STR_LENGTH] = "";
+		strcpy(ip, hostname_or_ip);
+
 		// construct address
-		if (strchr (hostname, '.') != NULL) {
+		if (strchr (hostname_or_ip, '.') != NULL) {
 			// convert hostname to ip
-			hostname = ConvertHostnameToIp (hostname);
-			if (hostname == NULL)
+			char* ptr = ConvertHostnameToIp (hostname_or_ip);
+			if (ptr == NULL)
 				return;
+			strcpy(ip, ptr);
+			delete ptr;
 		}
-		sprintf (serverAddress, "tcp://%s:%d", hostname, portno);
+		sprintf (serverAddress, "tcp://%s:%d", ip, portno);
 
 		// create context
 		contextDescriptor = zmq_ctx_new();
@@ -63,7 +73,7 @@ public:
 		//Socket Options provided above
 
 		//connect socket
-		if (zmq_connect(socketDescriptor, serverAddress)) {
+		if (zmq_connect(socketDescriptor, serverAddress) < 0) {
 			PrintError ();
 			Close ();
 		}
@@ -97,7 +107,7 @@ public:
 		// construct address
 		sprintf (serverAddress,"tcp://*:%d", portno);
 		// bind address
-		if (zmq_bind (socketDescriptor, serverAddress)) {
+		if (zmq_bind (socketDescriptor, serverAddress) < 0) {
 			PrintError ();
 			Close ();
 		}
@@ -113,9 +123,9 @@ public:
 
 	/**
 	 * Returns error status
-	 * @returns 1 if error else 0
+	 * @returns true if error else false
 	 */
-	int GetErrorStatus() { if (socketDescriptor == NULL) return 1; return 0; };
+	bool IsError() { if (socketDescriptor == NULL) return true; return false; };
 
 	/**
 	 * Returns Server Address
@@ -134,7 +144,7 @@ public:
 	 * @reutns Socket descriptor
 	 */
 
-	int GetsocketDescriptor () { return socketDescriptor; };
+	void* GetsocketDescriptor () { return socketDescriptor; };
 
 	/**
 	 * Unbinds the Socket
@@ -179,39 +189,152 @@ public:
 	 * @returns 0 if error, else 1
 	 */
 	int SendHeaderData (char* buf, int length) {
-		if(!zmq_send (socketDescriptor, buf, length, ZMQ_SNDMORE))
-			return 1;
-		PrintError();
-		return 0;
+		if(zmq_send (socketDescriptor, buf, length, ZMQ_SNDMORE) < 0) {
+			PrintError ();
+			return 0;
+		}
+		return 1;
 	};
 
 	/**
 	 * Send Message Body
 	 * @returns 0 if error, else 1
 	 */
-	int SendDataOnly (char* buf, int length) {
-		if(!zmq_send (socketDescriptor, buf, length, 0))
-			return 1;
-		PrintError ();
-		return 0;
+	int SendData (char* buf, int length) {
+		if(zmq_send (socketDescriptor, buf, length, 0) < 0) {
+			PrintError ();
+			return 0;
+		}
+		return 1;
 	};
 
+
 	/**
-	 * Receive Message (header/data)
+	 * Receive Message
 	 * @param index self index for debugging
 	 * @returns length of message, -1 if error
 	 */
-	int ReceiveData(int index, zmq_msg_t& message) {
-		// scan header
-		zmq_msg_init (&message);
+	int ReceiveMessage(const int index) {
 		int length = zmq_msg_recv (&message, socketDescriptor, 0);
 		if (length == -1) {
 			PrintError ();
 			cprintf (BG_RED,"Error: Could not read header for socket %d\n",index);
-			zmq_msg_close (&message);
 		}
 		return length;
 	};
+
+
+	/**
+	 * Receive Header
+	 * @param index self index for debugging
+	 * @param acqIndex address of acquisition index
+	 * @param frameIndex address of frame index
+	 * @param subframeIndex address of subframe index
+	 * @param filename address of file name
+	 * @returns 0 if error, else 1
+	 */
+	int ReceiveHeader(const int index, uint64_t &acqIndex,
+			uint64_t &frameIndex, uint64_t &subframeIndex, string &filename)
+	{
+		zmq_msg_init (&message);
+		if (ReceiveMessage(index) > 0) {
+			if (ParseHeader(index, acqIndex, frameIndex, subframeIndex, filename)) {
+				zmq_msg_close(&message);
+#ifdef VERBOSE
+				cprintf(BLUE,"%d header rxd\n",index);
+#endif
+				return 1;
+			}
+		}
+		zmq_msg_close(&message);
+		return 0;
+	};
+
+	/**
+	 * Receive Data
+	 * @param index self index for debugging
+	 * @param buf buffer to copy image data to
+	 * @param size size of image
+	 * @returns 0 if error, else 1
+	 */
+	int ReceiveData(const int index, int* buf, const int size)
+	{
+		zmq_msg_init (&message);
+		int length = ReceiveMessage(index);
+
+		//dummy
+		if (length == DUMMY_MSG_SIZE) {
+#ifdef VERBOSE
+			cprintf(RED,"%d Received end of acquisition\n", index);
+#endif
+			zmq_msg_close(&message);
+			return 0;
+		}
+
+		//actual data
+		if (length == size) {
+#ifdef VERBOSE
+			cprintf(BLUE,"%d actual data\n", index);
+#endif
+			memcpy((char*)buf, (char*)zmq_msg_data(&message), size);
+		}
+
+		//incorrect size
+		else {
+			cprintf(RED,"Error: Received weird packet size %d for socket %d\n", length, index);
+			memset((char*)buf,0xFF,size);
+		}
+
+		zmq_msg_close(&message);
+		return 1;
+	};
+
+
+	/**
+	 * Parse Header
+	 * @param index self index for debugging
+	 * @param acqIndex address of acquisition index
+	 * @param frameIndex address of frame index
+	 * @param subframeIndex address of subframe index
+	 * @param filename address of file name
+	 */
+	int ParseHeader(const int index, uint64_t &acqIndex,
+			uint64_t &frameIndex, uint64_t &subframeIndex, string &filename)
+	{
+		Document d;
+		if (d.Parse( (char*)zmq_msg_data(&message), zmq_msg_size(&message)).HasParseError()) {
+			cprintf (RED,"Error: Could not parse header for socket %d\n",index);
+			return 0;
+		}
+#ifdef VERYVERBOSE
+		// htype is an array of strings
+		rapidjson::Value::Array htype = d["htype"].GetArray();
+		for (int i = 0; i < htype.Size(); i++)
+			printf("%d: htype: %s\n", index, htype[i].GetString());
+		// shape is an array of ints
+		rapidjson::Value::Array shape = d["shape"].GetArray();
+		printf("%d: shape: ", index);
+		for (int i = 0; i < shape.Size(); i++)
+			printf("%d: %d ", index, shape[i].GetInt());
+		printf("\n");
+		printf("%d: type: %s\n", index, d["type"].GetString());
+#endif
+
+		if(d["acqIndex"].GetInt()!=-1){
+			acqIndex 		= d["acqIndex"].GetInt();
+			frameIndex 		= d["fIndex"].GetInt();
+			subframeIndex 	= d["subfnum"].GetInt();
+			filename 		= d["fname"].GetString();
+#ifdef VERYVERBOSE
+			cout << "Acquisition index: " << acqIndex << endl;
+			cout << "Frame index: " << frameIndex << endl;
+			cout << "Subframe index: " << subframeIndex << endl;
+			cout << "File name: " << filename << endl;
+#endif
+		}
+		return 1;
+	};
+
 
 	/**
 	 * Print error
@@ -285,4 +408,7 @@ private:
 
 	/** Server Address */
 	char serverAddress[1000];
+
+	/** Zmq Message */
+	zmq_msg_t message;
 };

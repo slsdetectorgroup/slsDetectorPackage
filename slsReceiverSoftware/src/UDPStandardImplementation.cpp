@@ -216,9 +216,9 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {
 		if (enable) {
 			bool error = false;
 			for ( int i = 0; i < numThreads; ++i ) {
-				dataStreamer.push_back(new DataStreamer(fifo[i], &frameToGuiFrequency, &frameToGuiTimerinMS, &dynamicRange));
+				dataStreamer.push_back(new DataStreamer(fifo[i], &dynamicRange, &frameToGuiFrequency, &frameToGuiTimerinMS));
 				dataStreamer[i]->SetGeneralData(generalData);
-				if (dataStreamer[i]->CreateZmqSockets() == FAIL) {
+				if (dataStreamer[i]->CreateZmqSockets(&detID, &numThreads) == FAIL) {
 					error = true;
 					break;
 				}
@@ -478,6 +478,9 @@ int UDPStandardImplementation::VerifyCallBackAction() {
 }
 
 int UDPStandardImplementation::startReceiver(char *c) {
+	cout << endl << endl;
+	FILE_LOG(logINFO) << "Starting Receiver";
+
 	ResetParametersforNewMeasurement();
 
 	//listener
@@ -486,7 +489,6 @@ int UDPStandardImplementation::startReceiver(char *c) {
 		FILE_LOG(logERROR) << c;
 		return FAIL;
 	}
-	cout << "Listener Ready ..." << endl;
 
 	//callbacks
 	callbackAction = DO_EVERYTHING;
@@ -502,9 +504,9 @@ int UDPStandardImplementation::startReceiver(char *c) {
 			return FAIL;
 		}
 	} else
-		cout << "Data will not be saved" << endl;
-	cout << "Processor Ready ..." << endl;
+		cout << " Data will not be saved" << endl;
 
+	cout << "Ready ..." << endl;
 
 	//status
 	pthread_mutex_lock(&statusMutex);
@@ -550,15 +552,15 @@ void UDPStandardImplementation::stopReceiver(){
 			tot += dataProcessor[i]->GetNumFramesCaught();
 
 			if (dataProcessor[i]->GetNumFramesCaught() < numberOfFrames) {
-				cprintf(RED, "\nPort %d\n",udpPortNum[i]);
-				cprintf(RED, "Missing Packets   \t: %lld\n",(long long int)numberOfFrames*generalData->packetsPerFrame-listener[i]->GetTotalPacketsCaught());
-				cprintf(RED, "Frames Caught  \t\t: %lld\n",(long long int)dataProcessor[i]->GetNumFramesCaught());
-				cprintf(RED, "Last Frame Number Caught :%lld\n",(long long int)listener[i]->GetLastFrameIndexCaught());
+				cprintf(RED, "\n[Port %d]\n",udpPortNum[i]);
+				cprintf(RED, "Missing Packets\t\t: %lld\n",(long long int)numberOfFrames*generalData->packetsPerFrame-listener[i]->GetTotalPacketsCaught());
+				cprintf(RED, "Frames Caught\t\t: %lld\n",(long long int)dataProcessor[i]->GetNumFramesCaught());
+				cprintf(RED, "Last Frame Caught\t: %lld\n",(long long int)listener[i]->GetLastFrameIndexCaught());
 			}else{
-				cprintf(GREEN, "\nPort %d\n",udpPortNum[i]);
-				cprintf(GREEN, "Missing Packets   \t: %lld\n",(long long int)numberOfFrames*generalData->packetsPerFrame-listener[i]->GetTotalPacketsCaught());
-				cprintf(GREEN, "Frames Caught  \t\t: %lld\n",(long long int)dataProcessor[i]->GetNumFramesCaught());
-				cprintf(GREEN, "Last Frame Number Caught :%lld\n",(long long int)listener[i]->GetLastFrameIndexCaught());
+				cprintf(GREEN, "\n[Port %d]\n",udpPortNum[i]);
+				cprintf(GREEN, "Missing Packets\t\t: %lld\n",(long long int)numberOfFrames*generalData->packetsPerFrame-listener[i]->GetTotalPacketsCaught());
+				cprintf(GREEN, "Frames Caught\t\t: %lld\n",(long long int)dataProcessor[i]->GetNumFramesCaught());
+				cprintf(GREEN, "Last Frame Caught\t: %lld\n",(long long int)listener[i]->GetLastFrameIndexCaught());
 			}
 		}
 		if(!activated)
@@ -575,7 +577,6 @@ void UDPStandardImplementation::stopReceiver(){
 
 	FILE_LOG(logINFO)  << "Receiver Stopped";
 	FILE_LOG(logINFO)  << "Status: " << runStatusType(status);
-	cout << endl << endl;
 }
 
 
@@ -816,7 +817,6 @@ int UDPStandardImplementation::SetupWriter() {
 		return FAIL;
 	}
 
-	cout << "Writer Ready ..." << endl;
 	return OK;
 }
 

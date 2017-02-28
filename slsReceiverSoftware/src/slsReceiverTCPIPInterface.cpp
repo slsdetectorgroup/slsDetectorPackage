@@ -2339,6 +2339,7 @@ int slsReceiverTCPIPInterface::set_multi_detector_size() {
 		else if (receiverBase == NULL){
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
+			cprintf(RED, "%s", mess);
 		}
 		else if(receiverBase->getStatus()!= IDLE){
 			strcpy(mess,"Can not set position file id while receiver not idle\n");

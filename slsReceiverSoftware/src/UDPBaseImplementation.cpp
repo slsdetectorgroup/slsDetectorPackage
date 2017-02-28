@@ -254,7 +254,7 @@ void UDPBaseImplementation::setFileFormat(const fileFormat f){
 		break;
 	}
 
-	FILE_LOG(logINFO) << "File Format:" << getFileFormatType(fileFormatType);
+	FILE_LOG(logINFO) << "File Format: " << getFileFormatType(fileFormatType);
 }
 
 
@@ -263,7 +263,7 @@ void UDPBaseImplementation::setFileName(const char c[]){
 
 	if(strlen(c))
 		strcpy(fileName, c);
-	FILE_LOG(logINFO) << "File name:" << fileName;
+	FILE_LOG(logINFO) << "File name: " << fileName;
 }
 
 void UDPBaseImplementation::setFilePath(const char c[]){
@@ -276,18 +276,18 @@ void UDPBaseImplementation::setFilePath(const char c[]){
 			strcpy(filePath,c);
 		else{
 			strcpy(filePath,"");
-			FILE_LOG(logWARNING) << "FilePath does not exist:" << filePath;
+			FILE_LOG(logWARNING) << "FilePath does not exist: " << filePath;
 		}
 		strcpy(filePath, c);
 	}
-	FILE_LOG(logDEBUG) << "Info: File path:" << filePath;
+	FILE_LOG(logDEBUG) << "Info: File path: " << filePath;
 }
 
 void UDPBaseImplementation::setFileIndex(const uint64_t i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	fileIndex = i;
-	FILE_LOG(logINFO) << "File Index:" << fileIndex;
+	FILE_LOG(logINFO) << "File Index: " << fileIndex;
 }
 
 //FIXME: needed?
@@ -295,7 +295,7 @@ void UDPBaseImplementation::setScanTag(const int i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	scanTag = i;
-	FILE_LOG(logINFO) << "Scan Tag:" << scanTag;
+	FILE_LOG(logINFO) << "Scan Tag: " << scanTag;
 
 }
 
@@ -336,14 +336,14 @@ void UDPBaseImplementation::setUDPPortNumber(const uint32_t i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	udpPortNum[0] = i;
-	FILE_LOG(logINFO) << "UDP Port Number[0]:" << udpPortNum[0];
+	FILE_LOG(logINFO) << "UDP Port Number[0]: " << udpPortNum[0];
 }
 
 void UDPBaseImplementation::setUDPPortNumber2(const uint32_t i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	udpPortNum[1] = i;
-	FILE_LOG(logINFO) << "UDP Port Number[1]:" << udpPortNum[1];
+	FILE_LOG(logINFO) << "UDP Port Number[1]: " << udpPortNum[1];
 }
 
 void UDPBaseImplementation::setEthernetInterface(const char* c){
@@ -368,7 +368,7 @@ int UDPBaseImplementation::setFrameToGuiFrequency(const uint32_t freq){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	frameToGuiFrequency = freq;
-	FILE_LOG(logINFO) << "Frame To Gui Frequency:" << frameToGuiFrequency;
+	FILE_LOG(logINFO) << "Frame To Gui Frequency: " << frameToGuiFrequency;
 
 	//overrridden child classes might return FAIL
 	return OK;
@@ -378,7 +378,7 @@ void UDPBaseImplementation::setFrameToGuiTimer(const uint32_t time_in_ms){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	frameToGuiTimerinMS = time_in_ms;
-	FILE_LOG(logINFO) << "Frame To Gui Timer:" << frameToGuiTimerinMS;
+	FILE_LOG(logINFO) << "Frame To Gui Timer: " << frameToGuiTimerinMS;
 }
 
 
@@ -386,7 +386,7 @@ int UDPBaseImplementation::setDataStreamEnable(const bool enable){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	dataStreamEnable = enable;
-	FILE_LOG(logINFO) << "Streaming Data from Receiver:" << dataStreamEnable;
+	FILE_LOG(logINFO) << "Streaming Data from Receiver: " << dataStreamEnable;
 
 	//overrridden child classes might return FAIL
 	return OK;
@@ -397,7 +397,7 @@ int UDPBaseImplementation::setAcquisitionPeriod(const uint64_t i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	acquisitionPeriod = i;
-	FILE_LOG(logINFO) << "Acquisition Period:" <<  (double)acquisitionPeriod/(1E9) << "s";
+	FILE_LOG(logINFO) << "Acquisition Period: " <<  (double)acquisitionPeriod/(1E9) << "s";
 
 	//overrridden child classes might return FAIL
 	return OK;
@@ -407,7 +407,7 @@ int UDPBaseImplementation::setAcquisitionTime(const uint64_t i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	acquisitionTime = i;
-	FILE_LOG(logINFO) << "Acquisition Time:" <<  (double)acquisitionTime/(1E9) << "s";
+	FILE_LOG(logINFO) << "Acquisition Time: " <<  (double)acquisitionTime/(1E9) << "s";
 
 	//overrridden child classes might return FAIL
 	return OK;
@@ -417,7 +417,7 @@ int UDPBaseImplementation::setNumberOfFrames(const uint64_t i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	numberOfFrames = i;
-	FILE_LOG(logINFO) << "Number of Frames:" << numberOfFrames;
+	FILE_LOG(logINFO) << "Number of Frames: " << numberOfFrames;
 
 	//overrridden child classes might return FAIL
 	return OK;
@@ -427,7 +427,7 @@ int UDPBaseImplementation::setDynamicRange(const uint32_t i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	dynamicRange = i;
-	FILE_LOG(logINFO) << "Dynamic Range:" << dynamicRange;
+	FILE_LOG(logINFO) << "Dynamic Range: " << dynamicRange;
 
 	//overrridden child classes might return FAIL
 	return OK;
@@ -465,7 +465,7 @@ int UDPBaseImplementation::setDetectorType(const detectorType d){
 
 	myDetectorType = d;
 	//if eiger, set numberofListeningThreads = 2;
-	FILE_LOG(logINFO) << "Detector Type:" << getDetectorType(d);
+	FILE_LOG(logINFO) << "Detector Type: " << getDetectorType(d);
 	return OK;
 }
 
@@ -473,7 +473,7 @@ void UDPBaseImplementation::setDetectorPositionId(const int i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	detID = i;
-	FILE_LOG(logINFO) << "Detector Position Id:" << detID;
+	FILE_LOG(logINFO) << "Detector Position Id: " << detID;
 }
 
 void UDPBaseImplementation::initialize(const char *c){
@@ -481,7 +481,7 @@ void UDPBaseImplementation::initialize(const char *c){
 
 	if(strlen(c))
 		strcpy(detHostname, c);
-	FILE_LOG(logINFO) << "Detector Hostname:" << detHostname;
+	FILE_LOG(logINFO) << "Detector Hostname: " << detHostname;
 }
 
 

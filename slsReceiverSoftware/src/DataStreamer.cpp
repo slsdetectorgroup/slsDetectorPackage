@@ -27,7 +27,7 @@ const char* DataStreamer::jsonHeaderFormat_part1 =
 		"{"
 		"\"htype\":[\"chunk-1.0\"], "
 		"\"type\":\"%s\", "
-		"\"shape\":%s, ";
+		"\"shape\":[%d, %d], ";
 
 const char* DataStreamer::jsonHeaderFormat =
 		"%s"
@@ -52,7 +52,6 @@ DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* tim
 		firstAcquisitionIndex(0),
 		firstMeasurementIndex(0)
 {
-	memset(timerBegin, 0xFF, sizeof(timespec));
 	if(ThreadObject::CreateThread()){
 		pthread_mutex_lock(&Mutex);
 		ErrorMask ^= (1<<index);
@@ -62,11 +61,14 @@ DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* tim
 	NumberofDataStreamers++;
 	FILE_LOG (logDEBUG) << "Number of DataStreamers: " << NumberofDataStreamers;
 
+	memset((void*)&timerBegin, 0, sizeof(timespec));
+	currentHeader = new char[255];
 }
 
 
 DataStreamer::~DataStreamer() {
 	CloseZmqSocket();
+	delete currentHeader;
 	ThreadObject::DestroyThread();
 	NumberofDataStreamers--;
 }
@@ -128,7 +130,7 @@ void DataStreamer::ResetParametersforNewMeasurement(){
 
 
 void DataStreamer::CreateHeaderPart1() {
-	char *type;
+	char type[10] = "";
 	switch (*dynamicRange) {
 	case 4:		strcpy(type, "uint8");	break;
 	case 8:		strcpy(type, "uint8");	break;
@@ -136,14 +138,15 @@ void DataStreamer::CreateHeaderPart1() {
 	case 32:	strcpy(type, "uint32");	break;
 	default:
 		strcpy(type, "unknown");
-		cprintf(RED," Unknown datatype in json format\n");
+		cprintf(RED," Unknown datatype in json format %d\n", *dynamicRange);
 		break;
 	}
 
-	char *shape= "[%d, %d]";
-	sprintf(shape, shape, generalData->nPixelsX, generalData->nPixelsY);
-
-	sprintf(currentHeader, jsonHeaderFormat_part1, type, shape);
+	sprintf(currentHeader, jsonHeaderFormat_part1,
+			type, generalData->nPixelsX, generalData->nPixelsY);
+#ifdef VERBOSE
+	cprintf(BLUE, "%d currentheader: %s\n", index, currentHeader);
+#endif
 }
 
 
@@ -182,14 +185,13 @@ int DataStreamer::SetThreadPriority(int priority) {
 
 int DataStreamer::CreateZmqSockets(int* dindex, int* nunits) {
 	uint32_t portnum = DEFAULT_ZMQ_PORTNO + ((*dindex) * (*nunits) + index);
-	printf("%d Streamer: Port number: %d\n", index, portnum);
 
 	zmqSocket = new ZmqSocket(portnum);
-	if (zmqSocket->GetErrorStatus()) {
+	if (zmqSocket->IsError()) {
 		cprintf(RED, "Error: Could not create Zmq socket on port %d for Streamer %d\n", portnum, index);
 		return FAIL;
 	}
-	printf("%d Streamer: Zmq Server started at %s\n",zmqSocket->GetZmqServerAddress());
+	printf("%d Streamer: Zmq Server started at %s\n",index, zmqSocket->GetZmqServerAddress());
 	return OK;
 }
 
@@ -226,9 +228,19 @@ void DataStreamer::ThreadExecution() {
 
 
 void DataStreamer::StopProcessing(char* buf) {
+
+	//send dummy header and data
+	if (!SendHeader(0, true))
+		cprintf(RED,"Error: Could not send zmq dummy header for streamer %d\n", index);
+
+	if (!zmqSocket->SendData(DUMMY_MSG, DUMMY_MSG_SIZE))
+		cprintf(RED,"Error: Could not send zmq dummy message for streamer %d\n", index);
+
 	fifo->FreeAddress(buf);
 	StopRunning();
-	cprintf(MAGENTA,"%d: Streaming Completed\n", index);
+#ifdef VERBOSE
+	printf("%d: Streaming Completed\n", index);
+#endif
 }
 
 
@@ -258,13 +270,16 @@ void DataStreamer::ProcessAnImage(char* buf) {
 			return;
 	}
 
-	if(!SendHeader(fnum))
+	if (!SendHeader(fnum))
 		cprintf(RED,"Error: Could not send zmq header for fnum %lld and streamer %d\n",
 				(long long int) fnum, index);
 
-
-	Send Datat();
+	if (!zmqSocket->SendData(buf + FILE_FRAME_HEADER_SIZE, generalData->imageSize))
+		cprintf(RED,"Error: Could not send zmq data for fnum %lld and streamer %d\n",
+						(long long int) fnum, index);
 }
+
+
 
 bool DataStreamer::CheckTimer() {
 	struct timespec end;
@@ -273,13 +288,14 @@ bool DataStreamer::CheckTimer() {
 	cprintf(BLUE,"%d Timer elapsed time:%f seconds\n", index, ( end.tv_sec - timerBegin.tv_sec ) + ( end.tv_nsec - timerBegin.tv_nsec ) / 1000000000.0);
 #endif
 	//still less than streaming timer, keep waiting
-	if((( end.tv_sec - timerBegin.tv_sec )	+ ( end.tv_nsec - timerBegin.tv_nsec ) / 1000000000.0) < (streamingTimerInMs/1000))
+	if((( end.tv_sec - timerBegin.tv_sec )	+ ( end.tv_nsec - timerBegin.tv_nsec ) / 1000000000.0) < (*streamingTimerInMs/1000))
 		return false;
 
 	//restart timer
 	clock_gettime(CLOCK_REALTIME, &timerBegin);
 	return true;
 }
+
 
 bool DataStreamer::CheckCount() {
 	if (currentFreqCount == *streamingFrequency ) {
@@ -290,11 +306,24 @@ bool DataStreamer::CheckCount() {
 	return false;
 }
 
-int DataStreamer::SendHeader(uint64_t fnum) {
-	uint64_t frameIndex = fnum - firstMeasurementIndex;
-	uint64_t acquisitionIndex = fnum - firstAcquisitionIndex;
-	uint64_t subframeIndex = -1; /* subframe to be included in fifo buffer? */
-	char buf[1000];
-	int len = sprintf(buf, jsonHeaderFormat, jsonHeaderFormat_part1, acquisitionIndex, frameIndex, subframeIndex,completeFileName[ithread]);
-	return zmqSocket->SendDataOnly(buf, len);
+
+int DataStreamer::SendHeader(uint64_t fnum, bool dummy) {
+	uint64_t frameIndex = -1;
+	uint64_t acquisitionIndex = -1;
+	uint64_t subframeIndex = -1;
+	char fname[MAX_STR_LENGTH] = "run";
+	char buf[1000] = "";
+
+	if (!dummy) {
+		frameIndex = fnum - firstMeasurementIndex;
+		acquisitionIndex = fnum - firstAcquisitionIndex;
+		subframeIndex = -1; /* subframe to be included in fifo buffer? */
+		 /* fname to be included in fifo buffer? */
+	}
+
+	int len = sprintf(buf, jsonHeaderFormat, currentHeader, acquisitionIndex, frameIndex, subframeIndex,fname);
+#ifdef VERBOSE
+	printf("%d Streamer: buf:%s\n", index, buf);
+#endif
+	return zmqSocket->SendHeaderData(buf, len);
 }

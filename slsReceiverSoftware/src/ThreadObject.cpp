@@ -61,7 +61,7 @@ int ThreadObject::CreateThread() {
 		return FAIL;
 	}
 	alive = true;
-	FILE_LOG (logINFO) << GetType() << " thread " << index << " created successfully.";
+	FILE_LOG (logDEBUG) << GetType() << " thread " << index << " created successfully.";
 
 	return OK;
 }

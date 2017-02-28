@@ -85,11 +85,6 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	void ResetParametersforNewMeasurement();
 
 	/**
-	 * Create Part1 of Json Header which includes common attributes in an acquisition
-	 */
-	void CreateHeaderPart1();
-
-	/**
 	 * Set GeneralData pointer to the one given
 	 * @param g address of GeneralData (Detector Data) pointer
 	 */
@@ -128,6 +123,11 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	 * @returns true if thread is running, else false
 	 */
 	bool IsRunning();
+
+	/**
+	 * Create Part1 of Json Header which includes common attributes in an acquisition
+	 */
+	void CreateHeaderPart1();
 
 	/**
 	 * Record First Indices (firstAcquisitionIndex, firstMeasurementIndex)
@@ -172,9 +172,10 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	/**
 	 * Create and send Json Header
 	 * @param fnum frame number
+	 * @param dummy true if its a dummy header
 	 * @returns 0 if error, else 1
 	 */
-	int SendHeader(uint64_t fnum);
+	int SendHeader(uint64_t fnum, bool dummy = false);
 
 	/** type of thread */
 	static const std::string TypeName;

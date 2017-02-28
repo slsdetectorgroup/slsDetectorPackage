@@ -284,7 +284,9 @@ void DataProcessor::StopProcessing(char* buf) {
 
 	file->CloseCurrentFile();
 	StopRunning();
-	cprintf(BLUE,"%d: Processing Completed\n", index);
+#ifdef VERBOSE
+	printf("%d: Processing Completed\n", index);
+#endif
 }
 
 

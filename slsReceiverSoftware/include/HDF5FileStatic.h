@@ -227,11 +227,11 @@ public:
 
 			//Create a group in the file
 			Group group1( fd->createGroup( "entry" ) );
-			Group group2( group1.createGroup("data") );
-			Group group3( group1.createGroup("instrument") );
-			Group group4( group3.createGroup("beam") );
-			Group group5( group3.createGroup("detector") );
-			Group group6( group1.createGroup("sample") );
+			 Group group2( group1.createGroup("data") );
+			 Group group3( group1.createGroup("instrument") );
+			  Group group4( group3.createGroup("beam") );
+			  Group group5( group3.createGroup("detector") );
+			 Group group6( group1.createGroup("sample") );
 
 			//Dynamic Range
 			dataset = group5.createDataSet ( "dynamic range", PredType::NATIVE_INT, dataspace );
@@ -533,5 +533,50 @@ public:
 		free(data_out);
 		return 0;
 	}
+
+	/**
+	 * Link the Virtual File in the Master File
+	 * In C because H5Lcreate_external exists only in C
+	 * @param virtualfname virtual file name
+	 * @param virtualDatasetname virtual dataset name
+	 * @param masterFileName master file name
+	 * @returns 0 for success and 1 for fail
+	 */
+	int LinkVirtualInMaster(string virtualfname, string virtualDatasetname, string masterFileName) {
+		char linkname[100];
+		sprintf(linkname, "/entry/data/%s",virtualDatasetname.c_str());
+		hid_t mfd=-1, vfd=-1, vdset=-1;
+		hid_t dfal = H5Pcreate (H5P_FILE_ACCESS);
+		if (H5Pset_fclose_degree (dfal, H5F_CLOSE_STRONG) >= 0) {
+			mfd = H5Fopen( masterFileName.c_str(), H5F_ACC_RDWR, dfal);
+			if (mfd >= 0) {
+				vfd = H5Fopen( virtualfname.c_str(), H5F_ACC_RDWR, dfal);
+				if (vfd >= 0) {
+					vdset = H5Dopen2( vfd, virtualDatasetname.c_str(), H5P_DEFAULT);
+					if (vdset >= 0) {
+						if(H5Lcreate_external( virtualfname.c_str(), virtualDatasetname.c_str(),
+								mfd, linkname, H5P_DEFAULT, H5P_DEFAULT) >= 0) {
+							H5Dclose(vdset);
+							H5Fclose(mfd);
+							H5Fclose(vfd);
+							return 0;
+							cprintf(BLUE,"link created!\n");
+						} else cprintf(RED, "could not create link\n");
+					} else cprintf(RED, "could not open virtual dataset %s\n", virtualDatasetname.c_str());
+				} else cprintf(RED, "could not open virtual file %s\n", virtualfname.c_str());
+			} else cprintf(RED, "could not open master file %s\n", masterFileName.c_str());
+		}else cprintf(RED, "could not set strong file close degree\n");
+
+		if(vdset >=0 )	H5Dclose(vdset);
+		if(mfd >=0 )	H5Fclose(mfd);
+		if(vfd >=0 )	H5Fclose(vfd);
+		return 1;
+	}
+
+
+
+
+
 };
+
 #endif

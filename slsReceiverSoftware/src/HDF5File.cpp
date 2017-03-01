@@ -211,6 +211,10 @@ int HDF5File::CreateVirtualFile(uint64_t fnum) {
 				numReadouts, fileNames, *overWriteEnable, fnum, cdatatype,
 				framestosave, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
 				framestosave, numDetY * nPixelsY, numDetX * ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),HDF5_WRITER_VERSION);
+
+		if (ret == OK)
+			ret = HDF5FileStatic::LinkVirtualInMaster(virtualFileName, virtualDatasetName, masterFileName);
+
 		pthread_mutex_unlock(&Mutex);
 		return ret;
 	}

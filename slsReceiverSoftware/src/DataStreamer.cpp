@@ -63,6 +63,7 @@ DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* tim
 
 	memset((void*)&timerBegin, 0, sizeof(timespec));
 	currentHeader = new char[255];
+	strcpy(fileNametoStream, "");
 }
 
 
@@ -121,9 +122,11 @@ void DataStreamer::ResetParametersforNewAcquisition() {
 	acquisitionStartedFlag = false;
 }
 
-void DataStreamer::ResetParametersforNewMeasurement(){
+void DataStreamer::ResetParametersforNewMeasurement(char* fname){
 	firstMeasurementIndex = 0;
 	measurementStartedFlag = false;
+	strcpy(fileNametoStream, fname);
+	cprintf(BLUE,"fname:%s\n",fname);
 
 	CreateHeaderPart1();
 }
@@ -312,17 +315,15 @@ int DataStreamer::SendHeader(uint64_t fnum, uint32_t snum, bool dummy) {
 	uint64_t frameIndex = -1;
 	uint64_t acquisitionIndex = -1;
 	uint32_t subframeIndex = -1;
-	char fname[MAX_STR_LENGTH] = "run";
 	char buf[1000] = "";
 
 	if (!dummy) {
 		frameIndex = fnum - firstMeasurementIndex;
 		acquisitionIndex = fnum - firstAcquisitionIndex;
 		subframeIndex = snum;
-		 /* fname to be included in fifo buffer? */
 	}
 
-	int len = sprintf(buf, jsonHeaderFormat, currentHeader, acquisitionIndex, frameIndex, subframeIndex, fname);
+	int len = sprintf(buf, jsonHeaderFormat, currentHeader, acquisitionIndex, frameIndex, subframeIndex, fileNametoStream);
 #ifdef VERBOSE
 	printf("%d Streamer: buf:%s\n", index, buf);
 #endif

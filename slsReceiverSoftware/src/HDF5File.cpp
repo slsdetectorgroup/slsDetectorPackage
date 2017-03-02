@@ -26,6 +26,17 @@ HDF5File::HDF5File(int ind, int* nd, char* fname, char* fpath, uint64_t* findex,
 		dataspace(0),
 		dataset(0),
 		datatype(PredType::STD_U16LE),
+
+		dataspace_para(0),
+
+		para1("sub_frame_number"),
+		dataset_para1(0),
+		datatype_para1(PredType::STD_U32LE),
+
+		para2("bunch_id"),
+		dataset_para2(0),
+		datatype_para2(PredType::STD_U64LE),
+
 		nPixelsX(nx),
 		nPixelsY(ny),
 		numFramesInFile(0)
@@ -86,12 +97,14 @@ int HDF5File::CreateFile(uint64_t fnum) {
 	if(!fnum) UpdateDataType();
 
 	uint64_t framestosave = ((*numImages - fnum) > maxFramesPerFile) ? maxFramesPerFile : (*numImages-fnum);
-
 	pthread_mutex_lock(&Mutex);
 	if (HDF5FileStatic::CreateDataFile(index, *overWriteEnable, currentFileName, *frameIndexEnable,
 			fnum, framestosave, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
 			datatype, filefd, dataspace, dataset,
-			HDF5_WRITER_VERSION, MAX_CHUNKED_IMAGES) == FAIL) {
+			HDF5_WRITER_VERSION, MAX_CHUNKED_IMAGES,
+			dataspace_para,
+			para1, dataset_para1, datatype_para1,
+			para2, dataset_para2, datatype_para2) == FAIL) {
 		pthread_mutex_unlock(&Mutex);
 		return FAIL;
 	}
@@ -107,7 +120,7 @@ int HDF5File::CreateFile(uint64_t fnum) {
 
 void HDF5File::CloseCurrentFile() {
 	pthread_mutex_lock(&Mutex);
-	HDF5FileStatic::CloseDataFile(index, filefd, dataspace, dataset);
+	HDF5FileStatic::CloseDataFile(index, filefd, dataspace, dataset, dataset_para1, dataset_para2);
 	if (master && (*detIndex==0)) {
 		HDF5FileStatic::CloseVirtualDataFile(virtualfd);
 	}
@@ -116,7 +129,7 @@ void HDF5File::CloseCurrentFile() {
 
 void HDF5File::CloseAllFiles() {
 	pthread_mutex_lock(&Mutex);
-	HDF5FileStatic::CloseDataFile(index, filefd, dataspace, dataset);
+	HDF5FileStatic::CloseDataFile(index, filefd, dataspace, dataset, dataset_para1, dataset_para2);
 	if (master && (*detIndex==0)) {
 		HDF5FileStatic::CloseMasterDataFile(masterfd);
 		HDF5FileStatic::CloseVirtualDataFile(virtualfd);
@@ -126,17 +139,25 @@ void HDF5File::CloseAllFiles() {
 
 
 int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum) {
-	if (numFramesInFile >= maxFramesPerFile) {/**max *100?????????????*/
+	if (numFramesInFile >= maxFramesPerFile) {/**max  multiply by 100?????????????*/
 		CloseCurrentFile();
 		CreateFile(fnum);
 	}
 	numFramesInFile++;
+
+	uint32_t snum = (*((uint32_t*)(buffer + FILE_FRAME_HDR_FNUM_SIZE)));
+	uint64_t bid = (*((uint64_t*)(buffer + FILE_FRAME_HDR_FNUM_SIZE + FILE_FRAME_HDR_SNUM_SIZE)));
 	pthread_mutex_lock(&Mutex);
-	if (HDF5FileStatic::WriteDataFile(index, buffer + FILE_FRAME_HEADER_SIZE,  /** ignoring bunchid?????????? */
+	if (HDF5FileStatic::WriteDataFile(index, buffer + FILE_FRAME_HEADER_SIZE,
 			fnum%maxFramesPerFile, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
 			dataspace, dataset, datatype) == OK) {
-		pthread_mutex_unlock(&Mutex);
-		return OK;
+		if (HDF5FileStatic::WriteParameterDatasets(index, dataspace_para,
+				fnum%maxFramesPerFile,
+				dataset_para1, datatype_para1, &snum,
+				dataset_para2, datatype_para2, &bid) == OK) {
+			pthread_mutex_unlock(&Mutex);
+			return OK;
+		}
 	}
 	pthread_mutex_unlock(&Mutex);
 	cprintf(RED,"%d Error: Write to file failed\n", index);
@@ -202,18 +223,31 @@ int HDF5File::CreateVirtualFile(uint64_t fnum) {
 		osfn << "/virtual_data";
 		if (*frameIndexEnable) osfn << "_f" << setfill('0') << setw(12) << fnum;
 		string virtualDatasetName = osfn.str();
+		//parameter 1 name
+		osfn.str(""); osfn.clear();
+		osfn << "/virtual_" << para1;
+		if (*frameIndexEnable) osfn << "_f" << setfill('0') << setw(12) << fnum;
+		string vpara1DatasetName = osfn.str();
+
+		//parameter 2 name
+		osfn.str(""); osfn.clear();
+		osfn << "/virtual_" << para2;
+		if (*frameIndexEnable) osfn << "_f" << setfill('0') << setw(12) << fnum;
+		string vpara2DatasetName = osfn.str();
 
 		uint64_t framestosave = ((*numImages - fnum) > maxFramesPerFile) ? maxFramesPerFile : (*numImages-fnum);
 
 		//create virtual file
 		pthread_mutex_lock(&Mutex);
 		int ret = HDF5FileStatic::CreateVirtualDataFile(virtualfd, virtualFileName, virtualDatasetName, srcDatasetName,
-				numReadouts, fileNames, *overWriteEnable, fnum, cdatatype,
+				para1, vpara1DatasetName, H5T_STD_U32LE,
+				para2, vpara2DatasetName, H5T_STD_U64LE,
+				numReadouts, fileNames, *overWriteEnable, cdatatype,
 				framestosave, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
-				framestosave, numDetY * nPixelsY, numDetX * ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),HDF5_WRITER_VERSION);
+				framestosave, numDetY * nPixelsY, numDetX * ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX), HDF5_WRITER_VERSION);
 
 		if (ret == OK)
-			ret = HDF5FileStatic::LinkVirtualInMaster(virtualFileName, virtualDatasetName, masterFileName);
+			ret = HDF5FileStatic::LinkVirtualInMaster(masterFileName, virtualFileName, virtualDatasetName, vpara1DatasetName, vpara2DatasetName);
 
 		pthread_mutex_unlock(&Mutex);
 		return ret;

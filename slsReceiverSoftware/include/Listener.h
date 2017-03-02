@@ -27,8 +27,9 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param e ethernet interface
 	 * @param act pointer to activated
 	 * @param nf pointer to number of images to catch
+	 * @param dr pointer to dynamic range
 	 */
-	Listener(Fifo*& f, runStatus* s, uint32_t* portno, char* e, int* act, uint64_t* nf);
+	Listener(Fifo*& f, runStatus* s, uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr);
 
 	/**
 	 * Destructor
@@ -235,6 +236,9 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** Number of Images to catch */
 	uint64_t* numImages;
+
+	/** Dynamic Range */
+	uint32_t* dynamicRange;
 
 	/**Number of complete Packets caught for an entire acquisition (including all scans) */
 	uint64_t numTotalPacketsCaught;

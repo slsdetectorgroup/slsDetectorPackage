@@ -94,13 +94,14 @@ public:
 	 * Get Header Infomation (frame number, packet number)
 	 * @param index thread index for debugging purposes
 	 * @param packetData pointer to data
+	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
 	 * @param frameNumber frame number
 	 * @param packetNumber packet number
 	 * @param subFrameNumber sub frame number if applicable
 	 * @param bunchId bunch id
 	 */
-	virtual void GetHeaderInfo(int index, char* packetData, uint64_t& frameNumber,
-			uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t bunchId) const
+	virtual void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
+			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t& bunchId) const
 	{
 		subFrameNumber = -1;
 		bunchId = -1;
@@ -388,13 +389,14 @@ private:
 	 * Get Header Infomation (frame number, packet number)
 	 * @param index thread index for debugging purposes
 	 * @param packetData pointer to data
+	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
 	 * @param frameNumber frame number
 	 * @param packetNumber packet number
 	 * @param subFrameNumber sub frame number if applicable
 	 * @param bunchId bunch id
 	 */
-	void GetHeaderInfo(int index, char* packetData, uint64_t& frameNumber,
-			uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t bunchId) const
+	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
+			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t& bunchId) const
 	{
 		subFrameNumber = -1;
 		jfrau_packet_header_t* header = (jfrau_packet_header_t*)(packetData);
@@ -449,7 +451,7 @@ private:
 		packetsPerFrame 	= 256;
 		imageSize 			= dataSize*packetsPerFrame;
 		frameIndexMask 		= 0xffffff;
-		maxFramesPerFile 	= 5;//EIGER_MAX_FRAMES_PER_FILE;
+		maxFramesPerFile 	= EIGER_MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 100;
@@ -475,19 +477,23 @@ private:
 	 * Get Header Infomation (frame number, packet number)
 	 * @param index thread index for debugging purposes
 	 * @param packetData pointer to data
+	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
 	 * @param frameNumber frame number
 	 * @param packetNumber packet number
 	 * @param subFrameNumber sub frame number if applicable
 	 * @param bunchId bunch id
 	 */
-	void GetHeaderInfo(int index, char* packetData, uint64_t& frameNumber,
-			uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t bunchId) const {
+	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
+			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t& bunchId) const {
 		bunchId = -1;
+		subFrameNumber = -1;
 		eiger_packet_footer_t* footer = (eiger_packet_footer_t*)(packetData + footerOffset);
 		frameNumber = (uint64_t)((*( (uint64_t*) footer)) & frameIndexMask);
 		packetNumber = (uint32_t)(*( (uint16_t*) footer->packetNumber))-1;
-		eiger_packet_header_t* header = (eiger_packet_header_t*) (packetData);
-		subFrameNumber = (uint64_t) *( (uint32_t*) header->subFrameNumber);
+		if (dynamicRange == 32) {
+			eiger_packet_header_t* header = (eiger_packet_header_t*) (packetData);
+			subFrameNumber = (uint64_t) *( (uint32_t*) header->subFrameNumber);
+		}
 	}
 
 	/**

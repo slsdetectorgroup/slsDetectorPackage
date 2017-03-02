@@ -29,7 +29,7 @@ pthread_mutex_t Listener::Mutex = PTHREAD_MUTEX_INITIALIZER;
 const GeneralData* Listener::generalData(0);
 
 
-Listener::Listener(Fifo*& f, runStatus* s, uint32_t* portno, char* e, int* act, uint64_t* nf) :
+Listener::Listener(Fifo*& f, runStatus* s, uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr) :
 		ThreadObject(NumberofListeners),
 		fifo(f),
 		acquisitionStartedFlag(false),
@@ -40,6 +40,7 @@ Listener::Listener(Fifo*& f, runStatus* s, uint32_t* portno, char* e, int* act, 
 		eth(e),
 		activated(act),
 		numImages(nf),
+		dynamicRange(dr),
 		numTotalPacketsCaught(0),
 		numPacketsCaught(0),
 		firstAcquisitionIndex(0),
@@ -302,7 +303,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 	//look for carry over
 	if (carryOverFlag) {
 		//check if its the current image packet
-		generalData->GetHeaderInfo(index, carryOverPacket, fnum, pnum, snum, bid);
+		generalData->GetHeaderInfo(index, carryOverPacket, *dynamicRange, fnum, pnum, snum, bid);
 		if (fnum != currentFrameIndex) {
 			return generalData->imageSize;
 		}
@@ -327,7 +328,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		//update parameters
 		numPacketsCaught++;		//record immediately to get more time before socket shutdown
 		numTotalPacketsCaught++;
-		generalData->GetHeaderInfo(index, listeningPacket, fnum, pnum, snum, bid);
+		generalData->GetHeaderInfo(index, listeningPacket, *dynamicRange, fnum, pnum, snum, bid);
 		lastCaughtFrameIndex = fnum;
 #ifdef VERBOSE
 		if (!index && !pnum) cprintf(GREEN,"Listening %d: fnum:%lld, pnum:%d\n", index, (long long int)fnum, pnum);

@@ -82,7 +82,7 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	/**
 	 * Reset parameters for new measurement (eg. for each scan)
 	 */
-	void ResetParametersforNewMeasurement();
+	void ResetParametersforNewMeasurement(char* fname);
 
 	/**
 	 * Set GeneralData pointer to the one given
@@ -237,5 +237,8 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** Frame Number of First Frame for each real time acquisition (eg. for each scan) */
 	uint64_t firstMeasurementIndex;
+
+	/* File name to stream */
+	char fileNametoStream[MAX_STR_LENGTH];
 };
 

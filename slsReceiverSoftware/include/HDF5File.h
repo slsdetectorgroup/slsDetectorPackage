@@ -144,6 +144,27 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	/** Datatype of dataset */
 	DataType datatype;
 
+	/** Dataspace of parameters */
+	DataSpace* dataspace_para;
+
+	/** parameter1 */
+	std::string para1;
+
+	/** Dataset of parameter1 */
+	DataSet* dataset_para1;
+
+	/** Datatype of parameter1 */
+	DataType datatype_para1;
+
+	/** parameter2 */
+	std::string para2;
+
+	/** Dataset of parameter2 */
+	DataSet* dataset_para2;
+
+	/** Datatype of parameter2 */
+	DataType datatype_para2;
+
 	/** Number of pixels in x direction */
 	uint32_t nPixelsX;
 

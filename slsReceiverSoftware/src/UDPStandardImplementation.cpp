@@ -393,7 +393,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 
 	//create threads
 	for ( int i=0; i < numThreads; ++i ) {
-		listener.push_back(new Listener(fifo[i], &status, &udpPortNum[i], eth, &activated, &numberOfFrames));
+		listener.push_back(new Listener(fifo[i], &status, &udpPortNum[i], eth, &activated, &numberOfFrames, &dynamicRange));
 		dataProcessor.push_back(new DataProcessor(fifo[i], &fileFormatType, &fileWriteEnable, &dataStreamEnable,
 														&callbackAction, rawDataReadyCallBack,pRawDataReady));
 		if (Listener::GetErrorMask() || DataProcessor::GetErrorMask()) {
@@ -780,8 +780,13 @@ void UDPStandardImplementation::ResetParametersforNewMeasurement() {
 		(*it)->ResetParametersforNewMeasurement();
 	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
 		(*it)->ResetParametersforNewMeasurement();
-	for (vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
-		(*it)->ResetParametersforNewMeasurement();
+
+	if (dataStreamEnable) {
+		char fnametostream[1000];
+		sprintf(fnametostream, "%s/%s", filePath, fileName);
+		for (vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
+			(*it)->ResetParametersforNewMeasurement(fnametostream);
+	}
 }
 
 

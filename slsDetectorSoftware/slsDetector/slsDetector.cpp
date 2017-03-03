@@ -5226,6 +5226,7 @@ double* slsDetector::decodeData(int *datain, int &nn, double *fdata) {
   double *dataout;
   if (fdata) {
     dataout=fdata;
+    nn=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;
     //    printf("not allocating fdata!\n");
     if (thisDetector->myDetectorType==JUNGFRAUCTB) nn=thisDetector->dataBytes/2;
   } else { 

@@ -319,7 +319,7 @@ public:
 		printf("%d: type: %s\n", index, d["type"].GetString());
 #endif
 
-		if(d["acqIndex"].GetInt()!=-1){
+		if(d["acqIndex"].GetUint64()!=-1){
 			acqIndex 		= d["acqIndex"].GetUint64();
 			frameIndex 		= d["fIndex"].GetUint64();
 			subframeIndex 	= d["subfnum"].GetUint();

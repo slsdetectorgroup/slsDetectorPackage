@@ -757,7 +757,8 @@ int slsReceiverTCPIPInterface::setup_udp(){
 			sscanf(args[1],"%d",&udpport);
 			sscanf(args[2],"%d",&udpport2);
 			receiverBase->setUDPPortNumber(udpport);
-			receiverBase->setUDPPortNumber2(udpport2);
+			if (myDetectorType == EIGER)
+				receiverBase->setUDPPortNumber2(udpport2);
 			//setup udpip
 			//get ethernet interface or IP to listen to
 			FILE_LOG(logINFO) << "Receiver UDP IP: " << args[0];

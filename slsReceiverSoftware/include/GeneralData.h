@@ -382,7 +382,7 @@ private:
 	{
 		jfrau_packet_header_t* header = (jfrau_packet_header_t*)(packetData);
 		frameNumber = (uint64_t)(*( (uint32_t*) header->frameNumber));
-		packetNumber = (uint32_t)(*( (uint8_t*) header->packetNumber));
+		packetNumber = packetsPerFrame -1 - (uint32_t)(*( (uint8_t*) header->packetNumber));
 	}
 
 	/**
@@ -401,7 +401,7 @@ private:
 		subFrameNumber = -1;
 		jfrau_packet_header_t* header = (jfrau_packet_header_t*)(packetData);
 		frameNumber = (uint64_t)(*( (uint32_t*) header->frameNumber));
-		packetNumber = (uint32_t)(*( (uint8_t*) header->packetNumber));
+		packetNumber = packetsPerFrame - 1 -(uint32_t)(*( (uint8_t*) header->packetNumber));
 		bunchId = (*((uint64_t*) header->bunchid));
 	}
 

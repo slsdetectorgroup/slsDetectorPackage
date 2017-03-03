@@ -331,7 +331,8 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		generalData->GetHeaderInfo(index, listeningPacket, *dynamicRange, fnum, pnum, snum, bid);
 		lastCaughtFrameIndex = fnum;
 #ifdef VERBOSE
-		if (!index && !pnum) cprintf(GREEN,"Listening %d: fnum:%lld, pnum:%d\n", index, (long long int)fnum, pnum);
+		if (!index && !pnum)
+			cprintf(GREEN,"Listening %d: fnum:%lld, pnum:%d\n", index, (long long int)fnum, pnum);
 #endif
 		if (!measurementStartedFlag)
 			RecordFirstIndices(fnum);

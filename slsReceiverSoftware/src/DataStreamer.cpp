@@ -31,8 +31,8 @@ const char* DataStreamer::jsonHeaderFormat_part1 =
 
 const char* DataStreamer::jsonHeaderFormat =
 		"%s"
-		"\"acqIndex\":%lld, "
-		"\"fIndex\":%lld, "
+		"\"acqIndex\":%llu, "
+		"\"fIndex\":%llu, "
 		"\"subfnum\":%u, "
 		"\"fname\":\"%s\"}";
 

@@ -16,15 +16,15 @@
 \section{Usage}
 
 \subsection{Mandatory setup - Hardware}
-A EIGER single module (500~kpixels) needs:
+An EIGER single module (500~kpixels) needs:
 \begin{itemize}
 \item A chilled (water+alcohol) at approximately 21~$^{\circ}$C, which needs to dissipate 85~W.
 \item A power supply (12~V, 8~A).
 \item 2$\times$1~Gb/s Ethernet connectors to control the detector and, optionally, receive data at low rate. A DHCP server that gives IPs to the 1~Gb/s connectors of the detector is needed. Note that flow control has to be enabled on the switch you are using.
 \item 2$\times$10~Gb/s transceivers to optionally, receive data at high rate.
- \end{itemize}
-
-Figure~\ref{fig:1} shows the relationship between the \textbf{Client} (which sits on a beamline control PC), the \textbf{Receiver} (which can run in multiple instances on one or more PCs which receive data from the detector. The receiver(s) does not necessary have to be running on the same PC as the client.) It is important that the receiver is closely connected to the detector.
+\end{itemize}
+The equipment scales linearly with the number of modules.
+Figure~\ref{fig:1} shows the relationship between the \textbf{Client} (which sits on a beamline control PC), the \textbf{Receiver} (which can run in multiple instances on one or more PCs which receive data from the detector. The receiver(s) does not necessary have to be running on the same PC as the client.) It is important that the receiver is closely connected to the detector (they have to be on the same network). Note that if you implement the 1Gb/s redout only: client, receiver and detector have to be all three in the same network. If you omplement teh 10Gb/s redout, then client, the 1~GbE of the detector and the receiver have to stay on the 1GbE. But the receiver data receiving device and the 10GbE detector can be on their private newtwork, minimising the missing packets.  
 
 \begin{figure}[t]
 \begin{center}
@@ -45,7 +45,6 @@ The receiver is a process run on a PC closely connected to the detector. Open on
 \item {\tt{./slsReceiver --rx\_tcpport xxxx}} 
 \item {\tt{./slsReceiver --rx\_tcpport yyyy}}
 \end{itemize}
-
 where xxxx, yyyy are the tcp port numbers. Use 1955 and 1956 for example. Note that in older version of the software {\tt{--mode 1}} was used only for the ``bottom'' half module. Now, the receiver for the bottom is open without arguments anymore, but still in the configuration file one needs to write {\tt{n:flippeddatax 1}}, where {\tt{n}} indicated the half module number, 1 if it is a module.
 \\ Open as many receiver as half module boards. A single module has two half module boards.
 
@@ -94,17 +93,25 @@ Other important settings that are configured in the {\tt{setup.det}} file are:
 One should notice that, by default, by choosing the option {\tt{dr 32}}, then the software automatically sets the detector to  {\tt{clkdivider 2}}. By choosing the option {\tt{dr 16}}, the software automatically sets the detector to  {\tt{clkdivider 1}}. One needs to choose {\tt{clkdivider 0}} after setting the {\tt{dr 16}} option to have the fastest frame rate. 
 We would recommend expert users (beamline people) to write their parameters file for the users. 
 
+\section{Setting up the threshold}
+\begin{verbatim}
+sls_detector_put 0-trimen N xxxx yyyy zzzz
+sls_detector_put 0-settings [veryhighgain/highgain/standard/lowgain/verylowgain]
+sls_detector_put 0-threshold energy_in_eV
+\end{verbatim}
+The first line requires to specify how many ({\tt{N}}) and at which energies in eV {\{tt{xxxx}}, {\tt{yyyy}}, {\tt{zzzz}} and so on) the trimmed files were generated (to allow for an interpolation). This line should normally be included into the {\tt{mydetector.config}} file and should be set for you by one of the detector group.
+NORMALLY, in this new calibration scheme, only {\tt{settings standard}} will be provided to you. Unless specific cases to be discussed.
+The threshold at 6000 eV , for example would be set as:{\tt{sls\_detector\_put 0-threshold 6000}}.
+
 \section{Standard acquisition}
 
-You will then need to setup the detector threshold and settings, the exposure time, the number of real time frames and eventually how many real time frames should be acquired:
+After you setup the setting and the threshold, you need to specify the exposure time, the number of real time frames and eventually how many real time frames should be acquired:
 \begin{verbatim}
-sls_detector_put 0-settings [veryhighgain/highgain/standard/lowgain/verylowgain]
-sls_detector_put 0-threshold 6000
 sls_detector_put 0-exptime 1[time_is_s]
 sls_detector_put 0-frames 10
 sls_detector_put 0-period 0[time_is_s]
 \end{verbatim}
-In this case 10 consecutive 1~s frames will be acquired. Note that {\tt{period}} defines the sum of the acquisition time and the desired dead time before the next frame. If {\tt{period}} is set to 0, then the next frame will start as soon as the detector is ready to take another acquisition. \\
+In this acquisition 10 consecutive 1~s frames will be acquired. Note that {\tt{period}} defines the sum of the acquisition time and the desired dead time before the next frame. If {\tt{period}} is set to 0, then the next frame will start as soon as the detector is ready to take another acquisition. \\
 
 For \E, at the moment 5 settings are possible: {\tt{standard}}, {\tt{lowgain}}, {\tt{verylowgain}}, {\tt{veryhighgain}} and {\tt{highgain}}. According to the setting chosen, one can reach different energies. Refer to the settings requirements for your detector.\\ 
 Notice that the option {\tt{settings standard/highgain/lowgain/veryhighgain/verylowgain}} actually loads the trimbit files so it is time consuming. Only setting the {\tt{threshold}} does not load trimbit files.  
@@ -125,7 +132,7 @@ To acquire simply type:
 \begin{verbatim}
 sls_detector_acquire 0-
 \end{verbatim}
-Note taht acquiring is blocking.
+
 You can poll the detector status using:
 \begin{verbatim}
 sls_detector_get 0-status 
@@ -136,13 +143,6 @@ The detector will not accept other commands while acquiring. If an acquisition w
 sls_detector_put 0-status stop 
 \end{verbatim}
 this same command can be used after a non proper abortion of the acquisition to reset to normal status the detector.
-There is a more complex way of performing an acquisition, that is useful for debugging and in case one wants a non blocking behaviour: 
-\begin{itemize}
-\item {\tt{sls\_detector\_put 0-receiver start}} 
-\item {\tt{sls\_detector\_put 0-status start}} 
-\item {\tt{sls\_detector\_put 0-receiver stop}} 
-\end{itemize}
- 
 
 \section{Readout timing- maximum frame rate}\label{timing}
 IMPORTANT: to have faster readout and smaller dead time, one can configure {\tt{clkdivider}}, i.e. the speed at which the data are read, i.e. 200/100/50~MHz for {\tt{clkdivider 0/1/2}} and the dead time between frames through {\tt{flags parallel}}, i.e. acquire and read at the same time or acquire and then read out.
@@ -406,13 +406,6 @@ sleep 300; #or till the screen over netcat has told you Successuful
 
 do the same for the other boards. You can program in parallel many boards, but you cannot load two bitfiles on the same board till loading and copying one process has finished. So load all left febs together, then proceed to the left febs, then the bebs. Power off completely everything. Power it on.
 
-\section{Checking the 1Gb/s, 10Gb/s physical links}
-LEDs on the backpanel board at the back of each half module signal:
-\begin{itemize}
-\item  the 1Gb/s physical link is signaled by the most external LED (should be green) 
-\item the 10Gb/s physical link is signaled by the second most external LED next to the 1Gb/s one (should be green) 
-\end{itemize}
-
 \section{Setting up 10Gb correctly: experience so far}
 
 For configuring well the 10Gb card not to loose packets, as root, do:
@@ -431,14 +424,6 @@ Very important is to activate the flow control in 10Gb (in 1Gb it is on by defau
 ./sls_detector_put flowcontrol_10g 1
 \end{verbatim}
 Set the transmission delays as explained in the manual.
-
-\section{Running the (9M at cSAXS. For now}
-\begin{itemize}
-\item login as {\tt{x12saop@xbl-daq-27}}
-\item {\tt{setup\_eiger}} #loads environmental variables and brings you to the right directory to execute commands
-\item slsReceiverScript3 1991 36 # from one shell.. opens 36 receivers
-\item p config ../../eiger_9m_10gb_xbl-daq-27_withbottom.config
-\end{itemize}
 
 
 \end{document}

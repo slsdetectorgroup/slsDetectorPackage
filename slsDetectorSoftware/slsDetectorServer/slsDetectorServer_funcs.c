@@ -1949,6 +1949,7 @@ int set_module(int file_des) {
 #endif
 #ifdef EIGERD
 	switch(myModule.reg){
+	case GET_SETTINGS:
 	case STANDARD:
 	case HIGHGAIN:
 	case LOWGAIN:

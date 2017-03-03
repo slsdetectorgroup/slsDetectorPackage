@@ -313,7 +313,13 @@ void DataProcessor::ProcessAnImage(char* buf) {
 		RecordFirstIndices(fnum);
 	}
 
-	if (*fileWriteEnable && *callbackAction == DO_EVERYTHING)
-		file->WriteToFile(buf, generalData->fifoBufferSize + FILE_FRAME_HEADER_SIZE, fnum-firstMeasurementIndex);
+	if (*callbackAction == DO_EVERYTHING) {
+		if (*fileWriteEnable)
+			file->WriteToFile(buf, generalData->fifoBufferSize + FILE_FRAME_HEADER_SIZE, fnum-firstMeasurementIndex);
+	} else {
+		if (rawDataReadyCallBack)
+			rawDataReadyCallBack((int)fnum, buf + FILE_FRAME_HEADER_SIZE, generalData->fifoBufferSize,
+							NULL, NULL, pRawDataReady);
+	}
 }
 

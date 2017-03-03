@@ -44,23 +44,27 @@ class slsDetectorData {
     ymap=new int[dsize/sizeof(dataType)];
 
 
-    dataMask=new dataType*[ny];
-    for(int i = 0; i < ny; i++) {
-      dataMask[i] = new dataType[nx];
-    }
-    dataMap=new int*[ny];
-    for(int i = 0; i < ny; i++) {
-      dataMap[i] = new int[nx];
-    }
+    //  if (dataMask==NULL) {
+      dataMask=new dataType*[ny];
+      for(int i = 0; i < ny; i++) {
+	dataMask[i] = new dataType[nx];
+      }
+      // }
     
-    dataROIMask=new int*[ny];
-    for(int i = 0; i < ny; i++) {
-      dataROIMask[i] = new int[nx];
-      for (int j=0; j<nx; j++)
-	 dataROIMask[i][j]=1;
-    }
-
-
+    // if (dataMap==NULL) {
+      dataMap=new int*[ny];
+      for(int i = 0; i < ny; i++) {
+	dataMap[i] = new int[nx];
+      }
+      // }
+      // if (dataROIMask==NULL) {
+      dataROIMask=new int*[ny];
+      for(int i = 0; i < ny; i++) {
+	dataROIMask[i] = new int[nx];
+	for (int j=0; j<nx; j++)
+	  dataROIMask[i][j]=1;
+      }
+      // }
 
     setDataMap(dMap);
     setDataMask(dMask);
@@ -70,9 +74,9 @@ class slsDetectorData {
 
   virtual ~slsDetectorData() {
     for(int i = 0; i < ny; i++) {
-    delete [] dataMap[i];
-    delete [] dataMask[i];
-    delete [] dataROIMask[i];
+      delete [] dataMap[i];
+      delete [] dataMask[i];
+      delete [] dataROIMask[i];
     }
     delete [] dataMap;
     delete [] dataMask;
@@ -80,9 +84,6 @@ class slsDetectorData {
     delete [] xmap;
     delete [] ymap;
   }
-
-  virtual void getPixel(int ip, int &x, int &y) {x=xmap[ip]; y=ymap[ip];};
-
 
 
   /**
@@ -186,6 +187,27 @@ class slsDetectorData {
   /** changes the size of the data frame */
   int setDataSize(int d) {dataSize=d; return dataSize;};
 
+
+  virtual void getPixel(int ip, int &x, int &y) {x=xmap[ip]; y=ymap[ip];};
+
+  virtual dataType **getData(char *ptr, int dsize=-1) {
+   
+    dataType **data;
+    int ix,iy;
+    data=new dataType*[ny];
+    for(int i = 0; i < ny; i++) {
+      data[i]=new dataType[nx];
+    }
+    if (dsize<=0 || dsize>dataSize) dsize=dataSize;
+    for (int ip=0; ip<(dsize/sizeof(dataType)); ip++) {
+      getPixel(ip,ix,iy);
+      if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
+	data[iy][ix]=getChannel(ptr,ix,iy);
+      }
+    }
+    return data;
+
+  };
 
   /** 
      Returns the value of the selected channel for the given dataset. Virtual function, can be overloaded.

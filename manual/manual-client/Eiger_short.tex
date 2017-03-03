@@ -16,15 +16,15 @@
 \section{Usage}
 
 \subsection{Mandatory setup - Hardware}
-A EIGER single module (500~kpixels) needs:
+An EIGER single module (500~kpixels) needs:
 \begin{itemize}
 \item A chilled (water+alcohol) at approximately 21~$^{\circ}$C, which needs to dissipate 85~W.
 \item A power supply (12~V, 8~A).
 \item 2$\times$1~Gb/s Ethernet connectors to control the detector and, optionally, receive data at low rate. A DHCP server that gives IPs to the 1~Gb/s connectors of the detector is needed. Note that flow control has to be enabled on the switch you are using.
 \item 2$\times$10~Gb/s transceivers to optionally, receive data at high rate.
- \end{itemize}
-
-Figure~\ref{fig:1} shows the relationship between the \textbf{Client} (which sits on a beamline control PC), the \textbf{Receiver} (which can run in multiple instances on one or more PCs which receive data from the detector. The receiver(s) does not necessary have to be running on the same PC as the client.) It is important that the receiver is closely connected to the detector.
+\end{itemize}
+The equipment scales linearly with the number of modules.
+Figure~\ref{fig:1} shows the relationship between the \textbf{Client} (which sits on a beamline control PC), the \textbf{Receiver} (which can run in multiple instances on one or more PCs which receive data from the detector. The receiver(s) does not necessary have to be running on the same PC as the client.) It is important that the receiver is closely connected to the detector (they have to be on the same network). Note that if you implement the 1Gb/s redout only: client, receiver and detector have to be all three in the same network. If you omplement teh 10Gb/s redout, then client, the 1~GbE of the detector and the receiver have to stay on the 1GbE. But the receiver data receiving device and the 10GbE detector can be on their private newtwork, minimising the missing packets.  
 
 \begin{figure}[t]
 \begin{center}
@@ -43,10 +43,10 @@ The receiver is a process run on a PC closely connected to the detector. Open on
 
 \begin{itemize}
 \item {\tt{./slsReceiver --rx\_tcpport xxxx}} 
-\item {\tt{./slsReceiver --rx\_tcpport yyyy --mode 1}}
+\item {\tt{./slsReceiver --rx\_tcpport yyyy}}
 \end{itemize}
-
-where xxxx, yyyy are the tcp port numbers. Use 1955 and 1956 for example. Note that {\tt{--mode 1}} is used only for the ``bottom'' half module. \\ Open as many receiver as half module boards. A single module has two half module boards.
+where xxxx, yyyy are the tcp port numbers. Use 1955 and 1956 for example. Note that in older version of the software {\tt{--mode 1}} was used only for the ``bottom'' half module. Now, the receiver for the bottom is open without arguments anymore, but still in the configuration file one needs to write {\tt{n:flippeddatax 1}}, where {\tt{n}} indicated the half module number, 1 if it is a module.
+\\ Open as many receiver as half module boards. A single module has two half module boards.
 
 \subsection{Mandatory setup - Client}
 
@@ -93,17 +93,25 @@ Other important settings that are configured in the {\tt{setup.det}} file are:
 One should notice that, by default, by choosing the option {\tt{dr 32}}, then the software automatically sets the detector to  {\tt{clkdivider 2}}. By choosing the option {\tt{dr 16}}, the software automatically sets the detector to  {\tt{clkdivider 1}}. One needs to choose {\tt{clkdivider 0}} after setting the {\tt{dr 16}} option to have the fastest frame rate. 
 We would recommend expert users (beamline people) to write their parameters file for the users. 
 
+\section{Setting up the threshold}
+\begin{verbatim}
+sls_detector_put 0-trimen N xxxx yyyy zzzz
+sls_detector_put 0-settings [veryhighgain/highgain/standard/lowgain/verylowgain]
+sls_detector_put 0-threshold energy_in_eV
+\end{verbatim}
+The first line requires to specify how many ({\tt{N}}) and at which energies in eV {\{tt{xxxx}}, {\tt{yyyy}}, {\tt{zzzz}} and so on) the trimmed files were generated (to allow for an interpolation). This line should normally be included into the {\tt{mydetector.config}} file and should be set for you by one of the detector group.
+NORMALLY, in this new calibration scheme, only {\tt{settings standard}} will be provided to you. Unless specific cases to be discussed.
+The threshold at 6000 eV , for example would be set as:{\tt{sls\_detector\_put 0-threshold 6000}}.
+
 \section{Standard acquisition}
 
-You will then need to setup the detector threshold and settings, the exposure time, the number of real time frames and eventually how many real time frames should be acquired:
+After you setup the setting and the threshold, you need to specify the exposure time, the number of real time frames and eventually how many real time frames should be acquired:
 \begin{verbatim}
-sls_detector_put 0-settings [veryhighgain/highgain/standard/lowgain/verylowgain]
-sls_detector_put 0-threshold 6000
 sls_detector_put 0-exptime 1[time_is_s]
 sls_detector_put 0-frames 10
 sls_detector_put 0-period 0[time_is_s]
 \end{verbatim}
-In this case 10 consecutive 1~s frames will be acquired. Note that {\tt{period}} defines the sum of the acquisition time and the desired dead time before the next frame. If {\tt{period}} is set to 0, then the next frame will start as soon as the detector is ready to take another acquisition. \\
+In this acquisition 10 consecutive 1~s frames will be acquired. Note that {\tt{period}} defines the sum of the acquisition time and the desired dead time before the next frame. If {\tt{period}} is set to 0, then the next frame will start as soon as the detector is ready to take another acquisition. \\
 
 For \E, at the moment 5 settings are possible: {\tt{standard}}, {\tt{lowgain}}, {\tt{verylowgain}}, {\tt{veryhighgain}} and {\tt{highgain}}. According to the setting chosen, one can reach different energies. Refer to the settings requirements for your detector.\\ 
 Notice that the option {\tt{settings standard/highgain/lowgain/veryhighgain/verylowgain}} actually loads the trimbit files so it is time consuming. Only setting the {\tt{threshold}} does not load trimbit files.  

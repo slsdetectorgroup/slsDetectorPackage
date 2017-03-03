@@ -101,10 +101,17 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 			uint32_t nx, uint32_t ny, uint64_t at, uint64_t ap);
 
 	/**
-	 * Create Virtual File
-	 * @param fnum frame number
+	 * End of Acquisition
+	 * @param numf number of images caught
 	 */
-	int CreateVirtualFile(uint64_t fnum);
+	void EndofAcquisition(uint64_t numf);
+
+	/**
+	 * Create Virtual File
+	 * @param numf number of images caught
+	 * @returns OK or FAIL
+	 */
+	int CreateVirtualFile(uint64_t numf);
 
 
  private:
@@ -119,7 +126,6 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	 * Updates data type depending on current dynamic range
 	 */
 	void UpdateDataType();
-
 
 
 
@@ -144,6 +150,16 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	/** Datatype of dataset */
 	DataType datatype;
 
+	/** Number of pixels in x direction */
+	uint32_t nPixelsX;
+
+	/** Number of pixels in y direction */
+	uint32_t nPixelsY;
+
+	/** Number of frames in file */
+	uint32_t numFramesInFile;
+
+	//parameters
 	/** Dataspace of parameters */
 	DataSpace* dataspace_para;
 
@@ -165,14 +181,7 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	/** Datatype of parameter2 */
 	DataType datatype_para2;
 
-	/** Number of pixels in x direction */
-	uint32_t nPixelsX;
 
-	/** Number of pixels in y direction */
-	uint32_t nPixelsY;
-
-	/** Number of frames in file */
-	uint32_t numFramesInFile;
 
 };
 #endif

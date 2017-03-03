@@ -80,17 +80,13 @@ public:
 	 * @param fnameprefix file name prefix (includes scan and position variables)
 	 * @param fnum current frame number
 	 * @param findex file index
-	 * @param frindexenable frame index enable
-	 * @param fnum frame number index
 	 * @returns virtual file name
 	 */
-	static string CreateVirtualFileName(char* fpath, char* fnameprefix, uint64_t findex, bool frindexenable,
-			uint64_t fnum)
+	static string CreateVirtualFileName(char* fpath, char* fnameprefix, uint64_t findex)
 	{
 		ostringstream osfn;
 		osfn << fpath << "/" << fnameprefix;
 		osfn << "_virtual";
-		if (frindexenable) osfn << "_f" << setfill('0') << setw(12) << fnum;
 		osfn << "_" << findex;
 		osfn << ".h5";
 		return osfn.str();
@@ -408,185 +404,198 @@ public:
 	}
 
 
-
 	/**
 	 * Create virtual file
 	 * (in C because H5Pset_virtual doesnt exist yet in C++)
 	 * @param fd virtual file handle
-	 * @param virtualfname virtual file name
-	 * @param virtualDatasetname virtual dataset name
-	 * @param srcDatasetname source dataset name
-	 * @param spara1Datasetname source dataset name of parameter 1
-	 * @param vpara1DatasetName virtual dataset name of parameter 1
-	 * @param dtype_para1 datatype of parameter 1
-	 * @param spara1Datasetname source dataset name of parameter 1
-	 * @param vpara2DatasetName virtual dataset name of parameter 2
-	 * @param dtype_para2 datatype of parameter 2
-	 * @param numFiles number of files
-	 * @param fileNames array of file names
-	 * @param owenable overwrite enable
-	 * @param dtype datatype
-	 * @param srcNDimx source number of objects in x dimension (Number of images)
-	 * @param srcNDimy source number of objects in y dimension (Number of pixels in y dir)
-	 * @param srcNDimz source number of objects in z dimension (Number of pixels in x dir)
-	 * @param dstNDimx destination number of objects in x dimension (Number of images)
-	 * @param dstNDimy destination number of objects in y dimension (Number of pixels in y dir)
-	 * @param dstNDimz destination number of objects in z dimension (Number of pixels in x dir)
+	 * @param masterFileName master file name
+	 * @param fpath file path
+	 * @param fnameprefix file name prefix (includes scan and position variables)
+	 * @param findex file index
+	 * @param frindexenable frame index enable
+	 * @param dindex readout index
+	 * @param numunits number of units per readout. eg. eiger has 2 udp units per readout
+	 * @param maxFramesPerFile maximum frames per file
+	 * @param numf number of frames caught
+	 * @param srcDataseName source dataset name
+	 * @param srcP1DatasetName source parameter 1 dataset name
+	 * @param srcP2DatasetName source parameter 2 dataset name
+	 * @param dataType datatype of data dataset
+	 * @param p1DataType datatype of parameter 1
+	 * @param p2DataType datatype of parameter 2
+	 * @param numDety number of readouts in Y dir
+	 * @param numDetz number of readouts in Z dir
+	 * @param nDimy number of objects in y dimension in source file (Number of pixels in y dir)
+	 * @param nDimz number of objects in z dimension in source file (Number of pixels in x dir)
 	 * @param version version of software for hdf5 writing
 	 * @returns 0 for success and 1 for fail
 	 */
-	static int CreateVirtualDataFile(hid_t& fd, string virtualfname, string virtualDatasetname, string srcDatasetname,
-			string spara1DatasetName, string vpara1DatasetName, hid_t dtype_para1,
-			string spara2DatasetName, string vpara2DatasetName, hid_t dtype_para2,
-			int numFiles, string fileNames[], bool owenable, hid_t dtype,
-			uint64_t srcNDimx, uint32_t srcNDimy, uint32_t srcNDimz,
-			uint64_t dstNDimx, uint32_t dstNDimy, uint32_t dstNDimz, double version)
+	static int CreateVirtualDataFile(
+			hid_t& fd, string masterFileName,
+			char* fpath, char* fnameprefix, uint64_t findex, bool frindexenable,
+			int dindex, int numunits,
+			uint32_t maxFramesPerFile, uint64_t numf,
+			string srcDataseName, string srcP1DatasetName, string srcP2DatasetName,
+			DataType dataType, DataType p1DataType, DataType p2DataType,
+			int numDety, int numDetz, uint32_t nDimy, uint32_t nDimz,
+			double version)
 	{
+		//virtual names
+		string virtualFileName = CreateVirtualFileName(fpath, fnameprefix, findex);
+		printf("Virtual File: %s\n", virtualFileName.c_str());
+
 		//file
 		hid_t dfal = H5Pcreate (H5P_FILE_ACCESS);
 		if (dfal < 0)
-			return CloseFileOnError(fd, string("Error in creating file access property for virtual file ") + virtualfname + string("\n"));
+			return CloseFileOnError(fd, string("Error in creating file access property for virtual file ") + virtualFileName + string("\n"));
 		if (H5Pset_fclose_degree (dfal, H5F_CLOSE_STRONG) < 0)
-			return CloseFileOnError(fd, string("Error in setting strong file close degree for virtual file ") + virtualfname + string("\n"));
-		if(!owenable)
-			fd = H5Fcreate( virtualfname.c_str(), H5F_ACC_EXCL, H5P_DEFAULT, dfal);
-		else
-			fd = H5Fcreate( virtualfname.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, dfal);
+			return CloseFileOnError(fd, string("Error in setting strong file close degree for virtual file ") + virtualFileName + string("\n"));
+		fd = H5Fcreate( virtualFileName.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, dfal);
 		if (fd < 0)
-			return CloseFileOnError(fd, string("Error in creating virtual file ") + virtualfname + string("\n"));
-
+			return CloseFileOnError(fd, string("Error in creating virtual file ") + virtualFileName + string("\n"));
 
 		//attributes - version
 		hid_t dataspace_attr = H5Screate (H5S_SCALAR);
 		if (dataspace_attr < 0)
-			return CloseFileOnError(fd, string("Error in creating dataspace for attribute in virtual file ") + virtualfname + string("\n"));
+			return CloseFileOnError(fd, string("Error in creating dataspace for attribute in virtual file ") + virtualFileName + string("\n"));
 		hid_t attrid = H5Acreate2 (fd, "version", H5T_NATIVE_DOUBLE, dataspace_attr, H5P_DEFAULT, H5P_DEFAULT);
 		if (attrid < 0)
-			return CloseFileOnError(fd, string("Error in creating attribute in virtual file ") + virtualfname + string("\n"));
+			return CloseFileOnError(fd, string("Error in creating attribute in virtual file ") + virtualFileName + string("\n"));
 		double attr_data = version;
 		if (H5Awrite (attrid, H5T_NATIVE_DOUBLE, &attr_data) < 0)
-			return CloseFileOnError(fd, string("Error in writing attribute in virtual file ") + virtualfname + string("\n"));
+			return CloseFileOnError(fd, string("Error in writing attribute in virtual file ") + virtualFileName + string("\n"));
 				if (H5Aclose (attrid) < 0)
-			return CloseFileOnError(fd, string("Error in closing attribute in virtual file ") + virtualfname + string("\n"));
+			return CloseFileOnError(fd, string("Error in closing attribute in virtual file ") + virtualFileName + string("\n"));
 
 
-
-		//**data dataset**
-		//dataspace
-		hsize_t vdsdims[3] = {dstNDimx, dstNDimy, dstNDimz};
+		//virtual dataspace
+		hsize_t vdsdims[3] = {numf, numDety * nDimy, numDetz * nDimz};
 		hid_t vdsDataspace = H5Screate_simple(3, vdsdims ,NULL);
 		if (vdsDataspace < 0)
-			return CloseFileOnError(fd, string("Error in creating virtual dataspace in virtual file ") + virtualfname + string("\n"));
-		hsize_t srcdims[3] = {srcNDimx, srcNDimy, srcNDimz};
-		hid_t srcDataspace = H5Screate_simple(3, srcdims, NULL);
-		if (srcDataspace < 0)
-			return CloseFileOnError(fd, string("Error in creating source dataspace in virtual file ") + virtualfname + string("\n"));
+			return CloseFileOnError(fd, string("Error in creating virtual dataspace in virtual file ") + virtualFileName + string("\n"));
+		hsize_t vdsdims_para[2] = {numf, numDety * numDetz};
+		hid_t vdsDataspace_para = H5Screate_simple(2, vdsdims_para, NULL);
+		if (vdsDataspace_para < 0)
+			return CloseFileOnError(fd, string("Error in creating virtual dataspace (parameters) in virtual file ") + virtualFileName + string("\n"));
+
 
 		//fill values
 		hid_t dcpl = H5Pcreate (H5P_DATASET_CREATE);
 		if (dcpl < 0)
-			return CloseFileOnError(fd, string("Error in creating file creation properties in virtual file ") + virtualfname + string("\n"));
+			return CloseFileOnError(fd, string("Error in creating file creation properties in virtual file ") + virtualFileName + string("\n"));
 		int fill_value = -1;
-		if (H5Pset_fill_value (dcpl, dtype, &fill_value) < 0)
-			return CloseFileOnError(fd, string("Error in creating fill value in virtual file ") + virtualfname + string("\n"));
-
-
-		//hyperslab
-		hsize_t offset[3]={0, 0, 0},
-				count[3]={srcNDimx, srcNDimy, srcNDimz};
-		bool error = false;
-		for (int i = 0; i < numFiles; i++) {
-			if (H5Sselect_hyperslab (vdsDataspace, H5S_SELECT_SET, offset, NULL, count, NULL) < 0) {
-				cprintf(RED,"could not select hyperslab\n");
-				error = true;
-				break;
-			}
-			if (H5Pset_virtual(dcpl, vdsDataspace, fileNames[i].c_str(), srcDatasetname.c_str(), srcDataspace) < 0) {
-				cprintf(RED,"could not set mapping\n");
-				error = true;
-				break;
-			}
-			offset[2] += srcNDimz;
-			if (offset[2] >=  dstNDimz) {
-				offset[2] = 0;
-				offset[1] += srcNDimy;
-			}
-		}
-		if (error)
-			return CloseFileOnError(fd, string("Error in mapping files in virtual file ") + virtualfname + string("\n"));
-
-		//dataset
-		hid_t vdsdataset = H5Dcreate2 (fd, virtualDatasetname.c_str(), dtype, vdsDataspace, H5P_DEFAULT, dcpl, H5P_DEFAULT);
-		if (vdsdataset < 0)
-			return CloseFileOnError(fd, string("Error in creating virutal dataset in virtual file ") + virtualfname + string("\n"));
-
-		//close
-		H5Sclose(vdsDataspace);
-		H5Sclose(srcDataspace);
-		H5Dclose(vdsdataset);
-
-
-
-		//**paramter datasets**
-		//dataspace
-		hsize_t vdsdims_para[2] = {dstNDimx, numFiles};
-		hid_t vdsDataspace_para = H5Screate_simple(2, vdsdims_para, NULL);
-		if (vdsDataspace_para < 0)
-			return CloseFileOnError(fd, string("Error in creating virtual dataspace (parameters) in virtual file ") + virtualfname + string("\n"));
-		hsize_t srcdims_para[1] = {srcNDimx};
-		hid_t srcDataspace_para = H5Screate_simple(1, srcdims_para, NULL);
-		if (srcDataspace_para < 0)
-			return CloseFileOnError(fd, string("Error in creating source dataspace (parameters) in virtual file ") + virtualfname + string("\n"));
-
-		//fill values
+		if (H5Pset_fill_value (dcpl, GetDataTypeinC(dataType), &fill_value) < 0)
+			return CloseFileOnError(fd, string("Error in creating fill value in virtual file ") + virtualFileName + string("\n"));
 		hid_t dcpl1 = H5Pcreate (H5P_DATASET_CREATE);
 		hid_t dcpl2 = H5Pcreate (H5P_DATASET_CREATE);
 		if ((dcpl1 < 0) || (dcpl2 < 0))
-			return CloseFileOnError(fd, string("Error in creating file creation properties (parameters) in virtual file ") + virtualfname + string("\n"));
+			return CloseFileOnError(fd, string("Error in creating file creation properties (parameters) in virtual file ") + virtualFileName + string("\n"));
 		fill_value = -1;
-		if ((H5Pset_fill_value (dcpl1, dtype_para1, &fill_value) < 0) || (H5Pset_fill_value (dcpl2, dtype_para2, &fill_value) < 0))
-			return CloseFileOnError(fd, string("Error in creating fill value (parameters) in virtual file ") + virtualfname + string("\n"));
+		if ((H5Pset_fill_value (dcpl1, GetDataTypeinC(p1DataType), &fill_value) < 0) ||
+				(H5Pset_fill_value (dcpl2, GetDataTypeinC(p2DataType), &fill_value) < 0))
+			return CloseFileOnError(fd, string("Error in creating fill value (parameters) in virtual file ") + virtualFileName + string("\n"));
+
 
 		//hyperslab
-		hsize_t offset_para[2] = {0,0},
-				count_para[2] = {dstNDimx,1};
-		error = false;
-		for (int i = 0; i < numFiles; i++) {
-			//cout<<"("<<offset[0]<<","<<offset[1]<<","<<offset[2]<<")"<<endl;
-			if (H5Sselect_hyperslab (vdsDataspace_para, H5S_SELECT_SET, offset_para, NULL, count_para, NULL) < 0) {
-				cprintf(RED,"could not select hyperslab\n");
-				error = true;
-				break;
+		int numMajorHyperslab = numf/maxFramesPerFile;
+		if (numf%maxFramesPerFile) numMajorHyperslab++;
+		bool error = false;
+		uint64_t framesSaved = 0;
+		for (int j = 0; j < numMajorHyperslab; j++) {
+
+			uint64_t nDimx = ((numf - framesSaved) > maxFramesPerFile) ? maxFramesPerFile : (numf-framesSaved);
+			hsize_t offset[3] 		= {framesSaved, 0, 0};
+			hsize_t	count[3] 		= {nDimx, nDimy, nDimz};
+			hsize_t offset_para[2] 	= {framesSaved, 0};
+			hsize_t	count_para[2] 	= {nDimx, 1};
+
+			for (int i = 0; i < numDety * numDetz; ++i) {
+
+				//setect hyperslabs
+				if (H5Sselect_hyperslab (vdsDataspace, H5S_SELECT_SET, offset, NULL, count, NULL) < 0) {
+					cprintf(RED,"could not select hyperslab\n");
+					error = true;
+					break;
+				}
+				if (H5Sselect_hyperslab (vdsDataspace_para, H5S_SELECT_SET, offset_para, NULL, count_para, NULL) < 0) {
+					cprintf(RED,"could not select hyperslab for parameters\n");
+					error = true;
+					break;
+				}
+
+				//source file name
+				string srcFileName = HDF5FileStatic::CreateFileName(fpath, fnameprefix, findex,
+						frindexenable, framesSaved, dindex, numunits, i);
+
+				//source dataset name
+				ostringstream osfn;
+				osfn << "/data";
+				if (frindexenable) osfn << "_f" << setfill('0') << setw(12) << framesSaved;
+				string srcDatasetName = osfn.str();
+
+				//source dataspace
+				hsize_t srcdims[3] = {nDimx, nDimy, nDimz};
+				hid_t srcDataspace = H5Screate_simple(3, srcdims, NULL);
+				if (srcDataspace < 0)
+					return CloseFileOnError(fd, string("Error in creating source dataspace in virtual file ") + virtualFileName + string("\n"));
+				hsize_t srcdims_para[1] = {nDimx};
+				hid_t srcDataspace_para = H5Screate_simple(1, srcdims_para, NULL);
+				if (srcDataspace_para < 0)
+					return CloseFileOnError(fd, string("Error in creating source dataspace (parameters) in virtual file ") + virtualFileName + string("\n"));
+
+				//mapping
+				if (H5Pset_virtual(dcpl, vdsDataspace, srcFileName.c_str(), srcDatasetName.c_str(), srcDataspace) < 0) {
+					cprintf(RED,"could not set mapping for paramter 1\n");
+					error = true;
+					break;
+				}
+
+				if (H5Pset_virtual(dcpl1, vdsDataspace_para, srcFileName.c_str(), srcP1DatasetName.c_str(), srcDataspace_para) < 0) {
+					cprintf(RED,"could not set mapping for paramter 1\n");
+					error = true;
+					break;
+				}
+				if (H5Pset_virtual(dcpl2, vdsDataspace_para, srcFileName.c_str(), srcP2DatasetName.c_str(), srcDataspace_para) < 0) {
+					cprintf(RED,"could not set mapping for paramter 2\n");
+					error = true;
+					break;
+				}
+				//H5Sclose(srcDataspace);
+				//H5Sclose(srcDataspace_para);
+				offset[2] += nDimz;
+				if (offset[2] >=  (numDetz * nDimz)) {
+					offset[2] = 0;
+					offset[1] += nDimy;
+				}
+				offset_para[1]++;
 			}
-			if (H5Pset_virtual(dcpl1, vdsDataspace_para, fileNames[i].c_str(), spara1DatasetName.c_str(), srcDataspace_para) < 0) {
-				cprintf(RED,"could not set mapping for paramter 1\n");
-				error = true;
-				break;
-			}
-			if (H5Pset_virtual(dcpl2, vdsDataspace_para, fileNames[i].c_str(), spara2DatasetName.c_str(), srcDataspace_para) < 0) {
-				cprintf(RED,"could not set mapping for paramter 2\n");
-				error = true;
-				break;
-			}
-			offset_para[1] ++;
+			framesSaved += nDimx;
 		}
 		if (error)
-			return CloseFileOnError(fd, string("Error in mapping files (parameters) in virtual file ") + virtualfname + string("\n"));
+			return CloseFileOnError(fd, string("Error in mapping files in virtual file ") + virtualFileName + string("\n"));
 
 		//dataset
-		hid_t vdsdataset1 = H5Dcreate2 (fd, vpara1DatasetName.c_str(), dtype_para1, vdsDataspace_para, H5P_DEFAULT, dcpl1, H5P_DEFAULT);
-		hid_t vdsdataset2 = H5Dcreate2 (fd, vpara2DatasetName.c_str(), dtype_para2, vdsDataspace_para, H5P_DEFAULT, dcpl2, H5P_DEFAULT);
-		if ((vdsdataset1 < 0) && (vdsdataset1 < 0))
-			return CloseFileOnError(fd, string("Error in creating virutal dataset (parameters) in virtual file ") + virtualfname + string("\n"));
+		string virtualDatasetName = string("/virtual_") + srcDataseName;
+		string virutalP1DatasetName = string("/virtual_") + srcP1DatasetName;
+		string virutalP2DatasetName = string("/virtual_") + srcP2DatasetName;
+		hid_t vdsdataset = H5Dcreate2 (fd, virtualDatasetName.c_str(), GetDataTypeinC(dataType), vdsDataspace, H5P_DEFAULT, dcpl, H5P_DEFAULT);
+		if (vdsdataset < 0)
+			return CloseFileOnError(fd, string("Error in creating virutal dataset in virtual file ") + virtualFileName + string("\n"));
+		hid_t vdsdataset1 = H5Dcreate2 (fd, virutalP1DatasetName.c_str(), GetDataTypeinC(p1DataType), vdsDataspace_para, H5P_DEFAULT, dcpl1, H5P_DEFAULT);
+		hid_t vdsdataset2 = H5Dcreate2 (fd, virutalP2DatasetName.c_str(), GetDataTypeinC(p2DataType), vdsDataspace_para, H5P_DEFAULT, dcpl2, H5P_DEFAULT);
+		if ((vdsdataset1 < 0) || (vdsdataset2 < 0))
+			return CloseFileOnError(fd, string("Error in creating virutal dataset (parameters) in virtual file ") + virtualFileName + string("\n"));
 
 		//close
+		H5Sclose(vdsDataspace);
 		H5Sclose(vdsDataspace_para);
-		H5Sclose(srcDataspace_para);
+		H5Dclose(vdsdataset);
 		H5Dclose(vdsdataset1);
 		H5Dclose(vdsdataset2);
-
 		H5Fclose(fd); fd = 0;
-		return 0;
+
+		//link
+		return LinkVirtualInMaster(masterFileName, virtualFileName, virtualDatasetName, virutalP1DatasetName, virutalP2DatasetName);
 	}
 
 
@@ -699,15 +708,19 @@ public:
 		return 0;
 	}
 
+
+
 	/**
 	 * Link the Virtual File in the Master File
 	 * In C because H5Lcreate_external exists only in C
 	 * @param masterFileName master file name
 	 * @param virtualfname virtual file name
 	 * @param virtualDatasetname virtual dataset name
+	 * @param virtualpara1DatasetName virtual dataset name of parameter 1
+	 * @param virtualpara2DatasetName virtual dataset name of parameter 1
 	 * @returns 0 for success and 1 for fail
 	 */
-	int LinkVirtualInMaster(string masterFileName, string virtualfname, string virtualDatasetname,
+	static int LinkVirtualInMaster(string masterFileName, string virtualfname, string virtualDatasetname,
 			string virtualpara1DatasetName, string virtualpara2DatasetName) {
 		char linkname[100];
 		hid_t vfd = 0;
@@ -746,10 +759,18 @@ public:
 
 		//**paramter datasets**
 		hid_t vdset1 = H5Dopen2( vfd, virtualpara1DatasetName.c_str(), H5P_DEFAULT);
+		if (vdset1 < 0) {
+			H5Fclose(mfd); mfd = 0;
+				return CloseFileOnError( vfd, string("Error in opening virtual parameter 1 dataet to create link\n"));
+		}
 		hid_t vdset2 = H5Dopen2( vfd, virtualpara2DatasetName.c_str(), H5P_DEFAULT);
+		if (vdset2 < 0) {
+			H5Fclose(mfd); mfd = 0;
+				return CloseFileOnError( vfd, string("Error in opening virtual parameter 2 dataet to create link\n"));
+		}
 		if ((vdset1 < 0) || (vdset2 < 0)) {
 			H5Fclose(mfd); mfd = 0;
-			return CloseFileOnError( vfd, string("Error in opening virtual parameter dataet to create link\n"));
+			return CloseFileOnError( vfd, string("Error in opening either virtual parameter dataet to create link\n"));
 		}
 		sprintf(linkname, "/entry/data/%s",virtualpara1DatasetName.c_str());
 		if(H5Lcreate_external( virtualfname.c_str(), virtualpara1DatasetName.c_str(),
@@ -782,6 +803,26 @@ public:
 		return 1;
 	}
 
+
+	/**
+	 * Get Data type in C
+	 * @param dtype datatype in C++
+	 * @returns datatype in C
+	 */
+	static hid_t GetDataTypeinC(DataType dtype) {
+		if (dtype == PredType::STD_U8LE)
+			return H5T_STD_U8LE;
+		else if (dtype == PredType::STD_U16LE)
+			return H5T_STD_U16LE;
+		else if (dtype == PredType::STD_U32LE)
+			return H5T_STD_U32LE;
+		else if (dtype == PredType::STD_U64LE)
+			return H5T_STD_U64LE;
+		else {
+			cprintf(RED, "Invalid Data type\n");
+			return H5T_STD_U64LE;
+		}
+	}
 
 };
 

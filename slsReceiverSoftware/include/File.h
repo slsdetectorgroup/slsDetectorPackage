@@ -141,7 +141,13 @@ class File : private virtual slsReceiverDefs {
 		cprintf(RED,"This is a generic function SetNumberofPixels that should be overloaded by a derived class\n");
 	}
 
-
+	/**
+	 * End of Acquisition
+	 * @param numf number of images caught
+	 */
+	virtual void EndofAcquisition(uint64_t numf) {
+		cprintf(RED,"This is a generic function EndofAcquisition that should be overloaded by a derived class\n");
+	}
 
  protected:
 

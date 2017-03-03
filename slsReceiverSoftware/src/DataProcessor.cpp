@@ -249,6 +249,12 @@ void DataProcessor::CloseFiles() {
 		file->CloseAllFiles();
 }
 
+void DataProcessor::EndofAcquisition(uint64_t numf) {
+	if (*fileWriteEnable && file->GetFileType() == HDF5 && numf) {
+		file->EndofAcquisition(numf);
+	}
+}
+
 
 void DataProcessor::ThreadExecution() {
 	char* buffer=0;
@@ -307,7 +313,7 @@ void DataProcessor::ProcessAnImage(char* buf) {
 		RecordFirstIndices(fnum);
 	}
 
-	if (fileWriteEnable && *callbackAction == DO_EVERYTHING)
+	if (*fileWriteEnable && *callbackAction == DO_EVERYTHING)
 		file->WriteToFile(buf, generalData->fifoBufferSize + FILE_FRAME_HEADER_SIZE, fnum-firstMeasurementIndex);
 }
 

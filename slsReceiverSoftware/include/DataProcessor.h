@@ -174,6 +174,11 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	void CloseFiles();
 
+	/**
+	 * End of Acquisition
+	 * @param numf number of images caught
+	 */
+	void EndofAcquisition(uint64_t numf);
 
 
  private:

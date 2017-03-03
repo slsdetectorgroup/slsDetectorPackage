@@ -536,6 +536,17 @@ void UDPStandardImplementation::stopReceiver(){
 	while(DataProcessor::GetRunningMask()){
 		usleep(5000);
 	}
+
+	//create virtual file
+	if (fileWriteEnable && fileFormatType == HDF5) {
+		uint64_t maxFramescaught = 0;
+		for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it) {
+			maxFramescaught = max(maxFramescaught, (*it)->GetNumFramesCaught());
+		}
+		if (maxFramescaught)
+			dataProcessor[0]->EndofAcquisition(maxFramescaught);
+	}
+
 	while(DataStreamer::GetRunningMask()){
 		usleep(5000);
 	}
@@ -637,8 +648,13 @@ void UDPStandardImplementation::shutDownUDPSockets() {
 
 
 void UDPStandardImplementation::closeFiles() {
-	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
+	uint64_t maxFramescaught = 0;
+	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it) {
 		(*it)->CloseFiles();
+		maxFramescaught = max(maxFramescaught, (*it)->GetNumFramesCaught());
+	}
+	if (maxFramescaught)
+		dataProcessor[0]->EndofAcquisition(maxFramescaught);
 }
 
 

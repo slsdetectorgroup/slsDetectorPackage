@@ -50,8 +50,8 @@ extern int N_CHANS;
 
 extern int nChans;
 extern int nChips;
-extern int nDacs;
-extern int nAdcs;
+int nDacs;
+int nAdcs;
 
 int initDetector() {
 
@@ -64,18 +64,11 @@ int initDetector() {
   printf("Board is for %d modules\n",n);
 #endif
 
-  if(myDetectorType == JUNGFRAU){
-	  N_CHAN=JUNGFRAU_NCHAN;
-	  N_CHIP=JUNGFRAU_NCHIP;
-	  N_DAC=JUNGFRAU_NDAC;
-	  N_ADC=JUNGFRAU_NADC;
-	  N_CHANS=JUNGFRAU_NCHANS;
-
-	  nChans=N_CHAN;
-	  nChips=N_CHIP;
-	  nDacs=N_DAC;
-	  nAdcs=N_ADC;
-  }
+  
+  //  nChans=N_CHAN;
+  //	  nChips=N_CHIP;
+  nDacs=N_DAC;
+  //  nAdcs=N_ADC;
 
   detectorModules=malloc(n*sizeof(sls_detector_module));
   detectorDacs=malloc(n*N_DAC*sizeof(int));
@@ -84,8 +77,8 @@ int initDetector() {
   detectorChans=NULL;
   detectorAdcs=NULL;
   if(myDetectorType != JUNGFRAU){
-	  detectorChips=malloc(n*N_CHIP*sizeof(int));
-	  detectorChans=malloc(n*N_CHIP*N_CHAN*sizeof(int));
+    detectorChips=malloc(n*N_CHIP*sizeof(int));
+    detectorChans=malloc(n*N_CHIP*N_CHAN*sizeof(int));
   }
 
 #ifdef VERBOSE
@@ -101,7 +94,7 @@ int initDetector() {
 
   for (imod=0; imod<n; imod++) {
     (detectorModules+imod)->dacs=detectorDacs+imod*N_DAC;
-	(detectorModules+imod)->adcs=detectorAdcs+imod*N_ADC;
+    (detectorModules+imod)->adcs=detectorAdcs+imod*N_ADC;
     if(myDetectorType != JUNGFRAU){
     	(detectorModules+imod)->chipregs=detectorChips+imod*N_CHIP;
     	(detectorModules+imod)->chanregs=detectorChans+imod*N_CHIP*N_CHAN;
@@ -935,284 +928,285 @@ int setSettings(int i, int imod) {
 /* Initialization*/
 
 int initChannelbyNumber(sls_detector_channel myChan) {printf("in init channel by number\n");
-  int reg=myChan.reg;
-  int ft=reg & TRIM_DR;
-  int cae=(reg>>(NTRIMBITS))&1;
-  int ae=(reg>>(NTRIMBITS+1))&1;
-  int coe=(reg>>(NTRIMBITS+2))&1;
-  int ocoe=(reg>>(NTRIMBITS+3))&1;
-  int counts=(reg>>(NTRIMBITS+4));
-#ifdef VERBOSE
-  printf("Initializing channel %d chip %d module %d reg %x\n",myChan.chan,myChan.chip,myChan.module, reg);
-  printf("trim %d, cae %d, ae %d, coe %d, ocoe %d, counts %d\n",ft, cae, ae, coe, ocoe, counts);
-#endif
+/*   int reg=myChan.reg; */
+/*   int ft=reg & TRIM_DR; */
+/*   int cae=(reg>>(NTRIMBITS))&1; */
+/*   int ae=(reg>>(NTRIMBITS+1))&1; */
+/*   int coe=(reg>>(NTRIMBITS+2))&1; */
+/*   int ocoe=(reg>>(NTRIMBITS+3))&1; */
+/*   int counts=(reg>>(NTRIMBITS+4)); */
+/* #ifdef VERBOSE */
+/*   printf("Initializing channel %d chip %d module %d reg %x\n",myChan.chan,myChan.chip,myChan.module, reg); */
+/*   printf("trim %d, cae %d, ae %d, coe %d, ocoe %d, counts %d\n",ft, cae, ae, coe, ocoe, counts); */
+/* #endif */
   
-  if (myChan.chip<0)
-    setCSregister(myChan.module);
-  else
-    selChip(myChan.chip,myChan.module);
+/*   if (myChan.chip<0) */
+/*     setCSregister(myChan.module); */
+/*   else */
+/*     selChip(myChan.chip,myChan.module); */
 
-   if (myChan.chan<0)
-    setSSregister(myChan.module);
-  else
-    selChannel(myChan.chan,myChan.module);
+/*    if (myChan.chan<0) */
+/*     setSSregister(myChan.module); */
+/*   else */
+/*     selChannel(myChan.chan,myChan.module); */
   
-   initChannel(ft,cae,ae, coe, ocoe, counts,myChan.module);
+/*    initChannel(ft,cae,ae, coe, ocoe, counts,myChan.module); */
 
-   setDynamicRange(dynamicRange);
+/*    setDynamicRange(dynamicRange); */
 
-   setCSregister(ALLMOD);
-   clearSSregister(ALLMOD); 
-   putout("0000000000000000",ALLMOD);
+/*    setCSregister(ALLMOD); */
+/*    clearSSregister(ALLMOD);  */
+/*    putout("0000000000000000",ALLMOD); */
 
    return myChan.reg;
 
 }
 
 int getChannelbyNumber(sls_detector_channel* myChan) {
-  int imod, ichip, ichan;
-  imod=myChan->module;
-  ichip=myChan->chip;
-  ichan=myChan->chan;
+  /* int imod, ichip, ichan; */
+  /* imod=myChan->module; */
+  /* ichip=myChan->chip; */
+  /* ichan=myChan->chan; */
    
-  if (detectorChans) {
-    if (imod<nModX && imod>=0) {
-      if (ichip<(detectorModules+imod)->nchip && ichan<(detectorModules+imod)->nchan/(detectorModules+imod)->nchip)
-	myChan->reg=detectorChans[imod*N_CHAN*N_CHIP+ichip*N_CHAN+ichan];
-      return OK;
-    }
-  } 
+  /* if (detectorChans) { */
+  /*   if (imod<nModX && imod>=0) { */
+  /*     if (ichip<(detectorModules+imod)->nchip && ichan<(detectorModules+imod)->nchan/(detectorModules+imod)->nchip) */
+  /* 	myChan->reg=detectorChans[imod*N_CHAN*N_CHIP+ichip*N_CHAN+ichan]; */
+  /*     return OK; */
+  /*   } */
+  /* }  */
   return FAIL;
 
 }
 
 int getTrimbit(int imod, int ichip, int ichan) {
-  if (detectorChans) {
-    if (imod<getNModBoard() && imod>=0)
-      if (ichip<(detectorModules+imod)->nchip && ichan<(detectorModules+imod)->nchan/(detectorModules+imod)->nchip)
-	return (detectorChans[imod*N_CHAN*N_CHIP+ichip*N_CHAN+ichan] & TRIM_DR);
-  }
+  /* if (detectorChans) { */
+  /*   if (imod<getNModBoard() && imod>=0) */
+  /*     if (ichip<(detectorModules+imod)->nchip && ichan<(detectorModules+imod)->nchan/(detectorModules+imod)->nchip) */
+  /* 	return (detectorChans[imod*N_CHAN*N_CHIP+ichip*N_CHAN+ichan] & TRIM_DR); */
+  /* } */
 
   return -1;
 }
 
 int initChannel(int ft,int cae, int ae, int coe, int ocoe, int counts, int imod){
   
-  int ibit, bit, i, im, ichip, ichan;
-  int chanmi, chanma, chipmi, chipma, modmi, modma;
+/*   int ibit, bit, i, im, ichip, ichan; */
+/*   int chanmi, chanma, chipmi, chipma, modmi, modma; */
 
 
 
-  sMod=imod;
-  //  printf("initializing module %d\n",sMod);
-  if (imod==ALLMOD) {
-    sMod=allSelected;
+/*   sMod=imod; */
+/*   //  printf("initializing module %d\n",sMod); */
+/*   if (imod==ALLMOD) { */
+/*     sMod=allSelected; */
 
-    //    printf("initializing all modules\n");
-  }
+/*     //    printf("initializing all modules\n"); */
+/*   } */
 
-  if (sChan==allSelected) {
-    //    printf("initializing all channels ft=%d coe=%d\n",ft,coe);
-    chanmi=0;
-    chanma=N_CHAN;
-  } else if (sChan==noneSelected || sChan>N_CHAN || sChan<0) {
-    //  printf("initializing no channels ft=%d coe=%d\n",ft,coe);
-    chanmi=0;
-    chanma=-1;
-  } else {
-    // printf("initializing channel %d ft=%d coe=%d\n",sChan, ft,coe);
-    chanmi=sChan;
-    chanma=sChan+1;
-  }
+/*   if (sChan==allSelected) { */
+/*     //    printf("initializing all channels ft=%d coe=%d\n",ft,coe); */
+/*     chanmi=0; */
+/*     chanma=N_CHAN; */
+/*   } else if (sChan==noneSelected || sChan>N_CHAN || sChan<0) { */
+/*     //  printf("initializing no channels ft=%d coe=%d\n",ft,coe); */
+/*     chanmi=0; */
+/*     chanma=-1; */
+/*   } else { */
+/*     // printf("initializing channel %d ft=%d coe=%d\n",sChan, ft,coe); */
+/*     chanmi=sChan; */
+/*     chanma=sChan+1; */
+/*   } */
   
-  if (sChip==allSelected) {
-    // printf("initializing all chips\n");
-    chipmi=0;
-    chipma=N_CHIP;
-  } else if (sChip==noneSelected || sChip>N_CHIP || sChip<0) {
-    // printf("initializing no chips\n");
-    chipmi=0;
-    chipma=-1;
-  } else {
-    // printf("initializing chip %d\n",sChip);
-    chipmi=sChip;
-    chipma=sChip+1;
-  }
+/*   if (sChip==allSelected) { */
+/*     // printf("initializing all chips\n"); */
+/*     chipmi=0; */
+/*     chipma=N_CHIP; */
+/*   } else if (sChip==noneSelected || sChip>N_CHIP || sChip<0) { */
+/*     // printf("initializing no chips\n"); */
+/*     chipmi=0; */
+/*     chipma=-1; */
+/*   } else { */
+/*     // printf("initializing chip %d\n",sChip); */
+/*     chipmi=sChip; */
+/*     chipma=sChip+1; */
+/*   } */
  
   
-  if (sMod==allSelected) {
-    modmi=0;
-    modma=nModX;//getNModBoard();
-  } else if (sMod==noneSelected || sMod>nModX || sMod<0) {//(sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
-    modmi=0;
-    modma=-1;
-    return 1;
-  } else {
-    modmi=sMod;
-    modma=sMod+1;
-  }
+/*   if (sMod==allSelected) { */
+/*     modmi=0; */
+/*     modma=nModX;//getNModBoard(); */
+/*   } else if (sMod==noneSelected || sMod>nModX || sMod<0) {//(sMod==noneSelected || sMod>getNModBoard() || sMod<0) { */
+/*     modmi=0; */
+/*     modma=-1; */
+/*     return 1; */
+/*   } else { */
+/*     modmi=sMod; */
+/*     modma=sMod+1; */
+/*   } */
  
-  if (detectorChans) {
-    for (im=modmi; im<modma; im++) {
-      for (ichip=chipmi; ichip<chipma; ichip++) {
-	for (ichan=chanmi; ichan<chanma; ichan++) {
-#ifdef VERBOSE
-	  //  printf("im=%d ichi=%d icha=%d tot=%d reg=%x\n",im,ichip, ichan, im*N_CHAN*N_CHIP+ichip*N_CHAN+ichan,detectorChans[im*N_CHAN*N_CHIP+ichip*N_CHAN+ichan]);
-#endif
-	 detectorChans[im*N_CHAN*N_CHIP+ichip*N_CHAN+ichan]= ft | (cae<<(NTRIMBITS+1)) | (ae<<(NTRIMBITS+2)) | (coe<<(NTRIMBITS+3)) | (ocoe<<(NTRIMBITS+4)) | (counts<<(NTRIMBITS+5));
-#ifdef VERBOSE
-	 //printf("imod=%d ichip=%d ichan=%d addr=%x reg=%x\n",im,ichip,ichan,detectorChans+im*N_CHAN*N_CHIP+ichip*N_CHAN+ichan, detectorChans[im*N_CHAN*N_CHIP+ichip*N_CHAN+ichan]);
-	  // printf("imod=%d ichip=%d ichan=%d addr=%x reg=%x\n",im,ichip,ichan,detectorChans+im*N_CHAN*N_CHIP+ichip*N_CHAN+ichan, detectorChans[im*N_CHAN*N_CHIP+ichip*N_CHAN+ichan]);
-#endif
-	}
-      }
-    }
-  }
-  /* remember to clear counters before programming!!!*/
-  if (ft>63 || ft<0) {
-    fprintf(stdout,"Fine Threshold is %d  while should be between 0 and 63!",ft);
-    return 1;
-  }
-  /*cal_enable*/
-  if (cae) {
-    putout("0100000000000000",imod);  
-    putout("0110000000000000",imod); 
-  } else {
-    putout("0000000000000000",imod);  
-    putout("0010000000000000",imod); 
-  }
-  /*n_an_enable*/
-  if (ae) {
-    putout("0000000000000000",imod);  
-    putout("0010000000000000",imod);
-    putout("0000000000000000",imod);   
-  } else {
-    putout("0100000000000000",imod);  
-    putout("0110000000000000",imod); 
-    putout("0100000000000000",imod);  
-  }
-  /*trb5*/
-  ibit=5;
-  bit=ft & (1<<ibit);  
-  if (bit) {
-    putout("0100000000000000",imod);  
-    putout("0110000000000000",imod);
-    putout("0100000000000000",imod);  
-  } else {
-    putout("0000000000000000",imod);  
-    putout("0010000000000000",imod); 
-    putout("0000000000000000",imod);  
-  }
+/*   if (detectorChans) { */
+/*     for (im=modmi; im<modma; im++) { */
+/*       for (ichip=chipmi; ichip<chipma; ichip++) { */
+/* 	for (ichan=chanmi; ichan<chanma; ichan++) { */
+/* #ifdef VERBOSE */
+/* 	  //  printf("im=%d ichi=%d icha=%d tot=%d reg=%x\n",im,ichip, ichan, im*N_CHAN*N_CHIP+ichip*N_CHAN+ichan,detectorChans[im*N_CHAN*N_CHIP+ichip*N_CHAN+ichan]); */
+/* #endif */
+/* 	 detectorChans[im*N_CHAN*N_CHIP+ichip*N_CHAN+ichan]= ft | (cae<<(NTRIMBITS+1)) | (ae<<(NTRIMBITS+2)) | (coe<<(NTRIMBITS+3)) | (ocoe<<(NTRIMBITS+4)) | (counts<<(NTRIMBITS+5)); */
+/* #ifdef VERBOSE */
+/* 	 //printf("imod=%d ichip=%d ichan=%d addr=%x reg=%x\n",im,ichip,ichan,detectorChans+im*N_CHAN*N_CHIP+ichip*N_CHAN+ichan, detectorChans[im*N_CHAN*N_CHIP+ichip*N_CHAN+ichan]); */
+/* 	  // printf("imod=%d ichip=%d ichan=%d addr=%x reg=%x\n",im,ichip,ichan,detectorChans+im*N_CHAN*N_CHIP+ichip*N_CHAN+ichan, detectorChans[im*N_CHAN*N_CHIP+ichip*N_CHAN+ichan]); */
+/* #endif */
+/* 	} */
+/*       } */
+/*     } */
 
-  /*trb3*/
-  ibit=3;
-  bit=ft & (1<<ibit);  
-  if (bit) {
-    putout("0100000000000000",imod);  
-    putout("0110000000000000",imod); 
-    putout("0100000000000000",imod);  
-  } else {
-    putout("0000000000000000",imod);  
-    putout("0010000000000000",imod);
-    putout("0000000000000000",imod);  
-  }
+/*   } */
+/*   /\* remember to clear counters before programming!!!*\/ */
+/*   if (ft>63 || ft<0) { */
+/*     fprintf(stdout,"Fine Threshold is %d  while should be between 0 and 63!",ft); */
+/*     return 1; */
+/*   } */
+/*   /\*cal_enable*\/ */
+/*   if (cae) { */
+/*     putout("0100000000000000",imod);   */
+/*     putout("0110000000000000",imod);  */
+/*   } else { */
+/*     putout("0000000000000000",imod);   */
+/*     putout("0010000000000000",imod);  */
+/*   } */
+/*   /\*n_an_enable*\/ */
+/*   if (ae) { */
+/*     putout("0000000000000000",imod);   */
+/*     putout("0010000000000000",imod); */
+/*     putout("0000000000000000",imod);    */
+/*   } else { */
+/*     putout("0100000000000000",imod);   */
+/*     putout("0110000000000000",imod);  */
+/*     putout("0100000000000000",imod);   */
+/*   } */
+/*   /\*trb5*\/ */
+/*   ibit=5; */
+/*   bit=ft & (1<<ibit);   */
+/*   if (bit) { */
+/*     putout("0100000000000000",imod);   */
+/*     putout("0110000000000000",imod); */
+/*     putout("0100000000000000",imod);   */
+/*   } else { */
+/*     putout("0000000000000000",imod);   */
+/*     putout("0010000000000000",imod);  */
+/*     putout("0000000000000000",imod);   */
+/*   } */
 
-  /*trb2*/
-  ibit=2;
-  bit=ft & (1<<ibit);  
-  if (bit) {
-    putout("0100000000000000",imod);  
-    putout("0110000000000000",imod);
-    putout("0100000000000000",imod);   
-  } else {
-    putout("0000000000000000",imod);  
-    putout("0010000000000000",imod); 
-    putout("0000000000000000",imod);  
-  }
+/*   /\*trb3*\/ */
+/*   ibit=3; */
+/*   bit=ft & (1<<ibit);   */
+/*   if (bit) { */
+/*     putout("0100000000000000",imod);   */
+/*     putout("0110000000000000",imod);  */
+/*     putout("0100000000000000",imod);   */
+/*   } else { */
+/*     putout("0000000000000000",imod);   */
+/*     putout("0010000000000000",imod); */
+/*     putout("0000000000000000",imod);   */
+/*   } */
 
-  /*trb1*/
-  ibit=1;
-  bit=ft & (1<<ibit);  
-  if (bit) {
-    putout("0100000000000000",imod);  
-    putout("0110000000000000",imod); 
-    putout("0100000000000000",imod);  
-  } else {
-    putout("0000000000000000",imod);  
-    putout("0010000000000000",imod); 
-    putout("0000000000000000",imod);  
-  }
+/*   /\*trb2*\/ */
+/*   ibit=2; */
+/*   bit=ft & (1<<ibit);   */
+/*   if (bit) { */
+/*     putout("0100000000000000",imod);   */
+/*     putout("0110000000000000",imod); */
+/*     putout("0100000000000000",imod);    */
+/*   } else { */
+/*     putout("0000000000000000",imod);   */
+/*     putout("0010000000000000",imod);  */
+/*     putout("0000000000000000",imod);   */
+/*   } */
 
-  /*trb0*/
-  ibit=0;
-  bit=ft & (1<<ibit);  
-  if (bit) {
-    putout("0100000000000000",imod);  
-    putout("0110000000000000",imod); 
-    putout("0100000000000000",imod); 
-  } else {
-    putout("0000000000000000",imod);  
-    putout("0010000000000000",imod); 
-    putout("0000000000000000",imod);  
-  }
+/*   /\*trb1*\/ */
+/*   ibit=1; */
+/*   bit=ft & (1<<ibit);   */
+/*   if (bit) { */
+/*     putout("0100000000000000",imod);   */
+/*     putout("0110000000000000",imod);  */
+/*     putout("0100000000000000",imod);   */
+/*   } else { */
+/*     putout("0000000000000000",imod);   */
+/*     putout("0010000000000000",imod);  */
+/*     putout("0000000000000000",imod);   */
+/*   } */
 
-  /*n_comp_enable*/
-  if (coe) {
-    putout("0000000000000000",imod);  
-    putout("0010000000000000",imod); 
-    putout("0000000000000000",imod); 
-  } else {
-    putout("0100000000000000",imod);  
-    putout("0110000000000000",imod); 
-    putout("0100000000000000",imod);  
-  }
+/*   /\*trb0*\/ */
+/*   ibit=0; */
+/*   bit=ft & (1<<ibit);   */
+/*   if (bit) { */
+/*     putout("0100000000000000",imod);   */
+/*     putout("0110000000000000",imod);  */
+/*     putout("0100000000000000",imod);  */
+/*   } else { */
+/*     putout("0000000000000000",imod);   */
+/*     putout("0010000000000000",imod);  */
+/*     putout("0000000000000000",imod);   */
+/*   } */
+
+/*   /\*n_comp_enable*\/ */
+/*   if (coe) { */
+/*     putout("0000000000000000",imod);   */
+/*     putout("0010000000000000",imod);  */
+/*     putout("0000000000000000",imod);  */
+/*   } else { */
+/*     putout("0100000000000000",imod);   */
+/*     putout("0110000000000000",imod);  */
+/*     putout("0100000000000000",imod);   */
+/*   } */
 
  
-  /*trb4*/
-  ibit=4;
-  bit=ft & (1<<ibit);  
-  if (bit) {
-    putout("0100000000000000",imod);  
-    putout("0110000000000000",imod);
-    putout("0100000000000000",imod);  
-  } else {
-    putout("0000000000000000",imod);  
-    putout("0010000000000000",imod);
-    putout("0000000000000000",imod);   
-  }
+/*   /\*trb4*\/ */
+/*   ibit=4; */
+/*   bit=ft & (1<<ibit);   */
+/*   if (bit) { */
+/*     putout("0100000000000000",imod);   */
+/*     putout("0110000000000000",imod); */
+/*     putout("0100000000000000",imod);   */
+/*   } else { */
+/*     putout("0000000000000000",imod);   */
+/*     putout("0010000000000000",imod); */
+/*     putout("0000000000000000",imod);    */
+/*   } */
   
-  /*out_comp_enable*/
-  if (ocoe) {
-    putout("0100000000000000",imod);  
-    putout("0110000000000000",imod); 
-    putout("0100000000000000",imod);  
-  } else {
-    putout("0000000000000000",imod);  
-    putout("0010000000000000",imod); 
-    putout("0000000000000000",imod);  
-  }
+/*   /\*out_comp_enable*\/ */
+/*   if (ocoe) { */
+/*     putout("0100000000000000",imod);   */
+/*     putout("0110000000000000",imod);  */
+/*     putout("0100000000000000",imod);   */
+/*   } else { */
+/*     putout("0000000000000000",imod);   */
+/*     putout("0010000000000000",imod);  */
+/*     putout("0000000000000000",imod);   */
+/*   } */
   
   
-  for (ibit=0; ibit<24; ibit++) {
-    bit=counts & (1<<ibit);  
-    if (bit) {
-      putout("0100000000000000",imod);  
-      putout("0110000000000000",imod); 
-      putout("0100000000000000",imod);  
-    } else {
-      putout("0000000000000000",imod);  
-      putout("0010000000000000",imod);
-      putout("0000000000000000",imod);  
-    }
-  }
-  counterClear(imod);
-  counterSet(imod);
-  putout("0000000000000000",imod);
-  for (i=0; i<10; i++) 
-    putout("0000100000000000",imod);
-  putout("0000000000000000",imod);
+/*   for (ibit=0; ibit<24; ibit++) { */
+/*     bit=counts & (1<<ibit);   */
+/*     if (bit) { */
+/*       putout("0100000000000000",imod);   */
+/*       putout("0110000000000000",imod);  */
+/*       putout("0100000000000000",imod);   */
+/*     } else { */
+/*       putout("0000000000000000",imod);   */
+/*       putout("0010000000000000",imod); */
+/*       putout("0000000000000000",imod);   */
+/*     } */
+/*   } */
+/*   counterClear(imod); */
+/*   counterSet(imod); */
+/*   putout("0000000000000000",imod); */
+/*   for (i=0; i<10; i++)  */
+/*     putout("0000100000000000",imod); */
+/*   putout("0000000000000000",imod); */
 
-  //getDynamicRange();
+/*   //getDynamicRange(); */
 
 
   return 0;
@@ -1221,53 +1215,53 @@ int initChannel(int ft,int cae, int ae, int coe, int ocoe, int counts, int imod)
 
 
 int initChipbyNumber(sls_detector_chip myChip){
-  int imod, ichip;
-  imod=myChip.module;
-  ichip=myChip.chip;
-  int obe=(myChip.reg)&1;
-  int ow=(myChip.reg)>>1;
-  int nchan, ichan;
-  int ft,  cae, ae, coe, ocoe, counts, chanreg;
+  /* int imod, ichip; */
+  /* imod=myChip.module; */
+  /* ichip=myChip.chip; */
+  /* int obe=(myChip.reg)&1; */
+  /* int ow=(myChip.reg)>>1; */
+  /* int nchan, ichan; */
+  /* int ft,  cae, ae, coe, ocoe, counts, chanreg; */
  
   
   
-  nchan=myChip.nchan;
-  if (ichip<0)
-    setCSregister(imod);
-  else
-    selChip(ichip,imod);
+  /* nchan=myChip.nchan; */
+  /* if (ichip<0) */
+  /*   setCSregister(imod); */
+  /* else */
+  /*   selChip(ichip,imod); */
 
-  clearSSregister(imod);
-  for (ichan=0; ichan<nchan; ichan++) {
-    chanreg=(myChip.chanregs)[ichan];
-    ft=chanreg&((int)TRIM_DR);
-    cae=(chanreg>>(NTRIMBITS+1))&1;
-    ae=(chanreg>>(NTRIMBITS+2))&1;
-    coe=((chanreg)>>(NTRIMBITS+3))&1;
-    ocoe=((chanreg)>>(NTRIMBITS+4))&1;
-    counts=((chanreg)>>(NTRIMBITS+5));
-    nextStrip(imod); 
-    initChannel(ft,cae,ae, coe, ocoe, counts,imod);
-  }
-  initChip(obe,ow,imod);
+  /* clearSSregister(imod); */
+  /* for (ichan=0; ichan<nchan; ichan++) { */
+  /*   chanreg=(myChip.chanregs)[ichan]; */
+  /*   ft=chanreg&((int)TRIM_DR); */
+  /*   cae=(chanreg>>(NTRIMBITS+1))&1; */
+  /*   ae=(chanreg>>(NTRIMBITS+2))&1; */
+  /*   coe=((chanreg)>>(NTRIMBITS+3))&1; */
+  /*   ocoe=((chanreg)>>(NTRIMBITS+4))&1; */
+  /*   counts=((chanreg)>>(NTRIMBITS+5)); */
+  /*   nextStrip(imod);  */
+  /*   initChannel(ft,cae,ae, coe, ocoe, counts,imod); */
+  /* } */
+  /* initChip(obe,ow,imod); */
   return myChip.reg;
 
 }
 
 int getChipbyNumber(sls_detector_chip* myChip){
-  int imod, ichip;
-  imod=myChip->module;
-  ichip=myChip->chip;
+  /* int imod, ichip; */
+  /* imod=myChip->module; */
+  /* ichip=myChip->chip; */
   
-  if (detectorChips) {
-    if (imod<nModX)
-      if (ichip<(detectorModules+imod)->nchip) {
-	myChip->reg=detectorChips[ichip+imod*N_CHIP];
-	myChip->nchan=N_CHAN;
-	myChip->chanregs=detectorChans+imod*N_CHAN*N_CHIP+ichip*N_CHIP;
-	return OK;
-      }
-  }
+  /* if (detectorChips) { */
+  /*   if (imod<nModX) */
+  /*     if (ichip<(detectorModules+imod)->nchip) { */
+  /* 	myChip->reg=detectorChips[ichip+imod*N_CHIP]; */
+  /* 	myChip->nchan=N_CHAN; */
+  /* 	myChip->chanregs=detectorChans+imod*N_CHAN*N_CHIP+ichip*N_CHIP; */
+  /* 	return OK; */
+  /*     } */
+  /* } */
   return FAIL;
 
 }
@@ -1275,9 +1269,9 @@ int getChipbyNumber(sls_detector_chip* myChip){
 
 
 int initChip(int obe, int ow,int imod){
-  int i;
-  int im, ichip;
-  int chipmi, chipma, modmi, modma;
+  /* int i; */
+  /* int im, ichip; */
+  /* int chipmi, chipma, modmi, modma; */
   /* switch (ow) {
   case 0:;
   case 1:
@@ -1301,208 +1295,208 @@ int initChip(int obe, int ow,int imod){
   }
   */
 
-#ifdef DEBUGOUT
-  printf("Initializing chip\n");
-#endif
-  putout("0000000000000000",imod);
-#ifdef DEBUGOUT
-  printf("Output mode= %d\n", ow);
-#endif
+/* #ifdef DEBUGOUT */
+/*   printf("Initializing chip\n"); */
+/* #endif */
+/*   putout("0000000000000000",imod); */
+/* #ifdef DEBUGOUT */
+/*   printf("Output mode= %d\n", ow); */
+/* #endif */
 
-  /* clearing shift in register */
-  for (i=0; i<10; i++) 
-    putout("0000100000000000",imod);
-  putout("0000000000000000",imod);
+/*   /\* clearing shift in register *\/ */
+/*   for (i=0; i<10; i++)  */
+/*     putout("0000100000000000",imod); */
+/*   putout("0000000000000000",imod); */
 
-  if (ow>0) {
-    putout("0100000000000000",imod);  
-    putout("0110000000000000",imod); 
-    putout("0100000000000000",imod);
-    for (i=0; i<(OUTMUX_OFFSET-1); i++) {
-      putout("0000000000000000",imod);  
-      putout("0010000000000000",imod); 
-      putout("0000000000000000",imod); 
-    }
-    if (ow>1) {
-      putout("0000000000000000",imod);  
-      putout("0010000000000000",imod);
-      putout("0000000000000000",imod); 
-    }
-    if (ow>2) {
-      putout("0000000000000000",imod);  
-      putout("0010000000000000",imod);
-      putout("0000000000000000",imod);
-    }
-    if (ow>3) {
-      putout("0000000000000000",imod);  
-      putout("0010000000000000",imod); 
-      putout("0000000000000000",imod);
-    }
-    if (ow>4) {
-      putout("0000000000000000",imod);  
-      putout("0010000000000000",imod); 
-      putout("0000000000000000",imod);
-    }
-  }  
-#ifdef DEBUGOUT
-  printf("Output buffer  enable= %d\n", obe);
-#endif
-  if (obe) {
-    putout("0100000000000000",imod);  
-    putout("0110000000000000",imod); 
-    putout("0100000000000000",imod);  
-  } else {
-    putout("0000000000000000",imod);  
-    putout("0010000000000000",imod); 
-    putout("0000000000000000",imod);  
-  }    
-  /*}*/
-  putout("0000000000000000",imod);  
-
-
+/*   if (ow>0) { */
+/*     putout("0100000000000000",imod);   */
+/*     putout("0110000000000000",imod);  */
+/*     putout("0100000000000000",imod); */
+/*     for (i=0; i<(OUTMUX_OFFSET-1); i++) { */
+/*       putout("0000000000000000",imod);   */
+/*       putout("0010000000000000",imod);  */
+/*       putout("0000000000000000",imod);  */
+/*     } */
+/*     if (ow>1) { */
+/*       putout("0000000000000000",imod);   */
+/*       putout("0010000000000000",imod); */
+/*       putout("0000000000000000",imod);  */
+/*     } */
+/*     if (ow>2) { */
+/*       putout("0000000000000000",imod);   */
+/*       putout("0010000000000000",imod); */
+/*       putout("0000000000000000",imod); */
+/*     } */
+/*     if (ow>3) { */
+/*       putout("0000000000000000",imod);   */
+/*       putout("0010000000000000",imod);  */
+/*       putout("0000000000000000",imod); */
+/*     } */
+/*     if (ow>4) { */
+/*       putout("0000000000000000",imod);   */
+/*       putout("0010000000000000",imod);  */
+/*       putout("0000000000000000",imod); */
+/*     } */
+/*   }   */
+/* #ifdef DEBUGOUT */
+/*   printf("Output buffer  enable= %d\n", obe); */
+/* #endif */
+/*   if (obe) { */
+/*     putout("0100000000000000",imod);   */
+/*     putout("0110000000000000",imod);  */
+/*     putout("0100000000000000",imod);   */
+/*   } else { */
+/*     putout("0000000000000000",imod);   */
+/*     putout("0010000000000000",imod);  */
+/*     putout("0000000000000000",imod);   */
+/*   }     */
+/*   /\*}*\/ */
+/*   putout("0000000000000000",imod);   */
 
 
 
-  sMod=imod;
-  if (imod==ALLMOD)
-    sMod=allSelected;
-
- 
-  if (sChip==allSelected) {
-    chipmi=0;
-    chipma=N_CHIP;
-  } else if (sChip==noneSelected || sChip>N_CHIP || sChip<0) {
-    chipmi=0;
-    chipma=-1;
-  } else {
-    chipmi=sChip;
-    chipma=sChip+1;
-  }
- 
-  
-  if (sMod==allSelected) {
-    modmi=0;
-    modma=nModX;//getNModBoard();
-  } else if (sMod==noneSelected || sMod>nModX || sMod<0) {//(sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
-    modmi=0;
-    modma=-1;
-  } else {
-    modmi=sMod;
-    modma=sMod+1;
-  }
- 
-  if (detectorChips) {
-    for (im=modmi; im<modma; im++) {
-      for (ichip=chipmi; ichip<chipma; ichip++) {
-	//	printf("imod %d ichip %d\n",im,ichip);
-	detectorChips[im*N_CHIP+ichip]=obe | (ow<<1);
-#ifdef VERBOSE
-	//printf("imod=%d ichip=%d reg=%d (%x)\n",im,ichip,detectorChips[im*N_CHIP+ichip],detectorChips+im*N_CHIP+ichip);
-#endif
-      }
-    }
-  }
-  getDynamicRange();
-  return 0;
-}
 
 
-int initChipWithProbes(int obe, int ow,int nprobes, int imod){
-  int i;
-  int im, ichip;
-  int chipmi, chipma, modmi, modma;
-
-  int64_t regval=0, dum;
-  int omask;
-  switch (ow) {
-  case 2:
-    omask=2;
-    break;
-  case 3:
-    omask=4;
-    break;
-  case 4:
-    omask=8;
-    break;
-  case 5:
-    omask=16;
-    break;
-  default:
-    omask=0;//1;
-    break;
-  }
-
-#ifdef VERBOSE 
- // printf("\n \n \n",regval);
-  printf("initChip ow=%d omask=%d probes=%d\n",ow, omask,nprobes);
-#endif
-  regval|=(omask<<OUTMUX_OFFSET);
-  regval|=(nprobes<<PROBES_OFFSET);
-  regval|=(obe<<OUTBUF_OFFSET);
-#ifdef VERBOSE
-  printf("initChip : shift in will be %08x\n",(unsigned int)(regval));
-#endif
-  /* clearing shift in register */
-
-  putout("0000000000000000",imod);
-  for (i=0; i<10; i++) 
-    putout("0000100000000000",imod);
-  putout("0000000000000000",imod);
-
-  for (i=0; i<35; i++) {
-    dum= (1<<(34-i));
-    if (regval & dum) {
-      putout("0100000000000000",imod);  
-      putout("0110000000000000",imod); 
-      putout("0100000000000000",imod);
-    } else {
-      putout("0000000000000000",imod);  
-      putout("0010000000000000",imod); 
-      putout("0000000000000000",imod); 
-    }
-  }
-  putout("0000000000000000",imod);  
-
-  sMod=imod;
-  if (imod==ALLMOD)
-    sMod=allSelected;
+/*   sMod=imod; */
+/*   if (imod==ALLMOD) */
+/*     sMod=allSelected; */
 
  
-  if (sChip==allSelected) {
-    chipmi=0;
-    chipma=N_CHIP;
-  } else if (sChip==noneSelected || sChip>N_CHIP || sChip<0) {
-    chipmi=0;
-    chipma=-1;
-  } else {
-    chipmi=sChip;
-    chipma=sChip+1;
-  }
+/*   if (sChip==allSelected) { */
+/*     chipmi=0; */
+/*     chipma=N_CHIP; */
+/*   } else if (sChip==noneSelected || sChip>N_CHIP || sChip<0) { */
+/*     chipmi=0; */
+/*     chipma=-1; */
+/*   } else { */
+/*     chipmi=sChip; */
+/*     chipma=sChip+1; */
+/*   } */
  
   
-  if (sMod==allSelected) {
-    modmi=0;
-    modma=nModX;//getNModBoard();
-  } else if (sMod==noneSelected || sMod>nModX || sMod<0) {//(sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
-    modmi=0;
-    modma=-1;
-  } else {
-    modmi=sMod;
-    modma=sMod+1;
-  }
+/*   if (sMod==allSelected) { */
+/*     modmi=0; */
+/*     modma=nModX;//getNModBoard(); */
+/*   } else if (sMod==noneSelected || sMod>nModX || sMod<0) {//(sMod==noneSelected || sMod>getNModBoard() || sMod<0) { */
+/*     modmi=0; */
+/*     modma=-1; */
+/*   } else { */
+/*     modmi=sMod; */
+/*     modma=sMod+1; */
+/*   } */
  
-  if (detectorChips) {
-    for (im=modmi; im<modma; im++) {
-      for (ichip=chipmi; ichip<chipma; ichip++) {
-	//	printf("imod %d ichip %d\n",im,ichip);
-	detectorChips[im*N_CHIP+ichip]=obe | (ow<<1);
-#ifdef VERBOSE
-	//printf("imod=%d ichip=%d reg=%d (%x)\n",im,ichip,detectorChips[im*N_CHIP+ichip],detectorChips+im*N_CHIP+ichip);
-#endif
-      }
-    }
-  }
-  getDynamicRange();
+/*   if (detectorChips) { */
+/*     for (im=modmi; im<modma; im++) { */
+/*       for (ichip=chipmi; ichip<chipma; ichip++) { */
+/* 	//	printf("imod %d ichip %d\n",im,ichip); */
+/* 	detectorChips[im*N_CHIP+ichip]=obe | (ow<<1); */
+/* #ifdef VERBOSE */
+/* 	//printf("imod=%d ichip=%d reg=%d (%x)\n",im,ichip,detectorChips[im*N_CHIP+ichip],detectorChips+im*N_CHIP+ichip); */
+/* #endif */
+/*       } */
+/*     } */
+/*   } */
+/*   getDynamicRange(); */
+   return 0; 
+ } 
+
+
+ int initChipWithProbes(int obe, int ow,int nprobes, int imod){ 
+/*   int i; */
+/*   int im, ichip; */
+/*   int chipmi, chipma, modmi, modma; */
+
+/*   int64_t regval=0, dum; */
+/*   int omask; */
+/*   switch (ow) { */
+/*   case 2: */
+/*     omask=2; */
+/*     break; */
+/*   case 3: */
+/*     omask=4; */
+/*     break; */
+/*   case 4: */
+/*     omask=8; */
+/*     break; */
+/*   case 5: */
+/*     omask=16; */
+/*     break; */
+/*   default: */
+/*     omask=0;//1; */
+/*     break; */
+/*   } */
+
+/* #ifdef VERBOSE  */
+/*  // printf("\n \n \n",regval); */
+/*   printf("initChip ow=%d omask=%d probes=%d\n",ow, omask,nprobes); */
+/* #endif */
+/*   regval|=(omask<<OUTMUX_OFFSET); */
+/*   regval|=(nprobes<<PROBES_OFFSET); */
+/*   regval|=(obe<<OUTBUF_OFFSET); */
+/* #ifdef VERBOSE */
+/*   printf("initChip : shift in will be %08x\n",(unsigned int)(regval)); */
+/* #endif */
+/*   /\* clearing shift in register *\/ */
+
+/*   putout("0000000000000000",imod); */
+/*   for (i=0; i<10; i++)  */
+/*     putout("0000100000000000",imod); */
+/*   putout("0000000000000000",imod); */
+
+/*   for (i=0; i<35; i++) { */
+/*     dum= (1<<(34-i)); */
+/*     if (regval & dum) { */
+/*       putout("0100000000000000",imod);   */
+/*       putout("0110000000000000",imod);  */
+/*       putout("0100000000000000",imod); */
+/*     } else { */
+/*       putout("0000000000000000",imod);   */
+/*       putout("0010000000000000",imod);  */
+/*       putout("0000000000000000",imod);  */
+/*     } */
+/*   } */
+/*   putout("0000000000000000",imod);   */
+
+/*   sMod=imod; */
+/*   if (imod==ALLMOD) */
+/*     sMod=allSelected; */
+
+ 
+/*   if (sChip==allSelected) { */
+/*     chipmi=0; */
+/*     chipma=N_CHIP; */
+/*   } else if (sChip==noneSelected || sChip>N_CHIP || sChip<0) { */
+/*     chipmi=0; */
+/*     chipma=-1; */
+/*   } else { */
+/*     chipmi=sChip; */
+/*     chipma=sChip+1; */
+/*   } */
+ 
+  
+/*   if (sMod==allSelected) { */
+/*     modmi=0; */
+/*     modma=nModX;//getNModBoard(); */
+/*   } else if (sMod==noneSelected || sMod>nModX || sMod<0) {//(sMod==noneSelected || sMod>getNModBoard() || sMod<0) { */
+/*     modmi=0; */
+/*     modma=-1; */
+/*   } else { */
+/*     modmi=sMod; */
+/*     modma=sMod+1; */
+/*   } */
+ 
+/*   if (detectorChips) { */
+/*     for (im=modmi; im<modma; im++) { */
+/*       for (ichip=chipmi; ichip<chipma; ichip++) { */
+/* 	//	printf("imod %d ichip %d\n",im,ichip); */
+/* 	detectorChips[im*N_CHIP+ichip]=obe | (ow<<1); */
+/* #ifdef VERBOSE */
+/* 	//printf("imod=%d ichip=%d reg=%d (%x)\n",im,ichip,detectorChips[im*N_CHIP+ichip],detectorChips+im*N_CHIP+ichip); */
+/* #endif */
+/*       } */
+/*     } */
+/*   } */
+/*   getDynamicRange(); */
 
   return 0;
 }

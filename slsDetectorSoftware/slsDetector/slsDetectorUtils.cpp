@@ -151,7 +151,7 @@ int  slsDetectorUtils::acquire(int delflag){
   }
 
   if(receiver){
-	  pthread_mutex_lock(&mg);
+    pthread_mutex_lock(&mg); //cout << "lock"<< endl;
 	  if(getReceiverStatus()!=IDLE)
 		  stopReceiver();
 	  //multi detectors shouldnt have different receiver read frequencies enabled/disabled
@@ -161,7 +161,7 @@ int  slsDetectorUtils::acquire(int delflag){
 	  	}
 	  if(setReceiverOnline()==OFFLINE_FLAG)
 		  *stoppedFlag=1;
-	  pthread_mutex_unlock(&mg);
+	  pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
   }
 
 
@@ -173,9 +173,9 @@ int  slsDetectorUtils::acquire(int delflag){
 
   //resets frames caught in receiver
   if(receiver){
-	  pthread_mutex_lock(&mg);
-	  resetFramesCaught();
-	  pthread_mutex_unlock(&mg);
+    pthread_mutex_lock(&mg); //cout << "lock"<< endl;
+    resetFramesCaught();
+    pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
   }
 
 
@@ -269,7 +269,7 @@ int  slsDetectorUtils::acquire(int delflag){
 	    	aclog->addStep(getCurrentPosition(), getCurrentFileName());
 
 	    if (eclog)
-			eclog->addStep(setDAC(-1,THRESHOLD,0), getCurrentFileName());
+		eclog->addStep(setDAC(-1,THRESHOLD,0), getCurrentFileName());
 
 
 	    if (*correctionMask&(1<< I0_NORMALIZATION)) {
@@ -280,7 +280,7 @@ int  slsDetectorUtils::acquire(int delflag){
 	    setCurrentFrameIndex(0);
 
 	    if(receiver)
-	    	pthread_mutex_lock(&mg);
+	      pthread_mutex_lock(&mg); //cout << "lock"<< endl;
 	    if (multiframe>1)
 	      setFrameIndex(0);
 	    else
@@ -288,30 +288,33 @@ int  slsDetectorUtils::acquire(int delflag){
 
 
 	    if(receiver){
-	    	pthread_mutex_unlock(&mg);
+	      pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
 	    	pthread_mutex_lock(&mp);
 	    	createFileName();
 	    	pthread_mutex_unlock(&mp);
 	    	//send receiver file name
-	    	pthread_mutex_lock(&mg);
+	    	pthread_mutex_lock(&mg); //cout << "lock"<< endl;
 	    	setFileName(fileIO::getFileName());
+
 	    	//start receiver
 	    	if(startReceiver() == FAIL) {
+		  cout << "Start receiver failed " << endl;
 	    		stopReceiver();
 	    		*stoppedFlag=1;
-	    		pthread_mutex_unlock(&mg);
+	    		pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
 	    		break;
 	    	}
-	    	pthread_mutex_unlock(&mg);
+		  cout << "Receiver started " << endl;
+		  pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
 	    }
-#ifdef VERBOSE
+	    #ifdef VERBOSE
 	    cout << "Acquiring " << endl;
-#endif
+	   #endif
 	    startAndReadAll();
-#ifdef VERBOSE
-	    cout << "finished " << endl;
+	    cout << "detector finished " << endl;
+	   #ifdef VERBOSE
 	    cout << "returned! " << endl;
-#endif
+	   #endif
        
 
 
@@ -341,17 +344,20 @@ int  slsDetectorUtils::acquire(int delflag){
 	  } else
 	    break;
 
-
-	  pthread_mutex_lock(&mg);
+	  while (dataQueueSize()) usleep(100000);
+	  // cout << "mglock " << endl;;
+	  pthread_mutex_lock(&mg); //cout << "lock"<< endl;
+	  // cout << "done " << endl;;
 	  //offline
 	  if(setReceiverOnline()==OFFLINE_FLAG){
-		  if ((getDetectorsType()==GOTTHARD) || (getDetectorsType()==MOENCH) || (getDetectorsType()==JUNGFRAU) ){
+		  if ((getDetectorsType()==GOTTHARD) || (getDetectorsType()==MOENCH) || (getDetectorsType()==JUNGFRAU)|| (getDetectorsType()==JUNGFRAUCTB) ){
 			  if((*correctionMask)&(1<<WRITE_FILE))
 				  closeDataFile();
 		  }
 	  }
 	  //online
 	  else{
+
 		  if(setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG){
 			  stopAcquisition();
 			  stopReceiver();
@@ -359,9 +365,9 @@ int  slsDetectorUtils::acquire(int delflag){
 			  break;
 		  }
 		  stopReceiver();
-		 // cout<<"***********receiver stopped"<<endl;
+		  //	  cout<<"***********receiver stopped"<<endl;
 	  }
-	  pthread_mutex_unlock(&mg);
+	  pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
 
 
 
@@ -439,9 +445,9 @@ int  slsDetectorUtils::acquire(int delflag){
  #endif
     if(*correctionMask&(1<<WRITE_FILE))
       IncrementFileIndex();
-    pthread_mutex_lock(&mg);
+    pthread_mutex_lock(&mg); //cout << "lock"<< endl;
     setFileIndex(fileIO::getFileIndex());
-    pthread_mutex_unlock(&mg);
+    pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
 
       break;
     }
@@ -452,14 +458,14 @@ int  slsDetectorUtils::acquire(int delflag){
 #endif
   if(*correctionMask&(1<<WRITE_FILE))
     IncrementFileIndex();
-  pthread_mutex_lock(&mg);
+  pthread_mutex_lock(&mg); //cout << "lock"<< endl;
   setFileIndex(fileIO::getFileIndex());
-  pthread_mutex_unlock(&mg);
+  pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
 
     if (measurement_finished){
-    	  pthread_mutex_lock(&mg);
+      pthread_mutex_lock(&mg); //cout << "lock"<< endl;
     	  measurement_finished(im,*fileIndex,measFinished_p);
-    	  pthread_mutex_unlock(&mg);
+    	  pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
     }
 
     if (*stoppedFlag) {

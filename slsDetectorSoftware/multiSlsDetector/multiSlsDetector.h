@@ -838,7 +838,7 @@ class multiSlsDetector  : public slsDetectorUtils {
       \param datain data from the detector
       \returns pointer to a double array with a data per channel
   */
-  double* decodeData(int *datain, double *fdata=NULL);
+  double* decodeData(int *datain, int &nn, double *fdata=NULL);
 
   
   
@@ -1242,8 +1242,7 @@ class multiSlsDetector  : public slsDetectorUtils {
  /** Reads frames from receiver through a constant socket
  */
  void readFrameFromReceiver();
-
-  /** Locks/Unlocks the connection to the receiver
+   /** Locks/Unlocks the connection to the receiver
       /param lock sets (1), usets (0), gets (-1) the lock
       /returns lock status of the receiver
   */

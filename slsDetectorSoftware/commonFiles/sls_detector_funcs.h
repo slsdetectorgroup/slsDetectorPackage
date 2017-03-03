@@ -108,8 +108,12 @@ enum {
 
   F_PROGRAM_FPGA,			/**< program FPGA */
   F_RESET_FPGA,				/**< reset FPGA */
-  F_POWER_CHIP				/**< power chip */
+  F_POWER_CHIP,				/**< power chip */
   /* Always append functions hereafter!!! */
+
+  /* Always append functions before!!! */
+  TOO_MANY_FUNCTIONS_DEFINED=128 //you should get a compilation error if there are already so many functions defined. It conflicts with sls_receiver_funcs.h
+
 
 };
 

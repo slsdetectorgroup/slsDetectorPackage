@@ -791,6 +791,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="v_limit"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
   /* r/w timers */
 
   descrToFuncMap[i].m_pFuncName="temp_adc"; //
@@ -878,6 +882,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="samples"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
+  i++;
+
   /* read only timers */
 
   descrToFuncMap[i].m_pFuncName="exptimel"; //
@@ -960,6 +968,20 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 
   descrToFuncMap[i].m_pFuncName="adcpipeline"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
+  i++;
+
+
+  descrToFuncMap[i].m_pFuncName="dbitclk"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="dbitphase"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
+  i++;
+
+
+  descrToFuncMap[i].m_pFuncName="dbitpipeline"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
   i++;
 
@@ -1123,6 +1145,11 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
  
   descrToFuncMap[i].m_pFuncName="patwaittime2"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
+  i++;
+
+ 
+  descrToFuncMap[i].m_pFuncName="dut_clk"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
   i++;
 
@@ -3830,6 +3857,8 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
 	  dac=V_POWER_IO;
   else if (cmd== "v_chip")
 	  dac=V_POWER_CHIP;
+  else if (cmd== "v_limit")
+	  dac=V_LIMIT;
   else
     return string("cannot decode dac ")+cmd;
   
@@ -3863,7 +3892,7 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
   sprintf(answer,"%f",myDet->setDAC(-1,dac,mode));
 #endif
   if(mode)
-	  strcat(answer,"mV");
+	  strcat(answer," mV");
   return string(answer);
 
 }
@@ -4021,7 +4050,7 @@ string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
     return string("cannot set ")+cmd;
     
   if (sscanf(args[0],"adc:%d",&idac)==1) {
-    printf("chiptestboard!\n");
+    //  printf("chiptestboard!\n");
     adc=(dacIndex)(idac+1000);
   } else if (cmd=="temp_adc")
     adc=TEMPERATURE_ADC;
@@ -4147,6 +4176,8 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
     index=PROBES_NUMBER;
   else if (cmd=="measurements")
     index=MEASUREMENTS_NUMBER;
+  else if (cmd=="samples")
+    index=SAMPLES_JCTB;
   else
     return string("could not decode timer ")+cmd;
 
@@ -4200,6 +4231,7 @@ string slsDetectorCommand::helpTimer(int narg, char *args[], int action) {
     os << "frames t \t sets the number of frames per cycle (e.g. after each trigger)" << std::endl;
     os << "cycles t \t sets the number of cycles (e.g. number of triggers)" << std::endl;
     os << "probes t \t sets the number of probes to accumulate (max 3! cycles should be set to 1, frames to the number of pump-probe events)" << std::endl;
+    os << "samples t \t sets the number of samples expected from the jctb" << std::endl;
     os << std::endl;
 
 
@@ -4213,6 +4245,8 @@ string slsDetectorCommand::helpTimer(int narg, char *args[], int action) {
     os << "frames  \t gets the number of frames per cycle (e.g. after each trigger)" << std::endl;
     os << "cycles  \t gets the number of cycles (e.g. number of triggers)" << std::endl;
     os << "probes  \t gets the number of probes to accumulate" << std::endl;
+       os << "samples t \t gets the number of samples expected from the jctb" << std::endl;
+ 
     os << std::endl;
 
   } 
@@ -4348,9 +4382,16 @@ string slsDetectorCommand::cmdSpeed(int narg, char *args[], int action) {
     index=ADC_CLOCK;
   else if (cmd=="adcphase") {
     index=ADC_PHASE;
-    t=100000;
+   t=100000;
   }  else if (cmd=="adcpipeline")
     index=ADC_PIPELINE;
+  else if (cmd=="dbitclk")
+    index=DBIT_CLOCK;
+  else if (cmd=="dbitphase") {
+    index=DBIT_PHASE;
+    t=100000;
+  }  else if (cmd=="dbitpipeline")
+    index=DBIT_PIPELINE;
   else
     return string("could not decode speed variable ")+cmd;
 
@@ -4425,50 +4466,59 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action) {
 
 		readOutFlags flag=GET_READOUT_FLAGS;
 
-		if (action==PUT_ACTION) {
-			string sval=string(args[1]);
-			if (sval=="none")
-				flag=NORMAL_READOUT;
-			else if (sval=="storeinram")
-				flag=STORE_IN_RAM;
-			else if (sval=="tot")
-				flag=TOT_MODE;
-			else if (sval=="continous")
-				flag=CONTINOUS_RO;
-			else if (sval=="parallel")
-				flag=PARALLEL;
-			else if (sval=="nonparallel")
-				flag=NONPARALLEL;
-			else if (sval=="safe")
-				flag=SAFE;
-			else
-				return string("could not scan flag ")+string(args[1]);
-		}
 
-
+    if (action==PUT_ACTION) {
+      string sval=string(args[1]);
+      if (sval=="none")
+	flag=NORMAL_READOUT;
+      else if (sval=="storeinram")
+	flag=STORE_IN_RAM;
+      else if (sval=="tot")
+	flag=TOT_MODE;
+      else if (sval=="continous")
+	flag=CONTINOUS_RO;
+      else if (sval=="parallel")
+	flag=PARALLEL;
+      else if (sval=="nonparallel")
+	flag=NONPARALLEL;
+      else if (sval=="safe")
+	flag=SAFE;
+      else if (sval=="digital")
+	flag=DIGITAL_ONLY;
+      else if  (sval=="analog_digital")
+	flag=ANALOG_AND_DIGITAL; 
+      else
+	return string("could not scan flag ")+string(args[1]);
+    }
+  
 		myDet->setOnline(ONLINE_FLAG);
+    retval = myDet->setReadOutFlags(flag);
 
-		retval = myDet->setReadOutFlags(flag);
+    // cout << hex << flag << " " << retval << endl;
 
-		if(retval == NORMAL_READOUT)
-			return string("none");
+    if(retval == NORMAL_READOUT)
+    	return string("none");
 
-		if(retval & STORE_IN_RAM)
-			strcat(answer,"storeinram ");
-		if(retval & TOT_MODE)
-			strcat(answer,"tot ");
-		if(retval & CONTINOUS_RO)
-			strcat(answer,"continous ");
-		if(retval & PARALLEL)
-			strcat(answer,"parallel ");
-		if(retval & NONPARALLEL)
-			strcat(answer,"nonparallel ");
-		if(retval & SAFE)
-			strcat(answer,"safe ");
-		if(strlen(answer))
-			return string(answer);
+    if(retval & STORE_IN_RAM)
+    	strcat(answer,"storeinram ");
+    if(retval & TOT_MODE)
+    	strcat(answer,"tot ");
+    if(retval & CONTINOUS_RO)
+    	strcat(answer,"continous ");
+    if(retval & PARALLEL)
+    	strcat(answer,"parallel ");
+    if(retval & NONPARALLEL)
+    	strcat(answer,"nonparallel ");
+    if(retval & SAFE)
+    	strcat(answer,"safe "); 
+    if (retval & DIGITAL_ONLY)
+      strcat(answer,"digital " );
+    if  (retval & ANALOG_AND_DIGITAL) 
+      strcat(answer,"analog_digital ");
+    if(strlen(answer))
+    	return string(answer);
 
-		return string("unknown");
+    return string("unknown");
 
 	}  else if (cmd=="extsig") {
 		externalSignalFlag flag=GET_EXTERNAL_SIGNAL_FLAG;
@@ -4487,10 +4537,8 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action) {
 
 		return myDet->externalSignalType(myDet->setExternalSignalFlags(flag,is));
 
-	}
 
-
-	else if (cmd=="programfpga") {
+	}	else if (cmd=="programfpga") {
 		if (action==GET_ACTION)
 			return string("cannot get");
 		if(strstr(args[1],".pof")==NULL)
@@ -4543,14 +4591,15 @@ string slsDetectorCommand::helpAdvanced(int narg, char *args[], int action) {
   if (action==PUT_ACTION || action==HELP_ACTION) {
 
     os << "extsig:i mode \t sets the mode of the external signal i. can be  \n \t \t \t off, \n \t \t \t gate_in_active_high, \n \t \t \t gate_in_active_low, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t ro_trigger_in_rising_edge, \n \t \t \t ro_trigger_in_falling_edge, \n \t \t \t gate_out_active_high, \n \t \t \t gate_out_active_low, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge, \n \t \t \t ro_trigger_out_rising_edge, \n \t \t \t ro_trigger_out_falling_edge" << std::endl;
-    os << "flags mode \t sets the readout flags to mode. can be none, storeinram, tot, continous, parallel, nonparallel, safe, unknown" << std::endl;
+    os << "flags mode \t sets the readout flags to mode. can be none, storeinram, tot, continous, parallel, nonparallel, safe, digital, analog_digital, unknown" << std::endl;
+
     os << "programfpga f \t programs the fpga with file f (with .pof extension)." << std::endl;
     os << "resetfpga f \t resets fpga, f can be any value" << std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
 
     os << "extsig:i \t gets the mode of the external signal i. can be  \n \t \t \t off, \n \t \t \t gate_in_active_high, \n \t \t \t gate_in_active_low, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t ro_trigger_in_rising_edge, \n \t \t \t ro_trigger_in_falling_edge, \n \t \t \t gate_out_active_high, \n \t \t \t gate_out_active_low, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge, \n \t \t \t ro_trigger_out_rising_edge, \n \t \t \t ro_trigger_out_falling_edge" << std::endl;
-    os << "flags \t gets the readout flags. can be none, storeinram, tot, continous, parallel, nonparallel, safe, unknown" << std::endl;
+    os << "flags \t gets the readout flags. can be none, storeinram, tot, continous, parallel, nonparallel, safe, digital, analog_digital, unknown" << std::endl;
 
   } 
   return os.str();
@@ -5261,7 +5310,26 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
     
    os << hex << myDet->readRegister(67) << dec; 
 
+  } else if  (cmd=="dut_clk") {
+   if (action==PUT_ACTION) {
+     
+      if (sscanf(args[1],"%x",&addr))
+      ;
+    else
+      return string("Could not scan dut_clk reg ")+string(args[1]);
+
+    
+      myDet->writeRegister(123,addr); //0x7b
+    }
+
+
+    
+   os << hex << myDet->readRegister(123) << dec; //0x7b
   } else if  (cmd=="adcdisable") {
+
+    int nroi=0;
+    ROI roiLimits[MAX_ROIS];
+
    if (action==PUT_ACTION) {
      
       if (sscanf(args[1],"%x",&addr))
@@ -5269,19 +5337,69 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
     else
       return string("Could not scan adcdisable reg ")+string(args[1]);
 
-    
-      myDet->writeRegister(94,addr);
+    /******USE ROI?!?!?!?*********/
+    // roiLimits[i].xmin;roiLimits[i].xmax;roiLimits[i].ymin;roiLimits[i].ymin;roiLimits[i].ymax
+    //int mask=1;
+    int ii=0;
+    while (ii<32) {
+      nroi++;
+      roiLimits[nroi-1].xmin=ii;
+      roiLimits[nroi-1].ymin=0;
+      roiLimits[nroi-1].ymax=0;
+      while ((addr&(1<<ii))) {
+	ii++;
+	if (ii>=32)
+	  break;
+      }
+      if (ii>=32) {
+	break;
+	cout << "ROI "<< nroi << " xmin "<<roiLimits[nroi-1].xmin << " xmax "<< roiLimits[nroi-1].xmax << endl;
+	roiLimits[nroi-1].xmax=31;
+	break;
+      }
+      roiLimits[nroi-1].xmin=ii;
+      while ((addr&(1<<ii))==0) {
+	ii++;
+	if (ii>=32)
+	  break;
+      }
+      roiLimits[nroi-1].xmax=ii-1;
+      if (ii>=32) {
+	cout << "ROI "<< nroi << " xmin "<<roiLimits[nroi-1].xmin << " xmax "<< roiLimits[nroi-1].xmax << endl;
+	nroi++;
+	break;
+      }
+      cout << "ROI "<< nroi << " xmin "<<roiLimits[nroi-1].xmin << " xmax "<< roiLimits[nroi-1].xmax << endl;
     }
+    cout << "********ROI "<< nroi << endl; 
+    myDet->setROI(nroi-1,roiLimits);
+    //  myDet->writeRegister(94,addr);  
+    // myDet->writeRegister(120,addr);
+   }
 
+   ROI  *aa=myDet->getROI(nroi);
+   
+   int reg=0xffffffff;
+   if (nroi<1)
+     reg=0;
+   else {
+   for (int iroi=0; iroi<nroi; iroi++) {
+     cout << iroi << " xmin "<< (aa+iroi)->xmin<< " xmax "<< (aa+iroi)->xmax<< endl;
+     for (int ich=(aa+iroi)->xmin; ich<=(aa+iroi)->xmax; ich++) {
+       reg&=~(1<<ich);
+     }
+   }
+   }
+   os << hex << reg << dec;
 
     
-   os << hex << myDet->readRegister(94) << dec; 
+   //os <<" "<< hex << myDet->readRegister(120) << dec; 
 
   } 
 
 
 
-else  return helpPattern(narg, args, action);
+  else  return helpPattern(narg, args, action);
   
 
 

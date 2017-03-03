@@ -7,46 +7,30 @@
 
 
 // Hardware definitions
-#define NMAXMODY 1
-#define NMAXMOD (NMAXMODX*NMAXMODY)
 
-#define NCHAN 32
+#define NCHAN 36
 #define NCHIP 1
-#define NADC 1
+#define NADC 9 //
 
-#ifdef CTB
-#define NDAC 24
-#define NPWR 5
-#else
-#define NDAC 16
-#define NPWR 0
-#endif
+/* #ifdef CTB */
+/* #define NDAC 24 */
+/* #define NPWR 5 */
+/* #else */
+/* #define NDAC 16 */
+/* #define NPWR 0 */
+/* #endif */
 #define DAC_CMD_OFF 20
 
 #define NMAXMODX  1
+#define NMAXMODY 1
+#define NMAXMOD (NMAXMODX*NMAXMODY)
+
 #define NCHANS (NCHAN*NCHIP*NMAXMOD)
 #define NDACS (NDAC*NMAXMOD)
 
-#define JUNGFRAU_NCHAN 			(256*256)
-#define JUNGFRAU_NCHIP 			8
-#define JUNGFRAU_NADC			0
-#define JUNGFRAU_NDAC 			16
-#define JUNGFRAU_NCHANS 		(JUNGFRAU_NCHAN*JUNGFRAU_NCHIP*NMAXMOD)
-
-
 
 /**when moench readout tested with gotthard module*/
-#define GOTTHARDNCHAN 128
-#define GOTTHARDNCHIP 10
 
-
-#define NTRIMBITS 6
-#define NCOUNTBITS 24
-
-#define NCHIPS_PER_ADC		2
-
-//#define TRIM_DR ((2**NTRIMBITS)-1)
-//#define COUNT_DR ((2**NCOUNTBITS)-1) 
 #define TRIM_DR (((int)pow(2,NTRIMBITS))-1)
 #define COUNT_DR (((int)pow(2,NCOUNTBITS))-1)
 

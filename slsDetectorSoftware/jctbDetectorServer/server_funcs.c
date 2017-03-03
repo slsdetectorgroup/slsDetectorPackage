@@ -14,6 +14,7 @@
 int (*flist[256])(int);
 
 
+
 //defined in the detector specific file
 /* #ifdef MYTHEND */
 /* const enum detectorType myDetectorType=MYTHEN; */
@@ -58,8 +59,9 @@ int adcvpp=0x4;
 /** for jungfrau reinitializing macro later */
 int N_CHAN=NCHAN;
 int N_CHIP=NCHIP;
-int N_DAC=NDAC;
+int N_DAC=24;
 int N_ADC=NADC;
+int N_PWR=5;
 int N_CHANS=NCHANS;
 
 
@@ -93,21 +95,30 @@ int init_detector(int b, int checkType) {
   case MOENCH03_MODULE_ID:
     myDetectorType=MOENCH;
     printf("This is a MOENCH03 module %d\n",MOENCH);
+    N_DAC=8;
+    N_PWR=0;
     break;
 
   case JUNGFRAU_MODULE_ID:
     myDetectorType=JUNGFRAU;
-    printf("This is a Jungfrau module %d\n", JUNGFRAU);
+    printf("This is a Jungfrau module %d\n Not supported: exiting!", JUNGFRAU);
+    N_DAC=8;
+    N_PWR=0;
+    exit(1);
     break;
 
   case JUNGFRAU_CTB_ID:
     myDetectorType=JUNGFRAUCTB;
-    printf("This is a Jungfrau CTB %d\n", JUNGFRAUCTB);
+    printf("This is a CTB %d\n", JUNGFRAUCTB);
+    N_DAC=24;
+    N_PWR=5;
     break;
 
   default:
     myDetectorType=GENERIC;
     printf("Unknown detector type %02x\n",(bus_r(PCB_REV_REG) & DETECTOR_TYPE_MASK)>>DETECTOR_TYPE_OFFSET);
+    N_DAC=8;
+    N_PWR=0;
     break;
 
   }
@@ -116,102 +127,25 @@ int init_detector(int b, int checkType) {
 
   //control server only--
   if (b) {
-  resetPLL();
-  bus_w16(CONTROL_REG, SYNC_RESET);
-  bus_w16(CONTROL_REG, 0);
-  bus_w16(CONTROL_REG, GB10_RESET_BIT);
-  bus_w16(CONTROL_REG, 0);
-
+    resetPLL();
+    bus_w16(CONTROL_REG, SYNC_RESET);
+    bus_w16(CONTROL_REG, 0);
+    bus_w16(CONTROL_REG, GB10_RESET_BIT);
+    bus_w16(CONTROL_REG, 0);
+    
 #ifdef MCB_FUNCS
-	 printf("\nBoard Revision:0x%x\n",(bus_r(PCB_REV_REG)&BOARD_REVISION_MASK));
-	 if(myDetectorType == JUNGFRAU)
-		 initDetector(); /*allocating detectorModules, detectorsDacs etc for "settings", also does allocate RAM*/
-	 dataBytes=NMAXMOD*N_CHIP*N_CHAN*2; /**Nchip and Nchan real values get assigned in initDetector()*/
+    printf("\nBoard Revision:0x%x\n",(bus_r(PCB_REV_REG)&BOARD_REVISION_MASK));
+    // if(myDetectorType == JUNGFRAU)
+    initDetector(); /*allocating detectorModules, detectorsDacs etc for "settings", also does allocate RAM*/
+    dataBytes=NMAXMOD*N_CHIP*N_CHAN*2; /**Nchip and Nchan real values get assigned in initDetector()*/
     printf("Initializing Detector\n");
     //bus_w16(CONTROL_REG, SYNC_RESET); // reset registers
 #endif
-
-    prepareSlowADC();
-    // testFpga();
-    // testRAM();
-    // printf("ADC_SYNC_REG:%x\n",bus_r(ADC_SYNC_REG));
-    //moench specific
-    //  setPhaseShiftOnce();
-    /*some registers set, which is in common with jungfrau, please check */
+    if (myDetectorType==JUNGFRAUCTB) prepareSlowADCSeq();
+  
     prepareADC();
-    //setADC(-1); //already does setdaqreg and clean fifo 
-    // setSettings(GET_SETTINGS,-1); 
-    /*some registers set, which is in common with jungfrau, please check */
-    initDac(0);    initDac(8); //initializes the two dacs
-
-    if(myDetectorType==JUNGFRAU){
-    	/** for jungfrau reinitializing macro */
-    	N_CHAN=JUNGFRAU_NCHAN;
-    	N_CHIP=JUNGFRAU_NCHIP;
-    	N_DAC=JUNGFRAU_NDAC;
-    	N_ADC=JUNGFRAU_NADC;
-    	N_CHANS=JUNGFRAU_NCHANS;
-
-
-    	//set dacs
-    	int retval = -1;
-    	int dacvalues[14][2]={
-    			{0,	1250},	//vout_cm
-				{10, 	1053},	//vin_com
-				{1, 	600},	//vb_sda
-				{11, 	1000},	//vb_colbuf
-				{2, 	3000},	//vb_test_cur
-				{3, 	830},	//vcascp_pixbuf
-				{4, 	1630},	//vcascn_pixbuf
-				{12, 	750},	//vb_pixbuf
-				{6,	480},	//vref_ds
-				{5,	1000},	//vb_ds
-				{7, 	400},	//vref_comp
-				{13, 1220},	//vb_comp
-				{8, 	1500},	//vref_prech
-				{9, 	3000},	//vdd_prot
-    	};
-    	for(i=0;i<14;++i){
-    		retval=setDac(dacvalues[i][0], dacvalues[i][1]);
-    		if(retval!=dacvalues[i][1])
-    			printf("Error: Setting dac %d failed, wrote %d, read %d\n",dacvalues[i][0],dacvalues[i][1],retval);
-    	}
-
-    	//power on the chips
-    	bus_w(POWER_ON_REG,0x1);
-
-    	//reset adc
-    	writeADC(ADCREG1,0x3); writeADC(ADCREG1,0x0);
-    	writeADC(ADCREG2,0x40);
-    	writeADC(ADCREG3,0xf);
-    	writeADC(ADCREG4,0x3f);
-    	//vrefs - configurable?
-    	writeADC(ADCREG_VREFS,0x2);
-
-
-    	//set ADCINVERSionreg (by trial and error)
-    	bus_w(ADC_INVERSION_REG,0x453b2a9c);
-
-    	//set adc_pipeline
-    	bus_w(ADC_PIPELINE_REG,0x20); //same as ADC_OFFSET_REG
-
-    	//set dbit_pipeline
-    	bus_w(DBIT_PIPELINE_REG,0x100e);
-    	usleep(1000000);//1s
-
-    	//reset mem machine fifos fifos
-    	bus_w(MEM_MACHINE_FIFOS_REG,0x4000);
-    	bus_w(MEM_MACHINE_FIFOS_REG,0x0);
-
-    	//reset run control
-    	bus_w(MEM_MACHINE_FIFOS_REG,0x0400);
-    	bus_w(MEM_MACHINE_FIFOS_REG,0x0);
-
-    	//set default setting
-    	setSettings(DYNAMICGAIN,-1);
-    }
-
-
+  
+  
     //Initialization of acquistion parameters
     setFrames(-1);
     setTrains(-1);
@@ -219,7 +153,7 @@ int init_detector(int b, int checkType) {
     setPeriod(-1);
     setDelay(-1);
     setGates(-1);
-
+    
     setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
     setMaster(GET_MASTER);
     setSynchronization(GET_SYNCHRONIZATION_MODE);
@@ -236,12 +170,13 @@ int init_detector(int b, int checkType) {
   // getDynamicRange();
 
   /* both these functions setROI and allocateRAM should go into the control server part. */
-  if(myDetectorType!=JUNGFRAU){
-	  int retvalsize,ret;
-	  setROI(-1,NULL,&retvalsize,&ret);
-	  allocateRAM();
-  }
 
+  int retvalsize,ret;
+  setROI(-1,NULL,&retvalsize,&ret);
+  allocateRAM();
+
+  setSamples(1);
+  bus_w(DAC_REG,0xffff);
   return OK;
 }
 
@@ -332,6 +267,7 @@ int function_table() {
   flist[F_CALIBRATE_PEDESTAL]=&calibrate_pedestal;
   flist[F_SET_CTB_PATTERN]=&set_ctb_pattern;
   flist[F_WRITE_ADC_REG]=&write_adc_register;
+  flist[F_POWER_CHIP]=&power_chip;
   return OK;
 }
 
@@ -418,7 +354,7 @@ int get_detector_type(int file_des) {
 
   /* receive arguments */
   /* execute action */
-  ret=myDetectorType;
+  ret=JUNGFRAUCTB;//myDetectorType;
 
 #ifdef VERBOSE
     printf("Returning detector type %d\n",ret);
@@ -1045,6 +981,7 @@ int set_dac(int file_des) {
 	int n;
 	int val;
 	int mV=0;
+	int v;
 	sprintf(mess,"Can't set DAC\n");
 
 	n = receiveDataOnly(file_des,arg,sizeof(arg));
@@ -1081,27 +1018,35 @@ int set_dac(int file_des) {
 
 
 
-#ifdef MCB_FUNCS
 
 	if (ret==OK) {
 		if (differentClients==1 && lockStatus==1) {
 			ret=FAIL;
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		} else{		  
-		  if (ind<NDAC-NPWR) {
+		  if (ind<N_DAC-N_PWR) {
 		    
 		    if (mV) {
-		      if (val>2500)
+		      
+		      v=val;
+		      
+		      if (val>2500) 
 			val=-1;
 		      printf("%d mV is ",val);
 		      if (val>0)
 			val=val/2500*4095;
 		      printf("%d DACu\n", val);
-		    } else if (val>4095)
-		      val=-1;
+		    } else {
+		      v=val*2500/4095;
+		      if (val>4095) {
+			val=-1;
+		      }
+		    }
 		    
-		    
-		    retval=setDac(ind,val);
+		    if (vLimitCompliant(v))
+		      retval=setDac(ind,val);
+
+
 		  } else {
 		    switch (ind) {
 		    case ADC_VPP:
@@ -1127,22 +1072,35 @@ int set_dac(int file_des) {
 		    case V_POWER_IO:
 		    case V_POWER_CHIP:
 		      if (mV) {
+			if (vLimitCompliant(val))
+			  retval=setPower(ind,val);
+			else
+			  printf("********power %d exceeds voltage limits", ind);
+			  
+		      } else
+			printf("********power %d should be set in mV instead od DACu", ind);
+		      break;
+		      
+		    case V_LIMIT:
+		      if (mV) {
 			retval=setPower(ind,val);
 		      } else
 			printf("********power %d should be set in mV instead od DACu", ind);
 		      break;
 		      
-		      
 		    default:
 		      printf("**********No dac with index %d\n",ind);
+		      printf("**********%d %d\n",N_DAC,N_PWR);
 		      ret=FAIL;
 		    }
 		    
 		  }
 		}
 	}
+
+
 	if(ret==OK){
-	  if (ind<NDAC-NPWR) {	
+	  if (ind<N_DAC-N_PWR) {	
 	    if (mV) {
 	      printf("%d DACu is ",retval);
 	      retval1=2500*retval/4095;
@@ -1152,17 +1110,17 @@ int set_dac(int file_des) {
 	  } else 
 	    retval1=retval;
 	}
-#endif
 
-#ifdef VERBOSE
-	printf("DAC set to %d V\n",  retval);
-#endif  
+	//#ifdef VERBOSE
+	printf("DAC set to %d mV\n",  retval);
+	//#endif  
 	
 	if(ret==FAIL)
 	  printf("Setting dac %d of module %d: wrote %d but read %d\n", ind, imod, val, retval);
 	else{
 	  if (differentClients)
 	    ret=FORCE_UPDATE;
+
 	}
 	
 	
@@ -1223,7 +1181,6 @@ int get_adc(int file_des) {
 		idac=TEMP_ADC;
 		break;
 	default:
-	  readSlowADC(ind);
 	  printf("Unknown DAC index %d\n",ind);
 	  sprintf(mess,"Unknown DAC index %d\n",ind);
 	  ret=FAIL;
@@ -1231,7 +1188,16 @@ int get_adc(int file_des) {
 	}
 
 	if (ret==OK)
-		retval=getTemperatureByModule(idac,imod);
+	  retval=getTemperatureByModule(idac,imod);
+	else {
+	  retval=readSlowADC(ind-1000);
+	  if (retval>=0) {
+	    ret=OK;
+	  }
+	  
+	}
+	  
+
 #endif
 
 #ifdef VERBOSE
@@ -2066,7 +2032,7 @@ int get_run_status(int file_des) {
 }
 
 int read_frame(int file_des) {
-
+  int n;
   u_int16_t* p=NULL;
 
   if (differentClients==1 && lockStatus==1) {
@@ -2087,14 +2053,15 @@ int read_frame(int file_des) {
     nframes++;
     dataretval=(char*)ram_values;
     dataret=OK;
-#ifdef VERBOSE
+    //#ifdef VERBOSE
       printf("sending data of %d frames\n",nframes);
-#endif
+      //#endif
 	sendDataOnly(file_des,&dataret,sizeof(dataret));
-#ifdef VERYVERBOSE
-	  printf("sending pointer %x of size %d\n",(unsigned int)(dataretval),dataBytes*nSamples);
-#endif
-	  sendDataOnly(file_des,dataretval,dataBytes*nSamples);
+	//#ifdef VERYVERBOSE
+	  printf("sending pointer %x of size %d\n",(unsigned int)(dataretval),dataBytes);
+	  //#endif
+	  n=sendDataOnly(file_des,dataretval,dataBytes);
+	  printf("Sent %d bytes\n",n);
   } else  {
       if (getFrames()>-1) {
 	dataret=FAIL;
@@ -2242,6 +2209,9 @@ int set_timer(int file_des) {
       case CYCLES_NUMBER: 
 	retval=setTrains(tns);
 	break;
+      case SAMPLES_JCTB:
+	retval=setSamples(tns);
+	break;
       default:
 	ret=FAIL;
 	sprintf(mess,"timer index unknown %d\n",ind);
@@ -2343,6 +2313,9 @@ int get_time_left(int file_des) {
     case FRAMES_FROM_START_PG:
       retval=getFramesFromStart();
       break;
+    case SAMPLES_JCTB:
+      retval=setSamples(-1);
+      break;
     default:
       ret=FAIL;
       sprintf(mess,"timer index unknown %d\n",ind);
@@ -2433,7 +2406,7 @@ int set_roi(int file_des) {
 	int n=0;
 	int retvalsize=0;
 	ROI arg[MAX_ROIS];
-	ROI* retval=0;
+	int retval;
 	strcpy(mess,"Could not set/get roi\n");
 	//	u_int32_t disable_reg=0;
 
@@ -2443,42 +2416,32 @@ int set_roi(int file_des) {
 		ret=FAIL;
 	}
 
-	if(myDetectorType == JUNGFRAU){
-		ret = FAIL;
-		strcpy(mess,"Not applicable/implemented for this detector\n");
-		printf("Error:Set ROI-%s",mess);
+
+	if(nroi>=0){
+	  n = receiveDataOnly(file_des,arg,nroi*sizeof(ROI));
+	  if (n != (nroi*sizeof(ROI))) {
+	    sprintf(mess,"Received wrong number of bytes for ROI\n");
+	    ret=FAIL;
+	  }
+	  
+	  printf("Setting ROI to:");
+	  for( i=0;i<nroi;i++)
+	    printf("%d\t%d\t%d\t%d\n",arg[i].xmin,arg[i].xmax,arg[i].ymin,arg[i].ymax);
+	  // printf("Error: Function 41 or Setting ROI is not yet implemented in Moench!\n");
+	  
 	}
 
-	else{
-
-		if(nroi>=0){
-			n = receiveDataOnly(file_des,arg,nroi*sizeof(ROI));
-			if (n != (nroi*sizeof(ROI))) {
-				sprintf(mess,"Received wrong number of bytes for ROI\n");
-				ret=FAIL;
-			}
-
-			printf("Setting ROI to:");
-			for( i=0;i<nroi;i++)
-				printf("%d\t%d\t%d\t%d\n",arg[i].xmin,arg[i].xmax,arg[i].ymin,arg[i].ymax);
-			printf("Error: Function 41 or Setting ROI is not yet implemented in Moench!\n");
-
-		}
-
-		/* execute action if the arguments correctly arrived*/
-		if (lockStatus==1 && differentClients==1){//necessary???
-			sprintf(mess,"Detector locked by %s\n", lastClientIP);
-			ret=FAIL;
-		}
-		else{
-			retval=setROI(nroi,arg,&retvalsize,&ret);
-			if (ret==FAIL){
-				printf("mess:%s\n",mess);
-				sprintf(mess,"Could not set all roi, should have set %d rois, but only set %d rois\n",nroi,retvalsize);
-			}
-		}
+	/* execute action if the arguments correctly arrived*/
+	if (lockStatus==1 && differentClients==1 && nroi>=0){//necessary???
+	  sprintf(mess,"Detector locked by %s\n", lastClientIP);
+	  ret=FAIL;
+	} else{
+	  retval=setROI(nroi,arg,&retvalsize,&ret);
+	  if (ret==FAIL){
+	    printf("mess:%s\n",mess);
+	    sprintf(mess,"Could not set all roi, should have set %d rois, but only set %d rois\n",nroi,retvalsize);
+	  }
 	}
-
 
 	if(ret==OK && differentClients){
 		printf("Force update\n");
@@ -2491,7 +2454,7 @@ int set_roi(int file_des) {
 		n = sendDataOnly(file_des,mess,sizeof(mess));
 	else{
 		sendDataOnly(file_des,&retvalsize,sizeof(retvalsize));
-		sendDataOnly(file_des,retval,retvalsize*sizeof(ROI));
+		sendDataOnly(file_des,arg,retvalsize*sizeof(ROI));
 	}
 	/*return ok/fail*/
 	return ret;
@@ -2525,15 +2488,17 @@ int set_speed(int file_des) {
   
   if (ret==OK) {
 
-    if (arg==PHASE_SHIFT || arg==ADC_PHASE) {
+    /* if (arg==PHASE_SHIFT || arg==ADC_PHASE) { */
       
       
-      retval=phaseStep(val);
+    /*   retval=phaseStep(val); */
 
-    } else {
+    /* } else if ( arg==DBIT_PHASE) { */
+    /* 	  retval=dbitPhaseStep(val);  */
+    /* } else { */
 
 
-    if (val!=-1) {
+    /* if (val!=-1) { */
 
 
       if (differentClients==1 && lockStatus==1 && val>=0) {
@@ -2541,8 +2506,23 @@ int set_speed(int file_des) {
 	sprintf(mess,"Detector locked by %s\n",lastClientIP);
       }  else {
 	switch (arg) {
+	case PHASE_SHIFT:
+	case ADC_PHASE:
+	  if (val==-1)
+	    retval=getPhase(run_clk_c);
+	  else
+	    retval=configurePhase(val,run_clk_c);
+	  break;
+
+	case DBIT_PHASE: 
+	  if (val==-1)
+	    retval=getPhase(dbit_clk_c);
+	  else
+	    retval=configurePhase(val,dbit_clk_c);
+	  break;
+
 	case CLOCK_DIVIDER:
-	  retval=setClockDivider(val,0);
+	  retval=configureFrequency(val,run_clk_c);//setClockDivider(val,0);
 	  break;
 
 /* 	case PHASE_SHIFT: */
@@ -2554,12 +2534,14 @@ int set_speed(int file_des) {
 	  break;
 
 	case ADC_CLOCK:
-	  retval=setClockDivider(val,1);
+	  retval=configureFrequency(val,adc_clk_c);//setClockDivider(val,1);
+	  configureFrequency(val,sync_clk_c);
 	  break;
 
-/* 	case ADC_PHASE: */
-/* 	  retval=phaseStep(val,1); */
-/* 	  break; */
+	case DBIT_CLOCK:
+	  retval=configureFrequency(val,dbit_clk_c);//setClockDivider(val,2);
+	  break;
+
 
 
 	case ADC_PIPELINE:
@@ -2567,53 +2549,20 @@ int set_speed(int file_des) {
 	  break;
 
 
+	case DBIT_PIPELINE:
+	  retval=dbitPipeline(val);
+	  break;
 
 	default:
 	  ret=FAIL;
 	  sprintf(mess,"Unknown speed parameter %d",arg);
 	}
       }
-    }
+      // }
 
 
-    }
-
-
-    switch (arg) {
-    case CLOCK_DIVIDER:
-      retval=getClockDivider(0);
-      break;
-
-    case PHASE_SHIFT:
-      retval=getPhase();
-      // retval=phaseStep(-1);
-      //ret=FAIL;
-      //sprintf(mess,"Cannot read phase",arg);
-      break;
-
-    case OVERSAMPLING:
-      retval=setOversampling(-1);
-      break;
-
-    case ADC_CLOCK:
-      retval=getClockDivider(1);
-      break;
-
-    case ADC_PHASE:
-      retval=getPhase();
-      break;
-
-
-    case ADC_PIPELINE:
-      retval=adcPipeline(-1);
-      break;
-      
-
-    default:
-      ret=FAIL;
-      sprintf(mess,"Unknown speed parameter %d",arg);
-    }
   }
+
 
   
 
@@ -2631,15 +2580,34 @@ int set_speed(int file_des) {
 int set_readout_flags(int file_des) {
 
   enum readOutFlags arg;
-  int ret=FAIL;
-  
+  int ret=OK;
+  enum readOutFlags v=-1;
 
   receiveDataOnly(file_des,&arg,sizeof(arg));
 
-  sprintf(mess,"can't set readout flags for moench\n");
+  switch (arg) {
+  case NORMAL_READOUT:
+  case DIGITAL_ONLY:
+  case ANALOG_AND_DIGITAL:
+  case GET_READOUT_FLAGS:
+    break;
+  default:
+    sprintf(mess,"unknown readout flags for jctb\n");
+    ret=FAIL;
+  }
+  if (ret==OK)
+    v=setReadOutMode(arg);
   
+  if (v<0) {
+    ret=FAIL;
+    sprintf(mess,"found non valid readout mode (neither analog nor digital)\n");
+  }
   sendDataOnly(file_des,&ret,sizeof(ret));
-  sendDataOnly(file_des,mess,sizeof(mess));
+  if (ret==OK) 
+    sendDataOnly(file_des,&v,sizeof(v));
+  else
+    sendDataOnly(file_des,mess,sizeof(mess));
+  // sendDataOnly(file_des,mess,sizeof(mess));
 
   return ret; 
 }
@@ -2786,6 +2754,7 @@ int send_update(int file_des) {
   int n;//int thr, n;
   //int it;
   int64_t retval, tns=-1;
+  enum readOutFlags v=-1;
   n = sendDataOnly(file_des,lastClientIP,sizeof(lastClientIP));
   n = sendDataOnly(file_des,&nModX,sizeof(nModX));
   n = sendDataOnly(file_des,&nModY,sizeof(nModY));
@@ -2809,7 +2778,12 @@ int send_update(int file_des) {
   n = sendDataOnly(file_des,&retval,sizeof(int64_t));*/
   retval=setTrains(tns);
   n = sendDataOnly(file_des,&retval,sizeof(int64_t));
+  retval=setSamples(tns);
+  n = sendDataOnly(file_des,&retval,sizeof(int64_t));
 
+  v=setReadOutMode(-1);
+  sendDataOnly(file_des,&v,sizeof(v));
+  
   if (lockStatus==0) {
     strcpy(lastClientIP,thisClientIP);
   }
@@ -3179,13 +3153,14 @@ int reset_counter_block(int file_des) {
 
 
 
+
 int start_receiver(int file_des) {
 	int ret=OK;
 	int n=0;
 	strcpy(mess,"Could not start receiver\n");
 
 	/* execute action if the arguments correctly arrived*/
-#ifdef MCB_FUNCS
+	//#ifdef MCB_FUNCS
 	if (lockStatus==1 && differentClients==1){//necessary???
 		sprintf(mess,"Detector locked by %s\n", lastClientIP);
 		ret=FAIL;
@@ -3193,7 +3168,7 @@ int start_receiver(int file_des) {
 	else
 		ret = startReceiver(1);
 
-#endif
+	//#endif
 
 
 	if(ret==OK && differentClients){
@@ -3512,4 +3487,52 @@ int write_adc_register(int file_des) {
   /*return ok/fail*/
   return ret; 
 
+}
+
+int power_chip(int file_des) {
+
+	int retval=-1;
+	int ret=OK;
+	int arg=-1;
+	int n;
+
+	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+
+
+#ifdef VERBOSE
+	printf("Power chip to %d\n", arg);
+#endif
+
+	if (differentClients==1 && lockStatus==1 && arg!=-1) {
+		ret=FAIL;
+		sprintf(mess,"Detector locked by %s\n",lastClientIP);
+	} else {
+		retval=powerChip(arg);
+#ifdef VERBOSE
+		printf("Chip powered: %d\n",retval);
+#endif
+
+		if (retval==arg || arg<0) {
+			ret=OK;
+		} else {
+			ret=FAIL;
+			printf("Powering chip failed, wrote %d but read %d\n", arg, retval);
+		}
+
+	}
+	if (ret==OK && differentClients==1)
+		ret=FORCE_UPDATE;
+
+	/* send answer */
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret==FAIL) {
+		n += sendDataOnly(file_des,mess,sizeof(mess));
+	} else
+		n += sendDataOnly(file_des,&retval,sizeof(retval));
+
+	return ret;
 }

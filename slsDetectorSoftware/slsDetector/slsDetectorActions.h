@@ -25,7 +25,7 @@ class slsDetectorActions : public virtual slsDetectorBase
 {
  public :
 
-  enum {noScan, energyScan, thresholdScan, trimbitsScan, positionScan, scriptScan };
+  enum {noScan, energyScan, thresholdScan, trimbitsScan, positionScan, scriptScan, dacScan };
 
 
   /** default constructor */

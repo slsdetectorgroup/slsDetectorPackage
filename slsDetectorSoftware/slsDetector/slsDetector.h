@@ -655,13 +655,24 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   int getMaxMods(){return thisDetector->nModsMax;}; //
 
 
-  int getTotalNumberOfChannels(){return thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;};
+    /** number of rois defined */
+    int nROI;
+    /** list of rois */
+    ROI roiLimits[MAX_ROIS];
+  
+    /** readout flags */
+    readOutFlags roFlags;
 
-  int getTotalNumberOfChannels(dimension d){return thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nMod[d];};
 
-  int getMaxNumberOfChannels(){return thisDetector->nChans*thisDetector->nChips*thisDetector->nModsMax;};
+    int getTotalNumberOfChannels();
+    //{return thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;};
 
-  int getMaxNumberOfChannels(dimension d){return thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nModMax[d];};
+ int getTotalNumberOfChannels(dimension d);
+ //{return thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nMod[d];};
+
+ int getMaxNumberOfChannels();//{return thisDetector->nChans*thisDetector->nChips*thisDetector->nModsMax;};
+
+ int getMaxNumberOfChannels(dimension d);//{return thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nModMax[d];};
 
   /** returns the enable if data will be flipped across x or y axis
    *  \param d axis across which data is flipped
@@ -1297,7 +1308,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
       \param datain data from the detector
       \returns pointer to a double array with a data per channel
   */
-  double* decodeData(int *datain, double *fdata=NULL);
+  double* decodeData(int *datain, int &nn, double *fdata=NULL);
 
   
   
@@ -1624,6 +1635,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   * @param index frames caught by receiver
  */
  int resetFramesCaught();
+
 
   /** Locks/Unlocks the connection to the receiver
       /param lock sets (1), usets (0), gets (-1) the lock

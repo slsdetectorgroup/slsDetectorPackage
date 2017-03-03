@@ -22,10 +22,10 @@ string fileIO::createFileName() {
 					       detIndex			  \
 					       );
 	
-  if (getDetectorsType()==JUNGFRAUCTB) {
-    nBytes=2*getTotalNumberOfChannels();
-  } else
-    nBytes=getDataBytes();
+  //if (getDetectorsType()==JUNGFRAUCTB) {
+  //  nBytes=2*getTotalNumberOfChannels();
+  //} else
+  nBytes=getDataBytes();
   return currentFileName;
   
 }
@@ -57,7 +57,7 @@ int fileIO::writeDataFile(string fname, double *data, double *err, double *ang, 
   if (nch==-1)
     nch=getTotalNumberOfChannels();
   
-  cout << "Write filexxx...." << endl;
+  //  cout << "Write filexxx...." << endl;
 
   return fileIOStatic::writeDataFile(fname, nch, data, err, ang, dataformat);
 
@@ -66,7 +66,7 @@ int fileIO::writeDataFile(ofstream &outfile, double *data, double *err, double *
   if (nch==-1)
     nch=getTotalNumberOfChannels();
   
-  cout << "Write file...." << endl;
+  //cout << "Write file...." << endl;
 
   return fileIOStatic::writeDataFile(outfile, nch, data, err, ang, dataformat, offset);
 
@@ -97,13 +97,14 @@ int fileIO::writeDataFile(void *data, int iframe) {
 	if ((*framesPerFile)<2)
 		iframe=-1;
 
-	if ((iframe%(*framesPerFile))==0 || (iframe<0)) {
+	if ((iframe%(*framesPerFile))==0 || (iframe<0) || filefd==0) {
 		createFileName();
 		filefd = fopen((currentFileName+string(".raw")).c_str(), "w"); 
 	}
 
 	if (filefd){
 // 	  fileIOStatic::writeBinaryDataFile(filefd,getDataBytes(),  data);
+	  cout <<"Writing "<< nBytes<< " dataBytes"<< endl;
  	  fileIOStatic::writeBinaryDataFile(filefd,nBytes,  data);
 	  iframe++;
 	}

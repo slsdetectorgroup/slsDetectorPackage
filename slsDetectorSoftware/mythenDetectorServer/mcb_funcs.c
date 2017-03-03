@@ -63,15 +63,15 @@ int initDetector() {
   detectorChans=malloc(n*NCHIP*NCHAN*sizeof(int));
   detectorDacs=malloc(n*NDAC*sizeof(dacs_t));
   detectorAdcs=malloc(n*NADC*sizeof(dacs_t));
-#ifdef VERBOSE
+  //#ifdef VERBOSE
   printf("modules from 0x%x to 0x%x\n",detectorModules, detectorModules+n);
   printf("chips from 0x%x to 0x%x\n",detectorChips, detectorChips+n*NCHIP);
   printf("chans from 0x%x to 0x%x\n",detectorChans, detectorChans+n*NCHIP*NCHAN);
   printf("dacs from 0x%x to 0x%x\n",detectorDacs, detectorDacs+n*NDAC);
   printf("adcs from 0x%x to 0x%x\n",detectorAdcs, detectorAdcs+n*NADC);
-#endif
+  //#endif
   for (imod=0; imod<n; imod++) {
-
+ printf("module %d\n",imod);
  
     (detectorModules+imod)->dacs=detectorDacs+imod*NDAC;
     (detectorModules+imod)->adcs=detectorAdcs+imod*NADC;
@@ -87,6 +87,7 @@ int initDetector() {
     (detectorModules+imod)->reg=0;
     /* initialize registers, dacs, retrieve sn, adc values etc */
   }
+  printf("modules done\n");
   thisSettings=UNINITIALIZED;
   sChan=noneSelected;
   sChip=noneSelected;
@@ -99,9 +100,12 @@ int initDetector() {
   clearSSregister(ALLMOD); 
   putout("0000000000000000",ALLMOD);
 
+  printf("dr\n");
   /* initialize dynamic range etc. */
   dynamicRange=getDynamicRange();
+  printf("nmod\n");
   nModX=setNMod(-1);
+  printf("done\n");
 
   
 
@@ -115,7 +119,7 @@ int initDetector() {
   // allocateRAM();
 
 
-
+  
 
   return OK;
 }
@@ -919,6 +923,7 @@ int setSettings(int i) {
   for (ind=0; ind<NDAC; ind++)
     v[ind]=-1;
  
+  // printf("vind\n");
   if (i!=GET_SETTINGS) {
    switch (i) {
    case STANDARD:; case FAST:; case HIGHGAIN:
@@ -938,19 +943,20 @@ int setSettings(int i) {
   irgpr=detectorDacs[4+imod*NDAC];
   irgsh1=detectorDacs[imod*NDAC+RGSH1];
   irgsh2=detectorDacs[imod*NDAC+RGSH2];
-		  */
-  
+	
+  	  */
+  // printf("regs\n");
   irgpr=setDACRegister(RGPR,-1,imod);
   irgsh1=setDACRegister(RGSH1,-1,imod);
   irgsh2=setDACRegister(RGSH2,-1,imod);
-  for (is=STANDARD; is<UNDEFINED; is++) {
+  for (is=STANDARD; is<sizeof(rgpr); is++){//;UNDEFINED; is++) {
     if (irgpr==rgpr[is] && irgsh1==rgsh1[is] &&  irgsh2==rgsh2[is]) {
       isett=is;
     }
   }
-#ifdef VERBOSE
-  printf("Settings of module 0 are %d\n",isett);
-#endif
+  //#ifdef VERBOSE
+    // printf("Settings of module 0 are %d\n",isett);
+  //#endif
   for (imod=1; imod<nModX; imod++) {
     if (isett!=UNDEFINED) {
       irgpr=setDACRegister(RGPR,-1,imod);

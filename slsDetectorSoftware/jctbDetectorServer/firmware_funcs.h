@@ -28,16 +28,20 @@ u_int16_t bus_w16(u_int32_t offset, u_int16_t data);//aldos function
 u_int32_t bus_w(u_int32_t offset, u_int32_t data);
 u_int32_t bus_r(u_int32_t offset);
 
-int setPhaseShiftOnce();
-int phaseStep(int st);
-int getPhase();
+//int setPhaseShiftOnce();
+//int phaseStep(int st);
+//int dbitPhaseStep(int st);
+//int getDbitPhase();
+int getPhase(int i);
 int cleanFifo();
 int setDAQRegister();
+int configurePhase(int val, int i);
+int configureFrequency(int val, int i);
 
 u_int32_t putout(char *s, int modnum);
 u_int32_t readin(int modnum);
-u_int32_t setClockDivider(int d, int ic);
-u_int32_t getClockDivider(int ic);
+//u_int32_t setClockDivider(int d, int ic);
+//u_int32_t getClockDivider(int ic);
 
 void resetPLL();
 u_int32_t setPllReconfigReg(u_int32_t reg, u_int32_t val, int trig);
@@ -47,12 +51,13 @@ u_int32_t setSetLength(int d);
 u_int32_t getSetLength();
 u_int32_t setWaitStates(int d);
 u_int32_t getWaitStates();
-u_int32_t setTotClockDivider(int d);
-u_int32_t getTotClockDivider();
-u_int32_t setTotDutyCycle(int d);
-u_int32_t getTotDutyCycle();
+//u_int32_t setTotClockDivider(int d);
+//u_int32_t getTotClockDivider();
+//u_int32_t setTotDutyCycle(int d);
+//u_int32_t getTotDutyCycle();
 u_int32_t setOversampling(int d);
 u_int32_t adcPipeline(int d);
+u_int32_t dbitPipeline(int d);
 
 u_int32_t setExtSignal(int d, enum externalSignalFlag  mode);
 int  getExtSignal(int d);
@@ -184,7 +189,7 @@ int setDac(int dacnum,int dacvalue);
 
 int setPower(int ind, int val);
 
-ROI *setROI(int nroi,ROI* arg,int *retvalsize, int *ret);
+int setROI(int nroi,ROI* arg,int *retvalsize, int *ret);
 int getChannels();
 
 /*
@@ -211,5 +216,11 @@ int calibration_sensor(int num, int *values, int *dacs) ;
 int calibration_chip(int num, int *values, int *dacs);
 */
 
+int64_t setSamples(int64_t value);
+//int setOutputMode(int d);
+int prepareSlowADCSeq();
+int readSlowADC(int ichan);
+int setReadOutMode(int arg);
+int vLimitCompliant(int val_mV)
 
 #endif

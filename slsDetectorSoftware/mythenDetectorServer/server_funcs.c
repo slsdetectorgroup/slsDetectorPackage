@@ -61,12 +61,18 @@ int init_detector( int b) {
   if (b) {
 #ifdef MCB_FUNCS
     initDetector();
+    printf("init \n");
     setSettings(GET_SETTINGS);
+    printf("get settings \n");
     testRAM();
+    printf("test ram \n");
 #endif
     setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
+    printf("timing \n");
     setMaster(GET_MASTER);
+    printf("master \n");
     setSynchronization(GET_SYNCHRONIZATION_MODE);
+    printf("sync \n");
   }
   strcpy(mess,"dummy message");
   strcpy(lastClientIP,"none");

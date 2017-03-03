@@ -690,6 +690,7 @@ virtual int createReceivingDataSockets(const bool destroy = false){return -1;};
 
 /** Reads frames from receiver through a constant socket
 */
+
 virtual void readFrameFromReceiver(){};
 
 /**

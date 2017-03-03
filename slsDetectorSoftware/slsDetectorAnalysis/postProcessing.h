@@ -295,12 +295,14 @@ s
      queue containing the postprocessed data
   */
   queue<detectorData*> finalDataQueue;
-  
 
  /** data queue size */
   int queuesize;
 
-
+   /** queue mutex */   
+  sem_t sem_queue;   
+  /** set when detector finishes acquiring */   
+  int acquiringDone; 
 
 
   /**

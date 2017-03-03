@@ -84,6 +84,7 @@ postProcessing::~postProcessing(){
 void postProcessing::processFrame(int *myData, int delflag, int jctb) {
 
   string fname;
+  int nn;
   //double *fdata=NULL;
   
 #ifdef VERBOSE
@@ -98,20 +99,29 @@ void postProcessing::processFrame(int *myData, int delflag, int jctb) {
  
  /** decode data */
  
+  // cout << "decode 0"<< endl;
  // if (getDetectorsType()==MYTHEN) {
-  fdata=decodeData(myData, fdata);
+
+  
+  // for (int ib=0; ib<1000; ib++)
+  //   cout << ((*(((u_int64_t*)myData)+ib))>>17&1) ;
+  // cout << endl;
+
+
+  fdata=decodeData(myData,nn, fdata);
     
-#ifdef VERBOSE
-    cout << "decode"<< endl;
-#endif
+  //#ifdef VERBOSE
+    // cout << "decode 1"<< endl;
+    //#endif
     // } else
   //  fdata=NULL;
-
   if (rawDataReady) {
-    #ifdef VERBOSE
+#ifdef VERBOSE
+    cout << "decoded data size is "<<nn << endl;
     cout << "raw data ready..." << endl;
-    #endif
-    rawDataReady(fdata,numberOfChannels, pRawDataArg);
+#endif
+    // rawDataReady(fdata,numberOfChannels, pRawDataArg);
+     rawDataReady(fdata,nn, pRawDataArg);
 #ifdef VERBOSE
     cout << "done" << endl;
     cout << "NO FILE WRITING AND/OR DATA PROCESSING DONE BY SLS DETECTOR SOFTWARE!!!" << endl;   
@@ -153,7 +163,8 @@ void postProcessing::processFrame(int *myData, int delflag, int jctb) {
 
 	//	cout << "callback arg "<< getCurrentProgress()<< " " << (fname+string(".raw")).c_str() << " " << getTotalNumberOfChannels() << endl;
 	//	cout << "DATAREADY 1" <<endl;
-	thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),(fname+string(".raw")).c_str(),getTotalNumberOfChannels()); //only 1d detectors
+	//	thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),(fname+string(".raw")).c_str(),getTotalNumberOfChannels()); //only 1d detectors
+	thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),(fname+string(".raw")).c_str(),nn); //only 1d detectors
 	dataReady(thisData, currentFrameIndex, -1, pCallbackArg);
 	delete thisData;
 	fdata=NULL;
@@ -407,9 +418,9 @@ int postProcessing::fillBadChannelMask() {
 
 
 void* postProcessing::processData(int delflag) {
-	pthread_mutex_lock(&mg);
+  	pthread_mutex_lock(&mg);
 	if(setReceiverOnline()==OFFLINE_FLAG){
-		 pthread_mutex_unlock(&mg);
+	  pthread_mutex_unlock(&mg);
 
 #ifdef VERBOSE
 		std::cout<< " ??????????????????????????????????????????? processing data - threaded mode " << *threadedProcessing << endl;
@@ -443,14 +454,14 @@ void* postProcessing::processData(int delflag) {
 		  //	  cout << "loop" << endl;
 			while((queuesize=dataQueueSize())>0) {
 				/** Pop data queue */
-			  //#ifdef VERBOSE
+			  #ifdef VERBOSE
 				cout << "data found"<< endl<<endl;;
-				//#endif
+			#endif
 
 				myData=dataQueueFront(); // get the data from the queue
-#ifdef VERBOSE
-				cout << "got them"<< endl;
-#endif
+				//#ifdef VERBOSE
+				  //	cout << "got them"<< endl;
+				//#endif
 
 				if (myData) {
 				  
@@ -493,31 +504,32 @@ void* postProcessing::processData(int delflag) {
 		  fdata = NULL;
 		  //cout << "delete done "<< endl;
 		}
-		}
-	//receiver
+	} //receiver 
 	else{
-		 pthread_mutex_unlock(&mg);
-		//cprintf(RED,"In post processing threads\n");
+ 	  
+ 		 pthread_mutex_unlock(&mg);
+ 		//cprintf(RED,"In post processing threads\n");
 
 
-		if(dataReady){
-			readFrameFromReceiver();
-		}
+ 		if(dataReady){
+ 			readFrameFromReceiver();
+ 		}
 
-		//only update progress
-		else{
-			int caught = -1;
-			char c;
-			int ifp;
+ 		//only update progress
+ 		else{
+ 			int caught = -1;
+ 			char c;
+ 			int ifp;
 			while(true){
 
-				//cout.flush();
-				//cout<<flush;
-				usleep(100 * 1000); //20ms need this else connecting error to receiver (too fast)
+ 				//cout.flush();
+ 				//cout<<flush;
+ 				usleep(100 * 1000); //20ms need this else connecting error to receiver (too fast)
 
-				if (checkJoinThread()){
-					break;
-				}
+ 				if (checkJoinThread()){
+ 					break;
+ 				}
+
 
 
 				ifp=kbhit();
@@ -530,33 +542,32 @@ void* postProcessing::processData(int delflag) {
 				}
 
 
-				//get progress
-				pthread_mutex_lock(&mg);
-				if(setReceiverOnline() == ONLINE_FLAG){
-					caught = getFramesCaughtByReceiver();
-				}
-				pthread_mutex_unlock(&mg);
+
+ 				//get progress
+ 				pthread_mutex_lock(&mg);
+ 				if(setReceiverOnline() == ONLINE_FLAG){
+ 					caught = getFramesCaughtByReceiver();
+ 				}
+ 				pthread_mutex_unlock(&mg);
 
 
-				//updating progress
-				if(caught!= -1){
-					setCurrentProgress(caught);
-	#ifdef VERY_VERY_DEBUG
-				cout << "caught:" << caught << endl;
-	#endif
-				}
-				if (checkJoinThread()){
-					break;
-				}
+ 				//updating progress
+ 				if(caught!= -1){
+ 					setCurrentProgress(caught);
+ #ifdef VERY_VERY_DEBUG
+ 				cout << "caught:" << caught << endl;
+ #endif
+ 				}
+ 				if (checkJoinThread()){
+ 					break;
+ 				}
 
 
 
-			}
-		}
+ 			}
+ 		}
 
-		//cout<<"exiting from proccessing thread"<<endl;
 
-		//cprintf(RED,"Exiting post processing thread\n");
 	}
 
 	return 0;

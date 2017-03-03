@@ -120,8 +120,12 @@ int64_t getPeriod();
 int64_t setTrains(int64_t value);
 int64_t getTrains();
 
+
 int64_t setProbes(int64_t value);
 int64_t getProbes();
+
+int64_t setSamples(int64_t value);
+int64_t getSamples();
 
 int64_t getProgress();
 int64_t setProgress();

@@ -1850,13 +1850,38 @@ int set_timer(int file_des) {
 		ret=FAIL;
 	}
 
-	if (ret!=OK) {
-		printf(mess);
-	}
+int set_timer(int file_des) {
+  enum timerIndex ind;
+  int64_t tns;
+  int n;
+  int64_t retval;
+  int ret=OK;
+  
+
+  printf("set\n");
+  sprintf(mess,"can't set timer\n");
+  
+  n = receiveDataOnly(file_des,&ind,sizeof(ind));
+  if (n < 0) {
+    sprintf(mess,"Error reading from socket\n");
+    ret=FAIL;
+  }
+  
+  n = receiveDataOnly(file_des,&tns,sizeof(tns));
+  if (n < 0) {
+    sprintf(mess,"Error reading from socket\n");
+    ret=FAIL;
+  }
+  
+  if (ret!=OK) {
+    printf(mess);
+  }
+
 
 #ifdef VERBOSE
 	printf("setting timer %d to %lld ns\n",ind,tns);
 #endif 
+
 	if (ret==OK) {
 
 		if (differentClients==1 && lockStatus==1 && tns!=-1) {

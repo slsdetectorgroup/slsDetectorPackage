@@ -1032,6 +1032,35 @@ int setContinousReadOut(int d) {
 }
 
 
+<<<<<<< HEAD
+int startReceiver(int start) {
+	u_int32_t addr=CONFIG_REG;
+	//#ifdef VERBOSE
+	if(start)
+		printf("Setting up detector to send to Receiver\n");
+	else
+		printf("Setting up detector to send to CPU\n");
+	//#endif
+	int reg=bus_r(addr);
+	//for start recever, write 0 and for stop, write 1
+	if (!start)
+		bus_w(CONFIG_REG,reg&(~GB10_NOT_CPU_BIT));
+	else
+		bus_w(CONFIG_REG,reg|GB10_NOT_CPU_BIT);
+
+	reg=bus_r(addr);
+//#ifdef VERBOSE
+	printf("Config Reg %x\n", reg);
+//#endif
+	int d =reg&GB10_NOT_CPU_BIT;
+	if(d!=0) d=1;
+	if(d!=start)
+	  return OK;
+	else
+	 return FAIL;
+}
+=======
+>>>>>>> f24459bee05f373e2830bb24388e40f0b2983d5a
 
 
 u_int64_t  getDetectorNumber() {
@@ -1258,6 +1287,17 @@ int64_t setTrains(int64_t value){
 
 int64_t getTrains(){
 	return get64BitReg(GET_CYCLES_LSB_REG, GET_CYCLES_MSB_REG);
+}
+
+
+int64_t setSamples(int64_t value){
+  if (value>=0)
+    bus_w(NSAMPLES_REG,value);
+  return bus_r(NSAMPLES_REG);
+}
+
+int64_t getSamples(){
+  return bus_r(NSAMPLES_REG);//get64BitReg(GET_CYCLES_LSB_REG, GET_CYCLES_MSB_REG);
 }
 
 
@@ -1835,8 +1875,123 @@ u_int32_t  fifoReadStatus(){
 	return bus_r(STATUS_REG)&(SOME_FIFO_FULL_BIT | ALL_FIFO_EMPTY_BIT);
 }
 
+<<<<<<< HEAD
+
+u_int16_t* fifo_read_event(int ns)
+{
+  int i=0;//, j=0;
+/*   volatile u_int16_t volatile *dum; */
+   volatile u_int16_t a;
+   /*volatile u_int32_t val;*/
+  // volatile u_int32_t volatile *dum;
+     //  volatile u_int32_t a;
+
+  bus_w16(DUMMY_REG,0); //
+/* #ifdef TIMEDBG  */
+/*   gettimeofday(&tse,NULL); */
+/* #endif    */
+  if (ns==0) {
+    a=bus_r16(LOOK_AT_ME_REG);
+    //  volatile u_int32_t t = bus_r16(LOOK_AT_ME_REG);
+  //   bus_w(DUMMY_REG,0);
+    while(a==0) {
+      if (runBusy()==0) {
+	a = bus_r(LOOK_AT_ME_REG);
+	if (a==0) {
+	printf("no frame found and acquisition finished - exiting\n");
+	printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
+	return NULL;
+	} else {
+	  //	printf("status idle, look at me %x status %x\n", bus_r(LOOK_AT_ME_REG),runState());
+	  break;
+	}
+      }
+      a = bus_r(LOOK_AT_ME_REG);
+      //#ifdef VERBOSE
+      //  printf(".");
+      //#endif
+    }
+/* #ifdef TIMEDBG  */
+/*     //    tsss=tss; */
+/*     gettimeofday(&tss,NULL); */
+/*     printf("look for data  = %ld usec\n", (tss.tv_usec) - (tse.tv_usec));  */
+
+/*   #endif  */
+
+  }
+   //  printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
+/*   dma_memcpy(now_ptr,values ,dataBytes); */
+/* #else */
+
+  bus_w16(DUMMY_REG,1<<8); // read strobe to all fifos
+   bus_w16(DUMMY_REG,0);
+    // i=0;//
+/*   for (i=0; i<32; i++) { */
+
+/* /\*   while (((adcDisableMask&(3<<((i)*2)))>>((i)*2))==3) { *\/ */
+/* /\*     i++; *\/ */
+/* /\*     if (i>15) *\/ */
+/* /\*       break; *\/ */
+/* /\*   } *\/ */
+/* /\*   if (i<16) {    *\/ */
+/*     bus_w16(DUMMY_REG,i); */
+/*   } */
+/*   val=*values; */
+
+
+  // bus_w16(DUMMY_REG,0); //
+    for (i=0; i<32; i++) {
+
+
+     //  bus_w16(DUMMY_REG,i);
+     //   bus_r16(DUMMY_REG);
+/*     dum=(((u_int16_t*)(now_ptr))+i); */
+/*     *dum=bus_r16(FIFO_DATA_REG);  */
+/*      a=bus_r16(FIFO_DATA_REG);   */
+      //dum=(((u_int32_t*)(now_ptr))+i);
+
+      //  a=*values;//bus_r(FIFO_DATA_REG);
+      // if ((adcDisableMask&(3<<(i*2)))==0) {
+	    *((u_int32_t*)now_ptr)=*values;//bus_r(FIFO_DATA_REG);
+
+
+	    if (i!=0 || ns!=0) {
+	      a=0;
+	      while (*((u_int32_t*)now_ptr)==*((u_int32_t*)(now_ptr)-1) && a++<10) {
+
+		//	  printf("******************** %d: fifo %d: new %08x old %08x\n ",ns, i, *((u_int32_t*)now_ptr),*((u_int32_t*)(now_ptr)-1));
+		*((u_int32_t*)now_ptr)=*values;
+		//  printf("%d-",i);
+
+	      }
+	    }
+	    now_ptr+=4;
+	    //  }
+/*       while (((adcDisableMask&(3<<((i+1)*2)))>>((i+1)*2))==3) { */
+/* 	i++; */
+/*       } */
+
+      //      if (((adcDisableMask&(3<<((i+1)*2)))>>((i+1)*2))!=3) {
+	    printf("sample %d fifo %d status %08x\n",ns,i,bus_r16(FIFO_STATUS_REG));   
+	bus_w16(DUMMY_REG,i+1);
+	// }
+     // *(((u_int16_t*)(now_ptr))+i)=bus_r16(FIFO_DATA_REG);
+    }
+    //  bus_w16(DUMMY_REG,0); //
+/* #ifdef TIMEDBG  */
+
+/*   gettimeofday(&tss,NULL); */
+/*   printf("read data loop  = %ld usec\n",(tss.tv_usec) - (tse.tv_usec));  */
+
+/* #endif  */
+#ifdef VERBOSE
+  printf("*");
+#endif
+  return ram_values;
+=======
 u_int32_t  fifo_full(void){
 	return bus_r(STATUS_REG)&SOME_FIFO_FULL_BIT;
+>>>>>>> f24459bee05f373e2830bb24388e40f0b2983d5a
 }
 
 
@@ -1921,12 +2076,36 @@ return dataout;
 
 
 int setDynamicRange(int dr) {
+<<<<<<< HEAD
+  if (dr%16==0 && dr>0) {
+    dynamicRange=16;
+    // nSamples=dr/16;
+    // bus_w(NSAMPLES_REG,nSamples);
+  } 
+  getDynamicRange();
+  allocateRAM();
+  printf("Setting dataBytes to %d: dr %d; samples %d\n",dataBytes, dynamicRange, nSamples);
+  return   getDynamicRange();
+=======
 	return dynamicRange;
+>>>>>>> f24459bee05f373e2830bb24388e40f0b2983d5a
 }
 
 
 int getDynamicRange() {
+<<<<<<< HEAD
+  if(myDetectorType == JUNGFRAU){
+	dynamicRange=16;
+    return dynamicRange;
+  }
+
+  nSamples=bus_r(NSAMPLES_REG);
+  getChannels();
+  dataBytes=nModX*N_CHIP*getChannels()*2*nSamples;
+  return dynamicRange;//*bus_r(NSAMPLES_REG);//nSamples;
+=======
 	return dynamicRange;
+>>>>>>> f24459bee05f373e2830bb24388e40f0b2983d5a
 }
 
 int testBus() {

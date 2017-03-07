@@ -258,16 +258,21 @@ void Listener::ThreadExecution() {
 		return;
 	}
 
-	//error check
+	//error check, (should not be here) if not transmitting yet (previous if) rc should be > 0
 	if (rc <= 0) {
-		cprintf(BG_RED,"Error:(Weird), UDP Sockets not shut down, but received nothing\n");
-		fifo->FreeAddress(buffer);
+		if (carryOverFlag) {
+			uint64_t fnum=0;uint32_t pnum=0;
+			generalData->GetHeaderInfo(index, carryOverPacket, fnum, pnum);
+			if (fnum < currentFrameIndex)
+				cprintf(BG_RED,"Error:(Weird Early self shut down), Frame number less than current frame number\n");
+		}else
+			cprintf(BG_RED,"Error:(Weird Early self shut down), UDP Sockets not shut down, but received nothing\n");
+		StopListening(buffer);
 		return;
 	}
 
 	(*((uint32_t*)buffer)) = rc;
-	//for those returning earlier
-	(*((uint64_t*)(buffer + FIFO_HEADER_NUMBYTES ))) = currentFrameIndex;
+	(*((uint64_t*)(buffer + FIFO_HEADER_NUMBYTES ))) = currentFrameIndex;		//for those returning earlier
 	currentFrameIndex++;
 
 	//push into fifo
@@ -295,6 +300,9 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 	int dsize = generalData->dataSize;
 	bool isHeaderEmpty = true;
 
+	//only for jungfrau as we look only at pnum
+	uint32_t expectpnum = 0;
+
 
 	//reset to -1
 	memset(buf,0xFF,dsize);
@@ -305,6 +313,8 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		//check if its the current image packet
 		generalData->GetHeaderInfo(index, carryOverPacket, *dynamicRange, fnum, pnum, snum, bid);
 		if (fnum != currentFrameIndex) {
+			if (fnum < currentFrameIndex)
+				return 0;
 			return generalData->imageSize;
 		}
 		carryOverFlag = false;
@@ -315,15 +325,20 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 			(*((uint64_t*)(buf - FILE_FRAME_HEADER_SIZE + FILE_FRAME_HDR_FNUM_SIZE + FILE_FRAME_HDR_SNUM_SIZE))) = bid;
 			isHeaderEmpty = false;
 		}
+		expectpnum = pnum+1; //for jungfrau
 	}
 
 
+	//until last packet
 	while (pnum < (generalData->packetsPerFrame-1)) {
 
 		//listen to new packet
-		rc += udpSocket->ReceiveDataOnly(listeningPacket);
-		if (rc <= 0) return 0;
-
+		int curr_rc = udpSocket->ReceiveDataOnly(listeningPacket);
+		if(curr_rc <= 0) {
+			if (rc <= 0) return 0;			//empty image
+			return generalData->imageSize;	//empty packet now, but not empty image
+		}
+		rc += curr_rc;
 
 		//update parameters
 		numPacketsCaught++;		//record immediately to get more time before socket shutdown
@@ -331,14 +346,26 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		generalData->GetHeaderInfo(index, listeningPacket, *dynamicRange, fnum, pnum, snum, bid);
 		lastCaughtFrameIndex = fnum;
 #ifdef VERBOSE
-		if (!index && !pnum)
+		if (!index)
 			cprintf(GREEN,"Listening %d: fnum:%lld, pnum:%d\n", index, (long long int)fnum, pnum);
 #endif
 		if (!measurementStartedFlag)
 			RecordFirstIndices(fnum);
 
-		//future packet
-		if (fnum != currentFrameIndex) {
+
+
+		//future packet (jungfrau) look at packet numbers
+		if (generalData->myDetectorType == JUNGFRAU)  {
+			if (pnum < expectpnum) {
+				cprintf(RED,"setting carry over flag to true\n");
+				carryOverFlag = true;
+				memcpy(carryOverPacket,listeningPacket, generalData->packetSize);
+				return generalData->imageSize;
+			}
+		}
+		//future packet	by looking at image number  (all other detectors)
+		else if (fnum != currentFrameIndex) {
+			cprintf(RED,"setting carry over flag to true\n");
 			carryOverFlag = true;
 			memcpy(carryOverPacket,listeningPacket, generalData->packetSize);
 			return generalData->imageSize;
@@ -352,6 +379,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 			(*((uint64_t*)(buf - FILE_FRAME_HEADER_SIZE + FILE_FRAME_HDR_FNUM_SIZE + FILE_FRAME_HDR_SNUM_SIZE))) = bid;
 			isHeaderEmpty = false;
 		}
+		expectpnum = pnum+1; //for jungfrau
 	}
 
 	return generalData->imageSize;

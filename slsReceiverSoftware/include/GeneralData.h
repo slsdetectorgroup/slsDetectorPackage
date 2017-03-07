@@ -7,12 +7,16 @@
  *@short abstract for setting/getting properties of detector data
  */
 
+#include "sls_receiver_defs.h"
 #include "receiver_defs.h"
 
 
 class GeneralData {
 	
 public:
+
+	/** DetectorType */
+	slsReceiverDefs::detectorType myDetectorType;
 
 	/** Number of Pixels in x axis */
 	uint32_t nPixelsX;
@@ -67,8 +71,22 @@ public:
 
 	/** Cosntructor */
 	GeneralData():
+		myDetectorType(slsReceiverDefs::GENERIC),
+		nPixelsX(0),
+		nPixelsY(0),
+		headerSizeinPacket(0),
+		dataSize(0),
+		packetSize(0),
+		packetsPerFrame(0),
+		imageSize(0),
+		frameIndexMask(0),
+		frameIndexOffset(0),
 		packetIndexMask(0),
 		packetIndexOffset(0),
+		maxFramesPerFile(0),
+		fifoBufferSize(0),
+		fifoBufferHeaderSize(0),
+		defaultFifoDepth(0),
 		threadsPerReceiver(1),
 		headerPacketSize(0){};
 
@@ -134,7 +152,8 @@ public:
 	 */
 	virtual void Print() const {
 		printf("\n\nDetector Data Variables:\n");
-		printf(	"Pixels X: %d\n"
+		printf(	"myDetectorType:%s\n"
+				"Pixels X: %d\n"
 				"Pixels Y: %d\n"
 				"Header Size in Packet: %d\n"
 				"Data Size: %d\n"
@@ -151,6 +170,7 @@ public:
 				"Default Fifo Depth: %d\n"
 				"Threads Per Receiver: %d\n"
 				"Header Packet Size: %d\n",
+				slsReceiverDefs::getDetectorType(myDetectorType).c_str(),
 				nPixelsX,
 				nPixelsY,
 				headerSizeinPacket,
@@ -178,6 +198,7 @@ class GotthardData : public GeneralData {
 
 	/** Constructor */
 	GotthardData(){
+		myDetectorType		= slsReceiverDefs::GOTTHARD;
 		nPixelsX 			= 1280;
 		nPixelsY 			= 1;
 		headerSizeinPacket  = 4;
@@ -202,6 +223,7 @@ class ShortGotthardData : public GeneralData {
 
 	/** Constructor */
 	ShortGotthardData(){
+		myDetectorType		= slsReceiverDefs::GOTTHARD;
 		nPixelsX 			= 256;
 		nPixelsY 			= 1;
 		headerSizeinPacket  = 4;
@@ -229,6 +251,7 @@ class PropixData : public GeneralData {
 
 	/** Constructor */
 	PropixData(){
+		myDetectorType		= slsReceiverDefs::PROPIX;
 		nPixelsX 			= 22;
 		nPixelsY 			= 22;
 		headerSizeinPacket  = 4;
@@ -256,6 +279,7 @@ class Moench02Data : public GeneralData {
 
 	/** Constructor */
 	Moench02Data(){
+		myDetectorType		= slsReceiverDefs::MOENCH;
 		nPixelsX 			= 160;
 		nPixelsY 			= 160;
 		headerSizeinPacket  = 4;
@@ -288,6 +312,7 @@ class Moench03Data : public GeneralData {
 
 	/** Constructor */
 	Moench03Data(){
+		myDetectorType		= slsReceiverDefs::MOENCH;
 		nPixelsX 			= 400;
 		nPixelsY 			= 400;
 		headerSizeinPacket  = 22;
@@ -315,6 +340,7 @@ class JCTBData : public GeneralData {
 
 	/** Constructor */
 	JCTBData(){
+		myDetectorType		= slsReceiverDefs::JUNGFRAUCTB;
 		nPixelsX 			= 32;
 		nPixelsY 			= 128;
 		headerSizeinPacket  = 22;
@@ -358,6 +384,7 @@ private:
 
 	/** Constructor */
 	JungfrauData(){
+		myDetectorType		= slsReceiverDefs::JUNGFRAU;
 		nPixelsX 			= (256*4);
 		nPixelsY 			= 256;
 		headerSizeinPacket  = 22;
@@ -401,7 +428,7 @@ private:
 		subFrameNumber = -1;
 		jfrau_packet_header_t* header = (jfrau_packet_header_t*)(packetData);
 		frameNumber = (uint64_t)(*( (uint32_t*) header->frameNumber));
-		packetNumber = packetsPerFrame - 1 -(uint32_t)(*( (uint8_t*) header->packetNumber));
+		packetNumber =  packetsPerFrame - 1 -(uint32_t)(*( (uint8_t*) header->packetNumber));//old firmware (not needed in new firmware)
 		bunchId = (*((uint64_t*) header->bunchid));
 	}
 
@@ -443,6 +470,7 @@ private:
 
 	/** Constructor */
 	EigerData(){
+		myDetectorType		= slsReceiverDefs::EIGER;
 		nPixelsX 			= (256*2);
 		nPixelsY 			= 256;
 		headerSizeinPacket  = 8;
@@ -470,7 +498,7 @@ private:
 	void GetHeaderInfo(int index, char* packetData,	uint64_t& frameNumber, uint32_t& packetNumber) const {
 		eiger_packet_footer_t* footer = (eiger_packet_footer_t*)(packetData + footerOffset);
 		frameNumber = (uint64_t)((*( (uint64_t*) footer)) & frameIndexMask);
-		packetNumber = (uint32_t)(*( (uint16_t*) footer->packetNumber))-1;
+		packetNumber = ((uint32_t)(*( (uint16_t*) footer->packetNumber)))-1;
 	}
 
 	/**
@@ -489,7 +517,7 @@ private:
 		subFrameNumber = -1;
 		eiger_packet_footer_t* footer = (eiger_packet_footer_t*)(packetData + footerOffset);
 		frameNumber = (uint64_t)((*( (uint64_t*) footer)) & frameIndexMask);
-		packetNumber = (uint32_t)(*( (uint16_t*) footer->packetNumber))-1;
+		packetNumber = ((uint32_t)(*( (uint16_t*) footer->packetNumber)))-1;
 		if (dynamicRange == 32) {
 			eiger_packet_header_t* header = (eiger_packet_header_t*) (packetData);
 			subFrameNumber = (uint64_t) *( (uint32_t*) header->subFrameNumber);

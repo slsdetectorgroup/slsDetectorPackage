@@ -562,15 +562,16 @@ void UDPStandardImplementation::stopReceiver(){
 		for (int i = 0; i < numThreads; i++) {
 			tot += dataProcessor[i]->GetNumFramesCaught();
 
-			if (dataProcessor[i]->GetNumFramesCaught() < numberOfFrames) {
+			uint64_t missingpackets = numberOfFrames*generalData->packetsPerFrame-listener[i]->GetTotalPacketsCaught();
+			if (missingpackets) {
 				cprintf(RED, "\n[Port %d]\n",udpPortNum[i]);
-				cprintf(RED, "Missing Packets\t\t: %lld\n",(long long int)numberOfFrames*generalData->packetsPerFrame-listener[i]->GetTotalPacketsCaught());
-				cprintf(RED, "Frames Caught\t\t: %lld\n",(long long int)dataProcessor[i]->GetNumFramesCaught());
+				cprintf(RED, "Missing Packets\t\t: %lld\n",(long long int)missingpackets);
+				cprintf(RED, "Frames Processed\t: %lld\n",(long long int)dataProcessor[i]->GetNumFramesCaught());
 				cprintf(RED, "Last Frame Caught\t: %lld\n",(long long int)listener[i]->GetLastFrameIndexCaught());
 			}else{
 				cprintf(GREEN, "\n[Port %d]\n",udpPortNum[i]);
-				cprintf(GREEN, "Missing Packets\t\t: %lld\n",(long long int)numberOfFrames*generalData->packetsPerFrame-listener[i]->GetTotalPacketsCaught());
-				cprintf(GREEN, "Frames Caught\t\t: %lld\n",(long long int)dataProcessor[i]->GetNumFramesCaught());
+				cprintf(GREEN, "Missing Packets\t\t: %lld\n",(long long int)missingpackets);
+				cprintf(GREEN, "Frames Processed\t: %lld\n",(long long int)dataProcessor[i]->GetNumFramesCaught());
 				cprintf(GREEN, "Last Frame Caught\t: %lld\n",(long long int)listener[i]->GetLastFrameIndexCaught());
 			}
 		}

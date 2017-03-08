@@ -734,19 +734,20 @@ int UDPStandardImplementation::SetupFifoStructure() {
 		//listen to only n jobs at a time
 		if (frameToGuiFrequency)
 			numberofJobs = frameToGuiFrequency;
-		else {
+
+		/*else { NOT YET
 			//random freq depends on acquisition period/time (calculate upto 100ms/period)
 			int i = ((acquisitionPeriod > 0) ?
 					(SAMPLE_TIME_IN_NS/acquisitionPeriod):
 					((acquisitionTime > 0) ? (SAMPLE_TIME_IN_NS/acquisitionTime) : SAMPLE_TIME_IN_NS));
 			//must be > 0 and < max jobs
 			numberofJobs = ((i < 1) ? 1 : ((i > MAX_JOBS_PER_THREAD) ? MAX_JOBS_PER_THREAD : i));
-		}
+		}*/
 		FILE_LOG (logINFO) << "Number of Jobs Per Thread:" << numberofJobs << endl;
 
 		uint32_t oldfifodepth = fifoDepth;
 		//reduce fifo depth if numberofJobsPerBuffer > 1 (to save memory)
-		if (numberofJobs >1) {
+		if (numberofJobs > 1) {
 			fifoDepth = ((fifoDepth % numberofJobs) ?
 					((fifoDepth/numberofJobs)+1) : //if not directly divisible
 					(fifoDepth/numberofJobs));

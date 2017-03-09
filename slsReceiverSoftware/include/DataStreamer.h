@@ -22,10 +22,11 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	 * Calls Base Class CreateThread(), sets ErrorMask if error and increments NumberofDataStreamers
 	 * @param f address of Fifo pointer
 	 * @param dr pointer to dynamic range
-	 * @param freq poiner to streaming frequency
-	 * @param timer poiner to timer if streaming frequency is random
+	 * @param freq pointer to streaming frequency
+	 * @param timer pointer to timer if streaming frequency is random
+	 * @param sEnable pointer to short frame enable
 	 */
-	DataStreamer(Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* timer);
+	DataStreamer(Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* timer, int* sEnable);
 
 	/**
 	 * Destructor
@@ -211,6 +212,9 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	/** Pointer to dynamic range */
 	uint32_t* dynamicRange;
 
+	/** Pointer to short frame enable */
+	int* shortFrameEnable;
+
 	/** Pointer to Streaming frequency, if 0, sending random images with a timer */
 	uint32_t* streamingFrequency;
 
@@ -240,5 +244,8 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 
 	/* File name to stream */
 	char fileNametoStream[MAX_STR_LENGTH];
+
+	/** Complete buffer used for roi, eg. shortGotthard */
+	char* completeBuffer;
 };
 

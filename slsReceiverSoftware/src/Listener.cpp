@@ -330,10 +330,11 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 	}
 
 
-	//until last packet
-	while (pnum < (generalData->packetsPerFrame-1)) {
+	//until last packet isHeaderEmpty to account for gotthard short frame, else never entering this loop)
+	while ( isHeaderEmpty || (pnum < (generalData->packetsPerFrame-1))) {
 
 		//listen to new packet
+
 		int curr_rc = udpSocket->ReceiveDataOnly(listeningPacket);
 		if(curr_rc <= 0) {
 			if (rc <= 0) return 0;			//empty image

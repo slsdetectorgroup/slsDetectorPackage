@@ -69,6 +69,15 @@ public:
 	/** Size of a header packet */
 	uint32_t headerPacketSize;
 
+	/** Streaming (for ROI - mainly short Gotthard) - Number of Pixels in x axis */
+	uint32_t nPixelsX_Streamer;
+
+	/** Streaming (for ROI - mainly short Gotthard) - Number of Pixels in y axis */
+	uint32_t nPixelsY_Streamer;
+
+	/** Streaming (for ROI - mainly short Gotthard) - Image size (in bytes) */
+	uint32_t imageSize_Streamer;
+
 	/** Cosntructor */
 	GeneralData():
 		myDetectorType(slsReceiverDefs::GENERIC),
@@ -88,7 +97,11 @@ public:
 		fifoBufferHeaderSize(0),
 		defaultFifoDepth(0),
 		threadsPerReceiver(1),
-		headerPacketSize(0){};
+		headerPacketSize(0),
+		nPixelsX_Streamer(0),
+		nPixelsY_Streamer(0),
+		imageSize_Streamer(0)
+		{};
 
 	/** Destructor */
 	virtual ~GeneralData(){};
@@ -124,8 +137,7 @@ public:
 		subFrameNumber = -1;
 		bunchId = -1;
 		frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
-		if (myDetectorType == slsReceiverDefs::PROPIX ||(myDetectorType == slsReceiverDefs::GOTTHARD && packetSize == GOTTHARD_PACKET_SIZE))
-			frameNumber++;
+		frameNumber++;
 		packetNumber = frameNumber&packetIndexMask;
 		frameNumber = (frameNumber & frameIndexMask) >> frameIndexOffset;
 	}
@@ -170,8 +182,11 @@ public:
 				"Fifo Buffer Header Size: %d\n"
 				"Default Fifo Depth: %d\n"
 				"Threads Per Receiver: %d\n"
-				"Header Packet Size: %d\n",
-				slsReceiverDefs::getDetectorType(myDetectorType).c_str(),
+				"Header Packet Size: %d\n"
+				"Streamer Pixels X: %d\n"
+				"Streamer Pixels Y: %d\n"
+				"Streamer Image Size: %d\n"
+				,slsReceiverDefs::getDetectorType(myDetectorType).c_str(),
 				nPixelsX,
 				nPixelsY,
 				headerSizeinPacket,
@@ -188,7 +203,10 @@ public:
 				fifoBufferHeaderSize,
 				defaultFifoDepth,
 				threadsPerReceiver,
-				headerPacketSize);
+				headerPacketSize,
+				nPixelsX_Streamer,
+				nPixelsY_Streamer,
+				imageSize_Streamer);
 	};
 };
 
@@ -214,6 +232,9 @@ class GotthardData : public GeneralData {
 		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 25000;
+		nPixelsX_Streamer 	= nPixelsX;
+		nPixelsY_Streamer 	= nPixelsY;
+		imageSize_Streamer 	= imageSize;
 	};
 };
 
@@ -237,7 +258,42 @@ class ShortGotthardData : public GeneralData {
 		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 25000;
+		nPixelsX_Streamer 	= 1280;
+		nPixelsY_Streamer 	= 1;
+		imageSize_Streamer 	= 1280 * 2;
 	};
+
+	/**
+	 * Get Header Infomation (frame number, packet number)
+	 * @param index thread index for debugging purposes
+	 * @param packetData pointer to data
+	 * @param frameNumber frame number
+	 * @param packetNumber packet number
+	 */
+	virtual void GetHeaderInfo(int index, char* packetData,	uint64_t& frameNumber, uint32_t& packetNumber) const
+	{
+		frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
+		packetNumber = 0;
+	}
+
+	/**
+	 * Get Header Infomation (frame number, packet number)
+	 * @param index thread index for debugging purposes
+	 * @param packetData pointer to data
+	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
+	 * @param frameNumber frame number
+	 * @param packetNumber packet number
+	 * @param subFrameNumber sub frame number if applicable
+	 * @param bunchId bunch id
+	 */
+	virtual void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
+			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t& bunchId) const
+	{
+		subFrameNumber = -1;
+		bunchId = -1;
+		frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
+		packetNumber = 0;
+	}
 };
 
 
@@ -267,6 +323,9 @@ class PropixData : public GeneralData {
 		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 25000;
+		nPixelsX_Streamer 	= nPixelsX;
+		nPixelsY_Streamer 	= nPixelsY;
+		imageSize_Streamer 	= imageSize;
 	};
 };
 
@@ -295,6 +354,9 @@ class Moench02Data : public GeneralData {
 		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 2500;
+		nPixelsX_Streamer 	= nPixelsX;
+		nPixelsY_Streamer 	= nPixelsY;
+		imageSize_Streamer 	= imageSize;
 	};
 
 	/**
@@ -328,6 +390,9 @@ class Moench03Data : public GeneralData {
 		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 2500;
+		nPixelsX_Streamer 	= nPixelsX;
+		nPixelsY_Streamer 	= nPixelsY;
+		imageSize_Streamer 	= imageSize;
 	};
 };
 
@@ -353,6 +418,9 @@ class JCTBData : public GeneralData {
 		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 2500;
+		nPixelsX_Streamer 	= nPixelsX;
+		nPixelsY_Streamer 	= nPixelsY;
+		imageSize_Streamer 	= imageSize;
 	};
 
 	/**
@@ -397,6 +465,9 @@ private:
 		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 2500;
+		nPixelsX_Streamer 	= nPixelsX;
+		nPixelsY_Streamer 	= nPixelsY;
+		imageSize_Streamer 	= imageSize;
 	};
 
 	/**
@@ -487,6 +558,9 @@ private:
 		footerOffset		= headerSizeinPacket + dataSize;
 		threadsPerReceiver	= 2;
 		headerPacketSize	= 48;
+		nPixelsX_Streamer 	= nPixelsX;
+		nPixelsY_Streamer 	= nPixelsY;
+		imageSize_Streamer 	= imageSize;
 	};
 
 	/**

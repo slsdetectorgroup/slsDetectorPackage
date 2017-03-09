@@ -215,7 +215,7 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {
 		if (enable) {
 			bool error = false;
 			for ( int i = 0; i < numThreads; ++i ) {
-				dataStreamer.push_back(new DataStreamer(fifo[i], &dynamicRange, &frameToGuiFrequency, &frameToGuiTimerinMS));
+				dataStreamer.push_back(new DataStreamer(fifo[i], &dynamicRange, &frameToGuiFrequency, &frameToGuiTimerinMS, &shortFrameEnable));
 				dataStreamer[i]->SetGeneralData(generalData);
 				if (dataStreamer[i]->CreateZmqSockets(&detID, &numThreads) == FAIL) {
 					error = true;

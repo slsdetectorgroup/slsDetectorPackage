@@ -37,12 +37,13 @@ const char* DataStreamer::jsonHeaderFormat =
 		"\"fname\":\"%s\"}";
 
 
-DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* timer) :
+DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* timer, int* sEnable) :
 		ThreadObject(NumberofDataStreamers),
 		generalData(0),
 		fifo(f),
 		zmqSocket(0),
 		dynamicRange(dr),
+		shortFrameEnable(sEnable),
 		streamingFrequency(freq),
 		streamingTimerInMs(timer),
 		currentFreqCount(0),
@@ -50,7 +51,8 @@ DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* tim
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
 		firstAcquisitionIndex(0),
-		firstMeasurementIndex(0)
+		firstMeasurementIndex(0),
+		completeBuffer(0)
 {
 	if(ThreadObject::CreateThread()){
 		pthread_mutex_lock(&Mutex);
@@ -69,7 +71,8 @@ DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* tim
 
 DataStreamer::~DataStreamer() {
 	CloseZmqSocket();
-	delete currentHeader;
+	if (currentHeader) delete currentHeader;
+	if (completeBuffer) delete completeBuffer;
 	ThreadObject::DestroyThread();
 	NumberofDataStreamers--;
 }
@@ -126,9 +129,16 @@ void DataStreamer::ResetParametersforNewMeasurement(char* fname){
 	firstMeasurementIndex = 0;
 	measurementStartedFlag = false;
 	strcpy(fileNametoStream, fname);
+	if (completeBuffer) {
+		delete completeBuffer;
+		completeBuffer = 0;
+	}
+	if (*shortFrameEnable >= 0) {
+		completeBuffer = new char[generalData->imageSize_Streamer];
+		memset(completeBuffer, 0, generalData->imageSize_Streamer);
+	}
 	CreateHeaderPart1();
 }
-
 
 void DataStreamer::CreateHeaderPart1() {
 	char type[10] = "";
@@ -144,7 +154,7 @@ void DataStreamer::CreateHeaderPart1() {
 	}
 
 	sprintf(currentHeader, jsonHeaderFormat_part1,
-			STREAMER_VERSION, type, generalData->nPixelsX, generalData->nPixelsY);
+			STREAMER_VERSION, type, generalData->nPixelsX_Streamer, generalData->nPixelsY_Streamer);
 #ifdef VERBOSE
 	cprintf(BLUE, "%d currentheader: %s\n", index, currentHeader);
 #endif
@@ -276,9 +286,19 @@ void DataStreamer::ProcessAnImage(char* buf) {
 		cprintf(RED,"Error: Could not send zmq header for fnum %lld and streamer %d\n",
 				(long long int) fnum, index);
 
-	if (!zmqSocket->SendData(buf + FILE_FRAME_HEADER_SIZE, generalData->imageSize))
-		cprintf(RED,"Error: Could not send zmq data for fnum %lld and streamer %d\n",
-						(long long int) fnum, index);
+	//shortframe gotthard - data sending
+	if (completeBuffer) {
+		memcpy(completeBuffer + ((generalData->imageSize)**shortFrameEnable), buf + FILE_FRAME_HEADER_SIZE, generalData->imageSize);
+		if (!zmqSocket->SendData(completeBuffer, generalData->imageSize_Streamer))
+			cprintf(RED,"Error: Could not send zmq data for fnum %lld and streamer %d\n",
+					(long long int) fnum, index);
+	}
+	//normal - data sending
+	else {
+		if (!zmqSocket->SendData(buf + FILE_FRAME_HEADER_SIZE, generalData->imageSize))
+			cprintf(RED,"Error: Could not send zmq data for fnum %lld and streamer %d\n",
+					(long long int) fnum, index);
+	}
 }
 
 

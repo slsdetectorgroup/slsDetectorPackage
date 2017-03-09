@@ -1698,8 +1698,10 @@ slsDetectorDefs::detectorType slsDetector::getDetectorsType(int pos){
     // readOutFlags roFlags;
 
 
-int slsDetector::getTotalNumberOfChannels() {  
-  cout << "total number of channels" << endl; 
+int slsDetector::getTotalNumberOfChannels() {
+#ifdef VERBOSE
+  cout << "total number of channels" << endl;
+#endif
   if(thisDetector->myDetectorType==JUNGFRAUCTB){
     if (thisDetector->roFlags&DIGITAL_ONLY)
       thisDetector->nChan[X]=4;
@@ -1718,8 +1720,10 @@ int slsDetector::getTotalNumberOfChannels() {
     thisDetector->nChans=thisDetector->nChan[X];
     thisDetector->dataBytes=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods*2*thisDetector->timerValue[SAMPLES_JCTB];
   } else
+#ifdef VERBOSE
     cout << "det type is "<< thisDetector->myDetectorType << endl;
   cout << "Total number of channels is "<< thisDetector->nChans*thisDetector->nChips*thisDetector->nMods << " data bytes is " << thisDetector->dataBytes << endl;
+#endif
   return thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;
 };
 

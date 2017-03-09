@@ -304,14 +304,18 @@ int  slsDetectorUtils::acquire(int delflag){
 	    		pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
 	    		break;
 	    	}
+#ifdef VERBOSE
 		  cout << "Receiver started " << endl;
+#endif
 		  pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
 	    }
 	    #ifdef VERBOSE
 	    cout << "Acquiring " << endl;
 	   #endif
 	    startAndReadAll();
+#ifdef VERBOSE
 	    cout << "detector finished " << endl;
+#endif
 	   #ifdef VERBOSE
 	    cout << "returned! " << endl;
 	   #endif

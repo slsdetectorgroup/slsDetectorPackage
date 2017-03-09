@@ -29,6 +29,7 @@ HDF5File::HDF5File(int ind, int* nd, char* fname, char* fpath, uint64_t* findex,
 		nPixelsX(nx),
 		nPixelsY(ny),
 		numFramesInFile(0),
+		numFilesinAcquisition(0),
 
 		dataspace_para(0),
 
@@ -86,6 +87,7 @@ void HDF5File::UpdateDataType() {
 
 
 int HDF5File::CreateFile(uint64_t fnum) {
+	numFilesinAcquisition++;
 	numFramesInFile = 0;
 	currentFileName = HDF5FileStatic::CreateFileName(filePath, fileNamePrefix, *fileIndex,
 			*frameIndexEnable, fnum, *detIndex, *numUnitsPerDetector, index);
@@ -119,6 +121,7 @@ void HDF5File::CloseCurrentFile() {
 
 
 void HDF5File::CloseAllFiles() {
+	numFilesinAcquisition = 0;
 	pthread_mutex_lock(&Mutex);
 	HDF5FileStatic::CloseDataFile(index, filefd, dataspace, dataset, dataset_para1, dataset_para2);
 	if (master && (*detIndex==0)) {
@@ -174,8 +177,21 @@ int HDF5File::CreateMasterFile(bool en, uint32_t size,
 
 void HDF5File::EndofAcquisition(uint64_t numf) {
 	//not created before
-	if (!virtualfd)
-		CreateVirtualFile(numf);
+	if (!virtualfd) {
+		//create virtual file only if more than 1 file or more than 1 detector(more than 1 file)
+		if (((numFilesinAcquisition > 1) ||(numDetY*numDetX) > 1))
+			CreateVirtualFile(numf);
+		//link current file in master file
+		else {
+			//dataset name
+			ostringstream osfn;
+			osfn << "/data";
+			if (*frameIndexEnable) osfn << "_f" << setfill('0') << setw(12) << 0;
+			string dsetname = osfn.str();
+			HDF5FileStatic::LinkVirtualInMaster(masterFileName, currentFileName, dsetname, para1, para2);
+		}
+	}
+	numFilesinAcquisition = 0;
 }
 
 

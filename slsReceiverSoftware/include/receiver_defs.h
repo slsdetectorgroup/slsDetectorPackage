@@ -36,6 +36,10 @@
 #define MAX_JOBS_PER_THREAD				1000
 
 
+//to differentiate between gotthard and short gotthard
+#define GOTTHARD_PACKET_SIZE			1286
+
+
 #define DUMMY_PACKET_VALUE				0xFFFFFFFF
 
 #define LISTENER_PRIORITY				99

@@ -126,8 +126,6 @@ void DataStreamer::ResetParametersforNewMeasurement(char* fname){
 	firstMeasurementIndex = 0;
 	measurementStartedFlag = false;
 	strcpy(fileNametoStream, fname);
-	cprintf(BLUE,"fname:%s\n",fname);
-
 	CreateHeaderPart1();
 }
 

@@ -27,7 +27,7 @@ Fifo::Fifo(uint32_t fifoItemSize, uint32_t fifoDepth, bool &success):
 
 Fifo::~Fifo() {
 	FILE_LOG (logDEBUG) << __AT__ << " called";
-	cprintf(RED,"destroying fifos\n");
+	cprintf(BLUE,"Fifo Object %d: Goodbye\n", index);
 	DestroyFifos();
 	NumberofFifoClassObjects--;
 }
@@ -47,6 +47,7 @@ int Fifo::CreateFifos(uint32_t fifoItemSize, uint32_t fifoDepth) {
 	memory = (char*) calloc (fifoItemSize * fifoDepth, sizeof(char));
 	if (memory == NULL){
 		FILE_LOG (logERROR) << "Could not allocate memory for fifos";
+		memory = 0;
 		return FAIL;
 	}
 
@@ -69,6 +70,11 @@ int Fifo::CreateFifos(uint32_t fifoItemSize, uint32_t fifoDepth) {
 void Fifo::DestroyFifos(){
 	FILE_LOG (logDEBUG) << __AT__ << " called";
 
+
+	if(memory) {
+		free(memory);
+		memory = 0;
+	}
 	if (fifoBound) {
 		delete fifoBound;
 		fifoBound = 0;
@@ -80,10 +86,6 @@ void Fifo::DestroyFifos(){
 	if (fifoStream) {
 		delete fifoStream;
 		fifoStream = 0;
-	}
-	if(memory) {
-		free(memory);
-		memory = 0;
 	}
 }
 

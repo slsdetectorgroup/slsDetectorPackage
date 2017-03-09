@@ -51,6 +51,7 @@ Listener::Listener(Fifo*& f, runStatus* s, uint32_t* portno, char* e, int* act, 
 		carryOverPacket(0),
 		listeningPacket(0)
 {
+
 	if(ThreadObject::CreateThread()){
 		pthread_mutex_lock(&Mutex);
 		ErrorMask ^= (1<<index);
@@ -309,7 +310,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 
 	//look for carry over
-	if (carryOverFlag) {
+	if (carryOverFlag) {if(!index) cprintf(RED,"carry flag\n");
 		//check if its the current image packet
 		generalData->GetHeaderInfo(index, carryOverPacket, *dynamicRange, fnum, pnum, snum, bid);
 		if (fnum != currentFrameIndex) {

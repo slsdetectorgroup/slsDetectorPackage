@@ -124,7 +124,8 @@ public:
 		subFrameNumber = -1;
 		bunchId = -1;
 		frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
-		frameNumber++;
+		if (myDetectorType == slsReceiverDefs::PROPIX ||(myDetectorType == slsReceiverDefs::GOTTHARD && packetSize == GOTTHARD_PACKET_SIZE))
+			frameNumber++;
 		packetNumber = frameNumber&packetIndexMask;
 		frameNumber = (frameNumber & frameIndexMask) >> frameIndexOffset;
 	}
@@ -203,7 +204,7 @@ class GotthardData : public GeneralData {
 		nPixelsY 			= 1;
 		headerSizeinPacket  = 4;
 		dataSize 			= 1280;
-		packetSize 			= 1286;
+		packetSize 			= GOTTHARD_PACKET_SIZE;
 		packetsPerFrame 	= 2;
 		imageSize 			= dataSize*packetsPerFrame;
 		frameIndexMask 		= 0xFFFFFFFE;
@@ -211,7 +212,7 @@ class GotthardData : public GeneralData {
 		packetIndexMask 	= 1;
 		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= imageSize;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 25000;
 	};
 };
@@ -234,7 +235,7 @@ class ShortGotthardData : public GeneralData {
 		frameIndexMask 		= 0xFFFFFFFF;
 		maxFramesPerFile 	= SHORT_MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= imageSize;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 25000;
 	};
 };
@@ -264,7 +265,7 @@ class PropixData : public GeneralData {
 		packetIndexMask 	= 1;
 		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= imageSize;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
 		defaultFifoDepth 	= 25000;
 	};
 };

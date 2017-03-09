@@ -21,7 +21,6 @@ using namespace std;
 
 UDPStandardImplementation::UDPStandardImplementation() {
 	InitializeMembers();
-
 }
 
 
@@ -188,7 +187,7 @@ int UDPStandardImplementation::setFrameToGuiFrequency(const uint32_t freq) {
 	if (frameToGuiFrequency != freq) {
 		frameToGuiFrequency = freq;
 
-		//only the ones lisening to more than 1 frame at a time needs to change fifo structure
+		/*//only the ones lisening to more than 1 frame at a time needs to change fifo structure
 		switch (myDetectorType) {
 		case GOTTHARD:
 		case PROPIX:
@@ -197,7 +196,7 @@ int UDPStandardImplementation::setFrameToGuiFrequency(const uint32_t freq) {
 		break;
 		default:
 			break;
-		}
+		}*/
 	}
 	FILE_LOG (logINFO) << "Frame to Gui Frequency: " << frameToGuiFrequency;
 	return OK;
@@ -246,7 +245,7 @@ int UDPStandardImplementation::setAcquisitionPeriod(const uint64_t i) {
 	if (acquisitionPeriod != i) {
 		acquisitionPeriod = i;
 
-		//only the ones lisening to more than 1 frame at a time needs to change fifo structure
+		/*//only the ones lisening to more than 1 frame at a time needs to change fifo structure
 		switch (myDetectorType) {
 		case GOTTHARD:
 		case PROPIX:
@@ -255,7 +254,7 @@ int UDPStandardImplementation::setAcquisitionPeriod(const uint64_t i) {
 		break;
 		default:
 			break;
-		}
+		}*/
 	}
 	FILE_LOG (logINFO) << "Acquisition Period: " << (double)acquisitionPeriod/(1E9) << "s";
 	return OK;
@@ -266,7 +265,7 @@ int UDPStandardImplementation::setAcquisitionTime(const uint64_t i) {
 	if (acquisitionTime != i) {
 		acquisitionTime = i;
 
-		//only the ones lisening to more than 1 frame at a time needs to change fifo structure
+		/*//only the ones lisening to more than 1 frame at a time needs to change fifo structure
 		switch (myDetectorType) {
 		case GOTTHARD:
 		case PROPIX:
@@ -275,7 +274,7 @@ int UDPStandardImplementation::setAcquisitionTime(const uint64_t i) {
 		break;
 		default:
 			break;
-		}
+		}*/
 	}
 	FILE_LOG (logINFO) << "Acquisition Period: " << (double)acquisitionTime/(1E9) << "s";
 	return OK;
@@ -286,7 +285,7 @@ int UDPStandardImplementation::setNumberOfFrames(const uint64_t i) {
 	if (numberOfFrames != i) {
 		numberOfFrames = i;
 
-		//only the ones lisening to more than 1 frame at a time needs to change fifo structure
+		/*//only the ones lisening to more than 1 frame at a time needs to change fifo structure
 		switch (myDetectorType) {
 		case GOTTHARD:
 		case PROPIX:
@@ -295,7 +294,7 @@ int UDPStandardImplementation::setNumberOfFrames(const uint64_t i) {
 		break;
 		default:
 			break;
-		}
+		}*/
 	}
 	FILE_LOG (logINFO) << "Number of Frames:" << numberOfFrames;
 	return OK;
@@ -349,7 +348,6 @@ int UDPStandardImplementation::setFifoDepth(const uint32_t i) {
 
 int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	FILE_LOG (logDEBUG) << "Setting receiver type";
-
 	DeleteMembers();
 	InitializeMembers();
 	myDetectorType = d;
@@ -670,7 +668,7 @@ void UDPStandardImplementation::SetLocalNetworkParameters() {
 	//to increase Socket Receiver Buffer size
 	sprintf(command,"echo $((%d)) > /proc/sys/net/core/rmem_max",RECEIVE_SOCKET_BUFFER_SIZE);
 	if (system(command)) {
-		FILE_LOG (logWARNING) << "No root permission to change Socket Receiver Buffer size (/proc/sys/net/core/rmem_max)";
+		FILE_LOG (logWARNING) << "No root privileges to change Socket Receiver Buffer size (net.core.rmem_max)";
 		return;
 	}
 	FILE_LOG (logINFO) << "Socket Receiver Buffer size (/proc/sys/net/core/rmem_max) modified to " << RECEIVE_SOCKET_BUFFER_SIZE ;
@@ -679,7 +677,7 @@ void UDPStandardImplementation::SetLocalNetworkParameters() {
 	// to increase Max length of input packet queue
 	sprintf(command,"echo %d > /proc/sys/net/core/netdev_max_backlog",MAX_SOCKET_INPUT_PACKET_QUEUE);
 	if (system(command)) {
-		FILE_LOG (logWARNING) << "No root permission to change Max length of input packet queue (/proc/sys/net/core/netdev_max_backlog)";
+		FILE_LOG (logWARNING) << "No root privileges to change Max length of input packet queue (net.core.rmem_max)";
 		return;
 	}
 	FILE_LOG (logINFO) << "Max length of input packet queue (/proc/sys/net/core/netdev_max_backlog) modified to " << MAX_SOCKET_INPUT_PACKET_QUEUE ;
@@ -691,26 +689,26 @@ void UDPStandardImplementation::SetThreadPriorities() {
 
 	for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it){
 		if ((*it)->SetThreadPriority(LISTENER_PRIORITY) == FAIL) {
-			FILE_LOG(logWARNING) << "Unable to prioritize threads. Root privileges required for this option.";
+			FILE_LOG(logWARNING) << "No root privileges to prioritize threads";
 			return;
 		}
 	}
 	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it){
 		if ((*it)->SetThreadPriority(PROCESSOR_PRIORITY) == FAIL) {
-			FILE_LOG(logWARNING) << "Unable to prioritize threads. Root privileges required for this option.";
+			FILE_LOG(logWARNING) << "No root privileges to prioritize threads";
 			return;
 		}
 	}
 	for (vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it){
 		if ((*it)->SetThreadPriority(STREAMER_PRIORITY) == FAIL) {
-			FILE_LOG(logWARNING) << "Unable to prioritize threads. Root privileges required for this option.";
+			FILE_LOG(logWARNING) << "No root privileges to prioritize threads";
 			return;
 		}
 	}
 	struct sched_param tcp_param;
 	tcp_param.sched_priority = TCP_PRIORITY;
 	if (pthread_setschedparam(pthread_self(),5 , &tcp_param) != EPERM) {
-		FILE_LOG(logWARNING) << "Unable to prioritize threads. Root privileges required for this option.";
+		FILE_LOG(logWARNING) << "No root privileges to prioritize threads";
 		return;
 	}
 
@@ -728,21 +726,22 @@ void UDPStandardImplementation::SetThreadPriorities() {
 
 int UDPStandardImplementation::SetupFifoStructure() {
 	//recalculate number of jobs &  fifodepth, return if no change
-	if ((myDetectorType == GOTTHARD) || (myDetectorType == PROPIX)) {
+/*	if ((myDetectorType == GOTTHARD) || (myDetectorType == PROPIX)) {
 
 		int oldnumberofjobs = numberofJobs;
+
 		//listen to only n jobs at a time
 		if (frameToGuiFrequency)
 			numberofJobs = frameToGuiFrequency;
 
-		/*else { NOT YET
+		else { NOT YET
 			//random freq depends on acquisition period/time (calculate upto 100ms/period)
 			int i = ((acquisitionPeriod > 0) ?
 					(SAMPLE_TIME_IN_NS/acquisitionPeriod):
 					((acquisitionTime > 0) ? (SAMPLE_TIME_IN_NS/acquisitionTime) : SAMPLE_TIME_IN_NS));
 			//must be > 0 and < max jobs
 			numberofJobs = ((i < 1) ? 1 : ((i > MAX_JOBS_PER_THREAD) ? MAX_JOBS_PER_THREAD : i));
-		}*/
+		}
 		FILE_LOG (logINFO) << "Number of Jobs Per Thread:" << numberofJobs << endl;
 
 		uint32_t oldfifodepth = fifoDepth;
@@ -757,7 +756,7 @@ int UDPStandardImplementation::SetupFifoStructure() {
 		//no change, return
 		if ((oldnumberofjobs == numberofJobs) && (oldfifodepth == fifoDepth))
 			return OK;
-	}else
+	}else*/
 		numberofJobs = 1;
 
 

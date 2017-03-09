@@ -159,6 +159,9 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	/** Number of frames in file */
 	uint32_t numFramesInFile;
 
+	/** Number of files in an acquisition - to verify need of virtual file */
+	int numFilesinAcquisition;
+
 	//parameters
 	/** Dataspace of parameters */
 	DataSpace* dataspace_para;
@@ -180,7 +183,6 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 
 	/** Datatype of parameter2 */
 	DataType datatype_para2;
-
 
 
 };

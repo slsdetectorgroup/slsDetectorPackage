@@ -60,7 +60,6 @@ The command line interface consists in these main functions:
 \item[sls\_detector\_get] to retrieve detector parameters
 \end{description}
 
-
 First, your detector should always be configured for each PC that you might want to use for controlling the detector. All the examples given here show the command {\tt{0-}}, which could be omitted for the EIGER system $0$. In the case more EIGER systems are controlled at once, the call of {\tt{1-}},.. becomes compulsory.
 
 To make sure the shared memory is cleaned, before starting, one should do:  
@@ -132,6 +131,13 @@ To acquire simply type:
 \begin{verbatim}
 sls_detector_acquire 0-
 \end{verbatim}
+Note taht acquiring is blocking.
+
+There is a more complex way of performing an acquisition, that is useful for debugging and in case one wants a non blocking behaviour: 
+\begin{itemize}
+\item {\tt{sls\_detector\_put 0-receiver start}} 
+\item {\tt{sls\_detector\_put 0-status start}} 
+\end{itemize}
 
 You can poll the detector status using:
 \begin{verbatim}
@@ -139,9 +145,9 @@ sls_detector_get 0-status
 \end{verbatim}
 If the receiver has not yet received the finished signal by the detector, the answer will return {\tt{running}}. If the detector has finished and ready for the next acquisition, then it will return {\tt{idle}}.
 The detector will not accept other commands while acquiring. If an acquisition wishes to be properly aborted, then:
-\begin{verbatim}
-sls_detector_put 0-status stop 
-\end{verbatim}
+\begin{itemize}
+\item {\tt{sls\_detector\_put 0-status stop}} 
+\end{itemize}
 this same command can be used after a non proper abortion of the acquisition to reset to normal status the detector.
 
 \section{Readout timing- maximum frame rate}\label{timing}
@@ -159,7 +165,7 @@ In the case of REAL CONTINUOUS readout, i.e. continuous acquire and readout from
 \end{itemize}
 Note that in the {\tt{continuous}} mode, some buffering is still done on the memories, so a higher frame rate than the proper real continuos one can be achieved. Still, this extra buffering is possible till the memories are not saturated. 
 The number of images that can be stored on memories are:
-\ \\
+\begin{table}
 \begin{tabular}{|c|c|}
 \hline
 dynamic range & images\\
@@ -171,12 +177,14 @@ dynamic range & images\\
 16 & 7600\\
 \hline
 \end{tabular}
+\caption{Amount of images that can be stored on board.}
+\end{table}
 
 The maximum frame rate achievable with 10~GbE, {\tt{dr 16}}, {\tt{flags continuous}}, {\tt{flags parallel}},{\tt{clkdivider 0}}, \textbf{6.1~kHz}. This is currently limited by the connection between the Front End Board and the Backend board. We expect the 32 bit mode limit to be \textbf{2~kHz} ({\tt{clkdivider 2}}).
  In dynamic range {\tt{dr 8}} the frame rate is \textbf{11~kHz} and for{\tt{dr 4}} is \textbf{22~kHz}. For 4 and 8 bit mode the frame rate are directly limited by the speed of the detector chip and not by the readout boards.    
 
 Here is a list of all the readout times in the different configurations:
-\ \\
+\begin{table}
 \begin{tabular}{|c|c|c|c|c|}
 \hline
 dynamic range & clkdivider & mode & readout time ($\mu$s) & max frame rate (kHz)\\
@@ -198,7 +206,8 @@ dynamic range & clkdivider & mode & readout time ($\mu$s) & max frame rate (kHz)
 32 & 2 & nonparallel & 504 & $<2$\\
 \hline
 \end{tabular}
-
+\caption{Readout settings.}
+\end{table}
 \textbf{As if you run too fast, the detector could become noisier, it is important to match the detector settings to your frame rate. This can be done having more parameters files and load the one suitable with your experiment.} We experienced that {\tt{highgain}} settings could not be used at 6~kHz.
 
 
@@ -283,8 +292,7 @@ You need to use the command specifying from which board you desire the temperatu
 ./sls_detector_get 1:temp_fpga
 \end{verbatim}
 
-\section{Advanced functionalities}
-\subsection{Autosumming and rate corrections}
+\section{Autosumming and rate corrections}
 
 In the case of autosumming mode, i.e, {\tt{dr 32}}, the acquisition time ({\tt{exptime}} is broken in as many subframes as they fit into the acquisition time minus all the subframes readout times. By default the {\tt{subexptime}} is set to 2.621440~ms. This implies that 12 bit counter of \E will saturate when the rate is above or equal to 1.57~MHz/pixel. The minimum value is of order of 10~ns (although as explained values smaller than 500~$\mu$s do not make sense). The maximum value is 5.2~s.
 
@@ -310,6 +318,13 @@ sls_detector_put 0-ratecorr -1
 \end{verbatim}
 
 Every time either the rate corrections are activated, $\tau$ is changed or the subframe length is changed, then a new correction table is evaluated. Note that computing the correction table is time consuming. 
+\section{1Gb/s, 10Gb/s links}
+\subsection{Checking the 1Gb/s, 10Gb/s physical links}
+LEDs on the backpanel board at the back of each half module signal:
+\begin{itemize}
+\item  the 1Gb/s physical link is signaled by the most external LED (should be green) 
+\item the 10Gb/s physical link is signaled by the second most external LED next to the 1Gb/s one (should be green) 
+\end{itemize}
 
 \subsection{Delays in sending for 1Gb/s, 10Gb/s, 10Gb flow control, receiver fifo}
 
@@ -358,6 +373,24 @@ To activate back a module, do:
 \end{verbatim}
 
 \end{itemize}
+\subsection{Setting up 10Gb correctly: experience so far}
+
+For configuring well the 10Gb card not to loose packets, as root, do:
+\begin{verbatim}
+ ethtool -G xth1 rx 4096, ethtool -C xth1 rx-usecs 100 
+\end{verbatim}
+where {\tt{xth1}} can be replaced with the correct 10Gb device. To minimise loosing packets, priorities are set better as root user, so have the receiver as root.
+To try to bypass being root, we trued something like this:
+\begin{verbatim}
+/etc/security/limits.conf  username – rtprio 99
+\end{verbatim}
+but somehow it did  not fully worked  so we kept the trick of being root.
+
+Very important is to activate the flow control in 10Gb (in 1Gb it is on by default and not configurable)
+\begin{verbatim}
+./sls_detector_put flowcontrol_10g 1
+\end{verbatim}
+Set the transmission delays as explained in the manual.
 
 \appendix
 
@@ -406,25 +439,13 @@ sleep 300; #or till the screen over netcat has told you Successuful
 
 do the same for the other boards. You can program in parallel many boards, but you cannot load two bitfiles on the same board till loading and copying one process has finished. So load all left febs together, then proceed to the left febs, then the bebs. Power off completely everything. Power it on.
 
-\section{Setting up 10Gb correctly: experience so far}
-
-For configuring well the 10Gb card not to loose packets, as root, do:
-\begin{verbatim}
- ethtool -G xth1 rx 4096, ethtool -C xth1 rx-usecs 100 
-\end{verbatim}
-where {\tt{xth1}} can be replaced with the correct 10Gb device. To minimise loosing packets, priorities are set better as root user, so have the receiver as root.
-To try to bypass being root, we trued something like this:
-\begin{verbatim}
-/etc/security/limits.conf  username – rtprio 99
-\end{verbatim}
-but somehow it did  not fully worked  so we kept the trick of being root.
-
-Very important is to activate the flow control in 10Gb (in 1Gb it is on by default and not configurable)
-\begin{verbatim}
-./sls_detector_put flowcontrol_10g 1
-\end{verbatim}
-Set the transmission delays as explained in the manual.
-
+\section{Running the (9M at cSAXS. For now)}
+\begin{itemize}
+\item login as {\tt{x12saop@xbl-daq-27}}
+\item {\tt{setup\_eiger}} \#loads environmental variables and brings you to the right directory to execute commands
+\item slsReceiverScript3 1991 36 \# from one shell.. opens 36 receivers
+\item p config ../../eiger\_9m\_10gb\_xbl-daq-27\_withbottom.config
+\end{itemize}
 
 \end{document}
 

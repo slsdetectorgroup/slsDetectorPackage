@@ -7537,7 +7537,7 @@ string slsDetector::setFilePath(string s) {
 			pthread_mutex_unlock(&ms);
 		}
 		else if(!s.empty()){
-			std::cout << "path does not exist" << endl;
+			std::cout << "file path does not exist" << endl;
 			setErrorMask((getErrorMask())|(FILE_PATH_DOES_NOT_EXIST));
 		}
 		if(ret==FORCE_UPDATE)

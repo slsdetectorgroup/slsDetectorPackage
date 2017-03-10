@@ -269,16 +269,14 @@ void UDPBaseImplementation::setFileName(const char c[]){
 void UDPBaseImplementation::setFilePath(const char c[]){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
+
 	if(strlen(c)){
 		//check if filepath exists
 		struct stat st;
 		if(stat(c,&st) == 0)
 			strcpy(filePath,c);
-		else{
-			strcpy(filePath,"");
+		else
 			FILE_LOG(logWARNING) << "FilePath does not exist: " << filePath;
-		}
-		strcpy(filePath, c);
 	}
 	FILE_LOG(logDEBUG) << "Info: File path: " << filePath;
 }

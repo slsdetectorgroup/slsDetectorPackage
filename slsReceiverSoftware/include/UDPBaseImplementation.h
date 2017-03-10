@@ -285,7 +285,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	/**
 	 * Set File Path
 	 * Checks for file directory existence before setting file path,
-	 * If it doesn't exist, it will set it blank
+	 * If it exists, it sets it
 	 * @param c file path (max of 1000 characters)
 	 */
 	void setFilePath(const char c[]);

@@ -530,7 +530,7 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 		else{
 			receiverBase->setFilePath(fPath);
 			retval = receiverBase->getFilePath();
-			if(retval == NULL){
+			if (retval == NULL || (strlen(fPath) && strcasecmp(fPath, retval))) {
 				ret = FAIL;
 				strcpy(mess,"receiver file path does not exist\n");
 			}

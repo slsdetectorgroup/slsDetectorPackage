@@ -122,7 +122,8 @@ public:
 		GET_FILE_FORMAT=-1,/**< the receiver will return its file format */
 		BINARY, /**< binary format */
 		ASCII, /**< ascii format */
-		HDF5 /**< hdf5 format */
+		HDF5, /**< hdf5 format */
+		NUM_FILE_FORMATS
 	};
 
 

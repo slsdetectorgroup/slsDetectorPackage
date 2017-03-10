@@ -549,24 +549,23 @@ void qTabDataOutput::GetOutputDir(){
 		dispOutputDir->setText(QString(myDet->getFilePath().c_str()));
 		//multi file path blank means sls file paths are different
 		if (dispOutputDir->text().isEmpty()) {
-			qDefs::Message(qDefs::INFO,"The file path for individual units are different.\n"
+			qDefs::Message(qDefs::INFORMATION,"The file path for individual units are different.\n"
 					"Hence, leaving the common field blank.","qTabDataOutput::GetOutputDir");
 #ifdef VERBOSE
 						cout << "The file path for individual units are different.\n"
 					"Hence, leaving the common field blank." << endl;
 #endif
 						QString errTip = QString("<br><nobr><font color=\"red\">"
-												"<b>Output Directory</b>"
-												"Information only: The file path for individual units are different.<br>"
+												"<b>Output Directory</b> Information only: The file path for individual units are different.<br>"
 												"Hence, leaving the common field blank.</font></nobr>");
 						lblOutputDir->setText("Path*:");
-						//dispOutputDir->setPalette(*red1);
+						lblOutputDir->setPalette(red);
 						lblOutputDir->setToolTip(errTip);
 						btnOutputBrowse->setToolTip(errTip);
 						dispOutputDir->setToolTip(errTip);
 		} else {
 			lblOutputDir->setText("Path:");
-			//dispOutputDir->setPalette(*black1);
+			lblOutputDir->setPalette(*black1);
 			lblOutputDir->setToolTip(outDirTip);
 			btnOutputBrowse->setToolTip(outDirTip);
 			dispOutputDir->setToolTip(outDirTip);
@@ -633,7 +632,7 @@ int qTabDataOutput::VerifyOutputDirectory(){
 				QString(mess.c_str()) +
 				QString( ".</font></nobr>");
 		lblOutputDir->setText("Path*:");
-		dispOutputDir->setPalette(*red1);
+		lblOutputDir->setPalette(red);
 		lblOutputDir->setToolTip(errTip);
 		btnOutputBrowse->setToolTip(errTip);
 		dispOutputDir->setToolTip(errTip);
@@ -647,7 +646,7 @@ int qTabDataOutput::VerifyOutputDirectory(){
 		cout << "The output pathid valid" << endl;
 #endif
 		lblOutputDir->setText("Path:");
-		dispOutputDir->setPalette(*black1);
+		lblOutputDir->setPalette(*black1);
 		lblOutputDir->setToolTip(outDirTip);
 		btnOutputBrowse->setToolTip(outDirTip);
 		dispOutputDir->setToolTip(outDirTip);
@@ -712,7 +711,7 @@ void qTabDataOutput::SetOutputDir(){
 								"Invalid <b>File Path</b></font></nobr>");
 
 		lblOutputDir->setText("Path*:");
-		dispOutputDir->setPalette(*red1);
+		lblOutputDir->setPalette(red);
 		lblOutputDir->setToolTip(errTip);
 		btnOutputBrowse->setToolTip(errTip);
 		dispOutputDir->setToolTip(errTip);
@@ -722,7 +721,7 @@ void qTabDataOutput::SetOutputDir(){
 		cout << "The output path has been modified" << endl;
 #endif
 		lblOutputDir->setText("Path:");
-		dispOutputDir->setPalette(*black1);
+		lblOutputDir->setPalette(*black1);
 		lblOutputDir->setToolTip(outDirTip);
 		btnOutputBrowse->setToolTip(outDirTip);
 		dispOutputDir->setToolTip(outDirTip);
@@ -997,7 +996,7 @@ void qTabDataOutput::UpdateFileOverwriteFromServer(){
 #endif
 	disconnect(chkOverwriteEnable,	SIGNAL(toggled(bool)), 		this, 	SLOT(SetOverwriteEnable(bool)));
 
-	chkFile->setChecked(myDet->overwriteFile());
+	chkOverwriteEnable->setChecked(myDet->overwriteFile());
 
 	connect(chkOverwriteEnable,	SIGNAL(toggled(bool)), 		this, 	SLOT(SetOverwriteEnable(bool)));
 }
@@ -1030,11 +1029,16 @@ void qTabDataOutput::Refresh(){
 	cout  << endl << "**Updating DataOutput Tab" << endl;
 #endif
 
+	if (!myDet->enableWriteToFile())
+		boxFileWriteEnabled->setEnabled(false);
+	else
+		boxFileWriteEnabled->setEnabled(true);
 
 	// output dir
 #ifdef VERBOSE
 	cout  << "Getting output directory" << endl;
 #endif
+
 	disconnect(comboDetector,		SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(GetOutputDir()));
 	PopulateDetectors();
 	connect(comboDetector,		SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(GetOutputDir()));
@@ -1047,11 +1051,6 @@ void qTabDataOutput::Refresh(){
 
 	//file name
 	dispFileName->setText(QString(myDet->getFileName().c_str()));
-
-	//file write enable
-	if(myDet->enableWriteToFile() == 1)
-		dispFileName->setText("Enabled");
-	else dispFileName->setText("Disabled");
 
 	//flat field correction from server
 #ifdef VERBOSE

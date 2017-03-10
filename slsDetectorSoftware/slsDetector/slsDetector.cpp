@@ -7525,9 +7525,12 @@ int slsDetector::startReceiver(){
 				setErrorMask((getErrorMask())|(COULDNOT_START_RECEIVER));
 		}
 	}
-	//let detector prepare anyway even if receiver didnt work
-	if((thisDetector->myDetectorType != JUNGFRAU))
-		ret=detectorSendToReceiver(true);
+	//let detector prepare anyway even if receiver didnt work (for those not using the receiver)
+	if((thisDetector->myDetectorType != JUNGFRAU)) {
+		int ret1 = detectorSendToReceiver(true);
+		if (ret != FAIL)
+			ret = ret1;
+	}
 
 	return ret;
 }

@@ -226,9 +226,6 @@ int  slsDetectorUtils::acquire(int delflag){
      
 	for (int ip=0; ip<np; ip++) {
 
-		//let processing thread listen to these packets
-		sem_post(&sem_newRTAcquisition);
-
 	  //   cout << "positions " << endl;
 	  if (*stoppedFlag==0) {
 	    if  (getNumberOfPositions()>0) {
@@ -297,12 +294,17 @@ int  slsDetectorUtils::acquire(int delflag){
 	    	setFileName(fileIO::getFileName());
 	    	//start receiver
 	    	if(startReceiver() == FAIL) {
+	    		cout << "Start receiver failed " << endl;
 	    		stopReceiver();
 	    		*stoppedFlag=1;
 	    		pthread_mutex_unlock(&mg);
 	    		break;
 	    	}
 	    	pthread_mutex_unlock(&mg);
+
+			//let processing thread listen to these packets
+			sem_post(&sem_newRTAcquisition);
+
 	    }
 #ifdef VERBOSE
 	    cout << "Acquiring " << endl;

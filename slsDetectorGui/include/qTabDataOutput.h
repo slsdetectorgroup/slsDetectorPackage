@@ -90,15 +90,25 @@ private:
 	void GetCompression();
 
 	/** update speed */
-	void updateSpeedFromServer();
+	void UpdateSpeedFromServer();
 
 	/** update flags */
-	void updateFlagsFromServer();
+	void UpdateFlagsFromServer();
+
+	/** update flags */
+	void SetupFileFormat();
+
+	/** update file format */
+	void UpdateFileFormatFromServer();
+
+	/** update overwrite enable */
+	void UpdateFileOverwriteFromServer();
+
 
 private slots:
 
 /** Open dialog to choose the output directory */
-void browseOutputDir();
+void BrowseOutputDir();
 
 /**set flat field file*/
 void SetFlatField();
@@ -137,10 +147,16 @@ void SetCompression(bool enable);
 void EnableTenGigabitEthernet(bool enable, int get=0);
 
 /** set speed */
-void setSpeed();
+void SetSpeed();
 
 /** set flags */
-void setFlags();
+void SetFlags();
+
+/** set file format */
+void SetFileFormat(int format);
+
+/** set overwrite enable */
+void SetOverwriteEnable(bool enable);
 
 signals:
 /**signal to enable/disable positions in Actions*/

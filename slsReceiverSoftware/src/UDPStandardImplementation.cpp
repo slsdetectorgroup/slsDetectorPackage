@@ -1527,7 +1527,7 @@ int UDPStandardImplementation::setupWriter(){
 	//acquisition start call back returns enable write
 	cbAction = DO_EVERYTHING;
 	if (startAcquisitionCallBack)
-		cbAction=startAcquisitionCallBack(filePath,fileNamePerThread[0],(int)fileIndex,bufferSize,pStartAcquisition);
+		cbAction=startAcquisitionCallBack(filePath,fileNamePerThread[0],fileIndex, (uint32_t)bufferSize,pStartAcquisition);
 
 
 	if(cbAction < DO_EVERYTHING){
@@ -2175,6 +2175,7 @@ int UDPStandardImplementation::prepareAndListenBufferCompleteFrames(int ithread)
 	uint32_t pnum = 0;
 	uint64_t fnum = 0;
 	uint64_t bnum = 0;
+	uint64_t snum = 0;
 	int rc = 0;
 	//from getframeandpacketnumber()
 	uint32_t pi = 0;
@@ -2193,7 +2194,8 @@ int UDPStandardImplementation::prepareAndListenBufferCompleteFrames(int ithread)
 	}
 	else
 		fnum = fi;								//fnum of first packet
-	bnum = bi;								//bnum of first packet
+	bnum = bi;									//bnum of first packet
+	snum = si;									//snum of first packet
 	totalListeningPacketCount[ithread]++;
 #ifdef VERBOSE
 	if(!ithread) cout << "1 pnum:" << pnum << endl;
@@ -2283,6 +2285,7 @@ int UDPStandardImplementation::prepareAndListenBufferCompleteFrames(int ithread)
 			if(fi!=ALL_MASK_32)
 				fnum = fi;						//fnum of first packet
 			bnum = bi;							//bnum of first packet
+			snum = si;							//snum of first packet
 		}
 	}
 	//------------------------------------------------------ got a complete frame --------------------------------------------------------
@@ -2292,8 +2295,21 @@ int UDPStandardImplementation::prepareAndListenBufferCompleteFrames(int ithread)
 #ifdef VERBOSE
 	if(!ithread) cout << "fnum:" << (*((uint64_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))) << endl;
 #endif
-	if(myDetectorType == JUNGFRAU)
-		(*((uint64_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_BUNCHID_OFFSET))) = bnum;
+	switch (myDetectorType) {
+	case JUNGFRAU:
+		(*((uint64_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_TIMESTAMP_OFFSET))) = bnum;
+		(*((uint64_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_EXPLENGTH_OFFSET))) = 0;
+		break;
+	case EIGER:
+		(*((uint64_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_TIMESTAMP_OFFSET))) = 0;
+		(*((uint64_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_EXPLENGTH_OFFSET))) = snum;
+		break;
+	default:
+		(*((uint64_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_TIMESTAMP_OFFSET))) = 0;
+		(*((uint64_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_EXPLENGTH_OFFSET))) = 0;
+		break;
+	}
+
 	//write packet count to buffer
 	*((uint32_t*)(buffer[ithread])) = packetsPerFrame;
 	return bufferSize;
@@ -2802,7 +2818,7 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 			cprintf(RED,"Note: Deactivated Receiver\n");
 		//acquisition end
 		if (acquisitionFinishedCallBack)
-			acquisitionFinishedCallBack((int)totalPacketsCaught, pAcquisitionFinished);
+			acquisitionFinishedCallBack(totalPacketsCaught, pAcquisitionFinished);
 	}
 }
 
@@ -2827,8 +2843,12 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 
 	//callback to write data
 	if (cbAction < DO_EVERYTHING)
-		rawDataReadyCallBack((int)tempframenumber, wbuffer + fifoBufferHeaderSize, npackets * onePacketSize,
-				sfilefd[ithread], latestData[ithread],pRawDataReady);//know which thread from sfilefd
+		rawDataReadyCallBack(detID*numberofListeningThreads+ithread, tempframenumber,
+				0,0,
+				wbuffer + fifoBufferHeaderSize,
+				bufferSize * numberofJobsPerBuffer + fifoBufferHeaderSize,
+				sfilefd[ithread], pRawDataReady);//know which thread from sfilefd
+
 
 
 	//write to file if enabled and update write parameters
@@ -2870,14 +2890,17 @@ void UDPStandardImplementation::handleCompleteFramesOnly(int ithread, char* wbuf
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//get current frame number
-	uint64_t tempframenumber;
-	tempframenumber = (*((uint64_t*)(wbuffer+HEADER_SIZE_NUM_TOT_PACKETS)));
-	tempframenumber -= startFrameIndex;
+	uint64_t tempframenumber = (*((uint64_t*)(wbuffer + HEADER_SIZE_NUM_TOT_PACKETS)));
+	uint64_t bnum = (*((uint64_t*)(wbuffer + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_TIMESTAMP_OFFSET)));
+	uint64_t snum = (*((uint64_t*)(wbuffer + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_EXPLENGTH_OFFSET)));
 
 
 	if (cbAction < DO_EVERYTHING)
-		rawDataReadyCallBack((int)tempframenumber, wbuffer + HEADER_SIZE_NUM_TOT_PACKETS, bufferSize + FILE_FRAME_HEADER_LENGTH,
-				sfilefd[ithread], latestData[ithread],pRawDataReady);
+		rawDataReadyCallBack(detID*numberofListeningThreads+ithread, tempframenumber,
+				bnum, snum,
+				wbuffer + fifoBufferHeaderSize,
+				bufferSize * numberofJobsPerBuffer + fifoBufferHeaderSize,
+				sfilefd[ithread], pRawDataReady);
 
 
 	//write to file if enabled and update write parameters
@@ -2887,6 +2910,7 @@ void UDPStandardImplementation::handleCompleteFramesOnly(int ithread, char* wbuf
 		fwrite(wbuffer + HEADER_SIZE_NUM_TOT_PACKETS, 1, (bufferSize + FILE_FRAME_HEADER_LENGTH), sfilefd[ithread]);
 	}
 
+	tempframenumber -= startFrameIndex;
 
 	//progress
 	if(tempframenumber &&  (tempframenumber%(maxFramesPerFile/progressFrequency)) == 0){

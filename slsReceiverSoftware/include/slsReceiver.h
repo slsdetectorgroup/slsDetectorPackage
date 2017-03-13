@@ -58,28 +58,39 @@ class slsReceiver : private virtual slsReceiverDefs {
 	int64_t getReceiverVersion();
 
 	/**
-	 @sort register calbback for starting the acquisition
-	 @param func  callback to be called when starting the acquisition. Its arguments are filepath filename fileindex data size
-	 \returns	   0 callback takes care of open,close,write file; 	   1 callback writes file, we have to open, close it; 2 we open, close, write file, callback does not do anything
+	 * Call back for start acquisition
+	 * callback arguments are
+	 * filepath
+	 * filename
+	 * fileindex
+	 * datasize
+	 *
+	 * return value is
+	 * 0 callback takes care of open,close,wrie file
+	 * 1 callback writes file, we have to open, close it
+	 * 2 we open, close, write file, callback does not do anything
 	 */
-	void registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg);
-
+	void registerCallBackStartAcquisition(int (*func)(char*, char*, uint64_t, uint32_t, void*),void *arg);
 
 	/**
-	  callback argument is
-	  toatal farmes caught
+	 * Call back for acquisition finished
+	 * callback argument is
+	 * total frames caught
 	 */
-	void registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg);
+	void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void*),void *arg);
 
 	/**
-	  args to raw data ready callback are
-	  framenum
-	  datapointer
-	  datasize in bytes
-	  file descriptor
-	  guidatapointer (NULL, no data required)
+	 * Call back for raw data
+	 * args to raw data ready callback are
+	 * index
+	 * frame number
+	 * timestamp/ bunch id
+	 * exposure length/ sub frame number
+	 * datapointer
+	 * datasize in bytes
+	 * file descriptor
 	 */
-	void registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg);
+	void registerCallBackRawDataReady(void (*func)(int, uint64_t, uint64_t, uint64_t, char*, uint32_t, FILE*, void*),void *arg);
 
 
  private:

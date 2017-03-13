@@ -55,13 +55,10 @@ public:
 	/**
 
 	@sort register calbback for starting the acquisition 
-	 \param func  callback to be called when starting the acquisition. Its arguments are filepath filename fileindex data size
-	   
+	 \param func  callback to be called when starting the acquisition. Its arguments are  filepath, filename, fileindex, datasize
 	  \returns	   0 callback takes care of open,close,write file; 	   1 callback writes file, we have to open, close it; 2 we open, close, write file, callback does not do anything
-
 	*/
-	
-	void registerCallBackStartAcquisition(int (*func)(char* filepath, char* filename,int fileindex, int datasize, void*),void *arg);
+	void registerCallBackStartAcquisition(int (*func)(char* filepath, char* filename, uint64_t fileindex, uint32_t datasize, void*),void *arg);
 
 
 	/**	
@@ -69,20 +66,17 @@ public:
 	  \param func end of acquisition callback. Argument nf is total frames caught
 	  \returns nothing
 	*/
-	
-	
-	void registerCallBackAcquisitionFinished(void (*func)(int nf, void*),void *arg);
+	void registerCallBackAcquisitionFinished(void (*func)(uint64_t nf, void*),void *arg);
 	
 
 
 	/**
 	   @sort register callback to be called when data are available (to process and/or save the data).
-	   \param func raw data ready callback. arguments are framenum datapointer  datasize file descriptor guidatapointer (NULL, no data required)
+	   \param func raw data ready callback. arguments are index, frame number, timestamp/ bunch id, exposure length/ sub frame number, datapointer, datasize in bytes, file descriptor
 	  \returns nothing
 	*/
+	void registerCallBackRawDataReady(void (*func)(int index, uint64_t framenumber, uint64_t timestamp, uint64_t explength, char* datapointer, uint32_t datasize, FILE* filedescriptor, void*),void *arg);
 	
-	void registerCallBackRawDataReady(void (*func)(int framenumber, char* datapointer, int datasize, FILE* filedescriptor, char* guidatapointer, void*),void *arg);
-
 	//receiver object
 	slsReceiver* receiver;
 };

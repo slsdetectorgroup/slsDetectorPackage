@@ -58,8 +58,10 @@ typedef struct {
 #define HEADER_SIZE_NUM_PACKETS	1
 #define ALL_MASK_32				0xFFFFFFFF
 
-#define FILE_FRAME_HEADER_LENGTH	16
-#define FILE_HEADER_BUNCHID_OFFSET	8
+#define FILE_FRAME_HEADER_LENGTH	 	(8*3)
+#define FILE_HEADER_TIMESTAMP_OFFSET	8	//start of frame/ bunch id
+#define FILE_HEADER_EXPLENGTH_OFFSET	16	//exposure length/ sub frame number
+
 
 
 //all max frames defined in sls_receiver_defs.h.  20000 gotthard, 100000 for short gotthard, 1000 for moench, eiger 20000

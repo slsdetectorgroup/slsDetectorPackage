@@ -486,30 +486,32 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * fileindex
 	 * datasize
 	 *
-	 * return value is the action which decides what the user and default responsibilities to save data are
+	 * return value is
 	 * 0 callback takes care of open,close,wrie file
 	 * 1 callback writes file, we have to open, close it
 	 * 2 we open, close, write file, callback does not do anything
 	 */
-	void registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg);
+	void registerCallBackStartAcquisition(int (*func)(char*, char*, uint64_t, uint32_t, void*),void *arg);
 
 	/**
 	 * Call back for acquisition finished
 	 * callback argument is
 	 * total frames caught
 	 */
-	void registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg);
+	void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void*),void *arg);
 
 	/**
 	 * Call back for raw data
 	 * args to raw data ready callback are
-	 * framenum
+	 * index
+	 * frame number
+	 * timestamp/ bunch id
+	 * exposure length/ sub frame number
 	 * datapointer
 	 * datasize in bytes
 	 * file descriptor
-	 * guidatapointer (NULL, no data required)
 	 */
-	void registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg);
+	void registerCallBackRawDataReady(void (*func)(int, uint64_t, uint64_t, uint64_t, char*, uint32_t, FILE*, void*),void *arg);
 
 
 
@@ -599,7 +601,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 
 	//***callback parameters***
 	/**
-	 * function being called back for start acquisition
+	 * Call back for start acquisition
 	 * callback arguments are
 	 * filepath
 	 * filename
@@ -611,28 +613,30 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * 1 callback writes file, we have to open, close it
 	 * 2 we open, close, write file, callback does not do anything
 	 */
-	int (*startAcquisitionCallBack)(char*, char*,int, int, void*);
+	int (*startAcquisitionCallBack)(char*, char*, uint64_t, uint32_t, void*);
 	void *pStartAcquisition;
 
 	/**
-	 * function being called back for acquisition finished
+	 * Call back for acquisition finished
 	 * callback argument is
 	 * total frames caught
 	 */
-	void (*acquisitionFinishedCallBack)(int, void*);
+	void (*acquisitionFinishedCallBack)(uint64_t, void*);
 	void *pAcquisitionFinished;
 
 
 	/**
-	 * function being called back for raw data
+	 * Call back for raw data
 	 * args to raw data ready callback are
-	 * framenum
+	 * index
+	 * frame number
+	 * timestamp/ bunch id
+	 * exposure length/ sub frame number
 	 * datapointer
 	 * datasize in bytes
 	 * file descriptor
-	 * guidatapointer (NULL, no data required)
 	 */
-	void (*rawDataReadyCallBack)(int, char*, int, FILE*, char*, void*);
+	void (*rawDataReadyCallBack)(int, uint64_t, uint64_t, uint64_t, char*, uint32_t, FILE*, void*);
 	void *pRawDataReady;
 
 

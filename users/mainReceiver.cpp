@@ -26,8 +26,8 @@ void closeFile(int p){
 
 
 
-int StartAcq(char* filepath, char*filename,int fileindex, int datasize, void*p){
-  printf("--StartAcq:  filepath:%s  filename:%s fileindex:%d  datasize:%d\n",
+int StartAcq(char* filepath, char* filename, uint64_t fileindex, uint32_t datasize, void*p){
+  printf("--StartAcq:  filepath:%s  filename:%s fileindex:%llu  datasize:%u\n",
 	 filepath, filename, fileindex, datasize);
 
   printf("--StartAcq: returning 0\n");
@@ -35,14 +35,15 @@ int StartAcq(char* filepath, char*filename,int fileindex, int datasize, void*p){
 }
 
 
-void AcquisitionFinished(int frames, void*p){
-  printf("AcquisitionFinished: frames:%d \n",frames);
+void AcquisitionFinished(uint64_t frames, void*p){
+  printf("AcquisitionFinished: frames:%llu \n",frames);
 
 }
 
 
-void GetData(int framenum, char* datapointer, int datasize, FILE* descriptor, char* gui, void* p){
-  printf("GetData: framenum: %d(%d)\n", framenum, *(int*)datapointer);
+void GetData(int index, uint64_t framenum, uint64_t timestamp, uint64_t explength, char* datapointer, uint32_t datasize, FILE* descriptor, void* p){
+  printf("GetData: index:%d framenum: %llu, timestamp: %llu, explength:%llu, firstbytedata: 0x%x datsize: %u\n",
+		  index, framenum, timestamp, explength,((uint8_t)(*((uint8_t*)(datapointer)))), datasize);
 
 }
 

@@ -1526,9 +1526,15 @@ int UDPStandardImplementation::setupWriter(){
 
 	//acquisition start call back returns enable write
 	cbAction = DO_EVERYTHING;
-	if (startAcquisitionCallBack)
-		cbAction=startAcquisitionCallBack(filePath,fileNamePerThread[0],fileIndex, (uint32_t)bufferSize,pStartAcquisition);
-
+	if (startAcquisitionCallBack) {
+		//remove detector index in the file name
+		int deti = -1;
+		string tempname(fileName);
+		size_t uscore=tempname.rfind("_");
+		if ((uscore!=string::npos) && (sscanf(tempname.substr(uscore+1,tempname.size()-uscore-1).c_str(),"d%d",&deti)))
+				tempname=tempname.substr(0,uscore);
+		cbAction=startAcquisitionCallBack(filePath, (char*)tempname.c_str(),fileIndex, (uint32_t)bufferSize,pStartAcquisition);
+	}
 
 	if(cbAction < DO_EVERYTHING){
 		FILE_LOG(logINFO) << "Call back activated. Data saving must be taken care of by user in call back.";
@@ -2302,7 +2308,10 @@ int UDPStandardImplementation::prepareAndListenBufferCompleteFrames(int ithread)
 		break;
 	case EIGER:
 		(*((uint64_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_TIMESTAMP_OFFSET))) = 0;
-		(*((uint64_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_EXPLENGTH_OFFSET))) = snum;
+		if (dynamicRange == 32)
+			(*((uint64_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_EXPLENGTH_OFFSET))) = snum;
+		else
+			(*((uint64_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_EXPLENGTH_OFFSET))) = 0;
 		break;
 	default:
 		(*((uint64_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_TIMESTAMP_OFFSET))) = 0;
@@ -2818,7 +2827,7 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 			cprintf(RED,"Note: Deactivated Receiver\n");
 		//acquisition end
 		if (acquisitionFinishedCallBack)
-			acquisitionFinishedCallBack(totalPacketsCaught, pAcquisitionFinished);
+			acquisitionFinishedCallBack((totalPacketsCaught/(packetsPerFrame*numberofListeningThreads)), pAcquisitionFinished);
 	}
 }
 

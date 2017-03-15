@@ -650,7 +650,7 @@ int UDPStandardImplementation::setDynamicRange(const uint32_t i){
 				if(latestData[i]){delete[] latestData[i];latestData[i] = 0;}
 			}
 			for(int i=0;i<numberofWriterThreads;i++){
-				latestData[i] = new char[bufferSize+FILE_FRAME_HEADER_LENGTH]();
+				latestData[i] = new char[bufferSize+sizeof(sls_detector_header)]();
 			}
 			//restructure fifo
 			numberofJobsPerBuffer = -1;
@@ -707,7 +707,7 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b){
 				if(latestData[i]){delete[] latestData[i];latestData[i] = 0;}
 			}
 			for(int i=0;i<numberofWriterThreads;i++){
-				latestData[i] = new char[bufferSize+FILE_FRAME_HEADER_LENGTH]();
+				latestData[i] = new char[bufferSize+sizeof(sls_detector_header)]();
 			}
 
 			//restructure fifo
@@ -826,7 +826,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 		fifoSize			= EIGER_FIFO_SIZE;
 		fifoDepth			= EIGER_FIFO_SIZE;
 		footerOffset		= EIGER_DATA_PACKET_HEADER_SIZE + oneDataSize;
-		fifoBufferHeaderSize= (HEADER_SIZE_NUM_TOT_PACKETS + FILE_FRAME_HEADER_LENGTH);
+		fifoBufferHeaderSize= (HEADER_SIZE_NUM_TOT_PACKETS + sizeof(sls_detector_header));
 		excludeMissingPackets= true;
 		break;
 	case JUNGFRAUCTB:
@@ -854,7 +854,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 		maxFramesPerFile	= JFRAU_MAX_FRAMES_PER_FILE;
 		fifoDepth			= JFRAU_FIFO_SIZE;
 		fifoSize			= JFRAU_FIFO_SIZE;
-		fifoBufferHeaderSize= (HEADER_SIZE_NUM_TOT_PACKETS + FILE_FRAME_HEADER_LENGTH);
+		fifoBufferHeaderSize= (HEADER_SIZE_NUM_TOT_PACKETS + sizeof(sls_detector_header));
 		//footerOffset		= Not applicable;
 		excludeMissingPackets=true;
 		break;
@@ -895,7 +895,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 	}
 	for(int i=0; i<numberofWriterThreads; i++){
 		if(excludeMissingPackets)
-			latestData[i] = new char[bufferSize+FILE_FRAME_HEADER_LENGTH]();
+			latestData[i] = new char[bufferSize+sizeof(sls_detector_header)]();
 		else
 			latestData[i] = new char[bufferSize]();
 	}
@@ -1871,7 +1871,7 @@ void UDPStandardImplementation::startDataCallback(){
 				int len = sprintf(buf,jsonFmt,type,shape, acquisitionIndex, frameIndex, subframeIndex,completeFileName[ithread]);
 				zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);
 				//send data
-				zmq_send(zmqsocket, (latestData[ithread]+FILE_FRAME_HEADER_LENGTH), bufferSize, 0);
+				zmq_send(zmqsocket, (latestData[ithread]+sizeof(sls_detector_header)), bufferSize, 0);
 				//start clock after sending
 				if(!frameToGuiFrequency){
 					randomSendNow = false;
@@ -2296,28 +2296,25 @@ int UDPStandardImplementation::prepareAndListenBufferCompleteFrames(int ithread)
 	}
 	//------------------------------------------------------ got a complete frame --------------------------------------------------------
 
-	//write frame number
-	(*((uint64_t*)(buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS))) = fnum + startAcquisitionIndex;
+	sls_detector_header* header = (sls_detector_header*) (buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS);
+	memset(header, 0, sizeof(sls_detector_header));
+	header->frameNumber = (uint64_t) (fnum + startAcquisitionIndex);
+	if (myDetectorType == EIGER && dynamicRange == 32)
+		header->expLength = (uint32_t) snum;
+	header->packetNumber = (uint32_t) packetsPerFrame;
+	if (myDetectorType == JUNGFRAU)
+		header->bunchId = (uint64_t) bnum;
+	header->xCoord = (uint16_t) detID * numberofListeningThreads + ithread;
+	header->detType = (uint8_t) myDetectorType;
+	header->version = (uint8_t) SLS_DETECTOR_HEADER_VERSION;
+
 #ifdef VERBOSE
-	if(!ithread) cout << "fnum:" << (*((uint64_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))) << endl;
+	if(!ithread)
+			cprintf(BLUE,
+					"framenumber:%llu\tsubfnum:%u\tpnum:%u\tbunchid:%llu\txcoord:%u\tdettype:%u\tversion:%u\n",
+					header->frameNumber, header->expLength, header->packetNumber,
+					header->bunchId, header->xCoord, header->detType, header->version);
 #endif
-	switch (myDetectorType) {
-	case JUNGFRAU:
-		(*((uint64_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_TIMESTAMP_OFFSET))) = bnum;
-		(*((uint64_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_EXPLENGTH_OFFSET))) = 0;
-		break;
-	case EIGER:
-		(*((uint64_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_TIMESTAMP_OFFSET))) = 0;
-		if (dynamicRange == 32)
-			(*((uint64_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_EXPLENGTH_OFFSET))) = snum;
-		else
-			(*((uint64_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_EXPLENGTH_OFFSET))) = 0;
-		break;
-	default:
-		(*((uint64_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_TIMESTAMP_OFFSET))) = 0;
-		(*((uint64_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_EXPLENGTH_OFFSET))) = 0;
-		break;
-	}
 
 	//write packet count to buffer
 	*((uint32_t*)(buffer[ithread])) = packetsPerFrame;
@@ -2852,8 +2849,20 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 
 	//callback to write data
 	if (cbAction < DO_EVERYTHING)
-		rawDataReadyCallBack(detID*numberofListeningThreads+ithread, tempframenumber,
-				0,0,
+		rawDataReadyCallBack(
+				tempframenumber,//frameNumber
+				0,//expLength
+				0,//packetNumber
+				0,//bunchId
+				0,//timestamp
+				0,//modId
+				detID*numberofListeningThreads+ithread,//xCoord
+				0,//yCoord
+				0,//zCoord
+				0,//debug
+				0,//roundRNumber
+				(uint8_t)myDetectorType,//detType
+				SLS_DETECTOR_HEADER_VERSION,//version
 				wbuffer + fifoBufferHeaderSize,
 				bufferSize * numberofJobsPerBuffer + fifoBufferHeaderSize,
 				sfilefd[ithread], pRawDataReady);//know which thread from sfilefd
@@ -2898,15 +2907,25 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 void UDPStandardImplementation::handleCompleteFramesOnly(int ithread, char* wbuffer){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
-	//get current frame number
-	uint64_t tempframenumber = (*((uint64_t*)(wbuffer + HEADER_SIZE_NUM_TOT_PACKETS)));
-	uint64_t bnum = (*((uint64_t*)(wbuffer + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_TIMESTAMP_OFFSET)));
-	uint64_t snum = (*((uint64_t*)(wbuffer + HEADER_SIZE_NUM_TOT_PACKETS + FILE_HEADER_EXPLENGTH_OFFSET)));
-
+	//get header
+	sls_detector_header* header = (sls_detector_header*) (wbuffer + HEADER_SIZE_NUM_TOT_PACKETS);
+	uint64_t tempframenumber = header->frameNumber;
 
 	if (cbAction < DO_EVERYTHING)
-		rawDataReadyCallBack(detID*numberofListeningThreads+ithread, tempframenumber,
-				bnum, snum,
+		rawDataReadyCallBack(
+				header->frameNumber,
+				header->expLength,
+				header->packetNumber,
+				header->bunchId,
+				header->timestamp,
+				header->modId,
+				header->xCoord,
+				header->yCoord,
+				header->zCoord,
+				header->debug,
+				header->roundRNumber,
+				header->detType,
+				header->version,
 				wbuffer + fifoBufferHeaderSize,
 				bufferSize * numberofJobsPerBuffer + fifoBufferHeaderSize,
 				sfilefd[ithread], pRawDataReady);
@@ -2916,7 +2935,7 @@ void UDPStandardImplementation::handleCompleteFramesOnly(int ithread, char* wbuf
 	if((fileWriteEnable) && (sfilefd[ithread])){
 		if(tempframenumber && (tempframenumber%maxFramesPerFile) == 0)
 			createNewFile(ithread);
-		fwrite(wbuffer + HEADER_SIZE_NUM_TOT_PACKETS, 1, (bufferSize + FILE_FRAME_HEADER_LENGTH), sfilefd[ithread]);
+		fwrite(wbuffer + HEADER_SIZE_NUM_TOT_PACKETS, 1, (bufferSize + sizeof(sls_detector_header)), sfilefd[ithread]);
 	}
 
 	tempframenumber -= startFrameIndex;
@@ -3179,7 +3198,7 @@ void UDPStandardImplementation::copyFrameToGui(int ithread, char* buffer, uint32
 		strcpy(guiFileName[ithread],completeFileName[ithread]);
 
 		if(excludeMissingPackets) //copy also the header
-			memcpy(latestData[ithread],buffer+HEADER_SIZE_NUM_TOT_PACKETS, bufferSize + FILE_FRAME_HEADER_LENGTH);
+			memcpy(latestData[ithread],buffer+ HEADER_SIZE_NUM_TOT_PACKETS, bufferSize + sizeof(sls_detector_header));
 		else //copy only the data
 			memcpy(latestData[ithread],buffer+ fifoBufferHeaderSize , numpackets*onePacketSize);
 		//let it know its got data

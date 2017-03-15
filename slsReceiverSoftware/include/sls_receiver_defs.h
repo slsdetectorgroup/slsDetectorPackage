@@ -116,6 +116,40 @@ public:
 		STOPPED /**< acquisition stopped externally */
 	};
 
+
+	/**
+	    @short  structure for a Detector Packet or Image Header
+	    @li frameNumber is the frame number
+	    @li expLength is the subframe number (32 bit eiger) or real time exposure time in 100ns (others)
+	    @li packetNumber is the packet number
+	    @li bunchId is the bunch id from beamline
+	    @li timestamp is the time stamp with 10 MHz clock
+	    @li modId is the unique module id (unique even for left, right, top, bottom)
+	    @li xCoord is the x coordinate in the complete detector system
+	    @li yCoord is the y coordinate in the complete detector system
+	    @li zCoord is the z coordinate in the complete detector system
+	    @li debug is for debugging purposes
+	    @li roundRNumber is the round robin set number
+	    @li detType is the detector type see :: detectorType
+	    @li version is the version number of this structure format
+	*/
+	typedef struct {
+		uint64_t frameNumber;	/**< is the frame number */
+		uint32_t expLength;		/**< is the subframe number (32 bit eiger) or real time exposure time in 100ns (others) */
+		uint32_t packetNumber;	/**< is the packet number */
+		uint64_t bunchId;		/**< is the bunch id from beamline */
+		uint64_t timestamp;		/**< is the time stamp with 10 MHz clock */
+		uint16_t modId;			/**< is the unique module id (unique even for left, right, top, bottom) */
+		uint16_t xCoord;		/**< is the x coordinate in the complete detector system */
+		uint16_t yCoord;		/**< is the y coordinate in the complete detector system */
+		uint16_t zCoord;		/**< is the z coordinate in the complete detector system */
+		uint32_t debug;			/**< is for debugging purposes */
+		uint16_t roundRNumber;	/**< is the round robin set number */
+		uint8_t detType;		/**< is the detector type see :: detectorType */
+		uint8_t version;		/**< is the version number of this structure format */
+	} sls_detector_header;
+
+
 #ifdef __cplusplus
 	  /** returns string from enabled/disabled
 	      \param b true or false

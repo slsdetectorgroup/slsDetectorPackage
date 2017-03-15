@@ -72,10 +72,12 @@ public:
 
 	/**
 	   @sort register callback to be called when data are available (to process and/or save the data).
-	   \param func raw data ready callback. arguments are index, frame number, timestamp/ bunch id, exposure length/ sub frame number, datapointer, datasize in bytes, file descriptor
-	  \returns nothing
-	*/
-	void registerCallBackRawDataReady(void (*func)(int index, uint64_t framenumber, uint64_t timestamp, uint64_t explength, char* datapointer, uint32_t datasize, FILE* filedescriptor, void*),void *arg);
+	   \param func raw data ready callback. arguments are frameNumber, expLength, packetNumber, bunchId, timestamp, modId, xCoord, yCoord, zCoord, debug, roundRNumber, detType, version, dataPointer, dataSize, fileDescriptor
+	   \returns nothing
+	 */
+	void registerCallBackRawDataReady(void (*func)(uint64_t frameNumber, uint32_t expLength, uint32_t packetNumber, uint64_t bunchId, uint64_t timestamp,
+			uint16_t modId, uint16_t xCoord, uint16_t yCoord, uint16_t zCoord, uint32_t debug, uint16_t roundRNumber, uint8_t detType, uint8_t version,
+			char* datapointer, uint32_t datasize, FILE* filedescriptor, void*),void *arg);
 	
 	//receiver object
 	slsReceiver* receiver;

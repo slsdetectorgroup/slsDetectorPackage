@@ -58,9 +58,10 @@ typedef struct {
 #define HEADER_SIZE_NUM_PACKETS	1
 #define ALL_MASK_32				0xFFFFFFFF
 
-#define FILE_FRAME_HEADER_LENGTH	 	(8*3)
-#define FILE_HEADER_TIMESTAMP_OFFSET	8	//start of frame/ bunch id
-#define FILE_HEADER_EXPLENGTH_OFFSET	16	//exposure length/ sub frame number
+#define SLS_DETECTOR_HEADER_VERSION 	0x1
+//#define FILE_FRAME_HEADER_LENGTH	 	(8*3)
+//#define FILE_HEADER_TIMESTAMP_OFFSET	8	//start of frame/ bunch id
+//#define FILE_HEADER_EXPLENGTH_OFFSET	16	//exposure length/ sub frame number
 
 
 

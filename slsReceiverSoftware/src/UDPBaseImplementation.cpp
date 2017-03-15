@@ -517,7 +517,8 @@ void UDPBaseImplementation::registerCallBackAcquisitionFinished(void (*func)(uin
 	pAcquisitionFinished=arg;
 }
 
-void UDPBaseImplementation::registerCallBackRawDataReady(void (*func)(int, uint64_t, uint64_t, uint64_t, char*, uint32_t, FILE*, void*),void *arg){
+void UDPBaseImplementation::registerCallBackRawDataReady(void (*func)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+		char*, uint32_t, FILE*, void*),void *arg){
 	rawDataReadyCallBack=func;
 	pRawDataReady=arg;
 }

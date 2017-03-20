@@ -261,7 +261,7 @@ sls_detector_put 0-subexptime [time_in_s]
 
 One needs to realize that the readout time, for each subframe is 10.5~$\mu$s if the detector is in parallel mode. 500~$\mu$s if the detector is in non parallel mode. Note that in {\tt{dr 32}}, as the single frame readout from the chip is 500~$\mu$s, no {\tt{subexptime}}$<$500~$\mu$s can be set in {\tt{parallel}} mode. To have smaller {\tt{subexptime}}, you need the {\tt{nonparallel}} mode, although this will have a larger deadtime than the acquisition time.\\
 
-Online rate corrections can be activated for {\tt{dr=32, 16}}. They are particularly useful in the autosumming mode as  every single subframe is corrected before summing it. To correct for rate, the subframe duration has to be known to the correction algorithm.    
+Online rate corrections can be activated for {\tt{dr=32}}. They are particularly useful in the autosumming mode as  every single subframe is corrected before summing it. To correct for rate, the subframe duration has to be known to the correction algorithm. Rate corrections for {\tt{dr=16}} will be activated as well in teh next firmware release.     
 To activate the rate corrections, one should do:\\
 \begin{verbatim}
 sls_detector_put 0-ratecorr [tauval_in_ns]
@@ -494,6 +494,14 @@ sls_detector_acquire
 You read {\tt{N}} in every pixel if you are setup correctly. 
 \end{itemize}
  
+\section{Load a noise pattern with shape}
+For debug pourposes, we have created a noise pattern with a shape. If you reconstruct correctly your image, you should be able to read ".EIGER'' in the same direction for both the top and bottom in normal human readable orientation.
+To load the special noise file copy the file {\tt{settingsdir/eiger/standard/eigernoise.sn048}} for every beb serial number snxxx you have and:
+\begin{verbatim}
+sls_detector_put trimbits ../settingsdir/eiger/standard/eigernoise
+sls_detector_put vthreshold 4000
+sls_detector_put vtr 4000
+\end{verbatim}
 
 \section{Running the (9M at cSAXS. For now)}
 \begin{itemize}

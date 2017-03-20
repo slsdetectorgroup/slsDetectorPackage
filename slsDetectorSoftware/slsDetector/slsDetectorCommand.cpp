@@ -651,10 +651,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
   i++;
 
-  descrToFuncMap[i].m_pFuncName="ib_test_c"; //
-  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
-  i++;
-
   descrToFuncMap[i].m_pFuncName="dac0"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
   i++;
@@ -909,6 +905,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   i++;
 
   descrToFuncMap[i].m_pFuncName="cyclesl"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="probesl"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
   i++;
 
@@ -1972,9 +1972,9 @@ string slsDetectorCommand::cmdEnablefwrite(int narg, char *args[], int action){
 string slsDetectorCommand::helpEnablefwrite(int narg, char *args[], int action){
   ostringstream os;
   if (action==GET_ACTION || action==HELP_ACTION)
-    os << string("When Enabled writes the data into the file\n");
+    os << string("enablefwrite \t When Enabled writes the data into the file\n");
   if (action==PUT_ACTION || action==HELP_ACTION)
-    os << string(" i \t  should be 1 or 0 or -1\n");
+    os << string("enablefwrite i \t  should be 1 or 0 or -1\n");
   return os.str();
 }
 
@@ -2004,9 +2004,9 @@ string slsDetectorCommand::cmdOverwrite(int narg, char *args[], int action){
 string slsDetectorCommand::helpOverwrite(int narg, char *args[], int action){
   ostringstream os;
   if (action==GET_ACTION || action==HELP_ACTION)
-    os << string("When Enabled overwrites files\n");
+    os << string("overwrite \t When Enabled overwrites files\n");
   if (action==PUT_ACTION || action==HELP_ACTION)
-    os << string(" i \t  should be 1 or 0 or -1\n");
+    os << string("overwrite i \t  should be 1 or 0 or -1\n");
   return os.str();
 }
 
@@ -2036,7 +2036,7 @@ string slsDetectorCommand::helpFileIndex(int narg, char *args[], int action){
   if (action==GET_ACTION || action==HELP_ACTION)
     os << string("index \t  gets the file index for the next the data file\n");
   if (action==PUT_ACTION || action==HELP_ACTION)
-    os << string("fname i \t  sets the fileindex for the next data file\n");
+    os << string("index i \t  sets the fileindex for the next data file\n");
   return os.str();
 }
 
@@ -2912,7 +2912,7 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
     os << "txndelay_left \n gets detector transmission delay of the left port"<< std::endl;
     os << "txndelay_right \n gets detector transmission delay of the right port"<< std::endl;
     os << "txndelay_frame \n gets detector transmission delay of the entire frame"<< std::endl;
-    os << "flowcontrol_10g \n sets flow control for 10g for eiger"<< std::endl;
+    os << "flowcontrol_10g \n gets flow control for 10g for eiger"<< std::endl;
   } 
   return os.str();
 
@@ -4005,13 +4005,13 @@ string slsDetectorCommand::helpDAC(int narg, char *args[], int action) {
 
 
     os << "dac0 " << "\t gets dac 0" << std::endl;
-    os << "dac1 " << "\t gets dac 0" << std::endl;
-    os << "dac2 " << "\t gets dac 0" << std::endl;
-    os << "dac3 " << "\t gets dac 0" << std::endl;
-    os << "dac4 " << "\t gets dac 0" << std::endl;
-    os << "dac5 " << "\t gets dac 0" << std::endl;
-    os << "dac6 " << "\t gets dac 0" << std::endl;
-    os << "dac7 " << "\t gets dac 0" << std::endl;
+    os << "dac1 " << "\t gets dac 1" << std::endl;
+    os << "dac2 " << "\t gets dac 2" << std::endl;
+    os << "dac3 " << "\t gets dac 3" << std::endl;
+    os << "dac4 " << "\t gets dac 4" << std::endl;
+    os << "dac5 " << "\t gets dac 5" << std::endl;
+    os << "dac6 " << "\t gets dac 6" << std::endl;
+    os << "dac7 " << "\t gets dac 7" << std::endl;
 
     os << "vsvp"	<< "dacu\t gets vsvp" << std::endl;
     os << "vsvn" 	<< "dacu\t gets vsvn" << std::endl;
@@ -4595,11 +4595,13 @@ string slsDetectorCommand::helpAdvanced(int narg, char *args[], int action) {
 
     os << "programfpga f \t programs the fpga with file f (with .pof extension)." << std::endl;
     os << "resetfpga f \t resets fpga, f can be any value" << std::endl;
+    os << "powerchip i \t powers on or off the chip. i = 1 for on, i = 0 for off" << std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
 
     os << "extsig:i \t gets the mode of the external signal i. can be  \n \t \t \t off, \n \t \t \t gate_in_active_high, \n \t \t \t gate_in_active_low, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t ro_trigger_in_rising_edge, \n \t \t \t ro_trigger_in_falling_edge, \n \t \t \t gate_out_active_high, \n \t \t \t gate_out_active_low, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge, \n \t \t \t ro_trigger_out_rising_edge, \n \t \t \t ro_trigger_out_falling_edge" << std::endl;
-    os << "flags \t gets the readout flags. can be none, storeinram, tot, continous, parallel, nonparallel, safe, digital, analog_digital, unknown" << std::endl;
+    os << "flags \t gets the readout flags. can be none, storeinram, tot, continous, parallel, nonparallel, safe, unknown" << std::endl;
+    os << "powerchip \t gets if the chip has been powered on or off" << std::endl;
 
   } 
   return os.str();

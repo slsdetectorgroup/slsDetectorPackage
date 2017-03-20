@@ -1438,8 +1438,8 @@ private:
 	 * @param subframeIndex address of subframe index
 	 * @param filename address of file name
 	 */
-	int getData(const int isocket, const bool masking, int* image, const int size,
-			uint64_t &acqIndex, uint64_t &frameIndex, uint32_t &subframeIndex, string &filename);
+	int getData(const int isocket, const bool masking, int* image, const int size, uint64_t &acqIndex, uint64_t &frameIndex, uint32_t &subframeIndex, string &filename);
+
 
 	/** Ensures if sockets created successfully */
 	bool dataSocketsStarted;

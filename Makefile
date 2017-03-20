@@ -34,7 +34,7 @@ $(info )
 
 .PHONY: all nonstatic static lib libreceiver textclient receiver gui stextclient sreceiver
 
-all: lib textclient  receiver#gui 
+all: lib textclient  receiver gui 
 
 nonstatic: lib libreceiver textclient receiver  gui 
 

@@ -1410,7 +1410,7 @@ private:
 	/**
 	 * Gets data from socket
 	 */
-	int getData(const int isocket, const bool masking, int* image, const int size, int &acqIndex, int &frameIndex, int &subframeIndex, string &filename);
+	int getData(const int isocket, const bool masking, int* image, const int size, uint64_t &acqIndex, uint64_t &frameIndex, uint32_t &subframeIndex, string &filename);
 
 	/** Ensures if sockets created successfully */
 	bool dataSocketsStarted;

@@ -5162,12 +5162,13 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 
 
 
-int multiSlsDetector::getData(const int isocket, const bool masking, int* image, const int size, int &acqIndex, int &frameIndex, int &subframeIndex, string &filename){
+int multiSlsDetector::getData(const int isocket, const bool masking, int* image, const int size, uint64_t &acqIndex, uint64_t &frameIndex, uint32_t &subframeIndex, string &filename){
 
 	zmq_msg_t message;
 
 	//scan header-------------------------------------------------------------------
 	zmq_msg_init (&message);
+	//cprintf(BLUE,"%d going to receive message\n", isocket);
 	int len = zmq_msg_recv(&message, zmqsocket[isocket], 0);
 	if (len == -1) {
 		cprintf(BG_RED,"Could not read header for socket %d\n",isocket);
@@ -5178,7 +5179,7 @@ int multiSlsDetector::getData(const int isocket, const bool masking, int* image,
 
 
 	// error if you print it
-	// cout << isocket << " header len:"<<len<<" value:"<< (char*)zmq_msg_data(&message)<<endl;
+   // cprintf(BLUE,"%d header len:%d value:%s\n",isocket, len, (char*)zmq_msg_data(&message));
 	//cprintf(BLUE,"%d header %d\n",isocket,len);
 	rapidjson::Document d;
 	d.Parse( (char*)zmq_msg_data(&message), zmq_msg_size(&message));
@@ -5197,10 +5198,14 @@ int multiSlsDetector::getData(const int isocket, const bool masking, int* image,
 	cout << isocket << "type: " << d["type"].GetString() << endl;
 
 #endif
-	if(d["acqIndex"].GetInt()!=-9){ //!isocket &&
-		acqIndex 		= d["acqIndex"].GetInt();
-		frameIndex 		= d["fIndex"].GetInt();
-		subframeIndex 	= d["subfnum"].GetInt();
+	if(d["acqIndex"].GetUint64()!=-1){ //!isocket &&
+		acqIndex 		= d["acqIndex"].GetUint64();
+		frameIndex 		= d["fIndex"].GetUint64();
+		subframeIndex 	= -1;
+		if(d["bitmode"].GetInt()==32 && d["detType"].GetUint()== EIGER) {
+			cprintf(BLUE,"eiger 32 bitmode\n");
+			subframeIndex 	= d["expLength"].GetUint();
+		}
 		filename 		= d["fname"].GetString();
 #ifdef VERYVERBOSE
 		cout << "Acquisition index: " << acqIndex << endl;
@@ -5275,9 +5280,9 @@ void multiSlsDetector::readFrameFromReceiver(){
 	}
 
 	//gui variables
-	int currentAcquisitionIndex = -1;
-	int currentFrameIndex = -1;
-	int currentSubFrameIndex = -1;
+	uint64_t currentAcquisitionIndex = -1;
+	uint64_t currentFrameIndex = -1;
+	uint32_t currentSubFrameIndex = -1;
 	string currentFileName = "";
 
 	//getting sls values

@@ -1785,13 +1785,38 @@ void UDPStandardImplementation::startDataCallback(){
 
 
 		//header details
-		const char *type = "float64";
-		const char *shape= "[1024, 512]";
-		const char *jsonFmt ="{\"htype\":[\"chunk-1.0\"], \"type\":\"%s\", \"shape\":%s, \"acqIndex\":%d, \"fIndex\":%d, \"subfnum\":%d, \"fname\":\"%s\"}";
+		const char *jsonFmt ="{"
+				"\"jsonversion\":%u, "
+				"\"acqIndex\":%llu, "
+				"\"fIndex\":%llu, "
+				"\"bitmode\":%d, "
+				"\"shape\":[%d, %d], "
+				"\"fname\":\"%s\", "
+
+				"\"frameNumber\":%llu, "
+				"\"expLength\":%u, "
+				"\"packetNumber\":%u, "
+				"\"bunchId\":%llu, "
+				"\"timestamp\":%llu, "
+				"\"modId\":%u, "
+				"\"xCoord\":%u, "
+				"\"yCoord\":%u, "
+				"\"zCoord\":%u, "
+				"\"debug\":%u, "
+				"\"roundRNumber\":%u, "
+				"\"detType\":%u, "
+				"\"version\":%u"
+				"}";
+		int npixelsx=0, npixelsy=0;
+		switch(myDetectorType) {
+		case JUNGFRAU: 	npixelsx = JFRAU_PIXELS_IN_ONE_ROW;		npixelsy = JFRAU_PIXELS_IN_ONE_COL;		break;
+		case EIGER: 	npixelsx = EIGER_PIXELS_IN_ONE_ROW;		npixelsy = EIGER_PIXELS_IN_ONE_COL;		break;
+		default:break; /* will not work for other detectors*/
+		}
 		char buf[1000];
-		int acquisitionIndex = -1;
-		int frameIndex = -1;
-		int subframeIndex = -1;
+		uint64_t acquisitionIndex = -1;
+		uint64_t frameIndex = -1;
+		uint32_t subframeIndex = -1;
 #ifdef DEBUG
 		int oldpnum = -1;
 #endif
@@ -1816,7 +1841,9 @@ void UDPStandardImplementation::startDataCallback(){
 					frameIndex = fnum;
 					acquisitionIndex = fnum - startAcquisitionIndex;
 					if(dynamicRange == 32) subframeIndex = snum;
-					int len = sprintf(buf,jsonFmt,type,shape, acquisitionIndex, frameIndex, subframeIndex,completeFileName[ithread]);
+					int len = sprintf(buf,jsonFmt,
+							SLS_DETECTOR_JSON_HEADER_VERSION, acquisitionIndex, frameIndex, dynamicRange, npixelsx, npixelsy,completeFileName[ithread],
+							0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0	);/* will not work for other detectors*/
 					zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);
 					//send data
 					zmq_send(zmqsocket, buffer, oneframesize, 0);
@@ -1828,12 +1855,15 @@ void UDPStandardImplementation::startDataCallback(){
 				//send final header
 				//update frame details
 #ifdef DEBUG
-				cout << "sending dummy" << endl;
+				cprintf(BLUE,"%d sending dummy\n");
 #endif
-				frameIndex = -9;
-				acquisitionIndex = -9;
-				subframeIndex = -9;
-				int len = sprintf(buf,jsonFmt,type,shape, acquisitionIndex, frameIndex, subframeIndex,completeFileName[ithread]);
+
+				frameIndex = -1;
+				acquisitionIndex = -1;
+				int len = sprintf(buf,jsonFmt,
+						SLS_DETECTOR_JSON_HEADER_VERSION, acquisitionIndex, frameIndex, dynamicRange, npixelsx, npixelsy,completeFileName[ithread],
+						0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
 				zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);
 				//send final data
 				zmq_send (zmqsocket, "end", 3, 0);
@@ -1863,12 +1893,21 @@ void UDPStandardImplementation::startDataCallback(){
 			}
 
 			if(excludeMissingPackets){
+#ifdef DEBUG
+				cprintf(BLUE,"%d sending image\n", ithread);
+#endif
 				//send header
 				//update frame details
-				frameIndex = (*((uint64_t*)(latestData[ithread]))) - startFrameIndex;
-				acquisitionIndex = (*((uint64_t*)(latestData[ithread]))) - startAcquisitionIndex;
-				subframeIndex = -1;
-				int len = sprintf(buf,jsonFmt,type,shape, acquisitionIndex, frameIndex, subframeIndex,completeFileName[ithread]);
+				sls_detector_header* header = (sls_detector_header*) (latestData[ithread]);
+				uint64_t fnum = header->frameNumber;
+				frameIndex = fnum - startFrameIndex;
+				acquisitionIndex = fnum - startAcquisitionIndex;
+
+				int len = sprintf(buf,jsonFmt,
+						SLS_DETECTOR_JSON_HEADER_VERSION, acquisitionIndex, frameIndex, dynamicRange, npixelsx, npixelsy,completeFileName[ithread],
+						header->frameNumber, header->expLength, header->packetNumber, header->bunchId, header->timestamp,
+						header->modId, header->xCoord, header->yCoord, header->zCoord, header->debug, header->roundRNumber, header->detType, header->version);
+
 				zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);
 				//send data
 				zmq_send(zmqsocket, (latestData[ithread]+sizeof(sls_detector_header)), bufferSize, 0);
@@ -1922,7 +1961,9 @@ void UDPStandardImplementation::startDataCallback(){
 						frameIndex = fnum;
 						acquisitionIndex = fnum - startAcquisitionIndex;
 						if(dynamicRange == 32) subframeIndex = snum;
-						int len = sprintf(buf,jsonFmt,type,shape, acquisitionIndex, frameIndex, subframeIndex,completeFileName[ithread]);
+						int len = sprintf(buf,jsonFmt,
+								SLS_DETECTOR_JSON_HEADER_VERSION, acquisitionIndex, frameIndex, dynamicRange, npixelsx, npixelsy,completeFileName[ithread],
+								0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0	);/* will not work for other detectors*/
 						zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);
 						//send data
 						zmq_send(zmqsocket, buffer, oneframesize, 0);
@@ -1958,7 +1999,9 @@ void UDPStandardImplementation::startDataCallback(){
 							frameIndex = fnum;
 							acquisitionIndex = fnum - startAcquisitionIndex;
 							if(dynamicRange == 32) subframeIndex = snum;
-							int len = sprintf(buf,jsonFmt,type,shape, acquisitionIndex, frameIndex, subframeIndex,completeFileName[ithread]);
+							int len = sprintf(buf,jsonFmt,
+									SLS_DETECTOR_JSON_HEADER_VERSION, acquisitionIndex, frameIndex, dynamicRange, npixelsx, npixelsy,completeFileName[ithread],
+									0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0	);/* will not work for other detectors*/
 							zmq_send(zmqsocket, buf,len, ZMQ_SNDMORE);
 							//send data
 							zmq_send(zmqsocket, buffer, oneframesize, 0);

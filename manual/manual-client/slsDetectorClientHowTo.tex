@@ -125,7 +125,7 @@ Refer to detailed documentation to understand how the different timing modes wor
 Refer to detailed documentation to understand how the different timing modes work.
 \item[dr n] Sets the dynamic range n (in bits) of the data for a photon counting detector. For \E it can be set to 4, 8, 16 (but the real counter depth will still be limited to 12 bits) or 32 when one wants to activate the internal subframe summing mode.
 
-\item[flags s] Sets some particular flags for your detector. For MYTHEN s can be \textit{none}, \textit{storeinram} (for buffered readout) or \textit{tot} (for time over threshold). For \E, s can be {\it{continous}} (for continous readout), \textit{storeinram} (for buffered readout), \textit{parallel} for parallel exposure to the next frame and readout of the previous frame, \textit{nonparallel} to decouple sequentially readout and exposure, \textit{safe} (rowclock interleaved).  
+\item[flags s] Sets some particular flags for your detector. For MYTHEN s can be \textit{none}, \textit{storeinram} (for buffered readout) or \textit{tot} (for time over threshold). For \E, s can be {\it{continous}} (for continous readout- still buffer on memories happens), \textit{storeinram} (for buffered readout. Do not use as has no graet advantages), \textit{parallel} for parallel exposure to the next frame and readout of the previous frame, \textit{nonparallel} to decouple sequentially readout and exposure, \textit{safe} (rowclock interleaved).  
 %\item[timestamp] 
 \item[help cmd]  Returns the help for command cmd.
 \item[lock] Locks (1) or unlocks (0) the detector to this particular control PC. An be unlocked again only from the same PC or by rebooting the detector.
@@ -576,8 +576,14 @@ Advanced commands to configure the detector system. Should be left to the config
 \item[stopport]Returns the port used by the sockets to stop/get the status of the detector.
 %\item[add s] Avoid using it. Adds the controller s to the detector structure.  
 %\item[remove i] Avoid using it. Removes the controller in position i from the detector structure.  
-\item[id[:i]]        returns the id of the detector structure. i is the detector position in a multi detector system
+\item[id[:i]] returns the id of the detector structure. i is the detector position in a multi detector system
 \item[free]  Avoid using it. Frees the shared memory. 
+\end{description}
+Settable communication parameters:
+\start{description}
+\item[txndelay\_left] \E advanced: Set transmission delay of sending the left port frame  
+\item[txndelay\_right] \E advanced: Set transmission delay of sending the right port frame
+ \item[txndelay\_frame] \E advanced: Set transmission delay of sending the entire frame In addition to left and right. This value has to be greater than the maximum of the transmission delays of each port.    
 \end{description}
 
 
@@ -654,23 +660,31 @@ Advanced settings changing the analog or digital performance of the acquisition.
 \item[ib\_test\_c]   Returns ib\_test\_c    
 \item[vsvp] Returns vsvp 
 \item [vsvn] Returns vsvn 
-\item [vtr] Returns vtr 
-\item [vrf] Returns vrf 
-\item [vrs] Returns vrs
-\item [vtgstv] Returns vtgstv
-\item[vcmp\_ll] Returns vcmp\_ll 
-\item [vcmp\_lr] Returns vcmp\_lr
-\item [vcmp\_rl] Returns vcmp\_rl
-\item [vcmp\_rr] Returns vcmp\_rr 
-\item [vcall] Returns vcall 
-\item [rxb\_rb] Returns rxb\_rb 
-\item [rxb\_lb] Returns rxb\_rb
-\item [vcp] Returns vcp 
-\item [vcn] Returns vcn 
-\item [vis] Returns vis 
+\item [vtr] Returns vtr trim strength (\E)
+\item [vrf] Returns vrf preamp gain (\E)
+\item [vrs] Returns vrs shaper gain (\E)
+\item [vtgstv] Returns vtgstv (\E)
+\item[vcmp\_ll] Returns vcmp\_ll (\E) leftmost chip theshold 
+\item [vcmp\_lr] Returns vcmp\_lr (\E) second to leftmost chip theshold 
+\item [vcmp\_rl] Returns vcmp\_rl (\E) second to rightmost chip theshold 
+\item [vcmp\_rr] Returns vcmp\_rr (\E) rightmost chip theshold 
+\item [vcall] Returns vcall calibration stength (\E)
+\item [rxb\_rb] Returns rxb\_rb rightmost chip value to decode 0-1 in the readout
+\item [rxb\_lb] Returns rxb\_lb leftmost chip value to decode 0-1 in the readout
+\item [vcp] Returns vcp cascode p value (\E)
+\item [vcn] Returns vcn cascode n value (\E)
+\item [vis] Returns vis shaper current (\E)
 \item [iodelay] Returns iodelay 
 \item[temp\_adc]    Returns the temperature of the ADCs     
 \item[temp\_fpga] Returns the temperature of the FPGA.
+\item[temp\_fpgaext]   Returns the temperature close to the fpga (\E).
+\item[temp\_10ge]   Returns the temperature close to the 10GE (\E).
+\item[temp\_dcdc]    Returns the temperature close to the dc dc converter  (\E).
+\item[temp\_sodl]    Returns the temperature close to the left so-dimm memory  (\E).
+\item[temp\_sodr]    Returns the temperature close to the right so-dimm memory  (\E).
+\item[temp\_fpgafl]    Returns the temperature of the left front end board fpga  (\E).
+\item[temp\_fpgafr]    Returns the temperature of the right front end board fpga  (\E).
+
 \item[reg a]   Write to register of address a the data d  
 \item[clkdivider]  Returns the clock divider for the readout.
 \item[setlength]  Returns the length of the set/reset signals in the acquisition.    

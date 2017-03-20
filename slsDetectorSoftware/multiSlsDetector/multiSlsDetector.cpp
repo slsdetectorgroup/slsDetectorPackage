@@ -5203,7 +5203,6 @@ int multiSlsDetector::getData(const int isocket, const bool masking, int* image,
 		frameIndex 		= d["fIndex"].GetUint64();
 		subframeIndex 	= -1;
 		if(d["bitmode"].GetInt()==32 && d["detType"].GetUint()== EIGER) {
-			cprintf(BLUE,"eiger 32 bitmode\n");
 			subframeIndex 	= d["expLength"].GetUint();
 		}
 		filename 		= d["fname"].GetString();

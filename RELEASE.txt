@@ -1,0 +1,133 @@
+SLS Detector Package 2.3.0 released on 2017-03-23
+================================================================================
+
+
+
+
+INTRODUCTION
+
+This document describes the differences between previous versions and 2.3.0 releases.
+
+Manuals can be found under the 'manual' folder.
+
+User documentation and other help can be accessed directly at this location:
+
+    https://www.psi.ch/detectors/users-support
+
+If you have any software related questions or comments, please send them to:
+
+    dhanya.thattil@psi.ch
+
+
+
+
+CONTENTS
+
+- Changes in User Interface
+- New Features
+- Resolved Issues
+- Known Issues
+
+
+
+
+Changes in User Interface
+=========================
+
+This release supports the following features:
+
+  	
+	Receiver
+    	--------
+	- The files will be written in this format in the default mode:
+		* ASCII file header of 1024 bytes (only for EIGER detectors)
+		* series of images, each preceded by a Standard Header image 
+		(header described below)
+	
+
+	- Stanard Header image header in file and call back
+	arguments defined. It is in the following format defined as 
+	sls_detector_header defined in 
+	slsReceiverSoftware/include/sls_receiver_defs.h
+	Mostly 0 if not applicatble or implemented, but updated in next release 
+	from firmware.
+		
+		* Frame Number       : 8 bytes 	# Image Number
+		* Exposure Length    : 4 bytes  # sub frame number in 32 bit mode
+		  		       Eiger. 
+		* Packet Number      : 4 bytes	# Number of packets in an image
+		* Bunch ID           : 8 bytes  # Bunch Id in beamline for jungfrau. 
+		* Timestamp          : 8 bytes  # Not implemened
+		* Module Id          : 2 bytes  # Not implemented
+		* X Coordinate       : 2 bytes  # Id of part of detector in 1D
+		* Y Coordinate       : 2 bytes  # Not implemented
+		* Z Coordinate       : 2 bytes  # Not implemented
+		* Debug              : 4 bytes  # Not implemented
+		* Round Robin Number : 2 bytes  # Not implemented
+		* Detector Type      : 1 byte   # Detector type defined by enum
+				                  detectorType in slsReceiverSoftware
+						  /include/sls_receiver_defs.h
+		* Header Version     : 1 byte   # 1
+	
+
+	
+	- The call back value for Start Acquisition Call back has only 2 
+	options now:
+		* 0 user mode: user call back takes care of open, close and writing 
+		  to file.
+		* 1 default mode: default procedure to open, close and write to file.
+		
+		
+
+
+
+New Features
+============
+	Eiger
+    	-----
+	- Tau is moved to settings file, Gain and offset are removed from calibration
+	file. Put settings only sets client variable, whereas putting threshold loads 
+	settings files to the server.
+	
+	- Mode argument in starting up receiver is removed. FlippedData command is used
+	in config file to specify bottom.
+	
+	
+	Receiver
+    	--------
+	- Image Reconstruction from the files are different as packet headers are not
+	stored and a standard image header is used.
+
+	
+	General
+    	-------
+	
+	- Users folder that gives an example on how to user the slsDetectorUsers and
+	slsReceiverUsers class.
+	
+	- Data is streamed from Receiver to Gui via ZMQ if gui call back defined.
+	
+
+
+
+Resolved Issues
+===============
+
+	Eiger
+    	-----
+	- Frame and packet counters in server to check delays were buggy.
+
+
+Known Issues
+============
+	- X, Y and Z Coordinates do not exactly define the position of the
+	detector in 3d. This will be defined in the next release. Other header
+	parameters will be complete in the next release.
+	
+	- Too many split files per detector especially for Eiger. Next Release will
+	have a HDF5 version, with virtual file mapping all the split files in an
+	acquisition.
+	
+	- This version is tested only for Eiger and Jungfrau.
+
+

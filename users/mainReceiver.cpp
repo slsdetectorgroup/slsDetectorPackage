@@ -53,7 +53,7 @@ void AcquisitionFinished(uint64_t frames, void*p){
 
 void GetData(uint64_t frameNumber, uint32_t expLength, uint32_t packetNumber, uint64_t bunchId, uint64_t timestamp,
 		uint16_t modId, uint16_t xCoord, uint16_t yCoord, uint16_t zCoord, uint32_t debug, uint16_t roundRNumber, uint8_t detType, uint8_t version,
-		char* datapointer, uint32_t datasize, FILE* filedescriptor, void* p){
+		char* datapointer, uint32_t datasize, void* p){
 
 	PRINT_IN_COLOR (xCoord,
 			"%d GetData: \n"
@@ -158,8 +158,10 @@ int main(int argc, char *argv[]) {
 	while(str.find("q") == string::npos)
 		cin>>str;
 	//stop tcp server thread, stop udp socket
-	for (int i = 0; i < NUM_RECEIVERS; ++i)
+	for (int i = 0; i < NUM_RECEIVERS; ++i) {
+		cprintf(BLUE,"Stopping Receiver %d\n",i);
 		receivers[i]->stop();
+	}
 
 
 	deleteReceiver(receivers);

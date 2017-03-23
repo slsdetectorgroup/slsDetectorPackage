@@ -8,6 +8,7 @@
  */
 
 #include "ansi.h"
+//#include "sls_receiver_defs.h"
 
 #include <zmq.h>
 #include <errno.h>
@@ -306,23 +307,13 @@ public:
 			cprintf (RED,"Error: Could not parse header for socket %d\n",index);
 			return 0;
 		}
-#ifdef VERYVERBOSE
-		printf("version:%.1f\n", d["version"].GetDouble());
-
-		// shape is an array of ints
-		rapidjson::Value::Array shape = d["shape"].GetArray();
-		printf("%d: shape: ", index);
-		for (int i = 0; i < shape.Size(); i++)
-			printf("%d: %d ", index, shape[i].GetInt());
-		printf("\n");
-
-		printf("%d: type: %s\n", index, d["type"].GetString());
-#endif
-
-		if(d["acqIndex"].GetUint64()!=-1){
+		if(d["acqIndex"].GetUint64()!=(uint64_t)-1) {
 			acqIndex 		= d["acqIndex"].GetUint64();
 			frameIndex 		= d["fIndex"].GetUint64();
-			subframeIndex 	= d["subfnum"].GetUint();
+			subframeIndex 	= -1;
+			if(d["bitmode"].GetInt()==32 && d["detType"].GetUint() == slsReceiverDefs::EIGER) {
+				subframeIndex 	= d["expLength"].GetUint();
+			}
 			filename 		= d["fname"].GetString();
 #ifdef VERYVERBOSE
 			cout << "Acquisition index: " << acqIndex << endl;

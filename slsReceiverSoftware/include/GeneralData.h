@@ -230,7 +230,7 @@ class GotthardData : public GeneralData {
 		packetIndexMask 	= 1;
 		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= imageSize;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 25000;
 		nPixelsX_Streamer 	= nPixelsX;
 		nPixelsY_Streamer 	= nPixelsY;
@@ -256,7 +256,7 @@ class ShortGotthardData : public GeneralData {
 		frameIndexMask 		= 0xFFFFFFFF;
 		maxFramesPerFile 	= SHORT_MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= imageSize;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 25000;
 		nPixelsX_Streamer 	= 1280;
 		nPixelsY_Streamer 	= 1;
@@ -321,7 +321,7 @@ class PropixData : public GeneralData {
 		packetIndexMask 	= 1;
 		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= imageSize;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 25000;
 		nPixelsX_Streamer 	= nPixelsX;
 		nPixelsY_Streamer 	= nPixelsY;
@@ -352,7 +352,7 @@ class Moench02Data : public GeneralData {
 		packetIndexMask 	= 0xFF;
 		maxFramesPerFile 	= MOENCH_MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= imageSize;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 2500;
 		nPixelsX_Streamer 	= nPixelsX;
 		nPixelsY_Streamer 	= nPixelsY;
@@ -388,7 +388,7 @@ class Moench03Data : public GeneralData {
 		packetIndexMask 	= 0xFFFFFFFF;
 		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= imageSize;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 2500;
 		nPixelsX_Streamer 	= nPixelsX;
 		nPixelsY_Streamer 	= nPixelsY;
@@ -416,7 +416,7 @@ class JCTBData : public GeneralData {
 		imageSize 			= dataSize*packetsPerFrame;
 		maxFramesPerFile 	= JFCTB_MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= imageSize;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 2500;
 		nPixelsX_Streamer 	= nPixelsX;
 		nPixelsY_Streamer 	= nPixelsY;
@@ -463,7 +463,7 @@ private:
 		imageSize 			= dataSize*packetsPerFrame;
 		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= imageSize;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 2500;
 		nPixelsX_Streamer 	= nPixelsX;
 		nPixelsY_Streamer 	= nPixelsY;
@@ -553,7 +553,7 @@ private:
 		frameIndexMask 		= 0xffffff;
 		maxFramesPerFile 	= EIGER_MAX_FRAMES_PER_FILE;
 		fifoBufferSize		= imageSize;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + FILE_FRAME_HEADER_SIZE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 100;
 		footerOffset		= headerSizeinPacket + dataSize;
 		threadsPerReceiver	= 2;

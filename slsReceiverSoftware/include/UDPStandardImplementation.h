@@ -60,13 +60,6 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	void setFileFormat(slsReceiverDefs::fileFormat f);
 
 	/**
-	 * Set File Name Prefix (without frame index, file index and extension (_f000000000000_8.raw))
-	 * Does not check for file existence since it is created only at startReceiver
-	 * @param c file name (max of 1000 characters)
-	 */
-	void setFileName(const char c[]);
-
-	/**
 	 * Set Short Frame Enabled, later will be moved to getROI (so far only for gotthard)
 	 * @param i index of adc enabled, else -1 if all enabled
 	 * @return OK or FAIL

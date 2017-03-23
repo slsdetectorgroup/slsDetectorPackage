@@ -132,26 +132,6 @@ void UDPStandardImplementation::setFileFormat(const fileFormat f){
 
 
 
-void UDPStandardImplementation::setFileName(const char c[]) {
-	if (strlen(c)) {
-		strcpy(fileName, c); //automatically update fileName in Filewriter (pointer)
-		/*int detindex = -1;
-		string tempname(fileName);
-		size_t uscore=tempname.rfind("_");
-		if (uscore!=string::npos) {
-			if (sscanf(tempname.substr(uscore+1, tempname.size()-uscore-1).c_str(), "d%d", &detindex)) {
-				detID = detindex;
-				tempname=tempname.substr(0,uscore);
-				strcpy(fileName, tempname.c_str());
-			}
-		}
-		if (detindex == -1)
-			detID = 0;*/
-	}
-	FILE_LOG (logINFO) << "File name:" << fileName;
-}
-
-
 int UDPStandardImplementation::setShortFrameEnable(const int i) {
 	if (myDetectorType != GOTTHARD) {
 		cprintf(RED, "Error: Can not set short frame for this detector\n");
@@ -556,7 +536,7 @@ void UDPStandardImplementation::stopReceiver(){
 
 
 	{	//statistics
-		int tot = 0;
+		uint64_t tot = 0;
 		for (int i = 0; i < numThreads; i++) {
 			tot += dataProcessor[i]->GetNumFramesCaught();
 
@@ -577,7 +557,7 @@ void UDPStandardImplementation::stopReceiver(){
 			cprintf(RED,"Note: Deactivated Receiver\n");
 		//callback
 		if (acquisitionFinishedCallBack)
-			acquisitionFinishedCallBack((int)(tot/numThreads), pAcquisitionFinished);
+			acquisitionFinishedCallBack((tot/numThreads), pAcquisitionFinished);
 	}
 
 	//change status

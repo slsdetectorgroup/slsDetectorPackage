@@ -66,6 +66,10 @@ void HDF5File::PrintMembers() {
 }
 
 
+H5File* HDF5File::GetHDF5FileHandle() {
+	return filefd;
+}
+
 void HDF5File::SetNumberofPixels(uint32_t nx, uint32_t ny) {
 	nPixelsX = nx;
 	nPixelsY = ny;
@@ -139,19 +143,20 @@ int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum) {
 	}
 	numFramesInFile++;
 
-	uint32_t snum = (*((uint32_t*)(buffer + FILE_FRAME_HDR_FNUM_SIZE)));
-	uint64_t bid = (*((uint64_t*)(buffer + FILE_FRAME_HDR_FNUM_SIZE + FILE_FRAME_HDR_SNUM_SIZE)));
+	sls_detector_header* header = (sls_detector_header*) (buffer);
+	//uint32_t snum = header->expLength;
+//	uint64_t bid = header->expLength
 	pthread_mutex_lock(&Mutex);
-	if (HDF5FileStatic::WriteDataFile(index, buffer + FILE_FRAME_HEADER_SIZE,
+	if (HDF5FileStatic::WriteDataFile(index, buffer + sizeof(sls_detector_header),
 			fnum%maxFramesPerFile, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
 			dataspace, dataset, datatype) == OK) {
-		if (HDF5FileStatic::WriteParameterDatasets(index, dataspace_para,
+		/*if (HDF5FileStatic::WriteParameterDatasets(index, dataspace_para,
 				fnum%maxFramesPerFile,
 				dataset_para1, datatype_para1, &snum,
 				dataset_para2, datatype_para2, &bid) == OK) {
 			pthread_mutex_unlock(&Mutex);
 			return OK;
-		}
+		}*/
 	}
 	pthread_mutex_unlock(&Mutex);
 	cprintf(RED,"%d Error: Write to file failed\n", index);

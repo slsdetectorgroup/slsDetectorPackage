@@ -23,18 +23,29 @@ uint64_t DataStreamer::RunningMask(0x0);
 
 pthread_mutex_t DataStreamer::Mutex = PTHREAD_MUTEX_INITIALIZER;
 
-const char* DataStreamer::jsonHeaderFormat_part1 =
-		"{"
-		"\"version\":%.1f, "
-		"\"type\":\"%s\", "
-		"\"shape\":[%d, %d], ";
-
 const char* DataStreamer::jsonHeaderFormat =
-		"%s"
+		"{"
+		"\"jsonversion\":%u, "
+		"\"bitmode\":%d, "
+		"\"shape\":[%d, %d], "
 		"\"acqIndex\":%llu, "
 		"\"fIndex\":%llu, "
-		"\"subfnum\":%u, "
-		"\"fname\":\"%s\"}";
+		"\"fname\":\"%s\", "
+
+		"\"frameNumber\":%llu, "
+		"\"expLength\":%u, "
+		"\"packetNumber\":%u, "
+		"\"bunchId\":%llu, "
+		"\"timestamp\":%llu, "
+		"\"modId\":%u, "
+		"\"xCoord\":%u, "
+		"\"yCoord\":%u, "
+		"\"zCoord\":%u, "
+		"\"debug\":%u, "
+		"\"roundRNumber\":%u, "
+		"\"detType\":%u, "
+		"\"version\":%u"
+		"}";
 
 
 DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* timer, int* sEnable) :
@@ -47,7 +58,6 @@ DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* tim
 		streamingFrequency(freq),
 		streamingTimerInMs(timer),
 		currentFreqCount(0),
-		currentHeader(0),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
 		firstAcquisitionIndex(0),
@@ -64,14 +74,12 @@ DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* tim
 	FILE_LOG (logDEBUG) << "Number of DataStreamers: " << NumberofDataStreamers;
 
 	memset((void*)&timerBegin, 0, sizeof(timespec));
-	currentHeader = new char[255];
 	strcpy(fileNametoStream, "");
 }
 
 
 DataStreamer::~DataStreamer() {
 	CloseZmqSocket();
-	if (currentHeader) delete currentHeader;
 	if (completeBuffer) delete completeBuffer;
 	ThreadObject::DestroyThread();
 	NumberofDataStreamers--;
@@ -137,27 +145,6 @@ void DataStreamer::ResetParametersforNewMeasurement(char* fname){
 		completeBuffer = new char[generalData->imageSize_Streamer];
 		memset(completeBuffer, 0, generalData->imageSize_Streamer);
 	}
-	CreateHeaderPart1();
-}
-
-void DataStreamer::CreateHeaderPart1() {
-	char type[10] = "";
-	switch (*dynamicRange) {
-	case 4:		strcpy(type, "uint4");	break;
-	case 8:		strcpy(type, "uint8");	break;
-	case 16:	strcpy(type, "uint16");	break;
-	case 32:	strcpy(type, "uint32");	break;
-	default:
-		strcpy(type, "unknown");
-		cprintf(RED," Unknown datatype in json format %d\n", *dynamicRange);
-		break;
-	}
-
-	sprintf(currentHeader, jsonHeaderFormat_part1,
-			STREAMER_VERSION, type, generalData->nPixelsX_Streamer, generalData->nPixelsY_Streamer);
-#ifdef VERBOSE
-	cprintf(BLUE, "%d currentheader: %s\n", index, currentHeader);
-#endif
 }
 
 
@@ -240,8 +227,9 @@ void DataStreamer::ThreadExecution() {
 
 void DataStreamer::StopProcessing(char* buf) {
 
+	sls_detector_header* header = (sls_detector_header*) (buf);
 	//send dummy header and data
-	if (!SendHeader(0, true))
+	if (!SendHeader(header, true))
 		cprintf(RED,"Error: Could not send zmq dummy header for streamer %d\n", index);
 
 	if (!zmqSocket->SendData((char*)DUMMY_MSG, DUMMY_MSG_SIZE))
@@ -256,8 +244,9 @@ void DataStreamer::StopProcessing(char* buf) {
 
 
 void DataStreamer::ProcessAnImage(char* buf) {
-	uint64_t fnum = (*((uint64_t*)buf));
-	uint32_t snum = (*((uint32_t*)(buf + FILE_FRAME_HDR_FNUM_SIZE)));
+
+	sls_detector_header* header = (sls_detector_header*) (buf);
+	uint64_t fnum = header->frameNumber;
 #ifdef VERBOSE
 	if (!index) cprintf(MAGENTA,"DataStreamer %d: fnum:%lld\n", index, (long long int)fnum);
 #endif
@@ -282,20 +271,20 @@ void DataStreamer::ProcessAnImage(char* buf) {
 			return;
 	}
 
-	if (!SendHeader(fnum, snum))
+	if (!SendHeader(header))
 		cprintf(RED,"Error: Could not send zmq header for fnum %lld and streamer %d\n",
 				(long long int) fnum, index);
 
 	//shortframe gotthard - data sending
 	if (completeBuffer) {
-		memcpy(completeBuffer + ((generalData->imageSize)**shortFrameEnable), buf + FILE_FRAME_HEADER_SIZE, generalData->imageSize);
+		memcpy(completeBuffer + ((generalData->imageSize)**shortFrameEnable), buf + sizeof(sls_detector_header), generalData->imageSize);
 		if (!zmqSocket->SendData(completeBuffer, generalData->imageSize_Streamer))
 			cprintf(RED,"Error: Could not send zmq data for fnum %lld and streamer %d\n",
 					(long long int) fnum, index);
 	}
 	//normal - data sending
 	else {
-		if (!zmqSocket->SendData(buf + FILE_FRAME_HEADER_SIZE, generalData->imageSize))
+		if (!zmqSocket->SendData(buf + sizeof(sls_detector_header), generalData->imageSize))
 			cprintf(RED,"Error: Could not send zmq data for fnum %lld and streamer %d\n",
 					(long long int) fnum, index);
 	}
@@ -329,19 +318,24 @@ bool DataStreamer::CheckCount() {
 }
 
 
-int DataStreamer::SendHeader(uint64_t fnum, uint32_t snum, bool dummy) {
-	uint64_t frameIndex = -1;
-	uint64_t acquisitionIndex = -1;
-	uint32_t subframeIndex = -1;
+int DataStreamer::SendHeader(sls_detector_header* header, bool dummy) {
+
+	uint64_t frameIndex = header->frameNumber - firstMeasurementIndex;
+	uint64_t acquisitionIndex = header->frameNumber - firstAcquisitionIndex;
+	uint32_t subframeIndex = header->expLength;
+
 	char buf[1000] = "";
 
-	if (!dummy) {
-		frameIndex = fnum - firstMeasurementIndex;
-		acquisitionIndex = fnum - firstAcquisitionIndex;
-		subframeIndex = snum;
+	if (dummy) {
+		frameIndex = -1;
+		acquisitionIndex = -1;
+		subframeIndex = -1;
 	}
 
-	int len = sprintf(buf, jsonHeaderFormat, currentHeader, acquisitionIndex, frameIndex, subframeIndex, fileNametoStream);
+	int len = sprintf(buf, jsonHeaderFormat,
+			SLS_DETECTOR_JSON_HEADER_VERSION, *dynamicRange, generalData->nPixelsX_Streamer, generalData->nPixelsY_Streamer, acquisitionIndex, frameIndex, fileNametoStream,
+			header->frameNumber, header->expLength, header->packetNumber, header->bunchId, header->timestamp,
+			header->modId, header->xCoord, header->yCoord, header->zCoord, header->debug, header->roundRNumber, header->detType, header->version);
 #ifdef VERBOSE
 	printf("%d Streamer: buf:%s\n", index, buf);
 #endif

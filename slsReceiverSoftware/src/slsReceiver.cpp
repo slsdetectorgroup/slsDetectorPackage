@@ -160,7 +160,7 @@ int64_t slsReceiver::getReceiverVersion(){
 }
 
 
-void slsReceiver::registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){
+void slsReceiver::registerCallBackStartAcquisition(int (*func)(char*, char*, uint64_t, uint32_t, void*),void *arg){
   //tcpipInterface
 	if(udp_interface)
 		udp_interface->registerCallBackStartAcquisition(func,arg);
@@ -170,7 +170,7 @@ void slsReceiver::registerCallBackStartAcquisition(int (*func)(char*, char*,int,
 
 
 
-void slsReceiver::registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){
+void slsReceiver::registerCallBackAcquisitionFinished(void (*func)(uint64_t, void*),void *arg){
   //tcpipInterface
 	if(udp_interface)
 		udp_interface->registerCallBackAcquisitionFinished(func,arg);
@@ -179,7 +179,8 @@ void slsReceiver::registerCallBackAcquisitionFinished(void (*func)(int, void*),v
 }
 
 
-void slsReceiver::registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg){
+void slsReceiver::registerCallBackRawDataReady(void (*func)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+		char*, uint32_t, FILE*, void*),void *arg){
 	//tcpipInterface
 	if(udp_interface)
 		udp_interface->registerCallBackRawDataReady(func,arg);

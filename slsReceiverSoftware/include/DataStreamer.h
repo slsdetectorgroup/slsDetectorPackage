@@ -126,11 +126,6 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	bool IsRunning();
 
 	/**
-	 * Create Part1 of Json Header which includes common attributes in an acquisition
-	 */
-	void CreateHeaderPart1();
-
-	/**
 	 * Record First Indices (firstAcquisitionIndex, firstMeasurementIndex)
 	 * @param fnum frame index to record
 	 */
@@ -172,12 +167,11 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 
 	/**
 	 * Create and send Json Header
-	 * @param fnum frame number
-	 * @param snum sub frame number
+	 * @param header header of image
 	 * @param dummy true if its a dummy header
 	 * @returns 0 if error, else 1
 	 */
-	int SendHeader(uint64_t fnum, uint32_t snum, bool dummy = false);
+	int SendHeader(sls_detector_header* header, bool dummy = false);
 
 	/** type of thread */
 	static const std::string TypeName;
@@ -226,9 +220,6 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** timer beginning stamp for random streaming */
 	struct timespec timerBegin;
-
-	/** Current Json Header  prefix*/
-	char* currentHeader;
 
 	/** Aquisition Started flag */
 	bool acquisitionStartedFlag;

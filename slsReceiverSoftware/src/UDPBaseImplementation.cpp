@@ -541,20 +541,20 @@ int UDPBaseImplementation::setActivate(int enable){
 }
 
 /***callback functions***/
-void UDPBaseImplementation::registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){
+void UDPBaseImplementation::registerCallBackStartAcquisition(int (*func)(char*, char*, uint64_t, uint32_t, void*),void *arg){
 	startAcquisitionCallBack=func;
 	pStartAcquisition=arg;
 }
 
-void UDPBaseImplementation::registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){
+void UDPBaseImplementation::registerCallBackAcquisitionFinished(void (*func)(uint64_t, void*),void *arg){
 	acquisitionFinishedCallBack=func;
 	pAcquisitionFinished=arg;
 }
 
-void UDPBaseImplementation::registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg){
+void UDPBaseImplementation::registerCallBackRawDataReady(void (*func)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+		char*, uint32_t, FILE*, void*),void *arg){
 	rawDataReadyCallBack=func;
 	pRawDataReady=arg;
 }
-
 
 //#endif

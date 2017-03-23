@@ -33,7 +33,8 @@ pthread_mutex_t DataProcessor::Mutex = PTHREAD_MUTEX_INITIALIZER;
 
 DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* dsEnable,
 		int* cbaction,
-		void (*dataReadycb)(int, char*, int, FILE*, char*, void*),
+		void (*dataReadycb)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+				char*, uint32_t, FILE*, void*),
 		void *pDataReadycb) :
 
 		ThreadObject(NumberofDataProcessors),
@@ -300,8 +301,8 @@ void DataProcessor::ProcessAnImage(char* buf) {
 	numFramesCaught++;
 	numTotalFramesCaught++;
 
-
-	uint64_t fnum = (*((uint64_t*)buf));
+	sls_detector_header* header = (sls_detector_header*) (buf);
+	uint64_t fnum = header->frameNumber;
 #ifdef VERBOSE
 	if (!index) cprintf(BLUE,"DataProcessing %d: fnum:%lld\n", index, (long long int)fnum);
 #endif
@@ -315,11 +316,30 @@ void DataProcessor::ProcessAnImage(char* buf) {
 
 	if (*callbackAction == DO_EVERYTHING) {
 		if (*fileWriteEnable)
-			file->WriteToFile(buf, generalData->fifoBufferSize + FILE_FRAME_HEADER_SIZE, fnum-firstMeasurementIndex);
+			file->WriteToFile(buf, generalData->fifoBufferSize + sizeof(sls_detector_header), fnum-firstMeasurementIndex);
 	} else {
+		/*
 		if (rawDataReadyCallBack)
-			rawDataReadyCallBack((int)fnum, buf + FILE_FRAME_HEADER_SIZE, generalData->fifoBufferSize,
-							NULL, NULL, pRawDataReady);
+			rawDataReadyCallBack(
+					header->frameNumber,
+					header->expLength,
+					header->packetNumber,
+					header->bunchId,
+					header->timestamp,
+					header->modId,
+					header->xCoord,
+					header->yCoord,
+					header->zCoord,
+					header->debug,
+					header->roundRNumber,
+					header->detType,
+					header->version,
+					buf + sizeof(sls_detector_header),
+					generalData->imageSize,
+					file->GetFileHandle(), pRawDataReady);
+					*/
+		file->GetBinaryFileHandle();
+		//GetHDF5FileHandle
 	}
 }
 

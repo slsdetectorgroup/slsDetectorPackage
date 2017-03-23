@@ -12,10 +12,14 @@
 
 #include "File.h"
 #include "HDF5FileStatic.h"
+
+//#ifndef HDF5DEFINED
+//#define HDF5DEFINED
 #include "H5Cpp.h"
 #ifndef H5_NO_NAMESPACE
     using namespace H5;
 #endif
+//#endif
 
 #include <string>
 
@@ -53,6 +57,12 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	 * Print all member values
 	 */
 	void PrintMembers();
+
+	/**
+	 * Get File Handle pointer
+	 * @returns file handle pointer
+	 */
+	H5File* GetHDF5FileHandle();
 
 	/**
 	 * Set Number of pixels

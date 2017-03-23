@@ -35,6 +35,10 @@ void BinaryFile::PrintMembers() {
 	printf("Number of Frames in File: %d\n",numFramesInFile);
 }
 
+FILE* BinaryFile::GetFileHandle() {
+	return filefd;
+}
+
 slsReceiverDefs::fileFormat BinaryFile::GetFileType() {
 	return BINARY;
 }

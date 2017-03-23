@@ -15,10 +15,12 @@
 #define DO_EVERYTHING					2
 
 //binary file/ fifo
-#define FILE_FRAME_HDR_FNUM_SIZE		8
-#define FILE_FRAME_HDR_SNUM_SIZE		4
-#define FILE_FRAME_HDR_BID_SIZE			8
-#define FILE_FRAME_HEADER_SIZE			(FILE_FRAME_HDR_FNUM_SIZE + FILE_FRAME_HDR_SNUM_SIZE + FILE_FRAME_HDR_BID_SIZE)
+
+//#define FILE_FRAME_HDR_FNUM_SIZE		8
+//#define FILE_FRAME_HDR_SNUM_SIZE		8
+//#define FILE_FRAME_HDR_BID_SIZE			8
+//#define FILE_FRAME_HEADER_SIZE			(FILE_FRAME_HDR_FNUM_SIZE + FILE_FRAME_HDR_SNUM_SIZE + FILE_FRAME_HDR_BID_SIZE)
+
 #define FIFO_HEADER_NUMBYTES			4
 #define FILE_BUFFER_SIZE        		(16*1024*1024) //16mb
 
@@ -26,10 +28,10 @@
 #define MAX_CHUNKED_IMAGES 				1
 
 //versions
-#define STREAMER_VERSION				1.0
-#define HDF5_WRITER_VERSION 			1.0
-#define BINARY_WRITER_VERSION 			1.0 //1 decimal places
-
+#define HDF5_WRITER_VERSION 				1.0 //1 decimal places
+#define BINARY_WRITER_VERSION 				1.0 //1 decimal places
+#define SLS_DETECTOR_HEADER_VERSION 		0x1
+#define SLS_DETECTOR_JSON_HEADER_VERSION 	0x2
 
 //parameters to calculate fifo depth
 #define SAMPLE_TIME_IN_NS				100000000//100ms

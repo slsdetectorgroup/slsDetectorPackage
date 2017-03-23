@@ -16,8 +16,7 @@ User documentation and other help can be accessed directly at this location:
 
 If you have any software related questions or comments, please send them to:
 
-    dhanya.thattil@psi.ch or
-    anna.bergamaschi@psi.ch
+    dhanya.thattil@psi.ch
 
 
 

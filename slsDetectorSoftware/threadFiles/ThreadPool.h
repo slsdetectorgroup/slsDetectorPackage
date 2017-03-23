@@ -38,8 +38,8 @@ private:
   std::deque<Task*> m_tasks;
   volatile int m_pool_state;
 
-  bool m_tasks_loaded;
-  bool thread_started;
+  volatile bool m_tasks_loaded;
+  volatile bool thread_started;
   int current_thread_number;
 
   //volatile uint64_t tasks_done_mask;

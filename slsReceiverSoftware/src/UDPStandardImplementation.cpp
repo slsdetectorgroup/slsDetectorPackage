@@ -3196,8 +3196,20 @@ void UDPStandardImplementation::updateFileHeader(int ithread){
 			"Timestamp\t: %s\n\n"
 
 			"#Frame Header\n"
-			"Frame Number\t: 8 bytes\n"
-			"Bunch ID\t: 8 bytes\n",
+			"Frame Number       : 8 bytes\n"
+			"Exposure Length    : 4 bytes\n"
+			"Packet Number      : 4 bytes\n"
+			"Bunch ID           : 8 bytes\n"
+			"Timestamp          : 8 bytes\n"
+			"Module Id          : 2 bytes\n"
+			"X Coordinate       : 2 bytes\n"
+			"Y Coordinate       : 2 bytes\n"
+			"Z Coordinate       : 2 bytes\n"
+			"Debug              : 4 bytes\n"
+			"Round Robin Number : 2 bytes\n"
+			"Detector Type      : 1 byte\n"
+			"Header Version     : 1 byte\n"
+			,
 			FILE_HEADER_SIZE,
 			(flippedData[0]?0:1),
 			(ithread?0:1),

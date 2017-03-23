@@ -630,7 +630,7 @@ private:
 	bool fileCreateSuccess;
 
 	/** File header */
-	const static unsigned int FILE_HEADER_SIZE = 500;
+	const static unsigned int FILE_HEADER_SIZE = 1000;
 	char fileHeader[MAX_NUMBER_OF_WRITER_THREADS][FILE_HEADER_SIZE];
 
 	/** File Descriptor */

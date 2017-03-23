@@ -5285,11 +5285,12 @@ void multiSlsDetector::readFrameFromReceiver(){
 	string currentFileName = "";
 
 	//getting sls values
-	int slsdatabytes = 0, slsmaxchannels = 0, bytesperchannel = 0, slsmaxX = 0, slsmaxY=0, nx=0, ny=0;
+	int slsdatabytes = 0, slsmaxchannels = 0, slsmaxX = 0, slsmaxY=0, nx=0, ny=0;
+	double bytesperchannel = 0;
 	if(detectors[0]){
 		slsdatabytes = detectors[0]->getDataBytes();
 		slsmaxchannels = detectors[0]->getMaxNumberOfChannels();
-		bytesperchannel = slsdatabytes/slsmaxchannels;
+		bytesperchannel = (double)slsdatabytes/(double)slsmaxchannels;
 		slsmaxX = detectors[0]->getTotalNumberOfChannels(X);
 		slsmaxY = detectors[0]->getTotalNumberOfChannels(Y);
 	}
@@ -5356,17 +5357,17 @@ void multiSlsDetector::readFrameFromReceiver(){
 					if(bottom[isocket]){
 					//if((((isocket/numSocketsPerSLSDetector)+1)%2) == 0){
 						for(int i=0;i<slsmaxY;++i){
-							memcpy(((char*)multiframe) + offsetY[isocket] + offsetX[isocket] + ((slsmaxY-1-i)*maxX*bytesperchannel),
-									(char*)image+ i*(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel,
-									(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel);
+							memcpy(((char*)multiframe) + offsetY[isocket] + offsetX[isocket] + (int)((slsmaxY-1-i)*maxX*bytesperchannel),
+									(char*)image+ (int)(i*(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel),
+									(int)(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel);
 						}
 					}
 					//top
 					else{
 						for(int i=0;i<slsmaxY;++i){
-							memcpy(((char*)multiframe) + offsetY[isocket] + offsetX[isocket] + (i*maxX*bytesperchannel),
-									(char*)image+ i*(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel,
-									(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel);
+							memcpy(((char*)multiframe) + offsetY[isocket] + offsetX[isocket] + (int)(i*maxX*bytesperchannel),
+									(char*)image+ (int)(i*(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel),
+									(int)(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel);
 						}
 					}
 				}

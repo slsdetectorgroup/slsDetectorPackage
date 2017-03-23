@@ -1536,7 +1536,7 @@ int UDPStandardImplementation::setupWriter(){
 		cbAction=startAcquisitionCallBack(filePath, (char*)tempname.c_str(),fileIndex, (uint32_t)bufferSize,pStartAcquisition);
 	}
 
-	if(cbAction < DO_EVERYTHING){
+	if(cbAction == DO_NOTHING){
 		FILE_LOG(logINFO) << "Call back activated. Data saving must be taken care of by user in call back.";
 		if (rawDataReadyCallBack){
 			FILE_LOG(logINFO) << "Data Write has been defined externally";
@@ -1587,12 +1587,12 @@ int UDPStandardImplementation::createNewFile(int ithread){
 #endif
 
 	//filewrite enable & we allowed to create/close files
-	if(fileWriteEnable && cbAction > DO_NOTHING){
+	if(fileWriteEnable && cbAction == DO_EVERYTHING){
 
 		//close file pointers
 		if(sfilefd[ithread]){
 			//all threads need to close file, reset mask and exit loop
-			if(myDetectorType == EIGER && fileWriteEnable && (cbAction > DO_NOTHING)){
+			if(myDetectorType == EIGER && fileWriteEnable && (cbAction == DO_EVERYTHING)){
 				updateFileHeader(ithread);
 				fseek(sfilefd[ithread],0,0);
 				fwrite((void*)fileHeader[ithread], 1, FILE_HEADER_SIZE, sfilefd[ithread]);
@@ -2732,7 +2732,7 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 
 
 	//all threads need to close file, reset mask and exit loop
-	if(myDetectorType == EIGER && fileWriteEnable && (cbAction > DO_NOTHING)){
+	if(myDetectorType == EIGER && fileWriteEnable && (cbAction == DO_EVERYTHING)){
 		updateFileHeader(ithread);
 		fseek(sfilefd[ithread],0,0);
 		fwrite((void*)fileHeader[ithread], 1, FILE_HEADER_SIZE, sfilefd[ithread]);
@@ -2891,7 +2891,7 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 
 
 	//callback to write data
-	if (cbAction < DO_EVERYTHING)
+	if (cbAction == DO_NOTHING)
 		rawDataReadyCallBack(
 				tempframenumber,//frameNumber
 				0,//expLength
@@ -2908,7 +2908,7 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 				SLS_DETECTOR_HEADER_VERSION,//version
 				wbuffer + fifoBufferHeaderSize,
 				bufferSize * numberofJobsPerBuffer + fifoBufferHeaderSize,
-				sfilefd[ithread], pRawDataReady);//know which thread from sfilefd
+				pRawDataReady);//know which thread from sfilefd
 
 
 
@@ -2954,7 +2954,7 @@ void UDPStandardImplementation::handleCompleteFramesOnly(int ithread, char* wbuf
 	sls_detector_header* header = (sls_detector_header*) (wbuffer + HEADER_SIZE_NUM_TOT_PACKETS);
 	uint64_t tempframenumber = header->frameNumber;
 
-	if (cbAction < DO_EVERYTHING)
+	if (cbAction == DO_NOTHING)
 		rawDataReadyCallBack(
 				header->frameNumber,
 				header->expLength,
@@ -2971,7 +2971,7 @@ void UDPStandardImplementation::handleCompleteFramesOnly(int ithread, char* wbuf
 				header->version,
 				wbuffer + fifoBufferHeaderSize,
 				bufferSize * numberofJobsPerBuffer + fifoBufferHeaderSize,
-				sfilefd[ithread], pRawDataReady);
+				pRawDataReady);
 
 
 	//write to file if enabled and update write parameters

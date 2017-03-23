@@ -47,8 +47,7 @@ typedef struct {
 #define GOODBYE 							-200
 
 #define DO_NOTHING		0
-#define CREATE_FILES	1
-#define DO_EVERYTHING	2
+#define DO_EVERYTHING	1
 
 #define BUF_SIZE        		(16*1024*1024) //16mb
 #define SAMPLE_TIME_IN_NS		100000000//100ms

@@ -8,7 +8,7 @@ BINDIR	?=	$(INSTALLROOT)/bin
 DOCDIR	?=	$(INSTALLROOT)/docs
 LIBDIR	?=	$(INSTALLROOT)/bin
 INCDIR	?=	$(INSTALLROOT)/include
-
+ 
 WD				=	$(shell pwd)
 LIBRARYDIR		=	$(WD)/slsDetectorSoftware
 LIBRARYRXRDIR 		= 	$(WD)/slsReceiverSoftware

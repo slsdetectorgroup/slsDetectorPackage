@@ -16,6 +16,14 @@ using namespace std;
 pthread_mutex_t HDF5File::Mutex = PTHREAD_MUTEX_INITIALIZER;
 H5File* HDF5File::masterfd = 0;
 hid_t HDF5File::virtualfd = 0;
+const int const HDF5File::NUM_PARAMETERS = 13;
+const char * const HDF5File::PARAMETERS[] = {
+		"frameNumber", "expLength", "packetNumber", "bunchId", "timestamp", "modId",
+		"xCoord", "yCoord", "zCoord", "debug", "roundRNumber", "detType", "version"};
+const DataType * const HDF5File::PARAMETER_DATATYPES[] = {
+		PredType::STD_U64LE, PredType::STD_U32LE, PredType::STD_U32LE, PredType::STD_U64LE, PredType::STD_U64LE, PredType::STD_U16LE,
+		PredType::STD_U16LE, PredType::STD_U16LE, PredType::STD_U16LE, PredType::STD_U32LE, PredType::STD_U16LE, PredType::STD_U8LE, PredType::STD_U8LE};
+
 
 HDF5File::HDF5File(int ind, int* nd, char* fname, char* fpath, uint64_t* findex,
 		bool* frindexenable, bool* owenable, uint32_t maxf, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr,
@@ -30,16 +38,8 @@ HDF5File::HDF5File(int ind, int* nd, char* fname, char* fpath, uint64_t* findex,
 		nPixelsY(ny),
 		numFramesInFile(0),
 		numFilesinAcquisition(0),
-
 		dataspace_para(0),
-
-		para1("sub_frame_number"),
-		dataset_para1(0),
-		datatype_para1(PredType::STD_U32LE),
-
-		para2("bunch_id"),
-		dataset_para2(0),
-		datatype_para2(PredType::STD_U64LE)
+		dataset_para(0)
 {
 #ifdef VERBOSE
 	PrintMembers();
@@ -101,9 +101,8 @@ int HDF5File::CreateFile(uint64_t fnum) {
 			fnum, framestosave, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
 			datatype, filefd, dataspace, dataset,
 			HDF5_WRITER_VERSION, MAX_CHUNKED_IMAGES,
-			dataspace_para,
-			para1, dataset_para1, datatype_para1,
-			para2, dataset_para2, datatype_para2) == FAIL) {
+			NUM_PARAMETERS, PARAMETERS, PARAMETER_DATATYPES,
+			dataspace_para,	dataset_para) == FAIL) {
 		pthread_mutex_unlock(&Mutex);
 		return FAIL;
 	}
@@ -115,7 +114,7 @@ int HDF5File::CreateFile(uint64_t fnum) {
 
 void HDF5File::CloseCurrentFile() {
 	pthread_mutex_lock(&Mutex);
-	HDF5FileStatic::CloseDataFile(index, filefd, dataspace, dataset, dataset_para1, dataset_para2);
+	HDF5FileStatic::CloseDataFile(index, filefd, dataspace, dataset, NUM_PARAMETERS, dataset_para);
 	pthread_mutex_unlock(&Mutex);
 }
 
@@ -123,7 +122,7 @@ void HDF5File::CloseCurrentFile() {
 void HDF5File::CloseAllFiles() {
 	numFilesinAcquisition = 0;
 	pthread_mutex_lock(&Mutex);
-	HDF5FileStatic::CloseDataFile(index, filefd, dataspace, dataset, dataset_para1, dataset_para2);
+	HDF5FileStatic::CloseDataFile(index, filefd, dataspace, dataset, NUM_PARAMETERS, dataset_para);
 	if (master && (*detIndex==0)) {
 		HDF5FileStatic::CloseMasterDataFile(masterfd);
 		HDF5FileStatic::CloseVirtualDataFile(virtualfd);
@@ -140,19 +139,19 @@ int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum) {
 	numFramesInFile++;
 
 	sls_detector_header* header = (sls_detector_header*) (buffer);
-	//uint32_t snum = header->expLength;
-//	uint64_t bid = header->expLength
+	uint32_t snum = header->expLength;
+	uint64_t bid = header->expLength;
 	pthread_mutex_lock(&Mutex);
 	if (HDF5FileStatic::WriteDataFile(index, buffer + sizeof(sls_detector_header),
 			fnum%maxFramesPerFile, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
 			dataspace, dataset, datatype) == OK) {
-		/*if (HDF5FileStatic::WriteParameterDatasets(index, dataspace_para,
+		if (HDF5FileStatic::WriteParameterDatasets(index, dataspace_para,
 				fnum%maxFramesPerFile,
-				dataset_para1, datatype_para1, &snum,
-				dataset_para2, datatype_para2, &bid) == OK) {
+				dataset_para, PARAMETER_DATATYPES,
+				&snum, &bid) == OK) {
 			pthread_mutex_unlock(&Mutex);
 			return OK;
-		}*/
+		}
 	}
 	pthread_mutex_unlock(&Mutex);
 	cprintf(RED,"%d Error: Write to file failed\n", index);

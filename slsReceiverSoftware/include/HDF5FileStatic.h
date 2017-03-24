@@ -101,14 +101,15 @@ public:
 	 */
 
 	static void CloseDataFile(int ind, H5File*& fd, DataSpace*& dp, DataSet*& ds,
-			 DataSet*& ds_p1, DataSet*& ds_p2)
+			 const int numparameters, DataSet*& ds_p1[])
 	{
 		try {
 			Exception::dontPrint(); //to handle errors
 			if(dp) 		{delete dp; 	dp = 0;}
 			if(ds) 		{delete ds; 	ds = 0;}
-			if(ds_p1) 	{delete ds_p1; 	ds_p1 = 0;}
-			if(ds_p2) 	{delete ds_p2; 	ds_p2 = 0;}
+			for (int i = 0; i < numparameters; ++i) {
+				delete ds_p1[i]; 	ds_p1[i] = 0;
+			}
 			if(fd) 		{delete fd; 	fd = 0;}
 		} catch(Exception error) {
 			cprintf(RED,"Error in closing HDF5 handles\n");
@@ -187,8 +188,8 @@ public:
 	 */
 	template <typename P1, typename P2>
 	static int WriteParameterDatasets(int ind, DataSpace* dspace_para, uint64_t fnum,
-			DataSet*& dset_para1, DataType dtype_para1, P1* para1,
-			DataSet*& dset_para2, DataType dtype_para2, P2* para2)
+			DataSet*& dset_para[], const DataType* const dtype_para[],
+			P1* para1, P2* para2)
 	{
 		hsize_t count[1] = {1};
 		hsize_t start[1] = {fnum};
@@ -197,8 +198,8 @@ public:
 			Exception::dontPrint(); //to handle errors
 			dspace_para->selectHyperslab( H5S_SELECT_SET, count, start);
 			DataSpace memspace(H5S_SCALAR);
-			dset_para1->write(para1, dtype_para1, memspace, *dspace_para);
-			dset_para2->write(para2, dtype_para2, memspace, *dspace_para);
+			dset_para[0]->write(para1, *dtype_para[0], memspace, *dspace_para);
+			dset_para[1]->write(para2, *dtype_para[1], memspace, *dspace_para);
 		}
 		catch(Exception error){
 			cprintf(RED,"Error in writing parameters to file in object %d\n",ind);
@@ -347,9 +348,8 @@ public:
 			uint64_t fnum, uint64_t nDimx, uint32_t nDimy, uint32_t nDimz,
 			DataType dtype, H5File*& fd, DataSpace*& dspace, DataSet*& dset,
 			double version, uint64_t maxchunkedimages,
-			DataSpace*& dspace_para,
-			string para1, DataSet*& dset_para1, DataType dtype_para1,
-			string para2, DataSet*& dset_para2, DataType dtype_para2)
+			const int numparameters, const char * const parameters[], const DataType* const dtype_para[],
+			DataSpace*& dspace_para, DataSet*& dset_para[])
 	{
 		try {
 			Exception::dontPrint(); //to handle errors
@@ -391,8 +391,8 @@ public:
 			//create parameter datasets
 			hsize_t dims[1] = {nDimx};
 			dspace_para = new DataSpace (1,dims);
-			dset_para1 = new DataSet(fd->createDataSet(para1.c_str(), dtype_para1, *dspace_para));
-			dset_para2 = new DataSet(fd->createDataSet(para2.c_str(), dtype_para2, *dspace_para));
+			for (int i = 0; i < numparameters; ++i)
+				dset_para[i] = new DataSet(fd->createDataSet(parameters[i], *dtype_para[i], *dspace_para));
 		}
 		catch(Exception error){
 			cprintf(RED,"Error in creating HDF5 handles in object %d\n",ind);

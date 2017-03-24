@@ -163,27 +163,13 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	int numFilesinAcquisition;
 
 	//parameters
+	static const int const NUM_PARAMETERS;
+	static const char* const PARAMETERS[];
+	static const DataType* const PARAMETER_DATATYPES[];
+
 	/** Dataspace of parameters */
 	DataSpace* dataspace_para;
-
-	/** parameter1 */
-	std::string para1;
-
-	/** Dataset of parameter1 */
-	DataSet* dataset_para1;
-
-	/** Datatype of parameter1 */
-	DataType datatype_para1;
-
-	/** parameter2 */
-	std::string para2;
-
-	/** Dataset of parameter2 */
-	DataSet* dataset_para2;
-
-	/** Datatype of parameter2 */
-	DataType datatype_para2;
-
+	DataSet* dataset_para[NUM_PARAMETERS];
 
 };
 #endif

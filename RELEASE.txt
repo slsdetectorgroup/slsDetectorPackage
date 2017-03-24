@@ -1,12 +1,11 @@
-SLS Detector Package 2.3.0 released on 2017-03-23
+SLS Detector Package 3.0.0 released on 2017-03-24
 ================================================================================
-
 
 
 
 INTRODUCTION
 
-This document describes the differences between previous versions and 2.3.0 releases.
+This document describes the differences between previous versions and 3.0.0 releases.
 
 Manuals can be found under the 'manual' folder.
 
@@ -20,7 +19,6 @@ If you have any software related questions or comments, please send them to:
 
 
 
-
 CONTENTS
 
 - Changes in User Interface
@@ -30,21 +28,19 @@ CONTENTS
 
 
 
-
 Changes in User Interface
 =========================
+This release has no changes in user interface from the previous 2.3 version.
 
-This release supports the following features:
-
+Reiterating, both 2.3 and 3.0 supports the following features:
   	
 	Receiver
-    	--------
+    --------
 	- The files will be written in this format in the default mode:
 		* ASCII file header of 1024 bytes (only for EIGER detectors)
 		* series of images, each preceded by a Standard Header image 
 		(header described below)
 	
-
 	- Stanard Header image header in file and call back
 	arguments defined. It is in the following format defined as 
 	sls_detector_header defined in 
@@ -65,12 +61,10 @@ This release supports the following features:
 		* Debug              : 4 bytes  # Not implemented
 		* Round Robin Number : 2 bytes  # Not implemented
 		* Detector Type      : 1 byte   # Detector type defined by enum
-				                  detectorType in slsReceiverSoftware
-						  /include/sls_receiver_defs.h
+				                          detectorType in slsReceiverSoftware
+						                  /include/sls_receiver_defs.h
 		* Header Version     : 1 byte   # 1
-	
-
-	
+		
 	- The call back value for Start Acquisition Call back is insignificant at the 
 	moment and left for future use. Instead, the following rules apply:
 		* If file write is enabled from the client, we will write the files.
@@ -79,57 +73,43 @@ This release supports the following features:
 	file write (so we dont write) and register the callbacks (so the user gets 
 	the data).
 		
-		
-
 
 
 New Features
 ============
-	Eiger
-    	-----
-	- Tau is moved to settings file, Gain and offset are removed from calibration
-	file. Put settings only sets client variable, whereas putting threshold loads 
-	settings files to the server.
-	
-	- Mode argument in starting up receiver is removed. FlippedData command is used
-	in config file to specify bottom.
-	
-	
 	Receiver
-    	--------
-	- Image Reconstruction from the files are different as packet headers are not
-	stored and a standard image header is used.
-
+    --------
+	- One can choose the file format using the command "fileformat binary/hdf5" from 
+	the client.
+	
+	- Virtual HDF5 file maps all the files into a single file.
+	
+	- Gotthard, Propix and Moench also save data in the same was as Jungfrau and Eiger
+	(ie. without any packet headers, only image  header followed by image data)
+	
+	
+	Eiger
+	-----
+	- The ascii part of the file (file header with acquisition parameters) moved to 
+	a separate file called the master file. So one master file per acquisition.
+	
 	
 	General
-    	-------
+    -------
+	- UDP Packets from all the detectors will contain the standard sls detector header. 
+	X, Y and Z Coordinates define the position of the detector in 3d. 
 	
-	- Users folder that gives an example on how to user the slsDetectorUsers and
-	slsReceiverUsers class.
 	
-	- Data is streamed from Receiver to Gui via ZMQ if gui call back defined.
-	
-
 
 
 Resolved Issues
 ===============
 
-	Eiger
-    	-----
-	- Frame and packet counters in server to check delays were buggy.
 
 
 Known Issues
 ============
-	- X, Y and Z Coordinates do not exactly define the position of the
-	detector in 3d. This will be defined in the next release. Other header
-	parameters will be complete in the next release.
-	
-	- Too many split files per detector especially for Eiger. Next Release will
-	have a HDF5 version, with virtual file mapping all the split files in an
-	acquisition.
-	
-	- This version is tested only for Eiger and Jungfrau.
+
+
 
 

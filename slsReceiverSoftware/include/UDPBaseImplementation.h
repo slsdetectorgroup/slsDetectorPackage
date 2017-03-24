@@ -520,8 +520,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 *
 	 * return value is
 	 * 0 callback takes care of open,close,wrie file
-	 * 1 callback writes file, we have to open, close it
-	 * 2 we open, close, write file, callback does not do anything
+	 * 1 we open, close, write file, callback does not do anything
 	 */
 	void registerCallBackStartAcquisition(int (*func)(char*, char*, uint64_t, uint32_t, void*),void *arg);
 
@@ -550,10 +549,10 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * version is the version number of this structure format
 	 * dataPointer is the pointer to the data
 	 * dataSize in bytes is the size of the data in bytes
-	 * fileDescriptor is the file descriptor
 	 */
 	void registerCallBackRawDataReady(void (*func)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
-			char*, uint32_t, FILE*, void*),void *arg);
+			char*, uint32_t, void*),void *arg);
+
 
 
 
@@ -643,8 +642,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 *
 	 * return value is
 	 * 0 callback takes care of open,close,wrie file
-	 * 1 callback writes file, we have to open, close it
-	 * 2 we open, close, write file, callback does not do anything
+	 * 1 we open, close, write file, callback does not do anything
 	 */
 	int (*startAcquisitionCallBack)(char*, char*, uint64_t, uint32_t, void*);
 	void *pStartAcquisition;
@@ -676,12 +674,13 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * version is the version number of this structure format
 	 * dataPointer is the pointer to the data
 	 * dataSize in bytes is the size of the data in bytes
-	 * fileDescriptor is the file descriptor
 	 */
 	void (*rawDataReadyCallBack)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
-			char*, uint32_t, FILE*, void*);
+			char*, uint32_t, void*);
 	void *pRawDataReady;
 
- private:
+
+
+private:
 
 };

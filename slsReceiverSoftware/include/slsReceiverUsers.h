@@ -51,7 +51,7 @@ public:
 
 	@sort register calbback for starting the acquisition 
 	 \param func  callback to be called when starting the acquisition. Its arguments are  filepath, filename, fileindex, datasize
-	  \returns	   0 callback takes care of open,close,write file; 	   1 callback writes file, we have to open, close it; 2 we open, close, write file, callback does not do anything
+	  \returns	   0 callback takes care of open,close,write file; 	   1  we open, close, write file, callback does not do anything
 	*/
 	void registerCallBackStartAcquisition(int (*func)(char* filepath, char* filename, uint64_t fileindex, uint32_t datasize, void*),void *arg);
 
@@ -67,12 +67,12 @@ public:
 
 	/**
 	   @sort register callback to be called when data are available (to process and/or save the data).
-	   \param func raw data ready callback. arguments are frameNumber, expLength, packetNumber, bunchId, timestamp, modId, xCoord, yCoord, zCoord, debug, roundRNumber, detType, version, dataPointer, dataSize, fileDescriptor
+	   \param func raw data ready callback. arguments are frameNumber, expLength, packetNumber, bunchId, timestamp, modId, xCoord, yCoord, zCoord, debug, roundRNumber, detType, version, dataPointer, dataSize
 	   \returns nothing
 	 */
 	void registerCallBackRawDataReady(void (*func)(uint64_t frameNumber, uint32_t expLength, uint32_t packetNumber, uint64_t bunchId, uint64_t timestamp,
 			uint16_t modId, uint16_t xCoord, uint16_t yCoord, uint16_t zCoord, uint32_t debug, uint16_t roundRNumber, uint8_t detType, uint8_t version,
-			char* datapointer, uint32_t datasize, FILE* filedescriptor, void*),void *arg);
+			char* datapointer, uint32_t datasize, void*),void *arg);
 	
 	//receiver object
 	slsReceiver* receiver;

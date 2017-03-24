@@ -578,9 +578,8 @@ class UDPInterface {
 	 * datasize
 	 *
 	 * return value is
-	 * 0 callback takes care of open,close,wrie file
-	 * 1 callback writes file, we have to open, close it
-	 * 2 we open, close, write file, callback does not do anything
+	 * 0 callback takes care of open,close,write file
+	 * 1 we open, close, write file, callback does not do anything
 	 */
 	virtual void registerCallBackStartAcquisition(int (*func)(char*, char*, uint64_t, uint32_t, void*),void *arg) = 0;
 
@@ -609,10 +608,9 @@ class UDPInterface {
 	 * version is the version number of this structure format
 	 * dataPointer is the pointer to the data
 	 * dataSize in bytes is the size of the data in bytes
-	 * fileDescriptor is the file descriptor
 	 */
 	virtual void registerCallBackRawDataReady(void (*func)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
-			char*, uint32_t, FILE*, void*),void *arg) = 0;
+			char*, uint32_t, void*),void *arg) = 0;
 
 
  protected:

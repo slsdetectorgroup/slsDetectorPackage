@@ -9,20 +9,17 @@
 #define RECEIVE_SOCKET_BUFFER_SIZE 		(100*1024*1024)
 #define MAX_SOCKET_INPUT_PACKET_QUEUE 	250000
 
+
 //files
 #define DO_NOTHING						0
-#define CREATE_FILES					1
-#define DO_EVERYTHING					2
+#define DO_EVERYTHING					1
 
-//binary file/ fifo
-
-//#define FILE_FRAME_HDR_FNUM_SIZE		8
-//#define FILE_FRAME_HDR_SNUM_SIZE		8
-//#define FILE_FRAME_HDR_BID_SIZE			8
-//#define FILE_FRAME_HEADER_SIZE			(FILE_FRAME_HDR_FNUM_SIZE + FILE_FRAME_HDR_SNUM_SIZE + FILE_FRAME_HDR_BID_SIZE)
-
-#define FIFO_HEADER_NUMBYTES			4
+//binary
 #define FILE_BUFFER_SIZE        		(16*1024*1024) //16mb
+
+//fifo
+#define FIFO_HEADER_NUMBYTES			4
+
 
 //hdf5
 #define MAX_CHUNKED_IMAGES 				1

@@ -90,6 +90,8 @@ int main(int argc, char *argv[]) {
 		}
 
 		//register callbacks
+		//remember to set file write enable to 0 (using the client) if we should not write files and
+		//you will write data using the callbacks
 
 		/**
 		 * Call back for start acquisition
@@ -99,10 +101,9 @@ int main(int argc, char *argv[]) {
 		 * fileindex
 		 * datasize
 		 *
-		 * return value is
-		 * 0 callback takes care of open,close,wrie file
-		 * 1 callback writes file, we have to open, close it
-		 * 2 we open, close, write file, callback does not do anything
+		 * return value is insignificant at the moment
+		 * we write depending on file write enable
+		 * users get data to write depending on call backs registered
 		 */
 		printf("Registering 	StartAcq()\n");
 		receivers[i]->registerCallBackStartAcquisition(StartAcq, NULL);
@@ -133,7 +134,6 @@ int main(int argc, char *argv[]) {
 		 * version is the version number of this structure format
 		 * dataPointer is the pointer to the data
 		 * dataSize in bytes is the size of the data in bytes
-		 * fileDescriptor is the file descriptor
 		 */
 		printf("Registering     GetData() \n");
 		receivers[i]->registerCallBackRawDataReady(GetData,NULL);

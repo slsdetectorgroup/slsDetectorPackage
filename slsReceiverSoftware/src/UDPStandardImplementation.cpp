@@ -427,33 +427,6 @@ void UDPStandardImplementation::resetAcquisitionCount() {
 }
 
 
-int UDPStandardImplementation::VerifyCallBackAction() {
-	/** file path and file index not required?? or need to include detector index?  do they need the datasize? its given for write data anyway */
-
-	callbackAction=startAcquisitionCallBack(filePath, fileName, fileIndex,
-			(generalData->fifoBufferSize) * numberofJobs + (generalData->fifoBufferHeaderSize), pStartAcquisition);
-	switch(callbackAction) {
-	case 0:
-		if (acquisitionFinishedCallBack == NULL || rawDataReadyCallBack == NULL) {
-			FILE_LOG(logERROR) << "Callback action 0: All the call backs must be registered";
-			return FAIL;
-		}
-		cout << "Start Acquisition, Acquisition Finished and Data Write has been defined externally" << endl;
-		break;
-	case 1:
-		if (rawDataReadyCallBack == NULL) {
-			FILE_LOG(logERROR) << "Callback action 1: RawDataReady call backs must be registered";
-			return FAIL;
-		}
-		cout << "Data Write defined externally" << endl;
-		break;
-	case 2:break;
-	default:
-		cprintf(RED,"Error: Unknown call back action.\n");
-		return FAIL;
-	}
-	return OK;
-}
 
 int UDPStandardImplementation::startReceiver(char *c) {
 	cout << endl << endl;
@@ -470,13 +443,21 @@ int UDPStandardImplementation::startReceiver(char *c) {
 
 	//callbacks
 	callbackAction = DO_EVERYTHING;
-	if (startAcquisitionCallBack)
-		if (VerifyCallBackAction() == FAIL)
-			return FAIL;
+	if (startAcquisitionCallBack) {
+		callbackAction=startAcquisitionCallBack(filePath, fileName, fileIndex,
+				(generalData->fifoBufferSize) * numberofJobs + (generalData->fifoBufferHeaderSize), pStartAcquisition);
+		if (callbackAction == DO_NOTHING) {
+			if (acquisitionFinishedCallBack == NULL || rawDataReadyCallBack == NULL) {
+				FILE_LOG(logERROR) << "Callback action 0: All the call backs must be registered";
+				return FAIL;
+			}
+			cout << "Start Acquisition, Acquisition Finished and Data Write has been defined externally" << endl;
+		}
+	}
 
 	//processor->writer
 	if (fileWriteEnable) {
-		if (callbackAction > DO_NOTHING && SetupWriter() == FAIL) {
+		if (callbackAction == DO_EVERYTHING && SetupWriter() == FAIL) {
 			strcpy(c,"Could not create file.");
 			FILE_LOG(logERROR) << c;
 			return FAIL;

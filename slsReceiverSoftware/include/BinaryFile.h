@@ -47,12 +47,6 @@ class BinaryFile : private virtual slsReceiverDefs, public File, public BinaryFi
 	void PrintMembers();
 
 	/**
-	 * Get File Handle pointer
-	 * @returns file handle pointer
-	 */
-	FILE* GetFileHandle();
-
-	/**
 	 * Create file
 	 * @param fnum current frame index to include in file name
 	 * @returns OK or FAIL

@@ -51,7 +51,7 @@ public:
 
 	@sort register calbback for starting the acquisition 
 	 \param func  callback to be called when starting the acquisition. Its arguments are  filepath, filename, fileindex, datasize
-	  \returns	   0 callback takes care of open,close,write file; 	   1  we open, close, write file, callback does not do anything
+	 \return value is insignificant at the moment, we write depending on file write enable, users get data to write depending on call backs registered
 	*/
 	void registerCallBackStartAcquisition(int (*func)(char* filepath, char* filename, uint64_t fileindex, uint32_t datasize, void*),void *arg);
 

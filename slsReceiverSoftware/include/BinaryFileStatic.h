@@ -129,16 +129,16 @@ class BinaryFileStatic {
 		time_t t = time(0);
 		char message[MAX_STR_LENGTH];
 		sprintf(message,
-				"Version		: %.1f\n"
-				"Dynamic Range	: %d\n"
-				"Ten Giga		: %d\n"
-				"Image Size		: %d bytes\n"
-				"x				: %d pixels\n"
-				"y				: %d pixels\n"
-				"Total Frames	: %lld\n"
-				"Exptime (ns)	: %lld\n"
-				"Period (ns)	: %lld\n"
-				"Timestamp		: %s\n\n"
+				"Version        : %.1f\n"
+				"Dynamic Range  : %d\n"
+				"Ten Giga       : %d\n"
+				"Image Size     : %d bytes\n"
+				"x              : %d pixels\n"
+				"y              : %d pixels\n"
+				"Total Frames   : %lld\n"
+				"Exptime (ns)   : %lld\n"
+				"Period (ns)    : %lld\n"
+				"Timestamp      : %s\n\n"
 
 				"#Frame Header\n"
 				"Frame Number       : 8 bytes\n"

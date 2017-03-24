@@ -32,9 +32,8 @@ pthread_mutex_t DataProcessor::Mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
 DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* dsEnable,
-		int* cbaction,
 		void (*dataReadycb)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
-				char*, uint32_t, FILE*, void*),
+				char*, uint32_t, void*),
 		void *pDataReadycb) :
 
 		ThreadObject(NumberofDataProcessors),
@@ -51,7 +50,6 @@ DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* 
 		file(0),
 		fileFormatType(ftype),
 		fileWriteEnable(fwenable),
-		callbackAction(cbaction),
 		rawDataReadyCallBack(dataReadycb),
 		pRawDataReady(pDataReadycb)
 {
@@ -314,32 +312,28 @@ void DataProcessor::ProcessAnImage(char* buf) {
 		RecordFirstIndices(fnum);
 	}
 
-	if (*callbackAction == DO_EVERYTHING) {
-		if (*fileWriteEnable)
-			file->WriteToFile(buf, generalData->fifoBufferSize + sizeof(sls_detector_header), fnum-firstMeasurementIndex);
-	} else {
-		/*
-		if (rawDataReadyCallBack)
-			rawDataReadyCallBack(
-					header->frameNumber,
-					header->expLength,
-					header->packetNumber,
-					header->bunchId,
-					header->timestamp,
-					header->modId,
-					header->xCoord,
-					header->yCoord,
-					header->zCoord,
-					header->debug,
-					header->roundRNumber,
-					header->detType,
-					header->version,
-					buf + sizeof(sls_detector_header),
-					generalData->imageSize,
-					file->GetFileHandle(), pRawDataReady);
-					*/
-		file->GetBinaryFileHandle();
-		//GetHDF5FileHandle
-	}
+
+	if (*fileWriteEnable)
+		file->WriteToFile(buf, generalData->fifoBufferSize + sizeof(sls_detector_header), fnum-firstMeasurementIndex);
+
+	if (rawDataReadyCallBack)
+		rawDataReadyCallBack(
+				header->frameNumber,
+				header->expLength,
+				header->packetNumber,
+				header->bunchId,
+				header->timestamp,
+				header->modId,
+				header->xCoord,
+				header->yCoord,
+				header->zCoord,
+				header->debug,
+				header->roundRNumber,
+				header->detType,
+				header->version,
+				buf + sizeof(sls_detector_header),
+				generalData->imageSize,
+				pRawDataReady);
+
 }
 

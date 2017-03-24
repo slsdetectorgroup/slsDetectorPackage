@@ -248,12 +248,6 @@ private:
 	/** Number of Jobs */
 	int numberofJobs;
 
-	/** Pointer to the action which decides what the user and default responsibilities to save data are
-	 * 0 raw data ready callback takes care of open,close,write file
-	 * 1 callback writes file, we have to open, close it
-	 * 2 we open, close, write file, callback does not do anything */
-	int callbackAction;
-
 	//*** mutex ***
 	/** Status mutex */
 	pthread_mutex_t statusMutex;

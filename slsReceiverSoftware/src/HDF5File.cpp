@@ -66,10 +66,6 @@ void HDF5File::PrintMembers() {
 }
 
 
-H5File* HDF5File::GetHDF5FileHandle() {
-	return filefd;
-}
-
 void HDF5File::SetNumberofPixels(uint32_t nx, uint32_t ny) {
 	nPixelsX = nx;
 	nPixelsY = ny;

@@ -28,14 +28,12 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param ftype pointer to file format type
 	 * @param fwenable pointer to file writer enable
 	 * @param dsEnable pointer to data stream enable
-	 * @param cbaction pointer to call back action
 	 * @param dataReadycb pointer to data ready call back function
 	 * @param pDataReadycb pointer to arguments of data ready call back function
 	 */
 	DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* dsEnable,
-						int* cbaction,
 						void (*dataReadycb)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
-								char*, uint32_t, FILE*, void*),
+								char*, uint32_t, void*),
 						void *pDataReadycb);
 
 	/**
@@ -286,13 +284,6 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	bool* fileWriteEnable;
 
 
-	//***callback parameters***
-	/** Pointer to the action which decides what the user and default responsibilities to save data are
-	 * 0 raw data ready callback takes care of open,close,write file
-	 * 1 callback writes file, we have to open, close it
-	 * 2 we open, close, write file, callback does not do anything */
-	int* callbackAction;
-
 	/**
 	 * Call back for raw data
 	 * args to raw data ready callback are
@@ -311,10 +302,9 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * version is the version number of this structure format
 	 * dataPointer is the pointer to the data
 	 * dataSize in bytes is the size of the data in bytes
-	 * fileDescriptor is the file descriptor
 	 */
 	void (*rawDataReadyCallBack)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
-			char*, uint32_t, FILE*, void*);
+			char*, uint32_t, void*);
 	void *pRawDataReady;
 
 

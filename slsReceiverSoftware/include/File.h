@@ -11,16 +11,6 @@
 #include "sls_receiver_defs.h"
 #include "logger.h"
 
-#ifdef HDF5C
-//#ifndef HDF5DEFINED
-//#define HDF5DEFINED
-#include "H5Cpp.h"
-#ifndef H5_NO_NAMESPACE
-    using namespace H5;
-#endif
-#endif
-//#endif
-
 #include <string>
 
 class File : private virtual slsReceiverDefs {
@@ -66,15 +56,6 @@ class File : private virtual slsReceiverDefs {
 	 * @return type
 	 */
 	virtual fileFormat GetFileType() = 0;
-
-	/**
-	 * Get File Handle pointer
-	 * @returns file handle pointer
-	 */
-	virtual FILE* GetBinaryFileHandle() {return NULL;};
-#ifdef HDF5C
-	virtual H5File* GetHDF5FileHandle() {return NULL;};
-#endif
 
 	/**
 	 * Get Member Pointer Values before the object is destroyed

@@ -53,7 +53,6 @@ void UDPStandardImplementation::InitializeMembers() {
 	//*** receiver parameters ***
 	numThreads = 1;
 	numberofJobs = 1;
-	callbackAction = DO_EVERYTHING;
 
 	//*** mutex ***
 	pthread_mutex_init(&statusMutex,NULL);
@@ -373,7 +372,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	for ( int i=0; i < numThreads; ++i ) {
 		listener.push_back(new Listener(fifo[i], &status, &udpPortNum[i], eth, &activated, &numberOfFrames, &dynamicRange));
 		dataProcessor.push_back(new DataProcessor(fifo[i], &fileFormatType, &fileWriteEnable, &dataStreamEnable,
-														&callbackAction, rawDataReadyCallBack,pRawDataReady));
+				rawDataReadyCallBack,pRawDataReady));
 		if (Listener::GetErrorMask() || DataProcessor::GetErrorMask()) {
 			FILE_LOG (logERROR) << "Error: Could not creates listener/dataprocessor threads (index:" << i << ")";
 			for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
@@ -442,28 +441,22 @@ int UDPStandardImplementation::startReceiver(char *c) {
 	}
 
 	//callbacks
-	callbackAction = DO_EVERYTHING;
 	if (startAcquisitionCallBack) {
-		callbackAction=startAcquisitionCallBack(filePath, fileName, fileIndex,
+		startAcquisitionCallBack(filePath, fileName, fileIndex,
 				(generalData->fifoBufferSize) * numberofJobs + (generalData->fifoBufferHeaderSize), pStartAcquisition);
-		if (callbackAction == DO_NOTHING) {
-			if (acquisitionFinishedCallBack == NULL || rawDataReadyCallBack == NULL) {
-				FILE_LOG(logERROR) << "Callback action 0: All the call backs must be registered";
-				return FAIL;
-			}
-			cout << "Start Acquisition, Acquisition Finished and Data Write has been defined externally" << endl;
-		}
+		if (rawDataReadyCallBack != NULL)
+			cout << "Data Write has been defined externally" << endl;
 	}
 
 	//processor->writer
 	if (fileWriteEnable) {
-		if (callbackAction == DO_EVERYTHING && SetupWriter() == FAIL) {
+		if (SetupWriter() == FAIL) {
 			strcpy(c,"Could not create file.");
 			FILE_LOG(logERROR) << c;
 			return FAIL;
 		}
 	} else
-		cout << " Data will not be saved" << endl;
+		cout << "File Write Disabled" << endl;
 
 	cout << "Ready ..." << endl;
 

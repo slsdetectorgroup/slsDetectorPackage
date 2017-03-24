@@ -71,11 +71,13 @@ This release supports the following features:
 	
 
 	
-	- The call back value for Start Acquisition Call back has only 2 
-	options now:
-		* 0 user mode: user call back takes care of open, close and writing 
-		  to file.
-		* 1 default mode: default procedure to open, close and write to file.
+	- The call back value for Start Acquisition Call back is insignificant at the 
+	moment and left for future use. Instead, the following rules apply:
+		* If file write is enabled from the client, we will write the files.
+		* If callbacks are registered, they will be called.
+	For example, the user prefers to write the data himself, one must disable
+	file write (so we dont write) and register the callbacks (so the user gets 
+	the data).
 		
 		
 

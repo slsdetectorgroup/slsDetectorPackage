@@ -226,9 +226,6 @@ void UDPStandardImplementation::initializeMembers(){
 		receiverData[i] = 0;
 	}
 
-
-	//***callback***
-	cbAction = DO_EVERYTHING;
 }
 
 
@@ -1525,7 +1522,6 @@ int UDPStandardImplementation::setupWriter(){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	//acquisition start call back returns enable write
-	cbAction = DO_EVERYTHING;
 	if (startAcquisitionCallBack) {
 		//remove detector index in the file name
 		int deti = -1;
@@ -1533,17 +1529,13 @@ int UDPStandardImplementation::setupWriter(){
 		size_t uscore=tempname.rfind("_");
 		if ((uscore!=string::npos) && (sscanf(tempname.substr(uscore+1,tempname.size()-uscore-1).c_str(),"d%d",&deti)))
 				tempname=tempname.substr(0,uscore);
-		cbAction=startAcquisitionCallBack(filePath, (char*)tempname.c_str(),fileIndex, (uint32_t)bufferSize,pStartAcquisition);
+		startAcquisitionCallBack(filePath, (char*)tempname.c_str(),fileIndex, (uint32_t)bufferSize,pStartAcquisition);
 	}
-
-	if(cbAction == DO_NOTHING){
-		FILE_LOG(logINFO) << "Call back activated. Data saving must be taken care of by user in call back.";
-		if (rawDataReadyCallBack){
-			FILE_LOG(logINFO) << "Data Write has been defined externally";
-		}
-	}else if(!fileWriteEnable){
+	if (rawDataReadyCallBack)
+		FILE_LOG(logINFO) << "Data Write has been defined externally";
+	if (!fileWriteEnable)
 		FILE_LOG(logINFO) << "Data will not be saved";
-	}
+
 
 
 	//creating first file
@@ -1587,12 +1579,12 @@ int UDPStandardImplementation::createNewFile(int ithread){
 #endif
 
 	//filewrite enable & we allowed to create/close files
-	if(fileWriteEnable && cbAction == DO_EVERYTHING){
+	if(fileWriteEnable){
 
 		//close file pointers
 		if(sfilefd[ithread]){
 			//all threads need to close file, reset mask and exit loop
-			if(myDetectorType == EIGER && fileWriteEnable && (cbAction == DO_EVERYTHING)){
+			if(myDetectorType == EIGER && fileWriteEnable){
 				updateFileHeader(ithread);
 				fseek(sfilefd[ithread],0,0);
 				fwrite((void*)fileHeader[ithread], 1, FILE_HEADER_SIZE, sfilefd[ithread]);
@@ -2732,7 +2724,7 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 
 
 	//all threads need to close file, reset mask and exit loop
-	if(myDetectorType == EIGER && fileWriteEnable && (cbAction == DO_EVERYTHING)){
+	if(myDetectorType == EIGER && fileWriteEnable){
 		updateFileHeader(ithread);
 		fseek(sfilefd[ithread],0,0);
 		fwrite((void*)fileHeader[ithread], 1, FILE_HEADER_SIZE, sfilefd[ithread]);
@@ -2891,7 +2883,7 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 
 
 	//callback to write data
-	if (cbAction == DO_NOTHING)
+	if (rawDataReadyCallBack)
 		rawDataReadyCallBack(
 				tempframenumber,//frameNumber
 				0,//expLength
@@ -2954,7 +2946,7 @@ void UDPStandardImplementation::handleCompleteFramesOnly(int ithread, char* wbuf
 	sls_detector_header* header = (sls_detector_header*) (wbuffer + HEADER_SIZE_NUM_TOT_PACKETS);
 	uint64_t tempframenumber = header->frameNumber;
 
-	if (cbAction == DO_NOTHING)
+	if (rawDataReadyCallBack)
 		rawDataReadyCallBack(
 				header->frameNumber,
 				header->expLength,

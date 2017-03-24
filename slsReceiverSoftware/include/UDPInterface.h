@@ -543,9 +543,9 @@ class UDPInterface {
 	 * fileindex
 	 * datasize
 	 *
-	 * return value is
-	 * 0 callback takes care of open,close,write file
-	 * 1 we open, close, write file, callback does not do anything
+	 * return value is insignificant at the moment
+	 * we write depending on file write enable
+	 * users get data to write depending on call backs registered
 	 */
 	virtual void registerCallBackStartAcquisition(int (*func)(char*, char*, uint64_t, uint32_t, void*),void *arg) = 0;
 

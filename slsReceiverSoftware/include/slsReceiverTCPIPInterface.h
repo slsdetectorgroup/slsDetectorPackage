@@ -65,9 +65,9 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	 * fileindex
 	 * datasize
 	 *
-	 * return value is
-	 * 0 callback takes care of open,close,wrie file
-	 * 1 we open, close, write file, callback does not do anything
+	 * return value is insignificant at the moment
+	 * we write depending on file write enable
+	 * users get data to write depending on call backs registered
 	 */
 	void registerCallBackStartAcquisition(int (*func)(char*, char*, uint64_t, uint32_t, void*),void *arg);
 
@@ -308,9 +308,9 @@ private:
 	 * fileindex
 	 * datasize
 	 *
-	 * return value is
-	 * 0 callback takes care of open,close,wrie file
-	 * 1 we open, close, write file, callback does not do anything
+	 * return value is insignificant at the moment
+	 * we write depending on file write enable
+	 * users get data to write depending on call backs registered
 	 */
 	int (*startAcquisitionCallBack)(char*, char*, uint64_t, uint32_t, void*);
 	void *pStartAcquisition;

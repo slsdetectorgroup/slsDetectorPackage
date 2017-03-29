@@ -24,13 +24,13 @@ An EIGER single module (500~kpixels) needs:
 \item 2$\times$10~Gb/s transceivers to optionally, receive data at high rate.
 \end{itemize}
 The equipment scales linearly with the number of modules.
-Figure~\ref{fig:1} shows the relationship between the \textbf{Client} (which sits on a beamline control PC), the \textbf{Receiver} (which can run in multiple instances on one or more PCs which receive data from the detector. The receiver(s) does not necessary have to be running on the same PC as the client.) It is important that the receiver is closely connected to the detector (they have to be on the same network). Note that if you implement the 1Gb/s redout only: client, receiver and detector have to be all three in the same network. If you omplement teh 10Gb/s redout, then client, the 1~GbE of the detector and the receiver have to stay on the 1GbE. But the receiver data receiving device and the 10GbE detector can be on their private newtwork, minimising the missing packets.  
+Figure~\ref{fig:1} shows the relationship between the \textbf{Client} (which sits on a beamline control PC), the \textbf{Receiver} (which can run in multiple instances on one or more PCs which receive data from the detector. The receiver(s) does not necessary have to be running on the same PC as the client.) It is important that the receiver is closely connected to the detector (they have to be on the same network). Note that if you implement the 1Gb/s readout only: client, receiver and detector have to be all three in the same network. If you implement the 10Gb/s readout, then client, the 1~GbE of the detector and the receiver have to stay on the 1GbE. But the receiver data receiving device and the 10GbE detector can be on their private network, minimizing the missing packets.  
 
 \begin{figure}[t]
 \begin{center}
 \includegraphics[width=.8\textwidth]{Client2}
 \end{center}
-\caption{Communications protocol between the Client PC, the receiver pc and the detector.}
+\caption{Communications protocol between the Client PC, the receiver PC and the detector.}
 \label{fig:1}
 \end{figure}
 
@@ -92,14 +92,31 @@ Other important settings that are configured in the {\tt{setup.det}} file are:
 One should notice that, by default, by choosing the option {\tt{dr 32}}, then the software automatically sets the detector to  {\tt{clkdivider 2}}. By choosing the option {\tt{dr 16}}, the software automatically sets the detector to  {\tt{clkdivider 1}}. One needs to choose {\tt{clkdivider 0}} after setting the {\tt{dr 16}} option to have the fastest frame rate. 
 We would recommend expert users (beamline people) to write their parameters file for the users. 
 
+
+\section{API versioning}
+The eigerDetectorServer running on the boards has a versioning API scheme that will make it crash if used with a wrong firmware.
+You can also check your versioning by hand with the code:
+\begin{verbatim}
+ sls_detector_get softwareversion
+\end{verbatim}
+gets the server (slsDetectorSoftware) version (answer is something like: {\tt{softwareversion 111920160722}}.
+ \begin{verbatim}
+sls_detector_get thisversion 
+\end{verbatim}
+returns the client version. The answer can be {\tt{thisversion 111220160718}}.
+\begin{verbatim}
+/sls_detector_get detectorversion
+\end{verbatim}
+returns the firmware version . The answer can be {\tt{detectorversion 11}}.
+
 \section{Setting up the threshold}
 \begin{verbatim}
 sls_detector_put 0-trimen N xxxx yyyy zzzz
-sls_detector_put 0-settings [veryhighgain/highgain/standard/lowgain/verylowgain]
+sls_detector_put 0-settings standard #[veryhighgain/highgain/lowgain/verylowgain] also possible
 sls_detector_put 0-threshold energy_in_eV
 \end{verbatim}
-The first line requires to specify how many ({\tt{N}}) and at which energies in eV {\{tt{xxxx}}, {\tt{yyyy}}, {\tt{zzzz}} and so on) the trimmed files were generated (to allow for an interpolation). This line should normally be included into the {\tt{mydetector.config}} file and should be set for you by one of the detector group.
-NORMALLY, in this new calibration scheme, only {\tt{settings standard}} will be provided to you. Unless specific cases to be discussed.
+The first line requires to specify how many ({\tt{N}}) and at which energies in eV {\{tt{xxxx}}, {\tt{yyyy}}, {\tt{zzzz}} and so on) trimmed files were generated (to allow for an interpolation). This line should normally be included into the {\tt{mydetector.config}} file and should be set for you by one of the detector group.
+NORMALLY, in this new calibration scheme, only {\tt{settings standard}} will be provided to you, unless specific cases to be discussed.
 The threshold at 6000 eV , for example would be set as:{\tt{sls\_detector\_put 0-threshold 6000}}.
 
 \section{Standard acquisition}
@@ -112,7 +129,7 @@ sls_detector_put 0-period 0[time_is_s]
 \end{verbatim}
 In this acquisition 10 consecutive 1~s frames will be acquired. Note that {\tt{period}} defines the sum of the acquisition time and the desired dead time before the next frame. If {\tt{period}} is set to 0, then the next frame will start as soon as the detector is ready to take another acquisition. \\
 
-For \E, at the moment 5 settings are possible: {\tt{standard}}, {\tt{lowgain}}, {\tt{verylowgain}}, {\tt{veryhighgain}} and {\tt{highgain}}. According to the setting chosen, one can reach different energies. Refer to the settings requirements for your detector.\\ 
+For \E, at the moment 5 settings are possible: {\tt{standard}}, {\tt{lowgain}}, {\tt{verylowgain}}, {\tt{veryhighgain}} and {\tt{highgain}}. According to the setting chosen, one can reach different requirements (low noise or high rate). Refer to the settings requirements for your detector.\\ 
 Notice that the option {\tt{settings standard/highgain/lowgain/veryhighgain/verylowgain}} actually loads the trimbit files so it is time consuming. Only setting the {\tt{threshold}} does not load trimbit files.  
 
 The threshold is expressed in (eV) as the proper threshold setting, i.e. normally is set to 50\% of the beam energy.  
@@ -131,9 +148,18 @@ To acquire simply type:
 \begin{verbatim}
 sls_detector_acquire 0-
 \end{verbatim}
-Note taht acquiring is blocking.
+Note that acquiring is blocking.
+You can poll the status of the detector with:
+\begin{verbatim}
+sls_detector_get status
+\end{verbatim}
+If the detector is still acquiring, the answer will return {\tt{running}}. If the detector has finished and ready for the next acquisition, then it will return {\tt{idle}}.
+You can also ask for the status of the receiver, to know when it has returned and finished getting the data with:
+\begin{verbatim}
+sls_detector_get receiver
+\end{verbatim}
 
-There is a more complex way of performing an acquisition, that is useful for debugging and in case one wants a non blocking behaviour: 
+There is a more complex way of performing an acquisition, that is useful for debugging and in case one wants a non blocking behavior: 
 \begin{itemize}
 \item {\tt{sls\_detector\_put 0-receiver start}} 
 \item {\tt{sls\_detector\_put 0-status start}} 
@@ -143,7 +169,15 @@ You can poll the detector status using:
 \begin{verbatim}
 sls_detector_get 0-status 
 \end{verbatim}
-If the receiver has not yet received the finished signal by the detector, the answer will return {\tt{running}}. If the detector has finished and ready for the next acquisition, then it will return {\tt{idle}}.
+When the detector is {\tt{idle}}, then you need to stop the receiver doing:
+\begin{itemize}
+\item {\tt{sls\_detector\_put 0-receiver stop}} 
+\end{itemize}
+You can then reset to zero the number of frames caught, if you desire:
+\begin{itemize}
+\item {\tt{sls\_detector\_put 0-resetframescaught 0}} 
+\end{itemize}
+
 The detector will not accept other commands while acquiring. If an acquisition wishes to be properly aborted, then:
 \begin{itemize}
 \item {\tt{sls\_detector\_put 0-status stop}} 
@@ -233,65 +267,6 @@ Hardware-wise, the ENABLE OUT signal outputs when the chips are really acquiring
 
 We are planning to change some functionality, i.e. unify the {\tt{trigger}} and {\tt{burst}} trigger modes and make both {\tt{frames}} and {\tt{cycles}} configurable at the same time.
 
-\section{Offline processing and monitoring}
-\subsection{Offline image reconstruction}
-The offline image reconstruction is in {\tt{slsDetectorsPackage/slsImageReconstruction}}.
-
-The detector writes a raw file per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce cbf files. The executable uses the CBFlib-0.9.5 library (downloaded from the web as it download some architecture dependent packages at installation).\\
-\underline{At cSAXS, the CBFlib-0.9.5 has been compiled -such that the required packages are}\\\underline{ downloaded in /sls/X12SA/data/x12saop/EigerPackage/CBFlib-0.9.5.}\\ 
-
-To use it for a single module:
-\begin{verbatim}
-cbfMaker [filename with dir]
-\end{verbatim}
-eg.
-{\tt{cbfMaker /scratch/run\_63\_d1\_f000000000000\_3.raw}}\\
-
-To use it for a 1.5 multi modules:
-\begin{verbatim}
-cbfMaker [filename] [pixels x] [pixels y] ([singlemodulelongside_x] [start det])
-\end{verbatim}
-eg.
-{\tt cbfMaker /scratch/run\_63\_d0\_f000000000000\_3.raw  3072 512 1 0}.\\
-The {\tt{[singlemodulelongside\_x]}} and {\tt{[start det]}} param are optional. Defaults are ``1'', the detector long side is on the x coordinate and start to reconstruct from module 0. 
-The executables: 
-\begin{verbatim}
-bcfMaker1.5M [file_name_with_dir]
-bcfMaker9M [file_name_with_dir]
-\end{verbatim}
-contain the hardcoded geometry for the 1.5M (3 modules horizontal on the long side) and for the 9M at cSAXS: 6(short side)$\times$3 (long side) modules.\\ 
-Missing packets in a frame and border pixels ($\times 2$ and $\times 4$ are given with value $-1$ at the present time.
-
-It is important to know, that the pixels at the edge between 2 chips count more as double size. We can virtually introduced 1 virtual pixel per double larger pixel, so to have an even number of counts everywhere. Virtual pixels (not filled ) between module gaps are also inserted.
-
- \begin{verbatim}
-   GapPixelsBetweenChips_x = 2;
-   GapPixelsBetweenChips_y = 2;
-   GapPixelsBetweenModules_x = 8;
-   GapPixelsBetweenModules_y = 36;
- \end{verbatim}
-
-\subsection{Read temperatures from boards}
-
-With an updated kernel on the linux boards (ask to the SLS detector group for specifications), it is possible to monitor the temperature on the Back End Boards: 
-\begin{verbatim}
-temp_fpga   #gets the temperature of the fpga
-temp_fpgaext   #gets the temperature close to the fpga
-temp_10ge   #gets the temperature close to the 10GE
-temp_dcdc   #gets the temperature close to the dc dc converter
-temp_sodl   #gets the temperature close to the left so-dimm memory
-temp_sodr   #gets the temperature close to the right so-dimm memory
-temp_fpgafl   #gets the temperature of the left front end board fpga
-temp_fpgafr   #gets the temperature of the left front end board fpga
-
-\end{verbatim}
-
-You need to use the command specifying from which board you desire the temperature readings, for example:
-\begin{verbatim}
-./sls_detector_get 0:temp_fpga
-./sls_detector_get 1:temp_fpga
-\end{verbatim}
-
 \section{Autosumming and rate corrections}
 
 In the case of autosumming mode, i.e, {\tt{dr 32}}, the acquisition time ({\tt{exptime}} is broken in as many subframes as they fit into the acquisition time minus all the subframes readout times. By default the {\tt{subexptime}} is set to 2.621440~ms. This implies that 12 bit counter of \E will saturate when the rate is above or equal to 1.57~MHz/pixel. The minimum value is of order of 10~ns (although as explained values smaller than 500~$\mu$s do not make sense). The maximum value is 5.2~s.
@@ -303,7 +278,7 @@ sls_detector_put 0-subexptime [time_in_s]
 
 One needs to realize that the readout time, for each subframe is 10.5~$\mu$s if the detector is in parallel mode. 500~$\mu$s if the detector is in non parallel mode. Note that in {\tt{dr 32}}, as the single frame readout from the chip is 500~$\mu$s, no {\tt{subexptime}}$<$500~$\mu$s can be set in {\tt{parallel}} mode. To have smaller {\tt{subexptime}}, you need the {\tt{nonparallel}} mode, although this will have a larger deadtime than the acquisition time.\\
 
-Online rate corrections can be activated. They are particularly useful and implemented \textbf{only} in the autosumming mode, i.e. when {\tt{dr 32}} is activated as  every single subframe is corrected before summing it. To correct for rate, the subframe duration has to be known to the correction algorithm.    
+Online rate corrections can be activated for {\tt{dr=32}}. They are particularly useful in the autosumming mode as  every single subframe is corrected before summing it. To correct for rate, the subframe duration has to be known to the correction algorithm. Rate corrections for {\tt{dr=16}} will be activated as well in the next firmware release.     
 To activate the rate corrections, one should do:\\
 \begin{verbatim}
 sls_detector_put 0-ratecorr [tauval_in_ns]
@@ -312,7 +287,7 @@ To deactivate:
 \begin{verbatim}
 sls_detector_put 0-ratecorr 0
 \end{verbatim}
-Default values for tau can be loaded from the calibration files. In this case, one needs to make sure the appropriate tau value is written in the calibration file, then need to load the appropriate {\tt{settings}} or {\tt{calibrations}} at least once before. Now to activate the rate corrections with the value written in the calibrations, once would do: 
+Default values for tau can be loaded from the trimbit files. In this case, one needs to make sure the appropriate tau value is written in the trimbit files, then need to load the appropriate {\tt{settings}} and {\tt{vthreshold}} before. Now to activate the rate corrections with the value written in the trimbit file or interpolated from there, once would do: 
 \begin{verbatim}
 sls_detector_put 0-ratecorr -1
 \end{verbatim}
@@ -392,6 +367,73 @@ Very important is to activate the flow control in 10Gb (in 1Gb it is on by defau
 \end{verbatim}
 Set the transmission delays as explained in the manual.
 
+\section{Offline processing and monitoring}
+\subsection{Offline image reconstruction}
+The offline image reconstruction is in {\tt{slsDetectorsPackage/slsImageReconstruction}}.
+
+The detector writes a raw file per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce cbf files. The executable uses the CBFlib-0.9.5 library (downloaded from the web as it download some architecture dependent packages at installation).\\
+\underline{At cSAXS, the CBFlib-0.9.5 has been compiled -such that the required packages are}\\\underline{ downloaded in /sls/X12SA/data/x12saop/EigerPackage/CBFlib-0.9.5.}\\ 
+
+To use it for a single module:
+\begin{verbatim}
+cbfMaker [filename with dir]
+\end{verbatim}
+eg.
+{\tt{cbfMaker /scratch/run\_63\_d1\_f000000000000\_3.raw}}\\
+
+To use it for a 1.5 multi modules:
+\begin{verbatim}
+cbfMaker [filename] [pixels x] [pixels y] ([singlemodulelongside_x] [start det])
+\end{verbatim}
+eg.
+{\tt cbfMaker /scratch/run\_63\_d0\_f000000000000\_3.raw  3072 512 1 0}.\\
+The {\tt{[singlemodulelongside\_x]}} and {\tt{[start det]}} param are optional. Defaults are ``1'', the detector long side is on the x coordinate and start to reconstruct from module 0. 
+The executables: 
+\begin{verbatim}
+bcfMaker1.5M [file_name_with_dir]
+bcfMaker9M [file_name_with_dir]
+\end{verbatim}
+contain the hardcoded geometry for the 1.5M (3 modules horizontal on the long side) and for the 9M at cSAXS: 6(short side)$\times$3 (long side) modules.\\ 
+Missing packets in a frame and border pixels ($\times 2$ and $\times 4$ are given with value $-1$ at the present time.
+
+It is important to know, that the pixels at the edge between 2 chips count more as double size. We can virtually introduced 1 virtual pixel per double larger pixel, so to have an even number of counts everywhere. Virtual pixels (not filled ) between module gaps are also inserted.
+
+ \begin{verbatim}
+   GapPixelsBetweenChips_x = 2;
+   GapPixelsBetweenChips_y = 2;
+   GapPixelsBetweenModules_x = 8;
+   GapPixelsBetweenModules_y = 36;
+ \end{verbatim}
+
+\subsection{Read temperatures/HV from boards}
+
+With an updated kernel on the linux boards (ask to the SLS detector group for specifications), it is possible to monitor the temperature on the Back End Boards: 
+\begin{verbatim}
+temp_fpga   #gets the temperature of the fpga
+temp_fpgaext   #gets the temperature close to the fpga
+temp_10ge   #gets the temperature close to the 10GE
+temp_dcdc   #gets the temperature close to the dc dc converter
+temp_sodl   #gets the temperature close to the left so-dimm memory
+temp_sodr   #gets the temperature close to the right so-dimm memory
+temp_fpgafl   #gets the temperature of the left front end board fpga
+temp_fpgafr   #gets the temperature of the right front end board fpga
+
+\end{verbatim}
+
+You need to use the command specifying from which board you desire the temperature readings, for example:
+\begin{verbatim}
+./sls_detector_get 0:temp_fpga
+./sls_detector_get 1:temp_fpga
+\end{verbatim}
+In 500k--2M pixel systems there is a hardware temperature safety switch, which will cut power to the BEBs when reaching a too high temperature. For the 9M system, there is a temperature sensor read by the bchip100 PCU which will shutdown the detector when above a certain temperature.
+ 
+The HV can also be set and read through the software:
+\begin{verbatim}
+./sls_detector_put vhighvoltage 150
+./sls_detector_get vhighvoltage 
+\end{verbatim}
+Note that the get {\tt{vhighvoltage}} would return the measured HV from the master module only.
+
 \appendix
 
 \section{Kill the server, copy a new server, start the server}
@@ -417,27 +459,66 @@ Start the server again:
 
 \section{Loading firmware bitfiles}
 
-A \textbf{bcp} executable (which needs \textbf{tftp} installed on the PC, is needed. First of all, you need to press something on the detector: to programm bitfiles (firmware files), do a hard reset with a pin/thin stuff in the holes at the very back of the module. They are between the top 7 LED and the bottom 1 and opposite for the otehr side. Push hard till all LEDs are alternating green and red. After booting only the central one should be on green and red alternating. From a terminal, do:
+A \textbf{bcp} executable (which needs \textbf{tftp} installed on the PC, is needed. First of all, you need to press something on the detector: to programm bitfiles (firmware files), do a hard reset with a pin/thin stuff in the holes at the very back of the module. They are between the top 7 LED and the bottom 1 and opposite for the other side. Push hard till all LEDs are alternating green and red. After booting only the central one should be on green and red alternating. From a terminal, do:
 \begin{verbatim}
 nc -p 3000 -u bebxxx 3000 
 \end{verbatim} 
-where {\tt{xxx}} is the board number. It is enough top monitor with {\tt{nc}} only one board. Pres enter twice (till you see a prompt with the baord hostname printed) and keep this terminal to monitor. It takes a bit of time to load the bitfiles, but the terminal tells you.\\
+where {\tt{xxx}} is the board number. It is enough top monitor with {\tt{nc}} only one board. Pres enter twice (till you see a prompt with the board hostname printed) and keep this terminal to monitor. It takes a bit of time to load the bitfiles, but the terminal tells you.\\
 From another terminal you do:
 \begin{verbatim}
 ./bcp feb_left.bit bebxxx:/febl
-sleep 300; #or till the screen over netcat has told you Successuful
+sleep 300; #or till the screen over netcat has told you Successful
 ./bcp feb_right.bit bebxxx:/febr
-sleep 300; #or till the screen over netcat has told you Successuful
+sleep 300; #or till the screen over netcat has told you Successful
 ./bcp download.bit bebxxx:/fw0
-sleep 300; #or till the screen over netcat has told you Successuful
+sleep 300; #or till the screen over netcat has told you Successful
 \end{verbatim}
 If you need to program a new kernel (only needed when told to do so):
 \begin{verbatim}
  ./bcp kernel_local bebxxx:/kernel
-sleep 300; #or till the screen over netcat has told you Successuful
+sleep 300; #or till the screen over netcat has told you Successful
 \end{verbatim}
+do the same for the other boards. You can program in parallel many boards, but you cannot load two bitfiles on the same board till loading and copying one process has finished. So load all left febs together, then proceed to the right febs, then the bebs. Power off completely everything. Power it on.
 
-do the same for the other boards. You can program in parallel many boards, but you cannot load two bitfiles on the same board till loading and copying one process has finished. So load all left febs together, then proceed to the left febs, then the bebs. Power off completely everything. Power it on.
+\section{Pulsing the detector}
+There are two ways to pulse the detector: 
+\begin{itemize}
+\item \textbf{Pulse digitally:} when you are interested to the output readout and do not care about the analog response from the pixels:
+ \begin{verbatim}
+sls_detector_put vthreshold 4000
+sls_detector_put vtr 4000
+sls_detector_put pulsechip N #to pulse N
+sls_detector_put pulsechip -1 #to get out of testing mode 
+\end{verbatim}
+Note that the answer will be $2 \cdot \textrm{{\tt{N}}} +2$ in this case.
+
+\item  \textbf{Pulse analogically:} You want to really check the analogical part of the detcetor, not just the readout.
+
+ \begin{verbatim}
+sls_detector_put vcall 3600
+sls_detector_put vthreshold 1700
+sls_detector_put vrf 3100
+for i in $(seq 0 7) ; 
+do px=$((-255+i)); 
+sls_detector_put  pulse 0 $px 0;
+for j in $(seq 0 255) ; do
+sls_detector_put pulsenmove N 0 1;
+done;
+done;
+sls_detector_p resmat 0
+sls_detector_acquire
+\end{verbatim}
+You read {\tt{N}} in every pixel if you are setup correctly. 
+\end{itemize}
+ 
+\section{Load a noise pattern with shape}
+For debug purposes, we have created a noise pattern with a shape. If you reconstruct correctly your image, you should be able to read ".EIGER'' in the same direction for both the top and bottom in normal human readable orientation.
+To load the special noise file look at {\tt{settingsdir/eiger/standard/eigernoise.sn0xx}} in the package. 
+\begin{verbatim}
+sls_detector_put trimbits ../settingsdir/eiger/standard/eigernoise
+sls_detector_put vthreshold 4000
+sls_detector_put vtr 4000
+\end{verbatim}
 
 \section{Running the (9M at cSAXS. For now)}
 \begin{itemize}

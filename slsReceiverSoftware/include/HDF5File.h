@@ -162,14 +162,11 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	/** Number of files in an acquisition - to verify need of virtual file */
 	int numFilesinAcquisition;
 
-	//parameters
-	static const int const NUM_PARAMETERS;
-	static const char* const PARAMETERS[];
-	static const DataType* const PARAMETER_DATATYPES[];
-
 	/** Dataspace of parameters */
 	DataSpace* dataspace_para;
-	DataSet* dataset_para[NUM_PARAMETERS];
+
+	/** Dataset array for parameters */
+	DataSet* dataset_para[HDF5FileStatic::NumberofParameters];
 
 };
 #endif

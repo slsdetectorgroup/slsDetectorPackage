@@ -26,7 +26,7 @@ LIBZMQ =  -L$(LIBZMQDIR) -Wl,-rpath=$(LIBZMQDIR) -lzmq
 
 SRC_CLNT = MySocketTCP.cpp  ThreadObject.cpp Listener.cpp DataProcessor.cpp DataStreamer.cpp Fifo.cpp File.cpp BinaryFile.cpp UDPInterface.cpp  UDPBaseImplementation.cpp UDPStandardImplementation.cpp slsReceiverTCPIPInterface.cpp slsReceiver.cpp slsReceiverUsers.cpp utilities.cpp
 ifeq ($(HDF5),yes)
-	SRC_CLNT += HDF5File.cpp 
+	SRC_CLNT += HDF5File.cpp HDF5FileStatic.cpp
 endif
 
 ifeq ($(REST), yes)

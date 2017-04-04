@@ -1,5 +1,5 @@
 /************************************************
- * @file DataStreamer.h
+ * @file DataStreamer.cpp
  * @short streams data from receiver via ZMQ
  ***********************************************/
 

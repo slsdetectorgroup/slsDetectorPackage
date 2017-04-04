@@ -1,5 +1,5 @@
 /************************************************
- * @file ThreadObject.h
+ * @file ThreadObject.cpp
  * @short creates/destroys a thread
  ***********************************************/
 

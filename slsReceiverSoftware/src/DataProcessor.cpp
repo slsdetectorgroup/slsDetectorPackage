@@ -1,5 +1,5 @@
 /************************************************
- * @file DataProcessor.h
+ * @file DataProcessor.cpp
  * @short creates data processor thread that
  * pulls pointers to memory addresses from fifos
  * and processes data stored in them & writes them to file

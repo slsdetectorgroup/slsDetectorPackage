@@ -1,5 +1,5 @@
 /************************************************
- * @file BinaryFile.h
+ * @file BinaryFile.cpp
  * @short sets/gets properties for the binary file,
  * creates/closes the file and writes data to it
  ***********************************************/

@@ -1,5 +1,5 @@
 /************************************************
- * @file File.h
+ * @file File.cpp
  * @short sets/gets properties for the file,
  * creates/closes the file and writes data to it
  ***********************************************/

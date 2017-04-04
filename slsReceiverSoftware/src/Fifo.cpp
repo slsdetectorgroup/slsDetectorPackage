@@ -1,5 +1,5 @@
 /************************************************
- * @file Fifo.h
+ * @file Fifo.cpp
  * @short constructs the fifo structure
  * which is a circular buffer with pointers to
  * parts of allocated memory

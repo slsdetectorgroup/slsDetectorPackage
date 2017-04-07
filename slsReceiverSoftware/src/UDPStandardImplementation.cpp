@@ -2523,8 +2523,7 @@ uint32_t UDPStandardImplementation::processListeningBuffer(int ithread, int &cSi
 		break;
 
 	default:
-		cprintf(RED,"Listening_Thread %d: Error: This detector %s is not implemented in the receiver\n",
-				ithread, getDetectorType(myDetectorType).c_str());
+		cprintf(RED,"Listening_Thread %d: Error: This detector is not implemented in the receiver\n", ithread);
 		break;
 	}
 

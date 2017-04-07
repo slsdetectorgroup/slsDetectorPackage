@@ -9,7 +9,7 @@
 This file is an example of how to implement the slsDetectorUsers class 
 You can compile it linking it to the slsDetector library
 
-gcc mainReceiver.cpp -L lib -l SlsDetector -lm -lpthread
+gcc mainReceiver.cpp -L lib -l SlsDetector -lm -pthread
 
 where lib is the location of libSlsDetector.so
 

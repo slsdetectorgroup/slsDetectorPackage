@@ -2,8 +2,8 @@ INCLUDES	=   -I .
 SRC_DET		= 	mainClient.cpp 	
 SRC_REC		=   mainReceiver.cpp
 LIBDIR		=   ../../bin
-LDFLAG_DET 	=	-L$(LIBDIR) -lSlsDetector -L/usr/lib64/ -lpthread
-LDFLAG_REC 	=	-L$(LIBDIR) -lSlsReceiver -L/usr/lib64/ -lpthread
+LDFLAG_DET 	=	-L$(LIBDIR) -lSlsDetector -L/usr/lib64/ -pthread
+LDFLAG_REC 	=	-L$(LIBDIR) -lSlsReceiver -L/usr/lib64/ -pthread
 DESTDIR		?=	../docs
 
 

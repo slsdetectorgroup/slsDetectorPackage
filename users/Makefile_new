@@ -2,8 +2,8 @@ WD				=	$(shell pwd)
 LIBDIR	 		= 	$(WD)/../bin
 LIBRARYRXRDIR 	=	$(WD)/../slsReceiverSoftware
 LIBRARYDETDIR 	=	$(WD)/../slsDetectorSoftware
-LDFLAGRXR 		= 	-L$(LIBDIR) -lSlsReceiver -L/usr/lib64/ -lpthread
-LDFLAGDET 		= 	-L$(LIBDIR) -lSlsDetector -L/usr/lib64/ -lpthread
+LDFLAGRXR 		= 	-L$(LIBDIR) -lSlsReceiver -L/usr/lib64/ -pthread
+LDFLAGDET 		= 	-L$(LIBDIR) -lSlsDetector -L/usr/lib64/ -pthread
 INCLUDESRXR		=	-I $(LIBRARYRXRDIR)/include
 INCLUDESDET		=	-I $(LIBRARYDETDIR)/slsDetector -I $(LIBRARYDETDIR)/slsDetectorAnalysis
 

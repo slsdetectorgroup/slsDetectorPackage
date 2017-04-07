@@ -7,16 +7,13 @@
 #include <unistd.h>
 #include <ansi.h>
 
-#ifdef VERBOSE
-#define FILELOG_MAX_LEVEL logDEBUG
-#endif
-
-#ifdef VERYVERBOSE
-#define FILELOG_MAX_LEVEL logDEBUG4
-#endif
 
 #ifdef FIFODEBUG
 #define FILELOG_MAX_LEVEL logDEBUG5
+#elif VERYVERBOSE
+#define FILELOG_MAX_LEVEL logDEBUG4
+#elif VERBOSE
+#define FILELOG_MAX_LEVEL logDEBUG
 #endif
 
 #ifndef FILELOG_MAX_LEVEL

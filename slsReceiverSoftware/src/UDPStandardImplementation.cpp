@@ -20,6 +20,7 @@
 
 #include <zmq.h>	//zmq
 #include <sstream>
+#include <inttypes.h>		//printf of uint64_t etc
 
 using namespace std;
 
@@ -1531,11 +1532,12 @@ int UDPStandardImplementation::setupWriter(){
 				tempname=tempname.substr(0,uscore);
 		startAcquisitionCallBack(filePath, (char*)tempname.c_str(),fileIndex, (uint32_t)bufferSize,pStartAcquisition);
 	}
-	if (rawDataReadyCallBack)
+	if (rawDataReadyCallBack) {
 		FILE_LOG(logINFO) << "Data Write has been defined externally";
-	if (!fileWriteEnable)
+	}
+	if (!fileWriteEnable) {
 		FILE_LOG(logINFO) << "Data will not be saved";
-
+	}
 
 
 	//creating first file
@@ -2346,7 +2348,7 @@ int UDPStandardImplementation::prepareAndListenBufferCompleteFrames(int ithread)
 #ifdef VERBOSE
 	if(!ithread)
 			cprintf(BLUE,
-					"framenumber:%llu\tsubfnum:%u\tpnum:%u\tbunchid:%llu\txcoord:%u\tdettype:%u\tversion:%u\n",
+					"framenumber:%lu\tsubfnum:%u\tpnum:%u\tbunchid:%lu\txcoord:%u\tdettype:%u\tversion:%u\n",
 					header->frameNumber, header->expLength, header->packetNumber,
 					header->bunchId, header->xCoord, header->detType, header->version);
 #endif
@@ -3325,7 +3327,7 @@ void UDPStandardImplementation::handleDataCompression(int ithread, char* wbuffer
 		break;
 	}
 
-	while(buff[0] = receiverData[ithread]->findNextFrame(data,ndata,remainingsize)){
+	while((buff[0] = receiverData[ithread]->findNextFrame(data,ndata,remainingsize))){
 
 		//remaining number of packets
 		np = ndata/onePacketSize;

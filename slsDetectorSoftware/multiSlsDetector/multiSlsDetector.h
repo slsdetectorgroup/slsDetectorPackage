@@ -198,7 +198,7 @@ class multiSlsDetector  : public slsDetectorUtils {
     /** flag for acquiring */
     bool acquiringFlag;
 
-  };
+  }sharedMultiSlsDetector;
 
 
 

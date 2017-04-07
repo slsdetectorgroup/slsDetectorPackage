@@ -85,7 +85,8 @@ int ThreadPool::destroy_threadpool(){
 }
 
 void* ThreadPool::execute_thread(){
-	int ithread = current_thread_number;
+	//for debugging seting ithread value
+	// int ithread = current_thread_number;
 	thread_started = true;
 	Task* task = NULL;
 	m_tasks_loaded = false;

@@ -17,20 +17,20 @@ int energyConversion::readCalibrationFile(string fname, double &gain, double &of
   string str;
   ifstream infile;
 #ifdef VERBOSE
-  std::cout<< "Opening file "<< fname << std::endl;
+  printf( "Opening file %s \n", fname.c_str() );
 #endif
   infile.open(fname.c_str(), ios_base::in);
   if (infile.is_open()) {
     getline(infile,str);
 #ifdef VERBOSE
-    std::cout<< str << std::endl;
+    printf( "%s \n", str.c_str() );
 #endif
     istringstream ssstr(str);
     ssstr >> offset >> gain;
     infile.close();
-	cout << "Calibration file loaded: " << fname << endl;
+	printf( "Calibration file loaded: %s \n", fname.c_str() );
   } else {
-    std::cout<< "Could not open calibration file "<< fname << std::endl;
+    printf( "Could not open calibration file %s \n", fname.c_str() );
     gain=0.;
     offset=0.;
 #ifndef MYROOT
@@ -45,7 +45,7 @@ int energyConversion::readCalibrationFile(string fname, double &gain, double &of
 };
 
 int energyConversion::writeCalibrationFile(string fname, double gain, double offset){
-  //std::cout<< "Function not yet implemented " << std::endl;
+  //printf( "Function not yet implemented \n" );
   ofstream outfile;
   outfile.open (fname.c_str());
 
@@ -53,7 +53,7 @@ int energyConversion::writeCalibrationFile(string fname, double gain, double off
   if (outfile.is_open()) {
     outfile << offset << " " << gain << std::endl;
   } else {
-    std::cout<< "Could not open calibration file "<< fname << " for writing" << std::endl;
+    printf( "Could not open calibration file %s for writing \n", fname.c_str() );
 #ifndef MYROOT
     return FAIL;
 #endif
@@ -76,7 +76,7 @@ int energyConversion::readCalibrationFile(string fname, int *gain, int *offset){
 	double o,g;
 	int ig=0;
 #ifdef VERBOSE
-	std::cout<< "Opening file "<< fname << std::endl;
+	printf( "Opening file %s \n", fname.c_str() );
 #endif
 	infile.open(fname.c_str(), ios_base::in);
 	if (infile.is_open()) {
@@ -85,7 +85,7 @@ int energyConversion::readCalibrationFile(string fname, int *gain, int *offset){
 			//while ( (getline(infile,str)) > -1) {
 			getline(infile,str);
 #ifdef VERBOSE
-			std::cout<< str << std::endl;
+			printf( "%s \n", str.c_str() );
 #endif
 			istringstream ssstr(str);
 			ssstr >> o >> g;
@@ -96,9 +96,9 @@ int energyConversion::readCalibrationFile(string fname, int *gain, int *offset){
 				break;
 		}
 		infile.close();
-		cout << "Calibration file loaded: " << fname << endl;
+		printf( "Calibration file loaded: %s \n", fname.c_str() );
 	} else {
-		cout << "Could not open calibration file: "<< fname << std::endl;
+		printf( "Could not open calibration file: %s \n", fname.c_str() );
 		gain[0]=0;
 		offset[0]=0;
 #ifndef MYROOT
@@ -114,7 +114,7 @@ int energyConversion::readCalibrationFile(string fname, int *gain, int *offset){
 };
 
 int energyConversion::writeCalibrationFile(string fname, int *gain, int *offset){
-  //std::cout<< "Function not yet implemented " << std::endl;
+  //printf( "Function not yet implemented \n" );
   ofstream outfile;	
   outfile.open (fname.c_str());
   // >> i/o operations here <<
@@ -122,7 +122,7 @@ int energyConversion::writeCalibrationFile(string fname, int *gain, int *offset)
     for (int ig=0; ig<4; ig++)
       outfile << ((double)offset[ig]/1000) << " " << ((double)gain[ig]/1000) << std::endl;
   } else {
-    std::cout<< "Could not open calibration file "<< fname << " for writing" << std::endl;
+    printf( "Could not open calibration file %s for writing \n", fname.c_str() );
 #ifndef MYROOT
     return FAIL;
 #endif
@@ -251,16 +251,16 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 		names[id++]="VDAC15";
 		break;
 	default:
-		cout << "Unknown detector type - unknown format for settings file" << endl;
+		printf( "Unknown detector type - unknown format for settings file \n" );
 		return NULL;
 	}
 
 #ifdef VERBOSE
-	std::cout<<   "reading settings file for module number "<< myMod->module << std::endl;
+	printf( " reading settings file for module number %d \n", myMod->module );
 #endif
 	myfname=fname;
 #ifdef VERBOSE
-	std::cout<< "file name is "<< myfname <<   std::endl;
+	printf( "file name is %s \n", myfname.c_str() );
 #endif
 
 	switch (myDetectorType) {
@@ -274,7 +274,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 				istringstream ssstr(str);
 				ssstr >> sargname >> ival;
 #ifdef VERBOSE
-				std::cout<< sargname << " dac nr. " << idac << " is " << ival << std::endl;
+				printf( "%s dac nr. %d is %d \n", sargname.c_str(), idac, ival );
 #endif
 				myMod->dacs[idac]=ival;
 				idac++;
@@ -283,24 +283,24 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 				getline(infile,str);
 				iline++;
 #ifdef VERYVERBOSE
-				std::cout<< str << std::endl;
+				printf( "%s \n", str.c_str() );
 #endif
 				istringstream ssstr(str);
 				ssstr >> sargname >> ival;
 #ifdef VERYVERBOSE
-				std::cout<< "chip " << ichip << " " << sargname << " is " << ival << std::endl;
+				printf( "chip %d %s is %d \n", ichip, sargname.c_str(), ival );
 #endif
 
 				myMod->chipregs[ichip]=ival;
 				for (ichan=0; ichan<nch; ichan++) {
 					getline(infile,str);
 #ifdef VERYVERBOSE
-					std::cout<< str << std::endl;
+					printf( " %s \n", str.c_str() );
 #endif
 					istringstream ssstr(str);
 
 #ifdef VERYVERBOSE
-					std::cout<< "channel " << ichan+ichip*thisDetector->nChans <<" iline " << iline<< std::endl;
+					printf( "channel %d iline %d \n", ichan+ichip*myMod->nchan, iline );
 #endif
 					iline++;
 					myMod->chanregs[ichip*nch+ichan]=0;
@@ -310,42 +310,42 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 						switch (iarg) {
 						case 0:
 #ifdef VERYVERBOSE
-							std::cout<< "trimbits " << ival ;
+							printf( "trimbits %d", ival );
 #endif
 							myMod->chanregs[ichip*nch+ichan]|=ival&TRIMBITMASK;
 							break;
 						case 1:
 #ifdef VERYVERBOSE
-							std::cout<< " compen " << ival ;
+							printf( " compen %d", ival );
 #endif
 							myMod->chanregs[ichip*nch+ichan]|=ival<<9;
 							break;
 						case 2:
 #ifdef VERYVERBOSE
-							std::cout<< " anen " << ival ;
+							printf( " anen %d", ival );
 #endif
 							myMod->chanregs[ichip*nch+ichan]|=ival<<8;
 							break;
 						case 3:
 #ifdef VERYVERBOSE
-							std::cout<< " calen " << ival  ;
+							printf( " calen %d", ival ) ;
 #endif
 							myMod->chanregs[ichip*nch+ichan]|=ival<<7;
 							break;
 						case 4:
 #ifdef VERBOSE
-							std::cout<< " outcomp " << ival  ;
+							printf( " outcomp %d", ival ) ;
 #endif
 							myMod->chanregs[ichip*nch+ichan]|=ival<<10;
 							break;
 						case 5:
 #ifdef VERBOSE
-							std::cout<< " counts " << ival  << std::endl;
+							printf( " counts %d \n", ival );
 #endif
 							myMod->chanregs[ichip*nch+ichan]|=ival<<11;
 							break;
 						default:
-							std::cout<< " too many columns" << std::endl;
+							printf( " too many columns \n" );
 							break;
 						}
 					}
@@ -353,7 +353,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 				//	}
 			}
 #ifdef VERBOSE
-			std::cout<< "read " << ichan*ichip << " channels" <<std::endl;
+			printf( "read %d channels \n", ichan*ichip );
 #endif
 
 			infile.close();
@@ -375,12 +375,12 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 			infile.read((char*) myMod->chanregs,sizeof(int)*(myMod->nchan));
 #ifdef VERBOSE
 			for(int i=0;i<myMod->ndac;i++)
-				std::cout << "dac " << i << ":" << myMod->dacs[i] << std::endl;
-			std::cout << "iodelay:" << iodelay << std::endl;
-			std::cout << "tau:" << tau << std::endl;
+				printf( "dac %d:%d \n", i, myMod->dacs[i] );
+			printf( "iodelay:%d \n", iodelay );
+			printf( "tau:%d \n", tau );
 #endif
 			if(infile.eof()){
-				cout<<endl<<"Error, could not load trimbits end of file, "<<myfname<<", reached."<<endl<<endl;
+				printf( "Error, could not load trimbits end of file reached: %s \n\n", myfname.c_str() );
 				if (nflag)
 					deleteModule(myMod);
 
@@ -406,7 +406,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 				getline(infile,str);
 				iline++;
 #ifdef VERBOSE
-				std::cout<< str << std::endl;
+				printf( "str: %s \n", str.c_str() );
 #endif
 				istringstream ssstr(str);
 				ssstr >> sargname >> ival;
@@ -415,7 +415,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 						myMod->dacs[i]=ival;
 						idac++;
 #ifdef VERBOSE
-						std::cout<< sargname << " dac nr. " << idac << " is " << ival << std::endl;
+						printf( " %s dac nr. %d is %d \n", sargname.c_str(), idac, ival );
 #endif
 						break;
 					}
@@ -423,10 +423,10 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 			}
 			if (i < id) {
 #ifdef VERBOSE
-				std::cout<< sargname << " dac nr. " << idac << " is " << ival << std::endl;
+				printf( " %s dac nr. %d is %d \n", sargname.c_str(), idac, ival );
 #endif
 			}else
-				std::cout<< "Unknown dac " << sargname << std::endl;
+				printf( "Unknown dac %s \n", sargname.c_str() );
 
 			infile.close();
 			strcpy(settingsFile,fname.c_str());
@@ -439,7 +439,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 		break;
 
 	default:
-		std::cout<< "Unknown detector type - don't know how to read file" <<  myfname << std::endl;
+		printf( "Unknown detector type - don't know how to read file %s\n",  myfname.c_str());
 		infile.close();
 		deleteModule(myMod);
 		return NULL;
@@ -517,7 +517,7 @@ int energyConversion::writeSettingsFile(string fname, detectorType myDetectorTyp
 		names[id++]="VDAC15";
 		break;
 	default:
-		cout << "Unknown detector type - unknown format for settings file" << endl;
+		printf( "Unknown detector type - unknown format for settings file \n" );
 		return FAIL;
 	}
 
@@ -532,9 +532,9 @@ int energyConversion::writeSettingsFile(string fname, detectorType myDetectorTyp
 			iv = 1150;
 #ifdef VERBOSE
 			for(int i=0;i<mod.ndac;i++)
-				std::cout << "dac " << i << ":" << mod.dacs[i] << std::endl;
-			std::cout << "iodelay: " << iodelay << std::endl;
-			std::cout << "tau: " << tau << std::endl;
+				printf( "dac %d:%d \n", i, mod.dacs[i] );
+			printf( "iodelay: %d \n", iodelay );
+			printf( "tau: %d", tau);
 #endif
 			outfile.write((char*)mod.dacs, sizeof(dacs_t)*(mod.ndac));
 			outfile.write((char*)iodelay, sizeof(iodelay));
@@ -587,7 +587,7 @@ int energyConversion::writeSettingsFile(string fname, detectorType myDetectorTyp
 			outfile.close();
 			return OK;
 		}
-		std::cout<< "could not open SETTINGS file " << fname << std::endl;
+		printf( "could not open SETTINGS file %s \n", fname.c_str() );
 		return FAIL;
 
 	}

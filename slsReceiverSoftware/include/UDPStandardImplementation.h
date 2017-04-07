@@ -739,7 +739,7 @@ private:
 
 	//***data call back thread parameters***
 	/** Ensures if zmq threads created successfully */
-	bool zmqThreadStarted;
+	volatile bool zmqThreadStarted;
 
 	/** Number of data callback Threads */
 	int numberofDataCallbackThreads;
@@ -760,7 +760,7 @@ private:
 
 	//***general and listening thread parameters***
 	/** Ensures if threads created successfully */
-	bool threadStarted;
+	volatile bool threadStarted;
 
 	/** Current Thread Index*/
 	int currentThreadIndex;

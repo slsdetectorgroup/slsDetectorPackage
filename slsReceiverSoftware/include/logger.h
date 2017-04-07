@@ -123,14 +123,18 @@ inline std::string NowTime()
 inline std::string NowTime()
 {
     char buffer[11];
+    const int buffer_len = sizeof(buffer);
     time_t t;
     time(&t);
     tm r = {0};
-    strftime(buffer, sizeof(buffer), "%X", localtime_r(&t, &r));
+    strftime(buffer, buffer_len, "%X", localtime_r(&t, &r));
+    buffer[buffer_len - 1] = 0;
     struct timeval tv;
     gettimeofday(&tv, 0);
-    char result[100] = {0};
-    sprintf(result, "%s.%03ld", buffer, (long)tv.tv_usec / 1000);
+    char result[100];
+    const int result_len = sizeof(result);
+    snprintf(result, result_len, "%s.%03ld", buffer, (long)tv.tv_usec / 1000);
+    result[result_len - 1] = 0;
     return result;
 }
 
@@ -144,7 +148,8 @@ template <typename T> std::ostringstream& Log<T>::Get(TLogLevel level)
 	lev = level;
     os << "- " << NowTime();
     os << " " << ToString(level) << ": ";
-    os << std::string(level > logDEBUG ? level - logDEBUG : 0, '\t');
+    if (level > logDEBUG)
+    	os << std::string(level - logDEBUG, '\t');
     return os;
 }
 
@@ -216,14 +221,15 @@ inline void Output2FILE::Output(const std::string& msg, TLogLevel level)
     FILE* pStream = Stream();
     if (!pStream)
         return;
+    bool out = true;
     switch(level){
     case logERROR:		cprintf(RED BOLD,"%s",msg.c_str()); 	break;
     case logWARNING:	cprintf(YELLOW BOLD,"%s",msg.c_str()); 	break;
     case logINFO:		cprintf(GRAY,"%s",msg.c_str());break;
    // case logINFO:		cprintf(DARKGRAY BOLD,"%s",msg.c_str());break;
-    default: 			fprintf(pStream,"%s",msg.c_str()); 		break;
+    default: 			fprintf(pStream,"%s",msg.c_str()); out = false; break;
     }
-    fflush(pStream);
+    fflush(out ? stdout : pStream);
 }
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)

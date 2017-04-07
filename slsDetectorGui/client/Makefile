@@ -1,6 +1,6 @@
 CC			=	g++ 
 CLAGS		+=  -DVERBOSE #VERYBOSE
-LDLIBS		+= 	-lm  -lstdc++ -lpthread 
+LDLIBS		+= 	-lm  -lstdc++ -pthread 
 
 LDIR 		=	../../slsDetectorSoftware
 RDIR 		= 	../../slsReceiverSoftware

@@ -12,10 +12,10 @@ FLAGS= -Wall -pthread -DVERBOSE  -DVERYVERBOSE #-DEIGER_DEBUG2 -DEIGER_DEBUG  -D
 
 # Setting up the verbose flags
 ifeq ($(DEBUG),1)
-     FLAGS = -Wall -DVERBOSE
+     FLAGS = -Wall -pthread -DVERBOSE
 endif
 ifeq ($(DEBUG),2)
-     FLAGS = -Wall -DVERYVERBOSE
+     FLAGS = -Wall -pthread -DVERYVERBOSE
 endif
 
 ##############################################################

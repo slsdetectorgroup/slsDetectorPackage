@@ -7,7 +7,7 @@ CXX = $(CC)
 ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
 LDFLAGDET = -L$(LIBDIR)  -Wl,-rpath=$(LIBDIR) -lSlsDetector -L/usr/lib64/ -pthread
 LDFLAGRXR = -L$(LIBDIR)  -Wl,-rpath=$(LIBDIR) -lSlsReceiver -L/usr/lib64/ -pthread
-FLAGS= -Wall  -DVERBOSE  -DVERYVERBOSE #-DEIGER_DEBUG2 -DEIGER_DEBUG  -DEIGER_DEBUG3 #-DFIFO_DEBUG
+FLAGS= -Wall -pthread -DVERBOSE  -DVERYVERBOSE #-DEIGER_DEBUG2 -DEIGER_DEBUG  -DEIGER_DEBUG3 #-DFIFO_DEBUG
 # -DVERBOSE 
 
 # Setting up the verbose flags

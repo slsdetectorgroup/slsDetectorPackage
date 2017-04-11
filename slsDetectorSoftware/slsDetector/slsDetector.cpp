@@ -3728,7 +3728,7 @@ int slsDetector::updateDetectorNoWait() {
 
   // int ret=OK;
   enum detectorSettings t;
-  int thr, n, nm = 0;
+  int thr, n = 0, nm;
   // int it;
   int64_t retval;// tns=-1;
   char lastClientIP[INET_ADDRSTRLEN];
@@ -7806,7 +7806,7 @@ string slsDetector::getReceiverLastClientIP(){
 
 int slsDetector::updateReceiverNoWait() {
 
-  int n,ind = 0;
+  int n = 0,ind;
   char path[MAX_STR_LENGTH];
   char lastClientIP[INET_ADDRSTRLEN];
 

@@ -5363,13 +5363,11 @@ string slsDetectorCommand::cmdPulse(int narg, char *args[], int action) {
 
 	}
 
-	return string("");
-/*
+
 	if(retval == OK)
 		return string(" successful");
 	else
 		return string(" failed");
-		*/
 }
 
 

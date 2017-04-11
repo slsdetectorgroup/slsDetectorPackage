@@ -879,10 +879,14 @@ void postProcessing::startThread(int delflag) {
   else
     ret = pthread_create(&dataProcessingThread, &tattr,startProcessDataNoDelete, (void*)this);
     
+  if (ret)
+	  printf("ret %d\n", ret);
+
   pthread_attr_destroy(&tattr);
 
   // scheduling parameters of target thread
   ret = pthread_setschedparam(dataProcessingThread, policy, &param);
+
   
 }
 

@@ -75,10 +75,10 @@ int slsDetectorActions::setActionScript(int iaction, string fname) {
 
 
 int slsDetectorActions::setActionParameter(int iaction, string par) {
-  int am;
+ // int am;
 
   if (iaction>=0 && iaction<MAX_ACTIONS) {
-    am= 1& ( (*actionMask) << iaction);
+    //am= 1& ( (*actionMask) << iaction);
 
     if (par!="") {
       strcpy(actionParameter[iaction],par.c_str());

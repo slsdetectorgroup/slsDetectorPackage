@@ -898,8 +898,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 
 int slsDetector::initializeDetectorStructure() {
   sls_detector_module *thisMod;
-  char *p2;
-  p2=(char*)thisDetector;
+  //char *p2;
+  //p2=(char*)thisDetector;
 
   /** for each of the detector modules up to the maximum number which can be installed initlialize the sls_detector_module structure \sa ::sls_detector_module*/
   for (int imod=0; imod<thisDetector->nModsMax; imod++) {
@@ -967,66 +967,67 @@ slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType t)
   sls_detector_module *myMod=(sls_detector_module*)malloc(sizeof(sls_detector_module));
 
 
-  int nch, nm, nc, nd, na=0;
+  int nch, nc, nd, na=0;
+  //int nm = 0;
 
   switch(t) {
   case MYTHEN:
     nch=128; // complete mythen system
-    nm=24;
+   // nm=24;
     nc=10;
     nd=6; // dacs
     break;
   case PICASSO:
     nch=128; // complete mythen system
-    nm=24;
+   // nm=24;
     nc=12;
     nd=6; // dacs+adcs
     break;
   case GOTTHARD:
     nch=128;
-    nm=1;
+   // nm=1;
     nc=10;
     nd=8; // dacs+adcs
     na=5;
     break;
   case PROPIX:
     nch=22*22;
-    nm=1;
+   // nm=1;
     nc=1;
     nd=8; // dacs+adcs
     na=5;
     break;
   case EIGER:
     nch=256*256; // one EIGER half module
-    nm=1; //modules/detector
+    // nm=1; //modules/detector
     nc=4*1; //chips 
     nd=16; //dacs
     na=0;
     break;
   case MOENCH:
     nch=160*160;
-    nm=1; //modules/detector
+   // nm=1; //modules/detector
     nc=1; //chips
     nd=8; //dacs
     na=1;
     break;
   case JUNGFRAU:
     nch=256*256;//32;
-    nm=1;
+   // nm=1;
     nc=4*2;
     nd=16; // dacs+adcs
     na=0;
     break;
   case JUNGFRAUCTB:
     nch=32;//32;
-    nm=1;
+   // nm=1;
     nc=1;
     nd=8; // dacs+adcs
     na=1;
     break;
   default:
     nch=0; // dum!
-    nm=0; //modules/detector
+   // nm=0; //modules/detector
     nc=0; //chips
     nd=0; //dacs+adcs
     na=0;
@@ -1672,7 +1673,6 @@ int slsDetector::setNumberOfModules(int n, dimension d){
   int ret=FAIL;
   char mess[MAX_STR_LENGTH]="dummy";
   int connect;
-  int num;
 
   arg[0]=d;
   arg[1]=n;
@@ -1693,11 +1693,11 @@ int slsDetector::setNumberOfModules(int n, dimension d){
     if (connect == UNDEFINED)
       printf( "no control socket? \n" );
     else if (connect == OK){
-      num = controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-      num = controlSocket->SendDataOnly(&arg,sizeof(arg));
-      num = controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+      controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+      controlSocket->SendDataOnly(&arg,sizeof(arg));
+      controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
       if (ret!=FAIL) {
-	num = controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
       }	else {
 	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	printf( "Detector returned error: %s \n", mess );
@@ -3728,18 +3728,18 @@ int slsDetector::updateDetectorNoWait() {
 
   // int ret=OK;
   enum detectorSettings t;
-  int thr, n, nm;
+  int thr, n, nm = 0;
   // int it;
   int64_t retval;// tns=-1;
   char lastClientIP[INET_ADDRSTRLEN];
 
-  n = 	controlSocket->ReceiveDataOnly(lastClientIP,sizeof(lastClientIP));
+  n += 	controlSocket->ReceiveDataOnly(lastClientIP,sizeof(lastClientIP));
 #ifdef VERBOSE
   printf( "Updating detector last modified by %s \n", lastClientIP );
 #endif
-  n = 	controlSocket->ReceiveDataOnly(&nm,sizeof(nm));
+  n += 	controlSocket->ReceiveDataOnly(&nm,sizeof(nm));
   thisDetector->nMod[X]=nm;
-  n = 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
+  n += 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
   /// Should be overcome at a certain point!
 
   if (thisDetector->myDetectorType==MYTHEN) {
@@ -3761,13 +3761,13 @@ int slsDetector::updateDetectorNoWait() {
   if (thisDetector->nModMax[Y]<thisDetector->nMod[Y])
     thisDetector->nModMax[Y]=thisDetector->nMod[Y];
 
-  n = 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
+  n += 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
   thisDetector->dynamicRange=nm;
 
-  n = 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
+  n += 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
   thisDetector->dataBytes=nm;
   //t=setSettings(GET_SETTINGS);
-  n = 	controlSocket->ReceiveDataOnly( &t,sizeof(t));
+  n += 	controlSocket->ReceiveDataOnly( &t,sizeof(t));
   thisDetector->currentSettings=t;
 
   if((thisDetector->myDetectorType!= GOTTHARD)&&
@@ -3775,41 +3775,44 @@ int slsDetector::updateDetectorNoWait() {
 		  (thisDetector->myDetectorType!= JUNGFRAU)&&
 		  (thisDetector->myDetectorType!= MOENCH)){
     //thr=getThresholdEnergy();
-    n = 	controlSocket->ReceiveDataOnly( &thr,sizeof(thr));
+    n += 	controlSocket->ReceiveDataOnly( &thr,sizeof(thr));
     thisDetector->currentThresholdEV=thr;
   }
 
   //retval=setFrames(tns);
-  n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+  n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
   thisDetector->timerValue[FRAME_NUMBER]=retval;
   // retval=setExposureTime(tns);
-  n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+  n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
   thisDetector->timerValue[ACQUISITION_TIME]=retval;
 
   if(thisDetector->myDetectorType == EIGER){
 	   //retval=setSubFrameExposureTime(tns);
-	  n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+	  n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
 	  thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME]=retval;
   }
   //retval=setPeriod(tns);
-  n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+  n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
   thisDetector->timerValue[FRAME_PERIOD]=retval;
   //retval=setDelay(tns);
-  n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+  n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
   thisDetector->timerValue[DELAY_AFTER_TRIGGER]=retval;
   // retval=setGates(tns);
-  n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+  n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
   thisDetector->timerValue[GATES_NUMBER]=retval;
 
   //retval=setProbes(tns);
   if (thisDetector->myDetectorType == MYTHEN){
-    n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+    n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
     thisDetector->timerValue[PROBES_NUMBER]=retval;
   }
 
   //retval=setTrains(tns);
-  n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+  n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
   thisDetector->timerValue[CYCLES_NUMBER]=retval;
+
+  if (!n)
+	  printf("n: %d\n", n);
 
   return OK;
 
@@ -4216,7 +4219,6 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	int64_t retval = -1;
 	char mess[MAX_STR_LENGTH]="";
 	int ret=OK;
-	int n=0;
 
 	if (index!=MEASUREMENTS_NUMBER) {
 
@@ -4228,7 +4230,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 			if (connectControl() == OK){
 				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 				controlSocket->SendDataOnly(&index,sizeof(index));
-				n=controlSocket->SendDataOnly(&t,sizeof(t));
+				controlSocket->SendDataOnly(&t,sizeof(t));
 				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
 				if (ret==FAIL) {
 					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
@@ -4705,7 +4707,7 @@ int slsDetector::setSpeed(speedVariable sp, int value) {
   int retval=-1;
   char mess[MAX_STR_LENGTH]="";
   int ret=OK;
-  int n=0;
+
 #ifdef VERBOSE
   printf( "Setting speed  variable %d to %d \n", sp, value );
 #endif
@@ -4713,7 +4715,7 @@ int slsDetector::setSpeed(speedVariable sp, int value) {
     if (connectControl() == OK){
       controlSocket->SendDataOnly(&fnum,sizeof(fnum));
       controlSocket->SendDataOnly(&sp,sizeof(sp));
-      n=controlSocket->SendDataOnly(&value,sizeof(value));
+      controlSocket->SendDataOnly(&value,sizeof(value));
 #ifdef VERBOSE
       printf( "Sent %d bytes \n", n );
 #endif
@@ -6477,13 +6479,17 @@ int slsDetector::readConfigurationFile(string const fname){
   //char *args[1000];
 
   string sargname, sargval;
-  int iline=0;
 #ifdef VERBOSE
+  int iline=0;
   printf( "config file name %s \n", fname.c_str() );
 #endif
   infile.open(fname.c_str(), ios_base::in);
   if (infile.is_open()) {
+#ifdef VERBOSE
     iline=readConfigurationFile(infile);
+#else
+    readConfigurationFile(infile);
+#endif
     infile.close();
   } else {
     printf( "Error opening configuration file %s for reading \n", fname.c_str() );
@@ -6571,11 +6577,16 @@ int slsDetector::writeConfigurationFile(string const fname){
 
 
   ofstream outfile;
+#ifdef VERBOSE
   int ret;
-
+#endif
   outfile.open(fname.c_str(),ios_base::out);
   if (outfile.is_open()) {
-    ret=writeConfigurationFile(outfile);
+#ifdef VERBOSE
+	ret=writeConfigurationFile(outfile);
+#else
+    writeConfigurationFile(outfile);
+#endif
     outfile.close();
   }
   else {
@@ -6691,7 +6702,7 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
 
 
 
-int slsDetector::writeSettingsFile(string fname, int imod, int& iodelay, int& tau){
+int slsDetector::writeSettingsFile(string fname, int imod, int iodelay, int tau){
 
   return writeSettingsFile(fname,thisDetector->myDetectorType, detectorModules[imod], iodelay, tau);
 
@@ -7795,21 +7806,21 @@ string slsDetector::getReceiverLastClientIP(){
 
 int slsDetector::updateReceiverNoWait() {
 
-  int n,ind;
+  int n,ind = 0;
   char path[MAX_STR_LENGTH];
   char lastClientIP[INET_ADDRSTRLEN];
 
-  n = 	dataSocket->ReceiveDataOnly(lastClientIP,sizeof(lastClientIP));
+  n += 	dataSocket->ReceiveDataOnly(lastClientIP,sizeof(lastClientIP));
 #ifdef VERBOSE
   printf( "Updating receiver last modified by %s \n", lastClientIP );
 #endif
 
-  n = 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
+  n += 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
 	pthread_mutex_lock(&ms);
   fileIO::setFileIndex(ind);
 	pthread_mutex_unlock(&ms);
 
-  n = 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);
+  n += 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);
 	pthread_mutex_lock(&ms);
   fileIO::setFilePath(path);
 	pthread_mutex_unlock(&ms);
@@ -7818,6 +7829,8 @@ int slsDetector::updateReceiverNoWait() {
   pthread_mutex_lock(&ms);
   fileIO::setFileName(path);
   pthread_mutex_unlock(&ms);
+
+  if (!n) printf("n: %d\n", n);
 
   return OK;
 

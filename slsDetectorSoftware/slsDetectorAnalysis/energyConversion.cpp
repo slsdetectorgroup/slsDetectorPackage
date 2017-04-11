@@ -457,7 +457,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 };
 
 
-int energyConversion::writeSettingsFile(string fname, detectorType myDetectorType, sls_detector_module mod, int& iodelay, int& tau){
+int energyConversion::writeSettingsFile(string fname, detectorType myDetectorType, sls_detector_module mod, int iodelay, int tau){
 
 	ofstream outfile;
 
@@ -537,8 +537,8 @@ int energyConversion::writeSettingsFile(string fname, detectorType myDetectorTyp
 			printf( "tau: %d", tau);
 #endif
 			outfile.write((char*)mod.dacs, sizeof(dacs_t)*(mod.ndac));
-			outfile.write((char*)iodelay, sizeof(iodelay));
-			outfile.write((char*)tau, sizeof(tau));
+			outfile.write(reinterpret_cast<char*>(&iodelay), sizeof(iodelay));
+			outfile.write(reinterpret_cast<char*>(&tau), sizeof(tau));
 			outfile.write((char*)mod.chanregs, sizeof(int)*(mod.nchan));
 
 			outfile.close();

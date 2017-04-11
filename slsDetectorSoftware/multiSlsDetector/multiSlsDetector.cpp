@@ -1436,7 +1436,7 @@ int* multiSlsDetector::getDataFromDetector() {
 	int n = 0;
 	int* retval= NULL;
 	int *retdet, *p=retval;
-	int nodata=1, nodatadet=-1;
+	int nodatadet=-1;
 	int nodatadetectortype = false;
 	detectorType types = getDetectorsType();
 	if(types == EIGER || types == JUNGFRAU){
@@ -1455,7 +1455,6 @@ int* multiSlsDetector::getDataFromDetector() {
 			if(!nodatadetectortype){
 				n=detectors[id]->getDataBytes();
 				if (retdet) {
-					nodata=0;
 #ifdef VERBOSE
 					cout << "Detector " << id << " returned " << n << " bytes " << endl;
 #endif
@@ -2105,7 +2104,6 @@ slsDetectorDefs::ROI* multiSlsDetector::getROI(int &n){
 	n = 0;
 	int num = 0,i,j;
 	int ndet = thisMultiDetector->numberOfDetectors;
-	int nroi[ndet];
 	int maxroi = ndet*MAX_ROIS;
 	ROI temproi;
 	ROI roiLimits[maxroi];
@@ -2120,7 +2118,6 @@ slsDetectorDefs::ROI* multiSlsDetector::getROI(int &n){
 			if(detectors[i]->getErrorMask())
 			  setErrorMask(getErrorMask()|(1<<i));
 
-			nroi[i] =  index;
 			if(temp){
 //#ifdef VERBOSE
 				if(index)
@@ -2604,7 +2601,7 @@ int multiSlsDetector::setRateCorrection(double t){
 				ret=detectors[idet]->setRateCorrection(t);
 				if(detectors[idet]->getErrorMask())
 					setErrorMask(getErrorMask()|(1<<idet));
-				if (ret1 != OK)
+				if (ret != OK)
 					ret1=FAIL;
 			}
 		}

@@ -3431,7 +3431,7 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
 	  if (retval < 0)
 		  sprintf(answer, "%d", -1);
 	  else
-		  sprintf(answer,"%llx", (long long unsigned int)retval);
+		  sprintf(answer,"%lx", retval);
     return string(answer);
   }
 
@@ -3445,7 +3445,7 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
     	if (retval < 0)
     		sprintf(answer, "%d", -1);
     	else
-    		sprintf(answer,"%llx", (long long unsigned int)retval);
+    		sprintf(answer,"%lx", retval);
       return string(answer);
     } else
       return string("undefined module number");
@@ -3455,7 +3455,7 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
 	  if (retval < 0)
 		  sprintf(answer, "%d", -1);
 	  else
-		  sprintf(answer,"%llx", (long long unsigned int)retval);
+		  sprintf(answer,"%lx", retval);
     return string(answer);
   }
   if (cmd.find("modulenumber")!=string::npos) {
@@ -3465,7 +3465,7 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
     	if (retval < 0)
     		sprintf(answer, "%d", -1);
     	else
-    		sprintf(answer,"%llx", (long long unsigned int)retval);
+    		sprintf(answer,"%lx", retval);
       return string(answer);
     } else
       return string("undefined module number");
@@ -3476,7 +3476,7 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
 	  if (retval < 0)
 		  sprintf(answer, "%d", -1);
 	  else
-		  sprintf(answer,"%llx", (long long unsigned int)retval);
+		  sprintf(answer,"%lx", retval);
     return string(answer);
   }
   
@@ -3485,7 +3485,7 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
 	  if (retval < 0)
 		  sprintf(answer, "%d", -1);
 	  else
-		  sprintf(answer,"%llx", (long long unsigned int)retval);
+		  sprintf(answer,"%lx", retval);
     return string(answer);
   }
 
@@ -3495,7 +3495,7 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
 	if (retval < 0)
 		sprintf(answer, "%d", -1);
 	else
-		sprintf(answer,"%llx", (long long unsigned int)retval);
+		sprintf(answer,"%lx", retval);
     return string(answer);
   }
   return string("unknown id mode ")+cmd;
@@ -4899,7 +4899,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
 	else
 	  return string("Could not scan address (hexadecimal fomat) ")+string(args[1]);
       
-	if (sscanf(args[2],"%llx",&word))
+	if (sscanf(args[2],"%lx",&word))
 	  ;
 	else
 	  return string("Could not scan value  (hexadecimal fomat) ")+string(args[2]);
@@ -4915,7 +4915,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
     
     if (action==PUT_ACTION) {
       
-      if (sscanf(args[1],"%llx",&word))
+      if (sscanf(args[1],"%lx",&word))
 	;
       else
 	return string("Could not scan value  (hexadecimal fomat) ")+string(args[1]);
@@ -4932,7 +4932,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
 
     if (action==PUT_ACTION) {
       
-      if (sscanf(args[1],"%llx",&word))
+      if (sscanf(args[1],"%lx",&word))
 	;
       else
 	return string("Could not scan value  (hexadecimal fomat) ")+string(args[1]);
@@ -5203,7 +5203,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
 
    if (action==PUT_ACTION) {
      
-      if (sscanf(args[1],"%lld",&t))
+      if (sscanf(args[1],"%ld",&t))
       ;
     else
       return string("Could not scan wait time")+string(args[1]);
@@ -5226,7 +5226,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
 
    if (action==PUT_ACTION) {
      
-      if (sscanf(args[1],"%lld",&t))
+      if (sscanf(args[1],"%ld",&t))
       ;
     else
       return string("Could not scan wait time ")+string(args[1]);
@@ -5244,7 +5244,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
   }	else if (cmd=="patwaittime2") {
    if (action==PUT_ACTION) {
      
-      if (sscanf(args[1],"%lld",&t))
+      if (sscanf(args[1],"%ld",&t))
       ;
     else
       return string("Could not scan wait time ")+string(args[1]);

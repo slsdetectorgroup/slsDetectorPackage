@@ -1810,7 +1810,6 @@ void UDPStandardImplementation::startDataCallback(){
 		char buf[1000];
 		uint64_t acquisitionIndex = -1;
 		uint64_t frameIndex = -1;
-		uint32_t subframeIndex = -1;
 #ifdef DEBUG
 		int oldpnum = -1;
 #endif
@@ -1834,7 +1833,6 @@ void UDPStandardImplementation::startDataCallback(){
 					//update frame details
 					frameIndex = fnum;
 					acquisitionIndex = fnum - startAcquisitionIndex;
-					if(dynamicRange == 32) subframeIndex = snum;
 					int len = sprintf(buf,jsonFmt,
 							SLS_DETECTOR_JSON_HEADER_VERSION, acquisitionIndex, frameIndex, dynamicRange, npixelsx, npixelsy,completeFileName[ithread],
 							0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0	);/* will not work for other detectors*/
@@ -1954,7 +1952,6 @@ void UDPStandardImplementation::startDataCallback(){
 						//update frame details
 						frameIndex = fnum;
 						acquisitionIndex = fnum - startAcquisitionIndex;
-						if(dynamicRange == 32) subframeIndex = snum;
 						int len = sprintf(buf,jsonFmt,
 								SLS_DETECTOR_JSON_HEADER_VERSION, acquisitionIndex, frameIndex, dynamicRange, npixelsx, npixelsy,completeFileName[ithread],
 								0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0	);/* will not work for other detectors*/
@@ -1992,7 +1989,6 @@ void UDPStandardImplementation::startDataCallback(){
 							//update frame details
 							frameIndex = fnum;
 							acquisitionIndex = fnum - startAcquisitionIndex;
-							if(dynamicRange == 32) subframeIndex = snum;
 							int len = sprintf(buf,jsonFmt,
 									SLS_DETECTOR_JSON_HEADER_VERSION, acquisitionIndex, frameIndex, dynamicRange, npixelsx, npixelsy,completeFileName[ithread],
 									0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0	);/* will not work for other detectors*/
@@ -3305,7 +3301,6 @@ void UDPStandardImplementation::handleDataCompression(int ithread, char* wbuffer
 	int once = 0;
 	int xmax = 0, ymax = 0;									//max pixels in x and y direction
 	int xmin = 1, ymin = 1;									//min pixels in x and y direction
-	double tot, tl, tr, bl, br;
 
 	//determining xmax and ymax
 	switch(myDetectorType){
@@ -3351,11 +3346,6 @@ void UDPStandardImplementation::handleDataCompression(int ithread, char* wbuffer
 				for(int iy = ymin - 1; iy < ymax+1; iy++){
 					thisEvent=singlePhotonDetectorObject[ithread]->getEventType(buff[0], ix, iy, commonModeSubtractionEnable);
 					if (nf>1000) {
-						tot=0;
-						tl=0;
-						tr=0;
-						bl=0;
-						br=0;
 						if (thisEvent==PHOTON_MAX) {
 							receiverData[ithread]->getFrameNumber(buff[0]);
 							//iFrame=receiverData[ithread]->getFrameNumber(buff);

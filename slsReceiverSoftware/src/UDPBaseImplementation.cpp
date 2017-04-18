@@ -19,7 +19,6 @@ using namespace std;
  * They access local cache of configuration or detector parameters *******
  *************************************************************************/
 UDPBaseImplementation::UDPBaseImplementation(){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	initializeMembers();
 
@@ -33,9 +32,7 @@ UDPBaseImplementation::UDPBaseImplementation(){
 }
 
 void UDPBaseImplementation::initializeMembers(){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
-	FILE_LOG(logDEBUG) << "Info: Initializing base members";
 	//**detector parameters***
 	myDetectorType = GENERIC;
 	strcpy(detHostname,"");
@@ -93,7 +90,6 @@ UDPBaseImplementation::~UDPBaseImplementation(){}
 
 /**initial parameters***/
 char *UDPBaseImplementation::getDetectorHostname() const{
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	//not initialized
 	if(!strlen(detHostname))
@@ -106,7 +102,6 @@ char *UDPBaseImplementation::getDetectorHostname() const{
 }
 
 int UDPBaseImplementation::getFlippedData(int axis) const{
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
 	if(axis<0 || axis > 1) return -1;
 	return flippedData[axis];
 }
@@ -114,7 +109,6 @@ int UDPBaseImplementation::getFlippedData(int axis) const{
 
 /***file parameters***/
 char *UDPBaseImplementation::getFileName() const{
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	//not initialized
 	if(!strlen(fileName))
@@ -127,7 +121,6 @@ char *UDPBaseImplementation::getFileName() const{
 }
 
 char *UDPBaseImplementation::getFilePath() const{
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	//not initialized
 	if(!strlen(filePath))
@@ -139,25 +132,24 @@ char *UDPBaseImplementation::getFilePath() const{
 	return output;
 }
 
-uint64_t UDPBaseImplementation::getFileIndex() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return fileIndex;}
+uint64_t UDPBaseImplementation::getFileIndex() const{	return fileIndex;}
 
-int UDPBaseImplementation::getScanTag() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return scanTag;}
+int UDPBaseImplementation::getScanTag() const{	return scanTag;}
 
-bool UDPBaseImplementation::getFrameIndexEnable() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return frameIndexEnable;}
+bool UDPBaseImplementation::getFrameIndexEnable() const{	return frameIndexEnable;}
 
-bool UDPBaseImplementation::getFileWriteEnable() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return fileWriteEnable;}
+bool UDPBaseImplementation::getFileWriteEnable() const{	return fileWriteEnable;}
 
-bool UDPBaseImplementation::getOverwriteEnable() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return overwriteEnable;}
+bool UDPBaseImplementation::getOverwriteEnable() const{	return overwriteEnable;}
 
-bool UDPBaseImplementation::getDataCompressionEnable() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return dataCompressionEnable;}
+bool UDPBaseImplementation::getDataCompressionEnable() const{	return dataCompressionEnable;}
 
 /***acquisition count parameters***/
-uint64_t UDPBaseImplementation::getTotalFramesCaught() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return (totalPacketsCaught/packetsPerFrame);}
+uint64_t UDPBaseImplementation::getTotalFramesCaught() const{	return (totalPacketsCaught/packetsPerFrame);}
 
-uint64_t UDPBaseImplementation::getFramesCaught() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return (packetsCaught/packetsPerFrame);}
+uint64_t UDPBaseImplementation::getFramesCaught() const{	return (packetsCaught/packetsPerFrame);}
 
 int64_t UDPBaseImplementation::getAcquisitionIndex() const{
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	if(!totalPacketsCaught)
 		return -1;
@@ -166,12 +158,12 @@ int64_t UDPBaseImplementation::getAcquisitionIndex() const{
 
 
 /***connection parameters***/
-uint32_t UDPBaseImplementation::getUDPPortNumber() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return udpPortNum[0];}
+uint32_t UDPBaseImplementation::getUDPPortNumber() const{	return udpPortNum[0];}
 
-uint32_t UDPBaseImplementation::getUDPPortNumber2() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return udpPortNum[1];}
+uint32_t UDPBaseImplementation::getUDPPortNumber2() const{	return udpPortNum[1];}
 
 char *UDPBaseImplementation::getEthernetInterface() const{
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	char* output = new char[MAX_STR_LENGTH]();
 	strcpy(output,eth);
@@ -181,30 +173,30 @@ char *UDPBaseImplementation::getEthernetInterface() const{
 
 
 /***acquisition parameters***/
-int UDPBaseImplementation::getShortFrameEnable() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return shortFrameEnable;}
+int UDPBaseImplementation::getShortFrameEnable() const{	return shortFrameEnable;}
 
-uint32_t UDPBaseImplementation::getFrameToGuiFrequency() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return frameToGuiFrequency;}
+uint32_t UDPBaseImplementation::getFrameToGuiFrequency() const{	return frameToGuiFrequency;}
 
-uint32_t UDPBaseImplementation::getFrameToGuiTimer() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return frameToGuiTimerinMS;}
+uint32_t UDPBaseImplementation::getFrameToGuiTimer() const{	return frameToGuiTimerinMS;}
 
-uint32_t UDPBaseImplementation::getDataStreamEnable() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return dataStreamEnable;}
+uint32_t UDPBaseImplementation::getDataStreamEnable() const{	return dataStreamEnable;}
 
-uint64_t UDPBaseImplementation::getAcquisitionPeriod() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return acquisitionPeriod;}
+uint64_t UDPBaseImplementation::getAcquisitionPeriod() const{	return acquisitionPeriod;}
 
-uint64_t UDPBaseImplementation::getAcquisitionTime() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return acquisitionTime;}
+uint64_t UDPBaseImplementation::getAcquisitionTime() const{	return acquisitionTime;}
 
-uint64_t UDPBaseImplementation::getNumberOfFrames() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return numberOfFrames;}
+uint64_t UDPBaseImplementation::getNumberOfFrames() const{	return numberOfFrames;}
 
-uint32_t UDPBaseImplementation::getDynamicRange() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return dynamicRange;}
+uint32_t UDPBaseImplementation::getDynamicRange() const{	return dynamicRange;}
 
-bool UDPBaseImplementation::getTenGigaEnable() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return tengigaEnable;}
+bool UDPBaseImplementation::getTenGigaEnable() const{	return tengigaEnable;}
 
-uint32_t UDPBaseImplementation::getFifoDepth() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return fifoDepth;}
+uint32_t UDPBaseImplementation::getFifoDepth() const{	return fifoDepth;}
 
 /***receiver status***/
-slsReceiverDefs::runStatus UDPBaseImplementation::getStatus() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return status;}
+slsReceiverDefs::runStatus UDPBaseImplementation::getStatus() const{	return status;}
 
-int UDPBaseImplementation::getActivate() const{FILE_LOG(logDEBUG) << __AT__ << " starting"; return activated;}
+int UDPBaseImplementation::getActivate() const{ return activated;}
 
 
 /*************************************************************************
@@ -214,29 +206,35 @@ int UDPBaseImplementation::getActivate() const{FILE_LOG(logDEBUG) << __AT__ << "
 
 /**initial parameters***/
 void UDPBaseImplementation::configure(map<string, string> config_map){
-	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
-	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
+	ostringstream os;
+	os << " must be overridden by child classes";
+	string message(os.str());	FILE_LOG(logERROR, message);
 }
 
 void UDPBaseImplementation::setFlippedData(int axis, int enable){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 	if(axis<0 || axis>1) return;
 	flippedData[axis] = enable==0?0:1;
-	FILE_LOG(logINFO)  << "Flipped Data: " << flippedData[0] << " , " << flippedData[1];
+
+	ostringstream os;
+	os << "Flipped Data: " << flippedData[0] << " , " << flippedData[1];
+	string message(os.str());	FILE_LOG(logINFO, message);
 }
 
 
 /***file parameters***/
 void UDPBaseImplementation::setFileName(const char c[]){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	if(strlen(c))
 		strcpy(fileName, c);
-	FILE_LOG(logINFO) << "File name:" << fileName;
+
+	ostringstream os;
+	os << "File name:" << fileName;
+	string message(os.str());	FILE_LOG(logINFO, message);
 }
 
 void UDPBaseImplementation::setFilePath(const char c[]){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	if(strlen(c)){
 		//check if filepath exists
@@ -245,55 +243,69 @@ void UDPBaseImplementation::setFilePath(const char c[]){
 			strcpy(filePath,c);
 		else{
 			strcpy(filePath,"");
-			FILE_LOG(logWARNING) << "FilePath does not exist:" << filePath;
+			ostringstream os;
+			os <<  "FilePath does not exist:" << filePath;
+			string message(os.str());	FILE_LOG(logWARNING, message);
 		}
 		strcpy(filePath, c);
 	}
-	FILE_LOG(logDEBUG) << "Info: File path:" << filePath;
+	/*FILE_LOG(logDEBUG) << "Info: File path:" << filePath;*/
 }
 
 void UDPBaseImplementation::setFileIndex(const uint64_t i){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	fileIndex = i;
-	FILE_LOG(logINFO) << "File Index:" << fileIndex;
+	ostringstream os;
+	os << "File Index:" << fileIndex;
+	string message(os.str());	FILE_LOG(logINFO, message);
 }
 
 //FIXME: needed?
 void UDPBaseImplementation::setScanTag(const int i){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	scanTag = i;
-	FILE_LOG(logINFO) << "Scan Tag:" << scanTag;
+	ostringstream os;
+	os << "Scan Tag:" << scanTag;
+	string message(os.str());	FILE_LOG(logINFO, message);
 
 }
 
 void UDPBaseImplementation::setFrameIndexEnable(const bool b){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	frameIndexEnable = b;
-	FILE_LOG(logINFO) << "Frame Index Enable: " << stringEnable(frameIndexEnable);
+	ostringstream os;
+	os << "Frame Index Enable: " << stringEnable(frameIndexEnable);
+	string message(os.str());	FILE_LOG(logINFO, message);
 }
 
 void UDPBaseImplementation::setFileWriteEnable(const bool b){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	fileWriteEnable = b;
-	FILE_LOG(logINFO) << "File Write Enable: " << stringEnable(fileWriteEnable);
+	ostringstream os;
+	os << "File Write Enable: " << stringEnable(fileWriteEnable);
+	string message(os.str());	FILE_LOG(logINFO, message);
 }
 
 void UDPBaseImplementation::setOverwriteEnable(const bool b){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	overwriteEnable = b;
-	FILE_LOG(logINFO) << "Overwrite Enable: " << stringEnable(overwriteEnable);
+	ostringstream os;
+	os << "Overwrite Enable: " << stringEnable(overwriteEnable);
+	string message(os.str());	FILE_LOG(logINFO, message);
 }
 
 int UDPBaseImplementation::setDataCompressionEnable(const bool b){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	dataCompressionEnable = b;
-	FILE_LOG(logINFO) << "Data Compression : " << stringEnable(dataCompressionEnable);
+	ostringstream os;
+	os << "Data Compression : " << stringEnable(dataCompressionEnable);
+	string message(os.str());	FILE_LOG(logINFO, message);
 
 	//overridden methods might return FAIL
 	return OK;
@@ -302,58 +314,72 @@ int UDPBaseImplementation::setDataCompressionEnable(const bool b){
 
 /***connection parameters***/
 void UDPBaseImplementation::setUDPPortNumber(const uint32_t i){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	udpPortNum[0] = i;
-	FILE_LOG(logINFO) << "UDP Port Number[0]:" << udpPortNum[0];
+	ostringstream os;
+	os << "UDP Port Number[0]:" << udpPortNum[0];
+	string message(os.str());	FILE_LOG(logINFO, message);
 }
 
 void UDPBaseImplementation::setUDPPortNumber2(const uint32_t i){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	udpPortNum[1] = i;
-	FILE_LOG(logINFO) << "UDP Port Number[1]:" << udpPortNum[1];
+	ostringstream os;
+	os << "UDP Port Number[1]:" << udpPortNum[1];
+	string message(os.str());	FILE_LOG(logINFO, message);
 }
 
 void UDPBaseImplementation::setEthernetInterface(const char* c){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	strcpy(eth, c);
-	FILE_LOG(logINFO) << "Ethernet Interface: " << eth;
+	ostringstream os;
+	os << "Ethernet Interface: " << eth;
+	string message(os.str());	FILE_LOG(logINFO, message);
 }
 
 
 /***acquisition parameters***/
 void UDPBaseImplementation::setShortFrameEnable(const int i){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	shortFrameEnable = i;
-	FILE_LOG(logINFO) << "Short Frame Enable: " << stringEnable(shortFrameEnable);
+	ostringstream os;
+	os << "Short Frame Enable: " << stringEnable(shortFrameEnable);
+	string message(os.str());	FILE_LOG(logINFO, message);
 }
 
 int UDPBaseImplementation::setFrameToGuiFrequency(const uint32_t freq){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	frameToGuiFrequency = freq;
-	FILE_LOG(logINFO) << "Frame To Gui Frequency:" << frameToGuiFrequency;
+	ostringstream os;
+	os << "Frame To Gui Frequency:" << frameToGuiFrequency;
+	string message(os.str());	FILE_LOG(logINFO, message);
 
 	//overrridden child classes might return FAIL
 	return OK;
 }
 
 void UDPBaseImplementation::setFrameToGuiTimer(const uint32_t time_in_ms){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	frameToGuiTimerinMS = time_in_ms;
-	FILE_LOG(logINFO) << "Frame To Gui Timer:" << frameToGuiTimerinMS;
+	ostringstream os;
+	os << "Frame To Gui Timer:" << frameToGuiTimerinMS;
+	string message(os.str());	FILE_LOG(logINFO, message);
 }
 
 
 uint32_t UDPBaseImplementation::setDataStreamEnable(const uint32_t enable){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	dataStreamEnable = enable;
-	FILE_LOG(logINFO) << "Streaming Data from Receiver:" << dataStreamEnable;
+	ostringstream os;
+	os << "Streaming Data from Receiver:" << dataStreamEnable;
+	string message(os.str());	FILE_LOG(logINFO, message);
 
 	//overrridden child classes might return FAIL
 	return OK;
@@ -361,60 +387,72 @@ uint32_t UDPBaseImplementation::setDataStreamEnable(const uint32_t enable){
 
 
 int UDPBaseImplementation::setAcquisitionPeriod(const uint64_t i){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	acquisitionPeriod = i;
-	FILE_LOG(logINFO) << "Acquisition Period:" <<  (double)acquisitionPeriod/(1E9) << "s";
+	ostringstream os;
+	os << "Acquisition Period:" <<  (double)acquisitionPeriod/(1E9) << "s";
+	string message(os.str());	FILE_LOG(logINFO, message);
 
 	//overrridden child classes might return FAIL
 	return OK;
 }
 
 int UDPBaseImplementation::setAcquisitionTime(const uint64_t i){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	acquisitionTime = i;
-	FILE_LOG(logINFO) << "Acquisition Time:" <<  (double)acquisitionTime/(1E9) << "s";
+	ostringstream os;
+	os << "Acquisition Time:" <<  (double)acquisitionTime/(1E9) << "s";
+	string message(os.str());	FILE_LOG(logINFO, message);
 
 	//overrridden child classes might return FAIL
 	return OK;
 }
 
 int UDPBaseImplementation::setNumberOfFrames(const uint64_t i){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	numberOfFrames = i;
-	FILE_LOG(logINFO) << "Number of Frames:" << numberOfFrames;
+	ostringstream os;
+	os << "Number of Frames:" << numberOfFrames;
+	string message(os.str());	FILE_LOG(logINFO, message);
 
 	//overrridden child classes might return FAIL
 	return OK;
 }
 
 int UDPBaseImplementation::setDynamicRange(const uint32_t i){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	dynamicRange = i;
-	FILE_LOG(logINFO) << "Dynamic Range:" << dynamicRange;
+	ostringstream os;
+	os << "Dynamic Range:" << dynamicRange;
+	string message(os.str());	FILE_LOG(logINFO, message);
 
 	//overrridden child classes might return FAIL
 	return OK;
 }
 
 int UDPBaseImplementation::setTenGigaEnable(const bool b){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	tengigaEnable = b;
-	FILE_LOG(logINFO) << "Ten Giga Enable: " << stringEnable(tengigaEnable);
+	ostringstream os;
+	os << "Ten Giga Enable: " << stringEnable(tengigaEnable);
+	string message(os.str());	FILE_LOG(logINFO, message);
 
 	//overridden functions might return FAIL
 	return OK;
 }
 
 int UDPBaseImplementation::setFifoDepth(const uint32_t i){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	fifoDepth = i;
-	FILE_LOG(logINFO) << "Fifo Depth: " << i;
+	ostringstream os;
+	os << "Fifo Depth: " << i;
+	string message(os.str());	FILE_LOG(logINFO, message);
 
 	//overridden functions might return FAIL
 	return OK;
@@ -428,79 +466,94 @@ int UDPBaseImplementation::setFifoDepth(const uint32_t i){
 
 /***initial functions***/
 int UDPBaseImplementation::setDetectorType(const detectorType d){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	myDetectorType = d;
 	//if eiger, set numberofListeningThreads = 2;
-	FILE_LOG(logINFO) << "Detector Type:" << getDetectorType(d);
+	ostringstream os;
+	os << "Detector Type:" << getDetectorType(d);
+	string message(os.str());	FILE_LOG(logINFO, message);
 	return OK;
 }
 
 void UDPBaseImplementation::initialize(const char *c){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	if(strlen(c))
 		strcpy(detHostname, c);
-	FILE_LOG(logINFO) << "Detector Hostname:" << detHostname;
+	ostringstream os;
+	os << "Detector Hostname:" << detHostname;
+	string message(os.str());	FILE_LOG(logINFO, message);
 }
 
 
 /***acquisition functions***/
 void UDPBaseImplementation::resetAcquisitionCount(){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	totalPacketsCaught = 0;
-	FILE_LOG(logINFO) << "totalPacketsCaught:" << totalPacketsCaught;
+	ostringstream os;
+	os << "totalPacketsCaught:" << totalPacketsCaught;
+	string message(os.str());	FILE_LOG(logINFO, message);
 }
 
 int UDPBaseImplementation::startReceiver(char *c){
-	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
-	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
+	ostringstream os;
+	os << " must be overridden by child classes";
+	string message(os.str());	FILE_LOG(logERROR, message);
 	return OK;
 }
 
 void UDPBaseImplementation::stopReceiver(){
-	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
-	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
+	ostringstream os;
+	os << " must be overridden by child classes";
+	string message(os.str());	FILE_LOG(logERROR, message);
 }
 
 void UDPBaseImplementation::startReadout(){
-	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
-	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
+	ostringstream os;
+	os << " must be overridden by child classes";
+	string message(os.str());	FILE_LOG(logERROR, message);
 }
 
 int UDPBaseImplementation::shutDownUDPSockets(){
-	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
-	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
+	ostringstream os;
+	os << " must be overridden by child classes";
+	string message(os.str());	FILE_LOG(logERROR, message);
 
 	//overridden functions might return FAIL
 	return OK;
 }
 
 void UDPBaseImplementation::readFrame(int ithread, char* c,char** raw, int64_t &startAcquisitionIndex, int64_t &startFrameIndex){
-	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
-	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
+	ostringstream os;
+	os << " must be overridden by child classes";
+	string message(os.str());	FILE_LOG(logERROR, message);
 }
 
 
 //FIXME: needed, isnt stopReceiver enough?
 void UDPBaseImplementation::abort(){
-	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
-	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
+	ostringstream os;
+	os << " must be overridden by child classes";
+	string message(os.str());	FILE_LOG(logERROR, message);
 }
 
 void UDPBaseImplementation::closeFile(int ithread){
-	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
-	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
+	ostringstream os;
+	os << " must be overridden by child classes";
+	string message(os.str());	FILE_LOG(logERROR, message);
 }
 
 
 int UDPBaseImplementation::setActivate(int enable){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 
 	if(enable != -1){
 		activated = enable;
-		FILE_LOG(logINFO) << "Activation: " << stringEnable(activated);
+		ostringstream os;
+		os << "Activation: " << stringEnable(activated);
+		string message(os.str());	FILE_LOG(logINFO, message);
 	}
 
 	return activated;

@@ -18,7 +18,7 @@
  *@short creates the UDP and TCP class objects
  */
 
-class slsReceiver : private virtual slsReceiverDefs {
+class slsReceiver :  public Logger, private virtual slsReceiverDefs {
 	
  public:
 	/**

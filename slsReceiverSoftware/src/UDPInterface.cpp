@@ -23,17 +23,23 @@ using namespace std;
 UDPInterface * UDPInterface::create(string receiver_type){
 	
 	if (receiver_type == "standard"){
-		FILE_LOG(logINFO) << "Starting " << receiver_type;
+		ostringstream os;
+		os << "Starting " << receiver_type;
+		string message(os.str());	FILE_LOG(logINFO, message);
 		return new UDPStandardImplementation();
 	}
 #ifdef REST
 	else if (receiver_type == "REST"){
-		FILE_LOG(logINFO) << "Starting " << receiver_type;
+		ostringstream os;
+		os << "Starting " << receiver_type;
+		string message(os.str());	FILE_LOG(logINFO, message);
 		return new UDPRESTImplementation();
 	}
 #endif
 	else{
-		FILE_LOG(logWARNING) << "[ERROR] UDP interface not supported, using standard implementation";
+		ostringstream os;
+		os << "[ERROR] UDP interface not supported, using standard implementation";
+		string message(os.str());	FILE_LOG(logWARNING, message);
 		return new UDPBaseImplementation();
 	}
 }

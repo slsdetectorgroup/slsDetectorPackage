@@ -111,8 +111,8 @@ enum communicationProtocol{
 	 total_sent(0),// sender (client): where to? ip
 	 header_packet_size(0)
    { 
-	 memset(&serverAddress, 0, sizeof(serverAddress));
-	 memset(&clientAddress, 0, sizeof(clientAddress));
+	 memset(&serverAddress, 0,sizeof(serverAddress));
+	 memset(&clientAddress,0,sizeof(clientAddress));
   //   strcpy(hostname,host_ip_or_name);
 
 	 strcpy(lastClientIP,"none");

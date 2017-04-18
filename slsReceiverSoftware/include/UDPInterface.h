@@ -21,7 +21,7 @@
 #include "logger.h"
 
 
-class UDPInterface {
+class UDPInterface: public Logger {
 	
 
 	/*  abstract class that defines the UDP interface of an sls detector data receiver.

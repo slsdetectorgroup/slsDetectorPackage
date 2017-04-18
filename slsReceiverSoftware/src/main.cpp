@@ -104,7 +104,6 @@ int main(int argc, char *argv[]) {
 
 	//start tcp server thread
 	if(receiver->start() == slsReceiverDefs::OK){
-		FILE_LOG(logDEBUG1) << "DONE!" << endl;
 		string str;
 		cin>>str;
 		//wait and look for an exit keyword

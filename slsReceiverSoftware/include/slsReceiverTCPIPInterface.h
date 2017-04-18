@@ -17,7 +17,7 @@
  *@short interface between receiver and client
  */
 
-class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
+class slsReceiverTCPIPInterface : public Logger, private virtual slsReceiverDefs {
 	
  public:
 	/**

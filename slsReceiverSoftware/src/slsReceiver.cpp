@@ -106,23 +106,31 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 
 	if( !fname.empty() ){
 		try{
-			FILE_LOG(logINFO) << "config file name " << fname;
+			ostringstream os;
+			os << "config file name " << fname;
+			string message(os.str());	FILE_LOG(logDEBUG, message);
 			success = read_config_file(fname, &tcpip_port_no, &configuration_map);
 			//VERBOSE_PRINT("Read configuration file of " + iline + " lines");
 		}
 		catch(...){
-			FILE_LOG(logERROR) << "Error opening configuration file " << fname ;
-		success = FAIL;
+			ostringstream os;
+			os << "Error opening configuration file " << fname ;
+			string message(os.str());	FILE_LOG(logERROR, message);
+			success = FAIL;
 		}
 	}
 
 
 	if(success != OK){
-		FILE_LOG(logERROR) << "Failed: see output above for more information " ;
+		ostringstream os;
+		os << "Failed: see output above for more information " ;
+		string message(os.str());	FILE_LOG(logERROR, message);
 	}
 
 	if (success==OK){
-		FILE_LOG(logINFO) << "SLS Receiver starting " << udp_interface_type << " on port " << tcpip_port_no << endl;
+		ostringstream os;
+		os << "SLS Receiver starting " << udp_interface_type << " on port " << tcpip_port_no << endl;
+		string message(os.str());	FILE_LOG(logDEBUG, message);
 #ifdef REST
 		udp_interface = UDPInterface::create(udp_interface_type);
 		udp_interface->configure(configuration_map);

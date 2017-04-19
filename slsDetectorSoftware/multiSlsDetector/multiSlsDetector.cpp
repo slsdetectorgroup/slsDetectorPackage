@@ -5159,25 +5159,27 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 
 int multiSlsDetector::getData(const int isocket, const bool masking, int* image, const int size, uint64_t &acqIndex, uint64_t &frameIndex, uint32_t &subframeIndex, string &filename){
 
-	zmq_msg_t message;
+	zmq_msg_t header_message;
 
 	//scan header-------------------------------------------------------------------
-	zmq_msg_init (&message);
+	zmq_msg_init (&header_message);
 	//cprintf(BLUE,"%d going to receive message\n", isocket);
-	int len = zmq_msg_recv(&message, zmqsocket[isocket], 0);
+	int len = zmq_msg_recv(&header_message, zmqsocket[isocket], 0);
 	if (len == -1) {
 		cprintf(BG_RED,"Could not read header for socket %d\n",isocket);
-		zmq_msg_close(&message);
+		zmq_msg_close(&header_message);
 		cprintf(RED, "%d message null\n",isocket);
 		return FAIL;
 	}
 
-
 	// error if you print it
-   // cprintf(BLUE,"%d header len:%d value:%s\n",isocket, len, (char*)zmq_msg_data(&message));
-	//cprintf(BLUE,"%d header %d\n",isocket,len);
+	//cprintf(BLUE,"%d header len:%d value:%s\n",isocket, len, (char*)zmq_msg_data(&header_message));
+
 	rapidjson::Document d;
-	d.Parse( (char*)zmq_msg_data(&message), zmq_msg_size(&message));
+	rapidjson::ParseResult result = d.Parse( (char*)zmq_msg_data(&header_message), len);
+	if (!result) {
+	  cprintf(RED,"%d Could not parse. len:%d: Message:%s \n", isocket, len, (char*)zmq_msg_data(&header_message) );
+	}
 #ifdef VERYVERBOSE
 	// htype is an array of strings
 	rapidjson::Value::Array htype = d["htype"].GetArray();
@@ -5193,7 +5195,7 @@ int multiSlsDetector::getData(const int isocket, const bool masking, int* image,
 	cout << isocket << "type: " << d["type"].GetString() << endl;
 
 #endif
-	if(d["acqIndex"].GetUint64()!= (long long unsigned int)-1){ //!isocket &&
+	if(d["acqIndex"].GetUint64()!= (uint64_t)-1){ //!isocket &&
 		acqIndex 		= d["acqIndex"].GetUint64();
 		frameIndex 		= d["fIndex"].GetUint64();
 		subframeIndex 	= -1;
@@ -5210,17 +5212,19 @@ int multiSlsDetector::getData(const int isocket, const bool masking, int* image,
 		if(frameIndex == (long long unsigned int)-1) cprintf(RED,"multi frame index -1!!\n");
 	}
 	// close the message
-	zmq_msg_close(&message);
+	zmq_msg_close(&header_message);
 
 
 	//scan data-------------------------------------------------------------------
-	zmq_msg_init (&message);
-	len = zmq_msg_recv(&message, zmqsocket[isocket], 0);
-	//cprintf(BLUE,"%d data %d\n",isocket,len);
+	zmq_msg_t data_message;
+	zmq_msg_init (&data_message);
+	len = zmq_msg_recv(&data_message, zmqsocket[isocket], 0);
+	//cprintf(GREEN,"%d data %d\n",isocket,len);
 
-	//end of socket ("end")
-	if(len == 3){
-		//cprintf(RED,"%d Received end of acquisition\n", isocket);
+	//end of socket ("end\0")
+	if(len == 4){
+	        zmq_msg_close(&data_message); // close the message
+		//cprintf(RED,"%d Received end of acquisition len:%d\n", isocket, len);
 		return FAIL;
 	}
 
@@ -5232,8 +5236,8 @@ int multiSlsDetector::getData(const int isocket, const bool masking, int* image,
 	//actual image
 	else{
 		//actual data
-		//cprintf(BLUE,"%d actual dataaa\n",isocket);
-		memcpy((char*)image,(char*)zmq_msg_data(&message),size);
+	  //	cprintf(GREEN,"%d actual dataaa\n",isocket);
+		memcpy((char*)image,(char*)zmq_msg_data(&data_message),size);
 
 		//jungfrau masking adcval
 		if(masking){
@@ -5244,7 +5248,7 @@ int multiSlsDetector::getData(const int isocket, const bool masking, int* image,
 		}
 	}
 
-	zmq_msg_close(&message); // close the message
+	zmq_msg_close(&data_message); // close the message
 
 	return OK;
 }

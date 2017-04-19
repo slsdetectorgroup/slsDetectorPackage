@@ -1897,7 +1897,6 @@ void UDPStandardImplementation::startDataCallback(){
 		FILE_LOG(logINFO, cstreambuf);
 	}
 
-	int headersize=0;
 	switch(myDetectorType){
 	case EIGER:
 		headersize = EIGER_DATA_PACKET_HEADER_SIZE; break;

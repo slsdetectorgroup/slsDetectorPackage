@@ -206,9 +206,7 @@ int UDPBaseImplementation::getActivate() const{ return activated;}
 
 /**initial parameters***/
 void UDPBaseImplementation::configure(map<string, string> config_map){
-	ostringstream os;
-	os << " must be overridden by child classes";
-	string message(os.str());	FILE_LOG(logERROR, message);
+	FILE_LOG(logERROR, " must be overridden by child classes");
 }
 
 void UDPBaseImplementation::setFlippedData(int axis, int enable){
@@ -216,9 +214,9 @@ void UDPBaseImplementation::setFlippedData(int axis, int enable){
 	if(axis<0 || axis>1) return;
 	flippedData[axis] = enable==0?0:1;
 
-	ostringstream os;
-	os << "Flipped Data: " << flippedData[0] << " , " << flippedData[1];
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "Flipped Data: %d , %d ", flippedData[0], flippedData[1]);
+	FILE_LOG(logINFO, cstreambuf);
 }
 
 
@@ -228,13 +226,12 @@ void UDPBaseImplementation::setFileName(const char c[]){
 	if(strlen(c))
 		strcpy(fileName, c);
 
-	ostringstream os;
-	os << "File name:" << fileName;
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "File name: %s ", fileName);
+	FILE_LOG(logINFO, cstreambuf);
 }
 
 void UDPBaseImplementation::setFilePath(const char c[]){
-
 
 	if(strlen(c)){
 		//check if filepath exists
@@ -243,69 +240,67 @@ void UDPBaseImplementation::setFilePath(const char c[]){
 			strcpy(filePath,c);
 		else{
 			strcpy(filePath,"");
-			ostringstream os;
-			os <<  "FilePath does not exist:" << filePath;
-			string message(os.str());	FILE_LOG(logWARNING, message);
+
+			char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+			sprintf(cstreambuf, "FilePath does not exist: %s ", filePath);
+			FILE_LOG(logWARNING, cstreambuf);
 		}
 		strcpy(filePath, c);
 	}
-	/*FILE_LOG(logDEBUG) << "Info: File path:" << filePath;*/
+	/*{
+	 	 char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	 	 sprintf(cstreambuf, "File path:: %s ", filePath);
+	 	 FILE_LOG(logDEBUG, cstreambuf);
+	  }*/
 }
 
 void UDPBaseImplementation::setFileIndex(const uint64_t i){
 
-
 	fileIndex = i;
-	ostringstream os;
-	os << "File Index:" << fileIndex;
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "File Index: %lu ", fileIndex);
+	FILE_LOG(logINFO, cstreambuf);
 }
 
 //FIXME: needed?
 void UDPBaseImplementation::setScanTag(const int i){
 
-
 	scanTag = i;
-	ostringstream os;
-	os << "Scan Tag:" << scanTag;
-	string message(os.str());	FILE_LOG(logINFO, message);
-
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "Scan Tag: %d ", scanTag);
+	FILE_LOG(logINFO, cstreambuf);
 }
 
 void UDPBaseImplementation::setFrameIndexEnable(const bool b){
 
-
 	frameIndexEnable = b;
-	ostringstream os;
-	os << "Frame Index Enable: " << stringEnable(frameIndexEnable);
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "Frame Index Enable: %s ", stringEnable(frameIndexEnable).c_str());
+	FILE_LOG(logINFO, cstreambuf);
 }
 
 void UDPBaseImplementation::setFileWriteEnable(const bool b){
 
-
 	fileWriteEnable = b;
-	ostringstream os;
-	os << "File Write Enable: " << stringEnable(fileWriteEnable);
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "File Write Enable: %s ", stringEnable(fileWriteEnable).c_str());
+	FILE_LOG(logINFO, cstreambuf);
 }
 
 void UDPBaseImplementation::setOverwriteEnable(const bool b){
 
-
 	overwriteEnable = b;
-	ostringstream os;
-	os << "Overwrite Enable: " << stringEnable(overwriteEnable);
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "Overwrite Enable: %s ", stringEnable(overwriteEnable).c_str());
+	FILE_LOG(logINFO, cstreambuf);
 }
 
 int UDPBaseImplementation::setDataCompressionEnable(const bool b){
 
-
 	dataCompressionEnable = b;
-	ostringstream os;
-	os << "Data Compression : " << stringEnable(dataCompressionEnable);
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "Data Compression: %s ", stringEnable(dataCompressionEnable).c_str());
+	FILE_LOG(logINFO, cstreambuf);
 
 	//overridden methods might return FAIL
 	return OK;
@@ -315,49 +310,44 @@ int UDPBaseImplementation::setDataCompressionEnable(const bool b){
 /***connection parameters***/
 void UDPBaseImplementation::setUDPPortNumber(const uint32_t i){
 
-
 	udpPortNum[0] = i;
-	ostringstream os;
-	os << "UDP Port Number[0]:" << udpPortNum[0];
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "UDP Port Number[0]: %u ", udpPortNum[0]);
+	FILE_LOG(logINFO, cstreambuf);
 }
 
 void UDPBaseImplementation::setUDPPortNumber2(const uint32_t i){
 
-
 	udpPortNum[1] = i;
-	ostringstream os;
-	os << "UDP Port Number[1]:" << udpPortNum[1];
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "UDP Port Number[1]: %u ", udpPortNum[1]);
+	FILE_LOG(logINFO, cstreambuf);
 }
 
 void UDPBaseImplementation::setEthernetInterface(const char* c){
 
-
 	strcpy(eth, c);
-	ostringstream os;
-	os << "Ethernet Interface: " << eth;
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "Ethernet Interface: %s ", eth);
+	FILE_LOG(logINFO, cstreambuf);
 }
 
 
 /***acquisition parameters***/
 void UDPBaseImplementation::setShortFrameEnable(const int i){
 
-
 	shortFrameEnable = i;
-	ostringstream os;
-	os << "Short Frame Enable: " << stringEnable(shortFrameEnable);
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "Short Frame Enable: %d ", shortFrameEnable);
+	FILE_LOG(logINFO, cstreambuf);
 }
 
 int UDPBaseImplementation::setFrameToGuiFrequency(const uint32_t freq){
 
-
 	frameToGuiFrequency = freq;
-	ostringstream os;
-	os << "Frame To Gui Frequency:" << frameToGuiFrequency;
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "Frame To Gui Frequency: %u ", frameToGuiFrequency);
+	FILE_LOG(logINFO, cstreambuf);
 
 	//overrridden child classes might return FAIL
 	return OK;
@@ -365,21 +355,19 @@ int UDPBaseImplementation::setFrameToGuiFrequency(const uint32_t freq){
 
 void UDPBaseImplementation::setFrameToGuiTimer(const uint32_t time_in_ms){
 
-
 	frameToGuiTimerinMS = time_in_ms;
-	ostringstream os;
-	os << "Frame To Gui Timer:" << frameToGuiTimerinMS;
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "Frame To Gui Timer: %u ", frameToGuiTimerinMS);
+	FILE_LOG(logINFO, cstreambuf);
 }
 
 
 uint32_t UDPBaseImplementation::setDataStreamEnable(const uint32_t enable){
 
-
 	dataStreamEnable = enable;
-	ostringstream os;
-	os << "Streaming Data from Receiver:" << dataStreamEnable;
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "Streaming Data from Receiver: %d ", dataStreamEnable);
+	FILE_LOG(logINFO, cstreambuf);
 
 	//overrridden child classes might return FAIL
 	return OK;
@@ -388,11 +376,10 @@ uint32_t UDPBaseImplementation::setDataStreamEnable(const uint32_t enable){
 
 int UDPBaseImplementation::setAcquisitionPeriod(const uint64_t i){
 
-
 	acquisitionPeriod = i;
-	ostringstream os;
-	os << "Acquisition Period:" <<  (double)acquisitionPeriod/(1E9) << "s";
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "Acquisition Period: %f s ", (double)acquisitionPeriod/(1E9));
+	FILE_LOG(logINFO, cstreambuf);
 
 	//overrridden child classes might return FAIL
 	return OK;
@@ -400,11 +387,10 @@ int UDPBaseImplementation::setAcquisitionPeriod(const uint64_t i){
 
 int UDPBaseImplementation::setAcquisitionTime(const uint64_t i){
 
-
 	acquisitionTime = i;
-	ostringstream os;
-	os << "Acquisition Time:" <<  (double)acquisitionTime/(1E9) << "s";
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "Acquisition Time: %f s ", (double)acquisitionTime/(1E9));
+	FILE_LOG(logINFO, cstreambuf);
 
 	//overrridden child classes might return FAIL
 	return OK;
@@ -412,11 +398,10 @@ int UDPBaseImplementation::setAcquisitionTime(const uint64_t i){
 
 int UDPBaseImplementation::setNumberOfFrames(const uint64_t i){
 
-
 	numberOfFrames = i;
-	ostringstream os;
-	os << "Number of Frames:" << numberOfFrames;
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "Number of Frames: %lu ", numberOfFrames);
+	FILE_LOG(logINFO, cstreambuf);
 
 	//overrridden child classes might return FAIL
 	return OK;
@@ -424,11 +409,10 @@ int UDPBaseImplementation::setNumberOfFrames(const uint64_t i){
 
 int UDPBaseImplementation::setDynamicRange(const uint32_t i){
 
-
 	dynamicRange = i;
-	ostringstream os;
-	os << "Dynamic Range:" << dynamicRange;
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "Dynamic Range: %u ", dynamicRange);
+	FILE_LOG(logINFO, cstreambuf);
 
 	//overrridden child classes might return FAIL
 	return OK;
@@ -436,11 +420,10 @@ int UDPBaseImplementation::setDynamicRange(const uint32_t i){
 
 int UDPBaseImplementation::setTenGigaEnable(const bool b){
 
-
 	tengigaEnable = b;
-	ostringstream os;
-	os << "Ten Giga Enable: " << stringEnable(tengigaEnable);
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "Ten Giga Enable: %s ", stringEnable(tengigaEnable).c_str());
+	FILE_LOG(logINFO, cstreambuf);
 
 	//overridden functions might return FAIL
 	return OK;
@@ -448,11 +431,10 @@ int UDPBaseImplementation::setTenGigaEnable(const bool b){
 
 int UDPBaseImplementation::setFifoDepth(const uint32_t i){
 
-
 	fifoDepth = i;
-	ostringstream os;
-	os << "Fifo Depth: " << i;
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "Fifo Depth: %u ", i);
+	FILE_LOG(logINFO, cstreambuf);
 
 	//overridden functions might return FAIL
 	return OK;
@@ -467,23 +449,23 @@ int UDPBaseImplementation::setFifoDepth(const uint32_t i){
 /***initial functions***/
 int UDPBaseImplementation::setDetectorType(const detectorType d){
 
-
 	myDetectorType = d;
 	//if eiger, set numberofListeningThreads = 2;
-	ostringstream os;
-	os << "Detector Type:" << getDetectorType(d);
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "Detector Type: %s ", getDetectorType(d).c_str());
+	FILE_LOG(logINFO, cstreambuf);
+
 	return OK;
 }
 
 void UDPBaseImplementation::initialize(const char *c){
 
-
 	if(strlen(c))
 		strcpy(detHostname, c);
-	ostringstream os;
-	os << "Detector Hostname:" << detHostname;
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "Detector Hostname: %s ", detHostname);
+	FILE_LOG(logINFO, cstreambuf);
+
 }
 
 
@@ -492,68 +474,62 @@ void UDPBaseImplementation::resetAcquisitionCount(){
 
 
 	totalPacketsCaught = 0;
-	ostringstream os;
-	os << "totalPacketsCaught:" << totalPacketsCaught;
-	string message(os.str());	FILE_LOG(logINFO, message);
+	char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+	sprintf(cstreambuf, "Total Packets Caught: %lu ", totalPacketsCaught);
+	FILE_LOG(logINFO, cstreambuf);
 }
 
 int UDPBaseImplementation::startReceiver(char *c){
-	ostringstream os;
-	os << " must be overridden by child classes";
-	string message(os.str());	FILE_LOG(logERROR, message);
+
+	FILE_LOG(logERROR, " must be overridden by child classes");
+
 	return OK;
 }
 
 void UDPBaseImplementation::stopReceiver(){
-	ostringstream os;
-	os << " must be overridden by child classes";
-	string message(os.str());	FILE_LOG(logERROR, message);
+
+	FILE_LOG(logERROR, " must be overridden by child classes");
 }
 
 void UDPBaseImplementation::startReadout(){
-	ostringstream os;
-	os << " must be overridden by child classes";
-	string message(os.str());	FILE_LOG(logERROR, message);
+
+	FILE_LOG(logERROR, " must be overridden by child classes");
 }
 
 int UDPBaseImplementation::shutDownUDPSockets(){
-	ostringstream os;
-	os << " must be overridden by child classes";
-	string message(os.str());	FILE_LOG(logERROR, message);
+
+	FILE_LOG(logERROR, " must be overridden by child classes");
 
 	//overridden functions might return FAIL
 	return OK;
 }
 
 void UDPBaseImplementation::readFrame(int ithread, char* c,char** raw, int64_t &startAcquisitionIndex, int64_t &startFrameIndex){
-	ostringstream os;
-	os << " must be overridden by child classes";
-	string message(os.str());	FILE_LOG(logERROR, message);
+
+	FILE_LOG(logERROR, " must be overridden by child classes");
 }
 
 
 //FIXME: needed, isnt stopReceiver enough?
 void UDPBaseImplementation::abort(){
-	ostringstream os;
-	os << " must be overridden by child classes";
-	string message(os.str());	FILE_LOG(logERROR, message);
+
+	FILE_LOG(logERROR, " must be overridden by child classes");
 }
 
 void UDPBaseImplementation::closeFile(int ithread){
-	ostringstream os;
-	os << " must be overridden by child classes";
-	string message(os.str());	FILE_LOG(logERROR, message);
+
+	FILE_LOG(logERROR, " must be overridden by child classes");
 }
 
 
 int UDPBaseImplementation::setActivate(int enable){
 
-
 	if(enable != -1){
 		activated = enable;
-		ostringstream os;
-		os << "Activation: " << stringEnable(activated);
-		string message(os.str());	FILE_LOG(logINFO, message);
+
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "Activation: %s ", stringEnable(activated).c_str());
+		FILE_LOG(logINFO, cstreambuf);
 	}
 
 	return activated;

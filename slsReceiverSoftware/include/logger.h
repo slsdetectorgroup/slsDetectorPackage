@@ -14,7 +14,7 @@
 #elif VERYVERBOSE
 #define FILELOG_MAX_LEVEL logDEBUG4
 #elif VERBOSE
-#define FILELOG_MAX_LEVEL logDEBUG
+#define FILELOG_MAX_LEVEL logDEBUG1
 #endif
 
 #ifndef FILELOG_MAX_LEVEL
@@ -31,11 +31,14 @@ class Logger {
 public:
 	Logger(){};
 
-	enum TLogLevel {logERROR, logWARNING, logINFO, logDEBUG, logDEBUG1, logDEBUG2, logDEBUG3, logDEBUG4, logDEBUG5};
+	enum TLogLevel {logERROR, logWARNING, logINFO, logDEBUG1, logDEBUG2, logDEBUG3, logDEBUG4, logDEBUG5};
 
 
-	static void FILE_LOG(TLogLevel level, char* msg)
+	static void FILE_LOG(TLogLevel level, char const* msg)
 	{
+
+		if(level > FILELOG_MAX_LEVEL) return;
+
 	    char buffer[11];
 	    const int buffer_len = sizeof(buffer);
 	    time_t t;
@@ -70,10 +73,10 @@ public:
 	   */
 
 	    switch(level){
-	    case logERROR:		cprintf(RED BOLD,	"- %s ERROR: %s",		result, msg); 	break;
-	    case logWARNING:	cprintf(YELLOW BOLD,"- %s WARNING: %s",		result, msg); 	break;
-	    case logINFO:		cprintf(GRAY,		"- %s INFO: %s",		result, msg);	break;
-	    default: break;
+	    case logERROR:		cprintf(RED BOLD,	"- %s ERROR: %s \n",	result, msg); 	break;
+	    case logWARNING:	cprintf(YELLOW BOLD,"- %s WARNING: %s \n",	result, msg); 	break;
+	    case logINFO:		cprintf(GRAY,		"- %s INFO: %s \n",		result, msg);	break;
+	    default: 			cprintf(GRAY,		"- %s DEBUG: %s \n",	result, msg);	break;
 	    }
 
 

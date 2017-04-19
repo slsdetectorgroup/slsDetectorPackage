@@ -106,31 +106,32 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 
 	if( !fname.empty() ){
 		try{
-			ostringstream os;
-			os << "config file name " << fname;
-			string message(os.str());	FILE_LOG(logDEBUG, message);
+			char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+			sprintf(cstreambuf, "config file name : %s ",fname.c_str());
+			FILE_LOG(logDEBUG1, cstreambuf);
+
 			success = read_config_file(fname, &tcpip_port_no, &configuration_map);
 			//VERBOSE_PRINT("Read configuration file of " + iline + " lines");
 		}
 		catch(...){
-			ostringstream os;
-			os << "Error opening configuration file " << fname ;
-			string message(os.str());	FILE_LOG(logERROR, message);
+			char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+			sprintf(cstreambuf, "Error opening configuration file : %s ",fname.c_str());
+			FILE_LOG(logERROR, cstreambuf);
+
 			success = FAIL;
 		}
 	}
 
 
 	if(success != OK){
-		ostringstream os;
-		os << "Failed: see output above for more information " ;
-		string message(os.str());	FILE_LOG(logERROR, message);
+		FILE_LOG(logERROR, "Failed: see output above for more information ");
 	}
 
 	if (success==OK){
-		ostringstream os;
-		os << "SLS Receiver starting " << udp_interface_type << " on port " << tcpip_port_no << endl;
-		string message(os.str());	FILE_LOG(logDEBUG, message);
+
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "SLS Receiver starting %s on port %d ",udp_interface_type.c_str(), tcpip_port_no);
+		FILE_LOG(logDEBUG1, cstreambuf);
 #ifdef REST
 		udp_interface = UDPInterface::create(udp_interface_type);
 		udp_interface->configure(configuration_map);

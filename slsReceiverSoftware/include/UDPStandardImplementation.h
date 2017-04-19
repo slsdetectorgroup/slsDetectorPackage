@@ -831,8 +831,6 @@ private:
 	/** Progress (currentFrameNumber) Mutex  */
 	pthread_mutex_t progressMutex;
 
-	char streambuf[MAX_NUMBER_OF_WRITER_THREADS][MAX_STR_LENGTH];
-	char cstreambuf[MAX_STR_LENGTH];
 
 
 };

@@ -3,9 +3,6 @@
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
  ***********************************************/
 
-sprintf(cstreambuf, "%s", " \0");
-FILE_LOG(logDEBUG, cstreambuf);
-
 #include "UDPStandardImplementation.h"
 
 #include "moench02ModuleData.h"
@@ -38,10 +35,6 @@ UDPStandardImplementation::UDPStandardImplementation(){
 
 	initializeMembers();
 
-	for(int i= 0; i < MAX_NUMBER_OF_WRITER_THREADS; ++i)
-		memset(streambuf[i], 0, MAX_STR_LENGTH );
-	memset(cstreambuf, 0, MAX_STR_LENGTH );
-
 	//***mutex***
 	pthread_mutex_init(&statusMutex,NULL);
 	pthread_mutex_init(&writeMutex,NULL);
@@ -51,11 +44,9 @@ UDPStandardImplementation::UDPStandardImplementation(){
 	//to increase socket receiver buffer size and max length of input queue by changing kernel settings
 	if(myDetectorType == EIGER);
 	else if(system("echo $((100*1024*1024)) > /proc/sys/net/core/rmem_max")){
-		sprintf(cstreambuf, "%s", "Warning: No root permission to change socket receiver buffer size in file /proc/sys/net/core/rmem_max \0");
-		FILE_LOG(logDEBUG, cstreambuf);
+		FILE_LOG(logDEBUG1, "Warning: No root permission to change socket receiver buffer size in file /proc/sys/net/core/rmem_max");
 	}else if(system("echo 250000 > /proc/sys/net/core/netdev_max_backlog")){
-		sprintf(cstreambuf, "%s", "Warning: No root permission to change max length of input queue in file /proc/sys/net/core/netdev_max_backlog \0");
-		FILE_LOG(logDEBUG, cstreambuf);
+		FILE_LOG(logDEBUG1, "Warning: No root permission to change max length of input queue in file /proc/sys/net/core/netdev_max_backlog ");
 	}
 
 	/** permanent setting by heiner
@@ -84,8 +75,7 @@ UDPStandardImplementation::~UDPStandardImplementation(){
 /***initial parameters***/
 
 void UDPStandardImplementation::deleteMembers(){
-	sprintf(cstreambuf, "%s", "Deleting member pointers \0");
-	FILE_LOG(logDEBUG, cstreambuf);
+	FILE_LOG(logDEBUG1, "Deleting member pointers ");
 
 	shutDownUDPSockets();
 	for(int i=0;i<MAX_NUMBER_OF_WRITER_THREADS; i++)
@@ -135,8 +125,7 @@ void UDPStandardImplementation::initializeBaseMembers(){
 
 void UDPStandardImplementation::initializeMembers(){
 
-	sprintf(cstreambuf, "%s", "Initializing members \0");
-	FILE_LOG(logDEBUG, cstreambuf);
+	FILE_LOG(logDEBUG1, "Initializing members ");
 
 	//***detector parameters***
 	detID = 0;
@@ -291,14 +280,7 @@ int UDPStandardImplementation::setupFifoStructure(){
 	//eiger always listens to 1 packet at a time
 	if(excludeMissingPackets){
 		numberofJobsPerBuffer = 1;
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "Info: 1 packet per buffer";
-			string message(os.str());	FILE_LOG(logDEBUG, message);
-		}
-
+		FILE_LOG(logDEBUG1, "1 packet per buffer ");
 	}
 	//else calculate best possible number of frames to listen to at a time (for fast readouts like gotthard)
 	else{
@@ -325,14 +307,11 @@ int UDPStandardImplementation::setupFifoStructure(){
 				numberofJobsPerBuffer = i;
 
 		}
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
 		{
-			ostringstream os;
-			os << "Number of Frames per buffer:" << numberofJobsPerBuffer << endl;
-			string message(os.str());	FILE_LOG(logINFO, message);
+			char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+			sprintf(cstreambuf, "Number of Frames per buffer: %d ",numberofJobsPerBuffer);
+			FILE_LOG(logINFO, cstreambuf);
 		}
-
 	}
 
 
@@ -350,16 +329,12 @@ int UDPStandardImplementation::setupFifoStructure(){
 	//do not rebuild fifo structure if it is the same (oldfifosize differs only for different packetsperframe)
 	if((oldNumberofJobsPerBuffer == numberofJobsPerBuffer) && (oldFifoSize == fifoSize))
 		return OK;
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
+
 	{
-		ostringstream os;
-		os << "Info: Total Fifo Size:" << fifoSize;
-		string message(os.str());	FILE_LOG(logINFO, message);
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "Total Fifo Size: %u ",fifoSize);
+		FILE_LOG(logINFO, cstreambuf);
 	}
-
-
-
 
 	//delete threads
 	if(threadStarted){
@@ -428,19 +403,11 @@ int UDPStandardImplementation::setupFifoStructure(){
 
 	//create threads
 	if(createListeningThreads() == FAIL){
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		ostringstream os;
-		os << "Could not create listening thread";
-		string message(os.str());	FILE_LOG(logERROR, message);
+		FILE_LOG(logERROR, "Could not create listening thread ");
 		return FAIL;
 	}
 	if(createWriterThreads() == FAIL){
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		ostringstream os;
-		os << "Could not create writer threads";
-		string message(os.str());	FILE_LOG(logERROR, message);
+		FILE_LOG(logERROR, "Could not create writer threads ");
 		return FAIL;
 	}
 	setThreadPriorities();
@@ -476,13 +443,10 @@ void UDPStandardImplementation::setFileName(const char c[]){
 		if(detindex == -1)
 			detID = 0;
 	}
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
-
 	{
-		ostringstream os;
-		os << "File name:" << fileName;
-		string message(os.str());	FILE_LOG(logINFO, message);
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "File name: %s ",fileName);
+		FILE_LOG(logINFO, cstreambuf);
 	}
 }
 
@@ -522,14 +486,11 @@ int UDPStandardImplementation::setDataCompressionEnable(const bool b){
 	deleteFilter();
 	if(b)
 		initializeFilter();
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
 	{
-		ostringstream os;
-		os << "Data Compression: " << stringEnable(dataCompressionEnable);
-		string message(os.str());	FILE_LOG(logINFO, message);
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "Data Compression: %s ",stringEnable(dataCompressionEnable).c_str());
+		FILE_LOG(logINFO, cstreambuf);
 	}
-
 	return OK;
 }
 
@@ -576,12 +537,10 @@ void UDPStandardImplementation::setShortFrameEnable(const int i){
 	deleteFilter();
 	if(dataCompressionEnable)
 		initializeFilter();
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
 	{
-		ostringstream os;
-		os << "Short Frame Enable: " << shortFrameEnable;
-		string message(os.str());	FILE_LOG(logINFO, message);
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "Short Frame Enable: %d ", shortFrameEnable);
+		FILE_LOG(logINFO, cstreambuf);
 	}
 }
 
@@ -592,14 +551,11 @@ int UDPStandardImplementation::setFrameToGuiFrequency(const uint32_t freq){
 	frameToGuiFrequency = freq;
 	if(setupFifoStructure() == FAIL)
 		return FAIL;
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
 	{
-		ostringstream os;
-		os << "Frame to Gui Frequency: " << frameToGuiFrequency;
-		string message(os.str());	FILE_LOG(logINFO, message);
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "Frame to Gui Frequency: %u ",frameToGuiFrequency);
+		FILE_LOG(logINFO, cstreambuf);
 	}
-
 	return OK;
 }
 
@@ -610,14 +566,11 @@ uint32_t UDPStandardImplementation::setDataStreamEnable(const uint32_t enable){
 
 	int oldvalue = dataStreamEnable;
 	dataStreamEnable = enable;
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
 	{
-		ostringstream os;
-		os << "Data Send to Gui: " << dataStreamEnable;
-		string message(os.str());	FILE_LOG(logINFO, message);
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "Data Send to Gui: %d ", dataStreamEnable);
+		FILE_LOG(logINFO, cstreambuf);
 	}
-
 
 	if(oldvalue!=dataStreamEnable){
 		//data sockets have to be created again as the client ones are
@@ -643,12 +596,11 @@ int UDPStandardImplementation::setAcquisitionPeriod(const uint64_t i){
 	acquisitionPeriod = i;
 	if(setupFifoStructure() == FAIL)
 		return FAIL;
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
+
 	{
-		ostringstream os;
-		os << "Acquisition Period: " << (double)acquisitionPeriod/(1E9) << "s";
-		string message(os.str());	FILE_LOG(logINFO, message);
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "Acquisition Period: %f s", (double)acquisitionPeriod/(1E9));
+		FILE_LOG(logINFO, cstreambuf);
 	}
 
 	if(myDetectorType == EIGER)
@@ -665,12 +617,11 @@ int UDPStandardImplementation::setAcquisitionTime(const uint64_t i){
 	acquisitionTime = i;
 	if(setupFifoStructure() == FAIL)
 		return FAIL;
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
+
 	{
-		ostringstream os;
-		os << "Acquisition Period: " << (double)acquisitionTime/(1E9) << "s";
-		string message(os.str());	FILE_LOG(logINFO, message);
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "Acquisition Period: %f s ", (double)acquisitionTime/(1E9));
+		FILE_LOG(logINFO, cstreambuf);
 	}
 
 	if(myDetectorType == EIGER)
@@ -687,12 +638,11 @@ int UDPStandardImplementation::setNumberOfFrames(const uint64_t i){
 	numberOfFrames = i;
 	if(setupFifoStructure() == FAIL)
 		return FAIL;
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
+
 	{
-		ostringstream os;
-		os << "Number of Frames:" << numberOfFrames;
-		string message(os.str());	FILE_LOG(logINFO, message);
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "Number of Frames: %lu ", numberOfFrames);
+		FILE_LOG(logINFO, cstreambuf);
 	}
 
 	if(myDetectorType == EIGER)
@@ -706,12 +656,11 @@ int UDPStandardImplementation::setDynamicRange(const uint32_t i){
 
 
 	uint32_t oldDynamicRange = dynamicRange;
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
+
 	{
-		ostringstream os;
-		os << "Info: Setting Dynamic Range to " << i;
-		string message(os.str());	FILE_LOG(logDEBUG, message);
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "Setting Dynamic Range to %u ", i);
+		FILE_LOG(logDEBUG1, cstreambuf);
 	}
 
 	dynamicRange = i;
@@ -743,14 +692,12 @@ int UDPStandardImplementation::setDynamicRange(const uint32_t i){
 		}
 
 	}
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
-	{
-		ostringstream os;
-		os << "Dynamic Range: " << dynamicRange;
-		string message(os.str());	FILE_LOG(logINFO, message);
-	}
 
+	{
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "Dynamic Range: %u ", dynamicRange);
+		FILE_LOG(logINFO, cstreambuf);
+	}
 	return OK;
 }
 
@@ -758,14 +705,12 @@ int UDPStandardImplementation::setDynamicRange(const uint32_t i){
 
 int UDPStandardImplementation::setTenGigaEnable(const bool b){
 
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
 	{
-		ostringstream os;
-		os << "Info: Setting Ten Giga to " << stringEnable(b);
-		string message(os.str());	FILE_LOG(logDEBUG, message);
-	}
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "Setting Ten Giga to %s ", stringEnable(b).c_str());
+		FILE_LOG(logDEBUG1, cstreambuf);
 
+	}
 	bool oldTenGigaEnable = tengigaEnable;
 	tengigaEnable = b;
 
@@ -783,18 +728,16 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b){
 		}
 		bufferSize			= oneDataSize * packetsPerFrame;
 		footerOffset		= EIGER_DATA_PACKET_HEADER_SIZE + oneDataSize;
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << dec <<
-					"packetsPerFrame:" << packetsPerFrame <<
-					"\nonePacketSize:" << onePacketSize <<
-					"\noneDataSize:" << oneDataSize <<
-					"\nbufferSize:" << bufferSize;
-			string message(os.str());	FILE_LOG(logDEBUG, message);
-		}
 
+		{
+			char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+			sprintf(cstreambuf, "packetsPerFrame: %u\n"
+					"onePacketSize: %d\n"
+					"oneDataSize: %d\n"
+					"bufferSize: %d ",
+					packetsPerFrame, onePacketSize, oneDataSize, bufferSize);
+			FILE_LOG(logDEBUG1, cstreambuf);
+		}
 
 		for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++)
 			updateFileHeader(i);
@@ -817,14 +760,12 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b){
 		}
 
 	}
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
-	{
-		ostringstream os;
-		os << "Ten Giga: " << stringEnable(tengigaEnable);
-		string message(os.str());	FILE_LOG(logINFO, message);
-	}
 
+	{
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "Ten Giga: %s ", stringEnable(tengigaEnable).c_str());
+		FILE_LOG(logINFO, cstreambuf);
+	}
 	return OK;
 }
 
@@ -833,12 +774,10 @@ int UDPStandardImplementation::setFifoDepth(const uint32_t i){
 
 
 	if(i != fifoDepth){
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
 		{
-			ostringstream os;
-			os << "Fifo Depth: " << i << endl;
-			string message(os.str());	FILE_LOG(logINFO, message);
+			char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+			sprintf(cstreambuf, "Fifo Depth: %u ", i);
+			FILE_LOG(logINFO, cstreambuf);
 		}
 		fifoDepth = i;
 		return setupFifoStructure();
@@ -858,145 +797,126 @@ int UDPStandardImplementation::setFifoDepth(const uint32_t i){
 /***initial functions***/
 int UDPStandardImplementation::setDetectorType(const detectorType d){
 
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
-	{
-		ostringstream os;
-		os << "Setting receiver type";
-		string message(os.str());	FILE_LOG(logDEBUG, message);
-	}
+	FILE_LOG(logDEBUG1, "Setting receiver type ");
 
 	deleteMembers();
 	initializeBaseMembers();
 	initializeMembers();
 
-	myDetectorType = d;
-	switch(myDetectorType){
-	case GOTTHARD:
-	case PROPIX:
-	case MOENCH:
-	case EIGER:
-	case JUNGFRAUCTB:
-	case JUNGFRAU:
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
 	{
-		ostringstream os;
-		os << " ***** " << getDetectorType(d) << " Receiver *****";
-		string message(os.str());	FILE_LOG(logINFO, message);
-	}
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
 
-	break;
-	default:
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-	{
-		ostringstream os;
-		os << "This is an unknown receiver type " << (int)d;
-		string message(os.str());	FILE_LOG(logERROR, message);
-	}
-	return FAIL;
-	}
+		myDetectorType = d;
+		switch(myDetectorType){
+		case GOTTHARD:
+		case PROPIX:
+		case MOENCH:
+		case EIGER:
+		case JUNGFRAUCTB:
+		case JUNGFRAU:
+			sprintf(cstreambuf, " ***** %s Receiver *** ", getDetectorType(d).c_str());
+			FILE_LOG(logINFO, cstreambuf);
+			break;
+		default:
+			sprintf(cstreambuf, "This is an unknown receiver type %d ", (int)d);
+			FILE_LOG(logERROR, cstreambuf);
+			return FAIL;
+		}
 
-	//set detector specific variables
-	switch(myDetectorType){
-	case GOTTHARD:
-		packetsPerFrame		= GOTTHARD_PACKETS_PER_FRAME;
-		onePacketSize 		= GOTTHARD_ONE_PACKET_SIZE;
-		oneDataSize 		= GOTTHARD_ONE_DATA_SIZE;
-		bufferSize 			= GOTTHARD_BUFFER_SIZE;
-		frameIndexMask 		= GOTTHARD_FRAME_INDEX_MASK;
-		frameIndexOffset 	= GOTTHARD_FRAME_INDEX_OFFSET;
-		packetIndexMask 	= GOTTHARD_PACKET_INDEX_MASK;
-		maxFramesPerFile	= MAX_FRAMES_PER_FILE;
-		fifoSize			= GOTTHARD_FIFO_SIZE;
-		fifoDepth			= GOTTHARD_FIFO_SIZE;
-		fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS;
-		//footerOffset		= Not applicable;
-		break;
-	case PROPIX:
-		packetsPerFrame		= PROPIX_PACKETS_PER_FRAME;
-		onePacketSize 		= PROPIX_ONE_PACKET_SIZE;
-		//oneDataSize 		= Not applicable;
-		bufferSize 			= PROPIX_BUFFER_SIZE;
-		frameIndexMask 		= PROPIX_FRAME_INDEX_MASK;
-		frameIndexOffset 	= PROPIX_FRAME_INDEX_OFFSET;
-		packetIndexMask 	= PROPIX_PACKET_INDEX_MASK;
-		maxFramesPerFile	= MAX_FRAMES_PER_FILE;
-		fifoSize			= PROPIX_FIFO_SIZE;
-		fifoDepth			= PROPIX_FIFO_SIZE;
-		fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS;
-		//footerOffset		= Not applicable;
-		break;
-	case MOENCH:
-		packetsPerFrame		= MOENCH_PACKETS_PER_FRAME;
-		onePacketSize 		= MOENCH_ONE_PACKET_SIZE;
-		oneDataSize 		= MOENCH_ONE_DATA_SIZE;
-		bufferSize 			= MOENCH_BUFFER_SIZE;
-		frameIndexMask 		= MOENCH_FRAME_INDEX_MASK;
-		frameIndexOffset 	= MOENCH_FRAME_INDEX_OFFSET;
-		packetIndexMask 	= MOENCH_PACKET_INDEX_MASK;
-		maxFramesPerFile	= MOENCH_MAX_FRAMES_PER_FILE;
-		fifoSize			= MOENCH_FIFO_SIZE;
-		fifoDepth 			= MOENCH_FIFO_SIZE;
-		fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS;
-		//footerOffset		= Not applicable;
-		break;
-	case EIGER:
-		//assuming 1G in the beginning
-		packetsPerFrame		= EIGER_ONE_GIGA_CONSTANT * dynamicRange;
-		onePacketSize 		= EIGER_ONE_GIGA_ONE_PACKET_SIZE;
-		oneDataSize 		= EIGER_ONE_GIGA_ONE_DATA_SIZE;
-		bufferSize 			= oneDataSize * packetsPerFrame;
-		frameIndexMask 		= EIGER_FRAME_INDEX_MASK;
-		frameIndexOffset 	= EIGER_FRAME_INDEX_OFFSET;
-		packetIndexMask 	= EIGER_PACKET_INDEX_MASK;
-		maxFramesPerFile	= EIGER_MAX_FRAMES_PER_FILE;
-		fifoSize			= EIGER_FIFO_SIZE;
-		fifoDepth			= EIGER_FIFO_SIZE;
-		footerOffset		= EIGER_DATA_PACKET_HEADER_SIZE + oneDataSize;
-		fifoBufferHeaderSize= (HEADER_SIZE_NUM_TOT_PACKETS + sizeof(sls_detector_header));
-		excludeMissingPackets= true;
-		break;
-	case JUNGFRAUCTB:
-		packetsPerFrame		= JCTB_PACKETS_PER_FRAME;
-		onePacketSize 		= JCTB_ONE_PACKET_SIZE;
-		//oneDataSize 		= Not applicable;
-		bufferSize 			= JCTB_BUFFER_SIZE;
-		frameIndexMask 		= JCTB_FRAME_INDEX_MASK;
-		frameIndexOffset 	= JCTB_FRAME_INDEX_OFFSET;
-		packetIndexMask 	= JCTB_PACKET_INDEX_MASK;
-		maxFramesPerFile	= JFCTB_MAX_FRAMES_PER_FILE;
-		fifoSize			= JCTB_FIFO_SIZE;
-		fifoDepth			= JCTB_FIFO_SIZE;
-		fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS;
-		//footerOffset		= Not applicable;
-		break;
-	case JUNGFRAU:
-		packetsPerFrame		= JFRAU_PACKETS_PER_FRAME;
-		onePacketSize 		= JFRAU_ONE_PACKET_SIZE;
-		oneDataSize 		= JFRAU_ONE_DATA_SIZE;
-		bufferSize 			= oneDataSize * packetsPerFrame;
-		frameIndexMask 		= JFRAU_FRAME_INDEX_MASK;
-		frameIndexOffset 	= JFRAU_FRAME_INDEX_OFFSET;
-		packetIndexMask 	= JFRAU_PACKET_INDEX_MASK;
-		maxFramesPerFile	= JFRAU_MAX_FRAMES_PER_FILE;
-		fifoDepth			= JFRAU_FIFO_SIZE;
-		fifoSize			= JFRAU_FIFO_SIZE;
-		fifoBufferHeaderSize= (HEADER_SIZE_NUM_TOT_PACKETS + sizeof(sls_detector_header));
-		//footerOffset		= Not applicable;
-		excludeMissingPackets=true;
-		break;
-	default:
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-	{
-		ostringstream os;
-		os << "This is an unknown receiver type " << (int)d;
-		string message(os.str());	FILE_LOG(logERROR, message);
-	}
-
-	return FAIL;
+		//set detector specific variables
+		switch(myDetectorType){
+		case GOTTHARD:
+			packetsPerFrame		= GOTTHARD_PACKETS_PER_FRAME;
+			onePacketSize 		= GOTTHARD_ONE_PACKET_SIZE;
+			oneDataSize 		= GOTTHARD_ONE_DATA_SIZE;
+			bufferSize 			= GOTTHARD_BUFFER_SIZE;
+			frameIndexMask 		= GOTTHARD_FRAME_INDEX_MASK;
+			frameIndexOffset 	= GOTTHARD_FRAME_INDEX_OFFSET;
+			packetIndexMask 	= GOTTHARD_PACKET_INDEX_MASK;
+			maxFramesPerFile	= MAX_FRAMES_PER_FILE;
+			fifoSize			= GOTTHARD_FIFO_SIZE;
+			fifoDepth			= GOTTHARD_FIFO_SIZE;
+			fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS;
+			//footerOffset		= Not applicable;
+			break;
+		case PROPIX:
+			packetsPerFrame		= PROPIX_PACKETS_PER_FRAME;
+			onePacketSize 		= PROPIX_ONE_PACKET_SIZE;
+			//oneDataSize 		= Not applicable;
+			bufferSize 			= PROPIX_BUFFER_SIZE;
+			frameIndexMask 		= PROPIX_FRAME_INDEX_MASK;
+			frameIndexOffset 	= PROPIX_FRAME_INDEX_OFFSET;
+			packetIndexMask 	= PROPIX_PACKET_INDEX_MASK;
+			maxFramesPerFile	= MAX_FRAMES_PER_FILE;
+			fifoSize			= PROPIX_FIFO_SIZE;
+			fifoDepth			= PROPIX_FIFO_SIZE;
+			fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS;
+			//footerOffset		= Not applicable;
+			break;
+		case MOENCH:
+			packetsPerFrame		= MOENCH_PACKETS_PER_FRAME;
+			onePacketSize 		= MOENCH_ONE_PACKET_SIZE;
+			oneDataSize 		= MOENCH_ONE_DATA_SIZE;
+			bufferSize 			= MOENCH_BUFFER_SIZE;
+			frameIndexMask 		= MOENCH_FRAME_INDEX_MASK;
+			frameIndexOffset 	= MOENCH_FRAME_INDEX_OFFSET;
+			packetIndexMask 	= MOENCH_PACKET_INDEX_MASK;
+			maxFramesPerFile	= MOENCH_MAX_FRAMES_PER_FILE;
+			fifoSize			= MOENCH_FIFO_SIZE;
+			fifoDepth 			= MOENCH_FIFO_SIZE;
+			fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS;
+			//footerOffset		= Not applicable;
+			break;
+		case EIGER:
+			//assuming 1G in the beginning
+			packetsPerFrame		= EIGER_ONE_GIGA_CONSTANT * dynamicRange;
+			onePacketSize 		= EIGER_ONE_GIGA_ONE_PACKET_SIZE;
+			oneDataSize 		= EIGER_ONE_GIGA_ONE_DATA_SIZE;
+			bufferSize 			= oneDataSize * packetsPerFrame;
+			frameIndexMask 		= EIGER_FRAME_INDEX_MASK;
+			frameIndexOffset 	= EIGER_FRAME_INDEX_OFFSET;
+			packetIndexMask 	= EIGER_PACKET_INDEX_MASK;
+			maxFramesPerFile	= EIGER_MAX_FRAMES_PER_FILE;
+			fifoSize			= EIGER_FIFO_SIZE;
+			fifoDepth			= EIGER_FIFO_SIZE;
+			footerOffset		= EIGER_DATA_PACKET_HEADER_SIZE + oneDataSize;
+			fifoBufferHeaderSize= (HEADER_SIZE_NUM_TOT_PACKETS + sizeof(sls_detector_header));
+			excludeMissingPackets= true;
+			break;
+		case JUNGFRAUCTB:
+			packetsPerFrame		= JCTB_PACKETS_PER_FRAME;
+			onePacketSize 		= JCTB_ONE_PACKET_SIZE;
+			//oneDataSize 		= Not applicable;
+			bufferSize 			= JCTB_BUFFER_SIZE;
+			frameIndexMask 		= JCTB_FRAME_INDEX_MASK;
+			frameIndexOffset 	= JCTB_FRAME_INDEX_OFFSET;
+			packetIndexMask 	= JCTB_PACKET_INDEX_MASK;
+			maxFramesPerFile	= JFCTB_MAX_FRAMES_PER_FILE;
+			fifoSize			= JCTB_FIFO_SIZE;
+			fifoDepth			= JCTB_FIFO_SIZE;
+			fifoBufferHeaderSize= HEADER_SIZE_NUM_TOT_PACKETS;
+			//footerOffset		= Not applicable;
+			break;
+		case JUNGFRAU:
+			packetsPerFrame		= JFRAU_PACKETS_PER_FRAME;
+			onePacketSize 		= JFRAU_ONE_PACKET_SIZE;
+			oneDataSize 		= JFRAU_ONE_DATA_SIZE;
+			bufferSize 			= oneDataSize * packetsPerFrame;
+			frameIndexMask 		= JFRAU_FRAME_INDEX_MASK;
+			frameIndexOffset 	= JFRAU_FRAME_INDEX_OFFSET;
+			packetIndexMask 	= JFRAU_PACKET_INDEX_MASK;
+			maxFramesPerFile	= JFRAU_MAX_FRAMES_PER_FILE;
+			fifoDepth			= JFRAU_FIFO_SIZE;
+			fifoSize			= JFRAU_FIFO_SIZE;
+			fifoBufferHeaderSize= (HEADER_SIZE_NUM_TOT_PACKETS + sizeof(sls_detector_header));
+			//footerOffset		= Not applicable;
+			excludeMissingPackets=true;
+			break;
+		default:
+			sprintf(cstreambuf, "This is an unknown receiver type %d ", (int)d);
+			FILE_LOG(logERROR, cstreambuf);
+			return FAIL;
+		}
 	}
 
 	//delete threads and set number of listening threads
@@ -1042,14 +962,11 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 		for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++)
 			updateFileHeader(i);
 	}
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
 	{
-		ostringstream os;
-		os << " Detector type set to " << getDetectorType(d);
-		string message(os.str());	FILE_LOG(logDEBUG, message);
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "Detector type set to %s ", getDetectorType(d).c_str());
+		FILE_LOG(logDEBUG1, cstreambuf);
 	}
-
 	return OK;
 }
 
@@ -1065,25 +982,14 @@ void UDPStandardImplementation::resetAcquisitionCount(){
 	pthread_mutex_lock(&writeMutex);
 	totalPacketsCaught = 0;
 	pthread_mutex_unlock(&writeMutex);
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
-	{
-		ostringstream os;
-		os << "Acquisition Count has been reset";
-		string message(os.str());	FILE_LOG(logINFO, message);
-	}
+
+	FILE_LOG(logINFO, "Acquisition Count has been reset ");
 }
 
 
 int UDPStandardImplementation::startReceiver(char *c){
 
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
-	{
-		ostringstream os;
-		os  << "Starting Receiver";
-		string message(os.str());	FILE_LOG(logINFO, message);
-	}
+	FILE_LOG(logINFO, "Starting Receiver ");
 
 	//reseting variables
 
@@ -1138,62 +1044,36 @@ int UDPStandardImplementation::startReceiver(char *c){
 
 
 	//Print Receiver Configuration
-	if(myDetectorType != EIGER){
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "Data Compression has been " << stringEnable(dataCompressionEnable);
-			string message(os.str());	FILE_LOG(logINFO, message);
+	{
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		if(myDetectorType != EIGER){
+			sprintf(cstreambuf, "Data Compression has been %s ", stringEnable(dataCompressionEnable).c_str());
+			FILE_LOG(logINFO, cstreambuf);
 		}
-	}
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
-	{
-		ostringstream os;
-		os << "Number of Jobs Per Buffer: " << numberofJobsPerBuffer << endl;
-		os << "Max Frames Per File:" << maxFramesPerFile;
-		string message(os.str());	FILE_LOG(logINFO, message);
-	}
+		sprintf(cstreambuf, "Number of Jobs Per Buffer: %d\n"
+				"Max Frames Per File: %lu ",
+				numberofJobsPerBuffer, maxFramesPerFile);
+		FILE_LOG(logINFO, cstreambuf);
 
-	if(frameToGuiFrequency)
-	{
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		ostringstream os;
-		os << "Frequency of frames sent to gui: " << frameToGuiFrequency;
-		string message(os.str());	FILE_LOG(logINFO, message);
+		if(frameToGuiFrequency)	{
+			sprintf(cstreambuf, "Frequency of frames sent to gui: %u ", frameToGuiFrequency);
+			FILE_LOG(logINFO, cstreambuf);
+		} else
+			FILE_LOG(logINFO, "Frequency of frames sent to gui: Random ");
 	}
-	else
-	{
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		ostringstream os;
-		os << "Frequency of frames sent to gui: Random";
-		string message(os.str());	FILE_LOG(logINFO, message);
-	}
-
 
 	//create UDP sockets
 	if(createUDPSockets() == FAIL){
 		strcpy(c,"Could not create UDP Socket(s).");
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		ostringstream os;
-		os << c;
-		string message(os.str());	FILE_LOG(logERROR, message);
+		FILE_LOG(logERROR,"Could not create UDP Socket(s). ");
 		return FAIL;
 	}
 
 	if(setupWriter() == FAIL){
 		//stop udp socket
 		shutDownUDPSockets();
-		sprintf(c,"Could not create file");
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		ostringstream os;
-		os << c;
-		string message(os.str());	FILE_LOG(logERROR, message);
+		strcpy(c,"Could not create file");
+		FILE_LOG(logERROR, "Could not create file ");
 
 		for(int i=0; i < numberofWriterThreads; i++)
 			sem_post(&writerSemaphore[i]);
@@ -1233,15 +1113,13 @@ int UDPStandardImplementation::startReceiver(char *c){
 		for(int i=0;i<numberofDataCallbackThreads;i++)
 			sem_post(&dataCallbackSemaphore[i]);
 	}
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
-	{
-		ostringstream os;
-		os  << "Receiver Started" << endl;
-		os  << "Status: " << runStatusType(status);
-		string message(os.str());	FILE_LOG(logINFO, message);
-	}
 
+	{
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "Receiver Started\n"
+				"Status: %s ", runStatusType(status).c_str());
+		FILE_LOG(logINFO, cstreambuf);
+	}
 	return OK;
 }
 
@@ -1251,14 +1129,8 @@ int UDPStandardImplementation::startReceiver(char *c){
  * Post: udp sockets shut down, status is idle, semaphores destroyed
  * */
 void UDPStandardImplementation::stopReceiver(){
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
 
-	{
-		ostringstream os;
-		os  << "Stopping Receiver";
-		string message(os.str());	FILE_LOG(logINFO, message);
-	}
+	FILE_LOG(logINFO,  "Stopping Receiver");
 
 	//set status to transmitting
 	startReadout();
@@ -1278,13 +1150,12 @@ void UDPStandardImplementation::stopReceiver(){
 	pthread_mutex_lock(&statusMutex);
 	status = IDLE;
 	pthread_mutex_unlock(&(statusMutex));
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
+
 	{
-		ostringstream os;
-		os  << "Receiver Stopped" << endl;
-		os  << "Status: " << runStatusType(status);
-		string message(os.str());	FILE_LOG(logINFO, message);
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "Receiver Stopped\n"
+				"Status: %s ", runStatusType(status).c_str());
+		FILE_LOG(logINFO, cstreambuf);
 	}
 	cout << endl << endl;
 }
@@ -1299,13 +1170,11 @@ int UDPStandardImplementation::shutDownUDPSockets(){
 	for(int i=0;i<numberofListeningThreads;i++){
 		if(udpSocket[i]){
 			udpSocket[i]->ShutDownSocket();
-			sprintf(cstreambuf, "%s", " \0");
-			FILE_LOG(logDEBUG, cstreambuf);
-			{
-				ostringstream os;
-				os << "Shut down UDP Socket " << i;
-				string message(os.str());	FILE_LOG(logINFO, message);
-			}
+
+			char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+			sprintf(cstreambuf, "Shut down UDP Sock %d ", i);
+			FILE_LOG(logINFO, cstreambuf);
+
 			delete udpSocket[i];
 			udpSocket[i] = 0;
 		}
@@ -1321,14 +1190,8 @@ int UDPStandardImplementation::shutDownUDPSockets(){
  * Post:udp sockets closed, status is transmitting
  * */
 void UDPStandardImplementation::startReadout(){
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
 
-	{
-		ostringstream os;
-		os << "Transmitting last data";
-		string message(os.str());	FILE_LOG(logDEBUG, message);
-	}
+	FILE_LOG(logDEBUG1, "Transmitting last data ");
 
 	if(status == RUNNING){
 
@@ -1353,7 +1216,7 @@ void UDPStandardImplementation::startReadout(){
 				//(as one listens to many at a time, shouldnt cut off in between)
 				while((prev != totalP) || (prevReceivedInBuffer!= currentReceivedInBuffer)){
 #ifdef DEBUG5
-					cprintf(MAGENTA,"waiting for all packets prevP:%d totalP:%d PrevBuffer:%d currentBuffer:%d\n",prev,totalP,prevReceivedInBuffer,currentReceivedInBuffer);
+					cprintf(MAGENTA,"waiting for all packets prevP:%d totalP:%d PrevBuffer:%d currentBuffer:\n",prev,totalP,prevReceivedInBuffer,currentReceivedInBuffer);
 
 #endif
 					//usleep(2*1000*1000);
@@ -1380,13 +1243,9 @@ void UDPStandardImplementation::startReadout(){
 		pthread_mutex_lock(&statusMutex);
 		status = TRANSMITTING;
 		pthread_mutex_unlock(&statusMutex);
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "Status: Transmitting";
-			string message(os.str());	FILE_LOG(logINFO, message);
-		}
+
+		FILE_LOG(logINFO, "Status: Transmitting ");
+
 	}
 
 	//shut down udp sockets and make listeners push dummy (end) packets for writers
@@ -1407,13 +1266,9 @@ void UDPStandardImplementation::closeFile(int ithread){
 	//normal
 	if(!dataCompressionEnable){
 		if(sfilefd[ithread]){
-			sprintf(cstreambuf, "%s", " \0");
-			FILE_LOG(logDEBUG, cstreambuf);
-			{
-				ostringstream os;
-				os << "Going to close file: " << fileno(sfilefd[ithread]);
-				string message(os.str());	FILE_LOG(logDEBUG4, message);
-			}
+			char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+			sprintf(cstreambuf, "Going to close file: %d ", fileno(sfilefd[ithread]));
+			FILE_LOG(logDEBUG4, cstreambuf);
 
 			fflush(sfilefd[ithread]);
 			fclose(sfilefd[ithread]);
@@ -1425,13 +1280,10 @@ void UDPStandardImplementation::closeFile(int ithread){
 	else{
 #if (defined(MYROOT1) && defined(ALLFILE_DEBUG)) || !defined(MYROOT1)
 		if(sfilefd[0]){
-			sprintf(cstreambuf, "%s", " \0");
-			FILE_LOG(logDEBUG, cstreambuf);
-			{
-				ostringstream os;
-				os << "sfilefd: " << fileno(sfilefd[0]);
-				string message(os.str());	FILE_LOG(logDEBUG4, message);
-			}
+			char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+			sprintf(cstreambuf, "sfilefd: %d ", fileno(sfilefd[0]));
+			FILE_LOG(logDEBUG4, cstreambuf);
+
 			fclose(sfilefd[0]);
 			sfilefd[0] = 0;
 		}
@@ -1471,13 +1323,9 @@ int UDPStandardImplementation::setActivate(int enable){
 
 	if(enable != -1){
 		activated = enable;
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "Activation: " << stringEnable(activated);
-			string message(os.str());	FILE_LOG(logINFO, message);
-		}
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "Activation: %s ", stringEnable(activated).c_str());
+		FILE_LOG(logINFO, cstreambuf);
 	}
 
 	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++)
@@ -1503,47 +1351,27 @@ int UDPStandardImplementation::createDataCallbackThreads(bool destroy){
 
 	//destroy
 	if(destroy){
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "Info: Destroying Data Callback Thread(s)";
-			string message(os.str());	FILE_LOG(logDEBUG, message);
-		}
+		FILE_LOG(logDEBUG1, "Destroying Data Callback Thread(s) ");
 
 		killAllDataCallbackThreads = true;
 		for(int i = 0; i < numberofDataCallbackThreads; ++i){
 			sem_post(&dataCallbackSemaphore[i]);
 			pthread_join(dataCallbackThreads[i],NULL);
 			sem_destroy(&dataCallbackSemaphore[i]);
-			sprintf(cstreambuf, "%s", " \0");
-			FILE_LOG(logDEBUG, cstreambuf);
-			{
-				ostringstream os;
-				os << "." << flush;
-				string message(os.str());	FILE_LOG(logDEBUG, message);
-			}
+#ifdef DVERBOSE
+			cout << "." ;
+			cout << flush;
+#endif
 		}
 		killAllDataCallbackThreads = false;
 		zmqThreadStarted = false;
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "Data Callback thread(s) destroyed";
-			string message(os.str());	FILE_LOG(logINFO, message);
-		}
+
+		FILE_LOG(logINFO, "Data Callback thread(s) destroyed ");
 	}
 
 	//create
 	else{
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "Creating Data Callback Thread(s)";
-			string message(os.str());	FILE_LOG(logINFO, message);
-		}
+		FILE_LOG(logINFO, "Creating Data Callback Thread(s) ");
 
 		//reset current index
 		currentThreadIndex = -1;
@@ -1553,31 +1381,23 @@ int UDPStandardImplementation::createDataCallbackThreads(bool destroy){
 			zmqThreadStarted = false;
 			currentThreadIndex = i;
 			if(pthread_create(&dataCallbackThreads[i], NULL,startDataCallbackThread, (void*) this)){
-				{
-					sprintf(cstreambuf, "%s", " \0");
-					FILE_LOG(logDEBUG, cstreambuf);
-					ostringstream os;
-					os << "Could not create data call back thread with index " << i;
-					string message(os.str());	FILE_LOG(logERROR, message);
-				}
+				char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+				sprintf(cstreambuf, "Could not create data call back thread with index %d ", i);
+				FILE_LOG(logERROR, cstreambuf);
 				return FAIL;
 			}
 			while(!zmqThreadStarted);
+#ifdef DVERBOSE
 			{
-				sprintf(cstreambuf, "%s", " \0");
-				FILE_LOG(logDEBUG, cstreambuf);
-				ostringstream os;
-				os << "." << flush;
-				string message(os.str());	FILE_LOG(logDEBUG, message);
+				cout << "." ;
+				cout << flush;
 			}
+#else
+			;
+#endif
 		}
-		{
-			sprintf(cstreambuf, "%s", " \0");
-			FILE_LOG(logDEBUG, cstreambuf);
-			ostringstream os;
-			os << "Info: Data Callback thread(s) created successfully.";
-			string message(os.str());	FILE_LOG(logDEBUG, message);
-		}
+
+		FILE_LOG(logDEBUG1, "Data Callback thread(s) created successfully. ");
 	}
 
 	return OK;
@@ -1596,47 +1416,28 @@ int UDPStandardImplementation::createListeningThreads(bool destroy){
 
 	//destroy
 	if(destroy){
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "Info: Destroying Listening Thread(s)";
-			string message(os.str());	FILE_LOG(logDEBUG, message);
-		}
+
+		FILE_LOG(logDEBUG1, "Destroying Listening Thread(s) ");
 
 		killAllListeningThreads = true;
 		for(int i = 0; i < numberofListeningThreads; ++i){
 			sem_post(&listenSemaphore[i]);
 			pthread_join(listeningThreads[i],NULL);
 			sem_destroy(&listenSemaphore[i]);
-			sprintf(cstreambuf, "%s", " \0");
-			FILE_LOG(logDEBUG, cstreambuf);
-			{
-				ostringstream os;
-				os << "." << flush;
-				string message(os.str());	FILE_LOG(logDEBUG, message);
-			}
+#ifdef DVERBOSE
+			cout << "." ;
+			cout << flush;
+#endif
 		}
 		killAllListeningThreads = false;
 		threadStarted = false;
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "Listening thread(s) destroyed";
-			string message(os.str());	FILE_LOG(logINFO, message);
-		}
+
+		FILE_LOG(logINFO, "Listening thread(s) destroyed ");
 	}
 
 	//create
 	else{
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "Creating Listening Thread(s)";
-			string message(os.str());	FILE_LOG(logINFO, message);
-		}
+		FILE_LOG(logINFO, "Creating Listening Thread(s) ");
 
 		//reset current index
 		currentThreadIndex = -1;
@@ -1646,31 +1447,23 @@ int UDPStandardImplementation::createListeningThreads(bool destroy){
 			threadStarted = false;
 			currentThreadIndex = i;
 			if(pthread_create(&listeningThreads[i], NULL,startListeningThread, (void*) this)){
-				sprintf(cstreambuf, "%s", " \0");
-				FILE_LOG(logDEBUG, cstreambuf);
-				{
-					ostringstream os;
-					os << "Could not create listening thread with index " << i;
-					string message(os.str());	FILE_LOG(logERROR, message);
-				}
+				char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+				sprintf(cstreambuf, "Could not create listening thread with index %d ", i);
+				FILE_LOG(logERROR, cstreambuf);
 				return FAIL;
 			}
-			while(!threadStarted);
-			sprintf(cstreambuf, "%s", " \0");
-			FILE_LOG(logDEBUG, cstreambuf);
+			while(!threadStarted)
+#ifdef DVERBOSE
 			{
-				ostringstream os;
-				os << "." << flush;
-				string message(os.str());	FILE_LOG(logDEBUG, message);
+				cout << "." ;
+				cout << flush;
 			}
+#else
+			;
+#endif
 		}
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "Info: Listening thread(s) created successfully.";
-			string message(os.str());	FILE_LOG(logDEBUG, message);
-		}
+
+		FILE_LOG(logDEBUG1, "Listening thread(s) created successfully. ");
 	}
 
 	return OK;
@@ -1690,47 +1483,27 @@ int UDPStandardImplementation::createWriterThreads(bool destroy){
 
 	//destroy threads
 	if(destroy){
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "Info: Destroying Writer Thread(s)";
-			string message(os.str());	FILE_LOG(logDEBUG, message);
-		}
+		FILE_LOG(logDEBUG1, "Destroying Writer Thread(s) ");
 
 		killAllWritingThreads = true;
 		for(int i = 0; i < numberofWriterThreads; ++i){
 			sem_post(&writerSemaphore[i]);
 			pthread_join(writingThreads[i],NULL);
 			sem_destroy(&writerSemaphore[i]);
-			sprintf(cstreambuf, "%s", " \0");
-			FILE_LOG(logDEBUG, cstreambuf);
-			{
-				ostringstream os;
-				os <<"."<<flush;
-				string message(os.str());	FILE_LOG(logDEBUG, message);
-			}
+#ifdef DVERBOSE
+			cout << "." ;
+			cout << flush;
+#endif
 		}
 		killAllWritingThreads = false;
 		threadStarted = false;
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "Writer thread(s) destroyed";
-			string message(os.str());	FILE_LOG(logINFO, message);
-		}
+
+		FILE_LOG(logINFO, "Writer thread(s) destroyed ");
 	}
 
 	//create threads
 	else{
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "Creating Writer Thread(s)";
-			string message(os.str());	FILE_LOG(logINFO, message);
-		}
+		FILE_LOG(logINFO, "Creating Writer Thread(s) ");
 
 		//reset current index
 		currentThreadIndex = -1;
@@ -1740,27 +1513,23 @@ int UDPStandardImplementation::createWriterThreads(bool destroy){
 			threadStarted = false;
 			currentThreadIndex = i;
 			if(pthread_create(&writingThreads[i], NULL,startWritingThread, (void*) this)){
-				sprintf(cstreambuf, "%s", " \0");
-				FILE_LOG(logDEBUG, cstreambuf);
-				{
-					ostringstream os;
-					os << "Could not create writer thread with index " << i;
-					string message(os.str());	FILE_LOG(logERROR, message);
-				}
+				char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+				sprintf(cstreambuf, "Could not create writer thread with index %d ", i);
+				FILE_LOG(logERROR, cstreambuf);
 				return FAIL;
 			}
-			while(!threadStarted);
-			sprintf(cstreambuf, "%s", " \0");
-			FILE_LOG(logDEBUG, cstreambuf);
+			while(!threadStarted)
+#ifdef DVERBOSE
 			{
-				ostringstream os;
-				os << "." << flush;
-				string message(os.str());	FILE_LOG(logDEBUG, message);
+				cout << "." ;
+				cout << flush;
 			}
-		}
-#ifdef DEBUG
-		cout << "\nWriter thread(s) created successfully" << endl;
+#else
+			;
 #endif
+		}
+
+		FILE_LOG(logDEBUG1, "Writer thread(s) created successfully. ");
 	}
 
 	return OK;
@@ -1807,21 +1576,9 @@ void UDPStandardImplementation::setThreadPriorities(){
 		rights = false;
 
 	if(!rights){
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "Unable to prioritize threads. Root privileges required for this option.";
-			string message(os.str());	FILE_LOG(logWARNING, message);
-		}
+		FILE_LOG(logWARNING, "Unable to prioritize threads. Root privileges required for this option. ");
 	}else{
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "Priorities set - DataCallback: 55, TCP:50, Listening:99, Writing:90";
-			string message(os.str());	FILE_LOG(logINFO, message);
-		}
+		FILE_LOG(logINFO, "Priorities set - DataCallback: 55, TCP:50, Listening:99, Writing:90 ");
 	}
 }
 
@@ -1848,27 +1605,18 @@ int UDPStandardImplementation::createUDPSockets(){
 
 	//if no eth, listen to all
 	if(!strlen(eth)){
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "eth is empty. Listening to all";
-			string message(os.str());	FILE_LOG(logWARNING, message);
-		}
+		FILE_LOG(logWARNING, "eth is empty. Listening to all ");
 
 		for(int i=0;i<numberofListeningThreads;i++)
 			udpSocket[i] = new genericSocket(port[i],genericSocket::UDP,onePacketSize,NULL,headerpacketsize);
 	}
 	//normal socket
 	else{
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
 		{
-			ostringstream os;
-			os << "Ethernet Interface:" << eth;
-			string message(os.str());	FILE_LOG(logINFO, message);
+			char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+			sprintf(cstreambuf, "Ethernet Interface: %s", eth);
+			FILE_LOG(logINFO, cstreambuf);
 		}
-
 		for(int i=0;i<numberofListeningThreads;i++)
 			udpSocket[i] = new genericSocket(port[i],genericSocket::UDP,onePacketSize,eth,headerpacketsize);
 	}
@@ -1879,24 +1627,15 @@ int UDPStandardImplementation::createUDPSockets(){
 		if(!iret){
 			cout << "UDP port opened at port " << port[i] << endl;
 		}else{
-			sprintf(cstreambuf, "%s", " \0");
-			FILE_LOG(logDEBUG, cstreambuf);
-			{
-				ostringstream os;
-				os << "Could not create UDP socket on port " << port[i] << " error: " << iret;
-				string message(os.str());	FILE_LOG(logERROR, message);
-			}
+			char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+			sprintf(cstreambuf, "Could not create UDP socket on port %u error: %d ", port[i], iret);
+			FILE_LOG(logERROR, cstreambuf);
 			shutDownUDPSockets();
 			return FAIL;
 		}
 	}
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
-	{
-		ostringstream os;
-		os << "UDP socket(s) created successfully.";
-		string message(os.str());	FILE_LOG(logDEBUG, message);
-	}
+
+	FILE_LOG(logDEBUG1,  "UDP socket(s) created successfully. ");
 	cout << "Listener Ready ..." << endl;
 
 	return OK;
@@ -1917,19 +1656,14 @@ int UDPStandardImplementation::setupWriter(){
 			tempname=tempname.substr(0,uscore);
 		startAcquisitionCallBack(filePath, (char*)tempname.c_str(),fileIndex, (uint32_t)bufferSize,pStartAcquisition);
 	}
+
+
+
 	if (rawDataReadyCallBack) {
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		ostringstream os;
-		os << "Data Write has been defined externally";
-		string message(os.str());	FILE_LOG(logINFO, message);
+		FILE_LOG(logINFO, "Data Write has been defined externally ");
 	}
 	if (!fileWriteEnable) {
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		ostringstream os;
-		os << "Data will not be saved";
-		string message(os.str());	FILE_LOG(logINFO, message);
+		FILE_LOG(logINFO, "Data will not be saved ");
 	}
 
 
@@ -1940,36 +1674,30 @@ int UDPStandardImplementation::setupWriter(){
 		createFileMask|=(1<<i);
 	pthread_mutex_unlock(&statusMutex);
 
-	for(int i=0; i<numberofWriterThreads; i++){
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os <<	i << " Going to post 1st semaphore";
-			string message(os.str());	FILE_LOG(logDEBUG4, message);
+	{
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		for(int i=0; i<numberofWriterThreads; i++){
+			sprintf(cstreambuf, "%d Going to post 1st semaphore ",i);
+			FILE_LOG(logDEBUG4, cstreambuf);
+
+			sem_post(&writerSemaphore[i]);
 		}
-		sem_post(&writerSemaphore[i]);
 	}
 	//wait till its mask becomes zero(all created)
 	while(createFileMask){
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "*" << flush;
-			string message(os.str());	FILE_LOG(logDEBUG4, message);
-		}
+#ifdef DVERBOSE
+			{
+				cout << "*" ;
+				cout << flush;
+			}
+#else
+			;
+#endif
 		usleep(5000);
 	}
 
 	if(fileCreateSuccess == OK){
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "Successfully created file(s)";
-			string message(os.str());	FILE_LOG(logDEBUG, message);
-		}
+		FILE_LOG(logDEBUG1, "Successfully created file(s) ");
 		cout << "Writer Ready ..." << endl;
 	}
 
@@ -1986,14 +1714,12 @@ int UDPStandardImplementation::createNewFile(int ithread){
 		sprintf(completeFileName[ithread], "%s/%s_%lld.raw", filePath,fileNamePerThread[ithread],(long long int)fileIndex);
 	else
 		sprintf(completeFileName[ithread], "%s/%s_f%012lld_%lld.raw", filePath,fileNamePerThread[ithread],(long long int)lastFrameNumberInFile[ithread]+1,(long long int)fileIndex);
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
-	{
-		ostringstream os;
-		os << completeFileName[ithread];
-		string message(os.str());	FILE_LOG(logDEBUG4, message);
-	}
 
+	{
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "%s ", completeFileName[ithread]);
+		FILE_LOG(logDEBUG4, cstreambuf);
+	}
 	//filewrite enable & we allowed to create/close files
 	if(fileWriteEnable){
 
@@ -2013,20 +1739,18 @@ int UDPStandardImplementation::createNewFile(int ithread){
 		//create file
 		if(!overwriteEnable){
 			if (NULL == (sfilefd[ithread] = fopen((const char *) (completeFileName[ithread]), "wx"))){
-				sprintf(cstreambuf, "%s", " \0");
-				FILE_LOG(logDEBUG, cstreambuf);
-				ostringstream os;
-				os << "Could not create/overwrite file" << completeFileName[ithread];
-				string message(os.str());	FILE_LOG(logERROR, message);
+				char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+				sprintf(cstreambuf, "Could not create/overwrite file %s ", completeFileName[ithread]);
+				FILE_LOG(logERROR, cstreambuf);
+
 				sfilefd[ithread] = 0;
 				return FAIL;
 			}
 		}else if (NULL == (sfilefd[ithread] = fopen((const char *) (completeFileName[ithread]), "w"))){
-			sprintf(cstreambuf, "%s", " \0");
-			FILE_LOG(logDEBUG, cstreambuf);
-			ostringstream os;
-			os << "Could not create file" << completeFileName[ithread];
-			string message(os.str());	FILE_LOG(logERROR, message);
+			char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+			sprintf(cstreambuf, "Could not create file %s ", completeFileName[ithread]);
+			FILE_LOG(logERROR, cstreambuf);
+
 			sfilefd[ithread] = 0;
 			return FAIL;
 		}
@@ -2107,23 +1831,11 @@ int UDPStandardImplementation::createCompressionFile(int ithread, int iframe){
 	//resets the pedestalSubtraction array and the commonModeSubtraction
 	singlePhotonDetectorObject[ithread]->newDataSet();
 	if(myFile[ithread]==NULL){
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "File Null";
-			string message(os.str());	FILE_LOG(logERROR, message);
-		}
+		FILE_LOG(logERROR, "File Null ");
 		return FAIL;
 	}
 	if(!myFile[ithread]->IsOpen()){
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "File Not Open";
-			string message(os.str());	FILE_LOG(logERROR, message);
-		}
+		FILE_LOG(logERROR, "File Not Open ");
 		return FAIL;
 	}
 	return OK;
@@ -2179,14 +1891,11 @@ void UDPStandardImplementation::startDataCallback(){
 	//zmq_setsockopt(zmqsocket,ZMQ_SNDHWM,&val,sizeof(val)); //set SEND HIGH WATER MARK (8-9ms slower)
 	zmq_bind(zmqsocket,hostName);
 	// bind
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
 	{
-		ostringstream os;
-		os << "Thread" << ithread << ": ZMQ Server at " << hostName;
-		string message(os.str());	FILE_LOG(logINFO, message);
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "Thread %d: ZMQ Server at %s ", ithread, hostName);
+		FILE_LOG(logINFO, cstreambuf);
 	}
-
 
 	int headersize=0;
 	switch(myDetectorType){
@@ -2207,17 +1916,7 @@ void UDPStandardImplementation::startDataCallback(){
 		int oneframesize = oneDataSize * packetsPerFrame;
 		char* buffer = new char[packetsPerFrame*oneDataSize]();
 		memset(buffer,0xFF,oneframesize);
-		int size = 0;
-		int offset = 0;
-		uint32_t currentfnum = 0;
-		uint64_t fnum = 0;
-		uint32_t pnum = 0;
-		uint32_t snum = 0;
-		uint64_t bid = 0;
 		bool randomSendNow = true;
-		bool newFrame = false;
-
-
 
 		//header details
 		const char *jsonFmt ="{"
@@ -2241,7 +1940,7 @@ void UDPStandardImplementation::startDataCallback(){
 				"\"roundRNumber\":%u, "
 				"\"detType\":%u, "
 				"\"version\":%u"
-				"}\0";
+				"}\n";
 		int npixelsx=0, npixelsy=0;
 		switch(myDetectorType) {
 		case JUNGFRAU: 	npixelsx = JFRAU_PIXELS_IN_ONE_ROW;		npixelsy = JFRAU_PIXELS_IN_ONE_COL;		break;
@@ -2253,7 +1952,6 @@ void UDPStandardImplementation::startDataCallback(){
 #ifdef DEBUG
 		int oldpnum = -1;
 #endif
-		int datapacketscaught = 0;
 
 		/* inner loop - loop for each buffer */
 		//until mask reset (dummy pcaket got by writer)
@@ -2277,14 +1975,14 @@ void UDPStandardImplementation::startDataCallback(){
 				acquisitionIndex = -1;
 				{
 					char buf[1000]="";memset(buf,0,1000);
-					int len = sprintf(buf,jsonFmt,
+					sprintf(buf,jsonFmt,
 							SLS_DETECTOR_JSON_HEADER_VERSION, acquisitionIndex, frameIndex, dynamicRange, npixelsx, npixelsy,completeFileName[ithread],
 							0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
 					zmq_send(zmqsocket, buf,1000, 0);
 				}
 				//send final data
-				zmq_send (zmqsocket, "end\0", 4, 0);
+				zmq_send (zmqsocket, "end\n", 4, 0);
 
 				pthread_mutex_lock(&statusMutex);
 				dataCallbackThreadsMask^=(1<<ithread);
@@ -2322,7 +2020,7 @@ void UDPStandardImplementation::startDataCallback(){
 				acquisitionIndex = fnum - startAcquisitionIndex;
 				{
 					char buf[1000]="";memset(buf,0,1000);
-					int len = sprintf(buf,jsonFmt,
+					sprintf(buf,jsonFmt,
 							SLS_DETECTOR_JSON_HEADER_VERSION, acquisitionIndex, frameIndex, dynamicRange, npixelsx, npixelsy,completeFileName[ithread],
 							header->frameNumber, header->expLength, header->packetNumber, header->bunchId, header->timestamp,
 							header->modId, header->xCoord, header->yCoord, header->zCoord, header->debug, header->roundRNumber, header->detType, header->version);
@@ -2410,12 +2108,10 @@ void UDPStandardImplementation::startListening(){
 
 			//udpsocket doesnt exist
 			if(activated && !udpSocket[ithread]){
-				sprintf(cstreambuf, "%s", " \0");
-				FILE_LOG(logDEBUG, cstreambuf);
 				{
-					ostringstream os;
-					os << "Listening_Thread " << ithread << ": UDP Socket not created or shut down earlier";
-					string message(os.str());	FILE_LOG(logERROR, message);
+					char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+					sprintf(cstreambuf, "Listening_Thread %d: UDP Socket not created or shut down earlier ", ithread);
+					FILE_LOG(logERROR, cstreambuf);
 				}
 				stopListening(ithread,0);
 				continue;
@@ -2744,13 +2440,9 @@ void UDPStandardImplementation::stopListening(int ithread, int numbytes){
 
 	//free empty buffer
 	if(numbytes <= 0){
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "Listening "<< ithread << ": End of Acquisition";
-			string message(os.str());	FILE_LOG(logINFO, message);
-		}
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "Listening %d: End of Acquisition", ithread);
+		FILE_LOG(logINFO, cstreambuf);
 		while(!fifoFree[ithread]->push(buffer[ithread]));
 	}
 
@@ -2784,12 +2476,10 @@ void UDPStandardImplementation::stopListening(int ithread, int numbytes){
 	listeningThreadsMask^=(1<<ithread);
 	pthread_mutex_unlock(&(statusMutex));
 	//#ifdef DEBUG4
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
 	{
-		ostringstream os;
-		os << "Listening Thread of " << udpPortNum[ithread] << " got " << totalListeningPacketCount[ithread] << " packets";
-		string message(os.str());	FILE_LOG(logINFO, message);
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "Listening Thread of %u got %d packets ", udpPortNum[ithread], totalListeningPacketCount[ithread]);
+		FILE_LOG(logINFO, cstreambuf);
 	}
 	//#endif
 
@@ -3014,13 +2704,14 @@ void UDPStandardImplementation::waitWritingBufferForNextAcquisition(int ithread)
 			if(!ithread){
 				//wait till its mask becomes 1 (all created except this one)
 				while(createFileMask!=0x1){
-					sprintf(cstreambuf, "%s", " \0");
-					FILE_LOG(logDEBUG, cstreambuf);
+#ifdef DVERBOSE
 					{
-						ostringstream os;
-						os << "*" << flush;
-						string message(os.str());	FILE_LOG(logDEBUG4, message);
+						cout << "*" ;
+						cout << flush;
 					}
+#else
+					;
+#endif
 					usleep(5000);
 				}
 				//create the normal file
@@ -3060,12 +2751,10 @@ void UDPStandardImplementation::waitWritingBufferForNextAcquisition(int ithread)
 
 void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 
-	sprintf(cstreambuf, "%s", " \0");
-	FILE_LOG(logDEBUG, cstreambuf);
 	{
-		ostringstream os;
-		os << "Writing "<< ithread << ": End of Acquisition";
-		string message(os.str());	FILE_LOG(logINFO, message);
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "Writing %d: End of Acquisition ", ithread);
+		FILE_LOG(logINFO, cstreambuf);
 	}
 
 	//free fifo
@@ -3175,13 +2864,8 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer){
 		pthread_mutex_unlock(&(statusMutex));
 
 		//statistics
-		sprintf(cstreambuf, "%s", " \0");
-		FILE_LOG(logDEBUG, cstreambuf);
-		{
-			ostringstream os;
-			os << "Status: Run Finished";
-			string message(os.str());	FILE_LOG(logINFO, message);
-		}
+		FILE_LOG(logINFO, "Status: Run Finished");
+
 		for(int i=0;i<numberofListeningThreads;i++){
 
 			if(totalWritingPacketCount[i] < ((uint64_t)numberOfFrames*packetsPerFrame)){
@@ -3786,25 +3470,11 @@ int UDPStandardImplementation::getFrameandPacketNumber(int ithread, char* wbuffe
 		//error in frame number sent by fpga
 		if(((uint32_t)(*( (uint64_t*) footer)))==0){
 			framenumber = 0;
-			sprintf(cstreambuf, "%s", " \0");
-			FILE_LOG(logDEBUG, cstreambuf);
-			{
-				ostringstream os;
-				os << "Fifo "<< ithread << ": Frame Number is zero from firmware.";
-				string message(os.str());	FILE_LOG(logERROR, message);
 
+			char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+			sprintf(cstreambuf, "Fifo %d: Frame Number is zero from firmware. ", ithread);
+			FILE_LOG(logERROR, cstreambuf);
 
-			}
-			if(((uint32_t)(*( (uint64_t*) footer)))==0)
-			{
-				sprintf(cstreambuf, "%s", " \0");
-				FILE_LOG(logDEBUG, cstreambuf);
-			  packetnumber = (*( (uint16_t*) footer->packetNumber))-1;
-				ostringstream os;
-				os << "Fifo "<< ithread << ": Frame Number is still zero from firmware. and pnum:" << packetnumber << "udp port num:" << udpPortNum[ithread];
-				string message(os.str());	FILE_LOG(logERROR, message);
-
-			}
 			return FAIL;
 		}
 		packetnumber = (*( (uint16_t*) footer->packetNumber))-1;

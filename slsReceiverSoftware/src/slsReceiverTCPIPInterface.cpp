@@ -126,22 +126,17 @@ int slsReceiverTCPIPInterface::setPortNumber(int pn){
 
 
 int slsReceiverTCPIPInterface::start(){
-	{
-		ostringstream os;
-		os << "Creating TCP Server Thread" << endl;
-		string message(os.str());	FILE_LOG(logDEBUG, message);
-	}
+
+	FILE_LOG(logDEBUG1, "Creating TCP Server Thread");
+
 	killTCPServerThread = 0;
 	if(pthread_create(&TCPServer_thread, NULL,startTCPServerThread, (void*) this)){
 		cout << "Could not create TCP Server thread" << endl;
 		return FAIL;
 	}
 	//#ifdef VERYVERBOSE
-	{
-		ostringstream os;
-		os << "TCP Server thread created successfully." << endl;
-		string message(os.str());	FILE_LOG(logDEBUG, message);
-	}
+	FILE_LOG(logDEBUG1, "TCP Server thread created successfully.");
+
 	//#endif
 	return OK;
 }
@@ -402,20 +397,20 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 
 		}
 	}
-	//#ifdef VERYVERBOSE
+//#ifdef VERYVERBOSE
 	if(ret!=FAIL)
 	{
-		ostringstream os;
-		os << "detector type " << dr;
-		string message(os.str());	FILE_LOG(logDEBUG, message);
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "Detector Type %d ", (int)dr);
+		FILE_LOG(logDEBUG1, cstreambuf);
 	}
 	else
 		cprintf(RED, "%s\n", mess);
-	//#endif
+//#endif
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -482,7 +477,7 @@ int slsReceiverTCPIPInterface::set_file_name() {
 
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -557,7 +552,7 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -629,7 +624,7 @@ int slsReceiverTCPIPInterface::set_file_index() {
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -707,7 +702,7 @@ int slsReceiverTCPIPInterface::set_frame_index() {
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -772,15 +767,15 @@ int slsReceiverTCPIPInterface::setup_udp(){
 			//setup udpip
 			//get ethernet interface or IP to listen to
 			{
-				ostringstream os;
-				os << "Receiver UDP IP: " << args[0];
-				string message(os.str());	FILE_LOG(logINFO, message);
+				char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+				sprintf(cstreambuf, "Receiver UDP IP: %s ",args[0]);
+				FILE_LOG(logINFO, cstreambuf);
 			}
 			temp = genericSocket::ipToName(args[0]);
 			if(temp=="none"){
 				ret = FAIL;
 				strcpy(mess, "Failed to get ethernet interface or IP\n");
-				FILE_LOG(logERROR, string(mess));
+				FILE_LOG(logERROR, "Failed to get ethernet interface or IP ");
 			}
 			else{
 				strcpy(eth,temp.c_str());
@@ -801,9 +796,10 @@ int slsReceiverTCPIPInterface::setup_udp(){
 				}
 				else{
 					strcpy(retval,temp.c_str());
-					ostringstream os;
-					os << "Reciever MAC Address: " << retval;
-					string message(os.str());	FILE_LOG(logINFO, message);
+
+					char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+					sprintf(cstreambuf, "Reciever MAC Address: %s ",retval);
+					FILE_LOG(logINFO, cstreambuf);
 				}
 			}
 		}
@@ -811,14 +807,16 @@ int slsReceiverTCPIPInterface::setup_udp(){
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		FILE_LOG(logERROR, string(mess));
+		char cstreambuf[MAX_STR_LENGTH]; memset(cstreambuf, 0, MAX_STR_LENGTH);
+		sprintf(cstreambuf, "%s ", mess);
+		FILE_LOG(logERROR, cstreambuf);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	mySock->SendDataOnly(retval,MAX_STR_LENGTH);
@@ -867,7 +865,7 @@ int slsReceiverTCPIPInterface::start_receiver(){
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -915,7 +913,7 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -946,7 +944,7 @@ int	slsReceiverTCPIPInterface::get_status(){
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -977,7 +975,7 @@ int	slsReceiverTCPIPInterface::get_frames_caught(){
 	}else retval=receiverBase->getTotalFramesCaught();
 #endif
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -1009,7 +1007,7 @@ int	slsReceiverTCPIPInterface::get_frame_index(){
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -1054,7 +1052,7 @@ int	slsReceiverTCPIPInterface::reset_frames_caught(){
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -1123,7 +1121,7 @@ int slsReceiverTCPIPInterface::set_short_frame() {
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -1305,7 +1303,7 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -1486,7 +1484,7 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -1640,7 +1638,7 @@ int	slsReceiverTCPIPInterface::propix_read_frame(){
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -1907,7 +1905,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -2070,7 +2068,7 @@ int	slsReceiverTCPIPInterface::jungfrau_read_frame(){
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -2148,7 +2146,7 @@ int slsReceiverTCPIPInterface::set_read_frequency(){
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -2214,7 +2212,7 @@ int slsReceiverTCPIPInterface::set_read_receiver_timer(){
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -2277,7 +2275,7 @@ int slsReceiverTCPIPInterface::set_data_stream_enable(){
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -2337,7 +2335,7 @@ int slsReceiverTCPIPInterface::enable_file_write(){
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -2365,7 +2363,7 @@ int slsReceiverTCPIPInterface::get_id(){
 #endif
 
 	if(mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -2413,7 +2411,7 @@ else{
 #endif
 
 if(ret==OK && mySock->differentClients){
-	FILE_LOG(logDEBUG,"Force update" );
+	FILE_LOG(logDEBUG1,"Force update" );
 	ret=FORCE_UPDATE;
 }
 
@@ -2501,7 +2499,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -2573,7 +2571,7 @@ int slsReceiverTCPIPInterface::enable_compression() {
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -2639,7 +2637,7 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -2740,7 +2738,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -2808,7 +2806,7 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -2878,7 +2876,7 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -2950,7 +2948,7 @@ int slsReceiverTCPIPInterface::set_fifo_depth() {
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -3024,7 +3022,7 @@ int slsReceiverTCPIPInterface::set_activate() {
 
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 
@@ -3088,7 +3086,7 @@ int slsReceiverTCPIPInterface::set_flipped_data(){
 #endif
 
 	if(ret==OK && mySock->differentClients){
-		FILE_LOG(logDEBUG,"Force update" );
+		FILE_LOG(logDEBUG1,"Force update" );
 		ret=FORCE_UPDATE;
 	}
 

@@ -1897,13 +1897,6 @@ void UDPStandardImplementation::startDataCallback(){
 		FILE_LOG(logINFO, cstreambuf);
 	}
 
-	switch(myDetectorType){
-	case EIGER:
-		headersize = EIGER_DATA_PACKET_HEADER_SIZE; break;
-	default:
-		headersize = 0; break;
-	}
-
 	//let calling function know thread started and obtained current (after sockets created)
 	if(!zmqThreadStarted)
 		zmqThreadStarted = true;

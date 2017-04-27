@@ -100,7 +100,6 @@ enum communicationProtocol{
 
 
  genericSocket(const char* const host_ip_or_name, unsigned short int const port_number, communicationProtocol p, int ps = DEFAULT_PACKET_SIZE) :
-   //   portno(port_number), 
 	 protocol(p),
 	 is_a_server(0),
 	 socketDescriptor(-1),
@@ -109,11 +108,15 @@ enum communicationProtocol{
 	 nsending(0),
 	 nsent(0),
 	 total_sent(0),// sender (client): where to? ip
-	 header_packet_size(0)
+   header_packet_size(0),
+ portno(port_number)
    { 
 	 memset(&serverAddress, 0,sizeof(serverAddress));
 	 memset(&clientAddress,0,sizeof(clientAddress));
   //   strcpy(hostname,host_ip_or_name);
+	 memset(lastClientIP, 0, INET_ADDRSTRLEN);
+	 memset(thisClientIP, 0, INET_ADDRSTRLEN);
+	 memset(dummyClientIP, 0, INET_ADDRSTRLEN);
 
 	 strcpy(lastClientIP,"none");
 	 strcpy(thisClientIP,"none1");
@@ -164,7 +167,6 @@ enum communicationProtocol{
   */
   
    genericSocket(unsigned short int const port_number, communicationProtocol p, int ps = DEFAULT_PACKET_SIZE, const char *eth=NULL, int hsize=0):
-     //portno(port_number),
      protocol(p),
      is_a_server(1),
      socketDescriptor(-1),
@@ -173,7 +175,8 @@ enum communicationProtocol{
 	 nsending(0),
 	 nsent(0),
 	 total_sent(0),
-	 header_packet_size(hsize)
+       header_packet_size(hsize),
+    portno(port_number)
    {
 
 	  memset(&serverAddress, 0, sizeof(serverAddress));
@@ -181,7 +184,9 @@ enum communicationProtocol{
 /* // you can specify an IP address: */
 /* // or you can let it automatically select one: */
 /* myaddr.sin_addr.s_addr = INADDR_ANY; */
-
+	 memset(lastClientIP, 0, INET_ADDRSTRLEN);
+	 memset(thisClientIP, 0, INET_ADDRSTRLEN);
+	 memset(dummyClientIP, 0, INET_ADDRSTRLEN);
 
 		 strcpy(lastClientIP,"none");
 		 strcpy(thisClientIP,"none1");
@@ -610,6 +615,7 @@ enum communicationProtocol{
 
     		 break;
     	 case UDP:
+
     		 if (socketDescriptor<0) return -1;
     		 //if length given, listens to length, else listens for packetsize till length is reached
     		 if(length){
@@ -632,12 +638,30 @@ enum communicationProtocol{
     		 else{
     			 //normal
     			 nsending=packet_size;
+			 /* if(portno%2){
+			   cprintf(BLUE,"%d total_sent set to zero:%d\n",portno, total_sent);fflush(stdout);
+			 }else{
+			   cprintf(GREEN,"%d total_sent set to zero:%d\n",portno, total_sent);fflush(stdout);
+			   }*/
     			 while(1){
     				 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
-      				 if(nsent<=0 || nsent == packet_size)
+				 /* if(portno%2){
+				   cprintf(BLUE,"%d nsent:%d total_sent:%d\n", portno, nsent, total_sent);fflush(stdout);
+				 }else{
+				   cprintf(GREEN,"%d nsent:%d total_sent:%d\n", portno, nsent, total_sent);fflush(stdout);
+				   }*/
+      				 if((nsent<=0) || (nsent == packet_size)) {
+
+				   /* if(portno%2){
+				     cprintf(BLUE,"%d breaking out of loop %d\n",portno, nsent);fflush(stdout);
+				   }else{
+				     cprintf(GREEN,"%d breaking out of loop %d\n",portno, nsent);fflush(stdout);
+				     }*/
     					 break;
-    				 if(nsent != packet_size && nsent != header_packet_size)
-    						cprintf(RED,"Incomplete Packet size %d\n",nsent);
+				 }
+    				 if(nsent != packet_size && nsent != header_packet_size){
+				     cprintf(RED,"%d Incomplete Packet size %d\n",portno, nsent);fflush(stdout);
+				 }
     			 }
     			//nsent = 1040;
     			total_sent+=nsent;
@@ -649,8 +673,13 @@ enum communicationProtocol{
 #ifdef VERY_VERBOSE
     	 cout << "sent "<< total_sent << " Bytes" << endl;
 #endif
-
-
+	 /*if(protocol == UDP){
+	   if(portno%2){ 
+	     cprintf(BLUE,"%d exiting total sent %d\n",portno, total_sent);fflush(stdout);
+	   }else{
+	     cprintf(GREEN,"%d exiting total sent %d\n",portno, total_sent);fflush(stdout);
+	   }
+	   }*/
     	 return total_sent;
 
 
@@ -723,11 +752,11 @@ enum communicationProtocol{
 
 
  private:
-  
-  int nsending;
-  int nsent;
-  int total_sent;
+  volatile int nsending;
+  volatile int nsent;
+  volatile int total_sent;
   int header_packet_size;
+  const int portno;
        
 
   // pthread_mutex_t mp;

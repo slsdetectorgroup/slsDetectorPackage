@@ -1340,9 +1340,9 @@ int set_module(int file_des) {
 	myModule.nchan=NCHAN*NCHIP;
 	myModule.nadc=NADC;
 
-//#ifdef VERBOSE
+	//#ifdef VERBOSE
 	printf("Setting module\n");
-//#endif
+	//#endif
 
 	ret=receiveModuleGeneral(file_des, &myModule, 0); //0 is to receive partially (without trimbits etc.)
 
@@ -1352,9 +1352,9 @@ int set_module(int file_des) {
 		ret=FAIL;
 
 
-//#ifdef VERBOSE
+	//#ifdef VERBOSE
 	printf("module number is %d,register is %d, nchan %d, nchip %d, ndac %d, nadc %d, gain %f, offset %f\n",myModule.module, myModule.reg, myModule.nchan, myModule.nchip, myModule.ndac,  myModule.nadc, myModule.gain,myModule.offset);
-//#endif
+	//#endif
 
 	if (ret==OK) {
 		if (myModule.module>=getNModBoard()) {
@@ -1608,7 +1608,7 @@ int start_acquisition(int file_des) {
 		sprintf(mess,"Frame Period is 0. Set it to start acquisition\n");
 		cprintf(RED,"%s",mess);
 	}
-	 else {
+	else {
 		ret=startStateMachine();
 	}
 	if (ret==FAIL)
@@ -1850,32 +1850,9 @@ int set_timer(int file_des) {
 		ret=FAIL;
 	}
 
-int set_timer(int file_des) {
-  enum timerIndex ind;
-  int64_t tns;
-  int n;
-  int64_t retval;
-  int ret=OK;
-  
-
-  printf("set\n");
-  sprintf(mess,"can't set timer\n");
-  
-  n = receiveDataOnly(file_des,&ind,sizeof(ind));
-  if (n < 0) {
-    sprintf(mess,"Error reading from socket\n");
-    ret=FAIL;
-  }
-  
-  n = receiveDataOnly(file_des,&tns,sizeof(tns));
-  if (n < 0) {
-    sprintf(mess,"Error reading from socket\n");
-    ret=FAIL;
-  }
-  
-  if (ret!=OK) {
-    printf(mess);
-  }
+	if (ret!=OK) {
+		printf(mess);
+	}
 
 
 #ifdef VERBOSE
@@ -1929,7 +1906,7 @@ int set_timer(int file_des) {
 	}
 
 	if (ret==OK && differentClients)
-			ret=FORCE_UPDATE;
+		ret=FORCE_UPDATE;
 
 
 	n = sendDataOnly(file_des,&ret,sizeof(ret));

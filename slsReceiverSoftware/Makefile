@@ -1,5 +1,5 @@
 include ../Makefile.include
-
+ 
 DESTDIR		?=	../bin
 LIBDIR	 	?= 	$(DESTDIR)
 DOCDIR 		?= 	docs

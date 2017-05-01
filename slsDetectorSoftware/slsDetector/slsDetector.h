@@ -512,7 +512,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      \sa ::sls_detector_module sharedSlsDetector mythenDetector::writeSettingsFile(string, int)
   */
   using energyConversion::writeSettingsFile;
-  int writeSettingsFile(string fname, int imod, int& iodelay, int& tau);
+  int writeSettingsFile(string fname, int imod, int iodelay, int tau);
 
 
   /**

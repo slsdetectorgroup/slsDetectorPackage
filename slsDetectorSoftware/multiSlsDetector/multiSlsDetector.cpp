@@ -1192,10 +1192,10 @@ int multiSlsDetector::setThresholdEnergy(int e_eV, int pos, detectorSettings ise
 						ret=*iret[idet];
 					else if (ret<(*iret[idet]-200) || ret>(*iret[idet]+200))
 							ret=-1;
-					delete iret[idet];
 				}else ret=-1;
 				if(detectors[idet]->getErrorMask())
 					setErrorMask(getErrorMask()|(1<<idet));
+				delete iret[idet];
 			}
 		}
 	}
@@ -1209,7 +1209,7 @@ int multiSlsDetector::setThresholdEnergy(int e_eV, int pos, detectorSettings ise
 
 slsDetectorDefs::detectorSettings multiSlsDetector::getSettings(int pos) {
 
-  int i, posmin, posmax;
+  int posmin, posmax;
   int ret=-100;
 
   if (pos<0) {
@@ -1243,10 +1243,10 @@ slsDetectorDefs::detectorSettings multiSlsDetector::getSettings(int pos) {
 						ret=*iret[idet];
 					else if (ret!=*iret[idet])
 						ret=GET_SETTINGS;
-					delete iret[idet];
 				}else ret=GET_SETTINGS;
 				if(detectors[idet]->getErrorMask())
 					setErrorMask(getErrorMask()|(1<<idet));
+				delete iret[idet];
 			}
 		}
 	}
@@ -1291,10 +1291,10 @@ slsDetectorDefs::detectorSettings multiSlsDetector::setSettings(detectorSettings
 						ret=*iret[idet];
 					else if (ret!=*iret[idet])
 						ret=GET_SETTINGS;
-					delete iret[idet];
 				}else ret=GET_SETTINGS;
 				if(detectors[idet]->getErrorMask())
 					setErrorMask(getErrorMask()|(1<<idet));
+				delete iret[idet];
 			}
 		}
 	}
@@ -1454,7 +1454,7 @@ int* multiSlsDetector::getDataFromDetector() {
 	int n = 0;
 	int* retval= NULL;
 	int *retdet, *p=retval;
-	int nodata=1, nodatadet=-1;
+	int nodatadet=-1;
 	int nodatadetectortype = false;
 	detectorType types = getDetectorsType();
 	if(types == EIGER || types == JUNGFRAU){
@@ -1473,8 +1473,7 @@ int* multiSlsDetector::getDataFromDetector() {
 				setErrorMask(getErrorMask()|(1<<id));
 			if(!nodatadetectortype){
 				n=detectors[id]->getDataBytes();
-				if (retdet) {
-					nodata=0;
+				if (retdet) {;
 #ifdef VERBOSE
 					cout << "Detector " << id << " returned " << n << " bytes " << endl;
 #endif
@@ -1681,10 +1680,10 @@ int multiSlsDetector::startAndReadAllNoWait(){
 				if(iret[idet] != NULL){
 					if(*iret[idet] != OK)
 						ret = FAIL;
-					delete iret[idet];
 				}else  ret = FAIL;
 				if(detectors[idet]->getErrorMask())
 					setErrorMask(getErrorMask()|(1<<idet));
+				delete iret[idet];
 			}
 		}
 	}
@@ -2126,7 +2125,6 @@ slsDetectorDefs::ROI* multiSlsDetector::getROI(int &n){
 	n = 0;
 	int num = 0,i,j;
 	int ndet = thisMultiDetector->numberOfDetectors;
-	int nroi[ndet];
 	int maxroi = ndet*MAX_ROIS;
 	ROI temproi;
 	ROI roiLimits[maxroi];
@@ -2141,7 +2139,6 @@ slsDetectorDefs::ROI* multiSlsDetector::getROI(int &n){
 			if(detectors[i]->getErrorMask())
 			  setErrorMask(getErrorMask()|(1<<i));
 
-			nroi[i] =  index;
 			if(temp){
 //#ifdef VERBOSE
 				if(index)
@@ -2364,7 +2361,7 @@ int multiSlsDetector::setFlatFieldCorrection(string fname){
   char ffffname[MAX_STR_LENGTH*2];
   int  nch;//nbad=0,
   //int badlist[MAX_BADCHANS];
-  int im=0;
+  //int im=0;
 
   if (fname=="default") {
     fname=string(thisMultiDetector->flatFieldFile);
@@ -2636,7 +2633,7 @@ int multiSlsDetector::setRateCorrection(double t){
 				ret=detectors[idet]->setRateCorrection(t);
 				if(detectors[idet]->getErrorMask())
 					setErrorMask(getErrorMask()|(1<<idet));
-				if (ret1 != OK)
+				if (ret != OK)
 					ret1=FAIL;
 			}
 		}
@@ -3366,8 +3363,6 @@ char* multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 
 	if (s.find('+')==string::npos) {
 
-		int posmin=0, posmax=thisMultiDetector->numberOfDetectors;
-
 		if(!threadpool){
 			cout << "Error in creating threadpool. Exiting" << endl;
 			return getNetworkParameter(p);
@@ -4033,10 +4028,10 @@ int multiSlsDetector::executeTrimming(trimMode mode, int par1, int par2, int imo
 							ret=*iret[idet];
 						else if (ret!=*iret[idet])
 							ret=-1;
-						delete iret[idet];
 					}else ret=-1;
 					if(detectors[idet]->getErrorMask())
 						setErrorMask(getErrorMask()|(1<<idet));
+					delete iret[idet];
 				}
 			}
 		}
@@ -4131,10 +4126,10 @@ int multiSlsDetector::loadSettingsFile(string fname, int imod) {
 					if(iret[idet] != NULL){
 						if(*iret[idet] != OK)
 							ret = FAIL;
-						delete iret[idet];
 					}else  ret = FAIL;
 				  if(detectors[idet]->getErrorMask())
 					  setErrorMask(getErrorMask()|(1<<idet));
+					delete iret[idet];
 			  }
 		  }
 	  }
@@ -4208,10 +4203,10 @@ int multiSlsDetector::setAllTrimbits(int val, int imod){
 							ret=*iret[idet];
 						else if (ret!=*iret[idet])
 							ret=-1;
-						delete iret[idet];
 					}else ret=-1;
 					if(detectors[idet]->getErrorMask())
 						setErrorMask(getErrorMask()|(1<<idet));
+					delete iret[idet];
 				}
 			}
 		}
@@ -4256,10 +4251,10 @@ int multiSlsDetector::loadCalibrationFile(string fname, int imod) {
 					if(iret[idet] != NULL){
 						if(*iret[idet] != OK)
 							ret = FAIL;
-						delete iret[idet];
 					}else  ret = FAIL;
 					if(detectors[idet]->getErrorMask())
 						setErrorMask(getErrorMask()|(1<<idet));
+					delete iret[idet];
 				}
 			}
 		}
@@ -4544,9 +4539,7 @@ int multiSlsDetector::writeConfigurationFile(string const fname){
   
 
   ofstream outfile;
-#ifdef VERBOSE
-  int ret;
-#endif
+  int iline = 0;
 
   outfile.open(fname.c_str(),ios_base::out);
   if (outfile.is_open()) {
@@ -4559,7 +4552,7 @@ int multiSlsDetector::writeConfigurationFile(string const fname){
     cout << iv << " " << names[iv] << endl;
     strcpy(args[0],names[iv].c_str());
     outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
-
+    iline++;
     // single detector configuration
     for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
       //    sprintf(ext,".det%d",i);
@@ -4577,6 +4570,7 @@ int multiSlsDetector::writeConfigurationFile(string const fname){
       cout << iv << " " << names[iv] << endl;
       strcpy(args[0],names[iv].c_str());
       outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
+      iline++;
     }
     
     
@@ -4588,7 +4582,7 @@ int multiSlsDetector::writeConfigurationFile(string const fname){
     return FAIL;
   }
 #ifdef VERBOSE
-  std::cout<< "wrote " <<ret << " lines to configuration file " << std::endl;
+  std::cout<< "wrote " <<iline << " lines to configuration file " << std::endl;
 #endif
   
   return OK;
@@ -4934,10 +4928,10 @@ int multiSlsDetector::startReceiver(){
 				if(iret[idet] != NULL){
 					if(*iret[idet] != OK)
 						ret = FAIL;
-					delete iret[idet];
 				}else  ret = FAIL;
 				if(detectors[idet]->getErrorMask())
 					setErrorMask(getErrorMask()|(1<<idet));
+				delete iret[idet];
 			}
 		}
 	}
@@ -4996,10 +4990,10 @@ int multiSlsDetector::stopReceiver(){
 				if(iret[idet] != NULL){
 					if(*iret[idet] != OK)
 						ret = FAIL;
-					delete iret[idet];
 				}else  ret = FAIL;
 				if(detectors[idet]->getErrorMask())
 					setErrorMask(getErrorMask()|(1<<idet));
+				delete iret[idet];
 			}
 		}
 	}
@@ -5199,7 +5193,7 @@ int multiSlsDetector::getData(const int isocket, const bool masking, int* image,
 
 	//jungfrau masking adcval
 	if(masking){
-		int snel = size/sizeof(int);
+		unsigned int snel = size/sizeof(int);
 		for(unsigned int i=0;i<snel;++i){
 			image[i] = (image[i] & 0x3FFF3FFF);
 		}
@@ -5524,7 +5518,7 @@ string multiSlsDetector::getErrorMessage(int &critical){
 					slsMask=detectors[idet]->getErrorMask();
 #ifdef VERYVERBOSE
 					//append sls det error mask
-					sprintf(sNumber,"0x%x",slsMask);
+					sprintf(sNumber,"0x%lx",slsMask);
 					retval.append("Error Mask " + string(sNumber)+string("\n"));
 #endif
 					//get the error critical level
@@ -5757,10 +5751,10 @@ uint64_t multiSlsDetector::setCTBWord(int addr,uint64_t word) {
 		  ret1=detectors[idet]->setCTBWord(addr, word);
 		    if(detectors[idet]->getErrorMask())
 			  setErrorMask(getErrorMask()|(1<<idet));
-			if(ret==-100)
+			if(ret==(long long unsigned int)-100)
 				ret=ret1;
 			else if (ret!=ret1)
-				ret=-1;
+				ret=(long long unsigned int)-1;
 		}
 	return ret;
 }
@@ -5871,10 +5865,10 @@ int multiSlsDetector::pulsePixel(int n,int x,int y) {
 						ret=*iret[idet];
 					else if (ret!=*iret[idet])
 						ret=-1;
-					delete iret[idet];
 				}else ret=-1;
 				if(detectors[idet]->getErrorMask())
 					setErrorMask(getErrorMask()|(1<<idet));
+				delete iret[idet];
 			}
 		}
 	}
@@ -5908,10 +5902,10 @@ int multiSlsDetector::pulsePixelNMove(int n,int x,int y) {
 						ret=*iret[idet];
 					else if (ret!=*iret[idet])
 						ret=-1;
-					delete iret[idet];
 				}else ret=-1;
 				if(detectors[idet]->getErrorMask())
 					setErrorMask(getErrorMask()|(1<<idet));
+				delete iret[idet];
 			}
 		}
 	}
@@ -5945,10 +5939,10 @@ int multiSlsDetector::pulseChip(int n) {
 						ret=*iret[idet];
 					else if (ret!=*iret[idet])
 						ret=-1;
-					delete iret[idet];
 				}else ret=-1;
 				if(detectors[idet]->getErrorMask())
 					setErrorMask(getErrorMask()|(1<<idet));
+				delete iret[idet];
 			}
 		}
 	}

@@ -24,8 +24,8 @@ public:
 	~func00_t() {}
 	void operator()() const {((m_ptr->*m_fn)());}
 private:
-	_Class* m_ptr;
 	_Ret (_Class::*m_fn)();
+	_Class* m_ptr;
 };
 
 template<typename _Ret, typename _Class, typename _Store>
@@ -36,8 +36,8 @@ public:
 	~func0_t() {}
 	void operator()() const {*m_store = ((m_ptr->*m_fn)());}
 private:
-	_Class* m_ptr;
 	_Ret (_Class::*m_fn)();
+	_Class* m_ptr;
 	_Store* m_store;
 };
 
@@ -49,8 +49,8 @@ public:
 	~func1_t() {}
 	void operator()() const {*m_store = ((m_ptr->*m_fn)(m_arg1));}
 private:
-	_Class* m_ptr;
 	_Ret (_Class::*m_fn)(_Arg1);
+	_Class* m_ptr;
 	_Arg1 m_arg1;
 	_Store* m_store;
 };
@@ -63,8 +63,8 @@ public:
 	~func2_t() {}
 	void operator()() const {*m_store = ((m_ptr->*m_fn)(m_arg1,m_arg2));}
 private:
-	_Class* m_ptr;
 	_Ret (_Class::*m_fn)(_Arg1,_Arg2);
+	_Class* m_ptr;
 	_Arg1 m_arg1;
 	_Arg2 m_arg2;
 	_Store* m_store;
@@ -78,8 +78,8 @@ public:
 	~func3_t() {}
 	void operator()() const {*m_store = ((m_ptr->*m_fn)(m_arg1,m_arg2,m_arg3));}
 private:
-	_Class* m_ptr;
 	_Ret (_Class::*m_fn)(_Arg1,_Arg2,_Arg3);
+	_Class* m_ptr;
 	_Arg1 m_arg1;
 	_Arg2 m_arg2;
 	_Arg3 m_arg3;
@@ -94,8 +94,8 @@ public:
 	~func4_t() {}
 	void operator()() const {*m_store = ((m_ptr->*m_fn)(m_arg1,m_arg2,m_arg3,m_arg4));}
 private:
-	_Class* m_ptr;
 	_Ret (_Class::*m_fn)(_Arg1,_Arg2,_Arg3,_Arg4);
+	_Class* m_ptr;
 	_Arg1 m_arg1;
 	_Arg2 m_arg2;
 	_Arg3 m_arg3;

@@ -38,7 +38,7 @@ int postProcessing::kbhit(){
 }
 
 
-postProcessing::postProcessing(): expTime(NULL), ang(NULL), val(NULL), err(NULL), numberOfChannels(0), badChannelMask(NULL){
+postProcessing::postProcessing(): expTime(NULL), badChannelMask(NULL), ang(NULL),  val(NULL), err(NULL), numberOfChannels(0) {
   pthread_mutex_t mp1 = PTHREAD_MUTEX_INITIALIZER;
   mp=mp1;
   pthread_mutex_init(&mp, NULL);  
@@ -433,10 +433,9 @@ void* postProcessing::processData(int delflag) {
 
 
 		int *myData;
-		char *p;
 		int dum=1;
-		int nf=1, ii, nch;
-		int jctb=0;
+//		int nf=1, ii, nch;
+//		int jctb=0;
 
 
 // 		if (getDetectorsType()==JUNGFRAUCTB) {
@@ -467,7 +466,7 @@ void* postProcessing::processData(int delflag) {
 				  
 
 			// 	  if (jctb) {
-// 				    p=(char*)myData;
+// 				    char* p=(char*)myData;
 // 				    for (ii=0; ii<nf; ii++) {
 // 				      processFrame((int*)p,delflag, 1);
 // 				      p+=2*nch;
@@ -891,6 +890,9 @@ void postProcessing::startThread(int delflag) {
   else
     ret = pthread_create(&dataProcessingThread, &tattr,startProcessDataNoDelete, (void*)this);
     
+  if (ret)
+ 	  printf("ret %d\n", ret);
+
   pthread_attr_destroy(&tattr);
 
   // scheduling parameters of target thread

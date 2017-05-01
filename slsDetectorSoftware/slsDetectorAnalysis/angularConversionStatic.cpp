@@ -255,8 +255,8 @@ int angularConversionStatic::readAngularConversion( ifstream& infile, int nmod, 
 	angOff[nm].etilt=epitch;
 
       }
-	// cout << 	angOff[nm].center << " " << \
-	// angOff[nm].r_conversion << " " << \
+	// cout << 	angOff[nm].center << " " <<
+	// angOff[nm].r_conversion << " " <<
 	//   angOff[nm].offset << endl;
 
     } else

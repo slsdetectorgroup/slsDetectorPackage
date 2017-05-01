@@ -119,7 +119,7 @@ class energyConversion
 
      \sa ::sls_detector_module mythenDetector::writeSettingsFile(string, sls_detector_module)
   */
-  int writeSettingsFile(string fname, detectorType myDetectorType, sls_detector_module mod, int& iodelay, int& tau);
+  int writeSettingsFile(string fname, detectorType myDetectorType, sls_detector_module mod, int iodelay, int tau);
   
   /** allocates the momery for a detector module structure
       \param myDetectorType detector type (needed for number of channels, chips, dacs etc.)

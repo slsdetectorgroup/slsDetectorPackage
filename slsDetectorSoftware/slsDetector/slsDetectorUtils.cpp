@@ -806,7 +806,6 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
   slsDetectorCommand *cmd;
   string names[100];
   int nvar=0;
-  int nvar1=0;
 
   names[nvar++]="fname";
   names[nvar++]="index";
@@ -886,6 +885,9 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
   names[nvar++]="patnloop2";
   names[nvar++]="patwait2"; 
   names[nvar++]="patwaittime2"; 
+  break;
+  default:
+	  break;
   }
 
 
@@ -916,7 +918,8 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
   names[nvar++]="flatfield";
   names[nvar++]="badchannels";
   break;
-
+  default:
+	  break;
   }
 
  switch (getDetectorsType()) {
@@ -924,7 +927,8 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
   case MYTHEN:
   names[nvar++]="trimbits";
   break;
-
+  default:
+	  break;
   }
 
  // char ext[100];

@@ -67,12 +67,13 @@ int ThreadPool::destroy_threadpool(){
 	/*cout << "Broadcasting STOP signal to all threads..." << endl;*/
 	m_task_cond_var.broadcast(); // notify all threads we are shttung down
 
-	int ret = -1;
+//	int ret = -1;
 	for (int i = 0; i < m_pool_size; i++) {
 		void* result;
 		sem_post(&semStart);
 		sem_post(&semDone);
-		ret = pthread_join(m_threads[i], &result);
+		//ret =
+		pthread_join(m_threads[i], &result);
 		/*cout << "pthread_join() returned " << ret << ": " << strerror(errno) << endl;*/
 		m_task_cond_var.broadcast(); // try waking up a bunch of threads that are still waiting
 	}
@@ -85,7 +86,8 @@ int ThreadPool::destroy_threadpool(){
 }
 
 void* ThreadPool::execute_thread(){
-	int ithread = current_thread_number;
+//for debugging seting ithread value
+//	int ithread = current_thread_number;
 	thread_started = true;
 	Task* task = NULL;
 	m_tasks_loaded = false;

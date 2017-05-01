@@ -3472,7 +3472,11 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
 
 
   if (cmd=="thisversion"){
-    sprintf(answer,"%llx",myDet->getId(THIS_SOFTWARE_VERSION));
+	  int64_t retval = myDet->getId(THIS_SOFTWARE_VERSION);
+	  if (retval < 0)
+		  sprintf(answer, "%d", -1);
+	  else
+		  sprintf(answer,"%lx", (long long unsigned int)retval);
     return string(answer);
   }
 
@@ -3482,37 +3486,61 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
   if (cmd=="moduleversion") {
     int ival=-1;
     if (sscanf(args[0],"moduleversion:%d",&ival)) {
-      sprintf(answer,"%llx",myDet->getId(MODULE_FIRMWARE_VERSION,ival));
+    	int64_t retval = myDet->getId(MODULE_FIRMWARE_VERSION, ival);
+    	if (retval < 0)
+    		sprintf(answer, "%d", -1);
+    	else
+    		sprintf(answer,"%lx", (long long unsigned int)retval);
       return string(answer);
     } else
       return string("undefined module number");
   }
   if (cmd=="detectornumber") {
-    sprintf(answer,"%llx",myDet->getId(DETECTOR_SERIAL_NUMBER));
+	  int64_t retval = myDet->getId(DETECTOR_SERIAL_NUMBER);
+	  if (retval < 0)
+		  sprintf(answer, "%d", -1);
+	  else
+		  sprintf(answer,"%lx", (long long unsigned int)retval);
     return string(answer);
   }
   if (cmd.find("modulenumber")!=string::npos) {
     int ival=-1;
     if (sscanf(args[0],"modulenumber:%d",&ival)) {
-      sprintf(answer,"%llx",myDet->getId(MODULE_SERIAL_NUMBER,ival));
+    	int64_t retval = myDet->getId(MODULE_SERIAL_NUMBER, ival);
+    	if (retval < 0)
+    		sprintf(answer, "%d", -1);
+    	else
+    		sprintf(answer,"%lx", (long long unsigned int)retval);
       return string(answer);
     } else
       return string("undefined module number");
   }
 
   if (cmd=="detectorversion") {
-    sprintf(answer,"%llx",myDet->getId(DETECTOR_FIRMWARE_VERSION));
+	  int64_t retval = myDet->getId(DETECTOR_FIRMWARE_VERSION);
+	  if (retval < 0)
+		  sprintf(answer, "%d", -1);
+	  else
+		  sprintf(answer,"%lx", (long long unsigned int)retval);
     return string(answer);
   }
   
   if (cmd=="softwareversion") {
-    sprintf(answer,"%llx",myDet->getId(DETECTOR_SOFTWARE_VERSION));
+	  int64_t retval = myDet->getId(DETECTOR_SOFTWARE_VERSION);
+	  if (retval < 0)
+		  sprintf(answer, "%d", -1);
+	  else
+		  sprintf(answer,"%lx", (long long unsigned int)retval);
     return string(answer);
   }
 
   if (cmd=="receiverversion") {
 	myDet->setReceiverOnline(ONLINE_FLAG);
-    sprintf(answer,"%llx",myDet->getId(RECEIVER_VERSION));
+	int64_t retval = myDet->getId(RECEIVER_VERSION);
+	if (retval < 0)
+		sprintf(answer, "%d", -1);
+	else
+		sprintf(answer,"%lx", (long long unsigned int)retval);
     return string(answer);
   }
   return string("unknown id mode ")+cmd;
@@ -4558,7 +4586,7 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action) {
 		if (action==GET_ACTION)
 			return string("cannot get");
 #ifdef VERBOSE
-		std::cout<< " resetting fpga " << sval << std::endl;
+		std::cout<< " resetting fpga " << std::endl;
 #endif
 		myDet->setOnline(ONLINE_FLAG);
 		if(myDet->resetFPGA() == OK)
@@ -4938,7 +4966,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
 	else
 	  return string("Could not scan address (hexadecimal fomat) ")+string(args[1]);
       
-	if (sscanf(args[2],"%llx",&word))
+	if (sscanf(args[2],"%lx",&word))
 	  ;
 	else
 	  return string("Could not scan value  (hexadecimal fomat) ")+string(args[2]);
@@ -4954,7 +4982,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
     
     if (action==PUT_ACTION) {
       
-      if (sscanf(args[1],"%llx",&word))
+      if (sscanf(args[1],"%lx",&word))
 	;
       else
 	return string("Could not scan value  (hexadecimal fomat) ")+string(args[1]);
@@ -4971,7 +4999,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
 
     if (action==PUT_ACTION) {
       
-      if (sscanf(args[1],"%llx",&word))
+      if (sscanf(args[1],"%lx",&word))
 	;
       else
 	return string("Could not scan value  (hexadecimal fomat) ")+string(args[1]);
@@ -5242,7 +5270,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
 
    if (action==PUT_ACTION) {
      
-      if (sscanf(args[1],"%lld",&t))
+      if (sscanf(args[1],"%ld",&t))
       ;
     else
       return string("Could not scan wait time")+string(args[1]);
@@ -5265,7 +5293,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
 
    if (action==PUT_ACTION) {
      
-      if (sscanf(args[1],"%lld",&t))
+      if (sscanf(args[1],"%ld",&t))
       ;
     else
       return string("Could not scan wait time ")+string(args[1]);
@@ -5283,7 +5311,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
   }	else if (cmd=="patwaittime2") {
    if (action==PUT_ACTION) {
      
-      if (sscanf(args[1],"%lld",&t))
+      if (sscanf(args[1],"%ld",&t))
       ;
     else
       return string("Could not scan wait time ")+string(args[1]);
@@ -5471,13 +5499,12 @@ string slsDetectorCommand::cmdPulse(int narg, char *args[], int action) {
 
 	}
 
-	return string("");
-/*
+
 	if(retval == OK)
 		return string(" successful");
 	else
 		return string(" failed");
-		*/
+
 }
 
 

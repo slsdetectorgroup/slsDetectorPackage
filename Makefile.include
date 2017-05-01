@@ -5,9 +5,9 @@
 CC = g++
 CXX = $(CC)
 ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
-LDFLAGDET = -L$(LIBDIR)  -Wl,-rpath=$(LIBDIR) -lSlsDetector -L/usr/lib64/ -lpthread
-LDFLAGRXR = -L$(LIBDIR)  -Wl,-rpath=$(LIBDIR) -lSlsReceiver -L/usr/lib64/ -lpthread
-FLAGS= -Wall  -DHDF5C #-DEIGER_DEBUG2
+LDFLAGDET = -L$(LIBDIR)  -Wl,-rpath=$(LIBDIR) -lSlsDetector -L/usr/lib64/ -pthread
+LDFLAGRXR = -L$(LIBDIR)  -Wl,-rpath=$(LIBDIR) -lSlsReceiver -L/usr/lib64/ -pthread
+FLAGS= -Wall  -pthread -DHDF5C #-DEIGER_DEBUG2
 # -DVERBOSE 
 
 # Setting up the verbose flags
@@ -27,7 +27,7 @@ HDF5 = yes
 HDF5_DIR = /opt/hdf5v1.10.0
 
 ifeq ($(HDF5),yes)
-	LDFLAGRXR = -L$(LIBDIR) -Wl,-rpath=$(LIBDIR) -lSlsReceiver -L$(HDF5_DIR)/lib  -Wl,-rpath=$(HDF5_DIR)/lib -lhdf5 -lhdf5_cpp -lsz -lz -DHDF5C -L/usr/lib64/ -lpthread
+	LDFLAGRXR = -L$(LIBDIR) -Wl,-rpath=$(LIBDIR) -lSlsReceiver -L$(HDF5_DIR)/lib  -Wl,-rpath=$(HDF5_DIR)/lib -lhdf5 -lhdf5_cpp -lsz -lz -DHDF5C -L/usr/lib64/ -pthread
 	INCLUDESRXR = -I$(HDF5_DIR)/include
 endif	
 

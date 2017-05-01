@@ -69,14 +69,14 @@ gotthardVirtualServer:  $(SRC_MYTHEN_SVC)
 
 
 %.o : %.cpp %.h Makefile
-	$(CXX) -o $@ -c $< $(INCLUDES) $(DFLAGS)  -fPIC  $(EPICSFLAGS) -lpthread  -lrt $(LIBZMQ) #$(FLAGS)
+	$(CXX) -o $@ -c $< $(INCLUDES) $(DFLAGS)  -fPIC  $(EPICSFLAGS) -pthread  -lrt $(LIBZMQ) #$(FLAGS)
 
 
 package:  $(OBJS) $(DESTDIR)/libSlsDetector.so $(DESTDIR)/libSlsDetector.a 
 
 
 $(DESTDIR)/libSlsDetector.so: $(OBJS) 
-	$(CXX)  -shared -Wl,-soname,libSlsDetector.so -o libSlsDetector.so  $(OBJS)  -lc $(INCLUDES) $(DFLAGS)  $(FLAGS) $(EPICSFLAGS)  -L/usr/lib64 -lpthread -lrt $(LIBZMQ)
+	$(CXX)  -shared -Wl,-soname,libSlsDetector.so -o libSlsDetector.so  $(OBJS)  -lc $(INCLUDES) $(DFLAGS)  $(FLAGS) $(EPICSFLAGS)  -L/usr/lib64 -pthread -lrt $(LIBZMQ)
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
 	mv libSlsDetector.so $(DESTDIR)
 

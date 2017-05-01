@@ -1568,7 +1568,7 @@ long int calcChecksum(int sourceip, int destip) {
 	ip.ip_ver            = 0x4;
 	ip.ip_ihl            = 0x5;
 	ip.ip_tos            = 0x0;
-	ip.ip_len            = 0x2032;//ipPacketSize;//fixed in firmware
+	ip.ip_len            = 0x2052;//ipPacketSize;//fixed in firmware
 	ip.ip_ident          = 0x0000;
 	ip.ip_flag           = 0x2; //not nibble aligned (flag& offset
 	ip.ip_offset         = 0x000;

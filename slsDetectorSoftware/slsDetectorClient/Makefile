@@ -13,7 +13,7 @@ INCLUDES?= -I../commonFiles -I../slsDetector -I ../MySocketTCP  -I../usersFuncti
 LIBDIR?=../
 LIBS?= -L$(LIBDIR) -lSlsDetector 
 
-LDFLAG=   -L/usr/lib64/ -lpthread
+LDFLAG=   -L/usr/lib64/ -pthread
 
 
 DESTDIR ?= bin

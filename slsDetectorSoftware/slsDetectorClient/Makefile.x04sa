@@ -2,7 +2,7 @@ CFLAGS= -DC_ONLY
 FLAGS=-DVERBOSE 
 INCLUDES= -I../slsDetectorSoftware/commonFiles -I../slsDetectorSoftware/slsDetector -I ../slsDetectorSoftware/MySocketTCP  -I../slsDetectorSoftware/usersFunctions -I../slsDetectorSoftware/multiSlsDetector -I../slsDetectorSoftware/slsDetectorAnalysis
 LIBS= -L../slsDetectorSoftware/
-LDFLAG= -lSlsDetector -lpthread
+LDFLAG= -lSlsDetector -pthread
 
 EPICSFLAGS=-DEPICS  -I/usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/ -L /usr/local/epics/base/lib/SL5-x86/ -Wl,-R/usr/local/epics/base/lib/SL5-x86  -lca -lCom 
 

@@ -164,6 +164,7 @@ public:
 	 * Print all variables
 	 */
 	virtual void Print() const {
+		string temp = slsReceiverDefs::getDetectorType(myDetectorType);
 		printf("\n\nDetector Data Variables:\n");
 		printf(	"myDetectorType:%s\n"
 				"Pixels X: %d\n"
@@ -186,7 +187,7 @@ public:
 				"Streamer Pixels X: %d\n"
 				"Streamer Pixels Y: %d\n"
 				"Streamer Image Size: %d\n"
-				,slsReceiverDefs::getDetectorType(myDetectorType).c_str(),
+				,temp.c_str(),//.c_str() modifies, using temp string for thread safety
 				nPixelsX,
 				nPixelsY,
 				headerSizeinPacket,

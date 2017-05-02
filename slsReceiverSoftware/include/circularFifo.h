@@ -126,7 +126,8 @@ bool CircularFifo<Element>::isEmpty() const
 template<typename Element>
 bool CircularFifo<Element>::isFull() const
 {
-   int tailCheck = (tail+1) % Capacity;
+   int tailCheck = increment(tail);
+   //int tailCheck = (tail+1) % Capacity;
    return (tailCheck == head);
 }
 

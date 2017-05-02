@@ -95,7 +95,7 @@ class ThreadObject : private virtual slsReceiverDefs {
 	bool alive;
 
 	/** Variable monitored by thread to kills itself */
-	bool killThread;
+	volatile bool killThread;
 
 	/** Thread variable */
 	pthread_t thread;

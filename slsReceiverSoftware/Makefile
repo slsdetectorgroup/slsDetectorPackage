@@ -60,7 +60,7 @@ $(BUILDDIR)/%.o : $(SRCDIR)/%.cpp Makefile
 ifeq ($(ROOTSLS),yes)
 	$(CXX) -DROOTSLS -o $@ -c $< $(INCLUDES) $(DFLAGS)  $(ROOTFLAGS) -fPIC  $(EPICSFLAGS) $(LDFLAGRXR) -L/usr/lib64/ $(FLAGS) 
 else	
-	$(CXX) -o $@ -c $< $(INCLUDES) $(DFLAGS) -fPIC  $(EPICSFLAGS) $(LDFLAGRXR) -lpthread $(FLAGS) $(LIBZMQ)  -lrt 
+	$(CXX) -o $@ -c $< $(INCLUDES) $(DFLAGS) -fPIC  $(EPICSFLAGS) $(LDFLAGRXR) -pthread $(FLAGS) $(LIBZMQ)  -lrt 
 endif
 
 lib:  $(OBJS) $(DESTDIR)/libSlsReceiver.so $(DESTDIR)/libSlsReceiver.a 
@@ -69,7 +69,7 @@ receiver: $(DESTDIR)/slsReceiver
 
 
 $(DESTDIR)/libSlsReceiver.so: $(OBJS) 
-	$(CXX)  -shared -Wl,-soname,libSlsReceiver.so -o libSlsReceiver.so  $(OBJS) -lc $(INCLUDES) $(DFLAGS) $(FLAGS) $(EPICSFLAGS)  -L/usr/lib64 -lpthread $(LIBZMQ) -lrt 
+	$(CXX)  -shared -Wl,-soname,libSlsReceiver.so -o libSlsReceiver.so  $(OBJS) -lc $(INCLUDES) $(DFLAGS) $(FLAGS) $(EPICSFLAGS)  -L/usr/lib64 -pthread $(LIBZMQ) -lrt 
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
 	mv libSlsReceiver.so $(DESTDIR)
 

@@ -188,12 +188,6 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	/** mutex to update static items among objects (threads)*/
 	static pthread_mutex_t Mutex;
 
-	/** Json Header Format for each measurement part */
-	static const char *jsonHeaderFormat_part1;
-
-	/** Json Header Format */
-	static const char *jsonHeaderFormat;
-
 	/** GeneralData (Detector Data) object */
 	const GeneralData* generalData;
 

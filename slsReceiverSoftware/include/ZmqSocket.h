@@ -17,9 +17,7 @@
 #include <rapidjson/document.h> //json header in zmq stream
 using namespace rapidjson;
 
-#define DEFAULT_ZMQ_PORTNO 	70001
-#define DUMMY_MSG_SIZE 		3
-#define DUMMY_MSG			"end"
+#define DEFAULT_ZMQ_PORTNO 	40001
 
 class ZmqSocket {
 
@@ -187,9 +185,28 @@ public:
 
 	/**
 	 * Send Message Header
+	 * @param buf message
+	 * @param length length of message
+	 * @param dummy true if end of acquistion else false
 	 * @returns 0 if error, else 1
 	 */
-	int SendHeaderData (char* buf, int length) {
+	int SendHeaderData (uint32_t jsonversion, uint32_t dynamicrange, uint32_t npixelsx, uint32_t npixelsy,
+			uint64_t acqIndex, uint64_t fIndex, char* fname, bool dummy,
+			uint64_t frameNumber, uint32_t expLength, uint32_t packetNumber, uint64_t bunchId, uint64_t timestamp,
+			uint16_t modId, uint16_t xCoord, uint16_t yCoord, uint16_t zCoord, uint32_t debug, uint16_t roundRNumber,
+			uint8_t detType, uint8_t version) {
+
+		char buf[MAX_STR_LENGTH] = "";
+		int length = sprintf(buf, jsonHeaderFormat,
+				jsonversion, dynamicrange, npixelsx, npixelsy,
+				acqIndex, fIndex, fname, dummy?1:0,
+				frameNumber, expLength, packetNumber, bunchId, timestamp,
+				modId, xCoord, yCoord, zCoord, debug, roundRNumber,
+				detType, version);
+#ifdef VERBOSE
+	printf("%d Streamer: buf:%s\n", index, buf);
+#endif
+
 		if(zmq_send (socketDescriptor, buf, length, ZMQ_SNDMORE) < 0) {
 			PrintError ();
 			return 0;
@@ -199,6 +216,8 @@ public:
 
 	/**
 	 * Send Message Body
+	 * @param buf message
+	 * @param length length of message
 	 * @returns 0 if error, else 1
 	 */
 	int SendData (char* buf, int length) {
@@ -213,9 +232,10 @@ public:
 	/**
 	 * Receive Message
 	 * @param index self index for debugging
+	 * @param message message
 	 * @returns length of message, -1 if error
 	 */
-	int ReceiveMessage(const int index) {
+	int ReceiveMessage(const int index, zmq_msg_t& message) {
 		int length = zmq_msg_recv (&message, socketDescriptor, 0);
 		if (length == -1) {
 			PrintError ();
@@ -232,18 +252,27 @@ public:
 	 * @param frameIndex address of frame index
 	 * @param subframeIndex address of subframe index
 	 * @param filename address of file name
-	 * @returns 0 if error, else 1
+	 * @returns 0 if error or end of acquisition, else 1
 	 */
 	int ReceiveHeader(const int index, uint64_t &acqIndex,
 			uint64_t &frameIndex, uint32_t &subframeIndex, string &filename)
 	{
+		zmq_msg_t message;
 		zmq_msg_init (&message);
-		if (ReceiveMessage(index) > 0) {
-			if (ParseHeader(index, acqIndex, frameIndex, subframeIndex, filename)) {
-				zmq_msg_close(&message);
+		int len = ReceiveMessage(index, message);
+		if ( len > 0 ) {
+			bool dummy = false;
+			if ( ParseHeader (index, len, message, acqIndex, frameIndex, subframeIndex, filename, dummy)) {
+				zmq_msg_close (&message);
 #ifdef VERBOSE
-				cprintf(BLUE,"%d header rxd\n",index);
+				cprintf( RED,"%d Length: %d Header:%s \n", index, length, (char*) zmq_msg_data (&message) );
 #endif
+				if (dummy) {
+#ifdef VERBOSE
+					cprintf(RED,"%d Received end of acquisition\n", index);
+#endif
+					return 0;
+				}
 				return 1;
 			}
 		}
@@ -256,21 +285,13 @@ public:
 	 * @param index self index for debugging
 	 * @param buf buffer to copy image data to
 	 * @param size size of image
-	 * @returns 0 if error, else 1
+	 * @returns length of data received
 	 */
 	int ReceiveData(const int index, int* buf, const int size)
 	{
+		zmq_msg_t message;
 		zmq_msg_init (&message);
-		int length = ReceiveMessage(index);
-
-		//dummy
-		if (length == DUMMY_MSG_SIZE) {
-#ifdef VERBOSE
-			cprintf(RED,"%d Received end of acquisition\n", index);
-#endif
-			zmq_msg_close(&message);
-			return 0;
-		}
+		int length = ReceiveMessage(index, message);
 
 		//actual data
 		if (length == size) {
@@ -287,27 +308,41 @@ public:
 		}
 
 		zmq_msg_close(&message);
-		return 1;
+		return length;
 	};
 
 
 	/**
 	 * Parse Header
 	 * @param index self index for debugging
+	 * @param length length of message
+	 * @param message message
 	 * @param acqIndex address of acquisition index
 	 * @param frameIndex address of frame index
 	 * @param subframeIndex address of subframe index
 	 * @param filename address of file name
+	 * @param dummy true if end of acquisition else false
+	 * @returns true if successfull else false
 	 */
-	int ParseHeader(const int index, uint64_t &acqIndex,
-			uint64_t &frameIndex, uint32_t &subframeIndex, string &filename)
+	int ParseHeader(const int index, int length, zmq_msg_t& message, uint64_t &acqIndex,
+			uint64_t &frameIndex, uint32_t &subframeIndex, string &filename, bool& dummy)
 	{
 		Document d;
-		if (d.Parse( (char*)zmq_msg_data(&message), zmq_msg_size(&message)).HasParseError()) {
-			cprintf (RED,"Error: Could not parse header for socket %d\n",index);
+		if ( d.Parse( (char*) zmq_msg_data (&message), zmq_msg_size (&message)).HasParseError() ) {
+			cprintf( RED,"%d Could not parse. len:%d: Message:%s \n", index, length, (char*) zmq_msg_data (&message) );
+			fflush ( stdout );
+			char* buf =  (char*) zmq_msg_data (&message);
+			for ( int i= 0; i < length; ++i ) {
+				cprintf(RED,"%02x ",buf[i]);
+			}
+			printf("\n");
+			fflush( stdout );
 			return 0;
 		}
-		if(d["acqIndex"].GetUint64()!=(uint64_t)-1) {
+
+		int temp = d["data"].GetUint();
+		dummy = temp ? true : false;
+		if (dummy) {
 			acqIndex 		= d["acqIndex"].GetUint64();
 			frameIndex 		= d["fIndex"].GetUint64();
 			subframeIndex 	= -1;
@@ -316,6 +351,7 @@ public:
 			}
 			filename 		= d["fname"].GetString();
 #ifdef VERYVERBOSE
+			cout << "Data: " << temp << endl;
 			cout << "Acquisition index: " << acqIndex << endl;
 			cout << "Frame index: " << frameIndex << endl;
 			cout << "Subframe index: " << subframeIndex << endl;
@@ -399,6 +435,30 @@ private:
 	/** Server Address */
 	char serverAddress[1000];
 
-	/** Zmq Message */
-	zmq_msg_t message;
+	/** Json Header Format */
+	static const char* jsonHeaderFormat =
+			"{"
+			"\"jsonversion\":%u, "
+			"\"bitmode\":%d, "
+			"\"shape\":[%d, %d], "
+			"\"acqIndex\":%llu, "
+			"\"fIndex\":%llu, "
+			"\"fname\":\"%s\", "
+			 "\"data\": %d, "
+
+			"\"frameNumber\":%llu, "
+			"\"expLength\":%u, "
+			"\"packetNumber\":%u, "
+			"\"bunchId\":%llu, "
+			"\"timestamp\":%llu, "
+			"\"modId\":%u, "
+			"\"xCoord\":%u, "
+			"\"yCoord\":%u, "
+			"\"zCoord\":%u, "
+			"\"debug\":%u, "
+			"\"roundRNumber\":%u, "
+			"\"detType\":%u, "
+			"\"version\":%u"
+			"}\n\0";
+
 };

@@ -92,7 +92,7 @@ class ThreadObject : private virtual slsReceiverDefs {
 	int index;
 
 	/** Thread is alive/dead */
-	bool alive;
+	volatile bool alive;
 
 	/** Variable monitored by thread to kills itself */
 	volatile bool killThread;

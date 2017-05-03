@@ -101,9 +101,9 @@ enum communicationProtocol{
    { 
 	 memset(&serverAddress, 0, sizeof(serverAddress));
 	 memset(&clientAddress, 0, sizeof(clientAddress));
-	 strcpy(lastClientIP,"none");
-	 strcpy(thisClientIP,"none1");
-	 strcpy(dummyClientIP,"dummy");
+	 memset(lastClientIP,0,INET_ADDRSTRLEN);
+	 memset(thisClientIP,0,INET_ADDRSTRLEN);
+	 memset(dummyClientIP,0,INET_ADDRSTRLEN);
 	 differentClients = 0;
      struct hostent *hostInfo = gethostbyname(host_ip_or_name);
      if (hostInfo == NULL){
@@ -166,9 +166,9 @@ enum communicationProtocol{
 /* // you can specify an IP address: */
 /* // or you can let it automatically select one: */
 /* myaddr.sin_addr.s_addr = INADDR_ANY; */
-		 strcpy(lastClientIP,"none");
-		 strcpy(thisClientIP,"none1");
-		 strcpy(dummyClientIP,"dummy");
+		 memset(lastClientIP,0,INET_ADDRSTRLEN);
+		 memset(thisClientIP,0,INET_ADDRSTRLEN);
+		 memset(dummyClientIP,0,INET_ADDRSTRLEN);
 		 differentClients = 0;
 
 

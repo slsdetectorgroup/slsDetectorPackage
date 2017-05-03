@@ -444,8 +444,9 @@ int UDPStandardImplementation::startReceiver(char *c) {
 	if (startAcquisitionCallBack) {
 		startAcquisitionCallBack(filePath, fileName, fileIndex,
 				(generalData->fifoBufferSize) * numberofJobs + (generalData->fifoBufferHeaderSize), pStartAcquisition);
-		if (rawDataReadyCallBack != NULL)
+		if (rawDataReadyCallBack != NULL) {
 			cout << "Data Write has been defined externally" << endl;
+		}
 	}
 
 	//processor->writer

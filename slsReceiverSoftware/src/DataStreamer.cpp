@@ -23,30 +23,6 @@ uint64_t DataStreamer::RunningMask(0x0);
 
 pthread_mutex_t DataStreamer::Mutex = PTHREAD_MUTEX_INITIALIZER;
 
-const char* DataStreamer::jsonHeaderFormat =
-		"{"
-		"\"jsonversion\":%u, "
-		"\"bitmode\":%d, "
-		"\"shape\":[%d, %d], "
-		"\"acqIndex\":%llu, "
-		"\"fIndex\":%llu, "
-		"\"fname\":\"%s\", "
-
-		"\"frameNumber\":%llu, "
-		"\"expLength\":%u, "
-		"\"packetNumber\":%u, "
-		"\"bunchId\":%llu, "
-		"\"timestamp\":%llu, "
-		"\"modId\":%u, "
-		"\"xCoord\":%u, "
-		"\"yCoord\":%u, "
-		"\"zCoord\":%u, "
-		"\"debug\":%u, "
-		"\"roundRNumber\":%u, "
-		"\"detType\":%u, "
-		"\"version\":%u"
-		"}";
-
 
 DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* timer, int* sEnable) :
 		ThreadObject(NumberofDataStreamers),
@@ -232,9 +208,6 @@ void DataStreamer::StopProcessing(char* buf) {
 	if (!SendHeader(header, true))
 		cprintf(RED,"Error: Could not send zmq dummy header for streamer %d\n", index);
 
-	if (!zmqSocket->SendData((char*)DUMMY_MSG, DUMMY_MSG_SIZE))
-		cprintf(RED,"Error: Could not send zmq dummy message for streamer %d\n", index);
-
 	fifo->FreeAddress(buf);
 	StopRunning();
 #ifdef VERBOSE
@@ -324,20 +297,12 @@ int DataStreamer::SendHeader(sls_detector_header* header, bool dummy) {
 	uint64_t acquisitionIndex = header->frameNumber - firstAcquisitionIndex;
 	uint32_t subframeIndex = header->expLength;
 
-	char buf[1000] = "";
+	return zmqSocket->SendHeaderData(SLS_DETECTOR_JSON_HEADER_VERSION, *dynamicRange,
+			generalData->nPixelsX_Streamer, generalData->nPixelsY_Streamer,
+			acquisitionIndex, frameIndex, fileNametoStream, dummy,
 
-	if (dummy) {
-		frameIndex = -1;
-		acquisitionIndex = -1;
-		subframeIndex = -1;
-	}
-
-	int len = sprintf(buf, jsonHeaderFormat,
-			SLS_DETECTOR_JSON_HEADER_VERSION, *dynamicRange, generalData->nPixelsX_Streamer, generalData->nPixelsY_Streamer, acquisitionIndex, frameIndex, fileNametoStream,
 			header->frameNumber, header->expLength, header->packetNumber, header->bunchId, header->timestamp,
-			header->modId, header->xCoord, header->yCoord, header->zCoord, header->debug, header->roundRNumber, header->detType, header->version);
-#ifdef VERBOSE
-	printf("%d Streamer: buf:%s\n", index, buf);
-#endif
-	return zmqSocket->SendHeaderData(buf, len);
+			header->modId, header->xCoord, header->yCoord, header->zCoord, header->debug, header->roundRNumber,
+			header->detType, header->version
+			);
 }

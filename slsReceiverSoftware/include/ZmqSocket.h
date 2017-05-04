@@ -197,6 +197,31 @@ public:
 			uint8_t detType, uint8_t version) {
 
 		char buf[MAX_STR_LENGTH] = "";
+		/** Json Header Format */
+		const char* jsonHeaderFormat =
+				"{"
+				"\"jsonversion\":%u, "
+				"\"bitmode\":%d, "
+				"\"shape\":[%d, %d], "
+				"\"acqIndex\":%llu, "
+				"\"fIndex\":%llu, "
+				"\"fname\":\"%s\", "
+				 "\"data\": %d, "
+
+				"\"frameNumber\":%llu, "
+				"\"expLength\":%u, "
+				"\"packetNumber\":%u, "
+				"\"bunchId\":%llu, "
+				"\"timestamp\":%llu, "
+				"\"modId\":%u, "
+				"\"xCoord\":%u, "
+				"\"yCoord\":%u, "
+				"\"zCoord\":%u, "
+				"\"debug\":%u, "
+				"\"roundRNumber\":%u, "
+				"\"detType\":%u, "
+				"\"version\":%u"
+				"}\n\0";
 		int length = sprintf(buf, jsonHeaderFormat,
 				jsonversion, dynamicrange, npixelsx, npixelsy,
 				acqIndex, fIndex, fname, dummy?1:0,
@@ -434,31 +459,5 @@ private:
 
 	/** Server Address */
 	char serverAddress[1000];
-
-	/** Json Header Format */
-	static const char* jsonHeaderFormat =
-			"{"
-			"\"jsonversion\":%u, "
-			"\"bitmode\":%d, "
-			"\"shape\":[%d, %d], "
-			"\"acqIndex\":%llu, "
-			"\"fIndex\":%llu, "
-			"\"fname\":\"%s\", "
-			 "\"data\": %d, "
-
-			"\"frameNumber\":%llu, "
-			"\"expLength\":%u, "
-			"\"packetNumber\":%u, "
-			"\"bunchId\":%llu, "
-			"\"timestamp\":%llu, "
-			"\"modId\":%u, "
-			"\"xCoord\":%u, "
-			"\"yCoord\":%u, "
-			"\"zCoord\":%u, "
-			"\"debug\":%u, "
-			"\"roundRNumber\":%u, "
-			"\"detType\":%u, "
-			"\"version\":%u"
-			"}\n\0";
 
 };

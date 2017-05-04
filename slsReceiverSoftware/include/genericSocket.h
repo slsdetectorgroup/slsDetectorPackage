@@ -71,7 +71,7 @@ using namespace std;
 #define DEFAULT_BACKLOG 5
 #define DEFAULT_UDP_PORTNO 50001
 #define DEFAULT_GUI_PORTNO 65000
-#define DEFAULT_ZMQ_PORTNO 70001
+//#define DEFAULT_ZMQ_PORTNO defined in zmqSocket.h (40001)
 
 class genericSocket{
 

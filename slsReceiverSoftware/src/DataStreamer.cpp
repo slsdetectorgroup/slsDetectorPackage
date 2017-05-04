@@ -295,7 +295,6 @@ int DataStreamer::SendHeader(sls_detector_header* header, bool dummy) {
 
 	uint64_t frameIndex = header->frameNumber - firstMeasurementIndex;
 	uint64_t acquisitionIndex = header->frameNumber - firstAcquisitionIndex;
-	uint32_t subframeIndex = header->expLength;
 
 	return zmqSocket->SendHeaderData(SLS_DETECTOR_JSON_HEADER_VERSION, *dynamicRange,
 			generalData->nPixelsX_Streamer, generalData->nPixelsY_Streamer,

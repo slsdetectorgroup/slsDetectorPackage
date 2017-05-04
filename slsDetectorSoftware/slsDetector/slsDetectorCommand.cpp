@@ -3476,7 +3476,7 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
 	  if (retval < 0)
 		  sprintf(answer, "%d", -1);
 	  else
-		  sprintf(answer,"%lx", (long long unsigned int)retval);
+		  sprintf(answer,"%lx", retval);
     return string(answer);
   }
 
@@ -3490,7 +3490,7 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
     	if (retval < 0)
     		sprintf(answer, "%d", -1);
     	else
-    		sprintf(answer,"%lx", (long long unsigned int)retval);
+    		sprintf(answer,"%lx", retval);
       return string(answer);
     } else
       return string("undefined module number");
@@ -3500,7 +3500,7 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
 	  if (retval < 0)
 		  sprintf(answer, "%d", -1);
 	  else
-		  sprintf(answer,"%lx", (long long unsigned int)retval);
+		  sprintf(answer,"%lx", retval);
     return string(answer);
   }
   if (cmd.find("modulenumber")!=string::npos) {
@@ -3510,7 +3510,7 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
     	if (retval < 0)
     		sprintf(answer, "%d", -1);
     	else
-    		sprintf(answer,"%lx", (long long unsigned int)retval);
+    		sprintf(answer,"%lx", retval);
       return string(answer);
     } else
       return string("undefined module number");
@@ -3521,7 +3521,7 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
 	  if (retval < 0)
 		  sprintf(answer, "%d", -1);
 	  else
-		  sprintf(answer,"%lx", (long long unsigned int)retval);
+		  sprintf(answer,"%lx", retval);
     return string(answer);
   }
   
@@ -3530,7 +3530,7 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
 	  if (retval < 0)
 		  sprintf(answer, "%d", -1);
 	  else
-		  sprintf(answer,"%lx", (long long unsigned int)retval);
+		  sprintf(answer,"%lx", retval);
     return string(answer);
   }
 
@@ -3540,7 +3540,7 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
 	if (retval < 0)
 		sprintf(answer, "%d", -1);
 	else
-		sprintf(answer,"%lx", (long long unsigned int)retval);
+		sprintf(answer,"%lx", retval);
     return string(answer);
   }
   return string("unknown id mode ")+cmd;

@@ -888,20 +888,21 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 	  pthread_mutex_unlock(&ms);
 	  setFileFormat(BINARY);
   }else if (thisDetector->myDetectorType==EIGER){
-	  fileIO:: setFramesPerFile(EIGER_MAX_FRAMES_PER_FILE);
+	  fileIO::setFramesPerFile(EIGER_MAX_FRAMES_PER_FILE);
 	  pthread_mutex_unlock(&ms);
 	  setFileFormat(BINARY);
   }else if (thisDetector->myDetectorType==MOENCH){
-	  fileIO:: setFramesPerFile(MOENCH_MAX_FRAMES_PER_FILE);
+	  fileIO::setFramesPerFile(MOENCH_MAX_FRAMES_PER_FILE);
 	  pthread_mutex_unlock(&ms);
 	  setFileFormat(BINARY);
   }else if (thisDetector->myDetectorType==JUNGFRAU){
-	  fileIO:: setFramesPerFile(JFRAU_MAX_FRAMES_PER_FILE);
+	  fileIO::setFramesPerFile(JFRAU_MAX_FRAMES_PER_FILE);
 	  pthread_mutex_unlock(&ms);
 	  setFileFormat(BINARY);
   }else if (thisDetector->myDetectorType==JUNGFRAUCTB){
 	  setFramesPerFile(JFCTB_MAX_FRAMES_PER_FILE);
-	  fileIO:: pthread_mutex_unlock(&ms);
+	  fileIO::setFramesPerFile(JFRAU_MAX_FRAMES_PER_FILE);
+	  pthread_mutex_unlock(&ms);
 	  setFileFormat(BINARY);
   }else
 	  pthread_mutex_unlock(&ms);
@@ -1003,61 +1004,61 @@ slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType t)
   switch(t) {
   case MYTHEN:
     nch=128; // complete mythen system
-//    nm=24;
+//  nm=24;
     nc=10;
     nd=6; // dacs
     break;
   case PICASSO:
     nch=128; // complete mythen system
- //   nm=24;
+ // nm=24;
     nc=12;
     nd=6; // dacs+adcs
     break;
   case GOTTHARD:
     nch=128;
-    nm=1;
+//  nm=1;
     nc=10;
     nd=8; // dacs+adcs
     na=5;
     break;
   case PROPIX:
     nch=22*22;
-    nm=1;
+//   nm=1;
     nc=1;
     nd=8; // dacs+adcs
     na=5;
     break;
   case EIGER:
     nch=256*256; // one EIGER half module
-//    nm=1; //modules/detector
+//  nm=1; //modules/detector
     nc=4*1; //chips 
     nd=16; //dacs
     na=0;
     break;
   case MOENCH:
     nch=160*160;
-    nm=1; //modules/detector
+//   nm=1; //modules/detector
     nc=1; //chips
     nd=8; //dacs
     na=1;
     break;
   case JUNGFRAU:
     nch=256*256;//32;
- //   nm=1;
+ // nm=1;
     nc=4*2;
     nd=16; // dacs+adcs
     na=0;
     break;
   case JUNGFRAUCTB:
     nch=36;
-//    nm=1;
+//  nm=1;
     nc=1;
     nd=8; // dacs+adcs
     na=1;
     break;
   default:
     nch=0; // dum!
-//    nm=0; //modules/detector
+//  nm=0; //modules/detector
     nc=0; //chips
     nd=0; //dacs+adcs
     na=0;
@@ -1722,13 +1723,15 @@ int slsDetector::getTotalNumberOfChannels() {
     }
     thisDetector->nChans=thisDetector->nChan[X];
     thisDetector->dataBytes=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods*2*thisDetector->timerValue[SAMPLES_JCTB];
-  } else
+  } else {
 #ifdef VERBOSE
     cout << "det type is "<< thisDetector->myDetectorType << endl;
   cout << "Total number of channels is "<< thisDetector->nChans*thisDetector->nChips*thisDetector->nMods << " data bytes is " << thisDetector->dataBytes << endl;
 #endif
+  ;
+  }
   return thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;
-};
+}
 
 int slsDetector::getTotalNumberOfChannels(dimension d) {
   getTotalNumberOfChannels();
@@ -1743,7 +1746,10 @@ int slsDetector::getMaxNumberOfChannels(){
 };
 
 int slsDetector::getMaxNumberOfChannels(dimension d){  
-  if(thisDetector->myDetectorType==JUNGFRAUCTB) if (d==X) return 36*thisDetector->nChip[d]*thisDetector->nModMax[d]; else return 1*thisDetector->nChip[d]*thisDetector->nModMax[d];
+  if(thisDetector->myDetectorType==JUNGFRAUCTB) {
+	  if (d==X) return 36*thisDetector->nChip[d]*thisDetector->nModMax[d];
+	  else return 1*thisDetector->nChip[d]*thisDetector->nModMax[d];
+  }
   return thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nModMax[d];
 };
 
@@ -2443,7 +2449,7 @@ dacs_t slsDetector::setDAC(dacs_t val, dacIndex index, int mV, int imod){
   int arg[3];
 
 
-  if (    (thisDetector->myDetectorType == GOTTHARD) ||  (thisDetector->myDetectorType == PROPIX) && index==HV_NEW)
+  if ( (index==HV_NEW) &&((thisDetector->myDetectorType == GOTTHARD) || (thisDetector->myDetectorType == PROPIX)))
     index=HV_POT;
 
   arg[0]=index;
@@ -5251,7 +5257,7 @@ double* slsDetector::decodeData(int *datain, int &nn, double *fdata) {
     
     //  printf("allocating fdata!\n");
   }
-  const int bytesize=8;
+ // const int bytesize=8;
   
   int ival=0;
   char *ptr=(char*)datain;

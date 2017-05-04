@@ -5185,16 +5185,12 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 int multiSlsDetector::getData(const int isocket, const bool masking, int* image, const int size,
 		uint64_t &acqIndex, uint64_t &frameIndex, uint32_t &subframeIndex, string &filename) {
 
-	bool dummy = false;
-	if (!zmqSocket[isocket]->ReceiveHeader(isocket, acqIndex, frameIndex, subframeIndex, filename, dummy))
+	//fail is on parse error or end of acquisition
+	if (!zmqSocket[isocket]->ReceiveHeader(isocket, acqIndex, frameIndex, subframeIndex, filename))
 		return FAIL;
 
-	//end of acquisition
-	if(dummy)
-		return FAIL;
-
+	//receiving incorrect size is replaced by 0xFF
 	zmqSocket[isocket]->ReceiveData(isocket, image, size);
-
 
 	//jungfrau masking adcval
 	if(masking){

@@ -766,10 +766,10 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 		progress=(int)data->progressIndex;
 		currentFrameIndex = fileIOStatic::getIndicesFromFileName(string(data->fileName),currentFileIndex);
 		//happens if receiver sends a null and empty file name
-		if(string(data->fileName).empty()){
+		/*if(string(data->fileName).empty()){
 			cout << "Received empty file name. Exiting function without updating data for plot." << endl;
 			return -1;
-		}
+		}*/
 #ifdef VERYVERBOSE
 		cout << "progress:" << progress << endl;
 #endif

@@ -63,6 +63,7 @@ Listener::Listener(Fifo*& f, runStatus* s, uint32_t* portno, char* e, int* act, 
 
 
 Listener::~Listener() {
+	if (udpSocket) delete udpSocket;
 	if (carryOverPacket) delete carryOverPacket;
 	if (listeningPacket) delete listeningPacket;
 	ThreadObject::DestroyThread();
@@ -166,10 +167,10 @@ void Listener::RecordFirstIndices(uint64_t fnum) {
 		acquisitionStartedFlag = true;
 		firstAcquisitionIndex = fnum;
 	}
-	if (!index) cprintf(BLUE,"%d First Acquisition Index:%lld\n"
-							  "%d First Measurement Index:%lld\n",
-			index, (long long int)firstAcquisitionIndex,
-			index, (long long int)firstMeasurementIndex);
+	if (!index) cprintf(BLUE,"%d First Acquisition Index:%lu\n"
+							  "%d First Measurement Index:%lu\n",
+			index, firstAcquisitionIndex,
+			index, firstMeasurementIndex);
 }
 
 

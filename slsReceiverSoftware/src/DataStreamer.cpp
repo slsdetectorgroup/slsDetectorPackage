@@ -215,18 +215,18 @@ void DataStreamer::StopProcessing(char* buf) {
 #endif
 }
 
-
+/** buf includes only the standard header */
 void DataStreamer::ProcessAnImage(char* buf) {
 
 	sls_detector_header* header = (sls_detector_header*) (buf);
 	uint64_t fnum = header->frameNumber;
 #ifdef VERBOSE
-	if (!index) cprintf(MAGENTA,"DataStreamer %d: fnum:%lld\n", index, (long long int)fnum);
+	if (!index) cprintf(MAGENTA,"DataStreamer %d: fnum:%lu\n", index,fnum);
 #endif
 
 	if (!measurementStartedFlag) {
 #ifdef VERBOSE
-		if (!index) cprintf(MAGENTA,"DataStreamer %d: fnum:%lld\n", index, (long long int)fnum);
+		if (!index) cprintf(MAGENTA,"DataStreamer %d: fnum:%lu\n", index, fnum);
 #endif
 		RecordFirstIndices(fnum);
 		//restart timer
@@ -293,15 +293,18 @@ bool DataStreamer::CheckCount() {
 
 int DataStreamer::SendHeader(sls_detector_header* header, bool dummy) {
 
+	if (dummy)
+		return  zmqSocket->SendHeaderData(index, dummy,SLS_DETECTOR_JSON_HEADER_VERSION);
+
 	uint64_t frameIndex = header->frameNumber - firstMeasurementIndex;
 	uint64_t acquisitionIndex = header->frameNumber - firstAcquisitionIndex;
 
-	return zmqSocket->SendHeaderData(SLS_DETECTOR_JSON_HEADER_VERSION, *dynamicRange,
+	return zmqSocket->SendHeaderData(index, dummy, SLS_DETECTOR_JSON_HEADER_VERSION, *dynamicRange,
 			generalData->nPixelsX_Streamer, generalData->nPixelsY_Streamer,
-			acquisitionIndex, frameIndex, fileNametoStream, dummy,
-
+			acquisitionIndex, frameIndex, fileNametoStream,
 			header->frameNumber, header->expLength, header->packetNumber, header->bunchId, header->timestamp,
-			header->modId, header->xCoord, header->yCoord, header->zCoord, header->debug, header->roundRNumber,
+			header->modId, header->xCoord, header->yCoord, header->zCoord,
+			header->debug, header->roundRNumber,
 			header->detType, header->version
-			);
+	);
 }

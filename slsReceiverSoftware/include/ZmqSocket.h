@@ -190,11 +190,15 @@ public:
 	 * @param dummy true if end of acquistion else false
 	 * @returns 0 if error, else 1
 	 */
-	int SendHeaderData (uint32_t jsonversion, uint32_t dynamicrange, uint32_t npixelsx, uint32_t npixelsy,
-			uint64_t acqIndex, uint64_t fIndex, char* fname, bool dummy,
-			uint64_t frameNumber, uint32_t expLength, uint32_t packetNumber, uint64_t bunchId, uint64_t timestamp,
-			uint16_t modId, uint16_t xCoord, uint16_t yCoord, uint16_t zCoord, uint32_t debug, uint16_t roundRNumber,
-			uint8_t detType, uint8_t version) {
+	int SendHeaderData ( int index, bool dummy, uint32_t jsonversion, uint32_t dynamicrange = 0,
+			uint32_t npixelsx = 0, uint32_t npixelsy = 0,
+			uint64_t acqIndex = 0, uint64_t fIndex = 0, char* fname = NULL,
+			uint64_t frameNumber = 0, uint32_t expLength = 0, uint32_t packetNumber = 0,
+			uint64_t bunchId = 0, uint64_t timestamp = 0,
+			uint16_t modId = 0, uint16_t xCoord = 0, uint16_t yCoord = 0, uint16_t zCoord = 0,
+			uint32_t debug = 0, uint16_t roundRNumber = 0,
+			uint8_t detType = 0, uint8_t version = 0) {
+
 
 		char buf[MAX_STR_LENGTH] = "";
 		/** Json Header Format */
@@ -206,7 +210,7 @@ public:
 				"\"acqIndex\":%llu, "
 				"\"fIndex\":%llu, "
 				"\"fname\":\"%s\", "
-				 "\"data\": %d, "
+				"\"data\": %d, "
 
 				"\"frameNumber\":%llu, "
 				"\"expLength\":%u, "
@@ -224,15 +228,16 @@ public:
 				"}\n\0";
 		int length = sprintf(buf, jsonHeaderFormat,
 				jsonversion, dynamicrange, npixelsx, npixelsy,
-				acqIndex, fIndex, fname, dummy?1:0,
-				frameNumber, expLength, packetNumber, bunchId, timestamp,
-				modId, xCoord, yCoord, zCoord, debug, roundRNumber,
-				detType, version);
+				acqIndex, fIndex, (fname == NULL)? "":fname, dummy?0:1,
+						frameNumber, expLength, packetNumber, bunchId, timestamp,
+						modId, xCoord, yCoord, zCoord, debug, roundRNumber,
+						detType, version);
 #ifdef VERBOSE
-	printf("%d Streamer: buf:%s\n", index, buf);
+		if(!index)
+			printf("%d Streamer: buf:%s\n", index, buf);
 #endif
 
-		if(zmq_send (socketDescriptor, buf, length, ZMQ_SNDMORE) < 0) {
+		if(zmq_send (socketDescriptor, buf, length, dummy?0:ZMQ_SNDMORE) < 0) {
 			PrintError ();
 			return 0;
 		}
@@ -266,6 +271,10 @@ public:
 			PrintError ();
 			cprintf (BG_RED,"Error: Could not read header for socket %d\n",index);
 		}
+#ifdef VERBOSE
+		else
+			cprintf( RED,"Message %d Length: %d Header:%s \n", index, length, (char*) zmq_msg_data (&message) );
+#endif
 		return length;
 	};
 
@@ -287,10 +296,13 @@ public:
 		int len = ReceiveMessage(index, message);
 		if ( len > 0 ) {
 			bool dummy = false;
+#ifdef VERBOSE
+				cprintf( RED,"Header %d Length: %d Header:%s \n", index, length, (char*) zmq_msg_data (&message) );
+#endif
 			if ( ParseHeader (index, len, message, acqIndex, frameIndex, subframeIndex, filename, dummy)) {
 				zmq_msg_close (&message);
 #ifdef VERBOSE
-				cprintf( RED,"%d Length: %d Header:%s \n", index, length, (char*) zmq_msg_data (&message) );
+				cprintf( RED,"Parsed Header %d Length: %d Header:%s \n", index, len, (char*) zmq_msg_data (&message) );
 #endif
 				if (dummy) {
 #ifdef VERBOSE
@@ -352,6 +364,12 @@ public:
 	int ParseHeader(const int index, int length, zmq_msg_t& message, uint64_t &acqIndex,
 			uint64_t &frameIndex, uint32_t &subframeIndex, string &filename, bool& dummy)
 	{
+
+		acqIndex = -1;
+		frameIndex = -1;
+		subframeIndex = -1;
+		dummy = true;
+
 		Document d;
 		if ( d.Parse( (char*) zmq_msg_data (&message), zmq_msg_size (&message)).HasParseError() ) {
 			cprintf( RED,"%d Could not parse. len:%d: Message:%s \n", index, length, (char*) zmq_msg_data (&message) );
@@ -366,23 +384,25 @@ public:
 		}
 
 		int temp = d["data"].GetUint();
-		dummy = temp ? true : false;
-		if (dummy) {
+		dummy = temp ? false : true;
+		if (!dummy) {
 			acqIndex 		= d["acqIndex"].GetUint64();
 			frameIndex 		= d["fIndex"].GetUint64();
-			subframeIndex 	= -1;
-			if(d["bitmode"].GetInt()==32 && d["detType"].GetUint() == slsReceiverDefs::EIGER) {
+			if(d["bitmode"].GetUint()==32 && d["detType"].GetUint() == slsReceiverDefs::EIGER) {
 				subframeIndex 	= d["expLength"].GetUint();
 			}
 			filename 		= d["fname"].GetString();
-#ifdef VERYVERBOSE
-			cout << "Data: " << temp << endl;
-			cout << "Acquisition index: " << acqIndex << endl;
-			cout << "Frame index: " << frameIndex << endl;
-			cout << "Subframe index: " << subframeIndex << endl;
-			cout << "File name: " << filename << endl;
-#endif
 		}
+#ifdef VERYVERBOSE
+		cprintf(BLUE,"%d Dummy:%d\n"
+				"\tAcqIndex:%lu\n"
+				"\tFrameIndex:%lu\n"
+				"\tSubIndex:%u\n"
+				"\tBitMode:%u\n"
+				"\tDetType:%u\n",
+				index, (int)dummy, acqIndex, frameIndex, subframeIndex,
+				d["bitmode"].GetUint(),d["detType"].GetUint());
+#endif
 		return 1;
 	};
 

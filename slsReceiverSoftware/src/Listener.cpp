@@ -293,7 +293,7 @@ void Listener::StopListening(char* buf) {
 }
 
 
-
+/* buf includes the header */
 uint32_t Listener::ListenToAnImage(char* buf) {
 	uint32_t rc = 0;
 	uint64_t fnum = 0, bid = 0;
@@ -322,7 +322,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		memcpy(buf  + generalData->fifoBufferHeaderSize + (pnum * dsize), carryOverPacket + generalData->headerSizeinPacket, dsize);
 		//writer header
 		if(isHeaderEmpty) {
-			sls_detector_header* header = (sls_detector_header*) (buf);
+			sls_detector_header* header = (sls_detector_header*) (buf + FIFO_HEADER_NUMBYTES);
 			memset(header, 0, sizeof(sls_detector_header));
 			header->frameNumber = fnum;
 			if (generalData->myDetectorType == EIGER && *dynamicRange == 32)
@@ -331,16 +331,9 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 			if (generalData->myDetectorType == JUNGFRAU)
 				header->bunchId = bid;
 			/*header->xCoord = index;  given by det packet, also for ycoord, zcoord */
-			/*header->detType = (uint8_t) generalData->myDetectorType; given by det packet */
+			header->detType = (uint8_t) generalData->myDetectorType; /*given by det packet */
 			header->version = (uint8_t) SLS_DETECTOR_HEADER_VERSION;
 
-		#ifdef VERBOSE
-			if(!ithread)
-					cprintf(BLUE,
-							"framenumber:%llu\tsubfnum:%u\tpnum:%u\tbunchid:%llu\txcoord:%u\tdettype:%u\tversion:%u\n",
-							header->frameNumber, header->expLength, header->packetNumber,
-							header->bunchId, header->xCoord, header->detType, header->version);
-		#endif
 			isHeaderEmpty = false;
 		}
 		expectpnum = pnum+1; //for jungfrau
@@ -366,7 +359,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		lastCaughtFrameIndex = fnum;
 #ifdef VERBOSE
 		if (!index)
-			cprintf(GREEN,"Listening %d: fnum:%lld, pnum:%d\n", index, (long long int)fnum, pnum);
+			cprintf(GREEN,"Listening %d: fnum:%lu, pnum:%d\n", index,fnum, pnum);
 #endif
 		if (!measurementStartedFlag)
 			RecordFirstIndices(fnum);
@@ -393,7 +386,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		//copy packet
 		memcpy(buf + generalData->fifoBufferHeaderSize + (pnum * dsize), listeningPacket + generalData->headerSizeinPacket, dsize);
 		if(isHeaderEmpty) {
-			sls_detector_header* header = (sls_detector_header*) (buf);
+			sls_detector_header* header = (sls_detector_header*) (buf + FIFO_HEADER_NUMBYTES);
 			memset(header, 0, sizeof(sls_detector_header));
 			header->frameNumber = fnum;
 			if (generalData->myDetectorType == EIGER && *dynamicRange == 32)
@@ -402,7 +395,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 			if (generalData->myDetectorType == JUNGFRAU)
 				header->bunchId = bid;
 			/*header->xCoord = index;  given by det packet, also for ycoord, zcoord */
-			/*header->detType = (uint8_t) generalData->myDetectorType; given by det packet */
+			header->detType = (uint8_t) generalData->myDetectorType; /*given by det packet */
 			header->version = (uint8_t) SLS_DETECTOR_HEADER_VERSION;
 			isHeaderEmpty = false;
 		}

@@ -26,11 +26,10 @@ uint64_t Listener::RunningMask(0x0);
 
 pthread_mutex_t Listener::Mutex = PTHREAD_MUTEX_INITIALIZER;
 
-const GeneralData* Listener::generalData(0);
-
 
 Listener::Listener(Fifo*& f, runStatus* s, uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr) :
 		ThreadObject(NumberofListeners),
+		generalData(0),
 		fifo(f),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
@@ -64,8 +63,8 @@ Listener::Listener(Fifo*& f, runStatus* s, uint32_t* portno, char* e, int* act, 
 
 Listener::~Listener() {
 	if (udpSocket) delete udpSocket;
-	if (carryOverPacket) delete carryOverPacket;
-	if (listeningPacket) delete listeningPacket;
+	if (carryOverPacket) delete [] carryOverPacket;
+	if (listeningPacket) delete [] listeningPacket;
 	ThreadObject::DestroyThread();
 	NumberofListeners--;
 }
@@ -146,11 +145,13 @@ void Listener::ResetParametersforNewMeasurement(){
 	firstMeasurementIndex = 0;
 	carryOverFlag = false;
 	if (carryOverPacket)
-		delete carryOverPacket;
+		delete [] carryOverPacket;
 	carryOverPacket = new char[generalData->packetSize];
+	memset(carryOverPacket,0,generalData->packetSize);
 	if (listeningPacket)
-		delete listeningPacket;
+		delete [] listeningPacket;
 	listeningPacket = new char[generalData->packetSize];
+	memset(listeningPacket,0,generalData->packetSize);
 }
 
 
@@ -191,19 +192,19 @@ int Listener::SetThreadPriority(int priority) {
 }
 
 int Listener::CreateUDPSockets() {
-	ShutDownUDPSocket();
 
 	if (!(*activated))
 		return OK;
 
 	//if eth is mistaken with ip address
 	if (strchr(eth,'.') != NULL){
-		strcpy(eth,"");
+		strncpy(eth,"", MAX_STR_LENGTH);
 	}
 	if(!strlen(eth)){
 		FILE_LOG(logWARNING) << "eth is empty. Listening to all";
 	}
 
+	ShutDownUDPSocket();
 	udpSocket = new genericSocket(*udpPortNumber, genericSocket::UDP,
 			generalData->packetSize, (strlen(eth)?eth:NULL), generalData->headerPacketSize);
 	int iret = udpSocket->getErrorStatus();
@@ -247,7 +248,7 @@ void Listener::ThreadExecution() {
 	}
 
 	//get data
-	if (*status != TRANSMITTING) {
+	if (*status != TRANSMITTING && udpSocket) {
 		if (*activated)
 			rc = ListenToAnImage(buffer);
 		else
@@ -255,7 +256,7 @@ void Listener::ThreadExecution() {
 	}
 
 	//done acquiring
-	if (*status == TRANSMITTING || ((!(*activated)) && (rc == 0))) {
+	if ((*status == TRANSMITTING) || ( (!(*activated)) && (rc == 0)) ) {
 		StopListening(buffer);
 		return;
 	}
@@ -288,13 +289,13 @@ void Listener::StopListening(char* buf) {
 	fifo->PushAddress(buf);
 	StopRunning();
 #ifdef VERBOSE
-	cprintf(GREEN,"%d: Listening Packets (%d) : %d\n", index, *udpPortNumber, numPacketsCaught);
+	cprintf(GREEN,"%d: Listening Packets (%u) : %llu\n", index, *udpPortNumber, numPacketsCaught);
 	printf("%d: Listening Completed\n", index);
 #endif
 }
 
 
-/* buf includes the header */
+/* buf includes the fifo header and packet header */
 uint32_t Listener::ListenToAnImage(char* buf) {
 	uint32_t rc = 0;
 	uint64_t fnum = 0, bid = 0;
@@ -345,8 +346,10 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 	while ( isHeaderEmpty || (pnum < (generalData->packetsPerFrame-1))) {
 
 		//listen to new packet
-
-		int curr_rc = udpSocket->ReceiveDataOnly(listeningPacket);
+		int curr_rc = 0;
+		if (udpSocket){
+			curr_rc = udpSocket->ReceiveDataOnly(listeningPacket);
+		}
 		if(curr_rc <= 0) {
 			if (rc <= 0) return 0;			//empty image
 			return generalData->imageSize;	//empty packet now, but not empty image
@@ -359,7 +362,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		generalData->GetHeaderInfo(index, listeningPacket, *dynamicRange, fnum, pnum, snum, bid);
 		lastCaughtFrameIndex = fnum;
 #ifdef VERBOSE
-		if (!index)
+		//if (!index)
 			cprintf(GREEN,"Listening %d: fnum:%lu, pnum:%d\n", index,fnum, pnum);
 #endif
 		if (!measurementStartedFlag)

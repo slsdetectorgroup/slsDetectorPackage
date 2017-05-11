@@ -88,7 +88,7 @@ enum communicationProtocol{
 
 
  genericSocket(const char* const host_ip_or_name, unsigned short int const port_number, communicationProtocol p, int ps = DEFAULT_PACKET_SIZE) :
-   //   portno(port_number), 
+     portno(port_number),
 	 protocol(p),
 	 is_a_server(0),
 	 socketDescriptor(-1),
@@ -149,7 +149,7 @@ enum communicationProtocol{
   */
   
    genericSocket(unsigned short int const port_number, communicationProtocol p, int ps = DEFAULT_PACKET_SIZE, const char *eth=NULL, int hsize=0):
-     //portno(port_number),
+     portno(port_number),
      protocol(p),
      is_a_server(1),
      socketDescriptor(-1),
@@ -161,8 +161,10 @@ enum communicationProtocol{
 	 header_packet_size(hsize)
    {
 
+
 	  memset(&serverAddress, 0, sizeof(serverAddress));
 	  memset(&clientAddress, 0, sizeof(clientAddress));
+
 /* // you can specify an IP address: */
 /* // or you can let it automatically select one: */
 /* myaddr.sin_addr.s_addr = INADDR_ANY; */
@@ -483,15 +485,17 @@ enum communicationProtocol{
      static string ipToName(string ip) {
        struct ifaddrs *addrs, *iap;
        struct sockaddr_in *sa;
-       char buf[32];
 
+       char buf[32];
+       const int buf_len = sizeof(buf);
+       memset(buf,0,buf_len);
        strcpy(buf,"none");
 
        getifaddrs(&addrs);
        for (iap = addrs; iap != NULL; iap = iap->ifa_next) {
 	 if (iap->ifa_addr && (iap->ifa_flags & IFF_UP) && iap->ifa_addr->sa_family == AF_INET) {
 	   sa = (struct sockaddr_in *)(iap->ifa_addr);
-	   inet_ntop(iap->ifa_addr->sa_family, (void *)&(sa->sin_addr), buf, sizeof(buf));
+	   inet_ntop(iap->ifa_addr->sa_family, (void *)&(sa->sin_addr), buf, buf_len);
 	   if (ip==string(buf)) {
 	     //printf("%s\n", iap->ifa_name);
 	     strcpy(buf,iap->ifa_name);
@@ -507,6 +511,8 @@ enum communicationProtocol{
        struct ifreq ifr;
        int sock, j, k;
        char mac[32];
+       const int mac_len = sizeof(mac);
+       memset(mac,0,mac_len);
        
        sock=getSock(inf,&ifr);
        
@@ -515,10 +521,10 @@ enum communicationProtocol{
 	 return string("00:00:00:00:00:00");
        }
        for (j=0, k=0; j<6; j++) {
-	 k+=snprintf(mac+k, sizeof(mac)-k-1, j ? ":%02X" : "%02X",
+	 k+=snprintf(mac+k, mac_len-k-1, j ? ":%02X" : "%02X",
 		     (int)(unsigned int)(unsigned char)ifr.ifr_hwaddr.sa_data[j]);
        }
-       mac[sizeof(mac)-1]='\0';
+       mac[mac_len-1]='\0';
        
        if(sock!=1){
     	   close(sock);
@@ -533,6 +539,8 @@ enum communicationProtocol{
        struct ifreq ifr;
        int sock;
        char *p, addr[32];
+       const int addr_len = sizeof(addr);
+       memset(addr,0,addr_len);
        
        sock=getSock(inf,&ifr);
        
@@ -541,8 +549,8 @@ enum communicationProtocol{
 	 return string("0.0.0.0");
        }
        p=inet_ntoa(((struct sockaddr_in *)(&ifr.ifr_addr))->sin_addr);
-       strncpy(addr,p,sizeof(addr)-1);
-       addr[sizeof(addr)-1]='\0';
+       strncpy(addr,p,addr_len-1);
+       addr[addr_len-1]='\0';
        
        if(sock!=1){
     	   close(sock);
@@ -616,6 +624,9 @@ enum communicationProtocol{
     			 //normal
     			 nsending=packet_size;
     			 while(1){
+#ifdef VERYVERBOSE
+    				cprintf(BLUE,"%d gonna listen\n", portno); fflush(stdout);
+#endif
     				 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
       				 //break out of loop only if read one packets size or read didnt work (cuz of shutdown)
     				 if(nsent<=0 || nsent == packet_size)
@@ -697,6 +708,7 @@ enum communicationProtocol{
 
  protected:
 
+  int portno;
   communicationProtocol protocol; 
   int is_a_server;
   int socketDescriptor;

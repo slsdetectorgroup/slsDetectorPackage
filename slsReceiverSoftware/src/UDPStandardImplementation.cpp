@@ -553,7 +553,7 @@ void UDPStandardImplementation::startReadout(){
 		if(activated){
 
 			//current packets caught
-			int totalP = 0,prev=-1;
+			volatile int totalP = 0,prev=-1;
 			for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
 				totalP += (*it)->GetTotalPacketsCaught();
 
@@ -563,10 +563,11 @@ void UDPStandardImplementation::startReadout(){
 				//wait as long as there is change from prev totalP,
 				while(prev != totalP){
 #ifdef VERY_VERBOSE
-					cprintf(MAGENTA,"waiting for all packets prevP:%d totalP:%d PrevBuffer:%d currentBuffer:%d\n",prev,totalP,prevReceivedInBuffer,currentReceivedInBuffer);
+					cprintf(MAGENTA,"waiting for all packets prevP:%d totalP:%d\n",
+							prev,totalP);
 
 #endif
-					//usleep(2*1000*1000);
+					usleep(1*1000*1000);usleep(1*1000*1000);usleep(1*1000*1000);usleep(1*1000*1000);
 					usleep(5*1000);/* Need to find optimal time **/
 
 					prev = totalP;
@@ -588,7 +589,6 @@ void UDPStandardImplementation::startReadout(){
 
 		FILE_LOG(logINFO) << "Status: Transmitting";
 	}
-
 	//shut down udp sockets so as to make listeners push dummy (end) packets for processors
 	shutDownUDPSockets();
 }

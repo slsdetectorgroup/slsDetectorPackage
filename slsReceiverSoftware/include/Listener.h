@@ -206,7 +206,7 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	static pthread_mutex_t Mutex;
 
 	/** GeneralData (Detector Data) object */
-	static const GeneralData* generalData;
+	const GeneralData* generalData;
 
 	/** Fifo structure */
 	Fifo* fifo;
@@ -241,10 +241,10 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	uint32_t* dynamicRange;
 
 	/**Number of complete Packets caught for an entire acquisition (including all scans) */
-	uint64_t numTotalPacketsCaught;
+	volatile uint64_t numTotalPacketsCaught;
 
 	/** Number of complete Packets caught for each real time acquisition (eg. for each scan) */
-	uint64_t numPacketsCaught;
+	volatile uint64_t numPacketsCaught;
 
 	/** Frame Number of First Frame of an entire Acquisition (including all scans) */
 	uint64_t firstAcquisitionIndex;

@@ -100,6 +100,8 @@ int HDF5File::CreateFile(uint64_t fnum) {
 		return FAIL;
 	}
 	pthread_mutex_unlock(&Mutex);
+	if (dataspace == NULL)
+		cprintf(RED,"Got nothing!\n");
 	printf("%d HDF5 File: %s\n", index, currentFileName.c_str());
 	return OK;
 }
@@ -168,18 +170,22 @@ int HDF5File::CreateMasterFile(bool en, uint32_t size,
 void HDF5File::EndofAcquisition(uint64_t numf) {
 	//not created before
 	if (!virtualfd) {
-		//create virtual file only if more than 1 file or more than 1 detector(more than 1 file)
-		if (((numFilesinAcquisition > 1) ||(numDetY*numDetX) > 1))
-			CreateVirtualFile(numf);
-		//link current file in master file
-		else {
+
+		//only one file and one sub image
+		if (((numFilesinAcquisition == 1) && (numDetY*numDetX) == 1)) {
 			//dataset name
 			ostringstream osfn;
 			osfn << "/data";
 			if (*frameIndexEnable) osfn << "_f" << setfill('0') << setw(12) << 0;
 			string dsetname = osfn.str();
+			pthread_mutex_lock(&Mutex);
 			HDF5FileStatic::LinkVirtualInMaster(masterFileName, currentFileName, dsetname);
+			pthread_mutex_unlock(&Mutex);
 		}
+
+		//link current file in master file
+		else
+			CreateVirtualFile(numf);
 	}
 	numFilesinAcquisition = 0;
 }

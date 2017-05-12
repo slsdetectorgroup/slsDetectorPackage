@@ -355,9 +355,9 @@ public:
 	 */
 	static int CreateDataFile(int ind, bool owenable, string fname, bool frindexenable,
 			uint64_t fnum, uint64_t nDimx, uint32_t nDimy, uint32_t nDimz,
-			DataType dtype, H5File*& fd, DataSpace* dspace, DataSet* dset,
+			DataType dtype, H5File*& fd, DataSpace*& dspace, DataSet*& dset,
 			double version, uint64_t maxchunkedimages,
-			DataSpace* dspace_para, DataSet* dset_para[])
+			DataSpace*& dspace_para, DataSet* dset_para[])
 	{
 		try {
 			Exception::dontPrint(); //to handle errors

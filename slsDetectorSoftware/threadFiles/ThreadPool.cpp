@@ -127,6 +127,9 @@ void* ThreadPool::execute_thread(){
 		(*task)(); // could also do task->run(arg);
 		/*cout << ithread <<" Done executing thread " << pthread_self() << endl;*/
 
+		delete task;
+		/*cout << ithread << " task deleted" << endl;*/
+
 		m_task_mutex.lock();
 		number_of_ongoing_tasks--;
 		m_task_mutex.unlock();
@@ -138,9 +141,10 @@ void* ThreadPool::execute_thread(){
 			m_tasks_loaded = false;
 		}
 		//if(zmqthreadpool) cout<<"***"<<ithread<<" semaphore done address post:"<<&semDone<<endl;
+
+
 		sem_post(&semDone);
-		delete task;
-		/*cout << ithread << " task deleted" << endl;*/
+		//removed deleteing task to earlier
 	}
 	return NULL;
 }

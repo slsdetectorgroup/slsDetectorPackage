@@ -293,7 +293,6 @@ multiSlsDetector::~multiSlsDetector() {
 int multiSlsDetector::createThreadPool(){
 	if(threadpool){
 		threadpool->destroy_threadpool();
-		threadpool=0;
 	}
 	if(thisMultiDetector->numberOfDetectors < 1){
 		cout << "No detectors attached to create threadpool" << endl;
@@ -321,6 +320,7 @@ int multiSlsDetector::createThreadPool(){
 void multiSlsDetector::destroyThreadPool(){
 	if(threadpool){
 		threadpool->destroy_threadpool();
+		delete threadpool;
 		threadpool=0;
 #ifdef VERBOSE
 		cout<<"Destroyed Threadpool "<< threadpool << endl;

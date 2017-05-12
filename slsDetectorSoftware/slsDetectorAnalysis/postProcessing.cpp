@@ -778,6 +778,14 @@ void postProcessing::initDataset(int r) {
   cout << "done"  << endl;
 #endif
 
+  delete [] chPM;
+  delete [] mM;
+  if (ffcoeff != NULL)  delete [] ffcoeff;
+  if (fferr != NULL)  delete [] fferr;
+  if (angRad != NULL) delete [] angRad;
+  if (angOff != NULL) delete [] angOff;
+  if (angCenter != NULL) delete [] angCenter;
+
 
   if (*correctionMask&(1<< ANGULAR_CONVERSION)) {
     arraySize=getNumberOfAngularBins();

@@ -138,6 +138,7 @@ int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum) {
 			fnum%maxFramesPerFile, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
 			dataspace, dataset, datatype) == OK) {
 		sls_detector_header* header = (sls_detector_header*) (buffer);
+		header->xCoord = ((*detIndex) * (*numUnitsPerDetector) + index);/** need to be changed when det header incl*/
 		if (HDF5FileStatic::WriteParameterDatasets(index, dataspace_para,
 				fnum%maxFramesPerFile,
 				dataset_para, header) == OK) {

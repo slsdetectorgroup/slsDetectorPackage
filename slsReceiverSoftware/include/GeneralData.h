@@ -78,6 +78,10 @@ public:
 	/** Streaming (for ROI - mainly short Gotthard) - Image size (in bytes) */
 	uint32_t imageSize_Streamer;
 
+	/** emptybuffer  (mainly for jungfrau) */
+	uint32_t emptyHeader;
+
+
 	/** Cosntructor */
 	GeneralData():
 		myDetectorType(slsReceiverDefs::GENERIC),
@@ -100,7 +104,8 @@ public:
 		headerPacketSize(0),
 		nPixelsX_Streamer(0),
 		nPixelsY_Streamer(0),
-		imageSize_Streamer(0)
+		imageSize_Streamer(0),
+		emptyHeader(0)
 		{};
 
 	/** Destructor */
@@ -167,26 +172,27 @@ public:
 		std::string temp = slsReceiverDefs::getDetectorType(myDetectorType);
 		printf("\n\nDetector Data Variables:\n");
 		printf(	"myDetectorType:%s\n"
-				"Pixels X: %d\n"
-				"Pixels Y: %d\n"
-				"Header Size in Packet: %d\n"
-				"Data Size: %d\n"
-				"Packet Size: %d\n"
-				"Packets per Frame: %d\n"
-				"Image Size: %d\n"
+				"Pixels X: %u\n"
+				"Pixels Y: %u\n"
+				"Header Size in Packet: %u\n"
+				"Data Size: %u\n"
+				"Packet Size: %u\n"
+				"Packets per Frame: %u\n"
+				"Image Size: %u\n"
 				"Frame Index Mask: 0x%llx\n"
-				"Frame Index Offset: %d\n"
+				"Frame Index Offset: %u\n"
 				"Packet Index Mask: 0x%x\n"
-				"Packet Index Offset: %d\n"
-				"Max Frames Per File: %d\n"
-				"Fifo Buffer Size: %d\n"
-				"Fifo Buffer Header Size: %d\n"
-				"Default Fifo Depth: %d\n"
-				"Threads Per Receiver: %d\n"
-				"Header Packet Size: %d\n"
-				"Streamer Pixels X: %d\n"
-				"Streamer Pixels Y: %d\n"
-				"Streamer Image Size: %d\n"
+				"Packet Index Offset: %u\n"
+				"Max Frames Per File: %u\n"
+				"Fifo Buffer Size: %u\n"
+				"Fifo Buffer Header Size: %u\n"
+				"Default Fifo Depth: %u\n"
+				"Threads Per Receiver: %u\n"
+				"Header Packet Size: %u\n"
+				"Streamer Pixels X: %u\n"
+				"Streamer Pixels Y: %u\n"
+				"Streamer Image Size: %u\n"
+				"Empty Header: %u\n"
 				,temp.c_str(),//.c_str() modifies, using temp string for thread safety
 				nPixelsX,
 				nPixelsY,
@@ -207,7 +213,8 @@ public:
 				headerPacketSize,
 				nPixelsX_Streamer,
 				nPixelsY_Streamer,
-				imageSize_Streamer);
+				imageSize_Streamer,
+				emptyHeader);
 	};
 };
 
@@ -436,21 +443,7 @@ class JCTBData : public GeneralData {
 
 class JungfrauData : public GeneralData {
 
-private:
-
-	/** Structure of an jungfrau packet header */
-	typedef struct {
-		unsigned char emptyHeader[6];
-		unsigned char reserved[4];
-		unsigned char packetNumber[1];
-		unsigned char frameNumber[3];
-		unsigned char bunchid[8];
-	} jfrau_packet_header_t;
-
  public:
-
-	/** Size of packet header */
-	const static uint32_t packetHeaderSize	= 22;
 
 	/** Constructor */
 	JungfrauData(){
@@ -469,50 +462,9 @@ private:
 		nPixelsX_Streamer 	= nPixelsX;
 		nPixelsY_Streamer 	= nPixelsY;
 		imageSize_Streamer 	= imageSize;
+		emptyHeader			= 6;
 	};
 
-	/**
-	 * Get Header Infomation (frame number, packet number)
-	 * @param index thread index for debugging purposes
-	 * @param packetData pointer to data
-	 * @param frameNumber frame number
-	 * @param packetNumber packet number
-	 */
-	virtual void GetHeaderInfo(int index, char* packetData,	uint64_t& frameNumber, uint32_t& packetNumber) const
-	{
-		jfrau_packet_header_t* header = (jfrau_packet_header_t*)(packetData);
-		frameNumber = (uint64_t)(*( (uint32_t*) header->frameNumber));
-		packetNumber = packetsPerFrame -1 - (uint32_t)(*( (uint8_t*) header->packetNumber));
-	}
-
-	/**
-	 * Get Header Infomation (frame number, packet number)
-	 * @param index thread index for debugging purposes
-	 * @param packetData pointer to data
-	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
-	 * @param frameNumber frame number
-	 * @param packetNumber packet number
-	 * @param subFrameNumber sub frame number if applicable
-	 * @param bunchId bunch id
-	 */
-	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
-			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t& bunchId) const
-	{
-		subFrameNumber = -1;
-		jfrau_packet_header_t* header = (jfrau_packet_header_t*)(packetData);
-		frameNumber = (uint64_t)(*( (uint32_t*) header->frameNumber));
-		packetNumber =  packetsPerFrame - 1 -(uint32_t)(*( (uint8_t*) header->packetNumber));//old firmware (not needed in new firmware)
-		bunchId = (*((uint64_t*) header->bunchid));
-	}
-
-
-	/**
-	 * Print all variables
-	 */
-	void Print() const {
-		GeneralData::Print();
-		printf("Packet Header Size: %d\n",packetHeaderSize);
-	}
 };
 
 

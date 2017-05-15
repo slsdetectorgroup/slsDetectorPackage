@@ -27,10 +27,11 @@ uint64_t Listener::RunningMask(0x0);
 pthread_mutex_t Listener::Mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-Listener::Listener(Fifo*& f, runStatus* s, uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr) :
+Listener::Listener(detectorType dtype, Fifo*& f, runStatus* s, uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr) :
 		ThreadObject(NumberofListeners),
 		generalData(0),
 		fifo(f),
+		myDetectorType(dtype),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
 		status(s),
@@ -150,8 +151,8 @@ void Listener::ResetParametersforNewMeasurement(){
 	memset(carryOverPacket,0,generalData->packetSize);
 	if (listeningPacket)
 		delete [] listeningPacket;
-	listeningPacket = new char[generalData->packetSize];
-	memset(listeningPacket,0,generalData->packetSize);
+	listeningPacket = new char[generalData->packetSize + generalData->emptyHeader];
+	memset(listeningPacket,0,generalData->packetSize + generalData->emptyHeader);
 }
 
 
@@ -265,7 +266,20 @@ void Listener::ThreadExecution() {
 	if (rc <= 0) {
 		if (carryOverFlag) {
 			uint64_t fnum=0;uint32_t pnum=0;
-			generalData->GetHeaderInfo(index, carryOverPacket, fnum, pnum);
+
+			// -------------------------- new header -------------------------------------------------
+			if (myDetectorType == JUNGFRAU) {
+				sls_detector_header* header = (sls_detector_header*) (carryOverPacket);
+				fnum = header->frameNumber;
+				pnum = header->packetNumber;
+			}
+			// -------------------old header -------------------------------------------------
+			else {
+				generalData->GetHeaderInfo(index, carryOverPacket, fnum, pnum);
+			}
+			//---------------------------------------------------------------------------------------
+
+
 			if (fnum < currentFrameIndex)
 				cprintf(BG_RED,"Error:(Weird Early self shut down), Frame number less than current frame number\n");
 		}else
@@ -302,19 +316,30 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 	uint32_t pnum = 0, snum = 0;
 	int dsize = generalData->dataSize;
 	bool isHeaderEmpty = true;
-
-	//only for jungfrau as we look only at pnum
-	uint32_t expectpnum = 0;
+	sls_detector_header* header = 0;
 
 
 	//reset to -1
 	memset(buf + generalData->fifoBufferHeaderSize, 0xFF, dsize);
 
 
+
+
 	//look for carry over
-	if (carryOverFlag) {if(!index) cprintf(RED,"carry flag\n");
+	if (carryOverFlag) {
+		if(!index) cprintf(RED,"carry flag\n");
 		//check if its the current image packet
-		generalData->GetHeaderInfo(index, carryOverPacket, *dynamicRange, fnum, pnum, snum, bid);
+		// -------------------------- new header ----------------------------------------------------------------------
+		if (myDetectorType == JUNGFRAU) {
+			header = (sls_detector_header*) (carryOverPacket);
+			fnum = header->frameNumber;
+			pnum = header->packetNumber;
+		}
+		// -------------------old header -----------------------------------------------------------------------------
+		else {
+			generalData->GetHeaderInfo(index, carryOverPacket, *dynamicRange, fnum, pnum, snum, bid);
+		}
+		//------------------------------------------------------------------------------------------------------------
 		if (fnum != currentFrameIndex) {
 			if (fnum < currentFrameIndex)
 				return 0;
@@ -324,22 +349,28 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		memcpy(buf  + generalData->fifoBufferHeaderSize + (pnum * dsize), carryOverPacket + generalData->headerSizeinPacket, dsize);
 		//writer header
 		if(isHeaderEmpty) {
-			sls_detector_header* header = (sls_detector_header*) (buf + FIFO_HEADER_NUMBYTES);
-			memset(header, 0, sizeof(sls_detector_header));
-			header->frameNumber = fnum;
-			if (generalData->myDetectorType == EIGER && *dynamicRange == 32)
-				header->expLength = snum;
-			header->packetNumber = generalData->packetsPerFrame; /*in the end..*/
-			if (generalData->myDetectorType == JUNGFRAU)
-				header->bunchId = bid;
-			/*header->xCoord = index;  given by det packet, also for ycoord, zcoord */
-			header->detType = (uint8_t) generalData->myDetectorType; /*given by det packet */
-			header->version = (uint8_t) SLS_DETECTOR_HEADER_VERSION;
-
+			// -------------------------- new header ----------------------------------------------------------------------
+			if (myDetectorType == JUNGFRAU) {
+				memcpy(buf + FIFO_HEADER_NUMBYTES, header, sizeof(sls_detector_header));
+			}
+			// -------------------old header ------------------------------------------------------------------------------
+			else {
+				header = (sls_detector_header*) (buf + FIFO_HEADER_NUMBYTES);
+				memset(header, 0, sizeof(sls_detector_header));
+				header->frameNumber = fnum;
+				if (generalData->myDetectorType == EIGER && *dynamicRange == 32)
+					header->expLength = snum;
+				header->packetNumber = generalData->packetsPerFrame; /*in the end..*/
+				/*header->xCoord = index;  given by det packet, also for ycoord, zcoord */
+				header->detType = (uint8_t) generalData->myDetectorType; /*given by det packet */
+				header->version = (uint8_t) SLS_DETECTOR_HEADER_VERSION;
+			}
+			//------------------------------------------------------------------------------------------------------------
 			isHeaderEmpty = false;
 		}
-		expectpnum = pnum+1; //for jungfrau
 	}
+
+
 
 
 	//until last packet isHeaderEmpty to account for gotthard short frame, else never entering this loop)
@@ -359,28 +390,32 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		//update parameters
 		numPacketsCaught++;		//record immediately to get more time before socket shutdown
 		numTotalPacketsCaught++;
-		generalData->GetHeaderInfo(index, listeningPacket, *dynamicRange, fnum, pnum, snum, bid);
+
+		// -------------------------- new header ----------------------------------------------------------------------
+		if (myDetectorType == JUNGFRAU) {
+			listeningPacket += generalData->emptyHeader;
+			header = (sls_detector_header*) (listeningPacket);
+			fnum = header->frameNumber;
+			pnum = header->packetNumber;
+		}
+		// -------------------old header -----------------------------------------------------------------------------
+		else {
+			generalData->GetHeaderInfo(index, listeningPacket, *dynamicRange, fnum, pnum, snum, bid);
+		}
+		//------------------------------------------------------------------------------------------------------------
+
 		lastCaughtFrameIndex = fnum;
 #ifdef VERBOSE
 		//if (!index)
-			cprintf(GREEN,"Listening %d: fnum:%lu, pnum:%d\n", index,fnum, pnum);
+		cprintf(GREEN,"Listening %d: fnum:%lu, pnum:%d\n", index,fnum, pnum);
 #endif
 		if (!measurementStartedFlag)
 			RecordFirstIndices(fnum);
 
 
 
-		//future packet (jungfrau) look at packet numbers
-		if (generalData->myDetectorType == JUNGFRAU)  {
-			if (pnum < expectpnum) {
-				cprintf(RED,"setting carry over flag to true\n");
-				carryOverFlag = true;
-				memcpy(carryOverPacket,listeningPacket, generalData->packetSize);
-				return generalData->imageSize;
-			}
-		}
 		//future packet	by looking at image number  (all other detectors)
-		else if (fnum != currentFrameIndex) {
+		if (fnum != currentFrameIndex) {
 			cprintf(RED,"setting carry over flag to true\n");
 			carryOverFlag = true;
 			memcpy(carryOverPacket,listeningPacket, generalData->packetSize);
@@ -390,20 +425,25 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		//copy packet
 		memcpy(buf + generalData->fifoBufferHeaderSize + (pnum * dsize), listeningPacket + generalData->headerSizeinPacket, dsize);
 		if(isHeaderEmpty) {
-			sls_detector_header* header = (sls_detector_header*) (buf + FIFO_HEADER_NUMBYTES);
-			memset(header, 0, sizeof(sls_detector_header));
-			header->frameNumber = fnum;
-			if (generalData->myDetectorType == EIGER && *dynamicRange == 32)
-				header->expLength = snum;
-			header->packetNumber = generalData->packetsPerFrame; /*in the end..*/
-			if (generalData->myDetectorType == JUNGFRAU)
-				header->bunchId = bid;
-			/*header->xCoord = index;  given by det packet, also for ycoord, zcoord */
-			header->detType = (uint8_t) generalData->myDetectorType; /*given by det packet */
-			header->version = (uint8_t) SLS_DETECTOR_HEADER_VERSION;
+			// -------------------------- new header ----------------------------------------------------------------------
+			if (myDetectorType == JUNGFRAU) {
+				memcpy(buf + FIFO_HEADER_NUMBYTES, header, sizeof(sls_detector_header));
+			}
+			// -------------------old header ------------------------------------------------------------------------------
+			else {
+				header = (sls_detector_header*) (buf + FIFO_HEADER_NUMBYTES);
+				memset(header, 0, sizeof(sls_detector_header));
+				header->frameNumber = fnum;
+				if (generalData->myDetectorType == EIGER && *dynamicRange == 32)
+					header->expLength = snum;
+				header->packetNumber = generalData->packetsPerFrame; /*in the end..*/
+				/*header->xCoord = index;  given by det packet, also for ycoord, zcoord */
+				header->detType = (uint8_t) generalData->myDetectorType; /*given by det packet */
+				header->version = (uint8_t) SLS_DETECTOR_HEADER_VERSION;
+			}
+			//------------------------------------------------------------------------------------------------------------
 			isHeaderEmpty = false;
 		}
-		expectpnum = pnum+1; //for jungfrau
 	}
 
 	return generalData->imageSize;

@@ -370,7 +370,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 
 	//create threads
 	for ( int i=0; i < numThreads; ++i ) {
-		listener.push_back(new Listener(fifo[i], &status, &udpPortNum[i], eth, &activated, &numberOfFrames, &dynamicRange));
+		listener.push_back(new Listener(myDetectorType, fifo[i], &status, &udpPortNum[i], eth, &activated, &numberOfFrames, &dynamicRange));
 		dataProcessor.push_back(new DataProcessor(fifo[i], &fileFormatType, &fileWriteEnable, &dataStreamEnable,
 				rawDataReadyCallBack,pRawDataReady));
 		if (Listener::GetErrorMask() || DataProcessor::GetErrorMask()) {

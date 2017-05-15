@@ -224,6 +224,7 @@ void Listener::ShutDownUDPSocket() {
 	if(udpSocket){
 		udpSocket->ShutDownSocket();
 		FILE_LOG(logINFO) << "Shut down of UDP port " << *udpPortNumber;
+		fflush(stdout);
 		delete udpSocket;
 		udpSocket = 0;
 	}
@@ -314,9 +315,11 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 	uint32_t rc = 0;
 	uint64_t fnum = 0, bid = 0;
 	uint32_t pnum = 0, snum = 0;
+	uint32_t numpackets = 0;
 	int dsize = generalData->dataSize;
 	bool isHeaderEmpty = true;
 	sls_detector_header* header = 0;
+
 
 
 	//reset to -1
@@ -351,7 +354,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		if(isHeaderEmpty) {
 			// -------------------------- new header ----------------------------------------------------------------------
 			if (myDetectorType == JUNGFRAU) {
-				memcpy(buf + FIFO_HEADER_NUMBYTES, header, sizeof(sls_detector_header));
+				memcpy(buf + FIFO_HEADER_NUMBYTES, (char*)header, sizeof(sls_detector_header));
 			}
 			// -------------------old header ------------------------------------------------------------------------------
 			else {
@@ -368,24 +371,24 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 			//------------------------------------------------------------------------------------------------------------
 			isHeaderEmpty = false;
 		}
+		numpackets++;
 	}
 
 
 
 
 	//until last packet isHeaderEmpty to account for gotthard short frame, else never entering this loop)
-	while ( isHeaderEmpty || (pnum < (generalData->packetsPerFrame-1))) {
-
+	while ( numpackets < (generalData->packetsPerFrame)) {
 		//listen to new packet
-		int curr_rc = 0;
+		rc = 0;
 		if (udpSocket){
-			curr_rc = udpSocket->ReceiveDataOnly(listeningPacket);
+			rc = udpSocket->ReceiveDataOnly(listeningPacket);
 		}
-		if(curr_rc <= 0) {
-			if (rc <= 0) return 0;			//empty image
+		if(rc <= 0) {
+			if (numpackets == 0) return 0;	//empty image
 			return generalData->imageSize;	//empty packet now, but not empty image
 		}
-		rc += curr_rc;
+		numpackets++;
 
 		//update parameters
 		numPacketsCaught++;		//record immediately to get more time before socket shutdown
@@ -393,8 +396,8 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 		// -------------------------- new header ----------------------------------------------------------------------
 		if (myDetectorType == JUNGFRAU) {
-			listeningPacket += generalData->emptyHeader;
-			header = (sls_detector_header*) (listeningPacket);
+			//listeningPacket += generalData->emptyHeader;
+			header = (sls_detector_header*) (listeningPacket + generalData->emptyHeader);
 			fnum = header->frameNumber;
 			pnum = header->packetNumber;
 		}
@@ -407,7 +410,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		lastCaughtFrameIndex = fnum;
 #ifdef VERBOSE
 		//if (!index)
-		cprintf(GREEN,"Listening %d: fnum:%lu, pnum:%d\n", index,fnum, pnum);
+		cprintf(GREEN,"Listening %d: currentfindex:%lu, fnum:%lu,   pnum:%u numpackets:%u\n", index,currentFrameIndex, fnum, pnum, numpackets);
 #endif
 		if (!measurementStartedFlag)
 			RecordFirstIndices(fnum);
@@ -418,16 +421,16 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		if (fnum != currentFrameIndex) {
 			cprintf(RED,"setting carry over flag to true\n");
 			carryOverFlag = true;
-			memcpy(carryOverPacket,listeningPacket, generalData->packetSize);
+			memcpy(carryOverPacket,listeningPacket + generalData->emptyHeader, generalData->packetSize);
 			return generalData->imageSize;
 		}
 
 		//copy packet
-		memcpy(buf + generalData->fifoBufferHeaderSize + (pnum * dsize), listeningPacket + generalData->headerSizeinPacket, dsize);
+		memcpy(buf + generalData->fifoBufferHeaderSize + (pnum * dsize), listeningPacket + generalData->emptyHeader + generalData->headerSizeinPacket, dsize);
 		if(isHeaderEmpty) {
 			// -------------------------- new header ----------------------------------------------------------------------
 			if (myDetectorType == JUNGFRAU) {
-				memcpy(buf + FIFO_HEADER_NUMBYTES, header, sizeof(sls_detector_header));
+				memcpy(buf + FIFO_HEADER_NUMBYTES, (char*)header, sizeof(sls_detector_header));
 			}
 			// -------------------old header ------------------------------------------------------------------------------
 			else {

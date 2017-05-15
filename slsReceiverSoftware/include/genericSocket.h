@@ -628,7 +628,7 @@ enum communicationProtocol{
     				cprintf(BLUE,"%d gonna listen\n", portno); fflush(stdout);
 #endif
     				 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
-      				 //break out of loop only if read one packets size or read didnt work (cuz of shutdown)
+    				 //break out of loop only if read one packets size or read didnt work (cuz of shutdown)
     				 if(nsent<=0 || nsent == packet_size)
     					 break;
     				 //incomplete packets or header packets ignored and read buffer again

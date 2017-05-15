@@ -54,6 +54,9 @@ public:
 	/** Max Frames per binary file */
 	uint32_t maxFramesPerFile;
 
+	/** emptybuffer  (mainly for jungfrau) */
+	uint32_t emptyHeader;
+
 	/** Data size that is saved into the fifo buffer at a time*/
 	uint32_t fifoBufferSize;
 
@@ -78,8 +81,7 @@ public:
 	/** Streaming (for ROI - mainly short Gotthard) - Image size (in bytes) */
 	uint32_t imageSize_Streamer;
 
-	/** emptybuffer  (mainly for jungfrau) */
-	uint32_t emptyHeader;
+
 
 
 	/** Cosntructor */
@@ -97,6 +99,7 @@ public:
 		packetIndexMask(0),
 		packetIndexOffset(0),
 		maxFramesPerFile(0),
+		emptyHeader(0),
 		fifoBufferSize(0),
 		fifoBufferHeaderSize(0),
 		defaultFifoDepth(0),
@@ -104,8 +107,7 @@ public:
 		headerPacketSize(0),
 		nPixelsX_Streamer(0),
 		nPixelsY_Streamer(0),
-		imageSize_Streamer(0),
-		emptyHeader(0)
+		imageSize_Streamer(0)
 		{};
 
 	/** Destructor */
@@ -184,6 +186,7 @@ public:
 				"Packet Index Mask: 0x%x\n"
 				"Packet Index Offset: %u\n"
 				"Max Frames Per File: %u\n"
+				"Empty Header: %u\n"
 				"Fifo Buffer Size: %u\n"
 				"Fifo Buffer Header Size: %u\n"
 				"Default Fifo Depth: %u\n"
@@ -192,7 +195,7 @@ public:
 				"Streamer Pixels X: %u\n"
 				"Streamer Pixels Y: %u\n"
 				"Streamer Image Size: %u\n"
-				"Empty Header: %u\n"
+
 				,temp.c_str(),//.c_str() modifies, using temp string for thread safety
 				nPixelsX,
 				nPixelsY,
@@ -450,19 +453,20 @@ class JungfrauData : public GeneralData {
 		myDetectorType		= slsReceiverDefs::JUNGFRAU;
 		nPixelsX 			= (256*4);
 		nPixelsY 			= 256;
-		headerSizeinPacket  = 22;
+		headerSizeinPacket  = sizeof(slsReceiverDefs::sls_detector_header);
 		dataSize 			= 8192;
 		packetSize 			= headerSizeinPacket + dataSize;
 		packetsPerFrame 	= 128;
 		imageSize 			= dataSize*packetsPerFrame;
 		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
+		emptyHeader			= 6;
 		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 2500;
 		nPixelsX_Streamer 	= nPixelsX;
 		nPixelsY_Streamer 	= nPixelsY;
 		imageSize_Streamer 	= imageSize;
-		emptyHeader			= 6;
+
 	};
 
 };

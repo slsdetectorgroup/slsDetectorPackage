@@ -567,7 +567,7 @@ void UDPStandardImplementation::startReadout(){
 							prev,totalP);
 
 #endif
-					usleep(1*1000*1000);usleep(1*1000*1000);usleep(1*1000*1000);usleep(1*1000*1000);
+					//usleep(1*1000*1000);usleep(1*1000*1000);usleep(1*1000*1000);usleep(1*1000*1000);
 					usleep(5*1000);/* Need to find optimal time **/
 
 					prev = totalP;

@@ -24,6 +24,9 @@ public:
 	/** Number of Pixels in y axis */
 	uint32_t nPixelsY;
 
+	/** emptybuffer  (mainly for jungfrau) */
+	uint32_t emptyHeader;
+
 	/** Size of header in Packet */
 	uint32_t headerSizeinPacket;
 
@@ -53,9 +56,6 @@ public:
 
 	/** Max Frames per binary file */
 	uint32_t maxFramesPerFile;
-
-	/** emptybuffer  (mainly for jungfrau) */
-	uint32_t emptyHeader;
 
 	/** Data size that is saved into the fifo buffer at a time*/
 	uint32_t fifoBufferSize;
@@ -89,6 +89,7 @@ public:
 		myDetectorType(slsReceiverDefs::GENERIC),
 		nPixelsX(0),
 		nPixelsY(0),
+		emptyHeader(0),
 		headerSizeinPacket(0),
 		dataSize(0),
 		packetSize(0),
@@ -99,7 +100,6 @@ public:
 		packetIndexMask(0),
 		packetIndexOffset(0),
 		maxFramesPerFile(0),
-		emptyHeader(0),
 		fifoBufferSize(0),
 		fifoBufferHeaderSize(0),
 		defaultFifoDepth(0),
@@ -176,6 +176,7 @@ public:
 		printf(	"myDetectorType:%s\n"
 				"Pixels X: %u\n"
 				"Pixels Y: %u\n"
+				"Empty Header: %u\n"
 				"Header Size in Packet: %u\n"
 				"Data Size: %u\n"
 				"Packet Size: %u\n"
@@ -186,7 +187,6 @@ public:
 				"Packet Index Mask: 0x%x\n"
 				"Packet Index Offset: %u\n"
 				"Max Frames Per File: %u\n"
-				"Empty Header: %u\n"
 				"Fifo Buffer Size: %u\n"
 				"Fifo Buffer Header Size: %u\n"
 				"Default Fifo Depth: %u\n"
@@ -199,6 +199,7 @@ public:
 				,temp.c_str(),//.c_str() modifies, using temp string for thread safety
 				nPixelsX,
 				nPixelsY,
+				emptyHeader,
 				headerSizeinPacket,
 				dataSize,
 				packetSize,
@@ -216,8 +217,7 @@ public:
 				headerPacketSize,
 				nPixelsX_Streamer,
 				nPixelsY_Streamer,
-				imageSize_Streamer,
-				emptyHeader);
+				imageSize_Streamer);
 	};
 };
 
@@ -453,13 +453,13 @@ class JungfrauData : public GeneralData {
 		myDetectorType		= slsReceiverDefs::JUNGFRAU;
 		nPixelsX 			= (256*4);
 		nPixelsY 			= 256;
-		headerSizeinPacket  = sizeof(slsReceiverDefs::sls_detector_header);
+		emptyHeader			= 6;
+		headerSizeinPacket  = emptyHeader + sizeof(slsReceiverDefs::sls_detector_header);
 		dataSize 			= 8192;
 		packetSize 			= headerSizeinPacket + dataSize;
 		packetsPerFrame 	= 128;
 		imageSize 			= dataSize*packetsPerFrame;
 		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
-		emptyHeader			= 6;
 		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 2500;

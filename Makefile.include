@@ -23,7 +23,7 @@ endif
 # HDF5 code: in this case, you need HDF5 libraries
 ##############################################################   
 
-HDF5 = yes
+HDF5 = no
 HDF5_DIR = /opt/hdf5v1.10.0
 
 ifeq ($(HDF5),yes)

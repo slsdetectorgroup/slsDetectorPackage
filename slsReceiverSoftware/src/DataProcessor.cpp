@@ -187,8 +187,9 @@ void DataProcessor::SetGeneralData(GeneralData* g) {
 int DataProcessor::SetThreadPriority(int priority) {
 	struct sched_param param;
 	param.sched_priority = priority;
-	if (pthread_setschedparam(thread, SCHED_RR, &param) == EPERM)
+	if (pthread_setschedparam(thread, SCHED_FIFO, &param) == EPERM)
 		return FAIL;
+	FILE_LOG(logINFO) << "Processor Thread Priority set to " << priority;
 	return OK;
 }
 

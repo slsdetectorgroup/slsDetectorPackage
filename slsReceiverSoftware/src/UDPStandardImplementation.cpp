@@ -644,36 +644,42 @@ void UDPStandardImplementation::SetThreadPriorities() {
 
 	for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it){
 		if ((*it)->SetThreadPriority(LISTENER_PRIORITY) == FAIL) {
-			FILE_LOG(logWARNING) << "No root privileges to prioritize threads";
+			FILE_LOG(logWARNING) << "No root privileges to prioritize listener threads";
 			return;
 		}
 	}
+	/*
 	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it){
 		if ((*it)->SetThreadPriority(PROCESSOR_PRIORITY) == FAIL) {
-			FILE_LOG(logWARNING) << "No root privileges to prioritize threads";
+			FILE_LOG(logWARNING) << "No root privileges to prioritize writer threads";
 			return;
 		}
 	}
 	for (vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it){
 		if ((*it)->SetThreadPriority(STREAMER_PRIORITY) == FAIL) {
-			FILE_LOG(logWARNING) << "No root privileges to prioritize threads";
+			FILE_LOG(logWARNING) << "No root privileges to prioritize streamer threads";
 			return;
 		}
 	}
 	struct sched_param tcp_param;
 	tcp_param.sched_priority = TCP_PRIORITY;
 	if (pthread_setschedparam(pthread_self(),5 , &tcp_param) != EPERM) {
-		FILE_LOG(logWARNING) << "No root privileges to prioritize threads";
+		FILE_LOG(logWARNING) << "No root privileges to prioritize tcp threads";
 		return;
 	}
 
 	ostringstream osfn;
-	osfn << "Priorities set - "
+ 	osfn << "Priorities set - "
 			  "TCP:"<< TCP_PRIORITY <<
 			", Listener:" << LISTENER_PRIORITY <<
 			", Processor:" << PROCESSOR_PRIORITY;
 	if (dataStreamEnable)
 		osfn << ", Streamer:" << STREAMER_PRIORITY;
+
+*/
+	ostringstream osfn;
+	osfn << "Priorities set - "
+			"Listener:" << LISTENER_PRIORITY;
 
 	FILE_LOG(logINFO) << osfn.str();
 }

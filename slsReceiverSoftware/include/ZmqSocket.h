@@ -47,7 +47,7 @@ public:
 		strcpy(ip, hostname_or_ip);
 
 		// construct address
-		if (strchr (hostname_or_ip, '.') != NULL) {
+		if (strchr (hostname_or_ip, '.') == NULL) {
 			// convert hostname to ip
 			char* ptr = ConvertHostnameToIp (hostname_or_ip);
 			if (ptr == NULL)

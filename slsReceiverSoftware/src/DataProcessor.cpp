@@ -39,17 +39,17 @@ DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* 
 		ThreadObject(NumberofDataProcessors),
 		generalData(0),
 		fifo(f),
-		dataStreamEnable(dsEnable),
-		acquisitionStartedFlag(false),
-		measurementStartedFlag(false),
-		numTotalFramesCaught(0),
-		numFramesCaught(0),
-		firstAcquisitionIndex(0),
-		firstMeasurementIndex(0),
-		currentFrameIndex(0),
 		file(0),
+		dataStreamEnable(dsEnable),
 		fileFormatType(ftype),
 		fileWriteEnable(fwenable),
+		acquisitionStartedFlag(false),
+		measurementStartedFlag(false),
+		firstAcquisitionIndex(0),
+		firstMeasurementIndex(0),
+		numTotalFramesCaught(0),
+		numFramesCaught(0),
+		currentFrameIndex(0),
 		rawDataReadyCallBack(dataReadycb),
 		pRawDataReady(pDataReadycb)
 {
@@ -114,6 +114,9 @@ uint64_t DataProcessor::GetProcessedAcquisitionIndex() {
 	return currentFrameIndex - firstAcquisitionIndex;
 }
 
+uint64_t DataProcessor::GetProcessedMeasurementIndex() {
+	return currentFrameIndex - firstMeasurementIndex;
+}
 
 
 

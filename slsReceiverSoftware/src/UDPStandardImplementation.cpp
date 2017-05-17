@@ -492,12 +492,12 @@ void UDPStandardImplementation::stopReceiver(){
 
 	//create virtual file
 	if (fileWriteEnable && fileFormatType == HDF5) {
-		uint64_t maxFramescaught = 0;
+		uint64_t maxIndexCaught = 0;
 		for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it) {
-			maxFramescaught = max(maxFramescaught, (*it)->GetNumFramesCaught());
+			maxIndexCaught = max(maxIndexCaught, (*it)->GetProcessedMeasurementIndex());
 		}
-		if (maxFramescaught)
-			dataProcessor[0]->EndofAcquisition(maxFramescaught);
+		if (maxIndexCaught)
+			dataProcessor[0]->EndofAcquisition(maxIndexCaught); //to create virtual file
 	}
 
 	while(DataStreamer::GetRunningMask()){
@@ -515,7 +515,7 @@ void UDPStandardImplementation::stopReceiver(){
 		for (int i = 0; i < numThreads; i++) {
 			tot += dataProcessor[i]->GetNumFramesCaught();
 
-			uint64_t missingpackets = numberOfFrames*generalData->packetsPerFrame-listener[i]->GetTotalPacketsCaught();
+			uint64_t missingpackets = numberOfFrames*generalData->packetsPerFrame-listener[i]->GetPacketsCaught();
 			if (missingpackets) {
 				cprintf(RED, "\n[Port %d]\n",udpPortNum[i]);
 				cprintf(RED, "Missing Packets\t\t: %lld\n",(long long int)missingpackets);
@@ -555,7 +555,7 @@ void UDPStandardImplementation::startReadout(){
 			//current packets caught
 			volatile int totalP = 0,prev=-1;
 			for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
-				totalP += (*it)->GetTotalPacketsCaught();
+				totalP += (*it)->GetPacketsCaught();
 
 			//wait for all packets
 			if((unsigned long long int)totalP!=numberOfFrames*generalData->packetsPerFrame*listener.size()){
@@ -574,7 +574,7 @@ void UDPStandardImplementation::startReadout(){
 					totalP = 0;
 
 					for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
-						totalP += (*it)->GetTotalPacketsCaught();
+						totalP += (*it)->GetPacketsCaught();
 #ifdef VERY_VERBOSE
 					cprintf(MAGENTA,"\tupdated:  totalP:%d\n",totalP);
 #endif
@@ -602,13 +602,13 @@ void UDPStandardImplementation::shutDownUDPSockets() {
 
 
 void UDPStandardImplementation::closeFiles() {
-	uint64_t maxFramescaught = 0;
+	uint64_t maxIndexCaught = 0;
 	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it) {
 		(*it)->CloseFiles();
-		maxFramescaught = max(maxFramescaught, (*it)->GetNumFramesCaught());
+		maxIndexCaught = max(maxIndexCaught, (*it)->GetProcessedMeasurementIndex());
 	}
-	if (maxFramescaught)
-		dataProcessor[0]->EndofAcquisition(maxFramescaught);
+	if (maxIndexCaught)
+		dataProcessor[0]->EndofAcquisition(maxIndexCaught);
 }
 
 

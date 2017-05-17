@@ -93,6 +93,11 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	uint64_t GetProcessedAcquisitionIndex();
 
+	/**
+	 * Get Current Frame Index thats been processed for each real time acquisition (eg. for each scan)
+	 * @return -1 if no frames have been caught, else current frame index
+	 */
+	uint64_t GetProcessedMeasurementIndex();
 
 	//*** setters ***
 	/**
@@ -250,32 +255,13 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	/** Fifo structure */
 	Fifo* fifo;
 
-	/** Data Stream Enable */
-	bool* dataStreamEnable;
 
-	/** Aquisition Started flag */
-	bool acquisitionStartedFlag;
-
-	/** Measurement Started flag */
-	bool measurementStartedFlag;
-
-	/**Number of complete frames caught for an entire acquisition (including all scans) */
-	uint64_t numTotalFramesCaught;
-
-	/** Number of complete frames caught for each real time acquisition (eg. for each scan) */
-	uint64_t numFramesCaught;
-
-	/** Frame Number of First Frame of an entire Acquisition (including all scans) */
-	uint64_t firstAcquisitionIndex;
-
-	/** Frame Number of First Frame for each real time acquisition (eg. for each scan) */
-	uint64_t firstMeasurementIndex;
-
-	/** Frame Number of latest processed frame number of an entire Acquisition (including all scans) */
-	uint64_t currentFrameIndex;
-
+	//individual members
 	/** File writer implemented as binary or hdf5 File */
 	File* file;
+
+	/** Data Stream Enable */
+	bool* dataStreamEnable;
 
 	/** File Format Type */
 	fileFormat* fileFormatType;
@@ -284,6 +270,35 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	bool* fileWriteEnable;
 
 
+	//acquisition start
+	/** Aquisition Started flag */
+	bool acquisitionStartedFlag;
+
+	/** Measurement Started flag */
+	bool measurementStartedFlag;
+
+	/** Frame Number of First Frame of an entire Acquisition (including all scans) */
+	uint64_t firstAcquisitionIndex;
+
+	/** Frame Number of First Frame for each real time acquisition (eg. for each scan) */
+	uint64_t firstMeasurementIndex;
+
+
+	//for statistics
+	/**Number of complete frames caught for an entire acquisition (including all scans) */
+	uint64_t numTotalFramesCaught;
+
+	/** Number of complete frames caught for each real time acquisition (eg. for each scan) */
+	uint64_t numFramesCaught;
+
+	/** Frame Number of latest processed frame number of an entire Acquisition (including all scans) */
+	uint64_t currentFrameIndex;
+
+
+
+
+
+	//call back
 	/**
 	 * Call back for raw data
 	 * args to raw data ready callback are

@@ -32,8 +32,6 @@ Listener::Listener(detectorType dtype, Fifo*& f, runStatus* s, uint32_t* portno,
 		generalData(0),
 		fifo(f),
 		myDetectorType(dtype),
-		acquisitionStartedFlag(false),
-		measurementStartedFlag(false),
 		status(s),
 		udpSocket(0),
 		udpPortNumber(portno),
@@ -41,12 +39,13 @@ Listener::Listener(detectorType dtype, Fifo*& f, runStatus* s, uint32_t* portno,
 		activated(act),
 		numImages(nf),
 		dynamicRange(dr),
-		numTotalPacketsCaught(0),
-		numPacketsCaught(0),
+		acquisitionStartedFlag(false),
+		measurementStartedFlag(false),
 		firstAcquisitionIndex(0),
 		firstMeasurementIndex(0),
-		currentFrameIndex(0),
+		numPacketsCaught(0),
 		lastCaughtFrameIndex(0),
+		currentFrameIndex(0),
 		carryOverFlag(0),
 		carryOverPacket(0),
 		listeningPacket(0)
@@ -103,8 +102,8 @@ bool Listener::GetMeasurementStartedFlag(){
 	return measurementStartedFlag;
 }
 
-uint64_t Listener::GetTotalPacketsCaught() {
-	return numTotalPacketsCaught;
+uint64_t Listener::GetPacketsCaught() {
+	return numPacketsCaught;
 }
 
 uint64_t Listener::GetLastFrameIndexCaught() {
@@ -133,7 +132,6 @@ void Listener::SetFifo(Fifo*& f) {
 
 void Listener::ResetParametersforNewAcquisition() {
 	acquisitionStartedFlag = false;
-	numTotalPacketsCaught = 0;
 	firstAcquisitionIndex = 0;
 	currentFrameIndex = 0;
 	lastCaughtFrameIndex = 0;
@@ -387,7 +385,6 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 		//update parameters
 		numPacketsCaught++;					//record immediately to get more time before socket shutdown
-		numTotalPacketsCaught++;
 
 		// -------------------------- new header ----------------------------------------------------------------------
 		if (myDetectorType == JUNGFRAU) {
@@ -463,7 +460,6 @@ uint32_t Listener::CreateAnImage(char* buf) {
 
 	//update parameters
 	numPacketsCaught++;		//record immediately to get more time before socket shutdown
-	numTotalPacketsCaught++;
 
 	//reset data to -1
 	memset(buf, 0xFF, generalData->dataSize);

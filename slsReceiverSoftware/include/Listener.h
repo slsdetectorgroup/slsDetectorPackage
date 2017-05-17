@@ -73,10 +73,10 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	bool GetMeasurementStartedFlag();
 
 	/**
-	 * Get Total Packets caught in an acquisition
-	 * @return Total Packets caught in an acquisition
+	 * Get Packets caught in a real time acquisition (start and stop of receiver)
+	 * @return Packets caught in a real time acquisition
 	 */
-	uint64_t GetTotalPacketsCaught();
+	uint64_t GetPacketsCaught();
 
 	/**
 	 * Get Last Frame index caught
@@ -217,12 +217,6 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	/** Detector Type */
 	detectorType myDetectorType;
 
-	/** Aquisition Started flag */
-	bool acquisitionStartedFlag;
-
-	/** Measurement Started flag */
-	bool measurementStartedFlag;
-
 	/** Receiver Status */
 	runStatus* status;
 
@@ -244,11 +238,13 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	/** Dynamic Range */
 	uint32_t* dynamicRange;
 
-	/**Number of complete Packets caught for an entire acquisition (including all scans) */
-	volatile uint64_t numTotalPacketsCaught;
 
-	/** Number of complete Packets caught for each real time acquisition (eg. for each scan) */
-	volatile uint64_t numPacketsCaught;
+	// acquisition start
+	/** Aquisition Started flag */
+	bool acquisitionStartedFlag;
+
+	/** Measurement Started flag */
+	bool measurementStartedFlag;
 
 	/** Frame Number of First Frame of an entire Acquisition (including all scans) */
 	uint64_t firstAcquisitionIndex;
@@ -256,13 +252,20 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	/** Frame Number of First Frame for each real time acquisition (eg. for each scan) */
 	uint64_t firstMeasurementIndex;
 
+
+	// for statistics
+	/** Number of complete Packets caught for each real time acquisition (eg. for each scan (start& stop of receiver)) */
+	volatile uint64_t numPacketsCaught;
+
+	/** Last Frame Index caught  from udp network */
+	uint64_t lastCaughtFrameIndex;
+
+
+	// parameters to acquire image
 	/** Current Frame Index, default value is 0
 	 * ( always check acquisitionStartedFlag for validity first)
 	 */
 	uint64_t currentFrameIndex;
-
-	/** Last Frame Index caught  from udp network */
-	uint64_t lastCaughtFrameIndex;
 
 	/** True if there is a packet carry over from previous Image */
 	bool carryOverFlag;

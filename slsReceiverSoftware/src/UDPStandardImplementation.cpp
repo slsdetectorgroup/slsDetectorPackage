@@ -405,9 +405,9 @@ void UDPStandardImplementation::setDetectorPositionId(const int i){
 
 	detID = i;
 	FILE_LOG(logINFO) << "Detector Position Id:" << detID;
-	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it) {
-		(*it)->SetupFileWriter((int*)numDet, fileName, filePath, &fileIndex, &frameIndexEnable,
-									&overwriteEnable, &detID, &numThreads, &numberOfFrames, &dynamicRange, generalData);
+	for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
+		dataProcessor[i]->SetupFileWriter((int*)numDet, fileName, filePath, &fileIndex, &frameIndexEnable,
+									&overwriteEnable, &detID, &numThreads, &numberOfFrames, &dynamicRange, &udpPortNum[i], generalData);
 	}
 }
 
@@ -519,12 +519,12 @@ void UDPStandardImplementation::stopReceiver(){
 			if (missingpackets) {
 				cprintf(RED, "\n[Port %d]\n",udpPortNum[i]);
 				cprintf(RED, "Missing Packets\t\t: %lld\n",(long long int)missingpackets);
-				cprintf(RED, "Complete Frames\t: %lld\n",(long long int)dataProcessor[i]->GetNumFramesCaught());
+				cprintf(RED, "Complete Frames\t\t: %lld\n",(long long int)dataProcessor[i]->GetNumFramesCaught());
 				cprintf(RED, "Last Frame Caught\t: %lld\n",(long long int)listener[i]->GetLastFrameIndexCaught());
 			}else{
 				cprintf(GREEN, "\n[Port %d]\n",udpPortNum[i]);
 				cprintf(GREEN, "Missing Packets\t\t: %lld\n",(long long int)missingpackets);
-				cprintf(GREEN, "Complete Frames\t: %lld\n",(long long int)dataProcessor[i]->GetNumFramesCaught());
+				cprintf(GREEN, "Complete Frames\t\t: %lld\n",(long long int)dataProcessor[i]->GetNumFramesCaught());
 				cprintf(GREEN, "Last Frame Caught\t: %lld\n",(long long int)listener[i]->GetLastFrameIndexCaught());
 			}
 		}

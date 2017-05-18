@@ -20,20 +20,24 @@ class File : private virtual slsReceiverDefs {
 	 * Constructor
 	 * creates the File Writer
 	 * @param ind self index
+	 * @param maxf max frames per file
+	 * @param ppf packets per frame
 	 * @param nd pointer to number of detectors in each dimension
 	 * @param fname pointer to file name prefix
 	 * @param fpath pointer to file path
 	 * @param findex pointer to file index
 	 * @param frindexenable pointer to frame index enable
 	 * @param owenable pointer to over write enable
-	 * @param maxf max frames per file
 	 * @param dindex pointer to detector index
 	 * @param nunits pointer to number of theads/ units per detector
 	 * @param nf pointer to number of images in acquisition
-	 * @param dr dynamic range
+	 * @param dr pointer to dynamic range
+	 * @param portno pointer to udp port number for logging
 	 */
-	File(int ind, int* nd, char* fname, char* fpath, uint64_t* findex,
-			bool* frindexenable, bool* owenable, uint32_t maxf, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr);
+	File(int ind, uint32_t maxf, const uint32_t* ppf,
+			int* nd, char* fname, char* fpath, uint64_t* findex,
+			bool* frindexenable, bool* owenable,
+			int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno);
 
 	/**
 	 * Destructor
@@ -68,16 +72,24 @@ class File : private virtual slsReceiverDefs {
 	 * @param dindex pointer to detector index
 	 * @param nunits pointer to number of theads/ units per detector
 	 * @param nf pointer to number of images in acquisition
-	 * @param dr dynamic range
+	 * @param dr pointer to dynamic range
+	 * @param portno pointer to dynamic range
 	 */
 	void GetMemberPointerValues(int* nd, char*& fname, char*& fpath, uint64_t*& findex,
-			bool*& frindexenable, bool*& owenable, int*& dindex, int*& nunits, uint64_t*& nf, uint32_t*& dr);
+			bool*& frindexenable, bool*& owenable,
+			int*& dindex, int*& nunits, uint64_t*& nf, uint32_t*& dr, uint32_t*& portno);
 
 	/**
 	 * Set Max frames per file
 	 * @param maxf maximum frames per file
 	 */
 	void SetMaxFramesPerFile(uint32_t maxf);
+
+	/**
+	 * Set Packets per frame (called only for each generalData construction)
+	 * @param ppf pointer to packets per frame
+	 */
+	void SetPacketsPerFrame(const uint32_t* ppf);
 
 	/**
 	 * Create file
@@ -107,9 +119,10 @@ class File : private virtual slsReceiverDefs {
 	 * Write data to file
 	 * @param buffer buffer to write from
 	 * @param fnum current image number
+	 * @param nump number of packets caught
 	 * @param OK or FAIL
 	 */
-	virtual int WriteToFile(char* buffer, int buffersize, uint64_t fnum) {
+	virtual int WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) {
 		cprintf(RED,"This is a generic function WriteToFile that should be overloaded by a derived class\n");
 		return FAIL;
 	}
@@ -156,14 +169,24 @@ class File : private virtual slsReceiverDefs {
 	/** Self Index */
 	int index;
 
+	/** Maximum frames per file */
+	uint32_t maxFramesPerFile;
+
+	/** Packets per frame for logging */
+	//pointer because value in generalData could change
+	const uint32_t* packetsPerFrame;
+
+	/** Master File Name */
+	std::string masterFileName;
+
+	/** Current File Name */
+	std::string currentFileName;
+
 	/** Number of Detectors in X dimension */
 	int numDetX;
 
 	/** Number of Detectors in Y dimension */
 	int numDetY;
-
-	/** Master File Name */
-	std::string masterFileName;
 
 	/** File Name Prefix */
 	char* fileNamePrefix;
@@ -177,14 +200,8 @@ class File : private virtual slsReceiverDefs {
 	/** Frame Index */
 	bool* frameIndexEnable;
 
-	/** File Write Enable */
-	bool* fileWriteEnable;
-
 	/** Over write enable */
 	bool* overWriteEnable;
-
-	/** Maximum frames per file */
-	uint32_t maxFramesPerFile;
 
 	/** Detector Index */
 	int* detIndex;
@@ -198,7 +215,8 @@ class File : private virtual slsReceiverDefs {
 	/** Dynamic Range */
 	uint32_t* dynamicRange;
 
-	/** Current File Name */
-	std::string currentFileName;
+	/** UDP Port Number for logging */
+	uint32_t* udpPortNumber;
+
 };
 

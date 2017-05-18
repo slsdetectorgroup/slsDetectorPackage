@@ -18,11 +18,13 @@ hid_t HDF5File::virtualfd = 0;
 
 
 
-HDF5File::HDF5File(int ind, int* nd, char* fname, char* fpath, uint64_t* findex,
-		bool* frindexenable, bool* owenable, uint32_t maxf, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr,
+HDF5File::HDF5File(int ind, uint32_t maxf, const uint32_t* ppf,
+		int* nd, char* fname, char* fpath, uint64_t* findex,
+		bool* frindexenable, bool* owenable,
+		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
 		uint32_t nx, uint32_t ny):
 
-		File(ind, nd, fname, fpath, findex, frindexenable, owenable, maxf, dindex, nunits, nf, dr),
+		File(ind, maxf, ppf, nd, fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr, portno),
 		filefd(0),
 		dataspace(0),
 		dataset(0),
@@ -30,6 +32,7 @@ HDF5File::HDF5File(int ind, int* nd, char* fname, char* fpath, uint64_t* findex,
 		nPixelsX(nx),
 		nPixelsY(ny),
 		numFramesInFile(0),
+		numActualPacketsInFile(0),
 		numFilesinAcquisition(0),
 		dataspace_para(0)
 {
@@ -81,8 +84,15 @@ void HDF5File::UpdateDataType() {
 
 
 int HDF5File::CreateFile(uint64_t fnum) {
+
+	//calculate packet loss
+	int64_t loss = -1;
+	if (numFramesInFile)
+		loss = (numFramesInFile*(*packetsPerFrame)) - numActualPacketsInFile;
+
 	numFilesinAcquisition++;
 	numFramesInFile = 0;
+	numActualPacketsInFile = 0;
 	currentFileName = HDF5FileStatic::CreateFileName(filePath, fileNamePrefix, *fileIndex,
 			*frameIndexEnable, fnum, *detIndex, *numUnitsPerDetector, index);
 
@@ -102,7 +112,18 @@ int HDF5File::CreateFile(uint64_t fnum) {
 	pthread_mutex_unlock(&Mutex);
 	if (dataspace == NULL)
 		cprintf(RED,"Got nothing!\n");
-	printf("%d HDF5 File: %s\n", index, currentFileName.c_str());
+
+	//first file, print entrire path
+	if (loss == -1)
+		printf("[%u]: HDF5 File created: %s\n", *udpPortNumber, currentFileName.c_str());
+	//other files
+	else {
+		if (loss)
+			cprintf(RED,"[%u]:  Packet_Loss:%lu  \tNew_File:%s\n", *udpPortNumber,loss, basename(currentFileName.c_str()));
+		else
+			cprintf(GREEN,"[%u]:  Packet_Loss:%lu  \tNew_File:%s\n", *udpPortNumber,loss, basename(currentFileName.c_str()));
+	}
+
 	return OK;
 }
 
@@ -126,13 +147,13 @@ void HDF5File::CloseAllFiles() {
 }
 
 
-int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum) {
+int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) {
 	if (numFramesInFile >= maxFramesPerFile) {
 		CloseCurrentFile();
 		CreateFile(fnum);
 	}
 	numFramesInFile++;
-
+	numActualPacketsInFile += nump;
 	pthread_mutex_lock(&Mutex);
 	if (HDF5FileStatic::WriteDataFile(index, buffer + sizeof(sls_detector_header),
 			fnum%maxFramesPerFile, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
@@ -154,6 +175,11 @@ int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum) {
 
 int HDF5File::CreateMasterFile(bool en, uint32_t size,
 		uint32_t nx, uint32_t ny, uint64_t at, uint64_t ap) {
+
+	//beginning of every acquisition
+	numFramesInFile = 0;
+	numActualPacketsInFile = 0;
+
 	if (master && (*detIndex==0)) {
 		virtualfd = 0;
 		masterFileName = HDF5FileStatic::CreateMasterFileName(filePath, fileNamePrefix, *fileIndex);

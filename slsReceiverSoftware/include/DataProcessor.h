@@ -156,11 +156,12 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param dindex pointer to detector index
 	 * @param nunits pointer to number of theads/ units per detector
 	 * @param nf pointer to number of images in acquisition
-	 * @param dr dynamic range
+	 * @param dr pointer to dynamic range
+	 * @param portno pointer to udp port number
 	 * @param g address of GeneralData (Detector Data) pointer
 	 */
 	void SetupFileWriter(int* nd, char* fname, char* fpath, uint64_t* findex,
-			bool* frindexenable, bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, GeneralData* g = 0);
+			bool* frindexenable, bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno, GeneralData* g = 0);
 
 
 	/**

@@ -26,22 +26,26 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	 * Constructor
 	 * creates the File Writer
 	 * @param ind self index
+	 * @param maxf max frames per file
+	 * @param ppf packets per frame
 	 * @param nd pointer to number of detectors in each dimension
 	 * @param fname pointer to file name prefix
 	 * @param fpath pointer to file path
 	 * @param findex pointer to file index
 	 * @param frindexenable pointer to frame index enable
 	 * @param owenable pointer to over write enable
-	 * @param maxf max frames per file
 	 * @param dindex pointer to detector index
 	 * @param nunits pointer to number of theads/ units per detector
-	 * @param nf pointer to number of frames
-	 * @param dr dynamic range
+	 * @param nf pointer to number of images in acquisition
+	 * @param dr pointer to dynamic range
+	 * @param portno pointer to udp port number for logging
 	 * @param nx number of pixels in x direction
 	 * @param ny number of pixels in y direction
 	 */
-	HDF5File(int ind, int* nd, char* fname, char* fpath, uint64_t* findex,
-			bool* frindexenable, bool* owenable, uint32_t maxf, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr,
+	HDF5File(int ind, uint32_t maxf, const uint32_t* ppf,
+			int* nd, char* fname, char* fpath, uint64_t* findex,
+			bool* frindexenable, bool* owenable,
+			int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
 			uint32_t nx, uint32_t ny);
 
 	/**
@@ -83,9 +87,10 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	 * @param buffer buffer to write from
 	 * @param bsize size of buffer (not used)
 	 * @param fnum current image number
+	 * @param nump number of packets caught
 	 * @returns OK or FAIL
 	 */
-	int WriteToFile(char* buffer, int bsize, uint64_t fnum);
+	int WriteToFile(char* buffer, int bsize, uint64_t fnum, uint32_t nump);
 
 	/**
 	 * Create master file
@@ -158,6 +163,9 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 
 	/** Number of frames in file */
 	uint32_t numFramesInFile;
+
+	/** Number of actual packets caught in file */
+	uint64_t numActualPacketsInFile;
 
 	/** Number of files in an acquisition - to verify need of virtual file */
 	int numFilesinAcquisition;

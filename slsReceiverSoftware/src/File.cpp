@@ -10,9 +10,13 @@
 using namespace std;
 
 
-File::File(int ind, int* nd, char* fname, char* fpath, uint64_t* findex,
-		bool* frindexenable, bool* owenable, uint32_t maxf, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr):
+File::File(int ind, uint32_t maxf, const uint32_t* ppf,
+		int* nd, char* fname, char* fpath, uint64_t* findex,
+		bool* frindexenable, bool* owenable,
+		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno):
 			index(ind),
+			maxFramesPerFile(maxf),
+			packetsPerFrame(ppf),
 			numDetX(nd[0]),
 			numDetY(nd[1]),
 			fileNamePrefix(fname),
@@ -20,11 +24,12 @@ File::File(int ind, int* nd, char* fname, char* fpath, uint64_t* findex,
 			fileIndex(findex),
 			frameIndexEnable(frindexenable),
 			overWriteEnable(owenable),
-			maxFramesPerFile(maxf),
 			detIndex(dindex),
 			numUnitsPerDetector(nunits),
 			numImages(nf),
-			dynamicRange(dr)
+			dynamicRange(dr),
+			udpPortNumber(portno)
+
 {
 	master = index?false:true;
 }
@@ -38,28 +43,47 @@ string File::GetCurrentFileName() {
 void File::PrintMembers() {
 	printf("\nGeneral Writer Variables:"
 			"Index: %d\n"
+			"Max Frames Per File: %u\n"
+			"Packets per Frame: %u\n"
+			"Number of Detectors in x dir: %d\n"
+			"Number of Detectors in y dir: %d\n"
 			"File Name Prefix: %s\n"
 			"File Path: %s\n"
-			"File Index: %lld\n"
+			"File Index: %lu\n"
 			"Frame Index Enable: %d\n"
 			"Over Write Enable: %d\n"
-			"Max Frames Per File: %d\n"
+
 			"Detector Index: %d\n"
-			"Number of Units Per Detector: %d\n",
+			"Number of Units Per Detector: %d\n"
+			"Number of Images in Acquisition: %lu\n"
+			"Dynamic Range: %u\n"
+			"UDP Port number: %u\n"
+			"Master File Name: %s\n"
+			"Current File Name: %s\n",
 			index,
+			maxFramesPerFile,
+			*packetsPerFrame,
+			numDetX,
+			numDetY,
 			fileNamePrefix,
 			filePath,
-			(long long int)*fileIndex,
-			*frameIndexEnable,
-			*overWriteEnable,
-			maxFramesPerFile,
+			*fileIndex,
+			(int)*frameIndexEnable,
+			(int)*overWriteEnable,
+
 			*detIndex,
-			*numUnitsPerDetector);
+			*numUnitsPerDetector,
+			*numImages,
+			*dynamicRange,
+			*udpPortNumber,
+			masterFileName.c_str(),
+			currentFileName.c_str());
 }
 
 
 void File::GetMemberPointerValues(int* nd, char*& fname, char*& fpath, uint64_t*& findex,
-		bool*& frindexenable, bool*& owenable, int*& dindex, int*& nunits, uint64_t*& nf, uint32_t*& dr)
+		bool*& frindexenable, bool*& owenable,
+		int*& dindex, int*& nunits, uint64_t*& nf, uint32_t*& dr, uint32_t*& portno)
 {
 	nd[0] = numDetX;
 	nd[1] = numDetY;
@@ -72,8 +96,14 @@ void File::GetMemberPointerValues(int* nd, char*& fname, char*& fpath, uint64_t*
 	nunits = numUnitsPerDetector;
 	nf = numImages;
 	dr = dynamicRange;
+	portno = udpPortNumber;
 }
 
 void File::SetMaxFramesPerFile(uint32_t maxf) {
 	maxFramesPerFile = maxf;
+}
+
+
+void File::SetPacketsPerFrame(const uint32_t* ppf) {
+	packetsPerFrame = ppf;
 }

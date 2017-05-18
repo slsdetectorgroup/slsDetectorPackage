@@ -13,12 +13,15 @@ using namespace std;
 
 FILE* BinaryFile::masterfd = 0;
 
-BinaryFile::BinaryFile(int ind, int* nd, char* fname, char* fpath, uint64_t* findex,
-		bool* frindexenable, bool* owenable, uint32_t maxf, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr):
+BinaryFile::BinaryFile(int ind, uint32_t maxf, const uint32_t* ppf,
+		int* nd, char* fname, char* fpath, uint64_t* findex,
+		bool* frindexenable, bool* owenable,
+		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno):
 
-		File(ind, nd, fname, fpath, findex, frindexenable, owenable, maxf, dindex, nunits, nf, dr),
+		File(ind, maxf, ppf, nd, fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr, portno),
 		filefd(0),
-		numFramesInFile(0)
+		numFramesInFile(0),
+		numActualPacketsInFile(0)
 {
 #ifdef VERBOSE
 	PrintMembers();
@@ -41,14 +44,31 @@ slsReceiverDefs::fileFormat BinaryFile::GetFileType() {
 
 
 int BinaryFile::CreateFile(uint64_t fnum) {
+	//calculate packet loss
+	int64_t loss = -1;
+	if (numFramesInFile)
+		loss = (numFramesInFile*(*packetsPerFrame)) - numActualPacketsInFile;
+
 	numFramesInFile = 0;
+	numActualPacketsInFile = 0;
+
 	currentFileName = BinaryFileStatic::CreateFileName(filePath, fileNamePrefix, *fileIndex,
 			*frameIndexEnable, fnum, *detIndex, *numUnitsPerDetector, index);
 
 	if (BinaryFileStatic::CreateDataFile(filefd, *overWriteEnable, currentFileName, FILE_BUFFER_SIZE) == FAIL)
 		return FAIL;
 
-	printf("%d Binary File created: %s\n", index, currentFileName.c_str());
+	//first file, print entrire path
+	if (loss == -1)
+		printf("[%u]: Binary File created: %s\n", *udpPortNumber, currentFileName.c_str());
+	//other files
+	else {
+		if (loss)
+			cprintf(RED,"[%u]:  Packet_Loss:%lu  \tNew_File:%s\n", *udpPortNumber,loss, basename(currentFileName.c_str()));
+		else
+			cprintf(GREEN,"[%u]:  Packet_Loss:%lu  \tNew_File:%s\n", *udpPortNumber,loss, basename(currentFileName.c_str()));
+	}
+
 	return OK;
 }
 
@@ -62,12 +82,13 @@ void BinaryFile::CloseAllFiles() {
 		BinaryFileStatic::CloseDataFile(masterfd);
 }
 
-int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum) {
+int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) {
 	if (numFramesInFile >= maxFramesPerFile) {
 		CloseCurrentFile();
 		CreateFile(fnum);
 	}
 	numFramesInFile++;
+	numActualPacketsInFile += nump;
 	if (BinaryFileStatic::WriteDataFile(filefd, buffer, buffersize, fnum) == buffersize)
 		return OK;
 	cprintf(RED,"%d Error: Write to file failed for image number %lld\n", index, (long long int)fnum);
@@ -77,6 +98,10 @@ int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum) {
 
 int BinaryFile::CreateMasterFile(bool en, uint32_t size,
 		uint32_t nx, uint32_t ny, uint64_t at, uint64_t ap) {
+	//beginning of every acquisition
+	numFramesInFile = 0;
+	numActualPacketsInFile = 0;
+
 	if (master && (*detIndex==0)) {
 		masterFileName = BinaryFileStatic::CreateMasterFileName(filePath, fileNamePrefix, *fileIndex);
 		printf("Master File: %s\n", masterFileName.c_str());

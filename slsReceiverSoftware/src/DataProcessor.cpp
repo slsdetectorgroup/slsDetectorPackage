@@ -300,11 +300,16 @@ void DataProcessor::StopProcessing(char* buf) {
 
 /** buf includes only the standard header */
 void DataProcessor::ProcessAnImage(char* buf) {
-	numFramesCaught++;
-	numTotalFramesCaught++;
 
 	sls_detector_header* header = (sls_detector_header*) (buf);
 	uint64_t fnum = header->frameNumber;
+	uint32_t nump = header->packetNumber;
+	if (nump == generalData->packetsPerFrame) {
+		numFramesCaught++;
+		numTotalFramesCaught++;
+	}
+
+
 #ifdef VERBOSE
 	if (!index) cprintf(BLUE,"DataProcessing %d: fnum:%lu\n", index, fnum);
 #endif

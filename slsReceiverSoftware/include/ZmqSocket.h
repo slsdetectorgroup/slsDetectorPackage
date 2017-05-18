@@ -53,7 +53,6 @@ public:
 			if (ptr == NULL)
 				return;
 			strcpy(ip, ptr);
-			delete ptr;
 		}
 		sprintf (serverAddress, "tcp://%s:%d", ip, portno);
 

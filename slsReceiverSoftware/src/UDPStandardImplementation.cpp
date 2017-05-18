@@ -519,12 +519,12 @@ void UDPStandardImplementation::stopReceiver(){
 			if (missingpackets) {
 				cprintf(RED, "\n[Port %d]\n",udpPortNum[i]);
 				cprintf(RED, "Missing Packets\t\t: %lld\n",(long long int)missingpackets);
-				cprintf(RED, "Frames Processed\t: %lld\n",(long long int)dataProcessor[i]->GetNumFramesCaught());
+				cprintf(RED, "Complete Frames\t: %lld\n",(long long int)dataProcessor[i]->GetNumFramesCaught());
 				cprintf(RED, "Last Frame Caught\t: %lld\n",(long long int)listener[i]->GetLastFrameIndexCaught());
 			}else{
 				cprintf(GREEN, "\n[Port %d]\n",udpPortNum[i]);
 				cprintf(GREEN, "Missing Packets\t\t: %lld\n",(long long int)missingpackets);
-				cprintf(GREEN, "Frames Processed\t: %lld\n",(long long int)dataProcessor[i]->GetNumFramesCaught());
+				cprintf(GREEN, "Complete Frames\t: %lld\n",(long long int)dataProcessor[i]->GetNumFramesCaught());
 				cprintf(GREEN, "Last Frame Caught\t: %lld\n",(long long int)listener[i]->GetLastFrameIndexCaught());
 			}
 		}

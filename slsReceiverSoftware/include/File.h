@@ -13,6 +13,8 @@
 
 #include <string>
 
+class Fifo;
+
 class File : private virtual slsReceiverDefs {
 	
  public:
@@ -33,11 +35,12 @@ class File : private virtual slsReceiverDefs {
 	 * @param nf pointer to number of images in acquisition
 	 * @param dr pointer to dynamic range
 	 * @param portno pointer to udp port number for logging
+	 * @param fifo for logging fill level
 	 */
 	File(int ind, uint32_t maxf, const uint32_t* ppf,
 			int* nd, char* fname, char* fpath, uint64_t* findex,
 			bool* frindexenable, bool* owenable,
-			int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno);
+			int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno, Fifo*& f);
 
 	/**
 	 * Destructor
@@ -90,6 +93,13 @@ class File : private virtual slsReceiverDefs {
 	 * @param ppf pointer to packets per frame
 	 */
 	void SetPacketsPerFrame(const uint32_t* ppf);
+
+	/**
+	 * Set Fifo for logging fill level
+	 * @param f fifo reference
+	 */
+	void SetFifo(Fifo*& f);
+
 
 	/**
 	 * Create file
@@ -217,6 +227,9 @@ class File : private virtual slsReceiverDefs {
 
 	/** UDP Port Number for logging */
 	uint32_t* udpPortNumber;
+
+	/** Fifo structure for logging fill level*/
+	Fifo* fifo;
 
 };
 

@@ -743,7 +743,7 @@ int UDPStandardImplementation::SetupFifoStructure() {
 		if(dataStreamer.size())dataStreamer[i]->SetFifo(fifo[i]);
 	}
 
-	FILE_LOG (logINFO) << "Fifo structure(s) reconstructed";
+	FILE_LOG (logINFO) << "Fifo structure(s) reconstructed with Fifo Depth: " << fifoDepth;
 	return OK;
 }
 

@@ -5,6 +5,7 @@
  ***********************************************/
 #include "HDF5File.h"
 #include "receiver_defs.h"
+#include "Fifo.h"
 
 #include <iostream>
 #include <iomanip>
@@ -22,9 +23,9 @@ HDF5File::HDF5File(int ind, uint32_t maxf, const uint32_t* ppf,
 		int* nd, char* fname, char* fpath, uint64_t* findex,
 		bool* frindexenable, bool* owenable,
 		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
-		uint32_t nx, uint32_t ny):
+		uint32_t nx, uint32_t ny, Fifo*& f):
 
-		File(ind, maxf, ppf, nd, fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr, portno),
+		File(ind, maxf, ppf, nd, fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr, portno, f),
 		filefd(0),
 		dataspace(0),
 		dataset(0),
@@ -119,10 +120,13 @@ int HDF5File::CreateFile(uint64_t fnum) {
 	//other files
 	else {
 		if (loss)
-			cprintf(RED,"[%u]:  Packet_Loss:%lu  \tNew_File:%s\n", *udpPortNumber,loss, basename(currentFileName.c_str()));
+			cprintf(RED,"[%u]:  Packet_Loss:%lu  Fifo_Max_Level:%d  \tNew_File:%s\n",
+					*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound() , basename(currentFileName.c_str()));
 		else
-			cprintf(GREEN,"[%u]:  Packet_Loss:%lu  \tNew_File:%s\n", *udpPortNumber,loss, basename(currentFileName.c_str()));
+			cprintf(GREEN,"[%u]:  Packet_Loss:%lu  Fifo_Max_Level:%d  \tNew_File:%s\n",
+					*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound(), basename(currentFileName.c_str()));
 	}
+
 
 	return OK;
 }

@@ -17,7 +17,8 @@ Fifo::Fifo(uint32_t fifoItemSize, uint32_t fifoDepth, bool &success):
 		memory(0),
 		fifoBound(0),
 		fifoFree(0),
-		fifoStream(0){
+		fifoStream(0),
+		status_fifoBound(0){
 	FILE_LOG (logDEBUG) << __AT__ << " called";
 	index = NumberofFifoClassObjects++;
 	if(CreateFifos(fifoItemSize, fifoDepth) == FAIL)
@@ -100,6 +101,9 @@ void Fifo::GetNewAddress(char*& address) {
 
 void Fifo::PushAddress(char*& address) {
 	while(!fifoBound->push(address));
+	int temp = fifoBound->getSemValue();
+	if (temp > status_fifoBound)
+		status_fifoBound = temp;
 }
 
 void Fifo::PopAddress(char*& address) {
@@ -112,5 +116,11 @@ void Fifo::PushAddressToStream(char*& address) {
 
 void Fifo::PopAddressToStream(char*& address) {
 	fifoStream->pop(address);
+}
+
+int Fifo::GetMaxLevelForFifoBound() {
+	int temp = status_fifoBound;
+	status_fifoBound = 0;
+	return temp;
 }
 

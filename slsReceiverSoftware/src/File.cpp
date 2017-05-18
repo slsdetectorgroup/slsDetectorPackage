@@ -5,6 +5,7 @@
  ***********************************************/
 
 #include "File.h"
+#include "Fifo.h"
 
 #include <iostream>
 using namespace std;
@@ -13,7 +14,7 @@ using namespace std;
 File::File(int ind, uint32_t maxf, const uint32_t* ppf,
 		int* nd, char* fname, char* fpath, uint64_t* findex,
 		bool* frindexenable, bool* owenable,
-		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno):
+		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno, Fifo*& f):
 			index(ind),
 			maxFramesPerFile(maxf),
 			packetsPerFrame(ppf),
@@ -106,4 +107,8 @@ void File::SetMaxFramesPerFile(uint32_t maxf) {
 
 void File::SetPacketsPerFrame(const uint32_t* ppf) {
 	packetsPerFrame = ppf;
+}
+
+void File::SetFifo(Fifo*& f) {
+	fifo = f;
 }

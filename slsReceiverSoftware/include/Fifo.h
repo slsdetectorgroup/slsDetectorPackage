@@ -61,6 +61,12 @@ class Fifo : private virtual slsReceiverDefs {
 	 */
 	void PopAddressToStream(char*& address);
 
+	/**
+	 * Get Maximum Level filled in Fifo Bound
+	 * and reset this value for next intake
+	 */
+	int GetMaxLevelForFifoBound();
+
  private:
 
 	/**
@@ -94,4 +100,6 @@ class Fifo : private virtual slsReceiverDefs {
 
 	/** Circular Fifo pointing to addresses of to be streamed data in memory */
 	CircularFifo<char>* fifoStream;
+
+	int status_fifoBound;
 };

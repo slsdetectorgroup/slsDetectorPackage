@@ -302,14 +302,14 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 	uint32_t fifohsize = generalData->fifoBufferHeaderSize;
 	uint32_t pperFrame = generalData->packetsPerFrame;
 	bool isHeaderEmpty = true;
-	sls_detector_header* header = 0;
-
+	sls_detector_header* old_header = 0;
+	sls_detector_header* new_header = 0;
 
 
 	//reset to -1
 	memset(buf, 0, fifohsize);
 	memset(buf + fifohsize, 0xFF, dsize);
-
+	new_header = (sls_detector_header*) (buf + FIFO_HEADER_NUMBYTES);
 
 
 
@@ -319,9 +319,9 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		//check if its the current image packet
 		// -------------------------- new header ----------------------------------------------------------------------
 		if (myDetectorType == JUNGFRAU) {
-			header = (sls_detector_header*) (carryOverPacket + esize);
-			fnum = header->frameNumber;
-			pnum = header->packetNumber;
+			old_header = (sls_detector_header*) (carryOverPacket + esize);
+			fnum = old_header->frameNumber;
+			pnum = old_header->packetNumber;
 		}
 		// -------------------old header -----------------------------------------------------------------------------
 		else {
@@ -334,6 +334,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 				cprintf(BG_RED,"Error:(Weird), With carry flag: Frame number less than current frame number\n");
 				return 0;
 			}
+			new_header->packetNumber = numpackets;
 			return generalData->imageSize;
 		}
 
@@ -346,19 +347,18 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		if(isHeaderEmpty) {
 			// -------------------------- new header ----------------------------------------------------------------------
 			if (myDetectorType == JUNGFRAU) {
-				memcpy(buf + FIFO_HEADER_NUMBYTES, (char*)header, sizeof(sls_detector_header));
+				memcpy((char*)new_header, (char*)old_header, sizeof(sls_detector_header));
 			}
 			// -------------------old header ------------------------------------------------------------------------------
 			else {
-				header = (sls_detector_header*) (buf + FIFO_HEADER_NUMBYTES);
-				memset(header, 0, sizeof(sls_detector_header));
-				header->frameNumber = fnum;
+				memset(new_header, 0, sizeof(sls_detector_header));
+				new_header->frameNumber = fnum;
 				if (generalData->myDetectorType == EIGER && *dynamicRange == 32)
-					header->expLength = snum;
-				header->packetNumber = pperFrame;
-				/*header->xCoord = index;  given by det packet, also for ycoord, zcoord */
-				header->detType = (uint8_t) generalData->myDetectorType;
-				header->version = (uint8_t) SLS_DETECTOR_HEADER_VERSION;
+					new_header->expLength = snum;
+				new_header->packetNumber = pperFrame;
+				/*new_header->xCoord = index;  given by det packet, also for ycoord, zcoord */
+				new_header->detType = (uint8_t) generalData->myDetectorType;
+				new_header->version = (uint8_t) SLS_DETECTOR_HEADER_VERSION;
 			}
 			//------------------------------------------------------------------------------------------------------------
 			isHeaderEmpty = false;
@@ -379,7 +379,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		if(rc <= 0) {
 			if (numpackets == 0) return 0;	//empty image
 
-			header->packetNumber = numpackets; 	//number of packets caught
+			new_header->packetNumber = numpackets; 	//number of packets caught
 			return generalData->imageSize;	//empty packet now, but not empty image
 		}
 
@@ -388,9 +388,9 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 		// -------------------------- new header ----------------------------------------------------------------------
 		if (myDetectorType == JUNGFRAU) {
-			header = (sls_detector_header*) (listeningPacket + esize);
-			fnum = header->frameNumber;
-			pnum = header->packetNumber;
+			old_header = (sls_detector_header*) (listeningPacket + esize);
+			fnum = old_header->frameNumber;
+			pnum = old_header->packetNumber;
 		}
 		// -------------------old header -----------------------------------------------------------------------------
 		else {
@@ -416,7 +416,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 			carryOverFlag = true;
 			memcpy(carryOverPacket,listeningPacket, generalData->packetSize);
 
-			header->packetNumber = numpackets; 	//number of packets caught
+			new_header->packetNumber = numpackets; 	//number of packets caught
 			return generalData->imageSize;
 		}
 
@@ -427,25 +427,25 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		if(isHeaderEmpty) {
 			// -------------------------- new header ----------------------------------------------------------------------
 			if (myDetectorType == JUNGFRAU) {
-				memcpy(buf + FIFO_HEADER_NUMBYTES, (char*)header, sizeof(sls_detector_header));
+				memcpy((char*)new_header, (char*)old_header, sizeof(sls_detector_header));
 			}
 			// -------------------old header ------------------------------------------------------------------------------
 			else {
-				header = (sls_detector_header*) (buf + FIFO_HEADER_NUMBYTES);
-				memset(header, 0, sizeof(sls_detector_header));
-				header->frameNumber = fnum;
+				memset(new_header, 0, sizeof(sls_detector_header));
+				new_header->frameNumber = fnum;
 				if (generalData->myDetectorType == EIGER && *dynamicRange == 32)
-					header->expLength = snum;
-				/*header->xCoord = index;  given by det packet, also for ycoord, zcoord */
-				header->detType = (uint8_t) generalData->myDetectorType;
-				header->version = (uint8_t) SLS_DETECTOR_HEADER_VERSION;
+					new_header->expLength = snum;
+				new_header->packetNumber = pperFrame;
+				/*new_header->xCoord = index;  given by det packet, also for ycoord, zcoord */
+				new_header->detType = (uint8_t) generalData->myDetectorType;
+				new_header->version = (uint8_t) SLS_DETECTOR_HEADER_VERSION;
 			}
 			//------------------------------------------------------------------------------------------------------------
 			isHeaderEmpty = false;
 		}
 	}
 
-	header->packetNumber = numpackets; 	//number of packets caught
+	new_header->packetNumber = numpackets; 	//number of packets caught
 	return generalData->imageSize;
 }
 

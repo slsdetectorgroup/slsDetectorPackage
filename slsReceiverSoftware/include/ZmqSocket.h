@@ -46,14 +46,13 @@ public:
 		char ip[MAX_STR_LENGTH] = "";
 		strcpy(ip, hostname_or_ip);
 
+		// convert hostname to ip
+		char* ptr = ConvertHostnameToIp (hostname_or_ip);
+		if (ptr == NULL)
+			return;
+		strcpy(ip, ptr);
+
 		// construct address
-		if (strchr (hostname_or_ip, '.') == NULL) {
-			// convert hostname to ip
-			char* ptr = ConvertHostnameToIp (hostname_or_ip);
-			if (ptr == NULL)
-				return;
-			strcpy(ip, ptr);
-		}
 		sprintf (serverAddress, "tcp://%s:%d", ip, portno);
 
 		// create context

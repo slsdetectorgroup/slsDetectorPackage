@@ -9,6 +9,70 @@
 #define CSP0 0x20200000
 #define MEM_SIZE 0x100000 
 
+/* FPGA Version register */
+
+#define FPGA_VERSION_REG      		(0x00 << 11)
+
+#define BOARD_REVISION_OFST			(0)
+#define BOARD_REVISION_MSK			(0x00FFFFFF << BOARD_REVISION_OFST)
+#define DETECTOR_TYPE_OFST   		(24)
+#define DETECTOR_TYPE_MSK   		(0x000000FF << DETECTOR_TYPE_OFST)
+
+
+
+/* Fix pattern register */
+#define FIX_PATT_REG          		(0x01 << 11)
+
+#define FIX_PATT_VAL    			0xACDC2014
+
+
+/* Status register */
+#define STATUS_REG            		(0x02 << 11)
+
+#define RUN_BUSY_OFST				(0)
+#define RUN_BUSY_MSK      			(0x00000001 << RUN_BUSY_BIT_OFST)
+#define WAITING_FOR_TRIGGER_OFST  	(3)
+#define WAITING_FOR_TRIGGER_MSK  	(0x00000001 << WAITING_FOR_TRIGGER_OFST)
+#define DELAYBEFORE_OFST  			(4)
+#define DELAYBEFORE_MSK  			(0x00000001 << DELAYBEFORE_OFST)
+#define DELAYAFTER_OFST  			(5)
+#define DELAYAFTER_MSK  			(0x00000001 << DELAYAFTER_OFST)
+#define STOPPED_OFST  				(15)
+#define STOPPED_MSK  				(0x00000001 << STOPPED_OFST)
+#define RUNMACHINE_BUSY_OFST  		(17)
+#define RUNMACHINE_BUSY_MSK  		(0x00000001 << RUNMACHINE_BUSY_OFST)
+
+
+/* Look at me register */
+#define LOOK_AT_ME_REG          	(0x03 << 11)		//Not used in firmware or software
+
+/* System Status register */
+#define SYSTEM_STATUS_REG       	(0x04 << 11)		//Not used in software
+
+#define DDR3_CAL_DONE_OFST			(0)
+#define DDR3_CAL_DONE_MSK 			(0x00000001 << DDR3_CAL_DONE_OFST)
+#define DDR3_CAL_FAIL_OFST			(1)
+#define DDR3_CAL_FAIL_MSK 			(0x00000001 << DDR3_CAL_FAIL_OFST)
+#define DDR3_CAL_FAIL_OFST			(1)
+#define DDR3_CAL_FAIL_MSK 			(0x00000001 << DDR3_CAL_FAIL_OFST)
+
+
+
+
+/* Time from Start 64 bit register */
+#define TIME_FROM_START_LSB_REG   	(0x10 << 11)
+#define TIME_FROM_START_MSB_REG   	(0x11 << 11)
+//#define GET_ACTUAL_TIME_LSB_REG     16<<11
+//#define GET_ACTUAL_TIME_MSB_REG     17<<11
+
+
+
+
+
+
+
+
+
 
 //Constants
 #define HALFSPEED_DBIT_PIPELINE 0x7f7c
@@ -22,7 +86,7 @@
 
 /* values defined for FPGA */
 #define MCSNUM            0x0
-#define FIXED_PATT_VAL    0xacdc1980
+
 
 
 #define FPGA_INIT_PAT     0x60008
@@ -64,12 +128,11 @@
 //HV
 
 
-#define DUMMY_REG             0x44<<11
-#define FPGA_VERSION_REG      0<<11 //0x22<<11
-#define PCB_REV_REG			  0<<11
-#define FIX_PATT_REG          1<<11 //0x23<<11
+
+
+
 #define CONTROL_REG           79<<11//0x24<<11
-#define STATUS_REG            2<<11 //0x25<<11
+
 #define CONFIG_REG            77<<11//0x26<<11
 #define EXT_SIGNAL_REG        78<<11//	  0x4E<<11
 #define FPGA_SVN_REG    	  0x29<<11
@@ -78,8 +141,8 @@
 #define CHIP_OF_INTRST_REG    0x2A<<11
 
 //FIFO
-#define LOOK_AT_ME_REG          3<<11 //0x28<<11
-#define SYSTEM_STATUS_REG       4<<11
+
+
 
 #define FIFO_DATA_REG 6<<11
 #define FIFO_STATUS_REG  7<<11
@@ -99,8 +162,7 @@
 
 
 
-#define GET_ACTUAL_TIME_LSB_REG     16<<11
-#define GET_ACTUAL_TIME_MSB_REG     17<<11
+
 
 #define GET_MEASUREMENT_TIME_LSB_REG     38<<11
 #define GET_MEASUREMENT_TIME_MSB_REG     38<<11
@@ -268,13 +330,7 @@
 #define SHIFTMOD 2
 #define SHIFTFIFO 9
 
-/** for PCB_REV_REG */
-#define DETECTOR_TYPE_MASK   	0xFF000000
-#define DETECTOR_TYPE_OFFSET   	24
-#define BOARD_REVISION_MASK		0xFFFFFF
-#define MOENCH03_MODULE_ID		2
-#define JUNGFRAU_MODULE_ID			8
-#define JUNGFRAU_CTB_ID			3
+
 
 
 
@@ -295,28 +351,7 @@
 #define GB10_RESET_BIT      0x0800   
 #define MEM_RESET_BIT       0x1000   
 
-/* for status register */
-#define RUN_BUSY_BIT             0x00000001
-#define READOUT_BUSY_BIT         0x00000002
-#define FIFOTEST_BUSY_BIT        0x00000004 //????
-#define WAITING_FOR_TRIGGER_BIT  0x00000008
-#define DELAYBEFORE_BIT          0x00000010
-#define DELAYAFTER_BIT           0x00000020
-#define EXPOSING_BIT             0x00000040
-#define COUNT_ENABLE_BIT         0x00000080
-#define READSTATE_0_BIT    		 0x00000100
-#define READSTATE_1_BIT    		 0x00000200
-#define READSTATE_2_BIT    		 0x00000400
-#define SOME_FIFO_FULL_BIT       0x00000800 // error!
 
-#define RUNSTATE_0_BIT     		 0x00001000
-#define RUNSTATE_1_BIT    		 0x00002000
-#define RUNSTATE_2_BIT    		 0x00004000
-#define STOPPED_BIT       		 0x00008000 // stopped!
-#define ALL_FIFO_EMPTY_BIT       0x00010000 // data ready
-#define RUNMACHINE_BUSY_BIT      0x00020000
-#define READMACHINE_BUSY_BIT     0x00040000
-#define PLL_RECONFIG_BUSY     	 0x00100000
 
 
 

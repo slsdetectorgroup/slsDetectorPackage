@@ -28,6 +28,9 @@ void FPGAdontTouchFlash();
 void FPGATouchFlash();
 int powerChip (int on);
 void initializeDetector();
+int checkType();
+void printVersions();
+
 
 u_int16_t bus_r16(u_int32_t offset);
 u_int16_t bus_w16(u_int32_t offset, u_int16_t data);//aldos function
@@ -90,8 +93,8 @@ int getAdcConfigured();
 
 
 u_int64_t getDetectorNumber();
-u_int32_t getFirmwareVersion();
-u_int32_t  getFirmwareSVNVersion();
+u_int64_t getFirmwareVersion();
+int64_t getId(enum idMode arg);
 
 int testFifos(void);
 u_int32_t testFpga(void);
@@ -136,12 +139,12 @@ int64_t getFramesFromStart();
 
 u_int32_t runBusy(void); 
 u_int32_t runState(void); 
-u_int32_t dataPresent(void); 
 
 
 int startStateMachine();
 int stopStateMachine();
 int startReadOut();
+enum runStatus getStatus();
 u_int32_t fifoReset(void);
 u_int32_t fifoReadCounter(int fifonum);
 u_int32_t fifoReadStatus();

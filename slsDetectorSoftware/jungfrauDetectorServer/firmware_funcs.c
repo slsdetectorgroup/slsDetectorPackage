@@ -13,10 +13,6 @@
 //#define VERYVERBOSE
 
 
-#ifdef SHAREDMEMORY
-#include "sharedmemory.h"
-#endif
-
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
@@ -140,12 +136,6 @@ int mapCSP0(void) {
 	CSP0BASE = malloc(MEM_SIZE);
 	printf("memory allocated\n");
 #endif
-#ifdef SHAREDMEMORY 
-	if ( (res=inism(SMSV))<0) {
-		printf("error attaching shared memory! %i",res);
-		return FAIL;
-	}
-#endif
 	//printf("CSPObase is 0x%08x \n",CSP0BASE);
 	printf("CSPOBASE mapped from %08x to %08x\n",CSP0BASE,CSP0BASE+MEM_SIZE);
 
@@ -201,39 +191,13 @@ int powerChip (int on){
 void initializeDetector(){
 	printf("Initializing Detector\n");
 
-	int i;
-	//printf("Bus test... ");
-	for (i=0; i<1000000; i++) {
-		bus_w(SET_DELAY_LSB_REG, i*100);
-		bus_r(FPGA_VERSION_REG);
-		if (i*100!=bus_r(SET_DELAY_LSB_REG))
-			cprintf(RED,"Bus Test ERROR: wrote 0x%x, read 0x%x\n",i*100,bus_r(SET_DELAY_LSB_REG));
-	}
-	//printf("Finished\n");
-
-	//confirm the detector type
-	if (((bus_r(PCB_REV_REG) & DETECTOR_TYPE_MASK)>>DETECTOR_TYPE_OFFSET) != JUNGFRAU_MODULE_ID){
-		cprintf(BG_RED,"This is not a Jungfrau Server (enum:%d)\n",myDetectorType);
+	//initial test
+	if ( (testFpga() == FAIL) || (testBus() == FAIL) || (checkType() == FAIL)) {	/*Check with Carlos if type check required */
+		cprintf(BG_RED, "Dangerous to continue. Goodbye!\n");
 		exit(-1);
 	}
-	cprintf(BLUE,"\n\n********************************************************\n"
-			"*********************Jungfrau Server********************\n"
-			"********************************************************\n");
 
-	//print version
-	cprintf(BLUE,"\n"
-			"Firmware Version:\t 0x%x\n"
-			"Software Version:\t %llx\n"
-			//"F/w-S/w API Version:\t\t %lld\n"
-			//"Required Firmware Version:\t %d\n"
-			"Fixed Pattern:\t\t 0x%x\n"
-			"Board Revision:\t\t 0x%x\n"
-			"\n********************************************************\n",
-			bus_r(FPGA_VERSION_REG),(long long unsigned int)(((int64_t)SVNREV <<32) | (int64_t)SVNDATE)
-			//,sw_fw_apiversion,	REQUIRED_FIRMWARE_VERSION
-			,bus_r(FIX_PATT_REG),(bus_r(PCB_REV_REG)&BOARD_REVISION_MASK)
-	);
-
+	printVersions();
 
 	printf("Resetting PLL\n");
 	resetPLL();
@@ -242,9 +206,12 @@ void initializeDetector(){
 	bus_w16(CONTROL_REG, GB10_RESET_BIT);
 	bus_w16(CONTROL_REG, 0);
 
+	//allocating module structure for the detector in the server
 #ifdef MCB_FUNCS
 	initDetector();
 #endif
+
+
 	/*some registers set, which is in common with jungfrau, please check */
 	prepareADC();
 	/*some registers set, which is in common with jungfrau, please check */
@@ -317,6 +284,32 @@ void initializeDetector(){
 	setMaster(GET_MASTER);
 	setSynchronization(GET_SYNCHRONIZATION_MODE);
 
+}
+
+int checkType() {
+	volatile u_int32_t type = ((bus_r(FPGA_VERSION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
+	if (type != JUNGFRAU){
+			cprintf(BG_RED,"This is not a Jungfrau Server (read %d, expected %d)\n",type, JUNGFRAU);
+			return FAIL;
+		}
+	return OK;
+}
+
+void printVersions() {
+	cprintf(BLUE,"\n\n"
+			"********************************************************\n"
+			"*********************Jungfrau Server********************\n"
+			"********************************************************\n\n"
+			"Firmware Version:\t 0x%llx\n"
+			"Software Version:\t 0x%llx\n"
+			//"F/w-S/w API Version:\t\t %lld\n"
+			//"Required Firmware Version:\t %d\n"
+			"********************************************************\n",
+			(long long unsigned int)getId(DETECTOR_FIRMWARE_VERSION),
+			(long long unsigned int)getId(DETECTOR_SOFTWARE_VERSION)
+			//,(long long unsigned int)getId(SOFTWARE_FIRMWARE_API_VERSION)
+			//REQUIRED_FIRMWARE_VERSION);
+	);
 }
 
 
@@ -1052,77 +1045,86 @@ u_int64_t  getDetectorNumber() {
 	return res;
 }
 
-u_int32_t  getFirmwareVersion() {
-	return bus_r(FPGA_VERSION_REG);
+u_int64_t  getFirmwareVersion() {
+	return ((bus_r(FPGA_VERSION_REG) & BOARD_REVISION_MSK) >> BOARD_REVISION_OFST);
 }
 
-u_int32_t  getFirmwareSVNVersion(){
-	return bus_r(FPGA_SVN_REG);
+int64_t getId(enum idMode arg) {
+	int64_t retval = -1;
+
+	switch(arg){
+	case DETECTOR_SERIAL_NUMBER:
+		retval =  getDetectorNumber();
+		break;
+	case DETECTOR_FIRMWARE_VERSION:
+		retval=getFirmwareSVNVersion();
+		retval=(retval <<32) | getFirmwareVersion();
+		break;
+	case DETECTOR_SOFTWARE_VERSION:
+		retval= SVNREV;
+		retval= (retval <<32) | SVNDATE;
+		break;
+	default:
+		printf("Required unknown id %d \n", arg);
+		break;
+	}
+	return retval;
 }
 
 
-// for fpga test 
+
+
+
+int testFifos(void) {
+	printf("Fifo test not implemented!\n");
+	/*bus_w16(CONTROL_REG, START_FIFOTEST_BIT); check with Carlos
+	bus_w16(CONTROL_REG, 0x0);*/
+	return OK;
+}
+
 u_int32_t testFpga(void) {
-	printf("Testing FPGA:\n");
-	volatile u_int32_t val,addr,val2;
-	int result=OK,i;
-	//fixed pattern
-	val=bus_r(FIX_PATT_REG);
-	if (val==FIXED_PATT_VAL) {
-		printf("fixed pattern ok!! %08x\n",val);
-	} else {
-		printf("fixed pattern wrong!! %08x\n",val);
-		result=FAIL;
-	}
+	printf("\nTesting FPGA...\n");
 
-	//dummy register
-	addr = DUMMY_REG;
-	for(i=0;i<1000000;i++)
-	{
-		val=0x5A5A5A5A-i;
-		bus_w(addr, val);
-		val=bus_r(addr);
-		if (val!=0x5A5A5A5A-i) {
-			printf("ATTEMPT:%d:\tFPGA dummy register wrong!! %x instead of %x \n",i,val,0x5A5A5A5A-i);
-			result=FAIL;
-		}
-		val=(i+(i<<10)+(i<<20));
-		bus_w(addr, val);
-		val2=bus_r(addr);
-		if (val2!=val) {
-			printf("ATTEMPT:%d:\tFPGA dummy register wrong!! read %x instead of %x.\n",i,val2,val);
-			result=FAIL;
-		}
-		val=0x0F0F0F0F;
-		bus_w(addr, val);
-		val=bus_r(addr);
-		if (val!=0x0F0F0F0F) {
-			printf("ATTEMPT:%d:\tFPGA dummy register wrong!! %x instead of 0x0F0F0F0F \n",i,val);
-			result=FAIL;
-		}
-		val=0xF0F0F0F0;
-		bus_w(addr, val);
-		val=bus_r(addr);
-		if (val!=0xF0F0F0F0)  {
-			printf("ATTEMPT:%d:\tFPGA dummy register wrong!! %x instead of 0xF0F0F0F0 \n\n",i,val);
-			result=FAIL;
-		}
-	}
-	if(result==OK)
-	{
-		printf("----------------------------------------------------------------------------------------------");
-		printf("\nATTEMPT 1000000: FPGA DUMMY REGISTER OK!!!\n");
-		printf("----------------------------------------------------------------------------------------------");
+	//fixed pattern
+	int ret = OK;
+	volatile u_int32_t val = bus_r(FIX_PATT_REG);
+	if (val == FIX_PATT_VAL) {
+		printf("Fixed pattern: successful match 0x%08x\n",val);
+	} else {
+		cprintf(RED,"Fixed pattern does not match! Read 0x%08x, expected 0x%08x\n", val, FIX_PATT_VAL);
+		ret = FAIL;
 	}
 	printf("\n");
-	return result;
+	return ret;
 }
-
 
 u_int32_t testRAM(void) {
 	int result=OK;
-	printf("TestRAM not implemented\n");
+	printf("RAM Test not implemented!\n");
 	return result;
+}
+
+int testBus() {
+	printf("\nTesting Bus...\n");
+
+	int ret = OK;
+	u_int32_t addr = SET_DELAY_LSB_REG;
+	int times = 1000 * 1000;
+	int i = 0;
+
+	for (i = 0; i < times; ++i) {
+		bus_w(addr, i * 100);
+		if (i * 100 != bus_r(SET_DELAY_LSB_REG)) {
+			cprintf(RED,"ERROR: Mismatch! Wrote 0x%x, read 0x%x\n", i * 100, bus_r(SET_DELAY_LSB_REG));
+			ret = FAIL;
+		}
+	}
+
+	if (ret == OK)
+		printf("Successfully tested bus %d times\n", times);
+
+	printf("\n");
+	return ret;
 }
 
 
@@ -1136,15 +1138,6 @@ int setNMod(int n) {
 
 int getNMod() {
 	return 1;
-}
-
-
-// fifo test
-int testFifos(void) {
-	printf("Fifo test not implemented!\n");
-	bus_w16(CONTROL_REG, START_FIFOTEST_BIT);
-	bus_w16(CONTROL_REG, 0x0);
-	return OK;
 }
 
 
@@ -1660,21 +1653,8 @@ int configureInterface(uint32_t destip,uint64_t destmac,uint64_t  sourcemac,int 
 
 #endif
 
-	//bus_w(CONTROL_REG,GB10_RESET_BIT);
-	//usleep(50 * 1000);
-	bus_w(CONTROL_REG,0);
-	//usleep(500* 1000);
-	//bus_w(CONFIG_REG,conf | GB10_NOT_CPU_BIT);
-	printf("System status register is %08x\n",bus_r(SYSTEM_STATUS_REG));
-
-
-	/*
-	bus_w(CONTROL_REG,GB10_RESET_BIT);
-	bus_w(CONTROL_REG,0);
-	usleep(500 * 1000);
-	bus_w(CONFIG_REG,conf | GB10_NOT_CPU_BIT);
-	printf("System status register is %08x\n",bus_r(SYSTEM_STATUS_REG));
-	*/
+	/*bus_w(CONTROL_REG,0);    Carlos modification
+	printf("System status register is %08x\n",bus_r(SYSTEM_STATUS_REG));*/
 
 	printf("Reset mem machine fifos\n");
 	bus_w(MEM_MACHINE_FIFOS_REG,0x4000);
@@ -1733,31 +1713,19 @@ int getAdcConfigured(){
 }
 
 u_int32_t runBusy(void) {
-	u_int32_t s = bus_r(STATUS_REG) & 1;
+	u_int32_t s = ((runState() & RUN_BUSY_MSK) >> RUN_BUSY_OFST);
 #ifdef VERBOSE
 	printf("status %04x\n",s);
 #endif
 	return s;
 }
 
-u_int32_t dataPresent(void) {
-	return bus_r(LOOK_AT_ME_REG);
-}
 
 u_int32_t runState(void) {
 	int s=bus_r(STATUS_REG);
-#ifdef SHAREDMEMORY
-	if (s&RUN_BUSY_BIT)
-		write_status_sm("Running");
-	else
-		write_status_sm("Stopped");
-#endif
 #ifdef VERBOSE
 	printf("status %04x\n",s);
 #endif
-
-	/*  if (s==0x62001)
-    exit(-1);*/
 	return s;
 }
 
@@ -1771,10 +1739,6 @@ int startStateMachine(){
 	//#endif
 	//	cleanFifo();
 	// fifoReset();
-#ifdef SHAREDMEMORY
-	write_stop_sm(0);
-	write_status_sm("Started");
-#endif
 	//start state machine
 	bus_w16(CONTROL_REG, FIFO_RESET_BIT);
 	bus_w16(CONTROL_REG, 0x0);
@@ -1792,10 +1756,6 @@ int stopStateMachine(){
 	//#ifdef VERBOSE
 	cprintf(BG_RED,"*******Stopping State Machine*******\n");
 	//#endif
-#ifdef SHAREDMEMORY
-	write_stop_sm(1);
-	write_status_sm("Stopped");
-#endif
 	// for(i=0;i<100;i++){
 	//stop state machine
 	bus_w16(CONTROL_REG, STOP_ACQ_BIT);
@@ -1808,11 +1768,9 @@ int stopStateMachine(){
 
 
 int startReadOut(){
-	u_int32_t status;
 #ifdef VERBOSE
 	printf("Starting State Machine Readout\n");
 #endif
-	status=bus_r(STATUS_REG)&RUN_BUSY_BIT;
 #ifdef DEBUG
 	printf("State machine status is %08x\n",bus_r(STATUS_REG));
 #endif
@@ -1820,6 +1778,57 @@ int startReadOut(){
 	usleep(100);
 	bus_w16(CONTROL_REG,  0x0);
 	return OK;
+}
+
+enum runStatus getStatus() {
+#ifdef VERBOSE
+	printf("Getting status\n");
+#endif
+
+	enum runStatus s;
+	u_int32_t retval = runState();
+	printf("\n\nSTATUS=%08x\n",retval);
+
+	//running
+	if(((retval & RUN_BUSY_MSK) >> RUN_BUSY_OFST)) {
+		if ((retval & WAITING_FOR_TRIGGER_MSK) >> WAITING_FOR_TRIGGER_OFST) {
+			printf("-----------------------------------WAITING-----------------------------------\n");
+			s=WAITING;
+		}
+		else{
+			printf("-----------------------------------RUNNING-----------------------------------\n");
+			s=RUNNING;
+		}
+	}
+
+	//not running
+	else {
+		if ((retval & STOPPED_MSK) >> STOPPED_OFST) {
+			printf("-----------------------------------STOPPED--------------------------\n");
+			s=STOPPED;
+		} else if ((retval & RUNMACHINE_BUSY_MSK) >> RUNMACHINE_BUSY_OFST) {
+			printf("-----------------------------------READ MACHINE BUSY--------------------------\n");
+			s=TRANSMITTING;
+		} else if (!retval) {
+			printf("-----------------------------------IDLE--------------------------------------\n");
+			s=IDLE;
+		} else {
+			printf("-----------------------------------Unknown status %08x--------------------------------------\n", retval);
+			s=ERROR;
+		}
+		/* Check with Carlos , I included IDLE and unknown status above
+		//and readbusy=0,idle
+		else if((!(retval&0xffff))||(retval==SOME_FIFO_FULL_BIT)){
+			printf("-----------------------------------IDLE--------------------------------------\n");
+			s=IDLE;
+		} else {
+			printf("-----------------------------------Unknown status %08x--------------------------------------\n", retval);
+			s=ERROR;
+			ret=FAIL;
+		}*/
+	}
+
+	return s;
 }
 
 
@@ -1942,38 +1951,6 @@ int getDynamicRange() {
 	return dynamicRange;
 }
 
-int testBus() {
-	u_int32_t j;
-	u_int64_t i, n, nt;
-	// char cmd[100];
-	u_int32_t val=0x0;
-	int ifail=OK;
-	// printf("%s\n",cmd);
-	// system(cmd);
-	i=0;
-
-	n=1000000;
-	nt=n/100;
-	printf("testing bus %d times\n",(int)n);
-	while (i<n) {
-		// val=bus_r(FIX_PATT_REG);
-		bus_w(DUMMY_REG,val);
-		bus_w(FIX_PATT_REG,0);
-		j=bus_r(DUMMY_REG);
-		//if (i%10000==1)
-		if (j!=val){
-			printf("%d :  read wrong value %08x instead of %08x\n",(int)i,j, val);
-			ifail++;
-			//return FAIL;
-		}// else
-		// printf("%d : value OK 0x%08x\n",i,j);
-		if ((i%nt)==0)
-			printf("%lld cycles OK\n",i);
-		val+=0xbbbbb;
-		i++;
-	}
-	return ifail;
-}
 
 
 int setStoreInRAM(int b) {

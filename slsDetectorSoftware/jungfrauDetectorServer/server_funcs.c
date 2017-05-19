@@ -538,15 +538,9 @@ int get_id(int file_des) {
 
 	switch (arg) {
 	case DETECTOR_SERIAL_NUMBER:
-		retval=getDetectorNumber();
-		break;
 	case DETECTOR_FIRMWARE_VERSION:
-		retval=getFirmwareSVNVersion();
-		retval=(retval <<32) | getFirmwareVersion();
-		break;
 	case DETECTOR_SOFTWARE_VERSION:
-		retval= SVNREV;
-		retval= (retval <<32) | SVNDATE;
+		retval = getId(arg);
 		break;
 	default:
 		printf("Required unknown id %d \n", arg);
@@ -1700,44 +1694,9 @@ int get_run_status(int file_des) {
 	enum runStatus s;
 	sprintf(mess,"getting run status\n");
 
-#ifdef VERBOSE
-	printf("Getting status\n");
-#endif
-
-	retval= runState();
-	printf("\n\nSTATUS=%08x\n",retval);
-
-	if(!(retval&RUN_BUSY_BIT)){
-		if((retval&STOPPED_BIT)  ){ //
-			printf("-----------------------------------STOPPED--------------------------\n");
-			s=STOPPED;
-		} else if((retval&READMACHINE_BUSY_BIT)  ){
-			printf("-----------------------------------READ MACHINE BUSY--------------------------\n");
-			s=TRANSMITTING;
-		}
-		//and readbusy=0,idle
-		else if((!(retval&0xffff))||(retval==SOME_FIFO_FULL_BIT)){
-			printf("-----------------------------------IDLE--------------------------------------\n");
-			s=IDLE;
-		} else {
-			printf("-----------------------------------Unknown status %08x--------------------------------------\n", retval);
-			s=ERROR;
-			ret=FAIL;
-		}
-	}
-	//if runbusy=1
-	else {
-		if (retval&WAITING_FOR_TRIGGER_BIT){
-			printf("-----------------------------------WAITING-----------------------------------\n");
-			s=WAITING;
-		}
-		else{
-			printf("-----------------------------------RUNNING-----------------------------------\n");
-			s=RUNNING;
-		}
-	}
-
-
+	s = getStatus();
+	if (s == ERROR)
+		ret = FAIL;
 
 	if (ret!=OK) {
 		printf("get status failed %04x\n",retval);

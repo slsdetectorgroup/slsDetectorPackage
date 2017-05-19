@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <cstring>
 using namespace std;
 
 int Fifo::NumberofFifoClassObjects(0);
@@ -46,6 +47,7 @@ int Fifo::CreateFifos(uint32_t fifoItemSize, uint32_t fifoDepth) {
 	fifoStream = new CircularFifo<char>(fifoDepth);
 	//allocate memory
 	memory = (char*) calloc (fifoItemSize * fifoDepth, sizeof(char));
+	memset(memory,0,fifoItemSize * fifoDepth* sizeof(char));
 	if (memory == NULL){
 		FILE_LOG (logERROR) << "Could not allocate memory for fifos";
 		memory = 0;
@@ -55,7 +57,7 @@ int Fifo::CreateFifos(uint32_t fifoItemSize, uint32_t fifoDepth) {
 	{ //push free addresses into fifoFree fifo
 		char* buffer = memory;
 		while (buffer < (memory + fifoItemSize * (fifoDepth-1))) {
-			sprintf(buffer,"memory");
+			//sprintf(buffer,"memory");
 #ifdef FIFODEBUG
 			cprintf(MAGENTA,"Fifofree %d: value:%d, pop 0x%p\n", index, fifoFree->getSemValue(), (void*)(buffer));
 #endif

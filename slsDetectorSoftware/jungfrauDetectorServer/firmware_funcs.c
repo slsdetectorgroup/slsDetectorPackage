@@ -61,12 +61,13 @@ typedef struct ip_header_struct {
 } ip_header;
 
 
-struct timeval tss,tse,tsss; //for timing
-
-
-
-
 u_int32_t CSP0BASE;
+int highvoltage = 0;
+
+
+
+
+
 FILE *debugfp, *datafp;
 int fr;
 int wait_time;
@@ -212,10 +213,19 @@ void initializeDetector(){
 #endif
 
 
+
+
+
+
+
+
+
+
+
 	/*some registers set, which is in common with jungfrau, please check */
 	prepareADC();
 	/*some registers set, which is in common with jungfrau, please check */
-	initDac(0);    initDac(8); //initializes the two dacs
+	/*initDac(0);    initDac(8); Carlos later need to initialize dac 0 and dac8 doesnt exist */ //initializes the two dacs
 
 
 	//set dacs
@@ -278,7 +288,7 @@ void initializeDetector(){
 	setPeriod(2*1000*1000);
 	setDelay(0);
 	setGates(0);
-
+	initHighVoltage(0); /* ask Carlos Set it to a value so server is always updated in a get*/
 
 	setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
 	setMaster(GET_MASTER);
@@ -394,6 +404,7 @@ int setDAQRegister(){
 }
 
 
+/** Carlos later dont know if this is even used (all over the place in mcb_funcs.c) */
 // direct pattern output 
 u_int32_t putout(char *s, int modnum) {
 	int i;
@@ -410,8 +421,8 @@ u_int32_t putout(char *s, int modnum) {
 	for (i=0;i<16;i++) {
 		if (s[i]=='1') pat=pat+(1<<(15-i));
 	}
-	//addr=DAC_REG+(modnum<<4);
-	addr=DAC_REG;//+(modnum<<SHIFTMOD); commented by dhanya
+	//addr=SPI_REG+(modnum<<4);
+	addr=SPI_REG;//+(modnum<<SHIFTMOD); commented by dhanya
 	bus_w(addr, pat);
 
 	return OK;
@@ -1255,16 +1266,6 @@ int64_t getTrains(){
 }
 
 
-int64_t setSamples(int64_t value){
-  if (value>=0)
-    bus_w(NSAMPLES_REG,value);
-  return bus_r(NSAMPLES_REG);
-}
-
-int64_t getSamples(){
-  return bus_r(NSAMPLES_REG);//get64BitReg(GET_CYCLES_LSB_REG, GET_CYCLES_MSB_REG);
-}
-
 
 int64_t setProbes(int64_t value){
 	return 0;
@@ -1287,15 +1288,15 @@ int64_t getProgress() {
 }
 
 int64_t getActualTime(){
-	return get64BitReg(GET_ACTUAL_TIME_LSB_REG, GET_ACTUAL_TIME_MSB_REG)/(1E-9*CLK_FREQ);
+	return get64BitReg(TIME_FROM_START_LSB_REG, TIME_FROM_START_MSB_REG)/(1E-9*CLK_FREQ);
 }
 
 int64_t getMeasurementTime(){
-	int64_t v=get64BitReg(GET_MEASUREMENT_TIME_LSB_REG, GET_MEASUREMENT_TIME_MSB_REG);
+	int64_t v=get64BitReg(MEASUREMENT_START_TIME_LSB_REG, MEASUREMENT_START_TIME_MSB_REG);
 	return v/(1E-9*CLK_FREQ);
 }
 
-int64_t getFramesFromStart(){
+int64_t getFramesFromStart(){ /** ask Carlos.. sending back v, but not used in firmware? */
 	int64_t v=get64BitReg(FRAMES_FROM_START_LSB_REG, FRAMES_FROM_START_MSB_REG);
 	int64_t v1=get64BitReg(FRAMES_FROM_START_PG_LSB_REG, FRAMES_FROM_START_PG_MSB_REG);
 
@@ -1420,59 +1421,79 @@ int getTemperature(int tempSensor, int imod){
 
 int initHighVoltage(int val, int imod){
 
-
-	u_int32_t offw,codata;
-	u_int16_t valw, dacvalue;
-	int i,ddx,csdx,cdx;
+	u_int32_t addr = SPI_REG;
 	float alpha=0.55;
+	u_int16_t valw, dacvalue;
+	u_int32_t codata;
 
-	if (val>=0) {
-		if (val<60) {
-			dacvalue=0;
-			val=60;
-		} else if (val>=200) {
-			dacvalue=0x1;
-			val=200;
+	int numbits = 8;
+	int valuemask = 0xff;
+
+	// setting hv
+	if (val >= 0) {
+
+		// limit values
+		if (val < 60) {
+			dacvalue = 0;
+			val = 60;
+		} else if (val >= 200) {
+			dacvalue = 0x1;
+			val = 200;
 		} else {
-			dacvalue=1.+(200.-val)/alpha;
+			dacvalue = 1. + (200.-val) / alpha;
 			val=200.-(dacvalue-1)*alpha;
 		}
-		printf ("****************************** setting val %d, dacval %d\n",val, dacvalue);
-		offw=DAC_REG;
+		printf ("\n Setting High voltage to %d (dacval %d)\n",val, dacvalue);
+		codata = dacvalue & valuemask;
 
-		ddx=8; csdx=10; cdx=9;
-		codata=((dacvalue)&0xff);
+		// start point 0xffff
+		valw = 0xffff; 	//To make it compatible with old board
+						//valw = DAC_SERIAL_DIGITAL_OUT_MSK & DAC_SERIAL_CLK_OUT_MSK & DAC_SERIAL_CS_OUT_MSK &
+						//HV_SERIAL_DIGITAL_OUT_MSK & HV_SERIAL_CLK_OUT_MSK & HV_SERIAL_CS_OUT_MSK;
+		bus_w (addr, valw);
 
+		// chip sel bar down
+		valw &= ~HV_SERIAL_CS_OUT_MSK;
+		bus_w (addr, valw);
 
+		{
+			int i = 0;
+			for (i = 0; i < numbits; i++) {
 
+				// clk down
+				valw &= ~HV_SERIAL_CLK_OUT_MSK;
+				bus_w (addr, valw);
 
-		valw=0xffff; bus_w(offw,(valw)); // start point
-		valw=((valw&(~(0x1<<csdx))));bus_w(offw,valw); //chip sel bar down
-		for (i=0;i<8;i++) {
-			valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
-			valw=((valw&(~(0x1<<ddx)))+(((codata>>(7-i))&0x1)<<ddx));bus_w(offw,valw);//write data (i)
-			valw=((valw&(~(0x1<<cdx)))+(0x1<<cdx));bus_w(offw,valw);//clkup
+				// write data (i) (each bit from codata starting from msb)
+				valw = ((valw & ~HV_SERIAL_DIGITAL_OUT_MSK) +
+						(((codata >> (7-i)) & 0x1) << HV_SERIAL_DIGITAL_OUT_OFST));
+				bus_w (addr, valw);
+
+				// clk up
+				valw |= HV_SERIAL_CLK_OUT_MSK ;
+				bus_w (addr, valw);
+			}
 		}
-		valw=((valw&(~(0x1<<csdx)))+(0x1<<csdx));bus_w(offw,valw); //csup
 
-		valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
+		// chip sel bar up
+		valw |= HV_SERIAL_CS_OUT_MSK;
+		bus_w (addr, valw);
 
+		//clk down
+		valw &= ~HV_SERIAL_CLK_OUT_MSK;
+		bus_w (addr, valw);
 
-		valw=0xffff; bus_w(offw,(valw)); // stop point =start point of course */
+		// stop point = start point of course 0xffff
+		valw = 0xffff; 	//To make it compatible with old board
+						//valw = DAC_SERIAL_DIGITAL_OUT_MSK & DAC_SERIAL_CLK_OUT_MSK & DAC_SERIAL_CS_OUT_MSK &
+						//HV_SERIAL_DIGITAL_OUT_MSK & HV_SERIAL_CLK_OUT_MSK & HV_SERIAL_CS_OUT_MSK;
+		bus_w (addr, valw);
 
-
-		printf("Writing %d in HVDAC  \n",dacvalue);
-
-		bus_w(HV_REG,val);
+		printf(" High voltage set to %d (dacval %d)\n", val, dacvalue);
+		highvoltage = val;
 	}
 
-
-
-	return bus_r(HV_REG);
-
-
-
-	//  return val;
+	return highvoltage;
 }
 
 
@@ -1653,8 +1674,8 @@ int configureInterface(uint32_t destip,uint64_t destmac,uint64_t  sourcemac,int 
 
 #endif
 
-	/*bus_w(CONTROL_REG,0);    Carlos modification
-	printf("System status register is %08x\n",bus_r(SYSTEM_STATUS_REG));*/
+	/*bus_w(CONTROL_REG,0);    Carlos modification*/
+	/*printf("System status register is %08x\n",bus_r(SYSTEM_STATUS_REG)); Carlos modification */
 
 	printf("Reset mem machine fifos\n");
 	bus_w(MEM_MACHINE_FIFOS_REG,0x4000);
@@ -2695,57 +2716,68 @@ uint64_t setPatternWaitTime(int level, uint64_t t) {
 }
 
 
+/** Carlos later, used only for 0 and 8 */
 void initDac(int dacnum) {
 	printf("\nInitializing dac for %d\n",dacnum);
 
-	u_int32_t offw,codata;
+	u_int32_t addr = SPI_REG;
 	u_int16_t valw;
-	int i,ddx,csdx,cdx;
+	u_int32_t codata;
 
+	int csdx = dacnum / 8 + 2; 		// To make it compatible with old board (16 dacs), otherwise only DAC_SERIAL_CS_OUT_OFST
+	printf("Chip select bit:%d\n"
+			"Dac Channel Nr:%d\n",
+			csdx, 0xf);
 
+	int numbits = 25;
+	codata = (
+			   ((0x6 << 4) + /* 110 for initdac, 011 for specific dac ?? */
+			  	(0xf << 16)) + /* dac channel number (can be 0 - 8), f means all in initdac ??*/
+			   ((0x0 << 4) & 0xfff0) /* value from bit 12 to 4?? */
+			   );
 
-	//setting int reference
-	offw=DAC_REG;
+	// start point
+	valw = 0xffff; 	//To make it compatible with old board
+					//valw = DAC_SERIAL_DIGITAL_OUT_MSK & DAC_SERIAL_CLK_OUT_MSK & DAC_SERIAL_CS_OUT_MSK &
+					//HV_SERIAL_DIGITAL_OUT_MSK & HV_SERIAL_CLK_OUT_MSK & HV_SERIAL_CS_OUT_MSK;
+	bus_w (addr, valw);
 
+	// chip sel bar down
+	valw &= ~(0x1 << csdx);
+	bus_w (addr, valw);
 
-	ddx=0; cdx=1;
-	csdx=dacnum/8+2;
+	{
+		int i = 0;
+		for (i = 0; i < numbits; i++) {
 
+			// clk down
+			valw &= ~DAC_SERIAL_CLK_OUT_MSK;
+			bus_w (addr, valw);
 
-	printf("data bit=%d, clkbit=%d, csbit=%d\n",ddx,cdx,csdx);
-	codata=(((0x6<<4)+(0xf<<16))+((0x0<<4)&0xfff0));
+			// write data (i) (each bit from codata starting from msb)
+			valw = ((valw & ~DAC_SERIAL_DIGITAL_OUT_MSK) +
+					(((codata >> (numbits - 1 - i)) & 0x1) << DAC_SERIAL_DIGITAL_OUT_OFST));
+			bus_w (addr, valw);
 
-	valw=0xffff; bus_w(offw,(valw)); // start point
-	valw=((valw&(~(0x1<<csdx))));bus_w(offw,valw); //chip sel bar down
-	for (i=1;i<25;i++) {
-
-		valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
-		valw=((valw&(~(0x1<<ddx)))+(((codata>>(24-i))&0x1)<<ddx));bus_w(offw,valw);//write data (i)
-		//	printf("%d ", ((codata>>(24-i))&0x1));
-
-
-		valw=((valw&(~(0x1<<cdx)))+(0x1<<cdx));bus_w(offw,valw);//clkup
+			// clk up
+			valw |= DAC_SERIAL_CLK_OUT_MSK ;
+			bus_w (addr, valw);
+		}
 	}
-	// printf("\n ");
 
+	// chip sel bar up
+	valw |= (0x1 << csdx);
+	bus_w (addr, valw);
 
-	valw=((valw&(~(0x1<<csdx)))+(0x1<<csdx));bus_w(offw,valw); //csup
+	//clk down
+	valw &= ~DAC_SERIAL_CLK_OUT_MSK;
+	bus_w (addr, valw);
 
-	valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
-
-
-
-
-	valw=0xffff; bus_w(offw,(valw)); // stop point =start point of course */
-
-
-	//end of setting int reference
-
-
-
-
-
-
+	// stop point = start point of course
+	valw = 0xffff; 	//To make it compatible with old board
+					//valw = DAC_SERIAL_DIGITAL_OUT_MSK & DAC_SERIAL_CLK_OUT_MSK & DAC_SERIAL_CS_OUT_MSK &
+					//HV_SERIAL_DIGITAL_OUT_MSK & HV_SERIAL_CLK_OUT_MSK & HV_SERIAL_CS_OUT_MSK;
+	bus_w (addr, valw);
 
 }
 
@@ -2783,44 +2815,83 @@ int getDacRegister(int dacnum) {
 }
 
 
-int setDac(int dacnum,int dacvalue){
-	printf("\nSetting of DAC %d with value %d\n",dacnum,dacvalue);
+int setDac(int dacnum, int dacvalue){
+	printf("\nSetting of DAC %d with value %d\n",dacnum, dacvalue);
 
-	u_int32_t offw,codata;
+	u_int32_t addr = SPI_REG;
 	u_int16_t valw;
-	int i,ddx,csdx,cdx;
-
-	int dacch=0;
-
-	if (dacvalue>=0) {
-
-		//setting int reference
-		offw=DAC_REG;
+	u_int32_t codata;
 
 
-		ddx=0; cdx=1;
-		csdx=dacnum/8+2;
+	int csdx = dacnum / 8 + 2; 	// Chip select can be DAC_SERIAL_CS_OUT_OFST(2) or 3 (compatibility with old board 16 dacs)
+	int dacch = dacnum % 8;		// 0-8, dac channel number (also for dacnum 9-15 in old board)
+	int numbits = 25;
+	printf("Chip select bit:%d\n"
+			"Dac Channel Nr:%d\n",
+			csdx, dacch);
 
-		dacch=dacnum%8;
 
-		printf("data bit=%d, clkbit=%d, csbit=%d\n",ddx,cdx,csdx);
-		//modified to power down single channels
-		//   codata=((((0x2)<<4)+((dacch)&0xf))<<16)+((dacvalue<<4)&0xfff0);
-		codata=((((0x3)<<4)+((dacch)&0xf))<<16)+((dacvalue<<4)&0xfff0);
-		valw=0xffff; bus_w(offw,(valw)); // start point
-		valw=((valw&(~(0x1<<csdx))));bus_w(offw,valw); //chip sel bar down
-		for (i=1;i<25;i++) {
-			valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
-			valw=((valw&(~(0x1<<ddx)))+(((codata>>(24-i))&0x1)<<ddx));bus_w(offw,valw);//write data (i)
-			//	printf("%d ", ((codata>>(24-i))&0x1));
-			valw=((valw&(~(0x1<<cdx)))+(0x1<<cdx));bus_w(offw,valw);//clkup
+	// setting dac
+	if (dacvalue >= 0) {
+		//modified to power down single channels  codata=((((0x2)<<4)+((dacch)&0xf))<<16)+((dacvalue<<4)&0xfff0);
+
+		codata = (
+				  ((0x3 << 4) +   /** 110 for initdac, 011 for specific dac?? */
+				   ((dacch)&0xf)) /** dac ch number (can be 0 - 8). f means all in initdac ?? */
+				 << 16) +		  /** Carlos later, why change in bracket position */
+				 ((dacvalue<<4)&0xfff0);  /* value from bit 12 to 4?? */
+
+
+
+
+		codata=(((0x6<<4)+(0xf<<16))+((0x0<<4)&0xfff0));
+		codata=(((0x3<<4)+((dacch)&0xf))<<16)+((dacvalue<<4)&0xfff0);
+
+
+
+		// start point
+		valw = 0xffff; 	//To make it compatible with old board
+						//valw = DAC_SERIAL_DIGITAL_OUT_MSK & DAC_SERIAL_CLK_OUT_MSK & DAC_SERIAL_CS_OUT_MSK &
+						//HV_SERIAL_DIGITAL_OUT_MSK & HV_SERIAL_CLK_OUT_MSK & HV_SERIAL_CS_OUT_MSK;
+		bus_w (addr, valw);
+
+		// chip sel bar down
+		valw &= ~(0x1 << csdx);
+		bus_w (addr, valw);
+
+		{
+			int i = 0;
+			for (i = 0; i < numbits; i++) {
+
+				// clk down
+				valw &= ~DAC_SERIAL_CLK_OUT_MSK;
+				bus_w (addr, valw);
+
+				// write data (i) (each bit from codata starting from msb)
+				valw = ((valw & ~DAC_SERIAL_DIGITAL_OUT_MSK) +
+						(((codata >> (numbits - 1 - i)) & 0x1) << DAC_SERIAL_DIGITAL_OUT_OFST));
+				bus_w (addr, valw);
+
+				// clk up
+				valw |= DAC_SERIAL_CLK_OUT_MSK ;
+				bus_w (addr, valw);
+			}
 		}
-		// printf("\n ");
-		valw=((valw&(~(0x1<<csdx)))+(0x1<<csdx));bus_w(offw,valw); //csup
-		valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
-		valw=0xffff; bus_w(offw,(valw)); // stop point =start point of course */
 
-		//printf("Writing %d in DAC(0-15) %d \n",dacvalue,dacnum);
+		// chip sel bar up
+		valw |= (0x1 << csdx);
+		bus_w (addr, valw);
+
+		//clk down
+		valw &= ~DAC_SERIAL_CLK_OUT_MSK;
+		bus_w (addr, valw);
+
+		// stop point = start point of course
+		valw = 0xffff; 	//To make it compatible with old board
+						//valw = DAC_SERIAL_DIGITAL_OUT_MSK & DAC_SERIAL_CLK_OUT_MSK & DAC_SERIAL_CS_OUT_MSK &
+						//HV_SERIAL_DIGITAL_OUT_MSK & HV_SERIAL_CLK_OUT_MSK & HV_SERIAL_CS_OUT_MSK;
+		bus_w (addr, valw);
+
 		printf("Writing %d in DAC %d \n",dacvalue,dacnum);
 		setDacRegister(dacnum,dacvalue);
 	} else if (dacvalue==-100) {

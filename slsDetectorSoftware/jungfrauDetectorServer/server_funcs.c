@@ -916,7 +916,7 @@ int set_dac(int file_des) {
 				retval=adcvpp;;
 
 			} else if (ind==HV_NEW )
-				retval=initHighVoltageByModule(val,imod);
+				retval=initHighVoltage(val,0);
 			else
 				printf("**********No dac with index %d\n",ind);
 		}

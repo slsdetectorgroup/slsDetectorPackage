@@ -364,24 +364,6 @@ int getTemperatureByModule(int tempSensor, int imod)
 }
 
 
-int initHighVoltageByModule(int val, int imod)
-{
-  int im;
-  //for the particular module
-  if (imod>=0 && imod<nModX) { 
-    return initHighVoltage(val,imod);
-  }
-  else{
-    //checks if all modules have the same value(ALLMOD)
-    for (im=1; im<nModX; im++) {
-      if (initHighVoltage(val,im)!=initHighVoltage(val,0)) {
-	return -1;
-      }
-    }
-    return initHighVoltage(val,0);
-  }
-}
-
 
 int initConfGainByModule(int isettings,int val, int imod)
 {

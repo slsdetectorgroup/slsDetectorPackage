@@ -10,66 +10,122 @@
 #define MEM_SIZE 0x100000 
 
 /* FPGA Version register */
+#define FPGA_VERSION_REG      			(0x00 << 11)
 
-#define FPGA_VERSION_REG      		(0x00 << 11)
-
-#define BOARD_REVISION_OFST			(0)
-#define BOARD_REVISION_MSK			(0x00FFFFFF << BOARD_REVISION_OFST)
-#define DETECTOR_TYPE_OFST   		(24)
-#define DETECTOR_TYPE_MSK   		(0x000000FF << DETECTOR_TYPE_OFST)
+#define BOARD_REVISION_OFST				(0)
+#define BOARD_REVISION_MSK				(0x00FFFFFF << BOARD_REVISION_OFST)
+#define DETECTOR_TYPE_OFST   			(24)
+#define DETECTOR_TYPE_MSK   			(0x000000FF << DETECTOR_TYPE_OFST)
 
 
 
 /* Fix pattern register */
-#define FIX_PATT_REG          		(0x01 << 11)
+#define FIX_PATT_REG          			(0x01 << 11)
 
-#define FIX_PATT_VAL    			0xACDC2014
+#define FIX_PATT_VAL    				0xACDC2014
 
 
 /* Status register */
-#define STATUS_REG            		(0x02 << 11)
+#define STATUS_REG            			(0x02 << 11)
 
-#define RUN_BUSY_OFST				(0)
-#define RUN_BUSY_MSK      			(0x00000001 << RUN_BUSY_BIT_OFST)
-#define WAITING_FOR_TRIGGER_OFST  	(3)
-#define WAITING_FOR_TRIGGER_MSK  	(0x00000001 << WAITING_FOR_TRIGGER_OFST)
-#define DELAYBEFORE_OFST  			(4)
-#define DELAYBEFORE_MSK  			(0x00000001 << DELAYBEFORE_OFST)
-#define DELAYAFTER_OFST  			(5)
-#define DELAYAFTER_MSK  			(0x00000001 << DELAYAFTER_OFST)
-#define STOPPED_OFST  				(15)
-#define STOPPED_MSK  				(0x00000001 << STOPPED_OFST)
-#define RUNMACHINE_BUSY_OFST  		(17)
-#define RUNMACHINE_BUSY_MSK  		(0x00000001 << RUNMACHINE_BUSY_OFST)
+#define RUN_BUSY_OFST					(0)
+#define RUN_BUSY_MSK      				(0x00000001 << RUN_BUSY_BIT_OFST)
+#define WAITING_FOR_TRIGGER_OFST  		(3)
+#define WAITING_FOR_TRIGGER_MSK  		(0x00000001 << WAITING_FOR_TRIGGER_OFST)
+#define DELAYBEFORE_OFST  				(4)											//Not used in software
+#define DELAYBEFORE_MSK  				(0x00000001 << DELAYBEFORE_OFST)			//Not used in software
+#define DELAYAFTER_OFST  				(5)											//Not used in software
+#define DELAYAFTER_MSK  				(0x00000001 << DELAYAFTER_OFST)				//Not used in software
+#define STOPPED_OFST  					(15)
+#define STOPPED_MSK  					(0x00000001 << STOPPED_OFST)
+#define RUNMACHINE_BUSY_OFST  			(17)
+#define RUNMACHINE_BUSY_MSK  			(0x00000001 << RUNMACHINE_BUSY_OFST)
 
 
 /* Look at me register */
-#define LOOK_AT_ME_REG          	(0x03 << 11)		//Not used in firmware or software
+#define LOOK_AT_ME_REG          		(0x03 << 11)								//Not used in firmware or software
 
 /* System Status register */
-#define SYSTEM_STATUS_REG       	(0x04 << 11)		//Not used in software
+#define SYSTEM_STATUS_REG       		(0x04 << 11)								//Not used in software
 
-#define DDR3_CAL_DONE_OFST			(0)
-#define DDR3_CAL_DONE_MSK 			(0x00000001 << DDR3_CAL_DONE_OFST)
-#define DDR3_CAL_FAIL_OFST			(1)
-#define DDR3_CAL_FAIL_MSK 			(0x00000001 << DDR3_CAL_FAIL_OFST)
-#define DDR3_CAL_FAIL_OFST			(1)
-#define DDR3_CAL_FAIL_MSK 			(0x00000001 << DDR3_CAL_FAIL_OFST)
+#define DDR3_CAL_DONE_OFST				(0)											//Not used in software
+#define DDR3_CAL_DONE_MSK 				(0x00000001 << DDR3_CAL_DONE_OFST)			//Not used in software
+#define DDR3_CAL_FAIL_OFST				(1)											//Not used in software
+#define DDR3_CAL_FAIL_MSK 				(0x00000001 << DDR3_CAL_FAIL_OFST)			//Not used in software
+#define DDR3_INIT_DONE_OFST				(2)											//Not used in software
+#define DDR3_INIT_DONE_MSK 				(0x00000001 << DDR3_INIT_DONE_OFST)			//Not used in software
+#define RECONFIG_PLL_LCK_OFST			(3)											//Not used in software
+#define RECONFIG_PLL_LCK_MSK 			(0x00000001 << RECONFIG_PLL_LCK_OFST)		//Not used in software
+#define PLL_A_LCK_OFST					(4)											//Not used in software
+#define PLL_A_LCK_MSK 					(0x00000001 << PLL_A_LCK_OFST)				//Not used in software
+#define DD3_PLL_LCK_OFST				(5)											//Not used in software
+#define DD3_PLL_LCK_MSK 				(0x00000001 << DD3_PLL_LCK_OFST)			//Not used in software
 
 
+/* Module Control Board Serial Number Register */
+#define MOD_SERIAL_NUM_REG				(0x0A << 11)								//Not used in software
+
+#define HARDWARE_SERIAL_NUM_OFST		(0)											//Not used in software
+#define HARDWARE_SERIAL_NUM_MSK			(0x000000FF << HARDWARE_SERIAL_NUM_OFST)	//Not used in software
+#define HARDWARE_VERSION_NUM_OFST		(16)										//Not used in software
+#define HARDWARE_VERSION_NUM_MSK		(0x0000003F << HARDWARE_VERSION_NUM_OFST)	//Not used in software
 
 
 /* Time from Start 64 bit register */
-#define TIME_FROM_START_LSB_REG   	(0x10 << 11)
-#define TIME_FROM_START_MSB_REG   	(0x11 << 11)
-//#define GET_ACTUAL_TIME_LSB_REG     16<<11
-//#define GET_ACTUAL_TIME_MSB_REG     17<<11
+#define TIME_FROM_START_LSB_REG   		(0x10 << 11)
+#define TIME_FROM_START_MSB_REG   		(0x11 << 11)
 
+/* Get Delay 64 bit register */
+#define GET_DELAY_LSB_REG     			(0x12 << 11)
+#define GET_DELAY_MSB_REG     			(0x13 << 11)
 
+/* Get Cycles 64 bit register */
+#define GET_CYCLES_LSB_REG    			(0x14 << 11)
+#define GET_CYCLES_MSB_REG    			(0x15 << 11)
 
+/* Get Frames 64 bit register */
+#define GET_FRAMES_LSB_REG   			(0x16 << 11)
+#define GET_FRAMES_MSB_REG    			(0x17 << 11)
 
+/* Get Period 64 bit register */
+#define GET_PERIOD_LSB_REG    			(0x18 << 11)
+#define GET_PERIOD_MSB_REG    			(0x19 << 11)
 
+/* Get Period 64 bit register */
+#define GET_EXPTIME_LSB_REG    			(0x1A << 11)
+#define GET_EXPTIME_MSB_REG    			(0x1B << 11)
 
+/* Get Period 64 bit register */
+#define GET_GATES_LSB_REG    			(0x1C << 11)
+#define GET_GATES_MSB_REG    			(0x1D << 11)
+
+/* Get Frames from Start 64 bit register (frames from start Data Streaming) ask Carlos used in software firmware_funcs.c getFramesFromStart, but not in firmware*/
+#define FRAMES_FROM_START_LSB_REG 		(0x22 << 11)								/*Not used in firmware,used in software*/
+#define FRAMES_FROM_START_MSB_REG		(0x23 << 11)								/*Not used in firmware,used in software*/
+
+/* Get Frames from Start 64 bit register (frames from start Run Control) ask Carlos*/
+#define FRAMES_FROM_START_PG_LSB_REG	(0x24 << 11)
+#define FRAMES_FROM_START_PG_MSB_REG 	(0x25 << 11)
+
+/* Measurement Time 64 bit register (start frame time) tell Carlos it should be measurement started time? */
+#define MEASUREMENT_START_TIME_LSB_REG	(0x26 << 11)
+#define MEASUREMENT_START_TIME_MSB_REG 	(0x27 << 11)
+
+/* SPI (Serial Peripheral Interface) Register */
+#define SPI_REG							(0x40 << 11)
+
+#define DAC_SERIAL_DIGITAL_OUT_OFST		(0)
+#define DAC_SERIAL_DIGITAL_OUT_MSK		(0x00000001 << DAC_SERIAL_DIGITAL_OUT_OFST)
+#define DAC_SERIAL_CLK_OUT_OFST			(1)
+#define DAC_SERIAL_CLK_OUT_MSK			(0x00000001 << DAC_SERIAL_CLK_OUT_OFST)
+#define DAC_SERIAL_CS_OUT_OFST			(2)
+#define DAC_SERIAL_CS_OUT_MSK			(0x00000001 << DAC_SERIAL_CS_OUT_OFST)
+#define HV_SERIAL_DIGITAL_OUT_OFST		(8)
+#define HV_SERIAL_DIGITAL_OUT_MSK		(0x00000001 << HV_SERIAL_DIGITAL_OUT_OFST)
+#define HV_SERIAL_CLK_OUT_OFST			(9)
+#define HV_SERIAL_CLK_OUT_MSK			(0x00000001 << HV_SERIAL_CLK_OUT_OFST)
+#define HV_SERIAL_CS_OUT_OFST			(10)
+#define HV_SERIAL_CS_OUT_MSK			(0x00000001 << HV_SERIAL_CS_OUT_OFST)
 
 
 
@@ -108,7 +164,6 @@
 //#define ADC_OFFSET_REG      		66<<11 //same as CONFGAIN_REG
 #define ADC_INVERSION_REG   		0x43<<11
 
-#define DAC_REG     				64<<11//0x17<<11// control the dacs
 //ADC
 #define ADC_WRITE_REG         		65<<11//0x18<<11
 //#define ADC_SYNC_REG          66<<11//0x19<<11
@@ -164,51 +219,37 @@
 
 
 
-#define GET_MEASUREMENT_TIME_LSB_REG     38<<11
-#define GET_MEASUREMENT_TIME_MSB_REG     38<<11
+
 
 
 #define SET_DELAY_LSB_REG     96<<11 //0x68<<11
 #define SET_DELAY_MSB_REG     97<<11 //0x69<<11
-#define GET_DELAY_LSB_REG     18<<11//0x6a<<11
-#define GET_DELAY_MSB_REG     19<<11//0x6b<<11
+
 
 #define SET_CYCLES_LSB_REG    98<<11//0x6c<<11
 #define SET_CYCLES_MSB_REG    99<<11//0x6d<<11
-#define GET_CYCLES_LSB_REG    20<<11//0x6e<<11
-#define GET_CYCLES_MSB_REG    21<<11//0x6f<<11
+
 
 #define SET_FRAMES_LSB_REG    100<<11//0x70<<11
 #define SET_FRAMES_MSB_REG    101<<11//0x71<<11
-#define GET_FRAMES_LSB_REG    22<<11//0x72<<11
-#define GET_FRAMES_MSB_REG    23<<11//0x73<<11
+
 
 #define SET_PERIOD_LSB_REG    102<<11//0x74<<11
 #define SET_PERIOD_MSB_REG    103<<11//0x75<<11
-#define GET_PERIOD_LSB_REG    24<<11//0x76<<11
-#define GET_PERIOD_MSB_REG    25<<11//0x77<<11
+
 
 #define SET_EXPTIME_LSB_REG   104<<11//0x78<<11
 #define SET_EXPTIME_MSB_REG   105<<11//0x79<<11
-#define GET_EXPTIME_LSB_REG   26<<11//0x7a<<11
-#define GET_EXPTIME_MSB_REG   27<<11//0x7b<<11
 
 #define SET_GATES_LSB_REG     106<<11//0x7c<<11
 #define SET_GATES_MSB_REG     107<<11//0x7d<<11
-#define GET_GATES_LSB_REG     28<<11//0x7e<<11
-#define GET_GATES_MSB_REG     29<<11//0x7f<<11
+
 
 #define DATA_IN_LSB_REG 30<<11
 #define DATA_IN_MSB_REG 31<<11
 
 #define PATTERN_OUT_LSB_REG 32<<11
 #define PATTERN_OUT_MSB_REG 33<<11
-
-#define FRAMES_FROM_START_LSB_REG 34<<11
-#define FRAMES_FROM_START_MSB_REG 35<<11
-
-#define FRAMES_FROM_START_PG_LSB_REG 36<<11
-#define FRAMES_FROM_START_PG_MSB_REG 37<<11
 
 
  

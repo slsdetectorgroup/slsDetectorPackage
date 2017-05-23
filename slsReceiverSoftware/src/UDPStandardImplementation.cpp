@@ -300,7 +300,7 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b) {
 	if (tengigaEnable != b) {
 		tengigaEnable = b;
 		//side effects
-		generalData->SetTenGigaEnable(tengigaEnable,b);
+		generalData->SetTenGigaEnable(b,dynamicRange);
 
 		numberofJobs = -1; //changes to imagesize has to be noted to recreate fifo structure
 		if (SetupFifoStructure() == FAIL)

@@ -39,6 +39,7 @@
 /* Other Default Values */
 //enum DACNAMES            			{ VB_COMP, VDD_PROT, VIN_COM, VREF_PRECH, VB_PIXBUF, VB_DS, VREF_DS, VREF_COMP };
 #define DEFAULT_DAC_VALS   			{ 1220,    3000,     1053,    1450,       750,       1000,  480,     420       };
+enum adcVals						{TEMP_FPGA, TEMP_ADC};
 #define DEFAULT_SETTINGS			(DYNAMICGAIN)
 #define DEFAULT_TX_UDP_PORT			(0x7e9a)
 

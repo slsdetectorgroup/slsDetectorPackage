@@ -7,6 +7,9 @@
 
 #include <stdio.h>
 
+#define GOODBYE 					(-200)
+
+
 int sockfd;
 
 

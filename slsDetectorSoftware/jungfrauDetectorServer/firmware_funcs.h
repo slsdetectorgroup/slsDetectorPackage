@@ -109,8 +109,6 @@ void resetPeripheral();
 int adcPhase(int st);
 int getPhase();
 
-u_int32_t putout(char *s, int modnum);
-u_int32_t readin(int modnum);
 u_int32_t setClockDivider(int d);
 u_int32_t getClockDivider();
 

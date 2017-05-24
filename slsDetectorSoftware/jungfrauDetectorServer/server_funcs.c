@@ -569,8 +569,6 @@ int digital_test(int file_des) {
 	int ret=OK;
 	int imod=-1;
 	int n=0;
-	int ibit=0;
-	int ow;
 	int ival;
 	enum digitalTestMode arg;
 
@@ -593,53 +591,8 @@ int digital_test(int file_des) {
 			sprintf(mess,"Error reading from socket\n");
 			retval=FAIL;
 		}
-#ifdef VERBOSE
-		printf("of module %d\n", imod);
-#endif  
-		retval=0;
-#ifdef MCB_FUNCS  
-		if (differentClients==1 && lockStatus==1) {
-			ret=FAIL;
-			sprintf(mess,"Detector locked by %s\n",lastClientIP);
-			break;
-		}
-		if (imod >= NMODX) {
-			ret=FAIL;
-			sprintf(mess,"Module %d disabled\n",imod);
-			break;
-		}
-		if (testShiftIn(imod)) retval|=(1<<(ibit));
-		ibit++;
-		if (testShiftOut(imod)) retval|=(1<<(ibit));
-		ibit++;
-		if (testShiftStSel(imod)) retval|=(1<<(ibit));
-		ibit++;
-		//if ( testDataInOut(0x123456, imod)) retval|=(1<<(ibit++));
-		//if ( testExtPulse(imod)) retval|=(1<<(ibit++));
-		//  for (ow=0; ow<6; ow++)
-		// ow=1;
-		//#ifndef PICASSOD
-		for (ow=0; ow<5; ow++) {
-			//#endif
-			if (testDataInOutMux(imod, ow, 0x789abc)) retval|=(1<<ibit);
-			ibit++;
-		}
-		//for (ow=0; ow<6; ow++)
-		// ow=1;
-		//#ifndef PICASSOD
-		for (ow=0; ow<5; ow++) {
-			//#endif
-			if (testExtPulseMux(imod, ow)) retval|=(1<<ibit);
-			ibit++;
-		}
-		//#ifndef PICASSOD
-		if ( testOutMux(imod)) retval|=(1<<(ibit));
-		ibit++;
-		if (testFpgaMux(imod)) retval|=(1<<(ibit));
-		ibit++;
-		//#endif
-
-#endif 
+		ret = FAIL;
+		strcpy(mess, "Not implemented for this detector\n");
 		break;
 	case MODULE_FIRMWARE_TEST:
 		retval=0x2;

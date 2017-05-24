@@ -910,13 +910,13 @@ int set_dac(int file_des) {
 				if (val>4 || val<0)
 					printf("Cannot set ADC VPP to %d\n",val);
 				else {
-					writeADC(0x18,val);
+					setAdc(0x18,val);
 					adcvpp=val;
 				}
 				retval=adcvpp;;
 
 			} else if (ind==HV_NEW )
-				retval=initHighVoltage(val,0);
+				retval=setHighVoltage(val,0);
 			else
 				printf("**********No dac with index %d\n",ind);
 		}
@@ -2411,13 +2411,12 @@ int configure_mac(int file_des) {
 
 		if(ret==OK)
 			configureMAC(ipad,imacadd,idetectormacadd,detipad,digitalTestBit,udpport);
-		retval=getAdcConfigured();
 	}
 #endif
 	if (ret==FAIL)
 		printf("configuring MAC of mod %d failed\n", imod);
 	else
-		printf("Configuremac successful of mod %d and adc %d\n",imod,retval);
+		printf("Configuremac successful of mod %d\n",imod);
 
 	if (differentClients)
 		ret=FORCE_UPDATE;
@@ -2960,7 +2959,7 @@ int write_adc_register(int file_des) {
 
 
 	if(ret!=FAIL){
-		ret=writeADC(addr,val);
+		ret=setAdc(addr,val);
 		if (ret==OK)
 			retval=val;
 	}

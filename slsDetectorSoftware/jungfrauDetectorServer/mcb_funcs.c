@@ -18,7 +18,7 @@
 
 /* global variables */
 #undef DEBUG
-#undef DEBUGOUT
+
 
 extern enum detectorType myDetectorType;
 extern int nModX;
@@ -799,13 +799,8 @@ int initChip(int obe, int ow,int imod){
   int chipmi, chipma, modmi, modma;
 
 
-#ifdef DEBUGOUT
-  printf("Initializing chip\n");
-#endif
   putout("0000000000000000",imod);
-#ifdef DEBUGOUT
-  printf("Output mode= %d\n", ow);
-#endif
+
 
   /* clearing shift in register */
   for (i=0; i<10; i++) 
@@ -842,9 +837,7 @@ int initChip(int obe, int ow,int imod){
       putout("0000000000000000",imod);
     }
   }  
-#ifdef DEBUGOUT
-  printf("Output buffer  enable= %d\n", obe);
-#endif
+
   if (obe) {
     putout("0100000000000000",imod);  
     putout("0110000000000000",imod); 
@@ -1025,16 +1018,12 @@ int initMCBregisters(int cm, int imod){
   
  if (cm) { 
    putout("0000000001000001",imod); 
-#ifdef DEBUGOUT   
-   printf("enabling cal through sensor\n");
-#endif
+
  }  else {
    putout("0000000001000001",imod);
    putout("0000000001000000",imod);
    putout("0000000001000001",imod); 
-#ifdef DEBUGOUT   
-   printf("disabling cal through sensor\n");
-#endif 
+
  }
  putout("0000000001000000",imod);
  
@@ -1542,9 +1531,7 @@ int testOutMux(int imod) {
       //dist=2*ibit;
       if (dist==0)
 	dist=1;
-#ifdef DEBUGOUT
-      printf("Distance is %d\n",dist);
-#endif
+
 
 
    
@@ -1557,9 +1544,7 @@ int testOutMux(int imod) {
       //for (k=0; k<nModX; k++) {
       val=readin(k);
       //val=bus_r(MCB_DOUT_REG_OFF+(k<<SHIFTMOD)) & 0x3ff; 
-#ifdef DEBUGOUT
-      printf("%d %x\n",i*dist,val);     
-#endif
+
       for (j=0; j<NCHIP; j++) {
 	v=val & 1<< j;
 	if (pat & (1<<(i*dist))) {
@@ -1585,9 +1570,7 @@ int testOutMux(int imod) {
       //for (k=0; k<nModX; k++) {
       val=readin(k);
       //val=bus_r(MCB_DOUT_REG_OFF+(k<<SHIFTMOD)) & 0x3ff; 
-#ifdef DEBUGOUT
-      printf("%d %x\n",i*dist, val);
-#endif
+
       for (j=0; j<NCHIP; j++) {
 	v=val & 1<< j;
 	if (pat & (1<<(i*dist))) {
@@ -1618,9 +1601,7 @@ int testOutMux(int imod) {
       //for (k=0; k<nModX; k++) {
       val=readin(k);
       //val=bus_r(MCB_DOUT_REG_OFF+(k<<SHIFTMOD)) & 0x3ff; 
-#ifdef DEBUGOUT
-      printf("%d %x\n",i*dist, val);
-#endif
+
       for (j=0; j<NCHIP; j++) {
 	v=val & 1<< j;
 	if (pat & (1<<(i*dist))) {
@@ -1646,9 +1627,7 @@ int testOutMux(int imod) {
       //for (k=0; k<nModX; k++) {
       val=readin(k);
       //val=bus_r(MCB_DOUT_REG_OFF+(k<<SHIFTMOD)) & 0x3ff; 
-#ifdef DEBUGOUT
-      printf("%d %x\n",i*dist, val);
-#endif
+
       for (j=0; j<NCHIP; j++) {
 	v=val & 1<< j;
 	if (pat & (1<<(i*dist))) {
@@ -1733,9 +1712,7 @@ int testFpgaMux(int imod)  {
       //dist=2*ibit;
       if (dist==0)
 	dist=1;
-#ifdef DEBUGOUT
-      printf("Distance is %d\n",dist);
-#endif
+
 
 
     
@@ -1747,9 +1724,7 @@ int testFpgaMux(int imod)  {
       putout("0000010000000000",ALLMOD) ; 
 
 
-#ifdef DEBUGOUT
-	  printf("testing FPGA Mux\n");
-#endif  
+
 		     
       for (i=0; i<4; i++) {
 	k=imod;
@@ -1758,9 +1733,6 @@ int testFpgaMux(int imod)  {
 	//val=bus_r(MCB_DOUT_REG_OFF+(k<<SHIFTMOD)) & 0x3ff; 
   
 
-#ifdef DEBUGOUT
-	  printf("%d %x\n",i*dist, val);
-#endif    
 	  for (j=0; j<10; j++) {
 	    v=val & 1<< j;
 	    if (pat & (1<<(i*dist))) {

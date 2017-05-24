@@ -22,14 +22,11 @@
 /* Fix pattern register */
 #define FIX_PATT_REG          			(0x01 << 11)
 
-#define FIX_PATT_VAL    				0xACDC2014
-
-
 /* Status register */
 #define STATUS_REG            			(0x02 << 11)
 
 #define RUN_BUSY_OFST					(0)
-#define RUN_BUSY_MSK      				(0x00000001 << RUN_BUSY_BIT_OFST)
+#define RUN_BUSY_MSK      				(0x00000001 << RUN_BUSY_OFST)
 #define WAITING_FOR_TRIGGER_OFST  		(3)
 #define WAITING_FOR_TRIGGER_MSK  		(0x00000001 << WAITING_FOR_TRIGGER_OFST)
 #define DELAYBEFORE_OFST  				(4)											//Not used in software
@@ -99,17 +96,13 @@
 #define GET_GATES_LSB_REG    			(0x1C << 11)
 #define GET_GATES_MSB_REG    			(0x1D << 11)
 
-/* Get Frames from Start 64 bit register (frames from start Data Streaming) ask Carlos used in software firmware_funcs.c getFramesFromStart, but not in firmware*/
-#define FRAMES_FROM_START_LSB_REG 		(0x22 << 11)								/*Not used in firmware,used in software*/
-#define FRAMES_FROM_START_MSB_REG		(0x23 << 11)								/*Not used in firmware,used in software*/
-
-/* Get Frames from Start 64 bit register (frames from start Run Control) ask Carlos*/
+/* Get Frames from Start 64 bit register (frames from start Run Control) */
 #define FRAMES_FROM_START_PG_LSB_REG	(0x24 << 11)
 #define FRAMES_FROM_START_PG_MSB_REG 	(0x25 << 11)
 
-/* Measurement Time 64 bit register (start frame time) tell Carlos it should be measurement started time? */
-#define MEASUREMENT_START_TIME_LSB_REG	(0x26 << 11)
-#define MEASUREMENT_START_TIME_MSB_REG 	(0x27 << 11)
+/* Measurement Time 64 bit register (timestamp at a frame start until reset)*/
+#define START_FRAME_TIME_LSB_REG		(0x26 << 11)
+#define START_FRAME_TIME_MSB_REG 		(0x27 << 11)
 
 /* SPI (Serial Peripheral Interface) Register */
 #define SPI_REG							(0x40 << 11)
@@ -128,13 +121,77 @@
 #define HV_SERIAL_CS_OUT_MSK			(0x00000001 << HV_SERIAL_CS_OUT_OFST)
 
 
+/* ADC SPI (Serial Peripheral Interface) Register */
+#define ADC_SPI_REG   					(0x41 << 11)
+
+#define ADC_SERIAL_CLK_OUT_OFST			(0)
+#define ADC_SERIAL_CLK_OUT_MSK			(0x00000001 << ADC_SERIAL_CLK_OUT_OFST)
+#define ADC_SERIAL_DATA_OUT_OFST		(1)
+#define ADC_SERIAL_DATA_OUT_MSK			(0x00000001 << ADC_SERIAL_DATA_OUT_OFST)
+#define ADC_SERIAL_CS_OUT_OFST			(2)
+#define ADC_SERIAL_CS_OUT_MSK			(0x0000000F << ADC_SERIAL_CS_OUT_OFST)
+
+/* ADC offset Register */
+#define ADC_OFST_REG 					(0x42 << 11)
+
+/* ADC Port Invert Register */
+#define ADC_PORT_INVERT_REG   			(0x43 << 11)
+
+/* Receiver IP Address Register */
+#define RX_IP_REG    					(0x45 << 11)
+
+/* UDP Port */
+#define UDP_PORT_REG    				(0x46 << 11)
+
+#define UDP_PORT_RX_OFST				(0)
+#define UDP_PORT_RX_MSK					(0x0000FFFF << UDP_PORT_RX_OFST)
+#define UDP_PORT_TX_OFST				(16)
+#define UDP_PORT_TX_MSK					(0x0000FFFF << UDP_PORT_TX_OFST)
+
+/* Receiver Mac Address 64 bit Register */
+#define RX_MAC_LSB_REG					(0x47 << 11)
+#define RX_MAC_MSB_REG					(0x48 << 11)
+
+#define RX_MAC_LSB_OFST					(0)
+#define RX_MAC_LSB_MSK					(0x0000FFFF << RX_MAC_LSB_OFST)
+#define RX_MAC_MSB_OFST					(0)
+#define RX_MAC_MSB_MSK					(0x000000FF << RX_MAC_MSB_OFST)
+
+/* Detector/ Transmitter Mac Address 64 bit Register */
+#define TX_MAC_LSB_REG					(0x49 << 11)
+#define TX_MAC_MSB_REG					(0x4A << 11)
+
+#define TX_MAC_LSB_OFST					(0)
+#define TX_MAC_LSB_MSK					(0x0000FFFF << TX_MAC_LSB_OFST)
+#define TX_MAC_MSB_OFST					(0)
+#define TX_MAC_MSB_MSK					(0x000000FF << TX_MAC_MSB_OFST)
+
+/* Detector/ Transmitter IP Address Register */
+#define TX_IP_REG						(0x4B << 11)
+
+/** Detector/ Transmitter IP Checksum Register */
+#define TX_IP_CHECKSUM_REG				(0x4C << 11)
+
+#define TX_IP_CHECKSUM_OFST				(0)
+#define TX_IP_CHECKSUM_MSK				(0x000000FF << TX_IP_CHECKSUM_OFST)
+
+/** Configuration Register */
+#define CONFIG_REG            			(0x4D << 11)								//Not used in software Carlos
+
+#define CONFIG_OPERATION_MODE_OFST		(16)										//Not used in software
+#define CONFIG_OPERATION_MODE_MSK		(0x00000001 << CONFIG_OPERATION_MODE_OFST)	//Not used in software
+#define CONFIG_READOUT_SPEED_OFST		(20)										//Not used in software
+#define CONFIG_READOUT_SPEED_MSK		(0x00000003 << CONFIG_READOUT_SPEED_OFST)	//Not used in software
+#define CONFIG_QUARTER_SPEED_10MHZ_VAL	(0x0 << CONFIG_READOUT_SPEED_OFST) & CONFIG_READOUT_SPEED_MSK //Not used in software
+#define CONFIG_HALF_SPEED_20MHZ_VAL		(0x1 << CONFIG_READOUT_SPEED_OFST) & CONFIG_READOUT_SPEED_MSK //Not used in software
+#define CONFIG_FULL_SPEED_VAL			(0x2 << CONFIG_READOUT_SPEED_OFST) & CONFIG_READOUT_SPEED_MSK //Not used in software and firmware
+
+
 
 
 //Constants
 #define HALFSPEED_DBIT_PIPELINE 0x7f7c
 #define QUARTERSPEED_DBIT_PIPELINE 0x8981
-#define HALFSPEED_ADC_PIPELINE 0x20
-#define QUARTERSPEED_ADC_PIPELINE 0x10
 #define HALFSPEED_CONF 0x0
 #define QUARTERSPEED_CONF 0xf
 #define HALFSPEED_ADC_PHASE 65
@@ -150,22 +207,16 @@
 
 //#ifdef JUNGFRAU_DHANYA
 #define POWER_ON_REG 				0x5e<<11
-#define ADCREG1 					0x8  //same as PLL_BANDWIDTH_REG
-#define ADCREG2 					0x14
-#define ADCREG3 					0x4  //same as PLL_M_COUNTER_REG
-#define ADCREG4 					0x5  //same as PLL_C_COUNTER_REG
-#define ADCREG_VREFS 				0x18
 #define DBIT_PIPELINE_REG 			0x59<<11 //same PATTERN_N_LOOP2_REG
 #define MEM_MACHINE_FIFOS_REG 		0x4f<<11 //same as CONTROL_REG
 #define CONFGAIN_REG 				0x5d<<11 //same as DAQ_REG
-#define ADC_PIPELINE_REG 			0x42<<11 //same as ADC_OFFSET_REG
+
 //#endif
 
 //#define ADC_OFFSET_REG      		66<<11 //same as CONFGAIN_REG
-#define ADC_INVERSION_REG   		0x43<<11
 
 //ADC
-#define ADC_WRITE_REG         		65<<11//0x18<<11
+
 //#define ADC_SYNC_REG          66<<11//0x19<<11
 //#define HV_REG                67<<11//0x20<<11
 
@@ -188,7 +239,7 @@
 
 #define CONTROL_REG           79<<11//0x24<<11
 
-#define CONFIG_REG            77<<11//0x26<<11
+
 #define EXT_SIGNAL_REG        78<<11//	  0x4E<<11
 #define FPGA_SVN_REG    	  0x29<<11
 
@@ -204,10 +255,6 @@
 
 
 #define FIFO_DATA_REG_OFF     0x50<<11 ///////
-//to read back dac registers
-#define MOD_DACS1_REG         0x65<<11
-#define MOD_DACS2_REG         0x66<<11
-#define MOD_DACS3_REG         0x67<<11
 
 //user entered
 
@@ -260,20 +307,10 @@
 #define PLL_CNTRL_REG 81<<11//0x34<<11
 
 
-#ifdef NEW_GBE_INTERFACE
-#define GBE_PARAM_OUT_REG 40<<11
-#define GBE_PARAM_REG 69<<11
-#define GBE_CNTRL_REG 70<<11
-#else
-#define RX_UDP_AREG    69<<11 //rx_udpip_AReg_c     : integer:= 69; *\/ 
-#define UDPPORTS_AREG 70<<11// udpports_AReg_c   : integer:= 70; *\/
-#define RX_UDPMACL_AREG 71<<11//rx_udpmacL_AReg_c   : integer:= 71; *\/ 
-#define RX_UDPMACH_AREG 72<<11//rx_udpmacH_AReg_c   : integer:= 72; *\/
-#define DETECTORMACL_AREG 73<<11//detectormacL_AReg_c : integer:= 73; *\/
-#define DETECTORMACH_AREG 74<<11//detectormacH_AReg_c : integer:= 74; *\/ 
-#define DETECTORIP_AREG 75<<11//detectorip_AReg_c   : integer:= 75; *\/
-#define IPCHKSUM_AREG 76<<11//ipchksum_AReg_c : integer:= 76; *\/ */
-#endif
+
+
+
+
 
 
 #define PATTERN_CNTRL_REG 82<<11

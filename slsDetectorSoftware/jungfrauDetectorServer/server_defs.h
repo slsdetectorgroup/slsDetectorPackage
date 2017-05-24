@@ -3,28 +3,31 @@
 #include "sls_detector_defs.h"
 #include <stdint.h> 
 
+#define GOODBYE 					(-200)
+
 /* Hardware Definitions */
-#define NMAXMODY 					1
-#define NMAXMODX  					1
-#define NMAXMOD 					(NMAXMODX*NMAXMODY)
-#define NCHAN 						(256*256)
-#define NCHIP 						8
-#define NADC						0
-#define NDAC 						8
-#define NCHANS 						(NCHAN*NCHIP*NMAXMOD)
-#define NDACS 						(NDAC*NMAXMOD)
+#define NMAXMODY 					(1)
+#define NMAXMODX  					(1)
+#define NMAXMOD 					(NMAXMODX * NMAXMODY)
+#define NMODY 						(1)
+#define NMODX  						(1)
+#define NMOD 						(NMODX * NMODY)
+#define NCHAN 						(256 * 256)
+#define NCHIP 						(8)
+#define NADC						(0)
+#define NDAC 						(8)
+#define NCHANS 						(NCHAN * NCHIP * NMAXMOD)
+#define NDACS 						(NDAC * NMAXMOD)
+#define DYNAMIC_RANGE				(16)
+#define DATA_BYTES					(NMAXMOD * NCHIP * NCHAN * 2)
+#define IP_PACKETSIZE				(0x0522) /**carlos?? calcChecksum*/
+#define UDP_PACKETSIZE				(0x050E) /**carlos?? calcChecksum*/
+#define CLK_EXPTIME					(40)	/** 0x28 better name? */
+#define CLK_FC						(20)	/** 0x14 better name? */
 
-#define DEFAULT_PHASE_SHIFT			0 //	120
-#define DEFAULT_IP_PACKETSIZE		0x0522
-#define DEFAULT_UDP_PACKETSIZE		0x050E
-#define ADC1_IP_PACKETSIZE			256*2+14+20
-#define ADC1_UDP_PACKETSIZE			256*2+4+8+2
-#define CLK_FREQ 156.25E+6
-#define ADC_CLK_FREQ 32E+6
+#define CLK_FREQ 156.25E+6			/**carlos used in firmware_funcs.. but needed ?*/
 
-/** DEFAULT */
-enum DACNAMES              			{ VB_COMP, VDD_PROT, VIN_COM, VREF_PRECH, VB_PIXBUF, VB_DS, VREF_DS, VREF_COMP };
-#define DEFAULT_DAC_VALS   			{ 1220,    3000,     1053,    1450,       750,       1000,  480,     420       };
+/** Default Acqusition Parameters */
 #define DEFAULT_NUM_FRAMES			(1*1000*1000)
 #define DEFAULT_NUM_CYCLES			(0)
 #define DEFAULT_EXPTIME				(10*1000)
@@ -32,6 +35,10 @@ enum DACNAMES              			{ VB_COMP, VDD_PROT, VIN_COM, VREF_PRECH, VB_PIXBU
 #define DEFAULT_DELAY				(0)
 #define DEFAULT_NUM_GATES			(0)
 #define DEFAULT_HIGH_VOLTAGE		(0)
+
+/* Other Default Values */
+//enum DACNAMES            			{ VB_COMP, VDD_PROT, VIN_COM, VREF_PRECH, VB_PIXBUF, VB_DS, VREF_DS, VREF_COMP };
+#define DEFAULT_DAC_VALS   			{ 1220,    3000,     1053,    1450,       750,       1000,  480,     420       };
 #define DEFAULT_SETTINGS			(DYNAMICGAIN)
 #define DEFAULT_TX_UDP_PORT			(0x7e9a)
 
@@ -41,14 +48,21 @@ enum DACNAMES              			{ VB_COMP, VDD_PROT, VIN_COM, VREF_PRECH, VB_PIXBU
 #define ADC_OFST_HALF_SPEED_VAL		(0x20)
 #define ADC_OFST_QUARTER_SPEED_VAL	(0x10)
 
+#define SAMPLE_ADC_HALF_SPEED	 	(0x7f7c)
+#define SAMPLE_ADC_QUARTER_SPEED 	(0x8981)
+#define DAQ_HALF_SPEED 				(0x0)
+#define DAQ_QUARTER_SPEED 			(0xf)
+#define ADC_PHASE_HALF_SPEED 		(0x41)
+#define ADC_PHASE_QUARTER_SPEED 	(0x19)
+
 /* Maybe not required for jungfrau */
-#define NTRIMBITS 					6
-#define NCOUNTBITS 					24
-#define NCHIPS_PER_ADC				2
+#define NTRIMBITS 					(6)
+#define NCOUNTBITS 					(24)
+#define NCHIPS_PER_ADC				(2)
 #define TRIM_DR 					(((int)pow(2,NTRIMBITS))-1)
 #define COUNT_DR 					(((int)pow(2,NCOUNTBITS))-1)
-#define ALLMOD 						0xffff
-#define ALLFIFO 					0xffff
+#define ALLMOD 						(0xffff)
+#define ALLFIFO 					(0xffff)
 
 /* LTC2620 DAC DEFINES */
 #define LTC2620_DAC_CMD_OFST		(20)
@@ -138,10 +152,6 @@ enum DACNAMES              			{ VB_COMP, VDD_PROT, VIN_COM, VREF_PRECH, VB_PIXBU
 #define AD9257_TEST_RESET_LONG_GEN	(5)
 #define AD9257_USER_IN_MODE_OFST	(6)
 #define AD9257_USER_IN_MODE_MSK		(0x00000003 << AD9257_USER_IN_MODE_OFST)
-
-
-
-
 
 
 #endif

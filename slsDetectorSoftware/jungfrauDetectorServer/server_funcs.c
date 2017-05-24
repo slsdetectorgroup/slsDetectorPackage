@@ -9,20 +9,12 @@
 
 
 
-extern int nModX;
-extern int nModY;
-extern size_t dataBytes;
-extern int nSamples;
-extern int dynamicRange;
-extern int  storeInRAM;
 extern int lockStatus;
 extern char lastClientIP[INET_ADDRSTRLEN];
 extern char thisClientIP[INET_ADDRSTRLEN];
 extern int differentClients;
-extern unsigned int *ram_values;
 
-
-//defined in the detector specific file
+//defined in the detector specific make file
 #ifdef MYTHEND
 const enum detectorType myDetectorType=MYTHEN;
 #elif PROPIXD
@@ -43,19 +35,19 @@ const enum detectorType myDetectorType=GENERIC;
 
 
 
-
 // Global variables
 int (*flist[256])(int);
-char *dataretval=NULL;
-int nframes, iframes, dataret;
 char mess[MAX_STR_LENGTH];
 
-int digitalTestBit = 0;
-int adcvpp=0x4;
+int digitalTestBit = 0; /** Carlos will we use this somewhere */
+int adcvpp = 0x4;			/** Carlos will we use this somewhere */
 
 
-int init_detector(int b) {
-	if(b){
+
+
+
+int init_detector(int controlserver) {
+	if(controlserver){
 		defineGPIOpins();
 		resetFPGA();
 	}else
@@ -65,8 +57,7 @@ int init_detector(int b) {
 		printf("Could not map memory\n");
 		exit(1);
 	}
-
-	if (b)
+	if (controlserver)
 		initializeDetector();
 
 	//common for both control and stop server
@@ -162,7 +153,6 @@ int function_table() {
 	flist[F_START_RECEIVER]=&start_receiver;
 	flist[F_STOP_RECEIVER]=&stop_receiver;
 	flist[F_CALIBRATE_PEDESTAL]=&calibrate_pedestal;
-	flist[F_SET_CTB_PATTERN]=&set_ctb_pattern;
 	flist[F_WRITE_ADC_REG]=&write_adc_register;
 	flist[F_PROGRAM_FPGA]=&program_fpga;
 	flist[F_RESET_FPGA]=&reset_fpga;
@@ -244,6 +234,8 @@ int exec_command(int file_des) {
 
 
 
+
+
 int get_detector_type(int file_des) {
 	int n=0;
 	enum detectorType ret;
@@ -312,7 +304,7 @@ int set_number_of_modules(int file_des) {
 				retval=FAIL;
 			} else {
 				ret=setNMod(nm);
-				if (nModX==nm || nm==GET_FLAG) {
+				if (NMODX==nm || nm==GET_FLAG) {
 					retval=OK;
 					if (differentClients==1)
 						retval=FORCE_UPDATE;
@@ -611,7 +603,7 @@ int digital_test(int file_des) {
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 			break;
 		}
-		if (imod >= nModX) {
+		if (imod >= NMODX) {
 			ret=FAIL;
 			sprintf(mess,"Module %d disabled\n",imod);
 			break;
@@ -742,14 +734,14 @@ int write_register(int file_des) {
 
 	if(ret!=FAIL){
 		address=(addr<<11);
-		if((address==FIFO_DATA_REG_OFF)||(address==CONTROL_REG))
+		/*if((address==FIFO_DATA_REG_OFF)||(address==CONTROL_REG)) ask Carlos
 			ret = bus_w16(address,val);
-		else
+		else*/
 			ret=bus_w(address,val);
 		if(ret==OK){
-			if((address==FIFO_DATA_REG_OFF)||(address==CONTROL_REG))
+			/*if((address==FIFO_DATA_REG_OFF)||(address==CONTROL_REG)) ask Carlos
 				retval=bus_r16(address);
-			else
+			else*/
 				retval=bus_r(address);
 		}
 	}
@@ -808,9 +800,9 @@ int read_register(int file_des) {
 
 	if(ret!=FAIL){
 		address=(addr<<11);
-		if((address==FIFO_DATA_REG_OFF)||(address==CONTROL_REG))
+		/*if((address==FIFO_DATA_REG_OFF)||(address==CONTROL_REG)) ask Carlos
 			retval=bus_r16(address);
-		else
+		else*/
 			retval=bus_r(address);
 	}
 
@@ -900,10 +892,6 @@ int set_dac(int file_des) {
 
 
 				retval=setDac(ind,val);
-				/* 			if(idac==HIGH_VOLTAGE) */
-				/* 				retval=initHighVoltageByModule(val,imod); */
-				/* 			else */
-				/* 				retval=initDACbyIndexDACU(idac,val,imod); */
 			}
 			else if (ind==ADC_VPP) {
 				printf("Setting ADC VPP to %d\n",val);
@@ -1010,7 +998,7 @@ int get_adc(int file_des) {
 	}
 
 	if (ret==OK)
-		retval=getTemperatureByModule(idac,imod);
+		retval=getTemperature(idac,imod);
 #endif
 
 #ifdef VERBOSE
@@ -1718,7 +1706,7 @@ int get_run_status(int file_des) {
 }
 
 int read_frame(int file_des) {
-	dataret=FAIL;
+	int dataret=FAIL;
 	if (differentClients==1 && lockStatus==1) {
 		dataret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
@@ -1773,7 +1761,7 @@ int start_and_read_all(int file_des) {
 	printf("Starting and reading all frames\n");
 #endif 
 	if (differentClients==1 && lockStatus==1) {
-		dataret=FAIL;
+		int dataret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		sendDataOnly(file_des,&dataret,sizeof(dataret));
 		sendDataOnly(file_des,mess,sizeof(mess));
@@ -2299,14 +2287,19 @@ int send_update(int file_des) {
 
 	int ret=OK;
 	enum detectorSettings t;
-	int n;//int thr, n;
-	//int it;
+	int n;
+	int val;
+	size_t s;
 	int64_t retval, tns=-1;
 	n = sendDataOnly(file_des,lastClientIP,sizeof(lastClientIP));
-	n = sendDataOnly(file_des,&nModX,sizeof(nModX));
-	n = sendDataOnly(file_des,&nModY,sizeof(nModY));
-	n = sendDataOnly(file_des,&dynamicRange,sizeof(dynamicRange));
-	n = sendDataOnly(file_des,&dataBytes,sizeof(dataBytes));
+	val = NMODX;
+	n = sendDataOnly(file_des,&val,sizeof(val));
+	val = NMODY;
+	n = sendDataOnly(file_des,&val,sizeof(val));
+	val = DYNAMIC_RANGE;
+	n = sendDataOnly(file_des,&val,sizeof(val));
+	s = DATA_BYTES;
+	n = sendDataOnly(file_des,&s,sizeof(s));
 	t=setSettings(GET_SETTINGS,-1);
 	n = sendDataOnly(file_des,&t,sizeof(t));
 	/*  thr=getThresholdEnergy();
@@ -2377,7 +2370,6 @@ int configure_mac(int file_des) {
 
 	//#ifdef VERBOSE
 	int i;
-	printf("\ndigital_test_bit in server %d\t",digitalTestBit);
 	printf("\nipadd %x\t",ipad);
 	printf("destination ip is %d.%d.%d.%d = 0x%x \n",(ipad>>24)&0xff,(ipad>>16)&0xff,(ipad>>8)&0xff,(ipad)&0xff,ipad);
 	printf("macad:%llx\n",imacadd);
@@ -2410,7 +2402,7 @@ int configure_mac(int file_des) {
 		}
 
 		if(ret==OK)
-			configureMAC(ipad,imacadd,idetectormacadd,detipad,digitalTestBit,udpport);
+			configureMAC(ipad,imacadd,idetectormacadd,detipad,udpport);
 	}
 #endif
 	if (ret==FAIL)
@@ -2450,7 +2442,7 @@ int load_image(int file_des) {
 		ret=FAIL;
 	}
 
-	n = receiveDataOnly(file_des,ImageVals,dataBytes);
+	n = receiveDataOnly(file_des,ImageVals,DATA_BYTES);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -2639,7 +2631,7 @@ int read_counter_block(int file_des) {
 	n = sendDataOnly(file_des,&ret,sizeof(ret));
 	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,CounterVals,dataBytes);//1280*2
+		n += sendDataOnly(file_des,CounterVals,DATA_BYTES);
 	} else {
 		n += sendDataOnly(file_des,mess,sizeof(mess));
 	}
@@ -2762,168 +2754,6 @@ int calibrate_pedestal(int file_des){
 		n += sendDataOnly(file_des,mess,sizeof(mess));
 	else
 		n += sendDataOnly(file_des,&retval,sizeof(retval));
-
-	/*return ok/fail*/
-	return ret;
-}
-
-
-int set_ctb_pattern(int file_des){
-
-	int ret=OK;//FAIL;
-	int retval=-1;
-	int n;
-	int mode;
-	uint64_t word, retval64, t;
-	int addr;
-	int level, start, stop, nl;
-	uint64_t pat[1024];
-
-	sprintf(mess,"Could not set pattern\n");
-
-	n = receiveDataOnly(file_des,&mode,sizeof(mode));
-	printf("pattern mode is %d\n",mode);
-	switch (mode) {
-
-	case 0: //sets word
-		n = receiveDataOnly(file_des,&addr,sizeof(addr));
-		n = receiveDataOnly(file_des,&word,sizeof(word));
-		ret=OK;
-
-		switch (addr) {
-		case -1:
-			retval64=writePatternIOControl(word);
-			break;
-		case -2:
-			retval64=writePatternClkControl(word);
-			break;
-		default:
-			retval64=writePatternWord(addr,word);
-		};
-
-
-		//write word;
-		//@param addr address of the word, -1 is I/O control register,  -2 is clk control register
-		//@param word 64bit word to be written, -1 gets
-
-		n = sendDataOnly(file_des,&ret,sizeof(ret));
-		if (ret==FAIL)
-			n += sendDataOnly(file_des,mess,sizeof(mess));
-		else
-			n += sendDataOnly(file_des,&retval64,sizeof(retval64));
-		break;
-
-		case 1: //pattern loop
-			n = receiveDataOnly(file_des,&level,sizeof(level));
-			n = receiveDataOnly(file_des,&start,sizeof(start));
-			n = receiveDataOnly(file_des,&stop,sizeof(stop));
-			n = receiveDataOnly(file_des,&nl,sizeof(nl));
-
-
-
-			printf("level %d start %x stop %x nl %d\n",level, start, stop, nl);
-			/** Sets the pattern or loop limits in the CTB
-      @param level -1 complete pattern, 0,1,2, loop level
-      @param start start address if >=0
-      @param stop stop address if >=0
-      @param n number of loops (if level >=0)
-      @returns OK/FAIL
-			 */
-			ret=setPatternLoop(level, &start, &stop, &nl);
-
-			n = sendDataOnly(file_des,&ret,sizeof(ret));
-			if (ret==FAIL)
-				n += sendDataOnly(file_des,mess,sizeof(mess));
-			else {
-				n += sendDataOnly(file_des,&start,sizeof(start));
-				n += sendDataOnly(file_des,&stop,sizeof(stop));
-				n += sendDataOnly(file_des,&nl,sizeof(nl));
-			}
-			break;
-
-
-
-		case 2: //wait address
-			n = receiveDataOnly(file_des,&level,sizeof(level));
-			n = receiveDataOnly(file_des,&addr,sizeof(addr));
-
-
-
-			/** Sets the wait address in the CTB
-      @param level  0,1,2, wait level
-      @param addr wait address, -1 gets
-      @returns actual value
-			 */
-			printf("wait addr %d %x\n",level, addr);
-			retval=setPatternWaitAddress(level,addr);
-			printf("ret: wait addr %d %x\n",level, retval);
-			ret=OK;
-			n = sendDataOnly(file_des,&ret,sizeof(ret));
-			if (ret==FAIL)
-				n += sendDataOnly(file_des,mess,sizeof(mess));
-			else {
-				n += sendDataOnly(file_des,&retval,sizeof(retval));
-
-			}
-
-
-			break;
-
-
-		case 3: //wait time
-			n = receiveDataOnly(file_des,&level,sizeof(level));
-			n = receiveDataOnly(file_des,&t,sizeof(t));
-
-
-			/** Sets the wait time in the CTB
-      @param level  0,1,2, wait level
-      @param t wait time, -1 gets
-      @returns actual value
-			 */
-
-			ret=OK;
-
-			retval64=setPatternWaitTime(level,t);
-
-			n = sendDataOnly(file_des,&ret,sizeof(ret));
-			if (ret==FAIL)
-				n += sendDataOnly(file_des,mess,sizeof(mess));
-			else
-				n += sendDataOnly(file_des,&retval64,sizeof(retval64));
-
-			break;
-
-
-
-		case 4:
-			n = receiveDataOnly(file_des,pat,sizeof(pat));
-			for (addr=0; addr<1024; addr++)
-				writePatternWord(addr,word);
-			ret=OK;
-			retval=0;
-			n = sendDataOnly(file_des,&ret,sizeof(ret));
-			if (ret==FAIL)
-				n += sendDataOnly(file_des,mess,sizeof(mess));
-			else
-				n += sendDataOnly(file_des,&retval64,sizeof(retval64));
-
-			break;
-
-
-
-
-
-		default:
-			ret=FAIL;
-			printf(mess);
-			sprintf(mess,"%s - wrong mode %d\n",mess, mode);
-			n = sendDataOnly(file_des,&ret,sizeof(ret));
-			n += sendDataOnly(file_des,mess,sizeof(mess));
-
-
-
-	}
-
 
 	/*return ok/fail*/
 	return ret;

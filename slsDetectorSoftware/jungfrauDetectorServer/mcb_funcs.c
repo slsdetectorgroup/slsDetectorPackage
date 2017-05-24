@@ -1,28 +1,20 @@
 #ifdef MCB_FUNCS
 
+#include "registers_m.h"
+#include "server_defs.h"
+#include "firmware_funcs.h"
+#include "mcb_funcs.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <math.h>
-#include "registers_m.h"
-
-#ifndef PICASSOD
-#include "server_defs.h"
-#else
-#include "picasso_defs.h"
-#endif
-#include "firmware_funcs.h"
-#include "mcb_funcs.h"
-
 
 /* global variables */
-#undef DEBUG
 
 
-extern enum detectorType myDetectorType;
-extern int nModX;
-extern int dynamicRange;
+
 enum detectorSettings thisSettings;
 
 int sChan, sChip, sMod, sDac, sAdc;
@@ -40,7 +32,6 @@ int *detectorAdcs=NULL;
 int initDetector() {
   int imod;
   int n=getNModBoard();
-  nModX=n;
 #ifdef VERBOSE
   printf("Board is for %d modules\n",n);
 #endif
@@ -196,15 +187,16 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 
 
 
+
+/* Register commands */
+
 int clearCSregister(int imod) {
 
   putout("0000000001000000",imod);  
   putout("0000100001000000",imod);  
   putout("0000100001000000",imod);
   putout("0000000001000000",imod);  
-#ifdef DEBUG
-  fprintf(stdout, "Clearing CS shiftregister\n");
-#endif
+
   /*  
       sChan=noneSelected;
       sMod=noneSelected;
@@ -225,9 +217,7 @@ int setCSregister(int imod){
   putout("0001000001000000",imod);  
   putout("0001000001000000",imod);
   putout("0000000001000000",imod);  
-#ifdef DEBUG
-  fprintf(stdout, "Setting CS shiftregister\n");
-#endif
+
   putout("0000000000000000",imod);
   sChip=allSelected;
   sMod=imod;
@@ -241,9 +231,7 @@ int nextChip(int imod){
   putout("0000000001000000",imod);  
   putout("0010000001000000",imod);
   putout("0000000001000000",imod); 
-#ifdef DEBUG
-  fprintf(stdout, "Next Chip\n");
-#endif
+
   sChip++;
   sMod=imod;
   if (imod==ALLMOD)
@@ -256,9 +244,7 @@ int firstChip(int imod){
   putout("0100000001000000",imod);  
   putout("0110000001000000",imod);
   putout("0100000001000000",imod); 
-#ifdef DEBUG
-  fprintf(stdout, "First Chip\n");
-#endif
+
   sChip=0;
   sMod=imod;
   if (imod==ALLMOD)
@@ -272,9 +258,7 @@ int clearSSregister(int imod){
   for (i=0; i<10; i++)   
     putout("0000111000000000",imod);
   putout("0000011000000000",imod); 
-#ifdef DEBUG
-  fprintf(stdout,"Clearing SS shiftregister\n");
-#endif
+
   putout("0000000000000000",imod);
   sChan=noneSelected;
   sMod=imod;
@@ -289,9 +273,7 @@ int setSSregister(int imod){
   for (i=0; i<10; i++) 
     putout("0001011000000000",imod);
   putout("0000011000000000",imod);  
-#ifdef DEBUG
-  fprintf(stdout,"Setting SS shiftregister\n");
-#endif
+
   putout("0000000000000000",imod);
   sChan=allSelected;
   sMod=imod;
@@ -304,9 +286,7 @@ int nextStrip(int imod){
   putout("0000011000000000",imod); 
   putout("0010011000000000",imod);
   putout("0000011000000000",imod); 
-#ifdef DEBUG
-  fprintf(stdout,"|-");
-#endif
+
   sChan++;
   sMod=imod;
   if (imod==ALLMOD)
@@ -345,54 +325,6 @@ int selChip(const int chip,int imod) {
 }  
 
 
-int getTemperatureByModule(int tempSensor, int imod)
-{
-  int im;
-  //for the particular module
-  if (imod>=0 && imod<nModX) { 
-    return getTemperature(tempSensor,imod);
-  }
-  else{
-    //checks if all modules have the same value(ALLMOD)
-    for (im=1; im<nModX; im++) {
-      if (getTemperature(tempSensor,im)!=getTemperature(tempSensor,0)) {
-	return -1;
-      }
-    }
-    return getTemperature(tempSensor,0);
-  }
-}
-
-
-
-int initConfGainByModule(int isettings,int val, int imod)
-{
-  int im;
-  //for the particular module
-  if (imod>=0 && imod<nModX) { 
-    return initConfGain(isettings,val,imod);
-  }
-  else{
-    //checks if all modules have the same value(ALLMOD)
-    for (im=1; im<nModX; im++) {
-      if (initConfGain(isettings,val,im)!=initConfGain(isettings,val,0))
-	return -1;
-    }
-    return initConfGain(isettings,val,0);
-  }
-}
-
-
-void showbits(int h)
-{
-  if(h==1)
-    printf("%d",h);
-  else
-    {
-      showbits(h/2);
-      printf("%d",h%2);
-    }
-}
 
 
 
@@ -414,27 +346,27 @@ int setSettings(int i, int imod) {
 	//determine conf value to write
 	if(i!=GET_SETTINGS){
 		switch(i){
-		case DYNAMICGAIN: 	val = dynamic;break;
-		case DYNAMICHG0: 	val = dynamichighgain0;break;
-		case FIXGAIN1: 		val = fixgain1;break;
-		case FIXGAIN2: 		val = fixgain2;break;
-		case FORCESWITCHG1: val = forceswitchgain1;break;
-		case FORCESWITCHG2: val = forceswitchgain2;break;
+		case DYNAMICGAIN: 	val = dynamic;			break;
+		case DYNAMICHG0: 	val = dynamichighgain0;	break;
+		case FIXGAIN1: 		val = fixgain1;			break;
+		case FIXGAIN2: 		val = fixgain2;			break;
+		case FORCESWITCHG1: val = forceswitchgain1;	break;
+		case FORCESWITCHG2: val = forceswitchgain2;	break;
 		default:
 			printf("Error: This settings is not defined for this detector %d\n",i);
 			return GET_SETTINGS;
 		}
 	}
 
-	retval=initConfGainByModule(i,val,imod);
+	retval = initConfGain(i,val,imod);
 
 	switch(retval){
-	case dynamic: isett=DYNAMICGAIN;	break;
-	case dynamichighgain0: isett=DYNAMICHG0;	break;
-	case fixgain1: isett=FIXGAIN1;		break;
-	case fixgain2: isett=FIXGAIN2;		break;
-	case forceswitchgain1: isett=FORCESWITCHG1;	break;
-	case forceswitchgain2: isett=FORCESWITCHG2;	break;
+	case dynamic: 			isett=DYNAMICGAIN;		break;
+	case dynamichighgain0: 	isett=DYNAMICHG0;		break;
+	case fixgain1: 			isett=FIXGAIN1;			break;
+	case fixgain2: 			isett=FIXGAIN2;			break;
+	case forceswitchgain1: 	isett=FORCESWITCHG1;	break;
+	case forceswitchgain2: 	isett=FORCESWITCHG2;	break;
 	default:
 		isett=UNDEFINED;
 		printf("Error:Wrong settings read out from Gain Reg 0x%x\n",retval);
@@ -447,6 +379,9 @@ int setSettings(int i, int imod) {
 //#endif
 	return thisSettings;
 }
+
+
+
 
 
 
@@ -478,7 +413,7 @@ int initChannelbyNumber(sls_detector_channel myChan) {printf("in init channel by
   
    initChannel(ft,cae,ae, coe, ocoe, counts,myChan.module);
 
-   setDynamicRange(dynamicRange);
+   setDynamicRange(DYNAMIC_RANGE);
 
    setCSregister(ALLMOD);
    clearSSregister(ALLMOD); 
@@ -495,7 +430,7 @@ int getChannelbyNumber(sls_detector_channel* myChan) {
   ichan=myChan->chan;
    
   if (detectorChans) {
-    if (imod<nModX && imod>=0) {
+    if (imod<NMODX && imod>=0) {
       if (ichip<(detectorModules+imod)->nchip && ichan<(detectorModules+imod)->nchan/(detectorModules+imod)->nchip)
 	myChan->reg=detectorChans[imod*NCHAN*NCHIP+ichip*NCHAN+ichan];
       return OK;
@@ -514,6 +449,8 @@ int getTrimbit(int imod, int ichip, int ichan) {
 
   return -1;
 }
+
+
 
 int initChannel(int ft,int cae, int ae, int coe, int ocoe, int counts, int imod){
   
@@ -561,8 +498,8 @@ int initChannel(int ft,int cae, int ae, int coe, int ocoe, int counts, int imod)
   
   if (sMod==allSelected) {
     modmi=0;
-    modma=nModX;//getNModBoard();
-  } else if (sMod==noneSelected || sMod>nModX || sMod<0) {//(sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
+    modma=NMODX;//getNModBoard();
+  } else if (sMod==noneSelected || sMod>NMODX || sMod<0) {//(sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
     modmi=0;
     modma=-1;
     return 1;
@@ -779,7 +716,7 @@ int getChipbyNumber(sls_detector_chip* myChip){
   ichip=myChip->chip;
   
   if (detectorChips) {
-    if (imod<nModX)
+    if (imod<NMODX)
       if (ichip<(detectorModules+imod)->nchip) {
 	myChip->reg=detectorChips[ichip+imod*NCHIP];
 	myChip->nchan=NCHAN;
@@ -873,8 +810,8 @@ int initChip(int obe, int ow,int imod){
   
   if (sMod==allSelected) {
     modmi=0;
-    modma=nModX;//getNModBoard();
-  } else if (sMod==noneSelected || sMod>nModX || sMod<0) {//(sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
+    modma=NMODX;//getNModBoard();
+  } else if (sMod==noneSelected || sMod>NMODX || sMod<0) {//(sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
     modmi=0;
     modma=-1;
   } else {
@@ -973,8 +910,8 @@ int initChipWithProbes(int obe, int ow,int nprobes, int imod){
   
   if (sMod==allSelected) {
     modmi=0;
-    modma=nModX;//getNModBoard();
-  } else if (sMod==noneSelected || sMod>nModX || sMod<0) {//(sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
+    modma=NMODX;//getNModBoard();
+  } else if (sMod==noneSelected || sMod>NMODX || sMod<0) {//(sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
     modmi=0;
     modma=-1;
   } else {
@@ -1035,8 +972,8 @@ int initMCBregisters(int cm, int imod){
   
   if (sMod==allSelected) {
     modmi=0;
-    modma=nModX;
-  } else if (sMod==noneSelected || sMod>nModX || sMod<0) {//(sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
+    modma=NMODX;
+  } else if (sMod==noneSelected || sMod>NMODX || sMod<0) {//(sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
     modmi=0;
     modma=-1;
   } else {
@@ -1075,8 +1012,8 @@ int initModulebyNumber(sls_detector_module myMod) {
     sMod=allSelected;
   if (sMod==allSelected) {
     modmi=0;
-    modma=nModX;//getNModBoard();
-  } else if (sMod==noneSelected || sMod>nModX || sMod<0) {// (sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
+    modma=NMODX;//getNModBoard();
+  } else if (sMod==noneSelected || sMod>NMODX || sMod<0) {// (sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
     modmi=0;
     modma=-1;
   } else {
@@ -1124,12 +1061,12 @@ int getModulebyNumber(sls_detector_module* myMod) {
   return OK;
 }
 
+
+
 /* To chips */
 int clearCounter(int imod){
   int i;
-#ifdef DEBUG
-  printf("Clearing counter with contclear\n");
-#endif
+
   putout("0000000000000000",imod);  
   for (i=0; i<10; i++)   
     putout("0000000000010000",imod);   
@@ -1140,9 +1077,7 @@ int clearCounter(int imod){
 
 int clearOutReg(int imod){
   int i;
-#ifdef DEBUG
-  printf("Clearing output register\n");
-#endif
+
   putout("0000010000000000",imod); 
   for (i=0; i<10; i++)
     putout("0000110000000000",imod);   
@@ -1151,9 +1086,7 @@ int clearOutReg(int imod){
 }
 int setOutReg(int imod){
   int i;
-#ifdef DEBUG
-  printf("Setting output register\n");
-#endif
+
   putout("0000010000000000",imod); 
   for (i=0; i<10; i++)
     putout("0001010000000000",imod);   
@@ -1164,9 +1097,7 @@ int setOutReg(int imod){
 
 int extPulse(int ncal, int imod) {
   int ical;
-#ifdef DEBUG
-  printf("Giving a clock pulse to the counter\n");
-#endif
+
   for (ical=0; ical<ncal; ical++) {
     putout("0000001000000000",imod);
     putout("0010001000000000",imod);
@@ -1176,9 +1107,7 @@ int extPulse(int ncal, int imod) {
 }
 int calPulse(int ncal, int imod) {
   int ical,i;
-#ifdef DEBUG
-  printf("Giving a cal pulse\n");
-#endif
+
   for (ical=0; ical<ncal; ical++) { 
     //printf("%d\n",ical);
      for (i=0; i<10; i++)
@@ -1193,9 +1122,7 @@ int calPulse(int ncal, int imod) {
 }
 
 int countEnable(int imod) {
-#ifdef DEBUG
-  printf("Enabling counter\n");
-#endif
+
   putout("0000000000100000",imod);
   return 0;
 }
@@ -1203,9 +1130,7 @@ int countEnable(int imod) {
 
 int counterClear(int imod) {
   int i;
-#ifdef DEBUG
-  printf("Clearing counter in counter mode\n");
-#endif
+
   putout("0000001000000000",imod);
   for (i=0; i<10; i++) 
     putout("0000101000000000",imod);
@@ -1215,9 +1140,7 @@ int counterClear(int imod) {
 
 int counterSet(int imod) {
   int i;
-#ifdef DEBUG
-  printf("Setting counter\n");
-#endif
+
   putout("0000001000000000",imod);
   for (i=0; i<20; i++)
     putout("0001001000000000",imod);
@@ -1225,6 +1148,11 @@ int counterSet(int imod) {
 
   return 0;
 }
+
+
+
+
+
 // Fifo continuous read 
 
 int readOutChan(int *val) {
@@ -1235,17 +1163,11 @@ int readOutChan(int *val) {
   clearOutReg(ALLMOD);
   
   setOutReg(ALLMOD);
-
-#ifdef DEBUG
-  printf("Reading out one channel\n");
-#endif
-
   
-
   for (i=0; i<nbit; i++) {
     putout("0000010000000000", ALLMOD);
     k=0;
-    for (k=0; k<nModX; k++) {
+    for (k=0; k<NMODX; k++) {
       v=readin(k);
       //v=bus_r(MCB_DOUT_REG_OFF+(k<<SHIFTMOD)) & 0x3ff;
       for (j=0; j<NCHIP; j++) {
@@ -1300,7 +1222,7 @@ int testShiftIn(int imod) {
       putout("0000000000000000",ALLMOD); 
       
       k=imod;
-      //for (k=0; k<nModX; k++) {
+      //for (k=0; k<NMODX; k++) {
       val=readin(k);
       //val=bus_r(MCB_DOUT_REG_OFF+(k<<SHIFTMOD)) & 0x3ff;
 	for (j=0; j<10; j++) {	
@@ -1356,7 +1278,7 @@ int testShiftOut(int imod) {
 
 
     k=imod;
-    //for (k=0; k<nModX; k++) {
+    //for (k=0; k<NMODX; k++) {
     val=readin(k);
     //val=bus_r(MCB_DOUT_REG_OFF+(k<<SHIFTMOD)) & 0x3ff;
       //printf("%8x\n",val);
@@ -1403,7 +1325,7 @@ int testShiftStSel(int imod) {
 
 
     k=imod;
-    //for (k=0; k<nModX; k++) {
+    //for (k=0; k<NMODX; k++) {
     val=readin(k);
     //val=bus_r(MCB_DOUT_REG_OFF+(k<<SHIFTMOD)) & 0x3ff;
 	for (j=0; j<NCHIP; j++) {
@@ -1435,7 +1357,7 @@ int testShiftStSel(int imod) {
 
 
 int testDataInOut(int num, int imod) {
-  int val[NCHIP*nModX], result=OK;
+  int val[NCHIP*NMODX], result=OK;
   int ich, ichip;
   setCSregister(ALLMOD);
   printf("Testing data in out for module %d pattern 0x%x\n", imod, num);
@@ -1449,7 +1371,7 @@ int testDataInOut(int num, int imod) {
     nextStrip(ALLMOD);
     readOutChan(val);
     //imod=0;
-    //for (imod=0; imod<nModX; imod++) {
+    //for (imod=0; imod<NMODX; imod++) {
       for (ichip=0; ichip<NCHIP; ichip++) {
 	if (val[ichip+imod*NCHIP]!=num) {
 	  printf("Test datain out: Channel %d read %x instead of %x\n", (imod*NCHIP+ichip)*NCHAN+ich, val[ichip+NCHIP*imod], num);
@@ -1541,7 +1463,7 @@ int testOutMux(int imod) {
 
       i=0;
       k=imod;
-      //for (k=0; k<nModX; k++) {
+      //for (k=0; k<NMODX; k++) {
       val=readin(k);
       //val=bus_r(MCB_DOUT_REG_OFF+(k<<SHIFTMOD)) & 0x3ff; 
 
@@ -1567,7 +1489,7 @@ int testOutMux(int imod) {
 
       i++;
       k=imod;
-      //for (k=0; k<nModX; k++) {
+      //for (k=0; k<NMODX; k++) {
       val=readin(k);
       //val=bus_r(MCB_DOUT_REG_OFF+(k<<SHIFTMOD)) & 0x3ff; 
 
@@ -1598,7 +1520,7 @@ int testOutMux(int imod) {
 
       i++;
       k=imod;
-      //for (k=0; k<nModX; k++) {
+      //for (k=0; k<NMODX; k++) {
       val=readin(k);
       //val=bus_r(MCB_DOUT_REG_OFF+(k<<SHIFTMOD)) & 0x3ff; 
 
@@ -1624,7 +1546,7 @@ int testOutMux(int imod) {
       putout("0000010001110000",ALLMOD);
       i++;
       k=imod;
-      //for (k=0; k<nModX; k++) {
+      //for (k=0; k<NMODX; k++) {
       val=readin(k);
       //val=bus_r(MCB_DOUT_REG_OFF+(k<<SHIFTMOD)) & 0x3ff; 
 
@@ -1728,7 +1650,7 @@ int testFpgaMux(int imod)  {
 		     
       for (i=0; i<4; i++) {
 	k=imod;
-	//for (k=0; k<nModX; k++) {
+	//for (k=0; k<NMODX; k++) {
 	val=readin(k);
 	//val=bus_r(MCB_DOUT_REG_OFF+(k<<SHIFTMOD)) & 0x3ff; 
   
@@ -1783,7 +1705,7 @@ int calibration_sensor(int num, int *v, int *dacs) {
 
  
     printf("calibrating sensor...");
-  for (imod=0; imod<nModX; imod++) {
+  for (imod=0; imod<NMODX; imod++) {
     //selMod(imod);   
     for (ichip=0; ichip<10; ichip++) { 
       selChip(ichip,imod);
@@ -1796,7 +1718,7 @@ int calibration_sensor(int num, int *v, int *dacs) {
     }
   }
  
-  for (imod=0; imod<nModX; imod++) {
+  for (imod=0; imod<NMODX; imod++) {
     //selMod(imod);
     initMCBregisters(1,imod);
     for (ich=0; ich<NCHAN; ich++){
@@ -1816,7 +1738,7 @@ int calibration_sensor(int num, int *v, int *dacs) {
       selChannel(ich,imod); // select channel
     } 
     readOutChan(val); // readout channel
-    for (imod=0; imod<nModX; imod++) {
+    for (imod=0; imod<NMODX; imod++) {
       for (ichip=0; ichip<NCHIP; ichip++) {
 	*(v+(ichip+imod*NCHIP)*NCHAN+ich)=val[ichip+imod*NCHIP];
 	selChip(ichip,imod); // select channel 
@@ -1835,7 +1757,7 @@ int calibration_chip(int num, int *v, int *dacs) {
 
  
   printf("calibrating chip...");
-  for (imod=0; imod<nModX; imod++) {
+  for (imod=0; imod<NMODX; imod++) {
     //selMod(imod);
     initMCBregisters(0,imod);
     for (ichip=0; ichip<10; ichip++) { 
@@ -1848,7 +1770,7 @@ int calibration_chip(int num, int *v, int *dacs) {
     }
   }
   for (ich=0; ich<NCHAN; ich++){
-    for (imod=0; imod<nModX; imod++) {
+    for (imod=0; imod<NMODX; imod++) {
       //selMod(imod);
       for (ichip=0; ichip<NCHIP; ichip++) {
 	selChip(ichip,imod); // select channel 
@@ -1866,7 +1788,7 @@ int calibration_chip(int num, int *v, int *dacs) {
     usleep(20);  
     selChannel(ich,ALLMOD); // select channel 
     readOutChan(val); // readout channel
-    for (imod=0; imod<nModX; imod++) {
+    for (imod=0; imod<NMODX; imod++) {
       //selMod(imod);
       for (ichip=0; ichip<10; ichip++) {
 	*(v+(ichip+imod*NCHIP)*NCHAN+ich)=val[ichip+imod*NCHIP];

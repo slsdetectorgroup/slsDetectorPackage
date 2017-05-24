@@ -48,7 +48,7 @@ int stopWritingFPGAprogram(FILE* filefp);
 int writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp);
 
 long int calcChecksum(int sourceip, int destip);
-void configureMAC(uint32_t destip,uint64_t destmac,uint64_t  sourcemac,int detipad,int ival,uint32_t destport);
+void configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, int detipad, uint32_t destport);
 
 int64_t set64BitReg(int64_t value, int aLSB, int aMSB);
 int64_t get64BitReg(int aLSB, int aMSB);
@@ -81,22 +81,14 @@ int64_t getActualTime();
 int64_t getMeasurementTime();
 int64_t getFramesFromStart();
 
-int setDynamicRange(int dr);
-int getDynamicRange();
-int getNModBoard();
-int setNMod(int n);
-int getNMod();
-
 u_int32_t runBusy(void); 
-u_int32_t runState(void); 
-
 int startStateMachine();
 int stopStateMachine();
 int startReadOut();
 enum runStatus getStatus();
 void waitForAcquisitionEnd();
 
-void serializeToSPI(int bitsize, u_int32_t val, u_int16_t csmask, int numbitstosend, u_int16_t clkmask, u_int16_t digoutmask, int digofset);
+void serializeToSPI(u_int32_t addr, u_int32_t val, u_int16_t csmask, int numbitstosend, u_int16_t clkmask, u_int16_t digoutmask, int digofset);
 void initDac(int dacnum);
 int setDac(int dacnum, int dacvalue);
 int setHighVoltage(int val, int imod);
@@ -104,8 +96,16 @@ void setAdc(int addr, int val);
 void configureAdc();
 void prepareADC();
 
+int setDynamicRange(int dr);
+int getDynamicRange();
+int getNModBoard();
+int setNMod(int n);
+int getNMod();
+
 int powerChip (int on);
-int setPhaseShiftOnce();
+void cleanFifos();
+void resetCore();
+void resetPeripheral();
 int adcPhase(int st);
 int getPhase();
 
@@ -114,29 +114,19 @@ u_int32_t readin(int modnum);
 u_int32_t setClockDivider(int d);
 u_int32_t getClockDivider();
 
-void resetPLL();
-u_int32_t setPllReconfigReg(u_int32_t reg, u_int32_t val, int trig);
-u_int32_t getPllReconfigReg(u_int32_t reg, int trig);
-void configurePll(int i);
-
 int getTemperature(int tempSensor,int imod);
 int initConfGain(int isettings,int val,int imod);
 int initSpeedConfGain(int val);
 
-ROI *setROI(int nroi,ROI* arg,int *retvalsize, int *ret);
-int getChannels();
+void resetPLL();
+u_int32_t setPllReconfigReg(u_int32_t reg, u_int32_t val, int trig);
+u_int32_t getPllReconfigReg(u_int32_t reg, int trig);
+void configurePll();
 
 int loadImage(int index, short int ImageVals[]);
 int readCounterBlock(int startACQ, short int CounterVals[]);
 int resetCounterBlock(int startACQ);
 int calibratePedestal(int frames);
-uint64_t readPatternWord(int addr);
-uint64_t writePatternWord(int addr, uint64_t word);
-uint64_t writePatternIOControl(uint64_t word);
-uint64_t writePatternClkControl(uint64_t word);
-int setPatternLoop(int level, int *start, int *stop, int *n);
-int setPatternWaitAddress(int level, int addr);
-uint64_t setPatternWaitTime(int level, uint64_t t);
 
 u_int32_t setExtSignal(int d, enum externalSignalFlag  mode);
 int  getExtSignal(int d);

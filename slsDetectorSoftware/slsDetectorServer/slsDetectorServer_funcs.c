@@ -7,19 +7,17 @@
 
 #include <stdio.h>
 #include <string.h>
-
 #include <arpa/inet.h>
-int sockfd;
+
+
+// Global variables
+
 extern int lockStatus;
 extern char lastClientIP[INET_ADDRSTRLEN];
 extern char thisClientIP[INET_ADDRSTRLEN];
 extern int differentClients;
 
-
-
-// Global variables
-int (*flist[256])(int);
-//defined in the detector specific file
+//defined in the detector specific Makefile
 #ifdef MYTHEND
 const enum detectorType myDetectorType=MYTHEN;
 #elif GOTTHARDD
@@ -28,58 +26,25 @@ const enum detectorType myDetectorType=GOTTHARD;
 const enum detectorType myDetectorType=EIGER;
 #elif PICASSOD
 const enum detectorType myDetectorType=PICASSO;
+#elif MOENCHD
+const enum detectorType myDetectorType=MOENCH;
+#elif JUNGFRAUD
+const enum detectorType myDetectorType=JUNGFRAU;
 #else
 const enum detectorType myDetectorType=GENERIC;
 #endif
 
-extern enum detectorSettings thisSettings;
-
-//global variables for optimized readout
+int sockfd;		//updated in slsDetectorServer (extern)
+int (*flist[256])(int);
 char mess[MAX_STR_LENGTH];
-int dataret;
-//extern 
 int dataBytes = 10;
 
 
 
-void checkFirmwareCompatibility(){
-	int64_t fwversion = getDetectorId(DETECTOR_FIRMWARE_VERSION);
-	int64_t swversion = getDetectorId(DETECTOR_SOFTWARE_VERSION);
-	int64_t sw_fw_apiversion = getDetectorId(SOFTWARE_FIRMWARE_API_VERSION);
-
-	cprintf(BLUE,"\n\n********************************************************\n"
-			   "**********************EIGER Server**********************\n"
-			   "********************************************************\n");
-	cprintf(BLUE,"\n"
-			"Firmware Version:\t\t %lld\n"
-			"Software Version:\t\t %llx\n"
-			"F/w-S/w API Version:\t\t %lld\n"
-			"Required Firmware Version:\t %d\n"
-			"\n********************************************************\n",
-			fwversion,swversion,sw_fw_apiversion,REQUIRED_FIRMWARE_VERSION);
-
-	//cant read versions
-	if(!fwversion || !sw_fw_apiversion){
-		cprintf(RED,"FATAL ERROR: Cant read versions from FPGA. Please update firmware\n");
-		cprintf(RED,"Exiting Server. Goodbye!\n\n");
-		exit(-1);
-	}
-
-	//check for API compatibility - old server
-	if(sw_fw_apiversion > REQUIRED_FIRMWARE_VERSION){
-		cprintf(RED,"FATAL ERROR: This software version is incompatible.\n"
-				"Please update it to be compatible with this firmware\n\n");
-		cprintf(RED,"Exiting Server. Goodbye!\n\n");
-		exit(-1);
-	}
-
-	//check for firmware compatibility - old firmware
-	if( REQUIRED_FIRMWARE_VERSION > fwversion){
-		cprintf(RED,"FATAL ERROR: This firmware version is incompatible.\n"
-				"Please update it to v%d to be compatible with this server\n\n", REQUIRED_FIRMWARE_VERSION);
-		cprintf(RED,"Exiting Server. Goodbye!\n\n");
-		exit(-1);
-	}
+void basictests() {
+#ifdef	SLS_DETECTOR_FUNCTION_LIST
+	checkFirmwareCompatibility();
+#endif
 }
 
 
@@ -431,8 +396,10 @@ int send_update(int file_des) {
 	nm=setDynamicRange(GET_FLAG);
 #endif
 	n += sendData(file_des,&nm,sizeof(nm),INT32);
-	nm = dataBytes;
-	n += sendData(file_des,&nm,sizeof(nm),INT32);
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+	dataBytes=calculateDataBytes();
+#endif
+	n += sendData(file_des,&dataBytes,sizeof(dataBytes),INT32);
 #ifdef	SLS_DETECTOR_FUNCTION_LIST
 	t=setSettings(GET_SETTINGS, GET_FLAG);
 #endif
@@ -1016,10 +983,6 @@ int digital_test(int file_des) {
 #ifdef VERBOSE
 			printf("of module %d\n", imod);
 #endif   
-#ifndef MYTHEND
-			ret = FAIL;
-			strcpy(mess,"Not applicable/implemented for this detector\n");
-#else
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 			if (imod>=0 && imod<getTotalNumberOfModules())
 				retval=moduleTest(arg,imod);
@@ -1058,7 +1021,7 @@ int digital_test(int file_des) {
 #endif
 			break;
 		default:
-			printf("Unknown digital test required %d\n",arg);
+			printf("Digital test: %d. Not applicable/implemented for this detector\n",arg);
 			ret=FAIL;
 			retval=FAIL;
 			break;
@@ -2488,13 +2451,13 @@ int get_run_status(int file_des) {
 
 
 int start_and_read_all(int file_des) {
-	int dataret1;
+	int dataret1, dataret;
 #ifdef VERBOSE
 	printf("Starting and reading all frames\n");
 #endif
 
 	if (differentClients==1 && lockStatus==1) {
-		dataret=FAIL;
+		dataret = FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		//ret could be swapped during sendData
 		dataret1 = dataret;
@@ -2521,7 +2484,7 @@ int start_and_read_all(int file_des) {
 
 
 int read_frame(int file_des) {
-	int dataret1;
+	int dataret1, dataret;
 
 	if (differentClients==1 && lockStatus==1) {
 		dataret=FAIL;

@@ -28,7 +28,7 @@ int main(int argc, char *argv[]){
 #endif
 	if (argc==1) {
 
-		checkFirmwareCompatibility();
+		basictests();
 //#endif
 		portno = DEFAULT_PORTNO;
 		printf("opening control server on port %d\n",portno );

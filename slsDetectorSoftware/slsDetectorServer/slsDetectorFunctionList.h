@@ -18,22 +18,46 @@ Here are the definitions, but the actual implementation should be done for each 
 ****************************************************/
 
 
+//basic tests
+void 		checkFirmwareCompatibility();
+#ifdef JUNGFRAUD
+int 		checkType();
+u_int32_t 	testFpga(void);
+int 		testBus(void);
+#endif
+int 		moduleTest( enum digitalTestMode arg, int imod);
+int 		detectorTest( enum digitalTestMode arg);
 
-void getModuleConfiguration();
-int initDetector();
-int initDetectorStop();
+
+//Ids
+int64_t 	getDetectorId(enum idMode arg);
+u_int64_t  	getFirmwareVersion();
+int64_t 	getModuleId(enum idMode arg, int imod);
+int  		getDetectorNumber();
+u_int64_t  	getDetectorMAC();
+int  		getDetectorIP();
+
+
+//initialization
+int 		initDetector();
+#ifdef EIGERD
+int 		initDetectorStop();
+void 		getModuleConfiguration();
+#endif
+
+#ifdef JUNGFRAUD
+int 		mapCSP0(void);
+u_int16_t 	bus_w16(u_int32_t offset, u_int16_t data);
+u_int16_t 	bus_r16(u_int32_t offset);
+u_int32_t 	bus_w(u_int32_t offset, u_int32_t data);
+u_int32_t 	bus_r(u_int32_t offset);
+#endif
+
 
 int setNMod(int nm, enum dimension dim);
 int getNModBoard(enum dimension arg);
 
-int64_t getModuleId(enum idMode arg, int imod);
-int64_t getDetectorId(enum idMode arg);
-int  getDetectorNumber();
-u_int64_t  getDetectorMAC();
-int  getDetectorIP();
 
-int moduleTest( enum digitalTestMode arg, int imod);
-int detectorTest( enum digitalTestMode arg);
 
 
 void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]);

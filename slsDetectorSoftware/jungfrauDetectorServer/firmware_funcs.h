@@ -48,7 +48,7 @@ int stopWritingFPGAprogram(FILE* filefp);
 int writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp);
 
 long int calcChecksum(int sourceip, int destip);
-void configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, int detipad, uint32_t destport);
+void configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, int sourceip, uint32_t destport);
 
 int64_t set64BitReg(int64_t value, int aLSB, int aMSB);
 int64_t get64BitReg(int aLSB, int aMSB);
@@ -74,9 +74,6 @@ int64_t getTrains();
 int64_t setProbes(int64_t value);
 int64_t getProbes();
 
-int64_t getProgress();
-int64_t setProgress();
-
 int64_t getActualTime();
 int64_t getMeasurementTime();
 int64_t getFramesFromStart();
@@ -84,7 +81,6 @@ int64_t getFramesFromStart();
 u_int32_t runBusy(void); 
 int startStateMachine();
 int stopStateMachine();
-int startReadOut();
 enum runStatus getStatus();
 void waitForAcquisitionEnd();
 
@@ -93,7 +89,6 @@ void initDac(int dacnum);
 int setDac(int dacnum, int dacvalue);
 int setHighVoltage(int val, int imod);
 void setAdc(int addr, int val);
-void configureAdc();
 void prepareADC();
 
 int setDynamicRange(int dr);
@@ -117,8 +112,7 @@ int initConfGain(int isettings,int val,int imod);
 int initSpeedConfGain(int val);
 
 void resetPLL();
-u_int32_t setPllReconfigReg(u_int32_t reg, u_int32_t val, int trig);
-u_int32_t getPllReconfigReg(u_int32_t reg, int trig);
+u_int32_t setPllReconfigReg(u_int32_t reg, u_int32_t val);
 void configurePll();
 
 int loadImage(int index, short int ImageVals[]);
@@ -126,10 +120,6 @@ int readCounterBlock(int startACQ, short int CounterVals[]);
 int resetCounterBlock(int startACQ);
 int calibratePedestal(int frames);
 
-u_int32_t setExtSignal(int d, enum externalSignalFlag  mode);
-int  getExtSignal(int d);
-u_int32_t setFPGASignal(int d, enum externalSignalFlag  mode);
-int  getFPGASignal(int d);
 int setTiming(int t);
 int setMaster(int f);
 int setSynchronization(int s);

@@ -39,9 +39,8 @@ const enum detectorType myDetectorType=GENERIC;
 int (*flist[256])(int);
 char mess[MAX_STR_LENGTH];
 
-int digitalTestBit = 0; /** Carlos will we use this somewhere */
 int adcvpp = 0x4;			/** Carlos will we use this somewhere */
-
+//set adc val??
 
 
 
@@ -609,7 +608,7 @@ int digital_test(int file_des) {
 	case DETECTOR_SOFTWARE_TEST:
 		retval=testFpga();
 		break;
-	case DIGITAL_BIT_TEST:
+	case DIGITAL_BIT_TEST:// only for gotthard
 		n = receiveDataOnly(file_des,&ival,sizeof(ival));
 		if (n < 0) {
 			sprintf(mess,"Error reading from socket\n");
@@ -623,8 +622,6 @@ int digital_test(int file_des) {
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 			break;
 		}
-		digitalTestBit = ival;
-		retval=digitalTestBit;
 		break;
 	default:
 		printf("Unknown digital test required %d\n",arg);
@@ -687,15 +684,9 @@ int write_register(int file_des) {
 
 	if(ret!=FAIL){
 		address=(addr<<11);
-		/*if((address==FIFO_DATA_REG_OFF)||(address==CONTROL_REG)) ask Carlos
-			ret = bus_w16(address,val);
-		else*/
 			ret=bus_w(address,val);
 		if(ret==OK){
-			/*if((address==FIFO_DATA_REG_OFF)||(address==CONTROL_REG)) ask Carlos
-				retval=bus_r16(address);
-			else*/
-				retval=bus_r(address);
+			retval=bus_r(address);
 		}
 	}
 
@@ -753,10 +744,7 @@ int read_register(int file_des) {
 
 	if(ret!=FAIL){
 		address=(addr<<11);
-		/*if((address==FIFO_DATA_REG_OFF)||(address==CONTROL_REG)) ask Carlos
-			retval=bus_r16(address);
-		else*/
-			retval=bus_r(address);
+		retval=bus_r(address);
 	}
 
 
@@ -1595,26 +1583,11 @@ int stop_acquisition(int file_des) {
 
 int start_readout(int file_des) {
 
-
-	int ret=OK;
 	int n;
+	int ret = FAIL;
 
-
-	sprintf(mess,"can't start readout\n");
-
-#ifdef VERBOSE
-	printf("Starting readout\n");
-#endif     
-	if (differentClients==1 && lockStatus==1) {
-		ret=FAIL;
-		sprintf(mess,"Detector locked by %s\n",lastClientIP);
-	} else {
-		ret=startReadOut();
-	}
-	if (ret==FAIL)
-		sprintf(mess,"Start readout failed\n");
-	else if (differentClients)
-		ret=FORCE_UPDATE;
+	strcpy(mess, "Start Readout is not implemented for this detector!\n");
+	cprintf(RED,"Warning: %s", mess);
 
 	n = sendDataOnly(file_des,&ret,sizeof(ret));
 	if (ret==FAIL) {
@@ -1858,7 +1831,7 @@ int get_time_left(int file_des) {
 			retval=getFrames();
 			break;
 		case ACQUISITION_TIME:
-			retval=getExposureTime();
+			retval=getExposureTime();/** not implemented */
 			break;
 		case FRAME_PERIOD:
 			retval=getPeriod();
@@ -1867,16 +1840,13 @@ int get_time_left(int file_des) {
 			retval=getDelay();
 			break;
 		case GATES_NUMBER:
-			retval=getGates();
+			retval=getGates();/** not implemented */
 			break;
 		case PROBES_NUMBER:
 			retval=getProbes();
 			break;
 		case CYCLES_NUMBER:
 			retval=getTrains();
-			break;
-		case PROGRESS:
-			retval=getProgress();
 			break;
 		case ACTUAL_TIME:
 			retval=getActualTime();

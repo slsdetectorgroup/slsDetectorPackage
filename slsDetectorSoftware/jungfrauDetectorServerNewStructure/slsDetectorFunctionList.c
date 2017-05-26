@@ -1,27 +1,13 @@
-#ifdef SLS_DETECTOR_FUNCTION_LIST
-
+//#ifdef SLS_DETECTOR_FUNCTION_LIST
 
 #include <stdio.h>
 #include <unistd.h> //to gethostname
 #include <string.h>
 
-
-
 #include "slsDetectorFunctionList.h"
-#include "gitInfoEiger.h"
-#include "FebControl.h"
-#include "Beb.h"
+#include "gitInfoJungfrau.h"
 
-int default_tau_from_file= -1;
 
-#define BEB_NUM 34
-
-enum detectorSettings thisSettings;
-const char* dac_names[16] = {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};
-
-enum{E_PARALLEL, E_NON_PARALLEL, E_SAFE};
-
-//static const string dacNames[16] = {"Svp","Svn","Vtr","Vrf","Vrs","Vtgstv","Vcmp_ll","Vcmp_lr","Cal","Vcmp_rl","Vcmp_rr","Rxb_rb","Rxb_lb","Vcp","Vcn","Vis"};
 
 sls_detector_module *detectorModules=NULL;
 int *detectorChips=NULL;
@@ -29,76 +15,45 @@ int *detectorChans=NULL;
 dacs_t *detectorDacs=NULL;
 dacs_t *detectorAdcs=NULL;
 
-int eiger_highvoltage = 0;
-int eiger_iodelay = 0;
-int eiger_photonenergy = 0;
-int eiger_dynamicrange = 0;
-int eiger_readoutmode = 0;
-int eiger_storeinmem = 0;
-int eiger_readoutspeed = 0;
-int eiger_triggermode = 0;
-int eiger_extgating = 0;
-int eiger_extgatingpolarity = 0;
+enum detectorSettings thisSettings;
+enum masterFlags masterMode = NO_MASTER;
+int highvoltage = 0;
+int dacValues[NDAC];
 
+u_int32_t CSP0BASE = 0;
+int32_t clkPhase[2] = {0, 0};
+char mtdvalue[10];
 
-int eiger_nexposures = 1;
-int eiger_ncycles = 1;
-
-
-int send_to_ten_gig = 0;
-int  ndsts_in_use=32;
-unsigned int nimages_per_request=1;
-int  on_dst=0;
-int dst_requested[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-
-int default_dac_values[16] = {
-		0, 		//SvP
-		2480, 	//Vtr
-		3300, 	//Vrf
-		1400, 	//Vrs
-		4000, 	//SvN
-		2556, 	//Vtgstv
-		1000, 	//Vcmp_ll
-		1000, 	//Vcmp_lr
-		4000, 	//cal
-		1000, 	//Vcmp_rl
-		1100, 	//rxb_rb
-		1100, 	//rxb_lb
-		1000, 	//Vcmp_rr
-		1000, 	//Vcp
-		2000, 	//Vcn
-		1550 	//Vis
-};
-int default_gain_values[3] = {517000,517000,517000};
-int default_offset_values[3] = {3851000,3851000,3851000};
-
-
-enum masterFlags  masterMode=IS_SLAVE;
-int top = 0;
-int master = 0;
-int normal = 0;
-
-
-#define TEN_GIGA_BUFFER_SIZE 4112
-#define ONE_GIGA_BUFFER_SIZE 1040
 
 
 void checkFirmwareCompatibility(){
-	int64_t fwversion = getDetectorId(DETECTOR_FIRMWARE_VERSION);
-	int64_t swversion = getDetectorId(DETECTOR_SOFTWARE_VERSION);
-	int64_t sw_fw_apiversion = getDetectorId(SOFTWARE_FIRMWARE_API_VERSION);
+	printf("Testing Firmware Compatibility... \n");
 
-	cprintf(BLUE,"\n\n********************************************************\n"
-			   "**********************EIGER Server**********************\n"
-			   "********************************************************\n");
-	cprintf(BLUE,"\n"
-			"Firmware Version:\t\t %lld\n"
+	int64_t fwversion 			= getDetectorId(DETECTOR_FIRMWARE_VERSION);
+	int64_t swversion 			= getDetectorId(DETECTOR_SOFTWARE_VERSION);
+	//int64_t sw_fw_apiversion 	= getDetectorId(SOFTWARE_FIRMWARE_API_VERSION);
+	cprintf(BLUE,"\n\n"
+			"********************************************************\n"
+			"****************** Jungfrau Server *********************\n"
+			"********************************************************\n\n"
+			"Firmware Version:\t\t %llx\n"
 			"Software Version:\t\t %llx\n"
-			"F/w-S/w API Version:\t\t %lld\n"
-			"Required Firmware Version:\t %d\n"
-			"\n********************************************************\n",
-			fwversion,swversion,sw_fw_apiversion,REQUIRED_FIRMWARE_VERSION);
+			//"F/w-S/w API Version:\t\t %lld\n"
+			//"Required Firmware Version:\t %d\n"
+			"\n"
+			"********************************************************\n",
+			fwversion, swversion
+			//, sw_fw_apiversion, REQUIRED_FIRMWARE_VERSION
+	);
 
+
+	//initial test
+	if ( (checkType() == FAIL) || (testFpga() == FAIL) || (testBus() == FAIL) ) {
+		cprintf(BG_RED, "Dangerous to continue. Goodbye!\n");
+		exit(-1);
+	}
+
+/*
 	//cant read versions
 	if(!fwversion || !sw_fw_apiversion){
 		cprintf(RED,"FATAL ERROR: Cant read versions from FPGA. Please update firmware\n");
@@ -121,148 +76,78 @@ void checkFirmwareCompatibility(){
 		cprintf(RED,"Exiting Server. Goodbye!\n\n");
 		exit(-1);
 	}
+*/
 }
 
+
+int checkType() {
+	volatile u_int32_t type = ((bus_r(FPGA_VERSION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
+	if (type != JUNGFRAU){
+			cprintf(BG_RED,"This is not a Jungfrau Server (read %d, expected %d)\n",type, JUNGFRAU);
+			return FAIL;
+		}
+
+	return OK;
+}
+
+
+
+u_int32_t testFpga(void) {
+	printf("\nTesting FPGA...\n");
+
+	//fixed pattern
+	int ret = OK;
+	volatile u_int32_t val = bus_r(FIX_PATT_REG);
+	if (val == FIX_PATT_VAL) {
+		printf("Fixed pattern: successful match 0x%08x\n",val);
+	} else {
+		cprintf(RED,"Fixed pattern does not match! Read 0x%08x, expected 0x%08x\n", val, FIX_PATT_VAL);
+		ret = FAIL;
+	}
+	printf("\n");
+	return ret;
+}
+
+
+int testBus() {
+	printf("\nTesting Bus...\n");
+
+	int ret = OK;
+	u_int32_t addr = SET_DELAY_LSB_REG;
+	int times = 1000 * 1000;
+	int i = 0;
+
+	for (i = 0; i < times; ++i) {
+		bus_w(addr, i * 100);
+		if (i * 100 != bus_r(SET_DELAY_LSB_REG)) {
+			cprintf(RED,"ERROR: Mismatch! Wrote 0x%x, read 0x%x\n", i * 100, bus_r(SET_DELAY_LSB_REG));
+			ret = FAIL;
+		}
+	}
+
+	if (ret == OK)
+		printf("Successfully tested bus %d times\n", times);
+
+	printf("\n");
+	return ret;
+}
 
 
 int moduleTest( enum digitalTestMode arg, int imod){
-	//template testShiftIn from mcb_funcs.c
-
-	//CHIP_TEST
-	//testShiftIn
-	//testShiftOut
-	//testShiftStSel
-	//testDataInOutMux
-	//testExtPulseMux
-	//testOutMux
-	//testFpgaMux
-
 	return OK;
 }
-
-
-
-
 
 int detectorTest( enum digitalTestMode arg){
-	//templates from firmware_funcs.c
-
-	//DETECTOR_FIRMWARE_TEST:testFpga()
-	//DETECTOR_MEMORY_TEST:testRAM()
-	//DETECTOR_BUS_TEST:testBus()
-	//DETECTOR_SOFTWARE_TEST:testFpga()
-	return OK;
-}
-
-
-int64_t getDetectorId(enum idMode arg){
-	int64_t retval = -1;
-
 	switch(arg){
-	case DETECTOR_SERIAL_NUMBER:
-		retval =  getDetectorNumber();/** to be implemented with mac? */
-		break;
-	case DETECTOR_FIRMWARE_VERSION:
-		return (int64_t)getFirmwareVersion();
-	case SOFTWARE_FIRMWARE_API_VERSION:
-		return (int64_t)Beb_GetFirmwareSoftwareAPIVersion();
-	case DETECTOR_SOFTWARE_VERSION:
-		retval= SVNREV;
-		retval= (retval <<32) | SVNDATE;
-		//cprintf(BLUE,"git date:%x, git rev:%x\n",SVNDATE,SVNREV);
-		break;
+	case DETECTOR_FIRMWARE_TEST:	return testFpga();
+	case DETECTOR_BUS_TEST: 		return testBus();
+	//DETECTOR_MEMORY_TEST:testRAM
+	//DETECTOR_SOFTWARE_TEST:
 	default:
+		cprintf(RED,"Warning: Test not implemented for this detector %d\n", (int)arg);
 		break;
 	}
-
-	return retval;
-}
-
-u_int64_t getFirmwareVersion() {
-	return Beb_GetFirmwareRevision();
-}
-
-int64_t getModuleId(enum idMode arg, int imod){
-
-	/**/
-	return -1;
-}
-
-
-int getDetectorNumber(){
-	int res=0;
-
-	//execute and get address
-	char output[255];
-	FILE* sysFile = popen("more /home/root/executables/detid.txt", "r");
-	fgets(output, sizeof(output), sysFile);
-	pclose(sysFile);
-	sscanf(output,"%d",&res);
-	printf("detector id: %d\n",res);
-
-/*
-	int res=0;
-	char hostname[100];
-	if (gethostname(hostname, sizeof hostname) == 0)
-		puts(hostname);
-	else
-		perror("gethostname");
-	sscanf(hostname,"%x",&res);
-*/
-	return res;
-}
-
-
-u_int64_t  getDetectorMAC() {
-	char mac[255]="";
-	u_int64_t res=0;
-
-	//execute and get address
-	char output[255];
-	FILE* sysFile = popen("more /sys/class/net/eth0/address", "r");
-	//FILE* sysFile = popen("ifconfig eth0 | grep HWaddr | cut -d \" \" -f 11", "r");
-	fgets(output, sizeof(output), sysFile);
-	pclose(sysFile);
-
-	//getting rid of ":"
-	char * pch;
-	pch = strtok (output,":");
-	while (pch != NULL){
-		strcat(mac,pch);
-		pch = strtok (NULL, ":");
-	}
-	sscanf(mac,"%llx",&res);
-	//increment by 1 for 10g
-	if(send_to_ten_gig)
-		res++;
-	//printf("mac:%llx\n",res);
-
-	return res;
-}
-
-
-
-int  getDetectorIP(){
-	char temp[50]="";
-	int res=0;
-	//execute and get address
-	char output[255];
-	FILE* sysFile = popen("ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2", "r");
-	fgets(output, sizeof(output), sysFile);
-	pclose(sysFile);
-
-	//converting IPaddress to hex.
-	char* pcword = strtok (output,".");
-	while (pcword != NULL) {
-		sprintf(output,"%02x",atoi(pcword));
-		strcat(temp,output);
-		pcword = strtok (NULL, ".");
-	}
-	strcpy(output,temp);
-	sscanf(output, "%x", 	&res);
-	//printf("ip:%x\n",res);
-
-	return res;
+	return OK;
 }
 
 
@@ -401,6 +286,106 @@ int getNModBoard(enum dimension arg){
 
 
 
+int64_t getModuleId(enum idMode arg, int imod){
+
+	/**/
+	return -1;
+}
+
+
+
+
+int64_t getDetectorId(enum idMode arg){
+	int64_t retval = -1;
+
+	switch(arg){
+	case DETECTOR_SERIAL_NUMBER:
+		retval =  getDetectorNumber();
+		break;
+	case DETECTOR_FIRMWARE_VERSION:
+		retval=(u_int32_t)bus_r(FPGA_SVN_REG);
+		retval=(retval <<32) | (u_int32_t)bus_r(FPGA_VERSION_REG)();
+		break;
+	//case SOFTWARE_FIRMWARE_API_VERSION:
+	//return GetFirmwareSoftwareAPIVersion();
+	case DETECTOR_SOFTWARE_VERSION:
+		retval= SVNREV;
+		retval= (retval <<32) | SVNDATE;
+		break;
+	default:
+		break;
+	}
+
+	return retval;
+}
+
+
+
+int getDetectorNumber(){
+	int res=0;
+
+	//execute and get address
+	char output[255];
+	FILE* sysFile = popen("more /home/root/executables/detid.txt", "r");
+	fgets(output, sizeof(output), sysFile);
+	pclose(sysFile);
+	sscanf(output,"%d",&res);
+	printf("detector id: %d\n",res);
+
+/*
+	int res=0;
+	char hostname[100];
+	if (gethostname(hostname, sizeof hostname) == 0)
+		puts(hostname);
+	else
+		perror("gethostname");
+	sscanf(hostname,"%x",&res);
+*/
+	return res;
+}
+
+
+u_int64_t  getDetectorMAC() {
+	char output[255],mac[255]="";
+	u_int64_t res=0;
+	FILE* sysFile = popen("ifconfig eth0 | grep HWaddr | cut -d \" \" -f 11", "r");
+	fgets(output, sizeof(output), sysFile);
+	pclose(sysFile);
+	//getting rid of ":"
+	char * pch;
+	pch = strtok (output,":");
+	while (pch != NULL){
+		strcat(mac,pch);
+		pch = strtok (NULL, ":");
+	}
+	sscanf(mac,"%llx",&res);
+	return res;
+}
+
+
+
+int  getDetectorIP(){
+	char temp[50]="";
+	int res=0;
+	//execute and get address
+	char output[255];
+	FILE* sysFile = popen("ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2", "r");
+	fgets(output, sizeof(output), sysFile);
+	pclose(sysFile);
+
+	//converting IPaddress to hex.
+	char* pcword = strtok (output,".");
+	while (pcword != NULL) {
+		sprintf(output,"%02x",atoi(pcword));
+		strcat(temp,output);
+		pcword = strtok (NULL, ".");
+	}
+	strcpy(output,temp);
+	sscanf(output, "%x", 	&res);
+	//printf("ip:%x\n",res);
+
+	return res;
+}
 
 
 
@@ -1354,4 +1339,4 @@ int setNetworkParameter(enum detNetworkParameter mode, int value){
 	return Beb_SetNetworkParameter(mode, value);
 }
 
-#endif
+//#endif

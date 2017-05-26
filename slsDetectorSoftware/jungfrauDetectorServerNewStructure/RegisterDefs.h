@@ -1,13 +1,9 @@
-#ifndef REGISTERS_G_H
-#define REGISTERS_G_H
-
-
-#include "sls_detector_defs.h"
-
+#ifndef REGISTER_DEFS_H
+#define REGISTER_DEFS_H
 
 /* Definitions for FPGA*/
 #define CSP0 0x20200000
-#define MEM_SIZE 0x100000 
+#define MEM_SIZE 0x100000
 
 /* FPGA Version register */
 #define FPGA_VERSION_REG      			(0x00 << 11)
@@ -87,14 +83,6 @@
 /* Get Period 64 bit register */
 #define GET_PERIOD_LSB_REG    			(0x18 << 11)
 #define GET_PERIOD_MSB_REG    			(0x19 << 11)
-
-/* Get Period 64 bit register */
-#define GET_EXPTIME_LSB_REG    			(0x1A << 11)
-#define GET_EXPTIME_MSB_REG    			(0x1B << 11)
-
-/* Get Period 64 bit register */
-#define GET_GATES_LSB_REG    			(0x1C << 11)
-#define GET_GATES_MSB_REG    			(0x1D << 11)
 
 /* Get Frames from Start 64 bit register (frames from start Run Control) */
 #define FRAMES_FROM_START_PG_LSB_REG	(0x24 << 11)
@@ -186,7 +174,7 @@
 #define CONFIG_READOUT_SPEED_MSK		(0x00000003 << CONFIG_READOUT_SPEED_OFST)
 #define CONFIG_QUARTER_SPEED_10MHZ_VAL	((0x0 << CONFIG_READOUT_SPEED_OFST) & CONFIG_READOUT_SPEED_MSK)
 #define CONFIG_HALF_SPEED_20MHZ_VAL		((0x1 << CONFIG_READOUT_SPEED_OFST) & CONFIG_READOUT_SPEED_MSK)
-#define CONFIG_FULL_SPEED_VAL			((0x2 << CONFIG_READOUT_SPEED_OFST) & CONFIG_READOUT_SPEED_MSK)
+#define CONFIG_FULL_SPEED_40MHZ_VAL		((0x2 << CONFIG_READOUT_SPEED_OFST) & CONFIG_READOUT_SPEED_MSK)
 #define CONFIG_TDMA_OFST				(24)
 #define CONFIG_TDMA_MSK					(0x00000001 << CONFIG_TDMA_OFST)
 #define CONFIG_TDMA_DISABLE_VAL			((0x0 << CONFIG_TDMA_OFST) & CONFIG_TDMA_MSK)
@@ -233,9 +221,9 @@
 #define PLL_CTRL_ADDR_MSK				(0x0000003F << PLL_CTRL_ADDR_OFST)
 
 /* Sample Register (Obsolete) */
-#define SAMPLE_REG 						(0x59 << 11) /** carlos set speed differently*/
+#define SAMPLE_REG 						(0x59 << 11)
 
-#define SAMPLE_ADC_SAMPLE_SEL_OFST		(0)												/** carlos cant use the bits*/
+#define SAMPLE_ADC_SAMPLE_SEL_OFST		(0)
 #define SAMPLE_ADC_SAMPLE_SEL_MSK		(0x00000007 << SAMPLE_ADC_SAMPLE_SEL_OFST)
 #define SAMPLE_ADC_SAMPLE_0_VAL			((0x0 << SAMPLE_ADC_SAMPLE_SEL_OFST) & SAMPLE_ADC_SAMPLE_SEL_MSK)
 #define SAMPLE_ADC_SAMPLE_1_VAL			((0x1 << SAMPLE_ADC_SAMPLE_SEL_OFST) & SAMPLE_ADC_SAMPLE_SEL_MSK)
@@ -288,14 +276,6 @@
 /** DAQ Register */
 #define DAQ_REG							(0x5D << 11)								//TBD in firmware
 
-/** carlos ?? */
-/* settings/conf gain register */
-#define GAIN_MASK                    	0x0000ffff
-#define GAIN_OFFSET                  	0
-#define SPEED_GAIN_MASK     			0xf0000000
-#define SPEED_GAIN_OFFSET   			28
-/***************/
-
 /** Chip Power Register */
 #define CHIP_POWER_REG					(0x5E << 11)
 
@@ -337,6 +317,7 @@
 #define COORD_0_Z_MSK					(0x0000FFFF << COORD_0_Z_OFST)
 
 
+#endif  //REGISTERS_G_H
 
 
 
@@ -345,16 +326,10 @@
 
 
 
-/**carlos */
-#define SET_GATES_LSB_REG     106<<11//0x7c<<11
-#define SET_GATES_MSB_REG     107<<11//0x7d<<11
-
-
-/**ADC SYNC CLEAN FIFO*/
-#define ADCSYNC_CLEAN_FIFO_BITS     0x300000
-#define CLEAN_FIFO_MASK				0x0fffff
 
 
 
-#endif
+
+
+
 

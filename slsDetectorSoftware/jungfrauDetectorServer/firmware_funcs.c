@@ -131,22 +131,16 @@ void initializeDetector(){
 	printf("Initializing Detector\n");
 
 	//initial test
-	if ( (testFpga() == FAIL) || (testBus() == FAIL) || (checkType() == FAIL)) {
+	if ( (checkType() == FAIL) || (testFpga() == FAIL) || (testBus() == FAIL) ) {
 		cprintf(BG_RED, "Dangerous to continue. Goodbye!\n");
 		exit(-1);
 	}
 
-	printVersions();
-
 	printf("Resetting PLL\n");
 	resetPLL();
-
 	resetCore();
 	resetPeripheral();
-	/*bus_w(CONTROL_REG, SYNC_RESET); Carlos  #define SYNC_RESET          0x0400
-	bus_w(CONTROL_REG, 0);
-	bus_w(CONTROL_REG, GB10_RESET_BIT);		#define GB10_RESET_BIT      0x0800
-	bus_w(CONTROL_REG, 0);*/
+	cleanFifos();
 
 	//allocating module structure for the detector in the server
 #ifdef MCB_FUNCS
@@ -172,18 +166,11 @@ void initializeDetector(){
 		}
 	}
 
-	/* Only once */
-	bus_w(DAQ_REG, 0x0);/**carlos? not defined */
+	bus_w(DAQ_REG, 0x0); 		/* Only once at server startup */
 
-	configureAdc();
-
-	bus_w(SAMPLE_REG,SAMPLE_ADC_HALF_SPEED);
-	adcPhase(ADC_PHASE_HALF_SPEED); //set adc_clock_phase in unit of 1/(52) clock period (by trial and error)
-
-	cleanFifos();
-	resetCore();
-
-	initSpeedConfGain(DAQ_HALF_SPEED);
+	setClockDivider(HALF_SPEED);
+	cleanFifos();	/* todo might work without */
+	resetCore();	/* todo might work without */
 
 
 	//Initialization of acquistion parameters
@@ -193,12 +180,8 @@ void initializeDetector(){
 	setExposureTime(DEFAULT_EXPTIME);
 	setPeriod(DEFAULT_PERIOD);
 	setDelay(DEFAULT_DELAY);
-	setGates(DEFAULT_NUM_GATES);
 	setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 
-	setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
-	setMaster(GET_MASTER);
-	setSynchronization(GET_SYNCHRONIZATION_MODE);
 }
 
 int checkType() {
@@ -207,6 +190,10 @@ int checkType() {
 			cprintf(BG_RED,"This is not a Jungfrau Server (read %d, expected %d)\n",type, JUNGFRAU);
 			return FAIL;
 		}
+
+
+	printVersions();
+
 	return OK;
 }
 
@@ -475,11 +462,10 @@ long int calcChecksum(int sourceip, int destip) {
 	unsigned short *addr;
 	long int sum = 0;
 	long int checksum;
-/**carlos ip packet size fixed in firmware? 0x2036? */
 	ip.ip_ver            = 0x4;
 	ip.ip_ihl            = 0x5;
 	ip.ip_tos            = 0x0;
-	ip.ip_len            = 0x2052;	//ipPacketSize;//fixed in firmware
+	ip.ip_len            = IP_PACKETSIZE;
 	ip.ip_ident          = 0x0000;
 	ip.ip_flag           = 0x2; 	//not nibble aligned (flag& offset
 	ip.ip_offset         = 0x000;
@@ -506,7 +492,7 @@ long int calcChecksum(int sourceip, int destip) {
 
 
 
-void configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, int detipad, uint32_t destport) {
+void configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, int sourceip, uint32_t destport) {
 	uint32_t sourceport  =  DEFAULT_TX_UDP_PORT;
 	long int checksum=calcChecksum(sourceip, destip);
 
@@ -524,7 +510,7 @@ void configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, int det
 	cleanFifos();
 	resetCore();
 
-	usleep(500 * 1000); /** carlos time cuz of reset or writing configure para? */
+	usleep(500 * 1000); /* todo maybe without */
 }
 
 
@@ -579,59 +565,53 @@ int64_t getFrames(){
 int64_t setExposureTime(int64_t value){
 	if (value!=-1){
 		printf("\nSetting exptime to %lldns\n",(long long int)value);
-		value*=(1E-3*CLK_EXPTIME);
+		value*=(1E-3*CLK_RUN);
 	}
-	int64_t retval = set64BitReg(value,SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG)/(1E-3*CLK_EXPTIME);
+	int64_t retval = set64BitReg(value,SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG)/(1E-3*CLK_RUN);
 	printf("Getting exptime: %lldns\n",(long long int)retval);
 	return retval;
 }
 
 int64_t getExposureTime(){
-	return get64BitReg(GET_EXPTIME_LSB_REG, GET_EXPTIME_MSB_REG)/(1E-3*CLK_EXPTIME);
+	return 0;
 }
 
 int64_t setGates(int64_t value){
-	if(value!=-1)
-		printf("\nSetting number of gates to %lld\n",(long long int)value);
-/*
-	int64_t retval = set64BitReg(value, SET_GATES_LSB_REG, SET_GATES_MSB_REG);
-	printf("Getting number of gates: %lld\n",(long long int)retval);
-	return retval; Carlos set gates not defined */
 	return 0;
 }
 
 int64_t getGates(){
-	return get64BitReg(GET_GATES_LSB_REG, GET_GATES_MSB_REG);
+	return 0;
 }
 
 int64_t setDelay(int64_t value){
 	if (value!=-1){
 		printf("\nSetting delay to %lldns\n",(long long int)value);
-		value*=(1E-3*CLK_FC);
+		value*=(1E-3*CLK_SYNC);
 	}
 
-	int64_t retval = set64BitReg(value,SET_DELAY_LSB_REG, SET_DELAY_MSB_REG)/(1E-3*CLK_FC);
+	int64_t retval = set64BitReg(value,SET_DELAY_LSB_REG, SET_DELAY_MSB_REG)/(1E-3*CLK_SYNC);
 	printf("Getting delay: %lldns\n",(long long int)retval);
 	return retval;
 }
 
 int64_t getDelay(){
-	return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG)/(1E-3*CLK_FC);
+	return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG)/(1E-3*CLK_SYNC);
 }
 
 int64_t setPeriod(int64_t value){
 	if (value!=-1){
 		printf("\nSetting period to %lldns\n",(long long int)value);
-		value*=(1E-3*CLK_FC);
+		value*=(1E-3*CLK_SYNC);
 	}
 
-	int64_t retval = set64BitReg(value,SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/(1E-3*CLK_FC);
+	int64_t retval = set64BitReg(value,SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/(1E-3*CLK_SYNC);
 	printf("Getting period: %lldns\n",(long long int)retval);
 	return retval;
 }
 
 int64_t getPeriod(){
-	return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG)/(1E-3*CLK_FC);
+	return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG)/(1E-3*CLK_SYNC);
 }
 
 int64_t setTrains(int64_t value){
@@ -655,24 +635,15 @@ int64_t getProbes(){
 	return 0;
 }
 
-int64_t setProgress() {/** carlos ? */
-	return 0;
-}
-
-int64_t getProgress() {/** carlos ? */
-	//should be done in firmware!!!!
-	return 0;
-
-}
 
 
 int64_t getActualTime(){
-	return get64BitReg(TIME_FROM_START_LSB_REG, TIME_FROM_START_MSB_REG)/(1E-9*CLK_FREQ); /**carlos should be CLK_FC or CLK_EXPTIME.. is clk_freq every used?*/
+	return get64BitReg(TIME_FROM_START_LSB_REG, TIME_FROM_START_MSB_REG)/(1E-9*CLK_SYNC);
 }
 
 int64_t getMeasurementTime(){
-	int64_t v=get64BitReg(START_FRAME_TIME_LSB_REG, START_FRAME_TIME_MSB_REG);
-	return v/(1E-9*CLK_FREQ);/**carlos should be CLK_FC or CLK_EXPTIME.. is clk_freq every used?*/
+	return get64BitReg(START_FRAME_TIME_LSB_REG, START_FRAME_TIME_MSB_REG)/(1E-9*CLK_SYNC);
+
 }
 
 int64_t getFramesFromStart(){
@@ -702,22 +673,11 @@ u_int32_t runBusy(void) {
 int startStateMachine(){
 	printf("*******Starting State Machine*******\n");
 
-	//	cleanFifo;
-	// fifoReset();
-	/*Not implemented yet
-	bus_w(CONTROL_REG, FIFO_RESET_BIT); #define FIFO_RESET_BIT      0x8000 Carlos  same as cleanFifos()?
-	bus_w(CONTROL_REG, 0x0);
-	*/
+	cleanFifos();
+
 	//start state machine
-	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_START_ACQ_MSK); /** no usleep required, like in stop?*/
-	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_START_ACQ_MSK);
-
-	/*Not implemented yet check with Carlos
-	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_START_ACQ_MSK | START_EXPOSURE_BIT); #define START_EXPOSURE_BIT  0x0040
-		bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_START_ACQ_MSK & ~START_EXPOSURE_BIT);
-	*/
-
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_START_ACQ_MSK);
+	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_START_ACQ_MSK);
 
 	printf("Status Register: %08x\n",bus_r(STATUS_REG));
 	return OK;
@@ -739,16 +699,6 @@ int stopStateMachine(){
 }
 
 
-int startReadOut(){
-	cprintf(BG_RED, "*******Starting State Machine Readout*******\n");
-
-	/* Not implemented yet check with Carlos
-	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_START_ACQ_MSK | CONTROL_START_READOUT_BIT); #define STOP_READOUT_BIT    0x0020
-	usleep(100);
-	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_START_ACQ_MSK & ~CONTROL_START_READOUT_BIT);
-	*/
-	return OK;
-}
 
 enum runStatus getStatus() {
 #ifdef VERBOSE
@@ -957,40 +907,8 @@ void setAdc(int addr, int val) {
 
 
 
-void configureAdc() {
-	printf("Configuring Adcs\n");
-	//power mode reset
-	setAdc(AD9257_POWER_MODE_REG,
-			(AD9257_INT_RESET_VAL << AD9257_POWER_INTERNAL_OFST) & AD9257_POWER_INTERNAL_MSK);
-	//power mode chip run
-	setAdc(AD9257_POWER_MODE_REG,
-			(AD9257_INT_CHIP_RUN_VAL << AD9257_POWER_INTERNAL_OFST) & AD9257_POWER_INTERNAL_MSK);
 
-	// lvds-iee reduced , binary offset
-	setAdc(AD9257_OUT_MODE_REG,
-			(AD9257_OUT_LVDS_IEEE_VAL << AD9257_OUT_LVDS_OPT_OFST) & AD9257_OUT_LVDS_OPT_MSK);
-
-	// all devices on chip to receive next command
-	setAdc(AD9257_DEV_IND_2_REG,
-			AD9257_CHAN_H_MSK | AD9257_CHAN_G_MSK | AD9257_CHAN_F_MSK | AD9257_CHAN_E_MSK);
-	setAdc(AD9257_DEV_IND_1_REG,
-			AD9257_CHAN_D_MSK | AD9257_CHAN_C_MSK | AD9257_CHAN_B_MSK | AD9257_CHAN_A_MSK |
-			AD9257_CLK_CH_DCO_MSK | AD9257_CLK_CH_IFCO_MSK);
-
-	// vref 1.33
-	setAdc(AD9257_VREF_REG,
-			(AD9257_VREF_1_33_VAL << AD9257_VREF_OFST) & AD9257_VREF_MSK);
-
-	printf("Setting ADC Port Invert Reg to 0x%08x\n", ADC_PORT_INVERT_VAL);
-	bus_w(ADC_PORT_INVERT_REG, ADC_PORT_INVERT_VAL);
-
-	printf("Setting ADC Offset Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL);
-	bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
-}
-
-
-
-void prepareADC(){ /** Carlos combine configureAdc and prepare adc? need prepareadc? only output clock phase and no test mode */
+void prepareADC(){
 	printf("Preparing ADC\n");
 
 	//power mode reset
@@ -1008,6 +926,17 @@ void prepareADC(){ /** Carlos combine configureAdc and prepare adc? need prepare
 	setAdc(AD9257_OUT_MODE_REG,
 			(AD9257_OUT_LVDS_IEEE_VAL << AD9257_OUT_LVDS_OPT_OFST) & AD9257_OUT_LVDS_OPT_MSK);
 
+	// all devices on chip to receive next command
+	setAdc(AD9257_DEV_IND_2_REG,
+			AD9257_CHAN_H_MSK | AD9257_CHAN_G_MSK | AD9257_CHAN_F_MSK | AD9257_CHAN_E_MSK);
+	setAdc(AD9257_DEV_IND_1_REG,
+			AD9257_CHAN_D_MSK | AD9257_CHAN_C_MSK | AD9257_CHAN_B_MSK | AD9257_CHAN_A_MSK |
+			AD9257_CLK_CH_DCO_MSK | AD9257_CLK_CH_IFCO_MSK);
+
+	// vref 1.33
+	setAdc(AD9257_VREF_REG,
+			(AD9257_VREF_1_33_VAL << AD9257_VREF_OFST) & AD9257_VREF_MSK);
+
 	// no test mode
 	setAdc(AD9257_TEST_MODE_REG,
 			(AD9257_NONE_VAL << AD9257_OUT_TEST_OFST) & AD9257_OUT_TEST_MSK);
@@ -1020,10 +949,6 @@ void prepareADC(){ /** Carlos combine configureAdc and prepare adc? need prepare
 	setAdc(AD9257_TEST_MODE_REG,
 			(AD9257_MIXED_BIT_FREQ_VAL << AD9257_OUT_TEST_OFST) & AD9257_OUT_TEST_MSK);
 #endif
-
-	bus_w(ADC_LATCH_DISABLE_REG,0x0); // enable all ADCs
-	bus_w(DAQ_REG, 0x12); /**carlos daq reg not detail defined */ //adc pipeline=18
-	bus_w(DAQ_REG,0xbbbbbbbb); /**carlos daq reg not detail defined */
 }
 
 
@@ -1074,7 +999,7 @@ int powerChip (int on){
 
 
 
-void cleanFifos() { /** check with Carlos, resettig it no usleep required in resetting it) */
+void cleanFifos() {
 	printf("Clearing Acquisition Fifos\n");
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_ACQ_FIFO_CLR_MSK);
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_ACQ_FIFO_CLR_MSK);
@@ -1095,7 +1020,7 @@ void resetPeripheral() {
 
 
 
-int adcPhase(int st){ /**carlos needed clkphase 1 and 2? */
+int adcPhase(int st){ /**carlos needed clkphase 1 and 2?  cehck with Aldo */
 	printf("\nSetting ADC Phase to %d\n",st);
 	if (st > 65535 || st < -65535)
 		return clkPhase[0];
@@ -1118,38 +1043,37 @@ int getPhase() {
 
 
 u_int32_t setClockDivider(int d) {
-
-	enum clkspeed{FULL,HALF,QUARTER};
-
 	if(d!=-1){
 		switch(d){
 		//stop state machine if running
 		if(runBusy())
 			stopStateMachine();
 
-		case FULL:
-			printf("Setting Half Speed (40 MHz)\n");
+		case FULL_SPEED://40
+			printf("Setting Half Speed (20 MHz):\n");
 			/**to be done*/
-			bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
-			bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
-			initSpeedConfGain(DAQ_HALF_SPEED);
-			adcPhase(ADC_PHASE_HALF_SPEED);
+
+			printf("Setting Sample Reg to 0x%x\n", SAMPLE_ADC_HALF_SPEED);		bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
+			printf("Setting Config Reg to 0x%x\n", CONFIG_HALF_SPEED);			bus_w(CONFIG_REG, CONFIG_HALF_SPEED);
+			printf("Setting ADC Ofst Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL);	bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
+			printf("Setting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED);	adcPhase(ADC_PHASE_HALF_SPEED);
 			break;
-		case HALF:
-			printf("Setting Half Speed (20 MHz)\n");
-			bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
-			bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
-			initSpeedConfGain(DAQ_HALF_SPEED);
-			adcPhase(ADC_PHASE_HALF_SPEED);
+		case HALF_SPEED:
+			printf("Setting Half Speed (20 MHz):\n");
+			printf("Setting Sample Reg to 0x%x\n", SAMPLE_ADC_HALF_SPEED);		bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
+			printf("Setting Config Reg to 0x%x\n", CONFIG_HALF_SPEED);			bus_w(CONFIG_REG, CONFIG_HALF_SPEED);
+			printf("Setting ADC Ofst Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL);	bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
+			printf("Setting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED);	adcPhase(ADC_PHASE_HALF_SPEED);
 			break;
-		case QUARTER:
-			printf("Setting Half Speed (10 MHz)\n");
-			bus_w(SAMPLE_REG, SAMPLE_ADC_QUARTER_SPEED);
-			bus_w(ADC_OFST_REG, ADC_OFST_QUARTER_SPEED_VAL);
-			initSpeedConfGain(DAQ_QUARTER_SPEED);
-			adcPhase(ADC_PHASE_QUARTER_SPEED);
+		case QUARTER_SPEED:
+			printf("Setting Half Speed (10 MHz):\n");
+			printf("Setting Sample Reg to 0x%x\n", SAMPLE_ADC_QUARTER_SPEED);		bus_w(SAMPLE_REG, SAMPLE_ADC_QUARTER_SPEED);
+			printf("Setting Config Reg to 0x%x\n", CONFIG_QUARTER_SPEED);			bus_w(CONFIG_REG, CONFIG_QUARTER_SPEED);
+			printf("Setting ADC Ofst Reg to 0x%x\n", ADC_OFST_QUARTER_SPEED_VAL);	bus_w(ADC_OFST_REG, ADC_OFST_QUARTER_SPEED_VAL);
+			printf("Setting ADC Phase Reg to 0x%x\n", ADC_PHASE_QUARTER_SPEED);		adcPhase(ADC_PHASE_QUARTER_SPEED);
 			break;
 		}
+		printf("\n");
 	}
 	return getClockDivider();
 }
@@ -1161,14 +1085,15 @@ u_int32_t setClockDivider(int d) {
 
 u_int32_t getClockDivider(int ic) {
 
-	enum clkspeed{FULL,HALF,QUARTER};
-	switch(initSpeedConfGain(-1)){
-	//case FULLSPEED_CONF:
-	//return FULL;
-	case DAQ_HALF_SPEED:
-		return HALF;
-	case DAQ_QUARTER_SPEED:
-		return QUARTER;
+	u_int32_t val = bus_r(CONFIG_REG);
+	int speed = val & CONFIG_READOUT_SPEED_MSK;
+	switch(speed){
+	case CONFIG_FULL_SPEED_40MHZ_VAL:
+		return FULL_SPEED;
+	case CONFIG_HALF_SPEED_20MHZ_VAL:
+		return HALF_SPEED;
+	case CONFIG_QUARTER_SPEED_10MHZ_VAL:
+		return QUARTER_SPEED;
 	default:
 		return -1;
 	}
@@ -1185,7 +1110,7 @@ u_int32_t getClockDivider(int ic) {
 
 
 
-/**carlos  shouldnt exist what sort of temperatre?s tempr in reg  is 1b<11 and temp pit is 1c<11*/
+/**carlos  shouldnt exist what sort of temperatre?s tempr in reg  is 1b<11 and temp pit is 1c<11 ..firmware (only 0x1c 32 bit ) Aldo.. is it connected??*/
 int getTemperature(int tempSensor, int imod){
 	int val;
 	imod=0;//ignoring more than 1 mod for now
@@ -1223,42 +1148,23 @@ int getTemperature(int tempSensor, int imod){
 }
 
 
-
+//settings
 int initConfGain(int isettings,int val,int imod){
 	int retval;
-	u_int32_t addr=DAQ_REG; /**carlos*/
+	u_int32_t addr=DAQ_REG;
 	if(isettings!=-1){
 		//#ifdef VERBOSE
 		printf("Setting Gain with val:0x%x\n",val);
 		//#endif
-		bus_w(addr,(val|(bus_r(addr)&~GAIN_MASK)));
+		bus_w(addr,val);
 	}
-	retval=(bus_r(addr)&GAIN_MASK);
+	retval=bus_r(addr);
 	//#ifdef VERBOSE
-	printf("Value read from Gain reg is 0x%x\n",retval);
 	printf("Gain Reg Value is 0x%x\n",bus_r(addr));
 	//#endif
 	return retval;
 }
 
-
-
-int initSpeedConfGain(int val){
-	int retval;
-	u_int32_t addr=DAQ_REG; /**carlos*/
-	if(val!=-1){
-		//#ifdef VERBOSE
-		printf("\nSetting Speed of Gain reg with val:0x%x\n",val);
-		//#endif
-		bus_w(addr,((val<<SPEED_GAIN_OFFSET)|(bus_r(addr)&~SPEED_GAIN_MASK)));
-	}
-	retval=((bus_r(addr)&SPEED_GAIN_MASK)>>SPEED_GAIN_OFFSET);
-	//#ifdef VERBOSE
-	printf("Value read from Speed of Gain reg is 0x%x\n",retval);
-	printf("Gain Reg Value is 0x%x\n",bus_r(addr));
-	//#endif
-	return retval;
-}
 
 
 
@@ -1277,76 +1183,23 @@ void resetPLL() {
 }
 
 
-u_int32_t setPllReconfigReg(u_int32_t reg, u_int32_t val, int trig) {
-
-/** carlos status reg pll reconfig busy bit?? */
-	// printf("*********** pll busy: %08x\n",bus_r(STATUS_REG)&PLL_RECONFIG_BUSY);
+u_int32_t setPllReconfigReg(u_int32_t reg, u_int32_t val) {
 
 	// set parameter
 	bus_w(PLL_PARAM_REG, val);
 
 	// set address
-	bus_w(PLL_CONTROL_REG, (reg << PLL_CTRL_ADDR_OFST) & PLL_CTRL_ADDR_MSK); /** should i read it first? */
-	usleep(10000);
+	bus_w(PLL_CONTROL_REG, (reg << PLL_CTRL_ADDR_OFST) & PLL_CTRL_ADDR_MSK);
+	usleep(10*1000);
 
 	//write parameter
 	bus_w(PLL_CONTROL_REG, bus_r(PLL_CONTROL_REG) | PLL_CTRL_WR_PARAMETER_MSK);
 	bus_w(PLL_CONTROL_REG, bus_r(PLL_CONTROL_REG) & ~PLL_CTRL_WR_PARAMETER_MSK);
-	usleep(10000);
-/**carlos usleep after?*/
+	usleep(10*1000);
 
 	return val;
-
 }
 
-u_int32_t getPllReconfigReg(u_int32_t reg, int trig) {
-
-
-	// set address
-	bus_w(PLL_CONTROL_REG, (reg << PLL_CTRL_ADDR_OFST) & PLL_CTRL_ADDR_MSK);  /** should i read it first? */
-	usleep(100); /** carlos why less */
-
-	/** Not implemented yet carlos
-	bus_w(PLL_CONTROL_REG, bus_r(PLL_CONTROL_REG) | PLL_CTRL_RD_PARAMETER_MSK | PLL_CTRL_TRIG_MSK);
-	bus_w(PLL_CONTROL_REG, bus_r(PLL_CONTROL_REG) & ~PLL_CTRL_RD_PARAMETER_MSK & ~PLL_CTRL_TRIG_MSK);
-	usleep(100);
-	bus_w(PLL_CONTROL_REG, 0x0); //write zero? problem if address remain?
-
-	while(bus_r(STATUS_REG) & PLL_RECONFIG_BUSY) {
-		printf("get: reconfig busy");
-	}
-	 return what??
-	*/
-
-	/* nonsense
-	u_int32_t val=reg<<PLL_CNTR_ADDR_OFF;
-	u_int32_t vv;
-	//  printf("cntrlreg: %08x\n",PLL_CONTROL_REG);
-	// printf("wrote: %08x\n",val);
-	bus_w(PLL_CONTROL_REG,val);
-	//  printf("read: %08x\n",bus_r(PLL_CONTROL_REG));
-	usleep(100);
-	val=(1<<PLL_CNTR_READ_BIT)|(reg<<PLL_CNTR_ADDR_OFF)|(trig<<15);
-	//  printf("wrote: %08x\n",val);
-	bus_w(PLL_CONTROL_REG,val);//15 is trigger for the tap
-	//  printf("read: %08x\n",bus_r(PLL_CONTROL_REG));
-	//  usleep(100);
-	val=(reg<<PLL_CNTR_ADDR_OFF);
-	//  printf("wrote: %08x\n",val);
-	bus_w(PLL_CONTROL_REG,val);
-	usleep(100);
-
-	val=0;
-	// printf("wrote: %08x\n",val);
-	bus_w(PLL_CONTROL_REG,val);
-
-	while(bus_r(STATUS_REG)&PLL_RECONFIG_BUSY) {
-		printf("get: reconfig busy");
-	}
-	return vv;
-	*/
-	return 0;
-}
 
 
 
@@ -1356,33 +1209,29 @@ void configurePll() {
 	u_int32_t val;
 	int32_t phase=0, inv=0;
 
-	printf("phase in %d\n",clkPhase[1]);
-	if (clkPhase[1]>0) { /**carlos ? */
+	printf("phase in %d\n", clkPhase[1]);
+	if (clkPhase[1]>0) {
 		inv=0;
 		phase=clkPhase[1];
 	}  else {
 		inv=1;
 		phase=-1*clkPhase[1];
 	}
-	printf("phase out %d %08x\n",phase,phase);
+	printf("phase out %d %08x\n", phase, phase);
 
 	if (inv) {
-		val=phase | (1<<16);// |  (inv<<21);
-		printf("**************** phase word %08x\n",val);
-		//  printf("Phase, val: %08x\n", val);
-		setPllReconfigReg(PLL_PHASE_SHIFT_REG,val,0); //shifts counter 0
+		val = ((phase << PLL_SHIFT_NUM_SHIFTS_OFST) & PLL_SHIFT_NUM_SHIFTS_MSK) | PLL_SHIFT_CNT_SLCT_C1_VAL | PLL_SHIFT_UP_DOWN_NEG_VAL;
+		printf("**************** phase word %08x\n", val);
+		setPllReconfigReg(PLL_PHASE_SHIFT_REG, val);
 	} else {
-		val=phase ;// |  (inv<<21);
-		printf("**************** phase word %08x\n",val);
-		//  printf("Phase, val: %08x\n", val);
-		setPllReconfigReg(PLL_PHASE_SHIFT_REG,val,0); //shifts counter 0
+		val = ((phase << PLL_SHIFT_NUM_SHIFTS_OFST) & PLL_SHIFT_NUM_SHIFTS_MSK) | PLL_SHIFT_CNT_SLCT_C0_VAL | PLL_SHIFT_UP_DOWN_NEG_VAL;
+		printf("**************** phase word %08x\n", val);
+		setPllReconfigReg(PLL_PHASE_SHIFT_REG, val);
 
-		printf("**************** phase word %08x\n",val);
-		val=phase | (2<<16);// |  (inv<<21);
-		//  printf("Phase, val: %08x\n", val);
-		setPllReconfigReg(PLL_PHASE_SHIFT_REG,val,0); //shifts counter 0
+		printf("**************** phase word %08x\n", val);
+		val = ((phase << PLL_SHIFT_NUM_SHIFTS_OFST) & PLL_SHIFT_NUM_SHIFTS_MSK) | PLL_SHIFT_CNT_SLCT_C2_VAL;
+		setPllReconfigReg(PLL_PHASE_SHIFT_REG, val);
 	}
-
 	usleep(10000);
 }
 
@@ -1402,57 +1251,8 @@ int loadImage(int index, short int ImageVals[]){
 
 int readCounterBlock(int startACQ, short int CounterVals[]){
 
-	u_int32_t val;
-	volatile u_int16_t *ptr;
-
-	u_int32_t address = COUNTER_MEMORY_REG;
-	ptr=(u_int16_t*)(CSP0BASE+address*2);
-
-
-	if (runBusy()) {
-		if(stopStateMachine()==FAIL)
-			return FAIL;
-		//waiting for the last frame read to be done
-		while(runBusy())  usleep(500);
-#ifdef VERBOSE
-		printf("State machine stopped\n");
-#endif
-	}
-
-	val=bus_r(MULTI_PURPOSE_REG);
-#ifdef VERBOSE
-	printf("Value of multipurpose reg:%d\n",bus_r(MULTI_PURPOSE_REG));
-#endif
-
-	memcpy(CounterVals,(u_int16_t *)ptr,DATA_BYTES);
-#ifdef VERBOSE
-	int i;
-	printf("Copied counter memory block with size of %d bytes..\n",DATA_BYTES);
-	for(i=0;i<6;i++)
-		printf("%d: %d\t",i,CounterVals[i]);
-#endif
-
-
-	bus_w(MULTI_PURPOSE_REG,(val&~RESET_COUNTER_BIT));
-#ifdef VERBOSE
-	printf("\nClearing bit 2 of multipurpose reg:%d\n",bus_r(MULTI_PURPOSE_REG));
-#endif
-
-	if(startACQ==1){
-		startStateMachine();
-		if(runBusy())
-			printf("State machine RUNNING\n");
-		else
-			printf("State machine IDLE\n");
-	}
-
-	/*		if(sizeof(CounterVals)<=0){
-			printf("ERROR:size of counterVals=%d\n",(int)sizeof(CounterVals));
-			return FAIL;
-		}*/
-
-
-	return OK;
+//not implemented
+	return FAIL;
 }
 
 
@@ -1460,262 +1260,19 @@ int readCounterBlock(int startACQ, short int CounterVals[]){
 
 int resetCounterBlock(int startACQ){
 
-	char *counterVals=NULL;
-	counterVals=realloc(counterVals,DATA_BYTES);
-
-	int ret = OK;
-	u_int32_t val;
-	volatile u_int16_t *ptr;
-
-
-	u_int32_t address = COUNTER_MEMORY_REG;
-	ptr=(u_int16_t*)(CSP0BASE+address*2);
-
-
-	if (runBusy()) {
-		if(stopStateMachine()==FAIL)
-			return FAIL;
-		//waiting for the last frame read to be done
-		while(runBusy())  usleep(500);
-#ifdef VERBOSE
-		printf("State machine stopped\n");
-#endif
-	}
-
-	val=bus_r(MULTI_PURPOSE_REG);/** carlos, does this exist? .. its reg 0... */
-#ifdef VERBOSE
-	printf("Value of multipurpose reg:%d\n",bus_r(MULTI_PURPOSE_REG));
-#endif
-
-
-	bus_w(MULTI_PURPOSE_REG,(val|RESET_COUNTER_BIT));
-#ifdef VERBOSE
-	printf("Setting bit 2 of multipurpose reg:%d\n",bus_r(MULTI_PURPOSE_REG));
-#endif
-
-
-	memcpy(counterVals,(u_int16_t*)ptr,DATA_BYTES);/*warning: passing argument 2 of ‘memcpy’ discards qualifiers from pointer target type*/
-#ifdef VERBOSE
-	int i;
-	printf("Copied counter memory block with size of %d bytes..\n",(int)sizeof(counterVals));
-	for(i=0;i<6;i=i+2)
-		printf("%d: %d\t",i,*(counterVals+i));
-#endif
-
-
-	bus_w(MULTI_PURPOSE_REG,(val&~RESET_COUNTER_BIT));
-#ifdef VERBOSE
-	printf("\nClearing bit 2 of multipurpose reg:%d\n",bus_r(MULTI_PURPOSE_REG));
-#endif
-
-	if(startACQ==1){
-		startStateMachine();
-		if(runBusy())
-			printf("State machine RUNNING\n");
-		else
-			printf("State machine IDLE\n");
-	}
-
-	if(sizeof(counterVals)<=0){
-		printf("ERROR:size of counterVals=%d\n",(int)sizeof(counterVals));
-		ret = FAIL;
-	}
-
-	return ret;
+	//not implemented
+		return FAIL;
 
 }
 
 
 
 int calibratePedestal(int frames){
-	printf("---------------------------\n");
-	printf("In Calibrate Pedestal\n");
-	int64_t framesBefore = getFrames();
-	int64_t periodBefore = getPeriod();
-	setFrames(frames);
-	setPeriod(1000000);
-	int dataret = OK;
-
-	double avg[1280];
-	int numberFrames = 0;
-
-	int adc = 3;
-	int adcCh = 3;
-	int Ch = 3;
-
-
-	int i = 0;
-	for(i =0; i < 1280; i++){
-
-		avg[i] = 0.0;
-	}
-
-	startStateMachine();
-
-	while(dataret==OK){
-		//got data
-		waitForAcquisitionEnd();
-		if (getFrames()>-2) {
-			dataret=FAIL;
-			printf("no data and run stopped: %d frames left\n",(int)(getFrames()+2));
-		} else {
-			dataret=FINISHED;
-			printf("acquisition successfully finished\n");
-		}
-	}
-
-
-
-	//double nf = (double)numberFrames;
-	for(i =0; i < 1280; i++){
-		adc = i / 256;
-		adcCh = (i - adc * 256) / 32;
-		Ch = i - adc * 256 - adcCh * 32;
-		adc--;
-		double v2 = avg[i];
-		avg[i] = avg[i]/ ((double)numberFrames/(double)frames);
-		unsigned short v = (unsigned short)avg[i];
-		printf("setting avg for channel %i(%i,%i,%i): %i (double= %f (%f))\t", i,adc,adcCh,Ch, v,avg[i],v2);
-		v=i*100;
-		ram_w16(DARK_IMAGE_REG,adc,adcCh,Ch,v-4096);
-		if(ram_r16(DARK_IMAGE_REG,adc,adcCh,Ch) !=  v-4096){
-			printf("value is wrong (%i,%i,%i): %i \n",adc,adcCh,Ch,  ram_r16(DARK_IMAGE_REG,adc,adcCh,Ch));
-		}
-	}
-
-
-
-	printf("frames: %i\n",numberFrames);
-	printf("corrected avg by: %f\n",(double)numberFrames/(double)frames);
-
-	printf("restoring previous condition\n");
-	setFrames(framesBefore);
-	setPeriod(periodBefore);
-
-	printf("---------------------------\n");
-	return 0;
+	//not implemented
+	return FAIL;
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-u_int32_t setExtSignal(int d, enum externalSignalFlag  mode) {
-
-	if (d >= 0 && d < 4) {
-		signals[d] = mode;
-#ifdef VERBOSE
-		printf("settings signal variable number %d to value %04x\n", d, signals[d]);
-#endif
-
-		// if output signal, set it!
-
-		switch (mode) {
-		case GATE_IN_ACTIVE_HIGH:
-		case GATE_IN_ACTIVE_LOW:
-			if (timingMode==GATE_FIX_NUMBER || timingMode==GATE_WITH_START_TRIGGER)
-				setFPGASignal(d,mode);
-			else
-				setFPGASignal(d,SIGNAL_OFF);
-			break;
-		case TRIGGER_IN_RISING_EDGE:
-		case TRIGGER_IN_FALLING_EDGE:
-			if (timingMode==TRIGGER_EXPOSURE || timingMode==GATE_WITH_START_TRIGGER)
-				setFPGASignal(d,mode);
-			else
-				setFPGASignal(d,SIGNAL_OFF);
-			break;
-		case RO_TRIGGER_IN_RISING_EDGE:
-		case RO_TRIGGER_IN_FALLING_EDGE:
-			if (timingMode==TRIGGER_READOUT)
-				setFPGASignal(d,mode);
-			else
-				setFPGASignal(d,SIGNAL_OFF);
-			break;
-		case MASTER_SLAVE_SYNCHRONIZATION:
-			setSynchronization(syncMode);
-			break;
-		default:
-			setFPGASignal(d,mode);
-			break;
-		}
-
-		setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
-	}
-
-	return getExtSignal(d);
-}
-
-
-
-int getExtSignal(int d) {
-
-	if (d>=0 && d<4) {
-#ifdef VERBOSE
-		printf("gettings signal variable number %d  value %04x\n", d, signals[d]);
-#endif
-		return signals[d];
-	} else
-		return -1;
-}
-
-
-
-
-u_int32_t setFPGASignal(int d, enum externalSignalFlag  mode) {
-
-
-	int modes[]={EXT_SIG_OFF, EXT_GATE_IN_ACTIVEHIGH, EXT_GATE_IN_ACTIVELOW,EXT_TRIG_IN_RISING,EXT_TRIG_IN_FALLING,EXT_RO_TRIG_IN_RISING, EXT_RO_TRIG_IN_FALLING,EXT_GATE_OUT_ACTIVEHIGH, EXT_GATE_OUT_ACTIVELOW, EXT_TRIG_OUT_RISING, EXT_TRIG_OUT_FALLING, EXT_RO_TRIG_OUT_RISING, EXT_RO_TRIG_OUT_FALLING};
-
-	u_int32_t c;
-	int off = d * SIGNAL_OFFSET;
-	c = bus_r(EXT_SIGNAL_REG);
-
-
-	if (mode<=RO_TRIGGER_OUT_FALLING_EDGE &&  mode>=0) {
-#ifdef VERBOSE
-		printf("writing signal register number %d mode %04x\n",d, modes[mode]);
-#endif
-		bus_w(EXT_SIGNAL_REG,((modes[mode])<<off)|(c&~(SIGNAL_MASK<<off))); /** will not work. cArlos */
-	}
-	return getExtSignal(d);
-}
-
-
-int getFPGASignal(int d) {
-
-	int modes[]={SIGNAL_OFF, GATE_IN_ACTIVE_HIGH, GATE_IN_ACTIVE_LOW,TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE,RO_TRIGGER_IN_RISING_EDGE, RO_TRIGGER_IN_FALLING_EDGE, GATE_OUT_ACTIVE_HIGH,   GATE_OUT_ACTIVE_LOW, TRIGGER_OUT_RISING_EDGE, TRIGGER_OUT_FALLING_EDGE, RO_TRIGGER_OUT_RISING_EDGE,RO_TRIGGER_OUT_FALLING_EDGE};
-
-	int off=d*SIGNAL_OFFSET;
-	int mode=((bus_r(EXT_SIGNAL_REG)&(SIGNAL_MASK<<off))>>off); /** will not work. cArlos */
-
-	if (mode<=RO_TRIGGER_OUT_FALLING_EDGE) {
-		if (modes[mode]!=SIGNAL_OFF && signals[d]!=MASTER_SLAVE_SYNCHRONIZATION)
-			signals[d]=modes[mode];
-#ifdef VERYVERBOSE
-		printf("gettings signal register number %d  value %04x\n", d, modes[mode]);
-#endif
-		return modes[mode];
-	} else
-		return -1;
-
-}
 
 
 
@@ -1723,354 +1280,29 @@ int getFPGASignal(int d) {
 
 int setTiming(int ti) {
 
-	int ret=GET_EXTERNAL_COMMUNICATION_MODE;
-
-	int g=-1, t=-1, rot=-1;
-
-	int i;
-
-	switch (ti) {
-	case AUTO_TIMING:
-		printf("\nSetting timing to auto\n");
-		timingMode=ti;
-		// disable all gates/triggers in except if used for master/slave synchronization
-		for (i=0; i<4; i++) {
-			if (getFPGASignal(i)>0 && getFPGASignal(i)<GATE_OUT_ACTIVE_HIGH && signals[i]!=MASTER_SLAVE_SYNCHRONIZATION)
-				setFPGASignal(i,SIGNAL_OFF);
-		}
-		break;
-
-	case   TRIGGER_EXPOSURE:
-		printf("\nSetting timing to trigger exposure\n");
-		timingMode=ti;
-		// if one of the signals is configured to be trigger, set it and unset possible gates
-		for (i=0; i<4; i++) {
-			if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,signals[i]);
-			else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
-				setFPGASignal(i,SIGNAL_OFF);
-			else if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,SIGNAL_OFF);
-
-		}
-		break;
-
-
-
-	case  TRIGGER_READOUT:
-		printf("\nSetting timing to trigger readout\n");
-		timingMode=ti;
-		// if one of the signals is configured to be trigger, set it and unset possible gates
-		for (i=0; i<4; i++) {
-			if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,signals[i]);
-			else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
-				setFPGASignal(i,SIGNAL_OFF);
-			else if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,SIGNAL_OFF);
-		}
-		break;
-
-	case GATE_FIX_NUMBER:
-		printf("\nSetting timing to gate fix number\n");
-		timingMode=ti;
-		// if one of the signals is configured to be trigger, set it and unset possible gates
-		for (i=0; i<4; i++) {
-			if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,SIGNAL_OFF);
-			else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
-				setFPGASignal(i,signals[i]);
-			else if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,SIGNAL_OFF);
-		}
-		break;
-
-
-
-	case GATE_WITH_START_TRIGGER:
-		printf("\nSetting timing to gate with start trigger\n");
-		timingMode=ti;
-		for (i=0; i<4; i++) {
-			if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,SIGNAL_OFF);
-			else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
-				setFPGASignal(i,signals[i]);
-			else if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,signals[i]);
-		}
-		break;
-
-	default:
-		break;
-
-	}
-
-
-
-	for (i=0; i<4; i++) {
-		if (signals[i]!=MASTER_SLAVE_SYNCHRONIZATION) {
-			if (getFPGASignal(i)==RO_TRIGGER_IN_RISING_EDGE ||  getFPGASignal(i)==RO_TRIGGER_IN_FALLING_EDGE)
-				rot=i;
-			else if (getFPGASignal(i)==GATE_IN_ACTIVE_HIGH || getFPGASignal(i)==GATE_IN_ACTIVE_LOW)
-				g=i;
-			else if (getFPGASignal(i)==TRIGGER_IN_RISING_EDGE ||  getFPGASignal(i)==TRIGGER_IN_FALLING_EDGE)
-				t=i;
+	if(ti != GET_EXTERNAL_COMMUNICATION_MODE){
+		switch((int)ti){
+		case AUTO_TIMING:			bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);	break;
+		case TRIGGER_EXPOSURE:		bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);	break;
+		default:
+			cprintf(RED,"Unknown timing mode %d\n", ti);
+			return GET_EXTERNAL_COMMUNICATION_MODE;
 		}
 	}
-
-
-	if (g>=0 && t>=0 && rot<0) {
-		ret=GATE_WITH_START_TRIGGER;
-	} else if (g<0 && t>=0 && rot<0) {
-		ret=TRIGGER_EXPOSURE;
-	} else if (g>=0 && t<0 && rot<0) {
-		ret=GATE_FIX_NUMBER;
-	} else if (g<0 && t<0 && rot>0) {
-		ret=TRIGGER_READOUT;
-	} else if (g<0 && t<0 && rot<0) {
-		ret=AUTO_TIMING;
-	}
-
-	// timingMode=ret;
-
-	return ret;
-
+	if (bus_r(EXT_SIGNAL_REG) == EXT_SIGNAL_MSK)
+		return TRIGGER_EXPOSURE;
+	return AUTO_TIMING;
 }
 
 
 
 int setMaster(int f) {
-
-	int i;
-	switch(f) {
-	case NO_MASTER:
-		// switch of gates or triggers
-		masterMode=NO_MASTER;
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				setFPGASignal(i,SIGNAL_OFF);
-			}
-		}
-		break;
-	case IS_MASTER:
-		// configure gate or trigger out
-		masterMode=IS_MASTER;
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				switch (syncMode) {
-				case NO_SYNCHRONIZATION:
-					setFPGASignal(i,SIGNAL_OFF);
-					break;
-				case MASTER_GATES:
-					setFPGASignal(i,GATE_OUT_ACTIVE_HIGH);
-					break;
-				case MASTER_TRIGGERS:
-					setFPGASignal(i,TRIGGER_OUT_RISING_EDGE);
-					break;
-				case SLAVE_STARTS_WHEN_MASTER_STOPS:
-					setFPGASignal(i,RO_TRIGGER_OUT_RISING_EDGE);
-					break;
-				default:
-					;
-				}
-			}
-		}
-		break;
-	case IS_SLAVE:
-		// configure gate or trigger in
-		masterMode=IS_SLAVE;
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				switch (syncMode) {
-				case NO_SYNCHRONIZATION:
-					setFPGASignal(i,SIGNAL_OFF);
-					break;
-				case MASTER_GATES:
-					setFPGASignal(i,GATE_IN_ACTIVE_HIGH);
-					break;
-				case MASTER_TRIGGERS:
-					setFPGASignal(i,TRIGGER_IN_RISING_EDGE);
-					break;
-				case SLAVE_STARTS_WHEN_MASTER_STOPS:
-					setFPGASignal(i,TRIGGER_IN_RISING_EDGE);
-					break;
-				default:
-					;
-				}
-			}
-		}
-		break;
-	default:
-		//do nothing
-		break;
-	}
-
-	switch(masterMode) {
-	case NO_MASTER:
-		return NO_MASTER;
-
-
-	case IS_MASTER:
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				switch (syncMode) {
-				case NO_SYNCHRONIZATION:
-					return IS_MASTER;
-				case MASTER_GATES:
-					if (getFPGASignal(i)==GATE_OUT_ACTIVE_HIGH)
-						return IS_MASTER;
-					else
-						return NO_MASTER;
-				case MASTER_TRIGGERS:
-					if (getFPGASignal(i)==TRIGGER_OUT_RISING_EDGE)
-						return IS_MASTER;
-					else
-						return NO_MASTER;
-				case SLAVE_STARTS_WHEN_MASTER_STOPS:
-					if (getFPGASignal(i)==RO_TRIGGER_OUT_RISING_EDGE)
-						return IS_MASTER;
-					else
-						return NO_MASTER;
-				default:
-					return NO_MASTER;
-				}
-
-			}
-		}
-		break;
-
-	case IS_SLAVE:
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				switch (syncMode) {
-				case NO_SYNCHRONIZATION:
-					return IS_SLAVE;
-				case MASTER_GATES:
-					if (getFPGASignal(i)==GATE_IN_ACTIVE_HIGH)
-						return IS_SLAVE;
-					else
-						return NO_MASTER;
-				case MASTER_TRIGGERS:
-				case SLAVE_STARTS_WHEN_MASTER_STOPS:
-					if (getFPGASignal(i)==TRIGGER_IN_RISING_EDGE)
-						return IS_SLAVE;
-					else
-						return NO_MASTER;
-				default:
-					return NO_MASTER;
-				}
-			}
-		}
-		break;
-	}
-	return masterMode;
+	return NO_MASTER;
 }
 
 
 
 int setSynchronization(int s) {
-
-	int i;
-
-	switch(s) {
-	case NO_SYNCHRONIZATION:
-		syncMode=NO_SYNCHRONIZATION;
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				setFPGASignal(i,SIGNAL_OFF);
-			}
-		}
-		break;
-		// disable external signals?
-	case MASTER_GATES:
-		// configure gate in or out
-		syncMode=MASTER_GATES;
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				if (masterMode==IS_MASTER)
-					setFPGASignal(i,GATE_OUT_ACTIVE_HIGH);
-				else if (masterMode==IS_SLAVE)
-					setFPGASignal(i,GATE_IN_ACTIVE_HIGH);
-			}
-		}
-
-		break;
-	case MASTER_TRIGGERS:
-		// configure trigger in or out
-		syncMode=MASTER_TRIGGERS;
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				if (masterMode==IS_MASTER)
-					setFPGASignal(i,TRIGGER_OUT_RISING_EDGE);
-				else if (masterMode==IS_SLAVE)
-					setFPGASignal(i,TRIGGER_IN_RISING_EDGE);
-			}
-		}
-		break;
-
-
-	case SLAVE_STARTS_WHEN_MASTER_STOPS:
-		// configure trigger in or out
-		syncMode=SLAVE_STARTS_WHEN_MASTER_STOPS;
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				if (masterMode==IS_MASTER)
-					setFPGASignal(i,RO_TRIGGER_OUT_RISING_EDGE);
-				else if (masterMode==IS_SLAVE)
-					setFPGASignal(i,TRIGGER_IN_RISING_EDGE);
-			}
-		}
-		break;
-
-
-	default:
-		//do nothing
-		break;
-	}
-
-	switch (syncMode) {
-
-	case NO_SYNCHRONIZATION:
-		return NO_SYNCHRONIZATION;
-
-	case MASTER_GATES:
-
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				if (masterMode==IS_MASTER && getFPGASignal(i)==GATE_OUT_ACTIVE_HIGH)
-					return MASTER_GATES;
-				else if (masterMode==IS_SLAVE && getFPGASignal(i)==GATE_IN_ACTIVE_HIGH)
-					return MASTER_GATES;
-			}
-		}
-		return NO_SYNCHRONIZATION;
-
-	case MASTER_TRIGGERS:
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				if (masterMode==IS_MASTER && getFPGASignal(i)==TRIGGER_OUT_RISING_EDGE)
-					return MASTER_TRIGGERS;
-				else if (masterMode==IS_SLAVE && getFPGASignal(i)==TRIGGER_IN_RISING_EDGE)
-					return MASTER_TRIGGERS;
-			}
-		}
-		return NO_SYNCHRONIZATION;
-
-	case SLAVE_STARTS_WHEN_MASTER_STOPS:
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				if (masterMode==IS_MASTER &&	getFPGASignal(i)==RO_TRIGGER_OUT_RISING_EDGE)
-					return SLAVE_STARTS_WHEN_MASTER_STOPS;
-				else if (masterMode==IS_SLAVE && getFPGASignal(i)==TRIGGER_IN_RISING_EDGE)
-					return SLAVE_STARTS_WHEN_MASTER_STOPS;
-			}
-		}
-		return NO_SYNCHRONIZATION;
-
-	default:
-		return NO_SYNCHRONIZATION;
-
-	}
 	return NO_SYNCHRONIZATION;
 
 }

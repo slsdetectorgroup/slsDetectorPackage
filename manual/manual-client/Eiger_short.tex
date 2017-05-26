@@ -115,13 +115,12 @@ Other important settings that are configured in the {\tt{setup.det}} file are:
 \item {\tt{tengiga 0/1}}, which sets whether the detector is enabled to send data through the 1~or the 10~Gb Ethernet.
 \item {\tt{flags parallel/nonparallel}}, which sets whether the detector is set in parallel acquisition and readout or in sequential mode. This changes the readout time of the chip and affects the frame rate capability (faster is {\tt{parallel}}, with higher noise but needed when the frame rate is $>2$~kHz. 
 \item {\tt{dr 32/16}} sets the detector in autosumming mode (32 bit counter or not autosumming, 12 bit out of the chip). This is strictly connected to what is required for the readout clock of chip. See next point.
-\item {\tt{clkdivider 0/1/2}}. Changes the readout clock: 200, 100, 50~MHz. Note that autosumming mode ({\tt{dr 32}} only works at {clkdivider 2}). By selecting Refer to readout timing specifications in~section\ref{timing} for how to set the detector. 
+\item {\tt{clkdivider 0/1/2}}. Changes the readout clock: 200, 100, 50~MHz (also refferered to as full, half, quarter speed). Note that autosumming mode ({\tt{dr 32}} only works at {clkdivider 2}=quarter speed). By selecting Refer to readout timing specifications in~section\ref{timing} for how to set the detector. 
 \item {\tt{flags continuous/storeinram}}. Allows to take frame continuously or storing them on memory. Normally {\tt{continuous}} should be used. Enabling the  {\tt{stroreinram}} mode allows you to obtain the maximum frame rate, but at the expenses to have to receive the data all at the end of the acquisition. Refer to readout timing specifications in section~\ref{timing} for how to set the detector.
 \end{itemize}
 
 One should notice that, by default, by choosing the option {\tt{dr 32}}, then the software automatically sets the detector to  {\tt{clkdivider 2}}. By choosing the option {\tt{dr 16}}, the software automatically sets the detector to  {\tt{clkdivider 1}}. One needs to choose {\tt{clkdivider 0}} after setting the {\tt{dr 16}} option to have the fastest frame rate. 
 We would recommend expert users (beamline people) to write their parameters file for the users. 
-
 
 \section{API versioning}
 The eigerDetectorServer running on the boards has a versioning API scheme that will make it crash if used with a wrong firmware.
@@ -273,6 +272,7 @@ dynamic range & clkdivider & mode & readout time ($\mu$s) & max frame rate (kHz)
 \caption{Readout settings.}
 \end{table}
 \textbf{As if you run too fast, the detector could become noisier, it is important to match the detector settings to your frame rate. This can be done having more parameters files and load the one suitable with your experiment.} We experienced that {\tt{highgain}} settings could not be used at 6~kHz.
+\textbf{We reccomend to use the detector in 32 bit mode with {\tt{clkdivider 2}}, {\tt{flags parallel}}. We reccomend to use the detector in 16 bit mode with {\tt{clkdivider 1}}, {\tt{flags parallel}}}. In general, choose first the desired dead time: this will tell you if you want to run in parallel or non parallel mode. Then, choose the maximum frame rate you want to aim, not exeeding what you aim for not to increase the noise.
 
 
 \section{External triggering options}
@@ -308,6 +308,15 @@ sls_detector_put 0-subexptime [time_in_s]
 
 One needs to realize that the readout time, for each subframe is 10.5~$\mu$s if the detector is in parallel mode. 500~$\mu$s if the detector is in non parallel mode. Note that in {\tt{dr 32}}, as the single frame readout from the chip is 500~$\mu$s, no {\tt{subexptime}}$<$500~$\mu$s can be set in {\tt{parallel}} mode. To have smaller {\tt{subexptime}}, you need the {\tt{nonparallel}} mode, although this will have a larger deadtime than the acquisition time.\\
 
+Rate corrections are possible online (and the came procedure can be used offline) by creating a lookup table between the theoretically incident counter value $c_i$ and the detected counter value $c_d$. 
+In the EIGER on board server, this lookup table is generated assuming that the detected rate $n_d$ can be modelled as a function of the incident rate $n_i$ according to the paralyzable counter model:
+\begin{equation}
+n_d= n_i \cdot exp(-n_i \cdot \tau),
+\label{rate}
+\end{equation}
+where $\tau$ represents an effective parameter for the dead time and the loss in efficiency. The lookup table is necessary as we are interested to obtain $c_i(c_d)$ and equation~\ref{rate} is not invertable. One needs to notice that the paralizable counter model to create a lookup tables applies only if photons arrive with a countinuos pattern (like at the SLS). If photons are structured in fewer but intenser bunches, deviations may arise. This is the case for some operation modes at the ESRF. For those cases we are studying how to correct, probably from a simulated correction tables if an analytical curve cannot be found.  
+\textbf{In the new calibration scheme, $\tau$ is given as a function of the energy. It is loaded from the trimbit files and interpolation between two trimbit files are performed.} One needs to make sure the appropriate $\tau$ value is written in the trimbit files, then need to load the appropriate {\tt{settings}} and {\tt{vthreshold}} before.
+
 Online rate corrections can be activated for {\tt{dr=32}}. They are particularly useful in the autosumming mode as  every single subframe is corrected before summing it. To correct for rate, the subframe duration has to be known to the correction algorithm. Rate corrections for {\tt{dr=16}} will be activated as well in the next firmware release.     
 To activate the rate corrections, one should do:\\
 \begin{verbatim}
@@ -317,7 +326,8 @@ To deactivate:
 \begin{verbatim}
 sls_detector_put 0-ratecorr 0
 \end{verbatim}
-Default values for tau can be loaded from the trimbit files. In this case, one needs to make sure the appropriate tau value is written in the trimbit files, then need to load the appropriate {\tt{settings}} and {\tt{vthreshold}} before. Now to activate the rate corrections with the value written in the trimbit file or interpolated from there, once would do: 
+
+ Now to activate the rate corrections with the value written in the trimbit file or interpolated from there, once would do: 
 \begin{verbatim}
 sls_detector_put 0-ratecorr -1
 \end{verbatim}

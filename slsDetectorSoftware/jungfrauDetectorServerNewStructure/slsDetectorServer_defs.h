@@ -8,8 +8,25 @@
 
 
 #define GOODBYE 					(-200)
-//#define REQUIRED_FIRMWARE_VERSION 	16
-//#define FIRMWAREREV					0xcaba	   //temporary should be in firmware
+#define CTRL_SRVR_INIT_TIME_US		(300 * 1000)
+//#define REQUIRED_FIRMWARE_VERSION 16
+//#define FIRMWAREREV				0xcaba	   //temporary should be in firmware
+
+/* Struct Definitions */
+typedef struct ip_header_struct {
+	u_int16_t     ip_len;
+	u_int8_t      ip_tos;
+	u_int8_t      ip_ihl:4 ,ip_ver:4;
+	u_int16_t     ip_offset:13,ip_flag:3;
+	u_int16_t     ip_ident;
+	u_int16_t     ip_chksum;
+	u_int8_t      ip_protocol;
+	u_int8_t      ip_ttl;
+	u_int32_t     ip_sourceip;
+	u_int32_t     ip_destip;
+} ip_header;
+
+/* Enums */
 enum clkspeed				{FULL_SPEED, HALF_SPEED, QUARTER_SPEED};
 enum ADC_INDEX				{TEMP_FPGA, TEMP_ADC};
 enum DAC_INDEX				{ VB_COMP, VDD_PROT, VIN_COM, VREF_PRECH, VB_PIXBUF, VB_DS, VREF_DS, VREF_COMP };
@@ -21,16 +38,26 @@ enum DAC_INDEX				{ VB_COMP, VDD_PROT, VIN_COM, VREF_PRECH, VB_PIXBUF, VB_DS, VR
 								1000,	/* VB_DS */			\
 								480,	/* VREF_DS */		\
 								420		/* VREF_COMP */		\
-								};
+							};
+
+#define NUM_SETTINGS		6
+#define DEFAULT_SETT_INDX	{DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2};
+#define DEFAULT_SETT_VALS	{	0x0f00,		/* DYNAMICGAIN	 	*/	\
+ 	  	  	  	  	  	  	  	0x0f01,		/* DYNAMICHG0		*/	\
+  	  	  	  	  	  	  	  	0x0f02,		/* FIXGAIN1			*/	\
+  	  	  	  	  	  	  	  	0x0f06,		/* FIXGAIN2			*/	\
+  	  	  	  	  	  	  	  	0x1f00,		/* FORCESWITCHG1	*/	\
+ 	  	  	  	  	  	  	  	0x3f00		/* FORCESWITCHG2	*/	\
+ 	  	  	  	  	  	  	 };
 
 
 /* Hardware Definitions */
 #define NMAXMODY 					(1)
 #define NMAXMODX  					(1)
 #define NMAXMOD 					(NMAXMODX * NMAXMODY)
-//#define NMODY 					(1)
-//#define NMODX  					(1)
-//#define NMOD 						(NMODX * NMODY)
+#define NMODY 						(1)
+#define NMODX  						(1)
+#define NMOD 						(NMODX * NMODY)
 #define NCHAN 						(256 * 256)
 #define NCHIP 						(8)
 #define NADC						(0)

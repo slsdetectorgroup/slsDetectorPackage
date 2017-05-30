@@ -1148,24 +1148,6 @@ int getTemperature(int tempSensor, int imod){
 }
 
 
-//settings
-int initConfGain(int isettings,int val,int imod){
-	int retval;
-	u_int32_t addr=DAQ_REG;
-	if(isettings!=-1){
-		//#ifdef VERBOSE
-		printf("Setting Gain with val:0x%x\n",val);
-		//#endif
-		bus_w(addr,val);
-	}
-	retval=bus_r(addr);
-	//#ifdef VERBOSE
-	printf("Gain Reg Value is 0x%x\n",bus_r(addr));
-	//#endif
-	return retval;
-}
-
-
 
 
 

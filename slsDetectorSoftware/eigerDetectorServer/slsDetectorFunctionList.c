@@ -84,6 +84,8 @@ int normal = 0;
 
 
 void checkFirmwareCompatibility(){
+	uint32_t ipadd	= getDetectorIP();
+	uint64_t macadd	= getDetectorMAC();
 	int64_t fwversion = getDetectorId(DETECTOR_FIRMWARE_VERSION);
 	int64_t swversion = getDetectorId(DETECTOR_SOFTWARE_VERSION);
 	int64_t sw_fw_apiversion = getDetectorId(SOFTWARE_FIRMWARE_API_VERSION);
@@ -92,12 +94,17 @@ void checkFirmwareCompatibility(){
 			   "**********************EIGER Server**********************\n"
 			   "********************************************************\n");
 	cprintf(BLUE,"\n"
+			"Detector IP Addr:\t\t 0x%x\n"
+			"Detector MAC Addr:\t\t 0x%llx\n"
+
 			"Firmware Version:\t\t %lld\n"
 			"Software Version:\t\t %llx\n"
 			"F/w-S/w API Version:\t\t %lld\n"
 			"Required Firmware Version:\t %d\n"
 			"\n********************************************************\n",
-			fwversion,swversion,sw_fw_apiversion,REQUIRED_FIRMWARE_VERSION);
+			ipadd, macadd,
+			fwversion,swversion,
+			sw_fw_apiversion,REQUIRED_FIRMWARE_VERSION);
 
 	//cant read versions
 	if(!fwversion || !sw_fw_apiversion){
@@ -182,33 +189,17 @@ u_int64_t getFirmwareVersion() {
 	return Beb_GetFirmwareRevision();
 }
 
-int64_t getModuleId(enum idMode arg, int imod){
-
-	/**/
-	return -1;
-}
 
 
-int getDetectorNumber(){
-	int res=0;
-
+u_int32_t getDetectorNumber(){
+	u_int32_t res=0;
 	//execute and get address
 	char output[255];
 	FILE* sysFile = popen("more /home/root/executables/detid.txt", "r");
 	fgets(output, sizeof(output), sysFile);
 	pclose(sysFile);
-	sscanf(output,"%d",&res);
-	printf("detector id: %d\n",res);
-
-/*
-	int res=0;
-	char hostname[100];
-	if (gethostname(hostname, sizeof hostname) == 0)
-		puts(hostname);
-	else
-		perror("gethostname");
-	sscanf(hostname,"%x",&res);
-*/
+	sscanf(output,"%u",&res);
+	printf("detector id: %u\n",res);
 	return res;
 }
 
@@ -242,9 +233,9 @@ u_int64_t  getDetectorMAC() {
 
 
 
-int  getDetectorIP(){
+u_int32_t  getDetectorIP(){
 	char temp[50]="";
-	int res=0;
+	u_int32_t res=0;
 	//execute and get address
 	char output[255];
 	FILE* sysFile = popen("ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2", "r");
@@ -268,46 +259,7 @@ int  getDetectorIP(){
 
 
 
-int initDetector(){
-	int imod,i,n;
-	n = getNModBoard(1);
-
-	//#ifdef VERBOSE
-	printf("This Server is for 1 Eiger half module\n");
-	//#endif
-
-
-	//Allocation of memory
-	detectorModules=malloc(n*sizeof(sls_detector_module));
-	detectorChips=malloc(n*NCHIP*sizeof(int));
-
-	detectorChans=malloc(n*NCHIP*NCHAN*sizeof(int));
-	detectorDacs=malloc(n*NDAC*sizeof(dacs_t));
-	detectorAdcs=malloc(n*NADC*sizeof(dacs_t));
-#ifdef VERBOSE
-	printf("modules from 0x%x to 0x%x\n",detectorModules, detectorModules+n);
-	printf("chips from 0x%x to 0x%x\n",detectorChips, detectorChips+n*NCHIP);
-	printf("chans from 0x%x to 0x%x\n",detectorChans, detectorChans+n*NCHIP*NCHAN);
-	printf("dacs from 0x%x to 0x%x\n",detectorDacs, detectorDacs+n*NDAC);
-	printf("adcs from 0x%x to 0x%x\n",detectorAdcs, detectorAdcs+n*NADC);
-#endif
-	for (imod=0; imod<n; imod++) {
-		(detectorModules+imod)->dacs=detectorDacs+imod*NDAC;
-		(detectorModules+imod)->adcs=detectorAdcs+imod*NADC;
-		(detectorModules+imod)->chipregs=detectorChips+imod*NCHIP;
-		(detectorModules+imod)->chanregs=detectorChans+imod*NCHIP*NCHAN;
-		(detectorModules+imod)->ndac=NDAC;
-		(detectorModules+imod)->nadc=NADC;
-		(detectorModules+imod)->nchip=NCHIP;
-		(detectorModules+imod)->nchan=NCHIP*NCHAN;
-		(detectorModules+imod)->module=imod;
-		(detectorModules+imod)->gain=0;
-		(detectorModules+imod)->offset=0;
-		(detectorModules+imod)->reg=0;
-	}
-	thisSettings = UNINITIALIZED;
-
-
+void initControlServer(){
 	//Feb and Beb Initializations
 	getModuleConfiguration();
 	Feb_Interface_FebInterface();
@@ -321,6 +273,75 @@ int initDetector(){
 	printf("FEB Initialization done\n");
 	Beb_Beb();
 	printf("BEB Initialization done\n");
+
+
+	setupDetector();
+
+	printf("\n");
+}
+
+void initStopServer(){
+	getModuleConfiguration();
+	Feb_Interface_FebInterface();
+	Feb_Control_FebControl();
+	Feb_Control_Init(master,top,normal,getDetectorNumber());
+	printf("FEB Initialization done\n");
+
+	printf("\n");
+}
+
+
+void getModuleConfiguration(){
+	int *m=&master;
+	int *t=&top;
+	int *n=&normal;
+	Beb_GetModuleConfiguration(m,t,n);
+	if(top)	printf("*************** TOP ***************\n");
+	else	printf("*************** BOTTOM ***************\n");
+	if(master)	printf("*************** MASTER ***************\n");
+	else		printf("*************** SLAVE ***************\n");
+	if(normal)	printf("*************** NORMAL ***************\n");
+	else		printf("*************** SPECIAL ***************\n");
+}
+
+
+
+void allocateDetectorStructureMemory(){
+	printf("This Server is for 1 Eiger half module (250k)\n");
+
+	//Allocation of memory
+	detectorModules=malloc(sizeof(sls_detector_module));
+	detectorChips=malloc(NCHIP*sizeof(int));
+	detectorChans=malloc(NCHIP*NCHAN*sizeof(int));
+	detectorDacs=malloc(NDAC*sizeof(dacs_t));
+	detectorAdcs=malloc(NADC*sizeof(dacs_t));
+#ifdef VERBOSE
+	printf("modules from 0x%x to 0x%x\n",detectorModules, detectorModules+n);
+	printf("chips from 0x%x to 0x%x\n",detectorChips, detectorChips+n*NCHIP);
+	printf("chans from 0x%x to 0x%x\n",detectorChans, detectorChans+n*NCHIP*NCHAN);
+	printf("dacs from 0x%x to 0x%x\n",detectorDacs, detectorDacs+n*NDAC);
+	printf("adcs from 0x%x to 0x%x\n",detectorAdcs, detectorAdcs+n*NADC);
+#endif
+	(detectorModules)->dacs=detectorDacs;
+	(detectorModules)->adcs=detectorAdcs;
+	(detectorModules)->chipregs=detectorChips;
+	(detectorModules)->chanregs=detectorChans;
+	(detectorModules)->ndac=NDAC;
+	(detectorModules)->nadc=NADC;
+	(detectorModules)->nchip=NCHIP;
+	(detectorModules)->nchan=NCHIP*NCHAN;
+	(detectorModules)->module=imod;
+	(detectorModules)->gain=0;
+	(detectorModules)->offset=0;
+	(detectorModules)->reg=0;
+	thisSettings = UNINITIALIZED;
+}
+
+
+
+void setupDetector() {
+
+	allocateDetectorStructureMemory();
 
 	//Get dac values
 	int retval[2];
@@ -343,66 +364,17 @@ int initDetector(){
 	int enable[2] = {0,1};
 	setExternalGating(enable);//disable external gating
 	Feb_Control_SetInTestModeVariable(0);
-	setHighVoltage(0,0);
+	setHighVoltage(0);
 	Feb_Control_CheckSetup();
-
-	//print detector mac and ip
-	printf("mac read from detector: %llx\n",getDetectorMAC());
-	printf("ip read from detector: %x\n",getDetectorIP());
-
-
-	printf("\n");
-	return 1;
-}
-
-int initDetectorStop(){
-	getModuleConfiguration();
-	Feb_Interface_FebInterface();
-	Feb_Control_FebControl();
-	Feb_Control_Init(master,top,normal,getDetectorNumber());
-	printf("FEB Initialization done\n");
-	/* Beb_Beb(-1);
-    printf("BEB constructor done\n");*/
-
-	printf("\n");
-	return 1;
 }
 
 
-
-void getModuleConfiguration(){
-	int *m=&master;
-	int *t=&top;
-	int *n=&normal;
-	/*if(getDetectorNumber() == 0xbeb015){
-		master = 1;
-		top = 1;
-	}*/
-	Beb_GetModuleConfiguration(m,t,n);
-	if(top)	printf("*************** TOP ***************\n");
-	else	printf("*************** BOTTOM ***************\n");
-	if(master)	printf("*************** MASTER ***************\n");
-	else		printf("*************** SLAVE ***************\n");
-	if(normal)	printf("*************** NORMAL ***************\n");
-	else		printf("*************** SPECIAL ***************\n");
-}
-
-
-
-int setNMod(int nm, enum dimension dim){
-	return 1;
-}
 
 
 
 int getNModBoard(enum dimension arg){
 	return 1;
 }
-
-
-
-
-
 
 
 
@@ -469,7 +441,7 @@ void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]){
 
 
 
-int setHighVoltage(int val, int imod){
+int setHighVoltage(int val){
 	if(val!=-1){
 		eiger_highvoltage = val;
 		if(master){
@@ -1064,21 +1036,20 @@ int executeTrimming(enum trimMode mode, int par1, int par2, int imod){
 	return FAIL;
 }
 
-
 int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int udpport, int udpport2, int ival){
-	if (detectormacadd != getDetectorMAC()){
+	if (sourcemac != getDetectorMAC()){
 		printf("*************************************************\n");
-		printf("WARNING: actual detector mac address %llx does not match the one from client %llx\n",getDetectorMAC(),detectormacadd);
-		detectormacadd = getDetectorMAC();
+		printf("WARNING: actual detector mac address %llx does not match the one from client %llx\n",getDetectorMAC(),sourcemac);
+		sourcemac = getDetectorMAC();
 		printf("WARNING: Matched detectormac to the hardware mac now\n");
 		printf("*************************************************\n");
 	}
 	//only for 1Gbe
 	if(!send_to_ten_gig){
-		if (detipad != getDetectorIP()){
+		if (sourceip != getDetectorIP()){
 			printf("*************************************************\n");
-			printf("WARNING: actual detector ip address %x does not match the one from client %x\n",getDetectorIP(),detipad);
-			detipad = getDetectorIP();
+			printf("WARNING: actual detector ip address %x does not match the one from client %x\n",getDetectorIP(),sourceip);
+			sourceip = getDetectorIP();
 			printf("WARNING: Matched detector ip to the hardware ip now\n");
 			printf("*************************************************\n");
 		}
@@ -1086,20 +1057,20 @@ int configureMAC(int ipad, long long int macad, long long int detectormacadd, in
 
 	char src_mac[50], src_ip[50],dst_mac[50], dst_ip[50];
 	int src_port = 0xE185;
-	sprintf(src_ip,"%d.%d.%d.%d",(detipad>>24)&0xff,(detipad>>16)&0xff,(detipad>>8)&0xff,(detipad)&0xff);
-	sprintf(dst_ip,"%d.%d.%d.%d",(ipad>>24)&0xff,(ipad>>16)&0xff,(ipad>>8)&0xff,(ipad)&0xff);
-	sprintf(src_mac,"%02x:%02x:%02x:%02x:%02x:%02x",(unsigned int)((detectormacadd>>40)&0xFF),
-			(unsigned int)((detectormacadd>>32)&0xFF),
-			(unsigned int)((detectormacadd>>24)&0xFF),
-			(unsigned int)((detectormacadd>>16)&0xFF),
-			(unsigned int)((detectormacadd>>8)&0xFF),
-			(unsigned int)((detectormacadd>>0)&0xFF));
-	sprintf(dst_mac,"%02x:%02x:%02x:%02x:%02x:%02x",(unsigned int)((macad>>40)&0xFF),
-			(unsigned int)((macad>>32)&0xFF),
-			(unsigned int)((macad>>24)&0xFF),
-			(unsigned int)((macad>>16)&0xFF),
-			(unsigned int)((macad>>8)&0xFF),
-			(unsigned int)((macad>>0)&0xFF));
+	sprintf(src_ip,"%d.%d.%d.%d",(sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff);
+	sprintf(dst_ip,"%d.%d.%d.%d",(destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);
+	sprintf(src_mac,"%02x:%02x:%02x:%02x:%02x:%02x",(unsigned int)((sourcemac>>40)&0xFF),
+			(unsigned int)((sourcemac>>32)&0xFF),
+			(unsigned int)((sourcemac>>24)&0xFF),
+			(unsigned int)((sourcemac>>16)&0xFF),
+			(unsigned int)((sourcemac>>8)&0xFF),
+			(unsigned int)((sourcemac>>0)&0xFF));
+	sprintf(dst_mac,"%02x:%02x:%02x:%02x:%02x:%02x",(unsigned int)((destmac>>40)&0xFF),
+			(unsigned int)((destmac>>32)&0xFF),
+			(unsigned int)((destmac>>24)&0xFF),
+			(unsigned int)((destmac>>16)&0xFF),
+			(unsigned int)((destmac>>8)&0xFF),
+			(unsigned int)((destmac>>0)&0xFF));
 
 	printf("src_port:%d\n",src_port);
 	printf("src_ip:%s\n",src_ip);

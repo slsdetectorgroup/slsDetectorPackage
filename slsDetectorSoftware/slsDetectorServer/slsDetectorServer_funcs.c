@@ -48,14 +48,13 @@ void basictests() {
 }
 
 
-int init_detector(int b) {
+int init_detector(int controlserver) {
 #ifdef VIRTUAL
 	printf("This is a VIRTUAL detector\n");
 #endif
-
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-	if(b)	initDetector();
-	else initDetectorStop();
+	if (controlserver) initControlServer();
+	else initStopServer();
 #endif
 	strcpy(mess,"dummy message");
 	strcpy(lastClientIP,"none");
@@ -885,7 +884,7 @@ int get_id(int file_des) {
 #endif
 
 	switch (arg) {
-#ifndef EIGERD
+#ifdef MYTHEND
 	case  MODULE_SERIAL_NUMBER:
 	case MODULE_FIRMWARE_VERSION:
 		n = receiveData(file_des,&imod,sizeof(imod),INT32);
@@ -1206,7 +1205,7 @@ int set_dac(int file_des) {
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		} else{
 			if((ind == HV_POT) ||(ind == HV_NEW))
-				retval[0] = setHighVoltage(val,imod);
+				retval[0] = setHighVoltage(val);/*imod removed*/
 			else if(ind == IO_DELAY)
 				retval[0] = setIODelay(val,imod);
 			else{
@@ -1418,7 +1417,7 @@ int write_register(int file_des) {
 	addr=arg[0];
 	val=arg[1];
 
-#if defined(MYTHEND) || defined(GOTTHARDD)
+#ifndef EIGERD
 #ifdef VERBOSE
 	printf("writing to register 0x%x data 0x%x\n", addr, val);
 #endif
@@ -1480,7 +1479,7 @@ int read_register(int file_des) {
 	}
 	addr=arg;
 
-#if defined(MYTHEND) || defined(GOTTHARDD)
+#ifndef EIGERD
 #ifdef VERBOSE
 	printf("reading  register 0x%x\n", addr);
 #endif
@@ -1910,15 +1909,25 @@ int set_module(int file_des) {
 	printf("eV:%d\n",myEV);
 #endif
 #endif
-#ifdef EIGERD
+
+#if defined(JUNGFRAUD) || defined(EIGERD)
 	switch(myModule.reg){
 	case GET_SETTINGS:
+	case UNINITIALIZED:
+#ifdef EIGERD
 	case STANDARD:
 	case HIGHGAIN:
 	case LOWGAIN:
 	case VERYHIGHGAIN:
 	case VERYLOWGAIN:
-	case UNINITIALIZED:
+#elif JUNGFRAUD
+	case DYNAMICGAIN:
+	case DYNAMICHG0:
+	case FIXGAIN1:
+	case FIXGAIN2:
+	case FORCESWITCHG1:
+	case FORCESWITCHG2:
+#endif
 		break;
 	default:
 		sprintf(mess,"This setting %d does not exist for this detector\n",myModule.reg);
@@ -1927,7 +1936,6 @@ int set_module(int file_des) {
 		break;
 	}
 #endif
-
 	if (ret==OK) {
 		if (differentClients==1 && lockStatus==1) {
 			ret=FAIL;
@@ -3024,7 +3032,7 @@ int set_speed(int file_des) {
 			case TOT_DUTY_CYCLE:
 				retval=setSpeed(arg, val);
 				break;
-#elif EIGERD
+#elif defined(EIGERD) || defined(JUNGFRAU)
 			case CLOCK_DIVIDER:
 				retval=setSpeed(arg, val);
 				break;
@@ -3175,12 +3183,12 @@ int configure_mac(int file_des) {
 
 #ifndef MYTHEND
 	int imod=0;//should be in future sent from client as -1, arg[2]
-	int ipad;
-	long long int imacadd;
-	long long int idetectormacadd;
-	int udpport;
-	int udpport2;
-	int detipad;
+	uint32_t ipad;
+	uint64_t imacadd;
+	uint64_t idetectormacadd;
+	uint32_t udpport;
+	uint32_t udpport2;
+	uint32_t detipad;
 #endif
 
 	sprintf(mess,"Can't configure MAC\n");

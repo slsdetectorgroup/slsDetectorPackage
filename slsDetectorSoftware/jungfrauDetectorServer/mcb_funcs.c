@@ -171,7 +171,7 @@ int setSettings(int i, int imod) {
 	int isett=-1,val=-1,retval=-1;
 	enum conf_gain {
 		dynamic = 0x0f00,	//dynamic
-		dynamichighgain0 =	0x0f01,	//dynamichighgain0
+		dynamichighgain0 =	v,	//dynamichighgain0
 		fixgain1 = 0x0f02,	//fixgain1
 		fixgain2 = 0x0f06,	//fixgain2
 		forceswitchgain1 = 0x1f00,	//forceswitchgain1

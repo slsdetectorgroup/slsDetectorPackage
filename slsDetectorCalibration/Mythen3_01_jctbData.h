@@ -44,8 +44,9 @@ class mythen3_01_jctbData : public slsDetectorData<short unsigned int> {
  
 
  static short unsigned int* mythen03_frame(char *ptr, int dr=24,  int nch=64*3, int off=5) {
+   // off=0;
     int iarg;
-    int64_t word;
+    int64_t word, *wp;
     short unsigned int* val=new short unsigned int[nch];
     int bit[64];
     int nb=2;
@@ -53,30 +54,53 @@ class mythen3_01_jctbData : public slsDetectorData<short unsigned int> {
     int idr=0;
     int ib=0;
     int iw=0;
+    int ii=0;
     bit[0]=19;
     bit[1]=8;
     idr=0;
     for (ib=0; ib<nch; ib++) {
       val[ib]=0;
     }
+    wp=(int64_t*)ptr;
+    
     for (iw=0; iw<nch/nb; iw) {
-      word=*((int64_t*)(ptr+8));
-	if (ioff<off) ioff++;
-	else {
-	  if (idr<16) {
-	    for (ib=0; ib<nb; ib++) {
-	      if (word&(1<<bit[ib]))    val[iw+nch*ib/nb]|=(1<<idr);
-	    }//end for()
-	  }
-	  idr++;
-	  if (idr==dr) {
-	    idr=0;
-	    iw++;
-	  }//end if()
-	}//end else()
+      word=*wp;;
+      if (ioff<off) {
+	ioff++;
+	 cout <<"*";
+      }  else {
+	
+	if (idr<16) {
+	  for (ib=0; ib<nb; ib++) {
+	    if (word&(1<<bit[ib]))  {
+	      cout << "+" ;
+	      val[iw+nch*(ib/nb)]|=(1<<idr);
+	    }  else { 
+	      	cout << "-" ; 
+	       } 
+	  }//end for()
+	}
+	
+	idr++;
+	
+	
+	if (idr==dr) {
+	  idr=0;
+	  //  cout << dec << " " << iw << " " << val[iw] << " " << val[iw+nch/2] << endl;
+	  cout <<dec << iw<<endl;
+	  iw++;
+	}//end if()
+
+      }//end else()
+      wp+=1;
+      ii++;
     }//end for
+    
+    cout << "Decoded "<<ii << " samples"<< endl;
+    cout << "Should be "<< nch/nb*dr+off << " samples"<< endl;
+  
     return val;
-  }
+ }
 
  virtual int setFrameNumber(int f=0) {if (f>=0) frameNumber=f; return frameNumber; };
  virtual int setDynamicRange(int d=-1) {if (d>0 && d<=24) dynamicRange=d; return dynamicRange;};

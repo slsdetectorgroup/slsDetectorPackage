@@ -6,12 +6,13 @@
 
 class moench03Ctb10GbData : public slsReceiverData<uint16_t> {
  
- private:
+ protected:
   
   int iframe;
   int nadc;
   int sc_width;
   int sc_height;
+
  public:
 
 
@@ -165,58 +166,116 @@ class moench03Ctb10GbData : public slsReceiverData<uint16_t> {
 /*     }; */
 
 
-  	virtual char *readNextFrame(ifstream &filebin, int& fnum) {
-	  char *data=new char[packetSize*nPackets];
-	  char *retval=0;
-	  int np=0, nd;
-	  fnum = -1;
-	  int  pn;
-	  char aa[8224];
-	  char *packet=(char *)aa;
+  virtual char *readNextFrame(ifstream &filebin, int& fnum, char *data=NULL) {
+    int dd=0;
+    if (data==NULL) {
+      data=new char[packetSize*nPackets];
+      dd=1;
+    }
+      char *retval=0;
+      int np=0, nd;
+      fnum = -1;
+      int  pn;
+      char aa[8224];
+      char *packet=(char *)aa;
+      int place;
+      
+      if (filebin.is_open()) {
 
-	  if (filebin.is_open()) {
 
 
-
-
-	    while(filebin.read((char*)packet, 8208) && np<nPackets){
-	      pn=getPacketNumber(packet);
-	      
-	      if (pn==1 && fnum<0)
-		fnum= getFrameNumber(packet);
-	      
-	      // cout << "fn: " << fnum << "\t pn: " << pn << endl;
-	      if (fnum>=0) {
-		if (getFrameNumber(packet) !=fnum) { 
-		  
-		  if (np==0){
-		    delete [] data;
-		    return NULL;
-		  } else
-		    return data;
-		}
-		
-		memcpy(data+(pn-1)*packetSize, packet, packetSize);
-		np++;
-		
+        place=filebin.tellg();
+        while(filebin.read((char*)packet, 8208) && np<nPackets){
+          pn=getPacketNumber(packet);
+          if (pn==1 && fnum<0)
+	    fnum= getFrameNumber(packet);
+          
+	  //	  cout <<getFrameNumber(packet)<< " fn: " << fnum << "\t pn: " << pn << " np " << np << endl;
+          if (fnum>=0) {
+	    if (getFrameNumber(packet) !=fnum) {
+	      cout << "-"<<endl;
+	      filebin.seekg(place);
+	      if (np==0){
+		if (dd)
+		  delete [] data;
+		return NULL;
+	      } else {
+		return data;
 	      }
 	    }
+        
+	    memcpy(data+(pn-1)*packetSize, packet, packetSize);
+	    np++;
+	    if (np==nPackets)
+	      return data;
+        
+          }
+          place=filebin.tellg();
+        }
+        
+      }
+
+	      
+      if (np==0){
+	cout << "-"<<endl;
+        filebin.seekg(place);
+	if (dd)
+	  delete [] data;
+        return NULL;
+      }
+
+      //filebin.seekg(place);
+      return data;
+    };
+
+/*   	virtual char *readNextFrame(ifstream &filebin, int& fnum) { */
+/* 	  char *data=new char[packetSize*nPackets]; */
+/* 	  char *retval=0; */
+/* 	  int np=0, nd; */
+/* 	  fnum = -1; */
+/* 	  int  pn; */
+/* 	  char aa[8224]; */
+/* 	  char *packet=(char *)aa; */
+
+/* 	  if (filebin.is_open()) { */
+
+
+
+
+/* 	    while(filebin.read((char*)packet, 8208) && np<nPackets){ */
+/* 	      pn=getPacketNumber(packet); */
+	      
+/* 	      if (pn==1 && fnum<0) */
+/* 		fnum= getFrameNumber(packet); */
+	      
+/* 	      // cout << "fn: " << fnum << "\t pn: " << pn << endl; */
+/* 	      if (fnum>=0) { */
+/* 		if (getFrameNumber(packet) !=fnum) {  */
+		  
+/* 		  if (np==0){ */
+/* 		    delete [] data; */
+/* 		    return NULL; */
+/* 		  } else */
+/* 		    return data; */
+/* 		} */
+		
+/* 		memcpy(data+(pn-1)*packetSize, packet, packetSize); */
+/* 		np++; */
+		
+/* 	      } */
+/* 	    } */
 	    
-	  }
+/* 	  } */
 
-	  if (np==0){
-	    delete [] data;
-	    return NULL;
-	  }
+/* 	  if (np==0){ */
+/* 	    delete [] data; */
+/* 	    return NULL; */
+/* 	  } */
 
-	};
+/* 	}; */
 
 int getPacketNumber(int x, int y) {return dataMap[y][x]/8208;};
 
-  	virtual char *readNextFrame(ifstream &filebin) {
-	  int fnum;
-	  return readNextFrame(filebin, fnum);
-	};
 
 };
 

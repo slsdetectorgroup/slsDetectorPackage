@@ -1,11 +1,12 @@
-void imageMacro(char *name){
+TH2D *imageMacro(char *name) {
+
   //TH2D *makeNorm(){
 
   //TFile ff("/local_zfs_raid/tomcat_20160528/trees/img_blank_eta_gmap.root");
   //TH2D *hff=(TH2D*)ff.Get("imgHR");
-    TFile ff("/local_zfs_raid/tomcat_20160528/trees/img_blank_eta_nb25.root");
+    TFile *ff=new TFile("/mnt/moench_data/tomcat_20160528_img/img_blank_eta_nb25.root");
   //  TFile ff("/local_zfs_raid/tomcat_20160528/trees/img_blank_eta_gcorr_nb25.root");
-  TH2D *hff=(TH2D*)ff.Get("blankHR");
+  TH2D *hff=(TH2D*)ff->Get("blankHR");
   hff->SetName("imgBlank");
   TH2D *hpixel=new TH2D("hpixel","hpixel",25,0,25,25,0,25);
   for (int ibx=10*25; ibx<hff->GetNbinsX()-10*25; ibx++) {
@@ -45,9 +46,9 @@ void imageMacro(char *name){
   }    else {
     
   
-  sprintf(nn,"/local_zfs_raid/tomcat_20160528/trees/img_%s_eta_nb25.root", name);
+  sprintf(nn,"/mnt/moench_data/tomcat_20160528_img/img_%s_eta_nb25.root", name);
   // if (strcmp(name,"blank"))
-    TFile fg(nn);
+    TFile *fg=new TFile(nn);
     // else
     // TFile fg=gDirectory;
 
@@ -57,13 +58,21 @@ void imageMacro(char *name){
   //  TFile fg("/local_zfs_raid/tomcat_20160528/trees/img_sample_eta_nb25.root");
   // TFile fg("/local_zfs_raid/tomcat_20160528/trees/img_grating_1d_eta_gcorr_nb25.root");
    sprintf(nn,"%sHR",name);
-   TH2D *hg=(TH2D*)fg.Get(nn);
+   TH2D *hg=(TH2D*)fg->Get(nn);
    // hg->SetName("imgGrating");
 
   //hg->Divide(hff);
   }
    if (hpix)
      hg->Divide(hpix);
+   new TCanvas();
+   hg->Draw("colz");
+
+   return hg;
+}
+
+
+void imageMacro(TH2D *hg){
 
   Double_t imageData[200*400*25*25];
   const int nsigma=5.;

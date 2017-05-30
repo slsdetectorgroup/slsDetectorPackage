@@ -1,7 +1,31 @@
-{
+{ 
+  TColor::InitializeColors();
+  const Int_t NRGBs = 5;
+  const Int_t NCont = 255;//90;
+
+  Double_t stops[NRGBs] = { 0.00, 0.34, 0.61, 0.84, 1.00 };
+  Double_t red[NRGBs]   = { 0.00, 0.00, 0.87, 1.00, 0.51 };
+  Double_t green[NRGBs] = { 0.00, 0.81, 1.00, 0.20, 0.00 };
+  Double_t blue[NRGBs]  = { 0.51, 1.00, 0.12, 0.00, 0.00 };
+  Double_t gray[NRGBs]  = { 1., 0.34, 0.61, 0.84, 1.00};
+  Double_t zero[NRGBs]  = { 0., 0.0,0.0, 0.0, 0.00};
+  //TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
+   TColor::CreateGradientColorTable(NRGBs, stops, gray, gray, gray, NCont);
+ 
+  gStyle->SetNumberContours(NCont);
+
+  gStyle->SetPadTopMargin(0);
+  gStyle->SetPadRightMargin(0);
+  gStyle->SetPadBottomMargin(0);
+  gStyle->SetPadLeftMargin(0);
+
+
+
+  gROOT->ForceStyle();
+
   // TFile ff("/local_zfs_raid/tomcat_20160528/trees/img_blank_eta.root");
   // TH2D *hff=(TH2D*)ff.Get("imgHR");
-  TFile ff("/local_zfs_raid/tomcat_20160528/trees/img_blank_eta_gmap_v2.root");
+  TFile ff("/mnt/moench_data/tomcat_20160528_img/img_blank_eta_nb25.root");
   TH2D *hff=(TH2D*)ff.Get("blankHR");
   hff->SetName("imgBlank");
   TH2D *hpixel=new TH2D("hpixel","hpixel",25,0,25,25,0,25);
@@ -32,7 +56,7 @@
 
   // TFile fg("/local_zfs_raid/tomcat_20160528/trees/img_grating_2d_eta.root");
   // TH2D *hg=(TH2D*)fg.Get("imgHR");
-  TFile fg("/local_zfs_raid/tomcat_20160528/trees/img_grating_2d_eta_gmap_v2.root");
+  TFile fg("/mnt/moench_data/tomcat_20160528_img/img_grating_2d_eta_nb25.root");
   TH2D *hg=(TH2D*)fg.Get("grating_2dHR");
   hg->SetName("imgGrating");
 
@@ -50,9 +74,21 @@
  
    hg->Scale(1/ng);
 
-   new TCanvas();
-   hg->SetMaximum(1.);
-   hg->Draw("colz");
+   new TCanvas("c1","c1",800,800);
+   hg->SetMaximum(2.);
+   Double_t xmin=hg->GetXaxis()->GetXmin();
+   Double_t xmax=hg->GetXaxis()->GetXmax();
+   Double_t ymin=hg->GetYaxis()->GetXmin();
+   Double_t ymax=hg->GetYaxis()->GetXmax();
+   hg->SetTitle(";mm;mm;Normalized intensity (a.u.)");
+   hg->GetXaxis()->Set(hg->GetXaxis()->GetNbins(),xmin*0.025-180.*0.025+0.1,xmax*0.025-180.*0.025+0.1);
+   hg->GetYaxis()->Set(hg->GetYaxis()->GetNbins(),ymin*0.025-180.*0.025-1.5,ymax*0.025-180*0.025-1.5);
+   
+   hg->GetXaxis()->SetRangeUser(0,0.5);
+   hg->GetYaxis()->SetRangeUser(0,0.5);
+   
+   hg->Draw("col");
+   hg->SetStats(kFALSE);
    // new TCanvas();
    // hsg->SetMaximum(1.);
    // hsg->Draw("colz");

@@ -35,7 +35,7 @@
 
   // TFile fg("/local_zfs_raid/tomcat_20160528/trees/img_grating_2d_eta.root");
   // TH2D *hg=(TH2D*)fg.Get("imgHR");
-  TFile fg("/local_zfs_raid/tomcat_20160528/trees/img_sample_eta_gmap_v2.root");
+  TFile fg("/mnt/moench_data/tomcat_20160528_img/img_sample_eta_gmap_v2.root");
   TH2D *hg=(TH2D*)fg.Get("sampleHR");
   hg->SetName("imgSample");
 

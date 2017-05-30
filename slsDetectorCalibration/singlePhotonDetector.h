@@ -31,6 +31,8 @@ using namespace std;
     UNDEFINED_EVENT=-1
   };
 
+#ifndef DEF_QUAD
+#define DEF_QUAD
   enum quadrant {
     TOP_LEFT=0,
     TOP_RIGHT=1,
@@ -38,7 +40,7 @@ using namespace std;
     BOTTOM_RIGHT=3,
     UNDEFINED_QUADRANT=-1
   };
-
+#endif
 
 
 template <class dataType>
@@ -158,7 +160,7 @@ class singlePhotonDetector {
        \param iy pixel y coordinate
        \param val value to set
     */
-    virtual void setPedestal(int ix, int iy, double val){if (ix>=0 && ix<nx && iy>=0 && iy<ny) stat[iy][ix].setPedestal(val);};
+    virtual void setPedestal(int ix, int iy, double val, double rms=0){if (ix>=0 && ix<nx && iy>=0 && iy<ny) stat[iy][ix].setPedestal(val,rms);};
 
  
 
@@ -187,7 +189,122 @@ class singlePhotonDetector {
       }
       return clusterSize;
     }
-    
+
+
+
+    int *getNPhotons(char *data, double thr=-1) {
+
+      double val;
+      int *nph=new int[nx*ny];
+      double rest[ny][nx];
+      int cy=(clusterSizeY+1)/2;
+      int cs=(clusterSize+1)/2;
+
+      int ccs=clusterSize;
+      int ccy=clusterSizeY;
+
+
+      double tthr=thr;
+      int nn;
+      double max=0, tl=0, tr=0, bl=0,br=0, v;
+
+
+      if (thr>=0) {
+	cy=1;
+	cs=1;
+	ccs=1;
+	ccy=1;
+      }
+
+
+      for (int ix=0; ix<nx; ix++) {
+      for (int iy=0; iy<ny; iy++) {
+	
+	val=dataSign*(det->getValue(data, ix, iy)-getPedestal(ix,iy,0));
+	
+	if (thr<=0) tthr=nSigma*getPedestalRMS(ix,iy);
+	
+	nn=val/tthr;
+	
+	if (nn>0) {
+	  rest[iy][ix]=val-nn*tthr;
+	  nph[ix+nx*iy]=nn;
+	} else {
+	  rest[iy][ix]=val;
+	  nph[ix+nx*iy]=0;
+	}
+      }
+      
+      }
+      for (int ix=clusterSize/2; ix<clusterSize/2-1; ix++) {
+	for (int iy=clusterSizeY/2; iy<ny-clusterSizeY/2; iy++) {
+	  eventMask[iy][ix]=PEDESTAL;
+	
+	  if (thr<=0) tthr=nSigma*getPedestalRMS(ix,iy);
+	  
+	  max=0; 
+	  tl=0;
+	  tr=0; 
+	  bl=0;
+	  br=0;
+	  
+	  for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
+	    for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
+	      if ((iy+ir)>=0 && (iy+ir)<ny && (ix+ic)>=0 && (ix+ic)<nx) {
+		//cluster->set_data(rest[iy+ir][ix+ic], ic, ir);
+		v=rest[iy+ir][ix+ic];//cluster->get_data(ic,ir);
+		tot+=v;
+		if (ir<=0 && ic<=0)
+		  bl+=v;
+		if (ir<=0 && ic>=0)
+		  br+=v;
+		if (ir>=0 && ic<=0)
+		  tl+=v;
+		if (ir>=0 && ic>=0)
+		tr+=v;
+		
+		if (v>max) {
+		  max=v;
+		}
+		if (ir==0 && ic==0) {
+		  if (v>tthr) {
+		    eventMask[iy][ix]=PHOTON;
+		  } 
+		}
+	      }
+	    }
+	  }
+	  
+
+	  //if (cluster->get_data(0,0)>=max) {
+	    if (rest[iy][ix]>=max) {
+	    
+	    if (bl>=br && bl>=tl && bl>=tr) {
+	      quad=BOTTOM_LEFT;
+	      quadTot=bl;
+	    } else if (br>=bl && br>=tl && br>=tr) {
+	      quad=BOTTOM_RIGHT;
+	    quadTot=br;
+	    } else if (tl>=br && tl>=bl && tl>=tr) {
+	      quad=TOP_LEFT;
+	      quadTot=tl;
+	    } else if   (tr>=bl && tr>=tl && tr>=br) {
+	      quad=TOP_RIGHT;
+	      quadTot=tr;
+	    } 
+	    if (rest[iy][ix]>tthr || tot>sqrt(ccy*ccs)*tthr || quadTot>sqrt(cy*cs)*tthr) {
+	      nph[ix+nx*iy]++;
+	      rest[iy][ix]-=tthr;
+	    }
+	  }      
+	}
+	
+      }
+
+      
+      return nph;
+
+    }
 
 
 
@@ -207,6 +324,11 @@ class singlePhotonDetector {
       double max=0, tl=0, tr=0, bl=0,br=0, v;
       //  cout << iframe << endl;
     
+      int cy=(clusterSizeY+1)/2;
+      int cs=(clusterSize+1)/2;
+
+
+
       tot=0;
       quadTot=0;
       quad=UNDEFINED_QUADRANT;
@@ -250,30 +372,16 @@ class singlePhotonDetector {
 	      if (ir>=0 && ic>=0)
 		tr+=v;
 	      
-	      if (cluster->get_data(ic,ir)>max) {
+	      if (v>max) {
 		max=v;
 	      }
 	      if (ir==0 && ic==0) {
-		if (v>nSigma*cluster->rms) {
-		  eventMask[iy][ix]=PHOTON;
-		} else if (cluster->get_data(ic,ir)<-nSigma*cluster->rms)
+		if (v<-nSigma*cluster->rms)
 		  eventMask[iy][ix]=NEGATIVE_PEDESTAL;
 	      }
 	    }
 	  }
 	}
-	
-	if (eventMask[iy][ix]!=PHOTON && tot>sqrt(clusterSizeY*clusterSize)*nSigma*cluster->rms) {
-	  eventMask[iy][ix]=NEIGHBOUR;
-	} else if (eventMask[iy][ix]==PHOTON) {
-	  if (cluster->get_data(0,0)>=max) {
-	    eventMask[iy][ix]=PHOTON_MAX;
-	  }
-	} else if (eventMask[iy][ix]==PEDESTAL) {
-	  if (cm==0)
-	    addToPedestal(det->getValue(data, ix, iy),ix,iy);
-	}
-      
 	
 	if (bl>=br && bl>=tl && bl>=tr) {
 	  quad=BOTTOM_LEFT;
@@ -288,7 +396,19 @@ class singlePhotonDetector {
 	  quad=TOP_RIGHT;
 	  quadTot=tr;
 	} 
-
+	
+	if (max>nSigma*cluster->rms || tot>sqrt(clusterSizeY*clusterSize)*nSigma*cluster->rms || quadTot>cy*cs*nSigma*cluster->rms) {
+	  if (cluster->get_data(0,0)>=max) {
+	    eventMask[iy][ix]=PHOTON_MAX;
+	  } else {
+	    eventMask[iy][ix]=PHOTON;
+	  }
+	} else if (eventMask[iy][ix]==PEDESTAL) {
+	  if (cm==0)
+	    addToPedestal(det->getValue(data, ix, iy),ix,iy);
+	}
+      
+	
 
       return  eventMask[iy][ix];
 

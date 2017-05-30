@@ -376,7 +376,7 @@ In the example before, it would be: {\tt{zzzz}}=4*100000+ 100000
 ./sls_detector_put rx_fifodepth xxxx
 \end{verbatim}
  {\tt{xxxx}} is 100 images by default.
-\item Deactivate a half module (for ROI or debugging):
+\item Deactivate a half module (for ROI or debugging). Note that the MASTER module SHOULD NOT be deactivated:
 \begin{verbatim}
 ./sls_detector_put X:activated 0 
 \end{verbatim}

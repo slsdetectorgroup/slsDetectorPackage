@@ -2,7 +2,7 @@
 #define SLSDETECTORSERVER_DEFS_H
 
 #include "sls_detector_defs.h" 	//default dynamicgain in settings
-#include "registers_m.h"
+#include "RegisterDefs.h"
 #include <stdint.h>
 
 
@@ -10,7 +10,7 @@
 #define GOODBYE 					(-200)
 #define CTRL_SRVR_INIT_TIME_US		(300 * 1000)
 //#define REQUIRED_FIRMWARE_VERSION 16
-//#define FIRMWAREREV				0xcaba	   //temporary should be in firmware
+
 
 /* Struct Definitions */
 typedef struct ip_header_struct {
@@ -27,9 +27,9 @@ typedef struct ip_header_struct {
 } ip_header;
 
 /* Enums */
-enum clkspeed				{FULL_SPEED, HALF_SPEED, QUARTER_SPEED};
+enum CLK_SPEED_INDEX		{FULL_SPEED, HALF_SPEED, QUARTER_SPEED};
 enum ADC_INDEX				{TEMP_FPGA, TEMP_ADC};
-enum DAC_INDEX				{ VB_COMP, VDD_PROT, VIN_COM, VREF_PRECH, VB_PIXBUF, VB_DS, VREF_DS, VREF_COMP };
+enum DAC_INDEX				{VB_COMP, VDD_PROT, VIN_COM, VREF_PRECH, VB_PIXBUF, VB_DS, VREF_DS, VREF_COMP };
 #define DEFAULT_DAC_VALS   	{ 	1220,	/* VB_COMP */		\
 								3000,	/* VDD_PROT */		\
 								1053,	/* VIN_COM */		\
@@ -52,20 +52,15 @@ enum DAC_INDEX				{ VB_COMP, VDD_PROT, VIN_COM, VREF_PRECH, VB_PIXBUF, VB_DS, VR
 
 
 /* Hardware Definitions */
-#define NMAXMODY 					(1)
-#define NMAXMODX  					(1)
-#define NMAXMOD 					(NMAXMODX * NMAXMODY)
-#define NMODY 						(1)
-#define NMODX  						(1)
-#define NMOD 						(NMODX * NMODY)
+#define NMAXMOD 					(1)
+#define NMOD 						(1)
 #define NCHAN 						(256 * 256)
 #define NCHIP 						(8)
 #define NADC						(0)
 #define NDAC 						(8)
-#define NCHANS 						(NCHAN * NCHIP * NMAXMOD)
-#define NDACS 						(NDAC * NMAXMOD)
 #define DYNAMIC_RANGE				(16)
-#define DATA_BYTES					(NMAXMOD * NCHIP * NCHAN * 2)
+#define NUM_BITS_PER_PIXEL			(DYNAMIC_RANGE / 8)
+#define DATA_BYTES					(NCHIP * NCHAN * NUM_BITS_PER_PIXEL)
 #define IP_PACKETSIZE				(0x2052)
 #define CLK_RUN						(40)	/* MHz */
 #define CLK_SYNC					(20)	/* MHz */
@@ -78,6 +73,7 @@ enum DAC_INDEX				{ VB_COMP, VDD_PROT, VIN_COM, VREF_PRECH, VB_PIXBUF, VB_DS, VR
 #define DEFAULT_PERIOD				(2*1000*1000)	//ns
 #define DEFAULT_DELAY				(0)
 #define DEFAULT_HIGH_VOLTAGE		(0)
+#define DEFAULT_TIMING_MODE			(AUTO_TIMING)
 #define DEFAULT_SETTINGS			(DYNAMICGAIN)
 #define DEFAULT_TX_UDP_PORT			(0x7e9a)
 

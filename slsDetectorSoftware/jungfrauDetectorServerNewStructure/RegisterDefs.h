@@ -84,6 +84,9 @@
 #define GET_PERIOD_LSB_REG    			(0x18 << 11)
 #define GET_PERIOD_MSB_REG    			(0x19 << 11)
 
+/** Get Temperature Carlos, incorrectl as get gates */
+#define GET_TEMPERATURE_TMP112_REG		(0x1c << 11)							// in 10ths of millidegrees of TMP112
+
 /* Get Frames from Start 64 bit register (frames from start Run Control) */
 #define FRAMES_FROM_START_PG_LSB_REG	(0x24 << 11)
 #define FRAMES_FROM_START_PG_MSB_REG 	(0x25 << 11)

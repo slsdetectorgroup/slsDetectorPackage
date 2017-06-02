@@ -1210,6 +1210,7 @@ int set_dac(int file_des) {
 				retval[0] = setIODelay(val,imod);
 			else{
 				setDAC(idac,val,imod,mV,retval);
+#ifdef EIGERD
 				if(val != -1) {
 					//changing dac changes settings to undefined
 					switch(idac){
@@ -1226,6 +1227,7 @@ int set_dac(int file_des) {
 						break;
 					}
 				}
+#endif
 			}
 		}
 
@@ -1344,10 +1346,12 @@ int get_adc(int file_des) {
 		iadc = TEMP_FPGAFEBR;
 		break;
 #endif
-#ifdef GOTTHARDD
+#if defined(GOTTHARD) || defined(JUNGFRAUD)
 	case TEMPERATURE_FPGA:
+		iadc = TEMP_FPGA;
 		break;
 	case TEMPERATURE_ADC:
+		iadc = TEMP_ADC;
 		break;
 #endif
 	default:
@@ -2751,15 +2755,24 @@ int set_dynamic_range(int file_des) {
 		ret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 	}  else {
-#ifdef EIGERD
+
 		switch(dr){
+#ifdef EIGERD
 		case -1:case 4:	case 8:	case 16:case 32:break;
+#elif JUNGFRAUD
+		case 16: break;
+#endif
 		default:
+#ifdef EIGERD
 			strcpy(mess,"could not set dynamic range. Must be 4,8,16 or 32.\n");
+#elif JUNGFRAUD
+			strcpy(mess,"could not change dynamic range from 16 for this detector.\n");
+#endif
 			ret = FAIL;
 		}
-#endif
+
 	}
+#ifdef EIGERD
 	if(ret == OK){
 		int old_dr = setDynamicRange(-1);
 		retval=setDynamicRange(dr);
@@ -2783,6 +2796,7 @@ int set_dynamic_range(int file_des) {
 			}
 		}
 	}
+#endif
 #endif
 	if (dr>=0 && retval!=dr)
 		ret=FAIL;

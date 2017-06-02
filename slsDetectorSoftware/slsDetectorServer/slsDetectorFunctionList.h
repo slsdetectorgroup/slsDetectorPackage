@@ -97,12 +97,17 @@ int setROI(int n, ROI arg[], int *retvalsize, int *ret);
 int setSpeed(enum speedVariable arg, int val);
 #if defined(EIGERD) || defined(MYTHEND)
 enum readOutFlags setReadOutFlags(enum readOutFlags val);
+#endif
+#ifdef MYTHEND
 int executeTrimming(enum trimMode mode, int par1, int par2, int imod);
 #endif
 
 // parameters - timer
 int64_t setTimer(enum timerIndex ind, int64_t val);
+#ifndef EIGERD
 int64_t getTimeLeft(enum timerIndex ind);
+#endif
+
 
 // parameters - channel, chip, module, settings
 #ifdef MYTHEND
@@ -128,11 +133,21 @@ int setThresholdEnergy(int ev, int imod);
 #endif
 
 // parameters - dac, adc, hv
-void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]);
-int getADC(enum detAdcIndex ind,  int imod);
+#ifdef JUNGFRAUD
+void serializeToSPI(u_int32_t addr, u_int32_t val, u_int16_t csmask, int numbitstosend, u_int16_t clkmask, u_int16_t digoutmask, int digofset);
+void initDac(int dacnum);
+void prepareADC();
+void setAdc(int addr, int val);
+int voltageToDac(int value);
+int dacToVoltage(unsigned int digital);
+#endif
+void setDAC(enum DAC_INDEX ind, int val, int imod, int mV, int retval[]);
+int getADC(enum ADC_INDEX ind,  int imod);
 #ifndef MYTHEND
 int setHighVoltage(int val);
 #endif
+
+
 
 // parameters - timing, extsig
 #ifdef MYTHEND
@@ -159,7 +174,10 @@ int resetCounterBlock(int startACQ);
 int calibratePedestal(int frames);
 
 #elif JUNGFRAUD
-// jungfrau specific - flashing fpga
+// jungfrau specific - pll, flashing firmware
+void 		resetPLL();
+u_int32_t 	setPllReconfigReg(u_int32_t reg, u_int32_t val);
+void 		configurePll();
 void 		eraseFlash();
 int 		startWritingFPGAprogram(FILE** filefp);
 int 		stopWritingFPGAprogram(FILE* filefp);
@@ -183,7 +201,7 @@ int setAllTrimbits(int val);
 int getAllTrimbits();
 int getBebFPGATemp();
 int activate(int enable);
-int setNetworkParameter(enum detNetworkParameter mode, int value);
+int setNetworkParameter(enum NETWORK_PARA_INDEX mode, int value);
 #endif
 
 
@@ -195,9 +213,14 @@ int startReceiver(int d);
 #endif
 int startStateMachine();
 int stopStateMachine();
+#ifndef JUNGFRAUD
 int startReadOut();
+#endif
 enum runStatus getRunStatus();
 void readFrame(int *ret, char *mess);
+#ifdef JUNGFRAUD
+u_int32_t runBusy(void);
+#endif
 
 
 //common
@@ -206,7 +229,6 @@ int calculateDataBytes();
 int getTotalNumberOfChannels();
 int getTotalNumberOfChips();
 int getTotalNumberOfModules();
-int getNumberOfChannelsPerChip();
 int getNumberOfChannelsPerModule();
 int getNumberOfChipsPerModule();
 int getNumberOfDACsPerModule();
@@ -215,6 +237,7 @@ int getNumberOfADCsPerModule();
 int getNumberOfGainsPerModule();
 int getNumberOfOffsetsPerModule();
 #endif
+int getNumberOfChannelsPerChip();
 
 // sync
 enum masterFlags setMaster(enum masterFlags arg);

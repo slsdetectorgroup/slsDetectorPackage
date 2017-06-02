@@ -6,6 +6,7 @@
 
 #include "slsDetectorFunctionList.h"
 #include "gitInfoJungfrau.h"
+#include "slsDetectorServer_defs.h" //also include RegisterDefs.h
 
 
 
@@ -208,7 +209,6 @@ u_int16_t getHardwareSerialNumber() {
 	return ((bus_r(MOD_SERIAL_NUM_REG) & HARDWARE_SERIAL_NUM_MSK) >> HARDWARE_SERIAL_NUM_OFST);
 }
 
-
 u_int32_t getDetectorNumber(){
 	return bus_r(MOD_SERIAL_NUM_REG);
 }
@@ -396,7 +396,7 @@ void FPGATouchFlash(){
 
 
 
-/* set up detector*/
+/* set up detector */
 
 void allocateDetectorStructureMemory(){
 	printf("This Server is for 1 Jungfrau module (500k)\n");
@@ -475,7 +475,7 @@ void setupDetector() {
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
 	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY);
 	/*setSpeed(CLOCK_DIVIDER, HALF_SPEED); depends if all the previous stuff works*/
-	setTiming(AUTO_TIMING);
+	setTiming(DEFAULT_TIMING_MODE);
 	setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 }
 
@@ -576,6 +576,7 @@ int setDynamicRange(int dr){
 
 
 /* parameters - readout */
+
 int setSpeed(enum speedVariable arg, int val) {
 
 	if (arg != CLOCK_DIVIDER)
@@ -587,7 +588,7 @@ int setSpeed(enum speedVariable arg, int val) {
 		switch(val){
 
 		// stop state machine if running
-		if(((bus_r(STATUS_REG) & RUN_BUSY_MSK) >> RUN_BUSY_OFST))
+		if(runBusy())
 			stopStateMachine();
 
 		// todo in firmware, for now setting half speed
@@ -767,7 +768,7 @@ int setModule(sls_detector_module myMod){
 
 	//set dac values
 	for(i=0;i<myMod.ndac;i++)
-		setDAC((enum detDacIndex)i,myMod.dacs[i],myMod.module,0,retval);
+		setDAC((enum DAC_INDEX)i,myMod.dacs[i],myMod.module,0,retval);
 
 	return thisSettings;
 }
@@ -779,7 +780,7 @@ int getModule(sls_detector_module *myMod){
 
 	//dacs
 	for(i=0;i<NDAC;i++)
-		setDAC((enum detDacIndex)i,-1,-1,0,retval);
+		setDAC((enum DAC_INDEX)i,-1,-1,0,retval);
 
 	//copy to local copy as well
 	if (detectorModules)
@@ -862,66 +863,227 @@ enum detectorSettings getSettings(){
 
 
 
-
-
 /* parameters - dac, adc, hv */
 
-void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]){
 
-	if(ind == VTHRESHOLD){
-		int ret[5];
-		setDAC(VCMP_LL,val,imod,mV,retval);
-			ret[0] = retval[mV];
-		setDAC(VCMP_LR,val,imod,mV,retval);
-			ret[1] = retval[mV];
-		setDAC(VCMP_RL,val,imod,mV,retval);
-			ret[2] = retval[mV];
-		setDAC(VCMP_RR,val,imod,mV,retval);
-			ret[3] = retval[mV];
-		setDAC(VCP,val,imod,mV,retval);
-			ret[4] = retval[mV];
-
-
-		if((ret[0]== ret[1])&&
-				(ret[1]==ret[2])&&
-				(ret[2]==ret[3]) && 
-		   (ret[3]==ret[4]))
-		  cprintf(GREEN,"vthreshold match\n");
-		else{
-		  retval[0] = -1;retval[1] = -1;
-		  cprintf(RED,"vthreshold mismatch 0:%d 1:%d 2:%d 3:%d\n",
-			  ret[0],ret[1],ret[2],ret[3]);
-		}
-		return;
-	}
-	char iname[10];
-
-	if(((int)ind>=0)&&((int)ind<NDAC))
-		strcpy(iname,dac_names[(int)ind]);
-	else{
-		printf("dac value outside range:%d\n",(int)ind);
-		strcpy(iname,dac_names[0]);
-	}
+void serializeToSPI(u_int32_t addr, u_int32_t val, u_int16_t csmask, int numbitstosend, u_int16_t clkmask, u_int16_t digoutmask, int digofset) {
 #ifdef VERBOSE
-	if(val >= 0)
-		printf("Setting dac %d: %s to %d ",ind, iname,val);
+	if (numbitstosend == 16)
+		printf("Writing to ADC SPI Register: 0x%04x\n",val);
 	else
-		printf("Getting dac %d: %s ",ind, iname);
-	if(mV)
-		printf("in mV\n");
-	else
-		printf("in dac units\n");
+		printf("Writing to SPI Register: 0x%08x\n", val);
 #endif
-	if(val >= 0)
-		Feb_Control_SetDAC(iname,val,mV);
-	int k;
-	Feb_Control_GetDAC(iname, &k,0);
-	retval[0] = k;
-	Feb_Control_GetDAC(iname,&k,1);
-	retval[1] = k;
 
-	(detectorModules)->dacs[ind] = retval[0];
+	u_int16_t valw;
 
+	// start point
+	valw = 0xffff; 		/**todo testwith old board 0xff for adc_spi */			// old board compatibility (not using specific bits)
+	bus_w16 (addr, valw);
+
+	// chip sel bar down
+	valw &= ~csmask; /* todo with test: done a bit different, not with previous value */
+	bus_w16 (addr, valw);
+
+	{
+		int i = 0;
+		for (i = 0; i < numbitstosend; ++i) {
+
+			// clk down
+			valw &= ~clkmask;
+			bus_w16 (addr, valw);
+
+			// write data (i)
+			valw = ((valw & ~digoutmask) + 										// unset bit
+					(((val >> (numbitstosend - 1 - i)) & 0x1) << digofset)); 	// each bit from val starting from msb
+			bus_w16 (addr, valw);
+
+			// clk up
+			valw |= clkmask ;
+			bus_w16 (addr, valw);
+		}
+	}
+
+	// chip sel bar up
+	valw |= csmask; /* todo with test: not done for spi */
+	bus_w16 (addr, valw);
+
+	//clk down
+	valw &= ~clkmask;
+	bus_w16 (addr, valw);
+
+	// stop point = start point of course
+	valw = 0xffff; 		/**todo testwith old board 0xff for adc_spi */			// old board compatibility (not using specific bits)
+	bus_w16 (addr, valw);
+
+	printf("\n");
+}
+
+
+
+void initDac(int dacnum) {
+	printf("\n Initializing dac for %d to \n",dacnum);
+
+	u_int32_t codata;
+	int csdx 		= dacnum / NDAC + DAC_SERIAL_CS_OUT_OFST; 	// old board (16 dacs),so can be DAC_SERIAL_CS_OUT_OFST or +1
+	int dacchannel 	= 0xf;										// all channels
+	int dacvalue	= 0x6; 										// can be any random value (just writing to power up)
+	printf("Write to Input Register\n"
+			"Chip select bit:%d\n"
+			"Dac Channel:0x%x\n3"
+			"Dac Value:0x%x",
+			csdx, dacchannel, dacvalue);
+
+	codata = LTC2620_DAC_CMD_WRITE +											// command to write to input register
+			((dacchannel << LTC2620_DAC_ADDR_OFST) & LTC2620_DAC_ADDR_MSK) +	// all channels
+			((dacvalue << LTC2620_DAC_DATA_OFST) & LTC2620_DAC_DATA_MSK);		// any random value
+	serializeToSPI(SPI_REG, codata, (0x1 << csdx), LTC2620_DAC_NUMBITS,
+			DAC_SERIAL_CLK_OUT_MSK, DAC_SERIAL_DIGITAL_OUT_MSK, DAC_SERIAL_DIGITAL_OUT_OFST);
+}
+
+
+
+void prepareADC(){
+	printf("Preparing ADC\n");
+
+	//power mode reset
+	setAdc(AD9257_POWER_MODE_REG,
+			(AD9257_INT_RESET_VAL << AD9257_POWER_INTERNAL_OFST) & AD9257_POWER_INTERNAL_MSK);
+	//power mode chip run
+	setAdc(AD9257_POWER_MODE_REG,
+			(AD9257_INT_CHIP_RUN_VAL << AD9257_POWER_INTERNAL_OFST) & AD9257_POWER_INTERNAL_MSK);
+
+	//output clock phase
+	setAdc(AD9257_OUT_PHASE_REG,
+			(AD9257_OUT_CLK_60_VAL << AD9257_OUT_CLK_OFST) & AD9257_OUT_CLK_MSK);
+
+	// lvds-iee reduced , binary offset
+	setAdc(AD9257_OUT_MODE_REG,
+			(AD9257_OUT_LVDS_IEEE_VAL << AD9257_OUT_LVDS_OPT_OFST) & AD9257_OUT_LVDS_OPT_MSK);
+
+	// all devices on chip to receive next command
+	setAdc(AD9257_DEV_IND_2_REG,
+			AD9257_CHAN_H_MSK | AD9257_CHAN_G_MSK | AD9257_CHAN_F_MSK | AD9257_CHAN_E_MSK);
+	setAdc(AD9257_DEV_IND_1_REG,
+			AD9257_CHAN_D_MSK | AD9257_CHAN_C_MSK | AD9257_CHAN_B_MSK | AD9257_CHAN_A_MSK |
+			AD9257_CLK_CH_DCO_MSK | AD9257_CLK_CH_IFCO_MSK);
+
+	// vref 1.33
+	setAdc(AD9257_VREF_REG,
+			(AD9257_VREF_1_33_VAL << AD9257_VREF_OFST) & AD9257_VREF_MSK);
+
+	// no test mode
+	setAdc(AD9257_TEST_MODE_REG,
+			(AD9257_NONE_VAL << AD9257_OUT_TEST_OFST) & AD9257_OUT_TEST_MSK);
+
+#ifdef TESTADC
+	printf("***************************************** *******\n");
+	printf("******* PUTTING ADC IN TEST MODE!!!!!!!!! *******\n");
+	printf("***************************************** *******\n");
+	// mixed bit frequency test mode
+	setAdc(AD9257_TEST_MODE_REG,
+			(AD9257_MIXED_BIT_FREQ_VAL << AD9257_OUT_TEST_OFST) & AD9257_OUT_TEST_MSK);
+#endif
+}
+
+
+
+void setAdc(int addr, int val) {
+
+	u_int32_t codata;
+	codata = val + (addr << 8);
+	printf("\n Setting Adc spi register. Addr: 0x%04x Value: 0x%04x\n", addr, val);
+	serializeToSPI(ADC_SPI_REG, codata, ADC_SERIAL_CS_OUT_MSK, AD9257_ADC_NUMBITS,
+			ADC_SERIAL_CLK_OUT_MSK, ADC_SERIAL_DATA_OUT_MSK, ADC_SERIAL_DATA_OUT_OFST);
+}
+
+
+int voltageToDac(int value){
+	int vmin = 0;
+	int vmax = 2500;
+	int nsteps = 4096;
+	if ((value < vmin) || (value > vmax)) return -1;
+	return (int)(((value - vmin) / (vmax - vmin)) * (nsteps - 1) + 0.5);
+}
+
+int dacToVoltage(unsigned int digital){
+	int vmin = 0;
+	int vmax = 2500;
+	int nsteps = 4096;
+	int v = vmin + (vmax - vmin) * digital / (nsteps - 1);
+	if((v < 0) || (v > nsteps - 1))
+		return -1;
+	return v;
+}
+
+
+
+void setDAC(enum DAC_INDEX ind, int val, int imod, int mV, int retval[]){
+
+	//if set and mv, convert to dac
+	if (val > 0 && mV)
+		val = voltageToDac(val); //gives -1 on error
+
+
+	if ( (val >= 0) || (val == -100)) {
+		u_int32_t codata;
+		int csdx 		= dacnum / NDAC + DAC_SERIAL_CS_OUT_OFST; 	// old board (16 dacs),so can be DAC_SERIAL_CS_OUT_OFST or +1
+		int dacchannel 	= dacnum % NDAC;							// 0-8, dac channel number (also for dacnum 9-15 in old board)
+
+		printf("\n Setting of DAC %d with value %d\n",dacnum, dacvalue);
+		// command
+		if (dacvalue >= 0) {
+			printf("Write to Input Register and Update\n");
+			codata = LTC2620_DAC_CMD_SET;
+
+		} else if (dacvalue == -100) {
+			printf("POWER DOWN\n");
+			codata = LTC2620_DAC_CMD_POWER_DOWN;
+		}
+		// address
+		printf("Chip select bit:%d\n"
+				"Dac Channel:0x%x\n3"
+				"Dac Value:0x%x",
+				csdx, dacchannel, dacvalue);
+		codata += ((dacchannel << LTC2620_DAC_ADDR_OFST) & LTC2620_DAC_ADDR_MSK) +
+				((dacvalue << LTC2620_DAC_DATA_OFST) & LTC2620_DAC_DATA_MSK);
+		// to spi
+		serializeToSPI(SPI_REG, codata, (0x1 << csdx), LTC2620_DAC_NUMBITS,
+				DAC_SERIAL_CLK_OUT_MSK, DAC_SERIAL_DIGITAL_OUT_MSK, DAC_SERIAL_DIGITAL_OUT_OFST);
+
+		dacValues[dacnum] = dacvalue;
+	}
+
+	printf("\nGetting DAC %d\n",dacnum);
+	retval[0] = dacValues[dacnum];
+	retval[1] = dacToVoltage(retval[0]);
+}
+
+
+int getADC(enum ADC_INDEX ind,  int imod){
+
+	char tempnames[2][20]={"VRs/FPGAs Temperature", "ADCs/ASICs Temperature"};
+	printf("Getting Temperature for %s\n",tempnames[ind]);
+	u_int32_t addr = GET_TEMPERATURE_TMP112_REG;
+	u_int32_t val = 0;
+	int retval = -1;
+
+	for(int i = 0; i < 10; i++) {
+		switch((int)ind){
+
+		case TEMP_FPGA:
+			val = (val<<1) + ((bus_r(GET_TEMPERATURE_TMP112_REG) & (2)) >> 1);
+			break;
+		case TEMPADC:
+			val= (val<<1) + (bus_r(GET_TEMPERATURE_TMP112_REG) & (1));
+			break;
+		}
+	}
+	/** or just read it */
+	retval = ((int)tempVal) / 4.0;
+
+	printf("Temperature %s: %.2f°C\n",tempnames[ind],retval);
+
+	return retval;
 }
 
 
@@ -952,158 +1114,34 @@ int setHighVoltage(int val){
 }
 
 
-int getADC(enum detAdcIndex ind,  int imod){
-	int retval = -1;
-	char tempnames[6][20]={"FPGA EXT", "10GE","DCDC", "SODL", "SODR", "FPGA"};
-	char cstore[255];
 
-	switch(ind){
-		case TEMP_FPGA:
-			retval=getBebFPGATemp()*1000;
-			break;
-		case TEMP_FPGAFEBL:
-			retval=Feb_Control_GetLeftFPGATemp();
-			break;
-		case TEMP_FPGAFEBR:
-			retval=Feb_Control_GetRightFPGATemp();
-			break;
-		case TEMP_FPGAEXT:
-		case TEMP_10GE:
-		case TEMP_DCDC:
-		case TEMP_SODL:
-		case TEMP_SODR:
-			sprintf(cstore,"more  /sys/class/hwmon/hwmon%d/device/temp1_input",ind);
-			FILE* sysFile = popen(cstore, "r");
-			fgets(cstore, sizeof(cstore), sysFile);
-			pclose(sysFile);
-			sscanf(cstore,"%d",&retval);
-			break;
+
+
+
+/* parameters - timing, extsig */
+
+
+enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
+
+	if(arg != GET_EXTERNAL_COMMUNICATION_MODE){
+		switch((int)arg){
+		case AUTO_TIMING:			bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);	break;
+		case TRIGGER_EXPOSURE:		bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);	break;
 		default:
-			return -1;
-	}
-
-	printf("Temperature %s: %f°C\n",tempnames[ind],(double)retval/1000.00);
-
-	return retval;
-}
-
-
-
-
-
-
-
-
-int startStateMachine(){
-	printf("*******Starting State Machine*******\n");
-
-	cleanFifos();
-
-	//start state machine
-	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_START_ACQ_MSK);
-	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_START_ACQ_MSK);
-
-	printf("Status Register: %08x\n",bus_r(STATUS_REG));
-}
-
-
-int stopStateMachine(){
-	cprintf(BG_RED,"*******Stopping State Machine*******\n");
-
-	//stop state machine
-	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STOP_ACQ_MSK);
-	usleep(100);
-	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_STOP_ACQ_MSK);
-
-	printf("Status Register: %08x\n",bus_r(STATUS_REG));
-	return OK;
-}
-
-
-
-
-
-enum runStatus getRunStatus(){
-#ifdef VERBOSE
-	printf("Getting status\n");
-#endif
-
-	enum runStatus s;
-	u_int32_t retval = bus_r(STATUS_REG);
-	printf("Status Register: %08x\n",retval);
-
-	//running
-	if(((retval & RUN_BUSY_MSK) >> RUN_BUSY_OFST)) {
-		if ((retval & WAITING_FOR_TRIGGER_MSK) >> WAITING_FOR_TRIGGER_OFST) {
-			printf("-----------------------------------WAITING-----------------------------------\n");
-			s=WAITING;
-		}
-		else{
-			printf("-----------------------------------RUNNING-----------------------------------\n");
-			s=RUNNING;
+			cprintf(RED,"Unknown timing mode %d\n", arg);
+			return GET_EXTERNAL_COMMUNICATION_MODE;
 		}
 	}
-
-	//not running
-	else {
-		if ((retval & STOPPED_MSK) >> STOPPED_OFST) {
-			printf("-----------------------------------STOPPED--------------------------\n");
-			s=STOPPED;
-		} else if ((retval & RUNMACHINE_BUSY_MSK) >> RUNMACHINE_BUSY_OFST) {
-			printf("-----------------------------------READ MACHINE BUSY--------------------------\n");
-			s=TRANSMITTING;
-		} else if (!retval) {
-			printf("-----------------------------------IDLE--------------------------------------\n");
-			s=IDLE;
-		} else {
-			printf("-----------------------------------Unknown status %08x--------------------------------------\n", retval);
-			s=ERROR;
-		}
-	}
-
-	return s;
-}
-
-
-
-void readFrame(int *ret, char *mess){
-	if(!Feb_Control_WaitForFinishedFlag(5000))
-		cprintf(RED,"Error: Waiting for finished flag\n");
-	cprintf(GREEN,"Acquisition finished***\n");
-
-	if(eiger_storeinmem){
-		printf("requesting images after storing in memory\n");
-		if(startReadOut() == FAIL){
-			strcpy(mess,"Could not execute read image requests\n");
-			*ret = (int)FAIL;
-			return;
-		}
-	}
-
-	//wait for detector to send
-	Beb_EndofDataSend(send_to_ten_gig);
-
-
-	printf("*****Done Waiting...\n");
-	*ret = (int)FINISHED;
-	strcpy(mess,"acquisition successfully finished\n");
+	if (bus_r(EXT_SIGNAL_REG) == EXT_SIGNAL_MSK)
+		return TRIGGER_EXPOSURE;
+	return AUTO_TIMING;
 }
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
+/* configure mac */
 
 
 long int calcChecksum(int sourceip, int destip) {
@@ -1187,6 +1225,71 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 }
 
 
+
+
+
+
+/* jungfrau specific - pll, flashing fpga */
+
+
+
+void resetPLL() {
+	// reset PLL Reconfiguration and PLL
+	bus_w(PLL_CONTROL_REG, bus_r(PLL_CONTROL_REG) | PLL_CTRL_RECONFIG_RST_MSK | PLL_CTRL_RST_MSK);
+	usleep(100);
+	bus_w(PLL_CONTROL_REG, bus_r(PLL_CONTROL_REG) & ~PLL_CTRL_RECONFIG_RST_MSK & ~PLL_CTRL_RST_MSK);
+}
+
+
+u_int32_t setPllReconfigReg(u_int32_t reg, u_int32_t val) {
+
+	// set parameter
+	bus_w(PLL_PARAM_REG, val);
+
+	// set address
+	bus_w(PLL_CONTROL_REG, (reg << PLL_CTRL_ADDR_OFST) & PLL_CTRL_ADDR_MSK);
+	usleep(10*1000);
+
+	//write parameter
+	bus_w(PLL_CONTROL_REG, bus_r(PLL_CONTROL_REG) | PLL_CTRL_WR_PARAMETER_MSK);
+	bus_w(PLL_CONTROL_REG, bus_r(PLL_CONTROL_REG) & ~PLL_CTRL_WR_PARAMETER_MSK);
+	usleep(10*1000);
+
+	return val;
+}
+
+
+
+
+void configurePll() {
+	u_int32_t val;
+	int32_t phase=0, inv=0;
+
+	printf("phase in %d\n", clkPhase[1]);
+	if (clkPhase[1]>0) {
+		inv=0;
+		phase=clkPhase[1];
+	}  else {
+		inv=1;
+		phase=-1*clkPhase[1];
+	}
+	printf("phase out %d %08x\n", phase, phase);
+
+	if (inv) {
+		val = ((phase << PLL_SHIFT_NUM_SHIFTS_OFST) & PLL_SHIFT_NUM_SHIFTS_MSK) | PLL_SHIFT_CNT_SLCT_C1_VAL | PLL_SHIFT_UP_DOWN_NEG_VAL;
+		printf("**************** phase word %08x\n", val);
+		setPllReconfigReg(PLL_PHASE_SHIFT_REG, val);
+	} else {
+		val = ((phase << PLL_SHIFT_NUM_SHIFTS_OFST) & PLL_SHIFT_NUM_SHIFTS_MSK) | PLL_SHIFT_CNT_SLCT_C0_VAL | PLL_SHIFT_UP_DOWN_NEG_VAL;
+		printf("**************** phase word %08x\n", val);
+		setPllReconfigReg(PLL_PHASE_SHIFT_REG, val);
+
+		printf("**************** phase word %08x\n", val);
+		val = ((phase << PLL_SHIFT_NUM_SHIFTS_OFST) & PLL_SHIFT_NUM_SHIFTS_MSK) | PLL_SHIFT_CNT_SLCT_C2_VAL;
+		setPllReconfigReg(PLL_PHASE_SHIFT_REG, val);
+	}
+	usleep(10000);
+}
 
 
 
@@ -1290,15 +1393,122 @@ int writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp){
 
 
 
+/* aquisition */
 
+int startStateMachine(){
+	printf("*******Starting State Machine*******\n");
 
+	cleanFifos();
 
-int calculateDataBytes(){
-	if(send_to_ten_gig)
-		return setDynamicRange(-1)*16*TEN_GIGA_BUFFER_SIZE;
-	else
-		return setDynamicRange(-1)*16*ONE_GIGA_BUFFER_SIZE;
+	//start state machine
+	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_START_ACQ_MSK);
+	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_START_ACQ_MSK);
+
+	printf("Status Register: %08x\n",bus_r(STATUS_REG));
 }
+
+
+int stopStateMachine(){
+	cprintf(BG_RED,"*******Stopping State Machine*******\n");
+
+	//stop state machine
+	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STOP_ACQ_MSK);
+	usleep(100);
+	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_STOP_ACQ_MSK);
+
+	printf("Status Register: %08x\n",bus_r(STATUS_REG));
+	return OK;
+}
+
+
+
+
+
+enum runStatus getRunStatus(){
+#ifdef VERBOSE
+	printf("Getting status\n");
+#endif
+
+	enum runStatus s;
+	u_int32_t retval = bus_r(STATUS_REG);
+	printf("Status Register: %08x\n",retval);
+
+	//running
+	if(((retval & RUN_BUSY_MSK) >> RUN_BUSY_OFST)) {
+		if ((retval & WAITING_FOR_TRIGGER_MSK) >> WAITING_FOR_TRIGGER_OFST) {
+			printf("-----------------------------------WAITING-----------------------------------\n");
+			s=WAITING;
+		}
+		else{
+			printf("-----------------------------------RUNNING-----------------------------------\n");
+			s=RUNNING;
+		}
+	}
+
+	//not running
+	else {
+		if ((retval & STOPPED_MSK) >> STOPPED_OFST) {
+			printf("-----------------------------------STOPPED--------------------------\n");
+			s=STOPPED;
+		} else if ((retval & RUNMACHINE_BUSY_MSK) >> RUNMACHINE_BUSY_OFST) {
+			printf("-----------------------------------READ MACHINE BUSY--------------------------\n");
+			s=TRANSMITTING;
+		} else if (!retval) {
+			printf("-----------------------------------IDLE--------------------------------------\n");
+			s=IDLE;
+		} else {
+			printf("-----------------------------------Unknown status %08x--------------------------------------\n", retval);
+			s=ERROR;
+		}
+	}
+
+	return s;
+}
+
+
+
+void readFrame(int *ret, char *mess){
+
+	// wait for status to be done
+	while(runBusy()){
+		usleep(500);
+	}
+
+	// frames left to give status
+	int64_t retval = getTimeLeft(FRAME_NUMBER) + 1;
+	if ( retval > 0) {
+		*ret = (int)FAIL;
+		sprintf(mess,"no data and run stopped: %lld frames left\n",retval);
+		cprintf(RED,"%s\n",mess);
+	} else {
+		*ret = (int)FINISHED;
+		sprintf(mess,"acquisition successfully finished\n");
+		printf("%s",mess);
+	}
+}
+
+
+
+u_int32_t runBusy(void) {
+	u_int32_t s = ((bus_r(STATUS_REG) & RUN_BUSY_MSK) >> RUN_BUSY_OFST);
+#ifdef VERBOSE
+	printf("Status Register: %08x\n", s);
+#endif
+	return s;
+}
+
+
+
+
+
+
+
+
+
+
+/* common */
+
+
 
 
 int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod){
@@ -1378,36 +1588,22 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod){
 }
 
 
+int calculateDataBytes(){
+	return DATA_BYTES;
+}
 
-int getTotalNumberOfChannels(){return getNumberOfChannelsPerModule();}
-int getTotalNumberOfChips(){return NCHIP;}
-int getTotalNumberOfModules(){return 1;}
-int getNumberOfChannelsPerChip(){return  NCHAN;}
+int getTotalNumberOfChannels(){return getNumberOfChannelsPerModule() * getTotalNumberOfModules;}
+int getTotalNumberOfChips(){return getNumberOfChipsPerModule * getTotalNumberOfModules;}
+int getTotalNumberOfModules(){return NMOD;}
 int getNumberOfChannelsPerModule(){return  getNumberOfChannelsPerChip() * getTotalNumberOfChips();}
 int getNumberOfChipsPerModule(){return  NCHIP;}
 int getNumberOfDACsPerModule(){return  NDAC;}
 int getNumberOfADCsPerModule(){return  NADC;}
-int getNumberOfGainsPerModule(){return  NGAIN;}
-int getNumberOfOffsetsPerModule(){return  NOFFSET;}
+int getNumberOfChannelsPerChip(){return  NCHAN;}
 
 
 
-
-
-enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
-	if(arg != GET_EXTERNAL_COMMUNICATION_MODE){
-		switch((int)arg){
-		case AUTO_TIMING:			bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);	break;
-		case TRIGGER_EXPOSURE:		bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);	break;
-		default:
-			cprintf(RED,"Unknown timing mode %d\n", arg);
-			return GET_EXTERNAL_COMMUNICATION_MODE;
-		}
-	}
-	if (bus_r(EXT_SIGNAL_REG) == EXT_SIGNAL_MSK)
-		return TRIGGER_EXPOSURE;
-	return AUTO_TIMING;
-}
+/* sync */
 
 enum masterFlags setMaster(enum masterFlags arg){
 	return NO_MASTER;
@@ -1416,5 +1612,10 @@ enum masterFlags setMaster(enum masterFlags arg){
 enum synchronizationMode setSynchronization(enum synchronizationMode arg){
 	return NO_SYNCHRONIZATION;
 }
+
+
+
+
+
 
 //#endif

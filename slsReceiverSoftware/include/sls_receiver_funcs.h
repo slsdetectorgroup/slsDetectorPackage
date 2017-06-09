@@ -51,7 +51,7 @@ enum {
 	F_ENABLE_RECEIVER_TEN_GIGA,		/**< enable 10Gbe in receiver */
 	F_SET_RECEIVER_FIFO_DEPTH,		/**< set receiver fifo depth */
 
-	F_ACTIVATE,						/** < activate/deactivate readout */
+	F_RECEIVER_ACTIVATE,			/** < activate/deactivate readout */
 	F_STREAM_DATA_FROM_RECEIVER,		/**< stream data from receiver to client */
 	F_READ_RECEIVER_TIMER,			/** < sets the timer between each data stream in receiver */
 	F_SET_FLIPPED_DATA_RECEIVER,		/** < sets the enable to flip data across x/y axis (bottom/top) */

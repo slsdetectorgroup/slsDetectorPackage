@@ -64,11 +64,21 @@ void qTabMeasurement::SetupWidgetWindow(){
 	//Number of Triggers
 	spinNumTriggers->setValue((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1));
 	//delay
-	time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,-1)*(1E-9))));
-	spinDelay->setValue(time);
-	comboDelayUnit->setCurrentIndex((int)unit);
+	if (detType == slsDetectorDefs::EIGER) {
+		lblDelay->setEnabled(false);
+		spinDelay->setEnabled(false);
+		comboDelayUnit->setEnabled(false);
+	} else {
+		time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,-1)*(1E-9))));
+		spinDelay->setValue(time);
+		comboDelayUnit->setCurrentIndex((int)unit);
+	}
 	//gates
-	spinNumGates->setValue((int)myDet->setTimer(slsDetectorDefs::GATES_NUMBER,-1));
+	if ((detType == slsDetectorDefs::EIGER) || (detType == slsDetectorDefs::JUNGFRAU)) {
+		lblNumGates->setEnabled(false);
+		spinNumGates->setEnabled(false);
+	} else
+		spinNumGates->setValue((int)myDet->setTimer(slsDetectorDefs::GATES_NUMBER,-1));
 	//probes
 	if(detType == slsDetectorDefs::MYTHEN)
 		spinNumProbes->setValue((int)myDet->setTimer(slsDetectorDefs::PROBES_NUMBER,-1));
@@ -274,11 +284,17 @@ void qTabMeasurement::Initialization(){
 	connect(comboPeriodUnit,SIGNAL(currentIndexChanged(int)),	this,	SLOT(setAcquisitionPeriod()));
 	//Number of Triggers
 	connect(spinNumTriggers,SIGNAL(valueChanged(int)),			this,	SLOT(setNumTriggers(int)));
+
 	//Delay After Trigger
-	connect(spinDelay,SIGNAL(valueChanged(double)),				this,	SLOT(setDelay()));
-	connect(comboDelayUnit,SIGNAL(currentIndexChanged(int)),	this,	SLOT(setDelay()));
+	if (detType != slsDetectorDefs::EIGER) {
+		connect(spinDelay,SIGNAL(valueChanged(double)),				this,	SLOT(setDelay()));
+		connect(comboDelayUnit,SIGNAL(currentIndexChanged(int)),	this,	SLOT(setDelay()));
+	}
+
 	//Number of Gates
-	connect(spinNumGates,SIGNAL(valueChanged(int)),				this,	SLOT(setNumGates(int)));
+	if ((detType != slsDetectorDefs::EIGER) && (detType != slsDetectorDefs::JUNGFRAU))
+		connect(spinNumGates,SIGNAL(valueChanged(int)),				this,	SLOT(setNumGates(int)));
+
 	//Number of Probes
 	connect(spinNumProbes,SIGNAL(valueChanged(int)),			this,	SLOT(setNumProbes(int)));
 }
@@ -784,9 +800,12 @@ void qTabMeasurement::Refresh(){
 		disconnect(spinPeriod,			SIGNAL(valueChanged(double)),		this,	SLOT(setAcquisitionPeriod()));
 		disconnect(comboPeriodUnit,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(setAcquisitionPeriod()));
 		disconnect(spinNumTriggers,		SIGNAL(valueChanged(int)),			this,	SLOT(setNumTriggers(int)));
-		disconnect(spinDelay,			SIGNAL(valueChanged(double)),		this,	SLOT(setDelay()));
-		disconnect(comboDelayUnit,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(setDelay()));
-		disconnect(spinNumGates,		SIGNAL(valueChanged(int)),		 	this,	SLOT(setNumGates(int)));
+		if (detType != slsDetectorDefs::EIGER) {
+			disconnect(spinDelay,			SIGNAL(valueChanged(double)),		this,	SLOT(setDelay()));
+			disconnect(comboDelayUnit,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(setDelay()));
+		}
+		if ((detType != slsDetectorDefs::EIGER) && (detType != slsDetectorDefs::JUNGFRAU))
+			disconnect(spinNumGates,		SIGNAL(valueChanged(int)),		 	this,	SLOT(setNumGates(int)));
 
 #ifdef VERBOSE
 		cout  << "Getting number of measurements & frames" << endl;
@@ -815,14 +834,30 @@ void qTabMeasurement::Refresh(){
 		cout  << "Getting delay after trigger, number of triggers and number of gates" << endl;
 #endif
 		//delay
-		time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,-1)*(1E-9))));
-		spinDelay->setValue(time);
-		comboDelayUnit->setCurrentIndex((int)unit);
+		//delay
+		if (detType == slsDetectorDefs::EIGER) {
+			lblDelay->setEnabled(false);
+			spinDelay->setEnabled(false);
+			comboDelayUnit->setEnabled(false);
+		} else {
+			lblDelay->setEnabled(true);
+			spinDelay->setEnabled(true);
+			comboDelayUnit->setEnabled(true);
+			time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,-1)*(1E-9))));
+			spinDelay->setValue(time);
+			comboDelayUnit->setCurrentIndex((int)unit);
+		}
+		//gates
+		if ((detType == slsDetectorDefs::EIGER) || (detType == slsDetectorDefs::JUNGFRAU)) {
+			lblNumGates->setEnabled(false);
+			spinNumGates->setEnabled(false);
+		} else {
+			lblNumGates->setEnabled(true);
+			spinNumGates->setEnabled(true);
+			spinNumGates->setValue((int)myDet->setTimer(slsDetectorDefs::GATES_NUMBER,-1));
+		}
 		//Number of Triggers
 		spinNumTriggers->setValue((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1));
-		//gates
-		spinNumGates->setValue((int)myDet->setTimer(slsDetectorDefs::GATES_NUMBER,-1));
-
 
 #ifdef VERBOSE
 		cout  << "Getting file name prefix, file index, file write enable and progress index" << endl;
@@ -851,9 +886,12 @@ void qTabMeasurement::Refresh(){
 		connect(spinPeriod,			SIGNAL(valueChanged(double)),		this,	SLOT(setAcquisitionPeriod()));
 		connect(comboPeriodUnit,	SIGNAL(currentIndexChanged(int)),	this,	SLOT(setAcquisitionPeriod()));
 		connect(spinNumTriggers,	SIGNAL(valueChanged(int)),			this,	SLOT(setNumTriggers(int)));
-		connect(spinDelay,			SIGNAL(valueChanged(double)),		this,	SLOT(setDelay()));
-		connect(comboDelayUnit,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(setDelay()));
-		connect(spinNumGates,		SIGNAL(valueChanged(int)),		 	this,	SLOT(setNumGates(int)));
+		if (detType != slsDetectorDefs::EIGER) {
+			connect(spinDelay,			SIGNAL(valueChanged(double)),		this,	SLOT(setDelay()));
+			connect(comboDelayUnit,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(setDelay()));
+		}
+		if ((detType != slsDetectorDefs::EIGER) && (detType != slsDetectorDefs::JUNGFRAU))
+			connect(spinNumGates,		SIGNAL(valueChanged(int)),		 	this,	SLOT(setNumGates(int)));
 
 		//timing mode - will also check if exptime>acq period and also enableprobes()
 		GetModeFromDetector();

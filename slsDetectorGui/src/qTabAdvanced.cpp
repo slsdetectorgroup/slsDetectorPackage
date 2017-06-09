@@ -189,7 +189,8 @@ void qTabAdvanced::SetupWidgetWindow(){
 
 	//updates roi
 	cout << "Getting ROI" << endl;
-	updateROIList();
+	if (myDet->getDetectorsType() == slsDetectorDefs::GOTTHARD)
+		updateROIList();
 
 	//  print receiver configurations
 	if(myDet->getDetectorsType() != slsDetectorDefs::MYTHEN){
@@ -278,10 +279,11 @@ void qTabAdvanced::Initialization(){
 
 	//roi
 
-
-	connect(btnClearRoi,		SIGNAL(clicked()),			this, SLOT(clearROIinDetector()));
-	connect(btnGetRoi,			SIGNAL(clicked()),			this, SLOT(updateROIList()));
-	connect(btnSetRoi,			SIGNAL(clicked()),			this, SLOT(setROI()));
+	if (myDet->getDetectorsType() == slsDetectorDefs::GOTTHARD) {
+		connect(btnClearRoi,		SIGNAL(clicked()),			this, SLOT(clearROIinDetector()));
+		connect(btnGetRoi,			SIGNAL(clicked()),			this, SLOT(updateROIList()));
+		connect(btnSetRoi,			SIGNAL(clicked()),			this, SLOT(setROI()));
+	}
 }
 
 
@@ -1317,7 +1319,8 @@ void qTabAdvanced::Refresh(){
 #ifdef VERBOSE
 		cout << "Getting ROI" << endl;
 #endif
-	updateROIList();
+		if (myDet->getDetectorsType() == slsDetectorDefs::GOTTHARD)
+			updateROIList();
 
 	//update alltirmbits from server
 	if(boxSetAllTrimbits->isEnabled())

@@ -6968,7 +6968,7 @@ int slsDetector::programFPGA(string fname){
 #endif
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
 		if (connectControl() == OK){
-			controlSocket->SendDataOnly(&fnum,sizeof(fnum));cprintf(BG_RED,"size of filesize:%d\n",sizeof(filesize));
+			controlSocket->SendDataOnly(&fnum,sizeof(fnum));cprintf(BG_RED,"size of filesize:%lu\n",sizeof(filesize));
 			controlSocket->SendDataOnly(&filesize,sizeof(filesize));
 			//check opening error
 			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
@@ -7822,8 +7822,8 @@ slsDetectorDefs::runStatus slsDetector::startReceiverReadout(){
 
 int slsDetector::detectorSendToReceiver(bool set){
   int fnum;
-  if(set)	fnum=F_START_RECEIVER;
-  else	fnum=F_STOP_RECEIVER;
+  if(set)	fnum=F_PREPARE_ACQUISITION;
+  else	fnum=F_CLEANUP_ACQUISITION;
   int ret = FAIL;
   char mess[MAX_STR_LENGTH]="";
 

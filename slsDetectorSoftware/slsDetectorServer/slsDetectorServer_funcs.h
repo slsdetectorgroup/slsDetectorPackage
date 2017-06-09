@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 // initialization functions
+int printSocketReadError();
 void basictests();
 void init_detector(int);
 int decode_function(int);
@@ -39,6 +40,7 @@ int get_chip(int);
 int set_all_chips(int);
 int set_module(int);
 int get_module(int);
+int set_all_modules(int);
 int set_settings(int);
 int get_threshold_energy(int);
 int set_threshold_energy(int);
@@ -85,6 +87,7 @@ int reset_fpga(int);
 int power_chip(int);
 int set_activate(int);
 int prepare_acquisition(int);
+int cleanup_acquisition(int);
 
 
 #endif

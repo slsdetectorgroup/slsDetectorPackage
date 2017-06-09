@@ -293,7 +293,7 @@ void allocateDetectorStructureMemory(){
 	(detectorModules)->nadc=NADC;
 	(detectorModules)->nchip=NCHIP;
 	(detectorModules)->nchan=NCHIP*NCHAN;
-	(detectorModules)->module=imod;
+	(detectorModules)->module=0;
 	(detectorModules)->gain=0;
 	(detectorModules)->offset=0;
 	(detectorModules)->reg=0;
@@ -305,11 +305,18 @@ void allocateDetectorStructureMemory(){
 void setupDetector() {
 
 	allocateDetectorStructureMemory();
-
-	//Get dac values
-	int retval[2];
-	for(i=0;i<(detectorModules)->ndac;i++)
-		setDAC((enum DAC_INDEX)i,DEFAULT_DAC_VALS[i],(detectorModules)->module,0,retval);
+	//set dacs
+	printf("Setting Default Dac values\n");
+	{
+		int i = 0;
+		int retval[2]={-1,-1};
+		const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
+		for(i = 0; i < NDAC; ++i) {
+			setDAC((enum DACINDEX)i,defaultvals[i],0,0,retval);
+			if (retval[0] != defaultvals[i])
+				cprintf(RED, "Warning: Setting dac %d failed, wrote %d, read %d\n",i ,defaultvals[i], retval[0]);
+		}
+	}
 
 	//setting default measurement parameters
 	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
@@ -533,7 +540,7 @@ int setModule(sls_detector_module myMod, int delay){
 
 	//set dac values
 	for(i=0;i<myMod.ndac;i++)
-		setDAC((enum DAC_INDEX)i,myMod.dacs[i],myMod.module,0,retval);
+		setDAC((enum DACINDEX)i,myMod.dacs[i],myMod.module,0,retval);
 
 	//includ gap pixels
 	unsigned int tt[263680];
@@ -566,7 +573,7 @@ int getModule(sls_detector_module *myMod){
 
 	//dacs
 	for(i=0;i<NDAC;i++)
-		setDAC((enum DAC_INDEX)i,-1,-1,0,retval);
+		setDAC((enum DACINDEX)i,-1,-1,0,retval);
 
 	//trimbits
 	unsigned int* tt;
@@ -635,8 +642,7 @@ int setThresholdEnergy(int ev, int imod){
 
 /* parameters - dac, adc, hv */
 
-
-void setDAC(enum DAC_INDEX ind, int val, int imod, int mV, int retval[]){
+void setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]){
 
 	if(ind == VTHRESHOLD){
 		int ret[5];
@@ -696,7 +702,7 @@ void setDAC(enum DAC_INDEX ind, int val, int imod, int mV, int retval[]){
 
 
 
-int getADC(enum ADC_INDEX ind,  int imod){
+int getADC(enum ADCINDEX ind,  int imod){
 	int retval = -1;
 	char tempnames[6][20]={"FPGA EXT", "10GE","DCDC", "SODL", "SODR", "FPGA"};
 	char cstore[255];
@@ -793,8 +799,7 @@ enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
 
 /* configure mac */
 
-
-int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int udpport, int udpport2, int ival){
+int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2, int ival) {
 	if (sourcemac != getDetectorMAC()){
 		printf("*************************************************\n");
 		printf("WARNING: actual detector mac address %llx does not match the one from client %llx\n",getDetectorMAC(),sourcemac);
@@ -1050,7 +1055,7 @@ int activate(int enable){
 	return ret;
 }
 
-int setNetworkParameter(enum detNetworkParameter mode, int value){
+int setNetworkParameter(enum NETWORKINDEX mode, int value){
 	return Beb_SetNetworkParameter(mode, value);
 }
 
@@ -1113,15 +1118,13 @@ int stopStateMachine(){
 
 int startReadOut(){
 
+	printf("Requesting images...\n");
 	//RequestImages();
 	int ret_val = 0;
 	dst_requested[0] = 1;
 	while(dst_requested[on_dst]){
 		//waits on data
 		int beb_num = BEB_NUM;//Feb_Control_GetModuleNumber();
-
-
-
 		if  ((ret_val = (!Beb_RequestNImages(beb_num,send_to_ten_gig,on_dst,nimages_per_request,0))))
 			break;
 //		for(i=0;i<nimages_per_request;i++)
@@ -1274,10 +1277,10 @@ int calculateDataBytes(){
 }
 
 
-int getTotalNumberOfChannels(){return getNumberOfChannelsPerModule() * getTotalNumberOfModules;}
-int getTotalNumberOfChips(){return getNumberOfChipsPerModule * getTotalNumberOfModules;}
+int getTotalNumberOfChannels(){return ((int)getNumberOfChannelsPerModule() * (int)getTotalNumberOfModules);}
+int getTotalNumberOfChips(){return ((int)getNumberOfChipsPerModule * (int)getTotalNumberOfModules);}
 int getTotalNumberOfModules(){return NMOD;}
-int getNumberOfChannelsPerModule(){return  getNumberOfChannelsPerChip() * getTotalNumberOfChips();}
+int getNumberOfChannelsPerModule(){return  ((int)getNumberOfChannelsPerChip() * (int)getTotalNumberOfChips());}
 int getNumberOfChipsPerModule(){return  NCHIP;}
 int getNumberOfDACsPerModule(){return  NDAC;}
 int getNumberOfADCsPerModule(){return  NADC;}

@@ -412,7 +412,7 @@ int Beb_Activate(int enable){
 }
 
 
-int Beb_SetNetworkParameter(enum detNetworkParameter mode, int val){
+int Beb_SetNetworkParameter(enum NETWORKINDEX mode, int val){
 
 	if(!Beb_activated)
 		return val;

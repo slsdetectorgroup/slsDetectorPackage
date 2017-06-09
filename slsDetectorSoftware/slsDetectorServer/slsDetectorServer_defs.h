@@ -11,27 +11,21 @@
 #include "sls_detector_defs.h"
 #include <stdint.h>
 
-#define GOODBYE 		-200
+/** This is only an example file!!! */
 
+/*
+#define GOODBYE 					 		(-200)
+enum DAC_INDEX					 			{examplesdac}
 
-/* examples*/
-#ifdef JUNGFRAU_DHANYA
-#define NCHAN 			(256*256)
-#define NCHIP 			8
-#define NADC			0
-#else
-#define NCHAN 			1
-#define NCHIP 			1
-#define NDAC 			1
-#define NADC			1
-#endif
-
-#define NMAXMODX  		1
-#define NMAXMODY 		1
-#define NMAXMOD 		NMAXMODX*NMAXMODY
-#define NCHANS 			NCHAN*NCHIP*NMAXMOD
-#define NDACS 			NDAC*NMAXMOD
-
-
+ Hardware Definitions
+#define NMAXMOD 					 		(1)
+#define NMOD 						 		(1)
+#define NCHAN 						 		(256 * 256)
+#define NCHIP 						 		(4)
+#define NADC						 		(0)
+#define NDAC 						 		(16)
+#define NGAIN						 		(0)
+#define NOFFSET						 		(0)
+*/
 
 #endif /* SLSDETECTORSERVER_DEFS_H_ */

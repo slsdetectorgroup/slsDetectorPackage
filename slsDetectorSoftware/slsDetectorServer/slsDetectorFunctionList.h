@@ -143,8 +143,8 @@ void 		setAdc(int addr, int val);
 int 		voltageToDac(int value);
 int 		dacToVoltage(unsigned int digital);
 #endif
-void 		setDAC(enum DAC_INDEX ind, int val, int imod, int mV, int retval[]);
-int 		getADC(enum ADC_INDEX ind,  int imod);
+void 		setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]);
+int 		getADC(enum ADCINDEX ind,  int imod);
 #ifndef MYTHEND
 int 		setHighVoltage(int val);
 #endif
@@ -204,7 +204,7 @@ int setAllTrimbits(int val);
 int getAllTrimbits();
 int getBebFPGATemp();
 int activate(int enable);
-int setNetworkParameter(enum NETWORK_PARA_INDEX mode, int value);
+int setNetworkParameter(enum NETWORKINDEX mode, int value);
 #endif
 
 

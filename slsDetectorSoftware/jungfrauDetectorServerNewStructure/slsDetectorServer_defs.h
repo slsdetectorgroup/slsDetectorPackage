@@ -28,8 +28,8 @@ typedef struct ip_header_struct {
 
 /* Enums */
 enum CLK_SPEED_INDEX		{FULL_SPEED, HALF_SPEED, QUARTER_SPEED};
-enum ADC_INDEX				{TEMP_FPGA, TEMP_ADC};
-enum DAC_INDEX				{VB_COMP, VDD_PROT, VIN_COM, VREF_PRECH, VB_PIXBUF, VB_DS, VREF_DS, VREF_COMP };
+enum ADCINDEX				{TEMP_FPGA, TEMP_ADC};
+enum DACINDEX				{VB_COMP, VDD_PROT, VIN_COM, VREF_PRECH, VB_PIXBUF, VB_DS, VREF_DS, VREF_COMP };
 #define DEFAULT_DAC_VALS   	{ 	1220,	/* VB_COMP */		\
 								3000,	/* VDD_PROT */		\
 								1053,	/* VIN_COM */		\

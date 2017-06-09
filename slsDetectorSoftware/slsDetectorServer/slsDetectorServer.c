@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 
 
 extern int sockfd;

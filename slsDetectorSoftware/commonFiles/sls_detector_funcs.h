@@ -111,6 +111,7 @@ enum detFuncs{
   F_POWER_CHIP,				/**< power chip */
   F_ACTIVATE,				/** < activate */
   F_PREPARE_ACQUISITION,	/** < prepare acquisition */
+  F_CLEANUP_ACQUISITION,		/** < clean up after acquisition */
   /* Always append functions hereafter!!! */
 
   /* Always append functions before!!! */

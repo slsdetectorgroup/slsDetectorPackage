@@ -422,7 +422,7 @@ void allocateDetectorStructureMemory(){
 	(detectorModules)->nadc=NADC;
 	(detectorModules)->nchip=NCHIP;
 	(detectorModules)->nchan=NCHIP*NCHAN;
-	(detectorModules)->module=imod;
+	(detectorModules)->module=0;
 	(detectorModules)->gain=0;
 	(detectorModules)->offset=0;
 	(detectorModules)->reg=0;
@@ -451,12 +451,12 @@ void setupDetector() {
 	printf("Setting Default Dac values\n");
 	{
 		int i = 0;
-		int retval = -1;
+		int retval[2]={-1,-1};
 		const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
 		for(i = 0; i < NDAC; ++i) {
-			retval = setDac(i, defaultvals[i]);
-			if (retval != defaultvals[i])
-				cprintf(RED, "Error: Setting dac %d failed, wrote %d, read %d\n",i ,defaultvals[i], retval);
+			setDAC((enum DACINDEX)i,defaultvals[i],0,0,retval);
+			if (retval[0] != defaultvals[i])
+				cprintf(RED, "Warning: Setting dac %d failed, wrote %d, read %d\n",i ,defaultvals[i], retval[0]);
 		}
 	}
 
@@ -768,7 +768,7 @@ int setModule(sls_detector_module myMod){
 
 	//set dac values
 	for(i=0;i<myMod.ndac;i++)
-		setDAC((enum DAC_INDEX)i,myMod.dacs[i],myMod.module,0,retval);
+		setDAC((enum DACINDEX)i,myMod.dacs[i],myMod.module,0,retval);
 
 	return thisSettings;
 }
@@ -780,7 +780,7 @@ int getModule(sls_detector_module *myMod){
 
 	//dacs
 	for(i=0;i<NDAC;i++)
-		setDAC((enum DAC_INDEX)i,-1,-1,0,retval);
+		setDAC((enum DACINDEX)i,-1,-1,0,retval);
 
 	//copy to local copy as well
 	if (detectorModules)
@@ -1022,7 +1022,7 @@ int dacToVoltage(unsigned int digital){
 
 
 
-void setDAC(enum DAC_INDEX ind, int val, int imod, int mV, int retval[]){
+void setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]){
 	int dacval = val;
 
 	//if set and mv, convert to dac
@@ -1065,7 +1065,7 @@ void setDAC(enum DAC_INDEX ind, int val, int imod, int mV, int retval[]){
 }
 
 
-int getADC(enum ADC_INDEX ind,  int imod){
+int getADC(enum ADCINDEX ind,  int imod){
 
 	char tempnames[2][20]={"VRs/FPGAs Temperature", "ADCs/ASICs Temperature"};
 	printf("Getting Temperature for %s\n",tempnames[ind]);
@@ -1599,10 +1599,10 @@ int calculateDataBytes(){
 	return DATA_BYTES;
 }
 
-int getTotalNumberOfChannels(){return getNumberOfChannelsPerModule() * getTotalNumberOfModules;}
-int getTotalNumberOfChips(){return getNumberOfChipsPerModule * getTotalNumberOfModules;}
+int getTotalNumberOfChannels(){return ((int)getNumberOfChannelsPerModule() * (int)getTotalNumberOfModules);}
+int getTotalNumberOfChips(){return ((int)getNumberOfChipsPerModule * (int)getTotalNumberOfModules);}
 int getTotalNumberOfModules(){return NMOD;}
-int getNumberOfChannelsPerModule(){return  getNumberOfChannelsPerChip() * getTotalNumberOfChips();}
+int getNumberOfChannelsPerModule(){return  ((int)getNumberOfChannelsPerChip() * (int)getTotalNumberOfChips());}
 int getNumberOfChipsPerModule(){return  NCHIP;}
 int getNumberOfDACsPerModule(){return  NDAC;}
 int getNumberOfADCsPerModule(){return  NADC;}

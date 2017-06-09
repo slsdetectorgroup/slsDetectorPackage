@@ -42,6 +42,11 @@ int dataBytes = 10;
 
 /* initialization functions */
 
+int printSocketReadError() {
+	cprintf(BG_RED, "Error reading from socket. Possible socket crash\n");
+	return FAIL;
+}
+
 void basictests() {
 #ifdef	SLS_DETECTOR_FUNCTION_LIST
 	checkFirmwareCompatibility();
@@ -69,7 +74,7 @@ int decode_function(int file_des) {
 	int fnum,n;
 	int ret=FAIL;
 #ifdef VERBOSE
-	printf( "receive data\n");
+	printf( "\nreceive data\n");
 #endif
 	n = receiveData(file_des,&fnum,sizeof(fnum),INT32);
 	if (n <= 0) {
@@ -84,11 +89,12 @@ int decode_function(int file_des) {
 #endif
 
 #ifdef VERBOSE
-	printf( "calling function fnum = %d 0x%p %s\n", fnum, (unsigned int)flist[fnum], getFunctionName((enum detFuncs)fnum));
+	printf(" calling function fnum=%d, (%s) located at 0x%x\n", fnum,  getFunctionName((enum detFuncs)fnum), (unsigned int)flist[fnum]);
 #endif
-	if (fnum<0 || fnum>=NUM_DET_FUNCTIONS)
+	if (fnum<0 || fnum>=NUM_DET_FUNCTIONS) {
+		cprintf(BG_RED,"Unknown function enum %d\n", fnum);
 		ret=(M_nofunc)(file_des);
-	else
+	}else
 		ret=(*flist[fnum])(file_des);
 	if (ret == FAIL)
 		cprintf(RED, "Error executing the function = %d (%s)\n", fnum, getFunctionName((enum detFuncs)fnum));
@@ -170,6 +176,7 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_POWER_CHIP:						return "F_POWER_CHIP";
 	case F_ACTIVATE:						return "F_ACTIVATE";
 	case F_PREPARE_ACQUISITION:				return "F_PREPARE_ACQUISITION";
+	case F_CLEANUP_ACQUISITION:				return "F_CLEANUP_ACQUISITION";
 	default:								return "Unknown Function";
 	}
 }
@@ -247,6 +254,7 @@ void function_table() {
 	flist[F_POWER_CHIP]							= &power_chip;
 	flist[F_ACTIVATE]							= &set_activate;
 	flist[F_PREPARE_ACQUISITION]				= &prepare_acquisition;
+	flist[F_CLEANUP_ACQUISITION]				= &cleanup_acquisition;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= TOO_MANY_FUNCTIONS_DEFINED) {
@@ -255,8 +263,11 @@ void function_table() {
 	}
 
 #ifdef VERYVERBOSE
-	for (i = 0; i < NUM_DET_FUNCTIONS ; i++) {
-		printf("function %d (%s) located at 0x%p\n", i, flist[i] getFunctionName((enum detFuncs)fnum));
+	{
+		int i=0;
+		for (i = 0; i < NUM_DET_FUNCTIONS ; i++) {
+			printf("function fnum=%d, (%s) located at 0x%x\n", i,  getFunctionName((enum detFuncs)i), (unsigned int)flist[i]);
+		}
 	}
 #endif
 }
@@ -264,12 +275,11 @@ void function_table() {
 
 int  M_nofunc(int file_des){
 	int ret=FAIL,ret1=FAIL;
-	int n=1;
-	char buffer[MAX_STR_LENGTH]="";
+	int n=0;
 
 	//to receive any arguments
 	while (n > 0)
-		n = receiveData(file_des,buf,MAX_STR_LENGTH,OTHER);
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 
 	sprintf(mess,"Unrecognized Function. Please do not proceed.\n");
 	cprintf(BG_RED,"Error: %s",mess);
@@ -297,7 +307,7 @@ int exec_command(int file_des) {
 
 	// receive arguments
 	n = receiveData(file_des,cmd,MAX_STR_LENGTH,OTHER);
-	if (n < 0)	return FAIL;
+	if (n < 0) return printSocketReadError();
 
 	// execute action if the arguments correctly arrived
 #ifdef VERBOSE
@@ -329,14 +339,15 @@ int exec_command(int file_des) {
 
 
 
-int get_error(int) {
+int get_error(int file_des) {
 	int ret=FAIL,ret1=FAIL;
+	int n=0;
 	sprintf(mess,"Function (Get Error) is not implemented for this detector\n");
 	cprintf(RED, "Error: %s", mess);
 
 	//to receive any arguments
 	while (n > 0)
-		n = receiveData(file_des,buf,MAX_STR_LENGTH,OTHER);
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 
 	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	n = sendData(file_des,mess,MAX_STR_LENGTH,OTHER);
@@ -384,7 +395,7 @@ int set_number_of_modules(int file_des) {
 
 	// receive arguments
 	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 	enum dimension dim=arg[0];
 	int nm=arg[1];
 
@@ -438,7 +449,7 @@ int get_max_number_of_modules(int file_des) {
 
 	// receive arguments
 	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 #ifdef VERBOSE
@@ -475,19 +486,22 @@ int get_max_number_of_modules(int file_des) {
 int set_external_signal_flag(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int arg[2]={-1,-1};
 	enum externalSignalFlag retval=GET_EXTERNAL_SIGNAL_FLAG;
 	sprintf(mess,"set external signal flag failed\n");
 
-	// receive arguments
-	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
-
 #ifndef MYTHEND
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	sprintf(mess,"Function (Set External Signal Flag) is not implemented for this detector\n");
 	cprintf(RED, "%s", mess);
 #else
+
+	// receive arguments
+	int arg[2]={-1,-1};
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
+	if (n < 0) return printSocketReadError();
 
 	int signalindex=arg[0];
 	enum externalSignalFlag flag=arg[1];
@@ -552,7 +566,7 @@ int set_external_communication_mode(int file_des) {
 
 	// receive arguments
 	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 #ifdef VERBOSE
@@ -571,14 +585,18 @@ int set_external_communication_mode(int file_des) {
 	case AUTO_TIMING:
 	case TRIGGER_EXPOSURE:
 #endif
-		break;
 		retval=setTiming(arg);
+		break;
 	default:
 		ret = FAIL;
 		sprintf(mess,"Timing mode (%d) is not implemented for this detector\n",(int)arg);
 		cprintf(RED, "Warning: %s", mess);
 		break;
 	}
+#ifdef VERBOSE
+	if(ret==OK)
+		printf("retval:%d\n",retval);
+#endif
 	if (ret==OK && differentClients==1)
 		ret=FORCE_UPDATE;
 
@@ -612,11 +630,11 @@ int get_id(int file_des) {
 
 	// receive arguments
 	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 	if (arg == MODULE_FIRMWARE_VERSION) {
 		n = receiveData(file_des,&imod,sizeof(imod),INT32);
-		if (n < 0) return FAIL;
+		if (n < 0) return printSocketReadError();
 	}
 
 	// execute action
@@ -687,24 +705,34 @@ int get_id(int file_des) {
 int digital_test(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	enum digitalTestMode arg=0;
-	int imod=-1;
-	int ival=-1;
 	int retval=-1;
 	sprintf(mess,"get digital test failed\n");
 
+#ifdef EIGERD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+	ret = FAIL;
+	sprintf(mess,"Function (Digital Test) is not implemented for this detector\n");
+	cprintf(RED, "%s", mess);
+#else
+
+	enum digitalTestMode arg=0;
+	int imod=-1;
+	int ival=-1;
+
 	// receive arguments
 	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return FAL;
+	if (n < 0) return printSocketReadError();
 
 	if (arg == CHIP_TEST) {
 		n = receiveData(file_des,&imod,sizeof(imod),INT32);
-		if (n < 0) return FAIL;
+		if (n < 0) return printSocketReadError();
 	}
 
 	if (arg == DIGITAL_BIT_TEST) {
 		n = receiveData(file_des,&ival,sizeof(ival),INT32);
-		if (n < 0) return FAIL;
+		if (n < 0) return printSocketReadError();
 	}
 
 	// execute action
@@ -766,7 +794,7 @@ int digital_test(int file_des) {
 	if (differentClients)
 #endif
 		ret=FORCE_UPDATE;
-
+#endif
 
 	// send ok / fail
 	// ret could be swapped during sendData
@@ -786,14 +814,15 @@ int digital_test(int file_des) {
 
 
 
-int analog_test(int) {
+int analog_test(int file_des) {
 	int ret=FAIL,ret1=FAIL;
+	int n=0;
 	sprintf(mess,"Function (Analog Test) is not implemented for this detector\n");
 	cprintf(RED, "Error: %s", mess);
 
 	//to receive any arguments
 	while (n > 0)
-		n = receiveData(file_des,buf,MAX_STR_LENGTH,OTHER);
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 
 	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	n = sendData(file_des,mess,MAX_STR_LENGTH,OTHER);
@@ -804,14 +833,15 @@ int analog_test(int) {
 
 
 
-int enable_analog_out(int) {
+int enable_analog_out(int file_des) {
 	int ret=FAIL,ret1=FAIL;
+	int n=0;
 	sprintf(mess,"Function (Enable Analog Out) is not implemented for this detector\n");
 	cprintf(RED, "Error: %s", mess);
 
 	//to receive any arguments
 	while (n > 0)
-		n = receiveData(file_des,buf,MAX_STR_LENGTH,OTHER);
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 
 	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	n = sendData(file_des,mess,MAX_STR_LENGTH,OTHER);
@@ -822,14 +852,15 @@ int enable_analog_out(int) {
 
 
 
-int calibration_pulse(int) {
+int calibration_pulse(int file_des) {
 	int ret=FAIL,ret1=FAIL;
+	int n=0;
 	sprintf(mess,"Function (Calibration Pulse) is not implemented for this detector\n");
 	cprintf(RED, "Error: %s", mess);
 
 	//to receive any arguments
 	while (n > 0)
-		n = receiveData(file_des,buf,MAX_STR_LENGTH,OTHER);
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 
 	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	n = sendData(file_des,mess,MAX_STR_LENGTH,OTHER);
@@ -854,13 +885,13 @@ int set_dac(int file_des) {
 
 	// receive arguments
 	n = receiveData(file_des,arg,sizeof(arg),INT32);
-	if (n < 0)	return FAIL;
+	if (n < 0) return printSocketReadError();
 	ind=arg[0];
 	imod=arg[1];
 	mV=arg[2];
 
 	n = receiveData(file_des,&val,sizeof(val),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 	// checks
 #ifdef MYTHEND
@@ -880,7 +911,7 @@ int set_dac(int file_des) {
 		cprintf(RED, "Warning: %s", mess);
 	}
 #else
-	enum detDacIndex idac=0;
+	enum DACINDEX idac=0;
 	switch (ind) {
 #ifdef MYTHEND
 	case  TRIMBIT_SIZE:			//ind = VTRIM;
@@ -1112,7 +1143,7 @@ int get_adc(int file_des) {
 
 	// receive arguments
 	n = receiveData(file_des,arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 	ind=arg[0];
 	imod=arg[1];
 
@@ -1126,7 +1157,7 @@ int get_adc(int file_des) {
 #endif
 #endif
 
-	enum detAdcIndex iadc=0;
+	enum ADCINDEX iadc=0;
 	switch (ind) {
 #ifdef EIGERD
 	case TEMPERATURE_FPGAEXT:
@@ -1205,23 +1236,24 @@ int get_adc(int file_des) {
 int write_register(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int arg[2]={-1,-1};
-	int addr=0;
-	int val=0;
 	int retval=-1;
 	sprintf(mess,"write to register failed\n");
 
-	// receive arguments
-	n = receiveData(file_des,arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
-	addr=arg[0];
-	val=arg[1];
-
 #ifdef EIGERD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	sprintf(mess,"Function (Write Register) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
+
+	// receive arguments
+	int arg[2]={-1,-1};
+	n = receiveData(file_des,arg,sizeof(arg),INT32);
+	if (n < 0) return printSocketReadError();
+	int addr=arg[0];
+	int val=arg[1];
 
 	// execute action
 	if (differentClients && lockStatus) {
@@ -1272,21 +1304,23 @@ int write_register(int file_des) {
 int read_register(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int arg=0;
-	int addr=0;
 	int retval=-1;
 	sprintf(mess,"read register failed\n");
 
-	// receive arguments
-	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
-	addr=arg;
-
 #ifdef EIGERD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	sprintf(mess,"Function (Read Register) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
+
+	// receive arguments
+	int arg=0;
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
+	if (n < 0) return printSocketReadError();
+	int addr=arg;
 
 	// execute action
 #ifdef VERBOSE
@@ -1320,14 +1354,15 @@ int read_register(int file_des) {
 
 
 
-int write_memory(int) {
+int write_memory(int file_des) {
 	int ret=FAIL,ret1=FAIL;
+	int n=0;
 	sprintf(mess,"Function (Write Memory) is not implemented for this detector\n");
 	cprintf(RED, "Error: %s", mess);
 
 	//to receive any arguments
 	while (n > 0)
-		n = receiveData(file_des,buf,MAX_STR_LENGTH,OTHER);
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 
 	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	n = sendData(file_des,mess,MAX_STR_LENGTH,OTHER);
@@ -1337,14 +1372,15 @@ int write_memory(int) {
 }
 
 
-int read_memory(int) {
+int read_memory(int file_des) {
 	int ret=FAIL,ret1=FAIL;
+	int n=0;
 	sprintf(mess,"Function (Read Memory) is not implemented for this detector\n");
 	cprintf(RED, "Error: %s", mess);
 
 	//to receive any arguments
 	while (n > 0)
-		n = receiveData(file_des,buf,MAX_STR_LENGTH,OTHER);
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 
 	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	n = sendData(file_des,mess,MAX_STR_LENGTH,OTHER);
@@ -1358,20 +1394,22 @@ int read_memory(int) {
 int set_channel(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	sls_detector_channel myChan;
 	int retval=-1;
 	sprintf(mess,"set channel failed\n");
 
-	// receive arguments
-	n=receiveChannel(file_des, &myChan);
-	if (n < 0) return FAIL;
-
-
 #ifndef MYTHEND
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	sprintf(mess,"Function (Set Channel) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
+
+	// receive arguments
+	sls_detector_channel myChan;
+	n=receiveChannel(file_des, &myChan);
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 #ifdef VERBOSE
@@ -1427,19 +1465,23 @@ int set_channel(int file_des) {
 int get_channel(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int arg[3]={-1,-1,-1};
 	sls_detector_channel retval;
 	sprintf(mess,"get channel failed\n");
 
-	// receive arguments
-	n = receiveData(file_des,arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
-
 #ifndef MYTHEND
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	sprintf(mess,"Function (Get Channel) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
+
+	// receive arguments
+	int arg[3]={-1,-1,-1};
+	n = receiveData(file_des,arg,sizeof(arg),INT32);
+	if (n < 0) return printSocketReadError();
+
 	// execute action
 	int ichan=arg[0];
 	int ichip=arg[1];
@@ -1491,14 +1533,15 @@ int get_channel(int file_des) {
 
 
 
-int set_all_channels(int) {
+int set_all_channels(int file_des) {
 	int ret=FAIL,ret1=FAIL;
+	int n=0;
 	sprintf(mess,"Function (Set All Channels) is not implemented for this detector\n");
 	cprintf(RED, "Error: %s", mess);
 
 	//to receive any arguments
 	while (n > 0)
-		n = receiveData(file_des,buf,MAX_STR_LENGTH,OTHER);
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 
 	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	n = sendData(file_des,mess,MAX_STR_LENGTH,OTHER);
@@ -1514,18 +1557,18 @@ int set_all_channels(int) {
 int set_chip(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	sls_detector_chip myChip;
 	int retval=-1;
 	sprintf(mess,"set chip failed\n");
 
 #ifndef MYTHEND
 	//to receive any arguments
 	while (n > 0)
-		n = receiveData(file_des,buf,MAX_STR_LENGTH,OTHER);
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	sprintf(mess,"Function (Set Channel) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
+	sls_detector_chip myChip;
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	myChip.nchan=getNumberOfChannelsPerChip();
@@ -1590,19 +1633,22 @@ int set_chip(int file_des) {
 int get_chip(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int arg[2]={-1,-1};
 	sls_detector_chip retval;
 	sprintf(mess,"get chip failed\n");
 
-	// receive arguments
-	n = receiveData(file_des,arg,sizeof(arg),INT32);
-	if (n < 0)return FAIL;
-
 #ifndef MYTHEND
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	sprintf(mess,"Function (Set Channel) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
+
+	// receive arguments
+	int arg[2]={-1,-1};
+	n = receiveData(file_des,arg,sizeof(arg),INT32);
+	if (n < 0) return printSocketReadError();
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	int ichip=arg[0];
@@ -1651,14 +1697,15 @@ int get_chip(int file_des) {
 
 
 
-int set_all_chips(int) {
+int set_all_chips(int file_des) {
 	int ret=FAIL,ret1=FAIL;
+	int n=0;
 	sprintf(mess,"Function (Set All Chips) is not implemented for this detector\n");
 	cprintf(RED, "Error: %s", mess);
 
 	//to receive any arguments
 	while (n > 0)
-		n = receiveData(file_des,buf,MAX_STR_LENGTH,OTHER);
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 
 	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	n = sendData(file_des,mess,MAX_STR_LENGTH,OTHER);
@@ -1682,8 +1729,6 @@ int set_module(int file_des) {
 	int myEV=-1;
 #endif
 	sprintf(mess,"set module failed\n");
-
-
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	int *myDac=NULL;
@@ -1897,7 +1942,7 @@ int get_module(int file_des) {
 
 	// receive arguments
 	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 	imod=arg;
 
 	// execute action
@@ -2002,6 +2047,24 @@ int get_module(int file_des) {
 
 
 
+int set_all_modules(int file_des) {
+	int ret=FAIL,ret1=FAIL;
+	int n=0;
+	sprintf(mess,"Function (Set All Modules) is not implemented for this detector\n");
+	cprintf(RED, "Error: %s", mess);
+
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
+	n = sendData(file_des,mess,MAX_STR_LENGTH,OTHER);
+
+	// return ok / fail
+	return ret;
+}
+
+
 
 
 int set_settings(int file_des) {
@@ -2015,7 +2078,7 @@ int set_settings(int file_des) {
 
 	// receive arguments
 	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 	imod=arg[1];
 	isett=arg[0];
 
@@ -2073,19 +2136,22 @@ int set_settings(int file_des) {
 int get_threshold_energy(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int imod=-1;
 	int retval=-1;
 	sprintf(mess,"get threshold energy failed\n");
 
-	// receive arguments
-	n = receiveData(file_des,&imod,sizeof(imod),INT32);
-	if (n < 0) return FAIL;
-
 #if !defined(MYTHEND) && !defined(EIGERD)
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	sprintf(mess,"Function (Get Threshold Energy) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
+
+	// receive arguments
+	int imod=-1;
+	n = receiveData(file_des,&imod,sizeof(imod),INT32);
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 #ifdef VERBOSE
@@ -2127,15 +2193,13 @@ int get_threshold_energy(int file_des) {
 int set_threshold_energy(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int arg[3]={-1,-1,-1};
 	int retval=-1;
 	sprintf(mess,"set thhreshold energy failed\n");
 
-	// receive arguments
-	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
-
 #ifndef MYTHEND
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 #ifdef EIGERD
 	sprintf(mess,"Function (Set Threshold Energy) is only implemented via Set Settings for this detector\n");
@@ -2144,6 +2208,11 @@ int set_threshold_energy(int file_des) {
 #endif
 	cprintf(RED, "Warning: %s", mess);
 #else
+
+	// receive arguments
+	int arg[3]={-1,-1,-1};
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 	int ethr=arg[0];
@@ -2274,6 +2343,9 @@ int start_readout(int file_des) {
 	sprintf(mess,"start readout failed\n");
 
 #ifdef JUNGFRAUD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	sprintf(mess,"Function (Start Readout) is not implemented for this detector\n");
 	cprintf(RED, "%s", mess);
@@ -2295,6 +2367,7 @@ int start_readout(int file_des) {
 #endif
 	if (ret==OK && differentClients)
 		ret=FORCE_UPDATE;
+#endif
 
 	// ret could be swapped during sendData
 	ret1 = ret;
@@ -2329,7 +2402,7 @@ int get_run_status(int file_des) {
 		ret=FORCE_UPDATE;
 
 	// send ok / fail
-	sendData(file_des,&ret,sizeof(ret),INT32);
+	sendData(file_des,&ret1,sizeof(ret),INT32);
 	// send return argument
 	sendData(file_des,&s,sizeof(s),INT32);
 
@@ -2444,10 +2517,10 @@ int set_timer(int file_des) {
 
 	// receive arguments
 	n = receiveData(file_des,&ind,sizeof(ind),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 	n = receiveData(file_des,&tns,sizeof(tns),INT64);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 	if (differentClients && lockStatus && tns!=-1) {
@@ -2489,15 +2562,16 @@ int set_timer(int file_des) {
 			break;
 		}
 #if defined(MYTHEND) || defined(GOTTHARD)
-	if (ret == OK && ind==FRAME_NUMBER) {
-		ret=allocateRAM();
-		if (ret!=OK) {
-			ret = FAIL;
-			sprintf(mess,"Could not allocate RAM for %lld frames\n", tns);
-			cprintf(RED, "%s", mess);
+		if (ret == OK && ind==FRAME_NUMBER) {
+			ret=allocateRAM();
+			if (ret!=OK) {
+				ret = FAIL;
+				sprintf(mess,"Could not allocate RAM for %lld frames\n", tns);
+				cprintf(RED, "%s", mess);
+			}
 		}
-	}
 #endif
+	}
 #endif
 	if (ret==OK && differentClients)
 		ret=FORCE_UPDATE;
@@ -2527,19 +2601,24 @@ int set_timer(int file_des) {
 int get_time_left(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	enum timerIndex ind=0;
 	int64_t retval=-1;
 	sprintf(mess,"get timer left failed\n");
 
-	// receive arguments
-	n = receiveData(file_des,&ind,sizeof(ind),INT32);
-	if (n < 0) return FAIL;
+
 
 #ifdef EIGERD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	sprintf(mess,"Function (Get Timer Left) is not implemented for this detector\n");
 	cprintf(RED, "%s", mess);
 #else
+
+	// receive arguments
+	enum timerIndex ind=0;
+	n = receiveData(file_des,&ind,sizeof(ind),INT32);
+	if (n < 0) return printSocketReadError();
 
 #ifdef VERBOSE
 	printf("getting time left on timer %d \n",ind);
@@ -2609,7 +2688,7 @@ int set_dynamic_range(int file_des) {
 
 	// receive arguments
 	n = receiveData(file_des,&dr,sizeof(dr),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 	if (differentClients && lockStatus && dr>=0) {
@@ -2700,19 +2779,22 @@ int set_dynamic_range(int file_des) {
 int set_readout_flags(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	enum readOutFlags arg=-1;
 	enum readOutFlags retval=-1;
 	sprintf(mess,"set readout flags failed\n");
 
-	// receive arguments
-	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
-
 #if !defined(MYTHEND) && !defined(EIGERD)
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret=FAIL;
 	sprintf(mess,"Function (Set Read Out Flags) is not implemented for this detector\n");
 	cprintf(RED, "%s",mess);
 #else
+
+	// receive arguments
+	enum readOutFlags arg=-1;
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 	if (differentClients && lockStatus && arg!=GET_READOUT_FLAGS) {
@@ -2781,28 +2863,38 @@ int set_readout_flags(int file_des) {
 int set_roi(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int nroi=-1;
-	ROI arg[MAX_ROIS];
-	ROI* retval=0;
-	int retvalsize=0,retvalsize1=0;
 	strcpy(mess,"set nroi failed\n");
 
+#ifndef GOTTHARDD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+	ret=FAIL;
+	sprintf(mess,"Function (Set ROI) is not implemented for this detector\n");
+	cprintf(RED, "%s",mess);
+#else
+
+	ROI* retval=0;
+	int retvalsize=0,retvalsize1=0;
+
 	// receive arguments
+	int nroi=-1;
+	ROI arg[MAX_ROIS];
 	n = receiveData(file_des,&nroi,sizeof(nroi),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 	{
 		int i;
 		if(nroi!=-1){
 			for(i=0;i<nroi;i++){
 				n = receiveData(file_des,&arg[i].xmin,sizeof(int),INT32);
-				if (n < 0) return FAIL;
+				if (n < 0) return printSocketReadError();
 				n = receiveData(file_des,&arg[i].xmax,sizeof(int),INT32);
-				if (n < 0) return FAIL;
+				if (n < 0) return printSocketReadError();
 				n = receiveData(file_des,&arg[i].ymin,sizeof(int),INT32);
-				if (n < 0) return FAIL;
+				if (n < 0) return printSocketReadError();
 				n = receiveData(file_des,&arg[i].ymax,sizeof(int),INT32);
-				if (n < 0) return FAIL;
+				if (n < 0) return printSocketReadError();
 			}
 			//n = receiveData(file_des,arg,nroi*sizeof(ROI));
 			if (n != (nroi*sizeof(ROI))) {
@@ -2812,12 +2904,6 @@ int set_roi(int file_des) {
 			}
 		}
 	}
-
-#ifndef GOTTHARDD
-	ret=FAIL;
-	sprintf(mess,"Function (Set ROI) is not implemented for this detector\n");
-	cprintf(RED, "%s",mess);
-#else
 
 	// execute action
 	if (differentClients && lockStatus) {
@@ -2850,10 +2936,13 @@ int set_roi(int file_des) {
 	// send return argument
 	if (ret==FAIL) {
 		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else {
+	}
+#ifdef GOTTHARDD
+	else {
 		//retvalsize could be swapped during sendData
 		retvalsize1=retvalsize;
 		sendData(file_des,&retvalsize1,sizeof(retvalsize),INT32);
+		int i=0;
 		for(i=0;i<retvalsize;i++){
 			n = sendData(file_des,&retval[i].xmin,sizeof(int),INT32);
 			n = sendData(file_des,&retval[i].xmax,sizeof(int),INT32);
@@ -2862,7 +2951,7 @@ int set_roi(int file_des) {
 		}
 		//sendData(file_des,retval,retvalsize*sizeof(ROI));
 	}
-
+#endif
 	// return ok / fail
 	return ret;
 }
@@ -2881,10 +2970,10 @@ int set_speed(int file_des) {
 
 	// receive arguments
 	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 	n = receiveData(file_des,&val,sizeof(val),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 	if (differentClients && lockStatus  && val>=0) {
@@ -2953,23 +3042,27 @@ int set_speed(int file_des) {
 int execute_trimming(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	enum trimMode mode=0;
-	int arg[3]={-1,-1,-1};
-	int retval=-1;
 	sprintf(mess,"execute trimming failed\n");
 
-	// receive arguments
-	n = receiveData(file_des,&mode,sizeof(mode),INT32);
-	if (n < 0) return FAIL;
-
-	n = receiveData(file_des,arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
-
 #ifndef MYTHEND
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	sprintf(mess,"Function (Execute Trimming) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
+
+	int retval=-1;
+
+	// receive arguments
+	enum trimMode mode=0;
+	int arg[3]={-1,-1,-1};
+	n = receiveData(file_des,&mode,sizeof(mode),INT32);
+	if (n < 0) return printSocketReadError();
+
+	n = receiveData(file_des,arg,sizeof(arg),INT32);
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 	int imod, par1,par2;
@@ -2996,14 +3089,11 @@ int execute_trimming(int file_des) {
 		case BEAM_TRIMMING:
 		case IMPROVE_TRIMMING:
 		case FIXEDSETTINGS_TRIMMING:
-			if (myDetectorType==MYTHEN) {
-				retval=executeTrimming(mode, par1, par2, imod);
-				if ((ret!=OK) && (retval>0)) {
-					ret=FAIL;
-					sprintf(mess,"Could not trim %d channels\n", retval);
-					cprintf(RED, "Warning: %s", mess);
-				}
-				break;
+			retval=executeTrimming(mode, par1, par2, imod);
+			if ((ret!=OK) && (retval>0)) {
+				ret=FAIL;
+				sprintf(mess,"Could not trim %d channels\n", retval);
+				cprintf(RED, "Warning: %s", mess);
 			}
 			break;
 		default:
@@ -3058,7 +3148,7 @@ int lock_server(int file_des) {
 
 	// receive arguments
 	n = receiveData(file_des,&lock,sizeof(lock),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 	if (lock>=0) {
@@ -3116,10 +3206,10 @@ int set_port(int file_des) {
 
 	// receive arguments
 	n = receiveData(file_des,&p_type,sizeof(p_type),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 	n = receiveData(file_des,&p_number,sizeof(p_number),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 	int sd=-1;
@@ -3187,42 +3277,42 @@ int send_update(int file_des) {
 	enum detectorSettings t;
 
 	n = sendData(file_des,lastClientIP,sizeof(lastClientIP),OTHER);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 
 #ifdef	SLS_DETECTOR_FUNCTION_LIST
 	nm=setNMod(GET_FLAG,X);
 #endif
 	n = sendData(file_des,&nm,sizeof(nm),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 
 #ifdef	SLS_DETECTOR_FUNCTION_LIST
 	nm=setNMod(GET_FLAG,Y);
 #endif
 	n = sendData(file_des,&nm,sizeof(nm),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 
 #ifdef	SLS_DETECTOR_FUNCTION_LIST
 	nm=setDynamicRange(GET_FLAG);
 #endif
 	n = sendData(file_des,&nm,sizeof(nm),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	dataBytes=calculateDataBytes();
 #endif
 	n = sendData(file_des,&dataBytes,sizeof(dataBytes),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 
 #ifdef	SLS_DETECTOR_FUNCTION_LIST
 	t=setSettings(GET_SETTINGS, GET_FLAG);
 #endif
 	n = sendData(file_des,&t,sizeof(t),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 
 #if defined(MYTHEND) || defined(EIGERD)
@@ -3230,7 +3320,7 @@ int send_update(int file_des) {
 	nm=getThresholdEnergy(GET_FLAG);
 #endif
 	n = sendData(file_des,&nm,sizeof(nm),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 #endif
 
 
@@ -3238,14 +3328,14 @@ int send_update(int file_des) {
 	retval=setTimer(FRAME_NUMBER,GET_FLAG);
 #endif
 	n = sendData(file_des,&retval,sizeof(int64_t),INT64);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 
 #ifdef	SLS_DETECTOR_FUNCTION_LIST
 	retval=setTimer(ACQUISITION_TIME,GET_FLAG);
 #endif
 	n = sendData(file_des,&retval,sizeof(int64_t),INT64);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 
 #ifdef EIGERD
@@ -3253,7 +3343,7 @@ int send_update(int file_des) {
 	retval=setTimer(SUBFRAME_ACQUISITION_TIME,GET_FLAG);
 #endif
 	n = sendData(file_des,&retval,sizeof(int64_t),INT64);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 #endif
 
 
@@ -3261,7 +3351,7 @@ int send_update(int file_des) {
 	retval=setTimer(FRAME_PERIOD,GET_FLAG);
 #endif
 	n = sendData(file_des,&retval,sizeof(int64_t),INT64);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 
 #ifndef EIGERD
@@ -3269,7 +3359,7 @@ int send_update(int file_des) {
 	retval=setTimer(DELAY_AFTER_TRIGGER,GET_FLAG);
 #endif
 	n = sendData(file_des,&retval,sizeof(int64_t),INT64);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 #endif
 
 
@@ -3278,7 +3368,7 @@ int send_update(int file_des) {
 	retval=setTimer(GATES_NUMBER,GET_FLAG);
 #endif
 	n = sendData(file_des,&retval,sizeof(int64_t),INT64);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 #endif
 
 
@@ -3287,7 +3377,7 @@ int send_update(int file_des) {
 	retval=setTimer(PROBES_NUMBER,GET_FLAG);
 #endif
 	n = sendData(file_des,&retval,sizeof(int64_t),INT64);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 #endif
 
 
@@ -3295,7 +3385,7 @@ int send_update(int file_des) {
 	retval=setTimer(CYCLES_NUMBER,GET_FLAG);
 #endif
 	n = sendData(file_des,&retval,sizeof(int64_t),INT64);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 
 	if (lockStatus==0) {
@@ -3313,20 +3403,23 @@ int send_update(int file_des) {
 int configure_mac(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	char arg[6][50];
-	memset(arg,0,sizeof(arg));
 	int retval=-100;
 	sprintf(mess,"configure mac failed\n");
 
-	// receive arguments
-	n = receiveData(file_des,arg,sizeof(arg),OTHER);
-	if (n < 0) return FAIL;
-
 #ifdef MYTHEND
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	strcpy(mess,"Function (Configure MAC) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
+
+	// receive arguments
+	char arg[6][50];
+	memset(arg,0,sizeof(arg));
+	n = receiveData(file_des,arg,sizeof(arg),OTHER);
+	if (n < 0) return printSocketReadError();
 
 	int imod=0;//should be in future sent from client as -1, arg[2]
 	uint32_t ipad;
@@ -3387,7 +3480,7 @@ int configure_mac(int file_des) {
 					cprintf(RED, "Warning: %s", mess);
 				}
 				else
-					printf("Configure MAC successful\n",imod);
+					printf("Configure MAC successful\n");
 #ifdef VERBOSE
 				printf("Configured MAC with retval %d\n",  retval);
 #endif
@@ -3420,24 +3513,27 @@ int configure_mac(int file_des) {
 int load_image(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	enum imageType index=0;
-	char ImageVals[dataBytes];
-	memset(ImageVals,0,dataBytes);
 	int retval=-1;
 	sprintf(mess,"Loading image failed\n");
 
-	// receive arguments
-	n = receiveData(file_des,&index,sizeof(index),INT32);
-	if (n < 0) return FAIL;
-
-	n = receiveData(file_des,ImageVals,dataBytes,OTHER);
-	if (n < 0) return FAIL;
-
 #ifndef GOTTHARDD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	sprintf(mess,"Function (Load Image) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
+
+	// receive arguments
+	enum imageType index=0;
+	char ImageVals[dataBytes];
+	memset(ImageVals,0,dataBytes);
+	n = receiveData(file_des,&index,sizeof(index),INT32);
+	if (n < 0) return printSocketReadError();
+
+	n = receiveData(file_des,ImageVals,dataBytes,OTHER);
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 	if (differentClients && lockStatus) {
@@ -3501,7 +3597,7 @@ int set_master(int file_des) {
 
 	// receive arguments
 	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 	if (differentClients && lockStatus && ((int)arg!=(int)GET_MASTER)) {
@@ -3552,7 +3648,7 @@ int set_synchronization(int file_des) {
 
 	// receive arguments
 	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 	if (differentClients && lockStatus && ((int)arg!=(int)GET_SYNCHRONIZATION_MODE)) {
@@ -3595,23 +3691,26 @@ int set_synchronization(int file_des) {
 int read_counter_block(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int startACQ=-1;
+	char CounterVals[dataBytes];
+	memset(CounterVals,0,dataBytes);
 	sprintf(mess,"Read counter block failed\n");
 
-	// receive arguments
-	n = receiveData(file_des,&startACQ,sizeof(startACQ),INT32);
-	if (n < 0) return FAIL;
-
 #ifndef GOTTHARDD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	sprintf(mess,"Function (Read Counter Block) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
-	char CounterVals[dataBytes];
-	memset(CounterVals,0,dataBytes);
+
+	// receive arguments
+	int startACQ=-1;
+	n = receiveData(file_des,&startACQ,sizeof(startACQ),INT32);
+	if (n < 0) return printSocketReadError();
 
 	// execute action
-	if (differentClients && lockStatus && isett!=GET_SETTINGS) {
+	if (differentClients && lockStatus) {
 		ret = FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		cprintf(RED, "Warning: %s", mess);
@@ -3653,18 +3752,21 @@ int read_counter_block(int file_des) {
 int reset_counter_block(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int startACQ=-1;
 	sprintf(mess,"Reset counter block failed\n");
 
-	// receive arguments
-	n = receiveData(file_des,&startACQ,sizeof(startACQ),INT32);
-	if (n < 0) return FAIL;
-
 #ifndef GOTTHARDD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	sprintf(mess,"Function (Reset Counter Block) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
+
+	// receive arguments
+	int startACQ=-1;
+	n = receiveData(file_des,&startACQ,sizeof(startACQ),INT32);
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 	if (differentClients && lockStatus) {
@@ -3704,22 +3806,27 @@ int reset_counter_block(int file_des) {
 int calibrate_pedestal(int file_des){
 	int ret=OK,ret1=OK;
 	int n=0;
-	int frames=-1;
 	int retval=-1;
 	sprintf(mess,"calibrate pedestal failed\n");
 
-	// receive arguments
-	n = receiveData(file_des,&frames,sizeof(frames),INT32);
-	if (n < 0) return FAIL;
 
 #ifndef GOTTHARDD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	sprintf(mess,"Function (Calibrate Pedestal) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
 
+	// receive arguments
+	int frames=-1;
+	n = receiveData(file_des,&frames,sizeof(frames),INT32);
+	if (n < 0) return printSocketReadError();
+
+
 	// execute action
-	if (differentClients && lockStatus && isett!=GET_SETTINGS) {
+	if (differentClients && lockStatus) {
 		ret = FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		cprintf(RED, "Warning: %s", mess);
@@ -3759,20 +3866,23 @@ int calibrate_pedestal(int file_des){
 int enable_ten_giga(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int arg=-1;
 	int retval=-1;
 	sprintf(mess,"Enabling/disabling 10GbE failed\n");
 
-	// receive arguments
-	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
-
 	// execute action
 #ifndef EIGERD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	sprintf(mess,"Function (Enable 10 GbE) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
+
+	// receive arguments
+	int arg=-1;
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 	if (differentClients && lockStatus && arg!=-1) {
@@ -3816,19 +3926,23 @@ int enable_ten_giga(int file_des) {
 int set_all_trimbits(int file_des){
 	int ret=OK,ret1=OK;
 	int n=0;
-	int arg=-1;
 	int retval=-1;
 	sprintf(mess,"setting all trimbits failed\n");
 
-	// receive arguments
-	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
-
 #ifndef EIGERD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	sprintf(mess,"Function (Set All Trimbits) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
+
+	// receive arguments
+	int arg=-1;
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
+	if (n < 0) return printSocketReadError();
+
 
 	// execute action
 	if (differentClients && lockStatus && arg!=-1) {
@@ -3880,14 +3994,15 @@ int set_all_trimbits(int file_des){
 }
 
 
-int set_ctb_pattern(int) {
+int set_ctb_pattern(int file_des) {
 	int ret=FAIL,ret1=FAIL;
+	int n=0;
 	sprintf(mess,"Function (Set CTB Pattern) is not implemented for this detector\n");
 	cprintf(RED, "Error: %s", mess);
 
 	//to receive any arguments
 	while (n > 0)
-		n = receiveData(file_des,buf,MAX_STR_LENGTH,OTHER);
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 
 	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	n = sendData(file_des,mess,MAX_STR_LENGTH,OTHER);
@@ -3901,23 +4016,24 @@ int set_ctb_pattern(int) {
 int write_adc_register(int file_des) {
 	int ret=OK, ret1=OK;
 	int n=0;
-	int arg[2]={-1,-1};
-	int addr=-1;
-	int val=-1;
 	int retval=-1;
 	sprintf(mess,"write to adc register failed\n");
 
-	// receive arguments
-	n = receiveDataOnly(file_des,arg,sizeof(arg));
-	if (n < 0) return FAIL;
-	addr=arg[0];
-	val=arg[1];
-
 #ifndef JUNGFRAUD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	sprintf(mess,"Function (Write ADC Register) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
+
+	// receive arguments
+	int arg[2]={-1,-1};
+	n = receiveData(file_des,arg,sizeof(arg),INT32);
+	if (n < 0) return printSocketReadError();
+	int addr=arg[0];
+	int val=arg[1];
 
 	// execute action
 	if (differentClients && lockStatus) {
@@ -3965,20 +4081,22 @@ int write_adc_register(int file_des) {
 int set_counter_bit(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int arg=-1;
 	int retval=-1;
 	sprintf(mess,"set counter bit failed \n");
 
-	// receive arguments
-	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
-
-
 #ifndef EIGERD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	strcpy(mess,"Function (Set Counter Bit) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
+
+	// receive arguments
+	int arg=-1;
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 	if (differentClients && lockStatus && arg!=-1) {
@@ -4022,18 +4140,21 @@ int set_counter_bit(int file_des) {
 int pulse_pixel(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int arg[3]={-1,-1,-1};
 	sprintf(mess,"pulse pixel failed\n");
 
-	// receive arguments
-	n = receiveData(file_des,arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
-
 #ifndef EIGERD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	strcpy(mess,"Function (Pulse Pixel) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
+
+	// receive arguments
+	int arg[3]={-1,-1,-1};
+	n = receiveData(file_des,arg,sizeof(arg),INT32);
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 	if (differentClients && lockStatus) {
@@ -4071,18 +4192,21 @@ int pulse_pixel(int file_des) {
 int pulse_pixel_and_move(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int arg[3]={-1,-1,-1};
 	sprintf(mess,"pulse pixel and move failed\n");
 
-	// receive arguments
-	n = receiveData(file_des,arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
-
 #ifndef EIGERD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	strcpy(mess,"Function (Pulse Pixel and Move) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
+
+	// receive arguments
+	int arg[3]={-1,-1,-1};
+	n = receiveData(file_des,arg,sizeof(arg),INT32);
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 	if (differentClients && lockStatus) {
@@ -4122,20 +4246,24 @@ int pulse_pixel_and_move(int file_des) {
 int pulse_chip(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int arg = -1;
 	sprintf(mess,"pulse chip failed\n");
 
-	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
-
 #ifndef EIGERD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	strcpy(mess,"Function (Pulse Chip) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
 
+	// receive arguments
+	int arg = -1;
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
+	if (n < 0) return printSocketReadError();
+
 	// execute action
-	if (differentClients && lockStatus && isett!=GET_SETTINGS) {
+	if (differentClients && lockStatus) {
 		ret = FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		cprintf(RED, "Warning: %s", mess);
@@ -4171,18 +4299,21 @@ int pulse_chip(int file_des) {
 int set_rate_correct(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int64_t tau_ns=-1;
 	sprintf(mess,"Set rate correct failed\n");
 
-	// receive arguments
-	n = receiveData(file_des,&tau_ns,sizeof(tau_ns),INT64);
-	if (n < 0) return FAIL;
-
 #ifndef EIGERD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret=FAIL;
 	sprintf(mess,"Function (Rate Correction) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
+
+	// receive arguments
+	int64_t tau_ns=-1;
+	n = receiveData(file_des,&tau_ns,sizeof(tau_ns),INT64);
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 	if (differentClients && lockStatus) {
@@ -4246,6 +4377,9 @@ int get_rate_correct(int file_des) {
 	sprintf(mess,"Get Rate correct failed\n");
 
 #ifndef EIGERD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret=FAIL;
 	sprintf(mess,"Function (Get Rate Correction) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
@@ -4283,28 +4417,31 @@ int get_rate_correct(int file_des) {
 int set_network_parameter(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	enum networkParameter mode=0;
-	int value=-1;
 	int retval=-1;
 	sprintf(mess,"set network parameter failed\n");
 
-	// execute action
-	n = receiveData(file_des,&mode,sizeof(mode),INT32);
-	if (n < 0) return FAIL;
-
-	n = receiveData(file_des,&value,sizeof(value),INT32);
-	if (n < 0) return FAIL;
-
 #ifndef EIGERD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret=FAIL;
 	sprintf(mess,"Function(Set Network Parmaeter) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
 
-	enum detNetworkParameter index;
+	enum NETWORKINDEX index;
+
+	// receive arguments
+	enum networkParameter mode=0;
+	int value=-1;
+	n = receiveData(file_des,&mode,sizeof(mode),INT32);
+	if (n < 0) return printSocketReadError();
+
+	n = receiveData(file_des,&value,sizeof(value),INT32);
+	if (n < 0) return printSocketReadError();
 
 	// execute action
-	if (differentClients && lockStatus && isett!=GET_SETTINGS) {
+	if (differentClients && lockStatus && value<0) {
 		ret = FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		cprintf(RED, "Warning: %s", mess);
@@ -4375,7 +4512,7 @@ int program_fpga(int file_des) {
 #ifndef JUNGFRAUD
 	//to receive any arguments
 	while (n > 0)
-		n = receiveData(file_des,buf,MAX_STR_LENGTH,OTHER);
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret=FAIL;
 	sprintf(mess,"Function (Program FPGA) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
@@ -4389,14 +4526,14 @@ int program_fpga(int file_des) {
 
 	// receive arguments - filesize
 	n = receiveData(file_des,&filesize,sizeof(filesize),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 	totalsize = filesize;
 #ifdef VERY_VERBOSE
 	printf("\n\n Total size is:%d\n",totalsize);
 #endif
 
 	// execute action
-	if (differentClients && lockStatus && isett!=GET_SETTINGS) {
+	if (differentClients && lockStatus) {
 		ret = FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		cprintf(RED, "Warning: %s", mess);
@@ -4440,7 +4577,7 @@ int program_fpga(int file_des) {
 
 			//receive
 			n = receiveData(file_des,fpgasrc,unitprogramsize,OTHER);
-			if (n < 0) return FAIL;
+			if (n < 0) return printSocketReadError();
 
 			if(!(unitprogramsize - filesize)){
 				fpgasrc[unitprogramsize]='\0';
@@ -4515,7 +4652,10 @@ int reset_fpga(int file_des) {
 	int n=0;
 	sprintf(mess,"Reset FPGA unsuccessful\n");
 
-#ifdef JUNGFRAUD
+#ifndef JUNGFRAUD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	sprintf(mess,"Function (Start Readout) is not implemented for this detector\n");
 	cprintf(RED, "%s", mess);
@@ -4554,19 +4694,22 @@ int reset_fpga(int file_des) {
 int power_chip(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int arg=-1;
 	int retval=-1;
 	sprintf(mess,"power chip failed\n");
 
-#ifdef JUNGFRAUD
+#ifndef JUNGFRAUD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	sprintf(mess,"Function (Power Chip) is not implemented for this detector\n");
 	cprintf(RED, "%s", mess);
 #else
 
 	// receive arguments
+	int arg=-1;
 	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 	if (differentClients && lockStatus && arg!=-1) {
@@ -4617,19 +4760,22 @@ int power_chip(int file_des) {
 int set_activate(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int arg=-1;
 	int retval=-1;
 	sprintf(mess,"Activate/Deactivate failed\n");
 
-	// receive arguments
-	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return FAIL;
-
 #ifndef EIGERD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret=FAIL;
 	sprintf(mess,"Function (Set Activate) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
+
+	// receive arguments
+	int arg=-1;
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
+	if (n < 0) return printSocketReadError();
 
 	// execute action
 	if (differentClients && lockStatus && arg!=-1) {
@@ -4677,6 +4823,9 @@ int prepare_acquisition(int file_des) {
 	strcpy(mess,"prepare acquisition failed\n");
 
 #if !defined(GOTTHARDD) && !defined(EIGERD)
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	sprintf(mess,"Function (Prepare Acquisition) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
@@ -4712,5 +4861,49 @@ int prepare_acquisition(int file_des) {
 	return ret;
 }
 
+
+int cleanup_acquisition(int file_des) {
+	int ret=OK,ret1=OK;
+	int n=0;
+	strcpy(mess,"prepare acquisition failed\n");
+
+#ifndef GOTTHARDD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+	ret = FAIL;
+	sprintf(mess,"Function (Cleanup Acquisition) is not implemented for this detector\n");
+	cprintf(RED, "Warning: %s", mess);
+#else
+
+	// execute action
+	if (differentClients && lockStatus) {
+		ret = FAIL;
+		sprintf(mess,"Detector locked by %s\n",lastClientIP);
+		cprintf(RED, "Warning: %s", mess);
+	}
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+	else {//to be implemented when used here
+		ret = FAIL;
+		sprintf(mess,"Function (Cleanup Acquisition) is not implemented for this detector\n");
+		cprintf(RED, "Warning: %s", mess);
+	}
+#endif
+	if(ret==OK && differentClients)
+		ret=FORCE_UPDATE;
+#endif
+
+	// ret could be swapped during sendData
+	ret1 = ret;
+	// send ok / fail
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
+	// send return argument
+	if (ret==FAIL) {
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
+	}
+
+	// return ok / fail
+	return ret;
+}
 
 

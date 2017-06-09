@@ -8,7 +8,7 @@
 #ifndef SLS_DETECTOR_FUNCS_H
 #define SLS_DETECTOR_FUNCS_H
 
-enum {
+enum detFuncs{
 
   // General purpose functions
   F_EXEC_COMMAND=0, /**< command is executed */
@@ -109,10 +109,13 @@ enum {
   F_PROGRAM_FPGA,			/**< program FPGA */
   F_RESET_FPGA,				/**< reset FPGA */
   F_POWER_CHIP,				/**< power chip */
+  F_ACTIVATE,				/** < activate */
+  F_PREPARE_ACQUISITION,	/** < prepare acquisition */
   /* Always append functions hereafter!!! */
 
   /* Always append functions before!!! */
-  TOO_MANY_FUNCTIONS_DEFINED=128 //you should get a compilation error if there are already so many functions defined. It conflicts with sls_receiver_funcs.h
+  NUM_DET_FUNCTIONS,
+  TOO_MANY_FUNCTIONS_DEFINED=127 //you should get a compilation error if there are already so many functions defined. It conflicts with sls_receiver_funcs.h
 
 
 };

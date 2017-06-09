@@ -1581,11 +1581,11 @@ int stop_acquisition(int file_des) {
 
 }
 
+
 int start_readout(int file_des) {
 
 	int n;
 	int ret = FAIL;
-
 	strcpy(mess, "Start Readout is not implemented for this detector!\n");
 	cprintf(RED,"Warning: %s", mess);
 

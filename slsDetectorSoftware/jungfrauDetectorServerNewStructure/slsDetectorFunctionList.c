@@ -1001,7 +1001,10 @@ int voltageToDac(int value){
 	int vmin = 0;
 	int vmax = 2500;
 	int nsteps = 4096;
-	if ((value < vmin) || (value > vmax)) return -1;
+	if ((value < vmin) || (value > vmax)) {
+		cprintf(RED,"Voltage value (to convert to dac value) is outside bounds: %d\n", value);
+		return -1;
+	}
 	return (int)(((value - vmin) / (vmax - vmin)) * (nsteps - 1) + 0.5);
 }
 
@@ -1010,32 +1013,35 @@ int dacToVoltage(unsigned int digital){
 	int vmax = 2500;
 	int nsteps = 4096;
 	int v = vmin + (vmax - vmin) * digital / (nsteps - 1);
-	if((v < 0) || (v > nsteps - 1))
+	if((v < 0) || (v > nsteps - 1)) {
+		cprintf(RED,"\nVoltage value (converted from dac value) is outside bounds: %d\n", v);
 		return -1;
+	}
 	return v;
 }
 
 
 
 void setDAC(enum DAC_INDEX ind, int val, int imod, int mV, int retval[]){
+	int dacval = val;
 
 	//if set and mv, convert to dac
-	if (val > 0 && mV)
+	if (val > 0 && mV) {
 		val = voltageToDac(val); //gives -1 on error
-
+	}
 
 	if ( (val >= 0) || (val == -100)) {
 		u_int32_t codata;
 		int csdx 		= dacnum / NDAC + DAC_SERIAL_CS_OUT_OFST; 	// old board (16 dacs),so can be DAC_SERIAL_CS_OUT_OFST or +1
 		int dacchannel 	= dacnum % NDAC;							// 0-8, dac channel number (also for dacnum 9-15 in old board)
 
-		printf("\n Setting of DAC %d with value %d\n",dacnum, dacvalue);
+		printf("\n Setting of DAC %d : (%d dac units)\t %d mV\n",dacnum, dacval, val);
 		// command
-		if (dacvalue >= 0) {
+		if (val >= 0) {
 			printf("Write to Input Register and Update\n");
 			codata = LTC2620_DAC_CMD_SET;
 
-		} else if (dacvalue == -100) {
+		} else if (val == -100) {
 			printf("POWER DOWN\n");
 			codata = LTC2620_DAC_CMD_POWER_DOWN;
 		}
@@ -1043,19 +1049,19 @@ void setDAC(enum DAC_INDEX ind, int val, int imod, int mV, int retval[]){
 		printf("Chip select bit:%d\n"
 				"Dac Channel:0x%x\n3"
 				"Dac Value:0x%x",
-				csdx, dacchannel, dacvalue);
+				csdx, dacchannel, val);
 		codata += ((dacchannel << LTC2620_DAC_ADDR_OFST) & LTC2620_DAC_ADDR_MSK) +
-				((dacvalue << LTC2620_DAC_DATA_OFST) & LTC2620_DAC_DATA_MSK);
+				((val << LTC2620_DAC_DATA_OFST) & LTC2620_DAC_DATA_MSK);
 		// to spi
 		serializeToSPI(SPI_REG, codata, (0x1 << csdx), LTC2620_DAC_NUMBITS,
 				DAC_SERIAL_CLK_OUT_MSK, DAC_SERIAL_DIGITAL_OUT_MSK, DAC_SERIAL_DIGITAL_OUT_OFST);
 
-		dacValues[dacnum] = dacvalue;
+		dacValues[dacnum] = dacval;
 	}
 
-	printf("\nGetting DAC %d\n",dacnum);
-	retval[0] = dacValues[dacnum];
-	retval[1] = dacToVoltage(retval[0]);
+	printf("\nGetting DAC %d : ",dacnum);
+	retval[0] = dacValues[dacnum];		printf("(%d dac units)\t", retval[0]);
+	retval[1] = dacToVoltage(retval[0]);printf("%d mV\n", retval[1]);
 }
 
 
@@ -1222,6 +1228,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 	resetCore();
 
 	usleep(500 * 1000); /* todo maybe without */
+	return 0;
 }
 
 

@@ -76,6 +76,11 @@ enum NETWORK_PARA_INDEX				 		{TXN_LEFT, TXN_RIGHT, TXN_FRAME,FLOWCTRL_10G};
 #define DEFAULT_TIMING_MODE					(AUTO_TIMING)
 #define DEFAULT_PHOTON_ENERGY				(-1)
 #define DEFAULT_RATE_CORRECTION				(0)
+#define DEFAULT_EXT_GATING_ENABLE			(0)
+#define DEFAULT_EXT_GATING_POLARITY			(1)				//positive
+#define DEFAULT_TEST_MODE					(0)
+#define DEFAULT_HIGH_VOLTAGE				(0)
+
 
 #define MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS	(0x1FFFFFFF) /** 29 bit register for max subframe exposure value */
 

@@ -117,22 +117,6 @@ void checkFirmwareCompatibility(){
 
 
 
-int moduleTest( enum digitalTestMode arg, int imod){
-	cprintf(BG_RED, "Warning: Module Test not implemented for this detector\n");
-	return OK;
-}
-
-
-int detectorTest( enum digitalTestMode arg){
-	cprintf(BG_RED, "Warning: Detector Tests not implemented for this detector\n");
-	//DETECTOR_FIRMWARE_TEST:testFpga()
-	//DETECTOR_MEMORY_TEST:testRAM()
-	//DETECTOR_BUS_TEST:testBus()
-	//DETECTOR_SOFTWARE_TEST:testFpga()
-	return OK;
-}
-
-
 
 
 /* Ids */
@@ -1079,7 +1063,7 @@ int setNetworkParameter(enum detNetworkParameter mode, int value){
 /* aquisition */
 
 
-int startReceiver(int d){
+int prepareAcquisition(){
 
 	printf("Going to prepare for acquisition with counter_bit:%d\n",Feb_Control_Get_Counter_Bit());
 	Feb_Control_PrepareForAcquisition();
@@ -1159,10 +1143,10 @@ enum runStatus getRunStatus(){
 	//if(trialMasterMode == IS_MASTER){
 	int i = Feb_Control_AcquisitionInProgress();
 	if(i== 0){
-		//printf("IDLE\n");
+		printf("Status: IDLE\n");
 		return IDLE;
 	}else{
-		printf("RUNNING\n");
+		printf("Status: RUNNING...\n");
 		return RUNNING;
 	}
 	//}else printf("***** not master*** \n");

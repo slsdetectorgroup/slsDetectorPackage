@@ -25,9 +25,11 @@ int 		checkType();
 u_int32_t 	testFpga(void);
 int 		testBus(void);
 #endif
+
+#if defined(MYTHEND) || defined(JUNGFRAUD)
 int 		moduleTest( enum digitalTestMode arg, int imod);
 int 		detectorTest( enum digitalTestMode arg);
-
+#endif
 
 // Ids
 int64_t 	getDetectorId(enum idMode arg);
@@ -86,95 +88,96 @@ int 		getPhase();
 #endif
 
 // parameters - nmod, dr, roi
-int setNMod(int nm, enum dimension dim);	// mythen specific, but for detector compatibility as a get
-int getNModBoard(enum dimension arg);		// mythen specific, but for detector compatibility as a get
-int setDynamicRange(int dr);
-#ifdef MYTHEND
-int setROI(int n, ROI arg[], int *retvalsize, int *ret);
+int 		setNMod(int nm, enum dimension dim);	// mythen specific, but for detector compatibility as a get
+int 		getNModBoard(enum dimension arg);		// mythen specific, but for detector compatibility as a get
+int 		setDynamicRange(int dr);
+#ifdef GOTTHARD
+int 		setROI(int n, ROI arg[], int *retvalsize, int *ret);
 #endif
 
 // parameters - readout
-int setSpeed(enum speedVariable arg, int val);
+int 		setSpeed(enum speedVariable arg, int val);
 #if defined(EIGERD) || defined(MYTHEND)
-enum readOutFlags setReadOutFlags(enum readOutFlags val);
+enum 		readOutFlags setReadOutFlags(enum readOutFlags val);
 #endif
 #ifdef MYTHEND
-int executeTrimming(enum trimMode mode, int par1, int par2, int imod);
+int 		executeTrimming(enum trimMode mode, int par1, int par2, int imod);
 #endif
 
 // parameters - timer
-int64_t setTimer(enum timerIndex ind, int64_t val);
+int64_t 	setTimer(enum timerIndex ind, int64_t val);
 #ifndef EIGERD
-int64_t getTimeLeft(enum timerIndex ind);
+int64_t 	getTimeLeft(enum timerIndex ind);
 #endif
 
 
 // parameters - channel, chip, module, settings
 #ifdef MYTHEND
-int setChannel(sls_detector_channel myChan);
-int getChannel(sls_detector_channel *myChan);
-int setChip(sls_detector_chip myChip);
-int getChip(sls_detector_chip *myChip);
+int 		setChannel(sls_detector_channel myChan);
+int 		getChannel(sls_detector_channel *myChan);
+int 		setChip(sls_detector_chip myChip);
+int 		getChip(sls_detector_chip *myChip);
 #endif
 #ifdef EIGERD
-int setModule(sls_detector_module myMod, int delay);
+int 		setModule(sls_detector_module myMod, int delay);
 #else
-int setModule(sls_detector_module myMod);
+int 		setModule(sls_detector_module myMod);
 #endif
-int getModule(sls_detector_module *myMod);
-enum detectorSettings setSettings(enum detectorSettings sett, int imod);
-enum detectorSettings getSettings();
+int 		getModule(sls_detector_module *myMod);
+enum 		detectorSettings setSettings(enum detectorSettings sett, int imod);
+enum 		detectorSettings getSettings();
 
 
-#if defined(MYTHEND) || defined(EIGERD)
 // parameters - threshold
-int getThresholdEnergy(int imod);
-int setThresholdEnergy(int ev, int imod);
+#if defined(MYTHEND) || defined(EIGERD)
+int 		getThresholdEnergy(int imod);
+int 		setThresholdEnergy(int ev, int imod);
 #endif
 
 // parameters - dac, adc, hv
 #ifdef JUNGFRAUD
-void serializeToSPI(u_int32_t addr, u_int32_t val, u_int16_t csmask, int numbitstosend, u_int16_t clkmask, u_int16_t digoutmask, int digofset);
-void initDac(int dacnum);
-void prepareADC();
-void setAdc(int addr, int val);
-int voltageToDac(int value);
-int dacToVoltage(unsigned int digital);
+void 		serializeToSPI(u_int32_t addr, u_int32_t val, u_int16_t csmask, int numbitstosend, u_int16_t clkmask, u_int16_t digoutmask, int digofset);
+void 		initDac(int dacnum);
+void 		prepareADC();
+void 		setAdc(int addr, int val);
+int 		voltageToDac(int value);
+int 		dacToVoltage(unsigned int digital);
 #endif
-void setDAC(enum DAC_INDEX ind, int val, int imod, int mV, int retval[]);
-int getADC(enum ADC_INDEX ind,  int imod);
+void 		setDAC(enum DAC_INDEX ind, int val, int imod, int mV, int retval[]);
+int 		getADC(enum ADC_INDEX ind,  int imod);
 #ifndef MYTHEND
-int setHighVoltage(int val);
+int 		setHighVoltage(int val);
 #endif
 
 
 
 // parameters - timing, extsig
 #ifdef MYTHEND
-enum externalSignalFlag getExtSignal(int signalindex);
-enum externalSignalFlag setExtSignal(int signalindex,  enum externalSignalFlag flag);
+enum 		externalSignalFlag getExtSignal(int signalindex);
+enum 		externalSignalFlag setExtSignal(int signalindex,  enum externalSignalFlag flag);
 #endif
-enum externalCommunicationMode setTiming( enum externalCommunicationMode arg);
+enum 		externalCommunicationMode setTiming( enum externalCommunicationMode arg);
 
 // configure mac
 #ifdef JUNGFRAUD
-long int calcChecksum(int sourceip, int destip);
+long int 	calcChecksum(int sourceip, int destip);
 #endif
 #ifndef MYTHEND
-int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2, int ival);
+int 		configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2, int ival);
 #endif
 
 
 // very detector specific
-#ifdef GOTTHARDD
-// gotthard specific - image, pedestal
-int loadImage(enum imageType index, char *imageVals);
-int readCounterBlock(int startACQ, char *counterVals);
-int resetCounterBlock(int startACQ);
-int calibratePedestal(int frames);
 
-#elif JUNGFRAUD
+// gotthard specific - image, pedestal
+#ifdef GOTTHARDD
+int 		loadImage(enum imageType index, char *imageVals);
+int 		readCounterBlock(int startACQ, char *counterVals);
+int			resetCounterBlock(int startACQ);
+int 		calibratePedestal(int frames);
+
 // jungfrau specific - pll, flashing firmware
+#elif JUNGFRAUD
 void 		resetPLL();
 u_int32_t 	setPllReconfigReg(u_int32_t reg, u_int32_t val);
 void 		configurePll();
@@ -183,8 +186,8 @@ int 		startWritingFPGAprogram(FILE** filefp);
 int 		stopWritingFPGAprogram(FILE* filefp);
 int 		writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp);
 
+// eiger specific - iodelay, 10g, pulse, rate, temp, activate, delay nw parameter
 #elif EIGERD
-//eiger specific - iodelay, 10g, pulse, rate, temp, activate, delay nw parameter
 int setIODelay(int val, int imod);
 int enableTenGigabitEthernet(int val);
 int setCounterBit(int val);
@@ -208,8 +211,8 @@ int setNetworkParameter(enum NETWORK_PARA_INDEX mode, int value);
 
 
 // aquisition
-#ifdef defined(EIGERD) || defined(GOTTHARD)
-int startReceiver(int d);
+#if defined(EIGERD) || defined(GOTTHARD)
+int prepareAcquisition();
 #endif
 int startStateMachine();
 int stopStateMachine();

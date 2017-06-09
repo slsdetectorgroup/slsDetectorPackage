@@ -58,6 +58,7 @@ enum DAC_INDEX				{VB_COMP, VDD_PROT, VIN_COM, VREF_PRECH, VB_PIXBUF, VB_DS, VRE
 #define NCHIP 						(8)
 #define NADC						(0)
 #define NDAC 						(8)
+#define NDAC_OLDBOARD				(16)
 #define DYNAMIC_RANGE				(16)
 #define NUM_BITS_PER_PIXEL			(DYNAMIC_RANGE / 8)
 #define DATA_BYTES					(NCHIP * NCHAN * NUM_BITS_PER_PIXEL)

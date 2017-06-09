@@ -1304,6 +1304,7 @@ string slsDetector::checkOnline() {
 
 int slsDetector::activate(int const enable){
 	int fnum = F_ACTIVATE;
+	int fnum2 = F_RECEIVER_ACTIVATE;
 	int retval = -1;
 	int arg = enable;
 	char mess[MAX_STR_LENGTH]="";
@@ -1355,7 +1356,7 @@ int slsDetector::activate(int const enable){
 			std::cout << "Activating/Deactivating Receiver: " << retval << std::endl;
 #endif
 			if (connectData() == OK){
-				ret=thisReceiver->sendInt(fnum,retval,retval);
+				ret=thisReceiver->sendInt(fnum2,retval,retval);
 				disconnectData();
 			}
 			if(ret==FAIL)
@@ -3851,14 +3852,12 @@ int slsDetector::updateDetectorNoWait() {
 
   n += 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
   thisDetector->dataBytes=nm;
+
   //t=setSettings(GET_SETTINGS);
   n += 	controlSocket->ReceiveDataOnly( &t,sizeof(t));
   thisDetector->currentSettings=t;
 
-  if((thisDetector->myDetectorType!= GOTTHARD)&&
-		  (thisDetector->myDetectorType!= PROPIX)&&
-		  (thisDetector->myDetectorType!= JUNGFRAU)&&
-		  (thisDetector->myDetectorType!= MOENCH) && (thisDetector->myDetectorType!= JUNGFRAUCTB)){
+  if((thisDetector->myDetectorType == EIGER) || (thisDetector->myDetectorType == MYTHEN)){
     //thr=getThresholdEnergy();
     n += 	controlSocket->ReceiveDataOnly( &thr,sizeof(thr));
     thisDetector->currentThresholdEV=thr;
@@ -3867,6 +3866,7 @@ int slsDetector::updateDetectorNoWait() {
   //retval=setFrames(tns);
   n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
   thisDetector->timerValue[FRAME_NUMBER]=retval;
+
   // retval=setExposureTime(tns);
   n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
   thisDetector->timerValue[ACQUISITION_TIME]=retval;
@@ -3876,22 +3876,28 @@ int slsDetector::updateDetectorNoWait() {
 	  n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
 	  thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME]=retval;
   }
+
   //retval=setPeriod(tns);
   n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
   thisDetector->timerValue[FRAME_PERIOD]=retval;
-  //retval=setDelay(tns);
-  n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
-  thisDetector->timerValue[DELAY_AFTER_TRIGGER]=retval;
+
+  if(thisDetector->myDetectorType != EIGER) {
+	  //retval=setDelay(tns);
+	  n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+	  thisDetector->timerValue[DELAY_AFTER_TRIGGER]=retval;
+  }
+
   // retval=setGates(tns);
+  if ((thisDetector->myDetectorType != JUNGFRAU) && (thisDetector->myDetectorType != EIGER)){
   n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
   thisDetector->timerValue[GATES_NUMBER]=retval;
+  }
 
   //retval=setProbes(tns);
   if (thisDetector->myDetectorType == MYTHEN){
     n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
     thisDetector->timerValue[PROBES_NUMBER]=retval;
   }
-
 
   //retval=setTrains(tns);
   n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
@@ -3908,9 +3914,7 @@ int slsDetector::updateDetectorNoWait() {
 
      //retval=setProbes(tns);
      getTotalNumberOfChannels();
-    
      //    thisDetector->dataBytes=getTotalNumberOfChannels()*thisDetector->dynamicRange/8*thisDetector->timerValue[SAMPLES_JCTB];
-     
   }
 
 
@@ -6964,7 +6968,7 @@ int slsDetector::programFPGA(string fname){
 #endif
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
 		if (connectControl() == OK){
-			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+			controlSocket->SendDataOnly(&fnum,sizeof(fnum));cprintf(BG_RED,"size of filesize:%d\n",sizeof(filesize));
 			controlSocket->SendDataOnly(&filesize,sizeof(filesize));
 			//check opening error
 			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));

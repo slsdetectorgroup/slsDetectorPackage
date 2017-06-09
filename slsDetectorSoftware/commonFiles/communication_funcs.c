@@ -308,7 +308,7 @@ int receiveData(int file_des, void* buf,int length, intType itype){
 	int ret = receiveDataOnly(file_des, buf, length);
 #ifndef PCCOMPILE
 #ifdef EIGERD
-	swapData(buf, length, itype);
+	if (ret >= 0) swapData(buf, length, itype);
 #endif
 #endif
 	return ret;
@@ -316,9 +316,9 @@ int receiveData(int file_des, void* buf,int length, intType itype){
 
 
  int sendDataOnly(int file_des, void* buf,int length) {
-
-
-  return   write(file_des, buf, length);  
+	 int ret =  write(file_des, buf, length); //value of -1 is other end socket crash as sigpipe is ignored
+	 if (ret < 0) cprintf(BG_RED, "Error writing to socket. Possible socket crash\n");
+	 return ret;
 }
 
 
@@ -332,32 +332,22 @@ int receiveData(int file_des, void* buf,int length, intType itype){
   printf("want to receive %d Bytes\n", length); 
   //#endif
 
-  while(length>0){
+  while(length > 0) {
     nreceiving = (length>send_rec_max_size) ? send_rec_max_size:length;
-
-    //#ifdef VERY_VERBOSE
-    // printf("want to receive %d Bytes\n", nreceiving); 
-  //#endif
     nreceived = read(file_des,(char*)buf+total_received,nreceiving); 
-    //#ifdef VERY_VERBOSE
-    // printf("read %d \n", nreceived); 
-  //#endif
-  if(!nreceived) break;
-  //  if(nreceived<0) break;
+    if(!nreceived){
+    	if(!total_received) {
+    		cprintf(BG_RED, "Error reading from socket. Possible socket crash\n");
+    		return -1; //to handle it
+    	}
+    	break;
+    }
     length-=nreceived;
     total_received+=nreceived;
-    //    cout<<"nrec: "<<nreceived<<" waiting for ("<<length<<")"<<endl;
   }
- 
-  //#ifdef VERY_VERBOSE
-  // printf("received %d Bytes\n", total_received); 
-  //#endif
 
   if (total_received>0)
     strcpy(thisClientIP,dummyClientIP);
-  
-  //if (strcmp(lastClientIP,"none")==0)
-  //strcpy(lastClientIP,thisClientIP);
   
   if (strcmp(lastClientIP,thisClientIP))
     differentClients=1;

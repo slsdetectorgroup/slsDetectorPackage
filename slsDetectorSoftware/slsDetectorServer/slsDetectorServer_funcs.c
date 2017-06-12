@@ -904,14 +904,15 @@ int set_dac(int file_des) {
 #endif
 #endif
 	// check if dac exists for this detector
+	enum DACINDEX idac=0;
 #ifdef JUNGFRAUD
 	if ((ind != HV_NEW) && (ind >= NDAC_OLDBOARD)) {	//for compatibility with old board
 		ret = FAIL;
 		sprintf(mess,"Dac Index (%d) is not implemented for this detector\n",(int)ind);
 		cprintf(RED, "Warning: %s", mess);
-	}
+	}else
+		idac = ind;
 #else
-	enum DACINDEX idac=0;
 	switch (ind) {
 #ifdef MYTHEND
 	case  TRIMBIT_SIZE:			//ind = VTRIM;
@@ -1049,11 +1050,14 @@ int set_dac(int file_des) {
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 			cprintf(RED, "Warning: %s", mess);
 		} else {
+#ifdef EIGERD
 			//iodelay
 			if(ind == IO_DELAY)
 				retval[0] = setIODelay(val,imod);
 			//high voltage
-			else if((ind == HV_POT) || (ind == HV_NEW)) {
+			else
+#endif
+				if((ind == HV_POT) || (ind == HV_NEW)) {
 				retval[0] = setHighVoltage(val);
 #ifdef EIGERD
 				if(retval[0] < 0){
@@ -2702,8 +2706,9 @@ int set_dynamic_range(int file_des) {
 		case -1:
 		case 16:
 #ifdef EIGERD
-		case 4:	case 8:	case 32:break;
+		case 4:	case 8:	case 32:
 #endif
+		break;
 		default:
 			ret = FAIL;
 			sprintf(mess,"Dynamic Range (%d) is not implemented for this detector\n", dr);
@@ -3421,7 +3426,6 @@ int configure_mac(int file_des) {
 	n = receiveData(file_des,arg,sizeof(arg),OTHER);
 	if (n < 0) return printSocketReadError();
 
-	int imod=0;//should be in future sent from client as -1, arg[2]
 	uint32_t ipad;
 	uint64_t imacadd;
 	uint64_t idetectormacadd;
@@ -3441,11 +3445,6 @@ int configure_mac(int file_des) {
 		cprintf(RED, "Warning: %s", mess);
 	}
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-	else if (imod>=getTotalNumberOfModules()) {
-		ret=FAIL;
-		sprintf(mess,"Module number (%d) is out of range\n",imod);
-		cprintf(RED, "Warning: %s", mess);
-	}
 	else {
 #ifdef VERBOSE
 		int i;
@@ -3468,6 +3467,7 @@ int configure_mac(int file_des) {
 #endif
 		if(getRunStatus() == RUNNING){
 			ret = stopStateMachine();
+		}
 			if(ret==FAIL) {
 				sprintf(mess,"Could not stop detector acquisition to configure mac\n");
 				cprintf(RED, "Warning: %s", mess);
@@ -3485,7 +3485,7 @@ int configure_mac(int file_des) {
 				printf("Configured MAC with retval %d\n",  retval);
 #endif
 			}
-		}
+
 	}
 #endif
 	if (differentClients)
@@ -4045,14 +4045,7 @@ int write_adc_register(int file_des) {
 #ifdef VERBOSE
 	printf("writing to register 0x%x data 0x%x\n", addr, val);
 #endif
-	ret=setAdc(addr,val);
-	if (ret==OK)
-		retval=val;
-	else {
-		ret=FAIL;
-		sprintf(mess,"Writing to register 0x%x failed: wrote 0x%x but read 0x%x\n", addr, val, retval);
-		cprintf(RED, "Warning: %s", mess);
-	}
+	setAdc(addr,val);
 #ifdef VERBOSE
 	printf("Data set to 0x%x\n",  retval);
 #endif
@@ -4669,8 +4662,7 @@ int reset_fpga(int file_des) {
 	}
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	else {
-		resetFPGA();
-		initializeDetector();
+		initControlServer();
 		ret = FORCE_UPDATE;
 	}
 #endif

@@ -33,10 +33,14 @@ int main(int argc, char *argv[]){
 	char cmd[100];
 #endif
 	if (argc==1) {
-		basictests();
 		portno = DEFAULT_PORTNO;
-		printf("opening control server on port %d\n",portno );
+		cprintf(BLUE,
+		"********************************************************\n"
+		"********* opening control server on port %d **********\n"
+		"********************************************************\n\n"
+		, portno);
 		b=1;
+		basictests();
 #ifdef STOP_SERVER
 		sprintf(cmd,"%s %d &",argv[0],DEFAULT_PORTNO+1);
 		system(cmd);
@@ -47,7 +51,11 @@ int main(int argc, char *argv[]){
 			printf("could not open stop server: unknown port\n");
 			return 1;
 		}
-		printf("opening stop server on port %d\n",portno);
+		cprintf(BLUE,
+		"********************************************************\n"
+		"*********** opening stop server on port %d ***********\n"
+		"********************************************************\n\n"
+		, portno);
 		b=0;
 	}
 

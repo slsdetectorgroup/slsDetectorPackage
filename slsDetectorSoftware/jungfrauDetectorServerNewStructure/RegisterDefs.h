@@ -144,18 +144,18 @@
 #define RX_MAC_MSB_REG					(0x48 << 11)
 
 #define RX_MAC_LSB_OFST					(0)
-#define RX_MAC_LSB_MSK					(0x0000FFFF << RX_MAC_LSB_OFST)
+#define RX_MAC_LSB_MSK					(0xFFFFFFFF << RX_MAC_LSB_OFST)
 #define RX_MAC_MSB_OFST					(0)
-#define RX_MAC_MSB_MSK					(0x000000FF << RX_MAC_MSB_OFST)
+#define RX_MAC_MSB_MSK					(0x0000FFFF << RX_MAC_MSB_OFST)
 
 /* Detector/ Transmitter Mac Address 64 bit Register */
 #define TX_MAC_LSB_REG					(0x49 << 11)
 #define TX_MAC_MSB_REG					(0x4A << 11)
 
 #define TX_MAC_LSB_OFST					(0)
-#define TX_MAC_LSB_MSK					(0x0000FFFF << TX_MAC_LSB_OFST)
+#define TX_MAC_LSB_MSK					(0xFFFFFFFF << TX_MAC_LSB_OFST)
 #define TX_MAC_MSB_OFST					(0)
-#define TX_MAC_MSB_MSK					(0x000000FF << TX_MAC_MSB_OFST)
+#define TX_MAC_MSB_MSK					(0x0000FFFF << TX_MAC_MSB_OFST)
 
 /* Detector/ Transmitter IP Address Register */
 #define TX_IP_REG						(0x4B << 11)
@@ -164,7 +164,7 @@
 #define TX_IP_CHECKSUM_REG				(0x4C << 11)
 
 #define TX_IP_CHECKSUM_OFST				(0)
-#define TX_IP_CHECKSUM_MSK				(0x000000FF << TX_IP_CHECKSUM_OFST)
+#define TX_IP_CHECKSUM_MSK				(0x0000FFFF << TX_IP_CHECKSUM_OFST)
 
 /* Configuration Register */
 #define CONFIG_REG            			(0x4D << 11)

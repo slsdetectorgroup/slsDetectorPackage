@@ -1,15 +1,15 @@
 //#ifdef SLS_DETECTOR_FUNCTION_LIST
 
-#include <stdio.h>
-#include <unistd.h> //to gethostname
-#include <string.h>
 
 #include "slsDetectorFunctionList.h"
 #include "gitInfoJungfrau.h"
-#include "slsDetectorServer_defs.h" //also include RegisterDefs.h
+#include "slsDetectorServer_defs.h" // also include RegisterDefs.h
 
-
-
+#include <stdio.h>
+#include <unistd.h> 	// usleep
+#include <string.h>
+#include <fcntl.h>		// open
+#include <sys/mman.h>	// mmap
 /* global variables */
 
 sls_detector_module *detectorModules=NULL;
@@ -18,6 +18,7 @@ int *detectorChans=NULL;
 dacs_t *detectorDacs=NULL;
 dacs_t *detectorAdcs=NULL;
 
+int gpioDefined=0;
 enum detectorSettings thisSettings;
 enum masterFlags masterMode = NO_MASTER;
 int highvoltage = 0;
@@ -34,7 +35,14 @@ char mtdvalue[10];
 /* basic tests */
 
 void checkFirmwareCompatibility(){
-	printf("Testing Firmware Compatibility... \n");
+
+	defineGPIOpins();
+	resetFPGA();
+	if ((mapCSP0() == FAIL) || (checkType() == FAIL) || (testFpga() == FAIL) || (testBus() == FAIL) ) {
+		cprintf(BG_RED, "Dangerous to continue. Goodbye!\n");
+		exit(EXIT_FAILURE);
+	}
+
 	uint16_t hversion			= getHardwareVersionNumber();
 	uint16_t hsnumber			= getHardwareSerialNumber();
 	uint32_t ipadd				= getDetectorIP();
@@ -65,13 +73,8 @@ void checkFirmwareCompatibility(){
 	);
 
 
-	//initial test
-	if ( (checkType() == FAIL) || (testFpga() == FAIL) || (testBus() == FAIL) ) {
-		cprintf(BG_RED, "Dangerous to continue. Goodbye!\n");
-		exit(-1);
-	}
-
 /*
+ * 	printf("Testing firmware capability... ");
 	//cant read versions
 	if(!fwversion || !sw_fw_apiversion){
 		cprintf(RED,"FATAL ERROR: Cant read versions from FPGA. Please update firmware\n");
@@ -122,7 +125,6 @@ u_int32_t testFpga(void) {
 		cprintf(RED,"Fixed pattern does not match! Read 0x%08x, expected 0x%08x\n", val, FIX_PATT_VAL);
 		ret = FAIL;
 	}
-	printf("\n");
 	return ret;
 }
 
@@ -145,8 +147,6 @@ int testBus() {
 
 	if (ret == OK)
 		printf("Successfully tested bus %d times\n", times);
-
-	printf("\n");
 	return ret;
 }
 
@@ -264,13 +264,6 @@ u_int32_t  getDetectorIP(){
 
 void initControlServer(){
 
-	defineGPIOpins();
-	resetFPGA();
-	if ((mapCSP0() == FAIL) || (checkType() == FAIL) || (testFpga() == FAIL) || (testBus() == FAIL) ) {
-		cprintf(BG_RED, "Dangerous to continue. Goodbye!\n");
-		exit(EXIT_FAILURE);
-	}
-
 	setupDetector();
 	printf("\n");
 }
@@ -281,35 +274,39 @@ void initStopServer() {
 
 	usleep(CTRL_SRVR_INIT_TIME_US);
 	if (mapCSP0() == FAIL) {
-		cprintf(BG_RED, "Stop Server: Dangerous to continue. Goodbye!\n");
+		cprintf(BG_RED, "Stop Server: Map Fail. Dangerous to continue. Goodbye!\n");
 		exit(EXIT_FAILURE);
 	}
 }
 
 
 int mapCSP0(void) {
-	printf("Mapping memory\n");
+	// if not mapped
+	if (!CSP0BASE) {
+		printf("Mapping memory\n");
 #ifdef VIRTUAL
-	CSP0BASE = malloc(MEM_SIZE);
-	printf("memory allocated\n");
+		CSP0BASE = malloc(MEM_SIZE);
+		printf("memory allocated\n");
 #else
-	int fd;
-	fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
-	if (fd == -1) {
-		cprintf(BG_RED, "Error: Can't find /dev/mem\n");
-		return FAIL;
-	}
+		int fd;
+		fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
+		if (fd == -1) {
+			cprintf(BG_RED, "Error: Can't find /dev/mem\n");
+			return FAIL;
+		}
 #ifdef VERBOSE
-	printf("/dev/mem opened\n");
+		printf("/dev/mem opened\n");
 #endif
-	CSP0BASE = (u_int32_t)mmap(0, MEM_SIZE, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, CSP0);
-	if (CSP0BASE == (u_int32_t)MAP_FAILED) {
-		cprintf(BG_RED, "Error: Can't map memmory area\n");
-		return FAIL;
-	}
-	printf("CSPOBASE mapped from %08x to %08x\n",CSP0BASE,CSP0BASE+MEM_SIZE);
+		CSP0BASE = (u_int32_t)mmap(0, MEM_SIZE, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, CSP0);
+		if (CSP0BASE == (u_int32_t)MAP_FAILED) {
+			cprintf(BG_RED, "Error: Can't map memmory area\n");
+			return FAIL;
+		}
+		printf("CSPOBASE mapped from %08x to %08x\n",CSP0BASE,CSP0BASE+MEM_SIZE);
 #endif
-	printf("Status Register: %08x\n",bus_r(STATUS_REG));
+		printf("Status Register: %08x\n",bus_r(STATUS_REG));
+	}else
+		printf("Memory already mapped before\n");
 	return OK;
 }
 
@@ -359,18 +356,22 @@ int64_t get64BitReg(int aLSB, int aMSB){
 	vMSB=bus_r(aMSB);
 	v64=vMSB;
 	v64=(v64<<32) | vLSB;
-	printf("reg64(%x,%x) %x %x %llx\n", aLSB, aMSB, vLSB, vMSB, v64);
+	printf(" reg64(%x,%x) %x %x %llx\n", aLSB, aMSB, vLSB, vMSB, v64);
 	return v64;
 }
 
 
 void defineGPIOpins(){
-	//define the gpio pins
-	system("echo 7 > /sys/class/gpio/export");
-	system("echo 9 > /sys/class/gpio/export");
-	//define their direction
-	system("echo in  > /sys/class/gpio/gpio7/direction");
-	system("echo out > /sys/class/gpio/gpio9/direction");
+	if (!gpioDefined) {
+		//define the gpio pins
+		system("echo 7 > /sys/class/gpio/export");
+		system("echo 9 > /sys/class/gpio/export");
+		//define their direction
+		system("echo in  > /sys/class/gpio/gpio7/direction");
+		system("echo out > /sys/class/gpio/gpio9/direction");
+		printf("gpio pins defined\n");
+		gpioDefined = 1;
+	}else printf("gpio pins already defined earlier\n");
 }
 
 void resetFPGA(){
@@ -402,6 +403,11 @@ void allocateDetectorStructureMemory(){
 	printf("This Server is for 1 Jungfrau module (500k)\n");
 
 	//Allocation of memory
+	if (detectorModules!=NULL) free(detectorModules);
+	if (detectorChips!=NULL) free(detectorChips);
+	if (detectorChans!=NULL) free(detectorChans);
+	if (detectorDacs!=NULL) free(detectorDacs);
+	if (detectorAdcs!=NULL) free(detectorAdcs);
 	detectorModules=malloc(sizeof(sls_detector_module));
 	detectorChips=malloc(NCHIP*sizeof(int));
 	detectorChans=malloc(NCHIP*NCHAN*sizeof(int));
@@ -461,7 +467,7 @@ void setupDetector() {
 	}
 
 	bus_w(DAQ_REG, 0x0); 		/* Only once at server startup */
-	setClockDivider(HALF_SPEED);
+	setSpeed(CLOCK_DIVIDER, HALF_SPEED);
 	cleanFifos();	/* todo might work without */
 	resetCore();	/* todo might work without */
 
@@ -502,11 +508,11 @@ u_int32_t readRegister(u_int32_t offset) {
 int powerChip (int on){
 	if(on != -1){
 		if(on){
-			printf("\nPowering on the chip\n");
+			cprintf(BLUE, "\n*** Powering on the chip ***\n");
 			bus_w(CHIP_POWER_REG, bus_r(CHIP_POWER_REG) | CHIP_POWER_ENABLE_MSK);
 		}
 		else{
-			printf("\nPowering off the chip\n");
+			cprintf(BLUE, "\n*** Powering off the chip*** \n");
 			bus_w(CHIP_POWER_REG, bus_r(CHIP_POWER_REG) & ~CHIP_POWER_ENABLE_MSK);
 		}
 	}
@@ -514,30 +520,30 @@ int powerChip (int on){
 }
 
 void cleanFifos() {
-	printf("Clearing Acquisition Fifos\n");
+	printf("\nClearing Acquisition Fifos\n");
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_ACQ_FIFO_CLR_MSK);
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_ACQ_FIFO_CLR_MSK);
 }
 
 void resetCore() {
-	printf("Resetting Core\n");
+	printf("\nResetting Core\n");
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_CORE_RST_MSK);
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_CORE_RST_MSK);
 }
 
 void resetPeripheral() {
-	printf("Resetting Peripheral\n");
+	printf("\nResetting Peripheral\n");
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_PERIPHERAL_RST_MSK);
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_PERIPHERAL_RST_MSK);
 }
 
 int adcPhase(int st){ /**carlos needed clkphase 1 and 2?  cehck with Aldo */
-	printf("\nSetting ADC Phase to %d\n",st);
+	printf("Setting ADC Phase to %d\n",st);
 	if (st > 65535 || st < -65535)
 		return clkPhase[0];
 	clkPhase[1] = st - clkPhase[0];
 
-	printf("phase %d\n", clkPhase[1] );
+	printf(" phase %d\n", clkPhase[1] );
 	configurePll();
 	clkPhase[0] = st;
 	return clkPhase[0];
@@ -593,21 +599,21 @@ int setSpeed(enum speedVariable arg, int val) {
 
 		// todo in firmware, for now setting half speed
 		case FULL_SPEED://40
-			printf("Setting Half Speed (20 MHz):\n");
+			printf("\nSetting Half Speed (20 MHz):\n");
 			printf("Setting Sample Reg to 0x%x\n", SAMPLE_ADC_HALF_SPEED);		bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
 			printf("Setting Config Reg to 0x%x\n", CONFIG_HALF_SPEED);			bus_w(CONFIG_REG, CONFIG_HALF_SPEED);
 			printf("Setting ADC Ofst Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL);	bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
 			printf("Setting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED);	adcPhase(ADC_PHASE_HALF_SPEED);
 			break;
 		case HALF_SPEED:
-			printf("Setting Half Speed (20 MHz):\n");
+			printf("\nSetting Half Speed (20 MHz):\n");
 			printf("Setting Sample Reg to 0x%x\n", SAMPLE_ADC_HALF_SPEED);		bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
 			printf("Setting Config Reg to 0x%x\n", CONFIG_HALF_SPEED);			bus_w(CONFIG_REG, CONFIG_HALF_SPEED);
 			printf("Setting ADC Ofst Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL);	bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
 			printf("Setting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED);	adcPhase(ADC_PHASE_HALF_SPEED);
 			break;
 		case QUARTER_SPEED:
-			printf("Setting Half Speed (10 MHz):\n");
+			printf("\nSetting Half Speed (10 MHz):\n");
 			printf("Setting Sample Reg to 0x%x\n", SAMPLE_ADC_QUARTER_SPEED);		bus_w(SAMPLE_REG, SAMPLE_ADC_QUARTER_SPEED);
 			printf("Setting Config Reg to 0x%x\n", CONFIG_QUARTER_SPEED);			bus_w(CONFIG_REG, CONFIG_QUARTER_SPEED);
 			printf("Setting ADC Ofst Reg to 0x%x\n", ADC_OFST_QUARTER_SPEED_VAL);	bus_w(ADC_OFST_REG, ADC_OFST_QUARTER_SPEED_VAL);
@@ -618,8 +624,7 @@ int setSpeed(enum speedVariable arg, int val) {
 	}
 
 	//getting
-	u_int32_t val = bus_r(CONFIG_REG);
-	int speed = val & CONFIG_READOUT_SPEED_MSK;
+	u_int32_t speed = bus_r(CONFIG_REG) & CONFIG_READOUT_SPEED_MSK;
 	switch(speed){
 	case CONFIG_FULL_SPEED_40MHZ_VAL:
 		return FULL_SPEED;
@@ -646,9 +651,9 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 
 	case FRAME_NUMBER:
 		if(val >= 0)
-			printf("\nSetting number of frames: %lld\n",(long long int)val);
+			printf("\nSetting #frames: %lld\n",(long long int)val);
 		retval = set64BitReg(val,  SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
-		printf("Getting number of frames: %lld\n",(long long int)retval);
+		printf("Getting #frames: %lld\n",(long long int)retval);
 		break;
 
 	case ACQUISITION_TIME:
@@ -680,9 +685,9 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 
 	case CYCLES_NUMBER:
 		if(val >= 0)
-			printf("\nSetting number of cycles to %lld\n", (long long int)val);
+			printf("\nSetting #cycles to %lld\n", (long long int)val);
 		retval = set64BitReg(val,  SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
-		printf("Getting number of cycles: %lld\n", (long long int)retval);
+		printf("Getting #cycles: %lld\n", (long long int)retval);
 		break;
 
 	default:
@@ -800,27 +805,30 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 	uint32_t val = -1;
 	const int defaultIndex[NUM_SETTINGS] = DEFAULT_SETT_INDX;
 	const int defaultvals[NUM_SETTINGS] = DEFAULT_SETT_VALS;
+	const char defaultNames[NUM_SETTINGS][100]=DEFAULT_SETT_NAMES;
 
 	if(sett != GET_SETTINGS) {
 
 		// find gain val
 		{
 			int i;
-			for (int i = 0; i < NUM_SETTINGS; ++i) {
+			for (i = 0; i < NUM_SETTINGS; ++i) {
 				if (sett == defaultIndex[i]) {
 					val = defaultvals[i];
 					break;
 				}
 			}
-		}
 
-		//not found
-		if (val == -1) {
-			cprintf(RED, "Error: This settings is not defined for this detector %d\n", (int)sett);
-			return val;
-		}
 
-		printf("Writing to DAQ Register with val:0x%x\n", val);
+			//not found
+			if (val == -1) {
+				cprintf(RED, "Error: This settings is not defined for this detector %d\n", (int)sett);
+				return val;
+			}
+
+			printf("\nConfiguring to settings %s (%d)\n"
+					" Writing to DAQ Register with val:0x%x\n", defaultNames[i], sett, val);
+		}
 		bus_w(DAQ_REG, val);
 		thisSettings = sett;
 	}
@@ -831,31 +839,36 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 
 
 enum detectorSettings getSettings(){
+
 	enum detectorSettings sett = -1;
+	const int defaultIndex[NUM_SETTINGS] = DEFAULT_SETT_INDX;
+	const int defaultvals[NUM_SETTINGS] = DEFAULT_SETT_VALS;
+	const char defaultNames[NUM_SETTINGS][100]=DEFAULT_SETT_NAMES;
+
 	uint32_t val = bus_r(DAQ_REG);
-	printf("Reading DAQ Register :0x%x\n", val);
+	printf("\nGetting Settings\n Reading DAQ Register :0x%x\n", val);
 
 	//find setting
 	{
 		int i;
-		for (int i = 0; i < NUM_SETTINGS; ++i) {
+		for (i = 0; i < NUM_SETTINGS; ++i) {
 			if (val == defaultvals[i]) {
 				sett = defaultIndex[i];
 				break;
 			}
 		}
+
+
+		//not found
+		if (sett == -1) {
+			cprintf(RED, "Error: Undefined settings read for this detector (DAQ Reg val: 0x%x)\n", val);
+			thisSettings = UNDEFINED;
+			return sett;
+		}
+
+		thisSettings = sett;
+		printf("Settings Read: %s (%d)\n", defaultNames[i], thisSettings);
 	}
-
-	//not found
-	if (sett == -1) {
-		cprintf(RED, "Error: Undefined settings read for this detector (DAQ Reg val: 0x%x)\n", val);
-		thisSettings = UNDEFINED;
-		return sett;
-	}
-
-	thisSettings = sett;
-	printf("Settings: %d\n", thisSettings);
-
 	return thisSettings;
 }
 
@@ -914,23 +927,21 @@ void serializeToSPI(u_int32_t addr, u_int32_t val, u_int16_t csmask, int numbits
 	// stop point = start point of course
 	valw = 0xffff; 		/**todo testwith old board 0xff for adc_spi */			// old board compatibility (not using specific bits)
 	bus_w16 (addr, valw);
-
-	printf("\n");
 }
 
 
 
 void initDac(int dacnum) {
-	printf("\n Initializing dac for %d to \n",dacnum);
+	printf("\nInitializing dac for %d to \n",dacnum);
 
 	u_int32_t codata;
 	int csdx 		= dacnum / NDAC + DAC_SERIAL_CS_OUT_OFST; 	// old board (16 dacs),so can be DAC_SERIAL_CS_OUT_OFST or +1
 	int dacchannel 	= 0xf;										// all channels
 	int dacvalue	= 0x6; 										// can be any random value (just writing to power up)
-	printf("Write to Input Register\n"
-			"Chip select bit:%d\n"
-			"Dac Channel:0x%x\n3"
-			"Dac Value:0x%x",
+	printf(" Write to Input Register\n"
+			" Chip select bit:%d\n"
+			" Dac Channel:0x%x\n"
+			" Dac Value:0x%x\n",
 			csdx, dacchannel, dacvalue);
 
 	codata = LTC2620_DAC_CMD_WRITE +											// command to write to input register
@@ -943,24 +954,30 @@ void initDac(int dacnum) {
 
 
 void prepareADC(){
-	printf("Preparing ADC\n");
+	printf("\n\nPreparing ADC ... \n");
 
 	//power mode reset
+	printf("power mode reset:\n");
 	setAdc(AD9257_POWER_MODE_REG,
 			(AD9257_INT_RESET_VAL << AD9257_POWER_INTERNAL_OFST) & AD9257_POWER_INTERNAL_MSK);
+
 	//power mode chip run
+	 printf("power mode chip run:\n");
 	setAdc(AD9257_POWER_MODE_REG,
 			(AD9257_INT_CHIP_RUN_VAL << AD9257_POWER_INTERNAL_OFST) & AD9257_POWER_INTERNAL_MSK);
 
 	//output clock phase
+	 printf("output clock phase:\n");
 	setAdc(AD9257_OUT_PHASE_REG,
 			(AD9257_OUT_CLK_60_VAL << AD9257_OUT_CLK_OFST) & AD9257_OUT_CLK_MSK);
 
 	// lvds-iee reduced , binary offset
+	 printf("lvds-iee reduced, binary offset:\n");
 	setAdc(AD9257_OUT_MODE_REG,
 			(AD9257_OUT_LVDS_IEEE_VAL << AD9257_OUT_LVDS_OPT_OFST) & AD9257_OUT_LVDS_OPT_MSK);
 
 	// all devices on chip to receive next command
+	 printf("all devices on chip to receive next command:\n");
 	setAdc(AD9257_DEV_IND_2_REG,
 			AD9257_CHAN_H_MSK | AD9257_CHAN_G_MSK | AD9257_CHAN_F_MSK | AD9257_CHAN_E_MSK);
 	setAdc(AD9257_DEV_IND_1_REG,
@@ -968,10 +985,12 @@ void prepareADC(){
 			AD9257_CLK_CH_DCO_MSK | AD9257_CLK_CH_IFCO_MSK);
 
 	// vref 1.33
+	 printf("vref 1.33:\n");
 	setAdc(AD9257_VREF_REG,
 			(AD9257_VREF_1_33_VAL << AD9257_VREF_OFST) & AD9257_VREF_MSK);
 
 	// no test mode
+	 printf("no test mode:\n");
 	setAdc(AD9257_TEST_MODE_REG,
 			(AD9257_NONE_VAL << AD9257_OUT_TEST_OFST) & AD9257_OUT_TEST_MSK);
 
@@ -980,6 +999,7 @@ void prepareADC(){
 	printf("******* PUTTING ADC IN TEST MODE!!!!!!!!! *******\n");
 	printf("***************************************** *******\n");
 	// mixed bit frequency test mode
+	 printf("mixed bit frequency test mode:\n");
 	setAdc(AD9257_TEST_MODE_REG,
 			(AD9257_MIXED_BIT_FREQ_VAL << AD9257_OUT_TEST_OFST) & AD9257_OUT_TEST_MSK);
 #endif
@@ -991,7 +1011,7 @@ void setAdc(int addr, int val) {
 
 	u_int32_t codata;
 	codata = val + (addr << 8);
-	printf("\n Setting Adc spi register. Addr: 0x%04x Value: 0x%04x\n", addr, val);
+	printf(" Setting ADC SPI Register. Wrote 0x%04x at 0x%04x\n", val, addr);
 	serializeToSPI(ADC_SPI_REG, codata, ADC_SERIAL_CS_OUT_MSK, AD9257_ADC_NUMBITS,
 			ADC_SERIAL_CLK_OUT_MSK, ADC_SERIAL_DATA_OUT_MSK, ADC_SERIAL_DATA_OUT_OFST);
 }
@@ -1014,7 +1034,7 @@ int dacToVoltage(unsigned int digital){
 	int nsteps = 4096;
 	int v = vmin + (vmax - vmin) * digital / (nsteps - 1);
 	if((v < 0) || (v > nsteps - 1)) {
-		cprintf(RED,"\nVoltage value (converted from dac value) is outside bounds: %d\n", v);
+		cprintf(RED,"Voltage value (converted from dac value) is outside bounds: %d\n", v);
 		return -1;
 	}
 	return v;
@@ -1032,23 +1052,23 @@ void setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]){
 
 	if ( (val >= 0) || (val == -100)) {
 		u_int32_t codata;
-		int csdx 		= dacnum / NDAC + DAC_SERIAL_CS_OUT_OFST; 	// old board (16 dacs),so can be DAC_SERIAL_CS_OUT_OFST or +1
-		int dacchannel 	= dacnum % NDAC;							// 0-8, dac channel number (also for dacnum 9-15 in old board)
+		int csdx 		= ind / NDAC + DAC_SERIAL_CS_OUT_OFST; 	// old board (16 dacs),so can be DAC_SERIAL_CS_OUT_OFST or +1
+		int dacchannel 	= ind % NDAC;							// 0-8, dac channel number (also for dacnum 9-15 in old board)
 
-		printf("\n Setting of DAC %d : (%d dac units)\t %d mV\n",dacnum, dacval, val);
+		printf("\nSetting of DAC %d : %d dac units (%d mV)\n",ind, dacval, val);
 		// command
 		if (val >= 0) {
-			printf("Write to Input Register and Update\n");
+			printf(" Write to Input Register and Update\n");
 			codata = LTC2620_DAC_CMD_SET;
 
 		} else if (val == -100) {
-			printf("POWER DOWN\n");
+			printf(" POWER DOWN\n");
 			codata = LTC2620_DAC_CMD_POWER_DOWN;
 		}
 		// address
-		printf("Chip select bit:%d\n"
-				"Dac Channel:0x%x\n3"
-				"Dac Value:0x%x",
+		printf(" Chip select bit:%d\n"
+				" Dac Channel:0x%x\n"
+				" Dac Value:0x%x\n",
 				csdx, dacchannel, val);
 		codata += ((dacchannel << LTC2620_DAC_ADDR_OFST) & LTC2620_DAC_ADDR_MSK) +
 				((val << LTC2620_DAC_DATA_OFST) & LTC2620_DAC_DATA_MSK);
@@ -1056,38 +1076,43 @@ void setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]){
 		serializeToSPI(SPI_REG, codata, (0x1 << csdx), LTC2620_DAC_NUMBITS,
 				DAC_SERIAL_CLK_OUT_MSK, DAC_SERIAL_DIGITAL_OUT_MSK, DAC_SERIAL_DIGITAL_OUT_OFST);
 
-		dacValues[dacnum] = dacval;
+		dacValues[ind] = dacval;
 	}
 
-	printf("\nGetting DAC %d : ",dacnum);
-	retval[0] = dacValues[dacnum];		printf("(%d dac units)\t", retval[0]);
-	retval[1] = dacToVoltage(retval[0]);printf("%d mV\n", retval[1]);
+	printf("Getting DAC %d : ",ind);
+	retval[0] = dacValues[ind];		printf("%d dac units ", retval[0]);
+	retval[1] = dacToVoltage(retval[0]);printf("(%d mV)\n", retval[1]);
 }
 
 
 int getADC(enum ADCINDEX ind,  int imod){
 
-	char tempnames[2][20]={"VRs/FPGAs Temperature", "ADCs/ASICs Temperature"};
+	char tempnames[2][40]={"VRs/FPGAs Temperature", "ADCs/ASICs Temperature"};
 	printf("Getting Temperature for %s\n",tempnames[ind]);
 	u_int32_t addr = GET_TEMPERATURE_TMP112_REG;
-	u_int32_t val = 0;
 	int retval = -1;
+/*
+ 	 	u_int32_t val = 0;
+	{
+		int i;
+		for(i = 0; i < 10; i++) {
+			switch((int)ind){
 
-	for(int i = 0; i < 10; i++) {
-		switch((int)ind){
-
-		case TEMP_FPGA:
-			val = (val<<1) + ((bus_r(GET_TEMPERATURE_TMP112_REG) & (2)) >> 1);
-			break;
-		case TEMPADC:
-			val= (val<<1) + (bus_r(GET_TEMPERATURE_TMP112_REG) & (1));
-			break;
+			case TEMP_FPGA:
+				val = (val<<1) + ((bus_r(addr) & (2)) >> 1);
+				break;
+			case TEMP_ADC:
+				val= (val<<1) + (bus_r(addr) & (1));
+				break;
+			}
 		}
 	}
-	/** or just read it */
-	retval = ((int)tempVal) / 4.0;
+	// or just read it
+	retval = ((int)val) / 4.0;
 
-	printf("Temperature %s: %.2f°C\n",tempnames[ind],retval);
+	printf("Temperature %s: %d °C\n",tempnames[ind],retval);*/
+	printf("\nReal Temperature %s: %d °C\n",tempnames[ind],bus_r(addr));
+
 
 	return retval;
 }
@@ -1110,7 +1135,7 @@ int setHighVoltage(int val){
 			dacvalue = 1. + (200.-val) / alpha;
 			val=200.-(dacvalue-1)*alpha;
 		}
-		printf ("\n Setting High voltage to %d (dacval %d)\n",val, dacvalue);
+		printf ("\nSetting High voltage to %d (dacval %d)\n",val, dacvalue);
 		dacvalue &= MAX1932_HV_DATA_MSK;
 		serializeToSPI(SPI_REG, dacvalue, HV_SERIAL_CS_OUT_MSK, MAX1932_HV_NUMBITS,
 				HV_SERIAL_CLK_OUT_MSK, HV_SERIAL_DIGITAL_OUT_MSK, HV_SERIAL_DIGITAL_OUT_OFST);
@@ -1188,42 +1213,79 @@ long int calcChecksum(int sourceip, int destip) {
 
 
 int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2, int ival){
-	printf("\nConfiguring MAC\n");
+	cprintf(BLUE, "\n*** Configuring MAC ***\n");
 	uint32_t sourceport  =  DEFAULT_TX_UDP_PORT;
 
-	printf("Source IP   : %d.%d.%d.%d\n",(sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff);
-	printf("Source MAC  : %02x:%02x:%02x:%02x:%02x:%02x\n",
+	printf("Source IP   : %d.%d.%d.%d \t\t(0x%08x)\n",(sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip);
+	printf("Source MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
 			(unsigned int)((sourcemac>>40)&0xFF),
 			(unsigned int)((sourcemac>>32)&0xFF),
 			(unsigned int)((sourcemac>>24)&0xFF),
 			(unsigned int)((sourcemac>>16)&0xFF),
 			(unsigned int)((sourcemac>>8)&0xFF),
-			(unsigned int)((sourcemac>>0)&0xFF));
-	printf("Source Port : %d\n",sourceport);
+			(unsigned int)((sourcemac>>0)&0xFF),
+			sourcemac);
+	printf("Source Port : %d \t\t\t(0x%08x)\n",sourceport, sourceport);
 
-	printf("Dest. IP    : %d.%d.%d.%d\n",(destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);
-	printf("Dest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x\n",
+	printf("Dest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",(destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff, destip);
+	printf("Dest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
 			(unsigned int)((destmac>>40)&0xFF),
 			(unsigned int)((destmac>>32)&0xFF),
 			(unsigned int)((destmac>>24)&0xFF),
 			(unsigned int)((destmac>>16)&0xFF),
 			(unsigned int)((destmac>>8)&0xFF),
-			(unsigned int)((destmac>>0)&0xFF));
-	printf("Dest. Port  : %d\n",udpport);
-
+			(unsigned int)((destmac>>0)&0xFF),
+			destmac);
+	printf("Dest. Port  : %d \t\t\t(0x%08x)\n",udpport, udpport);
 
 	long int checksum=calcChecksum(sourceip, destip);
 	bus_w(TX_IP_REG, sourceip);
 	bus_w(RX_IP_REG, destip);
-	bus_w(RX_MAC_LSB_REG, (destmac << RX_MAC_LSB_OFST) & RX_MAC_LSB_MSK);
-	bus_w(RX_MAC_MSB_REG, (destmac << RX_MAC_MSB_OFST) & RX_MAC_MSB_MSK);
-	bus_w(TX_MAC_LSB_REG, (sourcemac << TX_MAC_LSB_OFST) & TX_MAC_LSB_MSK);
-	bus_w(TX_MAC_MSB_REG, (sourcemac << TX_MAC_MSB_OFST) & TX_MAC_MSB_MSK);
-	bus_w(UDP_PORT_REG,
-			((sourceport << UDP_PORT_TX_OFST) & UDP_PORT_TX_MSK) |
-			((destport << UDP_PORT_RX_OFST) & UDP_PORT_RX_MSK));
-	bus_w(TX_IP_CHECKSUM_REG,(checksum << TX_IP_CHECKSUM_OFST) & TX_IP_CHECKSUM_MSK);
 
+/*
+	bus_w(TX_MAC_LSB_REG,(destmac>>32)&0xFFFFFFFF);//rx_udpmacH_AReg_c
+	bus_w(TX_MAC_MSB_REG,(destmac)&0xFFFFFFFF);//rx_udpmacL_AReg_c
+	bus_w(RX_MAC_MSB_REG,(sourcemac>>32)&0xFFFFFFFF);//detectormacH_AReg_c
+	bus_w(RX_MAC_LSB_REG,(sourcemac)&0xFFFFFFFF);//detectormacL_AReg_c
+	bus_w(UDP_PORT_REG,((sourceport&0xFFFF)<<16)+(udpport&0xFFFF));//udpports_AReg_c
+*/
+	uint32_t val = 0;
+
+	val = ((sourcemac >> LSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
+	bus_w(TX_MAC_LSB_REG, val);
+#ifdef VERBOSE
+	printf("Read from TX_MAC_LSB_REG: 0x%08x\n", bus_r(TX_MAC_LSB_REG));
+#endif
+
+	val = ((sourcemac >> MSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
+	bus_w(TX_MAC_MSB_REG,val);
+#ifdef VERBOSE
+	printf("Read from TX_MAC_MSB_REG: 0x%08x\n", bus_r(TX_MAC_MSB_REG));
+#endif
+
+	val = ((destmac >> LSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
+	bus_w(RX_MAC_LSB_REG, val);
+#ifdef VERBOSE
+	printf("Read from RX_MAC_LSB_REG: 0x%08x\n", bus_r(RX_MAC_LSB_REG));
+#endif
+
+	val = ((destmac >> MSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
+	bus_w(RX_MAC_MSB_REG, val);
+#ifdef VERBOSE
+	printf("Read from RX_MAC_MSB_REG: 0x%08x\n", bus_r(RX_MAC_MSB_REG));
+#endif
+
+	val = (((sourceport << UDP_PORT_TX_OFST) & UDP_PORT_TX_MSK) |
+			((udpport << UDP_PORT_RX_OFST) & UDP_PORT_RX_MSK));
+	bus_w(UDP_PORT_REG, val);
+#ifdef VERBOSE
+	printf("Read from UDP_PORT_REG: 0x%08x\n", bus_r(UDP_PORT_REG));
+#endif
+
+	bus_w(TX_IP_CHECKSUM_REG,(checksum << TX_IP_CHECKSUM_OFST) & TX_IP_CHECKSUM_MSK);
+#ifdef VERBOSE
+	printf("Read from TX_IP_CHECKSUM_REG: 0x%08x\n", bus_r(TX_IP_CHECKSUM_REG));
+#endif
 	cleanFifos();
 	resetCore();
 
@@ -1272,7 +1334,7 @@ void configurePll() {
 	u_int32_t val;
 	int32_t phase=0, inv=0;
 
-	printf("phase in %d\n", clkPhase[1]);
+	printf(" phase in %d\n", clkPhase[1]);
 	if (clkPhase[1]>0) {
 		inv=0;
 		phase=clkPhase[1];
@@ -1280,19 +1342,19 @@ void configurePll() {
 		inv=1;
 		phase=-1*clkPhase[1];
 	}
-	printf("phase out %d %08x\n", phase, phase);
+	printf(" phase out %d (0x%08x)\n", phase, phase);
 
 	if (inv) {
-		val = ((phase << PLL_SHIFT_NUM_SHIFTS_OFST) & PLL_SHIFT_NUM_SHIFTS_MSK) | PLL_SHIFT_CNT_SLCT_C1_VAL | PLL_SHIFT_UP_DOWN_NEG_VAL;
-		printf("**************** phase word %08x\n", val);
+		val = ((phase << PLL_SHIFT_NUM_SHIFTS_OFST) & PLL_SHIFT_NUM_SHIFTS_MSK) + PLL_SHIFT_CNT_SLCT_C1_VAL + PLL_SHIFT_UP_DOWN_NEG_VAL;
+		printf(" phase word 0x%08x\n", val);
 		setPllReconfigReg(PLL_PHASE_SHIFT_REG, val);
 	} else {
-		val = ((phase << PLL_SHIFT_NUM_SHIFTS_OFST) & PLL_SHIFT_NUM_SHIFTS_MSK) | PLL_SHIFT_CNT_SLCT_C0_VAL | PLL_SHIFT_UP_DOWN_NEG_VAL;
-		printf("**************** phase word %08x\n", val);
+		val = ((phase << PLL_SHIFT_NUM_SHIFTS_OFST) & PLL_SHIFT_NUM_SHIFTS_MSK) + PLL_SHIFT_CNT_SLCT_C0_VAL + PLL_SHIFT_UP_DOWN_NEG_VAL;
+		printf(" phase word 0x%08x\n", val);
 		setPllReconfigReg(PLL_PHASE_SHIFT_REG, val);
 
-		printf("**************** phase word %08x\n", val);
-		val = ((phase << PLL_SHIFT_NUM_SHIFTS_OFST) & PLL_SHIFT_NUM_SHIFTS_MSK) | PLL_SHIFT_CNT_SLCT_C2_VAL;
+		printf(" phase word 0x%08x\n", val);
+		val = ((phase << PLL_SHIFT_NUM_SHIFTS_OFST) & PLL_SHIFT_NUM_SHIFTS_MSK) + PLL_SHIFT_CNT_SLCT_C2_VAL;
 		setPllReconfigReg(PLL_PHASE_SHIFT_REG, val);
 	}
 	usleep(10000);
@@ -1412,6 +1474,7 @@ int startStateMachine(){
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_START_ACQ_MSK);
 
 	printf("Status Register: %08x\n",bus_r(STATUS_REG));
+	return OK;
 }
 
 

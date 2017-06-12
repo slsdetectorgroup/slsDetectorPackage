@@ -7,6 +7,7 @@
 #include "slsDetectorServer_defs.h"
 
 #include <stdlib.h>
+#include <stdio.h>		//FILE
 
 
 

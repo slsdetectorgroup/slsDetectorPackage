@@ -1,9 +1,9 @@
 Path: slsDetectorsPackage/slsDetectorSoftware/jungfrauDetectorServer 
 URL: origin git@git.psi.ch:sls_detectors_software/sls_detector_software.git/jungfrauDetectorServer 
 Repository Root: origin git@git.psi.ch:sls_detectors_software/sls_detector_software.git 
-Repsitory UUID: 12c9e77720cf5a85145c2c77d8d9efd02cbf44ce 
-Revision: 73 
+Repsitory UUID: 6d38c0622a2936f70345e7d53aaf1c9e2de4cbd6 
+Revision: 75 
 Branch: developer 
 Last Changed Author: Dhanya_Maliakal 
-Last Changed Rev: 1399 
-Last Changed Date: 2017-06-12 18:50:18 +0200
+Last Changed Rev: 1401 
+Last Changed Date: 2017-06-12 18:53:18 +0200

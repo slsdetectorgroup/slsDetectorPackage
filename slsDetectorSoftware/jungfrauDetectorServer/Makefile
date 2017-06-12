@@ -1,57 +1,26 @@
-# $Id: Makefile,v 1.1.1.1 2006/02/04 03:35:01 freza Exp $
-# first compile
-# make cris-axis-linux-gnu
+CROSS  		= bfin-uclinux-
+CC    		= $(CROSS)gcc
+CFLAGS		+=  -Wall -DJUNGFRAUD -DSLS_DETECTOR_FUNCTION_LIST -DDACS_INT -DSTOP_SERVER #-DVERBOSEI #-DVERBOSE
+LDLIBS		+= 	-lm  -lstdc++ 
 
+PROGS		= 	jungfrauDetectorServer 
+DESTDIR		?= 	bin
+INSTMODE	= 	0777
 
-CROSS  = bfin-uclinux-
-CC    = $(CROSS)gcc
+SRC_CLNT	=	communication_funcs.c slsDetectorServer.c slsDetectorServer_funcs.c  slsDetectorFunctionList.c 
+OBJS 		= 	$(SRC_CLNT:.c=.o) 
+ 
+all: clean $(PROGS)
 
-CFLAGS += -Wall -DJUNGFRAUD -DMCB_FUNCS -DDACS_INT  #-DVERBOSE #-DVERYVERBOSE  #-DVIRTUAL 
+boot: $(OBJS) 
 
-
-PROGS= 	 jungfrauDetectorServer
-INSTDIR= 	/tftpboot
-INSTMODE= 	0777
-
-
-
-BINS = testlib_sharedlibc
-SRCS = server.c server_funcs.c communication_funcs.c firmware_funcs.c mcb_funcs.c
-OBJS = $(SRCS:%.c=%.o) 
-
-
-
-all:	clean $(PROGS) 
-
-test: 	clean jungfrauADCTEst
-
-boot: $(OBJS)
-
-jungfrauDetectorServer: $(OBJS)
-	echo $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@)
-
-
-jungfrauADCTEst: $(OBJS)
-	echo $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@) -DTESTADC 
-
-
-
-
-install:	$(PROGS)
-	$(INSTALL) -d $(INSTDIR)
-	$(INSTALL) -m $(INSTMODE) $(PROGS) $(INSTDIR)
-
-
-romfs:
-	$(ROMFSINST)	/bin/$(PROGS) 
+$(PROGS): $(OBJS)
+	echo $(OBJS) 
+	mkdir -p $(DESTDIR) 
+	$(CC) -o $@ $^ $(CFLAGS) $(LDLIBS) 
+	mv $(PROGS) $(DESTDIR)
+	rm *.gdb
 
 clean:
-	rm -rf $(PROGS)  *.o *.gdb
-
-
-
-
-
-
+	rm -rf $(DESTDIR)/$(PROGS)  *.o
+	

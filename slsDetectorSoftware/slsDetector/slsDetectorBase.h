@@ -433,10 +433,6 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   int setThresholdEnergy(int e_eV){return setThresholdEnergy(e_eV,-1);};
 
 
-  //  int getBeamEnergy(){return 2*getThresholdEnergy();};
-  //int setBeamEnergy(int e){return 2*setThresholdEnergy(e/2);};
-
-
   /**
      Prints receiver configuration
      \returns OK or FAIL
@@ -741,6 +737,18 @@ virtual void readFrameFromReceiver()=0;
     case TRANSMITTING:      return string("data");	\
     case  RUN_FINISHED:      return string("finished");	\
     default:       return string("idle");		\
+    }};
+
+  /** returns string from file format index
+      \param s can be RAW, HDF5
+      \returns string raw, hdf5
+  */
+  static string fileFormats(fileFormat f){\
+    switch (f) {				\
+    case BINARY:       return string("binary");		\
+    case ASCII:       return string("ascii");		\
+    case HDF5:      return  string("hdf5");	\
+    default:       return string("unknown");		\
     }};
 
 

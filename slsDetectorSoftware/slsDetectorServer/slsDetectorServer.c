@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 
 
 extern int sockfd;
@@ -23,38 +24,45 @@ int main(int argc, char *argv[]){
 	int retval=OK;
 	int sd, fd;
 
+	// if socket crash, ignores SISPIPE, prevents global signal handler
+	// subsequent read/write to socket gives error - must handle locally
+	signal(SIGPIPE, SIG_IGN);
+
+
 #ifdef STOP_SERVER
 	char cmd[100];
 #endif
 	if (argc==1) {
-
-		checkFirmwareCompatibility();
-//#endif
 		portno = DEFAULT_PORTNO;
-		printf("opening control server on port %d\n",portno );
+		cprintf(BLUE,
+		"********************************************************\n"
+		"********* opening control server on port %d **********\n"
+		"********************************************************\n\n"
+		, portno);
 		b=1;
+		basictests();
 #ifdef STOP_SERVER
 		sprintf(cmd,"%s %d &",argv[0],DEFAULT_PORTNO+1);
 		system(cmd);
 #endif
 	} else {
 		portno = DEFAULT_PORTNO+1;
-		if ( sscanf(argv[1],"%d",&portno) ==0) {
+		if ( sscanf(argv[1],"%d",&portno) == 0) {
 			printf("could not open stop server: unknown port\n");
 			return 1;
 		}
-		printf("opening stop server on port %d\n",portno);
+		cprintf(BLUE,
+		"********************************************************\n"
+		"*********** opening stop server on port %d ***********\n"
+		"********************************************************\n\n"
+		, portno);
 		b=0;
 	}
-//#endif
-
 
 	init_detector(b); //defined in slsDetectorServer_funcs
 
 	sd=bindSocket(portno); //defined in communication_funcs
-
 	sockfd=sd;
-
 	if (getServerError(sd)) {  //defined in communication_funcs
 		printf("server error!\n");
 		return -1;

@@ -28,8 +28,6 @@ int *detectorChips=NULL;
 int *detectorChans=NULL;
 dacs_t *detectorDacs=NULL;
 dacs_t *detectorAdcs=NULL;
-int* detectorGain = NULL;
-int* detectorOffset = NULL;
 
 int eiger_highvoltage = 0;
 int eiger_iodelay = 0;
@@ -53,24 +51,7 @@ unsigned int nimages_per_request=1;
 int  on_dst=0;
 int dst_requested[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-int default_dac_values[16] = {
-		0, 		//SvP
-		2480, 	//Vtr
-		3300, 	//Vrf
-		1400, 	//Vrs
-		4000, 	//SvN
-		2556, 	//Vtgstv
-		1000, 	//Vcmp_ll
-		1000, 	//Vcmp_lr
-		4000, 	//cal
-		1000, 	//Vcmp_rl
-		1100, 	//rxb_rb
-		1100, 	//rxb_lb
-		1000, 	//Vcmp_rr
-		1000, 	//Vcp
-		2000, 	//Vcn
-		1550 	//Vis
-};
+
 int default_gain_values[3] = {517000,517000,517000};
 int default_offset_values[3] = {3851000,3851000,3851000};
 
@@ -81,165 +62,64 @@ int master = 0;
 int normal = 0;
 
 
-#define TEN_GIGA_BUFFER_SIZE 4112
-#define ONE_GIGA_BUFFER_SIZE 1040
 
 
-int initDetector(){
-	int imod,i,n;
-	n = getNModBoard(1);
 
-	//#ifdef VERBOSE
-	printf("This Server is for 1 Eiger half module\n");
-	//#endif
+/* basic tests */
 
+void checkFirmwareCompatibility(){
+	uint32_t ipadd	= getDetectorIP();
+	uint64_t macadd	= getDetectorMAC();
+	int64_t fwversion = getDetectorId(DETECTOR_FIRMWARE_VERSION);
+	int64_t swversion = getDetectorId(DETECTOR_SOFTWARE_VERSION);
+	int64_t sw_fw_apiversion = getDetectorId(SOFTWARE_FIRMWARE_API_VERSION);
 
-	//Allocation of memory
-	detectorModules=malloc(n*sizeof(sls_detector_module));
-	detectorChips=malloc(n*NCHIP*sizeof(int));
+	cprintf(BLUE,"\n\n"
+			"********************************************************\n"
+			"**********************EIGER Server**********************\n"
+			"********************************************************\n");
+	cprintf(BLUE,"\n"
+			"Detector IP Addr:\t\t 0x%x\n"
+			"Detector MAC Addr:\t\t 0x%llx\n"
 
-	detectorChans=malloc(n*NCHIP*NCHAN*sizeof(int));
-	detectorDacs=malloc(n*NDAC*sizeof(dacs_t));
-	detectorAdcs=malloc(n*NADC*sizeof(dacs_t));
-	detectorGain=malloc(n*NGAIN*sizeof(int));
-	detectorOffset=malloc(n*NOFFSET*sizeof(int));
-#ifdef VERBOSE
-	printf("modules from 0x%x to 0x%x\n",detectorModules, detectorModules+n);
-	printf("chips from 0x%x to 0x%x\n",detectorChips, detectorChips+n*NCHIP);
-	printf("chans from 0x%x to 0x%x\n",detectorChans, detectorChans+n*NCHIP*NCHAN);
-	printf("dacs from 0x%x to 0x%x\n",detectorDacs, detectorDacs+n*NDAC);
-	printf("adcs from 0x%x to 0x%x\n",detectorAdcs, detectorAdcs+n*NADC);
-	printf("gains from 0x%x to 0x%x\n",detectorGain, detectorGain+n*NGAIN);
-	printf("offsets from 0x%x to 0x%x\n",detectorOffset, detectorOffset+n*NOFFSET);
-#endif
-	for (imod=0; imod<n; imod++) {
-		(detectorModules+imod)->dacs=detectorDacs+imod*NDAC;
-		(detectorModules+imod)->adcs=detectorAdcs+imod*NADC;
-		(detectorModules+imod)->chipregs=detectorChips+imod*NCHIP;
-		(detectorModules+imod)->chanregs=detectorChans+imod*NCHIP*NCHAN;
-		(detectorModules+imod)->ndac=NDAC;
-		(detectorModules+imod)->nadc=NADC;
-		(detectorModules+imod)->nchip=NCHIP;
-		(detectorModules+imod)->nchan=NCHIP*NCHAN;
-		(detectorModules+imod)->module=imod;
-		(detectorModules+imod)->gain=0;
-		(detectorModules+imod)->offset=0;
-		(detectorModules+imod)->reg=0;
-		/* initialize registers, dacs, retrieve sn, adc values etc */
+			"Firmware Version:\t\t %lld\n"
+			"Software Version:\t\t %llx\n"
+			"F/w-S/w API Version:\t\t %lld\n"
+			"Required Firmware Version:\t %d\n\n"
+			"********************************************************\n",
+			ipadd, macadd,
+			fwversion,swversion,
+			sw_fw_apiversion,REQUIRED_FIRMWARE_VERSION);
+
+	//cant read versions
+	if(!fwversion || !sw_fw_apiversion){
+		cprintf(RED,"FATAL ERROR: Cant read versions from FPGA. Please update firmware\n");
+		cprintf(RED,"Exiting Server. Goodbye!\n\n");
+		exit(-1);
 	}
-	for(i=0;i<NGAIN;i++)
-		detectorGain[i] = default_gain_values[(int)STANDARD];
-	for(i=0;i<NOFFSET;i++)
-		detectorOffset[i] = default_offset_values[(int)STANDARD];
-	thisSettings = UNINITIALIZED;
-	/*sChan=noneSelected;
-  sChip=noneSelected;
-  sMod=noneSelected;
-  sDac=noneSelected;
-  sAdc=noneSelected;
-	 */
 
-	//Feb and Beb Initializations
-	getModuleConfiguration();
-	Feb_Interface_FebInterface();
-	Feb_Control_FebControl();
-	Feb_Control_Init(master,top,normal, getDetectorNumber());
-	//master of 9M, check high voltage serial communication to blackfin
-	if(master && !normal){
-		if(Feb_Control_OpenSerialCommunication())
-		;//	Feb_Control_CloseSerialCommunication();
+	//check for API compatibility - old server
+	if(sw_fw_apiversion > REQUIRED_FIRMWARE_VERSION){
+		cprintf(RED,"FATAL ERROR: This software version is incompatible.\n"
+				"Please update it to be compatible with this firmware\n\n");
+		cprintf(RED,"Exiting Server. Goodbye!\n\n");
+		exit(-1);
 	}
-	printf("FEB Initialization done\n");
-	Beb_Beb();
-	printf("BEB Initialization done\n");
 
-	//Get dac values
-	int retval[2];
-	for(i=0;i<(detectorModules)->ndac;i++)
-		setDAC((enum detDacIndex)i,default_dac_values[i],(detectorModules)->module,0,retval);
-
-	//setting default measurement parameters
-	setTimer(FRAME_NUMBER,1);
-	setTimer(ACQUISITION_TIME,1E9);
-	setTimer(SUBFRAME_ACQUISITION_TIME,DEFAULT_SUBFRAME_EXPOSURE_VAL);
-	setTimer(FRAME_PERIOD,1E9);
-	setDynamicRange(16);
-	eiger_photonenergy = -1;
-	setReadOutFlags(NONPARALLEL);
-	setSpeed(0,1);//clk_devider,half speed
-	setIODelay(650,0);
-	setTiming(AUTO_TIMING);
-	//SetPhotonEnergyCalibrationParameters(-5.8381e-5,1.838515,5.09948e-7,-4.32390e-11,1.32527e-15);
-	setRateCorrection(0); //deactivate rate correction
-	int enable[2] = {0,1};
-	setExternalGating(enable);//disable external gating
-	Feb_Control_SetInTestModeVariable(0);
-	setHighVoltage(0,0);
-	Feb_Control_CheckSetup();
-
-	//print detector mac and ip
-	printf("mac read from detector: %llx\n",getDetectorMAC());
-	printf("ip read from detector: %x\n",getDetectorIP());
-
-
-	printf("\n");
-	return 1;
-}
-
-int initDetectorStop(){
-	getModuleConfiguration();
-	Feb_Interface_FebInterface();
-	Feb_Control_FebControl();
-	Feb_Control_Init(master,top,normal,getDetectorNumber());
-	printf("FEB Initialization done\n");
-	/* Beb_Beb(-1);
-    printf("BEB constructor done\n");*/
-
-	printf("\n");
-	return 1;
+	//check for firmware compatibility - old firmware
+	if( REQUIRED_FIRMWARE_VERSION > fwversion){
+		cprintf(RED,"FATAL ERROR: This firmware version is incompatible.\n"
+				"Please update it to v%d to be compatible with this server\n\n", REQUIRED_FIRMWARE_VERSION);
+		cprintf(RED,"Exiting Server. Goodbye!\n\n");
+		exit(-1);
+	}
 }
 
 
 
-void getModuleConfiguration(){
-	int *m=&master;
-	int *t=&top;
-	int *n=&normal;
-	/*if(getDetectorNumber() == 0xbeb015){
-		master = 1;
-		top = 1;
-	}*/
-	Beb_GetModuleConfiguration(m,t,n);
-	if(top)	printf("*************** TOP ***************\n");
-	else	printf("*************** BOTTOM ***************\n");
-	if(master)	printf("*************** MASTER ***************\n");
-	else		printf("*************** SLAVE ***************\n");
-	if(normal)	printf("*************** NORMAL ***************\n");
-	else		printf("*************** SPECIAL ***************\n");
-}
 
 
-
-int setNMod(int nm, enum dimension dim){
-	return 1;
-}
-
-
-
-int getNModBoard(enum dimension arg){
-	return 1;
-}
-
-
-
-int64_t getModuleId(enum idMode arg, int imod){
-
-	/**/
-	return -1;
-}
-
-
-
+/* Ids */
 
 int64_t getDetectorId(enum idMode arg){
 	int64_t retval = -1;
@@ -249,7 +129,7 @@ int64_t getDetectorId(enum idMode arg){
 		retval =  getDetectorNumber();/** to be implemented with mac? */
 		break;
 	case DETECTOR_FIRMWARE_VERSION:
-		return (int64_t)Beb_GetFirmwareRevision();
+		return (int64_t)getFirmwareVersion();
 	case SOFTWARE_FIRMWARE_API_VERSION:
 		return (int64_t)Beb_GetFirmwareSoftwareAPIVersion();
 	case DETECTOR_SOFTWARE_VERSION:
@@ -264,28 +144,21 @@ int64_t getDetectorId(enum idMode arg){
 	return retval;
 }
 
+u_int64_t getFirmwareVersion() {
+	return Beb_GetFirmwareRevision();
+}
 
 
-int getDetectorNumber(){
-	int res=0;
 
+u_int32_t getDetectorNumber(){
+	u_int32_t res=0;
 	//execute and get address
 	char output[255];
 	FILE* sysFile = popen("more /home/root/executables/detid.txt", "r");
 	fgets(output, sizeof(output), sysFile);
 	pclose(sysFile);
-	sscanf(output,"%d",&res);
-	printf("detector id: %d\n",res);
-
-/*
-	int res=0;
-	char hostname[100];
-	if (gethostname(hostname, sizeof hostname) == 0)
-		puts(hostname);
-	else
-		perror("gethostname");
-	sscanf(hostname,"%x",&res);
-*/
+	sscanf(output,"%u",&res);
+	printf("detector id: %u\n",res);
 	return res;
 }
 
@@ -318,10 +191,9 @@ u_int64_t  getDetectorMAC() {
 }
 
 
-
-int  getDetectorIP(){
+u_int32_t  getDetectorIP(){
 	char temp[50]="";
-	int res=0;
+	u_int32_t res=0;
 	//execute and get address
 	char output[255];
 	FILE* sysFile = popen("ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2", "r");
@@ -344,33 +216,232 @@ int  getDetectorIP(){
 
 
 
-int moduleTest( enum digitalTestMode arg, int imod){
-	//template testShiftIn from mcb_funcs.c
 
-	//CHIP_TEST
-	//testShiftIn
-	//testShiftOut
-	//testShiftStSel
-	//testDataInOutMux
-	//testExtPulseMux
-	//testOutMux
-	//testFpgaMux
 
-	return OK;
+/* initialization */
+
+void initControlServer(){
+	//Feb and Beb Initializations
+	getModuleConfiguration();
+	Feb_Interface_FebInterface();
+	Feb_Control_FebControl();
+	Feb_Control_Init(master,top,normal, getDetectorNumber());
+	//master of 9M, check high voltage serial communication to blackfin
+	if(master && !normal){
+		if(Feb_Control_OpenSerialCommunication())
+		;//	Feb_Control_CloseSerialCommunication();
+	}
+	printf("FEB Initialization done\n");
+	Beb_Beb();
+	printf("BEB Initialization done\n");
+
+
+	setupDetector();
+
+	printf("\n");
+}
+
+void initStopServer(){
+	getModuleConfiguration();
+	Feb_Interface_FebInterface();
+	Feb_Control_FebControl();
+	Feb_Control_Init(master,top,normal,getDetectorNumber());
+	printf("FEB Initialization done\n");
+
+	printf("\n");
+}
+
+
+void getModuleConfiguration(){
+	int *m=&master;
+	int *t=&top;
+	int *n=&normal;
+	Beb_GetModuleConfiguration(m,t,n);
+	if(top)	printf("*************** TOP ***************\n");
+	else	printf("*************** BOTTOM ***************\n");
+	if(master)	printf("*************** MASTER ***************\n");
+	else		printf("*************** SLAVE ***************\n");
+	if(normal)	printf("*************** NORMAL ***************\n");
+	else		printf("*************** SPECIAL ***************\n");
+}
+
+
+
+/* set up detector */
+
+void allocateDetectorStructureMemory(){
+	printf("This Server is for 1 Eiger half module (250k)\n");
+
+	//Allocation of memory
+	detectorModules=malloc(sizeof(sls_detector_module));
+	detectorChips=malloc(NCHIP*sizeof(int));
+	detectorChans=malloc(NCHIP*NCHAN*sizeof(int));
+	detectorDacs=malloc(NDAC*sizeof(dacs_t));
+	detectorAdcs=malloc(NADC*sizeof(dacs_t));
+#ifdef VERBOSE
+	printf("modules from 0x%x to 0x%x\n",detectorModules, detectorModules+n);
+	printf("chips from 0x%x to 0x%x\n",detectorChips, detectorChips+n*NCHIP);
+	printf("chans from 0x%x to 0x%x\n",detectorChans, detectorChans+n*NCHIP*NCHAN);
+	printf("dacs from 0x%x to 0x%x\n",detectorDacs, detectorDacs+n*NDAC);
+	printf("adcs from 0x%x to 0x%x\n",detectorAdcs, detectorAdcs+n*NADC);
+#endif
+	(detectorModules)->dacs=detectorDacs;
+	(detectorModules)->adcs=detectorAdcs;
+	(detectorModules)->chipregs=detectorChips;
+	(detectorModules)->chanregs=detectorChans;
+	(detectorModules)->ndac=NDAC;
+	(detectorModules)->nadc=NADC;
+	(detectorModules)->nchip=NCHIP;
+	(detectorModules)->nchan=NCHIP*NCHAN;
+	(detectorModules)->module=0;
+	(detectorModules)->gain=0;
+	(detectorModules)->offset=0;
+	(detectorModules)->reg=0;
+	thisSettings = UNINITIALIZED;
+}
+
+
+
+void setupDetector() {
+
+	allocateDetectorStructureMemory();
+	//set dacs
+	printf("Setting Default Dac values\n");
+	{
+		int i = 0;
+		int retval[2]={-1,-1};
+		const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
+		for(i = 0; i < NDAC; ++i) {
+			setDAC((enum DACINDEX)i,defaultvals[i],0,0,retval);
+			if (retval[0] != defaultvals[i])
+				cprintf(RED, "Warning: Setting dac %d failed, wrote %d, read %d\n",i ,defaultvals[i], retval[0]);
+		}
+	}
+
+	//setting default measurement parameters
+	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
+	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
+	setTimer(SUBFRAME_ACQUISITION_TIME, DEFAULT_SUBFRAME_EXPOSURE_VAL);
+	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
+	setDynamicRange(DEFAULT_DYNAMIC_RANGE);
+	eiger_photonenergy = DEFAULT_PHOTON_ENERGY;
+	setReadOutFlags(DEFAULT_READOUT_FLAG);
+	setSpeed(CLOCK_DIVIDER, DEFAULT_CLK_SPEED);//clk_devider,half speed
+	setIODelay(DEFAULT_IO_DELAY, DEFAULT_MOD_INDEX);
+	setTiming(DEFAULT_TIMING_MODE);
+	//SetPhotonEnergyCalibrationParameters(-5.8381e-5,1.838515,5.09948e-7,-4.32390e-11,1.32527e-15);
+	setRateCorrection(DEFAULT_RATE_CORRECTION);
+	int enable[2] = {DEFAULT_EXT_GATING_ENABLE, DEFAULT_EXT_GATING_POLARITY};
+	setExternalGating(enable);//disable external gating
+	Feb_Control_SetInTestModeVariable(DEFAULT_TEST_MODE);
+	setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+	Feb_Control_CheckSetup();
 }
 
 
 
 
 
-int detectorTest( enum digitalTestMode arg){
-	//templates from firmware_funcs.c
 
-	//DETECTOR_FIRMWARE_TEST:testFpga()
-	//DETECTOR_MEMORY_TEST:testRAM()
-	//DETECTOR_BUS_TEST:testBus()
-	//DETECTOR_SOFTWARE_TEST:testFpga()
-	return OK;
+
+/* set parameters - nmod, dr, roi */
+
+int setNMod(int nm, enum dimension dim){
+	return NMOD;
+}
+
+
+int getNModBoard(enum dimension arg){
+	return NMAXMOD;
+}
+
+int setDynamicRange(int dr){
+	if(dr > 0){
+		printf(" Setting dynamic range: %d\n",dr);
+		if(Feb_Control_SetDynamicRange(dr)){
+
+			//EigerSetBitMode(dr);
+			on_dst = 0;
+			int i;
+			for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
+			if(Beb_SetUpTransferParameters(dr))
+				eiger_dynamicrange = dr;
+			else printf("ERROR:Could not set bit mode in the back end\n");
+		}
+	}
+	//make sure back end and front end have the same bit mode
+	dr= Feb_Control_GetDynamicRange();
+
+	return dr;
+}
+
+
+
+
+/* parameters - readout */
+
+int setSpeed(enum speedVariable arg, int val){
+
+	if (arg != CLOCK_DIVIDER)
+		return -1;
+
+	if(val != -1){
+		printf(" Setting Read out Speed: %d\n",val);
+		if(Feb_Control_SetReadoutSpeed(val))
+			eiger_readoutspeed = val;
+	}
+	return 	eiger_readoutspeed;
+}
+
+
+enum readOutFlags setReadOutFlags(enum readOutFlags val){
+
+	enum readOutFlags retval = GET_READOUT_FLAGS;
+	if(val!=GET_READOUT_FLAGS){
+
+
+		if(val&0xF0000){
+			switch(val){
+			case PARALLEL:  	val=E_PARALLEL; 	printf(" Setting Read out Flag: Parallel\n"); 			break;
+			case NONPARALLEL:	val=E_NON_PARALLEL; printf(" Setting Read out Flag: Non Parallel\n");		break;
+			case SAFE:			val=E_SAFE; 		printf(" Setting Read out Flag: Safe\n"); 				break;
+
+			default:
+				cprintf(RED,"Cannot set unknown readout flag. 0x%x\n", val);
+				return -1;
+			}
+			printf(" Setting Read out Flag: %d\n",val);
+			if(Feb_Control_SetReadoutMode(val))
+				eiger_readoutmode = val;
+			else return -1;
+
+		}else{
+			switch(val){
+			case STORE_IN_RAM:  	val=1; 		printf(" Setting Read out Flag: Store in Ram\n"); 		break;
+			case CONTINOUS_RO:		val=0; 		printf(" Setting Read out Flag: Continuous Readout\n");		break;
+
+			default:
+				cprintf(RED,"Cannot set unknown readout flag. 0x%x\n", val);
+				return -1;
+			}
+			printf(" Setting store in ram variable: %d\n",val);
+			eiger_storeinmem = val;
+
+		}
+	}
+
+	switch(eiger_readoutmode){
+	case E_PARALLEL: 		retval=PARALLEL; 		break;
+	case E_NON_PARALLEL:	retval=NONPARALLEL; 	break;
+	case E_SAFE:			retval=SAFE; 			break;
+	}
+
+	switch(eiger_storeinmem){
+	case 0: 		retval|=CONTINOUS_RO; 	break;
+	case 1:			retval|=STORE_IN_RAM; 	break;
+	}
+	printf("Read out Flag: 0x%x\n",retval);
+	return retval;
 }
 
 
@@ -378,7 +449,200 @@ int detectorTest( enum digitalTestMode arg){
 
 
 
-void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]){
+
+
+/* parameters - timer */
+
+int64_t setTimer(enum timerIndex ind, int64_t val){
+
+	switch(ind){
+	case FRAME_NUMBER:
+		if(val >= 0){
+			printf(" Setting number of frames: %d * %d\n",(unsigned int)val,eiger_ncycles);
+			if(Feb_Control_SetNExposures((unsigned int)val*eiger_ncycles)){
+				eiger_nexposures = val;
+				//SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
+				on_dst = 0;
+				int i;
+				for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
+				ndsts_in_use = 1;
+				nimages_per_request = eiger_nexposures * eiger_ncycles;
+			}
+		}return eiger_nexposures;
+
+	case ACQUISITION_TIME:
+		if(val >= 0){
+			printf(" Setting exp time: %fs\n",val/(1E9));
+			Feb_Control_SetExposureTime(val/(1E9));
+		}
+		return (Feb_Control_GetExposureTime()*(1E9));
+
+	case SUBFRAME_ACQUISITION_TIME:
+		if(val >= 0){
+			printf(" Setting sub exp time: %lldns\n",(long long int)val/10);
+			Feb_Control_SetSubFrameExposureTime(val/10);
+		}
+		return (Feb_Control_GetSubFrameExposureTime());
+
+
+	case FRAME_PERIOD:
+		if(val >= 0){
+			printf(" Setting acq period: %fs\n",val/(1E9));
+			Feb_Control_SetExposurePeriod(val/(1E9));
+		}
+		return (Feb_Control_GetExposurePeriod()*(1E9));
+
+	case CYCLES_NUMBER:
+		if(val >= 0){
+			printf(" Setting number of triggers: %d * %d\n",(unsigned int)val,eiger_nexposures);
+			if(Feb_Control_SetNExposures((unsigned int)val*eiger_nexposures)){
+				eiger_ncycles = val;
+				//SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
+				on_dst = 0;
+				int i;
+				for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
+				nimages_per_request = eiger_nexposures * eiger_ncycles;
+			}
+		}return eiger_ncycles;
+	default:
+		cprintf(RED,"Warning: Timer Index not implemented for this detector: %d\n", ind);
+		break;
+	}
+
+	return -1;
+}
+
+
+
+
+
+/* parameters - channel, chip, module, settings */
+
+
+int setModule(sls_detector_module myMod, int delay){
+	int retval[2];
+	int i;
+
+	//#ifdef VERBOSE
+	printf("Setting module with settings %d\n",myMod.reg);
+	//#endif
+
+	setSettings( (enum detectorSettings)myMod.reg,-1);
+
+	if(setIODelay(delay, -1)!= delay){
+		cprintf(RED,"could not set iodelay %d\n",delay);
+		return FAIL;
+	}
+
+	//copy module locally
+	if (detectorModules)
+		copyModule(detectorModules,&myMod);
+
+	//set dac values
+	for(i=0;i<myMod.ndac;i++)
+		setDAC((enum DACINDEX)i,myMod.dacs[i],myMod.module,0,retval);
+
+	//includ gap pixels
+	unsigned int tt[263680];
+	int iy,ichip,ix,ip=0,ich=0;
+	for(iy=0;iy<256;iy++) {
+		for (ichip=0; ichip<4; ichip++) {
+			for(ix=0;ix<256;ix++) {
+				tt[ip++]=myMod.chanregs[ich++];
+			}
+			if (ichip<3) {
+				tt[ip++]=0;
+				tt[ip++]=0;
+			}
+		}
+	}
+
+	//set trimbits
+	if(!Feb_Control_SetTrimbits(Feb_Control_GetModuleNumber(),tt)){
+		cprintf(BG_RED,"Could not set trimbits\n");
+		return FAIL;
+	}
+
+	return thisSettings;
+}
+
+
+int getModule(sls_detector_module *myMod){
+	int i;
+	int retval[2];
+
+	//dacs
+	for(i=0;i<NDAC;i++)
+		setDAC((enum DACINDEX)i,-1,-1,0,retval);
+
+	//trimbits
+	unsigned int* tt;
+	tt = Feb_Control_GetTrimbits();
+
+	//exclude gap pixels
+	int iy,ichip,ix,ip=0,ich=0;
+	for(iy=0;iy<256;iy++) {
+		for (ichip=0; ichip<4; ichip++) {
+			for(ix=0;ix<256;ix++) {
+				myMod->chanregs[ich++]=tt[ip++];
+			}
+			if (ichip<3) {
+				ip++;
+				ip++;
+			}
+		}
+	}
+
+	//copy to local copy as well
+	if (detectorModules)
+		copyModule(myMod,detectorModules);
+	else
+		return FAIL;
+	return OK;
+}
+
+
+
+enum detectorSettings setSettings(enum detectorSettings sett, int imod){
+	if(sett == UNINITIALIZED){
+		return thisSettings;
+	}if(sett != GET_SETTINGS)
+		thisSettings = sett;
+	printf(" Settings: %d\n", thisSettings);
+	return thisSettings;
+}
+
+enum detectorSettings getSettings(){
+	return thisSettings;
+}
+
+
+
+
+
+
+/* parameters - threshold */
+
+int getThresholdEnergy(int imod){
+	printf(" Getting Threshold energy\n");
+	return eiger_photonenergy;
+}
+
+
+int setThresholdEnergy(int ev, int imod){
+	printf(" Setting threshold energy:%d\n",ev);
+	if(ev >= 0)
+		eiger_photonenergy = ev;
+	return  getThresholdEnergy(imod);
+}
+
+
+
+
+
+/* parameters - dac, adc, hv */
+
+void setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]){
 
 	if(ind == VTHRESHOLD){
 		int ret[5];
@@ -438,27 +702,7 @@ void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]){
 
 
 
-int setHighVoltage(int val, int imod){
-	if(val!=-1){
-		eiger_highvoltage = val;
-		if(master){
-			int ret = Feb_Control_SetHighVoltage(val);
-			if(!ret)			//could not set
-				return -2;
-			else if (ret == -1) //outside range
-				return -1;
-		}
-	}
-
-	if(master && !Feb_Control_GetHighVoltage(&eiger_highvoltage)){
-		cprintf(RED,"Warning: Could not read high voltage\n");
-		return -3;
-	}
-	return eiger_highvoltage;
-}
-
-
-int getADC(enum detAdcIndex ind,  int imod){
+int getADC(enum ADCINDEX ind,  int imod){
 	int retval = -1;
 	char tempnames[6][20]={"FPGA EXT", "10GE","DCDC", "SODL", "SODR", "FPGA"};
 	char cstore[255];
@@ -493,6 +737,155 @@ int getADC(enum detAdcIndex ind,  int imod){
 	return retval;
 }
 
+
+int setHighVoltage(int val){
+	if(val!=-1){
+		eiger_highvoltage = val;
+		if(master){
+			int ret = Feb_Control_SetHighVoltage(val);
+			if(!ret)			//could not set
+				return -2;
+			else if (ret == -1) //outside range
+				return -1;
+		}
+	}
+
+	if(master && !Feb_Control_GetHighVoltage(&eiger_highvoltage)){
+		cprintf(RED,"Warning: Could not read high voltage\n");
+		return -3;
+	}
+	return eiger_highvoltage;
+}
+
+
+
+
+
+
+
+/* parameters - timing, extsig */
+
+enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
+	enum externalCommunicationMode ret=GET_EXTERNAL_COMMUNICATION_MODE;
+	if(arg != GET_EXTERNAL_COMMUNICATION_MODE){
+		switch((int)arg){
+		case AUTO_TIMING:			ret = 0;	break;
+		case TRIGGER_EXPOSURE:		ret = 2;	break;
+		case BURST_TRIGGER:			ret = 1;	break;
+		case GATE_FIX_NUMBER:		ret = 3;	break;
+		}
+		printf(" Setting Triggering Mode: %d\n",(int)ret);
+		if(Feb_Control_SetTriggerMode(ret,1))
+			eiger_triggermode = ret;
+	}
+
+	ret = eiger_triggermode;
+	switch((int)ret){
+	case 0:		ret = AUTO_TIMING;		break;
+	case 2:		ret = TRIGGER_EXPOSURE; break;
+	case 1:		ret = BURST_TRIGGER;	break;
+	case 3:		ret = GATE_FIX_NUMBER;	break;
+	default:
+		printf("Unknown trigger mode found %d\n",ret);
+		ret = 0;
+	}
+	return ret;
+}
+
+
+
+
+
+
+/* configure mac */
+
+int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2, int ival) {
+	if (sourcemac != getDetectorMAC()){
+		printf("*************************************************\n");
+		printf("WARNING: actual detector mac address %llx does not match the one from client %llx\n",getDetectorMAC(),sourcemac);
+		sourcemac = getDetectorMAC();
+		printf("WARNING: Matched detectormac to the hardware mac now\n");
+		printf("*************************************************\n");
+	}
+	//only for 1Gbe
+	if(!send_to_ten_gig){
+		if (sourceip != getDetectorIP()){
+			printf("*************************************************\n");
+			printf("WARNING: actual detector ip address %x does not match the one from client %x\n",getDetectorIP(),sourceip);
+			sourceip = getDetectorIP();
+			printf("WARNING: Matched detector ip to the hardware ip now\n");
+			printf("*************************************************\n");
+		}
+	}
+
+	char src_mac[50], src_ip[50],dst_mac[50], dst_ip[50];
+	int src_port = 0xE185;
+	sprintf(src_ip,"%d.%d.%d.%d",(sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff);
+	sprintf(dst_ip,"%d.%d.%d.%d",(destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);
+	sprintf(src_mac,"%02x:%02x:%02x:%02x:%02x:%02x",(unsigned int)((sourcemac>>40)&0xFF),
+			(unsigned int)((sourcemac>>32)&0xFF),
+			(unsigned int)((sourcemac>>24)&0xFF),
+			(unsigned int)((sourcemac>>16)&0xFF),
+			(unsigned int)((sourcemac>>8)&0xFF),
+			(unsigned int)((sourcemac>>0)&0xFF));
+	sprintf(dst_mac,"%02x:%02x:%02x:%02x:%02x:%02x",(unsigned int)((destmac>>40)&0xFF),
+			(unsigned int)((destmac>>32)&0xFF),
+			(unsigned int)((destmac>>24)&0xFF),
+			(unsigned int)((destmac>>16)&0xFF),
+			(unsigned int)((destmac>>8)&0xFF),
+			(unsigned int)((destmac>>0)&0xFF));
+
+	printf("src_port:%d\n",src_port);
+	printf("src_ip:%s\n",src_ip);
+	printf("dst_ip:%s\n",dst_ip);
+	printf("src_mac:%s\n",src_mac);
+	printf("dst_mac:%s\n",dst_mac);
+
+
+	int beb_num = BEB_NUM;//Feb_Control_GetModuleNumber();
+	int header_number = 0;
+	int dst_port = udpport;
+	if(!top)
+		dst_port = udpport2;
+
+	printf("dst_port:%d\n\n",dst_port);
+
+	int i=0;
+	/* for(i=0;i<32;i++){ modified for Aldo*/
+	if(Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,src_port) &&
+			Beb_SetUpUDPHeader(beb_num,send_to_ten_gig,header_number+i,dst_mac,dst_ip, dst_port))
+		printf("set up left ok\n");
+	else return -1;
+	/*}*/
+
+	header_number = 32;
+	dst_port = udpport2;
+	if(!top)
+		dst_port = udpport;
+	printf("dst_port:%d\n\n",dst_port);
+
+	/*for(i=0;i<32;i++){*//** modified for Aldo*/
+	if(Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,src_port) &&
+			Beb_SetUpUDPHeader(beb_num,send_to_ten_gig,header_number+i,dst_mac,dst_ip, dst_port))
+		printf("set up right ok\n\n");
+	else return -1;
+	/*}*/
+
+	on_dst = 0;
+
+	for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
+	nimages_per_request=eiger_nexposures * eiger_ncycles;
+
+	return 0;
+}
+
+
+
+
+
+
+
+/* eiger specific - iodelay, 10g, pulse, rate, temp, activate, delay nw parameter */
 
 int setIODelay(int val, int imod){
 	if(val!=-1){
@@ -608,6 +1001,11 @@ int getDefaultSettingsTau_in_nsec(){
 	return default_tau_from_file;
 }
 
+void setDefaultSettingsTau_in_nsec(int t){
+	default_tau_from_file = t;
+	printf("Default tau set to %d\n",default_tau_from_file);
+}
+
 int64_t getCurrentTau(){
 	if(!getRateCorrectionEnable())
 		return 0;
@@ -615,175 +1013,62 @@ int64_t getCurrentTau(){
 		return Feb_Control_Get_RateTable_Tau_in_nsec();
 }
 
-void setDefaultSettingsTau_in_nsec(int t){
-	default_tau_from_file = t;
+void setExternalGating(int enable[]){
+	if(enable>=0){
+		Feb_Control_SetExternalEnableMode(enable[0], enable[1]);//enable = 0 or 1, polarity = 0 or 1 , where 1 is positive
+		eiger_extgating = enable[0];
+		eiger_extgatingpolarity = enable[1];
+	}
+	enable[0] = eiger_extgating;
+	enable[1] = eiger_extgatingpolarity;
 }
 
-int setModule(sls_detector_module myMod, int* gain, int* offset,int* delay){
-	int retval[2];
-	int i;
-
-	//#ifdef VERBOSE
-	printf("Setting module with settings %d\n",myMod.reg);
-	//#endif
-
-	//set the settings variable
-	setSettings( (enum detectorSettings)myMod.reg,-1);
-
-	//set the gains and offset variables locally
-	for(i=0;i<NGAIN;i++){
-		if(gain[i]>=0){
-			detectorGain[i] = gain[i];
-			printf("gain[%d]:%d\n",i,detectorGain[i]);
-		}else cprintf(RED,"gain not changed\n");
-	}
-	for(i=0;i<NOFFSET;i++){
-		if(offset[i]>=0){
-			detectorOffset[i] = offset[i];
-			printf("offset[%d]:%d\n",i,detectorOffset[i]);
-		}else cprintf(RED,"offset not changed\n");
-	}
-
-	if(setIODelay(*delay, -1)!= (*delay)){
-		cprintf(RED,"could not set iodelay %d\n",*delay);
+int setAllTrimbits(int val){
+	int ichan;
+	if(!Feb_Control_SaveAllTrimbitsTo(val)){
+		cprintf(RED,"error in setting all trimbits to value\n");
 		return FAIL;
-	}
-
-	//copy module locally
-	if (detectorModules)
-		copyModule(detectorModules,&myMod);
-
-	//set dac values
-	for(i=0;i<myMod.ndac;i++)
-		setDAC((enum detDacIndex)i,myMod.dacs[i],myMod.module,0,retval);
-
-	//includ gap pixels
-	unsigned int tt[263680];
-	int iy,ichip,ix,ip=0,ich=0;
-	for(iy=0;iy<256;iy++) {
-		for (ichip=0; ichip<4; ichip++) {
-			for(ix=0;ix<256;ix++) {
-				tt[ip++]=myMod.chanregs[ich++];
-			}
-			if (ichip<3) {
-				tt[ip++]=0;
-				tt[ip++]=0;
+	}else{
+#ifdef VERBOSE
+		printf("Copying register %x value %d\n",destMod->reg,val);
+#endif
+		if (detectorModules){
+			for (ichan=0; ichan<(detectorModules->nchan); ichan++) {
+				*((detectorModules->chanregs)+ichan)=val;
 			}
 		}
 	}
-
-	//set trimbits
-	if(!Feb_Control_SetTrimbits(Feb_Control_GetModuleNumber(),tt)){
-		cprintf(BG_RED,"Could not set trimbits\n");
-		return FAIL;
-	}
-
-	return thisSettings;
-}
-
-
-int getModule(sls_detector_module *myMod, int* gain, int* offset){
-	int i;
-	int retval[2];
-	//printf("get gainval[0]:%d\n",detectorGain[0]);
-
-	//dacs
-	for(i=0;i<NDAC;i++)
-		setDAC((enum detDacIndex)i,-1,-1,0,retval);
-
-	//gains, offsets
-	for(i=0;i<NGAIN;i++)
-		gain[i] = detectorGain[i];
-	for(i=0;i<NOFFSET;i++)
-		offset[i] = detectorOffset[i];
-
-	//trimbits
-	unsigned int* tt;
-	tt = Feb_Control_GetTrimbits();
-
-	//exclude gap pixels
-	int iy,ichip,ix,ip=0,ich=0;
-	for(iy=0;iy<256;iy++) {
-		for (ichip=0; ichip<4; ichip++) {
-			for(ix=0;ix<256;ix++) {
-				myMod->chanregs[ich++]=tt[ip++];
-			}
-			if (ichip<3) {
-				ip++;
-				ip++;
-			}
-		}
-	}
-
-	//copy to local copy as well
-	if (detectorModules)
-		copyModule(myMod,detectorModules);
-	else
-		return FAIL;
 	return OK;
 }
 
+int getAllTrimbits(){
+	return *((detectorModules->chanregs));
+}
 
+int getBebFPGATemp(){
+	return Beb_GetBebFPGATemp();
+}
 
+int activate(int enable){
+	int ret = Beb_Activate(enable);
+	Feb_Control_activate(ret);
+	return ret;
+}
 
-
-
-int getThresholdEnergy(int imod){
-	printf(" Getting Threshold energy\n");
-	return eiger_photonenergy;
+int setNetworkParameter(enum NETWORKINDEX mode, int value){
+	return Beb_SetNetworkParameter(mode, value);
 }
 
 
-int setThresholdEnergy(int ev, int imod){
-	printf(" Setting threshold energy:%d\n",ev);
-	int retval[2],i;
-	int thrvalue[NGAIN];
-	int average=0;
-	if(ev >= 0) {
 
-	  enum detDacIndex ind[NGAIN]={VCMP_LL,VCMP_LR,VCMP_RL, VCMP_RR}; 
-	  const char* vcmp[4]={"vcmp_ll","vcmp_lr","vcmp_rl","vcmp_rr"};
-	  int valid=0;
-	  
-	  //calculate thrvalues for dacs
-	  for(i=0;i<NGAIN;i++){
-	    
-	    thrvalue[i] = (int) (( ((double)detectorGain[i]/1000) * (-1) * ((double)ev/1000)) + ((double)detectorOffset[i]/1000));
-	    printf("detectorGain[i]:%d detectorOffset[i]:%d thrvalue[i]:%d\n",detectorGain[i],detectorOffset[i],thrvalue[i]);
-	    //put limits (VCMP SHOUDL ALWAYS BE BETWEEN 0 AND 2000
-	   
-	    //setdacs
-	    if(thrvalue[i]>=0 && thrvalue[i]<2001)valid++;
-	  }//ngains
 
-	  if( valid == NGAIN){
-	    eiger_photonenergy = ev;	 
-	    for(i=0;i<NGAIN;i++) {
-	      average+= thrvalue[i];
-	      setDAC(ind[i],thrvalue[i],-1,0,retval);
-	      if(retval[0] != thrvalue[i]) cprintf(BG_RED,"Failed to set %s to %d, got %d\n",vcmp[i], thrvalue[i],retval[0]);
-	    }
-	    average=(int) ((float)average/4.+0.5);
-	    setDAC(VCP,average,-1,0,retval);
-	    if(retval[0] != average) cprintf(BG_RED,"Failed to set VCP to %d, got %d\n",average, retval[0]);
-	  }
-	}
-	return  getThresholdEnergy(imod);
-}
 
-enum detectorSettings setSettings(enum detectorSettings sett, int imod){
-	if(sett == UNINITIALIZED){
-		return thisSettings;
-	}if(sett != GET_SETTINGS)
-		thisSettings = sett;
-	return thisSettings;
-}
 
-enum detectorSettings getSettings(){
-	return thisSettings;
-}
 
-int startReceiver(int d){
+/* aquisition */
+
+
+int prepareAcquisition(){
 
 	printf("Going to prepare for acquisition with counter_bit:%d\n",Feb_Control_Get_Counter_Bit());
 	Feb_Control_PrepareForAcquisition();
@@ -833,15 +1118,13 @@ int stopStateMachine(){
 
 int startReadOut(){
 
+	printf("Requesting images...\n");
 	//RequestImages();
 	int ret_val = 0;
 	dst_requested[0] = 1;
 	while(dst_requested[on_dst]){
 		//waits on data
 		int beb_num = BEB_NUM;//Feb_Control_GetModuleNumber();
-
-
-
 		if  ((ret_val = (!Beb_RequestNImages(beb_num,send_to_ten_gig,on_dst,nimages_per_request,0))))
 			break;
 //		for(i=0;i<nimages_per_request;i++)
@@ -863,10 +1146,10 @@ enum runStatus getRunStatus(){
 	//if(trialMasterMode == IS_MASTER){
 	int i = Feb_Control_AcquisitionInProgress();
 	if(i== 0){
-		//printf("IDLE\n");
+		printf("Status: IDLE\n");
 		return IDLE;
 	}else{
-		printf("RUNNING\n");
+		printf("Status: RUNNING...\n");
 		return RUNNING;
 	}
 	//}else printf("***** not master*** \n");
@@ -905,272 +1188,8 @@ void readFrame(int *ret, char *mess){
 
 
 
-int64_t setTimer(enum timerIndex ind, int64_t val){
 
-	switch(ind){
-	case FRAME_NUMBER:
-		if(val >= 0){
-			printf(" Setting number of frames: %d * %d\n",(unsigned int)val,eiger_ncycles);
-			if(Feb_Control_SetNExposures((unsigned int)val*eiger_ncycles)){
-				eiger_nexposures = val;
-				//SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
-				on_dst = 0;
-				int i;
-				for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
-				ndsts_in_use = 1;
-				nimages_per_request = eiger_nexposures * eiger_ncycles;
-			}
-		}return eiger_nexposures;
-
-	case ACQUISITION_TIME:
-		if(val >= 0){
-			printf(" Setting exp time: %fs\n",val/(1E9));
-			Feb_Control_SetExposureTime(val/(1E9));
-		}
-		return (Feb_Control_GetExposureTime()*(1E9));
-
-	case SUBFRAME_ACQUISITION_TIME:
-		if(val >= 0){
-			printf(" Setting sub exp time: %lldns\n",(long long int)val/10);
-			Feb_Control_SetSubFrameExposureTime(val/10);
-		}
-		return (Feb_Control_GetSubFrameExposureTime());
-
-
-	case FRAME_PERIOD:
-		if(val >= 0){
-			printf(" Setting acq period: %fs\n",val/(1E9));
-			Feb_Control_SetExposurePeriod(val/(1E9));
-		}
-		return (Feb_Control_GetExposurePeriod()*(1E9));
-		/*	case DELAY_AFTER_TRIGGER:
-		if(val >= 0)
-			EigerSetNumberOfExposures((unsigned int)val);
-		return EigerGetNumberOfExposures();
-
-	case GATES_NUMBER:
-		if(val >= 0)
-			EigerSetNumberOfGates((unsigned int)val);
-		return EigerGetNumberOfGates();
-
-	case PROBES_NUMBER:
-		if(val >= 0)
-			EigerSetNumberOfExposures((unsigned int)val);
-		return EigerGetNumberOfExposures();*/
-	case CYCLES_NUMBER:
-		if(val >= 0){
-			printf(" Setting number of triggers: %d * %d\n",(unsigned int)val,eiger_nexposures);
-			if(Feb_Control_SetNExposures((unsigned int)val*eiger_nexposures)){
-				eiger_ncycles = val;
-				//SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
-				on_dst = 0;
-				int i;
-				for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
-				nimages_per_request = eiger_nexposures * eiger_ncycles;
-			}
-		}return eiger_ncycles;
-	default:
-		printf("unknown timer index: %d\n",ind);
-		break;
-	}
-
-	return -1;
-}
-
-
-
-
-int64_t getTimeLeft(enum timerIndex ind){
-
-	return -1;
-}
-
-
-
-int setDynamicRange(int dr){
-	if(dr > 0){
-		printf(" Setting dynamic range: %d\n",dr);
-		if(Feb_Control_SetDynamicRange(dr)){
-
-			//EigerSetBitMode(dr);
-			on_dst = 0;
-			int i;
-			for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
-			if(Beb_SetUpTransferParameters(dr))
-				eiger_dynamicrange = dr;
-			else printf("ERROR:Could not set bit mode in the back end\n");
-		}
-	}
-	//make sure back end and front end have the same bit mode
-	dr= Feb_Control_GetDynamicRange();
-
-	return dr;
-}
-
-
-
-enum readOutFlags setReadOutFlags(enum readOutFlags val){
-
-	enum readOutFlags retval = GET_READOUT_FLAGS;
-	if(val!=GET_READOUT_FLAGS){
-
-
-		if(val&0xF0000){
-			switch(val){
-			case PARALLEL:  	val=E_PARALLEL; 	printf(" Setting Read out Flag: Parallel\n"); 			break;
-			case NONPARALLEL:	val=E_NON_PARALLEL; printf(" Setting Read out Flag: Non Parallel\n");		break;
-			case SAFE:			val=E_SAFE; 		printf(" Setting Read out Flag: Safe\n"); 				break;
-
-			default:
-				cprintf(RED,"Cannot set unknown readout flag. 0x%x\n", val);
-				return -1;
-			}
-			printf(" Setting Read out Flag: %d\n",val);
-			if(Feb_Control_SetReadoutMode(val))
-				eiger_readoutmode = val;
-			else return -1;
-
-		}else{
-			switch(val){
-			case STORE_IN_RAM:  	val=1; 		printf(" Setting Read out Flag: Store in Ram\n"); 		break;
-			case CONTINOUS_RO:		val=0; 		printf(" Setting Read out Flag: Continuous Readout\n");		break;
-
-			default:
-				cprintf(RED,"Cannot set unknown readout flag. 0x%x\n", val);
-				return -1;
-			}
-			printf(" Setting store in ram variable: %d\n",val);
-			eiger_storeinmem = val;
-
-		}
-	}
-
-	switch(eiger_readoutmode){
-	case E_PARALLEL: 		retval=PARALLEL; 		break;
-	case E_NON_PARALLEL:	retval=NONPARALLEL; 	break;
-	case E_SAFE:			retval=SAFE; 			break;
-	}
-
-	switch(eiger_storeinmem){
-	case 0: 		retval|=CONTINOUS_RO; 	break;
-	case 1:			retval|=STORE_IN_RAM; 	break;
-	}
-	printf("Read out Flag: 0x%x\n",retval);
-	return retval;
-}
-
-
-
-
-int setROI(int n, ROI arg[], int *retvalsize, int *ret){
-	return FAIL;
-}
-
-
-
-int setSpeed(enum speedVariable arg, int val){
-	if(val != -1){
-		printf(" Setting Read out Speed: %d\n",val);
-		if(Feb_Control_SetReadoutSpeed(val))
-			eiger_readoutspeed = val;
-	}
-	return 	eiger_readoutspeed;
-}
-
-
-
-int executeTrimming(enum trimMode mode, int par1, int par2, int imod){
-	return FAIL;
-}
-
-
-int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int udpport, int udpport2, int ival){
-	if (detectormacadd != getDetectorMAC()){
-		printf("*************************************************\n");
-		printf("WARNING: actual detector mac address %llx does not match the one from client %llx\n",getDetectorMAC(),detectormacadd);
-		detectormacadd = getDetectorMAC();
-		printf("WARNING: Matched detectormac to the hardware mac now\n");
-		printf("*************************************************\n");
-	}
-	//only for 1Gbe
-	if(!send_to_ten_gig){
-		if (detipad != getDetectorIP()){
-			printf("*************************************************\n");
-			printf("WARNING: actual detector ip address %x does not match the one from client %x\n",getDetectorIP(),detipad);
-			detipad = getDetectorIP();
-			printf("WARNING: Matched detector ip to the hardware ip now\n");
-			printf("*************************************************\n");
-		}
-	}
-
-	char src_mac[50], src_ip[50],dst_mac[50], dst_ip[50];
-	int src_port = 0xE185;
-	sprintf(src_ip,"%d.%d.%d.%d",(detipad>>24)&0xff,(detipad>>16)&0xff,(detipad>>8)&0xff,(detipad)&0xff);
-	sprintf(dst_ip,"%d.%d.%d.%d",(ipad>>24)&0xff,(ipad>>16)&0xff,(ipad>>8)&0xff,(ipad)&0xff);
-	sprintf(src_mac,"%02x:%02x:%02x:%02x:%02x:%02x",(unsigned int)((detectormacadd>>40)&0xFF),
-			(unsigned int)((detectormacadd>>32)&0xFF),
-			(unsigned int)((detectormacadd>>24)&0xFF),
-			(unsigned int)((detectormacadd>>16)&0xFF),
-			(unsigned int)((detectormacadd>>8)&0xFF),
-			(unsigned int)((detectormacadd>>0)&0xFF));
-	sprintf(dst_mac,"%02x:%02x:%02x:%02x:%02x:%02x",(unsigned int)((macad>>40)&0xFF),
-			(unsigned int)((macad>>32)&0xFF),
-			(unsigned int)((macad>>24)&0xFF),
-			(unsigned int)((macad>>16)&0xFF),
-			(unsigned int)((macad>>8)&0xFF),
-			(unsigned int)((macad>>0)&0xFF));
-
-	printf("src_port:%d\n",src_port);
-	printf("src_ip:%s\n",src_ip);
-	printf("dst_ip:%s\n",dst_ip);
-	printf("src_mac:%s\n",src_mac);
-	printf("dst_mac:%s\n",dst_mac);
-
-
-	int beb_num = BEB_NUM;//Feb_Control_GetModuleNumber();
-	int header_number = 0;
-	int dst_port = udpport;
-	if(!top)
-		dst_port = udpport2;
-
-	printf("dst_port:%d\n\n",dst_port);
-
-	int i=0;
-	/* for(i=0;i<32;i++){ modified for Aldo*/
-	if(Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,src_port) &&
-			Beb_SetUpUDPHeader(beb_num,send_to_ten_gig,header_number+i,dst_mac,dst_ip, dst_port))
-		printf("set up left ok\n");
-	else return -1;
-	/*}*/
-
-	header_number = 32;
-	dst_port = udpport2;
-	if(!top)
-		dst_port = udpport;
-	printf("dst_port:%d\n\n",dst_port);
-
-	/*for(i=0;i<32;i++){*//** modified for Aldo*/
-	if(Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,src_port) &&
-			Beb_SetUpUDPHeader(beb_num,send_to_ten_gig,header_number+i,dst_mac,dst_ip, dst_port))
-		printf("set up right ok\n\n");
-	else return -1;
-	/*}*/
-
-	on_dst = 0;
-
-	for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
-	nimages_per_request=eiger_nexposures * eiger_ncycles;
-
-	return 0;
-}
-
-
-int calculateDataBytes(){
-	if(send_to_ten_gig)
-		return setDynamicRange(-1)*16*TEN_GIGA_BUFFER_SIZE;
-	else
-		return setDynamicRange(-1)*16*ONE_GIGA_BUFFER_SIZE;
-}
+/* common */
 
 
 int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod){
@@ -1250,15 +1269,22 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod){
 }
 
 
+int calculateDataBytes(){
+	if(send_to_ten_gig)
+		return setDynamicRange(-1) * ONE_GIGA_CONSTANT * TEN_GIGA_BUFFER_SIZE;
+	else
+		return setDynamicRange(-1) * TEN_GIGA_CONSTANT * ONE_GIGA_BUFFER_SIZE;
+}
 
-int getTotalNumberOfChannels(){return getNumberOfChannelsPerModule();}
-int getTotalNumberOfChips(){return NCHIP;}
-int getTotalNumberOfModules(){return 1;}
-int getNumberOfChannelsPerChip(){return  NCHAN;}
-int getNumberOfChannelsPerModule(){return  getNumberOfChannelsPerChip() * getTotalNumberOfChips();}
+
+int getTotalNumberOfChannels(){return ((int)getNumberOfChannelsPerModule() * (int)getTotalNumberOfModules);}
+int getTotalNumberOfChips(){return ((int)getNumberOfChipsPerModule * (int)getTotalNumberOfModules);}
+int getTotalNumberOfModules(){return NMOD;}
+int getNumberOfChannelsPerModule(){return  ((int)getNumberOfChannelsPerChip() * (int)getTotalNumberOfChips());}
 int getNumberOfChipsPerModule(){return  NCHIP;}
 int getNumberOfDACsPerModule(){return  NDAC;}
 int getNumberOfADCsPerModule(){return  NADC;}
+int getNumberOfChannelsPerChip(){return  NCHAN;}
 int getNumberOfGainsPerModule(){return  NGAIN;}
 int getNumberOfOffsetsPerModule(){return  NOFFSET;}
 
@@ -1266,66 +1292,10 @@ int getNumberOfOffsetsPerModule(){return  NOFFSET;}
 
 
 
-enum externalSignalFlag getExtSignal(int signalindex){
-	return GET_EXTERNAL_SIGNAL_FLAG;
-}
 
-
-
-
-
-enum externalSignalFlag setExtSignal(int signalindex,  enum externalSignalFlag flag){
-	return getExtSignal(signalindex);
-}
-
-
-
-
-
-
-enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
-	enum externalCommunicationMode ret=GET_EXTERNAL_COMMUNICATION_MODE;
-	if(arg != GET_EXTERNAL_COMMUNICATION_MODE){
-		switch((int)arg){
-		case AUTO_TIMING:			ret = 0;	break;
-		case TRIGGER_EXPOSURE:		ret = 2;	break;
-		case BURST_TRIGGER:			ret = 1;	break;
-		case GATE_FIX_NUMBER:		ret = 3;	break;
-		}
-		printf(" Setting Triggering Mode: %d\n",(int)ret);
-		if(Feb_Control_SetTriggerMode(ret,1))
-			eiger_triggermode = ret;
-	}
-
-	ret = eiger_triggermode;
-	switch((int)ret){
-	case 0:		ret = AUTO_TIMING;		break;
-	case 2:		ret = TRIGGER_EXPOSURE; break;
-	case 1:		ret = BURST_TRIGGER;	break;
-	case 3:		ret = GATE_FIX_NUMBER;	break;
-	default:
-		printf("Unknown trigger mode found %d\n",ret);
-		ret = 0;
-	}
-	return ret;
-}
-
-
-void setExternalGating(int enable[]){
-	if(enable>=0){
-		Feb_Control_SetExternalEnableMode(enable[0], enable[1]);//enable = 0 or 1, polarity = 0 or 1 , where 1 is positive
-		eiger_extgating = enable[0];
-		eiger_extgatingpolarity = enable[1];
-	}
-	enable[0] = eiger_extgating;
-	enable[1] = eiger_extgatingpolarity;
-}
-
+/* sync */
 
 enum masterFlags setMaster(enum masterFlags arg){
-	//if(arg != GET_MASTER)
-	//	masterMode = arg;
-
 	return NO_MASTER;
 }
 
@@ -1335,38 +1305,10 @@ enum synchronizationMode setSynchronization(enum synchronizationMode arg){
 	return NO_SYNCHRONIZATION;
 }
 
-void setAllTrimbits(int val){
-	int ichan;
-	if(Feb_Control_SaveAllTrimbitsTo(val)){
-#ifdef VERBOSE
-		printf("Copying register %x value %d\n",destMod->reg,val);
-#endif
-		if (detectorModules){
-			for (ichan=0; ichan<(detectorModules->nchan); ichan++) {
-				*((detectorModules->chanregs)+ichan)=val;
-			}
-		}
-	}else printf("error in setting all trimbits to value\n");
-}
-
-int getAllTrimbits(){
-	return *((detectorModules->chanregs));
-}
-
-int getBebFPGATemp(){
-	return Beb_GetBebFPGATemp();
-}
 
 
-int activate(int enable){
-	int ret = Beb_Activate(enable);
-	Feb_Control_activate(ret);
-	return ret;
-}
 
 
-int setNetworkParameter(enum detNetworkParameter mode, int value){
-	return Beb_SetNetworkParameter(mode, value);
-}
+
 
 #endif

@@ -180,24 +180,31 @@ void Beb_GetModuleConfiguration(int* master, int* top, int* normal){
 void Beb_EndofDataSend(int tengiga){
 	//mapping new memory
 	u_int32_t* csp0base=0;
-	int l_framepktcounter2, l_txndelaycounter, l_framedelaycounter, r_framepktcounter2, r_txndelaycounter, r_framedelaycounter;
-	int l_framepktcounter2_new, l_txndelaycounter_new, l_framedelaycounter_new, r_framepktcounter2_new, r_txndelaycounter_new, r_framedelaycounter_new;
-	int addr_l_framepktcounter2,  addr_l_txndelaycounter,  addr_l_framedelaycounter,  addr_r_framepktcounter2,  addr_r_txndelaycounter,  addr_r_framedelaycounter;
+	int l_framepktLsbcounter, l_framepktMsbcounter, l_txndelaycounter, l_framedelaycounter;
+	int r_framepktLsbcounter, r_framepktMsbcounter, r_txndelaycounter, r_framedelaycounter;
+	int l_framepktLsbcounter_new, l_framepktMsbcounter_new, l_txndelaycounter_new, l_framedelaycounter_new;
+	int r_framepktLsbcounter_new, r_framepktMsbcounter_new, r_txndelaycounter_new, r_framedelaycounter_new;
+	int addr_l_framepktLsbcounter,  addr_l_framepktMsbcounter, addr_l_txndelaycounter,  addr_l_framedelaycounter;
+	int addr_r_framepktLsbcounter,  addr_r_framepktMsbcounter, addr_r_txndelaycounter,  addr_r_framedelaycounter;
 
 	switch(tengiga){
 	case 0:
-		addr_l_framepktcounter2 = ONE_GIGA_LEFT_PKT_SEND_COUNTER;
+		addr_l_framepktLsbcounter = ONE_GIGA_LEFT_INDEX_LSB_COUNTER;
+		addr_l_framepktMsbcounter = ONE_GIGA_LEFT_INDEX_MSB_COUNTER;
 		addr_l_txndelaycounter = ONE_GIGA_LEFT_TXN_DELAY_COUNTER;
 		addr_l_framedelaycounter = ONE_GIGA_LEFT_FRAME_DELAY_COUNTER;
-		addr_r_framepktcounter2 = ONE_GIGA_RIGHT_PKT_SEND_COUNTER;
+		addr_r_framepktLsbcounter = ONE_GIGA_RIGHT_INDEX_LSB_COUNTER;
+		addr_r_framepktMsbcounter = ONE_GIGA_RIGHT_INDEX_MSB_COUNTER;
 		addr_r_txndelaycounter = ONE_GIGA_RIGHT_TXN_DELAY_COUNTER;
 		addr_r_framedelaycounter = ONE_GIGA_RIGHT_FRAME_DELAY_COUNTER;
 		break;
 	case 1:
-		addr_l_framepktcounter2 = TEN_GIGA_LEFT_PKT_SEND_COUNTER;
+		addr_l_framepktLsbcounter = TEN_GIGA_LEFT_INDEX_LSB_COUNTER;
+		addr_l_framepktMsbcounter = TEN_GIGA_LEFT_INDEX_MSB_COUNTER;
 		addr_l_txndelaycounter = TEN_GIGA_LEFT_TXN_DELAY_COUNTER;
 		addr_l_framedelaycounter = TEN_GIGA_LEFT_FRAME_DELAY_COUNTER;
-		addr_r_framepktcounter2 = TEN_GIGA_RIGHT_PKT_SEND_COUNTER;
+		addr_r_framepktLsbcounter = TEN_GIGA_RIGHT_INDEX_LSB_COUNTER;
+		addr_r_framepktMsbcounter = TEN_GIGA_RIGHT_INDEX_MSB_COUNTER;
 		addr_r_txndelaycounter = TEN_GIGA_RIGHT_TXN_DELAY_COUNTER;
 		addr_r_framedelaycounter = TEN_GIGA_RIGHT_FRAME_DELAY_COUNTER;
 		break;
@@ -211,23 +218,27 @@ void Beb_EndofDataSend(int tengiga){
 		return;
 	}else{
 		//read data first time
-		l_framepktcounter2 = Beb_Read32(csp0base, addr_l_framepktcounter2);
+		l_framepktLsbcounter = Beb_Read32(csp0base, addr_l_framepktLsbcounter);
+		l_framepktMsbcounter = Beb_Read32(csp0base, addr_l_framepktMsbcounter);
 		l_txndelaycounter = Beb_Read32(csp0base, addr_l_txndelaycounter);
 		l_framedelaycounter = Beb_Read32(csp0base, addr_l_framedelaycounter);
-		r_framepktcounter2 = Beb_Read32(csp0base, addr_r_framepktcounter2);
+		r_framepktLsbcounter = Beb_Read32(csp0base, addr_r_framepktLsbcounter);
+		r_framepktMsbcounter = Beb_Read32(csp0base, addr_r_framepktMsbcounter);
 		r_txndelaycounter = Beb_Read32(csp0base, addr_r_txndelaycounter);
 		r_framedelaycounter = Beb_Read32(csp0base, addr_r_framedelaycounter);
 //#ifdef VERBOSE
 		printf("\nLeft\n"
-				"Framepacketcounter: %d\n"
+				"FramepacketLsbcounter: %d\n"
+				"FramepacketMsbcounter: %d\n"
 				"Txndelaycounter:%d\n"
 				"Framedelaycounter:%d\n"
 				"\nRight\n"
-				"Framepacketcounter: %d\n"
+				"FramepacketLsbcounter: %d\n"
+				"FramepacketMsbcounter: %d\n"
 				"Txndelaycounter:%d\n"
 				"Framedelaycounter:%d\n\n",
-				l_framepktcounter2,l_txndelaycounter,l_framedelaycounter,
-				r_framepktcounter2,r_txndelaycounter,r_framedelaycounter);
+				l_framepktLsbcounter,l_framepktMsbcounter,l_txndelaycounter,l_framedelaycounter,
+				r_framepktLsbcounter,r_framepktMsbcounter,r_txndelaycounter,r_framedelaycounter);
 //#endif
 
 		//keep comparing with previous values
@@ -239,33 +250,42 @@ void Beb_EndofDataSend(int tengiga){
 			usleep(maxtimer);
 
 			//read new values
-			l_framepktcounter2_new = Beb_Read32(csp0base, addr_l_framepktcounter2);
+			l_framepktLsbcounter_new = Beb_Read32(csp0base, addr_l_framepktLsbcounter);
+			l_framepktMsbcounter_new = Beb_Read32(csp0base, addr_l_framepktMsbcounter);
 			l_txndelaycounter_new = Beb_Read32(csp0base, addr_l_txndelaycounter);
 			l_framedelaycounter_new = Beb_Read32(csp0base, addr_l_framedelaycounter);
-			r_framepktcounter2_new = Beb_Read32(csp0base, addr_r_framepktcounter2);
+			r_framepktLsbcounter_new = Beb_Read32(csp0base, addr_r_framepktLsbcounter);
+			r_framepktMsbcounter_new = Beb_Read32(csp0base, addr_r_framepktMsbcounter);
 			r_txndelaycounter_new = Beb_Read32(csp0base, addr_r_txndelaycounter);
 			r_framedelaycounter_new = Beb_Read32(csp0base, addr_r_framedelaycounter);
 //#ifdef VERBOSE
 			printf("\nLeft\n"
-					"Framepacketcounter: %d\n"
+					"FramepacketLsbcounter: %d\n"
+					"FramepacketMsbcounter: %d\n"
 					"Txndelaycounter:%d\n"
 					"Framedelaycounter:%d\n"
 					"\nRight\n"
-					"Framepacketcounter: %d\n"
+					"FramepacketLsbcounter: %d\n"
+					"FramepacketMsbcounter: %d\n"
 					"Txndelaycounter:%d\n"
 					"Framedelaycounter:%d\n\n",
-					l_framepktcounter2_new,l_txndelaycounter_new,l_framedelaycounter_new,
-					r_framepktcounter2_new,r_txndelaycounter_new,r_framedelaycounter_new);
+					l_framepktLsbcounter_new,l_framepktMsbcounter_new,l_txndelaycounter_new,l_framedelaycounter_new,
+					r_framepktLsbcounter_new,r_framepktMsbcounter_new,r_txndelaycounter_new,r_framedelaycounter_new);
 //#endif
 
-			if ((l_framepktcounter2 == l_framepktcounter2_new) && (r_framepktcounter2 == r_framepktcounter2_new))
+			if ((l_framepktLsbcounter == l_framepktLsbcounter_new) &&
+				(l_framepktMsbcounter == l_framepktMsbcounter_new) &&
+				(r_framepktLsbcounter == r_framepktLsbcounter_new) &&
+				(r_framepktMsbcounter == r_framepktMsbcounter_new))
 				break;
 
 			//update old values
-			l_framepktcounter2 = l_framepktcounter2_new;
+			l_framepktLsbcounter = l_framepktLsbcounter_new;
+			l_framepktMsbcounter = l_framepktMsbcounter_new;
 			l_txndelaycounter = l_txndelaycounter_new;
 			l_framedelaycounter = l_framedelaycounter_new;
-			r_framepktcounter2 = r_framepktcounter2_new;
+			r_framepktLsbcounter = r_framepktLsbcounter_new;
+			r_framepktMsbcounter = r_framepktMsbcounter_new;
 			r_txndelaycounter = r_txndelaycounter_new;
 			r_framedelaycounter = r_framedelaycounter_new;
 
@@ -392,7 +412,7 @@ int Beb_Activate(int enable){
 }
 
 
-int Beb_SetNetworkParameter(enum detNetworkParameter mode, int val){
+int Beb_SetNetworkParameter(enum NETWORKINDEX mode, int val){
 
 	if(!Beb_activated)
 		return val;

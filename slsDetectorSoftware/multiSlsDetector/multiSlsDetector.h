@@ -17,6 +17,7 @@ ID:         $Id$
 
 class slsDetector;
 class ThreadPool;
+class ZmqSocket;
 
 //#include "sls_detector_defs.h"
 
@@ -121,6 +122,8 @@ class multiSlsDetector  : public slsDetectorUtils {
     char filePath[MAX_STR_LENGTH];
     /** max frames per file */
     int framesPerFile;
+    /** file format*/
+    fileFormat fileFormatType;
 
     /** corrections  to be applied to the data \see ::correctionFlags */
     int correctionMask;
@@ -198,7 +201,7 @@ class multiSlsDetector  : public slsDetectorUtils {
     /** flag for acquiring */
     bool acquiringFlag;
 
-  };
+  } sharedMultiSlsDetector;
 
 
 
@@ -319,6 +322,12 @@ class multiSlsDetector  : public slsDetectorUtils {
   /** returns the number of detectors in the multidetector structure
       \returns number of detectors */
   int getNumberOfDetectors() {return thisMultiDetector->numberOfDetectors;};
+
+  /** returns the number of detectors in each direction
+   	   \param nx number of detectors in x direction
+   	   \param ny number of detectors in y direction
+   */
+  void getNumberOfDetectors(int& nx, int& ny);
 
   int getMaxMods();
   int getNMods();
@@ -1150,6 +1159,13 @@ class multiSlsDetector  : public slsDetectorUtils {
   string setFileName(string s="");
 
   /**
+     Sets up the file format
+     @param f file format
+     \returns file format
+  */
+  fileFormat setFileFormat(fileFormat f=GET_FILE_FORMAT);
+
+  /**
      Sets up the file index
      @param i file index
      \returns file index
@@ -1165,6 +1181,11 @@ class multiSlsDetector  : public slsDetectorUtils {
      \returns file name
   */
   string getFileName(){return setFileName();};
+
+  /**
+     \returns file name
+  */
+  fileFormat getFileFormat(){return setFileFormat();};
 
   /**
      \returns file index
@@ -1408,14 +1429,23 @@ private:
 
 	/**
 	 * Gets data from socket
+	 * @param isocket socket index
+	 * @param masking if masking required (jungfrau)
+	 * @param image image buffer
+	 * @param size size of image
+	 * @param acqIndex address of acquisition index
+	 * @param frameIndex address of frame index
+	 * @param subframeIndex address of subframe index
+	 * @param filename address of file name
 	 */
-	int getData(const int isocket, const bool masking, int* image, const int size, int &acqIndex, int &frameIndex, int &subframeIndex, string &filename);
+	int getData(const int isocket, const bool masking, int* image, const int size, uint64_t &acqIndex, uint64_t &frameIndex, uint32_t &subframeIndex, string &filename);
+
 
 	/** Ensures if sockets created successfully */
 	bool dataSocketsStarted;
-	void *context[MAXDET];
-	void *zmqsocket[MAXDET];
-	char dataSocketServerDetails[MAXDET][100];
+
+	/** ZMQ Socket - Receiver to Client */
+	ZmqSocket* zmqSocket[MAXDET];
 
  protected:
  

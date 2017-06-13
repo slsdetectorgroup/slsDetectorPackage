@@ -189,8 +189,8 @@ int function_table() {
   flist[F_SET_SYNCHRONIZATION_MODE]=&set_synchronization;
   flist[F_READ_COUNTER_BLOCK]=&read_counter_block;
   flist[F_RESET_COUNTER_BLOCK]=&reset_counter_block;
-  flist[F_START_RECEIVER]=&start_receiver;
-  flist[F_STOP_RECEIVER]=&stop_receiver;
+  flist[F_PREPARE_ACQUISITION]=&start_receiver;
+  flist[F_CLEANUP_ACQUISITION]=&stop_receiver;
   flist[F_CALIBRATE_PEDESTAL]=&calibrate_pedestal;
   return OK;
 }

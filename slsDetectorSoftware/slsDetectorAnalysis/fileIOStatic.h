@@ -534,9 +534,7 @@ class fileIOStatic  {
   static int readDataFile(int nch, string fname, double *data, double *err=NULL, double *ang=NULL, char dataformat='f') { \
     ifstream infile;							\
     int  iline=0;							\
-    int maxchans;							\
     string str;							\
-    maxchans=nch;							\
     infile.open(fname.c_str(), ios_base::in);				\
     if (infile.is_open()) {						\
       iline=readDataFile(nch, infile, data, err, ang, dataformat, 0);	\

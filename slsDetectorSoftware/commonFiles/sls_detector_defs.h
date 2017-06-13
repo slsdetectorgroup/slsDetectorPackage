@@ -19,9 +19,6 @@
 /** header length for data :gotthard*/
 #define HEADERLENGTH 12
 
-#define DEFAULT_SUBFRAME_EXPOSURE_VAL 2621440 /** default value for sub frame value 2.6ms*/
-#define MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS	0x1FFFFFFF /** 29 bit register for max subframe exposure value */
-
 /** maximum rois */
 #define MAX_ROIS 100
 
@@ -129,7 +126,7 @@ class slsDetectorDefs: public virtual slsReceiverDefs{
 typedef struct {
   int module; /**< is the module number */
   int serialnumber;  /**< is the module serial number */
-  int nchan; /**< is the number of channels per chip */
+  int nchan; /**< is the number of channels on the module*/
   int nchip; /**< is the number of chips on the module */
   int ndac; /**< is the number of dacs on the module */
   int nadc; /**< is the number of adcs on the module */

@@ -4212,12 +4212,16 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
   
   if (action==PUT_ACTION) {
     if (sscanf(args[1],"%lf", &val))
-      ;
+    	;//printf("value:%0.9lf\n",val);
     else
       return string("cannot scan timer value ")+string(args[1]);
-    if (index==ACQUISITION_TIME || index==SUBFRAME_ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER)
-      t=(int64_t)(val*1E+9);
-    else t=(int64_t)val;
+    if (index==ACQUISITION_TIME || index==SUBFRAME_ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER) {
+      // 	t=(int64_t)(val*1E+9); for precision of eg.0.0000325, following done
+    	val*=1E9;
+    	t = (int64_t)val;
+    	if(fabs(val-t))		// to validate precision loss
+    		t = t + val - t; //even t += vak-t loses precision
+    }else t=(int64_t)val;
   }
   
   

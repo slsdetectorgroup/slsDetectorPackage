@@ -331,7 +331,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		//------------------------------------------------------------------------------------------------------------
 		if (fnum != currentFrameIndex) {
 			if (fnum < currentFrameIndex) {
-				cprintf(BG_RED,"Error:(Weird), With carry flag: Frame number less than current frame number\n");
+				cprintf(BG_RED,"Error:(Weird), With carry flag: Frame number %lu less than current frame number %lu\n", fnum, currentFrameIndex);
 				return 0;
 			}
 			new_header->packetNumber = numpackets;

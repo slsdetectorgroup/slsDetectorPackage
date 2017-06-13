@@ -467,6 +467,15 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
   i++;
 
+
+
+  /* chip */
+  descrToFuncMap[i].m_pFuncName="led";
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
+  i++;
+
+
+
   /* versions/ serial numbers  getId */
 
   descrToFuncMap[i].m_pFuncName="moduleversion"; //
@@ -834,6 +843,46 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
   i++;
 
+
+  descrToFuncMap[i].m_pFuncName="i_a"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="i_b"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="i_c"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="i_d"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="i_io"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="vm_a"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="vm_b"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="vm_c"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="vm_d"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="vm_io"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
+  i++;
 
   /* r/w timers */
 
@@ -4016,7 +4065,7 @@ string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
     return helpADC(narg, args, action);
   else if (action==PUT_ACTION)
     return string("cannot set ")+cmd;
-    
+     
   if (sscanf(args[0],"adc:%d",&idac)==1) {
     //  printf("chiptestboard!\n");
     adc=(dacIndex)(idac+1000);
@@ -4038,6 +4087,26 @@ string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
 	  adc=TEMPERATURE_FPGA2;
   else if (cmd=="temp_fpgafr")
 	  adc=TEMPERATURE_FPGA3;
+  else if (cmd=="i_a")
+	  adc=I_POWER_A;
+  else if (cmd=="i_b")
+	  adc=I_POWER_B;
+  else if (cmd=="i_c")
+	  adc=I_POWER_C;
+  else if (cmd=="i_d")
+	  adc=I_POWER_D;
+  else if (cmd=="vm_a")
+	  adc=V_POWER_A;
+  else if (cmd=="vm_b")
+	  adc=V_POWER_B;
+  else if (cmd=="vm_c")
+	  adc=V_POWER_C;
+  else if (cmd=="vm_d")
+	  adc=V_POWER_D;
+  else if (cmd=="vm_io")
+	  adc=V_POWER_IO;
+  else if (cmd=="i_io")
+	  adc=I_POWER_IO;
   else
     return string("cannot decode adc ")+cmd;
 
@@ -4546,6 +4615,19 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action) {
 		  }
 		  sprintf(ans,"%d",myDet->powerChip());
 		  return string(ans);
+	} else if (cmd=="led") {
+		  char ans[100];
+		  int val=0;
+		  myDet->setOnline(ONLINE_FLAG);
+		  if (action==PUT_ACTION){
+			  int ival = -1;
+			  if (!sscanf(args[1],"%d",&ival))
+				  return string("could not scan powerchip parameter " + string(args[1]));
+			  val=myDet->readRegister(0x4d);
+			  myDet->writeRegister(0x4d,(val&(~1))|((~ival)&1));//config register
+		  }
+		  sprintf(ans,"%d",~(myDet->readRegister(0x4d))&1);
+		  return string(ans);
 	}
 	else
 		return string("unknown command ")+cmd;
@@ -4563,11 +4645,13 @@ string slsDetectorCommand::helpAdvanced(int narg, char *args[], int action) {
 
     os << "programfpga f \t programs the fpga with file f (with .pof extension)." << std::endl;
     os << "resetfpga f \t resets fpga, f can be any value" << std::endl;
+    os << "led s \t sets led status (0 off, 1 on)" << std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
 
     os << "extsig:i \t gets the mode of the external signal i. can be  \n \t \t \t off, \n \t \t \t gate_in_active_high, \n \t \t \t gate_in_active_low, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t ro_trigger_in_rising_edge, \n \t \t \t ro_trigger_in_falling_edge, \n \t \t \t gate_out_active_high, \n \t \t \t gate_out_active_low, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge, \n \t \t \t ro_trigger_out_rising_edge, \n \t \t \t ro_trigger_out_falling_edge" << std::endl;
     os << "flags \t gets the readout flags. can be none, storeinram, tot, continous, parallel, nonparallel, safe, digital, analog_digital, unknown" << std::endl;
+    os << "led \t returns led status (0 off, 1 on)" << std::endl;
 
   } 
   return os.str();

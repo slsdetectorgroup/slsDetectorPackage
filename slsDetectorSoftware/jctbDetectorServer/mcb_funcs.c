@@ -811,19 +811,20 @@ int initHighVoltageByModule(int val, int imod)
 
 int initConfGainByModule(int isettings,int val, int imod)
 {
-  int im;
-  //for the particular module
-  if (imod>=0 && imod<nModX) { 
-    return initConfGain(isettings,val,imod);
-  }
-  else{
-    //checks if all modules have the same value(ALLMOD)
-    for (im=1; im<nModX; im++) {
-      if (initConfGain(isettings,val,im)!=initConfGain(isettings,val,0))
-	return -1;
-    }
-    return initConfGain(isettings,val,0);
-  }
+  /* int im; */
+  /* //for the particular module */
+  /* if (imod>=0 && imod<nModX) {  */
+  /*   return initConfGain(isettings,val,imod); */
+  /* } */
+  /* else{ */
+  /*   //checks if all modules have the same value(ALLMOD) */
+  /*   for (im=1; im<nModX; im++) { */
+  /*     if (initConfGain(isettings,val,im)!=initConfGain(isettings,val,0)) */
+  /* 	return -1; */
+  /*   } */
+  /*   return initConfGain(isettings,val,0); */
+  /* } */
+  return FAIL;
 }
 
 
@@ -869,56 +870,56 @@ void showbits(int h)
 
 
 int setSettings(int i, int imod) {
-#ifdef VERBOSE
-	if(i==-1)
-		printf("\nReading settings of detector...\n");
-	else
-		printf("\ninside set settings wit settings=%d...\n",i);
-#endif
-	int isett=-1,val=-1,retval=-1;
-	enum conf_gain {
-		dynamic = 0x0f00,	//dynamic
-		dynamichighgain0 =	0x0f01,	//dynamichighgain0
-		fixgain1 = 0x0f02,	//fixgain1
-		fixgain2 = 0x0f06,	//fixgain2
-		forceswitchgain1 = 0x1f00,	//forceswitchgain1
-		forceswitchgain2 = 0x3f00	//forceswitchgain2
-	};
+/* #ifdef VERBOSE */
+/* 	if(i==-1) */
+/* 		printf("\nReading settings of detector...\n"); */
+/* 	else */
+/* 		printf("\ninside set settings wit settings=%d...\n",i); */
+/* #endif */
+/* 	int isett=-1,val=-1,retval=-1; */
+/* 	enum conf_gain { */
+/* 		dynamic = 0x0f00,	//dynamic */
+/* 		dynamichighgain0 =	0x0f01,	//dynamichighgain0 */
+/* 		fixgain1 = 0x0f02,	//fixgain1 */
+/* 		fixgain2 = 0x0f06,	//fixgain2 */
+/* 		forceswitchgain1 = 0x1f00,	//forceswitchgain1 */
+/* 		forceswitchgain2 = 0x3f00	//forceswitchgain2 */
+/* 	}; */
 
-	//determine conf value to write
-	if(i!=GET_SETTINGS){
-		switch(i){
-		case DYNAMICGAIN: 	val = dynamic;break;
-		case DYNAMICHG0: 	val = dynamichighgain0;break;
-		case FIXGAIN1: 		val = fixgain1;break;
-		case FIXGAIN2: 		val = fixgain2;break;
-		case FORCESWITCHG1: val = forceswitchgain1;break;
-		case FORCESWITCHG2: val = forceswitchgain2;break;
-		default:
-			printf("Error: This settings is not defined for this detector %d\n",i);
-			return GET_SETTINGS;
-		}
-	}
+/* 	//determine conf value to write */
+/* 	if(i!=GET_SETTINGS){ */
+/* 		switch(i){ */
+/* 		case DYNAMICGAIN: 	val = dynamic;break; */
+/* 		case DYNAMICHG0: 	val = dynamichighgain0;break; */
+/* 		case FIXGAIN1: 		val = fixgain1;break; */
+/* 		case FIXGAIN2: 		val = fixgain2;break; */
+/* 		case FORCESWITCHG1: val = forceswitchgain1;break; */
+/* 		case FORCESWITCHG2: val = forceswitchgain2;break; */
+/* 		default: */
+/* 			printf("Error: This settings is not defined for this detector %d\n",i); */
+/* 			return GET_SETTINGS; */
+/* 		} */
+/* 	} */
 
-	retval=initConfGainByModule(i,val,imod);
+/* 	retval=initConfGainByModule(i,val,imod); */
 
-	switch(retval){
-	case dynamic: isett=DYNAMICGAIN;	break;
-	case dynamichighgain0: isett=DYNAMICHG0;	break;
-	case fixgain1: isett=FIXGAIN1;		break;
-	case fixgain2: isett=FIXGAIN2;		break;
-	case forceswitchgain1: isett=FORCESWITCHG1;	break;
-	case forceswitchgain2: isett=FORCESWITCHG2;	break;
-	default:
-		isett=UNDEFINED;
-		printf("Error:Wrong settings read out from Gain Reg 0x%x\n",retval);
-		break;
-	}
+/* 	switch(retval){ */
+/* 	case dynamic: isett=DYNAMICGAIN;	break; */
+/* 	case dynamichighgain0: isett=DYNAMICHG0;	break; */
+/* 	case fixgain1: isett=FIXGAIN1;		break; */
+/* 	case fixgain2: isett=FIXGAIN2;		break; */
+/* 	case forceswitchgain1: isett=FORCESWITCHG1;	break; */
+/* 	case forceswitchgain2: isett=FORCESWITCHG2;	break; */
+/* 	default: */
+/* 		isett=UNDEFINED; */
+/* 		printf("Error:Wrong settings read out from Gain Reg 0x%x\n",retval); */
+/* 		break; */
+/* 	} */
 
-	thisSettings=isett;
-//#ifdef VERBOSE
-	printf("detector settings are %d\n",thisSettings);
-//#endif
+/* 	thisSettings=isett; */
+/* //#ifdef VERBOSE */
+/* 	printf("detector settings are %d\n",thisSettings); */
+/* //#endif */
 	return thisSettings;
 }
 

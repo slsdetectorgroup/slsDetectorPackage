@@ -77,7 +77,7 @@ int setDACRegister(int idac, int val, int imod);
 int getDacRegister(int dacnum);
 
 
-int getTemperature(int tempSensor,int imod);
+int getTemperature(int tempSensor);
 int initHighVoltage(int val,int imod);
 int initConfGain(int isettings,int val,int imod);
 
@@ -161,7 +161,7 @@ int allocateRAM();
 
 int writeADC(int addr, int val);
 int prepareADC();
-int prepareSlowADC();
+
 
 
 int clearRAM();
@@ -192,6 +192,21 @@ int setPower(int ind, int val);
 int setROI(int nroi,ROI* arg,int *retvalsize, int *ret);
 int getChannels();
 
+int getCurrent(int idac);
+int getVoltage(int idac);
+
+void defineGPIOpins();
+void resetFPGA();
+void FPGAdontTouchFlash();
+void FPGATouchFlash();
+
+int startWritingFPGAprogram(FILE** filefp);
+int stopWritingFPGAprogram(FILE* filefp);
+int writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp);
+void eraseFlash();
+
+
+
 /*
 
 u_int32_t setNBits(u_int32_t);
@@ -218,8 +233,6 @@ int calibration_chip(int num, int *values, int *dacs);
 
 int64_t setSamples(int64_t value);
 //int setOutputMode(int d);
-int prepareSlowADCSeq();
-int readSlowADC(int ichan);
 int setReadOutMode(int arg);
 int vLimitCompliant(int val_mV)
 

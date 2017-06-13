@@ -29,6 +29,9 @@
 #define MAX_FPGAPROGRAMSIZE (2 * 1024 *1024)
 
 
+
+#define MAX_SCAN_LEVELS 2
+
 typedef char mystring[MAX_STR_LENGTH];
 typedef double mysteps[MAX_SCAN_STEPS];
 
@@ -373,7 +376,12 @@ enum dacIndex {
   V_POWER_D = 103, /**new chiptest board */
   V_POWER_IO =104, /**new chiptest board */
   V_POWER_CHIP=105 ,/**new chiptest board */
-  V_LIMIT=106 /**new chiptest board */
+  I_POWER_A=106 , /**new chiptest board */
+  I_POWER_B=107 , /**new chiptest board */
+  I_POWER_C=108 , /**new chiptest board */
+  I_POWER_D=109 , /**new chiptest board */
+  I_POWER_IO=110 , /**new chiptest board */
+  V_LIMIT=111 /**new chiptest board */
 };
 
 /**

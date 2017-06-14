@@ -21,6 +21,16 @@
 
 //#ifdef JUNGFRAU_DHANYA
 #define POWER_ON_REG 			0x5e<<11
+//  Pwr_I2C_SDA <= PowerReg_s(1) when PowerReg_s(3)='1' else 'Z';
+//  Pwr_I2C_SCL <= PowerReg_s(0) when PowerReg_s(2)='1' else 'Z';
+
+#define PWR_I2C_SCL_BIT  0
+#define PWR_I2C_SDA_BIT  1
+#define PWR_I2C_SCL_EN_BIT  2
+#define PWR_I2C_SDA_EN_BIT  3
+
+#define POWER_STATUS_REG 		41<<11	
+
 #define ADCREG1 			0x08  
 #define ADCREG2 			0x14//20 
 #define ADCREG3 			0x4  
@@ -32,7 +42,7 @@
 #define ADC_PIPELINE_REG 		66<<11 //0x42 same as ADC_OFFSET_REG
 //#endif
 
-#define ADC_OFFSET_REG      		93<<11 //same as DAQ_REG
+//#define ADC_OFFSET_REG      		93<<11 //same as DAQ_REG
 #define ADC_INVERSION_REG   		67<<11
 
 #define DAC_REG     64<<11//0x17<<11// control the dacs
@@ -63,7 +73,7 @@
 #define STATUS_REG            2<<11 //0x25<<11
 #define CONFIG_REG            77<<11//0x26<<11
 #define EXT_SIGNAL_REG        78<<11//	  0x27<<11
-#define FPGA_SVN_REG    	  0x29<<11
+//#define FPGA_SVN_REG    	  0x29<<11
 
 
 #define CHIP_OF_INTRST_REG    0x2A<<11
@@ -88,7 +98,6 @@
 //user entered
 
 
-#define NSAMPLES_REG 95<<11
 
 
 
@@ -185,10 +194,14 @@
 
 
 
-#define DAQ_REG   93<<11
+//#define DAQ_REG   93<<11 //unused
+#define NSAMPLES_REG 93<<11 
+
 
 #define HV_REG 95<<11
    
+
+
 #define PATTERN_IOCTRL_REG_LSB 108<<11
 #define PATTERN_IOCTRL_REG_MSB 109<<11
 

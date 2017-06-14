@@ -6871,7 +6871,7 @@ int slsDetector::programFPGA(string fname){
 	size_t filesize=0;
 	char* fpgasrc = NULL;
 
-	if(thisDetector->myDetectorType != JUNGFRAU){
+	if(thisDetector->myDetectorType != JUNGFRAU && thisDetector->myDetectorType != JUNGFRAUCTB){
 		std::cout << "Not implemented for this detector" << std::endl;
 		return FAIL;
 	}

@@ -8,9 +8,6 @@
 #include <fstream>
 
 
-
-#define MAX_SCAN_LEVELS 2
-
 using namespace std;
 
 /**

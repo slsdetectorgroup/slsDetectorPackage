@@ -328,9 +328,15 @@ int receiveData(int file_des, void* buf,int length, intType itype){
   int nreceiving;
   int nreceived;
   if (file_des<0) return -1;
+<<<<<<< HEAD
+ #ifdef VERY_VERBOSE
+  printf("want to receive %d Bytes\n", length); 
+ #endif
+=======
 #ifdef VERY_VERBOSE
   printf("want to receive %d Bytes\n", length); 
 #endif
+>>>>>>> e564542ad33a64e66ad6153066741c69c707f99d
 
   while(length > 0) {
     nreceiving = (length>send_rec_max_size) ? send_rec_max_size:length;

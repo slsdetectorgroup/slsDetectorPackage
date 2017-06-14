@@ -4,6 +4,7 @@
 #include "server_defs.h"
 #include "firmware_funcs.h"
 #include "mcb_funcs.h"
+#include "slow_adc.h"
 #include "registers_m.h"
 #include "gitInfoMoench.h"
 
@@ -72,10 +73,7 @@ int init_detector(int b, int checkType) {
     exit(1);  
   }
 
-  //print version
-  printf("v: 0x%x\n",bus_r(FPGA_VERSION_REG));
-  printf("fp: 0x%x\n",bus_r(FIX_PATT_REG));
-  
+  // defineGPIOpins();
   //checktype
   if (checkType) {
     printf("Bus test... (checktype is %d; b is %d)",checkType,b );
@@ -123,44 +121,8 @@ int init_detector(int b, int checkType) {
 
   }
   printf("Detector type is %d\n", myDetectorType);
-
-
-  //control server only--
-  if (b) {
-    resetPLL();
-    bus_w16(CONTROL_REG, SYNC_RESET);
-    bus_w16(CONTROL_REG, 0);
-    bus_w16(CONTROL_REG, GB10_RESET_BIT);
-    bus_w16(CONTROL_REG, 0);
-    
-#ifdef MCB_FUNCS
-    printf("\nBoard Revision:0x%x\n",(bus_r(PCB_REV_REG)&BOARD_REVISION_MASK));
-    // if(myDetectorType == JUNGFRAU)
-    initDetector(); /*allocating detectorModules, detectorsDacs etc for "settings", also does allocate RAM*/
-    dataBytes=NMAXMOD*N_CHIP*N_CHAN*2; /**Nchip and Nchan real values get assigned in initDetector()*/
-    printf("Initializing Detector\n");
-    //bus_w16(CONTROL_REG, SYNC_RESET); // reset registers
-#endif
-    if (myDetectorType==JUNGFRAUCTB) prepareSlowADCSeq();
-  
-    prepareADC();
-  
-  
-    //Initialization of acquistion parameters
-    setFrames(-1);
-    setTrains(-1);
-    setExposureTime(-1);
-    setPeriod(-1);
-    setDelay(-1);
-    setGates(-1);
-    
-    setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
-    setMaster(GET_MASTER);
-    setSynchronization(GET_SYNCHRONIZATION_MODE);
-    startReceiver(0); //firmware
-  }//end of control server only--
-  else printf("\n\n");
-
+  if (b)
+    initDetector();
 
   //common for both control and stop server
   strcpy(mess,"dummy message");
@@ -171,12 +133,6 @@ int init_detector(int b, int checkType) {
 
   /* both these functions setROI and allocateRAM should go into the control server part. */
 
-  int retvalsize,ret;
-  setROI(-1,NULL,&retvalsize,&ret);
-  allocateRAM();
-
-  setSamples(1);
-  bus_w(DAC_REG,0xffff);
   return OK;
 }
 
@@ -267,7 +223,9 @@ int function_table() {
   flist[F_CALIBRATE_PEDESTAL]=&calibrate_pedestal;
   flist[F_SET_CTB_PATTERN]=&set_ctb_pattern;
   flist[F_WRITE_ADC_REG]=&write_adc_register;
+  flist[F_PROGRAM_FPGA]=&program_fpga;
   flist[F_POWER_CHIP]=&power_chip;
+  flist[F_RESET_FPGA]=&reset_fpga;
   return OK;
 }
 
@@ -735,49 +693,7 @@ int digital_test(int file_des) {
       printf("of module %d\n", imod);
 #endif  
       retval=0;
-#ifdef MCB_FUNCS  
-      if (differentClients==1 && lockStatus==1) {
-	ret=FAIL;
-	sprintf(mess,"Detector locked by %s\n",lastClientIP);
-	break;
-      }
-      if (imod >= nModX) {
-	ret=FAIL;
-	sprintf(mess,"Module %d disabled\n",imod);
-	break;
-      }
-      if (testShiftIn(imod)) retval|=(1<<(ibit));
-      ibit++;
-      if (testShiftOut(imod)) retval|=(1<<(ibit));
-      ibit++;
-      if (testShiftStSel(imod)) retval|=(1<<(ibit));
-      ibit++;
-      //if ( testDataInOut(0x123456, imod)) retval|=(1<<(ibit++));
-      //if ( testExtPulse(imod)) retval|=(1<<(ibit++));
-      //  for (ow=0; ow<6; ow++)
-      // ow=1;
-      //#ifndef PICASSOD
-      for (ow=0; ow<5; ow++) {
-	//#endif
-	if (testDataInOutMux(imod, ow, 0x789abc)) retval|=(1<<ibit);
-	ibit++;
-      }
-      //for (ow=0; ow<6; ow++)
-	// ow=1;
-      //#ifndef PICASSOD
-      for (ow=0; ow<5; ow++) {
-	//#endif
-	if (testExtPulseMux(imod, ow)) retval|=(1<<ibit);
-	ibit++;
-      }
-      //#ifndef PICASSOD
-      if ( testOutMux(imod)) retval|=(1<<(ibit));
-      ibit++;
-      if (testFpgaMux(imod)) retval|=(1<<(ibit));
-      ibit++;
-      //#endif
-     
-#endif 
+
     break;
   case MODULE_FIRMWARE_TEST:
     retval=0x2;
@@ -1062,7 +978,7 @@ int set_dac(int file_des) {
 		      break;
 
 		    case HV_NEW:
-		      retval=initHighVoltageByModule(val,imod);
+		      retval=initHighVoltage(val,imod);//ByModule
 		      break;
 		      
 		    case V_POWER_A:
@@ -1153,6 +1069,7 @@ int get_adc(int file_des) {
 	int imod;
 	int n;
 	int idac=0;
+	int ipwr=-1;
 
 	sprintf(mess,"Can't read ADC\n");
 
@@ -1172,7 +1089,7 @@ int get_adc(int file_des) {
 	if (imod>=getNModBoard() || imod<0)
 		ret=FAIL;
 
-#ifdef MCB_FUNCS
+	//#ifdef MCB_FUNCS
 	switch (ind) {
 	case TEMPERATURE_FPGA:
 		idac=TEMP_FPGA;
@@ -1180,16 +1097,51 @@ int get_adc(int file_des) {
 	case TEMPERATURE_ADC:
 		idac=TEMP_ADC;
 		break;
+
+	case V_POWER_D:
+	  idac++;
+	case V_POWER_C:
+	  idac++;
+	case V_POWER_B:
+	  idac++;
+	case V_POWER_A:
+	  idac++;
+	case V_POWER_IO:
+	  idac+=100;
+	  break;
+
+	case I_POWER_D:
+	  idac++;
+	case I_POWER_C:
+	  idac++;
+	case I_POWER_B:
+	  idac++;
+	case I_POWER_A:
+	  idac++;
+	case I_POWER_IO:
+	  idac+=200;
+	  break;
+	  
 	default:
-	  printf("Unknown DAC index %d\n",ind);
+	  //  printf("Unknown DAC index %d\n",ind);
 	  sprintf(mess,"Unknown DAC index %d\n",ind);
 	  ret=FAIL;
 	  break;
 	}
+	printf("DAC index %d (%d)\n",idac,ind);
 
-	if (ret==OK)
-	  retval=getTemperatureByModule(idac,imod);
-	else {
+	if (ret==OK) {
+
+
+	  if (idac>=200)
+	    retval=getCurrent(idac-200);
+	  else if (idac>=100)
+	    retval=getVoltage(idac-100);
+	  else
+	    retval=getTemperature(idac);
+
+
+	}else if (ind>=1000) {
 	  retval=readSlowADC(ind-1000);
 	  if (retval>=0) {
 	    ret=OK;
@@ -1198,7 +1150,7 @@ int get_adc(int file_des) {
 	}
 	  
 
-#endif
+	//#endif
 
 #ifdef VERBOSE
 	printf("ADC is %d V\n",  retval);
@@ -1263,9 +1215,7 @@ int set_channel(int file_des) {
       ret=FAIL;
       sprintf(mess,"Detector locked by %s\n",lastClientIP);  
     } else {
-#ifdef MCB_FUNCS
-    retval=initChannelbyNumber(myChan);
-#endif
+
     }
   }
   /* Maybe this is done inside the initialization funcs */
@@ -1338,9 +1288,6 @@ int get_channel(int file_des) {
 
 
   if (ret==OK) {
-#ifdef MCB_FUNCS
-      ret=getChannelbyNumber(&retval);
-#endif
     if (differentClients && ret==OK)
       ret=FORCE_UPDATE;
   } 
@@ -1410,9 +1357,7 @@ int set_chip(int file_des) {
       ret=FAIL;
       sprintf(mess,"Detector locked by %s\n",lastClientIP);  
     } else {
-#ifdef MCB_FUNCS
-  retval=initChipbyNumber(myChip);
-#endif
+      ;
     }
   /* Maybe this is done inside the initialization funcs */
   //copyChip(detectorChips[myChip.module]+(myChip.chip), &myChip);
@@ -1467,9 +1412,6 @@ int get_chip(int file_des) {
 
  
   if (ret==OK) {
-#ifdef MCB_FUNCS
-    ret=getChipbyNumber(&retval);
-#endif
     if (differentClients && ret==OK)
       ret=FORCE_UPDATE;
   } 
@@ -1584,11 +1526,6 @@ int set_module(int file_des) {
       ret=FAIL;
       sprintf(mess,"Detector locked by %s\n",lastClientIP);  
     } else {
-#ifdef MCB_FUNCS
-    retval=initModulebyNumber(myModule);
-    if(retval != myModule.reg)
-    	ret = FAIL;
-#endif
     }
   }
 
@@ -1694,9 +1631,6 @@ int get_module(int file_des) {
    if (imod>=0 && imod<getNModBoard()) {
      ret=OK;
      myModule.module=imod;
-#ifdef MCB_FUNCS
-     getModulebyNumber(&myModule);
-#endif
 
 #ifdef VERBOSE
      printf("Returning module %d of register %x\n",  imod, myModule.reg);
@@ -1803,9 +1737,9 @@ int set_settings(int file_des) {
     ret=FAIL;
     sprintf(mess,"Detector locked by %s\n",lastClientIP);  
   } else {
-#ifdef MCB_FUNCS
-    retval=setSettings(arg[0],imod);
-#endif
+/* #ifdef MCB_FUNCS */
+/*     retval=setSettings(arg[0],imod); */
+/* #endif */
 #ifdef VERBOSE
     printf("Settings changed to %d\n",retval);
 #endif  
@@ -1948,36 +1882,7 @@ int get_run_status(int file_des) {
 
   retval= runState();
   printf("\n\nSTATUS=%08x\n",retval);
-  if(myDetectorType == JUNGFRAU){
-    printf("Detector type jungfrau? %d\n",myDetectorType);
-    if(!(retval&RUN_BUSY_BIT)){
-      
-      if((retval&READMACHINE_BUSY_BIT)  ){
-	printf("-----------------------------------JF READ MACHINE BUSY--------------------------\n");
-	s=TRANSMITTING;
-      }
-      //and readbusy=0,idle
-      else if((!(retval&0xffff))||(retval==SOME_FIFO_FULL_BIT)){
-	printf("-----------------------------------JF IDLE--------------------------------------\n");
-	s=IDLE;
-      } else {
-		  printf("-----------------------------------JF Unknown status %08x--------------------------------------\n", retval);
-		  s=ERROR;
-		  ret=FAIL;
-      }
-    }
-    //if runbusy=1
-    else {
-      if (retval&WAITING_FOR_TRIGGER_BIT){
-	printf("-----------------------------------JF WAITING-----------------------------------\n");
-	s=WAITING;
-      }
-      else{
-	printf("-----------------------------------JF RUNNING-----------------------------------\n");
-	s=RUNNING;
-      }
-    }
-  } else {
+  
     //error
     if(retval&SOME_FIFO_FULL_BIT){
       printf("-----------------------------------ERROR--------------------------------------x%0x\n",retval);
@@ -2011,7 +1916,6 @@ int get_run_status(int file_des) {
 	s=RUNNING;
       }
     }
-  }
   if (ret!=OK) {
     printf("get status failed %04x\n",retval);
     sprintf(mess, "get status failed %08x\n", retval);
@@ -2053,13 +1957,13 @@ int read_frame(int file_des) {
     nframes++;
     dataretval=(char*)ram_values;
     dataret=OK;
-    //#ifdef VERBOSE
+    #ifdef VERBOSE
       printf("sending data of %d frames\n",nframes);
-      //#endif
+     #endif
 	sendDataOnly(file_des,&dataret,sizeof(dataret));
-	//#ifdef VERYVERBOSE
+	#ifdef VERYVERBOSE
 	  printf("sending pointer %x of size %d\n",(unsigned int)(dataretval),dataBytes);
-	  //#endif
+	 #endif
 	  n=sendDataOnly(file_des,dataretval,dataBytes);
 	  printf("Sent %d bytes\n",n);
   } else  {
@@ -2523,6 +2427,13 @@ int set_speed(int file_des) {
 
 	case CLOCK_DIVIDER:
 	  retval=configureFrequency(val,run_clk_c);//setClockDivider(val,0);
+	  if (configureFrequency(-1,sync_clk_c)>retval) {
+	    configureFrequency(retval,sync_clk_c);
+	    printf("--Configuring sync clk to %d MHz\n",val);
+	  } else if (configureFrequency(-1,dbit_clk_c)>val && configureFrequency(-1,adc_clk_c)>retval) {
+	    printf("++Configuring sync clk to %d MHz\n",val);
+	    configureFrequency(retval,sync_clk_c);
+	  }
 	  break;
 
 /* 	case PHASE_SHIFT: */
@@ -2535,11 +2446,25 @@ int set_speed(int file_des) {
 
 	case ADC_CLOCK:
 	  retval=configureFrequency(val,adc_clk_c);//setClockDivider(val,1);
-	  configureFrequency(val,sync_clk_c);
+	  if (configureFrequency(-1,sync_clk_c)>val) {
+	    configureFrequency(retval,sync_clk_c);
+	    printf("--Configuring sync clk to %d MHz\n",val);
+	  } else if (configureFrequency(-1,dbit_clk_c)>val && configureFrequency(-1,run_clk_c)>retval) {
+	    printf("++Configuring sync clk to %d MHz\n",val);
+	    configureFrequency(retval,sync_clk_c);
+	  }
 	  break;
 
 	case DBIT_CLOCK:
 	  retval=configureFrequency(val,dbit_clk_c);//setClockDivider(val,2);
+	  if (configureFrequency(-1,sync_clk_c)>retval){
+	    configureFrequency(retval,sync_clk_c);
+	    printf("--Configuring sync clk to %d MHz\n",val);
+	  } else if (configureFrequency(-1,adc_clk_c)>retval && configureFrequency(-1,run_clk_c)>retval) {
+	    printf("++Configuring sync clk to %d MHz\n",val);
+	    configureFrequency(retval,sync_clk_c);
+	  }
+	    
 	  break;
 
 
@@ -2760,7 +2685,7 @@ int send_update(int file_des) {
   n = sendDataOnly(file_des,&nModY,sizeof(nModY));
   n = sendDataOnly(file_des,&dynamicRange,sizeof(dynamicRange));
   n = sendDataOnly(file_des,&dataBytes,sizeof(dataBytes));
-  t=setSettings(GET_SETTINGS,-1);
+  t=GET_SETTINGS;//setSettings(GET_SETTINGS,-1);
   n = sendDataOnly(file_des,&t,sizeof(t));
 /*  thr=getThresholdEnergy();
   n = sendDataOnly(file_des,&thr,sizeof(thr));*/
@@ -2859,7 +2784,7 @@ int configure_mac(int file_des) {
 	//#ifdef VERBOSE
 	printf("Configuring MAC of module %d at port %x\n", imod, udpport);
 	//#endif
-#ifdef MCB_FUNCS
+	//#ifdef MCB_FUNCS
 	if (ret==OK){
 		if(runBusy()){
 			ret=stopStateMachine();
@@ -2871,7 +2796,7 @@ int configure_mac(int file_des) {
 			configureMAC(ipad,imacadd,idetectormacadd,detipad,digitalTestBit,udpport);
 		retval=getAdcConfigured();
 	}
-#endif
+	//#endif
 	if (ret==FAIL)
 		printf("configuring MAC of mod %d failed\n", imod);
 	else
@@ -3196,7 +3121,7 @@ int stop_receiver(int file_des) {
 	strcpy(mess,"Could not stop receiver\n");
 
 	/* execute action if the arguments correctly arrived*/
-#ifdef MCB_FUNCS
+	//#ifdef MCB_FUNCS
 	if (lockStatus==1 && differentClients==1){//necessary???
 		sprintf(mess,"Detector locked by %s\n", lastClientIP);
 		ret=FAIL;
@@ -3204,7 +3129,7 @@ int stop_receiver(int file_des) {
 	else
 		ret=startReceiver(0);
 
-#endif
+	//#endif
 
 
 	if(ret==OK && differentClients){
@@ -3536,3 +3461,160 @@ int power_chip(int file_des) {
 
 	return ret;
 }
+
+
+int reset_fpga(int file_des) {
+	int ret=OK;
+	int n;
+	sprintf(mess,"Reset FPGA unsuccessful\n");
+
+	resetFPGA();
+	initializeDetector();
+
+	ret = FORCE_UPDATE;
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret==FAIL)
+		n += sendDataOnly(file_des,mess,sizeof(mess));
+
+	/*return ok/fail*/
+	return ret;
+}
+
+
+int program_fpga(int file_des) {
+	int ret=OK;
+	int n;
+	sprintf(mess,"Program FPGA unsuccessful\n");
+	char* fpgasrc = NULL;
+	FILE* fp = NULL;
+	size_t filesize = 0;
+	size_t unitprogramsize = 0;
+	size_t totalsize = 0;
+
+
+	//filesize
+	n = receiveDataOnly(file_des,&filesize,sizeof(filesize));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+	totalsize = filesize;
+#ifdef VERY_VERBOSE
+	printf("\n\n Total size is:%d\n",totalsize);
+#endif
+
+	//lock
+	if (ret==OK && differentClients==1 && lockStatus==1) {
+		ret=FAIL;
+		sprintf(mess,"Detector locked by %s\n",lastClientIP);
+		filesize = 0;
+	}
+
+	//opening file pointer to flash and telling FPGA to not touch flash
+	if(ret == OK && startWritingFPGAprogram(&fp) != OK){
+		sprintf(mess,"Could not write to flash. Error at startup.\n");
+		cprintf(RED,"%s",mess);
+		ret=FAIL;
+		filesize = 0;
+	}
+
+	//---------------- first ret ----------------
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret==FAIL)
+		n += sendDataOnly(file_des,mess,sizeof(mess));
+	//---------------- first ret ----------------
+
+
+	//erasing flash
+	if(ret != FAIL){
+		eraseFlash();
+		fpgasrc = (char*)malloc(MAX_FPGAPROGRAMSIZE);
+	}
+
+
+
+	//writing to flash part by part
+	while(ret != FAIL && filesize){
+
+		unitprogramsize = MAX_FPGAPROGRAMSIZE;  //2mb
+		if(unitprogramsize > filesize) //less than 2mb
+			unitprogramsize = filesize;
+#ifdef VERY_VERBOSE
+		printf("unit size to receive is:%d\n",unitprogramsize);
+		printf("filesize:%d currentpointer:%d\n",filesize,currentPointer);
+#endif
+
+
+		//receive
+		n = receiveDataOnly(file_des,fpgasrc,unitprogramsize);
+		if (n < 0) {
+			sprintf(mess,"Error reading from socket\n");
+			ret=FAIL;
+		}
+
+
+		if (ret==OK) {
+			if(!(unitprogramsize - filesize)){
+				fpgasrc[unitprogramsize]='\0';
+				filesize-=unitprogramsize;
+				unitprogramsize++;
+			}else
+				filesize-=unitprogramsize;
+
+			ret = writeFPGAProgram(fpgasrc,unitprogramsize,fp);
+		}
+
+
+		//---------------- middle rets ----------------
+		n = sendDataOnly(file_des,&ret,sizeof(ret));
+		if (ret==FAIL) {
+			n += sendDataOnly(file_des,mess,sizeof(mess));
+			cprintf(RED,"Failure: Breaking out of program receiving\n");
+		}
+		//---------------- middle rets ----------------
+
+
+		if(ret != FAIL){
+			//print progress
+			printf("Writing to Flash:%d%%\r",(int) (((double)(totalsize-filesize)/totalsize)*100) );
+			fflush(stdout);
+		}
+
+	}
+
+
+
+	printf("\n");
+
+	//closing file pointer to flash and informing FPGA
+	if(stopWritingFPGAprogram(fp) == FAIL){
+		sprintf(mess,"Could not write to flash. Error at end.\n");
+		cprintf(RED,"%s",mess);
+		ret=FAIL;
+	}
+
+	if(ret!=FAIL){
+		ret=FORCE_UPDATE;
+	}
+
+
+	//---------------- last ret ----------------
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret==FAIL)
+		n += sendDataOnly(file_des,mess,sizeof(mess));
+	//---------------- last ret ----------------
+
+
+	//free resources
+	if(fpgasrc != NULL)
+		free(fpgasrc);
+	if(fp!=NULL)
+		fclose(fp);
+#ifdef VERY_VERBOSE
+	printf("Done with program receiving command\n");
+#endif
+	/*return ok/fail*/
+	return ret;
+}
+
+

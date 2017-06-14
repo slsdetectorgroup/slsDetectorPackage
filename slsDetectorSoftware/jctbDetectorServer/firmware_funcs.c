@@ -6,6 +6,7 @@
 #include "server_defs.h"
 #include "firmware_funcs.h"
 #include "mcb_funcs.h"
+#include "slow_adc.h"
 #include "registers_m.h"
 
 //#define VERBOSE
@@ -47,6 +48,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "blackfin.h"
 typedef struct ip_header_struct {
   u_int16_t     ip_len;
   u_int8_t      ip_tos;
@@ -63,9 +65,6 @@ typedef struct ip_header_struct {
 
 struct timeval tss,tse,tsss; //for timing
 
-
-//for memory mapping
-u_int32_t CSP0BASE;
 
 
 FILE *debugfp, *datafp;
@@ -89,7 +88,7 @@ int adcConfigured=-1;
 u_int16_t *ram_values=NULL;
 char volatile *now_ptr=NULL;
 //u_int32_t volatile  *values;
-u_int16_t volatile  *values;
+extern u_int16_t volatile  *values;
 int ram_size=0;
 
 int64_t totalTime=1;
@@ -139,92 +138,95 @@ int digitalEnable=0;
 
 int vLimit=-100;
 
+int nDacs;
+int nAdcs;
 
+char mtdvalue[10];
 
+int initDetector() {
 
-int mapCSP0(void) {
-  printf("Mapping memory\n");
-#ifndef VIRTUAL
-  int fd;
-  fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
-  if (fd == -1) {
-    printf("\nCan't find /dev/mem!\n");
-       return FAIL;
-  }
-  printf("/dev/mem opened\n");
+  int imod;
+  //  sls_detector_module *myModule;
+  int n=getNModBoard();
+  nModX=n;
 
-  CSP0BASE = (u_int32_t)mmap(0, MEM_SIZE, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, CSP0);
-  if (CSP0BASE == (u_int32_t)MAP_FAILED) {
-    printf("\nCan't map memmory area!!\n");
-    return FAIL;
-  }
-  printf("CSP0 mapped\n");
-
+#ifdef VERBOSE
+  printf("Board is for %d modules\n",n);
 #endif
-#ifdef VIRTUAL
-  CSP0BASE = malloc(MEM_SIZE);
-  printf("memory allocated\n");
-#endif
-#ifdef SHAREDMEMORY 
-  if ( (res=inism(SMSV))<0) {
-    printf("error attaching shared memory! %i",res);
-    return FAIL;
-  }
-#endif
-  printf("CSPObase is 0x%08x \n",CSP0BASE);
-  printf("CSPOBASE=from %08x to %08x\n",CSP0BASE,CSP0BASE+MEM_SIZE);
 
-  u_int32_t address;
-  address = FIFO_DATA_REG;//_OFF;
-  //values=(u_int32_t*)(CSP0BASE+address*2);
-  values=(u_int16_t*)(CSP0BASE+address*2);
-  printf("statusreg=%08x\n",bus_r(STATUS_REG));
-  printf("\n\n");
+  
+  //  nChans=N_CHAN;
+  //	  nChips=N_CHIP;
+  nDacs=N_DAC;
+  //  nAdcs=N_ADC;
+
+/*   detectorModules=malloc(n*sizeof(sls_detector_module)); */
+/*   detectorDacs=malloc(n*N_DAC*sizeof(int)); */
+/*   detectorAdcs=malloc(n*N_ADC*sizeof(int)); */
+/*   detectorChips=NULL; */
+/*   detectorChans=NULL; */
+/*   detectorAdcs=NULL; */
+/*   if(myDetectorType != JUNGFRAU){ */
+/*     detectorChips=malloc(n*N_CHIP*sizeof(int)); */
+/*     detectorChans=malloc(n*N_CHIP*N_CHAN*sizeof(int)); */
+/*   } */
+
+/* #ifdef VERBOSE */
+/*   printf("modules from 0x%x to 0x%x\n",(unsigned int)(detectorModules), (unsigned int)(detectorModules+n)); */
+/*   printf("dacs from 0x%x to 0x%x\n",(unsigned int)(detectorDacs), (unsigned int)(detectorDacs+n*N_DAC)); */
+/*   printf("adcs from 0x%x to 0x%x\n",(unsigned int)(detectorAdcs), (unsigned int)(detectorAdcs+n*N_ADC)); */
+/*   if(myDetectorType != JUNGFRAU){ */
+/* 	  printf("chips from 0x%x to 0x%x\n",(unsigned int)(detectorChips), (unsigned int)(detectorChips+n*N_CHIP)); */
+/* 	  printf("chans from 0x%x to 0x%x\n",(unsigned int)(detectorChans), (unsigned int)(detectorChans+n*N_CHIP*N_CHAN)); */
+/*   } */
+/* #endif */
+
+
+/*   for (imod=0; imod<n; imod++) { */
+/*     (detectorModules+imod)->dacs=detectorDacs+imod*N_DAC; */
+/*     (detectorModules+imod)->adcs=detectorAdcs+imod*N_ADC; */
+/*     if(myDetectorType != JUNGFRAU){ */
+/*     	(detectorModules+imod)->chipregs=detectorChips+imod*N_CHIP; */
+/*     	(detectorModules+imod)->chanregs=detectorChans+imod*N_CHIP*N_CHAN; */
+/*     } */
+/*     (detectorModules+imod)->ndac=N_DAC; */
+/*     (detectorModules+imod)->nadc=N_ADC; */
+/*     (detectorModules+imod)->nchip=N_CHIP; */
+/*     (detectorModules+imod)->nchan=N_CHIP*N_CHAN; */
+/*     (detectorModules+imod)->module=imod; */
+/*     (detectorModules+imod)->gain=0; */
+/*     (detectorModules+imod)->offset=0; */
+/*     (detectorModules+imod)->reg=0; */
+/*     /\* initialize registers, dacs, retrieve sn, adc values etc *\/ */
+/*   } */
+/*   thisSettings=UNINITIALIZED; */
+/*   sChan=noneSelected; */
+/*   sChip=noneSelected; */
+/*   sMod=noneSelected; */
+/*   sDac=noneSelected; */
+/*   sAdc=noneSelected; */
+  
+/*   /\* */
+/*   setCSregister(ALLMOD); //commented out by dhanya */
+/*   setSSregister(ALLMOD); */
+/*   counterClear(ALLMOD); */
+/*   clearSSregister(ALLMOD);  */
+/*   putout("0000000000000000",ALLMOD); */
+/*   *\/ */
+
+/*   /\* initialize dynamic range etc. *\/ */
+/*   /\* dynamicRange=getDynamicRange(); //always 16 not required commented out */
+/*      nModX=setNMod(-1);*\/ */
+
+/*   // dynamicRange=32; */
+/*   // initChip(0, 0,ALLMOD); */
+/*   //nModX=n;  */
+/*   // */
+  allocateRAM();
+
   return OK;
 }
 
-u_int16_t bus_r16(u_int32_t offset){
-  volatile u_int16_t *ptr1;
-  ptr1=(u_int16_t*)(CSP0BASE+offset*2);
-  return *ptr1;
-}
-
-u_int16_t bus_w16(u_int32_t offset, u_int16_t data) {
-  volatile u_int16_t  *ptr1;
-  ptr1=(u_int16_t*)(CSP0BASE+offset*2);
-  *ptr1=data;
-  return OK;
-}
-
-/** ramType is DARK_IMAGE_REG or GAIN_IMAGE_REG */
-u_int16_t ram_w16(u_int32_t ramType, int adc, int adcCh, int Ch, u_int16_t data) { 
-  unsigned int adr = (ramType | adc << 8 | adcCh << 5 | Ch );
-  // printf("Writing to addr:%x\n",adr);
-  return bus_w16(adr,data);
-}
-
-/** ramType is DARK_IMAGE_REG or GAIN_IMAGE_REG */
-u_int16_t ram_r16(u_int32_t ramType, int adc, int adcCh, int Ch){
-  unsigned int adr = (ramType | adc << 8 | adcCh << 5 | Ch );
-  //  printf("Reading from addr:%x\n",adr);
-  return bus_r16(adr);
-}
-
-u_int32_t bus_w(u_int32_t offset, u_int32_t data) {
- volatile  u_int32_t  *ptr1;
-
-  ptr1=(u_int32_t*)(CSP0BASE+offset*2);
-  *ptr1=data;
-
-  return OK;
-}
-
-
-u_int32_t bus_r(u_int32_t offset) {
-  volatile u_int32_t  *ptr1;
-  ptr1=(u_int32_t*)(CSP0BASE+offset*2);
-  return *ptr1;
-}
 
 
 
@@ -470,16 +472,24 @@ int configureFrequency(int val, int i) {
 
   u_int32_t tot;
   u_int32_t odd=1;//0;
-
+  printf("Want to configure frequency of counter %d to %d\n",i,val);
   //   printf("PLL reconfig reset\N");   bus_w(PLL_CNTRL_REG,(1<<PLL_CNTR_RECONFIG_RESET_BIT));  usleep(100);  bus_w(PLL_CNTRL_REG, 0);
-  if (i<0 || i>3)
+  if (i<0 || i>3) {
+    printf("wrong counter number %d\n",i);
     return -1;
+  }
   
-  if (val<=0) 
+  if (val<=0) {
+   
+    printf("get value %d %d \n",i,clkDivider[i]);
     return clkDivider[i];
-
-  if (i==1 || i==2){
-    if (val>40) printf("Too high frequency %d MHz for these ADCs!\n", val);
+  }
+  if (i==adc_clk_c){
+    if (val>40) 
+      {
+	printf("Too high frequency %d MHz for these ADCs!\n", val);
+	return clkDivider[i];
+      }
   }
   
   tot= PLL_VCO_FREQ_MHZ/val;
@@ -489,10 +499,10 @@ int configureFrequency(int val, int i) {
     h=l+1;
     odd=1;
   } 
-	else
-	{
-		odd=0;
-	}
+  else
+    {
+      odd=0;
+    }
   
   printf("Counter %d: Low is %d, High is %d\n",i, l,h);
   
@@ -518,7 +528,11 @@ int configureFrequency(int val, int i) {
   bus_w(PLL_CNTRL_REG,((1<<PLL_CNTR_PLL_RESET_BIT))); //reset PLL
   usleep(100);
   bus_w(PLL_CNTRL_REG, 0);
-    
+
+  clkDivider[i]=PLL_VCO_FREQ_MHZ/(l+h);
+
+  printf("Frequency of clock %d is %d\n", i, clkDivider[i]);
+
   return clkDivider[i];   
 }
 
@@ -1141,7 +1155,7 @@ u_int32_t  getFirmwareVersion() {
 }
 
 u_int32_t  getFirmwareSVNVersion(){
-  return bus_r(FPGA_SVN_REG);
+  return bus_r(FPGA_VERSION_REG);//(FPGA_SVN_REG);
 }
 
 
@@ -1261,36 +1275,6 @@ int testFifos(void) {
 }
 
 
-
-// program dacq settings 
-
-int64_t set64BitReg(int64_t value, int aLSB, int aMSB){
-  int64_t v64;
-  u_int32_t vLSB,vMSB;
-  if (value!=-1) {
-    vLSB=value&(0xffffffff);
-    bus_w(aLSB,vLSB);
-    v64=value>> 32;
-    vMSB=v64&(0xffffffff);
-    bus_w(aMSB,vMSB);
-    //   printf("Wreg64(%x,%x) %08x %08x %016llx\n", aLSB>>11, aMSB>>11, vLSB, vMSB, value);
-  }
-  return get64BitReg(aLSB, aMSB);
-
-}
-
-int64_t get64BitReg(int aLSB, int aMSB){
-  int64_t v64;
-  u_int32_t vLSB,vMSB;
-  vLSB=bus_r(aLSB);
-  vMSB=bus_r(aMSB);
-  v64=vMSB;
-  v64=(v64<<32) | vLSB;
-
-  // printf("reg64(%x,%x) %x %x %llx\n", aLSB, aMSB, vLSB, vMSB, v64);
-
-  return v64;
-}
 
 int64_t setFrames(int64_t value){
   return set64BitReg(value,  SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
@@ -1599,11 +1583,11 @@ int setDACRegister(int idac, int val, int imod) {
 /* #endif */
 /*    return val; */
 }
+ 
 
-
-int getTemperature(int tempSensor, int imod){
+int getTemperature(int tempSensor){
   int val;
-  imod=0;//ignoring more than 1 mod for now
+  int imod=0;//ignoring more than 1 mod for now
   int i,j,repeats=6;
   u_int32_t tempVal=0;
 #ifdef VERBOSE
@@ -1643,13 +1627,21 @@ int initHighVoltage(int val, int imod){
 
    
   u_int32_t offw,codata;
-  u_int16_t valw, dacvalue;
+  u_int16_t valw, dacvalue=-1;
   int i,ddx,csdx,cdx;//iru,
   float alpha=0.55;//, fval=val;
+  
+  offw=DAC_REG;
 
-   if (val!=-1) {
-   
-     if (val<60) {
+  if (val!=-1) {
+     if (val<0) {
+       printf("val is %d: should switch the relais!\n", val);
+       val=-100;
+       dacvalue=0;
+     }  else if (val==0) {
+       dacvalue=0;
+       val=0;
+     } else if (val<60) {
        dacvalue=0;
        val=60;
      } else if (val>=200) {
@@ -1661,9 +1653,8 @@ int initHighVoltage(int val, int imod){
      }
      printf ("****************************** setting val %d, dacval %d\n",val, dacvalue);
 
-     if (val>=0) {
+     // if (dacvalue>=0) {
 
-       offw=DAC_REG;
      
        ddx=8; csdx=10; cdx=9;
        codata=((dacvalue)&0xff);
@@ -1681,24 +1672,24 @@ int initHighVoltage(int val, int imod){
        
        valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
        
-       
-       valw=0xff00|bus_r(offw); //switch on HV 
+       if (dacvalue>=0) {
+	 valw=bus_r(offw)|0xff00;; //switch on HV
+       } else {
+	 valw=bus_r(offw)&0x7fff;//switch off HV
+       }
+
+
        bus_w(offw,(valw)); // stop point =start point of course */
-       
        printf("Writing %d in HVDAC  \n",dacvalue);
        
        bus_w(HV_REG,val);
        
-     } else {
-       valw=bus_r(offw)&0x7fff;
-       bus_w(offw,(valw));
-       bus_w(HV_REG,0);
-     }
-   } 
+	 // } 
+  }
 
 
 
-  return bus_r(HV_REG);
+  return (int16_t)bus_r(HV_REG);
 
 
 
@@ -1709,18 +1700,18 @@ int initHighVoltage(int val, int imod){
 
 int initConfGain(int isettings,int val,int imod){
   int retval;
-  u_int32_t addr=CONFGAIN_REG;
+/*   u_int32_t addr=CONFGAIN_REG; */
 
-  if(isettings!=-1){
-#ifdef VERBOSE
-    printf("Setting Gain of module:%d with val:%d\n",imod,val);
-#endif
-    bus_w(addr,val);
-  }
-  retval=(bus_r(addr));
-#ifdef VERBOSE
-  printf("Value read from Gain reg is %d\n",retval);
-#endif 
+/*   if(isettings!=-1){ */
+/* #ifdef VERBOSE */
+/*     printf("Setting Gain of module:%d with val:%d\n",imod,val); */
+/* #endif */
+/*     bus_w(addr,val); */
+/*   } */
+/*   retval=(bus_r(addr)); */
+/* #ifdef VERBOSE */
+/*   printf("Value read from Gain reg is %d\n",retval); */
+/* #endif  */
     return retval;
 }
 
@@ -2163,7 +2154,7 @@ u_int16_t* fifo_read_event(int ns)
 	if (i!=0 || ns!=0) { 
 	  a=0;
 	      while (*((u_int16_t*)now_ptr)==*((u_int16_t*)(now_ptr)-1) && a++<10) {
-	    	*((u_int16_t*)now_ptr)=*values;
+	    	*((u_int16_t*)now_ptr)=*values;				
 	      }
 	    }
 	now_ptr+=2;
@@ -2174,13 +2165,13 @@ u_int16_t* fifo_read_event(int ns)
     }
   }
   if (digitalEnable) {
-    // printf("+");
+     printf("+");
     
      bus_w16(DUMMY_REG,1<<9); // read strobe to digital fifo
      bus_w16(DUMMY_REG,0<<9); // read strobe to digital fifo
      *((u_int64_t*)now_ptr)=get64BitReg(FIFO_DIGITAL_DATA_LSB_REG,FIFO_DIGITAL_DATA_MSB_REG);
      //bit17 is clkout 
-     printf("%d",(*((u_int64_t*)now_ptr)>>17)&1);
+     // printf("%d",(*((u_int64_t*)now_ptr)>>17)&1);
      now_ptr+=8;
      
   } 
@@ -2412,16 +2403,17 @@ int allocateRAM() {
 #ifdef VERBOSE
   printf("\nnmodx=%d nmody=%d dynamicRange=%d dataBytes=%d nFrames=%d nTrains=%d, size=%d\n",nModX,nModY,dynamicRange,dataBytes,nf,nt,(int)size );
 #endif
+  if (size<=0) return FAIL;
 
-    if (size==ram_size) {
+  if (size==ram_size) {
 
       //#ifdef VERBOSE
-      printf("RAM of size %d already allocated: nothing to be done\n",(int) size);
+    printf("RAM of size %d already allocated: nothing to be done\n",(int) size);
       //#endif
-      return OK;
-    }
+    return OK;
+  }
 
-
+  
 
     //#ifdef VERBOSE
       printf("reallocating ram %x, size %d\n",(unsigned int)ram_values, (int)size);
@@ -2505,243 +2497,6 @@ int writeADC(int addr, int val) {
    return OK;
 }
 
-int prepareSlowADCSeq() {
-
-  //  u_int16_t vv=0x3c40;
-  u_int16_t codata=( 1<<13) | (7<<10)  | (7<<7) | (1<<6) | (0<<3) | (2<<1) | 1;
-
-  u_int32_t valw;              
-  int  obit, ibit;
-
-  int cnv_bit=16, sdi_bit=17, sck_bit=18;
-  
-
-  // int oval=0;
-
-
-  printf("Codata is %04x\n",codata);
-  
-   /* //convert */
-  valw=(1<<cnv_bit); 
-  bus_w(ADC_WRITE_REG,valw); 
-  
-  usleep(20);
-  
-  valw=0; 
-  bus_w(ADC_WRITE_REG,(valw)); 
-  
-  usleep(20);
-    
-  for (ibit=0; ibit<14; ibit++) {
-    obit=((codata >> (13-ibit)) & 1);
-    //   printf("%d",obit);
-    valw = obit << sdi_bit;
-    
-    bus_w(ADC_WRITE_REG,valw);
-    
-    usleep(20);
-    
-    bus_w(ADC_WRITE_REG,valw|(1<<sck_bit));
-    
-    usleep(20);
-    
-    bus_w(ADC_WRITE_REG,valw);
-
-  }
-  //   printf("\n");
-  
-
-
-  bus_w(ADC_WRITE_REG,0);
-
-   /* //convert */
-  valw=(1<<cnv_bit); 
-  bus_w(ADC_WRITE_REG,valw); 
-  
-  usleep(20);
-  
-  valw=0; 
-  bus_w(ADC_WRITE_REG,(valw)); 
-  
-  usleep(20);
-  return 0;
-
-}
-
-int prepareSlowADC(int ichan) {
-
-  // u_int16_t vv=0x3c40;
-  // u_int16_t codata=( 1<<13) | (7<<10)  | (7<<7) | (1<<6) | (0<<3) | (2<<1) | 1;
-
-    u_int16_t codata=(1<<13) | (7<<10)  | (ichan<<7) | (1<<6) | (0<<3) | (0<<1) | 1; //read single channel
-    if (ichan<0) codata=( 1<<13) | (3<<10)  | (7<7) | (1<<6) | (0<<3) | (0<<1) | 1;
-
-    u_int32_t valw;              
-  int obit, ibit;
-
-  int cnv_bit=16, sdi_bit=17, sck_bit=18;
-  
-
-  //  int oval=0;
-
-
-  printf("Codata is %04x\n",codata);
-  
-   /* //convert */
-  valw=(1<<cnv_bit); 
-  bus_w(ADC_WRITE_REG,valw); 
-  
-  usleep(20);
-  
-  valw=0; 
-  bus_w(ADC_WRITE_REG,(valw)); 
-  
-  usleep(20);
-    
-  for (ibit=0; ibit<14; ibit++) {
-    obit=((codata >> (13-ibit)) & 1);
-    //   printf("%d",obit);
-    valw = obit << sdi_bit;
-    
-    bus_w(ADC_WRITE_REG,valw);
-    
-    usleep(20);
-    
-    bus_w(ADC_WRITE_REG,valw|(1<<sck_bit));
-    
-    usleep(20);
-    
-    bus_w(ADC_WRITE_REG,valw);
-
-  }
-  //   printf("\n");
-  
-
-
-  bus_w(ADC_WRITE_REG,0);
-
-   /* //convert */
-  valw=(1<<cnv_bit); 
-  bus_w(ADC_WRITE_REG,valw); 
-  
-  usleep(20);
-  
-  valw=0; 
-  bus_w(ADC_WRITE_REG,(valw)); 
-  
-  usleep(20);
-  return 0;
-
-}
-
-
-
-
-int readSlowADC(int ichan) {
-
-
-  // u_int16_t vv=0x3c40;
-  //  u_int16_t codata=( 1<<13) | (7<<10)  | (ichan<<7) | (1<<6) | (0<<3) | (0<<1) | 1; //read single channel
-
-  u_int32_t valw;              
-  int i, obit;
-
-  int cnv_bit=16,  sck_bit=18;
-  
-
-  int oval=0;
-
-  printf("DAC index is %d\n",ichan);
-
-  if (ichan<-1 || ichan>7)
-    return -1;
-
-
-  prepareSlowADC(ichan);
-
-
-  /* printf("Codata is %04x\n",codata); */
-  
-  /*  /\* //convert *\/ */
-  /* valw=(1<<cnv_bit);  */
-  /* bus_w(ADC_WRITE_REG,valw);  */
-  
-  /* usleep(20); */
-  
-  /* valw=0;  */
-  /* bus_w(ADC_WRITE_REG,(valw));  */
-  
-  /* usleep(20); */
-    
-  /* for (ibit=0; ibit<14; ibit++) { */
-  /*   obit=((codata >> (13-ibit)) & 1); */
-  /*   //   printf("%d",obit); */
-  /*   valw = obit << sdi_bit; */
-    
-  /*   bus_w(ADC_WRITE_REG,valw); */
-    
-  /*   usleep(20); */
-    
-  /*   bus_w(ADC_WRITE_REG,valw|(1<<sck_bit)); */
-    
-  /*   usleep(20); */
-    
-  /*   bus_w(ADC_WRITE_REG,valw); */
-
-  /* } */
-  /* //   printf("\n"); */
-  
-
-
-  /* bus_w(ADC_WRITE_REG,0); */
-
-
-  
-
-
-  for (ichan=0; ichan<9; ichan++) {
- 
- 
-   /* //convert */
-    valw=(1<<cnv_bit);
-    bus_w(ADC_WRITE_REG,valw);
-    
-    usleep(20);
-    
-    valw=0;
-    bus_w(ADC_WRITE_REG,(valw));
-    
-
-    usleep(20);
-    //  printf("Channel %d ",ichan);
-    //read
-    oval=0;
-    for (i=0;i<16;i++) {
-      //cldwn
-      valw=0;
-      bus_w(ADC_WRITE_REG,valw);
-      bus_w(ADC_WRITE_REG,valw|(1<<sck_bit));
-      usleep(20);
-      bus_w(ADC_WRITE_REG,valw);
-      usleep(20);
-      
-      obit=bus_r16(SLOW_ADC_REG)&0x1;
-      //  printf("%d",obit);
-      //write data (i)
-      // usleep(0);
-      oval|=obit<<(15-i);
-      
-    }
-    printf("\t");
-    printf("Value %d  is %d\n",ichan, oval);
-    
-  }
- 
- 
-  return 2500*oval/65535;
-}
-
-
 int prepareADC(){
   printf("Preparing ADC\n");
   u_int32_t codata,csmask;
@@ -2754,23 +2509,15 @@ int prepareADC(){
 /* #define ADCREG3 			0x4   */
 /* #define ADCREG4 			0x5   */
     codata=0;    
-    writeADC(ADCREG1,0x3); 
-writeADC(ADCREG1,0x0);
-    
+    writeADC(0x08,0x3);//reset
+    writeADC(0x08,0x0);//run! 
+    writeADC(0x04,0xf);//all chans
+    writeADC(0x04,0x3f);//all chans
 
-    	writeADC(ADCREG3,0xf);
-    	writeADC(ADCREG4,0x3f);
-
-	//   writeADC(0x16,0x01);//output clock phase
-
-
-	  // writeADC(0x16,0x07);//output clock phase
-
-     //   writeADC(0x16,0x4);//output clock phase
-
-	  //  writeADC(0x18,0x0);// vref 1V
-	    
-     writeADC(ADCREG2,0x40);//lvds reduced range -- offset binary
+    writeADC(0x16,0x4);//output clock phase
+    //  writeADC(0x18,0x4);// vref 1V
+    // writeADC(0x14,0x0);
+    writeADC(0x14,0x40);//lvds reduced range -- offset binary
 
      writeADC(0xD,0x0);//no test mode
 
@@ -3135,6 +2882,8 @@ int readCounterBlock(int startACQ, short int CounterVals[]){
 
 
 
+int calibratePedestal(int frames){}
+
 
 int resetCounterBlock(int startACQ){
 	int ret = OK; 
@@ -3204,118 +2953,6 @@ int resetCounterBlock(int startACQ){
 	}
 
 
-
-int calibratePedestal(int frames){
-  printf("---------------------------\n");
-  printf("In Calibrate Pedestal\n");
-  int64_t framesBefore = getFrames();
-  int64_t periodBefore = getPeriod();
-  setFrames(frames);
-  setPeriod(1000000);
-  int dataret = OK;
-
-  double avg[1280];
-  int numberFrames = 0;
-
-  int adc = 3;
-  int adcCh = 3;
-  int Ch = 3;
- 
-
-  int i = 0;
-  for(i =0; i < 1280; i++){
-    
-    avg[i] = 0.0;
-  }
-
-  startReceiver(0);
-	
-  startStateMachine();
-
-  while(dataret==OK){
-    //got data
-    if (fifo_read_event(0)) {
-      dataret=OK;
-      //sendDataOnly(file_des,&dataret,sizeof(dataret));
-      //sendDataOnly(file_des,dataretval,dataBytes);
-      printf("received frame\n");
-	
-      unsigned short *frame = (unsigned short *)now_ptr;
-
-      int a;
-      for (a=0;a<1280; a++){
-	//unsigned short v = (frame[a] << 8) + (frame[a] >> 8);
-	//	  printf("%i: %i %i\n",a, frame[a],v);
-	avg[a] += ((double)frame[a])/(double)frames;
-	//if(frame[a] == 8191)
-	//  printf("ch %i: %u\n",a,frame[a]);
-      }
-      //      printf("********\n");
-      numberFrames++;
-    }  
-
-    //no more data or no data
-    else {
-      if(getFrames()>-2) {
-	dataret=FAIL;
-	printf("no data and run stopped: %d frames left\n",(int)(getFrames()+2));
-	     
-      } else {
-	dataret=FINISHED;
-	printf("acquisition successfully finished\n");
-
-      }
-      printf("dataret %d\n",dataret);
-    }
-  }
-
-  
-
-  //double nf = (double)numberFrames;
-  for(i =0; i < 1280; i++){
-    adc = i / 256;
-    adcCh = (i - adc * 256) / 32;
-    Ch = i - adc * 256 - adcCh * 32;
-    adc--;
-    double v2 = avg[i];
-    avg[i] = avg[i]/ ((double)numberFrames/(double)frames);
-    unsigned short v = (unsigned short)avg[i];
-    printf("setting avg for channel %i(%i,%i,%i): %i (double= %f (%f))\t", i,adc,adcCh,Ch, v,avg[i],v2);
-    v=i*100;
-    ram_w16(DARK_IMAGE_REG,adc,adcCh,Ch,v-4096);
-    if(ram_r16(DARK_IMAGE_REG,adc,adcCh,Ch) !=  v-4096){
-        printf("value is wrong (%i,%i,%i): %i \n",adc,adcCh,Ch,  ram_r16(DARK_IMAGE_REG,adc,adcCh,Ch));
-    }
-  }
-
-      /*for(adc = 1; adc < 5; adc++){
-    for(adcCh = 0; adcCh < 8; adcCh++){
-      for(Ch=0 ; Ch < 32; Ch++){
-	int channel = (adc+1) * 32 * 8  + adcCh * 32 + Ch;
-	double v2 = avg[channel];
-	avg[channel] = avg[channel]/ ((double)numberFrames/(double)frames);
-	unsigned short v = (unsigned short)avg[channel];
-	printf("setting avg for channel %i: %i (double= %f (%f))\t", channel, v,avg[channel],v2);
-	ram_w16(DARK_IMAGE_REG,adc,adcCh,Ch,v-4096);
-	if(ram_r16(DARK_IMAGE_REG,adc,adcCh,Ch) !=  v-4096){
-	  printf("value is wrong (%i,%i,%i): %i \n",adc,adcCh,Ch,  ram_r16(DARK_IMAGE_REG,adc,adcCh,Ch));
-	}
-      }
-    }
-    }*/
-
-
-
-  printf("frames: %i\n",numberFrames);	
-  printf("corrected avg by: %f\n",(double)numberFrames/(double)frames);
-  
-  printf("restoring previous condition\n");
-  setFrames(framesBefore);
-  setPeriod(periodBefore); 
-  
-  printf("---------------------------\n");
-  return 0;
-}
 uint64_t readPatternWord(int addr) {
   uint64_t word=0;
   int cntrl=0;
@@ -3586,8 +3223,8 @@ int getDacRegister(int dacnum) {
 
   
   bus_w(DAC_NUM_REG, dacnum);
-  printf("READ dac register value %d address %d\n",bus_r(DAC_VAL_OUT_REG),bus_r(DAC_NUM_REG)) ;
-  return bus_r(DAC_VAL_OUT_REG);
+  printf("READ dac register value %d address %d\n",(int16_t)bus_r(DAC_VAL_OUT_REG),bus_r(DAC_NUM_REG)) ;
+  return (int16_t)bus_r(DAC_VAL_OUT_REG);
 /* #define DAC_VAL_REG 121<<11 */
 /* #define DAC_NUM_REG 122<<11 */
 /* #define DAC_VAL_OUT_REG 42<<11 */
@@ -3755,6 +3392,136 @@ int setPower(int ind, int val) {
 
 
 }
+
+
+void defineGPIOpins(){
+	//define the gpio pins
+	system("echo 7 > /sys/class/gpio/export");
+	system("echo 9 > /sys/class/gpio/export");
+	//define their direction
+	system("echo in  > /sys/class/gpio/gpio7/direction");
+	system("echo out > /sys/class/gpio/gpio9/direction");
+}
+
+void resetFPGA(){
+	cprintf(BLUE,"\n*** Reseting FPGA ***\n");
+	FPGAdontTouchFlash();
+	FPGATouchFlash();
+	usleep(250*1000);
+}
+
+void FPGAdontTouchFlash(){
+	//tell FPGA to not touch flash
+	system("echo 0 > /sys/class/gpio/gpio9/value");
+	//usleep(100*1000);
+}
+
+void FPGATouchFlash(){
+	//tell FPGA to touch flash to program itself
+	system("echo 1 > /sys/class/gpio/gpio9/value");
+}
+
+
+int startWritingFPGAprogram(FILE** filefp){
+#ifdef VERY_VERBOSE
+	printf("\n at startWritingFPGAprogram \n");
+#endif
+
+	//getting the drive
+	char output[255];
+	FILE* fp = popen("awk \'$4== \"\\\"bitfile(spi)\\\"\" {print $1}\' /proc/mtd", "r");
+	fgets(output, sizeof(output), fp);
+	pclose(fp);
+	strcpy(mtdvalue,"/dev/");
+	char* pch = strtok(output,":");
+	if(pch == NULL){
+		cprintf(RED,"Could not get mtd value\n");
+		return FAIL;
+	}
+	strcat(mtdvalue,pch);
+	printf ("\nFlash drive found: %s\n",mtdvalue);
+
+
+	FPGAdontTouchFlash();
+
+	//writing the program to flash
+	*filefp = fopen(mtdvalue, "w");
+	if(*filefp == NULL){
+		cprintf(RED,"Unable to open %s in write mode\n",mtdvalue);
+		return FAIL;
+	}
+	printf("flash ready for writing\n");
+
+	return OK;
+}
+
+
+void eraseFlash(){
+#ifdef VERY_VERBOSE
+	printf("\n at eraseFlash \n");
+#endif
+
+	char command[255];
+	sprintf(command,"flash_eraseall %s",mtdvalue);
+	system(command);
+	printf("flash erased\n");
+}
+
+int stopWritingFPGAprogram(FILE* filefp){
+#ifdef VERY_VERBOSE
+	printf("\n at stopWritingFPGAprogram \n");
+#endif
+
+	int wait = 0;
+	if(filefp!= NULL){
+		fclose(filefp);
+		wait = 1;
+	}
+
+	//touch and program
+	FPGATouchFlash();
+
+	if(wait){
+#ifdef VERY_VERBOSE
+		printf("Waiting for FPGA to program from flash\n");
+#endif
+		//waiting for success or done
+		char output[255];
+		int res=0;
+		while(res == 0){
+		  FILE* sysFile = popen("cat /sys/class/gpio/gpio7/value", "r");
+		  fgets(output, sizeof(output), sysFile);
+		  pclose(sysFile);
+		  sscanf(output,"%d",&res);
+#ifdef VERY_VERBOSE
+		  printf("gpi07 returned %d\n",res);
+#endif
+		}
+	}
+	printf("FPGA has picked up the program from flash\n\n");
+
+
+	return OK;
+}
+
+int writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp){
+#ifdef VERY_VERBOSE
+	printf("\n at writeFPGAProgram \n");
+	cprintf(BLUE,"address of fpgasrc:%p\n",(void *)fpgasrc);
+	cprintf(BLUE,"fsize:%d\n",fsize);
+	cprintf(BLUE,"pointer:%p\n",(void*)filefp);
+#endif
+
+	if(fwrite((void*)fpgasrc , sizeof(char) , fsize , filefp )!= fsize){
+		cprintf(RED,"Could not write FPGA source to flash\n");
+		return FAIL;
+	}
+#ifdef VERY_VERBOSE
+	cprintf(BLUE,"program written to flash\n");
+#endif
+	return OK;
+}
+
 
 
 
@@ -4048,5 +3815,251 @@ int setReadOutMode(int arg) {
   allocateRAM();
   printf("dataBytes is %d\n",dataBytes);
   return v1;
+
+}
+
+
+int writePowerI2C(int val, int nbit) {
+
+  int nc=nbit/8;
+  int ic, ib, ii;
+  int ack;
+  int bsd=PWR_I2C_SDA_BIT, bsc=PWR_I2C_SCL_BIT,esd=PWR_I2C_SDA_EN_BIT, esc=PWR_I2C_SCL_EN_BIT; 
+
+  u_int16_t co;
+
+    printf("Write power I2C\n");
+  co=(1<<bsc)|(1<<bsd); bus_w16(POWER_ON_REG,co); //all high
+
+  co=(1<<bsc)|(1<<bsd)|(1<<esd)|(1<<esc); bus_w16(POWER_ON_REG,co); //all high and enabled
+
+  for(ic=0; ic<nc; ic++) {
+
+    for (ii=0; ii<8; ii++) {
+      ib=15-ic*8-ii;
+      co=co&(~(1<<bsc)); bus_w16(POWER_ON_REG,co); //clock down
+      co=(co&(~(1<<bsd)))|(((val>>ib)&1)<<bsd);bus_w16(POWER_ON_REG,co); //data
+      co=co|((1<<bsc)); bus_w16(POWER_ON_REG,co); //clock up
+      printf("%d",((val>>ib)&1));
+    }
+    printf("\n");
+    co=co&(~(1<<bsc)); bus_w16(POWER_ON_REG,co); //clock down
+    co=co&(~(1<<esd)); bus_w16(POWER_ON_REG,co); //datatristate
+    //usleep(1000000);
+    ack=bus_r16(POWER_STATUS_REG)&1;
+    printf("ack1 is %d\n",ack);
+    co=co|((1<<bsc)); bus_w16(POWER_ON_REG,co); //clock up
+    ack=bus_r16(POWER_STATUS_REG)&1;
+    printf("ack2 is %d\n",ack);
+    /* while(ack) { */
+    /*   printf("."); */
+    /*   ack=bus_r16(POWER_STATUS_REG)&1; //get ack from slave */
+    /* } */
+    co=co&(~(1<<bsc)); bus_w16(POWER_ON_REG,co); //clock down
+    ack=bus_r16(POWER_STATUS_REG)&1;
+    printf("ack3 is %d\n",ack);
+    co=co|((1<<esd)); bus_w16(POWER_ON_REG,co); //dataenable
+    
+  }
+
+  co=(1<<bsc)|(1<<bsd)|(1<<esd)|(1<<esc);  bus_w16(POWER_ON_REG,co);//all high and enabled
+
+  co=(1<<bsc)|(1<<bsd);  bus_w16(POWER_ON_REG,co);//all high
+
+  return val;
+}
+
+int readPowerI2C(int idac) {
+
+  int val=(1<<7)|(idac<<1)|1;
+  int retval=0;
+
+  int nc=2;
+  int ic, ib, ii;
+  int ack;
+  int bsd=PWR_I2C_SDA_BIT, bsc=PWR_I2C_SCL_BIT,esd=PWR_I2C_SDA_EN_BIT, esc=PWR_I2C_SCL_EN_BIT; 
+
+  u_int16_t co;
+
+  co=(1<<bsc)|(1<<bsd); bus_w16(POWER_ON_REG,co); //all high
+
+  co=(1<<bsc)|(1<<bsd)|(1<<esd)|(1<<esc); bus_w16(POWER_ON_REG,co); //all high and enabled
+
+  /** write slave address **/
+
+    printf("Read power I2C\n");
+    for (ii=0; ii<8; ii++) {
+      ib=7-ii;
+      co=co&(~(1<<bsc)); bus_w16(POWER_ON_REG,co); //clock down
+      co=(co&(~(1<<bsd)))|(((val>>ib)&1)<<bsd);bus_w16(POWER_ON_REG,co); //data
+      co=co|((1<<bsc)); bus_w16(POWER_ON_REG,co); //clock up
+      printf("%d",((val>>ib)&1));
+    }
+    printf("\n");
+    co=co&(~(1<<bsc)); bus_w16(POWER_ON_REG,co); //clock down
+    co=co&(~(1<<esd)); bus_w16(POWER_ON_REG,co); //datatristate
+    //usleep(100000);
+    // for (ii=0; ii<50; ii++) {
+
+    ack=bus_r16(POWER_STATUS_REG)&1;
+    printf("ack1 %d", ack); 
+    // }
+    printf("\n");
+    //  for (ii=0; ii<50; ii++) {
+    co=co|((1<<bsc)); bus_w16(POWER_ON_REG,co); //clock up
+    
+    ack=bus_r16(POWER_STATUS_REG)&1;
+    printf("ack2 %d", ack); 
+    
+    /* while(ack) { */
+    /*   printf("."); */
+    /*   ack=bus_r16(POWER_STATUS_REG)&1; //get ack from slave */
+    /* } */
+    co=co&(~(1<<bsc)); bus_w16(POWER_ON_REG,co); //clock down
+   
+ 
+    ack=bus_r16(POWER_STATUS_REG)&1;
+    printf("ack3 %d", ack); 
+    //  } 
+    
+    printf("\n");
+    printf("R ");
+    for(ic=0; ic<nc; ic++) {
+      for (ii=0; ii<8; ii++) {
+	ib=15-ic*8-ii;
+	
+	ack=bus_r16(POWER_STATUS_REG)&1; //get ack from slave
+	//	printf("|%x %d\n",co,ack);
+	co=co&(~(1<<bsc)); bus_w16(POWER_ON_REG,co); //clock down
+	ack=bus_r16(POWER_STATUS_REG)&1; //get ack from slave
+	//	printf("\%x %d\n",co,ack);
+	co=co|((1<<bsc)); bus_w16(POWER_ON_REG,co); //clock up
+	ack=bus_r16(POWER_STATUS_REG)&1; //get ack from slave
+	//	printf("/%x %d\n",co,ack);
+	retval+=(ack<<ib);
+	printf("%d",ack);
+      }
+      
+      printf(" ");
+      co=co&(~(1<<bsc)); bus_w16(POWER_ON_REG,co); //clock down
+      //usleep(100000);
+      co=co&(~(1<<bsd)); bus_w16(POWER_ON_REG,co); //ack from master
+      co=co|((1<<esd)); bus_w16(POWER_ON_REG,co); //dataenable
+      co=co|((1<<bsc)); bus_w16(POWER_ON_REG,co); //clock up
+      co=co&(~(1<<bsc)); bus_w16(POWER_ON_REG,co); //clock down
+      co=co&(~(1<<esd)); bus_w16(POWER_ON_REG,co); //data tristate
+     
+    }
+    
+    printf("\n");
+    co=co|((1<<bsc)); bus_w16(POWER_ON_REG,co); //clock up
+
+
+    co=(1<<bsc)|(1<<bsd);  bus_w16(POWER_ON_REG,co);//all tristated
+
+
+    printf("i2c val %d\n",retval);
+
+
+
+
+
+
+  return retval;
+}
+
+
+int getCurrent(int idac){
+  u_int16_t ptr=0xfe;//0x1; //shunt
+  u_int16_t val=(1<<15)|(idac<<9)|ptr;
+  int retval=0;
+  float vv;
+  printf("Write value is %x for shunt %d\n",val,idac);
+  writePowerI2C(val, 16);
+  vv=readPowerI2C(idac);
+  
+  retval=vv/2.;
+  
+  printf("Measured Current %d is %d mA\n",idac,retval);
+
+  return retval;
+  
+
+}
+
+
+
+int getVoltage(int idac) {
+
+  u_int16_t ptr=0x0;//0x2; //bus
+  u_int16_t val=(1<<15)|(idac<<9)|ptr;
+  int retval=0;
+  float vv;
+  printf("Write value is %x for shunt %d\n",val, idac);
+  writePowerI2C(val, 16);
+  vv=readPowerI2C(idac);
+  retval=vv*1.25;
+  printf("Measured Voltage %d is %d mV\n",idac,retval);
+  return retval;
+
+
+  //#define PWR_I2C_SDA_BIT  1
+  //#define PWR_I2C_SCL_BIT  0
+  //#define PWR_I2C_SDA_EN_BIT  3
+  //#define PWR_I2C_SCL_EN_BIT  2
+    
+  
+
+}
+
+void initializeDetector(){
+
+
+  //print version
+  printf("v: 0x%x\n",bus_r(FPGA_VERSION_REG));
+  printf("fp: 0x%x\n",bus_r(FIX_PATT_REG));
+  
+
+
+  //control server only--
+ 
+    resetPLL();
+    bus_w16(CONTROL_REG, SYNC_RESET);
+    bus_w16(CONTROL_REG, 0);
+    bus_w16(CONTROL_REG, GB10_RESET_BIT);
+    bus_w16(CONTROL_REG, 0);
+    
+    //#ifdef MCB_FUNCS
+    printf("\nBoard Revision:0x%x\n",(bus_r(PCB_REV_REG)&BOARD_REVISION_MASK));
+    // if(myDetectorType == JUNGFRAU)
+    initDetector(); /*allocating detectorModules, detectorsDacs etc for "settings", also does allocate RAM*/
+    dataBytes=NMAXMOD*N_CHIP*N_CHAN*2; /**Nchip and Nchan real values get assigned in initDetector()*/
+    printf("Initializing Detector\n");
+    //bus_w16(CONTROL_REG, SYNC_RESET); // reset registers
+    //#endif
+    if (myDetectorType==JUNGFRAUCTB) prepareSlowADCSeq();
+  
+    prepareADC();
+  
+  
+    //Initialization of acquistion parameters
+    setFrames(-1);
+    setTrains(-1);
+    setExposureTime(-1);
+    setPeriod(-1);
+    setDelay(-1);
+    setGates(-1);
+    
+    setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
+    setMaster(GET_MASTER);
+    setSynchronization(GET_SYNCHRONIZATION_MODE);
+    startReceiver(0); //firmware
+
+  int retvalsize,ret;
+  setROI(-1,NULL,&retvalsize,&ret);
+  allocateRAM();
+
+  setSamples(1);
+  bus_w(DAC_REG,0xffff);
 
 }

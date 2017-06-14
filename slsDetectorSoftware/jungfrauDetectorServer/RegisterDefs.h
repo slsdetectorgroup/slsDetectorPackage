@@ -2,8 +2,6 @@
 #define REGISTER_DEFS_H
 
 /* Definitions for FPGA*/
-#define CSP0 0x20200000
-#define MEM_SIZE 0x100000
 
 /* FPGA Version register */
 #define FPGA_VERSION_REG      			(0x00 << 11)

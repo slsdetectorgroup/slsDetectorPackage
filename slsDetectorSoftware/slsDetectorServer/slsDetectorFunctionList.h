@@ -52,19 +52,6 @@ void		initStopServer();
 #ifdef EIGERD
 void 		getModuleConfiguration();
 #endif
-#ifdef JUNGFRAUD
-int 		mapCSP0(void);
-void 		bus_w16(u_int32_t offset, u_int16_t data);
-u_int16_t 	bus_r16(u_int32_t offset);
-void 		bus_w(u_int32_t offset, u_int32_t data);
-u_int32_t 	bus_r(u_int32_t offset);
-int64_t 	set64BitReg(int64_t value, int aLSB, int aMSB);
-int64_t 	get64BitReg(int aLSB, int aMSB);
-void 		defineGPIOpins();
-void 		resetFPGA();
-void 		FPGAdontTouchFlash();
-void 		FPGATouchFlash();
-#endif
 
 // set up detector
 void		allocateDetectorStructureMemory();
@@ -73,8 +60,8 @@ void 		setupDetector();
 
 // advanced read/write reg
 #ifndef EIGERD
-u_int32_t 	writeRegister(u_int32_t offset, u_int32_t data);
-u_int32_t 	readRegister(u_int32_t offset);
+extern u_int32_t	writeRegister(u_int32_t offset, u_int32_t data);
+extern u_int32_t  	readRegister(u_int32_t offset);
 #endif
 
 
@@ -182,30 +169,30 @@ int 		calibratePedestal(int frames);
 void 		resetPLL();
 u_int32_t 	setPllReconfigReg(u_int32_t reg, u_int32_t val);
 void 		configurePll();
-void 		eraseFlash();
-int 		startWritingFPGAprogram(FILE** filefp);
-int 		stopWritingFPGAprogram(FILE* filefp);
-int 		writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp);
+extern void eraseFlash();
+extern int 	startWritingFPGAprogram(FILE** filefp);
+extern void stopWritingFPGAprogram(FILE* filefp);
+extern int 	writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp);
 
 // eiger specific - iodelay, 10g, pulse, rate, temp, activate, delay nw parameter
 #elif EIGERD
-int setIODelay(int val, int imod);
-int enableTenGigabitEthernet(int val);
-int setCounterBit(int val);
-int pulsePixel(int n, int x, int y);
-int pulsePixelNMove(int n, int x, int y);
-int pulseChip(int n);
-int64_t setRateCorrection(int64_t custom_tau_in_nsec);
-int getRateCorrectionEnable();
-int getDefaultSettingsTau_in_nsec();
-void setDefaultSettingsTau_in_nsec(int t);
-int64_t getCurrentTau();
-void setExternalGating(int enable[]);
-int setAllTrimbits(int val);
-int getAllTrimbits();
-int getBebFPGATemp();
-int activate(int enable);
-int setNetworkParameter(enum NETWORKINDEX mode, int value);
+int 		setIODelay(int val, int imod);
+int 		enableTenGigabitEthernet(int val);
+int 		setCounterBit(int val);
+int 		pulsePixel(int n, int x, int y);
+int 		pulsePixelNMove(int n, int x, int y);
+int 		pulseChip(int n);
+int64_t 	setRateCorrection(int64_t custom_tau_in_nsec);
+int 		getRateCorrectionEnable();
+int 		getDefaultSettingsTau_in_nsec();
+void 		setDefaultSettingsTau_in_nsec(int t);
+int64_t 	getCurrentTau();
+void 		setExternalGating(int enable[]);
+int 		setAllTrimbits(int val);
+int 		getAllTrimbits();
+int 		getBebFPGATemp();
+int 		activate(int enable);
+int 		setNetworkParameter(enum NETWORKINDEX mode, int value);
 #endif
 
 
@@ -213,39 +200,39 @@ int setNetworkParameter(enum NETWORKINDEX mode, int value);
 
 // aquisition
 #if defined(EIGERD) || defined(GOTTHARD)
-int prepareAcquisition();
+int 		prepareAcquisition();
 #endif
-int startStateMachine();
-int stopStateMachine();
+int 		startStateMachine();
+int 		stopStateMachine();
 #ifndef JUNGFRAUD
-int startReadOut();
+int 		startReadOut();
 #endif
-enum runStatus getRunStatus();
-void readFrame(int *ret, char *mess);
+enum 		runStatus getRunStatus();
+void 		readFrame(int *ret, char *mess);
 #ifdef JUNGFRAUD
-u_int32_t runBusy(void);
+u_int32_t 	runBusy(void);
 #endif
 
 
 //common
-int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod);
-int calculateDataBytes();
-int getTotalNumberOfChannels();
-int getTotalNumberOfChips();
-int getTotalNumberOfModules();
-int getNumberOfChannelsPerModule();
-int getNumberOfChipsPerModule();
-int getNumberOfDACsPerModule();
-int getNumberOfADCsPerModule();
+int 		copyModule(sls_detector_module *destMod, sls_detector_module *srcMod);
+int 		calculateDataBytes();
+int 		getTotalNumberOfChannels();
+int 		getTotalNumberOfChips();
+int 		getTotalNumberOfModules();
+int 		getNumberOfChannelsPerModule();
+int 		getNumberOfChipsPerModule();
+int 		getNumberOfDACsPerModule();
+int 		getNumberOfADCsPerModule();
 #ifdef EIGERD
-int getNumberOfGainsPerModule();
-int getNumberOfOffsetsPerModule();
+int 		getNumberOfGainsPerModule();
+int 		getNumberOfOffsetsPerModule();
 #endif
-int getNumberOfChannelsPerChip();
+int 		getNumberOfChannelsPerChip();
 
 // sync
-enum masterFlags setMaster(enum masterFlags arg);
-enum synchronizationMode setSynchronization(enum synchronizationMode arg);
+enum masterFlags 			setMaster(enum masterFlags arg);
+enum synchronizationMode 	setSynchronization(enum synchronizationMode arg);
 
 
 

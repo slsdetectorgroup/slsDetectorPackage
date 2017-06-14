@@ -4,31 +4,24 @@
 #include "slsDetectorFunctionList.h"
 #include "gitInfoJungfrau.h"
 #include "slsDetectorServer_defs.h" // also include RegisterDefs.h
+#include "blackfin.h"
+#include "programfpga.h"
 
-#include <stdio.h>
-#include <unistd.h> 	// usleep
-#include <string.h>
-#include <fcntl.h>		// open
-#include <sys/mman.h>	// mmap
+
+
 /* global variables */
-
 sls_detector_module *detectorModules=NULL;
 int *detectorChips=NULL;
 int *detectorChans=NULL;
 dacs_t *detectorDacs=NULL;
 dacs_t *detectorAdcs=NULL;
 
-int gpioDefined=0;
 enum detectorSettings thisSettings;
 enum masterFlags masterMode = NO_MASTER;
+
 int highvoltage = 0;
 int dacValues[NDAC];
-
-u_int32_t CSP0BASE = 0;
 int32_t clkPhase[2] = {0, 0};
-char mtdvalue[10];
-
-
 
 
 
@@ -280,119 +273,6 @@ void initStopServer() {
 }
 
 
-int mapCSP0(void) {
-	// if not mapped
-	if (!CSP0BASE) {
-		printf("Mapping memory\n");
-#ifdef VIRTUAL
-		CSP0BASE = malloc(MEM_SIZE);
-		printf("memory allocated\n");
-#else
-		int fd;
-		fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
-		if (fd == -1) {
-			cprintf(BG_RED, "Error: Can't find /dev/mem\n");
-			return FAIL;
-		}
-#ifdef VERBOSE
-		printf("/dev/mem opened\n");
-#endif
-		CSP0BASE = (u_int32_t)mmap(0, MEM_SIZE, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, CSP0);
-		if (CSP0BASE == (u_int32_t)MAP_FAILED) {
-			cprintf(BG_RED, "Error: Can't map memmory area\n");
-			return FAIL;
-		}
-		printf("CSPOBASE mapped from %08x to %08x\n",CSP0BASE,CSP0BASE+MEM_SIZE);
-#endif
-		printf("Status Register: %08x\n",bus_r(STATUS_REG));
-	}else
-		printf("Memory already mapped before\n");
-	return OK;
-}
-
-
-void bus_w16(u_int32_t offset, u_int16_t data) {
-	volatile u_int16_t  *ptr1;
-	ptr1=(u_int16_t*)(CSP0BASE+offset*2);
-	*ptr1=data;
-}
-
-u_int16_t bus_r16(u_int32_t offset){
-	volatile u_int16_t *ptr1;
-	ptr1=(u_int16_t*)(CSP0BASE+offset*2);
-	return *ptr1;
-}
-
-void bus_w(u_int32_t offset, u_int32_t data) {
-	volatile  u_int32_t  *ptr1;
-	ptr1=(u_int32_t*)(CSP0BASE+offset*2);
-	*ptr1=data;
-}
-
-u_int32_t bus_r(u_int32_t offset) {
-	volatile u_int32_t  *ptr1;
-	ptr1=(u_int32_t*)(CSP0BASE+offset*2);
-	return *ptr1;
-}
-
-int64_t set64BitReg(int64_t value, int aLSB, int aMSB){
-	int64_t v64;
-	u_int32_t vLSB,vMSB;
-	if (value!=-1) {
-		vLSB=value&(0xffffffff);
-		bus_w(aLSB,vLSB);
-		v64=value>> 32;
-		vMSB=v64&(0xffffffff);
-		bus_w(aMSB,vMSB);
-	}
-	return get64BitReg(aLSB, aMSB);
-
-}
-
-int64_t get64BitReg(int aLSB, int aMSB){
-	int64_t v64;
-	u_int32_t vLSB,vMSB;
-	vLSB=bus_r(aLSB);
-	vMSB=bus_r(aMSB);
-	v64=vMSB;
-	v64=(v64<<32) | vLSB;
-	printf(" reg64(%x,%x) %x %x %llx\n", aLSB, aMSB, vLSB, vMSB, v64);
-	return v64;
-}
-
-
-void defineGPIOpins(){
-	if (!gpioDefined) {
-		//define the gpio pins
-		system("echo 7 > /sys/class/gpio/export");
-		system("echo 9 > /sys/class/gpio/export");
-		//define their direction
-		system("echo in  > /sys/class/gpio/gpio7/direction");
-		system("echo out > /sys/class/gpio/gpio9/direction");
-		printf("gpio pins defined\n");
-		gpioDefined = 1;
-	}else printf("gpio pins already defined earlier\n");
-}
-
-void resetFPGA(){
-	cprintf(BLUE,"\n*** Reseting FPGA ***\n");
-	FPGAdontTouchFlash();
-	FPGATouchFlash();
-	usleep(250*1000);
-}
-
-void FPGAdontTouchFlash(){
-	//tell FPGA to not touch flash
-	system("echo 0 > /sys/class/gpio/gpio9/value");
-	//usleep(100*1000);
-}
-
-void FPGATouchFlash(){
-	//tell FPGA to touch flash to program itself
-	system("echo 1 > /sys/class/gpio/gpio9/value");
-}
-
-
 
 
 
@@ -487,18 +367,6 @@ void setupDetector() {
 
 
 
-
-
-/* advanced read/write reg */
-
-u_int32_t writeRegister(u_int32_t offset, u_int32_t data) {
-	bus_w(offset << 11, data);
-	return readRegister(offset);
-}
-
-u_int32_t readRegister(u_int32_t offset) {
-	return bus_r(offset << 11);
-}
 
 
 
@@ -1362,105 +1230,6 @@ void configurePll() {
 
 
 
-void eraseFlash(){
-#ifdef VERY_VERBOSE
-	printf("\nErasing Flash\n");
-#endif
-	char command[255];
-	sprintf(command,"flash_eraseall %s",mtdvalue);
-	system(command);
-	printf("flash erased\n");
-}
-
-
-int startWritingFPGAprogram(FILE** filefp){
-#ifdef VERY_VERBOSE
-	printf("\nStart Writing of FPGA program\n");
-#endif
-
-	//getting the drive
-	char output[255];
-	FILE* fp = popen("awk \'$4== \"\\\"bitfile(spi)\\\"\" {print $1}\' /proc/mtd", "r");
-	fgets(output, sizeof(output), fp);
-	pclose(fp);
-	strcpy(mtdvalue,"/dev/");
-	char* pch = strtok(output,":");
-	if(pch == NULL){
-		cprintf(RED,"Could not get mtd value\n");
-		return FAIL;
-	}
-	strcat(mtdvalue,pch);
-	printf ("\nFlash drive found: %s\n",mtdvalue);
-
-	FPGAdontTouchFlash();
-
-	//writing the program to flash
-	*filefp = fopen(mtdvalue, "w");
-	if(*filefp == NULL){
-		cprintf(RED,"Unable to open %s in write mode\n",mtdvalue);
-		return FAIL;
-	}
-	printf("flash ready for writing\n");
-
-	return OK;
-}
-
-int stopWritingFPGAprogram(FILE* filefp){
-#ifdef VERY_VERBOSE
-	printf("\nStopping of writing FPGA program\n");
-#endif
-
-	int wait = 0;
-	if(filefp!= NULL){
-		fclose(filefp);
-		wait = 1;
-	}
-
-	//touch and program
-	FPGATouchFlash();
-
-	if(wait){
-#ifdef VERY_VERBOSE
-		printf("Waiting for FPGA to program from flash\n");
-#endif
-		//waiting for success or done
-		char output[255];
-		int res=0;
-		while(res == 0){
-			FILE* sysFile = popen("cat /sys/class/gpio/gpio7/value", "r");
-			fgets(output, sizeof(output), sysFile);
-			pclose(sysFile);
-			sscanf(output,"%d",&res);
-#ifdef VERY_VERBOSE
-			printf("gpi07 returned %d\n",res);
-#endif
-		}
-	}
-	printf("FPGA has picked up the program from flash\n\n");
-
-	return OK;
-}
-
-int writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp){
-#ifdef VERY_VERBOSE
-	printf("\nWriting of FPGA Program\n");
-	cprintf(BLUE,"address of fpgasrc:%p\n",(void *)fpgasrc);
-	cprintf(BLUE,"fsize:%d\n",fsize);
-	cprintf(BLUE,"pointer:%p\n",(void*)filefp);
-#endif
-
-	if(fwrite((void*)fpgasrc , sizeof(char) , fsize , filefp )!= fsize){
-		cprintf(RED,"Could not write FPGA source to flash\n");
-		return FAIL;
-	}
-#ifdef VERY_VERBOSE
-	cprintf(BLUE, "program written to flash\n");
-#endif
-	return OK;
-}
-
-
-
 
 /* aquisition */
 
@@ -1574,11 +1343,7 @@ u_int32_t runBusy(void) {
 
 
 
-
-
 /* common */
-
-
 
 
 int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod){

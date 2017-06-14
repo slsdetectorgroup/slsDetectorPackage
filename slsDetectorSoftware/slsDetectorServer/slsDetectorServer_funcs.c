@@ -4603,11 +4603,7 @@ int program_fpga(int file_des) {
 		printf("\n");
 
 		//closing file pointer to flash and informing FPGA
-		if(stopWritingFPGAprogram(fp) == FAIL){
-			ret=FAIL;
-			sprintf(mess,"Could not write to flash. Error at end.\n");
-			cprintf(RED,"%s",mess);
-		}
+		stopWritingFPGAprogram(fp);
 
 		//free resources
 		if(fpgasrc != NULL)

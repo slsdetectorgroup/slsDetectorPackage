@@ -8,7 +8,6 @@
 
 
 #define GOODBYE 					(-200)
-#define CTRL_SRVR_INIT_TIME_US		(300 * 1000)
 //#define REQUIRED_FIRMWARE_VERSION 16
 
 

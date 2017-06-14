@@ -1,15 +1,12 @@
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-
 #ifndef SLS_DETECTOR_FUNCTION_LIST_H
 #define SLS_DETECTOR_FUNCTION_LIST_H
 
-#include "sls_detector_defs.h"
-#include "slsDetectorServer_defs.h"
+#include "sls_receiver_defs.h"
+#include "slsDetectorServer_defs.h" // DAC_INDEX, ADC_INDEX, also include RegisterDefs.h
 
 #include <stdlib.h>
-#include <stdio.h>		//FILE
-
-
+#include <stdio.h>					// FILE
 
 
 /****************************************************
@@ -60,8 +57,8 @@ void 		setupDetector();
 
 // advanced read/write reg
 #ifndef EIGERD
-extern u_int32_t	writeRegister(u_int32_t offset, u_int32_t data);
-extern u_int32_t  	readRegister(u_int32_t offset);
+extern u_int32_t	writeRegister(u_int32_t offset, u_int32_t data);	// blackfin.h
+extern u_int32_t  	readRegister(u_int32_t offset);						// blackfin.h
 #endif
 
 
@@ -126,8 +123,7 @@ int 		setThresholdEnergy(int ev, int imod);
 #ifdef JUNGFRAUD
 void 		serializeToSPI(u_int32_t addr, u_int32_t val, u_int16_t csmask, int numbitstosend, u_int16_t clkmask, u_int16_t digoutmask, int digofset);
 void 		initDac(int dacnum);
-void 		prepareADC();
-void 		setAdc(int addr, int val);
+extern void	setAdc(int addr, int val);		// AD9257.h
 int 		voltageToDac(int value);
 int 		dacToVoltage(unsigned int digital);
 #endif
@@ -169,10 +165,10 @@ int 		calibratePedestal(int frames);
 void 		resetPLL();
 u_int32_t 	setPllReconfigReg(u_int32_t reg, u_int32_t val);
 void 		configurePll();
-extern void eraseFlash();
-extern int 	startWritingFPGAprogram(FILE** filefp);
-extern void stopWritingFPGAprogram(FILE* filefp);
-extern int 	writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp);
+extern void eraseFlash();													// programfpga.h
+extern int 	startWritingFPGAprogram(FILE** filefp);							// programfpga.h
+extern void stopWritingFPGAprogram(FILE* filefp);							// programfpga.h
+extern int 	writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp);	// programfpga.h
 
 // eiger specific - iodelay, 10g, pulse, rate, temp, activate, delay nw parameter
 #elif EIGERD

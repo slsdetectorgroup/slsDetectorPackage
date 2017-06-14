@@ -3,16 +3,14 @@
 
 #include "slsDetectorFunctionList.h"
 #include "gitInfoJungfrau.h"
-#include "slsDetectorServer_defs.h" // also include RegisterDefs.h
-#include "blackfin.h"
+
+
+#include "AD9257.h"		// include "commonServerFunctions.h", which in turn includes "blackfin.h"
 #include "programfpga.h"
 
-
-
 /* global variables */
+//jungfrau doesnt require chips and chans (save memory)
 sls_detector_module *detectorModules=NULL;
-int *detectorChips=NULL;
-int *detectorChans=NULL;
 dacs_t *detectorDacs=NULL;
 dacs_t *detectorAdcs=NULL;
 
@@ -284,26 +282,18 @@ void allocateDetectorStructureMemory(){
 
 	//Allocation of memory
 	if (detectorModules!=NULL) free(detectorModules);
-	if (detectorChips!=NULL) free(detectorChips);
-	if (detectorChans!=NULL) free(detectorChans);
 	if (detectorDacs!=NULL) free(detectorDacs);
 	if (detectorAdcs!=NULL) free(detectorAdcs);
 	detectorModules=malloc(sizeof(sls_detector_module));
-	detectorChips=malloc(NCHIP*sizeof(int));
-	detectorChans=malloc(NCHIP*NCHAN*sizeof(int));
 	detectorDacs=malloc(NDAC*sizeof(dacs_t));
 	detectorAdcs=malloc(NADC*sizeof(dacs_t));
 #ifdef VERBOSE
 	printf("modules from 0x%x to 0x%x\n",detectorModules, detectorModules+n);
-	printf("chips from 0x%x to 0x%x\n",detectorChips, detectorChips+n*NCHIP);
-	printf("chans from 0x%x to 0x%x\n",detectorChans, detectorChans+n*NCHIP*NCHAN);
 	printf("dacs from 0x%x to 0x%x\n",detectorDacs, detectorDacs+n*NDAC);
 	printf("adcs from 0x%x to 0x%x\n",detectorAdcs, detectorAdcs+n*NADC);
 #endif
 	(detectorModules)->dacs=detectorDacs;
 	(detectorModules)->adcs=detectorAdcs;
-	(detectorModules)->chipregs=detectorChips;
-	(detectorModules)->chanregs=detectorChans;
 	(detectorModules)->ndac=NDAC;
 	(detectorModules)->nadc=NADC;
 	(detectorModules)->nchip=NCHIP;
@@ -747,55 +737,7 @@ enum detectorSettings getSettings(){
 /* parameters - dac, adc, hv */
 
 
-void serializeToSPI(u_int32_t addr, u_int32_t val, u_int16_t csmask, int numbitstosend, u_int16_t clkmask, u_int16_t digoutmask, int digofset) {
-#ifdef VERBOSE
-	if (numbitstosend == 16)
-		printf("Writing to ADC SPI Register: 0x%04x\n",val);
-	else
-		printf("Writing to SPI Register: 0x%08x\n", val);
-#endif
 
-	u_int16_t valw;
-
-	// start point
-	valw = 0xffff; 		/**todo testwith old board 0xff for adc_spi */			// old board compatibility (not using specific bits)
-	bus_w16 (addr, valw);
-
-	// chip sel bar down
-	valw &= ~csmask; /* todo with test: done a bit different, not with previous value */
-	bus_w16 (addr, valw);
-
-	{
-		int i = 0;
-		for (i = 0; i < numbitstosend; ++i) {
-
-			// clk down
-			valw &= ~clkmask;
-			bus_w16 (addr, valw);
-
-			// write data (i)
-			valw = ((valw & ~digoutmask) + 										// unset bit
-					(((val >> (numbitstosend - 1 - i)) & 0x1) << digofset)); 	// each bit from val starting from msb
-			bus_w16 (addr, valw);
-
-			// clk up
-			valw |= clkmask ;
-			bus_w16 (addr, valw);
-		}
-	}
-
-	// chip sel bar up
-	valw |= csmask; /* todo with test: not done for spi */
-	bus_w16 (addr, valw);
-
-	//clk down
-	valw &= ~clkmask;
-	bus_w16 (addr, valw);
-
-	// stop point = start point of course
-	valw = 0xffff; 		/**todo testwith old board 0xff for adc_spi */			// old board compatibility (not using specific bits)
-	bus_w16 (addr, valw);
-}
 
 
 
@@ -821,68 +763,10 @@ void initDac(int dacnum) {
 
 
 
-void prepareADC(){
-	printf("\n\nPreparing ADC ... \n");
-
-	//power mode reset
-	printf("power mode reset:\n");
-	setAdc(AD9257_POWER_MODE_REG,
-			(AD9257_INT_RESET_VAL << AD9257_POWER_INTERNAL_OFST) & AD9257_POWER_INTERNAL_MSK);
-
-	//power mode chip run
-	 printf("power mode chip run:\n");
-	setAdc(AD9257_POWER_MODE_REG,
-			(AD9257_INT_CHIP_RUN_VAL << AD9257_POWER_INTERNAL_OFST) & AD9257_POWER_INTERNAL_MSK);
-
-	//output clock phase
-	 printf("output clock phase:\n");
-	setAdc(AD9257_OUT_PHASE_REG,
-			(AD9257_OUT_CLK_60_VAL << AD9257_OUT_CLK_OFST) & AD9257_OUT_CLK_MSK);
-
-	// lvds-iee reduced , binary offset
-	 printf("lvds-iee reduced, binary offset:\n");
-	setAdc(AD9257_OUT_MODE_REG,
-			(AD9257_OUT_LVDS_IEEE_VAL << AD9257_OUT_LVDS_OPT_OFST) & AD9257_OUT_LVDS_OPT_MSK);
-
-	// all devices on chip to receive next command
-	 printf("all devices on chip to receive next command:\n");
-	setAdc(AD9257_DEV_IND_2_REG,
-			AD9257_CHAN_H_MSK | AD9257_CHAN_G_MSK | AD9257_CHAN_F_MSK | AD9257_CHAN_E_MSK);
-	setAdc(AD9257_DEV_IND_1_REG,
-			AD9257_CHAN_D_MSK | AD9257_CHAN_C_MSK | AD9257_CHAN_B_MSK | AD9257_CHAN_A_MSK |
-			AD9257_CLK_CH_DCO_MSK | AD9257_CLK_CH_IFCO_MSK);
-
-	// vref 1.33
-	 printf("vref 1.33:\n");
-	setAdc(AD9257_VREF_REG,
-			(AD9257_VREF_1_33_VAL << AD9257_VREF_OFST) & AD9257_VREF_MSK);
-
-	// no test mode
-	 printf("no test mode:\n");
-	setAdc(AD9257_TEST_MODE_REG,
-			(AD9257_NONE_VAL << AD9257_OUT_TEST_OFST) & AD9257_OUT_TEST_MSK);
-
-#ifdef TESTADC
-	printf("***************************************** *******\n");
-	printf("******* PUTTING ADC IN TEST MODE!!!!!!!!! *******\n");
-	printf("***************************************** *******\n");
-	// mixed bit frequency test mode
-	 printf("mixed bit frequency test mode:\n");
-	setAdc(AD9257_TEST_MODE_REG,
-			(AD9257_MIXED_BIT_FREQ_VAL << AD9257_OUT_TEST_OFST) & AD9257_OUT_TEST_MSK);
-#endif
-}
 
 
 
-void setAdc(int addr, int val) {
 
-	u_int32_t codata;
-	codata = val + (addr << 8);
-	printf(" Setting ADC SPI Register. Wrote 0x%04x at 0x%04x\n", val, addr);
-	serializeToSPI(ADC_SPI_REG, codata, ADC_SERIAL_CS_OUT_MSK, AD9257_ADC_NUMBITS,
-			ADC_SERIAL_CLK_OUT_MSK, ADC_SERIAL_DATA_OUT_MSK, ADC_SERIAL_DATA_OUT_OFST);
-}
 
 
 int voltageToDac(int value){
@@ -1345,10 +1229,10 @@ u_int32_t runBusy(void) {
 
 /* common */
 
-
+//jungfrau doesnt require chips and chans (save memory)
 int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod){
 
-	int ichip, idac,  ichan, iadc;
+	int idac, iadc;
 	int ret=OK;
 
 #ifdef VERBOSE
@@ -1403,14 +1287,6 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod){
 	if (srcMod->offset>=0)
 		destMod->offset=srcMod->offset;
 
-	for (ichip=0; ichip<(srcMod->nchip); ichip++) {
-		if (*((srcMod->chipregs)+ichip)>=0)
-			*((destMod->chipregs)+ichip)=*((srcMod->chipregs)+ichip);
-	}
-	for (ichan=0; ichan<(srcMod->nchan); ichan++) {
-		if (*((srcMod->chanregs)+ichan)>=0)
-			*((destMod->chanregs)+ichan)=*((srcMod->chanregs)+ichan);
-	}
 	for (idac=0; idac<(srcMod->ndac); idac++) {
 		if (*((srcMod->dacs)+idac)>=0)
 			*((destMod->dacs)+idac)=*((srcMod->dacs)+idac);

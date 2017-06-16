@@ -17,7 +17,7 @@
 #include <rapidjson/document.h> //json header in zmq stream
 using namespace rapidjson;
 
-#define DEFAULT_ZMQ_PORTNO 	40001
+#define DEFAULT_ZMQ_PORTNO 	70001
 
 class ZmqSocket {
 

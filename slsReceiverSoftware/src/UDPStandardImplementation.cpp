@@ -443,7 +443,7 @@ int UDPStandardImplementation::startReceiver(char *c) {
 	//callbacks
 	if (startAcquisitionCallBack) {
 		startAcquisitionCallBack(filePath, fileName, fileIndex,
-				(generalData->fifoBufferSize) * numberofJobs + (generalData->fifoBufferHeaderSize), pStartAcquisition);
+				(generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize), pStartAcquisition);
 		if (rawDataReadyCallBack != NULL) {
 			cout << "Data Write has been defined externally" << endl;
 		}
@@ -728,7 +728,7 @@ int UDPStandardImplementation::SetupFifoStructure() {
 		//create fifo structure
 		bool success = true;
 		fifo.push_back( new Fifo (
-				(generalData->fifoBufferSize) * numberofJobs + (generalData->fifoBufferHeaderSize),
+				(generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize),
 				fifoDepth, success));
 		if (!success) {
 			cprintf(BG_RED,"Error: Could not allocate memory for fifo structure of index %d\n", i);

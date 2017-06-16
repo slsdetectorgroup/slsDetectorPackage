@@ -29,7 +29,8 @@ File::File(int ind, uint32_t maxf, const uint32_t* ppf,
 			numUnitsPerDetector(nunits),
 			numImages(nf),
 			dynamicRange(dr),
-			udpPortNumber(portno)
+			udpPortNumber(portno),
+			fifo(f)
 
 {
 	master = index?false:true;

@@ -57,9 +57,6 @@ public:
 	/** Max Frames per binary file */
 	uint32_t maxFramesPerFile;
 
-	/** Data size that is saved into the fifo buffer at a time*/
-	uint32_t fifoBufferSize;
-
 	/** Header size of data saved into fifo buffer at a time*/
 	uint32_t fifoBufferHeaderSize;
 
@@ -100,7 +97,6 @@ public:
 		packetIndexMask(0),
 		packetIndexOffset(0),
 		maxFramesPerFile(0),
-		fifoBufferSize(0),
 		fifoBufferHeaderSize(0),
 		defaultFifoDepth(0),
 		threadsPerReceiver(1),
@@ -210,7 +206,6 @@ public:
 				packetIndexMask,
 				packetIndexOffset,
 				maxFramesPerFile,
-				fifoBufferSize,
 				fifoBufferHeaderSize,
 				defaultFifoDepth,
 				threadsPerReceiver,
@@ -240,7 +235,6 @@ class GotthardData : public GeneralData {
 		frameIndexOffset 	= 1;
 		packetIndexMask 	= 1;
 		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
-		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 25000;
 		nPixelsX_Streamer 	= nPixelsX;
@@ -266,7 +260,6 @@ class ShortGotthardData : public GeneralData {
 		imageSize 			= dataSize*packetsPerFrame;
 		frameIndexMask 		= 0xFFFFFFFF;
 		maxFramesPerFile 	= SHORT_MAX_FRAMES_PER_FILE;
-		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 25000;
 		nPixelsX_Streamer 	= 1280;
@@ -331,7 +324,6 @@ class PropixData : public GeneralData {
 		frameIndexOffset 	= 1;
 		packetIndexMask 	= 1;
 		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
-		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 25000;
 		nPixelsX_Streamer 	= nPixelsX;
@@ -362,7 +354,6 @@ class Moench02Data : public GeneralData {
 		frameIndexOffset 	= 8;
 		packetIndexMask 	= 0xFF;
 		maxFramesPerFile 	= MOENCH_MAX_FRAMES_PER_FILE;
-		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 2500;
 		nPixelsX_Streamer 	= nPixelsX;
@@ -398,7 +389,6 @@ class Moench03Data : public GeneralData {
 		frameIndexOffset 	= (6+8);
 		packetIndexMask 	= 0xFFFFFFFF;
 		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
-		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 2500;
 		nPixelsX_Streamer 	= nPixelsX;
@@ -426,7 +416,6 @@ class JCTBData : public GeneralData {
 		packetsPerFrame 	= 1;
 		imageSize 			= dataSize*packetsPerFrame;
 		maxFramesPerFile 	= JFCTB_MAX_FRAMES_PER_FILE;
-		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 2500;
 		nPixelsX_Streamer 	= nPixelsX;
@@ -460,7 +449,6 @@ class JungfrauData : public GeneralData {
 		packetsPerFrame 	= 128;
 		imageSize 			= dataSize*packetsPerFrame;
 		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
-		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 2500;
 		nPixelsX_Streamer 	= nPixelsX;
@@ -509,7 +497,6 @@ private:
 		imageSize 			= dataSize*packetsPerFrame;
 		frameIndexMask 		= 0xffffff;
 		maxFramesPerFile 	= EIGER_MAX_FRAMES_PER_FILE;
-		fifoBufferSize		= imageSize;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 100;
 		footerOffset		= headerSizeinPacket + dataSize;
@@ -564,7 +551,6 @@ private:
 	void SetDynamicRange(int dr, bool tgEnable) {
 		packetsPerFrame = (tgEnable ? 4 : 16) * dr;
 		imageSize 		= dataSize*packetsPerFrame;
-		fifoBufferSize	= packetSize*packetsPerFrame;
 	}
 
 	/**
@@ -574,10 +560,9 @@ private:
 	 */
 	void SetTenGigaEnable(bool tgEnable, int dr) {
 		dataSize 		= (tgEnable ? 4096 : 1024);
-		packetSize 		= (tgEnable ? 4112 : 1040);;
+		packetSize 		= (tgEnable ? 4112 : 1040);
 		packetsPerFrame = (tgEnable ? 4 : 16) * dr;
 		imageSize 		= dataSize*packetsPerFrame;
-		fifoBufferSize	= packetSize*packetsPerFrame;
 		footerOffset	= packetHeaderSize+dataSize;
 	};
 

@@ -330,7 +330,7 @@ void DataProcessor::ProcessAnImage(char* buf) {
 
 
 	if (*fileWriteEnable)
-		file->WriteToFile(buf, generalData->fifoBufferSize + sizeof(sls_detector_header), fnum-firstMeasurementIndex, nump);
+		file->WriteToFile(buf, generalData->imageSize + sizeof(sls_detector_header), fnum-firstMeasurementIndex, nump);
 
 	if (rawDataReadyCallBack) {
 		rawDataReadyCallBack(

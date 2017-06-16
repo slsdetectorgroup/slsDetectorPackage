@@ -58,6 +58,15 @@ Listener::Listener(detectorType dtype, Fifo*& f, runStatus* s, uint32_t* portno,
 	}
 	NumberofListeners++;
 	FILE_LOG (logDEBUG) << "Number of Listeners: " << NumberofListeners;
+
+	switch(myDetectorType){
+	case JUNGFRAU:
+		standardheader = true;
+		break;
+	default:
+		standardheader = false;
+		break;
+	}
 }
 
 
@@ -318,7 +327,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		//if(!index) cprintf(RED,"carry flag\n");
 		//check if its the current image packet
 		// -------------------------- new header ----------------------------------------------------------------------
-		if (myDetectorType == JUNGFRAU) {
+		if (standardheader) {
 			old_header = (sls_detector_header*) (carryOverPacket + esize);
 			fnum = old_header->frameNumber;
 			pnum = old_header->packetNumber;
@@ -346,7 +355,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		//writer header
 		if(isHeaderEmpty) {
 			// -------------------------- new header ----------------------------------------------------------------------
-			if (myDetectorType == JUNGFRAU) {
+			if (standardheader) {
 				memcpy((char*)new_header, (char*)old_header, sizeof(sls_detector_header));
 			}
 			// -------------------old header ------------------------------------------------------------------------------
@@ -387,7 +396,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		numPacketsCaught++;					//record immediately to get more time before socket shutdown
 
 		// -------------------------- new header ----------------------------------------------------------------------
-		if (myDetectorType == JUNGFRAU) {
+		if (standardheader) {
 			old_header = (sls_detector_header*) (listeningPacket + esize);
 			fnum = old_header->frameNumber;
 			pnum = old_header->packetNumber;
@@ -426,7 +435,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		numpackets++;			//number of packets in this image (each time its copied to buf)
 		if(isHeaderEmpty) {
 			// -------------------------- new header ----------------------------------------------------------------------
-			if (myDetectorType == JUNGFRAU) {
+			if (standardheader) {
 				memcpy((char*)new_header, (char*)old_header, sizeof(sls_detector_header));
 			}
 			// -------------------old header ------------------------------------------------------------------------------

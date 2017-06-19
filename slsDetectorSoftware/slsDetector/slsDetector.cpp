@@ -539,14 +539,19 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     /** set receiver udp port for Eiger */
     thisDetector->receiverUDPPort2=DEFAULT_UDP_PORTNO+1;
     /** set receiver ip address/hostname */
+    memset(thisDetector->receiver_hostname,0,MAX_STR_LENGTH);
     strcpy(thisDetector->receiver_hostname,"none");
     /** set receiver udp ip address */
+    memset(thisDetector->receiverUDPIP,0,MAX_STR_LENGTH);
     strcpy(thisDetector->receiverUDPIP,"none");
     /** set receiver udp mac address */
+    memset(thisDetector->receiverUDPMAC,0,MAX_STR_LENGTH);
     strcpy(thisDetector->receiverUDPMAC,"none");
     /** set detector mac address */
+    memset(thisDetector->detectorMAC,0,MAX_STR_LENGTH);
     strcpy(thisDetector->detectorMAC,DEFAULT_DET_MAC);
     /** set detector ip address */
+    memset(thisDetector->detectorIP,0,MAX_STR_LENGTH);
     strcpy(thisDetector->detectorIP,DEFAULT_DET_IP);
 
     /** sets onlineFlag to OFFLINE_FLAG */
@@ -5813,7 +5818,7 @@ int slsDetector::exitServer(){
 };
 
 
-char* slsDetector::setNetworkParameter(networkParameter index, string value) {
+string slsDetector::setNetworkParameter(networkParameter index, string value) {
 	int i;
 
 	switch (index) {
@@ -5854,7 +5859,7 @@ char* slsDetector::setNetworkParameter(networkParameter index, string value) {
 
 
 
-char* slsDetector::getNetworkParameter(networkParameter index) {
+string slsDetector::getNetworkParameter(networkParameter index) {
 
   switch (index) {
   case DETECTOR_MAC:
@@ -5889,7 +5894,7 @@ char* slsDetector::getNetworkParameter(networkParameter index) {
 
 }
 
-char* slsDetector::setDetectorMAC(string detectorMAC){
+string slsDetector::setDetectorMAC(string detectorMAC){
   if(detectorMAC.length()==17){
     if((detectorMAC[2]==':')&&(detectorMAC[5]==':')&&(detectorMAC[8]==':')&&
        (detectorMAC[11]==':')&&(detectorMAC[14]==':')){
@@ -5908,12 +5913,12 @@ char* slsDetector::setDetectorMAC(string detectorMAC){
 	  std::cout << "Warning: server MAC Address should be in xx:xx:xx:xx:xx:xx format" << std::endl;
   }
 
-  return thisDetector->detectorMAC;
+  return string(thisDetector->detectorMAC);
 };
 
 
 
-char* slsDetector::setDetectorIP(string detectorIP){
+string slsDetector::setDetectorIP(string detectorIP){
 	struct sockaddr_in sa;
 	//taking function arguments into consideration
 	if(detectorIP.length()){
@@ -5931,12 +5936,12 @@ char* slsDetector::setDetectorIP(string detectorIP){
 			}
 		}
 	}
-	return thisDetector->detectorIP;
+	return string(thisDetector->detectorIP);
 }
 
 
 
-char* slsDetector::setReceiver(string receiverIP){
+string slsDetector::setReceiver(string receiverIP){
 	if(getRunStatus()==RUNNING){
 		cprintf(RED,"Acquisition already running, Stopping it.\n");
 		stopAcquisition();
@@ -6002,16 +6007,18 @@ char* slsDetector::setReceiver(string receiverIP){
 			setUDPConnection();
 			if(thisDetector->myDetectorType == EIGER)
 				enableTenGigabitEthernet(thisDetector->tenGigaEnable);
+			//datastreamenable
+			//fifodepth
 		}
 	}
 
-  return thisDetector->receiver_hostname;
+  return string(thisDetector->receiver_hostname);
 }
 
 
 
 
-char* slsDetector::setReceiverUDPIP(string udpip){
+string slsDetector::setReceiverUDPIP(string udpip){
 	struct sockaddr_in sa;
 	//taking function arguments into consideration
 	if(udpip.length()){
@@ -6022,21 +6029,22 @@ char* slsDetector::setReceiverUDPIP(string udpip){
 				std::cout << "Warning: Receiver UDP IP Address should be VALID and in xxx.xxx.xxx.xxx format" << std::endl;
 			}else{
 				strcpy(thisDetector->receiverUDPIP,udpip.c_str());
-				if(!strcmp(thisDetector->receiver_hostname,"none"))
+				if(!strcmp(thisDetector->receiver_hostname,"none")) {
 					std::cout << "Warning: Receiver hostname not set yet." << endl;
+				}
 				else if(setUDPConnection()==FAIL){
 					std::cout<< "Warning: UDP connection set up failed" << std::endl;
 				}
 			}
 		}
 	}
-	return thisDetector->receiverUDPIP;
+	return string(thisDetector->receiverUDPIP);
 }
 
 
 
 
-char* slsDetector::setReceiverUDPMAC(string udpmac){
+string slsDetector::setReceiverUDPMAC(string udpmac){
   if(udpmac.length()!=17){
 	setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
 	std::cout << "Warning: receiver udp mac address should be in xx:xx:xx:xx:xx:xx format" << std::endl;
@@ -6057,7 +6065,7 @@ char* slsDetector::setReceiverUDPMAC(string udpmac){
   }
 
 
-  return thisDetector->receiverUDPMAC;
+  return string(thisDetector->receiverUDPMAC);
 }
 
 
@@ -6083,9 +6091,8 @@ int slsDetector::setReceiverUDPPort2(int udpport){
 }
 
 
-char* slsDetector::setDetectorNetworkParameter(networkParameter index, int delay){
+string slsDetector::setDetectorNetworkParameter(networkParameter index, int delay){
 	int fnum = F_SET_NETWORK_PARAMETER;
-	char* cretval = new char[MAX_STR_LENGTH];
 	int ret = FAIL;
 	int retval = -1;
 	char mess[MAX_STR_LENGTH]="";
@@ -6114,9 +6121,10 @@ char* slsDetector::setDetectorNetworkParameter(networkParameter index, int delay
 	std::cout<< "Speed set to  "<< retval  << std::endl;
 #endif
 
-
-	sprintf(cretval,"%d",retval);
-	return cretval;
+	ostringstream ss;
+	ss << retval;
+	string s =  ss.str();
+	return s;
 }
 
 
@@ -6609,12 +6617,10 @@ int slsDetector::printReceiverConfiguration(){
 	std::cout << "Receiver Hostname:\t" << getNetworkParameter(RECEIVER_HOSTNAME) << std::endl;
 	std::cout << "Receiver UDP IP:\t" << getNetworkParameter(RECEIVER_UDP_IP) << std::endl;
 	std::cout << "Receiver UDP MAC:\t" << getNetworkParameter(RECEIVER_UDP_MAC) << std::endl;
-
-
 	std::cout << "Receiver UDP Port:\t" << getNetworkParameter(RECEIVER_UDP_PORT) << std::endl;
-	if(thisDetector->myDetectorType == EIGER)
-		std::cout << "Receiver UDP Port2:\t" << getNetworkParameter(RECEIVER_UDP_PORT2) << std::endl;
 
+	if(thisDetector->myDetectorType == EIGER)
+		std::cout << "Receiver UDP Port2:\t" <<  getNetworkParameter(RECEIVER_UDP_PORT2) << std::endl;
 	std::cout << std::endl;
 
 	return OK;

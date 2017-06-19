@@ -980,8 +980,8 @@ class multiSlsDetector  : public slsDetectorUtils {
   char* setCalDir(string s); 
 
 
-  char *getNetworkParameter(networkParameter);
-  char *setNetworkParameter(networkParameter, std::string);
+  string getNetworkParameter(networkParameter);
+  string setNetworkParameter(networkParameter, std::string);
   int setPort(portType, int);
   int lockServer(int);
     

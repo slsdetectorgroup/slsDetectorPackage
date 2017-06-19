@@ -2930,7 +2930,6 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
 		myDet->setNetworkParameter(t, args[1]);
 
 	return myDet->getNetworkParameter(t);
-
 }
 
 string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int action) {

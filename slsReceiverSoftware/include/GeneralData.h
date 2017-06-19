@@ -183,7 +183,6 @@ public:
 				"Packet Index Mask: 0x%x\n"
 				"Packet Index Offset: %u\n"
 				"Max Frames Per File: %u\n"
-				"Fifo Buffer Size: %u\n"
 				"Fifo Buffer Header Size: %u\n"
 				"Default Fifo Depth: %u\n"
 				"Threads Per Receiver: %u\n"

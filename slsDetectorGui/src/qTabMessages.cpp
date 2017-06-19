@@ -81,7 +81,7 @@ void qTabMessages::Initialization(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabMessages::customEvent(QEvent *e) {
-  if (e->type() == (STREAMEVENT)){
+ if (e->type() == (STREAMEVENT)){
 	  QString temp = ((qStreamEvent*)e)->getString();
 	  dispLog->append(temp);
   }

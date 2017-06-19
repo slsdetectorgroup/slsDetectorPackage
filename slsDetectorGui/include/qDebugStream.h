@@ -17,6 +17,7 @@
 #include <QString>
 #include <QCustomEvent>
 
+
 #include <iostream>
 #include <streambuf>
 #include <string>
@@ -47,6 +48,7 @@ class qDebugStream : public basic_streambuf<char> {
 
 public:
 	qDebugStream(ostream &stream, QWidget* w) : m_stream(stream), log_window(w) {
+		mutex = PTHREAD_MUTEX_INITIALIZER;
 		m_old_buf = stream.rdbuf();
 		stream.rdbuf(this);
 	}
@@ -55,8 +57,11 @@ public:
 
 	~qDebugStream(){
 		// output anything that is left
-		if (!m_string.empty())
+		if (!m_string.empty()) {
+			pthread_mutex_lock(&mutex);
 			QApplication::postEvent(log_window, new qStreamEvent(m_string.c_str()));
+			pthread_mutex_unlock(&mutex);
+		}
 		m_stream.rdbuf(m_old_buf);
 	}
 
@@ -65,8 +70,10 @@ public:
 protected:
 	virtual int_type overflow(int_type v){
 		if (v == '\n'){
+			pthread_mutex_lock(&mutex);
 			QApplication::postEvent(log_window, new qStreamEvent(m_string.c_str()));
 			m_string.erase(m_string.begin(), m_string.end());
+			pthread_mutex_unlock(&mutex);
 		}
 		else
 			m_string += v;
@@ -76,7 +83,9 @@ protected:
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 	virtual streamsize xsputn(const char *p, streamsize n)	{
+		pthread_mutex_lock(&mutex);
 		m_string.append(p, p + n);
+
 		//changed from uint because of 64 bit
 		int pos = 0;
 
@@ -88,12 +97,14 @@ protected:
 				m_string.erase(m_string.begin(), m_string.begin() + pos + 1);
 			}
 		}
+		pthread_mutex_unlock(&mutex);
 		return n;
 	}
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 private:
+	pthread_mutex_t mutex;
 	ostream &m_stream;
 	streambuf *m_old_buf;
 	string m_string;

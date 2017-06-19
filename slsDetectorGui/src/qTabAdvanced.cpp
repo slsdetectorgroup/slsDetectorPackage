@@ -153,14 +153,14 @@ void qTabAdvanced::SetupWidgetWindow(){
 	spinControlPort->setValue(det->getControlPort());
 	spinStopPort->setValue(det->getStopPort());
 	spinTCPPort->setValue(det->getReceiverPort());
-	spinUDPPort->setValue(atoi(det->getReceiverUDPPort()));
+	spinUDPPort->setValue(atoi(det->getReceiverUDPPort().c_str()));
 
 	cout << "Getting network information" << endl;
-	dispIP->setText(det->getDetectorIP());
-	dispMAC->setText(det->getDetectorMAC());
-	dispRxrHostname->setText(det->getReceiver());
-	dispUDPIP->setText(det->getReceiverUDPIP());
-	dispUDPMAC->setText(det->getReceiverUDPMAC());
+	dispIP->setText(det->getDetectorIP().c_str());
+	dispMAC->setText(det->getDetectorMAC().c_str());
+	dispRxrHostname->setText(det->getReceiver().c_str());
+	dispUDPIP->setText(det->getReceiverUDPIP().c_str());
+	dispUDPMAC->setText(det->getReceiverUDPMAC().c_str());
 
 
 	//check if its online and set it to red if offline
@@ -785,10 +785,10 @@ void qTabAdvanced::SetNetworkParameters(){
 	disconnect(dispUDPIP,		SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
 	disconnect(dispUDPMAC,		SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
 
-	dispIP->setText(QString(det->setDetectorIP(dispIP->text().toAscii().constData())));
-	dispMAC->setText(QString(det->setDetectorMAC(dispMAC->text().toAscii().constData())));
-	dispUDPIP->setText(QString(det->setReceiverUDPIP(dispUDPIP->text().toAscii().constData())));
-	dispUDPMAC->setText(QString(det->setReceiverUDPMAC(dispUDPMAC->text().toAscii().constData())));
+	dispIP->setText(QString(det->setDetectorIP(dispIP->text().toAscii().constData()).c_str()));
+	dispMAC->setText(QString(det->setDetectorMAC(dispMAC->text().toAscii().constData()).c_str()));
+	dispUDPIP->setText(QString(det->setReceiverUDPIP(dispUDPIP->text().toAscii().constData()).c_str()));
+	dispUDPMAC->setText(QString(det->setReceiverUDPMAC(dispUDPMAC->text().toAscii().constData()).c_str()));
 	qDefs::checkErrorMessage(det,"qTabAdvanced::SetNetworkParameters");
 
 	connect(dispIP,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
@@ -806,7 +806,7 @@ void qTabAdvanced::SetReceiver(){
 	cout << "Setting Receiver" << endl;
 #endif
 	string outdir = myDet->getFilePath();
-	dispRxrHostname->setText(QString(det->setReceiver(dispRxrHostname->text().toAscii().constData())));
+	dispRxrHostname->setText(QString(det->setReceiver(dispRxrHostname->text().toAscii().constData()).c_str()));
 	qDefs::checkErrorMessage(det,"qTabAdvanced::SetReceiver");
 	det->setFilePath(outdir);
 	qDefs::checkErrorMessage(det,"qTabAdvanced::SetReceiver");
@@ -1059,13 +1059,13 @@ void qTabAdvanced::SetDetector(int index){
 	spinControlPort->setValue(det->getControlPort());
 	spinStopPort->setValue(det->getStopPort());
 	spinTCPPort->setValue(det->getReceiverPort());
-	spinUDPPort->setValue(atoi(det->getReceiverUDPPort()));
+	spinUDPPort->setValue(atoi(det->getReceiverUDPPort().c_str()));
 
-	dispIP->setText(det->getDetectorIP());
-	dispMAC->setText(det->getDetectorMAC());
-	dispRxrHostname->setText(det->getReceiver());
-	dispUDPIP->setText(det->getReceiverUDPIP());
-	dispUDPMAC->setText(det->getReceiverUDPMAC());
+	dispIP->setText(det->getDetectorIP().c_str());
+	dispMAC->setText(det->getDetectorMAC().c_str());
+	dispRxrHostname->setText(det->getReceiver().c_str());
+	dispUDPIP->setText(det->getReceiverUDPIP().c_str());
+	dispUDPMAC->setText(det->getReceiverUDPMAC().c_str());
 
 
 	//check if its online and set it to red if offline
@@ -1262,20 +1262,20 @@ void qTabAdvanced::Refresh(){
 		disconnect(dispUDPMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
 		disconnect(btnRxr,				SIGNAL(clicked()),			this, SLOT(SetReceiver()));
 
-		dispIP->setText(det->getDetectorIP());
-		dispMAC->setText(det->getDetectorMAC());
+		dispIP->setText(det->getDetectorIP().c_str());
+		dispMAC->setText(det->getDetectorMAC().c_str());
 
 		//so that updated status
 		if(det->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG)
 			det->checkReceiverOnline();
 		comboRxrOnline->setCurrentIndex(det->setReceiverOnline());
 
-		dispRxrHostname->setText(det->getReceiver());
+		dispRxrHostname->setText(det->getReceiver().c_str());
 		spinTCPPort->setValue(det->getReceiverPort());
-		spinUDPPort->setValue(atoi(det->getReceiverUDPPort()));
+		spinUDPPort->setValue(atoi(det->getReceiverUDPPort().c_str()));
 
-		dispUDPIP->setText(det->getReceiverUDPIP());
-		dispUDPMAC->setText(det->getReceiverUDPMAC());
+		dispUDPIP->setText(det->getReceiverUDPIP().c_str());
+		dispUDPMAC->setText(det->getReceiverUDPMAC().c_str());
 
 		//connect
 		connect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));

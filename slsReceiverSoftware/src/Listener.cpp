@@ -324,7 +324,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 	//look for carry over
 	if (carryOverFlag) {
-		//if(!index) cprintf(RED,"carry flag\n");
+		 cprintf(RED,"%d carry flag\n",index);
 		//check if its the current image packet
 		// -------------------------- new header ----------------------------------------------------------------------
 		if (standardheader) {
@@ -347,8 +347,21 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 			return generalData->imageSize;
 		}
 
-		memcpy(buf  + fifohsize + (pnum * dsize),
-				carryOverPacket + hsize, dsize);
+		//copy packet
+		switch(myDetectorType) {
+		//for gotthard, 1st packet: 4 bytes fnum, CACA, 1278 bytes data
+		//				2nd packet: 4 bytes fnu, 1282 bytes data !!
+		case GOTTHARD:
+			if(!pnum)
+				memcpy(buf + fifohsize + (pnum * dsize), carryOverPacket + hsize+4, dsize-2);
+			else
+				memcpy(buf + fifohsize + (pnum * dsize) - 2, carryOverPacket + hsize, dsize+2);
+			break;
+		default:
+			memcpy(buf + fifohsize + (pnum * dsize), carryOverPacket + hsize, dsize);
+			break;
+		}
+
 		carryOverFlag = false;
 		numpackets++;					//number of packets in this image (each time its copied to buf)
 
@@ -430,8 +443,19 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		}
 
 		//copy packet
-		memcpy(buf + fifohsize + (pnum * dsize),
-				listeningPacket + hsize, dsize);
+		switch(myDetectorType) {
+		//for gotthard, 1st packet: 4 bytes fnum, CACA, 1278 bytes data
+		//				2nd packet: 4 bytes fnu, 1282 bytes data !!
+		case GOTTHARD:
+			if(!pnum)
+				memcpy(buf + fifohsize + (pnum * dsize), listeningPacket + hsize+4, dsize-2);
+			else
+				memcpy(buf + fifohsize + (pnum * dsize) - 2, listeningPacket + hsize, dsize+2);
+			break;
+		default:
+			memcpy(buf + fifohsize + (pnum * dsize), listeningPacket + hsize, dsize);
+			break;
+		}
 		numpackets++;			//number of packets in this image (each time its copied to buf)
 		if(isHeaderEmpty) {
 			// -------------------------- new header ----------------------------------------------------------------------

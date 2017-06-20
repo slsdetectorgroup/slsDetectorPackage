@@ -17,7 +17,7 @@
 #include <rapidjson/document.h> //json header in zmq stream
 using namespace rapidjson;
 
-#define DEFAULT_ZMQ_PORTNO 	70001
+#define DEFAULT_ZMQ_PORTNO 	30001
 
 class ZmqSocket {
 
@@ -68,6 +68,15 @@ public:
 		}
 
 		//Socket Options provided above
+		//ZMQ_LINGER default is already -1 means no messages discarded. use this options if optimizing required
+		//ZMQ_SNDHWM default is 0 means no limit. use this to optimize if optimizing required
+		// eg. int value = -1;
+		int value = -1;
+		 if (zmq_setsockopt(socketDescriptor, ZMQ_LINGER, &value,sizeof(value))) {
+			PrintError ();
+			Close();
+		 }
+
 
 		//connect socket
 		if (zmq_connect(socketDescriptor, serverAddress) < 0) {
@@ -231,7 +240,7 @@ public:
 						modId, xCoord, yCoord, zCoord, debug, roundRNumber,
 						detType, version);
 #ifdef VERBOSE
-		if(!index)
+		//if(!index)
 			printf("%d Streamer: buf:%s\n", index, buf);
 #endif
 
@@ -295,7 +304,7 @@ public:
 		if ( len > 0 ) {
 			bool dummy = false;
 #ifdef VERBOSE
-				cprintf( RED,"Header %d Length: %d Header:%s \n", index, length, (char*) zmq_msg_data (&message) );
+				cprintf( BLUE,"Header %d Length: %d Header:%s \n", index, len, (char*) zmq_msg_data (&message) );
 #endif
 			if ( ParseHeader (index, len, message, acqIndex, frameIndex, subframeIndex, filename, dummy)) {
 				zmq_msg_close (&message);
@@ -308,6 +317,7 @@ public:
 #endif
 					return 0;
 				}
+				cprintf(GREEN,"%d data\n",index);
 				return 1;
 			}
 		}

@@ -6,6 +6,7 @@
 #include "communication_funcs.h"
 #include "server_funcs.h"
 #include <stdlib.h>
+#include <string.h>
 
 
 extern int sockfd;

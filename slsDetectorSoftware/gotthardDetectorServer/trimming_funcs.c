@@ -164,8 +164,8 @@ int choose_vthresh_and_vtrim(int countlim,  int nsigma, int im) {
   double vthreshmean, vthreshSTDev;
   int *thrmi, *thrma;
   double c;
-  double b=BVTRIM;
-  double a=AVTRIM;
+  //double b=BVTRIM;
+  //double a=AVTRIM;
   int *trim;
   int ich, imod, ichan;
   int nvalid=0;
@@ -236,7 +236,7 @@ int choose_vthresh_and_vtrim(int countlim,  int nsigma, int im) {
     while (runBusy()) {
     }
     usleep(500);
-    fifodata=fifo_read_event();
+    fifodata=(int*)fifo_read_event();
     scan=decode_data(fifodata);
     for (imod=modmi; imod<modma; imod++) {
       for (ichan=0; ichan<nChans*nChips; ichan++){
@@ -377,7 +377,7 @@ int trim_with_level(int countlim, int im) {
     }
     usleep(500);
 
-    fifodata=fifo_read_event();
+    fifodata=(int*)fifo_read_event();
     scan=decode_data(fifodata);
     for (imod=modmi; imod<modma; imod++) {
       for (ichan=0; ichan<nChans*nChips; ichan++) {
@@ -515,7 +515,7 @@ int choose_vthresh() {
   }
   usleep(500);
   
-    fifodata=fifo_read_event();
+    fifodata=(int*)fifo_read_event();
     scan=decode_data(fifodata);
     //
     scan1=decode_data(fifodata);
@@ -523,7 +523,7 @@ int choose_vthresh() {
 
   for (imod=modmi; imod<modma; imod++) {
     //
-    med[imod]=median(scan1+imod*nChans*nChips,nChans*nChips);
+    med[imod]=(int)median((int*)scan1+imod*nChans*nChips,nChans*nChips);
     med1[imod]=med[imod];
     //commented out by dhanya    vthreshmean=vthreshmean+getDACbyIndexDACU(VTHRESH,imod);
     olddiff[imod]=0xffffff;
@@ -553,7 +553,7 @@ int choose_vthresh() {
     }
     usleep(500);
 
-    fifodata=fifo_read_event();
+    fifodata=(int*)fifo_read_event();
     scan=decode_data(fifodata);
     //
     scan1=decode_data(fifodata);
@@ -561,7 +561,7 @@ int choose_vthresh() {
     change_flag=0;
     printf("Vthresh iteration %3d 0f %3d\n",iteration, maxiterations);
     for (ichan=modmi; ichan<modma; ichan++) {
-      med[ichan]=median(scan1+ichan*nChans*nChips,nChans*nChips);
+      med[ichan]=(int)median((int*)scan1+ichan*nChans*nChips,nChans*nChips);
       med1[imod]=med[imod];
       media=median(med1+modmi,nm);
 
@@ -680,7 +680,7 @@ int trim_with_median(int stop, int im) {
     while (runBusy()) {
     }
     usleep(500);
-    fifodata=fifo_read_event();
+    fifodata=(int*)fifo_read_event();
     scan=decode_data(fifodata);
     scan1=decode_data(fifodata);
 
@@ -689,7 +689,7 @@ int trim_with_median(int stop, int im) {
     /********* calculates median every time ***********/
 
     for (imod=modmi; imod<modma; imod++) {
-      me[imod]=median(scan1+imod*nChans*nChips,nChans*nChips);
+      me[imod]=median((int*)scan1+imod*nChans*nChips,nChans*nChips);
       me1[imod]=me[imod];
       printf("Median of module %d=%d\n",imod,me[imod]);
     }

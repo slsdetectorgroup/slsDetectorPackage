@@ -5282,7 +5282,16 @@ void multiSlsDetector::readFrameFromReceiver(){
 	int* multiframe=new int[nel]();
 	int nch;
 
-	volatile uint64_t dataThreadMask = 0x0;
+/*
+	//left shift can be done to a maximum of 32 bits (so using 3 x 32 bits, instead of 2 x 64 bits)
+	volatile uint32_t dataThreadMask1 = 0x0;
+	volatile uint32_t dataThreadMask2 = 0x0;
+	volatile uint32_t dataThreadMask3 = 0x0;
+	if(numSockets >= 96) {
+		cprintf(BG_RED,"Error: Too many sockets %d for gui to process. Goodbye!", numSockets);
+		createReceivingDataSockets(true);
+		exit(EXIT_FAILURE);
+	}
 
 	//wait for real time acquisition to start
 	bool running = true;
@@ -5290,22 +5299,41 @@ void multiSlsDetector::readFrameFromReceiver(){
 	if(checkJoinThread())
 		running = false;
 
-	for(int i = 0; i < numSockets; ++i)
-		dataThreadMask|=(1<<i);
+
+	for(int i = 0; i < numSockets; ++i) {
+		if(i < 32)
+			dataThreadMask1 |=(1<<i);
+		else if (i < 64)
+			dataThreadMask2 |=(1<<(i-32));
+		else
+			dataThreadMask3 |=(1<<(i-64));
+	}
 
 	//exit when last message for each socket received
 	while(running){
+
+		printf("datathreadmask1:0x%08x datathreadmask2:0x%08x datathreadmask2:0x%08x\n",dataThreadMask1,dataThreadMask2,dataThreadMask3);
 		//memset(((char*)multiframe),0xFF,slsdatabytes*thisMultiDetector->numberOfDetectors);	//reset frame memory
 
 		//get each frame
 		for(int isocket=0; isocket<numSockets; ++isocket){
+			cout<<"isocket:"<<isocket<<endl;
 
 			//if running
-			if((1 << isocket) & dataThreadMask){
-
+			if (((isocket < 32) && ((1 << isocket) & dataThreadMask1)) || 								//first 32 sockets
+				((isocket >= 32) && (isocket < 64) &&((1 << (isocket-32)) & dataThreadMask2)) || 		//next 32 sockets
+				((isocket >= 64) && ((1 << (isocket-64)) & dataThreadMask3))) {							//next set of sockets
+			//if((1 << isocket) & dataThreadMask){
+				cout<<"isocket running"<<endl;
 				//get individual images
 				if(FAIL == getData(isocket, jungfrau, image, expectedslssize, currentAcquisitionIndex,currentFrameIndex,currentSubFrameIndex,currentFileName)){
-					dataThreadMask^=(1<<isocket);
+					if(isocket < 32)
+						dataThreadMask1^=(1<<isocket);
+					else if (isocket < 64)
+						dataThreadMask2^=(1<<(isocket-32));
+					else
+						dataThreadMask3^=(1<<(isocket-64));
+					printf("changed to datathreadmask1:0x%08x datathreadmask2:0x%08x datathreadmask2:0x%08x\n",dataThreadMask1,dataThreadMask2,dataThreadMask3);
 					continue;
 				}
 
@@ -5341,7 +5369,109 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 
 		//all done
-		if(!dataThreadMask){
+		if(!dataThreadMask1 && !dataThreadMask2 && !dataThreadMask3){
+			cout<<"doneeeeeeeeeeeeeeeeeeeeeee!\n"<<endl;
+			sem_wait(&sem_newRTAcquisition);
+			//done with complete acquisition
+			if(checkJoinThread())
+				break;
+			else{
+				//starting a new scan/measurement
+				for(int i = 0; i < numSockets; ++i) {
+					if(i < 32)
+						dataThreadMask1 |=(1<<i);
+					else if (i < 64)
+						dataThreadMask2 |=(1<<(i-32));
+					else
+						dataThreadMask3 |=(1<<(i-64));
+				}
+				running = false;
+			}
+		}
+
+		//send data to callback
+		if(running){
+		  fdata = decodeData(multiframe,nch);
+			if ((fdata) && (dataReady)){
+				thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),nx,ny);
+				dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);
+				delete thisData;
+				fdata = NULL;
+				//cout<<"Send frame #"<< currentFrameIndex << " to gui"<<endl;
+			}
+			setCurrentProgress(currentAcquisitionIndex+1);
+		}
+
+		//setting it back for each scan/measurement
+		running = true;
+	}
+	*/
+
+
+	bool runningList[numSockets];
+	int numRunning = 0;
+
+	//wait for real time acquisition to start
+	bool running = true;
+	sem_wait(&sem_newRTAcquisition);
+	if(checkJoinThread())
+		running = false;
+
+	for(int i = 0; i < numSockets; ++i)
+		runningList[i] = true;
+	numRunning = numSockets;
+
+
+	//exit when last message for each socket received
+	while(running){
+		//memset(((char*)multiframe),0xFF,slsdatabytes*thisMultiDetector->numberOfDetectors);	//reset frame memory
+
+		//get each frame
+		for(int isocket=0; isocket<numSockets; ++isocket){
+
+			//if running
+			if (runningList[isocket]) {
+			//if((1 << isocket) & dataThreadMask){
+				//get individual images
+				if(FAIL == getData(isocket, jungfrau, image, expectedslssize, currentAcquisitionIndex,currentFrameIndex,currentSubFrameIndex,currentFileName)){
+					runningList[isocket] = false;
+					numRunning--;
+					continue;
+				}
+
+				//assemble data with interleaving
+				if(maxX){
+
+					//bottom
+					if(bottom[isocket]){
+					//if((((isocket/numSocketsPerSLSDetector)+1)%2) == 0){
+						for(int i=0;i<slsmaxY;++i){
+							memcpy(((char*)multiframe) + offsetY[isocket] + offsetX[isocket] + (int)((slsmaxY-1-i)*maxX*bytesperchannel),
+									(char*)image+ (int)(i*(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel),
+									(int)(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel);
+						}
+					}
+					//top
+					else{
+						for(int i=0;i<slsmaxY;++i){
+							memcpy(((char*)multiframe) + offsetY[isocket] + offsetX[isocket] + (int)(i*maxX*bytesperchannel),
+									(char*)image+ (int)(i*(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel),
+									(int)(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel);
+						}
+					}
+				}
+
+				//assemble data with no interleaving, assumed detectors appended vertically
+				else{
+					memcpy((char*)multiframe+slsdatabytes*isocket,(char*)image,slsdatabytes);
+				}
+			}
+
+		}
+
+
+		//all done
+		if(!numRunning){
 			sem_wait(&sem_newRTAcquisition);
 			//done with complete acquisition
 			if(checkJoinThread())
@@ -5349,7 +5479,8 @@ void multiSlsDetector::readFrameFromReceiver(){
 			else{
 				//starting a new scan/measurement
 				for(int i = 0; i < numSockets; ++i)
-					dataThreadMask|=(1<<i);
+					runningList[i] = true;
+				numRunning = numSockets;
 				running = false;
 			}
 		}

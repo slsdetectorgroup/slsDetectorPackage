@@ -14,6 +14,7 @@
 
 #include <stdlib.h>
 
+
 //for memory mapping
 u_int64_t CSP0BASE;
 
@@ -171,8 +172,8 @@ int mapCSP0(void) {
     return FAIL;
   }
 #endif
-  printf("CSPObase is 0x%x \n",CSP0BASE);
-  printf("CSPOBASE=from %08x to %x\n",CSP0BASE,CSP0BASE+MEM_SIZE);
+  printf("CSPObase is 0x%llx \n",CSP0BASE);
+  printf("CSPOBASE=from %llx to %llx\n",CSP0BASE,CSP0BASE+MEM_SIZE);
 
   u_int32_t address;
   address = FIFO_DATA_REG_OFF;
@@ -827,7 +828,7 @@ u_int32_t testRAM(void) {
   int i=0;
   allocateRAM();
   //  while(i<100000) {
-    memcpy(ram_values, values, dataBytes);
+    memcpy((char*)ram_values, (char*)values, dataBytes);
     printf ("Testing RAM:\t%d: copied fifo %x to memory %x size %d\n",i++, (unsigned int)(values), (unsigned int)(ram_values), dataBytes);
     // }
   return result;
@@ -970,7 +971,7 @@ int64_t getActualTime(){
 
 int64_t getMeasurementTime(){
   int64_t v=get64BitReg(GET_MEASUREMENT_TIME_LSB_REG, GET_MEASUREMENT_TIME_MSB_REG);
-  int64_t mask=0x8000000000000000;
+  u_int64_t mask=0x8000000000000000;
   if (v & mask ) {
 #ifdef VERBOSE
     printf("no measurement time left\n");
@@ -1000,7 +1001,7 @@ int loadImage(int index, short int ImageVals[]){
 	for(i=0;i<6;i++)
 		printf("%d:%d\t",i,ImageVals[i]);
 #endif
-	memcpy(ptr,ImageVals ,dataBytes);
+	memcpy((char*)ptr,(char*)ImageVals ,dataBytes);
 #ifdef VERBOSE
 	printf("\nLoaded x%08x address with image of index %d\n",(unsigned int)(ptr),index);
 #endif
@@ -1816,7 +1817,7 @@ int allocateRAM() {
 int prepareADC(){
 	printf("Preparing ADC\n");
 	u_int32_t valw,codata,csmask;
-	int i,j,cdx,ddx,value;
+	int i,j,cdx,ddx;
 	cdx=0; ddx=1;
 	csmask=0x7c; //  1111100
 
@@ -2208,7 +2209,7 @@ int readCounterBlock(int startACQ, short int CounterVals[]){
 		printf("Value of multipurpose reg:%d\n",bus_r(MULTI_PURPOSE_REG));
 #endif
 
-		memcpy(CounterVals,ptr,dataBytes);
+		memcpy((char*)CounterVals,(char*)ptr,dataBytes);
 #ifdef VERBOSE
 		int i;
 		printf("Copied counter memory block with size of %d bytes..\n",dataBytes);
@@ -2278,7 +2279,7 @@ int resetCounterBlock(int startACQ){
 #endif
 
 
-		memcpy(counterVals,ptr,dataBytes);
+		memcpy((char*)counterVals,(char*)ptr,dataBytes);
 #ifdef VERBOSE
 		int i;
 		printf("Copied counter memory block with size of %d bytes..\n",(int)sizeof(counterVals));
@@ -2350,7 +2351,7 @@ int calibratePedestal(int frames){
 
       int a;
       for (a=0;a<1280; a++){
-	unsigned short v = (frame[a] << 8) + (frame[a] >> 8);
+	//unsigned short v = (frame[a] << 8) + (frame[a] >> 8);
 	//	  printf("%i: %i %i\n",a, frame[a],v);
 	avg[a] += ((double)frame[a])/(double)frames;
 	//if(frame[a] == 8191)
@@ -2377,7 +2378,7 @@ int calibratePedestal(int frames){
 
   
 
-  double nf = (double)numberFrames;
+  //double nf = (double)numberFrames;
   for(i =0; i < 1280; i++){
     adc = i / 256;
     adcCh = (i - adc * 256) / 32;

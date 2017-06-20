@@ -72,6 +72,7 @@ int getAdcConfigured();
 
 u_int64_t getDetectorNumber();
 u_int32_t getFirmwareVersion();
+u_int32_t  getFirmwareSVNVersion();
 int testFifos(void);
 u_int32_t testFpga(void);
 u_int32_t testRAM(void);

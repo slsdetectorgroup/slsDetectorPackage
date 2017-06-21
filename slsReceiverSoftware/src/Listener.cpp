@@ -266,7 +266,7 @@ void Listener::ThreadExecution() {
 	}
 
 
-	/*//done acquiring
+	/*//done acquiring (removing this, else the last incomplete image will not be sent, directly going to dummy msg)
 	if ((*status == TRANSMITTING) || ( (!(*activated)) && (rc == 0)) ) {
 		StopListening(buffer);
 		return;

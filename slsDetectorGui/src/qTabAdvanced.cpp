@@ -191,12 +191,13 @@ void qTabAdvanced::SetupWidgetWindow(){
 	cout << "Getting ROI" << endl;
 	if (myDet->getDetectorsType() == slsDetectorDefs::GOTTHARD)
 		updateROIList();
-
+#ifdef VERYVERBOSE
 	//  print receiver configurations
 	if(myDet->getDetectorsType() != slsDetectorDefs::MYTHEN){
 		cout << endl;
 		myDet->printReceiverConfiguration();
 	}
+#endif
 
 	Initialization();
 

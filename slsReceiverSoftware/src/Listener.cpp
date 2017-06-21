@@ -251,7 +251,7 @@ void Listener::ThreadExecution() {
 
 	//udpsocket doesnt exist
 	if (*activated && !udpSocket) {
-		FILE_LOG(logERROR) << "Listening_Thread " << index << ": UDP Socket not created or shut down earlier";
+		//FILE_LOG(logERROR) << "Listening_Thread " << index << ": UDP Socket not created or shut down earlier";
 		(*((uint32_t*)buffer)) = 0;
 		StopListening(buffer);
 		return;
@@ -265,15 +265,16 @@ void Listener::ThreadExecution() {
 			rc = CreateAnImage(buffer + generalData->fifoBufferHeaderSize);
 	}
 
-	//done acquiring
+
+	/*//done acquiring
 	if ((*status == TRANSMITTING) || ( (!(*activated)) && (rc == 0)) ) {
 		StopListening(buffer);
 		return;
-	}
+	}*/
 
 	//error check, (should not be here) if not transmitting yet (previous if) rc should be > 0
 	if (rc <= 0) {
-			cprintf(BG_RED,"Error:(Weird Early self shut down), UDP Sockets not shut down, but received nothing\n");
+		//cprintf(BG_RED,"Error:(Weird Early self shut down), UDP Sockets not shut down, but received nothing\n");
 		StopListening(buffer);
 		return;
 	}
@@ -282,8 +283,10 @@ void Listener::ThreadExecution() {
 	(*((uint64_t*)(buffer + FIFO_HEADER_NUMBYTES ))) = currentFrameIndex;		//for those returning earlier
 	currentFrameIndex++;
 
+
 	//push into fifo
 	fifo->PushAddress(buffer);
+
 }
 
 
@@ -317,9 +320,8 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 	//reset to -1
 	memset(buf, 0, fifohsize);
-	memset(buf + fifohsize, 0xFF, dsize);
+	memset(buf + fifohsize, 0xFF, generalData->imageSize);
 	new_header = (sls_detector_header*) (buf + FIFO_HEADER_NUMBYTES);
-
 
 
 	//look for carry over
@@ -422,6 +424,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		//------------------------------------------------------------------------------------------------------------
 
 		lastCaughtFrameIndex = fnum;
+
 #ifdef VERBOSE
 		//if (!index)
 		cprintf(GREEN,"Listening %d: currentfindex:%lu, fnum:%lu,   pnum:%u numpackets:%u\n",

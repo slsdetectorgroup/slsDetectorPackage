@@ -275,6 +275,9 @@ void DataProcessor::ThreadExecution() {
 
 	//check dummy
 	uint32_t numBytes = (uint32_t)(*((uint32_t*)buffer));
+#ifdef VERBOSE
+	if (!index) cprintf(BLUE,"DataProcessor %d, Numbytes:%u\n", index,numBytes);
+#endif
 	if (numBytes == DUMMY_PACKET_VALUE) {
 		StopProcessing(buffer);
 		return;
@@ -292,6 +295,10 @@ void DataProcessor::ThreadExecution() {
 
 
 void DataProcessor::StopProcessing(char* buf) {
+#ifdef VERBOSE
+	if (!index)
+		cprintf(RED,"DataProcessing %d: Dummy\n", index);
+#endif
 	//stream or free
 	if (*dataStreamEnable)
 		fifo->PushAddressToStream(buf);
@@ -318,7 +325,8 @@ void DataProcessor::ProcessAnImage(char* buf) {
 
 
 #ifdef VERBOSE
-	if (!index) cprintf(BLUE,"DataProcessing %d: fnum:%lu\n", index, fnum);
+	if (!index)
+		cprintf(BLUE,"DataProcessing %d: fnum:%lu\n", index, fnum);
 #endif
 
 	if (!measurementStartedFlag) {

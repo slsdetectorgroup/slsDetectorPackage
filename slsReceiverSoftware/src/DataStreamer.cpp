@@ -183,11 +183,14 @@ void DataStreamer::ThreadExecution() {
 	char* buffer=0;
 	fifo->PopAddressToStream(buffer);
 #ifdef FIFODEBUG
-	if (!index) cprintf(BLUE,"DataProcessor %d, pop 0x%p buffer:%s\n", index,(void*)(buffer),buffer);
+	if (!index) cprintf(BLUE,"DataStreamer %d, pop 0x%p buffer:%s\n", index,(void*)(buffer),buffer);
 #endif
 
 	//check dummy
 	uint32_t numBytes = (uint32_t)(*((uint32_t*)buffer));
+#ifdef VERBOSE
+	cprintf(GREEN,"DataStreamer %d, Numbytes:%u\n", index,numBytes);
+#endif
 	if (numBytes == DUMMY_PACKET_VALUE) {
 		StopProcessing(buffer);
 		return;
@@ -203,7 +206,10 @@ void DataStreamer::ThreadExecution() {
 
 
 void DataStreamer::StopProcessing(char* buf) {
-
+#ifdef VERBOSE
+	if (!index)
+		cprintf(RED,"DataStreamer %d: Dummy\n", index);
+#endif
 	sls_detector_header* header = (sls_detector_header*) (buf);
 	//send dummy header and data
 	if (!SendHeader(header, true))
@@ -222,7 +228,7 @@ void DataStreamer::ProcessAnImage(char* buf) {
 	sls_detector_header* header = (sls_detector_header*) (buf);
 	uint64_t fnum = header->frameNumber;
 #ifdef VERBOSE
-	if (!index) cprintf(MAGENTA,"DataStreamer %d: fnum:%lu\n", index,fnum);
+	cprintf(MAGENTA,"DataStreamer %d: fnum:%lu\n", index,fnum);
 #endif
 
 	if (!measurementStartedFlag) {

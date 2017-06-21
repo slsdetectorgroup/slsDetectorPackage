@@ -10,6 +10,8 @@
 #include "ansi.h"
 //#include "sls_receiver_defs.h"
 
+//#define ZMQ_DETAIL
+
 #include <zmq.h>
 #include <errno.h>
 #include <netdb.h>				//gethostbyname()
@@ -303,21 +305,23 @@ public:
 		int len = ReceiveMessage(index, message);
 		if ( len > 0 ) {
 			bool dummy = false;
-#ifdef VERBOSE
-				cprintf( BLUE,"Header %d Length: %d Header:%s \n", index, len, (char*) zmq_msg_data (&message) );
+#ifdef ZMQ_DETAIL
+				cprintf( BLUE,"Header %d [%d] Length: %d Header:%s \n", index, portno, len, (char*) zmq_msg_data (&message) );
 #endif
 			if ( ParseHeader (index, len, message, acqIndex, frameIndex, subframeIndex, filename, dummy)) {
-				zmq_msg_close (&message);
-#ifdef VERBOSE
-				cprintf( RED,"Parsed Header %d Length: %d Header:%s \n", index, len, (char*) zmq_msg_data (&message) );
+#ifdef ZMQ_DETAIL
+				cprintf( RED,"Parsed Header %d [%d] Length: %d Header:%s \n", index, portno, len, (char*) zmq_msg_data (&message) );
 #endif
+				zmq_msg_close (&message);
 				if (dummy) {
-#ifdef VERBOSE
-					cprintf(RED,"%d Received end of acquisition\n", index);
+#ifdef ZMQ_DETAIL
+					cprintf(RED,"%d [%d] Received end of acquisition\n", index, portno );
 #endif
 					return 0;
 				}
-				cprintf(GREEN,"%d data\n",index);
+#ifdef ZMQ_DETAIL
+				cprintf(GREEN,"%d [%d] data\n",index, portno );
+#endif
 				return 1;
 			}
 		}

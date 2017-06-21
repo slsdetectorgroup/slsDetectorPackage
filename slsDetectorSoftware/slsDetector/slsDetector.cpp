@@ -144,7 +144,9 @@ int slsDetector::freeSharedMemory() {
     perror("shmdt failed\n");
     return FAIL;
   }
+#ifdef VERBOSE
   printf("Shared memory %d detached\n", shmId);
+#endif
   // remove shared memory
   if (shmctl(shmId, IPC_RMID, 0) == -1) {
     perror("shmctl(IPC_RMID) failed\n");
@@ -247,7 +249,9 @@ slsDetector::slsDetector(int pos, detectorType type, int id, multiSlsDetector *p
 
   /**Initializes the detector stucture \sa initializeDetectorSize
    */
+#ifdef VERBOSE
   cout << "init det size"<< endl;
+#endif
   initializeDetectorSize(type);
 
 
@@ -261,9 +265,11 @@ slsDetector::~slsDetector(){
   if (shmdt(thisDetector) == -1) {
     perror("shmdt failed\n");
     printf("Could not detach shared memory %d\n", shmId);
-  } else
+  }
+#ifdef VERBOSE
+  else
     printf("Shared memory %d detached\n", shmId);
-
+#endif
 delete thisReceiver;
 };
 
@@ -5900,7 +5906,11 @@ string slsDetector::setDetectorMAC(string detectorMAC){
        (detectorMAC[11]==':')&&(detectorMAC[14]==':')){
       strcpy(thisDetector->detectorMAC,detectorMAC.c_str());
       if(!strcmp(thisDetector->receiver_hostname,"none"))
+#ifdef VERBOSE
     	  std::cout << "Warning: Receiver hostname not set yet." << endl;
+#else
+      	  ;
+#endif
       else if(setUDPConnection()==FAIL)
 	    std::cout<< "Warning: UDP connection set up failed" << std::endl;
     }else{
@@ -5927,7 +5937,11 @@ string slsDetector::setDetectorIP(string detectorIP){
 			if(result!=0){
 				strcpy(thisDetector->detectorIP,detectorIP.c_str());
 				if(!strcmp(thisDetector->receiver_hostname,"none"))
+#ifdef VERBOSE
 					std::cout << "Warning: Receiver hostname not set yet." << endl;
+#else
+					;
+#endif
 				else if(setUDPConnection()==FAIL)
 					std::cout<< "Warning: UDP connection set up failed" << std::endl;
 			}else{
@@ -6030,7 +6044,11 @@ string slsDetector::setReceiverUDPIP(string udpip){
 			}else{
 				strcpy(thisDetector->receiverUDPIP,udpip.c_str());
 				if(!strcmp(thisDetector->receiver_hostname,"none")) {
+#ifdef VERBOSE
 					std::cout << "Warning: Receiver hostname not set yet." << endl;
+#else
+					;
+#endif
 				}
 				else if(setUDPConnection()==FAIL){
 					std::cout<< "Warning: UDP connection set up failed" << std::endl;
@@ -6054,7 +6072,11 @@ string slsDetector::setReceiverUDPMAC(string udpmac){
        (udpmac[11]==':')&&(udpmac[14]==':')){
       strcpy(thisDetector->receiverUDPMAC,udpmac.c_str());
       if(!strcmp(thisDetector->receiver_hostname,"none"))
+#ifdef VERBOSE
     	  std::cout << "Warning: Receiver hostname not set yet." << endl;
+#else
+      	  ;
+#endif
       else  if(setUDPConnection()==FAIL){
     	  std::cout<< "Warning: UDP connection set up failed" << std::endl;
       }
@@ -6073,7 +6095,11 @@ string slsDetector::setReceiverUDPMAC(string udpmac){
 int slsDetector::setReceiverUDPPort(int udpport){
 	thisDetector->receiverUDPPort = udpport;
 	if(!strcmp(thisDetector->receiver_hostname,"none"))
-		std::cout << "Warning: Receiver hostname not set yet." << endl;
+#ifdef VERBOSE
+    	  std::cout << "Warning: Receiver hostname not set yet." << endl;
+#else
+      	  ;
+#endif
 	else if(setUDPConnection()==FAIL){
 		std::cout<< "Warning: UDP connection set up failed" << std::endl;
     }
@@ -6083,7 +6109,11 @@ int slsDetector::setReceiverUDPPort(int udpport){
 int slsDetector::setReceiverUDPPort2(int udpport){
 	thisDetector->receiverUDPPort2 = udpport;
 	if(!strcmp(thisDetector->receiver_hostname,"none"))
-		std::cout << "Warning:  Receiver hostname not set yet." << endl;
+#ifdef VERBOSE
+    	  std::cout << "Warning: Receiver hostname not set yet." << endl;
+#else
+      	  ;
+#endif
 	else if(setUDPConnection()==FAIL){
       std::cout<< "Warning: UDP connection set up failed" << std::endl;
     }
@@ -6137,7 +6167,9 @@ int slsDetector::setUDPConnection(){
 
 	//called before set up
 	if(!strcmp(thisDetector->receiver_hostname,"none")){
-		std::cout << "Warning: Receiver hostname not set yet." << endl;
+#ifdef VERBOSE
+    	std::cout << "Warning: Receiver hostname not set yet." << endl;
+#endif
 		return FAIL;
 	}
 
@@ -6195,9 +6227,9 @@ int slsDetector::setUDPConnection(){
 		}
 	}else
 		ret=FAIL;
-
+#ifdef VERBOSE
 	printReceiverConfiguration();
-
+#endif
 	return ret;
 }
 

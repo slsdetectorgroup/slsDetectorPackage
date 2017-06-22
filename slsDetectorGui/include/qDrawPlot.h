@@ -571,6 +571,8 @@ QVector<QwtIntervalSample> histogramSamples;
 bool plotRequired;
 
 
+
+
 signals:
 void UpdatingPlotFinished();
 void InterpolateSignal(bool);

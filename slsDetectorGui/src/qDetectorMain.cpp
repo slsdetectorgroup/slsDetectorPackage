@@ -296,7 +296,7 @@ void qDetectorMain::SetUpDetector(const string fName){
 //#endif
 	myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
 	if(detType != slsDetectorDefs::MYTHEN) {
-		if(myDet->setReceiverOnline(slsDetectorDefs::GET_ONLINE_FLAG) == slsDetectorDefs::ONLINE_FLAG) {cprintf(GREEN,"is online!\n");
+		if(myDet->setReceiverOnline(slsDetectorDefs::GET_ONLINE_FLAG) == slsDetectorDefs::ONLINE_FLAG) {
 			myDet->setReceiverOnline(slsDetectorDefs::ONLINE_FLAG);
 		}else cprintf(RED,"is not online!\n");
 	}

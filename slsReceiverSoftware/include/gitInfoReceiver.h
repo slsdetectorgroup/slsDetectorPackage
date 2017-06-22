@@ -1,11 +1,11 @@
 //#define SVNPATH ""
 #define SVNURL "git@git.psi.ch:sls_detectors_software/sls_receiver_software.git"
 //#define SVNREPPATH ""
-#define SVNREPUUID "9ee216cc0cc39e77af2b9a8cdb3edbca218279fc"
-//#define SVNREV 0x588
+#define SVNREPUUID "3ed2a33d504cb2d40acd6e7c8e115697158346e9"
+//#define SVNREV 0x595
 //#define SVNKIND ""
 //#define SVNSCHED ""
 #define SVNAUTH "Dhanya_Maliakal"
-#define SVNREV 0x588
-#define SVNDATE 0x20170613
+#define SVNREV 0x595
+#define SVNDATE 0x20170622
 //

@@ -160,6 +160,9 @@ int DataStreamer::SetThreadPriority(int priority) {
 
 int DataStreamer::CreateZmqSockets(int* dindex, int* nunits) {
 	uint32_t portnum = DEFAULT_ZMQ_PORTNO + ((*dindex) * (*nunits) + index);
+	//using userReceiver where all receivers in one program (numberofstreamers>*nunits)
+	if(index >= *nunits)
+		portnum = DEFAULT_ZMQ_PORTNO + index;
 
 	zmqSocket = new ZmqSocket(portnum);
 	if (zmqSocket->IsError()) {

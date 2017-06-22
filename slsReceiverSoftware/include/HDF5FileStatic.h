@@ -50,7 +50,7 @@ public:
 	{
 		ostringstream osfn;
 		osfn << fpath << "/" << fnameprefix;
-		if (dindex >= 0) osfn << "_d" << (dindex * numunits + unitindex);
+		if (dindex >= 0) osfn << "_d" << ((unitindex >= numunits) ? unitindex : (dindex * numunits + unitindex));	//if unit index > numunits, all receivers in one program (userReceiver)
 		if (frindexenable) osfn << "_f" << setfill('0') << setw(12) << fnum;
 		osfn << "_" << findex;
 		osfn << ".h5";

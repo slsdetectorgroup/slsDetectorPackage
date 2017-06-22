@@ -333,8 +333,9 @@ void qDrawPlot::SetupWidgetWindow(){
 	//Setting the callback function to get progress from detector class(using receivers)
 	myDet->registerProgressCallback(&(GetProgressCallBack),this);
 	//stream data from receiver to the gui
-	if(detType != slsDetectorDefs::MYTHEN)
+	if(detType != slsDetectorDefs::MYTHEN && myDet->setReceiverOnline(slsDetectorDefs::GET_ONLINE_FLAG) == slsDetectorDefs::ONLINE_FLAG) {
 		myDet->enableDataStreamingFromReceiver(1);
+	}
 
 
 	qDefs::checkErrorMessage(myDet,"qDrawPlot::SetupWidgetWindow");

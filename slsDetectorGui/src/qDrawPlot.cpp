@@ -499,7 +499,9 @@ bool qDrawPlot::StartOrStopThread(bool start){
 		// This is manually done instead of keeping track of thread because
 		// this thread returns immediately after executing the acquire command
 		gui_acquisition_thread_running=1;
-		cout << "Started acquiring threaddd:" << endl;
+#ifdef VERYVERBOSE
+		cout << "Started acquiring thread" << endl;
+#endif
 	}
 	pthread_mutex_unlock(&gui_acquisition_start_stop_mutex);
 	return gui_acquisition_thread_running;

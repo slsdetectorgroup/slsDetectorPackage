@@ -930,7 +930,7 @@ class multiSlsDetector  : public slsDetectorUtils {
      \param imod module number (if -1 alla modules)
      \returns current DAC value
   */
-  dacs_t getADC(dacIndex index, int imod=0);
+  dacs_t getADC(dacIndex index, int imod=-1);
   /**
      configure channel
      \param reg channel register

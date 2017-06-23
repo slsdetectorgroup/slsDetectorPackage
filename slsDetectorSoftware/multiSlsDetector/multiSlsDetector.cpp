@@ -2970,53 +2970,86 @@ int  multiSlsDetector::getAngularConversion(int &direction,  angleConversionCons
 
 
 dacs_t multiSlsDetector::setDAC(dacs_t val, dacIndex idac, int mV, int imod) {
-  dacs_t ret, ret1=-100;
-  
-  int id=-1, im=-1;
-  int dmi=0, dma=thisMultiDetector->numberOfDetectors;
-  
-  if (decodeNMod(imod, id, im)>=0) {
-    dmi=id;
-    dma=dma+1;
-  }
+	dacs_t ret = -100;
+	if(!threadpool){
+		cout << "Error in creating threadpool. Exiting" << endl;
+		return -1;
+	}else{
+		int id=-1, im=-1;
+		int posmin=0, posmax=thisMultiDetector->numberOfDetectors;
+		if (decodeNMod(imod, id, im)>=0) {
+			posmin=id;
+			posmax=id+1;
+		}
 
-  for (int idet=dmi; idet<dma; idet++) {
-    if (detectors[idet]) {
-      ret=detectors[idet]->setDAC(val, idac, mV, im);
-       if(detectors[idet]->getErrorMask())
-	setErrorMask(getErrorMask()|(1<<idet));
-     if (ret1==-100)
-	ret1=ret;
-      else if (ret!=ret1)
-	ret1=-1;
-    }
-  }
-  return ret1;
+		//return storage values
+		dacs_t* iret[posmax-posmin];
+		for(int idet=posmin; idet<posmax; ++idet){
+			if(detectors[idet]){
+				iret[idet]= new dacs_t(-1);
+				Task* task = new Task(new func4_t <dacs_t,slsDetector,dacs_t,dacIndex,int,int,dacs_t>(&slsDetector::setDAC,
+						detectors[idet],val, idac, mV, im, iret[idet]));
+				threadpool->add_task(task);
+			}
+		}
+		threadpool->startExecuting();
+		threadpool->wait_for_tasks_to_complete();
+		for(int idet=posmin; idet<posmax; idet++){
+			if(detectors[idet]){
+				if(iret[idet] != NULL){
+					if (ret==-100)
+						ret=*iret[idet];
+					else if (ret!=*iret[idet])
+						ret=-1;
+					delete iret[idet];
+				}else ret=-1;
+				if(detectors[idet]->getErrorMask())
+					setErrorMask(getErrorMask()|(1<<idet));
+			}
+		}
+	}
+	return ret;
 }
 
 dacs_t multiSlsDetector::getADC(dacIndex idac, int imod) {
-  dacs_t ret, ret1=-100;
-  
-  int id=-1, im=-1;
-  int dmi=0, dma=thisMultiDetector->numberOfDetectors;
-  
-  if (decodeNMod(imod, id, im)>=0) {
-    dmi=id;
-    dma=dma+1;
-  }
-
-  for (int idet=dmi; idet<dma; idet++) {
-    if (detectors[idet]) {
-      ret=detectors[idet]->getADC(idac, im);
-	  if(detectors[idet]->getErrorMask())
-		 setErrorMask(getErrorMask()|(1<<idet));
-      if (ret1==-100)
-	ret1=ret;
-      else if (ret!=ret1)
-	ret1=-1;
-    }
-  }
-  return ret1;
+	dacs_t ret = -100;
+	if(!threadpool){
+		cout << "Error in creating threadpool. Exiting" << endl;
+		return -1;
+	}else{
+		int id=-1, im=-1;
+		int posmin=0, posmax=thisMultiDetector->numberOfDetectors;
+		if (decodeNMod(imod, id, im)>=0) {
+			posmin=id;
+			posmax=id+1;
+		}
+		//return storage values
+				dacs_t* iret[posmax-posmin];
+		for(int idet=posmin; idet<posmax; ++idet){
+			if(detectors[idet]){
+				iret[idet]= new dacs_t(-1);
+				Task* task = new Task(new func2_t <dacs_t,slsDetector,dacIndex,int,dacs_t>(&slsDetector::getADC,
+						detectors[idet],idac, im, iret[idet]));
+				threadpool->add_task(task);
+			}
+		}
+		threadpool->startExecuting();
+		threadpool->wait_for_tasks_to_complete();
+		for(int idet=posmin; idet<posmax; idet++){
+			if(detectors[idet]){
+				if(iret[idet] != NULL){
+					if (ret==-100)
+						ret=*iret[idet];
+					else if (ret!=*iret[idet])
+						ret=-1;
+					delete iret[idet];
+				}else ret=-1;
+				if(detectors[idet]->getErrorMask())
+					setErrorMask(getErrorMask()|(1<<idet));
+			}
+		}
+	}
+	return ret;
 }
 
 int multiSlsDetector::setChannel(int64_t reg, int ichan, int ichip, int imod) {

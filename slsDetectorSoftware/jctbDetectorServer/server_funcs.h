@@ -99,4 +99,7 @@ int power_chip(int);
 int reset_fpga(int);
 int program_fpga(int);
 
+int   activate(int);
+int   prepare_acquisition(int);
+int   cleanup_acquisition(int);
 #endif

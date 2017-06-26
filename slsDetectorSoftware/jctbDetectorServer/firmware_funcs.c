@@ -2514,7 +2514,7 @@ int prepareADC(){
     writeADC(0x04,0xf);//all chans
     writeADC(0x04,0x3f);//all chans
 
-    writeADC(0x16,0x4);//output clock phase
+    // writeADC(0x16,0x4);//output clock phase
     //  writeADC(0x18,0x4);// vref 1V
     // writeADC(0x14,0x0);
     writeADC(0x14,0x40);//lvds reduced range -- offset binary

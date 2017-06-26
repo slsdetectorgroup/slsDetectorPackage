@@ -226,6 +226,9 @@ int function_table() {
   flist[F_PROGRAM_FPGA]=&program_fpga;
   flist[F_POWER_CHIP]=&power_chip;
   flist[F_RESET_FPGA]=&reset_fpga;
+  flist[F_ACTIVATE]=&activate;
+  flist[F_PREPARE_ACQUISITION]=&prepare_acquisition;
+  flist[F_CLEANUP_ACQUISITION]=&cleanup_acquisition;
   return OK;
 }
 
@@ -238,7 +241,7 @@ int  M_nofunc(int file_des){
 
   sendDataOnly(file_des,&ret,sizeof(ret));
   sendDataOnly(file_des,mess,sizeof(mess));
-  return GOODBYE;
+  return FAIL;
 }
 
 
@@ -3212,6 +3215,7 @@ int set_ctb_pattern(int file_des){
 	  n = receiveDataOnly(file_des,&word,sizeof(word)); 
 	  ret=OK;
 
+	  printf("pattern addr is %d %x\n",addr, word);
 	  switch (addr) {
 	  case -1:
 	    retval64=writePatternIOControl(word);
@@ -3236,6 +3240,7 @@ int set_ctb_pattern(int file_des){
 	  break;
 
 	case 1: //pattern loop
+	  // printf("loop\n");
 	  n = receiveDataOnly(file_des,&level,sizeof(level)); 
 	  n = receiveDataOnly(file_des,&start,sizeof(start)); 
 	  n = receiveDataOnly(file_des,&stop,sizeof(stop)); 
@@ -3243,7 +3248,7 @@ int set_ctb_pattern(int file_des){
 	  
 
 
-	  printf("level %d start %x stop %x nl %d\n",level, start, stop, nl);
+	  //       printf("level %d start %x stop %x nl %d\n",level, start, stop, nl);
   /** Sets the pattern or loop limits in the CTB
       @param level -1 complete pattern, 0,1,2, loop level
       @param start start address if >=0
@@ -3266,6 +3271,7 @@ int set_ctb_pattern(int file_des){
 
 
 	case 2: //wait address
+	  printf("wait\n");
 	  n = receiveDataOnly(file_des,&level,sizeof(level)); 
 	  n = receiveDataOnly(file_des,&addr,sizeof(addr)); 
 
@@ -3293,6 +3299,7 @@ int set_ctb_pattern(int file_des){
 
 
 	case 3: //wait time
+	  printf("wait time\n");
 	  n = receiveDataOnly(file_des,&level,sizeof(level)); 
 	  n = receiveDataOnly(file_des,&t,sizeof(t)); 
 
@@ -3618,3 +3625,79 @@ int program_fpga(int file_des) {
 }
 
 
+int activate(int file_des) {
+
+	int retval=-1;
+	int ret=OK;
+	int arg=-1;
+	int n;
+	
+	sprintf(mess,"Can't activate detector\n");
+	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+
+	if (ret==OK && differentClients==1)
+		ret=FORCE_UPDATE;
+	retval=arg;
+	/* send answer */
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret==FAIL) {
+		n += sendDataOnly(file_des,mess,sizeof(mess));
+	} else
+		n += sendDataOnly(file_des,&retval,sizeof(retval));
+
+	return ret;
+}
+
+int prepare_acquisition(int file_des) {
+
+	int retval=-1;
+	int ret=OK;
+	int arg=-1;
+	int n;
+	
+	sprintf(mess,"Can't activate detector\n");
+	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+
+	if (ret==OK && differentClients==1)
+		ret=FORCE_UPDATE;
+
+	/* send answer */
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret==FAIL) {
+		n += sendDataOnly(file_des,mess,sizeof(mess));
+	} 
+	return ret;
+}
+
+int cleanup_acquisition(int file_des) {
+
+	int retval=-1;
+	int ret=OK;
+	int arg=-1;
+	int n;
+	
+	sprintf(mess,"Can't activate detector\n");
+	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+
+	if (ret==OK && differentClients==1)
+		ret=FORCE_UPDATE;
+
+	/* send answer */
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret==FAIL) {
+		n += sendDataOnly(file_des,mess,sizeof(mess));
+	} 
+	return ret;
+}

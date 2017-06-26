@@ -62,18 +62,6 @@ int  slsDetectorUtils::acquire(int delflag){
   bool receiver = (setReceiverOnline()==ONLINE_FLAG);
   if(!receiver){
 	  setDetectorIndex(-1);
-  }else{
-	  //put receiver read frequency to random if no gui
-	  int ret = setReadReceiverFrequency(0);
-	  if(ret>0 && (dataReady == NULL)){
-		  ret = setReadReceiverFrequency(1,0);
-		  std::cout << "No Data call back and hence receiver read frequency reset to " << ret <<" (Random)" << std::endl;
-	  }
-
-	  //start/stop data streaming threads if threads in client enabled/disabled
-	  ret = enableDataStreamingFromReceiver(-1);
-	 // cout<<"getting datastream:"<<ret<<endl;
-	 // cout<<"result of enabledatastream:"<<enableDataStreamingFromReceiver(ret)<<endl;
   }
 
   int nc=setTimer(CYCLES_NUMBER,-1);
@@ -154,11 +142,6 @@ int  slsDetectorUtils::acquire(int delflag){
     pthread_mutex_lock(&mg); //cout << "lock"<< endl;
 	  if(getReceiverStatus()!=IDLE)
 		  stopReceiver();
-	  //multi detectors shouldnt have different receiver read frequencies enabled/disabled
-    	if(setReadReceiverFrequency(0) < 0){
-	  		std::cout << "Error: The receiver read frequency is invalid:" << setReadReceiverFrequency(0) << std::endl;
-	  		*stoppedFlag=1;
-	  	}
 	  if(setReceiverOnline()==OFFLINE_FLAG)
 		  *stoppedFlag=1;
 	  pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;

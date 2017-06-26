@@ -2376,7 +2376,6 @@ int set_speed(int file_des) {
 int set_readout_flags(int file_des) {
 
   enum readOutFlags arg;
-  int n;
   int ret=FAIL;
   
 

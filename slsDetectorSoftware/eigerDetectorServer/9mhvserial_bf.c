@@ -8,6 +8,7 @@
 #include <unistd.h>			// read, close
 #include <string.h>  		// memset
 #include <linux/i2c-dev.h>	// I2C_SLAVE, __u8 reg
+#include <errno.h>
 
 #define PORTNAME 				"/dev/ttyBF1"
 #define GOODBYE 				200
@@ -89,37 +90,40 @@ int i2c_write(unsigned int value){
 
 int main(int argc, char* argv[]) {
 
-	int fd = open(PORTNAME, O_RDWR | O_NOCTTY);
+	int fd = open(PORTNAME, O_RDWR | O_NOCTTY | O_SYNC);
 	if(fd < 0){
 		cprintf(RED,"Warning: Unable to open port %s\n", PORTNAME);
 		return -1;
 	}
 
 	struct termios serial_conf;
-	// Get the current options for the port
-	tcgetattr(fd, &serial_conf);
 	// reset structure
 	memset(&serial_conf,0,sizeof(serial_conf));
 	// control options
 	serial_conf.c_cflag = B2400 | CS8 | CREAD | CLOCAL;
 	// input options
-	serial_conf.c_iflag = IGNPAR;
+	serial_conf.c_iflag = 0;//IGNPAR; (stuck because it was in ignore parity)
 	// output options
 	serial_conf.c_oflag = 0;
 	// line options
 	serial_conf.c_lflag = ICANON;
 	// flush input
-	tcflush(fd, TCIFLUSH);
+	if(tcflush(fd, TCIFLUSH) < 0){
+		cprintf(RED,"Warning: error form tcflush %d\n", errno);
+		return 0;
+	}
 	// set new options for the port, TCSANOW:changes occur immediately without waiting for data to complete
-	tcsetattr(fd, TCSANOW, &serial_conf);
-
-
+	if(tcsetattr(fd, TCSANOW, &serial_conf) < 0){
+		cprintf(RED,"Warning: error form tcsetattr %d\n", errno);
+		return 0;
+	}
 
 
 	int ret = 0;
 	int n = 0;
 	int ival= 0;
 	char buffer[BUFFERSIZE];
+	memset(buffer,0,BUFFERSIZE);
 	buffer[BUFFERSIZE-2] = '\0';
 	buffer[BUFFERSIZE-1] = '\n';
 	cprintf(GREEN,"Ready...\n");

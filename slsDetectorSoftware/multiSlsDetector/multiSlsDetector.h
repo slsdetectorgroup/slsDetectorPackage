@@ -930,7 +930,7 @@ class multiSlsDetector  : public slsDetectorUtils {
      \param imod module number (if -1 alla modules)
      \returns current DAC value
   */
-  dacs_t getADC(dacIndex index, int imod=0);
+  dacs_t getADC(dacIndex index, int imod=-1);
   /**
      configure channel
      \param reg channel register
@@ -980,8 +980,8 @@ class multiSlsDetector  : public slsDetectorUtils {
   char* setCalDir(string s); 
 
 
-  char *getNetworkParameter(networkParameter);
-  char *setNetworkParameter(networkParameter, std::string);
+  string getNetworkParameter(networkParameter);
+  string setNetworkParameter(networkParameter, std::string);
   int setPort(portType, int);
   int lockServer(int);
     

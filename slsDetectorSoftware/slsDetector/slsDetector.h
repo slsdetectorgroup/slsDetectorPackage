@@ -444,7 +444,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      \returns parameter
 
   */
-  char* setNetworkParameter(networkParameter index, string value);
+ string setNetworkParameter(networkParameter index, string value);
 
   /**
      gets the network parameters
@@ -452,7 +452,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      \returns parameter
 
   */
-  char* getNetworkParameter(networkParameter index);
+  string getNetworkParameter(networkParameter index);
 
   /* I/O */
 
@@ -1704,36 +1704,36 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
 
   /** returns the  detector MAC address\sa sharedSlsDetector  */
-  char* getDetectorMAC() {return thisDetector->detectorMAC;};
+  string getDetectorMAC() {return string(thisDetector->detectorMAC);};
   /** returns the  detector IP address\sa sharedSlsDetector  */
-  char* getDetectorIP() {return thisDetector->detectorIP;};
+  string getDetectorIP() {return string(thisDetector->detectorIP);};
   /** returns the receiver IP address \sa sharedSlsDetector  */
-  char* getReceiver() {return thisDetector->receiver_hostname;};
+  string getReceiver() {return string(thisDetector->receiver_hostname);};
   /** returns the receiver UDP IP address \sa sharedSlsDetector  */
-  char* getReceiverUDPIP() {return thisDetector->receiverUDPIP;};
+  string getReceiverUDPIP() {return string(thisDetector->receiverUDPIP);};
   /** returns the receiver UDP MAC address \sa sharedSlsDetector  */
-  char* getReceiverUDPMAC() {return thisDetector->receiverUDPMAC;};
+  string getReceiverUDPMAC() {return string(thisDetector->receiverUDPMAC);};
   /** returns the receiver UDP IP address \sa sharedSlsDetector  */
-  char* getReceiverUDPPort() {char *c= new char[MAX_STR_LENGTH];sprintf(c,"%d",thisDetector->receiverUDPPort); return c;};
+  string getReceiverUDPPort() {ostringstream ss; ss << thisDetector->receiverUDPPort; string s = ss.str(); return s;};
   /** returns the receiver UDP2 for Eiger IP address \sa sharedSlsDetector  */
-  char* getReceiverUDPPort2() {char *c= new char[MAX_STR_LENGTH];sprintf(c,"%d",thisDetector->receiverUDPPort2); return c;};
+  string getReceiverUDPPort2() {ostringstream ss; ss << thisDetector->receiverUDPPort2; string s = ss.str(); return s;};
 
   /** validates the format of detector MAC address and sets it \sa sharedSlsDetector  */
-  char* setDetectorMAC(string detectorMAC);
+  string setDetectorMAC(string detectorMAC);
   /** validates the format of detector IP address and sets it \sa sharedSlsDetector  */
-  char* setDetectorIP(string detectorIP);
+  string setDetectorIP(string detectorIP);
   /** validates and sets the receiver IP address/hostname \sa sharedSlsDetector  */
-  char* setReceiver(string receiver);
+  string setReceiver(string receiver);
   /** validates the format of receiver udp ip and sets it \sa sharedSlsDetector  */
-  char* setReceiverUDPIP(string udpip);
+  string setReceiverUDPIP(string udpip);
   /** validates the format of receiver udp mac and sets it \sa sharedSlsDetector  */
-  char* setReceiverUDPMAC(string udpmac);
+  string setReceiverUDPMAC(string udpmac);
   /** sets the receiver udp port \sa sharedSlsDetector  */
   int setReceiverUDPPort(int udpport);
   /** sets the receiver udp port2 for Eiger \sa sharedSlsDetector  */
   int setReceiverUDPPort2(int udpport);
   /** sets the transmission delay for left or right port or for an entire frame*/
-  char* setDetectorNetworkParameter(networkParameter index, int delay);
+  string setDetectorNetworkParameter(networkParameter index, int delay);
 
   /** Sets the read receiver frequency
    	  if data required from receiver randomly readRxrFrequency=0,

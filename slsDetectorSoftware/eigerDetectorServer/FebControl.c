@@ -13,6 +13,7 @@
 #include <string.h>
 #include <time.h>
 #include <termios.h>  // POSIX terminal control definitions(CS8, CREAD, CLOCAL..)
+#include <errno.h>
 
 #include "FebRegisterDefs.h"
 #include "FebControl.h"
@@ -225,31 +226,35 @@ int Feb_Control_Init(int master, int top, int normal, int module_num){
 
 int Feb_Control_OpenSerialCommunication(){
 	cprintf(BG_BLUE,"opening serial communication of hv\n");
-	if(Feb_Control_hv_fd != -1)
+	//if(Feb_Control_hv_fd != -1)
 		close(Feb_Control_hv_fd);
-	Feb_Control_hv_fd = open(SPECIAL9M_HIGHVOLTAGE_PORT, O_RDWR | O_NOCTTY);
+	Feb_Control_hv_fd = open(SPECIAL9M_HIGHVOLTAGE_PORT, O_RDWR | O_NOCTTY | O_SYNC);
 	if(Feb_Control_hv_fd < 0){
 		cprintf(RED,"Warning: Unable to open port %s to set up high voltage serial communciation to the blackfin\n", SPECIAL9M_HIGHVOLTAGE_PORT);
 		return 0;
 	}
 
 	struct termios serial_conf;
-	// Get the current options for the port
-	tcgetattr(Feb_Control_hv_fd, &serial_conf);
 	// reset structure
-	memset(&serial_conf,0,sizeof(serial_conf));
+	memset (&serial_conf, 0, sizeof(serial_conf));
 	// control options
 	serial_conf.c_cflag = B2400 | CS8 | CREAD | CLOCAL;//57600 too high
 	// input options
-	serial_conf.c_iflag = IGNPAR;
+	serial_conf.c_iflag = 0;//IGNPAR; (stuck because it was in ignore parity)
 	// output options
 	serial_conf.c_oflag = 0;
 	// line options
 	serial_conf.c_lflag = ICANON;
 	// flush input
-	tcflush(Feb_Control_hv_fd, TCIFLUSH);
+	if(tcflush(Feb_Control_hv_fd, TCIFLUSH) < 0){
+		cprintf(RED,"Warning: error form tcflush %d\n", errno);
+		return 0;
+	}
 	// set new options for the port, TCSANOW:changes occur immediately without waiting for data to complete
-	tcsetattr(Feb_Control_hv_fd, TCSANOW, &serial_conf);
+	if(tcsetattr(Feb_Control_hv_fd, TCSANOW, &serial_conf) < 0){
+		cprintf(RED,"Warning: error form tcsetattr %d\n", errno);
+		return 0;
+	}
 
 	return 1;
 }
@@ -605,6 +610,7 @@ int Feb_Control_SendHighVoltage(int dacvalue){
 		}
 
 		char buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE];
+		memset(buffer,0,SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
 		buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE-2]='\0';
 		buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE-1]='\n';
 		int n;

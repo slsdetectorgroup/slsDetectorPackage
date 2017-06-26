@@ -171,7 +171,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
      \returns parameter
 
   */
-  virtual char *getNetworkParameter(networkParameter i)=0;
+  virtual string getNetworkParameter(networkParameter i)=0;
 
   /**
      sets the network parameters  (implemented for gotthard)
@@ -180,7 +180,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
      \returns parameter
 
   */
-  virtual char *setNetworkParameter(networkParameter i, string s)=0; 
+  virtual string setNetworkParameter(networkParameter i, string s)=0;
 
   /**
      changes/gets the port number

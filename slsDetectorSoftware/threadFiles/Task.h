@@ -129,8 +129,8 @@ public:
 	Task(func2_t <char*,slsDetector,networkParameter,string,string>* t):		m1(0),m2(0),m3(0),m4(0),m5(0),m6(0),m7(0),m8(0),m9(0),m10(0),m11(t),m12(0),m13(0){};
 	/* Return: void, Param: none */
 	Task(func00_t <void,slsDetector>* t):										m1(0),m2(0),m3(0),m4(0),m5(0),m6(0),m7(0),m8(0),m9(0),m10(0),m11(0),m12(t),m13(0){};
-	/* Return: int, Param: int,int,detectorSettings  */
-	Task(func3_t <int,slsDetector,int,int,detectorSettings,int>* t): 			m1(0),m2(0),m3(0),m4(0),m5(0),m6(0),m7(0),m8(0),m9(0),m10(0),m11(0),m12(0),m13(t){};
+	/* Return: int, Param: int,int,detectorSettings,int  */
+	Task(func4_t <int,slsDetector,int,int,detectorSettings,int,int>* t):		m1(0),m2(0),m3(0),m4(0),m5(0),m6(0),m7(0),m8(0),m9(0),m10(0),m11(0),m12(0),m13(t){};
 
 
 
@@ -178,7 +178,7 @@ private:
 	/* Return: void, Param: none */
 	func00_t <void,slsDetector>* m12;
 	/* Return: int, Param: int,int,detectorSettings */
-	func3_t <int,slsDetector,int,int,detectorSettings,int>* m13;
+	func4_t <int,slsDetector,int,int,detectorSettings,int,int>* m13;
 };
 
 

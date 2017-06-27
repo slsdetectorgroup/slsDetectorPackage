@@ -138,7 +138,7 @@ int energyConversion::writeCalibrationFile(string fname, int *gain, int *offset)
 
 
 
-slsDetectorDefs::sls_detector_module* energyConversion::interpolateTrim(detectorType myDetectorType, sls_detector_module* a, sls_detector_module* b, const int energy, const int e1, const int e2){
+slsDetectorDefs::sls_detector_module* energyConversion::interpolateTrim(detectorType myDetectorType, sls_detector_module* a, sls_detector_module* b, const int energy, const int e1, const int e2, int tb){
 	// only implemented for eiger currently (in terms of which dacs)
 	if(myDetectorType != EIGER) {
 		printf("Interpolation of Trim values not implemented for this detector!\n");
@@ -168,8 +168,10 @@ slsDetectorDefs::sls_detector_module* energyConversion::interpolateTrim(detector
 	}
 
 	//Interpolate all trimbits
-	for (int i = 0; i<myMod->nchan; i++)
-		myMod->chanregs[i] = linearInterpolation(energy, e1, e2, a->chanregs[i], b->chanregs[i]);
+	if(tb) {
+		for (int i = 0; i<myMod->nchan; i++)
+			myMod->chanregs[i] = linearInterpolation(energy, e1, e2, a->chanregs[i], b->chanregs[i]);
+	}
 	return myMod;
 }
 
@@ -180,7 +182,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::interpolateTrim(detector
 /* I/O */
 
 
-slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string fname, detectorType myDetectorType, int& iodelay, int& tau, sls_detector_module* myMod){
+slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string fname, detectorType myDetectorType, int& iodelay, int& tau, sls_detector_module* myMod, int tb){
 
 
 
@@ -372,19 +374,21 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 			infile.read((char*) myMod->dacs,sizeof(dacs_t)*(myMod->ndac));
 			infile.read((char*)&iodelay,sizeof(iodelay));
 			infile.read((char*)&tau,sizeof(tau));
-			infile.read((char*) myMod->chanregs,sizeof(int)*(myMod->nchan));
 #ifdef VERBOSE
 			for(int i=0;i<myMod->ndac;i++)
 				printf( "dac %d:%d \n", i, myMod->dacs[i] );
 			printf( "iodelay:%d \n", iodelay );
 			printf( "tau:%d \n", tau );
 #endif
-			if(infile.eof()){
-				printf( "Error, could not load trimbits end of file reached: %s \n\n", myfname.c_str() );
-				if (nflag)
-					deleteModule(myMod);
+			if(tb) {
+				infile.read((char*) myMod->chanregs,sizeof(int)*(myMod->nchan));
+				if(infile.eof()){
+					printf( "Error, could not load trimbits end of file reached: %s \n\n", myfname.c_str() );
+					if (nflag)
+						deleteModule(myMod);
 
-				return NULL;
+					return NULL;
+				}
 			}
 			infile.close();
 			strcpy(settingsFile,fname.c_str());

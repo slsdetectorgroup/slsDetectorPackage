@@ -552,6 +552,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="thresholdnotb"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
+  i++;
+
   descrToFuncMap[i].m_pFuncName="trimbits"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
   i++;
@@ -3289,10 +3293,10 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
     return myDet->getDetectorSettings(myDet->getSettings());
   } else if (cmd=="threshold") {
     if (action==PUT_ACTION) {
-      detectorType type = myDet->getDetectorsType();
       if (!sscanf(args[1],"%d",&val)) {
     	  return string("invalid threshold value");
       }
+      detectorType type = myDet->getDetectorsType();
       if (type != EIGER || (type == EIGER && narg<=2)) {
     	  myDet->setThresholdEnergy(val);
       } else {
@@ -3304,6 +3308,25 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
     }
     sprintf(ans,"%d",myDet->getThresholdEnergy());
     return string(ans);
+  } else if (cmd=="thresholdnotb") {
+	  if (action==PUT_ACTION) {
+		  if (!sscanf(args[1],"%d",&val)) {
+			  return string("invalid threshold value");
+		  }
+		  detectorType type = myDet->getDetectorsType();
+		  if (type != EIGER)
+			  return string("not implemented for this detector");
+		  if (narg<=2) {
+			  myDet->setThresholdEnergy(val, -1, GET_SETTINGS, 0);
+		  } else {
+			  detectorSettings sett= myDet->getDetectorSettings(string(args[2]));
+			  if(sett == -1)
+				  return string("invalid settings value");
+			  myDet->setThresholdEnergy(val, -1, sett, 0);
+		  }
+	  }
+	  sprintf(ans,"%d",myDet->getThresholdEnergy());
+	  return string(ans);
   } else if (cmd=="trimbits") {
     if (narg>=2) {
       string sval=string(args[1]);
@@ -3386,7 +3409,8 @@ string slsDetectorCommand::helpSettings(int narg, char *args[], int action) {
   if (action==PUT_ACTION || action==HELP_ACTION) {
     os << "settings s \n sets the settings of the detector - can be standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain"
     		"lownoise, dynamichg0,fixgain1,fixgain2,forceswitchg1, forceswitchg2"<< std::endl;
-    os << "threshold eV\n sets the detector threshold in eV"<< std::endl;
+    os << "threshold eV [sett]\n sets the detector threshold in eV. If sett is provided for eiger, uses settings sett"<< std::endl;
+    os << "thresholdnotb eV [sett]\n sets the detector threshold in eV without loading trimbits. If sett is provided for eiger, uses settings sett"<< std::endl;
     os << "trimbits fname\n loads the trimfile fname to the detector. If no extension is specified, the serial number of each module will be attached."<< std::endl;
     os << "trim:mode fname\n trims the detector according to mode (can be noise, beam, improve, fix) and saves the resulting trimbits to file fname."<< std::endl;
     os << "trimval i \n sets all the trimbits to i" << std::endl;

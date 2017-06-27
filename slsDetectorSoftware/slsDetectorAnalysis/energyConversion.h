@@ -88,9 +88,10 @@ class energyConversion
      \param energy energy to trim at
      \param e1 reference trim value
      \param e2 reference trim value
+     \param tb 1 to include trimbits, 0 to exclude (used for eiger)
      \returns  the pointer to the module structure with interpolated values or NULL if error
    */
-  sls_detector_module* interpolateTrim(detectorType myDetectorType, sls_detector_module* a, sls_detector_module* b, const int energy, const int e1, const int e2);
+  sls_detector_module* interpolateTrim(detectorType myDetectorType, sls_detector_module* a, sls_detector_module* b, const int energy, const int e1, const int e2, int tb=1);
 
 
 
@@ -103,10 +104,11 @@ class energyConversion
      \param iodelay io delay (detector specific)
      \param tau tau (detector specific)
      \param myMod pointer to the module structure which has to be set. <BR> If it is NULL a new module structure will be created
+     \param tb 1 to include trimbits, 0 to exclude (used for eiger)
      \returns the pointer to myMod or NULL if reading the file failed
   */
 
-  sls_detector_module* readSettingsFile(string fname, detectorType myDetectorType, int& iodelay, int& tau, sls_detector_module* myMod=NULL);
+  sls_detector_module* readSettingsFile(string fname, detectorType myDetectorType, int& iodelay, int& tau, sls_detector_module* myMod=NULL, int tb=1);
 
   /**
      writes a trim/settings file

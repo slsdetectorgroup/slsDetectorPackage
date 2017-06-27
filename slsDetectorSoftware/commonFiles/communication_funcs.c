@@ -561,6 +561,15 @@ int  receiveModuleGeneral(int file_des, sls_detector_module* myMod, int receiveA
   myMod->chipregs=chipptr;
   myMod->chanregs=chanptr;
 
+#ifdef EIGERD
+  //feature to exclude sending of trimbtis, nchips=0,nchans=0 in that case
+  if(myMod->nchip == 0 && myMod->nchan == 0) {
+	  receiveAll=0;
+	  nchipold=0;
+	  nchanold=0;
+  }
+#endif
+
   nChips=myMod->nchip;
   nchipdiff=nChips-nchipold;
   if (nchipold!=nChips) {
@@ -570,6 +579,7 @@ int  receiveModuleGeneral(int file_des, sls_detector_module* myMod, int receiveA
   else
     printf("received %d chips\n",nChips);
 #endif
+
 
   nChans=myMod->nchan;
   nchandiff=nChans-nchanold;

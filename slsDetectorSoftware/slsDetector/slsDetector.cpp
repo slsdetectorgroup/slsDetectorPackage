@@ -2886,7 +2886,7 @@ int slsDetector::setModule(int reg, int imod){
 
 };
 
-int slsDetector::setModule(sls_detector_module module, int iodelay, int tau, int e_eV, int* gainval, int* offsetval){
+int slsDetector::setModule(sls_detector_module module, int iodelay, int tau, int e_eV, int* gainval, int* offsetval, int tb){
 
 	int fnum=F_SET_MODULE;
 	int retval;
@@ -2903,6 +2903,11 @@ int slsDetector::setModule(sls_detector_module module, int iodelay, int tau, int
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
 		if (connectControl() == OK){
 			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+			//to exclude trimbits
+			if(!tb) {
+				module.nchan=0;
+				module.nchip=0;
+			}
 			sendModule(&module);
 
 			//not included in module
@@ -2936,23 +2941,29 @@ int slsDetector::setModule(sls_detector_module module, int iodelay, int tau, int
 	if (ret!=FAIL) {
 		if (detectorModules) {
 			if (imod>=0 && imod<thisDetector->nMod[X]*thisDetector->nMod[Y]) {
-				(detectorModules+imod)->nchan=module.nchan;
-				(detectorModules+imod)->nchip=module.nchip;
+				if(tb) {
+					(detectorModules+imod)->nchan=module.nchan;
+					(detectorModules+imod)->nchip=module.nchip;
+				}
 				(detectorModules+imod)->ndac=module.ndac;
 				(detectorModules+imod)->nadc=module.nadc;
-				thisDetector->nChips=module.nchip;
-				thisDetector->nChans=module.nchan/module.nchip;
+				if(tb) {
+					thisDetector->nChips=module.nchip;
+					thisDetector->nChans=module.nchan/module.nchip;
+				}
 				thisDetector->nDacs=module.ndac;
 				thisDetector->nAdcs=module.nadc;
 
 				if(thisDetector->myDetectorType != JUNGFRAU){
-					for (int ichip=0; ichip<thisDetector->nChips; ichip++) {
-						if (chipregs)
-							chipregs[ichip+thisDetector->nChips*imod]=module.chipregs[ichip];
+					if(tb) {
+						for (int ichip=0; ichip<thisDetector->nChips; ichip++) {
+							if (chipregs)
+								chipregs[ichip+thisDetector->nChips*imod]=module.chipregs[ichip];
 
-						if (chanregs) {
-							for (int i=0; i<thisDetector->nChans; i++) {
-								chanregs[i+ichip*thisDetector->nChans+thisDetector->nChips*thisDetector->nChans*imod]=module.chanregs[ichip*thisDetector->nChans+i];
+							if (chanregs) {
+								for (int i=0; i<thisDetector->nChans; i++) {
+									chanregs[i+ichip*thisDetector->nChans+thisDetector->nChips*thisDetector->nChans*imod]=module.chanregs[ichip*thisDetector->nChans+i];
+								}
 							}
 						}
 					}
@@ -3182,11 +3193,11 @@ int slsDetector::getThresholdEnergy(int imod){
   return  thisDetector->currentThresholdEV;
 };
 
-int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isettings){
+int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isettings, int tb){
 
 	//currently only for eiger
 	if (thisDetector->myDetectorType == EIGER) {
-		setThresholdEnergyAndSettings(e_eV,isettings);
+		setThresholdEnergyAndSettings(e_eV,isettings,tb);
 			return  thisDetector->currentThresholdEV;
 	}
 
@@ -3226,7 +3237,7 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
 
 
 
-int slsDetector::setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings) {
+int slsDetector::setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings, int tb) {
 
 	//if settings provided, use that, else use the shared memory variable
 	detectorSettings is = ((isettings != GET_SETTINGS) ? isettings: thisDetector->currentSettings);
@@ -3292,7 +3303,7 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV, detectorSettings isetti
 #endif
 		//read the files
 		myMod=createModule();
-		if (NULL == readSettingsFile(settingsfname,thisDetector->myDetectorType, iodelay, tau, myMod)) {
+		if (NULL == readSettingsFile(settingsfname,thisDetector->myDetectorType, iodelay, tau, myMod, tb)) {
 			if(myMod)deleteModule(myMod);
 			return FAIL;
 		}
@@ -3327,13 +3338,13 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV, detectorSettings isetti
 		int tau1 = -1;			//not included in the module
 		int iodelay2 = -1;			//not included in the module
 		int tau2 = -1;			//not included in the module
-		if (NULL == readSettingsFile(settingsfname1,thisDetector->myDetectorType, iodelay1, tau1, myMod1)) {
+		if (NULL == readSettingsFile(settingsfname1,thisDetector->myDetectorType, iodelay1, tau1, myMod1, tb)) {
 			setErrorMask((getErrorMask())|(SETTINGS_FILE_NOT_OPEN));
 			deleteModule(myMod1);
 			deleteModule(myMod2);
 			return FAIL;
 		}
-		if (NULL == readSettingsFile(settingsfname2,thisDetector->myDetectorType, iodelay2, tau2, myMod2)) {
+		if (NULL == readSettingsFile(settingsfname2,thisDetector->myDetectorType, iodelay2, tau2, myMod2, tb)) {
 			setErrorMask((getErrorMask())|(SETTINGS_FILE_NOT_OPEN));
 			deleteModule(myMod1);
 			deleteModule(myMod2);
@@ -3349,7 +3360,7 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV, detectorSettings isetti
 		iodelay = iodelay1;
 
 		//interpolate  module
-		myMod = interpolateTrim(thisDetector->myDetectorType, myMod1, myMod2, e_eV, trim1, trim2);
+		myMod = interpolateTrim(thisDetector->myDetectorType, myMod1, myMod2, e_eV, trim1, trim2, tb);
 		if (myMod == NULL) {
 			printf("Could not interpolate, different dac values in files\n");
 			setErrorMask((getErrorMask())|(SETTINGS_NOT_SET));
@@ -3365,7 +3376,7 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV, detectorSettings isetti
 
 	myMod->module=0;
 	myMod->reg=thisDetector->currentSettings;
-	setModule(*myMod, iodelay, tau, e_eV, 0, 0);
+	setModule(*myMod, iodelay, tau, e_eV, 0, 0, tb);
 	deleteModule(myMod);
 	if (getSettings(-1) != is){
 		printf( "Could not set settings in detector \n" );

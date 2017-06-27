@@ -462,6 +462,8 @@ class JungfrauData : public GeneralData {
 class EigerData : public GeneralData {
 
 private:
+
+#ifndef EIGER_NEWHEADER
 	/** Structure of an eiger packet header	 */
 	typedef struct {
 		unsigned char subFrameNumber[4];
@@ -483,29 +485,48 @@ private:
 
 	/** Footer offset */
 	uint32_t footerOffset;
+#endif
+
 
 	/** Constructor */
 	EigerData(){
 		myDetectorType		= slsReceiverDefs::EIGER;
 		nPixelsX 			= (256*2);
 		nPixelsY 			= 256;
+#ifndef EIGER_NEWHEADER
 		headerSizeinPacket  = 8;
+#else
+		headerSizeinPacket  = sizeof(slsReceiverDefs::sls_detector_header);
+#endif
 		dataSize 			= 1024;
+#ifndef EIGER_NEWHEADER
 		packetSize 			= headerSizeinPacket + dataSize + 8;
+#else
+		packetSize 			= headerSizeinPacket + dataSize;
+#endif
 		packetsPerFrame 	= 256;
 		imageSize 			= dataSize*packetsPerFrame;
+#ifndef EIGER_NEWHEADER
 		frameIndexMask 		= 0xffffff;
+#endif
 		maxFramesPerFile 	= EIGER_MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 100;
+#ifndef EIGER_NEWHEADER
 		footerOffset		= headerSizeinPacket + dataSize;
+#endif
 		threadsPerReceiver	= 2;
+#ifndef EIGER_NEWHEADER
 		headerPacketSize	= 48;
+#else
+		headerPacketSize	= 40;
+#endif
 		nPixelsX_Streamer 	= nPixelsX;
 		nPixelsY_Streamer 	= nPixelsY;
 		imageSize_Streamer 	= imageSize;
 	};
 
+#ifndef EIGER_NEWHEADER
 	/**
 	 * Get Header Infomation (frame number, packet number)
 	 * @param index thread index for debugging purposes
@@ -541,6 +562,7 @@ private:
 			subFrameNumber = (uint64_t) *( (uint32_t*) header->subFrameNumber);
 		}
 	}
+#endif
 
 	/**
 	 * Setting dynamic range changes member variables
@@ -559,12 +581,20 @@ private:
 	 */
 	void SetTenGigaEnable(bool tgEnable, int dr) {
 		dataSize 		= (tgEnable ? 4096 : 1024);
+#ifndef EIGER_NEWHEADER
 		packetSize 		= (tgEnable ? 4112 : 1040);
+#else
+		packetSize 		= headerSizeinPacket + dataSize;
+#endif
 		packetsPerFrame = (tgEnable ? 4 : 16) * dr;
 		imageSize 		= dataSize*packetsPerFrame;
+#ifndef EIGER_NEWHEADER
 		footerOffset	= packetHeaderSize+dataSize;
+#endif
 	};
 
+
+#ifndef EIGER_NEWHEADER
 	/**
 	 * Print all variables
 	 */
@@ -575,5 +605,6 @@ private:
 				packetHeaderSize,
 				footerOffset);
 	}
+#endif
 };
 

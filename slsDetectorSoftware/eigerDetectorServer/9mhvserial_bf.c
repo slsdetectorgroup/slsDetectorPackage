@@ -102,13 +102,13 @@ int main(int argc, char* argv[]) {
 	// control options
 	serial_conf.c_cflag = B2400 | CS8 | CREAD | CLOCAL;
 	// input options
-	serial_conf.c_iflag = 0;//IGNPAR; (stuck because it was in ignore parity)
+	serial_conf.c_iflag = IGNPAR;
 	// output options
 	serial_conf.c_oflag = 0;
 	// line options
 	serial_conf.c_lflag = ICANON;
 	// flush input
-	if(tcflush(fd, TCIFLUSH) < 0){
+	if(tcflush(fd, TCIOFLUSH) < 0){
 		cprintf(RED,"Warning: error form tcflush %d\n", errno);
 		return 0;
 	}
@@ -118,17 +118,39 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 
+	if(tcsetattr(fd, TCSAFLUSH, &serial_conf) < 0){
+		cprintf(RED,"Warning: error form tcsetattr %d\n", errno);
+		return 0;
+	}
 
 	int ret = 0;
 	int n = 0;
 	int ival= 0;
 	char buffer[BUFFERSIZE];
 	memset(buffer,0,BUFFERSIZE);
-	buffer[BUFFERSIZE-2] = '\0';
 	buffer[BUFFERSIZE-1] = '\n';
 	cprintf(GREEN,"Ready...\n");
 
+	/*
+		int once = 1;
+		while(strcmp(buffer,"start")){
+			if(once){
+				once=0;
+				cprintf(MAGENTA,"in the loop, checking\n");
+			}
+			memset(buffer,0,BUFFERSIZE);
+			n = read(fd,buffer,BUFFERSIZE);
+			//#ifdef VERBOSE
+					cprintf(BLUE,"Received %d Bytes\n", n);
+			//#endif
+					cprintf(BLUE,"Got message: %s\n",buffer);
+		}
+		cprintf(GREEN,"started\n");
+	*/
+
+
 	while(ret != GOODBYE){
+		memset(buffer,0,BUFFERSIZE);
 		n = read(fd,buffer,BUFFERSIZE);
 #ifdef VERBOSE
 		cprintf(BLUE,"Received %d Bytes\n", n);
@@ -141,7 +163,9 @@ int main(int argc, char* argv[]) {
 				cprintf(RED,"Warning: cannot scan voltage value\n");
 				break;
 			}
-
+			// ok/ fail
+			memset(buffer,0,BUFFERSIZE);
+			buffer[BUFFERSIZE-1] = '\n';
 			if(i2c_write(ival)<0)
 				strcpy(buffer,"fail ");
 			else
@@ -156,6 +180,8 @@ int main(int argc, char* argv[]) {
 		case 'g':
 			ival = i2c_read();
 			//ok/ fail
+			memset(buffer,0,BUFFERSIZE);
+			buffer[BUFFERSIZE-1] = '\n';
 			if(ival < 0)
 				strcpy(buffer,"fail ");
 			else
@@ -165,6 +191,8 @@ int main(int argc, char* argv[]) {
 			cprintf(BLUE,"Sent %d Bytes\n", n);
 #endif
 			//value
+			memset(buffer,0,BUFFERSIZE);
+			buffer[BUFFERSIZE-1] = '\n';
 			if(ival >= 0){
 				cprintf(GREEN,"%d\n",ival);
 				sprintf(buffer,"%d ",ival);
@@ -180,7 +208,7 @@ int main(int argc, char* argv[]) {
 			ret = GOODBYE;
 			break;
 		default:
-			printf("Unknown Command. buffer:%s\n",buffer);
+			printf("Unknown Command. buffer:[%s]\n",buffer);
 			break;
 		}
 	}

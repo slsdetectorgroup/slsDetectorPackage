@@ -240,13 +240,13 @@ int Feb_Control_OpenSerialCommunication(){
 	// control options
 	serial_conf.c_cflag = B2400 | CS8 | CREAD | CLOCAL;//57600 too high
 	// input options
-	serial_conf.c_iflag = 0;//IGNPAR; (stuck because it was in ignore parity)
+	serial_conf.c_iflag = IGNPAR;
 	// output options
 	serial_conf.c_oflag = 0;
 	// line options
 	serial_conf.c_lflag = ICANON;
 	// flush input
-	if(tcflush(Feb_Control_hv_fd, TCIFLUSH) < 0){
+	if(tcflush(Feb_Control_hv_fd, TCIOFLUSH) < 0){
 		cprintf(RED,"Warning: error form tcflush %d\n", errno);
 		return 0;
 	}
@@ -255,7 +255,23 @@ int Feb_Control_OpenSerialCommunication(){
 		cprintf(RED,"Warning: error form tcsetattr %d\n", errno);
 		return 0;
 	}
+	if(tcsetattr(Feb_Control_hv_fd, TCSAFLUSH, &serial_conf) < 0){
+		cprintf(RED,"Warning: error form tcsetattr %d\n", errno);
+		return 0;
+	}
 
+	/*
+	//send start
+	char buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE];
+	memset(buffer,0,SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
+	buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE-1] = '\n';
+	strcpy(buffer,"start");
+	int n = write(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
+	if (n < 0) {
+		cprintf(RED,"\nWarning: Error writing to i2c bus\n");
+		return 0;
+	}
+*/
 	return 1;
 }
 
@@ -611,10 +627,9 @@ int Feb_Control_SendHighVoltage(int dacvalue){
 
 		char buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE];
 		memset(buffer,0,SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
-		buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE-2]='\0';
 		buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE-1]='\n';
 		int n;
-		sprintf(buffer,"p%d ",dacvalue);
+		sprintf(buffer,"p%d",dacvalue);
 		n = write(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
 		if (n < 0) {
 			cprintf(RED,"\nWarning: Error writing to i2c bus\n");
@@ -624,6 +639,8 @@ int Feb_Control_SendHighVoltage(int dacvalue){
 		cprintf(BLUE,"Sent %d Bytes\n", n);
 #endif
 		//ok/fail
+		memset(buffer,0,SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
+		buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE-1] = '\n';
 		n = read(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
 		if (n < 0) {
 			cprintf(RED,"\nWarning: Error reading from i2c bus\n");
@@ -694,10 +711,10 @@ int Feb_Control_ReceiveHighVoltage(unsigned int* value){
 			return 0;
 		}
 		char buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE];
-		buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE-2]='\0';
 		buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE-1]='\n';
 		int n = 0;
 		//request
+
 		strcpy(buffer,"g ");
 		n = write(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
 		if (n < 0) {
@@ -709,6 +726,8 @@ int Feb_Control_ReceiveHighVoltage(unsigned int* value){
 #endif
 
 		//ok/fail
+		memset(buffer,0,SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
+		buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE-1] = '\n';
 		n = read(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
 		if (n < 0) {
 			cprintf(RED,"\nWarning: Error reading from i2c bus\n");
@@ -722,6 +741,8 @@ int Feb_Control_ReceiveHighVoltage(unsigned int* value){
 			return 0;
 		}
 
+		memset(buffer,0,SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
+		buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE-1] = '\n';
 		n = read(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
 		if (n < 0) {
 			cprintf(RED,"\nWarning: Error reading from i2c bus\n");

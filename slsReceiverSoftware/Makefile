@@ -4,6 +4,7 @@ DESTDIR		?=	../bin
 LIBDIR	 	?= 	$(DESTDIR)
 DOCDIR 		?= 	docs
 SRCDIR		=	src
+INCDIR		=   include
 TESTDIR		=	test
 BUILDDIR	=	build
 PROGS		= 	$(DESTDIR)/slsReceiver 
@@ -25,6 +26,9 @@ LIBZMQ =  -L$(LIBZMQDIR) -Wl,-rpath=$(LIBZMQDIR) -lzmq
 #-Iinclude -I../slsDetectorCalibration -I$(ASM) 
 
 SRC_CLNT = MySocketTCP.cpp  ThreadObject.cpp Listener.cpp DataProcessor.cpp DataStreamer.cpp Fifo.cpp File.cpp BinaryFile.cpp UDPInterface.cpp  UDPBaseImplementation.cpp UDPStandardImplementation.cpp slsReceiverTCPIPInterface.cpp slsReceiver.cpp slsReceiverUsers.cpp utilities.cpp
+DEPSINCLUDES = $(INCDIR)/ansi.h $(INCDIR)/sls_receiver_defs.h $(INCDIR)/sls_receiver_funcs.h $(INCDIR)/GeneralData.h  $(INCDIR)/circularFifo.h $(INCDIR)/genericSocket.h  $(INCDIR)/logger.h $(INCDIR)/receiver_defs.h $(INCDIR)/UDPInterface.h $(INCDIR)/utilities.h $(INCDIR)/ZmqSocket.h $(INCDIR)/BinaryFileStatic.h $(INCDIR)/HDF5FileStatic.h
+
+
 ifeq ($(HDF5),yes)
 	SRC_CLNT += HDF5File.cpp HDF5FileStatic.cpp
 endif
@@ -54,8 +58,9 @@ dummy: $(DESTDIR)/dummyReceiver
 
 intdoc: $(SRC_H) $(SRC_CLNT) 
 	doxygen doxy.config
+	
 
-$(BUILDDIR)/%.o : $(SRCDIR)/%.cpp Makefile
+$(BUILDDIR)/%.o : $(SRCDIR)/%.cpp $(INCDIR)/%.h $(DEPSINCLUDES) Makefile
 ifeq ($(ROOTSLS),yes)
 	$(CXX) -DROOTSLS -o $@ -c $< $(INCLUDES) $(DFLAGS)  $(ROOTFLAGS) -fPIC  $(EPICSFLAGS) $(LDFLAGRXR) -L/usr/lib64/ $(FLAGS) 
 else	

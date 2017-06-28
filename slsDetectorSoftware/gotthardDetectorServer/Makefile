@@ -21,7 +21,7 @@ OBJS = $(SRCS:%.c=%.o)
 
 
 
-all:	clean $(PROGS) 
+all:	clean updateVersion $(PROGS) 
 
 boot: $(OBJS)
 
@@ -41,7 +41,8 @@ romfs:
 clean:
 	rm -rf $(PROGS)  *.o *.gdb
 
-
+updateVersion:
+	./updateGitVersion.sh
 
 
 

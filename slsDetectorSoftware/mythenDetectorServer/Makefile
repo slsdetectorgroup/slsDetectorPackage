@@ -22,7 +22,7 @@ CFLAGS+= 	-Wall -DC_ONLY -DMCB_FUNCS -DDACS_INT $(VFLAGS)
 LDLIBS+= 	-lm
 
 mythen:	clean $(PROGS)
-all:	$(PROGS) 
+all:	updateVersion $(PROGS) 
 
 boot: $(OBJS)
 
@@ -39,3 +39,7 @@ clean:
 
 depend:
 	makedepend -Y -- $(CFLAGS) -- $(SRCS) 2>/dev/null
+
+updateVersion:
+	./updateGitVersion.sh
+	

@@ -18,7 +18,7 @@ CFLAGS+= 	-Wall -DC_ONLY -DVERBOSE
 
 LDLIBS+= 	-lm
 
-all:	$(PROGS)
+all:	updateVersion $(PROGS)
 
 boot: $(OBJS)
 
@@ -35,3 +35,7 @@ clean:
 
 depend:
 	makedepend -Y -- $(CFLAGS) -- $(SRCS) 2>/dev/null
+
+updateVersion:
+	./updateGitVersion.sh
+	

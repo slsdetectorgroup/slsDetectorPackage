@@ -1,7 +1,7 @@
 MAINDIR=slsDetectorsPackage
 SPECDIR=slsDetectorSoftware
-TMPFILE=gitInfoLibTmp.h
-INCLFILE=gitInfoLib.h
+TMPFILE=slsDetector/gitInfoLibTmp.h
+INCLFILE=slsDetector/gitInfoLib.h
 WD=$PWD
 
 GITREPO1='git remote -v'
@@ -28,7 +28,7 @@ REV=`eval $REV1  $REV2`
 FOLDERREV=`eval $FOLDERREV1  $FOLDERREV2`
 RDATE=`eval $RDATE1`
 echo Path: ${MAINDIR}/${SPECDIR}  $'\n'URL: ${GITREPO}  $'\n'Repository Root: ${GITREPO}  $'\n'Repsitory UUID: ${REPUID}  $'\n'Revision: ${FOLDERREV}  $'\n'Branch: ${BRANCH}  $'\n'Last Changed Author: ${AUTH1}_${AUTH2}  $'\n'Last Changed Rev: ${REV}  $'\n'Last Changed Date: ${RDATE} > gitInfo.txt 
-cd $WD
+cd ..
 ./genVersionHeader.sh $SPECDIR/gitInfo.txt $SPECDIR/$TMPFILE $SPECDIR/$INCLFILE 
 echo "Revision Updated"
 cd $WD

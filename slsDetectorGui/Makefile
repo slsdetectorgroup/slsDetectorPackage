@@ -29,10 +29,11 @@ INCLUDES	?= 	$(LIBRARYDIR)/commonFiles -I$(LIBRARYRXRDIR)/MySocketTCP  -I$(LIBRA
 .PHONY: all lib clean mm doc htmldoc guiclient
 
 
-all: lib updateVersion $(PROG) Makefile.gui guiclient
+all: lib $(PROG) Makefile.gui guiclient
 
-lib:
-	cd ../ && $(MAKE) lib
+lib:  $(DESTDIR)/libSlsDetector.so  $(DESTDIR)/libSlsDetector.a
+	if [ ! -f $(DESTDIR)/libSlsDetector.so ]; then cd ../ && $(MAKE) lib; fi
+
 
 clean: 
 	if test -e Makefile.gui; then $(MAKE) -f Makefile.gui clean; $(MAKE) -f Makefile.gui mocclean; 	rm Makefile.gui; else 	$(MAKE) Makefile.gui; 	$(MAKE) -f Makefile.gui clean; $(MAKE) -f Makefile.gui mocclean;  fi
@@ -42,7 +43,7 @@ clean:
 
 Makefile.gui: mm
 
-mm:
+mm: 
 	qmake -set QT_INSTALL_PREFIX $(QTDIR) && qmake -o Makefile.gui INCLUDES='$(INCLUDES)' DESTDIR=$(DESTDIR) SLSDETLIB=$(LIBDIR) SUBLIBS='$(LDFLAGDET)'
 
 doc:
@@ -52,11 +53,10 @@ htmldoc:
 	cd manual && $(MAKE) html DESTDIR=$(DOCDIR)
 
 $(PROG): Makefile.gui $(DIR)
+	./updateGitVersion.sh
 	$(MAKE) -f Makefile.gui SLSDETLIB=$(LIBDIR) DESTDIR=$(DESTDIR) SUBLIBS='$(LDFLAGDET)' INCLUDES='$(INCLUDES)'
 
 guiclient:
 	echo $(WD)
 	cd client && $(MAKE) DESTDIR=$(DESTDIR)
 	
-updateVersion:
-	./updateGitVersion.sh

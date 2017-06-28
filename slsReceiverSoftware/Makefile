@@ -49,7 +49,7 @@ $(info )
 
 .PHONY: all intdoc  package eigerReceiver clean
 
-all: builddir lib receiver
+all: builddir updateVersion lib receiver
 
 dummy: $(DESTDIR)/dummyReceiver
 
@@ -112,6 +112,8 @@ testclean:
 		cd $(TESTDIR) && rm *.o rec send; \
 	fi
 
+updateVersion:
+	./updateGitVersion.sh
 
 #-------------------------------------------------------------------------------
 

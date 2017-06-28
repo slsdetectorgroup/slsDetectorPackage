@@ -461,108 +461,27 @@ class JungfrauData : public GeneralData {
 
 class EigerData : public GeneralData {
 
-private:
-
-#ifndef EIGER_NEWHEADER
-	/** Structure of an eiger packet header	 */
-	typedef struct {
-		unsigned char subFrameNumber[4];
-		unsigned char missingPacket[2];
-		unsigned char portIndex[1];
-		unsigned char dynamicRange[1];
-	} eiger_packet_header_t;
-
-	/** Structure of an eiger packet footer  */
-	typedef struct	{
-		unsigned char frameNumber[6];
-		unsigned char packetNumber[2];
-	} eiger_packet_footer_t;
-
  public:
-
-	/** Size of packet header */
-	const static uint32_t packetHeaderSize	= 8;
-
-	/** Footer offset */
-	uint32_t footerOffset;
-#endif
-
 
 	/** Constructor */
 	EigerData(){
 		myDetectorType		= slsReceiverDefs::EIGER;
 		nPixelsX 			= (256*2);
 		nPixelsY 			= 256;
-#ifndef EIGER_NEWHEADER
-		headerSizeinPacket  = 8;
-#else
 		headerSizeinPacket  = sizeof(slsReceiverDefs::sls_detector_header);
-#endif
 		dataSize 			= 1024;
-#ifndef EIGER_NEWHEADER
-		packetSize 			= headerSizeinPacket + dataSize + 8;
-#else
 		packetSize 			= headerSizeinPacket + dataSize;
-#endif
 		packetsPerFrame 	= 256;
 		imageSize 			= dataSize*packetsPerFrame;
-#ifndef EIGER_NEWHEADER
-		frameIndexMask 		= 0xffffff;
-#endif
 		maxFramesPerFile 	= EIGER_MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 100;
-#ifndef EIGER_NEWHEADER
-		footerOffset		= headerSizeinPacket + dataSize;
-#endif
 		threadsPerReceiver	= 2;
-#ifndef EIGER_NEWHEADER
-		headerPacketSize	= 48;
-#else
 		headerPacketSize	= 40;
-#endif
 		nPixelsX_Streamer 	= nPixelsX;
 		nPixelsY_Streamer 	= nPixelsY;
 		imageSize_Streamer 	= imageSize;
 	};
-
-#ifndef EIGER_NEWHEADER
-	/**
-	 * Get Header Infomation (frame number, packet number)
-	 * @param index thread index for debugging purposes
-	 * @param packetData pointer to data
-	 * @param frameNumber frame number
-	 * @param packetNumber packet number
-	 */
-	void GetHeaderInfo(int index, char* packetData,	uint64_t& frameNumber, uint32_t& packetNumber) const {
-		eiger_packet_footer_t* footer = (eiger_packet_footer_t*)(packetData + footerOffset);
-		frameNumber = (uint64_t)((*( (uint64_t*) footer)) & frameIndexMask);
-		packetNumber = ((uint32_t)(*( (uint16_t*) footer->packetNumber)))-1;
-	}
-
-	/**
-	 * Get Header Infomation (frame number, packet number)
-	 * @param index thread index for debugging purposes
-	 * @param packetData pointer to data
-	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
-	 * @param frameNumber frame number
-	 * @param packetNumber packet number
-	 * @param subFrameNumber sub frame number if applicable
-	 * @param bunchId bunch id
-	 */
-	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
-			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t& bunchId) const {
-		bunchId = -1;
-		subFrameNumber = -1;
-		eiger_packet_footer_t* footer = (eiger_packet_footer_t*)(packetData + footerOffset);
-		frameNumber = (uint64_t)((*( (uint64_t*) footer)) & frameIndexMask);
-		packetNumber = ((uint32_t)(*( (uint16_t*) footer->packetNumber)))-1;
-		if (dynamicRange == 32) {
-			eiger_packet_header_t* header = (eiger_packet_header_t*) (packetData);
-			subFrameNumber = (uint64_t) *( (uint32_t*) header->subFrameNumber);
-		}
-	}
-#endif
 
 	/**
 	 * Setting dynamic range changes member variables
@@ -581,30 +500,11 @@ private:
 	 */
 	void SetTenGigaEnable(bool tgEnable, int dr) {
 		dataSize 		= (tgEnable ? 4096 : 1024);
-#ifndef EIGER_NEWHEADER
-		packetSize 		= (tgEnable ? 4112 : 1040);
-#else
 		packetSize 		= headerSizeinPacket + dataSize;
-#endif
 		packetsPerFrame = (tgEnable ? 4 : 16) * dr;
 		imageSize 		= dataSize*packetsPerFrame;
-#ifndef EIGER_NEWHEADER
-		footerOffset	= packetHeaderSize+dataSize;
-#endif
 	};
 
 
-#ifndef EIGER_NEWHEADER
-	/**
-	 * Print all variables
-	 */
-	void Print() const {
-		GeneralData::Print();
-		printf(  "Packet Header Size: %d\n"
-				"Footer Offset : %d\n",
-				packetHeaderSize,
-				footerOffset);
-	}
-#endif
 };
 

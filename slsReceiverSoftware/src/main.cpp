@@ -13,7 +13,7 @@
 #include "logger.h"
 using namespace std;
 
-slsReceiverUsers *receiver;
+slsReceiverUsers *receiver; 
 
 void deleteReceiver(slsReceiverUsers* r){
 	if(r){delete r;r=0;}

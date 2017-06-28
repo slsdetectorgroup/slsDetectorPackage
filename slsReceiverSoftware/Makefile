@@ -39,7 +39,6 @@ DUMMY_MAIN_SRC = dummyMain.cpp
 
 OBJS=$(SRC_CLNT:%.cpp=$(BUILDDIR)/%.o) 
 
-
 $(info )
 $(info #######################################)
 $(info #    Compiling slsReceiverSoftware    #)
@@ -49,7 +48,7 @@ $(info )
 
 .PHONY: all intdoc  package eigerReceiver clean
 
-all: builddir updateVersion lib receiver
+all: builddir lib receiver
 
 dummy: $(DESTDIR)/dummyReceiver
 
@@ -68,7 +67,9 @@ lib:  $(OBJS) $(DESTDIR)/libSlsReceiver.so $(DESTDIR)/libSlsReceiver.a
 receiver: $(DESTDIR)/slsReceiver
 
 
-$(DESTDIR)/libSlsReceiver.so: $(OBJS) 
+
+$(DESTDIR)/libSlsReceiver.so: $(OBJS)  
+	./updateGitVersion.sh
 	$(CXX)  -shared -Wl,-soname,libSlsReceiver.so -o libSlsReceiver.so  $(OBJS) -lc $(INCLUDES) $(DFLAGS) $(FLAGS) $(EPICSFLAGS)  -L/usr/lib64 -pthread $(LIBZMQ) -lrt 
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
 	mv libSlsReceiver.so $(DESTDIR)
@@ -78,12 +79,12 @@ $(DESTDIR)/libSlsReceiver.a: $(OBJS)
 	mv libSlsReceiver.a $(DESTDIR)
 
 
-$(DESTDIR)/slsReceiver: 	lib
+$(DESTDIR)/slsReceiver: 	 $(SRCDIR)/$(MAIN_SRC) $(DESTDIR)/libSlsReceiver.so $(DESTDIR)/libSlsReceiver.a
 	$(CXX)   -o $@  $(SRCDIR)/$(MAIN_SRC)  $(FLAGS)  $(INCLUDES) $(CLAGS) $(LIBS) $(LDFLAGRXR) -fPIC  $(LIBZMQ) -lrt 
 #$(EIGERFLAGS)
 
 
-$(DESTDIR)/dummyReceiver: 	lib
+$(DESTDIR)/dummyReceiver: 	$(SRCDIR)/$(DUMMY_MAIN_SRC) $(DESTDIR)/libSlsReceiver.so $(DESTDIR)/libSlsReceiver.a
 	$(CXX)   -o $@  $(SRCDIR)/$(DUMMY_MAIN_SRC)  $(FLAGS)  $(INCLUDES) $(CLAGS) $(LIBS) $(LDFLAGRXR) -fPIC $(LIBZMQ)  -lrt 
 #$(EIGERFLAGS)
 
@@ -112,8 +113,6 @@ testclean:
 		cd $(TESTDIR) && rm *.o rec send; \
 	fi
 
-updateVersion:
-	./updateGitVersion.sh
 
 #-------------------------------------------------------------------------------
 

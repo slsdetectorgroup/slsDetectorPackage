@@ -61,11 +61,8 @@ Listener::Listener(detectorType dtype, Fifo*& f, runStatus* s, uint32_t* portno,
 
 	switch(myDetectorType){
 	case JUNGFRAU:
-		standardheader = true;
-#ifndef EIGER_NEWHEADER
-#else
 	case EIGER:
-#endif
+		standardheader = true;
 		break;
 	default:
 		standardheader = false;
@@ -381,10 +378,6 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 			else {
 				memset(new_header, 0, sizeof(sls_detector_header));
 				new_header->frameNumber = fnum;
-#ifndef EIGER_NEWHEADER
-				if (generalData->myDetectorType == EIGER && *dynamicRange == 32)
-					new_header->expLength = snum;
-#endif
 				new_header->packetNumber = pperFrame;
 				/*new_header->xCoord = index;  given by det packet, also for ycoord, zcoord */
 				new_header->detType = (uint8_t) generalData->myDetectorType;
@@ -475,10 +468,6 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 			else {
 				memset(new_header, 0, sizeof(sls_detector_header));
 				new_header->frameNumber = fnum;
-#ifndef EIGER_NEWHEADER
-				if (generalData->myDetectorType == EIGER && *dynamicRange == 32)
-					new_header->expLength = snum;
-#endif
 				new_header->packetNumber = pperFrame;
 				/*new_header->xCoord = index;  given by det packet, also for ycoord, zcoord */
 				new_header->detType = (uint8_t) generalData->myDetectorType;

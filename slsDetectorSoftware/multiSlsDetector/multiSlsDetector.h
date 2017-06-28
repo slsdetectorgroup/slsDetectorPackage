@@ -462,9 +462,10 @@ class multiSlsDetector  : public slsDetectorUtils {
      \param e_eV threshold in eV
      \param imod module number (-1 all)
      \param isettings ev. change settings
+     \param tb 1 to include trimbits, 0 to exclude
      \returns current threshold value for imod in ev (-1 failed)
   */
-  int setThresholdEnergy(int e_eV, int imod=-1, detectorSettings isettings=GET_SETTINGS); 
+  int setThresholdEnergy(int e_eV, int imod=-1, detectorSettings isettings=GET_SETTINGS,int tb=1);
  
   /**
      get detector settings

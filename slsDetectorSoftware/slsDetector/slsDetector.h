@@ -965,10 +965,11 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
       \param e_eV threashold in eV (detector specific)
       \param gainval pointer to extra gain values
       \param offsetval pointer to extra offset values
+      \param tb 1 to include trimbits, 0 to exclude (used for eiger)
       \returns current register value
       \sa ::sls_detector_module
   */
-  int setModule(sls_detector_module module, int iodelay, int tau, int e_eV, int* gainval=0, int* offsetval=0);
+  int setModule(sls_detector_module module, int iodelay, int tau, int e_eV, int* gainval=0, int* offsetval=0, int tb=1);
   //virtual int setModule(sls_detector_module module);
 
   /**
@@ -999,17 +1000,19 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      \param e_eV threshold in eV
      \param imod module number (-1 all)
      \param isettings ev. change settings
+     \param tb 1 to include trimbits, 0 to exclude
      \returns current threshold value for imod in ev (-1 failed)
   */
-  int setThresholdEnergy(int e_eV, int imod=-1, detectorSettings isettings=GET_SETTINGS); 
+  int setThresholdEnergy(int e_eV, int imod=-1, detectorSettings isettings=GET_SETTINGS, int tb=1);
 
   /**
      set threshold energy
      \param e_eV threshold in eV
      \param isettings ev. change settings
+     \param tb 1 to include trimbits, 0 to exclude
      \returns OK if successful, else FAIL
   */
-  int setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings);
+  int setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings, int tb=1);
  
   /**
      get detector settings

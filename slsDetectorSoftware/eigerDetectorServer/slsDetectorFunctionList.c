@@ -542,25 +542,31 @@ int setModule(sls_detector_module myMod, int delay){
 	for(i=0;i<myMod.ndac;i++)
 		setDAC((enum DACINDEX)i,myMod.dacs[i],myMod.module,0,retval);
 
-	//includ gap pixels
-	unsigned int tt[263680];
-	int iy,ichip,ix,ip=0,ich=0;
-	for(iy=0;iy<256;iy++) {
-		for (ichip=0; ichip<4; ichip++) {
-			for(ix=0;ix<256;ix++) {
-				tt[ip++]=myMod.chanregs[ich++];
-			}
-			if (ichip<3) {
-				tt[ip++]=0;
-				tt[ip++]=0;
+
+	if(myMod.nchan==0 && myMod.nchip == 0)
+		cprintf(BLUE,"Setting module without trimbits\n");
+	else{
+		cprintf(GREEN,"Setting module with trimbits\n");
+		//includ gap pixels
+		unsigned int tt[263680];
+		int iy,ichip,ix,ip=0,ich=0;
+		for(iy=0;iy<256;iy++) {
+			for (ichip=0; ichip<4; ichip++) {
+				for(ix=0;ix<256;ix++) {
+					tt[ip++]=myMod.chanregs[ich++];
+				}
+				if (ichip<3) {
+					tt[ip++]=0;
+					tt[ip++]=0;
+				}
 			}
 		}
-	}
 
-	//set trimbits
-	if(!Feb_Control_SetTrimbits(Feb_Control_GetModuleNumber(),tt)){
-		cprintf(BG_RED,"Could not set trimbits\n");
-		return FAIL;
+		//set trimbits
+		if(!Feb_Control_SetTrimbits(Feb_Control_GetModuleNumber(),tt)){
+			cprintf(BG_RED,"Could not set trimbits\n");
+			return FAIL;
+		}
 	}
 
 	return thisSettings;
@@ -1211,11 +1217,13 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod){
 
 		destMod->serialnumber=srcMod->serialnumber;
 	}
-	if ((srcMod->nchip)>(destMod->nchip)) {
+	//no trimbit feature
+	if (destMod->nchip && ((srcMod->nchip)>(destMod->nchip))) {
 		printf("Number of chip of source is larger than number of chips of destination\n");
 		return FAIL;
 	}
-	if ((srcMod->nchan)>(destMod->nchan)) {
+	//no trimbit feature
+	if (destMod->nchan && ((srcMod->nchan)>(destMod->nchan))) {
 		printf("Number of channels of source is larger than number of channels of destination\n");
 		return FAIL;
 	}
@@ -1249,14 +1257,19 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod){
 	if (srcMod->offset>=0)
 		destMod->offset=srcMod->offset;
 
-	for (ichip=0; ichip<(srcMod->nchip); ichip++) {
-		if (*((srcMod->chipregs)+ichip)>=0)
-			*((destMod->chipregs)+ichip)=*((srcMod->chipregs)+ichip);
+	if((destMod->nchip!=0) || (destMod->nchan!=0)) {
+		for (ichip=0; ichip<(srcMod->nchip); ichip++) {
+			if (*((srcMod->chipregs)+ichip)>=0)
+				*((destMod->chipregs)+ichip)=*((srcMod->chipregs)+ichip);
+		}
+		for (ichan=0; ichan<(srcMod->nchan); ichan++) {
+			if (*((srcMod->chanregs)+ichan)>=0)
+				*((destMod->chanregs)+ichan)=*((srcMod->chanregs)+ichan);
+		}
 	}
-	for (ichan=0; ichan<(srcMod->nchan); ichan++) {
-		if (*((srcMod->chanregs)+ichan)>=0)
-			*((destMod->chanregs)+ichan)=*((srcMod->chanregs)+ichan);
-	}
+#ifdef VERBOSE
+	else printf("Not Copying trimbits\n");
+#endif
 	for (idac=0; idac<(srcMod->ndac); idac++) {
 		if (*((srcMod->dacs)+idac)>=0)
 			*((destMod->dacs)+idac)=*((srcMod->dacs)+idac);

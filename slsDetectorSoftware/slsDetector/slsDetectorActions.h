@@ -207,7 +207,7 @@ class slsDetectorActions : public virtual slsDetectorBase
 /*   *\/ */
 /*   virtual detectorType getDetectorsType(int pos=-1)=0; */
 
-  virtual int setThresholdEnergy(int, int im=-1, detectorSettings isettings=GET_SETTINGS)=0;
+  virtual int setThresholdEnergy(int, int im=-1, detectorSettings isettings=GET_SETTINGS, int tb=1)=0;
   virtual int setChannel(int64_t, int ich=-1, int ichip=-1, int imod=-1)=0;
 
 

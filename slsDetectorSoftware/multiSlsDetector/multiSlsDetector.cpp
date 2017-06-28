@@ -1168,7 +1168,7 @@ int multiSlsDetector::getThresholdEnergy(int pos) {
 }  
 
 
-int multiSlsDetector::setThresholdEnergy(int e_eV, int pos, detectorSettings isettings) {
+int multiSlsDetector::setThresholdEnergy(int e_eV, int pos, detectorSettings isettings, int tb) {
 
 	int posmin, posmax;
 	int ret=-100;
@@ -1189,8 +1189,8 @@ int multiSlsDetector::setThresholdEnergy(int e_eV, int pos, detectorSettings ise
 		for(int idet=posmin; idet<posmax; idet++){
 			if(detectors[idet]){
 				iret[idet]= new int(-1);
-				Task* task = new Task(new func3_t<int,slsDetector,int,int,detectorSettings,int>(&slsDetector::setThresholdEnergy,
-						detectors[idet],e_eV,-1,isettings,iret[idet]));
+				Task* task = new Task(new func4_t<int,slsDetector,int,int,detectorSettings,int,int>(&slsDetector::setThresholdEnergy,
+						detectors[idet],e_eV,-1,isettings,tb,iret[idet]));
 				threadpool->add_task(task);
 			}
 		}

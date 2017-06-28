@@ -12,7 +12,7 @@ SRC_CLNT	=	communication_funcs.c slsDetectorServer.c slsDetectorServer_funcs.c  
 OBJS 		= 	$(SRC_CLNT:.c=.o) 
  
 
-all: clean $(PROGS) #hv9m_blackfin_server 
+all: clean updateVersion $(PROGS) #hv9m_blackfin_server 
 
 	
 boot: $(OBJS) 
@@ -31,4 +31,7 @@ hv9m_blackfin_server:9mhvserial_bf.c
 
 clean:
 	rm -rf $(DESTDIR)/$(PROGS)  *.o $(DESTDIR)/hv9m_blackfin_server 
+	
+updateVersion:
+	./updateGitVersion.sh
 	

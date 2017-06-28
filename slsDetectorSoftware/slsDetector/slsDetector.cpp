@@ -3463,7 +3463,7 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV, detectorSettings isetti
 		}
 		//interpolate tau
 		tau = linearInterpolation(e_eV, trim1, trim2, tau1, tau2);
-		printf("new tau:%d\n",tau);
+		//printf("new tau:%d\n",tau);
 
 		deleteModule(myMod1);
 		deleteModule(myMod2);

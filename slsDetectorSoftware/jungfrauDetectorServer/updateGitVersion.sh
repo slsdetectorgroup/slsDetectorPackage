@@ -1,6 +1,6 @@
-SERVER=eigerDetectorServer
-TMPFILE=gitInfoEigerTmp.h
-INCLFILE=gitInfoEiger.h
+SERVER=jungfrauDetectorServer
+TMPFILE=gitInfoJungfrauTmp.h
+INCLFILE=gitInfoJungfrau.h
 
 WD=slsDetectorSoftware/$SERVER
 
@@ -32,6 +32,3 @@ cd ../../
 ./genVersionHeader.sh $WD/gitInfo.txt $WD/$TMPFILE $WD/$INCLFILE 
 echo "Revision Updated"
 cd $WD
-
-
-

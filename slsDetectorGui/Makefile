@@ -29,7 +29,7 @@ INCLUDES	?= 	$(LIBRARYDIR)/commonFiles -I$(LIBRARYRXRDIR)/MySocketTCP  -I$(LIBRA
 .PHONY: all lib clean mm doc htmldoc guiclient
 
 
-all: lib $(PROG) Makefile.gui guiclient
+all: lib updateVersion $(PROG) Makefile.gui guiclient
 
 lib:
 	cd ../ && $(MAKE) lib
@@ -57,3 +57,6 @@ $(PROG): Makefile.gui $(DIR)
 guiclient:
 	echo $(WD)
 	cd client && $(MAKE) DESTDIR=$(DESTDIR)
+	
+updateVersion:
+	./updateGitVersion.sh

@@ -62,6 +62,7 @@ INCLUDEPATH 		= 	\
                             $(QWTDIR)/src\
                             $(QWT3D)/include\
 							slsDetectorPlotting/include\
+							../slsReceiverSoftware/include\
 							include\
 							forms/include\
 							/usr/include/qwt\  #these are not included for standard installations, also bin path should include qt4 bin, not qt3 bin
@@ -128,6 +129,7 @@ HEADERS 			=  		\
 							include/qTabMessages.h\
 							include/gitInfoGui.h\
 							../slsDetectorSoftware/commonFiles/sls_detector_defs.h\
+							../slsReceiverSoftware/include/sls_receiver_defs.h\
 							include/qServer.h
 
 

@@ -34,7 +34,7 @@ OBJS = $(SRC_CLNT:.cpp=.o)
 
 .PHONY: all intdoc doc htmldoc package clean
 
-all: package $(SRC_CLNT)
+all: updateVersion package $(SRC_CLNT)
 
 intdoc: $(SRC_H) $(SRC_CLNT) 
 	doxygen doxy.config
@@ -87,6 +87,11 @@ $(DESTDIR)/libSlsDetector.a: $(OBJS)
 clean:
 	rm -rf  $(DESTDIR)/libSlsDetector.a   $(DESTDIR)/libSlsDetector.so core  docs/* slsDetectorUsersDocs $(OBJS)
 	cd 
+	
+	
+updateVersion:
+	./updateGitVersion.sh
+	
 
 #-------------------------------------------------------------------------------
 

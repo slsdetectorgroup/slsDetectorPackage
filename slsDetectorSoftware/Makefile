@@ -20,7 +20,7 @@ LIBZMQ =  -L$(LIBZMQDIR) -Wl,-rpath=$(LIBZMQDIR) -lzmq
 SRC_CLNT=slsDetectorAnalysis/fileIO.cpp  usersFunctions/usersFunctions.cpp slsDetector/slsDetectorUtils.cpp slsDetector/slsDetectorCommand.cpp slsDetectorAnalysis/angularConversion.cpp slsDetectorAnalysis/angularConversionStatic.cpp slsDetectorAnalysis/energyConversion.cpp slsDetector/slsDetectorActions.cpp slsDetectorAnalysis/postProcessing.cpp slsDetector/slsDetector.cpp multiSlsDetector/multiSlsDetector.cpp slsDetectorAnalysis/postProcessingFuncs.cpp slsReceiverInterface/receiverInterface.cpp slsDetector/slsDetectorUsers.cpp threadFiles/CondVar.cpp  threadFiles/Mutex.cpp threadFiles/ThreadPool.cpp   #../slsReceiverSoftware/MySocketTCP/MySocketTCP.cpp 
 DEPSINCLUDES = $(LIBZMQDIR)/sls_receiver_defs.h $(LIBZMQDIR)/sls_receiver_funcs.h $(LIBZMQDIR)/ansi.h commonFiles/sls_detector_defs.h commonFiles/sls_detector_funcs.h commonFiles/error_defs.h slsDetector/slsDetectorBase.h slsDetectorAnalysis/angCalLogClass.h slsDetectorAnalysis/angleConversionConstant.h slsDetectorAnalysis/badChannelCorrections.h slsDetectorAnalysis/detectorData.h slsDetectorAnalysis/enCalLogClass.h slsDetectorAnalysis/fileIOStatic.h slsDetectorAnalysis/movingStat.h slsDetectorAnalysis/runningStat.h slsDetectorAnalysis/single_photon_hit.h threadFiles/Global.h threadFiles/Task.h usersFunctions/angleFunction.h
 
- 
+
 $(info )
 $(info #######################################)
 $(info #    Compiling slsDetectorSoftware    #)

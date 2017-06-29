@@ -19,7 +19,7 @@
 #include <QAbstractButton>
 using namespace std;
 
-class qDefs:public QWidget {
+class qDefs:public QWidget{
 public:
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 

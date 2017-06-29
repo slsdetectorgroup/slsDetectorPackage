@@ -4,16 +4,13 @@ include ../Makefile.include
 
 $(info )
 $(info ##################################)
-$(info #    Compiling slsDetectorGui    #)
+$(info #    In slsDetectorGui Makefile  #)
 $(info ##################################)
 $(info )
 
 
-
-PROG		= 	$(DESTDIR)/slsDetectorGui
-
 DESTDIR		?=	../bin
-LIBDIR		?=	$(DESTDIR)
+PROG		= 	$(DESTDIR)/slsDetectorGui
 DOCDIR		?=	docs
 
 LIBRARYDIR		?=	../slsDetectorSoftware
@@ -29,10 +26,15 @@ INCLUDES	?= 	$(LIBRARYDIR)/commonFiles -I$(LIBRARYRXRDIR)/MySocketTCP  -I$(LIBRA
 .PHONY: all lib clean mm doc htmldoc guiclient
 
 
-all: lib $(PROG) Makefile.gui guiclient
+all: lib Makefile.gui $(PROG) guiclient
 
-lib:  $(DESTDIR)/libSlsDetector.so  $(DESTDIR)/libSlsDetector.a
-	if [ ! -f $(DESTDIR)/libSlsDetector.so ]; then cd ../ && $(MAKE) lib; fi
+lib:  
+	cd $(LIBRARYDIR) && $(MAKE) DESTDIR=$(DESTDIR) 
+	@echo ""
+	@echo "#######################################"
+	@echo "#   Back in slsDetectorGui Makefile   #"
+	@echo "#######################################"
+	@echo ""
 
 
 clean: 
@@ -44,7 +46,7 @@ clean:
 Makefile.gui: mm
 
 mm: 
-	qmake -set QT_INSTALL_PREFIX $(QTDIR) && qmake -o Makefile.gui INCLUDES='$(INCLUDES)' DESTDIR=$(DESTDIR) SLSDETLIB=$(LIBDIR) SUBLIBS='$(LDFLAGDET)'
+	qmake -set QT_INSTALL_PREFIX $(QTDIR) && qmake -o Makefile.gui INCLUDES='$(INCLUDES)' DESTDIR=$(DESTDIR) SLSDETLIB=$(DESTDIR) SUBLIBS='$(LDFLAGDET)'
 
 doc:
 	cd manual && $(MAKE) DESTDIR=$(DOCDIR)
@@ -52,12 +54,10 @@ doc:
 htmldoc:
 	cd manual && $(MAKE) html DESTDIR=$(DOCDIR)
 
-$(PROG): Makefile.gui slsDetectorGui.pro $(DIR)
-	echo $(DIR)
-	./updateGitVersion.sh
-	$(MAKE) -f Makefile.gui SLSDETLIB=$(LIBDIR) DESTDIR=$(DESTDIR) SUBLIBS='$(LDFLAGDET)' INCLUDES='$(INCLUDES)'
+$(PROG): Makefile slsDetectorGui.pro $(DIR)
+	$(MAKE) -f Makefile.gui SLSDETLIB=$(DESTDIR) DESTDIR=$(DESTDIR) SUBLIBS='$(LDFLAGDET)' INCLUDES='$(INCLUDES)'
 
 guiclient:
-	echo $(WD)
+#	echo $(WD)
 	cd client && $(MAKE) DESTDIR=$(DESTDIR)
 	

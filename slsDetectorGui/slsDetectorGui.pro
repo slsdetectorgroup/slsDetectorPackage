@@ -4,6 +4,7 @@
 #When using epics, uncomment epics defines, libs and a line in INCLUDEPATH
 
 
+
 QT_INSTALL_PREFIX	=	$(QTDIR)
 QMAKE_UIC 			= 	$(QTDIR)/bin/uic
 QMAKE_MOC 			=  	$(QTDIR)/bin/moc
@@ -30,7 +31,7 @@ QMAKE_CXXFLAGS_WARN_ON = 	-w
 QMAKE_CFLAGS_WARN_ON   = 	-w
 
 
-#QMAKE_PRE_LINK		= 		updateGitVersion.sh
+
 
 DESTDIR  			?= 		bin
 MOC_DIR   			= 		mocs
@@ -49,6 +50,18 @@ INSTALLS			+= 		target
 INSTALLS 			+= 		documentation
 QMAKE_CLEAN 		+= 		docs/*/* 
 							
+
+
+extralib.target = extra
+extralib.commands = 	echo `tput setaf 6`;	\
+	echo 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';	\
+	echo 'x       Compiling slsDetectorGui      x';	\
+	echo 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';	\
+	echo `./updateGitVersion.sh; tput sgr0`
+extralib.depends = $(target)
+QMAKE_EXTRA_TARGETS += extralib
+PRE_TARGETDEPS = extra
+
 
 
 

@@ -3385,7 +3385,7 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV, detectorSettings isetti
 		ostfn << thisDetector->settingsDir << ssettings << "/" << e << "eV" << "/noise.sn" << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER) << setbase(10);
 		string settingsfname = ostfn.str();
         ostfn.str(""); ostfn.clear();
-        cout <<  settingsfname << endl;
+        //cout <<  settingsfname << endl;
 
 		//read settings file
 		if (NULL == readSettingsFile(settingsfname,thisDetector->myDetectorType, iodelay_tmp, tau_tmp, tmpMod)) {
@@ -3407,7 +3407,7 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV, detectorSettings isetti
 	int new_vrf = static_cast<int>( round( s(e_eV) ));
 
 	//cout << "Linear vrf:" << myMod->dacs[2] << " Spline vrf: " << s( e_eV ) << endl; 
-	printf("Lineary vrf: %d Spline vrf: %4.2f Rounded: %d \n", myMod->dacs[2], s(e_eV), new_vrf);
+	//printf("Lineary vrf: %d Spline vrf: %4.2f Rounded: %d \n", myMod->dacs[2], s(e_eV), new_vrf);
 
 	myMod->module=0;
 	myMod->reg=thisDetector->currentSettings;

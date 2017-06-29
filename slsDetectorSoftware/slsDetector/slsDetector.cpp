@@ -11,6 +11,9 @@
 #include <math.h>
 #include "gitInfoLib.h"
 
+#include "spline.h"
+#include <vector>
+
 int slsDetector::initSharedMemory(detectorType type, int id) {
 
 
@@ -3362,9 +3365,53 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV, detectorSettings isetti
 		deleteModule(myMod2);
 	}
 
+    //<-------------------------------------------------- new code for doing a spline interpolation of vrf
+
+	//vector to hold energy and vrf
+	vector<double> energy, vrf;
+	sls_detector_module *tmpMod=createModule();
+    ostringstream ostfn;
+
+	//Only needed for reading otherwise not used
+	int iodelay_tmp;
+	int tau_tmp; 
+
+	//Looping over all energies in trimen
+    for (int i = 0; i< thisDetector->nTrimEn; ++i) {
+        
+        int e = thisDetector->trimEnergies[i];
+		energy.push_back( static_cast<double>(e));
+
+		ostfn << thisDetector->settingsDir << ssettings << "/" << e << "eV" << "/noise.sn" << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER) << setbase(10);
+		string settingsfname = ostfn.str();
+        ostfn.str(""); ostfn.clear();
+        cout <<  settingsfname << endl;
+
+		//read settings file
+		if (NULL == readSettingsFile(settingsfname,thisDetector->myDetectorType, iodelay_tmp, tau_tmp, tmpMod)) {
+			setErrorMask((getErrorMask())|(SETTINGS_FILE_NOT_OPEN));
+			deleteModule(tmpMod);
+			return FAIL;
+		}
+
+		vrf.push_back( static_cast<double>(tmpMod->dacs[2]) );  //TODO! Not use hard coded dac index
+
+    }
+
+	deleteModule( tmpMod );
+
+	//spline interpolation
+    tk::spline s;
+    s.set_points(energy,vrf);    // currently it is required that X is already sorted
+
+	int new_vrf = static_cast<int>( round( s(e_eV) ));
+
+	//cout << "Linear vrf:" << myMod->dacs[2] << " Spline vrf: " << s( e_eV ) << endl; 
+	printf("Lineary vrf: %d Spline vrf: %4.2f Rounded: %d \n", myMod->dacs[2], s(e_eV), new_vrf);
 
 	myMod->module=0;
 	myMod->reg=thisDetector->currentSettings;
+	myMod->dacs[2] = new_vrf; //TODO! Don't use hardcoded value!
 	setModule(*myMod, iodelay, tau, e_eV, 0, 0);
 	deleteModule(myMod);
 	if (getSettings(-1) != is){

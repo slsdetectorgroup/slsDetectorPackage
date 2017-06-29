@@ -21,9 +21,10 @@ SRC_CLNT=slsDetectorAnalysis/fileIO.cpp  usersFunctions/usersFunctions.cpp slsDe
 DEPSINCLUDES = $(LIBZMQDIR)/sls_receiver_defs.h $(LIBZMQDIR)/sls_receiver_funcs.h $(LIBZMQDIR)/ansi.h commonFiles/sls_detector_defs.h commonFiles/sls_detector_funcs.h commonFiles/error_defs.h slsDetector/slsDetectorBase.h slsDetectorAnalysis/angCalLogClass.h slsDetectorAnalysis/angleConversionConstant.h slsDetectorAnalysis/badChannelCorrections.h slsDetectorAnalysis/detectorData.h slsDetectorAnalysis/enCalLogClass.h slsDetectorAnalysis/fileIOStatic.h slsDetectorAnalysis/movingStat.h slsDetectorAnalysis/runningStat.h slsDetectorAnalysis/single_photon_hit.h threadFiles/Global.h threadFiles/Task.h usersFunctions/angleFunction.h
 
 
+
 $(info )
 $(info #######################################)
-$(info #    Compiling slsDetectorSoftware    #)
+$(info #   In slsDetectorSoftware Makefile   #)
 $(info #######################################)
 $(info )
 
@@ -67,7 +68,6 @@ gotthardVirtualServer:  $(SRC_MYTHEN_SVC)
 	cd gotthardDetectorServer && make -f Makefile.virtual DESTDIR=$(DESTDIR) 
 
 
-
 %.o : %.cpp %.h $(DEPSINCLUDES) Makefile
 	$(CXX) -o $@ -c $< $(INCLUDES) $(DFLAGS)  -fPIC  $(EPICSFLAGS) -pthread  -lrt $(LIBZMQ) $(FLAGS)
 
@@ -75,8 +75,12 @@ gotthardVirtualServer:  $(SRC_MYTHEN_SVC)
 package:  $(OBJS) $(DESTDIR)/libSlsDetector.so $(DESTDIR)/libSlsDetector.a 
 
 
+
 $(DESTDIR)/libSlsDetector.so: $(OBJS) 
-	./updateGitVersion.sh
+	$(call colorecho,"#######################################")
+	$(call colorecho,"#    Compiling slsDetector Library    #")
+	$(call colorecho,"#######################################")
+	$(call colorecho,`./updateGitVersion.sh`)
 	$(CXX)  -shared -Wl,-soname,libSlsDetector.so -o libSlsDetector.so  $(OBJS)  -lc $(INCLUDES) $(DFLAGS)  $(FLAGS) $(EPICSFLAGS)  -L/usr/lib64 -pthread -lrt $(LIBZMQ)
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
 	mv libSlsDetector.so $(DESTDIR)

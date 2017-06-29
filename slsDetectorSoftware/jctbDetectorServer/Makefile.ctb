@@ -30,15 +30,18 @@ boot: $(OBJS)
 
 jungfrauDetectorServerTest: $(OBJS)
 	echo $(OBJS)
+	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@)
 
 
 jungfrauDetectorServer: $(OBJS)
 	echo $(OBJS)
+	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@)
 
 jungfrauADCTEst: $(OBJS)
 	echo $(OBJS)
+	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@) -DTESTADC 
 
 

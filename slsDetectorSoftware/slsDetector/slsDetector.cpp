@@ -26,9 +26,9 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
 #ifdef VERBOSE
   cout << "init shm"<< endl;
 #endif
-  switch(type) {
+  switch(type)  {
   case MYTHEN:
-    nch=128; // complete mythen system
+    nch=128;  // complete mythen system
     nm=24;
     nc=10;
     nd=6; // dacs+adcs

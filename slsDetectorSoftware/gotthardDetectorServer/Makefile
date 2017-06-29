@@ -21,12 +21,13 @@ OBJS = $(SRCS:%.c=%.o)
 
 
 
-all:	clean updateVersion $(PROGS) 
+all:	clean $(PROGS) 
 
 boot: $(OBJS)
 
 $(PROGS): $(OBJS)
 	echo $(OBJS)
+	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@)
 
 
@@ -41,8 +42,6 @@ romfs:
 clean:
 	rm -rf $(PROGS)  *.o *.gdb
 
-updateVersion:
-	./updateGitVersion.sh
 
 
 

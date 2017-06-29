@@ -10,12 +10,13 @@ INSTMODE	= 	0777
 SRC_CLNT	=	communication_funcs.c slsDetectorServer.c slsDetectorServer_funcs.c  slsDetectorFunctionList.c 
 OBJS 		= 	$(SRC_CLNT:.c=.o) 
  
-all: clean updateVersion $(PROGS)
+all: clean $(PROGS)
 
 boot: $(OBJS) 
 
 $(PROGS): $(OBJS)
-	echo $(OBJS) 
+#	echo $(OBJS) 
+	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`
 	mkdir -p $(DESTDIR) 
 	$(CC) -o $@ $^ $(CFLAGS) $(LDLIBS) 
 	mv $(PROGS) $(DESTDIR)
@@ -24,6 +25,5 @@ $(PROGS): $(OBJS)
 clean:
 	rm -rf $(DESTDIR)/$(PROGS)  *.o
 	
-updateVersion:
-	./updateGitVersion.sh
+
 	

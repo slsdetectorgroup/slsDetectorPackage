@@ -1,7 +1,6 @@
 include ../Makefile.include
 
 DESTDIR		?=	../bin
-LIBDIR	 	?= 	$(DESTDIR)
 DOCDIR 		?= 	docs
 SRCDIR		=	src
 INCDIR		=   include
@@ -45,7 +44,7 @@ OBJS=$(SRC_CLNT:%.cpp=$(BUILDDIR)/%.o)
 
 $(info )
 $(info #######################################)
-$(info #    Compiling slsReceiverSoftware    #)
+$(info #   In slsReceiverSoftware Makefile   #)
 $(info #######################################)
 $(info )
 
@@ -74,7 +73,10 @@ receiver: $(DESTDIR)/slsReceiver
 
 
 $(DESTDIR)/libSlsReceiver.so: $(OBJS)  
-	./updateGitVersion.sh
+	$(call colorecho,"#######################################")
+	$(call colorecho,"#    Compiling slsReceiver Library    #")
+	$(call colorecho,"#######################################")
+	$(call colorecho,`./updateGitVersion.sh`)
 	$(CXX)  -shared -Wl,-soname,libSlsReceiver.so -o libSlsReceiver.so  $(OBJS) -lc $(INCLUDES) $(DFLAGS) $(FLAGS) $(EPICSFLAGS)  -L/usr/lib64 -pthread $(LIBZMQ) -lrt 
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
 	mv libSlsReceiver.so $(DESTDIR)
@@ -85,11 +87,17 @@ $(DESTDIR)/libSlsReceiver.a: $(OBJS)
 
 
 $(DESTDIR)/slsReceiver: 	 $(SRCDIR)/$(MAIN_SRC) $(DESTDIR)/libSlsReceiver.so $(DESTDIR)/libSlsReceiver.a
+	$(call colorecho,"#######################################")
+	$(call colorecho,"#        Compiling slsReceiver        #")
+	$(call colorecho,"#######################################")
 	$(CXX)   -o $@  $(SRCDIR)/$(MAIN_SRC)  $(FLAGS)  $(INCLUDES) $(CLAGS) $(LIBS) $(LDFLAGRXR) -fPIC  $(LIBZMQ) -lrt 
 #$(EIGERFLAGS)
 
 
 $(DESTDIR)/dummyReceiver: 	$(SRCDIR)/$(DUMMY_MAIN_SRC) $(DESTDIR)/libSlsReceiver.so $(DESTDIR)/libSlsReceiver.a
+	$(call colorecho,"#######################################")
+	$(call colorecho,"#     Compiling Dummy slsReceiver     #")
+	$(call colorecho,"#######################################")
 	$(CXX)   -o $@  $(SRCDIR)/$(DUMMY_MAIN_SRC)  $(FLAGS)  $(INCLUDES) $(CLAGS) $(LIBS) $(LDFLAGRXR) -fPIC $(LIBZMQ)  -lrt 
 #$(EIGERFLAGS)
 
@@ -108,7 +116,8 @@ clean: buildclean
 	if test -e $(PROGS); then rm $(PROGS);fi
 
 builddir:
-	if [ ! -d $(BUILDDIR) ]; then mkdir $(BUILDDIR); fi
+	mkdir -p $(BUILDDIR)
+#	if [ ! -d $(BUILDDIR) ]; then mkdir $(BUILDDIR); fi
 
 buildclean:
 	rm -rf $(OBJS)		

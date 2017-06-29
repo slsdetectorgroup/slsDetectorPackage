@@ -1,7 +1,7 @@
 MAINDIR=slsDetectorsPackage
 SPECDIR=slsDetectorGui
-TMPFILE=include/gitInfoGuiTmp.h
-INCLFILE=include/gitInfoGui.h
+TMPFILE=gitInfoGuiTmp.h
+INCLFILE=gitInfoGui.h
 WD=$PWD
 
 GITREPO1='git remote -v'

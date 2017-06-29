@@ -53,7 +53,8 @@ htmldoc:
 	cd manual && $(MAKE) html DESTDIR=$(DOCDIR)
 
 $(PROG): Makefile.gui $(DIR)
-	./updateGitVersion.sh
+	echo $(DIR)
+#	./updateGitVersion.sh
 	$(MAKE) -f Makefile.gui SLSDETLIB=$(LIBDIR) DESTDIR=$(DESTDIR) SUBLIBS='$(LDFLAGDET)' INCLUDES='$(INCLUDES)'
 
 guiclient:

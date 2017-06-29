@@ -30,6 +30,8 @@ QMAKE_CXXFLAGS_WARN_ON = 	-w
 QMAKE_CFLAGS_WARN_ON   = 	-w
 
 
+QMAKE_PRE_LINK		= 		updateGitVersion.sh
+
 DESTDIR  			?= 		bin
 MOC_DIR   			= 		mocs
 OBJECTS_DIR 		= 		objs
@@ -127,7 +129,7 @@ HEADERS 			=  		\
 							include/qTabDebugging.h\
 							include/qTabDeveloper.h\
 							include/qTabMessages.h\
-							include/gitInfoGui.h\
+							gitInfoGui.h\
 							../slsDetectorSoftware/commonFiles/sls_detector_defs.h\
 							../slsReceiverSoftware/include/sls_receiver_defs.h\
 							include/qServer.h

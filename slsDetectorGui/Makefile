@@ -52,9 +52,9 @@ doc:
 htmldoc:
 	cd manual && $(MAKE) html DESTDIR=$(DOCDIR)
 
-$(PROG): Makefile.gui $(DIR)
+$(PROG): Makefile.gui slsDetectorGui.pro $(DIR)
 	echo $(DIR)
-#	./updateGitVersion.sh
+	./updateGitVersion.sh
 	$(MAKE) -f Makefile.gui SLSDETLIB=$(LIBDIR) DESTDIR=$(DESTDIR) SUBLIBS='$(LDFLAGDET)' INCLUDES='$(INCLUDES)'
 
 guiclient:

@@ -30,7 +30,7 @@ QMAKE_CXXFLAGS_WARN_ON = 	-w
 QMAKE_CFLAGS_WARN_ON   = 	-w
 
 
-QMAKE_PRE_LINK		= 		updateGitVersion.sh
+#QMAKE_PRE_LINK		= 		updateGitVersion.sh
 
 DESTDIR  			?= 		bin
 MOC_DIR   			= 		mocs
@@ -59,6 +59,7 @@ DEPENDPATH  		+=		\
 
 
 INCLUDEPATH 		= 	\	 
+							. \
 							$(QWTDIR)/include\
 							$(QWTDIR) \
                             $(QWTDIR)/src\
@@ -129,7 +130,7 @@ HEADERS 			=  		\
 							include/qTabDebugging.h\
 							include/qTabDeveloper.h\
 							include/qTabMessages.h\
-							gitInfoGui.h\
+							gitInfoGui.h\  
 							../slsDetectorSoftware/commonFiles/sls_detector_defs.h\
 							../slsReceiverSoftware/include/sls_receiver_defs.h\
 							include/qServer.h

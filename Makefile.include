@@ -69,6 +69,11 @@ ifeq ($(ROOTSLS),yes)
 endif
 
 
+define colorecho
+      @tput setaf 6
+      @echo $1
+      @tput sgr0
+endef
 
 
 

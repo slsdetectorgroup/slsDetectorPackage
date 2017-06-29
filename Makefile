@@ -19,6 +19,8 @@ CALWIZDIR		=	$(WD)/calibrationWizards
 MANDIR			=	$(WD)/manual
 CALIBDIR		=	$(WD)/slsDetectorCalibration
 
+TABSPACE		:=	"\t"
+
  
 INCLUDES=-I. -I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRARYDIR)/usersFunctions -I$(LIBRARYDIR)/multiSlsDetector -I$(LIBRARYDIR)/slsDetectorUtils -I$(LIBRARYDIR)/slsDetectorCommand -I$(LIBRARYDIR)/slsDetectorAnalysis -I$(LIBRARYDIR)/slsReceiverInterface  -I$(LIBRARYRXRDIR)/include -I$(LIBRARYDIR)/threadFiles -I$(ASM)
 
@@ -27,14 +29,15 @@ INCLUDESRXR += -I. -I$(LIBRARYRXRDIR)/include -I$(CALIBDIR) -I$(ASM)
 
 $(info )
 $(info #######################################)
-$(info #    Compiling slsDetectorsPackage    #)
+$(info #   In slsDetectorsPackage Makefile   #)
 $(info #######################################)
 $(info )
 
 
 .PHONY: all nonstatic static lib libreceiver textclient receiver gui stextclient sreceiver
 
-all: lib textclient  receiver gui 
+#all: lib textclient  receiver gui 
+all: textclient  receiver gui 
 
 nonstatic: lib libreceiver textclient receiver  gui 
 
@@ -52,29 +55,50 @@ stextclient: slsDetectorClient_static
 
 slsDetectorClient: textclient
 
-slsDetectorClient_static: lib
-	cd  $(CLIENTDIR) && $(MAKE) static_clients FLAGS='$(FLAGS)' LIBS='$(LDFLAGDET)' DESTDIR='$(BINDIR)' LIBDIR='$(LIBDIR)' INCLUDES='$(INCLUDES)'
-
-textclient: lib
-	cd  $(CLIENTDIR) && $(MAKE) FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)'  LIBDIR='$(LIBDIR)' LIBS='$(LDFLAGDET)' INCLUDES='$(INCLUDES)'
-
-
+slsDetectorClient_static: #lib
+	cd  $(CLIENTDIR) && $(MAKE) static_clients FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)' LIBRARYDIR='$(LIBRARYDIR)' LIBS='$(LDFLAGDET)' INCLUDES='$(INCLUDES)'
+	@echo ""
+	@echo "#######################################"
+	@echo "# Back in slsDetectorPackage Makefile #"
+	@echo "#######################################"
+	@echo ""
+		
+textclient: #lib
+	cd  $(CLIENTDIR) && $(MAKE) FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)'  LIBRARYDIR='$(LIBRARYDIR)' LIBS='$(LDFLAGDET)' INCLUDES='$(INCLUDES)'
+	@echo ""
+	@echo "#######################################"
+	@echo "# Back in slsDetectorPackage Makefile #"
+	@echo "#######################################"
+	@echo ""
+	
 slsReceiver: receiver
 
 slsReceiver_static: receiver
 
-receiver: libreceiver
-	cd  $(RECEIVERDIR) && $(MAKE) receiver FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)' LIBDIR='$(LIBDIR)'  LIBS='$(LDFLAGRXR)' INCLUDES='$(INCLUDESRXR)'
+receiver: #libreceiver
+	cd  $(RECEIVERDIR) && $(MAKE) receiver FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)'  LIBS='$(LDFLAGRXR)' INCLUDES='$(INCLUDESRXR)'
+	@echo ""
+	@echo "#######################################"
+	@echo "# Back in slsDetectorPackage Makefile #"
+	@echo "#######################################"
+	@echo ""
+		
+sreceiver: #libreceiver
+	cd  $(RECEIVERDIR) && $(MAKE)  static_receiver FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)'  LIBS='$(LDFLAGRXR)' INCLUDES='$(INCLUDESRXR)'
+	@echo ""
+	@echo "#######################################"
+	@echo "# Back in slsDetectorPackage Makefile #"
+	@echo "#######################################"
+	@echo ""
 
-sreceiver: libreceiver
-	cd  $(RECEIVERDIR) && $(MAKE)  static_receiver FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)' LIBDIR='$(LIBDIR)'  LIBS='$(LDFLAGRXR)' INCLUDES='$(INCLUDESRXR)'
-
-
-
-slsDetectorGUI: lib
-	cd  $(GUIDIR) && $(MAKE) DESTDIR='$(BINDIR)' LIBDIR='$(LIBDIR)' INCLUDES='$(INCLUDES)' LDFLAGDET='-L$(LIBDIR) -lSlsDetector'  
-
-
+slsDetectorGUI: #lib
+	cd  $(GUIDIR) && $(MAKE) DESTDIR='$(BINDIR)' LIBRARYDIR='$(LIBRARYDIR)' INCLUDES='$(INCLUDES)' LDFLAGDET='-L$(LIBDIR) -lSlsDetector'
+	@echo ""
+	@echo "#######################################"
+	@echo "# Back in slsDetectorPackage Makefile #"
+	@echo "#######################################"
+	@echo ""
+	
 calWiz: 
 	cd  $(CALWIZDIR) && $(MAKE)  DESTDIR=$(BINDIR) #FLAGS=$(FLAGS)  LDFLAGDET=$(LDFLAGDET) INCLUDES=$(INCLUDES)
 

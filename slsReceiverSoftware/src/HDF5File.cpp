@@ -53,13 +53,13 @@ void HDF5File::PrintMembers() {
 	File::PrintMembers();
 	UpdateDataType();
 	if (datatype == PredType::STD_U8LE) {
-		printf("Data Type: 4 or 8\n");
+		FILE_LOG(logINFO) << "Data Type: 4 or 8";
 	} else if (datatype == PredType::STD_U16LE) {
-		printf("Data Type: 16\n");
+		FILE_LOG(logINFO) << "Data Type: 16";
 	} else if (datatype == PredType::STD_U32LE) {
-		printf("Data Type: 32\n");
+		FILE_LOG(logINFO) << "Data Type: 32";
 	} else {
-		cprintf(BG_RED,"unknown data type\n");
+		FILE_LOG(logERROR) << BG_RED,"unknown data type";
 	}
 }
 
@@ -112,18 +112,18 @@ int HDF5File::CreateFile(uint64_t fnum) {
 	}
 	pthread_mutex_unlock(&Mutex);
 	if (dataspace == NULL)
-		cprintf(RED,"Got nothing!\n");
+		bprintf(RED,"Got nothing!\n");
 
 	//first file, print entrire path
 	if (loss == -1)
-		printf("[%u]: HDF5 File created: %s\n", *udpPortNumber, currentFileName.c_str());
+		FILE_LOG(logINFO) << *udpPortNumber << ": HDF5 File created: " << currentFileName;
 	//other files
 	else {
 		if (loss)
-			cprintf(RED,"[%u]:  Packet_Loss:%lu  Fifo_Max_Level:%d  \tNew_File:%s\n",
+			bprintf(RED,"[%u]:  Packet_Loss:%lu  Fifo_Max_Level:%d  \tNew_File:%s\n",
 					*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound() , basename(currentFileName.c_str()));
 		else
-			cprintf(GREEN,"[%u]:  Packet_Loss:%lu  Fifo_Max_Level:%d  \tNew_File:%s\n",
+			bprintf(GREEN,"[%u]:  Packet_Loss:%lu  Fifo_Max_Level:%d  \tNew_File:%s\n",
 					*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound(), basename(currentFileName.c_str()));
 	}
 
@@ -172,7 +172,7 @@ int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t 
 		}
 	}
 	pthread_mutex_unlock(&Mutex);
-	cprintf(RED,"%d Error: Write to file failed\n", index);
+	bprintf(RED,"%d Error: Write to file failed\n", index);
 	return FAIL;
 }
 
@@ -187,7 +187,7 @@ int HDF5File::CreateMasterFile(bool en, uint32_t size,
 	if (master && (*detIndex==0)) {
 		virtualfd = 0;
 		masterFileName = HDF5FileStatic::CreateMasterFileName(filePath, fileNamePrefix, *fileIndex);
-		printf("Master File: %s\n", masterFileName.c_str());
+		FILE_LOG(logINFO) << "Master File: " << masterFileName;
 		pthread_mutex_lock(&Mutex);
 		int ret = HDF5FileStatic::CreateMasterDataFile(masterfd, masterFileName, *overWriteEnable,
 				*dynamicRange, en, size, nx, ny, *numImages, at, ap, HDF5_WRITER_VERSION);

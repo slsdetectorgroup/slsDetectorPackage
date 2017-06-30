@@ -6,6 +6,8 @@
 #define CYAN    	"\x1b[36m"
 #define GRAY		"\x1b[37m"
 #define DARKGRAY	"\x1b[30m"
+
+#define BG_BLACK	"\x1b[48;5;232m"
 #define BG_RED     	"\x1b[41m"
 #define BG_GREEN   	"\x1b[42m"
 #define BG_YELLOW  	"\x1b[43m"
@@ -15,8 +17,10 @@
 #define RESET   	"\x1b[0m"
 #define BOLD    	"\x1b[1m"
 
+//on background black
+#define bprintf(code, format, ...) printf(code BG_BLACK format RESET, ##__VA_ARGS__)
+//normal printout
 #define cprintf(code, format, ...) printf(code format RESET, ##__VA_ARGS__)
-
 /*
 
 Code examples

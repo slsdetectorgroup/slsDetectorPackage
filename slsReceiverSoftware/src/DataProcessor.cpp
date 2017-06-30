@@ -168,7 +168,7 @@ void DataProcessor::RecordFirstIndices(uint64_t fnum) {
 	}
 
 #ifdef VERBOSE
-	cprintf(BLUE,"%d First Acquisition Index:%lld\tFirst Measurement Index:%lld\n",
+	bprintf(BLUE,"%d First Acquisition Index:%lld\tFirst Measurement Index:%lld\n",
 			index, (long long int)firstAcquisitionIndex, (long long int)firstMeasurementIndex);
 #endif
 }
@@ -270,13 +270,13 @@ void DataProcessor::ThreadExecution() {
 	char* buffer=0;
 	fifo->PopAddress(buffer);
 #ifdef FIFODEBUG
-	if (!index) cprintf(BLUE,"DataProcessor %d, pop 0x%p buffer:%s\n", index,(void*)(buffer),buffer);
+	if (!index) bprintf(BLUE,"DataProcessor %d, pop 0x%p buffer:%s\n", index,(void*)(buffer),buffer);
 #endif
 
 	//check dummy
 	uint32_t numBytes = (uint32_t)(*((uint32_t*)buffer));
 #ifdef VERBOSE
-	if (!index) cprintf(BLUE,"DataProcessor %d, Numbytes:%u\n", index,numBytes);
+	if (!index) bprintf(BLUE,"DataProcessor %d, Numbytes:%u\n", index,numBytes);
 #endif
 	if (numBytes == DUMMY_PACKET_VALUE) {
 		StopProcessing(buffer);
@@ -297,7 +297,7 @@ void DataProcessor::ThreadExecution() {
 void DataProcessor::StopProcessing(char* buf) {
 #ifdef VERBOSE
 	if (!index)
-		cprintf(RED,"DataProcessing %d: Dummy\n", index);
+		bprintf(RED,"DataProcessing %d: Dummy\n", index);
 #endif
 	//stream or free
 	if (*dataStreamEnable)
@@ -308,7 +308,7 @@ void DataProcessor::StopProcessing(char* buf) {
 	file->CloseCurrentFile();
 	StopRunning();
 #ifdef VERBOSE
-	printf("%d: Processing Completed\n", index);
+	FILE_LOG(logINFO) << index << ": Processing Completed";
 #endif
 }
 
@@ -326,12 +326,12 @@ void DataProcessor::ProcessAnImage(char* buf) {
 
 #ifdef VERBOSE
 	if (!index)
-		cprintf(BLUE,"DataProcessing %d: fnum:%lu\n", index, fnum);
+		bprintf(BLUE,"DataProcessing %d: fnum:%lu\n", index, fnum);
 #endif
 
 	if (!measurementStartedFlag) {
 #ifdef VERBOSE
-		if (!index) cprintf(BLUE,"DataProcessing %d: fnum:%lu\n", index, fnum);
+		if (!index) bprintf(BLUE,"DataProcessing %d: fnum:%lu\n", index, fnum);
 #endif
 		RecordFirstIndices(fnum);
 	}

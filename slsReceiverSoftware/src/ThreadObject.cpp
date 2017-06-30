@@ -87,7 +87,7 @@ void ThreadObject::RunningThread() {
 		sem_wait(&semaphore);
 
 		if(killThread)	{
-			cprintf(BLUE,"%s Thread %d: Goodbye\n",GetType().c_str(),index);
+			bprintf(BLUE,"%s Thread %d: Goodbye\n",GetType().c_str(),index);
 			pthread_exit(NULL);
 		}
 

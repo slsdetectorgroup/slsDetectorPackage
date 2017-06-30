@@ -43,43 +43,25 @@ string File::GetCurrentFileName() {
 }
 
 void File::PrintMembers() {
-	printf("\nGeneral Writer Variables:"
-			"Index: %d\n"
-			"Max Frames Per File: %u\n"
-			"Packets per Frame: %u\n"
-			"Number of Detectors in x dir: %d\n"
-			"Number of Detectors in y dir: %d\n"
-			"File Name Prefix: %s\n"
-			"File Path: %s\n"
-			"File Index: %lu\n"
-			"Frame Index Enable: %d\n"
-			"Over Write Enable: %d\n"
+	FILE_LOG(logINFO) << "\nGeneral Writer Variables:" << endl
+			<< "Index: " << index << endl
+			<< "Max Frames Per File: " << maxFramesPerFile << endl
+			<< "Packets per Frame: " << *packetsPerFrame << endl
+			<< "Number of Detectors in x dir: " << numDetX << endl
+			<< "Number of Detectors in y dir: " << numDetY << endl
+			<< "File Name Prefix: " << fileNamePrefix << endl
+			<< "File Path: " << filePath << endl
+			<< "File Index: " << *fileIndex << endl
+			<< "Frame Index Enable: " << *frameIndexEnable << endl
+			<< "Over Write Enable: " << *overWriteEnable << endl
 
-			"Detector Index: %d\n"
-			"Number of Units Per Detector: %d\n"
-			"Number of Images in Acquisition: %lu\n"
-			"Dynamic Range: %u\n"
-			"UDP Port number: %u\n"
-			"Master File Name: %s\n"
-			"Current File Name: %s\n",
-			index,
-			maxFramesPerFile,
-			*packetsPerFrame,
-			numDetX,
-			numDetY,
-			fileNamePrefix,
-			filePath,
-			*fileIndex,
-			(int)*frameIndexEnable,
-			(int)*overWriteEnable,
-
-			*detIndex,
-			*numUnitsPerDetector,
-			*numImages,
-			*dynamicRange,
-			*udpPortNumber,
-			masterFileName.c_str(),
-			currentFileName.c_str());
+			<< "Detector Index: " << *detIndex << endl
+			<< "Number of Units Per Detector: " << *numUnitsPerDetector << endl
+			<< "Number of Images in Acquisition: " << *numImages << endl
+			<< "Dynamic Range: " << *dynamicRange << endl
+			<< "UDP Port number: " << *udpPortNumber << endl
+			<< "Master File Name: " << masterFileName << endl
+			<< "Current File Name: " << currentFileName;
 }
 
 

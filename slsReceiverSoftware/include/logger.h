@@ -32,13 +32,8 @@
 )
 #define __SHORT_AT__  string(__SHORT_FORM_OF_FILE__) + string("::") + string(__func__) + string("(): ")
 
-//":" TOSTRING(__LINE__)
 
-/*
-void error(const char *location, const char *msg){
-  printf("Error at %s: %s\n", location, msg);
-}
-*/
+
 
 inline std::string NowTime();
 
@@ -223,10 +218,10 @@ inline void Output2FILE::Output(const std::string& msg, TLogLevel level)
         return;
     bool out = true;
     switch(level){
-    case logERROR:		cprintf(RED BOLD,"%s",msg.c_str()); 	break;
-    case logWARNING:	cprintf(YELLOW BOLD,"%s",msg.c_str()); 	break;
-    case logINFO:		cprintf(GRAY,"%s",msg.c_str());			break;
-   // case logINFO:		cprintf(DARKGRAY BOLD,"%s",msg.c_str());break;
+    case logERROR:		bprintf(RED BOLD,"%s",msg.c_str()); 	break;
+    case logWARNING:	bprintf(YELLOW BOLD,"%s",msg.c_str()); 	break;
+    case logINFO:		bprintf(GRAY,"%s",msg.c_str());			break;
+   // case logINFO:		bprintf(DARKGRAY BOLD,"%s",msg.c_str());break;
     default: 			fprintf(pStream,"%s",msg.c_str()); 	out = false; 	break;
     }
     fflush(out ? stdout : pStream);

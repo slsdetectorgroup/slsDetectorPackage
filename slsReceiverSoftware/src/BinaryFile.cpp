@@ -35,8 +35,8 @@ BinaryFile::~BinaryFile() {
 
 void BinaryFile::PrintMembers() {
 	File::PrintMembers();
-	printf("Max Frames Per File: %d\n",maxFramesPerFile);
-	printf("Number of Frames in File: %d\n",numFramesInFile);
+	FILE_LOG(logINFO) << "Max Frames Per File: " << maxFramesPerFile;
+	FILE_LOG(logINFO) << "Number of Frames in File: " << numFramesInFile;
 }
 
 slsReceiverDefs::fileFormat BinaryFile::GetFileType() {
@@ -61,14 +61,14 @@ int BinaryFile::CreateFile(uint64_t fnum) {
 
 	//first file, print entrire path
 	if (loss == -1)
-		printf("[%u]: Binary File created: %s\n", *udpPortNumber, currentFileName.c_str());
+		FILE_LOG(logINFO) << "[" << *udpPortNumber << "]: Binary File created: " << currentFileName;
 	//other files
 	else {
 		if (loss)
-			cprintf(RED,"[%u]:  Packet_Loss:%lu  Fifo_Max_Level:%d  \tNew_File:%s\n",
+			bprintf(RED,"[%u]:  Packet_Loss:%lu  Fifo_Max_Level:%d  \tNew_File:%s\n",
 					*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound() , basename(currentFileName.c_str()));
 		else
-			cprintf(GREEN,"[%u]:  Packet_Loss:%lu  Fifo_Max_Level:%d  \tNew_File:%s\n",
+			bprintf(GREEN,"[%u]:  Packet_Loss:%lu  Fifo_Max_Level:%d  \tNew_File:%s\n",
 					*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound(), basename(currentFileName.c_str()));
 	}
 
@@ -94,7 +94,7 @@ int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_
 	numActualPacketsInFile += nump;
 	if (BinaryFileStatic::WriteDataFile(filefd, buffer, buffersize, fnum) == buffersize)
 		return OK;
-	cprintf(RED,"%d Error: Write to file failed for image number %lld\n", index, (long long int)fnum);
+	bprintf(RED,"%d Error: Write to file failed for image number %lld\n", index, (long long int)fnum);
 	return FAIL;
 }
 
@@ -107,7 +107,7 @@ int BinaryFile::CreateMasterFile(bool en, uint32_t size,
 
 	if (master && (*detIndex==0)) {
 		masterFileName = BinaryFileStatic::CreateMasterFileName(filePath, fileNamePrefix, *fileIndex);
-		printf("Master File: %s\n", masterFileName.c_str());
+		FILE_LOG(logINFO) << "Master File: " << masterFileName;
 		return BinaryFileStatic::CreateMasterDataFile(masterfd, masterFileName, *overWriteEnable,
 				*dynamicRange, en, size, nx, ny, *numImages,
 				at, ap, BINARY_WRITER_VERSION);

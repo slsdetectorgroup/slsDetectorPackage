@@ -18,7 +18,7 @@ using namespace std;
 
 
 
-slsReceiver::slsReceiver(int argc, char *argv[], int &success){
+slsReceiver::slsReceiver(int argc, char *argv[], int &success) {
 
 	/** 
 	 * Constructor method to start up a Receiver server. Reads configuration file, options, and 
@@ -70,7 +70,9 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 
 		case 'f':
 			fname = optarg;
-			//cout << long_options[option_index].name << " " << optarg << endl;
+#ifdef VERYVERBOSE
+			FILE_LOG(logDEBUG) << long_options[option_index].name << " " << optarg << endl;
+#endif
 			break;
 
 		case 'b':
@@ -94,7 +96,7 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 
 			help_message += """\t--type:\t Type of the receiver. Possible arguments are: standard, REST. Default: standard.\n\n""";
 
-			cout << help_message << endl;
+			FILE_LOG(logINFO) << help_message << endl;
 			break;
 		       
 		}

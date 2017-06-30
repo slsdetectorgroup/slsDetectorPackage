@@ -151,7 +151,7 @@ public:
 	 * @param tgEnable true if 10GbE is enabled, else false
 	 */
 	virtual void SetDynamicRange(int dr, bool tgEnable) {
-		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+		bprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
 	};
 
 	/**
@@ -160,58 +160,35 @@ public:
 	 * @param dr dynamic range
 	 */
 	virtual void SetTenGigaEnable(bool tgEnable, int dr) {
-		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+		bprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
 	};
 
 	/**
 	 * Print all variables
 	 */
 	virtual void Print() const {
-		std::string temp = slsReceiverDefs::getDetectorType(myDetectorType);
-		printf("\n\nDetector Data Variables:\n");
-		printf(	"myDetectorType:%s\n"
-				"Pixels X: %u\n"
-				"Pixels Y: %u\n"
-				"Empty Header: %u\n"
-				"Header Size in Packet: %u\n"
-				"Data Size: %u\n"
-				"Packet Size: %u\n"
-				"Packets per Frame: %u\n"
-				"Image Size: %u\n"
-				"Frame Index Mask: 0x%llx\n"
-				"Frame Index Offset: %u\n"
-				"Packet Index Mask: 0x%x\n"
-				"Packet Index Offset: %u\n"
-				"Max Frames Per File: %u\n"
-				"Fifo Buffer Header Size: %u\n"
-				"Default Fifo Depth: %u\n"
-				"Threads Per Receiver: %u\n"
-				"Header Packet Size: %u\n"
-				"Streamer Pixels X: %u\n"
-				"Streamer Pixels Y: %u\n"
-				"Streamer Image Size: %u\n"
-
-				,temp.c_str(),//.c_str() modifies, using temp string for thread safety
-				nPixelsX,
-				nPixelsY,
-				emptyHeader,
-				headerSizeinPacket,
-				dataSize,
-				packetSize,
-				packetsPerFrame,
-				imageSize,
-				(long long int)frameIndexMask,
-				frameIndexOffset,
-				packetIndexMask,
-				packetIndexOffset,
-				maxFramesPerFile,
-				fifoBufferHeaderSize,
-				defaultFifoDepth,
-				threadsPerReceiver,
-				headerPacketSize,
-				nPixelsX_Streamer,
-				nPixelsY_Streamer,
-				imageSize_Streamer);
+		FILE_LOG(logDEBUG) << "\n\nDetector Data Variables:";
+		FILE_LOG(logDEBUG) << "myDetectorType: " << slsReceiverDefs::getDetectorType(myDetectorType);
+		FILE_LOG(logDEBUG) << "Pixels X: " << nPixelsX;
+		FILE_LOG(logDEBUG) << "Pixels Y: " << nPixelsY;
+		FILE_LOG(logDEBUG) << "Empty Header: " << emptyHeader;
+		FILE_LOG(logDEBUG) << "Header Size in Packet: " << headerSizeinPacket;
+		FILE_LOG(logDEBUG) << "Data Size: " << dataSize;
+		FILE_LOG(logDEBUG) << "Packet Size: " << packetSize;
+		FILE_LOG(logDEBUG) << "Packets per Frame: " << packetsPerFrame;
+		FILE_LOG(logDEBUG) << "Image Size: " << imageSize;
+		FILE_LOG(logDEBUG) << "Frame Index Mask: " << frameIndexMask;
+		FILE_LOG(logDEBUG) << "Frame Index Offset: " << frameIndexOffset;
+		FILE_LOG(logDEBUG) << "Packet Index Mask: " << packetIndexMask;
+		FILE_LOG(logDEBUG) << "Packet Index Offset: " << packetIndexOffset;
+		FILE_LOG(logDEBUG) << "Max Frames Per File: " << maxFramesPerFile;
+		FILE_LOG(logDEBUG) << "Fifo Buffer Header Size: " << fifoBufferHeaderSize;
+		FILE_LOG(logDEBUG) << "Default Fifo Depth: " << defaultFifoDepth;
+		FILE_LOG(logDEBUG) << "Threads Per Receiver: " << threadsPerReceiver;
+		FILE_LOG(logDEBUG) << "Header Packet Size: " << headerPacketSize;
+		FILE_LOG(logDEBUG) << "Streamer Pixels X: " << nPixelsX_Streamer;
+		FILE_LOG(logDEBUG) << "Streamer Pixels Y: " << nPixelsY_Streamer;
+		FILE_LOG(logDEBUG) << "Streamer Image Size: " << imageSize_Streamer;
 	};
 };
 
@@ -365,7 +342,7 @@ class Moench02Data : public GeneralData {
 	 */
 	void Print() const {
 		GeneralData::Print();
-		printf("Bytes Per Adc: %d\n",bytesPerAdc);
+		FILE_LOG(logINFO) << "Bytes Per Adc: " << bytesPerAdc;
 	}
 };
 
@@ -427,7 +404,7 @@ class JCTBData : public GeneralData {
 	 */
 	void Print() const {
 		GeneralData::Print();
-		printf("Bytes Per Adc: %d\n",bytesPerAdc);
+		FILE_LOG(logINFO) << "Bytes Per Adc: " << bytesPerAdc;
 	}
 };
 

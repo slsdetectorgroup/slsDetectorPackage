@@ -70,7 +70,7 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 			strcpy(mess,"dummy message");
 			function_table();
 #ifdef VERYVERBOSE
-			cout << "Function table assigned." << endl;
+			FILE_LOG(logINFO) << "Function table assigned.";
 #endif
 		}
 	}
@@ -89,7 +89,7 @@ int slsReceiverTCPIPInterface::setPortNumber(int pn){
 
 		if (p_number<1024) {
 			sprintf(mess,"Too low port number %d\n", p_number);
-			cout << mess << endl;
+			bprintf(RED,"%s",mess);
 		} else {
 
 			oldsocket=mySock;
@@ -101,10 +101,9 @@ int slsReceiverTCPIPInterface::setPortNumber(int pn){
 					strcpy(mySock->lastClientIP,oldsocket->lastClientIP);
 					delete oldsocket;
 				} else {
-					cout << "Could not bind port " << p_number << endl;
+					FILE_LOG(logERROR) <<  "Could not bind port " << p_number;
 					if (sd==-10) {
-
-						cout << "Port "<< p_number << " already set" << endl;
+						FILE_LOG(logINFO) << "Port "<< p_number << " already set";
 					} else {
 						delete mySock;
 						mySock=oldsocket;
@@ -123,27 +122,26 @@ int slsReceiverTCPIPInterface::setPortNumber(int pn){
 
 
 int slsReceiverTCPIPInterface::start(){
-	FILE_LOG(logDEBUG) << "Creating TCP Server Thread" << endl;
+	FILE_LOG(logDEBUG) << "Creating TCP Server Thread";
 	killTCPServerThread = 0;
 	if(pthread_create(&TCPServer_thread, NULL,startTCPServerThread, (void*) this)){
-		cout << "Could not create TCP Server thread" << endl;
+		FILE_LOG(logERROR) << "Could not create TCP Server thread";
 		return FAIL;
 	}
 	//#ifdef VERYVERBOSE
-	FILE_LOG(logDEBUG) << "TCP Server thread created successfully." << endl;
+	FILE_LOG(logDEBUG) << "TCP Server thread created successfully.";
 	//#endif
 	return OK;
 }
 
 
 void slsReceiverTCPIPInterface::stop(){
-	cout << "Shutting down UDP Socket" << endl;
+	FILE_LOG(logINFO) << "Shutting down UDP Socket";
 	killTCPServerThread = 1;
 	if(mySock)	mySock->ShutDownSocket();
-	cout<<"Socket closed"<<endl;
+	FILE_LOG(logDEBUG) << "Socket closed";
 	pthread_join(TCPServer_thread, NULL);
 	killTCPServerThread = 0;
-	cout<<"Threads joined"<<endl;
 }
 
 
@@ -160,38 +158,38 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 
 
 #ifdef VERYVERBOSE
-	cout << "Starting Receiver TCP Server" << endl;
+	FILE_LOG(logDEBUG5) << "Starting Receiver TCP Server";
 #endif
 	int v=OK;
 
 	while(1) {
 #ifdef VERYVERBOSE
-		cout<< endl;
+		FILE_LOG(logDEBUG5);
 #endif
 #ifdef VERY_VERBOSE
-		cout << "Waiting for client call" << endl;
+		FILE_LOG(logDEBUG5) << "Waiting for client call";
 #endif
 		if(mySock->Connect()>=0){
 #ifdef VERY_VERBOSE
-			cout << "Conenction accepted" << endl;
+			FILE_LOG(logDEBUG5) << "Conenction accepted";
 #endif
 			v = decode_function();
 #ifdef VERY_VERBOSE
-			cout << "function executed" << endl;
+			FILE_LOG(logDEBUG5) << "function executed";
 #endif
 			mySock->Disconnect();
 #ifdef VERY_VERBOSE
-			cout << "connection closed" << endl;
+			FILE_LOG(logDEBUG5) << "connection closed";
 #endif
 		}
 
 		//if tcp command was to exit server
 		if(v==GOODBYE){
-			cout << "Shutting down UDP Socket" << endl;
+			FILE_LOG(logINFO) << "Shutting down UDP Socket";
 			if(receiverBase){
 				receiverBase->shutDownUDPSockets();
 
-				cout << "Closing Files... " << endl;
+				FILE_LOG(logINFO) << "Closing Files... ";
 				receiverBase->closeFiles();
 			}
 
@@ -269,7 +267,7 @@ int slsReceiverTCPIPInterface::function_table(){
 
 #ifdef VERYVERBOSE
 	for (int i=0;i<numberOfFunctions;i++)
-		cout << "function " << i << "located at " << flist[i] << endl;
+		FILE_LOG(logDEBUG1) << "function " << i << "located at " << flist[i];
 #endif
 	return OK;
 
@@ -283,22 +281,22 @@ int slsReceiverTCPIPInterface::decode_function(){
 	ret = FAIL;
 	int n,fnum;
 #ifdef VERYVERBOSE
-	cout <<  "receive data" << endl;
+	FILE_LOG(logDEBUG1) <<  "receive data";
 #endif
 	n = mySock->ReceiveDataOnly(&fnum,sizeof(fnum));
 	if (n <= 0) {
 #ifdef VERYVERBOSE
-		cout << "ERROR reading from socket " << n << ", " << fnum << endl;
+		FILE_LOG(logDEBUG1) << "ERROR reading from socket " << n << ", " << fnum;
 #endif
 		return FAIL;
 	}
 #ifdef VERYVERBOSE
 	else
-		cout << "size of data received " << n <<endl;
+		FILE_LOG(logDEBUG1) << "size of data received " << n;
 #endif
 
 #ifdef VERYVERBOSE
-	cout <<  "calling function fnum = "<< fnum << dec << ":"<< flist[fnum] << endl;
+	FILE_LOG(logDEBUG1) <<  "calling function fnum = "<< fnum << dec << ":"<< flist[fnum];
 #endif
 
 	if (fnum<0 || fnum>numberOfFunctions-1)
@@ -306,7 +304,7 @@ int slsReceiverTCPIPInterface::decode_function(){
 	//calling function
 	(this->*flist[fnum])();
 	if (ret==FAIL)
-		cprintf(RED, "Error executing the function = %d\n",fnum);
+		bprintf(RED, "Error executing the function = %d\n",fnum);
 
 	return ret;
 }
@@ -320,7 +318,7 @@ int slsReceiverTCPIPInterface::M_nofunc(){
 
 	ret=FAIL;
 	sprintf(mess,"Unrecognized Function\n");
-	cout << mess << endl;
+	FILE_LOG(logERROR) << mess;
 
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	mySock->SendDataOnly(mess,sizeof(mess));
@@ -358,7 +356,7 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 		}
 		else if((receiverBase)&&(receiverBase->getStatus()!= IDLE)){
 			strcpy(mess,"Can not set detector type while receiver not idle\n");
-			cprintf(RED,"%s",mess);
+			bprintf(RED,"%s",mess);
 			ret = FAIL;
 		}
 		else{
@@ -399,7 +397,7 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 	if(ret!=FAIL)
 		FILE_LOG(logDEBUG) << "detector type " << dr;
 	else
-		cprintf(RED, "%s\n", mess);
+		bprintf(RED, "%s\n", mess);
 	//#endif
 #endif
 
@@ -451,7 +449,7 @@ int slsReceiverTCPIPInterface::set_file_name() {
 		}
 		else if(receiverBase->getStatus()!= IDLE){
 			strcpy(mess,"Can not set file name while receiver not idle\n");
-			cprintf(RED,"%s",mess);
+			bprintf(RED,"%s",mess);
 			ret = FAIL;
 		}
 		else{
@@ -463,9 +461,9 @@ int slsReceiverTCPIPInterface::set_file_name() {
 	}
 #ifdef VERYVERBOSE
 	if(ret!=FAIL)
-		cout << "file name:" << retval << endl;
+		FILE_LOG(logDEBUG1) << "file name:" << retval;
 	else
-		cout << mess << endl;
+		FILE_LOG(logERROR) << mess;
 #endif
 #endif
 
@@ -478,7 +476,7 @@ int slsReceiverTCPIPInterface::set_file_name() {
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED, "%s\n", mess);
+		bprintf(RED, "%s\n", mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	if(retval == NULL)
@@ -524,7 +522,7 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 		}
 		else if(receiverBase->getStatus()!= IDLE){
 			strcpy(mess,"Can not set file path while receiver not idle\n");
-			cprintf(RED,"%s",mess);
+			bprintf(RED,"%s",mess);
 			ret = FAIL;
 		}
 		else{
@@ -539,9 +537,9 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 	}
 #ifdef VERYVERBOSE
 	if(ret!=FAIL)
-		cout << "file path:" << retval << endl;
+		FILE_LOG(logDEBUG1) << "file path:" << retval;
 	else
-		cout << mess << endl;
+		FILE_LOG(logERROR) << mess;
 #endif
 #endif
 
@@ -553,7 +551,7 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED, "%s\n", mess);
+		bprintf(RED, "%s\n", mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	if(retval == NULL)
@@ -598,7 +596,7 @@ int slsReceiverTCPIPInterface::set_file_index() {
 		}
 		else if(receiverBase->getStatus()!= IDLE){
 			strcpy(mess,"Can not set file index while receiver not idle\n");
-			cprintf(RED,"%s",mess);
+			bprintf(RED,"%s",mess);
 			ret = FAIL;
 		}
 		else{
@@ -611,9 +609,9 @@ int slsReceiverTCPIPInterface::set_file_index() {
 	}
 #ifdef VERYVERBOSE
 	if(ret!=FAIL)
-		cout << "file index:" << retval << endl;
+		FILE_LOG(logDEBUG1) << "file index:" << retval;
 	else
-		cout << mess << endl;
+		FILE_LOG(logERROR) << mess;
 #endif
 #endif
 
@@ -625,7 +623,7 @@ int slsReceiverTCPIPInterface::set_file_index() {
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED, "%s\n", mess);
+		bprintf(RED, "%s\n", mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	mySock->SendDataOnly(&retval,sizeof(retval));
@@ -667,7 +665,7 @@ int slsReceiverTCPIPInterface::set_frame_index() {
 		}
 		else if(receiverBase->getStatus()!= IDLE){
 			strcpy(mess,"Can not set frame index while receiver not idle\n");
-			cprintf(RED,"%s",mess);
+			bprintf(RED,"%s",mess);
 			ret = FAIL;
 		}
 		else{
@@ -689,9 +687,9 @@ int slsReceiverTCPIPInterface::set_frame_index() {
 	}
 #ifdef VERYVERBOSE
 	if(ret!=FAIL)
-		cout << "frame index:" << retval << endl;
+		FILE_LOG(logDEBUG1) << "frame index:" << retval;
 	else
-		cout << mess << endl;
+		FILE_LOG(logERROR) << mess;
 #endif
 #endif
 
@@ -703,7 +701,7 @@ int slsReceiverTCPIPInterface::set_frame_index() {
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED, "%s\n", mess);
+		bprintf(RED, "%s\n", mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	mySock->SendDataOnly(&retval,sizeof(retval));
@@ -749,7 +747,7 @@ int slsReceiverTCPIPInterface::setup_udp(){
 		}
 		else if(receiverBase->getStatus()!= IDLE){
 			strcpy(mess,"Can not set up udp while receiver not idle\n");
-			cprintf(RED,"%s",mess);
+			bprintf(RED,"%s",mess);
 			ret = FAIL;
 		}
 		else{
@@ -844,7 +842,7 @@ int slsReceiverTCPIPInterface::start_receiver(){
 			ret=receiverBase->startReceiver(mess);
 		else{
 			sprintf(mess,"Cannot start Receiver as it is in %s state\n",runStatusType(s).c_str());
-			cprintf(RED,"%s",mess);
+			bprintf(RED,"%s",mess);
 			ret=FAIL;
 		}
 	}
@@ -858,7 +856,7 @@ int slsReceiverTCPIPInterface::start_receiver(){
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED, "Error:%s\n", mess);
+		bprintf(RED, "Error:%s\n", mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	//return ok/fail
@@ -892,7 +890,7 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 			ret = OK;
 		else{
 			sprintf(mess,"Could not stop receiver. It is in %s state\n",runStatusType(s).c_str());
-			cprintf(RED,"%s",mess);
+			bprintf(RED,"%s",mess);
 			ret = FAIL;
 		}
 	}
@@ -906,7 +904,7 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED, "%s\n", mess);
+		bprintf(RED, "%s\n", mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	//return ok/fail
@@ -937,7 +935,7 @@ int	slsReceiverTCPIPInterface::get_status(){
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED, "%s\n", mess);
+		bprintf(RED, "%s\n", mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	retval = (runStatus(s));
@@ -968,7 +966,7 @@ int	slsReceiverTCPIPInterface::get_frames_caught(){
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED, "%s\n", mess);
+		bprintf(RED, "%s\n", mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	mySock->SendDataOnly(&retval,sizeof(retval));
@@ -1000,7 +998,7 @@ int	slsReceiverTCPIPInterface::get_frame_index(){
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED, "%s\n", mess);
+		bprintf(RED, "%s\n", mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	mySock->SendDataOnly(&retval,sizeof(retval));
@@ -1045,7 +1043,7 @@ int	slsReceiverTCPIPInterface::reset_frames_caught(){
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED, "%s\n", mess);
+		bprintf(RED, "%s\n", mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	//return ok/fail
@@ -1091,7 +1089,7 @@ int slsReceiverTCPIPInterface::set_short_frame() {
 		}
 		else if(receiverBase->getStatus()!= IDLE){
 			strcpy(mess,"Cannot set short frame while status is running\n");
-			cprintf(RED,"%s",mess);
+			bprintf(RED,"%s",mess);
 			ret=FAIL;
 		}
 		else{
@@ -1109,7 +1107,7 @@ int slsReceiverTCPIPInterface::set_short_frame() {
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED, "%s\n", mess);
+		bprintf(RED, "%s\n", mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	mySock->SendDataOnly(&retval,sizeof(retval));
@@ -1203,7 +1201,7 @@ int slsReceiverTCPIPInterface::set_read_frequency(){
 		}
 		else if(receiverBase->getStatus()!= IDLE){
 			strcpy(mess,"Can not set receiver frequency mode while receiver not idle\n");
-			cprintf(RED,"%s\n",mess);
+			bprintf(RED,"%s\n",mess);
 			ret = FAIL;
 		}
 		else{
@@ -1211,13 +1209,13 @@ int slsReceiverTCPIPInterface::set_read_frequency(){
 				ret = receiverBase->setFrameToGuiFrequency(index);
 				if(ret == FAIL){
 					strcpy(mess, "Could not allocate memory for listening fifo\n");
-					cprintf(RED,"%s\n",mess);
+					bprintf(RED,"%s\n",mess);
 				}
 			}
 			retval=receiverBase->getFrameToGuiFrequency();
 			if(index>=0 && retval!=index){
 				strcpy(mess,"Could not set frame to gui frequency");
-				cprintf(RED,"%s\n",mess);
+				bprintf(RED,"%s\n",mess);
 				ret = FAIL;
 			}
 		}
@@ -1233,7 +1231,7 @@ int slsReceiverTCPIPInterface::set_read_frequency(){
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED,"%s\n",mess);
+		bprintf(RED,"%s\n",mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	mySock->SendDataOnly(&retval,sizeof(retval));
@@ -1273,7 +1271,7 @@ int slsReceiverTCPIPInterface::set_read_receiver_timer(){
 		}
 		else if(receiverBase->getStatus()!= IDLE){
 			strcpy(mess,"Can not set receiver frequency mode while receiver not idle\n");
-			cprintf(RED,"%s\n",mess);
+			bprintf(RED,"%s\n",mess);
 			ret = FAIL;
 		}
 		else{
@@ -1283,7 +1281,7 @@ int slsReceiverTCPIPInterface::set_read_receiver_timer(){
 			retval=receiverBase->getFrameToGuiTimer();
 			if(index>=0 && retval!=index){
 				strcpy(mess,"Could not set datastream timer");
-				cprintf(RED,"%s\n",mess);
+				bprintf(RED,"%s\n",mess);
 				ret = FAIL;
 			}
 		}
@@ -1299,7 +1297,7 @@ int slsReceiverTCPIPInterface::set_read_receiver_timer(){
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED,"%s\n",mess);
+		bprintf(RED,"%s\n",mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	mySock->SendDataOnly(&retval,sizeof(retval));
@@ -1337,7 +1335,7 @@ int slsReceiverTCPIPInterface::set_data_stream_enable(){
 		}
 		else if((index >= 0) && (receiverBase->getStatus()!= IDLE)){
 			strcpy(mess,"Can not set data stream enable while receiver not idle\n");
-			cprintf(RED,"%s\n",mess);
+			bprintf(RED,"%s\n",mess);
 			ret = FAIL;
 		}
 		else{
@@ -1346,7 +1344,7 @@ int slsReceiverTCPIPInterface::set_data_stream_enable(){
 			retval=receiverBase->getDataStreamEnable();
 			if(index>=0 && retval!=index){
 				strcpy(mess,"Could not set data stream enable");
-				cprintf(RED,"%s\n",mess);
+				bprintf(RED,"%s\n",mess);
 				ret = FAIL;
 			}
 		}
@@ -1362,7 +1360,7 @@ int slsReceiverTCPIPInterface::set_data_stream_enable(){
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED,"%s\n",mess);
+		bprintf(RED,"%s\n",mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	mySock->SendDataOnly(&retval,sizeof(retval));
@@ -1401,7 +1399,7 @@ int slsReceiverTCPIPInterface::enable_file_write(){
 		}
 		else if(receiverBase->getStatus()!= IDLE){
 			strcpy(mess,"Can not set file write mode while receiver not idle\n");
-			cprintf(RED,"%s",mess);
+			bprintf(RED,"%s",mess);
 			ret = FAIL;
 		}
 		else{
@@ -1422,7 +1420,7 @@ int slsReceiverTCPIPInterface::enable_file_write(){
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED,"%s\n",mess);
+		bprintf(RED,"%s\n",mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	mySock->SendDataOnly(&retval,sizeof(retval));
@@ -1466,7 +1464,7 @@ int64_t slsReceiverTCPIPInterface::getReceiverVersion(){
 
 
 
-int	slsReceiverTCPIPInterface::start_readout(){cprintf(BLUE,"In start readout!\n");
+int	slsReceiverTCPIPInterface::start_readout(){bprintf(BLUE,"In start readout!\n");
 	ret=OK;
 	enum runStatus retval;
 
@@ -1498,7 +1496,7 @@ int	slsReceiverTCPIPInterface::start_readout(){cprintf(BLUE,"In start readout!\n
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED,"%s\n",mess);
+		bprintf(RED,"%s\n",mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	mySock->SendDataOnly(&retval,sizeof(retval));
@@ -1538,7 +1536,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 		}
 		else if(receiverBase->getStatus()!= IDLE){
 			strcpy(mess,"Can not set timer while receiver not idle\n");
-			cprintf(RED,"%s",mess);
+			bprintf(RED,"%s",mess);
 			ret = FAIL;
 		}
 		else{
@@ -1568,13 +1566,13 @@ int slsReceiverTCPIPInterface::set_timer() {
 #ifdef VERYVERBOSE
 	if(ret!=FAIL){
 		if(index[0] == ACQUISITION_TIME)
-			cout << "acquisition time:" << retval << endl;
+			FILE_LOG(logDEBUG1) << "acquisition time:" << retval;
 		else if(index[0] == FRAME_PERIOD)
-			cout << "acquisition period:" << retval << endl;
+			FILE_LOG(logDEBUG1) << "acquisition period:" << retval
 		else
-			cout << "frame number:" << retval << endl;
+			FILE_LOG(logDEBUG1) << "frame number:" << retval;
 	}else
-		cout << mess << endl;
+		FILE_LOG(logERROR) << mess;
 #endif
 #endif
 
@@ -1586,7 +1584,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED,"%s\n",mess);
+		bprintf(RED,"%s\n",mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	mySock->SendDataOnly(&retval,sizeof(retval));
@@ -1627,7 +1625,7 @@ int slsReceiverTCPIPInterface::enable_compression() {
 			}
 			else if(receiverBase->getStatus()!= IDLE){
 				strcpy(mess,"Cannot enable/disable compression while status is running\n");
-				cprintf(RED,"%s",mess);
+				bprintf(RED,"%s",mess);
 				ret=FAIL;
 			}
 			else{
@@ -1658,7 +1656,7 @@ int slsReceiverTCPIPInterface::enable_compression() {
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED,"%s\n",mess);
+		bprintf(RED,"%s\n",mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	mySock->SendDataOnly(&retval,sizeof(retval));
@@ -1697,7 +1695,7 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 		}
 		else if(receiverBase->getStatus()!= IDLE){
 			strcpy(mess,"Can not set detector hostname while receiver not idle\n");
-			cprintf(RED,"%s",mess);
+			bprintf(RED,"%s",mess);
 			ret = FAIL;
 		}
 		else{
@@ -1710,9 +1708,9 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 	}
 #ifdef VERYVERBOSE
 	if(ret!=FAIL)
-		cout << "hostname:" << retval << endl;
+		FILE_LOG(logDEBUG1) << "hostname:" << retval;
 	else
-		cout << mess << endl;
+		FILE_LOG(logERROR) << mess;
 #endif
 #endif
 
@@ -1724,7 +1722,7 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED, "%s\n", mess);
+		bprintf(RED, "%s\n", mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	if(retval == NULL)
@@ -1772,7 +1770,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 			case 32:break;
 			default:
 				sprintf(mess,"This dynamic range does not exist: %d\n",dr);
-				cprintf(RED,"%s", mess);
+				bprintf(RED,"%s", mess);
 				ret=FAIL;
 				break;
 			}
@@ -1784,7 +1782,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 			}
 			else if(receiverBase->getStatus()!= IDLE){
 				strcpy(mess,"Can not set dynamic range while receiver not idle\n");
-				cprintf(RED,"%s",mess);
+				bprintf(RED,"%s",mess);
 				ret = FAIL;
 			}
 			else{
@@ -1801,9 +1799,9 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 	}
 #ifdef VERYVERBOSE
 	if(ret!=FAIL)
-		cout << "dynamic range" << dr << endl;
+		FILE_LOG(logDEBUG1) << "dynamic range" << dr;
 	else
-		cout << mess << endl;
+		FILE_LOG(logERROR) << mess;
 #endif
 #endif
 
@@ -1815,7 +1813,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED,"%s\n",mess);
+		bprintf(RED,"%s\n",mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	mySock->SendDataOnly(&retval,sizeof(retval));
@@ -1856,7 +1854,7 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 		}
 		else if(receiverBase->getStatus()!= IDLE){
 			strcpy(mess,"Can not set overwrite mode while receiver not idle\n");
-			cprintf(RED,"%s",mess);
+			bprintf(RED,"%s",mess);
 			ret = FAIL;
 		}
 		else{
@@ -1869,9 +1867,9 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 	}
 #ifdef VERYVERBOSE
 	if(ret!=FAIL)
-		cout << "overwrite:" << retval << endl;
+		FILE_LOG(logDEBUG1) << "overwrite:" << retval;
 	else
-		cout << mess << endl;
+		FILE_LOG(logERROR) << mess;
 #endif
 #endif
 
@@ -1883,7 +1881,7 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED,"%s\n",mess);
+		bprintf(RED,"%s\n",mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	mySock->SendDataOnly(&retval,sizeof(retval));
@@ -1924,7 +1922,7 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 		}
 		else if(receiverBase->getStatus()!= IDLE){
 			strcpy(mess,"Can not set up 1Giga/10Giga mode while receiver not idle\n");
-			cprintf(RED,"%s",mess);
+			bprintf(RED,"%s",mess);
 			ret = FAIL;
 		}
 		else{
@@ -1939,9 +1937,9 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 	}
 #ifdef VERYVERBOSE
 	if(ret!=FAIL)
-		cout << "10Gbe:" << val << endl;
+		FILE_LOG(logDEBUG1) << "10Gbe:" << val;
 	else
-		cout << mess << endl;
+		FILE_LOG(logDEBUG1) << mess;
 #endif
 #endif
 
@@ -1953,7 +1951,7 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED,"%s\n",mess);
+		bprintf(RED,"%s\n",mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	mySock->SendDataOnly(&retval,sizeof(retval));
@@ -1994,7 +1992,7 @@ int slsReceiverTCPIPInterface::set_fifo_depth() {
 			}
 			else if(receiverBase->getStatus()!= IDLE){
 				strcpy(mess,"Cannot set/get fifo depth while status is running\n");
-				cprintf(RED,"%s",mess);
+				bprintf(RED,"%s",mess);
 				ret=FAIL;
 			}
 			else{
@@ -2025,7 +2023,7 @@ int slsReceiverTCPIPInterface::set_fifo_depth() {
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED,"%s\n",mess);
+		bprintf(RED,"%s\n",mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	mySock->SendDataOnly(&retval,sizeof(retval));
@@ -2048,7 +2046,7 @@ int slsReceiverTCPIPInterface::set_activate() {
 	// receive arguments
 	if(mySock->ReceiveDataOnly(&enable,sizeof(enable)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
-		cprintf(RED,"%s",mess);
+		bprintf(RED,"%s",mess);
 		ret = FAIL;
 	}
 
@@ -2064,11 +2062,11 @@ int slsReceiverTCPIPInterface::set_activate() {
 		if(ret!=FAIL){
 			if (receiverBase == NULL){
 				strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
-				cprintf(RED,"%s",mess);
+				bprintf(RED,"%s",mess);
 				ret=FAIL;
 			}else if(receiverBase->getStatus()==RUNNING){
 				strcpy(mess,"Cannot activate/deactivate while status is running\n");
-				cprintf(RED,"%s",mess);
+				bprintf(RED,"%s",mess);
 				ret=FAIL;
 			}else{
 				if(enable != -1)
@@ -2077,7 +2075,7 @@ int slsReceiverTCPIPInterface::set_activate() {
 				if(enable >= 0 && retval != enable){
 					sprintf(mess,"Tried to set activate to %d, but returned %d\n",enable,retval);
 					ret = FAIL;
-					cprintf(RED,"%s",mess);
+					bprintf(RED,"%s",mess);
 				}
 			}
 		}
@@ -2085,9 +2083,9 @@ int slsReceiverTCPIPInterface::set_activate() {
 #endif
 #ifdef VERYVERBOSE
 	if(ret!=FAIL)
-		cout << "Activate: " << retval << endl;
+		FILE_LOG(logDEBUG1) << "Activate: " << retval;
 	else
-		cout << mess << endl;
+		FILE_LOG(logDEBUG1) << mess;
 #endif
 
 
@@ -2099,7 +2097,7 @@ int slsReceiverTCPIPInterface::set_activate() {
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED,"%s\n",mess);
+		bprintf(RED,"%s\n",mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	mySock->SendDataOnly(&retval,sizeof(retval));
@@ -2138,7 +2136,7 @@ int slsReceiverTCPIPInterface::set_flipped_data(){
 		}
 		else if(receiverBase->getStatus()!= IDLE){
 			strcpy(mess,"Can not set flipped data while receiver not idle\n");
-			cprintf(RED,"%s",mess);
+			bprintf(RED,"%s",mess);
 			ret = FAIL;
 		}
 		else{
@@ -2149,9 +2147,9 @@ int slsReceiverTCPIPInterface::set_flipped_data(){
 	}
 #ifdef VERYVERBOSE
 	if(ret!=FAIL){
-		cout << "Flipped Data:" << retval << endl;
+		FILE_LOG(logDEBUG1) << "Flipped Data:" << retval;
 	}else
-		cout << mess << endl;
+		FILE_LOG(logDEBUG1) << mess;
 #endif
 #endif
 
@@ -2163,7 +2161,7 @@ int slsReceiverTCPIPInterface::set_flipped_data(){
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED,"%s\n",mess);
+		bprintf(RED,"%s\n",mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	mySock->SendDataOnly(&retval,sizeof(retval));
@@ -2185,7 +2183,7 @@ int slsReceiverTCPIPInterface::set_file_format() {
 	// receive arguments
 	if(mySock->ReceiveDataOnly(&f,sizeof(f)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
-		cprintf(RED,"%s",mess);
+		bprintf(RED,"%s",mess);
 		ret = FAIL;
 	}
 
@@ -2201,11 +2199,11 @@ int slsReceiverTCPIPInterface::set_file_format() {
 		if(ret!=FAIL){
 			if (receiverBase == NULL){
 				strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
-				cprintf(RED,"%s",mess);
+				bprintf(RED,"%s",mess);
 				ret=FAIL;
 			}else if(receiverBase->getStatus()==RUNNING && (f>=0)){
 				strcpy(mess,"Cannot set file format while status is running\n");
-				cprintf(RED,"%s",mess);
+				bprintf(RED,"%s",mess);
 				ret=FAIL;
 			}else{
 				if(f != -1)
@@ -2214,7 +2212,7 @@ int slsReceiverTCPIPInterface::set_file_format() {
 				if(f >= 0 && retval != f){
 					sprintf(mess,"Tried to set file format to %d, but returned %d\n",f,retval);
 					ret = FAIL;
-					cprintf(RED,"%s",mess);
+					bprintf(RED,"%s",mess);
 				}
 			}
 		}
@@ -2222,9 +2220,9 @@ int slsReceiverTCPIPInterface::set_file_format() {
 #endif
 #ifdef VERYVERBOSE
 	if(ret!=FAIL)
-		cout << "File Format: " << retval << endl;
+		FILE_LOG(logDEBUG1) << "File Format: " << retval;
 	else
-		cout << mess << endl;
+		FILE_LOG(logDEBUG1) << mess;
 #endif
 
 
@@ -2236,7 +2234,7 @@ int slsReceiverTCPIPInterface::set_file_format() {
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED,"%s\n",mess);
+		bprintf(RED,"%s\n",mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	mySock->SendDataOnly(&retval,sizeof(retval));
@@ -2274,7 +2272,7 @@ int slsReceiverTCPIPInterface::set_detector_posid() {
 		}
 		else if(receiverBase->getStatus()!= IDLE){
 			strcpy(mess,"Can not set position file id while receiver not idle\n");
-			cprintf(RED,"%s",mess);
+			bprintf(RED,"%s",mess);
 			ret = FAIL;
 		}
 		else{
@@ -2287,9 +2285,9 @@ int slsReceiverTCPIPInterface::set_detector_posid() {
 	}
 #ifdef VERYVERBOSE
 	if(ret!=FAIL)
-		cout << "Position Id:" << retval << endl;
+		FILE_LOG(logDEBUG1) << "Position Id:" << retval;
 	else
-		cout << mess << endl;
+		FILE_LOG(logDEBUG1) << mess;
 #endif
 #endif
 
@@ -2301,7 +2299,7 @@ int slsReceiverTCPIPInterface::set_detector_posid() {
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED, "%s\n", mess);
+		bprintf(RED, "%s\n", mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	mySock->SendDataOnly(&retval,sizeof(retval));
@@ -2340,11 +2338,11 @@ int slsReceiverTCPIPInterface::set_multi_detector_size() {
 		else if (receiverBase == NULL){
 			strcpy(mess,SET_RECEIVER_ERR_MESSAGE);
 			ret=FAIL;
-			cprintf(RED, "%s", mess);
+			bprintf(RED, "%s", mess);
 		}
 		else if(receiverBase->getStatus()!= IDLE){
 			strcpy(mess,"Can not set position file id while receiver not idle\n");
-			cprintf(RED,"%s",mess);
+			bprintf(RED,"%s",mess);
 			ret = FAIL;
 		}
 		else{
@@ -2354,9 +2352,9 @@ int slsReceiverTCPIPInterface::set_multi_detector_size() {
 	}
 #ifdef VERYVERBOSE
 	if(ret!=FAIL)
-		cout << "Multi Detector Size:" << retval << endl;
+		FILE_LOG(logDEBUG1) << "Multi Detector Size:" << retval;
 	else
-		cout << mess << endl;
+		FILE_LOG(logDEBUG1) << mess;
 #endif
 #endif
 
@@ -2368,7 +2366,7 @@ int slsReceiverTCPIPInterface::set_multi_detector_size() {
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED, "%s\n", mess);
+		bprintf(RED, "%s\n", mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	mySock->SendDataOnly(&retval,sizeof(retval));
@@ -2410,7 +2408,7 @@ int slsReceiverTCPIPInterface::lock_receiver() {
 	// receive arguments
 	if(mySock->ReceiveDataOnly(&lock,sizeof(lock)) < 0 ){
 		sprintf(mess,"Error reading from socket\n");
-		cout << "Error reading from socket (lock)" << endl;
+		FILE_LOG(logERROR) << "Error reading from socket (lock)";
 		ret=FAIL;
 	}
 	// execute action if the arguments correctly arrived
@@ -2432,7 +2430,7 @@ int slsReceiverTCPIPInterface::lock_receiver() {
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED,"%s\n",mess);
+		bprintf(RED,"%s\n",mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}
 	else
@@ -2459,13 +2457,12 @@ int slsReceiverTCPIPInterface::set_port() {
 	// receive arguments
 	if(mySock->ReceiveDataOnly(&p_type,sizeof(p_type)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
-		cout << mess << endl;
+		FILE_LOG(logERROR) << mess;
 		ret=FAIL;
 	}
-
 	if(mySock->ReceiveDataOnly(&p_number,sizeof(p_number)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
-		cout << mess << endl;
+		FILE_LOG(logERROR) << mess;
 		ret=FAIL;
 	}
 
@@ -2478,10 +2475,10 @@ int slsReceiverTCPIPInterface::set_port() {
 		else {
 			if (p_number<1024) {
 				sprintf(mess,"Too low port number %d\n", p_number);
-				cout << mess << endl;
+				FILE_LOG(logERROR) << mess;
 				ret=FAIL;
 			}
-			cout << "set port " << p_type << " to " << p_number <<endl;
+			FILE_LOG(logINFO) << "set port " << p_type << " to " << p_number <<endl;
 			strcpy(oldLastClientIP, mySock->lastClientIP);
 			mySocket = new MySocketTCP(p_number);
 		}
@@ -2495,10 +2492,10 @@ int slsReceiverTCPIPInterface::set_port() {
 			} else {
 				ret=FAIL;
 				sprintf(mess,"Could not bind port %d\n", p_number);
-				cout << mess << endl;
+				FILE_LOG(logERROR) << mess;
 				if (sd==-10) {
 					sprintf(mess,"Port %d already set\n", p_number);
-					cout << mess << endl;
+					FILE_LOG(logERROR) << mess;
 				}
 			}
 		}
@@ -2507,7 +2504,7 @@ int slsReceiverTCPIPInterface::set_port() {
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED,"%s\n",mess);
+		bprintf(RED,"%s\n",mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 	}else {
 		mySock->SendDataOnly(&p_number,sizeof(p_number));
@@ -2606,7 +2603,7 @@ int slsReceiverTCPIPInterface::update_client() {
 	}
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED,"%s\n",mess);
+		bprintf(RED,"%s\n",mess);
 		mySock->SendDataOnly(mess,sizeof(mess));
 		return ret;
 	}
@@ -2625,7 +2622,7 @@ int slsReceiverTCPIPInterface::exit_server() {
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	strcpy(mess,"closing server");
 	mySock->SendDataOnly(mess,sizeof(mess));
-	cprintf(RED,"%s\n",mess);
+	bprintf(RED,"%s\n",mess);
 	return ret;
 }
 
@@ -2648,7 +2645,7 @@ int slsReceiverTCPIPInterface::exec_command() {
 	// execute action if the arguments correctly arrived
 	if (ret==OK) {
 #ifdef VERYVERBOSE
-		cout << "executing command " << cmd << endl;
+		FILE_LOG(logDEBUG5) << "executing command " << cmd;
 #endif
 		if (lockStatus==0 || mySock->differentClients==0)
 			sysret=system(cmd);

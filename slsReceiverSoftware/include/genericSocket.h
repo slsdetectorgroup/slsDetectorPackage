@@ -313,7 +313,7 @@ enum communicationProtocol{
  /** @short etablishes connection; disconnect should always follow
 	 \returns 1 if error
      */
-     int  Connect(){//cout<<"connect"<<endl;
+     int  Connect(){
 
      if(file_des>0) return file_des;
        if (protocol==UDP) return -1;
@@ -458,7 +458,6 @@ enum communicationProtocol{
        if (ts<=0)
 	 return -1;
        
-       //cout << "socketdescriptor "<< socketDescriptor << endl; 
        struct timeval tout;
        tout.tv_sec  = 0;
        tout.tv_usec = 0;
@@ -612,7 +611,7 @@ enum communicationProtocol{
     			    	 continue;
     				 if(nsent != nsending){
     					 if(nsent && (nsent != -1))
-    							 cprintf(RED,"Incomplete Packet size %d\n",nsent);
+    							 bprintf(RED,"Incomplete Packet size %d\n",nsent);
     					 break;
     				 }
     				 length-=nsent;
@@ -625,7 +624,7 @@ enum communicationProtocol{
     			 nsending=packet_size;
     			 while(1){
 #ifdef VERYVERBOSE
-    				cprintf(BLUE,"%d gonna listen\n", portno); fflush(stdout);
+    				bprintf(BLUE,"%d gonna listen\n", portno); fflush(stdout);
 #endif
     				 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
     				 //break out of loop only if read one packets size or read didnt work (cuz of shutdown)
@@ -633,7 +632,7 @@ enum communicationProtocol{
     					 break;
     				 //incomplete packets or header packets ignored and read buffer again
     				 if(nsent != packet_size && nsent != header_packet_size)
-    						cprintf(RED,"Incomplete Packet size %d\n",nsent);
+    						bprintf(RED,"Incomplete Packet size %d\n",nsent);
     			 }
     			//nsent = 1040;
     			total_sent+=nsent;

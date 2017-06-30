@@ -1,6 +1,7 @@
 include ../Makefile.include
 
 DESTDIR		?=	../bin
+LIBDIR		?=	../bin
 DOCDIR 		?= 	docs
 SRCDIR		=	src
 INCDIR		=   include
@@ -22,7 +23,7 @@ INCLUDES?= $(INCLUDESRXR) -I include/ -I ../slsDetectorCalibration
 LIBZMQDIR = include
 LIBZMQ =  -L$(LIBZMQDIR) -Wl,-rpath=$(LIBZMQDIR) -lzmq
 
-#-Iinclude -I../slsDetectorCalibration -I$(ASM) 
+
 
 SRC_CLNT = MySocketTCP.cpp  ThreadObject.cpp Listener.cpp DataProcessor.cpp DataStreamer.cpp Fifo.cpp File.cpp BinaryFile.cpp UDPInterface.cpp  UDPBaseImplementation.cpp UDPStandardImplementation.cpp slsReceiverTCPIPInterface.cpp slsReceiver.cpp slsReceiverUsers.cpp utilities.cpp
 DEPSINCLUDES = $(INCDIR)/ansi.h $(INCDIR)/sls_receiver_defs.h $(INCDIR)/sls_receiver_funcs.h $(INCDIR)/GeneralData.h  $(INCDIR)/circularFifo.h $(INCDIR)/genericSocket.h  $(INCDIR)/logger.h $(INCDIR)/receiver_defs.h $(INCDIR)/UDPInterface.h $(INCDIR)/utilities.h $(INCDIR)/ZmqSocket.h $(INCDIR)/BinaryFileStatic.h $(INCDIR)/HDF5FileStatic.h
@@ -38,7 +39,6 @@ endif
 
 MAIN_SRC = main.cpp
 
-DUMMY_MAIN_SRC = dummyMain.cpp
 
 OBJS=$(SRC_CLNT:%.cpp=$(BUILDDIR)/%.o) 
 
@@ -90,7 +90,7 @@ $(DESTDIR)/slsReceiver: 	 $(SRCDIR)/$(MAIN_SRC) $(DESTDIR)/libSlsReceiver.so $(D
 	$(call colorecho,"#######################################")
 	$(call colorecho,"#        Compiling slsReceiver        #")
 	$(call colorecho,"#######################################")
-	$(CXX)   -o $@  $(SRCDIR)/$(MAIN_SRC)  $(FLAGS)  $(INCLUDES) $(CLAGS) $(LIBS) $(LDFLAGRXR) -fPIC  $(LIBZMQ) -lrt 
+	$(CXX)   -o $@  $(SRCDIR)/$(MAIN_SRC)  $(FLAGS)  $(INCLUDES) $(CFLAGS) $(LIBS) $(LDFLAGRXR) -fPIC  $(LIBZMQ) -lrt 
 #$(EIGERFLAGS)
 
 
@@ -98,15 +98,8 @@ $(DESTDIR)/dummyReceiver: 	$(SRCDIR)/$(DUMMY_MAIN_SRC) $(DESTDIR)/libSlsReceiver
 	$(call colorecho,"#######################################")
 	$(call colorecho,"#     Compiling Dummy slsReceiver     #")
 	$(call colorecho,"#######################################")
-	$(CXX)   -o $@  $(SRCDIR)/$(DUMMY_MAIN_SRC)  $(FLAGS)  $(INCLUDES) $(CLAGS) $(LIBS) $(LDFLAGRXR) -fPIC $(LIBZMQ)  -lrt 
+	$(CXX)   -o $@  $(SRCDIR)/$(DUMMY_MAIN_SRC)  $(FLAGS)  $(INCLUDES) $(CFLAGS) $(LIBS) $(LDFLAGRXR) -fPIC $(LIBZMQ)  -lrt 
 #$(EIGERFLAGS)
-
-
-# Stand-alone Mysocket tests
-mysocket_test:
-	g++ -o $(TESTDIR)/MySocketTCP.o -c $(SRCDIR)/MySocketTCP.cpp -I include
-	g++ -o $(TESTDIR)/rec $(TESTDIR)/MySocketTCP.o $(TESTDIR)/rec.cxx -I include
-	g++ -o $(TESTDIR)/send $(TESTDIR)/MySocketTCP.o $(TESTDIR)/send.cxx -I include
 
 
 clean: buildclean

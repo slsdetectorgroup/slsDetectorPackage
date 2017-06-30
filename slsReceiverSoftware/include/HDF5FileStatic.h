@@ -110,7 +110,7 @@ public:
 				fd = 0;
 			}
 		} catch(Exception error) {
-			cprintf(RED,"Error in closing HDF5 handles of index %d\n", ind);
+			bprintf(RED,"Error in closing HDF5 handles of index %d\n", ind);
 			error.printError();
 		}
 	}
@@ -128,7 +128,7 @@ public:
 				fd = 0;
 			}
 		} catch(Exception error) {
-			cprintf(RED,"Error in closing master HDF5 handles\n");
+			bprintf(RED,"Error in closing master HDF5 handles\n");
 			error.printError();
 		}
 	}
@@ -142,7 +142,7 @@ public:
 	{
 		if(fd) {
 			if (H5Fclose(fd) < 0 )
-				cprintf(RED,"Error in closing virtual HDF5 handles\n");
+				bprintf(RED,"Error in closing virtual HDF5 handles\n");
 			fd = 0;
 		}
 	}
@@ -175,7 +175,7 @@ public:
 			memspace.close();
 		}
 		catch(Exception error){
-			cprintf(RED,"Error in writing to file in object %d\n",ind);
+			bprintf(RED,"Error in writing to file in object %d\n",ind);
 			error.printError();
 			return 1;
 		}
@@ -211,7 +211,7 @@ public:
 			dset_para[12]->write(&header->version, 		ParameterDataTypes[12], memspace, *dspace_para);
 		}
 		catch(Exception error){
-			cprintf(RED,"Error in writing parameters to file in object %d\n",ind);
+			bprintf(RED,"Error in writing parameters to file in object %d\n",ind);
 			error.printError();
 			return 1;
 		}
@@ -319,7 +319,7 @@ public:
 			fd->close();
 
 		} catch(Exception error) {
-			cprintf(RED,"Error in creating master HDF5 handles\n");
+			bprintf(RED,"Error in creating master HDF5 handles\n");
 			error.printError();
 			return 1;
 		}
@@ -403,7 +403,7 @@ public:
 				dset_para[i] = new DataSet(fd->createDataSet(ParameterNames[i], ParameterDataTypes[i], *dspace_para));
 		}
 		catch(Exception error){
-			cprintf(RED,"Error in creating HDF5 handles in object %d\n",ind);
+			bprintf(RED,"Error in creating HDF5 handles in object %d\n",ind);
 			error.printError();
 			fd->close();
 			return 1;
@@ -449,7 +449,7 @@ public:
 	{
 		//virtual names
 		string virtualFileName = CreateVirtualFileName(fpath, fnameprefix, findex);
-		printf("Virtual File: %s\n", virtualFileName.c_str());
+		FILE_LOG(logINFO) << "Virtual File: " << virtualFileName;
 
 		//file
 		hid_t dfal = H5Pcreate (H5P_FILE_ACCESS);
@@ -519,12 +519,12 @@ public:
 
 				//setect hyperslabs
 				if (H5Sselect_hyperslab (vdsDataspace, H5S_SELECT_SET, offset, NULL, count, NULL) < 0) {
-					cprintf(RED,"could not select hyperslab\n");
+					bprintf(RED,"could not select hyperslab\n");
 					error = true;
 					break;
 				}
 				if (H5Sselect_hyperslab (vdsDataspace_para, H5S_SELECT_SET, offset_para, NULL, count_para, NULL) < 0) {
-					cprintf(RED,"could not select hyperslab for parameters\n");
+					bprintf(RED,"could not select hyperslab for parameters\n");
 					error = true;
 					break;
 				}
@@ -551,14 +551,14 @@ public:
 
 				//mapping
 				if (H5Pset_virtual(dcpl, vdsDataspace, srcFileName.c_str(), srcDatasetName.c_str(), srcDataspace) < 0) {
-					cprintf(RED,"could not set mapping for paramter 1\n");
+					bprintf(RED,"could not set mapping for paramter 1\n");
 					error = true;
 					break;
 				}
 
 				for (int k = 0; k < NumberofParameters; ++k) {
 					if (H5Pset_virtual(dcpl_para[k], vdsDataspace_para, srcFileName.c_str(), ParameterNames[k], srcDataspace_para) < 0) {
-						cprintf(RED,"could not set mapping for paramter %d\n", k);
+						bprintf(RED,"could not set mapping for paramter %d\n", k);
 						error = true;
 						break;
 					}
@@ -631,39 +631,30 @@ public:
 			data_out = (T*)malloc(sizeof(T)*(nDimx*nDimy*nDimz));
 			break;
 		default:
-			cprintf(RED,"invalid rank. Options: 2 or 3\n");
+			bprintf(RED,"invalid rank. Options: 2 or 3\n");
 			return 0;
 		}
 		if (datatype == PredType::STD_U16LE) {
-			printf("datatype:16\n");
+			FILE_LOG(logINFO) << "datatype:16";
 		} else if (datatype == PredType::STD_U32LE) {
-			printf("datatype:32\n");
+			FILE_LOG(logINFO) << "datatype:32";
 		} else if (datatype == PredType::STD_U64LE) {
-			printf("datatype:64\n");
+			FILE_LOG(logINFO) << "datatype:64";
 		} else if (datatype == PredType::STD_U8LE) {
-			printf("datatype:8\n");
+			FILE_LOG(logINFO) << "datatype:8";
 		} else {
-			cprintf(RED, "unknown datatype\n");
+			FILE_LOG(logERROR) <<  "unknown datatype";
 			return 1;
 		}
-		printf("owenable:%d\n"
-				"oldFileName:%s\n"
-				"oldDatasetName:%s\n"
-				"newFileName:%s\n"
-				"newDatasetName:%s\n"
-				"rank:%d\n"
-				"nDimx:%llu\n"
-				"nDimy:%u\n"
-				"nDimz:%u\n",
-						owenable?1:0,
-						oldFileName.c_str(),
-						oldDatasetName.c_str(),
-						newFileName.c_str(),
-						newDatasetName.c_str(),
-						rank,
-						(long long unsigned int)nDimx,
-						nDimy,
-						nDimz);
+		FILE_LOG(logINFO) << "owenable:" << owenable?1:0 << endl
+				<< "oldFileName:" << oldFileName << endl
+				<< "oldDatasetName:" << oldDatasetName << endl
+				<< "newFileName:" << newFileName << endl
+				<< "newDatasetName:" << newDatasetName << endl
+				<< "rank:" << rank << endl
+				<< "nDimx:" << nDimx << endl
+				<< "nDimy:" << nDimy << endl
+				<< "nDimz:" << nDimz;
 
 		H5File* oldfd;
 		H5File* newfd;
@@ -697,7 +688,7 @@ public:
 			newfd->close();
 			oldfd->close();
 		} catch(Exception error){
-			cprintf(RED,"Error in copying virtual files\n");
+			bprintf(RED,"Error in copying virtual files\n");
 			error.printError();
 			free(data_out);
 			oldfd->close();
@@ -781,7 +772,7 @@ public:
 	 * @returns 1 for fail
 	 */
 	static int CloseFileOnError(hid_t& fd, const string msg) {
-		cprintf(RED, "%s", msg.c_str());
+		bprintf(RED, "%s", msg.c_str());
 		if(fd > 0)
 			H5Fclose(fd);
 		fd = 0;
@@ -804,7 +795,7 @@ public:
 		else if (dtype == PredType::STD_U64LE)
 			return H5T_STD_U64LE;
 		else {
-			cprintf(RED, "Invalid Data type\n");
+			bprintf(RED, "Invalid Data type\n");
 			return H5T_STD_U64LE;
 		}
 	}

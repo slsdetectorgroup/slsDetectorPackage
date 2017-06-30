@@ -177,7 +177,7 @@ void Listener::RecordFirstIndices(uint64_t fnum) {
 		acquisitionStartedFlag = true;
 		firstAcquisitionIndex = fnum;
 	}
-	if (!index) cprintf(BLUE,"%d First Acquisition Index:%lu\n"
+	if (!index) bprintf(BLUE,"%d First Acquisition Index:%lu\n"
 							  "%d First Measurement Index:%lu\n",
 			index, firstAcquisitionIndex,
 			index, firstMeasurementIndex);
@@ -219,7 +219,7 @@ int Listener::CreateUDPSockets() {
 			generalData->packetSize, (strlen(eth)?eth:NULL), generalData->headerPacketSize);
 	int iret = udpSocket->getErrorStatus();
 	if(!iret){
-		cout << index << ": UDP port opened at port " << *udpPortNumber << endl;
+		FILE_LOG(logINFO) << index << ": UDP port opened at port " << *udpPortNumber;
 	}else{
 		FILE_LOG(logERROR) << "Could not create UDP socket on port " << *udpPortNumber << " error: " << iret;
 		return FAIL;
@@ -247,7 +247,7 @@ void Listener::ThreadExecution() {
 
 	fifo->GetNewAddress(buffer);
 #ifdef FIFODEBUG
-	if (!index) cprintf(GREEN,"Listener %d, pop 0x%p buffer:%s\n", index,(void*)(buffer),buffer);
+	if (!index) bprintf(GREEN,"Listener %d, pop 0x%p buffer:%s\n", index,(void*)(buffer),buffer);
 #endif
 
 	//udpsocket doesnt exist
@@ -275,7 +275,7 @@ void Listener::ThreadExecution() {
 
 	//error check, (should not be here) if not transmitting yet (previous if) rc should be > 0
 	if (rc <= 0) {
-		//cprintf(BG_RED,"Error:(Weird Early self shut down), UDP Sockets not shut down, but received nothing\n");
+		//bprintf(BG_RED,"Error:(Weird Early self shut down), UDP Sockets not shut down, but received nothing\n");
 		StopListening(buffer);
 		return;
 	}
@@ -297,8 +297,8 @@ void Listener::StopListening(char* buf) {
 	fifo->PushAddress(buf);
 	StopRunning();
 #ifdef VERBOSE
-	cprintf(GREEN,"%d: Listening Packets (%u) : %llu\n", index, *udpPortNumber, numPacketsCaught);
-	printf("%d: Listening Completed\n", index);
+	bprintf(GREEN,"%d: Listening Packets (%u) : %llu\n", index, *udpPortNumber, numPacketsCaught);
+	bprintf(GREEN,"%d: Listening Completed\n", index);
 #endif
 }
 
@@ -327,7 +327,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 	//look for carry over
 	if (carryOverFlag) {
-		 cprintf(RED,"%d carry flag\n",index);
+		 bprintf(RED,"%d carry flag\n",index);
 		//check if its the current image packet
 		// -------------------------- new header ----------------------------------------------------------------------
 		if (standardheader) {
@@ -343,7 +343,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		//------------------------------------------------------------------------------------------------------------
 		if (fnum != currentFrameIndex) {
 			if (fnum < currentFrameIndex) {
-				cprintf(BG_RED,"Error:(Weird), With carry flag: Frame number %lu less than current frame number %lu\n", fnum, currentFrameIndex);
+				bprintf(BG_RED,"Error:(Weird), With carry flag: Frame number %lu less than current frame number %lu\n", fnum, currentFrameIndex);
 				return 0;
 			}
 			new_header->packetNumber = numpackets;
@@ -426,7 +426,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 #ifdef VERBOSE
 		//if (!index)
-		cprintf(GREEN,"Listening %d: currentfindex:%lu, fnum:%lu,   pnum:%u numpackets:%u\n",
+		bprintf(GREEN,"Listening %d: currentfindex:%lu, fnum:%lu,   pnum:%u numpackets:%u\n",
 				index,currentFrameIndex, fnum, pnum, numpackets);
 #endif
 		if (!measurementStartedFlag)
@@ -436,7 +436,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 		//future packet	by looking at image number  (all other detectors)
 		if (fnum != currentFrameIndex) {
-			//cprintf(RED,"setting carry over flag to true\n");
+			//bprintf(RED,"setting carry over flag to true\n");
 			carryOverFlag = true;
 			memcpy(carryOverPacket,listeningPacket, generalData->packetSize);
 

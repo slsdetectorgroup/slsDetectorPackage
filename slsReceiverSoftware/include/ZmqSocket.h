@@ -243,7 +243,7 @@ public:
 						detType, version);
 #ifdef VERBOSE
 		//if(!index)
-			printf("%d Streamer: buf:%s\n", index, buf);
+			FILE_LOG(logINFO) << index << ": Streamer: buf:" << buf;
 #endif
 
 		if(zmq_send (socketDescriptor, buf, length, dummy?0:ZMQ_SNDMORE) < 0) {

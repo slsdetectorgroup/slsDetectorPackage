@@ -25,23 +25,23 @@ void closeFile(int p){
 
 /*
 int startAcquisitionCallBack(char* filePath, char* fileName, int fileIndex, int bufferSize, void* context) {
-  cout << "#### startAcquisitionCallBack ####" << endl;
-  cout << "* filePath: " << filePath << endl;
-  cout << "* fileName: " << fileName << endl;
-  cout << "* fileIndex: " << fileIndex << endl;
-  cout << "* bufferSize: " << bufferSize << endl;
+  FILE_LOG(logINFO) << "#### startAcquisitionCallBack ####";
+  FILE_LOG(logINFO) << "* filePath: " << filePath;
+  FILE_LOG(logINFO) << "* fileName: " << fileName;
+  FILE_LOG(logINFO) << "* fileIndex: " << fileIndex;
+  FILE_LOG(logINFO) << "* bufferSize: " << bufferSize;
   return 1;
 }
 
 void acquisitionFinishedCallBack(int totalFramesCaught, void* context) {
-  cout << "#### acquisitionFinishedCallBack ####" << endl;
-  cout << "* totalFramesCaught: " << totalFramesCaught << endl;
+  FILE_LOG(logINFO) << "#### acquisitionFinishedCallBack ####";
+  FILE_LOG(logINFO) << "* totalFramesCaught: " << totalFramesCaught;
 }
 
 void rawDataReadyCallBack(int currFrameNum, char* dataPointer, int dataSize, FILE* file, char* guiDataPointer, void* context) {
-  cout << "#### rawDataReadyCallBack ####" << endl;
-  cout << "* currFrameNum: " << currFrameNum << endl;
-  cout << "* dataSize: " << dataSize << endl;
+  FILE_LOG(logINFO) << "#### rawDataReadyCallBack ####";
+  FILE_LOG(logINFO) << "* currFrameNum: " << currFrameNum;
+  FILE_LOG(logINFO) << "* dataSize: " << dataSize;
 }
 */
 
@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
 
 	//start tcp server thread
 	if(receiver->start() == slsReceiverDefs::OK){
-		FILE_LOG(logDEBUG1) << "DONE!" << endl;
+		FILE_LOG(logDEBUG1) << "DONE!";
 		string str;
 		cin>>str;
 		//wait and look for an exit keyword
@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	deleteReceiver(receiver);
-	cout << "Goodbye!" << endl;
+	FILE_LOG(logINFO) << "Goodbye!";
 	return 0;
 }
 

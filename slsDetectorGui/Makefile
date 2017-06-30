@@ -10,6 +10,7 @@ $(info )
 
 
 DESTDIR		?=	../bin
+LIBDIR		?=  ../bin
 PROG		= 	$(DESTDIR)/slsDetectorGui
 DOCDIR		?=	docs
 
@@ -46,7 +47,7 @@ clean:
 Makefile.gui: mm
 
 mm: 
-	qmake -set QT_INSTALL_PREFIX $(QTDIR) && qmake -o Makefile.gui INCLUDES='$(INCLUDES)' DESTDIR=$(DESTDIR) SLSDETLIB=$(DESTDIR) SUBLIBS='$(LDFLAGDET)'
+	qmake -set QT_INSTALL_PREFIX $(QTDIR) && qmake -o Makefile.gui INCLUDES='$(INCLUDES)' DESTDIR=$(DESTDIR) SLSDETLIB=$(DESTDIR) SUBLIBS='$(LDFLAGDET)'  LIBDIR='$(LIBDIR)'
 
 doc:
 	cd manual && $(MAKE) DESTDIR=$(DOCDIR)
@@ -55,7 +56,7 @@ htmldoc:
 	cd manual && $(MAKE) html DESTDIR=$(DOCDIR)
 
 $(PROG): Makefile slsDetectorGui.pro $(DIR)
-	$(MAKE) -f Makefile.gui SLSDETLIB=$(DESTDIR) DESTDIR=$(DESTDIR) SUBLIBS='$(LDFLAGDET)' INCLUDES='$(INCLUDES)'
+	$(MAKE) -f Makefile.gui SLSDETLIB=$(DESTDIR) DESTDIR=$(DESTDIR) SUBLIBS='$(LDFLAGDET)' INCLUDES='$(INCLUDES)' LIBDIR='$(LIBDIR)'
 
 guiclient:
 #	echo $(WD)

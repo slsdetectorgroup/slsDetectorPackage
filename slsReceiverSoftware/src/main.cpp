@@ -50,6 +50,10 @@ int main(int argc, char *argv[]) {
 	//Catch signal SIGINT to close files properly
 	signal(SIGINT,closeFile);
 
+	// if socket crash, ignores SISPIPE, prevents global signal handler
+	// subsequent read/write to socket gives error - must handle locally
+	signal(SIGPIPE, SIG_IGN);
+
 	//system("setterm -linux term -background white -clear");
 
 	int ret = slsReceiverDefs::OK;

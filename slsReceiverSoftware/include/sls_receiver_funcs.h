@@ -5,10 +5,11 @@
    All set functions with argument -1 work as get, when possible 
  */
 
+#define REC_FUNC_START_INDEX 128
 
-enum {
+enum recFuncs{
 	//General functions
-	F_EXEC_RECEIVER_COMMAND=128, 		/**< command is executed */
+	F_EXEC_RECEIVER_COMMAND=REC_FUNC_START_INDEX, 		/**< command is executed */
 	F_EXIT_RECEIVER, 				/**< turn off receiver server */
 	F_LOCK_RECEIVER, 				/**< Locks/Unlocks server communication to the given client */
 	F_GET_LAST_RECEIVER_CLIENT_IP,  /**< returns the IP of the client last connected to the receiver */
@@ -58,7 +59,11 @@ enum {
 	F_SET_RECEIVER_FILE_FORMAT,		/** < sets the receiver file format */
 
 	F_SEND_RECEIVER_DETPOSID,		/** < sets the detector position id in the reveiver */
-	F_SEND_RECEIVER_MULTIDETSIZE    /** < sets the multi detector size to the receiver */
+	F_SEND_RECEIVER_MULTIDETSIZE,    /** < sets the multi detector size to the receiver */
 	/* Always append functions hereafter!!! */
+
+
+	/* Always append functions before!!! */
+	NUM_REC_FUNCTIONS
 };
 

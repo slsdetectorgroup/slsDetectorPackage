@@ -19,6 +19,10 @@
 class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	
  public:
+
+	/** Destructor */
+	virtual ~slsReceiverTCPIPInterface();
+
 	/**
 	 * Constructor
 	 * reads config file, creates socket, assigns function table
@@ -46,8 +50,7 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	/** stop listening on the TCP & UDP port for client comminication */
 	void stop();
 
-	/** Destructor */
-	virtual ~slsReceiverTCPIPInterface();
+
 
 	/** Close all threaded Files and exit */
 	void closeFile(int p);
@@ -98,7 +101,8 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	 */
 	void registerCallBackRawDataReady(void (*func)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
 			char*, uint32_t, void*),void *arg);
-private:
+
+ private:
 
 	/**
 	 * Static function - Thread started which is a TCP server
@@ -114,32 +118,82 @@ private:
 	 */
 	void startTCPServer();
 
+	/** retuns function name with function index */
+	const char* getFunctionName(enum recFuncs func);
+
 	/** assigns functions to the fnum enum */
 	int function_table();
 
 	/** Decodes Function */
 	int decode_function();
 
+	/** print socket read error */
+	int printSocketReadError();
+
+	/** receiver object is null */
+	void invalidReceiverObject();
+
+	/** receiver already locked */
+	void receiverlocked();
+
+	/** receiver not idle */
+	void receiverNotIdle();
+
+	/** function not implemented for specific detector */
+	void functionNotImplemented();
+
 	/** Unrecognized Function */
 	int M_nofunc();
+
+
+
+	/** Execute command */
+	int	exec_command();
+
+	/** Exit Receiver Server */
+	int	exit_server();
+
+	/** Locks Receiver */
+	int	lock_receiver();
+
+	/** Get Last Client IP*/
+	int	get_last_client_ip();
+
+	/** Set port */
+	int set_port();
+
+	/** Updates Client if different clients connect */
+	int	update_client();
+
+	/** Sends the updated parameters to client */
+	int send_update();
+
+	/** get version, calls get_version */
+	int get_id();
 
 	/** Set detector type */
 	int set_detector_type();
 
-	/** Set File name without frame index, file index and extension */
-	int set_file_name();
+	/** set detector hostname  */
+	int set_detector_hostname();
 
-	/** Set File path */
-	int set_file_dir();
+	/** set short frame */
+	int set_short_frame();
 
 	/** Set up UDP Details */
 	int setup_udp();
 
-	/** Set File index */
-	int set_file_index();
+	/** set acquisition period, frame number etc */
+	int set_timer();
 
-	/** Set Frame index */
-	int set_frame_index();
+	/** set dynamic range  */
+	int set_dynamic_range();
+
+	/** Sets the receiver to send every nth frame to gui, or only upon gui request */
+	int set_read_frequency();
+
+	/** Gets receiver status */
+	int	get_status();
 
 	/** Start Receiver - starts listening to udp packets from detector */
 	int start_receiver();
@@ -147,69 +201,39 @@ private:
 	/** Stop Receiver - stops listening to udp packets from detector*/
 	int stop_receiver();
 
-	/** Gets receiver status */
-	int	get_status();
-
-	/** Gets Total Frames Caught */
-	int	get_frames_caught();
-
-	/** Gets frame index for each acquisition */
-	int	get_frame_index();
-
-	/** Resets Total Frames Caught */
-	int	reset_frames_caught();
-
-	/** set short frame */
-	int set_short_frame();
-
-	/** Reads Frame/ buffer */
-	int	read_frame();
-
-	/** gotthard specific read frame */
-	int gotthard_read_frame();
-
-	/** propix specific read frame */
-	int propix_read_frame();
-
-	/** moench specific read frame */
-	int moench_read_frame();
-
-	/** eiger specific read frame */
-	int eiger_read_frame();
-
-	/** jungfrau specific read frame */
-	int jungfrau_read_frame();
-
-	/** Sets the receiver to send every nth frame to gui, or only upon gui request */
-	int set_read_frequency();
-
-	/** Sets the timer between frames streamed by receiver when frequency is set to 0 */
-	int set_read_receiver_timer();
-
-	/* Set the data stream enable */
-	int set_data_stream_enable();
-
-	/** Enable File Write*/
-	int enable_file_write();
-
-	/** get version, calls get_version */
-	int get_id();
-
 	/** set status to transmitting and
 	 * when fifo is empty later, sets status to run_finished */
 	int start_readout();
 
-	/** set acquisition period, frame number etc */
-	int set_timer();
+	/** Reads Frame/ buffer */
+	int	read_frame();
+
+	/** Set File path */
+	int set_file_dir();
+
+	/** Set File name without frame index, file index and extension */
+	int set_file_name();
+
+	/** Set File index */
+	int set_file_index();
+
+	/** Set Frame index */
+	int set_frame_index();
+
+	/** Gets frame index for each acquisition */
+	int	get_frame_index();
+
+	/** Gets Total Frames Caught */
+	int	get_frames_caught();
+
+	/** Resets Total Frames Caught */
+	int	reset_frames_caught();
+
+	/** Enable File Write*/
+	int enable_file_write();
 
 	/** enable compression */
 	int enable_compression();
-
-	/** set detector hostname  */
-	int set_detector_hostname();
-
-	/** set dynamic range  */
-	int set_dynamic_range();
 
 	/** enable overwrite  */
 	int enable_overwrite();
@@ -223,6 +247,12 @@ private:
 	/** activate/ deactivate */
 	int set_activate();
 
+	/* Set the data stream enable */
+	int set_data_stream_enable();
+
+	/** Sets the timer between frames streamed by receiver when frequency is set to 0 */
+	int set_read_receiver_timer();
+
 	/** enable flipped data */
 	int set_flipped_data();
 
@@ -235,48 +265,25 @@ private:
 	/** set multi detector size */
 	int set_multi_detector_size();
 
-	//General Functions
-	/** Locks Receiver */
-	int	lock_receiver();
-
-	/** Set port */
-	int set_port();
-
-	/** Get Last Client IP*/
-	int	get_last_client_ip();
-
-	/** Updates Client if different clients connect */
-	int	update_client();
-
-	/** Sends the updated parameters to client */
-	int send_update();
-
-	/** Exit Receiver Server */
-	int	exit_server();
-
-	/** Execute command */
-	int	exec_command();
 
 
-
-	//private:
 	/** detector type */
 	detectorType myDetectorType;
 
 	/** slsReceiverBase object */
 	UDPInterface *receiverBase;
 
-	/** Number of functions */
-	static const int numberOfFunctions = 256;
-
 	/** Function List */
-	int (slsReceiverTCPIPInterface::*flist[numberOfFunctions])();
+	int (slsReceiverTCPIPInterface::*flist[NUM_REC_FUNCTIONS])();
 
 	/** Message */
 	char mess[MAX_STR_LENGTH];
 
 	/** success/failure */
 	int ret;
+
+	/** function index */
+	int fnum;
 
 	/** Lock Status if server locked to a client */
 	int lockStatus;
@@ -292,9 +299,6 @@ private:
 
 	/** port number */
 	int portNumber;
-
-	/** Receiver not setup error message */
-	char SET_RECEIVER_ERR_MESSAGE[MAX_STR_LENGTH];
 
 
 	//***callback parameters***

@@ -45,10 +45,10 @@ static: lib  libreceiver stextclient sreceiver gui
 
 
 lib:
-	cd $(LIBRARYDIR) && $(MAKE) FLAGS='$(FLAGS)' DESTDIR='$(LIBDIR)' INCLUDES='$(INCLUDES)'
+	cd $(LIBRARYDIR) && $(MAKE) FLAGS='$(FLAGS)' DESTDIR='$(LIBDIR)' LIBRARYDIR='$(LIBRARYDIR)' LIBS='$(LDFLAGDET)' INCLUDES='$(INCLUDES)' LIBDIR='$(LIBDIR)'
 
 libreceiver:
-	cd $(LIBRARYRXRDIR) && $(MAKE) FLAGS='$(FLAGS)' DESTDIR='$(LIBDIR)' INCLUDES='$(INCLUDESRXR)'
+	cd $(LIBRARYRXRDIR) && $(MAKE) FLAGS='$(FLAGS)' DESTDIR='$(LIBDIR)' LIBS='$(LDFLAGRXR)' INCLUDES='$(INCLUDESRXR)' LIBDIR='$(LIBDIR)'
 
 
 stextclient: slsDetectorClient_static
@@ -56,7 +56,7 @@ stextclient: slsDetectorClient_static
 slsDetectorClient: textclient
 
 slsDetectorClient_static: #lib
-	cd  $(CLIENTDIR) && $(MAKE) static_clients FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)' LIBRARYDIR='$(LIBRARYDIR)' LIBS='$(LDFLAGDET)' INCLUDES='$(INCLUDES)'
+	cd  $(CLIENTDIR) && $(MAKE) static_clients FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)' LIBRARYDIR='$(LIBRARYDIR)' LIBS='$(LDFLAGDET)' INCLUDES='$(INCLUDES)' LIBDIR='$(LIBDIR)'
 	@echo ""
 	@echo "#######################################"
 	@echo "# Back in slsDetectorPackage Makefile #"
@@ -64,7 +64,7 @@ slsDetectorClient_static: #lib
 	@echo ""
 		
 textclient: #lib
-	cd  $(CLIENTDIR) && $(MAKE) FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)'  LIBRARYDIR='$(LIBRARYDIR)' LIBS='$(LDFLAGDET)' INCLUDES='$(INCLUDES)'
+	cd  $(CLIENTDIR) && $(MAKE) FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)'  LIBRARYDIR='$(LIBRARYDIR)' LIBS='$(LDFLAGDET)' INCLUDES='$(INCLUDES)' LIBDIR='$(LIBDIR)'
 	@echo ""
 	@echo "#######################################"
 	@echo "# Back in slsDetectorPackage Makefile #"
@@ -76,7 +76,7 @@ slsReceiver: receiver
 slsReceiver_static: receiver
 
 receiver: #libreceiver
-	cd  $(RECEIVERDIR) && $(MAKE) receiver FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)'  LIBS='$(LDFLAGRXR)' INCLUDES='$(INCLUDESRXR)'
+	cd  $(RECEIVERDIR) && $(MAKE) receiver FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)'  LIBS='$(LDFLAGRXR)' INCLUDES='$(INCLUDESRXR)' LIBDIR='$(LIBDIR)'
 	@echo ""
 	@echo "#######################################"
 	@echo "# Back in slsDetectorPackage Makefile #"
@@ -84,7 +84,7 @@ receiver: #libreceiver
 	@echo ""
 		
 sreceiver: #libreceiver
-	cd  $(RECEIVERDIR) && $(MAKE)  static_receiver FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)'  LIBS='$(LDFLAGRXR)' INCLUDES='$(INCLUDESRXR)'
+	cd  $(RECEIVERDIR) && $(MAKE)  static_receiver FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)'  LIBS='$(LDFLAGRXR)' INCLUDES='$(INCLUDESRXR)' LIBDIR='$(LIBDIR)'
 	@echo ""
 	@echo "#######################################"
 	@echo "# Back in slsDetectorPackage Makefile #"
@@ -92,7 +92,7 @@ sreceiver: #libreceiver
 	@echo ""
 
 slsDetectorGUI: #lib
-	cd  $(GUIDIR) && $(MAKE) DESTDIR='$(BINDIR)' LIBRARYDIR='$(LIBRARYDIR)' INCLUDES='$(INCLUDES)' LDFLAGDET='-L$(LIBDIR) -lSlsDetector'
+	cd  $(GUIDIR) && $(MAKE) DESTDIR='$(BINDIR)' LIBRARYDIR='$(LIBRARYDIR)' INCLUDES='$(INCLUDES)' LDFLAGDET='-L$(LIBDIR) -lSlsDetector' LIBDIR='$(LIBDIR)'
 	@echo ""
 	@echo "#######################################"
 	@echo "# Back in slsDetectorPackage Makefile #"

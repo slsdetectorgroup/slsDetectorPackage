@@ -622,12 +622,6 @@ int slsReceiverTCPIPInterface::send_update() {
 
 	mySock->SendDataOnly(mySock->lastClientIP,sizeof(mySock->lastClientIP));
 
-	//index
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	ind=receiverBase->getFileIndex();
-#endif
-	mySock->SendDataOnly(&ind,sizeof(ind));
-
 	//filepath
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	path = receiverBase->getFilePath();
@@ -649,6 +643,12 @@ int slsReceiverTCPIPInterface::send_update() {
 		mySock->SendDataOnly(path,MAX_STR_LENGTH);
 		delete[] path;
 	}
+
+	//index
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind=receiverBase->getFileIndex();
+#endif
+	mySock->SendDataOnly(&ind,sizeof(ind));
 
 
 	// file path

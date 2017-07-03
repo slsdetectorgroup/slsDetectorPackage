@@ -540,7 +540,7 @@ void qTabDeveloper::RefreshAdcs(){
 	for(int i=0;i<NUM_ADC_WIDGETS;i++){
 		//all detectors
 		if(!detid){
-			if(detType == slsDetectorDefs::EIGER){
+			if(detType == slsDetectorDefs::EIGER || detType == slsDetectorDefs::JUNGFRAU){
 				double value = (double)myDet->getADC(getSLSIndex(i+NUM_DAC_WIDGETS),-1);
 				if(value == -1)
 					spinAdcs[i]->setValue(value);
@@ -553,7 +553,7 @@ void qTabDeveloper::RefreshAdcs(){
 		}
 		//specific detector
 		else{
-			if(detType == slsDetectorDefs::EIGER)
+			if(detType == slsDetectorDefs::EIGER || detType == slsDetectorDefs::JUNGFRAU)
 				spinAdcs[i]->setValue((double)det->getADC(getSLSIndex(i+NUM_DAC_WIDGETS))/1000.00);
 			else
 				spinAdcs[i]->setValue((double)det->getADC(getSLSIndex(i+NUM_DAC_WIDGETS)));

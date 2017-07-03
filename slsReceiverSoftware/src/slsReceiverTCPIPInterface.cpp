@@ -34,7 +34,6 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 				fnum(-1),
 				lockStatus(0),
 				killTCPServerThread(0),
-				tenGigaEnable(0),
 				portNumber(DEFAULT_PORTNO+2),
 				mySock(NULL)
 {
@@ -651,6 +650,22 @@ int slsReceiverTCPIPInterface::send_update() {
 		delete[] path;
 	}
 
+
+	// file path
+	// file name
+	// file index
+	// file format
+	// file write enable
+	// file overwrite enable
+
+	// activate
+	// fifo depth
+
+	// data stream enable
+	// receiver read frequency
+	// receiver read timer
+
+
 	if (!lockStatus)
 		strcpy(mySock->lastClientIP,mySock->thisClientIP);
 
@@ -692,8 +707,10 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 		return printSocketReadError();
 
 	// execute action
+	if (dr == GET_DETECTOR_TYPE)
+		retval = myDetectorType;
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (mySock->differentClients && lockStatus)
+	else if (mySock->differentClients && lockStatus)
 		receiverlocked();
 	else if ((receiverBase) && (receiverBase->getStatus() != IDLE))
 		receiverNotIdle();
@@ -761,12 +778,13 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 		return printSocketReadError();
 
 	// execute action
+	// only a set, not a get
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (mySock->differentClients && lockStatus)
 		receiverlocked();
 	else if (receiverBase == NULL)
 		invalidReceiverObject();
-	else if (receiverBase->getStatus()!= IDLE)
+	else if (receiverBase->getStatus() != IDLE)
 		receiverNotIdle();
 	else {
 		receiverBase->initialize(hostname);
@@ -811,21 +829,21 @@ int slsReceiverTCPIPInterface::set_short_frame() {
 		functionNotImplemented();
 
 	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	// only a set, not a get
 	else {
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 		if (mySock->differentClients && lockStatus)
 			receiverlocked();
 		else if (receiverBase == NULL)
 			invalidReceiverObject();
-		else if (receiverBase->getStatus()!= IDLE)
+		else if (receiverBase->getStatus() != IDLE)
 			receiverNotIdle();
 		else {
 			receiverBase->setShortFrameEnable(index);
 			retval = receiverBase->getShortFrameEnable();
 		}
-	}
 #endif
-
+	}
 	if (ret == OK && mySock->differentClients)
 		ret = FORCE_UPDATE;
 
@@ -854,12 +872,13 @@ int slsReceiverTCPIPInterface::setup_udp(){
 		return printSocketReadError();
 
 	// execute action
+	// only a set, not a get
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (mySock->differentClients && lockStatus)
 		receiverlocked();
 	else if (receiverBase == NULL)
 		invalidReceiverObject();
-	else if (receiverBase->getStatus()!= IDLE)
+	else if (receiverBase->getStatus() != IDLE)
 		receiverNotIdle();
 	else {
 		//set up udp port
@@ -935,43 +954,63 @@ int slsReceiverTCPIPInterface::set_timer() {
 
 	// execute action
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if (receiverBase == NULL)
+	if (receiverBase == NULL)
 		invalidReceiverObject();
-	else if (receiverBase->getStatus()!= IDLE)
-		receiverNotIdle();
 	else {
-		if (index[0] == ACQUISITION_TIME){
-			if (index[1]>=0){
-				ret = receiverBase->setAcquisitionTime(index[1]);
-				if (ret == FAIL) {
-					strcpy(mess,"Could not allocate memory for listening fifo\n");
+		// set
+		if (index[1] >= 0) {
+			if (mySock->differentClients && lockStatus)
+				receiverlocked();
+			else if (receiverBase->getStatus() != IDLE)
+				receiverNotIdle();
+			else {
+				switch (index[0]) {
+				case ACQUISITION_TIME:
+					ret = receiverBase->setAcquisitionTime(index[1]);
+					if (ret == FAIL) {
+						strcpy(mess,"Could not allocate memory for listening fifo\n");
+						FILE_LOG(logERROR) << "Warning: " << mess;
+					}
+					break;
+				case FRAME_PERIOD:
+					ret = receiverBase->setAcquisitionPeriod(index[1]);
+					if (ret == FAIL) {
+						strcpy(mess,"Could not allocate memory for listening fifo\n");
+						FILE_LOG(logERROR) << "Warning: " << mess;
+					}
+					break;
+				case FRAME_NUMBER:
+				case CYCLES_NUMBER:
+					receiverBase->setNumberOfFrames(index[1]);
+					break;
+				default:
+					ret = FAIL;
+					sprintf(mess,"This timer mode (%lld) does not exist for receiver\n", (long long int)index[0]);
 					FILE_LOG(logERROR) << "Warning: " << mess;
 				}
 			}
-			retval=receiverBase->getAcquisitionTime();
-		} else if(index[0] == FRAME_PERIOD){
-			if(index[1]>=0){
-				ret = receiverBase->setAcquisitionPeriod(index[1]);
-				if (ret == FAIL) {
-					strcpy(mess,"Could not allocate memory for listening fifo\n");
-					FILE_LOG(logERROR) << "Warning: " << mess;
-				}
-			}
-			retval=receiverBase->getAcquisitionPeriod();
-		} else {
-			if (index[1]>=0)
-				receiverBase->setNumberOfFrames(index[1]);
-			retval=receiverBase->getNumberOfFrames();
 		}
-		if (index[1]>=0 && retval!=index[1]) {
+		// get
+		switch (index[0]) {
+		case ACQUISITION_TIME:
+			retval=receiverBase->getAcquisitionTime();
+			break;
+		case FRAME_PERIOD:
+			retval=receiverBase->getAcquisitionPeriod();
+			break;
+		case FRAME_NUMBER:
+		case CYCLES_NUMBER:
+			retval=receiverBase->getNumberOfFrames();
+			break;
+		}
+		// check
+		if (ret == OK && index[1] >= 0 && retval != index[1]) {
 			ret = FAIL;
 			strcpy(mess,"Could not set timer\n");
 			FILE_LOG(logERROR) << "Warning: " << mess;
 		}
 	}
-
+#endif
 #ifdef VERYVERBOSE
 	if (index[0] == ACQUISITION_TIME)
 		FILE_LOG(logDEBUG1) << "acquisition time:" << retval;
@@ -979,7 +1018,6 @@ int slsReceiverTCPIPInterface::set_timer() {
 		FILE_LOG(logDEBUG1) << "acquisition period:" << retval
 		else
 			FILE_LOG(logDEBUG1) << "frame number:" << retval;
-#endif
 #endif
 
 	if (ret == OK && mySock->differentClients)
@@ -1008,36 +1046,47 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 		return printSocketReadError();
 
 	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if (dr > 0) {
-		switch(dr){
-		case 4:
-		case 8:
-		case 16:
-		case 32:
-			break;
-		default:
-			ret=FAIL;
-			sprintf(mess,"This dynamic range %d does not exist for this detector\n",dr);
-			FILE_LOG(logERROR) << "Warning: " << mess;
-			break;
-		}
+	bool exists = false;
+	switch (dr) {
+	case -1:
+	case 16:
+		exists = true;
+		break;
+	case 4:
+	case 8:
+	case 32:
+		if (myDetectorType == EIGER)
+			exists = true;
+		break;
+	default:
+		break;
 	}
-	if (ret!=FAIL){
+	if (!exists) {
+		ret = FAIL;
+		sprintf(mess,"This dynamic range %d does not exist for this detector\n",dr);
+		FILE_LOG(logERROR) << "Warning: " << mess;
+	}
+
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	if (ret == OK){
 		if (receiverBase == NULL)
 			invalidReceiverObject();
-		else if (receiverBase->getStatus()!= IDLE)
-			receiverNotIdle();
 		else {
-			if(dr > 0){
-				ret = receiverBase->setDynamicRange(dr);
-				if(ret == FAIL) {
-					strcpy(mess, "Could not allocate memory for fifo or could not start listening/writing threads\n");
-					FILE_LOG(logERROR) << "Warning: " << mess;
+			// set
+			if (dr > 0) {
+				if (mySock->differentClients && lockStatus)
+					receiverlocked();
+				else if (receiverBase->getStatus() != IDLE)
+					receiverNotIdle();
+				else {
+					ret = receiverBase->setDynamicRange(dr);
+					if(ret == FAIL) {
+						strcpy(mess, "Could not allocate memory for fifo or could not start listening/writing threads\n");
+						FILE_LOG(logERROR) << "Warning: " << mess;
+					}
 				}
 			}
+			//get
 			retval = receiverBase->getDynamicRange();
 			if(dr > 0 && retval != dr) {
 				ret = FAIL;
@@ -1046,10 +1095,8 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 			}
 		}
 	}
-
 #ifdef VERYVERBOSE
-	if(ret!=FAIL)
-		FILE_LOG(logDEBUG1) << "dynamic range" << dr;
+	FILE_LOG(logDEBUG1) << "dynamic range" << dr;
 #endif
 #endif
 
@@ -1080,22 +1127,26 @@ int slsReceiverTCPIPInterface::set_read_frequency(){
 
 	// execute action
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if (receiverBase == NULL)
+	if (receiverBase == NULL)
 		invalidReceiverObject();
-	else if (receiverBase->getStatus()!= IDLE)
-		receiverNotIdle();
 	else {
-		if(index >= 0 ){
-			ret = receiverBase->setFrameToGuiFrequency(index);
-			if(ret == FAIL){
-				strcpy(mess, "Could not allocate memory for listening fifo\n");
-				FILE_LOG(logERROR) << "Warning: " << mess;
+		// set
+		if (index >= 0) {
+			if (mySock->differentClients && lockStatus)
+				receiverlocked();
+			else if (receiverBase->getStatus() != IDLE)
+				receiverNotIdle();
+			else {
+				ret = receiverBase->setFrameToGuiFrequency(index);
+				if(ret == FAIL) {
+					strcpy(mess, "Could not allocate memory for listening fifo\n");
+					FILE_LOG(logERROR) << "Warning: " << mess;
+				}
 			}
 		}
+		//get
 		retval=receiverBase->getFrameToGuiFrequency();
-		if(index>=0 && retval!=index){
+		if(index >= 0 && retval != index){
 			ret = FAIL;
 			strcpy(mess,"Could not set frame to gui frequency");
 			FILE_LOG(logERROR) << "Warning: " << mess;
@@ -1147,8 +1198,11 @@ int slsReceiverTCPIPInterface::start_receiver(){
 	memset(mess, 0, sizeof(mess));
 
 	// execute action
+	// only a set, not a get
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (mySock->differentClients && lockStatus)
+	if (receiverBase == NULL)
+		invalidReceiverObject();
+	else if (mySock->differentClients && lockStatus)
 		receiverlocked();
 	/*
 	else if(!strlen(receiverBase->getFilePath())){
@@ -1156,16 +1210,18 @@ int slsReceiverTCPIPInterface::start_receiver(){
 		ret = FAIL;
 	}
 	 */
-	else if (receiverBase == NULL)
-		invalidReceiverObject();
 	else {
 		enum runStatus s = receiverBase->getStatus();
-		if (s == IDLE)
-			ret=receiverBase->startReceiver(mess);
-		else {
+		if (s != IDLE) {
 			ret=FAIL;
 			sprintf(mess,"Cannot start Receiver as it is in %s state\n",runStatusType(s).c_str());
 			FILE_LOG(logERROR) << "Warning: " << mess;
+		}
+		else {
+			ret=receiverBase->startReceiver(mess);
+			if (ret == FAIL) {
+				FILE_LOG(logERROR) << "Warning: " << mess;
+			}
 		}
 	}
 #endif
@@ -1192,15 +1248,15 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 	enum runStatus s = ERROR;
 
 	// execute action
+	// only a set, not a get
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if (receiverBase == NULL)
+	if (receiverBase == NULL)
 		invalidReceiverObject();
+	else if (mySock->differentClients && lockStatus)
+		receiverlocked();
 	else {
-		if(receiverBase->getStatus()!= IDLE){
+		if(receiverBase->getStatus() != IDLE)
 			receiverBase->stopReceiver();
-		}
 		s = receiverBase->getStatus();
 		if (s == IDLE)
 			ret = OK;
@@ -1232,12 +1288,14 @@ int	slsReceiverTCPIPInterface::start_readout(){
 	enum runStatus retval;
 
 	// execute action
+	// only a set, not a get
+
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if (receiverBase == NULL)
+	if (receiverBase == NULL)
 		invalidReceiverObject();
-	/*else if(receiverBase->getStatus()!= IDLE){
+	else if (mySock->differentClients && lockStatus)
+		receiverlocked();
+	/*else if(receiverBase->getStatus() != IDLE){
 		strcpy(mess,"Can not start receiver readout while receiver not idle\n");
 		ret = FAIL;
 	}*/
@@ -1306,14 +1364,20 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 
 	// execute action
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if (receiverBase == NULL)
+	if (receiverBase == NULL)
 		invalidReceiverObject();
-	else if (receiverBase->getStatus()!= IDLE)
-		receiverNotIdle();
 	else {
-		receiverBase->setFilePath(fPath);
+		// set
+		if (strlen(fPath)) {
+			if (mySock->differentClients && lockStatus)
+				receiverlocked();
+			else if (receiverBase->getStatus() != IDLE)
+				receiverNotIdle();
+			else {
+				receiverBase->setFilePath(fPath);
+			}
+		}
+		//get
 		retval = receiverBase->getFilePath();
 		if (retval == NULL || (strlen(fPath) && strcasecmp(fPath, retval))) {
 			ret = FAIL;
@@ -1321,10 +1385,9 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 			FILE_LOG(logERROR) << "Warning: " << mess;
 		}
 	}
-#ifdef VERYVERBOSE
-	if(ret!=FAIL)
-		FILE_LOG(logDEBUG1) << "file path:" << retval;
 #endif
+#ifdef VERYVERBOSE
+	FILE_LOG(logDEBUG1) << "file path:" << retval;
 #endif
 
 	if (ret == OK && mySock->differentClients)
@@ -1362,14 +1425,20 @@ int slsReceiverTCPIPInterface::set_file_name() {
 
 	// execute action
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if (receiverBase == NULL)
+	if (receiverBase == NULL)
 		invalidReceiverObject();
-	else if (receiverBase->getStatus()!= IDLE)
-		receiverNotIdle();
-	else{
-		receiverBase->setFileName(fName);
+	else {
+		// set
+		if (strlen(fName)) {
+			if (mySock->differentClients && lockStatus)
+				receiverlocked();
+			else if (receiverBase->getStatus() != IDLE)
+				receiverNotIdle();
+			else {
+				receiverBase->setFileName(fName);
+			}
+		}
+		//get
 		retval = receiverBase->getFileName();
 		if(retval == NULL) {
 			ret = FAIL;
@@ -1377,10 +1446,9 @@ int slsReceiverTCPIPInterface::set_file_name() {
 			FILE_LOG(logERROR) << "Warning: " << mess;
 		}
 	}
-#ifdef VERYVERBOSE
-	if(ret!=FAIL)
-		FILE_LOG(logDEBUG1) << "file name:" << retval;
 #endif
+#ifdef VERYVERBOSE
+	FILE_LOG(logDEBUG1) << "file name:" << retval;
 #endif
 
 	if (ret == OK && mySock->differentClients)
@@ -1415,26 +1483,30 @@ int slsReceiverTCPIPInterface::set_file_index() {
 
 	// execute action
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if (receiverBase == NULL)
+	if (receiverBase == NULL)
 		invalidReceiverObject();
-	else if (receiverBase->getStatus()!= IDLE)
-		receiverNotIdle();
-	else{
-		if(index >= 0)
-			receiverBase->setFileIndex(index);
+	else {
+		// set
+		if(index >= 0) {
+			if (mySock->differentClients && lockStatus)
+				receiverlocked();
+			else if (receiverBase->getStatus() != IDLE)
+				receiverNotIdle();
+			else {
+				receiverBase->setFileIndex(index);
+			}
+		}
+		//get
 		retval=receiverBase->getFileIndex();
-		if(index>=0 && retval!=index) {
+		if(index >= 0 && retval != index) {
 			ret = FAIL;
 			strcpy(mess, "Could not set file index\n");
 			FILE_LOG(logERROR) << "Warning: " << mess;
 		}
 	}
-#ifdef VERYVERBOSE
-	if(ret!=FAIL)
-		FILE_LOG(logDEBUG1) << "file index:" << retval;
 #endif
+#ifdef VERYVERBOSE
+	FILE_LOG(logDEBUG1) << "file index:" << retval;
 #endif
 
 	if (ret == OK && mySock->differentClients)
@@ -1465,12 +1537,13 @@ int slsReceiverTCPIPInterface::set_frame_index() {
 		return printSocketReadError();
 
 	// execute action
+	// only a set, not a get
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if (receiverBase == NULL)
+	if (receiverBase == NULL)
 		invalidReceiverObject();
-	else if (receiverBase->getStatus()!= IDLE)
+	else if (mySock->differentClients && lockStatus)
+		receiverlocked();
+	else if (receiverBase->getStatus() != IDLE)
 		receiverNotIdle();
 	else{
 		//client sets to 0, but for receiver it is just an enable
@@ -1564,12 +1637,13 @@ int	slsReceiverTCPIPInterface::reset_frames_caught(){
 	memset(mess, 0, sizeof(mess));
 
 	// execute action
+	// only a set, not a get
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if (receiverBase == NULL)
+	if (receiverBase == NULL)
 		invalidReceiverObject();
-	else if (receiverBase->getStatus()!= IDLE)
+	else if (mySock->differentClients && lockStatus)
+		receiverlocked();
+	else if (receiverBase->getStatus() != IDLE)
 		receiverNotIdle();
 	else
 		receiverBase->resetAcquisitionCount();
@@ -1601,22 +1675,30 @@ int slsReceiverTCPIPInterface::enable_file_write(){
 
 	// execute action
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if (receiverBase == NULL)
+	if (receiverBase == NULL)
 		invalidReceiverObject();
-	else if (receiverBase->getStatus()!= IDLE)
-		receiverNotIdle();
 	else {
-		if(enable >= 0)
-			receiverBase->setFileWriteEnable(enable);
+		// set
+		if (enable >= 0) {
+			if (mySock->differentClients && lockStatus)
+				receiverlocked();
+			else if (receiverBase->getStatus() != IDLE)
+				receiverNotIdle();
+			else {
+				receiverBase->setFileWriteEnable(enable);
+			}
+		}
+		//get
 		retval=receiverBase->getFileWriteEnable();
-		if(enable>=0 && enable!=retval) {
+		if(enable >= 0 && enable != retval) {
 			ret=FAIL;
 			strcpy(mess,"Could not set file write enable");
 			FILE_LOG(logERROR) << "Warning: " << mess;
 		}
 	}
+#endif
+#ifdef VERYVERBOSE
+	FILE_LOG(logDEBUG1) << "file write enable:" << retval;
 #endif
 
 	if (ret == OK && mySock->differentClients)
@@ -1671,15 +1753,20 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 
 	// execute action
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if (receiverBase == NULL)
+	if (receiverBase == NULL)
 		invalidReceiverObject();
-	else if (receiverBase->getStatus()!= IDLE)
-		receiverNotIdle();
 	else {
-		if(index >= 0)
-			receiverBase->setOverwriteEnable(index);
+		// set
+		if(index >= 0) {
+			if (mySock->differentClients && lockStatus)
+				receiverlocked();
+			else if (receiverBase->getStatus() != IDLE)
+				receiverNotIdle();
+			else {
+				receiverBase->setOverwriteEnable(index);
+			}
+		}
+		//get
 		retval=receiverBase->getOverwriteEnable();
 		if(index >=0 && retval != index) {
 			ret = FAIL;
@@ -1687,9 +1774,9 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 			FILE_LOG(logERROR) << "Warning: " << mess;
 		}
 	}
-#ifdef VERYVERBOSE
-	FILE_LOG(logDEBUG1) << "overwrite:" << retval;
 #endif
+#ifdef VERYVERBOSE
+	FILE_LOG(logDEBUG1) << "file overwrite enable:" << retval;
 #endif
 
 	if (ret == OK && mySock->differentClients)
@@ -1721,30 +1808,35 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 		functionNotImplemented();
 
 	// execute action
+
+
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (ret == OK) {
-		if (mySock->differentClients && lockStatus)
-			receiverlocked();
-		else if (receiverBase == NULL)
+	else {
+		if (receiverBase == NULL)
 			invalidReceiverObject();
-		else if (receiverBase->getStatus()!= IDLE)
-			receiverNotIdle();
 		else {
-			if(val >= 0)
-				ret = receiverBase->setTenGigaEnable(val);
+			// set
+			if (val >= 0) {
+				if (mySock->differentClients && lockStatus)
+					receiverlocked();
+				else if (receiverBase->getStatus() != IDLE)
+					receiverNotIdle();
+				else {
+					ret = receiverBase->setTenGigaEnable(val);
+				}
+			}
+			//get
 			retval=receiverBase->getTenGigaEnable();
 			if((val >= 0) && (val != retval)) {
 				ret = FAIL;
 				strcpy(mess,"Could not set ten giga enable");
 				FILE_LOG(logERROR) << "Warning: " << mess;
 			}
-			else
-				tenGigaEnable = retval;
 		}
 	}
-#ifdef VERYVERBOSE
-	FILE_LOG(logDEBUG1) << "10Gbe:" << val;
 #endif
+#ifdef VERYVERBOSE
+	FILE_LOG(logDEBUG1) << "10Gbe:" << retval;
 #endif
 
 	if (ret == OK && mySock->differentClients)
@@ -1778,25 +1870,31 @@ int slsReceiverTCPIPInterface::set_fifo_depth() {
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else {
-		if(value >= 0){
+		// set
+		if(value >= 0) {
 			if (mySock->differentClients && lockStatus)
 				receiverlocked();
-			else if (receiverBase->getStatus()!= IDLE)
+			else if (receiverBase->getStatus() != IDLE)
 				receiverNotIdle();
 			else {
-				if(value >= 0){
-					ret = receiverBase->setFifoDepth(value);
-					if (ret == FAIL) {
-						strcpy(mess,"Could not set fifo depth");
-						FILE_LOG(logERROR) << "Warning: " << mess;
-					}
+				ret = receiverBase->setFifoDepth(value);
+				if (ret == FAIL) {
+					strcpy(mess,"Could not set fifo depth");
+					FILE_LOG(logERROR) << "Warning: " << mess;
 				}
 			}
 		}
+		//get
 		retval = receiverBase->getFifoDepth();
+		if(value >= 0 && retval != value) {
+			ret = FAIL;
+			strcpy(mess, "Could not set fifo depth\n");
+			FILE_LOG(logERROR) << "Warning: " << mess;
+		}
 	}
-
-
+#endif
+#ifdef VERYVERBOSE
+	FILE_LOG(logDEBUG1) << "fifo depth:" << retval;
 #endif
 
 	if (ret == OK && mySock->differentClients)
@@ -1829,16 +1927,21 @@ int slsReceiverTCPIPInterface::set_activate() {
 
 	// execute action
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (ret == OK) {
-		if (mySock->differentClients && lockStatus)
-			receiverlocked();
-		else if (receiverBase == NULL)
+	else {
+		if (receiverBase == NULL)
 			invalidReceiverObject();
-		else if (receiverBase->getStatus()!= IDLE)
-			receiverNotIdle();
 		else {
-			if(enable != -1)
-				receiverBase->setActivate(enable);
+			// set
+			if(enable >= 0) {
+				if (mySock->differentClients && lockStatus)
+					receiverlocked();
+				else if (receiverBase->getStatus() != IDLE)
+					receiverNotIdle();
+				else {
+					receiverBase->setActivate(enable);
+				}
+			}
+			//get
 			retval = receiverBase->getActivate();
 			if(enable >= 0 && retval != enable){
 				ret = FAIL;
@@ -1879,15 +1982,20 @@ int slsReceiverTCPIPInterface::set_data_stream_enable(){
 
 	// execute action
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if (receiverBase == NULL)
+	if (receiverBase == NULL)
 		invalidReceiverObject();
-	else if (receiverBase->getStatus()!= IDLE)
-		receiverNotIdle();
 	else {
-		if(index >= 0 )
-			ret = receiverBase->setDataStreamEnable(index);
+		// set
+		if(index >= 0) {
+			if (mySock->differentClients && lockStatus)
+				receiverlocked();
+			else if (receiverBase->getStatus() != IDLE)
+				receiverNotIdle();
+			else {
+				ret = receiverBase->setDataStreamEnable(index);
+			}
+		}
+		//get
 		retval = receiverBase->getDataStreamEnable();
 		if(index >= 0 && retval != index){
 			ret = FAIL;
@@ -1895,8 +2003,9 @@ int slsReceiverTCPIPInterface::set_data_stream_enable(){
 			FILE_LOG(logERROR) << "Warning: " << mess;
 		}
 	}
-
-
+#endif
+#ifdef VERYVERBOSE
+	FILE_LOG(logDEBUG1) << "data streaming enable:" << retval;
 #endif
 
 	if (ret == OK && mySock->differentClients)
@@ -1926,22 +2035,30 @@ int slsReceiverTCPIPInterface::set_read_receiver_timer(){
 
 	// execute action
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if (receiverBase == NULL)
+	if (receiverBase == NULL)
 		invalidReceiverObject();
-	else if (receiverBase->getStatus()!= IDLE)
-		receiverNotIdle();
 	else {
-		if(index >= 0 )
-			receiverBase->setFrameToGuiTimer(index);
+		// set
+		if(index >= 0) {
+			if (mySock->differentClients && lockStatus)
+				receiverlocked();
+			else if (receiverBase->getStatus() != IDLE)
+				receiverNotIdle();
+			else {
+				receiverBase->setFrameToGuiTimer(index);
+			}
+		}
+		//get
 		retval=receiverBase->getFrameToGuiTimer();
-		if(index>=0 && retval!=index){
+		if(index >= 0 && retval != index){
 			ret = FAIL;
 			strcpy(mess,"Could not set datastream timer");
 			FILE_LOG(logERROR) << "Warning: " << mess;
 		}
 	}
+#endif
+#ifdef VERYVERBOSE
+	FILE_LOG(logDEBUG1) << "receiver read timer:" << retval;
 #endif
 
 	if (ret == OK && mySock->differentClients)
@@ -1974,16 +2091,21 @@ int slsReceiverTCPIPInterface::set_flipped_data(){
 
 	// execute action
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (ret == OK) {
-		if (mySock->differentClients && lockStatus)
-			receiverlocked();
-		else if (receiverBase == NULL)
+	else {
+		if (receiverBase == NULL)
 			invalidReceiverObject();
-		else if (receiverBase->getStatus()!= IDLE)
-			receiverNotIdle();
 		else {
-			if (args[1] > -1)
-				receiverBase->setFlippedData(args[0],args[1]);
+			// set
+			if(args[1] >= 0) {
+				if (mySock->differentClients && lockStatus)
+					receiverlocked();
+				else if (receiverBase->getStatus() != IDLE)
+					receiverNotIdle();
+				else {
+					receiverBase->setFlippedData(args[0],args[1]);
+				}
+			}
+			//get
 			retval=receiverBase->getFlippedData(args[0]);
 			if (args[1] > -1 && retval != args[1]) {
 				ret = FAIL;
@@ -1992,9 +2114,9 @@ int slsReceiverTCPIPInterface::set_flipped_data(){
 			}
 		}
 	}
+#endif
 #ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "Flipped Data:" << retval;
-#endif
 #endif
 
 	if (ret == OK && mySock->differentClients)
@@ -2025,15 +2147,20 @@ int slsReceiverTCPIPInterface::set_file_format() {
 
 	// execute action
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if (receiverBase == NULL)
+	if (receiverBase == NULL)
 		invalidReceiverObject();
-	else if (receiverBase->getStatus()!= IDLE)
-		receiverNotIdle();
-	else{
-		if(f != -1)
-			receiverBase->setFileFormat(f);
+	else {
+		// set
+		if(f >= 0) {
+			if (mySock->differentClients && lockStatus)
+				receiverlocked();
+			else if (receiverBase->getStatus() != IDLE)
+				receiverNotIdle();
+			else {
+				receiverBase->setFileFormat(f);
+			}
+		}
+		//get
 		retval = receiverBase->getFileFormat();
 		if(f >= 0 && retval != f){
 			ret = FAIL;
@@ -2073,15 +2200,20 @@ int slsReceiverTCPIPInterface::set_detector_posid() {
 
 	// execute action
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if (receiverBase == NULL)
+	if (receiverBase == NULL)
 		invalidReceiverObject();
-	else if (receiverBase->getStatus()!= IDLE)
-		receiverNotIdle();
 	else {
-		if (arg >= 0)
-			receiverBase->setDetectorPositionId(arg);
+		// set
+		if(arg >= 0) {
+			if (mySock->differentClients && lockStatus)
+				receiverlocked();
+			else if (receiverBase->getStatus() != IDLE)
+				receiverNotIdle();
+			else {
+				receiverBase->setDetectorPositionId(arg);
+			}
+		}
+		//get
 		retval=receiverBase->getDetectorPositionId();
 		if (arg >= 0 && retval != arg) {
 			ret = FAIL;
@@ -2089,9 +2221,9 @@ int slsReceiverTCPIPInterface::set_detector_posid() {
 			FILE_LOG(logERROR) << "Warning: " << mess;
 		}
 	}
+#endif
 #ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "Position Id:" << retval;
-#endif
 #endif
 
 	if (ret == OK && mySock->differentClients)
@@ -2124,28 +2256,31 @@ int slsReceiverTCPIPInterface::set_multi_detector_size() {
 
 	// execute action
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if (receiverBase == NULL)
+	if (receiverBase == NULL)
 		invalidReceiverObject();
-	else if (receiverBase->getStatus()!= IDLE)
-		receiverNotIdle();
 	else {
-		if((arg[0] > 0) && (arg[1] > 0))
-			receiverBase->setMultiDetectorSize(arg);
-		{
-			int* temp = receiverBase->getMultiDetectorSize();
-			for (int i = 0; i < MAX_DIMENSIONS; ++i) {
-				if (!i)
-					retval = temp[i];
-				else
-					retval *= temp[i];
+		// set
+		if((arg[0] > 0) && (arg[1] > 0)) {
+			if (mySock->differentClients && lockStatus)
+				receiverlocked();
+			else if (receiverBase->getStatus() != IDLE)
+				receiverNotIdle();
+			else {
+				receiverBase->setMultiDetectorSize(arg);
 			}
 		}
+		//get
+		int* temp = receiverBase->getMultiDetectorSize();
+		for (int i = 0; i < MAX_DIMENSIONS; ++i) {
+			if (!i)
+				retval = temp[i];
+			else
+				retval *= temp[i];
+		}
 	}
+#endif
 #ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "Multi Detector Size:" << retval;
-#endif
 #endif
 
 	if (ret == OK && mySock->differentClients)

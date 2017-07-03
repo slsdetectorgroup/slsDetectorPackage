@@ -586,7 +586,12 @@ enum communicationProtocol{
     		 while(length>0){
     			 nsending = (length>packet_size) ? packet_size:length;
     			 nsent = read(file_des,(char*)buf+total_sent,nsending);
-    			 if(!nsent) break;
+    			 if(!nsent) {
+    				 if(!total_sent) {
+    					 return -1; //to handle it
+    				 }
+    				 break;
+    			 }
     			 length-=nsent;
     			 total_sent+=nsent;
     		 }
@@ -668,6 +673,10 @@ enum communicationProtocol{
 	 while(length>0){
 	   nsending = (length>packet_size) ? packet_size:length;
 	   nsent = write(file_des,(char*)buf+total_sent,nsending); 
+	   if(is_a_server && nsent < 0) {
+		   cprintf(BG_RED, "Error writing to socket. Possible client socket crash\n");
+		   break;
+	   }
 	   if(!nsent) break;
 	   length-=nsent;
 	   total_sent+=nsent;
@@ -691,8 +700,6 @@ enum communicationProtocol{
        cout << "sent "<< total_sent << " Bytes" << endl; 
 #endif
        return total_sent;
-       
-
      }
 
 

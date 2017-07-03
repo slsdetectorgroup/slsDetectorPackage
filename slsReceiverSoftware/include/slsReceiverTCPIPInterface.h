@@ -294,9 +294,6 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	/** thread for TCP server */
 	pthread_t   TCPServer_thread;
 
-	/** size of one frame*/
-	int tenGigaEnable;
-
 	/** port number */
 	int portNumber;
 

@@ -886,7 +886,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      set dacs value
      \param index ADC index
      \param imod module number
-     \returns current ADC value
+     \returns current ADC value  (temperature for eiger and jungfrau in millidegrees)
   */
   dacs_t getADC(dacIndex index, int imod=0);
  

@@ -929,7 +929,7 @@ class multiSlsDetector  : public slsDetectorUtils {
      \param val value (in V)
      \param index DAC index
      \param imod module number (if -1 alla modules)
-     \returns current DAC value
+     \returns current DAC value (temperature for eiger and jungfrau in millidegrees)
   */
   dacs_t getADC(dacIndex index, int imod=-1);
   /**

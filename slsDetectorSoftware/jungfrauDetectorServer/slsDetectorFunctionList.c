@@ -838,34 +838,11 @@ void setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]){
 
 
 int getADC(enum ADCINDEX ind,  int imod){
-
 	char tempnames[2][40]={"VRs/FPGAs Temperature", "ADCs/ASICs Temperature"};
 	printf("Getting Temperature for %s\n",tempnames[ind]);
 	u_int32_t addr = GET_TEMPERATURE_TMP112_REG;
-	int retval = -1;
-/*
- 	 	u_int32_t val = 0;
-	{
-		int i;
-		for(i = 0; i < 10; i++) {
-			switch((int)ind){
-
-			case TEMP_FPGA:
-				val = (val<<1) + ((bus_r(addr) & (2)) >> 1);
-				break;
-			case TEMP_ADC:
-				val= (val<<1) + (bus_r(addr) & (1));
-				break;
-			}
-		}
-	}
-	// or just read it
-	retval = ((int)val) / 4.0;
-
-	printf("Temperature %s: %d °C\n",tempnames[ind],retval);*/
-	printf("\nReal Temperature %s: %d °C\n",tempnames[ind],bus_r(addr));
-
-
+	int retval = bus_r(addr)/10;
+	printf("\nReal Temperature %s: %f °C\n",tempnames[ind],(double)retval/1000.00);
 	return retval;
 }
 

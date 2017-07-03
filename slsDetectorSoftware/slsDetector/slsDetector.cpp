@@ -1674,7 +1674,7 @@ int slsDetector::setDetectorType(detectorType const type){
 
 
   //receiver
-  if((retType != GENERIC) && (thisDetector->receiverOnlineFlag==ONLINE_FLAG)) {
+  if((retType != GENERIC) && (thisDetector->receiverOnlineFlag==ONLINE_FLAG) && (arg != GENERIC)) {
 	  retval = FAIL;
 	  if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
 #ifdef VERBOSE
@@ -6032,8 +6032,6 @@ string slsDetector::setReceiver(string receiverIP){
 			setUDPConnection();
 			if(thisDetector->myDetectorType == EIGER)
 				enableTenGigabitEthernet(thisDetector->tenGigaEnable);
-			//datastreamenable
-			//fifodepth
 		}
 	}
 

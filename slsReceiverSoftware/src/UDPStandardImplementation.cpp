@@ -203,9 +203,9 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {
 			}
 			if (DataStreamer::GetErrorMask() || error) {
 				if (DataStreamer::GetErrorMask())
-					bprintf(BG_RED,"Error: Could not create data callback threads\n");
+					bprintf(RED,"Error: Could not create data callback threads\n");
 				else
-					bprintf(BG_RED,"Error: Could not create zmq sockets\n");
+					bprintf(RED,"Error: Could not create zmq sockets\n");
 				for (vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
 					delete(*it);
 				dataStreamer.clear();
@@ -731,7 +731,7 @@ int UDPStandardImplementation::SetupFifoStructure() {
 				(generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize),
 				fifoDepth, success));
 		if (!success) {
-			bprintf(BG_RED,"Error: Could not allocate memory for fifo structure of index %d\n", i);
+			bprintf(RED,"Error: Could not allocate memory for fifo structure of index %d\n", i);
 			for (vector<Fifo*>::const_iterator it = fifo.begin(); it != fifo.end(); ++it)
 				delete(*it);
 			fifo.clear();

@@ -59,7 +59,7 @@ void HDF5File::PrintMembers() {
 	} else if (datatype == PredType::STD_U32LE) {
 		FILE_LOG(logINFO) << "Data Type: 32";
 	} else {
-		FILE_LOG(logERROR) << BG_RED,"unknown data type";
+		FILE_LOG(logERROR) << "unknown data type";
 	}
 }
 

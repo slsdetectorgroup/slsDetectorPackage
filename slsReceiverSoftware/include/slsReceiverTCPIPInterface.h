@@ -297,7 +297,6 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	/** port number */
 	int portNumber;
 
-
 	//***callback parameters***
 	/**
 	 * Call back for start acquisition

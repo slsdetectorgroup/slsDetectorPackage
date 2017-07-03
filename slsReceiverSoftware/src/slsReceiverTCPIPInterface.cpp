@@ -510,6 +510,7 @@ int slsReceiverTCPIPInterface::lock_receiver() {
 
 int slsReceiverTCPIPInterface::get_last_client_ip() {
 	ret = OK;
+
 	if (mySock->differentClients)
 		ret = FORCE_UPDATE;
 
@@ -602,7 +603,8 @@ int slsReceiverTCPIPInterface::update_client() {
 
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL){
+	//fail and force_update
+	if (ret != OK){
 		mySock->SendDataOnly(mess,sizeof(mess));
 		// return ok/fail
 		return ret;
@@ -622,7 +624,7 @@ int slsReceiverTCPIPInterface::send_update() {
 
 	mySock->SendDataOnly(mySock->lastClientIP,sizeof(mySock->lastClientIP));
 
-	//filepath
+	// filepath
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	path = receiverBase->getFilePath();
 #endif
@@ -633,7 +635,7 @@ int slsReceiverTCPIPInterface::send_update() {
 		delete[] path;
 	}
 
-	//filename
+	// filename
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	path = receiverBase->getFileName();
 #endif
@@ -644,27 +646,29 @@ int slsReceiverTCPIPInterface::send_update() {
 		delete[] path;
 	}
 
-	//index
+	// index
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=receiverBase->getFileIndex();
 #endif
 	mySock->SendDataOnly(&ind,sizeof(ind));
 
+	//file format
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind=(int)receiverBase->getFileFormat();
+#endif
+	mySock->SendDataOnly(&ind,sizeof(ind));
 
-	// file path
-	// file name
-	// file index
-	// file format
 	// file write enable
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind=(int)receiverBase->getFileWriteEnable();
+#endif
+	mySock->SendDataOnly(&ind,sizeof(ind));
+
 	// file overwrite enable
-
-	// activate
-	// fifo depth
-
-	// data stream enable
-	// receiver read frequency
-	// receiver read timer
-
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind=(int)receiverBase->getOverwriteEnable();
+#endif
+	mySock->SendDataOnly(&ind,sizeof(ind));
 
 	if (!lockStatus)
 		strcpy(mySock->lastClientIP,mySock->thisClientIP);
@@ -747,6 +751,10 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 		}
 	}
 #endif
+	// client has started updating receiver, update ip
+	if (!lockStatus)
+		strcpy(mySock->lastClientIP,mySock->thisClientIP);
+
 
 	if (ret == OK && mySock->differentClients)
 		ret = FORCE_UPDATE;

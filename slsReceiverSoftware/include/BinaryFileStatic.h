@@ -166,7 +166,7 @@ class BinaryFileStatic {
 				(long long int)acquisitionPeriod,
 				ctime(&t));
 		if (strlen(message) > MAX_STR_LENGTH) {
-			bprintf(BG_RED,"Master File Size %d is greater than max str size %d\n",
+			bprintf(RED,"Master File Size %d is greater than max str size %d\n",
 					(int)strlen(message), MAX_STR_LENGTH);
 			return 1;
 		}

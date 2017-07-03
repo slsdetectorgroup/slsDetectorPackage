@@ -1319,6 +1319,12 @@ class multiSlsDetector  : public slsDetectorUtils {
    */
   int setReceiverReadTimer(int time_in_ms=500);
 
+  /**
+   * Get Streaming sockets created in client from reciever
+    /returns 1 if sockets created, else 0
+   */
+  int getStreamingSocketsCreatedInClient();
+
   /** Enable or disable streaming data from receiver to client
    * 	@param enable 0 to disable 1 to enable -1 to only get the value
    * 	@returns data streaming

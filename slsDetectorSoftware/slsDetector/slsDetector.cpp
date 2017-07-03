@@ -6026,6 +6026,7 @@ string slsDetector::setReceiver(string receiverIP){
 				setFlippedData(X,-1);
 				activate(-1);
 			}
+			//if (parentDet->getStreamingSocketsCreatedInClient())
 			//std::cout << "***********************************dataStreaming:" << parentDet->enableDataStreamingFromReceiver(-1) << endl << endl;
 			//parentDet->enableDataStreamingFromReceiver(parentDet->enableDataStreamingFromReceiver(-1));
 			//set scan tag

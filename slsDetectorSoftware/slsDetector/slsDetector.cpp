@@ -6001,6 +6001,8 @@ string slsDetector::setReceiver(string receiverIP){
 				sendMultiDetectorSize();
 			setDetectorId();
 			setDetectorHostname();
+			setUDPConnection();
+
 			setFilePath(fileIO::getFilePath());
 			setFileName(fileIO::getFileName());
 			setFileIndex(fileIO::getFileIndex());
@@ -6013,6 +6015,7 @@ string slsDetector::setReceiver(string receiverIP){
 			imask = parentDet->enableOverwriteMask();
 			pthread_mutex_unlock(&ms);
 			overwriteFile(imask);
+
 			if ((thisDetector->timerValue[FRAME_NUMBER]*thisDetector->timerValue[CYCLES_NUMBER])>1)
 				setFrameIndex(0);
 			else
@@ -6026,13 +6029,23 @@ string slsDetector::setReceiver(string receiverIP){
 				setFlippedData(X,-1);
 				activate(-1);
 			}
-			//if (parentDet->getStreamingSocketsCreatedInClient())
-			//std::cout << "***********************************dataStreaming:" << parentDet->enableDataStreamingFromReceiver(-1) << endl << endl;
-			//parentDet->enableDataStreamingFromReceiver(parentDet->enableDataStreamingFromReceiver(-1));
-			//set scan tag
-			setUDPConnection();
+
 			if(thisDetector->myDetectorType == EIGER)
 				enableTenGigabitEthernet(thisDetector->tenGigaEnable);
+
+			// data streaming
+			int clientSockets = parentDet->getStreamingSocketsCreatedInClient();
+			int recSockets = enableDataStreamingFromReceiver(-1);
+			if(clientSockets != recSockets) {
+				pthread_mutex_lock(&ms);
+				if(clientSockets)
+					printf("Enabling Data Streaming\n");
+				else
+					printf("Disabling Data Streaming\n");
+				// push client state to receiver
+				parentDet->enableDataStreamingFromReceiver(clientSockets);
+				pthread_mutex_unlock(&ms);
+			}
 		}
 	}
 
@@ -8107,20 +8120,42 @@ int slsDetector::updateReceiverNoWait() {
   cout << "Updating receiver last modified by " << lastClientIP << std::endl;
 #endif
 
-  n += 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
-	pthread_mutex_lock(&ms);
-  fileIO::setFileIndex(ind);
-	pthread_mutex_unlock(&ms);
-
+  // filepath
   n += 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);
 	pthread_mutex_lock(&ms);
   fileIO::setFilePath(path);
 	pthread_mutex_unlock(&ms);
 
+	// filename
   n += 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);
   pthread_mutex_lock(&ms);
   fileIO::setFileName(path);
   pthread_mutex_unlock(&ms);
+
+  // index
+  n += 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
+  pthread_mutex_lock(&ms);
+  fileIO::setFileIndex(ind);
+  pthread_mutex_unlock(&ms);
+
+  //file format
+  n += 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
+  pthread_mutex_lock(&ms);
+  fileIO::setFileFormat(ind);
+  pthread_mutex_unlock(&ms);
+
+  // file write enable
+  n += 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
+  pthread_mutex_lock(&ms);
+  parentDet->enableWriteToFileMask(ind);
+  pthread_mutex_unlock(&ms);
+
+  // file overwrite enable
+  n += 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
+  pthread_mutex_lock(&ms);
+  parentDet->enableOverwriteMask(ind);
+  pthread_mutex_unlock(&ms);
+
 
   if (!n) printf("n: %d\n", n);
 
@@ -8141,12 +8176,14 @@ int slsDetector::updateReceiver() {
 		if (connectData() == OK){
 			dataSocket->SendDataOnly(&fnum,sizeof(fnum));
 			dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
-			if (ret!=FAIL)
-				updateReceiverNoWait();
-			else{
+			if (ret == FAIL) {
 				dataSocket->ReceiveDataOnly(mess,sizeof(mess));
 				std::cout<< "Receiver returned error: " << mess << std::endl;
 			}
+			else
+				updateReceiverNoWait();
+
+			//if ret is force update, do not update now as client is updating receiver currently
 			disconnectData();
 		}
 	}

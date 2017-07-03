@@ -5667,8 +5667,10 @@ int multiSlsDetector::setReceiverReadTimer(int time_in_ms){
 	return ret;
 }
 
+int multiSlsDetector::getStreamingSocketsCreatedInClient() {
+	return dataSocketsStarted;
+}
 
-// only called from gui or that wants zmq data packets
 int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
 
 	if(enable >= 0){

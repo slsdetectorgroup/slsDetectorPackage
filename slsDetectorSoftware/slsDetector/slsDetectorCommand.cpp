@@ -1324,7 +1324,7 @@ string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action) {
 
 	myDet->setOnline(ONLINE_FLAG);
 	if (myDet->setReceiverOnline(ONLINE_FLAG) == ONLINE_FLAG) {
-		//if it was not off
+		// command line: must be off, if receiver on or there was -1, then
 		if (myDet->enableDataStreamingFromReceiver(-1) != 0){
 			//switch it off, if error
 			if (myDet->enableDataStreamingFromReceiver(0) != 0) {

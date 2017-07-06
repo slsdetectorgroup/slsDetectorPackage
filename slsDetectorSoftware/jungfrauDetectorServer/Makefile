@@ -17,6 +17,7 @@ boot: $(OBJS)
 $(PROGS): $(OBJS)
 #	echo $(OBJS) 
 	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`
+	$(CC) $(CFLAGS) -c -o slsDetectorFunctionList.o slsDetectorFunctionList.c
 	mkdir -p $(DESTDIR) 
 	$(CC) -o $@ $^ $(CFLAGS) $(LDLIBS) 
 	mv $(PROGS) $(DESTDIR)

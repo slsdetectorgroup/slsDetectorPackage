@@ -841,8 +841,22 @@ int getADC(enum ADCINDEX ind,  int imod){
 	char tempnames[2][40]={"VRs/FPGAs Temperature", "ADCs/ASICs Temperature"};
 	printf("Getting Temperature for %s\n",tempnames[ind]);
 	u_int32_t addr = GET_TEMPERATURE_TMP112_REG;
-	int retval = bus_r(addr)/10;
-	printf("\nReal Temperature %s: %f °C\n",tempnames[ind],(double)retval/1000.00);
+	uint32_t regvalue = bus_r(addr);
+	uint32_t value = regvalue & TEMPERATURE_VALUE_MSK;
+	double retval = value;
+
+	// negative
+	if (regvalue & TEMPERATURE_POLARITY_MSK) {
+		// 2s complement
+		int ret = (~value) + 1;
+		// attach negative sign
+		ret = 0 - value;
+		retval = ret;
+	}
+
+	// conversion
+	retval *= 625.0/10.0;
+	printf("\nReal Temperature %s: %f °C\n",tempnames[ind],retval/1000.00);
 	return retval;
 }
 

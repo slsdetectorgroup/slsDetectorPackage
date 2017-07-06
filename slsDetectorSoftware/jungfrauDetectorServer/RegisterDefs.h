@@ -83,7 +83,13 @@
 #define GET_PERIOD_MSB_REG    			(0x19 << 11)
 
 /** Get Temperature Carlos, incorrectl as get gates */
-#define GET_TEMPERATURE_TMP112_REG		(0x1c << 11)							// in 10ths of millidegrees of TMP112
+#define GET_TEMPERATURE_TMP112_REG		(0x1c << 11)							// (after multiplying by 625) in 10ths of millidegrees of TMP112
+
+#define TEMPERATURE_POLARITY_BIT		(15)
+#define TEMPERATURE_POLARITY_MSK		(0x00000001 << TEMPERATURE_POLARITY_BIT)
+#define TEMPERATURE_VALUE_BIT			(0)
+#define TEMPERATURE_VALUE_MSK			(0x00007FFF << TEMPERATURE_VALUE_BIT)
+
 
 /* Get Frames from Start 64 bit register (frames from start Run Control) */
 #define FRAMES_FROM_START_PG_LSB_REG	(0x24 << 11)

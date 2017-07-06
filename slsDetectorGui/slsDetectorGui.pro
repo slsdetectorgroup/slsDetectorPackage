@@ -154,11 +154,8 @@ FORMS = 					\
 							forms/form_tab_measurement.ui\
 							forms/form_tab_dataoutput.ui\
 							forms/form_tab_plot.ui\
-#							forms/form_tab_actions.ui\
 							forms/form_tab_advanced.ui\
 							forms/form_tab_settings.ui\
 							forms/form_tab_debugging.ui\
-#							forms/form_tab_developer.ui\
-#							forms/form_tab_messages.ui
 							forms/form_action.ui\
 							forms/form_scan.ui

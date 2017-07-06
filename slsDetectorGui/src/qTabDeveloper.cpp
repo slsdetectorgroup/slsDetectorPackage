@@ -26,15 +26,15 @@ int qTabDeveloper::NUM_ADC_WIDGETS(0);
 
 
 qTabDeveloper::qTabDeveloper(qDetectorMain *parent,multiSlsDetector*& detector):
-						thisParent(parent),
-						myDet(detector),
-						det(0),
-						boxDacs(0),
-						boxAdcs(0),
-						lblHV(0),
-						comboHV(0),
-						adcTimer(0),
-						dacLayout(0){
+								thisParent(parent),
+								myDet(detector),
+								det(0),
+								boxDacs(0),
+								boxAdcs(0),
+								lblHV(0),
+								comboHV(0),
+								adcTimer(0),
+								dacLayout(0){
 	for(int i=0;i<20;i++){
 		lblDacs[i]=0;
 		lblAdcs[i]=0;
@@ -147,25 +147,18 @@ void qTabDeveloper::SetupWidgetWindow(){
 
 
 	case slsDetectorDefs::JUNGFRAU:
-		NUM_DAC_WIDGETS = 16;
-		NUM_ADC_WIDGETS = 0;
-		dacNames.push_back("v Dac 0:");
-		dacNames.push_back("v Dac 1:");
-		dacNames.push_back("v Dac 2:");
-		dacNames.push_back("v Dac 3:");
-		dacNames.push_back("v Dac 4:");
-		dacNames.push_back("v Dac 5:");
-		dacNames.push_back("v Dac 6:");
-		dacNames.push_back("i Dac 7:");
-		dacNames.push_back("v Dac 8:");
-		dacNames.push_back("v Dac 9:");
-		dacNames.push_back("v Dac 10:");
-		dacNames.push_back("v Dac 11:");
-		dacNames.push_back("v Dac 12:");
-		dacNames.push_back("v Dac 13:");
-		dacNames.push_back("v Dac 14:");
-		dacNames.push_back("i Dac 15:");
+		NUM_DAC_WIDGETS = 8;
+		NUM_ADC_WIDGETS = 1;
+		dacNames.push_back("v vb comp:");
+		dacNames.push_back("v vdd prot:");
+		dacNames.push_back("v vin com:");
+		dacNames.push_back("v vref prech:");
+		dacNames.push_back("v vb pixbuf:");
+		dacNames.push_back("v vb ds:");
+		dacNames.push_back("v vref ds:");
+		dacNames.push_back("i vref comp:");
 
+		adcNames.push_back("Temperature ADC/FPGA:");
 
 		break;
 
@@ -233,23 +226,22 @@ void qTabDeveloper::SetupWidgetWindow(){
 
 
 	//adcs
-	if((detType==slsDetectorDefs::GOTTHARD) ||
-			(detType==slsDetectorDefs::PROPIX) ||
-			(detType==slsDetectorDefs::MOENCH)||
-			(detType==slsDetectorDefs::EIGER))		{
-	    setFixedHeight(20+(50+(NUM_DAC_WIDGETS/2)*35)+(50+(NUM_ADC_WIDGETS/2)*35));
+	if(NUM_ADC_WIDGETS)		{
+		int rows = NUM_ADC_WIDGETS/2;
+		if (NUM_ADC_WIDGETS%2)rows++;
+		setFixedHeight(20+(50+(NUM_DAC_WIDGETS/2)*35)+(50+rows*35));
 		boxAdcs = new QGroupBox("ADCs",this);
-		boxAdcs->setFixedHeight(25+(NUM_ADC_WIDGETS/2)*35);
+		boxAdcs->setFixedHeight(25+rows*35);
 		layout->addWidget(boxAdcs,2,0);
 		CreateADCWidgets();
 		//to make the adcs at the bottom most
-		if(detType!=slsDetectorDefs::EIGER) {
+		if (detType!=slsDetectorDefs::EIGER) {
 			int diff = 340-height();
 			setFixedHeight(340);
 			layout->setVerticalSpacing(diff/2);
 		}
 		//timer to check adcs
-		adcTimer = new QTimer(this);
+		/*adcTimer = new QTimer(this); adc timer disabled, display adcs only when refreshing developer tab*/
 	}
 
 	qDefs::checkErrorMessage(myDet,"qTabDeveloper::SetupWidgetWindow");
@@ -259,7 +251,7 @@ void qTabDeveloper::SetupWidgetWindow(){
 
 
 void qTabDeveloper::Initialization(){
-	if(NUM_ADC_WIDGETS) connect(adcTimer, 	SIGNAL(timeout()), 		this, SLOT(RefreshAdcs()));
+	/*if(NUM_ADC_WIDGETS) connect(adcTimer, 	SIGNAL(timeout()), 		this, SLOT(RefreshAdcs()));*/
 
 	for(int i=0;i<NUM_DAC_WIDGETS;i++)
 		connect(spinDacs[i],	SIGNAL(editingFinished(int)),	this, SLOT(SetDacValues(int)));
@@ -306,10 +298,7 @@ void qTabDeveloper::CreateADCWidgets(){
 		spinAdcs[i]	= new QDoubleSpinBox(boxAdcs);
 		spinAdcs[i]->setMaximum(10000);
 		spinAdcs[i]->setMinimum(-1);
-		if((detType==slsDetectorDefs::GOTTHARD) ||
-				(detType==slsDetectorDefs::PROPIX) ||
-				(detType==slsDetectorDefs::MOENCH)||
-				(detType==slsDetectorDefs::EIGER))
+		if(NUM_ADC_WIDGETS)
 			spinAdcs[i]->setSuffix(0x00b0+QString("C"));
 
 		adcLayout->addWidget(lblAdcs[i],(int)(i/2),((i%2)==0)?1:4);
@@ -494,16 +483,9 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 						case 5:
 						case 6:
 						case 7:
-						case 8:
-						case 9:
-						case 10:
-						case 11:
-						case 12:
-						case 13:
-						case 14:
-						case 15:
 							return (slsDetectorDefs::dacIndex)index;
 							break;
+						case 8:	return slsDetectorDefs::TEMPERATURE_ADC;
 						default:
 							qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error Index:"+ index,"qTabDeveloper::getSLSIndex");
 							Refresh();
@@ -511,11 +493,11 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 						}
 						break;
 						default:
-		cout << "Unknown detector type:" + myDet->slsDetectorBase::getDetectorType(detType) << endl;
-		qDefs::Message(qDefs::CRITICAL,string("Unknown detector type:")+myDet->slsDetectorBase::getDetectorType(detType),"qTabDeveloper::getSLSIndex");
-		qDefs::checkErrorMessage(myDet,"qTabDeveloper::getSLSIndex");
-		exit(-1);
-		break;
+							cout << "Unknown detector type:" + myDet->slsDetectorBase::getDetectorType(detType) << endl;
+							qDefs::Message(qDefs::CRITICAL,string("Unknown detector type:")+myDet->slsDetectorBase::getDetectorType(detType),"qTabDeveloper::getSLSIndex");
+							qDefs::checkErrorMessage(myDet,"qTabDeveloper::getSLSIndex");
+							exit(-1);
+							break;
 	}
 	return slsDetectorDefs::HUMIDITY;
 }
@@ -531,7 +513,7 @@ void qTabDeveloper::RefreshAdcs(){
 #ifdef VERYVERBOSE
 	cout << "Updating ADCs" <<endl;
 #endif
-	adcTimer->stop();
+	/*adcTimer->stop();*/
 
 	int detid = comboDetector->currentIndex();
 	if(detid)
@@ -544,8 +526,10 @@ void qTabDeveloper::RefreshAdcs(){
 				double value = (double)myDet->getADC(getSLSIndex(i+NUM_DAC_WIDGETS),-1);
 				if(value == -1)
 					spinAdcs[i]->setValue(value);
-				else
+				else {
+					printf("value:%f\n",value/1000);
 					spinAdcs[i]->setValue(value/1000.00);
+				}
 
 			}
 			else
@@ -561,7 +545,7 @@ void qTabDeveloper::RefreshAdcs(){
 	}
 
 
-	adcTimer->start(ADC_TIMEOUT);
+	/*adcTimer->start(ADC_TIMEOUT);*/
 	qDefs::checkErrorMessage(myDet,"qTabDeveloper::RefreshAdcs");
 }
 
@@ -582,7 +566,7 @@ void qTabDeveloper::Refresh(){
 
 	//dacs
 #ifdef VERBOSE
-	cout << "Gettings DACs"  << endl;
+	cout << "Getting DACs"  << NUM_DAC_WIDGETS <<endl;
 #endif
 	for(int i=0;i<NUM_DAC_WIDGETS;i++){
 		//all detectors
@@ -626,20 +610,20 @@ void qTabDeveloper::Refresh(){
 		case 180:	comboHV->setCurrentIndex(5);break;
 		case 200:	comboHV->setCurrentIndex(6);break;
 		default:	comboHV->setCurrentIndex(0);//error
-					lblHV->setPalette(red);
-					lblHV->setText("High Voltage:*");
-					QString errTip = tipHV+QString("<br><br><font color=\"red\"><nobr>High Voltage could not be set. The return value is ")+
-							QString::number(ret)+ QString("</nobr></font>");
-					lblHV->setToolTip(errTip);
-					comboHV->setToolTip(errTip);
-					break;
+		lblHV->setPalette(red);
+		lblHV->setText("High Voltage:*");
+		QString errTip = tipHV+QString("<br><br><font color=\"red\"><nobr>High Voltage could not be set. The return value is ")+
+				QString::number(ret)+ QString("</nobr></font>");
+		lblHV->setToolTip(errTip);
+		comboHV->setToolTip(errTip);
+		break;
 		}
 
 		connect(comboHV,	SIGNAL(currentIndexChanged(int)),	this, SLOT(SetHighVoltage()));
 	}
 
 #ifdef VERBOSE
-		cout  << "**Updated Developer Tab" << endl << endl;
+	cout  << "**Updated Developer Tab" << endl << endl;
 #endif
 
 	qDefs::checkErrorMessage(myDet,"qTabDeveloper::Refresh");

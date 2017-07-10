@@ -25,11 +25,11 @@ int32_t clkPhase[2] = {0, 0};
 
 /* basic tests */
 
-void checkFirmwareCompatibility(){
+void checkFirmwareCompatibility() {
 
 	defineGPIOpins();
 	resetFPGA();
-	if ((mapCSP0() == FAIL) || (checkType() == FAIL) || (testFpga() == FAIL) || (testBus() == FAIL) ) {
+	if ((mapCSP0() == FAIL) || (checkType() == FAIL) || (testFpga() == FAIL) || (testBus() == FAIL)) {
 		cprintf(BG_RED, "Dangerous to continue. Goodbye!\n");
 		exit(EXIT_FAILURE);
 	}

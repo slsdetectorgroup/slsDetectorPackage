@@ -1,9 +1,9 @@
 Path: slsDetectorsPackage/slsDetectorSoftware 
 URL: origin git@git.psi.ch:sls_detectors_software/sls_detector_software.git 
 Repository Root: origin git@git.psi.ch:sls_detectors_software/sls_detector_software.git 
-Repsitory UUID: 79271ea7e3f5ac7113582e694b30b71a64d18844 
-Revision: 1436 
+Repsitory UUID: 9f1b82c18ab0893d65bfadeb646b8ea244614632 
+Revision: 1438 
 Branch: developer 
 Last Changed Author: Dhanya_Maliakal 
-Last Changed Rev: 1441 
-Last Changed Date: 2017-07-03 17:42:06 +0200
+Last Changed Rev: 1443 
+Last Changed Date: 2017-07-10 11:06:07.000000002 +0200 ./eigerDetectorServer/Feb.o

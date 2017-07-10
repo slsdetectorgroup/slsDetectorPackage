@@ -72,15 +72,15 @@ gotthardVirtualServer:  $(SRC_MYTHEN_SVC)
 	$(CXX) -o $@ -c $< $(INCLUDES) $(DFLAGS)  -fPIC  $(EPICSFLAGS) -pthread  -lrt $(LIBZMQ) $(FLAGS)
 
 
-package:  $(OBJS) $(DESTDIR)/libSlsDetector.so $(DESTDIR)/libSlsDetector.a 
+package: versioning $(OBJS) $(DESTDIR)/libSlsDetector.so $(DESTDIR)/libSlsDetector.a 
 
-
+versioning: 
+	$(call colorecho,`./updateGitVersion.sh`)
 
 $(DESTDIR)/libSlsDetector.so: $(OBJS) 
 	$(call colorecho,"#######################################")
 	$(call colorecho,"#    Compiling slsDetector Library    #")
 	$(call colorecho,"#######################################")
-	$(call colorecho,`./updateGitVersion.sh`)
 	$(CXX)  -shared -Wl,-soname,libSlsDetector.so -o libSlsDetector.so  $(OBJS)  -lc $(INCLUDES) $(DFLAGS)  $(FLAGS) $(EPICSFLAGS)  -L/usr/lib64 -pthread -lrt $(LIBZMQ)
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
 	mv libSlsDetector.so $(DESTDIR)

@@ -21,8 +21,8 @@ CFLAGS+= 	-Wall -DC_ONLY -DMCB_FUNCS -DVERBOSE -DVERYVERBOSE -DPICASSOD
 LDLIBS+= 	-lm
 
 picasso:	$(PICASSO)
-mythen:	$(PROGS)
-all:	$(PROGS) $(PICASSO)
+mythen:	versioning $(PROGS)
+all:	versioning $(PROGS) $(PICASSO)
 
 boot: $(OBJS)
 
@@ -44,3 +44,6 @@ clean:
 
 depend:
 	makedepend -Y -- $(CFLAGS) -- $(SRCS) 2>/dev/null
+
+versioning: 
+	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`

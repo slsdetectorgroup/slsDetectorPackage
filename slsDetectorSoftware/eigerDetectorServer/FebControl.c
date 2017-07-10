@@ -24,8 +24,7 @@
 //GetDAQStatusRegister(512,current_mode_bits_from_fpga)){
 
 unsigned int Module_ndacs = 16;
-char  Module_dac_names[16][10]= {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};;
-
+char  Module_dac_names[16][10]={"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};;
 
 
 

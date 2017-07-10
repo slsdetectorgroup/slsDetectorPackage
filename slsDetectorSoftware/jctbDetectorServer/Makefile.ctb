@@ -22,26 +22,26 @@ OBJS = $(SRCS:%.c=%.o)
 
 
 
-all:	clean $(PROGS) 
+all:	clean versioning $(PROGS) 
 
 test: 	clean jungfrauADCTEst
 
 boot: $(OBJS)
 
+versioning: 
+	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`
+
 jungfrauDetectorServerTest: $(OBJS)
 	echo $(OBJS)
-	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@)
 
 
 jungfrauDetectorServer: $(OBJS)
 	echo $(OBJS)
-	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@)
 
 jungfrauADCTEst: $(OBJS)
 	echo $(OBJS)
-	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@) -DTESTADC 
 
 

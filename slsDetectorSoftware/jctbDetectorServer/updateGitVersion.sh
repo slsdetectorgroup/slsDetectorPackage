@@ -1,37 +1,31 @@
 SERVER=jctbDetectorServer
+MAINDIR=slsDetectorsPackage
+SPECDIR=slsDetectorSoftware/$SERVER
 TMPFILE=gitInfoMoenchTmp.h
 INCLFILE=gitInfoMoench.h
 
-WD=slsDetectorSoftware/$SERVER
 
-GITREPO1='git remote -v'
-GITREPO2=" | grep \"fetch\" | cut -d' ' -f1"
-BRANCH1='git branch -v'
-BRANCH2=" | grep '*' | cut -d' ' -f2"
-REPUID1='git log --pretty=format:"%H" -1'
-AUTH1_1='git log --pretty=format:"%cn" -1'
-AUTH1_2=" | cut -d' ' -f1"
-AUTH2_1='git log --pretty=format:"%cn" -1'
-AUTH2_2=" | cut -d' ' -f2"
-FOLDERREV1='git log --oneline . '   #used for all the individual server folders
-FOLDERREV2=" | wc -l"  #used for all the individual server folders
-REV1='git log --oneline  '
-REV2=" | wc -l"
-RDATE1='git log --pretty=format:"%ci" -1'
+#evaluate the variables
+EVALFILE=../../evalVersionVariables.sh
+source $EVALFILE
 
-GITREPO=`eval $GITREPO1  $GITREPO2`
-BRANCH=`eval $BRANCH1  $BRANCH2`
-REPUID=`eval $REPUID1`
-AUTH1=`eval $AUTH1_1  $AUTH1_2`
-AUTH2=`eval $AUTH2_1  $AUTH2_2`
-REV=`eval $REV1  $REV2`
-FOLDERREV=`eval $FOLDERREV1  $FOLDERREV2`
+
+#get modified date
+#RDATE1='git log --pretty=format:"%ci" -1'
+RDATE1="find . -type f -exec stat --format '%Y :%y %n' '{}' \; | sort -nr | cut -d: -f2- | egrep -v 'gitInfo|.git|updateGitVersion|.o' | head -n 1"
 RDATE=`eval $RDATE1`
-echo Path: slsDetectorsPackage/$WD  $'\n'URL: ${GITREPO}/$SERVER  $'\n'Repository Root: ${GITREPO}  $'\n'Repsitory UUID: ${REPUID}  $'\n'Revision: ${FOLDERREV}  $'\n'Branch: ${BRANCH}  $'\n'Last Changed Author: ${AUTH1}_${AUTH2}  $'\n'Last Changed Rev: ${REV}  $'\n'Last Changed Date: ${RDATE} > gitInfo.txt 
-cd ../../
-./genVersionHeader.sh $WD/gitInfo.txt $WD/$TMPFILE $WD/$INCLFILE 
-echo "Revision Updated"
-cd $WD
+NEWDATE=$(sed "s/-//g" <<< $RDATE | awk '{print $1;}') 
+NEWDATE=${NEWDATE/#/0x}
 
 
+#get old date from INCLFILE
+OLDDATE=$(more $INCLFILE | grep '#define SVNDATE' | awk '{print $3}')
 
+
+#update INCLFILE if changes
+if [ "$OLDDATE" != "$NEWDATE" ]; then
+	echo Path: ${MAINDIR}/${SPECDIR}  $'\n'URL: ${GITREPO}  $'\n'Repository Root: ${GITREPO}  $'\n'Repsitory UUID: ${REPUID}  $'\n'Revision: ${FOLDERREV}  $'\n'Branch: ${BRANCH}  $'\n'Last Changed Author: ${AUTH1}_${AUTH2}  $'\n'Last Changed Rev: ${REV}  $'\n'Last Changed Date: ${RDATE} > gitInfo.txt 
+	cd ../../
+	./genVersionHeader.sh $SPECDIR/gitInfo.txt $SPECDIR/$TMPFILE $SPECDIR/$INCLFILE 
+	cd $WD
+fi

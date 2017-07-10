@@ -12,14 +12,16 @@ SRC_CLNT	=	communication_funcs.c slsDetectorServer.c slsDetectorServer_funcs.c  
 OBJS 		= 	$(SRC_CLNT:.c=.o) 
  
 
-all: clean $(PROGS) #hv9m_blackfin_server 
+all: clean versioning $(PROGS) #hv9m_blackfin_server 
 
 	
 boot: $(OBJS) 
 
+versioning: 
+	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`
+
 $(PROGS):  $(OBJS)
 #	echo $(OBJS) 
-	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`
 	mkdir -p $(DESTDIR) 
 	$(CC)  	-o $@  $(SRC_CLNT) $(CFLAGS) $(LDLIBS) 
 	mv $(PROGS) $(DESTDIR)

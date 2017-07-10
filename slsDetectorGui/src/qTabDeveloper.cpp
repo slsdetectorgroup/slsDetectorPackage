@@ -25,7 +25,7 @@ int qTabDeveloper::NUM_ADC_WIDGETS(0);
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-qTabDeveloper::qTabDeveloper(qDetectorMain *parent,multiSlsDetector*& detector):
+qTabDeveloper::qTabDeveloper(qDetectorMain *parent,multiSlsDetector*& detector) :
 								thisParent(parent),
 								myDet(detector),
 								det(0),
@@ -50,7 +50,7 @@ qTabDeveloper::qTabDeveloper(qDetectorMain *parent,multiSlsDetector*& detector):
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-qTabDeveloper::~qTabDeveloper(){
+qTabDeveloper::~qTabDeveloper() {
 	delete myDet;
 	if(det) delete det;
 	if(thisParent) delete thisParent;
@@ -60,7 +60,7 @@ qTabDeveloper::~qTabDeveloper(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabDeveloper::SetupWidgetWindow(){
+void qTabDeveloper::SetupWidgetWindow() {
 	//Detector Type
 	detType=myDet->getDetectorsType();
 
@@ -224,7 +224,6 @@ void qTabDeveloper::SetupWidgetWindow(){
 	layout->addWidget(comboDetector,0,0);
 	layout->addWidget(boxDacs,1,0);
 
-
 	//adcs
 	if(NUM_ADC_WIDGETS)		{
 		int rows = NUM_ADC_WIDGETS/2;
@@ -241,7 +240,7 @@ void qTabDeveloper::SetupWidgetWindow(){
 			layout->setVerticalSpacing(diff/2);
 		}
 		//timer to check adcs
-		/*adcTimer = new QTimer(this); adc timer disabled, display adcs only when refreshing developer tab*/
+		/*adcTimer = new QTimer(this); adc timer disabled, display adcs only when refreshing developer tab */
 	}
 
 	qDefs::checkErrorMessage(myDet,"qTabDeveloper::SetupWidgetWindow");

@@ -55,7 +55,7 @@ doc:
 htmldoc:
 	cd manual && $(MAKE) html DESTDIR=$(DOCDIR)
 
-$(PROG): Makefile slsDetectorGui.pro $(DIR)
+$(PROG): Makefile $(DIR)
 	$(MAKE) -f Makefile.gui SLSDETLIB=$(DESTDIR) DESTDIR=$(DESTDIR) SUBLIBS='$(LDFLAGDET)' INCLUDES='$(INCLUDES)' LIBDIR='$(LIBDIR)'
 
 guiclient:

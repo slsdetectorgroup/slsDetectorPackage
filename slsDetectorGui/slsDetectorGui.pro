@@ -22,7 +22,7 @@ QMAKE_LIBS 			= 	-L$(QTDIR)/lib
 
 #default
 DEFINES 			+= 	 VERBOSE DACS_INT PRINT_LOG  #VERYVERBOSE CHECKINFERROR 
-LIBS				=	-L$(QWTDIR)/lib	  -lqwt -L$(QWT3D)/lib 
+LIBS				=	-L$(QWTDIR)/lib	  -lqwt -L$(QWT3D)/lib $(LDFLAGDET)
 
 CXXFLAGS			+=  -g
 
@@ -59,6 +59,7 @@ extralib.commands = 	echo `tput setaf 6`;	\
 	echo 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';	\
 	echo `./updateGitVersion.sh; tput sgr0`
 extralib.depends = $(target)
+
 QMAKE_EXTRA_TARGETS += extralib
 PRE_TARGETDEPS = extra
 
@@ -71,8 +72,7 @@ DEPENDPATH  		+=		\
 							forms/include
 
 
-INCLUDEPATH 		= 	\	 
-							. \
+INCLUDEPATH 		+= 		\	 
 							$(QWTDIR)/include\
 							$(QWTDIR) \
                             $(QWTDIR)/src\
@@ -86,7 +86,8 @@ INCLUDEPATH 		= 	\
 							/usr/include/Qt\
 							/usr/include/QtCore\
 							/usr/include/QtGui\
-							$(INCLUDES)
+							$(INCLUDES) 
+							
 #epics
 #                            $(INCLUDES) /usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/
 
@@ -143,7 +144,7 @@ HEADERS 			=  		\
 							include/qTabDebugging.h\
 							include/qTabDeveloper.h\
 							include/qTabMessages.h\
-							gitInfoGui.h\  
+							include/gitInfoGui.h\  
 							../slsDetectorSoftware/commonFiles/sls_detector_defs.h\
 							../slsReceiverSoftware/include/sls_receiver_defs.h\
 							include/qServer.h

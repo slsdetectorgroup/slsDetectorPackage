@@ -56,7 +56,7 @@ private:
 /**
  *@short sets up the Developer parameters
  */
-class qTabDeveloper:public QWidget{
+class qTabDeveloper:public QWidget {
 	Q_OBJECT
 
 public:

@@ -63,20 +63,21 @@ $(BUILDDIR)/%.o : $(SRCDIR)/%.cpp $(INCDIR)/%.h $(DEPSINCLUDES) Makefile
 ifeq ($(ROOTSLS),yes)
 	$(CXX) -DROOTSLS -o $@ -c $< $(INCLUDES) $(DFLAGS)  $(ROOTFLAGS) -fPIC  $(EPICSFLAGS) $(LDFLAGRXR) -L/usr/lib64/ $(FLAGS) 
 else	
+#	$(call colorecho,`./updateGitVersion.sh`)
 	$(CXX) -o $@ -c $< $(INCLUDES) $(DFLAGS) -fPIC  $(EPICSFLAGS) $(LDFLAGRXR) -pthread $(FLAGS) $(LIBZMQ)  -lrt 
 endif
 
-lib:  $(OBJS) $(DESTDIR)/libSlsReceiver.so $(DESTDIR)/libSlsReceiver.a 
+versioning: 
+	$(call colorecho,`./updateGitVersion.sh`)
+
+lib:  versioning $(OBJS) $(DESTDIR)/libSlsReceiver.so $(DESTDIR)/libSlsReceiver.a 
 
 receiver: $(DESTDIR)/slsReceiver
-
-
 
 $(DESTDIR)/libSlsReceiver.so: $(OBJS)  
 	$(call colorecho,"#######################################")
 	$(call colorecho,"#    Compiling slsReceiver Library    #")
 	$(call colorecho,"#######################################")
-	$(call colorecho,`./updateGitVersion.sh`)
 	$(CXX)  -shared -Wl,-soname,libSlsReceiver.so -o libSlsReceiver.so  $(OBJS) -lc $(INCLUDES) $(DFLAGS) $(FLAGS) $(EPICSFLAGS)  -L/usr/lib64 -pthread $(LIBZMQ) -lrt 
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
 	mv libSlsReceiver.so $(DESTDIR)

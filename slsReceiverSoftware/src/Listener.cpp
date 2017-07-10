@@ -148,7 +148,7 @@ void Listener::ResetParametersforNewAcquisition() {
 }
 
 
-void Listener::ResetParametersforNewMeasurement(){
+void Listener::ResetParametersforNewMeasurement() {
 	measurementStartedFlag = false;
 	numPacketsCaught = 0;
 	firstMeasurementIndex = 0;

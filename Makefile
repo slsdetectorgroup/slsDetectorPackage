@@ -92,7 +92,7 @@ sreceiver: #libreceiver
 	@echo ""
 
 slsDetectorGUI: #lib
-	cd  $(GUIDIR) && $(MAKE) DESTDIR='$(BINDIR)' LIBRARYDIR='$(LIBRARYDIR)' INCLUDES='$(INCLUDES)' LDFLAGDET='-L$(LIBDIR) -lSlsDetector' LIBDIR='$(LIBDIR)'
+	cd  $(GUIDIR) && $(MAKE) DESTDIR='$(BINDIR)' LIBRARYDIR='$(LIBRARYDIR)' INCLUDES='$(INCLUDES)' LDFLAGDET='$(LDFLAGDET)' LIBDIR='$(LIBDIR)'
 	@echo ""
 	@echo "#######################################"
 	@echo "# Back in slsDetectorPackage Makefile #"

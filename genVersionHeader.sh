@@ -15,8 +15,8 @@ fout=$3
 
 #dat=echo "date '+%Y%m%d'"
 
-
-echo "in: $fin tmp: $ftmp out: $fout"
+echo "Updating $fout"
+#echo "in: $fin tmp: $ftmp out: $fout"
 
 #awk 'NR==FNR {if ($3=="Date:") {l[FNR]=$4; gsub("-","",l[FNR]);} else { if (match($0,"Rev")) {l[FNR]=$(NF);} else {l[FNR]="\""$(NF)"\"";};};next} {$0=$1" "$2" "l[FNR]}1' $fin $ftmp > $fout
 

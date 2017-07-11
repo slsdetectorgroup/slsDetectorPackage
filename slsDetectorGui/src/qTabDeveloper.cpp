@@ -15,6 +15,7 @@
 #include <QDoubleValidator>
 //C++ Include Headers
 #include<iostream>
+
 using namespace std;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -25,7 +26,7 @@ int qTabDeveloper::NUM_ADC_WIDGETS(0);
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-qTabDeveloper::qTabDeveloper(qDetectorMain *parent,multiSlsDetector*& detector) :
+qTabDeveloper::qTabDeveloper(qDetectorMain *parent,multiSlsDetector*& detector):
 								thisParent(parent),
 								myDet(detector),
 								det(0),
@@ -35,7 +36,7 @@ qTabDeveloper::qTabDeveloper(qDetectorMain *parent,multiSlsDetector*& detector) 
 								comboHV(0),
 								adcTimer(0),
 								dacLayout(0){
-	for(int i=0;i<20;i++){
+	for(int i=0;i<20;i++) {
 		lblDacs[i]=0;
 		lblAdcs[i]=0;
 		spinDacs[i]=0;
@@ -630,5 +631,3 @@ void qTabDeveloper::Refresh(){
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
-
-

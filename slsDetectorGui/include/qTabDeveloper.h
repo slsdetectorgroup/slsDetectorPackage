@@ -10,7 +10,6 @@
 
 #include "qDefs.h"
 
-
 /** Project Class Headers */
 class multiSlsDetector;
 /** Qt Include Headers */
@@ -50,7 +49,6 @@ private:
 	signals:
 	void editingFinished(int myId);
 };
-
 
 
 /**

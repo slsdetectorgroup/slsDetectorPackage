@@ -39,7 +39,7 @@ lib:
 
 
 clean: 
-	if test -e Makefile.gui; then $(MAKE) -f Makefile.gui clean; $(MAKE) -f Makefile.gui mocclean; 	rm Makefile.gui; else 	$(MAKE) Makefile.gui; 	$(MAKE) -f Makefile.gui clean; $(MAKE) -f Makefile.gui mocclean;  fi
+	if test -e Makefile.gui; then $(MAKE) -f Makefile.gui clean; $(MAKE) -f Makefile.gui mocclean; 	rm Makefile.gui; rm $(DESTDIR)/slsDetectorGui; else 	$(MAKE) Makefile.gui; 	$(MAKE) -f Makefile.gui clean; $(MAKE) -f Makefile.gui mocclean;  rm $(DESTDIR)/slsDetectorGui; fi
 	cd client &&  $(MAKE) clean
 #	cd manual && make clean
 
@@ -55,7 +55,7 @@ doc:
 htmldoc:
 	cd manual && $(MAKE) html DESTDIR=$(DOCDIR)
 
-$(PROG): Makefile $(DIR)
+$(PROG): Makefile $(DIR) src/*.cpp  include/*.h slsDetectorPlotting/include/*.h slsDetectorPlotting/src/*.cxx  forms/include/*.h
 	$(MAKE) -f Makefile.gui SLSDETLIB=$(DESTDIR) DESTDIR=$(DESTDIR) SUBLIBS='$(LDFLAGDET)' INCLUDES='$(INCLUDES)' LIBDIR='$(LIBDIR)'
 
 guiclient:

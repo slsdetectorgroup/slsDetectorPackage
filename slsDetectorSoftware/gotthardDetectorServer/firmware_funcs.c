@@ -4,6 +4,8 @@
 #include "mcb_funcs.h"
 #include "registers_g.h"
 
+#include "AD9257.h"		// include "commonServerFunctions.h"
+
 #ifdef SHAREDMEMORY
 #include "sharedmemory.h"
 #endif
@@ -1814,7 +1816,9 @@ int allocateRAM() {
 
 
 }
-int prepareADC(){
+
+
+int configureADC(){
 	printf("Preparing ADC\n");
 	u_int32_t valw,codata,csmask;
 	int i,j,cdx,ddx;
@@ -1834,26 +1838,26 @@ int prepareADC(){
 
 		// start point
 		valw=0xff;
-		bus_w(ADC_WRITE_REG,(valw));
+		bus_w(ADC_SPI_REG,(valw));
 
 		 //chip sel bar down
 		valw=((0xffffffff&(~csmask)));
-		bus_w(ADC_WRITE_REG,valw);
+		bus_w(ADC_SPI_REG,valw);
 
 		for (i=0;i<24;i++) {
 			 //cldwn
 			valw=valw&(~(0x1<<cdx));
-			bus_w(ADC_WRITE_REG,valw);
+			bus_w(ADC_SPI_REG,valw);
 			usleep(0);
 
 			//write data (i)
 			valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx);
-			bus_w(ADC_WRITE_REG,valw);
+			bus_w(ADC_SPI_REG,valw);
 			usleep(0);
 
 			//clkup
 			valw=valw+(0x1<<cdx);
-			bus_w(ADC_WRITE_REG,valw);
+			bus_w(ADC_SPI_REG,valw);
 			usleep(0);
 		}
 
@@ -1861,7 +1865,7 @@ int prepareADC(){
 		valw=valw&(~(0x1<<cdx));
 		usleep(0);
 		valw=0xff;
-		bus_w(ADC_WRITE_REG,(valw));
+		bus_w(ADC_SPI_REG,(valw));
 
 		//usleep in between
 		usleep(50000);
@@ -1872,19 +1876,19 @@ int prepareADC(){
 	/*
 	codata=0;
 	codata=(0x14<<8)+(0x0);  //command and value;
-	valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // start point
-	valw=((0xffffffff&(~csmask)));bus_w(ADC_WRITE_REG,valw); //chip sel bar down
+	valw=0xff; bus_w(ADC_SPI_REG,(valw)); // start point
+	valw=((0xffffffff&(~csmask)));bus_w(ADC_SPI_REG,valw); //chip sel bar down
 	for (i=0;i<24;i++) {
-		valw=valw&(~(0x1<<cdx));bus_w(ADC_WRITE_REG,valw);usleep(0); //cldwn
+		valw=valw&(~(0x1<<cdx));bus_w(ADC_SPI_REG,valw);usleep(0); //cldwn
 
-		valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_WRITE_REG,valw); usleep(0); //write data (i)
+		valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_SPI_REG,valw); usleep(0); //write data (i)
 
-		valw=valw+(0x1<<cdx);bus_w(ADC_WRITE_REG,valw); usleep(0); //clkup
+		valw=valw+(0x1<<cdx);bus_w(ADC_SPI_REG,valw); usleep(0); //clkup
 
 	}
 
 	valw=valw&(~(0x1<<cdx));usleep(0);
-	valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // stop point =start point
+	valw=0xff; bus_w(ADC_SPI_REG,(valw)); // stop point =start point
 
 
 
@@ -1892,36 +1896,36 @@ int prepareADC(){
 
 	codata=0;
 	codata=(0x08<<8)+(0x3);  //command and value;Power modes(global) reset
-	valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // start point
-	valw=((0xffffffff&(~csmask)));bus_w(ADC_WRITE_REG,valw); //chip sel bar down
+	valw=0xff; bus_w(ADC_SPI_REG,(valw)); // start point
+	valw=((0xffffffff&(~csmask)));bus_w(ADC_SPI_REG,valw); //chip sel bar down
 	for (i=0;i<24;i++) {
-		valw=valw&(~(0x1<<cdx));bus_w(ADC_WRITE_REG,valw);usleep(0); //cldwn
+		valw=valw&(~(0x1<<cdx));bus_w(ADC_SPI_REG,valw);usleep(0); //cldwn
 
-		valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_WRITE_REG,valw); usleep(0); //write data (i)
-		valw=valw+(0x1<<cdx);bus_w(ADC_WRITE_REG,valw); usleep(0); //clkup
+		valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_SPI_REG,valw); usleep(0); //write data (i)
+		valw=valw+(0x1<<cdx);bus_w(ADC_SPI_REG,valw); usleep(0); //clkup
 
 	}
 
 	valw=valw&(~(0x1<<cdx));usleep(0);
-	valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // stop point =start point
+	valw=0xff; bus_w(ADC_SPI_REG,(valw)); // stop point =start point
 
 
 
 	usleep(50000);
 	codata=0;
 	codata=(0x08<<8)+(0x0);  //command and value;Power modes(global) reset
-	valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // start point
-	valw=((0xffffffff&(~csmask)));bus_w(ADC_WRITE_REG,valw); //chip sel bar down
+	valw=0xff; bus_w(ADC_SPI_REG,(valw)); // start point
+	valw=((0xffffffff&(~csmask)));bus_w(ADC_SPI_REG,valw); //chip sel bar down
 	for (i=0;i<24;i++) {
-		valw=valw&(~(0x1<<cdx));bus_w(ADC_WRITE_REG,valw);usleep(0); //cldwn
+		valw=valw&(~(0x1<<cdx));bus_w(ADC_SPI_REG,valw);usleep(0); //cldwn
 
-		valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_WRITE_REG,valw); usleep(0); //write data (i)
-		valw=valw+(0x1<<cdx);bus_w(ADC_WRITE_REG,valw); usleep(0); //clkup
+		valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_SPI_REG,valw); usleep(0); //write data (i)
+		valw=valw+(0x1<<cdx);bus_w(ADC_SPI_REG,valw); usleep(0); //clkup
 
 	}
 
 	valw=valw&(~(0x1<<cdx));usleep(0);
-	valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // stop point =start point
+	valw=0xff; bus_w(ADC_SPI_REG,(valw)); // stop point =start point
 */
 }
 

@@ -33,7 +33,16 @@
 //#define TIME_FROM_START_REG   0x16<<11
 #define MCB_CNTRL_REG_OFF     0x17<<11// control the dacs
 //ADC
-#define ADC_WRITE_REG         0x18<<11
+#define ADC_SPI_REG        	  0x18<<11
+
+#define ADC_SERIAL_CLK_OUT_OFST			(0)
+#define ADC_SERIAL_CLK_OUT_MSK			(0x00000001 << ADC_SERIAL_CLK_OUT_OFST)
+#define ADC_SERIAL_DATA_OUT_OFST		(1)
+#define ADC_SERIAL_DATA_OUT_MSK			(0x00000001 << ADC_SERIAL_DATA_OUT_OFST)
+#define ADC_SERIAL_CS_OUT_OFST			(2)
+#define ADC_SERIAL_CS_OUT_MSK			(0x0000000F << ADC_SERIAL_CS_OUT_OFST)
+
+
 #define ADC_SYNC_REG          0x19<<11
 //#define MUTIME_REG            0x1a<<11
 //temperature

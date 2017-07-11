@@ -555,7 +555,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
      \param imod module number
      \returns current ADC value
   */
-  virtual dacs_t getADC(dacIndex index, int imod=0)=0;
+  virtual dacs_t getADC(dacIndex index, int imod=-1)=0;
 
   /**
      get the maximum size of the detector

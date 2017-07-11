@@ -522,10 +522,10 @@ class multiSlsDetector  : public slsDetectorUtils {
   int powerChip(int ival= -1);
 
   /** loads the modules settings/trimbits reading from a file -  file name extension is automatically generated! */
-  int loadSettingsFile(string fname, int nmod=0);
+  int loadSettingsFile(string fname, int nmod=-1);
 
   /** gets the modules settings/trimbits and writes them to file -  file name extension is automatically generated! */
-  int saveSettingsFile(string fname, int nmod=0);
+  int saveSettingsFile(string fname, int nmod=-1);
 
 
   /** sets all the trimbits to a particular value
@@ -537,10 +537,10 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
   /** loads the modules calibration data reading from a file -  file name extension is automatically generated! */
-  int loadCalibrationFile(string fname, int nmod=0);
+  int loadCalibrationFile(string fname, int nmod=-1);
 
   /** gets the modules calibration data and writes them to file -  file name extension is automatically generated! */
-  int saveCalibrationFile(string fname, int nmod=0);
+  int saveCalibrationFile(string fname, int nmod=-1);
 
 
 

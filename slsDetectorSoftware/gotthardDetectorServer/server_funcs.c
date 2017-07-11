@@ -84,7 +84,7 @@ int init_detector( int b) {
 
     //gotthard specific
     setPhaseShiftOnce();
-    prepareADC();
+    configureADC();
     setADC(-1); //already does setdaqreg and clean fifo
     setSettings(GET_SETTINGS,-1);
 
@@ -192,6 +192,7 @@ int function_table() {
   flist[F_PREPARE_ACQUISITION]=&start_receiver;
   flist[F_CLEANUP_ACQUISITION]=&stop_receiver;
   flist[F_CALIBRATE_PEDESTAL]=&calibrate_pedestal;
+  flist[F_WRITE_ADC_REG]=&write_adc_register;
   return OK;
 }
 
@@ -3051,6 +3052,57 @@ int calibrate_pedestal(int file_des){
 		n += sendDataOnly(file_des,&retval,sizeof(retval));
 
 	/*return ok/fail*/
+	return ret;
+}
+
+
+
+
+int write_adc_register(int file_des) {
+	int ret=OK;
+	int n=0;
+	int retval=-1;
+	sprintf(mess,"write to adc register failed\n");
+
+	// receive arguments
+	int arg[2]={-1,-1};
+	n = receiveData(file_des,arg,sizeof(arg),INT32);
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+
+	int addr=arg[0];
+	int val=arg[1];
+
+	// execute action
+	if (ret == OK) {
+		if (differentClients && lockStatus) {
+			ret = FAIL;
+			sprintf(mess,"Detector locked by %s\n",lastClientIP);
+			cprintf(RED, "Warning: %s", mess);
+		}
+		else {
+#ifdef VERBOSE
+			printf("writing to register 0x%x data 0x%x\n", addr, val);
+#endif
+			setAdc(addr,val);
+#ifdef VERBOSE
+			printf("Data set to 0x%x\n",  retval);
+#endif
+			if (ret==OK && differentClients)
+				ret=FORCE_UPDATE;
+		}
+	}
+	// send ok / fail
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	// send return argument
+	if (ret==FAIL) {
+		n = sendDataOnly(file_des,mess,sizeof(mess));
+	} else
+		n = sendDataOnly(file_des,&retval,sizeof(retval));
+
+	// return ok / fail
 	return ret;
 }
 

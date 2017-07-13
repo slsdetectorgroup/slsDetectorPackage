@@ -55,7 +55,7 @@ doc:
 htmldoc:
 	cd manual && $(MAKE) html DESTDIR=$(DOCDIR)
 
-$(PROG): Makefile $(DIR) src/*.cpp  include/*.h slsDetectorPlotting/include/*.h slsDetectorPlotting/src/*.cxx  forms/include/*.h
+$(PROG): Makefile $(DIR) src/*.cpp  include/*.h slsDetectorPlotting/include/*.h slsDetectorPlotting/src/*.cxx # forms/include/*.h
 	$(MAKE) -f Makefile.gui SLSDETLIB=$(DESTDIR) DESTDIR=$(DESTDIR) SUBLIBS='$(LDFLAGDET)' INCLUDES='$(INCLUDES)' LIBDIR='$(LIBDIR)'
 
 guiclient:

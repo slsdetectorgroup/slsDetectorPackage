@@ -135,9 +135,7 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success) {
 
 
 slsReceiver::~slsReceiver() {
-	if(udp_interface) 
-		delete udp_interface; 
-	if(tcpipInterface) 
+	if(tcpipInterface)
 		delete tcpipInterface;
 }
 
@@ -149,11 +147,6 @@ int slsReceiver::start() {
 
 void slsReceiver::stop() {
 	tcpipInterface->stop();
-}
-
-
-void slsReceiver::closeFile(int p) {
-	tcpipInterface->closeFile(p);
 }
 
 

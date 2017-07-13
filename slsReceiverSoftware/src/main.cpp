@@ -6,62 +6,85 @@
 
 #include <iostream>
 #include <string.h>
-#include  <signal.h>	//SIGINT
+#include <signal.h>	//SIGINT
 #include <cstdlib>		//system
 
 #include "utilities.h"
 #include "logger.h"
+
+#include <sys/types.h>	//wait
+#include <sys/wait.h>	//wait
 using namespace std;
 
-slsReceiverUsers *receiver; 
 
-void deleteReceiver(slsReceiverUsers* r){
-	if(r){delete r;r=0;}
-}
+bool keeprunning;
 
-void closeFile(int p){
-	deleteReceiver(receiver);
+void sigInterruptHandler(int p){
+	keeprunning = false;
 }
 
 /*
-int startAcquisitionCallBack(char* filePath, char* fileName, int fileIndex, int bufferSize, void* context) {
-  FILE_LOG(logINFO) << "#### startAcquisitionCallBack ####";
-  FILE_LOG(logINFO) << "* filePath: " << filePath;
-  FILE_LOG(logINFO) << "* fileName: " << fileName;
-  FILE_LOG(logINFO) << "* fileIndex: " << fileIndex;
-  FILE_LOG(logINFO) << "* bufferSize: " << bufferSize;
-  return 1;
+int StartAcq(char* filepath, char* filename, uint64_t fileindex, uint32_t datasize, void*p){
+  printf("#### StartAcq:  filepath:%s  filename:%s fileindex:%llu  datasize:%u ####\n",
+	 filepath, filename, fileindex, datasize);
+
+  cprintf(BLUE, "--StartAcq: returning 0\n");
+  return 0;
 }
 
-void acquisitionFinishedCallBack(int totalFramesCaught, void* context) {
-  FILE_LOG(logINFO) << "#### acquisitionFinishedCallBack ####";
-  FILE_LOG(logINFO) << "* totalFramesCaught: " << totalFramesCaught;
+
+void AcquisitionFinished(uint64_t frames, void*p){
+  cprintf(BLUE, "#### AcquisitionFinished: frames:%llu ####\n",frames);
 }
 
-void rawDataReadyCallBack(int currFrameNum, char* dataPointer, int dataSize, FILE* file, char* guiDataPointer, void* context) {
-  FILE_LOG(logINFO) << "#### rawDataReadyCallBack ####";
-  FILE_LOG(logINFO) << "* currFrameNum: " << currFrameNum;
-  FILE_LOG(logINFO) << "* dataSize: " << dataSize;
+
+void GetData(uint64_t frameNumber, uint32_t expLength, uint32_t packetNumber, uint64_t bunchId, uint64_t timestamp,
+		uint16_t modId, uint16_t xCoord, uint16_t yCoord, uint16_t zCoord, uint32_t debug, uint16_t roundRNumber, uint8_t detType, uint8_t version,
+		char* datapointer, uint32_t datasize, void* p){
+
+	PRINT_IN_COLOR (xCoord,
+			"#### %d GetData: ####\n"
+			"frameNumber: %llu\t\texpLength: %u\t\tpacketNumber: %u\t\tbunchId: %llu\t\ttimestamp: %llu\t\tmodId: %u\t\t"
+			"xCoord: %u\t\tyCoord: %u\t\tzCoord: %u\t\tdebug: %u\t\troundRNumber: %u\t\tdetType: %u\t\t"
+			"version: %u\t\tfirstbytedata: 0x%x\t\tdatsize: %u\n\n",
+			xCoord, frameNumber, expLength, packetNumber, bunchId, timestamp, modId,
+			xCoord, yCoord, zCoord, debug, roundRNumber, detType, version,
+			((uint8_t)(*((uint8_t*)(datapointer)))), datasize);
+
 }
 */
 
+
 int main(int argc, char *argv[]) {
 
-	//Catch signal SIGINT to close files properly
-	signal(SIGINT,closeFile);
+	keeprunning = true;
+
+	// Catch signal SIGINT to close files and call destructors properly
+	struct sigaction sa;
+	sa.sa_flags=0;							// no flags
+	sa.sa_handler=sigInterruptHandler;		// handler function
+	sigemptyset(&sa.sa_mask);				// dont block additional signals during invocation of handler
+	if (sigaction(SIGINT, &sa, NULL) == -1) {
+		bprintf(RED, "Could not set handler function for SIGINT\n");
+	}
+
 
 	// if socket crash, ignores SISPIPE, prevents global signal handler
 	// subsequent read/write to socket gives error - must handle locally
-	signal(SIGPIPE, SIG_IGN);
+	struct sigaction asa;
+	asa.sa_flags=0;							// no flags
+	asa.sa_handler=SIG_IGN;					// handler function
+	sigemptyset(&asa.sa_mask);				// dont block additional signals during invocation of handler
+	if (sigaction(SIGPIPE, &asa, NULL) == -1) {
+		bprintf(RED, "Could not set handler function for SIGCHILD\n");
+	}
 
-	//system("setterm -linux term -background white -clear");
 
 	int ret = slsReceiverDefs::OK;
-	receiver = new slsReceiverUsers(argc, argv, ret);
-
+	slsReceiverUsers *receiver = new slsReceiverUsers(argc, argv, ret);
 	if(ret==slsReceiverDefs::FAIL){
-		deleteReceiver(receiver);
-		return -1;
+		delete receiver;
+		exit(EXIT_FAILURE);
 	}
 
 
@@ -107,18 +130,16 @@ int main(int argc, char *argv[]) {
 
 
 	//start tcp server thread
-	if(receiver->start() == slsReceiverDefs::OK){
-		FILE_LOG(logDEBUG1) << "DONE!";
-		string str;
-		cin>>str;
-		//wait and look for an exit keyword
-		while(str.find("exit") == string::npos)
-			cin>>str;
-		//stop tcp server thread, stop udp socket
-		receiver->stop();
+	if (receiver->start() == slsReceiverDefs::FAIL){
+		delete receiver;
+		exit(EXIT_FAILURE);
 	}
 
-	deleteReceiver(receiver);
+	FILE_LOG(logINFO) << "Ready ... ";
+	bprintf(GRAY, "\n[ Press \'Ctrl+c\' to exit ]\n");
+	while(keeprunning);
+
+	delete receiver;
 	FILE_LOG(logINFO) << "Goodbye!";
 	return 0;
 }

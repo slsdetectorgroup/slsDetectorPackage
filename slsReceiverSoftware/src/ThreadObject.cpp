@@ -12,8 +12,8 @@ using namespace std;
 
 
 
-ThreadObject::ThreadObject(int ind):
-		index(ind),
+ThreadObject::ThreadObject():
+		index(0),
 		alive(false),
 		killThread(false),
 		thread(0)

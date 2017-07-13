@@ -6,6 +6,7 @@
 
 #include "UDPBaseImplementation.h"
 #include "genericSocket.h"
+#include "ZmqSocket.h"
 
 #include <sys/stat.h> 		// stat
 #include <iostream>
@@ -77,6 +78,7 @@ void UDPBaseImplementation::initializeMembers(){
 	frameToGuiFrequency = 0;
 	frameToGuiTimerinMS = DEFAULT_STREAMING_TIMER;
 	dataStreamEnable = false;
+	streamingPort = 0;
 }
 
 UDPBaseImplementation::~UDPBaseImplementation(){}
@@ -203,6 +205,7 @@ slsReceiverDefs::runStatus UDPBaseImplementation::getStatus() const{	FILE_LOG(lo
 
 int UDPBaseImplementation::getActivate() const{FILE_LOG(logDEBUG) << __AT__ << " starting"; return activated;}
 
+uint32_t UDPBaseImplementation::getStreamingPort() const{FILE_LOG(logDEBUG) << __AT__ << " starting"; return streamingPort;}
 
 /*************************************************************************
  * Setters ***************************************************************
@@ -523,11 +526,6 @@ void UDPBaseImplementation::abort(){
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
 }
 
-void UDPBaseImplementation::closeFiles(){
-	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
-	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
-}
-
 
 int UDPBaseImplementation::setActivate(int enable){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
@@ -539,6 +537,17 @@ int UDPBaseImplementation::setActivate(int enable){
 
 	return activated;
 }
+
+void UDPBaseImplementation::setStreamingPort(const uint32_t i) {
+
+	if (streamingPort == 0)
+		streamingPort = DEFAULT_ZMQ_PORTNO + (detID * ((myDetectorType == EIGER) ? 2 : 1)  ); // multiplied by 2 as eiger has 2 ports
+	else
+		streamingPort = i;
+
+	FILE_LOG(logINFO) << "Streaming Port: " << streamingPort;
+}
+
 
 /***callback functions***/
 void UDPBaseImplementation::registerCallBackStartAcquisition(int (*func)(char*, char*, uint64_t, uint32_t, void*),void *arg){

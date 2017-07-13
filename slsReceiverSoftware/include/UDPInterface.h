@@ -20,7 +20,6 @@
 
 
 class UDPInterface {
-	
 
 	/*  abstract class that defines the UDP interface of an sls detector data receiver.
 	 *
@@ -302,6 +301,12 @@ class UDPInterface {
 	 */
 	virtual int getActivate() const = 0;
 
+	/**
+	 * Get Streaming Port
+	 * @return streaming port
+	 */
+	virtual uint32_t getStreamingPort() const = 0;
+
 
 	/*************************************************************************
 	 * Setters ***************************************************************
@@ -556,16 +561,17 @@ class UDPInterface {
 	virtual void abort() = 0;  //FIXME: needed, isnt stopReceiver enough?
 
 	/**
-	 * Closes all files
-	 */
-	virtual void closeFiles() = 0;
-
-	/**
 	 * Activate / Deactivate Receiver
 	 * If deactivated, receiver will write dummy packets 0xFF
 	 * (as it will receive nothing from detector)
 	 */
 	virtual int setActivate(int enable = -1) = 0;
+
+	/**
+	 * Set streaming port
+	 * @param i streaming port
+	 */
+	virtual void setStreamingPort(const uint32_t i) = 0;
 
 
 	//***callback functions***

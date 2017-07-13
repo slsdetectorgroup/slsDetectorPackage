@@ -14,14 +14,15 @@ using namespace std;
 
 int Fifo::NumberofFifoClassObjects(0);
 
-Fifo::Fifo(uint32_t fifoItemSize, uint32_t fifoDepth, bool &success):
+Fifo::Fifo(int ind, uint32_t fifoItemSize, uint32_t fifoDepth, bool &success):
+		index(ind),
 		memory(0),
 		fifoBound(0),
 		fifoFree(0),
 		fifoStream(0),
 		status_fifoBound(0){
 	FILE_LOG (logDEBUG) << __AT__ << " called";
-	index = NumberofFifoClassObjects++;
+	NumberofFifoClassObjects++;
 	if(CreateFifos(fifoItemSize, fifoDepth) == FAIL)
 		success = false;
 }

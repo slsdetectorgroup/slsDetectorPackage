@@ -47,11 +47,6 @@ class slsReceiver : private virtual slsReceiverDefs {
 	void stop();
 
 	/**
-	 * Close File and exits receiver server
-	 */
-	void closeFile(int p);
-
-	/**
 	 * get get Receiver Version
 	 \returns id
 	 */

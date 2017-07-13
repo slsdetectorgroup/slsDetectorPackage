@@ -25,6 +25,8 @@ slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 		delete mySock;
 		mySock=NULL;
 	}
+	if(receiverBase)
+		delete receiverBase;
 }
 
 slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface* rbase, int pn):
@@ -137,7 +139,7 @@ int slsReceiverTCPIPInterface::start(){
 
 
 void slsReceiverTCPIPInterface::stop(){
-	FILE_LOG(logINFO) << "Shutting down UDP Socket";
+	FILE_LOG(logINFO) << "Shutting down TCP Socket";
 	killTCPServerThread = 1;
 	if(mySock)	mySock->ShutDownSocket();
 	FILE_LOG(logDEBUG) << "Socket closed";
@@ -145,11 +147,6 @@ void slsReceiverTCPIPInterface::stop(){
 	killTCPServerThread = 0;
 }
 
-
-
-void slsReceiverTCPIPInterface::closeFile(int p){
-	receiverBase->closeFiles();
-}
 
 
 int64_t slsReceiverTCPIPInterface::getReceiverVersion(){
@@ -220,9 +217,6 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 			FILE_LOG(logINFO) << "Shutting down UDP Socket";
 			if(receiverBase){
 				receiverBase->shutDownUDPSockets();
-
-				FILE_LOG(logINFO) << "Closing Files... ";
-				receiverBase->closeFiles();
 			}
 
 			mySock->exitServer();
@@ -230,8 +224,14 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 		}
 
 		//if user entered exit
-		if(killTCPServerThread)
+		if(killTCPServerThread) {
+			if (v != GOODBYE) {
+				if(receiverBase){
+					receiverBase->shutDownUDPSockets();
+				}
+			}
 			pthread_exit(NULL);
+		}
 
 	}
 }
@@ -277,6 +277,7 @@ const char* slsReceiverTCPIPInterface::getFunctionName(enum recFuncs func) {
 	case F_SET_RECEIVER_FILE_FORMAT:	return "F_SET_RECEIVER_FILE_FORMAT";
 	case F_SEND_RECEIVER_DETPOSID:		return "F_SEND_RECEIVER_DETPOSID";
 	case F_SEND_RECEIVER_MULTIDETSIZE:  return "F_SEND_RECEIVER_MULTIDETSIZE";
+	case F_SET_RECEIVER_STREAMING_PORT: return "F_SET_RECEIVER_STREAMING_PORT";
 	default:							return "Unknown Function";
 	}
 }
@@ -322,7 +323,7 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_SET_RECEIVER_FILE_FORMAT]		= 	&slsReceiverTCPIPInterface::set_file_format;
 	flist[F_SEND_RECEIVER_DETPOSID]			= 	&slsReceiverTCPIPInterface::set_detector_posid;
 	flist[F_SEND_RECEIVER_MULTIDETSIZE]		= 	&slsReceiverTCPIPInterface::set_multi_detector_size;
-
+	flist[F_SET_RECEIVER_STREAMING_PORT]	= 	&slsReceiverTCPIPInterface::set_streaming_port;
 #ifdef VERYVERBOSE
 	for (int i = 0; i < NUM_REC_FUNCTIONS ; i++) {
 		FILE_LOG(logINFO) << "function fnum: " << i << " (" << getFunctionName((enum recFuncs)i) << ") located at " << (unsigned int)flist[i];
@@ -667,6 +668,12 @@ int slsReceiverTCPIPInterface::send_update() {
 	// file overwrite enable
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getOverwriteEnable();
+#endif
+	mySock->SendDataOnly(&ind,sizeof(ind));
+
+	// streaming port
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind=(int)receiverBase->getStreamingPort();
 #endif
 	mySock->SendDataOnly(&ind,sizeof(ind));
 
@@ -2305,3 +2312,55 @@ int slsReceiverTCPIPInterface::set_multi_detector_size() {
 }
 
 
+
+
+int slsReceiverTCPIPInterface::set_streaming_port() {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int port = -1;
+	int retval = -1;
+
+	// receive arguments
+	if (mySock->ReceiveDataOnly(&port,sizeof(port)) < 0 )
+		return printSocketReadError();
+
+	// execute action
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	if (receiverBase == NULL)
+		invalidReceiverObject();
+	else {
+		// set
+		if(port >= 0) {
+			if (mySock->differentClients && lockStatus)
+				receiverlocked();
+			else if (receiverBase->getStatus() != IDLE)
+				receiverNotIdle();
+			else {
+				receiverBase->setStreamingPort(port);
+			}
+		}
+		//get
+		retval=receiverBase->getStreamingPort();
+		if(port > 0 && retval != port) { //if port = 0, its actual value calculated
+			ret = FAIL;
+			strcpy(mess, "Could not set streaming port\n");
+			FILE_LOG(logERROR) << "Warning: " << mess;
+		}
+	}
+#endif
+#ifdef VERYVERBOSE
+	FILE_LOG(logDEBUG1) << "streaming port:" << retval;
+#endif
+
+	if (ret == OK && mySock->differentClients)
+		ret = FORCE_UPDATE;
+
+	// send answer
+	mySock->SendDataOnly(&ret,sizeof(ret));
+	if (ret == FAIL)
+		mySock->SendDataOnly(mess,sizeof(mess));
+	mySock->SendDataOnly(&retval,sizeof(retval));
+
+	// return ok/fail
+	return ret;
+}

@@ -24,8 +24,8 @@ uint64_t DataStreamer::RunningMask(0x0);
 pthread_mutex_t DataStreamer::Mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* timer, int* sEnable) :
-		ThreadObject(NumberofDataStreamers),
+DataStreamer::DataStreamer(int ind, Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* timer, int* sEnable) :
+		ThreadObject(),
 		generalData(0),
 		fifo(f),
 		zmqSocket(0),
@@ -40,6 +40,10 @@ DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* tim
 		firstMeasurementIndex(0),
 		completeBuffer(0)
 {
+	index = NumberofDataStreamers;
+	cprintf(RED, "%d: Number of DataStreamers: %d\n", index, NumberofDataStreamers);
+	//index = ind;
+
 	if(ThreadObject::CreateThread()){
 		pthread_mutex_lock(&Mutex);
 		ErrorMask ^= (1<<index);
@@ -158,11 +162,8 @@ int DataStreamer::SetThreadPriority(int priority) {
 }
 
 
-int DataStreamer::CreateZmqSockets(int* dindex, int* nunits) {
-	uint32_t portnum = DEFAULT_ZMQ_PORTNO + ((*dindex) * (*nunits) + index);
-	//using userReceiver where all receivers in one program (numberofstreamers>*nunits)
-	if(index >= *nunits)
-		portnum = DEFAULT_ZMQ_PORTNO + index;
+int DataStreamer::CreateZmqSockets(int* nunits, uint32_t port) {
+	uint32_t portnum = port + index;
 
 	zmqSocket = new ZmqSocket(portnum);
 	if (zmqSocket->IsError()) {

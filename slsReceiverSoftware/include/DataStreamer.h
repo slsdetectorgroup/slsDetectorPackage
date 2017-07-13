@@ -20,13 +20,14 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	/**
 	 * Constructor
 	 * Calls Base Class CreateThread(), sets ErrorMask if error and increments NumberofDataStreamers
+	 * @param ind self index
 	 * @param f address of Fifo pointer
 	 * @param dr pointer to dynamic range
 	 * @param freq pointer to streaming frequency
 	 * @param timer pointer to timer if streaming frequency is random
 	 * @param sEnable pointer to short frame enable
 	 */
-	DataStreamer(Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* timer, int* sEnable);
+	DataStreamer(int ind, Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* timer, int* sEnable);
 
 	/**
 	 * Destructor
@@ -100,11 +101,11 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 
 	/**
 	 * Creates Zmq Sockets
-	 * @param dindex pointer to detector index
 	 * @param nunits pointer to number of theads/ units per detector
+	 * @param port streaming port start index
 	 * @return OK or FAIL
 	 */
-	int CreateZmqSockets(int* dindex, int* nunits);
+	int CreateZmqSockets(int* nunits, uint32_t port);
 
 	/**
 	 * Shuts down and deletes Zmq Sockets

@@ -10,6 +10,7 @@
 #include "DataProcessor.h"
 #include "DataStreamer.h"
 #include "Fifo.h"
+#include "ZmqSocket.h" 		//just for the zmq port define
 
 #include <cstdlib>			//system
 #include <cstring>			//strcpy
@@ -182,7 +183,8 @@ int UDPStandardImplementation::setFrameToGuiFrequency(const uint32_t freq) {
 }
 
 
-int UDPStandardImplementation::setDataStreamEnable(const bool enable) {
+int UDPStandardImplementation::setDataStreamEnable(const bool enable) {\
+
 	if (dataStreamEnable != enable) {
 		dataStreamEnable = enable;
 
@@ -194,9 +196,12 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {
 		if (enable) {
 			bool error = false;
 			for ( int i = 0; i < numThreads; ++i ) {
-				dataStreamer.push_back(new DataStreamer(fifo[i], &dynamicRange, &frameToGuiFrequency, &frameToGuiTimerinMS, &shortFrameEnable));
+				dataStreamer.push_back(new DataStreamer(i, fifo[i], &dynamicRange, &frameToGuiFrequency, &frameToGuiTimerinMS, &shortFrameEnable));
 				dataStreamer[i]->SetGeneralData(generalData);
-				if (dataStreamer[i]->CreateZmqSockets(&detID, &numThreads) == FAIL) {
+				// check again
+				if (streamingPort == 0)
+					streamingPort = DEFAULT_ZMQ_PORTNO + (detID * ((myDetectorType == EIGER) ? 2 : 1)  ); // multiplied by 2 as eiger has 2 ports
+				if (dataStreamer[i]->CreateZmqSockets(&numThreads, streamingPort) == FAIL) {
 					error = true;
 					break;
 				}
@@ -370,8 +375,8 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 
 	//create threads
 	for ( int i=0; i < numThreads; ++i ) {
-		listener.push_back(new Listener(myDetectorType, fifo[i], &status, &udpPortNum[i], eth, &activated, &numberOfFrames, &dynamicRange));
-		dataProcessor.push_back(new DataProcessor(fifo[i], &fileFormatType, &fileWriteEnable, &dataStreamEnable,
+		listener.push_back(new Listener(i, myDetectorType, fifo[i], &status, &udpPortNum[i], eth, &activated, &numberOfFrames, &dynamicRange));
+		dataProcessor.push_back(new DataProcessor(i, fifo[i], &fileFormatType, &fileWriteEnable, &dataStreamEnable,
 				rawDataReadyCallBack,pRawDataReady));
 		if (Listener::GetErrorMask() || DataProcessor::GetErrorMask()) {
 			FILE_LOG (logERROR) << "Error: Could not creates listener/dataprocessor threads (index:" << i << ")";
@@ -727,7 +732,7 @@ int UDPStandardImplementation::SetupFifoStructure() {
 	for ( int i = 0; i < numThreads; i++ ) {
 		//create fifo structure
 		bool success = true;
-		fifo.push_back( new Fifo (
+		fifo.push_back( new Fifo (i,
 				(generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize),
 				fifoDepth, success));
 		if (!success) {

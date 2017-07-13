@@ -29,9 +29,6 @@ public:
 	/** Destructor */
 	~slsReceiverUsers();
 
-	/** Close File and exits receiver server */
-	void closeFile(int p);
-
 	/**
 	 * starts listening on the TCP port for client comminication
 	 \return 0 for success or 1 for FAIL in creating TCP server

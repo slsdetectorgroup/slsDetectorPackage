@@ -241,6 +241,12 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	int getActivate() const;
 
+	/**
+	 * Get Streaming Port
+	 * @return streaming port
+	 */
+	uint32_t getStreamingPort() const;
+
 
 
 	/*************************************************************************
@@ -498,16 +504,17 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	void abort();  //FIXME: needed, isn't stopReceiver enough?
 
 	/**
-	 * Closes all files
-	 */
-	void closeFiles();
-
-	/**
 	 * Activate / Deactivate Receiver
 	 * If deactivated, receiver will write dummy packets 0xFF
 	 * (as it will receive nothing from detector)
 	 */
 	int setActivate(int enable = -1);
+
+	/**
+	 * Set streaming port
+	 * @param i streaming port
+	 */
+	void setStreamingPort(const uint32_t i);
 
 	//***callback functions***
 	/**
@@ -629,6 +636,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	/** Data Stream Enable from Receiver */
 	bool dataStreamEnable;
 	static const int DEFAULT_STREAMING_TIMER = 500;
+	/** streaming port */
+	uint32_t streamingPort;
 
 
 	//***callback parameters***

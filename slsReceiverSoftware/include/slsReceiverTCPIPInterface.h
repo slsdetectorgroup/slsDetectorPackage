@@ -51,10 +51,6 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	void stop();
 
 
-
-	/** Close all threaded Files and exit */
-	void closeFile(int p);
-
 	/** gets version */
 	int64_t getReceiverVersion();
 
@@ -264,6 +260,9 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 
 	/** set multi detector size */
 	int set_multi_detector_size();
+
+	/** set streaming port */
+	int set_streaming_port();
 
 
 

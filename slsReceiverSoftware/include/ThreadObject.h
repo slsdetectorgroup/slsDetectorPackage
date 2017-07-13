@@ -19,9 +19,8 @@ class ThreadObject : private virtual slsReceiverDefs {
  public:
 	/**
 	 * Constructor
-	 * @param ind self index
 	 */
-	ThreadObject(int ind);
+	ThreadObject();
 
 	/**
 	 * Destructor

@@ -177,7 +177,6 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 
 	/**
 	 * Closes file / all files(data compression involves multiple files)
-	 * TCPIPInterface can also call this in case of illegal shutdown of receiver
 	 */
 	void closeFiles();
 
@@ -247,11 +246,6 @@ private:
 
 	/** Number of Jobs */
 	int numberofJobs;
-
-	//*** mutex ***
-	/** Status mutex */
-	pthread_mutex_t statusMutex;
-
 
 	//** class objects ***
 	/** General Data Properties */

@@ -27,8 +27,8 @@ uint64_t Listener::RunningMask(0x0);
 pthread_mutex_t Listener::Mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s, uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr) :
-		ThreadObject(),
+Listener::Listener(detectorType dtype, Fifo*& f, runStatus* s, uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr) :
+		ThreadObject(NumberofListeners),
 		generalData(0),
 		fifo(f),
 		myDetectorType(dtype),
@@ -50,8 +50,6 @@ Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s, uint32_t
 		carryOverPacket(0),
 		listeningPacket(0)
 {
-	index = ind;
-
 	if(ThreadObject::CreateThread()){
 		pthread_mutex_lock(&Mutex);
 		ErrorMask ^= (1<<index);

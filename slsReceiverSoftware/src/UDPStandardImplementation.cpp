@@ -55,9 +55,6 @@ void UDPStandardImplementation::InitializeMembers() {
 	numThreads = 1;
 	numberofJobs = 1;
 
-	//*** mutex ***
-	pthread_mutex_init(&statusMutex,NULL);
-
 	//** class objects ***
 	generalData = 0;
 }
@@ -196,7 +193,7 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {\
 		if (enable) {
 			bool error = false;
 			for ( int i = 0; i < numThreads; ++i ) {
-				dataStreamer.push_back(new DataStreamer(i, fifo[i], &dynamicRange, &frameToGuiFrequency, &frameToGuiTimerinMS, &shortFrameEnable));
+				dataStreamer.push_back(new DataStreamer(fifo[i], &dynamicRange, &frameToGuiFrequency, &frameToGuiTimerinMS, &shortFrameEnable));
 				dataStreamer[i]->SetGeneralData(generalData);
 				// check again
 				if (streamingPort == 0)
@@ -375,8 +372,8 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 
 	//create threads
 	for ( int i=0; i < numThreads; ++i ) {
-		listener.push_back(new Listener(i, myDetectorType, fifo[i], &status, &udpPortNum[i], eth, &activated, &numberOfFrames, &dynamicRange));
-		dataProcessor.push_back(new DataProcessor(i, fifo[i], &fileFormatType, &fileWriteEnable, &dataStreamEnable,
+		listener.push_back(new Listener(myDetectorType, fifo[i], &status, &udpPortNum[i], eth, &activated, &numberOfFrames, &dynamicRange));
+		dataProcessor.push_back(new DataProcessor(fifo[i], &fileFormatType, &fileWriteEnable, &dataStreamEnable,
 				rawDataReadyCallBack,pRawDataReady));
 		if (Listener::GetErrorMask() || DataProcessor::GetErrorMask()) {
 			FILE_LOG (logERROR) << "Error: Could not creates listener/dataprocessor threads (index:" << i << ")";
@@ -467,9 +464,7 @@ int UDPStandardImplementation::startReceiver(char *c) {
 	FILE_LOG(logINFO) << "Ready ...";
 
 	//status
-	pthread_mutex_lock(&statusMutex);
 	status = RUNNING;
-	pthread_mutex_unlock(&(statusMutex));
 
 	//Let Threads continue to be ready for acquisition
 	StartRunning();
@@ -509,9 +504,7 @@ void UDPStandardImplementation::stopReceiver(){
 		usleep(5000);
 	}
 
-	pthread_mutex_lock(&statusMutex);
 	status = RUN_FINISHED;
-	pthread_mutex_unlock(&(statusMutex));
 	FILE_LOG(logINFO)  << "Status: " << runStatusType(status);
 
 
@@ -541,9 +534,7 @@ void UDPStandardImplementation::stopReceiver(){
 	}
 
 	//change status
-	pthread_mutex_lock(&statusMutex);
 	status = IDLE;
-	pthread_mutex_unlock(&(statusMutex));
 
 	FILE_LOG(logINFO)  << "Receiver Stopped";
 	FILE_LOG(logINFO)  << "Status: " << runStatusType(status);
@@ -588,10 +579,7 @@ void UDPStandardImplementation::startReadout(){
 		}
 
 		//set status
-		pthread_mutex_lock(&statusMutex);
 		status = TRANSMITTING;
-		pthread_mutex_unlock(&statusMutex);
-
 		FILE_LOG(logINFO) << "Status: Transmitting";
 	}
 	//shut down udp sockets so as to make listeners push dummy (end) packets for processors
@@ -732,7 +720,7 @@ int UDPStandardImplementation::SetupFifoStructure() {
 	for ( int i = 0; i < numThreads; i++ ) {
 		//create fifo structure
 		bool success = true;
-		fifo.push_back( new Fifo (i,
+		fifo.push_back( new Fifo (
 				(generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize),
 				fifoDepth, success));
 		if (!success) {

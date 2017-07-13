@@ -24,8 +24,8 @@ uint64_t DataStreamer::RunningMask(0x0);
 pthread_mutex_t DataStreamer::Mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-DataStreamer::DataStreamer(int ind, Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* timer, int* sEnable) :
-		ThreadObject(),
+DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* timer, int* sEnable) :
+		ThreadObject(NumberofDataStreamers),
 		generalData(0),
 		fifo(f),
 		zmqSocket(0),
@@ -40,10 +40,6 @@ DataStreamer::DataStreamer(int ind, Fifo*& f, uint32_t* dr, uint32_t* freq, uint
 		firstMeasurementIndex(0),
 		completeBuffer(0)
 {
-	index = NumberofDataStreamers;
-	cprintf(RED, "%d: Number of DataStreamers: %d\n", index, NumberofDataStreamers);
-	//index = ind;
-
 	if(ThreadObject::CreateThread()){
 		pthread_mutex_lock(&Mutex);
 		ErrorMask ^= (1<<index);

@@ -20,14 +20,13 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	/**
 	 * Constructor
 	 * Calls Base Class CreateThread(), sets ErrorMask if error and increments NumberofDataStreamers
-	 * @param ind self index
 	 * @param f address of Fifo pointer
 	 * @param dr pointer to dynamic range
 	 * @param freq pointer to streaming frequency
 	 * @param timer pointer to timer if streaming frequency is random
 	 * @param sEnable pointer to short frame enable
 	 */
-	DataStreamer(int ind, Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* timer, int* sEnable);
+	DataStreamer(Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* timer, int* sEnable);
 
 	/**
 	 * Destructor

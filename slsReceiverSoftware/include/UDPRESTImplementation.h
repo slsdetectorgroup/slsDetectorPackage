@@ -115,27 +115,9 @@ public:
 	 * Overridden method
 	 * Shuts down and deletes UDP Sockets
 	 * TCPIPInterface can also call this in case of illegal shutdown of receiver
-	 * @return OK or FAIL
 	 */
-	int shutDownUDPSockets();
+	void shutDownUDPSockets();
 
-	/**
-	 * Overridden method
-	 * Get the buffer-current frame read by receiver
-	 * @param c pointer to current file name
-	 * @param raw address of pointer, pointing to current frame to send to gui
-	 * @param startAcq start index of the acquisition
-	 * @param startFrame start index of the scan
-	 */
-	void readFrame(char* c,char** raw, uint64_t &startAcq, uint64_t &startFrame);
-
-	/**
-	 * Overridden method
-	 * Closes file / all files(data compression involves multiple files)
-	 * TCPIPInterface can also call this in case of illegal shutdown of receiver
-	 * @param i thread index valid for datacompression using root files, -1 for all threads
-	 */
-	void closeFile(int i = -1);
 
 	uint64_t getTotalFramesCaught() const;
 

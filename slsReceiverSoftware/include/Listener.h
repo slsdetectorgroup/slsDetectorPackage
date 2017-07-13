@@ -21,7 +21,6 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	/**
 	 * Constructor
 	 * Calls Base Class CreateThread(), sets ErrorMask if error and increments NumberofListerners
-	 * @param ind self index
 	 * @param dtype detector type
 	 * @param f address of Fifo pointer
 	 * @param s pointer to receiver status
@@ -31,7 +30,7 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param nf pointer to number of images to catch
 	 * @param dr pointer to dynamic range
 	 */
-	Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s, uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr);
+	Listener(detectorType dtype, Fifo*& f, runStatus* s, uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr);
 
 	/**
 	 * Destructor

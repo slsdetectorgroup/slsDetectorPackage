@@ -27,6 +27,29 @@ class UDPInterface {
 	 *
 	 *  UDPInterface *udp_interface = UDPInterface::create()
 	 *
+	 *  Sequence of Calls from client (upon setting receiver)
+	 *  -setDetectorType
+	 *  -setMultiDetectorSize
+	 *  -setDetectorPositionId
+	 *  -initialize
+	 *  -setUDPPortNumber,setUDPPortNumber2,setEthernetInterface
+	 *	-setFilePath
+	 *	-setFileName
+	 *	-setFileIndex
+	 *	-setFileFormat
+	 *	-setFileWriteEnable
+	 *	-setOverwriteEnable
+	 *	-setFrameIndexEnable
+	 *	-setAcquisitionPeriod
+	 *	-setNumberOfFrames
+	 *	-setAcquisitionTime
+	 *	-setDynamicRange
+	 *	-setFlippedData
+	 *	-setActivate
+	 *	-setTenGigaEnable
+	 *	-setStreamingPort
+	 *	-setDataStreamEnable
+	 *
 	 *
 	 *  supported sequence of method-calls:
 	 *

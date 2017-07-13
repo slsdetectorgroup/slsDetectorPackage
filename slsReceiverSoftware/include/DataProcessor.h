@@ -24,7 +24,6 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	/**
 	 * Constructor
 	 * Calls Base Class CreateThread(), sets ErrorMask if error and increments NumberofDataProcessors
-	 * @param ind self index
 	 * @param f address of Fifo pointer
 	 * @param ftype pointer to file format type
 	 * @param fwenable pointer to file writer enable
@@ -32,7 +31,7 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param dataReadycb pointer to data ready call back function
 	 * @param pDataReadycb pointer to arguments of data ready call back function
 	 */
-	DataProcessor(int ind, Fifo*& f, fileFormat* ftype, bool* fwenable, bool* dsEnable,
+	DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* dsEnable,
 						void (*dataReadycb)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
 								char*, uint32_t, void*),
 						void *pDataReadycb);

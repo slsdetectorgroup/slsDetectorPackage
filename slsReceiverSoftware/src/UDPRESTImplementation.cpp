@@ -90,7 +90,11 @@ void UDPRESTImplementation::initialize_REST(){
 	string rest_state = "";
 	std::string answer = "";
 
-	// HORRIBLE FIX to get the main receiver
+	/*
+	 * HORRIBLE FIX to get the main receiver
+	 * TODO: use detID (from baseclass)
+	 *  it i set by the client before calling initialize()
+	 */
 	string filename = getFileName();
 	if (filename.substr(filename.length() - 2) == "d0"){
 	  is_main_receiver = true;
@@ -236,14 +240,18 @@ void UDPRESTImplementation::stopReceiver(){
 	if(status == RUNNING)
 		startReadout();
 
-	while(status == TRANSMITTING)
-		usleep(5000);
+	/**
+	 * while(status == TRANSMITTING)
+	 * usleep(5000);
+	 * This has been changed, you check if all the threads are done processing
+	 *  and set the final status
+	 */
+
 
 	//change status
 	status = IDLE;
 
 	FILE_LOG(logDEBUG) << __AT__ << "exited, status " << endl;
-
 }
 
 
@@ -324,31 +332,6 @@ int UDPRESTImplementation::shutDownUDPSockets(){
 	return OK;
 }
 
-
-
-/* FIXME
- * do you really need this, this is called if registerDataCallback() is activated
- * in your gui to get data from receiver. you probably have a different way
- * of reconstructing complete data set from all receivers
- */
-void UDPRESTImplementation::readFrame(char* c,char** raw, uint64_t &startAcq, uint64_t &startFrame){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-	strcpy(c,"");
-	*raw = NULL;
-}
-
-
-
-
-
-/* FIXME
- * Its called by TCP in case of illegal shut down such as Ctrl + c.
- * Upto you what you want to do with it.
- */
-void UDPRESTImplementation::closeFile(int ithr){
-	FILE_LOG(logDEBUG) << __AT__ << "called for thread " << ithr;
-	FILE_LOG(logDEBUG) << __AT__ << "exited for thread " << ithr;
-}
 
 
 uint64_t UDPRESTImplementation::getTotalFramesCaught() const{   

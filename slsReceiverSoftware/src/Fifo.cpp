@@ -14,8 +14,8 @@ using namespace std;
 
 int Fifo::NumberofFifoClassObjects(0);
 
-Fifo::Fifo(int ind, uint32_t fifoItemSize, uint32_t fifoDepth, bool &success):
-		index(ind),
+Fifo::Fifo(uint32_t fifoItemSize, uint32_t fifoDepth, bool &success):
+		index(NumberofFifoClassObjects),
 		memory(0),
 		fifoBound(0),
 		fifoFree(0),

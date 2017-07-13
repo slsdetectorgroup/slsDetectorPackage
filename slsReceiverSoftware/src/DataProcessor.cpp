@@ -31,12 +31,12 @@ uint64_t DataProcessor::RunningMask(0x0);
 pthread_mutex_t DataProcessor::Mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-DataProcessor::DataProcessor(int ind, Fifo*& f, fileFormat* ftype, bool* fwenable, bool* dsEnable,
+DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* dsEnable,
 		void (*dataReadycb)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
 				char*, uint32_t, void*),
 		void *pDataReadycb) :
 
-		ThreadObject(),
+		ThreadObject(NumberofDataProcessors),
 		generalData(0),
 		fifo(f),
 		file(0),
@@ -53,8 +53,6 @@ DataProcessor::DataProcessor(int ind, Fifo*& f, fileFormat* ftype, bool* fwenabl
 		rawDataReadyCallBack(dataReadycb),
 		pRawDataReady(pDataReadycb)
 {
-	index = ind;
-
 	if(ThreadObject::CreateThread()){
 		pthread_mutex_lock(&Mutex);
 		ErrorMask ^= (1<<index);

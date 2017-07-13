@@ -3432,6 +3432,13 @@ string multiSlsDetector::getNetworkParameter(networkParameter p) {
 */
 string multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 
+	// disable data streaming before changing zmq port (but only if they were on)
+	/*int prev_streaming = 0;*/
+	if (p == RECEIVER_STREAMING_PORT) {
+		/*prev_streaming = getStreamingSocketsCreatedInClient();*/
+		enableDataStreamingFromReceiver(0);
+	}
+
 	if (s.find('+')==string::npos) {
 
 		if(!threadpool){
@@ -3441,6 +3448,8 @@ string multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 			string* sret[thisMultiDetector->numberOfDetectors];
 			for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
 				if(detectors[idet]){
+					if (p == RECEIVER_STREAMING_PORT)
+						s.append("multi\0");
 					sret[idet]=new string("error");
 					Task* task = new Task(new func2_t <string,slsDetector,networkParameter,string,string>(&slsDetector::setNetworkParameter,
 							detectors[idet],p,s,sret[idet]));
@@ -3481,7 +3490,11 @@ string multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 		}
 
 	}
-
+/*
+	//enable data streaming if it was on
+	if (p == RECEIVER_STREAMING_PORT && prev_streaming)
+		enableDataStreamingFromReceiver(1);
+*/
 	return getNetworkParameter(p);
 
 } 
@@ -5245,8 +5258,15 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 	cprintf(MAGENTA,"Going to create data sockets\n");
 
 	for(int i=0;i<numSockets; ++i){
-		uint32_t portnum = DEFAULT_ZMQ_PORTNO +
-				(i/numSocketsPerDetector)*numSocketsPerDetector + (i%numSocketsPerDetector);
+		uint32_t portnum;
+		sscanf(detectors[i/numSocketsPerDetector]->getReceiverStreamingPort().c_str(),"%d",&portnum);
+		if (portnum == 0) {
+			portnum = DEFAULT_ZMQ_PORTNO +
+							(i/numSocketsPerDetector)*numSocketsPerDetector + (i%numSocketsPerDetector); // *num and /num is not same cuz its integers
+		}else{
+			portnum += (i%numSocketsPerDetector);
+		}
+
 		zmqSocket[i] = new ZmqSocket(detectors[i/numSocketsPerDetector]->getReceiver().c_str(), portnum);
 		if (zmqSocket[i]->IsError()) {
 			cprintf(RED, "Error: Could not create Zmq socket on port %d\n", portnum);
@@ -5708,7 +5728,7 @@ int multiSlsDetector::getStreamingSocketsCreatedInClient() {
 int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
 
 	if(enable >= 0){
-		if(dataSocketsStarted != enable){
+		/*if(dataSocketsStarted != enable){*/
 			//destroy data threads
 			if(dataSocketsStarted)
 				createReceivingDataSockets(true);
@@ -5723,7 +5743,7 @@ int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
 					return -1;
 				}
 			}
-		}
+		/*}*/
 
 	}
 

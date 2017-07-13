@@ -777,6 +777,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->acquiringFlag = false;
     thisDetector->flippedData[0] = 0;
     thisDetector->flippedData[1] = 0;
+    thisDetector->zmqport = 0;
 
     for (int ia=0; ia<MAX_ACTIONS; ia++) {
       strcpy(thisDetector->actionScript[ia],"none");
@@ -5837,7 +5838,6 @@ int slsDetector::exitServer(){
 
 string slsDetector::setNetworkParameter(networkParameter index, string value) {
 	int i;
-
 	switch (index) {
 	case DETECTOR_MAC:
 		return setDetectorMAC(value);
@@ -5855,19 +5855,22 @@ string slsDetector::setNetworkParameter(networkParameter index, string value) {
 		return getReceiverUDPPort();
 	case RECEIVER_UDP_PORT2:
 		sscanf(value.c_str(),"%d",&i);
-		if(thisDetector->myDetectorType == EIGER)
+		if(thisDetector->myDetectorType == EIGER) {
 			setReceiverUDPPort2(i);
-		else
-			setReceiverUDPPort(i);
-		if(thisDetector->myDetectorType == EIGER)
 			return getReceiverUDPPort2();
-		return getReceiverUDPPort();
+		} else {
+			setReceiverUDPPort(i);
+			return getReceiverUDPPort();
+		}
 	case DETECTOR_TXN_DELAY_LEFT:
 	case DETECTOR_TXN_DELAY_RIGHT:
 	case DETECTOR_TXN_DELAY_FRAME:
 	case FLOW_CONTROL_10G:
 		sscanf(value.c_str(),"%d",&i);
 		return setDetectorNetworkParameter(index, i);
+	case RECEIVER_STREAMING_PORT:
+		setReceiverStreamingPort(value);
+		return getReceiverStreamingPort();
   default:
     return (char*)("unknown network parameter");
   }
@@ -5877,34 +5880,29 @@ string slsDetector::setNetworkParameter(networkParameter index, string value) {
 
 
 string slsDetector::getNetworkParameter(networkParameter index) {
-
+	ostringstream ss;string s;
   switch (index) {
   case DETECTOR_MAC:
     return getDetectorMAC();
-    break;
   case DETECTOR_IP:
     return getDetectorIP();
-    break;
   case RECEIVER_HOSTNAME:
     return getReceiver();
-    break;
   case RECEIVER_UDP_IP:
     return getReceiverUDPIP();
-    break;
   case RECEIVER_UDP_MAC:
     return getReceiverUDPMAC();
-    break;
   case RECEIVER_UDP_PORT:
     return getReceiverUDPPort();
-    break;
   case RECEIVER_UDP_PORT2:
     return getReceiverUDPPort2();
-    break;
   case DETECTOR_TXN_DELAY_LEFT:
   case DETECTOR_TXN_DELAY_RIGHT:
   case DETECTOR_TXN_DELAY_FRAME:
   case FLOW_CONTROL_10G:
 	  return setDetectorNetworkParameter(index, -1);
+  case RECEIVER_STREAMING_PORT:
+	  return getReceiverStreamingPort();
   default:
     return (char*)("unknown network parameter");
   }
@@ -5984,6 +5982,7 @@ string slsDetector::setReceiver(string receiverIP){
 		std::cout << "file path:" << fileIO::getFilePath() << endl;
 		std::cout << "file name:" << fileIO::getFileName() << endl;
 		std::cout << "file index:" << fileIO::getFileIndex() << endl;
+		std::cout << "file format:" << fileIO::getFileFormat() << endl;
 		pthread_mutex_lock(&ms);
 		std::cout << "write enable:" << parentDet->enableWriteToFileMask() << endl;
 		std::cout << "overwrite enable:" << parentDet->enableOverwriteMask() << endl;
@@ -5992,7 +5991,10 @@ string slsDetector::setReceiver(string receiverIP){
 		std::cout << "frame period:" << thisDetector->timerValue[FRAME_PERIOD] << endl;
 		std::cout << "frame number:" << thisDetector->timerValue[FRAME_NUMBER] << endl;
 		std::cout << "dynamic range:" << thisDetector->dynamicRange << endl << endl;
+		std::cout << "flippeddatax:" << thisDetector->flippedData[d] << endl;
 		std::cout << "10GbE:" << thisDetector->tenGigaEnable << endl << endl;
+		std::cout << "streaming port:" << thisDetector->zmqport << endl;
+
 		//std::cout << "dataStreaming:" << enableDataStreamingFromReceiver(-1) << endl << endl;
 /** enable compresison, */
 #endif
@@ -6034,6 +6036,7 @@ string slsDetector::setReceiver(string receiverIP){
 				enableTenGigabitEthernet(thisDetector->tenGigaEnable);
 
 			// data streaming
+			setReceiverStreamingPort(getReceiverStreamingPort());
 			int clientSockets = parentDet->getStreamingSocketsCreatedInClient();
 			int recSockets = enableDataStreamingFromReceiver(-1);
 			if(clientSockets != recSockets) {
@@ -6143,6 +6146,42 @@ int slsDetector::setReceiverUDPPort2(int udpport){
 	return thisDetector->receiverUDPPort2;
 }
 
+
+int slsDetector::setReceiverStreamingPort(string port) {
+	int defaultport = 0;
+	int numsockets = (thisDetector->myDetectorType == EIGER) ? 2:1;
+	int arg = 0;
+
+	//multi command, calculate individual ports
+	size_t found = port.find("multi");
+	if(found != string::npos) {
+		port.erase(found,5);
+		sscanf(port.c_str(),"%d",&defaultport);
+		arg = defaultport + (posId * numsockets);
+	}
+	else
+		sscanf(port.c_str(),"%d",&arg);
+
+	// send to receiver
+	int fnum=F_SET_RECEIVER_STREAMING_PORT;
+	int ret = FAIL;
+	int retval=-1;
+	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+#ifdef VERBOSE
+		std::cout << "Sending receiver streaming port to receiver " << arg << std::endl;
+#endif
+		if (connectData() == OK){
+			ret=thisReceiver->sendInt(fnum,retval,arg);
+			disconnectData();
+		}
+		if(ret!=FAIL)
+			thisDetector->zmqport = retval;
+		if(ret==FORCE_UPDATE)
+			updateReceiver();
+	}
+
+	return thisDetector->zmqport;
+}
 
 string slsDetector::setDetectorNetworkParameter(networkParameter index, int delay){
 	int fnum = F_SET_NETWORK_PARAMETER;
@@ -8156,6 +8195,9 @@ int slsDetector::updateReceiverNoWait() {
   parentDet->enableOverwriteMask(ind);
   pthread_mutex_unlock(&ms);
 
+  // streaming port
+  n += 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
+  thisDetector->zmqport = ind;
 
   if (!n) printf("n: %d\n", n);
 

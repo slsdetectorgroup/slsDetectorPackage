@@ -269,7 +269,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     bool acquiringFlag;
     /** flipped data across x or y axis */
     int flippedData[2];
-
+    /** tcp port between receiver and gui (only data) */
+    int zmqport;
 
   } sharedSlsDetector;
 
@@ -1720,6 +1721,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   string getReceiverUDPPort() {ostringstream ss; ss << thisDetector->receiverUDPPort; string s = ss.str(); return s;};
   /** returns the receiver UDP2 for Eiger IP address \sa sharedSlsDetector  */
   string getReceiverUDPPort2() {ostringstream ss; ss << thisDetector->receiverUDPPort2; string s = ss.str(); return s;};
+  /** returns the zmq port \sa sharedSlsDetector  */
+  string getReceiverStreamingPort() {ostringstream ss; ss << thisDetector->zmqport; string s = ss.str(); return s;};
 
   /** validates the format of detector MAC address and sets it \sa sharedSlsDetector  */
   string setDetectorMAC(string detectorMAC);
@@ -1735,6 +1738,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   int setReceiverUDPPort(int udpport);
   /** sets the receiver udp port2 for Eiger \sa sharedSlsDetector  */
   int setReceiverUDPPort2(int udpport);
+  /** sets the zmq port in client and receiver (includes "multi" at the end if it should calculate individual ports \sa sharedSlsDetector  */
+  int setReceiverStreamingPort(string port);
   /** sets the transmission delay for left or right port or for an entire frame*/
   string setDetectorNetworkParameter(networkParameter index, int delay);
 

@@ -1893,6 +1893,9 @@ int Feb_Control_PrintCorrectedValues(){
 }
 
 
+//So if software says now 40.00 you neeed to convert to mdegrees 40000(call it A1) and then
+//A1/65536/0.00198421639-273.15
+
 int Feb_Control_GetLeftFPGATemp(){
 	unsigned int temperature=0;
 	if(Module_TopAddressIsValid(&modules[1]))
@@ -1900,6 +1903,7 @@ int Feb_Control_GetLeftFPGATemp(){
 	else
 		Feb_Interface_ReadRegister(Module_GetBottomLeftAddress (&modules[1]),FEB_REG_STATUS, &temperature);
 	temperature = temperature >> 16;
+	temperature = ((((float)(temperature)/65536.0f)/0.00198421639f ) - 273.15f)*1000; // Static conversation, copied from xps sysmon standalone driver
 	//division done in client to send int over network
 	return (int)temperature;
 }
@@ -1911,6 +1915,7 @@ int Feb_Control_GetRightFPGATemp(){
 	else
 		Feb_Interface_ReadRegister(Module_GetBottomRightAddress (&modules[1]),FEB_REG_STATUS, &temperature);
 	temperature = temperature >> 16;
+	temperature = ((((float)(temperature)/65536.0f)/0.00198421639f ) - 273.15f)*1000; // Static conversation, copied from xps sysmon standalone driver
 	//division done in client to send int over network
 	return (int)temperature;
 }

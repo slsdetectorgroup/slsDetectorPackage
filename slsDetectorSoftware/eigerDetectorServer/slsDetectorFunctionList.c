@@ -715,7 +715,7 @@ int getADC(enum ADCINDEX ind,  int imod){
 
 	switch(ind){
 		case TEMP_FPGA:
-			retval=getBebFPGATemp()*1000;
+			retval=getBebFPGATemp();
 			break;
 		case TEMP_FPGAFEBL:
 			retval=Feb_Control_GetLeftFPGATemp();

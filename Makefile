@@ -76,7 +76,8 @@ slsReceiver: receiver
 slsReceiver_static: receiver
 
 receiver: #libreceiver
-	cd  $(RECEIVERDIR) && $(MAKE) receiver FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)'  LIBS='$(LDFLAGRXR)' INCLUDES='$(INCLUDESRXR)' LIBDIR='$(LIBDIR)'
+#	cd  $(RECEIVERDIR) && $(MAKE) receiver FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)'  LIBS='$(LDFLAGRXR)' INCLUDES='$(INCLUDESRXR)' LIBDIR='$(LIBDIR)'
+	cd  $(RECEIVERDIR) && $(MAKE) FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)'  LIBS='$(LDFLAGRXR)' INCLUDES='$(INCLUDESRXR)' LIBDIR='$(LIBDIR)'
 	@echo ""
 	@echo "#######################################"
 	@echo "# Back in slsDetectorPackage Makefile #"

@@ -18,6 +18,10 @@ LIBRARYDIR		?=	../slsDetectorSoftware
 LIBRARYRXRDIR 	?= 	../slsReceiverSoftware
 INCLUDES	?= 	$(LIBRARYDIR)/commonFiles -I$(LIBRARYRXRDIR)/MySocketTCP  -I$(LIBRARYDIR)/slsReceiverInterface   -I$(LIBRARYDIR)/slsDetector  -I$(LIBRARYDIR)/slsDetectorAnalysis  -I$(LIBRARYDIR)/multiSlsDetector   -I$(LIBRARYDIR)/usersFunctions  -I$(LIBRARYRXRDIR)/includes
 
+LDFLAGDET	?=	 -L$(LIBDIR)  -Wl,-rpath=$(LIBDIR) -lSlsDetector 
+
+
+
 #ifeq ( $(EIGERSLS), yes)  	
 #	LDFLAG += $(EIGERFLAGS)
 #else ifeq ( $(ROOTSLS), yes)  	

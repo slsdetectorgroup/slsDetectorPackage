@@ -1,5 +1,5 @@
 Makefile.gui
-#forms/include/
+forms/include/
 mocs/
 objs/
 qrc_icons.cpp

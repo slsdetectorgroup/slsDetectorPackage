@@ -58,6 +58,7 @@ void GetData(uint64_t frameNumber, uint32_t expLength, uint32_t packetNumber, ui
 int main(int argc, char *argv[]) {
 
 	keeprunning = true;
+	bprintf(BLUE,"[ Pid: %ld ]\n", (long)getpid());
 
 	// Catch signal SIGINT to close files and call destructors properly
 	struct sigaction sa;
@@ -137,7 +138,8 @@ int main(int argc, char *argv[]) {
 
 	FILE_LOG(logINFO) << "Ready ... ";
 	bprintf(GRAY, "\n[ Press \'Ctrl+c\' to exit ]\n");
-	while(keeprunning);
+	while(keeprunning)
+		usleep(5 * 1000 * 1000);
 
 	delete receiver;
 	FILE_LOG(logINFO) << "Goodbye!";

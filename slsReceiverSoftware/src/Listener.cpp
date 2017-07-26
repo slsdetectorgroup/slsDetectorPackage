@@ -326,7 +326,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 	//look for carry over
 	if (carryOverFlag) {
-		 bprintf(RED,"%d carry flag\n",index);
+		 //bprintf(RED,"%d carry flag\n",index);
 		//check if its the current image packet
 		// -------------------------- new header ----------------------------------------------------------------------
 		if (standardheader) {

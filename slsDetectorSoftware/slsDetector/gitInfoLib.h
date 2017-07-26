@@ -1,11 +1,11 @@
 //#define SVNPATH ""
 #define SVNURLLIB "git@git.psi.ch:sls_detectors_software/sls_detector_software.git"
 //#define SVNREPPATH ""
-#define SVNREPUUIDLIB "d3b24894af8a588e6945240c3b80c2b7024608c4"
-//#define SVNREV 0x1448
+#define SVNREPUUIDLIB "a80690be016d1f51db5e50c3db27b998af9ba6c8"
+//#define SVNREV 0x1449
 //#define SVNKIND ""
 //#define SVNSCHED ""
 #define SVNAUTHLIB "Dhanya_Maliakal"
-#define SVNREVLIB 0x1448
-#define SVNDATELIB 0x20170725
+#define SVNREVLIB 0x1449
+#define SVNDATELIB 0x20170726
 //

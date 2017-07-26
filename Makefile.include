@@ -5,6 +5,7 @@
 CC = g++
 CXX = $(CC)
 ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
+LDFLAGDETONLY = -L$(LIBDIR)  -Wl,-rpath=$(LIBDIR) -lSlsDetector 
 LDFLAGDET = -L$(LIBDIR)  -Wl,-rpath=$(LIBDIR) -lSlsDetector -L/usr/lib64/ -pthread
 LDFLAGRXR = -L$(LIBDIR)  -Wl,-rpath=$(LIBDIR) -lSlsReceiver -L/usr/lib64/ -pthread
 FLAGS= -Wall  -pthread  #-DEIGER_DEBUG2

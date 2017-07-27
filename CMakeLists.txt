@@ -1,14 +1,18 @@
 cmake_minimum_required(VERSION 2.8)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
+  
 find_package(Qt4)
 find_package(Qwt 6)
 find_package(CBF)
 find_package(Doxygen)
+find_package(HDF5 1.10)
+
+set (REST OFF)
+
 
 add_subdirectory(slsDetectorSoftware)
 add_subdirectory(slsReceiverSoftware)
-add_subdirectory(slsImageReconstruction)
 if (QT4_FOUND AND QWT_FOUND)
     add_subdirectory(slsDetectorGui)
 endif()
@@ -19,3 +23,7 @@ if (DEFINED ENV{ROOTSYS})
         add_subdirectory(calibrationWizards)
     endif()
 endif()
+
+
+
+		

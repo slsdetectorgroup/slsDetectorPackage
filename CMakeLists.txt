@@ -6,7 +6,7 @@ find_package(Qt4)
 find_package(Qwt 6)
 find_package(CBF)
 find_package(Doxygen)
-find_package(HDF5 1.10)
+find_package(HDF5 1.10 COMPONENTS CXX)
 
 set (REST OFF)
 set (CALIBRATE OFF)

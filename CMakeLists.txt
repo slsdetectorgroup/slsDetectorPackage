@@ -20,14 +20,10 @@ endif()
 
 
 if (CALIBRATE)
-	if (DEFINED ENV{ROOTSYS})
-    	find_package(ROOT)
-    	if (ROOT_FOUND)
-        	add_subdirectory(calibrationWizards)
-    	endif()
-	endif()
+    if (DEFINED ENV{ROOTSYS})
+        find_package(ROOT)
+        if (ROOT_FOUND)
+            add_subdirectory(calibrationWizards)
+        endif()
+    endif()
 endif(CALIBRATE)
-
-
-
-		

@@ -29,7 +29,7 @@ endif (REST)
 
 # HDF5
 if (HDF5_FOUND)
-	set (HDF5DIR '/opt/hdf5v1.10.0/')
+	set (HDF5DIR /opt/hdf5v1.10.0)
 	
 	include_directories( 
 		${HDF5DIR}/include 
@@ -37,15 +37,15 @@ if (HDF5_FOUND)
 	add_definitions( 
 		-DHDF5C 
 	)
-	add_library(hdf5 STATIC IMPORTED)
-	add_library(hdf5_cpp STATIC IMPORTED)
+	add_library(hdf5 SHARED IMPORTED)
+	add_library(hdf5_cpp SHARED IMPORTED)
 	add_library(sz SHARED IMPORTED)
 	add_library(z SHARED IMPORTED)
 	set_target_properties(hdf5 PROPERTIES
-		IMPORTED_LOCATION ${HDF5DIR}/lib/libhdf5.a
+		IMPORTED_LOCATION ${HDF5DIR}/lib/libhdf5.so
 	)
 	set_target_properties(hdf5_cpp PROPERTIES
-		IMPORTED_LOCATION ${HDF5DIR}/lib/libhdf5_cpp.a
+		IMPORTED_LOCATION ${HDF5DIR}/lib/libhdf5_cpp.so
 	)
 	set_target_properties(sz PROPERTIES
 		IMPORTED_LOCATION ${HDF5DIR}/lib/libsz.so
@@ -54,6 +54,11 @@ if (HDF5_FOUND)
 		IMPORTED_LOCATION ${HDF5DIR}/lib/libz.so
 	)
 	set(_hdf5_libs hdf5 hdf5_cpp sz z)
+	
+	list (APPEND SOURCES 
+		src/HDF5File.cpp
+		src/HDF5FileStatic.cpp
+	)
 endif ()
 
 

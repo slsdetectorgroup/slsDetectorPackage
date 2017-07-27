@@ -14,8 +14,9 @@
 using namespace H5;
 #endif
 #include "sls_receiver_defs.h"
+#include "logger.h"
 
-
+#include <iostream>
 #include <string>
 #include <iomanip>
 #include <stdlib.h>	 //malloc
@@ -646,7 +647,7 @@ public:
 			FILE_LOG(logERROR) <<  "unknown datatype";
 			return 1;
 		}
-		FILE_LOG(logINFO) << "owenable:" << owenable?1:0 << endl
+		FILE_LOG(logINFO) << "owenable:" << (owenable?1:0) << endl
 				<< "oldFileName:" << oldFileName << endl
 				<< "oldDatasetName:" << oldDatasetName << endl
 				<< "newFileName:" << newFileName << endl

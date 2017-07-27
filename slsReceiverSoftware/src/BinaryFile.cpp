@@ -64,12 +64,13 @@ int BinaryFile::CreateFile(uint64_t fnum) {
 		FILE_LOG(logINFO) << "[" << *udpPortNumber << "]: Binary File created: " << currentFileName;
 	//other files
 	else {
+		char c[1000]; strcpy(c, currentFileName.c_str());
 		if (loss)
 			bprintf(RED,"[%u]:  Packet_Loss:%lu  Fifo_Max_Level:%d  \tNew_File:%s\n",
-					*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound() , basename(currentFileName.c_str()));
+					*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound() , basename(c));
 		else
 			bprintf(GREEN,"[%u]:  Packet_Loss:%lu  Fifo_Max_Level:%d  \tNew_File:%s\n",
-					*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound(), basename(currentFileName.c_str()));
+					*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound(), basename(c));
 	}
 
 	return OK;

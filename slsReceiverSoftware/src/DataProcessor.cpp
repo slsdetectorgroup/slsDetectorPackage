@@ -229,7 +229,7 @@ void DataProcessor::SetupFileWriter(int* nd, char* fname, char* fpath, uint64_t*
 		file = new HDF5File(index, generalData->maxFramesPerFile, &generalData->packetsPerFrame,
 				nd, fname, fpath, findex,
 				frindexenable, owenable,
-				dindex, nunits, nf, dr, portno
+				dindex, nunits, nf, dr, portno,
 				generalData->nPixelsX, generalData->nPixelsY, fifo);
 		break;
 #endif

@@ -20,7 +20,7 @@ SlsQt2DPlotLayout::SlsQt2DPlotLayout(QWidget *parent):QGroupBox(parent){
 	the_layout=0;
 	the_plot   = new SlsQt2DPlot(this);
 
-	z_range_ne = new SlsQtNumberEntry(this,1,"Set the z axis range from",2,"to",2);
+	z_range_ne = new SlsQtNumberEntry(this,1,(char*)"Set the z axis range from",2,(char*)"to",2);
 	z_range_ne->setFixedWidth(402);
 #ifndef IAN
 	zRangeChecked = false;

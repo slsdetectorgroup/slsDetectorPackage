@@ -48,7 +48,7 @@ class qDebugStream : public basic_streambuf<char> {
 
 public:
 	qDebugStream(ostream &stream, QWidget* w) : m_stream(stream), log_window(w) {
-		mutex = PTHREAD_MUTEX_INITIALIZER;
+		pthread_mutex_init(&mutex, NULL);
 		m_old_buf = stream.rdbuf();
 		stream.rdbuf(this);
 	}

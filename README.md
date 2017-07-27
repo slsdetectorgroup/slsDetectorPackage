@@ -36,6 +36,10 @@ Use cmake to create out-of-source builds, by creating an build folder parallel t
     $ make
 ```
 
+Use the following as an example to compile statically and using specific hdf5 folder
+```
+    $ HDF5_ROOT=/opt/hdf5v1.10.0 cmake -DHDF5_USE_STATIC_LIBRARIES=TRUE ../slsDetectorsPackage
+ ```  
 The libraries and executables will be found at `bin` directory
 ```
     $ ls bin/

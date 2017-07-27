@@ -378,13 +378,13 @@ In the example before, it would be: {\tt{zzzz}}=4*100000+ 100000
  {\tt{xxxx}} is 100 images by default.
 \item Deactivate a half module (for ROI or debugging). Note that the MASTER module SHOULD NOT be deactivated:
 \begin{verbatim}
-./sls_detector_put X:activated 0 
+./sls_detector_put X:activate 0 
 \end{verbatim}
 where $X$ is the half module you want to deactivate.
 The receiver at this point will return fake data (overflow) for this module. If you wish to eliminate the receiver overall for this module, then you need to run a configuration file where this module has been removed.
 To activate back a module, do:
 \begin{verbatim}
-./sls_detector_put X:activated 1
+./sls_detector_put X:activate 1
 \end{verbatim}
 
 \end{itemize}
@@ -447,7 +447,7 @@ It is important to know, that the pixels at the edge between 2 chips count more 
 
 \subsection{Read temperatures/HV from boards}
 
-With an updated kernel on the linux boards (ask to the SLS detector group for specifications), it is possible to monitor the temperature on the Back End Boards: 
+With an updated kernel on the linux boards (ask to the SLS detector group for specifications), it is possible to monitor the temperature on the boards: 
 \begin{verbatim}
 temp_fpga   #gets the temperature of the fpga
 temp_fpgaext   #gets the temperature close to the fpga
@@ -470,9 +470,9 @@ In 500k--2M pixel systems there is a hardware temperature safety switch, which w
 The HV can also be set and read through the software:
 \begin{verbatim}
 ./sls_detector_put vhighvoltage 150
-./sls_detector_get vhighvoltage 
+./sls_detector_get m:vhighvoltage 
 \end{verbatim}
-Note that the get {\tt{vhighvoltage}} would return the measured HV from the master module only.
+Note that the get {\tt{vhighvoltage}} would return the measured HV from the master module only, so one has to really get it for the master \tt{m} module.
 
 \appendix
 

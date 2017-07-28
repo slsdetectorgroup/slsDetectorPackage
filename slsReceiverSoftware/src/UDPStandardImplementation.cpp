@@ -114,10 +114,11 @@ void UDPStandardImplementation::setFileFormat(const fileFormat f){
 	switch(f){
 #ifdef HDF5C
 	case HDF5:
-		fileFormatType = f;
+		fileFormatType = HDF5;
+		break;
 #endif
 	default:
-		fileFormatType = f;
+		fileFormatType = BINARY;
 		break;
 	}
 	//destroy file writer, set file format and create file writer

@@ -2179,7 +2179,7 @@ int slsReceiverTCPIPInterface::set_file_format() {
 		retval = receiverBase->getFileFormat();
 		if(f >= 0 && retval != f){
 			ret = FAIL;
-			sprintf(mess,"Could not set file format to %d, returned %d\n",f,retval);
+			sprintf(mess,"Could not set file format to %s, returned %s\n",getFileFormatType(f).c_str(),getFileFormatType(retval).c_str());
 			FILE_LOG(logERROR) << "Warning: " << mess;
 		}
 	}

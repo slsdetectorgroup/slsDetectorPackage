@@ -250,10 +250,11 @@ void UDPBaseImplementation::setFileFormat(const fileFormat f){
 	switch(f){
 #ifdef HDF5C
 	case HDF5:
-		fileFormatType = f;
+		fileFormatType = HDF5;
+		break;
 #endif
 	default:
-		fileFormatType = f;
+		fileFormatType = BINARY;
 		break;
 	}
 

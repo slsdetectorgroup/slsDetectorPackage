@@ -260,7 +260,7 @@ void DataProcessor::CloseFiles() {
 }
 
 void DataProcessor::EndofAcquisition(uint64_t numf) {
-	if (*fileWriteEnable && file->GetFileType() == HDF5 && numf) {
+	if (*fileWriteEnable && file->GetFileType() == HDF5) {
 		file->EndofAcquisition(numf);
 	}
 }

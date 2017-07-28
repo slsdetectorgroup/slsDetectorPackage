@@ -494,10 +494,13 @@ void UDPStandardImplementation::stopReceiver(){
 	//create virtual file
 	if (fileWriteEnable && fileFormatType == HDF5) {
 		uint64_t maxIndexCaught = 0;
+		bool anycaught = false;
 		for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it) {
 			maxIndexCaught = max(maxIndexCaught, (*it)->GetProcessedMeasurementIndex());
+			if((*it)->GetMeasurementStartedFlag())
+				anycaught = true;
 		}
-		if (maxIndexCaught)
+		if (anycaught)
 			dataProcessor[0]->EndofAcquisition(maxIndexCaught); //to create virtual file
 	}
 

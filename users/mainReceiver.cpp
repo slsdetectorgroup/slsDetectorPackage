@@ -181,7 +181,8 @@ int main(int argc, char *argv[]) {
 				exit(EXIT_FAILURE);
 			}
 
-			while(keeprunning);
+			while(keeprunning)
+				usleep(1 * 1000 * 1000);
 			delete receiver;
 			exit(EXIT_SUCCESS);
 		}
@@ -196,7 +197,8 @@ int main(int argc, char *argv[]) {
 	bprintf(GRAY, "\n[ Press \'Ctrl+c\' to exit ]\n");
 
 	// wait for all child processes to exit
-	while(numrunning);
+	while(numrunning)
+		usleep(1 * 1000 * 1000);
 	FILE_LOG(logINFO) << "Goodbye!";
 	return 0;
 }

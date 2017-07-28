@@ -509,8 +509,9 @@ int  slsDetectorUtils::acquire(int delflag){
   sem_destroy(&sem_newRTAcquisition);
 
   clock_gettime(CLOCK_REALTIME, &end);
+#ifdef VERBOSE
   cout << "Elapsed time for acquisition:" << (( end.tv_sec - begin.tv_sec )	+ ( end.tv_nsec - begin.tv_nsec ) / 1000000000.0) << " seconds" << endl;
-
+#endif
   return OK;
 
 }

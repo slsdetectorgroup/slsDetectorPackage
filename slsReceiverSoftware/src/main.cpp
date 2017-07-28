@@ -139,7 +139,7 @@ int main(int argc, char *argv[]) {
 	FILE_LOG(logINFO) << "Ready ... ";
 	bprintf(GRAY, "\n[ Press \'Ctrl+c\' to exit ]\n");
 	while(keeprunning)
-		usleep(5 * 1000 * 1000);
+		usleep(10 * 1000 * 1000);
 
 	delete receiver;
 	FILE_LOG(logINFO) << "Goodbye!";

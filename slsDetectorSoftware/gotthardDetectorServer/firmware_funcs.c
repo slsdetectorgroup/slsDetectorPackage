@@ -55,6 +55,16 @@ int masterMode=NO_MASTER, syncMode=NO_SYNCHRONIZATION, timingMode=AUTO_TIMING;
 enum externalSignalFlag  signals[4]={EXT_SIG_OFF, EXT_SIG_OFF, EXT_SIG_OFF, EXT_SIG_OFF};
 
 
+//for the 25um detectors
+int masterflags = NO_MASTER;
+int masterdefaultdelay = 62;
+int patternphase = 0;
+int adcphase = 0;
+int slavepatternphase = 0;
+int slaveadcphase = 0;
+int rsttosw1delay = 2;
+
+
 #ifdef MCB_FUNCS
 extern const int nChans;
 extern const int nChips;
@@ -230,6 +240,134 @@ u_int32_t bus_r(u_int32_t offset) {
 }
 
 
+
+void setMasterSlaveConfiguration(){
+
+/*
+	int masterflags = NO_MASTER;
+	int masterdefaultdelay = 62;
+	int patternphase = 0;
+	int adcphase = 0;
+	int slavepatternphase = 0;
+	int slaveadcphase = 0;
+	int sw1torstdelay = 2;
+*/
+// global master default delay picked from config file
+	FILE* fd=fopen(CONFIG_FILE,"r");
+	if(fd==NULL){
+		cprintf(RED,"\nWarning: Could not open file\n");
+		return;
+	}
+	cprintf(BLUE,"config file %s opened\n", CONFIG_FILE);
+
+	char key[256];
+	char value[256];
+	char line[256];
+	int ival=0;
+	u_int32_t val=0;
+
+	while (fgets(line, sizeof(line), fd)) {
+		if(line[0] == '#')
+			continue;
+		sscanf(line, "%s %s\n", key, value);
+		if	(!strcasecmp(key,"masterflags")) {
+			if	(!strcasecmp(value,"is_master")) {
+				masterflags = IS_MASTER;
+			}
+			else if (!strcasecmp(value,"is_slave")) {
+				masterflags = IS_SLAVE;
+			}
+			else  if (!strcasecmp(value,"no_master")){
+				masterflags = NO_MASTER;
+			}
+			else {
+				cprintf(RED,"could not scan masterflags %s value from config file\n",value);
+				exit(EXIT_FAILURE);
+			}
+		}
+		else {
+			if(sscanf(value,"%d",&ival)<=0) {
+				cprintf(RED,"could not scan patternphase %s value from config file\n",value);
+				exit(EXIT_FAILURE);
+			}
+
+			if (!strcasecmp(key,"masterdefaultdelay"))
+				masterdefaultdelay = ival;
+			else if (!strcasecmp(key,"patternphase"))
+				patternphase = ival;
+			else if (!strcasecmp(key,"adcphase"))
+				adcphase = ival;
+			else if (!strcasecmp(key,"slavepatternphase"))
+				slavepatternphase = ival;
+			else if (!strcasecmp(key,"slaveadcphase"))
+				slaveadcphase = ival;
+			else if (!strcasecmp(key,"rsttosw1delay"))
+				rsttosw1delay = ival;
+			else {
+				cprintf(RED,"could not scan parameter name %s from config file\n",key);
+				exit(EXIT_FAILURE);
+			}
+		}
+
+	}
+	cprintf(BLUE, "masterflags: %d\n"
+			"masterdefaultdelay:%d\n"
+			"patternphase:%d\n"
+			"adcphase:%d\n"
+			"slavepatternphase:%d\n"
+			"slaveadcphase:%d\n"
+			"rsttosw1delay:%d\n",
+			masterflags,
+			masterdefaultdelay,
+			patternphase,
+			adcphase,
+			slavepatternphase,
+			slaveadcphase,
+			rsttosw1delay);
+
+
+
+	if (masterflags == IS_MASTER) {
+		// set delay
+		setDelay(0);
+
+		/* Set pattern phase for the master module */
+		val=bus_r(MULTI_PURPOSE_REG);
+		val = (val & (~(PLL_CLK_SEL_MSK))) | PLL_CLK_SEL_MASTER_VAL;
+		bus_w(MULTI_PURPOSE_REG,val);
+		setPhaseShift(patternphase);
+		/* Set adc phase for the master module */
+		val=bus_r(MULTI_PURPOSE_REG);
+		val = (val & (~(PLL_CLK_SEL_MSK))) | PLL_CLK_SEL_MASTER_ADC_VAL;
+		bus_w(MULTI_PURPOSE_REG,val);
+		setPhaseShift(adcphase);
+		/* Set pattern phase for the slave module */
+		val=bus_r(MULTI_PURPOSE_REG);
+		val = (val & (~(PLL_CLK_SEL_MSK))) | PLL_CLK_SEL_SLAVE_VAL;
+		bus_w(MULTI_PURPOSE_REG,val);
+		setPhaseShift(slavepatternphase);
+		/* Set adc phase for the slave module */
+		val=bus_r(MULTI_PURPOSE_REG);
+		val = (val & (~(PLL_CLK_SEL_MSK))) | PLL_CLK_SEL_SLAVE_ADC_VAL;
+		bus_w(MULTI_PURPOSE_REG,val);
+		setPhaseShift(slaveadcphase);
+	}
+
+
+
+	if (masterflags == IS_MASTER || masterflags == IS_SLAVE) {
+		val=bus_r(MULTI_PURPOSE_REG);
+//#ifdef VERBOSE
+		printf("Value of multipurpose reg:%d\n",bus_r(MULTI_PURPOSE_REG));
+//#endif
+		val = (val & (~(RST_TO_SW1_DELAY_MSK))) | ((rsttosw1delay << RST_TO_SW1_DELAY_OFFSET) & (RST_TO_SW1_DELAY_MSK));
+		bus_w(MULTI_PURPOSE_REG,val);
+	}
+
+	fclose(fd);
+}
+
+
 int setPhaseShiftOnce(){
 	u_int32_t addr, reg;
 	int i;
@@ -256,6 +394,31 @@ int setPhaseShiftOnce(){
 
 	return OK;
 }
+
+
+int setPhaseShift(int numphaseshift){
+	u_int32_t addr, reg;
+	int i;
+	addr=MULTI_PURPOSE_REG;
+	reg=bus_r(addr);
+#ifdef VERBOSE
+	printf("Multipurpose reg:%x\n",reg);
+#endif
+
+	printf("\nImplementing phase shift of %d\n",numphaseshift);
+	for (i=0;i<numphaseshift;i++) {
+		bus_w(addr,reg | PHASE_STEP_BIT);
+		bus_w(addr,reg & (~PHASE_STEP_BIT));
+	}
+
+#ifdef VERBOSE
+		printf("Multipupose reg now:%x\n",bus_r(addr));
+#endif
+
+	return OK;
+}
+
+
 
 
 
@@ -926,9 +1089,19 @@ int64_t getPeriod(){
 int64_t setDelay(int64_t value){
   /* time is in ns */
   if (value!=-1) {
+	  if (masterflags == IS_MASTER) {
+		  value += masterdefaultdelay;
+		  cprintf(BLUE,"Actual delay for master: %lld\n", (long long int) value);
+	  }
     value*=(1E-9*CLK_FREQ);
   }
-  return set64BitReg(value,SET_DELAY_LSB_REG, SET_DELAY_MSB_REG)/(1E-9*CLK_FREQ);
+  int64_t retval = set64BitReg(value,SET_DELAY_LSB_REG, SET_DELAY_MSB_REG)/(1E-9*CLK_FREQ);
+  if (masterflags == IS_MASTER) {
+	  cprintf(BLUE,"Actual delay read from master: %lld\n", (long long int) retval);
+	  retval -= masterdefaultdelay;
+  }
+
+  return retval;
 }
 
 int64_t getDelay(){

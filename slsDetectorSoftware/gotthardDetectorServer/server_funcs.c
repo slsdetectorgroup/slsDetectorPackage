@@ -99,6 +99,7 @@ int init_detector( int b) {
     setMaster(GET_MASTER);
     setSynchronization(GET_SYNCHRONIZATION_MODE);
     startReceiver(0);
+    setMasterSlaveConfiguration();
   }
   strcpy(mess,"dummy message");
   strcpy(lastClientIP,"none");

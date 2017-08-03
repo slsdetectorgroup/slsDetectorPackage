@@ -274,14 +274,22 @@
 #define WRITE_BACK_OFFSET            6
 #define RESET_BIT                    0x00000080
 #define RESET_OFFSET                 7
+#define PLL_CLK_SEL_MSK	             0x00000700
+#define PLL_CLK_SEL_OFFSET           8
+#define PLL_CLK_SEL_MASTER_VAL		((0x1 << PLL_CLK_SEL_OFFSET) & PLL_CLK_SEL_MSK)
+#define PLL_CLK_SEL_MASTER_ADC_VAL	((0x2 << PLL_CLK_SEL_OFFSET) & PLL_CLK_SEL_MSK)
+#define PLL_CLK_SEL_SLAVE_VAL		((0x3 << PLL_CLK_SEL_OFFSET) & PLL_CLK_SEL_MSK)
+#define PLL_CLK_SEL_SLAVE_ADC_VAL	((0x4 << PLL_CLK_SEL_OFFSET) & PLL_CLK_SEL_MSK)
 #define ENET_RESETN_BIT              0x00000800
 #define ENET_RESETN_OFFSET           11
-#define INT_RSTN_BIT                 0x00002000
-#define INT_RSTN_OFFSET              13
+#define INT_RSTN_BIT                 0x00001000
+#define INT_RSTN_OFFSET              12
 #define DIGITAL_TEST_BIT             0x00004000
 #define DIGITAL_TEST_OFFSET          14
 //#define CHANGE_AT_POWER_ON_BIT       0x00008000
 //#define CHANGE_AT_POWER_ON_OFFSET    15
+#define RST_TO_SW1_DELAY_MSK         0x000F0000
+#define RST_TO_SW1_DELAY_OFFSET      16
 
 
 /* settings/conf gain register */

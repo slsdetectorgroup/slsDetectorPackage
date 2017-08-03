@@ -24,6 +24,10 @@
 
 #define NCHIPS_PER_ADC		2
 
+// for 25 um
+#define CONFIG_FILE	"config.txt"
+
+
 //#define TRIM_DR ((2**NTRIMBITS)-1)
 //#define COUNT_DR ((2**NCOUNTBITS)-1) 
 #define TRIM_DR (((int)pow(2,NTRIMBITS))-1)

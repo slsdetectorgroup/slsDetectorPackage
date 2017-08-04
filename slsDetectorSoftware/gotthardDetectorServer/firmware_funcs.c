@@ -1430,7 +1430,7 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 	tse_conf *tse_conf_regs;
 	long int sum = 0;
 	long int checksum;
-	int count,val;
+	int count;
 	unsigned short *addr;
 
 	mac_conf_regs=(mac_conf*)(CSP0BASE+offset*2);
@@ -1440,35 +1440,40 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 	printf("***Configuring MAC*** \n");
 #endif
 
+
 	if(ival)
-		bus_w(addrr,(RESET_BIT|DIGITAL_TEST_BIT)); //0x080,reset mac (reset)
+		bus_w(addrr, bus_r(addrr) | (RESET_BIT|DIGITAL_TEST_BIT)); //0x080,reset mac (reset)
 	else
-		bus_w(addrr,RESET_BIT); //0x080,reset mac (reset)
-	val=bus_r(addrr);
+		bus_w(addrr, bus_r(addrr) | RESET_BIT); //0x080,reset mac (reset)
+
 #ifdef VERBOSE
-	printf("Value read from Multi-purpose Reg:%x\n",val);
+	printf("Value read from Multi-purpose Reg:%x\n",bus_r(addrr));
 #endif 
 	//  if(val!=0x080) return -1;
 
 	usleep(500000);
+	
+	bus_w(addrr, bus_r(addrr) &(~ RESET_BIT));/* release reset */
 
 	if(ival)
-		bus_w(addrr,(ENET_RESETN_BIT|WRITE_BACK_BIT|DIGITAL_TEST_BIT)); //0x840,write shadow regs(enet reset,write bak)
+		bus_w(addrr, bus_r(addrr) | (ENET_RESETN_BIT|WRITE_BACK_BIT|DIGITAL_TEST_BIT)); //0x840,write shadow regs(enet reset,write bak)
 	else
-		bus_w(addrr,(ENET_RESETN_BIT|WRITE_BACK_BIT)); //0x840,write shadow regs(enet reset,write bak)
-	val=bus_r(addrr);
+		bus_w(addrr, bus_r(addrr) | (ENET_RESETN_BIT|WRITE_BACK_BIT)); //0x840,write shadow regs(enet reset,write bak)
+
 #ifdef VERBOSE
-	printf("Value read from Multi-purpose Reg:%x\n",val);
+	printf("Value read from Multi-purpose Reg:%x\n",bus_r(addrr));
 #endif 
 	//  if(val!=0x840) return -1;
 
+	bus_w(addrr, bus_r(addrr) &(~WRITE_BACK_BIT));/* release write_back */
+
 	if(ival)
-		bus_w(addrr,(ENET_RESETN_BIT|DIGITAL_TEST_BIT)); //0x800,nreset phy(enet reset)
+		bus_w(addrr, bus_r(addrr) | (ENET_RESETN_BIT|DIGITAL_TEST_BIT)); //0x800,nreset phy(enet reset)
 	else
-		bus_w(addrr,ENET_RESETN_BIT); //0x800,nreset phy(enet reset)
-	val=bus_r(addrr);
+		bus_w(addrr, bus_r(addrr) | ENET_RESETN_BIT); //0x800,nreset phy(enet reset)
+
 #ifdef VERBOSE
-	printf("Value read from Multi-purpose Reg:%x\n",val);
+	printf("Value read from Multi-purpose Reg:%x\n",bus_r(addrr));
 #endif 
 	//  if(val!=0x800) return -1;
 
@@ -1573,26 +1578,26 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 
 
 	if(ival)
-		bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|WRITE_BACK_BIT|DIGITAL_TEST_BIT)); //0x2840,write shadow regs..
+		bus_w(addrr, bus_r(addrr) | (INT_RSTN_BIT|ENET_RESETN_BIT|WRITE_BACK_BIT|DIGITAL_TEST_BIT)); //0x2840,write shadow regs..
 	else
-		bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|WRITE_BACK_BIT)); //0x2840,write shadow regs..
+		bus_w(addrr, bus_r(addrr) | (INT_RSTN_BIT|ENET_RESETN_BIT|WRITE_BACK_BIT)); //0x2840,write shadow regs..
 
-	val=bus_r(addrr);
 #ifdef VERBOSE
-	printf("Value read from Multi-purpose Reg:%x\n",val);
+	printf("Value read from Multi-purpose Reg:%x\n",bus_r(addrr));
 #endif 
 	//  if(val!=0x2840) return -1;
 
 	usleep(100000);
 
-	if(ival)
-		bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|DIGITAL_TEST_BIT)); //0x2820,write shadow regs..
-	else
-		bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT)); //0x2820,write shadow regs..
+	bus_w(addrr, bus_r(addrr) &(~WRITE_BACK_BIT));
 
-	val=bus_r(addrr);
+	if(ival)
+		bus_w(addrr, bus_r(addrr) | (INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|DIGITAL_TEST_BIT)); //0x2820,write shadow regs..
+	else
+		bus_w(addrr, bus_r(addrr) | (INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT)); //0x2820,write shadow regs..
+
 #ifdef VERBOSE
-	printf("Value read from Multi-purpose Reg:%x\n",val);
+	printf("Value read from Multi-purpose Reg:%x\n",bus_r(addrr));
 #endif 
 	//  if(val!=0x2820) return -1;
 

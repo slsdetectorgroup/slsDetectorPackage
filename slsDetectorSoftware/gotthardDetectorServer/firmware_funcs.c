@@ -17,6 +17,7 @@
 #include <stdlib.h>
 
 
+
 //for memory mapping
 u_int64_t CSP0BASE;
 
@@ -1054,8 +1055,16 @@ int64_t getFrames(){
 
 int64_t setExposureTime(int64_t value){
   /* time is in ns */
-  if (value!=-1)
-    value*=(1E-9*CLK_FREQ);
+  if (value!=-1) {
+	  double actualvalue = value*(1E-9*CLK_FREQ);
+	  value*=(1E-9*CLK_FREQ);
+	  if(fabs(actualvalue-value)>= 0.5){
+	    if(actualvalue > value)
+	      value++;
+	    else
+	      value--;
+	  }
+  }
     return set64BitReg(value,SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG)/(1E-9*CLK_FREQ);
 }
 
@@ -1074,7 +1083,14 @@ int64_t getGates(){
 int64_t setPeriod(int64_t value){
   /* time is in ns */
   if (value!=-1) {
-    value*=(1E-9*CLK_FREQ);
+	  double actualvalue = value*(1E-9*CLK_FREQ);
+	  value*=(1E-9*CLK_FREQ);
+	  if(fabs(actualvalue-value)>= 0.5){
+	    if(actualvalue > value)
+	      value++;
+	    else
+	      value--;
+	  }
   }
 
 
@@ -1093,7 +1109,14 @@ int64_t setDelay(int64_t value){
 		  value += masterdefaultdelay;
 		  cprintf(BLUE,"Actual delay for master: %lld\n", (long long int) value);
 	  }
-    value*=(1E-9*CLK_FREQ);
+	  double actualvalue = value*(1E-9*CLK_FREQ);
+	  value*=(1E-9*CLK_FREQ);
+	  if(fabs(actualvalue-value)>= 0.5){
+	    if(actualvalue > value)
+	      value++;
+	    else
+	      value--;
+	  }
   }
   int64_t retval = set64BitReg(value,SET_DELAY_LSB_REG, SET_DELAY_MSB_REG)/(1E-9*CLK_FREQ);
   if (masterflags == IS_MASTER) {

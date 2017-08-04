@@ -2,6 +2,7 @@
 BUILDDIR="build"
 HDF5DIR="/opt/hdf5v1.10.0"
 HDF5=0
+COMPILERTHREADS=0
 
 CLEAN=0
 REBUILD=0
@@ -9,15 +10,16 @@ CMAKE_PRE=""
 CMAKE_POST=""
 
 usage() { echo -e "
-Usage: $0 [-c] [-r] [-h] [-d <HDF5 directory>]
+Usage: $0 [-c] [-b] [-h] [-d <HDF5 directory>] [-j]
  -[no option]: only make
  -c: Clean
  -b: Builds/Rebuilds CMake files normal mode
  -h: Builds/Rebuilds Cmake files with HDF5 package
  -d: HDF5 Custom Directory
+ -j: Number of threads to compile through
  " ; exit 1; }
 
-while getopts ":bchd:" opt ; do
+while getopts ":bchd:j:" opt ; do
 	case $opt in
 	b) 
 		echo "Building of CMake files Required"
@@ -36,16 +38,20 @@ while getopts ":bchd:" opt ; do
 		echo "New HDF5 directory: $OPTARG" 
 		HDF5DIR=$OPTARG
 		;;
-    	\?)
-     		echo "Invalid option: -$OPTARG" 
+	j) 
+		echo "Number of compiler threads: $OPTARG" 
+		COMPILERTHREADS=$OPTARG
+		;;
+    \?)
+     	echo "Invalid option: -$OPTARG" 
 		usage
-      		exit 1
-      		;;
-    	:)
-      		echo "Option -$OPTARG requires an argument."
+      	exit 1
+      	;;
+    :)
+      	echo "Option -$OPTARG requires an argument."
 		usage
-      		exit 1
-      		;;	
+      	exit 1
+      	;;	
 	esac
 done
 
@@ -84,17 +90,27 @@ echo "in "$PWD
 
 
 
-#if rebuild required
+#cmake
 if [ $REBUILD -eq 1 ]; then
 	BUILDCOMMAND="$CMAKE_PRE cmake $CMAKE_POST .."
 	echo $BUILDCOMMAND
 	eval $BUILDCOMMAND
 fi
+
+#make clean
 if [ $CLEAN -eq 1 ]; then
 	make clean;
 fi
 
-make -j9
+
+#make
+if [ $COMPILERTHREADS -gt 0 ]; then
+	BUILDCOMMAND="make -j$COMPILERTHREADS"
+	echo $BUILDCOMMAND
+	eval $BUILDCOMMAND
+else
+	make
+fi
 
 
 

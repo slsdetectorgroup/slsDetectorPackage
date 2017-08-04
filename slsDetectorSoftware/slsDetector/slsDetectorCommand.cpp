@@ -4343,7 +4343,7 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
   myDet->setReceiverOnline(ONLINE_FLAG);
 
   ret=myDet->setTimer(index,t);
-  if (index==ACQUISITION_TIME || index==SUBFRAME_ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER)
+  if ((ret!=-1) && (index==ACQUISITION_TIME || index==SUBFRAME_ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER))
     rval=(double)ret*1E-9;
   else rval=ret;
 

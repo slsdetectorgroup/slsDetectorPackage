@@ -1,9 +1,9 @@
 Path: slsDetectorsPackage/slsDetectorGui 
 URL: origin git@git.psi.ch:sls_detectors_software/sls_detector_gui.git 
 Repository Root: origin git@git.psi.ch:sls_detectors_software/sls_detector_gui.git 
-Repsitory UUID: 3d4a8bf5fe9083caedea4cac98ce487cd7608edd 
-Revision: 412 
-Branch: cmakefix 
+Repsitory UUID: b7e546443bc168440632d8aa96e683bc4deada49 
+Revision: 413 
+Branch: 3.0-rc 
 Last Changed Author: Dhanya_Maliakal 
-Last Changed Rev: 412 
-Last Changed Date: 2017-07-27 10:34:37.000000002 +0200 ./include/qDebugStream.h
+Last Changed Rev: 413 
+Last Changed Date: 2017-08-03 17:23:11.000000002 +0200 ./src/qTabMessages.cpp

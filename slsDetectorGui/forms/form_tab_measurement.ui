@@ -241,7 +241,7 @@
         <string/>
        </property>
        <property name="minimum">
-        <number>0</number>
+        <number>-1</number>
        </property>
        <property name="maximum">
         <number>2000000000</number>
@@ -288,6 +288,9 @@
        </property>
        <property name="decimals">
         <number>9</number>
+       </property>
+       <property name="minimum">
+        <double>-1.000000000000000</double>
        </property>
        <property name="maximum">
         <double>2000000000.000000000000000</double>
@@ -401,7 +404,7 @@
         <string/>
        </property>
        <property name="minimum">
-        <number>0</number>
+        <number>-1</number>
        </property>
        <property name="maximum">
         <number>2000000000</number>
@@ -486,7 +489,7 @@ Maximum value is 3. &lt;br&gt;
         <string/>
        </property>
        <property name="minimum">
-        <number>0</number>
+        <number>-1</number>
        </property>
        <property name="maximum">
         <number>3</number>
@@ -586,7 +589,7 @@ Maximum value is 3. &lt;br&gt;
         <string/>
        </property>
        <property name="minimum">
-        <number>1</number>
+        <number>-1</number>
        </property>
        <property name="maximum">
         <number>2000000000</number>
@@ -638,10 +641,10 @@ Exposure Time of a frame.
         <bool>false</bool>
        </property>
        <property name="decimals">
-        <number>5</number>
+        <number>9</number>
        </property>
        <property name="minimum">
-        <double>0.000000000000000</double>
+        <double>-1.000000000000000</double>
        </property>
        <property name="maximum">
         <double>2000000000.000000000000000</double>
@@ -749,7 +752,10 @@ Frame period between exposures.
         <bool>false</bool>
        </property>
        <property name="decimals">
-        <number>5</number>
+        <number>9</number>
+       </property>
+       <property name="minimum">
+        <double>-1.000000000000000</double>
        </property>
        <property name="maximum">
         <double>2000000000.000000000000000</double>
@@ -966,7 +972,7 @@ Frame period between exposures.
         <string/>
        </property>
        <property name="minimum">
-        <number>0</number>
+        <number>-1</number>
        </property>
        <property name="maximum">
         <number>2000000000</number>

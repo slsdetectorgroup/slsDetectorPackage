@@ -28,18 +28,20 @@ endif (REST)
 
 
 # HDF5
-if (HDF5_FOUND)
-    include_directories( 
-        ${HDF5_INCLUDE_DIRS}
-    )
-    add_definitions( 
-        -DHDF5C ${HDF5_DEFINITIONS}
-    )
-    list (APPEND SOURCES 
-        src/HDF5File.cpp 
-        src/HDF5FileStatic.cpp
-    )
-endif ()
+if (USE_HDF5)
+	if (HDF5_FOUND)
+	    include_directories( 
+	        ${HDF5_INCLUDE_DIRS}
+	    )
+	    add_definitions( 
+	        -DHDF5C ${HDF5_DEFINITIONS}
+	    )
+	    list (APPEND SOURCES 
+	        src/HDF5File.cpp 
+	        src/HDF5FileStatic.cpp
+	    )
+	endif ()
+endif (USE_HDF5)
 
 
 add_definitions(

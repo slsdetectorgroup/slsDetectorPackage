@@ -1,14 +1,18 @@
 cmake_minimum_required(VERSION 2.8)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+set (REST OFF)
+set (CALIBRATE OFF)
+option (USE_HDF5 "HDF5 File format" OFF)
+
 
 find_package(Qt4)
 find_package(Qwt 6)
 find_package(CBF)
 find_package(Doxygen)
-find_package(HDF5 1.10 COMPONENTS CXX)
+if (USE_HDF5)
+	find_package(HDF5 1.10 COMPONENTS CXX)
+endif (USE_HDF5)
 
-set (REST OFF)
-set (CALIBRATE OFF)
 
 
 add_subdirectory(slsDetectorSoftware)

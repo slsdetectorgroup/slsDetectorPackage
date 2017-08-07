@@ -92,6 +92,7 @@ echo "in "$PWD
 
 #cmake
 if [ $REBUILD -eq 1 ]; then
+	rm -f CMakeCache.txt
 	BUILDCOMMAND="$CMAKE_PRE cmake $CMAKE_POST .."
 	echo $BUILDCOMMAND
 	eval $BUILDCOMMAND

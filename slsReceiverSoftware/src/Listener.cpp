@@ -250,7 +250,7 @@ void Listener::ThreadExecution() {
 #endif
 
 	//udpsocket doesnt exist
-	if (*activated && !udpSocket) {
+	if (*activated && !udpSocket && !carryOverFlag) {
 		//FILE_LOG(logERROR) << "Listening_Thread " << index << ": UDP Socket not created or shut down earlier";
 		(*((uint32_t*)buffer)) = 0;
 		StopListening(buffer);
@@ -258,7 +258,7 @@ void Listener::ThreadExecution() {
 	}
 
 	//get data
-	if (*status != TRANSMITTING && udpSocket) {
+	if ((*status != TRANSMITTING && udpSocket) || carryOverFlag) {
 		if (*activated)
 			rc = ListenToAnImage(buffer);
 		else
@@ -351,13 +351,13 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 		//copy packet
 		switch(myDetectorType) {
-		//for gotthard, 1st packet: 4 bytes fnum, CACA, 1278 bytes data
-		//				2nd packet: 4 bytes fnu, 1282 bytes data !!
+		//for gotthard, 1st packet: 4 bytes fnum, CACA					   + CACA, 639*2 bytes data
+		//				2nd packet: 4 bytes fnum, previous 1*2 bytes data  + 640*2 bytes data !!
 		case GOTTHARD:
 			if(!pnum)
-				memcpy(buf + fifohsize + (pnum * dsize), carryOverPacket + hsize+4, dsize-2);
+				memcpy(buf + fifohsize , carryOverPacket + hsize+4, dsize-2);
 			else
-				memcpy(buf + fifohsize + (pnum * dsize) - 2, carryOverPacket + hsize, dsize+2);
+				memcpy(buf + fifohsize + dsize - 2, carryOverPacket + hsize, dsize+2);
 			break;
 		default:
 			memcpy(buf + fifohsize + (pnum * dsize), carryOverPacket + hsize, dsize);
@@ -423,6 +423,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 		lastCaughtFrameIndex = fnum;
 
+
 #ifdef VERBOSE
 		//if (!index)
 		bprintf(GREEN,"Listening %d: currentfindex:%lu, fnum:%lu,   pnum:%u numpackets:%u\n",
@@ -435,7 +436,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 		//future packet	by looking at image number  (all other detectors)
 		if (fnum != currentFrameIndex) {
-			//bprintf(RED,"setting carry over flag to true\n");
+			//bprintf(RED,"setting carry over flag to true num:%llu nump:%u\n",fnum, numpackets );
 			carryOverFlag = true;
 			memcpy(carryOverPacket,listeningPacket, generalData->packetSize);
 
@@ -445,8 +446,8 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 		//copy packet
 		switch(myDetectorType) {
-		//for gotthard, 1st packet: 4 bytes fnum, CACA, 1278 bytes data
-		//				2nd packet: 4 bytes fnu, 1282 bytes data !!
+		//for gotthard, 1st packet: 4 bytes fnum, CACA					   + CACA, 639*2 bytes data
+		//				2nd packet: 4 bytes fnum, previous 1*2 bytes data  + 640*2 bytes data !!
 		case GOTTHARD:
 			if(!pnum)
 				memcpy(buf + fifohsize + (pnum * dsize), listeningPacket + hsize+4, dsize-2);

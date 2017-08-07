@@ -1,8 +1,8 @@
 #!/bin/bash
-git $1
+git $@
 for i in sls*/; do
-	cd $i
-	echo $i
-	git $1
-	cd ..
+     cd $i
+     echo $i
+     git $@
+     cd ..
 done

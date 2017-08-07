@@ -142,9 +142,10 @@ void slsReceiverTCPIPInterface::stop(){
 	FILE_LOG(logINFO) << "Shutting down TCP Socket";
 	killTCPServerThread = 1;
 	if(mySock)	mySock->ShutDownSocket();
-	FILE_LOG(logDEBUG) << "Socket closed";
+	FILE_LOG(logDEBUG) << "TCP Socket closed";
 	pthread_join(TCPServer_thread, NULL);
 	killTCPServerThread = 0;
+	FILE_LOG(logINFO) << "TCP Server Thread closed";
 }
 
 

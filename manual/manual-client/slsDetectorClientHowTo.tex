@@ -395,7 +395,7 @@ For some commands, an additional argument \verb=arg= is needed.
 
 
 \subsection{Standard commands}
-
+All the commends return two strings, where string1 is the command, string2 is teh actual returned string.
 
 \begin{description}
 \item[config fname] 
@@ -403,9 +403,11 @@ Dumps the current configuration of the detector to the file fname.
 \item[parameters fname]
  Dumps the current acquisition parameters of the detector to the file fname.
 \item[settings] 
-Returns the current settings of the detector.
+Returns the current settings of the detector. Returns a string 
+
 \item[threshold] 
-For photon counting detectors, returns the detector threshold in eV, -1 if undefined.
+For photon counting detectors, returns the detector threshold in eV, -1 if undefined. Returns ``threshold value\_in\_eV''. If it fails, the returned threshold is the old set value. 
+
 \item[timing]   
 Returns the acquisition timing mode of the detector.
 Refer to the detailed documentation to understand how the different timing modes work.
@@ -415,10 +417,10 @@ Returns the path where the output files are saved to.
 Returns the prefix of the file name for the data output.
 \item[enablefwrite] Returns if data are written to file (1) or not (0).
 \item[exptime] 
-Returns the exposure time of a single acquisition in seconds. 
+Returns the exposure time of a single acquisition in seconds. Example: "exptime 1.000000000''
 Refer to detailed documentation to understand how the different timing modes work. 
 \item[period]  
-Returns the frames period (in s). 
+Returns the frames period (in s). Example: ``period 1.000000000''
 Refer to detailed documentation to understand how the different timing modes work.
 \item[delay] 
 Returns the delay after trigger in triggered mode (in s). 
@@ -427,18 +429,19 @@ Refer to detailed documentation to understand how the different timing modes wor
 Returns the number of gates per frame in gated (stroboscopic) mode. 
 Refer to detailed documentation to understand how the different timing modes work.
 \item[frames]  
-Returns the number of frames acquired sequentially per cycle (e.g. after each trigger), with the exposure time defined by exptime and the period defined by period (unless in gated mode).
+Returns the number of frames acquired sequentially per cycle (e.g. after each trigger), with the exposure time defined by exptime and the period defined by period (unless in gated mode). Returned as a string to be interpreted as an integer ``frames integer''
 Note that the total number of images is  frames times cycles.  
 Refer to detailed documentation to understand how the different timing modes work. 
 \item[cycles n] 
-Returns the number of cycles (e.g. number of triggers). 
+Returns the number of cycles (e.g. number of triggers). Returned as atring to be interpreted as an integer ``cycles integer''
 Note that the total number of images is  frames times cycles. 
 Refer to detailed documentation to understand how the different timing modes work.  
 \item[probes]  Returns the number of probes to accumulate for stroboscopic measurements.  
 Refer to detailed documentation to understand how the different timing modes work.
 \item[measurements] Returns the number of repetitions of the acquisitions (non real time!). 
 Refer to detailed documentation to understand how the different timing modes work.
-\item[dr] Returns the dynamic range n (in bits) of the data for a photon counting detector. 
+\item[dr] Returns the dynamic range n (in bits) of the data for a photon counting detector. Returns a string that should be interpreted as an integer.
+
 \item[flags s] Returns the flags set for your detector. 
 \item[help cmd]  Returns the help for command cmd.
 \item[lock] Returns if the detector is locked to a single PC.
@@ -580,7 +583,7 @@ Advanced commands to configure the detector system. Should be left to the config
 \item[free]  Avoid using it. Frees the shared memory. 
 \end{description}
 Settable communication parameters:
-\start{description}
+\begin{description}
 \item[txndelay\_left] \E advanced: Set transmission delay of sending the left port frame  
 \item[txndelay\_right] \E advanced: Set transmission delay of sending the right port frame
  \item[txndelay\_frame] \E advanced: Set transmission delay of sending the entire frame In addition to left and right. This value has to be greater than the maximum of the transmission delays of each port.    
@@ -604,7 +607,7 @@ Settable communication parameters:
   
 \item[r\_online b] Returns whether the receiver in online (1) or offline (0) mode.           
 \item[r\_checkonline]       Returns whether the receiver in online (1) or offline (0) mode.   
-\item[framescaught]       Returns the number of frames received.
+\item[framescaught]       Returns the number of frames received. Returns: "framescaught n''
 \item[resetframescaught n]       Sets the number of frames received to 1
 \item[frameindex]     Returns the index of the last frame received.      
 \item[r\_lock] Returns whether the receiver is locked (1) or unlocked (0).   

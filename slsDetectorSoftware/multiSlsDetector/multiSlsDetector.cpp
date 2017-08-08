@@ -6089,6 +6089,11 @@ int multiSlsDetector::pulseChip(int n) {
 
 void multiSlsDetector::setAcquiringFlag(bool b){
 	thisMultiDetector->acquiringFlag = b;
+	for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
+		if(detectors[idet]){
+			detectors[idet]->setAcquiringFlag(b);
+		}
+	}
 }
 
 bool multiSlsDetector::getAcquiringFlag(){

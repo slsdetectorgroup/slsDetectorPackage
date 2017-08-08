@@ -42,17 +42,16 @@ slsDetectorUtils::slsDetectorUtils()  {
 
 
 int  slsDetectorUtils::acquire(int delflag){
-	struct timespec begin,end;
-	clock_gettime(CLOCK_REALTIME, &begin);
-
-
-  //ensure acquire isnt started multiple times by same client
+ //ensure acquire isnt started multiple times by same client
   if(getAcquiringFlag() == false)
     setAcquiringFlag(true);
   else{
 	  std::cout << "Error: Acquire has already been started." << std::endl;
 	  return FAIL;
   }
+
+	struct timespec begin,end;
+	clock_gettime(CLOCK_REALTIME, &begin);
 
 	//not in the loop for real time acqusition yet,
 	//in the real time acquisition loop, processing thread will wait for a post each time

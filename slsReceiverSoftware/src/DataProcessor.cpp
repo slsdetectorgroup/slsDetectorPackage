@@ -110,6 +110,10 @@ uint64_t DataProcessor::GetNumFramesCaught() {
 	return numFramesCaught;
 }
 
+uint64_t DataProcessor::GetActualProcessedAcquisitionIndex() {
+	return currentFrameIndex;
+}
+
 uint64_t DataProcessor::GetProcessedAcquisitionIndex() {
 	return currentFrameIndex - firstAcquisitionIndex;
 }
@@ -242,7 +246,7 @@ void DataProcessor::SetupFileWriter(int* nd, char* fname, char* fpath, uint64_t*
 	}
 }
 
-
+// only the first file
 int DataProcessor::CreateNewFile(bool en, uint64_t nf, uint64_t at, uint64_t ap) {
 	file->CloseAllFiles();
 	if (file->CreateMasterFile(en,	generalData->imageSize, generalData->nPixelsX, generalData->nPixelsY,
@@ -317,6 +321,7 @@ void DataProcessor::ProcessAnImage(char* buf) {
 
 	sls_detector_header* header = (sls_detector_header*) (buf);
 	uint64_t fnum = header->frameNumber;
+	currentFrameIndex = fnum;
 	uint32_t nump = header->packetNumber;
 	if (nump == generalData->packetsPerFrame) {
 		numFramesCaught++;

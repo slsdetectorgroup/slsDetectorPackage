@@ -88,6 +88,12 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	uint64_t GetNumFramesCaught();
 
 	/**
+	 * Gets Actual Current Frame Index (that has not been subtracted from firstAcquisitionIndex) thats been processed for an entire  acquisition (including all scans)
+	 * @return -1 if no frames have been caught, else current frame index (represents all scans too)
+	 */
+	uint64_t GetActualProcessedAcquisitionIndex();
+
+	/**
 	 * Get Current Frame Index thats been processed for an entire  acquisition (including all scans)
 	 * @return -1 if no frames have been caught, else current frame index (represents all scans too)
 	 */

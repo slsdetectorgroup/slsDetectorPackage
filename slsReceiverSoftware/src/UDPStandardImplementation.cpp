@@ -100,7 +100,7 @@ int64_t UDPStandardImplementation::getAcquisitionIndex() const {
 
 	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it){
 		flagsum += ((*it)->GetAcquisitionStartedFlag() ? 1 : 0);
-		sum += (*it)->GetProcessedAcquisitionIndex();
+		sum += (*it)->GetActualProcessedAcquisitionIndex();
 	}
 
 	//no data processed

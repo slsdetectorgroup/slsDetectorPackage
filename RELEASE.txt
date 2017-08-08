@@ -101,6 +101,10 @@ New Features
 	3.	UDP Packets from all the detectors will contain the standard sls detector header. 
 	  	X, Y and Z Coordinates define the position of the detector in 3d. 
 	  	
+	4.	When acquire has started, one can use sls_detector_get busy to check the status
+		of the acquire. 1 is running 0 is idle. This way one can start acqusition with &,
+		poll the busy command ( or framescaught or frameindex to get status from receiver).
+	  	
 	  	
 	Receiver
     --------
@@ -163,7 +167,7 @@ Resolved Issues
 	7.	Acquire & Unblocking acquire (receiver start, status start, receiver stop) can work
 	  	also when switching from gui to command line and vice versa.
 	  
-
+	8.	Bug Fix: sls_detector_get frameindex was always returning 0
 
 
 Known Issues

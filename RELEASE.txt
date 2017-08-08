@@ -31,84 +31,154 @@ CONTENTS
 Changes in User Interface
 =========================
 This release has no changes in user interface from the previous 2.3 version.
+However, receiver data call backs have been redefined for the 
+standard image header.
 
 Reiterating, both 2.3 and 3.0 supports the following features:
   	
 	Receiver
     --------
-	- The files will be written in this format in the default mode:
-		* ASCII file header of 1024 bytes (only for EIGER detectors)
-		* series of images, each preceded by a Standard Header image 
-		(header described below)
+	1.	The files will be written in this format in the binary mode:
+		* ASCII file: header of 1024 bytes (only for EIGER detectors)
+		* binary files: series of images, each preceded by a 
+		  	  Standard Image Header (header described below)
 	
-	- Stanard Header image header in file and call back
-	arguments defined. It is in the following format defined as 
-	sls_detector_header defined in 
-	slsReceiverSoftware/include/sls_receiver_defs.h
-	Mostly 0 if not applicatble or implemented, but updated in next release 
-	from firmware.
+	2. 	Stanard Image Header in file and call back
+	 	arguments defined. It is in the following format defined as 
+	  	sls_detector_header defined in 
+	 	slsReceiverSoftware/include/sls_receiver_defs.h
+	 	Mostly 0 if not applicatble or implemented, but updated in next release 
+	  	from firmware.
 		
 		* Frame Number       : 8 bytes 	# Image Number
-		* Exposure Length    : 4 bytes  # sub frame number in 32 bit mode
-		  		       Eiger. 
-		* Packet Number      : 4 bytes	# Number of packets in an image
-		* Bunch ID           : 8 bytes  # Bunch Id in beamline for jungfrau. 
-		* Timestamp          : 8 bytes  # Not implemened
-		* Module Id          : 2 bytes  # Not implemented
-		* X Coordinate       : 2 bytes  # Id of part of detector in 1D
-		* Y Coordinate       : 2 bytes  # Not implemented
+		* Exposure Length    : 4 bytes  # Sub frame number in 32 bit mode (Eiger)
+		  		       					  Real time exposre time in 100ns (Others) 
+		* Packet Number      : 4 bytes	# Number of packets caught in the image
+		* Bunch ID           : 8 bytes  # Bunch Id in beamline (Jungfrau) 
+		* Timestamp          : 8 bytes  # Not implemened. 
+										  Time stamp with 10MHz clock
+		* Module Id          : 2 bytes  # Not implemented. Unique module ID.
+		* X Coordinate       : 2 bytes  # Currently as Id of part of detector in 1D
+										  (Future Releases) as X coordinate 
+										  in complete detector system
+		* Y Coordinate       : 2 bytes  # Not implemented 
+										  Y coordinate in complete detector system
 		* Z Coordinate       : 2 bytes  # Not implemented
+										  Z coordinate in complete detector system
 		* Debug              : 4 bytes  # Not implemented
+										  For debugging purposes
 		* Round Robin Number : 2 bytes  # Not implemented
+										  Round Robin Number
 		* Detector Type      : 1 byte   # Detector type defined by enum
 				                          detectorType in slsReceiverSoftware
 						                  /include/sls_receiver_defs.h
-		* Header Version     : 1 byte   # 1
+		* Header Version     : 1 byte   # 1.0 currently
 		
-	- The call back value for Start Acquisition Call back is insignificant at the 
-	moment and left for future use. Instead, the following rules apply:
+	3.	The call back value for Start Acquisition Call back is insignificant at the 
+	 	 moment and left for future use. Instead, the following rules apply:
 		* If file write is enabled from the client, we will write the files.
 		* If callbacks are registered, they will be called.
-	For example, the user prefers to write the data himself, one must disable
-	file write (so we dont write) and register the callbacks (so the user gets 
-	the data).
+		For example, the user prefers to write the data himself, one must disable
+		file write (so we dont write) and register the callbacks (so the user gets 
+		the data).
 		
 
 
 New Features
 ============
-	Receiver
-    --------
-	- One can choose the file format using the command "fileformat binary/hdf5" from 
-	the client.
-	
-	- Virtual HDF5 file maps all the files into a single file.
-	
-	- Gotthard, Propix and Moench also save data in the same was as Jungfrau and Eiger
-	(ie. without any packet headers, only image  header followed by image data)
-	
-	
-	Eiger
-	-----
-	- The ascii part of the file (file header with acquisition parameters) moved to 
-	a separate file called the master file. So one master file per acquisition.
+	Package
+	-------
+	1.	One can compile using cmake or the ./cmk.sh script(also uses cmake)
+	  	Run ./cmk.sh -help to get more info. This method does not touch the 
+	  	source files.
+	  
+	2.	One can compile the normal way using Makefile (editing Makefile.include
+	  	for the hdf5 options), but this will modify other gitInfo files.
 	
 	
 	General
     -------
-	- UDP Packets from all the detectors will contain the standard sls detector header. 
-	X, Y and Z Coordinates define the position of the detector in 3d. 
+	3.	UDP Packets from all the detectors will contain the standard sls detector header. 
+	  	X, Y and Z Coordinates define the position of the detector in 3d. 
+	  	
+	  	
+	Receiver
+    --------
+	4.	One can choose the file format using the command "fileformat binary/hdf5" from 
+	  	the client, but one must compile with the options as defined in README.md
+	
+	5.	Virtual HDF5 file maps all the files into a single file.
+	
+	6.	Gotthard, Propix and Moench also save data in the same way as Jungfrau and Eiger,
+	  	as described above (ie. without any packet headers, only standard image headers 
+	  	for each image data)
+	
+	7.	(Eiger) The ascii part of the file (file header with acquisition parameters) moved to 
+	  	a separate file called the master file. So one master file per acquisition.
+	  
+	  
+   	Client
+	------
+	8.	(Eiger) Can now set Threshold without uploading Trimbits.
 	
 	
+	Gui
+    ---
+    9.	Set the data streaming port (individually/ a single one that calculates for the other
+	  	receiver streamer threads) via the command line
+	
+		
+	Users
+	-----
+	10.	Users example forks new child processes for every extra receiver object.
+
 
 
 Resolved Issues
 ===============
+	Client
+	------
+	1.	 Memory Leak fixed when setting receiver parameters such as udp port or detector 
+	  	network parameter. The signature in slsDetector.cpp and corresponding files have 
+	  	changed, but does not change the slsDetectorUser API.
+	  
+	2.	Bug Fix: Has been made more threadsafe (strtok). Removed bug of configuring MAC 
+	  	correctly even in multiple thread mode.
+	  
+	3.	Bug Fix: Client crashing when rx_hostname is IP instead of a hostname has been fixed.
+	
+	
+	Server
+	------
+	4.	(Eiger/Jungfrau) Bug Fix: Client crashing should not crash the server as SIGPIPE 
+	  	signal is caught.
+	  
+	5.	(Eiger) Buf Fix: Front End Temperature read out conversion fixed.
+	  
+	  
+	Receiver
+	--------	  
+	6.	Bug Fix: Ctrl+C kills the receiver properly calling the appropriate destructors.
+	
+	7.	Acquire & Unblocking acquire (receiver start, status start, receiver stop) can work
+	  	also when switching from gui to command line and vice versa.
+	  
 
 
 
 Known Issues
 ============
+	Server
+	------
+	1.	(Eiger) The hardware mac of the detector is used (not relayed back to the client). 
+	  	For 1 GbE, the hardware IP of the detector is used (also not relayed back to the 
+	  	client). 
+	  	
+	2.	Standard header fills x-coord in 1D. y-coord and z-coord is not implemented (3D).
+	
+	
+	3. HDF5 compression and filters are not implemented yet.
+
 
 
 

@@ -192,7 +192,7 @@ void UDPRESTImplementation::initialize_REST(){
 
 
 int UDPRESTImplementation::startReceiver(char message[]){
-	int i;
+	//int i;
 
 	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
 	initialize_REST();
@@ -277,7 +277,7 @@ void UDPRESTImplementation::startReadout(){
  * Its also called by TCP in case of illegal shut down such as Ctrl + c.
  * Upto you what you want to do with it.
  */
-int UDPRESTImplementation::shutDownUDPSockets(){
+void UDPRESTImplementation::shutDownUDPSockets(){
 
 	FILE_LOG(logDEBUG) << __AT__ << "called";
 
@@ -299,7 +299,7 @@ int UDPRESTImplementation::shutDownUDPSockets(){
 	//FILE_LOG(logDEBUG) << __AT__ << " numListeningThreads=" << numListeningThreads;
 	if (rest == NULL){
 		FILE_LOG(logWARNING) << __AT__ << "No REST object initialized, closing...";
-		return OK;
+		return;
 	}
 
 	// getting the state
@@ -329,7 +329,6 @@ int UDPRESTImplementation::shutDownUDPSockets(){
 	//delete rest;
 
 	FILE_LOG(logDEBUG) << __AT__ << "finished";
-	return OK;
 }
 
 

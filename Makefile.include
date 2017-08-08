@@ -41,17 +41,14 @@ endif
 
 REST = no
 
-#POCODIR = /afs/psi.ch/user/s/sala/public/poco-slp_5.7-32bit
-#JSONBOXDIR = /afs/psi.ch/user/s/sala/public/JsonBox-slp_5.7-32bit
-POCODIR = /afs/psi.ch/user/s/sala/public/poco-slp_6.4-64bit
-JSONBOXDIR = /afs/psi.ch/user/s/sala/public/JsonBox-slp_6.4-64bit
-#POCODIR = /home/sala/Programs/poco-ubuntu_13.10-64bit
-#JSONBOXDIR = /home/sala/Programs/JsonBox-ubuntu_13.10-64bit
 
-RESTFLAGS = -L$(POCODIR)/lib -Wl,-rpath=$(POCODIR)/lib  -L$(JSONBOXDIR) -Wl,-rpath=$(JSONBOXDIR)/lib  -lPocoNet -lPocoFoundation -lJsonBox
+POCODIR = /afs/psi.ch/user/s/sala/public/poco
+JSONBOXDIR = /opt/JsonBox-0.5
+
+RESTFLAGS = -L$(POCODIR)/lib -Wl,-rpath=$(POCODIR)/lib  -L$(JSONBOXDIR) -Wl,-rpath=$(JSONBOXDIR)  -lPocoNet -lPocoFoundation -lJsonBox
 
 ifeq ($(REST),yes)
-     LDFLAGRXR = -L$(LIBDIR) -lSlsReceiver $(RESTFLAGS) -DREST
+     LDFLAGRXR = -L$(LIBDIR) -Wl,-rpath=$(LIBDIR) -lSlsReceiver $(RESTFLAGS) -DREST
      INCLUDESRXR = $(EIGERFLAGS) -I$(POCODIR)/include -I$(JSONBOXDIR)/include
 endif
 

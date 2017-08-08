@@ -37,6 +37,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdStatus;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="busy"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdStatus;
+  i++;
+
   descrToFuncMap[i].m_pFuncName="datastream"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDataStream;
   i++;
@@ -1440,20 +1444,30 @@ string slsDetectorCommand::cmdStatus(int narg, char *args[], int action) {
 #ifdef VERBOSE
   cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 #endif
-  myDet->setOnline(ONLINE_FLAG);
-  if (action==PUT_ACTION) {
-    //myDet->setThreadedProcessing(0);
-    if (string(args[1])=="start")
-      myDet->startAcquisition();
-    else if (string(args[1])=="stop")
-      myDet->stopAcquisition();
-    else
-      return string("unknown action");
-  } else if (action==HELP_ACTION) {
-    return helpStatus(narg,args,HELP_ACTION);
+
+  if (action==HELP_ACTION)
+    return helpStatus(narg,args,action);
+
+  if (cmd=="status") {
+	  myDet->setOnline(ONLINE_FLAG);
+	  if (action==PUT_ACTION) {
+	    //myDet->setThreadedProcessing(0);
+	    if (string(args[1])=="start")
+	      myDet->startAcquisition();
+	    else if (string(args[1])=="stop")
+	      myDet->stopAcquisition();
+	    else
+	      return string("unknown action");
+	  }
+	  runStatus s=myDet->getRunStatus();
+	  return myDet->runStatusType(s);
   }
-  runStatus s=myDet->getRunStatus();
-  return myDet->runStatusType(s);
+  else if (cmd=="busy") {
+	  char answer[100];
+	  sprintf(answer,"%d", myDet->getAcquiringFlag());
+	  return string(answer);
+  }
+  else return string("cannot scan command ")+string(cmd);
 
 }
 
@@ -1462,8 +1476,10 @@ string slsDetectorCommand::cmdStatus(int narg, char *args[], int action) {
 string slsDetectorCommand::helpStatus(int narg, char *args[], int action) {
   
   ostringstream os;
-  if (action==GET_ACTION || action==HELP_ACTION)
+  if (action==GET_ACTION || action==HELP_ACTION) {
     os << string("status \t gets the detector status - can be: running, error, transmitting, finished, waiting or idle\n");
+    os << string("busy \t gets the status of acquire- can be: 0 or 1. 0 for idle, 1 for running\n");
+  }
   if (action==PUT_ACTION || action==HELP_ACTION)
     os << string("status \t controls the detector acquisition - can be start or stop \n");
   return os.str();
@@ -4356,8 +4372,10 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
       myDet->setFrameIndex(-1);
   }
 
-
-  sprintf(answer,"%0.9f",rval);
+  if (index==FRAME_NUMBER || index==GATES_NUMBER || index==PROBES_NUMBER || index==CYCLES_NUMBER || index==MEASUREMENTS_NUMBER)
+	  sprintf(answer,"%d",(int)rval);
+  else
+	  sprintf(answer,"%0.9f",rval);
   return string(answer);
   
 

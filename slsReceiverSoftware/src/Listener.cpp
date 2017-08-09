@@ -248,7 +248,7 @@ void Listener::ThreadExecution() {
 
 	fifo->GetNewAddress(buffer);
 #ifdef FIFODEBUG
-	if (!index) bprintf(GREEN,"Listener %d, pop 0x%p buffer:%s\n", index,(void*)(buffer),buffer);
+	bprintf(GREEN,"Listener %d, pop 0x%p buffer:%s\n", index,(void*)(buffer),buffer);
 #endif
 
 	//udpsocket doesnt exist
@@ -280,7 +280,8 @@ void Listener::ThreadExecution() {
 		if (!udpSocketAlive) {
 			(*((uint32_t*)buffer)) = 0;
 			StopListening(buffer);
-		}
+		}else
+			fifo->FreeAddress(buffer);
 		return;
 	}
 
@@ -432,7 +433,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 		// Eiger Firmware in a weird state
 		if (myDetectorType == EIGER && fnum == 0) {
-			cprintf(RED,"[%u]: Got Frame Number Zero from Firmware. Discarding Packet\n", udpPortNumber);
+			cprintf(RED,"[%u]: Got Frame Number Zero from Firmware. Discarding Packet\n", *udpPortNumber);
 			numPacketsCaught--;
 			return 0;
 		}

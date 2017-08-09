@@ -430,6 +430,13 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		}
 		//------------------------------------------------------------------------------------------------------------
 
+		// Eiger Firmware in a weird state
+		if (myDetectorType == EIGER && fnum == 0) {
+			cprintf(RED,"[%u]: Got Frame Number Zero from Firmware. Discarding Packet\n", udpPortNumber);
+			numPacketsCaught--;
+			return 0;
+		}
+
 		lastCaughtFrameIndex = fnum;
 
 

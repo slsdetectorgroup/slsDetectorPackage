@@ -637,10 +637,10 @@ enum communicationProtocol{
     					 break;
     				 //incomplete packets or header packets ignored and read buffer again
     				 if(nsent != packet_size && nsent != header_packet_size)
-    						bprintf(RED,"Incomplete Packet size %d\n",nsent);
+    						bprintf(RED,"%d Incomplete Packet size %d\n", portno, nsent);
     			 }
     			//nsent = 1040;
-    			total_sent+=nsent;
+    			 if(nsent > 0)total_sent+=nsent;
     		 }
     		 break;
     	 default:

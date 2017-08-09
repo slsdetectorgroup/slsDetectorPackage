@@ -48,7 +48,8 @@ Listener::Listener(detectorType dtype, Fifo*& f, runStatus* s, uint32_t* portno,
 		currentFrameIndex(0),
 		carryOverFlag(0),
 		carryOverPacket(0),
-		listeningPacket(0)
+		listeningPacket(0),
+		udpSocketAlive(0)
 {
 	if(ThreadObject::CreateThread()){
 		pthread_mutex_lock(&Mutex);
@@ -223,6 +224,7 @@ int Listener::CreateUDPSockets() {
 		FILE_LOG(logERROR) << "Could not create UDP socket on port " << *udpPortNumber << " error: " << iret;
 		return FAIL;
 	}
+	udpSocketAlive = true;
 	return OK;
 }
 
@@ -230,11 +232,11 @@ int Listener::CreateUDPSockets() {
 
 void Listener::ShutDownUDPSocket() {
 	if(udpSocket){
+		udpSocketAlive = false;
 		udpSocket->ShutDownSocket();
 		FILE_LOG(logINFO) << "Shut down of UDP port " << *udpPortNumber;
 		fflush(stdout);
-		delete udpSocket;
-		udpSocket = 0;
+		//delete socket at stoplistening
 	}
 }
 
@@ -250,7 +252,7 @@ void Listener::ThreadExecution() {
 #endif
 
 	//udpsocket doesnt exist
-	if (*activated && !udpSocket && !carryOverFlag) {
+	if (*activated && !udpSocketAlive && !carryOverFlag) {
 		//FILE_LOG(logERROR) << "Listening_Thread " << index << ": UDP Socket not created or shut down earlier";
 		(*((uint32_t*)buffer)) = 0;
 		StopListening(buffer);
@@ -258,7 +260,7 @@ void Listener::ThreadExecution() {
 	}
 
 	//get data
-	if ((*status != TRANSMITTING && udpSocket) || carryOverFlag) {
+	if ((*status != TRANSMITTING && udpSocketAlive) || carryOverFlag) {
 		if (*activated)
 			rc = ListenToAnImage(buffer);
 		else
@@ -274,8 +276,11 @@ void Listener::ThreadExecution() {
 
 	//error check, (should not be here) if not transmitting yet (previous if) rc should be > 0
 	if (rc <= 0) {
-		//cprintf(RED,"Error:(Weird Early self shut down), UDP Sockets not shut down, but received nothing\n");
-		StopListening(buffer);
+		//cprintf(RED,"%d Socket shut down while waiting for future packet. udpsocketalive:%d\n",index, udpSocketAlive );
+		if (!udpSocketAlive) {
+			(*((uint32_t*)buffer)) = 0;
+			StopListening(buffer);
+		}
 		return;
 	}
 
@@ -295,6 +300,10 @@ void Listener::StopListening(char* buf) {
 	(*((uint32_t*)buf)) = DUMMY_PACKET_VALUE;
 	fifo->PushAddress(buf);
 	StopRunning();
+	if (udpSocket) {
+		delete udpSocket;
+		udpSocket = 0;
+	}
 #ifdef VERBOSE
 	bprintf(GREEN,"%d: Listening Packets (%u) : %llu\n", index, *udpPortNumber, numPacketsCaught);
 	bprintf(GREEN,"%d: Listening Completed\n", index);
@@ -304,7 +313,7 @@ void Listener::StopListening(char* buf) {
 
 /* buf includes the fifo header and packet header */
 uint32_t Listener::ListenToAnImage(char* buf) {
-	uint32_t rc = 0;
+	int rc = 0;
 	uint64_t fnum = 0, bid = 0;
 	uint32_t pnum = 0, snum = 0;
 	uint32_t numpackets = 0;
@@ -395,7 +404,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 	while ( numpackets < pperFrame) {
 		//listen to new packet
 		rc = 0;
-		if (udpSocket){
+		if (udpSocketAlive){
 			rc = udpSocket->ReceiveDataOnly(listeningPacket);
 		}
 		if(rc <= 0) {

@@ -278,5 +278,8 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** if the standard header is implemented in firmware */
 	bool standardheader;
+
+	/** if the udp socket is connected */
+	bool udpSocketAlive;
 };
 

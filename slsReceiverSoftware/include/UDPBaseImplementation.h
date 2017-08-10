@@ -200,6 +200,12 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	uint64_t getAcquisitionTime() const;
 
+	/**
+	 * Get Sub Exposure Time
+	 * @return Sub Exposure Time
+	 */
+	uint64_t getSubExpTime() const;
+
 	/*
 	 * Get Number of Frames expected by receiver from detector
 	 * The data receiver status will change from running to idle when it gets this number of frames FIXME: (Not implemented)
@@ -397,6 +403,13 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	int setAcquisitionTime(const uint64_t i);
 
 	/**
+	 * Set Sub Exposure Time
+	 * @param i Sub Exposure Time
+	 * @return OK or FAIL
+	 */
+	void setSubExpTime(const uint64_t i);
+
+	/**
 	 * Set Number of Frames expected by receiver from detector
 	 * The data receiver status will change from running to idle when it gets this number of frames
 	 * @param i number of frames expected
@@ -581,6 +594,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	uint64_t acquisitionPeriod;
 	/** Acquisition Time */
 	uint64_t acquisitionTime;
+	/** Sub Exposure Time */
+	uint64_t subExpTime;
 	/** Frame Number */
 	uint64_t numberOfFrames;
 	/** Dynamic Range */

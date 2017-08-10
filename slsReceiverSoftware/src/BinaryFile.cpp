@@ -101,7 +101,7 @@ int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_
 
 
 int BinaryFile::CreateMasterFile(bool en, uint32_t size,
-		uint32_t nx, uint32_t ny, uint64_t at, uint64_t ap) {
+		uint32_t nx, uint32_t ny, uint64_t at,  uint64_t st, uint64_t ap) {
 	//beginning of every acquisition
 	numFramesInFile = 0;
 	numActualPacketsInFile = 0;
@@ -111,7 +111,7 @@ int BinaryFile::CreateMasterFile(bool en, uint32_t size,
 		FILE_LOG(logINFO) << "Master File: " << masterFileName;
 		return BinaryFileStatic::CreateMasterDataFile(masterfd, masterFileName, *overWriteEnable,
 				*dynamicRange, en, size, nx, ny, *numImages,
-				at, ap, BINARY_WRITER_VERSION);
+				at, st, ap, BINARY_WRITER_VERSION);
 	}
 	return OK;
 }

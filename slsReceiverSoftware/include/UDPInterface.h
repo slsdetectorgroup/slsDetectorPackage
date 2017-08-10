@@ -43,6 +43,7 @@ class UDPInterface {
 	 *	-setAcquisitionPeriod
 	 *	-setNumberOfFrames
 	 *	-setAcquisitionTime
+	 *	-setSubExpTime
 	 *	-setDynamicRange
 	 *	-setFlippedData
 	 *	-setActivate
@@ -284,6 +285,12 @@ class UDPInterface {
 	 */
 	virtual uint64_t getAcquisitionTime() const = 0;
 
+	/**
+	 * Get Sub Exposure Time
+	 * @return Sub Exposure Time
+	 */
+	virtual uint64_t getSubExpTime() const = 0;
+
 	/*
 	 * Get Number of Frames expected by receiver from detector
 	 * The data receiver status will change from running to idle when it gets this number of frames FIXME: (Not implemented)
@@ -475,6 +482,13 @@ class UDPInterface {
 	 * @return OK or FAIL
 	 */
 	virtual int setAcquisitionTime(const uint64_t i) = 0;
+
+	/**
+	 * Set Sub Exposure Time
+	 * @param i Sub Exposure Time
+	 * @return OK or FAIL
+	 */
+	virtual void setSubExpTime(const uint64_t i) = 0;
 
 	/**
 	 * Set Number of Frames expected by receiver from detector

@@ -999,6 +999,9 @@ int slsReceiverTCPIPInterface::set_timer() {
 				case CYCLES_NUMBER:
 					receiverBase->setNumberOfFrames(index[1]);
 					break;
+				case SUBFRAME_ACQUISITION_TIME:
+					receiverBase->setSubExpTime(index[1]);
+					break;
 				default:
 					ret = FAIL;
 					sprintf(mess,"This timer mode (%lld) does not exist for receiver\n", (long long int)index[0]);
@@ -1018,7 +1021,15 @@ int slsReceiverTCPIPInterface::set_timer() {
 		case CYCLES_NUMBER:
 			retval=receiverBase->getNumberOfFrames();
 			break;
+		case SUBFRAME_ACQUISITION_TIME:
+			retval=receiverBase->getSubExpTime();
+			break;
+		default:
+			ret = FAIL;
+			sprintf(mess,"This timer mode (%lld) does not exist for receiver\n", (long long int)index[0]);
+			FILE_LOG(logERROR) << "Warning: " << mess;
 		}
+
 		// check
 		if (ret == OK && index[1] >= 0 && retval != index[1]) {
 			ret = FAIL;
@@ -1028,12 +1039,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 	}
 #endif
 #ifdef VERYVERBOSE
-	if (index[0] == ACQUISITION_TIME)
-		FILE_LOG(logDEBUG1) << "acquisition time:" << retval;
-	else if(index[0] == FRAME_PERIOD)
-		FILE_LOG(logDEBUG1) << "acquisition period:" << retval
-		else
-			FILE_LOG(logDEBUG1) << "frame number:" << retval;
+	FILE_LOG(logDEBUG1) << getTimerType(index[0]) << ":" << retval;
 #endif
 
 	if (ret == OK && mySock->differentClients)

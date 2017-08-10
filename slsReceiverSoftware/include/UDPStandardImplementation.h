@@ -81,28 +81,6 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	int setDataStreamEnable(const bool enable);
 
 	/**
-	 * Set Acquisition Period
-	 * @param i acquisition period
-	 * @return OK or FAIL
-	 */
-	int setAcquisitionPeriod(const uint64_t i);
-
-	/**
-	 * Set Acquisition Time
-	 * @param i acquisition time
-	 * @return OK or FAIL
-	 */
-	int setAcquisitionTime(const uint64_t i);
-
-	/**
-	 * Set Number of Frames expected by receiver from detector
-	 * The data receiver status will change from running to idle when it gets this number of frames
-	 * @param i number of frames expected
-	 * @return OK or FAIL
-	 */
-	int setNumberOfFrames(const uint64_t i);
-
-	/**
 	 * Set Dynamic Range or Number of Bits Per Pixel
 	 * @param i dynamic range that is 4, 8, 16 or 32
 	 * @return OK or FAIL

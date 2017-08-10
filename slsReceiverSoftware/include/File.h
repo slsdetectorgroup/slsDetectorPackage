@@ -144,11 +144,12 @@ class File : private virtual slsReceiverDefs {
 	  * @param nx number of pixels in x direction
 	  * @param ny number of pixels in y direction
 	  * @param at acquisition time
+	  * @param at sub exposure time
 	  * @param ap acquisition period
 	  * @returns OK or FAIL
 	  */
 	virtual int CreateMasterFile(bool en, uint32_t size,
-				uint32_t nx, uint32_t ny, uint64_t at, uint64_t ap) {
+				uint32_t nx, uint32_t ny, uint64_t at, uint64_t st, uint64_t ap) {
 		bprintf(RED,"This is a generic function CreateMasterFile that should be overloaded by a derived class\n");
 		return OK;
 	}

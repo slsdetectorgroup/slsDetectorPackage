@@ -45,6 +45,7 @@ void UDPBaseImplementation::initializeMembers(){
 	strcpy(detHostname,"");
 	acquisitionPeriod = 0;
 	acquisitionTime = 0;
+	subExpTime = 0;
 	numberOfFrames = 0;
 	dynamicRange = 16;
 	tengigaEnable = false;
@@ -191,6 +192,8 @@ bool UDPBaseImplementation::getDataStreamEnable() const{	FILE_LOG(logDEBUG) << _
 uint64_t UDPBaseImplementation::getAcquisitionPeriod() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return acquisitionPeriod;}
 
 uint64_t UDPBaseImplementation::getAcquisitionTime() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return acquisitionTime;}
+
+uint64_t UDPBaseImplementation::getSubExpTime() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return subExpTime;}
 
 uint64_t UDPBaseImplementation::getNumberOfFrames() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return numberOfFrames;}
 
@@ -413,6 +416,13 @@ int UDPBaseImplementation::setAcquisitionTime(const uint64_t i){
 
 	//overrridden child classes might return FAIL
 	return OK;
+}
+
+void UDPBaseImplementation::setSubExpTime(const uint64_t i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	subExpTime = i;
+	FILE_LOG(logINFO) << "Sub Exposure Time: " <<  (double)subExpTime/(1E9) << "s";
 }
 
 int UDPBaseImplementation::setNumberOfFrames(const uint64_t i){

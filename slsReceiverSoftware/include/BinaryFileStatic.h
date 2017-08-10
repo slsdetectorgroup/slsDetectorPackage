@@ -108,12 +108,13 @@ class BinaryFileStatic {
 	 * @param nf number of images
 	 * @param acquisitionTime acquisition time
 	 * @param acquisitionPeriod acquisition period
+	 * @param subexposuretime sub exposure time
 	 * @param version version of software for binary writing
 	 * @returns 0 for success and 1 for fail
 	 */
 	static int CreateMasterDataFile(FILE*& fd, string fname, bool owenable,
 					uint32_t dr, bool tenE,	uint32_t size, uint32_t nPixelsX, uint32_t nPixelsY, uint64_t nf,
-					uint64_t acquisitionTime, uint64_t acquisitionPeriod, double version)
+					uint64_t acquisitionTime, uint64_t subexposuretime, uint64_t acquisitionPeriod, double version)
 	{
 		if(!owenable){
 			if (NULL == (fd = fopen((const char *) fname.c_str(), "wx"))){
@@ -129,16 +130,17 @@ class BinaryFileStatic {
 		time_t t = time(0);
 		char message[MAX_STR_LENGTH];
 		sprintf(message,
-				"Version        : %.1f\n"
-				"Dynamic Range  : %d\n"
-				"Ten Giga       : %d\n"
-				"Image Size     : %d bytes\n"
-				"x              : %d pixels\n"
-				"y              : %d pixels\n"
-				"Total Frames   : %lld\n"
-				"Exptime (ns)   : %lld\n"
-				"Period (ns)    : %lld\n"
-				"Timestamp      : %s\n\n"
+				"Version            : %.1f\n"
+				"Dynamic Range      : %d\n"
+				"Ten Giga           : %d\n"
+				"Image Size         : %d bytes\n"
+				"x                  : %d pixels\n"
+				"y                  : %d pixels\n"
+				"Total Frames       : %lld\n"
+				"Exptime (ns)       : %lld\n"
+				"SubExptime (ns)    : %lld\n"
+				"Period (ns)        : %lld\n"
+				"Timestamp          : %s\n\n"
 
 				"#Frame Header\n"
 				"Frame Number       : 8 bytes\n"
@@ -163,6 +165,7 @@ class BinaryFileStatic {
 				nPixelsY,
 				(long long int)nf,
 				(long long int)acquisitionTime,
+				(long long int)subexposuretime,
 				(long long int)acquisitionPeriod,
 				ctime(&t));
 		if (strlen(message) > MAX_STR_LENGTH) {

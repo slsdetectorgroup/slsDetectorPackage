@@ -223,66 +223,6 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {\
 }
 
 
-int UDPStandardImplementation::setAcquisitionPeriod(const uint64_t i) {
-	if (acquisitionPeriod != i) {
-		acquisitionPeriod = i;
-
-		/*//only the ones lisening to more than 1 frame at a time needs to change fifo structure
-		switch (myDetectorType) {
-		case GOTTHARD:
-		case PROPIX:
-		if (SetupFifoStructure() == FAIL)
-			return FAIL;
-		break;
-		default:
-			break;
-		}*/
-	}
-	FILE_LOG (logINFO) << "Acquisition Period: " << (double)acquisitionPeriod/(1E9) << "s";
-	return OK;
-}
-
-
-int UDPStandardImplementation::setAcquisitionTime(const uint64_t i) {
-	if (acquisitionTime != i) {
-		acquisitionTime = i;
-
-		/*//only the ones lisening to more than 1 frame at a time needs to change fifo structure
-		switch (myDetectorType) {
-		case GOTTHARD:
-		case PROPIX:
-		if (SetupFifoStructure() == FAIL)
-			return FAIL;
-		break;
-		default:
-			break;
-		}*/
-	}
-	FILE_LOG (logINFO) << "Acquisition Period: " << (double)acquisitionTime/(1E9) << "s";
-	return OK;
-}
-
-
-int UDPStandardImplementation::setNumberOfFrames(const uint64_t i) {
-	if (numberOfFrames != i) {
-		numberOfFrames = i;
-
-		/*//only the ones lisening to more than 1 frame at a time needs to change fifo structure
-		switch (myDetectorType) {
-		case GOTTHARD:
-		case PROPIX:
-		if (SetupFifoStructure() == FAIL)
-			return FAIL;
-		break;
-		default:
-			break;
-		}*/
-	}
-	FILE_LOG (logINFO) << "Number of Frames:" << numberOfFrames;
-	return OK;
-}
-
-
 int UDPStandardImplementation::setDynamicRange(const uint32_t i) {
 	if (dynamicRange != i) {
 		dynamicRange = i;
@@ -645,35 +585,6 @@ void UDPStandardImplementation::SetThreadPriorities() {
 			return;
 		}
 	}
-	/*
-	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it){
-		if ((*it)->SetThreadPriority(PROCESSOR_PRIORITY) == FAIL) {
-			FILE_LOG(logWARNING) << "No root privileges to prioritize writer threads";
-			return;
-		}
-	}
-	for (vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it){
-		if ((*it)->SetThreadPriority(STREAMER_PRIORITY) == FAIL) {
-			FILE_LOG(logWARNING) << "No root privileges to prioritize streamer threads";
-			return;
-		}
-	}
-	struct sched_param tcp_param;
-	tcp_param.sched_priority = TCP_PRIORITY;
-	if (pthread_setschedparam(pthread_self(),5 , &tcp_param) != EPERM) {
-		FILE_LOG(logWARNING) << "No root privileges to prioritize tcp threads";
-		return;
-	}
-
-	ostringstream osfn;
- 	osfn << "Priorities set - "
-			  "TCP:"<< TCP_PRIORITY <<
-			", Listener:" << LISTENER_PRIORITY <<
-			", Processor:" << PROCESSOR_PRIORITY;
-	if (dataStreamEnable)
-		osfn << ", Streamer:" << STREAMER_PRIORITY;
-
-*/
 	ostringstream osfn;
 	osfn << "Priorities set - "
 			"Listener:" << LISTENER_PRIORITY;
@@ -683,38 +594,6 @@ void UDPStandardImplementation::SetThreadPriorities() {
 
 
 int UDPStandardImplementation::SetupFifoStructure() {
-	//recalculate number of jobs &  fifodepth, return if no change
-/*	if ((myDetectorType == GOTTHARD) || (myDetectorType == PROPIX)) {
-
-		int oldnumberofjobs = numberofJobs;
-
-		//listen to only n jobs at a time
-		if (frameToGuiFrequency)
-			numberofJobs = frameToGuiFrequency;
-
-		else { NOT YET
-			//random freq depends on acquisition period/time (calculate upto 100ms/period)
-			int i = ((acquisitionPeriod > 0) ?
-					(SAMPLE_TIME_IN_NS/acquisitionPeriod):
-					((acquisitionTime > 0) ? (SAMPLE_TIME_IN_NS/acquisitionTime) : SAMPLE_TIME_IN_NS));
-			//must be > 0 and < max jobs
-			numberofJobs = ((i < 1) ? 1 : ((i > MAX_JOBS_PER_THREAD) ? MAX_JOBS_PER_THREAD : i));
-		}
-		FILE_LOG (logINFO) << "Number of Jobs Per Thread:" << numberofJobs;
-
-		uint32_t oldfifodepth = fifoDepth;
-		//reduce fifo depth if numberofJobsPerBuffer > 1 (to save memory)
-		if (numberofJobs > 1) {
-			fifoDepth = ((fifoDepth % numberofJobs) ?
-					((fifoDepth/numberofJobs)+1) : //if not directly divisible
-					(fifoDepth/numberofJobs));
-		}
-		FILE_LOG (logINFO) << "Total Fifo Depth Recalculated:" << fifoDepth;
-
-		//no change, return
-		if ((oldnumberofjobs == numberofJobs) && (oldfifodepth == fifoDepth))
-			return OK;
-	}else*/
 		numberofJobs = 1;
 
 
@@ -787,7 +666,7 @@ int UDPStandardImplementation::SetupWriter() {
 	bool error = false;
 	for (unsigned int i = 0; i < dataProcessor.size(); ++i)
 		if (dataProcessor[i]->CreateNewFile(tengigaEnable,
-				numberOfFrames, acquisitionTime, acquisitionPeriod) == FAIL) {
+				numberOfFrames, acquisitionTime, subExpTime, acquisitionPeriod) == FAIL) {
 			error = true;
 			break;
 		}

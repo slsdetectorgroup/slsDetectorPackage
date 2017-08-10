@@ -175,10 +175,11 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param en ten giga enable
 	 * @param nf number of frames
 	 * @param at acquisition time
+	 * @param at sub exposure time
 	 * @param ap acquisition period
 	 * @returns OK or FAIL
 	 */
-	int CreateNewFile(bool en, uint64_t nf, uint64_t at, uint64_t ap);
+	int CreateNewFile(bool en, uint64_t nf, uint64_t at, uint64_t st, uint64_t ap);
 
 	/**
 	 * Closes files

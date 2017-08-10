@@ -751,6 +751,30 @@ virtual void readFrameFromReceiver()=0;
     default:       return string("unknown");		\
     }};
 
+  /** returns string from timer index
+      \param s can be FRAME_NUMBER,ACQUISITION_TIME,FRAME_PERIOD, DELAY_AFTER_TRIGGER,GATES_NUMBER,PROBES_NUMBER, CYCLES_NUMBER, ACTUAL_TIME,MEASUREMENT_TIME, PROGRESS,MEASUREMENTS_NUMBER,FRAMES_FROM_START,FRAMES_FROM_START_PG,SAMPLES_JCTB,SUBFRAME_ACQUISITION_TIME
+      \returns string frame_number,acquisition_time,frame_period, delay_after_trigger,gates_number,probes_number, cycles_number, actual_time,measurement_time, progress,measurements_number,frames_from_start,frames_from_start_pg,samples_jctb,subframe_acquisition_time
+  */
+  static string getTimerType(timerIndex t){										\
+    switch (t) {																\
+    case FRAME_NUMBER: 				return string("frame_number"); 				\
+    case ACQUISITION_TIME: 			return string("acquisition_time"); 			\
+    case FRAME_PERIOD: 				return string("frame_period"); 				\
+    case DELAY_AFTER_TRIGGER: 		return string("delay_after_trigger"); 		\
+    case GATES_NUMBER: 				return string("gates_number"); 				\
+    case PROBES_NUMBER: 			return string("probes_number"); 			\
+    case CYCLES_NUMBER: 			return string("cycles_number"); 			\
+    case ACTUAL_TIME: 				return string("actual_time"); 				\
+    case MEASUREMENT_TIME: 			return string("measurement_time"); 			\
+    case PROGRESS: 					return string("progress"); 					\
+    case MEASUREMENTS_NUMBER: 		return string("measurements_number"); 		\
+    case FRAMES_FROM_START: 		return string("frames_from_start"); 		\
+    case FRAMES_FROM_START_PG: 		return string("frames_from_start_pg"); 		\
+    case SAMPLES_JCTB: 				return string("samples_jctb"); 				\
+    case SUBFRAME_ACQUISITION_TIME:	return string("subframe_acquisition_time");	\
+    default:       					return string("unknown");					\
+    }};
+
 
 
 };

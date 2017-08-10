@@ -30,6 +30,7 @@ dacs_t *detectorDacs=NULL;
 dacs_t *detectorAdcs=NULL;
 
 int eiger_highvoltage = 0;
+int eiger_theo_highvoltage = 0;
 int eiger_iodelay = 0;
 int eiger_photonenergy = 0;
 int eiger_dynamicrange = 0;
@@ -341,7 +342,14 @@ void setupDetector() {
 
 
 
+/* advanced read/write reg */
+uint32_t writeRegister(uint32_t offset, uint32_t data) {
+	return Feb_Control_WriteRegister(offset, data);
+}
 
+uint32_t readRegister(uint32_t offset) {
+	return Feb_Control_ReadRegister(offset);
+}
 
 
 /* set parameters - nmod, dr, roi */
@@ -745,22 +753,33 @@ int getADC(enum ADCINDEX ind,  int imod){
 
 
 int setHighVoltage(int val){
-	if(val!=-1){
-		eiger_highvoltage = val;
-		if(master){
+	if (master) {
+
+		// set
+		if(val!=-1){
+			eiger_theo_highvoltage = val;
 			int ret = Feb_Control_SetHighVoltage(val);
 			if(!ret)			//could not set
 				return -2;
 			else if (ret == -1) //outside range
 				return -1;
 		}
+
+		// get
+		if (!Feb_Control_GetHighVoltage(&eiger_highvoltage)) {
+			cprintf(RED,"Warning: Could not read high voltage\n");
+			return -3;
+		}
+
+		// tolerance of 5
+		if (abs(eiger_theo_highvoltage-eiger_highvoltage) > HIGH_VOLTAGE_TOLERANCE) {
+			cprintf(BLUE, "High voltage still ramping: %d\n", eiger_highvoltage);
+			return eiger_highvoltage;
+		}
+		return eiger_theo_highvoltage;
 	}
 
-	if(master && !Feb_Control_GetHighVoltage(&eiger_highvoltage)){
-		cprintf(RED,"Warning: Could not read high voltage\n");
-		return -3;
-	}
-	return eiger_highvoltage;
+	return SLAVE_HIGH_VOLTAGE_READ_VAL;
 }
 
 

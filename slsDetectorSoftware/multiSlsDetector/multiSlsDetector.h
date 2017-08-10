@@ -561,7 +561,17 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
   // Acquisition functions
+  /**
+     prepares detector for acquisition
+     \returns OK if all detectors are properly started, FAIL otherwise
+  */
+  int prepareAcquisition();
 
+  /**
+     prepares detector for acquisition
+     \returns OK if all detectors are properly started, FAIL otherwise
+  */
+  int cleanupAcquisition();
 
   /**
      start detector acquisition (master is started as last)

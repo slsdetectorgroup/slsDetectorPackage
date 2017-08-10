@@ -1059,7 +1059,7 @@ int set_dac(int file_des) {
 				if((ind == HV_POT) || (ind == HV_NEW)) {
 				retval[0] = setHighVoltage(val);
 #ifdef EIGERD
-				if(retval[0] < 0){
+				if ((retval[0] != SLAVE_HIGH_VOLTAGE_READ_VAL) && (retval[0] < 0)) {
 					ret = FAIL;
 					if(retval[0] == -1)
 						sprintf(mess, "Setting high voltage failed.Bad value %d. The range is from 0 to 200 V.\n",val);
@@ -1242,15 +1242,6 @@ int write_register(int file_des) {
 	int retval=-1;
 	sprintf(mess,"write to register failed\n");
 
-#ifdef EIGERD
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-	ret = FAIL;
-	sprintf(mess,"Function (Write Register) is not implemented for this detector\n");
-	cprintf(RED, "Warning: %s", mess);
-#else
-
 	// receive arguments
 	int arg[2]={-1,-1};
 	n = receiveData(file_des,arg,sizeof(arg),INT32);
@@ -1282,7 +1273,6 @@ int write_register(int file_des) {
 #endif
 	if (ret==OK && differentClients)
 		ret=FORCE_UPDATE;
-#endif
 
 	// ret could be swapped during sendData
 	ret1 = ret;
@@ -1310,15 +1300,6 @@ int read_register(int file_des) {
 	int retval=-1;
 	sprintf(mess,"read register failed\n");
 
-#ifdef EIGERD
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-	ret = FAIL;
-	sprintf(mess,"Function (Read Register) is not implemented for this detector\n");
-	cprintf(RED, "Warning: %s", mess);
-#else
-
 	// receive arguments
 	int arg=0;
 	n = receiveData(file_des,&arg,sizeof(arg),INT32);
@@ -1337,7 +1318,6 @@ int read_register(int file_des) {
 #endif
 	if (ret==OK && differentClients)
 		ret=FORCE_UPDATE;
-#endif
 
 	// ret could be swapped during sendData
 	ret1 = ret;

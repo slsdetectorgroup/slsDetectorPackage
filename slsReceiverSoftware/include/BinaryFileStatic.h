@@ -142,7 +142,7 @@ class BinaryFileStatic {
 
 				"#Frame Header\n"
 				"Frame Number       : 8 bytes\n"
-				"Exposure Length    : 4 bytes\n"
+				"SubFrame Number    : 4 bytes\n"  //Only Eiger so far, else "Exposure Length"
 				"Packet Number      : 4 bytes\n"
 				"Bunch ID           : 8 bytes\n"
 				"Timestamp          : 8 bytes\n"

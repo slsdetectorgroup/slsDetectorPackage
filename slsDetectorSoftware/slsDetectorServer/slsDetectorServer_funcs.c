@@ -1059,7 +1059,7 @@ int set_dac(int file_des) {
 				if((ind == HV_POT) || (ind == HV_NEW)) {
 				retval[0] = setHighVoltage(val);
 #ifdef EIGERD
-				if(retval[0] < 0){
+				if ((retval[0] != SLAVE_HIGH_VOLTAGE_READ_VAL) && (retval[0] < 0)) {
 					ret = FAIL;
 					if(retval[0] == -1)
 						sprintf(mess, "Setting high voltage failed.Bad value %d. The range is from 0 to 200 V.\n",val);

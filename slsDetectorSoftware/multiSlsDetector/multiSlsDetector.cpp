@@ -3009,16 +3009,24 @@ dacs_t multiSlsDetector::setDAC(dacs_t val, dacIndex idac, int mV, int imod) {
 	for(int idet=posmin; idet<posmax; idet++){
 		if(detectors[idet]){
 			if(iret[idet] != NULL){
-				if (ret==-100)
-					ret=*iret[idet];
-				else if (ret!=*iret[idet])
-					ret=-1;
+
+				// highvoltage of slave, ignore value
+				if ((idac == HV_NEW) && (*iret[idet] == -999))
+					;
+				else {
+					if (ret==-100)
+						ret=*iret[idet];
+					else if (ret!=*iret[idet])
+						ret=-1;
+				}
 				delete iret[idet];
 			}else ret=-1;
 			if(detectors[idet]->getErrorMask())
 				setErrorMask(getErrorMask()|(1<<idet));
 		}
 	}
+	if (ret==-100)
+		ret = -1;
 
 	return ret;
 }

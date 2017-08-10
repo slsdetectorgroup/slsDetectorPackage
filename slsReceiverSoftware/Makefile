@@ -48,6 +48,15 @@ $(info #   In slsReceiverSoftware Makefile   #)
 $(info #######################################)
 $(info )
 
+ifeq ($(REST), yes)
+$(info )
+$(info !#####################################!)
+$(info !    PLEASE ENSURE THAT VARIABLES     !)
+$(info !       POCODIR and JSONBOXDIR        !)
+$(info !        ARE PROPERLY SETUP!!!        !)
+$(info !#####################################!)
+$(info )
+endif
 
 .PHONY: all intdoc  package eigerReceiver clean
 
@@ -57,7 +66,6 @@ dummy: $(DESTDIR)/dummyReceiver
 
 intdoc: $(SRC_H) $(SRC_CLNT) 
 	doxygen doxy.config
-	
 
 $(BUILDDIR)/%.o : $(SRCDIR)/%.cpp $(INCDIR)/%.h $(DEPSINCLUDES) Makefile
 ifeq ($(ROOTSLS),yes)

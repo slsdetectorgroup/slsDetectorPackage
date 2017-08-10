@@ -58,7 +58,7 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success) {
 	int option_index = 0;
 	int c=0;
 	optind = 1;
-
+	
 	while ( c != -1 ){
 		c = getopt_long (argc, argv, "bfhtr", long_options, &option_index);
 		
@@ -85,6 +85,7 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success) {
 
 		case 'r':
 			rest_hostname = optarg;
+			configuration_map["rest_hostname"] = rest_hostname;
 			break;
 
 		case 'h':
@@ -105,7 +106,6 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success) {
 	// if required fname parameter not available, fail
 	//if (fname == "")
 	//	success = FAIL;
-
 	if( !fname.empty() ){
 		try{
 			FILE_LOG(logINFO) << "config file name " << fname;

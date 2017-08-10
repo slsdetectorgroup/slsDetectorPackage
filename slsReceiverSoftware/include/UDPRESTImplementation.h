@@ -8,6 +8,7 @@
 
 #include "UDPBaseImplementation.h"
 #include "RestHelper.h"
+#include "logger.h"
 
 #include <string.h>
 #include <stdio.h>

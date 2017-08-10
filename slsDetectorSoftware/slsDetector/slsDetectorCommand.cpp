@@ -1463,6 +1463,9 @@ string slsDetectorCommand::cmdStatus(int narg, char *args[], int action) {
 	  return myDet->runStatusType(s);
   }
   else if (cmd=="busy") {
+	  if (action==PUT_ACTION) {
+		  return string ("cannot put");
+	  }
 	  char answer[100];
 	  sprintf(answer,"%d", myDet->getAcquiringFlag());
 	  return string(answer);

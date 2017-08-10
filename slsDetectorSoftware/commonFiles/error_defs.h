@@ -79,6 +79,7 @@ using namespace std;
 #define RECEIVER_FLIPPED_DATA_NOT_SET		0x0000000020000000ULL
 #define THRESHOLD_NOT_SET					0x0000000040000000ULL
 #define RECEIVER_FILE_FORMAT				0x0000000080000000ULL
+#define RECEIVER_SUBF_TIME_NOT_SET			0x0000000100000000ULL
 //											0x0000000FFFFFFFFFULL
 
 /** @short class returning all error messages for error mask */
@@ -250,6 +251,9 @@ public:
 
 		if(slsErrorMask&RECEIVER_FILE_FORMAT)
 			retval.append("Could not set receiver file format\n");
+
+		if(slsErrorMask&RECEIVER_SUBF_TIME_NOT_SET)
+			retval.append("Could not set sub exposure time in receiver.\n");
 
 
 		//------------------------------------------------------ length of message

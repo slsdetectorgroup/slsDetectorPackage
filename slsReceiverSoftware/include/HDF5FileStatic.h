@@ -231,13 +231,14 @@ public:
 	 * @param ny number of pixels in y direction
 	 * @param nf number of images
 	 * @param acquisitionTime acquisition time
+	 * @param subexposuretime sub exposure time
 	 * @param acquisitionPeriod acquisition period
 	 * @param version version of software for hdf5 writing
 	 * @returns 0 for success and 1 for fail
 	 */
 	static int CreateMasterDataFile(H5File*& fd, string fname, bool owenable,
 			uint32_t dr, bool tenE,	uint32_t size, uint32_t nPixelsx, uint32_t nPixelsy, uint64_t nf,
-			uint64_t acquisitionTime, uint64_t acquisitionPeriod, double version)
+			uint64_t acquisitionTime, uint64_t subexposuretime, uint64_t acquisitionPeriod, double version)
 	{
 		try {
 			Exception::dontPrint(); //to handle errors
@@ -303,6 +304,12 @@ public:
 			//Exptime
 			dataset = group5.createDataSet ( "exposure time", PredType::STD_U64LE, dataspace );
 			dataset.write ( &acquisitionTime, PredType::STD_U64LE);
+			attribute = dataset.createAttribute("unit",strdatatype, dataspace);
+			attribute.write(strdatatype, string("ns"));
+
+			//SubExptime
+			dataset = group5.createDataSet ( "sub exposure time", PredType::STD_U64LE, dataspace );
+			dataset.write ( &subexposuretime, PredType::STD_U64LE);
 			attribute = dataset.createAttribute("unit",strdatatype, dataspace);
 			attribute.write(strdatatype, string("ns"));
 

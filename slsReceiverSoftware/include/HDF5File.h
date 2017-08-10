@@ -102,11 +102,12 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	 * @param nx number of pixels in x direction
 	 * @param ny number of pixels in y direction
 	 * @param at acquisition time
+	  * @param at sub exposure time
 	 * @param ap acquisition period
 	 * @returns OK or FAIL
 	 */
 	int CreateMasterFile(bool en, uint32_t size,
-			uint32_t nx, uint32_t ny, uint64_t at, uint64_t ap);
+			uint32_t nx, uint32_t ny, uint64_t at, uint64_t st, uint64_t ap);
 
 	/**
 	 * End of Acquisition

@@ -127,6 +127,8 @@ New Features
 	
 	9. 	(Eiger)	Setting high voltage returns -999 for only slave and on the multi level gives
 		the value of the master only.
+		
+	10.	StartAcquisition (or sls_detector_put status start) parallelized.
 	
 	
 	Gui
@@ -155,6 +157,7 @@ Resolved Issues
 	3.	Bug Fix: Client crashing when rx_hostname is IP instead of a hostname has been fixed.
 	
 	
+	
 	Server
 	------
 	4.	(Eiger/Jungfrau) Bug Fix: Client crashing should not crash the server as SIGPIPE 
@@ -174,6 +177,11 @@ Resolved Issues
 	
 	9.	Bug Fix: In the rare chance that the shut down socket is still processing in 
 		the genericsocket class, but the object is being deleted. 
+		
+	10.	(Eiger): When running independent(not slsReceiver) receiver, one needn't do receiver start
+		to prepare acquisition. Prepare Acquisition has been moved to StartAcqusition and
+		StartAndReadAll. 
+
 
 
 Known Issues

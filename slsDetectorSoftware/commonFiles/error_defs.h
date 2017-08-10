@@ -43,7 +43,8 @@ using namespace std;
 #define COULDNOT_STOP_RECEIVER				0x0000800000000000ULL
 #define RECEIVER_DET_POSID_NOT_SET			0x0000400000000000ULL
 #define RECEIVER_MULTI_DET_SIZE_NOT_SET		0x0000200000000000ULL
-
+#define PREPARE_ACQUISITION					0x0000100000000000ULL
+#define CLEANUP_ACQUISITION					0x0000080000000000ULL
 //											0xFFFFFFF000000000ULL
 
 //											0x0000000FFFFFFFFFULL
@@ -145,6 +146,12 @@ public:
 
 		if(slsErrorMask&RECEIVER_MULTI_DET_SIZE_NOT_SET)
 			retval.append("Could not set multi detector size\n");
+
+		if(slsErrorMask&PREPARE_ACQUISITION)
+			retval.append("Could not prepare acquisition in detector\n");
+
+		if(slsErrorMask&CLEANUP_ACQUISITION)
+			retval.append("Could not clean up after acquisition in detector\n");
 
 
 

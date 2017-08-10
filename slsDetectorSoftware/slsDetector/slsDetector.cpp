@@ -3976,6 +3976,62 @@ int slsDetector::updateDetector() {
 // Acquisition functions
 /* change these funcs accepting also ok/fail */
 
+
+int slsDetector::prepareAcquisition() {
+	int fnum = F_PREPARE_ACQUISITION;
+	int ret=FAIL;
+	char mess[MAX_STR_LENGTH]="";
+
+	if (thisDetector->onlineFlag==ONLINE_FLAG) {
+#ifdef VERBOSE
+		std::cout << "Preparing Detector for Acquisition" << std::endl;
+#endif
+		if (connectControl() == OK){
+			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			if (ret==FAIL){
+				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+				std::cout<< "Detector returned error: " << mess << std::endl;
+				setErrorMask((getErrorMask())|(PREPARE_ACQUISITION));
+			}
+			disconnectControl();
+			if (ret==FORCE_UPDATE)
+				updateDetector();
+		}
+	}else
+		std::cout << "cannot connect to detector" << endl;
+
+	return ret;
+}
+
+int slsDetector::cleanupAcquisition() {
+	int fnum = F_CLEANUP_ACQUISITION;
+	int ret=FAIL;
+	char mess[MAX_STR_LENGTH]="";
+
+	if (thisDetector->onlineFlag==ONLINE_FLAG) {
+#ifdef VERBOSE
+		std::cout << "Cleaning up Detector after Acquisition " << std::endl;
+#endif
+		if (connectControl() == OK){
+			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			if (ret==FAIL){
+				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+				std::cout<< "Detector returned error: " << mess << std::endl;
+				setErrorMask((getErrorMask())|(CLEANUP_ACQUISITION));
+			}
+			disconnectControl();
+			if (ret==FORCE_UPDATE)
+				updateDetector();
+		}
+	}else
+		std::cout << "cannot connect to detector" << endl;
+
+	return ret;
+
+}
+
 int slsDetector::startAcquisition(){
 
 
@@ -4258,6 +4314,10 @@ int* slsDetector::startAndReadAll(){
   int i=0;
 #endif
   //#endif
+  if(thisDetector->myDetectorType == EIGER) {
+	  if (prepareAcquisition() == FAIL)
+		  return NULL;
+  }
   startAndReadAllNoWait();
   //#ifdef VERBOSE
   // std::cout<< "started" << std::endl;
@@ -4485,7 +4545,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 					ret = FAIL;
 					cout << "ERROR: " << timername << " in receiver set incorrectly to " << retval << " instead of " << args[1] << endl;
 
-					if(strstr(mess,"receiver not idle")==NULL) {
+					if(strstr(mess,"receiver is not idle")==NULL) {
 						switch(index) {
 						case ACQUISITION_TIME:
 							setErrorMask((getErrorMask())|(RECEIVER_ACQ_TIME_NOT_SET));
@@ -7859,12 +7919,9 @@ int slsDetector::startReceiver(){
 		}
 	}
 
-	//let detector prepare anyway even if receiver didnt work (for those not using the receiver)
-	if((thisDetector->myDetectorType != JUNGFRAU)) {
-		int ret1 = detectorSendToReceiver(true);
-		if (ret != FAIL)
-			ret = ret1;
-	}
+	// tell detector to send to receiver (if start receiver failed, this is not executed)
+	if((thisDetector->myDetectorType != JUNGFRAU && thisDetector->myDetectorType != EIGER  && ret!= FAIL))
+		return prepareAcquisition(); // send data to receiver for these detectors
 
 	return ret;
 }
@@ -7878,7 +7935,7 @@ int slsDetector::stopReceiver(){
 	char mess[MAX_STR_LENGTH] = "";
 
 	if(thisDetector->myDetectorType != EIGER && thisDetector->myDetectorType != JUNGFRAU)
-		detectorSendToReceiver(false);
+		cleanupAcquisition(); // reset (send data to receiver) for these detectors, so back to CPU (dont care about ok/fail at this point)
 
 	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
 #ifdef VERBOSE
@@ -7922,37 +7979,6 @@ slsDetectorDefs::runStatus slsDetector::startReceiverReadout(){
 
 	return s;
 }
-
-
-int slsDetector::detectorSendToReceiver(bool set){
-  int fnum;
-  if(set)	fnum=F_PREPARE_ACQUISITION;
-  else	fnum=F_CLEANUP_ACQUISITION;
-  int ret = FAIL;
-  char mess[MAX_STR_LENGTH]="";
-
-  if (thisDetector->onlineFlag==ONLINE_FLAG) {
-#ifdef VERBOSE
-    std::cout << "Setting detector to send packets via client to: " << set << std::endl;
-#endif
-    if (connectControl() == OK){
-      controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-      controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-      if (ret==FAIL){
-	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-	std::cout<< "Detector returned error: " << mess << std::endl;
-      }
-      disconnectControl();
-      if (ret==FORCE_UPDATE)
-	updateDetector();
-    }
-  }else
-    std::cout << "cannot connect to detector" << endl;
-
-  return ret;
-}
-
-
 
 
 

@@ -1063,6 +1063,17 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
   // Acquisition functions
 
+  /**
+     prepares detector for acquisition
+     \returns OK/FAIL
+  */
+  int prepareAcquisition();
+
+  /**
+     prepares detector for acquisition
+     \returns OK/FAIL
+  */
+  int cleanupAcquisition();
 
   /**
      start detector acquisition
@@ -1614,10 +1625,6 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
    */
   runStatus startReceiverReadout();
 
-  /**   Sets(false) or Resets(true) the CPU bit in detector
-        \returns OK or FAIL
-  */
-  int detectorSendToReceiver(bool set);
 
   /**   gets the status of the listening mode of receiver
         \returns status

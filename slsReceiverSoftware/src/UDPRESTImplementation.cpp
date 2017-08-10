@@ -13,6 +13,8 @@
 #include <string.h>
 #include <stdint.h>
 #include <sstream>
+#include "logger.h"
+
 //#include "utilities.h"
 using namespace std;
 
@@ -24,7 +26,7 @@ using namespace std;
 
 
 UDPRESTImplementation::UDPRESTImplementation(){
-  FILE_LOG(logINFO) << "PID: " + __AT__ + " called";
+        FILE_LOG(logINFO) << "PID: " + __AT__ + " called";
 
 	//TODO I do not really know what to do with bottom...
 	// Default values
@@ -43,10 +45,9 @@ UDPRESTImplementation::~UDPRESTImplementation(){
 
 void UDPRESTImplementation::configure(map<string, string> config_map){
   // am I ever getting there?
-  FILE_LOG(logINFO) << __AT__ << " called";
+  FILE_LOG(logINFO) << __AT__ << "configure called";
 
 	map<string, string>::const_iterator pos;
-
 
 	pos = config_map.find("rest_hostname");
 	if (pos != config_map.end() ){
@@ -60,7 +61,7 @@ void UDPRESTImplementation::configure(map<string, string> config_map){
 			std::cout << "YEEEEEEEEEEEEEEEE" << rest_hostname << " " << rest_port << std::endl;
 
 			}	*/
-		std::cout << "YEEEEEEEEEEEEEEEE" << rest_hostname <<  std::endl;
+	  FILE_LOG(logINFO) << "REST hostname " << rest_hostname <<  std::endl;
 	  
 	}
 
@@ -110,7 +111,8 @@ void UDPRESTImplementation::initialize_REST(){
 	int code;
 
 
-	if (filename.substr(filename.length() - 2) == "d0"){
+	//if (filename.substr(filename.length() - 2) == "d0"){
+	if(detID == 0){
 	  is_main_receiver = true;
 	}
 	
@@ -119,10 +121,10 @@ void UDPRESTImplementation::initialize_REST(){
 	  throw;
 	} 
 	rest = new RestHelper() ;
-	std::cout << rest_hostname << " - " << rest_port << std::endl;
+	//std::cout << rest_hostname << " - " << rest_port << std::endl;
 	rest->init(rest_hostname);
 	rest->set_connection_params(1, 3);
-	
+	FILE_LOG(logINFO) << "REST init called";
 
 	if (!is_main_receiver){
 	  isInitialized = true;
@@ -184,7 +186,7 @@ void UDPRESTImplementation::initialize_REST(){
 	    test =  "{\"path\":\"" + string( getFilePath() ) + "\", \"n_frames\":10}";
 	    code = rest->post_json("api/v1/configure", &answer, test);
 	  }
-	  //FILE_LOG(logDEBUG1) + " state/configure got " + std::string(code)).c_str());
+	  //FILE_LOG(logDEBUG1) << " state/configure got " + std::string(code);
 	  
 	  rest_state = get_rest_state(rest);
 	  
@@ -211,9 +213,9 @@ void UDPRESTImplementation::initialize_REST(){
 int UDPRESTImplementation::startReceiver(char message[]){
 	int i;
 
-	FILE_LOG(logINFO) << " starting";
+	FILE_LOG(logINFO) << __AT__ << " starting";
 	initialize_REST();
-	FILE_LOG(logINFO) << " initialized";
+	FILE_LOG(logINFO) << __AT__ << " initialized";
 
 	std::string answer;
 	int code;

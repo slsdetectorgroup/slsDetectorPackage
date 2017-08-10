@@ -37,7 +37,7 @@ standard image header.
 Reiterating, both 2.3 and 3.0 supports the following features:
   	
 	Receiver
-    --------
+	--------
 	1.	The files will be written in this format in the binary mode:
 		* ASCII file: header of 1024 bytes (only for EIGER detectors)
 		* binary files: series of images, each preceded by a 
@@ -97,7 +97,7 @@ New Features
 	
 	
 	General
-    -------
+	-------
 	3.	UDP Packets from all the detectors will contain the standard sls detector header. 
 	  	X, Y and Z Coordinates define the position of the detector in 3d. 
 	  	
@@ -107,7 +107,7 @@ New Features
 	  	
 	  	
 	Receiver
-    --------
+	--------
 	4.	One can choose the file format using the command "fileformat binary/hdf5" from 
 	  	the client, but one must compile with the options as defined in README.md
 	
@@ -125,16 +125,21 @@ New Features
 	------
 	8.	(Eiger) Can now set Threshold without uploading Trimbits.
 	
+	9. 	(Eiger)	Setting high voltage returns -999 for only slave and on the multi level gives
+		the value of the master only.
+		
+	10.	StartAcquisition (or sls_detector_put status start) parallelized.
+	
 	
 	Gui
-    ---
-    9.	Set the data streaming port (individually/ a single one that calculates for the other
+	---
+    10.	Set the data streaming port (individually/ a single one that calculates for the other
 	  	receiver streamer threads) via the command line
 	
 		
 	Users
 	-----
-	10.	Users example forks new child processes for every extra receiver object.
+	11.	Users example forks new child processes for every extra receiver object.
 
 
 
@@ -152,6 +157,7 @@ Resolved Issues
 	3.	Bug Fix: Client crashing when rx_hostname is IP instead of a hostname has been fixed.
 	
 	
+	
 	Server
 	------
 	4.	(Eiger/Jungfrau) Bug Fix: Client crashing should not crash the server as SIGPIPE 
@@ -167,7 +173,15 @@ Resolved Issues
 	7.	Acquire & Unblocking acquire (receiver start, status start, receiver stop) can work
 	  	also when switching from gui to command line and vice versa.
 	  
-	8.	Bug Fix: sls_detector_get frameindex was always returning 0
+	8.	Bug Fix: sls_detector_get frameindex was always returning 0.
+	
+	9.	Bug Fix: In the rare chance that the shut down socket is still processing in 
+		the genericsocket class, but the object is being deleted. 
+		
+	10.	(Eiger): When running independent(not slsReceiver) receiver, one needn't do receiver start
+		to prepare acquisition. Prepare Acquisition has been moved to StartAcqusition and
+		StartAndReadAll. 
+
 
 
 Known Issues

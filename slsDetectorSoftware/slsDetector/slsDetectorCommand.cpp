@@ -3359,9 +3359,9 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 		return string("unknown detector size ")+cmd;
 
 	if (cmd=="roimask")
-	  sprintf(ans,"%x",ret);
+	  sprintf(ans,"0x%x",ret);
 	else
-	  sprintf(ans,"%d",ret);
+	  sprintf(ans,"0x%d",ret);
 	  
 	return string(ans);
 
@@ -3689,7 +3689,7 @@ string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action) {
   if (cmd=="bustest"){
     if (action==PUT_ACTION)
       return string("cannot set ")+cmd;
-    sprintf(answer,"%x",myDet->digitalTest(DETECTOR_BUS_TEST));
+    sprintf(answer,"0x%x",myDet->digitalTest(DETECTOR_BUS_TEST));
     return string(answer);
   } 
 
@@ -3698,7 +3698,7 @@ string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action) {
       return string("cannot set ")+cmd;
     int ival=-1;
     if (sscanf(args[0],"digitest:%d",&ival)) {
-      sprintf(answer,"%x",myDet->digitalTest(CHIP_TEST, ival));
+      sprintf(answer,"0x%x",myDet->digitalTest(CHIP_TEST, ival));
       return string(answer);
     } else
       return string("undefined module number");
@@ -3710,7 +3710,7 @@ string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action) {
     int ival=-1;
     if (sscanf(args[1],"%d",&ival)) {
       if((ival==0)||(ival==1)){
-	sprintf(answer,"%x",myDet->digitalTest(DIGITAL_BIT_TEST,ival));
+	sprintf(answer,"0x%x",myDet->digitalTest(DIGITAL_BIT_TEST,ival));
 	return string(answer);
       }
       else
@@ -3783,13 +3783,13 @@ string slsDetectorCommand::cmdRegister(int narg, char *args[], int action) {
 	;
       else
 	return string("Could not scan value  (hexadecimal fomat) ")+string(args[2]);
-      sprintf(answer,"%x",myDet->writeRegister(addr,val));
+      sprintf(answer,"0x%x",myDet->writeRegister(addr,val));
     } else if (cmd=="adcreg") {
       if (sscanf(args[2],"%x",&val))
 	;
       else
 	return string("Could not scan value  (hexadecimal fomat) ")+string(args[2]);
-      sprintf(answer,"%x",myDet->writeAdcRegister(addr,val));
+      sprintf(answer,"0x%x",myDet->writeAdcRegister(addr,val));
     } else {
       
       if (sscanf(args[2],"%d",&n))
@@ -3801,9 +3801,9 @@ string slsDetectorCommand::cmdRegister(int narg, char *args[], int action) {
 	return string("Bit number out of range")+string(args[2]);
       
       if (cmd=="setbit")
-	sprintf(answer,"%x",myDet->writeRegister(addr,myDet->readRegister(addr)| 1<<n));
+	sprintf(answer,"0x%x",myDet->writeRegister(addr,myDet->readRegister(addr)| 1<<n));
       if (cmd=="clearbit")
-	sprintf(answer,"%x",myDet->writeRegister(addr,myDet->readRegister(addr) & ~(1<<n)));
+	sprintf(answer,"0x%x",myDet->writeRegister(addr,myDet->readRegister(addr) & ~(1<<n)));
     }
 
 
@@ -3824,7 +3824,7 @@ string slsDetectorCommand::cmdRegister(int narg, char *args[], int action) {
 	return string("Could not scan address  (hexadecimal fomat) ")+string(args[1]);
       
 	
-      sprintf(answer,"%x",myDet->readRegister(addr));
+      sprintf(answer,"0x%x",myDet->readRegister(addr));
 
     }
     
@@ -3861,7 +3861,7 @@ string slsDetectorCommand::helpRegister(int narg, char *args[], int action) {
 
   ostringstream os;  
   if (action==PUT_ACTION || action==HELP_ACTION) {
-    os << "reg addr val \n writes the register addr with the value val"<< std::endl;
+    os << "reg addr val \n writes the register addr with the value val (hexadecimal format)"<< std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
     os << "reg addr \n reads the register addr"<< std::endl;

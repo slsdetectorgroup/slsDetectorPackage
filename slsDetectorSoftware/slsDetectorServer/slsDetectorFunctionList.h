@@ -59,6 +59,9 @@ void 		setupDetector();
 #ifndef EIGERD
 extern u_int32_t	writeRegister(u_int32_t offset, u_int32_t data);	// blackfin.h
 extern u_int32_t  	readRegister(u_int32_t offset);						// blackfin.h
+#else
+uint32_t	writeRegister(uint32_t offset, uint32_t data);
+uint32_t  	readRegister(uint32_t offset);
 #endif
 
 

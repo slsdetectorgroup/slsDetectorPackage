@@ -342,7 +342,14 @@ void setupDetector() {
 
 
 
+/* advanced read/write reg */
+uint32_t writeRegister(uint32_t offset, uint32_t data) {
+	return Feb_Control_WriteRegister(offset, data);
+}
 
+uint32_t readRegister(uint32_t offset) {
+	return Feb_Control_ReadRegister(offset);
+}
 
 
 /* set parameters - nmod, dr, roi */

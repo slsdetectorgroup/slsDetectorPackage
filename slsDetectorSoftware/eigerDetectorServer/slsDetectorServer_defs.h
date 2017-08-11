@@ -84,6 +84,8 @@ enum NETWORKINDEX				 			{TXN_LEFT, TXN_RIGHT, TXN_FRAME,FLOWCTRL_10G};
 
 #define MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS	(0x1FFFFFFF) /** 29 bit register for max subframe exposure value */
 
+#define SLAVE_HIGH_VOLTAGE_READ_VAL			(-999)
+#define HIGH_VOLTAGE_TOLERANCE				(5)
 
 
 #endif /* SLSDETECTORSERVER_DEFS_H_ */

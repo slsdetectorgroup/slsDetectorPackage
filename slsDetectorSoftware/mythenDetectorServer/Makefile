@@ -21,10 +21,14 @@ CFLAGS+= 	-Wall -DC_ONLY -DMCB_FUNCS -DDACS_INT $(VFLAGS)
 
 LDLIBS+= 	-lm
 
-mythen:	clean $(PROGS)
-all:	$(PROGS) 
+mythen:	clean versioning $(PROGS)
+all:	versioning $(PROGS) 
 
 boot: $(OBJS)
+
+versioning: 
+	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`
+
 
 $(PROGS): $(OBJS)
 	echo $(OBJS)
@@ -39,3 +43,4 @@ clean:
 
 depend:
 	makedepend -Y -- $(CFLAGS) -- $(SRCS) 2>/dev/null
+	

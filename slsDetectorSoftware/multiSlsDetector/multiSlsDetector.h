@@ -462,9 +462,10 @@ class multiSlsDetector  : public slsDetectorUtils {
      \param e_eV threshold in eV
      \param imod module number (-1 all)
      \param isettings ev. change settings
+     \param tb 1 to include trimbits, 0 to exclude
      \returns current threshold value for imod in ev (-1 failed)
   */
-  int setThresholdEnergy(int e_eV, int imod=-1, detectorSettings isettings=GET_SETTINGS); 
+  int setThresholdEnergy(int e_eV, int imod=-1, detectorSettings isettings=GET_SETTINGS,int tb=1);
  
   /**
      get detector settings
@@ -521,10 +522,10 @@ class multiSlsDetector  : public slsDetectorUtils {
   int powerChip(int ival= -1);
 
   /** loads the modules settings/trimbits reading from a file -  file name extension is automatically generated! */
-  int loadSettingsFile(string fname, int nmod=0);
+  int loadSettingsFile(string fname, int nmod=-1);
 
   /** gets the modules settings/trimbits and writes them to file -  file name extension is automatically generated! */
-  int saveSettingsFile(string fname, int nmod=0);
+  int saveSettingsFile(string fname, int nmod=-1);
 
 
   /** sets all the trimbits to a particular value
@@ -536,10 +537,10 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
   /** loads the modules calibration data reading from a file -  file name extension is automatically generated! */
-  int loadCalibrationFile(string fname, int nmod=0);
+  int loadCalibrationFile(string fname, int nmod=-1);
 
   /** gets the modules calibration data and writes them to file -  file name extension is automatically generated! */
-  int saveCalibrationFile(string fname, int nmod=0);
+  int saveCalibrationFile(string fname, int nmod=-1);
 
 
 
@@ -560,7 +561,17 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
   // Acquisition functions
+  /**
+     prepares detector for acquisition
+     \returns OK if all detectors are properly started, FAIL otherwise
+  */
+  int prepareAcquisition();
 
+  /**
+     prepares detector for acquisition
+     \returns OK if all detectors are properly started, FAIL otherwise
+  */
+  int cleanupAcquisition();
 
   /**
      start detector acquisition (master is started as last)
@@ -928,7 +939,7 @@ class multiSlsDetector  : public slsDetectorUtils {
      \param val value (in V)
      \param index DAC index
      \param imod module number (if -1 alla modules)
-     \returns current DAC value
+     \returns current DAC value (temperature for eiger and jungfrau in millidegrees)
   */
   dacs_t getADC(dacIndex index, int imod=-1);
   /**
@@ -1317,6 +1328,13 @@ class multiSlsDetector  : public slsDetectorUtils {
    	   /returns read receiver timer
    */
   int setReceiverReadTimer(int time_in_ms=500);
+
+
+  /**
+   * Get Streaming sockets created in client from reciever
+    /returns 1 if sockets created, else 0
+   */
+  int getStreamingSocketsCreatedInClient();
 
   /** Enable or disable streaming data from receiver to client
    * 	@param enable 0 to disable 1 to enable -1 to only get the value

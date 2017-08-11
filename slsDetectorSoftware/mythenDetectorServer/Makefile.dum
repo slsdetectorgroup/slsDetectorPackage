@@ -18,7 +18,7 @@ CFLAGS+= 	-Wall -DC_ONLY -DVERBOSE
 
 LDLIBS+= 	-lm
 
-all:	$(PROGS)
+all:	versioning $(PROGS)
 
 boot: $(OBJS)
 
@@ -35,3 +35,6 @@ clean:
 
 depend:
 	makedepend -Y -- $(CFLAGS) -- $(SRCS) 2>/dev/null
+
+versioning: 
+	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`

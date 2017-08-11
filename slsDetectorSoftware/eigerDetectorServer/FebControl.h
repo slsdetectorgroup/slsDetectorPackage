@@ -198,4 +198,6 @@ int Feb_Control_GetModuleNumber();
   int Feb_Control_GetLeftFPGATemp();
   int Feb_Control_GetRightFPGATemp();
 
+  uint32_t Feb_Control_WriteRegister(uint32_t offset, uint32_t data);
+  uint32_t Feb_Control_ReadRegister(uint32_t offset);
 #endif

@@ -27,6 +27,7 @@ boot: $(OBJS)
 
 $(PROGS): $(OBJS)
 	echo $(OBJS)
+	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@)
 
 

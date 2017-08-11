@@ -1115,7 +1115,7 @@ int Beb_GetBebFPGATemp()
 	}else{
 		//read data
 		ret = Beb_Read32(csp0base, FPGA_TEMP_OFFSET);
-		temperature = ((((float)(ret)/65536.0f)/0.00198421639f ) - 273.15f); // Static conversation, copied from xps sysmon standalone driver
+		temperature = ((((float)(ret)/65536.0f)/0.00198421639f ) - 273.15f)*1000; // Static conversation, copied from xps sysmon standalone driver
 		//close file pointer
 		Beb_close(fd,csp0base);
 	}

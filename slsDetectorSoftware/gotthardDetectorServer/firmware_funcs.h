@@ -28,7 +28,9 @@ u_int16_t bus_w16(u_int32_t offset, u_int16_t data);//aldos function
 u_int32_t bus_w(u_int32_t offset, u_int32_t data);
 u_int32_t bus_r(u_int32_t offset);
 
+void setMasterSlaveConfiguration();
 int setPhaseShiftOnce();
+int setPhaseShift(int numphaseshift);
 int cleanFifo();
 int setDAQRegister();
 
@@ -137,6 +139,7 @@ int setNMod(int n);
 int setStoreInRAM(int b);
 int allocateRAM();
 int clearRAM();
+
 
 
 int setMaster(int f);

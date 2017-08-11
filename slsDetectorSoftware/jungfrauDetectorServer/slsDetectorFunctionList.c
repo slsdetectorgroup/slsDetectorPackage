@@ -25,11 +25,11 @@ int32_t clkPhase[2] = {0, 0};
 
 /* basic tests */
 
-void checkFirmwareCompatibility(){
+void checkFirmwareCompatibility() {
 
 	defineGPIOpins();
 	resetFPGA();
-	if ((mapCSP0() == FAIL) || (checkType() == FAIL) || (testFpga() == FAIL) || (testBus() == FAIL) ) {
+	if ((mapCSP0() == FAIL) || (checkType() == FAIL) || (testFpga() == FAIL) || (testBus() == FAIL)) {
 		cprintf(BG_RED, "Dangerous to continue. Goodbye!\n");
 		exit(EXIT_FAILURE);
 	}
@@ -838,34 +838,25 @@ void setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]){
 
 
 int getADC(enum ADCINDEX ind,  int imod){
-
 	char tempnames[2][40]={"VRs/FPGAs Temperature", "ADCs/ASICs Temperature"};
 	printf("Getting Temperature for %s\n",tempnames[ind]);
 	u_int32_t addr = GET_TEMPERATURE_TMP112_REG;
-	int retval = -1;
-/*
- 	 	u_int32_t val = 0;
-	{
-		int i;
-		for(i = 0; i < 10; i++) {
-			switch((int)ind){
+	uint32_t regvalue = bus_r(addr);
+	uint32_t value = regvalue & TEMPERATURE_VALUE_MSK;
+	double retval = value;
 
-			case TEMP_FPGA:
-				val = (val<<1) + ((bus_r(addr) & (2)) >> 1);
-				break;
-			case TEMP_ADC:
-				val= (val<<1) + (bus_r(addr) & (1));
-				break;
-			}
-		}
+	// negative
+	if (regvalue & TEMPERATURE_POLARITY_MSK) {
+		// 2s complement
+		int ret = (~value) + 1;
+		// attach negative sign
+		ret = 0 - value;
+		retval = ret;
 	}
-	// or just read it
-	retval = ((int)val) / 4.0;
 
-	printf("Temperature %s: %d °C\n",tempnames[ind],retval);*/
-	printf("\nReal Temperature %s: %d °C\n",tempnames[ind],bus_r(addr));
-
-
+	// conversion
+	retval *= 625.0/10.0;
+	printf("\nReal Temperature %s: %f °C\n",tempnames[ind],retval/1000.00);
 	return retval;
 }
 
@@ -1303,8 +1294,8 @@ int calculateDataBytes(){
 	return DATA_BYTES;
 }
 
-int getTotalNumberOfChannels(){return ((int)getNumberOfChannelsPerModule() * (int)getTotalNumberOfModules);}
-int getTotalNumberOfChips(){return ((int)getNumberOfChipsPerModule * (int)getTotalNumberOfModules);}
+int getTotalNumberOfChannels(){return ((int)getNumberOfChannelsPerModule() * (int)getTotalNumberOfModules());}
+int getTotalNumberOfChips(){return ((int)getNumberOfChipsPerModule() * (int)getTotalNumberOfModules());}
 int getTotalNumberOfModules(){return NMOD;}
 int getNumberOfChannelsPerModule(){return  ((int)getNumberOfChannelsPerChip() * (int)getTotalNumberOfChips());}
 int getNumberOfChipsPerModule(){return  NCHIP;}

@@ -269,7 +269,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     bool acquiringFlag;
     /** flipped data across x or y axis */
     int flippedData[2];
-
+    /** tcp port between receiver and gui (only data) */
+    int zmqport;
 
   } sharedSlsDetector;
 
@@ -886,7 +887,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      set dacs value
      \param index ADC index
      \param imod module number
-     \returns current ADC value
+     \returns current ADC value  (temperature for eiger and jungfrau in millidegrees)
   */
   dacs_t getADC(dacIndex index, int imod=0);
  
@@ -965,10 +966,11 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
       \param e_eV threashold in eV (detector specific)
       \param gainval pointer to extra gain values
       \param offsetval pointer to extra offset values
+      \param tb 1 to include trimbits, 0 to exclude (used for eiger)
       \returns current register value
       \sa ::sls_detector_module
   */
-  int setModule(sls_detector_module module, int iodelay, int tau, int e_eV, int* gainval=0, int* offsetval=0);
+  int setModule(sls_detector_module module, int iodelay, int tau, int e_eV, int* gainval=0, int* offsetval=0, int tb=1);
   //virtual int setModule(sls_detector_module module);
 
   /**
@@ -999,17 +1001,19 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      \param e_eV threshold in eV
      \param imod module number (-1 all)
      \param isettings ev. change settings
+     \param tb 1 to include trimbits, 0 to exclude
      \returns current threshold value for imod in ev (-1 failed)
   */
-  int setThresholdEnergy(int e_eV, int imod=-1, detectorSettings isettings=GET_SETTINGS); 
+  int setThresholdEnergy(int e_eV, int imod=-1, detectorSettings isettings=GET_SETTINGS, int tb=1);
 
   /**
      set threshold energy
      \param e_eV threshold in eV
      \param isettings ev. change settings
+     \param tb 1 to include trimbits, 0 to exclude
      \returns OK if successful, else FAIL
   */
-  int setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings);
+  int setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings, int tb=1);
  
   /**
      get detector settings
@@ -1059,6 +1063,17 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
   // Acquisition functions
 
+  /**
+     prepares detector for acquisition
+     \returns OK/FAIL
+  */
+  int prepareAcquisition();
+
+  /**
+     prepares detector for acquisition
+     \returns OK/FAIL
+  */
+  int cleanupAcquisition();
 
   /**
      start detector acquisition
@@ -1610,10 +1625,6 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
    */
   runStatus startReceiverReadout();
 
-  /**   Sets(false) or Resets(true) the CPU bit in detector
-        \returns OK or FAIL
-  */
-  int detectorSendToReceiver(bool set);
 
   /**   gets the status of the listening mode of receiver
         \returns status
@@ -1717,6 +1728,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   string getReceiverUDPPort() {ostringstream ss; ss << thisDetector->receiverUDPPort; string s = ss.str(); return s;};
   /** returns the receiver UDP2 for Eiger IP address \sa sharedSlsDetector  */
   string getReceiverUDPPort2() {ostringstream ss; ss << thisDetector->receiverUDPPort2; string s = ss.str(); return s;};
+  /** returns the zmq port \sa sharedSlsDetector  */
+  string getReceiverStreamingPort() {ostringstream ss; ss << thisDetector->zmqport; string s = ss.str(); return s;};
 
   /** validates the format of detector MAC address and sets it \sa sharedSlsDetector  */
   string setDetectorMAC(string detectorMAC);
@@ -1732,6 +1745,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   int setReceiverUDPPort(int udpport);
   /** sets the receiver udp port2 for Eiger \sa sharedSlsDetector  */
   int setReceiverUDPPort2(int udpport);
+  /** sets the zmq port in client and receiver (includes "multi" at the end if it should calculate individual ports \sa sharedSlsDetector  */
+  int setReceiverStreamingPort(string port);
   /** sets the transmission delay for left or right port or for an entire frame*/
   string setDetectorNetworkParameter(networkParameter index, int delay);
 

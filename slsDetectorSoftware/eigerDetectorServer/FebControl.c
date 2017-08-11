@@ -24,8 +24,7 @@
 //GetDAQStatusRegister(512,current_mode_bits_from_fpga)){
 
 unsigned int Module_ndacs = 16;
-char  Module_dac_names[16][10]= {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};;
-
+char  Module_dac_names[16][10]={"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};;
 
 
 
@@ -1894,6 +1893,9 @@ int Feb_Control_PrintCorrectedValues(){
 }
 
 
+//So if software says now 40.00 you neeed to convert to mdegrees 40000(call it A1) and then
+//A1/65536/0.00198421639-273.15
+
 int Feb_Control_GetLeftFPGATemp(){
 	unsigned int temperature=0;
 	if(Module_TopAddressIsValid(&modules[1]))
@@ -1901,6 +1903,7 @@ int Feb_Control_GetLeftFPGATemp(){
 	else
 		Feb_Interface_ReadRegister(Module_GetBottomLeftAddress (&modules[1]),FEB_REG_STATUS, &temperature);
 	temperature = temperature >> 16;
+	temperature = ((((float)(temperature)/65536.0f)/0.00198421639f ) - 273.15f)*1000; // Static conversation, copied from xps sysmon standalone driver
 	//division done in client to send int over network
 	return (int)temperature;
 }
@@ -1912,9 +1915,41 @@ int Feb_Control_GetRightFPGATemp(){
 	else
 		Feb_Interface_ReadRegister(Module_GetBottomRightAddress (&modules[1]),FEB_REG_STATUS, &temperature);
 	temperature = temperature >> 16;
+	temperature = ((((float)(temperature)/65536.0f)/0.00198421639f ) - 273.15f)*1000; // Static conversation, copied from xps sysmon standalone driver
 	//division done in client to send int over network
 	return (int)temperature;
 }
 
 
+uint32_t Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
+	uint32_t value=0;
+	if(Module_TopAddressIsValid(&modules[1])){
+		if(!Feb_Interface_WriteRegister(Module_GetTopRightAddress (&modules[1]),offset, data,0, 0)) {
+			cprintf(RED,"Could not read value. Value read:%d\n", value);
+			value = 0;
+		}
+	} else {
+		if(!Feb_Interface_WriteRegister(Module_GetBottomRightAddress (&modules[1]),offset, data,0, 0)) {
+			cprintf(RED,"Could not read value. Value read:%d\n", value);
+			value = 0;
+		}
+	}
+	return Feb_Control_ReadRegister(offset);
+}
 
+
+uint32_t Feb_Control_ReadRegister(uint32_t offset) {
+	uint32_t value=0;
+	if(Module_TopAddressIsValid(&modules[1])){
+		if(!Feb_Interface_ReadRegister(Module_GetTopRightAddress (&modules[1]),offset, &value)) {
+			cprintf(RED,"Could not read value. Value read:%d\n", value);
+			value = 0;
+		}
+	} else {
+		if(!Feb_Interface_ReadRegister(Module_GetBottomRightAddress (&modules[1]),offset, &value)) {
+			cprintf(RED,"Could not read value. Value read:%d\n", value);
+			value = 0;
+		}
+	}
+	return value;
+}

@@ -4,6 +4,8 @@
 #include "mcb_funcs.h"
 #include "registers_g.h"
 
+#include "AD9257.h"		// include "commonServerFunctions.h"
+
 #ifdef SHAREDMEMORY
 #include "sharedmemory.h"
 #endif
@@ -13,6 +15,7 @@
 #include <sys/stat.h>
 
 #include <stdlib.h>
+
 
 
 //for memory mapping
@@ -51,6 +54,16 @@ int ififostart, ififostop, ififostep, ififo;
 int masterMode=NO_MASTER, syncMode=NO_SYNCHRONIZATION, timingMode=AUTO_TIMING;
 
 enum externalSignalFlag  signals[4]={EXT_SIG_OFF, EXT_SIG_OFF, EXT_SIG_OFF, EXT_SIG_OFF};
+
+
+//for the 25um detectors
+int masterflags = NO_MASTER;
+int masterdefaultdelay = 62;
+int patternphase = 0;
+int adcphase = 0;
+int slavepatternphase = 0;
+int slaveadcphase = 0;
+int rsttosw1delay = 2;
 
 
 #ifdef MCB_FUNCS
@@ -228,6 +241,134 @@ u_int32_t bus_r(u_int32_t offset) {
 }
 
 
+
+void setMasterSlaveConfiguration(){
+
+/*
+	int masterflags = NO_MASTER;
+	int masterdefaultdelay = 62;
+	int patternphase = 0;
+	int adcphase = 0;
+	int slavepatternphase = 0;
+	int slaveadcphase = 0;
+	int sw1torstdelay = 2;
+*/
+// global master default delay picked from config file
+	FILE* fd=fopen(CONFIG_FILE,"r");
+	if(fd==NULL){
+		cprintf(RED,"\nWarning: Could not open file\n");
+		return;
+	}
+	cprintf(BLUE,"config file %s opened\n", CONFIG_FILE);
+
+	char key[256];
+	char value[256];
+	char line[256];
+	int ival=0;
+	u_int32_t val=0;
+
+	while (fgets(line, sizeof(line), fd)) {
+		if(line[0] == '#')
+			continue;
+		sscanf(line, "%s %s\n", key, value);
+		if	(!strcasecmp(key,"masterflags")) {
+			if	(!strcasecmp(value,"is_master")) {
+				masterflags = IS_MASTER;
+			}
+			else if (!strcasecmp(value,"is_slave")) {
+				masterflags = IS_SLAVE;
+			}
+			else  if (!strcasecmp(value,"no_master")){
+				masterflags = NO_MASTER;
+			}
+			else {
+				cprintf(RED,"could not scan masterflags %s value from config file\n",value);
+				exit(EXIT_FAILURE);
+			}
+		}
+		else {
+			if(sscanf(value,"%d",&ival)<=0) {
+				cprintf(RED,"could not scan patternphase %s value from config file\n",value);
+				exit(EXIT_FAILURE);
+			}
+
+			if (!strcasecmp(key,"masterdefaultdelay"))
+				masterdefaultdelay = ival;
+			else if (!strcasecmp(key,"patternphase"))
+				patternphase = ival;
+			else if (!strcasecmp(key,"adcphase"))
+				adcphase = ival;
+			else if (!strcasecmp(key,"slavepatternphase"))
+				slavepatternphase = ival;
+			else if (!strcasecmp(key,"slaveadcphase"))
+				slaveadcphase = ival;
+			else if (!strcasecmp(key,"rsttosw1delay"))
+				rsttosw1delay = ival;
+			else {
+				cprintf(RED,"could not scan parameter name %s from config file\n",key);
+				exit(EXIT_FAILURE);
+			}
+		}
+
+	}
+	cprintf(BLUE, "masterflags: %d\n"
+			"masterdefaultdelay:%d\n"
+			"patternphase:%d\n"
+			"adcphase:%d\n"
+			"slavepatternphase:%d\n"
+			"slaveadcphase:%d\n"
+			"rsttosw1delay:%d\n",
+			masterflags,
+			masterdefaultdelay,
+			patternphase,
+			adcphase,
+			slavepatternphase,
+			slaveadcphase,
+			rsttosw1delay);
+
+
+
+	if (masterflags == IS_MASTER) {
+		// set delay
+		setDelay(0);
+
+		/* Set pattern phase for the master module */
+		val=bus_r(MULTI_PURPOSE_REG);
+		val = (val & (~(PLL_CLK_SEL_MSK))) | PLL_CLK_SEL_MASTER_VAL;
+		bus_w(MULTI_PURPOSE_REG,val);
+		setPhaseShift(patternphase);
+		/* Set adc phase for the master module */
+		val=bus_r(MULTI_PURPOSE_REG);
+		val = (val & (~(PLL_CLK_SEL_MSK))) | PLL_CLK_SEL_MASTER_ADC_VAL;
+		bus_w(MULTI_PURPOSE_REG,val);
+		setPhaseShift(adcphase);
+		/* Set pattern phase for the slave module */
+		val=bus_r(MULTI_PURPOSE_REG);
+		val = (val & (~(PLL_CLK_SEL_MSK))) | PLL_CLK_SEL_SLAVE_VAL;
+		bus_w(MULTI_PURPOSE_REG,val);
+		setPhaseShift(slavepatternphase);
+		/* Set adc phase for the slave module */
+		val=bus_r(MULTI_PURPOSE_REG);
+		val = (val & (~(PLL_CLK_SEL_MSK))) | PLL_CLK_SEL_SLAVE_ADC_VAL;
+		bus_w(MULTI_PURPOSE_REG,val);
+		setPhaseShift(slaveadcphase);
+	}
+
+
+
+	if (masterflags == IS_MASTER || masterflags == IS_SLAVE) {
+		val=bus_r(MULTI_PURPOSE_REG);
+//#ifdef VERBOSE
+		printf("Value of multipurpose reg:%d\n",bus_r(MULTI_PURPOSE_REG));
+//#endif
+		val = (val & (~(RST_TO_SW1_DELAY_MSK))) | ((rsttosw1delay << RST_TO_SW1_DELAY_OFFSET) & (RST_TO_SW1_DELAY_MSK));
+		bus_w(MULTI_PURPOSE_REG,val);
+	}
+
+	fclose(fd);
+}
+
+
 int setPhaseShiftOnce(){
 	u_int32_t addr, reg;
 	int i;
@@ -254,6 +395,31 @@ int setPhaseShiftOnce(){
 
 	return OK;
 }
+
+
+int setPhaseShift(int numphaseshift){
+	u_int32_t addr, reg;
+	int i;
+	addr=MULTI_PURPOSE_REG;
+	reg=bus_r(addr);
+#ifdef VERBOSE
+	printf("Multipurpose reg:%x\n",reg);
+#endif
+
+	printf("\nImplementing phase shift of %d\n",numphaseshift);
+	for (i=0;i<numphaseshift;i++) {
+		bus_w(addr,reg | PHASE_STEP_BIT);
+		bus_w(addr,reg & (~PHASE_STEP_BIT));
+	}
+
+#ifdef VERBOSE
+		printf("Multipupose reg now:%x\n",bus_r(addr));
+#endif
+
+	return OK;
+}
+
+
 
 
 
@@ -889,8 +1055,16 @@ int64_t getFrames(){
 
 int64_t setExposureTime(int64_t value){
   /* time is in ns */
-  if (value!=-1)
-    value*=(1E-9*CLK_FREQ);
+  if (value!=-1) {
+	  double actualvalue = value*(1E-9*CLK_FREQ);
+	  value*=(1E-9*CLK_FREQ);
+	  if(fabs(actualvalue-value)>= 0.5){
+	    if(actualvalue > value)
+	      value++;
+	    else
+	      value--;
+	  }
+  }
     return set64BitReg(value,SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG)/(1E-9*CLK_FREQ);
 }
 
@@ -909,7 +1083,14 @@ int64_t getGates(){
 int64_t setPeriod(int64_t value){
   /* time is in ns */
   if (value!=-1) {
-    value*=(1E-9*CLK_FREQ);
+	  double actualvalue = value*(1E-9*CLK_FREQ);
+	  value*=(1E-9*CLK_FREQ);
+	  if(fabs(actualvalue-value)>= 0.5){
+	    if(actualvalue > value)
+	      value++;
+	    else
+	      value--;
+	  }
   }
 
 
@@ -924,9 +1105,26 @@ int64_t getPeriod(){
 int64_t setDelay(int64_t value){
   /* time is in ns */
   if (value!=-1) {
-    value*=(1E-9*CLK_FREQ);
+	  if (masterflags == IS_MASTER) {
+		  value += masterdefaultdelay;
+		  cprintf(BLUE,"Actual delay for master: %lld\n", (long long int) value);
+	  }
+	  double actualvalue = value*(1E-9*CLK_FREQ);
+	  value*=(1E-9*CLK_FREQ);
+	  if(fabs(actualvalue-value)>= 0.5){
+	    if(actualvalue > value)
+	      value++;
+	    else
+	      value--;
+	  }
   }
-  return set64BitReg(value,SET_DELAY_LSB_REG, SET_DELAY_MSB_REG)/(1E-9*CLK_FREQ);
+  int64_t retval = set64BitReg(value,SET_DELAY_LSB_REG, SET_DELAY_MSB_REG)/(1E-9*CLK_FREQ);
+  if (masterflags == IS_MASTER) {
+	  cprintf(BLUE,"Actual delay read from master: %lld\n", (long long int) retval);
+	  retval -= masterdefaultdelay;
+  }
+
+  return retval;
 }
 
 int64_t getDelay(){
@@ -1255,7 +1453,7 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 	tse_conf *tse_conf_regs;
 	long int sum = 0;
 	long int checksum;
-	int count,val;
+	int count;
 	unsigned short *addr;
 
 	mac_conf_regs=(mac_conf*)(CSP0BASE+offset*2);
@@ -1265,35 +1463,40 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 	printf("***Configuring MAC*** \n");
 #endif
 
+
 	if(ival)
-		bus_w(addrr,(RESET_BIT|DIGITAL_TEST_BIT)); //0x080,reset mac (reset)
+		bus_w(addrr, bus_r(addrr) | (RESET_BIT|DIGITAL_TEST_BIT)); //0x080,reset mac (reset)
 	else
-		bus_w(addrr,RESET_BIT); //0x080,reset mac (reset)
-	val=bus_r(addrr);
+		bus_w(addrr, bus_r(addrr) | RESET_BIT); //0x080,reset mac (reset)
+
 #ifdef VERBOSE
-	printf("Value read from Multi-purpose Reg:%x\n",val);
+	printf("Value read from Multi-purpose Reg:%x\n",bus_r(addrr));
 #endif 
 	//  if(val!=0x080) return -1;
 
 	usleep(500000);
+	
+	bus_w(addrr, bus_r(addrr) &(~ RESET_BIT));/* release reset */
 
 	if(ival)
-		bus_w(addrr,(ENET_RESETN_BIT|WRITE_BACK_BIT|DIGITAL_TEST_BIT)); //0x840,write shadow regs(enet reset,write bak)
+		bus_w(addrr, bus_r(addrr) | (ENET_RESETN_BIT|WRITE_BACK_BIT|DIGITAL_TEST_BIT)); //0x840,write shadow regs(enet reset,write bak)
 	else
-		bus_w(addrr,(ENET_RESETN_BIT|WRITE_BACK_BIT)); //0x840,write shadow regs(enet reset,write bak)
-	val=bus_r(addrr);
+		bus_w(addrr, bus_r(addrr) | (ENET_RESETN_BIT|WRITE_BACK_BIT)); //0x840,write shadow regs(enet reset,write bak)
+
 #ifdef VERBOSE
-	printf("Value read from Multi-purpose Reg:%x\n",val);
+	printf("Value read from Multi-purpose Reg:%x\n",bus_r(addrr));
 #endif 
 	//  if(val!=0x840) return -1;
 
+	bus_w(addrr, bus_r(addrr) &(~WRITE_BACK_BIT));/* release write_back */
+
 	if(ival)
-		bus_w(addrr,(ENET_RESETN_BIT|DIGITAL_TEST_BIT)); //0x800,nreset phy(enet reset)
+		bus_w(addrr, bus_r(addrr) | (ENET_RESETN_BIT|DIGITAL_TEST_BIT)); //0x800,nreset phy(enet reset)
 	else
-		bus_w(addrr,ENET_RESETN_BIT); //0x800,nreset phy(enet reset)
-	val=bus_r(addrr);
+		bus_w(addrr, bus_r(addrr) | ENET_RESETN_BIT); //0x800,nreset phy(enet reset)
+
 #ifdef VERBOSE
-	printf("Value read from Multi-purpose Reg:%x\n",val);
+	printf("Value read from Multi-purpose Reg:%x\n",bus_r(addrr));
 #endif 
 	//  if(val!=0x800) return -1;
 
@@ -1398,26 +1601,26 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 
 
 	if(ival)
-		bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|WRITE_BACK_BIT|DIGITAL_TEST_BIT)); //0x2840,write shadow regs..
+		bus_w(addrr, bus_r(addrr) | (INT_RSTN_BIT|ENET_RESETN_BIT|WRITE_BACK_BIT|DIGITAL_TEST_BIT)); //0x2840,write shadow regs..
 	else
-		bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|WRITE_BACK_BIT)); //0x2840,write shadow regs..
+		bus_w(addrr, bus_r(addrr) | (INT_RSTN_BIT|ENET_RESETN_BIT|WRITE_BACK_BIT)); //0x2840,write shadow regs..
 
-	val=bus_r(addrr);
 #ifdef VERBOSE
-	printf("Value read from Multi-purpose Reg:%x\n",val);
+	printf("Value read from Multi-purpose Reg:%x\n",bus_r(addrr));
 #endif 
 	//  if(val!=0x2840) return -1;
 
 	usleep(100000);
 
-	if(ival)
-		bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|DIGITAL_TEST_BIT)); //0x2820,write shadow regs..
-	else
-		bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT)); //0x2820,write shadow regs..
+	bus_w(addrr, bus_r(addrr) &(~WRITE_BACK_BIT));
 
-	val=bus_r(addrr);
+	if(ival)
+		bus_w(addrr, bus_r(addrr) | (INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|DIGITAL_TEST_BIT)); //0x2820,write shadow regs..
+	else
+		bus_w(addrr, bus_r(addrr) | (INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT)); //0x2820,write shadow regs..
+
 #ifdef VERBOSE
-	printf("Value read from Multi-purpose Reg:%x\n",val);
+	printf("Value read from Multi-purpose Reg:%x\n",bus_r(addrr));
 #endif 
 	//  if(val!=0x2820) return -1;
 
@@ -1814,7 +2017,9 @@ int allocateRAM() {
 
 
 }
-int prepareADC(){
+
+
+int configureADC(){
 	printf("Preparing ADC\n");
 	u_int32_t valw,codata,csmask;
 	int i,j,cdx,ddx;
@@ -1834,26 +2039,26 @@ int prepareADC(){
 
 		// start point
 		valw=0xff;
-		bus_w(ADC_WRITE_REG,(valw));
+		bus_w(ADC_SPI_REG,(valw));
 
 		 //chip sel bar down
 		valw=((0xffffffff&(~csmask)));
-		bus_w(ADC_WRITE_REG,valw);
+		bus_w(ADC_SPI_REG,valw);
 
 		for (i=0;i<24;i++) {
 			 //cldwn
 			valw=valw&(~(0x1<<cdx));
-			bus_w(ADC_WRITE_REG,valw);
+			bus_w(ADC_SPI_REG,valw);
 			usleep(0);
 
 			//write data (i)
 			valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx);
-			bus_w(ADC_WRITE_REG,valw);
+			bus_w(ADC_SPI_REG,valw);
 			usleep(0);
 
 			//clkup
 			valw=valw+(0x1<<cdx);
-			bus_w(ADC_WRITE_REG,valw);
+			bus_w(ADC_SPI_REG,valw);
 			usleep(0);
 		}
 
@@ -1861,7 +2066,7 @@ int prepareADC(){
 		valw=valw&(~(0x1<<cdx));
 		usleep(0);
 		valw=0xff;
-		bus_w(ADC_WRITE_REG,(valw));
+		bus_w(ADC_SPI_REG,(valw));
 
 		//usleep in between
 		usleep(50000);
@@ -1872,19 +2077,19 @@ int prepareADC(){
 	/*
 	codata=0;
 	codata=(0x14<<8)+(0x0);  //command and value;
-	valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // start point
-	valw=((0xffffffff&(~csmask)));bus_w(ADC_WRITE_REG,valw); //chip sel bar down
+	valw=0xff; bus_w(ADC_SPI_REG,(valw)); // start point
+	valw=((0xffffffff&(~csmask)));bus_w(ADC_SPI_REG,valw); //chip sel bar down
 	for (i=0;i<24;i++) {
-		valw=valw&(~(0x1<<cdx));bus_w(ADC_WRITE_REG,valw);usleep(0); //cldwn
+		valw=valw&(~(0x1<<cdx));bus_w(ADC_SPI_REG,valw);usleep(0); //cldwn
 
-		valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_WRITE_REG,valw); usleep(0); //write data (i)
+		valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_SPI_REG,valw); usleep(0); //write data (i)
 
-		valw=valw+(0x1<<cdx);bus_w(ADC_WRITE_REG,valw); usleep(0); //clkup
+		valw=valw+(0x1<<cdx);bus_w(ADC_SPI_REG,valw); usleep(0); //clkup
 
 	}
 
 	valw=valw&(~(0x1<<cdx));usleep(0);
-	valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // stop point =start point
+	valw=0xff; bus_w(ADC_SPI_REG,(valw)); // stop point =start point
 
 
 
@@ -1892,36 +2097,36 @@ int prepareADC(){
 
 	codata=0;
 	codata=(0x08<<8)+(0x3);  //command and value;Power modes(global) reset
-	valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // start point
-	valw=((0xffffffff&(~csmask)));bus_w(ADC_WRITE_REG,valw); //chip sel bar down
+	valw=0xff; bus_w(ADC_SPI_REG,(valw)); // start point
+	valw=((0xffffffff&(~csmask)));bus_w(ADC_SPI_REG,valw); //chip sel bar down
 	for (i=0;i<24;i++) {
-		valw=valw&(~(0x1<<cdx));bus_w(ADC_WRITE_REG,valw);usleep(0); //cldwn
+		valw=valw&(~(0x1<<cdx));bus_w(ADC_SPI_REG,valw);usleep(0); //cldwn
 
-		valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_WRITE_REG,valw); usleep(0); //write data (i)
-		valw=valw+(0x1<<cdx);bus_w(ADC_WRITE_REG,valw); usleep(0); //clkup
+		valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_SPI_REG,valw); usleep(0); //write data (i)
+		valw=valw+(0x1<<cdx);bus_w(ADC_SPI_REG,valw); usleep(0); //clkup
 
 	}
 
 	valw=valw&(~(0x1<<cdx));usleep(0);
-	valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // stop point =start point
+	valw=0xff; bus_w(ADC_SPI_REG,(valw)); // stop point =start point
 
 
 
 	usleep(50000);
 	codata=0;
 	codata=(0x08<<8)+(0x0);  //command and value;Power modes(global) reset
-	valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // start point
-	valw=((0xffffffff&(~csmask)));bus_w(ADC_WRITE_REG,valw); //chip sel bar down
+	valw=0xff; bus_w(ADC_SPI_REG,(valw)); // start point
+	valw=((0xffffffff&(~csmask)));bus_w(ADC_SPI_REG,valw); //chip sel bar down
 	for (i=0;i<24;i++) {
-		valw=valw&(~(0x1<<cdx));bus_w(ADC_WRITE_REG,valw);usleep(0); //cldwn
+		valw=valw&(~(0x1<<cdx));bus_w(ADC_SPI_REG,valw);usleep(0); //cldwn
 
-		valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_WRITE_REG,valw); usleep(0); //write data (i)
-		valw=valw+(0x1<<cdx);bus_w(ADC_WRITE_REG,valw); usleep(0); //clkup
+		valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_SPI_REG,valw); usleep(0); //write data (i)
+		valw=valw+(0x1<<cdx);bus_w(ADC_SPI_REG,valw); usleep(0); //clkup
 
 	}
 
 	valw=valw&(~(0x1<<cdx));usleep(0);
-	valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // stop point =start point
+	valw=0xff; bus_w(ADC_SPI_REG,(valw)); // stop point =start point
 */
 }
 

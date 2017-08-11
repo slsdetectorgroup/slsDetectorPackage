@@ -30,6 +30,7 @@ dacs_t *detectorDacs=NULL;
 dacs_t *detectorAdcs=NULL;
 
 int eiger_highvoltage = 0;
+int eiger_theo_highvoltage = 0;
 int eiger_iodelay = 0;
 int eiger_photonenergy = 0;
 int eiger_dynamicrange = 0;
@@ -341,7 +342,14 @@ void setupDetector() {
 
 
 
+/* advanced read/write reg */
+uint32_t writeRegister(uint32_t offset, uint32_t data) {
+	return Feb_Control_WriteRegister(offset, data);
+}
 
+uint32_t readRegister(uint32_t offset) {
+	return Feb_Control_ReadRegister(offset);
+}
 
 
 /* set parameters - nmod, dr, roi */
@@ -542,25 +550,31 @@ int setModule(sls_detector_module myMod, int delay){
 	for(i=0;i<myMod.ndac;i++)
 		setDAC((enum DACINDEX)i,myMod.dacs[i],myMod.module,0,retval);
 
-	//includ gap pixels
-	unsigned int tt[263680];
-	int iy,ichip,ix,ip=0,ich=0;
-	for(iy=0;iy<256;iy++) {
-		for (ichip=0; ichip<4; ichip++) {
-			for(ix=0;ix<256;ix++) {
-				tt[ip++]=myMod.chanregs[ich++];
-			}
-			if (ichip<3) {
-				tt[ip++]=0;
-				tt[ip++]=0;
+
+	if(myMod.nchan==0 && myMod.nchip == 0)
+		cprintf(BLUE,"Setting module without trimbits\n");
+	else{
+		cprintf(GREEN,"Setting module with trimbits\n");
+		//includ gap pixels
+		unsigned int tt[263680];
+		int iy,ichip,ix,ip=0,ich=0;
+		for(iy=0;iy<256;iy++) {
+			for (ichip=0; ichip<4; ichip++) {
+				for(ix=0;ix<256;ix++) {
+					tt[ip++]=myMod.chanregs[ich++];
+				}
+				if (ichip<3) {
+					tt[ip++]=0;
+					tt[ip++]=0;
+				}
 			}
 		}
-	}
 
-	//set trimbits
-	if(!Feb_Control_SetTrimbits(Feb_Control_GetModuleNumber(),tt)){
-		cprintf(BG_RED,"Could not set trimbits\n");
-		return FAIL;
+		//set trimbits
+		if(!Feb_Control_SetTrimbits(Feb_Control_GetModuleNumber(),tt)){
+			cprintf(BG_RED,"Could not set trimbits\n");
+			return FAIL;
+		}
 	}
 
 	return thisSettings;
@@ -709,7 +723,7 @@ int getADC(enum ADCINDEX ind,  int imod){
 
 	switch(ind){
 		case TEMP_FPGA:
-			retval=getBebFPGATemp()*1000;
+			retval=getBebFPGATemp();
 			break;
 		case TEMP_FPGAFEBL:
 			retval=Feb_Control_GetLeftFPGATemp();
@@ -739,22 +753,33 @@ int getADC(enum ADCINDEX ind,  int imod){
 
 
 int setHighVoltage(int val){
-	if(val!=-1){
-		eiger_highvoltage = val;
-		if(master){
+	if (master) {
+
+		// set
+		if(val!=-1){
+			eiger_theo_highvoltage = val;
 			int ret = Feb_Control_SetHighVoltage(val);
 			if(!ret)			//could not set
 				return -2;
 			else if (ret == -1) //outside range
 				return -1;
 		}
+
+		// get
+		if (!Feb_Control_GetHighVoltage(&eiger_highvoltage)) {
+			cprintf(RED,"Warning: Could not read high voltage\n");
+			return -3;
+		}
+
+		// tolerance of 5
+		if (abs(eiger_theo_highvoltage-eiger_highvoltage) > HIGH_VOLTAGE_TOLERANCE) {
+			cprintf(BLUE, "High voltage still ramping: %d\n", eiger_highvoltage);
+			return eiger_highvoltage;
+		}
+		return eiger_theo_highvoltage;
 	}
 
-	if(master && !Feb_Control_GetHighVoltage(&eiger_highvoltage)){
-		cprintf(RED,"Warning: Could not read high voltage\n");
-		return -3;
-	}
-	return eiger_highvoltage;
+	return SLAVE_HIGH_VOLTAGE_READ_VAL;
 }
 
 
@@ -1211,11 +1236,13 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod){
 
 		destMod->serialnumber=srcMod->serialnumber;
 	}
-	if ((srcMod->nchip)>(destMod->nchip)) {
+	//no trimbit feature
+	if (destMod->nchip && ((srcMod->nchip)>(destMod->nchip))) {
 		printf("Number of chip of source is larger than number of chips of destination\n");
 		return FAIL;
 	}
-	if ((srcMod->nchan)>(destMod->nchan)) {
+	//no trimbit feature
+	if (destMod->nchan && ((srcMod->nchan)>(destMod->nchan))) {
 		printf("Number of channels of source is larger than number of channels of destination\n");
 		return FAIL;
 	}
@@ -1249,14 +1276,19 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod){
 	if (srcMod->offset>=0)
 		destMod->offset=srcMod->offset;
 
-	for (ichip=0; ichip<(srcMod->nchip); ichip++) {
-		if (*((srcMod->chipregs)+ichip)>=0)
-			*((destMod->chipregs)+ichip)=*((srcMod->chipregs)+ichip);
+	if((destMod->nchip!=0) || (destMod->nchan!=0)) {
+		for (ichip=0; ichip<(srcMod->nchip); ichip++) {
+			if (*((srcMod->chipregs)+ichip)>=0)
+				*((destMod->chipregs)+ichip)=*((srcMod->chipregs)+ichip);
+		}
+		for (ichan=0; ichan<(srcMod->nchan); ichan++) {
+			if (*((srcMod->chanregs)+ichan)>=0)
+				*((destMod->chanregs)+ichan)=*((srcMod->chanregs)+ichan);
+		}
 	}
-	for (ichan=0; ichan<(srcMod->nchan); ichan++) {
-		if (*((srcMod->chanregs)+ichan)>=0)
-			*((destMod->chanregs)+ichan)=*((srcMod->chanregs)+ichan);
-	}
+#ifdef VERBOSE
+	else printf("Not Copying trimbits\n");
+#endif
 	for (idac=0; idac<(srcMod->ndac); idac++) {
 		if (*((srcMod->dacs)+idac)>=0)
 			*((destMod->dacs)+idac)=*((srcMod->dacs)+idac);
@@ -1277,8 +1309,8 @@ int calculateDataBytes(){
 }
 
 
-int getTotalNumberOfChannels(){return ((int)getNumberOfChannelsPerModule() * (int)getTotalNumberOfModules);}
-int getTotalNumberOfChips(){return ((int)getNumberOfChipsPerModule * (int)getTotalNumberOfModules);}
+int getTotalNumberOfChannels(){return ((int)getNumberOfChannelsPerModule() * (int)getTotalNumberOfModules());}
+int getTotalNumberOfChips(){return ((int)getNumberOfChipsPerModule() * (int)getTotalNumberOfModules());}
 int getTotalNumberOfModules(){return NMOD;}
 int getNumberOfChannelsPerModule(){return  ((int)getNumberOfChannelsPerChip() * (int)getTotalNumberOfChips());}
 int getNumberOfChipsPerModule(){return  NCHIP;}

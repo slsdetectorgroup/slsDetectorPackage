@@ -1,7 +1,9 @@
 #ifndef COMMON_SERVER_FUNCTIONS_H
 #define COMMON_SERVER_FUNCTIONS_H
 
+#ifndef GOTTHARDD	//gotthard already had bus_w etc defined in its firmware_funcs.c (not yet made with common files)
 #include "blackfin.h"
+#endif
 
 /* global variables */
 void serializeToSPI(u_int32_t addr, u_int32_t val, u_int16_t csmask, int numbitstosend, u_int16_t clkmask, u_int16_t digoutmask, int digofset) {

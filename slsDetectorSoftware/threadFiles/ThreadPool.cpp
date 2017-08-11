@@ -49,9 +49,9 @@ int ThreadPool::initialize_threadpool(){
 		m_threads.push_back(tid);
 		while(!thread_started);
 	}
-#ifdef VERBOSE
+	#ifdef VERBOSE
 	cout << m_pool_size << " threads created by the thread pool" << endl;
-#endif
+	#endif
 	return m_pool_size;
 }
 
@@ -87,11 +87,11 @@ int ThreadPool::destroy_threadpool(){
 
 void* ThreadPool::execute_thread(){
 //for debugging seting ithread value
-//	int ithread = current_thread_number;
+  //int ithread = current_thread_number;
 	thread_started = true;
 	Task* task = NULL;
 	m_tasks_loaded = false;
-	/*cout << "Starting thread " << pthread_self() << endl;*/
+	//cout << "Starting thread " << pthread_self() << endl;
 	while(true) {
 		// Try to pick a task
 		/*cout << "Locking: " << pthread_self() << endl;*/
@@ -122,7 +122,7 @@ void* ThreadPool::execute_thread(){
 
 		//cout<<"***"<<ithread<<" checking out semaphore done address:"<<&semDone<<endl;
 
-		/*cout << ithread <<" Executing thread " << pthread_self() << endl;*/
+		//	cout << ithread <<" Executing thread " << pthread_self() << endl;
 		// execute the task
 		(*task)(); // could also do task->run(arg);
 		/*cout << ithread <<" Done executing thread " << pthread_self() << endl;*/

@@ -2981,17 +2981,19 @@ dacs_t multiSlsDetector::setDAC(dacs_t val, dacIndex idac, int mV, int imod) {
 			posmin=id;
 			posmax=id+1;
 		}
-
+		//	cout <<posmin << " " << posmax << endl;
 		//return storage values
 		dacs_t* iret[posmax-posmin];
 		for(int idet=posmin; idet<posmax; ++idet){
+		  //cout << idet << endl;
 			if(detectors[idet]){
-				iret[idet]= new dacs_t(-1);
-				Task* task = new Task(new func4_t <dacs_t,slsDetector,dacs_t,dacIndex,int,int,dacs_t>(&slsDetector::setDAC,
-						detectors[idet],val, idac, mV, im, iret[idet]));
-				threadpool->add_task(task);
+			  //	  cout << "*" << endl;
+			  iret[idet]= new dacs_t(-1);
+			  Task* task = new Task(new func4_t <dacs_t,slsDetector,dacs_t,dacIndex,int,int,dacs_t>(&slsDetector::setDAC,detectors[idet],val, idac, mV, im, iret[idet]));
+			  threadpool->add_task(task);
 			}
 		}
+		// cout << "Start" << endl;
 		threadpool->startExecuting();
 		threadpool->wait_for_tasks_to_complete();
 		for(int idet=posmin; idet<posmax; idet++){

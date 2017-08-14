@@ -619,7 +619,8 @@ int UDPStandardImplementation::SetupFifoStructure() {
 		if(dataStreamer.size())dataStreamer[i]->SetFifo(fifo[i]);
 	}
 
-	FILE_LOG (logINFO) << "Fifo structure(s) reconstructed with Fifo Depth: " << fifoDepth;
+	FILE_LOG (logINFO) << "Memory Allocated Per Fifo: " << ( ((generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize)) * fifoDepth) << " bytes" ;
+	FILE_LOG (logINFO) << " Fifo structure(s) reconstructed: " << numThreads;
 	return OK;
 }
 

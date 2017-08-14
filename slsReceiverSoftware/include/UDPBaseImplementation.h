@@ -650,7 +650,6 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	uint32_t frameToGuiTimerinMS;
 	/** Data Stream Enable from Receiver */
 	bool dataStreamEnable;
-	static const int DEFAULT_STREAMING_TIMER = 500;
 	/** streaming port */
 	uint32_t streamingPort;
 

@@ -27,6 +27,8 @@ typedef  int int32_t;
 #define JFCTB_MAX_FRAMES_PER_FILE   100000
 
 
+#define DEFAULT_STREAMING_TIMER_IN_MS 500
+
 /** 
     \file sls_receiver_defs.h
 This file contains all the basic definitions common to the slsReceiver class

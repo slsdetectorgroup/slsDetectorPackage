@@ -28,10 +28,13 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param ftype pointer to file format type
 	 * @param fwenable pointer to file writer enable
 	 * @param dsEnable pointer to data stream enable
+	 * @param freq pointer to streaming frequency
+	 * @param timer pointer to timer if streaming frequency is random
 	 * @param dataReadycb pointer to data ready call back function
 	 * @param pDataReadycb pointer to arguments of data ready call back function
 	 */
 	DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* dsEnable,
+						uint32_t* freq, uint32_t* timer,
 						void (*dataReadycb)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
 								char*, uint32_t, void*),
 						void *pDataReadycb);
@@ -240,7 +243,26 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	void ProcessAnImage(char* buf);
 
+	/**
+	 * Calls CheckTimer and CheckCount for streaming frequency and timer
+	 * and determines if the current image should be sent to streamer
+	 * @returns true if it should to streamer, else false
+	 */
+	bool SendToStreamer();
 
+	/**
+	 * This function should be called only in random frequency mode
+	 * Checks if timer is done and ready to send to stream
+	 * @returns true if ready to send to stream, else false
+	 */
+	bool CheckTimer();
+
+	/**
+	 * This function should be called only in non random frequency mode
+	 * Checks if count is done and ready to send to stream
+	 * @returns true if ready to send to stream, else false
+	 */
+	bool CheckCount();
 
 	/** type of thread */
 	static const std::string TypeName;
@@ -277,6 +299,19 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	/** File Write Enable */
 	bool* fileWriteEnable;
 
+	/** Pointer to Streaming frequency, if 0, sending random images with a timer */
+	uint32_t* streamingFrequency;
+
+	/** Pointer to the timer if Streaming frequency is random */
+	uint32_t* streamingTimerInMs;
+
+	/** Current frequency count */
+	uint32_t currentFreqCount;
+
+	/** timer beginning stamp for random streaming */
+	struct timespec timerBegin;
+
+
 
 	//acquisition start
 	/** Aquisition Started flag */
@@ -301,8 +336,6 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** Frame Number of latest processed frame number of an entire Acquisition (including all scans) */
 	uint64_t currentFrameIndex;
-
-
 
 
 

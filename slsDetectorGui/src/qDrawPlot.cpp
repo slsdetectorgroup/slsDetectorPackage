@@ -30,7 +30,7 @@ using namespace std;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-const double qDrawPlot::PLOT_TIMER_MS = 200;
+const double qDrawPlot::PLOT_TIMER_MS = DEFAULT_STREAMING_TIMER_IN_MS;
 
 qDrawPlot::qDrawPlot(QWidget *parent,multiSlsDetector*& detector):
 		 QWidget(parent),myDet(detector),plot1D_hists(0){

@@ -1380,77 +1380,130 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 	/* r/w timers */
 
+	/*! \page config
+   - <b>timing [mode]</b> sets/gets synchronization mode of the detector. Mode: auto, trigger, ro_trigger, gating, triggered_gating
+	 */
 	descrToFuncMap[i].m_pFuncName="timing"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTiming;
 	i++;
 
+	/*! \page config
+   - <b>exptime [i]</b> sets/gets exposure time in s
+	 */
 	descrToFuncMap[i].m_pFuncName="exptime"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
+	/*! \page config
+   - <b>subexptime [i]</b> sets/gets sub exposure time in s. Used in EIGER only in 32 bit mode.
+	 */
 	descrToFuncMap[i].m_pFuncName="subexptime"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
+	/*! \page config
+   - <b>period [i]</b> sets/gets frame period in s.
+	 */
 	descrToFuncMap[i].m_pFuncName="period"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
+	/*! \page config
+   - <b>delay [i]</b> sets/gets delay in s. Used in MYTHEN, GOTTHARD only
+	 */
 	descrToFuncMap[i].m_pFuncName="delay"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
+	/*! \page config
+   - <b>gates [i]</b> sets/gets number of gates. Used in MYTHEN, GOTTHARD, EIGER only
+	 */
 	descrToFuncMap[i].m_pFuncName="gates"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
+	/*! \page config
+   - <b>gates [i]</b> sets/gets number of frames. If \c timing is not \c auto, then it is the number of frames per cycle/trigger.
+	 */
 	descrToFuncMap[i].m_pFuncName="frames"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
+	/*! \page config
+   - <b>cycles [i]</b> sets/gets number of triggers. Timing mode should be set appropriately.
+	 */
 	descrToFuncMap[i].m_pFuncName="cycles"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
+	/*! \page config
+   - <b>probes [i]</b> sets/gets number of probes to accumulate. When setting, max 3! cycles should be set to 1, frames to the number of pump-probe events. Used in MYTHEN only
+	 */
 	descrToFuncMap[i].m_pFuncName="probes"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
-
+	/*! \page config
+   - <b>measurements [i]</b> sets/gets number of measurements.
+	 */
 	descrToFuncMap[i].m_pFuncName="measurements"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
+	/*! \page config
+   - <b>samples [i]</b> sets/gets number of samples expected from the jctb. Used in CHIP TEST BOARD only.
+	 */
 	descrToFuncMap[i].m_pFuncName="samples"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
 	/* read only timers */
 
+	/*! \page config
+   - <b>exptimel [i]</b> gets exposure time left. Used in MYTHEN, GOTTHARD only.
+	 */
 	descrToFuncMap[i].m_pFuncName="exptimel"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
+	/*! \page config
+   - <b>periodl [i]</b> gets frame period left. Used in MYTHEN, GOTTHARD only.
+	 */
 	descrToFuncMap[i].m_pFuncName="periodl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
+	/*! \page config
+   - <b>delayl [i]</b> gets delay left. Used in MYTHEN, GOTTHARD only.
+	 */
 	descrToFuncMap[i].m_pFuncName="delayl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
+	/*! \page config
+   - <b>gatesl [i]</b> gets number of gates left. Used in MYTHEN, GOTTHARD only.
+	 */
 	descrToFuncMap[i].m_pFuncName="gatesl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
+	/*! \page config
+   - <b>framesl [i]</b> gets number of frames left. Used in MYTHEN, GOTTHARD only.
+	 */
 	descrToFuncMap[i].m_pFuncName="framesl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
+	/*! \page config
+   - <b>cyclesl [i]</b> gets number of cylces left. Used in MYTHEN, GOTTHARD only.
+	 */
 	descrToFuncMap[i].m_pFuncName="cyclesl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
+	/*! \page config
+   - <b>probesl [i]</b> gets number of probes left. Used in MYTHEN, GOTTHARD only.
+	 */
 	descrToFuncMap[i].m_pFuncName="probesl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;

@@ -163,5 +163,95 @@ Commands to configure the detector. these commands are often left to the configu
 
 
 \begin{DoxyItemize}
-\item {\bfseries receiverversion} Gets the software version of receiver. Only get! 
+\item {\bfseries receiverversion} Gets the software version of receiver. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries timing \mbox{[}mode\mbox{]}} sets/gets synchronization mode of the detector. Mode: auto, trigger, ro\_\-trigger, gating, triggered\_\-gating
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries exptime \mbox{[}i\mbox{]}} sets/gets exposure time in s
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries subexptime \mbox{[}i\mbox{]}} sets/gets sub exposure time in s. Used in EIGER only in 32 bit mode.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries period \mbox{[}i\mbox{]}} sets/gets frame period in s.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries delay \mbox{[}i\mbox{]}} sets/gets delay in s. Used in MYTHEN, GOTTHARD only
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries gates \mbox{[}i\mbox{]}} sets/gets number of gates. Used in MYTHEN, GOTTHARD, EIGER only
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries gates \mbox{[}i\mbox{]}} sets/gets number of frames. If {\ttfamily timing} is not {\ttfamily auto}, then it is the number of frames per cycle/trigger.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries cycles \mbox{[}i\mbox{]}} sets/gets number of triggers. Timing mode should be set appropriately.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries probes \mbox{[}i\mbox{]}} sets/gets number of probes to accumulate. When setting, max 3! cycles should be set to 1, frames to the number of pump-\/probe events. Used in MYTHEN only
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries measurements \mbox{[}i\mbox{]}} sets/gets number of measurements.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries samples \mbox{[}i\mbox{]}} sets/gets number of samples expected from the jctb. Used in CHIP TEST BOARD only.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries exptimel \mbox{[}i\mbox{]}} gets exposure time left. Used in MYTHEN, GOTTHARD only.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries periodl \mbox{[}i\mbox{]}} gets frame period left. Used in MYTHEN, GOTTHARD only.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries delayl \mbox{[}i\mbox{]}} gets delay left. Used in MYTHEN, GOTTHARD only.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries gatesl \mbox{[}i\mbox{]}} gets number of gates left. Used in MYTHEN, GOTTHARD only.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries framesl \mbox{[}i\mbox{]}} gets number of frames left. Used in MYTHEN, GOTTHARD only.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries cyclesl \mbox{[}i\mbox{]}} gets number of cylces left. Used in MYTHEN, GOTTHARD only.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries probesl \mbox{[}i\mbox{]}} gets number of probes left. Used in MYTHEN, GOTTHARD only. 
 \end{DoxyItemize}

@@ -348,6 +348,9 @@ void DataProcessor::ProcessAnImage(char* buf) {
 		if (*dataStreamEnable) {
 			//restart timer
 			clock_gettime(CLOCK_REALTIME, &timerBegin);
+			timerBegin.tv_sec -= (*streamingTimerInMs) / 1000;
+			timerBegin.tv_nsec -= ((*streamingTimerInMs) % 1000) * 1000000;
+
 			//to send first image
 			currentFreqCount = *streamingFrequency;
 		}

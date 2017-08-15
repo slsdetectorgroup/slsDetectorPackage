@@ -53,7 +53,25 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </ul>
 <ul>
 <li><b>settings [s]</b> sets/gets the settings of the detector. Options: <code>standard</code>, <code>fast</code>, <code>highgain</code>, <code>dynamicgain</code>, <code>lowgain</code>, <code>mediumgain</code>, <code>veryhighgain</code>, <code>lownoise</code>, <code>dynamichg0</code>, <code>fixgain1</code>, <code>fixgain2</code>, <code>forceswitchg1</code>, <code>forceswitchg2</code>. <br/>
- In Eiger, only sets in client shared memory. Use <code>threshold</code> or <code>threshold_notb</code> to pass to detector </li>
+ In Eiger, only sets in client shared memory. Use <code>threshold</code> or <code>thresholdnotb</code> to pass to detector. Gets from detector.</li>
+</ul>
+<ul>
+<li><b>threshold [eV] [sett] </b> sets/gets the detector threshold in eV. sett is optional and if provided also sets the settings. Use this for Eiger instead of <code>settings</code>.</li>
+</ul>
+<ul>
+<li><b>thresholdnotb [eV] [sett] </b> sets/gets the detector threshold in eV without loading trimbits. sett is optional and if provided also sets the settings. Use this for Eiger instead of <code>settings</code>.</li>
+</ul>
+<ul>
+<li><b>trimbits [fname] </b> loads/stores the trimbits to/from the detector. If no extension is specified, the serial number of each module will be attached.</li>
+</ul>
+<ul>
+<li><b>trim:[mode] [fname]</b> trims the detector according to mode and saves resulting trimbits to file. Mode: noise, beam, improve, fix. Used in MYTHEN only. Only put!</li>
+</ul>
+<ul>
+<li><b>trimval [i]</b> sets all trimbits to i. Used in EIGER only.</li>
+</ul>
+<ul>
+<li><b>pedestal [i]</b> starts acquisition for i frames, calculates pedestal and writes back to fpga. Used in GOTTHARD only. Only put! </li>
 </ul>
 </div>
 <!--- window showing the filter options -->

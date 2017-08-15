@@ -23,5 +23,35 @@ Commands to setup the settings of the detector
 
 \begin{DoxyItemize}
 \item {\bfseries settings \mbox{[}s\mbox{]}} sets/gets the settings of the detector. Options: {\ttfamily standard}, {\ttfamily fast}, {\ttfamily highgain}, {\ttfamily dynamicgain}, {\ttfamily lowgain}, {\ttfamily mediumgain}, {\ttfamily veryhighgain}, {\ttfamily lownoise}, {\ttfamily dynamichg0}, {\ttfamily fixgain1}, {\ttfamily fixgain2}, {\ttfamily forceswitchg1}, {\ttfamily forceswitchg2}. \par
- In Eiger, only sets in client shared memory. Use {\ttfamily threshold} or {\ttfamily threshold\_\-notb} to pass to detector 
+ In Eiger, only sets in client shared memory. Use {\ttfamily threshold} or {\ttfamily thresholdnotb} to pass to detector. Gets from detector.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries threshold \mbox{[}eV\mbox{]} \mbox{[}sett\mbox{]} } sets/gets the detector threshold in eV. sett is optional and if provided also sets the settings. Use this for Eiger instead of {\ttfamily settings}.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries thresholdnotb \mbox{[}eV\mbox{]} \mbox{[}sett\mbox{]} } sets/gets the detector threshold in eV without loading trimbits. sett is optional and if provided also sets the settings. Use this for Eiger instead of {\ttfamily settings}.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries trimbits \mbox{[}fname\mbox{]} } loads/stores the trimbits to/from the detector. If no extension is specified, the serial number of each module will be attached.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries trim:\mbox{[}mode\mbox{]} \mbox{[}fname\mbox{]}} trims the detector according to mode and saves resulting trimbits to file. Mode: noise, beam, improve, fix. Used in MYTHEN only. Only put!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries trimval \mbox{[}i\mbox{]}} sets all trimbits to i. Used in EIGER only.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries pedestal \mbox{[}i\mbox{]}} starts acquisition for i frames, calculates pedestal and writes back to fpga. Used in GOTTHARD only. Only put! 
 \end{DoxyItemize}

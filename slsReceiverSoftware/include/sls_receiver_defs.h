@@ -27,7 +27,7 @@ typedef  int int32_t;
 #define JFCTB_MAX_FRAMES_PER_FILE   100000
 
 
-#define DEFAULT_STREAMING_TIMER_IN_MS 500
+#define DEFAULT_STREAMING_TIMER_IN_MS 200
 
 /** 
     \file sls_receiver_defs.h

@@ -1,0 +1,27 @@
+Commands to setup the settings of the detector
+
+
+\begin{DoxyItemize}
+\item {\bfseries settingsdir \mbox{[}dir\mbox{]}} Sets/gets the directory where the settings files are located (string)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries trimdir \mbox{[}dir\mbox{]}} obsolete {\ttfamily settingsdir} 
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries caldir \mbox{[}dir\mbox{]}} Sets/gets the directory where the calibration files are located (string)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries trimen \mbox{[}n e0 e1...e(n-\/1)\mbox{]}} Sets/gets the number of energies n at which the detector has default trim file and their values in eV (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries settings \mbox{[}s\mbox{]}} sets/gets the settings of the detector. Options: {\ttfamily standard}, {\ttfamily fast}, {\ttfamily highgain}, {\ttfamily dynamicgain}, {\ttfamily lowgain}, {\ttfamily mediumgain}, {\ttfamily veryhighgain}, {\ttfamily lownoise}, {\ttfamily dynamichg0}, {\ttfamily fixgain1}, {\ttfamily fixgain2}, {\ttfamily forceswitchg1}, {\ttfamily forceswitchg2}. \par
+ In Eiger, only sets in client shared memory. Use {\ttfamily threshold} or {\ttfamily threshold\_\-notb} to pass to detector 
+\end{DoxyItemize}

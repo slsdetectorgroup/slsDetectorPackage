@@ -1033,30 +1033,43 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	i++;
 
 	/*! \page settings
-   - <b>settings [s]</b> sets/gets the settings of the detector. Options: \c standard, \c fast, \c highgain, \c dynamicgain, \c lowgain, \c mediumgain, \c veryhighgain,
-   \c lownoise, \c dynamichg0, \c fixgain1, \c fixgain2, \c forceswitchg1, \c forceswitchg2.
-   \n In Eiger, only sets in client shared memory. Use \c threshold or \c thresholdnotb to pass to detector
+   - <b>threshold [eV] [sett] </b> sets/gets the detector threshold in eV. sett is optional and if provided also sets the settings. Use this for Eiger instead of \c settings.
 	 */
 	descrToFuncMap[i].m_pFuncName="threshold"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
 	i++;
 
+	/*! \page settings
+   - <b>thresholdnotb [eV] [sett] </b> sets/gets the detector threshold in eV without loading trimbits. sett is optional and if provided also sets the settings. Use this for Eiger instead of \c settings.
+	 */
 	descrToFuncMap[i].m_pFuncName="thresholdnotb"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
 	i++;
 
+	/*! \page settings
+   - <b>trimbits [fname] </b> loads/stores the trimbits to/from the detector. If no extension is specified, the serial number of each module will be attached.
+	 */
 	descrToFuncMap[i].m_pFuncName="trimbits"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
 	i++;
 
+	/*! \page settings
+   - <b>trim:[mode] [fname]</b> trims the detector according to mode and saves resulting trimbits to file. Mode: noise, beam, improve, fix. Used in MYTHEN only. Only put!
+	 */
 	descrToFuncMap[i].m_pFuncName="trim"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
 	i++;
 
+	/*! \page settings
+   - <b>trimval [i]</b> sets all trimbits to i. Used in EIGER only.
+	 */
 	descrToFuncMap[i].m_pFuncName="trimval"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
 	i++;
 
+	/*! \page settings
+   - <b>pedestal [i]</b> starts acquisition for i frames, calculates pedestal and writes back to fpga. Used in GOTTHARD only. Only put!
+	 */
 	descrToFuncMap[i].m_pFuncName="pedestal"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
 	i++;

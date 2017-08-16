@@ -464,7 +464,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	i++;
 
 	/*! \page output
-    - <b>fileformat</b> gets the file format for data (no put?) What are the possible return values?
+    - <b>fileformat</b> sets/gets the file format for data in receiver. Options: [ascii, binary, hdf5]. Ascii is not implemented in Receiver.
 	 */
 	descrToFuncMap[i].m_pFuncName="fileformat"; //OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFileName;
@@ -1460,49 +1460,49 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	/* read only timers */
 
 	/*! \page config
-   - <b>exptimel [i]</b> gets exposure time left. Used in MYTHEN, GOTTHARD only. Only get!
+   - <b>exptimel</b> gets exposure time left. Used in MYTHEN, GOTTHARD only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="exptimel"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
 	/*! \page config
-   - <b>periodl [i]</b> gets frame period left. Used in MYTHEN, GOTTHARD only. Only get!
+   - <b>periodl</b> gets frame period left. Used in MYTHEN, GOTTHARD only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="periodl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
 	/*! \page config
-   - <b>delayl [i]</b> gets delay left. Used in MYTHEN, GOTTHARD only. Only get!
+   - <b>delayl</b> gets delay left. Used in MYTHEN, GOTTHARD only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="delayl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
 	/*! \page config
-   - <b>gatesl [i]</b> gets number of gates left. Used in MYTHEN, GOTTHARD only. Only get!
+   - <b>gatesl</b> gets number of gates left. Used in MYTHEN, GOTTHARD only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="gatesl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
 	/*! \page config
-   - <b>framesl [i]</b> gets number of frames left. Used in MYTHEN, GOTTHARD only. Only get!
+   - <b>framesl</b> gets number of frames left. Used in MYTHEN, GOTTHARD only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="framesl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
 	/*! \page config
-   - <b>cyclesl [i]</b> gets number of cylces left. Used in MYTHEN, GOTTHARD only. Only get!
+   - <b>cyclesl</b> gets number of cylces left. Used in MYTHEN, GOTTHARD only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="cyclesl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
 	/*! \page config
-   - <b>probesl [i]</b> gets number of probes left. Used in MYTHEN, GOTTHARD only. Only get!
+   - <b>probesl</b> gets number of probes left. Used in MYTHEN, GOTTHARD only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="probesl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
@@ -1513,68 +1513,107 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	//   i++;
 
 	/*! \page config
-   - <b>now [i]</b> ??? Only get!
+   - <b>now</b> ??? Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="now"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
+	/*! \page config
+   - <b>timestamp</b> ??? Only get!
+	 */
 	descrToFuncMap[i].m_pFuncName="timestamp"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
+	/*! \page config
+   - <b>nframes</b> ??? Only get!
+	 */
 	descrToFuncMap[i].m_pFuncName="nframes"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
 	/* speed */
-
+	/*! \page config
+   - <b>clkdivider [i]</b> sets/gets the readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)]. MYTHEN[???]
+	 */
 	descrToFuncMap[i].m_pFuncName="clkdivider"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
+	/*! \page config
+   - <b>clkdivider [i]</b> sets/gets length of set/reset signals (in clock cycles). Used in MYTHEN only
+	 */
 	descrToFuncMap[i].m_pFuncName="setlength"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
+	/*! \page config
+   - <b>clkdivider [i]</b> sets/gets waitstates of the bus interface (in clock cycles). Used in MYTHEN only
+	 */
 	descrToFuncMap[i].m_pFuncName="waitstates"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
+	/*! \page config
+   - <b>clkdivider [i]</b> sets/gets clock divider in tot mode. Used in MYTHEN only
+	 */
 	descrToFuncMap[i].m_pFuncName="totdivider"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
+	/*! \page config
+   - <b>clkdivider [i]</b> sets/gets duty cycle of the tot clock. Used in MYTHEN only
+	 */
 	descrToFuncMap[i].m_pFuncName="totdutycycle"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
+	/*! \page config
+   - <b>phasestep [i]</b> ???
+	 */
 	descrToFuncMap[i].m_pFuncName="phasestep"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
+	/*! \page config
+   - <b>oversampling [i]</b> ???
+	 */
 	descrToFuncMap[i].m_pFuncName="oversampling"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
+	/*! \page config
+   - <b>adcclk [i]</b> ???
+	 */
 	descrToFuncMap[i].m_pFuncName="adcclk"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
+	/*! \page config
+   - <b>adcphase [i]</b> ??? Used in MYTHEN, JUNGFRAU only.
+	 */
 	descrToFuncMap[i].m_pFuncName="adcphase"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
-
+	/*! \page config
+   - <b>adcpipeline [i]</b> ???
+	 */
 	descrToFuncMap[i].m_pFuncName="adcpipeline"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
-
+	/*! \page config
+   - <b>dbitclk [i]</b> ???
+	 */
 	descrToFuncMap[i].m_pFuncName="dbitclk"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
+	/*! \page config
+   - <b>dbitphase [i]</b> ???
+	 */
 	descrToFuncMap[i].m_pFuncName="dbitphase"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
@@ -1585,20 +1624,33 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	i++;
 
 
-
 	/* settings dump/retrieve */
+
+	/*! \page config
+   - <b>config [fname]</b> sets/saves detector/receiver to configuration contained in fname. Same as executing sls_detector_put for every line. Normally a one time operation.
+	 */
 	descrToFuncMap[i].m_pFuncName="config";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdConfiguration;
 	i++;
 
+	/* settings dump/retrieve */
+	/*! \page config
+   - <b>rx_printconfig</b> prints the receiver configuration. Only get!"
+	 */
 	descrToFuncMap[i].m_pFuncName="rx_printconfig";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdConfiguration;
 	i++;
 
+	/*! \page config
+   - <b>parameters [fname]</b> sets/saves detector parameters contained in fname. Normally once per different measurement."
+	 */
 	descrToFuncMap[i].m_pFuncName="parameters";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdConfiguration;
 	i++;
 
+	/*! \page config
+   - <b>setup [fname]</b> sets/saves detector complete setup contained in fname (extensions automatically generated), including trimfiles, ff coefficients etc."
+	 */
 	descrToFuncMap[i].m_pFuncName="setup";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdConfiguration;
 	i++;
@@ -2577,7 +2629,7 @@ string slsDetectorCommand::helpFileName(int narg, char *args[], int action){
 	}
 	if (action==PUT_ACTION || action==HELP_ACTION){
 		os << string("fname s \t  sets the filename for the data (index and extension will be automatically appended)\n");
-		os << string("fname s \t  sets the file format for the data (binary, ascii, hdf5)\n");
+		os << string("fileformat s \t  sets the file format for the data (binary, ascii, hdf5)\n");
 	}
 	return os.str();
 }
@@ -5423,7 +5475,7 @@ string slsDetectorCommand::helpConfiguration(int narg, char *args[], int action)
 
 	}
 	if (action==GET_ACTION || action==HELP_ACTION) {
-
+		os << "rx_printconfig \t prints the receiver configuration" << std::endl;
 		os << "config fname \t saves the detector to the configuration to fname" << std::endl;
 		os << "parameters fname \t saves the detector parameters to  fname" << std::endl;
 		os << "setup fname \t saves the detector complete detector setup to  fname (extensions automatically generated), including trimfiles, ff coefficients etc." << std::endl;

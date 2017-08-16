@@ -2054,7 +2054,7 @@ string slsDetectorCommand::cmdDataStream(int narg, char *args[], int action) {
 	myDet->setReceiverOnline(ONLINE_FLAG);
 
 	if (action==HELP_ACTION)
-		return helpStatus(narg,args,HELP_ACTION);
+		return helpDataStream(narg,args,HELP_ACTION);
 
 	if (action==PUT_ACTION) {
 		if (!sscanf(args[1],"%d",&ival))

@@ -1,4 +1,10 @@
 Commands to configure the detector. these commands are often left to the configuration file.
+\begin{DoxyItemize}
+\item \hyperlink{config_detstructure}{Detector Structure}: commands to configure detector structure
+\item \hyperlink{config_detstatus}{Detector Status}: commands to configure detector status
+\item \hyperlink{config_versions}{Versions}: commands to check version of each subsytem
+\end{DoxyItemize}\hypertarget{config_detstructure}{}\subsection{Detector Structure}\label{config_detstructure}
+commands to configure detector structure
 
 
 \begin{DoxyItemize}
@@ -43,7 +49,8 @@ Commands to configure the detector. these commands are often left to the configu
 
 \begin{DoxyItemize}
 \item {\bfseries sync} Sets/gets the synchronization mode of the detectors in the multi-\/detector structure. Can be: {\ttfamily none}, {\ttfamily gating}, {\ttfamily trigger}, {\ttfamily complementary}. Mainly used by MYTHEN/GOTTHARD.
-\end{DoxyItemize}
+\end{DoxyItemize}\hypertarget{config_detstatus}{}\subsection{Detector Status}\label{config_detstatus}
+commands to configure detector status
 
 
 \begin{DoxyItemize}
@@ -129,42 +136,8 @@ Commands to configure the detector. these commands are often left to the configu
 
 \begin{DoxyItemize}
 \item {\bfseries led \mbox{[}i\mbox{]}} sets/gets the led status. 1 on, 0 off. Used for MOENCH only ??
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries moduleversion:\mbox{[}i\mbox{]}} Gets the firmware version of module i. Used for MYTHEN only. Only get!
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries detectornumber} Gets the serial number or MAC of detector. Only get!
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries modulenumber:\mbox{[}i\mbox{]}} Gets the serial number of module i. Used for MYTHEN only. Only get!
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries detectorversion} Gets the firmware version of detector. Only get!
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries softwareversion} Gets the software version of detector server. Only get!
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries thisversion} Gets the software version of this client software. Only get!
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries receiverversion} Gets the software version of receiver. Only get!
-\end{DoxyItemize}
+\end{DoxyItemize}\hypertarget{config_versions}{}\subsection{Versions}\label{config_versions}
+Commands to check versions of each subsystem
 
 
 \begin{DoxyItemize}

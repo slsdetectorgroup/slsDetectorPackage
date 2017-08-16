@@ -40,6 +40,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <h1><a class="anchor" id="config">Configuration commands </a></h1><p>Commands to configure the detector. these commands are often left to the configuration file.</p>
 <ul>
+<li><a class="el" href="config.html#detstructure">Detector Structure</a>: commands to configure detector structure</li>
+<li><a class="el" href="config.html#detstatus">Detector Status</a>: commands to configure detector status</li>
+<li><a class="el" href="config.html#versions">Versions</a>: commands to check version of each subsytem</li>
+</ul>
+<h2><a class="anchor" id="detstructure">
+Detector Structure</a></h2>
+<p>commands to configure detector structure</p>
+<ul>
 <li><b>datastream</b> enables/disables the 0MQ data stream (0MQ threads created) from receiver to client.</li>
 </ul>
 <ul>
@@ -66,6 +74,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <ul>
 <li><b>sync</b> Sets/gets the synchronization mode of the detectors in the multi-detector structure. Can be: <code>none</code>, <code>gating</code>, <code>trigger</code>, <code>complementary</code>. Mainly used by MYTHEN/GOTTHARD.</li>
 </ul>
+<h2><a class="anchor" id="detstatus">
+Detector Status</a></h2>
+<p>commands to configure detector status</p>
 <ul>
 <li><b>online [i]</b> sets the detector in online (1) or offline (0) mode</li>
 </ul>
@@ -118,27 +129,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <ul>
 <li><b>led [i]</b> sets/gets the led status. 1 on, 0 off. Used for MOENCH only ??</li>
 </ul>
-<ul>
-<li><b>moduleversion:[i]</b> Gets the firmware version of module i. Used for MYTHEN only. Only get!</li>
-</ul>
-<ul>
-<li><b>detectornumber</b> Gets the serial number or MAC of detector. Only get!</li>
-</ul>
-<ul>
-<li><b>modulenumber:[i]</b> Gets the serial number of module i. Used for MYTHEN only. Only get!</li>
-</ul>
-<ul>
-<li><b>detectorversion</b> Gets the firmware version of detector. Only get!</li>
-</ul>
-<ul>
-<li><b>softwareversion</b> Gets the software version of detector server. Only get!</li>
-</ul>
-<ul>
-<li><b>thisversion</b> Gets the software version of this client software. Only get!</li>
-</ul>
-<ul>
-<li><b>receiverversion</b> Gets the software version of receiver. Only get!</li>
-</ul>
+<h2><a class="anchor" id="versions">
+Versions</a></h2>
+<p>Commands to check versions of each subsystem</p>
 <ul>
 <li><b>timing [mode]</b> sets/gets synchronization mode of the detector. Mode: auto, trigger, ro_trigger, gating, triggered_gating</li>
 </ul>

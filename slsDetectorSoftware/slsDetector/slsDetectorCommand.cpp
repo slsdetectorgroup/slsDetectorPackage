@@ -53,7 +53,7 @@ The commands are sudivided into different pages depending on their functionaliti
  - \ref actions "Actions": commands to define scripts to be executed during the acquisition flow
  - \ref network "Network": commands to setup the network between client, detector and receiver
  - \ref receiver "Receiver": commands to configure the receiver
- - \ref test Developer: commands to be used only for software debugging. Avoid using them!
+ - \ref test "Developer": commands to be used only for software debugging. Avoid using them!
  */
 
 slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
@@ -112,10 +112,20 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	i++;
 
 
-	/* Detector structure configuration and debugging commands */
+
 
 	/*! \page config Configuration commands
-   Commands to configure the detector. these commands are often left to the configuration file.
+    Commands to configure the detector. these commands are often left to the configuration file.
+	 - \ref detstructure "Detector Structure": commands to configure detector structure
+	 - \ref detstatus "Detector Status": commands to configure detector status
+	 - \ref versions "Versions": commands to check version of each subsytem
+	 */
+
+	/* Detector structure configuration and debugging commands */
+
+	/*! \page config
+		\section detstructure Detector Structure
+   commands to configure detector structure
 	 */
 
 	/*! \page config
@@ -421,6 +431,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFileIndex;
 	i++;
 
+	/*! \page config
+		\section detstatus Detector Status
+   commands to configure detector status
+	 */
 
 	/*! \page config
     - <b>online [i]</b> sets the detector in online (1) or offline (0) mode
@@ -905,48 +919,53 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	/* versions/ serial numbers  getId */
 
 	/*! \page config
+		\section versions Versions
+   Commands to check versions of each subsystem
+	 */
+
+	/*!
    - <b>moduleversion:[i]</b> Gets the firmware version of module i. Used for MYTHEN only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="moduleversion"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
 	i++;
 
-	/*! \page config
+	/*!
    - <b>detectornumber</b> Gets the serial number or MAC of detector. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="detectornumber"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
 	i++;
 
-	/*! \page config
+	/*!
    - <b>modulenumber:[i]</b> Gets the serial number of module i. Used for MYTHEN only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="modulenumber"; /* find command! */
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
 	i++;
 
-	/*! \page config
+	/*!
    - <b>detectorversion</b> Gets the firmware version of detector. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="detectorversion"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
 	i++;
 
-	/*! \page config
+	/*!
    - <b>softwareversion</b> Gets the software version of detector server. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="softwareversion"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
 	i++;
 
-	/*! \page config
+	/*!
    - <b>thisversion</b> Gets the software version of this client software. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="thisversion"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
 	i++;
 
-	/*! \page config
+	/*!
    - <b>receiverversion</b> Gets the software version of receiver. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="receiverversion"; //

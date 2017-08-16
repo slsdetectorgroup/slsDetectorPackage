@@ -53,7 +53,9 @@ The commands are sudivided into different pages depending on their functionaliti
  - \ref actions "Actions": commands to define scripts to be executed during the acquisition flow
  - \ref network "Network": commands to setup the network between client, detector and receiver
  - \ref receiver "Receiver": commands to configure the receiver
- - \ref test "Developer": commands to be used only for software debugging. Avoid using them!
+  - \ref ctb Chiptestboard: commands specific for the new chiptest board as pattern generator
+ - \ref test Developer: commands to be used only for software debugging. Avoid using them!
+ 
  */
 
 slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
@@ -1108,83 +1110,142 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 
 	/* pots */
-
+	/*! \page settings
+   - <b>vthreshold [i] [mv]</b> Sets/gets detector threshold voltage for single photon counters. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vthreshold"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vcalibration [i] [mv]</b> Sets/gets the voltage of the calibration pulses. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vcalibration"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vtrimbit [i] [mv]</b> Sets/gets the voltage to set the width of the trimbits. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vtrimbit"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vpreamp [i] [mv]</b> Sets/gets the voltage to define the preamplifier feedback resistance. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vpreamp"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vhaper1 [i] [mv]</b> Sets/gets the voltage to define the  feedback resistance of the first shaper. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vshaper1"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vshaper2 [i] [mv]</b> Sets/gets the voltage to define the  feedback resistance of the second shaper. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vshaper2"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vhighvoltage [i]</b> Sets/gets the high voltage to the sensor in V (int).
+	 */
 	descrToFuncMap[i].m_pFuncName="vhighvoltage"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vapower [i]</b> Sets/gets the analog power supply for the old chiptest board in DAC units (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vapower"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vddpower [i]</b> Sets/gets the digital power supply for the old chiptest board in DAC units (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vddpower"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vshpower [i]</b> Sets/gets the comparator power supply for the old chiptest board in DAC units (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vshpower"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>viopower [i]</b> Sets/gets the power supply of the FPGA I/Os for the old chiptest board in DAC units (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="viopower"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vrefds [i] [mv]</b> Sets/gets vrefds. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vref_ds"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vcascn_pb [i] [mv]</b> Sets/gets vcascn_pb. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vcascn_pb"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vcasc_pb [i] [mv]</b> Sets/gets vcasc_pb. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vcascp_pb"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vout_cm [i] [mv]</b> Sets/gets vout_cm. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vout_cm"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vcasc_out [i] [mv]</b> Sets/gets vcasc_out. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vcasc_out"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vin_com [i] [mv]</b> Sets/gets vin_com. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vin_cm"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vref_comp [i] [mv]</b> Sets/gets vref_comp. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vref_comp"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>ib_test_c [i] [mv]</b> Sets/gets ib_test_c. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="ib_test_c"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>dac[0..7] [i] [mv]</b> Sets/gets dac[0..7] for MOENCH02. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="dac0"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
@@ -1217,194 +1278,333 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vsvp [i] [mv]</b> Sets/gets vsvp. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vsvp"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vsvn [i] [mv]</b> Sets/gets vsvn. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vsvn"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vtr [i] [mv]</b> Sets/gets vtr. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vtr"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vrf [i] [mv]</b> Sets/gets vrf. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vrf"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vrs [i] [mv]</b> Sets/gets vrs. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vrs"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vtgstv [i] [mv]</b> Sets/gets vtgstv. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vtgstv"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vcmp_ll [i] [mv]</b> Sets/gets vcmp_ll. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vcmp_ll"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vcmp_lr [i] [mv]</b> Sets/gets vcmp_lr. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vcmp_lr"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vcal_l [i] [mv]</b> Sets/gets vcal_l. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vcall"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vcomp_rl [i] [mv]</b> Sets/gets vcomp_rl. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vcmp_rl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vcomp_rr [i] [mv]</b> Sets/gets vcomp_rr. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vcmp_rr"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>rxb_rb [i] [mv]</b> Sets/gets rxb_rb. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="rxb_rb"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>rxb_lb [i] [mv]</b> Sets/gets rxb_lb. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="rxb_lb"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vcp [i] [mv]</b> Sets/gets vcp. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vcp"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vcn [i] [mv]</b> Sets/gets vcn. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vcn"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>vis [i] [mv]</b> Sets/gets vis. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vis"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>iodelay [i] [mv]</b> Sets/gets iodelay. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="iodelay"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
 
+	/*! \page settings
+   - <b>dac:j [i] [mv]</b> Sets/gets value for DAC number j for the new chiptestboard. Normally in DAC units unless \c mv is specified at the end of the command line (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="dac"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
 
 
+	/*! \page settings
+   - <b>adcvpp [i] </b> Sets/gets the Vpp of the ADC  0 -> 1V ; 1 -> 1.14V ; 2 -> 1.33V ; 3 -> 1.6V ; 4 -> 2V  (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="adcvpp"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
 
+	/*! \page settings
+   - <b>v_a [i] mv</b> Sets/gets value for Va on the new chiptest board. Must be in mV (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="v_a"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>v_b [i] mv</b> Sets/gets value for Vb on the new chiptest board. Must be in mV (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="v_b"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>v_c [i] mv</b> Sets/gets value for Vc on the new chiptest board. Must be in mV (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="v_c"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>v_d [i] mv</b> Sets/gets value for Vd on the new chiptest board. Must be in mV (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="v_d"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>v_io [i] mv</b> Sets/gets value for Vio on the new chiptest board. Must be in mV (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="v_io"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+
+	/*! \page settings
+   - <b>v_chip [i] mv</b> Sets/gets value for Vchip on the new chiptest board. Must be in mV (int). Normally don't use it!
+	 */
 	descrToFuncMap[i].m_pFuncName="v_chip"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
+	/*! \page settings
+   - <b>v_limit [i] mv</b> Sets/gets a soft limit for the power supplies and the DACs on the new chiptest board. Must be in mV (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="v_limit"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
 	/* r/w timers */
 
+	/*! \page settings
+   - <b>temp_adc</b> Gets the ADC temperature (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="temp_adc"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	i++;
 
+	/*! \page settings
+   - <b>temp_fpga</b> Gets the FPGA temperature (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="temp_fpga"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	i++;
 
+	/*! \page settings
+   - <b>temp_fpgaext</b> Gets the external FPGA temperature (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="temp_fpgaext"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	i++;
 
+	/*! \page settings
+   - <b>temp_10ge</b> Gets the 10Gbe temperature (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="temp_10ge"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	i++;
 
+	/*! \page settings
+   - <b>temp_dcdc</b> Gets the temperature of the DC/DC converter(int)
+	 */
 	descrToFuncMap[i].m_pFuncName="temp_dcdc"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	i++;
 
+	/*! \page settings
+   - <b>temp_sodl</b> Gets the temperature of the left so-dimm memory (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="temp_sodl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	i++;
 
+	/*! \page settings
+   - <b>temp_sodr</b> Gets the temperature of the right so-dimm memory (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="temp_sodr"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	i++;
 
 
+	/*! \page settings
+   - <b>adc:j</b> Gets the values of the slow ADC number j for the new chiptest board (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="adc"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	i++;
 
+	/*! \page settings
+   - <b>temp_fpgal</b> Gets the temperature of the left frontend FPGA (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="temp_fpgafl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	i++;
 
+	/*! \page settings
+   - <b>temp_fpgar</b> Gets the temperature of the right frontend FPGA (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="temp_fpgafr"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	i++;
 
 
+	/*! \page settings
+   - <b>i_a</b> Gets the current of the power supply a on the new chiptest board (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="i_a"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	i++;
 
+	/*! \page settings
+   - <b>i_b</b> Gets the current of the power supply b on the new chiptest board (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="i_b"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	i++;
 
+	/*! \page settings
+   - <b>i_c</b> Gets the current of the power supply c on the new chiptest board (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="i_c"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	i++;
 
+	/*! \page settings
+   - <b>i_d</b> Gets the current of the power supply d on the new chiptest board (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="i_d"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	i++;
 
+	/*! \page settings
+   - <b>i_io</b> Gets the current of the power supply io on the new chiptest board (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="i_io"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	i++;
 
+	/*! \page settings
+   - <b>vm_a</b> Gets the measured voltage of the power supply a on the new chiptest board (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vm_a"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	i++;
 
+	/*! \page settings
+   - <b>vm_b</b> Gets the measured voltage of the power supply b on the new chiptest board (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vm_b"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	i++;
 
+	/*! \page settings
+   - <b>vm_c</b> Gets the measured voltage of the power supply c on the new chiptest board (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vm_c"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	i++;
 
+	/*! \page settings
+   - <b>vm_d</b> Gets the measured voltage of the power supply d on the new chiptest board (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vm_d"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	i++;
 
+	/*! \page settings
+   - <b>vm_io</b> Gets the measured voltage of the power supply io on the new chiptest board (int)
+	 */
 	descrToFuncMap[i].m_pFuncName="vm_io"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	i++;
@@ -1781,98 +1981,164 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	/* pattern generator */
 
 
+	/*! \page ctb Chiptest board
+	  Commands specific for the new chiptest board as pattern generator
+	 */
+	
+	/*! \page ctb
+   - <b>adcinvert [mask]</b> Sets/gets ADC inversion mask (8 digits hex format)
+	 */
 	descrToFuncMap[i].m_pFuncName="adcinvert"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
 	i++;
 
+	/*! \page ctb
+   - <b>adcdisable [mask]</b> Sets/gets ADC disable mask (8 digits hex format)
+	 */
 	descrToFuncMap[i].m_pFuncName="adcdisable"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
 	i++;
 
+	/*! \page ctb
+   - <b>pattern fn</b> loads binary pattern file fn
+	 */
 	descrToFuncMap[i].m_pFuncName="pattern"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
 	i++;
 
 
+	/*! \page ctb
+   - <b>patword addr [word]</b> sets/gets 64 bit word at address addr of pattern memory. Both address and word in hex format. Advanced!
+	 */
 	descrToFuncMap[i].m_pFuncName="patword"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
 	i++;
 
 
+	/*! \page ctb
+   - <b>patioctrl [word]</b> sets/gets 64 bit mask defining input (0) and output (1) signals. hex format.
+	 */
 	descrToFuncMap[i].m_pFuncName="patioctrl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
 	i++;
 
 
+
+	/*! \page ctb
+   - <b>patclkctrl [word]</b> sets/gets 64 bit mask defining if output signal is a clock and runs. hex format. Unused at the moment.
+	 */
 	descrToFuncMap[i].m_pFuncName="patclkctrl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
 	i++;
 
 
+	/*! \page ctb
+   - <b>patlimits [addr1 addr2]</b> sets/gets the start and stop limits of the pattern to be executed. hex format. Advanced!
+	 */
 	descrToFuncMap[i].m_pFuncName="patlimits"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
 	i++;
 
+	/*! \page ctb
+   - <b>patloop0 [addr1 addr2]</b> sets/gets the start and stop limits of the level 0 loop. hex format. Advanced!
+	 */
 	descrToFuncMap[i].m_pFuncName="patloop0"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
 	i++;
 
 
+	/*! \page ctb
+   - <b>patnloop0 [n]</b> sets/gets the number of cyclesof the  level 0 loop (int).
+	 */
 	descrToFuncMap[i].m_pFuncName="patnloop0"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
 	i++;
 
 
+	/*! \page ctb
+   - <b>patwait0 [addr]</b> sets/gets the address of the level 0 wait point. hex format. Advanced!
+	 */
 	descrToFuncMap[i].m_pFuncName="patwait0"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
 	i++;
 
 
+	/*! \page ctb
+   - <b>patwaittime0 [n]</b> sets/gets the duration of the witing of the 0 waiting point in clock cycles (int).
+	 */
 	descrToFuncMap[i].m_pFuncName="patwaittime0"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
 	i++;
 
 
+	/*! \page ctb
+   - <b>patloop1 [addr1 addr2]</b> sets/gets the start and stop limits of the level 1 loop. hex format. Advanced!
+	 */
 	descrToFuncMap[i].m_pFuncName="patloop1"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
 	i++;
 
 
+	/*! \page ctb
+   - <b>patnloop1 [n]</b> sets/gets the number of cyclesof the  level 1 loop (int).
+	 */
 	descrToFuncMap[i].m_pFuncName="patnloop1"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
 	i++;
 
 
+	/*! \page ctb
+   - <b>patwait1 [addr]</b> sets/gets the address of the level 1 wait point. hex format. Advanced!
+	 */
 	descrToFuncMap[i].m_pFuncName="patwait1"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
 	i++;
 
 
+	/*! \page ctb
+   - <b>patwaittime1 [n]</b> sets/gets the duration of the witing of the 1 waiting point in clock cycles (int).
+	 */
 	descrToFuncMap[i].m_pFuncName="patwaittime1"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
 	i++;
 
 
+	/*! \page ctb
+   - <b>patloop2 [addr1 addr2]</b> sets/gets the start and stop limits of the level 2 loop. hex format. Advanced!
+	 */
 	descrToFuncMap[i].m_pFuncName="patloop2"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
 	i++;
 
 
+	/*! \page ctb
+   - <b>patnloop2 [n]</b> sets/gets the number of cyclesof the  level 2 loop (int).
+	 */
 	descrToFuncMap[i].m_pFuncName="patnloop2"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
 	i++;
 
 
+	/*! \page ctb
+   - <b>patwait2 [addr]</b> sets/gets the address of the level 2 wait point. hex format. Advanced!
+	 */
 	descrToFuncMap[i].m_pFuncName="patwait2"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
 	i++;
 
 
+
+	/*! \page ctb
+   - <b>patwaittime2 [n]</b> sets/gets the duration of the waiting of the 2 waiting point in clock cycles (int).
+	 */
 	descrToFuncMap[i].m_pFuncName="patwaittime2"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
 	i++;
 
 
+	/*! \page ctb
+   - <b>dut_clk [i]</b> sets/gets the signal to be used as a clock for the digital data coming from the device under test. Advanced!
+	 */
 	descrToFuncMap[i].m_pFuncName="dut_clk"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
 	i++;

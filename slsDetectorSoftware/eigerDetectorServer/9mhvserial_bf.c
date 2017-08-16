@@ -131,6 +131,7 @@ int main(int argc, char* argv[]) {
 	buffer[BUFFERSIZE-1] = '\n';
 	cprintf(GREEN,"Ready...\n");
 
+
 	/*
 		int once = 1;
 		while(strcmp(buffer,"start")){

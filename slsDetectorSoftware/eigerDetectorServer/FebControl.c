@@ -259,8 +259,8 @@ int Feb_Control_OpenSerialCommunication(){
 		return 0;
 	}
 
-	/*
-	//send start
+
+	//send the first message (which will be garbled up)
 	char buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE];
 	memset(buffer,0,SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
 	buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE-1] = '\n';
@@ -270,7 +270,7 @@ int Feb_Control_OpenSerialCommunication(){
 		cprintf(RED,"\nWarning: Error writing to i2c bus\n");
 		return 0;
 	}
-*/
+
 	return 1;
 }
 

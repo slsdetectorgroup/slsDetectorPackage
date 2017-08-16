@@ -166,6 +166,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
     Commands to configure the detector. these commands are often left to the configuration file.
 	 - \ref detstructure "Detector Structure": commands to configure detector structure
 	 - \ref detstatus "Detector Status": commands to configure detector status
+	 - \ref detsize "Detector Data Size": commands to configure detector data size
 	 - \ref versions "Versions": commands to check version of each subsytem
 	 */
 
@@ -186,16 +187,13 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	/*! \page config
    - \b free Free shared memory on the control PC
 	 */
-
 	descrToFuncMap[i].m_pFuncName="free";//OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFree;
 	i++;
 
-
 	/*! \page config
    - \b add Adds a detector at the end of the multi-detector structure. \c put argument is the hostname or IP adress. Returns the chained  list of detector hostnames.
 	 */
-
 	descrToFuncMap[i].m_pFuncName="add";//OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdd;
 	i++;
@@ -203,16 +201,13 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	/*! \page config
    - <b>remove i</b> Removes controller \c i from the multi-detector structure. Can be used for partial readout of the detector.
 	 */
-
 	descrToFuncMap[i].m_pFuncName="remove";//OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdRemove;
 	i++;
 
-
 	/*! \page config
    - <b>type</b> Sets/gets detector type (string).
 	 */
-
 	descrToFuncMap[i].m_pFuncName="type"; //OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdHostname;
 	i++;
@@ -220,7 +215,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	/*! \page config
    - <b>hostname</b> \c put adds the hostname (ot IP adress) at the end of the multi-detector structure. If used for a single controlled (i:) replaces the current hostname. Returns the list of the hostnames of the multi-detector structure.
 	 */
-
 	descrToFuncMap[i].m_pFuncName="hostname"; //OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdHostname;
 	i++;
@@ -228,7 +222,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	/*! \page config
    - <b>id[:i]</b> Returns the id of the detector structure. i is the detector position in a multi detector system. If used a \c put, configures the id of the detector structure. i is the detector position in a multi detector system and l is the id of the detector to be added.
 	 */
-
 	descrToFuncMap[i].m_pFuncName="id"; //OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdId;
 	i++;
@@ -273,6 +266,62 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	i++;
 
 
+	/* detector and data size */
+
+	/*! \page config
+		\section detsize Detector Data Size
+   commands to configure detector data size
+	 */
+
+	/*! \page config
+   - <b>nmod [i]</b> sets/gets the number of modules of the detector. Used for MYTHEN only.
+	 */
+	descrToFuncMap[i].m_pFuncName="nmod"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
+	i++;
+
+	/*! \page config
+   - <b>maxmod </b> Gets the maximum number of modules of the detector. Used for MYTHEN only. Cannot put!
+	 */
+	descrToFuncMap[i].m_pFuncName="maxmod"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
+	i++;
+
+	/*! \page config
+   - <b>dr [i]</b> sets/gets the dynamic range of detector. Mythen [4,8,16,24]. Eiger [4,8,16,32]. Others cannot put!
+	 */
+	descrToFuncMap[i].m_pFuncName="dr"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
+	i++;
+
+	/*! \page config
+   - <b>roi [i] [xmin] [xmax] [ymin] [ymax]  </b> sets region of interest of the detector, where i is number of rois;i=0 to clear rois. Used for GOTTHARD only.
+	 */
+	descrToFuncMap[i].m_pFuncName="roi"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
+	i++;
+
+	/*! \page config
+   - <b>detsizechan [xmax] [ymax]</b> sets the maximum number of channels in each dimension for complete detector set; -1 is no limit. Use for multi-detector system as first command in config file.
+	 */
+	descrToFuncMap[i].m_pFuncName="detsizechan"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
+	i++;
+
+	/*! \page config
+   - <b>roimask [i]</b>  ??
+	 */
+	descrToFuncMap[i].m_pFuncName="roimask"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
+	i++;
+
+	/*! \page config
+   - <b>flippeddatax [i]</b> enables/disables data being flipped across x axis. 1 enables, 0 disables. Used for EIGER only. 1 for bottom half-module, 0 for top-half module.
+	 */
+	descrToFuncMap[i].m_pFuncName="flippeddatax"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
+	i++;
+
 
 
 
@@ -298,27 +347,21 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 	/*! \page data
    - <b>ratecorr [ns]</b> Returns the dead time used for rate correections in ns (int). \c put sets the deadtime correction constant in ns, -1  will set it to default tau of settings (0 unset).
-
 	 */
 	descrToFuncMap[i].m_pFuncName="ratecorr"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdRateCorr;
 	i++;
 
-
 	/*! \page data
    - <b>badchannels [fn]</b> \c put sets the badchannels file to \c fn . \get returns the bad channels file name. If \fn is specified, it writes the badchannels to \c fn. \c none disables badchannel corrections.
-
 	 */
 	descrToFuncMap[i].m_pFuncName="badchannels"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdBadChannels;
 	i++;
 
-
 	/*! \page data
    - <b>angconv [fn]</b> \c put sets the angular conversion file to \c fn . \get returns the angular conversion file name. If \fn is specified, it writes the angular conversion factors to \c fn. \c none disables angular corrections.
-
 	 */
-
 	descrToFuncMap[i].m_pFuncName="angconv"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAngConv;
 	i++;
@@ -326,7 +369,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	/*! \page data
    - <b>globaloff [f]</b> Sets/gets the beamline angular global offset (float).
 	 */
-
 	descrToFuncMap[i].m_pFuncName="globaloff"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAngConv;
 	i++;
@@ -335,7 +377,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
    - <b>fineoff [f]</b> Sets/gets the angular fine offset of the measurement (float).
 	 */
 	//2017/08/15
-
 	descrToFuncMap[i].m_pFuncName="fineoff"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAngConv;
 	i++;
@@ -343,7 +384,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	/*! \page data
    - <b>binsize [f]</b> Sets/gets the bin size used for the angular conversion (float).
 	 */
-
 	descrToFuncMap[i].m_pFuncName="binsize" ;//
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAngConv;
 	i++;
@@ -351,11 +391,9 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	/*! \page data
    - <b>angdir [i]</b> Sets/gets the angular direction. 1 means increasing channels number as increasing angle, -1 increasing channel number decreasing angle. 
 	 */
-
 	descrToFuncMap[i].m_pFuncName="angdir" ;//
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAngConv;
 	i++;
-
 
 	/*! \page data
    - <b>moveflag [i]</b> Sets/gets the flag for physically moving the detector during the acquisition of several positions. 1 sets (moves), 0 unsets.
@@ -371,14 +409,12 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAngConv;
 	i++;
 
-
 	/*! \page data
    - <b>sampley [f]</b> Sets/gets the sample displacement in th direction orthogonal to the beam in um. Unused!
 	 */
 	descrToFuncMap[i].m_pFuncName="sampley" ;//
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAngConv;
 	i++;
-
 
 	/*! \page data
    - <b>threaded [i]</b> Sets/gets the data processing threaded flag. 1 is threaded, 0 unthreaded.
@@ -442,8 +478,8 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	i++;
 
 
-	/* file name */
 
+	/* file name */
 
 	/*! \page output Output settings
    Commands to setup the file destination and format
@@ -497,6 +533,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncName="fileformat"; //OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFileName;
 	i++;
+
 
 
 
@@ -685,6 +722,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 
 
+
 	/* communication configuration */
 
 	/*! \page network Network
@@ -814,56 +852,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	i++;
 
 
-	/* detector and data size */
-
-	/*! \page config
-   - <b>nmod [i]</b> sets/gets the number of modules of the detector. Used for MYTHEN only.
-	 */
-	descrToFuncMap[i].m_pFuncName="nmod"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
-	i++;
-
-	/*! \page config
-   - <b>maxmod </b> Gets the maximum number of modules of the detector. Used for MYTHEN only. Cannot put!
-	 */
-	descrToFuncMap[i].m_pFuncName="maxmod"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
-	i++;
-
-	/*! \page config
-   - <b>dr [i]</b> sets/gets the dynamic range of detector. Mythen [4,8,16,24]. Eiger [4,8,16,32]. Others cannot put!
-	 */
-	descrToFuncMap[i].m_pFuncName="dr"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
-	i++;
-
-	/*! \page config
-   - <b>roi [i] [xmin] [xmax] [ymin] [ymax]  </b> sets region of interest of the detector, where i is number of rois;i=0 to clear rois. Used for GOTTHARD only.
-	 */
-	descrToFuncMap[i].m_pFuncName="roi"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
-	i++;
-
-	/*! \page config
-   - <b>detsizechan [xmax] [ymax]</b> sets the maximum number of channels in each dimension for complete detector set; -1 is no limit. Use for multi-detector system as first command in config file.
-	 */
-	descrToFuncMap[i].m_pFuncName="detsizechan"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
-	i++;
-
-	/*! \page config
-   - <b>roimask [i]</b>  ??
-	 */
-	descrToFuncMap[i].m_pFuncName="roimask"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
-	i++;
-
-	/*! \page config
-   - <b>flippeddatax [i]</b> enables/disables data being flipped across x axis. 1 enables, 0 disables. Used for EIGER only. 1 for bottom half-module, 0 for top-half module.
-	 */
-	descrToFuncMap[i].m_pFuncName="flippeddatax"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
-	i++;
 
 	/*! \page test
    - <b>flippeddatay [i]</b> enables/disables data being flipped across y axis. 1 enables, 0 disables. Not implemented.

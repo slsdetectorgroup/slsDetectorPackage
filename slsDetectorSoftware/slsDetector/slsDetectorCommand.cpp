@@ -1678,7 +1678,11 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 	/*! \page receiver
    - <b>r_checkonline</b> Checks the receiver if it is online/offline mode. Prints either 'All receiver online', '[List of all receiver hostname in offline mode] :Not all receiver online'. Only get!
+	 */
+	descrToFuncMap[i].m_pFuncName="r_checkonline";
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
 	i++;
+
 
 	/*! \page receiver
    - <b>framescaught</b> gets the number of frames caught by receiver. Average of all for multi-detector command. Only get!

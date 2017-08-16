@@ -1450,11 +1450,11 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 
-	descr
+
 	/*! \page settings
    - <b>v_chip [i] mv</b> Sets/gets value for Vchip on the new chiptest board. Must be in mV (int). Normally don't use it!
 	 */
-	  ToFuncMap[i].m_pFuncName="v_chip"; //
+	descrToFuncMap[i].m_pFuncName="v_chip"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	i++;
 

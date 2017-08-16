@@ -1460,49 +1460,49 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	/* read only timers */
 
 	/*! \page config
-   - <b>exptimel [i]</b> gets exposure time left. Used in MYTHEN, GOTTHARD only.
+   - <b>exptimel [i]</b> gets exposure time left. Used in MYTHEN, GOTTHARD only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="exptimel"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
 	/*! \page config
-   - <b>periodl [i]</b> gets frame period left. Used in MYTHEN, GOTTHARD only.
+   - <b>periodl [i]</b> gets frame period left. Used in MYTHEN, GOTTHARD only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="periodl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
 	/*! \page config
-   - <b>delayl [i]</b> gets delay left. Used in MYTHEN, GOTTHARD only.
+   - <b>delayl [i]</b> gets delay left. Used in MYTHEN, GOTTHARD only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="delayl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
 	/*! \page config
-   - <b>gatesl [i]</b> gets number of gates left. Used in MYTHEN, GOTTHARD only.
+   - <b>gatesl [i]</b> gets number of gates left. Used in MYTHEN, GOTTHARD only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="gatesl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
 	/*! \page config
-   - <b>framesl [i]</b> gets number of frames left. Used in MYTHEN, GOTTHARD only.
+   - <b>framesl [i]</b> gets number of frames left. Used in MYTHEN, GOTTHARD only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="framesl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
 	/*! \page config
-   - <b>cyclesl [i]</b> gets number of cylces left. Used in MYTHEN, GOTTHARD only.
+   - <b>cyclesl [i]</b> gets number of cylces left. Used in MYTHEN, GOTTHARD only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="cyclesl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
 	/*! \page config
-   - <b>probesl [i]</b> gets number of probes left. Used in MYTHEN, GOTTHARD only.
+   - <b>probesl [i]</b> gets number of probes left. Used in MYTHEN, GOTTHARD only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="probesl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
@@ -1512,6 +1512,9 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	//   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	//   i++;
 
+	/*! \page config
+   - <b>now [i]</b> ??? Only get!
+	 */
 	descrToFuncMap[i].m_pFuncName="now"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;

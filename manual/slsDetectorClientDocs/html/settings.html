@@ -71,7 +71,205 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li><b>trimval [i]</b> sets all trimbits to i. Used in EIGER only.</li>
 </ul>
 <ul>
-<li><b>pedestal [i]</b> starts acquisition for i frames, calculates pedestal and writes back to fpga. Used in GOTTHARD only. Only put! </li>
+<li><b>pedestal [i]</b> starts acquisition for i frames, calculates pedestal and writes back to fpga. Used in GOTTHARD only. Only put!</li>
+</ul>
+<ul>
+<li><b>vthreshold [i] [mv]</b> Sets/gets detector threshold voltage for single photon counters. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vcalibration [i] [mv]</b> Sets/gets the voltage of the calibration pulses. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vtrimbit [i] [mv]</b> Sets/gets the voltage to set the width of the trimbits. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vpreamp [i] [mv]</b> Sets/gets the voltage to define the preamplifier feedback resistance. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vhaper1 [i] [mv]</b> Sets/gets the voltage to define the feedback resistance of the first shaper. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vshaper2 [i] [mv]</b> Sets/gets the voltage to define the feedback resistance of the second shaper. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vhighvoltage [i]</b> Sets/gets the high voltage to the sensor in V (int).</li>
+</ul>
+<ul>
+<li><b>vapower [i]</b> Sets/gets the analog power supply for the old chiptest board in DAC units (int)</li>
+</ul>
+<ul>
+<li><b>vddpower [i]</b> Sets/gets the digital power supply for the old chiptest board in DAC units (int)</li>
+</ul>
+<ul>
+<li><b>vshpower [i]</b> Sets/gets the comparator power supply for the old chiptest board in DAC units (int)</li>
+</ul>
+<ul>
+<li><b>viopower [i]</b> Sets/gets the power supply of the FPGA I/Os for the old chiptest board in DAC units (int)</li>
+</ul>
+<ul>
+<li><b>vrefds [i] [mv]</b> Sets/gets vrefds. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vcascn_pb [i] [mv]</b> Sets/gets vcascn_pb. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vcasc_pb [i] [mv]</b> Sets/gets vcasc_pb. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vout_cm [i] [mv]</b> Sets/gets vout_cm. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vcasc_out [i] [mv]</b> Sets/gets vcasc_out. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vin_com [i] [mv]</b> Sets/gets vin_com. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vref_comp [i] [mv]</b> Sets/gets vref_comp. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>ib_test_c [i] [mv]</b> Sets/gets ib_test_c. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>dac[0..7] [i] [mv]</b> Sets/gets dac[0..7] for MOENCH02. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vsvp [i] [mv]</b> Sets/gets vsvp. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vsvn [i] [mv]</b> Sets/gets vsvn. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vtr [i] [mv]</b> Sets/gets vtr. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vrf [i] [mv]</b> Sets/gets vrf. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vrs [i] [mv]</b> Sets/gets vrs. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vtgstv [i] [mv]</b> Sets/gets vtgstv. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vcmp_ll [i] [mv]</b> Sets/gets vcmp_ll. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vcmp_lr [i] [mv]</b> Sets/gets vcmp_lr. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vcal_l [i] [mv]</b> Sets/gets vcal_l. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vcomp_rl [i] [mv]</b> Sets/gets vcomp_rl. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vcomp_rr [i] [mv]</b> Sets/gets vcomp_rr. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>rxb_rb [i] [mv]</b> Sets/gets rxb_rb. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>rxb_lb [i] [mv]</b> Sets/gets rxb_lb. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vcp [i] [mv]</b> Sets/gets vcp. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vcn [i] [mv]</b> Sets/gets vcn. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>vis [i] [mv]</b> Sets/gets vis. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>iodelay [i] [mv]</b> Sets/gets iodelay. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>dac:j [i] [mv]</b> Sets/gets value for DAC number j for the new chiptestboard. Normally in DAC units unless <code>mv</code> is specified at the end of the command line (int)</li>
+</ul>
+<ul>
+<li><b>adcvpp [i] </b> Sets/gets the Vpp of the ADC 0 -&gt; 1V ; 1 -&gt; 1.14V ; 2 -&gt; 1.33V ; 3 -&gt; 1.6V ; 4 -&gt; 2V (int)</li>
+</ul>
+<ul>
+<li><b>v_a [i] mv</b> Sets/gets value for Va on the new chiptest board. Must be in mV (int)</li>
+</ul>
+<ul>
+<li><b>v_b [i] mv</b> Sets/gets value for Vb on the new chiptest board. Must be in mV (int)</li>
+</ul>
+<ul>
+<li><b>v_c [i] mv</b> Sets/gets value for Vc on the new chiptest board. Must be in mV (int)</li>
+</ul>
+<ul>
+<li><b>v_d [i] mv</b> Sets/gets value for Vd on the new chiptest board. Must be in mV (int)</li>
+</ul>
+<ul>
+<li><b>v_io [i] mv</b> Sets/gets value for Vio on the new chiptest board. Must be in mV (int)</li>
+</ul>
+<ul>
+<li><b>v_chip [i] mv</b> Sets/gets value for Vchip on the new chiptest board. Must be in mV (int). Normally don't use it!</li>
+</ul>
+<ul>
+<li><b>v_limit [i] mv</b> Sets/gets a soft limit for the power supplies and the DACs on the new chiptest board. Must be in mV (int)</li>
+</ul>
+<ul>
+<li><b>temp_adc</b> Gets the ADC temperature (int)</li>
+</ul>
+<ul>
+<li><b>temp_fpga</b> Gets the FPGA temperature (int)</li>
+</ul>
+<ul>
+<li><b>temp_fpgaext</b> Gets the external FPGA temperature (int)</li>
+</ul>
+<ul>
+<li><b>temp_10ge</b> Gets the 10Gbe temperature (int)</li>
+</ul>
+<ul>
+<li><b>temp_dcdc</b> Gets the temperature of the DC/DC converter(int)</li>
+</ul>
+<ul>
+<li><b>temp_sodl</b> Gets the temperature of the left so-dimm memory (int)</li>
+</ul>
+<ul>
+<li><b>temp_sodr</b> Gets the temperature of the right so-dimm memory (int)</li>
+</ul>
+<ul>
+<li><b>adc:j</b> Gets the values of the slow ADC number j for the new chiptest board (int)</li>
+</ul>
+<ul>
+<li><b>temp_fpgal</b> Gets the temperature of the left frontend FPGA (int)</li>
+</ul>
+<ul>
+<li><b>temp_fpgar</b> Gets the temperature of the right frontend FPGA (int)</li>
+</ul>
+<ul>
+<li><b>i_a</b> Gets the current of the power supply a on the new chiptest board (int)</li>
+</ul>
+<ul>
+<li><b>i_b</b> Gets the current of the power supply b on the new chiptest board (int)</li>
+</ul>
+<ul>
+<li><b>i_c</b> Gets the current of the power supply c on the new chiptest board (int)</li>
+</ul>
+<ul>
+<li><b>i_d</b> Gets the current of the power supply d on the new chiptest board (int)</li>
+</ul>
+<ul>
+<li><b>i_io</b> Gets the current of the power supply io on the new chiptest board (int)</li>
+</ul>
+<ul>
+<li><b>vm_a</b> Gets the measured voltage of the power supply a on the new chiptest board (int)</li>
+</ul>
+<ul>
+<li><b>vm_b</b> Gets the measured voltage of the power supply b on the new chiptest board (int)</li>
+</ul>
+<ul>
+<li><b>vm_c</b> Gets the measured voltage of the power supply c on the new chiptest board (int)</li>
+</ul>
+<ul>
+<li><b>vm_d</b> Gets the measured voltage of the power supply d on the new chiptest board (int)</li>
+</ul>
+<ul>
+<li><b>vm_io</b> Gets the measured voltage of the power supply io on the new chiptest board (int) </li>
 </ul>
 </div>
 <!--- window showing the filter options -->

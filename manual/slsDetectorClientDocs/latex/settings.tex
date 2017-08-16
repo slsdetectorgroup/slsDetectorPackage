@@ -53,5 +53,335 @@ Commands to setup the settings of the detector
 
 
 \begin{DoxyItemize}
-\item {\bfseries pedestal \mbox{[}i\mbox{]}} starts acquisition for i frames, calculates pedestal and writes back to fpga. Used in GOTTHARD only. Only put! 
+\item {\bfseries pedestal \mbox{[}i\mbox{]}} starts acquisition for i frames, calculates pedestal and writes back to fpga. Used in GOTTHARD only. Only put!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vthreshold \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets detector threshold voltage for single photon counters. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vcalibration \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets the voltage of the calibration pulses. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vtrimbit \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets the voltage to set the width of the trimbits. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vpreamp \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets the voltage to define the preamplifier feedback resistance. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vhaper1 \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets the voltage to define the feedback resistance of the first shaper. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vshaper2 \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets the voltage to define the feedback resistance of the second shaper. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vhighvoltage \mbox{[}i\mbox{]}} Sets/gets the high voltage to the sensor in V (int).
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vapower \mbox{[}i\mbox{]}} Sets/gets the analog power supply for the old chiptest board in DAC units (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vddpower \mbox{[}i\mbox{]}} Sets/gets the digital power supply for the old chiptest board in DAC units (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vshpower \mbox{[}i\mbox{]}} Sets/gets the comparator power supply for the old chiptest board in DAC units (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries viopower \mbox{[}i\mbox{]}} Sets/gets the power supply of the FPGA I/Os for the old chiptest board in DAC units (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vrefds \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets vrefds. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vcascn\_\-pb \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets vcascn\_\-pb. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vcasc\_\-pb \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets vcasc\_\-pb. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vout\_\-cm \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets vout\_\-cm. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vcasc\_\-out \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets vcasc\_\-out. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vin\_\-com \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets vin\_\-com. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vref\_\-comp \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets vref\_\-comp. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries ib\_\-test\_\-c \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets ib\_\-test\_\-c. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries dac\mbox{[}0..7\mbox{]} \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets dac\mbox{[}0..7\mbox{]} for MOENCH02. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vsvp \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets vsvp. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vsvn \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets vsvn. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vtr \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets vtr. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vrf \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets vrf. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vrs \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets vrs. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vtgstv \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets vtgstv. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vcmp\_\-ll \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets vcmp\_\-ll. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vcmp\_\-lr \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets vcmp\_\-lr. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vcal\_\-l \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets vcal\_\-l. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vcomp\_\-rl \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets vcomp\_\-rl. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vcomp\_\-rr \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets vcomp\_\-rr. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries rxb\_\-rb \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets rxb\_\-rb. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries rxb\_\-lb \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets rxb\_\-lb. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vcp \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets vcp. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vcn \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets vcn. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vis \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets vis. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries iodelay \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets iodelay. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries dac:j \mbox{[}i\mbox{]} \mbox{[}mv\mbox{]}} Sets/gets value for DAC number j for the new chiptestboard. Normally in DAC units unless {\ttfamily mv} is specified at the end of the command line (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries adcvpp \mbox{[}i\mbox{]} } Sets/gets the Vpp of the ADC 0 -\/$>$ 1V ; 1 -\/$>$ 1.14V ; 2 -\/$>$ 1.33V ; 3 -\/$>$ 1.6V ; 4 -\/$>$ 2V (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries v\_\-a \mbox{[}i\mbox{]} mv} Sets/gets value for Va on the new chiptest board. Must be in mV (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries v\_\-b \mbox{[}i\mbox{]} mv} Sets/gets value for Vb on the new chiptest board. Must be in mV (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries v\_\-c \mbox{[}i\mbox{]} mv} Sets/gets value for Vc on the new chiptest board. Must be in mV (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries v\_\-d \mbox{[}i\mbox{]} mv} Sets/gets value for Vd on the new chiptest board. Must be in mV (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries v\_\-io \mbox{[}i\mbox{]} mv} Sets/gets value for Vio on the new chiptest board. Must be in mV (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries v\_\-chip \mbox{[}i\mbox{]} mv} Sets/gets value for Vchip on the new chiptest board. Must be in mV (int). Normally don't use it!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries v\_\-limit \mbox{[}i\mbox{]} mv} Sets/gets a soft limit for the power supplies and the DACs on the new chiptest board. Must be in mV (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries temp\_\-adc} Gets the ADC temperature (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries temp\_\-fpga} Gets the FPGA temperature (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries temp\_\-fpgaext} Gets the external FPGA temperature (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries temp\_\-10ge} Gets the 10Gbe temperature (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries temp\_\-dcdc} Gets the temperature of the DC/DC converter(int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries temp\_\-sodl} Gets the temperature of the left so-\/dimm memory (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries temp\_\-sodr} Gets the temperature of the right so-\/dimm memory (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries adc:j} Gets the values of the slow ADC number j for the new chiptest board (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries temp\_\-fpgal} Gets the temperature of the left frontend FPGA (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries temp\_\-fpgar} Gets the temperature of the right frontend FPGA (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries i\_\-a} Gets the current of the power supply a on the new chiptest board (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries i\_\-b} Gets the current of the power supply b on the new chiptest board (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries i\_\-c} Gets the current of the power supply c on the new chiptest board (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries i\_\-d} Gets the current of the power supply d on the new chiptest board (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries i\_\-io} Gets the current of the power supply io on the new chiptest board (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vm\_\-a} Gets the measured voltage of the power supply a on the new chiptest board (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vm\_\-b} Gets the measured voltage of the power supply b on the new chiptest board (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vm\_\-c} Gets the measured voltage of the power supply c on the new chiptest board (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vm\_\-d} Gets the measured voltage of the power supply d on the new chiptest board (int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries vm\_\-io} Gets the measured voltage of the power supply io on the new chiptest board (int) 
 \end{DoxyItemize}

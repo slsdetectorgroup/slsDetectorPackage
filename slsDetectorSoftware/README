@@ -1,7 +1,7 @@
 This subversion repository contains 
 
 Common directories
-Please inform Anna, Beat and Ian if you make modifications to these directories
+Please inform Anna or Dhanya if you make modifications to these directories
 - MySocketTCP : socket class
 - commonFiles : header file common to server and client
 - slsDetector : base class with all main detector functionalities (client side)
@@ -13,9 +13,7 @@ Please inform Anna if you make modifications to these directories
 - mythenDetectorServer : mythen server (for etrax compiler)
 - firmware lib might be added in the future
 
-Eiger specific directories
-Please inform Beat and Ian if you make modifications to these directories
-- eigerDetector : eiger specific funcs (mainly files I/O and ..)
-- eigerDetectorServer : eiger server
+Other Detector specific directories
+Please inform Dhanya if you make modifications to these directories
 
 make doc

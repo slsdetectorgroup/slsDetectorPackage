@@ -24,16 +24,13 @@ uint64_t DataStreamer::RunningMask(0x0);
 pthread_mutex_t DataStreamer::Mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* timer, int* sEnable) :
+DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, int* sEnable) :
 		ThreadObject(NumberofDataStreamers),
 		generalData(0),
 		fifo(f),
 		zmqSocket(0),
 		dynamicRange(dr),
 		shortFrameEnable(sEnable),
-		streamingFrequency(freq),
-		streamingTimerInMs(timer),
-		currentFreqCount(0),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
 		firstAcquisitionIndex(0),
@@ -49,7 +46,6 @@ DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* tim
 	NumberofDataStreamers++;
 	FILE_LOG (logDEBUG) << "Number of DataStreamers: " << NumberofDataStreamers;
 
-	memset((void*)&timerBegin, 0, sizeof(timespec));
 	strcpy(fileNametoStream, "");
 }
 
@@ -236,19 +232,6 @@ void DataStreamer::ProcessAnImage(char* buf) {
 		if (!index) bprintf(MAGENTA,"DataStreamer %d: fnum:%lu\n", index, fnum);
 #endif
 		RecordFirstIndices(fnum);
-		//restart timer
-		clock_gettime(CLOCK_REALTIME, &timerBegin);
-		//to send first image
-		currentFreqCount = *streamingFrequency;
-	}
-
-	//skip
-	if (!(*streamingFrequency)) {
-		if (!CheckTimer())
-			return;
-	} else {
-		if (!CheckCount())
-			return;
 	}
 
 	if (!SendHeader(header))
@@ -270,32 +253,6 @@ void DataStreamer::ProcessAnImage(char* buf) {
 	}
 }
 
-
-
-bool DataStreamer::CheckTimer() {
-	struct timespec end;
-	clock_gettime(CLOCK_REALTIME, &end);
-#ifdef VERBOSE
-	bprintf(BLUE,"%d Timer elapsed time:%f seconds\n", index, ( end.tv_sec - timerBegin.tv_sec ) + ( end.tv_nsec - timerBegin.tv_nsec ) / 1000000000.0);
-#endif
-	//still less than streaming timer, keep waiting
-	if((( end.tv_sec - timerBegin.tv_sec )	+ ( end.tv_nsec - timerBegin.tv_nsec ) / 1000000000.0) < (*streamingTimerInMs/1000))
-		return false;
-
-	//restart timer
-	clock_gettime(CLOCK_REALTIME, &timerBegin);
-	return true;
-}
-
-
-bool DataStreamer::CheckCount() {
-	if (currentFreqCount == *streamingFrequency ) {
-		currentFreqCount = 1;
-		return true;
-	}
-	currentFreqCount++;
-	return false;
-}
 
 
 int DataStreamer::SendHeader(sls_detector_header* header, bool dummy) {

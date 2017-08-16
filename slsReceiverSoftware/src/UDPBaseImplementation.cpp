@@ -77,7 +77,7 @@ void UDPBaseImplementation::initializeMembers(){
 	//***acquisition parameters***
 	shortFrameEnable = -1;
 	frameToGuiFrequency = 0;
-	frameToGuiTimerinMS = DEFAULT_STREAMING_TIMER;
+	frameToGuiTimerinMS = DEFAULT_STREAMING_TIMER_IN_MS;
 	dataStreamEnable = false;
 	streamingPort = 0;
 }

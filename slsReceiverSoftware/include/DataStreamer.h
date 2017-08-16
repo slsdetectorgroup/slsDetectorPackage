@@ -22,11 +22,9 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	 * Calls Base Class CreateThread(), sets ErrorMask if error and increments NumberofDataStreamers
 	 * @param f address of Fifo pointer
 	 * @param dr pointer to dynamic range
-	 * @param freq pointer to streaming frequency
-	 * @param timer pointer to timer if streaming frequency is random
 	 * @param sEnable pointer to short frame enable
 	 */
-	DataStreamer(Fifo*& f, uint32_t* dr, uint32_t* freq, uint32_t* timer, int* sEnable);
+	DataStreamer(Fifo*& f, uint32_t* dr, int* sEnable);
 
 	/**
 	 * Destructor
@@ -152,20 +150,6 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	void ProcessAnImage(char* buf);
 
 	/**
-	 * This function should be called only in random frequency mode
-	 * Checks if timer is done and ready to send data
-	 * @returns true if ready to send data, else false
-	 */
-	bool CheckTimer();
-
-	/**
-	 * This function should be called only in non random frequency mode
-	 * Checks if count is done and ready to send data
-	 * @returns true if ready to send data, else false
-	 */
-	bool CheckCount();
-
-	/**
 	 * Create and send Json Header
 	 * @param header header of image
 	 * @param dummy true if its a dummy header
@@ -202,18 +186,6 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** Pointer to short frame enable */
 	int* shortFrameEnable;
-
-	/** Pointer to Streaming frequency, if 0, sending random images with a timer */
-	uint32_t* streamingFrequency;
-
-	/** Pointer to the timer if Streaming frequency is random */
-	uint32_t* streamingTimerInMs;
-
-	/** Current frequency count */
-	uint32_t currentFreqCount;
-
-	/** timer beginning stamp for random streaming */
-	struct timespec timerBegin;
 
 	/** Aquisition Started flag */
 	bool acquisitionStartedFlag;

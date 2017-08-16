@@ -54,6 +54,7 @@ int Fifo::CreateFifos(uint32_t fifoItemSize, uint32_t fifoDepth) {
 		memory = 0;
 		return FAIL;
 	}
+	FILE_LOG (logDEBUG) << "Memory Allocated " << index << ": " << (fifoItemSize * fifoDepth) << " bytes";
 
 	{ //push free addresses into fifoFree fifo
 		char* buffer = memory;
@@ -66,7 +67,7 @@ int Fifo::CreateFifos(uint32_t fifoItemSize, uint32_t fifoDepth) {
 			buffer += fifoItemSize;
 		}
 	}
-	FILE_LOG (logINFO) << "Fifo Structure " << index << " reconstructed";
+	FILE_LOG (logDEBUG) << "Fifo Reconstructed Depth " << index << ": " << fifoDepth;
 	return OK;
 }
 

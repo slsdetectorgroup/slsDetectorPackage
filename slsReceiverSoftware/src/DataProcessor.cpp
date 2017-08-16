@@ -32,6 +32,7 @@ pthread_mutex_t DataProcessor::Mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
 DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* dsEnable,
+		uint32_t* freq, uint32_t* timer,
 		void (*dataReadycb)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
 				char*, uint32_t, void*),
 		void *pDataReadycb) :
@@ -43,6 +44,9 @@ DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* 
 		dataStreamEnable(dsEnable),
 		fileFormatType(ftype),
 		fileWriteEnable(fwenable),
+		streamingFrequency(freq),
+		streamingTimerInMs(timer),
+		currentFreqCount(0),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
 		firstAcquisitionIndex(0),
@@ -61,6 +65,8 @@ DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* 
 
 	NumberofDataProcessors++;
 	FILE_LOG (logDEBUG) << "Number of DataProcessors: " << NumberofDataProcessors;
+
+	memset((void*)&timerBegin, 0, sizeof(timespec));
 }
 
 
@@ -289,13 +295,12 @@ void DataProcessor::ThreadExecution() {
 
 	ProcessAnImage(buffer + FIFO_HEADER_NUMBYTES);
 
-	//stream or free
-	if (*dataStreamEnable)
+	//stream (if time/freq to stream) or free
+	if (*dataStreamEnable && SendToStreamer())
 		fifo->PushAddressToStream(buffer);
 	else
 		fifo->FreeAddress(buffer);
 }
-
 
 
 void DataProcessor::StopProcessing(char* buf) {
@@ -339,6 +344,16 @@ void DataProcessor::ProcessAnImage(char* buf) {
 		if (!index) bprintf(BLUE,"DataProcessing %d: fnum:%lu\n", index, fnum);
 #endif
 		RecordFirstIndices(fnum);
+
+		if (*dataStreamEnable) {
+			//restart timer
+			clock_gettime(CLOCK_REALTIME, &timerBegin);
+			timerBegin.tv_sec -= (*streamingTimerInMs) / 1000;
+			timerBegin.tv_nsec -= ((*streamingTimerInMs) % 1000) * 1000000;
+
+			//to send first image
+			currentFreqCount = *streamingFrequency;
+		}
 	}
 
 
@@ -365,5 +380,45 @@ void DataProcessor::ProcessAnImage(char* buf) {
 				pRawDataReady);
 	}
 
+}
+
+
+
+bool DataProcessor::SendToStreamer() {
+	//skip
+	if (!(*streamingFrequency)) {
+		if (!CheckTimer())
+			return false;
+	} else {
+		if (!CheckCount())
+			return false;
+	}
+	return true;
+}
+
+
+bool DataProcessor::CheckTimer() {
+	struct timespec end;
+	clock_gettime(CLOCK_REALTIME, &end);
+#ifdef VERBOSE
+	bprintf(BLUE,"%d Timer elapsed time:%f seconds\n", index, ( end.tv_sec - timerBegin.tv_sec ) + ( end.tv_nsec - timerBegin.tv_nsec ) / 1000000000.0);
+#endif
+	//still less than streaming timer, keep waiting
+	if((( end.tv_sec - timerBegin.tv_sec )	+ ( end.tv_nsec - timerBegin.tv_nsec ) / 1000000000.0) < ((double)*streamingTimerInMs/1000.00))
+		return false;
+
+	//restart timer
+	clock_gettime(CLOCK_REALTIME, &timerBegin);
+	return true;
+}
+
+
+bool DataProcessor::CheckCount() {
+	if (currentFreqCount == *streamingFrequency ) {
+		currentFreqCount = 1;
+		return true;
+	}
+	currentFreqCount++;
+	return false;
 }
 

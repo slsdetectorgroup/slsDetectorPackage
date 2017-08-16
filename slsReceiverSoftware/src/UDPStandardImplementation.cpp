@@ -194,7 +194,7 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {\
 		if (enable) {
 			bool error = false;
 			for ( int i = 0; i < numThreads; ++i ) {
-				dataStreamer.push_back(new DataStreamer(fifo[i], &dynamicRange, &frameToGuiFrequency, &frameToGuiTimerinMS, &shortFrameEnable));
+				dataStreamer.push_back(new DataStreamer(fifo[i], &dynamicRange, &shortFrameEnable));
 				dataStreamer[i]->SetGeneralData(generalData);
 				// check again
 				if (streamingPort == 0)
@@ -314,7 +314,8 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	//create threads
 	for ( int i=0; i < numThreads; ++i ) {
 		listener.push_back(new Listener(myDetectorType, fifo[i], &status, &udpPortNum[i], eth, &activated, &numberOfFrames, &dynamicRange));
-		dataProcessor.push_back(new DataProcessor(fifo[i], &fileFormatType, &fileWriteEnable, &dataStreamEnable,
+		dataProcessor.push_back(new DataProcessor(fifo[i], &fileFormatType,
+				&fileWriteEnable, &dataStreamEnable, &frameToGuiFrequency, &frameToGuiTimerinMS,
 				rawDataReadyCallBack,pRawDataReady));
 		if (Listener::GetErrorMask() || DataProcessor::GetErrorMask()) {
 			FILE_LOG (logERROR) << "Error: Could not creates listener/dataprocessor threads (index:" << i << ")";
@@ -619,7 +620,8 @@ int UDPStandardImplementation::SetupFifoStructure() {
 		if(dataStreamer.size())dataStreamer[i]->SetFifo(fifo[i]);
 	}
 
-	FILE_LOG (logINFO) << "Fifo structure(s) reconstructed with Fifo Depth: " << fifoDepth;
+	FILE_LOG (logINFO) << "Memory Allocated Per Fifo: " << ( ((generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize)) * fifoDepth) << " bytes" ;
+	FILE_LOG (logINFO) << " Fifo structure(s) reconstructed: " << numThreads;
 	return OK;
 }
 

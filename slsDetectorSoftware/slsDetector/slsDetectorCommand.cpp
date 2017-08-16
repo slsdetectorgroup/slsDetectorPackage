@@ -1811,14 +1811,23 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 	/* pulse */
 
+	/*! \page config
+   - <b>pulse [n] [x] [y]</b> pulses pixel at coordinates (x,y) n number of times. Used in EIGER only. Only put!"
+	 */
 	descrToFuncMap[i].m_pFuncName="pulse"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPulse;
 	i++;
 
+	/*! \page config
+   - <b>pulsenmove [n] [x] [y]</b> pulses pixel n number of times and moves relatively by x value (x axis) and y value(y axis). Used in EIGER only. Only put!"
+	 */
 	descrToFuncMap[i].m_pFuncName="pulsenmove"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPulse;
 	i++;
 
+	/*! \page config
+   - <b>pulsechip [n]</b>pulses chip n number of times, while n=-1 will reset it to normal mode. Used in EIGER only. Only put!"
+	 */
 	descrToFuncMap[i].m_pFuncName="pulsechip"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPulse;
 	i++;

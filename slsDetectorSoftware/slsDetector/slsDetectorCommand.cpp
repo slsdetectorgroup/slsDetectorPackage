@@ -72,6 +72,31 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncName="test"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdUnderDevelopment;
 	i++;
+
+	/*! \page test
+   - <b>help</b> Returns a list of possible commands.
+	 */
+	descrToFuncMap[i].m_pFuncName="help";//OK
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdHelp;
+	i++;
+
+	/*! \page test
+   - <b>exitserver</b> Shuts down all the detector servers. Don't use it!!!!
+	 */
+	descrToFuncMap[i].m_pFuncName="exitserver";//OK
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdExitServer;
+	i++;
+
+	/*! \page test
+   - <b>exitreceiver</b> Shuts down all the receivers. Don't use it!!!!
+	 */
+	descrToFuncMap[i].m_pFuncName="exitreceiver";//OK
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdExitServer;
+	i++;
+
+
+
+
 	/* Acquisition and status commands */
 	/*! \page acquisition Acquition commands
    Commands to control the acquisition
@@ -109,6 +134,27 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 	descrToFuncMap[i].m_pFuncName="busy"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdStatus;
+	i++;
+
+	/*! \page acquisition
+   - <b>readctr </b> Reads the counters from the detector memory (analog detector returning values translated into number of photons - only GOTTHARD). Cannot put.
+	 */
+	descrToFuncMap[i].m_pFuncName="readctr"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdCounter;
+	i++;
+
+	/*! \page acquisition
+   - <b>resetctr i </b> Resets counter in detector, restarts acquisition if i=1(analog detector returning values translated into number of photons - only GOTTHARD). Cannot put.
+	 */
+	descrToFuncMap[i].m_pFuncName="resetctr"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdCounter;
+	i++;
+
+	/*! \page acquisition
+   - <b>resmat i </b> sets/resets counter bit in detector.gets the counter bit in detector ????
+	 */
+	descrToFuncMap[i].m_pFuncName="resmat"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdCounter;
 	i++;
 
 
@@ -199,26 +245,33 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSync;
 	i++;
 
-	/*! \page test
-   - <b>help</b> Returns a list of possible commands.
+	/*! \page config
+		\section detstatus Detector Status
+   commands to configure detector status
 	 */
-	descrToFuncMap[i].m_pFuncName="help";//OK
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdHelp;
+
+	/*! \page config
+    - <b>online [i]</b> sets the detector in online (1) or offline (0) mode
+	 */
+	descrToFuncMap[i].m_pFuncName="online"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
 	i++;
 
-	/*! \page test
-   - <b>exitserver</b> Shuts down all the detector servers. Don't use it!!!!
+	/*! \page config
+    - <b>checkonline</b> returns the hostnames of all detectors without connecting to them
 	 */
-	descrToFuncMap[i].m_pFuncName="exitserver";//OK
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdExitServer;
+	descrToFuncMap[i].m_pFuncName="checkonline"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
+	i++;
+	/*! \page config
+    - <b>activate</b> Activates/Deactivates the detector. Deactivated detector does not send data. Used for EIGER only.
+	 */
+	descrToFuncMap[i].m_pFuncName="activate"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
 	i++;
 
-	/*! \page test
-   - <b>exitreceiver</b> Shuts down all the receivers. Don't use it!!!!
-	 */
-	descrToFuncMap[i].m_pFuncName="exitreceiver";//OK
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdExitServer;
-	i++;
+
+
 
 
 	/* data processing commands */
@@ -346,26 +399,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdImage;
 	i++;
 
-	/*! \page acquisition
-   - <b>readctr </b> Reads the counters from the detector memory (analog detector returning values translated into number of photons - only GOTTHARD). Cannot put.
-	 */
-	descrToFuncMap[i].m_pFuncName="readctr"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdCounter;
-	i++;
 
-	/*! \page acquisition
-   - <b>resetctr i </b> Resets counter in detector, restarts acquisition if i=1(analog detector returning values translated into number of photons - only GOTTHARD). Cannot put.
-	 */
-	descrToFuncMap[i].m_pFuncName="resetctr"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdCounter;
-	i++;
 
-	/*! \page acquisition
-   - <b>resmat i </b> sets/resets counter bit in detector.gets the counter bit in detector ???? 
-	 */
-	descrToFuncMap[i].m_pFuncName="resmat"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdCounter;
-	i++;
+
+
 
 	/* trim/cal directories */
 
@@ -431,31 +468,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFileIndex;
 	i++;
 
-	/*! \page config
-		\section detstatus Detector Status
-   commands to configure detector status
-	 */
-
-	/*! \page config
-    - <b>online [i]</b> sets the detector in online (1) or offline (0) mode
-	 */
-	descrToFuncMap[i].m_pFuncName="online"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
-	i++;
-
-	/*! \page config
-    - <b>checkonline</b> returns the hostnames of all detectors without connecting to them
-	 */
-	descrToFuncMap[i].m_pFuncName="checkonline"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
-	i++;
-	/*! \page config
-    - <b>activate</b> Activates/Deactivates the detector. Deactivated detector does not send data. Used for EIGER only.
-	 */
-	descrToFuncMap[i].m_pFuncName="activate"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
-	i++;
-
 	/*! \page output
    - <b>enablefwrite [i]</b> Enables/disables file writing. 1 enables, 0 disables.
 	 */
@@ -483,6 +495,8 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncName="fileformat"; //OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFileName;
 	i++;
+
+
 
 	/* Acquisition actions */
 
@@ -595,10 +609,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
 	i++;
 
-
-
-
-
 	/*! \page actions
     - <b>scan0script [s]</b> sets/gets the script to be executed for the scan 0 level. \c none unsets.
 	 */
@@ -669,6 +679,8 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncName="scan1range"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScans;
 	i++;
+
+
 
 
 	/* communication configuration */

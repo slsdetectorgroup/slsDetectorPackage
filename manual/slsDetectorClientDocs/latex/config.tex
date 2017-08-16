@@ -2,6 +2,7 @@ Commands to configure the detector. these commands are often left to the configu
 \begin{DoxyItemize}
 \item \hyperlink{config_detstructure}{Detector Structure}: commands to configure detector structure
 \item \hyperlink{config_detstatus}{Detector Status}: commands to configure detector status
+\item \hyperlink{config_detsize}{Detector Data Size}: commands to configure detector data size
 \item \hyperlink{config_versions}{Versions}: commands to check version of each subsytem
 \end{DoxyItemize}\hypertarget{config_detstructure}{}\subsection{Detector Structure}\label{config_detstructure}
 commands to configure detector structure
@@ -65,12 +66,8 @@ commands to configure detector status
 
 \begin{DoxyItemize}
 \item {\bfseries activate} Activates/Deactivates the detector. Deactivated detector does not send data. Used for EIGER only.
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries lock \mbox{[}i\mbox{]}} Locks/Unlocks the detector to communicate with this client. 1 locks, 0 unlocks.
-\end{DoxyItemize}
+\end{DoxyItemize}\hypertarget{config_detsize}{}\subsection{Detector Data Size}\label{config_detsize}
+commands to configure detector data size
 
 
 \begin{DoxyItemize}
@@ -105,6 +102,11 @@ commands to configure detector status
 
 \begin{DoxyItemize}
 \item {\bfseries flippeddatax \mbox{[}i\mbox{]}} enables/disables data being flipped across x axis. 1 enables, 0 disables. Used for EIGER only. 1 for bottom half-\/module, 0 for top-\/half module.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries lock \mbox{[}i\mbox{]}} Locks/Unlocks the detector to communicate with this client. 1 locks, 0 unlocks.
 \end{DoxyItemize}
 
 

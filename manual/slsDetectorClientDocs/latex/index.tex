@@ -1,0 +1,44 @@
+This program is intended to control the SLS detectors via command line interface. This is the only way to access all possible functionality of the detectors, however it is often recommendable to avoid changing the most advanced settings, rather leaving the task to configuration files, as when using the GUI or the API provided.
+
+The command line interface consists in four main functions:
+
+
+\begin{DoxyItemize}
+\item {\bfseries sls\_\-detector\_\-acquire} to acquire data from the detector
+\item {\bfseries sls\_\-detector\_\-put} to set detector parameters
+\item {\bfseries sls\_\-detector\_\-get} to retrieve detector parameters
+\item {\bfseries sls\_\-detector\_\-help} to get help concerning the text commands Additionally the program slsReceiver should be started on the machine expected to receive the data from the detector.
+\end{DoxyItemize}
+
+If you need control a single detector, the use of the command line interface does not need any additional arguments.
+
+For commands addressing a single controller of your detector, the command cmd should be called with the index i of the controller:
+
+{\bfseries sls\_\-detector\_\-clnt i:cmd}
+
+where {\bfseries sls\_\-detector\_\-clnt} is the text client (put, get, acquire, help).
+
+In case more than one detector is configured on the control PC, the command cmd should be called with their respective index j:
+
+{\bfseries sls\_\-detector\_\-clnt j-\/cmd}
+
+where {\bfseries sls\_\-detector\_\-clnt} is the text client (put, get, acquire, help).
+
+To address a specific controller i of detector j use:
+
+{\bfseries sls\_\-detector\_\-clnt j-\/i:cmd}
+
+For additional questions concerning the indexing of the detector, please refer to the SLS Detectors FAQ documentation.
+
+The commands are sudivided into different pages depending on their functionalities:
+\begin{DoxyItemize}
+\item \hyperlink{acquisition}{Acquition commands} Acquisition: commands to start/stop the acquisition and retrieve data
+\item \hyperlink{config}{Configuration commands} Configuration: commands to configure the detector
+\item \hyperlink{data}{Data postprocessing}: commands to process the data -\/ mainly for MYTHEN except for rate corrections.
+\item \hyperlink{settings}{Settings}: commands to define detector settings/threshold.
+\item \hyperlink{output}{Output}: commands to define output file destination and format
+\item \hyperlink{actions}{Actions}: commands to define scripts to be executed during the acquisition flow
+\item \hyperlink{network}{Network}: commands to setup the network between client, detector and receiver
+\item \hyperlink{receiver}{Receiver}: commands to configure the receiver
+\item \hyperlink{test}{Developer}: commands to be used only for software debugging. Avoid using them! 
+\end{DoxyItemize}

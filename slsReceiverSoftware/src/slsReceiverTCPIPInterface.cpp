@@ -977,23 +977,15 @@ int slsReceiverTCPIPInterface::set_timer() {
 		if (index[1] >= 0) {
 			if (mySock->differentClients && lockStatus)
 				receiverlocked();
-			else if (receiverBase->getStatus() != IDLE)
-				receiverNotIdle();
+		//	else if (receiverBase->getStatus() != IDLE)
+		//		receiverNotIdle();
 			else {
 				switch (index[0]) {
 				case ACQUISITION_TIME:
 					ret = receiverBase->setAcquisitionTime(index[1]);
-					if (ret == FAIL) {
-						strcpy(mess,"Could not allocate memory for listening fifo\n");
-						FILE_LOG(logERROR) << "Warning: " << mess;
-					}
 					break;
 				case FRAME_PERIOD:
 					ret = receiverBase->setAcquisitionPeriod(index[1]);
-					if (ret == FAIL) {
-						strcpy(mess,"Could not allocate memory for listening fifo\n");
-						FILE_LOG(logERROR) << "Warning: " << mess;
-					}
 					break;
 				case FRAME_NUMBER:
 				case CYCLES_NUMBER:

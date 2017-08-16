@@ -83,4 +83,4 @@ PREDEFINED           = __cplusplus
 
 INPUT            = slsDetector/slsDetectorCommand.cpp 
 
-OUTPUT_DIRECTORY = slsDetectorClientDocs
+OUTPUT_DIRECTORY = ../manual/slsDetectorClientDocs

@@ -6089,7 +6089,8 @@ string slsDetector::setReceiver(string receiverIP){
 			setTimer(FRAME_PERIOD,thisDetector->timerValue[FRAME_PERIOD]);
 			setTimer(FRAME_NUMBER,thisDetector->timerValue[FRAME_NUMBER]);
 			setTimer(ACQUISITION_TIME,thisDetector->timerValue[ACQUISITION_TIME]);
-			setTimer(SUBFRAME_ACQUISITION_TIME,thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME]);
+			if(thisDetector->myDetectorType == EIGER)
+				setTimer(SUBFRAME_ACQUISITION_TIME,thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME]);
 			setDynamicRange(thisDetector->dynamicRange);
 			if(thisDetector->myDetectorType == EIGER){
 				setFlippedData(X,-1);

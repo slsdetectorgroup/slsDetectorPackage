@@ -244,15 +244,6 @@ u_int32_t bus_r(u_int32_t offset) {
 
 void setMasterSlaveConfiguration(){
 
-/*
-	int masterflags = NO_MASTER;
-	int masterdefaultdelay = 62;
-	int patternphase = 0;
-	int adcphase = 0;
-	int slavepatternphase = 0;
-	int slaveadcphase = 0;
-	int sw1torstdelay = 2;
-*/
 // global master default delay picked from config file
 	FILE* fd=fopen(CONFIG_FILE,"r");
 	if(fd==NULL){
@@ -354,16 +345,14 @@ void setMasterSlaveConfiguration(){
 		setPhaseShift(slaveadcphase);
 	}
 
+	/* Set RST to SW1 delay */
+	val=bus_r(MULTI_PURPOSE_REG);
+	//#ifdef VERBOSE
+	printf("Value of multipurpose reg:%d\n",bus_r(MULTI_PURPOSE_REG));
+	//#endif
+	val = (val & (~(RST_TO_SW1_DELAY_MSK))) | ((rsttosw1delay << RST_TO_SW1_DELAY_OFFSET) & (RST_TO_SW1_DELAY_MSK));
+	bus_w(MULTI_PURPOSE_REG,val);
 
-
-	if (masterflags == IS_MASTER || masterflags == IS_SLAVE) {
-		val=bus_r(MULTI_PURPOSE_REG);
-//#ifdef VERBOSE
-		printf("Value of multipurpose reg:%d\n",bus_r(MULTI_PURPOSE_REG));
-//#endif
-		val = (val & (~(RST_TO_SW1_DELAY_MSK))) | ((rsttosw1delay << RST_TO_SW1_DELAY_OFFSET) & (RST_TO_SW1_DELAY_MSK));
-		bus_w(MULTI_PURPOSE_REG,val);
-	}
 
 	fclose(fd);
 }

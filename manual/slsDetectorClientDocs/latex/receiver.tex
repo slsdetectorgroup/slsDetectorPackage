@@ -1,0 +1,53 @@
+Commands to configure the receiver. Not used in MYTHEN.
+
+
+\begin{DoxyItemize}
+\item {\bfseries receiver \mbox{[}s\mbox{]}} starts/stops the receiver to listen to detector packets. Gets status of receiver. Options: \mbox{[}start, stop\mbox{]}.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries r\_\-online \mbox{[}i\mbox{]}} sets/gets the receiver in online/offline mode. 1 is online, 0 is offline. Get is from shared memory.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries r\_\-checkonline} Checks the receiver if it is online/offline mode. Prints either 'All receiver online', '\mbox{[}List of all receiver hostname in offline mode\mbox{]} :Not all receiver online'. Only get! i++;
+\end{DoxyItemize}
+
+/$\ast$!
+
+
+\begin{DoxyItemize}
+\item {\bfseries framescaught} gets the number of frames caught by receiver. Average of all for multi-\/detector command. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries resetframescaught \mbox{[}i\mbox{]}} resets the number of frames caught to 0. i can be any number. Use this if using status start, instead of acquire (this command is included). Only put!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries frameindex \mbox{[}i\mbox{]}} gets the current frame index of receiver. Average of all for multi-\/detector command. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries r\_\-lock \mbox{[}i\mbox{]}} locks/unlocks the receiver to communicate with only this client. 1 locks, 0 unlocks.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries r\_\-lastclient} gets the last client communicating with the receiver. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries r\_\-readfreq \mbox{[}i\mbox{]}} sets/gets the stream frequency of data from receiver to client. i $>$ 0 is the nth frame being streamed. 0 sets frequency to a default timer (200ms).
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries rx\_\-fifodepth \mbox{[}i\mbox{]}} sets/gets receiver fifo (between Listener and Writer Threads) depth to i number of frames. Can improve listener packet loss, not if limited by writing. 
+\end{DoxyItemize}

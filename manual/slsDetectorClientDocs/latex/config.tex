@@ -1,0 +1,372 @@
+Commands to configure the detector. these commands are often left to the configuration file.
+
+
+\begin{DoxyItemize}
+\item {\bfseries datastream} enables/disables the 0MQ data stream (0MQ threads created) from receiver to client.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries free} Free shared memory on the control PC
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries add} Adds a detector at the end of the multi-\/detector structure. {\ttfamily put} argument is the hostname or IP adress. Returns the chained list of detector hostnames.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries remove i} Removes controller {\ttfamily i} from the multi-\/detector structure. Can be used for partial readout of the detector.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries type} Sets/gets detector type (string).
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries hostname} {\ttfamily put} adds the hostname (ot IP adress) at the end of the multi-\/detector structure. If used for a single controlled (i:) replaces the current hostname. Returns the list of the hostnames of the multi-\/detector structure.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries id\mbox{[}:i\mbox{]}} Returns the id of the detector structure. i is the detector position in a multi detector system. If used a {\ttfamily put}, configures the id of the detector structure. i is the detector position in a multi detector system and l is the id of the detector to be added.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries master i} {\ttfamily put} sets the position of the master of the acquisition (-\/1 if none). Returns the position of the master of the detector structure (-\/1 if none).
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries sync} Sets/gets the synchronization mode of the detectors in the multi-\/detector structure. Can be: {\ttfamily none}, {\ttfamily gating}, {\ttfamily trigger}, {\ttfamily complementary}. Mainly used by MYTHEN/GOTTHARD.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries online \mbox{[}i\mbox{]}} sets the detector in online (1) or offline (0) mode
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries checkonline} returns the hostnames of all detectors without connecting to them
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries activate} Activates/Deactivates the detector. Deactivated detector does not send data. Used for EIGER only.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries lock \mbox{[}i\mbox{]}} Locks/Unlocks the detector to communicate with this client. 1 locks, 0 unlocks.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries nmod \mbox{[}i\mbox{]}} sets/gets the number of modules of the detector. Used for MYTHEN only.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries maxmod } Gets the maximum number of modules of the detector. Used for MYTHEN only. Cannot put!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries dr \mbox{[}i\mbox{]}} sets/gets the dynamic range of detector. Mythen \mbox{[}4,8,16,24\mbox{]}. Eiger \mbox{[}4,8,16,32\mbox{]}. Others cannot put!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries roi \mbox{[}i\mbox{]} \mbox{[}xmin\mbox{]} \mbox{[}xmax\mbox{]} \mbox{[}ymin\mbox{]} \mbox{[}ymax\mbox{]} } sets region of interest of the detector, where i is number of rois;i=0 to clear rois. Used for GOTTHARD only.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries detsizechan \mbox{[}xmax\mbox{]} \mbox{[}ymax\mbox{]}} sets the maximum number of channels in each dimension for complete detector set; -\/1 is no limit. Use for multi-\/detector system as first command in config file.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries roimask \mbox{[}i\mbox{]}} ??
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries flippeddatax \mbox{[}i\mbox{]}} enables/disables data being flipped across x axis. 1 enables, 0 disables. Used for EIGER only. 1 for bottom half-\/module, 0 for top-\/half module.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries flags \mbox{[}flag\mbox{]}} sets/gets the readout flags to mode. Options: none, storeinram, tot, continous, parallel, nonparallel, safe, digital, analog\_\-digital, unknown. Used for MYTHEN and EIGER only.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries extsig:\mbox{[}i\mbox{]} \mbox{[}flag\mbox{]}} sets/gets the mode of the external signal i. Options: {\ttfamily off}, {\ttfamily gate\_\-in\_\-active\_\-high}, {\ttfamily gate\_\-in\_\-active\_\-low}, {\ttfamily trigger\_\-in\_\-rising\_\-edge}, {\ttfamily trigger\_\-in\_\-falling\_\-edge}, {\ttfamily ro\_\-trigger\_\-in\_\-rising\_\-edge}, {\ttfamily ro\_\-trigger\_\-in\_\-falling\_\-edge}, {\ttfamily gate\_\-out\_\-active\_\-high}, {\ttfamily gate\_\-out\_\-active\_\-low}, {\ttfamily trigger\_\-out\_\-rising\_\-edge}, {\ttfamily trigger\_\-out\_\-falling\_\-edge}, {\ttfamily ro\_\-trigger\_\-out\_\-rising\_\-edge}, {\ttfamily ro\_\-trigger\_\-out\_\-falling\_\-edge}. \par
+ Used in MYTHEN, GOTTHARD, PROPIX only.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries programfpga \mbox{[}file\mbox{]}} programs the FPGA with file f (with .pof extension). Used for JUNGFRAU, MOENCH only. Only put!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries resetfpga \mbox{[}f\mbox{]}} resets FPGA, where f can be any value. Used for JUNGFRAU only. Only put!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries powerchip \mbox{[}i\mbox{]}} Powers on/off the chip. 1 powers on, 0 powers off. Can also get the power status. Used for JUNGFRAU only.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries led \mbox{[}i\mbox{]}} sets/gets the led status. 1 on, 0 off. Used for MOENCH only ??
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries moduleversion:\mbox{[}i\mbox{]}} Gets the firmware version of module i. Used for MYTHEN only. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries detectornumber} Gets the serial number or MAC of detector. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries modulenumber:\mbox{[}i\mbox{]}} Gets the serial number of module i. Used for MYTHEN only. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries detectorversion} Gets the firmware version of detector. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries softwareversion} Gets the software version of detector server. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries thisversion} Gets the software version of this client software. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries receiverversion} Gets the software version of receiver. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries timing \mbox{[}mode\mbox{]}} sets/gets synchronization mode of the detector. Mode: auto, trigger, ro\_\-trigger, gating, triggered\_\-gating
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries exptime \mbox{[}i\mbox{]}} sets/gets exposure time in s
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries subexptime \mbox{[}i\mbox{]}} sets/gets sub exposure time in s. Used in EIGER only in 32 bit mode.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries period \mbox{[}i\mbox{]}} sets/gets frame period in s.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries delay \mbox{[}i\mbox{]}} sets/gets delay in s. Used in MYTHEN, GOTTHARD only
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries gates \mbox{[}i\mbox{]}} sets/gets number of gates. Used in MYTHEN, GOTTHARD, EIGER only
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries gates \mbox{[}i\mbox{]}} sets/gets number of frames. If {\ttfamily timing} is not {\ttfamily auto}, then it is the number of frames per cycle/trigger.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries cycles \mbox{[}i\mbox{]}} sets/gets number of triggers. Timing mode should be set appropriately.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries probes \mbox{[}i\mbox{]}} sets/gets number of probes to accumulate. When setting, max 3! cycles should be set to 1, frames to the number of pump-\/probe events. Used in MYTHEN only
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries measurements \mbox{[}i\mbox{]}} sets/gets number of measurements.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries samples \mbox{[}i\mbox{]}} sets/gets number of samples expected from the jctb. Used in CHIP TEST BOARD only.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries exptimel} gets exposure time left. Used in MYTHEN, GOTTHARD only. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries periodl} gets frame period left. Used in MYTHEN, GOTTHARD only. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries delayl} gets delay left. Used in MYTHEN, GOTTHARD only. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries gatesl} gets number of gates left. Used in MYTHEN, GOTTHARD only. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries framesl} gets number of frames left. Used in MYTHEN, GOTTHARD only. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries cyclesl} gets number of cylces left. Used in MYTHEN, GOTTHARD only. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries probesl} gets number of probes left. Used in MYTHEN, GOTTHARD only. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries now} ??? Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries timestamp} ??? Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries nframes} ??? Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries clkdivider \mbox{[}i\mbox{]}} sets/gets the readout clock divider. EIGER, JUNGFRAU \mbox{[}0(fast speed), 1(half speed), 2(quarter speed)\mbox{]}. MYTHEN\mbox{[}???\mbox{]}
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries clkdivider \mbox{[}i\mbox{]}} sets/gets length of set/reset signals (in clock cycles). Used in MYTHEN only
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries clkdivider \mbox{[}i\mbox{]}} sets/gets waitstates of the bus interface (in clock cycles). Used in MYTHEN only
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries clkdivider \mbox{[}i\mbox{]}} sets/gets clock divider in tot mode. Used in MYTHEN only
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries clkdivider \mbox{[}i\mbox{]}} sets/gets duty cycle of the tot clock. Used in MYTHEN only
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries phasestep \mbox{[}i\mbox{]}} ???
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries oversampling \mbox{[}i\mbox{]}} ???
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries adcclk \mbox{[}i\mbox{]}} ???
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries adcphase \mbox{[}i\mbox{]}} ??? Used in MYTHEN, JUNGFRAU only.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries adcpipeline \mbox{[}i\mbox{]}} ???
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries dbitclk \mbox{[}i\mbox{]}} ???
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries dbitphase \mbox{[}i\mbox{]}} ???
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries config \mbox{[}fname\mbox{]}} sets/saves detector/receiver to configuration contained in fname. Same as executing sls\_\-detector\_\-put for every line. Normally a one time operation.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries rx\_\-printconfig} prints the receiver configuration. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries parameters \mbox{[}fname\mbox{]}} sets/saves detector parameters contained in fname. Normally once per different measurement.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries setup \mbox{[}fname\mbox{]}} sets/saves detector complete setup contained in fname (extensions automatically generated), including trimfiles, ff coefficients etc.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries tengiga \mbox{[}i\mbox{]}} enables/disables 10GbE in system (detector \& receiver). 1 enabled 10GbE, 0 enables 1GbE. Used in EIGER only.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries pulse \mbox{[}n\mbox{]} \mbox{[}x\mbox{]} \mbox{[}y\mbox{]}} pulses pixel at coordinates (x,y) n number of times. Used in EIGER only. Only put!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries pulsenmove \mbox{[}n\mbox{]} \mbox{[}x\mbox{]} \mbox{[}y\mbox{]}} pulses pixel n number of times and moves relatively by x value (x axis) and y value(y axis). Used in EIGER only. Only put!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries pulsechip \mbox{[}n\mbox{]}}pulses chip n number of times, while n=-\/1 will reset it to normal mode. Used in EIGER only. Only put! 
+\end{DoxyItemize}

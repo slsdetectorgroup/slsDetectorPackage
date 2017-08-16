@@ -1635,21 +1635,21 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 	/* settings dump/retrieve */
 	/*! \page config
-   - <b>rx_printconfig</b> prints the receiver configuration. Only get!"
+   - <b>rx_printconfig</b> prints the receiver configuration. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="rx_printconfig";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdConfiguration;
 	i++;
 
 	/*! \page config
-   - <b>parameters [fname]</b> sets/saves detector parameters contained in fname. Normally once per different measurement."
+   - <b>parameters [fname]</b> sets/saves detector parameters contained in fname. Normally once per different measurement.
 	 */
 	descrToFuncMap[i].m_pFuncName="parameters";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdConfiguration;
 	i++;
 
 	/*! \page config
-   - <b>setup [fname]</b> sets/saves detector complete setup contained in fname (extensions automatically generated), including trimfiles, ff coefficients etc."
+   - <b>setup [fname]</b> sets/saves detector complete setup contained in fname (extensions automatically generated), including trimfiles, ff coefficients etc.
 	 */
 	descrToFuncMap[i].m_pFuncName="setup";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdConfiguration;
@@ -1659,52 +1659,86 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	/* receiver functions */
 
 	/*! \page receiver Receiver commands
-   Commands to configure the receiver
+   Commands to configure the receiver. Not used in MYTHEN.
+	 */
+
+	/*! \page receiver
+   - <b>receiver [s]</b> starts/stops the receiver to listen to detector packets. Gets status of receiver. Options: [start, stop].
 	 */
 	descrToFuncMap[i].m_pFuncName="receiver";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
 	i++;
 
+	/*! \page receiver
+   - <b>r_online [i]</b> sets/gets the receiver in online/offline mode. 1 is online, 0 is offline. Get is from shared memory.
+	 */
 	descrToFuncMap[i].m_pFuncName="r_online";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
 	i++;
 
-	descrToFuncMap[i].m_pFuncName="r_checkonline";
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
+	/*! \page receiver
+   - <b>r_checkonline</b> Checks the receiver if it is online/offline mode. Prints either 'All receiver online', '[List of all receiver hostname in offline mode] :Not all receiver online'. Only get!
 	i++;
 
+	/*! \page receiver
+   - <b>framescaught</b> gets the number of frames caught by receiver. Average of all for multi-detector command. Only get!
+	 */
 	descrToFuncMap[i].m_pFuncName="framescaught";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
 	i++;
 
+	/*! \page receiver
+   - <b>resetframescaught [i]</b> resets the number of frames caught to 0. i can be any number. Use this if using status start, instead of acquire (this command is included). Only put!
+	 */
 	descrToFuncMap[i].m_pFuncName="resetframescaught";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
 	i++;
 
+	/*! \page receiver
+   - <b>frameindex [i]</b> gets the current frame index of receiver. Average of all for multi-detector command. Only get!
+	 */
 	descrToFuncMap[i].m_pFuncName="frameindex";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
 	i++;
 
+	/*! \page receiver
+   - <b>r_lock [i]</b> locks/unlocks the receiver to communicate with only this client. 1 locks, 0 unlocks.
+	 */
 	descrToFuncMap[i].m_pFuncName="r_lock"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdLock;
 	i++;
 
+	/*! \page receiver
+   - <b>r_lastclient</b> gets the last client communicating with the receiver. Only get!
+	 */
 	descrToFuncMap[i].m_pFuncName="r_lastclient"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdLastClient;
 	i++;
 
+	/*! \page receiver
+   - <b>r_readfreq [i]</b> sets/gets the stream frequency of data from receiver to client. i > 0 is the nth frame being streamed. 0 sets frequency to a default timer (200ms).
+	 */
 	descrToFuncMap[i].m_pFuncName="r_readfreq"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
 	i++;
 
+	/*! \page test
+   - <b>r_compression [i] sets/gets compression in receiver. 1 sets, 0 unsets. Not implemented.</b>
+	 */
 	descrToFuncMap[i].m_pFuncName="r_compression"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
 	i++;
 
+	/*! \page config
+   - <b>tengiga [i]</b> enables/disables 10GbE in system (detector & receiver). 1 enabled 10GbE, 0 enables 1GbE. Used in EIGER only.
+	 */
 	descrToFuncMap[i].m_pFuncName="tengiga"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
 	i++;
 
+	/*! \page receiver
+   - <b>rx_fifodepth [i]</b> sets/gets receiver fifo (between Listener and Writer Threads) depth to i number of frames. Can improve listener packet loss, not if limited by writing.
+	 */
 	descrToFuncMap[i].m_pFuncName="rx_fifodepth"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
 	i++;

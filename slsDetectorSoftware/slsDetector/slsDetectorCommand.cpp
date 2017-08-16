@@ -45,16 +45,16 @@ To address a specific controller i of detector j use:
 For additional questions concerning the indexing of the detector, please refer to the SLS Detectors FAQ documentation.
 
 The commands are sudivided into different pages depending on their functionalities:
- - \ref acquisition Acquisition: commands to start/stop the acquisition and retrieve data
- - \ref config Configuration: commands to configure the detector
+ - \ref acquisition "Acquisition": commands to start/stop the acquisition and retrieve data
+ - \ref config "Configuration": commands to configure the detector
  - \ref data "Data postprocessing": commands to process the data - mainly for MYTHEN except for rate corrections.
  - \ref settings "Settings": commands to define detector settings/threshold.
  - \ref output "Output": commands to define output file destination and format
  - \ref actions "Actions": commands to define scripts to be executed during the acquisition flow
  - \ref network "Network": commands to setup the network between client, detector and receiver
  - \ref receiver "Receiver": commands to configure the receiver
-  - \ref ctb Chiptestboard: commands specific for the new chiptest board as pattern generator
- - \ref test Developer: commands to be used only for software debugging. Avoid using them!
+ - \ref ctb "Chiptest board": commands specific for the new chiptest board as pattern generator
+ - \ref test "Developer": commands to be used only for software debugging. Avoid using them!
  
  */
 

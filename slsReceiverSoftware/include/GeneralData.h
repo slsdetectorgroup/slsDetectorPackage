@@ -212,7 +212,7 @@ class GotthardData : public GeneralData {
 		packetIndexMask 	= 1;
 		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
-		defaultFifoDepth 	= 25000;
+		defaultFifoDepth 	= 50000;
 		nPixelsX_Streamer 	= nPixelsX;
 		nPixelsY_Streamer 	= nPixelsY;
 		imageSize_Streamer 	= imageSize;
@@ -237,7 +237,7 @@ class ShortGotthardData : public GeneralData {
 		frameIndexMask 		= 0xFFFFFFFF;
 		maxFramesPerFile 	= SHORT_MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
-		defaultFifoDepth 	= 25000;
+		defaultFifoDepth 	= 50000;
 		nPixelsX_Streamer 	= 1280;
 		nPixelsY_Streamer 	= 1;
 		imageSize_Streamer 	= 1280 * 2;
@@ -301,7 +301,7 @@ class PropixData : public GeneralData {
 		packetIndexMask 	= 1;
 		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
-		defaultFifoDepth 	= 25000;
+		defaultFifoDepth 	= 50000;
 		nPixelsX_Streamer 	= nPixelsX;
 		nPixelsY_Streamer 	= nPixelsY;
 		imageSize_Streamer 	= imageSize;

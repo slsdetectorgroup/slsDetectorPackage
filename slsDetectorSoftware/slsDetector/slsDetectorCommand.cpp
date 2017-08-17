@@ -176,9 +176,24 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 	/*! \page acquisition
    - \b acquire blocking acquisition (like calling sls_detector_acquire). Starts receiver and detector, writes and processes the data, stops detector. Only get!
+     \c Returns (string)\c "acquire unsuccessful" if fails, else "" for MYTHEN, \c "Acquired (int)" for others, where int is number of frames caught.
 	 */
 	descrToFuncMap[i].m_pFuncName="acquire"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAcquire;
+	i++;
+
+	/*! \page acquisition
+   - \b busy returns \c 1 if the acquisition is active, \c 0 otherwise. Works when the acquisition is started in blocking mode. Only get! \c Returns \c (int)
+	 */
+	descrToFuncMap[i].m_pFuncName="busy"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdStatus;
+	i++;
+
+	/*! \page acquisition
+   - <b> status [s] </b> starts or stops acquisition in detector in non blocking mode. \c s: [\c start, \c stop]. \c Returns the detector status: [\c running, \c error, \c transmitting, \c finished, \c waiting, \c idle]. \c Returns \c (string)
+	 */
+	descrToFuncMap[i].m_pFuncName="status"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdStatus;
 	i++;
 
 	/*! \page acquisition
@@ -193,20 +208,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 	descrToFuncMap[i].m_pFuncName="frame"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFrame;
-	i++;
-
-	/*! \page acquisition
-   - \b status \c returns the detector status (string)- can be: \c running, \c error, \c transmitting, \c finished, \c waiting or \c idle; \c put can be \c start or \c stop 
-	 */
-	descrToFuncMap[i].m_pFuncName="status"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdStatus;
-	i++;
-
-	/*! \page acquisition
-   - \b busy returns \c 1 if the acquisition is active, \c 0 otherwise. Works when the acquisition is started in non-blocking mode. Only get! 
-	 */
-	descrToFuncMap[i].m_pFuncName="busy"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdStatus;
 	i++;
 
 	/*! \page acquisition
@@ -255,7 +256,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page config
-   - \b datastream enables/disables the 0MQ data stream (0MQ threads created) from receiver to client.
+   - <b> datastream </b>enables/disables the 0MQ data stream (0MQ threads created) from receiver to client. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="datastream"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDataStream;
@@ -283,14 +284,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	i++;
 
 	/*! \page config
-   - <b>type</b> Sets/gets detector type (string).
+   - <b>type</b> Sets/gets detector type. \c Returns \c (string). Normally not used. Using hostname is enough.
 	 */
 	descrToFuncMap[i].m_pFuncName="type"; //OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdHostname;
 	i++;
 
 	/*! \page config
-   - <b>hostname</b> \c put adds the hostname (ot IP adress) at the end of the multi-detector structure. If used for a single controlled (i:) replaces the current hostname. Returns the list of the hostnames of the multi-detector structure.
+   - <b>hostname</b> \c put adds the hostname (ot IP adress) at the end of the multi-detector structure. If used for a single controlled (i:) replaces the current hostname. Returns the list of the hostnames of the multi-detector structure. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="hostname"; //OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdHostname;
@@ -323,20 +324,20 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page config
-    - <b>online [i]</b> sets the detector in online (1) or offline (0) mode
+    - <b>online [i]</b> sets the detector in online (1) or offline (0) mode. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="online"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
 	i++;
 
 	/*! \page config
-    - <b>checkonline</b> returns the hostnames of all detectors without connecting to them
+    - <b>checkonline</b> returns the hostnames of all detectors without connecting to them. \c Returns (string) "All online" or "[list of offline hostnames] : Not online".
 	 */
 	descrToFuncMap[i].m_pFuncName="checkonline"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
 	i++;
 	/*! \page config
-    - <b>activate</b> Activates/Deactivates the detector. Deactivated detector does not send data. Used for EIGER only.
+    - <b>activate</b> Activates/Deactivates the detector. Deactivated detector does not send data. Used for EIGER only. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="activate"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
@@ -350,56 +351,56 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page config
-   - <b>nmod [i]</b> sets/gets the number of modules of the detector. Used for MYTHEN only.
+   - <b>nmod [i]</b> sets/gets the number of modules of the detector. Used for MYTHEN only. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="nmod"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
 	i++;
 
 	/*! \page config
-   - <b>maxmod </b> Gets the maximum number of modules of the detector. Used for MYTHEN only. Cannot put!
+   - <b>maxmod </b> Gets the maximum number of modules of the detector. Used for MYTHEN only. Cannot put! \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="maxmod"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
 	i++;
 
 	/*! \page config
-   - <b>dr [i]</b> sets/gets the dynamic range of detector. Mythen [4,8,16,24]. Eiger [4,8,16,32]. Others cannot put!
+   - <b>dr [i]</b> sets/gets the dynamic range of detector. Mythen [4,8,16,24]. Eiger [4,8,16,32]. Others cannot put! \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="dr"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
 	i++;
 
 	/*! \page config
-   - <b>roi [i] [xmin] [xmax] [ymin] [ymax]  </b> sets region of interest of the detector, where i is number of rois;i=0 to clear rois. Used for GOTTHARD only.
+   - <b>roi [i] [xmin] [xmax] [ymin] [ymax]  </b> sets region of interest of the detector, where i is number of rois;i=0 to clear rois. Used for GOTTHARD only. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="roi"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
 	i++;
 
 	/*! \page config
-   - <b>detsizechan [xmax] [ymax]</b> sets the maximum number of channels in each dimension for complete detector set; -1 is no limit. Use for multi-detector system as first command in config file.
+   - <b>detsizechan [xmax] [ymax]</b> sets the maximum number of channels in each dimension for complete detector set; -1 is no limit. Use for multi-detector system as first command in config file. \c Returns \c ("int int")
 	 */
 	descrToFuncMap[i].m_pFuncName="detsizechan"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
 	i++;
 
 	/*! \page config
-   - <b>roimask [i]</b>  ??
+   - <b>roimask [i]</b>  ?? \c Returns \c (int) in hexadecimal
 	 */
 	descrToFuncMap[i].m_pFuncName="roimask"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
 	i++;
 
 	/*! \page config
-   - <b>flippeddatax [i]</b> enables/disables data being flipped across x axis. 1 enables, 0 disables. Used for EIGER only. 1 for bottom half-module, 0 for top-half module.
+   - <b>flippeddatax [i]</b> enables/disables data being flipped across x axis. 1 enables, 0 disables. Used for EIGER only. 1 for bottom half-module, 0 for top-half module. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="flippeddatax"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
 	i++;
 
 	/*! \page config
-   - <b>tengiga [i]</b> enables/disables 10GbE in system (detector & receiver). 1 enabled 10GbE, 0 enables 1GbE. Used in EIGER only.
+   - <b>tengiga [i]</b> enables/disables 10GbE in system (detector & receiver). 1 enabled 10GbE, 0 enables 1GbE. Used in EIGER only. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="tengiga"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
@@ -413,7 +414,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page config
-   - <b>flags [flag]</b> sets/gets the readout flags to mode. Options: none, storeinram, tot, continous, parallel, nonparallel, safe, digital, analog_digital, unknown. Used for MYTHEN and EIGER only.
+   - <b>flags [flag]</b> sets/gets the readout flags to mode. Options: none, storeinram, tot, continous, parallel, nonparallel, safe, digital, analog_digital, unknown. Used for MYTHEN and EIGER only. \c Returns \c (string). put takes one string and \c returns concatenation of all active flags separated by spaces.
 	 */
 	descrToFuncMap[i].m_pFuncName="flags";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
@@ -422,7 +423,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	/*! \page config
    - <b>extsig:[i] [flag]</b> sets/gets the mode of the external signal i. Options: \c off, \c gate_in_active_high, \c gate_in_active_low, \c trigger_in_rising_edge, \c trigger_in_falling_edge,
    \c ro_trigger_in_rising_edge, \c ro_trigger_in_falling_edge, \c gate_out_active_high, \c gate_out_active_low, \c trigger_out_rising_edge, \c trigger_out_falling_edge, \c ro_trigger_out_rising_edge,
-   \c ro_trigger_out_falling_edge. \n Used in MYTHEN, GOTTHARD, PROPIX only.
+   \c ro_trigger_out_falling_edge. \n Used in MYTHEN, GOTTHARD, PROPIX only. \c Returns \c (string)
 	*/
 	descrToFuncMap[i].m_pFuncName="extsig"; /* find command! */
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
@@ -436,14 +437,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page config
-   - <b>programfpga [file]</b> programs the FPGA with file f (with .pof extension). Used for JUNGFRAU, MOENCH only. Only put!
+   - <b>programfpga [file]</b> programs the FPGA with file f (with .pof extension). Used for JUNGFRAU, MOENCH only. Only put! \c Returns \c ("successful", "unsuccessful")
 	 */
 	descrToFuncMap[i].m_pFuncName="programfpga";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
 	i++;
 
 	/*! \page config
-   - <b>resetfpga [f]</b> resets FPGA, where f can be any value. Used for JUNGFRAU only. Only put!
+   - <b>resetfpga [f]</b> resets FPGA, where f can be any value. Used for JUNGFRAU only. Only put! \c Returns \c ("successful", "unsuccessful")
 	 */
 	descrToFuncMap[i].m_pFuncName="resetfpga";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
@@ -457,35 +458,35 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page config
-   - <b>powerchip [i]</b> Powers on/off the chip. 1 powers on, 0 powers off. Can also get the power status. Used for JUNGFRAU only.
+   - <b>powerchip [i]</b> Powers on/off the chip. 1 powers on, 0 powers off. Can also get the power status. Used for JUNGFRAU only. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="powerchip";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
 	i++;
 
 	/*! \page config
-   - <b>led [i]</b> sets/gets the led status. 1 on, 0 off. Used for MOENCH only ??
+   - <b>led [i]</b> sets/gets the led status. 1 on, 0 off. Used for MOENCH only ?? \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="led";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
 	i++;
 
 	/*! \page config
-   - <b>pulse [n] [x] [y]</b> pulses pixel at coordinates (x,y) n number of times. Used in EIGER only. Only put!"
+   - <b>pulse [n] [x] [y]</b> pulses pixel at coordinates (x,y) n number of times. Used in EIGER only. Only put! \c Returns \c ("successful", "unsuccessful")
 	 */
 	descrToFuncMap[i].m_pFuncName="pulse"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPulse;
 	i++;
 
 	/*! \page config
-   - <b>pulsenmove [n] [x] [y]</b> pulses pixel n number of times and moves relatively by x value (x axis) and y value(y axis). Used in EIGER only. Only put!"
+   - <b>pulsenmove [n] [x] [y]</b> pulses pixel n number of times and moves relatively by x value (x axis) and y value(y axis). Used in EIGER only. Only put! \c Returns \c ("successful", "unsuccessful")
 	 */
 	descrToFuncMap[i].m_pFuncName="pulsenmove"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPulse;
 	i++;
 
 	/*! \page config
-   - <b>pulsechip [n]</b>pulses chip n number of times, while n=-1 will reset it to normal mode. Used in EIGER only. Only put!"
+   - <b>pulsechip [n]</b>pulses chip n number of times, while n=-1 will reset it to normal mode. Used in EIGER only. Only put! \c Returns \c ("successful", "unsuccessful")
 	 */
 	descrToFuncMap[i].m_pFuncName="pulsechip"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPulse;
@@ -501,49 +502,49 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page config
-   - <b>moduleversion:[i]</b> Gets the firmware version of module i. Used for MYTHEN only. Only get!
+   - <b>moduleversion:[i]</b> Gets the firmware version of module i. Used for MYTHEN only. Only get! \c Returns \c (long int) in hexadecimal or "undefined module number"
 	 */
 	descrToFuncMap[i].m_pFuncName="moduleversion"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
 	i++;
 
 	/*! \page config
-   - <b>detectornumber</b> Gets the serial number or MAC of detector. Only get!
+   - <b>detectornumber</b> Gets the serial number or MAC of detector. Only get! \c Returns \c (long int) in hexadecimal
 	 */
 	descrToFuncMap[i].m_pFuncName="detectornumber"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
 	i++;
 
 	/*! \page config
-   - <b>modulenumber:[i]</b> Gets the serial number of module i. Used for MYTHEN only. Only get!
+   - <b>modulenumber:[i]</b> Gets the serial number of module i. Used for MYTHEN only. Only get! \c Returns \c (long int) in hexadecimal or "undefined module number"
 	 */
 	descrToFuncMap[i].m_pFuncName="modulenumber"; /* find command! */
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
 	i++;
 
 	/*! \page config
-   - <b>detectorversion</b> Gets the firmware version of detector. Only get!
+   - <b>detectorversion</b> Gets the firmware version of detector. Only get! \c Returns \c (long int) in hexadecimal
 	 */
 	descrToFuncMap[i].m_pFuncName="detectorversion"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
 	i++;
 
 	/*! \page config
-   - <b>softwareversion</b> Gets the software version of detector server. Only get!
+   - <b>softwareversion</b> Gets the software version of detector server. Only get! \c Returns \c (long int) in hexadecimal
 	 */
 	descrToFuncMap[i].m_pFuncName="softwareversion"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
 	i++;
 
 	/*! \page config
-   - <b>thisversion</b> Gets the software version of this client software. Only get!
+   - <b>thisversion</b> Gets the software version of this client software. Only get! \c Returns \c (long int) in hexadecimal
 	 */
 	descrToFuncMap[i].m_pFuncName="thisversion"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
 	i++;
 
 	/*! \page config
-   - <b>receiverversion</b> Gets the software version of receiver. Only get!
+   - <b>receiverversion</b> Gets the software version of receiver. Only get! \c Returns \c (long int) in hexadecimal
 	 */
 	descrToFuncMap[i].m_pFuncName="receiverversion"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
@@ -556,77 +557,77 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page config
-   - <b>timing [mode]</b> sets/gets synchronization mode of the detector. Mode: auto, trigger, ro_trigger, gating, triggered_gating
+   - <b>timing [mode]</b> sets/gets synchronization mode of the detector. Mode: auto, trigger, ro_trigger, gating, triggered_gating \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="timing"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTiming;
 	i++;
 
 	/*! \page config
-   - <b>exptime [i]</b> sets/gets exposure time in s
+   - <b>exptime [i]</b> sets/gets exposure time in s. \c Returns \c (double with 9 decimal digits)
 	 */
 	descrToFuncMap[i].m_pFuncName="exptime"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
 	/*! \page config
-   - <b>subexptime [i]</b> sets/gets sub exposure time in s. Used in EIGER only in 32 bit mode.
+   - <b>subexptime [i]</b> sets/gets sub exposure time in s. Used in EIGER only in 32 bit mode. \c Returns \c (double with 9 decimal digits)
 	 */
 	descrToFuncMap[i].m_pFuncName="subexptime"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
 	/*! \page config
-   - <b>period [i]</b> sets/gets frame period in s.
+   - <b>period [i]</b> sets/gets frame period in s. \c Returns \c (double with 9 decimal digits)
 	 */
 	descrToFuncMap[i].m_pFuncName="period"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
 	/*! \page config
-   - <b>delay [i]</b> sets/gets delay in s. Used in MYTHEN, GOTTHARD only
+   - <b>delay [i]</b> sets/gets delay in s. Used in MYTHEN, GOTTHARD only. \c Returns \c (double with 9 decimal digits)
 	 */
 	descrToFuncMap[i].m_pFuncName="delay"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
 	/*! \page config
-   - <b>gates [i]</b> sets/gets number of gates. Used in MYTHEN, GOTTHARD, EIGER only
+   - <b>gates [i]</b> sets/gets number of gates. Used in MYTHEN, GOTTHARD only. \c Returns \c (long long int)
 	 */
 	descrToFuncMap[i].m_pFuncName="gates"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
 	/*! \page config
-   - <b>gates [i]</b> sets/gets number of frames. If \c timing is not \c auto, then it is the number of frames per cycle/trigger.
+   - <b>frames [i]</b> sets/gets number of frames. If \c timing is not \c auto, then it is the number of frames per cycle/trigger. \c Returns \c (long long int)
 	 */
 	descrToFuncMap[i].m_pFuncName="frames"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
 	/*! \page config
-   - <b>cycles [i]</b> sets/gets number of triggers. Timing mode should be set appropriately.
+   - <b>cycles [i]</b> sets/gets number of triggers. Timing mode should be set appropriately. \c Returns \c (long long int)
 	 */
 	descrToFuncMap[i].m_pFuncName="cycles"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
 	/*! \page config
-   - <b>probes [i]</b> sets/gets number of probes to accumulate. When setting, max 3! cycles should be set to 1, frames to the number of pump-probe events. Used in MYTHEN only
+   - <b>probes [i]</b> sets/gets number of probes to accumulate. When setting, max 3! cycles should be set to 1, frames to the number of pump-probe events. Used in MYTHEN only. \c Returns \c (long long int)
 	 */
 	descrToFuncMap[i].m_pFuncName="probes"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
 	/*! \page config
-   - <b>measurements [i]</b> sets/gets number of measurements.
+   - <b>measurements [i]</b> sets/gets number of measurements. \c Returns \c (long long int)
 	 */
 	descrToFuncMap[i].m_pFuncName="measurements"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
 	/*! \page config
-   - <b>samples [i]</b> sets/gets number of samples expected from the jctb. Used in CHIP TEST BOARD only.
+   - <b>samples [i]</b> sets/gets number of samples expected from the jctb. Used in CHIP TEST BOARD only. \c Returns \c (long long int)
 	 */
 	descrToFuncMap[i].m_pFuncName="samples"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
@@ -639,49 +640,49 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page config
-   - <b>exptimel</b> gets exposure time left. Used in MYTHEN, GOTTHARD only. Only get!
+   - <b>exptimel</b> gets exposure time left. Used in MYTHEN, GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
 	 */
 	descrToFuncMap[i].m_pFuncName="exptimel"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
 	/*! \page config
-   - <b>periodl</b> gets frame period left. Used in MYTHEN, GOTTHARD only. Only get!
+   - <b>periodl</b> gets frame period left. Used in MYTHEN, GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
 	 */
 	descrToFuncMap[i].m_pFuncName="periodl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
 	/*! \page config
-   - <b>delayl</b> gets delay left. Used in MYTHEN, GOTTHARD only. Only get!
+   - <b>delayl</b> gets delay left. Used in MYTHEN, GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
 	 */
 	descrToFuncMap[i].m_pFuncName="delayl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
 	/*! \page config
-   - <b>gatesl</b> gets number of gates left. Used in MYTHEN, GOTTHARD only. Only get!
+   - <b>gatesl</b> gets number of gates left. Used in MYTHEN, GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
 	 */
 	descrToFuncMap[i].m_pFuncName="gatesl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
 	/*! \page config
-   - <b>framesl</b> gets number of frames left. Used in MYTHEN, GOTTHARD only. Only get!
+   - <b>framesl</b> gets number of frames left. Used in MYTHEN, GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
 	 */
 	descrToFuncMap[i].m_pFuncName="framesl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
 	/*! \page config
-   - <b>cyclesl</b> gets number of cylces left. Used in MYTHEN, GOTTHARD only. Only get!
+   - <b>cyclesl</b> gets number of cylces left. Used in MYTHEN, GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
 	 */
 	descrToFuncMap[i].m_pFuncName="cyclesl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
 	/*! \page config
-   - <b>probesl</b> gets number of probes left. Used in MYTHEN, GOTTHARD only. Only get!
+   - <b>probesl</b> gets number of probes left. Used in MYTHEN, GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
 	 */
 	descrToFuncMap[i].m_pFuncName="probesl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
@@ -719,91 +720,91 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page config
-   - <b>clkdivider [i]</b> sets/gets the readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)]. MYTHEN[???]
+   - <b>clkdivider [i]</b> sets/gets the readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)]. MYTHEN[???]. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="clkdivider"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>clkdivider [i]</b> sets/gets length of set/reset signals (in clock cycles). Used in MYTHEN only
+   - <b>clkdivider [i]</b> sets/gets length of set/reset signals (in clock cycles). Used in MYTHEN only. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="setlength"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>clkdivider [i]</b> sets/gets waitstates of the bus interface (in clock cycles). Used in MYTHEN only
+   - <b>clkdivider [i]</b> sets/gets waitstates of the bus interface (in clock cycles). Used in MYTHEN only. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="waitstates"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>clkdivider [i]</b> sets/gets clock divider in tot mode. Used in MYTHEN only
+   - <b>clkdivider [i]</b> sets/gets clock divider in tot mode. Used in MYTHEN only. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="totdivider"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>clkdivider [i]</b> sets/gets duty cycle of the tot clock. Used in MYTHEN only
+   - <b>clkdivider [i]</b> sets/gets duty cycle of the tot clock. Used in MYTHEN only. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="totdutycycle"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>phasestep [i]</b> ???
+   - <b>phasestep [i]</b> ???. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="phasestep"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>oversampling [i]</b> ???
+   - <b>oversampling [i]</b> ???. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="oversampling"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>adcclk [i]</b> ???
+   - <b>adcclk [i]</b> ???. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="adcclk"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>adcphase [i]</b> ??? Used in MYTHEN, JUNGFRAU only.
+   - <b>adcphase [i]</b> ??? Used in MYTHEN, JUNGFRAU only. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="adcphase"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>adcpipeline [i]</b> ???
+   - <b>adcpipeline [i]</b> ??? \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="adcpipeline"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>dbitclk [i]</b> ???
+   - <b>dbitclk [i]</b> ??? \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="dbitclk"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>dbitphase [i]</b> ???
+   - <b>dbitphase [i]</b> ??? \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="dbitphase"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>dbitpipeline [i]</b> ???
+   - <b>dbitpipeline [i]</b> ??? \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="dbitpipeline"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
@@ -817,7 +818,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page config
-   - <b>config [fname]</b> sets/saves detector/receiver to configuration contained in fname. Same as executing sls_detector_put for every line. Normally a one time operation.
+   - <b>config [fname]</b> sets/saves detector/receiver to configuration contained in fname. Same as executing sls_detector_put for every line. Normally a one time operation. \c Returns \c (string) fname
 	 */
 	descrToFuncMap[i].m_pFuncName="config";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdConfiguration;
@@ -825,21 +826,21 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 	/* settings dump/retrieve */
 	/*! \page config
-   - <b>rx_printconfig</b> prints the receiver configuration. Only get!
+   - <b>rx_printconfig</b> prints the receiver configuration. Only get! \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="rx_printconfig";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdConfiguration;
 	i++;
 
 	/*! \page config
-   - <b>parameters [fname]</b> sets/saves detector parameters contained in fname. Normally once per different measurement.
+   - <b>parameters [fname]</b> sets/saves detector parameters contained in fname. Normally once per different measurement. \c Returns \c (string) fname
 	 */
 	descrToFuncMap[i].m_pFuncName="parameters";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdConfiguration;
 	i++;
 
 	/*! \page config
-   - <b>setup [fname]</b> sets/saves detector complete setup contained in fname (extensions automatically generated), including trimfiles, ff coefficients etc.
+   - <b>setup [fname]</b> sets/saves detector complete setup contained in fname (extensions automatically generated), including trimfiles, ff coefficients etc.  \c Returns \c (string) fname
 	 */
 	descrToFuncMap[i].m_pFuncName="setup";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdConfiguration;
@@ -5335,9 +5336,6 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
 	myDet->setReceiverOnline(ONLINE_FLAG);
 
 	ret=myDet->setTimer(index,t);
-	if ((ret!=-1) && (index==ACQUISITION_TIME || index==SUBFRAME_ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER))
-		rval=(double)ret*1E-9;
-	else rval=ret;
 
 	//  cout << "here!"<< endl;
 	//set frame index
@@ -5348,10 +5346,13 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
 			myDet->setFrameIndex(-1);
 	}
 
-	if (index==FRAME_NUMBER || index==GATES_NUMBER || index==PROBES_NUMBER || index==CYCLES_NUMBER || index==MEASUREMENTS_NUMBER)
-		sprintf(answer,"%d",(int)rval);
-	else
+	if ((ret!=-1) && (index==ACQUISITION_TIME || index==SUBFRAME_ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER)) {
+		rval=(double)ret*1E-9;
 		sprintf(answer,"%0.9f",rval);
+	}
+	else
+		sprintf(answer,"%lld",(long long int)ret);
+
 	return string(answer);
 
 
@@ -6644,7 +6645,7 @@ string slsDetectorCommand::cmdPulse(int narg, char *args[], int action) {
 	if(retval == OK)
 		return string(" successful");
 	else
-		return string(" failed");
+		return string(" unsuccessful");
 
 }
 

@@ -573,14 +573,13 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	i++;
 
 	/*! \page timing
-	/*! \page config
    - <b>period [i]</b> sets/gets frame period in s. \c Returns \c (double with 9 decimal digits)
 	 */
 	descrToFuncMap[i].m_pFuncName="period"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
-	/*! \page config
+	/*! \page timing
    - <b>delay [i]</b> sets/gets delay in s. Used in MYTHEN, GOTTHARD only. \c Returns \c (double with 9 decimal digits)
 	 */
 	descrToFuncMap[i].m_pFuncName="delay"; //

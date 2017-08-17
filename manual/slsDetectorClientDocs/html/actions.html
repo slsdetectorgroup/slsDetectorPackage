@@ -40,49 +40,49 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <h1><a class="anchor" id="actions">Actions </a></h1><p>Commands to define scripts to be executed during the acquisition flow</p>
 <ul>
-<li><b>positions [n [p0..pn-1]]</b> sets/gets number of angular position and positions to be acquired.</li>
+<li><b>positions [n [p0..pn-1]]</b> sets/gets number of angular position and positions to be acquired.. <code>Returns</code> <code></code>(int int..) n [p0..pn-1]</li>
 </ul>
 <ul>
-<li><b>startscript [s]</b> sets/gets the script to be executed at the beginning of the acquisition. <code>none</code> unsets.</li>
+<li><b>startscript [s]</b> sets/gets the script to be executed at the beginning of the acquisition. <code>none</code> unsets. <code>Returns</code> <code></code>(string)</li>
 </ul>
 <ul>
-<li><b>startscriptpar [s]</b> sets/gets a string to be passed as a parameter to the startscript</li>
+<li><b>startscriptpar [s]</b> sets/gets a string to be passed as a parameter to the startscript. <code>Returns</code> <code></code>(string)</li>
 </ul>
 <ul>
-<li><b>stopscript [s]</b> sets/gets the script to be executed at the end of the acquisition. <code>none</code> unsets.</li>
+<li><b>stopscript [s]</b> sets/gets the script to be executed at the end of the acquisition. <code>none</code> unsets. <code>Returns</code> <code></code>(string)</li>
 </ul>
 <ul>
-<li><b>stopscriptpar [s]</b> sets/gets a string to be passed as a parameter to the stopscript</li>
+<li><b>stopscriptpar [s]</b> sets/gets a string to be passed as a parameter to the stopscript. <code>Returns</code> <code></code>(string)</li>
 </ul>
 <ul>
-<li><b>scriptbefore [s]</b> sets/gets the script to be executed before starting the detector every time in the acquisition. <code>none</code> unsets.</li>
+<li><b>scriptbefore [s]</b> sets/gets the script to be executed before starting the detector every time in the acquisition. <code>none</code> unsets. <code>Returns</code> <code></code>(string)</li>
 </ul>
 <ul>
-<li><b>scriptbeforepar [s]</b> sets/gets a string to be passed as a parameter to the scriptbefore</li>
+<li><b>scriptbeforepar [s]</b> sets/gets a string to be passed as a parameter to the scriptbefore. <code>Returns</code> <code></code>(string)</li>
 </ul>
 <ul>
-<li><b>scriptafter [s]</b> sets/gets the script to be executed after the detector has finished every time in the acquisition. <code>none</code> unsets.</li>
+<li><b>scriptafter [s]</b> sets/gets the script to be executed after the detector has finished every time in the acquisition. <code>none</code> unsets. <code>Returns</code> <code></code>(string)</li>
 </ul>
 <ul>
-<li><b>scriptafterpar [s]</b> sets/gets a string to be passed as a parameter to the scriptafter</li>
+<li><b>scriptafterpar [s]</b> sets/gets a string to be passed as a parameter to the scriptafter. <code>Returns</code> <code></code>(string)</li>
 </ul>
 <ul>
-<li><b>headerafter [s]</b> sets/gets the script to be executed for logging the detector parameters. <code>none</code> unsets.</li>
+<li><b>headerafter [s]</b> sets/gets the script to be executed for logging the detector parameters. <code>none</code> unsets. <code>Returns</code> <code></code>(string)</li>
 </ul>
 <ul>
-<li><b>headerbefore [s]</b> sets/gets the script to be executed for logging the detector parameters. <code>none</code> unsets.</li>
+<li><b>headerbefore [s]</b> sets/gets the script to be executed for logging the detector parameters. <code>none</code> unsets. <code>Returns</code> <code></code>(string)</li>
 </ul>
 <ul>
-<li><b>headerbeforepar [s]</b> sets/gets a string to be passed as a parameter to the headerbefore script</li>
+<li><b>headerbeforepar [s]</b> sets/gets a string to be passed as a parameter to the headerbefore script. <code>Returns</code> <code></code>(string)</li>
 </ul>
 <ul>
-<li><b>headerafterpar [s]</b> sets/gets a string to be passed as a parameter to the headerafter script</li>
+<li><b>headerafterpar [s]</b> sets/gets a string to be passed as a parameter to the headerafter script. <code>Returns</code> <code></code>(string)</li>
 </ul>
 <ul>
-<li><b>enacallog [i]</b> enables/disables logging of the parameters necessary for the energy calibration. 1 sets, 0 unsets.</li>
+<li><b>enacallog [i]</b> enables/disables logging of the parameters necessary for the energy calibration. 1 sets, 0 unsets. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>angcallog [i]</b> enables/disables logging of the parameters necessary for the angular calibration. 1 sets, 0 unsets.</li>
+<li><b>angcallog [i]</b> enables/disables logging of the parameters necessary for the angular calibration. 1 sets, 0 unsets. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
 <li><b>scan0script [s]</b> sets/gets the script to be executed for the scan 0 level. <code>none</code> unsets.</li>

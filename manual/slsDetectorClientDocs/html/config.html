@@ -44,11 +44,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li><a class="el" href="config.html#configstatus">Status</a>: commands to configure detector status</li>
 <li><a class="el" href="config.html#configsize">Data Size</a>: commands to configure detector data size</li>
 <li><a class="el" href="config.html#configflags">Flags</a>: commands to configure detector flags</li>
-<li><a class="el" href="config.html#configfpga">FPGA</a>: commands to configure FPGA of the detector</li>
 <li><a class="el" href="config.html#configchip">Chip</a>: commands to configure chip of the detector</li>
 <li><a class="el" href="config.html#configversions">Versions</a>: commands to check version of each subsytem</li>
-<li><a class="el" href="config.html#configtimers">Timers</a>: commands to configure the timers of the detector</li>
-<li><a class="el" href="config.html#configrotimers">RO Timers</a>: commands to configure the read only timers of the detector</li>
 <li><a class="el" href="config.html#configspeed">Speed</a>: commands to configure speed of detector</li>
 <li><a class="el" href="config.html#configsettings">Detector Parameters</a>: commands to configure/retrieve configuration of detector</li>
 </ul>
@@ -131,9 +128,6 @@ Flags</a></h2>
 <li><b>extsig:[i] [flag]</b> sets/gets the mode of the external signal i. Options: <code>off</code>, <code>gate_in_active_high</code>, <code>gate_in_active_low</code>, <code>trigger_in_rising_edge</code>, <code>trigger_in_falling_edge</code>, <code>ro_trigger_in_rising_edge</code>, <code>ro_trigger_in_falling_edge</code>, <code>gate_out_active_high</code>, <code>gate_out_active_low</code>, <code>trigger_out_rising_edge</code>, <code>trigger_out_falling_edge</code>, <code>ro_trigger_out_rising_edge</code>, <code>ro_trigger_out_falling_edge</code>. <br/>
  Used in MYTHEN, GOTTHARD, PROPIX only. <code>Returns</code> <code></code>(string)</li>
 </ul>
-<h2><a class="anchor" id="configfpga">
-FPGA</a></h2>
-<p>commands to configure FPGA of the detector</p>
 <ul>
 <li><b>programfpga [file]</b> programs the FPGA with file f (with .pof extension). Used for JUNGFRAU, MOENCH only. Only put! <code>Returns</code> <code></code>("successful", "unsuccessful")</li>
 </ul>
@@ -182,18 +176,6 @@ Versions</a></h2>
 <ul>
 <li><b>receiverversion</b> Gets the software version of receiver. Only get! <code>Returns</code> <code></code>(long int) in hexadecimal</li>
 </ul>
-<h2><a class="anchor" id="configtimers">
-Timers</a></h2>
-<p>commands to configure the timers of the detector</p>
-<ul>
-<li><b>timing [mode]</b> sets/gets synchronization mode of the detector. Mode: auto, trigger, ro_trigger, gating, triggered_gating <code>Returns</code> <code></code>(string)</li>
-</ul>
-<ul>
-<li><b>exptime [i]</b> sets/gets exposure time in s. <code>Returns</code> <code></code>(double with 9 decimal digits)</li>
-</ul>
-<ul>
-<li><b>subexptime [i]</b> sets/gets sub exposure time in s. Used in EIGER only in 32 bit mode. <code>Returns</code> <code></code>(double with 9 decimal digits)</li>
-</ul>
 <ul>
 <li><b>period [i]</b> sets/gets frame period in s. <code>Returns</code> <code></code>(double with 9 decimal digits)</li>
 </ul>
@@ -201,55 +183,7 @@ Timers</a></h2>
 <li><b>delay [i]</b> sets/gets delay in s. Used in MYTHEN, GOTTHARD only. <code>Returns</code> <code></code>(double with 9 decimal digits)</li>
 </ul>
 <ul>
-<li><b>gates [i]</b> sets/gets number of gates. Used in MYTHEN, GOTTHARD only. <code>Returns</code> <code></code>(long long int)</li>
-</ul>
-<ul>
-<li><b>frames [i]</b> sets/gets number of frames. If <code>timing</code> is not <code>auto</code>, then it is the number of frames per cycle/trigger. <code>Returns</code> <code></code>(long long int)</li>
-</ul>
-<ul>
-<li><b>cycles [i]</b> sets/gets number of triggers. Timing mode should be set appropriately. <code>Returns</code> <code></code>(long long int)</li>
-</ul>
-<ul>
-<li><b>probes [i]</b> sets/gets number of probes to accumulate. When setting, max 3! cycles should be set to 1, frames to the number of pump-probe events. Used in MYTHEN only. <code>Returns</code> <code></code>(long long int)</li>
-</ul>
-<ul>
-<li><b>measurements [i]</b> sets/gets number of measurements. <code>Returns</code> <code></code>(long long int)</li>
-</ul>
-<ul>
-<li><b>samples [i]</b> sets/gets number of samples expected from the jctb. Used in CHIP TEST BOARD only. <code>Returns</code> <code></code>(long long int)</li>
-</ul>
-<h2><a class="anchor" id="configrotimers">
-RO Timers</a></h2>
-<p>commands to configure the read only timers of the detector</p>
-<ul>
-<li><b>exptimel</b> gets exposure time left. Used in MYTHEN, GOTTHARD only. Only get! <code>Returns</code> <code></code>(double with 9 decimal digits)</li>
-</ul>
-<ul>
-<li><b>periodl</b> gets frame period left. Used in MYTHEN, GOTTHARD only. Only get! <code>Returns</code> <code></code>(double with 9 decimal digits)</li>
-</ul>
-<ul>
-<li><b>delayl</b> gets delay left. Used in MYTHEN, GOTTHARD only. Only get! <code>Returns</code> <code></code>(double with 9 decimal digits)</li>
-</ul>
-<ul>
-<li><b>gatesl</b> gets number of gates left. Used in MYTHEN, GOTTHARD only. Only get! <code>Returns</code> <code></code>(double with 9 decimal digits)</li>
-</ul>
-<ul>
 <li><b>framesl</b> gets number of frames left. Used in MYTHEN, GOTTHARD only. Only get! <code>Returns</code> <code></code>(double with 9 decimal digits)</li>
-</ul>
-<ul>
-<li><b>cyclesl</b> gets number of cylces left. Used in MYTHEN, GOTTHARD only. Only get! <code>Returns</code> <code></code>(double with 9 decimal digits)</li>
-</ul>
-<ul>
-<li><b>probesl</b> gets number of probes left. Used in MYTHEN, GOTTHARD only. Only get! <code>Returns</code> <code></code>(double with 9 decimal digits)</li>
-</ul>
-<ul>
-<li><b>now</b> ??? Only get!</li>
-</ul>
-<ul>
-<li><b>timestamp</b> ??? Only get!</li>
-</ul>
-<ul>
-<li><b>nframes</b> ??? Only get!</li>
 </ul>
 <h2><a class="anchor" id="configspeed">
 Speed</a></h2>
@@ -258,40 +192,40 @@ Speed</a></h2>
 <li><b>clkdivider [i]</b> sets/gets the readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)]. MYTHEN[???]. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>clkdivider [i]</b> sets/gets length of set/reset signals (in clock cycles). Used in MYTHEN only. <code>Returns</code> <code></code>(int)</li>
+<li><b>setlength [i]</b> sets/gets length of set/reset signals (in clock cycles). Used in MYTHEN only. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>clkdivider [i]</b> sets/gets waitstates of the bus interface (in clock cycles). Used in MYTHEN only. <code>Returns</code> <code></code>(int)</li>
+<li><b>waitstates [i]</b> sets/gets waitstates of the bus interface (in clock cycles). Used in MYTHEN only. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>clkdivider [i]</b> sets/gets clock divider in tot mode. Used in MYTHEN only. <code>Returns</code> <code></code>(int)</li>
+<li><b>totdivider [i]</b> sets/gets clock divider in tot mode. Used in MYTHEN only. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>clkdivider [i]</b> sets/gets duty cycle of the tot clock. Used in MYTHEN only. <code>Returns</code> <code></code>(int)</li>
+<li><b>totdutycycle [i]</b> sets/gets duty cycle of the tot clock. Used in MYTHEN only. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>phasestep [i]</b> ???. <code>Returns</code> <code></code>(int)</li>
+<li><b>phasestep [i]</b> Only put for gotthard. Moves the phase of the ADC clock.<code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>oversampling [i]</b> ???. <code>Returns</code> <code></code>(int)</li>
+<li><b>oversampling [i]</b> Sets/gets the number of adcsamples per clock. For the new chiptestboard.<code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>adcclk [i]</b> ???. <code>Returns</code> <code></code>(int)</li>
+<li><b>adcclk [i]</b> sets/gets the ADC clock frequency in MHz. For the new chiptestboard!<code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>adcphase [i]</b> ??? Used in MYTHEN, JUNGFRAU only. <code>Returns</code> <code></code>(int)</li>
+<li><b>adcphase [i]</b> Sets/gets the ADC clock frequency in MHz. For the new chiptestboard!<code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>adcpipeline [i]</b> ??? <code>Returns</code> <code></code>(int)</li>
+<li><b>adcpipeline [i]</b> Sets/gets the pipeline of the ADC. For the new chiptestbaord!<code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>dbitclk [i]</b> ??? <code>Returns</code> <code></code>(int)</li>
+<li><b>dbitclk [i]</b> Sets/gets the clock frequency of the latching of the digital bits in MHz. For the new chiptestboard!<code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>dbitphase [i]</b> ??? <code>Returns</code> <code></code>(int)</li>
+<li><b>dbitphase [i]</b> Sets/gets the phase of the clock for latching of the digital bits. For the new chiptestboard!?<code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>dbitpipeline [i]</b> ??? <code>Returns</code> <code></code>(int)</li>
+<li><b>dbitpipeline [i]</b> Sets/gets the pipeline of the latching of the digital bits. For the new chiptestbaord!<code>Returns</code> <code></code>(int)</li>
 </ul>
 <h2><a class="anchor" id="configsettings">
 Detector Parameters</a></h2>

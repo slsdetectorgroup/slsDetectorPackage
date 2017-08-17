@@ -4,11 +4,8 @@ Commands to configure the detector. these commands are often left to the configu
 \item \hyperlink{config_configstatus}{Status}: commands to configure detector status
 \item \hyperlink{config_configsize}{Data Size}: commands to configure detector data size
 \item \hyperlink{config_configflags}{Flags}: commands to configure detector flags
-\item \hyperlink{config_configfpga}{FPGA}: commands to configure FPGA of the detector
 \item \hyperlink{config_configchip}{Chip}: commands to configure chip of the detector
 \item \hyperlink{config_configversions}{Versions}: commands to check version of each subsytem
-\item \hyperlink{config_configtimers}{Timers}: commands to configure the timers of the detector
-\item \hyperlink{config_configrotimers}{RO Timers}: commands to configure the read only timers of the detector
 \item \hyperlink{config_configspeed}{Speed}: commands to configure speed of detector
 \item \hyperlink{config_configsettings}{Detector Parameters}: commands to configure/retrieve configuration of detector
 \end{DoxyItemize}\hypertarget{config_configstructure}{}\subsection{Data Structure}\label{config_configstructure}
@@ -126,8 +123,7 @@ commands to configure detector flags
 \begin{DoxyItemize}
 \item {\bfseries extsig:\mbox{[}i\mbox{]} \mbox{[}flag\mbox{]}} sets/gets the mode of the external signal i. Options: {\ttfamily off}, {\ttfamily gate\_\-in\_\-active\_\-high}, {\ttfamily gate\_\-in\_\-active\_\-low}, {\ttfamily trigger\_\-in\_\-rising\_\-edge}, {\ttfamily trigger\_\-in\_\-falling\_\-edge}, {\ttfamily ro\_\-trigger\_\-in\_\-rising\_\-edge}, {\ttfamily ro\_\-trigger\_\-in\_\-falling\_\-edge}, {\ttfamily gate\_\-out\_\-active\_\-high}, {\ttfamily gate\_\-out\_\-active\_\-low}, {\ttfamily trigger\_\-out\_\-rising\_\-edge}, {\ttfamily trigger\_\-out\_\-falling\_\-edge}, {\ttfamily ro\_\-trigger\_\-out\_\-rising\_\-edge}, {\ttfamily ro\_\-trigger\_\-out\_\-falling\_\-edge}. \par
  Used in MYTHEN, GOTTHARD, PROPIX only. {\ttfamily Returns} {\ttfamily }(string)
-\end{DoxyItemize}\hypertarget{config_configfpga}{}\subsection{FPGA}\label{config_configfpga}
-commands to configure FPGA of the detector
+\end{DoxyItemize}
 
 
 \begin{DoxyItemize}
@@ -199,22 +195,6 @@ Commands to check versions of each subsystem
 
 \begin{DoxyItemize}
 \item {\bfseries receiverversion} Gets the software version of receiver. Only get! {\ttfamily Returns} {\ttfamily }(long int) in hexadecimal
-\end{DoxyItemize}\hypertarget{config_configtimers}{}\subsection{Timers}\label{config_configtimers}
-commands to configure the timers of the detector
-
-
-\begin{DoxyItemize}
-\item {\bfseries timing \mbox{[}mode\mbox{]}} sets/gets synchronization mode of the detector. Mode: auto, trigger, ro\_\-trigger, gating, triggered\_\-gating {\ttfamily Returns} {\ttfamily }(string)
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries exptime \mbox{[}i\mbox{]}} sets/gets exposure time in s. {\ttfamily Returns} {\ttfamily }(double with 9 decimal digits)
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries subexptime \mbox{[}i\mbox{]}} sets/gets sub exposure time in s. Used in EIGER only in 32 bit mode. {\ttfamily Returns} {\ttfamily }(double with 9 decimal digits)
 \end{DoxyItemize}
 
 
@@ -229,83 +209,7 @@ commands to configure the timers of the detector
 
 
 \begin{DoxyItemize}
-\item {\bfseries gates \mbox{[}i\mbox{]}} sets/gets number of gates. Used in MYTHEN, GOTTHARD only. {\ttfamily Returns} {\ttfamily }(long long int)
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries frames \mbox{[}i\mbox{]}} sets/gets number of frames. If {\ttfamily timing} is not {\ttfamily auto}, then it is the number of frames per cycle/trigger. {\ttfamily Returns} {\ttfamily }(long long int)
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries cycles \mbox{[}i\mbox{]}} sets/gets number of triggers. Timing mode should be set appropriately. {\ttfamily Returns} {\ttfamily }(long long int)
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries probes \mbox{[}i\mbox{]}} sets/gets number of probes to accumulate. When setting, max 3! cycles should be set to 1, frames to the number of pump-\/probe events. Used in MYTHEN only. {\ttfamily Returns} {\ttfamily }(long long int)
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries measurements \mbox{[}i\mbox{]}} sets/gets number of measurements. {\ttfamily Returns} {\ttfamily }(long long int)
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries samples \mbox{[}i\mbox{]}} sets/gets number of samples expected from the jctb. Used in CHIP TEST BOARD only. {\ttfamily Returns} {\ttfamily }(long long int)
-\end{DoxyItemize}\hypertarget{config_configrotimers}{}\subsection{RO Timers}\label{config_configrotimers}
-commands to configure the read only timers of the detector
-
-
-\begin{DoxyItemize}
-\item {\bfseries exptimel} gets exposure time left. Used in MYTHEN, GOTTHARD only. Only get! {\ttfamily Returns} {\ttfamily }(double with 9 decimal digits)
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries periodl} gets frame period left. Used in MYTHEN, GOTTHARD only. Only get! {\ttfamily Returns} {\ttfamily }(double with 9 decimal digits)
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries delayl} gets delay left. Used in MYTHEN, GOTTHARD only. Only get! {\ttfamily Returns} {\ttfamily }(double with 9 decimal digits)
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries gatesl} gets number of gates left. Used in MYTHEN, GOTTHARD only. Only get! {\ttfamily Returns} {\ttfamily }(double with 9 decimal digits)
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
 \item {\bfseries framesl} gets number of frames left. Used in MYTHEN, GOTTHARD only. Only get! {\ttfamily Returns} {\ttfamily }(double with 9 decimal digits)
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries cyclesl} gets number of cylces left. Used in MYTHEN, GOTTHARD only. Only get! {\ttfamily Returns} {\ttfamily }(double with 9 decimal digits)
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries probesl} gets number of probes left. Used in MYTHEN, GOTTHARD only. Only get! {\ttfamily Returns} {\ttfamily }(double with 9 decimal digits)
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries now} ??? Only get!
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries timestamp} ??? Only get!
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries nframes} ??? Only get!
 \end{DoxyItemize}\hypertarget{config_configspeed}{}\subsection{Speed}\label{config_configspeed}
 commands to configure speed of detector
 
@@ -316,62 +220,62 @@ commands to configure speed of detector
 
 
 \begin{DoxyItemize}
-\item {\bfseries clkdivider \mbox{[}i\mbox{]}} sets/gets length of set/reset signals (in clock cycles). Used in MYTHEN only. {\ttfamily Returns} {\ttfamily }(int)
+\item {\bfseries setlength \mbox{[}i\mbox{]}} sets/gets length of set/reset signals (in clock cycles). Used in MYTHEN only. {\ttfamily Returns} {\ttfamily }(int)
 \end{DoxyItemize}
 
 
 \begin{DoxyItemize}
-\item {\bfseries clkdivider \mbox{[}i\mbox{]}} sets/gets waitstates of the bus interface (in clock cycles). Used in MYTHEN only. {\ttfamily Returns} {\ttfamily }(int)
+\item {\bfseries waitstates \mbox{[}i\mbox{]}} sets/gets waitstates of the bus interface (in clock cycles). Used in MYTHEN only. {\ttfamily Returns} {\ttfamily }(int)
 \end{DoxyItemize}
 
 
 \begin{DoxyItemize}
-\item {\bfseries clkdivider \mbox{[}i\mbox{]}} sets/gets clock divider in tot mode. Used in MYTHEN only. {\ttfamily Returns} {\ttfamily }(int)
+\item {\bfseries totdivider \mbox{[}i\mbox{]}} sets/gets clock divider in tot mode. Used in MYTHEN only. {\ttfamily Returns} {\ttfamily }(int)
 \end{DoxyItemize}
 
 
 \begin{DoxyItemize}
-\item {\bfseries clkdivider \mbox{[}i\mbox{]}} sets/gets duty cycle of the tot clock. Used in MYTHEN only. {\ttfamily Returns} {\ttfamily }(int)
+\item {\bfseries totdutycycle \mbox{[}i\mbox{]}} sets/gets duty cycle of the tot clock. Used in MYTHEN only. {\ttfamily Returns} {\ttfamily }(int)
 \end{DoxyItemize}
 
 
 \begin{DoxyItemize}
-\item {\bfseries phasestep \mbox{[}i\mbox{]}} ???. {\ttfamily Returns} {\ttfamily }(int)
+\item {\bfseries phasestep \mbox{[}i\mbox{]}} Only put for gotthard. Moves the phase of the ADC clock.{\ttfamily Returns} {\ttfamily }(int)
 \end{DoxyItemize}
 
 
 \begin{DoxyItemize}
-\item {\bfseries oversampling \mbox{[}i\mbox{]}} ???. {\ttfamily Returns} {\ttfamily }(int)
+\item {\bfseries oversampling \mbox{[}i\mbox{]}} Sets/gets the number of adcsamples per clock. For the new chiptestboard.{\ttfamily Returns} {\ttfamily }(int)
 \end{DoxyItemize}
 
 
 \begin{DoxyItemize}
-\item {\bfseries adcclk \mbox{[}i\mbox{]}} ???. {\ttfamily Returns} {\ttfamily }(int)
+\item {\bfseries adcclk \mbox{[}i\mbox{]}} sets/gets the ADC clock frequency in MHz. For the new chiptestboard!{\ttfamily Returns} {\ttfamily }(int)
 \end{DoxyItemize}
 
 
 \begin{DoxyItemize}
-\item {\bfseries adcphase \mbox{[}i\mbox{]}} ??? Used in MYTHEN, JUNGFRAU only. {\ttfamily Returns} {\ttfamily }(int)
+\item {\bfseries adcphase \mbox{[}i\mbox{]}} Sets/gets the ADC clock frequency in MHz. For the new chiptestboard!{\ttfamily Returns} {\ttfamily }(int)
 \end{DoxyItemize}
 
 
 \begin{DoxyItemize}
-\item {\bfseries adcpipeline \mbox{[}i\mbox{]}} ??? {\ttfamily Returns} {\ttfamily }(int)
+\item {\bfseries adcpipeline \mbox{[}i\mbox{]}} Sets/gets the pipeline of the ADC. For the new chiptestbaord!{\ttfamily Returns} {\ttfamily }(int)
 \end{DoxyItemize}
 
 
 \begin{DoxyItemize}
-\item {\bfseries dbitclk \mbox{[}i\mbox{]}} ??? {\ttfamily Returns} {\ttfamily }(int)
+\item {\bfseries dbitclk \mbox{[}i\mbox{]}} Sets/gets the clock frequency of the latching of the digital bits in MHz. For the new chiptestboard!{\ttfamily Returns} {\ttfamily }(int)
 \end{DoxyItemize}
 
 
 \begin{DoxyItemize}
-\item {\bfseries dbitphase \mbox{[}i\mbox{]}} ??? {\ttfamily Returns} {\ttfamily }(int)
+\item {\bfseries dbitphase \mbox{[}i\mbox{]}} Sets/gets the phase of the clock for latching of the digital bits. For the new chiptestboard!?{\ttfamily Returns} {\ttfamily }(int)
 \end{DoxyItemize}
 
 
 \begin{DoxyItemize}
-\item {\bfseries dbitpipeline \mbox{[}i\mbox{]}} ??? {\ttfamily Returns} {\ttfamily }(int)
+\item {\bfseries dbitpipeline \mbox{[}i\mbox{]}} Sets/gets the pipeline of the latching of the digital bits. For the new chiptestbaord!{\ttfamily Returns} {\ttfamily }(int)
 \end{DoxyItemize}\hypertarget{config_configsettings}{}\subsection{Detector Parameters}\label{config_configsettings}
 commands to configure/retrieve configuration of detector
 

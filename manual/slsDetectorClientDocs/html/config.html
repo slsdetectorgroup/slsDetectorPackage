@@ -40,14 +40,21 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <h1><a class="anchor" id="config">Configuration commands </a></h1><p>Commands to configure the detector. these commands are often left to the configuration file.</p>
 <ul>
-<li><a class="el" href="config.html#detstructure">Detector Structure</a>: commands to configure detector structure</li>
-<li><a class="el" href="config.html#detstatus">Detector Status</a>: commands to configure detector status</li>
-<li><a class="el" href="config.html#detsize">Detector Data Size</a>: commands to configure detector data size</li>
-<li><a class="el" href="config.html#versions">Versions</a>: commands to check version of each subsytem</li>
+<li><a class="el" href="config.html#configstructure">Data Structure</a>: commands to configure detector data structure</li>
+<li><a class="el" href="config.html#configstatus">Status</a>: commands to configure detector status</li>
+<li><a class="el" href="config.html#configsize">Data Size</a>: commands to configure detector data size</li>
+<li><a class="el" href="config.html#configflags">Flags</a>: commands to configure detector flags</li>
+<li><a class="el" href="config.html#configfpga">FPGA</a>: commands to configure FPGA of the detector</li>
+<li><a class="el" href="config.html#configchip">Chip</a>: commands to configure chip of the detector</li>
+<li><a class="el" href="config.html#configversions">Versions</a>: commands to check version of each subsytem</li>
+<li><a class="el" href="config.html#configtimers">Timers</a>: commands to configure the timers of the detector</li>
+<li><a class="el" href="config.html#configrotimers">RO Timers</a>: commands to configure the read only timers of the detector</li>
+<li><a class="el" href="config.html#configspeed">Speed</a>: commands to configure speed of detector</li>
+<li><a class="el" href="config.html#configsettings">Detector Parameters</a>: commands to configure/retrieve configuration of detector</li>
 </ul>
-<h2><a class="anchor" id="detstructure">
-Detector Structure</a></h2>
-<p>commands to configure detector structure</p>
+<h2><a class="anchor" id="configstructure">
+Data Structure</a></h2>
+<p>commands to configure detector data structure</p>
 <ul>
 <li><b>datastream</b> enables/disables the 0MQ data stream (0MQ threads created) from receiver to client.</li>
 </ul>
@@ -75,8 +82,8 @@ Detector Structure</a></h2>
 <ul>
 <li><b>sync</b> Sets/gets the synchronization mode of the detectors in the multi-detector structure. Can be: <code>none</code>, <code>gating</code>, <code>trigger</code>, <code>complementary</code>. Mainly used by MYTHEN/GOTTHARD.</li>
 </ul>
-<h2><a class="anchor" id="detstatus">
-Detector Status</a></h2>
+<h2><a class="anchor" id="configstatus">
+Status</a></h2>
 <p>commands to configure detector status</p>
 <ul>
 <li><b>online [i]</b> sets the detector in online (1) or offline (0) mode</li>
@@ -87,8 +94,8 @@ Detector Status</a></h2>
 <ul>
 <li><b>activate</b> Activates/Deactivates the detector. Deactivated detector does not send data. Used for EIGER only.</li>
 </ul>
-<h2><a class="anchor" id="detsize">
-Detector Data Size</a></h2>
+<h2><a class="anchor" id="configsize">
+Data Size</a></h2>
 <p>commands to configure detector data size</p>
 <ul>
 <li><b>nmod [i]</b> sets/gets the number of modules of the detector. Used for MYTHEN only.</li>
@@ -111,9 +118,9 @@ Detector Data Size</a></h2>
 <ul>
 <li><b>flippeddatax [i]</b> enables/disables data being flipped across x axis. 1 enables, 0 disables. Used for EIGER only. 1 for bottom half-module, 0 for top-half module.</li>
 </ul>
-<ul>
-<li><b>lock [i]</b> Locks/Unlocks the detector to communicate with this client. 1 locks, 0 unlocks.</li>
-</ul>
+<h2><a class="anchor" id="configflags">
+Flags</a></h2>
+<p>commands to configure detector flags</p>
 <ul>
 <li><b>flags [flag]</b> sets/gets the readout flags to mode. Options: none, storeinram, tot, continous, parallel, nonparallel, safe, digital, analog_digital, unknown. Used for MYTHEN and EIGER only.</li>
 </ul>
@@ -121,21 +128,60 @@ Detector Data Size</a></h2>
 <li><b>extsig:[i] [flag]</b> sets/gets the mode of the external signal i. Options: <code>off</code>, <code>gate_in_active_high</code>, <code>gate_in_active_low</code>, <code>trigger_in_rising_edge</code>, <code>trigger_in_falling_edge</code>, <code>ro_trigger_in_rising_edge</code>, <code>ro_trigger_in_falling_edge</code>, <code>gate_out_active_high</code>, <code>gate_out_active_low</code>, <code>trigger_out_rising_edge</code>, <code>trigger_out_falling_edge</code>, <code>ro_trigger_out_rising_edge</code>, <code>ro_trigger_out_falling_edge</code>. <br/>
  Used in MYTHEN, GOTTHARD, PROPIX only.</li>
 </ul>
+<h2><a class="anchor" id="configfpga">
+FPGA</a></h2>
+<p>commands to configure FPGA of the detector</p>
 <ul>
 <li><b>programfpga [file]</b> programs the FPGA with file f (with .pof extension). Used for JUNGFRAU, MOENCH only. Only put!</li>
 </ul>
 <ul>
 <li><b>resetfpga [f]</b> resets FPGA, where f can be any value. Used for JUNGFRAU only. Only put!</li>
 </ul>
+<h2><a class="anchor" id="configchip">
+Chip</a></h2>
+<p>commands to configure chip of the detector</p>
 <ul>
 <li><b>powerchip [i]</b> Powers on/off the chip. 1 powers on, 0 powers off. Can also get the power status. Used for JUNGFRAU only.</li>
 </ul>
 <ul>
 <li><b>led [i]</b> sets/gets the led status. 1 on, 0 off. Used for MOENCH only ??</li>
 </ul>
-<h2><a class="anchor" id="versions">
+<ul>
+<li><b>pulse [n] [x] [y]</b> pulses pixel at coordinates (x,y) n number of times. Used in EIGER only. Only put!</li>
+</ul>
+<ul>
+<li><b>pulsenmove [n] [x] [y]</b> pulses pixel n number of times and moves relatively by x value (x axis) and y value(y axis). Used in EIGER only. Only put!</li>
+</ul>
+<ul>
+<li><b>pulsechip [n]</b>pulses chip n number of times, while n=-1 will reset it to normal mode. Used in EIGER only. Only put!</li>
+</ul>
+<h2><a class="anchor" id="configversions">
 Versions</a></h2>
 <p>Commands to check versions of each subsystem</p>
+<ul>
+<li><b>moduleversion:[i]</b> Gets the firmware version of module i. Used for MYTHEN only. Only get!</li>
+</ul>
+<ul>
+<li><b>detectornumber</b> Gets the serial number or MAC of detector. Only get!</li>
+</ul>
+<ul>
+<li><b>modulenumber:[i]</b> Gets the serial number of module i. Used for MYTHEN only. Only get!</li>
+</ul>
+<ul>
+<li><b>detectorversion</b> Gets the firmware version of detector. Only get!</li>
+</ul>
+<ul>
+<li><b>softwareversion</b> Gets the software version of detector server. Only get!</li>
+</ul>
+<ul>
+<li><b>thisversion</b> Gets the software version of this client software. Only get!</li>
+</ul>
+<ul>
+<li><b>receiverversion</b> Gets the software version of receiver. Only get!</li>
+</ul>
+<h2><a class="anchor" id="configtimers">
+Timers</a></h2>
+<p>commands to configure the timers of the detector</p>
 <ul>
 <li><b>timing [mode]</b> sets/gets synchronization mode of the detector. Mode: auto, trigger, ro_trigger, gating, triggered_gating</li>
 </ul>
@@ -169,6 +215,9 @@ Versions</a></h2>
 <ul>
 <li><b>samples [i]</b> sets/gets number of samples expected from the jctb. Used in CHIP TEST BOARD only.</li>
 </ul>
+<h2><a class="anchor" id="configrotimers">
+RO Timers</a></h2>
+<p>commands to configure the read only timers of the detector</p>
 <ul>
 <li><b>exptimel</b> gets exposure time left. Used in MYTHEN, GOTTHARD only. Only get!</li>
 </ul>
@@ -199,6 +248,9 @@ Versions</a></h2>
 <ul>
 <li><b>nframes</b> ??? Only get!</li>
 </ul>
+<h2><a class="anchor" id="configspeed">
+Speed</a></h2>
+<p>commands to configure speed of detector</p>
 <ul>
 <li><b>clkdivider [i]</b> sets/gets the readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)]. MYTHEN[???]</li>
 </ul>
@@ -236,6 +288,12 @@ Versions</a></h2>
 <li><b>dbitphase [i]</b> ???</li>
 </ul>
 <ul>
+<li><b>dbitpipeline [i]</b> ???</li>
+</ul>
+<h2><a class="anchor" id="configsettings">
+Detector Parameters</a></h2>
+<p>commands to configure/retrieve configuration of detector</p>
+<ul>
 <li><b>config [fname]</b> sets/saves detector/receiver to configuration contained in fname. Same as executing sls_detector_put for every line. Normally a one time operation.</li>
 </ul>
 <ul>
@@ -248,16 +306,7 @@ Versions</a></h2>
 <li><b>setup [fname]</b> sets/saves detector complete setup contained in fname (extensions automatically generated), including trimfiles, ff coefficients etc.</li>
 </ul>
 <ul>
-<li><b>tengiga [i]</b> enables/disables 10GbE in system (detector &amp; receiver). 1 enabled 10GbE, 0 enables 1GbE. Used in EIGER only.</li>
-</ul>
-<ul>
-<li><b>pulse [n] [x] [y]</b> pulses pixel at coordinates (x,y) n number of times. Used in EIGER only. Only put!</li>
-</ul>
-<ul>
-<li><b>pulsenmove [n] [x] [y]</b> pulses pixel n number of times and moves relatively by x value (x axis) and y value(y axis). Used in EIGER only. Only put!</li>
-</ul>
-<ul>
-<li><b>pulsechip [n]</b>pulses chip n number of times, while n=-1 will reset it to normal mode. Used in EIGER only. Only put! </li>
+<li><b>tengiga [i]</b> enables/disables 10GbE in system (detector &amp; receiver). 1 enabled 10GbE, 0 enables 1GbE. Used in EIGER only. </li>
 </ul>
 </div>
 <!--- window showing the filter options -->
@@ -274,7 +323,7 @@ Versions</a></h2>
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 16 Aug 2017 by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 17 Aug 2017 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

@@ -1,11 +1,18 @@
 Commands to configure the detector. these commands are often left to the configuration file.
 \begin{DoxyItemize}
-\item \hyperlink{config_detstructure}{Detector Structure}: commands to configure detector structure
-\item \hyperlink{config_detstatus}{Detector Status}: commands to configure detector status
-\item \hyperlink{config_detsize}{Detector Data Size}: commands to configure detector data size
-\item \hyperlink{config_versions}{Versions}: commands to check version of each subsytem
-\end{DoxyItemize}\hypertarget{config_detstructure}{}\subsection{Detector Structure}\label{config_detstructure}
-commands to configure detector structure
+\item \hyperlink{config_configstructure}{Data Structure}: commands to configure detector data structure
+\item \hyperlink{config_configstatus}{Status}: commands to configure detector status
+\item \hyperlink{config_configsize}{Data Size}: commands to configure detector data size
+\item \hyperlink{config_configflags}{Flags}: commands to configure detector flags
+\item \hyperlink{config_configfpga}{FPGA}: commands to configure FPGA of the detector
+\item \hyperlink{config_configchip}{Chip}: commands to configure chip of the detector
+\item \hyperlink{config_configversions}{Versions}: commands to check version of each subsytem
+\item \hyperlink{config_configtimers}{Timers}: commands to configure the timers of the detector
+\item \hyperlink{config_configrotimers}{RO Timers}: commands to configure the read only timers of the detector
+\item \hyperlink{config_configspeed}{Speed}: commands to configure speed of detector
+\item \hyperlink{config_configsettings}{Detector Parameters}: commands to configure/retrieve configuration of detector
+\end{DoxyItemize}\hypertarget{config_configstructure}{}\subsection{Data Structure}\label{config_configstructure}
+commands to configure detector data structure
 
 
 \begin{DoxyItemize}
@@ -50,7 +57,7 @@ commands to configure detector structure
 
 \begin{DoxyItemize}
 \item {\bfseries sync} Sets/gets the synchronization mode of the detectors in the multi-\/detector structure. Can be: {\ttfamily none}, {\ttfamily gating}, {\ttfamily trigger}, {\ttfamily complementary}. Mainly used by MYTHEN/GOTTHARD.
-\end{DoxyItemize}\hypertarget{config_detstatus}{}\subsection{Detector Status}\label{config_detstatus}
+\end{DoxyItemize}\hypertarget{config_configstatus}{}\subsection{Status}\label{config_configstatus}
 commands to configure detector status
 
 
@@ -66,7 +73,7 @@ commands to configure detector status
 
 \begin{DoxyItemize}
 \item {\bfseries activate} Activates/Deactivates the detector. Deactivated detector does not send data. Used for EIGER only.
-\end{DoxyItemize}\hypertarget{config_detsize}{}\subsection{Detector Data Size}\label{config_detsize}
+\end{DoxyItemize}\hypertarget{config_configsize}{}\subsection{Data Size}\label{config_configsize}
 commands to configure detector data size
 
 
@@ -102,12 +109,8 @@ commands to configure detector data size
 
 \begin{DoxyItemize}
 \item {\bfseries flippeddatax \mbox{[}i\mbox{]}} enables/disables data being flipped across x axis. 1 enables, 0 disables. Used for EIGER only. 1 for bottom half-\/module, 0 for top-\/half module.
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries lock \mbox{[}i\mbox{]}} Locks/Unlocks the detector to communicate with this client. 1 locks, 0 unlocks.
-\end{DoxyItemize}
+\end{DoxyItemize}\hypertarget{config_configflags}{}\subsection{Flags}\label{config_configflags}
+commands to configure detector flags
 
 
 \begin{DoxyItemize}
@@ -118,7 +121,8 @@ commands to configure detector data size
 \begin{DoxyItemize}
 \item {\bfseries extsig:\mbox{[}i\mbox{]} \mbox{[}flag\mbox{]}} sets/gets the mode of the external signal i. Options: {\ttfamily off}, {\ttfamily gate\_\-in\_\-active\_\-high}, {\ttfamily gate\_\-in\_\-active\_\-low}, {\ttfamily trigger\_\-in\_\-rising\_\-edge}, {\ttfamily trigger\_\-in\_\-falling\_\-edge}, {\ttfamily ro\_\-trigger\_\-in\_\-rising\_\-edge}, {\ttfamily ro\_\-trigger\_\-in\_\-falling\_\-edge}, {\ttfamily gate\_\-out\_\-active\_\-high}, {\ttfamily gate\_\-out\_\-active\_\-low}, {\ttfamily trigger\_\-out\_\-rising\_\-edge}, {\ttfamily trigger\_\-out\_\-falling\_\-edge}, {\ttfamily ro\_\-trigger\_\-out\_\-rising\_\-edge}, {\ttfamily ro\_\-trigger\_\-out\_\-falling\_\-edge}. \par
  Used in MYTHEN, GOTTHARD, PROPIX only.
-\end{DoxyItemize}
+\end{DoxyItemize}\hypertarget{config_configfpga}{}\subsection{FPGA}\label{config_configfpga}
+commands to configure FPGA of the detector
 
 
 \begin{DoxyItemize}
@@ -128,7 +132,8 @@ commands to configure detector data size
 
 \begin{DoxyItemize}
 \item {\bfseries resetfpga \mbox{[}f\mbox{]}} resets FPGA, where f can be any value. Used for JUNGFRAU only. Only put!
-\end{DoxyItemize}
+\end{DoxyItemize}\hypertarget{config_configchip}{}\subsection{Chip}\label{config_configchip}
+commands to configure chip of the detector
 
 
 \begin{DoxyItemize}
@@ -138,8 +143,59 @@ commands to configure detector data size
 
 \begin{DoxyItemize}
 \item {\bfseries led \mbox{[}i\mbox{]}} sets/gets the led status. 1 on, 0 off. Used for MOENCH only ??
-\end{DoxyItemize}\hypertarget{config_versions}{}\subsection{Versions}\label{config_versions}
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries pulse \mbox{[}n\mbox{]} \mbox{[}x\mbox{]} \mbox{[}y\mbox{]}} pulses pixel at coordinates (x,y) n number of times. Used in EIGER only. Only put!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries pulsenmove \mbox{[}n\mbox{]} \mbox{[}x\mbox{]} \mbox{[}y\mbox{]}} pulses pixel n number of times and moves relatively by x value (x axis) and y value(y axis). Used in EIGER only. Only put!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries pulsechip \mbox{[}n\mbox{]}}pulses chip n number of times, while n=-\/1 will reset it to normal mode. Used in EIGER only. Only put!
+\end{DoxyItemize}\hypertarget{config_configversions}{}\subsection{Versions}\label{config_configversions}
 Commands to check versions of each subsystem
+
+
+\begin{DoxyItemize}
+\item {\bfseries moduleversion:\mbox{[}i\mbox{]}} Gets the firmware version of module i. Used for MYTHEN only. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries detectornumber} Gets the serial number or MAC of detector. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries modulenumber:\mbox{[}i\mbox{]}} Gets the serial number of module i. Used for MYTHEN only. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries detectorversion} Gets the firmware version of detector. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries softwareversion} Gets the software version of detector server. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries thisversion} Gets the software version of this client software. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries receiverversion} Gets the software version of receiver. Only get!
+\end{DoxyItemize}\hypertarget{config_configtimers}{}\subsection{Timers}\label{config_configtimers}
+commands to configure the timers of the detector
 
 
 \begin{DoxyItemize}
@@ -194,7 +250,8 @@ Commands to check versions of each subsystem
 
 \begin{DoxyItemize}
 \item {\bfseries samples \mbox{[}i\mbox{]}} sets/gets number of samples expected from the jctb. Used in CHIP TEST BOARD only.
-\end{DoxyItemize}
+\end{DoxyItemize}\hypertarget{config_configrotimers}{}\subsection{RO Timers}\label{config_configrotimers}
+commands to configure the read only timers of the detector
 
 
 \begin{DoxyItemize}
@@ -244,7 +301,8 @@ Commands to check versions of each subsystem
 
 \begin{DoxyItemize}
 \item {\bfseries nframes} ??? Only get!
-\end{DoxyItemize}
+\end{DoxyItemize}\hypertarget{config_configspeed}{}\subsection{Speed}\label{config_configspeed}
+commands to configure speed of detector
 
 
 \begin{DoxyItemize}
@@ -308,6 +366,12 @@ Commands to check versions of each subsystem
 
 
 \begin{DoxyItemize}
+\item {\bfseries dbitpipeline \mbox{[}i\mbox{]}} ???
+\end{DoxyItemize}\hypertarget{config_configsettings}{}\subsection{Detector Parameters}\label{config_configsettings}
+commands to configure/retrieve configuration of detector
+
+
+\begin{DoxyItemize}
 \item {\bfseries config \mbox{[}fname\mbox{]}} sets/saves detector/receiver to configuration contained in fname. Same as executing sls\_\-detector\_\-put for every line. Normally a one time operation.
 \end{DoxyItemize}
 
@@ -328,20 +392,5 @@ Commands to check versions of each subsystem
 
 
 \begin{DoxyItemize}
-\item {\bfseries tengiga \mbox{[}i\mbox{]}} enables/disables 10GbE in system (detector \& receiver). 1 enabled 10GbE, 0 enables 1GbE. Used in EIGER only.
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries pulse \mbox{[}n\mbox{]} \mbox{[}x\mbox{]} \mbox{[}y\mbox{]}} pulses pixel at coordinates (x,y) n number of times. Used in EIGER only. Only put!
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries pulsenmove \mbox{[}n\mbox{]} \mbox{[}x\mbox{]} \mbox{[}y\mbox{]}} pulses pixel n number of times and moves relatively by x value (x axis) and y value(y axis). Used in EIGER only. Only put!
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries pulsechip \mbox{[}n\mbox{]}}pulses chip n number of times, while n=-\/1 will reset it to normal mode. Used in EIGER only. Only put! 
+\item {\bfseries tengiga \mbox{[}i\mbox{]}} enables/disables 10GbE in system (detector \& receiver). 1 enabled 10GbE, 0 enables 1GbE. Used in EIGER only. 
 \end{DoxyItemize}

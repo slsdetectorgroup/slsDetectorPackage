@@ -299,6 +299,12 @@ void allocateDetectorStructureMemory(){
 	(detectorModules)->offset=0;
 	(detectorModules)->reg=0;
 	thisSettings = UNINITIALIZED;
+
+	// if trimval requested, should return -1 to acknowledge unknown
+	int ichan=0;
+	for (ichan=0; ichan<(detectorModules->nchan); ichan++) {
+		*((detectorModules->chanregs)+ichan) = -1;
+	}
 }
 
 
@@ -554,7 +560,7 @@ int setModule(sls_detector_module myMod, int delay){
 	if(myMod.nchan==0 && myMod.nchip == 0)
 		cprintf(BLUE,"Setting module without trimbits\n");
 	else{
-		cprintf(GREEN,"Setting module with trimbits\n");
+		printf("Setting module with trimbits\n");
 		//includ gap pixels
 		unsigned int tt[263680];
 		int iy,ichip,ix,ip=0,ich=0;
@@ -1063,11 +1069,24 @@ int setAllTrimbits(int val){
 			}
 		}
 	}
+	cprintf(GREEN, "All trimbits have been set to %d\n", val);
 	return OK;
 }
 
 int getAllTrimbits(){
-	return *((detectorModules->chanregs));
+	int ichan=0;
+	int value = *((detectorModules->chanregs));
+	if (detectorModules){
+		for (ichan=0; ichan<(detectorModules->nchan); ichan++) {
+			if(*((detectorModules->chanregs)+ichan) != value) {
+				value= -1;
+				break;
+			}
+
+		}
+	}
+	printf("Value of all Trimbits: %d\n", value);
+	return value;
 }
 
 int getBebFPGATemp(){

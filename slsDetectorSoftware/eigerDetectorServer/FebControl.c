@@ -224,7 +224,7 @@ int Feb_Control_Init(int master, int top, int normal, int module_num){
 
 
 int Feb_Control_OpenSerialCommunication(){
-	cprintf(BG_BLUE,"opening serial communication of hv\n");
+	cprintf(GREEN,"opening serial communication of hv\n");
 	//if(Feb_Control_hv_fd != -1)
 		close(Feb_Control_hv_fd);
 	Feb_Control_hv_fd = open(SPECIAL9M_HIGHVOLTAGE_PORT, O_RDWR | O_NOCTTY | O_SYNC);
@@ -232,7 +232,7 @@ int Feb_Control_OpenSerialCommunication(){
 		cprintf(RED,"Warning: Unable to open port %s to set up high voltage serial communciation to the blackfin\n", SPECIAL9M_HIGHVOLTAGE_PORT);
 		return 0;
 	}
-
+	cprintf(GREEN,"Serial Port opened at %s\n",SPECIAL9M_HIGHVOLTAGE_PORT);
 	struct termios serial_conf;
 	// reset structure
 	memset (&serial_conf, 0, sizeof(serial_conf));
@@ -265,12 +265,15 @@ int Feb_Control_OpenSerialCommunication(){
 	memset(buffer,0,SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
 	buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE-1] = '\n';
 	strcpy(buffer,"start");
+	cprintf(GREEN,"sending start: '%s'\n",buffer);
 	int n = write(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
 	if (n < 0) {
 		cprintf(RED,"\nWarning: Error writing to i2c bus\n");
 		return 0;
 	}
-
+#ifdef VERBOSE
+	cprintf(GREEN,"Sent: %d bytes\n",n);
+#endif
 	return 1;
 }
 
@@ -629,13 +632,14 @@ int Feb_Control_SendHighVoltage(int dacvalue){
 		buffer[SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE-1]='\n';
 		int n;
 		sprintf(buffer,"p%d",dacvalue);
+		cprintf(GREEN,"Sending HV: '%s'\n",buffer);
 		n = write(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
 		if (n < 0) {
 			cprintf(RED,"\nWarning: Error writing to i2c bus\n");
 			return 0;
 		}
 #ifdef VERBOSEI
-		cprintf(BLUE,"Sent %d Bytes\n", n);
+		cprintf(GREEN,"Sent %d Bytes\n", n);
 #endif
 		//ok/fail
 		memset(buffer,0,SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
@@ -646,8 +650,9 @@ int Feb_Control_SendHighVoltage(int dacvalue){
 			return 0;
 		}
 #ifdef VERBOSEI
-		cprintf(BLUE,"Received %d Bytes\n", n);
+		cprintf(GREEN,"Received %d Bytes\n", n);
 #endif
+		cprintf(GREEN,"Received HV: '%s'\n",buffer);
 		fflush(stdout);
 		/*Feb_Control_CloseSerialCommunication();*/
 		if(buffer[0] != 's'){
@@ -715,13 +720,14 @@ int Feb_Control_ReceiveHighVoltage(unsigned int* value){
 		//request
 
 		strcpy(buffer,"g ");
+		cprintf(GREEN,"\nSending HV: '%s'\n",buffer);
 		n = write(Feb_Control_hv_fd, buffer, SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE);
 		if (n < 0) {
 			cprintf(RED,"\nWarning: Error writing to i2c bus\n");
 			return 0;
 		}
 #ifdef VERBOSEI
-		cprintf(BLUE,"Sent %d Bytes\n", n);
+		cprintf(GREEN,"Sent %d Bytes\n", n);
 #endif
 
 		//ok/fail
@@ -733,8 +739,9 @@ int Feb_Control_ReceiveHighVoltage(unsigned int* value){
 			return 0;
 		}
 #ifdef VERBOSEI
-		cprintf(BLUE,"Received %d Bytes\n", n);
+		cprintf(GREEN,"Received %d Bytes\n", n);
 #endif
+		cprintf(GREEN,"Received HV: '%s'\n",buffer);
 		if(buffer[0] != 's'){
 			cprintf(RED,"\nWarning: failed to read high voltage\n");
 			return 0;
@@ -748,8 +755,9 @@ int Feb_Control_ReceiveHighVoltage(unsigned int* value){
 			return 0;
 		}
 #ifdef VERBOSEI
-		cprintf(BLUE,"Received %d Bytes\n", n);
+		cprintf(GREEN,"Received %d Bytes\n", n);
 #endif
+		cprintf(GREEN,"Received HV: '%s'\n",buffer);
 		/*Feb_Control_OpenSerialCommunication();*/
 		if (!sscanf(buffer,"%d",value)){
 			cprintf(RED,"\nWarning: failed to scan high voltage read\n");

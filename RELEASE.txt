@@ -85,6 +85,10 @@ Reiterating, both 2.3 and 3.0 supports the following features:
 		file write (so we dont write) and register the callbacks (so the user gets 
 		the data).
 		
+	4.	Multiple Receivers have to be started as different processes, instead of threads
+		due to static variables being used. Please refer example code provided in the 
+		slsDetectorsPackage/users folder (mainReceiver.cpp).
+		
 
 
 New Features
@@ -166,7 +170,10 @@ Resolved Issues
 	4.	(Eiger/Jungfrau) Bug Fix: Client crashing should not crash the server as SIGPIPE 
 	  	signal is caught.
 	  
-	5.	(Eiger) Buf Fix: Front End Temperature read out conversion fixed.
+	5.	(Eiger) Bug Fix: Front End Temperature read out conversion fixed.
+	
+	6.	(Eiger) Bug Fix: sls_detector_get trimval(get all trimbits) would return only the first pixel 
+		value. Now it returns -1 if all the pixels are different.
 	  
 	  
 	Receiver

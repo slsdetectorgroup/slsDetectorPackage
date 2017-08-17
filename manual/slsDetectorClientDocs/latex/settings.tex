@@ -1,4 +1,11 @@
 Commands to setup the settings of the detector
+\begin{DoxyItemize}
+\item \hyperlink{settings_settingsdir}{Settings, trim \& cal Directories}: commands to setup settings/trim/cal directories
+\item \hyperlink{settings_settingssett}{Settings and Threshold}: commands to configure settings and threshold of detector
+\item \hyperlink{settings_settingsdacs}{DACs}: commands to configure DACs of detector
+\item \hyperlink{settings_settingsadcs}{ADCs}: commands to readout ADCs of detector
+\end{DoxyItemize}\hypertarget{settings_settingsdir}{}\subsection{Settings, trim \& cal Directories}\label{settings_settingsdir}
+commands to setup settings/trim/cal directories
 
 
 \begin{DoxyItemize}
@@ -18,7 +25,8 @@ Commands to setup the settings of the detector
 
 \begin{DoxyItemize}
 \item {\bfseries trimen \mbox{[}n e0 e1...e(n-\/1)\mbox{]}} Sets/gets the number of energies n at which the detector has default trim file and their values in eV (int)
-\end{DoxyItemize}
+\end{DoxyItemize}\hypertarget{settings_settingssett}{}\subsection{Settings and Threshold}\label{settings_settingssett}
+commands to configure settings and threshold of detector
 
 
 \begin{DoxyItemize}
@@ -54,7 +62,8 @@ Commands to setup the settings of the detector
 
 \begin{DoxyItemize}
 \item {\bfseries pedestal \mbox{[}i\mbox{]}} starts acquisition for i frames, calculates pedestal and writes back to fpga. Used in GOTTHARD only. Only put!
-\end{DoxyItemize}
+\end{DoxyItemize}\hypertarget{settings_settingsdacs}{}\subsection{DACs}\label{settings_settingsdacs}
+commands to configure DACs of detector
 
 
 \begin{DoxyItemize}
@@ -284,7 +293,8 @@ Commands to setup the settings of the detector
 
 \begin{DoxyItemize}
 \item {\bfseries v\_\-limit \mbox{[}i\mbox{]} mv} Sets/gets a soft limit for the power supplies and the DACs on the new chiptest board. Must be in mV (int)
-\end{DoxyItemize}
+\end{DoxyItemize}\hypertarget{settings_settingsadcs}{}\subsection{ADCs}\label{settings_settingsadcs}
+commands to readout ADCs of detector
 
 
 \begin{DoxyItemize}

@@ -1451,7 +1451,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
    - <b>temp_10ge</b> Gets the 10Gbe temperature. Used in EIGER only. \c Returns \c EIGER(double"°C")
 	 */
 	descrToFuncMap[i].m_pFuncName="temp_10ge"; //
-	descrToFuncMap[i].m_pFuncPtr. \c Returns \c (int ["mV"])etectorCommand::cmdADC;
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	i++;
 
 	/*! \page settings

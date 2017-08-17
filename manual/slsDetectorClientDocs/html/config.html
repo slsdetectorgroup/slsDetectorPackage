@@ -56,7 +56,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 Data Structure</a></h2>
 <p>commands to configure detector data structure</p>
 <ul>
-<li><b>datastream</b> enables/disables the 0MQ data stream (0MQ threads created) from receiver to client.</li>
+<li><b> datastream </b>enables/disables the 0MQ data stream (0MQ threads created) from receiver to client. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
 <li><b>free</b> Free shared memory on the control PC</li>
@@ -68,10 +68,10 @@ Data Structure</a></h2>
 <li><b>remove i</b> Removes controller <code>i</code> from the multi-detector structure. Can be used for partial readout of the detector.</li>
 </ul>
 <ul>
-<li><b>type</b> Sets/gets detector type (string).</li>
+<li><b>type</b> Sets/gets detector type. <code>Returns</code> <code></code>(string). Normally not used. Using hostname is enough.</li>
 </ul>
 <ul>
-<li><b>hostname</b> <code>put</code> adds the hostname (ot IP adress) at the end of the multi-detector structure. If used for a single controlled (i:) replaces the current hostname. Returns the list of the hostnames of the multi-detector structure.</li>
+<li><b>hostname</b> <code>put</code> adds the hostname (ot IP adress) at the end of the multi-detector structure. If used for a single controlled (i:) replaces the current hostname. Returns the list of the hostnames of the multi-detector structure. <code>Returns</code> <code></code>(string)</li>
 </ul>
 <ul>
 <li><b>id[:i]</b> Returns the id of the detector structure. i is the detector position in a multi detector system. If used a <code>put</code>, configures the id of the detector structure. i is the detector position in a multi detector system and l is the id of the detector to be added.</li>
@@ -86,161 +86,161 @@ Data Structure</a></h2>
 Status</a></h2>
 <p>commands to configure detector status</p>
 <ul>
-<li><b>online [i]</b> sets the detector in online (1) or offline (0) mode</li>
+<li><b>online [i]</b> sets the detector in online (1) or offline (0) mode. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>checkonline</b> returns the hostnames of all detectors without connecting to them</li>
+<li><b>checkonline</b> returns the hostnames of all detectors without connecting to them. <code>Returns</code> (string) "All online" or "[list of offline hostnames] : Not online".</li>
 </ul>
 <ul>
-<li><b>activate</b> Activates/Deactivates the detector. Deactivated detector does not send data. Used for EIGER only.</li>
+<li><b>activate</b> Activates/Deactivates the detector. Deactivated detector does not send data. Used for EIGER only. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <h2><a class="anchor" id="configsize">
 Data Size</a></h2>
 <p>commands to configure detector data size</p>
 <ul>
-<li><b>nmod [i]</b> sets/gets the number of modules of the detector. Used for MYTHEN only.</li>
+<li><b>nmod [i]</b> sets/gets the number of modules of the detector. Used for MYTHEN only. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>maxmod </b> Gets the maximum number of modules of the detector. Used for MYTHEN only. Cannot put!</li>
+<li><b>maxmod </b> Gets the maximum number of modules of the detector. Used for MYTHEN only. Cannot put! <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>dr [i]</b> sets/gets the dynamic range of detector. Mythen [4,8,16,24]. Eiger [4,8,16,32]. Others cannot put!</li>
+<li><b>dr [i]</b> sets/gets the dynamic range of detector. Mythen [4,8,16,24]. Eiger [4,8,16,32]. Others cannot put! <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>roi [i] [xmin] [xmax] [ymin] [ymax] </b> sets region of interest of the detector, where i is number of rois;i=0 to clear rois. Used for GOTTHARD only.</li>
+<li><b>roi [i] [xmin] [xmax] [ymin] [ymax] </b> sets region of interest of the detector, where i is number of rois;i=0 to clear rois. Used for GOTTHARD only. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>detsizechan [xmax] [ymax]</b> sets the maximum number of channels in each dimension for complete detector set; -1 is no limit. Use for multi-detector system as first command in config file.</li>
+<li><b>detsizechan [xmax] [ymax]</b> sets the maximum number of channels in each dimension for complete detector set; -1 is no limit. Use for multi-detector system as first command in config file. <code>Returns</code> <code></code>("int int")</li>
 </ul>
 <ul>
-<li><b>roimask [i]</b> ??</li>
+<li><b>roimask [i]</b> ?? <code>Returns</code> <code></code>(int) in hexadecimal</li>
 </ul>
 <ul>
-<li><b>flippeddatax [i]</b> enables/disables data being flipped across x axis. 1 enables, 0 disables. Used for EIGER only. 1 for bottom half-module, 0 for top-half module.</li>
+<li><b>flippeddatax [i]</b> enables/disables data being flipped across x axis. 1 enables, 0 disables. Used for EIGER only. 1 for bottom half-module, 0 for top-half module. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>tengiga [i]</b> enables/disables 10GbE in system (detector &amp; receiver). 1 enabled 10GbE, 0 enables 1GbE. Used in EIGER only.</li>
+<li><b>tengiga [i]</b> enables/disables 10GbE in system (detector &amp; receiver). 1 enabled 10GbE, 0 enables 1GbE. Used in EIGER only. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <h2><a class="anchor" id="configflags">
 Flags</a></h2>
 <p>commands to configure detector flags</p>
 <ul>
-<li><b>flags [flag]</b> sets/gets the readout flags to mode. Options: none, storeinram, tot, continous, parallel, nonparallel, safe, digital, analog_digital, unknown. Used for MYTHEN and EIGER only.</li>
+<li><b>flags [flag]</b> sets/gets the readout flags to mode. Options: none, storeinram, tot, continous, parallel, nonparallel, safe, digital, analog_digital, unknown. Used for MYTHEN and EIGER only. <code>Returns</code> <code></code>(string). put takes one string and <code>returns</code> concatenation of all active flags separated by spaces.</li>
 </ul>
 <ul>
 <li><b>extsig:[i] [flag]</b> sets/gets the mode of the external signal i. Options: <code>off</code>, <code>gate_in_active_high</code>, <code>gate_in_active_low</code>, <code>trigger_in_rising_edge</code>, <code>trigger_in_falling_edge</code>, <code>ro_trigger_in_rising_edge</code>, <code>ro_trigger_in_falling_edge</code>, <code>gate_out_active_high</code>, <code>gate_out_active_low</code>, <code>trigger_out_rising_edge</code>, <code>trigger_out_falling_edge</code>, <code>ro_trigger_out_rising_edge</code>, <code>ro_trigger_out_falling_edge</code>. <br/>
- Used in MYTHEN, GOTTHARD, PROPIX only.</li>
+ Used in MYTHEN, GOTTHARD, PROPIX only. <code>Returns</code> <code></code>(string)</li>
 </ul>
 <h2><a class="anchor" id="configfpga">
 FPGA</a></h2>
 <p>commands to configure FPGA of the detector</p>
 <ul>
-<li><b>programfpga [file]</b> programs the FPGA with file f (with .pof extension). Used for JUNGFRAU, MOENCH only. Only put!</li>
+<li><b>programfpga [file]</b> programs the FPGA with file f (with .pof extension). Used for JUNGFRAU, MOENCH only. Only put! <code>Returns</code> <code></code>("successful", "unsuccessful")</li>
 </ul>
 <ul>
-<li><b>resetfpga [f]</b> resets FPGA, where f can be any value. Used for JUNGFRAU only. Only put!</li>
+<li><b>resetfpga [f]</b> resets FPGA, where f can be any value. Used for JUNGFRAU only. Only put! <code>Returns</code> <code></code>("successful", "unsuccessful")</li>
 </ul>
 <h2><a class="anchor" id="configchip">
 Chip</a></h2>
 <p>commands to configure chip of the detector</p>
 <ul>
-<li><b>powerchip [i]</b> Powers on/off the chip. 1 powers on, 0 powers off. Can also get the power status. Used for JUNGFRAU only.</li>
+<li><b>powerchip [i]</b> Powers on/off the chip. 1 powers on, 0 powers off. Can also get the power status. Used for JUNGFRAU only. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>led [i]</b> sets/gets the led status. 1 on, 0 off. Used for MOENCH only ??</li>
+<li><b>led [i]</b> sets/gets the led status. 1 on, 0 off. Used for MOENCH only ?? <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>pulse [n] [x] [y]</b> pulses pixel at coordinates (x,y) n number of times. Used in EIGER only. Only put!</li>
+<li><b>pulse [n] [x] [y]</b> pulses pixel at coordinates (x,y) n number of times. Used in EIGER only. Only put! <code>Returns</code> <code></code>("successful", "unsuccessful")</li>
 </ul>
 <ul>
-<li><b>pulsenmove [n] [x] [y]</b> pulses pixel n number of times and moves relatively by x value (x axis) and y value(y axis). Used in EIGER only. Only put!</li>
+<li><b>pulsenmove [n] [x] [y]</b> pulses pixel n number of times and moves relatively by x value (x axis) and y value(y axis). Used in EIGER only. Only put! <code>Returns</code> <code></code>("successful", "unsuccessful")</li>
 </ul>
 <ul>
-<li><b>pulsechip [n]</b>pulses chip n number of times, while n=-1 will reset it to normal mode. Used in EIGER only. Only put!</li>
+<li><b>pulsechip [n]</b>pulses chip n number of times, while n=-1 will reset it to normal mode. Used in EIGER only. Only put! <code>Returns</code> <code></code>("successful", "unsuccessful")</li>
 </ul>
 <h2><a class="anchor" id="configversions">
 Versions</a></h2>
 <p>Commands to check versions of each subsystem</p>
 <ul>
-<li><b>moduleversion:[i]</b> Gets the firmware version of module i. Used for MYTHEN only. Only get!</li>
+<li><b>moduleversion:[i]</b> Gets the firmware version of module i. Used for MYTHEN only. Only get! <code>Returns</code> <code></code>(long int) in hexadecimal or "undefined module number"</li>
 </ul>
 <ul>
-<li><b>detectornumber</b> Gets the serial number or MAC of detector. Only get!</li>
+<li><b>detectornumber</b> Gets the serial number or MAC of detector. Only get! <code>Returns</code> <code></code>(long int) in hexadecimal</li>
 </ul>
 <ul>
-<li><b>modulenumber:[i]</b> Gets the serial number of module i. Used for MYTHEN only. Only get!</li>
+<li><b>modulenumber:[i]</b> Gets the serial number of module i. Used for MYTHEN only. Only get! <code>Returns</code> <code></code>(long int) in hexadecimal or "undefined module number"</li>
 </ul>
 <ul>
-<li><b>detectorversion</b> Gets the firmware version of detector. Only get!</li>
+<li><b>detectorversion</b> Gets the firmware version of detector. Only get! <code>Returns</code> <code></code>(long int) in hexadecimal</li>
 </ul>
 <ul>
-<li><b>softwareversion</b> Gets the software version of detector server. Only get!</li>
+<li><b>softwareversion</b> Gets the software version of detector server. Only get! <code>Returns</code> <code></code>(long int) in hexadecimal</li>
 </ul>
 <ul>
-<li><b>thisversion</b> Gets the software version of this client software. Only get!</li>
+<li><b>thisversion</b> Gets the software version of this client software. Only get! <code>Returns</code> <code></code>(long int) in hexadecimal</li>
 </ul>
 <ul>
-<li><b>receiverversion</b> Gets the software version of receiver. Only get!</li>
+<li><b>receiverversion</b> Gets the software version of receiver. Only get! <code>Returns</code> <code></code>(long int) in hexadecimal</li>
 </ul>
 <h2><a class="anchor" id="configtimers">
 Timers</a></h2>
 <p>commands to configure the timers of the detector</p>
 <ul>
-<li><b>timing [mode]</b> sets/gets synchronization mode of the detector. Mode: auto, trigger, ro_trigger, gating, triggered_gating</li>
+<li><b>timing [mode]</b> sets/gets synchronization mode of the detector. Mode: auto, trigger, ro_trigger, gating, triggered_gating <code>Returns</code> <code></code>(string)</li>
 </ul>
 <ul>
-<li><b>exptime [i]</b> sets/gets exposure time in s</li>
+<li><b>exptime [i]</b> sets/gets exposure time in s. <code>Returns</code> <code></code>(double with 9 decimal digits)</li>
 </ul>
 <ul>
-<li><b>subexptime [i]</b> sets/gets sub exposure time in s. Used in EIGER only in 32 bit mode.</li>
+<li><b>subexptime [i]</b> sets/gets sub exposure time in s. Used in EIGER only in 32 bit mode. <code>Returns</code> <code></code>(double with 9 decimal digits)</li>
 </ul>
 <ul>
-<li><b>period [i]</b> sets/gets frame period in s.</li>
+<li><b>period [i]</b> sets/gets frame period in s. <code>Returns</code> <code></code>(double with 9 decimal digits)</li>
 </ul>
 <ul>
-<li><b>delay [i]</b> sets/gets delay in s. Used in MYTHEN, GOTTHARD only</li>
+<li><b>delay [i]</b> sets/gets delay in s. Used in MYTHEN, GOTTHARD only. <code>Returns</code> <code></code>(double with 9 decimal digits)</li>
 </ul>
 <ul>
-<li><b>gates [i]</b> sets/gets number of gates. Used in MYTHEN, GOTTHARD, EIGER only</li>
+<li><b>gates [i]</b> sets/gets number of gates. Used in MYTHEN, GOTTHARD only. <code>Returns</code> <code></code>(long long int)</li>
 </ul>
 <ul>
-<li><b>gates [i]</b> sets/gets number of frames. If <code>timing</code> is not <code>auto</code>, then it is the number of frames per cycle/trigger.</li>
+<li><b>frames [i]</b> sets/gets number of frames. If <code>timing</code> is not <code>auto</code>, then it is the number of frames per cycle/trigger. <code>Returns</code> <code></code>(long long int)</li>
 </ul>
 <ul>
-<li><b>cycles [i]</b> sets/gets number of triggers. Timing mode should be set appropriately.</li>
+<li><b>cycles [i]</b> sets/gets number of triggers. Timing mode should be set appropriately. <code>Returns</code> <code></code>(long long int)</li>
 </ul>
 <ul>
-<li><b>probes [i]</b> sets/gets number of probes to accumulate. When setting, max 3! cycles should be set to 1, frames to the number of pump-probe events. Used in MYTHEN only</li>
+<li><b>probes [i]</b> sets/gets number of probes to accumulate. When setting, max 3! cycles should be set to 1, frames to the number of pump-probe events. Used in MYTHEN only. <code>Returns</code> <code></code>(long long int)</li>
 </ul>
 <ul>
-<li><b>measurements [i]</b> sets/gets number of measurements.</li>
+<li><b>measurements [i]</b> sets/gets number of measurements. <code>Returns</code> <code></code>(long long int)</li>
 </ul>
 <ul>
-<li><b>samples [i]</b> sets/gets number of samples expected from the jctb. Used in CHIP TEST BOARD only.</li>
+<li><b>samples [i]</b> sets/gets number of samples expected from the jctb. Used in CHIP TEST BOARD only. <code>Returns</code> <code></code>(long long int)</li>
 </ul>
 <h2><a class="anchor" id="configrotimers">
 RO Timers</a></h2>
 <p>commands to configure the read only timers of the detector</p>
 <ul>
-<li><b>exptimel</b> gets exposure time left. Used in MYTHEN, GOTTHARD only. Only get!</li>
+<li><b>exptimel</b> gets exposure time left. Used in MYTHEN, GOTTHARD only. Only get! <code>Returns</code> <code></code>(double with 9 decimal digits)</li>
 </ul>
 <ul>
-<li><b>periodl</b> gets frame period left. Used in MYTHEN, GOTTHARD only. Only get!</li>
+<li><b>periodl</b> gets frame period left. Used in MYTHEN, GOTTHARD only. Only get! <code>Returns</code> <code></code>(double with 9 decimal digits)</li>
 </ul>
 <ul>
-<li><b>delayl</b> gets delay left. Used in MYTHEN, GOTTHARD only. Only get!</li>
+<li><b>delayl</b> gets delay left. Used in MYTHEN, GOTTHARD only. Only get! <code>Returns</code> <code></code>(double with 9 decimal digits)</li>
 </ul>
 <ul>
-<li><b>gatesl</b> gets number of gates left. Used in MYTHEN, GOTTHARD only. Only get!</li>
+<li><b>gatesl</b> gets number of gates left. Used in MYTHEN, GOTTHARD only. Only get! <code>Returns</code> <code></code>(double with 9 decimal digits)</li>
 </ul>
 <ul>
-<li><b>framesl</b> gets number of frames left. Used in MYTHEN, GOTTHARD only. Only get!</li>
+<li><b>framesl</b> gets number of frames left. Used in MYTHEN, GOTTHARD only. Only get! <code>Returns</code> <code></code>(double with 9 decimal digits)</li>
 </ul>
 <ul>
-<li><b>cyclesl</b> gets number of cylces left. Used in MYTHEN, GOTTHARD only. Only get!</li>
+<li><b>cyclesl</b> gets number of cylces left. Used in MYTHEN, GOTTHARD only. Only get! <code>Returns</code> <code></code>(double with 9 decimal digits)</li>
 </ul>
 <ul>
-<li><b>probesl</b> gets number of probes left. Used in MYTHEN, GOTTHARD only. Only get!</li>
+<li><b>probesl</b> gets number of probes left. Used in MYTHEN, GOTTHARD only. Only get! <code>Returns</code> <code></code>(double with 9 decimal digits)</li>
 </ul>
 <ul>
 <li><b>now</b> ??? Only get!</li>
@@ -255,58 +255,58 @@ RO Timers</a></h2>
 Speed</a></h2>
 <p>commands to configure speed of detector</p>
 <ul>
-<li><b>clkdivider [i]</b> sets/gets the readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)]. MYTHEN[???]</li>
+<li><b>clkdivider [i]</b> sets/gets the readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)]. MYTHEN[???]. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>clkdivider [i]</b> sets/gets length of set/reset signals (in clock cycles). Used in MYTHEN only</li>
+<li><b>clkdivider [i]</b> sets/gets length of set/reset signals (in clock cycles). Used in MYTHEN only. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>clkdivider [i]</b> sets/gets waitstates of the bus interface (in clock cycles). Used in MYTHEN only</li>
+<li><b>clkdivider [i]</b> sets/gets waitstates of the bus interface (in clock cycles). Used in MYTHEN only. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>clkdivider [i]</b> sets/gets clock divider in tot mode. Used in MYTHEN only</li>
+<li><b>clkdivider [i]</b> sets/gets clock divider in tot mode. Used in MYTHEN only. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>clkdivider [i]</b> sets/gets duty cycle of the tot clock. Used in MYTHEN only</li>
+<li><b>clkdivider [i]</b> sets/gets duty cycle of the tot clock. Used in MYTHEN only. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>phasestep [i]</b> ???</li>
+<li><b>phasestep [i]</b> ???. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>oversampling [i]</b> ???</li>
+<li><b>oversampling [i]</b> ???. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>adcclk [i]</b> ???</li>
+<li><b>adcclk [i]</b> ???. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>adcphase [i]</b> ??? Used in MYTHEN, JUNGFRAU only.</li>
+<li><b>adcphase [i]</b> ??? Used in MYTHEN, JUNGFRAU only. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>adcpipeline [i]</b> ???</li>
+<li><b>adcpipeline [i]</b> ??? <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>dbitclk [i]</b> ???</li>
+<li><b>dbitclk [i]</b> ??? <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>dbitphase [i]</b> ???</li>
+<li><b>dbitphase [i]</b> ??? <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>dbitpipeline [i]</b> ???</li>
+<li><b>dbitpipeline [i]</b> ??? <code>Returns</code> <code></code>(int)</li>
 </ul>
 <h2><a class="anchor" id="configsettings">
 Detector Parameters</a></h2>
 <p>commands to configure/retrieve configuration of detector</p>
 <ul>
-<li><b>config [fname]</b> sets/saves detector/receiver to configuration contained in fname. Same as executing sls_detector_put for every line. Normally a one time operation.</li>
+<li><b>config [fname]</b> sets/saves detector/receiver to configuration contained in fname. Same as executing sls_detector_put for every line. Normally a one time operation. <code>Returns</code> <code></code>(string) fname</li>
 </ul>
 <ul>
-<li><b>rx_printconfig</b> prints the receiver configuration. Only get!</li>
+<li><b>rx_printconfig</b> prints the receiver configuration. Only get! <code>Returns</code> <code></code>(string)</li>
 </ul>
 <ul>
-<li><b>parameters [fname]</b> sets/saves detector parameters contained in fname. Normally once per different measurement.</li>
+<li><b>parameters [fname]</b> sets/saves detector parameters contained in fname. Normally once per different measurement. <code>Returns</code> <code></code>(string) fname</li>
 </ul>
 <ul>
-<li><b>setup [fname]</b> sets/saves detector complete setup contained in fname (extensions automatically generated), including trimfiles, ff coefficients etc. </li>
+<li><b>setup [fname]</b> sets/saves detector complete setup contained in fname (extensions automatically generated), including trimfiles, ff coefficients etc. <code>Returns</code> <code></code>(string) fname </li>
 </ul>
 </div>
 <!--- window showing the filter options -->

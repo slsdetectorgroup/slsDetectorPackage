@@ -40,19 +40,19 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <h1><a class="anchor" id="acquisition">Acquition commands </a></h1><p>Commands to control the acquisition</p>
 <ul>
-<li><b>acquire</b> blocking acquisition (like calling sls_detector_acquire). Starts receiver and detector, writes and processes the data, stops detector. Only get!</li>
+<li><b>acquire</b> blocking acquisition (like calling sls_detector_acquire). Starts receiver and detector, writes and processes the data, stops detector. Only get! <code>Returns</code> (string)<code>"acquire unsuccessful"</code> if fails, else "" for MYTHEN, <code>"Acquired (int)"</code> for others, where int is number of frames caught.</li>
+</ul>
+<ul>
+<li><b>busy</b> returns <code>1</code> if the acquisition is active, <code>0</code> otherwise. Works when the acquisition is started in blocking mode. Only get! <code>Returns</code> <code></code>(int)</li>
+</ul>
+<ul>
+<li><b> status [s] </b> starts or stops acquisition in detector in non blocking mode. <code>s:</code> [<code>start</code>, <code>stop</code>]. <code>Returns</code> the detector status: [<code>running</code>, <code>error</code>, <code>transmitting</code>, <code>finished</code>, <code>waiting</code>, <code>idle</code>]. <code>Returns</code> <code></code>(string)</li>
 </ul>
 <ul>
 <li><b>data</b> gets all data from the detector (if any) processes them and writes them to file according to the preferences already setup (MYTHEN only). Only get!</li>
 </ul>
 <ul>
 <li><b>frame</b> gets a single frame from the detector (if any) processes it and writes it to file according to the preferences already setup (MYTHEN only). Only get!</li>
-</ul>
-<ul>
-<li><b>status</b> <code>returns</code> the detector status (string)- can be: <code>running</code>, <code>error</code>, <code>transmitting</code>, <code>finished</code>, <code>waiting</code> or <code>idle</code>; <code>put</code> can be <code>start</code> or <code>stop</code> </li>
-</ul>
-<ul>
-<li><b>busy</b> returns <code>1</code> if the acquisition is active, <code>0</code> otherwise. Works when the acquisition is started in non-blocking mode. Only get!</li>
 </ul>
 <ul>
 <li><b>readctr </b> Reads the counters from the detector memory (analog detector returning values translated into number of photons - only GOTTHARD). Cannot put.</li>

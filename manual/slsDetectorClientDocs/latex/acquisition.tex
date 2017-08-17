@@ -2,7 +2,17 @@ Commands to control the acquisition
 
 
 \begin{DoxyItemize}
-\item {\bfseries acquire} blocking acquisition (like calling sls\_\-detector\_\-acquire). Starts receiver and detector, writes and processes the data, stops detector. Only get!
+\item {\bfseries acquire} blocking acquisition (like calling sls\_\-detector\_\-acquire). Starts receiver and detector, writes and processes the data, stops detector. Only get! {\ttfamily Returns} (string){\ttfamily \char`\"{}acquire unsuccessful\char`\"{}} if fails, else \char`\"{}\char`\"{} for MYTHEN, {\ttfamily \char`\"{}Acquired (int)\char`\"{}} for others, where int is number of frames caught.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries busy} returns {\ttfamily 1} if the acquisition is active, {\ttfamily 0} otherwise. Works when the acquisition is started in blocking mode. Only get! {\ttfamily Returns} {\ttfamily }(int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries  status \mbox{[}s\mbox{]} } starts or stops acquisition in detector in non blocking mode. {\ttfamily s:} \mbox{[}{\ttfamily start}, {\ttfamily stop}\mbox{]}. {\ttfamily Returns} the detector status: \mbox{[}{\ttfamily running}, {\ttfamily error}, {\ttfamily transmitting}, {\ttfamily finished}, {\ttfamily waiting}, {\ttfamily idle}\mbox{]}. {\ttfamily Returns} {\ttfamily }(string)
 \end{DoxyItemize}
 
 
@@ -13,16 +23,6 @@ Commands to control the acquisition
 
 \begin{DoxyItemize}
 \item {\bfseries frame} gets a single frame from the detector (if any) processes it and writes it to file according to the preferences already setup (MYTHEN only). Only get!
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries status} {\ttfamily returns} the detector status (string)-\/ can be: {\ttfamily running}, {\ttfamily error}, {\ttfamily transmitting}, {\ttfamily finished}, {\ttfamily waiting} or {\ttfamily idle}; {\ttfamily put} can be {\ttfamily start} or {\ttfamily stop} 
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries busy} returns {\ttfamily 1} if the acquisition is active, {\ttfamily 0} otherwise. Works when the acquisition is started in non-\/blocking mode. Only get!
 \end{DoxyItemize}
 
 

@@ -109,6 +109,11 @@ commands to configure detector data size
 
 \begin{DoxyItemize}
 \item {\bfseries flippeddatax \mbox{[}i\mbox{]}} enables/disables data being flipped across x axis. 1 enables, 0 disables. Used for EIGER only. 1 for bottom half-\/module, 0 for top-\/half module.
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries tengiga \mbox{[}i\mbox{]}} enables/disables 10GbE in system (detector \& receiver). 1 enabled 10GbE, 0 enables 1GbE. Used in EIGER only.
 \end{DoxyItemize}\hypertarget{config_configflags}{}\subsection{Flags}\label{config_configflags}
 commands to configure detector flags
 
@@ -387,10 +392,5 @@ commands to configure/retrieve configuration of detector
 
 
 \begin{DoxyItemize}
-\item {\bfseries setup \mbox{[}fname\mbox{]}} sets/saves detector complete setup contained in fname (extensions automatically generated), including trimfiles, ff coefficients etc.
-\end{DoxyItemize}
-
-
-\begin{DoxyItemize}
-\item {\bfseries tengiga \mbox{[}i\mbox{]}} enables/disables 10GbE in system (detector \& receiver). 1 enabled 10GbE, 0 enables 1GbE. Used in EIGER only. 
+\item {\bfseries setup \mbox{[}fname\mbox{]}} sets/saves detector complete setup contained in fname (extensions automatically generated), including trimfiles, ff coefficients etc. 
 \end{DoxyItemize}

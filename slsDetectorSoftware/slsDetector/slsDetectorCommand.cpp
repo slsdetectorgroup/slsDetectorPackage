@@ -954,12 +954,21 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 
 
-	/* trim/cal directories */
+
 
 	/*! \page settings Detector settings commands
    Commands to setup the settings of the detector
+    - \ref settingsdir "Settings, trim & cal Directories": commands to setup settings/trim/cal directories
+    - \ref settingssett "Settings and Threshold": commands to configure settings and threshold of detector
+    - \ref settingsdacs "DACs": commands to configure DACs of detector
+    - \ref settingsadcs "ADCs": commands to readout ADCs of detector
 	 */
 
+	/* trim/cal directories */
+	/*! \page settings
+		\section settingsdir Settings, trim & cal Directories
+   commands to setup settings/trim/cal directories
+	 */
 	/*! \page settings
    - <b>settingsdir [dir]</b> Sets/gets the directory where the settings files are located (string)
 	 */
@@ -988,6 +997,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	i++;
 
 	/* settings, threshold */
+	/*! \page settings
+		\section settingssett Settings and Threshold
+   commands to configure settings and threshold of detector
+	 */
 
 	/*! \page settings
    - <b>settings [s]</b> sets/gets the settings of the detector. Options: \c standard, \c fast, \c highgain, \c dynamicgain, \c lowgain, \c mediumgain, \c veryhighgain,
@@ -1043,6 +1056,11 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 
 	/* pots */
+	/*! \page settings
+		\section settingsdacs DACs
+   commands to configure DACs of detector
+	 */
+
 	/*! \page settings
    - <b>vthreshold [i] [mv]</b> Sets/gets detector threshold voltage for single photon counters. Normally in DAC units unless \c mv is specified at the end of the command line (int)
 	 */
@@ -1399,6 +1417,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	i++;
 
 	/* r/w timers */
+	/*! \page settings
+		\section settingsadcs ADCs
+   commands to readout ADCs of detector
+	 */
 
 	/*! \page settings
    - <b>temp_adc</b> Gets the ADC temperature (int)

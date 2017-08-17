@@ -1586,49 +1586,49 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page output
-   - <b>outdir [dir]</b> Sets/gets the file output directory (string)
+   - <b>outdir [dir]</b> Sets/gets the file output directory. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="outdir"; //OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOutDir;
 	i++;
 
 	/*! \page output
-   - <b>fname [fn]</b> Sets/gets the root of the output file name (string)
+   - <b>fname [fn]</b> Sets/gets the root of the output file name \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="fname"; //OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFileName;
 	i++;
 
 	/*! \page output
-   - <b>index [i]</b> Sets/gets the current file index (int)
+   - <b>index [i]</b> Sets/gets the current file index. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="index"; //OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFileIndex;
 	i++;
 
 	/*! \page output
-   - <b>enablefwrite [i]</b> Enables/disables file writing. 1 enables, 0 disables.
+   - <b>enablefwrite [i]</b> Enables/disables file writing. 1 enables, 0 disables. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="enablefwrite"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdEnablefwrite;
 	i++;
 
 	/*! \page output
-    - <b>overwrite [i]</b> enables(1) /disables(0) file overwriting
+    - <b>overwrite [i]</b> enables(1) /disables(0) file overwriting. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="overwrite"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOverwrite;
 	i++;
 
 	/*! \page output
-    - <b>currentfname</b> gets the filename for the data without index and extension
+    - <b>currentfname</b> gets the filename for the data without index and extension. MYTHEN only. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="currentfname"; //OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFileName;
 	i++;
 
 	/*! \page output
-    - <b>fileformat</b> sets/gets the file format for data in receiver. Options: [ascii, binary, hdf5]. Ascii is not implemented in Receiver.
+    - <b>fileformat</b> sets/gets the file format for data in receiver. Options: [ascii, binary, hdf5]. Ascii is not implemented in Receiver. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="fileformat"; //OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFileName;
@@ -1644,105 +1644,105 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page actions
-    - <b>positions [n [p0..pn-1]]</b> sets/gets number of angular position and positions to be acquired.
+    - <b>positions [n [p0..pn-1]]</b> sets/gets number of angular position and positions to be acquired.. \c Returns \c (int int..) n [p0..pn-1]
 	 */
 	descrToFuncMap[i].m_pFuncName="positions"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPositions;
 	i++;
 
 	/*! \page actions
-    - <b>startscript [s]</b> sets/gets the script to be executed at the beginning of the acquisition. \c none unsets.
+    - <b>startscript [s]</b> sets/gets the script to be executed at the beginning of the acquisition. \c none unsets. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="startscript"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
 	i++;
 
 	/*! \page actions
-    - <b>startscriptpar [s]</b> sets/gets a string to be passed as a parameter to the startscript
+    - <b>startscriptpar [s]</b> sets/gets a string to be passed as a parameter to the startscript. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="startscriptpar"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
 	i++;
 
 	/*! \page actions
-    - <b>stopscript [s]</b> sets/gets the script to be executed at the end of the acquisition. \c none unsets.
+    - <b>stopscript [s]</b> sets/gets the script to be executed at the end of the acquisition. \c none unsets. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="stopscript"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
 	i++;
 
 	/*! \page actions
-    - <b>stopscriptpar [s]</b> sets/gets a string to be passed as a parameter to the stopscript
+    - <b>stopscriptpar [s]</b> sets/gets a string to be passed as a parameter to the stopscript. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="stopscriptpar"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
 	i++;
 
 	/*! \page actions
-    - <b>scriptbefore [s]</b> sets/gets the script to be executed before starting the detector every time in the acquisition. \c none unsets.
+    - <b>scriptbefore [s]</b> sets/gets the script to be executed before starting the detector every time in the acquisition. \c none unsets. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="scriptbefore"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
 	i++;
 
 	/*! \page actions
-    - <b>scriptbeforepar [s]</b> sets/gets a string to be passed as a parameter to the scriptbefore
+    - <b>scriptbeforepar [s]</b> sets/gets a string to be passed as a parameter to the scriptbefore. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="scriptbeforepar"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
 	i++;
 
 	/*! \page actions
-    - <b>scriptafter [s]</b> sets/gets the script to be executed after the detector has finished  every time in the acquisition. \c none unsets.
+    - <b>scriptafter [s]</b> sets/gets the script to be executed after the detector has finished  every time in the acquisition. \c none unsets. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="scriptafter"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
 	i++;
 
 	/*! \page actions
-    - <b>scriptafterpar [s]</b> sets/gets a string to be passed as a parameter to the scriptafter
+    - <b>scriptafterpar [s]</b> sets/gets a string to be passed as a parameter to the scriptafter. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="scriptafterpar"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
 	i++;
 
 	/*! \page actions
-    - <b>headerafter [s]</b> sets/gets the script to be executed for logging the detector parameters. \c none unsets.
+    - <b>headerafter [s]</b> sets/gets the script to be executed for logging the detector parameters. \c none unsets. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="headerafter"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
 	i++;
 
 	/*! \page actions
-    - <b>headerbefore [s]</b> sets/gets the script to be executed for logging the detector parameters. \c none unsets.
+    - <b>headerbefore [s]</b> sets/gets the script to be executed for logging the detector parameters. \c none unsets. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="headerbefore"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
 	i++;
 
 	/*! \page actions
-    - <b>headerbeforepar [s]</b> sets/gets a string to be passed as a parameter to the headerbefore script
+    - <b>headerbeforepar [s]</b> sets/gets a string to be passed as a parameter to the headerbefore script. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="headerbeforepar"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
 	i++;
 
 	/*! \page actions
-    - <b>headerafterpar [s]</b> sets/gets a string to be passed as a parameter to the headerafter script
+    - <b>headerafterpar [s]</b> sets/gets a string to be passed as a parameter to the headerafter script. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="headerafterpar"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
 	i++;
 
 	/*! \page actions
-    - <b>enacallog [i]</b> enables/disables logging of the parameters necessary for the energy calibration. 1 sets, 0 unsets.
+    - <b>enacallog [i]</b> enables/disables logging of the parameters necessary for the energy calibration. 1 sets, 0 unsets. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="encallog"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
 	i++;
 
 	/*! \page actions
-    - <b>angcallog [i]</b> enables/disables logging of the parameters necessary for the angular calibration. 1 sets, 0 unsets.
+    - <b>angcallog [i]</b> enables/disables logging of the parameters necessary for the angular calibration. 1 sets, 0 unsets. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="angcallog"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
@@ -1827,111 +1827,111 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 	/*! \page network Network
     Commands to setup the network between client, detector and receiver
-    - <b>rx_hostname [s]</b> sets/gets the receiver hostname or IP address, configures detector mac with all network parameters and updates receiver with acquisition parameters. Normally used for single detectors (Can be multi-detector). \c none disables. If used, use as last network command in configuring detector MAC.
+    - <b>rx_hostname [s]</b> sets/gets the receiver hostname or IP address, configures detector mac with all network parameters and updates receiver with acquisition parameters. Normally used for single detectors (Can be multi-detector). \c none disables. If used, use as last network command in configuring detector MAC. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="rx_hostname"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
 	i++;
 	/*! \page network
-   - <b>rx_udpip [ip]</b> sets/gets the ip address of the receiver UDP interface where the data from the detector will be streamed to. Normally used for single detectors (Can be multi-detector). Used if different from eth0.
+   - <b>rx_udpip [ip]</b> sets/gets the ip address of the receiver UDP interface where the data from the detector will be streamed to. Normally used for single detectors (Can be multi-detector). Used if different from eth0. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="rx_udpip"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
 	i++;
 
 	/*! \page network
-   - <b>rx_udpmac [mac]</b> sets/gets the mac address of the receiver UDP interface where the data from the detector will be streamed to. Normally used for single detectors (Can be multi-detector).
+   - <b>rx_udpmac [mac]</b> sets/gets the mac address of the receiver UDP interface where the data from the detector will be streamed to. Normally used for single detectors (Can be multi-detector). \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="rx_udpmac"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
 	i++;
 
 	/*! \page network
-   - <b>rx_udpport [port]</b> sets/gets the port of the receiver UDP interface where the data from the detector will be streamed to. Use single-detector command.
+   - <b>rx_udpport [port]</b> sets/gets the port of the receiver UDP interface where the data from the detector will be streamed to. Use single-detector command. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="rx_udpport"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
 	i++;
 
 	/*! \page network
-   - <b>rx_udpport2 [port]</b> sets/gets the second port of the receiver UDP interface where the data from the second half of the detector will be streamed to. Use single-detector command. Used for EIGER only.
+   - <b>rx_udpport2 [port]</b> sets/gets the second port of the receiver UDP interface where the data from the second half of the detector will be streamed to. Use single-detector command. Used for EIGER only. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="rx_udpport2"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
 	i++;
 
 	/*! \page network
-   - <b>detectormac [mac]</b> sets/gets the mac address of the detector UDP interface from where the detector will stream data. Use single-detector command. Normally unused.
+   - <b>detectormac [mac]</b> sets/gets the mac address of the detector UDP interface from where the detector will stream data. Use single-detector command. Normally unused. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="detectormac"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
 	i++;
 
 	/*! \page network
-   - <b>detectorip [ip]</b> sets/gets the ip address of the detector UDP interface from where the detector will stream data. Use single-detector command. Keep in same subnet as rx_udpip (if rx_udpip specified).
+   - <b>detectorip [ip]</b> sets/gets the ip address of the detector UDP interface from where the detector will stream data. Use single-detector command. Keep in same subnet as rx_udpip (if rx_udpip specified). \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="detectorip"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
 	i++;
 
 	/*! \page network
-   - <b>txndelay_left [delay]</b> sets/gets the transmission delay of first packet in an image being streamed out from the detector's left UDP port. Use single-detector command. Used for EIGER only.
+   - <b>txndelay_left [delay]</b> sets/gets the transmission delay of first packet in an image being streamed out from the detector's left UDP port. Use single-detector command. Used for EIGER only. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="txndelay_left"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
 	i++;
 
 	/*! \page network
-   - <b>txndelay_right [delay]</b> sets/gets the transmission delay of first packet in an image being streamed out from the detector's right UDP port. Use single-detector command. Used for EIGER only.
+   - <b>txndelay_right [delay]</b> sets/gets the transmission delay of first packet in an image being streamed out from the detector's right UDP port. Use single-detector command. Used for EIGER only. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="txndelay_right"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
 	i++;
 
 	/*! \page network
-   - <b>txndelay_frame [delay]</b> sets/gets the transmission frame period of entire frame being streamed out from the detector for both ports. Use single-detector command. Used for EIGER only.
+   - <b>txndelay_frame [delay]</b> sets/gets the transmission frame period of entire frame being streamed out from the detector for both ports. Use single-detector command. Used for EIGER only. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="txndelay_frame"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
 	i++;
 
 	/*! \page network
-   - <b>flowcontrol_10g [delay]</b> Enables/disables 10 GbE flow control. 1 enables, 0 disables. Used for EIGER only.
+   - <b>flowcontrol_10g [delay]</b> Enables/disables 10 GbE flow control. 1 enables, 0 disables. Used for EIGER only. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="flowcontrol_10g"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
 	i++;
 
 	/*! \page network
-   - <b>zmqport [port]</b> sets/gets the 0MQ (TCP) port of the receiver from where data is streamed to the client. Use single-detector command to set individually or multi-detector command to calculate based on \c port for the rest.
+   - <b>zmqport [port]</b> sets/gets the 0MQ (TCP) port of the receiver from where data is streamed to the client. Use single-detector command to set individually or multi-detector command to calculate based on \c port for the rest. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="zmqport"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
 	i++;
 
 	/*! \page network
-   - <b>configuremac [i]</b> configures the MAC of the detector with these parameters: detectorip, detectormac, rx_udpip, rx_udpmac, rx_udpport, rx_udpport2 (if applicable). Only put!
+   - <b>configuremac [i]</b> configures the MAC of the detector with these parameters: detectorip, detectormac, rx_udpip, rx_udpmac, rx_udpport, rx_udpport2 (if applicable). This command is already included in \c rx_hsotname. Only put!. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="configuremac"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdConfigureMac;
 	i++;
 
 	/*! \page network
-   - <b>rx_tcpport [port]</b> sets/gets the port of the client-receiver TCP interface. Use single-detector command. Is different for each detector if same \c rx_hostname used. Must be first command to communicate with receiver.
+   - <b>rx_tcpport [port]</b> sets/gets the port of the client-receiver TCP interface. Use single-detector command. Is different for each detector if same \c rx_hostname used. Must be first command to communicate with receiver. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="rx_tcpport"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPort;
 	i++;
 
 	/*! \page network
-   - <b>port [port]</b> sets/gets the port of the client-detector control server TCP interface. Use single-detector command. Default value is 1952 for all detectors. Normally not changed.
+   - <b>port [port]</b> sets/gets the port of the client-detector control server TCP interface. Use single-detector command. Default value is 1952 for all detectors. Normally not changed. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="port"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPort;
 	i++;
 
 	/*! \page network
-   - <b>stopport [port]</b> sets/gets the port of the client-detector stop server TCP interface. Use single-detector command. Default value is 1953 for all detectors. Normally not changed.
+   - <b>stopport [port]</b> sets/gets the port of the client-detector stop server TCP interface. Use single-detector command. Default value is 1953 for all detectors. Normally not changed. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="stopport"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPort;
@@ -1939,14 +1939,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 
 	/*! \page network
-   - <b>lock [i]</b> Locks/Unlocks the detector to communicate with this client. 1 locks, 0 unlocks.
+   - <b>lock [i]</b> Locks/Unlocks the detector to communicate with this client. 1 locks, 0 unlocks. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="lock"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdLock;
 	i++;
 
 	/*! \page network
-   - <b>lastclient </b> Gets the last client communicating with the detector. Cannot put!
+   - <b>lastclient </b> Gets the last client communicating with the detector. Cannot put!. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="lastclient"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdLastClient;

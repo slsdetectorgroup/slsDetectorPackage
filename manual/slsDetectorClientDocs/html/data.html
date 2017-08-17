@@ -43,10 +43,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li><b>flatfield [fn]</b> <code>put</code> sets flatfield file to <code>fn</code> (relative to <code>ffdir</code>).  returns the flatfield file name relative to <code>ffdir</code> (string). If</li>
 </ul>
 <ul>
-<li><b>ffdir [d]</b> Sets/gets the directory in which the flat field file is located.</li>
+<li><b>ffdir [d]</b> Sets/gets the directory in which the flat field file is located. <code>Returns</code> <code></code>(string) ffdir</li>
 </ul>
 <ul>
-<li><b>ratecorr [ns]</b> Returns the dead time used for rate correections in ns (int). <code>put</code> sets the deadtime correction constant in ns, -1 will set it to default tau of settings (0 unset).</li>
+<li><b>ratecorr [ns]</b> Returns the dead time used for rate correections in ns (int). <code>put</code> sets the deadtime correction constant in ns, -1 will set it to default tau of settings (0 unset). <code>Returns</code> <code></code>(double with 9 decimal digit precision)</li>
 </ul>
 <ul>
 <li><b>badchannels [fn]</b> <code>put</code> sets the badchannels file to <code>fn</code> .  returns the bad channels file name. If</li>

@@ -1,0 +1,93 @@
+Commands to setup the timing
+
+
+\begin{DoxyItemize}
+\item {\bfseries timing \mbox{[}mode\mbox{]}} sets/gets synchronization mode of the detector. Mode: auto, trigger, ro\_\-trigger, gating, triggered\_\-gating (string)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries exptime \mbox{[}i\mbox{]}} sets/gets exposure time in s. {\ttfamily Returns} {\ttfamily }(double with 9 decimal digits)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries subexptime \mbox{[}i\mbox{]}} sets/gets sub exposure time in s. Used in EIGER only in 32 bit mode. {\ttfamily Returns} {\ttfamily }(double with 9 decimal digits)
+\end{DoxyItemize}
+
+/$\ast$!
+
+
+\begin{DoxyItemize}
+\item {\bfseries gates \mbox{[}i\mbox{]}} sets/gets number of gates. Used in MYTHEN, GOTTHARD only. {\ttfamily Returns} {\ttfamily }(long long int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries frames \mbox{[}i\mbox{]}} sets/gets number of frames. If {\ttfamily timing} is not {\ttfamily auto}, then it is the number of frames per cycle/trigger. {\ttfamily Returns} {\ttfamily }(long long int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries cycles \mbox{[}i\mbox{]}} sets/gets number of triggers. Timing mode should be set appropriately. {\ttfamily Returns} {\ttfamily }(long long int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries probes \mbox{[}i\mbox{]}} sets/gets number of probes to accumulate. When setting, max 3! cycles should be set to 1, frames to the number of pump-\/probe events. Used in MYTHEN only. {\ttfamily Returns} {\ttfamily }(long long int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries measurements \mbox{[}i\mbox{]}} sets/gets number of measurements. {\ttfamily Returns} {\ttfamily }(long long int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries samples \mbox{[}i\mbox{]}} sets/gets number of samples expected from the jctb. Used in CHIP TEST BOARD only. {\ttfamily Returns} {\ttfamily }(long long int)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries exptimel} gets exposure time left. Used in MYTHEN, GOTTHARD only. Only get! {\ttfamily Returns} {\ttfamily }(double with 9 decimal digits)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries periodl} gets frame period left. Used in MYTHEN, GOTTHARD only. Only get! {\ttfamily Returns} {\ttfamily }(double with 9 decimal digits)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries delayl} gets delay left. Used in MYTHEN, GOTTHARD only. Only get! {\ttfamily Returns} {\ttfamily }(double with 9 decimal digits)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries gatesl} gets number of gates left. Used in MYTHEN, GOTTHARD only. Only get! {\ttfamily Returns} {\ttfamily }(double with 9 decimal digits)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries cyclesl} gets number of cylces left. Used in MYTHEN, GOTTHARD only. Only get! {\ttfamily Returns} {\ttfamily }(double with 9 decimal digits)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries probesl} gets number of probes left. Used in MYTHEN, GOTTHARD only. Only get! {\ttfamily Returns} {\ttfamily }(double with 9 decimal digits)
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries now} Actual time of the detector. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries timestamp} Last frame timestamp for MYTHEN. Only get!
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item {\bfseries nframes} ??? Only get! 
+\end{DoxyItemize}

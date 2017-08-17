@@ -161,7 +161,12 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdRegister;
 	i++;
 
-
+	/*! \page test
+   - <b>r_compression [i] </b> sets/gets compression in receiver. 1 sets, 0 unsets. Not implemented.</b>
+	 */
+	descrToFuncMap[i].m_pFuncName="r_compression"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
+	i++;
 
 
 
@@ -393,6 +398,12 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
 	i++;
 
+	/*! \page config
+   - <b>tengiga [i]</b> enables/disables 10GbE in system (detector & receiver). 1 enabled 10GbE, 0 enables 1GbE. Used in EIGER only.
+	 */
+	descrToFuncMap[i].m_pFuncName="tengiga"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
+	i++;
 
 
 	/* flags */
@@ -2020,20 +2031,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
    - <b>r_readfreq [i]</b> sets/gets the stream frequency of data from receiver to client. i > 0 is the nth frame being streamed. 0 sets frequency to a default timer (200ms).
 	 */
 	descrToFuncMap[i].m_pFuncName="r_readfreq"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
-	i++;
-
-	/*! \page test
-   - <b>r_compression [i] sets/gets compression in receiver. 1 sets, 0 unsets. Not implemented.</b>
-	 */
-	descrToFuncMap[i].m_pFuncName="r_compression"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
-	i++;
-
-	/*! \page config
-   - <b>tengiga [i]</b> enables/disables 10GbE in system (detector & receiver). 1 enabled 10GbE, 0 enables 1GbE. Used in EIGER only.
-	 */
-	descrToFuncMap[i].m_pFuncName="tengiga"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
 	i++;
 

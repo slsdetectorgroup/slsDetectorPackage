@@ -10,8 +10,9 @@ This document describes the differences between previous versions and 3.0.0 rele
 Manuals can be found under the 'manual' folder.
 
 Command Line Documentation can be accessed from this location via browser:
-	slsDetectorSoftware/slsDetectorClientDocs/html/index.html
 
+	manual/slsDetectorClientDocs/html/index.html
+	
 User documentation and other help can be accessed directly at this location:
 
     https://www.psi.ch/detectors/users-support

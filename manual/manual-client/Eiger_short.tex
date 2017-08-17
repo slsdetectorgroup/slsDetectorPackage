@@ -5,6 +5,7 @@
 \usepackage{graphicx}
 \usepackage{verbatim}
 \usepackage{xspace}
+\usepackage{hyperref}
 \newcommand{\E}{EIGER\xspace}  
 \newcommand{\p}{sls\_detector\_put}
 \newcommand{\g}{sls\_detector\_get}
@@ -51,13 +52,11 @@ The directory contains some executables taht are needed to make your detector to
  \begin{verbatim}
 ./on #to switch modules on
 ./off #to switch modules on
-./hvon switched HV on (to 150V)
-./hvoff switched HV off
 ./hvget gets the current HV value
 . waterflow returns the current waterflow returned by the flowmeter
 ./temp returns the water temperature returned by the flowmeter
  \end{verbatim}
-A watchdog is running on bchip100 to check for the flow and temparature. If outside of parameters, the detector will be switched off.
+A watchdog is running on bchip100 to check for the flow and temparature. If outside of parameters, the detector will be switched off. 
   
 \subsection{Mandatory setup - Receiver}
 
@@ -93,7 +92,7 @@ To do that:
 sls_detector_put 0-config mydetector.config
 \end{verbatim}
 
-In the config file, if client, receiver and detector are using \textbf{1GbE} the following lines are mandatory (see slsDetectorsPackage/examples/eiger_1Gb.config):
+In the config file, if client, receiver and detector are using \textbf{1GbE} the following lines are mandatory (see slsDetectorsPackage/examples/eiger\_1Gb.config):
 \begin{verbatim}
 detsizechan 1024 512 #detetctor geometry, long side of the module first
 hostname beb059+beb058+ #1Gb detector hostname for controls
@@ -107,7 +106,7 @@ rx_hostname x12sa-vcons #1Gb receiver pc hostname
 outdir /sls/X12SA/data/x12saop/Data10/Eiger0.5M
 \end{verbatim}
 
-In the config file, if client, receiver and detector commands are on 1Gb, but detector data to receiver are sent using \textbf{10GbE} the following lines are mandatory (see slsDetectorsPackage/examples/eiger_10Gb.config):
+In the config file, if client, receiver and detector commands are on 1Gb, but detector data to receiver are sent using \textbf{10GbE} the following lines are mandatory (see slsDetectorsPackage/examples/eiger\_10Gb.config):
 \begin{verbatim}
 detsizechan 1024 512 #detetctor geometry, long side of the module first
 hostname beb059+beb058+ #1Gb detector hostname for controls
@@ -385,7 +384,7 @@ settings standard
 sls_detector_get threshold
 threshold xxxx
 \end{verbatim}
-Returns the threshold in eV (xxxx). If it fails to set it, returns the last threshold it was set (which the detector still has). 
+Returns a string (xxxx) that can be interpreted as the threshold in eV. If it fails to set it, returns the last threshold it was set (which the detector still has). If settings are not defined or different trimbits are chosen, it will return "undefined".
 
 \item \begin{verbatim}
 sls_detector_get fname
@@ -486,8 +485,8 @@ where {\tt{number}} is a string that should be interpreted as a float in s.  0.0
 sls_detector_get vhighvoltage
 vhighvoltage number
 \end{verbatim}
-where {\tt{number}} is a string that should be interpreted as an int and for proper Eiger setting is approximately 150~V if it is cooorectly set. If two master modules are presents (multi systems), teh average is returned (still to be tested).   
-
+where {\tt{number}} is a string that should be interpreted as an int and for proper Eiger setting is approximately 150~V if it is correctly set. If two master modules are presents (multi systems), the average is returned (still to be tested). If one asks for the individual $n$ half module bias volatage through {\tt{sls\_detector\_get n:vhighvoltage}}, if the $n$ module is a master, the actual volatage will be returned. If it is a slave, -999 will be returned. 
+  
 \item \begin{verbatim}
 sls_detector_get busy
 busy number
@@ -573,6 +572,69 @@ Very important is to activate the flow control in 10Gb (in 1Gb it is on by defau
 Set the transmission delays as explained in the manual.
 
 \section{Offline processing and monitoring}
+
+\subsection{Data out of the detector: UDP packets}
+
+The current UDP header format is described in figure~\ref{UDPheader}.
+\begin{figure}[t]
+\begin{center}
+\includegraphics[width=1.2\textwidth]{EIGERUDPHeader}
+\end{center}
+\caption{UDP header out of EIGER}
+\label{UDPheader}
+\end{figure}
+ 
+\subsection{Data out of the slsReceiver}
+
+
+For a module, the geometry of the ports are : 
+\begin{tabular}{|c|c}
+\hline
+{\tt{0:rx\_udpport 50011}} &  {\tt{0:rx\_udpport2 50012}}\\  
+\hline
+{\tt{1:rx\_udpport 50013}} &  {\tt{1:rx\_udpport2 50014}}\\  
+\hline
+\end{tabular}
+white the option {\tt{n:flippeddatax 1}}, which flipes in vertical the content of the module. By convection, we usually use {\tt{1:flippeddatax 1}}, but one could flip the top instead.
+
+
+\subsection{``raw'' files}
+If you use the option of writing raw files, you will have a raw file for each UDP port (meaning most likely 2 chips), 4 files per module. In addition to teh raw fiules, you will get also a ``master'' file, containing in ascii some detector general parameters and teh explanation of how to interpret the data from the raw files.
+   
+The master file is named: {\tt{filename\_master\_0.raw}} and for version ``3.0'' of the slsDetectorSoftware looks like:
+ 
+\begin{verbatim}
+Version            : 1.0
+Dynamic Range      : 16
+Ten Giga           : 1
+Image Size         : 262144 bytes
+x                  : 512 pixels
+y                  : 256 pixels
+Total Frames       : 1
+Exptime (ns)       : 1000000000
+SubExptime (ns)    : 2621440
+Period (ns)        : 1000000000
+Timestamp          : Thu Aug 17 10:55:19 2017
+
+
+#Frame Header
+Frame Number       : 8 bytes
+SubFrame Number    : 4 bytes
+Packet Number      : 4 bytes
+Bunch ID           : 8 bytes
+Timestamp          : 8 bytes
+Module Id          : 2 bytes
+X Coordinate       : 2 bytes
+Y Coordinate       : 2 bytes
+Z Coordinate       : 2 bytes
+Debug              : 4 bytes
+Round Robin Number : 2 bytes
+Detector Type      : 1 byte
+Header Version     : 1 byte
+\end{verbatim}
+
+Note that if one wants to  reconstruct the real time the detector was acquiring in 32 bit (autosumming mode), one would have to multiply the SubExptime (ns) for the SubFrame Number. 
+
 \subsection{Offline image reconstruction}
 The offline image reconstruction is in {\tt{slsDetectorsPackage/slsImageReconstruction}}.
 

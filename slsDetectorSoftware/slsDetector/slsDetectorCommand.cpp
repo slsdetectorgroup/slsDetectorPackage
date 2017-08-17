@@ -1972,21 +1972,21 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page receiver
-   - <b>receiver [s]</b> starts/stops the receiver to listen to detector packets. Gets status of receiver. Options: [start, stop].
+   - <b>receiver [s]</b> starts/stops the receiver to listen to detector packets. Options: [ \c start, \c stop]. \c Returns \c (string) status of receiver[ \c idle, \c running].
 	 */
 	descrToFuncMap[i].m_pFuncName="receiver";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
 	i++;
 
 	/*! \page receiver
-   - <b>r_online [i]</b> sets/gets the receiver in online/offline mode. 1 is online, 0 is offline. Get is from shared memory.
+   - <b>r_online [i]</b> sets/gets the receiver in online/offline mode. 1 is online, 0 is offline. Get is from shared memory. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="r_online";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
 	i++;
 
 	/*! \page receiver
-   - <b>r_checkonline</b> Checks the receiver if it is online/offline mode. Prints either 'All receiver online', '[List of all receiver hostname in offline mode] :Not all receiver online'. Only get!
+   - <b>r_checkonline</b> Checks the receiver if it is online/offline mode. Only get! \c Returns (string) "All online" or "[list of offline hostnames] : Not online".
 	 */
 	descrToFuncMap[i].m_pFuncName="r_checkonline";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
@@ -1994,49 +1994,49 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 
 	/*! \page receiver
-   - <b>framescaught</b> gets the number of frames caught by receiver. Average of all for multi-detector command. Only get!
+   - <b>framescaught</b> gets the number of frames caught by receiver. Average of all for multi-detector command. Only get! \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="framescaught";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
 	i++;
 
 	/*! \page receiver
-   - <b>resetframescaught [i]</b> resets the number of frames caught to 0. i can be any number. Use this if using status start, instead of acquire (this command is included). Only put!
+   - <b>resetframescaught [i]</b> resets the number of frames caught to 0. i can be any number. Use this if using status start, instead of acquire (this command is included). Only put! \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="resetframescaught";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
 	i++;
 
 	/*! \page receiver
-   - <b>frameindex [i]</b> gets the current frame index of receiver. Average of all for multi-detector command. Only get!
+   - <b>frameindex [i]</b> gets the current frame index of receiver. Average of all for multi-detector command. Only get! \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="frameindex";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
 	i++;
 
 	/*! \page receiver
-   - <b>r_lock [i]</b> locks/unlocks the receiver to communicate with only this client. 1 locks, 0 unlocks.
+   - <b>r_lock [i]</b> locks/unlocks the receiver to communicate with only this client. 1 locks, 0 unlocks. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="r_lock"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdLock;
 	i++;
 
 	/*! \page receiver
-   - <b>r_lastclient</b> gets the last client communicating with the receiver. Only get!
+   - <b>r_lastclient</b> gets the last client communicating with the receiver. Only get! \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="r_lastclient"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdLastClient;
 	i++;
 
 	/*! \page receiver
-   - <b>r_readfreq [i]</b> sets/gets the stream frequency of data from receiver to client. i > 0 is the nth frame being streamed. 0 sets frequency to a default timer (200ms).
+   - <b>r_readfreq [i]</b> sets/gets the stream frequency of data from receiver to client. i > 0 is the nth frame being streamed. 0 sets frequency to a default timer (200ms). \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="r_readfreq"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
 	i++;
 
 	/*! \page receiver
-   - <b>rx_fifodepth [i]</b> sets/gets receiver fifo (between Listener and Writer Threads) depth to i number of frames. Can improve listener packet loss, not if limited by writing.
+   - <b>rx_fifodepth [i]</b> sets/gets receiver fifo (between Listener and Writer Threads) depth to i number of frames. Can improve listener packet loss (loss due to packet processing time in Listener threads), not if limited by writing. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="rx_fifodepth"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;

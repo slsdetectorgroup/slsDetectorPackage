@@ -47,6 +47,7 @@ For additional questions concerning the indexing of the detector, please refer t
 The commands are sudivided into different pages depending on their functionalities:
  - \ref acquisition "Acquisition": commands to start/stop the acquisition and retrieve data
  - \ref config "Configuration": commands to configure the detector
+ - \ref timing "Timing": commands to configure the detector timing
  - \ref data "Data postprocessing": commands to process the data - mainly for MYTHEN except for rate corrections.
  - \ref settings "Settings": commands to define detector settings/threshold.
  - \ref output "Output": commands to define output file destination and format
@@ -239,15 +240,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 - \ref configstatus "Status": commands to configure detector status
 	 - \ref configsize "Data Size": commands to configure detector data size
 	 - \ref configflags "Flags": commands to configure detector flags
-	 - \ref configfpga "FPGA": commands to configure FPGA of the detector
 	 - \ref configchip "Chip": commands to configure chip of the detector
 	 - \ref configversions "Versions": commands to check version of each subsytem
-	 - \ref configtimers "Timers": commands to configure the timers of the detector
-	 - \ref configrotimers "RO Timers": commands to configure the read only timers of the detector
 	 - \ref configspeed "Speed": commands to configure speed of detector
 	 - \ref configsettings "Detector Parameters": commands to configure/retrieve configuration of detector
 	 */
-
+	/*! \page timing Timing commands
+	  Commands to setup the timing
+	 */
 	/* Detector structure configuration and debugging commands */
 	/*! \page config
 		\section configstructure Data Structure
@@ -430,20 +430,17 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 
 	/* fpga */
-	/*! \page config
-		\section configfpga FPGA
-   commands to configure FPGA of the detector
-	 */
 
-	/*! \page config
-   - <b>programfpga [file]</b> programs the FPGA with file f (with .pof extension). Used for JUNGFRAU, MOENCH only. Only put!
+
+	/*! \page test
+   - <b>programfpga [file]</b> programs the FPGA with file f (with .pof extension). Used for JUNGFRAU and new chiptestboard only. Only put!
 	 */
 	descrToFuncMap[i].m_pFuncName="programfpga";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
 	i++;
 
-	/*! \page config
-   - <b>resetfpga [f]</b> resets FPGA, where f can be any value. Used for JUNGFRAU only. Only put!
+	/*! \page test
+   - <b>resetfpga [f]</b> resets FPGA, where f can be any value. Used for JUNGFRAU and new chiptestboard only. Only put!
 	 */
 	descrToFuncMap[i].m_pFuncName="resetfpga";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
@@ -550,33 +547,30 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	i++;
 
 	/* r/w timers */
-	/*! \page config
-		\section configtimers Timers
-   commands to configure the timers of the detector
-	 */
 
-	/*! \page config
+
+	/*! \page timing
    - <b>timing [mode]</b> sets/gets synchronization mode of the detector. Mode: auto, trigger, ro_trigger, gating, triggered_gating
 	 */
 	descrToFuncMap[i].m_pFuncName="timing"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTiming;
 	i++;
 
-	/*! \page config
+	/*! \page timing
    - <b>exptime [i]</b> sets/gets exposure time in s
 	 */
 	descrToFuncMap[i].m_pFuncName="exptime"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
-	/*! \page config
+	/*! \page timing
    - <b>subexptime [i]</b> sets/gets sub exposure time in s. Used in EIGER only in 32 bit mode.
 	 */
 	descrToFuncMap[i].m_pFuncName="subexptime"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
-	/*! \page config
+	/*! \page timing
    - <b>period [i]</b> sets/gets frame period in s.
 	 */
 	descrToFuncMap[i].m_pFuncName="period"; //
@@ -590,42 +584,42 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
-	/*! \page config
+	/*! \page timing
    - <b>gates [i]</b> sets/gets number of gates. Used in MYTHEN, GOTTHARD, EIGER only
 	 */
 	descrToFuncMap[i].m_pFuncName="gates"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
-	/*! \page config
+	/*! \page timing
    - <b>gates [i]</b> sets/gets number of frames. If \c timing is not \c auto, then it is the number of frames per cycle/trigger.
 	 */
 	descrToFuncMap[i].m_pFuncName="frames"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
-	/*! \page config
+	/*! \page timing
    - <b>cycles [i]</b> sets/gets number of triggers. Timing mode should be set appropriately.
 	 */
 	descrToFuncMap[i].m_pFuncName="cycles"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
-	/*! \page config
+	/*! \page timing
    - <b>probes [i]</b> sets/gets number of probes to accumulate. When setting, max 3! cycles should be set to 1, frames to the number of pump-probe events. Used in MYTHEN only
 	 */
 	descrToFuncMap[i].m_pFuncName="probes"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
-	/*! \page config
+	/*! \page timing
    - <b>measurements [i]</b> sets/gets number of measurements.
 	 */
 	descrToFuncMap[i].m_pFuncName="measurements"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	i++;
 
-	/*! \page config
+	/*! \page timing
    - <b>samples [i]</b> sets/gets number of samples expected from the jctb. Used in CHIP TEST BOARD only.
 	 */
 	descrToFuncMap[i].m_pFuncName="samples"; //
@@ -633,33 +627,29 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	i++;
 
 	/* read only timers */
-	/*! \page config
-		\section configrotimers RO Timers
-   commands to configure the read only timers of the detector
-	 */
 
-	/*! \page config
+	/*! \page timing
    - <b>exptimel</b> gets exposure time left. Used in MYTHEN, GOTTHARD only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="exptimel"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
-	/*! \page config
+	/*! \page timing
    - <b>periodl</b> gets frame period left. Used in MYTHEN, GOTTHARD only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="periodl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
-	/*! \page config
+	/*! \page timing
    - <b>delayl</b> gets delay left. Used in MYTHEN, GOTTHARD only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="delayl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
-	/*! \page config
+	/*! \page timing
    - <b>gatesl</b> gets number of gates left. Used in MYTHEN, GOTTHARD only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="gatesl"; //
@@ -673,14 +663,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
-	/*! \page config
+	/*! \page timing
    - <b>cyclesl</b> gets number of cylces left. Used in MYTHEN, GOTTHARD only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="cyclesl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
-	/*! \page config
+	/*! \page timing
    - <b>probesl</b> gets number of probes left. Used in MYTHEN, GOTTHARD only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="probesl"; //
@@ -691,21 +681,21 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	//   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	//   i++;
 
-	/*! \page config
-   - <b>now</b> ??? Only get!
+	/*! \page timing
+   - <b>now</b> Actual time of the detector. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="now"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
-	/*! \page config
-   - <b>timestamp</b> ??? Only get!
+	/*! \page timing
+   - <b>timestamp</b> Last frame timestamp for MYTHEN. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="timestamp"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	i++;
 
-	/*! \page config
+	/*! \page timing
    - <b>nframes</b> ??? Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="nframes"; //
@@ -726,84 +716,84 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	i++;
 
 	/*! \page config
-   - <b>clkdivider [i]</b> sets/gets length of set/reset signals (in clock cycles). Used in MYTHEN only
+   - <b>setlength [i]</b> sets/gets length of set/reset signals (in clock cycles). Used in MYTHEN only
 	 */
 	descrToFuncMap[i].m_pFuncName="setlength"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>clkdivider [i]</b> sets/gets waitstates of the bus interface (in clock cycles). Used in MYTHEN only
+   - <b>waitstates [i]</b> sets/gets waitstates of the bus interface (in clock cycles). Used in MYTHEN only
 	 */
 	descrToFuncMap[i].m_pFuncName="waitstates"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>clkdivider [i]</b> sets/gets clock divider in tot mode. Used in MYTHEN only
+   - <b>totdivider [i]</b> sets/gets clock divider in tot mode. Used in MYTHEN only
 	 */
 	descrToFuncMap[i].m_pFuncName="totdivider"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>clkdivider [i]</b> sets/gets duty cycle of the tot clock. Used in MYTHEN only
+   - <b>totdutycycle [i]</b> sets/gets duty cycle of the tot clock. Used in MYTHEN only
 	 */
 	descrToFuncMap[i].m_pFuncName="totdutycycle"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>phasestep [i]</b> ???
+   - <b>phasestep [i]</b> Only put for gotthard. Moves the phase of the ADC clock.
 	 */
 	descrToFuncMap[i].m_pFuncName="phasestep"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>oversampling [i]</b> ???
+   - <b>oversampling [i]</b> Sets/gets the number of adcsamples per clock. For the new chiptestboard.
 	 */
 	descrToFuncMap[i].m_pFuncName="oversampling"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>adcclk [i]</b> ???
+   - <b>adcclk [i]</b> sets/gets the ADC clock frequency in MHz. For the new chiptestboard!
 	 */
 	descrToFuncMap[i].m_pFuncName="adcclk"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>adcphase [i]</b> ??? Used in MYTHEN, JUNGFRAU only.
+   - <b>adcphase [i]</b> Sets/gets the ADC clock frequency in MHz. For the new chiptestboard!
 	 */
 	descrToFuncMap[i].m_pFuncName="adcphase"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>adcpipeline [i]</b> ???
+   - <b>adcpipeline [i]</b> Sets/gets the pipeline of the ADC. For the new chiptestbaord!
 	 */
 	descrToFuncMap[i].m_pFuncName="adcpipeline"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>dbitclk [i]</b> ???
+   - <b>dbitclk [i]</b> Sets/gets the clock frequency of the latching of the digital bits in MHz. For the new chiptestboard!
 	 */
 	descrToFuncMap[i].m_pFuncName="dbitclk"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>dbitphase [i]</b> ???
+   - <b>dbitphase [i]</b> Sets/gets the phase of the clock for  latching of the digital bits. For the new chiptestboard!???
 	 */
 	descrToFuncMap[i].m_pFuncName="dbitphase"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	i++;
 
 	/*! \page config
-   - <b>dbitpipeline [i]</b> ???
+   - <b>dbitpipeline [i]</b> Sets/gets the pipeline of the latching of the digital bits. For the new chiptestbaord!
 	 */
 	descrToFuncMap[i].m_pFuncName="dbitpipeline"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;

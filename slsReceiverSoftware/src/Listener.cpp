@@ -524,9 +524,9 @@ uint32_t Listener::CreateAnImage(char* buf) {
 
 
 void Listener::PrintFifoStatistics() {
-//#ifdef VERBOSE
+#ifdef VERBOSE
 	cout << "numFramesStatistic:" << numFramesStatistic << " numPacketsStatistic:" << numPacketsStatistic << endl;
-//#endif
+#endif
 	//calculate packet loss
 	int64_t loss = -1;
 	loss = (numFramesStatistic*(generalData->packetsPerFrame)) - numPacketsStatistic;

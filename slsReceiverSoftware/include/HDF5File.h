@@ -19,7 +19,6 @@
 #endif
 #include <string>
 
-class Fifo;
 
 class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileStatic {
 	
@@ -43,13 +42,12 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	 * @param portno pointer to udp port number for logging
 	 * @param nx number of pixels in x direction
 	 * @param ny number of pixels in y direction
-	 * @param fifo for logging fill level
 	 */
 	HDF5File(int ind, uint32_t maxf, const uint32_t* ppf,
 			int* nd, char* fname, char* fpath, uint64_t* findex,
 			bool* frindexenable, bool* owenable,
 			int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
-			uint32_t nx, uint32_t ny, Fifo*& f);
+			uint32_t nx, uint32_t ny);
 
 	/**
 	 * Destructor

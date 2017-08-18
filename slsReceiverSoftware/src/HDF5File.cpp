@@ -25,9 +25,9 @@ HDF5File::HDF5File(int ind, uint32_t maxf, const uint32_t* ppf,
 		int* nd, char* fname, char* fpath, uint64_t* findex,
 		bool* frindexenable, bool* owenable,
 		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
-		uint32_t nx, uint32_t ny, Fifo*& f):
+		uint32_t nx, uint32_t ny):
 
-		File(ind, maxf, ppf, nd, fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr, portno, f),
+		File(ind, maxf, ppf, nd, fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr, portno),
 		filefd(0),
 		dataspace(0),
 		dataset(0),
@@ -87,12 +87,6 @@ void HDF5File::UpdateDataType() {
 
 
 int HDF5File::CreateFile(uint64_t fnum) {
-
-	//calculate packet loss
-	int64_t loss = -1;
-	if (numFramesInFile)
-		loss = (numFramesInFile*(*packetsPerFrame)) - numActualPacketsInFile;
-
 	numFilesinAcquisition++;
 	numFramesInFile = 0;
 	numActualPacketsInFile = 0;
@@ -116,20 +110,7 @@ int HDF5File::CreateFile(uint64_t fnum) {
 	if (dataspace == NULL)
 		bprintf(RED,"Got nothing!\n");
 
-	//first file, print entrire path
-	if (loss == -1)
-		FILE_LOG(logINFO) << *udpPortNumber << ": HDF5 File created: " << currentFileName;
-	//other files
-	else {
-		char c[1000]; strcpy(c, currentFileName.c_str());
-		if (loss)
-			bprintf(RED,"[%u]:  Packet_Loss:%lu  Fifo_Max_Level:%d  \tNew_File:%s\n",
-					*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound() , basename(c));
-		else
-			bprintf(GREEN,"[%u]:  Packet_Loss:%lu  Fifo_Max_Level:%d  \tNew_File:%s\n",
-					*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound(), basename(c));
-	}
-
+	FILE_LOG(logINFO) << *udpPortNumber << ": HDF5 File created: " << currentFileName;
 
 	return OK;
 }

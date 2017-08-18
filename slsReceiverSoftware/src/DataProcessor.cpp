@@ -146,8 +146,6 @@ void DataProcessor::StopRunning() {
 
 void DataProcessor::SetFifo(Fifo*& f) {
 	fifo = f;
-	if (file)
-		file->SetFifo(f);
 }
 
 void DataProcessor::ResetParametersforNewAcquisition() {
@@ -240,14 +238,14 @@ void DataProcessor::SetupFileWriter(int* nd, char* fname, char* fpath, uint64_t*
 				nd, fname, fpath, findex,
 				frindexenable, owenable,
 				dindex, nunits, nf, dr, portno,
-				generalData->nPixelsX, generalData->nPixelsY, fifo);
+				generalData->nPixelsX, generalData->nPixelsY);
 		break;
 #endif
 	default:
 		file = new BinaryFile(index, generalData->maxFramesPerFile, &generalData->packetsPerFrame,
 				nd, fname, fpath, findex,
 				frindexenable, owenable,
-				dindex, nunits, nf, dr, portno, fifo);
+				dindex, nunits, nf, dr, portno);
 		break;
 	}
 }

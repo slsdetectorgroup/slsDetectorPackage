@@ -17,9 +17,9 @@ FILE* BinaryFile::masterfd = 0;
 BinaryFile::BinaryFile(int ind, uint32_t maxf, const uint32_t* ppf,
 		int* nd, char* fname, char* fpath, uint64_t* findex,
 		bool* frindexenable, bool* owenable,
-		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno, Fifo*& f):
+		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno):
 
-		File(ind, maxf, ppf, nd, fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr, portno, f),
+		File(ind, maxf, ppf, nd, fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr, portno),
 		filefd(0),
 		numFramesInFile(0),
 		numActualPacketsInFile(0)
@@ -45,12 +45,6 @@ slsReceiverDefs::fileFormat BinaryFile::GetFileType() {
 
 
 int BinaryFile::CreateFile(uint64_t fnum) {
-	/*
-	//calculate packet loss
-	int64_t loss = -1;
-	if (numFramesInFile)
-		loss = (numFramesInFile*(*packetsPerFrame)) - numActualPacketsInFile;
-*/
 	numFramesInFile = 0;
 	numActualPacketsInFile = 0;
 
@@ -60,24 +54,7 @@ int BinaryFile::CreateFile(uint64_t fnum) {
 	if (BinaryFileStatic::CreateDataFile(filefd, *overWriteEnable, currentFileName, FILE_BUFFER_SIZE) == FAIL)
 		return FAIL;
 
-	//first file, print entrire path
-	/*if (loss == -1)*/
-	if (!numFramesInFile)
-		FILE_LOG(logINFO) << "[" << *udpPortNumber << "]: Binary File created: " << currentFileName;
-
-	/*
-	//other files
-	else {
-		char c[1000]; strcpy(c, currentFileName.c_str());
-		if (loss)
-			bprintf(RED,"[%u]:  Packet_Loss:%lu  Used_Fifo_Max_Level:%d \tFree_Slots_Min_Level:%d \tNew_File:%s\n",
-					*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound() , fifo->GetMinLevelForFifoFree(), basename(c));
-		else
-			bprintf(GREEN,"[%u]:  Packet_Loss:%lu  Used_Fifo_Max_Level:%d  \tFree_Slots_Min_Level:%d \tNew_File:%s\n",
-					*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound(), fifo->GetMinLevelForFifoFree(), basename(c));
-	}
-	*/
-
+	FILE_LOG(logINFO) << "[" << *udpPortNumber << "]: Binary File created: " << currentFileName;
 	return OK;
 }
 

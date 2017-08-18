@@ -43,11 +43,11 @@ Reiterating, both 2.3 and 3.0 supports the following features:
 	Receiver
 	--------
 	1.	The files will be written in this format in the binary mode:
-		* ASCII file: header of 1024 bytes (only for EIGER detectors)
+		* 1 ASCII file per measurement: header with measurement parameters
 		* binary files: series of images, each preceded by a 
 		  	  Standard Image Header (header described below)
 	
-	2. 	Stanard Image Header in file and call back
+	2. 	Standard Image Header in file and call back
 	 	arguments defined. It is in the following format defined as 
 	  	sls_detector_header defined in 
 	 	slsReceiverSoftware/include/sls_receiver_defs.h
@@ -107,7 +107,10 @@ New Features
 	General
 	-------
 	3.	UDP Packets from all the detectors will contain the standard sls detector header. 
-	  	X, Y and Z Coordinates define the position of the detector in 3d. 
+		Jungfrau will have an extra 6 bytes preceding the standard header in the udp packets
+		only. X, Y and Z Coordinates define the position of the detector in 3d. These values
+		are not filled in the udp header at the moment, but will be in the files and receiver
+		call backs with only x in 1d at the moment.
 	  	
 	4.	When acquire has started, one can use sls_detector_get busy to check the status
 		of the acquire. 1 is running 0 is idle. This way one can start acqusition with &,

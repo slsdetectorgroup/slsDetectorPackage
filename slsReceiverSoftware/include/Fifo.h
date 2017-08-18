@@ -21,10 +21,10 @@ class Fifo : private virtual slsReceiverDefs {
 	 * Constructor
 	 * Calls CreateFifos that creates fifos and allocates memory
 	 * @param fifoItemSize size of each fifo item
-	 * @param fifoDepth fifo depth
+	 * @param depth fifo depth
 	 * @param success true if successful, else false
 	 */
-	Fifo(uint32_t fifoItemSize, uint32_t fifoDepth, bool &success);
+	Fifo(uint32_t fifoItemSize, uint32_t depth, bool &success);
 
 	/**
 	 * Destructor
@@ -67,15 +67,20 @@ class Fifo : private virtual slsReceiverDefs {
 	 */
 	int GetMaxLevelForFifoBound();
 
+	/**
+	 * Get Minimum Level filled in Fifo Free
+	 * and reset this value to max for next intake
+	 */
+	int GetMinLevelForFifoFree();
+
  private:
 
 	/**
 	 * Create Fifos, allocate memory & push addresses into fifo
 	 * @param fifoItemSize size of each fifo item
-	 * @param fifoDepth fifo depth
 	 * @return OK if successful, else FAIL
 	 */
-	int CreateFifos(uint32_t fifoItemSize, uint32_t fifoDepth);
+	int CreateFifos(uint32_t fifoItemSize);
 
 	/**
 	 * Destroy Fifos and deallocate memory
@@ -101,5 +106,9 @@ class Fifo : private virtual slsReceiverDefs {
 	/** Circular Fifo pointing to addresses of to be streamed data in memory */
 	CircularFifo<char>* fifoStream;
 
+	/** Fifo depth set */
+	int fifoDepth;
+
 	volatile int status_fifoBound;
+	volatile int status_fifoFree;
 };

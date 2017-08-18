@@ -14,16 +14,18 @@ using namespace std;
 
 int Fifo::NumberofFifoClassObjects(0);
 
-Fifo::Fifo(uint32_t fifoItemSize, uint32_t fifoDepth, bool &success):
+Fifo::Fifo(uint32_t fifoItemSize, uint32_t depth, bool &success):
 		index(NumberofFifoClassObjects),
 		memory(0),
 		fifoBound(0),
 		fifoFree(0),
 		fifoStream(0),
-		status_fifoBound(0){
+		fifoDepth(depth),
+		status_fifoBound(0),
+		status_fifoFree(depth){
 	FILE_LOG (logDEBUG) << __AT__ << " called";
 	NumberofFifoClassObjects++;
-	if(CreateFifos(fifoItemSize, fifoDepth) == FAIL)
+	if(CreateFifos(fifoItemSize) == FAIL)
 		success = false;
 }
 
@@ -37,11 +39,12 @@ Fifo::~Fifo() {
 
 
 
-int Fifo::CreateFifos(uint32_t fifoItemSize, uint32_t fifoDepth) {
+int Fifo::CreateFifos(uint32_t fifoItemSize) {
 	FILE_LOG (logDEBUG) << __AT__ << " called";
 
 	//destroy if not already
 	DestroyFifos();
+
 	//create fifos
 	fifoBound = new CircularFifo<char>(fifoDepth);
 	fifoFree = new CircularFifo<char>(fifoDepth);
@@ -67,6 +70,7 @@ int Fifo::CreateFifos(uint32_t fifoItemSize, uint32_t fifoDepth) {
 			buffer += fifoItemSize;
 		}
 	}
+
 	FILE_LOG (logDEBUG) << "Fifo Reconstructed Depth " << index << ": " << fifoDepth;
 	return OK;
 }
@@ -100,6 +104,9 @@ void Fifo::FreeAddress(char*& address) {
 }
 
 void Fifo::GetNewAddress(char*& address) {
+	int temp = fifoFree->getSemValue();
+	if (temp < status_fifoFree)
+		status_fifoFree = temp;
 	fifoFree->pop(address);
 }
 
@@ -125,6 +132,13 @@ void Fifo::PopAddressToStream(char*& address) {
 int Fifo::GetMaxLevelForFifoBound() {
 	int temp = status_fifoBound;
 	status_fifoBound = 0;
+	return temp;
+}
+
+
+int Fifo::GetMinLevelForFifoFree() {
+	int temp = status_fifoFree;
+	status_fifoFree = fifoDepth;
 	return temp;
 }
 

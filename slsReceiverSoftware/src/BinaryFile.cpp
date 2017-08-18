@@ -66,11 +66,11 @@ int BinaryFile::CreateFile(uint64_t fnum) {
 	else {
 		char c[1000]; strcpy(c, currentFileName.c_str());
 		if (loss)
-			bprintf(RED,"[%u]:  Packet_Loss:%lu  Fifo_Max_Level:%d  \tNew_File:%s\n",
-					*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound() , basename(c));
+			bprintf(RED,"[%u]:  Packet_Loss:%lu  Used_Fifo_Max_Level:%d \tFree_Slots_Min_Level:%d \tNew_File:%s\n",
+					*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound() , fifo->GetMinLevelForFifoFree(), basename(c));
 		else
-			bprintf(GREEN,"[%u]:  Packet_Loss:%lu  Fifo_Max_Level:%d  \tNew_File:%s\n",
-					*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound(), basename(c));
+			bprintf(GREEN,"[%u]:  Packet_Loss:%lu  Used_Fifo_Max_Level:%d  \tFree_Slots_Min_Level:%d \tNew_File:%s\n",
+					*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound(), fifo->GetMinLevelForFifoFree(), basename(c));
 	}
 
 	return OK;

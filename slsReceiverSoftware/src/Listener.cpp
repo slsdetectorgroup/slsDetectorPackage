@@ -164,6 +164,9 @@ void Listener::ResetParametersforNewMeasurement() {
 
 	numPacketsStatistic = 0;
 	numFramesStatistic = 0;
+	//reset fifo statistic
+	GetMaxLevelForFifoBound();
+	GetMinLevelForFifoFree();
 }
 
 

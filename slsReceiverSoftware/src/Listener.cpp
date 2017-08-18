@@ -161,6 +161,9 @@ void Listener::ResetParametersforNewMeasurement() {
 		delete [] listeningPacket;
 	listeningPacket = new char[generalData->packetSize];
 	memset(listeningPacket,0,generalData->packetSize);
+
+	numPacketsStatistic = 0;
+	numFramesStatistic = 0;
 }
 
 
@@ -289,9 +292,13 @@ void Listener::ThreadExecution() {
 	(*((uint64_t*)(buffer + FIFO_HEADER_NUMBYTES ))) = currentFrameIndex;		//for those returning earlier
 	currentFrameIndex++;
 
-
 	//push into fifo
 	fifo->PushAddress(buffer);
+
+	//Statistics
+	if (numFramesStatistic >=  generalData->maxFramesPerFile)
+		PrintFifoStatistics();
+	numFramesStatistic++;
 
 }
 
@@ -417,6 +424,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 		//update parameters
 		numPacketsCaught++;					//record immediately to get more time before socket shutdown
+		numPacketsStatistic++;
 
 		// -------------------------- new header ----------------------------------------------------------------------
 		if (standardheader) {
@@ -448,8 +456,6 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 #endif
 		if (!measurementStartedFlag)
 			RecordFirstIndices(fnum);
-
-
 
 		//future packet	by looking at image number  (all other detectors)
 		if (fnum != currentFrameIndex) {
@@ -515,4 +521,20 @@ uint32_t Listener::CreateAnImage(char* buf) {
 	memset(buf, 0xFF, generalData->dataSize);
 
 	return generalData->imageSize;
+}
+
+
+void Listener::PrintFifoStatistics() {
+	//calculate packet loss
+	int64_t loss = -1;
+	loss = (numFramesStatistic*(generalData->packetsPerFrame)) - numPacketsStatistic;
+	numPacketsStatistic = 0;
+	numFramesStatistic = 0;
+
+	if (loss)
+		bprintf(RED,"[%u]:  Packet_Loss:%lu  Used_Fifo_Max_Level:%d \tFree_Slots_Min_Level:%d \tCurrent_Frame#:%lu\n",
+				*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound() , fifo->GetMinLevelForFifoFree(), currentFrameIndex);
+	else
+		bprintf(GREEN,"[%u]:  Packet_Loss:%lu  Used_Fifo_Max_Level:%d  \tFree_Slots_Min_Level:%d \tCurrent_Frame#:%lu\n",
+				*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound(), fifo->GetMinLevelForFifoFree(), currentFrameIndex);
 }

@@ -45,11 +45,12 @@ slsReceiverDefs::fileFormat BinaryFile::GetFileType() {
 
 
 int BinaryFile::CreateFile(uint64_t fnum) {
+	/*
 	//calculate packet loss
 	int64_t loss = -1;
 	if (numFramesInFile)
 		loss = (numFramesInFile*(*packetsPerFrame)) - numActualPacketsInFile;
-
+*/
 	numFramesInFile = 0;
 	numActualPacketsInFile = 0;
 
@@ -60,8 +61,11 @@ int BinaryFile::CreateFile(uint64_t fnum) {
 		return FAIL;
 
 	//first file, print entrire path
-	if (loss == -1)
+	/*if (loss == -1)*/
+	if (!numFramesInFile)
 		FILE_LOG(logINFO) << "[" << *udpPortNumber << "]: Binary File created: " << currentFileName;
+
+	/*
 	//other files
 	else {
 		char c[1000]; strcpy(c, currentFileName.c_str());
@@ -72,6 +76,7 @@ int BinaryFile::CreateFile(uint64_t fnum) {
 			bprintf(GREEN,"[%u]:  Packet_Loss:%lu  Used_Fifo_Max_Level:%d  \tFree_Slots_Min_Level:%d \tNew_File:%s\n",
 					*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound(), fifo->GetMinLevelForFifoFree(), basename(c));
 	}
+	*/
 
 	return OK;
 }

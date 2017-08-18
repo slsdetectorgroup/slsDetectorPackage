@@ -189,6 +189,11 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	uint32_t CreateAnImage(char* buf);
 
+	/**
+	 * Print Fifo Statistics
+	 */
+	void PrintFifoStatistics();
+
 
 
 	/** type of thread */
@@ -281,5 +286,9 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** if the udp socket is connected */
 	bool udpSocketAlive;
+
+	uint32_t numPacketsStatistic;
+
+	uint32_t numFramesStatistic;
 };
 

@@ -104,10 +104,10 @@ void Fifo::GetNewAddress(char*& address) {
 }
 
 void Fifo::PushAddress(char*& address) {
-	while(!fifoBound->push(address));
 	int temp = fifoBound->getSemValue();
 	if (temp > status_fifoBound)
 		status_fifoBound = temp;
+	while(!fifoBound->push(address));
 }
 
 void Fifo::PopAddress(char*& address) {

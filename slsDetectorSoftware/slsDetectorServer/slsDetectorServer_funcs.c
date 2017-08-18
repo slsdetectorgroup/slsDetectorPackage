@@ -2626,7 +2626,7 @@ int get_time_left(int file_des) {
 	case FRAMES_FROM_START:
 	case FRAMES_FROM_START_PG:
 #endif
-		getTimeLeft(ind);
+		retval=getTimeLeft(ind);
 		break;
 	default:
 		ret = FAIL;

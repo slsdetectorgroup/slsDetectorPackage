@@ -101,5 +101,5 @@ class Fifo : private virtual slsReceiverDefs {
 	/** Circular Fifo pointing to addresses of to be streamed data in memory */
 	CircularFifo<char>* fifoStream;
 
-	int status_fifoBound;
+	volatile int status_fifoBound;
 };

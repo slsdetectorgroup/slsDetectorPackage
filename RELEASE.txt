@@ -98,7 +98,7 @@ New Features
 	-------
 	1.	One can compile using cmake or the ./cmk.sh script(also uses cmake)
 	  	Run ./cmk.sh -help to get more info. This method does not touch the 
-	  	source files.
+	  	source files. Please start off with ./cmk.sh -bj9, where (9 is #cores+1)
 	  
 	2.	One can compile the normal way using Makefile (editing Makefile.include
 	  	for the hdf5 options), but this will modify other gitInfo files.

@@ -108,9 +108,9 @@ void Fifo::GetNewAddress(char*& address) {
 	if (temp < status_fifoFree)
 		status_fifoFree = temp;
 	fifoFree->pop(address);
-	temp = fifoFree->getSemValue();
+	/*temp = fifoFree->getSemValue();
 	if (temp < status_fifoFree)
-		status_fifoFree = temp;
+		status_fifoFree = temp;*/
 }
 
 void Fifo::PushAddress(char*& address) {
@@ -118,9 +118,9 @@ void Fifo::PushAddress(char*& address) {
 	if (temp > status_fifoBound)
 		status_fifoBound = temp;
 	while(!fifoBound->push(address));
-	temp = fifoBound->getSemValue();
+	/*temp = fifoBound->getSemValue();
 	if (temp > status_fifoBound)
-		status_fifoBound = temp;
+		status_fifoBound = temp;*/
 }
 
 void Fifo::PopAddress(char*& address) {

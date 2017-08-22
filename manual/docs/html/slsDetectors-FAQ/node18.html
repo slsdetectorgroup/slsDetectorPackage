@@ -1,0 +1,264 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>What happens when I trim the detector?</TITLE>
+<META NAME="description" CONTENT="What happens when I trim the detector?">
+<META NAME="keywords" CONTENT="slsDetectors-FAQ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectors-FAQ.css">
+
+<LINK REL="next" HREF="node19.html">
+<LINK REL="previous" HREF="node17.html">
+<LINK REL="up" HREF="node14.html">
+<LINK REL="next" HREF="node19.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html338"
+  HREF="node19.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html334"
+  HREF="node14.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html328"
+  HREF="node17.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html336"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html339"
+  HREF="node19.html">In what consists the</A>
+<B> Up:</B> <A NAME="tex2html335"
+  HREF="node14.html">Single photon counting detectors</A>
+<B> Previous:</B> <A NAME="tex2html329"
+  HREF="node17.html">How does the flat</A>
+ &nbsp; <B>  <A NAME="tex2html337"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html340"
+  HREF="node18.html#SECTION00341000000000000000">MYTHEN</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00340000000000000000">
+What happens when I trim the detector?</A>
+</H1>
+
+<P>
+General remarks about trimming.
+
+<P>
+
+<H2><A NAME="SECTION00341000000000000000">
+MYTHEN</A>
+</H2>
+
+<P>
+<B>Trimming with noise</B> <A NAME="sec:noisetrim"></A>
+<BR>
+<P>
+The first step in the trimming procedure is to trim with noise (this is often sufficient). This has to be done for all the settings which are foreseen to be used (highgain, standard and fast).
+<BR>
+The procedure for the noise trimming is as follows:
+
+<OL>
+<LI>In the <I>Initialization tab</I> click on the settings for which you want to trim (e.g. standard)
+</LI>
+<LI>In the <I>Initialization tab</I> click on the <I>advanced</I> radio button to make the trimming accessible.
+</LI>
+<LI>In the <I>Acquisition tab</I> set the acquisition time to 100&nbsp;ms, the repetion to 1 and the delay between frames to 0.
+</LI>
+<LI>For noise trimming usually the default parameters <!-- MATH
+ $Vthreshold=7$
+ -->
+<IMG
+ WIDTH="114" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img28.png"
+ ALT="$ Vthreshold=7$">
+, <!-- MATH
+ $Counts=500$
+ -->
+<IMG
+ WIDTH="102" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img29.png"
+ ALT="$ Counts=500$">
+, <!-- MATH
+ $Resolution=4$
+ -->
+<IMG
+ WIDTH="111" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img30.png"
+ ALT="$ Resolution=4$">
+ work.
+<BR>
+However, to verify the threshold setting it is best to make a threshold scan. To do this go to the <I>Data</I> tab, in the Data display section select the 2D color and type advanced option. In the <I>Acquisition</I> tab select your data directory. Set the number of positions to 0. Select Scan, Type threshold. Typical values for the range are 500 to 900 with a step size of 10. Then click on the start button to perform the threshold scan. After the threhold scan has finished an image similar to the one in&nbsp;<A HREF="#fig:thresholdscanuntrimmed">2.7</A> should be shown. Depending on the system the number of modules may vary. If the plot is similar to the one in&nbsp;<A HREF="#fig:thresholdscantrimmed">2.10</A> the noise trim files did already exist and have been loaded when selecting the settings. In this case you don't need to trim with noise again.
+<BR>
+Set the parameter Vthreshold in the <I>Trimming</I> box (<I>Initialization tab</I>) 10-30 DAC units below the onset of the noise for the module with the lowest threshold offset. Since the modules have differences in the offset and gain the onset of the noise varies. 
+<BR>
+You can usually leave the remaining parameters unchanged (Counts/pixel=500; Resolution=4).
+</LI>
+<LI>Select the directory where the noise trim files should be written and the filename, to wich will be attached the extension given by the module serial number (.snxxx). If you want the trimfiles to be loaded authomatically when the global settings are selected, select the default directory specified in the config file (or in the ``trimbits/beamline'' directory for the older software versions). 
+Click on <I>Trim</I> to start the noise trimming process. After the trimming has finished look at the plot and the distribution of the trim bits. The distribution should be around 32<IMG
+ WIDTH="17" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img31.png"
+ ALT="$ \pm$">
+5 and should look gaussian. An example distribution is shown in figure&nbsp;<A HREF="#fig:trimdistribution">2.8</A> and an example plot in&nbsp;<A HREF="#fig:trimplot">2.9</A>. If the distribution is too much off center change the counts/pixel, if it is too narrow reduce the resolution (set it to 3), if it is too wide increase it (set it to 5). Make sure not too many channels have a trim value of 0 or 63.
+</LI>
+<LI>Execute the treshold scan again to verify the trimming was done properly. A plot similar tho the one in figure&nbsp;<A HREF="#fig:thresholdscantrimmed">2.10</A> should appear.
+</LI>
+</OL>
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:thresholdscanuntrimmed"></A><A NAME="1151"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 2.7:</STRONG>
+The untrimmed threshold scan.</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="554" HEIGHT="275" ALIGN="BOTTOM" BORDER="0"
+ SRC="img32.png"
+ ALT="\includegraphics[width=\textwidth]{images/noise_thresholdscanuntrimmed}">
+
+</DIV></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:trimdistribution"></A><A NAME="1158"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 2.8:</STRONG>
+The distribution of the trimbits.</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="554" HEIGHT="275" ALIGN="BOTTOM" BORDER="0"
+ SRC="img33.png"
+ ALT="\includegraphics[width=\textwidth]{images/trimbitdistribution}">
+
+</DIV></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:trimplot"></A><A NAME="1165"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 2.9:</STRONG>
+The trimbits for all the channels.</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="554" HEIGHT="275" ALIGN="BOTTOM" BORDER="0"
+ SRC="img34.png"
+ ALT="\includegraphics[width=\textwidth]{images/trimbitplot}">
+
+</DIV></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:thresholdscantrimmed"></A><A NAME="1172"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 2.10:</STRONG>
+The trimmed threshold scan.</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="554" HEIGHT="275" ALIGN="BOTTOM" BORDER="0"
+ SRC="img35.png"
+ ALT="\includegraphics[width=\textwidth]{images/noise_thresholdscantrimmed}">
+
+</DIV></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+<B>Improve the trimming using X-rays</B><A NAME="sec:improvetrimming"></A>
+<BR>
+<P>
+The improvement of the trimming acquired with noise is not essential: at 12&nbsp;keV an untrimmed module has a threshold dispersion which is about 1.4&nbsp;keV and is already reduced to 200&nbsp;eV at 12&nbsp;keV by the noise trimming. At lower energies the noise trimming will be more effective, while the threshold dispesion will be still larger at higher energies. The trimming improvement reduces the threshold dispersion to 140&nbsp;eV at 12&nbsp;keV and is expected to be almost constant at all energies. For this reason it is suggested to perform the trimming improvement only when a small threshold dispersion is really important (e.g. to avoid flat field corrections or in presence of fluorescent lines close to the threshold value) and it will probably be not worthy at lower energies (i.e. threshold lower than 6&nbsp;keV and X-ray energy lower than 12&nbsp;keV). 
+The procedure for the trimming improvement is as follows:
+
+<OL>
+<LI>Select the settings of the detector and load the noise trimming file
+</LI>
+<LI>Set the threshold at half of the X-ray energy (better if the detector has already been calibrated in energy like explained in&nbsp;<A HREF="node19.html#sec:encal">2.5</A>)
+</LI>
+<LI>Illuminate the detector with a flat field. This is very important to obtain a good trimming. 
+</LI>
+<LI>Select the <I>acquisition time</I> in the <I>acquisition tab</I> so that there are at least 1000 counts/strip per frame (the more counts, the better trimming). Set the repetions to 1 and the delay between frames to 0.
+</LI>
+<LI>Go to expert mode by clicking on <I>advanced</I> in the <I>initialization tab</I>, <I>settings</I> box
+</LI>
+<LI>In the trimming box  select the directory where the noise trim files should be written and the filename, to wich will be attached the extension given by the module serial number (.snxxx).
+</LI>
+<LI>Select the <I>improve</I> method
+<I>S</I>tart the trimming
+</LI>
+</OL>
+If the trimming is correctly performed and the illumination is flat enough, the same trimming can be used every time you will measure at this same energy.
+The authomatic loading of energy-specific trim files is not yet implemented.
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html338"
+  HREF="node19.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html334"
+  HREF="node14.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html328"
+  HREF="node17.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html336"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html339"
+  HREF="node19.html">In what consists the</A>
+<B> Up:</B> <A NAME="tex2html335"
+  HREF="node14.html">Single photon counting detectors</A>
+<B> Previous:</B> <A NAME="tex2html329"
+  HREF="node17.html">How does the flat</A>
+ &nbsp; <B>  <A NAME="tex2html337"
+  HREF="node1.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2017-08-22
+</ADDRESS>
+</BODY>
+</HTML>

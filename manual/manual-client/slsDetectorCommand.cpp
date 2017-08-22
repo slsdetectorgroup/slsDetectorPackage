@@ -1,0 +1,1 @@
+../../slsDetectorSoftware/slsDetector/slsDetectorCommand.cpp

@@ -1,0 +1,222 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Tips</TITLE>
+<META NAME="description" CONTENT="Tips">
+<META NAME="keywords" CONTENT="slsDetectorGuiHowTo">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectorGuiHowTo.css">
+
+<LINK REL="next" HREF="node14.html">
+<LINK REL="previous" HREF="node12.html">
+<LINK REL="up" HREF="node8.html">
+<LINK REL="next" HREF="node14.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html171"
+  HREF="node14.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html169"
+  HREF="node8.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html163"
+  HREF="node12.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html172"
+  HREF="node14.html">Acquisition</A>
+<B> Up:</B> <A NAME="tex2html170"
+  HREF="node8.html">slsDetectorClient</A>
+<B> Previous:</B> <A NAME="tex2html164"
+  HREF="node12.html">Retrieving detector parameters (plus</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><UL>
+<LI><A NAME="tex2html173"
+  HREF="node13.html#SECTION00250100000000000000">Mandatory setup</A>
+<LI><A NAME="tex2html174"
+  HREF="node13.html#SECTION00250200000000000000">Acquisition setup</A>
+<LI><A NAME="tex2html175"
+  HREF="node13.html#SECTION00250300000000000000">Acquiring</A>
+<LI><A NAME="tex2html176"
+  HREF="node13.html#SECTION00250400000000000000">Data processing</A>
+</UL></UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00250000000000000000">
+Tips</A>
+</H1>
+
+<P>
+
+<H3><A NAME="SECTION00250100000000000000">
+Mandatory setup</A>
+</H3>
+First of all you should setup the hostname and the detector size and dynamic range:
+<PRE>
+mythen_put hostname mcs1x00
+mythen_get nmod
+mythen_get dr
+</PRE>
+You should also tell the program where to find the default trimbits files and calibration files: 
+<PRE>
+mythen_put trimdir /scratch/trimbits
+mythen_get caldir /scratch/calibration
+</PRE>
+To chose the detector settings (e.g. standard):
+<PRE>
+mythen_put settings standard
+</PRE>
+In case <code>mythen_get settings</code> does not answer correctly, it most probably means that there is a problem in the architecture or setting of <I>trimdir</I> and <I>caldir</I> (see section&nbsp;<A HREF="node7.html#sec:trimdir">1.6</A>).
+
+<P>
+
+<H3><A NAME="SECTION00250200000000000000">
+Acquisition setup</A>
+</H3>
+You need to setup where the files will be written to
+<PRE>
+mythen_put outdir /scratch
+mythen_put fname run
+mythen_put index 0
+</PRE>
+this way your files will al be named /scracth/run_i.dat where is starts from 0 and is automatically incremented.
+
+<P>
+You will then need to setup the detector threshold and settings, the exposure time, the number of real time frames and eventually how many real time frames should be acquired:
+<PRE>
+mythen_put settings standard
+mythen_put threshold 6000
+mythen_put exptime 1.
+mythen_put frames 10
+</PRE>
+In this case 10 consecutive 1s frames will be acquired.
+External gating and triggering or more advanced acquisition modes are not explained here.
+
+<P>
+
+<H3><A NAME="SECTION00250300000000000000">
+Acquiring</A>
+</H3>
+There are two ways of acquiring data.
+<BR>
+The first is fully automatic and freezes the terminal until the acquisition is finished:
+<PRE>
+mythen_acquire 0
+</PRE>
+This is particulary indicated for fast real time acquisitions.
+
+<P>
+If you want to acquire few long frames you can run:
+<PRE>
+mythen_put status start
+</PRE>
+and the poll the detector status using
+<PRE>
+mythen_get status
+</PRE>
+if the answer is either transmitting or finished, the data are ready to be downloaded from the detector.
+This can be done using either:
+<PRE>
+mythen_get frame
+</PRE>
+where a single data frame is downloaded or
+<PRE>
+mythen_get data
+</PRE>
+where all data present on the detector are downloaded.
+This is not indicated when many short real time frames should be acquired since the detector memory would be full before finishing the acquisition since the download time is so limited.
+
+<P>
+
+<H3><A NAME="SECTION00250400000000000000">
+Data processing</A>
+</H3>
+Flat field and rate corrections can be applied direcly by simply selecting:
+<PRE>
+mythen_put flatield myflatfield.raw
+mythen_put ratecorr -1
+</PRE>
+
+<P>
+Concerning the angular conversion, it is very reccomended that the users edit the file usersFunctions.cpp contained in the folder slsDetectorSoftware/usersFunctions. 
+In the file it is possible to modify the function used for calculating the angular conversion and the ones used for interfacing with the diffractometer equipment i.e. reading the encoder fo the detector position, the ionization chanmbers etc.
+
+<P>
+It is also possible to configure some scans/scripts to be executed during the acquisition. They will be normally called as system calls except for threshold, energy and trimbits scans.
+
+<P>
+Possible arguments are:
+<DL>
+<DT><STRONG>help</STRONG></DT>
+<DD>This help  
+</DD>
+<DT><STRONG>-f myconf.txt</STRONG></DT>
+<DD>loads the configuration file to myconf.txt
+</DD>
+<DT><STRONG>-id i</STRONG></DT>
+<DD>Sets the detector to id i (the default is i). Useful when more than one detector are operated in parallel.
+</DD>
+<DT><STRONG>-offline</STRONG></DT>
+<DD>works in offline mode i.e. not connecting to the detector. Usefule e.g. to perform the energy calibration of the detector and possibly in the future to reprocess and visualize the data (not yet implemented).
+</DD>
+<DT><STRONG>-size n</STRONG></DT>
+<DD>sets the size of the text to n (the default is n=10);
+</DD>
+<DT><STRONG>-scale s</STRONG></DT>
+<DD>scales the size of the text and the root canvas by the scaling factor s (the default is s=1). It is useful when executing the program on a PC with low screen resolution (e.g. a laptop) and the window would then fall out of the screen.");
+</DD>
+</DL>
+The configuration of the detector can either be set when startin the GUI using the configuration file or using the text client or even using the configuration tab of the GUI.
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html171"
+  HREF="node14.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html169"
+  HREF="node8.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html163"
+  HREF="node12.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html172"
+  HREF="node14.html">Acquisition</A>
+<B> Up:</B> <A NAME="tex2html170"
+  HREF="node8.html">slsDetectorClient</A>
+<B> Previous:</B> <A NAME="tex2html164"
+  HREF="node12.html">Retrieving detector parameters (plus</A>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2017-08-22
+</ADDRESS>
+</BODY>
+</HTML>

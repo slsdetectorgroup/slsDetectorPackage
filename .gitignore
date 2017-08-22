@@ -15,5 +15,3 @@ JCTBGui/
 *.toc
 build
 tests
-manual/slsDetectorClientDocs/latex/doxygen.sty
-manual/slsDetectorClientDocs/latex/refman.tex

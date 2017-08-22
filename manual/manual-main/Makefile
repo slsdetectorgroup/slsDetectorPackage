@@ -1,4 +1,4 @@
-DESTDIR=../
+DESTDIR=../docs
 
 
 TEX=latex
@@ -11,13 +11,11 @@ TEXS=slsDetector-softFAQ.tex singlePhotonCounting-FAQ.tex angConv-FAQ.tex genera
 DVIS = $(MAINTEXS:.tex=.dvi)
 PSS = $(MAINTEXS:.tex=.ps)
 PDFS = $(MAINTEXS:.tex=.pdf)
-
 HTMLS = $(MAINTEXS:%.tex=%)
 
 
-#destdir?!?!?
 
-all: $(PDFS) $(HTMLS)
+all: pdf html
 	echo $(PWD)
 	echo $(PDFS)
 	echo $(HTMLS)
@@ -53,3 +51,7 @@ $(HTMLS): $(TEXS) $(MAINTEXS)
 
 clean:
 	rm -rf *.aux *.log *.toc *.out $(DVIS) $(PSS) $(PDFS) $(HTMLS)
+	rm -rf $(DESTDIR)/html/slsDetectors-FAQ
+	rm -rf $(DESTDIR)/html/slsDetectorInstall
+	rm -rf $(DESTDIR)/pdf/slsDetectors-FAQ.pdf
+	rm -rf $(DESTDIR)/pdf/slsDetectorInstall.pdf

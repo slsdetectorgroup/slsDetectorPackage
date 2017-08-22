@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Usage</TITLE>
+<META NAME="description" CONTENT="Usage">
+<META NAME="keywords" CONTENT="slsDetectorClientHowTo">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectorClientHowTo.css">
+
+<LINK REL="next" HREF="node6.html">
+<LINK REL="previous" HREF="node4.html">
+<LINK REL="up" HREF="slsDetectorClientHowTo.html">
+<LINK REL="next" HREF="node6.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html114"
+  HREF="node6.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html112"
+  HREF="slsDetectorClientHowTo.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html106"
+  HREF="node4.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html115"
+  HREF="node6.html">About this document ...</A>
+<B> Up:</B> <A NAME="tex2html113"
+  HREF="slsDetectorClientHowTo.html">SLS Detector text clients</A>
+<B> Previous:</B> <A NAME="tex2html107"
+  HREF="node4.html">Retrieving detector parameters</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html116"
+  HREF="node5.html#SECTION00051000000000000000">Mandatory setup</A>
+<LI><A NAME="tex2html117"
+  HREF="node5.html#SECTION00052000000000000000">Standard acquisition</A>
+<LI><A NAME="tex2html118"
+  HREF="node5.html#SECTION00053000000000000000">Data processing</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00050000000000000000">
+Usage</A>
+</H1>
+
+<P>
+
+<H2><A NAME="SECTION00051000000000000000">
+Mandatory setup</A>
+</H2>
+First, your detector should always be configured for each PC that you might want to use for controlling the detector.
+To do that:
+<PRE>
+sls_detector_put config mydetector.config
+</PRE>
+Refer to sample configuration files to produce the appropriate one for your detector.
+
+<P>
+One can configure all the detector settings in a parameter file <TT>setup.det</TT>, which is loaded by doing:
+<PRE>
+sls_detector_put parameters setup.det
+</PRE>
+
+<P>
+In the case of EIGER, the parameter file (<TT>setup.det</TT> needs to setup the proper bias voltage of the sensor, i.e. needs to contain the line <TT>vhighvoltage 150</TT>.
+
+<P>
+
+<H2><A NAME="SECTION00052000000000000000">
+Standard acquisition</A>
+</H2>
+
+<P>
+You will then need to setup the detector threshold and settings, the exposure time, the number of real time frames and eventually how many real time frames should be acquired:
+<PRE>
+sls_detector_put settings standard
+sls_detector_put threshold 6000
+sls_detector_put exptime 1.
+sls_detector_put frames 10
+</PRE>
+In this case 10 consecutive 1s frames will be acquired.
+
+<P>
+You need to setup where the files will be written to
+<PRE>
+sls_detector_put outdir /scratch
+sls_detector_put fname run
+sls_detector_put index 0
+</PRE>
+this way your files will all be named /scratch/run_fj_i.dat where j goes between 0 and 9 and is relative to the frame number, i starts from 0 and is automatically incremented. The next acquisition it will be 1.
+
+<P>
+To acquire simply type
+<PRE>
+sls_detector_acquire
+</PRE>
+
+<P>
+You can poll the detector status using
+<PRE>
+sls_detector_get status
+</PRE>
+
+<P>
+
+<H2><A NAME="SECTION00053000000000000000">
+Data processing</A>
+</H2>
+Flat field and rate corrections can be applied directly by simply selecting:
+<PRE>
+sls_detector_put flatield myflatfield.raw
+sls_detector_put ratecorr -1
+</PRE>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html114"
+  HREF="node6.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html112"
+  HREF="slsDetectorClientHowTo.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html106"
+  HREF="node4.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html115"
+  HREF="node6.html">About this document ...</A>
+<B> Up:</B> <A NAME="tex2html113"
+  HREF="slsDetectorClientHowTo.html">SLS Detector text clients</A>
+<B> Previous:</B> <A NAME="tex2html107"
+  HREF="node4.html">Retrieving detector parameters</A>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2017-08-22
+</ADDRESS>
+</BODY>
+</HTML>

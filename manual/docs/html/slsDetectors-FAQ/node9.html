@@ -1,0 +1,343 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Which is the sequence of the acquisition flow?</TITLE>
+<META NAME="description" CONTENT="Which is the sequence of the acquisition flow?">
+<META NAME="keywords" CONTENT="slsDetectors-FAQ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectors-FAQ.css">
+
+<LINK REL="next" HREF="node10.html">
+<LINK REL="previous" HREF="node8.html">
+<LINK REL="up" HREF="node2.html">
+<LINK REL="next" HREF="node10.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html213"
+  HREF="node10.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html209"
+  HREF="node2.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html203"
+  HREF="node8.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html211"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html214"
+  HREF="node10.html">How can I synchronize</A>
+<B> Up:</B> <A NAME="tex2html210"
+  HREF="node2.html">SLS Detectors Software</A>
+<B> Previous:</B> <A NAME="tex2html204"
+  HREF="node8.html">What is the meaning</A>
+ &nbsp; <B>  <A NAME="tex2html212"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00270000000000000000">
+Which is the sequence of the acquisition flow?</A>
+</H1>
+
+<P>
+The software gives the  possibility to setup several loops, actions and scan utilities which are then handled during the acquisition. 
+The software will also take care to generate the file names  and increment the indexes accordingly.
+<BR>
+<P>
+Figure&nbsp;<A HREF="#eq:acqflow">1.7</A> shows in which sequence the various scripts and loops are executed when calling the acquire command. The loops are drawn using the <!-- MATH
+ $\Updownarrow$
+ -->
+<IMG
+ WIDTH="14" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img4.png"
+ ALT="$ \Updownarrow$">
+ symbol, while the scripts using the  <!-- MATH
+ $\Rightarrow$
+ -->
+<IMG
+ WIDTH="20" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+ SRC="img5.png"
+ ALT="$ \Rightarrow$">
+.
+
+<P>
+<P><A NAME="eq:acqflow"></A><!-- MATH
+ \begin{displaymath}
+\textrm{\textbf{MEASUREMENTS}} \\
+ \left\Updownarrow \,
+    \begin{array}{l} \\
+  %   \textrm{Measurement loop} \\
+  \begin{array}{l} %\\
+        	  \Rightarrow  \,  \textrm{Start script} \\
+	   \\
+\textrm{\textbf{SCAN0}}
+           \left\Updownarrow 
+     \,
+	          \begin{array}{l} \\
+                 	  \Rightarrow \,  \textrm{Scan0 script} \\
+           %        \textrm{Scan 0 level} \\
+		   \\
+\par
+\textrm{\textbf{SCAN1}}      \left\Updownarrow  
+     \,
+	          \begin{array}{l} \\
+                %   \textrm{Scan 1 level} \\
+		 \begin{array}{l} %\\
+                 	  \Rightarrow \,  \textrm{Scan1 script} \\
+                 	  \Rightarrow \,  \textrm{Script before} \\
+		   \\
+\begin{array}{l} \\
+                    \textrm{\textbf{POSITIONS}} \left\Updownarrow  \,	  
+\begin{array}{l} \\
+             	  \Rightarrow \,     \textrm{Header before script} \\
+		   \\
+\par
+\textrm{\textbf{CYCLES}}     \left\Updownarrow  \,
+	          \begin{array}{l} \\
+		  \\
+\textrm{\textbf{FRAMES}}    \left\Updownarrow  \right. \\
+		  \\
+\\
+		  \end{array}
+		  \right. \\
+		  \\
+\Rightarrow \,  \textrm{Header after script}\\
+		  \\
+		  \end{array}
+		  \right. \\
+\\
+\\
+\\
+           \end{array}
+\par
+\\
+	 %  \\
+\Rightarrow \, \textrm{Script after} \\
+\end{array}
+	  % \right. \\
+	   \\
+\\
+                   \end{array}
+	   \right. \\
+\\
+	   \\
+\\
+                   \end{array} 
+	   \right. \\
+	   \\
+\Rightarrow	\,   \textrm{Stop script} \\
+\\
+            \end{array} 
+ %     \right. \\
+ \\
+      \end{array}  
+\right.
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER"><A NAME="eq:acqflow"></A>
+<IMG
+ WIDTH="698" HEIGHT="637" BORDER="0"
+ SRC="img6.png"
+ ALT="\begin{displaymath}\textrm{\textbf{MEASUREMENTS}} \\
+\left\Updownarrow \,
+\be...
+...
+\\
+\end{array}
+% \right. \\
+\\
+\end{array}
+\right.
+\end{displaymath}">
+</DIV><P>
+</P>
+
+<P>
+If you prefere to handle the acquisition from your acquisition enviroment, simply leave al scripts and scans disabled and call the acquition from your acquisition enviroment. 
+<BR>
+Only the frames and cycles loops are defined in firmware and guarantee a precise timing of the acquisition which cannot replaced by any other method (you can synchronize to your beamline by hardware connection of the IO signals as described in&nbsp;<A HREF="node10.html#sec:timing">1.8</A>).
+
+<P>
+Hereafter a description of the meaning of the various loops:
+<DL>
+<DT><STRONG>Measurement loop</STRONG></DT>
+<DD>executes offline several times the entire sequence of the acquisition. At the end of each measurement the <I>file index</I> is incremented.
+
+<P>
+</DD>
+<DT><STRONG>Scan 0 loop</STRONG></DT>
+<DD>is a high level scan loop which can be used e.g to loop on an enviroment variable (temperature, humidity...) or even to change sample.
+<BR>
+The list of steps or range of the <I>scan0 variable</I> must be set as scan0steps or scan0range. For small steps of the scan variable, avoid overwriting of the files specifying all the necessary digits in the filename by properly setting the precision with scan0prec.
+
+<P>
+</DD>
+<DT><STRONG>Scan 1 loop</STRONG></DT>
+<DD>is a low level scan loop which can be used e.g to loop on an enviroment variable (temperature, humidity...) or to move the sample in case of radiation damage.
+<BR>
+The list of steps or range of the <I>scan1 variable</I> must be set as scan1steps or scan1range. For small steps of the scan variable, avoid overwriting of the files specifying all the necessary digits in the filename by properly setting the precision with scan1prec.
+
+<P>
+</DD>
+<DT><STRONG>Position loop</STRONG></DT>
+<DD>The detector is moved in the angular positions specified by the positions command.
+<BR>
+The command for moving the detector should be defined as described in&nbsp;<A HREF="node12.html#sec:usersFunc">1.10</A>.
+<BR>
+All data acquired during a position loop will be merged together, unless the number of positions is set to 0. In this case single frames will be converted to angle without merging.
+<BR>
+Avoid using the position loop together with many frames/cycles.
+
+<P>
+</DD>
+<DT><STRONG>Cycles loop</STRONG></DT>
+<DD>is executed in real time and defines e.g. the number of triggers that will be accepted. The total number of images will be given by frames times cycles.
+
+<P>
+</DD>
+<DT><STRONG>Frames loop</STRONG></DT>
+<DD>is executed in real time and defines e.g. the images acquired per trigger. The total number of images will be given by frames times cycles.
+</DD>
+</DL>
+
+<P>
+Executing a script simply consists in a system call with the arguments specified below. The various scripts are executed only if they are enabled and different than <I>none</I>. 
+<BR>
+The scripts must be executable and the capability of parsing the arguments passed by the acquition program is left to the user writing the scripts. some example scripts writte in awk can be found in the examples directory.
+<BR>
+Hereafter a short description of how the scripts are called and with which options:
+<DL>
+<DT><STRONG>Start script</STRONG></DT>
+<DD>is executed at the very beginning of the measurement and can be used e.g. to initialize all the devices needed for the acquisition or open the beamline valves. The script is executed as:
+<BR>
+script  nrun=i par=p
+<BR>
+where i is the  <I>file index</I> and p is the <I>start script parameter</I>.
+
+<P>
+</DD>
+<DT><STRONG>Scan0 script</STRONG></DT>
+<DD>There are a few predefined scan modes i.e. <I>threshold</I> changing the detector threshold in DAC units, <I>energy</I> chaning the calibrated detector threshold in eV, <I>trimbits</I> chaning the trimbits of the detector (advanced: do not use) and <I>position</I> changing the detector position (if the motor movement is correctly setup as described in&nbsp;<A HREF="node12.html#sec:usersFunc">1.10</A>). Otherwise the scan0script is executed as:
+<BR>
+script nrun=i fn=fn var=v par=p
+<BR>
+where i is the  <I>file index</I>, fn is the <I>file name</I>, v is the value of the <I>scan0 variable</I> at the present step of the scan0 loop and  p is the <I>scan 0 script parameter</I>.
+
+<P>
+</DD>
+<DT><STRONG>Scan1 script</STRONG></DT>
+<DD>There are a few predefined scan modes i.e. <I>threshold</I> changing the detector threshold in DAC units, <I>energy</I> chaning the calibrated detector threshold in eV, <I>trimbits</I> chaning the trimbits of the detector (advanced: do not use) and <I>position</I> changing the detector position (if the motor movement is correctly setup as described in&nbsp;<A HREF="node12.html#sec:usersFunc">1.10</A>). Otherwise the scan1script is executed as:
+<BR>
+script nrun=i fn=fn var=v par=p
+<BR>
+where i is the  <I>file index</I>, fn is the <I>file name</I>, v is the value of the <I>scan1 variable</I> at the present step of the scan1 loop and  p is the <I>scan 1 script parameter</I>.
+
+<P>
+</DD>
+<DT><STRONG>Script before</STRONG></DT>
+<DD>is called just before the beginning of the data taking and can be used e.g. to open the shutter.
+  The script is executed as:
+<BR>
+script nrun=i fn=fn par=p sv0=v0 sv1=v1 p0=p0 p1=p1 
+<BR>
+where i is the  <I>file index</I>, fn is the <I>file name</I>, p is the <I>script before parameter</I>, v0 and v1 are the  values of the <I>scan0 and scan1 variables</I> at the present step of the scan loops and  p0 and p1 are the <I>scan0 and scan1 script parameters</I>.
+
+<P>
+</DD>
+<DT><STRONG>Header before script</STRONG></DT>
+<DD>is called before every step of the data taking (i.e. for each position, but at the beginning of the frames train if several acquisition have been programmed in real time) and can e.g. be used to dump the exact settings of the detector and beamline to reproduce or analyze the data offline.
+    The script is executed as:
+<BR>
+script nrun=i fn=fn par=p
+<BR>
+where i is the  <I>file index</I>, fn is the <I>file name</I>, and p is the <I>header before parameter</I>.
+
+<P>
+</DD>
+<DT><STRONG>Header after script</STRONG></DT>
+<DD>is called after every step of the data taking (i.e. for each position, but at the end of the frames train if several acquisition have been programmed in real time) and can e.g. be used to dump the exact settings of the detector and beamline to reproduce or analyze the data offline.
+    The script is executed as:
+<BR>
+script nrun=i fn=fn par=p
+<BR>
+where i is the  <I>file index</I>, fn is the <I>file name</I>, and p is the <I>header after parameter</I>.
+
+<P>
+</DD>
+<DT><STRONG>Script after</STRONG></DT>
+<DD>is called just after the end of the data taking and can be used e.g. to close the shutter.
+  The script is executed as:
+<BR>
+script nrun=i fn=fn par=p sv0=v0 sv1=v1 p0=p0 p1=p1 
+<BR>
+where i is the  <I>file index</I>, fn is the <I>file name</I>, p is the <I>script after parameter</I>, v0 and v1 are the  values of the <I>scan0 and scan1 variables</I> at the present step of the scan loops and  p0 and p1 are the <I>scan0 and scan1 script parameters</I>.
+
+<P>
+</DD>
+<DT><STRONG>Stop script</STRONG></DT>
+<DD>is executed at the very end of the measurement and can be used e.g. to switch off all devices. The script is executed as:
+<BR>
+script  nrun=i par=p
+<BR>
+where i si the <I>file index</I> and p is the <I>stop script parameter</I>.
+
+<P>
+</DD>
+</DL>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html213"
+  HREF="node10.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html209"
+  HREF="node2.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html203"
+  HREF="node8.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html211"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html214"
+  HREF="node10.html">How can I synchronize</A>
+<B> Up:</B> <A NAME="tex2html210"
+  HREF="node2.html">SLS Detectors Software</A>
+<B> Previous:</B> <A NAME="tex2html204"
+  HREF="node8.html">What is the meaning</A>
+ &nbsp; <B>  <A NAME="tex2html212"
+  HREF="node1.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2017-08-22
+</ADDRESS>
+</BODY>
+</HTML>

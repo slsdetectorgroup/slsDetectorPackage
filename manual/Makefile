@@ -1,4 +1,4 @@
-DESTDIR?=../docs
+DESTDIR?=docs
 
 
 #manual-api manual-calwiz manual-client manual-gui manual-main
@@ -14,18 +14,18 @@ ALLDIRS=$(MAINDIRS:manual-%=all-%)
 
 
 all: $(ALLDIRS)
-	$(shell test -d $(DESTDIR)/pdf && rm -fr $(DESTDIR)/pdf)
-	mv pdf $(DESTDIR)
-	$(shell test -d $(DESTDIR)/html && rm -fr $(DESTDIR)/html)
-	mv html $(DESTDIR)
-
+#	$(shell test -d $(DESTDIR)/pdf && rm -fr $(DESTDIR)/pdf)
+#	mv pdf $(DESTDIR)
+#	$(shell test -d $(DESTDIR)/html && rm -fr $(DESTDIR)/html)
+#	mv html $(DESTDIR)
+	
 pdf: $(PDFDIRS)
-	$(shell test -d $(DESTDIR)/pdf && rm -fr $(DESTDIR)/pdf)
-	mv pdf $(DESTDIR)
+#	$(shell test -d $(DESTDIR)/pdf && rm -fr $(DESTDIR)/pdf)
+#	mv pdf $(DESTDIR)
 
 html: $(HTMLDIRS)
-	$(shell test -d $(DESTDIR)/html && rm -fr $(DESTDIR)/html)
-	mv html $(DESTDIR)
+#	$(shell test -d $(DESTDIR)/html && rm -fr $(DESTDIR)/html)
+#	mv html $(DESTDIR)
 
 clean: $(CLEANDIRS)
 	rm -fr $(DESTDIR)/pdf
@@ -45,7 +45,7 @@ clean-%:
 	cd  $(@:clean-%=manual-%) && make clean	
 
 
-#¡Æ$(@D)¡Ç    The directory part of the file name of the target, with the trailing slash removed. If the value of ¡Æ$@¡Ç is dir/foo.o then ¡Æ$(@D)¡Ç is dir. This value is . if ¡Æ$@¡Ç does not contain a slash.
-#¡Æ$(@F)¡Ç    The file-within-directory part of the file name of the target. If the value of ¡Æ$@¡Ç is dir/foo.o then ¡Æ$(@F)¡Ç is foo.o. ¡Æ$(@F)¡Ç is equivalent to ¡Æ$(notdir $@)¡Ç.
+#ï¿½ï¿½$(@D)ï¿½ï¿½    The directory part of the file name of the target, with the trailing slash removed. If the value of ï¿½ï¿½$@ï¿½ï¿½ is dir/foo.o then ï¿½ï¿½$(@D)ï¿½ï¿½ is dir. This value is . if ï¿½ï¿½$@ï¿½ï¿½ does not contain a slash.
+#ï¿½ï¿½$(@F)ï¿½ï¿½    The file-within-directory part of the file name of the target. If the value of ï¿½ï¿½$@ï¿½ï¿½ is dir/foo.o then ï¿½ï¿½$(@F)ï¿½ï¿½ is foo.o. ï¿½ï¿½$(@F)ï¿½ï¿½ is equivalent to ï¿½ï¿½$(notdir $@)ï¿½ï¿½.
 
 

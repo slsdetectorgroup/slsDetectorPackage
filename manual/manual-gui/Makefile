@@ -8,40 +8,32 @@ TEX=latex
 
 MAINTEXS= slsDetectorGuiHowTo.tex
 
-#TEXS=
 
 DVIS = $(MAINTEXS:.tex=.dvi)
 PSS = $(MAINTEXS:.tex=.ps)
 PDFS = $(MAINTEXS:.tex=.pdf)
-
-#TARGETS=$(join $(DESTDIR)/, $(notdir $(MAINTEXS:.tex=.pdf)))
-
-#destdir?!?!?
-
-
-
-DVIS = $(MAINTEXS:.tex=.dvi)
-PSS = $(MAINTEXS:.tex=.ps)
-PDFS = $(MAINTEXS:.tex=.pdf)
-
 HTMLS = $(MAINTEXS:%.tex=%)
 
 
-#destdir?!?!?
-
-all: $(PDFS) $(HTMLS)
+all: pdf html
 	echo $(PWD)
 	echo $(PDFS)
 	echo $(HTMLS)
 
 pdf: $(PDFS)
+	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
+	$(shell test -d $(DESTDIR)/pdf || mkdir -p $(DESTDIR)/pdf)
+	mv $(PDFS) $(DESTDIR)/pdf	
 
 html: $(HTMLS)
 
-$(HTMLS): $(TEXS) $(MAINTEXS)
+$(HTMLS): $(MAINTEXS)
+	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
+	$(shell test -d $(DESTDIR)/html || mkdir -p $(DESTDIR)/html)                     
+	$(shell test -d $(DESTDIR)/html/$@ && rm -r $(DESTDIR)/html/$@)
 	latex $@.tex
 	latex2html -split 4 $@.tex
-
+	mv $@ $(DESTDIR)/html
 
 %.dvi : %.tex $(TEXS)
 	latex $<
@@ -57,3 +49,5 @@ $(HTMLS): $(TEXS) $(MAINTEXS)
 
 clean:
 	rm -rf *.aux *.log *.toc *.out $(DVIS) $(PSS) $(PDFS) $(HTMLS)
+	rm -rf $(DESTDIR)/html/slsDetectorGuiHowTo
+	rm -rf $(DESTDIR)/pdf/slsDetectorGuiHowTo.pdf

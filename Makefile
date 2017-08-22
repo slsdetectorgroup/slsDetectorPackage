@@ -5,9 +5,10 @@ include Makefile.include
 
 INSTALLROOT	?=	$(PWD)
 BINDIR	?=	$(INSTALLROOT)/bin
-DOCDIR	?=	$(INSTALLROOT)/docs
+DOCDIR	?=	$(INSTALLROOT)/manual/docs
 LIBDIR	?=	$(INSTALLROOT)/bin
 INCDIR	?=	$(INSTALLROOT)/include
+DETAILDOC	?=	$(INSTALLROOT)/docs
  
 WD				=	$(shell pwd)
 LIBRARYDIR		=	$(WD)/slsDetectorSoftware
@@ -116,6 +117,26 @@ htmldoc:
 	make doc
 	$(shell test -d $(DOCDIR) || mkdir -p $(DOCDIR))
 	cd manual && make html DESTDIR=$(DOCDIR)
+	
+detaildoc: createdocs docspdf docshtml removedocs
+
+createdocs: doxy.config
+	doxygen doxy.config	
+
+docspdf: 
+	cd slsDetectorPackageDocs/latex && make 
+	$(shell test -d $(DETAILDOC) || mkdir -p $(DETAILDOC))
+	$(shell test -d $(DETAILDOC)/pdf || mkdir -p $(DETAILDOC)/pdf)
+	mv slsDetectorPackageDocs/latex/refman.pdf $(DETAILDOC)/pdf/slsDetectorPackageDocs.pdf
+
+docshtml: 
+	$(shell test -d $(DETAILDOC) || mkdir -p $(DETAILDOC))
+	$(shell test -d $(DETAILDOC)/html || mkdir -p $(DETAILDOC)/html)
+	$(shell test -d $(DETAILDOC)/html/slsDetectorPackageDocs && rm -r $(DETAILDOC)/html/slsDetectorPackageDocs)
+	mv slsDetectorPackageDocs/html $(DETAILDOC)/html/slsDetectorPackageDocs
+	
+removedocs:
+	rm -rf 	slsDetectorPackageDocs;
 
 
 clean:
@@ -128,7 +149,8 @@ clean:
 	cd $(CALWIZDIR) && $(MAKE) clean
 	cd manual && $(MAKE) clean
 	cd $(DOCDIR) && rm -rf * 
-
+	rm -rf 	slsDetectorPackageDocs;
+	rm -rf $(DETAILDOC)
 
 
 #install_lib: 

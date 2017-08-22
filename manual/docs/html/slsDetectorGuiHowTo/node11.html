@@ -1,0 +1,269 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Detector setup</TITLE>
+<META NAME="description" CONTENT="Detector setup">
+<META NAME="keywords" CONTENT="slsDetectorGuiHowTo">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectorGuiHowTo.css">
+
+<LINK REL="next" HREF="node12.html">
+<LINK REL="previous" HREF="node10.html">
+<LINK REL="up" HREF="node8.html">
+<LINK REL="next" HREF="node12.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html151"
+  HREF="node12.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html149"
+  HREF="node8.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html143"
+  HREF="node10.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html152"
+  HREF="node12.html">Retrieving detector parameters (plus</A>
+<B> Up:</B> <A NAME="tex2html150"
+  HREF="node8.html">slsDetectorClient</A>
+<B> Previous:</B> <A NAME="tex2html144"
+  HREF="node10.html">Acquisition</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00230000000000000000">
+Detector setup</A>
+</H1>
+
+<P>
+mythen_put [id[:/-]]var arg
+
+<P>
+is used to configure the detector parameter var
+  e.g. mythen_put 0:exptime 1 sets the exposure time to 1 s
+
+<P>
+<DL>
+<DT><STRONG>help i</STRONG></DT>
+<DD>get help
+</DD>
+<DT><STRONG>config fname</STRONG></DT>
+<DD>reads the configuration file specified and sets the values
+</DD>
+<DT><STRONG>parameters fname</STRONG></DT>
+<DD>sets the detector parameters specified in the file
+</DD>
+<DT><STRONG>setup rootname</STRONG></DT>
+<DD>reads the files specfied (and that could be created by get setup) and resets the complete detector configuration including flatfield corrections, badchannels, trimbits etc.
+</DD>
+<DT><STRONG>hostname name</STRONG></DT>
+<DD>this is mandatory!!!! sets hostname (or IP adress)
+</DD>
+<DT><STRONG>online b</STRONG></DT>
+<DD>b can be 0 or 1 and sets the detector in offline/online state. Must be used to restore communication if some socket called failed because the detector was not connected.
+</DD>
+<DT><STRONG>status s</STRONG></DT>
+<DD>either start or stop
+</DD>
+<DT><STRONG>caldir path</STRONG></DT>
+<DD>Sets path of the calibration files 
+</DD>
+<DT><STRONG>trimdir path</STRONG></DT>
+<DD>Sets path of the trim files
+</DD>
+<DT><STRONG>outdir path</STRONG></DT>
+<DD>directory to which the files will be written by default
+</DD>
+<DT><STRONG>fname name</STRONG></DT>
+<DD>filename to which the files will be written by default (to which file and position indexes will eventually be attached)
+</DD>
+<DT><STRONG>index i</STRONG></DT>
+<DD>start index of the files (automatically incremented by the acquisition functions)
+</DD>
+<DT><STRONG>nmod n</STRONG></DT>
+<DD>Sets number of detector modules
+</DD>
+<DT><STRONG>extsig:i mode</STRONG></DT>
+<DD>Sets usage of the external digital signal i. mode can be: off, gate_in_active_high, gate_in_active_low, trigger_in_rising_edge, trigger_in_falling_edge, ro_trigger_in_rising_edge, ro_trigger_in_falling_edge, gate_out_active_high, gate_out_active_low, trigger_out_rising_edge, trigger_out_falling_edge, ro_trigger_out_rising_edge, ro_trigger_out_falling_edge
+</DD>
+<DT><STRONG>timing</STRONG></DT>
+<DD>Sets the timing mode of the detector. Can be auto, gating  (works only if at least one of the signals is configured as gate_in), trigger (works only if at least one of the signals is configured as trigger_in), ro_trigger (works only if at least one of the signals is configured as ro_trigger_in), triggered_gating (works only if one ofthe signals is configured as gate_in and one as trigger_in).
+</DD>
+<DT><STRONG>settings sett</STRONG></DT>
+<DD>Sets detector settings. Can be:  standard fast  highgain (depending on trheshold energy and maximum count rate: please refere to manual for limit values!);
+</DD>
+<DT><STRONG>threshold ev</STRONG></DT>
+<DD>Sets detector threshold in eV. Should be half of the beam energy. It is precise only if the detector is calibrated
+</DD>
+<DT><STRONG>vthreshold dac</STRONG></DT>
+<DD>Sets detector threshold in DAC units. A very rough calibration is dac=800-10*keV
+</DD>
+<DT><STRONG>exptime t</STRONG></DT>
+<DD>Sets the exposure time per frame (in s)
+</DD>
+<DT><STRONG>period t</STRONG></DT>
+<DD>Sets the frames period (in s)
+</DD>
+<DT><STRONG>delay t</STRONG></DT>
+<DD>Sets the delay after trigger (in s)
+</DD>
+<DT><STRONG>gates n</STRONG></DT>
+<DD>Sets the number of gates per frame
+</DD>
+<DT><STRONG>frames n</STRONG></DT>
+<DD>Sets the number of frames per cycle (e.g. after each trigger)
+</DD>
+<DT><STRONG>cycles n</STRONG></DT>
+<DD>Sets the number of cycles (e.g. number of triggers)
+</DD>
+<DT><STRONG>probes n</STRONG></DT>
+<DD>Sets the number of probes to accumulate (max 3)
+</DD>
+<DT><STRONG>dr n</STRONG></DT>
+<DD>Sets the dynamic range - can be (1,) 4, 8,16 or 24 bits
+</DD>
+<DT><STRONG>flags mode</STRONG></DT>
+<DD>Sets the readout flags - can be none or storeinram
+</DD>
+<DT><STRONG>flatfield fname</STRONG></DT>
+<DD>Sets the flatfield file name - none disable flat field corrections
+</DD>
+<DT><STRONG>ratecorr t</STRONG></DT>
+<DD>Sets the rate corrections with dead time t ns (0 unsets, -1 uses default dead time for chosen settings
+</DD>
+<DT><STRONG>badchannels fname</STRONG></DT>
+<DD>Sets the badchannels file name - none disable bad channels corrections
+</DD>
+<DT><STRONG>angconv fname</STRONG></DT>
+<DD>Sets the angular conversion file name
+</DD>
+<DT><STRONG>globaloff o</STRONG></DT>
+<DD>sets the fixed angular offset of your encoder - should be almost constant!
+</DD>
+<DT><STRONG>fineoff o</STRONG></DT>
+<DD>sets a possible angular offset of your setup - should be small but can be senseful to modify
+</DD>
+<DT><STRONG>binsize s</STRONG></DT>
+<DD>sets the binning size of the angular conversion (otherwise defaults from the angualr conversion constants)
+</DD>
+<DT><STRONG>angdir i</STRONG></DT>
+<DD>sets the angular direction of the detector (i can be 1 or -1 - by default 1, channel 0 is smaller angle)
+</DD>
+<DT><STRONG>positions np (pos0 pos1...posnp)</STRONG></DT>
+<DD>Sets the number of positions at which the detector is moved during the acquisition and their values
+</DD>
+<DT><STRONG>startscript script</STRONG></DT>
+<DD>sets a script to be executed at the beginning of the measurements (e.g. open shutter). <I>none</I> unsets. Parameters will be parsed as <code>script nrun=i par=spar</code> where i is the run number and spar is the value of startscriptpar.
+</DD>
+<DT><STRONG>stopscript script</STRONG></DT>
+<DD>sets a script to be executed at the end of the measurement (e.g. close shutter). <I>none</I> unsets. Parameters will be parsed as <code>script nrun=i par=spar</code> where i is the run number and spar is the value of stopscriptpar.
+</DD>
+<DT><STRONG>startscriptpar spar</STRONG></DT>
+<DD>sets a parameter passed to the start script as string with the syntax par=spar. Its meaning must be interpreted inside the script!
+</DD>
+<DT><STRONG>stopscriptpar spar</STRONG></DT>
+<DD>sets a parameter passed to the start script as string with the syntax par=spar. Its meaning must be interpreted inside the script!
+</DD>
+<DT><STRONG>scan0script script</STRONG></DT>
+<DD>Sets a scan script to be executed at higher level. Script can be none (unset), threshold (change threshold DAC values for all modules), energy (change energy threshold DAC values using calibration for each module), trimbits (change trimbits for all channels) or any script (e.g changing temperature or moving sample) which will be called with the syntax <code> script nrun=i fn=fname var=val par=spar</code> where i is the file index, fname is the file name val is the current value of the scan variable and spar is the value of the scan parameter
+</DD>
+<DT><STRONG>scan1script script</STRONG></DT>
+<DD>Sets a scan script to be executed at lower level. Script can be none (unset), threshold (change threshold DAC values for all modules), energy (change energy threshold DAC values using calibration for each module), trimbits (change trimbits for all channels) or any script (e.g changing temperature or moving sample) which will be called with the syntax <code> script nrun=i fn=fname var=val par=spar</code> where i is the file index, fname is the file name val is the current value of the scan variable and spar is the value of the scan parameter
+</DD>
+<DT><STRONG>scan0par spar</STRONG></DT>
+<DD>sets the scan parameter to be passed to scan0script as a string with syntax par=spar. Its meaning has to be interpreted insode the script! 
+</DD>
+<DT><STRONG>scan1par spar</STRONG></DT>
+<DD>sets the scan parameter to be passed to scan1script as a string with syntax par=spar. Its meaning has to be interpreted insode the script! 
+</DD>
+<DT><STRONG>scan0prec i</STRONG></DT>
+<DD>sets the precision of the scan variable in order to properly generate the file names for scan0
+</DD>
+<DT><STRONG>scan1prec i</STRONG></DT>
+<DD>sets the precision of the scan variable in order to properly generate the file names for scan1
+</DD>
+<DT><STRONG>scan0steps n (f0 f1..fn)</STRONG></DT>
+<DD>sets the steps for the scan0script. n is the number of steps and the following values are the step values.
+</DD>
+<DT><STRONG>scan1steps n (f0 f1..fn)</STRONG></DT>
+<DD>sets the steps for the scan1script. n is the number of steps and the following values are the step values.
+</DD>
+<DT><STRONG>scan0range mi ma st</STRONG></DT>
+<DD>generates the steps for the scan0script in the range mi to ma with step st (is mi smaller than ma specify a negative step)
+</DD>
+<DT><STRONG>scan1range mi ma st</STRONG></DT>
+<DD>generates the steps for the scan1script in the range mi to ma with step st (is mi smaller than ma specify a negative step)
+</DD>
+<DT><STRONG>scriptbefore script</STRONG></DT>
+<DD>sets the script to be executed before each acquisition (before all positions) with the syntax <code>script nrun=i fn=fname par=spar sv0=svar0 sv1=svar1 p0=spar0 p1=spar1</code> where i is the file index, fname is the file name, sva0, svar1 are the current values of the scan variables 0 and 1, spar0, spar1 are tthe scan parameter 0 and 1. <I>none</I> unsets.
+</DD>
+<DT><STRONG>scriptafter script</STRONG></DT>
+<DD>sets the script to be executed after each acquisition (after all positions) with the syntax <code>script nrun=i fn=fname par=spar sv0=svar0 sv1=svar1 p0=spar0 p1=spar1</code> where i is the file index, fname is the file name, sva0, svar1 are the current values of the scan variables 0 and 1, spar0, spar1 are tthe scan parameter 0 and 1. <I>none</I> unsets.
+</DD>
+<DT><STRONG>scriptbeforepar spar</STRONG></DT>
+<DD>sets the parameter to be passed to the script before witht he syntax par=spar 
+</DD>
+<DT><STRONG>scriptafterpar spar</STRONG></DT>
+<DD>sets the parameter to be passed to the script after witht he syntax par=spar 
+</DD>
+<DT><STRONG>headerbefore script</STRONG></DT>
+<DD>sets the script to be executed before each acquisition (after moving the detector) with the syntax <code>script nrun=i fn=fname par=spar</code> where i is the run number, fname is the file name, spar is the header before parameter. The script is normally used to save a file header. <I>none</I> unsets.
+</DD>
+<DT><STRONG>headerafter script</STRONG></DT>
+<DD>sets the script to be executed after each acquisition (after each position) with the syntax <code>script nrun=i fn=fname par=spar</code> where i is the run number, fname is the file name, spar is the header after parameter. The script is normally used to complete the file header. <I>none</I> unsets.
+</DD>
+<DT><STRONG>headerbeforepar spar</STRONG></DT>
+<DD>sets the parameter to be passed to the header before script with the syntax par=spar
+</DD>
+<DT><STRONG>headerafterpar spar</STRONG></DT>
+<DD>sets the parameter to be passed to the header after script with the syntax par=spar
+</DD>
+</DL>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html151"
+  HREF="node12.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html149"
+  HREF="node8.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html143"
+  HREF="node10.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html152"
+  HREF="node12.html">Retrieving detector parameters (plus</A>
+<B> Up:</B> <A NAME="tex2html150"
+  HREF="node8.html">slsDetectorClient</A>
+<B> Previous:</B> <A NAME="tex2html144"
+  HREF="node10.html">Acquisition</A>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2017-08-22
+</ADDRESS>
+</BODY>
+</HTML>

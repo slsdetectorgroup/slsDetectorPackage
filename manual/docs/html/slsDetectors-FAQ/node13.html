@@ -1,0 +1,193 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>In which data format are written the data?</TITLE>
+<META NAME="description" CONTENT="In which data format are written the data?">
+<META NAME="keywords" CONTENT="slsDetectors-FAQ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectors-FAQ.css">
+
+<LINK REL="previous" HREF="node12.html">
+<LINK REL="up" HREF="node2.html">
+<LINK REL="next" HREF="node14.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html259"
+  HREF="node14.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html255"
+  HREF="node2.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html251"
+  HREF="node12.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html257"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html260"
+  HREF="node14.html">Single photon counting detectors</A>
+<B> Up:</B> <A NAME="tex2html256"
+  HREF="node2.html">SLS Detectors Software</A>
+<B> Previous:</B> <A NAME="tex2html252"
+  HREF="node12.html">How can the detector</A>
+ &nbsp; <B>  <A NAME="tex2html258"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html261"
+  HREF="node13.html#SECTION002111000000000000000">GOTTHARD</A>
+<LI><A NAME="tex2html262"
+  HREF="node13.html#SECTION002112000000000000000">EIGER</A>
+<LI><A NAME="tex2html263"
+  HREF="node13.html#SECTION002113000000000000000">JUNGFRAU</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION002110000000000000000"></A> <A NAME="sec:dataFormat"></A>
+<BR>
+In which data format are written the data?
+</H1>
+
+<P>
+For MYTHEN the data are writen in ASCII fomat, one file per frame, in columns, either channel number - counts for the <I>.raw</I> files or angle (or channel number)-counts-error for the <I>.dat</I> files.
+
+<P>
+For the other detectors the files are written in binary format, and must be decoded depending on the detector.
+
+<P>
+
+<H2><A NAME="SECTION002111000000000000000">
+GOTTHARD</A>
+</H2>
+Each file contains 100 frames.
+<DL>
+<DT><STRONG>Normal mode</STRONG></DT>
+<DD>Each frame is split into 2 packets of 1286 bytes each, where actual data is 1280 bytes each. Both the packets (incl header and footer) are written one after the other into the file.
+
+<P>
+Representation of each packet:
+
+<UL>
+<LI>The first 4 bytes represents a number from which, the frame number and packet number can be derived.
+If the number was 108601, increment it by 1 to get 108602.
+<BR>
+Then this <!-- MATH
+ $(108602\&0xFFFFFFFE)>>1 = 54301$
+ -->
+<IMG
+ WIDTH="296" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img11.png"
+ ALT="$ (108602\&amp;0xFFFFFFFE)&gt;&gt;1 = 54301$">
+ is the frame number
+and  <!-- MATH
+ $(108602\&0x1) =0$
+ -->
+<IMG
+ WIDTH="131" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img12.png"
+ ALT="$ (108602\&amp;0x1) =0$">
+ is the packet number.
+<BR>
+0 is the packet on the left and 1 is the packet on the right.
+<BR>
+On a side note, when you use the data call back, we also give you the derived frame number as an argument.
+
+<P>
+</LI>
+<LI>Data of 1280 bytes. 16 bits per pixel.
+
+<P>
+</LI>
+<LI>2 bytes of insignificant footer.
+</LI>
+</UL>
+
+<P>
+</DD>
+<DT><STRONG>Short Frame Mode</STRONG></DT>
+<DD>One Frame has only one packet of 518 bytes, where actual data is 512 bytes.
+
+<UL>
+<LI>first 4 bytes is the frame number. There is no packet number or increment required herecompared to the normal mode.
+</LI>
+<LI>Data of 512 bytes.
+</LI>
+<LI>2 bytes of insignificant footer.
+</LI>
+</UL>
+
+<P>
+</DD>
+</DL>
+
+<P>
+
+<H2><A NAME="SECTION002112000000000000000">
+EIGER</A>
+</H2>
+
+<P>
+
+<H2><A NAME="SECTION002113000000000000000">
+JUNGFRAU</A>
+</H2>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html259"
+  HREF="node14.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html255"
+  HREF="node2.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html251"
+  HREF="node12.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html257"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html260"
+  HREF="node14.html">Single photon counting detectors</A>
+<B> Up:</B> <A NAME="tex2html256"
+  HREF="node2.html">SLS Detectors Software</A>
+<B> Previous:</B> <A NAME="tex2html252"
+  HREF="node12.html">How can the detector</A>
+ &nbsp; <B>  <A NAME="tex2html258"
+  HREF="node1.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2017-08-22
+</ADDRESS>
+</BODY>
+</HTML>

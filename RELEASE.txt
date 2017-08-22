@@ -7,20 +7,19 @@ INTRODUCTION
 
 This document describes the differences between previous versions and 3.0.0 releases.
 
-Manuals can be found under the 'manual' folder.
+Manuals can be found under the 'manual/docs' folder. Both HTML and pdf versions are provided.
 
-Command Line Documentation can be accessed from this location via browser:
-
-	manual/slsDetectorClientDocs/html/index.html
+Documentation from Source Code can be found for the Command Line and for the API for
+both HTML and pdf versions as slsDetectorClientDocs and slsDetectorUsersDocs respectively.
 	
-User documentation and other help can be accessed directly at this location:
+User documentation can also be accessed directly at this location:
 
     https://www.psi.ch/detectors/users-support
 
 If you have any software related questions or comments, please send them to:
 
     dhanya.thattil@psi.ch
-
+    anna.bergamaschi@psi.ch
 
 
 CONTENTS
@@ -144,7 +143,7 @@ New Features
 	
 	Gui
 	---
-    10.	Set the data streaming port (individually/ a single one that calculates for the other
+	10.	Set the data streaming port (individually/ a single one that calculates for the other
 	  	receiver streamer threads) via the command line
 	
 		

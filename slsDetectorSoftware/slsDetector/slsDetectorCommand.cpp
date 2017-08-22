@@ -5868,7 +5868,7 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 		if (action==PUT_ACTION) {
 			if(!strcasecmp(args[1],"start")) {
 				//to ensure data streaming enable is the same across client and receiver
-				if (receivers == ONLINE_FLAG) {
+				/*if (receivers == ONLINE_FLAG) {
 					//if it was not off
 					if (myDet->enableDataStreamingFromReceiver(-1) != 0){
 						//switch it off, if error
@@ -5876,7 +5876,7 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 							return string("could not disable data streaming in receiver\n");
 						}
 					}
-				}
+					}*/
 				myDet->startReceiver();
 			}
 			else if(!strcasecmp(args[1],"stop")){

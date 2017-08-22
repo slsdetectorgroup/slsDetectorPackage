@@ -2,7 +2,6 @@ include ../Makefile.include
 
 DESTDIR		?=	../bin
 LIBDIR	 	?= 	$(DESTDIR)
-DOCDIR 		?= 	docs
 
 
 CFLAGS= -g -DC_ONLY -fPIC
@@ -33,33 +32,9 @@ $(info )
 
 OBJS = $(SRC_CLNT:%.cpp=%.o) 
 
-.PHONY: all intdoc doc htmldoc package clean
+.PHONY: all package clean
 
 all: package $(SRC_CLNT)
-
-intdoc: $(SRC_H) $(SRC_CLNT) 
-	doxygen doxy.config
-
-doc: $(DOCDIR)/pdf/slsDetectorUsersDocs.pdf
-
-$(DOCDIR)/pdf/slsDetectorUsersDocs.pdf: slsDetectorUsersDocs
-	cd slsDetectorUsersDocs/latex && make 
-	$(shell test -d $(DOCDIR) || mkdir -p $(DOCDIR))
-	$(shell test -d $(DOCDIR)/pdf || mkdir -p $(DOCDIR)/pdf)
-	cp slsDetectorUsersDocs/latex/refman.pdf $(DOCDIR)/pdf/slsDetectorUsersDocs.pdf
-
-
-htmldoc: $(DOCDIR)/html/slsDetectorUsersDocs
-
-$(DOCDIR)/html/slsDetectorUsersDocs: slsDetectorUsersDocs
-	$(shell test -d $(DOCDIR) || mkdir -p $(DOCDIR))
-	$(shell test -d $(DOCDIR)/html || mkdir -p $(DOCDIR)/html)
-	$(shell test -d $(DOCDIR)/html/slsDetectorUsersDocs && rm -r $(DOCDIR)/html/slsDetectorUsersDocs)
-	cp -r slsDetectorUsersDocs/html $(DOCDIR)/html/slsDetectorUsersDocs
-
-slsDetectorUsersDocs: slsDetectorUsers.doxy slsDetector/slsDetectorUsers.h slsDetector/slsDetectorUsers.cpp slsDetectorAnalysis/detectorData.h
-	doxygen slsDetectorUsers.doxy
-
 
 mythenVirtualServer:  $(SRC_MYTHEN_SVC) 
 	cd mythenDetectorServer && make -f Makefile.virtual DESTDIR=$(DESTDIR) 
@@ -90,7 +65,7 @@ $(DESTDIR)/libSlsDetector.a: $(OBJS)
 	mv libSlsDetector.a $(DESTDIR)
 
 clean:
-	rm -rf  $(DESTDIR)/libSlsDetector.a   $(DESTDIR)/libSlsDetector.so core  docs/* slsDetectorUsersDocs $(OBJS)
+	rm -rf  $(DESTDIR)/libSlsDetector.a   $(DESTDIR)/libSlsDetector.so core  $(OBJS)
 	cd 
 	
 	

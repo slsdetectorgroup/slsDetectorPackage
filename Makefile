@@ -120,8 +120,8 @@ htmldoc:
 	
 detaildoc: createdocs docspdf docshtml removedocs
 
-createdocs: doxy.config
-	doxygen doxy.config	
+createdocs: $(LIBRARYDIR)/doxy.config
+	doxygen $(LIBRARYDIR)/doxy.config	
 
 docspdf: 
 	cd slsDetectorPackageDocs/latex && make 

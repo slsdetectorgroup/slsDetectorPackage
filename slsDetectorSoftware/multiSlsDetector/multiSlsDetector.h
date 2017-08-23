@@ -201,6 +201,9 @@ class multiSlsDetector  : public slsDetectorUtils {
     /** flag for acquiring */
     bool acquiringFlag;
 
+    /** external gui */
+    bool externalgui;
+
   } sharedMultiSlsDetector;
 
 
@@ -1441,6 +1444,19 @@ class multiSlsDetector  : public slsDetectorUtils {
      \returns acquiring flag
    */
   bool getAcquiringFlag();
+
+  /**
+     Set external gui flag in shared memory
+     \param b set external gui flag
+   */
+  void setExternalGuiFlag(bool b=false);
+
+  /**
+     Get external gui flag from shared memory
+     \returns external gui flag
+   */
+  void getExternalGuiFlag();
+
 
 
 private:

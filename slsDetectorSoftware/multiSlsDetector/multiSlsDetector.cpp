@@ -207,6 +207,7 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
 
     thisMultiDetector->receiver_read_freq = 0;
     thisMultiDetector->acquiringFlag = false;
+    thisMultiDetector->externalgui = false;
     thisMultiDetector->alreadyExisting=1;
   }
 
@@ -6254,4 +6255,13 @@ void multiSlsDetector::setAcquiringFlag(bool b){
 
 bool multiSlsDetector::getAcquiringFlag(){
 	return thisMultiDetector->acquiringFlag;
+}
+
+
+void multiSlsDetector::setExternalGuiFlag(bool b){
+	thisMultiDetector->externalgui = b;
+}
+
+bool multiSlsDetector::getExternalGuiFlag(){
+	return thisMultiDetector->externalgui;
 }

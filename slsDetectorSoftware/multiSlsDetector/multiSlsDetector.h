@@ -1455,7 +1455,7 @@ class multiSlsDetector  : public slsDetectorUtils {
      Get external gui flag from shared memory
      \returns external gui flag
    */
-  void getExternalGuiFlag();
+  bool getExternalGuiFlag();
 
 
 

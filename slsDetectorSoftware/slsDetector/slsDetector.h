@@ -1894,7 +1894,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      Get external gui flag from shared memory
      \returns external gui flag
    */
-  void getExternalGuiFlag();
+  bool getExternalGuiFlag();
 
  
  protected:

@@ -3590,11 +3590,11 @@ string multiSlsDetector::getNetworkParameter(networkParameter p) {
 string multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 
 	// disable data streaming before changing zmq port (but only if they were on)
-	/*int prev_streaming = 0;*/
-  //	if (p == RECEIVER_STREAMING_PORT) {
-		/*prev_streaming = getStreamingSocketsCreatedInClient();*/
-  //	enableDataStreamingFromReceiver(0);
-  //	}
+	int prev_streaming = 0;
+  	if (p == RECEIVER_STREAMING_PORT) {
+		prev_streaming = getStreamingSocketsCreatedInClient();
+  		enableDataStreamingFromReceiver(0);
+  	}
 
 	if (s.find('+')==string::npos) {
 
@@ -3647,11 +3647,11 @@ string multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 		}
 
 	}
-/*
+
 	//enable data streaming if it was on
 	if (p == RECEIVER_STREAMING_PORT && prev_streaming)
 		enableDataStreamingFromReceiver(1);
-*/
+
 	return getNetworkParameter(p);
 
 } 
@@ -5874,8 +5874,10 @@ int multiSlsDetector::getStreamingSocketsCreatedInClient() {
 
 int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
 
-  /*	if(enable >= 0){
-	
+	//create client sockets only if no external gui
+	if (!thisMultiDetector->externalgui) {
+		if(enable >= 0){
+
 			//destroy data threads
 			if(dataSocketsStarted)
 				createReceivingDataSockets(true);
@@ -5890,10 +5892,8 @@ int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
 					return -1;
 				}
 			}
-	
-
-			}*/
-
+		}
+	}
 
 
 	int ret=-100;
@@ -5928,9 +5928,10 @@ int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
 		}
 	}
 
-	/*	if(ret != dataSocketsStarted)
-		ret = -1;
-	*/
+	if (!thisMultiDetector->externalgui) {
+		if (ret != dataSocketsStarted)
+			ret = -1;
+	}
 	return ret;
 }
 

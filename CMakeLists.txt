@@ -13,7 +13,7 @@ if (USE_HDF5)
 	find_package(HDF5 1.10 COMPONENTS CXX)
 endif (USE_HDF5)
 
-
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 add_subdirectory(slsDetectorSoftware)
 add_subdirectory(slsReceiverSoftware)

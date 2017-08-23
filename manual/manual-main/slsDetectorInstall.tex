@@ -333,7 +333,7 @@ You will need to configure more than one detector, only in case you want to oper
 
 \subsection{MYTHEN}
 In order to be able to properly operate your detector you need a directory where the trimbit files (needed to set the detector settings and eventually equalize the individual channel thresholds) which in the following will be named \textit{settingsdir} and a directory where the calibration files (needed to convert the threshold energy in DAC units) are stored which in the following will be named \textit{caldir}. \\
-\textit{settingsdirdir} and \textit{caldir} can even be the same directory, and an example of it is given in the software package by the example directory \verb=trimdir=. 
+\textit{settingsdir} and \textit{caldir} can even be the same directory, and an example of it is given in the software package by the example directory \verb=trimdir=. 
 Since these directories are customized by producing trimbit files and calibration for each detector, make sure not to overwrite yours every time you upgrade the software.
 
 \textit{settingsdir} should contain three subdirectories \verb=standard=,  \verb=fast= and  \verb=highgain= containing respectively the trimfiles \verb=standard.trim=,  \verb=fast.trim= and  \verb=highgain.trim= which contain the correct voltage settings for the detector although all the individual channel thresholds set to 0. The original files contained in the package should be used, infact in case of error the detector would not recognize the correct settings.\\

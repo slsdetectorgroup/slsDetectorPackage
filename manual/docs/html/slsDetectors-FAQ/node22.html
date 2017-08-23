@@ -7,8 +7,8 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
   Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
 <HTML>
 <HEAD>
-<TITLE>About this document ...</TITLE>
-<META NAME="description" CONTENT="About this document ...">
+<TITLE>In what consists the energy calibration of the detector?</TITLE>
+<META NAME="description" CONTENT="In what consists the energy calibration of the detector?">
 <META NAME="keywords" CONTENT="slsDetectors-FAQ">
 <META NAME="resource-type" CONTENT="document">
 <META NAME="distribution" CONTENT="global">
@@ -18,62 +18,168 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 
 <LINK REL="STYLESHEET" HREF="slsDetectors-FAQ.css">
 
-<LINK REL="previous" HREF="node14.html">
-<LINK REL="up" HREF="slsDetectors-FAQ.html">
+<LINK REL="next" HREF="node23.html">
+<LINK REL="previous" HREF="node21.html">
+<LINK REL="up" HREF="node17.html">
+<LINK REL="next" HREF="node23.html">
 </HEAD>
 
 <BODY >
 <!--Navigation Panel-->
+<A NAME="tex2html446"
+  HREF="node23.html">
 <IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
- SRC="file:/usr/share/latex2html/icons/next_g.png"> 
-<A NAME="tex2html381"
-  HREF="slsDetectors-FAQ.html">
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html442"
+  HREF="node17.html">
 <IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
  SRC="file:/usr/share/latex2html/icons/up.png"></A> 
-<A NAME="tex2html377"
+<A NAME="tex2html436"
   HREF="node21.html">
 <IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
  SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
-<A NAME="tex2html383"
+<A NAME="tex2html444"
   HREF="node1.html">
 <IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
  SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
 <BR>
-<B> Up:</B> <A NAME="tex2html382"
-  HREF="slsDetectors-FAQ.html">SLS Detectors Frequently Asked</A>
-<B> Previous:</B> <A NAME="tex2html378"
-  HREF="node21.html">When should I enable</A>
- &nbsp; <B>  <A NAME="tex2html384"
+<B> Next:</B> <A NAME="tex2html447"
+  HREF="node23.html">Why should I change</A>
+<B> Up:</B> <A NAME="tex2html443"
+  HREF="node17.html">Single photon counting detectors</A>
+<B> Previous:</B> <A NAME="tex2html437"
+  HREF="node21.html">What happens when I</A>
+ &nbsp; <B>  <A NAME="tex2html445"
   HREF="node1.html">Contents</A></B> 
 <BR>
 <BR>
 <!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
 
-<H1><A NAME="SECTION00400000000000000000">
-About this document ...</A>
+<UL>
+<LI><A NAME="tex2html448"
+  HREF="node22.html#SECTION00451000000000000000">MYTHEN</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00450000000000000000"></A><A NAME="sec:encal"></A>
+<BR>
+In what consists the energy calibration of the detector?
 </H1>
- <STRONG>SLS Detectors
+
+<P>
+General remarks about DAC to energy conversion
+
+<P>
+
+<H2><A NAME="SECTION00451000000000000000">
+MYTHEN</A>
+</H2>
+
+<P>
+Since the conversion between the threshold DAC units and energy depends on the gain and offset of the channels the energy calibration has to be done for all settings (high gain, standard and fast). For each setting follow this procedure:
+
+<UL>
+<LI>Select the setting in the <I>Initialization</I> tab.
+</LI>
+<LI>Enter in expert mode by clicking the <I>Advanced</I> radiobutton in the <I>Global settings</I> box in the <I>Initialization</I> tab.
+</LI>
+<LI>If the trimfiles are in the correct location and with the correct name, they should be loaded by default every time you select the corresponding settings in the <I>global settings</I> box in the <I>initialization</I> tab&nbsp;<A NAME="tex2html20"
+  HREF="footnode.html#foot1316"><SUP>3.1</SUP></A>.
+If the trim files do not yet exist generate them as explained in section&nbsp;<A HREF="node21.html#sec:noisetrim">3.4.1</A>.
+</LI>
+<LI>Execute a threshold scan of the detector with at least three different energies. The more monochromatic are the X-rays, the better the calibration will be (i.e. scattered X-rays are better than the fluorescent emission). 
 <BR>
-Frequently Asked Questions</STRONG><P>
-This document was generated using the
-<A HREF="http://www.latex2html.org/"><STRONG>LaTeX</STRONG>2<tt>HTML</tt></A> translator Version 2008 (1.71)
+The scan should range from where all modules count 0 (estimate 850-20<IMG
+ WIDTH="9" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img40.png"
+ ALT="$ \cdot$">
+energy(keV) DAcu) and where all modules start having a lot of noise (usually 800 DACu) with a step of 1 or 2 DACu. The acquisition time should be chosen so that there are at least 1000 counts per strip on the plateau.
+</LI>
+<LI>Open the file <I>root/CalAllModules.C</I> for editing. Change the value of the following global variables according to your needs:
+
+<UL>
+<LI><I>nmod</I> is the number of modules of your system.
+</LI>
+<LI><I>nscan</I> is the number of different threshold scans you acquired.
+</LI>
+<LI><I>en</I> is the array with the energies at which you acquired the scans, in keV.
+</LI>
+<LI><I>een</I> is the array with the errors on the energies at which you acquired the scans, in keV. It is usually small, but can be some hundreds eV in case of dirty fluorescent samples.
+</LI>
+<LI><I>fn</I> is the array containing the location and root file name of your data.
+</LI>
+<LI><I>run</I> is the array containing the run index of your data.
+</LI>
+<LI><I>startscan</I> is the array containing the threshold value at which you started the scans.
+</LI>
+<LI><I>stopscan</I> is the array containing the threshold value at which you finished the scans.
+</LI>
+<LI><I>stepscan</I> is the array containing the threshold step of the scans.
+</LI>
+<LI><I>ave</I> is the array containing the average number of counts per strip on the plateau (it must not be too precise).
+</LI>
+<LI><I>sn</I> is the array containing the list of the serial number of the modules to be calibrated. It is important that the list is in the right order, so that the optput calibration files have the extension .snxxx corresponding to the right module.
+</LI>
+<LI><I>of</I> is the location and root file name of the calibration file. The directory should already exist and the extension .snxxx will be attached to the output file.  
+</LI>
+</UL>
+</LI>
+<LI>Launch <I>root</I>, which you should have already installed on your linux PC
+</LI>
+<LI>Execute the following commands in order to load the macros needed for the calibration:
+<PRE>
+root$ .L root/NewMythenMacros.C++
+root$ .L root/CalAllModules.C++
+</PRE>
+You should get a lot of warnings, but no errors.
+</LI>
+<LI>Execute the following command in order to run the calibration:
+<PRE>
+root$ EnCalModules()
+root$
+</PRE>
+Reading and analyzing the data takes some time, but, after a while, a canvas should open where the plots of the median of the counts of every module as a function of the threshold should be shown for each energy, fitted with a modified <I>erf</I> function in order to find the inflextion point. The last plot of the canvas should represent the inflexion points as a function of the energies, and by fitting it with a straight line it is possible to calculate the offset and gain for each module i.e. calibrate it as a function of the energy. Please check that this automated fitting procedure succeeds. In case you see many fitting errors you should try to check wether the variable you edited in  <I>root/CalAllModules.C</I> are all correct or try to edit the fitting procedures in the two root macro files (sorry!).
+</LI>
+<LI>Copy the calibration file you obtained to <I>calibration</I>/<I>settings</I><I>.snxxx</I>&nbsp;<A NAME="tex2html21"
+  HREF="footnode.html#foot1317"><SUP>3.2</SUP></A> By doing this the correct threshold for each module will be calculated every time you change the <I>threhsold energy</I> in the <I>global settings</I> box in the <I>initialization</I> tab, you have loaded some default settings and you are not in expert mode.  
+</LI>
+</UL>
+
 <P>
-Copyright &#169; 1993, 1994, 1995, 1996,
-<A HREF="http://cbl.leeds.ac.uk/nikos/personal.html">Nikos Drakos</A>, 
-Computer Based Learning Unit, University of Leeds.
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html446"
+  HREF="node23.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html442"
+  HREF="node17.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html436"
+  HREF="node21.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html444"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
 <BR>
-Copyright &#169; 1997, 1998, 1999,
-<A HREF="http://www.maths.mq.edu.au/~ross/">Ross Moore</A>, 
-Mathematics Department, Macquarie University, Sydney.
-<P>
-The command line arguments were: <BR>
- <STRONG>latex2html</STRONG> <TT>-split 4 slsDetectors-FAQ.tex</TT>
-<P>
-The translation was initiated by Thattil Dhanya on 2017-08-22
-<BR><HR>
+<B> Next:</B> <A NAME="tex2html447"
+  HREF="node23.html">Why should I change</A>
+<B> Up:</B> <A NAME="tex2html443"
+  HREF="node17.html">Single photon counting detectors</A>
+<B> Previous:</B> <A NAME="tex2html437"
+  HREF="node21.html">What happens when I</A>
+ &nbsp; <B>  <A NAME="tex2html445"
+  HREF="node1.html">Contents</A></B> 
+<!--End of Navigation Panel-->
 <ADDRESS>
 Thattil Dhanya
-2017-08-22
+2017-08-23
 </ADDRESS>
 </BODY>
 </HTML>

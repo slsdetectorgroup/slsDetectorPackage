@@ -4,7 +4,7 @@ DESTDIR=../docs
 TEX=latex
 
 
-MAINTEXS= slsDetectors-FAQ.tex slsDetectorInstall.tex 
+MAINTEXS= slsDetectorInstall.tex slsDetectors-FAQ.tex 
 
 TEXS=slsDetector-softFAQ.tex singlePhotonCounting-FAQ.tex angConv-FAQ.tex generalDet-FAQ.tex 
 
@@ -32,9 +32,10 @@ $(HTMLS): $(TEXS) $(MAINTEXS)
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
 	$(shell test -d $(DESTDIR)/html || mkdir -p $(DESTDIR)/html)
 	$(shell test -d $(DESTDIR)/html/$@ && rm -fr $(DESTDIR)/html/$@)
+	echo "*****************************  $@"
 	latex $@.tex
 	latex2html -split 4 $@.tex	
-	mv $(HTMLS) $(DESTDIR)/html
+	mv $@ $(DESTDIR)/html
 
 
 %.dvi : %.tex $(TEXS)

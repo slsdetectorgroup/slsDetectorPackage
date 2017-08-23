@@ -256,9 +256,9 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page config
-   - <b> datastream </b>enables/disables the 0MQ data stream (0MQ threads created) from receiver to client. \c Returns \c (int)
+   - <b> externalgui </b>sets/gets external gui flag. 1 sets and enables the 0MQ data stream (0MQ threads created) from receiver to client, while 0 unsets and disables. \c Returns \c (int)
 	 */
-	descrToFuncMap[i].m_pFuncName="datastream"; //
+	descrToFuncMap[i].m_pFuncName="externalgui"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDataStream;
 	i++;
 
@@ -2295,7 +2295,10 @@ string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action) {
 
 
 	myDet->setOnline(ONLINE_FLAG);
-	if (myDet->setReceiverOnline(ONLINE_FLAG) == ONLINE_FLAG) {
+
+	if (myDet->getExternalGuiFlag())
+		myDet->setReceiverOnline(ONLINE_FLAG);
+	else if (myDet->setReceiverOnline(ONLINE_FLAG) == ONLINE_FLAG) {
 		// command line: must be off, if receiver on or there was -1, then
 		if (myDet->enableDataStreamingFromReceiver(-1) != 0){
 			//switch it off, if error
@@ -2469,10 +2472,20 @@ string slsDetectorCommand::cmdDataStream(int narg, char *args[], int action) {
 
 	if (action==PUT_ACTION) {
 		if (!sscanf(args[1],"%d",&ival))
-			return string ("cannot scan datastream mode");
+			return string ("cannot scan externalgui mode");
+		bool bval=ival>0?true:false;
+		bool oldval = myDet->getExternalGuiFlag();
+		myDet->setExternalGuiFlag(bval);
 		myDet->enableDataStreamingFromReceiver(ival);
 	}
-	sprintf(ans,"%d",myDet->enableDataStreamingFromReceiver());
+
+	int retval = myDet->getExternalGuiFlag();
+	//if external gui on and datastreaming off
+	if (retval  && !myDet->enableDataStreamingFromReceiver()) {
+		retval=-1;
+		printf("Error: data streaming in receiver is switched off while external gui flag in shared memory is off.\n");
+	}
+	sprintf(ans,"%d",myDet->getExternalGuiFlag());
 	return string(ans);
 }
 
@@ -2481,9 +2494,9 @@ string slsDetectorCommand::helpDataStream(int narg, char *args[], int action) {
 
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION)
-		os << string("datastream \t gets if zmq data stream from receiver is enabled. \n");
+		os << string("externalgui \t gets external gui flag. 1/0 means the 0MQ data stream (0MQ threads created) from receiver to client is enabled/disabled. -1 for inconsistency. \n");
 	if (action==PUT_ACTION || action==HELP_ACTION)
-		os << string("datastream i\t enables/disables the zmq data stream from receiver. \n");
+		os << string("externalgui i\t sets external gui flag. 1/0 means the 0MQ data stream (0MQ threads created) from receiver to client is enabled/disabled. \n");
 	return os.str();
 }
 
@@ -5868,7 +5881,7 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 		if (action==PUT_ACTION) {
 			if(!strcasecmp(args[1],"start")) {
 				//to ensure data streaming enable is the same across client and receiver
-				if (receivers == ONLINE_FLAG) {
+				if ((!myDet->getExternalGuiFlag()) && (receivers == ONLINE_FLAG)) {
 					//if it was not off
 					if (myDet->enableDataStreamingFromReceiver(-1) != 0){
 						//switch it off, if error
@@ -5876,7 +5889,7 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 							return string("could not disable data streaming in receiver\n");
 						}
 					}
-				}
+					}
 				myDet->startReceiver();
 			}
 			else if(!strcasecmp(args[1],"stop")){

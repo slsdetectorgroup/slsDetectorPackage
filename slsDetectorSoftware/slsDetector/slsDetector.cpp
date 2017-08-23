@@ -9074,3 +9074,15 @@ void slsDetector::setAcquiringFlag(bool b){
 bool slsDetector::getAcquiringFlag(){
 	return thisDetector->acquiringFlag;
 }
+
+
+void slsDetector::setExternalGuiFlag(bool b){
+	pthread_mutex_lock(&ms);
+	parentDet->setExternalGuiFlag(b);
+	pthread_mutex_unlock(&ms);
+}
+
+bool slsDetector::getExternalGuiFlag(){
+	return parentDet->getExternalGuiFlag();
+}
+

@@ -5325,16 +5325,6 @@ slsDetectorDefs::runStatus multiSlsDetector::getReceiverStatus(){
 int multiSlsDetector::getFramesCaughtByReceiver() {
 	int ret=0,ret1=0;
 
-	if(thisMultiDetector->numberOfDetectors>10) {
-		if (detectors[0]){
-			ret =detectors[0]->getFramesCaughtByReceiver();
-			if(detectors[0]->getErrorMask())
-				setErrorMask(getErrorMask()|(1<<0));
-		}
-		return ret;
-	}
-
-
 	for (int i=0; i<thisMultiDetector->numberOfDetectors; i++)
 		if (detectors[i]){
 			ret1+=detectors[i]->getFramesCaughtByReceiver();

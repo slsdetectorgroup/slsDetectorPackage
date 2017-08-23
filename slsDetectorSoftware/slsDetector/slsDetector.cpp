@@ -4540,7 +4540,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 				if (connectData() == OK){
 					ret=thisReceiver->sendIntArray(fnum2,retval,args,mess);
 					disconnectData();
-				}else cprintf(RED,"could not connect\n");
+				}
 				if((args[1] != retval)|| (ret==FAIL)){
 					ret = FAIL;
 					cout << "ERROR: " << timername << " in receiver set incorrectly to " << retval << " instead of " << args[1] << endl;

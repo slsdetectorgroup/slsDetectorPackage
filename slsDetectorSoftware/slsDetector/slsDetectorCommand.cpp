@@ -4331,7 +4331,7 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 	if (cmd=="roimask")
 		sprintf(ans,"0x%x",ret);
 	else
-		sprintf(ans,"0x%d",ret);
+		sprintf(ans,"%d",ret);
 
 	return string(ans);
 

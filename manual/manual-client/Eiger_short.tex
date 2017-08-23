@@ -22,7 +22,7 @@
 \subsection{Mandatory setup - Hardware}
 An EIGER single module (500~kpixels) needs:
 \begin{itemize}
-\item A chilled (water+alcohol) at approximately 21~$^{\circ}$C, which needs to dissipate 85~W.
+\item A chilled (water+alcohol) at approximately 21~$^{\circ}$C, which needs to dissipate 85~W. For the (M, a special cooling liquid is required: 2/3 deionized water and 1/3 ESA Type 48.
 \item A power supply (12~V, 8~A). For the 9~M, a special cpu is give to remotely switch on and off the detector: see section~\ref{bchip100}. 
 \item 2$\times$1~Gb/s Ethernet connectors to control the detector and, optionally, receive data at low rate. A DHCP server that gives IPs to the 1~Gb/s connectors of the detector is needed. Note that flow control has to be enabled on the switch you are using.
 \item 2$\times$10~Gb/s transceivers to optionally, receive data at high rate.
@@ -57,6 +57,19 @@ The directory contains some executables taht are needed to make your detector to
 ./temp returns the water temperature returned by the flowmeter
  \end{verbatim}
 A watchdog is running on bchip100 to check for the flow and temparature. If outside of parameters, the detector will be switched off. 
+Here is an explanation of the LED color scheme of teh bchip100: 
+\begin{itemize}
+\item NO LED  Main Power off or Blackfin not ready, yet.
+\item RED     Too high temperature or too less water flow
+        Detector is shutted down and locked.
+        Detector will be unlocked (YELLOW) automatically when conditions are good again.
+\item YELLOW  Detector is off and unlocked. Ready to be turned on.
+\item GREEN   Detector is on
+\end{itemize}
+You can also Check temperatures and water flow in a browser (from teh same subnet where the 9M is: http://bchip100/status.cgi
+
+
+
   
 \subsection{Mandatory setup - Receiver}
 

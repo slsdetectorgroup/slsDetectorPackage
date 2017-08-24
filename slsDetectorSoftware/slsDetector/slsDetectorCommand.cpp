@@ -2473,9 +2473,7 @@ string slsDetectorCommand::cmdDataStream(int narg, char *args[], int action) {
 	if (action==PUT_ACTION) {
 		if (!sscanf(args[1],"%d",&ival))
 			return string ("cannot scan externalgui mode");
-		bool bval=ival>0?true:false;
-		bool oldval = myDet->getExternalGuiFlag();
-		myDet->setExternalGuiFlag(bval);
+		myDet->setExternalGuiFlag(ival>0?true:false);
 		myDet->enableDataStreamingFromReceiver(ival);
 	}
 

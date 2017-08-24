@@ -18,7 +18,7 @@
 #include <string>
 using namespace std;
 
-#define NUM_RECEIVERS 	2
+#define NUM_RECEIVERS 	1
 #define START_TCP_PORT	1954
 #define PRINT_IN_COLOR(c,f, ...) 	printf ("\033[%dm" f RESET, 30 + c+1, ##__VA_ARGS__)
 

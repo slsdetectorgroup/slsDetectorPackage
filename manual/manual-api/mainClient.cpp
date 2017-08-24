@@ -42,8 +42,8 @@ int main(int argc,  char **argv) {
     cout<<"Detector configured" << endl;
   }
     /** registering data callback */
-    //pDetector->registerDataCallback(&dataCallback, NULL);
-    //pDetector->enableDataStreamingFromReceiver(1);
+    pDetector->registerDataCallback(&dataCallback, NULL);
+    pDetector->enableDataStreamingFromReceiver(1);
 
     /** checking detector status and exiting if not idle */
    int status = pDetector->getDetectorStatus(); 

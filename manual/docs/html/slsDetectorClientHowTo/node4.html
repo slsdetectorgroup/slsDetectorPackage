@@ -110,6 +110,7 @@ For some commands, an additional argument <code>arg</code> is needed.
 <H2><A NAME="SECTION00041000000000000000">
 Standard commands</A>
 </H2>
+All the commends return two strings, where string1 is the command, string2 is teh actual returned string.
 
 <P>
 <DL>
@@ -120,10 +121,14 @@ Standard commands</A>
 <DD>Dumps the current acquisition parameters of the detector to the file fname.
 </DD>
 <DT><STRONG>settings</STRONG></DT>
-<DD>Returns the current settings of the detector.
+<DD>Returns the current settings of the detector. Returns a string 
+
+<P>
 </DD>
 <DT><STRONG>threshold</STRONG></DT>
-<DD>For photon counting detectors, returns the detector threshold in eV, -1 if undefined.
+<DD>For photon counting detectors, returns the detector threshold in eV, -1 if undefined. Returns ``threshold value_in_eV''. If it fails, the returned threshold is the old set value. 
+
+<P>
 </DD>
 <DT><STRONG>timing</STRONG></DT>
 <DD>Returns the acquisition timing mode of the detector.
@@ -139,11 +144,11 @@ Refer to the detailed documentation to understand how the different timing modes
 <DD>Returns if data are written to file (1) or not (0).
 </DD>
 <DT><STRONG>exptime</STRONG></DT>
-<DD>Returns the exposure time of a single acquisition in seconds. 
+<DD>Returns the exposure time of a single acquisition in seconds. Example: "exptime 1.000000000''
 Refer to detailed documentation to understand how the different timing modes work. 
 </DD>
 <DT><STRONG>period</STRONG></DT>
-<DD>Returns the frames period (in s). 
+<DD>Returns the frames period (in s). Example: ``period 1.000000000''
 Refer to detailed documentation to understand how the different timing modes work.
 </DD>
 <DT><STRONG>delay</STRONG></DT>
@@ -155,12 +160,12 @@ Refer to detailed documentation to understand how the different timing modes wor
 Refer to detailed documentation to understand how the different timing modes work.
 </DD>
 <DT><STRONG>frames</STRONG></DT>
-<DD>Returns the number of frames acquired sequentially per cycle (e.g. after each trigger), with the exposure time defined by exptime and the period defined by period (unless in gated mode).
+<DD>Returns the number of frames acquired sequentially per cycle (e.g. after each trigger), with the exposure time defined by exptime and the period defined by period (unless in gated mode). Returned as a string to be interpreted as an integer ``frames integer''
 Note that the total number of images is  frames times cycles.  
 Refer to detailed documentation to understand how the different timing modes work. 
 </DD>
 <DT><STRONG>cycles n</STRONG></DT>
-<DD>Returns the number of cycles (e.g. number of triggers). 
+<DD>Returns the number of cycles (e.g. number of triggers). Returned as atring to be interpreted as an integer ``cycles integer''
 Note that the total number of images is  frames times cycles. 
 Refer to detailed documentation to understand how the different timing modes work.  
 </DD>
@@ -173,7 +178,9 @@ Refer to detailed documentation to understand how the different timing modes wor
 Refer to detailed documentation to understand how the different timing modes work.
 </DD>
 <DT><STRONG>dr</STRONG></DT>
-<DD>Returns the dynamic range n (in bits) of the data for a photon counting detector. 
+<DD>Returns the dynamic range n (in bits) of the data for a photon counting detector. Returns a string that should be interpreted as an integer.
+
+<P>
 </DD>
 <DT><STRONG>flags s</STRONG></DT>
 <DD>Returns the flags set for your detector. 
@@ -549,7 +556,7 @@ Receiver -  GOTTHARD only</A>
 <DD>Returns whether the receiver in online (1) or offline (0) mode.   
 </DD>
 <DT><STRONG>framescaught</STRONG></DT>
-<DD>Returns the number of frames received.
+<DD>Returns the number of frames received. Returns: "framescaught n''
 </DD>
 <DT><STRONG>resetframescaught n</STRONG></DT>
 <DD>Sets the number of frames received to 1
@@ -808,7 +815,7 @@ Advanced settings changing the analog or digital performance of the acquisition.
 <!--End of Navigation Panel-->
 <ADDRESS>
 Thattil Dhanya
-2017-08-22
+2017-08-24
 </ADDRESS>
 </BODY>
 </HTML>

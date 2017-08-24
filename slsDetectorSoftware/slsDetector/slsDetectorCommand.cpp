@@ -4864,7 +4864,7 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
 
 	int idac=-1;
 	if (sscanf(args[0],"dac:%d",&idac)==1) {
-		printf("chiptestboard!\n");
+		//printf("chiptestboard!\n");
 		dac=(dacIndex)idac;
 	}
 	else if (cmd=="adcvpp")

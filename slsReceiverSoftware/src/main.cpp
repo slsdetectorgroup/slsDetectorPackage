@@ -14,6 +14,7 @@
 
 #include <sys/types.h>	//wait
 #include <sys/wait.h>	//wait
+#include <syscall.h>
 using namespace std;
 
 
@@ -58,7 +59,7 @@ void GetData(uint64_t frameNumber, uint32_t expLength, uint32_t packetNumber, ui
 int main(int argc, char *argv[]) {
 
 	keeprunning = true;
-	bprintf(BLUE,"[ Pid: %ld ]\n", (long)getpid());
+	bprintf(BLUE,"Created [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
 
 	// Catch signal SIGINT to close files and call destructors properly
 	struct sigaction sa;
@@ -85,6 +86,7 @@ int main(int argc, char *argv[]) {
 	slsReceiverUsers *receiver = new slsReceiverUsers(argc, argv, ret);
 	if(ret==slsReceiverDefs::FAIL){
 		delete receiver;
+		bprintf(BLUE,"Exiting [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
 		exit(EXIT_FAILURE);
 	}
 
@@ -133,6 +135,7 @@ int main(int argc, char *argv[]) {
 	//start tcp server thread
 	if (receiver->start() == slsReceiverDefs::FAIL){
 		delete receiver;
+		bprintf(BLUE,"Exiting [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
 		exit(EXIT_FAILURE);
 	}
 
@@ -142,6 +145,7 @@ int main(int argc, char *argv[]) {
 		usleep(5 * 1000 * 1000);
 
 	delete receiver;
+	bprintf(BLUE,"Exiting [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
 	FILE_LOG(logINFO) << "Goodbye!";
 	return 0;
 }

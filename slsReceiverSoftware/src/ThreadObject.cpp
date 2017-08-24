@@ -8,6 +8,7 @@
 #include "ThreadObject.h"
 
 #include <iostream>
+#include <syscall.h>
 using namespace std;
 
 
@@ -74,6 +75,7 @@ void* ThreadObject::StartThread(void* thisPointer) {
 
 
 void ThreadObject::RunningThread() {
+	bprintf(BLUE,"Created [ %s Thread %d, Tid: %ld ]\n", GetType().c_str(),index, (long)syscall(SYS_gettid));
 	while(true)	{
 
 		while(IsRunning()) {
@@ -87,7 +89,7 @@ void ThreadObject::RunningThread() {
 		sem_wait(&semaphore);
 
 		if(killThread)	{
-			bprintf(BLUE,"%s Thread %d: Goodbye\n",GetType().c_str(),index);
+			bprintf(BLUE,"Exiting [ %s Thread %d, Tid: %ld ]\n", GetType().c_str(),index, (long)syscall(SYS_gettid));
 			pthread_exit(NULL);
 		}
 

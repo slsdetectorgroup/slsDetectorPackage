@@ -63,13 +63,18 @@ public:
 			return;
 
 		// create publisher
-		socketDescriptor = zmq_socket (contextDescriptor, ZMQ_PULL);
+		socketDescriptor = zmq_socket (contextDescriptor, ZMQ_SUB);
 		if (socketDescriptor == NULL) {
 			PrintError ();
 			Close ();
 		}
 
 		//Socket Options provided above
+	    // an empty string implies receiving any messages
+		if ( zmq_setsockopt(socketDescriptor, ZMQ_SUBSCRIBE, "", 0)) {
+			PrintError ();
+			Close();
+		}
 		//ZMQ_LINGER default is already -1 means no messages discarded. use this options if optimizing required
 		//ZMQ_SNDHWM default is 0 means no limit. use this to optimize if optimizing required
 		// eg. int value = -1;
@@ -104,7 +109,7 @@ public:
 		if (contextDescriptor == NULL)
 			return;
 		// create publisher
-		socketDescriptor = zmq_socket (contextDescriptor, ZMQ_PUSH);
+		socketDescriptor = zmq_socket (contextDescriptor, ZMQ_PUB);
 		if (socketDescriptor == NULL) {
 			PrintError ();
 			Close ();

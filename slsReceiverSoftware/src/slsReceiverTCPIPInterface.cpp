@@ -15,6 +15,7 @@
 #include <sstream>
 #include <fstream>
 #include <stdlib.h>
+#include <syscall.h>
 using namespace std;
 
 
@@ -185,7 +186,7 @@ void* slsReceiverTCPIPInterface::startTCPServerThread(void *this_pointer){
 
 
 void slsReceiverTCPIPInterface::startTCPServer(){
-
+	bprintf(BLUE,"Created [ TCP server Tid: %ld ]\n", (long)syscall(SYS_gettid));
 
 #ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG5) << "Starting Receiver TCP Server";
@@ -221,6 +222,7 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 			}
 
 			mySock->exitServer();
+			bprintf(BLUE,"Exiting [ TCP server Tid: %ld ]\n", (long)syscall(SYS_gettid));
 			pthread_exit(NULL);
 		}
 
@@ -231,6 +233,7 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 					receiverBase->shutDownUDPSockets();
 				}
 			}
+			bprintf(BLUE,"Exiting [ TCP server Tid: %ld ]\n", (long)syscall(SYS_gettid));
 			pthread_exit(NULL);
 		}
 

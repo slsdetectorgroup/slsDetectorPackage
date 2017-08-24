@@ -8,7 +8,6 @@ DESTDIR		?=	../docs
 
 
 all: docs detUser detReceiver 
-	echo "in useeeeeeeeeers ****************************************************************************************************"
 #all: docs
 
 docs: createdocs docspdf docshtml removedocs

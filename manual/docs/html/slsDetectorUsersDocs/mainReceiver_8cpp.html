@@ -71,6 +71,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="mainReceiver_8cpp.html#a0d26a166bb416ff34512de6fe9e098bd">keeprunning</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="mainReceiver_8cpp.html#a9a5e6d0743c685444bb74ecfbb0e78c4">numrunning</a></td></tr>
 </table>
+<hr/><a name="_details"></a><h2>Detailed Description</h2>
+<p>This file is an example of how to implement the <a class="el" href="classslsReceiverUsers.html" title="Class for implementing the SLS data receiver in the users application. Callbacks...">slsReceiverUsers</a> class You can compile it linking it to the slsReceiver library</p>
+<p>g++ <a class="el" href="mainReceiver_8cpp.html">mainReceiver.cpp</a> -L lib -lSlsReceiver -L/usr/lib64/ -L lib2 -lzmq -pthread -lrt -lm -lstdc++</p>
+<p>where,</p>
+<p>lib is the location of lSlsReceiver.so</p>
+<p>lib2 is the location of the libzmq.a. [ libzmq.a is required only when using data call backs and enabling data streaming from receiver to client. It is linked in manual/manual-api from slsReceiverSoftware/include ] </p>
+
+<p>Definition in file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
 <hr/><h2>Define Documentation</h2>
 <a class="anchor" id="aa55605484e783ee738b6f4e7b251cbee"></a><!-- doxytag: member="mainReceiver.cpp::NUM_RECEIVERS" ref="aa55605484e783ee738b6f4e7b251cbee" args="" -->
 <div class="memitem">
@@ -83,7 +91,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 <div class="memdoc">
 
-<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00021">21</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
+<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00034">34</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
 
 </div>
 </div>
@@ -112,8 +120,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       </table>
 </div>
 <div class="memdoc">
+<p>Define Colors to print data call back in different colors for different recievers </p>
 
-<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00023">23</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
+<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00038">38</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
 
 </div>
 </div>
@@ -127,8 +136,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       </table>
 </div>
 <div class="memdoc">
+<p>Define TCP Port of First Receiver, others are incremented by 1 </p>
 
-<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00022">22</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
+<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00036">36</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
 
 </div>
 </div>
@@ -157,8 +167,16 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       </table>
 </div>
 <div class="memdoc">
+<p>Acquisition Finished Call back </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>frames</em>&nbsp;</td><td>Number of frames caught </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>p</em>&nbsp;</td><td>pointer to object </td></tr>
+  </table>
+  </dd>
+</dl>
 
-<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00052">52</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
+<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00093">93</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
 
 </div>
 </div>
@@ -270,8 +288,30 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       </table>
 </div>
 <div class="memdoc">
+<p>Get Receiver Data Call back Prints in different colors(for each receiver process) the different headers for each image call back. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>frameNumber</em>&nbsp;</td><td>frame number </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>expLength</em>&nbsp;</td><td>real time exposure length (in 100ns) or sub frame number (Eiger 32 bit mode only) </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>packetNumber</em>&nbsp;</td><td>number of packets caught for this frame </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>bunchId</em>&nbsp;</td><td>bunch id from beamline </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>timestamp</em>&nbsp;</td><td>time stamp in 10MHz clock (not implemented for most) </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>modId</em>&nbsp;</td><td>module id (not implemented for most) </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>xCoord</em>&nbsp;</td><td>x coordinates (detector id in 1D) </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>yCoord</em>&nbsp;</td><td>y coordinates (not implemented) </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>zCoord</em>&nbsp;</td><td>z coordinates (not implemented) </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>debug</em>&nbsp;</td><td>debug values if any </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>roundRNumber</em>&nbsp;</td><td>(not implemented) </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>detType</em>&nbsp;</td><td>detector type see :: detectorType </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>version</em>&nbsp;</td><td>version of standard header (structure format) </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>datapointer</em>&nbsp;</td><td>pointer to data </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>datasize</em>&nbsp;</td><td>data size in bytes </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>p</em>&nbsp;</td><td>pointer to object </td></tr>
+  </table>
+  </dd>
+</dl>
 
-<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00057">57</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
+<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00117">117</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
 
 </div>
 </div>
@@ -299,14 +339,69 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       </table>
 </div>
 <div class="memdoc">
+<p>Example of main program using the <a class="el" href="classslsReceiverUsers.html" title="Class for implementing the SLS data receiver in the users application. Callbacks...">slsReceiverUsers</a> class</p>
+<ul>
+<li>Defines in file for:<ul>
+<li>Default Number of receivers is 1</li>
+<li>Default Start TCP port is 1954 </li>
+</ul>
+</li>
+</ul>
 
-<p><p>Call back for start acquisition callback arguments are filepath filename fileindex datasize</p>
-<p>return value is insignificant at the moment we write depending on file write enable users get data to write depending on call backs registered</p>
-<p>Call back for acquisition finished callback argument is total frames caught</p>
-<p>Call back for raw data args to raw data ready callback are frameNumber is the frame number expLength is the subframe number (32 bit eiger) or real time exposure time in 100ns (others) packetNumber is the packet number bunchId is the bunch id from beamline timestamp is the time stamp with 10 MHz clock modId is the unique module id (unique even for left, right, top, bottom) xCoord is the x coordinate in the complete detector system yCoord is the y coordinate in the complete detector system zCoord is the z coordinate in the complete detector system debug is for debugging purposes roundRNumber is the round robin set number detType is the detector type see :: detectorType version is the version number of this structure format dataPointer is the pointer to the data dataSize in bytes is the size of the data in bytes</p>
+<p><ul>
+<li>set default values: child process pid values to -1, keeprunning to true, numrunning to 0</li>
+</ul>
+<ul>
+<li>Catch signal SIGINT to close files and call destructors properly</li>
+</ul>
+<ul>
+<li>wait for all the SIGCHILD signals and decrease numrunningeach time a child process exits</li>
+</ul>
+<ul>
+<li>loop over number of receivers</li>
+</ul>
+<ul>
+<li>fork process to create child process</li>
+</ul>
+<ul>
+<li>if fork failed, raise SIGINT and kill all receiver objects</li>
+</ul>
+<ul>
+<li>if child process</li>
+</ul>
+<ul>
+<li>create <a class="el" href="classslsReceiverUsers.html" title="Class for implementing the SLS data receiver in the users application. Callbacks...">slsReceiverUsers</a> object with appropriate arguments (START_TCP_PORT incrementing by 1</li>
+</ul>
+<ul>
+<li>register callbacks. remember to set file write enable to 0 (using the client) if we should not write files and you will write data using the callbacks</li>
+</ul>
+<ul>
+<li>Call back for start acquisition</li>
+</ul>
+<ul>
+<li>Call back for acquisition finished</li>
+</ul>
+<ul>
+<li>start tcp server thread</li>
+</ul>
+<ul>
+<li>as long as keeprunning is true, usleep for a second</li>
+</ul>
+<ul>
+<li>interrupt caught, delete <a class="el" href="classslsReceiverUsers.html" title="Class for implementing the SLS data receiver in the users application. Callbacks...">slsReceiverUsers</a> object and exit</li>
+</ul>
+<ul>
+<li>parent process, increment number of running processes</li>
+</ul>
+<ul>
+<li>Print Ready and Instructions how to exit</li>
+</ul>
+<ul>
+<li>Parent process waits for all child processes to exit by sleeping till numrunning is 0 </li>
+</ul>
 </p>
 
-<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00074">74</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
+<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00140">140</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
 
 </div>
 </div>
@@ -325,8 +420,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       </table>
 </div>
 <div class="memdoc">
+<p>Child Exit Signal Interrupt Handler When a child process exits, this function is called, blocks until all child processes exit &amp; decreases the variable indicating number of running processes </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>sig</em>&nbsp;</td><td>signal enum </td></tr>
+  </table>
+  </dd>
+</dl>
 
-<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00032">32</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
+<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00055">55</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
 
 </div>
 </div>
@@ -345,8 +447,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       </table>
 </div>
 <div class="memdoc">
+<p>Control+C Interrupt Handler Sets the variable keeprunning to false, to let all the processes know to exit properly </p>
 
-<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00039">39</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
+<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00065">65</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
 
 </div>
 </div>
@@ -392,8 +495,20 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       </table>
 </div>
 <div class="memdoc">
+<p>Start Acquisition Call back slsReceiver writes data if file write enabled. Users get data to write using call back if registerCallBackRawDataReady is registered. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>filepath</em>&nbsp;</td><td>file path </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>filename</em>&nbsp;</td><td>file name </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>fileindex</em>&nbsp;</td><td>file index </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>datasize</em>&nbsp;</td><td>data size in bytes </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>p</em>&nbsp;</td><td>pointer to object </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>ignored </dd></dl>
 
-<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00043">43</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
+<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00080">80</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
 
 </div>
 </div>
@@ -409,7 +524,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 <div class="memdoc">
 
-<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00026">26</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
+<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00041">41</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
 
 </div>
 </div>
@@ -423,8 +538,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       </table>
 </div>
 <div class="memdoc">
+<p>Variable is true to continue running, set to false upon interrupt </p>
 
-<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00027">27</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
+<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00043">43</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
 
 </div>
 </div>
@@ -438,8 +554,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       </table>
 </div>
 <div class="memdoc">
+<p>Variable indicating number of child processes running </p>
 
-<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00028">28</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
+<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00045">45</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
 
 </div>
 </div>
@@ -458,7 +575,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 24 Aug 2017 by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 25 Aug 2017 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

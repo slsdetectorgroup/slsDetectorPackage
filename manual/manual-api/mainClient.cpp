@@ -4,75 +4,92 @@
 This file is an example of how to implement the slsDetectorUsers class 
 You can compile it linking it to the slsDetector library
 
-gcc mainClient.cpp -L lib -l SlsDetector -lm -pthread
+g++ mainClient.cpp -L lib -lSlsDetector -L/usr/lib64/ -L lib2 -lzmq  -pthread -lrt -lm -lstdc++
 
-where lib is the location of libSlsDetector.so
-gcc mainClient.cpp -L . -l SlsDetector -lm -pthread -o users
+where,
 
-*/
+lib is the location of libSlsDetector.so
 
-#include <iostream>  
+lib2 is the location of the libzmq.a.
+[ libzmq.a is required only when using data call backs and enabling data streaming from receiver to client.
+It is linked in manual/manual-api from slsReceiverSoftware/include ]
+
+ */
+
 #include "slsDetectorUsers.h"
 #include "detectorData.h"
+#include <iostream>
 #include <cstdlib>
 
-/** Definition of the data callback which simply prints out the number of points received and teh frame number */
+/**
+ * Data Call back function defined
+ * @param pData pointer to data structure received from the call back
+ * @param iframe frame number of data passed
+ * @param isubframe sub frame number of data passed ( only valid for EIGER in 32 bit mode)
+ * @param pArg pointer to object
+ * \returns integer that is currently ignored
+ */
 int dataCallback(detectorData *pData, int iframe, int isubframe, void *pArg)
 {
-  std::cout  << "dataCallback: " << pData->npoints  << " "  << pData->npy  << "Frame number: " << iframe << std::endl; 
+	std::cout  << "dataCallback: " << pData->npoints  << " "  << pData->npy  << "Frame number: " << iframe << std::endl;
 }
 
 
-/**example of a main program using the slsDetectorUsers class */
+/**
+ * Example of a main program using the slsDetectorUsers class
+ *
+ * - Arguments are optional
+ * 		- argv[1] : Configuration File
+ * 		- argv[2] : Measurement Setup File
+ * 		- argv[3] : Detector Id (default is zero)
+ */
 int main(int argc,  char **argv) {
-  int id=0;
-  /** if specified, argv[3] is used as detector ID (default is 0)*/
-  if (argc>=4)
-    id=atoi(argv[3]);
-  
+	/** - if specified, set ID from argv[3] */
+	int id=0;
+	if (argc>=4)
+		id=atoi(argv[3]);
 
 
-  /** slsDetectorUsers is instantiated */
-  slsDetectorUsers *pDetector = new  slsDetectorUsers (id); 
+	/** - slsDetectorUsers Object is instantiated with appropriate ID */
+	slsDetectorUsers *pDetector = new  slsDetectorUsers (id);
 
-  
-  /** if specified, argv[1] is used as detector config file (necessary at least the first time it is called to properly configure advanced settings in the shared memory)*/
-  if (argc>=2){
-    pDetector->readConfigurationFile(argv[1]);
-    cout<<"Detector configured" << endl;
-  }
-    /** registering data callback */
-    pDetector->registerDataCallback(&dataCallback, NULL);
-    pDetector->enableDataStreamingFromReceiver(1);
 
-    /** checking detector status and exiting if not idle */
-   int status = pDetector->getDetectorStatus(); 
-    if (status  !=  0){
-      std::cout << "Detector not ready: " << slsDetectorUsers::runStatusType(status) << std::endl; 
-      return 1; 
-    }
+	/** - if specified, load configuration file (necessary at least the first time it is called to properly configure advanced settings in the shared memory) */
+	if (argc>=2){
+		pDetector->readConfigurationFile(argv[1]);
+		std::cout << "Detector configured" << std::endl;
+	}
 
-    /** load detector settings */
-    if (argc>=3){
-    	pDetector->retrieveDetectorSetup(argv[2]);
-    	cout<<"Detector measurement set-up done" << endl;
-    }
-     /** start measurement */
-     pDetector->startMeasurement(); 
-     cout<<"started measurement"<<endl;
-     
-    /* while (1) {
-       usleep(100000); 
-       status = pDetector->getDetectorStatus(); 
-        if (status  == 0 || status == 1|| status == 3)
-	  break; 
-     }*/
-     cout<<"measurement finished"<<endl;
-     /** returning when acquisition is finished or data are avilable */
-     
-    
-     delete pDetector; 
-     
-     return 0; 
+
+	/** - registering data callback */
+	pDetector->registerDataCallback(&dataCallback, NULL);
+	/** - if receiver exists, enable data streaming from receiver to get the data */
+	pDetector->enableDataStreamingFromReceiver(1);
+
+
+	/** - ensuring detector status is idle before starting acquisition. exiting if not idle */
+	int status = pDetector->getDetectorStatus();
+	if (status  !=  0){
+		std::cout << "Detector not ready: " << slsDetectorUsers::runStatusType(status) << std::endl;
+		return 1;
+	}
+
+	/** - if provided, load detector settings */
+	if (argc>=3){
+		pDetector->retrieveDetectorSetup(argv[2]);
+		std::cout << "Detector measurement set-up done" << std::endl;
+	}
+
+
+	/** - start measurement */
+	pDetector->startMeasurement();
+	std::cout << "measurement finished" << std::endl;
+
+	/** - returning when acquisition is finished or data are avilable */
+
+	/** - delete slsDetectorUsers object */
+	delete pDetector;
+
+	return 0;
 }
 

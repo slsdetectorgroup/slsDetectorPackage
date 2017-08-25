@@ -42,59 +42,56 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     </ul>
   </div>
 <h1>mainClient.cpp</h1><a href="mainClient_8cpp.html">Go to the documentation of this file.</a><div class="fragment"><pre class="fragment"><a name="l00001"></a>00001 
-<a name="l00014"></a>00014 <span class="preprocessor">#include &lt;iostream&gt;</span>  
-<a name="l00015"></a>00015 <span class="preprocessor">#include &quot;<a class="code" href="slsDetectorUsers_8h.html">slsDetectorUsers.h</a>&quot;</span>
-<a name="l00016"></a>00016 <span class="preprocessor">#include &quot;<a class="code" href="detectorData_8h.html">detectorData.h</a>&quot;</span>
-<a name="l00017"></a>00017 <span class="preprocessor">#include &lt;cstdlib&gt;</span>
-<a name="l00018"></a>00018 
-<a name="l00020"></a><a class="code" href="mainClient_8cpp.html#abba369ecba2066d66cc8b3b74460e778">00020</a> <span class="keywordtype">int</span> <a class="code" href="mainClient_8cpp.html#abba369ecba2066d66cc8b3b74460e778">dataCallback</a>(<a class="code" href="classdetectorData.html" title="data structure to hold the detector data after postprocessing (e.g. to plot, store...">detectorData</a> *pData, <span class="keywordtype">int</span> iframe, <span class="keywordtype">int</span> isubframe, <span class="keywordtype">void</span> *pArg)
-<a name="l00021"></a>00021 {
-<a name="l00022"></a>00022   std::cout  &lt;&lt; <span class="stringliteral">&quot;dataCallback: &quot;</span> &lt;&lt; pData-&gt;<a class="code" href="classdetectorData.html#a50aabf6f2c40587f8e915cf4913a2cfe" title="number of points">npoints</a>  &lt;&lt; <span class="stringliteral">&quot; &quot;</span>  &lt;&lt; pData-&gt;<a class="code" href="classdetectorData.html#ac289d259e7fd9445a9c04976a82cb324" title="dimensions in y coordinate">npy</a>  &lt;&lt; <span class="stringliteral">&quot;Frame number: &quot;</span> &lt;&lt; iframe &lt;&lt; std::endl; 
-<a name="l00023"></a>00023 }
-<a name="l00024"></a>00024 
-<a name="l00025"></a>00025 
-<a name="l00027"></a><a class="code" href="mainClient_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">00027</a> <span class="keywordtype">int</span> <a class="code" href="mainClient_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a>(<span class="keywordtype">int</span> argc,  <span class="keywordtype">char</span> **argv) {
-<a name="l00028"></a>00028   <span class="keywordtype">int</span> <span class="keywordtype">id</span>=0;
-<a name="l00030"></a>00030   <span class="keywordflow">if</span> (argc&gt;=4)
-<a name="l00031"></a>00031     <span class="keywordtype">id</span>=atoi(argv[3]);
-<a name="l00032"></a>00032   
-<a name="l00033"></a>00033 
-<a name="l00034"></a>00034 
-<a name="l00036"></a>00036   <a class="code" href="classslsDetectorUsers.html" title="Class for detector functionalitiesto embed the detector controls in the users custom...">slsDetectorUsers</a> *pDetector = <span class="keyword">new</span>  <a class="code" href="classslsDetectorUsers.html" title="Class for detector functionalitiesto embed the detector controls in the users custom...">slsDetectorUsers</a> (<span class="keywordtype">id</span>); 
+<a name="l00019"></a>00019 <span class="preprocessor">#include &quot;<a class="code" href="slsDetectorUsers_8h.html">slsDetectorUsers.h</a>&quot;</span>
+<a name="l00020"></a>00020 <span class="preprocessor">#include &quot;<a class="code" href="detectorData_8h.html">detectorData.h</a>&quot;</span>
+<a name="l00021"></a>00021 <span class="preprocessor">#include &lt;iostream&gt;</span>
+<a name="l00022"></a>00022 <span class="preprocessor">#include &lt;cstdlib&gt;</span>
+<a name="l00023"></a>00023 
+<a name="l00032"></a><a class="code" href="mainClient_8cpp.html#abba369ecba2066d66cc8b3b74460e778">00032</a> <span class="keywordtype">int</span> <a class="code" href="mainClient_8cpp.html#abba369ecba2066d66cc8b3b74460e778">dataCallback</a>(<a class="code" href="classdetectorData.html" title="data structure to hold the detector data after postprocessing (e.g. to plot, store...">detectorData</a> *pData, <span class="keywordtype">int</span> iframe, <span class="keywordtype">int</span> isubframe, <span class="keywordtype">void</span> *pArg)
+<a name="l00033"></a>00033 {
+<a name="l00034"></a>00034         std::cout  &lt;&lt; <span class="stringliteral">&quot;dataCallback: &quot;</span> &lt;&lt; pData-&gt;<a class="code" href="classdetectorData.html#a50aabf6f2c40587f8e915cf4913a2cfe" title="number of points">npoints</a>  &lt;&lt; <span class="stringliteral">&quot; &quot;</span>  &lt;&lt; pData-&gt;<a class="code" href="classdetectorData.html#ac289d259e7fd9445a9c04976a82cb324" title="dimensions in y coordinate">npy</a>  &lt;&lt; <span class="stringliteral">&quot;Frame number: &quot;</span> &lt;&lt; iframe &lt;&lt; std::endl;
+<a name="l00035"></a>00035 }
+<a name="l00036"></a>00036 
 <a name="l00037"></a>00037 
-<a name="l00038"></a>00038   
-<a name="l00040"></a>00040   <span class="keywordflow">if</span> (argc&gt;=2){
-<a name="l00041"></a>00041     pDetector-&gt;<a class="code" href="classslsDetectorUsers.html#a8aeda7c2cbc270c7f8756761823e8d95" title="Reads the configuration file -- will contain all the informations needed for the...">readConfigurationFile</a>(argv[1]);
-<a name="l00042"></a>00042     cout&lt;&lt;<span class="stringliteral">&quot;Detector configured&quot;</span> &lt;&lt; endl;
-<a name="l00043"></a>00043   }
-<a name="l00045"></a>00045     pDetector-&gt;<a class="code" href="classslsDetectorUsers.html#add821d94da9b03fe500d27e4433c01f5" title="register calbback for accessing detector final data">registerDataCallback</a>(&amp;<a class="code" href="mainClient_8cpp.html#abba369ecba2066d66cc8b3b74460e778">dataCallback</a>, NULL);
-<a name="l00046"></a>00046     pDetector-&gt;<a class="code" href="classslsDetectorUsers.html#a5c85f5c94b585a1915307fa7f4bc46f6">enableDataStreamingFromReceiver</a>(1);
-<a name="l00047"></a>00047 
-<a name="l00049"></a>00049    <span class="keywordtype">int</span> status = pDetector-&gt;<a class="code" href="classslsDetectorUsers.html#ac7d0254e38b8fe783204f691a4ee05b2" title="get run status">getDetectorStatus</a>(); 
-<a name="l00050"></a>00050     <span class="keywordflow">if</span> (status  !=  0){
-<a name="l00051"></a>00051       std::cout &lt;&lt; <span class="stringliteral">&quot;Detector not ready: &quot;</span> &lt;&lt; <a class="code" href="classslsDetectorUsers.html#a2c073513ae3ac53f3e040bc2911b6ee2" title="returns string from run status index">slsDetectorUsers::runStatusType</a>(status) &lt;&lt; std::endl; 
-<a name="l00052"></a>00052       <span class="keywordflow">return</span> 1; 
-<a name="l00053"></a>00053     }
-<a name="l00054"></a>00054 
-<a name="l00056"></a>00056     <span class="keywordflow">if</span> (argc&gt;=3){
-<a name="l00057"></a>00057         pDetector-&gt;<a class="code" href="classslsDetectorUsers.html#a8769c8ea5020b43dc3557c86f9e4159b" title="Loads the detector setup from file.">retrieveDetectorSetup</a>(argv[2]);
-<a name="l00058"></a>00058         cout&lt;&lt;<span class="stringliteral">&quot;Detector measurement set-up done&quot;</span> &lt;&lt; endl;
-<a name="l00059"></a>00059     }
-<a name="l00061"></a>00061      pDetector-&gt;<a class="code" href="classslsDetectorUsers.html#aa34810bb0e872fdf929ebe62d8582bd3" title="start measurement and acquires">startMeasurement</a>(); 
-<a name="l00062"></a>00062      cout&lt;&lt;<span class="stringliteral">&quot;started measurement&quot;</span>&lt;&lt;endl;
-<a name="l00063"></a>00063      
-<a name="l00064"></a>00064     <span class="comment">/* while (1) {</span>
-<a name="l00065"></a>00065 <span class="comment">       usleep(100000); </span>
-<a name="l00066"></a>00066 <span class="comment">       status = pDetector-&gt;getDetectorStatus(); </span>
-<a name="l00067"></a>00067 <span class="comment">        if (status  == 0 || status == 1|| status == 3)</span>
-<a name="l00068"></a>00068 <span class="comment">          break; </span>
-<a name="l00069"></a>00069 <span class="comment">     }*/</span>
-<a name="l00070"></a>00070      cout&lt;&lt;<span class="stringliteral">&quot;measurement finished&quot;</span>&lt;&lt;endl;
-<a name="l00074"></a>00074      <span class="keyword">delete</span> pDetector; 
-<a name="l00075"></a>00075      
-<a name="l00076"></a>00076      <span class="keywordflow">return</span> 0; 
-<a name="l00077"></a>00077 }
-<a name="l00078"></a>00078 
+<a name="l00046"></a><a class="code" href="mainClient_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">00046</a> <span class="keywordtype">int</span> <a class="code" href="mainClient_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a>(<span class="keywordtype">int</span> argc,  <span class="keywordtype">char</span> **argv) {
+<a name="l00048"></a>00048         <span class="keywordtype">int</span> <span class="keywordtype">id</span>=0;
+<a name="l00049"></a>00049         <span class="keywordflow">if</span> (argc&gt;=4)
+<a name="l00050"></a>00050                 <span class="keywordtype">id</span>=atoi(argv[3]);
+<a name="l00051"></a>00051 
+<a name="l00052"></a>00052 
+<a name="l00054"></a>00054         <a class="code" href="classslsDetectorUsers.html" title="Class for detector functionalitiesto embed the detector controls in the users custom...">slsDetectorUsers</a> *pDetector = <span class="keyword">new</span>  <a class="code" href="classslsDetectorUsers.html" title="Class for detector functionalitiesto embed the detector controls in the users custom...">slsDetectorUsers</a> (<span class="keywordtype">id</span>);
+<a name="l00055"></a>00055 
+<a name="l00056"></a>00056 
+<a name="l00058"></a>00058         <span class="keywordflow">if</span> (argc&gt;=2){
+<a name="l00059"></a>00059                 pDetector-&gt;<a class="code" href="classslsDetectorUsers.html#a8aeda7c2cbc270c7f8756761823e8d95" title="Reads the configuration file -- will contain all the informations needed for the...">readConfigurationFile</a>(argv[1]);
+<a name="l00060"></a>00060                 std::cout &lt;&lt; <span class="stringliteral">&quot;Detector configured&quot;</span> &lt;&lt; std::endl;
+<a name="l00061"></a>00061         }
+<a name="l00062"></a>00062 
+<a name="l00063"></a>00063 
+<a name="l00065"></a>00065         pDetector-&gt;<a class="code" href="classslsDetectorUsers.html#add821d94da9b03fe500d27e4433c01f5" title="register calbback for accessing detector final data">registerDataCallback</a>(&amp;<a class="code" href="mainClient_8cpp.html#abba369ecba2066d66cc8b3b74460e778">dataCallback</a>, NULL);
+<a name="l00067"></a>00067         pDetector-&gt;<a class="code" href="classslsDetectorUsers.html#a5c85f5c94b585a1915307fa7f4bc46f6">enableDataStreamingFromReceiver</a>(1);
+<a name="l00068"></a>00068 
+<a name="l00069"></a>00069 
+<a name="l00071"></a>00071         <span class="keywordtype">int</span> status = pDetector-&gt;<a class="code" href="classslsDetectorUsers.html#ac7d0254e38b8fe783204f691a4ee05b2" title="get run status">getDetectorStatus</a>();
+<a name="l00072"></a>00072         <span class="keywordflow">if</span> (status  !=  0){
+<a name="l00073"></a>00073                 std::cout &lt;&lt; <span class="stringliteral">&quot;Detector not ready: &quot;</span> &lt;&lt; <a class="code" href="classslsDetectorUsers.html#a2c073513ae3ac53f3e040bc2911b6ee2" title="returns string from run status index">slsDetectorUsers::runStatusType</a>(status) &lt;&lt; std::endl;
+<a name="l00074"></a>00074                 <span class="keywordflow">return</span> 1;
+<a name="l00075"></a>00075         }
+<a name="l00076"></a>00076 
+<a name="l00078"></a>00078         <span class="keywordflow">if</span> (argc&gt;=3){
+<a name="l00079"></a>00079                 pDetector-&gt;<a class="code" href="classslsDetectorUsers.html#a8769c8ea5020b43dc3557c86f9e4159b" title="Loads the detector setup from file.">retrieveDetectorSetup</a>(argv[2]);
+<a name="l00080"></a>00080                 std::cout &lt;&lt; <span class="stringliteral">&quot;Detector measurement set-up done&quot;</span> &lt;&lt; std::endl;
+<a name="l00081"></a>00081         }
+<a name="l00082"></a>00082 
+<a name="l00083"></a>00083 
+<a name="l00085"></a>00085         pDetector-&gt;<a class="code" href="classslsDetectorUsers.html#aa34810bb0e872fdf929ebe62d8582bd3" title="start measurement and acquires">startMeasurement</a>();
+<a name="l00086"></a>00086         std::cout &lt;&lt; <span class="stringliteral">&quot;measurement finished&quot;</span> &lt;&lt; std::endl;
+<a name="l00087"></a>00087 
+<a name="l00091"></a>00091         <span class="keyword">delete</span> pDetector;
+<a name="l00092"></a>00092 
+<a name="l00093"></a>00093         <span class="keywordflow">return</span> 0;
+<a name="l00094"></a>00094 }
+<a name="l00095"></a>00095 
 </pre></div></div>
 <!--- window showing the filter options -->
 <div id="MSearchSelectWindow"
@@ -110,7 +107,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 24 Aug 2017 by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 25 Aug 2017 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

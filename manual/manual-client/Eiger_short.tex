@@ -297,32 +297,32 @@ Here is a list of all the readout times in the different configurations:
 \begin{table}
 \begin{tabular}{|c|c|c|c|c|c|c|c|}
 \hline
-\tiny{dr} & \tiny{clkdivider} & \tiny{mode} & \tiny{readout t($\mu$s)} & \tiny{max frame rate (kHz)} & \tiny{max exptime ($\mu$s)} & \tiny{max period ($\mu$s)} & \tiny{max images}\\
+\tiny{dr} & \tiny{clkdivider} & \tiny{mode} & \tiny{readout t($\mu$s)} & \tiny{max frame rate (kHz)} & \tiny{max exptime ($\mu$s)} & \tiny{min period ($\mu$s)} & \tiny{max images}\\
 \hline
-4 & 0 & parallel & 3.4 &  &  & & \\
+4 & 0 & parallel & 3.4 & 22 &  & & \\
 \hline
-4 & 0 & nonparallel & 44 &  &  & & \\
+4 & 0 & nonparallel & 44 & 21 &  & & \\
 \hline
-4 & 1 & parallel & 6 &  &  & & \\
+4 & 1 & parallel & 6 & 10.5 &  & & \\
 \hline
-4 & 1 & nonparallel & 88.7 &  &  & & \\
+4 & 1 & nonparallel & 88.7 & 10.5 &  & & \\
 \hline
-4 & 2 & parallel & 11.2 &  &  & & \\
+4 & 2 & parallel & 11.2 & 5.4 &  & & \\
 \hline
-4 & 2 & nonparallel & 176.5 &  &  & & \\
+4 & 2 & nonparallel & 176.5 & 5.4 &  & & \\
 \hline
 \hline
-8 & 0 & parallel & 3.4 & 11 & 79 & 84 & \\
+8 & 0 & parallel & 3.4 & 11.2 &  &  & \\
 \hline
-8 & 0 & nonparallel & 85.7 &  &  & & \\
+8 & 0 & nonparallel & 85.7 & 11.2 &  & & \\
 \hline
-8 & 1 & parallel & 6.1 &  &  & & \\
+8 & 1 & parallel & 6.1 & 5.8 &  & & \\
 \hline
-8 & 1 & nonparallel & 170.5 &  &  & & \\
+8 & 1 & nonparallel & 170.5 & 5.8 &  & & \\
 \hline
-8 & 2 & parallel & 11.2 &  &  & & \\
+8 & 2 & parallel & 11.2 &  2.9 &  & & \\
 \hline
-8 & 2 & nonparallel & 340.3 &  &  & & \\
+8 & 2 & nonparallel & 340.3 &  2.9 &  & & \\
 \hline
 \hline
 16 & 0 & parallel & 3.4 & 6 & 164 & 168 & 12000\\
@@ -343,7 +343,7 @@ Here is a list of all the readout times in the different configurations:
 32 & 2 & nonparallel & 504 & $<2$&  & &\\
 \hline
 \end{tabular}
-\caption{Readout settings.}
+\caption{Readout settings. The {\tiny{min exptime}} possible is 3$-$5~$\mu$s.}
 \end{table}
 \end{tiny}
 \textbf{As if you run too fast, the detector could become noisier, it is important to match the detector settings to your frame rate. This can be done having more parameters files and load the one suitable with your experiment.} We experienced that {\tt{highgain}} settings could not be used at 6~kHz.

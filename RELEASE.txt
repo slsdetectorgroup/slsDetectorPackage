@@ -1,4 +1,4 @@
-SLS Detector Package 3.0.0 released on 2017-03-24
+SLS Detector Package 3.0.0 released on 2017-08-25
 ================================================================================
 
 

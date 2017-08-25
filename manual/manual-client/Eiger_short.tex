@@ -253,15 +253,26 @@ IMPORTANT: to have faster readout and smaller dead time, one can configure {\tt{
 The configuration of this timing variables allows to achieve different frame rates. NOTE THAT IN EIGER, WHATEVER YOU DO, THE FRAME RATE LIMITATIONS COME FROM THE NETWORK BOTTLENECK AS THE HARDWARE GOES FASTER THAN THE DATA OUT.
 
 In the case of REAL CONTINUOUS readout, i.e. continuous acquire and readout from the boards (independent on how the chip is set):
-\begin{itemize}
-\item 1~GbE, {\tt{dr 16}}, {\tt{flags continous}}, \textbf{256~Hz} 
-\item 1~GbE, {\tt{dr 32}}, {\tt{flags continous}}, {\tt{clkdivider 2}}, \textbf{128~Hz}
-\item 10~GbE, {\tt{dr 16}}, {\tt{flags continous}}, {\tt{flags parallel}},{\tt{clkdivider 0}}, \textbf{2.56~kHz}  
-\item 10~GbE, {\tt{dr 32}}, {\tt{flags continuous}}, {\tt{clkdivider 2}}, \textbf{1.28~kHz}  
-\item 10~GbE, {\tt{dr 8}}, {\tt{flags continous}}, {\tt{flags parallel}},{\tt{clkdivider 0}}, \textbf{5.12~kHz}
-\item 10~GbE, {\tt{dr 4}}, {\tt{flags continous}}, {\tt{flags parallel}},{\tt{clkdivider 0}}, \textbf{10.24~kHz}
-\end{itemize}
-Note that in the {\tt{continuous}} mode, some buffering is still done on the memories, so a higher frame rate than the proper real continuos one can be achieved. Still, this extra buffering is possible till the memories are not saturated. 
+\begin{table}
+\begin{tabular}{|c|c|c|}
+\hline
+GbE & dynamic range & maximum frame rate(Hz)\\
+\hline
+1 & 16 &  \textbf{256}\\ 
+\hline 
+1 &  32 &  \textbf{128}\\
+\hline 
+10 & 16 & \textbf{2560}\\  
+\hline 
+10 & 32 & \textbf{1280}\\  
+\hline 
+10 & 8 & \textbf{5120}\\
+\hline
+10 & 4 & \textbf{10240}\\
+\hline
+\end{tabular}
+\end{table}
+Note that in the {\tt{continuous}} flag mode, some buffering is still done on the memories, so a higher frame rate than the proper real continuos one can be achieved. Still, this extra buffering is possible till the memories are not saturated. 
 The number of images that can be stored on memories are:
 \begin{table}
 \begin{tabular}{|c|c|}
@@ -282,30 +293,59 @@ The maximum frame rate achievable with 10~GbE, {\tt{dr 16}}, {\tt{flags continuo
  In dynamic range {\tt{dr 8}} the frame rate is \textbf{11~kHz} and for{\tt{dr 4}} is \textbf{22~kHz}. For 4 and 8 bit mode the frame rate are directly limited by the speed of the detector chip and not by the readout boards.    
 
 Here is a list of all the readout times in the different configurations:
+\begin{tiny}
 \begin{table}
-\begin{tabular}{|c|c|c|c|c|}
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
 \hline
-dynamic range & clkdivider & mode & readout time ($\mu$s) & max frame rate (kHz)\\
+\tiny{dr} & \tiny{clkdivider} & \tiny{mode} & \tiny{readout t($\mu$s)} & \tiny{max frame rate (kHz)} & \tiny{max exptime ($\mu$s)} & \tiny{max period ($\mu$s)} & \tiny{max images}\\
 \hline
-16 & 0 & parallel & 2.75 & 6\\
+4 & 0 & parallel & 3.4 &  &  & & \\
 \hline
-16 & 0 & nonparallel &  126 & 3.4\\
+4 & 0 & nonparallel & 44 &  &  & & \\
 \hline
-16 & 1 & parallel &  5.36 & 2.9\\
+4 & 1 & parallel & 6 &  &  & & \\
 \hline
-16 & 1 & nonparallel & 252 & 1.7\\
+4 & 1 & nonparallel & 88.7 &  &  & & \\
 \hline
-16 & 2 & parallel &  10.6 & 1.5\\
+4 & 2 & parallel & 11.2 &  &  & & \\
 \hline
-16 & 2 & nonparallel & 504 & 0.85\\
+4 & 2 & nonparallel & 176.5 &  &  & & \\
 \hline
-32 & 2 & parallel &  10.6 & 2\\
 \hline
-32 & 2 & nonparallel & 504 & $<2$\\
+8 & 0 & parallel & 3.4 & 11 & 79 & 84 & \\
+\hline
+8 & 0 & nonparallel & 85.7 &  &  & & \\
+\hline
+8 & 1 & parallel & 6.1 &  &  & & \\
+\hline
+8 & 1 & nonparallel & 170.5 &  &  & & \\
+\hline
+8 & 2 & parallel & 11.2 &  &  & & \\
+\hline
+8 & 2 & nonparallel & 340.3 &  &  & & \\
+\hline
+\hline
+16 & 0 & parallel & 3.4 & 6 & 164 & 168 & 12000\\
+\hline
+16 & 0 & nonparallel &  126 & 3.4& 164 & 295 & 23000\\
+\hline
+16 & 1 & parallel &  6.1 & 2.9&  339 & 346 & 28000\\
+\hline
+16 & 1 & nonparallel & 255 & 1.7&  339 & 592 & infinite\\
+\hline
+16 & 2 & parallel &  11 & 1.5& 66 & 78 & infinite \\
+\hline
+16 & 2 & nonparallel & 504 & 0.85 & 7 & 512 & infinite\\
+\hline
+\hline
+32 & 2 & parallel &  11 & 2&  & &\\
+\hline
+32 & 2 & nonparallel & 504 & $<2$&  & &\\
 \hline
 \end{tabular}
 \caption{Readout settings.}
 \end{table}
+\end{tiny}
 \textbf{As if you run too fast, the detector could become noisier, it is important to match the detector settings to your frame rate. This can be done having more parameters files and load the one suitable with your experiment.} We experienced that {\tt{highgain}} settings could not be used at 6~kHz.
 \textbf{We reccomend to use the detector in 32 bit mode with {\tt{clkdivider 2}}, {\tt{flags parallel}}. We reccomend to use the detector in 16 bit mode with {\tt{clkdivider 1}}, {\tt{flags parallel}}}. In general, choose first the desired dead time: this will tell you if you want to run in parallel or non parallel mode. Then, choose the maximum frame rate you want to aim, not exeeding what you aim for not to increase the noise.
 
@@ -328,7 +368,7 @@ Here are the implemented options so far:
 \item{\tt{gating}} allows to get a frame only when the trigger pulse is gating. Note that in this case the exp time and period only depend on the gating signal. {\tt{cycles}} allows to select how many gates to consider. 
 \end{itemize}
 
-Hardware-wise, the ENABLE OUT signal outputs when the chips are really acquiring. This means that the single subframes will be outputted in 32 bit mode. The TRIGGER OUT outputs the sum-up-signal at the moment (which is useless). This will be changed in the future to output the envelop of the enable signal. 
+Hardware-wise, the ENABLE OUT signal outputs when the chips are really acquiring. This means that the single subframes will be output in 32 bit mode. The TRIGGER OUT outputs the sum-up-signal at the moment (which is useless). This will be changed in the future to output the envelop of the enable signal. 
 
 We are planning to change some functionality, i.e. unify the {\tt{trigger}} and {\tt{burst}} trigger modes and make both {\tt{frames}} and {\tt{cycles}} configurable at the same time.
 
@@ -710,9 +750,9 @@ In 500k--2M pixel systems there is a hardware temperature safety switch, which w
 The HV can also be set and read through the software:
 \begin{verbatim}
 ./sls_detector_put vhighvoltage 150
-./sls_detector_get m:vhighvoltage 
+./sls_detector_get vhighvoltage 
 \end{verbatim}
-Note that the get {\tt{vhighvoltage}} would return the measured HV from the master module only, so one has to really get it for the master {\tt{m}} module.
+Note that the get {\tt{vhighvoltage}} would return the measured HV from the master module only. If getting teh vhighvoltage for individual halfmodules, only the master will have a value different from -999.
 
 \appendix
 
@@ -739,7 +779,19 @@ Start the server again:
 
 \section{Loading firmware bitfiles}
 
-A \textbf{bcp} executable (which needs \textbf{tftp} installed on the PC, is needed. First of all, you need to press something on the detector: to programm bitfiles (firmware files), do a hard reset with a pin/thin stuff in the holes at the very back of the module. They are between the top 7 LED and the bottom 1 and opposite for the other side. Push hard till all LEDs are alternating green and red. After booting only the central one should be on green and red alternating. From a terminal, do:
+A \textbf{bcp} executable (which needs \textbf{tftp} installed on the PC, is needed. 
+\begin{enumerate}
+\item Manual way: you need to press something on the detector. To programm bitfiles (firmware files), do a hard reset with a pin/thin stuff in the holes at the very back of the module. They are between the top 7 LED and the bottom 1 and opposite for the other side. Push hard till all LEDs are alternating green and red.
+\item Software way (possible only if you have the correct programs copied on your board. If not, as the sls detcetor group). 
+\begin{verbatim}
+ssh root@bebxxx
+cd executables
+./boot_recovery 
+ \end{verbatim} 
+\end{enumerate}
+In both case, after booting, only the central one should be on green and red alternating. 
+
+From a terminal, do:
 \begin{verbatim}
 nc -p 3000 -u bebxxx 3000 
 \end{verbatim} 

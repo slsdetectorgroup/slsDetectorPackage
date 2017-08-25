@@ -204,6 +204,9 @@ Resolved Issues
 	10.	(Eiger): When running independent(not slsReceiver) receiver, one needn't do receiver start
 		to prepare acquisition. Prepare Acquisition has been moved to StartAcqusition and
 		StartAndReadAll. 
+	
+	11.	(Gotthard): 639 pixels in first packet and 641 pixels in second packet. The first pixel in second 
+		packet was unaccounted for. This is fixed now.
 
 
 

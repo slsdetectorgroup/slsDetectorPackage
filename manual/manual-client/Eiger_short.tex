@@ -22,7 +22,7 @@
 \subsection{Mandatory setup - Hardware}
 An EIGER single module (500~kpixels) needs:
 \begin{itemize}
-\item A chilled (water+alcohol) at approximately 21~$^{\circ}$C, which needs to dissipate 85~W. For the (M, a special cooling liquid is required: 2/3 deionized water and 1/3 ESA Type 48.
+\item A chilled (water+alcohol) at approximately 21~$^{\circ}$C, which needs to dissipate 85~W. For the 9M, a special cooling liquid is required: 2/3 deionized water and 1/3 ESA Type 48.
 \item A power supply (12~V, 8~A). For the 9~M, a special cpu is give to remotely switch on and off the detector: see section~\ref{bchip100}. 
 \item 2$\times$1~Gb/s Ethernet connectors to control the detector and, optionally, receive data at low rate. A DHCP server that gives IPs to the 1~Gb/s connectors of the detector is needed. Note that flow control has to be enabled on the switch you are using.
 \item 2$\times$10~Gb/s transceivers to optionally, receive data at high rate.
@@ -40,33 +40,36 @@ Figure~\ref{fig:1} shows the relationship between the \textbf{Client} (which sit
 
 The Client talks to control over 1~Gb Ethernet connection using TCP/IP to the detector and to the receiver. The detector sends data in UDP packets to the receiver. This data sending can be done over 1~Gb/s or 10~Gb/s. 
  
-\textbf{Switch on the detcetor only after having started the chiller and connected all the cables and network. EIGER is unable to get IP address after it has been switched on without a proper network set up. In taht case switch off and on teh detector again.}
+\begin{itemize}
+\item \textbf{Switch on the detector only after having started the chiller: the 500k single module and the 1.5M at cSAXS have a hardware temperature sensor, which will power off the boards if the temperature is too high. Note that the detector will be power on again as soon as the temperature has been lowered. The 9M will not boot up without the correct waterflow and temperature has it has an integrated flowmeter.} 
+\item \textbf{Switch on the detector only after having connected all the cables and network. EIGER is unable to get IP address after it has been switched on without a proper network set up. In that case switch off and on the detector again.}
+\end{itemize}
 
 \subsubsection{9M power supply interface: bchip100}\label{bchip100}
-So the bchip100, which is a cpu, is located on the top side of the 9M and needs to be connected over 1Gb, to the same or a different network as the detector 1~GbE. 
+So the bchip100, which is a blackfin cpu, is located on the top side of the 9M and needs to be connected over 1Gb, to the same or a different network as the detector 1~GbE. 
  \begin{verbatim}
 telnet bchip100
 cd 9m/
 \end{verbatim}
-The directory contains some executables taht are needed to make your detector to work:
+The directory contains some executables that are needed to make your detector to work:
  \begin{verbatim}
 ./on #to switch modules on
-./off #to switch modules on
-./hvget gets the current HV value
-. waterflow returns the current waterflow returned by the flowmeter
-./temp returns the water temperature returned by the flowmeter
+./off #to switch modules off
+./hvget #gets the current HV value
+./waterflow #returns the current waterflow returned by the flowmeter
+./temp #returns the water temperature returned by the flowmeter
  \end{verbatim}
-A watchdog is running on bchip100 to check for the flow and temparature. If outside of parameters, the detector will be switched off. 
-Here is an explanation of the LED color scheme of teh bchip100: 
+A watchdog is running on bchip100 to check for the flow and temparature. If outside of parameters ( flow$<$ 80 dl/min, temperature $\neq$21$\pm$2), the detector will be switched off. 
+Here is an explanation of the LED color scheme of the bchip100: 
 \begin{itemize}
 \item NO LED  Main Power off or Blackfin not ready, yet.
 \item RED     Too high temperature or too less water flow
-        Detector is shutted down and locked.
+        Detector is shut down and locked.
         Detector will be unlocked (YELLOW) automatically when conditions are good again.
 \item YELLOW  Detector is off and unlocked. Ready to be turned on.
 \item GREEN   Detector is on
 \end{itemize}
-You can also Check temperatures and water flow in a browser (from teh same subnet where the 9M is: http://bchip100/status.cgi
+You can also Check temperatures and water flow in a browser (from the same subnet where the 9M is: http://bchip100/status.cgi
 
 
 
@@ -107,7 +110,7 @@ sls_detector_put 0-config mydetector.config
 
 In the config file, if client, receiver and detector are using \textbf{1GbE} the following lines are mandatory (see slsDetectorsPackage/examples/eiger\_1Gb.config):
 \begin{verbatim}
-detsizechan 1024 512 #detetctor geometry, long side of the module first
+detsizechan 1024 512 #detector geometry, long side of the module first
 hostname beb059+beb058+ #1Gb detector hostname for controls
 0:rx_tcpport 1991 #tcpport for the first halfmodule                 
 0:rx_udpport 50011 #udp port first quadrant, first halfmodule         
@@ -121,7 +124,7 @@ outdir /sls/X12SA/data/x12saop/Data10/Eiger0.5M
 
 In the config file, if client, receiver and detector commands are on 1Gb, but detector data to receiver are sent using \textbf{10GbE} the following lines are mandatory (see slsDetectorsPackage/examples/eiger\_10Gb.config):
 \begin{verbatim}
-detsizechan 1024 512 #detetctor geometry, long side of the module first
+detsizechan 1024 512 #detector geometry, long side of the module first
 hostname beb059+beb058+ #1Gb detector hostname for controls
 0:rx_tcpport 1991 #tcpport for the first halfmodule                 
 0:rx_udpport 50011 #udp port first quadrant, first halfmodule       
@@ -149,7 +152,7 @@ Other important settings that are configured in the {\tt{setup.det}} file are:
 \item {\tt{tengiga 0/1}}, which sets whether the detector is enabled to send data through the 1~or the 10~Gb Ethernet.
 \item {\tt{flags parallel/nonparallel}}, which sets whether the detector is set in parallel acquisition and readout or in sequential mode. This changes the readout time of the chip and affects the frame rate capability (faster is {\tt{parallel}}, with higher noise but needed when the frame rate is $>2$~kHz. 
 \item {\tt{dr 32/16}} sets the detector in autosumming mode (32 bit counter or not autosumming, 12 bit out of the chip). This is strictly connected to what is required for the readout clock of chip. See next point.
-\item {\tt{clkdivider 0/1/2}}. Changes the readout clock: 200, 100, 50~MHz (also refferered to as full, half, quarter speed). Note that autosumming mode ({\tt{dr 32}} only works at {clkdivider 2}=quarter speed). By selecting Refer to readout timing specifications in~section\ref{timing} for how to set the detector. 
+\item {\tt{clkdivider 0/1/2}}. Changes the readout clock: 200, 100, 50~MHz (also referrered to as full, half, quarter speed). Note that autosumming mode ({\tt{dr 32}} only works at {clkdivider 2}=quarter speed). By selecting Refer to readout timing specifications in~section\ref{timing} for how to set the detector. 
 \item {\tt{flags continuous/storeinram}}. Allows to take frame continuously or storing them on memory. Normally {\tt{continuous}} should be used. Enabling the  {\tt{stroreinram}} mode allows you to obtain the maximum frame rate, but at the expenses to have to receive the data all at the end of the acquisition. Refer to readout timing specifications in section~\ref{timing} for how to set the detector.
 \end{itemize}
 
@@ -252,11 +255,11 @@ this same command can be used after a non proper abortion of the acquisition to 
 IMPORTANT: to have faster readout and smaller dead time, one can configure {\tt{clkdivider}}, i.e. the speed at which the data are read, i.e. 200/100/50~MHz for {\tt{clkdivider 0/1/2}} and the dead time between frames through {\tt{flags parallel}}, i.e. acquire and read at the same time or acquire and then read out.
 The configuration of this timing variables allows to achieve different frame rates. NOTE THAT IN EIGER, WHATEVER YOU DO, THE FRAME RATE LIMITATIONS COME FROM THE NETWORK BOTTLENECK AS THE HARDWARE GOES FASTER THAN THE DATA OUT.
 
-In the case of REAL CONTINUOUS readout, i.e. continuous acquire and readout from the boards (independent on how the chip is set):
-\begin{table}
+In the case of REAL CONTINUOUS readout, i.e. continuous acquire and readout from the boards (independent on how the chip is set), the continuous frame rates are listed in table~\ref{tcont}:
+\begin{table} 
 \begin{tabular}{|c|c|c|}
 \hline
-GbE & dynamic range & maximum frame rate(Hz)\\
+GbE & dynamic range & continuos maximum frame rate(Hz)\\
 \hline
 1 & 16 &  \textbf{256}\\ 
 \hline 
@@ -272,9 +275,9 @@ GbE & dynamic range & maximum frame rate(Hz)\\
 \hline
 \end{tabular}
 \caption{Frame rate limits for the CONTINUOS streming out of images.} 
-\end{table}
-Note that in the {\tt{continuous}} flag mode, some buffering is still done on the memories, so a higher frame rate than the proper real continuos one can be achieved. Still, this extra buffering is possible till the memories are not saturated. 
-The number of images that can be stored on memories are:
+\label{tcont}\end{table}
+Note that in the {\tt{continuous}} flag mode, some buffering is still done on the memories, so a higher frame rate than the proper real continuous one can be achieved. Still, this extra buffering is possible till the memories are not saturated. 
+The number of images that can be stored on memories are listed in table~\ref{timgs}:
 \begin{table}
 \begin{tabular}{|c|c|}
 \hline
@@ -287,13 +290,14 @@ dynamic range & images\\
 16 & 7600\\
 \hline
 \end{tabular}
-\caption{Amount of images that can be stored on board. As while we store them, we start to send them out, teh effective number of images could be larger than this, but it will depend on the network setup (how fats you stream out images).}
+\caption{Amount of images that can be stored on board. As while we store them, we start to send them out, the effective number of images could be larger than this, but it will depend on the network setup (how fats you stream out images).}
+\label{timgs}
 \end{table}
 
 The maximum frame rate achievable with 10~GbE, {\tt{dr 16}}, {\tt{flags continuous}}, {\tt{flags parallel}},{\tt{clkdivider 0}}, \textbf{6.1~kHz}. This is currently limited by the connection between the Front End Board and the Backend board. We expect the 32 bit mode limit to be \textbf{2~kHz} ({\tt{clkdivider 2}}).
  In dynamic range {\tt{dr 8}} the frame rate is \textbf{11~kHz} and for{\tt{dr 4}} is \textbf{22~kHz}. For 4 and 8 bit mode the frame rate are directly limited by the speed of the detector chip and not by the readout boards.    
 
-Here is a list of all the readout times in the different configurations:
+In table~\ref{tframes} is a list of all the readout times in the different configurations:
 \begin{tiny}
 \begin{table}
 \begin{tabular}{|c|c|c|c|c|c|c|c|}
@@ -345,10 +349,11 @@ Here is a list of all the readout times in the different configurations:
 \hline
 \end{tabular}
 \caption{Readout settings. The {\tiny{min exptime}} possible is 3$-$5~$\mu$s.}
+\label{tframes}
 \end{table}
 \end{tiny}
 \textbf{As if you run too fast, the detector could become noisier, it is important to match the detector settings to your frame rate. This can be done having more parameters files and load the one suitable with your experiment.} We experienced that {\tt{highgain}} settings could not be used at 6~kHz.
-\textbf{We reccomend to use the detector in 32 bit mode with {\tt{clkdivider 2}}, {\tt{flags parallel}}. We reccomend to use the detector in 16 bit mode with {\tt{clkdivider 1}}, {\tt{flags parallel}}}. In general, choose first the desired dead time: this will tell you if you want to run in parallel or non parallel mode. Then, choose the maximum frame rate you want to aim, not exeeding what you aim for not to increase the noise.
+\textbf{We recommend to use the detector in 32 bit mode with {\tt{clkdivider 2}}, {\tt{flags parallel}}. We recommend to use the detector in 16 bit mode with {\tt{clkdivider 1}}, {\tt{flags parallel}}}. In general, choose first the desired dead time: this will tell you if you want to run in parallel or non parallel mode. Then, choose the maximum frame rate you want to aim, not exceeding what you aim for not to increase the noise.
 
 
 \section{External triggering options}
@@ -384,13 +389,13 @@ sls_detector_put 0-subexptime [time_in_s]
 
 One needs to realize that the readout time, for each subframe is 10.5~$\mu$s if the detector is in parallel mode. 500~$\mu$s if the detector is in non parallel mode. Note that in {\tt{dr 32}}, as the single frame readout from the chip is 500~$\mu$s, no {\tt{subexptime}}$<$500~$\mu$s can be set in {\tt{parallel}} mode. To have smaller {\tt{subexptime}}, you need the {\tt{nonparallel}} mode, although this will have a larger deadtime than the acquisition time.\\
 
-Rate corrections are possible online (and the came procedure can be used offline) by creating a lookup table between the theoretically incident counter value $c_i$ and the detected counter value $c_d$. 
-In the EIGER on board server, this lookup table is generated assuming that the detected rate $n_d$ can be modelled as a function of the incident rate $n_i$ according to the paralyzable counter model:
+Rate corrections are possible online (and the came procedure can be used offline) by creating a look-up table between the theoretically incident counter value $c_i$ and the detected counter value $c_d$. 
+In the EIGER on board server, this look-up table is generated assuming that the detected rate $n_d$ can be modeled as a function of the incident rate $n_i$ according to the paralyzable counter model:
 \begin{equation}
 n_d= n_i \cdot exp(-n_i \cdot \tau),
 \label{rate}
 \end{equation}
-where $\tau$ represents an effective parameter for the dead time and the loss in efficiency. The lookup table is necessary as we are interested to obtain $c_i(c_d)$ and equation~\ref{rate} is not invertable. One needs to notice that the paralizable counter model to create a lookup tables applies only if photons arrive with a countinuos pattern (like at the SLS). If photons are structured in fewer but intenser bunches, deviations may arise. This is the case for some operation modes at the ESRF. For those cases we are studying how to correct, probably from a simulated correction tables if an analytical curve cannot be found.  
+where $\tau$ represents an effective parameter for the dead time and the loss in efficiency. The look-up table is necessary as we are interested to obtain $c_i(c_d)$ and equation~\ref{rate} is not invertible. One needs to notice that the paralizable counter model to create a look-up tables applies only if photons arrive with a continuous pattern (like at the SLS). If photons are structured in fewer but intenser bunches, deviations may arise. This is the case for some operation modes at the ESRF. For those cases we are studying how to correct, probably from a simulated correction tables if an analytical curve cannot be found.  
 \textbf{In the new calibration scheme, $\tau$ is given as a function of the energy. It is loaded from the trimbit files and interpolation between two trimbit files are performed.} One needs to make sure the appropriate $\tau$ value is written in the trimbit files, then need to load the appropriate {\tt{settings}} and {\tt{vthreshold}} before.
 
 Online rate corrections can be activated for {\tt{dr=32}}. They are particularly useful in the autosumming mode as  every single subframe is corrected before summing it. To correct for rate, the subframe duration has to be known to the correction algorithm. Rate corrections for {\tt{dr=16}} will be activated as well in the next firmware release.     
@@ -417,7 +422,7 @@ Guide on returned strings:
 \item \begin{verbatim}
 sls_detector_get free
 \end{verbatim}
-Returns a list of shared mamories cleaned (variable number depending on detector):
+Returns a list of shared memories cleaned (variable number depending on detector):
 \begin{verbatim}
 Shared memory 273612805 deleted
 Shared memory 276922374 deleted
@@ -539,13 +544,13 @@ where {\tt{number}} is a string that should be interpreted as a float in s.  0.0
 sls_detector_get vhighvoltage
 vhighvoltage number
 \end{verbatim}
-where {\tt{number}} is a string that should be interpreted as an int and for proper Eiger setting is approximately 150~V if it is correctly set. If two master modules are presents (multi systems), the average is returned (still to be tested). If one asks for the individual $n$ half module bias volatage through {\tt{sls\_detector\_get n:vhighvoltage}}, if the $n$ module is a master, the actual volatage will be returned. If it is a slave, -999 will be returned. 
+where {\tt{number}} is a string that should be interpreted as an int and for proper Eiger setting is approximately 150~V if it is correctly set. If two master modules are presents (multi systems), the average is returned (still to be tested). If one asks for the individual $n$ half module bias voltage through {\tt{sls\_detector\_get n:vhighvoltage}}, if the $n$ module is a master, the actual voltage will be returned. If it is a slave, -999 will be returned. 
   
 \item \begin{verbatim}
 sls_detector_get busy
 busy number
 \end{verbatim}
-where  {\tt{number}} is a string that should be interpreted as an int for 0/1 meaning no/yes. This command tells if the sharedmemory has in memory that an acquisition has been started or not. It should allows to use the non blocking acquire, regardless of any delay to teh detector getting into 'running' mode. 
+where  {\tt{number}} is a string that should be interpreted as an int for 0/1 meaning no/yes. This command tells if the sharedmemory has in memory that an acquisition has been started or not. It should allows to use the non blocking acquire, regardless of any delay to the detector getting into 'running' mode. 
 
 
 \end{enumerate}
@@ -641,19 +646,23 @@ The current UDP header format is described in figure~\ref{UDPheader}.
 \subsection{Data out of the slsReceiver}
 
 
-For a module, the geometry of the ports are : 
-\begin{tabular}{|c|c}
+For a module, the geometry of the ports are as in table~\ref{tports}: 
+\begin{table}
+\begin{tabular}{|c|c|}
 \hline
 {\tt{0:rx\_udpport 50011}} &  {\tt{0:rx\_udpport2 50012}}\\  
 \hline
 {\tt{1:rx\_udpport 50013}} &  {\tt{1:rx\_udpport2 50014}}\\  
 \hline
 \end{tabular}
-white the option {\tt{n:flippeddatax 1}}, which flipes in vertical the content of the module. By convection, we usually use {\tt{1:flippeddatax 1}}, but one could flip the top instead.
+\caption{UDP port geometry for a single module, 4 UDP ports.}
+\label{tports}
+\end{table}
+white the option {\tt{n:flippeddatax 1}}, which flips in vertical the content of the module. By convection, we usually use {\tt{1:flippeddatax 1}}, but one could flip the top instead.
 
 
 \subsection{``raw'' files}
-If you use the option of writing raw files, you will have a raw file for each UDP port (meaning most likely 2 chips), 4 files per module. In addition to teh raw fiules, you will get also a ``master'' file, containing in ascii some detector general parameters and teh explanation of how to interpret the data from the raw files.
+If you use the option of writing raw files, you will have a raw file for each UDP port (meaning most likely 2 chips), 4 files per module. In addition to the raw files, you will get also a ``master'' file, containing in ascii some detector general parameters and the explanation of how to interpret the data from the raw files.
    
 The master file is named: {\tt{filename\_master\_0.raw}} and for version ``3.0'' of the slsDetectorSoftware looks like:
  
@@ -753,7 +762,7 @@ The HV can also be set and read through the software:
 ./sls_detector_put vhighvoltage 150
 ./sls_detector_get vhighvoltage 
 \end{verbatim}
-Note that the get {\tt{vhighvoltage}} would return the measured HV from the master module only. If getting teh vhighvoltage for individual halfmodules, only the master will have a value different from -999.
+Note that the get {\tt{vhighvoltage}} would return the measured HV from the master module only. If getting the vhighvoltage for individual halfmodules, only the master will have a value different from -999.
 
 \appendix
 
@@ -782,8 +791,8 @@ Start the server again:
 
 A \textbf{bcp} executable (which needs \textbf{tftp} installed on the PC, is needed. 
 \begin{enumerate}
-\item Manual way: you need to press something on the detector. To programm bitfiles (firmware files), do a hard reset with a pin/thin stuff in the holes at the very back of the module. They are between the top 7 LED and the bottom 1 and opposite for the other side. Push hard till all LEDs are alternating green and red.
-\item Software way (possible only if you have the correct programs copied on your board. If not, as the sls detcetor group). 
+\item Manual way: you need to press something on the detector. To program bitfiles (firmware files), do a hard reset with a pin/thin stuff in the holes at the very back of the module. They are between the top 7 LED and the bottom 1 and opposite for the other side. Push hard till all LEDs are alternating green and red.
+\item Software way (possible only if you have the correct programs copied on your board. If not, as the sls detector group). 
 \begin{verbatim}
 ssh root@bebxxx
 cd executables
@@ -825,7 +834,7 @@ sls_detector_put pulsechip -1 #to get out of testing mode
 \end{verbatim}
 Note that the answer will be $2 \cdot \textrm{{\tt{N}}} +2$ in this case.
 
-\item  \textbf{Pulse analogically:} You want to really check the analogical part of the detcetor, not just the readout.
+\item  \textbf{Pulse analogically:} You want to really check the analogical part of the detector, not just the readout.
 
  \begin{verbatim}
 sls_detector_put vcall 3600

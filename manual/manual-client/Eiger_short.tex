@@ -271,6 +271,7 @@ GbE & dynamic range & maximum frame rate(Hz)\\
 10 & 4 & \textbf{10240}\\
 \hline
 \end{tabular}
+\caption{Frame rate limits for the CONTINUOS streming out of images.} 
 \end{table}
 Note that in the {\tt{continuous}} flag mode, some buffering is still done on the memories, so a higher frame rate than the proper real continuos one can be achieved. Still, this extra buffering is possible till the memories are not saturated. 
 The number of images that can be stored on memories are:
@@ -286,7 +287,7 @@ dynamic range & images\\
 16 & 7600\\
 \hline
 \end{tabular}
-\caption{Amount of images that can be stored on board.}
+\caption{Amount of images that can be stored on board. As while we store them, we start to send them out, teh effective number of images could be larger than this, but it will depend on the network setup (how fats you stream out images).}
 \end{table}
 
 The maximum frame rate achievable with 10~GbE, {\tt{dr 16}}, {\tt{flags continuous}}, {\tt{flags parallel}},{\tt{clkdivider 0}}, \textbf{6.1~kHz}. This is currently limited by the connection between the Front End Board and the Backend board. We expect the 32 bit mode limit to be \textbf{2~kHz} ({\tt{clkdivider 2}}).
@@ -299,37 +300,37 @@ Here is a list of all the readout times in the different configurations:
 \hline
 \tiny{dr} & \tiny{clkdivider} & \tiny{mode} & \tiny{readout t($\mu$s)} & \tiny{max frame rate (kHz)} & \tiny{max exptime ($\mu$s)} & \tiny{min period ($\mu$s)} & \tiny{max images}\\
 \hline
-4 & 0 & parallel & 3.4 & 22 &  & & \\
+4 & 0 & parallel & 3.4 & 22 &  40 & 44 & 50k\\
 \hline
-4 & 0 & nonparallel & 44 & 21 &  & & \\
+4 & 0 & nonparallel & 44 & 21 &  3 & 49 & 50k\\
 \hline
-4 & 1 & parallel & 6 & 10.5 &  & & \\
+4 & 1 & parallel & 6 & 10.5 &  85 & 92 & 100k\\
 \hline
-4 & 1 & nonparallel & 88.7 & 10.5 &  & & \\
+4 & 1 & nonparallel & 88.7 & 10.5 & 3 & 93 & 100k\\
 \hline
-4 & 2 & parallel & 11.2 & 5.4 &  & & \\
+4 & 2 & parallel & 11.2 & 5.4 &  185 & 197 & infinite\\
 \hline
-4 & 2 & nonparallel & 176.5 & 5.4 &  & & \\
-\hline
-\hline
-8 & 0 & parallel & 3.4 & 11.2 &  &  & \\
-\hline
-8 & 0 & nonparallel & 85.7 & 11.2 &  & & \\
-\hline
-8 & 1 & parallel & 6.1 & 5.8 &  & & \\
-\hline
-8 & 1 & nonparallel & 170.5 & 5.8 &  & & \\
-\hline
-8 & 2 & parallel & 11.2 &  2.9 &  & & \\
-\hline
-8 & 2 & nonparallel & 340.3 &  2.9 &  & & \\
+4 & 2 & nonparallel & 176.5 & 5.4 &  3 & 180 & infinite\\
 \hline
 \hline
-16 & 0 & parallel & 3.4 & 6 & 164 & 168 & 12000\\
+8 & 0 & parallel & 3.4 & 11.1 &  85 & 89 & 24k\\
 \hline
-16 & 0 & nonparallel &  126 & 3.4& 164 & 295 & 23000\\
+8 & 0 & nonparallel & 85.7 & 11.1 & 3 & 91 & 24k\\
 \hline
-16 & 1 & parallel &  6.1 & 2.9&  339 & 346 & 28000\\
+8 & 1 & parallel & 6.1 & 5.7 &  174 & 181 & 52k\\
+\hline
+8 & 1 & nonparallel & 170.5 & 5.7 &  3 & 175 & 52k\\
+\hline
+8 & 2 & parallel & 11.2 &  2.9 &  330 & 342 & infinite\\
+\hline
+8 & 2 & nonparallel & 340.3 &  2.9 &  3 & 344 & infinite\\
+\hline
+\hline
+16 & 0 & parallel & 3.4 & 6 & 164 & 168 & 12k\\
+\hline
+16 & 0 & nonparallel &  126 & 3.4& 164 & 295 & 23k\\
+\hline
+16 & 1 & parallel &  6.1 & 2.9&  339 & 346 & 28k\\
 \hline
 16 & 1 & nonparallel & 255 & 1.7&  339 & 592 & infinite\\
 \hline

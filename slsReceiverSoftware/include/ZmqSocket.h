@@ -78,7 +78,7 @@ public:
 		//ZMQ_LINGER default is already -1 means no messages discarded. use this options if optimizing required
 		//ZMQ_SNDHWM default is 0 means no limit. use this to optimize if optimizing required
 		// eg. int value = -1;
-		int value = -1;
+		int value = 0;
 		 if (zmq_setsockopt(socketDescriptor, ZMQ_LINGER, &value,sizeof(value))) {
 			PrintError ();
 			Close();
@@ -177,6 +177,7 @@ public:
 			zmq_close (socketDescriptor);
 			socketDescriptor = NULL;
 		}
+
 		if (contextDescriptor != NULL) {
 			zmq_ctx_destroy (contextDescriptor);
 			contextDescriptor = NULL;
@@ -255,6 +256,9 @@ public:
 			PrintError ();
 			return 0;
 		}
+#ifdef VERBOSE
+		cprintf(GREEN,"[%u] send header data\n",portno);
+#endif
 		return 1;
 	};
 
@@ -269,6 +273,9 @@ public:
 			PrintError ();
 			return 0;
 		}
+#ifdef VERBOSE
+		cprintf(GREEN,"[%u] send data\n",portno);
+#endif
 		return 1;
 	};
 

@@ -1,30 +1,28 @@
 CC				=	gcc
 CFLAGS			+=  -Wall -DDACS_INT   -DEIGERD  -DSLS_DETECTOR_FUNCTION_LIST  -DDACS_INT -DPCCOMPILE -DSTOP_SERVER  #-DVERBOSE 
-CFLAGS			+= -DVIRTUAL -DVIRTUAL_9M -DVIRTUAL_MASTER
-
+CFLAGS			+= -DVIRTUAL -DVIRTUAL_9M
+MASTERFLAG		+= -DVIRTUAL_MASTER
 LDLIBS			+= 	-lm  -lstdc++ -pthread
 
-PROGS			= 	eigerDetectorServerVirtual 
 DESTDIR			?= 	bin
-INSTMODE		= 	0777
 
 SRC_CLNT		=	communication_funcs.c slsDetectorServer.c slsDetectorServer_funcs.c  slsDetectorFunctionList_virtual.c 
-OBJS 			= 	$(SRC_CLNT:.c=.o) 
 
 
-all: clean $(PROGS)
+
+all: clean master slave
 
 	
-boot: $(OBJS)
-
-
-$(PROGS):   $(OBJS)
-#	echo $(CFLAGS)
-#	echo $(OBJS)
+master: $(SRC_CLNT)
 	mkdir -p $(DESTDIR) 
-	$(CC)  -o $@  $(SRC_CLNT) $(CFLAGS) $(LDLIBS) 
-	mv $(PROGS) $(DESTDIR)
+	$(CC)  -o eigerDetectorServer_virtualMaster $(SRC_CLNT) $(CFLAGS) $(MASTERFLAG) $(LDLIBS) 	
+	mv eigerDetectorServer_virtualMaster $(DESTDIR)
+	
+slave: $(SRC_CLNT)
+	mkdir -p $(DESTDIR) 
+	$(CC)  -o eigerDetectorServer_virtualSlave $(SRC_CLNT) $(CFLAGS) $(LDLIBS) 	
+	mv eigerDetectorServer_virtualSlave $(DESTDIR)
 
 clean:
-	rm -rf $(DESTDIR)/$(PROGS)  *.o
+	rm -rf $(DESTDIR)/eigerDetectorServer_virtualMaster $(DESTDIR)/eigerDetectorServer_virtualSlave *.o
 	

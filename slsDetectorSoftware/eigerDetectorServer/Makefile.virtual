@@ -1,24 +1,26 @@
-CC			=	gcc
-CFLAGS		+=  -Wall -DDACS_INT   -DEIGERD     -DDACS_INT -DPCCOMPILE -DSLS_DETECTOR_FUNCTION_LIST #-DSTOP_SERVER #-DVERBOSE #-DVIRTUAL -DPCCOMPILE
-LDLIBS		+= 	-lm  -lstdc++ 
+CC				=	gcc
+CFLAGS			+=  -Wall -DDACS_INT   -DEIGERD  -DSLS_DETECTOR_FUNCTION_LIST  -DDACS_INT -DPCCOMPILE -DSTOP_SERVER  #-DVERBOSE 
+CFLAGS			+= -DVIRTUAL -DVIRTUAL_9M -DVIRTUAL_MASTER
 
-PROGS		= 	eigerDetectorServerVirtual 
-DESTDIR		?= 	bin
-INSTMODE	= 	0777
+LDLIBS			+= 	-lm  -lstdc++ -pthread
 
-SRC_CLNT	=	communication_funcs.c slsDetectorServer.c slsDetectorServer_funcs.c  slsDetectorFunctionList.c 
-#SRC_CLNT2   =   Eiger.cxx HardwareIO.cxx LocalLinkInterface.cxx Feb.cxx
-OBJS 		= 	$(SRC_CLNT:.c=.o) 
-OBJS2 		= 	$(SRC_CLNT2:.cpp=.o)
+PROGS			= 	eigerDetectorServerVirtual 
+DESTDIR			?= 	bin
+INSTMODE		= 	0777
+
+SRC_CLNT		=	communication_funcs.c slsDetectorServer.c slsDetectorServer_funcs.c  slsDetectorFunctionList_virtual.c 
+OBJS 			= 	$(SRC_CLNT:.c=.o) 
 
 
 all: clean $(PROGS)
 
 	
-boot: $(OBJS) $(OBJS2)
+boot: $(OBJS)
 
-$(PROGS): 
-	echo $(OBJS) $(OBJS2)
+
+$(PROGS):   $(OBJS)
+#	echo $(CFLAGS)
+#	echo $(OBJS)
 	mkdir -p $(DESTDIR) 
 	$(CC)  -o $@  $(SRC_CLNT) $(CFLAGS) $(LDLIBS) 
 	mv $(PROGS) $(DESTDIR)

@@ -202,6 +202,9 @@ int 		setNetworkParameter(enum NETWORKINDEX mode, int value);
 int 		prepareAcquisition();
 #endif
 int 		startStateMachine();
+#ifdef VIRTUAL
+void* start_timer(void* arg);
+#endif
 int 		stopStateMachine();
 #ifndef JUNGFRAUD
 int 		startReadOut();

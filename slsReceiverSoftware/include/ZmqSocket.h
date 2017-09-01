@@ -124,6 +124,9 @@ public:
 			PrintError ();
 			Close ();
 		}
+
+		//sleep for a few milliseconds to allow a slow-joiner
+		usleep(200* 1000);
 	};
 
 	/**

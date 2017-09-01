@@ -1,9 +1,9 @@
 Path: slsDetectorsPackage/slsReceiverSoftware 
 URL: origin git@git.psi.ch:sls_detectors_software/sls_receiver_software.git 
 Repository Root: origin git@git.psi.ch:sls_detectors_software/sls_receiver_software.git 
-Repsitory UUID: 9cf66915a10735ae44565b8ad95ed5d065bdac6a 
-Revision: 653 
+Repsitory UUID: 253d74aaf3dfa161c067b00907c52001815f5bfe 
+Revision: 655 
 Branch: 3.0 
 Last Changed Author: Dhanya_Maliakal 
-Last Changed Rev: 658 
-Last Changed Date: 2017-08-28 12:03:56.000000002 +0200 ./include/ZmqSocket.h
+Last Changed Rev: 660 
+Last Changed Date: 2017-09-01 13:56:44.000000002 +0200 ./include/ZmqSocket.h

@@ -49,6 +49,7 @@ qDrawPlot::~qDrawPlot(){
 	for(QVector<SlsQtH1D*>::iterator h = plot1D_hists.begin();h!=plot1D_hists.end();h++)	delete *h;
 	plot1D_hists.clear();
 	if(lastImageArray) delete[] lastImageArray; lastImageArray=0;
+	if(gainImageArray) delete[] gainImageArray; gainImageArray=0;
 	StartOrStopThread(0);
 	delete myDet; myDet = 0;
 	for(int i=0;i<MAXCloneWindows;i++) if(winClone[i]) {delete winClone[i]; winClone[i] = NULL;}
@@ -132,6 +133,7 @@ void qDrawPlot::SetupWidgetWindow(){
 	histYAngleAxis = 0;
 	histTrimbits=0;
 	lastImageArray = 0;
+	gainImageArray = 0;
 
 	persistency = 0;
 	currentPersistency = 0;
@@ -318,8 +320,27 @@ void qDrawPlot::SetupWidgetWindow(){
 
 	plotLayout =  new QGridLayout(boxPlot);
 	plotLayout->setContentsMargins(0,0,0,0);
-		plotLayout->addWidget(plot1D,0,0,1,1);
-		plotLayout->addWidget(plot2D,0,0,1,1);
+		plotLayout->addWidget(plot1D,0,0,3,3);
+		plotLayout->addWidget(plot2D,0,0,3,3);
+
+
+	//gainplot
+	gainplot2D = new SlsQt2DPlotLayout(boxPlot);
+	gainImageArray = new double[nPixelsY*nPixelsX];
+	for(unsigned int px=0;px<nPixelsX;px++)
+		for(unsigned int py=0;py<nPixelsY;py++)
+			gainImageArray[py*nPixelsX+px] = sqrt(pow(0+1,2)*pow(double(px)-nPixelsX/2,2)/pow(nPixelsX/2,2)/pow(1+1,2) + pow(double(py)-nPixelsY/2,2)/pow(nPixelsY/2,2))/sqrt(2);
+		gainplot2D->setFont(QFont("Sans Serif",9,QFont::Normal));
+		gainplot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,startPixel,endPixel,gainImageArray);
+		gainplot2D->setTitle(GetImageTitle());
+		gainplot2D->SetXTitle(imageXAxisTitle);
+		gainplot2D->SetYTitle(imageYAxisTitle);
+		gainplot2D->SetZTitle(QString("Gain ") + imageZAxisTitle);
+		gainplot2D->setAlignment(Qt::AlignLeft);
+		plotLayout->addWidget(gainplot2D,1,3,1,1);
+		gainplot2D->hide();
+		gainPlotEnable = false;
+
 
 
 //callbacks
@@ -348,11 +369,10 @@ void qDrawPlot::Initialization(){
 	connect(this, 		SIGNAL(LogySignal(bool)),		plot1D, 	SLOT(SetLogY(bool)));
 	connect(this, 		SIGNAL(ResetZMinZMaxSignal(bool,bool,double,double)),plot2D, 	SLOT(ResetZMinZMax(bool,bool,double,double)));
 
-	connect(this, 		SIGNAL(SetZRangeSignal(double,double)),	plot2D, 	SLOT(SetZRange(double,double)));
-
 	connect(this, 		SIGNAL(AcquisitionErrorSignal(QString)),	this, 	SLOT(ShowAcquisitionErrorMessage(QString)));
 
 
+	connect(this, 		SIGNAL(GainPlotSignal(bool)),	this, 	SLOT(EnableGainPlot(bool)));
 }
 
 
@@ -583,15 +603,20 @@ void qDrawPlot::SetScanArgument(int scanArg){
 
 	//2d
 	if(lastImageArray) delete [] lastImageArray; lastImageArray = new double[nPixelsY*nPixelsX];
+	if(gainImageArray) delete [] gainImageArray; gainImageArray = new double[nPixelsY*nPixelsX];
 
 	//initializing 1d x axis
 	for(unsigned int px=0;px<(int)nPixelsX;px++)	histXAxis[px]  = px;/*+10;*/
 
 	//initializing 2d array
-	for(int py=0;py<(int)nPixelsY;py++)
-		for(int px=0;px<(int)nPixelsX;px++)
+	memset(lastImageArray,0,nPixelsY *nPixelsX * sizeof(double));
+	memset(gainImageArray,0,nPixelsY *nPixelsX * sizeof(double));
+	/*for(int py=0;py<(int)nPixelsY;py++)
+		for(int px=0;px<(int)nPixelsX;px++) {
 			lastImageArray[py*nPixelsX+px] = 0;
-
+			gainImageArray[py*nPixelsX+px] = 0;
+		}
+	 */
 
 	//histogram
 	if(histogram){
@@ -644,10 +669,15 @@ void qDrawPlot::SetupMeasurement(){
 		if(!running)
 		  lastImageNumber = 0;/**Just now */
 	//initializing 2d array
+	memset(lastImageArray,0,nPixelsY *nPixelsX * sizeof(double));
+	memset(gainImageArray,0,nPixelsY *nPixelsX * sizeof(double));
+	/*
 	for(int py=0;py<(int)nPixelsY;py++)
-		for(int px=0;px<(int)nPixelsX;px++)
+		for(int px=0;px<(int)nPixelsX;px++) {
 			lastImageArray[py*nPixelsX+px] = 0;
-
+			gainImageArray[py*nPixelsX+px] = 0;
+			}
+	 */
 	//1d with no scan
 	if ((!originally2D) && (scanArgument==qDefs::None)){
 #ifdef VERYVERBOSE
@@ -666,7 +696,7 @@ void qDrawPlot::SetupMeasurement(){
 #endif
 		//2d with no scan
 		if ((originally2D) && (scanArgument==qDefs::None)){
-			maxPixelsY = nPixelsY;
+			maxPixelsY = nPixelsY-1;
 			minPixelsY = 0;
 		}
 
@@ -1122,6 +1152,15 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 		else{
 			// Titles
 			imageTitle = temp_title;
+
+			//jungfrau mask gain
+			if(data->gvalues != NULL) {
+				memcpy(gainImageArray, data->gvalues, nPixelsX*nPixelsY*sizeof(double));
+				gainPlotEnable = true;
+			}else
+				gainPlotEnable = false;
+
+
 			//recalculating pedestal
 			if(startPedestalCal){
 				//start adding frames to get to the pedestal value
@@ -1458,6 +1497,17 @@ void qDrawPlot::UpdatePlot(){
 						plot2D->SetYTitle(imageYAxisTitle);
 						plot2D->SetZTitle(imageZAxisTitle);
 						plot2D->UpdateNKeepSetRangeIfSet(); //keep a "set" z range, and call Update();
+						if (gainPlotEnable) {
+							gainplot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,startPixel,endPixel,gainImageArray);
+							gainplot2D->setTitle(GetImageTitle());
+							gainplot2D->SetXTitle(imageXAxisTitle);
+							gainplot2D->SetYTitle(imageYAxisTitle);
+							gainplot2D->SetZTitle(QString("Gain ") + imageZAxisTitle);
+
+							gainplot2D->show();
+						}else {
+							gainplot2D->hide();
+						}
 					}
 					// update range if required
 					if(XYRangeChanged){
@@ -1467,9 +1517,16 @@ void qDrawPlot::UpdatePlot(){
 						if(!IsXYRange[qDefs::YMAXIMUM])			XYRangeValues[qDefs::YMAXIMUM]= plot2D->GetPlot()->GetYMaximum();
 						plot2D->GetPlot()->SetXMinMax(XYRangeValues[qDefs::XMINIMUM],XYRangeValues[qDefs::XMAXIMUM]);
 						plot2D->GetPlot()->SetYMinMax(XYRangeValues[qDefs::YMINIMUM],XYRangeValues[qDefs::YMAXIMUM]);
+						if (gainPlotEnable) {
+							gainplot2D->GetPlot()->SetXMinMax(XYRangeValues[qDefs::XMINIMUM],XYRangeValues[qDefs::XMAXIMUM]);
+							gainplot2D->GetPlot()->SetYMinMax(XYRangeValues[qDefs::YMINIMUM],XYRangeValues[qDefs::YMAXIMUM]);
+						}
 						XYRangeChanged	= false;
 					}
 					plot2D->GetPlot()->Update();
+					if (gainPlotEnable) {
+						gainplot2D->GetPlot()->Update();
+					}
 					//Display Statistics
 					if(displayStatistics){
 						double min=0,max=0,sum=0;
@@ -1853,9 +1910,12 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 		nPixelsY = 100;
 		if(lastImageArray) delete [] lastImageArray; lastImageArray = new double[nPixelsY*nPixelsX];
 		//initializing 2d array
+		memset(lastImageArray, 0 ,nPixelsY * nPixelsX * sizeof(double));
+		/*
 		for(int py=0;py<(int)nPixelsY;py++)
 			for(int px=0;px<(int)nPixelsX;px++)
 				lastImageArray[py*nPixelsX+px] = 0;
+				*/
 		//get trimbits
 		ret = 1;/*myDet->getChanRegs(lastImageArray,fromDetector);*/
 		if(!ret){
@@ -2066,3 +2126,11 @@ void qDrawPlot::GetStatistics(double &min, double &max, double &sum, double* arr
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qDrawPlot::EnableGainPlot(bool e) {
+#ifdef VERBOSE
+	cout << "Setting Gain Plot enable to " << e << endl;
+#endif
+	myDet->setGainDataEnableinDataCallback(e);
+}

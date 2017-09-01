@@ -124,10 +124,30 @@ private slots:
 	/** Enables/Sets default Titles to default */
 	void EnableTitles();
 
-	/** Enables range of the axes */
+	/** check aspect ratio */
+	void checkAspectRatio();
+
+	/** maintain aspect ratio
+	 * @param axis axis to be changed: 0 for x(y axis values changed), 1 for y (xaxis values changes), -1 for the larger one (aspect ratio checked)
+	 */
+	void maintainAspectRatio(int axis);
+
+	/** Enables range of the X axis */
+	void EnableXRange();
+
+	/** Enables range of the Y axis */
+	void EnableYRange();
+
+	/** Enables range of all axes, called by EnableXRange and EnableYRange */
 	void EnableRange();
 
-	/** Sets the range of the x and y axes */
+	/** Sets the range of the x axis */
+	void SetXAxisRange();
+
+	/** Sets the range of the y axis */
+	void SetYAxisRange();
+
+	/** Sets the range of both axes, called by SetXAxisRange and SetYAxisRange */
 	void SetAxesRange();
 
 	/** Sets the range of the z axis */
@@ -156,7 +176,6 @@ private slots:
 
 signals:
 	void DisableZoomSignal(bool);
-	void SetZRangeSignal(double,double);
 	void ResetZMinZMaxSignal(bool,bool,double,double);
 
 };

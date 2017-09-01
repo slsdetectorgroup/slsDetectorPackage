@@ -145,6 +145,15 @@ public:
 	/** Enable/Disable Histogram */
 	void SetHistogram(bool enable,int histArg, int min=0, int max=0, double size=0){histogram = enable;histogramArgument = histArg; histFrom=min;histTo=max;histSize=size;};
 
+	/** Get X Minimum value from plot */
+	double GetXMinimum() { if(plot_in_scope==1) return plot1D->GetXMinimum(); else plot2D->GetPlot()->GetXMinimum();};
+	/** Get X Maximum value from plot */
+	double GetXMaximum() { if(plot_in_scope==1) return plot1D->GetXMaximum(); else plot2D->GetPlot()->GetXMaximum();};
+	/** Get Y Minimum value from plot */
+	double GetYMinimum() { if(plot_in_scope==1) return plot1D->GetYMinimum(); else plot2D->GetPlot()->GetYMinimum();};
+	/** Get Y Maximum value from plot */
+	double GetYMaximum() { if(plot_in_scope==1) return plot1D->GetYMaximum(); else plot2D->GetPlot()->GetYMaximum();};
+
 public slots:
 /** To select 1D or 2D plot
  @param i is 1 for 1D, else 2D plot */
@@ -313,6 +322,11 @@ void ShowSaveErrorMessage(QString fileName);
  * @param status is the status of the detector
  * */
 void ShowAcquisitionErrorMessage(QString status);
+/**
+ * Enable Gain Plot
+ * @param e true for enable, false for disable
+ */
+void EnableGainPlot(bool e);
 
 
 private:
@@ -347,7 +361,6 @@ SlsQt1DPlot* 		plot1D;
 SlsQt2DPlotLayout* 	plot2D;
 /**	vector of 1D hist values */
 QVector<SlsQtH1D*> 	plot1D_hists;
-
 
 /**label with frame index for those with many frames per file*/
 QLabel *histFrameIndexTitle;
@@ -571,7 +584,12 @@ QVector<QwtIntervalSample> histogramSamples;
 bool plotRequired;
 
 
-
+/**	2D object second plot  */
+SlsQt2DPlotLayout* 	gainplot2D;
+/**	Current Image Values in 2D gain plot */
+double* gainImageArray;
+/** gain plot enable */
+bool gainPlotEnable;
 
 signals:
 void UpdatingPlotFinished();
@@ -579,12 +597,12 @@ void InterpolateSignal(bool);
 void ContourSignal(bool);
 void LogzSignal(bool);
 void LogySignal(bool);
-void SetZRangeSignal(double,double);
 void ResetZMinZMaxSignal(bool,bool,double,double);
 void SetCurrentMeasurementSignal(int);
 void saveErrorSignal(QString);
 void AcquisitionErrorSignal(QString);
 void UpdatePlotSignal();
+void GainPlotSignal(bool);
 };
 
 

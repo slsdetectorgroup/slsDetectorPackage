@@ -1813,7 +1813,7 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec){
 
 	if(Feb_Control_SetRateCorrectionTable(Feb_Control_rate_correction_table)){
 		Feb_Control_RateTable_Tau_in_nsec = tau_in_Nsec;
-		Feb_Control_RateTable_Period_in_nsec = period_in_sec;
+		Feb_Control_RateTable_Period_in_nsec = period_in_sec*1e9;
 		return 1;
 	}else{
 		Feb_Control_RateTable_Tau_in_nsec = -1;

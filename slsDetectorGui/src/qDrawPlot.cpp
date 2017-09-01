@@ -320,8 +320,8 @@ void qDrawPlot::SetupWidgetWindow(){
 
 	plotLayout =  new QGridLayout(boxPlot);
 	plotLayout->setContentsMargins(0,0,0,0);
-		plotLayout->addWidget(plot1D,0,0,3,3);
-		plotLayout->addWidget(plot2D,0,0,3,3);
+		plotLayout->addWidget(plot1D,0,0,4,4);
+		plotLayout->addWidget(plot2D,0,0,4,4);
 
 
 	//gainplot
@@ -333,11 +333,11 @@ void qDrawPlot::SetupWidgetWindow(){
 		gainplot2D->setFont(QFont("Sans Serif",9,QFont::Normal));
 		gainplot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,startPixel,endPixel,gainImageArray);
 		gainplot2D->setTitle(GetImageTitle());
-		gainplot2D->SetXTitle(imageXAxisTitle);
-		gainplot2D->SetYTitle(imageYAxisTitle);
-		gainplot2D->SetZTitle(QString("Gain ") + imageZAxisTitle);
 		gainplot2D->setAlignment(Qt::AlignLeft);
-		plotLayout->addWidget(gainplot2D,1,3,1,1);
+		gainplot2D->GetPlot()->enableAxis(0,false);
+		gainplot2D->GetPlot()->enableAxis(1,false);
+		gainplot2D->GetPlot()->enableAxis(2,false);
+		plotLayout->addWidget(gainplot2D,0,4,1,1);
 		gainplot2D->hide();
 		gainPlotEnable = false;
 
@@ -1500,10 +1500,6 @@ void qDrawPlot::UpdatePlot(){
 						if (gainPlotEnable) {
 							gainplot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,startPixel,endPixel,gainImageArray);
 							gainplot2D->setTitle(GetImageTitle());
-							gainplot2D->SetXTitle(imageXAxisTitle);
-							gainplot2D->SetYTitle(imageYAxisTitle);
-							gainplot2D->SetZTitle(QString("Gain ") + imageZAxisTitle);
-
 							gainplot2D->show();
 						}else {
 							gainplot2D->hide();
@@ -1517,16 +1513,18 @@ void qDrawPlot::UpdatePlot(){
 						if(!IsXYRange[qDefs::YMAXIMUM])			XYRangeValues[qDefs::YMAXIMUM]= plot2D->GetPlot()->GetYMaximum();
 						plot2D->GetPlot()->SetXMinMax(XYRangeValues[qDefs::XMINIMUM],XYRangeValues[qDefs::XMAXIMUM]);
 						plot2D->GetPlot()->SetYMinMax(XYRangeValues[qDefs::YMINIMUM],XYRangeValues[qDefs::YMAXIMUM]);
-						if (gainPlotEnable) {
-							gainplot2D->GetPlot()->SetXMinMax(XYRangeValues[qDefs::XMINIMUM],XYRangeValues[qDefs::XMAXIMUM]);
-							gainplot2D->GetPlot()->SetYMinMax(XYRangeValues[qDefs::YMINIMUM],XYRangeValues[qDefs::YMAXIMUM]);
-						}
+						gainplot2D->GetPlot()->SetXMinMax(XYRangeValues[qDefs::XMINIMUM],XYRangeValues[qDefs::XMAXIMUM]);
+						gainplot2D->GetPlot()->SetYMinMax(XYRangeValues[qDefs::YMINIMUM],XYRangeValues[qDefs::YMAXIMUM]);
 						XYRangeChanged	= false;
 					}
 					plot2D->GetPlot()->Update();
 					if (gainPlotEnable) {
 						gainplot2D->GetPlot()->Update();
-					}
+						gainplot2D->setFixedWidth(plot2D->width()/4);
+						gainplot2D->setFixedHeight(plot2D->height()/4);
+						gainplot2D->show();
+					}else
+						gainplot2D->hide();
 					//Display Statistics
 					if(displayStatistics){
 						double min=0,max=0,sum=0;

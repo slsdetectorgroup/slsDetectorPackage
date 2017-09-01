@@ -539,20 +539,40 @@ void qTabPlot::maintainAspectRatio(int axis) {
 		}
 
 		// if x changed: y adjusted, y changed: x adjusted, aspect ratio clicked: larger one adjusted
+		double newval=0;
 		switch(axis) {
 		case 0:
 			//change x
-			dispXMax->setText(QString::number(idealAspectratio * (ranges[qDefs::YMAXIMUM] - ranges[qDefs::YMINIMUM]) + ranges[qDefs::XMINIMUM]));
+			newval = idealAspectratio * (ranges[qDefs::YMAXIMUM] - ranges[qDefs::YMINIMUM]) + ranges[qDefs::XMINIMUM];
+			if (newval <= myPlot->GetXMaximum()) {
+				dispXMax->setText(QString::number(newval));
 #ifdef VERYVERBOSE
-			cprintf(BLUE,"new xmax: %f\n",dispXMax->text().toDouble());
+				cprintf(BLUE,"new xmax: %f\n",newval);
 #endif
+			} else {
+				newval = ranges[qDefs::XMAXIMUM] - (idealAspectratio * (ranges[qDefs::YMAXIMUM] - ranges[qDefs::YMINIMUM]));
+				dispXMin->setText(QString::number(newval));
+#ifdef VERYVERBOSE
+				cprintf(BLUE,"new xmin: %f\n",newval);
+#endif
+			}
+
 			break;
 		case 1:
 			// change y
-			dispYMax->setText(QString::number(((ranges[qDefs::XMAXIMUM] - ranges[qDefs::XMINIMUM]) / idealAspectratio) + ranges[qDefs::YMINIMUM]));
+			newval = ((ranges[qDefs::XMAXIMUM] - ranges[qDefs::XMINIMUM]) / idealAspectratio) + ranges[qDefs::YMINIMUM];
+			if (newval <= myPlot->GetYMaximum()) {
+				dispYMax->setText(QString::number(newval));
+				//#ifdef VERYVERBOSE
+				cprintf(BLUE,"new ymax: %f\n",newval);
+				//#endif
+			} else {
+				newval = ranges[qDefs::YMAXIMUM] - ((ranges[qDefs::XMAXIMUM] - ranges[qDefs::XMINIMUM]) / idealAspectratio);
+				dispYMin->setText(QString::number(newval));
 #ifdef VERYVERBOSE
-			cprintf(BLUE,"new ymax: %f\n",dispYMax->text().toDouble());
+				cprintf(BLUE,"new ymin: %f\n",newval);
 #endif
+			}
 			break;
 		default:
 			break;
@@ -694,6 +714,22 @@ void qTabPlot::SetXAxisRange(){
 	cout << "Setting X Axis Range" << endl;
 #endif
 
+	disconnect(dispXMin, 		SIGNAL(editingFinished()), this,	SLOT(SetXAxisRange()));
+	disconnect(dispXMax, 		SIGNAL(editingFinished()), this, 	SLOT(SetXAxisRange()));
+
+	if (dispXMin->text().toDouble() < myPlot->GetXMinimum()) {
+		qDefs::Message(qDefs::WARNING,"Outside Plot Range","qTabPlot::CheckZRange");
+		dispXMin->setText(QString::number(myPlot->GetXMinimum()));
+	}
+
+	if (dispXMax->text().toDouble() > myPlot->GetXMaximum()) {
+		qDefs::Message(qDefs::WARNING,"Outside Plot Range","qTabPlot::CheckZRange");
+		dispXMax->setText(QString::number(myPlot->GetXMaximum()));
+	}
+
+	connect(dispXMin, 		SIGNAL(editingFinished()), this,	SLOT(SetXAxisRange()));
+	connect(dispXMax, 		SIGNAL(editingFinished()), this, 	SLOT(SetXAxisRange()));
+
 	// keeping aspect ratio
 	if (chkAspectRatio->isChecked()) {
 		maintainAspectRatio(1);
@@ -709,8 +745,25 @@ void qTabPlot::SetXAxisRange(){
 
 void qTabPlot::SetYAxisRange(){
 #ifdef VERBOSE
-	cout << "Setting X Axis Range" << endl;
+	cout << "Setting Y Axis Range" << endl;
 #endif
+
+	disconnect(dispYMin, 		SIGNAL(editingFinished()), this,	SLOT(SetYAxisRange()));
+	disconnect(dispYMax, 		SIGNAL(editingFinished()), this, 	SLOT(SetYAxisRange()));
+
+	if (dispYMin->text().toDouble() < myPlot->GetYMinimum()) {
+		qDefs::Message(qDefs::WARNING,"Outside Plot Range","qTabPlot::CheckZRange");
+		dispYMin->setText(QString::number(myPlot->GetYMinimum()));
+	}
+
+	if (dispYMax->text().toDouble() > myPlot->GetYMaximum()) {
+		qDefs::Message(qDefs::WARNING,"Outside Plot Range","qTabPlot::CheckZRange");
+		dispYMax->setText(QString::number(myPlot->GetYMaximum()));
+	}
+
+	connect(dispYMin, 		SIGNAL(editingFinished()), this,	SLOT(SetYAxisRange()));
+	connect(dispYMax, 		SIGNAL(editingFinished()), this, 	SLOT(SetYAxisRange()));
+
 
 	// keeping aspect ratio
 	if (chkAspectRatio->isChecked()) {

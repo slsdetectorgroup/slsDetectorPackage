@@ -15,7 +15,7 @@
 //#include <list>
 //#include <queue>
 #include <fstream>
-#include "moench03Ctb10GbData.h"
+#include "moench03Ctb10GbT1Data.h"
 #include "moench03CommonMode.h"
 #define MYROOT1
 #include "singlePhotonDetector.h"
@@ -37,7 +37,7 @@ using namespace std;
 
 
 TH2F *readImage(ifstream &filebin,   TH2F *h2=NULL, TH2F *hped=NULL) {
-   moench03Ctb10GbData *decoder=new moench03Ctb10GbData();
+   moench03Ctb10GbT1Data *decoder=new moench03Ctb10GbT1Data();
   char *buff=decoder->readNextFrame(filebin);
   
 
@@ -96,7 +96,7 @@ TH2F *readImage(char *fname, int iframe=0, TH2F *hped=NULL) {
 TH2F *calcPedestal(char *fformat, int runmin, int runmax){
   ifstream filebin;
   char fname[10000];
-   moench03Ctb10GbData *decoder=new  moench03Ctb10GbData();
+   moench03Ctb10GbT1Data *decoder=new  moench03Ctb10GbT1Data();
   singlePhotonDetector<uint16_t> *filter=new singlePhotonDetector<uint16_t>(decoder, 3, 5, 1, NULL);
   char *buff;
   int ix,iy;
@@ -142,7 +142,7 @@ TH2F *calcPedestal(char *fformat, int runmin, int runmax){
 TH1D *calcSpectrum(char *fformat, int runmin, int runmax, TH2F *hped=NULL){
   ifstream filebin;
   char fname[10000];
-  moench03Ctb10GbData *decoder=new  moench03Ctb10GbData();
+  moench03Ctb10GbT1Data *decoder=new  moench03Ctb10GbT1Data();
   TH1D *hspectrum=new TH1D("hsp","hsp",2500,-500,10000);
   char *buff;
   int ix,iy;
@@ -180,7 +180,7 @@ TH1D *calcSpectrum(char *fformat, int runmin, int runmax, TH2F *hped=NULL){
 TH2F *drawImage(char *fformat, int runmin, int runmax, TH2F *hped=NULL){
   ifstream filebin;
   char fname[10000];
-  moench03Ctb10GbData *decoder=new  moench03Ctb10GbData();
+  moench03Ctb10GbT1Data *decoder=new  moench03Ctb10GbT1Data();
   TH2F *hspectrum=new TH2F("hsp","hsp",400,0,400,400,0,400);
   char *buff;
   int ix,iy;
@@ -243,7 +243,7 @@ THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int 
   double hc=0;
   int sign=1;
 
-   moench03Ctb10GbData *decoder=new  moench03Ctb10GbData();
+   moench03Ctb10GbT1Data *decoder=new  moench03Ctb10GbT1Data();
   cout << "decoder allocated " << endl;
 
    moench03CommonMode *cmSub=NULL;
@@ -278,30 +278,30 @@ THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int 
   cout << "hstack allocated " << endl;
 
 
-  TH2F *h1=new TH2F("h1",tit,nbins,hmin-0.5,hmax-0.5,NC*NR,-0.5,NC*NR-0.5);
-  hs->Add(h1);
-  cout << "h1 allocated " << endl;
+  TH2F *h1=NULL;//new TH2F("h1",tit,nbins,hmin-0.5,hmax-0.5,NC*NR,-0.5,NC*NR-0.5);
+  // hs->Add(h1);
+  // cout << "h1 allocated " << endl;
 
-  TH2F *h2;
-  TH2F *h3;
-  if (hitfinder) {
-    h2=new TH2F("h2",tit,nbins,hmin-0.5,hmax-0.5,NC*NR,-0.5,NC*NR-0.5);
-  cout << "h2 allocated " << endl;
-    h3=new TH2F("h3",tit,nbins,hmin-0.5,hmax-0.5,NC*NR,-0.5,NC*NR-0.5);
-  cout << "h3 allocated " << endl;
-    // hetaX=new TH2F("hetaX",tit,nbins,-1,2,NC*NR,-0.5,NC*NR-0.5);
-    //  hetaY=new TH2F("hetaY",tit,nbins,-1,2,NC*NR,-0.5,NC*NR-0.5);
-    hs->Add(h2);
-    hs->Add(h3);
-    // hs->Add(hetaX);
-    // hs->Add(hetaY);
-  }
-  if (hs->GetHists()) {
-    for (int i=0; i<3; i++)
-      if (hs->GetHists()->At(1)) cout << i << " " ; 
-    cout << " histos allocated " << endl;
-  } else
-    cout << "no hists in stack " << endl;
+  TH2F *h2=NULL;
+  TH2F *h3=NULL;
+  // if (hitfinder) {
+  //   h2=new TH2F("h2",tit,nbins,hmin-0.5,hmax-0.5,NC*NR,-0.5,NC*NR-0.5);
+  // cout << "h2 allocated " << endl;
+  //   h3=new TH2F("h3",tit,nbins,hmin-0.5,hmax-0.5,NC*NR,-0.5,NC*NR-0.5);
+  // cout << "h3 allocated " << endl;
+  //   // hetaX=new TH2F("hetaX",tit,nbins,-1,2,NC*NR,-0.5,NC*NR-0.5);
+  //   //  hetaY=new TH2F("hetaY",tit,nbins,-1,2,NC*NR,-0.5,NC*NR-0.5);
+  //   hs->Add(h2);
+  //   hs->Add(h3);
+  //   // hs->Add(hetaX);
+  //   // hs->Add(hetaY);
+  // }
+  // if (hs->GetHists()) {
+  //   for (int i=0; i<3; i++)
+  //     if (hs->GetHists()->At(1)) cout << i << " " ; 
+  //   cout << " histos allocated " << endl;
+  // } else
+  //   cout << "no hists in stack " << endl;
   
   
   ifstream filebin;
@@ -310,7 +310,8 @@ THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int 
   int ix=20, iy=20, ir, ic;
 
 
-  Int_t iFrame;
+  Int_t iFrame=-1;
+  Int_t np=-1;
   TTree *tall;
   if (hitfinder)
     tall=filter->initEventTree(tit, &iFrame);
@@ -353,17 +354,21 @@ THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int 
     cout << "file name " << fname << endl;
     filebin.open((const char *)(fname), ios::in | ios::binary);
     nph=0;
-    while ((buff=decoder->readNextFrame(filebin))) {
-      
+    if (filebin.is_open())
+      ;
+    else
+      cout << "Could not open file " << fname<< endl;
+    while ((buff=decoder->readNextFrame(filebin, iFrame))) {
+      //cout << (void*)buff << endl;
       filter->newFrame();
 
-	if (cmsub) {
-	//	cout << "cm" << endl;
-	  for (ix=xmin-1; ix<xmax+1; ix++)
-	    for (iy=ymin-1; iy<ymax+1; iy++) {
-	      thisEvent=filter->getEventType(buff, ix, iy,0);
-	    }
-	}
+	// if (cmsub) {
+	// //	cout << "cm" << endl;
+	//   for (ix=xmin-1; ix<xmax+1; ix++)
+	//     for (iy=ymin-1; iy<ymax+1; iy++) {
+	//       thisEvent=filter->getEventType(buff, ix, iy,0);
+	//     }
+	// }
       // if (hitfinder) {
 
       // 	//calculate pedestals and common modes
@@ -373,10 +378,10 @@ THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int 
 
       for (ix=xmin-1; ix<xmax+1; ix++)
 	for (iy=ymin-1; iy<ymax+1; iy++) {
-	  //	  cout << ix << " " << iy << endl;
+	  //  cout << buff << " " << iFrame << " " << ix << " " << iy << endl;
 	    thisEvent=filter->getEventType(buff, ix, iy, cmsub);
 	  //  if (nf>10) {
-	    h1->Fill(filter->getClusterTotal(1), iy+NR*ix);
+	    // h1->Fill(filter->getClusterTotal(1), iy+NR*ix);
 
 #ifdef MY_DEBUG
 	    //  if (iev%10==0)
@@ -388,9 +393,9 @@ THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int 
 	      if (thisEvent==PHOTON_MAX ) {
 		nph++;
 
-		h2->Fill(filter->getClusterTotal(2), iy+NR*ix);
-		h3->Fill(filter->getClusterTotal(3), iy+NR*ix);
-		iFrame=decoder->getFrameNumber(buff);
+		// h2->Fill(filter->getClusterTotal(2), iy+NR*ix);
+		// h3->Fill(filter->getClusterTotal(3), iy+NR*ix);
+		//	iFrame=decoder->getFrameNumber(buff);
 
 		tall->Fill();
 	   
@@ -403,7 +408,8 @@ THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int 
 	    
 	  // }
 	    
-
+	  iFrame=-1;
+	  np=-1;
 	    // }
 	}
 	  //////////////////////////////////////////////////////////
@@ -457,7 +463,7 @@ THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int 
 TGraph* checkFrameNumber(char *fformat, int runmin, int runmax, int ix, int iy){
   ifstream filebin;
   char fname[10000];
-  moench03Ctb10GbData *decoder=new  moench03Ctb10GbData();
+  moench03Ctb10GbT1Data *decoder=new  moench03Ctb10GbT1Data();
   char *buff;
   int ii=0;
  

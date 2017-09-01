@@ -4,7 +4,7 @@
 
 
 
-class moench03TCtbData : public slsDetectorData<uint16_t> {
+class moench03CtbData : public slsDetectorData<uint16_t> {
 
  private:
   
@@ -25,21 +25,24 @@ class moench03TCtbData : public slsDetectorData<uint16_t> {
   */
   
 
-  moench03TCtbData(int ns=5000): slsDetectorData<uint16_t>(400, 400, ns*2*32, NULL, NULL) , nadc(32), sc_width(25), sc_height(200) {
+  moench03CtbData(int ns=5000): slsDetectorData<uint16_t>(400, 400, ns*2*32, NULL, NULL) , nadc(32), sc_width(25), sc_height(200) {
 
-    
-    int adc_nr[32]={200,225,250,275,300,325,350,375,\
-		    0,25,50,75,100,125,150,175,\
-		    175,150,125,100,75,50,25,0,\
-		    375,350,325,300,275,250,225,200};
+     
     int row, col;
 
     int isample;
     int iadc;
     int ix, iy;
 
+    int adc_nr[32]={200,225,250,275,300,325,350,375,\
+		    0,25,50,75,100,125,150,175,\
+		    175,150,125,100,75,50,25,0,\
+		    375,350,325,300,275,250,225,200};
     
-
+ /* int adc_nr[32]={300,325,350,375,300,325,350,375,		\ */
+ /* 		    200,225,250,275,200,225,250,275,\ */
+ /* 		    100,125,150,175,100,125,150,175,\ */
+ /* 		    0,25,50,75,0,25,50,75}; */
 
 
     for (iadc=0; iadc<nadc; iadc++) {

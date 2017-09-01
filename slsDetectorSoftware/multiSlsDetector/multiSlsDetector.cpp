@@ -279,6 +279,7 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
   threadpool = 0;
 	if(createThreadPool() == FAIL)
 		exit(-1);
+	gainDataEnable = false;
 
 }
 
@@ -5436,7 +5437,7 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 
 
 
-int multiSlsDetector::getData(const int isocket, const bool masking, int* image, const int size,
+int multiSlsDetector::getData(const int isocket, int* image, const int size,
 		uint64_t &acqIndex, uint64_t &frameIndex, uint32_t &subframeIndex, string &filename) {
 
 	//fail is on parse error or end of acquisition
@@ -5445,14 +5446,6 @@ int multiSlsDetector::getData(const int isocket, const bool masking, int* image,
 
 	//receiving incorrect size is replaced by 0xFF
 	zmqSocket[isocket]->ReceiveData(isocket, image, size);
-
-	//jungfrau masking adcval
-	if(masking){
-		unsigned int snel = size/sizeof(int);
-		for(unsigned int i=0;i<snel;++i){
-			image[i] = (image[i] & 0x3FFF3FFF);
-		}
-	}
 
 	return OK;
 }
@@ -5468,6 +5461,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 	int numSockets = thisMultiDetector->numberOfDetectors;
 	int numSocketsPerSLSDetector = 1;
 	bool jungfrau = false;
+	double* gdata = NULL;
 	switch(getDetectorsType()){
 	case EIGER:
 		numSocketsPerSLSDetector = 2;
@@ -5526,6 +5520,9 @@ void multiSlsDetector::readFrameFromReceiver(){
 		return;
 	}
 	int* multiframe=new int[nel]();
+	int* multiframegain=NULL;
+	if (jungfrau)
+		multiframegain = new int[nel]();
 	int nch;
 
 	bool runningList[numSockets];
@@ -5552,7 +5549,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 			//if running
 			if (runningList[isocket]) {
 				//get individual images
-				if(FAIL == getData(isocket, jungfrau, image, expectedslssize, currentAcquisitionIndex,currentFrameIndex,currentSubFrameIndex,currentFileName)){
+				if(FAIL == getData(isocket, image, expectedslssize, currentAcquisitionIndex,currentFrameIndex,currentSubFrameIndex,currentFileName)){
 					runningList[isocket] = false;
 					numRunning--;
 					continue;
@@ -5606,12 +5603,29 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 		//send data to callback
 		if(running){
+			if (jungfrau) {
+				// with gain data
+				if (gainDataEnable) {
+					memcpy(multiframegain, multiframe, nel * sizeof(int));
+					for(unsigned int i=0;i<nel;++i){
+						multiframegain[i] = ((multiframe[i] & 0xC0000000) >> 14) | ((multiframe[i] & 0x0000C000) >> 14) ;
+						multiframe[i] = (multiframe[i] & 0x3FFF3FFF);
+					}
+					gdata = decodeData(multiframegain,nch);
+				}
+				// without gain data
+				else {
+					for(unsigned int i=0;i<nel;++i)
+						multiframe[i] = (multiframe[i] & 0x3FFF3FFF);
+				}
+			}
 		  fdata = decodeData(multiframe,nch);
 			if ((fdata) && (dataReady)){
-				thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),nx,ny);
+				thisData = new detectorData(fdata, NULL,NULL,getCurrentProgress(),currentFileName.c_str(),nx,ny, gdata);
 				dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);
 				delete thisData;
 				fdata = NULL;
+				gdata = NULL;
 				//cout<<"Send frame #"<< currentFrameIndex << " to gui"<<endl;
 			}
 			setCurrentProgress(currentAcquisitionIndex+1);
@@ -5624,6 +5638,8 @@ void multiSlsDetector::readFrameFromReceiver(){
 	//free resources
 	delete [] image;
 	delete[] multiframe;
+	if (jungfrau)
+		delete [] multiframegain;
 }
 
 
@@ -6255,4 +6271,9 @@ void multiSlsDetector::setExternalGuiFlag(bool b){
 
 bool multiSlsDetector::getExternalGuiFlag(){
 	return thisMultiDetector->externalgui;
+}
+
+
+void multiSlsDetector::setGainDataEnableinDataCallback(bool e) {
+	gainDataEnable = e;
 }

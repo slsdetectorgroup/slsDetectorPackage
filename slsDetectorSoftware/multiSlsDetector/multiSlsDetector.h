@@ -1457,6 +1457,13 @@ class multiSlsDetector  : public slsDetectorUtils {
    */
   bool getExternalGuiFlag();
 
+  /**
+   * Set Gain Data enable for gain plot
+   * in data call back
+   * @param e enable
+   */
+  void setGainDataEnableinDataCallback(bool e);
+
 
 
 private:
@@ -1464,7 +1471,6 @@ private:
 	/**
 	 * Gets data from socket
 	 * @param isocket socket index
-	 * @param masking if masking required (jungfrau)
 	 * @param image image buffer
 	 * @param size size of image
 	 * @param acqIndex address of acquisition index
@@ -1472,7 +1478,7 @@ private:
 	 * @param subframeIndex address of subframe index
 	 * @param filename address of file name
 	 */
-	int getData(const int isocket, const bool masking, int* image, const int size, uint64_t &acqIndex, uint64_t &frameIndex, uint32_t &subframeIndex, string &filename);
+	int getData(const int isocket, int* image, const int size, uint64_t &acqIndex, uint64_t &frameIndex, uint32_t &subframeIndex, string &filename);
 
 
 	/** Ensures if sockets created successfully */
@@ -1495,6 +1501,9 @@ private:
 
  private:
   ThreadPool* threadpool;
+
+  /** Gain Data enabled in data call back */
+  bool gainDataEnable;
 
 
 };

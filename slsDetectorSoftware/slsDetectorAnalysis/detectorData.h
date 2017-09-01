@@ -16,15 +16,16 @@ class detectorData {
       \param fname file name to which the data are saved
       \param np number of points in x coordinate defaults to the number of detector channels (1D detector)
       \param ny dimension in y (1D detector)
+      \param gval pointer to gain data (for jungfrau)
   */
-  detectorData(double *val=NULL, double *err=NULL, double *ang=NULL,  double p_ind=-1, const char *fname="", int np=-1, int ny=1) : values(val), errors(err), angles(ang),  progressIndex(p_ind), npoints(np), npy(ny){
+  detectorData(double *val=NULL, double *err=NULL, double *ang=NULL,  double p_ind=-1, const char *fname="", int np=-1, int ny=1, double* gval=NULL) : values(val), errors(err), angles(ang),  progressIndex(p_ind), npoints(np), npy(ny), gvalues(gval){
 	 strcpy(fileName,fname);
   };
     /** 
 	@short The destructor
 	deletes also the arrays pointing to data/errors/angles if not NULL
     */
-    ~detectorData() {if (values) delete [] values; if (errors) delete [] errors; if (angles) delete [] angles;};
+    ~detectorData() {if (values) delete [] values; if (errors) delete [] errors; if (angles) delete [] angles; if (gvalues) delete [] gvalues;};
     //private:
     double *values; /**< @short pointer to the data */
     double *errors; /**< @short pointer to the errors */
@@ -33,6 +34,7 @@ class detectorData {
     char fileName[1000];/**< @short file name */
     int npoints;/**< @short number of points */
     int npy;/**< @short dimensions in y coordinate*/
+    double *gvalues; /**< @short pointer to the gain data */
 };
 
 

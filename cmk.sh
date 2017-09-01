@@ -96,6 +96,7 @@ else
 	fi
 fi
 
+CMAKE_POST+=" -DCMAKE_BUILD_TYPE=Debug "
 
 #hdf5 rebuild
 if [ $HDF5 -eq 1 ]; then
@@ -103,7 +104,7 @@ if [ $HDF5 -eq 1 ]; then
 	CMAKE_POST+="-DUSE_HDF5=ON"
 #normal mode rebuild
 else
-	CMAKE_POST+="-DUSE_HDF5=OFF"
+	CMAKE_POST+="-DUSE_HDF5=OFF "
 fi
 
 

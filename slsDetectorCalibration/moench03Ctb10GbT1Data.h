@@ -23,16 +23,14 @@ class moench03Ctb10GbT1Data : public slsReceiverData<uint16_t> {
      \param c crosstalk parameter for the output buffer
 
   */
-  
+   moench03Ctb10GbT1Data(int ns=5000): slsReceiverData<uint16_t>(400, 400, 40, 8208), nadc(32), sc_width(25), sc_height(200) {
 
-  //  moench03Ctb10GbData(int ns=5000): slsDetectorData<uint16_t>(400, 400, 8208*40, NULL, NULL) , nadc(32), sc_width(25), sc_height(200) {
- moench03Ctb10GbT1Data(int ns=5000): slsReceiverData<uint16_t>(400, 400, 40, 8208), nadc(32), sc_width(25), sc_height(200) {
 
-    int adc_nr[32]={300,325,350,375,300,325,350,375,            \
-                    200,225,250,275,200,225,250,275,\
-                    100,125,150,175,100,125,150,175,\
-                    0,25,50,75,0,25,50,75};
 
+    int adc_nr[32]={300,325,350,375,300,325,350,375,		\
+    		    200,225,250,275,200,225,250,275,\
+    		    100,125,150,175,100,125,150,175,\
+    		    0,25,50,75,0,25,50,75};
 
     int row, col;
 
@@ -42,17 +40,18 @@ class moench03Ctb10GbT1Data : public slsReceiverData<uint16_t> {
     
     int npackets=40;
     int i;
-
+    int adc4(0);
 
     for (int ip=0; ip<npackets; ip++) {
       for (int is=0; is<128; is++) {
 
 	for (iadc=0; iadc<nadc; iadc++) {
 	  i=128*ip+is;
+	  adc4=(int)iadc/4;
 	  if (i<sc_width*sc_height) {
 	    //  for (int i=0; i<sc_width*sc_height; i++) {
 	    col=adc_nr[iadc]+(i%sc_width);
-	    if (iadc<16) {
+	    if (adc4%2==0) {
 	      row=199-i/sc_width;
 	    } else {
 	      row=200+i/sc_width;
@@ -79,10 +78,10 @@ class moench03Ctb10GbT1Data : public slsReceiverData<uint16_t> {
 	  // ii=ibyte+128*32*ipacket;
 	  isample=ii/nadc;
 	  iadc=ii%nadc;
-	
+	  adc4 = (int)iadc/4;
 	  ix=isample%sc_width;
 	  iy=isample/sc_width;
-	  if (iadc<(nadc/2)) {
+	  if (adc4%2==0) {
 	    xmap[i]=adc_nr[iadc]+ix;
 	    ymap[i]=ny/2-1-iy;
 	  } else {
@@ -96,12 +95,13 @@ class moench03Ctb10GbT1Data : public slsReceiverData<uint16_t> {
     }
     
 
-    //cout <<  dataMap[0][0] << endl;
+    
     
     iframe=0;
-      cout << "data struct created" << endl;
+    //  cout << "data struct created" << endl;
   };
     
+
 
      /**
 

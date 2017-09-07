@@ -1,1 +1,1 @@
-../slsReceiver/slsReceiverUsers.h
+../../slsReceiverSoftware/include/slsReceiverUsers.h

@@ -60,14 +60,15 @@ detectorData is a structure containing the data and additional information which
 You can  find examples of how this classes can be instatiated in mainClient.cpp and mainReceiver.cpp
 
 
-   \authors <a href="mailto:anna.bergamaschi@psi.ch">Anna Bergamaschi</a>, <a href="mailto:dhanya.maliakal@psi.ch">Dhanya Maliakal</a>
-   @version 0.2
+   \authors <a href="mailto:anna.bergamaschi@psi.ch">Anna Bergamaschi</a>, <a href="mailto:dhanya.thattil@psi.ch">Dhanya Thattil</a>
+   @version 3.0
 <H2>Currently supported detectors</H2>
 \li MYTHEN
 \li GOTTHARD controls
 \li GOTTHARD data receiver
-<H3>Coming soon</H3>
-\li EIGER
+\li	EIGER
+\li JUNGFRAU
+
 
 
 */

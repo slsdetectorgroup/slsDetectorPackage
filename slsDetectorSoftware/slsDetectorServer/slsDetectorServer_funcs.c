@@ -57,6 +57,7 @@ void init_detector(int controlserver) {
 #ifdef VIRTUAL
 	printf("This is a VIRTUAL detector\n");
 #endif
+
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (controlserver)
 		initControlServer();
@@ -2626,7 +2627,7 @@ int get_time_left(int file_des) {
 	case FRAMES_FROM_START:
 	case FRAMES_FROM_START_PG:
 #endif
-		getTimeLeft(ind);
+		retval=getTimeLeft(ind);
 		break;
 	default:
 		ret = FAIL;
@@ -3412,9 +3413,17 @@ int configure_mac(int file_des) {
 	uint32_t udpport2;
 	uint32_t detipad;
 	sscanf(arg[0], "%x", 	&ipad);
+#ifdef VIRTUAL
+	sscanf(arg[1], "%lx", 	&imacadd);
+#else
 	sscanf(arg[1], "%llx", 	&imacadd);
+#endif
 	sscanf(arg[2], "%x", 	&udpport);
+#ifdef VIRTUAL
+	sscanf(arg[3], "%lx",	&idetectormacadd);
+#else
 	sscanf(arg[3], "%llx",	&idetectormacadd);
+#endif
 	sscanf(arg[4], "%x",	&detipad);
 	sscanf(arg[5], "%x", 	&udpport2);
 
@@ -4295,7 +4304,7 @@ int set_rate_correct(int file_des) {
 	}
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	else {
-		printf("Setting rate correction to %lld ns\n",tau_ns);
+		printf("Setting rate correction to %lld ns\n",(long long int)tau_ns);
 		//set rate
 		//wrong bit mode
 		if((setDynamicRange(-1)!=32) && (setDynamicRange(-1)!=16) && (tau_ns!=0)){

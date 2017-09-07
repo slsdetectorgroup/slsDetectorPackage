@@ -95,6 +95,7 @@ int main(int argc, char* argv[]) {
 		cprintf(RED,"Warning: Unable to open port %s\n", PORTNAME);
 		return -1;
 	}
+	cprintf(GREEN,"opened port at %s\n",PORTNAME);
 
 	struct termios serial_conf;
 	// reset structure
@@ -131,23 +132,6 @@ int main(int argc, char* argv[]) {
 	buffer[BUFFERSIZE-1] = '\n';
 	cprintf(GREEN,"Ready...\n");
 
-	/*
-		int once = 1;
-		while(strcmp(buffer,"start")){
-			if(once){
-				once=0;
-				cprintf(MAGENTA,"in the loop, checking\n");
-			}
-			memset(buffer,0,BUFFERSIZE);
-			n = read(fd,buffer,BUFFERSIZE);
-			//#ifdef VERBOSE
-					cprintf(BLUE,"Received %d Bytes\n", n);
-			//#endif
-					cprintf(BLUE,"Got message: %s\n",buffer);
-		}
-		cprintf(GREEN,"started\n");
-	*/
-
 
 	while(ret != GOODBYE){
 		memset(buffer,0,BUFFERSIZE);
@@ -155,9 +139,15 @@ int main(int argc, char* argv[]) {
 #ifdef VERBOSE
 		cprintf(BLUE,"Received %d Bytes\n", n);
 #endif
-		cprintf(BLUE,"Got message: %s\n",buffer);
+		cprintf(BLUE,"Got message: '%s'\n",buffer);
 
 		switch(buffer[0]){
+		case '\0':
+			cprintf(GREEN,"Got Start (Detector restart)\n");
+			break;
+		case 's':
+			cprintf(GREEN,"Got Start \n");
+			break;
 		case 'p':
 			if (!sscanf(&buffer[1],"%d",&ival)){
 				cprintf(RED,"Warning: cannot scan voltage value\n");
@@ -170,10 +160,10 @@ int main(int argc, char* argv[]) {
 				strcpy(buffer,"fail ");
 			else
 				strcpy(buffer,"success ");
-			cprintf(GREEN,"%s\n",buffer);
+			cprintf(GREEN,"Sending: '%s'\n",buffer);
 			n = write(fd, buffer, BUFFERSIZE);
 #ifdef VERBOSE
-			cprintf(BLUE,"Sent %d Bytes\n", n);
+			cprintf(GREEN,"Sent %d Bytes\n", n);
 #endif
 			break;
 
@@ -187,20 +177,21 @@ int main(int argc, char* argv[]) {
 			else
 				strcpy(buffer,"success ");
 			n = write(fd, buffer, BUFFERSIZE);
+			cprintf(GREEN,"Sending: '%s'\n",buffer);
 #ifdef VERBOSE
-			cprintf(BLUE,"Sent %d Bytes\n", n);
+			cprintf(GREEN,"Sent %d Bytes\n", n);
 #endif
 			//value
 			memset(buffer,0,BUFFERSIZE);
 			buffer[BUFFERSIZE-1] = '\n';
 			if(ival >= 0){
-				cprintf(GREEN,"%d\n",ival);
+				cprintf(GREEN,"Sending: '%d'\n",ival);
 				sprintf(buffer,"%d ",ival);
 				n = write(fd, buffer, BUFFERSIZE);
 #ifdef VERBOSE
-				cprintf(BLUE,"Sent %d Bytes\n", n);
+				cprintf(GREEN,"Sent %d Bytes\n", n);
 #endif
-			}else cprintf(GREEN,"%s\n",buffer);
+			}else cprintf(RED,"%s\n",buffer);
 			break;
 
 		case 'e':
@@ -208,7 +199,7 @@ int main(int argc, char* argv[]) {
 			ret = GOODBYE;
 			break;
 		default:
-			printf("Unknown Command. buffer:[%s]\n",buffer);
+			cprintf(RED,"Unknown Command. buffer:'%s'\n",buffer);
 			break;
 		}
 	}

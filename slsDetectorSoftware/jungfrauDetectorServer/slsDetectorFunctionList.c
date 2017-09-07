@@ -347,7 +347,7 @@ void setupDetector() {
 
 	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
 	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
-	setTimer(ACQUISITION_TIME, DEFAULT_PERIOD);
+	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
 	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY);
 	/*setSpeed(CLOCK_DIVIDER, HALF_SPEED); depends if all the previous stuff works*/

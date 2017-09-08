@@ -23,6 +23,7 @@ int sockfd;
 int function_table();
 
 int decode_function(int);
+const char* getFunctionName(enum detFuncs func);
 int init_detector(int,int);
 
 int M_nofunc(int);
@@ -84,10 +85,6 @@ int configure_mac(int);
 int load_image(int);
 int read_counter_block(int);
 int reset_counter_block(int);
-
-int start_receiver(int);
-int stop_receiver(int);
-
 
 int calibrate_pedestal(int);
 

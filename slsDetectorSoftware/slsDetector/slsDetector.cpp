@@ -1343,7 +1343,7 @@ int slsDetector::activate(int const enable){
 			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
 			if (ret==FAIL) {
 				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-				std::cout<< "Detector returned activate error: " << mess << std::endl;
+				std::cout<< "Detector returned error: " << mess << std::endl;
 				setErrorMask((getErrorMask())|(DETECTOR_ACTIVATE));
 			} else {
 				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
@@ -1736,7 +1736,7 @@ int slsDetector::getTotalNumberOfChannels() {
     }
     thisDetector->nChans=thisDetector->nChan[X];
     thisDetector->dataBytes=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods*2*thisDetector->timerValue[SAMPLES_JCTB];
-    cout << "Total number of channels is "<< thisDetector->nChans*thisDetector->nChips*thisDetector->nMods << " data bytes is " << thisDetector->dataBytes << endl;
+   // cout << "Total number of channels is "<< thisDetector->nChans*thisDetector->nChips*thisDetector->nMods << " data bytes is " << thisDetector->dataBytes << endl;
   } else {
 #ifdef VERBOSE
     cout << "det type is "<< thisDetector->myDetectorType << endl;
@@ -7922,12 +7922,10 @@ int slsDetector::startReceiver(){
 	}
 
 
-	//let detector prepare anyway even if receiver didnt work (for those not using the receiver)
-	if((thisDetector->myDetectorType != JUNGFRAU) ) {
-		int ret1 = detectorSendToReceiver(true);
-		if (ret != FAIL)
-			ret = ret1;
-	}
+	// tell detector to send to receiver (if start receiver failed, this is not executed)
+	if(((thisDetector->myDetectorType == GOTTHARD || thisDetector->myDetectorType == PROPIX)  && ret!= FAIL))
+		return prepareAcquisition(); // send data to receiver for these detectors
+
 
 	return ret;
 }
@@ -7940,7 +7938,7 @@ int slsDetector::stopReceiver(){
 	int ret = FAIL;
 	char mess[MAX_STR_LENGTH] = "";
 
-	if(thisDetector->myDetectorType != EIGER && thisDetector->myDetectorType != JUNGFRAU)
+	if(thisDetector->myDetectorType == GOTTHARD || thisDetector->myDetectorType == PROPIX)
 		cleanupAcquisition(); // reset (send data to receiver) for these detectors, so back to CPU (dont care about ok/fail at this point)
 
 	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {

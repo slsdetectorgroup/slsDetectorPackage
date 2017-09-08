@@ -1466,7 +1466,6 @@ int multiSlsDetector::cleanupAcquisition(){
 /* change these funcs accepting also ok/fail */
 
 int multiSlsDetector::startAcquisition(){
-
 	if (getDetectorsType() == EIGER) {
 		if (prepareAcquisition() == FAIL)
 			return FAIL;
@@ -1780,7 +1779,7 @@ int* multiSlsDetector::startAndReadAll(){
   int i=0;
   if (thisMultiDetector->onlineFlag==ONLINE_FLAG) {
 
-	  if(getDetectorsType() == EIGER) {
+		if (getDetectorsType() == EIGER) {
 		  if (prepareAcquisition() == FAIL)
 			  return NULL;
 	  }
@@ -3126,37 +3125,11 @@ dacs_t multiSlsDetector::setDAC(dacs_t val, dacIndex idac, int mV, int imod) {
 	{
 		int id=-1, im=-1;
 		if (decodeNMod(imod, id, im)>=0) {
-
-			posmin=id;
-			posmax=id+1;
-		}
-		//	cout <<posmin << " " << posmax << endl;
-		//return storage values
-		dacs_t* iret[posmax-posmin];
-		for(int idet=posmin; idet<posmax; ++idet){
-		  //cout << idet << endl;
-			if(detectors[idet]){
-			  //	  cout << "*" << endl;
-			  iret[idet]= new dacs_t(-1);
-			  Task* task = new Task(new func4_t <dacs_t,slsDetector,dacs_t,dacIndex,int,int,dacs_t>(&slsDetector::setDAC,detectors[idet],val, idac, mV, im, iret[idet]));
-			  threadpool->add_task(task);
-			}
-		}
-		// cout << "Start" << endl;
-		threadpool->startExecuting();
-		threadpool->wait_for_tasks_to_complete();
-		for(int idet=posmin; idet<posmax; idet++){
-			if(detectors[idet]){
-				if(iret[idet] != NULL){
-					if (ret==-100)
-						ret=*iret[idet];
-					else if (ret!=*iret[idet])
-						ret=-1;
-					delete iret[idet];
-				}else ret=-1;
-				if(detectors[idet]->getErrorMask())
-					setErrorMask(getErrorMask()|(1<<idet));
-
+			if(detectors[id]){
+				ret = detectors[id]->setDAC(val, idac, mV, im);
+				if(detectors[id]->getErrorMask())
+					setErrorMask(getErrorMask()|(1<<id));
+				return ret;
 			}
 			return -1;
 		}

@@ -1,11 +1,11 @@
 //#define SVNPATH ""
-#define SVNURL "git@gitorious.psi.ch:sls_det_software/sls_detector_software.git/moenchDetectorServer"
+#define SVNURL "git@git.psi.ch:sls_detectors_software/sls_detector_software.git"
 //#define SVNREPPATH ""
-#define SVNREPUUID "046a469b1e6582c4c55bd6eaeb4818b618d0a9a9"
-//#define SVNREV 0x14
+#define SVNREPUUID "a45cc31a576153e251cfe904b3b459c7a2a9abdb"
+//#define SVNREV 0x1553
 //#define SVNKIND ""
 //#define SVNSCHED ""
-#define SVNAUTH "Maliakal_Dhanya"
-#define SVNREV 0x14
-#define SVNDATE 0x20140603
+#define SVNAUTH "Dhanya_Maliakal"
+#define SVNREV 0x1553
+#define SVNDATE 0x20170907
 //

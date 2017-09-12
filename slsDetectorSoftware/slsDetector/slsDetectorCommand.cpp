@@ -1901,6 +1901,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	i++;
 
 	/*! \page network
+   - <b>zmqsrcip [ip]</b> sets/gets the 0MQ (TCP) ip of the receiver from where data is streamed to the client. Default is ip of rx_hostname. Use this only with external gui. \c Returns \c (string)
+	 */
+	descrToFuncMap[i].m_pFuncName="zmqsrcip"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
+	i++;
+
+
+	/*! \page network
    - <b>configuremac [i]</b> configures the MAC of the detector with these parameters: detectorip, detectormac, rx_udpip, rx_udpmac, rx_udpport, rx_udpport2 (if applicable). This command is already included in \c rx_hsotname. Only put!. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="configuremac"; //
@@ -3940,7 +3948,10 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
 			if (!(sscanf(args[1],"%d",&i)))
 				return ("cannot parse argument") + string(args[1]);
 		}
-	}else return ("unknown network parameter")+cmd;
+	}else if (cmd=="zmqsrcip") {
+			t=RECEIVER_STREAMING_SRC_IP;
+	}
+	else return ("unknown network parameter")+cmd;
 
 	if (action==PUT_ACTION)
 		myDet->setNetworkParameter(t, args[1]);
@@ -3966,6 +3977,7 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
 		os << "txndelay_frame port \n sets detector transmission delay of the entire frame"<< std::endl;
 		os << "flowcontrol_10g port \n sets flow control for 10g for eiger"<< std::endl;
 		os << "zmqport port \n sets zmq port (data from receiver to client); setting via multidetector command calculates port for individual detectors"<< std::endl;
+		os << "zmqsrcip ip \n sets/gets the 0MQ (TCP) ip of the receiver from where data is streamed to the client. Default is ip of rx_hostname. Use this only with external gui." << std::endl;
 	}
 	if (action==GET_ACTION || action==HELP_ACTION) {
 		os << "detectormac \n gets detector mac "<< std::endl;
@@ -3979,6 +3991,7 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
 		os << "txndelay_frame \n gets detector transmission delay of the entire frame"<< std::endl;
 		os << "flowcontrol_10g \n gets flow control for 10g for eiger"<< std::endl;
 		os << "zmqport \n gets zmq port (data from receiver to client)"<< std::endl;
+		os << "zmqsrcip \n gets zmq source ip (data from receiver to client), none if default setting and no custom ip" << std::endl;
 	}
 	return os.str();
 

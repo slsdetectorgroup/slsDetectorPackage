@@ -3591,7 +3591,7 @@ string multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 
 	// disable data streaming before changing zmq port (but only if they were on)
 	int prev_streaming = 0;
-  	if (p == RECEIVER_STREAMING_PORT) {
+  	if (p == RECEIVER_STREAMING_PORT || p == RECEIVER_STREAMING_SRC_IP) {
 		prev_streaming = getStreamingSocketsCreatedInClient();
   		enableDataStreamingFromReceiver(0);
   	}
@@ -3649,7 +3649,7 @@ string multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 	}
 
 	//enable data streaming if it was on
-	if (p == RECEIVER_STREAMING_PORT && prev_streaming)
+	if ((p == RECEIVER_STREAMING_PORT || p == RECEIVER_STREAMING_SRC_IP) && prev_streaming)
 		enableDataStreamingFromReceiver(1);
 
 	return getNetworkParameter(p);

@@ -271,6 +271,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     int flippedData[2];
     /** tcp port between receiver and gui (only data) */
     int zmqport;
+    /**  zmq tcp src ip address between receiver and gui (only data) **/
+    char zmqsrcip[MAX_STR_LENGTH];
 
   } sharedSlsDetector;
 
@@ -1730,6 +1732,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   string getReceiverUDPPort2() {ostringstream ss; ss << thisDetector->receiverUDPPort2; string s = ss.str(); return s;};
   /** returns the zmq port \sa sharedSlsDetector  */
   string getReceiverStreamingPort() {ostringstream ss; ss << thisDetector->zmqport; string s = ss.str(); return s;};
+  /** gets the zmq source ip in client and receiver, returns "none" if default setting and no custom ip set*/
+  string getReceiverStreamingSourceIP(){return string(thisDetector->zmqsrcip);};
 
   /** validates the format of detector MAC address and sets it \sa sharedSlsDetector  */
   string setDetectorMAC(string detectorMAC);
@@ -1747,6 +1751,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   int setReceiverUDPPort2(int udpport);
   /** sets the zmq port in client and receiver (includes "multi" at the end if it should calculate individual ports \sa sharedSlsDetector  */
   int setReceiverStreamingPort(string port);
+  /** sets the zmq source ip in client and receiver */
+  string setReceiverStreamingSourceIP(string sourceIP);
   /** sets the transmission delay for left or right port or for an entire frame*/
   string setDetectorNetworkParameter(networkParameter index, int delay);
 

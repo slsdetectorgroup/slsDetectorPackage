@@ -1,0 +1,9 @@
+Path: slsDetectorsPackage/slsDetectorSoftware/jctbDetectorServer 
+URL: origin git@git.psi.ch:sls_detectors_software/sls_detector_software.git 
+Repository Root: origin git@git.psi.ch:sls_detectors_software/sls_detector_software.git 
+Repsitory UUID: a45cc31a576153e251cfe904b3b459c7a2a9abdb 
+Revision: 9 
+Branch: developer 
+Last Changed Author: Dhanya_Maliakal 
+Last Changed Rev: 1553 
+Last Changed Date: 2017-09-07 11:20:19.000000002 +0200 ./server_funcs.c

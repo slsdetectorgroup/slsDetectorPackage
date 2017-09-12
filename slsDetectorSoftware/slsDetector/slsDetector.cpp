@@ -559,6 +559,9 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     /** set detector ip address */
     memset(thisDetector->detectorIP,0,MAX_STR_LENGTH);
     strcpy(thisDetector->detectorIP,DEFAULT_DET_IP);
+    /** set zmq tcp src ip address */
+    memset(thisDetector->zmqsrcip,0,MAX_STR_LENGTH);
+
 
     /** sets onlineFlag to OFFLINE_FLAG */
     thisDetector->onlineFlag=OFFLINE_FLAG;
@@ -4510,8 +4513,8 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 
 
 
-	//send acquisiton period/frame number to receiver
-	if((index==FRAME_NUMBER)||(index==FRAME_PERIOD)||(index==CYCLES_NUMBER)||(index==ACQUISITION_TIME) || (index==SUBFRAME_ACQUISITION_TIME)){
+	//send acquisiton time/period/subexptime/frame/cycles/samples to receiver
+	if((index==FRAME_NUMBER)||(index==FRAME_PERIOD)||(index==CYCLES_NUMBER)||(index==ACQUISITION_TIME) || (index==SUBFRAME_ACQUISITION_TIME) || (index==SAMPLES_JCTB)){
 		string timername = getTimerType(index);
 		if(ret != FAIL){
 			int64_t args[2];
@@ -4555,7 +4558,10 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 							setErrorMask((getErrorMask())|(RECEIVER_ACQ_PERIOD_NOT_SET));
 							break;
 						case SUBFRAME_ACQUISITION_TIME:
-							setErrorMask((getErrorMask())|(RECEIVER_SUBF_TIME_NOT_SET));
+							setErrorMask((getErrorMask())|(RECEIVER_TIMER_NOT_SET));
+							break;
+						case SAMPLES_JCTB:
+							setErrorMask((getErrorMask())|(RECEIVER_TIMER_NOT_SET));
 							break;
 						default:
 							setErrorMask((getErrorMask())|(RECEIVER_FRAME_NUM_NOT_SET));
@@ -5934,6 +5940,8 @@ string slsDetector::setNetworkParameter(networkParameter index, string value) {
 	case RECEIVER_STREAMING_PORT:
 		setReceiverStreamingPort(value);
 		return getReceiverStreamingPort();
+	case RECEIVER_STREAMING_SRC_IP:
+		return setReceiverStreamingSourceIP(value);
   default:
     return (char*)("unknown network parameter");
   }
@@ -5966,6 +5974,8 @@ string slsDetector::getNetworkParameter(networkParameter index) {
 	  return setDetectorNetworkParameter(index, -1);
   case RECEIVER_STREAMING_PORT:
 	  return getReceiverStreamingPort();
+	case RECEIVER_STREAMING_SRC_IP:
+		return getReceiverStreamingSourceIP();
   default:
     return (char*)("unknown network parameter");
   }
@@ -6058,7 +6068,7 @@ string slsDetector::setReceiver(string receiverIP){
 		std::cout << "flippeddatax:" << thisDetector->flippedData[d] << endl;
 		std::cout << "10GbE:" << thisDetector->tenGigaEnable << endl << endl;
 		std::cout << "streaming port:" << thisDetector->zmqport << endl;
-
+		std::cout << "streaming source ip:" << thisDetector->zmqsrcip << endl;
 		//std::cout << "dataStreaming:" << enableDataStreamingFromReceiver(-1) << endl << endl;
 /** enable compresison, */
 #endif
@@ -6092,6 +6102,8 @@ string slsDetector::setReceiver(string receiverIP){
 			setTimer(ACQUISITION_TIME,thisDetector->timerValue[ACQUISITION_TIME]);
 			if(thisDetector->myDetectorType == EIGER)
 				setTimer(SUBFRAME_ACQUISITION_TIME,thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME]);
+			if(thisDetector->myDetectorType == JUNGFRAUCTB)
+				setTimer(SAMPLES_JCTB,thisDetector->timerValue[SAMPLES_JCTB]);
 			setDynamicRange(thisDetector->dynamicRange);
 			if(thisDetector->myDetectorType == EIGER){
 				setFlippedData(X,-1);
@@ -6103,6 +6115,7 @@ string slsDetector::setReceiver(string receiverIP){
 
 			// data streaming
 			setReceiverStreamingPort(getReceiverStreamingPort());
+			setReceiverStreamingSourceIP(getReceiverStreamingSourceIP());
 			int clientSockets = parentDet->getStreamingSocketsCreatedInClient();
 			int recSockets = enableDataStreamingFromReceiver(-1);
 			if(clientSockets != recSockets) {
@@ -6249,6 +6262,35 @@ int slsDetector::setReceiverStreamingPort(string port) {
 	return thisDetector->zmqport;
 }
 
+string slsDetector::setReceiverStreamingSourceIP(string sourceIP) {
+
+	int fnum=F_RECEIVER_STREAMING_SRC_IP;
+	int ret = FAIL;
+	char arg[MAX_STR_LENGTH];
+	memset(arg,0, sizeof(arg));
+	strcpy(arg,sourceIP.c_str());
+	char retval[MAX_STR_LENGTH];
+	memset(retval,0, sizeof(retval));
+
+	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+#ifdef VERBOSE
+		std::cout << "Sending receiver streaming source ip to receiver " << arg << std::endl;
+#endif
+		if (connectData() == OK){
+			ret=thisReceiver->sendString(fnum,retval,arg);
+			disconnectData();
+		}
+		if(ret!=FAIL) {
+			memset(thisDetector->zmqsrcip, 0, MAX_STR_LENGTH);
+			strcpy(thisDetector->zmqsrcip, retval);
+		}
+		if(ret==FORCE_UPDATE)
+			updateReceiver();
+	}
+
+	return getReceiverStreamingSourceIP();
+}
+
 string slsDetector::setDetectorNetworkParameter(networkParameter index, int delay){
 	int fnum = F_SET_NETWORK_PARAMETER;
 	int ret = FAIL;
@@ -6290,8 +6332,10 @@ int slsDetector::setUDPConnection(){
 
 	int ret = FAIL;
 	int fnum = F_SETUP_RECEIVER_UDP;
-	char args[3][MAX_STR_LENGTH]={"","",""};
-	char retval[MAX_STR_LENGTH]="";
+	char args[3][MAX_STR_LENGTH];
+	memset(args,0,sizeof(args));
+	char retval[MAX_STR_LENGTH];
+	memset(retval,0,sizeof(retval));
 
 	//called before set up
 	if(!strcmp(thisDetector->receiver_hostname,"none")){
@@ -8232,6 +8276,10 @@ int slsDetector::updateReceiverNoWait() {
   // streaming port
   n += 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
   thisDetector->zmqport = ind;
+
+  // streaming source ip
+  n += 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);
+  strcpy(thisDetector->zmqsrcip, path);
 
   if (!n) printf("n: %d\n", n);
 

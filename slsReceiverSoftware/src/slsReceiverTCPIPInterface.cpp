@@ -281,7 +281,8 @@ const char* slsReceiverTCPIPInterface::getFunctionName(enum recFuncs func) {
 	case F_SET_RECEIVER_FILE_FORMAT:	return "F_SET_RECEIVER_FILE_FORMAT";
 	case F_SEND_RECEIVER_DETPOSID:		return "F_SEND_RECEIVER_DETPOSID";
 	case F_SEND_RECEIVER_MULTIDETSIZE:  return "F_SEND_RECEIVER_MULTIDETSIZE";
-	case F_SET_RECEIVER_STREAMING_PORT: return "F_SET_RECEIVER_STREAMING_PORT";
+	case F_RECEIVER_STREAMING_SRC_IP: 	return "F_RECEIVER_STREAMING_SRC_IP";
+
 	default:							return "Unknown Function";
 	}
 }
@@ -328,6 +329,7 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_SEND_RECEIVER_DETPOSID]			= 	&slsReceiverTCPIPInterface::set_detector_posid;
 	flist[F_SEND_RECEIVER_MULTIDETSIZE]		= 	&slsReceiverTCPIPInterface::set_multi_detector_size;
 	flist[F_SET_RECEIVER_STREAMING_PORT]	= 	&slsReceiverTCPIPInterface::set_streaming_port;
+	flist[F_RECEIVER_STREAMING_SRC_IP]		= 	&slsReceiverTCPIPInterface::set_streaming_source_ip;
 #ifdef VERYVERBOSE
 	for (int i = 0; i < NUM_REC_FUNCTIONS ; i++) {
 		FILE_LOG(logINFO) << "function fnum: " << i << " (" << getFunctionName((enum recFuncs)i) << ") located at " << (unsigned int)flist[i];
@@ -681,6 +683,15 @@ int slsReceiverTCPIPInterface::send_update() {
 #endif
 	mySock->SendDataOnly(&ind,sizeof(ind));
 
+	// streaming source ip
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	path = receiverBase->getStreamingSourceIP();
+#endif
+	mySock->SendDataOnly(path,MAX_STR_LENGTH);
+	if (path != NULL)
+		delete[] path;
+
+
 	if (!lockStatus)
 		strcpy(mySock->lastClientIP,mySock->thisClientIP);
 
@@ -997,6 +1008,15 @@ int slsReceiverTCPIPInterface::set_timer() {
 				case SUBFRAME_ACQUISITION_TIME:
 					receiverBase->setSubExpTime(index[1]);
 					break;
+				case SAMPLES_JCTB:
+					if (myDetectorType != JUNGFRAUCTB) {
+						ret = FAIL;
+						sprintf(mess,"This timer mode (%lld) does not exist for this receiver type\n", (long long int)index[0]);
+						FILE_LOG(logERROR) << "Warning: " << mess;
+						break;
+					}
+					receiverBase->setNumberofSamples(index[1]);
+					break;
 				default:
 					ret = FAIL;
 					sprintf(mess,"This timer mode (%lld) does not exist for receiver\n", (long long int)index[0]);
@@ -1018,6 +1038,15 @@ int slsReceiverTCPIPInterface::set_timer() {
 			break;
 		case SUBFRAME_ACQUISITION_TIME:
 			retval=receiverBase->getSubExpTime();
+			break;
+		case SAMPLES_JCTB:
+			if (myDetectorType != JUNGFRAUCTB) {
+				ret = FAIL;
+				sprintf(mess,"This timer mode (%lld) does not exist for this receiver type\n", (long long int)index[0]);
+				FILE_LOG(logERROR) << "Warning: " << mess;
+				break;
+			}
+			retval=receiverBase->getNumberofSamples();
 			break;
 		default:
 			ret = FAIL;
@@ -1404,7 +1433,8 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 	}
 #endif
 #ifdef VERYVERBOSE
-	FILE_LOG(logDEBUG1) << "file path:" << retval;
+	if (retval != NULL)
+		FILE_LOG(logDEBUG1) << "file path:" << retval;
 #endif
 
 	if (ret == OK && mySock->differentClients)
@@ -2362,6 +2392,57 @@ int slsReceiverTCPIPInterface::set_streaming_port() {
 	if (ret == FAIL)
 		mySock->SendDataOnly(mess,sizeof(mess));
 	mySock->SendDataOnly(&retval,sizeof(retval));
+
+	// return ok/fail
+	return ret;
+}
+
+
+
+
+int slsReceiverTCPIPInterface::set_streaming_source_ip() {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	char arg[MAX_STR_LENGTH];
+	memset(arg, 0, sizeof(arg));
+	char* retval=NULL;
+
+	// receive arguments
+	if (mySock->ReceiveDataOnly(arg,MAX_STR_LENGTH) < 0 )
+		return printSocketReadError();
+
+	// execute action
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	if (receiverBase == NULL)
+		invalidReceiverObject();
+	else {
+		// set
+		if (mySock->differentClients && lockStatus)
+			receiverlocked();
+		else if (receiverBase->getStatus() != IDLE)
+			receiverNotIdle();
+		else {
+			receiverBase->setStreamingSourceIP(arg);
+		}
+
+		//get
+		retval = receiverBase->getStreamingSourceIP();
+	}
+#endif
+#ifdef VERYVERBOSE
+	FILE_LOG(logDEBUG1) << "streaming source ip:" << retval;
+#endif
+
+	if (ret == OK && mySock->differentClients)
+		ret = FORCE_UPDATE;
+
+	// send answer
+	mySock->SendDataOnly(&ret,sizeof(ret));
+	if (ret == FAIL)
+		mySock->SendDataOnly(mess,sizeof(mess));
+	mySock->SendDataOnly(retval,MAX_STR_LENGTH);
+	delete[] retval;
+
 
 	// return ok/fail
 	return ret;

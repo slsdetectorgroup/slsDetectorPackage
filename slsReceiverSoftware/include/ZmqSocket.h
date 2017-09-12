@@ -8,7 +8,7 @@
  */
 
 #include "ansi.h"
-//#include "sls_receiver_defs.h"
+#include "sls_receiver_defs.h"
 
 //#define ZMQ_DETAIL
 
@@ -17,6 +17,8 @@
 #include <netdb.h>				//gethostbyname()
 #include <arpa/inet.h>			//inet_ntoa
 #include <rapidjson/document.h> //json header in zmq stream
+#include <string.h>
+#include <unistd.h> 			//usleep in some machines
 using namespace rapidjson;
 
 #define DEFAULT_ZMQ_PORTNO 	30001
@@ -56,6 +58,9 @@ public:
 
 		// construct address
 		sprintf (serverAddress, "tcp://%s:%d", ip, portno);
+#ifdef VERBOSE
+		cprintf(BLUE,"addres:%s\n",serverAddress);
+#endif
 
 		// create context
 		contextDescriptor = zmq_ctx_new();
@@ -97,8 +102,10 @@ public:
 	 * Creates socket, context and connects to server
 	 * @param hostname hostname or ip of server
 	 * @param portnumber port number
+	 * @param ethip is the ip of the ethernet interface to stream zmq from.
+	 * If blank, it will get ip from "hostname -i", else stream to all interfaces
 	 */
-	ZmqSocket (const uint32_t portnumber):
+	ZmqSocket (const uint32_t portnumber, const char *ethip=NULL):
 		portno (portnumber),
 		server (true),
 		contextDescriptor (NULL),
@@ -113,16 +120,45 @@ public:
 		if (socketDescriptor == NULL) {
 			PrintError ();
 			Close ();
+			return;
 		}
 
 		//Socket Options provided above
 
-		// construct address
-		sprintf (serverAddress,"tcp://*:%d", portno);
+
+		// construct ip to stream from
+		char ip[MAX_STR_LENGTH];
+		memset(ip, 0, MAX_STR_LENGTH);
+
+		// if ethip pre-defined
+		if (ethip != NULL)
+			strcpy(ip,ethip);
+		else {
+			bool valid = false;
+			FILE *sysFile = popen("hostname -i", "r");
+			if (sysFile != NULL) {
+				if (fgets(ip, MAX_STR_LENGTH, sysFile) != NULL) {
+					sscanf(ip,"%s\n",ip);
+#ifdef VERBOSE
+					cprintf(BLUE, "read ip:%s.\n",ip);
+#endif
+					valid = true;
+					pclose(sysFile);
+				}
+			}
+			if(!valid)
+				strcpy(ip,"*");
+
+		}
+
+
+		// construct addresss
+		sprintf (serverAddress,"tcp://%s:%d", ip, portno);
 		// bind address
 		if (zmq_bind (socketDescriptor, serverAddress) < 0) {
 			PrintError ();
 			Close ();
+			return;
 		}
 
 		//sleep for a few milliseconds to allow a slow-joiner
@@ -313,7 +349,7 @@ public:
 	 * @returns 0 if error or end of acquisition, else 1
 	 */
 	int ReceiveHeader(const int index, uint64_t &acqIndex,
-			uint64_t &frameIndex, uint32_t &subframeIndex, string &filename)
+			uint64_t &frameIndex, uint32_t &subframeIndex, std::string &filename)
 	{
 		zmq_msg_t message;
 		zmq_msg_init (&message);
@@ -389,7 +425,7 @@ public:
 	 * @returns true if successfull else false
 	 */
 	int ParseHeader(const int index, int length, zmq_msg_t& message, uint64_t &acqIndex,
-			uint64_t &frameIndex, uint32_t &subframeIndex, string &filename, bool& dummy)
+			uint64_t &frameIndex, uint32_t &subframeIndex, std::string &filename, bool& dummy)
 	{
 
 		acqIndex = -1;
@@ -489,6 +525,7 @@ public:
 			break;
 		}
 	};
+
 
 
 private:

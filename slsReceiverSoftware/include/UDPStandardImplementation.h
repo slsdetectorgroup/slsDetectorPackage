@@ -81,6 +81,13 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	int setDataStreamEnable(const bool enable);
 
 	/**
+	 * Set Number of Samples expected by receiver from detector
+	 * @param i number of Samples expected
+	 * @return OK or FAIL
+	 */
+	int setNumberofSamples(const uint64_t i);
+
+	/**
 	 * Set Dynamic Range or Number of Bits Per Pixel
 	 * @param i dynamic range that is 4, 8, 16 or 32
 	 * @return OK or FAIL
@@ -224,6 +231,9 @@ private:
 
 	/** Number of Jobs */
 	int numberofJobs;
+
+	/** Number of channels in roi for jungfrauctb */
+	int nroichannels;
 
 	//** class objects ***
 	/** General Data Properties */

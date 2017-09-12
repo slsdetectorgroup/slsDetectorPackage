@@ -213,6 +213,12 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	uint64_t getNumberOfFrames() const;
 
+	/*
+	 * Get Number of Samples expected by receiver from detector (for chip test board only)
+	 * @return number of samples expected
+	 */
+	uint64_t getNumberofSamples() const;
+
 	/**
 	 * Get Dynamic Range or Number of Bits Per Pixel
 	 * @return dynamic range that is 4, 8, 16 or 32
@@ -253,6 +259,11 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	uint32_t getStreamingPort() const;
 
+	/**
+	 * Get streaming source ip
+	 * @return streaming source ip
+	 */
+	char *getStreamingSourceIP() const;
 
 
 	/*************************************************************************
@@ -413,9 +424,15 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * Set Number of Frames expected by receiver from detector
 	 * The data receiver status will change from running to idle when it gets this number of frames
 	 * @param i number of frames expected
-	 * @return OK or FAIL
 	 */
 	int setNumberOfFrames(const uint64_t i);
+
+	/**
+	 * Set Number of Samples expected by receiver from detector
+	 * @param i number of Samples expected
+	 * @return OK or FAIL
+	 */
+	int setNumberofSamples(const uint64_t i);
 
 	/**
 	 * Set Dynamic Range or Number of Bits Per Pixel
@@ -529,6 +546,12 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	void setStreamingPort(const uint32_t i);
 
+	/**
+	 * Set streaming source ip
+	 * @param c streaming source ip
+	 */
+	void setStreamingSourceIP(const char* c);
+
 	//***callback functions***
 	/**
 	 * Call back for start acquisition
@@ -598,6 +621,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	uint64_t subExpTime;
 	/** Frame Number */
 	uint64_t numberOfFrames;
+	/** Samples Number */
+	uint64_t numberOfSamples;
 	/** Dynamic Range */
 	uint32_t dynamicRange;
 	/** Ten Giga Enable*/
@@ -652,7 +677,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	bool dataStreamEnable;
 	/** streaming port */
 	uint32_t streamingPort;
-
+	/** streaming port */
+	char streamingSrcIP[MAX_STR_LENGTH];
 
 	//***callback parameters***
 	/**

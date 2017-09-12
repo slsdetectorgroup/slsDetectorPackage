@@ -47,6 +47,7 @@ void UDPBaseImplementation::initializeMembers(){
 	acquisitionTime = 0;
 	subExpTime = 0;
 	numberOfFrames = 0;
+	numberOfSamples = 0;
 	dynamicRange = 16;
 	tengigaEnable = false;
 	fifoDepth = 0;
@@ -80,6 +81,7 @@ void UDPBaseImplementation::initializeMembers(){
 	frameToGuiTimerinMS = DEFAULT_STREAMING_TIMER_IN_MS;
 	dataStreamEnable = false;
 	streamingPort = 0;
+	memset(streamingSrcIP, 0, sizeof(streamingSrcIP));
 }
 
 UDPBaseImplementation::~UDPBaseImplementation(){}
@@ -197,6 +199,8 @@ uint64_t UDPBaseImplementation::getSubExpTime() const{	FILE_LOG(logDEBUG) << __A
 
 uint64_t UDPBaseImplementation::getNumberOfFrames() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return numberOfFrames;}
 
+uint64_t UDPBaseImplementation::getNumberofSamples() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return numberOfSamples;}
+
 uint32_t UDPBaseImplementation::getDynamicRange() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return dynamicRange;}
 
 bool UDPBaseImplementation::getTenGigaEnable() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return tengigaEnable;}
@@ -209,6 +213,15 @@ slsReceiverDefs::runStatus UDPBaseImplementation::getStatus() const{	FILE_LOG(lo
 int UDPBaseImplementation::getActivate() const{FILE_LOG(logDEBUG) << __AT__ << " starting"; return activated;}
 
 uint32_t UDPBaseImplementation::getStreamingPort() const{FILE_LOG(logDEBUG) << __AT__ << " starting"; return streamingPort;}
+
+char *UDPBaseImplementation::getStreamingSourceIP() const{
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	char* output = new char[MAX_STR_LENGTH]();
+	strcpy(output,streamingSrcIP);
+	//freed by calling function
+	return output;
+}
 
 /*************************************************************************
  * Setters ***************************************************************
@@ -435,6 +448,16 @@ int UDPBaseImplementation::setNumberOfFrames(const uint64_t i){
 	return OK;
 }
 
+int UDPBaseImplementation::setNumberofSamples(const uint64_t i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	numberOfSamples = i;
+	FILE_LOG(logINFO) << "Number of Samples: " << numberOfSamples;
+
+	//overrridden child classes might return FAIL
+	return OK;
+}
+
 int UDPBaseImplementation::setDynamicRange(const uint32_t i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
@@ -557,6 +580,12 @@ void UDPBaseImplementation::setStreamingPort(const uint32_t i) {
 		streamingPort = i;
 
 	FILE_LOG(logINFO) << "Streaming Port: " << streamingPort;
+}
+
+void UDPBaseImplementation::setStreamingSourceIP(const char c[]){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	strcpy(streamingSrcIP, c);
+	FILE_LOG(logINFO) << "Streaming Source IP: " << streamingSrcIP;
 }
 
 

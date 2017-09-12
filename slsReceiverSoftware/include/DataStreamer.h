@@ -100,9 +100,10 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	 * Creates Zmq Sockets
 	 * @param nunits pointer to number of theads/ units per detector
 	 * @param port streaming port start index
+	 * @param srcip streaming source ip
 	 * @return OK or FAIL
 	 */
-	int CreateZmqSockets(int* nunits, uint32_t port);
+	int CreateZmqSockets(int* nunits, uint32_t port, const char* srcip);
 
 	/**
 	 * Shuts down and deletes Zmq Sockets

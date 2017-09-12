@@ -43,12 +43,14 @@ class UDPInterface {
 	 *	-setAcquisitionPeriod
 	 *	-setNumberOfFrames
 	 *	-setAcquisitionTime
-	 *	-setSubExpTime
+	 *	-setSubExpTime (if eiger)
+	 *	-setNumberofSamples (if chip test board)
 	 *	-setDynamicRange
-	 *	-setFlippedData
-	 *	-setActivate
-	 *	-setTenGigaEnable
+	 *	-setFlippedData (if eiger)
+	 *	-setActivate (if eiger)
+	 *	-setTenGigaEnable (if eiger)
 	 *	-setStreamingPort
+	 *	-setStreamingSourceIP
 	 *	-setDataStreamEnable
 	 *
 	 *
@@ -293,10 +295,16 @@ class UDPInterface {
 
 	/*
 	 * Get Number of Frames expected by receiver from detector
-	 * The data receiver status will change from running to idle when it gets this number of frames FIXME: (Not implemented)
-	 * @return number of frames expected
+	 * The data receiver status will change from running to idle when it gets this number of frames FIXME: (for Leo? Not implemented)
+	 * @return number of samples expected
 	 */
 	virtual uint64_t getNumberOfFrames() const = 0;
+
+	/*
+	 * Get Number of Samples expected by receiver from detector (for chip test board only)
+	 * @return number of samples expected
+	 */
+	virtual uint64_t getNumberofSamples() const = 0;
 
 	/**
 	 * Get Dynamic Range or Number of Bits Per Pixel
@@ -336,6 +344,12 @@ class UDPInterface {
 	 * @return streaming port
 	 */
 	virtual uint32_t getStreamingPort() const = 0;
+
+	/**
+	 * Get streaming source ip
+	 * @return streaming source ip
+	 */
+	virtual char *getStreamingSourceIP() const = 0;
 
 
 	/*************************************************************************
@@ -492,11 +506,18 @@ class UDPInterface {
 
 	/**
 	 * Set Number of Frames expected by receiver from detector
-	 * The data receiver status will change from running to idle when it gets this number of frames FIXME: (Not implemented)
+	 * The data receiver status will change from running to idle when it gets this number of frames FIXME: (for Leo? Not implemented)
 	 * @param i number of frames expected
 	 * @return OK or FAIL
 	 */
 	virtual int setNumberOfFrames(const uint64_t i) = 0;
+
+	/**
+	 * Set Number of Samples expected by receiver from detector
+	 * @param i number of Samples expected
+	 * @return OK or FAIL
+	 */
+	virtual int setNumberofSamples(const uint64_t i) = 0;
 
 	/**
 	 * Set Dynamic Range or Number of Bits Per Pixel
@@ -609,6 +630,12 @@ class UDPInterface {
 	 * @param i streaming port
 	 */
 	virtual void setStreamingPort(const uint32_t i) = 0;
+
+	/**
+	 * Set streaming source ip
+	 * @param c streaming source ip
+	 */
+	virtual void setStreamingSourceIP(const char* c) = 0;
 
 
 	//***callback functions***

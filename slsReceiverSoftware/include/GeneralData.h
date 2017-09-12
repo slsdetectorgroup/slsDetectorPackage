@@ -164,6 +164,14 @@ public:
 	};
 
 	/**
+	 * Setting packets per frame changes member variables
+	 * @param packets per frame
+	 */
+	virtual void SetPacketsPerFrame(uint32_t ppf) {
+		bprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+	};
+
+	/**
 	 * Print all variables
 	 */
 	virtual void Print() const {
@@ -376,7 +384,20 @@ class Moench03Data : public GeneralData {
 
 class JCTBData : public GeneralData {
 
+
+private:
+	/** Structure of an jungfrau ctb packet header */
+	typedef struct {
+		unsigned char emptyHeader[6];
+		unsigned char reserved[4];
+		unsigned char packetNumber[1];
+		unsigned char frameNumber[3];
+		unsigned char bunchid[8];
+	} jfrauctb_packet_header_t;
+
  public:
+
+
 
 	/** Bytes Per Adc */
 	const static uint32_t bytesPerAdc = 2;
@@ -384,19 +405,60 @@ class JCTBData : public GeneralData {
 	/** Constructor */
 	JCTBData(){
 		myDetectorType		= slsReceiverDefs::JUNGFRAUCTB;
-		nPixelsX 			= 32;
-		nPixelsY 			= 128;
+		nPixelsX 			= 32;	//(256*4);
+		nPixelsY 			= 128;	//(256*2);
 		headerSizeinPacket  = 22;
 		dataSize 			= 8192;
 		packetSize 			= headerSizeinPacket + dataSize;
 		packetsPerFrame 	= 1;
 		imageSize 			= dataSize*packetsPerFrame;
+		frameIndexMask 		= 0xFFFFFF;
 		maxFramesPerFile 	= JFCTB_MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 2500;
 		nPixelsX_Streamer 	= nPixelsX;
 		nPixelsY_Streamer 	= nPixelsY;
 		imageSize_Streamer 	= imageSize;
+	};
+
+ 	/**
+ 	 * Get Header Infomation (frame number, packet number)
+ 	 * @param index thread index for debugging purposes
+ 	 * @param packetData pointer to data
+ 	 * @param frameNumber frame number
+ 	 * @param packetNumber packet number
+ 	 */
+	virtual void GetHeaderInfo(int index, char* packetData,	uint64_t& frameNumber, uint32_t& packetNumber) const 	{
+		jfrauctb_packet_header_t* header = (jfrauctb_packet_header_t*)(packetData);
+		frameNumber = (uint64_t)((*( (uint32_t*) header->frameNumber)) & frameIndexMask);
+		packetNumber = (uint32_t)(*( (uint8_t*) header->packetNumber));
+	}
+
+	/**
+	 * Get Header Infomation (frame number, packet number)
+	 * @param index thread index for debugging purposes
+	 * @param packetData pointer to data
+	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
+	 * @param frameNumber frame number 	 * @param packetNumber packet number
+	 * @param subFrameNumber sub frame number if applicable
+	 * @param bunchId bunch id
+	 */
+	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
+			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t& bunchId) const 	{
+		subFrameNumber = -1;
+		jfrauctb_packet_header_t* header = (jfrauctb_packet_header_t*)(packetData);
+		frameNumber = (uint64_t)((*( (uint32_t*) header->frameNumber)) & frameIndexMask);
+		packetNumber = (uint32_t)(*( (uint8_t*) header->packetNumber));
+		bunchId = (*((uint64_t*) header->bunchid));
+	}
+
+	/**
+	 * Setting packets per frame changes member variables
+	 * @param packets per frame
+	 */
+	void SetPacketsPerFrame(uint32_t ppf) {
+		packetsPerFrame = ppf;
+		imageSize 		= dataSize*packetsPerFrame;
 	};
 
 	/**

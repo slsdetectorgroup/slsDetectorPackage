@@ -15,6 +15,7 @@
 #include <cstdlib>			//system
 #include <cstring>			//strcpy
 #include <errno.h>			//eperm
+#include <math.h>			//ceil
 using namespace std;
 
 
@@ -54,6 +55,7 @@ void UDPStandardImplementation::InitializeMembers() {
 	//*** receiver parameters ***
 	numThreads = 1;
 	numberofJobs = 1;
+	nroichannels = 0;
 
 	//** class objects ***
 	generalData = 0;
@@ -164,17 +166,6 @@ int UDPStandardImplementation::setShortFrameEnable(const int i) {
 int UDPStandardImplementation::setFrameToGuiFrequency(const uint32_t freq) {
 	if (frameToGuiFrequency != freq) {
 		frameToGuiFrequency = freq;
-
-		/*//only the ones lisening to more than 1 frame at a time needs to change fifo structure
-		switch (myDetectorType) {
-		case GOTTHARD:
-		case PROPIX:
-		if (SetupFifoStructure() == FAIL)
-			return FAIL;
-		break;
-		default:
-			break;
-		}*/
 	}
 	FILE_LOG (logINFO) << "Frame to Gui Frequency: " << frameToGuiFrequency;
 	return OK;
@@ -199,7 +190,7 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {\
 				// check again
 				if (streamingPort == 0)
 					streamingPort = DEFAULT_ZMQ_PORTNO + (detID * ((myDetectorType == EIGER) ? 2 : 1)  ); // multiplied by 2 as eiger has 2 ports
-				if (dataStreamer[i]->CreateZmqSockets(&numThreads, streamingPort) == FAIL) {
+				if (dataStreamer[i]->CreateZmqSockets(&numThreads, streamingPort, streamingSrcIP) == FAIL) {
 					error = true;
 					break;
 				}
@@ -219,6 +210,25 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {\
 		}
 	}
 	FILE_LOG (logINFO) << "Data Send to Gui: " << dataStreamEnable;
+	return OK;
+}
+
+
+
+int UDPStandardImplementation::setNumberofSamples(const uint64_t i) {
+	if (numberOfSamples != i) {
+		numberOfSamples = i;
+
+		//side effects
+		uint32_t ppf = ceil(double(2 * (nroichannels ? nroichannels : DEFAULT_NROI_CHANNELS) * numberOfSamples) / double(generalData->dataSize));
+		generalData->SetPacketsPerFrame(ppf);
+
+		numberofJobs = -1; //changes to imagesize has to be noted to recreate fifo structure
+		if (SetupFifoStructure() == FAIL)
+			return FAIL;
+	}
+	FILE_LOG (logINFO) << "Number of Samples: " << numberOfSamples;
+	FILE_LOG (logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 	return OK;
 }
 

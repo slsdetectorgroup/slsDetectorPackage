@@ -154,10 +154,10 @@ int DataStreamer::SetThreadPriority(int priority) {
 }
 
 
-int DataStreamer::CreateZmqSockets(int* nunits, uint32_t port) {
+int DataStreamer::CreateZmqSockets(int* nunits, uint32_t port, const char* srcip) {
 	uint32_t portnum = port + index;
 
-	zmqSocket = new ZmqSocket(portnum);
+	zmqSocket = new ZmqSocket(portnum, (strlen(srcip)?srcip:NULL));
 	if (zmqSocket->IsError()) {
 		bprintf(RED, "Error: Could not create Zmq socket on port %d for Streamer %d\n", portnum, index);
 		return FAIL;

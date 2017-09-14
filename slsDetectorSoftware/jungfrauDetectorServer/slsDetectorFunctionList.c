@@ -254,7 +254,7 @@ u_int32_t  getDetectorIP(){
 /* initialization */
 
 void initControlServer(){
-
+	clkPhase[0] = 0; clkPhase[1] = 0;
 	setupDetector();
 	printf("\n");
 }
@@ -336,7 +336,7 @@ void setupDetector() {
 		}
 	}
 
-	bus_w(DAQ_REG, 0x0); 		/* Only once at server startup */
+	bus_w(DAQ_REG, 0x0);		/* Only once at server startup */
 	setSpeed(CLOCK_DIVIDER, HALF_SPEED);
 	cleanFifos();	/* todo might work without */
 	resetCore();	/* todo might work without */

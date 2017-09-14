@@ -7249,6 +7249,15 @@ int slsDetector::programFPGA(string fname){
 			if (ret==FORCE_UPDATE)
 				updateDetector();
 		}
+
+		//remapping stop server
+		fnum=F_RESET_FPGA;
+		int stopret;
+		if (connectStop() == OK){
+			stopSocket->SendDataOnly(&fnum,sizeof(fnum));
+			stopSocket->ReceiveDataOnly(&stopret,sizeof(stopret));
+			disconnectControl();
+		}
 	}
 
 	//free resources
@@ -7272,17 +7281,15 @@ int slsDetector::resetFPGA(){
 	std::cout<< "Sending reset to FPGA " << endl;
 #endif
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
+		// control server
 		if (connectControl() == OK){
 			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-
-			//check opening error
 			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
 			if (ret==FAIL) {
 				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 				std::cout<< "Detector returned error: " << mess << std::endl;
 				setErrorMask((getErrorMask())|(RESET_ERROR));
 			}
-
 			disconnectControl();
 			if (ret==FORCE_UPDATE)
 				updateDetector();

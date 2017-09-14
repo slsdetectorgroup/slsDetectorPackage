@@ -1190,7 +1190,7 @@ int multiSlsDetector::setThresholdEnergy(int e_eV, int pos, detectorSettings ise
 		for(int idet=posmin; idet<posmax; idet++){
 			if(detectors[idet]){
 				iret[idet]= new int(-1);
-				Task* task = new Task(new func4_t<int,slsDetector,int,int,detectorSettings,int,int>(&slsDetector::setThresholdEnergy,
+				Task* task = new Task(new func4_t<int,int,int,detectorSettings,int>(&slsDetector::setThresholdEnergy,
 						detectors[idet],e_eV,-1,isettings,tb,iret[idet]));
 				threadpool->add_task(task);
 			}
@@ -1237,11 +1237,11 @@ slsDetectorDefs::detectorSettings multiSlsDetector::getSettings(int pos) {
 		return GET_SETTINGS;
 	}else{
 		//return storage values
-		int* iret[posmax-posmin];
+		detectorSettings* iret[posmax-posmin];
 		for(int idet=posmin; idet<posmax; idet++){
 			if(detectors[idet]){
-				iret[idet]= new int(-1);
-				Task* task = new Task(new func1_t<detectorSettings,slsDetector,int,int>(&slsDetector::getSettings,
+				iret[idet]= new detectorSettings(GET_SETTINGS);
+				Task* task = new Task(new func1_t<detectorSettings,int>(&slsDetector::getSettings,
 						detectors[idet],-1,iret[idet]));
 				threadpool->add_task(task);
 			}
@@ -1285,11 +1285,11 @@ slsDetectorDefs::detectorSettings multiSlsDetector::setSettings(detectorSettings
 		return GET_SETTINGS;
 	}else{
 		//return storage values
-		int* iret[posmax-posmin];
+		detectorSettings* iret[posmax-posmin];
 		for(int idet=posmin; idet<posmax; idet++){
 			if(detectors[idet]){
-				iret[idet]= new int(-1);
-				Task* task = new Task(new func2_t<detectorSettings,slsDetector,detectorSettings,int,int>(&slsDetector::setSettings,
+				iret[idet]= new detectorSettings(GET_SETTINGS);
+				Task* task = new Task(new func2_t<detectorSettings,detectorSettings,int>(&slsDetector::setSettings,
 						detectors[idet],isettings,-1,iret[idet]));
 				threadpool->add_task(task);
 			}
@@ -1374,7 +1374,7 @@ int multiSlsDetector::prepareAcquisition(){
 		for(int idet=posmin; idet<posmax; idet++){
 			if((idet!=thisMultiDetector->masterPosition) && (detectors[idet])){
 				iret[idet]= new int(OK);
-				Task* task = new Task(new func0_t<int,slsDetector,int>(&slsDetector::prepareAcquisition,
+				Task* task = new Task(new func0_t<int>(&slsDetector::prepareAcquisition,
 						detectors[idet],iret[idet]));
 				threadpool->add_task(task);
 			}
@@ -1437,7 +1437,7 @@ int multiSlsDetector::cleanupAcquisition(){
 		for(int idet=posmin; idet<posmax; idet++){
 			if((idet!=thisMultiDetector->masterPosition) && (detectors[idet])){
 				iret[idet]= new int(OK);
-				Task* task = new Task(new func0_t<int,slsDetector,int>(&slsDetector::cleanupAcquisition,
+				Task* task = new Task(new func0_t<int>(&slsDetector::cleanupAcquisition,
 						detectors[idet],iret[idet]));
 				threadpool->add_task(task);
 			}
@@ -1483,7 +1483,7 @@ int multiSlsDetector::startAcquisition(){
 		for(int idet=posmin; idet<posmax; idet++){
 			if((idet!=thisMultiDetector->masterPosition) && (detectors[idet])){
 				iret[idet]= new int(OK);
-				Task* task = new Task(new func0_t<int,slsDetector,int>(&slsDetector::startAcquisition,
+				Task* task = new Task(new func0_t<int>(&slsDetector::startAcquisition,
 						detectors[idet],iret[idet]));
 				threadpool->add_task(task);
 			}
@@ -1545,7 +1545,7 @@ int multiSlsDetector::stopAcquisition(){
 		for(int idet=posmin; idet<posmax; idet++){
 			if((idet!=thisMultiDetector->masterPosition) && (detectors[idet])){
 				iret[idet]= new int(OK);
-				Task* task = new Task(new func0_t<int,slsDetector,int>(&slsDetector::stopAcquisition,
+				Task* task = new Task(new func0_t<int>(&slsDetector::stopAcquisition,
 						detectors[idet],iret[idet]));
 				threadpool->add_task(task);
 			}
@@ -1828,7 +1828,7 @@ int multiSlsDetector::startAndReadAllNoWait(){
 		for(int idet=posmin; idet<posmax; idet++){
 			if((idet!=thisMultiDetector->masterPosition) && (detectors[idet])){
 				iret[idet]= new int(OK);
-				Task* task = new Task(new func0_t<int,slsDetector,int>(&slsDetector::startAndReadAllNoWait,
+				Task* task = new Task(new func0_t<int>(&slsDetector::startAndReadAllNoWait,
 						detectors[idet],iret[idet]));
 				threadpool->add_task(task);
 			}
@@ -3148,7 +3148,7 @@ dacs_t multiSlsDetector::setDAC(dacs_t val, dacIndex idac, int mV, int imod) {
 	for(int idet=posmin; idet<posmax; ++idet){
 		if(detectors[idet]){
 			iret[idet]= new dacs_t(-1);
-			Task* task = new Task(new func4_t <dacs_t,slsDetector,dacs_t,dacIndex,int,int,dacs_t>(&slsDetector::setDAC,
+			Task* task = new Task(new func4_t <dacs_t,dacs_t,dacIndex,int,int>(&slsDetector::setDAC,
 					detectors[idet],val, idac, mV, imod, iret[idet]));
 			threadpool->add_task(task);
 		}
@@ -3210,7 +3210,7 @@ dacs_t multiSlsDetector::getADC(dacIndex idac, int imod) {
 	for(int idet=posmin; idet<posmax; ++idet){
 		if(detectors[idet]){
 			iret[idet]= new dacs_t(-1);
-			Task* task = new Task(new func2_t <dacs_t,slsDetector,dacIndex,int,dacs_t>(&slsDetector::getADC,
+			Task* task = new Task(new func2_t <dacs_t,dacIndex,int>(&slsDetector::getADC,
 					detectors[idet],idac, imod, iret[idet]));
 			threadpool->add_task(task);
 		}
@@ -3608,7 +3608,7 @@ string multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 					if (p == RECEIVER_STREAMING_PORT)
 						s.append("multi\0");
 					sret[idet]=new string("error");
-					Task* task = new Task(new func2_t <string,slsDetector,networkParameter,string,string>(&slsDetector::setNetworkParameter,
+					Task* task = new Task(new func2_t <string,networkParameter,string>(&slsDetector::setNetworkParameter,
 							detectors[idet],p,s,sret[idet]));
 					threadpool->add_task(task);
 				}
@@ -4264,7 +4264,7 @@ int multiSlsDetector::executeTrimming(trimMode mode, int par1, int par2, int imo
 	for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
 		if(detectors[idet]){
 			iret[idet]= new int(-1);
-			Task* task = new Task(new func4_t <int,slsDetector,trimMode,int,int,int,int>(&slsDetector::executeTrimming,
+			Task* task = new Task(new func4_t <int,trimMode,int,int,int>(&slsDetector::executeTrimming,
 					detectors[idet],mode,par1,par2,imod,iret[idet]));
 			threadpool->add_task(task);
 		}
@@ -4367,7 +4367,7 @@ int multiSlsDetector::loadSettingsFile(string fname, int imod) {
 	for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
 		if(detectors[idet]){
 			iret[idet]= new int(OK);
-			Task* task = new Task(new func2_t <int,slsDetector,string,int,int>(&slsDetector::loadSettingsFile,
+			Task* task = new Task(new func2_t <int,string,int>(&slsDetector::loadSettingsFile,
 					detectors[idet],fname,imod,iret[idet]));
 			threadpool->add_task(task);
 		}
@@ -4441,7 +4441,7 @@ int multiSlsDetector::setAllTrimbits(int val, int imod){
 	for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
 		if(detectors[idet]){
 			iret[idet]= new int(-1);
-			Task* task = new Task(new func2_t <int,slsDetector,int,int,int>(&slsDetector::setAllTrimbits,
+			Task* task = new Task(new func2_t <int,int,int>(&slsDetector::setAllTrimbits,
 					detectors[idet],val,imod,iret[idet]));
 			threadpool->add_task(task);
 		}
@@ -4495,7 +4495,7 @@ int multiSlsDetector::loadCalibrationFile(string fname, int imod) {
 	for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
 		if(detectors[idet]){
 			iret[idet]= new int(OK);
-			Task* task = new Task(new func2_t <int,slsDetector,string,int,int>(&slsDetector::loadCalibrationFile,
+			Task* task = new Task(new func2_t <int,string,int>(&slsDetector::loadCalibrationFile,
 					detectors[idet],fname,imod,iret[idet]));
 			threadpool->add_task(task);
 		}
@@ -5173,7 +5173,7 @@ int multiSlsDetector::startReceiver(){
 		for(int idet=posmin; idet<posmax; idet++){
 			if((idet!=thisMultiDetector->masterPosition) && (detectors[idet])){
 				iret[idet]= new int(OK);
-				Task* task = new Task(new func0_t<int,slsDetector,int>(&slsDetector::startReceiver,
+				Task* task = new Task(new func0_t<int>(&slsDetector::startReceiver,
 						detectors[idet],iret[idet]));
 				threadpool->add_task(task);
 			}
@@ -5235,7 +5235,7 @@ int multiSlsDetector::stopReceiver(){
 		for(int idet=posmin; idet<posmax; idet++){
 			if((idet!=thisMultiDetector->masterPosition) && (detectors[idet])){
 				iret[idet]= new int(OK);
-				Task* task = new Task(new func0_t<int,slsDetector,int>(&slsDetector::stopReceiver,
+				Task* task = new Task(new func0_t<int>(&slsDetector::stopReceiver,
 						detectors[idet],iret[idet]));
 				threadpool->add_task(task);
 			}
@@ -5906,7 +5906,7 @@ int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
 		for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
 			if(detectors[idet]){
 				iret[idet]= new int(-1);
-				Task* task = new Task(new func1_t <int,slsDetector,int,int>(&slsDetector::enableDataStreamingFromReceiver,
+				Task* task = new Task(new func1_t <int,int>(&slsDetector::enableDataStreamingFromReceiver,
 						detectors[idet],enable,iret[idet]));
 				threadpool->add_task(task);
 			}
@@ -6135,7 +6135,7 @@ int multiSlsDetector::pulsePixel(int n,int x,int y) {
 		for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
 			if(detectors[idet]){
 				iret[idet]= new int(-1);
-				Task* task = new Task(new func3_t <int,slsDetector,int,int,int,int>(&slsDetector::pulsePixel,
+				Task* task = new Task(new func3_t <int,int,int,int>(&slsDetector::pulsePixel,
 						detectors[idet],n,x,y,iret[idet]));
 				threadpool->add_task(task);
 			}
@@ -6172,7 +6172,7 @@ int multiSlsDetector::pulsePixelNMove(int n,int x,int y) {
 		for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
 			if(detectors[idet]){
 				iret[idet]= new int(-1);
-				Task* task = new Task(new func3_t <int,slsDetector,int,int,int,int>(&slsDetector::pulsePixelNMove,
+				Task* task = new Task(new func3_t <int,int,int,int>(&slsDetector::pulsePixelNMove,
 						detectors[idet],n,x,y,iret[idet]));
 				threadpool->add_task(task);
 			}
@@ -6209,7 +6209,7 @@ int multiSlsDetector::pulseChip(int n) {
 		for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
 			if(detectors[idet]){
 				iret[idet]= new int(-1);
-				Task* task = new Task(new func1_t <int,slsDetector,int,int>(&slsDetector::pulseChip,
+				Task* task = new Task(new func1_t <int,int>(&slsDetector::pulseChip,
 						detectors[idet],n,iret[idet]));
 				threadpool->add_task(task);
 			}

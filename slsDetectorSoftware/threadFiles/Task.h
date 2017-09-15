@@ -108,7 +108,8 @@ private:
 
 class SuperTask:  public virtual slsDetectorDefs {
 public:
-	SuperTask():m1(0),m2(0),m3(0),m4(0),m5(0),m6(0),m7(0),m8(0),m9(0),m10(0),m11(0),m12(0),m13(0),m14(0){};
+	SuperTask():
+		m1(0),m2(0),m3(0),m4(0),m5(0),m6(0),m7(0),m8(0),m9(0),m10(0),m11(0),m12(0),m13(0),m14(0),m15(0){};
 	~SuperTask(){};
 protected:
 	/** Function signature defined
@@ -123,11 +124,12 @@ protected:
 	func2_t <int,				string,int>* 					m7;
 	func2_t <dacs_t,			dacIndex,int>* 					m8;
 	func2_t <detectorSettings,	detectorSettings,int>* 			m9;
-	func2_t <string,			networkParameter,string>* 		m10;
-	func3_t <int,				int,int,int>* 					m11;
-	func4_t <int,				trimMode,int,int,int>* 			m12;
-	func4_t <int,				int,int,detectorSettings,int>*	m13;
-	func4_t <dacs_t,			dacs_t,dacIndex,int,int>* 		m14;
+	func2_t <int64_t,			timerIndex,int64_t>* 			m10;
+	func2_t <string,			networkParameter,string>* 		m11;
+	func3_t <int,				int,int,int>* 					m12;
+	func4_t <int,				trimMode,int,int,int>* 			m13;
+	func4_t <int,				int,int,detectorSettings,int>*	m14;
+	func4_t <dacs_t,			dacs_t,dacIndex,int,int>* 		m15;
 };
 
 class Task:  public virtual SuperTask {
@@ -144,11 +146,12 @@ public:
 	Task(func2_t <int,				string,int>* t):						SuperTask(),fnum(7){m7 = t;};
 	Task(func2_t <dacs_t,			dacIndex,int>* t):                  	SuperTask(),fnum(8){m8 = t;};
 	Task(func2_t <detectorSettings,	detectorSettings,int>* t):				SuperTask(),fnum(9){m9 = t;};
-	Task(func2_t <string,			networkParameter,string>* t):			SuperTask(),fnum(10){m10 = t;};
-	Task(func3_t <int,				int,int,int>* t): 						SuperTask(),fnum(11){m11 = t;};
-	Task(func4_t <int,				trimMode,int,int,int>* t):				SuperTask(),fnum(12){m12 = t;};
-	Task(func4_t <int,				int,int,detectorSettings,int>* t): 		SuperTask(),fnum(13){m13 = t;};
-	Task(func4_t <dacs_t,			dacs_t,dacIndex,int,int>* t):       	SuperTask(),fnum(14){m14 = t;};
+	Task(func2_t <int64_t,			timerIndex,int64_t>* t):				SuperTask(),fnum(10){m10 = t;};
+	Task(func2_t <string,			networkParameter,string>* t):			SuperTask(),fnum(11){m11 = t;};
+	Task(func3_t <int,				int,int,int>* t): 						SuperTask(),fnum(12){m12 = t;};
+	Task(func4_t <int,				trimMode,int,int,int>* t):				SuperTask(),fnum(13){m13 = t;};
+	Task(func4_t <int,				int,int,detectorSettings,int>* t): 		SuperTask(),fnum(14){m14 = t;};
+	Task(func4_t <dacs_t,			dacs_t,dacIndex,int,int>* t):       	SuperTask(),fnum(15){m15 = t;};
 
 	~Task(){}
 
@@ -168,6 +171,7 @@ public:
 		case 12:	(*m12)();	break;
 		case 13:	(*m13)();	break;
 		case 14:    (*m14)();	break;
+		case 15:    (*m15)();	break;
 		default:
 			cprintf(RED, "Error: Task not defined. Abort!\n");
 			break;

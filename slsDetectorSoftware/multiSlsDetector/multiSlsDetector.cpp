@@ -1948,33 +1948,50 @@ void multiSlsDetector::resetFinalDataQueue() {
    CYCLES_NUMBER,
    GATE_INTEGRATED_TIME
    }
-*/
+ */
 int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t){
-  int i;
-  int64_t ret1=-100, ret;
+
+	int ret=-100;
+
+	if(!threadpool){
+		cout << "Error in creating threadpool. Exiting" << endl;
+		return -1;
+	}else{
+		//return storage values
+		int64_t* iret[thisMultiDetector->numberOfDetectors];
+		for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
+			if(detectors[idet]){
+				iret[idet]= new int64_t(-1);
+				Task* task = new Task(new func2_t<int64_t,timerIndex,int64_t>(&slsDetector::setTimer,
+						detectors[idet],index,t,iret[idet]));
+				threadpool->add_task(task);
+			}
+		}
+		threadpool->startExecuting();
+		threadpool->wait_for_tasks_to_complete();
+		for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
+			if(detectors[idet]){
+				if(iret[idet] != NULL){
+					if (ret==-100)
+						ret=*iret[idet];
+					else if (ret!=*iret[idet])
+						ret=-1;
+					delete iret[idet];
+				}else ret=-1;
+				if(detectors[idet]->getErrorMask())
+					setErrorMask(getErrorMask()|(1<<idet));
+			}
+		}
+	}
+
+	if (index==SAMPLES_JCTB)
+		setDynamicRange();
+
+	thisMultiDetector->timerValue[index]=ret;
+	return ret;
+}
 
 
-  
-  for (i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-    if (detectors[i]) {
-      ret=detectors[i]->setTimer(index,t);
-      if(detectors[i]->getErrorMask())
-	setErrorMask(getErrorMask()|(1<<i));
-      if (ret1==-100)
-	ret1=ret;
-      else if (ret!=ret1)
-	ret1=-1;
-      
-    }
-  }
-  if (index==SAMPLES_JCTB)
-    setDynamicRange();
-  // check return values!!!
-  
-  thisMultiDetector->timerValue[index]=ret1;
-
-  return ret1;
-};
 
  
 int64_t multiSlsDetector::getTimeLeft(timerIndex index){
@@ -5142,20 +5159,41 @@ slsReceiverDefs::fileFormat multiSlsDetector::setFileFormat(fileFormat f) {
 
 
 int multiSlsDetector::setFileIndex(int i) {
-  int ret=-100, ret1;
 
-  for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
-    if (detectors[idet]) {
-      ret1=detectors[idet]->setFileIndex(i);
-      if(detectors[idet]->getErrorMask())
-	setErrorMask(getErrorMask()|(1<<idet));
-      if (ret==-100)
-	ret=ret1;
-      else if (ret!=ret1)
-	ret=-1;
-    }
-  }
-  return ret;
+	int ret=-100;
+
+	if(!threadpool){
+		cout << "Error in creating threadpool. Exiting" << endl;
+		return -1;
+	}else{
+		//return storage values
+		int* iret[thisMultiDetector->numberOfDetectors];
+		for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
+			if(detectors[idet]){
+				iret[idet]= new int(-1);
+				Task* task = new Task(new func1_t<int,int>(&slsDetector::setFileIndex,
+						detectors[idet],i,iret[idet]));
+				threadpool->add_task(task);
+			}
+		}
+		threadpool->startExecuting();
+		threadpool->wait_for_tasks_to_complete();
+		for(int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++){
+			if(detectors[idet]){
+				if(iret[idet] != NULL){
+					if (ret==-100)
+						ret=*iret[idet];
+					else if (ret!=*iret[idet])
+						ret=-1;
+					delete iret[idet];
+				}else ret=-1;
+				if(detectors[idet]->getErrorMask())
+					setErrorMask(getErrorMask()|(1<<idet));
+			}
+		}
+	}
+
+	return ret;
 }
 
 

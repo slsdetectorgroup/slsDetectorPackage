@@ -1131,15 +1131,7 @@ void qTabAdvanced::updateAllTrimbitsFromServer(){
 
 	int ret = myDet->setAllTrimbits(-1);
 	qDefs::checkErrorMessage(myDet,"qTabAdvanced::updateAllTrimbitsFromServer");
-	if(ret<0){
-		qDefs::Message(qDefs::WARNING,"Inconsistent value from alltrimbits value.\n"
-				"Setting it for all detectors involved to 0.","qTabAdvanced::updateAllTrimbitsFromServer");
-		//set to default
-		spinSetAllTrimbits->setValue(0);
-		myDet->setAllTrimbits(0);
-		qDefs::checkErrorMessage(myDet,"qTabAdvanced::updateAllTrimbitsFromServer");
-	}else
-		spinSetAllTrimbits->setValue(ret);
+	spinSetAllTrimbits->setValue(ret);
 
 	connect(spinSetAllTrimbits,	SIGNAL(editingFinished()),	this,	SLOT(SetAllTrimbits()));
 }

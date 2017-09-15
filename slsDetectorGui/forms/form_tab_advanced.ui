@@ -142,7 +142,7 @@
        <rect>
         <x>230</x>
         <y>15</y>
-        <width>242</width>
+        <width>226</width>
         <height>44</height>
        </rect>
       </property>
@@ -782,6 +782,9 @@ An extension given by the modules serial number will be attached.
         <width>86</width>
         <height>25</height>
        </rect>
+      </property>
+      <property name="minimum">
+       <number>-1</number>
       </property>
       <property name="maximum">
        <number>63</number>

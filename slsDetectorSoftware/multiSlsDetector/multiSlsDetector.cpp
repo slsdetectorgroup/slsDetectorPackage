@@ -2828,41 +2828,74 @@ int multiSlsDetector::setRateCorrection(double t){
 #ifdef VERBOSE
 	std::cout<< "Setting rate correction with dead time "<< thisMultiDetector->tDead << std::endl;
 #endif
+	int ret=OK;
+	int posmax=thisMultiDetector->numberOfDetectors;
 
+	// eiger return value is ok/fail
 	if (getDetectorsType() == EIGER){
-		int ret = OK, ret1= OK;
-		for (int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet) {
-			if (detectors[idet]) {
-				ret=detectors[idet]->setRateCorrection(t);
-				if(detectors[idet]->getErrorMask())
-					setErrorMask(getErrorMask()|(1<<idet));
-				if (ret != OK)
-					ret1=FAIL;
+		if(!threadpool){
+			cout << "Error in creating threadpool. Exiting" << endl;
+			return FAIL;
+		}else{
+			int* iret[posmax];
+			for(int idet=0; idet<posmax; ++idet){
+				if(detectors[idet]){
+					iret[idet]= new int(OK);
+					Task* task = new Task(new func1_t<int,double>(&slsDetector::setRateCorrection,
+							detectors[idet],t,iret[idet]));
+					threadpool->add_task(task);
+				}
+			}
+			threadpool->startExecuting();
+			threadpool->wait_for_tasks_to_complete();
+			for(int idet=0; idet<posmax; ++idet){
+				if(detectors[idet]){
+					if(iret[idet] != NULL){
+						if(*iret[idet] != OK)
+							ret = FAIL;
+						delete iret[idet];
+					}else  ret = FAIL;
+					if(detectors[idet]->getErrorMask())
+						setErrorMask(getErrorMask()|(1<<idet));
+				}
 			}
 		}
-		return ret1;	//only success/fail
+		return ret;
 	}
 
-	//mythen, others
+
+	// mythen, others
 	if (t==0) {
 		thisMultiDetector->correctionMask&=~(1<<RATE_CORRECTION);
 		return thisMultiDetector->correctionMask&(1<<RATE_CORRECTION);
 	} else
 		thisMultiDetector->correctionMask|=(1<<RATE_CORRECTION);
 
-	int ret, ret1=-100;
-	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet) {
-		if (detectors[idet]) {
-			ret=detectors[idet]->setRateCorrection(t);
-			if(detectors[idet]->getErrorMask())
-				setErrorMask(getErrorMask()|(1<<idet));
-			if (ret1==-100)
-				ret1=ret;
-			else if (ret!=ret1)
-				ret1=-1;
+	ret = -100;
+	if(!threadpool){
+		cout << "Error in creating threadpool. Exiting" << endl;
+		return -1;
+	}else{
+		int* iret[posmax];
+		for(int idet=0; idet<posmax; ++idet){
+			if(detectors[idet]){
+				iret[idet]= new int(-1);
+				Task* task = new Task(new func1_t<int,double>(&slsDetector::setRateCorrection,
+						detectors[idet],t,iret[idet]));
+				threadpool->add_task(task);
+			}
+		}
+		threadpool->startExecuting();
+		threadpool->wait_for_tasks_to_complete();
+		for(int idet=0; idet<posmax; ++idet){
+			if(detectors[idet]){
+				if(iret[idet] != NULL)
+					delete iret[idet];
+				if(detectors[idet]->getErrorMask())
+					setErrorMask(getErrorMask()|(1<<idet));
+			}
 		}
 	}
-
 	return thisMultiDetector->correctionMask&(1<<RATE_CORRECTION);
 }
 
@@ -2889,22 +2922,44 @@ int multiSlsDetector::getRateCorrection(double &t){
 
 double multiSlsDetector::getRateCorrectionTau(){
 
-	double ret1=-100,ret;
-	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet) {
-		if (detectors[idet]) {
-			ret=detectors[idet]->getRateCorrectionTau();
-			if (ret1==-100)
-				ret1=ret;
-			else if (ret!=ret1){
-				std::cout<< "Rate correction is different for different readouts " << std::endl;
-				ret1=-1;
+	double ret=-100.0;
+	int posmax = thisMultiDetector->numberOfDetectors;
+
+	if(!threadpool){
+		cout << "Error in creating threadpool. Exiting" << endl;
+		return -1;
+	}else{
+		double* iret[posmax];
+		for(int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet){
+			if(detectors[idet]){
+				iret[idet]= new double(-1);
+				Task* task = new Task(new func0_t<double>(&slsDetector::getRateCorrectionTau,
+						detectors[idet],iret[idet]));
+				threadpool->add_task(task);
+			}
+		}
+		threadpool->startExecuting();
+		threadpool->wait_for_tasks_to_complete();
+
+		for(int idet=0; idet<posmax; ++idet){
+			if(detectors[idet]){
+				if(iret[idet] != NULL){
+					if(*iret[idet] == -100.0)
+						ret = *iret[idet];
+					else if ((ret - *iret[idet]) > 0.000000001) {
+						std::cout<< "Rate correction is different for different readouts " << std::endl;
+						ret=-1;
+					}
+					delete iret[idet];
+				}else  ret = -1;
+				if(detectors[idet]->getErrorMask())
+					setErrorMask(getErrorMask()|(1<<idet));
 			}
 		}
 	}
 
 	if (getDetectorsType() == EIGER)
-		return ret1;
-
+		return ret;
 
 
 	//only mythen
@@ -2916,9 +2971,9 @@ double multiSlsDetector::getRateCorrectionTau(){
 #ifdef VERBOSE
 		std::cout<< "Rate correction is disabled " << std::endl;
 #endif
-		ret1=0;
+		ret=0;
 	}
-	return ret1;
+	return ret;
 
 };
 

@@ -204,6 +204,9 @@ class multiSlsDetector  : public slsDetectorUtils {
     /** external gui */
     bool externalgui;
 
+    /** receiver online flag - is set if the receiver is connected, unset if socket connection is not possible  */
+    int receiverOnlineFlag;
+
   } sharedMultiSlsDetector;
 
 
@@ -1232,6 +1235,11 @@ class multiSlsDetector  : public slsDetectorUtils {
 	\returns number of frames caught by receiver
   */
   int getFramesCaughtByReceiver();
+
+  /**   gets the number of frames caught by any one receiver (to avoid using threadpool)
+	\returns number of frames caught by any one receiver (master receiver if exists)
+  */
+  int getFramesCaughtByAnyReceiver();
 
   /**  gets the current frame index of receiver
      \returns current frame index of receiver

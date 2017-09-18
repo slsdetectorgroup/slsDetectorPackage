@@ -2295,10 +2295,9 @@ string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action) {
 
 
 	myDet->setOnline(ONLINE_FLAG);
+	int r_online = myDet->setReceiverOnline(ONLINE_FLAG);
 
-	if (myDet->getExternalGuiFlag())
-		myDet->setReceiverOnline(ONLINE_FLAG);
-	else if (myDet->setReceiverOnline(ONLINE_FLAG) == ONLINE_FLAG) {
+	if ((!myDet->getExternalGuiFlag()) && (r_online == ONLINE_FLAG)) {
 		// command line: must be off, if receiver on or there was -1, then
 		if (myDet->enableDataStreamingFromReceiver(-1) != 0){
 			//switch it off, if error
@@ -2310,7 +2309,7 @@ string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action) {
 
 	if(myDet->acquire() == FAIL)
 		return string("acquire unsuccessful");
-	if(myDet->setReceiverOnline()==ONLINE_FLAG){
+	if(r_online){
 		char answer[100];
 		sprintf(answer,"\nAcquired %d",myDet->getFramesCaughtByReceiver());
 		return string(answer);

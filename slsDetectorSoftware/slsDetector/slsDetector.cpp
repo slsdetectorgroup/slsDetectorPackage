@@ -6111,7 +6111,8 @@ string slsDetector::setReceiver(string receiverIP){
 				else
 					printf("Disabling Data Streaming\n");
 				// push client state to receiver
-				parentDet->enableDataStreamingFromReceiver(clientSockets);
+				/*parentDet->enableDataStreamingFromReceiver(clientSockets);*/
+				enableDataStreamingFromReceiver(clientSockets);
 				pthread_mutex_unlock(&ms);
 			}
 		}
@@ -7587,19 +7588,23 @@ slsDetectorDefs::synchronizationMode slsDetector::setSynchronization(synchroniza
 
 /*receiver*/
 int slsDetector::setReceiverOnline(int off) {
-  //	int prev = thisDetector->receiverOnlineFlag;
-	if (off!=GET_ONLINE_FLAG) {
-		if(strcmp(thisDetector->receiver_hostname,"none")){
-			thisDetector->receiverOnlineFlag=off;
-			if (thisDetector->receiverOnlineFlag==ONLINE_FLAG){
-				setReceiverTCPSocket();
-				if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG){
-					std::cout << "cannot connect to receiver" << endl;
-					setErrorMask((getErrorMask())|(CANNOT_CONNECT_TO_RECEIVER));
-				}
-			}
-		}
-	}
+  	if (off!=GET_ONLINE_FLAG) {
+  		// setting flag to offline
+  		if (off == OFFLINE_FLAG)
+  			thisDetector->receiverOnlineFlag = off;
+  		// set flag to online only if hostname not none
+  		else if(strcmp(thisDetector->receiver_hostname,"none")){
+  			thisDetector->receiverOnlineFlag=off;
+  		}
+  		if (thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+  			setReceiverTCPSocket();
+  			// error in connecting
+  			if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG){
+  				std::cout << "cannot connect to receiver" << endl;
+  				setErrorMask((getErrorMask())|(CANNOT_CONNECT_TO_RECEIVER));
+  			}
+  		}
+  	}
 	return thisDetector->receiverOnlineFlag;
 }
 

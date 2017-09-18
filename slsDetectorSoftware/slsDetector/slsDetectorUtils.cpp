@@ -163,7 +163,7 @@ int  slsDetectorUtils::acquire(int delflag){
   }
 
 
-  for(int im=0;im<nm;im++) {
+  for(int im=0;im<nm;++im) {
 
 #ifdef VERBOSE
     cout << " starting measurement "<< im << " of " << nm << endl;
@@ -184,7 +184,7 @@ int  slsDetectorUtils::acquire(int delflag){
       executeAction(startScript);
     }
 
-    for (int is0=0; is0<ns0; is0++) {
+    for (int is0=0; is0<ns0; ++is0) {
       //  cout << "scan0 loop" << endl;
 
       if (*stoppedFlag==0) {
@@ -193,7 +193,7 @@ int  slsDetectorUtils::acquire(int delflag){
 	break;
   
 
-      for (int is1=0; is1<ns1; is1++) {
+      for (int is1=0; is1<ns1; ++is1) {
 	// cout << "scan1 loop" << endl;
 
 	if (*stoppedFlag==0) {
@@ -208,7 +208,7 @@ int  slsDetectorUtils::acquire(int delflag){
 
 	ResetPositionIndex();
      
-	for (int ip=0; ip<np; ip++) {
+	for (int ip=0; ip<np; ++ip) {
 
 	  //   cout << "positions " << endl;
 	  if (*stoppedFlag==0) {

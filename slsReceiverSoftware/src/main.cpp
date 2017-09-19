@@ -14,6 +14,7 @@
 
 #include <sys/types.h>	//wait
 #include <sys/wait.h>	//wait
+#include <unistd.h> 	//usleep
 #include <syscall.h>
 using namespace std;
 
@@ -78,7 +79,7 @@ int main(int argc, char *argv[]) {
 	asa.sa_handler=SIG_IGN;					// handler function
 	sigemptyset(&asa.sa_mask);				// dont block additional signals during invocation of handler
 	if (sigaction(SIGPIPE, &asa, NULL) == -1) {
-		bprintf(RED, "Could not set handler function for SIGCHILD\n");
+		bprintf(RED, "Could not set handler function for SIGPIPE\n");
 	}
 
 
@@ -142,7 +143,7 @@ int main(int argc, char *argv[]) {
 	FILE_LOG(logINFO) << "Ready ... ";
 	bprintf(GRAY, "\n[ Press \'Ctrl+c\' to exit ]\n");
 	while(keeprunning)
-		usleep(5 * 1000 * 1000);
+		pause();
 
 	delete receiver;
 	bprintf(BLUE,"Exiting [ Tid: %ld ]\n", (long)syscall(SYS_gettid));

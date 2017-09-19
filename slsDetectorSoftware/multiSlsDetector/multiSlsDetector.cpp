@@ -5229,6 +5229,11 @@ string multiSlsDetector::setFileName(string s) {
 	string ret = "error";
 	int posmax = thisMultiDetector->numberOfDetectors;
 
+	if(!s.empty()){
+		fileIO::setFileName(s);
+		s=createReceiverFilePrefix();
+	}
+
 	if(!threadpool){
 		cout << "Error in creating threadpool. Exiting" << endl;
 		return string("");
@@ -5259,6 +5264,14 @@ string multiSlsDetector::setFileName(string s) {
 			}
 		}
 	}
+
+	if ((ret != "error") || (ret != "")) {
+#ifdef VERBOSE
+			std::cout << "Complete file prefix from receiver: " << ret << std::endl;
+#endif
+		fileIO::setFileName(getNameFromReceiverFilePrefix(ret));
+	}
+
 	return ret;
 }
 

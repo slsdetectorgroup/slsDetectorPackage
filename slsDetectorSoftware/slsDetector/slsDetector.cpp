@@ -7774,17 +7774,14 @@ string slsDetector::setFileName(string s) {
 	int ret = FAIL;
 	char arg[MAX_STR_LENGTH]="";
 	char retval[MAX_STR_LENGTH]="";
+	string sretval="";
 
-	if(!s.empty()){
+	/*if(!s.empty()){
 		pthread_mutex_lock(&ms);
 		fileIO::setFileName(s);
-		/*if(thisDetector->myDetectorType == EIGER)
-			parentDet->setDetectorIndex(posId);
-		else if(parentDet->getNumberOfDetectors()>1)
-			parentDet->setDetectorIndex(-1);*/
 		s=parentDet->createReceiverFilePrefix();
 		pthread_mutex_unlock(&ms);
-	}
+	}*/
 
 	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
 		strcpy(arg,s.c_str());
@@ -7799,20 +7796,25 @@ string slsDetector::setFileName(string s) {
 #ifdef VERBOSE
 			std::cout << "Complete file prefix from receiver: " << retval << std::endl;
 #endif
+			/*
 			pthread_mutex_lock(&ms);
 			fileIO::setFileName(parentDet->getNameFromReceiverFilePrefix(string(retval)));
 			pthread_mutex_unlock(&ms);
+			*/
+			sretval = fileIO::getNameFromReceiverFilePrefix(string(retval));
 
 		}
+
 		if(ret==FORCE_UPDATE)
 			updateReceiver();
 	}
 
-	pthread_mutex_lock(&ms);
+	/*pthread_mutex_lock(&ms);
 	s = fileIO::getFileName();
 	pthread_mutex_unlock(&ms);
 
-	return s;
+	return s;*/
+	return sretval;
 }
 
 

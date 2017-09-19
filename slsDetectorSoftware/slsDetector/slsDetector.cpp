@@ -190,9 +190,9 @@ slsDetector::slsDetector(int pos, int id, multiSlsDetector *p) :slsDetectorUtils
     if it fails the detector id is incremented until it succeeds
     */
     shmId=initSharedMemory(type,id);
-    id++;
+    ++id;
   }
-  id--;
+  --id;
 #ifdef VERBOSE
   std::cout<< "Detector id is " << id << std::endl;
 #endif
@@ -238,9 +238,9 @@ slsDetector::slsDetector(int pos, detectorType type, int id, multiSlsDetector *p
     if it fails the detector id is incremented until it succeeds
     */
     shmId=initSharedMemory(type,id);
-    id++;
+    ++id;
   }
-  id--;
+  --id;
 #ifdef VERBOSE
   std::cout<< "Detector id is " << id << " type is " << type << std::endl;
 #endif
@@ -304,9 +304,9 @@ slsDetector::slsDetector(int pos, char *name, int id, int cport,multiSlsDetector
     if it fails the detector id is incremented until it succeeds
     */
     shmId=initSharedMemory(type,id);
-    id++;
+    ++id;
   }
-  id--;
+  --id;
 #ifdef VERBOSE
   std::cout<< "Detector id is " << id << std::endl;
 #endif
@@ -782,13 +782,13 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->flippedData[1] = 0;
     thisDetector->zmqport = 0;
 
-    for (int ia=0; ia<MAX_ACTIONS; ia++) {
+    for (int ia=0; ia<MAX_ACTIONS; ++ia) {
       strcpy(thisDetector->actionScript[ia],"none");
       strcpy(thisDetector->actionParameter[ia],"none");
     }
 
 
-    for (int iscan=0; iscan<MAX_SCAN_LEVELS; iscan++) {
+    for (int iscan=0; iscan<MAX_SCAN_LEVELS; ++iscan) {
 
       thisDetector->scanMode[iscan]=0;
       strcpy(thisDetector->scanScript[iscan],"none");
@@ -833,7 +833,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
   fferrors=(double*)(goff+thisDetector->fferroff);
   detectorModules=(sls_detector_module*)(goff+ thisDetector->modoff);
 #ifdef VERBOSE
-  //   for (int imod=0; imod< thisDetector->nModsMax; imod++)
+  //   for (int imod=0; imod< thisDetector->nModsMax; ++imod)
   //  std::cout<< hex << detectorModules+imod << dec <<std::endl;
 #endif
 
@@ -948,7 +948,7 @@ int slsDetector::initializeDetectorStructure() {
   //p2=(char*)thisDetector;
 
   /** for each of the detector modules up to the maximum number which can be installed initlialize the sls_detector_module structure \sa ::sls_detector_module*/
-  for (int imod=0; imod<thisDetector->nModsMax; imod++) {
+  for (int imod=0; imod<thisDetector->nModsMax; ++imod) {
 
 
 
@@ -967,37 +967,37 @@ int slsDetector::initializeDetectorStructure() {
     thisMod->reg=0;
 
     /** initializes the dacs values to 0 */
-    for (int idac=0; idac<thisDetector->nDacs; idac++) {
+    for (int idac=0; idac<thisDetector->nDacs; ++idac) {
       *(dacs+idac+thisDetector->nDacs*imod)=0;
     }
 
 
     /** initializes the adc values to 0 */
-    for (int iadc=0; iadc<thisDetector->nAdcs; iadc++) {
+    for (int iadc=0; iadc<thisDetector->nAdcs; ++iadc) {
       *(adcs+iadc+thisDetector->nAdcs*imod)=0;
     }
 
 
 
     /** initializes the chip registers to 0 */
-    for (int ichip=0; ichip<thisDetector->nChips; ichip++) {
+    for (int ichip=0; ichip<thisDetector->nChips; ++ichip) {
       *(chipregs+ichip+thisDetector->nChips*imod)=-1;
     }
 
 
     /** initializes the channel registers to 0 */
-    for (int ichan=0; ichan<thisDetector->nChans*thisDetector->nChips; ichan++) {
+    for (int ichan=0; ichan<thisDetector->nChans*thisDetector->nChips; ++ichan) {
       *(chanregs+ichan+thisDetector->nChips*thisDetector->nChans*imod)=-1;
     }
 
     /** initializes the gain values to 0 */
-    for (int igain=0; igain<thisDetector->nGain; igain++) {
+    for (int igain=0; igain<thisDetector->nGain; ++igain) {
       *(gain+igain+thisDetector->nGain*imod)=0;
     }
 
 
     /** initializes the offset values to 0 */
-    for (int ioffset=0; ioffset<thisDetector->nOffset; ioffset++) {
+    for (int ioffset=0; ioffset<thisDetector->nOffset; ++ioffset) {
       *(offset+ioffset+thisDetector->nOffset*imod)=0;
     }
 
@@ -1733,7 +1733,7 @@ int slsDetector::getTotalNumberOfChannels() {
     if (thisDetector->nChan[X]>=32) {
       if (thisDetector->nROI>0) {
 	thisDetector->nChan[X]-=32;
-	for (int iroi=0; iroi<thisDetector->nROI; iroi++)
+	for (int iroi=0; iroi<thisDetector->nROI; ++iroi)
 	  thisDetector->nChan[X]+=thisDetector->roiLimits[iroi].xmax-thisDetector->roiLimits[iroi].xmin+1;
       }
     }
@@ -2493,7 +2493,7 @@ dacs_t slsDetector::setDAC(dacs_t val, dacIndex index, int mV, int imod){
 	      *(dacs+index+imod*thisDetector->nDacs)=retval[0];
 	    }
 	    else {
-	      for (imod=0; imod<thisDetector->nModsMax; imod++)
+	      for (imod=0; imod<thisDetector->nModsMax; ++imod)
 		*(dacs+index+imod*thisDetector->nDacs)=retval[0];
 	    }
 	  }
@@ -2605,9 +2605,9 @@ int slsDetector::setChannel(int64_t reg, int ichan, int ichip, int imod){
       chamax=thisDetector->nChans;
       }*/
 
-  // for (int im=mmin; im<mmax; im++) {
-  //  for (int ichi=chimin; ichi<chimax; ichi++) {
-  //    for (int icha=chamin; icha<chamax; icha++) {
+  // for (int im=mmin; im<mmax; ++im) {
+  //  for (int ichi=chimin; ichi<chimax; ++ichi) {
+  //    for (int icha=chamin; icha<chamax; ++icha) {
   myChan.chan=ichan;//icha;
   myChan.chip=ichip;//ichi;
   myChan.module=imod;//im;
@@ -2675,9 +2675,9 @@ int slsDetector::setChannel(sls_detector_channel chan){
 
 
 
-      for (int im=mmin; im<mmax; im++) {
-	for (int ichi=chimin; ichi<chimax; ichi++) {
-	  for (int icha=chamin; icha<chamax; icha++) {
+      for (int im=mmin; im<mmax; ++im) {
+	for (int ichi=chimin; ichi<chimax; ++ichi) {
+	  for (int icha=chamin; icha<chamax; ++icha) {
 
 	    *(chanregs+im*thisDetector->nChans*thisDetector->nChips+ichi*thisDetector->nChips+icha)=retval;
 
@@ -2783,14 +2783,14 @@ int slsDetector::setChip(int reg, int ichip, int imod){
 
   myChip.nchan=thisDetector->nChans;
   myChip.reg=reg;
-  for (int im=mmin; im<mmax; im++) {
-    for (int ichi=chimin; ichi<chimax; ichi++) {
+  for (int im=mmin; im<mmax; ++im) {
+    for (int ichi=chimin; ichi<chimax; ++ichi) {
       myChip.chip=ichi;
       myChip.module=im;
       if (chanregs)
 	myChip.chanregs=(chanregs+ichi*thisDetector->nChans+im*thisDetector->nChans*thisDetector->nChips);
       else {
-	for (int i=0; i<thisDetector->nChans; i++)
+	for (int i=0; i<thisDetector->nChans; ++i)
 	  chregs[i]=-1;
 	myChip.chanregs=chregs;
       }
@@ -2889,7 +2889,7 @@ slsDetectorDefs::sls_detector_chip slsDetector::getChip(int ichip, int imod){
     if (chipregs)
       *(chipregs+ichip+imod*thisDetector->nChips)=myChip.reg;
     if (chanregs) {
-      for (int ichan=0; ichan<thisDetector->nChans; ichan++)
+      for (int ichan=0; ichan<thisDetector->nChans; ++ichan)
 	*(chanregs+imod*thisDetector->nChans*thisDetector->nChips+ichip*thisDetector->nChans+ichan)=*((myChip.chanregs)+ichan);
     }
   }
@@ -2927,7 +2927,7 @@ int slsDetector::setModule(int reg, int imod){
 
 
 
-  for (int im=mmin; im<mmax; im++) {
+  for (int im=mmin; im<mmax; ++im) {
 
     myModule.module=im;
     myModule.nchan=thisDetector->nChans;
@@ -2947,34 +2947,34 @@ int slsDetector::setModule(int reg, int imod){
     }
 
 
-    for (int i=0; i<thisDetector->nAdcs; i++)
+    for (int i=0; i<thisDetector->nAdcs; ++i)
       ads[i]=-1;
 
     if (chanregs)
       myModule.chanregs=chanregs+im*thisDetector->nChips*thisDetector->nChans;
     else {
-      for (int i=0; i<thisDetector->nChans*thisDetector->nChips; i++)
+      for (int i=0; i<thisDetector->nChans*thisDetector->nChips; ++i)
 	charegs[i]=-1;
       myModule.chanregs=charegs;
     }
     if (chipregs)
       myModule.chipregs=chanregs+im*thisDetector->nChips;
     else {
-      for (int ichip=0; ichip<thisDetector->nChips; ichip++)
+      for (int ichip=0; ichip<thisDetector->nChips; ++ichip)
 	chiregs[ichip]=-1;
       myModule.chipregs=chiregs;
     }
     if (dacs)
       myModule.dacs=dacs+im*thisDetector->nDacs;
     else {
-      for (int i=0; i<thisDetector->nDacs; i++)
+      for (int i=0; i<thisDetector->nDacs; ++i)
 	das[i]=-1;
       myModule.dacs=das;
     }
     if (adcs)
       myModule.adcs=adcs+im*thisDetector->nAdcs;
     else {
-      for (int i=0; i<thisDetector->nAdcs; i++)
+      for (int i=0; i<thisDetector->nAdcs; ++i)
 	ads[i]=-1;
       myModule.adcs=ads;
     }
@@ -3055,25 +3055,25 @@ int slsDetector::setModule(sls_detector_module module, int iodelay, int tau, int
 
 				if(thisDetector->myDetectorType != JUNGFRAU){
 					if(tb) {
-						for (int ichip=0; ichip<thisDetector->nChips; ichip++) {
+						for (int ichip=0; ichip<thisDetector->nChips; ++ichip) {
 							if (chipregs)
 								chipregs[ichip+thisDetector->nChips*imod]=module.chipregs[ichip];
 
 							if (chanregs) {
-								for (int i=0; i<thisDetector->nChans; i++) {
+								for (int i=0; i<thisDetector->nChans; ++i) {
 									chanregs[i+ichip*thisDetector->nChans+thisDetector->nChips*thisDetector->nChans*imod]=module.chanregs[ichip*thisDetector->nChans+i];
 								}
 							}
 						}
 					}
 					if (adcs) {
-						for (int i=0; i<thisDetector->nAdcs; i++)
+						for (int i=0; i<thisDetector->nAdcs; ++i)
 							adcs[i+imod*thisDetector->nAdcs]=module.adcs[i];
 					}
 				}
 
 				if (dacs) {
-					for (int i=0; i<thisDetector->nDacs; i++)
+					for (int i=0; i<thisDetector->nDacs; ++i)
 						dacs[i+imod*thisDetector->nDacs]=module.dacs[i];
 				}
 
@@ -3085,12 +3085,12 @@ int slsDetector::setModule(sls_detector_module module, int iodelay, int tau, int
 		}
 
 		if ((thisDetector->nGain) && (gainval) && (gain)) {
-			for (int i=0; i<thisDetector->nGain; i++)
+			for (int i=0; i<thisDetector->nGain; ++i)
 				gain[i+imod*thisDetector->nGain]=gainval[i];
 		}
 
 		if ((thisDetector->nOffset) && (offsetval) && (offset))  {
-			for (int i=0; i<thisDetector->nOffset; i++)
+			for (int i=0; i<thisDetector->nOffset; ++i)
 				offset[i+imod*thisDetector->nOffset]=offsetval[i];
 		}
 
@@ -3185,25 +3185,25 @@ slsDetectorDefs::sls_detector_module  *slsDetector::getModule(int imod){
 				thisDetector->nAdcs=myMod->nadc;
 
 				if(thisDetector->myDetectorType != JUNGFRAU){
-					for (int ichip=0; ichip<thisDetector->nChips; ichip++) {
+					for (int ichip=0; ichip<thisDetector->nChips; ++ichip) {
 						if (chipregs)
 							chipregs[ichip+thisDetector->nChips*imod]=myMod->chipregs[ichip];
 
 						if (chanregs) {
-							for (int i=0; i<thisDetector->nChans; i++) {
+							for (int i=0; i<thisDetector->nChans; ++i) {
 								chanregs[i+ichip*thisDetector->nChans+thisDetector->nChips*thisDetector->nChans*imod]=myMod->chanregs[ichip*thisDetector->nChans+i];
 							}
 						}
 					}
 
 					if (adcs) {
-						for (int i=0; i<thisDetector->nAdcs; i++)
+						for (int i=0; i<thisDetector->nAdcs; ++i)
 							adcs[i+imod*thisDetector->nAdcs]=myMod->adcs[i];
 					}
 				}
 
 				if (dacs) {
-					for (int i=0; i<thisDetector->nDacs; i++)
+					for (int i=0; i<thisDetector->nDacs; ++i)
 						dacs[i+imod*thisDetector->nDacs]=myMod->dacs[i];
 				}
 				(detectorModules+imod)->gain=myMod->gain;
@@ -3214,12 +3214,12 @@ slsDetectorDefs::sls_detector_module  *slsDetector::getModule(int imod){
 		}
 
 		if ((thisDetector->nGain) && (gainval) && (gain)) {
-			for (int i=0; i<thisDetector->nGain; i++)
+			for (int i=0; i<thisDetector->nGain; ++i)
 				gain[i+imod*thisDetector->nGain]=gainval[i];
 		}
 
 		if ((thisDetector->nOffset) && (offsetval) && (offset))  {
-			for (int i=0; i<thisDetector->nOffset; i++)
+			for (int i=0; i<thisDetector->nOffset; ++i)
 				offset[i+imod*thisDetector->nOffset]=offsetval[i];
 		}
 
@@ -3682,7 +3682,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 			modma=thisDetector->nMod[X]*thisDetector->nMod[Y];
 		}
 
-		for (im=modmi; im<modma; im++) {
+		for (im=modmi; im<modma; ++im) {
 			ostringstream ostfn, oscfn;
 			myMod->module=im;
 
@@ -3823,12 +3823,12 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 int slsDetector::getChanRegs(double* retval,bool fromDetector){
   int n=getTotalNumberOfChannels();
   if(fromDetector){
-    for(int im=0;im<setNumberOfModules();im++)
+    for(int im=0;im<setNumberOfModules();++im)
       getModule(im);
   }
   //the original array has 0 initialized
   if(chanregs){
-    for (int i=0; i<n; i++)
+    for (int i=0; i<n; ++i)
       retval[i] = (double) (chanregs[i] & TRIMBITMASK);
   }
   return n;
@@ -4235,7 +4235,7 @@ int* slsDetector::getDataFromDetector(int *retval){
 			}
 			return NULL;
 		}
-		// for (int ib=0; ib<thisDetector->dataBytes/8; ib++)
+		// for (int ib=0; ib<thisDetector->dataBytes/8; ++ib)
 		//   cout << ((*(((u_int64_t*)retval)+ib))>>17&1) ;
 
 
@@ -4266,7 +4266,7 @@ int* slsDetector::readAll(){
 
       while ((retval=getDataFromDetector())){
 #ifdef VERBOSE
-	i++;
+	++i;
 	std::cout<< i << std::endl;
 #endif
 	dataQueue.push(retval);
@@ -4328,7 +4328,7 @@ int* slsDetector::startAndReadAll(){
   //#endif
   while ((retval=getDataFromDetector())){
 #ifdef VERBOSE
-    i++;
+    ++i;
     std::cout<< i << std::endl;
     //#else
     //std::cout<< "-" << flush;
@@ -4346,7 +4346,7 @@ int* slsDetector::startAndReadAll(){
 #endif
   return dataQueue.front(); // check what we return!
   /* while ((retval=getDataFromDetectorNoWait()))
-     i++;
+     ++i;
      #ifdef VERBOSE
      std::cout<< "Received " << i << " frames"<< std::endl;
      #endif
@@ -5119,10 +5119,10 @@ int slsDetector::setROI(int n,ROI roiLimits[]){
 	//sort ascending order
 	int temp;
 
-	for(int i=0;i<n;i++){
+	for(int i=0;i<n;++i){
 	  
 	  //	  cout << "*** ROI "<< i << " xmin " << roiLimits[i].xmin << " xmax "<< roiLimits[i].xmax << endl;
-		for(int j=i+1;j<n;j++){
+		for(int j=i+1;j<n;++j){
 			if(roiLimits[j].xmin<roiLimits[i].xmin){
 	
 			  temp=roiLimits[i].xmin;roiLimits[i].xmin=roiLimits[j].xmin;roiLimits[j].xmin=temp;
@@ -5201,13 +5201,13 @@ int slsDetector::sendROI(int n,ROI roiLimits[]){
 
   //update client
   if(ret!=FAIL){
-    for(int i=0;i<retvalsize;i++)
+    for(int i=0;i<retvalsize;++i)
       thisDetector->roiLimits[i]=retval[i];
     thisDetector->nROI = retvalsize;
   }
 
   //#ifdef VERBOSE
-  for(int j=0;j<thisDetector->nROI;j++)
+  for(int j=0;j<thisDetector->nROI;++j)
     cout<<"get"<< roiLimits[j].xmin<<"\t"<<roiLimits[j].xmax<<"\t"<<roiLimits[j].ymin<<"\t"<<roiLimits[j].ymax<<endl;
   //#endif
 
@@ -5366,7 +5366,7 @@ double* slsDetector::decodeData(int *datain, int &nn, double *fdata) {
   if (thisDetector->timerValue[PROBES_NUMBER]==0) {
     if (thisDetector->myDetectorType==JUNGFRAUCTB) {
       
-      for (ichan=0; ichan<nn; ichan++) {
+      for (ichan=0; ichan<nn; ++ichan) {
 	//   //	}
 	dataout[ichan]=*((u_int16_t*)ptr);
 	ptr+=2;
@@ -5376,38 +5376,38 @@ double* slsDetector::decodeData(int *datain, int &nn, double *fdata) {
     } else {
 			switch (nbits) {
 			case 1:
-				for (ibyte=0; ibyte<thisDetector->dataBytes; ibyte++) {
+				for (ibyte=0; ibyte<thisDetector->dataBytes; ++ibyte) {
 				  iptr=ptr[ibyte];//&0x1;
-					for (ipos=0; ipos<8; ipos++) {
+					for (ipos=0; ipos<8; ++ipos) {
 						//	dataout[ibyte*2+ichan]=((iptr&((0xf)<<ichan))>>ichan)&0xf;
 						ival=(iptr>>(ipos))&0x1;
 						dataout[ichan]=ival;
-						ichan++;
+						++ichan;
 					}
 				}
 				break;
 			case 4:
-				for (ibyte=0; ibyte<thisDetector->dataBytes; ibyte++) {
+				for (ibyte=0; ibyte<thisDetector->dataBytes; ++ibyte) {
 					iptr=ptr[ibyte];
-					for (ipos=0; ipos<2; ipos++) {
+					for (ipos=0; ipos<2; ++ipos) {
 						//	dataout[ibyte*2+ichan]=((iptr&((0xf)<<ichan))>>ichan)&0xf;
 						ival=(iptr>>(ipos*4))&0xf;
 						dataout[ichan]=ival;
-						ichan++;
+						++ichan;
 					}
 				}
 				break;
 			case 8:
-				for (ichan=0; ichan<thisDetector->dataBytes; ichan++) {
+				for (ichan=0; ichan<thisDetector->dataBytes; ++ichan) {
 					ival=ptr[ichan]&0xff;
 					dataout[ichan]=ival;
 				}
 				break;
 			case 16:
-				for (ichan=0; ichan<nch; ichan++) {
+				for (ichan=0; ichan<nch; ++ichan) {
 					// dataout[ichan]=0;
 					// ival=0;
-					// for (ibyte=0; ibyte<2; ibyte++) {
+					// for (ibyte=0; ibyte<2; ++ibyte) {
 					// 	iptr=ptr[ichan*2+ibyte];
 					// 	ival|=((iptr<<(ibyte*bytesize))&(0xff<<(ibyte*bytesize)));
 					// }
@@ -5418,13 +5418,13 @@ double* slsDetector::decodeData(int *datain, int &nn, double *fdata) {
 			default:
 			  int mask=0xffffffff;
 			  if(thisDetector->myDetectorType == MYTHEN) mask=0xffffff;
-			  for (ichan=0; ichan<nch; ichan++) {
+			  for (ichan=0; ichan<nch; ++ichan) {
 			    dataout[ichan]=datain[ichan]&mask;
 			  }
 			}
     }
   } else {
-    for (ichan=0; ichan<nch; ichan++) {
+    for (ichan=0; ichan<nch; ++ichan) {
       dataout[ichan]=datain[ichan];
     }
   }
@@ -5485,7 +5485,7 @@ int slsDetector::setFlatFieldCorrection(string fname)
       int nm=getNMods();
       int chpm[nm];
       int mMask[nm];
-      for (int i=0; i<nm; i++) {
+      for (int i=0; i<nm; ++i) {
 	chpm[im]=getChansPerMod(im);
 	mMask[im]=im;
       }
@@ -5512,7 +5512,7 @@ int slsDetector::setFlatFieldCorrection(string fname)
 
 int slsDetector::fillModuleMask(int *mM){
   if (mM)
-    for (int i=0; i<getNMods(); i++)
+    for (int i=0; i<getNMods(); ++i)
       mM[i]=i;
 
   return getNMods();
@@ -5521,7 +5521,7 @@ int slsDetector::fillModuleMask(int *mM){
 
 int slsDetector::setFlatFieldCorrection(double *corr, double *ecorr) {
   if (corr!=NULL) {
-    for (int ichan=0; ichan<thisDetector->nMod[Y]*thisDetector->nMod[X]*thisDetector->nChans*thisDetector->nChips; ichan++) {
+    for (int ichan=0; ichan<thisDetector->nMod[Y]*thisDetector->nMod[X]*thisDetector->nChans*thisDetector->nChips; ++ichan) {
       // #ifdef VERBOSE
       //       std::cout<< ichan << " "<< corr[ichan] << std::endl;
       // #endif
@@ -5559,7 +5559,7 @@ int slsDetector::getFlatFieldCorrection(double *corr, double *ecorr) {
     std::cout<< "Flat field correction is enabled" << std::endl;
 #endif
     if (corr) {
-      for (int ichan=0; ichan<thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChans*thisDetector->nChips; ichan++) {
+      for (int ichan=0; ichan<thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChans*thisDetector->nChips; ++ichan) {
 	//	corr[ichan]=(ffcoefficients[ichan]*ffcoefficients[ichan])/(fferrors[ichan]*fferrors[ichan]);
 	corr[ichan]=ffcoefficients[ichan];
 	if (ecorr) {
@@ -5574,7 +5574,7 @@ int slsDetector::getFlatFieldCorrection(double *corr, double *ecorr) {
     std::cout<< "Flat field correction is disabled" << std::endl;
 #endif
     if (corr)
-      for (int ichan=0; ichan<thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChans*thisDetector->nChips; ichan++) {
+      for (int ichan=0; ichan<thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChans*thisDetector->nChips; ++ichan) {
 	corr[ichan]=1;
 	if (ecorr)
 	  ecorr[ichan]=0;
@@ -5591,7 +5591,7 @@ int slsDetector::flatFieldCorrect(double* datain, double *errin, double* dataout
 #endif
   double e, eo;
   if (thisDetector->correctionMask & (1<<FLAT_FIELD_CORRECTION)) {
-    for (int ichan=0; ichan<thisDetector->nMod[X]*thisDetector->nChans*thisDetector->nChips; ichan++) {
+    for (int ichan=0; ichan<thisDetector->nMod[X]*thisDetector->nChans*thisDetector->nChips; ++ichan) {
       if (errin==NULL) {
 	e=0;
       } else {
@@ -5765,7 +5765,7 @@ int slsDetector::rateCorrect(double* datain, double *errin, double* dataout, dou
 #ifdef VERBOSE
     std::cout<< "Rate correcting data with dead time "<< tau << " and acquisition time "<< t << std::endl;
 #endif
-    for (int ichan=0; ichan<thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChans*thisDetector->nChips; ichan++) {
+    for (int ichan=0; ichan<thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChans*thisDetector->nChips; ++ichan) {
 
       if (errin==NULL) {
 	e=sqrt(datain[ichan]);
@@ -5824,10 +5824,10 @@ int slsDetector::setBadChannelCorrection(int nch, int *chs, int ff) {
     if (nch<MAX_BADCHANS && nch>0) {
       thisDetector->correctionMask|=(1<<DISCARD_BAD_CHANNELS);
       thisDetector->nBadChans=0;
-      for (int ich=0 ;ich<nch; ich++) {
+      for (int ich=0 ;ich<nch; ++ich) {
 	if (chs[ich]>=0 && chs[ich]<getMaxNumberOfChannels()) {
 	  thisDetector->badChansList[ich]=chs[ich];
-	  thisDetector->nBadChans++;
+	  ++thisDetector->nBadChans;
 	  //  cout << "det : " << thisDetector->nBadChans << " " << thisDetector->badChansList[ich] << endl;
 	}
       }
@@ -5836,7 +5836,7 @@ int slsDetector::setBadChannelCorrection(int nch, int *chs, int ff) {
   } else {
     if (nch<MAX_BADCHANS && nch>0) {
       thisDetector->nBadFF=nch;
-      for (int ich=0 ;ich<nch; ich++) {
+      for (int ich=0 ;ich<nch; ++ich) {
 	thisDetector->badFFList[ich]=chs[ich];
       }
     }
@@ -5863,9 +5863,9 @@ int slsDetector::getBadChannelCorrection(int *bad) {
   int ichan;
   if (thisDetector->correctionMask&(1<< DISCARD_BAD_CHANNELS)) {
     if (bad) {
-      for (ichan=0; ichan<thisDetector->nBadChans; ichan++)
+      for (ichan=0; ichan<thisDetector->nBadChans; ++ichan)
 	bad[ichan]=thisDetector->badChansList[ichan];
-      for (int ich=0; ich<thisDetector->nBadFF; ich++)
+      for (int ich=0; ich<thisDetector->nBadFF; ++ich)
 	bad[ichan+ich]=thisDetector->badFFList[ich];
     }
     return thisDetector->nBadChans+thisDetector->nBadFF;
@@ -6125,7 +6125,8 @@ string slsDetector::setReceiver(string receiverIP){
 				else
 					printf("Disabling Data Streaming\n");
 				// push client state to receiver
-				parentDet->enableDataStreamingFromReceiver(clientSockets);
+				/*parentDet->enableDataStreamingFromReceiver(clientSockets);*/
+				enableDataStreamingFromReceiver(clientSockets);
 				pthread_mutex_unlock(&ms);
 			}
 		}
@@ -6445,7 +6446,7 @@ int slsDetector::configureMAC(){
 #endif
 
 
-	for(i=0;i<2;i++){
+	for(i=0;i<2;++i){
 		if(!strcmp(arg[i],"none")){
 			std::cout<< "Configure MAC Error. IP/MAC Addresses not set"<< std::endl;
 			setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
@@ -6590,7 +6591,7 @@ int slsDetector::configureMAC(){
 int slsDetector::getAngularConversion(int &direction,  angleConversionConstant *angconv) {
   direction=thisDetector->angDirection;
   if (angconv) {
-    for (int imod=0; imod<thisDetector->nMods; imod++) {
+    for (int imod=0; imod<thisDetector->nMods; ++imod) {
       (angconv+imod)->center=thisDetector->angOff[imod].center;
       (angconv+imod)->r_conversion=thisDetector->angOff[imod].r_conversion;
       (angconv+imod)->offset=thisDetector->angOff[imod].offset;
@@ -6886,7 +6887,7 @@ int slsDetector::readConfigurationFile(ifstream &infile){
     sargname="none";
     sargval="0";
     getline(infile,str);
-    iline++;
+    ++iline;
 #ifdef VERBOSE
     std::cout<<  str << std::endl;
 #endif
@@ -6912,7 +6913,7 @@ int slsDetector::readConfigurationFile(ifstream &infile){
 #endif
 	strcpy(myargs[iargval],sargname.c_str());
 	args[iargval]=myargs[iargval];
-	iargval++;
+	++iargval;
 	//}
       }
       ans=cmd->executeLine(iargval,args,PUT_ACTION);
@@ -6920,7 +6921,7 @@ int slsDetector::readConfigurationFile(ifstream &infile){
       std::cout<< ans << std::endl;
 #endif
     }
-    iline++;
+    ++iline;
   }
   delete cmd;
   return OK;
@@ -7022,17 +7023,17 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
   char *args[100];
   char myargs[100][1000];
 
-  for (int ia=0; ia<100; ia++) {
+  for (int ia=0; ia<100; ++ia) {
     //args[ia]=new char[1000];
 
     args[ia]=myargs[ia];
   }
 
 
-  for (iv=0; iv<nvar; iv++) {
+  for (iv=0; iv<nvar; ++iv) {
     cout << iv << " " << names[iv] << endl;
     if (names[iv]=="extsig") {
-      for (int is=0; is<nsig; is++) {
+      for (int is=0; is<nsig; ++is) {
 	sprintf(args[0],"%s:%d",names[iv].c_str(),is);
 
 	if (id>=0)
@@ -7109,17 +7110,17 @@ int slsDetector::programFPGA(string fname){
 	FILE* src = fopen(fname.c_str(),"rb");
 	FILE* dst = fopen(destfname.c_str(),"wb");
 	// Remove header (0...11C)
-	for (filepos=0; filepos < 0x11C; filepos++)
+	for (filepos=0; filepos < 0x11C; ++filepos)
 		fgetc(src);
 	// Write 0x80 times 0xFF (0...7F)
-	for (filepos=0; filepos < 0x80; filepos++)
+	for (filepos=0; filepos < 0x80; ++filepos)
 		fputc(0xFF,dst);
 	// Swap bits and write to file
-	for (filepos=0x80; filepos < 0x1000000; filepos++)	{
+	for (filepos=0x80; filepos < 0x1000000; ++filepos)	{
 		x = fgetc(src);
 		if (x < 0) break;
 		y=0;
-		for (i=0; i < 8; i++)
+		for (i=0; i < 8; ++i)
 			y=y| (   (( x & (1<<i) ) >> i)    << (7-i)     );	// This swaps the bits
 		fputc(y,dst);
 	}
@@ -7199,7 +7200,7 @@ int slsDetector::programFPGA(string fname){
 				int count = 66;
 				while(count>0){
 					usleep(1 * 1000 * 1000);
-					count--;
+					--count;
 					printf("Erasing Flash:%d%%\r",(int) (((double)(65-count)/65)*100));
 					std::cout << flush;
 				}
@@ -7348,7 +7349,7 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
     mmin=imod;
     mmax=imod+1;
   }
-  for (int im=mmin; im<mmax; im++) {
+  for (int im=mmin; im<mmax; ++im) {
     ostringstream ostfn;
     ostfn << fname;
     if(thisDetector->myDetectorType != EIGER){
@@ -7388,7 +7389,7 @@ int slsDetector::saveSettingsFile(string fname, int imod) {
     mmin=imod;
     mmax=imod+1;
   }
-  for (int im=mmin; im<mmax; im++) {
+  for (int im=mmin; im<mmax; ++im) {
     ostringstream ostfn;
     if(thisDetector->myDetectorType == EIGER){
     	ostfn << fname << ".sn"  << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER);
@@ -7459,12 +7460,12 @@ int slsDetector::loadCalibrationFile(string fname, int imod) {
   int* gainval=0; int* offsetval=0;
   if(thisDetector->nGain){
 	  gainval=new int[thisDetector->nGain];
-	  for(int i=0;i<thisDetector->nGain;i++)
+	  for(int i=0;i<thisDetector->nGain;++i)
 		  gainval[i] = -1;
   }
   if(thisDetector->nOffset){
 	  offsetval=new int[thisDetector->nOffset];
-	  for(int i=0;i<thisDetector->nOffset;i++)
+	  for(int i=0;i<thisDetector->nOffset;++i)
 		  offsetval[i] = -1;
   }
 
@@ -7476,7 +7477,7 @@ int slsDetector::loadCalibrationFile(string fname, int imod) {
     mmin=imod;
     mmax=imod+1;
   }
-  for (int im=mmin; im<mmax; im++) {
+  for (int im=mmin; im<mmax; ++im) {
     ostringstream ostfn;
     ostfn << fname ;
     if(thisDetector->myDetectorType != EIGER){
@@ -7520,7 +7521,7 @@ int slsDetector::saveCalibrationFile(string fname, int imod) {
     mmin=imod;
     mmax=imod+1;
   }
-  for (int im=mmin; im<mmax; im++) {
+  for (int im=mmin; im<mmax; ++im) {
     ostringstream ostfn;
     if(thisDetector->myDetectorType == EIGER)
     	ostfn << fname << ".sn" << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER);
@@ -7639,19 +7640,23 @@ slsDetectorDefs::synchronizationMode slsDetector::setSynchronization(synchroniza
 
 /*receiver*/
 int slsDetector::setReceiverOnline(int off) {
-  //	int prev = thisDetector->receiverOnlineFlag;
-	if (off!=GET_ONLINE_FLAG) {
-		if(strcmp(thisDetector->receiver_hostname,"none")){
-			thisDetector->receiverOnlineFlag=off;
-			if (thisDetector->receiverOnlineFlag==ONLINE_FLAG){
-				setReceiverTCPSocket();
-				if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG){
-					std::cout << "cannot connect to receiver" << endl;
-					setErrorMask((getErrorMask())|(CANNOT_CONNECT_TO_RECEIVER));
-				}
-			}
-		}
-	}
+  	if (off!=GET_ONLINE_FLAG) {
+  		// setting flag to offline
+  		if (off == OFFLINE_FLAG)
+  			thisDetector->receiverOnlineFlag = off;
+  		// set flag to online only if hostname not none
+  		else if(strcmp(thisDetector->receiver_hostname,"none")){
+  			thisDetector->receiverOnlineFlag=off;
+  		}
+  		if (thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+  			setReceiverTCPSocket();
+  			// error in connecting
+  			if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG){
+  				std::cout << "cannot connect to receiver" << endl;
+  				setErrorMask((getErrorMask())|(CANNOT_CONNECT_TO_RECEIVER));
+  			}
+  		}
+  	}
 	return thisDetector->receiverOnlineFlag;
 }
 
@@ -7821,17 +7826,14 @@ string slsDetector::setFileName(string s) {
 	int ret = FAIL;
 	char arg[MAX_STR_LENGTH]="";
 	char retval[MAX_STR_LENGTH]="";
+	string sretval="";
 
-	if(!s.empty()){
+	/*if(!s.empty()){
 		pthread_mutex_lock(&ms);
 		fileIO::setFileName(s);
-		/*if(thisDetector->myDetectorType == EIGER)
-			parentDet->setDetectorIndex(posId);
-		else if(parentDet->getNumberOfDetectors()>1)
-			parentDet->setDetectorIndex(-1);*/
 		s=parentDet->createReceiverFilePrefix();
 		pthread_mutex_unlock(&ms);
-	}
+	}*/
 
 	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
 		strcpy(arg,s.c_str());
@@ -7846,20 +7848,25 @@ string slsDetector::setFileName(string s) {
 #ifdef VERBOSE
 			std::cout << "Complete file prefix from receiver: " << retval << std::endl;
 #endif
+			/*
 			pthread_mutex_lock(&ms);
 			fileIO::setFileName(parentDet->getNameFromReceiverFilePrefix(string(retval)));
 			pthread_mutex_unlock(&ms);
+			*/
+			sretval = fileIO::getNameFromReceiverFilePrefix(string(retval));
 
 		}
+
 		if(ret==FORCE_UPDATE)
 			updateReceiver();
 	}
 
-	pthread_mutex_lock(&ms);
+	/*pthread_mutex_lock(&ms);
 	s = fileIO::getFileName();
 	pthread_mutex_unlock(&ms);
 
-	return s;
+	return s;*/
+	return sretval;
 }
 
 
@@ -8169,7 +8176,7 @@ int slsDetector::resetFramesCaught(){
 // 	   return NULL; 				} 				
 // 	 //jungfrau masking adcval 				
 // 	 if(thisDetector->myDetectorType == JUNGFRAU){ 					
-// 	 for(unsigned int i=0;i<nel;i++){ 						
+// 	 for(unsigned int i=0;i<nel;++i){
 // 	 retval[i] = (retval[i] & 0x3FFF3FFF); 					
 //        } 				
 //        } 			
@@ -8509,7 +8516,7 @@ int64_t slsDetector::clearAllErrorMask(){
 	clearErrorMask();
 
 	 pthread_mutex_lock(&ms);
-	for(int i=0;i<parentDet->getNumberOfDetectors();i++){
+	for(int i=0;i<parentDet->getNumberOfDetectors();++i){
 		if(parentDet->getDetectorId(i) == getDetectorId())
 			parentDet->setErrorMask(parentDet->getErrorMask()|(0<<i));
 	}
@@ -8818,7 +8825,7 @@ int slsDetector::setCTBPattern(string fname) {
        while (fread(&word, sizeof(word), 1,fd)) {
 	setCTBWord(addr,word);
 	// cout << hex << addr << " " << word << dec << endl;
-	 addr++;
+	 ++addr;
        }
        
        fclose(fd);

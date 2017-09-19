@@ -669,6 +669,11 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
  virtual int getFramesCaughtByReceiver()=0;
 
+ /**   gets the number of frames caught by any one receiver (to avoid using threadpool)
+	\returns number of frames caught by any one receiver (master receiver if exists)
+ */
+ virtual  int getFramesCaughtByAnyReceiver()=0;
+
  /**
     \returns current frame index of receiver
  */

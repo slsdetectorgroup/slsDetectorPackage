@@ -50,8 +50,10 @@ int  slsDetectorUtils::acquire(int delflag){
 	  return FAIL;
   }
 
+#ifdef VERBOSE
 	struct timespec begin,end;
 	clock_gettime(CLOCK_REALTIME, &begin);
+#endif
 
 	//not in the loop for real time acqusition yet,
 	//in the real time acquisition loop, processing thread will wait for a post each time
@@ -140,9 +142,8 @@ int  slsDetectorUtils::acquire(int delflag){
   if(receiver){
     pthread_mutex_lock(&mg); //cout << "lock"<< endl;
 	  if(getReceiverStatus()!=IDLE)
-		  stopReceiver();
-	  if(setReceiverOnline()==OFFLINE_FLAG)
-		  *stoppedFlag=1;
+		  if(stopReceiver() == FAIL)
+			  *stoppedFlag=1;
 	  pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
   }
 
@@ -156,12 +157,13 @@ int  slsDetectorUtils::acquire(int delflag){
   //resets frames caught in receiver
   if(receiver){
     pthread_mutex_lock(&mg); //cout << "lock"<< endl;
-    resetFramesCaught();
+    if (resetFramesCaught() == FAIL)
+    	  *stoppedFlag=1;
     pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
   }
 
 
-  for(int im=0;im<nm;im++) {
+  for(int im=0;im<nm;++im) {
 
 #ifdef VERBOSE
     cout << " starting measurement "<< im << " of " << nm << endl;
@@ -182,7 +184,7 @@ int  slsDetectorUtils::acquire(int delflag){
       executeAction(startScript);
     }
 
-    for (int is0=0; is0<ns0; is0++) {
+    for (int is0=0; is0<ns0; ++is0) {
       //  cout << "scan0 loop" << endl;
 
       if (*stoppedFlag==0) {
@@ -191,7 +193,7 @@ int  slsDetectorUtils::acquire(int delflag){
 	break;
   
 
-      for (int is1=0; is1<ns1; is1++) {
+      for (int is1=0; is1<ns1; ++is1) {
 	// cout << "scan1 loop" << endl;
 
 	if (*stoppedFlag==0) {
@@ -206,7 +208,7 @@ int  slsDetectorUtils::acquire(int delflag){
 
 	ResetPositionIndex();
      
-	for (int ip=0; ip<np; ip++) {
+	for (int ip=0; ip<np; ++ip) {
 
 	  //   cout << "positions " << endl;
 	  if (*stoppedFlag==0) {
@@ -332,10 +334,13 @@ int  slsDetectorUtils::acquire(int delflag){
 
 	  while (dataQueueSize()) usleep(100000);
 	  // cout << "mglock " << endl;;
+
+
+
 	  pthread_mutex_lock(&mg); //cout << "lock"<< endl;
 	  // cout << "done " << endl;;
 	  //offline
-	  if(setReceiverOnline()==OFFLINE_FLAG){
+	  if(!receiver){
 		  if ((getDetectorsType()==GOTTHARD) || (getDetectorsType()==MOENCH) || (getDetectorsType()==JUNGFRAU)|| (getDetectorsType()==JUNGFRAUCTB) ){
 			  if((*correctionMask)&(1<<WRITE_FILE))
 				  closeDataFile();
@@ -343,14 +348,8 @@ int  slsDetectorUtils::acquire(int delflag){
 	  }
 	  //online
 	  else{
-
-		  if(setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG){
-			  stopAcquisition();
-			  stopReceiver();
-			  pthread_mutex_unlock(&mg);
-			  break;
-		  }
-		  stopReceiver();
+		  if (stopReceiver() == FAIL)
+			  *stoppedFlag = 1;
 		  //	  cout<<"***********receiver stopped"<<endl;
 	  }
 	  pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
@@ -507,8 +506,8 @@ int  slsDetectorUtils::acquire(int delflag){
   setAcquiringFlag(false);
   sem_destroy(&sem_newRTAcquisition);
 
-  clock_gettime(CLOCK_REALTIME, &end);
 #ifdef VERBOSE
+  clock_gettime(CLOCK_REALTIME, &end);
   cout << "Elapsed time for acquisition:" << (( end.tv_sec - begin.tv_sec )	+ ( end.tv_nsec - begin.tv_nsec ) / 1000000000.0) << " seconds" << endl;
 #endif
   return OK;

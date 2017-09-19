@@ -1638,6 +1638,11 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   */
   int getFramesCaughtByReceiver();
 
+  /**   gets the number of frames caught by any one receiver (to avoid using threadpool)
+ 	\returns number of frames caught by any one receiver (master receiver if exists)
+  */
+  int getFramesCaughtByAnyReceiver() {getFramesCaughtByReceiver();};
+
   /**  gets the current frame index of receiver
      \returns current frame index of receiver
   */

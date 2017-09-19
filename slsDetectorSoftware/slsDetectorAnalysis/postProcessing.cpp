@@ -545,7 +545,7 @@ void* postProcessing::processData(int delflag) {
  				//get progress
  				pthread_mutex_lock(&mg);
  				if(setReceiverOnline() == ONLINE_FLAG){
- 					caught = getFramesCaughtByReceiver();
+ 					caught = getFramesCaughtByAnyReceiver();
  				}
  				pthread_mutex_unlock(&mg);
 

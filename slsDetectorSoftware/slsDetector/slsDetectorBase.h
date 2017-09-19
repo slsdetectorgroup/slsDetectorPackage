@@ -380,6 +380,54 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   int64_t setNumberOfFrames(int64_t t=-1){return setTimer(FRAME_NUMBER,t);};
   int64_t setNumberOfCycles(int64_t t=-1){return setTimer(CYCLES_NUMBER,t);};
 
+
+  /** sets/gets the value of important readout speed parameters
+      \param sp is the parameter to be set/get
+      \param value is the value to be set, if -1 get value
+      \returns current value for the specified parameter
+      \sa speedVariable
+  */
+  virtual int setSpeed(speedVariable sp, int value=-1)=0;
+  int setClockDivider(int s=-1){return setSpeed(CLOCK_DIVIDER,s);};
+
+  /**
+     set/get readout flags
+     \param flag readout flag to be set
+     \returns current flag
+  */
+  virtual int setReadOutFlags(readOutFlags flag=GET_READOUT_FLAGS)=0;
+  int getContinuousReadoutFlag(){if(setReadOutFlags()&CONTINOUS_RO) return OK; return FAIL;};
+  void setContinuousReadoutFlag(){setReadOutFlags(CONTINOUS_RO); };
+  int getStoreInRamReadoutFlag(){if(setReadOutFlags()&STORE_IN_RAM) return OK; return FAIL;};
+  void setStoreInRamReadoutFlag(){setReadOutFlags(STORE_IN_RAM); };
+  int getParallelReadoutFlag(){if(setReadOutFlags()&PARALLEL) return OK; return FAIL;};
+  void setParallelReadoutFlag(){setReadOutFlags(PARALLEL); };
+  int getNonParallelReadoutFlag(){if(setReadOutFlags()&NONPARALLEL) return OK; return FAIL;};
+  void setNonParallelReadoutFlag(){setReadOutFlags(NONPARALLEL); };
+  int getSafeReadoutFlag(){if(setReadOutFlags()&SAFE) return OK; return FAIL;};
+  void setSafeReadoutFlag(){setReadOutFlags(SAFE); };
+
+
+  /**
+     set dacs value
+     \param val value (in V)
+     \param index DAC index
+     \param mV 0 in dac units or 1 in mV
+     \param imod module number (if -1 alla modules)
+     \returns current DAC value
+  */
+  virtual dacs_t setDAC(dacs_t val, dacIndex index , int mV, int imod=-1)=0;
+  int setDACValue(int val, int index , int mV, int imod=-1) { return (int)setDAC((dacs_t)val,(dacIndex)index, mV,imod);};
+
+
+  /**
+     gets ADC value
+     \param index ADC index
+     \param imod module number
+     \returns current ADC value
+  */
+  virtual dacs_t getADC(dacIndex index, int imod=-1)=0;
+  int getADCValue(int index, int imod=-1){return (int)getADC((dacIndex)index, imod);};
   ///////////////////////////////////////////////////////////////////////////////////////////
   /**
      @short get run status
@@ -489,6 +537,11 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
         \returns number of frames caught by receiver
   */
   virtual int getFramesCaughtByReceiver()=0;
+
+  /**   gets the number of frames caught by any one receiver (to avoid using threadpool)
+ 	\returns number of frames caught by any one receiver (master receiver if exists)
+  */
+  virtual  int getFramesCaughtByAnyReceiver()=0;
 
   /**
      \returns current frame index of receiver

@@ -28,35 +28,18 @@ It is linked in manual/manual-api from slsReceiverSoftware/include ]
 #include <sys/types.h>	//wait
 #include <sys/wait.h>	//wait
 #include <string>
+#include <unistd.h> 	//usleep
+#include <errno.h>
+#include <syscall.h>	//tid
 using namespace std;
 
-/* Define Number of receivers */
-#define NUM_RECEIVERS 	1
-/** Define TCP Port of First Receiver, others are incremented by 1 */
-#define START_TCP_PORT	1954
+
 /** Define Colors to print data call back in different colors for different recievers */
 #define PRINT_IN_COLOR(c,f, ...) 	printf ("\033[%dm" f RESET, 30 + c+1, ##__VA_ARGS__)
 
-/* List of process IDs of all child receiver processes */
-pid_t childPid[NUM_RECEIVERS];
+
 /** Variable is true to continue running, set to false upon interrupt */
 bool keeprunning;
-/** Variable indicating number of child processes running */
-int numrunning;
-
-
-/**
- * Child Exit Signal Interrupt Handler
- * When a child process exits, this function is called,
- * blocks until all child processes exit &
- * decreases the variable indicating number of running processes
- * @param sig signal enum
- */
-void sigChildExitedHandler(int sig) {
-	pid_t pid = wait(NULL);
-	bprintf(GRAY, "\nChild Process Pid %d exited.\n", pid);
-	numrunning--;
-}
 
 /**
  * Control+C Interrupt Handler
@@ -64,6 +47,16 @@ void sigChildExitedHandler(int sig) {
  */
 void sigInterruptHandler(int p){
 	keeprunning = false;
+}
+
+/**
+ * prints usage of this example program
+ */
+void printHelp() {
+	bprintf(GRAY, "Usage:\n"
+			"./detReceiver\n"
+			"or ./detReceiver [num_receivers] [start_tcp_port]\n"
+			"Default values: num_receivers - 1, start_tcp_port - 1954\n\n");
 }
 
 /**
@@ -126,8 +119,8 @@ void GetData(uint64_t frameNumber, uint32_t expLength, uint32_t packetNumber, ui
 			xCoord, frameNumber, expLength, packetNumber, bunchId, timestamp, modId,
 			xCoord, yCoord, zCoord, debug, roundRNumber, detType, version,
 			((uint8_t)(*((uint8_t*)(datapointer)))), datasize);
-
 }
+
 
 
 /**
@@ -139,11 +132,19 @@ void GetData(uint64_t frameNumber, uint32_t expLength, uint32_t packetNumber, ui
  */
 int main(int argc, char *argv[]) {
 
-	/**	- set default values: child process pid values to -1, keeprunning to true, numrunning to 0 */
-	for (int i = 0; i < NUM_RECEIVERS; ++i)
-		childPid[i] = -1;
+	/**	- set default values */
+	int numReceivers = 1;
+	int startTCPPort = 1954;
 	keeprunning = true;
-	numrunning = 0;
+
+	/**	- get number of receivers and start tcp port from command line arguments */
+	if (argc > 1 && ((argc < 3) || (!sscanf(argv[1],"%d", &numReceivers)) || (!sscanf(argv[2],"%d", &startTCPPort))    ))
+		printHelp();
+	bprintf(BLUE,"Parent Process Created [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
+	bprintf(GRAY, "Number of Receivers: %d\n", numReceivers);
+	bprintf(GRAY, "Start TCP Port: %d\n", startTCPPort);
+
+
 
 	/** - Catch signal SIGINT to close files and call destructors properly */
 	struct sigaction sa;
@@ -154,38 +155,38 @@ int main(int argc, char *argv[]) {
 		bprintf(RED, "Could not set handler function for SIGINT\n");
 	}
 
-	/** - wait for all the SIGCHILD signals and decrease numrunningeach time a child process exits*/
+	/** - Ignore SIG_PIPE, prevents global signal handler, handle locally,
+	   instead of a server crashing due to client crash when writing, it just gives error */
 	struct sigaction asa;
 	asa.sa_flags=0;							// no flags
-	asa.sa_handler=sigChildExitedHandler;	// handler function
+	asa.sa_handler=SIG_IGN;					// handler function
 	sigemptyset(&asa.sa_mask);				// dont block additional signals during invocation of handler
-	if (sigaction(SIGCHLD, &asa, NULL) == -1) {
-		bprintf(RED, "Could not set handler function for SICHILD\n");
+	if (sigaction(SIGPIPE, &asa, NULL) == -1) {
+		bprintf(RED, "Could not set handler function for SIGPIPE\n");
 	}
 
 
 	/** - loop over number of receivers */
-	for (int i = 0; i < NUM_RECEIVERS; ++i) {
+	for (int i = 0; i < numReceivers; ++i) {
 
 		/**	- fork process to create child process */
-		childPid[i] = fork();
+		pid_t pid = fork();
 
-		/**	- if fork failed, raise SIGINT and kill all receiver objects */
-		if (childPid[i] < 0) {
+		/**	- if fork failed, raise SIGINT and properly destroy all child processes */
+		if (pid < 0) {
 			bprintf(RED,"fork() failed. Killing all the receiver objects\n");
 			raise(SIGINT);
 		}
 
-		/**	- if child process */
-		else if (childPid[i] == 0) {
-			bprintf(BLUE,"Starting Receiver %d with pid %ld\n", i, (long)getpid());
+			/**	- if child process */
+		else if (pid == 0) {
+			bprintf(BLUE,"Child process %d [ Tid: %ld ]\n", i, (long)syscall(SYS_gettid));
 
 			char temp[10];
-			sprintf(temp,"%d",START_TCP_PORT + i);
+			sprintf(temp,"%d",startTCPPort + i);
 			char* args[] = {(char*)"ignored", (char*)"--rx_tcpport", temp};
 			int ret = slsReceiverDefs::OK;
-			/**	-  create slsReceiverUsers object with appropriate arguments
-			  (START_TCP_PORT incrementing by 1 */
+			/**	-  create slsReceiverUsers object with appropriate arguments */
 			slsReceiverUsers *receiver = new slsReceiverUsers(3, args, ret);
 			if(ret==slsReceiverDefs::FAIL){
 				delete receiver;
@@ -211,30 +212,53 @@ int main(int argc, char *argv[]) {
 			/**	- start tcp server thread */
 			if (receiver->start() == slsReceiverDefs::FAIL){
 				delete receiver;
+				bprintf(BLUE,"Exiting Child Process [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
 				exit(EXIT_FAILURE);
 			}
 
-			/**	- as long as keeprunning is true, usleep for a second */
+			/**	- as long as keeprunning is true (changes with Ctrl+C) */
 			while(keeprunning)
-				usleep(1 * 1000 * 1000);
+				pause();
 			/**	- interrupt caught, delete slsReceiverUsers object and exit */
 			delete receiver;
+			bprintf(BLUE,"Exiting Child Process [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
 			exit(EXIT_SUCCESS);
+			break;
 		}
-
-		/**		- parent process, increment number of running processes */
-		else
-			numrunning++;
-
 	}
+
+	/** - Parent process ignores SIGINT (exits only when all child process exits) */
+	sa.sa_flags=0;							// no flags
+	sa.sa_handler=SIG_IGN;					// handler function
+	sigemptyset(&sa.sa_mask);				// dont block additional signals during invocation of handler
+	if (sigaction(SIGINT, &sa, NULL) == -1) {
+		bprintf(RED, "Could not set handler function for SIGINT\n");
+	}
+
 
 	/** - Print Ready and Instructions how to exit */
 	cout << "Ready ... " << endl;
 	bprintf(GRAY, "\n[ Press \'Ctrl+c\' to exit ]\n");
 
-	/** - Parent process waits for all child processes to exit by sleeping till numrunning is 0 */
-	while(numrunning)
-		usleep(1 * 1000 * 1000);
+	/** - Parent process waits for all child processes to exit */
+	for(;;) {
+		pid_t childPid = waitpid (-1, NULL, 0);
+
+		// no child closed
+		if (childPid == -1) {
+			if (errno == ECHILD) {
+				bprintf(GREEN,"All Child Processes have been closed\n");
+				break;
+			} else {
+				bprintf(RED, "Unexpected error from waitpid(): (%s)\n",strerror(errno));
+				break;
+			}
+		}
+
+		//child closed
+		bprintf(BLUE,"Exiting Child Process [ Tid: %ld ]\n", (long int) childPid);
+	}
+
 	cout << "Goodbye!" << endl;
 	return 0;
 }

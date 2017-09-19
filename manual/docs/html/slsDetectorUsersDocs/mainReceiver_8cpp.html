@@ -52,24 +52,23 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <code>#include &lt;sys/types.h&gt;</code><br/>
 <code>#include &lt;sys/wait.h&gt;</code><br/>
 <code>#include &lt;string&gt;</code><br/>
+<code>#include &lt;unistd.h&gt;</code><br/>
+<code>#include &lt;errno.h&gt;</code><br/>
+<code>#include &lt;syscall.h&gt;</code><br/>
 
 <p><a href="mainReceiver_8cpp_source.html">Go to the source code of this file.</a></p>
 <table border="0" cellpadding="0" cellspacing="0">
 <tr><td colspan="2"><h2>Defines</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">#define&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="mainReceiver_8cpp.html#aa55605484e783ee738b6f4e7b251cbee">NUM_RECEIVERS</a>&nbsp;&nbsp;&nbsp;1</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">#define&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="mainReceiver_8cpp.html#a2a4a8ad299b56605e3ee1ebb0950ac5c">START_TCP_PORT</a>&nbsp;&nbsp;&nbsp;1954</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="mainReceiver_8cpp.html#aeac6a4b86729a7e07100fb58600d6481">PRINT_IN_COLOR</a>(c, f,...)&nbsp;&nbsp;&nbsp;printf (&quot;\033[%dm&quot; f RESET, 30 + c+1, ##__VA_ARGS__)</td></tr>
 <tr><td colspan="2"><h2>Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="mainReceiver_8cpp.html#acdb2aab1ff93ceea5eb097337a200008">sigChildExitedHandler</a> (int sig)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="mainReceiver_8cpp.html#ac72dad9b593583bd4bf508a979c00f70">sigInterruptHandler</a> (int p)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="mainReceiver_8cpp.html#a0d20b69b0ad703df78459e1033d5c1d4">printHelp</a> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="mainReceiver_8cpp.html#a1ec49915ff49957985ebfe6ccc5cd1b3">StartAcq</a> (char *filepath, char *filename, uint64_t fileindex, uint32_t datasize, void *p)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="mainReceiver_8cpp.html#a013a16dd72eca4216a42196c4d9c0335">AcquisitionFinished</a> (uint64_t frames, void *p)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="mainReceiver_8cpp.html#a68d89c0f64de361efc31ae21513b86cb">GetData</a> (uint64_t frameNumber, uint32_t expLength, uint32_t packetNumber, uint64_t bunchId, uint64_t timestamp, uint16_t modId, uint16_t xCoord, uint16_t yCoord, uint16_t zCoord, uint32_t debug, uint16_t roundRNumber, uint8_t detType, uint8_t version, char *datapointer, uint32_t datasize, void *p)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="mainReceiver_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97">main</a> (int argc, char *argv[])</td></tr>
 <tr><td colspan="2"><h2>Variables</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">pid_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="mainReceiver_8cpp.html#adbe4cfbc29a961cebc69041b896c7304">childPid</a> [NUM_RECEIVERS]</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="mainReceiver_8cpp.html#a0d26a166bb416ff34512de6fe9e098bd">keeprunning</a></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="mainReceiver_8cpp.html#a9a5e6d0743c685444bb74ecfbb0e78c4">numrunning</a></td></tr>
 </table>
 <hr/><a name="_details"></a><h2>Detailed Description</h2>
 <p>This file is an example of how to implement the <a class="el" href="classslsReceiverUsers.html" title="Class for implementing the SLS data receiver in the users application. Callbacks...">slsReceiverUsers</a> class You can compile it linking it to the slsReceiver library</p>
@@ -80,21 +79,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>Definition in file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
 <hr/><h2>Define Documentation</h2>
-<a class="anchor" id="aa55605484e783ee738b6f4e7b251cbee"></a><!-- doxytag: member="mainReceiver.cpp::NUM_RECEIVERS" ref="aa55605484e783ee738b6f4e7b251cbee" args="" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define NUM_RECEIVERS&nbsp;&nbsp;&nbsp;1</td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00034">34</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
-
-</div>
-</div>
 <a class="anchor" id="aeac6a4b86729a7e07100fb58600d6481"></a><!-- doxytag: member="mainReceiver.cpp::PRINT_IN_COLOR" ref="aeac6a4b86729a7e07100fb58600d6481" args="(c, f,...)" -->
 <div class="memitem">
 <div class="memproto">
@@ -123,22 +107,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Define Colors to print data call back in different colors for different recievers </p>
 
 <p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00038">38</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a2a4a8ad299b56605e3ee1ebb0950ac5c"></a><!-- doxytag: member="mainReceiver.cpp::START_TCP_PORT" ref="a2a4a8ad299b56605e3ee1ebb0950ac5c" args="" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define START_TCP_PORT&nbsp;&nbsp;&nbsp;1954</td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Define TCP Port of First Receiver, others are incremented by 1 </p>
-
-<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00036">36</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
 
 </div>
 </div>
@@ -176,7 +144,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00093">93</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
+<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00086">86</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
 
 </div>
 </div>
@@ -311,7 +279,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00117">117</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
+<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00110">110</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
 
 </div>
 </div>
@@ -349,13 +317,16 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </ul>
 
 <p><ul>
-<li>set default values: child process pid values to -1, keeprunning to true, numrunning to 0</li>
+<li>set default values</li>
+</ul>
+<ul>
+<li>get number of receivers and start tcp port from command line arguments</li>
 </ul>
 <ul>
 <li>Catch signal SIGINT to close files and call destructors properly</li>
 </ul>
 <ul>
-<li>wait for all the SIGCHILD signals and decrease numrunningeach time a child process exits</li>
+<li>Ignore SIG_PIPE, prevents global signal handler, handle locally, instead of a server crashing due to client crash when writing, it just gives error</li>
 </ul>
 <ul>
 <li>loop over number of receivers</li>
@@ -364,13 +335,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>fork process to create child process</li>
 </ul>
 <ul>
-<li>if fork failed, raise SIGINT and kill all receiver objects</li>
+<li>if fork failed, raise SIGINT and properly destroy all child processes</li>
 </ul>
 <ul>
 <li>if child process</li>
 </ul>
 <ul>
-<li>create <a class="el" href="classslsReceiverUsers.html" title="Class for implementing the SLS data receiver in the users application. Callbacks...">slsReceiverUsers</a> object with appropriate arguments (START_TCP_PORT incrementing by 1</li>
+<li>create <a class="el" href="classslsReceiverUsers.html" title="Class for implementing the SLS data receiver in the users application. Callbacks...">slsReceiverUsers</a> object with appropriate arguments</li>
 </ul>
 <ul>
 <li>register callbacks. remember to set file write enable to 0 (using the client) if we should not write files and you will write data using the callbacks</li>
@@ -385,48 +356,41 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>start tcp server thread</li>
 </ul>
 <ul>
-<li>as long as keeprunning is true, usleep for a second</li>
+<li>as long as keeprunning is true (changes with Ctrl+C)</li>
 </ul>
 <ul>
 <li>interrupt caught, delete <a class="el" href="classslsReceiverUsers.html" title="Class for implementing the SLS data receiver in the users application. Callbacks...">slsReceiverUsers</a> object and exit</li>
 </ul>
 <ul>
-<li>parent process, increment number of running processes</li>
+<li>Parent process ignores SIGINT (exits only when all child process exits)</li>
 </ul>
 <ul>
 <li>Print Ready and Instructions how to exit</li>
 </ul>
 <ul>
-<li>Parent process waits for all child processes to exit by sleeping till numrunning is 0 </li>
+<li>Parent process waits for all child processes to exit </li>
 </ul>
 </p>
 
-<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00140">140</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
+<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00133">133</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="acdb2aab1ff93ceea5eb097337a200008"></a><!-- doxytag: member="mainReceiver.cpp::sigChildExitedHandler" ref="acdb2aab1ff93ceea5eb097337a200008" args="(int sig)" -->
+<a class="anchor" id="a0d20b69b0ad703df78459e1033d5c1d4"></a><!-- doxytag: member="mainReceiver.cpp::printHelp" ref="a0d20b69b0ad703df78459e1033d5c1d4" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void sigChildExitedHandler </td>
+          <td class="memname">void printHelp </td>
           <td>(</td>
-          <td class="paramtype">int&nbsp;</td>
-          <td class="paramname"> <em>sig</em></td>
+          <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
           <td></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
-<p>Child Exit Signal Interrupt Handler When a child process exits, this function is called, blocks until all child processes exit &amp; decreases the variable indicating number of running processes </p>
-<dl><dt><b>Parameters:</b></dt><dd>
-  <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>sig</em>&nbsp;</td><td>signal enum </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>prints usage of this example program </p>
 
 <p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00055">55</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
 
@@ -449,7 +413,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="memdoc">
 <p>Control+C Interrupt Handler Sets the variable keeprunning to false, to let all the processes know to exit properly </p>
 
-<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00065">65</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
+<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00048">48</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
 
 </div>
 </div>
@@ -508,26 +472,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>ignored </dd></dl>
 
-<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00080">80</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
+<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00073">73</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
 
 </div>
 </div>
 <hr/><h2>Variable Documentation</h2>
-<a class="anchor" id="adbe4cfbc29a961cebc69041b896c7304"></a><!-- doxytag: member="mainReceiver.cpp::childPid" ref="adbe4cfbc29a961cebc69041b896c7304" args="[NUM_RECEIVERS]" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">pid_t <a class="el" href="mainReceiver_8cpp.html#adbe4cfbc29a961cebc69041b896c7304">childPid</a>[NUM_RECEIVERS]</td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00041">41</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
-
-</div>
-</div>
 <a class="anchor" id="a0d26a166bb416ff34512de6fe9e098bd"></a><!-- doxytag: member="mainReceiver.cpp::keeprunning" ref="a0d26a166bb416ff34512de6fe9e098bd" args="" -->
 <div class="memitem">
 <div class="memproto">
@@ -540,23 +489,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="memdoc">
 <p>Variable is true to continue running, set to false upon interrupt </p>
 
-<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00043">43</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a9a5e6d0743c685444bb74ecfbb0e78c4"></a><!-- doxytag: member="mainReceiver.cpp::numrunning" ref="a9a5e6d0743c685444bb74ecfbb0e78c4" args="" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int <a class="el" href="mainReceiver_8cpp.html#a9a5e6d0743c685444bb74ecfbb0e78c4">numrunning</a></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Variable indicating number of child processes running </p>
-
-<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00045">45</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
+<p>Definition at line <a class="el" href="mainReceiver_8cpp_source.html#l00042">42</a> of file <a class="el" href="mainReceiver_8cpp_source.html">mainReceiver.cpp</a>.</p>
 
 </div>
 </div>
@@ -575,7 +508,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 28 Aug 2017 by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 19 Sep 2017 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

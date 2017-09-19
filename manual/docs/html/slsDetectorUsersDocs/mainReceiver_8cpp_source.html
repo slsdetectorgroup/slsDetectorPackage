@@ -72,8 +72,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00055"></a><a class="code" href="mainReceiver_8cpp.html#a0d20b69b0ad703df78459e1033d5c1d4">00055</a> <span class="keywordtype">void</span> <a class="code" href="mainReceiver_8cpp.html#a0d20b69b0ad703df78459e1033d5c1d4">printHelp</a>() {
 <a name="l00056"></a>00056         bprintf(GRAY, <span class="stringliteral">&quot;Usage:\n&quot;</span>
 <a name="l00057"></a>00057                         <span class="stringliteral">&quot;./detReceiver\n&quot;</span>
-<a name="l00058"></a>00058                         <span class="stringliteral">&quot;or ./detReceiver [num_receivers] [start_tcp_port]\n&quot;</span>
-<a name="l00059"></a>00059                         <span class="stringliteral">&quot;Default values: num_receivers - 1, start_tcp_port - 1954\n\n&quot;</span>);
+<a name="l00058"></a>00058                         <span class="stringliteral">&quot;or ./detReceiver [start_tcp_port] [num_receivers]\n&quot;</span>
+<a name="l00059"></a>00059                         <span class="stringliteral">&quot;Default values: start_tcp_port - 1954, num_receivers - 1\n\n&quot;</span>);
 <a name="l00060"></a>00060 }
 <a name="l00061"></a>00061 
 <a name="l00073"></a><a class="code" href="mainReceiver_8cpp.html#a1ec49915ff49957985ebfe6ccc5cd1b3">00073</a> <span class="keywordtype">int</span> <a class="code" href="mainReceiver_8cpp.html#a1ec49915ff49957985ebfe6ccc5cd1b3">StartAcq</a>(<span class="keywordtype">char</span>* filepath, <span class="keywordtype">char</span>* filename, uint64_t fileindex, uint32_t datasize, <span class="keywordtype">void</span>*p){
@@ -110,7 +110,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00137"></a>00137         <span class="keywordtype">int</span> startTCPPort = 1954;
 <a name="l00138"></a>00138         <a class="code" href="mainReceiver_8cpp.html#a0d26a166bb416ff34512de6fe9e098bd">keeprunning</a> = <span class="keyword">true</span>;
 <a name="l00139"></a>00139 
-<a name="l00141"></a>00141         <span class="keywordflow">if</span> (argc &gt; 1 &amp;&amp; ((argc &lt; 3) || (!sscanf(argv[1],<span class="stringliteral">&quot;%d&quot;</span>, &amp;numReceivers)) || (!sscanf(argv[2],<span class="stringliteral">&quot;%d&quot;</span>, &amp;startTCPPort))    ))
+<a name="l00141"></a>00141         <span class="keywordflow">if</span> (argc &gt; 1 &amp;&amp; ((argc &lt; 3) || (!sscanf(argv[1],<span class="stringliteral">&quot;%d&quot;</span>, &amp;startTCPPort)) || (!sscanf(argv[2],<span class="stringliteral">&quot;%d&quot;</span>, &amp;numReceivers))    ))
 <a name="l00142"></a>00142                 <a class="code" href="mainReceiver_8cpp.html#a0d20b69b0ad703df78459e1033d5c1d4">printHelp</a>();
 <a name="l00143"></a>00143         bprintf(BLUE,<span class="stringliteral">&quot;Parent Process Created [ Tid: %ld ]\n&quot;</span>, (<span class="keywordtype">long</span>)syscall(SYS_gettid));
 <a name="l00144"></a>00144         bprintf(GRAY, <span class="stringliteral">&quot;Number of Receivers: %d\n&quot;</span>, numReceivers);
@@ -131,7 +131,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00162"></a>00162         asa.sa_handler=SIG_IGN;                                 <span class="comment">// handler function</span>
 <a name="l00163"></a>00163         sigemptyset(&amp;asa.sa_mask);                              <span class="comment">// dont block additional signals during invocation of handler</span>
 <a name="l00164"></a>00164         <span class="keywordflow">if</span> (sigaction(SIGPIPE, &amp;asa, NULL) == -1) {
-<a name="l00165"></a>00165                 bprintf(RED, <span class="stringliteral">&quot;Could not set handler function for SIGCHILD\n&quot;</span>);
+<a name="l00165"></a>00165                 bprintf(RED, <span class="stringliteral">&quot;Could not set handler function for SIGPIPE\n&quot;</span>);
 <a name="l00166"></a>00166         }
 <a name="l00167"></a>00167 
 <a name="l00168"></a>00168 

@@ -1,6 +1,7 @@
 INCLUDES	=   -I . 
 SRC_DET		= 	mainClient.cpp 	
 SRC_REC		=   mainReceiver.cpp
+SRC_REC_NO	=   mainReceiver_withoutcallback.cpp
 LIBDIR		=   .
 LDFLAG_DET 	=	-I. -L$(LIBDIR) -lSlsDetector -L/usr/lib64/ -pthread -lrt -L. -lzmq
 LDFLAG_REC 	=	-I. -L$(LIBDIR) -lSlsReceiver -L/usr/lib64/ -pthread -lrt -L. -lzmq
@@ -37,6 +38,10 @@ detUser:$(SRC_DET)
 detReceiver:$(SRC_REC)
 	echo "creating receiver"
 	g++ -o detReceiver $(SRC_REC) $(INCLUDES) $(LDFLAG_REC) -lm -lstdc++
+	
+detReceiverNocall:$(SRC_REC_NO)
+	echo "creating receiver with no call backs"
+	g++ -o detReceiverNocall $(SRC_REC_NO) $(INCLUDES) $(LDFLAG_REC) -lm -lstdc++
 	
 clean:
 	echo "cleaning for manual-api"

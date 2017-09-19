@@ -197,16 +197,16 @@ int main(int argc, char *argv[]) {
 			  if we should not write files and you will write data using the callbacks */
 
 			/** - Call back for start acquisition */
-			bprintf(BLUE, "Registering 	StartAcq()\n");
-			receiver->registerCallBackStartAcquisition(StartAcq, NULL);
+			//bprintf(BLUE, "Registering 	StartAcq()\n");
+			//receiver->registerCallBackStartAcquisition(StartAcq, NULL);
 
 			/** - Call back for acquisition finished */
-			bprintf(BLUE, "Registering 	AcquisitionFinished()\n");
-			receiver->registerCallBackAcquisitionFinished(AcquisitionFinished, NULL);
+			//bprintf(BLUE, "Registering 	AcquisitionFinished()\n");
+			//receiver->registerCallBackAcquisitionFinished(AcquisitionFinished, NULL);
 
 			/* 	- Call back for raw data */
-			bprintf(BLUE, "Registering     GetData() \n");
-			receiver->registerCallBackRawDataReady(GetData,NULL);
+			//bprintf(BLUE, "Registering     GetData() \n");
+			//receiver->registerCallBackRawDataReady(GetData,NULL);
 
 
 			/**	- start tcp server thread */

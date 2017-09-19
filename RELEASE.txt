@@ -1,11 +1,11 @@
-SLS Detector Package 3.0.0 released on 2017-08-25
+SLS Detector Package 3.0.1 released on 2017-09-19
 ================================================================================
 
 
 
 INTRODUCTION
 
-This document describes the differences between previous versions and 3.0.0 releases.
+This document describes the differences between previous versions and 3.0.1 release.
 
 Manual (both HTML and pdf versions) are provided in
 	manual/docs/
@@ -47,55 +47,11 @@ This release has no changes in user interface from the previous 2.3 version.
 However, receiver data call backs have been redefined for the 
 standard image header.
 
-Reiterating, both 2.3 and 3.0 supports the following features:
+
   	
 	Receiver
-	--------
-	1.	The files will be written in this format in the binary mode:
-		* 1 ASCII file per measurement: header with measurement parameters
-		* binary files: series of images, each preceded by a 
-		  	  Standard Image Header (header described below)
-	
-	2. 	Standard Image Header in file and call back
-	 	arguments defined. It is in the following format defined as 
-	  	sls_detector_header defined in 
-	 	slsReceiverSoftware/include/sls_receiver_defs.h
-	 	Mostly 0 if not applicatble or implemented, but updated in next release 
-	  	from firmware.
-		
-		* Frame Number       : 8 bytes 	# Image Number
-		* Exposure Length    : 4 bytes  # Sub frame number in 32 bit mode (Eiger)
-		  		       					  Real time exposre time in 100ns (Others) 
-		* Packet Number      : 4 bytes	# Number of packets caught in the image
-		* Bunch ID           : 8 bytes  # Bunch Id in beamline (Jungfrau) 
-		* Timestamp          : 8 bytes  # Not implemened. 
-										  Time stamp with 10MHz clock
-		* Module Id          : 2 bytes  # Not implemented. Unique module ID.
-		* X Coordinate       : 2 bytes  # Currently as Id of part of detector in 1D
-										  (Future Releases) as X coordinate 
-										  in complete detector system
-		* Y Coordinate       : 2 bytes  # Not implemented 
-										  Y coordinate in complete detector system
-		* Z Coordinate       : 2 bytes  # Not implemented
-										  Z coordinate in complete detector system
-		* Debug              : 4 bytes  # Not implemented
-										  For debugging purposes
-		* Round Robin Number : 2 bytes  # Not implemented
-										  Round Robin Number
-		* Detector Type      : 1 byte   # Detector type defined by enum
-				                          detectorType in slsReceiverSoftware
-						                  /include/sls_receiver_defs.h
-		* Header Version     : 1 byte   # 1.0 currently
-		
-	3.	The call back value for Start Acquisition Call back is insignificant at the 
-	 	 moment and left for future use. Instead, the following rules apply:
-		* If file write is enabled from the client, we will write the files.
-		* If callbacks are registered, they will be called.
-		For example, the user prefers to write the data himself, one must disable
-		file write (so we dont write) and register the callbacks (so the user gets 
-		the data).
-		
-	4.	Multiple Receivers have to be started as different processes, instead of threads
+	--------	
+	1.	Multiple Receivers have to be started as different processes, instead of threads
 		due to static variables being used. Please refer example code provided in the 
 		slsDetectorsPackage/manual/manual-api folder (mainReceiver.cpp).
 		

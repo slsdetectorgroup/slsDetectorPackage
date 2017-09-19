@@ -541,6 +541,102 @@ class slsDetectorUsers
     */
    string getCommand(int narg, char *args[], int pos=-1);
 
+   /************************************************************************
+
+                            ADVANCED FUNCTIONS
+
+   *********************************************************************/
+   /**
+      @short sets clock divider of detector
+      \param value value to be set (-1 gets)
+      \returns speed of detector
+    */
+   int setClockDivider(int value);
+
+   /**
+      @short gets continuous readout flag
+      \returns gets continuous readout flag
+    */
+   int getContinuousReadoutFlag();
+
+   /**
+      @short sets continuous readout flag
+      \returns OK if successful, else false
+    */
+   void setContinuousReadoutFlag();
+
+   /**
+      @short gets store in ram readout flag
+      \returns gets store in ram readout flag
+    */
+   int getStoreInRamReadoutFlag();
+
+   /**
+      @short sets store in ram readout flag
+      \returns OK if successful, else false
+    */
+   void setStoreInRamReadoutFlag();
+
+   /**
+      @short gets parallel readout flag
+      \returns gets parallel readout flag
+    */
+   int getParallelReadoutFlag();
+
+   /**
+      @short sets parallel readout flag
+      \returns OK if successful, else false
+    */
+   void setParallelReadoutFlag();
+
+   /**
+      @short gets non parallel readout flag
+      \returns gets non parallel readout flag
+    */
+   int getNonParallelReadoutFlag();
+
+   /**
+      @short sets non parallel readout flag
+      \returns OK if successful, else false
+    */
+   void setNonParallelReadoutFlag();
+
+   /**
+      @short gets safe readout flag
+      \returns gets safe readout flag
+    */
+   int getSafeReadoutFlag();
+
+   /**
+      @short sets safe readout flag
+      \returns OK if successful, else false
+    */
+   void setSafeReadoutFlag();
+
+   /**
+      @short sets all trimbits to value (only available for eiger)
+      \param val value to be set (-1 gets)
+      \returns value set
+    */
+   int setAllTrimbits(int val);
+
+   /**
+      @short set dac value
+      \param id module index (-1 for all)
+      \param dacindex dac index \sa dacIndex
+      \param val value to be set (-1 gets)
+      \returns dac value
+    */
+   int setDAC(int id, int dacindex, int val);
+
+   /**
+      @short get adc value
+      \param id module index (-1 for all)
+      \param adcindex adc index \sa dacIndex
+      \returns adc value
+    */
+   int getADC(int id, int adcindex);
+
   /************************************************************************
 
                            STATIC FUNCTIONS
@@ -626,6 +722,7 @@ class slsDetectorUsers
     if (s== "gating") return 3;						\
     if (s== "triggered_gating") return 4;				\
     return -1;							};
+
 
  private:
   multiSlsDetector *myDetector;

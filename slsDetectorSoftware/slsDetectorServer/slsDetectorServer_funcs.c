@@ -38,7 +38,7 @@ int (*flist[NUM_DET_FUNCTIONS])(int);
 char mess[MAX_STR_LENGTH];
 int dataBytes = 10;
 int isControlServer = 0;
-
+int debugflag = 0;
 
 /* initialization functions */
 
@@ -47,9 +47,10 @@ int printSocketReadError() {
 	return FAIL;
 }
 
-void basictests() {
+void basictests(int flag) {
+	debugflag = flag;
 #ifdef	SLS_DETECTOR_FUNCTION_LIST
-	checkFirmwareCompatibility();
+	checkFirmwareCompatibility(debugflag);
 #endif
 }
 
@@ -4605,7 +4606,7 @@ int program_fpga(int file_des) {
 	printf("Done with program receiving command\n");
 #endif
 	if (isControlServer)
-		basictests();
+		basictests(debugflag);
 	init_detector(isControlServer);
 	}
 #endif
@@ -4653,7 +4654,7 @@ int reset_fpga(int file_des) {
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	else {
 		if (isControlServer)
-			basictests();
+			basictests(debugflag);
 		init_detector(isControlServer);
 		ret = FORCE_UPDATE;
 	}

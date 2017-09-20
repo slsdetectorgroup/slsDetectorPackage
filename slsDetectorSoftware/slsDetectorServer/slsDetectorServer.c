@@ -23,10 +23,19 @@ int main(int argc, char *argv[]){
 	int  portno, b;
 	int retval=OK;
 	int sd, fd;
+	int debugflag = 0;
 
 	// if socket crash, ignores SISPIPE, prevents global signal handler
 	// subsequent read/write to socket gives error - must handle locally
 	signal(SIGPIPE, SIG_IGN);
+
+	// circumvent the basic tests
+	if(argc > 1) {
+		if(!strcasecmp(argv[1],"-debug")){
+			debugflag = 1;
+			argc=1;
+		}
+	}
 
 
 #ifdef STOP_SERVER
@@ -40,9 +49,10 @@ int main(int argc, char *argv[]){
 		"********************************************************\n\n"
 		, portno);
 		b=1;
-		basictests();
+		basictests(debugflag);
 #ifdef STOP_SERVER
 		sprintf(cmd,"%s %d &",argv[0],DEFAULT_PORTNO+1);
+		//cprintf(BLUE,"cmd:%s\n", cmd);
 		system(cmd);
 #endif
 	} else {

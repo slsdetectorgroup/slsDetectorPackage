@@ -1,11 +1,11 @@
-SLS Detector Package 3.0.1 released on 2017-09-19
+SLS Detector Package 3.0.1 released on 2017-09-20
 ================================================================================
 
 
 
 INTRODUCTION
 
-This document describes the differences between previous versions and 3.0.1 release.
+This document describes the differences between 3.0.0 and 3.0.1 release.
 
 Manual (both HTML and pdf versions) are provided in
 	manual/docs/
@@ -42,132 +42,55 @@ CONTENTS
 
 
 Changes in User Interface
-=========================
-This release has no changes in user interface from the previous 2.3 version.
-However, receiver data call backs have been redefined for the 
-standard image header.
-
-
-  	
+========================= 	
 	Receiver
 	--------	
-	1.	Multiple Receivers have to be started as different processes, instead of threads
-		due to static variables being used. Please refer example code provided in the 
-		slsDetectorsPackage/manual/manual-api folder (mainReceiver.cpp).
+	1.	Bug Fix: Example receiver users code now handles child process exit
+		better.	Example receiver code in slsDetectorsPackage/manual/manual-api 
+		folder (mainReceiver.cpp).
+
+	2.	detReceiver is now executed with [start tcp port] [number of receivers]
+		as arguments. By default, start tcp port is 1954 and number of receivers
+		is 1.
+		
+	User
+	----
+	1.	Added a few advanced user functions in slsDetectorUser class. 
 		
 
 
 New Features
 ============
-	Package
-	-------
-	1.	One can compile using cmake or the ./cmk.sh script(also uses cmake)
-	  	Run ./cmk.sh -help to get more info. This method does not touch the 
-	  	source files. Please start off with ./cmk.sh -bj9, where (9 is #cores+1)
-	  
-	2.	One can compile the normal way using Makefile (editing Makefile.include
-	  	for the hdf5 options), but this will modify other gitInfo files.
-	
-	
-	General
-	-------
-	3.	UDP Packets from all the detectors will contain the standard sls detector header. 
-		Jungfrau will have an extra 6 bytes preceding the standard header in the udp packets
-		only. X, Y and Z Coordinates define the position of the detector in 3d. These values
-		are not filled in the udp header at the moment, but will be in the files and receiver
-		call backs with only x in 1d at the moment.
-	  	
-	4.	When acquire has started, one can use sls_detector_get busy to check the status
-		of the acquire. 1 is running 0 is idle. This way one can start acqusition with &,
-		poll the busy command ( or framescaught or frameindex to get status from receiver).
-	  	
-	  	
-	Receiver
-	--------
-	4.	One can choose the file format using the command "fileformat binary/hdf5" from 
-	  	the client, but one must compile with the options as defined in README.md
-	
-	5.	Virtual HDF5 file maps all the files into a single file.
-	
-	6.	Gotthard, Propix and Moench also save data in the same way as Jungfrau and Eiger,
-	  	as described above (ie. without any packet headers, only standard image headers 
-	  	for each image data)
-	
-	7.	(Eiger) The ascii part of the file (file header with acquisition parameters) moved to 
-	  	a separate file called the master file. So one master file per acquisition.
-	  
-	  
-   	Client
-	------
-	8.	(Eiger) Can now set Threshold without uploading Trimbits.
-	
-	9. 	(Eiger)	Setting high voltage returns -999 for only slave and on the multi level gives
-		the value of the master only.
-		
-	10.	StartAcquisition (or sls_detector_put status start) parallelized.
-	
-	
-	Gui
-	---
-	10.	Set the data streaming port (individually/ a single one that calculates for the other
-	  	receiver streamer threads) via the command line
-	
-		
-	Users-API
-	-----
-	11.	manual-api example forks new child processes for every extra receiver object.
+	Detector Server
+	---------------
+	1.	(Eiger): Virtual class to execute on pc for integration.
 
+	
+	Client
+	------
+	1.	Parallelized more commands to detector. Beneficial for large multi detector systems.
+	
+	2.	One can set "threaded" to 0 in the config file and acquire from command line. It will
+		not give you progress, but might be faster for large multi detector systems.
 
 
 Resolved Issues
 ===============
-	Client
-	------
-	1.	 Memory Leak fixed when setting receiver parameters such as udp port or detector 
-	  	network parameter. The signature in slsDetector.cpp and corresponding files have 
-	  	changed, but does not change the slsDetectorUser API.
-	  
-	2.	Bug Fix: Has been made more threadsafe (strtok). Removed bug of configuring MAC 
-	  	correctly even in multiple thread mode.
-	  
-	3.	Bug Fix: Client crashing when rx_hostname is IP instead of a hostname has been fixed.
-	
-	
-	
-	Server
-	------
-	4.	(Eiger/Jungfrau) Bug Fix: Client crashing should not crash the server as SIGPIPE 
-	  	signal is caught.
-	  
-	5.	(Eiger) Bug Fix: Front End Temperature read out conversion fixed.
-	
-	6.	(Eiger) Bug Fix: sls_detector_get trimval(get all trimbits) would return only the first pixel 
-		value. Now it returns -1 if all the pixels are different.
-	  
-	  
-	Receiver
-	--------	  
-	6.	Bug Fix: Ctrl+C kills the receiver properly calling the appropriate destructors.
-	
-	7.	Acquire & Unblocking acquire (receiver start, status start, receiver stop) can work
-	  	also when switching from gui to command line and vice versa.
-	  
-	8.	Bug Fix: sls_detector_get frameindex was always returning 0.
-	
-	9.	Bug Fix: In the rare chance that the shut down socket is still processing in 
-		the genericsocket class, but the object is being deleted. 
-		
-	10.	(Eiger): When running independent(not slsReceiver) receiver, one needn't do receiver start
-		to prepare acquisition. Prepare Acquisition has been moved to StartAcqusition and
-		StartAndReadAll. 
-	
-	11.	(Gotthard): 639 pixels in first packet and 641 pixels in second packet. The first pixel in second 
-		packet was unaccounted for. This is fixed now.
-
+	Gui
+	---
+	1.	(Eiger) in advanced mode: Loading trimbits and gui complains of different trimbits and
+		sets all trimbits to 0. This has been resolved now.
 
 
 Known Issues
 ============
+	Client
+	------
+	1. 	Changing file name prefix at the single detector level will not concatenate scan or 
+		position variables to the file name prefix. This is now done only at the multi
+		detector level. 
+	
+
 	Server
 	------
 	1.	(Eiger) The hardware mac of the detector is used (not relayed back to the client). 
@@ -177,8 +100,10 @@ Known Issues
 	2.	Standard header fills x-coord in 1D. y-coord and z-coord is not implemented (3D).
 	
 	
-	3. HDF5 compression and filters are not implemented yet.
-
+	Receiver
+	--------
+	
+	3. 	HDF5 compression and filters are not implemented yet.
 
 
 

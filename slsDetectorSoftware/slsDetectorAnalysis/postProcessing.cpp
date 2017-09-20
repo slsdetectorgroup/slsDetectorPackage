@@ -559,7 +559,7 @@ void* postProcessing::processData(int delflag) {
  					break;
  				}
 
- 				usleep(200 * 1000); //20ms need this else connecting error to receiver (too fast)
+ 				usleep(100 * 1000); //20ms need this else connecting error to receiver (too fast)
  			}
  		}
 	}

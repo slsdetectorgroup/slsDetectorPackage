@@ -312,51 +312,19 @@ int slsDetectorUsers::setClockDivider(int value) {
 	return myDetector->setClockDivider(value);
 }
 
-int slsDetectorUsers::getContinuousReadoutFlag(){
-	return myDetector->getContinuousReadoutFlag();
-}
-
-void slsDetectorUsers::setContinuousReadoutFlag(){
-	myDetector->setContinuousReadoutFlag();
-}
-
-int slsDetectorUsers::getStoreInRamReadoutFlag(){
-	return myDetector->getStoreInRamReadoutFlag();
-}
-
-void slsDetectorUsers::setStoreInRamReadoutFlag(){
-	myDetector->setStoreInRamReadoutFlag();
-}
-
-int slsDetectorUsers::getParallelReadoutFlag(){
-	return myDetector->getParallelReadoutFlag();
-}
-
-void slsDetectorUsers::setParallelReadoutFlag(){
-	myDetector->setParallelReadoutFlag();
-}
-
-int slsDetectorUsers::getNonParallelReadoutFlag(){
-	return myDetector->getNonParallelReadoutFlag();
-}
-
-void slsDetectorUsers::setNonParallelReadoutFlag(){
-	myDetector->setNonParallelReadoutFlag();
-}
-
-int slsDetectorUsers::getSafeReadoutFlag(){
-	return myDetector->getSafeReadoutFlag();
-}
-
-void slsDetectorUsers::setSafeReadoutFlag(){
-	myDetector->setSafeReadoutFlag();
+int slsDetectorUsers::setParallelMode(int value) {
+	if(value >= 0)
+		myDetector->setParallelMode(value);
+	return myDetector->getParallelMode();
 }
 
 int slsDetectorUsers::setAllTrimbits(int val, int id) {
 	return myDetector->setAllTrimbits(val, id);
 }
 
-int slsDetectorUsers::setDAC(int dacindex, int val, int id) {
+int slsDetectorUsers::setDAC(string dac, int val, int id) {
+	int dacindex = myDetector->getDACIndex(dac);
+	if(dacindex == -1) return -9999;
 	return myDetector->setDACValue(val, dacindex, id);
 }
 

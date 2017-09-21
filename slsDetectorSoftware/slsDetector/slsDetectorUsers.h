@@ -553,8 +553,6 @@ class slsDetectorUsers
     */
    int setClockDivider(int value);
 
-
-
     /**
       @short sets parallel mode
       \param value 0 for non parallel, 1 for parallel, 2 for safe mode (-1 gets)

@@ -829,6 +829,42 @@ virtual void readFrameFromReceiver()=0;
     }};
 
 
+  /**
+     @short returns adc index from string
+     \param s can be temp_adc, temp_fpga, temp_fpgaext, temp_10ge, temp_dcdc, temp_sodl, temp_sodr, temp_fpgafl, temp_fpgafr,
+     i_a, i_b, i_c, i_d, vm_a, vm_b,vm_c, vm_d, vm_io, i_io
+     \returns  TEMPERATURE_ADC, TEMPERATURE_FPGA, TEMPERATURE_FPGAEXT, TEMPERATURE_10GE, TEMPERATURE_DCDC, TEMPERATURE_SODL,
+     TEMPERATURE_SODR, TEMPERATURE_FPGA2, TEMPERATURE_FPGA3, I_POWER_A, I_POWER_B, I_POWER_C, I_POWER_D, V_POWER_A, V_POWER_B,
+     V_POWER_C, V_POWER_D, V_POWER_IO, I_POWER_IO
+     -1 when wrong mode
+  */
+  static int getADCIndex(string s){
+	  {
+		  int idac;
+		  if (sscanf(s.c_str(),"adc:%d",&idac)==1)
+			  return (dacIndex)(idac+1000);
+	  }
+	  if (s=="temp_adc")	  	return TEMPERATURE_ADC;
+	  if (s=="temp_fpga")	  	return TEMPERATURE_FPGA;
+	  if (s=="temp_fpgaext")	return TEMPERATURE_FPGAEXT;
+	  if (s=="temp_10ge")	  	return TEMPERATURE_10GE;
+	  if (s=="temp_dcdc")	  	return TEMPERATURE_DCDC;
+	  if (s=="temp_sodl")	  	return TEMPERATURE_SODL;
+	  if (s=="temp_sodr")	  	return TEMPERATURE_SODR;
+	  if (s=="temp_fpgafl")		return TEMPERATURE_FPGA2;
+	  if (s=="temp_fpgafr")		return TEMPERATURE_FPGA3;
+	  if (s=="i_a")	  			return I_POWER_A;
+	  if (s=="i_b")	  			return I_POWER_B;
+	  if (s=="i_c")	  			return I_POWER_C;
+	  if (s=="i_d")	  			return I_POWER_D;
+	  if (s=="vm_a")	  		return V_POWER_A;
+	  if (s=="vm_b")	  		return V_POWER_B;
+	  if (s=="vm_c")	  		return V_POWER_C;
+	  if (s=="vm_d")	  		return V_POWER_D;
+	  if (s=="vm_io")	  		return V_POWER_IO;
+	  if (s=="i_io")	  		return I_POWER_IO;
+	  return -1;
+  };
 
 };
 

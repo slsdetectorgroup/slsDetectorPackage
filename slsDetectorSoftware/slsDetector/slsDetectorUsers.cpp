@@ -174,8 +174,6 @@ double slsDetectorUsers::setDelayAfterTrigger(double t, bool inseconds){
     return  ((1E-9) * (double)myDetector->setDelayAfterTrigger(tms));
 }
 
-
-
 int64_t slsDetectorUsers::setNumberOfGates(int64_t t){
   return myDetector->setNumberOfGates(t);
 } 
@@ -208,14 +206,9 @@ string slsDetectorUsers::getDetectorType(){
   return myDetector->sgetDetectorsType();
 }
 
-
-  
 void slsDetectorUsers::initDataset(int refresh){
   myDetector->initDataset(refresh);
 }
-
-
-
 
 void slsDetectorUsers::addFrame(double *data, double pos, double i0, double t, string fname, double var){
   myDetector->addFrame(data,pos,i0,t,fname,var);
@@ -226,8 +219,6 @@ void slsDetectorUsers::finalizeDataset(double *a, double *v, double *e, int &np)
   myDetector->finalizeDataset(a, v, e, np);
 }
 
-
-
 int slsDetectorUsers::setReceiverMode(int n){
 	return myDetector->setReadReceiverFrequency(1,n);
 }
@@ -235,7 +226,6 @@ int slsDetectorUsers::setReceiverMode(int n){
 int slsDetectorUsers::enableDataStreamingFromReceiver(int i){
 	return myDetector->enableDataStreamingFromReceiver(i);
 }
-
 
 int64_t slsDetectorUsers::getModuleFirmwareVersion(){
 	return myDetector->getModuleFirmwareVersion();
@@ -301,12 +291,13 @@ void slsDetectorUsers::registerGetI0Callback( double (*func)(int,void*),void *ar
 }
 
 
+
+
 string slsDetectorUsers::putCommand(int narg, char *args[], int pos){
 	if(narg < 2)
 		return string("Error: Insufficient Parameters");
 	return myCmd->putCommand(narg, args, pos);
 }
-
 
 string slsDetectorUsers::getCommand(int narg, char *args[], int pos){
 	if(narg < 1)
@@ -315,71 +306,63 @@ string slsDetectorUsers::getCommand(int narg, char *args[], int pos){
 }
 
 
-  
+
+
 int slsDetectorUsers::setClockDivider(int value) {
 	return myDetector->setClockDivider(value);
 }
-
 
 int slsDetectorUsers::getContinuousReadoutFlag(){
 	return myDetector->getContinuousReadoutFlag();
 }
 
-
 void slsDetectorUsers::setContinuousReadoutFlag(){
 	myDetector->setContinuousReadoutFlag();
 }
-
 
 int slsDetectorUsers::getStoreInRamReadoutFlag(){
 	return myDetector->getStoreInRamReadoutFlag();
 }
 
-
 void slsDetectorUsers::setStoreInRamReadoutFlag(){
 	myDetector->setStoreInRamReadoutFlag();
 }
-
 
 int slsDetectorUsers::getParallelReadoutFlag(){
 	return myDetector->getParallelReadoutFlag();
 }
 
-
 void slsDetectorUsers::setParallelReadoutFlag(){
 	myDetector->setParallelReadoutFlag();
 }
-
 
 int slsDetectorUsers::getNonParallelReadoutFlag(){
 	return myDetector->getNonParallelReadoutFlag();
 }
 
-
 void slsDetectorUsers::setNonParallelReadoutFlag(){
 	myDetector->setNonParallelReadoutFlag();
 }
-
 
 int slsDetectorUsers::getSafeReadoutFlag(){
 	return myDetector->getSafeReadoutFlag();
 }
 
-
 void slsDetectorUsers::setSafeReadoutFlag(){
 	myDetector->setSafeReadoutFlag();
 }
 
-int slsDetectorUsers::setAllTrimbits(int val) {
-	return myDetector->setAllTrimbits(val);
+int slsDetectorUsers::setAllTrimbits(int val, int id) {
+	return myDetector->setAllTrimbits(val, id);
 }
-
 
 int slsDetectorUsers::setDAC(int dacindex, int val, int id) {
 	return myDetector->setDACValue(val, dacindex, id);
 }
 
-int slsDetectorUsers::getADC(int adcindex, int id) {
+int slsDetectorUsers::getADC(string adc, int id) {
+	int adcindex = myDetector->getADCIndex(adc);
+	if(adcindex == -1) return -9999;
 	return myDetector->getADCValue(adcindex, id);
 }
 

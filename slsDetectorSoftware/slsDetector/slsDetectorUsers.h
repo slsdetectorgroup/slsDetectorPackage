@@ -616,9 +616,10 @@ class slsDetectorUsers
    /**
       @short sets all trimbits to value (only available for eiger)
       \param val value to be set (-1 gets)
+      \param id module index (-1 for all)
       \returns value set
     */
-   int setAllTrimbits(int val);
+   int setAllTrimbits(int val, int id = -1);
 
    /**
       @short set dac value
@@ -631,12 +632,12 @@ class slsDetectorUsers
 
    /**
       @short get adc value
-      \param adcindex adc index \sa dacIndex
+      \param adc adc as string. can be temp_adc, temp_fpga, temp_fpgaext, temp_10ge, temp_dcdc, temp_sodl, temp_sodr, temp_fpgafl, temp_fpgafr,
+     i_a, i_b, i_c, i_d, vm_a, vm_b,vm_c, vm_d, vm_io, i_io
       \param id module index (-1 for all)
-      \returns adc value
+      \returns adc value, -1 (if id=-1,adcvalue is different for all modules), -9999 if adc string does not match
     */
-   int getADC(int adcindex, int id = -1);
-
+   int getADC(string adc, int id = -1);
 
    /**
       @short start receiver listening mode
@@ -730,7 +731,7 @@ class slsDetectorUsers
 
   /**
      @short returns external communication mode string from index
-     \param f index for communication mode
+     \param s index for communication mode
      \returns  auto, trigger, ro_trigger, gating, triggered_gating, unknown when wrong mode
   */
 

@@ -376,10 +376,21 @@ int slsDetectorUsers::setAllTrimbits(int val) {
 
 
 int slsDetectorUsers::setDAC(int id, int dacindex, int val) {
-		return myDetector->setDACValue(val, dacindex, id);
+	return myDetector->setDACValue(val, dacindex, id);
 }
 
 int slsDetectorUsers::getADC(int id, int adcindex) {
-		return myDetector->getADCValue(adcindex, id);
+	return myDetector->getADCValue(adcindex, id);
 }
 
+int slsDetectorUsers::stopReceiver() {
+	return myDetector->startReceiver();
+}
+
+int slsDetectorUsers::stopReceiver() {
+	return myDetector->stopReceiver();
+}
+
+int slsDetectorUsers::startAcquisition() {
+	return myDetector->startAcquisition();
+}

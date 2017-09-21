@@ -637,6 +637,31 @@ class slsDetectorUsers
     */
    int getADC(int id, int adcindex);
 
+
+   /**
+      @short start receiver listening mode
+      \param returns OK or FAIL
+    */
+   int startReceiver();
+
+   /**
+      @short stop receiver listening mode
+      \param returns OK or FAIL
+    */
+   int stopReceiver();
+
+   /**
+      @short stop receiver listening mode
+      \param returns OK or FAIL
+    */
+   int stopReceiver();
+
+   /**
+      start detector acquisition in non blocking mode
+      \returns OK if all detectors are properly started, FAIL otherwise
+   */
+   int startAcquisition();
+
   /************************************************************************
 
                            STATIC FUNCTIONS

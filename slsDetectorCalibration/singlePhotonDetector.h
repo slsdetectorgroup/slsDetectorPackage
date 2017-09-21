@@ -1,50 +1,35 @@
 #ifndef SINGLEPHOTONDETECTOR_H
-#define  SINGLEPHOTONDETECTOR_H
+#define SINGLEPHOTONDETECTOR_H
 
-
-#include "slsDetectorData.h"
+#include "analogDetector.h" 
 
 #include "single_photon_hit.h"
-#include "pedestalSubtraction.h"
-#include "commonModeSubtraction.h"
+
 
 
 //#define MYROOT1
 
 #ifdef MYROOT1
 #include <TTree.h>
-
 #endif
 
 
-#include <iostream>
-
-using namespace std;
-
-
-  enum eventType {
-    PEDESTAL=0,
-    NEIGHBOUR=1,
-    PHOTON=2,
-    PHOTON_MAX=3,
-    NEGATIVE_PEDESTAL=4,
-    UNDEFINED_EVENT=-1
-  };
-
-#ifndef DEF_QUAD
-#define DEF_QUAD
-  enum quadrant {
-    TOP_LEFT=0,
-    TOP_RIGHT=1,
-    BOTTOM_LEFT=2,
-    BOTTOM_RIGHT=3,
-    UNDEFINED_QUADRANT=-1
-  };
+#ifndef EVTYPE_DEF
+#define EVTYPE_DEF
+enum eventType {
+  PEDESTAL=0,
+  NEIGHBOUR=1,
+  PHOTON=2,
+  PHOTON_MAX=3,
+  NEGATIVE_PEDESTAL=4,
+  UNDEFINED_EVENT=-1
+};
 #endif
 
-
-template <class dataType>
-class singlePhotonDetector {
+//template <class dataType> class singlePhotonDetector : 
+//public analogDetector<dataType> {
+class singlePhotonDetector : 
+public analogDetector<uint16_t> {
 
   /** @short class to perform pedestal subtraction etc. and find single photon clusters for an analog detector */
 
@@ -66,27 +51,25 @@ class singlePhotonDetector {
   */
   
 
-  singlePhotonDetector(slsDetectorData<dataType> *d, 
-		       int csize=3, 
-		       double nsigma=5,  
-		       int sign=1, 
-		       commonModeSubtraction *cm=NULL,
-		       int nped=1000, 
-		       int nd=100) : det(d), nx(0), ny(0), stat(NULL), cmSub(cm),  nDark(nd), eventMask(NULL),nSigma (nsigma), clusterSize(csize), clusterSizeY(csize), cluster(NULL), iframe(-1), dataSign(sign), quad(UNDEFINED_QUADRANT), tot(0), quadTot(0) {
-
-   
-    det->getDetectorSize(nx,ny);
+ singlePhotonDetector(slsDetectorData<uint16_t> *d,
+		      int csize=3,
+		      double nsigma=5,
+		      int sign=1,
+		      commonModeSubtraction *cm=NULL,
+		      int nped=1000,
+		      int nd=100, int nnx=-1, int nny=-1) : analogDetector<uint16_t>(d, sign, cm, nnx, nny),   nDark(nd), eventMask(NULL),nSigma (nsigma), clusterSize(csize), clusterSizeY(csize), cluster(NULL),   quad(UNDEFINED_QUADRANT), tot(0), quadTot(0) {
     
-
-
-    stat=new pedestalSubtraction*[ny];
+    
+    
+    
     eventMask=new eventType*[ny];
     for (int i=0; i<ny; i++) {
-      stat[i]=new pedestalSubtraction[nx];
-      stat[i]->SetNPedestals(nped);
       eventMask[i]=new eventType[nx];
+      for (int ix=0; ix<nx; ix++) {
+	stat[i][ix].SetNPedestals(nped);
+      }
     }
-   
+    
     if (ny==1)
       clusterSizeY=1;
 
@@ -97,71 +80,14 @@ class singlePhotonDetector {
     /**
        destructor. Deletes the cluster structure and the pdestalSubtraction array
     */
-    virtual ~singlePhotonDetector() {delete cluster; for (int i=0; i<ny; i++) delete [] stat[i]; delete [] stat;};
+  virtual ~singlePhotonDetector() {delete cluster;};
 
     
-    /** resets the pedestalSubtraction array and the commonModeSubtraction */
-    void newDataSet(){iframe=-1; for (int iy=0; iy<ny; iy++) for (int ix=0; ix<nx; ix++) stat[iy][ix].Clear(); if (cmSub) cmSub->Clear(); };  
-
-    /** resets the eventMask to undefined and the commonModeSubtraction */
-    void newFrame(){iframe++; for (int iy=0; iy<ny; iy++) for (int ix=0; ix<nx; ix++) eventMask[iy][ix]=UNDEFINED_EVENT; if (cmSub) cmSub->newFrame();};
-
-
-    /** sets the commonModeSubtraction algorithm to be used 
-	\param cm commonModeSubtraction algorithm to be used (NULL unsets) 
-	\returns pointer to the actual common mode subtraction algorithm
-    */
-    commonModeSubtraction *setCommonModeSubtraction(commonModeSubtraction *cm) {cmSub=cm; return cmSub;};
-
-
-    /**
-       sets the sign of the data
-       \param sign 1 means positive values for photons, -1 negative, 0 gets
-       \returns current sign for the data
-    */
-    int setDataSign(int sign=0) {if (sign==1 || sign==-1) dataSign=sign; return dataSign;};
+  
+    /* /\** resets the eventMask to undefined and the commonModeSubtraction *\/ */
+    /* void newFrame(){analogDetector::newFrame(); for (int iy=0; iy<ny; iy++) for (int ix=0; ix<nx; ix++) eventMask[iy][ix]=UNDEFINED_EVENT; }; */
 
     
-    /**
-       adds value to pedestal (and common mode) for the given pixel
-       \param val value to be added
-       \param ix pixel x coordinate
-       \param iy pixel y coordinate
-    */
-    virtual void addToPedestal(double val, int ix, int iy){ 
-      //	cout << "*"<< ix << " " << iy << " " << val << endl;
-      if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
-	//	cout << ix << " " << iy << " " << val << endl;
-	stat[iy][ix].addToPedestal(val); 
-	if (cmSub && det->isGood(ix, iy) ) 
-	  cmSub->addToCommonMode(val, ix, iy);
-      };
-    };
-
-  /**
-       gets  pedestal (and common mode)
-       \param ix pixel x coordinate
-       \param iy pixel y coordinate
-       \param cm 0 (default) without common mode subtraction, 1 with common mode subtraction (if defined)
-    */
-    virtual double getPedestal(int ix, int iy, int cm=0){if (ix>=0 && ix<nx && iy>=0 && iy<ny) if (cmSub && cm>0) return stat[iy][ix].getPedestal()-cmSub->getCommonMode(); else return stat[iy][ix].getPedestal(); else return -1;};
-
-  /**
-       gets  pedestal rms (i.e. noise)
-       \param ix pixel x coordinate
-       \param iy pixel y coordinate
-    */
-    double getPedestalRMS(int ix, int iy){if (ix>=0 && ix<nx && iy>=0 && iy<ny) return stat[iy][ix].getPedestalRMS();else return -1;};
-
-
-  /**
-       sets  pedestal
-       \param ix pixel x coordinate
-       \param iy pixel y coordinate
-       \param val value to set
-    */
-    virtual void setPedestal(int ix, int iy, double val, double rms=0){if (ix>=0 && ix<nx && iy>=0 && iy<ny) stat[iy][ix].setPedestal(val,rms);};
-
  
 
   
@@ -180,9 +106,9 @@ class singlePhotonDetector {
       if (n>0 && n!=clusterSize) {
 	if (n%2==0)
 	  n+=1;
-	clusterSize=n; 
+	clusterSize=n;
 	if (cluster)
-	  delete cluster;    
+	  delete cluster;
 	if (ny>1)
 	  clusterSizeY=clusterSize;
 	cluster=new single_photon_hit(clusterSize,clusterSizeY);
@@ -192,13 +118,15 @@ class singlePhotonDetector {
 
 
 
-    int *getNPhotons(char *data, double thr=-1) {
+    virtual int *getNPhotons(char *data, double thr=-1) {
 
       double val;
       int *nph=new int[nx*ny];
       double rest[ny][nx];
       int cy=(clusterSizeY+1)/2;
       int cs=(clusterSize+1)/2;
+      
+      
 
       int ccs=clusterSize;
       int ccy=clusterSizeY;
@@ -219,20 +147,16 @@ class singlePhotonDetector {
 
       for (int ix=0; ix<nx; ix++) {
       for (int iy=0; iy<ny; iy++) {
-	
-	val=dataSign*(det->getValue(data, ix, iy)-getPedestal(ix,iy,0));
-	
+	 
 	if (thr<=0) tthr=nSigma*getPedestalRMS(ix,iy);
+    
+	val=subtractPedestal(data,ix,iy);
+
+	nph[ix+nx*iy]=analogDetector<uint16_t>::getNPhotons(data,ix,iy,tthr);
 	
-	nn=val/tthr;
-	
-	if (nn>0) {
-	  rest[iy][ix]=val-nn*tthr;
-	  nph[ix+nx*iy]=nn;
-	} else {
-	  rest[iy][ix]=val;
-	  nph[ix+nx*iy]=0;
-	}
+	rest[iy][ix]=subtractPedestal(data,ix,iy)-nph[ix+nx*iy]*tthr;
+	  
+	  
       }
       
       }
@@ -242,9 +166,9 @@ class singlePhotonDetector {
 	
 	  if (thr<=0) tthr=nSigma*getPedestalRMS(ix,iy);
 	  
-	  max=0; 
+	  max=0;
 	  tl=0;
-	  tr=0; 
+	  tr=0;
 	  bl=0;
 	  br=0;
 	  
@@ -269,16 +193,13 @@ class singlePhotonDetector {
 		if (ir==0 && ic==0) {
 		  if (v>tthr) {
 		    eventMask[iy][ix]=PHOTON;
-		  } 
+		  }
 		}
 	      }
 	    }
 	  }
-	  
-
 	  //if (cluster->get_data(0,0)>=max) {
 	    if (rest[iy][ix]>=max) {
-	    
 	    if (bl>=br && bl>=tl && bl>=tr) {
 	      quad=BOTTOM_LEFT;
 	      quadTot=bl;
@@ -291,17 +212,15 @@ class singlePhotonDetector {
 	    } else if   (tr>=bl && tr>=tl && tr>=br) {
 	      quad=TOP_RIGHT;
 	      quadTot=tr;
-	    } 
+	    }
 	    if (rest[iy][ix]>tthr || tot>sqrt(ccy*ccs)*tthr || quadTot>sqrt(cy*cs)*tthr) {
 	      nph[ix+nx*iy]++;
 	      rest[iy][ix]-=tthr;
 	    }
-	  }      
+	  }
 	}
 	
       }
-
-      
       return nph;
 
     }
@@ -315,7 +234,7 @@ class singlePhotonDetector {
 	/param data pointer to the data
 	/param ix pixel x coordinate
 	/param iy pixel y coordinate
-	/param cm enable(1)/disable(0) common mode subtraction (if defined). 
+	/param cm enable(1)/disable(0) common mode subtraction (if defined).
 	/returns event type for the given pixel
     */
     eventType getEventType(char *data, int ix, int iy, int cm=0) {
@@ -326,42 +245,39 @@ class singlePhotonDetector {
     
       int cy=(clusterSizeY+1)/2;
       int cs=(clusterSize+1)/2;
-
-
-
+      double val;
       tot=0;
       quadTot=0;
       quad=UNDEFINED_QUADRANT;
 
-
       if (iframe<nDark) {
-	if (cm==0) {
-	  //  cout << "=" << endl;
-	  addToPedestal(det->getValue(data, ix, iy),ix,iy);
-	  cluster->set_data(dataSign*(det->getValue(data, ix, iy)-getPedestal(ix,iy,cm)), 0,0       );
-	  // cout << "=" << endl;
-	}
+	addToPedestal(data, ix,iy);
 	return UNDEFINED_EVENT;
       }
-      
+
+
+     
       
 
       //   if (eventMask[iy][ix]==UNDEFINED) {
 	
-	eventMask[iy][ix]=PEDESTAL;
+      eventMask[iy][ix]=PEDESTAL;
 	
 	
-	cluster->x=ix;
-	cluster->y=iy;
-	cluster->rms=getPedestalRMS(ix,iy);
-	cluster->ped=getPedestal(ix,iy, cm);
+      cluster->x=ix;
+      cluster->y=iy;
+      cluster->rms=getPedestalRMS(ix,iy);
+      cluster->ped=getPedestal(ix,iy, cm);
 	
 
-	for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
-	  for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
+      for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
+	for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
 	    if ((iy+ir)>=0 && (iy+ir)<ny && (ix+ic)>=0 && (ix+ic)<nx) {
-	      cluster->set_data(dataSign*(det->getValue(data, ix+ic, iy+ir)-getPedestal(ix+ic,iy+ir,cm)), ic, ir       );
-	      v=cluster->get_data(ic,ir);
+	      
+	      v=subtractPedestal(data, ix+ic, iy+ir);
+	      
+	      cluster->set_data(v, ic, ir);
+	      //  v=cluster->get_data(ic,ir);
 	      tot+=v;
 	      if (ir<=0 && ic<=0)
 		bl+=v;
@@ -395,7 +311,7 @@ class singlePhotonDetector {
      	} else if   (tr>=bl && tr>=tl && tr>=br) {
 	  quad=TOP_RIGHT;
 	  quadTot=tr;
-	} 
+	}
 	
 	if (max>nSigma*cluster->rms || tot>sqrt(clusterSizeY*clusterSize)*nSigma*cluster->rms || quadTot>cy*cs*nSigma*cluster->rms) {
 	  if (cluster->get_data(0,0)>=max) {
@@ -404,18 +320,136 @@ class singlePhotonDetector {
 	    eventMask[iy][ix]=PHOTON;
 	  }
 	} else if (eventMask[iy][ix]==PEDESTAL) {
-	  if (cm==0)
-	    addToPedestal(det->getValue(data, ix, iy),ix,iy);
+	  if (cm==0) {
+	    if (det)
+	      val=dataSign*det->getValue(data, ix, iy);
+	    else
+	      val=((double**)data)[iy][ix];
+	    addToPedestal(val,ix,iy);
+	  }
 	}
       
-	
+
 
       return  eventMask[iy][ix];
 
   };
 
+
+int getClusters(char *data, single_photon_hit *clusters) {
+
+ 
+  int nph=0;
+  double val[ny][nx];
+  int cy=(clusterSizeY+1)/2;
+  int cs=(clusterSize+1)/2;
+  int ir, ic;
+  
+  double max=0, tl=0, tr=0, bl=0,br=0, *v, vv;
+
+  if (iframe<nDark) {
+    addToPedestal(data);
+    return 0;
+  }
+  newFrame();
+  for (int ix=0; ix<nx; ix++) {
+    for (int iy=0; iy<ny; iy++) {
+      
+      max=0;
+      tl=0;
+      tr=0;
+      bl=0;
+      br=0;
+      tot=0;
+      quadTot=0;
+      quad=UNDEFINED_QUADRANT;
+
+     
+
+      eventMask[iy][ix]=PEDESTAL;
+      
+	
+      (clusters+nph)->rms=getPedestalRMS(ix,iy);
+      
+      
+      
+      for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
+	for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
+	  
+	  if ((iy+ir)>=iy && (iy+ir)<ny && (ix+ic)>=ix && (ix+ic)<nx) {
+	    val[iy+ir][ix+ic]=subtractPedestal(data,ix+ic,iy+ir);
+	  }
+	  
+	  v=&(val[iy+ir][ix+ic]);
+	  tot+=*v;
+	  if (ir<=0 && ic<=0)
+	    bl+=*v;
+	  if (ir<=0 && ic>=0)
+	    br+=*v;
+	  if (ir>=0 && ic<=0)
+	    tl+=*v;
+	  if (ir>=0 && ic>=0)
+	    tr+=*v;
+	  if (*v>max) {
+	    max=*v;
+	  }
+	  
+	  
+	  if (ir==0 && ic==0) {
+	    if (*v<-nSigma*cluster->rms)
+	      eventMask[iy][ix]=NEGATIVE_PEDESTAL;
+	  }
+	  
+	}
+      }
+      
+      if (bl>=br && bl>=tl && bl>=tr) {
+	(clusters+nph)->quad=BOTTOM_LEFT;
+	(clusters+nph)->quadTot=bl;
+      } else if (br>=bl && br>=tl && br>=tr) {
+	(clusters+nph)->quad=BOTTOM_RIGHT;
+	(clusters+nph)->quadTot=br;
+      } else if (tl>=br && tl>=bl && tl>=tr) {
+	(clusters+nph)->quad=TOP_LEFT;
+	(clusters+nph)->quadTot=tl;
+      } else if   (tr>=bl && tr>=tl && tr>=br) {
+	(clusters+nph)->quad=TOP_RIGHT;
+	(clusters+nph)->quadTot=tr;
+      }
+      
+      if (max>nSigma*cluster->rms || tot>sqrt(clusterSizeY*clusterSize)*nSigma*cluster->rms || ((clusters+nph)->quadTot)>sqrt(cy*cs)*nSigma*cluster->rms) {
+	if (val[iy][ix]>=max) {
+	  eventMask[iy][ix]=PHOTON_MAX;
+	  (clusters+nph)->tot=tot;
+	  (clusters+nph)->x=ix;
+	  (clusters+nph)->y=iy;
+	  (clusters+nph)->ped=getPedestal(ix,iy,0);
+	  for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
+	    for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
+	      (clusters+nph)->set_data(val[iy+ir][ix+ic],ic,ir);
+	    }
+	  }
+	  nph++;
+
+
+	  } else {
+	    eventMask[iy][ix]=PHOTON;
+	  }
+      } else if (eventMask[iy][ix]==PEDESTAL) {
+	addToPedestal(data,ix,iy);
+      }
+
+
+    }
+  }
+
+  return  nph;
+  
+};
+
+
     /**<
-       retrurns the total signal in a cluster
+       returns the total signal in a cluster
        \param size cluser size  should be 1,2 or 3
        \returns cluster center if size=1, sum of the maximum quadrant if size=2, total of the cluster if size=3 or anything else
     */
@@ -437,12 +471,7 @@ class singlePhotonDetector {
 
     quadrant getQuadrant() {return quad;};
 
-    /** sets/gets number of samples for moving average pedestal calculation
-	\param i number of samples to be set (0 or negative gets)
-	\returns actual number of samples
-    */
-    int SetNPedestals(int i=-1) {int ix=0, iy=0; if (i>0) for (ix=0; ix<nx; ix++) for (iy=0; iy<ny; iy++) stat[iy][ix].SetNPedestals(i); return stat[0][0].SetNPedestals();};
-
+  
     /** returns value for cluster element in relative coordinates
 	\param ic x coordinate (center is (0,0))
 	\param ir y coordinate (center is (0,0))
@@ -458,7 +487,7 @@ class singlePhotonDetector {
     eventType getEventMask(int ic, int ir=0){return eventMask[ir][ic];};
  
 
-#ifdef MYROOT1  
+#ifdef MYROOT1
     /** generates a tree and maps the branches
 	\param tname name for the tree
 	\param iFrame pointer to the frame number
@@ -479,6 +508,9 @@ class singlePhotonDetector {
       tall->Branch("data",cluster->data,tit);
       tall->Branch("pedestal",&(cluster->ped),"pedestal/D");
       tall->Branch("rms",&(cluster->rms),"rms/D");
+      tall->Branch("tot",&(cluster->tot),"tot/D");
+      tall->Branch("quadTot",&(cluster->quadTot),"quadTot/D");
+      tall->Branch("quad",&(cluster->quad),"quad/I");
       return tall;
     };
 #else
@@ -488,23 +520,15 @@ class singlePhotonDetector {
 #endif
 
 
- private:
+ protected:
   
-    slsDetectorData<dataType> *det; /**< slsDetectorData to be used */
-    int nx; /**< Size of the detector in x direction */
-    int ny; /**< Size of the detector in y direction */
 
-
-    pedestalSubtraction **stat; /**< pedestalSubtraction class */
-    commonModeSubtraction *cmSub;/**< commonModeSubtraction class */
     int nDark; /**< number of frames to be used at the beginning of the dataset to calculate pedestal without applying photon discrimination */
     eventType **eventMask; /**< matrix of event type or each pixel */
     double nSigma; /**< number of sigma parameter for photon discrimination */
     int clusterSize; /**< cluster size in the x direction */
     int clusterSizeY; /**< cluster size in the y direction i.e. 1 for strips, clusterSize for pixels */
     single_photon_hit *cluster; /**< single photon hit data structure */
-    int iframe;  /**< frame number (not from file but incremented within the dataset every time newFrame is called */
-    int dataSign; /**< sign of the data i.e. 1 if photon is positive, -1 if negative */
     quadrant quad; /**< quadrant where the photon is located */
     double tot; /**< sum of the 3x3 cluster */
     double quadTot; /**< sum of the maximum 2x2cluster */

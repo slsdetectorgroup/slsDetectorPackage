@@ -1,9 +1,11 @@
 #ifndef SLS_INTERPOLATION_H
 #define SLS_INTERPOLATION_H
 
+#ifdef MYROOT1
 #include <TObject.h>
 #include <TTree.h>
 #include <TH2F.h>
+#endif
 
 #ifndef DEF_QUAD
 #define DEF_QUAD
@@ -16,35 +18,76 @@
   };
 #endif
 
-class slsInterpolation : public TObject{
+//#ifdef MYROOT1
+//: public TObject
+//#endif
+class slsInterpolation 
+{
 
  public:
- slsInterpolation(int nx=40, int ny=160, int ns=25) :nPixelsX(nx), nPixelsY(ny),  nSubPixels(ns) {hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);};
- 
+ slsInterpolation(int nx=400, int ny=400, int ns=25) :nPixelsX(nx), nPixelsY(ny),  nSubPixels(ns) {
+   
+#ifdef MYROOT1
+hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
+#endif
+   
+#ifndef MYROOT1
+ hint=new int[ns*nx*ns*ny];
+#endif
+
+};
+  
+  int getNSubPixels() {return nSubPixels;};
+  
+  
   //create eta distribution, eta rebinnining etc.
   //returns flat field image
   virtual void prepareInterpolation(int &ok)=0;
 
   //create interpolated image
   //returns interpolated image
+#ifdef MYROOT1
   virtual TH2F *getInterpolatedImage(){return hint;};
+#endif
+
+#ifndef MYROOT1
+  virtual int *getInterpolatedImage(){return hint;};
+#endif
   //return position inside the pixel for the given photon
-  virtual void getInterpolatedPosition(Int_t x, Int_t y, Double_t *data, Double_t &int_x, Double_t &int_y)=0;
+  virtual void getInterpolatedPosition(int x, int y, double *data, double &int_x, double &int_y)=0;
+  //return position inside the pixel for the given photon
+  virtual void getInterpolatedPosition(int x, int y, double etax, double etay, int quad, double &int_x, double &int_y)=0;
 
-  TH2F *addToImage(Double_t int_x, Double_t int_y){hint->Fill(int_x, int_y); return hint;};
+#ifdef MYROOT1
+  TH2F *addToImage(double int_x, double int_y){hint->Fill(int_x, int_y); return hint;};
+#endif
+
+#ifndef MYROOT1
+  virtual int *addToImage(double int_x, double int_y){ int iy=nSubPixels*int_y; int ix=nSubPixels*int_x; 
+    if (ix>=0 && ix<(nPixelsX*nSubPixels) && iy<(nSubPixels*nPixelsY) && iy>=0 )(*(hint+ix+iy*nPixelsX))+=1; 
+    return hint;
+  };
+#endif
 
 
-
-  virtual int addToFlatField(Double_t *cluster, Double_t &etax, Double_t &etay)=0;
-  virtual int addToFlatField(Double_t etax, Double_t etay)=0;
+  virtual int addToFlatField(double *cluster, double &etax, double &etay)=0;
+  virtual int addToFlatField(double etax, double etay)=0;
   
+#ifdef MYROOT1
+  virtual TH2D *getFlatField(){return NULL;};
+#endif
+
+#ifndef MYROOT1
+  virtual int *getFlatField(){return NULL;};
+#endif
+
   //virtual void Streamer(TBuffer &b);
 
   
-  static int calcQuad(Double_t *cl, Double_t &sum, Double_t &totquad, Double_t sDum[2][2]){
+  static int calcQuad(double *cl, double &sum, double &totquad, double sDum[2][2]){
     
     int corner = UNDEFINED_QUADRANT;
-    Double_t *cluster[3];
+    double *cluster[3];
     cluster[0]=cl;
     cluster[1]=cl+3;
     cluster[2]=cl+6;
@@ -95,8 +138,8 @@ class slsInterpolation : public TObject{
     
   } 
 
-  static int calcEta(Double_t totquad, Double_t sDum[2][2], Double_t &etax, Double_t &etay){
-    Double_t t,r;
+  static int calcEta(double totquad, double sDum[2][2], double &etax, double &etay){
+    double t,r;
     
     if (totquad>0) {
       t = sDum[1][0] + sDum[1][1];
@@ -109,7 +152,7 @@ class slsInterpolation : public TObject{
   } 
 
 
-  static int calcEta(Double_t *cl, Double_t &etax, Double_t &etay, Double_t &sum, Double_t &totquad, Double_t sDum[2][2]) {
+  static int calcEta(double *cl, double &etax, double &etay, double &sum, double &totquad, double sDum[2][2]) {
     int corner = calcQuad(cl,sum,totquad,sDum);
     calcEta(totquad, sDum, etax, etay);
     
@@ -117,8 +160,8 @@ class slsInterpolation : public TObject{
   }
 
 
-  static int calcEtaL(Double_t totquad, int corner, Double_t sDum[2][2], Double_t &etax, Double_t &etay){
-    Double_t t,r, toth, totv;
+  static int calcEtaL(double totquad, int corner, double sDum[2][2], double &etax, double &etay){
+    double t,r, toth, totv;
     if (totquad>0) {
       switch(corner) {
       case TOP_LEFT:
@@ -156,7 +199,7 @@ class slsInterpolation : public TObject{
     return 0;
   }
 
-  static int calcEtaL(Double_t *cl, Double_t &etax, Double_t &etay, Double_t &sum, Double_t &totquad, Double_t sDum[2][2]) {
+  static int calcEtaL(double *cl, double &etax, double &etay, double &sum, double &totquad, double sDum[2][2]) {
     int corner = calcQuad(cl,sum,totquad,sDum);
     calcEtaL(totquad, corner, sDum, etax, etay);
     
@@ -165,7 +208,7 @@ class slsInterpolation : public TObject{
 
 
 
-  static int calcEtaC3(Double_t *cl, Double_t &etax, Double_t &etay, Double_t &sum, Double_t &totquad, Double_t sDum[2][2]){
+  static int calcEtaC3(double *cl, double &etax, double &etay, double &sum, double &totquad, double sDum[2][2]){
     
     int corner = calcQuad(cl,sum,totquad,sDum);
     calcEta(sum, sDum, etax, etay);
@@ -175,8 +218,8 @@ class slsInterpolation : public TObject{
 
 
 
-  static int calcEta3(Double_t *cl, Double_t &etax, Double_t &etay, Double_t &sum) {
-    Double_t l,r,t,b;
+  static int calcEta3(double *cl, double &etax, double &etay, double &sum) {
+    double l,r,t,b;
     sum=cl[0]+cl[1]+cl[2]+cl[3]+cl[4]+cl[5]+cl[6]+cl[7]+cl[8];
     if (sum>0) {
       l=cl[0]+cl[3]+cl[6];
@@ -192,8 +235,8 @@ class slsInterpolation : public TObject{
 
 
 
-  static int calcEta3X(Double_t *cl, Double_t &etax, Double_t &etay, Double_t &sum) {
-    Double_t l,r,t,b;
+  static int calcEta3X(double *cl, double &etax, double &etay, double &sum) {
+    double l,r,t,b;
     sum=cl[0]+cl[1]+cl[2]+cl[3]+cl[4]+cl[5]+cl[6]+cl[7]+cl[8];
     if (sum>0) {
       l=cl[3];
@@ -213,12 +256,14 @@ class slsInterpolation : public TObject{
 
  protected:
   int nPixelsX, nPixelsY;
-  int nSubPixels;
+  int nSubPixels; 
+#ifdef MYROOT1
   TH2F *hint;
+#endif
+#ifndef MYROOT1
+  int *hint;
+#endif
 
-
-  //  ClassDefNV(slsInterpolation,1);
-  // #pragma link C++ class slsInterpolation-;
 };
 
 #endif

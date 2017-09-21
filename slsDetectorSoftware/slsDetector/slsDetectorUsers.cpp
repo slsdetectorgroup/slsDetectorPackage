@@ -375,15 +375,15 @@ int slsDetectorUsers::setAllTrimbits(int val) {
 }
 
 
-int slsDetectorUsers::setDAC(int id, int dacindex, int val) {
+int slsDetectorUsers::setDAC(int dacindex, int val, int id) {
 	return myDetector->setDACValue(val, dacindex, id);
 }
 
-int slsDetectorUsers::getADC(int id, int adcindex) {
+int slsDetectorUsers::getADC(int adcindex, int id) {
 	return myDetector->getADCValue(adcindex, id);
 }
 
-int slsDetectorUsers::stopReceiver() {
+int slsDetectorUsers::startReceiver() {
 	return myDetector->startReceiver();
 }
 

@@ -622,20 +622,20 @@ class slsDetectorUsers
 
    /**
       @short set dac value
-      \param id module index (-1 for all)
       \param dacindex dac index \sa dacIndex
       \param val value to be set (-1 gets)
+      \param id module index (-1 for all)
       \returns dac value
     */
-   int setDAC(int id, int dacindex, int val);
+   int setDAC(int dacindex, int val, int id = -1);
 
    /**
       @short get adc value
-      \param id module index (-1 for all)
       \param adcindex adc index \sa dacIndex
+      \param id module index (-1 for all)
       \returns adc value
     */
-   int getADC(int id, int adcindex);
+   int getADC(int adcindex, int id = -1);
 
 
    /**
@@ -643,12 +643,6 @@ class slsDetectorUsers
       \param returns OK or FAIL
     */
    int startReceiver();
-
-   /**
-      @short stop receiver listening mode
-      \param returns OK or FAIL
-    */
-   int stopReceiver();
 
    /**
       @short stop receiver listening mode

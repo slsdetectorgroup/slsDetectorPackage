@@ -521,16 +521,11 @@ void* postProcessing::processData(int delflag) {
  			int ifp;
 			while(true){
 
- 				//cout.flush();
- 				//cout<<flush;
- 				usleep(100 * 1000); //20ms need this else connecting error to receiver (too fast)
+				// set only in startThread
+				if (*threadedProcessing==0)
+					setTotalProgress();
 
- 				if (checkJoinThread()){
- 					break;
- 				}
-
-
-
+				// to exit acquire by typing q
 				ifp=kbhit();
 				if (ifp!=0){
 					c=fgetc(stdin);
@@ -539,7 +534,6 @@ void* postProcessing::processData(int delflag) {
 						stopAcquisition();
 					}
 				}
-
 
 
  				//get progress
@@ -557,16 +551,17 @@ void* postProcessing::processData(int delflag) {
  				cout << "caught:" << caught << endl;
  #endif
  				}
+
+ 				// exiting loop
+ 				if (*threadedProcessing==0)
+ 					break;
  				if (checkJoinThread()){
  					break;
  				}
 
-
-
+ 				usleep(100 * 1000); //20ms need this else connecting error to receiver (too fast)
  			}
  		}
-
-
 	}
 
 	return 0;

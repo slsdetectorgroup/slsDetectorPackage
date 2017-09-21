@@ -553,89 +553,55 @@ class slsDetectorUsers
     */
    int setClockDivider(int value);
 
-   /**
-      @short gets continuous readout flag
-      \returns gets continuous readout flag
+    /**
+      @short sets parallel mode
+      \param value 0 for non parallel, 1 for parallel, 2 for safe mode (-1 gets)
+      \returns gets parallel mode
     */
-   int getContinuousReadoutFlag();
+   int setParallelMode(int value);
 
-   /**
-      @short sets continuous readout flag
-      \returns OK if successful, else false
-    */
-   void setContinuousReadoutFlag();
-
-   /**
-      @short gets store in ram readout flag
-      \returns gets store in ram readout flag
-    */
-   int getStoreInRamReadoutFlag();
-
-   /**
-      @short sets store in ram readout flag
-      \returns OK if successful, else false
-    */
-   void setStoreInRamReadoutFlag();
-
-   /**
-      @short gets parallel readout flag
-      \returns gets parallel readout flag
-    */
-   int getParallelReadoutFlag();
-
-   /**
-      @short sets parallel readout flag
-      \returns OK if successful, else false
-    */
-   void setParallelReadoutFlag();
-
-   /**
-      @short gets non parallel readout flag
-      \returns gets non parallel readout flag
-    */
-   int getNonParallelReadoutFlag();
-
-   /**
-      @short sets non parallel readout flag
-      \returns OK if successful, else false
-    */
-   void setNonParallelReadoutFlag();
-
-   /**
-      @short gets safe readout flag
-      \returns gets safe readout flag
-    */
-   int getSafeReadoutFlag();
-
-   /**
-      @short sets safe readout flag
-      \returns OK if successful, else false
-    */
-   void setSafeReadoutFlag();
-
-   /**
+    /**
       @short sets all trimbits to value (only available for eiger)
       \param val value to be set (-1 gets)
+      \param id module index (-1 for all)
       \returns value set
     */
-   int setAllTrimbits(int val);
+   int setAllTrimbits(int val, int id = -1);
 
    /**
       @short set dac value
-      \param id module index (-1 for all)
-      \param dacindex dac index \sa dacIndex
+      \param dac dac as string. can be vcmp_ll, vcmp_lr, vcmp_rl, vcmp_rr, vthreshold, vrf, vrs, vtr, vcall, vcp. others not supported
       \param val value to be set (-1 gets)
-      \returns dac value
+      \param id module index (-1 for all)
+      \returns dac value or -1 (if id=-1 & dac value is different for all modules) or -9999 if dac string does not match
     */
-   int setDAC(int id, int dacindex, int val);
+   int setDAC(string dac, int val, int id = -1);
 
    /**
       @short get adc value
+      \param adc adc as string. can be temp_adc, temp_fpga, temp_fpgaext, temp_10ge, temp_dcdc, temp_sodl, temp_sodr, temp_fpgafl, temp_fpgafr. others not supported
       \param id module index (-1 for all)
-      \param adcindex adc index \sa dacIndex
-      \returns adc value
+      \returns adc value or -1 (if id=-1 & adc value is different for all modules) or -9999 if adc string does not match
     */
-   int getADC(int id, int adcindex);
+   int getADC(string adc, int id = -1);
+
+   /**
+      @short start receiver listening mode
+      \param returns OK or FAIL
+    */
+   int startReceiver();
+
+   /**
+      @short stop receiver listening mode
+      \param returns OK or FAIL
+    */
+   int stopReceiver();
+
+   /**
+      start detector acquisition in non blocking mode
+      \returns OK if all detectors are properly started, FAIL otherwise
+   */
+   int startAcquisition();
 
   /************************************************************************
 
@@ -711,7 +677,7 @@ class slsDetectorUsers
 
   /**
      @short returns external communication mode string from index
-     \param f index for communication mode
+     \param s index for communication mode
      \returns  auto, trigger, ro_trigger, gating, triggered_gating, unknown when wrong mode
   */
 

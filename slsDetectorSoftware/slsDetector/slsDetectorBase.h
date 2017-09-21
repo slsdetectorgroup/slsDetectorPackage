@@ -396,16 +396,23 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
      \returns current flag
   */
   virtual int setReadOutFlags(readOutFlags flag=GET_READOUT_FLAGS)=0;
-  int getContinuousReadoutFlag(){if(setReadOutFlags()&CONTINOUS_RO) return OK; return FAIL;};
-  void setContinuousReadoutFlag(){setReadOutFlags(CONTINOUS_RO); };
-  int getStoreInRamReadoutFlag(){if(setReadOutFlags()&STORE_IN_RAM) return OK; return FAIL;};
-  void setStoreInRamReadoutFlag(){setReadOutFlags(STORE_IN_RAM); };
-  int getParallelReadoutFlag(){if(setReadOutFlags()&PARALLEL) return OK; return FAIL;};
-  void setParallelReadoutFlag(){setReadOutFlags(PARALLEL); };
-  int getNonParallelReadoutFlag(){if(setReadOutFlags()&NONPARALLEL) return OK; return FAIL;};
-  void setNonParallelReadoutFlag(){setReadOutFlags(NONPARALLEL); };
-  int getSafeReadoutFlag(){if(setReadOutFlags()&SAFE) return OK; return FAIL;};
-  void setSafeReadoutFlag(){setReadOutFlags(SAFE); };
+  void setParallelMode(int value){						\
+	  if(value>=0){										\
+		  switch(value){								\
+		  case 0: setReadOutFlags(NONPARALLEL);break;	\
+		  case 1: setReadOutFlags(PARALLEL);break;		\
+		  default: setReadOutFlags(SAFE);break;			\
+		  }												\
+	  }													\
+  };													\
+  int getParallelMode(){								\
+	  int ret = setReadOutFlags();						\
+	  if (ret&NONPARALLEL) return 0;					\
+	  if (ret&PARALLEL) return 1;						\
+	  if (ret&SAFE) return 2; 							\
+	  return -1;										\
+  }														\
+
 
 
   /**
@@ -828,6 +835,45 @@ virtual void readFrameFromReceiver()=0;
     default:       					return string("unknown");					\
     }};
 
+
+  /**
+     @short returns adc index from string
+     \param s can be temp_adc, temp_fpga, temp_fpgaext, temp_10ge, temp_dcdc, temp_sodl, temp_sodr, temp_fpgafl, temp_fpgafr
+     \returns  TEMPERATURE_ADC, TEMPERATURE_FPGA, TEMPERATURE_FPGAEXT, TEMPERATURE_10GE, TEMPERATURE_DCDC, TEMPERATURE_SODL,
+     TEMPERATURE_SODR, TEMPERATURE_FPGA2, TEMPERATURE_FPGA3, -1 when unknown mode
+  */
+  static int getADCIndex(string s){
+	  if (s=="temp_adc")	  	return TEMPERATURE_ADC;
+	  if (s=="temp_fpga")	  	return TEMPERATURE_FPGA;
+	  if (s=="temp_fpgaext")	return TEMPERATURE_FPGAEXT;
+	  if (s=="temp_10ge")	  	return TEMPERATURE_10GE;
+	  if (s=="temp_dcdc")	  	return TEMPERATURE_DCDC;
+	  if (s=="temp_sodl")	  	return TEMPERATURE_SODL;
+	  if (s=="temp_sodr")	  	return TEMPERATURE_SODR;
+	  if (s=="temp_fpgafl")		return TEMPERATURE_FPGA2;
+	  if (s=="temp_fpgafr")		return TEMPERATURE_FPGA3;
+	  return -1;
+  };
+
+
+  /**
+     @short returns dac index from string
+     \param s can be vcmp_ll, vcmp_lr, vcmp_rl, vcmp_rr, vthreshold, vrf, vrs, vtr, vcall, vcp
+     \returns E_Vcmp_ll, E_Vcmp_lr, E_Vcmp_rl, E_Vcmp_rr, THRESHOLD, E_Vrf, E_Vrs, E_Vtr, E_cal, E_Vcp , -1 when unknown mode
+  */
+  static int getDACIndex(string s){
+	  if (s=="vcmp_ll")	  	return E_Vcmp_ll;
+	  if (s=="vcmp_lr")	  	return E_Vcmp_lr;
+	  if (s=="vcmp_rl")		return E_Vcmp_rl;
+	  if (s=="vcmp_rr")	  	return E_Vcmp_rr;
+	  if (s=="vthreshold")	return THRESHOLD;
+	  if (s=="vrf")	  		return E_Vrf;
+	  if (s=="vrs")	  		return E_Vrs;
+	  if (s=="vtr")			return E_Vtr;
+	  if (s=="vcall")		return E_cal;
+	  if (s=="vcp")			return E_Vcp;
+	  return -1;
+  };
 
 
 };

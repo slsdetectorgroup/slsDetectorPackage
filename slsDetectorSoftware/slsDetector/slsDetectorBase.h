@@ -424,7 +424,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
      \returns current DAC value
   */
   virtual dacs_t setDAC(dacs_t val, dacIndex index , int mV, int imod=-1)=0;
-  int setDACValue(int val, int index , int mV, int imod=-1) { return (int)setDAC((dacs_t)val,(dacIndex)index, mV,imod);};
+  int setDACValue(int val, int index , int imod=-1) { return (int)setDAC((dacs_t)val,(dacIndex)index,0,imod);};
 
 
   /**
@@ -838,12 +838,11 @@ virtual void readFrameFromReceiver()=0;
 
   /**
      @short returns adc index from string
-     \param s can be temp_adc, temp_fpga, temp_fpgaext, temp_10ge, temp_dcdc, temp_sodl, temp_sodr, temp_fpgafl, temp_fpgafr
-     \returns  TEMPERATURE_ADC, TEMPERATURE_FPGA, TEMPERATURE_FPGAEXT, TEMPERATURE_10GE, TEMPERATURE_DCDC, TEMPERATURE_SODL,
+     \param s can be temp_fpga, temp_fpgaext, temp_10ge, temp_dcdc, temp_sodl, temp_sodr, temp_fpgafl, temp_fpgafr
+     \returns  TEMPERATURE_FPGA, TEMPERATURE_FPGAEXT, TEMPERATURE_10GE, TEMPERATURE_DCDC, TEMPERATURE_SODL,
      TEMPERATURE_SODR, TEMPERATURE_FPGA2, TEMPERATURE_FPGA3, -1 when unknown mode
   */
   static int getADCIndex(string s){
-	  if (s=="temp_adc")	  	return TEMPERATURE_ADC;
 	  if (s=="temp_fpga")	  	return TEMPERATURE_FPGA;
 	  if (s=="temp_fpgaext")	return TEMPERATURE_FPGAEXT;
 	  if (s=="temp_10ge")	  	return TEMPERATURE_10GE;

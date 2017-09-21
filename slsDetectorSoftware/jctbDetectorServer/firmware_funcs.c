@@ -2309,8 +2309,6 @@ u_int32_t* decode_data(int *datain)
 int setDynamicRange(int dr) {
   if (dr%16==0 && dr>0) {
     dynamicRange=16;
-    nSamples=dr/16;
-    bus_w(NSAMPLES_REG,nSamples);
   } 
   getDynamicRange();
   allocateRAM();

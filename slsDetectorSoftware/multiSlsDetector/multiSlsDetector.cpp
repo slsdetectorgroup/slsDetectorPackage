@@ -116,6 +116,8 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
     thisMultiDetector->onlineFlag = ONLINE_FLAG;
     thisMultiDetector->receiverOnlineFlag = OFFLINE_FLAG;
     thisMultiDetector->numberOfDetectors=0;
+    thisMultiDetector->numberOfDetector[X]=0;
+	thisMultiDetector->numberOfDetector[Y]=0;
     for (int id=0; id<MAXDET; ++id) {
       thisMultiDetector->detectorIds[id]=-1;
       thisMultiDetector->offsetX[id]=0;
@@ -433,6 +435,8 @@ void multiSlsDetector::updateOffsets(){//cannot paralllize due to slsdetector ca
 	thisMultiDetector->numberOfChannel[Y] = 0;
 	thisMultiDetector->maxNumberOfChannel[X] = 0;
 	thisMultiDetector->maxNumberOfChannel[Y] = 0;
+	thisMultiDetector->numberOfDetector[X] = 0;
+	thisMultiDetector->numberOfDetector[Y] = 0;
 
 
 	for (int i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
@@ -455,6 +459,8 @@ void multiSlsDetector::updateOffsets(){//cannot paralllize due to slsdetector ca
 				numY += detectors[i]->getTotalNumberOfChannels(Y);
 				maxX += detectors[i]->getMaxNumberOfChannels(X);
 				maxY += detectors[i]->getMaxNumberOfChannels(Y);
+				++thisMultiDetector->numberOfDetector[X];
+				++thisMultiDetector->numberOfDetector[Y];
 #ifdef VERBOSE
 				cout<<"incrementing in both direction"<<endl;
 #endif
@@ -466,6 +472,7 @@ void multiSlsDetector::updateOffsets(){//cannot paralllize due to slsdetector ca
 				prevChanY = detectors[i]->getTotalNumberOfChannels(Y);
 				numY += detectors[i]->getTotalNumberOfChannels(Y);
 				maxY += detectors[i]->getMaxNumberOfChannels(Y);
+				++thisMultiDetector->numberOfDetector[Y];
 #ifdef VERBOSE
 				cout<<"incrementing in y direction"<<endl;
 #endif
@@ -483,6 +490,7 @@ void multiSlsDetector::updateOffsets(){//cannot paralllize due to slsdetector ca
 				prevChanX = detectors[i]->getTotalNumberOfChannels(X);
 				numX += detectors[i]->getTotalNumberOfChannels(X);
 				maxX += detectors[i]->getMaxNumberOfChannels(X);
+				++thisMultiDetector->numberOfDetector[X];
 #ifdef VERBOSE
 				cout<<"incrementing in x direction"<<endl;
 #endif
@@ -787,24 +795,6 @@ int multiSlsDetector::addSlsDetector(detectorType t, int pos) {
 
   return addSlsDetector(id, pos);
 
-}
-
-
-
-void multiSlsDetector::getNumberOfDetectors(int& nx, int& ny) {
-	nx = 0; ny = 0;
-
-	int offsetx = -1, offsety = -1;
-	for (int i = 0; i < thisMultiDetector->numberOfDetectors; ++i) {
-		if (thisMultiDetector->offsetX[i] > offsetx) {
-			++nx;
-			offsetx = thisMultiDetector->offsetX[i];
-		}
-		if (thisMultiDetector->offsetY[i] > offsety) {
-			++ny;
-			offsety = thisMultiDetector->offsetY[i];
-		}
-	}
 }
 
 

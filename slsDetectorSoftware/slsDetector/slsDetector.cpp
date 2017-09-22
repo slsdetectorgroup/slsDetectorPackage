@@ -6407,9 +6407,25 @@ int slsDetector::configureMAC(){
 	int ret=FAIL;
 	int fnum=F_CONFIGURE_MAC,fnum2=F_RECEIVER_SHORT_FRAME;
 	char mess[MAX_STR_LENGTH]="";
-	char arg[6][50]={"","","","","",""};
+	char arg[6][50];memset(arg,0,sizeof(char)*6*50);
 	int retval=-1;
 
+	// to send 3d positions to detector
+	bool sendpos = 0;
+	int pos[3]={0,0,0};
+
+	// only jungfrau send x, y and z in detector udp header
+	if (thisDetector->myDetectorType == JUNGFRAU) {
+		sendpos = true;
+		int max = parentDet->getNumberOfDetectors(X);
+		if(!posId) {
+			pos[0] = 0;
+			pos[1] = 0;
+		} else {
+			pos[0] = posId / max;
+			pos[1] = posId % max;
+		}
+	}
 
 	//if udpip wasnt initialized in config file
 	if(!(strcmp(thisDetector->receiverUDPIP,"none"))){
@@ -6434,10 +6450,10 @@ int slsDetector::configureMAC(){
 	strcpy(arg[3],thisDetector->detectorMAC);
 	strcpy(arg[4],thisDetector->detectorIP);
 	sprintf(arg[5],"%x",thisDetector->receiverUDPPort2);
-
 #ifdef VERBOSE
 	std::cout<< "Configuring MAC"<< std::endl;
 #endif
+
 
 
 	for(i=0;i<2;++i){
@@ -6529,6 +6545,8 @@ int slsDetector::configureMAC(){
 		if (connectControl() == OK){
 			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 			controlSocket->SendDataOnly(arg,sizeof(arg));
+			if(sendpos)
+				controlSocket->SendDataOnly(pos,sizeof(pos));
 			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
 			if (ret==FAIL){
 				controlSocket->ReceiveDataOnly(mess,sizeof(mess));

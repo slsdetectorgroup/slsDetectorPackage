@@ -67,6 +67,9 @@ class multiSlsDetector  : public slsDetectorUtils {
     /** Number of detectors operated at once */
     int numberOfDetectors;
 
+    /** Number of detectors operated at once */
+    int numberOfDetector[2];
+
     /** Ids of the detectors to be operated at once */
     int detectorIds[MAXDET];
 
@@ -329,11 +332,17 @@ class multiSlsDetector  : public slsDetectorUtils {
       \returns number of detectors */
   int getNumberOfDetectors() {return thisMultiDetector->numberOfDetectors;};
 
+  /**returns number of detectors in dimension d
+   * \param d dimension d
+   * \returns number of detectors in dimension d
+   */
+  int getNumberOfDetectors(dimension d) {return thisMultiDetector->numberOfDetector[d];};
+
   /** returns the number of detectors in each direction
    	   \param nx number of detectors in x direction
    	   \param ny number of detectors in y direction
    */
-  void getNumberOfDetectors(int& nx, int& ny);
+  void getNumberOfDetectors(int& nx, int& ny){nx=thisMultiDetector->numberOfDetector[X];ny=thisMultiDetector->numberOfDetector[Y];};
 
   int getMaxMods();
   int getNMods();

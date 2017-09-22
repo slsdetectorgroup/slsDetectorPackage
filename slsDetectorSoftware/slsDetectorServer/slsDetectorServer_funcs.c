@@ -3408,6 +3408,10 @@ int configure_mac(int file_des) {
 	char arg[6][50];
 	memset(arg,0,sizeof(arg));
 	n = receiveData(file_des,arg,sizeof(arg),OTHER);
+#ifdef JUNGFRAUD
+	int pos[3]={0,0,0};
+	n = receiveData(file_des,pos,sizeof(pos),INT32);
+#endif
 	if (n < 0) return printSocketReadError();
 
 	uint32_t ipad;
@@ -3456,6 +3460,10 @@ int configure_mac(int file_des) {
 		printf("udp port2:0x%x\n",udpport2);
 		printf("\n");
 		printf("Configuring MAC of module %d at port %x\n", imod, udpport);
+
+#ifdef JUNGFRAUD
+		printf("Position: [%d,%d,%d]\n", pos[0],pos[1],pos[2]);
+#endif
 #endif
 		if(getRunStatus() == RUNNING){
 			ret = stopStateMachine();
@@ -3471,8 +3479,16 @@ int configure_mac(int file_des) {
 					sprintf(mess,"Configure Mac failed\n");
 					cprintf(RED, "Warning: %s", mess);
 				}
-				else
+				else {
 					printf("Configure MAC successful\n");
+#ifdef JUNGFRAUD
+					ret = setDetectorPosition(pos);
+					if (ret == FAIL) {
+						sprintf(mess,"could not set detector position\n");
+						cprintf(RED, "Warning: %s", mess);
+					}
+#endif
+				}
 #ifdef VERBOSE
 				printf("Configured MAC with retval %d\n",  retval);
 #endif

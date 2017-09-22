@@ -6091,12 +6091,6 @@ string slsDetector::setReceiver(string receiverIP){
 			imask = parentDet->enableOverwriteMask();
 			pthread_mutex_unlock(&ms);
 			overwriteFile(imask);
-
-			if ((thisDetector->timerValue[FRAME_NUMBER]*thisDetector->timerValue[CYCLES_NUMBER])>1)
-				setFrameIndex(0);
-			else
-				setFrameIndex(-1);
-
 			setTimer(FRAME_PERIOD,thisDetector->timerValue[FRAME_PERIOD]);
 			setTimer(FRAME_NUMBER,thisDetector->timerValue[FRAME_NUMBER]);
 			setTimer(ACQUISITION_TIME,thisDetector->timerValue[ACQUISITION_TIME]);
@@ -8444,40 +8438,6 @@ int slsDetector::overwriteFile(int enable){
 
 
 
-int slsDetector::setFrameIndex(int index){
-	int fnum=F_SET_RECEIVER_FRAME_INDEX;
-	int ret = FAIL;
-	int retval=-1;
-	int arg = index;
-
-	if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG){
-		pthread_mutex_lock(&ms);
-		fileIO::setFrameIndex(index);
-		pthread_mutex_unlock(&ms);
-	}
-
-	else if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
-#ifdef VERBOSE
-		std::cout << "Sending frame index to receiver " << arg << std::endl;
-#endif
-		if (connectData() == OK){
-			ret=thisReceiver->sendInt(fnum,retval,arg);
-			disconnectData();
-		}
-		if(ret!=FAIL){
-			pthread_mutex_lock(&ms);
-			fileIO::setFrameIndex(retval);
-			pthread_mutex_unlock(&ms);
-		}
-		if(ret==FORCE_UPDATE)
-			updateReceiver();
-	}
-	pthread_mutex_lock(&ms);
-	retval = fileIO::getFrameIndex();
-	pthread_mutex_unlock(&ms);
-
-	return retval;
-}
 
 
 int slsDetector::calibratePedestal(int frames){

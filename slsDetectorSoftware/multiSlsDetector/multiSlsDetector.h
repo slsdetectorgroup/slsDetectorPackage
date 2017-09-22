@@ -1294,15 +1294,6 @@ class multiSlsDetector  : public slsDetectorUtils {
   */
   int overwriteFile(int enable=-1);
 
-  /**
-   * set frame index to 0 or -1
-   * @param index is the frame index
-  */
-  int setFrameIndex(int index=-1);
-
-
-
-
   int fillModuleMask(int *mM);
 
   /**checks error mask and returns error message if it exists

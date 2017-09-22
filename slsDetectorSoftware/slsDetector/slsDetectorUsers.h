@@ -579,9 +579,9 @@ class slsDetectorUsers
 
    /**
       @short get adc value
-      \param adc adc as string. can be temp_adc, temp_fpga, temp_fpgaext, temp_10ge, temp_dcdc, temp_sodl, temp_sodr, temp_fpgafl, temp_fpgafr. others not supported
+      \param adc adc as string. can be temp_fpga, temp_fpgaext, temp_10ge, temp_dcdc, temp_sodl, temp_sodr, temp_fpgafl, temp_fpgafr. others not supported
       \param id module index (-1 for all)
-      \returns adc value or -1 (if id=-1 & adc value is different for all modules) or -9999 if adc string does not match
+      \returns adc value in millidegree Celsius or -1 (if id=-1 & adc value is different for all modules) or -9999 if adc string does not match
     */
    int getADC(string adc, int id = -1);
 

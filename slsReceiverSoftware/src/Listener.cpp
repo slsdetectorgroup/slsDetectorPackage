@@ -397,7 +397,6 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 				memset(new_header, 0, sizeof(sls_detector_header));
 				new_header->frameNumber = fnum;
 				new_header->packetNumber = pperFrame;
-				/*new_header->xCoord = index;  given by det packet, also for ycoord, zcoord */
 				new_header->detType = (uint8_t) generalData->myDetectorType;
 				new_header->version = (uint8_t) SLS_DETECTOR_HEADER_VERSION;
 			}
@@ -494,7 +493,6 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 				memset(new_header, 0, sizeof(sls_detector_header));
 				new_header->frameNumber = fnum;
 				new_header->packetNumber = pperFrame;
-				/*new_header->xCoord = index;  given by det packet, also for ycoord, zcoord */
 				new_header->detType = (uint8_t) generalData->myDetectorType;
 				new_header->version = (uint8_t) SLS_DETECTOR_HEADER_VERSION;
 			}

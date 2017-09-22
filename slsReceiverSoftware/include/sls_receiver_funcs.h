@@ -35,13 +35,11 @@ enum recFuncs{
 	F_START_RECEIVER,				/**< starts the receiver listening mode */
 	F_STOP_RECEIVER,				/**< stops the receiver listening mode */
 	F_START_RECEIVER_READOUT, 		/**< acquisition has stopped. start remaining readout in receiver */
-	F_READ_RECEIVER_FRAME,  		/**< read one frame to gui*/
 
 	//file functions
 	F_SET_RECEIVER_FILE_PATH, 		/**< sets receiver file directory */
 	F_SET_RECEIVER_FILE_NAME, 		/**< sets receiver file name */
 	F_SET_RECEIVER_FILE_INDEX, 		/**< sets receiver file index */
-	F_SET_RECEIVER_FRAME_INDEX,		/**< sets the receiver frame index */
 	F_GET_RECEIVER_FRAME_INDEX,		/**< gets the receiver frame index */
 	F_GET_RECEIVER_FRAMES_CAUGHT,	/**< gets the number of frames caught by receiver */
 	F_RESET_RECEIVER_FRAMES_CAUGHT, /**< resets the frames caught by receiver */

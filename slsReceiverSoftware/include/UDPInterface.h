@@ -39,7 +39,6 @@ class UDPInterface {
 	 *	-setFileFormat
 	 *	-setFileWriteEnable
 	 *	-setOverwriteEnable
-	 *	-setFrameIndexEnable
 	 *	-setAcquisitionPeriod
 	 *	-setNumberOfFrames
 	 *	-setAcquisitionTime
@@ -183,12 +182,6 @@ class UDPInterface {
 	 * @return scan tag //FIXME: needed? (unsigned integer?)
 	 */
 	virtual int getScanTag() const = 0;
-
-	/**
-	 * Get if Frame Index is enabled (acquisition of more than 1 frame adds '_f000000000000' to file name )
-	 * @return true if frame index needed, else false
-	 */
-	virtual bool getFrameIndexEnable() const = 0;
 
 	/**
 	 * Get File Write Enable
@@ -411,12 +404,6 @@ class UDPInterface {
 	virtual void setScanTag(const int i) = 0;
 
 	/**
-	 * Set Frame Index Enable (acquisition of more than 1 frame adds '_f000000000000' to file name )
-	 * @param b true for frame index enable, else false
-	 */
-	virtual void setFrameIndexEnable(const bool b) = 0;
-
-	/**
 	 * Set File Write Enable
 	 * @param b true for file write enable, else false
 	 */
@@ -601,16 +588,6 @@ class UDPInterface {
 	 * Shuts down and deletes UDP Sockets
 	 */
 	virtual void shutDownUDPSockets() = 0;
-
-	/**
-	 * Get the buffer-current frame read by receiver
-	 * @param ithread port thread index
-	 * @param c pointer to current file name
-	 * @param raw address of pointer, pointing to current frame to send to gui
-	 * @param startAcq start index of the acquisition
-	 * @param startFrame start index of the scan
-	 */
-	virtual void readFrame(int ithread, char* c,char** raw, int64_t &startAcq, int64_t &startFrame)=0;
 
 	/**
 	 * abort acquisition with minimum damage: close open files, cleanup.

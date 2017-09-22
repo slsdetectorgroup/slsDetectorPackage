@@ -160,7 +160,6 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param fname pointer to file name prefix
 	 * @param fpath pointer to file path
 	 * @param findex pointer to file index
-	 * @param frindexenable pointer to frame index enable
 	 * @param owenable pointer to over write enable
 	 * @param dindex pointer to detector index
 	 * @param nunits pointer to number of theads/ units per detector
@@ -170,7 +169,7 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param g address of GeneralData (Detector Data) pointer
 	 */
 	void SetupFileWriter(int* nd, char* fname, char* fpath, uint64_t* findex,
-			bool* frindexenable, bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno, GeneralData* g = 0);
+			 bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno, GeneralData* g = 0);
 
 
 	/**

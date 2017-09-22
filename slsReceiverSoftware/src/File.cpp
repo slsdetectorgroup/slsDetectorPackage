@@ -11,8 +11,7 @@ using namespace std;
 
 
 File::File(int ind, uint32_t maxf, const uint32_t* ppf,
-		int* nd, char* fname, char* fpath, uint64_t* findex,
-		bool* frindexenable, bool* owenable,
+		int* nd, char* fname, char* fpath, uint64_t* findex, bool* owenable,
 		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno):
 			index(ind),
 			maxFramesPerFile(maxf),
@@ -22,7 +21,6 @@ File::File(int ind, uint32_t maxf, const uint32_t* ppf,
 			fileNamePrefix(fname),
 			filePath(fpath),
 			fileIndex(findex),
-			frameIndexEnable(frindexenable),
 			overWriteEnable(owenable),
 			detIndex(dindex),
 			numUnitsPerDetector(nunits),
@@ -50,7 +48,6 @@ void File::PrintMembers() {
 			<< "File Name Prefix: " << fileNamePrefix << endl
 			<< "File Path: " << filePath << endl
 			<< "File Index: " << *fileIndex << endl
-			<< "Frame Index Enable: " << *frameIndexEnable << endl
 			<< "Over Write Enable: " << *overWriteEnable << endl
 
 			<< "Detector Index: " << *detIndex << endl
@@ -63,8 +60,7 @@ void File::PrintMembers() {
 }
 
 
-void File::GetMemberPointerValues(int* nd, char*& fname, char*& fpath, uint64_t*& findex,
-		bool*& frindexenable, bool*& owenable,
+void File::GetMemberPointerValues(int* nd, char*& fname, char*& fpath, uint64_t*& findex, bool*& owenable,
 		int*& dindex, int*& nunits, uint64_t*& nf, uint32_t*& dr, uint32_t*& portno)
 {
 	nd[0] = numDetX;
@@ -72,7 +68,6 @@ void File::GetMemberPointerValues(int* nd, char*& fname, char*& fpath, uint64_t*
 	fname = fileNamePrefix;
 	fpath = filePath;
 	findex = fileIndex;
-	frindexenable = frameIndexEnable;
 	owenable = overWriteEnable;
 	dindex = detIndex;
 	nunits = numUnitsPerDetector;

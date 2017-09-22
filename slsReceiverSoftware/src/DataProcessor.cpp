@@ -211,18 +211,18 @@ void DataProcessor::SetFileFormat(const fileFormat f) {
 	if (file->GetFileType() != f) {
 		//remember the pointer values before they are destroyed
 		int nd[MAX_DIMENSIONS];nd[0] = 0; nd[1] = 0;
-		char* fname=0; char* fpath=0; uint64_t* findex=0; bool* frindexenable=0;
+		char* fname=0; char* fpath=0; uint64_t* findex=0;
 		bool* owenable=0; int* dindex=0; int* nunits=0; uint64_t* nf = 0; uint32_t* dr = 0; uint32_t* port = 0;
-		file->GetMemberPointerValues(nd, fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr, port);
+		file->GetMemberPointerValues(nd, fname, fpath, findex, owenable, dindex, nunits, nf, dr, port);
 		//create file writer with same pointers
-		SetupFileWriter(nd, fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr, port);
+		SetupFileWriter(nd, fname, fpath, findex, owenable, dindex, nunits, nf, dr, port);
 	}
 }
 
 
 
 void DataProcessor::SetupFileWriter(int* nd, char* fname, char* fpath, uint64_t* findex,
-		bool* frindexenable, bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
+		bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
 		GeneralData* g)
 {
 	if (g)
@@ -235,16 +235,14 @@ void DataProcessor::SetupFileWriter(int* nd, char* fname, char* fpath, uint64_t*
 #ifdef HDF5C
 	case HDF5:
 		file = new HDF5File(index, generalData->maxFramesPerFile, &generalData->packetsPerFrame,
-				nd, fname, fpath, findex,
-				frindexenable, owenable,
+				nd, fname, fpath, findex, owenable,
 				dindex, nunits, nf, dr, portno,
 				generalData->nPixelsX, generalData->nPixelsY);
 		break;
 #endif
 	default:
 		file = new BinaryFile(index, generalData->maxFramesPerFile, &generalData->packetsPerFrame,
-				nd, fname, fpath, findex,
-				frindexenable, owenable,
+				nd, fname, fpath, findex, owenable,
 				dindex, nunits, nf, dr, portno);
 		break;
 	}

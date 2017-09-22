@@ -201,9 +201,6 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	 * when fifo is empty later, sets status to run_finished */
 	int start_readout();
 
-	/** Reads Frame/ buffer */
-	int	read_frame();
-
 	/** Set File path */
 	int set_file_dir();
 
@@ -212,9 +209,6 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 
 	/** Set File index */
 	int set_file_index();
-
-	/** Set Frame index */
-	int set_frame_index();
 
 	/** Gets frame index for each acquisition */
 	int	get_frame_index();

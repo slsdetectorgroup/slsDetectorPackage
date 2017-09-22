@@ -15,11 +15,10 @@ using namespace std;
 FILE* BinaryFile::masterfd = 0;
 
 BinaryFile::BinaryFile(int ind, uint32_t maxf, const uint32_t* ppf,
-		int* nd, char* fname, char* fpath, uint64_t* findex,
-		bool* frindexenable, bool* owenable,
+		int* nd, char* fname, char* fpath, uint64_t* findex, bool* owenable,
 		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno):
 
-		File(ind, maxf, ppf, nd, fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr, portno),
+		File(ind, maxf, ppf, nd, fname, fpath, findex, owenable, dindex, nunits, nf, dr, portno),
 		filefd(0),
 		numFramesInFile(0),
 		numActualPacketsInFile(0)
@@ -49,7 +48,7 @@ int BinaryFile::CreateFile(uint64_t fnum) {
 	numActualPacketsInFile = 0;
 
 	currentFileName = BinaryFileStatic::CreateFileName(filePath, fileNamePrefix, *fileIndex,
-			*frameIndexEnable, fnum, *detIndex, *numUnitsPerDetector, index);
+			(*numImages > 1), fnum, *detIndex, *numUnitsPerDetector, index);
 
 	if (BinaryFileStatic::CreateDataFile(filefd, *overWriteEnable, currentFileName, FILE_BUFFER_SIZE) == FAIL)
 		return FAIL;

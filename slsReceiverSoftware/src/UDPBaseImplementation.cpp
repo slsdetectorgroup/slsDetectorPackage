@@ -70,7 +70,6 @@ void UDPBaseImplementation::initializeMembers(){
 	strcpy(filePath,"");
 	fileIndex = 0;
 	scanTag = 0;
-	frameIndexEnable = false;
 	fileWriteEnable = true;
 	overwriteEnable = true;
 	dataCompressionEnable = false;
@@ -150,8 +149,6 @@ char *UDPBaseImplementation::getFilePath() const{
 uint64_t UDPBaseImplementation::getFileIndex() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return fileIndex;}
 
 int UDPBaseImplementation::getScanTag() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return scanTag;}
-
-bool UDPBaseImplementation::getFrameIndexEnable() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return frameIndexEnable;}
 
 bool UDPBaseImplementation::getFileWriteEnable() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return fileWriteEnable;}
 
@@ -315,13 +312,6 @@ void UDPBaseImplementation::setScanTag(const int i){
 	scanTag = i;
 	FILE_LOG(logINFO) << "Scan Tag: " << scanTag;
 
-}
-
-void UDPBaseImplementation::setFrameIndexEnable(const bool b){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
-
-	frameIndexEnable = b;
-	FILE_LOG(logINFO) << "Frame Index Enable: " << stringEnable(frameIndexEnable);
 }
 
 void UDPBaseImplementation::setFileWriteEnable(const bool b){
@@ -544,11 +534,6 @@ void UDPBaseImplementation::startReadout(){
 }
 
 void UDPBaseImplementation::shutDownUDPSockets(){
-	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
-	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
-}
-
-void UDPBaseImplementation::readFrame(int ithread, char* c,char** raw, int64_t &startAcquisitionIndex, int64_t &startFrameIndex){
 	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
 }

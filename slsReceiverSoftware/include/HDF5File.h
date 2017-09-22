@@ -33,7 +33,6 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	 * @param fname pointer to file name prefix
 	 * @param fpath pointer to file path
 	 * @param findex pointer to file index
-	 * @param frindexenable pointer to frame index enable
 	 * @param owenable pointer to over write enable
 	 * @param dindex pointer to detector index
 	 * @param nunits pointer to number of theads/ units per detector
@@ -44,8 +43,7 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	 * @param ny number of pixels in y direction
 	 */
 	HDF5File(int ind, uint32_t maxf, const uint32_t* ppf,
-			int* nd, char* fname, char* fpath, uint64_t* findex,
-			bool* frindexenable, bool* owenable,
+			int* nd, char* fname, char* fpath, uint64_t* findex, bool* owenable,
 			int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
 			uint32_t nx, uint32_t ny);
 

@@ -91,14 +91,14 @@ int HDF5File::CreateFile(uint64_t fnum) {
 	numFramesInFile = 0;
 	numActualPacketsInFile = 0;
 	currentFileName = HDF5FileStatic::CreateFileName(filePath, fileNamePrefix, *fileIndex,
-			*frameIndexEnable, fnum, *detIndex, *numUnitsPerDetector, index);
+			(*numImages > 1), fnum, *detIndex, *numUnitsPerDetector, index);
 
 	//first time
 	if(!fnum) UpdateDataType();
 
 	uint64_t framestosave = ((*numImages - fnum) > maxFramesPerFile) ? maxFramesPerFile : (*numImages-fnum);
 	pthread_mutex_lock(&Mutex);
-	if (HDF5FileStatic::CreateDataFile(index, *overWriteEnable, currentFileName, *frameIndexEnable,
+	if (HDF5FileStatic::CreateDataFile(index, *overWriteEnable, currentFileName, (*numImages > 1),
 			fnum, framestosave, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
 			datatype, filefd, dataspace, dataset,
 			HDF5_WRITER_VERSION, MAX_CHUNKED_IMAGES,
@@ -191,7 +191,7 @@ void HDF5File::EndofAcquisition(uint64_t numf) {
 			//dataset name
 			ostringstream osfn;
 			osfn << "/data";
-			if (*frameIndexEnable) osfn << "_f" << setfill('0') << setw(12) << 0;
+			if ((*numImages > 1)) osfn << "_f" << setfill('0') << setw(12) << 0;
 			string dsetname = osfn.str();
 			pthread_mutex_lock(&Mutex);
 			HDF5FileStatic::LinkVirtualInMaster(masterFileName, currentFileName, dsetname);
@@ -212,7 +212,7 @@ int HDF5File::CreateVirtualFile(uint64_t numf) {
 		pthread_mutex_lock(&Mutex);
 		int ret = HDF5FileStatic::CreateVirtualDataFile(
 				virtualfd, masterFileName,
-				filePath, fileNamePrefix, *fileIndex, *frameIndexEnable,
+				filePath, fileNamePrefix, *fileIndex, (*numImages > 1),
 				*detIndex, *numUnitsPerDetector,
 				maxFramesPerFile, numf,
 				"data",	datatype,

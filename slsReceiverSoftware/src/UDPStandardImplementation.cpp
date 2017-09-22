@@ -360,7 +360,7 @@ void UDPStandardImplementation::setDetectorPositionId(const int i){
 	detID = i;
 	FILE_LOG(logINFO) << "Detector Position Id:" << detID;
 	for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
-		dataProcessor[i]->SetupFileWriter((int*)numDet, fileName, filePath, &fileIndex, &frameIndexEnable,
+		dataProcessor[i]->SetupFileWriter((int*)numDet, fileName, filePath, &fileIndex,
 									&overwriteEnable, &detID, &numThreads, &numberOfFrames, &dynamicRange, &udpPortNum[i], generalData);
 	}
 }

@@ -369,35 +369,7 @@ void UDPRESTImplementation::shutDownUDPSockets(){
 
 
 
-/* FIXME
- * do you really need this, this is called if registerDataCallback() is activated
- * in your gui to get data from receiver. you probably have a different way
- * of reconstructing complete data set from all receivers
- */
-/*
-void UDPRESTImplementation::readFrame(char* c,char** raw, uint64_t &startAcq, uint64_t &startFrame){
-  FILE_LOG(logDEBUG1) << " called";
-	strcpy(c,"");
-	*raw = NULL;
->>>>>>> 3.0-rcrest
-}
-*/
 
-
-
-
-/* FIXME
- * Its called by TCP in case of illegal shut down such as Ctrl + c.
- * Upto you what you want to do with it.
- */
-
-// Leo: not in the base class
-/*
-void UDPRESTImplementation::closeFiles(){
-  FILE_LOG(logDEBUG1) << "called for thread ";
-  FILE_LOG(logDEBUG1) << "exited for thread ";
-}
-*/
 
 uint64_t UDPRESTImplementation::getTotalFramesCaught() const{   
   FILE_LOG(logDEBUG1) << " starting";    

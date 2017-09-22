@@ -261,11 +261,9 @@ const char* slsReceiverTCPIPInterface::getFunctionName(enum recFuncs func) {
 	case F_START_RECEIVER:				return "F_START_RECEIVER";
 	case F_STOP_RECEIVER:				return "F_STOP_RECEIVER";
 	case F_START_RECEIVER_READOUT: 		return "F_START_RECEIVER_READOUT";
-	case F_READ_RECEIVER_FRAME:  		return "F_READ_RECEIVER_FRAME";
 	case F_SET_RECEIVER_FILE_PATH: 		return "F_SET_RECEIVER_FILE_PATH";
 	case F_SET_RECEIVER_FILE_NAME: 		return "F_SET_RECEIVER_FILE_NAME";
 	case F_SET_RECEIVER_FILE_INDEX: 	return "F_SET_RECEIVER_FILE_INDEX";
-	case F_SET_RECEIVER_FRAME_INDEX:	return "F_SET_RECEIVER_FRAME_INDEX";
 	case F_GET_RECEIVER_FRAME_INDEX:	return "F_GET_RECEIVER_FRAME_INDEX";
 	case F_GET_RECEIVER_FRAMES_CAUGHT:	return "F_GET_RECEIVER_FRAMES_CAUGHT";
 	case F_RESET_RECEIVER_FRAMES_CAUGHT:return "F_RESET_RECEIVER_FRAMES_CAUGHT";
@@ -308,11 +306,9 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_START_RECEIVER]					=	&slsReceiverTCPIPInterface::start_receiver;
 	flist[F_STOP_RECEIVER]					=	&slsReceiverTCPIPInterface::stop_receiver;
 	flist[F_START_RECEIVER_READOUT]			= 	&slsReceiverTCPIPInterface::start_readout;
-	flist[F_READ_RECEIVER_FRAME]			=	&slsReceiverTCPIPInterface::read_frame;
 	flist[F_SET_RECEIVER_FILE_PATH]			=	&slsReceiverTCPIPInterface::set_file_dir;
 	flist[F_SET_RECEIVER_FILE_NAME]			=	&slsReceiverTCPIPInterface::set_file_name;
 	flist[F_SET_RECEIVER_FILE_INDEX]		=	&slsReceiverTCPIPInterface::set_file_index;
-	flist[F_SET_RECEIVER_FRAME_INDEX]		=	&slsReceiverTCPIPInterface::set_frame_index;
 	flist[F_GET_RECEIVER_FRAME_INDEX]		=	&slsReceiverTCPIPInterface::get_frame_index;
 	flist[F_GET_RECEIVER_FRAMES_CAUGHT]		=	&slsReceiverTCPIPInterface::get_frames_caught;
 	flist[F_RESET_RECEIVER_FRAMES_CAUGHT]	=	&slsReceiverTCPIPInterface::reset_frames_caught;
@@ -1374,26 +1370,6 @@ int	slsReceiverTCPIPInterface::start_readout(){
 
 
 
-int	slsReceiverTCPIPInterface::read_frame(){
-	ret=FAIL;
-	memset(mess, 0, sizeof(mess));
-	int n = 0;
-	// to receive any arguments
-	while (n > 0)
-		n = mySock->ReceiveDataOnly(mess,MAX_STR_LENGTH);
-
-	sprintf(mess,"This function (%s) is not implemented anymore\n", getFunctionName((enum recFuncs)fnum));
-	FILE_LOG(logERROR) << mess;
-
-	// send ok / fail
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	// send return argument
-	mySock->SendDataOnly(mess,sizeof(mess));
-	// return ok / fail
-	return ret;
-}
-
-
 
 int slsReceiverTCPIPInterface::set_file_dir() {
 	ret = OK;
@@ -1570,62 +1546,6 @@ int slsReceiverTCPIPInterface::set_file_index() {
 }
 
 
-
-
-int slsReceiverTCPIPInterface::set_frame_index() {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	int index = -1;
-	int retval = -1;
-
-	strcpy(mess,"Could not set frame index\n");
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
-		return printSocketReadError();
-
-	// execute action
-	// only a set, not a get
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if (receiverBase->getStatus() != IDLE)
-		receiverNotIdle();
-	else{
-		//client sets to 0, but for receiver it is just an enable
-		//client uses this value for other detectors not using receiver,
-		//so implement the interface here
-
-		switch(index){
-		case -1: 	index=0; break;
-		default: 	index=1; break; //value is 0
-		}
-		receiverBase->setFrameIndexEnable(index);
-		retval=receiverBase->getFrameIndexEnable();
-		switch(retval){
-		case 0: 	retval=-1; break;
-		case 1: 	retval=0; break;
-		}
-	}
-
-#ifdef VERYVERBOSE
-	FILE_LOG(logDEBUG1) << "frame index:" << retval;
-#endif
-#endif
-
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
-
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
-	return ret;
-}
 
 
 

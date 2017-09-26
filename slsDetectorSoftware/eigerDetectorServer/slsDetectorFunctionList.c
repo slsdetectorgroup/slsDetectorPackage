@@ -61,6 +61,8 @@ enum masterFlags  masterMode=IS_SLAVE;
 int top = 0;
 int master = 0;
 int normal = 0;
+uint32_t detid = 0;
+
 
 
 
@@ -152,15 +154,7 @@ u_int64_t getFirmwareVersion() {
 
 
 u_int32_t getDetectorNumber(){
-	u_int32_t res=0;
-	//execute and get address
-	char output[255];
-	FILE* sysFile = popen("more /home/root/executables/detid.txt", "r");
-	fgets(output, sizeof(output), sysFile);
-	pclose(sysFile);
-	sscanf(output,"%u",&res);
-	printf("detector id: %u\n",res);
-	return res;
+	return detid;
 }
 
 
@@ -234,6 +228,7 @@ void initControlServer(){
 	}
 	printf("FEB Initialization done\n");
 	Beb_Beb();
+	Beb_SetDetectorNumber(getDetectorNumber());
 	printf("BEB Initialization done\n");
 
 
@@ -264,6 +259,14 @@ void getModuleConfiguration(){
 	else		printf("*************** SLAVE ***************\n");
 	if(normal)	printf("*************** NORMAL ***************\n");
 	else		printf("*************** SPECIAL ***************\n");
+
+	// read detector id
+	char output[255];
+	FILE* sysFile = popen(IDFILECOMMAND, "r");
+	fgets(output, sizeof(output), sysFile);
+	pclose(sysFile);
+	sscanf(output,"%u",&detid);
+	printf("detector id: %u\n",detid);
 }
 
 
@@ -663,7 +666,7 @@ int setThresholdEnergy(int ev, int imod){
 /* parameters - dac, adc, hv */
 
 void setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]){
-
+	printf("Going to set dac %d to %d of imod %d with mv mode %d \n", (int)ind, val, imod, mV);
 	if(ind == VTHRESHOLD){
 		int ret[5];
 		setDAC(VCMP_LL,val,imod,mV,retval);
@@ -911,6 +914,10 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 }
 
 
+
+int	setDetectorPosition(int pos[]) {
+	return Beb_SetDetectorPosition(pos);
+}
 
 
 

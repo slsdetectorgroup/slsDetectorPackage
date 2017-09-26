@@ -17,7 +17,6 @@
 
 
 
-
 #include "xfs_types.h"
 #include "xparameters.h"
 #include "FebRegisterDefs.h"
@@ -48,6 +47,8 @@
 		  int BEB_MMAP_SIZE = 0x1000;
 
 		  int Beb_activated = 1;
+
+		  uint32_t Beb_detid = 0;
 
 
 
@@ -144,7 +145,6 @@ void Beb_Beb(){
 //  Local_LocalLinkInterface1(ll_beb,XPAR_PLB_LL_FIFO_AURORA_DUAL_CTRL_FEB_LEFT_BASEADDR);
 
 //  Beb_SetByteOrder();
-
 }
 
 
@@ -1124,9 +1124,88 @@ int Beb_GetBebFPGATemp()
 }
 
 
+void Beb_SetDetectorNumber(uint32_t detid) {
+	if(!Beb_activated)
+		return;
+
+	uint32_t swapid = Beb_swap_uint16(detid);
+	//cprintf(GREEN, "detector id %d swapped %d\n", detid, swapid);
+	u_int32_t* csp0base=0;
+	int fd = Beb_open(&csp0base,XPAR_PLB_GPIO_TEST_BASEADDR);
+	if(fd < 0){
+		cprintf(BG_RED,"Set Detector ID FAIL\n");
+		return;
+	}else{
+		uint32_t value = Beb_Read32(csp0base, UDP_HEADER_A_OFST);
+		value &= UDP_HEADER_X_MSK;	// to keep previous x value
+		Beb_Write32(csp0base, UDP_HEADER_A_OFST, value | ((swapid << UDP_HEADER_ID_OFST) & UDP_HEADER_ID_MSK));
+		value = Beb_Read32(csp0base, UDP_HEADER_A_OFST);
+		if((value & UDP_HEADER_ID_MSK) != ((swapid << UDP_HEADER_ID_OFST) & UDP_HEADER_ID_MSK))
+			cprintf(BG_RED,"Set Detector ID FAIL\n");
+
+		Beb_close(fd,csp0base);
+	}
+	printf("detector id %d has been set in udp header\n", detid);
+}
 
 
 
+int Beb_SetDetectorPosition(int pos[]) {
+	if(!Beb_activated)
+		return OK;
+
+	pos[0] = Beb_swap_uint16(pos[0]);
+	pos[1] = Beb_swap_uint16(pos[1]);
+	pos[2] = Beb_swap_uint16(pos[2]);
+
+	int ret = FAIL;
+	//mapping new memory to read master top module configuration
+	u_int32_t* csp0base=0;
+	//open file pointer
+	int fd = Beb_open(&csp0base,XPAR_PLB_GPIO_TEST_BASEADDR);
+	if(fd < 0){
+		cprintf(BG_RED,"Set Detector Position FAIL\n");
+		return FAIL;
+	}else{
+		uint32_t value = 0;
+		ret = OK;
+		// x
+		value = Beb_Read32(csp0base, UDP_HEADER_A_OFST);
+		value &= UDP_HEADER_ID_MSK;	// to keep previous id value
+		Beb_Write32(csp0base, UDP_HEADER_A_OFST, value | ((pos[0] << UDP_HEADER_X_OFST) & UDP_HEADER_X_MSK));
+		value = Beb_Read32(csp0base, UDP_HEADER_A_OFST);
+		if((value & UDP_HEADER_X_MSK) != ((pos[0] << UDP_HEADER_X_OFST) & UDP_HEADER_X_MSK))
+			ret = FAIL;
+
+		// y
+		// overwriting z anyway, so no need to look at previous z value
+		Beb_Write32(csp0base, UDP_HEADER_B_OFST, ((pos[1] << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK));
+		value = Beb_Read32(csp0base, UDP_HEADER_B_OFST);
+		if(value  != ((pos[1] << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK))
+			ret = FAIL;
+
+		// z
+		value = Beb_Read32(csp0base, UDP_HEADER_B_OFST);
+		value &= UDP_HEADER_Y_MSK;	// to keep previous y value
+		Beb_Write32(csp0base, UDP_HEADER_B_OFST, value | ((pos[2] << UDP_HEADER_Z_OFST) & UDP_HEADER_Z_MSK));
+		value = Beb_Read32(csp0base, UDP_HEADER_B_OFST);
+		if((value & UDP_HEADER_Z_MSK) != ((pos[2] << UDP_HEADER_Z_OFST) & UDP_HEADER_Z_MSK))
+			ret = FAIL;
+
+
+		//close file pointer
+		Beb_close(fd,csp0base);
+	}
+	if (ret == OK)
+		printf("Position set to [%d, %d, %d]\n", Beb_swap_uint16(pos[0]), Beb_swap_uint16(pos[1]), Beb_swap_uint16(pos[2]));
+
+	return ret;
+}
+
+
+uint16_t Beb_swap_uint16( uint16_t val) {
+    return (val << 8) | (val >> 8 );
+}
 
 int Beb_open(u_int32_t** csp0base, u_int32_t offset){
 

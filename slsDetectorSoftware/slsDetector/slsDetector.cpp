@@ -6414,8 +6414,8 @@ int slsDetector::configureMAC(){
 	bool sendpos = 0;
 	int pos[3]={0,0,0};
 
-	// only jungfrau send x, y and z in detector udp header
-	if (thisDetector->myDetectorType == JUNGFRAU) {
+	// only jungfrau and eiger, send x, y and z in detector udp header
+	if (thisDetector->myDetectorType == JUNGFRAU || thisDetector->myDetectorType == EIGER) {
 		sendpos = true;
 		int max = parentDet->getNumberOfDetectors(X);
 		if(!posId) {

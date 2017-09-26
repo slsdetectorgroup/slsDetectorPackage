@@ -78,7 +78,7 @@ int normal = 0;
 
 /* basic tests */
 
-void checkFirmwareCompatibility(){
+void checkFirmwareCompatibility(int flag){
 	cprintf(BLUE,"\n\n"
 			"********************************************************\n"
 			"***************** EIGER Virtual Server *****************\n"
@@ -589,7 +589,9 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 
 
 
-
+int	setDetectorPosition(int pos[]) {
+	return OK;
+}
 
 
 

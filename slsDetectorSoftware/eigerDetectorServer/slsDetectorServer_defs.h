@@ -12,7 +12,8 @@
 #include <stdint.h>
 
 #define GOODBYE 					 		(-200)
-#define REQUIRED_FIRMWARE_VERSION 	 		(16)
+#define REQUIRED_FIRMWARE_VERSION 	 		(21)
+#define IDFILECOMMAND						"more /home/root/executables/detid.txt"
 
 /* Enums */
 enum CLK_SPEED_INDEX						{FULL_SPEED, HALF_SPEED, QUARTER_SPEED};

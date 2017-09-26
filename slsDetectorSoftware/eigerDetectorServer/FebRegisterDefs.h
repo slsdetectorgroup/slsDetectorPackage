@@ -181,8 +181,17 @@
 #define TEN_GIGA_RIGHT_TXN_DELAY_COUNTER	0x1c4
 #define TEN_GIGA_RIGHT_FRAME_DELAY_COUNTER	0x1e4
 
-
-
+// udp header (position, id)
+#define UDP_HEADER_A_OFST					0x00C0
+#define UDP_HEADER_B_OFST					0x00E0
+#define UDP_HEADER_X_OFST					(0)
+#define UDP_HEADER_X_MSK					(0xFFFF << UDP_HEADER_X_OFST)
+#define UDP_HEADER_ID_OFST					(16)
+#define UDP_HEADER_ID_MSK					(0xFFFF << UDP_HEADER_ID_OFST)
+#define UDP_HEADER_Z_OFST					(0)
+#define UDP_HEADER_Z_MSK					(0xFFFF << UDP_HEADER_Z_OFST)
+#define UDP_HEADER_Y_OFST					(16)
+#define UDP_HEADER_Y_MSK					(0xFFFF << UDP_HEADER_Y_OFST)
 
 
 

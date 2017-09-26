@@ -152,7 +152,7 @@ long int 	calcChecksum(int sourceip, int destip);
 #ifndef MYTHEND
 int 		configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2, int ival);
 #endif
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(EIGERD)
 int 		setDetectorPosition(int pos[]);
 #endif
 

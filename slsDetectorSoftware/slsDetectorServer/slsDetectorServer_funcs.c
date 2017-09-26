@@ -3408,7 +3408,7 @@ int configure_mac(int file_des) {
 	char arg[6][50];
 	memset(arg,0,sizeof(arg));
 	n = receiveData(file_des,arg,sizeof(arg),OTHER);
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(EIGERD)
 	int pos[3]={0,0,0};
 	n = receiveData(file_des,pos,sizeof(pos),INT32);
 #endif
@@ -3461,7 +3461,7 @@ int configure_mac(int file_des) {
 		printf("\n");
 		printf("Configuring MAC of module %d at port %x\n", imod, udpport);
 
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(EIGERD)
 		printf("Position: [%d,%d,%d]\n", pos[0],pos[1],pos[2]);
 #endif
 #endif
@@ -3481,7 +3481,7 @@ int configure_mac(int file_des) {
 				}
 				else {
 					printf("Configure MAC successful\n");
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(EIGERD)
 					ret = setDetectorPosition(pos);
 					if (ret == FAIL) {
 						sprintf(mess,"could not set detector position\n");

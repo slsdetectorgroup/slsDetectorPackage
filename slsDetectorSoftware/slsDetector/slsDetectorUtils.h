@@ -774,6 +774,12 @@ virtual int enableTenGigabitEthernet(int i = -1)=0;
  */
 virtual int setReceiverFifoDepth(int i = -1)=0;
 
+/** set/get receiver silent mode
+ * @param i is -1 to get, 0 unsets silent mode, 1 sets silent mode
+   /returns the receiver silent mode enable
+ */
+virtual int setReceiverSilentMode(int i = -1)=0;
+
   /******** CTB funcs */
 
   /** opens pattern file and sends pattern to CTB 

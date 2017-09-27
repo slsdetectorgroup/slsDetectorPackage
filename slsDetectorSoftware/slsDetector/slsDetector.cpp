@@ -8730,6 +8730,29 @@ int slsDetector::setReceiverFifoDepth(int i){
 
 
 
+int slsDetector::setReceiverSilentMode(int i){
+	int fnum=F_SET_RECEIVER_SILENT_MODE;
+	int ret = FAIL;
+	int retval=-1;
+
+
+	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+#ifdef VERBOSE
+		if(i ==-1)
+			std::cout<< "Getting Receiver Silent Mode" << endl;
+		else
+			std::cout<< "Setting Receiver Silent Mode to " << i << endl;
+#endif
+		if (connectData() == OK){
+			ret=thisReceiver->sendInt(fnum,retval,i);
+			disconnectData();
+		}
+		if(ret==FAIL)
+			setErrorMask((getErrorMask())|(RECEIVER_SILENT_MODE_NOT_SET));
+	}
+	return retval;
+}
+
 
 
   /******** CTB funcs */

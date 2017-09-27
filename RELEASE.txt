@@ -1,4 +1,4 @@
-SLS Detector Package 3.0.1 released on 2017-09-20
+SLS Detector Package 3.0.1 released on 2017-09-27
 ================================================================================
 
 
@@ -72,6 +72,12 @@ New Features
 	
 	2.	One can set "threaded" to 0 in the config file and acquire from command line. It will
 		not give you progress, but might be faster for large multi detector systems.
+		
+	
+	Receiver
+	--------
+	1.	Added silent mode to receiver using command r_silent [i] from client. 
+		It might be beneficial for max frame rate applications.
 
 
 Resolved Issues

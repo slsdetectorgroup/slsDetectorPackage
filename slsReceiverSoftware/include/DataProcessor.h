@@ -64,6 +64,12 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	static void ResetRunningMask();
 
+	/**
+	 * Set Silent Mode
+	 * @param mode 1 sets 0 unsets
+	 */
+	static void SetSilentMode(bool mode);
+
 	//*** non static functions ***
 	//*** getters ***
 	/**
@@ -284,6 +290,9 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** Fifo structure */
 	Fifo* fifo;
+
+	/** Silent Mode */
+	static bool SilentMode;
 
 
 	//individual members

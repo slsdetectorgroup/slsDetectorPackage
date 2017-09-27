@@ -61,6 +61,8 @@ enum recFuncs{
 	F_SEND_RECEIVER_DETPOSID,		/** < sets the detector position id in the reveiver */
 	F_SEND_RECEIVER_MULTIDETSIZE,    /** < sets the multi detector size to the receiver */
 	F_SET_RECEIVER_STREAMING_PORT, 	/** < sets the receiver streaming port */
+
+	F_SET_RECEIVER_SILENT_MODE,		/** < sets the receiver silent mode */
 	/* Always append functions hereafter!!! */
 
 

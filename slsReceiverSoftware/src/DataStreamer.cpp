@@ -23,6 +23,8 @@ uint64_t DataStreamer::RunningMask(0x0);
 
 pthread_mutex_t DataStreamer::Mutex = PTHREAD_MUTEX_INITIALIZER;
 
+bool DataStreamer::SilentMode(false);
+
 
 DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, int* sEnable) :
 		ThreadObject(NumberofDataStreamers),
@@ -70,6 +72,11 @@ uint64_t DataStreamer::GetRunningMask() {
 void DataStreamer::ResetRunningMask() {
 	RunningMask = 0x0;
 }
+
+void DataStreamer::SetSilentMode(bool mode) {
+	SilentMode = mode;
+}
+
 
 /** non static functions */
 /** getters */

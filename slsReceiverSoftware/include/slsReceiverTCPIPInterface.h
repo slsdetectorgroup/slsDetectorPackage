@@ -264,6 +264,9 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	/** set streaming port */
 	int set_streaming_port();
 
+	/** set silent mode */
+	int set_silent_mode();
+
 
 
 	/** detector type */

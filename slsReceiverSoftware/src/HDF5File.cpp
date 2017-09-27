@@ -25,9 +25,10 @@ HDF5File::HDF5File(int ind, uint32_t maxf, const uint32_t* ppf,
 		int* nd, char* fname, char* fpath, uint64_t* findex,
 		bool* frindexenable, bool* owenable,
 		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
-		uint32_t nx, uint32_t ny):
+		uint32_t nx, uint32_t ny,
+		bool* smode):
 
-		File(ind, maxf, ppf, nd, fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr, portno),
+		File(ind, maxf, ppf, nd, fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr, portno, smode),
 		filefd(0),
 		dataspace(0),
 		dataset(0),
@@ -110,7 +111,8 @@ int HDF5File::CreateFile(uint64_t fnum) {
 	if (dataspace == NULL)
 		bprintf(RED,"Got nothing!\n");
 
-	FILE_LOG(logINFO) << *udpPortNumber << ": HDF5 File created: " << currentFileName;
+	if(!silentMode)
+		FILE_LOG(logINFO) << *udpPortNumber << ": HDF5 File created: " << currentFileName;
 
 	return OK;
 }
@@ -171,7 +173,8 @@ int HDF5File::CreateMasterFile(bool en, uint32_t size,
 	if (master && (*detIndex==0)) {
 		virtualfd = 0;
 		masterFileName = HDF5FileStatic::CreateMasterFileName(filePath, fileNamePrefix, *fileIndex);
-		FILE_LOG(logINFO) << "Master File: " << masterFileName;
+		if(!silentMode)
+			FILE_LOG(logINFO) << "Master File: " << masterFileName;
 		pthread_mutex_lock(&Mutex);
 		int ret = HDF5FileStatic::CreateMasterDataFile(masterfd, masterFileName, *overWriteEnable,
 				*dynamicRange, en, size, nx, ny, *numImages, at, st, ap, HDF5_WRITER_VERSION);

@@ -267,6 +267,16 @@ int UDPStandardImplementation::setFifoDepth(const uint32_t i) {
 }
 
 
+void UDPStandardImplementation::setSilentMode(const uint32_t i){
+	silentMode = i;
+
+	Listener::SetSilentMode(i);
+	DataProcessor::SetSilentMode(i);
+	DataStreamer::SetSilentMode(i);
+
+	FILE_LOG(logINFO) << "Silent Mode: " << i;
+}
+
 
 int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	FILE_LOG (logDEBUG) << "Setting receiver type";
@@ -332,9 +342,8 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	//set up writer and callbacks
 	for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
 		(*it)->SetGeneralData(generalData);
-	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it) {
+	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
 		(*it)->SetGeneralData(generalData);
-	}
 
 	SetThreadPriorities();
 

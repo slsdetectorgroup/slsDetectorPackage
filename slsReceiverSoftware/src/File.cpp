@@ -13,7 +13,8 @@ using namespace std;
 File::File(int ind, uint32_t maxf, const uint32_t* ppf,
 		int* nd, char* fname, char* fpath, uint64_t* findex,
 		bool* frindexenable, bool* owenable,
-		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno):
+		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
+		bool* smode):
 			index(ind),
 			maxFramesPerFile(maxf),
 			packetsPerFrame(ppf),
@@ -28,7 +29,8 @@ File::File(int ind, uint32_t maxf, const uint32_t* ppf,
 			numUnitsPerDetector(nunits),
 			numImages(nf),
 			dynamicRange(dr),
-			udpPortNumber(portno)
+			udpPortNumber(portno),
+			silentMode(smode)
 
 {
 	master = index?false:true;
@@ -59,7 +61,8 @@ void File::PrintMembers() {
 			<< "Dynamic Range: " << *dynamicRange << endl
 			<< "UDP Port number: " << *udpPortNumber << endl
 			<< "Master File Name: " << masterFileName << endl
-			<< "Current File Name: " << currentFileName;
+			<< "Current File Name: " << currentFileName << endl
+			<< "Silent Mode: " << silentMode;
 }
 
 

@@ -322,6 +322,11 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   /** destructor */ 
   virtual ~slsDetector();
 
+  /**
+   * returns true. Used when reference is slsDetectorUtils and to determine if command can be implemented as slsDetector/multiSlsDetector object/
+   */
+  bool isMultiSlsDetectorClass(){return 0;};
+
   int setOnline(int const online=GET_ONLINE_FLAG);
   
   string checkOnline();
@@ -754,6 +759,13 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
    *  \return enable flipped data across x or y axis
    */
   int setFlippedData(dimension d=X, int value=-1);
+
+  /**
+   * Enable gap pixels, only for Eiger
+   * @param val 1 sets, 0 unsets, -1 gets
+   * @return gap pixel enable
+   */
+  int enableGapPixels(int val=-1);
 
 
   /*

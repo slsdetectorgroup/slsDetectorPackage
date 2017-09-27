@@ -62,6 +62,10 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
     
   virtual ~slsDetectorUtils(){};
 
+  /**
+   * Used when reference is slsDetectorUtils and to determine if command can be implemented as slsDetector/multiSlsDetector object/
+   */
+  virtual bool isMultiSlsDetectorClass()=0;
 
   virtual int getNumberOfDetectors(){return 1; };
   
@@ -76,6 +80,13 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
    *  \return enable flipped data across x or y axis
    */
   virtual int setFlippedData(dimension d=X, int value=-1)=0;
+
+  /**
+   * Enable gap pixels, only for Eiger
+   * @param val 1 sets, 0 unsets, -1 gets
+   * @return gap pixel enable
+   */
+  virtual int enableGapPixels(int val=-1) = 0;
 
   //int setPositions(int nPos, double *pos){return angularConversion::setPositions(nPos, pos);};
 

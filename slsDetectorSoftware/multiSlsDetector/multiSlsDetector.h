@@ -254,6 +254,11 @@ class multiSlsDetector  : public slsDetectorUtils {
   virtual ~multiSlsDetector();
   
   /**
+   * returns true. Used when reference is slsDetectorUtils and to determine if command can be implemented as slsDetector/multiSlsDetector object/
+   */
+  bool isMultiSlsDetectorClass(){return 1;};
+
+  /**
    * Creates all the threads in the threadpool
     \returns OK or FAIL
   */
@@ -1027,6 +1032,13 @@ class multiSlsDetector  : public slsDetectorUtils {
    *  \return enable flipped data across x or y axis
    */
   int setFlippedData(dimension d=X, int value=-1);
+
+  /**
+   * Enable gap pixels, only for Eiger
+   * @param val 1 sets, 0 unsets, -1 gets
+   * @return gap pixel enable
+   */
+  int enableGapPixels(int val=-1);
 
   int getMaxNumberOfModules(dimension d=X);
   int setDynamicRange(int i=-1);

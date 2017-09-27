@@ -4239,6 +4239,28 @@ int multiSlsDetector::setFlippedData(dimension d, int value){
 	return ret;
 }
 
+int multiSlsDetector::enableGapPixels(int val) {
+
+	if(getDetectorsType() != EIGER){
+		std::cout << "Not implemented for this detector" << std::endl;
+		return -1;
+	}
+
+	int ret=-100,ret1;
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet)
+		if (detectors[idet]){
+			ret1=detectors[idet]->enableGapPixels(val);
+			if(ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+
+/** do something */
+
+	return ret;
+}
+
 
 
 

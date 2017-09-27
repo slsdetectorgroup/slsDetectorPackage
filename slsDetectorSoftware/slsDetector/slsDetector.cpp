@@ -710,7 +710,6 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*thisDetector->dynamicRange/8;
 
     if(thisDetector->myDetectorType==JUNGFRAUCTB) {
-      cout << "here1" << endl;
       getTotalNumberOfChannels();
       //      thisDetector->dataBytes=getTotalNumberOfChannels()*thisDetector->dynamicRange/8*thisDetector->timerValue[SAMPLES_JCTB];
     }
@@ -1979,6 +1978,16 @@ int slsDetector::setFlippedData(dimension d, int value){
 }
 
 
+
+
+int slsDetector::enableGapPixels(int val) {
+
+	if(thisDetector->myDetectorType!= EIGER)
+		return -1;
+
+
+	return 0;
+}
 
 
 /*

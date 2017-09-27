@@ -406,6 +406,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
 	++i;
 
+	/*! \page config
+   - <b>gappixels [i]</b> enables/disables gap pixels in system (detector & receiver). 1 sets, 0 unsets. Used in EIGER only and only in multi detector level command. \c Returns \c (int)
+	 */
+	descrToFuncMap[i].m_pFuncName="gappixels"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
+	++i;
+
+
 
 	/* flags */
 	/*! \page config
@@ -4320,6 +4328,14 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 			myDet->setFlippedData(Y,val);
 		}
 
+		if(cmd=="gappixels"){
+			if ((!sscanf(args[1],"%d",&val)) ||  (val!=0 && val != 1))
+				return string ("cannot scan gappixels mode: must be 0 or 1");
+			myDet->setReceiverOnline(ONLINE_FLAG);
+			if (myDet->isMultiSlsDetectorClass()) // only in multi detector level to update offsets etc.
+				myDet->enableGapPixels(val);
+		}
+
 	}
 
 	if (cmd=="nmod" || cmd=="roimask") {
@@ -4337,17 +4353,22 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 	}
 	else if(cmd=="flippeddatax"){
 		myDet->setReceiverOnline(ONLINE_FLAG);
-		sprintf(ans,"%d",myDet->getFlippedData(X));
-		return string(ans);
+		ret = myDet->getFlippedData(X);
 	}
 	else if(cmd=="flippeddatay"){
 		return string("Not required for this detector\n");
 		myDet->setReceiverOnline(ONLINE_FLAG);
-		sprintf(ans,"%d",myDet->getFlippedData(Y));
-		return string(ans);
+		ret = myDet->getFlippedData(Y);
 	}
+	else if(cmd=="gappixels"){
+		myDet->setReceiverOnline(ONLINE_FLAG);
+		if (!myDet->isMultiSlsDetectorClass()) // only in multi detector level to update offsets etc.
+			return string("Cannot execute this command from slsDetector level. Please use multiSlsDetector level.\n");
+		ret = myDet->enableGapPixels();
+	}
+
 	else
-		return string("unknown detector size ")+cmd;
+		return string("unknown command ")+cmd;
 
 	if (cmd=="roimask")
 		sprintf(ans,"0x%x",ret);
@@ -4369,6 +4390,7 @@ string slsDetectorCommand::helpDetectorSize(int narg, char *args[], int action) 
 		os << "detsizechan x y \n sets the maximum number of channels for complete detector set in both directions; -1 is no limit"<< std::endl;
 		os << "flippeddatax x \n sets if the data should be flipped on the x axis"<< std::endl;
 		os << "flippeddatay y \n sets if the data should be flipped on the y axis"<< std::endl;
+		os << "gappixels i \n enables/disables gap pixels in system (detector & receiver). 1 sets, 0 unsets. Used in EIGER only and multidetector level." << std::endl;
 	}
 	if (action==GET_ACTION || action==HELP_ACTION) {
 		os << "nmod \n gets the number of modules of the detector"<< std::endl;
@@ -4378,6 +4400,7 @@ string slsDetectorCommand::helpDetectorSize(int narg, char *args[], int action) 
 		os << "detsizechan \n gets the maximum number of channels for complete detector set in both directions; -1 is no limit"<< std::endl;
 		os << "flippeddatax\n gets if the data will be flipped on the x axis"<< std::endl;
 		os << "flippeddatay\n gets if the data will be flipped on the y axis"<< std::endl;
+		os << "gappixels\n gets if gap pixels is enabled in system. Used in EIGER only and multidetector level." << std::endl;
 	}
 	return os.str();
 

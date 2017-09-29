@@ -387,7 +387,7 @@ public:
 	 * @param size size of image
 	 * @returns length of data received
 	 */
-	int ReceiveData(const int index, int* buf, const int size)
+	int ReceiveData(const int index, char* buf, const int size)
 	{
 		zmq_msg_t message;
 		zmq_msg_init (&message);
@@ -398,13 +398,13 @@ public:
 #ifdef VERBOSE
 			cprintf(BLUE,"%d actual data\n", index);
 #endif
-			memcpy((char*)buf, (char*)zmq_msg_data(&message), size);
+			memcpy(buf, (char*)zmq_msg_data(&message), size);
 		}
 
 		//incorrect size
 		else {
 			cprintf(RED,"Error: Received weird packet size %d for socket %d\n", length, index);
-			memset((char*)buf,0xFF,size);
+			memset(buf,0xFF,size);
 		}
 
 		zmq_msg_close(&message);

@@ -282,8 +282,6 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
   threadpool = 0;
 	if(createThreadPool() == FAIL)
 		exit(-1);
-	gainDataEnable = false;
-
 }
 
 multiSlsDetector::~multiSlsDetector() {
@@ -5711,7 +5709,7 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 
 
 
-int multiSlsDetector::getData(const int isocket, int* image, const int size,
+int multiSlsDetector::getData(const int isocket, char* image, const int size,
 		uint64_t &acqIndex, uint64_t &frameIndex, uint32_t &subframeIndex, string &filename) {
 
 	//fail is on parse error or end of acquisition
@@ -5786,18 +5784,6 @@ void multiSlsDetector::readFrameFromReceiver(){
 	}
 
 	int expectedslssize = slsdatabytes/numSocketsPerSLSDetector;
-	/*int* image = new int[(expectedslssize/sizeof(int))]();
-	int nel=(thisMultiDetector->dataBytes)/sizeof(int);
-	if(nel <= 0){
-		cprintf(RED,"Error: Multislsdetector databytes not valid : %d\n", thisMultiDetector->dataBytes);
-		return;
-	}
-	int* multiframe=new int[nel]();
-	int* multiframegain=NULL;
-	if (jungfrau)
-		multiframegain = new int[nel]();
-	*/
-
 	char* image = new char[expectedslssize]();
 	char* multiframe = new char[thisMultiDetector->dataBytes]();
 	char* multiframegain = NULL;
@@ -5822,7 +5808,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 	//exit when last message for each socket received
 	while(running){
-		memset(multiframe,0xFF,slsdatabytes*thisMultiDetector->numberOfDetectors);/*memset(((char*)multiframe),0xFF,slsdatabytes*thisMultiDetector->numberOfDetectors);*/	//reset frame memory
+		memset(multiframe,0xFF,slsdatabytes*thisMultiDetector->numberOfDetectors);	//reset frame memory
 
 		//get each frame
 		for(int isocket=0; isocket<numSockets; ++isocket){
@@ -5830,7 +5816,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 			//if running
 			if (runningList[isocket]) {
 				//get individual images
-				if(FAIL == getData(isocket, (int*)image, expectedslssize, currentAcquisitionIndex,currentFrameIndex,currentSubFrameIndex,currentFileName)){
+				if(FAIL == getData(isocket, image, expectedslssize, currentAcquisitionIndex,currentFrameIndex,currentSubFrameIndex,currentFileName)){
 					runningList[isocket] = false;
 					--numRunning;
 					continue;
@@ -5884,37 +5870,11 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 		//send data to callback
 		if(running){
-			/*
-			if (jungfrau) {
-				// with gain data
-				if (gainDataEnable) {
-					memcpy(multiframegain, multiframe, nel * sizeof(int));
-					for(unsigned int i=0;i<nel;++i){
-						multiframegain[i] = ((multiframe[i] & 0xC0000000) >> 14) | ((multiframe[i] & 0x0000C000) >> 14) ;
-						multiframe[i] = (multiframe[i] & 0x3FFF3FFF);
-					}
-					gdata = decodeData(multiframegain,nch);
-				}
-				// without gain data
-				else {
-					for(unsigned int i=0;i<nel;++i)
-						multiframe[i] = (multiframe[i] & 0x3FFF3FFF);
-				}
-			}
-		  fdata = decodeData(multiframe,nch);
-			if ((fdata) && (dataReady)){
-				thisData = new detectorData(fdata, NULL,NULL,getCurrentProgress(),currentFileName.c_str(),maxX,maxY, gdata);
-				dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);
-				delete thisData;
-				fdata = NULL;
-				gdata = NULL;
-				//cout<<"Send frame #"<< currentFrameIndex << " to gui"<<endl;
-			}
-			*/
 			if(dataReady) {
-				thisData = new detectorData(multiframe, thisMultiDetector->dataBytes, NULL,NULL,getCurrentProgress(),currentFileName.c_str(),maxX,maxY);
+				thisData = new detectorData(NULL,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),maxX,maxY,multiframe, thisMultiDetector->dataBytes);
 				dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);
 				delete thisData;
+				//cout<<"Send frame #"<< currentFrameIndex << " to gui"<<endl;
 			}
 
 			setCurrentProgress(currentAcquisitionIndex+1);
@@ -6542,7 +6502,3 @@ bool multiSlsDetector::getExternalGuiFlag(){
 	return thisMultiDetector->externalgui;
 }
 
-
-void multiSlsDetector::setGainDataEnableinDataCallback(bool e) {
-	gainDataEnable = e;
-}

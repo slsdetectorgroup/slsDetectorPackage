@@ -332,7 +332,7 @@ s
 
 
   double *fdata;
-  int (*dataReady)(detectorData*,int, int,void*);
+  int (*dataReady)(detectorData*,int, int, void*);
   void *pCallbackArg; 
   detectorData *thisData;
 

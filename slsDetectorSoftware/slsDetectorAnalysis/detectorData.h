@@ -18,28 +18,27 @@ class detectorData {
       \param ny dimension in y (1D detector)
       \param gval pointer to gain data (for jungfrau)
   */
-  detectorData(double *val=NULL, double *err=NULL, double *ang=NULL,  double p_ind=-1, const char *fname="", int np=-1, int ny=1, double* gval=NULL) : cvalues(NULL), databytes(-1), values(val), errors(err), angles(ang),  progressIndex(p_ind), npoints(np), npy(ny), gvalues(gval){
+  detectorData(double *val=NULL, double *err=NULL, double *ang=NULL,  double p_ind=-1, const char *fname="", int np=-1, int ny=1, char *cval=NULL, int dbytes=0) : values(val), errors(err), angles(ang),  progressIndex(p_ind), npoints(np), npy(ny), cvalues(cval), databytes(dbytes), dgainvalues(NULL) {
 	 strcpy(fileName,fname);
   };
-  detectorData(char *val=NULL, int db=0, double *err=NULL, double *ang=NULL,  double p_ind=-1, const char *fname="", int np=-1, int ny=1, double* gval=NULL) : cvalues(val), databytes(db), values(NULL), errors(err), angles(ang),  progressIndex(p_ind), npoints(np), npy(ny), gvalues(gval){
-	 strcpy(fileName,fname);
-  };
-    /** 
+
+  /**
 	@short The destructor
 	deletes also the arrays pointing to data/errors/angles if not NULL
-    */
-    ~detectorData() {if (values) delete [] values; if (errors) delete [] errors; if (angles) delete [] angles; if (gvalues) delete [] gvalues;};
+	cvalues are deleted by caller
+   */
+    ~detectorData() {if (values) delete [] values; if (errors) delete [] errors; if (angles) delete [] angles; if(dgainvalues) delete [] dgainvalues;};
     //private:
-    char* cvalues;
-    int databytes;
-    double *values; /**< @short pointer to the data */
+    double *values; /**< @short pointer to the data as double array */
     double *errors; /**< @short pointer to the errors */
     double *angles;/**< @short pointer to the angles (NULL if no angular conversion) */
     double progressIndex;/**< @short file index */
     char fileName[1000];/**< @short file name */
     int npoints;/**< @short number of points */
     int npy;/**< @short dimensions in y coordinate*/
-    double *gvalues; /**< @short pointer to the gain data */
+    char* cvalues; /**< @short pointer to the data as char arary */
+    int databytes; /**< @short number of bytes of data. Used with cvalues */
+    double* dgainvalues; /**< @short pointer to gain data as double array */
 };
 
 

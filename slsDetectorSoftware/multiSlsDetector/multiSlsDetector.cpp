@@ -5731,17 +5731,18 @@ int multiSlsDetector::getData(const int isocket, int* image, const int size,
 void multiSlsDetector::readFrameFromReceiver(){
 
 	//determine number of half readouts and maxX and maxY
-	int maxX=0,maxY=0;
+	int maxX=thisMultiDetector->numberOfChannel[X];
+	int maxY=thisMultiDetector->numberOfChannel[Y];
 	int numSockets = thisMultiDetector->numberOfDetectors;
 	int numSocketsPerSLSDetector = 1;
 	bool jungfrau = false;
-	double* gdata = NULL;
+	bool eiger = false;
+	/*double* gdata = NULL;*/
 	switch(getDetectorsType()){
 	case EIGER:
+		eiger = true;
 		numSocketsPerSLSDetector = 2;
 		numSockets *= numSocketsPerSLSDetector;
-		maxX = thisMultiDetector->numberOfChannel[X];
-		maxY = thisMultiDetector->numberOfChannel[Y];
 		break;
 	case JUNGFRAU:
 		jungfrau = true;
@@ -5757,7 +5758,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 	string currentFileName = "";
 
 	//getting sls values
-	int slsdatabytes = 0, slsmaxchannels = 0, slsmaxX = 0, slsmaxY=0, nx=0, ny=0;
+	int slsdatabytes = 0, slsmaxchannels = 0, slsmaxX = 0, slsmaxY=0;
 	double bytesperchannel = 0;
 	if(detectors[0]){
 		slsdatabytes = detectors[0]->getDataBytes();
@@ -5768,12 +5769,10 @@ void multiSlsDetector::readFrameFromReceiver(){
 	}
 
 	//getting multi values
-	nx = getTotalNumberOfChannels(slsDetectorDefs::X);
-	ny = getTotalNumberOfChannels(slsDetectorDefs::Y);
 	//calculating offsets (for eiger interleaving ports)
 	int offsetX[numSockets]; int offsetY[numSockets];
 	int bottom[numSockets];
-	if(maxX){
+	if(eiger){
 		for(int i=0; i<numSockets; ++i){
 			offsetY[i] = (maxY - (thisMultiDetector->offsetY[i/numSocketsPerSLSDetector] + slsmaxY)) * maxX * bytesperchannel;
 			//the left half or right half
@@ -5787,7 +5786,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 	}
 
 	int expectedslssize = slsdatabytes/numSocketsPerSLSDetector;
-	int* image = new int[(expectedslssize/sizeof(int))]();
+	/*int* image = new int[(expectedslssize/sizeof(int))]();
 	int nel=(thisMultiDetector->dataBytes)/sizeof(int);
 	if(nel <= 0){
 		cprintf(RED,"Error: Multislsdetector databytes not valid : %d\n", thisMultiDetector->dataBytes);
@@ -5797,6 +5796,14 @@ void multiSlsDetector::readFrameFromReceiver(){
 	int* multiframegain=NULL;
 	if (jungfrau)
 		multiframegain = new int[nel]();
+	*/
+
+	char* image = new char[expectedslssize]();
+	char* multiframe = new char[thisMultiDetector->dataBytes]();
+	char* multiframegain = NULL;
+	if (jungfrau)
+		multiframegain = new char[thisMultiDetector->dataBytes]();
+
 	int nch;
 
 	bool runningList[numSockets];
@@ -5815,7 +5822,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 	//exit when last message for each socket received
 	while(running){
-		memset(((char*)multiframe),0xFF,slsdatabytes*thisMultiDetector->numberOfDetectors);	//reset frame memory
+		memset(multiframe,0xFF,slsdatabytes*thisMultiDetector->numberOfDetectors);/*memset(((char*)multiframe),0xFF,slsdatabytes*thisMultiDetector->numberOfDetectors);*/	//reset frame memory
 
 		//get each frame
 		for(int isocket=0; isocket<numSockets; ++isocket){
@@ -5823,29 +5830,29 @@ void multiSlsDetector::readFrameFromReceiver(){
 			//if running
 			if (runningList[isocket]) {
 				//get individual images
-				if(FAIL == getData(isocket, image, expectedslssize, currentAcquisitionIndex,currentFrameIndex,currentSubFrameIndex,currentFileName)){
+				if(FAIL == getData(isocket, (int*)image, expectedslssize, currentAcquisitionIndex,currentFrameIndex,currentSubFrameIndex,currentFileName)){
 					runningList[isocket] = false;
 					--numRunning;
 					continue;
 				}
 
 				//assemble data with interleaving
-				if(maxX){
+				if(eiger){
 
 					//bottom
 					if(bottom[isocket]){
 					//if((((isocket/numSocketsPerSLSDetector)+1)%2) == 0){
 						for(int i=0;i<slsmaxY;++i){
-							memcpy(((char*)multiframe) + offsetY[isocket] + offsetX[isocket] + (int)((slsmaxY-1-i)*maxX*bytesperchannel),
-									(char*)image+ (int)(i*(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel),
+							memcpy(multiframe + offsetY[isocket] + offsetX[isocket] + (int)((slsmaxY-1-i)*maxX*bytesperchannel),
+									image+ (int)(i*(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel),
 									(int)((slsmaxX/numSocketsPerSLSDetector)*bytesperchannel));
 						}
 					}
 					//top
 					else{
 						for(int i=0;i<slsmaxY;++i){
-							memcpy(((char*)multiframe) + offsetY[isocket] + offsetX[isocket] + (int)(i*maxX*bytesperchannel),
-									(char*)image+ (int)(i*(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel),
+							memcpy(multiframe + offsetY[isocket] + offsetX[isocket] + (int)(i*maxX*bytesperchannel),
+									image+ (int)(i*(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel),
 									(int)((slsmaxX/numSocketsPerSLSDetector)*bytesperchannel));
 						}
 					}
@@ -5853,7 +5860,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 				//assemble data with no interleaving, assumed detectors appended vertically
 				else{
-					memcpy((char*)multiframe+slsdatabytes*isocket,(char*)image,slsdatabytes);
+					memcpy(multiframe+slsdatabytes*isocket,image,slsdatabytes);
 				}
 			}
 
@@ -5877,6 +5884,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 		//send data to callback
 		if(running){
+			/*
 			if (jungfrau) {
 				// with gain data
 				if (gainDataEnable) {
@@ -5895,13 +5903,20 @@ void multiSlsDetector::readFrameFromReceiver(){
 			}
 		  fdata = decodeData(multiframe,nch);
 			if ((fdata) && (dataReady)){
-				thisData = new detectorData(fdata, NULL,NULL,getCurrentProgress(),currentFileName.c_str(),nx,ny, gdata);
+				thisData = new detectorData(fdata, NULL,NULL,getCurrentProgress(),currentFileName.c_str(),maxX,maxY, gdata);
 				dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);
 				delete thisData;
 				fdata = NULL;
 				gdata = NULL;
 				//cout<<"Send frame #"<< currentFrameIndex << " to gui"<<endl;
 			}
+			*/
+			if(dataReady) {
+				thisData = new detectorData(multiframe, thisMultiDetector->dataBytes, NULL,NULL,getCurrentProgress(),currentFileName.c_str(),maxX,maxY);
+				dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);
+				delete thisData;
+			}
+
 			setCurrentProgress(currentAcquisitionIndex+1);
 		}
 

@@ -18,7 +18,10 @@ class detectorData {
       \param ny dimension in y (1D detector)
       \param gval pointer to gain data (for jungfrau)
   */
-  detectorData(double *val=NULL, double *err=NULL, double *ang=NULL,  double p_ind=-1, const char *fname="", int np=-1, int ny=1, double* gval=NULL) : values(val), errors(err), angles(ang),  progressIndex(p_ind), npoints(np), npy(ny), gvalues(gval){
+  detectorData(double *val=NULL, double *err=NULL, double *ang=NULL,  double p_ind=-1, const char *fname="", int np=-1, int ny=1, double* gval=NULL) : cvalues(NULL), databytes(-1), values(val), errors(err), angles(ang),  progressIndex(p_ind), npoints(np), npy(ny), gvalues(gval){
+	 strcpy(fileName,fname);
+  };
+  detectorData(char *val=NULL, int db=0, double *err=NULL, double *ang=NULL,  double p_ind=-1, const char *fname="", int np=-1, int ny=1, double* gval=NULL) : cvalues(val), databytes(db), values(NULL), errors(err), angles(ang),  progressIndex(p_ind), npoints(np), npy(ny), gvalues(gval){
 	 strcpy(fileName,fname);
   };
     /** 
@@ -27,6 +30,8 @@ class detectorData {
     */
     ~detectorData() {if (values) delete [] values; if (errors) delete [] errors; if (angles) delete [] angles; if (gvalues) delete [] gvalues;};
     //private:
+    char* cvalues;
+    int databytes;
     double *values; /**< @short pointer to the data */
     double *errors; /**< @short pointer to the errors */
     double *angles;/**< @short pointer to the angles (NULL if no angular conversion) */

@@ -295,8 +295,10 @@ void SetStyle(SlsQtH1D*  h){
 void GetStatistics(double &min, double &max, double &sum, double* array, int size);
 
 
-
-
+/**
+ * Convert data from
+ */
+void toDoublePixelData(double* dest, char* source,int size, int databytes);
 
 private slots:
 /** To update plot

@@ -340,6 +340,7 @@ void qDrawPlot::SetupWidgetWindow(){
 		plotLayout->addWidget(gainplot2D,0,4,1,1);
 		gainplot2D->hide();
 		gainPlotEnable = false;
+		gainDataEnable = false;
 
 
 
@@ -839,8 +840,10 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 		if(anglePlot){
 
 			// convert char* to double
-			double* finaldata = new double[nPixelsX*nPixelsY];
-			toDoublePixelData(finaldata, data->cvalues, nPixelsX*nPixelsY, data->databytes);
+			if(data->values==NULL) {
+				data->values = new double[nPixelsX*nPixelsY];
+				toDoublePixelData(data->values, data->cvalues, nPixelsX*nPixelsY, data->databytes);
+			}
 
 			LockLastImageArray();
 			//set title
@@ -855,7 +858,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 				histNBins = nAnglePixelsX;
 				nHists=1;
 				memcpy(histXAngleAxis,histXAxis,nAnglePixelsX*sizeof(double));
-				memcpy(histYAngleAxis,finaldata,nAnglePixelsX*sizeof(double));
+				memcpy(histYAngleAxis,data->values,nAnglePixelsX*sizeof(double));
 				SetHistXAxisTitle("Channel Number");
 
 			}
@@ -869,10 +872,10 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 #ifdef CHECKINFERROR
 				int k = 0;
 				for(int i = 0; i < data->npoints; i++){
-					if(isinf(finaldata[i])){
+					if(isinf(data->values[i])){
 						//cout << "*** ERROR: value at " << i << " infinity" << endl;
 						k++;
-						finaldata[i] = -1;
+						data->values[i] = -1;
 					}
 				}
 				if (k>0) {
@@ -882,14 +885,14 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 					cout << "angle min:" << m1 << endl;
 					cout << "angle max:" << m2 << endl;
 					cout << "angle sum:" << s1 << endl;
-					GetStatistics(m1,m2,s1,finaldata,nAnglePixelsX);
+					GetStatistics(m1,m2,s1,data->values,nAnglePixelsX);
 					cout << "value min:" << m1 << endl;
 					cout << "value max:" << m2 << endl;
 					cout << "value sum:" << s1 << endl;
 				}
 #endif
 				memcpy(histXAngleAxis,data->angles,nAnglePixelsX*sizeof(double));
-				memcpy(histYAngleAxis,finaldata,nAnglePixelsX*sizeof(double));
+				memcpy(histYAngleAxis,data->values,nAnglePixelsX*sizeof(double));
 				SetHistXAxisTitle("Angles");
 			}
 			UnlockLastImageArray();
@@ -899,7 +902,6 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 #endif
 			emit UpdatePlotSignal();
 			plotRequired = true;
-			delete [] finaldata;
 			return 0;
 		}
 
@@ -931,8 +933,15 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 		}
 
 		// convert char* to double
-		double* finaldata = new double[nPixelsX*nPixelsY];
-		toDoublePixelData(finaldata, data->cvalues, nPixelsX*nPixelsY, data->databytes);
+		if(data->values == NULL) {
+			data->values = new double[nPixelsX*nPixelsY];
+			if (gainDataEnable) {
+				data->dgainvalues = new double[nPixelsX*nPixelsY];
+				toDoublePixelData(data->values, data->cvalues, nPixelsX*nPixelsY, data->databytes, data->dgainvalues);
+			}
+			else
+				toDoublePixelData(data->values, data->cvalues, nPixelsX*nPixelsY, data->databytes);
+		}
 
 		//if scan
 		//alframes
@@ -945,13 +954,12 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 			//title
 			imageTitle = temp_title;
 			//copy data
-			memcpy(lastImageArray+(currentScanDivLevel*nPixelsX),finaldata,nPixelsX*sizeof(double));
+			memcpy(lastImageArray+(currentScanDivLevel*nPixelsX),data->values,nPixelsX*sizeof(double));
 			UnlockLastImageArray();
 			currentFrame++;
 			currentScanDivLevel++;
 			emit UpdatePlotSignal();
 			plotRequired = true;
-			delete [] finaldata;
 			return 0;
 		}
 		//file index
@@ -965,13 +973,12 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 			//title
 			imageTitle = temp_title;
 			//copy data
-			for(unsigned int px=0;px<nPixelsX;px++)	lastImageArray[currentScanDivLevel*nPixelsX+px] += finaldata[px];
+			for(unsigned int px=0;px<nPixelsX;px++)	lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
 			UnlockLastImageArray();
 			currentFrame++;
 			currentScanDivLevel++;
 			emit UpdatePlotSignal();
 			plotRequired = true;
-			delete [] finaldata;
 			return 0;
 		}
 		//level0
@@ -992,12 +999,11 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 			//title
 			imageTitle = temp_title;
 			//copy data
-			for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += finaldata[px];
+			for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
 			UnlockLastImageArray();
 			currentFrame++;
 			emit UpdatePlotSignal();
 			plotRequired = true;
-			delete [] finaldata;
 			return 0;
 		}
 		//level1
@@ -1018,12 +1024,11 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 			//title
 			imageTitle = temp_title;
 			//copy data
-			for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += finaldata[px];
+			for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
 			UnlockLastImageArray();
 			currentFrame++;
 			emit UpdatePlotSignal();
 			plotRequired = true;
-			delete [] finaldata;
 			return 0;
 		}
 
@@ -1064,18 +1069,18 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 					//frequency of intensity
 					if(histogramArgument == qDefs::Intensity){
 						//ignore outside limits
-						if ((finaldata[i] <  histFrom) || (finaldata[i] > histTo))
+						if ((data->values[i] <  histFrom) || (data->values[i] > histTo))
 							continue;
 						//check for intervals, increment if validates
 						for(int j=0;j<histogramSamples.size();j++){
-							if(histogramSamples[j].interval.contains(finaldata[i]))
+							if(histogramSamples[j].interval.contains(data->values[i]))
 								histogramSamples[j].value += 1;
 
 						}
 					}
 					//get sum of data pixels
 					else
-						val += finaldata[i];
+						val += data->values[i];
 
 				}
 
@@ -1122,8 +1127,8 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 					//start adding frames to get to the pedestal value
 					if(pedestalCount<NUM_PEDESTAL_FRAMES){
 						for(unsigned int px=0;px<nPixelsX;px++)
-							tempPedestalVals[px] += finaldata[px];
-						memcpy(histYAxis[0],finaldata,nPixelsX*sizeof(double));
+							tempPedestalVals[px] += data->values[px];
+						memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
 						pedestalCount++;
 					}
 					//calculate the pedestal value
@@ -1138,16 +1143,16 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 
 				//normal data
 				if(((!pedestal)&(!accumulate)&(!binary))	|| (resetAccumulate)){
-					memcpy(histYAxis[0],finaldata,nPixelsX*sizeof(double));
+					memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
 					resetAccumulate = false;
 				}
 				//pedestal or accumulate
 				else{
 					double temp;//cannot overwrite cuz of accumulate
 					for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++){
-						temp = finaldata[px];
+						temp = data->values[px];
 						if(pedestal)
-							temp = finaldata[px] - (pedestalVals[px]);
+							temp = data->values[px] - (pedestalVals[px]);
 						if(binary) {
 							if ((temp >= binaryFrom) && (temp <= binaryTo))
 								temp = 1;
@@ -1168,8 +1173,8 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 			imageTitle = temp_title;
 
 			//jungfrau mask gain
-			if(data->gvalues != NULL) {
-				memcpy(gainImageArray, data->gvalues, nPixelsX*nPixelsY*sizeof(double));
+			if(data->dgainvalues != NULL) {
+				memcpy(gainImageArray, data->dgainvalues, nPixelsX*nPixelsY*sizeof(double));
 				gainPlotEnable = true;
 			}else
 				gainPlotEnable = false;
@@ -1180,8 +1185,8 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 				//start adding frames to get to the pedestal value
 				if(pedestalCount<NUM_PEDESTAL_FRAMES){
 					for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
-						tempPedestalVals[px] += finaldata[px];
-					memcpy(lastImageArray,finaldata,nPixelsX*nPixelsY*sizeof(double));
+						tempPedestalVals[px] += data->values[px];
+					memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));
 					pedestalCount++;
 				}
 				//calculate the pedestal value
@@ -1196,16 +1201,16 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 
 			//normal data
 			if(((!pedestal)&(!accumulate)&(!binary))	|| (resetAccumulate)){
-				memcpy(lastImageArray,finaldata,nPixelsX*nPixelsY*sizeof(double));
+				memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));
 				resetAccumulate = false;
 			}
 			//pedestal or accumulate or binary
 			else{
 				double temp;
 				for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++){
-					temp = finaldata[px];
+					temp = data->values[px];
 					if(pedestal)
-						temp = finaldata[px] - (pedestalVals[px]);
+						temp = data->values[px] - (pedestalVals[px]);
 					if(binary) {
 						if ((temp >= binaryFrom) && (temp <= binaryTo))
 							temp = 1;
@@ -1224,7 +1229,6 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 		}*/
 		UnlockLastImageArray();
 
-		delete [] finaldata;
 #ifdef VERYVERBOSE
 		cprintf(BLUE,"currentframe:%d \tcurrentframeindex:%d\n",currentFrame,currentFrameIndex);
 #endif
@@ -1891,7 +1895,7 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 			//fill histogram values
 			int value = 0;
 			for(i=0;i<actualPixelsX;i++){
-				if( (histTrimbits[i] <= TRIM_HISTOGRAM_XMAX) && (histTrimbits[i] >= 0)){//if(histogramSamples[j].interval.contaifinaldataues[i]))
+				if( (histTrimbits[i] <= TRIM_HISTOGRAM_XMAX) && (histTrimbits[i] >= 0)){//if(histogramSamples[j].interval.contains(data->values[i]))
 					value = (int) histTrimbits[i];
 					histogramSamples[value].value += 1;
 				}
@@ -2143,15 +2147,15 @@ void qDrawPlot::GetStatistics(double &min, double &max, double &sum, double* arr
 
 void qDrawPlot::EnableGainPlot(bool e) {
 #ifdef VERBOSE
-	cout << "Setting Gain Plot enable to " << e << endl;
+	cout << "Setting Gain Data enable to " << e << endl;
 #endif
-	myDet->setGainDataEnableinDataCallback(e);
+	gainDataEnable = e;
 }
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void qDrawPlot::toDoublePixelData(double* dest, char* source,int size, int databytes) {
+void qDrawPlot::toDoublePixelData(double* dest, char* source,int size, int databytes, double* gaindest) {
 
 	int dr = ((double)databytes/(double)size)*8;
 	int ichan=0;
@@ -2173,29 +2177,30 @@ void qDrawPlot::toDoublePixelData(double* dest, char* source,int size, int datab
 		break;
 
 	case 8:
-		for (ichan = 0; ichan < databytes; ++ichan)
-			dest[ichan] = source[ichan];
+		for (ichan = 0; ichan < databytes; ++ichan) {
+			dest[ichan] = *((u_int8_t*)source);
+			++source;
+		}
 		break;
 
 	case 16:
 		for (ichan = 0; ichan < size; ++ichan) {
-			dest[ichan] = *((u_int16_t*)source);
+			if(gaindest!=NULL) {
+				gaindest[ichan] = ((*((u_int16_t*)source))& 0xC000);
+				dest[ichan] = ((*((u_int16_t*)source))& 0x3FFF);
+			}else
+				dest[ichan] = *((u_int16_t*)source);
 			source += 2;
 		}
 		break;
 
 	default:
-		if (detType == slsDetectorDefs::MYTHEN) {
-			for (ichan=0; ichan < size; ++ichan) {
+		for (ichan=0; ichan < size; ++ichan) {
+			if (detType == slsDetectorDefs::MYTHEN)
 				dest[ichan] = (*((u_int32_t*)source) & mask);
-				source += 4;
-			}
-		}
-		else {
-			for (ichan=0; ichan < size; ++ichan) {
+			else
 				dest[ichan] = *((u_int32_t*)source);
-				source += 4;
-			}
+			source += 4;
 		}
 		break;
 	}

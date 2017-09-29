@@ -298,7 +298,7 @@ void GetStatistics(double &min, double &max, double &sum, double* array, int siz
 /**
  * Convert data from
  */
-void toDoublePixelData(double* dest, char* source,int size, int databytes);
+void toDoublePixelData(double* dest, char* source,int size, int databytes, double* gaindest = NULL);
 
 private slots:
 /** To update plot
@@ -592,6 +592,7 @@ SlsQt2DPlotLayout* 	gainplot2D;
 double* gainImageArray;
 /** gain plot enable */
 bool gainPlotEnable;
+bool gainDataEnable;
 
 signals:
 void UpdatingPlotFinished();

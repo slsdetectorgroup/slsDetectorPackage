@@ -2163,6 +2163,7 @@ void qDrawPlot::toDoublePixelData(double* dest, char* source,int size, int datab
 	int halfbyte=0;
 	char cbyte = '\0';
 	int mask=0x00ffffff;
+	bool jungfrau = (detType == slsDetectorDefs::JUNGFRAU);
 
 	switch(dr) {
 
@@ -2184,22 +2185,57 @@ void qDrawPlot::toDoublePixelData(double* dest, char* source,int size, int datab
 		break;
 
 	case 16:
-		for (ichan = 0; ichan < size; ++ichan) {
+		// jungfrau
+		if (jungfrau) {
+
+			// show gain plot
 			if(gaindest!=NULL) {
-				gaindest[ichan] = ((*((u_int16_t*)source))& 0xC000);
-				dest[ichan] = ((*((u_int16_t*)source))& 0x3FFF);
-			}else
-				dest[ichan] = *((u_int16_t*)source);
-			source += 2;
+				for (ichan = 0; ichan < size; ++ichan) {
+					if (  (*((u_int16_t*)source)) == 0xFFFF  ) {
+						gaindest[ichan] = 0xFFFF;
+						dest[ichan] = 0xFFFF;
+					}
+					else{
+						gaindest[ichan] = (((*((u_int16_t*)source)) & 0xC000) >> 14);
+						dest[ichan] = ((*((u_int16_t*)source)) & 0x3FFF);
+					}
+					source += 2;
+				}
+			}
+
+			// only data plot
+			else {
+				for (ichan = 0; ichan < size; ++ichan) {
+					if (  (*((u_int16_t*)source)) == 0xFFFF  )
+						dest[ichan] = 0xFFFF;
+					else
+						dest[ichan] = ((*((u_int16_t*)source)) & 0x3FFF);
+					source += 2;
+				}
+			}
 		}
+
+
+		// other detectors
+		else {
+			for (ichan = 0; ichan < size; ++ichan) {
+				dest[ichan] = *((u_int16_t*)source);
+				source += 2;
+			}
+		}
+
 		break;
 
 	default:
+		// mythen
 		for (ichan=0; ichan < size; ++ichan) {
-			if (detType == slsDetectorDefs::MYTHEN)
-				dest[ichan] = (*((u_int32_t*)source) & mask);
-			else
-				dest[ichan] = *((u_int32_t*)source);
+			dest[ichan] = (*((u_int32_t*)source) & mask);
+			source += 4;
+		}
+
+		// other detectors
+		for (ichan=0; ichan < size; ++ichan) {
+			dest[ichan] = *((u_int32_t*)source);
 			source += 4;
 		}
 		break;

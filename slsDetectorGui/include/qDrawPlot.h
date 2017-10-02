@@ -296,7 +296,12 @@ void GetStatistics(double &min, double &max, double &sum, double* array, int siz
 
 
 /**
- * Convert data from
+ * Convert data from char* to double based on bit mode (get gain data from plot if enabled for jungfrau
+ * @param dest destination double array
+ * @param source source char array
+ * @param size number of pixels
+ * @param databytes number of data bytes
+ * @param gaindest NULL if not required, points to a double array to be filled up if gain data enabled
  */
 void toDoublePixelData(double* dest, char* source,int size, int databytes, double* gaindest = NULL);
 
@@ -590,8 +595,9 @@ bool plotRequired;
 SlsQt2DPlotLayout* 	gainplot2D;
 /**	Current Image Values in 2D gain plot */
 double* gainImageArray;
-/** gain plot enable */
+/** gain plot enable, enabled if gain data has been extracted and is available */
 bool gainPlotEnable;
+/** gain data enable, enabled if gain data to be extracted from normal data */
 bool gainDataEnable;
 
 signals:

@@ -6111,6 +6111,14 @@ string slsDetector::setDetectorIP(string detectorIP){
 
 
 string slsDetector::setReceiver(string receiverIP){
+
+	if(receiverIP == "none") {
+		memset(thisDetector->receiver_hostname, 0, MAX_STR_LENGTH);
+		strcpy(thisDetector->receiver_hostname,"none");
+		thisDetector->receiverOnlineFlag = OFFLINE_FLAG;
+		return string(thisDetector->receiver_hostname);
+	}
+
 	if(getRunStatus()==RUNNING){
 		cprintf(RED,"Acquisition already running, Stopping it.\n");
 		stopAcquisition();
@@ -7728,23 +7736,23 @@ slsDetectorDefs::synchronizationMode slsDetector::setSynchronization(synchroniza
 
 /*receiver*/
 int slsDetector::setReceiverOnline(int off) {
-  	if (off!=GET_ONLINE_FLAG) {
-  		// setting flag to offline
-  		if (off == OFFLINE_FLAG)
-  			thisDetector->receiverOnlineFlag = off;
-  		// set flag to online only if hostname not none
-  		else if(strcmp(thisDetector->receiver_hostname,"none")){
-  			thisDetector->receiverOnlineFlag=off;
-  		}
-  		if (thisDetector->receiverOnlineFlag==ONLINE_FLAG){
-  			setReceiverTCPSocket();
-  			// error in connecting
-  			if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG){
-  				std::cout << "cannot connect to receiver" << endl;
-  				setErrorMask((getErrorMask())|(CANNOT_CONNECT_TO_RECEIVER));
-  			}
-  		}
-  	}
+	if (off!=GET_ONLINE_FLAG) {
+		// no receiver
+		if(!strcmp(thisDetector->receiver_hostname,"none"))
+			thisDetector->receiverOnlineFlag = OFFLINE_FLAG;
+		else
+			thisDetector->receiverOnlineFlag = off;
+		// check receiver online
+		if (thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+			setReceiverTCPSocket();
+			// error in connecting
+			if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG){
+				std::cout << "cannot connect to receiver" << endl;
+				setErrorMask((getErrorMask())|(CANNOT_CONNECT_TO_RECEIVER));
+			}
+		}
+
+	}
 	return thisDetector->receiverOnlineFlag;
 }
 
@@ -8797,9 +8805,9 @@ int slsDetector::enableTenGigabitEthernet(int i){
 		//must also configuremac
 		if((i != -1)&&(retval == i))
 			if(configureMAC() != FAIL){
-				ret = FAIL;
-				retval=-1;
 				if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+					ret = FAIL;
+					retval=-1;
 #ifdef VERBOSE
 					std::cout << "Enabling / Disabling 10Gbe in receiver: " << i << std::endl;
 #endif
@@ -8845,6 +8853,29 @@ int slsDetector::setReceiverFifoDepth(int i){
 }
 
 
+
+int slsDetector::setReceiverSilentMode(int i){
+	int fnum=F_SET_RECEIVER_SILENT_MODE;
+	int ret = FAIL;
+	int retval=-1;
+
+
+	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+#ifdef VERBOSE
+		if(i ==-1)
+			std::cout<< "Getting Receiver Silent Mode" << endl;
+		else
+			std::cout<< "Setting Receiver Silent Mode to " << i << endl;
+#endif
+		if (connectData() == OK){
+			ret=thisReceiver->sendInt(fnum,retval,i);
+			disconnectData();
+		}
+		if(ret==FAIL)
+			setErrorMask((getErrorMask())|(RECEIVER_SILENT_MODE_NOT_SET));
+	}
+	return retval;
+}
 
 
 

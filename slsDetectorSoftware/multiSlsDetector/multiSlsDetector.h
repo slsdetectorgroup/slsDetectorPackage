@@ -1399,6 +1399,12 @@ class multiSlsDetector  : public slsDetectorUtils {
    */
   int setReceiverFifoDepth(int i = -1);
 
+  /** set/get receiver silent mode
+   * @param i is -1 to get, 0 unsets silent mode, 1 sets silent mode
+     /returns the receiver silent mode enable
+   */
+  int setReceiverSilentMode(int i = -1);
+
 
 
   /******** CTB funcs */

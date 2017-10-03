@@ -2049,6 +2049,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
 	++i;
 
+	/*! \page receiver
+   - <b>r_silent [i]</b> sets/gets receiver in silent mode, ie. it will not print anything during real time acquisition. 1 sets, 0 unsets. \c Returns \c (int)
+	 */
+	descrToFuncMap[i].m_pFuncName="r_silent"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
+	++i;
+
+
 
 
 	/* pattern generator */
@@ -6019,6 +6027,19 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 
 	}
 
+	else if(cmd=="r_silent"){
+		if (action==PUT_ACTION){
+			if (!sscanf(args[1],"%d",&ival))
+				return string("Could not scan r_online input ")+string(args[1]);
+			if(ival>=0)
+				sprintf(answer,"%d",myDet->setReceiverSilentMode(ival));
+		}else
+			sprintf(answer,"%d",myDet->setReceiverSilentMode());
+		return string(answer);
+
+	}
+
+
 	return string("could not decode command");
 
 }
@@ -6034,6 +6055,7 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
 		os << "r_readfreq \t sets the gui read frequency of the receiver, 0 if gui requests frame, >0 if receiver sends every nth frame to gui" << std::endl;
 		os << "tengiga \t sets system to be configure for 10Gbe if set to 1, else 1Gbe if set to 0" << std::endl;
 		os << "rx_fifodepth [val]\t sets receiver fifo depth to val" << std::endl;
+		os << "r_silent [i]\t sets receiver in silent mode, ie. it will not print anything during real time acquisition. 1 sets, 0 unsets." << std::endl;
 	}
 	if (action==GET_ACTION || action==HELP_ACTION){
 		os << "receiver \t returns the status of receiver - can be running or idle" << std::endl;
@@ -6042,6 +6064,7 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
 		os << "r_readfreq \t returns the gui read frequency of the receiver" << std::endl;
 		os << "tengiga \t returns 1 if the system is configured for 10Gbe else 0 for 1Gbe" << std::endl;
 		os << "rx_fifodepth \t returns receiver fifo depth" << std::endl;
+		os << "r_silent \t returns receiver silent mode enable. 1 is silent, 0 not silent." << std::endl;
 	}
 	return os.str();
 

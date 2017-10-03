@@ -345,3 +345,7 @@ int slsDetectorUsers::stopReceiver() {
 int slsDetectorUsers::startAcquisition() {
 	return myDetector->startAcquisition();
 }
+
+int slsDetectorUsers::setReceiverSilentMode(int i) {
+	return myDetector->setReceiverSilentMode(i);
+}

@@ -603,6 +603,13 @@ class slsDetectorUsers
    */
    int startAcquisition();
 
+   /**
+    * set receiver in silent mode
+    * @param i 1 sets, 0 unsets (-1 gets)
+    * @return silent mode of receiver
+    */
+   int setReceiverSilentMode(int i);
+
   /************************************************************************
 
                            STATIC FUNCTIONS

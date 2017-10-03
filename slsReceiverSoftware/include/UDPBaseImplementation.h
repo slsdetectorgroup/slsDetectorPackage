@@ -240,6 +240,12 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	runStatus getStatus() const;
 
 	/**
+	 * Get Silent Mode
+	 * @return silent mode
+	 */
+	uint32_t getSilentMode() const;
+
+	/**
 	 * Get activate
 	 * If deactivated, receiver will write dummy packets 0xFF
 	 * (as it will receive nothing from detector)
@@ -443,6 +449,12 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	int setFifoDepth(const uint32_t i);
 
+	//***receiver parameters***
+	/**
+	 * Set Silent Mode
+	 * @param i silent mode. 1 sets, 0 unsets
+	 */
+	void setSilentMode(const uint32_t i);
 
 	/*************************************************************************
 	 * Behavioral functions***************************************************
@@ -655,6 +667,11 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	uint32_t streamingPort;
 	/** streaming port */
 	char streamingSrcIP[MAX_STR_LENGTH];
+
+	//***receiver parameters***
+	uint32_t silentMode;
+
+
 
 	//***callback parameters***
 	/**

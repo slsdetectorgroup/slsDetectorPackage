@@ -57,6 +57,12 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	static void ResetRunningMask();
 
+	/**
+	 * Set Silent Mode
+	 * @param mode 1 sets 0 unsets
+	 */
+	static void SetSilentMode(bool mode);
+
 
 	//*** non static functions ***
 	//*** getters ***
@@ -217,6 +223,9 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	/** Fifo structure */
 	Fifo* fifo;
 
+	/** Silent Mode */
+	static bool SilentMode;
+
 
 	// individual members
 	/** Detector Type */
@@ -258,7 +267,7 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	uint64_t firstMeasurementIndex;
 
 
-	// for statistics
+	// for acquisition summary
 	/** Number of complete Packets caught for each real time acquisition (eg. for each scan (start& stop of receiver)) */
 	volatile uint64_t numPacketsCaught;
 
@@ -287,8 +296,12 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	/** if the udp socket is connected */
 	bool udpSocketAlive;
 
+
+	// for print progress during acqusition
+	/** number of packets for statistic */
 	uint32_t numPacketsStatistic;
 
+	/** number of images for statistic */
 	uint32_t numFramesStatistic;
 };
 

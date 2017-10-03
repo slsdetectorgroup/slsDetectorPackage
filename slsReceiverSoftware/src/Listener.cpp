@@ -26,6 +26,8 @@ uint64_t Listener::RunningMask(0x0);
 
 pthread_mutex_t Listener::Mutex = PTHREAD_MUTEX_INITIALIZER;
 
+bool Listener::SilentMode(false);
+
 
 Listener::Listener(detectorType dtype, Fifo*& f, runStatus* s, uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr) :
 		ThreadObject(NumberofListeners),
@@ -93,6 +95,9 @@ void Listener::ResetRunningMask() {
 	RunningMask = 0x0;
 }
 
+void Listener::SetSilentMode(bool mode) {
+	SilentMode = mode;
+}
 
 /** non static functions */
 /** getters */
@@ -183,10 +188,13 @@ void Listener::RecordFirstIndices(uint64_t fnum) {
 		acquisitionStartedFlag = true;
 		firstAcquisitionIndex = fnum;
 	}
-	if (!index) bprintf(BLUE,"%d First Acquisition Index:%lu\n"
-							  "%d First Measurement Index:%lu\n",
-			index, firstAcquisitionIndex,
-			index, firstMeasurementIndex);
+
+	if(!SilentMode) {
+		if (!index) bprintf(BLUE,"%d First Acquisition Index:%lu\n"
+				"%d First Measurement Index:%lu\n",
+				index, firstAcquisitionIndex,
+				index, firstMeasurementIndex);
+	}
 }
 
 
@@ -299,9 +307,11 @@ void Listener::ThreadExecution() {
 	fifo->PushAddress(buffer);
 
 	//Statistics
-	numFramesStatistic++;
-	if (numFramesStatistic >=  generalData->maxFramesPerFile)
-		PrintFifoStatistics();
+	if(!SilentMode) {
+		numFramesStatistic++;
+		if (numFramesStatistic >=  generalData->maxFramesPerFile)
+			PrintFifoStatistics();
+	}
 }
 
 

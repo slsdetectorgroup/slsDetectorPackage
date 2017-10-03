@@ -41,11 +41,13 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	 * @param portno pointer to udp port number for logging
 	 * @param nx number of pixels in x direction
 	 * @param ny number of pixels in y direction
+	 * @param smode pointer to silent mode
 	 */
 	HDF5File(int ind, uint32_t maxf, const uint32_t* ppf,
 			int* nd, char* fname, char* fpath, uint64_t* findex, bool* owenable,
 			int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
-			uint32_t nx, uint32_t ny);
+			uint32_t nx, uint32_t ny,
+			bool* smode);
 
 	/**
 	 * Destructor

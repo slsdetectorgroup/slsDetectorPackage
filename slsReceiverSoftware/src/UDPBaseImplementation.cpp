@@ -82,6 +82,10 @@ void UDPBaseImplementation::initializeMembers(){
 	dataStreamEnable = false;
 	streamingPort = 0;
 	memset(streamingSrcIP, 0, sizeof(streamingSrcIP));
+
+	//***receiver parameters***
+	silentMode = 0;
+
 }
 
 UDPBaseImplementation::~UDPBaseImplementation(){}
@@ -211,6 +215,8 @@ uint32_t UDPBaseImplementation::getFifoDepth() const{	FILE_LOG(logDEBUG) << __AT
 
 /***receiver status***/
 slsReceiverDefs::runStatus UDPBaseImplementation::getStatus() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return status;}
+
+uint32_t UDPBaseImplementation::getSilentMode() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return silentMode;}
 
 int UDPBaseImplementation::getActivate() const{FILE_LOG(logDEBUG) << __AT__ << " starting"; return activated;}
 
@@ -489,6 +495,14 @@ int UDPBaseImplementation::setFifoDepth(const uint32_t i){
 
 	//overridden functions might return FAIL
 	return OK;
+}
+
+/***receiver parameters***/
+void UDPBaseImplementation::setSilentMode(const uint32_t i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	silentMode = i;
+	FILE_LOG(logINFO) << "Silent Mode: " << i;
 }
 
 /*************************************************************************

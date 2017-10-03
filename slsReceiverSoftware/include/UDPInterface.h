@@ -332,6 +332,12 @@ class UDPInterface {
 	virtual slsReceiverDefs::runStatus getStatus() const = 0;
 
 	/**
+	 * Get Silent Mode
+	 * @return silent mode
+	 */
+	virtual uint32_t getSilentMode() const = 0;
+
+	/**
 	 * Get activate
 	 * If deactivated, receiver will write dummy packets 0xFF
 	 * (as it will receive nothing from detector)
@@ -541,6 +547,14 @@ class UDPInterface {
 	 * @return OK or FAIL
 	 */
 	virtual int setFifoDepth(const uint32_t i) = 0;
+
+
+	//***receiver parameters***
+	/**
+	 * Set Silent Mode
+	 * @param i silent mode. 1 sets, 0 unsets
+	 */
+	virtual void setSilentMode(const uint32_t i) = 0;
 
 
 	/*************************************************************************

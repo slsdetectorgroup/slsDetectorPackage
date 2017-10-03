@@ -261,6 +261,9 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	/** set streaming source ip */
 	int set_streaming_source_ip();
 
+	/** set silent mode */
+	int set_silent_mode();
+
 	/** enable gap pixels */
 	int enable_gap_pixels();
 

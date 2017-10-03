@@ -16,9 +16,9 @@ FILE* BinaryFile::masterfd = 0;
 
 BinaryFile::BinaryFile(int ind, uint32_t maxf, const uint32_t* ppf,
 		int* nd, char* fname, char* fpath, uint64_t* findex, bool* owenable,
-		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno):
-
-		File(ind, maxf, ppf, nd, fname, fpath, findex, owenable, dindex, nunits, nf, dr, portno),
+		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
+		bool* smode):
+		File(ind, maxf, ppf, nd, fname, fpath, findex, owenable, dindex, nunits, nf, dr, portno, smode),
 		filefd(0),
 		numFramesInFile(0),
 		numActualPacketsInFile(0)
@@ -53,7 +53,8 @@ int BinaryFile::CreateFile(uint64_t fnum) {
 	if (BinaryFileStatic::CreateDataFile(filefd, *overWriteEnable, currentFileName, FILE_BUFFER_SIZE) == FAIL)
 		return FAIL;
 
-	FILE_LOG(logINFO) << "[" << *udpPortNumber << "]: Binary File created: " << currentFileName;
+	if(!silentMode)
+		FILE_LOG(logINFO) << "[" << *udpPortNumber << "]: Binary File created: " << currentFileName;
 	return OK;
 }
 
@@ -89,7 +90,8 @@ int BinaryFile::CreateMasterFile(bool en, uint32_t size,
 
 	if (master && (*detIndex==0)) {
 		masterFileName = BinaryFileStatic::CreateMasterFileName(filePath, fileNamePrefix, *fileIndex);
-		FILE_LOG(logINFO) << "Master File: " << masterFileName;
+		if(!silentMode)
+			FILE_LOG(logINFO) << "Master File: " << masterFileName;
 		return BinaryFileStatic::CreateMasterDataFile(masterfd, masterFileName, *overWriteEnable,
 				*dynamicRange, en, size, nx, ny, *numImages,
 				at, st, ap, BINARY_WRITER_VERSION);

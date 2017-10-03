@@ -30,6 +30,8 @@ uint64_t DataProcessor::RunningMask(0x0);
 
 pthread_mutex_t DataProcessor::Mutex = PTHREAD_MUTEX_INITIALIZER;
 
+bool DataProcessor::SilentMode(false);
+
 
 DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* dsEnable,
 		uint32_t* freq, uint32_t* timer,
@@ -88,6 +90,10 @@ uint64_t DataProcessor::GetRunningMask() {
 
 void DataProcessor::ResetRunningMask() {
 	RunningMask = 0x0;
+}
+
+void DataProcessor::SetSilentMode(bool mode) {
+	SilentMode = mode;
 }
 
 /** non static functions */
@@ -237,13 +243,13 @@ void DataProcessor::SetupFileWriter(int* nd, char* fname, char* fpath, uint64_t*
 		file = new HDF5File(index, generalData->maxFramesPerFile, &generalData->packetsPerFrame,
 				nd, fname, fpath, findex, owenable,
 				dindex, nunits, nf, dr, portno,
-				generalData->nPixelsX, generalData->nPixelsY);
+				generalData->nPixelsX, generalData->nPixelsY, &SilentMode);
 		break;
 #endif
 	default:
 		file = new BinaryFile(index, generalData->maxFramesPerFile, &generalData->packetsPerFrame,
 				nd, fname, fpath, findex, owenable,
-				dindex, nunits, nf, dr, portno);
+				dindex, nunits, nf, dr, portno, &SilentMode);
 		break;
 	}
 }

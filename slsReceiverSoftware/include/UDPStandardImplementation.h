@@ -116,6 +116,12 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	int setFifoDepth(const uint32_t i);
 
 	/**
+	 * Set Silent Mode
+	 * @param i silent mode. 1 sets, 0 unsets
+	 */
+	void setSilentMode(const uint32_t i);
+
+	/**
 	 * Set receiver type (and corresponding detector variables in derived STANDARD class)
 	 * It is the first function called by the client when connecting to receiver
 	 * @param d detector type

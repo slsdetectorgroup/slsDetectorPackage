@@ -262,16 +262,15 @@ public:
 		if(slsErrorMask&RECEIVER_FILE_FORMAT)
 			retval.append("Could not set receiver file format\n");
 
-<<<<<<< HEAD
 		if(slsErrorMask&RECEIVER_TIMER_NOT_SET)
 			retval.append("Could not set timer in receiver.\n");
-=======
+
 		if(slsErrorMask&RECEIVER_SUBF_TIME_NOT_SET)
 			retval.append("Could not set sub exposure time in receiver.\n");
 
 		if(slsErrorMask&RECEIVER_SILENT_MODE_NOT_SET)
 			retval.append("Could not set silent mode in receiver.\n");
->>>>>>> 3.0.1
+
 
 		//------------------------------------------------------ length of message
 

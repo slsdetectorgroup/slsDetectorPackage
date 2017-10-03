@@ -80,10 +80,9 @@ using namespace std;
 #define RECEIVER_FLIPPED_DATA_NOT_SET		0x0000000020000000ULL
 #define THRESHOLD_NOT_SET					0x0000000040000000ULL
 #define RECEIVER_FILE_FORMAT				0x0000000080000000ULL
-#define RECEIVER_SUBF_TIME_NOT_SET			0x0000000100000000ULL
-#define RECEIVER_SILENT_MODE_NOT_SET		0x0000000200000000ULL
-#define RECEIVER_TIMER_NOT_SET				0x0000000400000000ULL
-#define RECEIVER_ENABLE_GAPPIXELS_NOT_SET	0x0000000800000000ULL
+#define RECEIVER_SILENT_MODE_NOT_SET		0x0000000100000000ULL
+#define RECEIVER_TIMER_NOT_SET				0x0000000200000000ULL
+#define RECEIVER_ENABLE_GAPPIXELS_NOT_SET	0x0000000400000000ULL
 
 //											0x0000000FFFFFFFFFULL
 
@@ -266,14 +265,12 @@ public:
 		if(slsErrorMask&RECEIVER_TIMER_NOT_SET)
 			retval.append("Could not set timer in receiver.\n");
 
+		if(slsErrorMask&RECEIVER_SILENT_MODE_NOT_SET)
+			retval.append("Could not set silent mode in receiver.\n");
+
 		if(slsErrorMask&RECEIVER_ENABLE_GAPPIXELS_NOT_SET)
 			retval.append("Could not enable/disable gap pixels in receiver.\n");
 
-		if(slsErrorMask&RECEIVER_SUBF_TIME_NOT_SET)
-			retval.append("Could not set sub exposure time in receiver.\n");
-
-		if(slsErrorMask&RECEIVER_SILENT_MODE_NOT_SET)
-			retval.append("Could not set silent mode in receiver.\n");
 
 		//------------------------------------------------------ length of message
 

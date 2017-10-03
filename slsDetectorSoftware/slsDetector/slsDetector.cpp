@@ -571,6 +571,9 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 
     /** set thisDetector->myDetectorType to type and according to this set nChans, nChips, nDacs, nAdcs, nModMax, dynamicRange, nMod*/
     thisDetector->myDetectorType=type;
+    thisDetector->gappixels = 0;
+    thisDetector->nGappixels[X]=0;
+    thisDetector->nGappixels[Y]=0;
     switch(thisDetector->myDetectorType) {
     case MYTHEN:
       thisDetector->nChan[X]=128;
@@ -679,6 +682,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->nModMax[X]=1;
       thisDetector->nModMax[Y]=1;
       thisDetector->dynamicRange=16;
+      thisDetector->nGappixels[X]=6;
+      thisDetector->nGappixels[Y]=1;
       break;
     default:
       thisDetector->nChan[X]=0;
@@ -708,14 +713,17 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->timerValue[SAMPLES_JCTB]=1;
 
     thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*thisDetector->dynamicRange/8;
+    thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) * thisDetector->dynamicRange/8;
 
     if(thisDetector->myDetectorType==JUNGFRAUCTB) {
       getTotalNumberOfChannels();
       //      thisDetector->dataBytes=getTotalNumberOfChannels()*thisDetector->dynamicRange/8*thisDetector->timerValue[SAMPLES_JCTB];
     }
     if(thisDetector->myDetectorType==MYTHEN){
-    	if (thisDetector->dynamicRange==24 || thisDetector->timerValue[PROBES_NUMBER]>0)
+    	if (thisDetector->dynamicRange==24 || thisDetector->timerValue[PROBES_NUMBER]>0) {
     		thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
+    		thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) * thisDetector->nChans*4;
+    	}
     }
 
     /** set trimDsdir, calDir to default to home directory*/
@@ -1739,10 +1747,11 @@ int slsDetector::getTotalNumberOfChannels() {
     thisDetector->nChans=thisDetector->nChan[X];
     thisDetector->dataBytes=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods*2*thisDetector->timerValue[SAMPLES_JCTB];
    // cout << "Total number of channels is "<< thisDetector->nChans*thisDetector->nChips*thisDetector->nMods << " data bytes is " << thisDetector->dataBytes << endl;
+    thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) *2*thisDetector->timerValue[SAMPLES_JCTB];
   } else {
 #ifdef VERBOSE
     cout << "det type is "<< thisDetector->myDetectorType << endl;
-  cout << "Total number of channels is "<< thisDetector->nChans*thisDetector->nChips*thisDetector->nMods << " data bytes is " << thisDetector->dataBytes << endl;
+  cout << "Total number of channels is "<< thisDetector->nChans*thisDetector->nChips*thisDetector->nMods << " data bytes is " << thisDetector->dataBytes << endl; // excluding gap pixels
 #endif
   ;
   }
@@ -1754,6 +1763,10 @@ int slsDetector::getTotalNumberOfChannels(dimension d) {
   return thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nMod[d];
 };
 
+int slsDetector::getTotalNumberOfChannelsInclGapPixels(dimension d) {
+	getTotalNumberOfChannels();
+	return (thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nMod[d]) + (thisDetector->gappixels * thisDetector->nGappixels[d]);
+}
 
 
 int slsDetector::getMaxNumberOfChannels(){
@@ -1768,6 +1781,14 @@ int slsDetector::getMaxNumberOfChannels(dimension d){
   }
   return thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nModMax[d];
 };
+
+int slsDetector::getMaxNumberOfChannelsInclGapPixels(dimension d) {
+	if(thisDetector->myDetectorType==JUNGFRAUCTB) {
+		if (d==X) return 36*thisDetector->nChip[d]*thisDetector->nModMax[d];
+		else return 1*thisDetector->nChip[d]*thisDetector->nModMax[d];
+	}
+	return (thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nModMax[d]) + (thisDetector->gappixels * thisDetector->nGappixels[d]);
+}
 
 /* needed to set/get the size of the detector */
 // if n=GET_FLAG returns the number of installed modules,
@@ -1849,10 +1870,13 @@ int slsDetector::setNumberOfModules(int n, dimension d){
       dr=32;
 
     thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*dr/8;
+    thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) *dr/8;
 
     if(thisDetector->myDetectorType==MYTHEN){
-      if (thisDetector->timerValue[PROBES_NUMBER]!=0)
+      if (thisDetector->timerValue[PROBES_NUMBER]!=0) {
 	thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
+	thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) *4;
+      }
     }
 
     if(thisDetector->myDetectorType==JUNGFRAUCTB){
@@ -1860,6 +1884,7 @@ int slsDetector::setNumberOfModules(int n, dimension d){
       //thisDetector->dataBytes=getTotalNumberOfChannels()*thisDetector->nChans*dr/8*thisDetector->nChips*thisDetector->timerValue[SAMPLES_JCTB];
 
     }
+
 
 #ifdef VERBOSE
     std::cout<< "Data size is " << thisDetector->dataBytes << std::endl;
@@ -1985,8 +2010,45 @@ int slsDetector::enableGapPixels(int val) {
 	if(thisDetector->myDetectorType!= EIGER)
 		return -1;
 
+	if (val >= 0) {
+		val=(val>0)?1:0;
 
-	return 0;
+		// send to receiver
+		int retval=-1;
+		int fnum=F_ENABLE_GAPPIXELS_IN_RECEIVER;
+		int ret=FAIL;
+		int arg=val;
+		if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
+			if (connectData() == OK){
+				ret=thisReceiver->sendInt(fnum,retval,arg);
+				disconnectData();
+			}
+			if((arg != retval) || (ret==FAIL)){
+				ret = FAIL;
+				setErrorMask((getErrorMask())|(RECEIVER_ENABLE_GAPPIXELS_NOT_SET));
+			}
+
+			if(ret==FORCE_UPDATE)
+				updateReceiver();
+		}
+
+		// update client
+		if (ret == OK) {
+			thisDetector->gappixels = val;
+			thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) * (thisDetector->dynamicRange/8);
+
+			// set data bytes for other detector ( for future use)
+			if(thisDetector->myDetectorType==JUNGFRAUCTB)
+				getTotalNumberOfChannels();
+			if(thisDetector->myDetectorType==MYTHEN){
+				if (thisDetector->dynamicRange==24 || thisDetector->timerValue[PROBES_NUMBER]>0) {
+					thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) * thisDetector->nChans*4;
+				}
+			}
+		}
+	}
+
+	return thisDetector->gappixels;
 }
 
 
@@ -5067,6 +5129,7 @@ int slsDetector::setDynamicRange(int n){
 
 
     thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*retval/8;
+    thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y)*retval/8;
 
     if (thisDetector->myDetectorType==JUNGFRAUCTB) {
       // thisDetector->nChip[X]=retval/16;
@@ -5077,13 +5140,14 @@ int slsDetector::setDynamicRange(int n){
       //cout << "data bytes: "<< thisDetector->dataBytes << endl;
     } 
     if(thisDetector->myDetectorType==MYTHEN){
-      if (thisDetector->timerValue[PROBES_NUMBER]!=0)
+      if (thisDetector->timerValue[PROBES_NUMBER]!=0) {
 	thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
+	thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y)*4;
+      }
       
       if (retval==32)
 	thisDetector->dynamicRange=24;
     }
-
 
     thisDetector->dynamicRange=retval;
 
@@ -6078,6 +6142,7 @@ string slsDetector::setReceiver(string receiverIP){
 		std::cout << "10GbE:" << thisDetector->tenGigaEnable << endl << endl;
 		std::cout << "streaming port:" << thisDetector->zmqport << endl;
 		std::cout << "streaming source ip:" << thisDetector->zmqsrcip << endl;
+		std::cout << "enable gap pixels:" << thisDetector->gappixels << endl;
 		//std::cout << "dataStreaming:" << enableDataStreamingFromReceiver(-1) << endl << endl;
 /** enable compresison, */
 #endif
@@ -6115,6 +6180,8 @@ string slsDetector::setReceiver(string receiverIP){
 
 			if(thisDetector->myDetectorType == EIGER)
 				enableTenGigabitEthernet(thisDetector->tenGigaEnable);
+
+			enableGapPixels(enableGapPixels(-1));
 
 			// data streaming
 			setReceiverStreamingPort(getReceiverStreamingPort());
@@ -8315,6 +8382,10 @@ int slsDetector::updateReceiverNoWait() {
   // streaming source ip
   n += 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);
   strcpy(thisDetector->zmqsrcip, path);
+
+  // gap pixels
+  n += dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
+  thisDetector->gappixels = ind;
 
   if (!n) printf("n: %d\n", n);
 

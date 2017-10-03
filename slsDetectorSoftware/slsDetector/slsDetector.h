@@ -274,6 +274,13 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     /**  zmq tcp src ip address between receiver and gui (only data) **/
     char zmqsrcip[MAX_STR_LENGTH];
 
+    /** gap pixels enable */
+    int gappixels;
+    /** gap pixels in each direction */
+    int nGappixels[2];
+    /** data bytes including gap pixels */
+    int dataBytesInclGapPixels;
+
   } sharedSlsDetector;
 
 
@@ -678,9 +685,13 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
  int getTotalNumberOfChannels(dimension d);
  //{return thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nMod[d];};
 
+ int getTotalNumberOfChannelsInclGapPixels(dimension d);
+
  int getMaxNumberOfChannels();//{return thisDetector->nChans*thisDetector->nChips*thisDetector->nModsMax;};
 
  int getMaxNumberOfChannels(dimension d);//{return thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nModMax[d];};
+
+ int getMaxNumberOfChannelsInclGapPixels(dimension d);
 
   /** returns the enable if data will be flipped across x or y axis
    *  \param d axis across which data is flipped
@@ -1201,6 +1212,12 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
       \sa sharedSlsDetector
   */
   int getDataBytes(){return thisDetector->dataBytes;};
+
+  /**
+   * returns number of bytes sent by detector including gap pixels
+   * \sa sharedSlsDetector
+   */
+  int getDataBytesInclGapPixels(){return thisDetector->dataBytesInclGapPixels;};
  
 
   /**

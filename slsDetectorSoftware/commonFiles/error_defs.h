@@ -81,6 +81,7 @@ using namespace std;
 #define THRESHOLD_NOT_SET					0x0000000040000000ULL
 #define RECEIVER_FILE_FORMAT				0x0000000080000000ULL
 #define RECEIVER_TIMER_NOT_SET				0x0000000100000000ULL
+#define RECEIVER_ENABLE_GAPPIXELS_NOT_SET	0x0000000200000000ULL
 //											0x0000000FFFFFFFFFULL
 
 /** @short class returning all error messages for error mask */
@@ -261,6 +262,9 @@ public:
 
 		if(slsErrorMask&RECEIVER_TIMER_NOT_SET)
 			retval.append("Could not set timer in receiver.\n");
+
+		if(slsErrorMask&RECEIVER_ENABLE_GAPPIXELS_NOT_SET)
+			retval.append("Could not enable/disable gap pixels in receiver.\n");
 
 		//------------------------------------------------------ length of message
 

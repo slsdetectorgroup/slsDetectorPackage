@@ -125,13 +125,18 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
     }
     thisMultiDetector->masterPosition=-1;
     thisMultiDetector->dataBytes=0;
+    thisMultiDetector->dataBytesInclGapPixels=0;
     thisMultiDetector->numberOfChannels=0;
     thisMultiDetector->numberOfChannel[X]=0;
     thisMultiDetector->numberOfChannel[Y]=0;
+    thisMultiDetector->numberOfChannelInclGapPixels[X]=0;
+	thisMultiDetector->numberOfChannelInclGapPixels[Y]=0;
 
     thisMultiDetector->maxNumberOfChannels=0;
     thisMultiDetector->maxNumberOfChannel[X]=0;
     thisMultiDetector->maxNumberOfChannel[Y]=0;
+    thisMultiDetector->maxNumberOfChannelInclGapPixels[X]=0;
+    thisMultiDetector->maxNumberOfChannelInclGapPixels[Y]=0;
 
     thisMultiDetector->maxNumberOfChannelsPerDetector[X]=-1;
     thisMultiDetector->maxNumberOfChannelsPerDetector[Y]=-1;
@@ -386,6 +391,7 @@ int multiSlsDetector::addSlsDetector(int id, int pos) {
   ++thisMultiDetector->numberOfDetectors;
   
   thisMultiDetector->dataBytes+=detectors[pos]->getDataBytes();
+  thisMultiDetector->dataBytesInclGapPixels+=detectors[pos]->getDataBytesInclGapPixels();
  
   thisMultiDetector->numberOfChannels+=detectors[pos]->getTotalNumberOfChannels();
   thisMultiDetector->maxNumberOfChannels+=detectors[pos]->getMaxNumberOfChannels();
@@ -437,10 +443,20 @@ void multiSlsDetector::updateOffsets(){//cannot paralllize due to slsdetector ca
 	thisMultiDetector->numberOfDetector[Y] = 0;
 
 
+	// gap pixels
+	int offsetX_gp=0, offsetY_gp=0, numX_gp=0, numY_gp=0, maxX_gp=0, maxY_gp=0;
+	int prevChanX_gp=0, prevChanY_gp=0;
+	thisMultiDetector->numberOfChannelInclGapPixels[X] = 0;
+	thisMultiDetector->numberOfChannelInclGapPixels[Y] = 0;
+	thisMultiDetector->maxNumberOfChannelInclGapPixels[X] = 0;
+	thisMultiDetector->maxNumberOfChannelInclGapPixels[Y] = 0;
+
+
 	for (int i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
 		if (detectors[i]) {
 #ifdef VERBOSE
 			cout<<"offsetX:"<<offsetX<<" prevChanX:"<<prevChanX<<" offsetY:"<<offsetY<<" prevChanY:"<<prevChanY<<endl;
+			cout<<"offsetX_gp:"<<offsetX_gp<<" prevChanX_gp:"<<prevChanX_gp<<" offsetY_gp:"<<offsetY_gp<<" prevChanY_gp:"<<prevChanY_gp<<endl;
 #endif
 			//cout<<" totalchan:"<< detectors[i]->getTotalNumberOfChannels(Y) <<" maxChanY:"<<maxChanY<<endl;
 			//incrementing in both direction
@@ -453,10 +469,16 @@ void multiSlsDetector::updateOffsets(){//cannot paralllize due to slsdetector ca
 					cout<<"\nDetector[" << i << "] exceeds maximum channels allowed for complete detector set in Y dimension!" << endl;
 				prevChanX = detectors[i]->getTotalNumberOfChannels(X);
 				prevChanY = detectors[i]->getTotalNumberOfChannels(Y);
+				prevChanX_gp = detectors[i]->getTotalNumberOfChannelsInclGapPixels(X);
+				prevChanY_gp = detectors[i]->getTotalNumberOfChannelsInclGapPixels(Y);
 				numX += detectors[i]->getTotalNumberOfChannels(X);
 				numY += detectors[i]->getTotalNumberOfChannels(Y);
+				numX_gp += detectors[i]->getTotalNumberOfChannelsInclGapPixels(X);
+				numY_gp += detectors[i]->getTotalNumberOfChannelsInclGapPixels(Y);
 				maxX += detectors[i]->getMaxNumberOfChannels(X);
 				maxY += detectors[i]->getMaxNumberOfChannels(Y);
+				maxX_gp += detectors[i]->getMaxNumberOfChannelsInclGapPixels(X);
+				maxY_gp += detectors[i]->getMaxNumberOfChannelsInclGapPixels(Y);
 				++thisMultiDetector->numberOfDetector[X];
 				++thisMultiDetector->numberOfDetector[Y];
 #ifdef VERBOSE
@@ -467,9 +489,13 @@ void multiSlsDetector::updateOffsets(){//cannot paralllize due to slsdetector ca
 			//incrementing in y direction
 			else if ((maxChanY == -1) || ((maxChanY > 0) && ((offsetY + prevChanY + detectors[i]->getTotalNumberOfChannels(Y)) <= maxChanY))){
 				offsetY += prevChanY;
+				offsetY_gp += prevChanY_gp;
 				prevChanY = detectors[i]->getTotalNumberOfChannels(Y);
+				prevChanY_gp = detectors[i]->getTotalNumberOfChannelsInclGapPixels(Y);
 				numY += detectors[i]->getTotalNumberOfChannels(Y);
+				numY_gp += detectors[i]->getTotalNumberOfChannelsInclGapPixels(Y);
 				maxY += detectors[i]->getMaxNumberOfChannels(Y);
+				maxY_gp += detectors[i]->getMaxNumberOfChannelsInclGapPixels(Y);
 				++thisMultiDetector->numberOfDetector[Y];
 #ifdef VERBOSE
 				cout<<"incrementing in y direction"<<endl;
@@ -481,21 +507,29 @@ void multiSlsDetector::updateOffsets(){//cannot paralllize due to slsdetector ca
 				if((maxChanX > 0) && ((offsetX + prevChanX + detectors[i]->getTotalNumberOfChannels(X)) > maxChanX))
 					cout<<"\nDetector[" << i << "] exceeds maximum channels allowed for complete detector set in X dimension!" << endl;
 				offsetY = 0;
-				prevChanY = detectors[i]->getTotalNumberOfChannels(Y);;
+				offsetY_gp = 0;
+				prevChanY = detectors[i]->getTotalNumberOfChannels(Y);
+				prevChanY_gp = detectors[i]->getTotalNumberOfChannelsInclGapPixels(Y);
 				numY = 0; //assuming symmetry with this statement. whats on 1st column should be on 2nd column
+				numY_gp = 0;
 				maxY = 0;
+				maxY_gp = 0;
 				offsetX += prevChanX;
+				offsetX_gp += prevChanX_gp;
 				prevChanX = detectors[i]->getTotalNumberOfChannels(X);
+				prevChanX_gp = detectors[i]->getTotalNumberOfChannelsInclGapPixels(X);
 				numX += detectors[i]->getTotalNumberOfChannels(X);
+				numX_gp += detectors[i]->getTotalNumberOfChannelsInclGapPixels(X);
 				maxX += detectors[i]->getMaxNumberOfChannels(X);
+				maxX_gp += detectors[i]->getMaxNumberOfChannelsInclGapPixels(X);
 				++thisMultiDetector->numberOfDetector[X];
 #ifdef VERBOSE
 				cout<<"incrementing in x direction"<<endl;
 #endif
 			}
 
-			thisMultiDetector->offsetX[i] = offsetX;
-			thisMultiDetector->offsetY[i] = offsetY;
+			thisMultiDetector->offsetX[i] = offsetX_gp;
+			thisMultiDetector->offsetY[i] = offsetY_gp;
 #ifdef VERBOSE
 			cout << "Detector[" << i << "] has offsets (" << thisMultiDetector->offsetX[i] << ", " << thisMultiDetector->offsetY[i] << ")" << endl;
 #endif
@@ -504,15 +538,25 @@ void multiSlsDetector::updateOffsets(){//cannot paralllize due to slsdetector ca
 				thisMultiDetector->numberOfChannel[X] = numX;
 			if(numY > thisMultiDetector->numberOfChannel[Y])
 				thisMultiDetector->numberOfChannel[Y] = numY;
+			if(numX_gp > thisMultiDetector->numberOfChannelInclGapPixels[X])
+				thisMultiDetector->numberOfChannelInclGapPixels[X] = numX_gp;
+			if(numY_gp > thisMultiDetector->numberOfChannelInclGapPixels[Y])
+				thisMultiDetector->numberOfChannelInclGapPixels[Y] = numY_gp;
 			if(maxX > thisMultiDetector->maxNumberOfChannel[X])
 				thisMultiDetector->maxNumberOfChannel[X] = maxX;
 			if(maxY > thisMultiDetector->maxNumberOfChannel[Y])
 				thisMultiDetector->maxNumberOfChannel[Y] = maxY;
+			if(maxX_gp > thisMultiDetector->maxNumberOfChannelInclGapPixels[X])
+				thisMultiDetector->maxNumberOfChannelInclGapPixels[X] = maxX_gp;
+			if(maxY_gp > thisMultiDetector->maxNumberOfChannelInclGapPixels[Y])
+				thisMultiDetector->maxNumberOfChannelInclGapPixels[Y] = maxY_gp;
 		}
 	}
 #ifdef VERBOSE
 	cout << "Number of Channels in X direction:" << thisMultiDetector->numberOfChannel[X] << endl;
 	cout << "Number of Channels in Y direction:" << thisMultiDetector->numberOfChannel[Y] << endl << endl;
+	cout << "Number of Channels in X direction with Gap Pixels:" << thisMultiDetector->numberOfChannelInclGapPixels[X] << endl;
+	cout << "Number of Channels in Y direction with Gap Pixels:" << thisMultiDetector->numberOfChannelInclGapPixels[Y] << endl << endl;
 #endif
 }
 
@@ -872,6 +916,7 @@ int multiSlsDetector::removeSlsDetector(int pos) {
     if (detectors[j]) {
 
       thisMultiDetector->dataBytes-=detectors[j]->getDataBytes();
+      thisMultiDetector->dataBytesInclGapPixels-=detectors[j]->getDataBytesInclGapPixels();
       thisMultiDetector->numberOfChannels-=detectors[j]->getTotalNumberOfChannels();
       thisMultiDetector->maxNumberOfChannels-=detectors[j]->getMaxNumberOfChannels();
 
@@ -2107,6 +2152,7 @@ int multiSlsDetector::setDynamicRange(int n, int pos){
 
     if (detectors[i]) {
       thisMultiDetector->dataBytes-=detectors[i]->getDataBytes();
+      thisMultiDetector->dataBytesInclGapPixels-=detectors[i]->getDataBytesInclGapPixels();
       ret=detectors[i]->setDynamicRange(n);
       if(detectors[i]->getErrorMask())
 	setErrorMask(getErrorMask()|(1<<i));
@@ -2115,6 +2161,7 @@ int multiSlsDetector::setDynamicRange(int n, int pos){
       else if (ret!=ret1)
 	ret1=FAIL;
       thisMultiDetector->dataBytes+=detectors[i]->getDataBytes();
+      thisMultiDetector->dataBytesInclGapPixels+=detectors[i]->getDataBytesInclGapPixels();
     }
   }
 
@@ -2162,13 +2209,13 @@ int multiSlsDetector::decodeNChannel(int offsetX, int offsetY, int &channelX, in
 	for(int i=0;i<thisMultiDetector->numberOfDetectors;++i){
 		if (detectors[i]) {
 			//check x offset range
-			if ((offsetX >= thisMultiDetector->offsetX[i]) && (offsetX < (thisMultiDetector->offsetX[i]+detectors[i]->getMaxNumberOfChannels(X)))){
+			if ((offsetX >= thisMultiDetector->offsetX[i]) && (offsetX < (thisMultiDetector->offsetX[i]+detectors[i]->getMaxNumberOfChannelsInclGapPixels(X)))){
 				if(offsetY==-1){
 					channelX = offsetX - thisMultiDetector->offsetX[i];
 					return i;
 				}else{
 					//check y offset range
-					if((offsetY >= thisMultiDetector->offsetY[i]) && (offsetY< (thisMultiDetector->offsetY[i]+detectors[i]->getMaxNumberOfChannels(Y)))){
+					if((offsetY >= thisMultiDetector->offsetY[i]) && (offsetY< (thisMultiDetector->offsetY[i]+detectors[i]->getMaxNumberOfChannelsInclGapPixels(Y)))){
 						channelX = offsetX - thisMultiDetector->offsetX[i];
 						channelY = offsetY - thisMultiDetector->offsetY[i];
 						return i;
@@ -2238,8 +2285,8 @@ int multiSlsDetector::setROI(int n,ROI roiLimits[]){
 				}
 				if(detectors[idet]){
 					//get last channel for each det in x and y dir
-					lastChannelX = (detectors[idet]->getMaxNumberOfChannels(X))-1;
-					lastChannelY = (detectors[idet]->getMaxNumberOfChannels(Y))-1;
+					lastChannelX = (detectors[idet]->getMaxNumberOfChannelsInclGapPixels(X))-1;
+					lastChannelY = (detectors[idet]->getMaxNumberOfChannelsInclGapPixels(Y))-1;
 
 					offsetX = thisMultiDetector->offsetX[idet];
 					offsetY = thisMultiDetector->offsetY[idet];
@@ -4061,6 +4108,7 @@ int multiSlsDetector::setDynamicRange(int p) {
 
   int ret=-100, ret1;
   thisMultiDetector->dataBytes=0;
+  thisMultiDetector->dataBytesInclGapPixels=0;
   thisMultiDetector->numberOfChannels=0;
   
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet) {
@@ -4069,8 +4117,10 @@ int multiSlsDetector::setDynamicRange(int p) {
       if(detectors[idet]->getErrorMask())
 	setErrorMask(getErrorMask()|(1<<idet));
       thisMultiDetector->dataBytes+=detectors[idet]->getDataBytes();
+      thisMultiDetector->dataBytesInclGapPixels+=detectors[idet]->getDataBytesInclGapPixels();
       //   cout << "db " << idet << " " << detectors[idet]->getDataBytes() << endl;
       thisMultiDetector->numberOfChannels+=detectors[idet]->getTotalNumberOfChannels();
+
       if (ret==-100)
 	ret=ret1;
       else if (ret!=ret1)
@@ -4123,12 +4173,14 @@ int multiSlsDetector::getMaxMods() {
   //int multiSlsDetector::getTotalNumberOfChannels(dimension d){thisMultiDetector->numberOfChannel[d]=0; for (int id=0; id< thisMultiDetector->numberOfDetectors; ++id) thisMultiDetector->numberOfChannel[d]+=detectors[id]->getTotalNumberOfChannels(d); return thisMultiDetector->numberOfChannel[d];};
   int multiSlsDetector::getTotalNumberOfChannels(dimension d){return thisMultiDetector->numberOfChannel[d];};
 
+  int multiSlsDetector::getTotalNumberOfChannelsInclGapPixels(dimension d){return thisMultiDetector->numberOfChannelInclGapPixels[d];}
+
   int multiSlsDetector::getMaxNumberOfChannels(){thisMultiDetector->maxNumberOfChannels=0; for (int id=0; id< thisMultiDetector->numberOfDetectors; ++id) thisMultiDetector->maxNumberOfChannels+=detectors[id]->getMaxNumberOfChannels();return thisMultiDetector->maxNumberOfChannels;};
 
  // int multiSlsDetector::getMaxNumberOfChannels(dimension d){thisMultiDetector->maxNumberOfChannel[d]=0; for (int id=0; id< thisMultiDetector->numberOfDetectors; ++id) thisMultiDetector->maxNumberOfChannel[d]+=detectors[id]->getMaxNumberOfChannels(d);return thisMultiDetector->maxNumberOfChannel[d];};
   int multiSlsDetector::getMaxNumberOfChannels(dimension d){return thisMultiDetector->maxNumberOfChannel[d];};
 
-
+  int multiSlsDetector::getMaxNumberOfChannelsInclGapPixels(dimension d){return thisMultiDetector->maxNumberOfChannelInclGapPixels[d];};
 
 
 
@@ -4189,6 +4241,7 @@ int multiSlsDetector::setNumberOfModules(int p, dimension d) {
   int nm, mm, nt=p;
 
   thisMultiDetector->dataBytes=0;
+  thisMultiDetector->dataBytesInclGapPixels=0;
   thisMultiDetector->numberOfChannels=0;
 
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet) {
@@ -4212,6 +4265,7 @@ int multiSlsDetector::setNumberOfModules(int p, dimension d) {
       if(detectors[idet]->getErrorMask())
 	setErrorMask(getErrorMask()|(1<<idet));
       thisMultiDetector->dataBytes+=detectors[idet]->getDataBytes();
+      thisMultiDetector->dataBytesInclGapPixels+=detectors[idet]->getDataBytesInclGapPixels();
       thisMultiDetector->numberOfChannels+=detectors[idet]->getTotalNumberOfChannels();
     }
   }
@@ -4254,7 +4308,15 @@ int multiSlsDetector::enableGapPixels(int val) {
 				ret=-1;
 		}
 
-/** do something */
+	// update data bytes incl gap pixels
+    thisMultiDetector->dataBytesInclGapPixels=0;
+	for (int i = 0; i < thisMultiDetector->numberOfDetectors; ++i) {
+		if (detectors[i])
+			thisMultiDetector->dataBytesInclGapPixels += detectors[i]->getDataBytesInclGapPixels();
+	}
+
+	// update offsets and number of channels incl gap pixels in multi level
+	updateOffsets();
 
 	return ret;
 }
@@ -5729,8 +5791,8 @@ int multiSlsDetector::getData(const int isocket, char* image, const int size,
 void multiSlsDetector::readFrameFromReceiver(){
 
 	//determine number of half readouts and maxX and maxY
-	int maxX=thisMultiDetector->numberOfChannel[X];
-	int maxY=thisMultiDetector->numberOfChannel[Y];
+	int maxX=thisMultiDetector->numberOfChannelInclGapPixels[X];
+	int maxY=thisMultiDetector->numberOfChannelInclGapPixels[Y];
 	int numSockets = thisMultiDetector->numberOfDetectors;
 	int numSocketsPerSLSDetector = 1;
 	bool jungfrau = false;
@@ -5759,11 +5821,11 @@ void multiSlsDetector::readFrameFromReceiver(){
 	int slsdatabytes = 0, slsmaxchannels = 0, slsmaxX = 0, slsmaxY=0;
 	double bytesperchannel = 0;
 	if(detectors[0]){
-		slsdatabytes = detectors[0]->getDataBytes();
-		slsmaxchannels = detectors[0]->getMaxNumberOfChannels();
+		slsdatabytes = detectors[0]->getDataBytesInclGapPixels();
+		slsmaxchannels = (detectors[0]->getMaxNumberOfChannelsInclGapPixels(X)*detectors[0]->getMaxNumberOfChannelsInclGapPixels(Y));
 		bytesperchannel = (double)slsdatabytes/(double)slsmaxchannels;
-		slsmaxX = detectors[0]->getTotalNumberOfChannels(X);
-		slsmaxY = detectors[0]->getTotalNumberOfChannels(Y);
+		slsmaxX = detectors[0]->getTotalNumberOfChannelsInclGapPixels(X);
+		slsmaxY = detectors[0]->getTotalNumberOfChannelsInclGapPixels(Y);
 	}
 
 	//getting multi values
@@ -5785,10 +5847,10 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 	int expectedslssize = slsdatabytes/numSocketsPerSLSDetector;
 	char* image = new char[expectedslssize]();
-	char* multiframe = new char[thisMultiDetector->dataBytes]();
+	char* multiframe = new char[thisMultiDetector->dataBytesInclGapPixels]();
 	char* multiframegain = NULL;
 	if (jungfrau)
-		multiframegain = new char[thisMultiDetector->dataBytes]();
+		multiframegain = new char[thisMultiDetector->dataBytesInclGapPixels]();
 
 	int nch;
 
@@ -5871,7 +5933,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 		//send data to callback
 		if(running){
 			if(dataReady) {
-				thisData = new detectorData(NULL,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),maxX,maxY,multiframe, thisMultiDetector->dataBytes);
+				thisData = new detectorData(NULL,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),maxX,maxY,multiframe, thisMultiDetector->dataBytesInclGapPixels);
 				dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);
 				delete thisData;
 				//cout<<"Send frame #"<< currentFrameIndex << " to gui"<<endl;

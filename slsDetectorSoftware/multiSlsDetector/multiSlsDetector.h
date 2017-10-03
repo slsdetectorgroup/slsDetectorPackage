@@ -87,6 +87,9 @@ class multiSlsDetector  : public slsDetectorUtils {
       
     /**  size of the data that are transfered from all detectors */
     int dataBytes;
+    /** data bytes including gap pixels transferred from all detectors */
+    int dataBytesInclGapPixels;
+
   
     /**  total number of channels for all detectors */
     int numberOfChannels;
@@ -94,11 +97,17 @@ class multiSlsDetector  : public slsDetectorUtils {
     /**  total number of channels for all detectors  in one dimension*/
     int numberOfChannel[2];
 
+    /** total number of channels including gap pixels in one dimension */
+    int numberOfChannelInclGapPixels[2];
+
     /**  total number of channels for all detectors */
     int maxNumberOfChannels;
   
     /**  max number of channels for all detectors  in one dimension*/
     int maxNumberOfChannel[2];
+
+    /**  max number of channels including gap pixels for all detectors  in one dimension*/
+    int maxNumberOfChannelInclGapPixels[2];
 
     /** max number of channels allowed for the complete set of detectors in one dimension */
     int maxNumberOfChannelsPerDetector[2];
@@ -363,9 +372,13 @@ class multiSlsDetector  : public slsDetectorUtils {
 
   int getTotalNumberOfChannels(dimension d);
 
+  int getTotalNumberOfChannelsInclGapPixels(dimension d);
+
   int getMaxNumberOfChannels();
 
   int getMaxNumberOfChannels(dimension d);
+
+  int getMaxNumberOfChannelsInclGapPixels(dimension d);
 
   int getMaxNumberOfChannelsPerDetector(dimension d){return thisMultiDetector->maxNumberOfChannelsPerDetector[d];};
 

@@ -1,9 +1,9 @@
 Path: slsDetectorsPackage/slsDetectorSoftware 
 URL: origin git@git.psi.ch:sls_detectors_software/sls_detector_software.git 
 Repository Root: origin git@git.psi.ch:sls_detectors_software/sls_detector_software.git 
-Repsitory UUID: 0fb1ff01209ad1aa975f39285814c2cc42db2678 
-Revision: 1556 
+Repsitory UUID: 1fd03e9cdd01efd75e3ab8641be71d61b2e1aa10 
+Revision: 1566 
 Branch: 3.0.1 
 Last Changed Author: Dhanya_Maliakal 
-Last Changed Rev: 1561 
-Last Changed Date: 2017-09-20 18:27:25.000000002 +0200 ./slsDetectorAnalysis/postProcessing.cpp
+Last Changed Rev: 1571 
+Last Changed Date: 2017-10-03 14:12:22.000000002 +0200 ./slsDetector/slsDetector.cpp

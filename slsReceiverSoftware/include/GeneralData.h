@@ -71,13 +71,13 @@ public:
 	uint32_t headerPacketSize;
 
 	/** Streaming (for ROI - mainly short Gotthard) - Number of Pixels in x axis */
-	uint32_t nPixelsX_Streamer;
+	uint32_t nPixelsXComplete;
 
 	/** Streaming (for ROI - mainly short Gotthard) - Number of Pixels in y axis */
-	uint32_t nPixelsY_Streamer;
+	uint32_t nPixelsYComplete;
 
 	/** Streaming (for ROI - mainly short Gotthard) - Image size (in bytes) */
-	uint32_t imageSize_Streamer;
+	uint32_t imageSizeComplete;
 
 
 
@@ -102,9 +102,9 @@ public:
 		defaultFifoDepth(0),
 		threadsPerReceiver(1),
 		headerPacketSize(0),
-		nPixelsX_Streamer(0),
-		nPixelsY_Streamer(0),
-		imageSize_Streamer(0)
+		nPixelsXComplete(0),
+		nPixelsYComplete(0),
+		imageSizeComplete(0)
 		{};
 
 	/** Destructor */
@@ -204,9 +204,9 @@ public:
 		FILE_LOG(logDEBUG) << "Default Fifo Depth: " << defaultFifoDepth;
 		FILE_LOG(logDEBUG) << "Threads Per Receiver: " << threadsPerReceiver;
 		FILE_LOG(logDEBUG) << "Header Packet Size: " << headerPacketSize;
-		FILE_LOG(logDEBUG) << "Streamer Pixels X: " << nPixelsX_Streamer;
-		FILE_LOG(logDEBUG) << "Streamer Pixels Y: " << nPixelsY_Streamer;
-		FILE_LOG(logDEBUG) << "Streamer Image Size: " << imageSize_Streamer;
+		FILE_LOG(logDEBUG) << "Complete Pixels X: " << nPixelsXComplete;
+		FILE_LOG(logDEBUG) << "Complete Pixels Y: " << nPixelsYComplete;
+		FILE_LOG(logDEBUG) << "Complete Image Size: " << imageSizeComplete;
 	};
 };
 
@@ -231,9 +231,6 @@ class GotthardData : public GeneralData {
 		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 50000;
-		nPixelsX_Streamer 	= nPixelsX;
-		nPixelsY_Streamer 	= nPixelsY;
-		imageSize_Streamer 	= imageSize;
 	};
 };
 
@@ -256,9 +253,9 @@ class ShortGotthardData : public GeneralData {
 		maxFramesPerFile 	= SHORT_MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 50000;
-		nPixelsX_Streamer 	= 1280;
-		nPixelsY_Streamer 	= 1;
-		imageSize_Streamer 	= 1280 * 2;
+		nPixelsXComplete 	= 1280;
+		nPixelsYComplete 	= 1;
+		imageSizeComplete 	= 1280 * 2;
 	};
 
 	/**
@@ -320,9 +317,6 @@ class PropixData : public GeneralData {
 		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 50000;
-		nPixelsX_Streamer 	= nPixelsX;
-		nPixelsY_Streamer 	= nPixelsY;
-		imageSize_Streamer 	= imageSize;
 	};
 };
 
@@ -350,9 +344,6 @@ class Moench02Data : public GeneralData {
 		maxFramesPerFile 	= MOENCH_MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 2500;
-		nPixelsX_Streamer 	= nPixelsX;
-		nPixelsY_Streamer 	= nPixelsY;
-		imageSize_Streamer 	= imageSize;
 	};
 
 	/**
@@ -385,9 +376,6 @@ class Moench03Data : public GeneralData {
 		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 2500;
-		nPixelsX_Streamer 	= nPixelsX;
-		nPixelsY_Streamer 	= nPixelsY;
-		imageSize_Streamer 	= imageSize;
 	};
 };
 
@@ -426,9 +414,6 @@ private:
 		maxFramesPerFile 	= JFCTB_MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 2500;
-		nPixelsX_Streamer 	= nPixelsX;
-		nPixelsY_Streamer 	= nPixelsY;
-		imageSize_Streamer 	= imageSize;
 	};
 
  	/**
@@ -499,9 +484,6 @@ class JungfrauData : public GeneralData {
 		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 2500;
-		nPixelsX_Streamer 	= nPixelsX;
-		nPixelsY_Streamer 	= nPixelsY;
-		imageSize_Streamer 	= imageSize;
 
 	};
 
@@ -527,9 +509,6 @@ class EigerData : public GeneralData {
 		defaultFifoDepth 	= 100;
 		threadsPerReceiver	= 2;
 		headerPacketSize	= 40;
-		nPixelsX_Streamer 	= nPixelsX;
-		nPixelsY_Streamer 	= nPixelsY;
-		imageSize_Streamer 	= imageSize;
 	};
 
 	/**

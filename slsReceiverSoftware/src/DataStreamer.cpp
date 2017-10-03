@@ -114,8 +114,8 @@ void DataStreamer::ResetParametersforNewMeasurement(char* fname){
 		completeBuffer = 0;
 	}
 	if (*shortFrameEnable >= 0) {
-		completeBuffer = new char[generalData->imageSize_Streamer];
-		memset(completeBuffer, 0, generalData->imageSize_Streamer);
+		completeBuffer = new char[generalData->imageSizeComplete];
+		memset(completeBuffer, 0, generalData->imageSizeComplete);
 	}
 }
 
@@ -208,7 +208,7 @@ void DataStreamer::StopProcessing(char* buf) {
 #endif
 	sls_detector_header* header = (sls_detector_header*) (buf);
 	//send dummy header and data
-	if (!SendHeader(header, true))
+	if (!SendHeader(header, 0, 0, true))
 		bprintf(RED,"Error: Could not send zmq dummy header for streamer %d\n", index);
 
 	fifo->FreeAddress(buf);
@@ -234,19 +234,25 @@ void DataStreamer::ProcessAnImage(char* buf) {
 		RecordFirstIndices(fnum);
 	}
 
-	if (!SendHeader(header))
-		bprintf(RED,"Error: Could not send zmq header for fnum %lld and streamer %d\n",
-				(long long int) fnum, index);
-
-	//shortframe gotthard - data sending
+	//shortframe gotthard
 	if (completeBuffer) {
+
+		if (!SendHeader(header, generalData->nPixelsXComplete, generalData->nPixelsYComplete, false))
+			bprintf(RED,"Error: Could not send zmq header for fnum %lld and streamer %d\n",
+					(long long int) fnum, index);
+
 		memcpy(completeBuffer + ((generalData->imageSize)**shortFrameEnable), buf + sizeof(sls_detector_header), generalData->imageSize);
-		if (!zmqSocket->SendData(completeBuffer, generalData->imageSize_Streamer))
+		if (!zmqSocket->SendData(completeBuffer, generalData->imageSizeComplete))
 			bprintf(RED,"Error: Could not send zmq data for fnum %lld and streamer %d\n",
 					(long long int) fnum, index);
 	}
-	//normal - data sending
+	//normal
 	else {
+
+		if (!SendHeader(header, generalData->nPixelsX, generalData->nPixelsY, false))
+			bprintf(RED,"Error: Could not send zmq header for fnum %lld and streamer %d\n",
+					(long long int) fnum, index);
+
 		if (!zmqSocket->SendData(buf + sizeof(sls_detector_header), generalData->imageSize))
 			bprintf(RED,"Error: Could not send zmq data for fnum %lld and streamer %d\n",
 					(long long int) fnum, index);
@@ -255,7 +261,7 @@ void DataStreamer::ProcessAnImage(char* buf) {
 
 
 
-int DataStreamer::SendHeader(sls_detector_header* header, bool dummy) {
+int DataStreamer::SendHeader(sls_detector_header* header, uint32_t nx, uint32_t ny, bool dummy) {
 
 	if (dummy)
 		return  zmqSocket->SendHeaderData(index, dummy,SLS_DETECTOR_JSON_HEADER_VERSION);
@@ -264,7 +270,7 @@ int DataStreamer::SendHeader(sls_detector_header* header, bool dummy) {
 	uint64_t acquisitionIndex = header->frameNumber - firstAcquisitionIndex;
 
 	return zmqSocket->SendHeaderData(index, dummy, SLS_DETECTOR_JSON_HEADER_VERSION, *dynamicRange,
-			generalData->nPixelsX_Streamer, generalData->nPixelsY_Streamer,
+			nx, ny,
 			acquisitionIndex, frameIndex, fileNametoStream,
 			header->frameNumber, header->expLength, header->packetNumber, header->bunchId, header->timestamp,
 			header->modId, header->xCoord, header->yCoord, header->zCoord,

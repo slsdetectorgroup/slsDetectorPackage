@@ -2163,7 +2163,6 @@ void qDrawPlot::toDoublePixelData(double* dest, char* source,int size, int datab
 	int halfbyte=0;
 	char cbyte = '\0';
 	int mask=0x00ffffff;
-	bool jungfrau = (detType == slsDetectorDefs::JUNGFRAU);
 
 	switch(dr) {
 
@@ -2185,8 +2184,7 @@ void qDrawPlot::toDoublePixelData(double* dest, char* source,int size, int datab
 		break;
 
 	case 16:
-		// jungfrau
-		if (jungfrau) {
+		if (detType == slsDetectorDefs::JUNGFRAU) {
 
 			// show gain plot
 			if(gaindest!=NULL) {
@@ -2213,28 +2211,28 @@ void qDrawPlot::toDoublePixelData(double* dest, char* source,int size, int datab
 					source += 2;
 				}
 			}
+			break;
 		}
 
 
 		// other detectors
-		else {
-			for (ichan = 0; ichan < size; ++ichan) {
-				dest[ichan] = *((u_int16_t*)source);
-				source += 2;
-			}
+		for (ichan = 0; ichan < size; ++ichan) {
+			dest[ichan] = *((u_int16_t*)source);
+			source += 2;
 		}
-
 		break;
 
 	default:
-		// mythen
-		for (ichan=0; ichan < size; ++ichan) {
-			dest[ichan] = (*((u_int32_t*)source) & mask);
-			source += 4;
+		if (detType == slsDetectorDefs::MYTHEN) {
+			for (ichan = 0; ichan < size; ++ichan) {
+				dest[ichan] = (*((u_int32_t*)source) & mask);
+				source += 4;
+			}
+			break;
 		}
 
 		// other detectors
-		for (ichan=0; ichan < size; ++ichan) {
+		for (ichan = 0; ichan < size; ++ichan) {
 			dest[ichan] = *((u_int32_t*)source);
 			source += 4;
 		}

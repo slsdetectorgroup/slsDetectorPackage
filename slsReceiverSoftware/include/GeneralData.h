@@ -10,6 +10,7 @@
 #include "sls_receiver_defs.h"
 #include "receiver_defs.h"
 
+#define NUM_BITS_IN_ONE_BYTE 8
 
 class GeneralData {
 	
@@ -170,6 +171,15 @@ public:
 	virtual void SetPacketsPerFrame(uint32_t ppf) {
 		bprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
 	};
+
+	/**
+	 * Enable Gap Pixels changes member variables
+	 * @param enable true if gap pixels enable, else false
+	 */
+	virtual void SetGapPixelsEnable(bool b, int dr) {
+		bprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+	};
+
 
 	/**
 	 * Print all variables
@@ -542,6 +552,26 @@ class EigerData : public GeneralData {
 		packetSize 		= headerSizeinPacket + dataSize;
 		packetsPerFrame = (tgEnable ? 4 : 16) * dr;
 		imageSize 		= dataSize*packetsPerFrame;
+	};
+
+	/**
+	 * Enable Gap Pixels changes member variables
+	 * @param enable true if gap pixels enable, else false
+	 */
+	void SetGapPixelsEnable(bool b, int dr) {
+		switch((int)b) {
+		case 1:
+			nPixelsX_Streamer 			= (256*2) + 3;
+			nPixelsY_Streamer 			= 256 + 1;
+			imageSize_Streamer			= nPixelsX_Streamer * imageSize_Streamer *
+											((double)dr/(double)NUM_BITS_IN_ONE_BYTE);
+			break;
+		default:
+			nPixelsX_Streamer 			= (256*2);
+			nPixelsY_Streamer 			= 256;
+			imageSize_Streamer			= dataSize*packetsPerFrame;
+			break;
+		}
 	};
 
 

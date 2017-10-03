@@ -60,6 +60,7 @@ enum recFuncs{
 	F_SEND_RECEIVER_MULTIDETSIZE,    /** < sets the multi detector size to the receiver */
 	F_SET_RECEIVER_STREAMING_PORT, 	/** < sets the receiver streaming port */
 	F_RECEIVER_STREAMING_SRC_IP,	/** < sets the receiver streaming source IP */
+	F_ENABLE_GAPPIXELS_IN_RECEIVER,	/** < sets gap pixels in the receiver */
 	/* Always append functions hereafter!!! */
 
 

@@ -280,6 +280,7 @@ const char* slsReceiverTCPIPInterface::getFunctionName(enum recFuncs func) {
 	case F_SEND_RECEIVER_DETPOSID:		return "F_SEND_RECEIVER_DETPOSID";
 	case F_SEND_RECEIVER_MULTIDETSIZE:  return "F_SEND_RECEIVER_MULTIDETSIZE";
 	case F_RECEIVER_STREAMING_SRC_IP: 	return "F_RECEIVER_STREAMING_SRC_IP";
+	case F_ENABLE_GAPPIXELS_IN_RECEIVER:return "F_ENABLE_GAPPIXELS_IN_RECEIVER";
 
 	default:							return "Unknown Function";
 	}
@@ -326,6 +327,7 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_SEND_RECEIVER_MULTIDETSIZE]		= 	&slsReceiverTCPIPInterface::set_multi_detector_size;
 	flist[F_SET_RECEIVER_STREAMING_PORT]	= 	&slsReceiverTCPIPInterface::set_streaming_port;
 	flist[F_RECEIVER_STREAMING_SRC_IP]		= 	&slsReceiverTCPIPInterface::set_streaming_source_ip;
+	flist[F_ENABLE_GAPPIXELS_IN_RECEIVER]	=	&slsReceiverTCPIPInterface::enable_gap_pixels;
 #ifdef VERYVERBOSE
 	for (int i = 0; i < NUM_REC_FUNCTIONS ; i++) {
 		FILE_LOG(logINFO) << "function fnum: " << i << " (" << getFunctionName((enum recFuncs)i) << ") located at " << (unsigned int)flist[i];
@@ -687,6 +689,11 @@ int slsReceiverTCPIPInterface::send_update() {
 	if (path != NULL)
 		delete[] path;
 
+	// gap pixels enable
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind = (int)receiverBase->getGapPixelsEnable();
+#endif
+	mySock->SendDataOnly(&ind,sizeof(ind));
 
 	if (!lockStatus)
 		strcpy(mySock->lastClientIP,mySock->thisClientIP);
@@ -2363,6 +2370,66 @@ int slsReceiverTCPIPInterface::set_streaming_source_ip() {
 	mySock->SendDataOnly(retval,MAX_STR_LENGTH);
 	delete[] retval;
 
+
+	// return ok/fail
+	return ret;
+}
+
+
+
+
+
+int slsReceiverTCPIPInterface::enable_gap_pixels() {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int enable = -1;
+	int retval = -1;
+
+	// receive arguments
+	if (mySock->ReceiveDataOnly(&enable,sizeof(enable)) < 0 )
+		return printSocketReadError();
+
+	if (myDetectorType != EIGER)
+		functionNotImplemented();
+
+	// execute action
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	else {
+		if (receiverBase == NULL)
+			invalidReceiverObject();
+		else {
+			// set
+			if(enable >= 0) {
+				if (mySock->differentClients && lockStatus)
+					receiverlocked();
+				else if (receiverBase->getStatus() != IDLE)
+					receiverNotIdle();
+				else {
+					receiverBase->setGapPixelsEnable(enable);
+				}
+			}
+			//get
+			retval = receiverBase->getGapPixelsEnable();
+			if(enable >= 0 && retval != enable){
+				ret = FAIL;
+				sprintf(mess,"Could not set gap pixels to %d, returned %d\n",enable,retval);
+				FILE_LOG(logERROR) << "Warning: " << mess;
+			}
+		}
+	}
+#endif
+#ifdef VERYVERBOSE
+	FILE_LOG(logDEBUG1) << "Activate: " << retval;
+#endif
+
+	if (ret == OK && mySock->differentClients)
+		ret = FORCE_UPDATE;
+
+	// send answer
+	mySock->SendDataOnly(&ret,sizeof(ret));
+	if (ret == FAIL)
+		mySock->SendDataOnly(mess,sizeof(mess));
+	mySock->SendDataOnly(&retval,sizeof(retval));
 
 	// return ok/fail
 	return ret;

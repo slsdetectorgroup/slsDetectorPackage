@@ -66,6 +66,12 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	int getFlippedData(int axis=0) const;
 
+	/**
+	 * Get Gap Pixels Enable (eiger specific)
+	 * @return true if gap pixels enabled, else false
+	 */
+	bool getGapPixelsEnable() const;
+
 
 	//***file parameters***
 	/**
@@ -283,6 +289,13 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * @return if data is flipped across 'axis'
 	 */
 	void setFlippedData(int axis=0, int enable=-1);
+
+	/**
+	 * Set Gap Pixels Enable (eiger specific)
+	 * @param b true for gap pixels enable, else false
+	 * @return OK or FAIL
+	 */
+	int setGapPixelsEnable(const bool b);
 
 
 	//***file parameters***
@@ -609,6 +622,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	uint32_t fifoDepth;
 	/** enable for flipping data across both axes */
 	int flippedData[2];
+	/** gap pixels enable */
+	bool gapPixelsEnable;
 
 	//***receiver parameters***
 	/** Maximum Number of Listening Threads/ UDP Ports */

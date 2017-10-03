@@ -112,6 +112,21 @@ int64_t UDPStandardImplementation::getAcquisitionIndex() const {
 }
 
 
+int UDPStandardImplementation::setGapPixelsEnable(const bool b) {
+	if (gapPixelsEnable != b) {
+		gapPixelsEnable = b;
+
+		// side effects
+
+		numberofJobs = -1; //changes to imagesize has to be noted to recreate fifo structure
+		if (SetupFifoStructure() == FAIL)
+			return FAIL;
+	}
+	FILE_LOG(logINFO)  << "Gap Pixels Enable: " << gapPixelsEnable;
+	return OK;
+}
+
+
 void UDPStandardImplementation::setFileFormat(const fileFormat f){
 	switch(f){
 #ifdef HDF5C

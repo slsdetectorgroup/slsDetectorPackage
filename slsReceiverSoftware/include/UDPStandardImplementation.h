@@ -54,6 +54,13 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	int64_t getAcquisitionIndex() const;
 
 	/**
+	 * Set Gap Pixels Enable (eiger specific)
+	 * @param b true for gap pixels enable, else false
+	 * @return OK or FAIL
+	 */
+	int setGapPixelsEnable(const bool b);
+
+	/**
 	 * Set File Format
 	 * @param f fileformat binary or hdf5
 	 */

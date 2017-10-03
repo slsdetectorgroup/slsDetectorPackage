@@ -53,6 +53,7 @@ void UDPBaseImplementation::initializeMembers(){
 	fifoDepth = 0;
 	flippedData[0] = 0;
 	flippedData[1] = 0;
+	gapPixelsEnable = false;
 
 	//***receiver parameters***
 	status = IDLE;
@@ -115,6 +116,10 @@ int UDPBaseImplementation::getFlippedData(int axis) const{
 	return flippedData[axis];
 }
 
+bool UDPBaseImplementation::getGapPixelsEnable() const {
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	return gapPixelsEnable;
+}
 
 /***file parameters***/
 slsReceiverDefs::fileFormat UDPBaseImplementation::getFileFormat() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return fileFormatType;}
@@ -255,6 +260,14 @@ void UDPBaseImplementation::setFlippedData(int axis, int enable){
 	FILE_LOG(logINFO)  << "Flipped Data: " << flippedData[0] << " , " << flippedData[1];
 }
 
+int UDPBaseImplementation::setGapPixelsEnable(const bool b) {
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	gapPixelsEnable = b;
+	FILE_LOG(logINFO)  << "Gap Pixels Enable: " << gapPixelsEnable;
+
+	// overridden
+	return OK;
+}
 
 /***file parameters***/
 void UDPBaseImplementation::setFileFormat(const fileFormat f){

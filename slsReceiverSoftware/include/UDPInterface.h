@@ -48,6 +48,7 @@ class UDPInterface {
 	 *	-setFlippedData (if eiger)
 	 *	-setActivate (if eiger)
 	 *	-setTenGigaEnable (if eiger)
+	 *	-setGapPixelsEnable
 	 *	-setStreamingPort
 	 *	-setStreamingSourceIP
 	 *	-setDataStreamEnable
@@ -150,6 +151,12 @@ class UDPInterface {
 	 * @return if data is flipped across 'axis'
 	 */
 	virtual int getFlippedData(int axis=0) const = 0;
+
+	/**
+	 * Get Gap Pixels Enable (eiger specific)
+	 * @return true if gap pixels enabled, else false
+	 */
+	virtual bool getGapPixelsEnable() const = 0;
 
 
 	//***file parameters***
@@ -368,6 +375,14 @@ class UDPInterface {
 	 * @return if data is flipped across 'axis'
 	 */
 	virtual void setFlippedData(int axis=0, int enable=-1) = 0;
+
+
+	/**
+	 * Set Gap Pixels Enable (eiger specific)
+	 * @param b true for gap pixels enable, else false
+	 * @return OK or FAIL
+	 */
+	virtual int setGapPixelsEnable(const bool b) = 0;
 
 
 	//***file parameters***

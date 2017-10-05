@@ -536,19 +536,19 @@ class EigerData : public GeneralData {
 	/**
 	 * Enable Gap Pixels changes member variables
 	 * @param enable true if gap pixels enable, else false
+	 * @param dr dynamic range
 	 */
 	void SetGapPixelsEnable(bool b, int dr) {
 		switch((int)b) {
 		case 1:
-			nPixelsX_Streamer 			= (256*2) + 3;
-			nPixelsY_Streamer 			= 256 + 1;
-			imageSize_Streamer			= nPixelsX_Streamer * imageSize_Streamer *
-											((double)dr/(double)NUM_BITS_IN_ONE_BYTE);
+			nPixelsX	= (256 * 2) + 3;
+			nPixelsY 	= 256 + 1;
+			imageSize	= nPixelsX * nPixelsY * ((double)dr/(double)NUM_BITS_IN_ONE_BYTE);
 			break;
 		default:
-			nPixelsX_Streamer 			= (256*2);
-			nPixelsY_Streamer 			= 256;
-			imageSize_Streamer			= dataSize*packetsPerFrame;
+			nPixelsX 	= (256*2);
+			nPixelsY 	= 256;
+			imageSize	= dataSize*packetsPerFrame;
 			break;
 		}
 	};

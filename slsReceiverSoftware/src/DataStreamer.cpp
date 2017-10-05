@@ -54,7 +54,7 @@ DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, int* sEnable) :
 
 DataStreamer::~DataStreamer() {
 	CloseZmqSocket();
-	if (completeBuffer) delete completeBuffer;
+	if (completeBuffer) delete [] completeBuffer;
 	ThreadObject::DestroyThread();
 	NumberofDataStreamers--;
 }
@@ -117,7 +117,7 @@ void DataStreamer::ResetParametersforNewMeasurement(char* fname){
 	measurementStartedFlag = false;
 	strcpy(fileNametoStream, fname);
 	if (completeBuffer) {
-		delete completeBuffer;
+		delete [] completeBuffer;
 		completeBuffer = 0;
 	}
 	if (*shortFrameEnable >= 0) {
@@ -253,6 +253,8 @@ void DataStreamer::ProcessAnImage(char* buf) {
 			bprintf(RED,"Error: Could not send zmq data for fnum %lld and streamer %d\n",
 					(long long int) fnum, index);
 	}
+
+
 	//normal
 	else {
 

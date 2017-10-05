@@ -22,7 +22,6 @@ class File : private virtual slsReceiverDefs {
 	 * creates the File Writer
 	 * @param ind self index
 	 * @param maxf max frames per file
-	 * @param ppf packets per frame
 	 * @param nd pointer to number of detectors in each dimension
 	 * @param fname pointer to file name prefix
 	 * @param fpath pointer to file path
@@ -35,7 +34,7 @@ class File : private virtual slsReceiverDefs {
 	 * @param portno pointer to udp port number for logging
 	 * @param smode pointer to silent mode
 	 */
-	File(int ind, uint32_t maxf, const uint32_t* ppf,
+	File(int ind, uint32_t maxf,
 			int* nd, char* fname, char* fpath, uint64_t* findex, bool* owenable,
 			int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
 			bool* smode);
@@ -83,12 +82,6 @@ class File : private virtual slsReceiverDefs {
 	 * @param maxf maximum frames per file
 	 */
 	void SetMaxFramesPerFile(uint32_t maxf);
-
-	/**
-	 * Set Packets per frame (called only for each generalData construction)
-	 * @param ppf pointer to packets per frame
-	 */
-	void SetPacketsPerFrame(const uint32_t* ppf);
 
 	/**
 	 * Create file
@@ -171,10 +164,6 @@ class File : private virtual slsReceiverDefs {
 
 	/** Maximum frames per file */
 	uint32_t maxFramesPerFile;
-
-	/** Packets per frame for logging */
-	//pointer because value in generalData could change
-	const uint32_t* packetsPerFrame;
 
 	/** Master File Name */
 	std::string masterFileName;

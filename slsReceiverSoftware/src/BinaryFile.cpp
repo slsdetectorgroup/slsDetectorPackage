@@ -14,11 +14,11 @@ using namespace std;
 
 FILE* BinaryFile::masterfd = 0;
 
-BinaryFile::BinaryFile(int ind, uint32_t maxf, const uint32_t* ppf,
+BinaryFile::BinaryFile(int ind, uint32_t maxf,
 		int* nd, char* fname, char* fpath, uint64_t* findex, bool* owenable,
 		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
 		bool* smode):
-		File(ind, maxf, ppf, nd, fname, fpath, findex, owenable, dindex, nunits, nf, dr, portno, smode),
+		File(ind, maxf, nd, fname, fpath, findex, owenable, dindex, nunits, nf, dr, portno, smode),
 		filefd(0),
 		numFramesInFile(0),
 		numActualPacketsInFile(0)

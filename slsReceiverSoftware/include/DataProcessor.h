@@ -28,12 +28,14 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param ftype pointer to file format type
 	 * @param fwenable pointer to file writer enable
 	 * @param dsEnable pointer to data stream enable
+	 * @param gpEnable pointer to gap pixels enable
+	 * @param dr pointer to dynamic range
 	 * @param freq pointer to streaming frequency
 	 * @param timer pointer to timer if streaming frequency is random
 	 * @param dataReadycb pointer to data ready call back function
 	 * @param pDataReadycb pointer to arguments of data ready call back function
 	 */
-	DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* dsEnable,
+	DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* dsEnable, bool* gpEnable, uint32_t* dr,
 						uint32_t* freq, uint32_t* timer,
 						void (*dataReadycb)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
 								char*, uint32_t, void*),
@@ -200,6 +202,11 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	void EndofAcquisition(uint64_t numf);
 
+	/**
+	 * Update pixel dimensions in file writer
+	 */
+	void SetPixelDimension();
+
 
  private:
 
@@ -269,6 +276,13 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	bool CheckCount();
 
+	/**
+	 * Processing Function (inserting gap pixels) eiger specific
+	 * @param buf pointer to image
+	 * @param dr dynamic range
+	 */
+	void InsertGapPixels(char* buf, uint32_t dr);
+
 	/** type of thread */
 	static const std::string TypeName;
 
@@ -307,6 +321,13 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	/** File Write Enable */
 	bool* fileWriteEnable;
 
+	/** Gap Pixels Enable */
+	bool* gapPixelsEnable;
+
+
+	/** Dynamic Range */
+	uint32_t* dynamicRange;
+
 	/** Pointer to Streaming frequency, if 0, sending random images with a timer */
 	uint32_t* streamingFrequency;
 
@@ -318,6 +339,9 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** timer beginning stamp for random streaming */
 	struct timespec timerBegin;
+
+	/** temporary buffer for processing */
+	char* tempBuffer;
 
 
 

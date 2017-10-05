@@ -33,7 +33,7 @@ pthread_mutex_t DataProcessor::Mutex = PTHREAD_MUTEX_INITIALIZER;
 bool DataProcessor::SilentMode(false);
 
 
-DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* dsEnable,
+DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* dsEnable, bool* gpEnable, uint32_t* dr,
 		uint32_t* freq, uint32_t* timer,
 		void (*dataReadycb)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
 				char*, uint32_t, void*),
@@ -46,8 +46,11 @@ DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* 
 		dataStreamEnable(dsEnable),
 		fileFormatType(ftype),
 		fileWriteEnable(fwenable),
+		gapPixelsEnable(gpEnable),
+		dynamicRange(dr),
 		streamingFrequency(freq),
 		streamingTimerInMs(timer),
+		tempBuffer(0),
 		currentFreqCount(0),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
@@ -74,6 +77,7 @@ DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* 
 
 DataProcessor::~DataProcessor() {
 	if (file) delete file;
+	if (tempBuffer) delete [] tempBuffer;
 	ThreadObject::DestroyThread();
 	NumberofDataProcessors--;
 }
@@ -165,6 +169,15 @@ void DataProcessor::ResetParametersforNewMeasurement(){
 	numFramesCaught = 0;
 	firstMeasurementIndex = 0;
 	measurementStartedFlag = false;
+
+	if (tempBuffer) {
+		delete [] tempBuffer;
+		tempBuffer = 0;
+	}
+	if (*gapPixelsEnable >= 0) {
+		tempBuffer = new char[generalData->imageSize];
+		memset(tempBuffer, 0, generalData->imageSize);
+	}
 }
 
 
@@ -194,7 +207,6 @@ void DataProcessor::SetGeneralData(GeneralData* g) {
 	generalData->Print();
 #endif
 	if (file) {
-		file->SetPacketsPerFrame(&generalData->packetsPerFrame);
 		file->SetMaxFramesPerFile(generalData->maxFramesPerFile);
 		if (file->GetFileType() == HDF5) {
 			file->SetNumberofPixels(generalData->nPixelsX, generalData->nPixelsY);
@@ -240,14 +252,14 @@ void DataProcessor::SetupFileWriter(int* nd, char* fname, char* fpath, uint64_t*
 	switch(*fileFormatType){
 #ifdef HDF5C
 	case HDF5:
-		file = new HDF5File(index, generalData->maxFramesPerFile, &generalData->packetsPerFrame,
+		file = new HDF5File(index, generalData->maxFramesPerFile,
 				nd, fname, fpath, findex, owenable,
 				dindex, nunits, nf, dr, portno,
 				generalData->nPixelsX, generalData->nPixelsY, &SilentMode);
 		break;
 #endif
 	default:
-		file = new BinaryFile(index, generalData->maxFramesPerFile, &generalData->packetsPerFrame,
+		file = new BinaryFile(index, generalData->maxFramesPerFile,
 				nd, fname, fpath, findex, owenable,
 				dindex, nunits, nf, dr, portno, &SilentMode);
 		break;
@@ -358,6 +370,8 @@ void DataProcessor::ProcessAnImage(char* buf) {
 		}
 	}
 
+	if (*gapPixelsEnable && (*dynamicRange!=4))
+		InsertGapPixels(buf + sizeof(sls_detector_header), *dynamicRange);
 
 	if (*fileWriteEnable)
 		file->WriteToFile(buf, generalData->imageSize + sizeof(sls_detector_header), fnum-firstMeasurementIndex, nump);
@@ -424,3 +438,103 @@ bool DataProcessor::CheckCount() {
 	return false;
 }
 
+
+void DataProcessor::SetPixelDimension() {
+	if (file) {
+		if (file->GetFileType() == HDF5) {
+			file->SetNumberofPixels(generalData->nPixelsX, generalData->nPixelsY);
+		}
+	}
+}
+
+
+/** eiger specific */
+void DataProcessor::InsertGapPixels(char* buf, uint32_t dr) {
+
+	memset(tempBuffer, 0xFF, generalData->imageSize);
+
+	const uint32_t nx = generalData->nPixelsX;
+	const uint32_t ny = generalData->nPixelsY;
+	const uint32_t npx = nx * ny;
+
+	char* srcptr = 0;
+	char* dstptr = 0;
+
+	const uint32_t b1px = generalData->imageSize / (npx); // not double as not dealing with 4 bit mode
+	const uint32_t b2px = 2 * b1px;
+	const uint32_t b1pxofst = (index ? b1px : 0); // left fpga (index 0) has no extra 1px offset, but right fpga has
+	const uint32_t b1chip = 256 * b1px;
+	const uint32_t b1line = (nx * b1px);
+
+	// copying line by line
+	srcptr = buf;
+	dstptr = tempBuffer + b1line + b1pxofst;		// left fpga (index 0) has no extra 1px offset, but right fpga has
+	for (int i = 0; i < (ny-1); ++i) {
+		memcpy(dstptr, srcptr, b1chip);
+		srcptr += b1chip;
+		dstptr += (b1chip + b2px);
+		memcpy(dstptr, srcptr, b1chip);
+		srcptr += b1chip;
+		dstptr += (b1chip + b1px);
+	}
+
+	// vertical filling of values
+	{
+		char* srcgp1 = 0; char* srcgp2 = 0; char* srcgp3 = 0;
+		char* dstgp1 = 0; char* dstgp2 = 0; char* dstgp3 = 0;
+		const uint32_t b3px = 3 * b1px;
+
+		srcptr = tempBuffer + b1line;
+		dstptr = tempBuffer + b1line;
+
+		for (int i = 0; i < (ny-1); ++i) {
+			srcgp1 = srcptr + b1pxofst + b1chip - b1px;
+			dstgp1 = srcgp1 + b1px;
+			srcgp2 = srcgp1 + b3px;
+			dstgp2 = dstgp1 + b1px;
+			if (!index) {
+				srcgp3 = srcptr + b1line - b2px;
+				dstgp3 = srcgp3 + b1px;
+			} else {
+				srcgp3 = srcptr + b1px;
+				dstgp3 = srcptr;
+			}
+			switch (dr) {
+			case 8:
+				(*((uint8_t*)srcgp1)) = (*((uint8_t*)srcgp1))/2;	(*((uint8_t*)dstgp1)) = (*((uint8_t*)srcgp1));
+				(*((uint8_t*)srcgp2)) = (*((uint8_t*)srcgp2))/2;	(*((uint8_t*)dstgp2)) = (*((uint8_t*)srcgp2));
+				(*((uint8_t*)srcgp3)) = (*((uint8_t*)srcgp3))/2;	(*((uint8_t*)dstgp3)) = (*((uint8_t*)srcgp3));
+				break;
+			case 16:
+				(*((uint16_t*)srcgp1)) = (*((uint16_t*)srcgp1))/2;	(*((uint16_t*)dstgp1)) = (*((uint16_t*)srcgp1));
+				(*((uint16_t*)srcgp2)) = (*((uint16_t*)srcgp2))/2;	(*((uint16_t*)dstgp2)) = (*((uint16_t*)srcgp2));
+				(*((uint16_t*)srcgp3)) = (*((uint16_t*)srcgp3))/2;	(*((uint16_t*)dstgp3)) = (*((uint16_t*)srcgp3));
+				break;
+			default:
+				(*((uint32_t*)srcgp1)) = (*((uint32_t*)srcgp1))/2;	(*((uint32_t*)dstgp1)) = (*((uint32_t*)srcgp1));
+				(*((uint32_t*)srcgp2)) = (*((uint32_t*)srcgp2))/2;	(*((uint32_t*)dstgp2)) = (*((uint32_t*)srcgp2));
+				(*((uint32_t*)srcgp3)) = (*((uint32_t*)srcgp3))/2;	(*((uint32_t*)dstgp3)) = (*((uint32_t*)srcgp3));
+				break;
+			}
+			srcptr += b1line;
+			dstptr += b1line;
+		}
+
+	}
+
+	// horizontal filling of values
+	srcptr = tempBuffer + b1line;
+	dstptr = tempBuffer;
+	for (int i = 0; i < nx; ++i) {
+		switch (dr) {
+		case 8:	(*((uint8_t*)srcptr)) = (*((uint8_t*)srcptr))/2; (*((uint8_t*)dstptr)) = (*((uint8_t*)srcptr)); break;
+		case 16:(*((uint16_t*)srcptr)) = (*((uint16_t*)srcptr))/2; (*((uint16_t*)dstptr)) = (*((uint16_t*)srcptr)); break;
+		default:(*((uint32_t*)srcptr)) = (*((uint32_t*)srcptr))/2; (*((uint32_t*)dstptr)) = (*((uint32_t*)srcptr)); break;
+		}
+		srcptr += b1px;
+		dstptr += b1px;
+	}
+
+	memcpy(buf, tempBuffer, generalData->imageSize);
+	return;
+}

@@ -117,6 +117,10 @@ int UDPStandardImplementation::setGapPixelsEnable(const bool b) {
 		gapPixelsEnable = b;
 
 		// side effects
+		generalData->SetGapPixelsEnable(b, dynamicRange);
+		// to update npixelsx, npixelsy in file writer
+		for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
+			(*it)->SetPixelDimension();
 
 		numberofJobs = -1; //changes to imagesize has to be noted to recreate fifo structure
 		if (SetupFifoStructure() == FAIL)
@@ -254,6 +258,10 @@ int UDPStandardImplementation::setDynamicRange(const uint32_t i) {
 
 		//side effects
 		generalData->SetDynamicRange(i,tengigaEnable);
+		generalData->SetGapPixelsEnable(gapPixelsEnable, dynamicRange);
+		// to update npixelsx, npixelsy in file writer
+		for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
+			(*it)->SetPixelDimension();
 
 		numberofJobs = -1; //changes to imagesize has to be noted to recreate fifo structure
 		if (SetupFifoStructure() == FAIL)
@@ -350,7 +358,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	for ( int i=0; i < numThreads; ++i ) {
 		listener.push_back(new Listener(myDetectorType, fifo[i], &status, &udpPortNum[i], eth, &activated, &numberOfFrames, &dynamicRange));
 		dataProcessor.push_back(new DataProcessor(fifo[i], &fileFormatType,
-				&fileWriteEnable, &dataStreamEnable, &frameToGuiFrequency, &frameToGuiTimerinMS,
+				&fileWriteEnable, &dataStreamEnable, &gapPixelsEnable, &dynamicRange, &frameToGuiFrequency, &frameToGuiTimerinMS,
 				rawDataReadyCallBack,pRawDataReady));
 		if (Listener::GetErrorMask() || DataProcessor::GetErrorMask()) {
 			FILE_LOG (logERROR) << "Error: Could not creates listener/dataprocessor threads (index:" << i << ")";

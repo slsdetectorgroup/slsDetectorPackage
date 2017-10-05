@@ -798,9 +798,10 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 	cout << "npoints " << data->npoints << endl;
 	cout << "npy " << data->npy << endl;
 	cout << "progress " << data->progressIndex << endl;
-	cout << "values " << data->values << endl;
+	if (data->values != NULL) cout << "values " << data->values << endl;
 	cout << "errors " << data->errors << endl;
 	cout << "angle " << data->angles << endl;
+	cout << "databytes " << data->databytes << endl;
 #endif
 	if(!stop_signal){
 

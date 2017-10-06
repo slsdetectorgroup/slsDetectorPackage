@@ -1911,8 +1911,9 @@ slsDetectorDefs::runStatus  multiSlsDetector::getRunStatus() {
     s1=detectors[i]->getRunStatus(); 
     if(detectors[i]->getErrorMask())
       setErrorMask(getErrorMask()|(1<<i));
-    if (s1==ERROR)
-      s=ERROR;
+    if (s1==ERROR) {
+      return ERROR;
+    }
     if (s1!=IDLE)
     	s = s1;
    // if (s1==IDLE && s!=IDLE)

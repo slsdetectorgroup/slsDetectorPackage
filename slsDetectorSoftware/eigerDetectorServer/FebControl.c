@@ -1073,29 +1073,29 @@ int Feb_Control_AcquisitionInProgress(){
 
 	//deactivated should return end of acquisition
 	if(!Feb_Control_activated)
-		return 0;
+		return STATUS_IDLE;
 
 	int ind = Feb_Control_current_index;
 	if(Module_BottomAddressIsValid(&modules[ind])){
 
 		if(!(Feb_Control_GetDAQStatusRegister(Module_GetBottomRightAddress(&modules[ind]),&status_reg_r)))
-		{cprintf(RED,"Error: Trouble reading Status register. bottom right address\n");return 0;}
+		{cprintf(RED,"Error: Trouble reading Status register. bottom right address\n");return STATUS_ERROR;}
 		if(!(Feb_Control_GetDAQStatusRegister(Module_GetBottomLeftAddress(&modules[ind]),&status_reg_l)))
-		{cprintf(RED,"Error: Trouble reading Status register. bottom left address\n");return 0;}
+		{cprintf(RED,"Error: Trouble reading Status register. bottom left address\n");return STATUS_ERROR;}
 
 	}else{
 		if(!(Feb_Control_GetDAQStatusRegister(Module_GetTopRightAddress(&modules[ind]),&status_reg_r)))
-		{cprintf(RED,"Error: Trouble reading Status register. top right address\n");return 0;}
+		{cprintf(RED,"Error: Trouble reading Status register. top right address\n");return STATUS_ERROR;}
 		if(!(Feb_Control_GetDAQStatusRegister(Module_GetTopLeftAddress(&modules[ind]),&status_reg_l)))
-		{cprintf(RED,"Error: Trouble reading Status register. top left address\n");return 0;}
+		{cprintf(RED,"Error: Trouble reading Status register. top left address\n");return STATUS_ERROR;}
 	}
 
 	//running
 	if((status_reg_r|status_reg_l)&DAQ_STATUS_DAQ_RUNNING) {/*printf("**runningggg\n");*/
-		return 1;
+		return STATUS_RUNNING;
 	}
 	//idle
-	return 0;
+	return STATUS_IDLE;
 }
 
 
@@ -1132,16 +1132,25 @@ int Feb_Control_AcquisitionStartedBit(){
 
 int Feb_Control_WaitForFinishedFlag(int sleep_time_us){
 	int is_running = Feb_Control_AcquisitionInProgress();
-	while(is_running){
+
+	int check_error = 0;
+
+	// it will break out if it is idle or if check_error is more than 5 times
+	while(is_running != STATUS_IDLE){
 		usleep(sleep_time_us);
 		is_running = Feb_Control_AcquisitionInProgress();
-	}
-	if(is_running!=0){
-		printf("\n\nWarning WaitForFinishedFlag comunication problem..\n\n");
-		return 0; //communication problem
+
+		// check error only 5 times (ensuring it is not something that happens sometimes)
+		if (is_running == STATUS_ERROR) {
+			if (check_error == 5)
+				break;
+			check_error++;
+		}// reset check_error for next time
+		else check_error = 0;
+
 	}
 
-	return 1;
+	return is_running;
 }
 
 
@@ -1150,6 +1159,10 @@ int Feb_Control_WaitForStartedFlag(int sleep_time_us, int prev_flag){
 	//deactivated dont wait (otherwise give a toggle value back)
 	if(!Feb_Control_activated)
 		return 1;
+
+	//did not start
+	if(prev_flag == -1)
+		return 0;
 
 	int value = prev_flag;
 	while(value == prev_flag){

@@ -55,7 +55,7 @@ Changes in User Interface
 		
 	User
 	----
-	1.	Added a few advanced user functions in slsDetectorUser class. 
+	3.	Added a few advanced user functions in slsDetectorUser class. 
 		
 
 
@@ -68,15 +68,15 @@ New Features
 	
 	Client
 	------
-	1.	Parallelized more commands to detector. Beneficial for large multi detector systems.
+	2.	Parallelized more commands to detector. Beneficial for large multi detector systems.
 	
-	2.	One can set "threaded" to 0 in the config file and acquire from command line. It will
+	3.	One can set "threaded" to 0 in the config file and acquire from command line. It will
 		not give you progress, but might be faster for large multi detector systems.
 		
 	
 	Receiver
 	--------
-	1.	Added silent mode to receiver using command r_silent [i] from client. 
+	4.	Added silent mode to receiver using command r_silent [i] from client. 
 		It might be beneficial for max frame rate applications.
 
 
@@ -86,6 +86,15 @@ Resolved Issues
 	---
 	1.	(Eiger) in advanced mode: Loading trimbits and gui complains of different trimbits and
 		sets all trimbits to 0. This has been resolved now.
+	Client
+	------
+	2.	Made it easier to disable the standard receiver and fixing bugs related to the use of a 
+		custom one.
+	
+	Detector Server
+	---------------
+	3.	(Eiger): Status will return error if there was the unlikely trouble reading status 
+		register in the front end board. Earlier, it would only return idle.
 
 
 Known Issues
@@ -97,8 +106,8 @@ Known Issues
 		detector level. 
 	
 
-	Server
-	------
+	Detector Server
+	---------------
 	1.	(Eiger) The hardware mac of the detector is used (not relayed back to the client). 
 	  	For 1 GbE, the hardware IP of the detector is used (also not relayed back to the 
 	  	client). 

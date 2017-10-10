@@ -47,6 +47,7 @@ DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* 
 		streamingFrequency(freq),
 		streamingTimerInMs(timer),
 		currentFreqCount(0),
+		xcoord(0),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
 		firstAcquisitionIndex(0),
@@ -208,7 +209,7 @@ int DataProcessor::SetThreadPriority(int priority) {
 
 
 void DataProcessor::SetFileFormat(const fileFormat f) {
-	if (file->GetFileType() != f) {
+	if (file && file->GetFileType() != f) {
 		//remember the pointer values before they are destroyed
 		int nd[MAX_DIMENSIONS];nd[0] = 0; nd[1] = 0;
 		char* fname=0; char* fpath=0; uint64_t* findex=0; bool* frindexenable=0;
@@ -228,30 +229,37 @@ void DataProcessor::SetupFileWriter(int* nd, char* fname, char* fpath, uint64_t*
 	if (g)
 		generalData = g;
 
+	// fix xcoord as detector is not providing it right now
+	xcoord = ((NumberofDataProcessors > (*nunits)) ? index : ((*dindex) * (*nunits)) + index);
+
 	if (file)
 		delete file;
 
-	switch(*fileFormatType){
+	if (*fileWriteEnable) {
+		switch(*fileFormatType){
 #ifdef HDF5C
-	case HDF5:
-		file = new HDF5File(index, generalData->maxFramesPerFile, &generalData->packetsPerFrame,
-				nd, fname, fpath, findex,
-				frindexenable, owenable,
-				dindex, nunits, nf, dr, portno,
-				generalData->nPixelsX, generalData->nPixelsY);
-		break;
+		case HDF5:
+			file = new HDF5File(index, generalData->maxFramesPerFile, &generalData->packetsPerFrame,
+					nd, fname, fpath, findex,
+					frindexenable, owenable,
+					dindex, nunits, nf, dr, portno,
+					generalData->nPixelsX, generalData->nPixelsY);
+			break;
 #endif
-	default:
-		file = new BinaryFile(index, generalData->maxFramesPerFile, &generalData->packetsPerFrame,
-				nd, fname, fpath, findex,
-				frindexenable, owenable,
-				dindex, nunits, nf, dr, portno);
-		break;
+		default:
+			file = new BinaryFile(index, generalData->maxFramesPerFile, &generalData->packetsPerFrame,
+					nd, fname, fpath, findex,
+					frindexenable, owenable,
+					dindex, nunits, nf, dr, portno);
+			break;
+		}
 	}
 }
 
 // only the first file
 int DataProcessor::CreateNewFile(bool en, uint64_t nf, uint64_t at, uint64_t st, uint64_t ap) {
+	if (file == NULL)
+		return FAIL;
 	file->CloseAllFiles();
 	if (file->CreateMasterFile(en,	generalData->imageSize, generalData->nPixelsX, generalData->nPixelsY,
 			at, st, ap) == FAIL)
@@ -268,7 +276,7 @@ void DataProcessor::CloseFiles() {
 }
 
 void DataProcessor::EndofAcquisition(uint64_t numf) {
-	if (*fileWriteEnable && file->GetFileType() == HDF5) {
+	if (file && file->GetFileType() == HDF5) {
 		file->EndofAcquisition(numf);
 	}
 }
@@ -312,7 +320,8 @@ void DataProcessor::StopProcessing(char* buf) {
 	else
 		fifo->FreeAddress(buf);
 
-	file->CloseCurrentFile();
+	if (file)
+		file->CloseCurrentFile();
 	StopRunning();
 #ifdef VERBOSE
 	FILE_LOG(logINFO) << index << ": Processing Completed";
@@ -355,7 +364,10 @@ void DataProcessor::ProcessAnImage(char* buf) {
 	}
 
 
-	if (*fileWriteEnable)
+	// fix x coord that is currently not provided by detector
+	header->xCoord = xcoord;
+
+	if (file)
 		file->WriteToFile(buf, generalData->imageSize + sizeof(sls_detector_header), fnum-firstMeasurementIndex, nump);
 
 	if (rawDataReadyCallBack) {

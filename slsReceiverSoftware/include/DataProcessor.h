@@ -311,6 +311,9 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	/** timer beginning stamp for random streaming */
 	struct timespec timerBegin;
 
+	/** x coord hardcoded, as detector does not send them yet **/
+	uint16_t xcoord;
+
 
 
 	//acquisition start

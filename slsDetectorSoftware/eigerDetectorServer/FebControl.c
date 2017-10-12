@@ -906,7 +906,7 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits){
 		return 0;
 	}
 
-	if(!Feb_Control_Reset()) cprintf(RED,"Warning could not reset DAQ.\n");
+	if(Feb_Control_Reset() == STATUS_ERROR) cprintf(RED,"Warning could not reset DAQ.\n");
 	int l_r;	//printf("222\n");
 	for(l_r=0;l_r<2;l_r++){ // l_r loop
 		//printf("\nl_r:%d\t\t",l_r);
@@ -914,7 +914,7 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits){
 		if(Feb_Control_activated){
 			if(!(Feb_Interface_WriteRegister(0xfff,DAQ_REG_STATIC_BITS,disable_chip_mask|DAQ_STATIC_BIT_PROGRAM|DAQ_STATIC_BIT_M8,0,0)
 					&&Feb_Control_SetCommandRegister(DAQ_SET_STATIC_BIT)
-					&&Feb_Control_StartDAQOnlyNWaitForFinish(5000))){
+					&&(Feb_Control_StartDAQOnlyNWaitForFinish(5000) == STATUS_IDLE))){
 				printf("Could not select chips\n");
 				return 0;
 			}
@@ -980,7 +980,7 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits){
 							!Feb_Interface_WriteMemoryInLoops(Module_GetTopRightAddress(&modules[Feb_Control_current_index]),0,0,1024,trimbits_to_load_r)||
 							//if(!Feb_Interface_WriteMemory(Module_GetTopLeftAddress(&modules[0]),0,0,1023,trimbits_to_load_r)||
 							//	!Feb_Interface_WriteMemory(Module_GetTopRightAddress(&modules[0]),0,0,1023,trimbits_to_load_l)||
-							!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+							(Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)){
 						printf(" some errror!\n");
 						return 0;
 					}
@@ -991,7 +991,7 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits){
 							!Feb_Interface_WriteMemoryInLoops(Module_GetBottomRightAddress(&modules[Feb_Control_current_index]),0,0,1024,trimbits_to_load_r)||
 							//if(!Feb_Interface_WriteMemory(Module_GetTopLeftAddress(&modules[0]),0,0,1023,trimbits_to_load_r)||
 							//	!Feb_Interface_WriteMemory(Module_GetTopRightAddress(&modules[0]),0,0,1023,trimbits_to_load_l)||
-							!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+							(Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)){
 						printf(" some errror!\n");
 						return 0;
 					}
@@ -1196,7 +1196,9 @@ int Feb_Control_Reset(){
 int Feb_Control_SetStaticBits(){
 	if(Feb_Control_activated){
 		//program=1,m4=2,m8=4,test=8,rotest=16,cs_bar_left=32,cs_bar_right=64
-		if(!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_STATIC_BITS,Feb_Control_staticBits,0,0) || !Feb_Control_SetCommandRegister(DAQ_SET_STATIC_BIT) || !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+		if(!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_STATIC_BITS,Feb_Control_staticBits,0,0) ||
+				!Feb_Control_SetCommandRegister(DAQ_SET_STATIC_BIT) ||
+				(Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATIC_IDLE)){
 			cprintf(RED,"Warning: Could not set static bits\n");
 			return 0;
 		}
@@ -1403,7 +1405,7 @@ unsigned int Feb_Control_ConvertTimeToRegister(float time_in_sec){
 }
 
 int Feb_Control_ResetChipCompletely(){
-	if(!Feb_Control_SetCommandRegister(DAQ_RESET_COMPLETELY) || !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+	if(!Feb_Control_SetCommandRegister(DAQ_RESET_COMPLETELY) || (Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)){
 		cprintf(RED,"Warning: could not ResetChipCompletely() with 0x%x.\n",DAQ_RESET_COMPLETELY);
 		return 0;
 	}
@@ -1414,13 +1416,13 @@ int Feb_Control_ResetChipCompletely(){
 
 
 int Feb_Control_ResetChipPartially(){
-	if(!Feb_Control_SetCommandRegister(DAQ_RESET_PERIPHERY) || !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+	if(!Feb_Control_SetCommandRegister(DAQ_RESET_PERIPHERY) || (Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)){
 		cprintf(RED,"Warning: could not ResetChipPartially with periphery\n");
 		return 0;
 	}
 	printf("Chip reset periphery 0x%x\n",DAQ_RESET_PERIPHERY);
 
-	if(!Feb_Control_SetCommandRegister(DAQ_RESET_COLUMN_SELECT) || !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+	if(!Feb_Control_SetCommandRegister(DAQ_RESET_COLUMN_SELECT) || (Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)){
 		cprintf(RED,"Warning: could not ResetChipPartially with column select\n");
 		return 0;
 	}
@@ -1469,7 +1471,7 @@ int Feb_Control_PrepareForAcquisition(){//return 1;
 	Feb_Control_PrintAcquisitionSetup();
 
 	//  if(!Reset()||!ResetDataStream()){
-	if(!Feb_Control_Reset()){
+	if(Feb_Control_Reset() == STATUS_ERROR){
 		printf("Trouble reseting daq or data stream...\n");;
 		return 0;
 	}
@@ -1593,7 +1595,10 @@ int Feb_Control_Pulse_Pixel(int npulses, int x, int y){
 	Feb_Control_SetInTestModeVariable(1); //on
 	Feb_Control_SetStaticBits();
 	Feb_Control_SetCommandRegister(DAQ_RESET_PERIPHERY|DAQ_RESET_COLUMN_SELECT);
-	Feb_Control_StartDAQOnlyNWaitForFinish(5000);
+	if (Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE) {
+		cprintf(RED,"Warning: could not pulse pixel as status not idle\n");
+		return 0;
+	}
 
 	unsigned int serial_in = 8<<(4*(7-x%8));
 	if(!Feb_Control_Shift32InSerialIn(serial_in)){
@@ -1623,7 +1628,7 @@ int Feb_Control_PulsePixelNMove(int npulses, int inc_x_pos, int inc_y_pos){
 	if(Feb_Control_activated){
 		if(!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_SEND_N_TESTPULSES,npulses,0,0) ||
 				!Feb_Control_SetCommandRegister(c) ||
-				!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+				(Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)){
 			cprintf(RED,"Warning: could not PulsePixelNMove(...).\n");
 			return 0;
 		}
@@ -1637,7 +1642,7 @@ int Feb_Control_Shift32InSerialIn(unsigned int value_to_shift_in){
 	if(Feb_Control_activated){
 		if(!Feb_Control_SetCommandRegister(DAQ_SERIALIN_SHIFT_IN_32) ||
 				!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_SHIFT_IN_32,value_to_shift_in,0,0) ||
-				!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+				(Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)){
 			cprintf(RED,"Warning: could not shift in 32.\n");
 			return 0;
 		}
@@ -1647,7 +1652,7 @@ int Feb_Control_Shift32InSerialIn(unsigned int value_to_shift_in){
 
 int Feb_Control_SendTokenIn(){
 	if(!Feb_Control_SetCommandRegister(DAQ_SEND_A_TOKEN_IN) ||
-			!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+			(Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)){
 		cprintf(RED,"Warning: could not SendTokenIn().\n");
 		return 0;
 	}
@@ -1663,7 +1668,7 @@ int Feb_Control_ClockRowClock(unsigned int ntimes){
 	if(Feb_Control_activated){
 		if(!Feb_Control_SetCommandRegister(DAQ_CLK_ROW_CLK_NTIMES) ||
 				!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CLK_ROW_CLK_NTIMES,ntimes,0,0) ||
-				!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+				(Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)){
 			cprintf(RED,"Warning: could not clock row clock.\n");
 			return 0;
 		}
@@ -1693,7 +1698,7 @@ int Feb_Control_PulseChip(int npulses){
 	for(i=0;i<npulses;i++){
 		if(!Feb_Control_SetCommandRegister(DAQ_CHIP_CONTROLLER_SUPER_SLOW_SPEED|DAQ_RESET_PERIPHERY|DAQ_RESET_COLUMN_SELECT))
 			cprintf(RED,"some set command register error\n");
-		if(!Feb_Control_StartDAQOnlyNWaitForFinish(5000))
+		if((Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE))
 			cprintf(RED,"some wait error\n");
 	}
 	Feb_Control_SetExternalEnableMode(on,1);
@@ -1862,7 +1867,7 @@ int Feb_Control_SetRateCorrectionTable(unsigned int *table){
 	  if(Feb_Control_activated){
 		  if(!Feb_Interface_WriteMemoryInLoops(Module_GetTopLeftAddress(&modules[Feb_Control_current_index]),1,0,1024,Feb_Control_rate_correction_table)||
 				  !Feb_Interface_WriteMemoryInLoops(Module_GetTopRightAddress(&modules[Feb_Control_current_index]),1,0,1024,Feb_Control_rate_correction_table)||
-				  !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+				  (Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)){
 			  cprintf(BG_RED,"Error in Top Writing to Memory ::Feb_Control_SetRateCorrectionTable\n");
 			  return 0;
 		  }
@@ -1871,7 +1876,7 @@ int Feb_Control_SetRateCorrectionTable(unsigned int *table){
 	  if(Feb_Control_activated){
 		  if(!Feb_Interface_WriteMemoryInLoops(Module_GetBottomLeftAddress(&modules[Feb_Control_current_index]),1,0,1024,Feb_Control_rate_correction_table)||
 				  !Feb_Interface_WriteMemoryInLoops(Module_GetBottomRightAddress(&modules[Feb_Control_current_index]),1,0,1024,Feb_Control_rate_correction_table)||
-				  !Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+				  (Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)){
 			  cprintf(BG_RED,"Error in Bottom Writing to Memory ::Feb_Control_SetRateCorrectionTable\n");
 			  return 0;
 		  }

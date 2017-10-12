@@ -1153,7 +1153,7 @@ int startStateMachine(){
 
 int stopStateMachine(){
 	cprintf(BG_RED,"Going to stop acquisition\n");
-	if(Feb_Control_StopAcquisition() & Beb_StopAcquisition())
+	if((Feb_Control_StopAcquisition() == STATUS_IDLE) & Beb_StopAcquisition())
 		return OK;
 	cprintf(BG_RED,"failed to stop acquisition\n");
 	return FAIL;

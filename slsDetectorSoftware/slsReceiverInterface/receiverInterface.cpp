@@ -163,7 +163,7 @@ int receiverInterface::getLastClientIP(int fnum, char retval[]){
 
 	dataSocket->SendDataOnly(&fnum,sizeof(fnum));
 	dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	dataSocket->ReceiveDataOnly(retval,sizeof(retval));
+	dataSocket->ReceiveDataOnly(retval,INET_ADDRSTRLEN);
 
 	return ret;
 }

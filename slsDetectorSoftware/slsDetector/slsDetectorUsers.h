@@ -598,10 +598,18 @@ class slsDetectorUsers
    int stopReceiver();
 
    /**
-      start detector acquisition in non blocking mode
+      start detector real time acquisition in non blocking mode
+      does not include scans, scripts, incrementing file index, s
+      tarting/stopping receiver, resetting frames caught in receiver
       \returns OK if all detectors are properly started, FAIL otherwise
    */
    int startAcquisition();
+
+   /**
+      stop detector real time acquisition
+      \returns OK if all detectors are properly started, FAIL otherwise
+   */
+   int stopAcquisition();
 
    /**
     * set receiver in silent mode

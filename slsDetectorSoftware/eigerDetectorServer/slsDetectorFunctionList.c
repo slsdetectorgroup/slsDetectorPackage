@@ -1146,8 +1146,8 @@ int startStateMachine(){
 	//wait for acquisition start
 	if(ret == OK){
 		if(!Feb_Control_WaitForStartedFlag(5000, prev_flag)){
-			cprintf(RED,"Error: Acquisition did no start or trouble reading register\n");
-			ret = FAIL;
+			cprintf(RED,"Error: Acquisition did not start or trouble reading register\n");
+			return FAIL;
 		}
 		cprintf(GREEN,"***Acquisition started\n");
 	}
@@ -1160,7 +1160,7 @@ int startStateMachine(){
 
 int stopStateMachine(){
 	cprintf(BG_RED,"Going to stop acquisition\n");
-	if(Feb_Control_StopAcquisition() & Beb_StopAcquisition())
+	if((Feb_Control_StopAcquisition() == STATUS_IDLE) & Beb_StopAcquisition())
 		return OK;
 	cprintf(BG_RED,"failed to stop acquisition\n");
 	return FAIL;
@@ -1194,16 +1194,19 @@ int startReadOut(){
 
 
 enum runStatus getRunStatus(){
-	//if(trialMasterMode == IS_MASTER){
+
 	int i = Feb_Control_AcquisitionInProgress();
-	if(i== 0){
+	switch (i) {
+	case STATUS_ERROR:
+		printf("Status: ERROR reading status register\n");
+		return ERROR;
+	case STATUS_IDLE:
 		printf("Status: IDLE\n");
 		return IDLE;
-	}else{
+	default:
 		printf("Status: RUNNING...\n");
 		return RUNNING;
 	}
-	//}else printf("***** not master*** \n");
 
 	return IDLE;
 }
@@ -1211,8 +1214,11 @@ enum runStatus getRunStatus(){
 
 
 void readFrame(int *ret, char *mess){
-	if(!Feb_Control_WaitForFinishedFlag(5000))
+	if(Feb_Control_WaitForFinishedFlag(5000) == STATUS_ERROR) {
 		cprintf(RED,"Error: Waiting for finished flag\n");
+		*ret = FAIL;
+		return;
+	}
 	cprintf(GREEN,"Acquisition finished***\n");
 
 	if(eiger_storeinmem){

@@ -3,3 +3,4 @@ forms/include/
 mocs/
 objs/
 qrc_icons.cpp
+.project

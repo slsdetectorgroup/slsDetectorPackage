@@ -18,6 +18,7 @@
 #include "FebRegisterDefs.h"
 #include "FebControl.h"
 #include "Beb.h"
+#include "slsDetectorServer_defs.h"
 
 
 

@@ -1129,7 +1129,7 @@ string multiSlsDetector::checkOnline() {
 
 int multiSlsDetector::activate(int const enable){
 	int i;
-	int64_t ret1=-100, ret;
+	int ret1=-100, ret;
 
 	for (i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
 		if (detectors[i]) {
@@ -1978,7 +1978,7 @@ void multiSlsDetector::resetFinalDataQueue() {
  */
 int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t){
 
-	int ret=-100;
+	int64_t ret=-100;
 
 	if(!threadpool){
 		cout << "Error in creating threadpool. Exiting" << endl;
@@ -2054,7 +2054,7 @@ int64_t multiSlsDetector::getTimeLeft(timerIndex index){
 
 int multiSlsDetector::setSpeed(speedVariable index, int value){
   int i;
-  int64_t ret1=-100, ret;
+  int ret1=-100, ret;
   
 
   

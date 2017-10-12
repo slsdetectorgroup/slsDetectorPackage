@@ -57,7 +57,7 @@ public analogDetector<uint16_t> {
 		      int sign=1,
 		      commonModeSubtraction *cm=NULL,
 		      int nped=1000,
-		      int nd=100, int nnx=-1, int nny=-1) : analogDetector<uint16_t>(d, sign, cm, nnx, nny),   nDark(nd), eventMask(NULL),nSigma (nsigma), clusterSize(csize), clusterSizeY(csize), cluster(NULL),   quad(UNDEFINED_QUADRANT), tot(0), quadTot(0) {
+		      int nd=100, int nnx=-1, int nny=-1, double *gm=NULL) : analogDetector<uint16_t>(d, sign, cm, nped, nnx, nny, gm),   nDark(nd), eventMask(NULL),nSigma (nsigma), clusterSize(csize), clusterSizeY(csize), cluster(NULL),   quad(UNDEFINED_QUADRANT), tot(0), quadTot(0) {
     
     
     
@@ -65,9 +65,6 @@ public analogDetector<uint16_t> {
     eventMask=new eventType*[ny];
     for (int i=0; i<ny; i++) {
       eventMask[i]=new eventType[nx];
-      for (int ix=0; ix<nx; ix++) {
-	stat[i][ix].SetNPedestals(nped);
-      }
     }
     
     if (ny==1)
@@ -80,7 +77,7 @@ public analogDetector<uint16_t> {
     /**
        destructor. Deletes the cluster structure and the pdestalSubtraction array
     */
-  virtual ~singlePhotonDetector() {delete cluster;};
+  virtual ~singlePhotonDetector() {delete cluster; for (int i=0; i<ny; i++) delete [] eventMask[i]; delete [] eventMask; };
 
     
   
@@ -89,9 +86,32 @@ public analogDetector<uint16_t> {
 
     
  
+ singlePhotonDetector(singlePhotonDetector *orig) : analogDetector<uint16_t>(orig) {
 
+    nDark=orig->nDark;
+    
+    
+    eventMask=new eventType*[ny];
+    for (int i=0; i<ny; i++) {
+      eventMask[i]=new eventType[nx];
+      
+    }
+    
+    
+    nSigma=orig->nSigma;
+    clusterSize=orig->clusterSize;
+    clusterSizeY=orig->clusterSizeY;
+    cluster=new single_photon_hit(clusterSize,clusterSizeY);
+    quad=UNDEFINED_QUADRANT;
+    tot=0;
+    quadTot=0;
+
+  }
   
 
+  virtual singlePhotonDetector *Clone() {
+    return new singlePhotonDetector(this);
+  }
     /** sets/gets number of rms threshold to detect photons
 	\param n number of sigma to be set (0 or negative gets)
 	\returns actual number of sigma parameter
@@ -118,22 +138,23 @@ public analogDetector<uint16_t> {
 
 
 
-    virtual int *getNPhotons(char *data, double thr=-1) {
+    virtual int *getNPhotons(char *data, double thr=-1, int *nph=NULL) {
 
       double val;
-      int *nph=new int[nx*ny];
+      if (nph==NULL)
+	nph=new int[nx*ny];
       double rest[ny][nx];
       int cy=(clusterSizeY+1)/2;
       int cs=(clusterSize+1)/2;
       
-      
+      double g=-1.;
 
       int ccs=clusterSize;
       int ccy=clusterSizeY;
 
 
       double tthr=thr;
-      int nn;
+      int nn=0;
       double max=0, tl=0, tr=0, bl=0,br=0, v;
 
 
@@ -148,13 +169,23 @@ public analogDetector<uint16_t> {
       for (int ix=0; ix<nx; ix++) {
       for (int iy=0; iy<ny; iy++) {
 	 
-	if (thr<=0) tthr=nSigma*getPedestalRMS(ix,iy);
-    
-	val=subtractPedestal(data,ix,iy);
+	if (thr<=0) {
+	  
+	if (gmap) {
+	  g=gmap[iy*nx+ix];
+	  if (g==0) g=-1.;
+	}
 
-	nph[ix+nx*iy]=analogDetector<uint16_t>::getNPhotons(data,ix,iy,tthr);
+	  tthr=nSigma*getPedestalRMS(ix,iy)/g;
+    
+	}	
+
+
+	val=subtractPedestal(data,ix,iy);
+	nn=analogDetector<uint16_t>::getNPhotons(data,ix,iy,tthr);
+	nph[ix+nx*iy]+=nn;
 	
-	rest[iy][ix]=subtractPedestal(data,ix,iy)-nph[ix+nx*iy]*tthr;
+	rest[iy][ix]=(val-nn*tthr);
 	  
 	  
       }
@@ -185,7 +216,7 @@ public analogDetector<uint16_t> {
 		if (ir>=0 && ic<=0)
 		  tl+=v;
 		if (ir>=0 && ic>=0)
-		tr+=v;
+		  tr+=v;
 		
 		if (v>max) {
 		  max=v;
@@ -205,7 +236,7 @@ public analogDetector<uint16_t> {
 	      quadTot=bl;
 	    } else if (br>=bl && br>=tl && br>=tr) {
 	      quad=BOTTOM_RIGHT;
-	    quadTot=br;
+	      quadTot=br;
 	    } else if (tl>=br && tl>=bl && tl>=tr) {
 	      quad=TOP_LEFT;
 	      quadTot=tl;
@@ -518,6 +549,16 @@ int getClusters(char *data, single_photon_hit *clusters) {
     void writeCluster(FILE* myFile){cluster->write(myFile);};
 
 #endif
+
+    virtual void processData(char *data, frameMode i=eFrame, int *val=NULL) {
+      switch(i) {
+      case ePedestal:
+	addToPedestal(data);
+	break;
+      default:
+	getNPhotons(data,-1,val);
+      }
+    };
 
 
  protected:

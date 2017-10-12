@@ -7,6 +7,7 @@
 #include <TH2F.h>
 #endif
 
+#include "tiffIO.h"
 #ifndef DEF_QUAD
 #define DEF_QUAD
  enum quadrant {
@@ -25,7 +26,7 @@ class slsInterpolation
 {
 
  public:
- slsInterpolation(int nx=400, int ny=400, int ns=25) :nPixelsX(nx), nPixelsY(ny),  nSubPixels(ns) {
+ slsInterpolation(int nx=400, int ny=400, int ns=25) :nPixelsX(nx), nPixelsY(ny),  nSubPixels(ns), id(0) {
    
 #ifdef MYROOT1
 hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
@@ -37,7 +38,33 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
 
 };
   
+ slsInterpolation(slsInterpolation *orig){
+   nPixelsX=orig->nPixelsX;
+   nPixelsY=orig->nPixelsY;
+   nSubPixels=orig->nSubPixels;
+#ifdef MYROOT1
+   hint=(TH2F*)(orig->hint)->Clone("hint");
+#endif
+   
+#ifndef MYROOT1
+ hint=new int[nSubPixels*nPixelsX*nSubPixels*nPixelsY];
+ memcpy(hint, orig->hint,nSubPixels*nPixelsX*nSubPixels*nPixelsY*sizeof(int));
+#endif
+ 
+ };
+
+ virtual int setId(int i) {id=i; return id;};
+
+  virtual slsInterpolation* Clone() = 0;
+
   int getNSubPixels() {return nSubPixels;};
+
+  int getImageSize(int &nnx, int &nny, int &ns) {
+    nnx=nSubPixels*nPixelsX;
+    nny=nSubPixels*nPixelsY;
+    ns=nSubPixels;
+    return nSubPixels*nSubPixels*nPixelsX*nPixelsY;
+  };
   
   
   //create eta distribution, eta rebinnining etc.
@@ -53,10 +80,44 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
 #ifndef MYROOT1
   virtual int *getInterpolatedImage(){return hint;};
 #endif
+
+
+
+    
+  void *writeInterpolatedImage(const char * imgname) {
+    cout << "!" <<endl;
+    float *gm=NULL;
+    gm=new float[ nSubPixels*  nSubPixels* nPixelsX*nPixelsY];
+    if (gm) {
+      for (int ix=0; ix<nPixelsX*nSubPixels; ix++) {
+	for (int iy=0; iy<nPixelsY*nSubPixels; iy++) {
+	  gm[iy*nPixelsX*nSubPixels+ix]=hint[iy*nPixelsX*nSubPixels+ix];
+	}
+      }
+      WriteToTiff(gm, imgname,nSubPixels* nPixelsX ,nSubPixels* nPixelsY); 
+      delete [] gm;
+    } else cout << "Could not allocate float image " << endl;
+    return NULL;    
+  }
+  
+
+
+
+
+
+
+
+
+
+
+
   //return position inside the pixel for the given photon
   virtual void getInterpolatedPosition(int x, int y, double *data, double &int_x, double &int_y)=0;
   //return position inside the pixel for the given photon
   virtual void getInterpolatedPosition(int x, int y, double etax, double etay, int quad, double &int_x, double &int_y)=0;
+
+
+
 
 #ifdef MYROOT1
   TH2F *addToImage(double int_x, double int_y){hint->Fill(int_x, int_y); return hint;};
@@ -64,7 +125,7 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
 
 #ifndef MYROOT1
   virtual int *addToImage(double int_x, double int_y){ int iy=nSubPixels*int_y; int ix=nSubPixels*int_x; 
-    if (ix>=0 && ix<(nPixelsX*nSubPixels) && iy<(nSubPixels*nPixelsY) && iy>=0 )(*(hint+ix+iy*nPixelsX))+=1; 
+    if (ix>=0 && ix<(nPixelsX*nSubPixels) && iy<(nSubPixels*nPixelsY) && iy>=0 )(*(hint+ix+iy*nPixelsX*nSubPixels))+=1; 
     return hint;
   };
 #endif
@@ -75,10 +136,14 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
   
 #ifdef MYROOT1
   virtual TH2D *getFlatField(){return NULL;};
+  virtual TH2D *setFlatField(TH2D *h){return NULL;};
 #endif
 
 #ifndef MYROOT1
   virtual int *getFlatField(){return NULL;};
+  virtual int *setFlatField(int *h){return NULL;}; 
+  void *writeFlatField(const char * imgname){return NULL;};
+  void *readFlatField(const char * imgname, int nb=-1, double emin=1, double emax=0){return NULL;};
 #endif
 
   //virtual void Streamer(TBuffer &b);
@@ -165,39 +230,43 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
     if (totquad>0) {
       switch(corner) {
       case TOP_LEFT:
-	t = sDum[1][1] ;
+	t = sDum[1][1];
 	r = sDum[0][1] ;
-	toth=sDum[1][1]+sDum[1][0];
+	toth=sDum[0][1]+sDum[0][0];
 	totv=sDum[0][1]+sDum[1][1];
 	break;
       case TOP_RIGHT:
 	t = sDum[1][0] ;
 	r = sDum[0][1] ;
-	toth=sDum[0][0]+t;
-	totv=sDum[0][0]+r;
+	toth=sDum[0][1]+sDum[0][0];
+	totv=sDum[1][0]+sDum[0][0];
 	break;
       case BOTTOM_LEFT:
 	r = sDum[1][1] ;
 	t = sDum[1][1] ;
-	toth=sDum[1][0]+t;
-	totv=sDum[0][1]+r;
+	toth=sDum[1][0]+sDum[1][1];
+	totv=sDum[0][1]+sDum[1][1];
 	break;
       case BOTTOM_RIGHT:
 	t = sDum[1][0] ;
 	r = sDum[1][1] ;
-	toth=sDum[1][1]+t;
-	totv=sDum[0][1]+r;
+	toth=sDum[1][0]+sDum[1][1];
+	totv=sDum[1][0]+sDum[0][0];
 	break;
       default:
-	etax=-1;
-	etay=-1;
+	etax=-1000;
+	etay=-1000;
 	return 0;
       }
-      etax=r/totv;
-      etay=t/toth;
+      //etax=r/totquad;
+      //etay=t/totquad;
+      etax=r/toth;
+      etay=t/totv;
     }
     return 0;
   }
+
+ 
 
   static int calcEtaL(double *cl, double &etax, double &etay, double &sum, double &totquad, double sDum[2][2]) {
     int corner = calcQuad(cl,sum,totquad,sDum);
@@ -263,6 +332,7 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
 #ifndef MYROOT1
   int *hint;
 #endif
+  int id;
 
 };
 

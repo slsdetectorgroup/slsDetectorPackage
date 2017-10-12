@@ -9,6 +9,7 @@
 #endif
 
 #include "slsInterpolation.h"
+#include "tiffIO.h"
 
 class etaInterpolationBase : public slsInterpolation {
   
@@ -35,6 +36,38 @@ class etaInterpolationBase : public slsInterpolation {
     
   };
   
+ etaInterpolationBase(etaInterpolationBase *orig): slsInterpolation(orig){
+   nbeta=orig->nbeta;
+   etamin=orig->etamin;
+   etamax=orig->etamax;
+
+    etastep=(etamax-etamin)/nbeta;
+#ifdef MYROOT1
+    heta=(TH2D*)(orig->heta)->Clone("heta");
+    hhx=(TH2D*)(orig->hhx)->Clone("hhx");
+    hhy=(TH2D*)(orig->hhy)->Clone("hhy");
+#endif
+
+#ifndef MYROOT1
+    heta=new int[nbeta*nbeta];
+    memcpy(heta,orig->heta,nbeta*nbeta*sizeof(int));
+    hhx=new int[nbeta*nbeta];
+    memcpy(hhx,orig->hhx,nbeta*nbeta*sizeof(int));
+    hhy=new int[nbeta*nbeta];
+    memcpy(hhy,orig->hhy,nbeta*nbeta*sizeof(int));
+    
+#endif
+    
+
+ };
+  virtual etaInterpolationBase* Clone() {
+
+    return new etaInterpolationBase(this);
+
+  };
+
+
+
 #ifdef MYROOT1
   TH2D *setEta(TH2D *h, int nb=-1, double emin=1, double emax=0)
   {  
@@ -65,12 +98,74 @@ class etaInterpolationBase : public slsInterpolation {
     }
     return heta;
   };
+  
   int *getFlatField(){return setEta(NULL);};
+  
+  
+  
+  
+  void *writeFlatField(const char * imgname) {
+    float *gm=NULL;
+    gm=new float[nbeta*nbeta];
+    for (int ix=0; ix<nbeta; ix++) {
+      for (int iy=0; iy<nbeta; iy++) {
+	gm[iy*nbeta+ix]=heta[iy*nbeta+ix];
+      }
+    } 
+    WriteToTiff(gm, imgname, nbeta, nbeta);   
+    delete [] gm;
+    return NULL; 
+  };
+  
+  int readFlatField(const char * imgname, double emin=1, double emax=0) {
+    if (emax>=1) etamax=emax;
+    if (emin<=0) etamin=emin;   
+   
+    if (etamin>=etamax) {
+      etamin=-0.1;
+      etamax=1.1;
+    }
+    
+    etastep=(etamax-etamin)/nbeta;
+    uint32 nnx;
+    uint32 nny;
+    float *gm=ReadFromTiff(imgname, nnx, nny);
+    if (nnx!=nny) {
+      cout << "different number of bins in x " << nnx << "  and y " << nny<< " !"<< endl;
+      cout << "Aborting read"<< endl;
+      return NULL;
+    }
+    nbeta=nnx;
+    if (gm) {
+      if (heta) {
+	delete [] heta;
+	delete [] hhx;
+	delete [] hhy;
+      }
+      
+      heta=new int[nbeta*nbeta];
+      hhx=new int[nbeta*nbeta];
+      hhy=new int[nbeta*nbeta];
+      
+      for (int ix=0; ix<nbeta; ix++) {
+	for (int iy=0; iy<nbeta; iy++) {
+	  heta[iy*nbeta+ix]=gm[iy*nbeta+ix];
+	}
+      }
+      delete [] gm;
+      return 1;
+    }
+    return NULL;
+  };
+  
+    
+
+
 #endif
   
 
   
-virtual void prepareInterpolation(int &ok)=0;
+  virtual void prepareInterpolation(int &ok){};
  
   /* ////////////////////////////////////////////////////////////////////////////// */
 
@@ -125,7 +220,7 @@ int *gethhx()
 
     double xpos_eta,ypos_eta;
     double dX,dY;
-    double ex,ey;
+    int ex,ey;
     switch (corner)
       {
       case TOP_LEFT:
@@ -159,13 +254,13 @@ int *gethhx()
     ex=(etax-etamin)/etastep;
     ey=(etay-etamin)/etastep;
     if (ex<0) ex=0;
-    if (ex>=nSubPixels) ex=nSubPixels-1;
+    if (ex>=nbeta) ex=nbeta-1;
     if (ey<0) ey=0;
-    if (ey>=nSubPixels) ey=nSubPixels-1;
+    if (ey>=nbeta) ey=nbeta-1;
     
    
-    xpos_eta=(((double)hhx[(int)(ey*nbeta+ex)]))/((double)nSubPixels);
-    ypos_eta=(((double)hhy[(int)(ey*nbeta+ex)]))/((double)nSubPixels);
+    xpos_eta=(((double)hhx[(ey*nbeta+ex)]))/((double)nSubPixels);
+    ypos_eta=(((double)hhy[(ey*nbeta+ex)]))/((double)nSubPixels);
       //else
       //return 0;
 
@@ -173,6 +268,7 @@ int *gethhx()
     
     int_x=((double)x) + 0.5*dX + xpos_eta;
     int_y=((double)y) + 0.5*dY + ypos_eta;
+    //   cout << etax << " " << ex << " " << etay << " " << ey << " " << xpos_eta << " " << int_x << " " << ypos_eta << " " << int_y << endl;
     //return 1;
 
   }
@@ -205,11 +301,12 @@ int *gethhx()
     ey=(eta3y-etamin)/etastep;
     
     if (ex<0) ex=0;
-    if (ex>=nSubPixels) ex=nSubPixels-1;
+    if (ex>=nbeta) ex=nbeta-1;
     if (ey<0) ey=0;
-    if (ey>=nSubPixels) ey=nSubPixels-1;
-      xpos_eta=(((double)hhx[(int)(ey*nbeta+ex)]))/((double)nSubPixels);
-      ypos_eta=(((double)hhy[(int)(ey*nbeta+ex)]))/((double)nSubPixels);
+    if (ey>=nbeta) ey=nbeta-1;
+
+    xpos_eta=(((double)hhx[(int)(ey*nbeta+ex)]))/((double)nSubPixels);
+    ypos_eta=(((double)hhy[(int)(ey*nbeta+ex)]))/((double)nSubPixels);
 #endif
     
     int_x=((double)x) + xpos_eta;
@@ -246,6 +343,7 @@ int *gethhx()
 #ifndef MYROOT1
     ex=(etax-etamin)/etastep;
     ey=(etay-etamin)/etastep;
+    // cout << etax << " " << ex << " " << etay << " " << ey << " " << ey*nbeta+ex << endl;
     if (ey<nbeta && ex<nbeta && ex>=0 && ey>=0)
       heta[ey*nbeta+ex]++;    
 #endif

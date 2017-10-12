@@ -2,16 +2,24 @@
 #define ETA_INTERPOLATION_POSXY_H
 
 
+#include "tiffIO.h"
 #include "etaInterpolationBase.h"
 
 class etaInterpolationPosXY : public etaInterpolationBase{
  public:
  etaInterpolationPosXY(int nx=400, int ny=400, int ns=25, int nb=-1, double emin=1, double emax=0) : etaInterpolationBase(nx,ny,ns, nb, emin,emax){};
-  
 
+ etaInterpolationPosXY(etaInterpolationPosXY *orig): etaInterpolationBase(orig){};
+
+  virtual etaInterpolationPosXY* Clone() {
+
+    return new etaInterpolationPosXY(this);
+
+  };
 
   virtual void prepareInterpolation(int &ok)
   {
+    cout <<"?"<< endl;
    ok=1;  
 #ifdef MYROOT1   
    if (hhx) delete hhx;
@@ -40,7 +48,6 @@ class etaInterpolationPosXY : public etaInterpolationBase{
    double hix[nbeta]; //integral of projection x
    double hiy[nbeta]; //integral of projection y
    int ii=0;
-  
    for (int ib=0; ib<nbeta; ib++) {
 
      tot_eta_x=0;
@@ -58,7 +65,7 @@ class etaInterpolationPosXY : public etaInterpolationBase{
 
      for (int iby=1; iby<nbeta; iby++) {
        hix[iby]=hix[iby-1]+hx[iby];
-       hiy[iby]=hiy[iby-1]+hx[iby];
+       hiy[iby]=hiy[iby-1]+hy[iby];
      }
 
      ii=0;
@@ -90,8 +97,32 @@ class etaInterpolationPosXY : public etaInterpolationBase{
 
      
    }
-  
-   return ;
+
+#ifdef SAVE_ALL
+   char tit[10000];
+   
+  float *etah=new float[nbeta*nbeta];
+  int etabins=nbeta;
+
+  for (int ii=0; ii<etabins*etabins; ii++) {
+    etah[ii]=hhx[ii];
+  }
+  sprintf(tit,"/scratch/eta_hhx_%d.tiff",id);
+  WriteToTiff(etah, tit, etabins, etabins);
+	  
+  for (int ii=0; ii<etabins*etabins; ii++) {
+    etah[ii]=hhy[ii];
+  }
+  sprintf(tit,"/scratch/eta_hhy_%d.tiff",id);
+  WriteToTiff(etah, tit, etabins, etabins);
+	  
+  for (int ii=0; ii<etabins*etabins; ii++) {
+    etah[ii]=heta[ii];
+  }
+  sprintf(tit,"/scratch/eta_%d.tiff",id);
+  WriteToTiff(etah, tit, etabins, etabins);
+#endif	  
+  return ;
   }
 
 };

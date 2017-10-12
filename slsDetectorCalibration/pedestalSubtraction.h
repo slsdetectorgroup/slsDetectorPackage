@@ -37,10 +37,19 @@ class pedestalSubtraction  {
       \param i number of elements for the moving average. If -1 (default) or negative, gets.
       \returns actual number of samples for the moving average
     */
-    virtual int SetNPedestals(int i=-1) {if (i>0) stat.SetN(i); return stat.GetN();};
+    virtual int SetNPedestals(int i=-1) {return stat.SetN(i);};
+
+  /**sets/gets the number of samples for the moving average
+      \returns actual number of samples for the moving average
+    */
+    virtual int GetNPedestals() {return stat.GetN();};
     
     /** sets the moving average */
-    virtual void setPedestal(double val, double rms=0) {stat.Set(val, rms);}
+    virtual void setPedestal(double val, double rms=0, int m=-1) {stat.Set(val, rms, m);}
+
+  
+    /** sets the moving average */
+    virtual void setPedestalRMS(double rms) {stat.SetRMS(rms);}
 
   
   

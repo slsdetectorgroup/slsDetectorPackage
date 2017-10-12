@@ -29,28 +29,41 @@ class MovingStat
 	/**
 	   clears the moving average number of samples parameter, mean and standard deviation
 	*/
-        void Set(double val, double rms=0)
+        void Set(double val, double rms=0, int m=-1)
         {
-	  m_n = n; 
-	  m_newM=val*n; 
-	  if (rms<=0)
-	    m_newM2=val*val*n;
-	  else
-	    m_newM2=(n*rms*rms+m_newM*m_newM/n);
+	  if (m>=0) m_n = m;  else m_n = n; 
+	  m_newM=val*m_n; 
+	  SetRMS(rms);
         }
-	
+		/**
+	   clears the moving average number of samples parameter, mean and standard deviation
+	*/
+        void SetRMS(double rms)
+        {
+	  if (rms<=0) {
+	    m_newM2=m_newM*m_newM/n;
+	    m_n=0;
+	  } else {
+	    if (m_n>0)
+	      m_newM2=(m_n*rms*rms+m_newM*m_newM/m_n);
+	    else {
+	      m_newM2=(m_n*rms*rms+m_newM*m_newM/n);
+	      m_n=0;
+	    }
+	  }
+        }
 	
 	/** sets number of samples parameter
 	    \param i number of samples  parameter to be set 
 	*/
 	
-	void SetN(int i) {if (i>=1) n=i;};
+	int SetN(int i) {if (i>=1) n=i; return n;};
 	
 	/** 
 	    gets number of samples  parameter
 	    \returns actual number of samples   parameter
 	*/
-	int GetN() {return n;};
+	int GetN() {return m_n;};
 		
 	/** calculates the moving average i.e. adds if number of elements is lower than number of samples parameter, pushes otherwise
 	   \param x value to calculate the moving average

@@ -46,10 +46,50 @@ class interpolatingDetector : public singlePhotonDetector {
 		       commonModeSubtraction *cm=NULL,
 		       int nped=1000, 
 		       int nd=100, int nnx=-1, int nny=-1) : 
-  singlePhotonDetector(d, 3,nsigma,sign, cm, nped, nd, nnx, nny) , interp(inte)  {};
+  singlePhotonDetector(d, 3,nsigma,sign, cm, nped, nd, nnx, nny) , interp(inte), id(0)  {};
   
   
   
+ interpolatingDetector(interpolatingDetector *orig) : singlePhotonDetector(orig) {
+    interp=(orig->interp)->Clone();
+    id=orig->id;
+  }
+
+
+  virtual interpolatingDetector *Clone() {
+    return new interpolatingDetector(this);
+  }
+
+  virtual int setId(int i) {id=i; interp->setId(id); return id;};
+
+  virtual void prepareInterpolation(int &ok) {
+    cout << "*"<< endl;
+#ifdef SAVE_ALL
+    char tit[1000];
+    sprintf(tit,"/scratch/ped_%d.tiff",id);
+    writePedestals(tit);
+    sprintf(tit,"/scratch/ped_rms_%d.tiff",id);
+    writePedestalRMS(tit);
+    if (gmap) {
+      sprintf(tit,"/scratch/gmap_%d.tiff",id);
+      writeGainMap(tit);
+    }
+#endif
+    interp->prepareInterpolation(ok);
+  } 
+
+  int getImageSize(int &nnx, int &nny, int &ns) {return interp->getImageSize(nnx, nny, ns);};
+  #ifdef MYROOT1
+  virtual TH2F *getInterpolatedImage()
+#endif
+#ifndef MYROOT1
+  virtual int *getInterpolatedImage()
+#endif
+ {  
+   if (interp)
+     return interp->getInterpolatedImage();
+ }
+
 #ifdef MYROOT1
   virtual TH2F *addToInterpolatedImage(char *data, single_photon_hit *clusters, int &nph)
 #endif
@@ -79,13 +119,23 @@ class interpolatingDetector : public singlePhotonDetector {
       return NULL;
   };
   
+   void *writeInterpolatedImage(const char * imgname) {    
+     cout << id << "=" << imgname<< endl;
+     interp->writeInterpolatedImage(imgname);  
+     return NULL;
+   }
   
   
-  
-  int addFrame(char *data, single_photon_hit *clusters, int ff=0) {
+  int addFrame(char *data, single_photon_hit *clusters=NULL, int ff=0) {
     
     
-    
+    single_photon_hit *cl;
+    single_photon_hit clust;
+    if (clusters)
+      cl=clusters;
+    else
+      cl=&clust;
+
     double int_x,int_y, eta_x, eta_y;
     int nph=0;
     double val[ny][nx];
@@ -118,8 +168,8 @@ class interpolatingDetector : public singlePhotonDetector {
       
       
       
-      
-	(clusters+nph)->rms=getPedestalRMS(ix,iy);
+	cl->rms=getPedestalRMS(ix,iy);
+	//(clusters+nph)->rms=getPedestalRMS(ix,iy);
 
 	//	cout << iframe << " " << nph << " " << ix << " " << iy << endl;
 	
@@ -147,7 +197,7 @@ class interpolatingDetector : public singlePhotonDetector {
 	    v=&(val[iy+ir][ix+ic]);
 	
 	    if (ir==0 && ic==0) {
-	      if (*v<-nSigma*(clusters+nph)->rms) {
+	      if (*v<-nSigma*cl->rms) {
 		eventMask[iy][ix]=NEGATIVE_PEDESTAL;
 		//	cout << "neg ped" << endl;
 	      }
@@ -173,74 +223,79 @@ class interpolatingDetector : public singlePhotonDetector {
       }
 	
 	if (bl>=br && bl>=tl && bl>=tr) {
-	  (clusters+nph)->quad=BOTTOM_LEFT;
-	  (clusters+nph)->quadTot=bl;
+	  cl->quad=BOTTOM_LEFT;
+	  cl->quadTot=bl;
 	  xoff=0;
 	  yoff=0;
 	} else if (br>=bl && br>=tl && br>=tr) {
-	  (clusters+nph)->quad=BOTTOM_RIGHT;
-	  (clusters+nph)->quadTot=br;
+	  cl->quad=BOTTOM_RIGHT;
+	  cl->quadTot=br;
 	  xoff=1;
 	  yoff=0;
 	} else if (tl>=br && tl>=bl && tl>=tr) {
-	  (clusters+nph)->quad=TOP_LEFT;
-	  (clusters+nph)->quadTot=tl;
+	  cl->quad=TOP_LEFT;
+	  cl->quadTot=tl;
 	  xoff=0;
 	  yoff=1;
 	} else if   (tr>=bl && tr>=tl && tr>=br) {
-	  (clusters+nph)->quad=TOP_RIGHT;
-	  (clusters+nph)->quadTot=tr;
+	  cl->quad=TOP_RIGHT;
+	  cl->quadTot=tr;
 	  xoff=1;
 	  yoff=1;
 	} 
 	
-	if (max>nSigma*(clusters+nph)->rms || tot>sqrt(clusterSizeY*clusterSize)*nSigma*(clusters+nph)->rms || ((clusters+nph)->quadTot)>sqrt(cy*cs)*nSigma*(clusters+nph)->rms) {
+	if (max>nSigma*cl->rms || tot>sqrt(clusterSizeY*clusterSize)*nSigma*cl->rms || (cl->quadTot)>sqrt(cy*cs)*nSigma*cl->rms) {
 	  if (val[iy][ix]>=max) {
 	    // cout << "max" << endl;
 	    eventMask[iy][ix]=PHOTON_MAX;
-	    (clusters+nph)->tot=tot;
-	    (clusters+nph)->x=ix;
-	    (clusters+nph)->y=iy;
-	    (clusters+nph)->ped=getPedestal(ix,iy, 0);
+	    cl->tot=tot;
+	    cl->x=ix;
+	    cl->y=iy;
+	    cl->ped=getPedestal(ix,iy, 0);
 	    //	  cout << iframe << " " << ix  << " " << iy << " "<< (clusters+nph)->tot << " " << (clusters+nph)->quadTot << " " << (clusters+nph)->ped<< " " << (clusters+nph)->rms << endl; 
 	    for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
 	      for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
 		if ((iy+ir)>=0 && (iy+ir)<ny && (ix+ic)>=0 && (ix+ic)<nx) {
-		  (clusters+nph)->set_data(val[iy+ir][ix+ic],ic,ir);
-		  cout << val[iy+ir][ix+ic] << " " ;
+		  cl->set_data(val[iy+ir][ix+ic],ic,ir);
+		  
+		    
+		  //  cout << val[iy+ir][ix+ic] << " " ;
 		}
 	      }
-	      cout << endl << " " ;
+	      //   cout << endl << " " ;
 	    }
 	    
-	     cout << endl << " " ;
+	    // cout << endl << " " ;
 	    
-	  cc[0][0]=(clusters+nph)->get_data(-1+xoff,-1+yoff);
-	  cc[1][0]=(clusters+nph)->get_data(-1+xoff,0+yoff);
-	  cc[0][1]=(clusters+nph)->get_data(0+xoff,-1+yoff);
-	  cc[1][1]=(clusters+nph)->get_data(0+xoff,0+yoff);
+	  cc[0][0]=cl->get_data(-1+xoff,-1+yoff);
+	  cc[1][0]=cl->get_data(-1+xoff,0+yoff);
+	  cc[0][1]=cl->get_data(0+xoff,-1+yoff);
+	  cc[1][1]=cl->get_data(0+xoff,0+yoff);
 	  
-	  cout << cc[0][0] << " " << cc[0][1] << endl;
-	  cout << cc[1][0] << " " << cc[1][1] << endl;
+	  //  cout << cc[0][0] << " " << cc[0][1] << endl;
+	  // cout << cc[1][0] << " " << cc[1][1] << endl;
 	  
 
-	  cout << endl << " " ;
+	  // cout << endl << " " ;
 	  
 	if (interp) {
-	  interp->calcEta((clusters+nph)->quadTot,cc,eta_x, eta_y);
-	  cout << eta_x << " " << eta_y << endl;
-	  cout << "**************************************************************************"<< endl;
+	  //interp->calcEta((clusters+nph)->quadTot,cc,eta_x, eta_y);
+	  interp->calcEtaL(cl->quadTot,cl->quad,cc,eta_x, eta_y);
+	  // cout << eta_x << " " << eta_y << endl;
 	  // cout << "eta" << endl;
 	  if (ff) {
 	    interp->addToFlatField(eta_x,eta_y);
+	    // cout << "**************************************************************************"<< endl;
 	  } else {
 	    //   cout << "interp" << endl;
-	    interp->getInterpolatedPosition(ix,iy,eta_x,eta_y,(clusters+nph)->quad,int_x,int_y);
+	    interp->getInterpolatedPosition(ix,iy,eta_x,eta_y,cl->quad,int_x,int_y);
 	    // cout << "add" << endl;
 	    interp->addToImage(int_x, int_y);
 	  }
 	  // cout << "done" << endl;
 	}	      
+	if (clusters) 	  cl=(clusters+nph);	  
+	
 	nph++;
 	  } else {
 	    //   cout << "ph" << endl;
@@ -259,12 +314,25 @@ class interpolatingDetector : public singlePhotonDetector {
   };
 
   
+    virtual void processData(char *data, frameMode i=eFrame, int *val=NULL) {
+      switch(i) {
+      case ePedestal:
+	addToPedestal(data);
+	break;
+      case eFlat:
+	addFrame(data,NULL,1);
+	break;
+      default:
+	 addFrame(data);
+      }
+    };
+
   
  protected:
   
   
   slsInterpolation *interp;
-
+  int id;
 };
 
 

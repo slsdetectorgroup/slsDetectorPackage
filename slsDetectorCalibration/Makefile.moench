@@ -13,8 +13,8 @@ all: moench03OnTheFlyAnalysis
 
 
 
-moench03OnTheFlyAnalysis:  $(MAIN)  $(INCS)
-			   g++ -o moench03OnTheFlyAnalysis  $(MAIN)  -lm -ltiff -lstdc++ $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)
+moench03OnTheFlyAnalysis:  $(MAIN)  $(INCS) clean
+			   g++ -o moench03OnTheFlyAnalysis  $(MAIN)  -lm -ltiff -lstdc++ $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL
 
 clean:
 	rm -f moench03OnTheFlyAnalysis

@@ -11,12 +11,20 @@ class linearInterpolation : public slsInterpolation{
 
  public:
  linearInterpolation(int nx=400, int ny=400, int ns=25) : slsInterpolation(nx,ny,ns) {};
- 
+  linearInterpolation(linearInterpolation *orig) : slsInterpolation(orig) {};
+
   virtual void prepareInterpolation(int &ok){ok=1;};
+
+  virtual linearInterpolation* Clone() {
+
+    return new linearInterpolation(this);
+
+  };
+
 
    //////////////////////////////////////////////////////////////////////////////
   //////////// /*It return position hit for the event in input */ //////////////
-  virtual void getInterpolatedPosition(Int_t x, Int_t y, double *data, double &int_x, double &int_y)
+  virtual void getInterpolatedPosition(int x, int y, double *data, double &int_x, double &int_y)
   {
     double sDum[2][2];
     double tot, totquad;
@@ -30,9 +38,9 @@ class linearInterpolation : public slsInterpolation{
     
     return;
   };
+  
 
-
-  virtual void getInterpolatedPosition(Int_t x, Int_t y, double etax, double etay, int corner, double &int_x, double &int_y)
+  virtual void getInterpolatedPosition(int x, int y, double etax, double etay, int corner, double &int_x, double &int_y)
   {
    
     double xpos_eta,ypos_eta;
@@ -77,7 +85,7 @@ class linearInterpolation : public slsInterpolation{
 
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
-  virtual void getPositionETA3(Int_t x, Int_t y, double *data, double &int_x, double &int_y)
+  virtual void getPositionETA3(int x, int y, double *data, double &int_x, double &int_y)
    {
     double sDum[2][2];
     double tot, totquad;

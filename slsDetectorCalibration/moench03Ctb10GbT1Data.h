@@ -188,6 +188,13 @@ class moench03Ctb10GbT1Data : public slsReceiverData<uint16_t> {
 
   virtual char *readNextFrame(ifstream &filebin, int& ff, int &np) {
 	  char *data=new char[packetSize*nPackets];
+	  char *d=readNextFrame(filebin, ff, np, data);
+	  if (d==NULL) {delete [] data; data=NULL;}
+	  return data;
+
+  }
+
+  virtual char *readNextFrame(ifstream &filebin, int& ff, int &np, char *data) {
 	  char *retval=0;
 	  int  nd;
 	  int fnum = -1;
@@ -215,7 +222,7 @@ class moench03Ctb10GbT1Data : public slsReceiverData<uint16_t> {
 		if (getFrameNumber(packet) !=fnum) { 
 		  
 		  if (np==0){
-		    delete [] data;
+		    // delete [] data;
 		    return NULL;
 		  } else
 		    filebin.seekg(-8208,ios_base::cur);
@@ -240,7 +247,7 @@ class moench03Ctb10GbT1Data : public slsReceiverData<uint16_t> {
 	  }
 
 	  if (np==0){
-	    delete [] data;
+	    // delete [] data;
 	    return NULL;
 	  }
 
@@ -248,6 +255,23 @@ class moench03Ctb10GbT1Data : public slsReceiverData<uint16_t> {
 	  return data;
 	  
   };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 int getPacketNumber(int x, int y) {return dataMap[y][x]/8208;};
 

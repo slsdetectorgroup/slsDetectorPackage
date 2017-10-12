@@ -32,13 +32,13 @@ void *WriteToTiff(float * imgData, const char * imgname, int nrow, int ncol){
   int sampleperpixel=1;
   // unsigned char * buff=NULL;
   tsize_t linebytes;
-
+ cout << "--" <<endl;
   TIFF * tif = TIFFOpen(imgname,"w");
   if (tif) {
     TIFFSetField(tif,TIFFTAG_IMAGEWIDTH,ncol);
     TIFFSetField(tif, TIFFTAG_IMAGELENGTH, nrow);
     TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL,sampleperpixel);
-    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, sizeof(float)*8);
+    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 32);
     TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_BOTLEFT); 
     TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
     TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);

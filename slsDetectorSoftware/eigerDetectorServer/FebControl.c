@@ -1199,7 +1199,7 @@ int Feb_Control_SetStaticBits(){
 		//program=1,m4=2,m8=4,test=8,rotest=16,cs_bar_left=32,cs_bar_right=64
 		if(!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_STATIC_BITS,Feb_Control_staticBits,0,0) ||
 				!Feb_Control_SetCommandRegister(DAQ_SET_STATIC_BIT) ||
-				(Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATIC_IDLE)){
+				(Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)){
 			cprintf(RED,"Warning: Could not set static bits\n");
 			return 0;
 		}

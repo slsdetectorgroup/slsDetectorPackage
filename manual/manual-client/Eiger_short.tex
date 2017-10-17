@@ -59,7 +59,7 @@ The directory contains some executables that are needed to make your detector to
 ./waterflow #returns the current waterflow returned by the flowmeter
 ./temp #returns the water temperature returned by the flowmeter
  \end{verbatim}
-A watchdog is running on bchip100 to check for the flow and temparature. If outside of parameters ( flow$<$ 80 dl/min, temperature $\neq$21$\pm$2), the detector will be switched off. 
+A watchdog is running on bchip100 to check for the flow and temperature. If outside of parameters ( flow$<$ 80 dl/min, temperature $\neq$21$\pm$2), the detector will be switched off. 
 Here is an explanation of the LED color scheme of the bchip100: 
 \begin{itemize}
 \item NO LED  Main Power off or Blackfin not ready, yet.
@@ -152,7 +152,7 @@ Other important settings that are configured in the {\tt{setup.det}} file are:
 \item {\tt{tengiga 0/1}}, which sets whether the detector is enabled to send data through the 1~or the 10~Gb Ethernet.
 \item {\tt{flags parallel/nonparallel}}, which sets whether the detector is set in parallel acquisition and readout or in sequential mode. This changes the readout time of the chip and affects the frame rate capability (faster is {\tt{parallel}}, with higher noise but needed when the frame rate is $>2$~kHz. 
 \item {\tt{dr 32/16}} sets the detector in autosumming mode (32 bit counter or not autosumming, 12 bit out of the chip). This is strictly connected to what is required for the readout clock of chip. See next point.
-\item {\tt{clkdivider 0/1/2}}. Changes the readout clock: 200, 100, 50~MHz (also referrered to as full, half, quarter speed). Note that autosumming mode ({\tt{dr 32}} only works at {clkdivider 2}=quarter speed). By selecting Refer to readout timing specifications in~section\ref{timing} for how to set the detector. 
+\item {\tt{clkdivider 0/1/2}}. Changes the readout clock: 200, 100, 50~MHz (also referred to as full, half, quarter speed). Note that autosumming mode ({\tt{dr 32}} only works at {clkdivider 2}=quarter speed). By selecting Refer to readout timing specifications in~section\ref{timing} for how to set the detector. 
 \item {\tt{flags continuous/storeinram}}. Allows to take frame continuously or storing them on memory. Normally {\tt{continuous}} should be used. Enabling the  {\tt{stroreinram}} mode allows you to obtain the maximum frame rate, but at the expenses to have to receive the data all at the end of the acquisition. Refer to readout timing specifications in section~\ref{timing} for how to set the detector.
 \end{itemize}
 
@@ -257,21 +257,21 @@ The configuration of this timing variables allows to achieve different frame rat
 
 In the case of REAL CONTINUOUS readout, i.e. continuous acquire and readout from the boards (independent on how the chip is set), the continuous frame rates are listed in table~\ref{tcont}:
 \begin{table} 
-\begin{tabular}{|c|c|c|}
+\begin{tabular}{|c|c|c|c|}
 \hline
-GbE & dynamic range & continuos maximum frame rate(Hz)\\
+GbE & dynamic range & continuos maximum frame rate(Hz) & minimum period ($\mu$s)\\
 \hline
-1 & 16 &  \textbf{256}\\ 
+1 & 16 &  \textbf{256} & 3901\\ 
 \hline 
-1 &  32 &  \textbf{128}\\
+1 &  32 &  \textbf{128} & 7820\\
 \hline 
-10 & 16 & \textbf{2560}\\  
+10 & 16 & \textbf{2560} & 391\\  
 \hline 
-10 & 32 & \textbf{1280}\\  
+10 & 32 & \textbf{1280}& 782\\  
 \hline 
-10 & 8 & \textbf{5120}\\
+10 & 8 & \textbf{5120} & 196\\
 \hline
-10 & 4 & \textbf{10240}\\
+10 & 4 & \textbf{10240} & 98\\
 \hline
 \end{tabular}
 \caption{Frame rate limits for the CONTINUOS streming out of images.} 
@@ -300,41 +300,42 @@ The maximum frame rate achievable with 10~GbE, {\tt{dr 16}}, {\tt{flags continuo
 In table~\ref{tframes} is a list of all the readout times in the different configurations:
 \begin{tiny}
 \begin{table}
+\begin{flushleft}
 \begin{tabular}{|c|c|c|c|c|c|c|c|}
 \hline
-\tiny{dr} & \tiny{clkdivider} & \tiny{mode} & \tiny{readout t($\mu$s)} & \tiny{max frame rate (kHz)} & \tiny{max exptime ($\mu$s)} & \tiny{min period ($\mu$s)} & \tiny{max images}\\
+\tiny{dr} & \tiny{clkdivider} & \tiny{flags} & \tiny{readout t($\mu$s)} & \tiny{max frame rate (kHz)} & \tiny{max exptime ($\mu$s)} & \tiny{min period ($\mu$s)} & \tiny{max imgs (nominal/our network)}\\
 \hline
-4 & 0 & parallel & 3.4 & 22 &  40 & 44 & 50k\\
+4 & 0 & parallel & 3.4 & 22 &  40 & 44 & 30k/50k\\
 \hline
-4 & 0 & nonparallel & 44 & 21 &  3 & 49 & 50k\\
+4 & 0 & nonparallel & 44 & 21 &  3 & 49 & 30k/50k\\
 \hline
-4 & 1 & parallel & 6 & 10.5 &  85 & 92 & 100k\\
+4 & 1 & parallel & 6 & 10.5 &  85 & 92 & 30k/100k\\
 \hline
-4 & 1 & nonparallel & 88.7 & 10.5 & 3 & 93 & 100k\\
+4 & 1 & nonparallel & 88.7 & 10.5 & 3 & 93 & 30k/100k\\
 \hline
 4 & 2 & parallel & 11.2 & 5.4 &  185 & 197 & infinite\\
 \hline
 4 & 2 & nonparallel & 176.5 & 5.4 &  3 & 180 & infinite\\
 \hline
 \hline
-8 & 0 & parallel & 3.4 & 11.1 &  85 & 89 & 24k\\
+8 & 0 & parallel & 3.4 & 11.1 &  85 & 89 & 15k/24k\\
 \hline
-8 & 0 & nonparallel & 85.7 & 11.1 & 3 & 91 & 24k\\
+8 & 0 & nonparallel & 85.7 & 11.1 & 3 & 91 & 15k/24k\\
 \hline
-8 & 1 & parallel & 6.1 & 5.7 &  174 & 181 & 52k\\
+8 & 1 & parallel & 6.1 & 5.7 &  174 & 181 & 15k/52k\\
 \hline
-8 & 1 & nonparallel & 170.5 & 5.7 &  3 & 175 & 52k\\
+8 & 1 & nonparallel & 170.5 & 5.7 &  3 & 175 & 15k/52k\\
 \hline
 8 & 2 & parallel & 11.2 &  2.9 &  330 & 342 & infinite\\
 \hline
 8 & 2 & nonparallel & 340.3 &  2.9 &  3 & 344 & infinite\\
 \hline
 \hline
-16 & 0 & parallel & 3.4 & 6 & 164 & 168 & 12k\\
+16 & 0 & parallel & 3.4 & 6 & 164 & 168 & 8k/12k\\
 \hline
-16 & 0 & nonparallel &  126 & 3.4& 164 & 295 & 23k\\
+16 & 0 & nonparallel &  126 & 3.4& 164 & 295 & 8k/23k\\
 \hline
-16 & 1 & parallel &  6.1 & 2.9&  339 & 346 & 28k\\
+16 & 1 & parallel &  6.1 & 2.9&  339 & 346 & 8k/28k\\
 \hline
 16 & 1 & nonparallel & 255 & 1.7&  339 & 592 & infinite\\
 \hline
@@ -348,8 +349,9 @@ In table~\ref{tframes} is a list of all the readout times in the different confi
 32 & 2 & nonparallel & 504 & $<2$&  & &\\
 \hline
 \end{tabular}
-\caption{Readout settings. The {\tiny{min exptime}} possible is 3$-$5~$\mu$s.}
+\caption{Readout settings. The {\tiny{min exptime}} possible is 5$-$10~$\mu$s. This is due to the time to pass the pixel enable signal in the whole chip.}
 \label{tframes}
+\end{flushleft}
 \end{table}
 \end{tiny}
 \textbf{As if you run too fast, the detector could become noisier, it is important to match the detector settings to your frame rate. This can be done having more parameters files and load the one suitable with your experiment.} We experienced that {\tt{highgain}} settings could not be used at 6~kHz.
@@ -414,6 +416,28 @@ sls_detector_put 0-ratecorr -1
 \end{verbatim}
 
 Every time either the rate corrections are activated, $\tau$ is changed or the subframe length is changed, then a new correction table is evaluated. Note that computing the correction table is time consuming. 
+
+\section{Dependent parameters and limits}
+Here is a list of dependent parameters:
+\begin{enumerate}
+\item \textbf{dr} changes \textbf{clkdivider}: \textbf{dr} 16 $\to$  \textbf{clkdivider} 1. You can change it to (0, 1, 2); the frame rate changes accordingly to table~\ref{tframes}. Setting the \textbf{dr} to 32 changes \textbf{clkdivider} to 2. Only way  \textbf{dr} 32 can work. 
+\end{enumerate}
+
+Here is a list of "ignored'' parameters, meaning that if the parameters are not what the detector expects, it will ignore them, but there is no guarantee that you get what you think you are asking: 
+\begin{enumerate}
+\item \textbf{period}. Assuming that you set the correct \textbf{exptime} according to the table~\ref{tframes}, the \textbf{period} to be used by the detector has to be $>=$ \textbf{exptime}+readout time (table~\ref{tframes}). Otherwise the detector will take data at the minimum possible period, which is \textbf{exptime}+readout times. \textbf{period} is not changed by the detector after the acquisition. 
+\end{enumerate}
+
+Here is a list of limits that should be checked:
+\begin{enumerate}
+\item 
+If \textbf{dr} is 32 and \textbf{clkdivider} is not 2, whatever the detector gets out is wrong (the boards cannot properly keep up) 
+\item If the variable \textbf{frames} is greater than what the memory can store (table~\ref{timgs}) and the frame rate exceed the continuos streeming (table~\ref{tcont}), limits on the maximum number of images need to be implemented if the period is lower than the one listed in table~\ref{tcont}. Check table~\ref{tframes} to see the different cases.
+\item Running at a speed that does not support the frame rate you are asking: see table~\ref{tframes} to check if the frame rate (\textbf{period}) you are asking is compatible with the \textbf{clkdivider} you are asking.
+\item Running at a redout time that does not support the frame rate you are asking. Check table~\ref{tframes} to check if the frame rate (\textbf{period}) you are asking is compatible with the \textbf{flags} you are asking.
+\item The minimum allowed value for \textbf{epttime} should be 10~$\mu$s. 
+\item By default the {\textbf{subexptime}} is set to 2.621440~ms. Values smaller than 500~$\mu$s do not make sense. The maximum value is 5.2~s. This limits should be checked.
+\end{enumerate}
 
 \section{Client checks - command line}
 
@@ -613,7 +637,12 @@ To activate back a module, do:
 \end{itemize}
 \subsection{Setting up 10Gb correctly: experience so far}
 
-For configuring well the 10Gb card not to loose packets, as root, do:
+For configuring well the 10Gb card not to loose packets, 
+\begin{itemize}
+\item MTU must be set up to 9000 (jumbo frames) on all the involved sides: detector, switch, server NIC
+\item you should set up static MAC address tables with separated VLANs
+\end{itemize}
+As root, also do:
 \begin{verbatim}
  ethtool -G xth1 rx 4096, ethtool -C xth1 rx-usecs 100 
 \end{verbatim}

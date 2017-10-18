@@ -131,6 +131,21 @@ void UDPStandardImplementation::setFileFormat(const fileFormat f){
 }
 
 
+void UDPStandardImplementation::setFileWriteEnable(const bool b){
+
+	if (fileWriteEnable != b){
+		fileWriteEnable = b;
+		for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
+				dataProcessor[i]->SetupFileWriter(fileWriteEnable, (int*)numDet, fileName, filePath, &fileIndex,
+					&overwriteEnable, &detID, &numThreads, &numberOfFrames, &dynamicRange, &udpPortNum[i], generalData);
+		}
+	}
+
+	FILE_LOG(logINFO) << "File Write Enable: " << stringEnable(fileWriteEnable);
+}
+
+
+
 
 int UDPStandardImplementation::setShortFrameEnable(const int i) {
 	if (myDetectorType != GOTTHARD) {
@@ -335,7 +350,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	for ( int i=0; i < numThreads; ++i ) {
 		listener.push_back(new Listener(myDetectorType, fifo[i], &status, &udpPortNum[i], eth, &activated, &numberOfFrames, &dynamicRange));
 		dataProcessor.push_back(new DataProcessor(fifo[i], &fileFormatType,
-				&fileWriteEnable, &dataStreamEnable, &frameToGuiFrequency, &frameToGuiTimerinMS,
+				fileWriteEnable, &dataStreamEnable, &frameToGuiFrequency, &frameToGuiTimerinMS,
 				rawDataReadyCallBack,pRawDataReady));
 		if (Listener::GetErrorMask() || DataProcessor::GetErrorMask()) {
 			FILE_LOG (logERROR) << "Error: Could not creates listener/dataprocessor threads (index:" << i << ")";
@@ -369,7 +384,7 @@ void UDPStandardImplementation::setDetectorPositionId(const int i){
 	detID = i;
 	FILE_LOG(logINFO) << "Detector Position Id:" << detID;
 	for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
-		dataProcessor[i]->SetupFileWriter((int*)numDet, fileName, filePath, &fileIndex,
+		dataProcessor[i]->SetupFileWriter(fileWriteEnable(int*)numDet, fileName, filePath, &fileIndex,
 									&overwriteEnable, &detID, &numThreads, &numberOfFrames, &dynamicRange, &udpPortNum[i], generalData);
 	}
 }

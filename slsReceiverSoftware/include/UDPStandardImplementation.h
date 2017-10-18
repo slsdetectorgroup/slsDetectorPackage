@@ -60,6 +60,12 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	void setFileFormat(slsReceiverDefs::fileFormat f);
 
 	/**
+	 * Set File Write Enable
+	 * @param b true for file write enable, else false
+	 */
+	void setFileWriteEnable(const bool b);
+
+	/**
 	 * Set Short Frame Enabled, later will be moved to getROI (so far only for gotthard)
 	 * @param i index of adc enabled, else -1 if all enabled
 	 * @return OK or FAIL

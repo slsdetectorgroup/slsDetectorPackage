@@ -31,7 +31,7 @@ uint64_t DataProcessor::RunningMask(0x0);
 pthread_mutex_t DataProcessor::Mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* dsEnable,
+DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool fwenable, bool* dsEnable,
 		uint32_t* freq, uint32_t* timer,
 		void (*dataReadycb)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
 				char*, uint32_t, void*),
@@ -216,26 +216,27 @@ void DataProcessor::SetFileFormat(const fileFormat f) {
 		bool* owenable=0; int* dindex=0; int* nunits=0; uint64_t* nf = 0; uint32_t* dr = 0; uint32_t* port = 0;
 		file->GetMemberPointerValues(nd, fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr, port);
 		//create file writer with same pointers
-		SetupFileWriter(nd, fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr, port);
+		SetupFileWriter(fileWriteEnable, nd, fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr, port);
 	}
 }
 
 
-
-void DataProcessor::SetupFileWriter(int* nd, char* fname, char* fpath, uint64_t* findex,
+void DataProcessor::SetupFileWriter(bool fwe, int* nd, char* fname, char* fpath, uint64_t* findex,
 		bool* frindexenable, bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
 		GeneralData* g)
 {
+	fileWriteEnable = fwe;
 	if (g)
 		generalData = g;
-
 	// fix xcoord as detector is not providing it right now
 	xcoord = ((NumberofDataProcessors > (*nunits)) ? index : ((*dindex) * (*nunits)) + index);
 
-	if (file)
-		delete file;
 
-	if (*fileWriteEnable) {
+	if (file) {
+		delete file; file = 0;
+	}
+
+	if (fileWriteEnable) {
 		switch(*fileFormatType){
 #ifdef HDF5C
 		case HDF5:

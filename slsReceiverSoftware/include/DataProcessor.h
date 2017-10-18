@@ -26,14 +26,14 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * Calls Base Class CreateThread(), sets ErrorMask if error and increments NumberofDataProcessors
 	 * @param f address of Fifo pointer
 	 * @param ftype pointer to file format type
-	 * @param fwenable pointer to file writer enable
+	 * @param fwenable file writer enable
 	 * @param dsEnable pointer to data stream enable
 	 * @param freq pointer to streaming frequency
 	 * @param timer pointer to timer if streaming frequency is random
 	 * @param dataReadycb pointer to data ready call back function
 	 * @param pDataReadycb pointer to arguments of data ready call back function
 	 */
-	DataProcessor(Fifo*& f, fileFormat* ftype, bool* fwenable, bool* dsEnable,
+	DataProcessor(Fifo*& f, fileFormat* ftype, bool fwenable, bool* dsEnable,
 						uint32_t* freq, uint32_t* timer,
 						void (*dataReadycb)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
 								char*, uint32_t, void*),
@@ -162,6 +162,7 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 
 	/**
 	 * Set up file writer object and call backs
+	 * @param fwe file write enable
 	 * @param nd pointer to number of detectors in each dimension
 	 * @param fname pointer to file name prefix
 	 * @param fpath pointer to file path
@@ -175,7 +176,7 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param portno pointer to udp port number
 	 * @param g address of GeneralData (Detector Data) pointer
 	 */
-	void SetupFileWriter(int* nd, char* fname, char* fpath, uint64_t* findex,
+	void SetupFileWriter(bool fwe, int* nd, char* fname, char* fpath, uint64_t* findex,
 			bool* frindexenable, bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno, GeneralData* g = 0);
 
 
@@ -306,7 +307,7 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	fileFormat* fileFormatType;
 
 	/** File Write Enable */
-	bool* fileWriteEnable;
+	bool fileWriteEnable;
 
 	/** Pointer to Streaming frequency, if 0, sending random images with a timer */
 	uint32_t* streamingFrequency;
@@ -319,6 +320,9 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** timer beginning stamp for random streaming */
 	struct timespec timerBegin;
+
+	/** x coord hardcoded, as detector does not send them yet **/
+	uint16_t xcoord;
 
 
 

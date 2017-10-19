@@ -42,9 +42,11 @@ CONTENTS
 
 
 Changes in User Interface
-========================= 	
+========================= 
+	
 	Receiver
 	--------	
+	
 	1.	Bug Fix: Example receiver users code now handles child process exit
 		better.	Example receiver code in slsDetectorsPackage/manual/manual-api 
 		folder (mainReceiver.cpp).
@@ -55,12 +57,14 @@ Changes in User Interface
 		
 	User
 	----
+	
 	3.	Added a few advanced user functions in slsDetectorUser class. 
 		
 
 
 New Features
 ============
+
 	Detector Server
 	---------------
 	1.	(Eiger): Virtual class to execute on pc for integration.
@@ -68,6 +72,7 @@ New Features
 	
 	Client
 	------
+	
 	2.	Parallelized more commands to detector. Beneficial for large multi detector systems.
 	
 	3.	One can set "threaded" to 0 in the config file and acquire from command line. It will
@@ -76,31 +81,53 @@ New Features
 	
 	Receiver
 	--------
+	
 	4.	Added silent mode to receiver using command r_silent [i] from client. 
 		It might be beneficial for max frame rate applications.
 
 
 Resolved Issues
 ===============
+
 	Gui
 	---
-	1.	(Eiger) in advanced mode: Loading trimbits and gui complains of different trimbits and
-		sets all trimbits to 0. This has been resolved now.
+	
+	1.	Bug fix:(Eiger) In expert mode and in advanced tab, when trimbits 
+		loaded are different for every pixel, the gui complains and sets 
+		all trimbits to zero. This has been resolved. Now, the "Set All 
+		Trimbits" field is just set to -1.
+	
+	2. 	Minor alignment issue in Advanced Tab fixed.
+	
 	Client
 	------
-	2.	Made it easier to disable the standard receiver and fixing bugs related to the use of a 
+	
+	3.	Made it easier to disable the standard receiver and fixing bugs related to the use of a 
 		custom one.
 	
 	Detector Server
 	---------------
-	3.	(Eiger): Status will return error if there was the unlikely trouble reading status 
+	
+	4.	(Eiger): Status will return error if there was the unlikely trouble reading status 
 		register in the front end board. Earlier, it would only return idle.
+		
+	Receiver
+	--------
+	
+	5.	Bug fix: x, y and z coordinates in the call backs and the files 
+		are still not corrected in the detector	udp header and must be 
+		hardcoded for this release. It is done now.
+	
+	6. 	File class in receiver should be created only if file write is
+		enabled. This has been corrected to that.
 
 
 Known Issues
 ============
+
 	Client
 	------
+	
 	1. 	Changing file name prefix at the single detector level will not concatenate scan or 
 		position variables to the file name prefix. This is now done only at the multi
 		detector level. 
@@ -108,17 +135,21 @@ Known Issues
 
 	Detector Server
 	---------------
-	1.	(Eiger) The hardware mac of the detector is used (not relayed back to the client). 
+	
+	2.	(Eiger) The hardware mac of the detector is used (not relayed back to the client). 
 	  	For 1 GbE, the hardware IP of the detector is used (also not relayed back to the 
 	  	client). 
 	  	
-	2.	Standard header fills x-coord in 1D. y-coord and z-coord is not implemented (3D).
+	3.	Standard header fills x-coord in 1D. y-coord and z-coord is not implemented (3D).
 	
 	
 	Receiver
 	--------
 	
-	3. 	HDF5 compression and filters are not implemented yet.
+	4. 	HDF5 compression and filters are not implemented yet.
+	
+
+	
 
 
 

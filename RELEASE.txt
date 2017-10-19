@@ -1,5 +1,6 @@
+
 SLS Detector Package 3.1.0 released on 2017-10-02
-================================================================================
+=================================================
 
 
 
@@ -48,8 +49,7 @@ Changes in User Interface
 	1. 	User Detector API for call back has been changed. Instead of providing double* data,
 		it will now provided in char* with the bit width. One can decode the char* to get an 
 		array with data type of their own choosing.
-		
-		
+			
 	Receiver
 	--------
 	2.	(Eiger) Gap Pixels are included in the data provided. It can be enabled/disabled using 
@@ -70,6 +70,7 @@ Resolved Issues
 
 Known Issues
 ============
+
 
 	
 

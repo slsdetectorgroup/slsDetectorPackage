@@ -1,5 +1,5 @@
 SLS Detector Package 3.0.1 released on 2017-09-27
-================================================================================
+=================================================
 
 
 
@@ -86,15 +86,6 @@ Resolved Issues
 	---
 	1.	(Eiger) in advanced mode: Loading trimbits and gui complains of different trimbits and
 		sets all trimbits to 0. This has been resolved now.
-	Client
-	------
-	2.	Made it easier to disable the standard receiver and fixing bugs related to the use of a 
-		custom one.
-	
-	Detector Server
-	---------------
-	3.	(Eiger): Status will return error if there was the unlikely trouble reading status 
-		register in the front end board. Earlier, it would only return idle.
 
 
 Known Issues

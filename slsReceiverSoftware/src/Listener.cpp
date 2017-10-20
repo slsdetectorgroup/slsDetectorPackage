@@ -60,16 +60,6 @@ Listener::Listener(detectorType dtype, Fifo*& f, runStatus* s, uint32_t* portno,
 	}
 	NumberofListeners++;
 	FILE_LOG (logDEBUG) << "Number of Listeners: " << NumberofListeners;
-
-	switch(myDetectorType){
-	case JUNGFRAU:
-	case EIGER:
-		standardheader = true;
-		break;
-	default:
-		standardheader = false;
-		break;
-	}
 }
 
 
@@ -345,6 +335,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 	bool isHeaderEmpty = true;
 	sls_detector_header* old_header = 0;
 	sls_detector_header* new_header = 0;
+	bool standardheader = generalData->standardheader;
 
 
 	//reset to -1

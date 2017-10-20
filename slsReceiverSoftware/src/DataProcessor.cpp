@@ -369,8 +369,9 @@ void DataProcessor::ProcessAnImage(char* buf) {
 	}
 
 
-	// fix x coord that is currently not provided by detector
-	header->xCoord = xcoord;
+	// x coord for those not having standard header
+	if (!generalData->standardheader)
+			header->xCoord = xcoord;
 
 	if (file)
 		file->WriteToFile(buf, generalData->imageSize + sizeof(sls_detector_header), fnum-firstMeasurementIndex, nump);

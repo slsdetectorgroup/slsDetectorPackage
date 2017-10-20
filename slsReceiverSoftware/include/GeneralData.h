@@ -78,6 +78,9 @@ public:
 	/** Streaming (for ROI - mainly short Gotthard) - Image size (in bytes) */
 	uint32_t imageSize_Streamer;
 
+	/** if standard header implemented in firmware */
+	bool standardheader;
+
 
 
 
@@ -103,7 +106,8 @@ public:
 		headerPacketSize(0),
 		nPixelsX_Streamer(0),
 		nPixelsY_Streamer(0),
-		imageSize_Streamer(0)
+		imageSize_Streamer(0),
+		standardheader(false)
 		{};
 
 	/** Destructor */
@@ -197,6 +201,7 @@ public:
 		FILE_LOG(logDEBUG) << "Streamer Pixels X: " << nPixelsX_Streamer;
 		FILE_LOG(logDEBUG) << "Streamer Pixels Y: " << nPixelsY_Streamer;
 		FILE_LOG(logDEBUG) << "Streamer Image Size: " << imageSize_Streamer;
+		FILE_LOG(logDEBUG) << "Standard Header: " << standardheader;
 	};
 };
 
@@ -492,7 +497,7 @@ class JungfrauData : public GeneralData {
 		nPixelsX_Streamer 	= nPixelsX;
 		nPixelsY_Streamer 	= nPixelsY;
 		imageSize_Streamer 	= imageSize;
-
+		standardheader		= true;
 	};
 
 };
@@ -520,6 +525,7 @@ class EigerData : public GeneralData {
 		nPixelsX_Streamer 	= nPixelsX;
 		nPixelsY_Streamer 	= nPixelsY;
 		imageSize_Streamer 	= imageSize;
+		standardheader		= true;
 	};
 
 	/**

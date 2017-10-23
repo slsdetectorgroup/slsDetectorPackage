@@ -290,9 +290,6 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	/** Listening buffer for one packet - might be removed when we can peek and eiger fnum is in header */
 	char* listeningPacket;
 
-	/** if the standard header is implemented in firmware */
-	bool standardheader;
-
 	/** if the udp socket is connected */
 	bool udpSocketAlive;
 

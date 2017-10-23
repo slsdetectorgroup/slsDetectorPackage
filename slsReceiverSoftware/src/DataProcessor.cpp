@@ -52,7 +52,7 @@ DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool fwenable, bool* d
 		streamingTimerInMs(timer),
 		currentFreqCount(0),
 		tempBuffer(0),
-		xcoord(0),
+		xcoordin1D(0),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
 		firstAcquisitionIndex(0),
@@ -247,7 +247,7 @@ void DataProcessor::SetupFileWriter(bool fwe, int* nd, char* fname, char* fpath,
 	if (g)
 		generalData = g;
 	// fix xcoord as detector is not providing it right now
-	xcoord = ((NumberofDataProcessors > (*nunits)) ? index : ((*dindex) * (*nunits)) + index);
+	xcoordin1D = ((NumberofDataProcessors > (*nunits)) ? index : ((*dindex) * (*nunits)) + index);
 
 
 	if (file) {
@@ -383,8 +383,15 @@ void DataProcessor::ProcessAnImage(char* buf) {
 	if (*gapPixelsEnable && (*dynamicRange!=4))
 		InsertGapPixels(buf + sizeof(sls_detector_header), *dynamicRange);
 
-	// fix x coord that is currently not provided by detector
-	header->xCoord = xcoord;
+	// x coord is 0 for detector in pos [0,0,0]
+	if (xcoordin1D) {
+		// do nothing as detector has correctly send them
+		if (header->xCoord || header->yCoord || header->zCoord)
+			;
+		// detector has send all 0's when there should have been a value greater than 0 in some dimension
+		else
+			header->xCoord = xcoordin1D;
+	}
 
 	if (file)
 		file->WriteToFile(buf, generalData->imageSize + sizeof(sls_detector_header), fnum-firstMeasurementIndex, nump);

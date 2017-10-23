@@ -79,6 +79,9 @@ public:
 	/** Streaming (for ROI - mainly short Gotthard) - Image size (in bytes) */
 	uint32_t imageSizeComplete;
 
+	/** if standard header implemented in firmware */
+	bool standardheader;
+
 
 
 
@@ -104,7 +107,8 @@ public:
 		headerPacketSize(0),
 		nPixelsXComplete(0),
 		nPixelsYComplete(0),
-		imageSizeComplete(0)
+		imageSizeComplete(0),
+		standardheader(false)
 		{};
 
 	/** Destructor */
@@ -207,6 +211,7 @@ public:
 		FILE_LOG(logDEBUG) << "Complete Pixels X: " << nPixelsXComplete;
 		FILE_LOG(logDEBUG) << "Complete Pixels Y: " << nPixelsYComplete;
 		FILE_LOG(logDEBUG) << "Complete Image Size: " << imageSizeComplete;
+		FILE_LOG(logDEBUG) << "Standard Header: " << standardheader;
 	};
 };
 
@@ -484,7 +489,7 @@ class JungfrauData : public GeneralData {
 		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 2500;
-
+		standardheader		= true;
 	};
 
 };
@@ -509,6 +514,7 @@ class EigerData : public GeneralData {
 		defaultFifoDepth 	= 100;
 		threadsPerReceiver	= 2;
 		headerPacketSize	= 40;
+		standardheader		= true;
 	};
 
 	/**

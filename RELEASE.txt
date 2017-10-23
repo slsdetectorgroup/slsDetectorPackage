@@ -1,5 +1,5 @@
 SLS Detector Package 3.0.1 released on 2017-09-27
-================================================================================
+=================================================
 
 
 
@@ -120,6 +120,7 @@ Resolved Issues
 	
 	6. 	File class in receiver should be created only if file write is
 		enabled. This has been corrected to that.
+
 
 
 Known Issues

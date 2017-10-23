@@ -44,6 +44,7 @@ CONTENTS
 
 Changes in User Interface
 ========================= 	
+	
 	Client
 	------
 	1. 	User Detector API for call back has been changed. Instead of providing double* data,
@@ -55,9 +56,11 @@ Changes in User Interface
 	2.	(Eiger) Gap Pixels are included in the data provided. It can be enabled/disabled using 
 		'gappixels' from the command line.		
 
+	
 
 New Features
 ============
+
 	Gui
 	---
 	1.	(Jungfrau) Now features gain plot. Enabled or disabled on the fly using the check button
@@ -68,9 +71,14 @@ Resolved Issues
 ===============
 
 
+
+Resolved Issues
+===============
+
+
+
 Known Issues
 ============
-
 
 	
 

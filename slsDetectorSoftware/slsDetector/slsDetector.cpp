@@ -6431,7 +6431,7 @@ int slsDetector::configureMAC(){
 			pos[1] = 0;
 		} else {
 			pos[0] = posId / max;
-			pos[1] = posId % max;
+			pos[1] = (posId % max) * ((thisDetector->myDetectorType == EIGER) ? 2 : 1); // for horiz. udp ports
 		}
 	}
 

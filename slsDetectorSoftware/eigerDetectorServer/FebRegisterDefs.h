@@ -182,8 +182,11 @@
 #define TEN_GIGA_RIGHT_FRAME_DELAY_COUNTER	0x1e4
 
 // udp header (position, id)
-#define UDP_HEADER_A_OFST					0x00C0
-#define UDP_HEADER_B_OFST					0x00E0
+#define UDP_HEADER_A_LEFT_OFST				0x00C0
+#define UDP_HEADER_B_LEFT_OFST				0x00E0
+#define UDP_HEADER_A_RIGHT_OFST				0x0100
+#define UDP_HEADER_B_RIGHT_OFST				0x0120
+
 #define UDP_HEADER_X_OFST					(0)
 #define UDP_HEADER_X_MSK					(0xFFFF << UDP_HEADER_X_OFST)
 #define UDP_HEADER_ID_OFST					(16)

@@ -110,7 +110,7 @@ void GetData(uint64_t frameNumber, uint32_t expLength, uint32_t packetNumber, ui
 		uint16_t modId, uint16_t xCoord, uint16_t yCoord, uint16_t zCoord, uint32_t debug, uint16_t roundRNumber, uint8_t detType, uint8_t version,
 		char* datapointer, uint32_t datasize, void* p){
 
-	PRINT_IN_COLOR (xCoord,
+	PRINT_IN_COLOR (modId?modId:xCoord,
 			"#### %d GetData: ####\n"
 			"frameNumber: %llu\t\texpLength: %u\t\tpacketNumber: %u\t\tbunchId: %llu\t\ttimestamp: %llu\t\tmodId: %u\t\t"
 			"xCoord: %u\t\tyCoord: %u\t\tzCoord: %u\t\tdebug: %u\t\troundRNumber: %u\t\tdetType: %u\t\t"

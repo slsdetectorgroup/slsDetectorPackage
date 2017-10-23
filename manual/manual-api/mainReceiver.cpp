@@ -54,9 +54,8 @@ void sigInterruptHandler(int p){
  */
 void printHelp() {
 	bprintf(GRAY, "Usage:\n"
-			"./detReceiver\n"
-			"or ./detReceiver [start_tcp_port] [num_receivers]\n"
-			"Default values: start_tcp_port - 1954, num_receivers - 1\n\n");
+			"./detReceiver [start_tcp_port] [num_receivers] [1 for call back, 0 for none]\n\n");
+	exit(EXIT_FAILURE);
 }
 
 /**
@@ -135,14 +134,16 @@ int main(int argc, char *argv[]) {
 	/**	- set default values */
 	int numReceivers = 1;
 	int startTCPPort = 1954;
+	int withCallback = 0;
 	keeprunning = true;
 
 	/**	- get number of receivers and start tcp port from command line arguments */
-	if (argc > 1 && ((argc < 3) || (!sscanf(argv[1],"%d", &startTCPPort)) || (!sscanf(argv[2],"%d", &numReceivers))    ))
+	if ( (argc != 4) || (!sscanf(argv[1],"%d", &startTCPPort)) || (!sscanf(argv[2],"%d", &numReceivers)) || (!sscanf(argv[3],"%d", &withCallback)) )
 		printHelp();
 	bprintf(BLUE,"Parent Process Created [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
 	bprintf(GRAY, "Number of Receivers: %d\n", numReceivers);
 	bprintf(GRAY, "Start TCP Port: %d\n", startTCPPort);
+	bprintf(GRAY, "Callback Enable: %d\n", withCallback);
 
 
 
@@ -193,20 +194,24 @@ int main(int argc, char *argv[]) {
 				exit(EXIT_FAILURE);
 			}
 
+
 			/**	- register callbacks. remember to set file write enable to 0 (using the client)
-			  if we should not write files and you will write data using the callbacks */
+		  if we should not write files and you will write data using the callbacks */
+			if (withCallback) {
 
-			/** - Call back for start acquisition */
-			bprintf(BLUE, "Registering 	StartAcq()\n");
-			receiver->registerCallBackStartAcquisition(StartAcq, NULL);
+				/** - Call back for start acquisition */
+				bprintf(BLUE, "Registering 	StartAcq()\n");
+				receiver->registerCallBackStartAcquisition(StartAcq, NULL);
 
-			/** - Call back for acquisition finished */
-			bprintf(BLUE, "Registering 	AcquisitionFinished()\n");
-			receiver->registerCallBackAcquisitionFinished(AcquisitionFinished, NULL);
+				/** - Call back for acquisition finished */
+				bprintf(BLUE, "Registering 	AcquisitionFinished()\n");
+				receiver->registerCallBackAcquisitionFinished(AcquisitionFinished, NULL);
 
-			/* 	- Call back for raw data */
-			bprintf(BLUE, "Registering     GetData() \n");
-			receiver->registerCallBackRawDataReady(GetData,NULL);
+				/* 	- Call back for raw data */
+				bprintf(BLUE, "Registering     GetData() \n");
+				receiver->registerCallBackRawDataReady(GetData,NULL);
+			}
+
 
 
 			/**	- start tcp server thread */

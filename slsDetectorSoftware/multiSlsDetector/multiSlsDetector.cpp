@@ -5791,9 +5791,7 @@ int multiSlsDetector::getData(const int isocket, char* image, const int size,
 
 void multiSlsDetector::readFrameFromReceiver(){
 
-	//determine number of half readouts and maxX and maxY
-	int maxX=thisMultiDetector->numberOfChannelInclGapPixels[X];
-	int maxY=thisMultiDetector->numberOfChannelInclGapPixels[Y];
+	//determine number of sockets
 	int numSockets = thisMultiDetector->numberOfDetectors;
 	int numSocketsPerSLSDetector = 1;
 	bool jungfrau = false;
@@ -5822,12 +5820,17 @@ void multiSlsDetector::readFrameFromReceiver(){
 	int slsdatabytes = 0, slsmaxchannels = 0, slsmaxX = 0, slsmaxY=0;
 	double bytesperchannel = 0;
 	if(detectors[0]){
-		slsdatabytes = detectors[0]->getDataBytesInclGapPixels();
-		slsmaxchannels = (detectors[0]->getMaxNumberOfChannelsInclGapPixels(X)*detectors[0]->getMaxNumberOfChannelsInclGapPixels(Y));
 		bytesperchannel = (double)slsdatabytes/(double)slsmaxchannels;
-		slsmaxX = detectors[0]->getTotalNumberOfChannelsInclGapPixels(X);
-		slsmaxY = detectors[0]->getTotalNumberOfChannelsInclGapPixels(Y);
+		slsdatabytes = (bytesperchannel < 1) ? detectors[0]->getDataBytes() : detectors[0]->getDataBytesInclGapPixels();
+		slsmaxchannels = (bytesperchannel < 1) ? (detectors[0]->getMaxNumberOfChannels(X) * detectors[0]->getMaxNumberOfChannels(Y)) :
+				(detectors[0]->getMaxNumberOfChannelsInclGapPixels(X)*detectors[0]->getMaxNumberOfChannelsInclGapPixels(Y));
+		slsmaxX = (bytesperchannel < 1) ? detectors[0]->getTotalNumberOfChannels(X) : detectors[0]->getTotalNumberOfChannelsInclGapPixels(X);
+		slsmaxY = (bytesperchannel < 1) ? detectors[0]->getTotalNumberOfChannels(Y) : detectors[0]->getTotalNumberOfChannelsInclGapPixels(Y);
 	}
+	// max channel values
+	int maxX = (bytesperchannel < 1) ? thisMultiDetector->numberOfChannel[X] : thisMultiDetector->numberOfChannelInclGapPixels[X];
+	int maxY = (bytesperchannel < 1) ? thisMultiDetector->numberOfChannel[Y] : thisMultiDetector->numberOfChannelInclGapPixels[Y];
+	int multidatabytes = (bytesperchannel < 1) ? thisMultiDetector->dataBytes : thisMultiDetector->dataBytesInclGapPixels;
 
 	//getting multi values
 	//calculating offsets (for eiger interleaving ports)
@@ -5848,10 +5851,10 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 	int expectedslssize = slsdatabytes/numSocketsPerSLSDetector;
 	char* image = new char[expectedslssize]();
-	char* multiframe = new char[thisMultiDetector->dataBytesInclGapPixels]();
+	char* multiframe = new char[multidatabytes]();
 	char* multiframegain = NULL;
 	if (jungfrau)
-		multiframegain = new char[thisMultiDetector->dataBytesInclGapPixels]();
+		multiframegain = new char[multidatabytes]();
 
 	int nch;
 
@@ -5933,8 +5936,11 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 		//send data to callback
 		if(running){
+
+
+
 			if(dataReady) {
-				thisData = new detectorData(NULL,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),maxX,maxY,multiframe, thisMultiDetector->dataBytesInclGapPixels);
+				thisData = new detectorData(NULL,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),maxX,maxY,multiframe, multidatabytes);
 				dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);
 				delete thisData;
 				//cout<<"Send frame #"<< currentFrameIndex << " to gui"<<endl;

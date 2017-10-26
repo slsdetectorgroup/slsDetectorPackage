@@ -2014,22 +2014,26 @@ int slsDetector::enableGapPixels(int val) {
 		val=(val>0)?1:0;
 
 		// send to receiver
-		int retval=-1;
-		int fnum=F_ENABLE_GAPPIXELS_IN_RECEIVER;
-		int ret=FAIL;
-		int arg=val;
-		if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
-			if (connectData() == OK){
-				ret=thisReceiver->sendInt(fnum,retval,arg);
-				disconnectData();
-			}
-			if((arg != retval) || (ret==FAIL)){
-				ret = FAIL;
-				setErrorMask((getErrorMask())|(RECEIVER_ENABLE_GAPPIXELS_NOT_SET));
-			}
+		int ret=OK;
 
-			if(ret==FORCE_UPDATE)
-				updateReceiver();
+		if (thisDetector->dynamicRange != 4) {
+			ret = FAIL;
+			int retval=-1;
+			int fnum=F_ENABLE_GAPPIXELS_IN_RECEIVER;
+			int arg=val;
+			if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
+				if (connectData() == OK){
+					ret=thisReceiver->sendInt(fnum,retval,arg);
+					disconnectData();
+				}
+				if((arg != retval) || (ret==FAIL)){
+					ret = FAIL;
+					setErrorMask((getErrorMask())|(RECEIVER_ENABLE_GAPPIXELS_NOT_SET));
+				}
+
+				if(ret==FORCE_UPDATE)
+					updateReceiver();
+			}
 		}
 
 		// update client

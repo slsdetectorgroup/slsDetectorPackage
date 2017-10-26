@@ -2009,14 +2009,14 @@ int slsDetector::enableGapPixels(int val) {
 
 	if(thisDetector->myDetectorType!= EIGER)
 		return -1;
-
+	if (thisDetector->dynamicRange == 4) return val;
 	if (val >= 0) {
 		val=(val>0)?1:0;
 
 		// send to receiver
 		int ret=OK;
 
-		if (thisDetector->dynamicRange != 4) {
+		//if (thisDetector->dynamicRange != 4) {
 			ret = FAIL;
 			int retval=-1;
 			int fnum=F_ENABLE_GAPPIXELS_IN_RECEIVER;
@@ -2034,7 +2034,7 @@ int slsDetector::enableGapPixels(int val) {
 				if(ret==FORCE_UPDATE)
 					updateReceiver();
 			}
-		}
+	//	}
 
 		// update client
 		if (ret == OK) {

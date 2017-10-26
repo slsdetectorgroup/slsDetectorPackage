@@ -5820,10 +5820,17 @@ void multiSlsDetector::readFrameFromReceiver(){
 	int slsdatabytes = 0, slsmaxchannels = 0, slsmaxX = 0, slsmaxY=0;
 	double bytesperchannel = 0;
 	if(detectors[0]){
+		slsmaxchannels = detectors[0]->getMaxNumberOfChannels(X) * detectors[0]->getMaxNumberOfChannels(Y);
+		slsdatabytes = detectors[0]->getDataBytes();
 		bytesperchannel = (double)slsdatabytes/(double)slsmaxchannels;
-		slsdatabytes = (bytesperchannel < 1) ? detectors[0]->getDataBytes() : detectors[0]->getDataBytesInclGapPixels();
-		slsmaxchannels = (bytesperchannel < 1) ? (detectors[0]->getMaxNumberOfChannels(X) * detectors[0]->getMaxNumberOfChannels(Y)) :
-				(detectors[0]->getMaxNumberOfChannelsInclGapPixels(X)*detectors[0]->getMaxNumberOfChannelsInclGapPixels(Y));
+
+		// recalculate with gap pixels (for >= 8 bit mode)
+		if (bytesperchannel >= 1) {
+			cprintf(RED, "shouldnt be here~\n");
+			slsdatabytes = detectors[0]->getDataBytesInclGapPixels();
+			slsmaxchannels = detectors[0]->getMaxNumberOfChannelsInclGapPixels(X)*detectors[0]->getMaxNumberOfChannelsInclGapPixels(Y);
+		}
+
 		slsmaxX = (bytesperchannel < 1) ? detectors[0]->getTotalNumberOfChannels(X) : detectors[0]->getTotalNumberOfChannelsInclGapPixels(X);
 		slsmaxY = (bytesperchannel < 1) ? detectors[0]->getTotalNumberOfChannels(Y) : detectors[0]->getTotalNumberOfChannelsInclGapPixels(Y);
 	}
@@ -5831,6 +5838,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 	int maxX = (bytesperchannel < 1) ? thisMultiDetector->numberOfChannel[X] : thisMultiDetector->numberOfChannelInclGapPixels[X];
 	int maxY = (bytesperchannel < 1) ? thisMultiDetector->numberOfChannel[Y] : thisMultiDetector->numberOfChannelInclGapPixels[Y];
 	int multidatabytes = (bytesperchannel < 1) ? thisMultiDetector->dataBytes : thisMultiDetector->dataBytesInclGapPixels;
+
 
 	//getting multi values
 	//calculating offsets (for eiger interleaving ports)

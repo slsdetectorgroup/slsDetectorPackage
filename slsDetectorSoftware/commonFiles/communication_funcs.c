@@ -536,7 +536,9 @@ int  receiveModuleGeneral(int file_des, sls_detector_module* myMod, int receiveA
   ts+=receiveData(file_des,&(myMod->nadc),sizeof(myMod->nadc),INT32);
   ts+=receiveData(file_des,&(myMod->reg),sizeof(myMod->reg),INT32);
   ts+=receiveData(file_des,myMod->dacs,sizeof(myMod->ndac),INT32);
-  ts+=receiveData(file_des,myMod->adcs,sizeof(myMod->nadc),INT32);
+  if(receiveAll){ // temporary fix
+	  ts+=receiveData(file_des,myMod->adcs,sizeof(myMod->nadc),INT32);
+  }
   /*some detectors dont require sending all trimbits etc.*/
   if(receiveAll){
     ts+=receiveData(file_des,myMod->chipregs,sizeof(myMod->nchip),INT32);

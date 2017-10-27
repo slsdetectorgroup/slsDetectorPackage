@@ -1720,7 +1720,7 @@ int set_module(int file_des) {
 	int *myChan = NULL;
 
 	myDac=(int*)malloc(getNumberOfDACsPerModule()*sizeof(int));
-	if (myDac == NULL) {
+	if (getNumberOfDACsPerModule() > 0 && myDac == NULL) {
 		ret = FAIL;
 		sprintf(mess,"could not allocate dacs\n");
 		cprintf(RED, "Warning: %s", mess);
@@ -1728,7 +1728,7 @@ int set_module(int file_des) {
 	else {
 		myModule.dacs=myDac;
 		myAdc=(int*)malloc(getNumberOfADCsPerModule()*sizeof(int));
-		if (myAdc == NULL) {
+		if (getNumberOfADCsPerModule() > 0 && myAdc == NULL) {
 			ret = FAIL;
 			sprintf(mess,"could not allocate adcs\n");
 			cprintf(RED, "Warning: %s", mess);
@@ -1741,7 +1741,7 @@ int set_module(int file_des) {
 			myModule.chanregs=NULL;
 #else
 			myChip=(int*)malloc(getNumberOfChipsPerModule()*sizeof(int));
-			if (myChip == NULL) {
+			if (getNumberOfChipsPerModule() > 0 && myChip == NULL) {
 				ret = FAIL;
 				sprintf(mess,"could not allocate chips\n");
 				cprintf(RED, "Warning: %s", mess);
@@ -1749,7 +1749,7 @@ int set_module(int file_des) {
 			else {
 				myModule.chipregs=myChip;
 				myChan=(int*)malloc(getNumberOfChannelsPerModule()*sizeof(int));
-				if (myChan == NULL) {
+				if (getNumberOfChannelsPerModule() > 0 && myChan == NULL) {
 					ret = FAIL;
 					sprintf(mess,"could not allocate chans\n");
 					cprintf(RED, "Warning: %s", mess);
@@ -1942,7 +1942,7 @@ int get_module(int file_des) {
 	}
 	else {
 		myDac=(int*)malloc(getNumberOfDACsPerModule()*sizeof(int));
-		if (myDac == NULL) {
+		if (getNumberOfDACsPerModule() > 0 && myDac == NULL) {
 			ret = FAIL;
 			sprintf(mess,"could not allocate dacs\n");
 			cprintf(RED, "Warning: %s", mess);
@@ -1950,7 +1950,7 @@ int get_module(int file_des) {
 		else {
 			myModule.dacs=myDac;
 			myAdc=(int*)malloc(getNumberOfADCsPerModule()*sizeof(int));
-			if (myAdc == NULL) {
+			if (getNumberOfADCsPerModule() > 0 && myAdc == NULL) {
 				ret = FAIL;
 				sprintf(mess,"could not allocate adcs\n");
 				cprintf(RED, "Warning: %s", mess);
@@ -1963,7 +1963,7 @@ int get_module(int file_des) {
 				myModule.chanregs=NULL;
 #else
 				myChip=(int*)malloc(getNumberOfChipsPerModule()*sizeof(int));
-				if (myChip == NULL) {
+				if (getNumberOfChipsPerModule() > 0 && myChip == NULL) {
 					ret = FAIL;
 					sprintf(mess,"could not allocate chips\n");
 					cprintf(RED, "Warning: %s", mess);
@@ -1971,7 +1971,7 @@ int get_module(int file_des) {
 				else {
 					myModule.chipregs=myChip;
 					myChan=(int*)malloc(getNumberOfChannelsPerModule()*sizeof(int));
-					if (myChan == NULL) {
+					if (getNumberOfChannelsPerModule() > 0 && myChan == NULL) {
 						ret = FAIL;
 						sprintf(mess,"could not allocate chans\n");
 						cprintf(RED, "Warning: %s", mess);

@@ -651,7 +651,7 @@ int getModule(sls_detector_module *myMod){
 	for(i=0;i<NDAC;i++)
 		setDAC((enum DACINDEX)i,-1,-1,0,retval);
 
-	//copy to local copy as well
+	//copy from local copy
 	if (detectorModules)
 		copyModule(myMod,detectorModules);
 	else
@@ -876,7 +876,7 @@ int setHighVoltage(int val){
 		// limit values
 		if (val < 60) {
 			dacvalue = 0;
-			val = 60;
+			val = 0;
 		} else if (val >= 200) {
 			dacvalue = 0x1;
 			val = 200;

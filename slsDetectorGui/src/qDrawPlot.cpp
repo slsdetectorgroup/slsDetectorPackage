@@ -114,14 +114,10 @@ void qDrawPlot::SetupWidgetWindow(){
 	plotTitle_prefix = "";
 	plot_in_scope   = 0;
 
-	nPixelsX = (myDet->setDynamicRange(-1) == 4) ?
-			myDet->getTotalNumberOfChannels(slsDetectorDefs::X) :
-			myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X);
+	nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X);
 	cout<<"nPixelsX:"<<nPixelsX<<endl;
 
-	nPixelsY = (myDet->setDynamicRange(-1) == 4) ?
-			myDet->getTotalNumberOfChannels(slsDetectorDefs::Y) :
-			myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y);
+	nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y);
 	cout<<"nPixelsY:"<<nPixelsY<<endl;
 
 	nAnglePixelsX = 1;
@@ -571,12 +567,8 @@ void qDrawPlot::SetScanArgument(int scanArg){
 
 	maxPixelsY = 0;
 	minPixelsY = 0;
-	nPixelsX = (myDet->setDynamicRange(-1) == 4) ?
-			myDet->getTotalNumberOfChannels(slsDetectorDefs::X) :
-			myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X);
-	nPixelsY = (myDet->setDynamicRange(-1) == 4) ?
-			myDet->getTotalNumberOfChannels(slsDetectorDefs::Y) :
-			myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y);
+	nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X);
+	nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y);
 	//cannot do this in between measurements , so update instantly
 	if(scanArgument==qDefs::Level0){
 		//no need to check if numsteps=0,cuz otherwise this mode wont be set in plot tab
@@ -1833,9 +1825,7 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 	if(detType == slsDetectorDefs::MYTHEN){
 
 		//get trimbits
-		actualPixelsX = (myDet->setDynamicRange(-1) == 4) ?
-				myDet->getTotalNumberOfChannels(slsDetectorDefs::X) :
-				myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X);
+		actualPixelsX = myDet->getTotalNumberOfChannels(slsDetectorDefs::X);
 		if(histTrimbits) delete [] histTrimbits; histTrimbits = new double[actualPixelsX];
 		ret = myDet->getChanRegs(histTrimbits,fromDetector);
 		//	cout << "got it!" << endl;
@@ -2172,7 +2162,6 @@ void qDrawPlot::EnableGainPlot(bool e) {
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::toDoublePixelData(double* dest, char* source,int size, int databytes, double* gaindest) {
-
 	int dr = ((double)databytes/(double)size)*8;
 	int ichan=0;
 	int ibyte=0;
@@ -2185,7 +2174,7 @@ void qDrawPlot::toDoublePixelData(double* dest, char* source,int size, int datab
 	case 4:
 		for (ibyte = 0; ibyte < databytes; ++ibyte) {
 			cbyte = source[ibyte];
-			for (halfbyte = 0; halfbyte < 2; ++halfbyte) {
+			for (halfbyte = 1; halfbyte >= 0; --halfbyte) {
 				dest[ichan] = (cbyte >> (halfbyte * 4)) & 0xf;
 				++ichan;
 			}

@@ -772,9 +772,9 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   int setFlippedData(dimension d=X, int value=-1);
 
   /**
-   * Enable gap pixels, only for Eiger
+   * Enable gap pixels, only for Eiger and for 8,16 and 32 bit mode. 4 bit mode gap pixels only in gui call back
    * @param val 1 sets, 0 unsets, -1 gets
-   * @return gap pixel enable
+   * @return gap pixel enable or -1 for error
    */
   int enableGapPixels(int val=-1);
 

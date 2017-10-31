@@ -2009,44 +2009,44 @@ int slsDetector::enableGapPixels(int val) {
 
 	if(thisDetector->myDetectorType!= EIGER)
 		return -1;
-	if (thisDetector->dynamicRange == 4) return val;
+
 	if (val >= 0) {
 		val=(val>0)?1:0;
 
 		// send to receiver
 		int ret=OK;
-
-		//if (thisDetector->dynamicRange != 4) {
-			ret = FAIL;
-			int retval=-1;
-			int fnum=F_ENABLE_GAPPIXELS_IN_RECEIVER;
-			int arg=val;
-			if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
-				if (connectData() == OK){
-					ret=thisReceiver->sendInt(fnum,retval,arg);
-					disconnectData();
-				}
-				if((arg != retval) || (ret==FAIL)){
-					ret = FAIL;
-					setErrorMask((getErrorMask())|(RECEIVER_ENABLE_GAPPIXELS_NOT_SET));
-				}
-
-				if(ret==FORCE_UPDATE)
-					updateReceiver();
+		int retval=-1;
+		int fnum=F_ENABLE_GAPPIXELS_IN_RECEIVER;
+		int arg=val;
+		if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
+			if (connectData() == OK){
+				ret=thisReceiver->sendInt(fnum,retval,arg);
+				disconnectData();
 			}
-	//	}
+			if((arg != retval) || (ret==FAIL)){
+				ret = FAIL;
+				setErrorMask((getErrorMask())|(RECEIVER_ENABLE_GAPPIXELS_NOT_SET));
+			}
+
+			if(ret==FORCE_UPDATE)
+				updateReceiver();
+		}
+
 
 		// update client
 		if (ret == OK) {
 			thisDetector->gappixels = val;
-			thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) * (thisDetector->dynamicRange/8);
+			thisDetector->dataBytesInclGapPixels = 0;
 
-			// set data bytes for other detector ( for future use)
-			if(thisDetector->myDetectorType==JUNGFRAUCTB)
-				getTotalNumberOfChannels();
-			if(thisDetector->myDetectorType==MYTHEN){
-				if (thisDetector->dynamicRange==24 || thisDetector->timerValue[PROBES_NUMBER]>0) {
-					thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) * thisDetector->nChans*4;
+			if (thisDetector->dynamicRange != 4) {
+				thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) * (thisDetector->dynamicRange/8);
+				// set data bytes for other detector ( for future use)
+				if(thisDetector->myDetectorType==JUNGFRAUCTB)
+					getTotalNumberOfChannels();
+				if(thisDetector->myDetectorType==MYTHEN){
+					if (thisDetector->dynamicRange==24 || thisDetector->timerValue[PROBES_NUMBER]>0) {
+						thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) * thisDetector->nChans*4;
+					}
 				}
 			}
 		}

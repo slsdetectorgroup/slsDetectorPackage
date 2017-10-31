@@ -528,8 +528,9 @@ void multiSlsDetector::updateOffsets(){//cannot paralllize due to slsdetector ca
 #endif
 			}
 
-			thisMultiDetector->offsetX[i] = offsetX_gp;
-			thisMultiDetector->offsetY[i] = offsetY_gp;
+			double bytesperchannel =  (double)detectors[i]->getDataBytes() / (double)(detectors[i]->getMaxNumberOfChannels(X) * detectors[i]->getMaxNumberOfChannels(Y));
+			thisMultiDetector->offsetX[i] = (bytesperchannel >= 1.0) ? offsetX_gp : offsetX;
+			thisMultiDetector->offsetY[i] = (bytesperchannel >= 1.0) ? offsetY_gp : offsetY;
 #ifdef VERBOSE
 			cout << "Detector[" << i << "] has offsets (" << thisMultiDetector->offsetX[i] << ", " << thisMultiDetector->offsetY[i] << ")" << endl;
 #endif
@@ -2176,6 +2177,8 @@ int multiSlsDetector::setDynamicRange(int n, int pos){
 		  std::cout << "Setting Clock to Half Speed for Dynamic Range of 16" << std::endl;
 		  setSpeed(CLOCK_DIVIDER,1);
 	  }
+	  if (n != -1)
+		  updateOffsets();
   }
 
   return thisMultiDetector->dataBytes;
@@ -4139,6 +4142,8 @@ int multiSlsDetector::setDynamicRange(int p) {
 		  std::cout << "Setting Clock to Half Speed for Dynamic Range of 16" << std::endl;
 		  setSpeed(CLOCK_DIVIDER,1);
 	  }
+	  if (p != -1)
+		  updateOffsets();
   }
   return ret;
 
@@ -5797,7 +5802,8 @@ void multiSlsDetector::readFrameFromReceiver(){
 	bool jungfrau = false;
 	bool eiger = false;
 	/*double* gdata = NULL;*/
-	switch(getDetectorsType()){
+	slsDetectorDefs::detectorType myDetType = getDetectorsType();
+	switch(myDetType){
 	case EIGER:
 		eiger = true;
 		numSocketsPerSLSDetector = 2;
@@ -5819,26 +5825,27 @@ void multiSlsDetector::readFrameFromReceiver(){
 	//getting sls values
 	int slsdatabytes = 0, slsmaxchannels = 0, slsmaxX = 0, slsmaxY=0;
 	double bytesperchannel = 0;
+	bool gappixelsenable = false;
 	if(detectors[0]){
 		slsmaxchannels = detectors[0]->getMaxNumberOfChannels(X) * detectors[0]->getMaxNumberOfChannels(Y);
 		slsdatabytes = detectors[0]->getDataBytes();
 		bytesperchannel = (double)slsdatabytes/(double)slsmaxchannels;
 
+
 		// recalculate with gap pixels (for >= 8 bit mode)
-		if (bytesperchannel >= 1) {
-			cprintf(RED, "shouldnt be here~\n");
+		if (bytesperchannel >= 1.0) {
 			slsdatabytes = detectors[0]->getDataBytesInclGapPixels();
 			slsmaxchannels = detectors[0]->getMaxNumberOfChannelsInclGapPixels(X)*detectors[0]->getMaxNumberOfChannelsInclGapPixels(Y);
 		}
 
-		slsmaxX = (bytesperchannel < 1) ? detectors[0]->getTotalNumberOfChannels(X) : detectors[0]->getTotalNumberOfChannelsInclGapPixels(X);
-		slsmaxY = (bytesperchannel < 1) ? detectors[0]->getTotalNumberOfChannels(Y) : detectors[0]->getTotalNumberOfChannelsInclGapPixels(Y);
+		slsmaxX = (bytesperchannel >= 1.0) ? detectors[0]->getTotalNumberOfChannelsInclGapPixels(X) : detectors[0]->getTotalNumberOfChannels(X);
+		slsmaxY = (bytesperchannel >= 1.0) ? detectors[0]->getTotalNumberOfChannelsInclGapPixels(Y) : detectors[0]->getTotalNumberOfChannels(Y);
+		gappixelsenable = detectors[0]->enableGapPixels(-1) >= 1 ? true: false;
 	}
 	// max channel values
-	int maxX = (bytesperchannel < 1) ? thisMultiDetector->numberOfChannel[X] : thisMultiDetector->numberOfChannelInclGapPixels[X];
-	int maxY = (bytesperchannel < 1) ? thisMultiDetector->numberOfChannel[Y] : thisMultiDetector->numberOfChannelInclGapPixels[Y];
-	int multidatabytes = (bytesperchannel < 1) ? thisMultiDetector->dataBytes : thisMultiDetector->dataBytesInclGapPixels;
-
+	int maxX = (bytesperchannel >= 1.0) ? thisMultiDetector->numberOfChannelInclGapPixels[X] : thisMultiDetector->numberOfChannel[X];
+	int maxY = (bytesperchannel >= 1.0) ? thisMultiDetector->numberOfChannelInclGapPixels[Y] : thisMultiDetector->numberOfChannel[Y];
+	int multidatabytes = (bytesperchannel >= 1.0) ? thisMultiDetector->dataBytesInclGapPixels : thisMultiDetector->dataBytes;
 
 	//getting multi values
 	//calculating offsets (for eiger interleaving ports)
@@ -5861,6 +5868,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 	char* image = new char[expectedslssize]();
 	char* multiframe = new char[multidatabytes]();
 	char* multiframegain = NULL;
+	char* multigappixels = NULL; // used only for 4 bit mode with gap pixels enabled
 	if (jungfrau)
 		multiframegain = new char[multidatabytes]();
 
@@ -5944,15 +5952,19 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 		//send data to callback
 		if(running){
-
-
-
-			if(dataReady) {
-				thisData = new detectorData(NULL,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),maxX,maxY,multiframe, multidatabytes);
-				dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);
-				delete thisData;
-				//cout<<"Send frame #"<< currentFrameIndex << " to gui"<<endl;
+			if (gappixelsenable && bytesperchannel < 1) {//inside this function, allocate if it doesnt exist
+				int nx = thisMultiDetector->numberOfChannelInclGapPixels[X];
+				int ny = thisMultiDetector->numberOfChannelInclGapPixels[Y];
+				int n = processImageWithGapPixels(multiframe, multigappixels);
+				thisData = new detectorData(NULL,NULL,NULL,getCurrentProgress(),currentFileName.c_str(), nx, ny,multigappixels, n);
 			}
+			else {
+				thisData = new detectorData(NULL,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),maxX,maxY,multiframe, multidatabytes);
+			}
+			dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);
+			delete thisData;
+				//cout<<"Send frame #"<< currentFrameIndex << " to gui"<<endl;
+
 
 			setCurrentProgress(currentAcquisitionIndex+1);
 		}
@@ -5966,7 +5978,141 @@ void multiSlsDetector::readFrameFromReceiver(){
 	delete[] multiframe;
 	if (jungfrau)
 		delete [] multiframegain;
+	if (multigappixels != NULL)
+		delete [] multigappixels;
+
 }
+
+
+/** eiger 4 bit mode */
+int multiSlsDetector::processImageWithGapPixels(char* image, char*& gpImage) {
+	int nxb = thisMultiDetector->numberOfDetector[X] * (512 + 3);
+	int nyb = thisMultiDetector->numberOfDetector[Y] * (256 + 1);
+	int gapdatabytes = nxb * nyb;
+
+	int nxchip = thisMultiDetector->numberOfDetector[X] * 4;
+	int nychip = thisMultiDetector->numberOfDetector[Y] * 1;
+
+	// allocate
+	if (gpImage == NULL)
+		gpImage = new char[gapdatabytes];
+	// fill value
+	memset(gpImage, 0xFF, gapdatabytes);
+
+
+	const int b1chipx = 128;
+	const int b1chipy = 256;
+	char* src = 0;
+	char* dst = 0;
+
+
+	// copying line by line
+	src = image;
+	dst = gpImage;
+	for (int row = 0; row < nychip; ++row) { // for each chip in a row
+		for (int ichipy = 0; ichipy < b1chipy; ++ichipy) { //for each row in a chip
+			for (int col = 0; col < nxchip; ++col) {
+				memcpy(dst, src, b1chipx);
+				src += b1chipx;
+				dst += b1chipx;
+				if ((col+1)%4)
+					++dst;
+			}
+		}
+
+		dst += (2 * nxb);
+	}
+
+
+
+	// vertical filling of values
+	{
+		uint8_t temp, g1, g2;
+		int mod;
+		dst = gpImage;
+		for (int row = 0; row < nychip; ++row) { // for each chip in a row
+			for (int ichipy = 0; ichipy < b1chipy; ++ichipy) { //for each row in a chip
+				for (int col = 0; col < nxchip; ++col) {
+					dst += b1chipx;
+					mod = (col+1)%4;
+					// copy gap pixel(chip 0, 1, 2)
+					if (mod) {
+						// neighbouring gap pixels to left
+						temp = (*((uint8_t*)(dst-1)));
+						g1 = ((temp & 0xF) / 2);
+						(*((uint8_t*)(dst-1))) = (temp & 0xF0) + g1;
+
+						// neighbouring gap pixels to right
+						temp = (*((uint8_t*)(dst+1)));
+						g2 = ((temp >> 4) / 2);
+						(*((uint8_t*)(dst+1))) = (g2 << 4) + (temp & 0x0F);
+
+						// gap pixels
+						(*((uint8_t*)dst)) = (g1 << 4) + g2;
+
+						// increment to point to proper chip destination
+						++dst;
+					}
+				}
+			}
+
+			dst += (2 * nxb);
+		}
+	}
+
+	//return gapdatabytes;
+	// horizontal filling
+	{
+		uint8_t temp, g1, g2;
+		char* dst_prevline = 0;
+		dst = gpImage;
+		for (int row = 0; row < nychip; ++row) { // for each chip in a row
+				dst += (b1chipy * nxb);
+				// horizontal copying of gap pixels from neighboring past line (bottom parts)
+				if (row < nychip-1) {
+					dst_prevline = dst - nxb;
+					for (int gapline = 0; gapline < nxb; ++gapline) {
+						temp = (*((uint8_t*)dst_prevline));
+						g1 = ((temp >> 4) / 2);
+						g2 = ((temp & 0xF) / 2);
+						(*((uint8_t*)dst_prevline)) = (g1 << 4) + g2;
+						(*((uint8_t*)dst)) = (*((uint8_t*)dst_prevline));
+						++dst;
+						++dst_prevline;
+					}
+				}
+
+				// horizontal copying of gap pixels from neihboring future line (top part)
+				if (row > 0) {
+					dst -= ((b1chipy + 1) * nxb);
+					dst_prevline = dst + nxb;
+					for (int gapline = 0; gapline < nxb; ++gapline) {
+						temp = (*((uint8_t*)dst_prevline));
+						g1 = ((temp >> 4) / 2);
+						g2 = ((temp & 0xF) / 2);
+						temp =  (g1 << 4) + g2;
+						(*((uint8_t*)dst_prevline)) = temp;
+						(*((uint8_t*)dst)) = temp;
+						++dst;
+						++dst_prevline;
+					}
+					dst += ((b1chipy + 1) * nxb);
+				}
+
+			dst += nxb;
+		}
+	}
+
+
+
+
+
+
+	return gapdatabytes;
+}
+
+
+
 
 
 int multiSlsDetector::lockReceiver(int lock) {

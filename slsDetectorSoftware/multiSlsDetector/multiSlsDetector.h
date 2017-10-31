@@ -1047,9 +1047,9 @@ class multiSlsDetector  : public slsDetectorUtils {
   int setFlippedData(dimension d=X, int value=-1);
 
   /**
-   * Enable gap pixels, only for Eiger
+   * Enable gap pixels, only for Eiger and for 8,16 and 32 bit mode. 4 bit mode gap pixels only in gui call back
    * @param val 1 sets, 0 unsets, -1 gets
-   * @return gap pixel enable
+   * @return gap pixel enable or -1 for error
    */
   int enableGapPixels(int val=-1);
 
@@ -1511,6 +1511,16 @@ private:
 	 * @param filename address of file name
 	 */
 	int getData(const int isocket, char* image, const int size, uint64_t &acqIndex, uint64_t &frameIndex, uint32_t &subframeIndex, string &filename);
+
+
+	/**
+	 * add gap pixels to the image (only for Eiger in 4 bit mode)
+	 * @param image pointer to image without gap pixels
+	 * @param gpImage poiner to image with gap pixels, if NULL, allocated inside function
+	 * @returns number of data bytes of image with gap pixels
+	 */
+	int processImageWithGapPixels(char* image, char*& gpImage);
+
 
 
 	/** Ensures if sockets created successfully */

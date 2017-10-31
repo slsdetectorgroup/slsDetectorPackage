@@ -545,6 +545,8 @@ class EigerData : public GeneralData {
 	 * @param dr dynamic range
 	 */
 	void SetGapPixelsEnable(bool b, int dr) {
+		if (dr == 4)
+			b = 0;
 		switch((int)b) {
 		case 1:
 			nPixelsX	= (256 * 2) + 3;

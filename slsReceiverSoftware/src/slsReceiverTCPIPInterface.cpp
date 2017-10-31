@@ -2461,10 +2461,7 @@ int slsReceiverTCPIPInterface::enable_gap_pixels() {
 				else if (receiverBase->getStatus() != IDLE)
 					receiverNotIdle();
 				else {
-					if (receiverBase->getDynamicRange() == 4)
-						FILE_LOG(logERROR) << "Warning: Cannot set gap pixels at receiver level for 4 bit mode" << endl;
-					else
-						receiverBase->setGapPixelsEnable(enable);
+					receiverBase->setGapPixelsEnable(enable);
 				}
 			}
 			//get

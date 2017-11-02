@@ -5846,6 +5846,8 @@ void multiSlsDetector::readFrameFromReceiver(){
 	int maxX = (bytesperchannel >= 1.0) ? thisMultiDetector->numberOfChannelInclGapPixels[X] : thisMultiDetector->numberOfChannel[X];
 	int maxY = (bytesperchannel >= 1.0) ? thisMultiDetector->numberOfChannelInclGapPixels[Y] : thisMultiDetector->numberOfChannel[Y];
 	int multidatabytes = (bytesperchannel >= 1.0) ? thisMultiDetector->dataBytesInclGapPixels : thisMultiDetector->dataBytes;
+	int dr = bytesperchannel * 8;
+
 
 	//getting multi values
 	//calculating offsets (for eiger interleaving ports)
@@ -5956,10 +5958,10 @@ void multiSlsDetector::readFrameFromReceiver(){
 				int nx = thisMultiDetector->numberOfChannelInclGapPixels[X];
 				int ny = thisMultiDetector->numberOfChannelInclGapPixels[Y];
 				int n = processImageWithGapPixels(multiframe, multigappixels);
-				thisData = new detectorData(NULL,NULL,NULL,getCurrentProgress(),currentFileName.c_str(), nx, ny,multigappixels, n);
+				thisData = new detectorData(NULL,NULL,NULL,getCurrentProgress(),currentFileName.c_str(), nx, ny,multigappixels, n, dr);
 			}
 			else {
-				thisData = new detectorData(NULL,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),maxX,maxY,multiframe, multidatabytes);
+				thisData = new detectorData(NULL,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),maxX,maxY,multiframe, multidatabytes, dr);
 			}
 			dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);
 			delete thisData;

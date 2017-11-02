@@ -848,7 +848,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 			// convert char* to double
 			if(data->values==NULL) {
 				data->values = new double[nPixelsX*nPixelsY];
-				toDoublePixelData(data->values, data->cvalues, nPixelsX*nPixelsY, data->databytes);
+				toDoublePixelData(data->values, data->cvalues, nPixelsX*nPixelsY, data->databytes, data->dynamicRange);
 			}
 
 			LockLastImageArray();
@@ -943,10 +943,10 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 			data->values = new double[nPixelsX*nPixelsY];
 			if (gainDataEnable) {
 				data->dgainvalues = new double[nPixelsX*nPixelsY];
-				toDoublePixelData(data->values, data->cvalues, nPixelsX*nPixelsY, data->databytes, data->dgainvalues);
+				toDoublePixelData(data->values, data->cvalues, nPixelsX*nPixelsY, data->databytes, data->dynamicRange, data->dgainvalues);
 			}
 			else
-				toDoublePixelData(data->values, data->cvalues, nPixelsX*nPixelsY, data->databytes);
+				toDoublePixelData(data->values, data->cvalues, nPixelsX*nPixelsY, data->databytes, data->dynamicRange);
 		}
 
 		//if scan
@@ -2161,8 +2161,7 @@ void qDrawPlot::EnableGainPlot(bool e) {
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void qDrawPlot::toDoublePixelData(double* dest, char* source,int size, int databytes, double* gaindest) {
-	int dr = ((double)databytes/(double)size)*8;
+void qDrawPlot::toDoublePixelData(double* dest, char* source,int size, int databytes, int dr, double* gaindest) {
 	int ichan=0;
 	int ibyte=0;
 	int halfbyte=0;

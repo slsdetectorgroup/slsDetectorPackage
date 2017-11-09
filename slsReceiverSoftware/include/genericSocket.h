@@ -105,6 +105,39 @@ enum communicationProtocol{
 	 memset(thisClientIP,0,INET_ADDRSTRLEN);
 	 memset(dummyClientIP,0,INET_ADDRSTRLEN);
 	 differentClients = 0;
+
+
+
+	 struct addrinfo hints, *res;
+	 int errcode;
+	 char addrstr[100];
+	 void *ptr;
+	 memset (&hints, 0, sizeof (hints));
+	 // criteria in selecting socket address structures returned by res
+	 hints.ai_family = AF_INET;
+	 hints.ai_socktype = SOCK_STREAM;
+	 //hints.ai_flags |= AI_CANONNAME;
+	 errcode = getaddrinfo (host_ip_or_name, NULL, &hints, &res);
+	 if (errcode != 0) {
+		 cerr << "Exiting: Problem interpreting host: " << host_ip_or_name << ". Error: " << gai_strerror(errcode) << endl;
+		 perror ("getaddrinfo");
+	 } else {
+		 if (res == NULL) {
+			 cerr << "Exiting: Problem interpreting host: " << host_ip_or_name << ". Null returned by getaddrinfo. " << endl;
+		 }
+		 // Set some fields in the serverAddress structure.
+		 serverAddress.sin_family = res->ai_family;
+		 memcpy((char *) &serverAddress.sin_addr.s_addr, &((struct sockaddr_in *) res->ai_addr)->sin_addr, res->ai_addrlen);
+		 serverAddress.sin_port = htons(port_number);
+		 socketDescriptor=0;
+		 freeaddrinfo(res);
+	 }
+	 clientAddress_length=sizeof(clientAddress);
+
+
+
+
+/*
      struct hostent *hostInfo = gethostbyname(host_ip_or_name);
      if (hostInfo == NULL){
        cerr << "Exiting: Problem interpreting host: " << host_ip_or_name << "\n";
@@ -117,6 +150,8 @@ enum communicationProtocol{
        socketDescriptor=0; //You can use send and recv, //would it work?????
      } 
      clientAddress_length=sizeof(clientAddress);
+*/
+
    }
 
    

@@ -1812,11 +1812,29 @@ int get_run_status(int file_des) {
   retval= runState();
   printf("\n\nSTATUS=%08x\n",retval);
 
+
+  //stopped (external stop, also maybe fifo full)
+  if (runState() & STOPPED_BIT){
+	  printf("-----------------------------------STOPPED--------------------------------------x%0x\n",retval);
+	  s=STOPPED;
+
+	  retval= runState();
+	  printf("reading again STATUS=%08x\n",retval);
+	  if (runState() & STOPPED_BIT){
+		  printf("-----------------------------------ERROR--------------------------------------x%0x\n",retval);
+		  s=ERROR;
+	  }
+  }
+
+
+
   //error
-  if(retval&SOME_FIFO_FULL_BIT){
+  else if(retval&SOME_FIFO_FULL_BIT){
 	  printf("-----------------------------------ERROR--------------------------------------x%0x\n",retval);
 	  s=ERROR;
   }
+
+
   //runbusy=0
   // else if(!(retval&RUNMACHINE_BUSY_BIT)){ //commented by Anna 24.10.2012
     else if(!(retval&RUN_BUSY_BIT)){ // by Anna 24.10.2012

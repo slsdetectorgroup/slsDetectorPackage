@@ -1623,7 +1623,7 @@ int getAdcConfigured(){
 }
 
 u_int32_t runBusy(void) {
-	u_int32_t s = bus_r(STATUS_REG);
+	u_int32_t s = bus_r(STATUS_REG) & RUN_BUSY_BIT;
   return s;
 }
 

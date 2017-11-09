@@ -185,6 +185,7 @@
 #define ALL_FIFO_EMPTY_BIT       0x00010000 // data ready
 #define RUNMACHINE_BUSY_BIT      0x00020000
 #define READMACHINE_BUSY_BIT     0x00040000
+#define STOPPED_BIT			 	 0x00100000
 
 
 

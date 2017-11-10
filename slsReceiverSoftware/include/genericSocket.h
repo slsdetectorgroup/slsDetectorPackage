@@ -105,18 +105,16 @@ enum communicationProtocol{
 	 memset(thisClientIP,0,INET_ADDRSTRLEN);
 	 memset(dummyClientIP,0,INET_ADDRSTRLEN);
 	 differentClients = 0;
-     struct hostent *hostInfo = gethostbyname(host_ip_or_name);
-     if (hostInfo == NULL){
-       cerr << "Exiting: Problem interpreting host: " << host_ip_or_name << "\n";
-     } else {
-       // Set some fields in the serverAddress structure.  
-       serverAddress.sin_family = hostInfo->h_addrtype;
-       memcpy((char *) &serverAddress.sin_addr.s_addr, hostInfo->h_addr_list[0], hostInfo->h_length);
-       //((char *) &serverAddress.sin_addr.s_addr)[hostInfo->h_length]='\0'; //a fix for valgrind
-       serverAddress.sin_port = htons(port_number);   
-       socketDescriptor=0; //You can use send and recv, //would it work?????
-     } 
-     clientAddress_length=sizeof(clientAddress);
+
+	 struct addrinfo *result;
+	 if (!ConvertHostnameToInternetAddress(host_ip_or_name, &result)) {
+		 serverAddress.sin_family = result->ai_family;
+		 memcpy((char *) &serverAddress.sin_addr.s_addr, &((struct sockaddr_in *) result->ai_addr)->sin_addr, result->ai_addrlen);
+		 freeaddrinfo(result);
+		 serverAddress.sin_port = htons(port_number);
+		 socketDescriptor=0;
+	 }
+	 clientAddress_length=sizeof(clientAddress);
    }
 
    
@@ -129,7 +127,7 @@ enum communicationProtocol{
        return SOCK_DGRAM;
        
      default: 
-       cerr << "unknow protocol " << p << endl;
+       cerr << "unknown protocol " << p << endl;
        return -1;
      }
    }
@@ -572,6 +570,57 @@ enum communicationProtocol{
        return sock;
 
      };
+
+
+ 	/**
+ 	 * Convert Hostname to Internet address info structure
+ 	 * One must use freeaddrinfo(res) after using it
+ 	 * @param hostname hostname
+ 	 * @param res address of pointer to address info structure
+ 	 * @return 1 for fail, 0 for success
+ 	 */
+     // Do not make this static (for multi threading environment)
+     int ConvertHostnameToInternetAddress (const char* const hostname, struct addrinfo **res) {
+    	// criteria in selecting socket address structures returned by res
+ 		struct addrinfo hints;
+ 		memset (&hints, 0, sizeof (hints));
+ 		 hints.ai_family = AF_INET;
+ 		 hints.ai_socktype = SOCK_STREAM;
+ 		 // get host info into res
+ 		 int errcode = getaddrinfo (hostname, NULL, &hints, res);
+ 		 if (errcode != 0) {
+ 			 cprintf (RED,"Error: Could not convert %s hostname to internet address (zmq):"
+ 					 "%s\n", hostname, gai_strerror(errcode));
+ 		 } else {
+ 			 if (*res == NULL) {
+ 				 cprintf (RED,"Error: Could not convert %s hostname to internet address (zmq): "
+ 						 "gettaddrinfo returned null\n", hostname);
+ 			 } else{
+ 				 return 0;
+ 			 }
+ 		 }
+ 		cerr << "Error: Could not convert hostname to internet address" << endl;
+ 		 return 1;
+ 	};
+
+     /**
+      * Convert Internet Address structure pointer to ip string (char*)
+      * Clears the internet address structure as well
+      * @param res pointer to internet address structure
+      * @param ip pointer to char array to store result in
+      * @param ipsize size available in ip buffer
+      * @return 1 for fail, 0 for success
+      */
+     // Do not make this static (for multi threading environment)
+     int ConvertInternetAddresstoIpString (struct addrinfo *res, char* ip, const int ipsize) {
+    	 if (inet_ntop (res->ai_family, &((struct sockaddr_in *) res->ai_addr)->sin_addr, ip, ipsize) != NULL) {
+    		 freeaddrinfo(res);
+    		 return 0;
+    	 }
+    	 cerr << "Error: Could not convert internet address to ip string" << endl;
+    	 return 1;
+     }
+
 
     
      int ReceiveDataOnly(void* buf,int length=0){

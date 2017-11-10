@@ -6435,13 +6435,15 @@ int slsDetector::setUDPConnection(){
 			strcpy(thisDetector->receiverUDPIP,thisDetector->receiver_hostname);
 		//if hostname not ip, convert it to ip
 		else{
-			struct hostent *he = gethostbyname(thisDetector->receiver_hostname);
-			if (he == NULL){
-				cout<<"rx_hostname:"<<thisDetector->receiver_hostname<<endl;
-				std::cout << "no rx_udpip given and could not convert receiver hostname to ip" << endl;
-				return FAIL;
-			}else
-				strcpy(thisDetector->receiverUDPIP,inet_ntoa(*(struct in_addr*)he->h_addr));
+			struct addrinfo *result;
+			if (!dataSocket->ConvertHostnameToInternetAddress(thisDetector->receiver_hostname, &result)) {
+				// on success
+				memset(thisDetector->receiverUDPIP, 0, MAX_STR_LENGTH);
+				// on failure, back to none
+				if (dataSocket->ConvertInternetAddresstoIpString(result, thisDetector->receiverUDPIP, MAX_STR_LENGTH)) {
+					strcpy(thisDetector->receiverUDPIP, "none");
+				}
+			}
 		}
 	}
 
@@ -6522,13 +6524,14 @@ int slsDetector::configureMAC(){
 			strcpy(thisDetector->receiverUDPIP,thisDetector->receiver_hostname);
 		//if hostname not ip, convert it to ip
 		else{
-			struct hostent *he = gethostbyname(thisDetector->receiver_hostname);
-			if (he != NULL)
-				strcpy(thisDetector->receiverUDPIP,inet_ntoa(*(struct in_addr*)he->h_addr));
-			else{
-				std::cout << "configure mac failed. no rx_udpip given and invalid receiver hostname" << endl;
-				setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
-				return FAIL;
+			struct addrinfo *result;
+			if (!dataSocket->ConvertHostnameToInternetAddress(thisDetector->receiver_hostname, &result)) {
+				// on success
+				memset(thisDetector->receiverUDPIP, 0, MAX_STR_LENGTH);
+				// on failure, back to none
+				if (dataSocket->ConvertInternetAddresstoIpString(result, thisDetector->receiverUDPIP, MAX_STR_LENGTH)) {
+					strcpy(thisDetector->receiverUDPIP, "none");
+				}
 			}
 		}
 	}

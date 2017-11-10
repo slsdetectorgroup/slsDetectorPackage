@@ -46,13 +46,13 @@ public:
 		socketDescriptor (NULL)
 	{
 		char ip[MAX_STR_LENGTH] = "";
-		strcpy(ip, hostname_or_ip);
+		memset(ip, 0, MAX_STR_LENGTH);
 
-		// convert hostname to ip
-		char* ptr = ConvertHostnameToIp (hostname_or_ip);
-		if (ptr == NULL)
+		// convert hostname to ip (not required, but a test that returns if failed)
+		struct addrinfo *result;
+		if ((ConvertHostnameToInternetAddress(hostname_or_ip, &result)) ||
+		 (ConvertInternetAddresstoIpString(result, ip, MAX_STR_LENGTH)))
 			return;
-		strcpy(ip, ptr);
 
 		// construct address
 		sprintf (serverAddress, "tcp://%s:%d", ip, portno);
@@ -187,19 +187,57 @@ public:
 		}
 	};
 
-	/**
-	 * Convert Hostname to ip
-	 * @param hostname hostname
-	 * @returns string with ip or NULL if error
-	 */
-	char* ConvertHostnameToIp (const char* const hostname) {
-		struct hostent *he = gethostbyname (hostname);
-		if (he == NULL){
-			cprintf (RED,"Error: Could not convert hostname to ip (zmq)\n");
-			return NULL;
-		}
-		return inet_ntoa (*(struct in_addr*)he->h_addr);
-	};
+
+ 	/**
+ 	 * Convert Hostname to Internet address info structure
+ 	 * One must use freeaddrinfo(res) after using it
+ 	 * @param hostname hostname
+ 	 * @param res address of pointer to address info structure
+ 	 * @return 1 for fail, 0 for success
+ 	 */
+     // Do not make this static (for multi threading environment)
+     int ConvertHostnameToInternetAddress (const char* const hostname, struct addrinfo **res) {
+    	// criteria in selecting socket address structures returned by res
+ 		struct addrinfo hints;
+ 		memset (&hints, 0, sizeof (hints));
+ 		 hints.ai_family = AF_INET;
+ 		 hints.ai_socktype = SOCK_STREAM;
+ 		 // get host info into res
+ 		 int errcode = getaddrinfo (hostname, NULL, &hints, res);
+ 		 if (errcode != 0) {
+ 			 cprintf (RED,"Error: Could not convert %s hostname to internet address (zmq):"
+ 					 "%s\n", hostname, gai_strerror(errcode));
+ 		 } else {
+ 			 if (*res == NULL) {
+ 				 cprintf (RED,"Error: Could not convert %s hostname to internet address (zmq): "
+ 						 "gettaddrinfo returned null\n", hostname);
+ 			 } else{
+ 				 return 0;
+ 			 }
+ 		 }
+ 		cerr << "Error: Could not convert hostname to internet address" << endl;
+ 		 return 1;
+ 	};
+
+     /**
+      * Convert Internet Address structure pointer to ip string (char*)
+      * Clears the internet address structure as well
+      * @param res pointer to internet address structure
+      * @param ip pointer to char array to store result in
+      * @param ipsize size available in ip buffer
+      * @return 1 for fail, 0 for success
+      */
+     // Do not make this static (for multi threading environment)
+     int ConvertInternetAddresstoIpString (struct addrinfo *res, char* ip, const int ipsize) {
+    	 if (inet_ntop (res->ai_family, &((struct sockaddr_in *) res->ai_addr)->sin_addr, ip, ipsize) != NULL) {
+    		 freeaddrinfo(res);
+    		 return 0;
+    	 }
+    	 cerr << "Error: Could not convert internet address to ip string" << endl;
+    	 return 1;
+     }
+
+
 
 	/**
 	 * Send Message Header

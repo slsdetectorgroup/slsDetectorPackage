@@ -6517,6 +6517,7 @@ int slsDetector::configureMAC(){
 		}
 	}
 
+
 	//if udpip wasnt initialized in config file
 	if(!(strcmp(thisDetector->receiverUDPIP,"none"))){
 		//hostname is an ip address

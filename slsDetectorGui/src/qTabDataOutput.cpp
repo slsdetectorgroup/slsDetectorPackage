@@ -80,8 +80,8 @@ void qTabDataOutput::SetupWidgetWindow(){
 	outDirTip = lblOutputDir->toolTip();
 
 
-	//expert mode is not enabled initially
-	chkCompression->setEnabled(false);
+	//not used at all, later used for gappixels
+	chkUnused->setEnabled(false);
 
 	//enabling file format depending on detector type
 	SetupFileFormat();
@@ -167,8 +167,6 @@ void qTabDataOutput::Initialization(){
 	connect(chkAngular,			SIGNAL(toggled(bool)), 	this, 	SLOT(SetAngularCorrection()));
 	//discard bad channels
 	connect(chkDiscardBad,		SIGNAL(toggled(bool)), 	this, 	SLOT(DiscardBadChannels()));
-	//compression
-	connect(chkCompression,		SIGNAL(toggled(bool)), 	this, 	SLOT(SetCompression(bool)));
 	//10GbE
 	connect(chkTenGiga,			SIGNAL(toggled(bool)), 	this, 	SLOT(EnableTenGigabitEthernet(bool)));
 
@@ -180,18 +178,6 @@ void qTabDataOutput::Initialization(){
 		connect(comboEigerFlags1,	SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(SetFlags()));
 		connect(comboEigerFlags2,	SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(SetFlags()));
 	}
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabDataOutput::SetExpertMode(bool enable){
-	if((detType == slsDetectorDefs::GOTTHARD) || (detType == slsDetectorDefs::MOENCH)){
-		chkCompression->setEnabled(enable);
-		GetCompression();
-	}
-
 }
 
 
@@ -737,34 +723,6 @@ void qTabDataOutput::SetOutputDir(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabDataOutput::GetCompression(){
-	disconnect(chkCompression,		SIGNAL(toggled(bool)), 	this, 	SLOT(SetCompression(bool)));
-	int ret = myDet->enableReceiverCompression();
-	if(ret > 0)	chkCompression->setChecked(true);
-	else		chkCompression->setChecked(false);
-	connect(chkCompression,			SIGNAL(toggled(bool)), 	this, 	SLOT(SetCompression(bool)));
-
-	qDefs::checkErrorMessage(myDet,"qTabDataOutput::GetCompression");
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabDataOutput::SetCompression(bool enable){
-	disconnect(chkCompression,		SIGNAL(toggled(bool)), 	this, 	SLOT(SetCompression(bool)));
-	int ret = myDet->enableReceiverCompression(enable);
-	if(ret > 0)	chkCompression->setChecked(true);
-	else		chkCompression->setChecked(false);
-	connect(chkCompression,			SIGNAL(toggled(bool)), 	this, 	SLOT(SetCompression(bool)));
-
-	qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetCompression");
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
 void qTabDataOutput::EnableTenGigabitEthernet(bool enable,int get){
 #ifdef VERBOSE
 	cout  << endl << "Enabling/Disabling 10GbE" << endl;
@@ -1100,14 +1058,6 @@ void qTabDataOutput::Refresh(){
 	}else{
 		btnOutputBrowse->setEnabled(true);
 		btnOutputBrowse->setToolTip(dispOutputDir->toolTip());
-	}
-
-	//getting compression
-	if(chkCompression->isEnabled()){
-#ifdef VERBOSE
-		cout  << "Getting compression" << endl;
-#endif
-		GetCompression();
 	}
 
 	//getting 10GbE

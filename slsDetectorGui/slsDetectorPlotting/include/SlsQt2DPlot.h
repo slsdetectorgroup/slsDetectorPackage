@@ -68,7 +68,7 @@ public:
     SlsQt2DPlot(QWidget * = NULL);
 
     //    SlsQt2DHist *GetHistogram(){ return hist; }
-    void   UnZoom();
+    void   UnZoom(bool replot=true);
     void   SetZoom(double xmin,double ymin,double x_width,double y_width);
 
 

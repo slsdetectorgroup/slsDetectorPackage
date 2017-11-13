@@ -164,13 +164,13 @@ void SlsQt2DPlot::SetupZoom(){
 	  //replot();
 }*/
 
-void SlsQt2DPlot::UnZoom(){
+void SlsQt2DPlot::UnZoom(bool replot){
 #if QWT_VERSION<0x060000
   zoomer->setZoomBase(QwtDoubleRect(hist->GetXMin(),hist->GetYMin(),hist->GetXMax()-hist->GetXMin(),hist->GetYMax()-hist->GetYMin()));
 #else
   zoomer->setZoomBase(QRectF(hist->GetXMin(),hist->GetYMin(),hist->GetXMax()-hist->GetXMin(),hist->GetYMax()-hist->GetYMin()));
 #endif 
-  zoomer->setZoomBase();//Call replot for the attached plot before initializing the zoomer with its scales.
+  zoomer->setZoomBase(replot);//Call replot for the attached plot before initializing the zoomer with its scales.
   // zoomer->zoom(0);
 }
 

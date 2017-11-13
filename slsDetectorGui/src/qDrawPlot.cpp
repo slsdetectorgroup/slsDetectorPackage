@@ -487,7 +487,10 @@ bool qDrawPlot::StartOrStopThread(bool start){
 		plot2D->GetPlot()->SetXMinMax(-0.5,nPixelsX+0.5);
 		plot2D->GetPlot()->SetYMinMax(startPixel,endPixel);
 		plot2D->GetPlot()->SetZoom(-0.5,startPixel,nPixelsX,endPixel-startPixel);
-		plot2D->GetPlot()->UnZoom();
+		if (boxPlot->title() == "Sample Plot")
+			plot2D->GetPlot()->UnZoom();
+		else
+			plot2D->GetPlot()->UnZoom(false);
 		/*XYRangeChanged = true;*/
 		boxPlot->setTitle("Old_Plot.raw");
 
@@ -856,13 +859,13 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 				memcpy(histYAngleAxis,data->values,nAnglePixelsX*sizeof(double));
 				SetHistXAxisTitle("Angles");
 			}
+			plotRequired = true;
 			UnlockLastImageArray();
 			currentFrame++;
 #ifdef VERYVERBOSE
 			cout << "Exiting GetData Function " << endl;
 #endif
 			emit UpdatePlotSignal();
-			plotRequired = true;
 			return 0;
 		}
 
@@ -906,11 +909,11 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 			imageTitle = temp_title;
 			//copy data
 			memcpy(lastImageArray+(currentScanDivLevel*nPixelsX),data->values,nPixelsX*sizeof(double));
+			plotRequired = true;
 			UnlockLastImageArray();
 			currentFrame++;
 			currentScanDivLevel++;
 			emit UpdatePlotSignal();
-			plotRequired = true;
 			return 0;
 		}
 		//file index
@@ -925,11 +928,11 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 			imageTitle = temp_title;
 			//copy data
 			for(unsigned int px=0;px<nPixelsX;px++)	lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
+			plotRequired = true;
 			UnlockLastImageArray();
 			currentFrame++;
 			currentScanDivLevel++;
 			emit UpdatePlotSignal();
-			plotRequired = true;
 			return 0;
 		}
 		//level0
@@ -951,10 +954,10 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 			imageTitle = temp_title;
 			//copy data
 			for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
+			plotRequired = true;
 			UnlockLastImageArray();
 			currentFrame++;
 			emit UpdatePlotSignal();
-			plotRequired = true;
 			return 0;
 		}
 		//level1
@@ -976,10 +979,10 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 			imageTitle = temp_title;
 			//copy data
 			for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
+			plotRequired = true;
 			UnlockLastImageArray();
 			currentFrame++;
 			emit UpdatePlotSignal();
-			plotRequired = true;
 			return 0;
 		}
 
@@ -1169,14 +1172,14 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 		}
 		/*	pthread_mutex_unlock(&(last_image_complete_mutex));
 		}*/
+		plotRequired = true;
 		UnlockLastImageArray();
 
 #ifdef VERYVERBOSE
 		cprintf(BLUE,"currentframe:%d \tcurrentframeindex:%d\n",currentFrame,currentFrameIndex);
 #endif
-		emit UpdatePlotSignal();
-		plotRequired = true;
 		currentFrame++;
+		emit UpdatePlotSignal();
 	}
 
 

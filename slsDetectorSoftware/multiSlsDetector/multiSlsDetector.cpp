@@ -2945,7 +2945,7 @@ double multiSlsDetector::getRateCorrectionTau(){
 		for(int idet=0; idet<posmax; ++idet){
 			if(detectors[idet]){
 				if(iret[idet] != NULL){
-					if(*iret[idet] == -100.0)
+					if(ret == -100.0)
 						ret = *iret[idet];
 					else if ((ret - *iret[idet]) > 0.000000001) {
 						std::cout<< "Rate correction is different for different readouts " << std::endl;

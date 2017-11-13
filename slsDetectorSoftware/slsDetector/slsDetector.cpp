@@ -1747,7 +1747,10 @@ int slsDetector::getTotalNumberOfChannels() {
     thisDetector->nChans=thisDetector->nChan[X];
     thisDetector->dataBytes=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods*2*thisDetector->timerValue[SAMPLES_JCTB];
    // cout << "Total number of channels is "<< thisDetector->nChans*thisDetector->nChips*thisDetector->nMods << " data bytes is " << thisDetector->dataBytes << endl;
-    thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) *2*thisDetector->timerValue[SAMPLES_JCTB];
+    thisDetector->dataBytesInclGapPixels =
+    		(thisDetector->nChan[X]*thisDetector->nChip[X]*thisDetector->nMod[X]) + (thisDetector->gappixels * thisDetector->nGappixels[X]) *
+			(thisDetector->nChan[Y]*thisDetector->nChip[Y]*thisDetector->nMod[Y]) + (thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+    		2*thisDetector->timerValue[SAMPLES_JCTB];
   } else {
 #ifdef VERBOSE
     cout << "det type is "<< thisDetector->myDetectorType << endl;
@@ -2007,8 +2010,8 @@ int slsDetector::setFlippedData(dimension d, int value){
 
 int slsDetector::enableGapPixels(int val) {
 
-	if(thisDetector->myDetectorType!= EIGER)
-		return -1;
+	if(val > 0 && thisDetector->myDetectorType!= EIGER)
+		val = -1;
 
 	if (val >= 0) {
 		val=(val>0)?1:0;

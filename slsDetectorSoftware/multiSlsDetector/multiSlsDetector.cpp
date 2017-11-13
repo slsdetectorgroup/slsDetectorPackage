@@ -4299,9 +4299,9 @@ int multiSlsDetector::setFlippedData(dimension d, int value){
 
 int multiSlsDetector::enableGapPixels(int val) {
 
-	if(getDetectorsType() != EIGER){
+	if(val > 0 && getDetectorsType() != EIGER){
 		std::cout << "Not implemented for this detector" << std::endl;
-		return -1;
+		val = -1;
 	}
 
 	int ret=-100,ret1;
@@ -4314,15 +4314,17 @@ int multiSlsDetector::enableGapPixels(int val) {
 				ret=-1;
 		}
 
-	// update data bytes incl gap pixels
-    thisMultiDetector->dataBytesInclGapPixels=0;
-	for (int i = 0; i < thisMultiDetector->numberOfDetectors; ++i) {
-		if (detectors[i])
-			thisMultiDetector->dataBytesInclGapPixels += detectors[i]->getDataBytesInclGapPixels();
-	}
+	if (val != -1) {
+		// update data bytes incl gap pixels
+		thisMultiDetector->dataBytesInclGapPixels=0;
+		for (int i = 0; i < thisMultiDetector->numberOfDetectors; ++i) {
+			if (detectors[i])
+				thisMultiDetector->dataBytesInclGapPixels += detectors[i]->getDataBytesInclGapPixels();
+		}
 
-	// update offsets and number of channels incl gap pixels in multi level
-	updateOffsets();
+		// update offsets and number of channels incl gap pixels in multi level
+		updateOffsets();
+	}
 
 	return ret;
 }

@@ -417,7 +417,6 @@ void qDetectorMain::EnableModes(QAction *action){
 		actionSaveCalibration->setVisible(enable);
 		tab_measurement->SetExpertMode(enable);
 		tab_settings->SetExpertMode(enable);
-		tab_dataoutput->SetExpertMode(enable);
 #ifdef VERBOSE
 		cout << "Setting Expert Mode to " << enable << endl;
 #endif

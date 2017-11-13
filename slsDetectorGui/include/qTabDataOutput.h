@@ -45,12 +45,6 @@ public:
 	 */
 	int VerifyOutputDirectory();
 
-	/** To enable expert mode
-	 * @param enable to enable if true
-	 */
-	void SetExpertMode(bool enable);
-
-
 private:
 	/** The sls detector object */
 	multiSlsDetector *myDet;
@@ -85,9 +79,6 @@ private:
 	/** Populate the readouts
 	 */
 	void PopulateDetectors();
-
-	/** Get Compression */
-	void GetCompression();
 
 	/** update speed */
 	void UpdateSpeedFromServer();
@@ -139,9 +130,6 @@ void SetOutputDir();
 
 /** set output directory*/
 void GetOutputDir();
-
-/** set compression */
-void SetCompression(bool enable);
 
 /** enable 10GbE */
 void EnableTenGigabitEthernet(bool enable, int get=0);

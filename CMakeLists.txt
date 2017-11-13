@@ -15,6 +15,9 @@ endif (USE_HDF5)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+set(CMAKE_INSTALL_RPATH "$ORIGIN")
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+
 add_subdirectory(slsDetectorSoftware)
 add_subdirectory(slsReceiverSoftware)
 if (QT4_FOUND AND QWT_FOUND)

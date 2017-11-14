@@ -2302,6 +2302,10 @@ string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action) {
 #endif
 
 
+	if (action==HELP_ACTION) {
+		return helpAcquire(narg,args,HELP_ACTION);
+	}
+
 	myDet->setOnline(ONLINE_FLAG);
 	int r_online = myDet->setReceiverOnline(ONLINE_FLAG);
 

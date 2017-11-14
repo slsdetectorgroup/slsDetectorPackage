@@ -274,7 +274,7 @@ GbE & dynamic range & continuos maximum frame rate(Hz) & minimum period ($\mu$s)
 10 & 4 & \textbf{10240} & 98\\
 \hline
 \end{tabular}
-\caption{Frame rate limits for the CONTINUOS streming out of images.} 
+\caption{Frame rate limits for the CONTINUOS streaming out of images.} 
 \label{tcont}\end{table}
 Note that in the {\tt{continuous}} flag mode, some buffering is still done on the memories, so a higher frame rate than the proper real continuous one can be achieved. Still, this extra buffering is possible till the memories are not saturated. 
 The number of images that can be stored on memories are listed in table~\ref{timgs}:
@@ -432,7 +432,7 @@ Here is a list of limits that should be checked:
 \begin{enumerate}
 \item 
 If \textbf{dr} is 32 and \textbf{clkdivider} is not 2, whatever the detector gets out is wrong (the boards cannot properly keep up) 
-\item If the variable \textbf{frames} is greater than what the memory can store (table~\ref{timgs}) and the frame rate exceed the continuos streeming (table~\ref{tcont}), limits on the maximum number of images need to be implemented if the period is lower than the one listed in table~\ref{tcont}. Check table~\ref{tframes} to see the different cases.
+\item If the variable \textbf{frames} is greater than what the memory can store (table~\ref{timgs}) and the frame rate exceed the continuos streaming (table~\ref{tcont}), limits on the maximum number of images need to be implemented if the period is lower than the one listed in table~\ref{tcont}. Check table~\ref{tframes} to see the different cases.
 \item Running at a speed that does not support the frame rate you are asking: see table~\ref{tframes} to check if the frame rate (\textbf{period}) you are asking is compatible with the \textbf{clkdivider} you are asking.
 \item Running at a redout time that does not support the frame rate you are asking. Check table~\ref{tframes} to check if the frame rate (\textbf{period}) you are asking is compatible with the \textbf{flags} you are asking.
 \item The minimum allowed value for \textbf{epttime} should be 10~$\mu$s. 
@@ -898,9 +898,9 @@ sls_detector_put trimbits ../settingsdir/eiger/standard/eigernoise
 \end{itemize}
 
 \section{Troubleshooting}
-\subsection{Cannot succesfully finish an acquisition}
+\subsection{Cannot successfully finish an acquisition}
 \subsubsection{only master module return from acquisition}
-When no packets are received AND detector stayes in 'running status'. Widest list of causes. 
+When no packets are received AND detector states in 'running status'. Widest list of causes. 
 Query the status of each half module till the maximum number {\tt{N}},  {\tt{for i in \$(seq\ 0\ N); do sls\_detector\_get \$i:status; done}}, to check if there are half modules that are still running.
 
 If only the master modules return but ALL the other half modules do not: 
@@ -911,15 +911,15 @@ If only the master modules return but ALL the other half modules do not:
 \end{itemize}
 
 \subsubsection{a few modules do not return from acquisition}
-If only a few modules are still running but the others return, it is a real problem with a backend board or a synchronyzation bug.
-If you can, ssh into the board, kill and start the eigerDetectorServer again (see Section~\ref{server} for how to do this). Keep the terminal with teh output from the  eigerDetectorServer and repeat the acquisition. 
+If only a few modules are still running but the others return, it is a real problem with a backend board or a synchronization bug.
+If you can, ssh into the board, kill and start the eigerDetectorServer again (see Section~\ref{server} for how to do this). Keep the terminal with the output from the  eigerDetectorServer and repeat the acquisition. 
 \begin{itemize}
-\item Check if the acquisition returned from the server or not. In case seak help from the SLSDetectorGroup.
-\item In the server you read something along the lines of "cannot read top right address". It is communication between the front and backend board. Or FEB FPGA is not programmed. Try to programm again FPGA, and make sure you program FPGA bit files 70x, if you have 70x FPGAs, or 30x, if you have 30x FPGAs. If still fails, tell the SLSDetectorGroup as it could be a hardware permanent failure.
+\item Check if the acquisition returned from the server or not. In case seek help from the SLSDetectorGroup.
+\item In the server you read something along the lines of "cannot read top right address". It is communication between the front and backend board. Or FEB FPGA is not programmed. Try to program again FPGA, and make sure you program FPGA bit files 70x, if you have 70x FPGAs, or 30x, if you have 30x FPGAs. If still fails, tell the SLSDetectorGroup as it could be a hardware permanent failure.
 \end{itemize}
 
 \subsection{No packets (or very little) are received} 
-In both cases running \textbf{wireshark} set to receive UDP packets on teh ethernet interface of the receiver (filter the UDPport$>=$xxxx, where xxxx is writtein in the configuration file) can help you understanding if NO packets are seen or some packets are seen. You have to set the buffer size of the receiving device in wireshark to 100Mbyte minimum. If no packets are received, check that your receiving interface and detector UDPIPs are correct (if in 10Gb). Most of the time in this case it is a basic configuartion problem.
+In both cases running \textbf{wireshark} set to receive UDP packets on the ethernet interface of the receiver (filter the UDPport$>=$xxxx, where xxxx is written in the configuration file) can help you understanding if NO packets are seen or some packets are seen. You have to set the buffer size of the receiving device in wireshark to 100Mbyte minimum. If no packets are received, check that your receiving interface and detector UDPIPs are correct (if in 10Gb). Most of the time in this case it is a basic configuration problem.
 If some packets are received, but not all, then it is an optimization problem:
  \begin{itemize}
 \item For receiving data over 1Gb, the switch must have FLOW CONTROL enabled 
@@ -929,11 +929,11 @@ If some packets are received, but not all, then it is an optimization problem:
 \subsection{The module seems dead, no lights on BEBs, no IP addresses}
 \begin{itemize}
 \item Check the 2 fuses on the power distribution board. If one of the fuses is in shortcuircuit, then exchange it. Nominal values are 7 A and 5 A. Old modules with 5 A and 3 A could trip.
-\item The module is not properly cooled and the temperature safety switch has killed the poer to the backend boards. 
+\item The module is not properly cooled and the temperature safety switch has killed the power to the backend boards. 
 \end{itemize}
 
 \subsection{The module seems powered but no IP addresses}
-If the 1G LED (see Section~\ref{led}) on the backpanel baord is not green:
+If the 1G LED (see Section~\ref{led}) on the backpanel board is not green:
 \begin{itemize}
 \item Check that the 1Gb cable is plugged in.
 \item Check that there is a DCHP server assigning IP addresses to the board.
@@ -942,7 +942,7 @@ If the 1G LED (see Section~\ref{led}) on the backpanel baord is not green:
 \end{itemize}
  Check that the board is not in recovery mode (i.e. the central LED on the back is stable green). In this case reboot the board with the soft reset or power cycle it.
 
-If the 1Gb LED on the backpanel baord is green (see Section~\ref{led}):
+If the 1Gb LED on the backpanel board is green (see Section~\ref{led}):
 \begin{itemize}
 \item Check that the IP address has been refreshed on the PC you are trying to communicate to the detector from. Run on the PC as root the following command to update the DNS cache: \textbf{nscd -i hosts} 
 \end{itemize}
@@ -960,7 +960,7 @@ Note that occasionally if there is a shared memory of a different size (from an 
 \begin{verbatim}
 *** shmget error (server) ***-1
 \end{verbatim}
-This needs to be cleaned with {\tt{ipcs -m}} and then {\tt{ipcrm -M xxx}}, where xxx are the keys with nattch 0. Alternative in the main slsDetectorFolder there is a script that can be used as {\tt{sh cleansharedmemory.sh}}. Note that you need to run the script with the account of the client user, as the shared memory belongs to teh client. It is good procedure to implement an automatic cleanup of the shared memory if the client user changes often.   
+This needs to be cleaned with {\tt{ipcs -m}} and then {\tt{ipcrm -M xxx}}, where xxx are the keys with nattch 0. Alternative in the main slsDetectorFolder there is a script that can be used as {\tt{sh cleansharedmemory.sh}}. Note that you need to run the script with the account of the client user, as the shared memory belongs to the client. It is good procedure to implement an automatic cleanup of the shared memory if the client user changes often.   
 
 \subsection{Measure the HV}
 For every system but not the 9M: 
@@ -970,7 +970,7 @@ For every system but not the 9M:
  \end{itemize}
 
 \subsection{The image now has a vertical line}
-Check if the vertical line has a lenght of 256 pixels and a width of 8 columns. In this case it is a dataline beaing bad. It can be either a wirebond problem or a frontend board problem. try to read the FEB temperature (see Section~\ref{}) and report the problem to the SLSDetector group. Most likely it will be a long term fix by checking the hardware.
+Check if the vertical line has a length of 256 pixels and a width of 8 columns. In this case it is a dataline beeing bad. It can be either a wirebond problem or a frontend board problem. try to read the FEB temperature (see Section~\ref{}) and report the problem to the SLSDetector group. Most likely it will be a long term fix by checking the hardware.
 
 \subsection{The image now has more vertical lines}
 

@@ -219,7 +219,7 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {\
 		if (enable) {
 			bool error = false;
 			for ( int i = 0; i < numThreads; ++i ) {
-				dataStreamer.push_back(new DataStreamer(fifo[i], &dynamicRange, &shortFrameEnable));
+				dataStreamer.push_back(new DataStreamer(fifo[i], &dynamicRange, &shortFrameEnable, &fileIndex));
 				dataStreamer[i]->SetGeneralData(generalData);
 				// check again
 				if (streamingPort == 0)

@@ -26,13 +26,14 @@ pthread_mutex_t DataStreamer::Mutex = PTHREAD_MUTEX_INITIALIZER;
 bool DataStreamer::SilentMode(false);
 
 
-DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, int* sEnable) :
+DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, int* sEnable, uint64_t* fi) :
 		ThreadObject(NumberofDataStreamers),
 		generalData(0),
 		fifo(f),
 		zmqSocket(0),
 		dynamicRange(dr),
 		shortFrameEnable(sEnable),
+		fileIndex(fi),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
 		firstAcquisitionIndex(0),
@@ -278,7 +279,7 @@ int DataStreamer::SendHeader(sls_detector_header* header, uint32_t nx, uint32_t 
 	uint64_t frameIndex = header->frameNumber - firstMeasurementIndex;
 	uint64_t acquisitionIndex = header->frameNumber - firstAcquisitionIndex;
 
-	return zmqSocket->SendHeaderData(index, dummy, SLS_DETECTOR_JSON_HEADER_VERSION, *dynamicRange,
+	return zmqSocket->SendHeaderData(index, dummy, SLS_DETECTOR_JSON_HEADER_VERSION, *dynamicRange, *fileIndex,
 			nx, ny,
 			acquisitionIndex, frameIndex, fileNametoStream,
 			header->frameNumber, header->expLength, header->packetNumber, header->bunchId, header->timestamp,

@@ -282,7 +282,7 @@ public:
 	 * @param dummy true if end of acquistion else false
 	 * @returns 0 if error, else 1
 	 */
-	int SendHeaderData ( int index, bool dummy, uint32_t jsonversion, uint32_t dynamicrange = 0,
+	int SendHeaderData ( int index, bool dummy, uint32_t jsonversion, uint32_t dynamicrange = 0, uint64_t fileIndex = 0,
 			uint32_t npixelsx = 0, uint32_t npixelsy = 0,
 			uint64_t acqIndex = 0, uint64_t fIndex = 0, char* fname = NULL,
 			uint64_t frameNumber = 0, uint32_t expLength = 0, uint32_t packetNumber = 0,
@@ -297,8 +297,9 @@ public:
 		const char* jsonHeaderFormat =
 				"{"
 				"\"jsonversion\":%u, "
-				"\"bitmode\":%d, "
-				"\"shape\":[%d, %d], "
+				"\"bitmode\":%u, "
+				"\"fileIndex\":%llu, "
+				"\"shape\":[%u, %u], "
 				"\"acqIndex\":%llu, "
 				"\"fIndex\":%llu, "
 				"\"fname\":\"%s\", "
@@ -319,7 +320,7 @@ public:
 				"\"version\":%u"
 				"}\n\0";
 		int length = sprintf(buf, jsonHeaderFormat,
-				jsonversion, dynamicrange, npixelsx, npixelsy,
+				jsonversion, dynamicrange, fileIndex, npixelsx, npixelsy,
 				acqIndex, fIndex, (fname == NULL)? "":fname, dummy?0:1,
 						frameNumber, expLength, packetNumber, bunchId, timestamp,
 						modId, xCoord, yCoord, zCoord, debug, roundRNumber,

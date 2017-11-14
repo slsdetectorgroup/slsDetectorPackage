@@ -3690,7 +3690,7 @@ string multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 
 	// disable data streaming before changing zmq port (but only if they were on)
 	int prev_streaming = 0;
-  	if (p == RECEIVER_STREAMING_PORT) {
+  	if (p == RECEIVER_STREAMING_PORT || p == CLIENT_STREAMING_PORT) {
 		prev_streaming = getStreamingSocketsCreatedInClient();
   		enableDataStreamingFromReceiver(0);
   	}
@@ -3704,7 +3704,7 @@ string multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 			string* sret[thisMultiDetector->numberOfDetectors];
 			for(int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet){
 				if(detectors[idet]){
-					if (p == RECEIVER_STREAMING_PORT)
+					if (p == RECEIVER_STREAMING_PORT || p == CLIENT_STREAMING_PORT)
 						s.append("multi\0");
 					sret[idet]=new string("error");
 					Task* task = new Task(new func2_t<string,networkParameter,string>(&slsDetector::setNetworkParameter,
@@ -3748,7 +3748,7 @@ string multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 	}
 
 	//enable data streaming if it was on
-	if (p == RECEIVER_STREAMING_PORT && prev_streaming)
+	if ((p == RECEIVER_STREAMING_PORT  || p == CLIENT_STREAMING_PORT) && prev_streaming)
 		enableDataStreamingFromReceiver(1);
 
 	return getNetworkParameter(p);

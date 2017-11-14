@@ -5930,6 +5930,9 @@ string slsDetector::setNetworkParameter(networkParameter index, string value) {
 	case FLOW_CONTROL_10G:
 		sscanf(value.c_str(),"%d",&i);
 		return setDetectorNetworkParameter(index, i);
+	case CLIENT_STREAMING_PORT:
+		setClientStreamingPort(value);
+		return getClientStreamingPort();
 	case RECEIVER_STREAMING_PORT:
 		setReceiverStreamingPort(value);
 		return getReceiverStreamingPort();
@@ -6235,6 +6238,28 @@ int slsDetector::setReceiverStreamingPort(string port) {
 	}
 	else
 		sscanf(port.c_str(),"%d",&arg);
+	thisDetector->zmqport = arg;
+
+	return thisDetector->zmqport;
+}
+
+
+
+
+int slsDetector::setReceiverStreamingPort(string port) {
+	int defaultport = 0;
+	int numsockets = (thisDetector->myDetectorType == EIGER) ? 2:1;
+	int arg = 0;
+
+	//multi command, calculate individual ports
+	size_t found = port.find("multi");
+	if(found != string::npos) {
+		port.erase(found,5);
+		sscanf(port.c_str(),"%d",&defaultport);
+		arg = defaultport + (posId * numsockets);
+	}
+	else
+		sscanf(port.c_str(),"%d",&arg);
 
 	// send to receiver
 	int fnum=F_SET_RECEIVER_STREAMING_PORT;
@@ -6249,12 +6274,12 @@ int slsDetector::setReceiverStreamingPort(string port) {
 			disconnectData();
 		}
 		if(ret!=FAIL)
-			thisDetector->zmqport = retval;
+			thisDetector->receiver_zmqport = retval;
 		if(ret==FORCE_UPDATE)
 			updateReceiver();
 	}
 
-	return thisDetector->zmqport;
+	return thisDetector->receiver_zmqport;
 }
 
 string slsDetector::setDetectorNetworkParameter(networkParameter index, int delay){

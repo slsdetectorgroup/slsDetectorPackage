@@ -354,3 +354,7 @@ int slsDetectorUsers::stopAcquisition() {
 int slsDetectorUsers::setReceiverSilentMode(int i) {
 	return myDetector->setReceiverSilentMode(i);
 }
+
+int slsDetectorUsers::setHighVoltage(int i) {
+	return myDetector->setHighVoltage(i);
+}

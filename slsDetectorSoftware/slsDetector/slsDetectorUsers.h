@@ -618,6 +618,13 @@ class slsDetectorUsers
     */
    int setReceiverSilentMode(int i);
 
+   /**
+    * set high voltage
+    * @param i > 0 sets, 0 unsets, (-1 gets)
+    * @return high voltage
+    */
+   int setHighVoltage(int i);
+
   /************************************************************************
 
                            STATIC FUNCTIONS

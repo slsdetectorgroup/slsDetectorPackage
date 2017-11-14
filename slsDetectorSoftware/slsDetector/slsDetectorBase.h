@@ -404,7 +404,12 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
 		  default: setReadOutFlags(SAFE);break;			\
 		  }												\
 	  }													\
-  };													\
+  };
+
+  /**
+   	 get readout mode of detector (eiger specific)
+   	 \returns 0 for nonparallel, 1 for parallel, 2 for safe
+   */
   int getParallelMode(){								\
 	  int ret = setReadOutFlags();						\
 	  if (ret&NONPARALLEL) return 0;					\
@@ -413,11 +418,17 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
 	  return -1;										\
   }														\
 
+  /**
+     set/ get high voltage
+     \param val high voltage (>0 sets, 0 unsets, -1 gets)
+     \returns high voltage
+   */
+  int setHighVoltage(int val){return setDAC(val, HV_NEW, 0, -1);}														\
 
 
   /**
      set dacs value
-     \param val value (in V)
+     \param val value
      \param index DAC index
      \param mV 0 in dac units or 1 in mV
      \param imod module number (if -1 alla modules)

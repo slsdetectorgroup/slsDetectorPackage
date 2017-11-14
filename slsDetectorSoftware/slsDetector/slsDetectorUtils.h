@@ -98,7 +98,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
   int enableFlatFieldCorrection(int i=-1) {if (i>0) setFlatFieldCorrectionFile("default"); else if (i==0) setFlatFieldCorrectionFile(""); return getFlatFieldCorrection();};
   int enablePixelMaskCorrection(int i=-1) {if (i>0) setBadChannelCorrection("default"); else if (i==0) setBadChannelCorrection(""); return getBadChannelCorrection();};
-  int enableCountRateCorrection(int i=-1) {if (i>0) {if (getDetectorsType() == MYTHEN) setRateCorrection(-1); else setRateCorrection(i);} else if (i==0) setRateCorrection(0); return getRateCorrection();};
+  int enableCountRateCorrection(int i=-1) {if (i>0) setRateCorrection(i); else if (i==0) setRateCorrection(0); return getRateCorrection();};
   // string getFilePath(){return fileIO::getFilePath();};;
   // string setFilePath(string s){return fileIO::setFilePath(s);};
 

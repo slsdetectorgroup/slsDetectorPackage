@@ -23,8 +23,9 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param f address of Fifo pointer
 	 * @param dr pointer to dynamic range
 	 * @param sEnable pointer to short frame enable
+	 * @param fi pointer to file index
 	 */
-	DataStreamer(Fifo*& f, uint32_t* dr, int* sEnable);
+	DataStreamer(Fifo*& f, uint32_t* dr, int* sEnable, uint64_t* fi);
 
 	/**
 	 * Destructor
@@ -197,6 +198,9 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** Pointer to short frame enable */
 	int* shortFrameEnable;
+
+	/** Pointer to file index */
+	uint64_t* fileIndex;
 
 	/** Aquisition Started flag */
 	bool acquisitionStartedFlag;

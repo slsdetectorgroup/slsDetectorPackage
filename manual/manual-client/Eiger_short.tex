@@ -581,7 +581,7 @@ where  {\tt{number}} is a string that should be interpreted as an int for 0/1 me
 
 
 \section{1Gb/s, 10Gb/s links}
-\subsection{Checking the 1Gb/s, 10Gb/s physical links}
+\subsection{Checking the 1Gb/s, 10Gb/s physical links}\label{led}
 LEDs on the backpanel board at the back of each half module signal:
 \begin{itemize}
 \item  the 1Gb/s physical link is signaled by the most external LED (should be green) 
@@ -635,7 +635,7 @@ To activate back a module, do:
 \end{verbatim}
 
 \end{itemize}
-\subsection{Setting up 10Gb correctly: experience so far}
+\subsection{Setting up 10Gb correctly: experience so far}\label{10g}
 
 For configuring well the 10Gb card not to loose packets, 
 \begin{itemize}
@@ -795,7 +795,7 @@ Note that the get {\tt{vhighvoltage}} would return the measured HV from the mast
 
 \appendix
 
-\section{Kill the server, copy a new server, start the server}
+\section{Kill the server, copy a new server, start the server}\label{server}
 All the below operations are form a terminal and assume you login to the boards.\\
 Kill current server:
 \begin{verbatim}
@@ -896,6 +896,89 @@ sls_detector_put trimbits ../settingsdir/eiger/standard/eigernoise
 \item slsReceiverScript3 1991 36 \# from one shell.. opens 36 receivers
 \item p config ../../eiger\_9m\_10gb\_xbl-daq-27\_withbottom.config
 \end{itemize}
+
+\section{Troubleshooting}
+\subsection{Cannot succesfully finish an acquisition}
+\subsubsection{only master module return from acquisition}
+When no packets are received AND detector stayes in 'running status'. Widest list of causes. 
+Query the status of each half module till the maximum number {\tt{N}},  {\tt{for i in \$(seq\ 0\ N); do sls\_detector\_get \$i:status; done}}, to check if there are half modules that are still running.
+
+If only the master modules return but ALL the other half modules do not: 
+\begin{itemize}
+\item FEB LED 1 and or 3 become red while trying to acquire an image: reconnect or change the DDR2 memories. Technically it is a FIFO problem to communicate the data to the rest of the chain. 
+\item It can be that the master cable is not connected, check.
+\item It can be that the synchronization cable is not connected or the termination board at the synchronization does not work. Check.
+\end{itemize}
+
+\subsubsection{a few modules do not return from acquisition}
+If only a few modules are still running but the others return, it is a real problem with a backend board or a synchronyzation bug.
+If you can, ssh into the board, kill and start the eigerDetectorServer again (see Section~\ref{server} for how to do this). Keep the terminal with teh output from the  eigerDetectorServer and repeat the acquisition. 
+\begin{itemize}
+\item Check if the acquisition returned from the server or not. In case seak help from the SLSDetectorGroup.
+\item In the server you read something along the lines of "cannot read top right address". It is communication between the front and backend board. Or FEB FPGA is not programmed. Try to programm again FPGA, and make sure you program FPGA bit files 70x, if you have 70x FPGAs, or 30x, if you have 30x FPGAs. If still fails, tell the SLSDetectorGroup as it could be a hardware permanent failure.
+\end{itemize}
+
+\subsection{No packets (or very little) are received} 
+In both cases running \textbf{wireshark} set to receive UDP packets on teh ethernet interface of the receiver (filter the UDPport$>=$xxxx, where xxxx is writtein in the configuration file) can help you understanding if NO packets are seen or some packets are seen. You have to set the buffer size of the receiving device in wireshark to 100Mbyte minimum. If no packets are received, check that your receiving interface and detector UDPIPs are correct (if in 10Gb). Most of the time in this case it is a basic configuartion problem.
+If some packets are received, but not all, then it is an optimization problem:
+ \begin{itemize}
+\item For receiving data over 1Gb, the switch must have FLOW CONTROL enabled 
+\item If using 10GbE, check that the 10Gb link is active on the backpanel board. Then refer to Section~\ref{10g} to see how to configure the 10Gb ports on the receiving machine correctly. 
+\end{itemize}
+
+\subsection{The module seems dead, no lights on BEBs, no IP addresses}
+\begin{itemize}
+\item Check the 2 fuses on the power distribution board. If one of the fuses is in shortcuircuit, then exchange it. Nominal values are 7 A and 5 A. Old modules with 5 A and 3 A could trip.
+\item The module is not properly cooled and the temperature safety switch has killed the poer to the backend boards. 
+\end{itemize}
+
+\subsection{The module seems powered but no IP addresses}
+If the 1G LED (see Section~\ref{led}) on the backpanel baord is not green:
+\begin{itemize}
+\item Check that the 1Gb cable is plugged in.
+\item Check that there is a DCHP server assigning IP addresses to the board.
+\item The IP address is assigned only at booting up of the boards. Try to reboot in case the board booted before it could have an IP address. 
+\item Check that you did not run out of IP addresses 
+\end{itemize}
+ Check that the board is not in recovery mode (i.e. the central LED on the back is stable green). In this case reboot the board with the soft reset or power cycle it.
+
+If the 1Gb LED on the backpanel baord is green (see Section~\ref{led}):
+\begin{itemize}
+\item Check that the IP address has been refreshed on the PC you are trying to communicate to the detector from. Run on the PC as root the following command to update the DNS cache: \textbf{nscd -i hosts} 
+\end{itemize}
+
+\subsection{Receiver cannot open socket}
+It is connected to the TCPport which the receiver uses:
+\begin{itemize}
+\item The port is already in use by the same receiver already opened somewhere or by another process: check with \textbf{ps -uxc} your processes
+\item In rare cases, it might be that the TCP port crashes. To find out which process uses the TCPPOrt do: \textbf{netstat -nlp | grep xxxx}, where xxxx is the tcpport number. To display open ports and established TCP connections, enter: \textbf{netstat -vatn}. Kill the process.
+%%%#To display only open UDP ports try the following command: netstat -vaun
+ \end{itemize}
+
+\subsection{Client has \textbf{shmget error}}
+Note that occasionally if there is a shared memory of a different size (from an older software version), it will return also a line like this:
+\begin{verbatim}
+*** shmget error (server) ***-1
+\end{verbatim}
+This needs to be cleaned with {\tt{ipcs -m}} and then {\tt{ipcrm -M xxx}}, where xxx are the keys with nattch 0. Alternative in the main slsDetectorFolder there is a script that can be used as {\tt{sh cleansharedmemory.sh}}. Note that you need to run the script with the account of the client user, as the shared memory belongs to teh client. It is good procedure to implement an automatic cleanup of the shared memory if the client user changes often.   
+
+\subsection{Measure the HV}
+For every system but not the 9M: 
+\begin{itemize}
+\item Software-wise measure it (now the software returns the measured value), with {\tt{sls\_detector\_get vhighvoltage}}. The returned value is the HV (for proper Eiger setting is approximately 150~V) if it is correctly set. If two master modules are presents (multi systems), the average is returned (still to be tested). If one asks for the individual $n$ half module bias voltage through {\tt{sls\_detector\_get n:vhighvoltage}}, if the $n$ module is a master, the actual voltage will be returned. If it is a slave, -999 will be returned. 
+\item Hardware-wise measure value of HV on C14 on the power distribution board. Check also that the small HV connector cable is really connected. 
+ \end{itemize}
+
+\subsection{The image now has a vertical line}
+Check if the vertical line has a lenght of 256 pixels and a width of 8 columns. In this case it is a dataline beaing bad. It can be either a wirebond problem or a frontend board problem. try to read the FEB temperature (see Section~\ref{}) and report the problem to the SLSDetector group. Most likely it will be a long term fix by checking the hardware.
+
+\subsection{The image now has more vertical lines}
+
+If you see strange lines in vertical occurring at period patterns, it is a memory problem. The pattern is 4 columns periodic in 16 bit mode, 8 columns periodic in 8 bit mode and 2 columns periodic in 32 bit mode. Try to switch on and off (sometimes it is a strange initialization problem).
+
+\subsection{ssh to the boards takes long}
+Depending on your network setup,  to speed up the ssh to the boards from a pc with internal dhcp server running: \textbf{iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE; echo "1" > /proc/sys/net/ipv4/ip\_forward}, where eth1 has to be the 1Gb network device on the pc
+
 
 \end{document}
 

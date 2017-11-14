@@ -416,7 +416,13 @@ int sendModuleGeneral(int file_des, sls_detector_module *myMod, int sendAll) {
   ts+=sendData(file_des,&(myMod->nadc),sizeof(myMod->nadc),INT32);
   ts+=sendData(file_des,&(myMod->reg),sizeof(myMod->reg),INT32);
   ts+=sendData(file_des,myMod->dacs,sizeof(myMod->ndac),OTHER);
-  ts+=sendData(file_des,myMod->adcs,sizeof(myMod->nadc),OTHER);
+  if(sendAll){
+	  ts+=sendData(file_des,myMod->adcs,sizeof(myMod->nadc),OTHER);
+  }else{
+	  uint32_t k = 0;
+	  ts+=sendData(file_des,&k,sizeof(k),OTHER);
+  }
+
   /*some detectors dont require sending all trimbits etc.*/
   if(sendAll){
     ts+=sendData(file_des,myMod->chipregs,sizeof(myMod->nchip),OTHER);
@@ -434,7 +440,13 @@ int sendModuleGeneral(int file_des, sls_detector_module *myMod, int sendAll) {
   for (idac=0; idac< nDacs; idac++) 
     printf("dac %d is %d\n",idac,(int)myMod->dacs[idac]);
 #endif
-  ts+= sendData(file_des,myMod->adcs,sizeof(dacs_t)*nAdcs,INT32);
+  if(sendAll)
+	  ts+= sendData(file_des,myMod->adcs,sizeof(dacs_t)*nAdcs,INT32);
+  else {
+	  uint32_t k = 0;
+	  ts+= sendData(file_des,&k,sizeof(k),INT32);
+  }
+
 #ifdef VERBOSE
   printf("adcs %d of size %d sent\n",myMod->module, ts);
 #endif
@@ -538,7 +550,10 @@ int  receiveModuleGeneral(int file_des, sls_detector_module* myMod, int receiveA
   ts+=receiveData(file_des,myMod->dacs,sizeof(myMod->ndac),INT32);
   if(receiveAll){ // temporary fix
 	  ts+=receiveData(file_des,myMod->adcs,sizeof(myMod->nadc),INT32);
+  }else {
+	  uint32_t k;ts+=receiveData(file_des,&k,sizeof(k),INT32);//nadc is 0
   }
+
   /*some detectors dont require sending all trimbits etc.*/
   if(receiveAll){
     ts+=receiveData(file_des,myMod->chipregs,sizeof(myMod->nchip),INT32);

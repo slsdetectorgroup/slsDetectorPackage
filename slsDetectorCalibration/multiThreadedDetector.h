@@ -11,9 +11,9 @@
 
 #include <pthread.h>
 
-#include "interpolatingDetector.h"
+#include "analogDetector.h"
 #include "circularFifo.h"
-
+include "etaVEL/slsInterpolation.h"
 
 
 
@@ -21,7 +21,7 @@
 class threadedDetector
 {
 public:
-  threadedDetector(interpolatingDetector *d, int fs=10000) {
+  threadedDetector(analogDetector *d, int fs=10000) {
     char *mem, *mm;
     det=d;
     fifoFree=new CircularFifo<char>(fs);
@@ -31,47 +31,54 @@ public:
       mm=mem+i*det->getDataSize();
       fifoFree->push(mm);
     }  
+    busy=0;
     stop=1;
     fMode=eFrame;
   }
   
 
-  int setFrameMode(int fm) {if (fMode>=0) fMode=fm; return fMode;}
+  virtual int setFrameMode(int fm) {if (fMode>=0) fMode=fm; return fMode;}
 
-  void prepareInterpolation(int &ok) {
-    cout << "-" << endl;
-    det->prepareInterpolation(ok);
-  };
+  /* void prepareInterpolation(int &ok) { */
+  /*   cout << "-" << endl; */
+  /*   det->prepareInterpolation(ok); */
+  /* }; */
 
-  int *getInterpolatedImage() {
+  virtual int *getImage() {
     return det->getInterpolatedImage();
   }
-  int getImageSize(int &nnx, int &nny, int &ns) {return det->getImageSize(nnx, nny, ns);};
-  virtual ~threadedDetector() {StopThread(); free(mem); delete fifoFree; delete fifoData;}
+  virtual int getImageSize(int &nnx, int &nny, int &ns) {return det->getImageSize(nnx, nny, ns);};
+
+  ~threadedDetector() {StopThread(); free(mem); delete fifoFree; delete fifoData;}
 
    /** Returns true if the thread was successfully started, false if there was an error starting the thread */
-   bool StartThread()
-   { stop=0;
+   virtual bool StartThread()
+   { stop=0; 
      return (pthread_create(&_thread, NULL, processData, this) == 0);
    }
 
-   void StopThread()
+   virtual void StopThread()
    { stop=1;
      (void) pthread_join(_thread, NULL);
    }
    
-   
-   bool pushData(char* &ptr) {
+
+   virtual bool pushData(char* &ptr) {
      fifoData->push(ptr);
    }
-   bool popFree(char* &ptr) {
+   virtual bool popFree(char* &ptr) {
      fifoFree->pop(ptr);
    }
 
+   virtual int isBusy() {return busy;}
+   
    //protected:
    /** Implement this method in your subclass with the code you want your thread to run. */
    //virtual void InternalThreadEntry() = 0;
-   void *writeInterpolatedImage(const char * imgname) {cout << "a" <<endl; return det->writeInterpolatedImage(imgname);};
+   virtual void *writeImage(const char * imgname) {cout << "a" <<endl; return det->writeImage(imgname);};
+
+   virtual void clearImage(){det->clearImage();};
+
 private:
    interpolatingDetector *det;
    int fMode;
@@ -81,18 +88,21 @@ private:
    CircularFifo<char> *fifoFree;
    CircularFifo<char> *fifoData;
    int stop;
+   int busy;
    char *data;
 
    static void * processData(void * ptr) {
      threadedDetector *This=((threadedDetector *)ptr); 
      return This->processData();
    }
-
    void * processData() {
+     busy=1;
      while (!stop) {
        if (fifoData->isEmpty()) {
+	 busy=0;
 	 usleep(100);
        } else {
+	 busy=1;
 	 fifoData->pop(data); //blocking!
 	 det->processData(data,(frameMode)fMode);
 	 fifoFree->push(data); 
@@ -103,9 +113,6 @@ private:
 
 
 
-
-
-
 };
 
 
@@ -113,7 +120,7 @@ private:
 class multiThreadedDetector
 {
 public:
- multiThreadedDetector(interpolatingDetector *d, int n, int fs=1000) : nThreads(n), ithread(0) { 
+ multiThreadedDetector(analogDetector *d, int n, int fs=1000) : nThreads(n), ithread(0) { 
     dd[0]=d;
     if (nThreads==1)
       dd[0]->setId(100);
@@ -146,24 +153,15 @@ public:
 
   int setFrameMode(int fm) { int ret; for (int i=0; i<nThreads; i++) ret=dets[i]->setFrameMode(fm); return ret;};
 
-  void prepareInterpolation(int &ok) {
-    int oo;
-    ok=1;
-    for (int i=0; i<nThreads; i++) { 
-      cout << i << endl;
-      dets[i]->prepareInterpolation(oo);
-      //if (oo<1) ok=0;
-    }
-  };
-
-  int *getInterpolatedImage() {
+  
+  int *getImage() {
     int *img;
     int nnx, nny, ns;
     int nn=dets[0]->getImageSize(nnx, nny, ns);
     //for (i=0; i<nn; i++) image[i]=0;
     
     for (int ii=0; ii<nThreads; ii++) {
-      img=dets[ii]->getInterpolatedImage();
+      img=dets[ii]->getImage();
       for (int i=0; i<nn; i++) {
 	if (ii==0)
 	  image[i]=img[i];
@@ -176,15 +174,30 @@ public:
     
   }
 
-   void *writeInterpolatedImage(const char * imgname) {   
+
+  void clearImage() {
+  
+    for (int ii=0; ii<nThreads; ii++) {
+      dets[ii]->clearImage();
+    }
+    
+  }
+
+
+
+
+
+
+
+   void *writeImage(const char * imgname) {   
 #ifdef SAVE_ALL  
      for (int ii=0; ii<nThreads; ii++) {
        char tit[10000];cout << "m" <<endl;
        sprintf(tit,"/scratch/int_%d.tiff",ii);
-       dets[ii]->writeInterpolatedImage(tit);
+       dets[ii]->writeImage(tit);
      }
 #endif
-     getInterpolatedImage();
+     getImage();
      int nnx, nny, ns;
      int nn=dets[0]->getImageSize(nnx, nny, ns);
      float *gm=new float[ nn];
@@ -214,6 +227,17 @@ public:
       
     }
 
+  
+  int isBusy() {
+    int ret=0, ret1;  
+    for (int i=0; i<nThreads; i++) {
+      ret1=dets[ithread]->isBusy();
+      ret|=ret1;
+      if (ret1) cout << "thread " << i <<" still busy " << endl;
+    }
+    return ret;
+  }
+  
    
    bool pushData(char* &ptr) {
      dets[ithread]->pushData(ptr);
@@ -228,6 +252,14 @@ public:
      if (ithread==nThreads) ithread=0;
      return ithread;
    }
+
+   virtual void prepareInterpolation(int &ok){
+     slsInterpolation *
+     
+};
+     
+
+
 
 private:
     bool stop;

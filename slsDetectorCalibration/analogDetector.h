@@ -6,8 +6,12 @@
 #include "pedestalSubtraction.h"
 #include "commonModeSubtraction.h"
 #include "tiffIO.h"
+
 #ifndef FRAMEMODE_DEF
 #define FRAMEMODE_DEF
+/** 
+enum to define the flags of the data set, which are needed to seect the type of processing it should undergo
+*/
  enum frameMode { eFrame, ePedestal, eFlat };
 #endif
 
@@ -23,20 +27,20 @@ template <class dataType> class analogDetector {
   /**
 
      Constructor (no error checking if datasize and offsets are compatible!)
-     \param d detector data structure to be used
-     \param csize cluster size (should be an odd number). Defaults to 3
-     \param nsigma number of rms to discriminate from the noise. Defaults to 5
-     \param sign 1 if photons are positive, -1 if  negative
-     \param cm common mode subtraction algorithm, if any. Defaults to NULL i.e. none
+     \param d detector data structure to be used - if null it is assumed that the data are in ordered ip=iy*nx+ix
+     \param sign is the sign of the data
      \param nped number of samples for pedestal averaging
-     \param nd number of dark frames to average as pedestals without photon discrimination at the beginning of the measurement
+     \param cm common mode subtraction algorithm, if any. Defaults to NULL i.e. none
+     \param nnx detector size in x - must be specified if no data structure is defined, otherwise defaults to the size of the data structure.
+     \param nny detector size in y - must be specified if no data structure is defined, otherwise defaults to the size of the data structure.
+     \param gm pointer to tha gain map matrix
 
 
   */
   
 
  analogDetector(slsDetectorData<dataType> *d, int sign=1, 
-		commonModeSubtraction *cm=NULL, int nped=1000, int nnx=-1, int nny=-1, double *gm=NULL) : det(d), nx(nnx), ny(nny), stat(NULL), cmSub(cm),  iframe(-1), dataSign(sign), gmap(gm) {
+		commonModeSubtraction *cm=NULL, int nped=1000, int nnx=-1, int nny=-1, double *gm=NULL) : det(d), nx(nnx), ny(nny), stat(NULL), cmSub(cm),  iframe(-1), dataSign(sign), gmap(gm), id(0) {
     
     if (det)
       det->getDetectorSize(nx,ny);
@@ -48,16 +52,17 @@ template <class dataType> class analogDetector {
 	stat[i][ix].SetNPedestals(nped);
       }
     }
-   
+    image=new int[nx*ny];
     
   };
   /**
      destructor. Deletes the cluster structure and the pdestalSubtraction array
   */
-  virtual ~analogDetector() {for (int i=0; i<ny; i++) delete [] stat[i]; delete [] stat; };
+  virtual ~analogDetector() {for (int i=0; i<ny; i++) delete [] stat[i]; delete [] stat; delete [] image;};
 
   /**
-     clone
+     constructor cloning another analog detector
+     \param orig analog Detector structure to be cloned
    */
   analogDetector(analogDetector* orig) { 
   /* copy construction from orig*/ 
@@ -68,7 +73,8 @@ template <class dataType> class analogDetector {
     iframe=orig->iframe;
     gmap=orig->gmap;
     cmSub=orig->cmSub;
-    
+    id=orig->id;
+
     stat=new pedestalSubtraction*[ny];
     for (int i=0; i<ny; i++) {
       stat[i]=new pedestalSubtraction[nx];
@@ -82,24 +88,67 @@ template <class dataType> class analogDetector {
 	setPedestal(ix,iy,orig->getPedestal(ix,iy),orig->getPedestalRMS(ix,iy),orig->GetNPedestals(ix,iy));
       }
     }
+    image=new int[nx*ny];
+    
   }
 
+  /**
+     clone. Must be virtual!
+   */
   virtual analogDetector *Clone() {
     return new analogDetector(this);
   }
 
+  /**
+     Gives an id to the structure. For debugging purposes in case of multithreading.
+     \param i is to be set
+     \returns current id
+   */
+  int setId(int i){id=i; return id;};
+
+  /**
+     Returns id of the structure. For debugging purposes in case of multithreading.
+     \returns current id
+   */
+  int getId() {return id; };
+ /**
+     Returns data size of the detector data structure
+     \returns data size of the detector data structurein bytes
+   */
   int getDataSize(){return det->getDataSize();}; 
+ /**
+     Returns data size of the detector image matrix
+     \param nnx reference to image size in x
+     \param nny reference to image size in y
+     \param nns reference to number of subpixels for interpolating detector, will always be 1 in this case
+     \returns number of pixels of the detector image
+   */
+  virtual int getImageSize(int &nnx, int &nny, int &nns){nnx=nx; nny=ny; nns=1; return nx*ny;}; 
+ /**
+     Returns data size of the detector image matrix
+     \param nnx reference to pixel size in x
+     \param nny reference to pixel size in y
+     \returns number of pixels of the detector image
+   */
+  virtual int getDetectorSize(int &nnx, int &nny){nnx=nx; nny=ny; return nx*ny;}; 
 
   /**
      set gain map
+     \param gm pointer to gain map matrix to be set -  NULL unsets
+     \returns pointer to current gain map
   */
   double *setGainMap(double *gm) {gmap=gm; return gmap;};
 
    /**
      return gain map
+     \returns pointer to current gain map
   */
   double *getGainMap() {return gmap;};
-
+  /**
+     reads a 32 bit tiff file of the size of the detector and sets its values as gain map for the detector. If file does not exist returns NULL, but does not change gainmap compared to previous settings.
+     \param imgname complete name of the file containing the gain map data
+     \returns pointer to current gain map is file reading succeeded, NULL is file reading didn't work.
+  */
   double *readGainMap(const char * imgname) {
     uint32 nnx, nny;
     float *gm=ReadFromTiff( imgname, nny, nnx);
@@ -115,7 +164,11 @@ template <class dataType> class analogDetector {
     }
     return NULL;
   }
-  
+   /**
+     wrties a 32 bit tiff file of the size of the detector and contaning the gain map value, if any. If file doesn'e exist or gainmap is undefined, does not do anything.
+     \param imgname complete name of the file to be written
+     \returns NULL
+  */
   void *writeGainMap(const char * imgname) {
     float *gm=NULL;
     if (gmap)  {
@@ -125,7 +178,8 @@ template <class dataType> class analogDetector {
 	  gm[iy*nx+ix]=gmap[iy*nx+ix];
 	}
       }
-      return WriteToTiff(gm, imgname, ny, nx);    
+      WriteToTiff(gm, imgname, ny, nx);   
+      delete [] gm;
     }
     return NULL;
   }
@@ -175,6 +229,7 @@ template <class dataType> class analogDetector {
        \param ix pixel x coordinate
        \param iy pixel y coordinate
        \param cm 0 (default) without common mode subtraction, 1 with common mode subtraction (if defined)
+       \returns pedestal value
     */
     virtual double getPedestal(int ix, int iy, int cm=0){if (ix>=0 && ix<nx && iy>=0 && iy<ny) if (cmSub && cm>0) return stat[iy][ix].getPedestal()-cmSub->getCommonMode(); else return stat[iy][ix].getPedestal(); else return -1;};
 
@@ -182,8 +237,57 @@ template <class dataType> class analogDetector {
        gets  pedestal rms (i.e. noise)
        \param ix pixel x coordinate
        \param iy pixel y coordinate
+       \returns pedestal rms
     */
-    double getPedestalRMS(int ix, int iy){if (ix>=0 && ix<nx && iy>=0 && iy<ny) return stat[iy][ix].getPedestalRMS();else return -1;};
+    virtual double getPedestalRMS(int ix, int iy){if (ix>=0 && ix<nx && iy>=0 && iy<ny) return stat[iy][ix].getPedestalRMS();else return -1;};
+
+   
+    /**
+       gets  pedestal (and common mode)
+       \param ix pixel x coordinate
+       \param iy pixel y coordinate
+       \param cm 0 (default) without common mode subtraction, 1 with common mode subtraction (if defined)
+       \returns pedestal value
+    */
+    virtual double* getPedestal(double *ped){
+      if (ped==NULL)
+	ped=new double[nx*ny];
+      for (int ix=0; ix<nx; ix++) {
+	for (int iy=0; iy<ny; iy++) {
+	  ped[iy*nx+ix]=stat[iy][ix].getPedestal();
+	}
+      }
+      return ped;
+    };
+
+    /**
+       gets  pedestal rms (i.e. noise)
+       \param ix pixel x coordinate
+       \param iy pixel y coordinate
+       \returns pedestal rms
+    */
+    virtual double* getPedestalRMS(double *ped=NULL){
+      if (ped==NULL)
+	ped=new double[nx*ny];
+      for (int ix=0; ix<nx; ix++) {
+	for (int iy=0; iy<ny; iy++) {
+	  ped[iy*nx+ix]=stat[iy][ix].getPedestalRMS();
+	}
+      }
+      return ped;
+    };
+
+
+
+
+
+
+
+
+
+
+
+
 
     
     /**
@@ -191,20 +295,74 @@ template <class dataType> class analogDetector {
        \param ix pixel x coordinate
        \param iy pixel y coordinate
        \param val value to set
+       \param rms rms to be set if any, defaults to 0
+       \param m number of pedestal samples to be set or the moving stat structure is any, defaults to 0
     */
     virtual void setPedestal(int ix, int iy, double val, double rms=0, int m=-1){if (ix>=0 && ix<nx && iy>=0 && iy<ny) stat[iy][ix].setPedestal(val,rms, m);};
     
-    /**
+  /**
        sets  pedestal
        \param ix pixel x coordinate
        \param iy pixel y coordinate
        \param val value to set
+       \param rms rms to be set if any, defaults to 0
+       \param m number of pedestal samples to be set or the moving stat structure is any, defaults to 0
+    */
+    virtual void setPedestal(double *ped, double *rms=NULL, int m=-1){
+      double rr=0;
+      for (int ix=0; ix<nx; ix++) {
+	for (int iy=0; iy<ny; iy++) {
+	  if (rms) rr=rms[iy*nx+ix];
+	  stat[iy][ix].setPedestal(ped[iy*nx+ix],rr, m);
+	};
+      };
+
+    }
+    
+
+
+
+
+    /**
+       sets  pedestal rms
+       \param ix pixel x coordinate
+       \param iy pixel y coordinate
+       \param rms value to set
     */
     virtual void setPedestalRMS(int ix, int iy, double rms=0){if (ix>=0 && ix<nx && iy>=0 && iy<ny) stat[iy][ix].setPedestalRMS(rms);};
     
+ virtual void setPedestalRMS(double *rms){
+      for (int ix=0; ix<nx; ix++) {
+	for (int iy=0; iy<ny; iy++) {
+	  stat[iy][ix].setPedestalRMS(rms[iy*nx+ix]);
+	};
+      };
+
+    }
+    
+
+
+     /**
+       sets  pedestal rms
+       \param ix pixel x coordinate
+       \param iy pixel y coordinate
+       \param rms value to set
+    */
+  virtual void *writeImage(const char * imgname) {
+    float *gm=NULL;
+      gm=new float[nx*ny];
+      for (int ix=0; ix<nx; ix++) {
+	for (int iy=0; iy<ny; iy++) {
+	    gm[iy*nx+ix]=image[iy*nx+ix];
+	}
+      }
+      WriteToTiff(gm, imgname, ny, nx);   
+      delete [] gm;
+      return NULL;
+  }
    
     
-  void *writePedestals(const char * imgname) {
+  virtual void *writePedestals(const char * imgname) {
     float *gm=NULL;
       gm=new float[nx*ny];
       for (int ix=0; ix<nx; ix++) {
@@ -240,8 +398,28 @@ template <class dataType> class analogDetector {
     return NULL;
   }
   
+  int readImage(const char * imgname) {
+    uint32 nnx, nny;
+    float *gm=ReadFromTiff( imgname, nny, nnx);
+    if (nnx>nx) nnx=nx;
+    if (nny>ny) nny=ny;
     
 
+
+    if (gm) {
+      for (int ix=0; ix<nnx; ix++) {
+	for (int iy=0; iy<nny; iy++) {
+	  image[iy*nx+ix]=gm[iy*nx+ix];
+	}
+      }
+      delete [] gm;
+      return 1;
+    }
+    return NULL;
+  }
+  
+    
+  virtual int *getImage(){return image;};
     
   void *writePedestalRMS(const char * imgname) {
     float *gm=NULL;
@@ -353,6 +531,7 @@ template <class dataType> class analogDetector {
 
    virtual  int getNPhotons(char *data, int ix, int iy=0, int thr=-1) {
      double g=1.;
+     int v;
      if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
 	
        if (gmap) {
@@ -362,11 +541,16 @@ template <class dataType> class analogDetector {
 
 	if (thr<=0) thr=-1*thr*getPedestalRMS(ix,iy)/g;
 	
-	if (det)
-	  return (dataSign*det->getValue(data, ix, iy)-getPedestal(ix,iy))/g/thr;
-	else
-	  return (((double*)data)[(iy)*nx+ix]-getPedestal(ix,iy))/g/thr;
-	
+	/* if (det) */
+	/*   return (dataSign*det->getValue(data, ix, iy)-getPedestal(ix,iy))/g/thr; */
+	/* else { */
+	//if (ix==30 && iy==50 )
+	  v=subtractPedestal(data,ix,iy)/g/thr;
+	  if (v>0)
+	  return v;
+	  //cout << v << endl;
+	  return 0;
+	  //	}
       }
       return 0;
       
@@ -376,7 +560,7 @@ template <class dataType> class analogDetector {
 
       double val;
       if (nph==NULL)
-	nph=new int[nx*ny];   
+	nph=image;//image=new int[nx*ny];   
       double tthr=thr;
       newFrame();
       for (int ix=0; ix<nx; ix++) {
@@ -388,7 +572,8 @@ template <class dataType> class analogDetector {
 
     }
 
-
+   virtual void clearImage(){  for (int ix=0; ix<nx; ix++) {
+       for (int iy=0; iy<ny; iy++) { image[iy*nx+ix]=0;}}};
 
     /** sets/gets number of samples for moving average pedestal calculation
 	\param i number of samples to be set (0 or negative gets)
@@ -432,6 +617,7 @@ template <class dataType> class analogDetector {
       }
     };
 
+    virtual char *getInterpolation(){return NULL;};
 
  protected:
   
@@ -443,6 +629,9 @@ template <class dataType> class analogDetector {
     int dataSign; /**< sign of the data i.e. 1 if photon is positive, -1 if negative */
     int iframe;  /**< frame number (not from file but incremented within the dataset every time newFrame is called */
     double *gmap;
+    int *image;
+    int id;
+    //int xmin, xmax, ymin, ymax;
 };
 
 #endif

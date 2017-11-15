@@ -42,6 +42,9 @@ class noInterpolation : public slsInterpolation{
   {
     return getInterpolatedPosition(x, y, NULL, int_x, int_y);
   };
+  virtual int getInterpolatedPosition(int x, int y, double totquad,int quad,double *cl,double &etax, double &etay){
+    return getInterpolatedPosition(x, y, NULL, int_x, int_y);
+  }
   
   //////////////////////////////////////////////////////////////////////////////////////
   virtual void getPositionETA3(int x, int y, double *data, double &int_x, double &int_y)
@@ -56,6 +59,9 @@ class noInterpolation : public slsInterpolation{
   virtual int addToFlatField(double *cluster, double &etax, double &etay){return 0;};
   virtual int addToFlatField(double etax, double etay){return 0;};
   
+  virtual int addToFlatField(double totquad,int quad,double *cl,double &etax, double &etay){return 0;};
+
+
  protected:
   ;
   // TRandom *eventGenerator;

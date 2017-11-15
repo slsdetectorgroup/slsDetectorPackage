@@ -94,7 +94,6 @@ public analogDetector<uint16_t> {
     eventMask=new eventType*[ny];
     for (int i=0; i<ny; i++) {
       eventMask[i]=new eventType[nx];
-      
     }
     
     
@@ -102,9 +101,11 @@ public analogDetector<uint16_t> {
     clusterSize=orig->clusterSize;
     clusterSizeY=orig->clusterSizeY;
     cluster=new single_photon_hit(clusterSize,clusterSizeY);
+
     quad=UNDEFINED_QUADRANT;
     tot=0;
     quadTot=0;
+    gmap=orig->gmap;
 
   }
   
@@ -139,119 +140,166 @@ public analogDetector<uint16_t> {
 
 
     virtual int *getNPhotons(char *data, double thr=-1, int *nph=NULL) {
-
+      
       double val;
       if (nph==NULL)
-	nph=new int[nx*ny];
+	nph=image;
+      //nph=new int[nx*ny];
+      
       double rest[ny][nx];
       int cy=(clusterSizeY+1)/2;
       int cs=(clusterSize+1)/2;
       
-      double g=-1.;
-
       int ccs=clusterSize;
       int ccy=clusterSizeY;
+      
+      double g=1.;
 
-
+      
       double tthr=thr;
       int nn=0;
       double max=0, tl=0, tr=0, bl=0,br=0, v;
-
-
+      
+      
       if (thr>=0) {
 	cy=1;
 	cs=1;
 	ccs=1;
 	ccy=1;
       }
-
-
-      for (int ix=0; ix<nx; ix++) {
-      for (int iy=0; iy<ny; iy++) {
-	 
-	if (thr<=0) {
-	  
-	if (gmap) {
-	  g=gmap[iy*nx+ix];
-	  if (g==0) g=-1.;
-	}
-
-	  tthr=nSigma*getPedestalRMS(ix,iy)/g;
-    
-	}	
-
-
-	val=subtractPedestal(data,ix,iy);
-	nn=analogDetector<uint16_t>::getNPhotons(data,ix,iy,tthr);
-	nph[ix+nx*iy]+=nn;
-	
-	rest[iy][ix]=(val-nn*tthr);
-	  
-	  
-      }
       
-      }
-      for (int ix=clusterSize/2; ix<clusterSize/2-1; ix++) {
-	for (int iy=clusterSizeY/2; iy<ny-clusterSizeY/2; iy++) {
-	  eventMask[iy][ix]=PEDESTAL;
-	
-	  if (thr<=0) tthr=nSigma*getPedestalRMS(ix,iy);
-	  
-	  max=0;
-	  tl=0;
-	  tr=0;
-	  bl=0;
-	  br=0;
-	  
-	  for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
-	    for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
-	      if ((iy+ir)>=0 && (iy+ir)<ny && (ix+ic)>=0 && (ix+ic)<nx) {
-		//cluster->set_data(rest[iy+ir][ix+ic], ic, ir);
-		v=rest[iy+ir][ix+ic];//cluster->get_data(ic,ir);
-		tot+=v;
-		if (ir<=0 && ic<=0)
-		  bl+=v;
-		if (ir<=0 && ic>=0)
-		  br+=v;
-		if (ir>=0 && ic<=0)
-		  tl+=v;
-		if (ir>=0 && ic>=0)
-		  tr+=v;
-		
-		if (v>max) {
-		  max=v;
-		}
-		if (ir==0 && ic==0) {
-		  if (v>tthr) {
-		    eventMask[iy][ix]=PHOTON;
+      if (iframe<nDark) { 
+	//cout << "ped " << iframe << endl;
+	addToPedestal(data);
+	return nph;
+      }	else {
+	if (thr>0) {
+	cout << "threshold" << endl;
+	for (int ix=0; ix<nx; ix++) {
+	  for (int iy=0; iy<ny; iy++) {
+	    //	cout << id << " " << ix << " " << iy << endl;
+	    
+	    if (gmap) {
+	      g=gmap[iy*nx+ix];
+	      if (g==0) g=-1.;
+	    }
+	    
+
+	    //return UNDEFINED_EVENT;
+    
+	    val=subtractPedestal(data,ix,iy);
+	    
+	    
+	    /* if (thr<=0) { */
+	      
+	    /*   tthr=nSigma*getPedestalRMS(ix,iy)/g; */
+	      
+	    /* } */
+	    
+	    /*  */
+		  nn=analogDetector<uint16_t>::getNPhotons(data,ix,iy,tthr);
+		  nph[ix+nx*iy]+=nn;
+		  rest[iy][ix]=(val-nn*tthr);
+	    
+	  }
+	}
+	}
+	for (int ix=0; ix<nx; ix++) {
+	  for (int iy=0; iy<ny; iy++) {
+	    
+	    //  for (int ix=clusterSize/2; ix<clusterSize/2-1; ix++) {
+	    // for (int iy=clusterSizeY/2; iy<ny-clusterSizeY/2; iy++) {
+	    eventMask[iy][ix]=PEDESTAL;
+	    
+	    if (thr<=0) {
+	      tthr=nSigma*getPedestalRMS(ix,iy)/g;
+	      if (ix==0 || iy==0)
+		rest[iy][ix]=subtractPedestal(data,ix,iy);
+	     
+	    }
+	    
+	    max=0;
+	    tl=0;
+	    tr=0;
+	    bl=0;
+	    br=0;
+	    tot=0;
+	    quadTot=0;
+
+	    for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
+	      for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
+		if ((iy+ir)>=0 && (iy+ir)<ny && (ix+ic)>=0 && (ix+ic)<nx) {
+		  //cluster->set_data(rest[iy+ir][ix+ic], ic, ir);
+		  
+		  if (thr<=0 && ir>=0 && ic>=0 ) 
+		    rest[iy+ir][ix+ic]=subtractPedestal(data,ix+ic,iy+ir);
+		  
+		  v=rest[iy+ir][ix+ic];//cluster->get_data(ic,ir);
+		  tot+=v;
+		  
+		  if (ir<=0 && ic<=0)
+		    bl+=v;
+		  if (ir<=0 && ic>=0)
+		    br+=v;
+		  if (ir>=0 && ic<=0)
+		    tl+=v;
+		  if (ir>=0 && ic>=0)
+		    tr+=v;
+		  
+		  if (v>max) {
+		    max=v;
 		  }
+		  // if (ir==0 && ic==0) {
+		    if (v>tthr) {
+		      eventMask[iy][ix]=NEIGHBOUR;
+		    }
+		    //}
 		}
 	      }
 	    }
-	  }
-	  //if (cluster->get_data(0,0)>=max) {
-	    if (rest[iy][ix]>=max) {
-	    if (bl>=br && bl>=tl && bl>=tr) {
-	      quad=BOTTOM_LEFT;
-	      quadTot=bl;
-	    } else if (br>=bl && br>=tl && br>=tr) {
-	      quad=BOTTOM_RIGHT;
-	      quadTot=br;
-	    } else if (tl>=br && tl>=bl && tl>=tr) {
-	      quad=TOP_LEFT;
-	      quadTot=tl;
-	    } else if   (tr>=bl && tr>=tl && tr>=br) {
-	      quad=TOP_RIGHT;
-	      quadTot=tr;
+	    if (rest[iy][ix]<=-tthr) {
+	      eventMask[iy][ix]=NEGATIVE_PEDESTAL;
+	      //if (cluster->get_data(0,0)>=max) {
+	    } else if (rest[iy][ix]>=max) { 
+	      if (bl>=br && bl>=tl && bl>=tr) {
+		quad=BOTTOM_LEFT;
+		quadTot=bl;
+	      } else if (br>=bl && br>=tl && br>=tr) {
+		quad=BOTTOM_RIGHT;
+		quadTot=br;
+	      } else if (tl>=br && tl>=bl && tl>=tr) {
+		quad=TOP_LEFT;
+		quadTot=tl;
+	      } else if   (tr>=bl && tr>=tl && tr>=br) {
+		quad=TOP_RIGHT;
+		quadTot=tr;
+	      }
+	      if (max>tthr || tot>sqrt(ccy*ccs)*tthr || quadTot>sqrt(cy*cs)*tthr) {
+	      /* 	cout << ix << " " << iy << " " << rest[iy][ix] <<" " <<  tot << " " << quadTot << endl; */
+	      /* 	 for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) { */
+	      /* for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) */
+	      /* 	cout << rest[iy+ir][ix+ic] << " " ; */
+	      /* cout << endl; */
+	      /* 	 } */
+		eventMask[iy][ix]=PHOTON;
+		nph[ix+nx*iy]++;
+		// rest[iy][ix]-=tthr;
+	      } //else if (thr<=0 ) {
+		//addToPedestal(data,ix,iy);
+	      // }
 	    }
-	    if (rest[iy][ix]>tthr || tot>sqrt(ccy*ccs)*tthr || quadTot>sqrt(cy*cs)*tthr) {
-	      nph[ix+nx*iy]++;
-	      rest[iy][ix]-=tthr;
+	    if (thr<0 && eventMask[iy][ix]==PEDESTAL) {
+	      addToPedestal(data,ix,iy);
 	    }
 	  }
 	}
-	
       }
+      
+      //	}
+      // }
+      
+      
+      
       return nph;
 
     }
@@ -551,6 +599,7 @@ int getClusters(char *data, single_photon_hit *clusters) {
 #endif
 
     virtual void processData(char *data, frameMode i=eFrame, int *val=NULL) {
+      // cout << "sp" << endl;
       switch(i) {
       case ePedestal:
 	addToPedestal(data);
@@ -558,6 +607,8 @@ int getClusters(char *data, single_photon_hit *clusters) {
       default:
 	getNPhotons(data,-1,val);
       }
+      iframe++;
+      //	cout << "done" << endl;
     };
 
 

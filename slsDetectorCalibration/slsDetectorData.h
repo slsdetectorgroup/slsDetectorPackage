@@ -333,9 +333,6 @@ class slsDetectorData {
   
   
 
-
-
-
 };
 
 

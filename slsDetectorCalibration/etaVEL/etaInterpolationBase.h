@@ -18,8 +18,8 @@ class etaInterpolationBase : public slsInterpolation {
     if (nb<=0) 
       nbeta=nSubPixels*10;   
     if (etamin>=etamax) {
-      etamin=-0.1;
-      etamax=1.1;
+      etamin=-1;
+      etamax=2;
     }
     etastep=(etamax-etamin)/nbeta;
 #ifdef MYROOT1
@@ -79,6 +79,11 @@ class etaInterpolationBase : public slsInterpolation {
      }
     return heta;
   };
+   TH2D *setFlatField(TH2D *h, int nb=-1, double emin=1, double emax=0)
+  {  
+    return setEta(h, nb, emin, emax);
+  };
+  
   TH2D *getFlatField(){return setEta(NULL);};
 #endif
   
@@ -91,17 +96,27 @@ class etaInterpolationBase : public slsInterpolation {
       etamin=emin;
       etamax=emax;
       if (etamin>=etamax) {
-	etamin=-0.1;
-	etamax=1.1;
+	etamin=-1;
+	etamax=2;
       }
       etastep=(etamax-etamin)/nbeta;
     }
     return heta;
   };
   
+   int *setFlatField(int *h, int nb=-1, double emin=1, double emax=0)
+  {  
+    return setEta(h, nb, emin, emax);
+  };
   int *getFlatField(){return setEta(NULL);};
   
-  
+  int *getFlatField(int &nb, double &emin, double &emax){
+    nb=nbeta; 
+    //cout << "igff* ff has " << nb << " bins " << endl; 
+    emin=etamin; 
+    emax=etamax; 
+    return getFlatField();
+  }; 
   
   
   void *writeFlatField(const char * imgname) {
@@ -122,8 +137,8 @@ class etaInterpolationBase : public slsInterpolation {
     if (emin<=0) etamin=emin;   
    
     if (etamin>=etamax) {
-      etamin=-0.1;
-      etamax=1.1;
+      etamin=-1;
+      etamax=2;
     }
     
     etastep=(etamax-etamin)/nbeta;
@@ -207,44 +222,92 @@ int *gethhx()
     
     int corner;
     corner=calcQuad(data, tot, totquad, sDum); 
-    
-    calcEta(totquad, sDum, etax, etay); 
-    getInterpolatedPosition(x,y,etax,etay,corner,int_x,int_y);
+    if (nSubPixels>2) 
+      calcEta(totquad, sDum, etax, etay); 
+      getInterpolatedPosition(x,y,etax,etay,corner,int_x,int_y);
+
     return;
   };
   
+  virtual void getInterpolatedPosition(int x, int y, double totquad,int quad,double *cl,double &int_x, double &int_y) {
+    
+     double cc[2][2];
+     double *cluster[3];
+     int xoff, yoff;
+     cluster[0]=cl;
+     cluster[1]=cl+3;
+     cluster[2]=cl+6;
+     
+     switch (quad) {
+     case BOTTOM_LEFT:
+       xoff=0;
+       yoff=0;
+       break;
+     case BOTTOM_RIGHT:
+       xoff=1;
+       yoff=0;
+       break;
+     case TOP_LEFT:
+       xoff=0;
+       yoff=1;
+       break;
+     case TOP_RIGHT:
+       xoff=1;
+       yoff=1;
+       break;
+     default:
+       ;
+     } 
+     double etax, etay;
+     if (nSubPixels>2) { 
+       cc[0][0]=cluster[yoff][xoff];
+       cc[1][0]=cluster[yoff+1][xoff];
+       cc[0][1]=cluster[yoff][xoff+1];
+       cc[1][1]=cluster[yoff+1][xoff+1];
+       calcEta(totquad,cc,etax,etay);
+     }
+     return getInterpolatedPosition(x,y,etax, etay,quad,int_x,int_y);
+
+  }
+
+
+
+
+
 
   virtual void getInterpolatedPosition(int x, int y, double etax, double etay, int corner, double &int_x, double &int_y)
   {
 
 
-    double xpos_eta,ypos_eta;
+    double xpos_eta=0,ypos_eta=0;
     double dX,dY;
     int ex,ey;
     switch (corner)
       {
       case TOP_LEFT:
-	dX=-1.; 
-	dY=+1.; 
+	dX=-.99; 
+	dY=+.99; 
 	break;
       case TOP_RIGHT:
-	dX=+1.; 
-	dY=+1.; 
+	dX=+.99; 
+	dY=+.99; 
 	break;
       case BOTTOM_LEFT:
-	dX=-1.; 
-	dY=-1.; 
+	dX=-.99; 
+	dY=-.99; 
 	break;
       case BOTTOM_RIGHT:
-	dX=+1.; 
-	dY=-1.; 
+	dX=+.99; 
+	dY=-.99; 
 	break;
       default:
+	cout << "bad quadrant" << endl;
 	dX=0.; 
 	dY=0.;
       }
     
 
+     if (nSubPixels>2) { 
 
 #ifdef MYROOT1
     xpos_eta=(hhx->GetBinContent(hhx->GetXaxis()->FindBin(etax),hhy->GetYaxis()->FindBin(etay)))/((double)nSubPixels);
@@ -265,9 +328,14 @@ int *gethhx()
       //return 0;
 
 #endif
-    
+     } else {
+       xpos_eta=-dX*0.25;
+       ypos_eta=-0.25*dY;
+     }
+       
     int_x=((double)x) + 0.5*dX + xpos_eta;
     int_y=((double)y) + 0.5*dY + ypos_eta;
+    // cout << "***"<< x <<" " << y << " " << int_x << " " << int_y << endl;
     //   cout << etax << " " << ex << " " << etay << " " << ey << " " << xpos_eta << " " << int_x << " " << ypos_eta << " " << int_y << endl;
     //return 1;
 
@@ -315,6 +383,56 @@ int *gethhx()
     return;
   };
   
+   virtual int addToFlatField(double totquad,int quad,double *cl,double &etax, double &etay) {
+     double cc[2][2];
+     double *cluster[3];
+     int xoff, yoff;
+     cluster[0]=cl;
+     cluster[1]=cl+3;
+     cluster[2]=cl+6;
+     
+     switch (quad) {
+     case BOTTOM_LEFT:
+       xoff=0;
+       yoff=0;
+       break;
+     case BOTTOM_RIGHT:
+       xoff=1;
+       yoff=0;
+       break;
+     case TOP_LEFT:
+       xoff=0;
+       yoff=1;
+       break;
+     case TOP_RIGHT:
+       xoff=1;
+       yoff=1;
+       break;
+     default:
+       ;
+     } 
+     cc[0][0]=cluster[yoff][xoff];
+     cc[1][0]=cluster[yoff+1][xoff];
+     cc[0][1]=cluster[yoff][xoff+1];
+     cc[1][1]=cluster[yoff+1][xoff+1];
+     
+      /* cout << cl[0] << " " << cl[1] << " " << cl[2] << endl;   */
+      /* cout << cl[3] << " " << cl[4] << " " << cl[5] << endl;   */
+      /* cout << cl[6] << " " << cl[7] << " " << cl[8] << endl;   */
+      /* cout <<"******"<<totquad << " " << quad << endl;  */
+      /* cout << cc[0][0]<< " " << cc[0][1] << endl;  */
+      /* cout << cc[1][0]<< " " << cc[1][1] << endl;  */
+     //calcMyEta(totquad,quad,cl,etax, etay);
+     calcEta(totquad, cc,etax, etay);
+
+     //     cout <<"******"<< etax << " " << etay << endl;
+
+
+     return addToFlatField(etax,etay);
+   }
+
+
+
   //////////////////////////////////////////////////////////////////////////////////////
   virtual int addToFlatField(double *cluster, double &etax, double &etay){
     double sDum[2][2];
@@ -345,7 +463,10 @@ int *gethhx()
     ey=(etay-etamin)/etastep;
     // cout << etax << " " << ex << " " << etay << " " << ey << " " << ey*nbeta+ex << endl;
     if (ey<nbeta && ex<nbeta && ex>=0 && ey>=0)
-      heta[ey*nbeta+ex]++;    
+      heta[ey*nbeta+ex]++; 
+    // cout << "*"<< etax << " " << etay << endl;
+    /* cout << etax << " " << etay << " " << ex << " " << ey << " " << ey*nbeta+ex << endl; */
+    /* cout <<"********"<< endl << endl ; */
 #endif
     return 0;    
 };

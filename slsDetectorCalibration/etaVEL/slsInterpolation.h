@@ -102,19 +102,30 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
   
 
 
-
-
-
-
-
-
-
-
-
   //return position inside the pixel for the given photon
   virtual void getInterpolatedPosition(int x, int y, double *data, double &int_x, double &int_y)=0;
   //return position inside the pixel for the given photon
   virtual void getInterpolatedPosition(int x, int y, double etax, double etay, int quad, double &int_x, double &int_y)=0;
+  virtual void getInterpolatedPosition(int x, int y, double totquad,int quad,double *cluster,double &etax, double &etay)=0;
+
+
+  //return position inside the pixel for the given photon
+  virtual void clearInterpolatedImage() {
+
+
+#ifdef MYROOT1
+    hint->Reset();
+#endif
+#ifndef MYROOT1
+      for (int ix=0; ix<nPixelsX*nSubPixels; ix++) {
+	for (int iy=0; iy<nPixelsY*nSubPixels; iy++) {
+	  hint[iy*nPixelsX*nSubPixels+ix]=0;
+	}
+      }
+#endif
+
+
+  };
 
 
 
@@ -125,6 +136,7 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
 
 #ifndef MYROOT1
   virtual int *addToImage(double int_x, double int_y){ int iy=nSubPixels*int_y; int ix=nSubPixels*int_x; 
+    //       cout << int_x << " " << int_y << " " << "  " << ix << " " << iy << " " << ix+iy*nPixelsX*nSubPixels << endl;
     if (ix>=0 && ix<(nPixelsX*nSubPixels) && iy<(nSubPixels*nPixelsY) && iy>=0 )(*(hint+ix+iy*nPixelsX*nSubPixels))+=1; 
     return hint;
   };
@@ -133,22 +145,26 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
 
   virtual int addToFlatField(double *cluster, double &etax, double &etay)=0;
   virtual int addToFlatField(double etax, double etay)=0;
-  
+
+  virtual int  addToFlatField(double totquad,int quad,double *cluster,double &etax, double &etay)=0;
+
 #ifdef MYROOT1
   virtual TH2D *getFlatField(){return NULL;};
-  virtual TH2D *setFlatField(TH2D *h){return NULL;};
+  virtual TH2D *setFlatField(TH2D *h, int nb=-1, double emin=-1, double emax=-1){return NULL;};
+ virtual TH2D *getFlatField(int &nb, double &emin, double &emax){nb=0; emin=0; emax=0; return getFlatField();}; 
 #endif
-
+  
 #ifndef MYROOT1
   virtual int *getFlatField(){return NULL;};
-  virtual int *setFlatField(int *h){return NULL;}; 
+  virtual int *setFlatField(int *h, int nb=-1, double emin=-1, double emax=-1){return NULL;}; 
   void *writeFlatField(const char * imgname){return NULL;};
   void *readFlatField(const char * imgname, int nb=-1, double emin=1, double emax=0){return NULL;};
+ virtual int *getFlatField(int &nb, double &emin, double &emax){nb=0; emin=0; emax=0; return getFlatField();}; 
 #endif
 
   //virtual void Streamer(TBuffer &b);
 
-  
+
   static int calcQuad(double *cl, double &sum, double &totquad, double sDum[2][2]){
     
     int corner = UNDEFINED_QUADRANT;
@@ -297,6 +313,35 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
       t=cl[6]+cl[7]+cl[8];
       etax=(-l+r)/sum;
       etay=(-b+t)/sum;
+    }
+    
+    return -1;
+  }
+
+
+  static int calcMyEta(double totquad, int quad, double *cl, double &etax, double &etay) {
+    double l,r,t,b, sum;
+    int yoff;
+    switch (quad) {
+     case BOTTOM_LEFT:
+     case BOTTOM_RIGHT:
+       yoff=0;
+       break;
+     case TOP_LEFT:
+     case TOP_RIGHT:
+       yoff=1;
+       break;
+     default:
+       ;
+     } 
+      l=cl[0+yoff*3]+cl[0+yoff*3+3];
+      r=cl[2+yoff*3]+cl[2+yoff*3+3];
+      b=cl[0+yoff*3]+cl[1+yoff*3]*cl[2+yoff*3];
+      t=cl[0+yoff*3+3]+cl[1+yoff*3+3]*cl[0+yoff*3+3];
+      sum=t+b;
+    if (sum>0) {
+      etax=(-l+r)/sum;
+      etay=(+t)/sum;
     }
     
     return -1;

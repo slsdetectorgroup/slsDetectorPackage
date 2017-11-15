@@ -57,7 +57,7 @@ class single_photon_hit {
 	\returns value of the cluster element
   */
   double get_data(int ix, int iy=0){return data[(iy+dy/2)*dx+ix+dx/2];};
-  
+  double *get_cluster() {return data;};
   int 	x; 			/**< x-coordinate of the center of hit */
   int	y; 			/**< x-coordinate of the center of hit */
   double	rms; 		/**< noise of central pixel l -- at some point it can be removed*/

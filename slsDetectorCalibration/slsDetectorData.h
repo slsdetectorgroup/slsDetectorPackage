@@ -119,7 +119,7 @@ class slsDetectorData {
     }
     for (iy=0; iy<ny; iy++){
       for (ix=0; ix<nx; ix++) {
-	ip=dataMap[ix][iy]/sizeof(dataType);
+	ip=dataMap[iy][ix]/sizeof(dataType);
 	xmap[ip]=ix;
 	ymap[ip]=iy;
       }

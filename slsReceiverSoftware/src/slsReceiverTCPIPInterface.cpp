@@ -2345,11 +2345,6 @@ int slsReceiverTCPIPInterface::set_streaming_port() {
 		}
 		//get
 		retval=receiverBase->getStreamingPort();
-		if(port > 0 && retval != port) { //if port = 0, its actual value calculated
-			ret = FAIL;
-			strcpy(mess, "Could not set streaming port\n");
-			FILE_LOG(logERROR) << "Warning: " << mess;
-		}
 	}
 #endif
 #ifdef VERYVERBOSE

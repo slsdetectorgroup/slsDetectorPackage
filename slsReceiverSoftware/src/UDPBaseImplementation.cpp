@@ -563,11 +563,7 @@ int UDPBaseImplementation::setActivate(int enable){
 }
 
 void UDPBaseImplementation::setStreamingPort(const uint32_t i) {
-
-	if (streamingPort == 0)
-		streamingPort = DEFAULT_ZMQ_PORTNO + (detID * ((myDetectorType == EIGER) ? 2 : 1)  ); // multiplied by 2 as eiger has 2 ports
-	else
-		streamingPort = i;
+	streamingPort = i;
 
 	FILE_LOG(logINFO) << "Streaming Port: " << streamingPort;
 }

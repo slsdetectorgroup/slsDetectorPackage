@@ -777,7 +777,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->acquiringFlag = false;
     thisDetector->flippedData[0] = 0;
     thisDetector->flippedData[1] = 0;
-    thisDetector->zmqport = 0;
+    thisDetector->zmqport = DEFAULT_ZMQ_CL_PORTNO + (posId * (thisDetector->myDetectorType == EIGER) ? 2 : 1);
+    thisDetector->receiver_zmqport = DEFAULT_ZMQ_RX_PORTNO + (posId * (thisDetector->myDetectorType == EIGER) ? 2 : 1);
 
     for (int ia=0; ia<MAX_ACTIONS; ++ia) {
       strcpy(thisDetector->actionScript[ia],"none");
@@ -6067,7 +6068,7 @@ string slsDetector::setReceiver(string receiverIP){
 		std::cout << "dynamic range:" << thisDetector->dynamicRange << endl << endl;
 		std::cout << "flippeddatax:" << thisDetector->flippedData[d] << endl;
 		std::cout << "10GbE:" << thisDetector->tenGigaEnable << endl << endl;
-		std::cout << "streaming port:" << thisDetector->zmqport << endl;
+		std::cout << "rx streaming port:" << thisDetector->receiver_zmqport << endl;
 
 		//std::cout << "dataStreaming:" << enableDataStreamingFromReceiver(-1) << endl << endl;
 /** enable compresison, */
@@ -6113,19 +6114,7 @@ string slsDetector::setReceiver(string receiverIP){
 
 			// data streaming
 			setReceiverStreamingPort(getReceiverStreamingPort());
-			int clientSockets = parentDet->getStreamingSocketsCreatedInClient();
-			int recSockets = enableDataStreamingFromReceiver(-1);
-			if(clientSockets != recSockets) {
-				pthread_mutex_lock(&ms);
-				if(clientSockets)
-					printf("Enabling Data Streaming\n");
-				else
-					printf("Disabling Data Streaming\n");
-				// push client state to receiver
-				/*parentDet->enableDataStreamingFromReceiver(clientSockets);*/
-				enableDataStreamingFromReceiver(clientSockets);
-				pthread_mutex_unlock(&ms);
-			}
+			enableDataStreamingFromReceiver(enableDataStreamingFromReceiver(-1));
 		}
 	}
 
@@ -6224,7 +6213,7 @@ int slsDetector::setReceiverUDPPort2(int udpport){
 }
 
 
-int slsDetector::setReceiverStreamingPort(string port) {
+int slsDetector::setClientStreamingPort(string port) {
 	int defaultport = 0;
 	int numsockets = (thisDetector->myDetectorType == EIGER) ? 2:1;
 	int arg = 0;
@@ -8268,9 +8257,9 @@ int slsDetector::updateReceiverNoWait() {
   parentDet->enableOverwriteMask(ind);
   pthread_mutex_unlock(&ms);
 
-  // streaming port
+  // receiver streaming port
   n += 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
-  thisDetector->zmqport = ind;
+  thisDetector->receiver_zmqport = ind;
 
   if (!n) printf("n: %d\n", n);
 

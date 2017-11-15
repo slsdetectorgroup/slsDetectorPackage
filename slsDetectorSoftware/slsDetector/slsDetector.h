@@ -273,7 +273,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     int zmqport;
     /** tcp port from receiver to gui/different process (only data) */
     int receiver_zmqport;
-
+    /** data streaming (up stream) enable in receiver */
+    bool receiver_datastream;
 
   } sharedSlsDetector;
 
@@ -1781,8 +1782,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   int setReceiverReadTimer(int time_in_ms=500);
 
   /** Enable or disable streaming data from receiver to client
-   * 	@param enable 0 to disable 1 to enable -1 to only get the value
-   * 	@returns data streaming
+   * @param enable 0 to disable 1 to enable -1 to only get the value
+   * @returns data streaming to receiver enable
   */
   int enableDataStreamingFromReceiver(int enable=-1);
 

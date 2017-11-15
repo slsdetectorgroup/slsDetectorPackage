@@ -256,13 +256,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page config
-   - <b> externalgui </b>sets/gets external gui flag. 1 sets and enables the 0MQ data stream (0MQ threads created) from receiver to client, while 0 unsets and disables. \c Returns \c (int)
-	 */
-	descrToFuncMap[i].m_pFuncName="externalgui"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDataStream;
-	++i;
-
-	/*! \page config
    - \b free Free shared memory on the control PC
 	 */
 	descrToFuncMap[i].m_pFuncName="free";//OK
@@ -1908,6 +1901,13 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 	/*! \page network
+   - <b> rx_datastream </b>enables/disables data streaming from receiver. 1 enables 0MQ data stream from receiver (creates streamer threads), while 0 disables (destroys streamer threads). \c Returns \c (int)
+	 */
+	descrToFuncMap[i].m_pFuncName="rx_datastream"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDataStream;
+	++i;
+
+	/*! \page network
    - <b>configuremac [i]</b> configures the MAC of the detector with these parameters: detectorip, detectormac, rx_udpip, rx_udpmac, rx_udpport, rx_udpport2 (if applicable). This command is already included in \c rx_hsotname. Only put!. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="configuremac"; //
@@ -2316,16 +2316,6 @@ string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action) {
 	myDet->setOnline(ONLINE_FLAG);
 	int r_online = myDet->setReceiverOnline(ONLINE_FLAG);
 
-	if ((!myDet->getExternalGuiFlag()) && (r_online == ONLINE_FLAG)) {
-		// command line: must be off, if receiver on or there was -1, then
-		if (myDet->enableDataStreamingFromReceiver(-1) != 0){
-			//switch it off, if error
-			if (myDet->enableDataStreamingFromReceiver(0) != 0) {
-				return string("could not disable data streaming in receiver\n");
-			}
-		}
-	}
-
 	if(myDet->acquire() == FAIL)
 		return string("acquire unsuccessful");
 	if(r_online){
@@ -2490,18 +2480,11 @@ string slsDetectorCommand::cmdDataStream(int narg, char *args[], int action) {
 
 	if (action==PUT_ACTION) {
 		if (!sscanf(args[1],"%d",&ival))
-			return string ("cannot scan externalgui mode");
-		myDet->setExternalGuiFlag(ival>0?true:false);
+			return string ("cannot scan rx_datastream mode");
 		myDet->enableDataStreamingFromReceiver(ival);
 	}
 
-	int retval = myDet->getExternalGuiFlag();
-	//if external gui on and datastreaming off
-	if (retval  && !myDet->enableDataStreamingFromReceiver()) {
-		retval=-1;
-		printf("Error: data streaming in receiver is switched off while external gui flag in shared memory is off.\n");
-	}
-	sprintf(ans,"%d",myDet->getExternalGuiFlag());
+	sprintf(ans,"%d",myDet->enableDataStreamingFromReceiver());
 	return string(ans);
 }
 
@@ -2510,9 +2493,9 @@ string slsDetectorCommand::helpDataStream(int narg, char *args[], int action) {
 
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION)
-		os << string("externalgui \t gets external gui flag. 1/0 means the 0MQ data stream (0MQ threads created) from receiver to client is enabled/disabled. -1 for inconsistency. \n");
+		os << string("rx_datastream \t enables/disables data streaming from receiver. 1 is 0MQ data stream from receiver enabled, while 0 is 0MQ disabled. -1 for inconsistency between multiple receivers. \n");
 	if (action==PUT_ACTION || action==HELP_ACTION)
-		os << string("externalgui i\t sets external gui flag. 1/0 means the 0MQ data stream (0MQ threads created) from receiver to client is enabled/disabled. \n");
+		os << string("rx_datastream i\t enables/disables data streaming from receiver. i is 1 enables 0MQ data stream from receiver (creates streamer threads), while 0 disables (destroys streamer threads). \n");
 	return os.str();
 }
 
@@ -5899,33 +5882,14 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 
 
 	myDet->setOnline(ONLINE_FLAG);
-	int receivers = myDet->setReceiverOnline(ONLINE_FLAG);
+	myDet->setReceiverOnline(ONLINE_FLAG);
 
 	if(cmd=="receiver"){
 		if (action==PUT_ACTION) {
-			if(!strcasecmp(args[1],"start")) {
-				//to ensure data streaming enable is the same across client and receiver
-				if ((!myDet->getExternalGuiFlag()) && (receivers == ONLINE_FLAG)) {
-					//if it was not off
-					if (myDet->enableDataStreamingFromReceiver(-1) != 0){
-						//switch it off, if error
-						if (myDet->enableDataStreamingFromReceiver(0) != 0) {
-							return string("could not disable data streaming in receiver\n");
-						}
-					}
-					}
+			if(!strcasecmp(args[1],"start"))
 				myDet->startReceiver();
-			}
-			else if(!strcasecmp(args[1],"stop")){
-				//myDet->stopReceiver();
-				// myDet->startReceiverReadout();
-				/*runStatus s = myDet->getReceiverStatus();
-    	  while(s != RUN_FINISHED){
-    		  usleep(50000);
-    		  s = myDet->getReceiverStatus();
-    	  }*/
+			else if(!strcasecmp(args[1],"stop"))
 				myDet->stopReceiver();
-			}
 			else
 				return helpReceiver(narg, args, action);
 		}

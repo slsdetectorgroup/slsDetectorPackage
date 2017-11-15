@@ -749,9 +749,9 @@ virtual ROI* getROI(int &n)=0;
  */
 virtual int setReadReceiverFrequency(int getFromReceiver, int freq=-1)=0;
 
-/** Enable or disable streaming of data from receiver to client
- * 	@param enable 0 to disable 1 to enable -1 to only get the value
- * 	@returns data streaming
+/** Enable or disable streaming data from receiver to client
+ * @param enable 0 to disable 1 to enable -1 to only get the value
+ * @returns data streaming to receiver enable
 */
 virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
 

@@ -3690,8 +3690,13 @@ string multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 
 	// disable data streaming before changing zmq port (but only if they were on)
 	int prev_streaming = 0;
+	switch (p) {
+	case RECEIVER_STREAMING_PORT:
+		prev_streaming = enableDataStreamingFromReceiver();
+		enableDataStreamingFromReceiver(0);
+	}
   	if (p == RECEIVER_STREAMING_PORT || p == CLIENT_STREAMING_PORT) {
-		prev_streaming = getStreamingSocketsCreatedInClient();
+		prev_streaming = enableDataStreamingToClient();
   		enableDataStreamingFromReceiver(0);
   	}
 
@@ -6150,7 +6155,7 @@ int multiSlsDetector::setReceiverReadTimer(int time_in_ms){
 	return ret;
 }
 
-int multiSlsDetector::getStreamingSocketsCreatedInClient() {
+int multiSlsDetector::enableDataStreamingToClient() {
 	return dataSocketsStarted;
 }
 

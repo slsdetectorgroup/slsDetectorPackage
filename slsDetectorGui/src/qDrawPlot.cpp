@@ -322,8 +322,7 @@ void qDrawPlot::SetupWidgetWindow(){
 		plotLayout->addWidget(plot2D,0,0,1,1);
 
 
-//callbacks
-
+	// callbacks
 	// Setting the callback function to get data from detector class
 	myDet->registerDataCallback(&(GetDataCallBack),this);
 	//Setting the callback function to alert when acquisition finished from detector class
@@ -332,6 +331,13 @@ void qDrawPlot::SetupWidgetWindow(){
 	myDet->registerMeasurementFinishedCallback(&(GetMeasurementFinishedCallBack),this);
 	//Setting the callback function to get progress from detector class(using receivers)
 	myDet->registerProgressCallback(&(GetProgressCallBack),this);
+
+
+	// if receiver, enable data streaming from receiver and client
+	if(myDet->setReceiverOnline() == slsDetectorDefs::ONLINE_FLAG) {
+		myDet->enableDataStreamingFromReceiver(1);
+		myDet->enableDataStreamingToClient(1);
+	}
 
 	qDefs::checkErrorMessage(myDet,"qDrawPlot::SetupWidgetWindow");
 }
@@ -731,17 +737,15 @@ void qDrawPlot::SetupMeasurement(){
 
 
 void* qDrawPlot::DataStartAcquireThread(void *this_pointer){
-	//stream data from receiver to the gui
-	if(((qDrawPlot*)this_pointer)->myDet->setReceiverOnline(slsDetectorDefs::GET_ONLINE_FLAG) == slsDetectorDefs::ONLINE_FLAG) {
-		//if it was not on
-		if ( (((qDrawPlot*)this_pointer)->myDet->getStreamingSocketsCreatedInClient() != 1)
-		  || (((qDrawPlot*)this_pointer)->myDet->enableDataStreamingFromReceiver(-1)!= 1) ){
-			//switch it on, if error
+	// stream data from receiver to the gui
+	if(((qDrawPlot*)this_pointer)->myDet->setReceiverOnline() == slsDetectorDefs::ONLINE_FLAG) {
+
+		// if receiver data up streaming not on, switch it on
+		if (((qDrawPlot*)this_pointer)->myDet->enableDataStreamingFromReceiver() != 1)
 			if (((qDrawPlot*)this_pointer)->myDet->enableDataStreamingFromReceiver(1) != 1) {
 				qDefs::checkErrorMessage(((qDrawPlot*)this_pointer)->myDet,"qDrawPlot::DataStartAcquireThread");
 				return this_pointer;
 			}
-		}
 	}
 
 	((qDrawPlot*)this_pointer)->myDet->acquire(1);

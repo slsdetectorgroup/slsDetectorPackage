@@ -77,6 +77,8 @@ void qTabAdvanced::SetupWidgetWindow(){
 	case slsDetectorDefs::MYTHEN:
 		isEnergy = true;
 		isAngular = true;
+		spinZmqPort->setEnabled(false);
+		spinZmqPort2->setEnabled(false);
 		break;
 	case slsDetectorDefs::EIGER:
 		isEnergy = true;
@@ -154,6 +156,8 @@ void qTabAdvanced::SetupWidgetWindow(){
 	spinStopPort->setValue(det->getStopPort());
 	spinTCPPort->setValue(det->getReceiverPort());
 	spinUDPPort->setValue(atoi(det->getReceiverUDPPort().c_str()));
+	spinZmqPort->setValue(atoi(det->getClientStreamingPort().c_str()));
+	spinZmqPort2->setValue(atoi(det->getReceiverStreamingPort().c_str()));
 
 	cout << "Getting network information" << endl;
 	dispIP->setText(det->getDetectorIP().c_str());
@@ -260,12 +264,14 @@ void qTabAdvanced::Initialization(){
 	if((detType==slsDetectorDefs::GOTTHARD) ||
 			(detType==slsDetectorDefs::MOENCH) ||
 			(detType==slsDetectorDefs::PROPIX) ||
-			(detType==slsDetectorDefs::PROPIX) ||
-			(detType==slsDetectorDefs::JUNGFRAU)){
+			(detType==slsDetectorDefs::JUNGFRAU) ||
+			(detType==slsDetectorDefs::EIGER)){
 
 		//network
 		connect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
 		connect(spinUDPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
+		connect(spinZmqPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetCltZmqPort(int)));
+		connect(spinZmqPort2,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrZmqPort(int)));
 		connect(comboRxrOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetReceiverOnline(int)));
 
 		connect(dispIP,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
@@ -721,6 +727,38 @@ void qTabAdvanced::SetRxrUDPPort(int port){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+void qTabAdvanced::SetCltZmqPort(int port){
+#ifdef VERBOSE
+	cout << "Setting Receiver UDP Port:" << port << endl;
+#endif
+	 ostringstream ss; ss << port; string sport = ss.str();
+
+	disconnect(spinZmqPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetCltZmqPort(int)));
+	spinZmqPort->setValue(atoi(det->setClientStreamingPort(sport).c_str()));
+	qDefs::checkErrorMessage(det,"qTabAdvanced::SetCltZmqPort");
+	connect(spinZmqPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetCltZmqPort(int)));
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabAdvanced::SetRxrZmqPort(int port){
+#ifdef VERBOSE
+	cout << "Setting Receiver UDP Port:" << port << endl;
+#endif
+	 ostringstream ss; ss << port; string sport = ss.str();
+
+	disconnect(spinZmqPort2,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrZmqPort(int)));
+	spinZmqPort2->setValue(atoi(det->setReceiverStreamingPort(sport).c_str()));
+	qDefs::checkErrorMessage(det,"qTabAdvanced::SetRxrZmqPort");
+	connect(spinZmqPort2,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrZmqPort(int)));
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 void qTabAdvanced::SetReceiverOnline(int index){
 #ifdef VERBOSE
 	cout << "Setting Reciever Online to :" << index << endl;
@@ -1061,6 +1099,8 @@ void qTabAdvanced::SetDetector(int index){
 	spinStopPort->setValue(det->getStopPort());
 	spinTCPPort->setValue(det->getReceiverPort());
 	spinUDPPort->setValue(atoi(det->getReceiverUDPPort().c_str()));
+	spinZmqPort->setValue(atoi(det->getClientStreamingPort().c_str()));
+	spinZmqPort2->setValue(atoi(det->getReceiverStreamingPort().c_str()));
 
 	dispIP->setText(det->getDetectorIP().c_str());
 	dispMAC->setText(det->getDetectorMAC().c_str());
@@ -1248,6 +1288,8 @@ void qTabAdvanced::Refresh(){
 		//disconnect
 		disconnect(spinTCPPort,			SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
 		disconnect(spinUDPPort,			SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
+		disconnect(spinZmqPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetCltZmqPort(int)));
+		disconnect(spinZmqPort2,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrZmqPort(int)));
 		disconnect(comboRxrOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetReceiverOnline(int)));
 		disconnect(dispIP,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
 		disconnect(dispMAC,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
@@ -1266,6 +1308,8 @@ void qTabAdvanced::Refresh(){
 		dispRxrHostname->setText(det->getReceiver().c_str());
 		spinTCPPort->setValue(det->getReceiverPort());
 		spinUDPPort->setValue(atoi(det->getReceiverUDPPort().c_str()));
+		spinZmqPort->setValue(atoi(det->getClientStreamingPort().c_str()));
+		spinZmqPort2->setValue(atoi(det->getReceiverStreamingPort().c_str()));
 
 		dispUDPIP->setText(det->getReceiverUDPIP().c_str());
 		dispUDPMAC->setText(det->getReceiverUDPMAC().c_str());
@@ -1273,6 +1317,8 @@ void qTabAdvanced::Refresh(){
 		//connect
 		connect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
 		connect(spinUDPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
+		connect(spinZmqPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetCltZmqPort(int)));
+		connect(spinZmqPort2,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrZmqPort(int)));
 		connect(comboRxrOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetReceiverOnline(int)));
 		connect(dispIP,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
 		connect(dispMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));

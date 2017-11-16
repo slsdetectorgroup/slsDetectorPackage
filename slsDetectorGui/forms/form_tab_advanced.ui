@@ -1264,12 +1264,12 @@ An extension given by the modules serial number will be attached.
           </sizepolicy>
          </property>
          <property name="text">
-          <string>ZMQ Port:</string>
+          <string>ZMQ Port TX:</string>
          </property>
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QSpinBox" name="spinUDPPort_2">
+        <widget class="QSpinBox" name="spinZmqPort2">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -1625,12 +1625,12 @@ An extension given by the modules serial number will be attached.
          </sizepolicy>
         </property>
         <property name="text">
-         <string>ZMQ Port:</string>
+         <string>ZMQ Port RX:</string>
         </property>
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QSpinBox" name="spinStopPort_2">
+       <widget class="QSpinBox" name="spinZmqPort">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>

@@ -34,7 +34,7 @@ typedef  int int32_t;
 #define DEFAULT_UDP_PORTNO 		50001
 #define DEFAULT_GUI_PORTNO 		65001
 #define DEFAULT_ZMQ_CL_PORTNO 	30001
-#define DEFAULT_ZMQ_RX_PORTNO 	31000
+#define DEFAULT_ZMQ_RX_PORTNO 	30001
 
 /** 
     \file sls_receiver_defs.h

@@ -1783,7 +1783,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
   /** Enable or disable streaming data from receiver to client
    * @param enable 0 to disable 1 to enable -1 to only get the value
-   * @returns data streaming to receiver enable
+   * @returns data streaming from receiver enable
   */
   int enableDataStreamingFromReceiver(int enable=-1);
 

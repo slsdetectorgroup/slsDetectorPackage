@@ -30,6 +30,7 @@ extern "C" {
 #include <queue>
 #include <math.h>
 #include <semaphore.h>
+#include <cstdlib>
 using namespace std;
 
 
@@ -88,6 +89,48 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   int enableFlatFieldCorrection(int i=-1) {if (i>0) setFlatFieldCorrectionFile("default"); else if (i==0) setFlatFieldCorrectionFile(""); return getFlatFieldCorrection();};
   int enablePixelMaskCorrection(int i=-1) {if (i>0) setBadChannelCorrection("default"); else if (i==0) setBadChannelCorrection(""); return getBadChannelCorrection();};
   int enableCountRateCorrection(int i=-1) {if (i>0) setRateCorrection(i); else if (i==0) setRateCorrection(0); return getRateCorrection();};
+
+  /**
+   * Set/Get receiver streaming out ZMQ port
+   * @param i sets, -1 gets
+   * @param imod module index, -1 for all
+   * @returns receiver streaming out ZMQ port
+   */
+  int setReceiverDataStreamingOutPort(int i, int imod) {										\
+	  // single module
+	  if (imod < 0) {																			\
+		  if (i >= 0) {																			\
+			  ostringstream ss; ss << i; string s = ss.str();									\
+			  getSlsDetector(imod)->setReceiverStreamingPort(RECEIVER_STREAMING_PORT, s);		\
+		  }																						\
+		  return atoi(getSlsDetector(imod)->getReceiverStreamingPort().c_str());				\
+	  }																							\
+	  // multimodule
+	  if (i >= 0)																				\
+		  setNetworkParameter(RECEIVER_STREAMING_PORT, s);										\
+	  return atoi(getSlsDetector(0)->getNetworkParameter(RECEIVER_STREAMING_PORT).c_str());};	\
+
+  /**
+   * Set/Get client streaming in ZMQ port
+   * @param i sets, -1 gets
+   * @param imod module index, -1 for all
+   * @returns client streaming in ZMQ port
+   */
+  int setClientDataStreamingInPort(int i, int imod=-1){												\
+		  // single module
+		  if (imod < 0) {																			\
+			  if (i >= 0) {																			\
+				  ostringstream ss; ss << i; string s = ss.str();									\
+				  getSlsDetector(imod)->setReceiverStreamingPort(CLIENT_STREAMING_PORT, s);		\
+			  }																						\
+			  return atoi(getSlsDetector(imod)->getReceiverStreamingPort().c_str());				\
+		  }																							\
+		  // multimodule
+		  if (i >= 0)																				\
+			  setNetworkParameter(CLIENT_STREAMING_PORT, s);										\
+		  return atoi(getSlsDetector(0)->getNetworkParameter(CLIENT_STREAMING_PORT).c_str());};	\
+  };
+
   // string getFilePath(){return fileIO::getFilePath();};;
   // string setFilePath(string s){return fileIO::setFilePath(s);};
 
@@ -751,7 +794,7 @@ virtual int setReadReceiverFrequency(int getFromReceiver, int freq=-1)=0;
 
 /** Enable or disable streaming data from receiver to client
  * @param enable 0 to disable 1 to enable -1 to only get the value
- * @returns data streaming to receiver enable
+ * @returns data streaming from receiver enable
 */
 virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
 

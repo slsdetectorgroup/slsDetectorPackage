@@ -124,7 +124,7 @@ int 		setThresholdEnergy(int ev, int imod);
 
 // parameters - dac, adc, hv
 #ifdef JUNGFRAUD
-void 		serializeToSPI(u_int32_t addr, u_int32_t val, u_int16_t csmask, int numbitstosend, u_int16_t clkmask, u_int16_t digoutmask, int digofset);
+void 		serializeToSPI(u_int32_t addr, u_int32_t val, u_int32_t csmask, int numbitstosend, u_int32_t clkmask, u_int32_t digoutmask, int digofset);
 void 		initDac(int dacnum);
 extern void	setAdc(int addr, int val);		// AD9257.h
 int 		voltageToDac(int value);

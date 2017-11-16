@@ -6224,7 +6224,7 @@ int slsDetector::setReceiverUDPPort2(int udpport){
 }
 
 
-int slsDetector::setClientStreamingPort(string port) {
+string slsDetector::setClientStreamingPort(string port) {
 	int defaultport = 0;
 	int numsockets = (thisDetector->myDetectorType == EIGER) ? 2:1;
 	int arg = 0;
@@ -6240,13 +6240,13 @@ int slsDetector::setClientStreamingPort(string port) {
 		sscanf(port.c_str(),"%d",&arg);
 	thisDetector->zmqport = arg;
 
-	return thisDetector->zmqport;
+	return getClientStreamingPort();
 }
 
 
 
 
-int slsDetector::setReceiverStreamingPort(string port) {
+string slsDetector::setReceiverStreamingPort(string port) {
 	int defaultport = 0;
 	int numsockets = (thisDetector->myDetectorType == EIGER) ? 2:1;
 	int arg = 0;
@@ -6279,7 +6279,7 @@ int slsDetector::setReceiverStreamingPort(string port) {
 			updateReceiver();
 	}
 
-	return thisDetector->receiver_zmqport;
+	return getReceiverStreamingPort();
 }
 
 string slsDetector::setDetectorNetworkParameter(networkParameter index, int delay){

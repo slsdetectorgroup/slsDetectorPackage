@@ -1757,9 +1757,9 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   /** sets the receiver udp port2 for Eiger \sa sharedSlsDetector  */
   int setReceiverUDPPort2(int udpport);
   /** sets the zmq port in client (includes "multi" at the end if it should calculate individual ports \sa sharedSlsDetector  */
-  int setClientStreamingPort(string port);
+  string setClientStreamingPort(string port);
   /** sets the zmq port in receiver (includes "multi" at the end if it should calculate individual ports \sa sharedSlsDetector  */
-  int setReceiverStreamingPort(string port);
+  string setReceiverStreamingPort(string port);
   /** sets the transmission delay for left or right port or for an entire frame*/
   string setDetectorNetworkParameter(networkParameter index, int delay);
 

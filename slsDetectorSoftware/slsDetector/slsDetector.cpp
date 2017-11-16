@@ -777,8 +777,9 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->acquiringFlag = false;
     thisDetector->flippedData[0] = 0;
     thisDetector->flippedData[1] = 0;
-    thisDetector->zmqport = DEFAULT_ZMQ_CL_PORTNO + (posId * (thisDetector->myDetectorType == EIGER) ? 2 : 1);
-    thisDetector->receiver_zmqport = DEFAULT_ZMQ_RX_PORTNO + (posId * (thisDetector->myDetectorType == EIGER) ? 2 : 1);
+    thisDetector->zmqport = 0;
+    thisDetector->receiver_zmqport = 0;
+    thisDetector->receiver_datastream = false;
 
     for (int ia=0; ia<MAX_ACTIONS; ++ia) {
       strcpy(thisDetector->actionScript[ia],"none");
@@ -922,6 +923,14 @@ int slsDetector::initializeDetectorSize(detectorType type) {
   if (thisReceiver != NULL)
 	  delete thisReceiver;
   thisReceiver = new receiverInterface(dataSocket);
+
+  // zmq ports
+  if (posId != -1) {
+	  if (thisDetector->zmqport == 0)
+		  thisDetector->zmqport = DEFAULT_ZMQ_CL_PORTNO + (posId * ((thisDetector->myDetectorType == EIGER) ? 2 : 1));
+	  if (thisDetector->receiver_zmqport == 0)
+		  thisDetector->receiver_zmqport = DEFAULT_ZMQ_RX_PORTNO + (posId * ((thisDetector->myDetectorType == EIGER) ? 2 : 1));
+  }
 
   //  setAngularConversionPointer(thisDetector->angOff,&thisDetector->nMods, thisDetector->nChans*thisDetector->nChips);
 
@@ -5967,6 +5976,8 @@ string slsDetector::getNetworkParameter(networkParameter index) {
   case DETECTOR_TXN_DELAY_FRAME:
   case FLOW_CONTROL_10G:
 	  return setDetectorNetworkParameter(index, -1);
+  case CLIENT_STREAMING_PORT:
+	  return getClientStreamingPort();
   case RECEIVER_STREAMING_PORT:
 	  return getReceiverStreamingPort();
   default:
@@ -8260,6 +8271,10 @@ int slsDetector::updateReceiverNoWait() {
   // receiver streaming port
   n += 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
   thisDetector->receiver_zmqport = ind;
+
+  // receiver streaming enable
+  n += dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
+  thisDetector->receiver_datastream = ind;
 
   if (!n) printf("n: %d\n", n);
 

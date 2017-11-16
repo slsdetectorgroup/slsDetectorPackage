@@ -209,6 +209,7 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
     thisMultiDetector->receiver_read_freq = 0;
     thisMultiDetector->acquiringFlag = false;
     thisMultiDetector->externalgui = false;
+    thisMultiDetector->receiver_datastream = false;
     thisMultiDetector->alreadyExisting=1;
   }
 
@@ -274,7 +275,7 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
 
   getNMods();
   getMaxMods();
-  dataSocketsStarted = false;
+  client_datastream = false;
   for(int i=0;i<MAXDET;++i)
 	  zmqSocket[i] = 0;
   threadpool = 0;
@@ -3694,11 +3695,14 @@ string multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 	case RECEIVER_STREAMING_PORT:
 		prev_streaming = enableDataStreamingFromReceiver();
 		enableDataStreamingFromReceiver(0);
-	}
-  	if (p == RECEIVER_STREAMING_PORT || p == CLIENT_STREAMING_PORT) {
+		break;
+	case CLIENT_STREAMING_PORT:
 		prev_streaming = enableDataStreamingToClient();
-  		enableDataStreamingFromReceiver(0);
-  	}
+		enableDataStreamingToClient(0);
+		break;
+	default: break;
+	}
+
 
 	if (s.find('+')==string::npos) {
 
@@ -3753,8 +3757,17 @@ string multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 	}
 
 	//enable data streaming if it was on
-	if ((p == RECEIVER_STREAMING_PORT  || p == CLIENT_STREAMING_PORT) && prev_streaming)
-		enableDataStreamingFromReceiver(1);
+	if (prev_streaming) {
+		switch (p) {
+		case RECEIVER_STREAMING_PORT:
+			enableDataStreamingFromReceiver(1);
+			break;
+		case CLIENT_STREAMING_PORT:
+			enableDataStreamingToClient(1);
+			break;
+		default: break;
+		}
+	}
 
 	return getNetworkParameter(p);
 
@@ -5666,7 +5679,7 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 					zmqSocket[i] = 0;
 				}
 			}
-			dataSocketsStarted = false;
+			client_datastream = false;
 		 cout << "Destroyed Receiving Data Socket(s)" << endl;
 		 return OK;
 	}
@@ -5674,14 +5687,9 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 	cprintf(MAGENTA,"Going to create data sockets\n");
 
 	for(int i=0;i<numSockets; ++i){
-		uint32_t portnum;
-		sscanf(detectors[i/numSocketsPerDetector]->getReceiverStreamingPort().c_str(),"%d",&portnum);
-		if (portnum == 0) {
-			portnum = DEFAULT_ZMQ_PORTNO +
-							(i/numSocketsPerDetector)*numSocketsPerDetector + (i%numSocketsPerDetector); // *num and /num is not same cuz its integers
-		}else{
-			portnum += (i%numSocketsPerDetector);
-		}
+		uint32_t portnum = 0;
+		sscanf(detectors[i/numSocketsPerDetector]->getClientStreamingPort().c_str(),"%d",&portnum);
+		portnum += (i%numSocketsPerDetector);
 
 		zmqSocket[i] = new ZmqSocket(detectors[i/numSocketsPerDetector]->getReceiver().c_str(), portnum);
 		if (zmqSocket[i]->IsError()) {
@@ -5692,7 +5700,7 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 		printf("Zmq Client[%d] at %s\n",i, zmqSocket[i]->GetZmqServerAddress());
 	}
 
-	dataSocketsStarted = true;
+	client_datastream = true;
 	cout << "Receiving Data Socket(s) created" << endl;
 	return OK;
 }
@@ -6155,71 +6163,63 @@ int multiSlsDetector::setReceiverReadTimer(int time_in_ms){
 	return ret;
 }
 
-int multiSlsDetector::enableDataStreamingToClient() {
-	return dataSocketsStarted;
+int multiSlsDetector::enableDataStreamingToClient(int enable) {
+	if(enable >= 0){
+
+		//destroy data threads
+		if (!enable)
+			createReceivingDataSockets(true);
+
+		//create data threads
+		else {
+			if(createReceivingDataSockets() == FAIL){
+				std::cout << "Could not create data threads in client." << std::endl;
+				//only for the first det as theres no general one
+				setErrorMask(getErrorMask()|(1<<0));
+				detectors[0]->setErrorMask((detectors[0]->getErrorMask())|(DATA_STREAMING));
+			}
+		}
+	}
+	return client_datastream;
 }
 
-int multiSlsDetector::enableDataStreamingFromReceiver(int enable){//cannot parrallize due to serReceiver calling parentdet->enabledatastremain
-
-	//create client sockets only if no external gui
-	if (!thisMultiDetector->externalgui) {
-		if(enable >= 0){
-
-			//destroy data threads
-			if(dataSocketsStarted)
-				createReceivingDataSockets(true);
-
-			//create data threads
-			if(enable > 0){
-				if(createReceivingDataSockets() == FAIL){
-					std::cout << "Could not create data threads in client. Aborting creating data sockets in receiver" << std::endl;
-					//only for the first det as theres no general one
-					setErrorMask(getErrorMask()|(1<<0));
-					detectors[0]->setErrorMask((detectors[0]->getErrorMask())|(DATA_STREAMING));
-					return -1;
+int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
+	if(enable >= 0){
+		int ret=-100;
+		if(!threadpool){
+			cout << "Error in creating threadpool. Exiting" << endl;
+			return -1;
+		}else{
+			//return storage values
+			int* iret[thisMultiDetector->numberOfDetectors];
+			for(int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet){
+				if(detectors[idet]){
+					iret[idet]= new int(-1);
+					Task* task = new Task(new func1_t<int,int>(&slsDetector::enableDataStreamingFromReceiver,
+							detectors[idet],enable,iret[idet]));
+					threadpool->add_task(task);
+				}
+			}
+			threadpool->startExecuting();
+			threadpool->wait_for_tasks_to_complete();
+			for(int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet){
+				if(detectors[idet]){
+					if(iret[idet] != NULL){
+						if (ret==-100)
+							ret=*iret[idet];
+						else if (ret!=*iret[idet])
+							ret=-1;
+						delete iret[idet];
+					}else ret=-1;
+					if(detectors[idet]->getErrorMask())
+						setErrorMask(getErrorMask()|(1<<idet));
 				}
 			}
 		}
+		thisMultiDetector->receiver_datastream = ret;
 	}
 
-
-	int ret=-100;
-	if(!threadpool){
-		cout << "Error in creating threadpool. Exiting" << endl;
-		return -1;
-	}else{
-		//return storage values
-		int* iret[thisMultiDetector->numberOfDetectors];
-		for(int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet){
-			if(detectors[idet]){
-				iret[idet]= new int(-1);
-				Task* task = new Task(new func1_t<int,int>(&slsDetector::enableDataStreamingFromReceiver,
-						detectors[idet],enable,iret[idet]));
-				threadpool->add_task(task);
-			}
-		}
-		threadpool->startExecuting();
-		threadpool->wait_for_tasks_to_complete();
-		for(int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet){
-			if(detectors[idet]){
-				if(iret[idet] != NULL){
-					if (ret==-100)
-						ret=*iret[idet];
-					else if (ret!=*iret[idet])
-						ret=-1;
-					delete iret[idet];
-				}else ret=-1;
-				if(detectors[idet]->getErrorMask())
-					setErrorMask(getErrorMask()|(1<<idet));
-			}
-		}
-	}
-
-	if (!thisMultiDetector->externalgui) {
-		if (ret != dataSocketsStarted)
-			ret = -1;
-	}
-	return ret;
+	return thisMultiDetector->receiver_datastream;
 }
 
 int multiSlsDetector::enableReceiverCompression(int i){

@@ -65,9 +65,6 @@ qClient::~qClient() {
 
 int qClient::executeLine(int narg, char *args[]){
 
-	char arg[MAX_STR_LENGTH] = "";
-	int iarg = -1;
-	char answer[100];
 	string retval = "";
 	string cmd = args[0];
 	string argument;

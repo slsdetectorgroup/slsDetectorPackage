@@ -133,6 +133,16 @@ private slots:
 	 */
 	void SetRxrUDPPort(int port);
 
+	/** Sets client zmq receiver port
+	 * @param port client zmq receiver port
+	 */
+	void SetCltZmqPort(int port);
+
+	/** Sets receiver zmq transmitting port
+	 * @param port receiver zmq transmitting port
+	 */
+	void SetRxrZmqPort(int port);
+
 	/** Sets receiver online
 	 * @param index 1 for online and 0 for offline
 	 */

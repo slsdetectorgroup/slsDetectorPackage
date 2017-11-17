@@ -51,7 +51,7 @@
     <enum>QTabWidget::North</enum>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>3</number>
    </property>
    <property name="elideMode">
     <enum>Qt::ElideLeft</enum>
@@ -142,7 +142,7 @@
        <rect>
         <x>230</x>
         <y>15</y>
-        <width>226</width>
+        <width>242</width>
         <height>44</height>
        </rect>
       </property>
@@ -957,8 +957,8 @@ An extension given by the modules serial number will be attached.
      <widget class="QPushButton" name="btnRxr">
       <property name="geometry">
        <rect>
-        <x>25</x>
-        <y>135</y>
+        <x>420</x>
+        <y>143</y>
         <width>291</width>
         <height>25</height>
        </rect>
@@ -977,7 +977,7 @@ An extension given by the modules serial number will be attached.
         <x>25</x>
         <y>25</y>
         <width>686</width>
-        <height>96</height>
+        <height>116</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_8">
@@ -1255,6 +1255,63 @@ An extension given by the modules serial number will be attached.
          </property>
         </widget>
        </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_12">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>ZMQ Port TX:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QSpinBox" name="spinZmqPort2">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>127</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Sets Receiver UDP Port
+#rx_udpport#</string>
+         </property>
+         <property name="statusTip">
+          <string/>
+         </property>
+         <property name="whatsThis">
+          <string/>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         </property>
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+         <property name="suffix">
+          <string/>
+         </property>
+         <property name="minimum">
+          <number>0</number>
+         </property>
+         <property name="maximum">
+          <number>2000000000</number>
+         </property>
+         <property name="value">
+          <number>0</number>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </widget>
@@ -1264,13 +1321,42 @@ An extension given by the modules serial number will be attached.
        <x>35</x>
        <y>15</y>
        <width>686</width>
-       <height>101</height>
+       <height>116</height>
       </rect>
      </property>
      <layout class="QGridLayout" name="gridLayout_6">
       <property name="verticalSpacing">
        <number>6</number>
       </property>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="comboDetector">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>180</width>
+          <height>0</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
       <item row="0" column="4">
        <widget class="QComboBox" name="comboOnline">
         <property name="sizePolicy">
@@ -1436,35 +1522,6 @@ An extension given by the modules serial number will be attached.
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="comboDetector">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>180</width>
-          <height>0</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
       <item row="1" column="1">
        <widget class="QSpinBox" name="spinControlPort">
         <property name="sizePolicy">
@@ -1517,6 +1574,63 @@ An extension given by the modules serial number will be attached.
       </item>
       <item row="2" column="1">
        <widget class="QSpinBox" name="spinStopPort">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>180</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Sets Stop Port 
+#stopport#</string>
+        </property>
+        <property name="statusTip">
+         <string/>
+        </property>
+        <property name="whatsThis">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>2000000000</number>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_11">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>ZMQ Port RX:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QSpinBox" name="spinZmqPort">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>

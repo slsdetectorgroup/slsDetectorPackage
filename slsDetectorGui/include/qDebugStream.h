@@ -59,7 +59,8 @@ public:
 		// output anything that is left
 		if (!m_string.empty()) {
 			pthread_mutex_lock(&mutex);
-			QApplication::postEvent(log_window, new qStreamEvent(m_string.c_str()));
+			const char* c_string = m_string.c_str();
+			QApplication::postEvent(log_window, new qStreamEvent(c_string));
 			pthread_mutex_unlock(&mutex);
 		}
 		m_stream.rdbuf(m_old_buf);
@@ -71,7 +72,8 @@ protected:
 	virtual int_type overflow(int_type v){
 		if (v == '\n'){
 			pthread_mutex_lock(&mutex);
-			QApplication::postEvent(log_window, new qStreamEvent(m_string.c_str()));
+			const char* c_string = m_string.c_str();
+			QApplication::postEvent(log_window, new qStreamEvent(c_string));
 			m_string.erase(m_string.begin(), m_string.end());
 			pthread_mutex_unlock(&mutex);
 		}
@@ -87,13 +89,14 @@ protected:
 		m_string.append(p, p + n);
 
 		//changed from uint because of 64 bit
-		int pos = 0;
+		size_t pos = 0;
 
 		while (pos != string::npos){
 			pos = m_string.find('\n');
 			if (pos != string::npos){
 				string tmp(m_string.begin(), m_string.begin() + pos);
-				QApplication::postEvent(log_window, new qStreamEvent(tmp.c_str()));
+				const char* c_tmp = tmp.c_str();
+				QApplication::postEvent(log_window, new qStreamEvent(c_tmp));
 				m_string.erase(m_string.begin(), m_string.begin() + pos + 1);
 			}
 		}

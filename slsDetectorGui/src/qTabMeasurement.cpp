@@ -734,7 +734,6 @@ void qTabMeasurement::SetTimingMode(int mode){
 
 
 	//Frame Period between exposures
-	qDefs::timeUnit unit;
 	if(lblPeriod->isEnabled())
 		CheckAcqPeriodGreaterThanExp();
 	else{

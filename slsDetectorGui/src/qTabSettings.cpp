@@ -69,11 +69,12 @@ void qTabSettings::GetDynamicRange(int setvalue){
 	cout  << "Getting dynamic range" << endl;
 #endif
 	int ret = myDet->setDynamicRange(-1);
-	if(detType == slsDetectorDefs::MYTHEN)
+	if(detType == slsDetectorDefs::MYTHEN) {
 		if(ret==24)
 			ret=32;
 		else if(ret==24)
 			cout<<"ret:"<<ret<<endl;
+	}
 	//check if the set value is equal to return value
 	if((setvalue!=-1) && (setvalue!=ret)){
 			qDefs::Message(qDefs::WARNING,"Dynamic Range cannot be set to this value.","qTabSettings::SetDynamicRange");

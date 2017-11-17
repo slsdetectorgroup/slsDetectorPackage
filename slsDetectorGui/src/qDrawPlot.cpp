@@ -297,7 +297,7 @@ void qDrawPlot::SetupWidgetWindow(){
 		nHists = 1;
 		if(histXAxis)    delete [] histXAxis; 	histXAxis    = new double [nPixelsX];
 		if(histYAxis[0]) delete [] histYAxis[0];histYAxis[0] = new double [nPixelsX];
-		for(unsigned int px=0;px<(int)nPixelsX;px++)	{histXAxis[px]  = px;histYAxis[0][px] = 0;}
+		for(unsigned int px=0;px<nPixelsX;px++)	{histXAxis[px]  = px;histYAxis[0][px] = 0;}
 		Clear1DPlot();
 		plot1D->SetXTitle("X Axis");
 		plot1D->SetYTitle("Y Axis");
@@ -349,8 +349,7 @@ void qDrawPlot::SetupWidgetWindow(){
 
 
 
-//callbacks
-
+	// callbacks
 	// Setting the callback function to get data from detector class
 	myDet->registerDataCallback(&(GetDataCallBack),this);
 	//Setting the callback function to alert when acquisition finished from detector class
@@ -359,6 +358,13 @@ void qDrawPlot::SetupWidgetWindow(){
 	myDet->registerMeasurementFinishedCallback(&(GetMeasurementFinishedCallBack),this);
 	//Setting the callback function to get progress from detector class(using receivers)
 	myDet->registerProgressCallback(&(GetProgressCallBack),this);
+
+
+	// if receiver, enable data streaming from receiver and client
+	if(myDet->setReceiverOnline() == slsDetectorDefs::ONLINE_FLAG) {
+		myDet->enableDataStreamingFromReceiver(1);
+		myDet->enableDataStreamingToClient(1);
+	}
 
 	qDefs::checkErrorMessage(myDet,"qDrawPlot::SetupWidgetWindow");
 }
@@ -561,7 +567,7 @@ void qDrawPlot::SetScanArgument(int scanArg){
 	//get #scansets for level 0 and level 1
 	int numScan0 = myDet->getScanSteps(0);	numScan0 = ((numScan0==0)?1:numScan0);
 	int numScan1 = myDet->getScanSteps(1);	numScan1 = ((numScan1==0)?1:numScan1);
-	int numPos=myDet->getPositions();
+	//int numPos=myDet->getPositions();
 
 	number_of_exposures = number_of_frames * numScan0 * numScan1;
 	if(anglePlot) number_of_exposures = numScan0 * numScan1;// * numPos;
@@ -615,9 +621,10 @@ void qDrawPlot::SetScanArgument(int scanArg){
 	if(gainImageArray) delete [] gainImageArray; gainImageArray = new double[nPixelsY*nPixelsX];
 
 	//initializing 1d x axis
-	for(unsigned int px=0;px<(int)nPixelsX;px++)	histXAxis[px]  = px;/*+10;*/
+	for(unsigned int px=0;px<nPixelsX;px++)	histXAxis[px]  = px;/*+10;*/
 
 	//initializing 2d array
+
 	memset(lastImageArray,0,nPixelsY *nPixelsX * sizeof(double));
 	memset(gainImageArray,0,nPixelsY *nPixelsX * sizeof(double));
 	/*for(int py=0;py<(int)nPixelsY;py++)
@@ -767,17 +774,15 @@ void qDrawPlot::SetupMeasurement(){
 
 
 void* qDrawPlot::DataStartAcquireThread(void *this_pointer){
-	//stream data from receiver to the gui
-	if(((qDrawPlot*)this_pointer)->myDet->setReceiverOnline(slsDetectorDefs::GET_ONLINE_FLAG) == slsDetectorDefs::ONLINE_FLAG) {
-		//if it was not on
-		if ( (((qDrawPlot*)this_pointer)->myDet->getStreamingSocketsCreatedInClient() != 1)
-		  || (((qDrawPlot*)this_pointer)->myDet->enableDataStreamingFromReceiver(-1)!= 1) ){
-			//switch it on, if error
+	// stream data from receiver to the gui
+	if(((qDrawPlot*)this_pointer)->myDet->setReceiverOnline() == slsDetectorDefs::ONLINE_FLAG) {
+
+		// if receiver data up streaming not on, switch it on
+		if (((qDrawPlot*)this_pointer)->myDet->enableDataStreamingFromReceiver() != 1)
 			if (((qDrawPlot*)this_pointer)->myDet->enableDataStreamingFromReceiver(1) != 1) {
 				qDefs::checkErrorMessage(((qDrawPlot*)this_pointer)->myDet,"qDrawPlot::DataStartAcquireThread");
 				return this_pointer;
 			}
-		}
 	}
 
 	((qDrawPlot*)this_pointer)->myDet->acquire(1);
@@ -834,7 +839,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 				sprintf(temp_title,"#%d  %d",fIndex,subIndex);
 		}else{
 			if(fileSaveEnable)	strcpy(temp_title,"#%d");
-			else		sprintf(temp_title,"",currentFrame);
+			else		sprintf(temp_title,"#%d",currentFrame);
 		}
 		if(subIndex != -1)
 			sprintf(temp_title,"#%d  %d",fIndex,subIndex);
@@ -1713,12 +1718,13 @@ void qDrawPlot::SavePlot(){
 
 	fName = QFileDialog::getSaveFileName(0,tr("Save Image"),fName,tr("PNG Files (*.png);;XPM Files(*.xpm);;JPEG Files(*.jpg)"),0,QFileDialog::ShowDirsOnly);
 
-	if (!fName.isEmpty())
+	if (!fName.isEmpty()) {
 		if(savedImage.save(fName))
 			qDefs::Message(qDefs::INFORMATION,"The Image has been successfully saved","qDrawPlot::SavePlot");
 		else
 			qDefs::Message(qDefs::WARNING,"Attempt to save image failed.\n"
     				"Formats: .png, .jpg, .xpm.","qDrawPlot::SavePlot");
+	}
 }
 
 
@@ -1816,7 +1822,7 @@ void qDrawPlot::DisableZoom(bool disable){
 
 
 int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
-	int ret,i,actualPixelsX;
+	int ret,actualPixelsX;
 	double min=0,max=0,sum=0;
 #ifdef VERBOSE
 	if(fromDetector)	cout << "Geting Trimbits from Detector" << endl;
@@ -1864,8 +1870,8 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 			if(histXAxis)		delete [] histXAxis;	histXAxis 	= new double [nPixelsX];
 			if(histYAxis[0])	delete [] histYAxis[0]; histYAxis[0]= new double [nPixelsX];
 			//initializing
-			for(unsigned int px=0;px<(int)nPixelsX;px++)	histXAxis[px] = px;
-			for(i=0;i<nPixelsX;i++)							histYAxis[0][i]  = 0;
+			for(unsigned int px=0;px<nPixelsX;px++)			histXAxis[px] = px;
+			for(unsigned int i=0;i<nPixelsX;i++)			histYAxis[0][i]  = 0;
 
 			//data
 			memcpy(histYAxis[0],histTrimbits,nPixelsX*sizeof(double));
@@ -1896,14 +1902,14 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 
 			//create intervals
 			histogramSamples.resize(TRIM_HISTOGRAM_XMAX+1);
-			for(i=0; i<TRIM_HISTOGRAM_XMAX+1; i++){
+			for(unsigned int i=0; i<TRIM_HISTOGRAM_XMAX+1; i++){
 				histogramSamples[i].interval.setInterval(i,i+1);
 				histogramSamples[i].value = 0;
 			}
 
 			//fill histogram values
 			int value = 0;
-			for(i=0;i<actualPixelsX;i++){
+			for(int i=0;i<actualPixelsX;i++){
 				if( (histTrimbits[i] <= TRIM_HISTOGRAM_XMAX) && (histTrimbits[i] >= 0)){//if(histogramSamples[j].interval.contains(data->values[i]))
 					value = (int) histTrimbits[i];
 					histogramSamples[value].value += 1;

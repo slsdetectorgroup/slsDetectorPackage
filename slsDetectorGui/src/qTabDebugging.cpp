@@ -404,11 +404,11 @@ void qTabDebugging::SetParameters(QTreeWidgetItem *item){
 			det = myDet->getSlsDetector(i);
 			qDefs::checkErrorMessage(myDet,"qTabDebugging::SetParameters");
 			lblDetectorId->setText(comboDetector->itemText(i));
-			sprintf(value,"%llx",det->getId(slsDetectorDefs::DETECTOR_SERIAL_NUMBER));
+			sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_SERIAL_NUMBER));
 			lblDetectorSerial->setText(QString(value));
-			sprintf(value,"%llx",det->getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION));
+			sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION));
 			lblDetectorFirmware	->setText(QString(value));
-			sprintf(value,"%llx",det->getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION));
+			sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION));
 			lblDetectorSoftware->setText(QString(value));
 			qDefs::checkErrorMessage(det,"qTabDebugging::SetParameters");
 
@@ -425,17 +425,17 @@ void qTabDebugging::SetParameters(QTreeWidgetItem *item){
 			det = myDet->getSlsDetector(i);
 			qDefs::checkErrorMessage(myDet,"qTabDebugging::SetParameters");
 			lblDetectorId->setText(comboDetector->itemText(i));
-			sprintf(value,"%llx",det->getId(slsDetectorDefs::DETECTOR_SERIAL_NUMBER));
+			sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_SERIAL_NUMBER));
 			lblDetectorSerial->setText(QString(value));
-			sprintf(value,"%llx",det->getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION));
+			sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION));
 			lblDetectorFirmware	->setText(QString(value));
-			sprintf(value,"%llx",det->getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION));
+			sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION));
 			lblDetectorSoftware->setText(QString(value));
 
 			lblModuleId->setText(QString("%1").arg(im));
-			sprintf(value,"%llx",det->getId(slsDetectorDefs::MODULE_SERIAL_NUMBER,im));
+			sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::MODULE_SERIAL_NUMBER,im));
 			lblModuleSerial->setText(QString(value));
-			sprintf(value,"%llx",det->getId(slsDetectorDefs::MODULE_FIRMWARE_VERSION,im));
+			sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::MODULE_FIRMWARE_VERSION,im));
 			lblModuleFirmware->setText(QString(value));
 
 			qDefs::checkErrorMessage(det,"qTabDebugging::SetParameters");
@@ -457,11 +457,11 @@ void qTabDebugging::SetParameters(QTreeWidgetItem *item){
 			det = myDet->getSlsDetector(i);
 			qDefs::checkErrorMessage(myDet,"qTabDebugging::SetParameters");
 			lblDetectorId->setText(comboDetector->itemText(i));
-			sprintf(value,"%llx",det->getId(slsDetectorDefs::DETECTOR_SERIAL_NUMBER));
+			sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_SERIAL_NUMBER));
 			lblDetectorSerial->setText(QString(value));
-			sprintf(value,"%llx",det->getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION));
+			sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION));
 			lblDetectorFirmware	->setText(QString(value));
-			sprintf(value,"%llx",det->getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION));
+			sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION));
 			lblDetectorSoftware->setText(QString(value));
 
 			qDefs::checkErrorMessage(det,"qTabDebugging::SetParameters");
@@ -481,11 +481,11 @@ void qTabDebugging::SetParameters(QTreeWidgetItem *item){
 		det = myDet->getSlsDetector(i);
 		qDefs::checkErrorMessage(myDet,"qTabDebugging::SetParameters");
 		lblDetectorId->setText(comboDetector->itemText(i));
-		sprintf(value,"%llx",det->getId(slsDetectorDefs::DETECTOR_SERIAL_NUMBER));
+		sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_SERIAL_NUMBER));
 		lblDetectorSerial->setText(QString(value));
-		sprintf(value,"%llx",det->getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION));
+		sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION));
 		lblDetectorFirmware	->setText(QString(value));
-		sprintf(value,"%llx",det->getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION));
+		sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION));
 		lblDetectorSoftware->setText(QString(value));
 
 		qDefs::checkErrorMessage(det,"qTabDebugging::SetParameters");

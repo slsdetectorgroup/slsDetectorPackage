@@ -430,7 +430,7 @@ unsigned int nPixelsX;
 /** Number of angle Pixels in X Axis */
 int nAnglePixelsX;
 /**	Number of pixel bins in Y Axis */
-int nPixelsY;
+unsigned int nPixelsY;
 /** Min Pixel number for Y Axis*/
 double minPixelsY;
 /** Max Pixel number for Y Axis*/

@@ -20,7 +20,7 @@
 
 qCloneWidget::qCloneWidget(QWidget *parent,int id,QString title,QString xTitle, QString yTitle, QString zTitle,
 		int numDim,string FilePath,bool displayStats, QString min, QString max, QString sum):
-	QMainWindow(parent),id(id),cloneplot2D(0),cloneplot1D(0),filePath(FilePath)
+	QMainWindow(parent),id(id),filePath(FilePath),cloneplot1D(0),cloneplot2D(0)
 	{
 	// Window title
 	char winTitle[300],currTime[50];
@@ -267,12 +267,13 @@ void qCloneWidget::SavePlot(){
 	cloneBox->render(&painter);
 
     fName = QFileDialog::getSaveFileName(this,tr("Save Snapshot "),fName,tr("PNG Files (*.png);;XPM Files(*.xpm);;JPEG Files(*.jpg)"),0,QFileDialog::ShowDirsOnly);
-    if (!fName.isEmpty())
+    if (!fName.isEmpty()) {
     	if((img.save(fName)))
     		qDefs::Message(qDefs::INFORMATION,"The SnapShot has been successfully saved","qCloneWidget::SavePlot");
     	else
     		qDefs::Message(qDefs::WARNING,"Attempt to save snapshot failed.\n"
     				"Formats: .png, .jpg, .xpm.","qCloneWidget::SavePlot");
+    }
 }
 
 

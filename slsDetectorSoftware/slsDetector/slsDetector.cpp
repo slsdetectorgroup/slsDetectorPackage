@@ -6035,6 +6035,8 @@ string slsDetector::setNetworkParameter(networkParameter index, string value) {
 		return getReceiverStreamingPort();
 	case RECEIVER_STREAMING_SRC_IP:
 		return setReceiverStreamingSourceIP(value);
+	case CLIENT_STREAMING_SRC_IP:
+		return setClientStreamingSourceIP(value);
   default:
     return (char*)("unknown network parameter");
   }
@@ -6069,8 +6071,10 @@ string slsDetector::getNetworkParameter(networkParameter index) {
 	  return getClientStreamingPort();
   case RECEIVER_STREAMING_PORT:
 	  return getReceiverStreamingPort();
-	case RECEIVER_STREAMING_SRC_IP:
-		return getReceiverStreamingSourceIP();
+case RECEIVER_STREAMING_SRC_IP:
+	return getReceiverStreamingSourceIP();
+case CLIENT_STREAMING_SRC_IP:
+	return getClientStreamingSourceIP();
   default:
     return (char*)("unknown network parameter");
   }

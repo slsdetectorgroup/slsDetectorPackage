@@ -195,7 +195,8 @@ enum networkParameter {
   FLOW_CONTROL_RD_PTR,		/**< memory read pointer for flow control */
   RECEIVER_STREAMING_PORT,	/**< receiever streaming TCP(ZMQ) port */
   CLIENT_STREAMING_PORT,	/**< client streaming TCP(ZMQ) port */
-  RECEIVER_STREAMING_SRC_IP	/**< receiever streaming TCP(ZMQ) ip */
+  RECEIVER_STREAMING_SRC_IP,/**< receiever streaming TCP(ZMQ) ip */
+  CLIENT_STREAMING_SRC_IP	/**< client streaming TCP(ZMQ) ip */
 };
 
 /**

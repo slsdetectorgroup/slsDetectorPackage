@@ -5941,11 +5941,9 @@ string slsDetector::setNetworkParameter(networkParameter index, string value) {
 		sscanf(value.c_str(),"%d",&i);
 		return setDetectorNetworkParameter(index, i);
 	case CLIENT_STREAMING_PORT:
-		setClientStreamingPort(value);
-		return getClientStreamingPort();
+		return setClientStreamingPort(value);
 	case RECEIVER_STREAMING_PORT:
-		setReceiverStreamingPort(value);
-		return getReceiverStreamingPort();
+		return setReceiverStreamingPort(value);
   default:
     return (char*)("unknown network parameter");
   }

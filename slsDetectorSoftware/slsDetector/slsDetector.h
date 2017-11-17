@@ -269,8 +269,12 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     bool acquiringFlag;
     /** flipped data across x or y axis */
     int flippedData[2];
-    /** tcp port between receiver and gui (only data) */
+    /** tcp port from gui/different process to receiver (only data) */
     int zmqport;
+    /** tcp port from receiver to gui/different process (only data) */
+    int receiver_zmqport;
+    /** data streaming (up stream) enable in receiver */
+    bool receiver_datastream;
     /**  zmq tcp src ip address between receiver and gui (only data) **/
     char zmqsrcip[MAX_STR_LENGTH];
 
@@ -1670,7 +1674,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   /**   gets the number of frames caught by any one receiver (to avoid using threadpool)
  	\returns number of frames caught by any one receiver (master receiver if exists)
   */
-  int getFramesCaughtByAnyReceiver() {getFramesCaughtByReceiver();};
+  int getFramesCaughtByAnyReceiver() {return getFramesCaughtByReceiver();};
 
   /**  gets the current frame index of receiver
      \returns current frame index of receiver
@@ -1757,8 +1761,10 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   string getReceiverUDPPort() {ostringstream ss; ss << thisDetector->receiverUDPPort; string s = ss.str(); return s;};
   /** returns the receiver UDP2 for Eiger IP address \sa sharedSlsDetector  */
   string getReceiverUDPPort2() {ostringstream ss; ss << thisDetector->receiverUDPPort2; string s = ss.str(); return s;};
-  /** returns the zmq port \sa sharedSlsDetector  */
-  string getReceiverStreamingPort() {ostringstream ss; ss << thisDetector->zmqport; string s = ss.str(); return s;};
+  /** returns the client zmq port \sa sharedSlsDetector  */
+  string getClientStreamingPort() {ostringstream ss; ss << thisDetector->zmqport; string s = ss.str(); return s;};
+  /** returns the receiver zmq port \sa sharedSlsDetector  */
+  string getReceiverStreamingPort() {ostringstream ss; ss << thisDetector->receiver_zmqport; string s = ss.str(); return s;};
   /** gets the zmq source ip in client and receiver, returns "none" if default setting and no custom ip set*/
   string getReceiverStreamingSourceIP(){return string(thisDetector->zmqsrcip);};
 
@@ -1776,10 +1782,13 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   int setReceiverUDPPort(int udpport);
   /** sets the receiver udp port2 for Eiger \sa sharedSlsDetector  */
   int setReceiverUDPPort2(int udpport);
-  /** sets the zmq port in client and receiver (includes "multi" at the end if it should calculate individual ports \sa sharedSlsDetector  */
-  int setReceiverStreamingPort(string port);
+  /** sets the zmq port in client (includes "multi" at the end if it should calculate individual ports \sa sharedSlsDetector  */
+  string setClientStreamingPort(string port);
+  /** sets the zmq port in receiver (includes "multi" at the end if it should calculate individual ports \sa sharedSlsDetector  */
+  string setReceiverStreamingPort(string port);
   /** sets the zmq source ip in client and receiver */
   string setReceiverStreamingSourceIP(string sourceIP);
+
   /** sets the transmission delay for left or right port or for an entire frame*/
   string setDetectorNetworkParameter(networkParameter index, int delay);
 
@@ -1802,8 +1811,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   int setReceiverReadTimer(int time_in_ms=500);
 
   /** Enable or disable streaming data from receiver to client
-   * 	@param enable 0 to disable 1 to enable -1 to only get the value
-   * 	@returns data streaming
+   * @param enable 0 to disable 1 to enable -1 to only get the value
+   * @returns data streaming from receiver enable
   */
   int enableDataStreamingFromReceiver(int enable=-1);
 

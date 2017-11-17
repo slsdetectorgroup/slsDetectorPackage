@@ -242,7 +242,7 @@ public:
 			retval.append("Could not activate/deactivate receiver\n");
 
 		if(slsErrorMask&DATA_STREAMING)
-			retval.append("Could not set/reset Data Streaming\n");
+			retval.append("Could not enable/disable Data Streaming\n");
 
 		if(slsErrorMask&RESET_ERROR)
 			retval.append("Could not reset the FPGA\n");

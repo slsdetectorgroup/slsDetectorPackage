@@ -256,13 +256,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page config
-   - <b> externalgui </b>sets/gets external gui flag. 1 sets and enables the 0MQ data stream (0MQ threads created) from receiver to client, while 0 unsets and disables. \c Returns \c (int)
-	 */
-	descrToFuncMap[i].m_pFuncName="externalgui"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDataStream;
-	++i;
-
-	/*! \page config
    - \b free Free shared memory on the control PC
 	 */
 	descrToFuncMap[i].m_pFuncName="free";//OK
@@ -1902,10 +1895,24 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 	/*! \page network
-   - <b>zmqport [port]</b> sets/gets the 0MQ (TCP) port of the receiver from where data is streamed to the client. Use single-detector command to set individually or multi-detector command to calculate based on \c port for the rest. \c Returns \c (int)
+   - <b>zmqport [port]</b> sets/gets the 0MQ (TCP) port of the client to where final data is streamed to (eg. for GUI). Use single-detector command to set individually or multi-detector command to calculate based on \c port for the rest. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="zmqport"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
+	++i;
+
+	/*! \page network
+   - <b>rx_zmqport [port]</b> sets/gets the 0MQ (TCP) port of the receiver from where data is streamed from (eg. to GUI or another process for further processing). Use single-detector command to set individually or multi-detector command to calculate based on \c port for the rest. \c Returns \c (int)
+	 */
+	descrToFuncMap[i].m_pFuncName="rx_zmqport"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
+	++i;
+
+	/*! \page network
+   - <b> rx_datastream </b>enables/disables data streaming from receiver. 1 enables 0MQ data stream from receiver (creates streamer threads), while 0 disables (destroys streamer threads). \c Returns \c (int)
+	 */
+	descrToFuncMap[i].m_pFuncName="rx_datastream"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDataStream;
 	++i;
 
 	/*! \page network
@@ -2318,18 +2325,12 @@ string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action) {
 #endif
 
 
+	if (action==HELP_ACTION) {
+		return helpAcquire(narg,args,HELP_ACTION);
+	}
+
 	myDet->setOnline(ONLINE_FLAG);
 	int r_online = myDet->setReceiverOnline(ONLINE_FLAG);
-
-	if ((!myDet->getExternalGuiFlag()) && (r_online == ONLINE_FLAG)) {
-		// command line: must be off, if receiver on or there was -1, then
-		if (myDet->enableDataStreamingFromReceiver(-1) != 0){
-			//switch it off, if error
-			if (myDet->enableDataStreamingFromReceiver(0) != 0) {
-				return string("could not disable data streaming in receiver\n");
-			}
-		}
-	}
 
 	if(myDet->acquire() == FAIL)
 		return string("acquire unsuccessful");
@@ -2495,18 +2496,11 @@ string slsDetectorCommand::cmdDataStream(int narg, char *args[], int action) {
 
 	if (action==PUT_ACTION) {
 		if (!sscanf(args[1],"%d",&ival))
-			return string ("cannot scan externalgui mode");
-		myDet->setExternalGuiFlag(ival>0?true:false);
+			return string ("cannot scan rx_datastream mode");
 		myDet->enableDataStreamingFromReceiver(ival);
 	}
 
-	int retval = myDet->getExternalGuiFlag();
-	//if external gui on and datastreaming off
-	if (retval  && !myDet->enableDataStreamingFromReceiver()) {
-		retval=-1;
-		printf("Error: data streaming in receiver is switched off while external gui flag in shared memory is off.\n");
-	}
-	sprintf(ans,"%d",myDet->getExternalGuiFlag());
+	sprintf(ans,"%d",myDet->enableDataStreamingFromReceiver());
 	return string(ans);
 }
 
@@ -2515,9 +2509,9 @@ string slsDetectorCommand::helpDataStream(int narg, char *args[], int action) {
 
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION)
-		os << string("externalgui \t gets external gui flag. 1/0 means the 0MQ data stream (0MQ threads created) from receiver to client is enabled/disabled. -1 for inconsistency. \n");
+		os << string("rx_datastream \t enables/disables data streaming from receiver. 1 is 0MQ data stream from receiver enabled, while 0 is 0MQ disabled. -1 for inconsistency between multiple receivers. \n");
 	if (action==PUT_ACTION || action==HELP_ACTION)
-		os << string("externalgui i\t sets external gui flag. 1/0 means the 0MQ data stream (0MQ threads created) from receiver to client is enabled/disabled. \n");
+		os << string("rx_datastream i\t enables/disables data streaming from receiver. i is 1 enables 0MQ data stream from receiver (creates streamer threads), while 0 disables (destroys streamer threads). \n");
 	return os.str();
 }
 
@@ -3958,6 +3952,12 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
 				return ("cannot parse argument") + string(args[1]);
 		}
 	}else if (cmd=="zmqport") {
+		t=CLIENT_STREAMING_PORT;
+		if (action==PUT_ACTION){
+			if (!(sscanf(args[1],"%d",&i)))
+				return ("cannot parse argument") + string(args[1]);
+		}
+	}else if (cmd=="rx_zmqport") {
 		t=RECEIVER_STREAMING_PORT;
 		if (action==PUT_ACTION){
 			if (!(sscanf(args[1],"%d",&i)))
@@ -3991,7 +3991,8 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
 		os << "txndelay_right port \n sets detector transmission delay of the right port"<< std::endl;
 		os << "txndelay_frame port \n sets detector transmission delay of the entire frame"<< std::endl;
 		os << "flowcontrol_10g port \n sets flow control for 10g for eiger"<< std::endl;
-		os << "zmqport port \n sets zmq port (data from receiver to client); setting via multidetector command calculates port for individual detectors"<< std::endl;
+		os << "zmqport port \n sets zmq port (data to client from receiver/different process); setting via multidetector command calculates port for individual detectors"<< std::endl;
+		os << "rx_zmqport port \n sets zmq port (data from receiver to client/different process); setting via multidetector command calculates port for individual detectors"<< std::endl;
 		os << "zmqsrcip ip \n sets/gets the 0MQ (TCP) ip of the receiver from where data is streamed to the client. Default is ip of rx_hostname. Use this only with external gui." << std::endl;
 	}
 	if (action==GET_ACTION || action==HELP_ACTION) {
@@ -4005,7 +4006,8 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
 		os << "txndelay_right \n gets detector transmission delay of the right port"<< std::endl;
 		os << "txndelay_frame \n gets detector transmission delay of the entire frame"<< std::endl;
 		os << "flowcontrol_10g \n gets flow control for 10g for eiger"<< std::endl;
-		os << "zmqport \n gets zmq port (data from receiver to client)"<< std::endl;
+		os << "zmqport \n gets zmq port (data to client from receiver/different process)"<< std::endl;
+		os << "rx_zmqport \n gets zmq port (data from receiver to client/different process)"<< std::endl;
 		os << "zmqsrcip \n gets zmq source ip (data from receiver to client), none if default setting and no custom ip" << std::endl;
 	}
 	return os.str();
@@ -5916,33 +5918,14 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 
 
 	myDet->setOnline(ONLINE_FLAG);
-	int receivers = myDet->setReceiverOnline(ONLINE_FLAG);
+	myDet->setReceiverOnline(ONLINE_FLAG);
 
 	if(cmd=="receiver"){
 		if (action==PUT_ACTION) {
-			if(!strcasecmp(args[1],"start")) {
-				//to ensure data streaming enable is the same across client and receiver
-				if ((!myDet->getExternalGuiFlag()) && (receivers == ONLINE_FLAG)) {
-					//if it was not off
-					if (myDet->enableDataStreamingFromReceiver(-1) != 0){
-						//switch it off, if error
-						if (myDet->enableDataStreamingFromReceiver(0) != 0) {
-							return string("could not disable data streaming in receiver\n");
-						}
-					}
-					}
+			if(!strcasecmp(args[1],"start"))
 				myDet->startReceiver();
-			}
-			else if(!strcasecmp(args[1],"stop")){
-				//myDet->stopReceiver();
-				// myDet->startReceiverReadout();
-				/*runStatus s = myDet->getReceiverStatus();
-    	  while(s != RUN_FINISHED){
-    		  usleep(50000);
-    		  s = myDet->getReceiverStatus();
-    	  }*/
+			else if(!strcasecmp(args[1],"stop"))
 				myDet->stopReceiver();
-			}
 			else
 				return helpReceiver(narg, args, action);
 		}

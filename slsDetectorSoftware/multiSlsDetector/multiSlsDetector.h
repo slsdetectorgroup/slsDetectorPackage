@@ -219,6 +219,9 @@ class multiSlsDetector  : public slsDetectorUtils {
     /** receiver online flag - is set if the receiver is connected, unset if socket connection is not possible  */
     int receiverOnlineFlag;
 
+    /** data streaming (up stream) enable in receiver */
+    bool receiver_datastream;
+
   } sharedMultiSlsDetector;
 
 
@@ -1367,16 +1370,18 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
   /**
-   * Get Streaming sockets created in client from reciever
-    /returns 1 if sockets created, else 0
+   * Enable data streaming to client
+   * @param enable 0 to disable, 1 to enable, -1 to get the value
+   * @returns data streaming to client enable
    */
-  int getStreamingSocketsCreatedInClient();
+  int enableDataStreamingToClient(int enable=-1);
 
   /** Enable or disable streaming data from receiver to client
-   * 	@param enable 0 to disable 1 to enable -1 to only get the value
-   * 	@returns data streaming
+   * @param enable 0 to disable 1 to enable -1 to only get the value
+   * @returns data streaming from receiver enable
   */
   int enableDataStreamingFromReceiver(int enable=-1);
+
 
   /** updates the multidetector offsets */
   void updateOffsets();
@@ -1523,8 +1528,8 @@ private:
 
 
 
-	/** Ensures if sockets created successfully */
-	bool dataSocketsStarted;
+	/** data streaming (down stream) enabled in client (zmq sckets created) */
+	bool client_datastream;
 
 	/** ZMQ Socket - Receiver to Client */
 	ZmqSocket* zmqSocket[MAXDET];

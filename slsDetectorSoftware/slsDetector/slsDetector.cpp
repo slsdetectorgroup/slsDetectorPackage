@@ -788,6 +788,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->flippedData[0] = 0;
     thisDetector->flippedData[1] = 0;
     thisDetector->zmqport = 0;
+    thisDetector->receiver_zmqport = 0;
+    thisDetector->receiver_datastream = false;
 
     for (int ia=0; ia<MAX_ACTIONS; ++ia) {
       strcpy(thisDetector->actionScript[ia],"none");
@@ -931,6 +933,14 @@ int slsDetector::initializeDetectorSize(detectorType type) {
   if (thisReceiver != NULL)
 	  delete thisReceiver;
   thisReceiver = new receiverInterface(dataSocket);
+
+  // zmq ports
+  if (posId != -1) {
+	  if (thisDetector->zmqport == 0)
+		  thisDetector->zmqport = DEFAULT_ZMQ_CL_PORTNO + (posId * ((thisDetector->myDetectorType == EIGER) ? 2 : 1));
+	  if (thisDetector->receiver_zmqport == 0)
+		  thisDetector->receiver_zmqport = DEFAULT_ZMQ_RX_PORTNO + (posId * ((thisDetector->myDetectorType == EIGER) ? 2 : 1));
+  }
 
   //  setAngularConversionPointer(thisDetector->angOff,&thisDetector->nMods, thisDetector->nChans*thisDetector->nChips);
 
@@ -6017,6 +6027,9 @@ string slsDetector::setNetworkParameter(networkParameter index, string value) {
 	case FLOW_CONTROL_10G:
 		sscanf(value.c_str(),"%d",&i);
 		return setDetectorNetworkParameter(index, i);
+	case CLIENT_STREAMING_PORT:
+		setClientStreamingPort(value);
+		return getClientStreamingPort();
 	case RECEIVER_STREAMING_PORT:
 		setReceiverStreamingPort(value);
 		return getReceiverStreamingPort();
@@ -6052,6 +6065,8 @@ string slsDetector::getNetworkParameter(networkParameter index) {
   case DETECTOR_TXN_DELAY_FRAME:
   case FLOW_CONTROL_10G:
 	  return setDetectorNetworkParameter(index, -1);
+  case CLIENT_STREAMING_PORT:
+	  return getClientStreamingPort();
   case RECEIVER_STREAMING_PORT:
 	  return getReceiverStreamingPort();
 	case RECEIVER_STREAMING_SRC_IP:
@@ -6155,9 +6170,10 @@ string slsDetector::setReceiver(string receiverIP){
 		std::cout << "dynamic range:" << thisDetector->dynamicRange << endl << endl;
 		std::cout << "flippeddatax:" << thisDetector->flippedData[d] << endl;
 		std::cout << "10GbE:" << thisDetector->tenGigaEnable << endl << endl;
-		std::cout << "streaming port:" << thisDetector->zmqport << endl;
 		std::cout << "streaming source ip:" << thisDetector->zmqsrcip << endl;
 		std::cout << "enable gap pixels:" << thisDetector->gappixels << endl;
+		std::cout << "rx streaming port:" << thisDetector->receiver_zmqport << endl;
+
 		//std::cout << "dataStreaming:" << enableDataStreamingFromReceiver(-1) << endl << endl;
 /** enable compresison, */
 #endif
@@ -6200,20 +6216,7 @@ string slsDetector::setReceiver(string receiverIP){
 
 			// data streaming
 			setReceiverStreamingPort(getReceiverStreamingPort());
-			setReceiverStreamingSourceIP(getReceiverStreamingSourceIP());
-			int clientSockets = parentDet->getStreamingSocketsCreatedInClient();
-			int recSockets = enableDataStreamingFromReceiver(-1);
-			if(clientSockets != recSockets) {
-				pthread_mutex_lock(&ms);
-				if(clientSockets)
-					printf("Enabling Data Streaming\n");
-				else
-					printf("Disabling Data Streaming\n");
-				// push client state to receiver
-				/*parentDet->enableDataStreamingFromReceiver(clientSockets);*/
-				enableDataStreamingFromReceiver(clientSockets);
-				pthread_mutex_unlock(&ms);
-			}
+			enableDataStreamingFromReceiver(enableDataStreamingFromReceiver(-1));
 		}
 	}
 
@@ -6312,7 +6315,29 @@ int slsDetector::setReceiverUDPPort2(int udpport){
 }
 
 
-int slsDetector::setReceiverStreamingPort(string port) {
+string slsDetector::setClientStreamingPort(string port) {
+	int defaultport = 0;
+	int numsockets = (thisDetector->myDetectorType == EIGER) ? 2:1;
+	int arg = 0;
+
+	//multi command, calculate individual ports
+	size_t found = port.find("multi");
+	if(found != string::npos) {
+		port.erase(found,5);
+		sscanf(port.c_str(),"%d",&defaultport);
+		arg = defaultport + (posId * numsockets);
+	}
+	else
+		sscanf(port.c_str(),"%d",&arg);
+	thisDetector->zmqport = arg;
+
+	return getClientStreamingPort();
+}
+
+
+
+
+string slsDetector::setReceiverStreamingPort(string port) {
 	int defaultport = 0;
 	int numsockets = (thisDetector->myDetectorType == EIGER) ? 2:1;
 	int arg = 0;
@@ -6340,12 +6365,12 @@ int slsDetector::setReceiverStreamingPort(string port) {
 			disconnectData();
 		}
 		if(ret!=FAIL)
-			thisDetector->zmqport = retval;
+			thisDetector->receiver_zmqport = retval;
 		if(ret==FORCE_UPDATE)
 			updateReceiver();
 	}
 
-	return thisDetector->zmqport;
+	return getReceiverStreamingPort();
 }
 
 string slsDetector::setReceiverStreamingSourceIP(string sourceIP) {
@@ -8394,9 +8419,13 @@ int slsDetector::updateReceiverNoWait() {
   parentDet->enableOverwriteMask(ind);
   pthread_mutex_unlock(&ms);
 
-  // streaming port
+  // receiver streaming port
   n += 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
-  thisDetector->zmqport = ind;
+  thisDetector->receiver_zmqport = ind;
+
+  // receiver streaming enable
+  n += dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
+  thisDetector->receiver_datastream = ind;
 
   // streaming source ip
   n += 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);

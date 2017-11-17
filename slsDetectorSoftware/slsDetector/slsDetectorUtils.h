@@ -30,6 +30,7 @@ extern "C" {
 #include <queue>
 #include <math.h>
 #include <semaphore.h>
+#include <cstdlib>
 using namespace std;
 
 
@@ -99,7 +100,32 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   int enableFlatFieldCorrection(int i=-1) {if (i>0) setFlatFieldCorrectionFile("default"); else if (i==0) setFlatFieldCorrectionFile(""); return getFlatFieldCorrection();};
   int enablePixelMaskCorrection(int i=-1) {if (i>0) setBadChannelCorrection("default"); else if (i==0) setBadChannelCorrection(""); return getBadChannelCorrection();};
   int enableCountRateCorrection(int i=-1) {if (i>0) setRateCorrection(i); else if (i==0) setRateCorrection(0); return getRateCorrection();};
-  // string getFilePath(){return fileIO::getFilePath();};;
+
+
+  /**
+   * Set/Get receiver streaming out ZMQ port
+   * For multi modules, it calculates (increments) and sets the ports
+   * @param i sets, -1 gets
+   * @returns receiver streaming out ZMQ port
+   */
+  int setReceiverDataStreamingOutPort(int i) {										\
+	  if (i >= 0) {	ostringstream ss; ss << i; string s = ss.str();					\
+	  	  	  	  	setNetworkParameter(RECEIVER_STREAMING_PORT, s);}				\
+	  return atoi(getNetworkParameter(RECEIVER_STREAMING_PORT).c_str());};			\
+
+  /**
+   * Set/Get client streaming in ZMQ port
+   * For multi modules, it calculates (increments) and sets the ports
+   * @param i sets, -1 gets
+   * @returns client streaming in ZMQ port
+   */
+  int setClientDataStreamingInPort(int i){											\
+		  if (i >= 0) {	ostringstream ss; ss << i; string s = ss.str();				\
+  	  	  				setNetworkParameter(CLIENT_STREAMING_PORT, s);}				\
+		  return atoi(getNetworkParameter(CLIENT_STREAMING_PORT).c_str());};		\
+
+
+// string getFilePath(){return fileIO::getFilePath();};;
   // string setFilePath(string s){return fileIO::setFilePath(s);};
 
   // string getFileName(){return fileIO::getFileName();};
@@ -760,9 +786,9 @@ virtual ROI* getROI(int &n)=0;
  */
 virtual int setReadReceiverFrequency(int getFromReceiver, int freq=-1)=0;
 
-/** Enable or disable streaming of data from receiver to client
- * 	@param enable 0 to disable 1 to enable -1 to only get the value
- * 	@returns data streaming
+/** Enable or disable streaming data from receiver to client
+ * @param enable 0 to disable 1 to enable -1 to only get the value
+ * @returns data streaming from receiver enable
 */
 virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
 

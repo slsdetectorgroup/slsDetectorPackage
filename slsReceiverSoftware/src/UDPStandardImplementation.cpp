@@ -221,9 +221,6 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {\
 			for ( int i = 0; i < numThreads; ++i ) {
 				dataStreamer.push_back(new DataStreamer(fifo[i], &dynamicRange, &shortFrameEnable, &fileIndex));
 				dataStreamer[i]->SetGeneralData(generalData);
-				// check again
-				if (streamingPort == 0)
-					streamingPort = DEFAULT_ZMQ_PORTNO + (detID * ((myDetectorType == EIGER) ? 2 : 1)  ); // multiplied by 2 as eiger has 2 ports
 				if (dataStreamer[i]->CreateZmqSockets(&numThreads, streamingPort, streamingSrcIP) == FAIL) {
 					error = true;
 					break;

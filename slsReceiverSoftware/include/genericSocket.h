@@ -51,27 +51,21 @@ class sockaddr_in;
 #include <ifaddrs.h>
 
 #endif
-#include <stdlib.h>  /******exit */
 
+#include <stdlib.h>  /******exit */
 #include <unistd.h>
 #include <string.h>
 #include <iostream>
-
 #include <math.h>
 #include <errno.h>
 #include <stdio.h>
-
-
 using namespace std;
 
 #define DEFAULT_PACKET_SIZE 1286
 /*#define SOCKET_BUFFER_SIZE (100*1024*1024) //100MB*/
 #define SOCKET_BUFFER_SIZE (2000*1024*1024) //100MB
-#define DEFAULT_PORTNO    1952
 #define DEFAULT_BACKLOG 5
-#define DEFAULT_UDP_PORTNO 50001
-#define DEFAULT_GUI_PORTNO 65000
-//#define DEFAULT_ZMQ_PORTNO defined in zmqSocket.h (40001)
+
 
 class genericSocket{
 
@@ -109,7 +103,7 @@ enum communicationProtocol{
 	 struct addrinfo *result;
 	 if (!ConvertHostnameToInternetAddress(host_ip_or_name, &result)) {
 		 serverAddress.sin_family = result->ai_family;
-		 memcpy((char *) &serverAddress.sin_addr.s_addr, &((struct sockaddr_in *) result->ai_addr)->sin_addr, result->ai_addrlen);
+		 memcpy((char *) &serverAddress.sin_addr.s_addr, &((struct sockaddr_in *) result->ai_addr)->sin_addr, sizeof(in_addr_t));
 		 freeaddrinfo(result);
 		 serverAddress.sin_port = htons(port_number);
 		 socketDescriptor=0;

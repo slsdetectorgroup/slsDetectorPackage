@@ -685,6 +685,11 @@ int slsReceiverTCPIPInterface::send_update() {
 #endif
 	mySock->SendDataOnly(&ind,sizeof(ind));
 
+	// data streaming enable
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind=(int)receiverBase->getDataStreamEnable();
+#endif
+
 	// streaming source ip
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	path = receiverBase->getStreamingSourceIP();
@@ -2304,11 +2309,6 @@ int slsReceiverTCPIPInterface::set_streaming_port() {
 		}
 		//get
 		retval=receiverBase->getStreamingPort();
-		if(port > 0 && retval != port) { //if port = 0, its actual value calculated
-			ret = FAIL;
-			strcpy(mess, "Could not set streaming port\n");
-			FILE_LOG(logERROR) << "Warning: " << mess;
-		}
 	}
 #endif
 #ifdef VERYVERBOSE

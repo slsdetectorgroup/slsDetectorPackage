@@ -8,9 +8,7 @@
  */
 
 #include "ansi.h"
-#include "sls_receiver_defs.h"
 
-//#define ZMQ_DETAIL
 
 #include <zmq.h>
 #include <errno.h>
@@ -21,7 +19,8 @@
 #include <unistd.h> 			//usleep in some machines
 using namespace rapidjson;
 
-#define DEFAULT_ZMQ_PORTNO 	30001
+
+//#define ZMQ_DETAIL
 
 class ZmqSocket {
 

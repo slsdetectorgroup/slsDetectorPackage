@@ -103,7 +103,7 @@ enum communicationProtocol{
 	 struct addrinfo *result;
 	 if (!ConvertHostnameToInternetAddress(host_ip_or_name, &result)) {
 		 serverAddress.sin_family = result->ai_family;
-		 memcpy((char *) &serverAddress.sin_addr.s_addr, &((struct sockaddr_in *) result->ai_addr)->sin_addr, result->ai_addrlen);
+		 memcpy((char *) &serverAddress.sin_addr.s_addr, &((struct sockaddr_in *) result->ai_addr)->sin_addr, sizeof(in_addr_t));
 		 freeaddrinfo(result);
 		 serverAddress.sin_port = htons(port_number);
 		 socketDescriptor=0;

@@ -454,23 +454,19 @@ class slsDetectorUsers
 
    /**
     * Set/Get receiver streaming out ZMQ port
-    * If imod is -1, when setting it calculates and sets the port for all individual detectors
-    * and when getting it returns only the port of individual detector in first position
+    * For multi modules, it calculates (increments) and sets the ports
     * @param i sets, -1 gets
-    * @param imod module index, -1 for all
     * @returns receiver streaming out ZMQ port ()
     */
-   int setReceiverDataStreamingOutPort(int i, int imod=-1);
+   int setReceiverDataStreamingOutPort(int i=-1);
 
    /**
     * Set/Get client streaming in ZMQ port
-    * If imod is -1, when setting it calculates and sets the port for all individual detectors
-    * and when getting it returns only the port of individual detector in first position
+    * For multi modules, it calculates (increments) and sets the ports
     * @param i sets, -1 gets
-    * @param imod module index, -1 for all
     * @returns client streaming in ZMQ port
     */
-   int setClientDataStreamingInPort(int i, int imod=-1);
+   int setClientDataStreamingInPort(int i=-1);
 
   /**
      get get Module Firmware Version

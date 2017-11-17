@@ -90,48 +90,31 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   int enablePixelMaskCorrection(int i=-1) {if (i>0) setBadChannelCorrection("default"); else if (i==0) setBadChannelCorrection(""); return getBadChannelCorrection();};
   int enableCountRateCorrection(int i=-1) {if (i>0) setRateCorrection(i); else if (i==0) setRateCorrection(0); return getRateCorrection();};
 
+
   /**
    * Set/Get receiver streaming out ZMQ port
+   * For multi modules, it calculates (increments) and sets the ports
    * @param i sets, -1 gets
-   * @param imod module index, -1 for all
    * @returns receiver streaming out ZMQ port
    */
-  int setReceiverDataStreamingOutPort(int i, int imod) {										\
-	  // single module
-	  if (imod < 0) {																			\
-		  if (i >= 0) {																			\
-			  ostringstream ss; ss << i; string s = ss.str();									\
-			  getSlsDetector(imod)->setReceiverStreamingPort(RECEIVER_STREAMING_PORT, s);		\
-		  }																						\
-		  return atoi(getSlsDetector(imod)->getReceiverStreamingPort().c_str());				\
-	  }																							\
-	  // multimodule
-	  if (i >= 0)																				\
-		  setNetworkParameter(RECEIVER_STREAMING_PORT, s);										\
-	  return atoi(getSlsDetector(0)->getNetworkParameter(RECEIVER_STREAMING_PORT).c_str());};	\
+  int setReceiverDataStreamingOutPort(int i) {										\
+	  if (i >= 0) {	ostringstream ss; ss << i; string s = ss.str();					\
+	  	  	  	  	setNetworkParameter(RECEIVER_STREAMING_PORT, s);}				\
+	  return atoi(getNetworkParameter(RECEIVER_STREAMING_PORT).c_str());};			\
 
   /**
    * Set/Get client streaming in ZMQ port
+   * For multi modules, it calculates (increments) and sets the ports
    * @param i sets, -1 gets
-   * @param imod module index, -1 for all
    * @returns client streaming in ZMQ port
    */
-  int setClientDataStreamingInPort(int i, int imod=-1){												\
-		  // single module
-		  if (imod < 0) {																			\
-			  if (i >= 0) {																			\
-				  ostringstream ss; ss << i; string s = ss.str();									\
-				  getSlsDetector(imod)->setReceiverStreamingPort(CLIENT_STREAMING_PORT, s);		\
-			  }																						\
-			  return atoi(getSlsDetector(imod)->getReceiverStreamingPort().c_str());				\
-		  }																							\
-		  // multimodule
-		  if (i >= 0)																				\
-			  setNetworkParameter(CLIENT_STREAMING_PORT, s);										\
-		  return atoi(getSlsDetector(0)->getNetworkParameter(CLIENT_STREAMING_PORT).c_str());};	\
-  };
+  int setClientDataStreamingInPort(int i){											\
+		  if (i >= 0) {	ostringstream ss; ss << i; string s = ss.str();				\
+  	  	  				setNetworkParameter(CLIENT_STREAMING_PORT, s);}				\
+		  return atoi(getNetworkParameter(CLIENT_STREAMING_PORT).c_str());};		\
 
-  // string getFilePath(){return fileIO::getFilePath();};;
+
+// string getFilePath(){return fileIO::getFilePath();};;
   // string setFilePath(string s){return fileIO::setFilePath(s);};
 
   // string getFileName(){return fileIO::getFileName();};

@@ -119,11 +119,10 @@ private:
 	int id;
 	/** Default Save file path */
 	string filePath;
-
-	/**	clone 2D Plot */
-	SlsQt2DPlotLayout* 	cloneplot2D;
 	/**	clone 1D Plot */
 	SlsQt1DPlot* 		cloneplot1D;
+	/**	clone 2D Plot */
+	SlsQt2DPlotLayout* 	cloneplot2D;
 	/**	vector of 1D hist values */
 	QVector<SlsQtH1D*> 	cloneplot1D_hists;
 

@@ -2355,7 +2355,7 @@ int slsReceiverTCPIPInterface::set_streaming_source_ip() {
 		else if (receiverBase->getStatus() != IDLE)
 			receiverNotIdle();
 		else {
-			receiverBase->setStreamingSourceIP(arg);
+				receiverBase->setStreamingSourceIP(arg);
 		}
 
 		//get

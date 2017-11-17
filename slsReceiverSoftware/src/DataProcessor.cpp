@@ -489,7 +489,7 @@ void DataProcessor::InsertGapPixels(char* buf, uint32_t dr) {
 	// copying line by line
 	srcptr = buf;
 	dstptr = tempBuffer + b1line + b1pxofst;		// left fpga (index 0) has no extra 1px offset, but right fpga has
-	for (int i = 0; i < (ny-1); ++i) {
+	for (uint32_t i = 0; i < (ny-1); ++i) {
 		memcpy(dstptr, srcptr, b1chip);
 		srcptr += b1chip;
 		dstptr += (b1chip + b2px);
@@ -507,7 +507,7 @@ void DataProcessor::InsertGapPixels(char* buf, uint32_t dr) {
 		srcptr = tempBuffer + b1line;
 		dstptr = tempBuffer + b1line;
 
-		for (int i = 0; i < (ny-1); ++i) {
+		for (uint32_t i = 0; i < (ny-1); ++i) {
 			srcgp1 = srcptr + b1pxofst + b1chip - b1px;
 			dstgp1 = srcgp1 + b1px;
 			srcgp2 = srcgp1 + b3px;
@@ -545,7 +545,7 @@ void DataProcessor::InsertGapPixels(char* buf, uint32_t dr) {
 	// horizontal filling of values
 	srcptr = tempBuffer + b1line;
 	dstptr = tempBuffer;
-	for (int i = 0; i < nx; ++i) {
+	for (uint32_t i = 0; i < nx; ++i) {
 		switch (dr) {
 		case 8:	(*((uint8_t*)srcptr)) = (*((uint8_t*)srcptr))/2; (*((uint8_t*)dstptr)) = (*((uint8_t*)srcptr)); break;
 		case 16:(*((uint16_t*)srcptr)) = (*((uint16_t*)srcptr))/2; (*((uint16_t*)dstptr)) = (*((uint16_t*)srcptr)); break;

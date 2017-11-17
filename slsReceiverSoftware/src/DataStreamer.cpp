@@ -280,7 +280,7 @@ int DataStreamer::SendHeader(sls_detector_header* header, uint32_t nx, uint32_t 
 	uint64_t acquisitionIndex = header->frameNumber - firstAcquisitionIndex;
 
 	return zmqSocket->SendHeaderData(index, dummy, SLS_DETECTOR_JSON_HEADER_VERSION, *dynamicRange, *fileIndex,
-			nx, ny,
+			nx, ny,generalData->imageSize,
 			acquisitionIndex, frameIndex, fileNametoStream,
 			header->frameNumber, header->expLength, header->packetNumber, header->bunchId, header->timestamp,
 			header->modId, header->xCoord, header->yCoord, header->zCoord,

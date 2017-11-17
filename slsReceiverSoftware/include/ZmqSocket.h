@@ -58,7 +58,7 @@ public:
 		// construct address
 		sprintf (serverAddress, "tcp://%s:%d", ip, portno);
 #ifdef VERBOSE
-		cprintf(BLUE,"addres:%s\n",serverAddress);
+		cprintf(BLUE,"address:%s\n",serverAddress);
 #endif
 
 		// create context
@@ -101,10 +101,9 @@ public:
 	 * Creates socket, context and connects to server
 	 * @param hostname hostname or ip of server
 	 * @param portnumber port number
-	 * @param ethip is the ip of the ethernet interface to stream zmq from.
-	 * If blank, it will get ip from "hostname -i", else stream to all interfaces
+	 * @param ethip is the ip of the ethernet interface to stream zmq from
 	 */
-	ZmqSocket (const uint32_t portnumber, const char *ethip=NULL):
+	ZmqSocket (const uint32_t portnumber, const char *ethip):
 		portno (portnumber),
 		server (true),
 		contextDescriptor (NULL),
@@ -124,35 +123,11 @@ public:
 
 		//Socket Options provided above
 
-
-		// construct ip to stream from
-		char ip[MAX_STR_LENGTH];
-		memset(ip, 0, MAX_STR_LENGTH);
-
-		// if ethip pre-defined
-		if (ethip != NULL)
-			strcpy(ip,ethip);
-		else {
-			bool valid = false;
-			FILE *sysFile = popen("hostname -i", "r");
-			if (sysFile != NULL) {
-				if (fgets(ip, MAX_STR_LENGTH, sysFile) != NULL) {
-					sscanf(ip,"%s\n",ip);
-#ifdef VERBOSE
-					cprintf(BLUE, "read ip:%s.\n",ip);
-#endif
-					valid = true;
-					pclose(sysFile);
-				}
-			}
-			if(!valid)
-				strcpy(ip,"*");
-
-		}
-
-
 		// construct addresss
-		sprintf (serverAddress,"tcp://%s:%d", ip, portno);
+		sprintf (serverAddress,"tcp://%s:%d", ethip, portno);
+#ifdef VERBOSE
+		cprintf(BLUE,"address:%s\n",serverAddress);
+#endif
 		// bind address
 		if (zmq_bind (socketDescriptor, serverAddress) < 0) {
 			PrintError ();
@@ -282,7 +257,7 @@ public:
 	 * @returns 0 if error, else 1
 	 */
 	int SendHeaderData ( int index, bool dummy, uint32_t jsonversion, uint32_t dynamicrange = 0, uint64_t fileIndex = 0,
-			uint32_t npixelsx = 0, uint32_t npixelsy = 0,
+			uint32_t npixelsx = 0, uint32_t npixelsy = 0, uint32_t imageSize = 0,
 			uint64_t acqIndex = 0, uint64_t fIndex = 0, char* fname = NULL,
 			uint64_t frameNumber = 0, uint32_t expLength = 0, uint32_t packetNumber = 0,
 			uint64_t bunchId = 0, uint64_t timestamp = 0,
@@ -299,6 +274,7 @@ public:
 				"\"bitmode\":%u, "
 				"\"fileIndex\":%llu, "
 				"\"shape\":[%u, %u], "
+				"\"size\":%u, "
 				"\"acqIndex\":%llu, "
 				"\"fIndex\":%llu, "
 				"\"fname\":\"%s\", "
@@ -319,7 +295,7 @@ public:
 				"\"version\":%u"
 				"}\n\0";
 		int length = sprintf(buf, jsonHeaderFormat,
-				jsonversion, dynamicrange, fileIndex, npixelsx, npixelsy,
+				jsonversion, dynamicrange, fileIndex, npixelsx, npixelsy, imageSize,
 				acqIndex, fIndex, (fname == NULL)? "":fname, dummy?0:1,
 						frameNumber, expLength, packetNumber, bunchId, timestamp,
 						modId, xCoord, yCoord, zCoord, debug, roundRNumber,

@@ -275,9 +275,10 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     int receiver_zmqport;
     /** data streaming (up stream) enable in receiver */
     bool receiver_datastream;
-    /**  zmq tcp src ip address between receiver and gui (only data) **/
-    char zmqsrcip[MAX_STR_LENGTH];
-
+    /**  zmq tcp src ip address in client (only data) **/
+    char zmqip[MAX_STR_LENGTH];
+    /**  zmq tcp src ip address in receiver (only data) **/
+    char receiver_zmqip[MAX_STR_LENGTH];
     /** gap pixels enable */
     int gappixels;
     /** gap pixels in each direction */
@@ -1765,8 +1766,10 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   string getClientStreamingPort() {ostringstream ss; ss << thisDetector->zmqport; string s = ss.str(); return s;};
   /** returns the receiver zmq port \sa sharedSlsDetector  */
   string getReceiverStreamingPort() {ostringstream ss; ss << thisDetector->receiver_zmqport; string s = ss.str(); return s;};
-  /** gets the zmq source ip in client and receiver, returns "none" if default setting and no custom ip set*/
-  string getReceiverStreamingSourceIP(){return string(thisDetector->zmqsrcip);};
+  /** gets the zmq source ip in client, returns "none" if default setting and no custom ip set*/
+  string getClientStreamingIP(){return string(thisDetector->zmqip);};
+  /** gets the zmq source ip in receiver, returns "none" if default setting and no custom ip set*/
+  string getReceiverStreamingIP(){return string(thisDetector->receiver_zmqip);};
 
   /** validates the format of detector MAC address and sets it \sa sharedSlsDetector  */
   string setDetectorMAC(string detectorMAC);
@@ -1786,8 +1789,10 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   string setClientStreamingPort(string port);
   /** sets the zmq port in receiver (includes "multi" at the end if it should calculate individual ports \sa sharedSlsDetector  */
   string setReceiverStreamingPort(string port);
-  /** sets the zmq source ip in client and receiver */
-  string setReceiverStreamingSourceIP(string sourceIP);
+  /** sets the zmq source ip in client */
+  string setClientStreamingIP(string sourceIP);
+  /** sets the zmq source ip in receiver. if empty, uses rx_hostname*/
+  string setReceiverStreamingIP(string sourceIP);
 
   /** sets the transmission delay for left or right port or for an entire frame*/
   string setDetectorNetworkParameter(networkParameter index, int delay);

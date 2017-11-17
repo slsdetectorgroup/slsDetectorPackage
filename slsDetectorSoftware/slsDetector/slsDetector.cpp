@@ -559,8 +559,10 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     /** set detector ip address */
     memset(thisDetector->detectorIP,0,MAX_STR_LENGTH);
     strcpy(thisDetector->detectorIP,DEFAULT_DET_IP);
-    /** set zmq tcp src ip address */
-    memset(thisDetector->zmqsrcip,0,MAX_STR_LENGTH);
+    /** set zmq tcp src ip address in client */
+    memset(thisDetector->zmqip,0,MAX_STR_LENGTH);
+    /** set zmq tcp src ip address in receiver*/
+    memset(thisDetector->receiver_zmqip,0,MAX_STR_LENGTH);
 
 
     /** sets onlineFlag to OFFLINE_FLAG */
@@ -6028,15 +6030,13 @@ string slsDetector::setNetworkParameter(networkParameter index, string value) {
 		sscanf(value.c_str(),"%d",&i);
 		return setDetectorNetworkParameter(index, i);
 	case CLIENT_STREAMING_PORT:
-		setClientStreamingPort(value);
-		return getClientStreamingPort();
+		return setClientStreamingPort(value);
 	case RECEIVER_STREAMING_PORT:
-		setReceiverStreamingPort(value);
-		return getReceiverStreamingPort();
-	case RECEIVER_STREAMING_SRC_IP:
-		return setReceiverStreamingSourceIP(value);
+		return setReceiverStreamingPort(value);
 	case CLIENT_STREAMING_SRC_IP:
-		return setClientStreamingSourceIP(value);
+		return setClientStreamingIP(value);
+	case RECEIVER_STREAMING_SRC_IP:
+		return setReceiverStreamingIP(value);
   default:
     return (char*)("unknown network parameter");
   }
@@ -6071,10 +6071,10 @@ string slsDetector::getNetworkParameter(networkParameter index) {
 	  return getClientStreamingPort();
   case RECEIVER_STREAMING_PORT:
 	  return getReceiverStreamingPort();
-case RECEIVER_STREAMING_SRC_IP:
-	return getReceiverStreamingSourceIP();
-case CLIENT_STREAMING_SRC_IP:
-	return getClientStreamingSourceIP();
+  case CLIENT_STREAMING_SRC_IP:
+  	return getClientStreamingIP();
+  case RECEIVER_STREAMING_SRC_IP:
+	return getReceiverStreamingIP();
   default:
     return (char*)("unknown network parameter");
   }
@@ -6174,7 +6174,7 @@ string slsDetector::setReceiver(string receiverIP){
 		std::cout << "dynamic range:" << thisDetector->dynamicRange << endl << endl;
 		std::cout << "flippeddatax:" << thisDetector->flippedData[d] << endl;
 		std::cout << "10GbE:" << thisDetector->tenGigaEnable << endl << endl;
-		std::cout << "streaming source ip:" << thisDetector->zmqsrcip << endl;
+		std::cout << "rx streaming source ip:" << thisDetector->receiver_zmqip << endl;
 		std::cout << "enable gap pixels:" << thisDetector->gappixels << endl;
 		std::cout << "rx streaming port:" << thisDetector->receiver_zmqport << endl;
 
@@ -6220,6 +6220,7 @@ string slsDetector::setReceiver(string receiverIP){
 
 			// data streaming
 			setReceiverStreamingPort(getReceiverStreamingPort());
+			setReceiverStreamingIP(getReceiverStreamingIP());
 			enableDataStreamingFromReceiver(enableDataStreamingFromReceiver(-1));
 		}
 	}
@@ -6377,15 +6378,60 @@ string slsDetector::setReceiverStreamingPort(string port) {
 	return getReceiverStreamingPort();
 }
 
-string slsDetector::setReceiverStreamingSourceIP(string sourceIP) {
+string slsDetector::setClientStreamingIP(string sourceIP) {
+
+	struct addrinfo *result;
+	// on failure to convert to a valid ip
+	if (dataSocket->ConvertHostnameToInternetAddress(sourceIP.c_str(), &result)) {
+		std::cout << "Warning: Could not convert zmqip into a valid IP" << sourceIP << std::endl;
+		  setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
+		  return getClientStreamingIP();
+	}
+	// on success put IP as string into arg
+	else {
+		memset(thisDetector->zmqip, 0, MAX_STR_LENGTH);
+		dataSocket->ConvertInternetAddresstoIpString(result, thisDetector->zmqip, MAX_STR_LENGTH);
+	}
+
+	return getClientStreamingIP();
+}
+
+
+string slsDetector::setReceiverStreamingIP(string sourceIP) {
 
 	int fnum=F_RECEIVER_STREAMING_SRC_IP;
 	int ret = FAIL;
 	char arg[MAX_STR_LENGTH];
-	memset(arg,0, sizeof(arg));
-	strcpy(arg,sourceIP.c_str());
+	memset(arg,0,sizeof(arg));
 	char retval[MAX_STR_LENGTH];
 	memset(retval,0, sizeof(retval));
+
+	// if empty, give rx_hostname
+	if (sourceIP.empty())  {
+		if(!strcmp(thisDetector->receiver_hostname,"none")) {
+			std::cout << "Receiver hostname not set yet. Cannot create rx_zmqip from none\n" << endl;
+			setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
+			return getReceiverStreamingIP();
+		}
+		sourceIP.assign(thisDetector->receiver_hostname);
+	}
+
+	// verify the ip
+	{
+		struct addrinfo *result;
+		// on failure to convert to a valid ip
+		if (dataSocket->ConvertHostnameToInternetAddress(sourceIP.c_str(), &result)) {
+			std::cout << "Warning: Could not convert rx_zmqip into a valid IP" << sourceIP << std::endl;
+			setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
+			return getReceiverStreamingIP();
+		}
+		// on success put IP as string into arg
+		else {
+			memset(thisDetector->zmqip, 0, MAX_STR_LENGTH);
+			dataSocket->ConvertInternetAddresstoIpString(result, arg, MAX_STR_LENGTH);
+		}
+	}
+
 
 	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
 #ifdef VERBOSE
@@ -6396,15 +6442,20 @@ string slsDetector::setReceiverStreamingSourceIP(string sourceIP) {
 			disconnectData();
 		}
 		if(ret!=FAIL) {
-			memset(thisDetector->zmqsrcip, 0, MAX_STR_LENGTH);
-			strcpy(thisDetector->zmqsrcip, retval);
+			memset(thisDetector->receiver_zmqip, 0, MAX_STR_LENGTH);
+			strcpy(thisDetector->receiver_zmqip, retval);
+			// if zmqip is empty, update it
+			if (! strlen(thisDetector->zmqip))
+				strcpy(thisDetector->zmqip, retval);
 		}
 		if(ret==FORCE_UPDATE)
 			updateReceiver();
 	}
 
-	return getReceiverStreamingSourceIP();
+	return getReceiverStreamingIP();
 }
+
+
 
 string slsDetector::setDetectorNetworkParameter(networkParameter index, int delay){
 	int fnum = F_SET_NETWORK_PARAMETER;
@@ -8433,7 +8484,7 @@ int slsDetector::updateReceiverNoWait() {
 
   // streaming source ip
   n += 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);
-  strcpy(thisDetector->zmqsrcip, path);
+  strcpy(thisDetector->receiver_zmqip, path);
 
   // gap pixels
   n += dataSocket->ReceiveDataOnly(&ind,sizeof(ind));

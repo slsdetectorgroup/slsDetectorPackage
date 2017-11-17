@@ -5784,7 +5784,7 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 		sscanf(detectors[i/numSocketsPerDetector]->getClientStreamingPort().c_str(),"%d",&portnum);
 		portnum += (i%numSocketsPerDetector);
 
-		zmqSocket[i] = new ZmqSocket(detectors[i/numSocketsPerDetector]->getReceiver().c_str(), portnum);
+		zmqSocket[i] = new ZmqSocket(detectors[i/numSocketsPerDetector]->getClientStreamingIP().c_str(), portnum);
 		if (zmqSocket[i]->IsError()) {
 			cprintf(RED, "Error: Could not create Zmq socket on port %d\n", portnum);
 			createReceivingDataSockets(true);
@@ -5902,8 +5902,6 @@ void multiSlsDetector::readFrameFromReceiver(){
 	char* multigappixels = NULL; // used only for 4 bit mode with gap pixels enabled
 	if (jungfrau)
 		multiframegain = new char[multidatabytes]();
-
-	int nch;
 
 	bool runningList[numSockets];
 	int numRunning = 0;

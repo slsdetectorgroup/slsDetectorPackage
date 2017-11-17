@@ -1916,16 +1916,16 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 	/*! \page network
-   - <b>zmqsrcip [ip]</b> sets/gets the 0MQ (TCP) ip of the client to where final data is streamed to (eg. for GUI). Default is ip of rx_hostname and works for GUI. This command to change from default can be used from command line when sockets are not already open as the command line is not aware/create the 0mq sockets in the client side. This is usually used to stream in from an external process. \c Returns \c (string)
+   - <b>zmqip [ip]</b> sets/gets the 0MQ (TCP) ip of the client to where final data is streamed to (eg. for GUI). For Experts only! Default is ip of rx_hostname and works for GUI. This command to change from default can be used from command line when sockets are not already open as the command line is not aware/create the 0mq sockets in the client side. This is usually used to stream in from an external process. . If no custom ip, empty until first time connect to receiver. \c Returns \c (string)
 	 */
-	descrToFuncMap[i].m_pFuncName="zmqsrcip"; //
+	descrToFuncMap[i].m_pFuncName="zmqip"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
 	i++;
 
 	/*! \page network
-   - <b>rx_zmqsrcip [ip]</b> sets/gets the 0MQ (TCP) ip of the receiver from where data is streamed from (eg. to GUI or another process for further processing). Default is ip of rx_hostname and works for GUI. This is usually used to stream out to an external process for further processing. \c Returns \c (string)
+   - <b>rx_zmqip [ip]</b> sets/gets the 0MQ (TCP) ip of the receiver from where data is streamed from (eg. to GUI or another process for further processing). For Experts only! Default is ip of rx_hostname and works for GUI. This is usually used to stream out to an external process for further processing. . If no custom ip, empty until first time connect to receiver. \c Returns \c (string)
 	 */
-	descrToFuncMap[i].m_pFuncName="rx_zmqsrcip"; //
+	descrToFuncMap[i].m_pFuncName="rx_zmqip"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
 	i++;
 
@@ -3969,9 +3969,9 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
 			if (!(sscanf(args[1],"%d",&i)))
 				return ("cannot parse argument") + string(args[1]);
 		}
-	}else if (cmd=="zmqsrcip") {
+	}else if (cmd=="zmqip") {
 		t=CLIENT_STREAMING_SRC_IP;
-	}else if (cmd=="rx_zmqsrcip") {
+	}else if (cmd=="rx_zmqip") {
 		t=RECEIVER_STREAMING_SRC_IP;
 	}
 	else return ("unknown network parameter")+cmd;
@@ -4004,10 +4004,10 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
 				"Use single-detector command to set individually or multi-detector command to calculate based on port for the rest."<< std::endl;
 		os << "rx_zmqport port \n sets the 0MQ (TCP) port of the receiver from where data is streamed from (eg. to GUI or another process for further processing). "
 				"Use single-detector command to set individually or multi-detector command to calculate based on port for the rest."<< std::endl;
-		os << "zmqsrcip ip \n sets the 0MQ (TCP) ip of the client to where final data is streamed to (eg. for GUI). Default is ip of rx_hostname and works for GUI. "
+		os << "zmqip ip \n sets the 0MQ (TCP) ip of the client to where final data is streamed to (eg. for GUI). Default is ip of rx_hostname and works for GUI. "
 				"This command to change from default can be used from command line when sockets are not already open as the command line is not aware/create the 0mq sockets in the client side. "
 				"This is usually used to stream in from an external process." << std::endl;
-		os << "rx_zmqsrcip ip \n sets/gets the 0MQ (TCP) ip of the receiver from where data is streamed from (eg. to GUI or another process for further processing). "
+		os << "rx_zmqip ip \n sets/gets the 0MQ (TCP) ip of the receiver from where data is streamed from (eg. to GUI or another process for further processing). "
 				"Default is ip of rx_hostname and works for GUI. This is usually used to stream out to an external process for further processing." << std::endl;
 	}
 	if (action==GET_ACTION || action==HELP_ACTION) {
@@ -4023,8 +4023,8 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
 		os << "flowcontrol_10g \n gets flow control for 10g for eiger"<< std::endl;
 		os << "zmqport \n gets the 0MQ (TCP) port of the client to where final data is streamed to"<< std::endl;
 		os << "rx_zmqport \n gets the 0MQ (TCP) port of the receiver from where data is streamed from"<< std::endl;
-		os << "zmqsrcip \n gets the 0MQ (TCP) ip of the client to where final data is streamed to, none if default setting and no custom ip" << std::endl;
-		os << "rx_zmqsrcip \n gets/gets the 0MQ (TCP) ip of the receiver from where data is streamed from, none if default setting and no custom ip" << std::endl;
+		os << "zmqip \n gets the 0MQ (TCP) ip of the client to where final data is streamed to.If no custom ip, empty until first time connect to receiver" << std::endl;
+		os << "rx_zmqip \n gets/gets the 0MQ (TCP) ip of the receiver from where data is streamed from. If no custom ip, empty until first time connect to receiver" << std::endl;
 	}
 	return os.str();
 

@@ -158,6 +158,14 @@ private slots:
 	 */
 	void SetNetworkParameters();
 
+	/** Sets client zmq ip to listen to
+	 */
+	void SetClientZMQIP();
+
+	/** Sets receiver zmq ip to stream from
+	 */
+	void SetReceiverZMQIP();
+
 	/** Sets the receiver. which also sets the receiver parameters
 	 */
 	void SetReceiver();

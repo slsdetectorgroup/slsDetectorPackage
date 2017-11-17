@@ -79,6 +79,8 @@ void qTabAdvanced::SetupWidgetWindow(){
 		isAngular = true;
 		spinZmqPort->setEnabled(false);
 		spinZmqPort2->setEnabled(false);
+		dispZMQIP->setEnabled(false);
+		dispZMQIP2->setEnabled(false);
 		break;
 	case slsDetectorDefs::EIGER:
 		isEnergy = true;
@@ -165,7 +167,8 @@ void qTabAdvanced::SetupWidgetWindow(){
 	dispRxrHostname->setText(det->getReceiver().c_str());
 	dispUDPIP->setText(det->getReceiverUDPIP().c_str());
 	dispUDPMAC->setText(det->getReceiverUDPMAC().c_str());
-
+	dispZMQIP->setText(det->getClientStreamingIP().c_str());
+	dispZMQIP2->setText(det->getReceiverStreamingIP().c_str());
 
 	//check if its online and set it to red if offline
 #ifdef VERYVERBOSE
@@ -261,11 +264,7 @@ void qTabAdvanced::Initialization(){
 	connect(spinStopPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetStopPort(int)));
 	connect(comboOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetOnline(int)));
 
-	if((detType==slsDetectorDefs::GOTTHARD) ||
-			(detType==slsDetectorDefs::MOENCH) ||
-			(detType==slsDetectorDefs::PROPIX) ||
-			(detType==slsDetectorDefs::JUNGFRAU) ||
-			(detType==slsDetectorDefs::EIGER)){
+	if(detType!=slsDetectorDefs::MYTHEN){
 
 		//network
 		connect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
@@ -278,6 +277,9 @@ void qTabAdvanced::Initialization(){
 		connect(dispMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
 		connect(dispUDPIP,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
 		connect(dispUDPMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+
+		connect(dispZMQIP,			SIGNAL(editingFinished()),	this, SLOT(SetClientZMQIP()));
+		connect(dispZMQIP2,			SIGNAL(editingFinished()),	this, SLOT(SetReceiverZMQIP()));
 
 		connect(btnRxr,				SIGNAL(clicked()),			this, SLOT(SetReceiver()));
 
@@ -840,6 +842,38 @@ void qTabAdvanced::SetNetworkParameters(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+void qTabAdvanced::SetClientZMQIP(){
+#ifdef VERBOSE
+	cout << "Setting Client ZMQ IP" << endl;
+#endif
+	disconnect(dispZMQIP,			SIGNAL(editingFinished()),	this, SLOT(SetClientZMQIP()));
+
+	dispZMQIP->setText(QString(det->setClientStreamingIP(dispZMQIP->text().toAscii().constData()).c_str()));
+	qDefs::checkErrorMessage(det,"qTabAdvanced::SetClientZMQIP");
+
+	connect(dispZMQIP,			SIGNAL(editingFinished()),	this, SLOT(SetClientZMQIP()));
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabAdvanced::SetReceiverZMQIP(){
+#ifdef VERBOSE
+	cout << "Setting Receiver ZMQ IP" << endl;
+#endif
+	disconnect(dispZMQIP2,			SIGNAL(editingFinished()),	this, SLOT(SetReceiverZMQIP()));
+
+	dispZMQIP2->setText(QString(det->setReceiverStreamingIP(dispZMQIP2->text().toAscii().constData()).c_str()));
+	qDefs::checkErrorMessage(det,"qTabAdvanced::SetReceiverZMQIP");
+
+	connect(dispZMQIP2,			SIGNAL(editingFinished()),	this, SLOT(SetReceiverZMQIP()));
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 void qTabAdvanced::SetReceiver(){
 #ifdef VERBOSE
 	cout << "Setting Receiver" << endl;
@@ -1107,6 +1141,8 @@ void qTabAdvanced::SetDetector(int index){
 	dispRxrHostname->setText(det->getReceiver().c_str());
 	dispUDPIP->setText(det->getReceiverUDPIP().c_str());
 	dispUDPMAC->setText(det->getReceiverUDPMAC().c_str());
+	dispZMQIP->setText(det->getClientStreamingIP().c_str());
+	dispZMQIP2->setText(det->getReceiverStreamingIP().c_str());
 
 
 	//check if its online and set it to red if offline
@@ -1280,11 +1316,7 @@ void qTabAdvanced::Refresh(){
 #ifdef VERBOSE
 		cout << "Getting Receiver Network Information" << endl;
 #endif
-	if ((detType==slsDetectorDefs::GOTTHARD) ||
-			(detType==slsDetectorDefs::MOENCH)||
-			(detType==slsDetectorDefs::PROPIX)||
-			(detType==slsDetectorDefs::JUNGFRAU)||
-			(detType==slsDetectorDefs::EIGER)){
+	if (detType!=slsDetectorDefs::MYTHEN){
 		//disconnect
 		disconnect(spinTCPPort,			SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
 		disconnect(spinUDPPort,			SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
@@ -1326,6 +1358,14 @@ void qTabAdvanced::Refresh(){
 		connect(dispUDPMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
 		connect(btnRxr,				SIGNAL(clicked()),			this, SLOT(SetReceiver()));
 
+		// zmq parameters
+		disconnect(dispZMQIP,			SIGNAL(editingFinished()),	this, SLOT(SetClientZMQIP()));
+		dispZMQIP->setText(det->getClientStreamingIP().c_str());
+		connect(dispZMQIP,			SIGNAL(editingFinished()),	this, SLOT(SetClientZMQIP()));
+
+		disconnect(dispZMQIP2,			SIGNAL(editingFinished()),	this, SLOT(SetReceiverZMQIP()));
+		dispZMQIP2->setText(det->getReceiverStreamingIP().c_str());
+		connect(dispZMQIP2,			SIGNAL(editingFinished()),	this, SLOT(SetReceiverZMQIP()));
 	}
 
 	//highlight in red if detector or receiver is offline

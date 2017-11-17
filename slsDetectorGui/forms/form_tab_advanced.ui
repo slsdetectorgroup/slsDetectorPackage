@@ -958,7 +958,7 @@ An extension given by the modules serial number will be attached.
       <property name="geometry">
        <rect>
         <x>420</x>
-        <y>143</y>
+        <y>140</y>
         <width>291</width>
         <height>25</height>
        </rect>
@@ -1264,7 +1264,7 @@ An extension given by the modules serial number will be attached.
           </sizepolicy>
          </property>
          <property name="text">
-          <string>ZMQ Port TX:</string>
+          <string>ZMQ Port:</string>
          </property>
         </widget>
        </item>
@@ -1309,6 +1309,42 @@ An extension given by the modules serial number will be attached.
          </property>
          <property name="value">
           <number>0</number>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="3">
+        <widget class="QLabel" name="label_16">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>ZMQ IP:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="4">
+        <widget class="QLineEdit" name="dispZMQIP2">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>180</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Sets the Receiver UDP IP
+#rx_udpip#</string>
+         </property>
+         <property name="text">
+          <string/>
          </property>
         </widget>
        </item>
@@ -1625,7 +1661,7 @@ An extension given by the modules serial number will be attached.
          </sizepolicy>
         </property>
         <property name="text">
-         <string>ZMQ Port RX:</string>
+         <string>Client ZMQ Port:</string>
         </property>
        </widget>
       </item>
@@ -1670,6 +1706,42 @@ An extension given by the modules serial number will be attached.
         </property>
         <property name="value">
          <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="3">
+       <widget class="QLabel" name="lblIP_2">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Client ZMQ IP:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="4">
+       <widget class="QLineEdit" name="dispZMQIP">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>180</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Sets the detector IP to send packets to receiver
+#detectorip#</string>
+        </property>
+        <property name="text">
+         <string/>
         </property>
        </widget>
       </item>

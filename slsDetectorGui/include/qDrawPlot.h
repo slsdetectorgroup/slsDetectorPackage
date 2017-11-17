@@ -146,13 +146,13 @@ public:
 	void SetHistogram(bool enable,int histArg, int min=0, int max=0, double size=0){histogram = enable;histogramArgument = histArg; histFrom=min;histTo=max;histSize=size;};
 
 	/** Get X Minimum value from plot */
-	double GetXMinimum() { if(plot_in_scope==1) return plot1D->GetXMinimum(); else plot2D->GetPlot()->GetXMinimum();};
+	double GetXMinimum() { if(plot_in_scope==1) return plot1D->GetXMinimum(); else return plot2D->GetPlot()->GetXMinimum();};
 	/** Get X Maximum value from plot */
-	double GetXMaximum() { if(plot_in_scope==1) return plot1D->GetXMaximum(); else plot2D->GetPlot()->GetXMaximum();};
+	double GetXMaximum() { if(plot_in_scope==1) return plot1D->GetXMaximum(); else return plot2D->GetPlot()->GetXMaximum();};
 	/** Get Y Minimum value from plot */
-	double GetYMinimum() { if(plot_in_scope==1) return plot1D->GetYMinimum(); else plot2D->GetPlot()->GetYMinimum();};
+	double GetYMinimum() { if(plot_in_scope==1) return plot1D->GetYMinimum(); else return plot2D->GetPlot()->GetYMinimum();};
 	/** Get Y Maximum value from plot */
-	double GetYMaximum() { if(plot_in_scope==1) return plot1D->GetYMaximum(); else plot2D->GetPlot()->GetYMaximum();};
+	double GetYMaximum() { if(plot_in_scope==1) return plot1D->GetYMaximum(); else return plot2D->GetPlot()->GetYMaximum();};
 
 public slots:
 /** To select 1D or 2D plot

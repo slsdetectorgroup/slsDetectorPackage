@@ -687,6 +687,7 @@ int slsReceiverTCPIPInterface::send_update() {
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getDataStreamEnable();
 #endif
+	mySock->SendDataOnly(&ind,sizeof(ind));
 
 	if (!lockStatus)
 		strcpy(mySock->lastClientIP,mySock->thisClientIP);

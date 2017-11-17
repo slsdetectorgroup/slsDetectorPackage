@@ -657,12 +657,12 @@ void qDetectorMain::ExecuteHelp(QAction *action){
 		cout << "About: Common GUI for Mythen, Eiger, Gotthard, Jungfrau, Moench and Propix detectors" << endl;
 #endif
 		char version[200];
-		int64_t retval= SVNREV;
+		long long unsigned int retval= SVNREV;
 		retval= (retval <<32) | SVNDATE;
 		sprintf(version,"%llx",retval);
 		string thisGUIVersion = string(version);
 
-		sprintf(version,"%llx",myDet->getId(slsDetectorDefs::THIS_SOFTWARE_VERSION));
+		sprintf(version,"%llx",(long long unsigned int)myDet->getId(slsDetectorDefs::THIS_SOFTWARE_VERSION));
 		qDefs::checkErrorMessage(myDet,"qDetectorMain::ExecuteHelp");
 		string thisClientVersion = string(version);
 

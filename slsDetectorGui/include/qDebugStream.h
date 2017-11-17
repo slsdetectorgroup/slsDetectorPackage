@@ -87,7 +87,7 @@ protected:
 		m_string.append(p, p + n);
 
 		//changed from uint because of 64 bit
-		unsigned int pos = 0;
+		int pos = 0;
 
 		while (pos != string::npos){
 			pos = m_string.find('\n');

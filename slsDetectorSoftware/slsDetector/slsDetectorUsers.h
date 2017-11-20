@@ -204,7 +204,7 @@ class slsDetectorUsers
 
   /**
            @short enable/disable count rate corrections 
-      \param i 0 disables, 1 enable, -1 gets
+      \param i 0 disables, 1 enables with default values, -1 gets
       \returns 0 if count corrections disabled, 1 if enabled
   */
    int enableCountRateCorrection(int i=-1);

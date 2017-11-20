@@ -722,8 +722,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 			 thisDetector->dynamicRange/8;
 
     if(thisDetector->myDetectorType==JUNGFRAUCTB){
-    	getTotalNumberOfChannels();	// recalculates nchans and databytes
-    	thisDetector->dataBytesInclGapPixels =  thisDetector->dataBytes;
+    	getTotalNumberOfChannels();
     }
     else if(thisDetector->myDetectorType==MYTHEN){
     	if (thisDetector->dynamicRange==24 || thisDetector->timerValue[PROBES_NUMBER]>0) {
@@ -831,16 +830,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->gainoff=thisDetector->chanoff+sizeof(int)*thisDetector->nGain*thisDetector->nModsMax;
     thisDetector->offsetoff=thisDetector->gainoff+sizeof(int)*thisDetector->nOffset*thisDetector->nModsMax;
 
-    //update?!?!?!?
-
     if(thisDetector->myDetectorType==JUNGFRAUCTB) {
-      //  cout << "here2" << endl;
       getTotalNumberOfChannels();
-	//thisDetector->nChan[X]=32;
-	//thisDetector->nChans=thisDetector->nChan[X]*thisDetector->nChan[Y];
-
-	//thisDetector->dataBytes=getTotalNumberOfChannels()*thisDetector->dynamicRange/8*thisDetector->timerValue[SAMPLES_JCTB];
-      
     }
 
   }
@@ -1765,11 +1756,7 @@ int slsDetector::getTotalNumberOfChannels() {
     }
     thisDetector->nChans=thisDetector->nChan[X];
     thisDetector->dataBytes=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods*2*thisDetector->timerValue[SAMPLES_JCTB];
-   // cout << "Total number of channels is "<< thisDetector->nChans*thisDetector->nChips*thisDetector->nMods << " data bytes is " << thisDetector->dataBytes << endl;
-    thisDetector->dataBytesInclGapPixels =
-    		(thisDetector->nChan[X]*thisDetector->nChip[X]*thisDetector->nMod[X]) + (thisDetector->gappixels * thisDetector->nGappixels[X]) *
-			(thisDetector->nChan[Y]*thisDetector->nChip[Y]*thisDetector->nMod[Y]) + (thisDetector->gappixels * thisDetector->nGappixels[Y]) *
-    		2*thisDetector->timerValue[SAMPLES_JCTB];
+    thisDetector->dataBytesInclGapPixels = thisDetector->dataBytes;
   } else {
 #ifdef VERBOSE
     cout << "det type is "<< thisDetector->myDetectorType << endl;
@@ -1787,7 +1774,7 @@ int slsDetector::getTotalNumberOfChannels(dimension d) {
 
 int slsDetector::getTotalNumberOfChannelsInclGapPixels(dimension d) {
 	getTotalNumberOfChannels();
-	return (thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nMod[d]) + (thisDetector->gappixels * thisDetector->nGappixels[d]);
+	return (thisDetector->nChan[d] * thisDetector->nChip[d] + thisDetector->gappixels * thisDetector->nGappixels[d]) * thisDetector->nMod[d];
 }
 
 
@@ -1809,7 +1796,7 @@ int slsDetector::getMaxNumberOfChannelsInclGapPixels(dimension d) {
 		if (d==X) return 36*thisDetector->nChip[d]*thisDetector->nModMax[d];
 		else return 1*thisDetector->nChip[d]*thisDetector->nModMax[d];
 	}
-	return (thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nModMax[d]) + (thisDetector->gappixels * thisDetector->nGappixels[d]);
+	return (thisDetector->nChan[d] * thisDetector->nChip[d] + thisDetector->gappixels * thisDetector->nGappixels[d]) * thisDetector->nModMax[d];
 }
 
 /* needed to set/get the size of the detector */
@@ -1892,19 +1879,23 @@ int slsDetector::setNumberOfModules(int n, dimension d){
       dr=32;
 
     thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*dr/8;
-    thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) *dr/8;
+	 thisDetector->dataBytesInclGapPixels =
+  			 (thisDetector->nMod[X] * thisDetector->nChips[X] * thisDetector->nChans[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+			 (thisDetector->nMod[Y] * thisDetector->nChips[Y] * thisDetector->nChans[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+			 thisDetector->dynamicRange/8;
 
     if(thisDetector->myDetectorType==MYTHEN){
       if (thisDetector->timerValue[PROBES_NUMBER]!=0) {
 	thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
-	thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) *4;
+	 thisDetector->dataBytesInclGapPixels =
+  			 (thisDetector->nMod[X] * thisDetector->nChips[X] * thisDetector->nChans[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+			 (thisDetector->nMod[Y] * thisDetector->nChips[Y] * thisDetector->nChans[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+			 4;
       }
     }
 
     if(thisDetector->myDetectorType==JUNGFRAUCTB){
       getTotalNumberOfChannels();
-      //thisDetector->dataBytes=getTotalNumberOfChannels()*thisDetector->nChans*dr/8*thisDetector->nChips*thisDetector->timerValue[SAMPLES_JCTB];
-
     }
 
 
@@ -2061,13 +2052,19 @@ int slsDetector::enableGapPixels(int val) {
 			thisDetector->dataBytesInclGapPixels = 0;
 
 			if (thisDetector->dynamicRange != 4) {
-				thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) * (thisDetector->dynamicRange/8);
-				// set data bytes for other detector ( for future use)
+				 thisDetector->dataBytesInclGapPixels =
+			   			 (thisDetector->nMod[X] * thisDetector->nChips[X] * thisDetector->nChans[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+						 (thisDetector->nMod[Y] * thisDetector->nChips[Y] * thisDetector->nChans[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+						 thisDetector->dynamicRange/8;
+				 // set data bytes for other detector ( for future use)
 				if(thisDetector->myDetectorType==JUNGFRAUCTB)
 					getTotalNumberOfChannels();
-				if(thisDetector->myDetectorType==MYTHEN){
+				else if(thisDetector->myDetectorType==MYTHEN){
 					if (thisDetector->dynamicRange==24 || thisDetector->timerValue[PROBES_NUMBER]>0) {
-						thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) * thisDetector->nChans*4;
+			    		 thisDetector->dataBytesInclGapPixels =
+			    	   			 (thisDetector->nMod[X] * thisDetector->nChips[X] * thisDetector->nChans[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+			    				 (thisDetector->nMod[Y] * thisDetector->nChips[Y] * thisDetector->nChans[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+			    				 4;
 					}
 				}
 			}
@@ -5155,7 +5152,10 @@ int slsDetector::setDynamicRange(int n){
 
 
     thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*retval/8;
-    thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y)*retval/8;
+	 thisDetector->dataBytesInclGapPixels =
+  			 (thisDetector->nMod[X] * thisDetector->nChips[X] * thisDetector->nChans[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+			 (thisDetector->nMod[Y] * thisDetector->nChips[Y] * thisDetector->nChans[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+			 thisDetector->dynamicRange/8;
 
     if (thisDetector->myDetectorType==JUNGFRAUCTB) {
       // thisDetector->nChip[X]=retval/16;
@@ -5168,7 +5168,10 @@ int slsDetector::setDynamicRange(int n){
     if(thisDetector->myDetectorType==MYTHEN){
       if (thisDetector->timerValue[PROBES_NUMBER]!=0) {
 	thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
-	thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y)*4;
+	 thisDetector->dataBytesInclGapPixels =
+  			 (thisDetector->nMod[X] * thisDetector->nChips[X] * thisDetector->nChans[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+			 (thisDetector->nMod[Y] * thisDetector->nChips[Y] * thisDetector->nChans[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+			 4;
       }
       
       if (retval==32)

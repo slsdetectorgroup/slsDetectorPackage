@@ -186,6 +186,11 @@ The first line requires to specify how many ({\tt{N}}) and at which energies in 
 NORMALLY, in this new calibration scheme, only {\tt{settings standard}} will be provided to you, unless specific cases to be discussed.
 The threshold at 6000 eV , for example would be set as:{\tt{sls\_detector\_put 0-threshold 6000}}.
 
+We have added a special command, {\tt{thresholdnotb}}, which allows to scan the threshold energy without reloading the trimbits at every stage. One cain either keep the trimbits at a specific value (es.32 if the range of energies to scan is large) or use the trimbits from a specific energy (like a central energy).
+\begin{verbatim}
+sls_detector_put 0-thresholdnotb energy_in_eV
+\end{verbatim}
+
 \section{Standard acquisition}
 
 After you setup the setting and the threshold, you need to specify the exposure time, the number of real time frames and eventually how many real time frames should be acquired:

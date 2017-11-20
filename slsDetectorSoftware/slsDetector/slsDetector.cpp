@@ -717,8 +717,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     // calculating databytes (special when with gap pixels, jctb, mythen in 24bit mode or using probes)
     thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*thisDetector->dynamicRange/8;
 	 thisDetector->dataBytesInclGapPixels =
-   			 (thisDetector->nMod[X] * thisDetector->nChips[X] * thisDetector->nChans[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
-			 (thisDetector->nMod[Y] * thisDetector->nChips[Y] * thisDetector->nChans[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+   			 (thisDetector->nMod[X] * thisDetector->nChip[X] * thisDetector->nChan[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+			 (thisDetector->nMod[Y] * thisDetector->nChip[Y] * thisDetector->nChan[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
 			 thisDetector->dynamicRange/8;
 
     if(thisDetector->myDetectorType==JUNGFRAUCTB){
@@ -728,8 +728,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     	if (thisDetector->dynamicRange==24 || thisDetector->timerValue[PROBES_NUMBER]>0) {
     		thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
     		 thisDetector->dataBytesInclGapPixels =
-    	   			 (thisDetector->nMod[X] * thisDetector->nChips[X] * thisDetector->nChans[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
-    				 (thisDetector->nMod[Y] * thisDetector->nChips[Y] * thisDetector->nChans[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+    	   			 (thisDetector->nMod[X] * thisDetector->nChip[X] * thisDetector->nChan[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+    				 (thisDetector->nMod[Y] * thisDetector->nChip[Y] * thisDetector->nChan[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
     				 4;
     	}
     }
@@ -1880,16 +1880,16 @@ int slsDetector::setNumberOfModules(int n, dimension d){
 
     thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*dr/8;
 	 thisDetector->dataBytesInclGapPixels =
-  			 (thisDetector->nMod[X] * thisDetector->nChips[X] * thisDetector->nChans[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
-			 (thisDetector->nMod[Y] * thisDetector->nChips[Y] * thisDetector->nChans[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+  			 (thisDetector->nMod[X] * thisDetector->nChip[X] * thisDetector->nChan[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+			 (thisDetector->nMod[Y] * thisDetector->nChip[Y] * thisDetector->nChan[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
 			 thisDetector->dynamicRange/8;
 
     if(thisDetector->myDetectorType==MYTHEN){
       if (thisDetector->timerValue[PROBES_NUMBER]!=0) {
 	thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
 	 thisDetector->dataBytesInclGapPixels =
-  			 (thisDetector->nMod[X] * thisDetector->nChips[X] * thisDetector->nChans[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
-			 (thisDetector->nMod[Y] * thisDetector->nChips[Y] * thisDetector->nChans[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+  			 (thisDetector->nMod[X] * thisDetector->nChip[X] * thisDetector->nChan[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+			 (thisDetector->nMod[Y] * thisDetector->nChip[Y] * thisDetector->nChan[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
 			 4;
       }
     }
@@ -2053,8 +2053,8 @@ int slsDetector::enableGapPixels(int val) {
 
 			if (thisDetector->dynamicRange != 4) {
 				 thisDetector->dataBytesInclGapPixels =
-			   			 (thisDetector->nMod[X] * thisDetector->nChips[X] * thisDetector->nChans[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
-						 (thisDetector->nMod[Y] * thisDetector->nChips[Y] * thisDetector->nChans[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+			   			 (thisDetector->nMod[X] * thisDetector->nChip[X] * thisDetector->nChan[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+						 (thisDetector->nMod[Y] * thisDetector->nChip[Y] * thisDetector->nChan[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
 						 thisDetector->dynamicRange/8;
 				 // set data bytes for other detector ( for future use)
 				if(thisDetector->myDetectorType==JUNGFRAUCTB)
@@ -2062,8 +2062,8 @@ int slsDetector::enableGapPixels(int val) {
 				else if(thisDetector->myDetectorType==MYTHEN){
 					if (thisDetector->dynamicRange==24 || thisDetector->timerValue[PROBES_NUMBER]>0) {
 			    		 thisDetector->dataBytesInclGapPixels =
-			    	   			 (thisDetector->nMod[X] * thisDetector->nChips[X] * thisDetector->nChans[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
-			    				 (thisDetector->nMod[Y] * thisDetector->nChips[Y] * thisDetector->nChans[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+			    	   			 (thisDetector->nMod[X] * thisDetector->nChip[X] * thisDetector->nChan[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+			    				 (thisDetector->nMod[Y] * thisDetector->nChip[Y] * thisDetector->nChan[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
 			    				 4;
 					}
 				}
@@ -5153,8 +5153,8 @@ int slsDetector::setDynamicRange(int n){
 
     thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*retval/8;
 	 thisDetector->dataBytesInclGapPixels =
-  			 (thisDetector->nMod[X] * thisDetector->nChips[X] * thisDetector->nChans[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
-			 (thisDetector->nMod[Y] * thisDetector->nChips[Y] * thisDetector->nChans[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+  			 (thisDetector->nMod[X] * thisDetector->nChip[X] * thisDetector->nChan[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+			 (thisDetector->nMod[Y] * thisDetector->nChip[Y] * thisDetector->nChan[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
 			 thisDetector->dynamicRange/8;
 
     if (thisDetector->myDetectorType==JUNGFRAUCTB) {
@@ -5169,8 +5169,8 @@ int slsDetector::setDynamicRange(int n){
       if (thisDetector->timerValue[PROBES_NUMBER]!=0) {
 	thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
 	 thisDetector->dataBytesInclGapPixels =
-  			 (thisDetector->nMod[X] * thisDetector->nChips[X] * thisDetector->nChans[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
-			 (thisDetector->nMod[Y] * thisDetector->nChips[Y] * thisDetector->nChans[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+  			 (thisDetector->nMod[X] * thisDetector->nChip[X] * thisDetector->nChan[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+			 (thisDetector->nMod[Y] * thisDetector->nChip[Y] * thisDetector->nChan[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
 			 4;
       }
       

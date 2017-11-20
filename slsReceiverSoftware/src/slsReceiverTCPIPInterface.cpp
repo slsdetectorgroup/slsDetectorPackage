@@ -2446,32 +2446,32 @@ int slsReceiverTCPIPInterface::enable_gap_pixels() {
 	if (mySock->ReceiveDataOnly(&enable,sizeof(enable)) < 0 )
 		return printSocketReadError();
 
-	if (myDetectorType != EIGER)
-		functionNotImplemented();
+
 
 	// execute action
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	if (receiverBase == NULL)
+		invalidReceiverObject();
 	else {
-		if (receiverBase == NULL)
-			invalidReceiverObject();
-		else {
-			// set
-			if(enable >= 0) {
-				if (mySock->differentClients && lockStatus)
-					receiverlocked();
-				else if (receiverBase->getStatus() != IDLE)
-					receiverNotIdle();
-				else {
+		// set
+		if(enable >= 0) {
+			if (mySock->differentClients && lockStatus)
+				receiverlocked();
+			else if (receiverBase->getStatus() != IDLE)
+				receiverNotIdle();
+			else {
+				if ((myDetectorType != EIGER) && (enable > 0))
+					functionNotImplemented();
+				else
 					receiverBase->setGapPixelsEnable(enable);
-				}
 			}
-			//get
-			retval = receiverBase->getGapPixelsEnable();
-			if(enable >= 0 && retval != enable){
-				ret = FAIL;
-				sprintf(mess,"Could not set gap pixels to %d, returned %d\n",enable,retval);
-				FILE_LOG(logERROR) << "Warning: " << mess;
-			}
+		}
+		//get
+		retval = receiverBase->getGapPixelsEnable();
+		if(enable >= 0 && retval != enable){
+			ret = FAIL;
+			sprintf(mess,"Could not set gap pixels to %d, returned %d\n",enable,retval);
+			FILE_LOG(logERROR) << "Warning: " << mess;
 		}
 	}
 #endif

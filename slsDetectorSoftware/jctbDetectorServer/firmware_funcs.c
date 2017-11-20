@@ -4044,7 +4044,7 @@ void initializeDetector(){
     setFrames(-1);
     setTrains(-1);
     setExposureTime(-1);
-    setPeriod(-1);
+    setPeriod(1 * 1000 * 1000);//1ms
     setDelay(-1);
     setGates(-1);
     

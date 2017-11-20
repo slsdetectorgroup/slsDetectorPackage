@@ -714,17 +714,24 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->timerValue[CYCLES_NUMBER]=1;
     thisDetector->timerValue[SAMPLES_JCTB]=1;
 
+    // calculating databytes (special when with gap pixels, jctb, mythen in 24bit mode or using probes)
     thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*thisDetector->dynamicRange/8;
-    thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) * thisDetector->dynamicRange/8;
+	 thisDetector->dataBytesInclGapPixels =
+   			 (thisDetector->nMod[X] * thisDetector->nChips[X] * thisDetector->nChans[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+			 (thisDetector->nMod[Y] * thisDetector->nChips[Y] * thisDetector->nChans[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+			 thisDetector->dynamicRange/8;
 
-    if(thisDetector->myDetectorType==JUNGFRAUCTB) {
-      getTotalNumberOfChannels();
-      //      thisDetector->dataBytes=getTotalNumberOfChannels()*thisDetector->dynamicRange/8*thisDetector->timerValue[SAMPLES_JCTB];
+    if(thisDetector->myDetectorType==JUNGFRAUCTB){
+    	getTotalNumberOfChannels();	// recalculates nchans and databytes
+    	thisDetector->dataBytesInclGapPixels =  thisDetector->dataBytes;
     }
-    if(thisDetector->myDetectorType==MYTHEN){
+    else if(thisDetector->myDetectorType==MYTHEN){
     	if (thisDetector->dynamicRange==24 || thisDetector->timerValue[PROBES_NUMBER]>0) {
     		thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
-    		thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) * thisDetector->nChans*4;
+    		 thisDetector->dataBytesInclGapPixels =
+    	   			 (thisDetector->nMod[X] * thisDetector->nChips[X] * thisDetector->nChans[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+    				 (thisDetector->nMod[Y] * thisDetector->nChips[Y] * thisDetector->nChans[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+    				 4;
     	}
     }
 

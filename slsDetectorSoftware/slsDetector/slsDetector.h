@@ -114,7 +114,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     int nModMax[2];
     /**  maximum number of modules (nModMax[X]*nModMax[Y]) \see nModMax */
     int nModsMax;
-    /**  number of channels per chip */
+    /**  number of channels per chip (used mainly in databytes calculation) */
     int nChans;
     /**  number of channels per chip in one direction */
     int nChan[2];
@@ -664,7 +664,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   /** Returns the number of  modules in direction d (without connecting to the detector) */
   int getNMod(dimension d){return thisDetector->nMod[d];}; //
 
-  int getChansPerMod(int imod=0){return thisDetector->nChans*thisDetector->nChips;};
+  int getChansPerMod(int imod=0){return thisDetector->nChan[X]*thisDetector->nChan[Y]*thisDetector->nChips;};
 
   int getChansPerMod( dimension d,int imod=0){return thisDetector->nChan[d]*thisDetector->nChip[d];};
 

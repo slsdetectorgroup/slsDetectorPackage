@@ -984,6 +984,30 @@ If you see strange lines in vertical occurring at period patterns, it is a memor
 \subsection{ssh to the boards takes long}
 Depending on your network setup,  to speed up the ssh to the boards from a pc with internal dhcp server running: \textbf{iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE; echo "1" > /proc/sys/net/ipv4/ip\_forward}, where eth1 has to be the 1Gb network device on the pc
 
+\subsection{Check firmware version installed on BEB}
+Follow some steps described in Section~\label{server}. 
+\begin{verbatim}
+ssh root@bebxxx #password is root
+killall eigerDetectorServer # kill server and stopserver
+cd executables/
+./eigerDetectorServer&
+\end{verbatim}
+Scroll up in the terminal till you find {\tt{Firmware Version: xx}}
+
+\subsection{Check if half-module is a master, a slave, a top or a bottom}
+Follow some steps described in Section~\label{server}.
+\begin{verbatim}
+ssh root@bebxxx #password is root
+killall eigerDetectorServer # kill server and stopserver
+cd executables/
+./eigerDetectorServer&
+\end{verbatim}
+Scroll up in the terminal till you find:\\
+*************** TOP/BOTTOM ***************\\
+*************** MASTER/SLAVE ***************\\
+*************** NORMAL/SPECIAL ***************\\
+
+
 
 \end{document}
 

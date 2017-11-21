@@ -778,7 +778,7 @@ void* qDrawPlot::DataStartAcquireThread(void *this_pointer){
 	if(((qDrawPlot*)this_pointer)->myDet->setReceiverOnline() == slsDetectorDefs::ONLINE_FLAG) {
 
 		// if receiver data up streaming not on, switch it on
-		if (((qDrawPlot*)this_pointer)->myDet->enableDataStreamingFromReceiver() != 1) {cprintf(GREEN,"receiver not on\n");
+		if (((qDrawPlot*)this_pointer)->myDet->enableDataStreamingFromReceiver() != 1) {
 			// switch on receiver
 			if (((qDrawPlot*)this_pointer)->myDet->enableDataStreamingFromReceiver(1) != 1) {
 				qDefs::checkErrorMessage(((qDrawPlot*)this_pointer)->myDet,"qDrawPlot::DataStartAcquireThread");

@@ -614,6 +614,15 @@ void UDPStandardImplementation::setStreamingPort(const uint32_t i) {
 	}
 }
 
+void UDPStandardImplementation::setStreamingSourceIP(const char c[]){
+	strcpy(streamingSrcIP, c);
+	FILE_LOG(logINFO) << "Streaming Source IP: " << streamingSrcIP;
+	if (dataStreamEnable) {
+		setDataStreamEnable(false);
+		setDataStreamEnable(true);
+	}
+}
+
 
 
 void UDPStandardImplementation::SetLocalNetworkParameters() {

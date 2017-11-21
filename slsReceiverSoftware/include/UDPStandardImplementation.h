@@ -190,6 +190,12 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 */
 	void setStreamingPort(const uint32_t i);
 
+	/**
+	 * Set streaming source ip and restart sockets if streaming was enabled
+	 * @param c streaming source ip
+	 */
+	void setStreamingSourceIP(const char* c);
+
 
 private:
 

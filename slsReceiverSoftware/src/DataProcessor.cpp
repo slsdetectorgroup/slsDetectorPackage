@@ -393,8 +393,6 @@ void DataProcessor::ProcessAnImage(char* buf) {
 			header->xCoord = xcoordin1D;
 	}
 
-	if (file)
-		file->WriteToFile(buf, generalData->imageSize + sizeof(sls_detector_header), fnum-firstMeasurementIndex, nump);
 
 	if (rawDataReadyCallBack) {
 		rawDataReadyCallBack(
@@ -415,6 +413,12 @@ void DataProcessor::ProcessAnImage(char* buf) {
 				generalData->imageSize,
 				pRawDataReady);
 	}
+
+
+	if (file)
+		file->WriteToFile(buf, generalData->imageSize + sizeof(sls_detector_header), fnum-firstMeasurementIndex, nump);
+
+
 
 }
 

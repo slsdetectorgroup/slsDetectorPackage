@@ -559,8 +559,10 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     /** set detector ip address */
     memset(thisDetector->detectorIP,0,MAX_STR_LENGTH);
     strcpy(thisDetector->detectorIP,DEFAULT_DET_IP);
-    /** set zmq tcp src ip address */
-    memset(thisDetector->zmqsrcip,0,MAX_STR_LENGTH);
+    /** set zmq tcp src ip address in client */
+    memset(thisDetector->zmqip,0,MAX_STR_LENGTH);
+    /** set zmq tcp src ip address in receiver*/
+    memset(thisDetector->receiver_zmqip,0,MAX_STR_LENGTH);
 
 
     /** sets onlineFlag to OFFLINE_FLAG */
@@ -712,17 +714,23 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->timerValue[CYCLES_NUMBER]=1;
     thisDetector->timerValue[SAMPLES_JCTB]=1;
 
+    // calculating databytes (special when with gap pixels, jctb, mythen in 24bit mode or using probes)
     thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*thisDetector->dynamicRange/8;
-    thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) * thisDetector->dynamicRange/8;
+	 thisDetector->dataBytesInclGapPixels =
+   			 (thisDetector->nMod[X] * thisDetector->nChip[X] * thisDetector->nChan[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+			 (thisDetector->nMod[Y] * thisDetector->nChip[Y] * thisDetector->nChan[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+			 thisDetector->dynamicRange/8;
 
-    if(thisDetector->myDetectorType==JUNGFRAUCTB) {
-      getTotalNumberOfChannels();
-      //      thisDetector->dataBytes=getTotalNumberOfChannels()*thisDetector->dynamicRange/8*thisDetector->timerValue[SAMPLES_JCTB];
+    if(thisDetector->myDetectorType==JUNGFRAUCTB){
+    	getTotalNumberOfChannels();
     }
-    if(thisDetector->myDetectorType==MYTHEN){
+    else if(thisDetector->myDetectorType==MYTHEN){
     	if (thisDetector->dynamicRange==24 || thisDetector->timerValue[PROBES_NUMBER]>0) {
     		thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
-    		thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) * thisDetector->nChans*4;
+    		 thisDetector->dataBytesInclGapPixels =
+    	   			 (thisDetector->nMod[X] * thisDetector->nChip[X] * thisDetector->nChan[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+    				 (thisDetector->nMod[Y] * thisDetector->nChip[Y] * thisDetector->nChan[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+    				 4;
     	}
     }
 
@@ -788,6 +796,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->flippedData[0] = 0;
     thisDetector->flippedData[1] = 0;
     thisDetector->zmqport = 0;
+    thisDetector->receiver_zmqport = 0;
+    thisDetector->receiver_datastream = false;
 
     for (int ia=0; ia<MAX_ACTIONS; ++ia) {
       strcpy(thisDetector->actionScript[ia],"none");
@@ -820,16 +830,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->gainoff=thisDetector->chanoff+sizeof(int)*thisDetector->nGain*thisDetector->nModsMax;
     thisDetector->offsetoff=thisDetector->gainoff+sizeof(int)*thisDetector->nOffset*thisDetector->nModsMax;
 
-    //update?!?!?!?
-
     if(thisDetector->myDetectorType==JUNGFRAUCTB) {
-      //  cout << "here2" << endl;
       getTotalNumberOfChannels();
-	//thisDetector->nChan[X]=32;
-	//thisDetector->nChans=thisDetector->nChan[X]*thisDetector->nChan[Y];
-
-	//thisDetector->dataBytes=getTotalNumberOfChannels()*thisDetector->dynamicRange/8*thisDetector->timerValue[SAMPLES_JCTB];
-      
     }
 
   }
@@ -931,6 +933,14 @@ int slsDetector::initializeDetectorSize(detectorType type) {
   if (thisReceiver != NULL)
 	  delete thisReceiver;
   thisReceiver = new receiverInterface(dataSocket);
+
+  // zmq ports
+  if (posId != -1) {
+	  if (thisDetector->zmqport == 0)
+		  thisDetector->zmqport = DEFAULT_ZMQ_CL_PORTNO + (posId * ((thisDetector->myDetectorType == EIGER) ? 2 : 1));
+	  if (thisDetector->receiver_zmqport == 0)
+		  thisDetector->receiver_zmqport = DEFAULT_ZMQ_RX_PORTNO + (posId * ((thisDetector->myDetectorType == EIGER) ? 2 : 1));
+  }
 
   //  setAngularConversionPointer(thisDetector->angOff,&thisDetector->nMods, thisDetector->nChans*thisDetector->nChips);
 
@@ -1746,11 +1756,7 @@ int slsDetector::getTotalNumberOfChannels() {
     }
     thisDetector->nChans=thisDetector->nChan[X];
     thisDetector->dataBytes=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods*2*thisDetector->timerValue[SAMPLES_JCTB];
-   // cout << "Total number of channels is "<< thisDetector->nChans*thisDetector->nChips*thisDetector->nMods << " data bytes is " << thisDetector->dataBytes << endl;
-    thisDetector->dataBytesInclGapPixels =
-    		(thisDetector->nChan[X]*thisDetector->nChip[X]*thisDetector->nMod[X]) + (thisDetector->gappixels * thisDetector->nGappixels[X]) *
-			(thisDetector->nChan[Y]*thisDetector->nChip[Y]*thisDetector->nMod[Y]) + (thisDetector->gappixels * thisDetector->nGappixels[Y]) *
-    		2*thisDetector->timerValue[SAMPLES_JCTB];
+    thisDetector->dataBytesInclGapPixels = thisDetector->dataBytes;
   } else {
 #ifdef VERBOSE
     cout << "det type is "<< thisDetector->myDetectorType << endl;
@@ -1768,7 +1774,7 @@ int slsDetector::getTotalNumberOfChannels(dimension d) {
 
 int slsDetector::getTotalNumberOfChannelsInclGapPixels(dimension d) {
 	getTotalNumberOfChannels();
-	return (thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nMod[d]) + (thisDetector->gappixels * thisDetector->nGappixels[d]);
+	return (thisDetector->nChan[d] * thisDetector->nChip[d] + thisDetector->gappixels * thisDetector->nGappixels[d]) * thisDetector->nMod[d];
 }
 
 
@@ -1790,7 +1796,7 @@ int slsDetector::getMaxNumberOfChannelsInclGapPixels(dimension d) {
 		if (d==X) return 36*thisDetector->nChip[d]*thisDetector->nModMax[d];
 		else return 1*thisDetector->nChip[d]*thisDetector->nModMax[d];
 	}
-	return (thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nModMax[d]) + (thisDetector->gappixels * thisDetector->nGappixels[d]);
+	return (thisDetector->nChan[d] * thisDetector->nChip[d] + thisDetector->gappixels * thisDetector->nGappixels[d]) * thisDetector->nModMax[d];
 }
 
 /* needed to set/get the size of the detector */
@@ -1873,19 +1879,23 @@ int slsDetector::setNumberOfModules(int n, dimension d){
       dr=32;
 
     thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*dr/8;
-    thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) *dr/8;
+	 thisDetector->dataBytesInclGapPixels =
+  			 (thisDetector->nMod[X] * thisDetector->nChip[X] * thisDetector->nChan[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+			 (thisDetector->nMod[Y] * thisDetector->nChip[Y] * thisDetector->nChan[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+			 thisDetector->dynamicRange/8;
 
     if(thisDetector->myDetectorType==MYTHEN){
       if (thisDetector->timerValue[PROBES_NUMBER]!=0) {
 	thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
-	thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) *4;
+	 thisDetector->dataBytesInclGapPixels =
+  			 (thisDetector->nMod[X] * thisDetector->nChip[X] * thisDetector->nChan[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+			 (thisDetector->nMod[Y] * thisDetector->nChip[Y] * thisDetector->nChan[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+			 4;
       }
     }
 
     if(thisDetector->myDetectorType==JUNGFRAUCTB){
       getTotalNumberOfChannels();
-      //thisDetector->dataBytes=getTotalNumberOfChannels()*thisDetector->nChans*dr/8*thisDetector->nChips*thisDetector->timerValue[SAMPLES_JCTB];
-
     }
 
 
@@ -2042,13 +2052,19 @@ int slsDetector::enableGapPixels(int val) {
 			thisDetector->dataBytesInclGapPixels = 0;
 
 			if (thisDetector->dynamicRange != 4) {
-				thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) * (thisDetector->dynamicRange/8);
-				// set data bytes for other detector ( for future use)
+				 thisDetector->dataBytesInclGapPixels =
+			   			 (thisDetector->nMod[X] * thisDetector->nChip[X] * thisDetector->nChan[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+						 (thisDetector->nMod[Y] * thisDetector->nChip[Y] * thisDetector->nChan[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+						 thisDetector->dynamicRange/8;
+				 // set data bytes for other detector ( for future use)
 				if(thisDetector->myDetectorType==JUNGFRAUCTB)
 					getTotalNumberOfChannels();
-				if(thisDetector->myDetectorType==MYTHEN){
+				else if(thisDetector->myDetectorType==MYTHEN){
 					if (thisDetector->dynamicRange==24 || thisDetector->timerValue[PROBES_NUMBER]>0) {
-						thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y) * thisDetector->nChans*4;
+			    		 thisDetector->dataBytesInclGapPixels =
+			    	   			 (thisDetector->nMod[X] * thisDetector->nChip[X] * thisDetector->nChan[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+			    				 (thisDetector->nMod[Y] * thisDetector->nChip[Y] * thisDetector->nChan[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+			    				 4;
 					}
 				}
 			}
@@ -5136,7 +5152,10 @@ int slsDetector::setDynamicRange(int n){
 
 
     thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*retval/8;
-    thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y)*retval/8;
+	 thisDetector->dataBytesInclGapPixels =
+  			 (thisDetector->nMod[X] * thisDetector->nChip[X] * thisDetector->nChan[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+			 (thisDetector->nMod[Y] * thisDetector->nChip[Y] * thisDetector->nChan[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+			 thisDetector->dynamicRange/8;
 
     if (thisDetector->myDetectorType==JUNGFRAUCTB) {
       // thisDetector->nChip[X]=retval/16;
@@ -5149,7 +5168,10 @@ int slsDetector::setDynamicRange(int n){
     if(thisDetector->myDetectorType==MYTHEN){
       if (thisDetector->timerValue[PROBES_NUMBER]!=0) {
 	thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
-	thisDetector->dataBytesInclGapPixels = getTotalNumberOfChannelsInclGapPixels(X)*getTotalNumberOfChannelsInclGapPixels(Y)*4;
+	 thisDetector->dataBytesInclGapPixels =
+  			 (thisDetector->nMod[X] * thisDetector->nChip[X] * thisDetector->nChan[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
+			 (thisDetector->nMod[Y] * thisDetector->nChip[Y] * thisDetector->nChan[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
+			 4;
       }
       
       if (retval==32)
@@ -6017,11 +6039,14 @@ string slsDetector::setNetworkParameter(networkParameter index, string value) {
 	case FLOW_CONTROL_10G:
 		sscanf(value.c_str(),"%d",&i);
 		return setDetectorNetworkParameter(index, i);
+	case CLIENT_STREAMING_PORT:
+		return setClientStreamingPort(value);
 	case RECEIVER_STREAMING_PORT:
-		setReceiverStreamingPort(value);
-		return getReceiverStreamingPort();
+		return setReceiverStreamingPort(value);
+	case CLIENT_STREAMING_SRC_IP:
+		return setClientStreamingIP(value);
 	case RECEIVER_STREAMING_SRC_IP:
-		return setReceiverStreamingSourceIP(value);
+		return setReceiverStreamingIP(value);
   default:
     return (char*)("unknown network parameter");
   }
@@ -6052,10 +6077,14 @@ string slsDetector::getNetworkParameter(networkParameter index) {
   case DETECTOR_TXN_DELAY_FRAME:
   case FLOW_CONTROL_10G:
 	  return setDetectorNetworkParameter(index, -1);
+  case CLIENT_STREAMING_PORT:
+	  return getClientStreamingPort();
   case RECEIVER_STREAMING_PORT:
 	  return getReceiverStreamingPort();
-	case RECEIVER_STREAMING_SRC_IP:
-		return getReceiverStreamingSourceIP();
+  case CLIENT_STREAMING_SRC_IP:
+  	return getClientStreamingIP();
+  case RECEIVER_STREAMING_SRC_IP:
+	return getReceiverStreamingIP();
   default:
     return (char*)("unknown network parameter");
   }
@@ -6155,9 +6184,10 @@ string slsDetector::setReceiver(string receiverIP){
 		std::cout << "dynamic range:" << thisDetector->dynamicRange << endl << endl;
 		std::cout << "flippeddatax:" << thisDetector->flippedData[d] << endl;
 		std::cout << "10GbE:" << thisDetector->tenGigaEnable << endl << endl;
-		std::cout << "streaming port:" << thisDetector->zmqport << endl;
-		std::cout << "streaming source ip:" << thisDetector->zmqsrcip << endl;
+		std::cout << "rx streaming source ip:" << thisDetector->receiver_zmqip << endl;
 		std::cout << "enable gap pixels:" << thisDetector->gappixels << endl;
+		std::cout << "rx streaming port:" << thisDetector->receiver_zmqport << endl;
+
 		//std::cout << "dataStreaming:" << enableDataStreamingFromReceiver(-1) << endl << endl;
 /** enable compresison, */
 #endif
@@ -6200,20 +6230,8 @@ string slsDetector::setReceiver(string receiverIP){
 
 			// data streaming
 			setReceiverStreamingPort(getReceiverStreamingPort());
-			setReceiverStreamingSourceIP(getReceiverStreamingSourceIP());
-			int clientSockets = parentDet->getStreamingSocketsCreatedInClient();
-			int recSockets = enableDataStreamingFromReceiver(-1);
-			if(clientSockets != recSockets) {
-				pthread_mutex_lock(&ms);
-				if(clientSockets)
-					printf("Enabling Data Streaming\n");
-				else
-					printf("Disabling Data Streaming\n");
-				// push client state to receiver
-				/*parentDet->enableDataStreamingFromReceiver(clientSockets);*/
-				enableDataStreamingFromReceiver(clientSockets);
-				pthread_mutex_unlock(&ms);
-			}
+			setReceiverStreamingIP(getReceiverStreamingIP());
+			enableDataStreamingFromReceiver(enableDataStreamingFromReceiver(-1));
 		}
 	}
 
@@ -6312,7 +6330,29 @@ int slsDetector::setReceiverUDPPort2(int udpport){
 }
 
 
-int slsDetector::setReceiverStreamingPort(string port) {
+string slsDetector::setClientStreamingPort(string port) {
+	int defaultport = 0;
+	int numsockets = (thisDetector->myDetectorType == EIGER) ? 2:1;
+	int arg = 0;
+
+	//multi command, calculate individual ports
+	size_t found = port.find("multi");
+	if(found != string::npos) {
+		port.erase(found,5);
+		sscanf(port.c_str(),"%d",&defaultport);
+		arg = defaultport + (posId * numsockets);
+	}
+	else
+		sscanf(port.c_str(),"%d",&arg);
+	thisDetector->zmqport = arg;
+
+	return getClientStreamingPort();
+}
+
+
+
+
+string slsDetector::setReceiverStreamingPort(string port) {
 	int defaultport = 0;
 	int numsockets = (thisDetector->myDetectorType == EIGER) ? 2:1;
 	int arg = 0;
@@ -6340,23 +6380,68 @@ int slsDetector::setReceiverStreamingPort(string port) {
 			disconnectData();
 		}
 		if(ret!=FAIL)
-			thisDetector->zmqport = retval;
+			thisDetector->receiver_zmqport = retval;
 		if(ret==FORCE_UPDATE)
 			updateReceiver();
 	}
 
-	return thisDetector->zmqport;
+	return getReceiverStreamingPort();
 }
 
-string slsDetector::setReceiverStreamingSourceIP(string sourceIP) {
+string slsDetector::setClientStreamingIP(string sourceIP) {
+
+	struct addrinfo *result;
+	// on failure to convert to a valid ip
+	if (dataSocket->ConvertHostnameToInternetAddress(sourceIP.c_str(), &result)) {
+		std::cout << "Warning: Could not convert zmqip into a valid IP" << sourceIP << std::endl;
+		  setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
+		  return getClientStreamingIP();
+	}
+	// on success put IP as string into arg
+	else {
+		memset(thisDetector->zmqip, 0, MAX_STR_LENGTH);
+		dataSocket->ConvertInternetAddresstoIpString(result, thisDetector->zmqip, MAX_STR_LENGTH);
+	}
+
+	return getClientStreamingIP();
+}
+
+
+string slsDetector::setReceiverStreamingIP(string sourceIP) {
 
 	int fnum=F_RECEIVER_STREAMING_SRC_IP;
 	int ret = FAIL;
 	char arg[MAX_STR_LENGTH];
-	memset(arg,0, sizeof(arg));
-	strcpy(arg,sourceIP.c_str());
+	memset(arg,0,sizeof(arg));
 	char retval[MAX_STR_LENGTH];
 	memset(retval,0, sizeof(retval));
+
+	// if empty, give rx_hostname
+	if (sourceIP.empty())  {
+		if(!strcmp(thisDetector->receiver_hostname,"none")) {
+			std::cout << "Receiver hostname not set yet. Cannot create rx_zmqip from none\n" << endl;
+			setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
+			return getReceiverStreamingIP();
+		}
+		sourceIP.assign(thisDetector->receiver_hostname);
+	}
+
+	// verify the ip
+	{
+		struct addrinfo *result;
+		// on failure to convert to a valid ip
+		if (dataSocket->ConvertHostnameToInternetAddress(sourceIP.c_str(), &result)) {
+			std::cout << "Warning: Could not convert rx_zmqip into a valid IP" << sourceIP << std::endl;
+			setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
+			return getReceiverStreamingIP();
+		}
+		// on success put IP as string into arg
+		else {
+			memset(thisDetector->zmqip, 0, MAX_STR_LENGTH);
+			dataSocket->ConvertInternetAddresstoIpString(result, arg, MAX_STR_LENGTH);
+		}
+	}
+
 
 	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
 #ifdef VERBOSE
@@ -6367,15 +6452,20 @@ string slsDetector::setReceiverStreamingSourceIP(string sourceIP) {
 			disconnectData();
 		}
 		if(ret!=FAIL) {
-			memset(thisDetector->zmqsrcip, 0, MAX_STR_LENGTH);
-			strcpy(thisDetector->zmqsrcip, retval);
+			memset(thisDetector->receiver_zmqip, 0, MAX_STR_LENGTH);
+			strcpy(thisDetector->receiver_zmqip, retval);
+			// if zmqip is empty, update it
+			if (! strlen(thisDetector->zmqip))
+				strcpy(thisDetector->zmqip, retval);
 		}
 		if(ret==FORCE_UPDATE)
 			updateReceiver();
 	}
 
-	return getReceiverStreamingSourceIP();
+	return getReceiverStreamingIP();
 }
+
+
 
 string slsDetector::setDetectorNetworkParameter(networkParameter index, int delay){
 	int fnum = F_SET_NETWORK_PARAMETER;
@@ -8400,13 +8490,17 @@ int slsDetector::updateReceiverNoWait() {
   parentDet->enableOverwriteMask(ind);
   pthread_mutex_unlock(&ms);
 
-  // streaming port
+  // receiver streaming port
   n += 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
-  thisDetector->zmqport = ind;
+  thisDetector->receiver_zmqport = ind;
+
+  // receiver streaming enable
+  n += dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
+  thisDetector->receiver_datastream = ind;
 
   // streaming source ip
   n += 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);
-  strcpy(thisDetector->zmqsrcip, path);
+  strcpy(thisDetector->receiver_zmqip, path);
 
   // gap pixels
   n += dataSocket->ReceiveDataOnly(&ind,sizeof(ind));

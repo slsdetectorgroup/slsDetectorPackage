@@ -425,7 +425,6 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
    */
   int setHighVoltage(int val){return setDAC(val, HV_NEW, 0, -1);}														\
 
-
   /**
      set dacs value
      \param val value

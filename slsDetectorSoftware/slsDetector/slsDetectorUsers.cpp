@@ -227,6 +227,18 @@ int slsDetectorUsers::enableDataStreamingFromReceiver(int i){
 	return myDetector->enableDataStreamingFromReceiver(i);
 }
 
+int slsDetectorUsers::enableDataStreamingToClient(int i){
+	return myDetector->enableDataStreamingToClient(i);
+}
+
+int slsDetectorUsers::setReceiverDataStreamingOutPort(int i){
+	return myDetector->setReceiverDataStreamingOutPort(i);
+}
+
+int slsDetectorUsers::setClientDataStreamingInPort(int i){
+	return myDetector->setClientDataStreamingInPort(i);
+}
+
 int64_t slsDetectorUsers::getModuleFirmwareVersion(){
 	return myDetector->getModuleFirmwareVersion();
 }

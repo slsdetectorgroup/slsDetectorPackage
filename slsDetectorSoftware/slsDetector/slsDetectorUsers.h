@@ -204,7 +204,7 @@ class slsDetectorUsers
 
   /**
            @short enable/disable count rate corrections 
-      \param i 0 disables, 1 enable, -1 gets
+      \param i 0 disables, 1 enables with default values, -1 gets
       \returns 0 if count corrections disabled, 1 if enabled
   */
    int enableCountRateCorrection(int i=-1);
@@ -439,13 +439,34 @@ class slsDetectorUsers
   virtual void finalizeDataset(double *a, double *v, double *e, int &np); 
 
 
-  /**
-   	 Enable data streaming from receiver (zmq)
-   	 \param i 1 to set, 0 to reset and -1 to get
-   	 \returns data streaming enable
-   */
+  /** Enable or disable streaming data from receiver (creates transmitting sockets)
+   * @param enable 0 to disable 1 to enable -1 to only get the value
+   * @returns data streaming from receiver enable
+  */
    int enableDataStreamingFromReceiver(int i=-1);
 
+   /**
+    * Enable data streaming to client (creates receiving sockets)
+    * @param i 0 to disable, 1 to enable, -1 to get the value
+    * @returns data streaming to client enable
+    */
+   int enableDataStreamingToClient(int i=-1);
+
+   /**
+    * Set/Get receiver streaming out ZMQ port
+    * For multi modules, it calculates (increments) and sets the ports
+    * @param i sets, -1 gets
+    * @returns receiver streaming out ZMQ port ()
+    */
+   int setReceiverDataStreamingOutPort(int i=-1);
+
+   /**
+    * Set/Get client streaming in ZMQ port
+    * For multi modules, it calculates (increments) and sets the ports
+    * @param i sets, -1 gets
+    * @returns client streaming in ZMQ port
+    */
+   int setClientDataStreamingInPort(int i=-1);
 
   /**
      get get Module Firmware Version

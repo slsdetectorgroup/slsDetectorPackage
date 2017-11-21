@@ -196,7 +196,7 @@ int UDPStandardImplementation::setFrameToGuiFrequency(const uint32_t freq) {
 }
 
 
-int UDPStandardImplementation::setDataStreamEnable(const bool enable) {\
+int UDPStandardImplementation::setDataStreamEnable(const bool enable) {
 
 	if (dataStreamEnable != enable) {
 		dataStreamEnable = enable;
@@ -568,6 +568,17 @@ void UDPStandardImplementation::closeFiles() {
 	}
 	if (maxIndexCaught)
 		dataProcessor[0]->EndofAcquisition(maxIndexCaught);
+}
+
+
+void UDPStandardImplementation::setStreamingPort(const uint32_t i) {
+	streamingPort = i;
+
+	FILE_LOG(logINFO) << "Streaming Port: " << streamingPort;
+	if (dataStreamEnable) {
+		setDataStreamEnable(false);
+		setDataStreamEnable(true);
+	}
 }
 
 

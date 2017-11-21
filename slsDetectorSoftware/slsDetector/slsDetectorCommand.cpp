@@ -4532,14 +4532,14 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
 		return string("done");
 
 	} else if (cmd=="trimval") {
-		if (action==PUT_ACTION){
-			if (sscanf(args[1],"%d",&val))
-				myDet->setAllTrimbits(val);
-			else
-				return string("invalid trimbit value ")+cmd;
-		}
-		sprintf(ans,"%d",myDet->setAllTrimbits(-1));
-		return ans;
+	  if (action==PUT_ACTION){
+	    if (sscanf(args[1],"%d",&val))
+	      myDet->setAllTrimbits(val);
+	    else
+	      return string("invalid trimbit value ")+cmd;
+	  }
+	  sprintf(ans,"%d",myDet->setAllTrimbits(-1));
+	  return ans;
 	} else if (cmd=="pedestal") {
 		if (action==GET_ACTION)
 			return string("cannot get");

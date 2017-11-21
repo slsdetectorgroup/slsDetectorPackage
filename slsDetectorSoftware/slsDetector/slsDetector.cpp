@@ -7526,24 +7526,30 @@ int slsDetector::setAllTrimbits(int val, int imod){
 #ifdef VERBOSE
 	std::cout<< "Setting all trimbits to "<< val << std::endl;
 #endif
-
-	if (thisDetector->onlineFlag==ONLINE_FLAG) {
-		if (connectControl() == OK){
-			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-			controlSocket->SendDataOnly(&val,sizeof(val));
-			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-			if (ret==FAIL) {
-				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-				std::cout<< "Detector returned error: " << mess << std::endl;
-				setErrorMask((getErrorMask())|(ALLTIMBITS_NOT_SET));
-			} else {
-				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-			}
-			disconnectControl();
-			if (ret==FORCE_UPDATE)
-				updateDetector();
-		}
-	}
+	if (getDetectorsType() == MYTHEN) {
+	  if (val>=0) {
+	    setChannel((val<<((int)TRIMBIT_OFF))|((int)COMPARATOR_ENABLE)); // trimbit scan
+	  } 
+	  return val;
+	} else {
+	  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+	    if (connectControl() == OK){
+	      controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+	      controlSocket->SendDataOnly(&val,sizeof(val));
+	      controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+	    if (ret==FAIL) {
+	      controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	      std::cout<< "Detector returned error: " << mess << std::endl;
+	      setErrorMask((getErrorMask())|(ALLTIMBITS_NOT_SET));
+	    } else {
+	      controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+	    }
+	    disconnectControl();
+	    if (ret==FORCE_UPDATE)
+	      updateDetector();
+	    }
+	  }
+	} 
 
 #ifdef VERBOSE
 	std::cout<< "All trimbits were set to "<< retval   << std::endl;

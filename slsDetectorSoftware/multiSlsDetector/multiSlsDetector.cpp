@@ -4598,46 +4598,46 @@ int multiSlsDetector::setAllTrimbits(int val, int imod){
 
 	// single
 	{
-		int id=-1, im=-1;
-		if (decodeNMod(imod, id, im)>=0) {
-			if(detectors[id]){
-				ret = detectors[id]->setAllTrimbits(val,im);
-				if(detectors[id]->getErrorMask())
-					setErrorMask(getErrorMask()|(1<<id));
-				return ret;
-			}
-			return -1;
-		}
+	  int id=-1, im=-1;
+	  if (decodeNMod(imod, id, im)>=0) {
+	    if(detectors[id]){
+	      ret = detectors[id]->setAllTrimbits(val,im);
+	      if(detectors[id]->getErrorMask())
+		setErrorMask(getErrorMask()|(1<<id));
+	      return ret;
+	    }
+	    return -1;
+	  }
 	}
-
+	
 	// multi
 	if(!threadpool){
-		cout << "Error in creating threadpool. Exiting" << endl;
-		return -1;
+	  cout << "Error in creating threadpool. Exiting" << endl;
+	  return -1;
 	}
 	int* iret[thisMultiDetector->numberOfDetectors];
 	for(int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet){
-		if(detectors[idet]){
-			iret[idet]= new int(-1);
-			Task* task = new Task(new func2_t<int,int,int>(&slsDetector::setAllTrimbits,
+	  if(detectors[idet]){
+	    iret[idet]= new int(-1);
+	    Task* task = new Task(new func2_t<int,int,int>(&slsDetector::setAllTrimbits,
 					detectors[idet],val,imod,iret[idet]));
-			threadpool->add_task(task);
-		}
+	    threadpool->add_task(task);
+	  }
 	}
 	threadpool->startExecuting();
 	threadpool->wait_for_tasks_to_complete();
 	for(int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet){
-		if(detectors[idet]){
-			if(iret[idet] != NULL){
-				if (ret==-100)
-					ret=*iret[idet];
-				else if (ret!=*iret[idet])
-					ret=-1;
-				delete iret[idet];
-			}else ret=-1;
-			if(detectors[idet]->getErrorMask())
-				setErrorMask(getErrorMask()|(1<<idet));
-		}
+	  if(detectors[idet]){
+	    if(iret[idet] != NULL){
+	      if (ret==-100)
+		ret=*iret[idet];
+	      else if (ret!=*iret[idet])
+		ret=-1;
+	      delete iret[idet];
+	    }else ret=-1;
+	    if(detectors[idet]->getErrorMask())
+	      setErrorMask(getErrorMask()|(1<<idet));
+	  }
 	}
 	return ret;
 }

@@ -8764,31 +8764,35 @@ int slsDetector::setReceiverReadTimer(int time_in_ms){
 
 
 int slsDetector::enableDataStreamingFromReceiver(int enable){
-	int fnum=F_STREAM_DATA_FROM_RECEIVER;
-	int ret = FAIL;
-	int retval=-1;
-	int arg = enable;
+
+	if (enable >= 0) {
+		int fnum=F_STREAM_DATA_FROM_RECEIVER;
+		int ret = FAIL;
+		int retval=-1;
+		int arg = enable;
 
 
-	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+		if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
 #ifdef VERBOSE
-		std::cout << "***************Sending Data Streaming in Receiver " << arg  << std::endl;
+			std::cout << "***************Sending Data Streaming in Receiver " << arg  << std::endl;
 #endif
-		if (connectData() == OK){
-			ret=thisReceiver->sendInt(fnum,retval,arg);
-			disconnectData();
+			if (connectData() == OK){
+				ret=thisReceiver->sendInt(fnum,retval,arg);
+				disconnectData();
+			}
+			if(ret==FAIL) {
+				retval = -1;
+				cout << "could not set data streaming in receiver to " << enable <<" Returned:" << retval << endl;
+				setErrorMask((getErrorMask())|(DATA_STREAMING));
+			} else {
+				thisDetector->receiver_datastream = retval;
+				if(ret==FORCE_UPDATE)
+					updateReceiver();
+			}
 		}
-		if(ret==FAIL)
-			retval = -1;
-		if(ret==FORCE_UPDATE)
-			updateReceiver();
 	}
 
-	if ((enable > 0) && (retval != enable)){
-		cout << "could not set data streaming in receiver to " << enable <<" Returned:" << retval << endl;
-		setErrorMask((getErrorMask())|(DATA_STREAMING));
-	}
-	return retval;
+	return thisDetector->receiver_datastream;
 }
 
 

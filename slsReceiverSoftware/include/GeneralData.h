@@ -479,7 +479,7 @@ class JungfrauData : public GeneralData {
 	JungfrauData(){
 		myDetectorType		= slsReceiverDefs::JUNGFRAU;
 		nPixelsX 			= (256*4);
-		nPixelsY 			= 256;
+		nPixelsY 			= 512;
 		emptyHeader			= 6;
 		headerSizeinPacket  = emptyHeader + sizeof(slsReceiverDefs::sls_detector_header);
 		dataSize 			= 8192;

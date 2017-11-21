@@ -81,6 +81,7 @@ void qTabAdvanced::SetupWidgetWindow(){
 		spinZmqPort2->setEnabled(false);
 		dispZMQIP->setEnabled(false);
 		dispZMQIP2->setEnabled(false);
+		btnRestartStreaming->setEnabled(false);
 		break;
 	case slsDetectorDefs::EIGER:
 		isEnergy = true;
@@ -282,6 +283,7 @@ void qTabAdvanced::Initialization(){
 		connect(dispZMQIP2,			SIGNAL(editingFinished()),	this, SLOT(SetReceiverZMQIP()));
 
 		connect(btnRxr,				SIGNAL(clicked()),			this, SLOT(SetReceiver()));
+		connect(btnRestartStreaming,SIGNAL(clicked()),			this, SLOT(RestartStreaming()));
 
 	}
 
@@ -731,12 +733,17 @@ void qTabAdvanced::SetRxrUDPPort(int port){
 
 void qTabAdvanced::SetCltZmqPort(int port){
 #ifdef VERBOSE
-	cout << "Setting Receiver UDP Port:" << port << endl;
+	cout << "Setting Client UDP Port:" << port << endl;
 #endif
 	 ostringstream ss; ss << port; string sport = ss.str();
 
 	disconnect(spinZmqPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetCltZmqPort(int)));
 	spinZmqPort->setValue(atoi(det->setClientStreamingPort(sport).c_str()));
+	myDet->enableDataStreamingFromReceiver(false);
+	myDet->enableDataStreamingToClient(false);
+
+	myDet->enableDataStreamingFromReceiver(true);
+	myDet->enableDataStreamingToClient(true);
 	qDefs::checkErrorMessage(det,"qTabAdvanced::SetCltZmqPort");
 	connect(spinZmqPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetCltZmqPort(int)));
 }
@@ -753,6 +760,11 @@ void qTabAdvanced::SetRxrZmqPort(int port){
 
 	disconnect(spinZmqPort2,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrZmqPort(int)));
 	spinZmqPort2->setValue(atoi(det->setReceiverStreamingPort(sport).c_str()));
+	myDet->enableDataStreamingFromReceiver(false);
+	myDet->enableDataStreamingToClient(false);
+
+	myDet->enableDataStreamingFromReceiver(true);
+	myDet->enableDataStreamingToClient(true);
 	qDefs::checkErrorMessage(det,"qTabAdvanced::SetRxrZmqPort");
 	connect(spinZmqPort2,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrZmqPort(int)));
 }
@@ -849,6 +861,11 @@ void qTabAdvanced::SetClientZMQIP(){
 	disconnect(dispZMQIP,			SIGNAL(editingFinished()),	this, SLOT(SetClientZMQIP()));
 
 	dispZMQIP->setText(QString(det->setClientStreamingIP(dispZMQIP->text().toAscii().constData()).c_str()));
+	myDet->enableDataStreamingFromReceiver(false);
+	myDet->enableDataStreamingToClient(false);
+
+	myDet->enableDataStreamingFromReceiver(true);
+	myDet->enableDataStreamingToClient(true);
 	qDefs::checkErrorMessage(det,"qTabAdvanced::SetClientZMQIP");
 
 	connect(dispZMQIP,			SIGNAL(editingFinished()),	this, SLOT(SetClientZMQIP()));
@@ -865,6 +882,11 @@ void qTabAdvanced::SetReceiverZMQIP(){
 	disconnect(dispZMQIP2,			SIGNAL(editingFinished()),	this, SLOT(SetReceiverZMQIP()));
 
 	dispZMQIP2->setText(QString(det->setReceiverStreamingIP(dispZMQIP2->text().toAscii().constData()).c_str()));
+	myDet->enableDataStreamingFromReceiver(false);
+	myDet->enableDataStreamingToClient(false);
+
+	myDet->enableDataStreamingFromReceiver(true);
+	myDet->enableDataStreamingToClient(true);
 	qDefs::checkErrorMessage(det,"qTabAdvanced::SetReceiverZMQIP");
 
 	connect(dispZMQIP2,			SIGNAL(editingFinished()),	this, SLOT(SetReceiverZMQIP()));
@@ -886,6 +908,23 @@ void qTabAdvanced::SetReceiver(){
 	Refresh();
 }
 
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabAdvanced::RestartStreaming(){
+#ifdef VERBOSE
+	cout << "Restarting Data Streaming in Receiver and Gui" << endl;
+#endif
+	disconnect(btnRestartStreaming,SIGNAL(clicked()),			this, SLOT(RestartStreaming()));
+	myDet->enableDataStreamingFromReceiver(false);
+	myDet->enableDataStreamingToClient(false);
+
+	myDet->enableDataStreamingFromReceiver(true);
+	myDet->enableDataStreamingToClient(true);
+	connect(btnRestartStreaming,SIGNAL(clicked()),			this, SLOT(RestartStreaming()));
+}
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

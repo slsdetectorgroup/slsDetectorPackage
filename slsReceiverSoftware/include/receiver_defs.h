@@ -46,5 +46,3 @@
 #define STREAMER_PRIORITY				10
 #define TCP_PRIORITY					10
 
-//jctb
-#define DEFAULT_NROI_CHANNELS			32

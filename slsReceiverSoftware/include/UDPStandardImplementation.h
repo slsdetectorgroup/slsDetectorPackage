@@ -264,7 +264,7 @@ private:
 	int numberofJobs;
 
 	/** Number of channels in roi for jungfrauctb */
-	int nroichannels;
+	uint32_t nroichannels;
 
 	//** class objects ***
 	/** General Data Properties */

@@ -10,7 +10,8 @@
 #include "sls_receiver_defs.h"
 #include "receiver_defs.h"
 
-#define NUM_BITS_IN_ONE_BYTE 8
+#include <math.h>			//ceil
+
 
 class GeneralData {
 	
@@ -170,9 +171,10 @@ public:
 
 	/**
 	 * Setting packets per frame changes member variables
-	 * @param packets per frame
+	 * @param ns number of samples
+	 * @param nroich number of channels in roi
 	 */
-	virtual void SetPacketsPerFrame(uint32_t ppf) {
+	virtual void setNumberofSamples(const uint64_t ns, uint32_t nroich) {
 		bprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
 	};
 
@@ -408,13 +410,13 @@ private:
 	/** Constructor */
 	JCTBData(){
 		myDetectorType		= slsReceiverDefs::JUNGFRAUCTB;
-		nPixelsX 			= 32;	//(256*4);
-		nPixelsY 			= 128;	//(256*2);
+		nPixelsX 			= 400;
+		nPixelsY 			= 400;
 		headerSizeinPacket  = 22;
 		dataSize 			= 8192;
 		packetSize 			= headerSizeinPacket + dataSize;
 		packetsPerFrame 	= 1;
-		imageSize 			= dataSize*packetsPerFrame;
+		imageSize 			= nPixelsX * nPixelsY * 2;
 		frameIndexMask 		= 0xFFFFFF;
 		maxFramesPerFile 	= JFCTB_MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
@@ -454,11 +456,13 @@ private:
 
 	/**
 	 * Setting packets per frame changes member variables
-	 * @param packets per frame
+	 * @param ns number of samples
+	 * @param nroich number of channels in roi
 	 */
-	void SetPacketsPerFrame(uint32_t ppf) {
-		packetsPerFrame = ppf;
-		imageSize 		= dataSize*packetsPerFrame;
+	void setNumberofSamples(const uint64_t ns, uint32_t nroich) {
+		packetsPerFrame = ceil(double(2 * (nroich ? nroich : 32) * ns) / dataSize);
+		nPixelsY		= (ns * 2) / 25;/* depends on nroich also?? */
+		imageSize 		= nPixelsX * nPixelsY * 2;
 	};
 
 	/**
@@ -551,12 +555,18 @@ class EigerData : public GeneralData {
 		case 1:
 			nPixelsX	= (256 * 2) + 3;
 			nPixelsY 	= 256 + 1;
-			imageSize	= nPixelsX * nPixelsY * ((double)dr/(double)NUM_BITS_IN_ONE_BYTE);
+			imageSize	= nPixelsX * nPixelsY * ((dr > 16) ? 4 : // 32 bit
+												((dr > 8)  ? 2 : // 16 bit
+												((dr > 4)  ? 1 : // 8 bit
+												0.5)));			 // 4 bit
 			break;
 		default:
 			nPixelsX 	= (256*2);
 			nPixelsY 	= 256;
-			imageSize	= dataSize*packetsPerFrame;
+			imageSize	= nPixelsX * nPixelsY * ((dr > 16) ? 4 : // 32 bit
+												((dr > 8)  ? 2 : // 16 bit
+												((dr > 4)  ? 1 : // 8 bit
+												0.5)));			 // 4 bit
 			break;
 		}
 	};

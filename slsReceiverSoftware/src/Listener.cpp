@@ -336,6 +336,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 	sls_detector_header* old_header = 0;
 	sls_detector_header* new_header = 0;
 	bool standardheader = generalData->standardheader;
+	uint32_t corrected_dsize = dsize - ((pperFrame * dsize) - generalData->imageSize);
 
 
 	//reset to -1
@@ -378,6 +379,12 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 				memcpy(buf + fifohsize , carryOverPacket + hsize+4, dsize-2);
 			else
 				memcpy(buf + fifohsize + dsize - 2, carryOverPacket + hsize, dsize+2);
+			break;
+		case JUNGFRAUCTB:
+			if (pnum == (pperFrame-1))
+				memcpy(buf + fifohsize + (pnum * dsize), carryOverPacket + hsize, corrected_dsize);
+			else
+				memcpy(buf + fifohsize + (pnum * dsize), carryOverPacket + hsize,  dsize);
 			break;
 		default:
 			memcpy(buf + fifohsize + (pnum * dsize), carryOverPacket + hsize, dsize);
@@ -478,6 +485,12 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 				memcpy(buf + fifohsize + (pnum * dsize), listeningPacket + hsize+4, dsize-2);
 			else
 				memcpy(buf + fifohsize + (pnum * dsize) - 2, listeningPacket + hsize, dsize+2);
+			break;
+		case JUNGFRAUCTB:
+			if (pnum == (pperFrame-1))
+				memcpy(buf + fifohsize + (pnum * dsize), listeningPacket + hsize, corrected_dsize);
+			else
+				memcpy(buf + fifohsize + (pnum * dsize), listeningPacket + hsize, dsize);
 			break;
 		default:
 			memcpy(buf + fifohsize + (pnum * dsize), listeningPacket + hsize, dsize);

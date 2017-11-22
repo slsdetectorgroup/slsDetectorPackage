@@ -416,7 +416,7 @@ void DataProcessor::ProcessAnImage(char* buf) {
 
 
 	if (file)
-		file->WriteToFile(buf, generalData->imageSize + sizeof(sls_detector_header), fnum-firstMeasurementIndex, nump);
+		file->WriteToFile(buf, sizeof(sls_detector_header) + generalData->imageSize, fnum-firstMeasurementIndex, nump);
 
 
 

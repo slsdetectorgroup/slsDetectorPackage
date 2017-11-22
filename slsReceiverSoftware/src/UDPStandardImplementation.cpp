@@ -15,7 +15,6 @@
 #include <cstdlib>			//system
 #include <cstring>			//strcpy
 #include <errno.h>			//eperm
-#include <math.h>			//ceil
 using namespace std;
 
 
@@ -250,10 +249,7 @@ int UDPStandardImplementation::setNumberofSamples(const uint64_t i) {
 	if (numberOfSamples != i) {
 		numberOfSamples = i;
 
-		//side effects
-		uint32_t ppf = ceil(double(2 * (nroichannels ? nroichannels : DEFAULT_NROI_CHANNELS) * numberOfSamples) / double(generalData->dataSize));
-		generalData->SetPacketsPerFrame(ppf);
-
+		generalData->setNumberofSamples(i, nroichannels);
 		numberofJobs = -1; //changes to imagesize has to be noted to recreate fifo structure
 		if (SetupFifoStructure() == FAIL)
 			return FAIL;

@@ -104,6 +104,7 @@ void qTabSettings::SetupDetectorSettings(){
 	int sett = (int)myDet->getSettings();cout<<"sett:"<<sett<<endl;
 	qDefs::checkErrorMessage(myDet,"qTabSettings::SetupDetectorSettings");
 	if(sett==-1) sett = Undefined;
+	if(detType == slsDetectorDefs::JUNGFRAUCTB && sett > slsDetectorDefs::UNDEFINED) sett = Uninitialized;
 	else if(sett == slsDetectorDefs::UNDEFINED) sett = Undefined;
 	else if(sett == slsDetectorDefs::UNINITIALIZED) sett = Uninitialized;
 	// To be able to index items on a combo box
@@ -166,6 +167,7 @@ void qTabSettings::SetupDetectorSettings(){
 			item[(int)VeryLowGain]->setEnabled(false);
 			break;
 		case slsDetectorDefs::JUNGFRAU:
+		case slsDetectorDefs::JUNGFRAUCTB:
 			item[(int)Standard]->setEnabled(false);
 			item[(int)Fast]->setEnabled(false);
 			item[(int)HighGain]->setEnabled(false);
@@ -224,6 +226,7 @@ void qTabSettings::setSettings(int index){
 		disconnect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
 		int sett = (int)myDet->getSettings();
 		if(sett==-1) sett = Undefined;
+		if(detType == slsDetectorDefs::JUNGFRAUCTB && sett > slsDetectorDefs::UNDEFINED) sett = Uninitialized;
 		else if(sett == slsDetectorDefs::UNDEFINED) sett = Undefined;
 		else if(sett == slsDetectorDefs::UNINITIALIZED) sett = Uninitialized;
 		comboSettings->setCurrentIndex(sett);
@@ -341,6 +344,7 @@ void qTabSettings::Refresh(){
 #endif
 	int sett = (int)myDet->getSettings();
 	if(sett==-1) sett = Undefined;//slsDetectorDefs::UNDEFINED;
+	if(detType == slsDetectorDefs::JUNGFRAUCTB && sett > slsDetectorDefs::UNDEFINED) sett = Uninitialized;
 	else if(sett == slsDetectorDefs::UNDEFINED) sett = Undefined;
 	else if(sett == slsDetectorDefs::UNINITIALIZED) sett = Uninitialized;
 	comboSettings->setCurrentIndex(sett);

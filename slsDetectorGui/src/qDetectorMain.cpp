@@ -278,6 +278,7 @@ void qDetectorMain::SetUpDetector(const string fName){
 	case slsDetectorDefs::PROPIX:
 	case slsDetectorDefs::MOENCH:
 	case slsDetectorDefs::JUNGFRAU:
+	case slsDetectorDefs::JUNGFRAUCTB:
 		actionLoadTrimbits->setText("Load Settings");  actionSaveTrimbits->setText("Save Settings");
 		break;
 	default:

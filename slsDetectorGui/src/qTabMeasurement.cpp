@@ -74,7 +74,7 @@ void qTabMeasurement::SetupWidgetWindow(){
 		comboDelayUnit->setCurrentIndex((int)unit);
 	}
 	//gates
-	if ((detType == slsDetectorDefs::EIGER) || (detType == slsDetectorDefs::JUNGFRAU)) {
+	if ((detType == slsDetectorDefs::EIGER) || (detType == slsDetectorDefs::JUNGFRAU) || (detType == slsDetectorDefs::JUNGFRAUCTB)) {
 		lblNumGates->setEnabled(false);
 		spinNumGates->setEnabled(false);
 	} else
@@ -160,6 +160,7 @@ void qTabMeasurement::SetupTimingMode(){
 		case slsDetectorDefs::PROPIX:
 		case slsDetectorDefs::GOTTHARD:
 		case slsDetectorDefs::JUNGFRAU:
+		case slsDetectorDefs::JUNGFRAUCTB:
 			item[(int)Trigger_Exp_Series]->setEnabled(true);
 			item[(int)Trigger_Readout]->setEnabled(false);
 			item[(int)Gated]->setEnabled(false);
@@ -292,7 +293,7 @@ void qTabMeasurement::Initialization(){
 	}
 
 	//Number of Gates
-	if ((detType != slsDetectorDefs::EIGER) && (detType != slsDetectorDefs::JUNGFRAU))
+	if ((detType != slsDetectorDefs::EIGER) && (detType != slsDetectorDefs::JUNGFRAU) && (detType != slsDetectorDefs::JUNGFRAUCTB))
 		connect(spinNumGates,SIGNAL(valueChanged(int)),				this,	SLOT(setNumGates(int)));
 
 	//Number of Probes
@@ -803,7 +804,7 @@ void qTabMeasurement::Refresh(){
 			disconnect(spinDelay,			SIGNAL(valueChanged(double)),		this,	SLOT(setDelay()));
 			disconnect(comboDelayUnit,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(setDelay()));
 		}
-		if ((detType != slsDetectorDefs::EIGER) && (detType != slsDetectorDefs::JUNGFRAU))
+		if ((detType != slsDetectorDefs::EIGER) && (detType != slsDetectorDefs::JUNGFRAU) && (detType != slsDetectorDefs::JUNGFRAUCTB))
 			disconnect(spinNumGates,		SIGNAL(valueChanged(int)),		 	this,	SLOT(setNumGates(int)));
 
 #ifdef VERBOSE
@@ -847,7 +848,7 @@ void qTabMeasurement::Refresh(){
 			comboDelayUnit->setCurrentIndex((int)unit);
 		}
 		//gates
-		if ((detType == slsDetectorDefs::EIGER) || (detType == slsDetectorDefs::JUNGFRAU)) {
+		if ((detType == slsDetectorDefs::EIGER) || (detType == slsDetectorDefs::JUNGFRAU) || (detType == slsDetectorDefs::JUNGFRAUCTB)) {
 			lblNumGates->setEnabled(false);
 			spinNumGates->setEnabled(false);
 		} else {
@@ -889,7 +890,7 @@ void qTabMeasurement::Refresh(){
 			connect(spinDelay,			SIGNAL(valueChanged(double)),		this,	SLOT(setDelay()));
 			connect(comboDelayUnit,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(setDelay()));
 		}
-		if ((detType != slsDetectorDefs::EIGER) && (detType != slsDetectorDefs::JUNGFRAU))
+		if ((detType != slsDetectorDefs::EIGER) && (detType != slsDetectorDefs::JUNGFRAU) && (detType != slsDetectorDefs::JUNGFRAUCTB))
 			connect(spinNumGates,		SIGNAL(valueChanged(int)),		 	this,	SLOT(setNumGates(int)));
 
 		//timing mode - will also check if exptime>acq period and also enableprobes()

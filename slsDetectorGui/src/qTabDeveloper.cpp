@@ -148,6 +148,7 @@ void qTabDeveloper::SetupWidgetWindow() {
 
 
 	case slsDetectorDefs::JUNGFRAU:
+	case slsDetectorDefs::JUNGFRAUCTB:
 		NUM_DAC_WIDGETS = 8;
 		NUM_ADC_WIDGETS = 1;
 		dacNames.push_back("v vb comp:");
@@ -474,6 +475,8 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 					}
 					break;
 					case slsDetectorDefs::JUNGFRAU:
+					case slsDetectorDefs::JUNGFRAUCTB:
+
 						switch(index){
 						case 0:
 						case 1:
@@ -522,7 +525,7 @@ void qTabDeveloper::RefreshAdcs(){
 	for(int i=0;i<NUM_ADC_WIDGETS;i++){
 		//all detectors
 		if(!detid){
-			if(detType == slsDetectorDefs::EIGER || detType == slsDetectorDefs::JUNGFRAU){
+			if(detType == slsDetectorDefs::EIGER || detType == slsDetectorDefs::JUNGFRAU || detType == slsDetectorDefs::JUNGFRAUCTB){
 				double value = (double)myDet->getADC(getSLSIndex(i+NUM_DAC_WIDGETS),-1);
 				if(value == -1)
 					spinAdcs[i]->setValue(value);
@@ -537,7 +540,7 @@ void qTabDeveloper::RefreshAdcs(){
 		}
 		//specific detector
 		else{
-			if(detType == slsDetectorDefs::EIGER || detType == slsDetectorDefs::JUNGFRAU)
+			if(detType == slsDetectorDefs::EIGER || detType == slsDetectorDefs::JUNGFRAU || detType == slsDetectorDefs::JUNGFRAUCTB)
 				spinAdcs[i]->setValue((double)det->getADC(getSLSIndex(i+NUM_DAC_WIDGETS))/1000.00);
 			else
 				spinAdcs[i]->setValue((double)det->getADC(getSLSIndex(i+NUM_DAC_WIDGETS)));

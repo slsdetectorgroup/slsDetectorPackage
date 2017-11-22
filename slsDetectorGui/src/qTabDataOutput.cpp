@@ -895,6 +895,7 @@ void qTabDataOutput::SetupFileFormat(){
 		case slsDetectorDefs::PROPIX:
 		case slsDetectorDefs::GOTTHARD:
 		case slsDetectorDefs::JUNGFRAU:
+		case slsDetectorDefs::JUNGFRAUCTB:
 			item[(int)slsReceiverDefs::BINARY]->setEnabled(true);
 			item[(int)slsReceiverDefs::ASCII]->setEnabled(false);
 			item[(int)slsReceiverDefs::HDF5]->setEnabled(true);

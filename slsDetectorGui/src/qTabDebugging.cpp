@@ -74,6 +74,7 @@ void qTabDebugging::SetupWidgetWindow(){
 		chkModuleFirmware->setEnabled(false);
 		break;
 	case slsDetectorDefs::JUNGFRAU:
+	case slsDetectorDefs::JUNGFRAUCTB:
 	case slsDetectorDefs::PROPIX:
 	case slsDetectorDefs::GOTTHARD:
 		lblDetector->setText("Module:");
@@ -343,7 +344,7 @@ void qTabDebugging::GetInfo(){
 
 
 	case slsDetectorDefs::JUNGFRAU:
-
+	case slsDetectorDefs::JUNGFRAUCTB:
 		//display widget
 		formLayout->addWidget(new QLabel("Module:"),0,0);
 		formLayout->addItem(new QSpacerItem(15,20,QSizePolicy::Fixed,QSizePolicy::Fixed),0,1);
@@ -355,7 +356,10 @@ void qTabDebugging::GetInfo(){
 		formLayout->addWidget(new QLabel("Module Software Version:"),3,0);
 		formLayout->addWidget(lblDetectorSoftware,3,2);
 		//tree widget
-		treeDet->setHeaderLabel("JungFrau Detector");
+		if (detType == slsDetectorDefs::JUNGFRAU)
+			treeDet->setHeaderLabel("JungFrau Detector");
+		else
+			treeDet->setHeaderLabel("JungFrauCTB Detector");
 		//gets det names
 		for (int i=0;i<comboDetector->count();i++)
 			items.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString("Module (%1)").arg(comboDetector->itemText(i)))));
@@ -470,6 +474,7 @@ void qTabDebugging::SetParameters(QTreeWidgetItem *item){
 
 
 	case slsDetectorDefs::JUNGFRAU:
+	case slsDetectorDefs::JUNGFRAUCTB:
 	case slsDetectorDefs::PROPIX:
 	case slsDetectorDefs::MOENCH:
 	case slsDetectorDefs::GOTTHARD:
@@ -519,6 +524,7 @@ void qTabDebugging::TestDetector(){
 		break;
 	case slsDetectorDefs::EIGER:	 Detector =  "Half Module";	break;
 	case slsDetectorDefs::JUNGFRAU:
+	case slsDetectorDefs::JUNGFRAUCTB:
 	case slsDetectorDefs::MOENCH:
 	case slsDetectorDefs::PROPIX:
 	case slsDetectorDefs::GOTTHARD:	 Detector =  "Module";	break;

@@ -67,12 +67,17 @@ void qDrawPlot::SetupWidgetWindow(){
 	// Depending on whether the detector is 1d or 2d
 	detType = myDet->getDetectorsType();
 	switch(detType){
-	case slsDetectorDefs::MYTHEN:	originally2D = false;	break;
-	case slsDetectorDefs::EIGER:	originally2D = true;	break;
-	case slsDetectorDefs::GOTTHARD:	originally2D = false; 	break;
-	case slsDetectorDefs::PROPIX:	originally2D = true; 	break;
-	case slsDetectorDefs::MOENCH:	originally2D = true; 	break;
-	case slsDetectorDefs::JUNGFRAU:	originally2D = true; 	break;
+	case slsDetectorDefs::MYTHEN:
+	case slsDetectorDefs::GOTTHARD:
+		originally2D = false;
+		break;
+	case slsDetectorDefs::EIGER:
+	case slsDetectorDefs::PROPIX:
+	case slsDetectorDefs::MOENCH:
+	case slsDetectorDefs::JUNGFRAU:
+	case slsDetectorDefs::JUNGFRAUCTB:
+		originally2D = true;
+		break;
 	default:
 		cout << "ERROR: Detector Type is Generic" << endl;
 		exit(-1);
@@ -115,9 +120,14 @@ void qDrawPlot::SetupWidgetWindow(){
 	plot_in_scope   = 0;
 
 	nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X);
-	cout<<"nPixelsX:"<<nPixelsX<<endl;
-
 	nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y);
+	if (detType == slsDetectorDefs::JUNGFRAUCTB) {
+		npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::SAMPLES_JCTB, -1) * 2)/25;
+		nPixelsX = npixelsx_jctb;
+		nPixelsY = npixelsy_jctb;
+	}
+
+	cout<<"nPixelsX:"<<nPixelsX<<endl;
 	cout<<"nPixelsY:"<<nPixelsY<<endl;
 
 	nAnglePixelsX = 1;
@@ -578,6 +588,12 @@ void qDrawPlot::SetScanArgument(int scanArg){
 	minPixelsY = 0;
 	nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X);
 	nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y);
+	if (detType == slsDetectorDefs::JUNGFRAUCTB) {
+		npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::SAMPLES_JCTB, -1) * 2)/25;
+		nPixelsX = npixelsx_jctb;
+		nPixelsY = npixelsy_jctb;
+	}
+
 	//cannot do this in between measurements , so update instantly
 	if(scanArgument==qDefs::Level0){
 		//no need to check if numsteps=0,cuz otherwise this mode wont be set in plot tab
@@ -2206,7 +2222,7 @@ void qDrawPlot::toDoublePixelData(double* dest, char* source,int size, int datab
 		break;
 
 	case 16:
-		if (detType == slsDetectorDefs::JUNGFRAU) {
+		if (detType == slsDetectorDefs::JUNGFRAU || detType == slsDetectorDefs::JUNGFRAUCTB) {
 
 			// show gain plot
 			if(gaindest!=NULL) {

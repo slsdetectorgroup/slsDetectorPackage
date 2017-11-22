@@ -602,6 +602,9 @@ bool gainPlotEnable;
 /** gain data enable, enabled if gain data to be extracted from normal data */
 bool gainDataEnable;
 
+const static int npixelsx_jctb = 400;
+int npixelsy_jctb;
+
 signals:
 void UpdatingPlotFinished();
 void InterpolateSignal(bool);

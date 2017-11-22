@@ -32,16 +32,18 @@ removedocs:
 	
 detUser:$(SRC_DET)
 	echo "creating client"
-	g++ -o detUser $(SRC_DET) $(INCLUDES) $(LDFLAG_DET) -lm -lstdc++
+	mkdir -p bin
+	g++ -o bin/detUser $(SRC_DET) $(INCLUDES) $(LDFLAG_DET) -lm -lstdc++
 
 detReceiver:$(SRC_REC)
 	echo "creating receiver"
-	g++ -o detReceiver $(SRC_REC) $(INCLUDES) $(LDFLAG_REC) -lm -lstdc++
+	mkdir -p bin
+	g++ -o bin/detReceiver $(SRC_REC) $(INCLUDES) $(LDFLAG_REC) -lm -lstdc++
 	
 	
 clean:
 	echo "cleaning for manual-api"
-	rm -rf detUser detReceiver slsDetectorUsersDocs
+	rm -rf bin/detUser bin/detReceiver slsDetectorUsersDocs
 	rm -rf slsDetectorUsersDocs
 	rm -rf $(DESTDIR)/html/slsDetectorUsersDocs
 	rm -rf $(DESTDIR)/pdf/slsDetectorUsersDocs.pdf

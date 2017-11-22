@@ -122,7 +122,7 @@ void qDrawPlot::SetupWidgetWindow(){
 	nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X);
 	nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y);
 	if (detType == slsDetectorDefs::JUNGFRAUCTB) {
-		npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::SAMPLES_JCTB, -1) * 2)/25;
+		npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::SAMPLES_JCTB, -1) * 2)/25;// for moench 03
 		nPixelsX = npixelsx_jctb;
 		nPixelsY = npixelsy_jctb;
 	}
@@ -589,7 +589,7 @@ void qDrawPlot::SetScanArgument(int scanArg){
 	nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X);
 	nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y);
 	if (detType == slsDetectorDefs::JUNGFRAUCTB) {
-		npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::SAMPLES_JCTB, -1) * 2)/25;
+		npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::SAMPLES_JCTB, -1) * 2)/25; // for moench 03
 		nPixelsX = npixelsx_jctb;
 		nPixelsY = npixelsy_jctb;
 	}

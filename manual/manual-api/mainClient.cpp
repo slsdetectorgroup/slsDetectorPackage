@@ -65,7 +65,7 @@ int main(int argc,  char **argv) {
 	pDetector->registerDataCallback(&dataCallback, NULL);
 	/** - if receiver exists, enable data streaming from receiver to get the data */
 	pDetector->enableDataStreamingFromReceiver(1);
-
+	pDetector->enableDataStreamingToClient(1);
 
 	/** - ensuring detector status is idle before starting acquisition. exiting if not idle */
 	int status = pDetector->getDetectorStatus();

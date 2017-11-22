@@ -2725,6 +2725,8 @@ int slsDetector::setChannel(sls_detector_channel chan){
   int ichip=chan.chip;
   int imod=chan.module;
 
+  cout << "Set chan " << ichan << " chip " <<ichip << " mod " << imod << " reg " << hex << chan.reg << endl;
+
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (connectControl() == OK){
       controlSocket->SendDataOnly(&fnum,sizeof(fnum));
@@ -8062,14 +8064,22 @@ string slsDetector::setFileName(string s) {
 
 		if(ret==FORCE_UPDATE)
 			updateReceiver();
+		return sretval;
+
+	} else {
+	  if(!s.empty()){
+	    pthread_mutex_lock(&ms);
+	    fileIO::setFileName(s);
+	    pthread_mutex_unlock(&ms);
+	  }
+	  pthread_mutex_lock(&ms);
+	  s = fileIO::getFileName();
+	  pthread_mutex_unlock(&ms);
+
+	  return s;
+
 	}
 
-	/*pthread_mutex_lock(&ms);
-	s = fileIO::getFileName();
-	pthread_mutex_unlock(&ms);
-
-	return s;*/
-	return sretval;
 }
 
 

@@ -275,7 +275,8 @@ int  slsDetectorUtils::acquire(int delflag){
 	    	pthread_mutex_unlock(&mp);
 	    	//send receiver file name
 	    	pthread_mutex_lock(&mg); //cout << "lock"<< endl;
-	    	setFileName(fileIO::getFileName());
+	    	
+		setFileName(fileIO::getFileName());
 
 	    	//start receiver
 	    	if(startReceiver() == FAIL) {

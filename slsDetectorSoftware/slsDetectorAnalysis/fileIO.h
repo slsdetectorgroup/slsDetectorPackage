@@ -12,6 +12,7 @@
 #include <sstream>
 #include <queue>
 #include <math.h>
+#include <semaphore.h>
 
 using namespace std;
 /**
@@ -30,7 +31,17 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
 
 
   /** default constructor */
-  fileIO(): fileIOStatic(){currentFrameIndex=-1;frameIndex=-1;detIndex=-1; framesPerFile=&nframes; nframes=1; filefd = NULL;};
+  fileIO(): fileIOStatic(){
+    currentFrameIndex=-1;
+    frameIndex=-1;
+    detIndex=-1; 
+    framesPerFile=&nframes; 
+    nframes=1; 
+    filefd = NULL;  
+    pthread_mutex_t mp1 = PTHREAD_MUTEX_INITIALIZER;
+    mf=mp1;
+    pthread_mutex_init(&mf, NULL); 
+  };
 
   /** virtual destructor */
   virtual ~fileIO(){};
@@ -39,51 +50,110 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
   using fileIOStatic::writeDataFile;
   using fileIOStatic::createFileName;
 
-  int getFileIndexFromFileName(string fname){return fileIOStatic::getFileIndexFromFileName(fname);};
-  int getIndicesFromFileName(string fname, int &index){return fileIOStatic::getIndicesFromFileName(fname,index);};
-  int getVariablesFromFileName(string fname, int &index, int &p_index, double &sv0, double &sv1){return fileIOStatic::getVariablesFromFileName(fname, index, p_index, sv0, sv1);};
-  int getVariablesFromFileName(string fname, int &index, int &f_index, int &p_index, double &sv0, double &sv1, int &detindex){return fileIOStatic::getVariablesFromFileName(fname, f_index, index, p_index, sv0, sv1, detindex);};
+  int getFileIndexFromFileName(string fname){
+    int ret; 
+    pthread_mutex_lock(&mf);
+    ret=fileIOStatic::getFileIndexFromFileName(fname);
+    pthread_mutex_unlock(&mf); 
+    return ret;
+  };
+  int getIndicesFromFileName(string fname, int &index){
+    int ret; 
+    pthread_mutex_lock(&mf);
+    ret=fileIOStatic::getIndicesFromFileName(fname,index);
+    pthread_mutex_unlock(&mf); 
+    return ret;
+  };
+
+
+
+  int getVariablesFromFileName(string fname, int &index, int &p_index, double &sv0, double &sv1){
+    
+    int ret; 
+    pthread_mutex_lock(&mf);
+    ret=fileIOStatic::getVariablesFromFileName(fname, index, p_index, sv0, sv1);
+    pthread_mutex_unlock(&mf); 
+    return ret;
+  };
+
+  int getVariablesFromFileName(string fname, int &index, int &f_index, int &p_index, double &sv0, double &sv1, int &detindex){
+
+    
+    int ret; 
+    pthread_mutex_lock(&mf);
+    ret=fileIOStatic::getVariablesFromFileName(fname, f_index, index, p_index, sv0, sv1, detindex);
+    pthread_mutex_unlock(&mf); 
+    return ret;
+  };
+
   /**
      sets the default output files path
      \param s file path
      \return actual file path
   */
-  virtual string setFilePath(string s) {sprintf(filePath, s.c_str()); return string(filePath);};
+  virtual string setFilePath(string s) {
+    pthread_mutex_lock(&mf);
+    sprintf(filePath, s.c_str()); 
+    pthread_mutex_unlock(&mf); 
+    return string(filePath);
+  };
 
   /**
      sets the default output files root name
      \param s file name to be set
      \returns actual file name
   */
-  virtual  string setFileName(string s) {sprintf(fileName, s.c_str()); return string(fileName);};
+  virtual  string setFileName(string s) {
+    pthread_mutex_lock(&mf);
+    sprintf(fileName, s.c_str()); 
+    pthread_mutex_unlock(&mf); 
+    return string(fileName);};
 
   /**
      sets the default output file index
      \param i start file index to be set
      \returns actual file index
   */
-  virtual int setFileIndex(int i) {*fileIndex=i; return *fileIndex;};
+  virtual int setFileIndex(int i) {
+    pthread_mutex_lock(&mf);
+    *fileIndex=i; 
+    pthread_mutex_unlock(&mf); 
+    return *fileIndex;
+  };
   
   /**
      sets the default output file frame index
      \param i file frame index to be set
      \returns actual file frame index
   */
-  virtual int setFrameIndex(int i) {frameIndex=i; return frameIndex;};
+  virtual int setFrameIndex(int i) {
+    pthread_mutex_lock(&mf);
+    frameIndex=i; 
+    pthread_mutex_unlock(&mf); 
+    return frameIndex;};
 
   /**
      sets the default output current frame index
      \param i current frame index to be set
      \returns actual current frame index
   */
-  virtual int setCurrentFrameIndex(int i) {currentFrameIndex=i; return currentFrameIndex;};
+  virtual int setCurrentFrameIndex(int i) {
+    pthread_mutex_lock(&mf);
+    currentFrameIndex=i; 
+    pthread_mutex_unlock(&mf); 
+    return currentFrameIndex;
+  };
 
   /**
      sets the default output file index
      \param i frame index to be set
      \returns actual frame index
   */
-  virtual int setFramesPerFile(int i) {if (i>0) *framesPerFile=i; return *framesPerFile;};
+  virtual int setFramesPerFile(int i) {
+    pthread_mutex_lock(&mf);
+    if (i>0) *framesPerFile=i;
+    pthread_mutex_unlock(&mf); 
+    return *framesPerFile;};
 
   /**
      sets the default output file index
@@ -335,6 +405,8 @@ yes  */
 
   int nBytes;
 
+ /** mutex to synchronize read/write fname */
+   pthread_mutex_t mf;
 };
 
 #endif

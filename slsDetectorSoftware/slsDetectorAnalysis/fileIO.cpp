@@ -8,6 +8,8 @@
 /* generates file name without extension*/
 
 string fileIO::createFileName() {
+  
+  pthread_mutex_lock(&mf);
   currentFileName=fileIOStatic::createFileName(filePath,	\
 					       fileName, \
 					       getActionMask(),	\
@@ -26,6 +28,7 @@ string fileIO::createFileName() {
   //  nBytes=2*getTotalNumberOfChannels();
   //} else
   nBytes=getDataBytes();
+  pthread_mutex_unlock(&mf);
   return currentFileName;
   
 }
@@ -35,6 +38,7 @@ string fileIO::createFileName() {
 /* generates file prefix for receivers */
 
 string fileIO::createReceiverFilePrefix() {
+  pthread_mutex_lock(&mf);
   currentReceiverFilePrefix=fileIOStatic::createReceiverFilePrefix(fileName, \
 								   getActionMask(),	\
 								   getCurrentScanVariable(0),	\
@@ -45,6 +49,7 @@ string fileIO::createReceiverFilePrefix() {
 								   getNumberOfPositions(),		\
 								   detIndex			  \
 								   );
+  pthread_mutex_unlock(&mf);
   return currentReceiverFilePrefix;
 
 }

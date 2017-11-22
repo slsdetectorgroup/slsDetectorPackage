@@ -3664,13 +3664,15 @@ string multiSlsDetector::getNetworkParameter(networkParameter p) {
 	setErrorMask(getErrorMask()|(1<<idet));
 
       if (s0=="")
-	s0=s;
+	s0=s+string("+");
       else
-	s0+=string("+")+s;
+	s0+=s+string("+");
+
       if (s1=="")
 	s1=s;
       else if (s1!=s)
 	s1="bad";
+
     }
   }
   if (s1=="bad")

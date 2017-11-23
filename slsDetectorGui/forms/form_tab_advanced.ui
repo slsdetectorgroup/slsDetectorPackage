@@ -1314,26 +1314,6 @@ An extension given by the modules serial number will be attached.
        </item>
       </layout>
      </widget>
-     <widget class="QPushButton" name="btnRestartStreaming">
-      <property name="geometry">
-       <rect>
-        <x>23</x>
-        <y>142</y>
-        <width>291</width>
-        <height>25</height>
-       </rect>
-      </property>
-      <property name="toolTip">
-       <string>Switching off and on the receiver data streaming from command line requires client sockets to be restarted as well.</string>
-      </property>
-      <property name="text">
-       <string>Restart Streaming (Receiver-&gt;GUI)</string>
-      </property>
-      <property name="icon">
-       <iconset resource="../include/icons.qrc">
-        <normaloff>:/icons/images/refresh.png</normaloff>:/icons/images/refresh.png</iconset>
-      </property>
-     </widget>
     </widget>
     <widget class="QWidget" name="gridLayoutWidget_7">
      <property name="geometry">

@@ -162,10 +162,6 @@ private slots:
 	 */
 	void SetReceiver();
 
-	/** Restart data streaming in receiver and gui
-	 */
-	void RestartStreaming();
-
 	/** Add ROI Input if the value changed in the last slot
 	 */
 	void AddROIInputSlot(){AddROIInput(1);};

@@ -79,7 +79,6 @@ void qTabAdvanced::SetupWidgetWindow(){
 		isAngular = true;
 		spinZmqPort->setEnabled(false);
 		spinZmqPort2->setEnabled(false);
-		btnRestartStreaming->setEnabled(false);
 		break;
 	case slsDetectorDefs::EIGER:
 		isEnergy = true;
@@ -281,8 +280,6 @@ void qTabAdvanced::Initialization(){
 		connect(dispUDPMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
 
 		connect(btnRxr,				SIGNAL(clicked()),			this, SLOT(SetReceiver()));
-		connect(btnRestartStreaming,SIGNAL(clicked()),			this, SLOT(RestartStreaming()));
-
 	}
 
 
@@ -737,12 +734,10 @@ void qTabAdvanced::SetCltZmqPort(int port){
 
 	disconnect(spinZmqPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetCltZmqPort(int)));
 	spinZmqPort->setValue(atoi(det->setClientStreamingPort(sport).c_str()));
-	myDet->enableDataStreamingFromReceiver(false);
-	myDet->enableDataStreamingToClient(false);
-
-	myDet->enableDataStreamingFromReceiver(true);
-	myDet->enableDataStreamingToClient(true);
 	qDefs::checkErrorMessage(det,"qTabAdvanced::SetCltZmqPort");
+	myDet->enableDataStreamingToClient(false);
+	myDet->enableDataStreamingToClient(true);
+	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetCltZmqPort");
 	connect(spinZmqPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetCltZmqPort(int)));
 }
 
@@ -758,12 +753,10 @@ void qTabAdvanced::SetRxrZmqPort(int port){
 
 	disconnect(spinZmqPort2,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrZmqPort(int)));
 	spinZmqPort2->setValue(atoi(det->setReceiverStreamingPort(sport).c_str()));
-	myDet->enableDataStreamingFromReceiver(false);
-	myDet->enableDataStreamingToClient(false);
-
-	myDet->enableDataStreamingFromReceiver(true);
-	myDet->enableDataStreamingToClient(true);
 	qDefs::checkErrorMessage(det,"qTabAdvanced::SetRxrZmqPort");
+	myDet->enableDataStreamingFromReceiver(false);
+	myDet->enableDataStreamingFromReceiver(true);
+	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetRxrZmqPort");
 	connect(spinZmqPort2,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrZmqPort(int)));
 }
 
@@ -862,24 +855,6 @@ void qTabAdvanced::SetReceiver(){
 	det->setFilePath(outdir);
 	qDefs::checkErrorMessage(det,"qTabAdvanced::SetReceiver");
 	Refresh();
-}
-
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabAdvanced::RestartStreaming(){
-#ifdef VERBOSE
-	cout << "Restarting Data Streaming in Receiver and Gui" << endl;
-#endif
-	disconnect(btnRestartStreaming,SIGNAL(clicked()),			this, SLOT(RestartStreaming()));
-	myDet->enableDataStreamingFromReceiver(false);
-	myDet->enableDataStreamingToClient(false);
-
-	myDet->enableDataStreamingFromReceiver(true);
-	myDet->enableDataStreamingToClient(true);
-	connect(btnRestartStreaming,SIGNAL(clicked()),			this, SLOT(RestartStreaming()));
 }
 
 

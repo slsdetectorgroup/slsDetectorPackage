@@ -31,7 +31,10 @@ It is linked in manual/manual-api from slsReceiverSoftware/include ]
  */
 int dataCallback(detectorData *pData, int iframe, int isubframe, void *pArg)
 {
-	std::cout  << "dataCallback: " << pData->npoints  << " "  << pData->npy  << "Frame number: " << iframe << std::endl;
+	std::cout  	<< " DataCallback:"
+				<< "\n nx           : " << pData->npoints
+				<< "\n ny           : " << pData->npy
+				<< "\n Frame number : " << iframe << std::endl;
 }
 
 
@@ -60,6 +63,8 @@ int main(int argc,  char **argv) {
 		std::cout << "Detector configured" << std::endl;
 	}
 
+	/** - set detector in shared memory online (in case no config file was used) */
+	pDetector->setOnline(slsDetectorDefs::ONLINE_FLAG);
 
 	/** - registering data callback */
 	pDetector->registerDataCallback(&dataCallback, NULL);

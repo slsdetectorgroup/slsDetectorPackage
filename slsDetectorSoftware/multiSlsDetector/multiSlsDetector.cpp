@@ -5868,11 +5868,13 @@ void multiSlsDetector::readFrameFromReceiver(){
 	int maxX = (bytesperchannel >= 1.0) ? thisMultiDetector->numberOfChannelInclGapPixels[X] : thisMultiDetector->numberOfChannel[X];
 	int maxY = (bytesperchannel >= 1.0) ? thisMultiDetector->numberOfChannelInclGapPixels[Y] : thisMultiDetector->numberOfChannel[Y];
 	int multidatabytes = (bytesperchannel >= 1.0) ? thisMultiDetector->dataBytesInclGapPixels : thisMultiDetector->dataBytes;
+	int dr = bytesperchannel * 8;
 	if (myDetType == JUNGFRAUCTB) {
 		maxY = (int)(thisMultiDetector->timerValue[SAMPLES_JCTB] * 2)/25; // for moench 03
 		maxX = 400;
+		dr = 16;
 	}
-	int dr = bytesperchannel * 8;
+
 
 
 	//getting multi values

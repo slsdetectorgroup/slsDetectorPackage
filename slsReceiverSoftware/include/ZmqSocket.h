@@ -9,6 +9,7 @@
 
 #include "ansi.h"
 
+#include <iostream>
 #include <zmq.h>
 #include <errno.h>
 #include <netdb.h>				//gethostbyname()
@@ -227,7 +228,7 @@ public:
  				 return 0;
  			 }
  		 }
- 		cerr << "Error: Could not convert hostname to internet address" << endl;
+ 		 cprintf(RED, "Error: Could not convert hostname to internet address\n");
  		 return 1;
  	};
 
@@ -245,7 +246,7 @@ public:
     		 freeaddrinfo(res);
     		 return 0;
     	 }
-    	 cerr << "Error: Could not convert internet address to ip string" << endl;
+    	 cprintf(RED, "Error: Could not convert internet address to ip string\n");
     	 return 1;
      }
 

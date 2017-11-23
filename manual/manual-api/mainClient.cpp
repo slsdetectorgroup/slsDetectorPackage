@@ -83,7 +83,22 @@ int main(int argc,  char **argv) {
 
 	/** - start measurement */
 	pDetector->startMeasurement();
-	std::cout << "measurement finished" << std::endl;
+	std::cout << "measurement finished" << std::endl;	usleep(1*1000*1000);
+	/** - start measurement */
+	pDetector->startMeasurement();
+	std::cout << "measurement finished" << std::endl;	usleep(1*1000*1000);
+	/** - start measurement */
+	pDetector->startMeasurement();
+	std::cout << "measurement finished" << std::endl;	usleep(1*1000*1000);
+	/** - start measurement */
+	pDetector->startMeasurement();
+	std::cout << "measurement finished" << std::endl;	usleep(1*1000*1000);
+	/** - start measurement */
+	pDetector->startMeasurement();
+	std::cout << "measurement finished" << std::endl;	usleep(1*1000*1000);
+	/** - start measurement */
+	pDetector->startMeasurement();
+	std::cout << "measurement finished" << std::endl;	usleep(1*1000*1000);
 
 	/** - returning when acquisition is finished or data are avilable */
 

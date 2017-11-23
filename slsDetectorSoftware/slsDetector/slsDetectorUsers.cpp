@@ -28,6 +28,10 @@ int slsDetectorUsers::setOnline(int const online){
   return myDetector->setOnline(online);
 }
 
+int slsDetectorUsers::setReceiverOnline(int const online){
+  return myDetector->setReceiverOnline(online);
+}
+
 void slsDetectorUsers::startMeasurement(){
   myDetector->acquire(0); 
 }

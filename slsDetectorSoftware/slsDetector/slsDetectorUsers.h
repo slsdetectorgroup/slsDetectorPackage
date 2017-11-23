@@ -110,6 +110,13 @@ class slsDetectorUsers
   */
   int setOnline(int const online=-1);
 
+  /**  @short sets the receivers onlineFlag
+      \param online can be: -1 returns wether the receiver is in online (1) or offline (0) state; 0 receiver in offline state; 1  receiver in online state
+      \returns 0 (offline) or 1 (online)
+  */
+  int setReceiverOnline(int const online=-1);
+
+
   /**
       @short start measurement and acquires
     \returns OK/FAIL

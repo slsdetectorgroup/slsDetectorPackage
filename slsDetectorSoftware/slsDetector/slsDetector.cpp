@@ -6443,7 +6443,6 @@ string slsDetector::setReceiverStreamingIP(string sourceIP) {
 		}
 		// on success put IP as string into arg
 		else {
-			memset(thisDetector->zmqip, 0, MAX_STR_LENGTH);
 			dataSocket->ConvertInternetAddresstoIpString(result, arg, MAX_STR_LENGTH);
 		}
 	}

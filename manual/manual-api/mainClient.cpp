@@ -64,7 +64,10 @@ int main(int argc,  char **argv) {
 	}
 
 	/** - set detector in shared memory online (in case no config file was used) */
-	pDetector->setOnline(slsDetectorDefs::ONLINE_FLAG);
+	pDetector->setOnline(1);
+
+	/** - set receiver in shared memory online (in case no config file was used) */
+	pDetector->setReceiverOnline(1);
 
 	/** - registering data callback */
 	pDetector->registerDataCallback(&dataCallback, NULL);

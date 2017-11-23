@@ -2339,13 +2339,13 @@ string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action) {
 	int r_online = myDet->setReceiverOnline(ONLINE_FLAG);
 
 	// switch off data streaming to prevent extra images in zmq gui buffer
-	if (r_online == ONLINE_FLAG) {
+	/*if (r_online == ONLINE_FLAG) {
 		if (myDet->enableDataStreamingFromReceiver() != 0) {
 			if (myDet->enableDataStreamingFromReceiver(0) != 0) {
 				std::cout << "Error: Unable to switch off data streaming in receiver. If GUI on, extra image(s) in zmq GUI buffer" << std::endl;
 			}
 		}
-	}
+	}*/
 
 	if(myDet->acquire() == FAIL)
 		return string("acquire unsuccessful");
@@ -5948,14 +5948,14 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 	if(cmd=="receiver"){
 		if (action==PUT_ACTION) {
 			if(!strcasecmp(args[1],"start")) {
-				// switch off data streaming to prevent extra images in zmq gui buffer
+				/*// switch off data streaming to prevent extra images in zmq gui buffer
 				if (r_online == ONLINE_FLAG) {
 					if (myDet->enableDataStreamingFromReceiver() != 0) {
 						if (myDet->enableDataStreamingFromReceiver(0) != 0) {
 							std::cout << "Error: Unable to switch off data streaming in receiver. If GUI on, extra image(s) in zmq GUI buffer" << std::endl;
 						}
 					}
-				}
+				}*/
 				myDet->startReceiver();
 			}
 			else if(!strcasecmp(args[1],"stop"))

@@ -5949,9 +5949,9 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 			if (!sscanf(args[1],"%d",&ival))
 				return string("Could not scan read frequency mode ")+string(args[1]);
 			if(ival>=0)
-				myDet->setReadReceiverFrequency(1,ival);
+				myDet->setReadReceiverFrequency(ival);
 		}
-		sprintf(answer,"%d",myDet->setReadReceiverFrequency(1));
+		sprintf(answer,"%d",myDet->setReadReceiverFrequency());
 		return string(answer);
 
 	}

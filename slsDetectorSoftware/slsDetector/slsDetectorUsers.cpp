@@ -224,7 +224,7 @@ void slsDetectorUsers::finalizeDataset(double *a, double *v, double *e, int &np)
 }
 
 int slsDetectorUsers::setReceiverMode(int n){
-	return myDetector->setReadReceiverFrequency(1,n);
+	return myDetector->setReadReceiverFrequency(n);
 }
 
 int slsDetectorUsers::enableDataStreamingFromReceiver(int i){

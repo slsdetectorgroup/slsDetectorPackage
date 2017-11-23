@@ -780,6 +780,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->zmqport = 0;
     thisDetector->receiver_zmqport = 0;
     thisDetector->receiver_datastream = false;
+    thisDetector->receiver_read_freq = 0;
 
     for (int ia=0; ia<MAX_ACTIONS; ++ia) {
       strcpy(thisDetector->actionScript[ia],"none");
@@ -6077,6 +6078,7 @@ string slsDetector::setReceiver(string receiverIP){
 		std::cout << "dynamic range:" << thisDetector->dynamicRange << endl << endl;
 		std::cout << "flippeddatax:" << thisDetector->flippedData[d] << endl;
 		std::cout << "10GbE:" << thisDetector->tenGigaEnable << endl << endl;
+		std::cout << "r_readfreq:" << thisDetector->receiver_read_freq << endl << endl;
 		std::cout << "rx streaming port:" << thisDetector->receiver_zmqport << endl;
 
 		//std::cout << "dataStreaming:" << enableDataStreamingFromReceiver(-1) << endl << endl;
@@ -6122,6 +6124,7 @@ string slsDetector::setReceiver(string receiverIP){
 				enableTenGigabitEthernet(thisDetector->tenGigaEnable);
 
 			// data streaming
+			setReadReceiverFrequency(thisDetector->receiver_read_freq);
 			setReceiverStreamingPort(getReceiverStreamingPort());
 			enableDataStreamingFromReceiver(enableDataStreamingFromReceiver(-1));
 		}
@@ -6259,6 +6262,8 @@ string slsDetector::setReceiverStreamingPort(string port) {
 	else
 		sscanf(port.c_str(),"%d",&arg);
 
+	 thisDetector->receiver_zmqport = arg;
+
 	// send to receiver
 	int fnum=F_SET_RECEIVER_STREAMING_PORT;
 	int ret = FAIL;
@@ -6271,8 +6276,10 @@ string slsDetector::setReceiverStreamingPort(string port) {
 			ret=thisReceiver->sendInt(fnum,retval,arg);
 			disconnectData();
 		}
-		if(ret!=FAIL)
-			thisDetector->receiver_zmqport = retval;
+		if (ret==FAIL) {
+			setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
+			std::cout << "Warning: Could not set receiver zmq port" << std::endl;
+		}
 		if(ret==FORCE_UPDATE)
 			updateReceiver();
 	}
@@ -8266,6 +8273,10 @@ int slsDetector::updateReceiverNoWait() {
   parentDet->enableOverwriteMask(ind);
   pthread_mutex_unlock(&ms);
 
+  // receiver read frequency
+  n += 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
+  thisDetector->receiver_read_freq = ind;
+
   // receiver streaming port
   n += 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
   thisDetector->receiver_zmqport = ind;
@@ -8506,34 +8517,35 @@ int64_t slsDetector::clearAllErrorMask(){
 
 
 
-int slsDetector::setReadReceiverFrequency(int getFromReceiver, int freq){
-	int fnum=F_READ_RECEIVER_FREQUENCY;
-	int ret = FAIL;
-	int retval=-1;
-	int arg = freq;
+int slsDetector::setReadReceiverFrequency(int freq){
 
-	if(!getFromReceiver)
-		return retval;
+	if (freq >= 0) {
+		thisDetector->receiver_read_freq = freq;
 
-	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+		int fnum=F_READ_RECEIVER_FREQUENCY;
+		int ret = FAIL;
+		int retval=-1;
+		int arg = freq;
+
+		if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
 #ifdef VERBOSE
-		std::cout << "Sending read frequency to receiver " << arg  << std::endl;
+			std::cout << "Sending read frequency to receiver " << arg  << std::endl;
 #endif
-		if (connectData() == OK){
-			ret=thisReceiver->sendInt(fnum,retval,arg);
-			disconnectData();
+			if (connectData() == OK){
+				ret=thisReceiver->sendInt(fnum,retval,arg);
+				disconnectData();
+			}
+			if((ret == FAIL) || (retval != freq)) {
+				cout << "could not set receiver read frequency to " << freq <<" Returned:" << retval << endl;
+				setErrorMask((getErrorMask())|(RECEIVER_READ_FREQUENCY));
+			}
+
+			if(ret==FORCE_UPDATE)
+				updateReceiver();
 		}
-		if(ret==FAIL)
-			retval = -1;
-		if(ret==FORCE_UPDATE)
-			updateReceiver();
 	}
 
-	if ((freq > 0) && (retval != freq)){
-		cout << "could not set receiver read frequency to " << freq <<" Returned:" << retval << endl;
-		setErrorMask((getErrorMask())|(RECEIVER_READ_FREQUENCY));
-	}
-	return retval;
+	return thisDetector->receiver_read_freq;
 }
 
 

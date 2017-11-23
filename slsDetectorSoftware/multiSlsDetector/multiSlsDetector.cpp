@@ -3695,12 +3695,8 @@ string multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 	int prev_streaming = 0;
 	switch (p) {
 	case RECEIVER_STREAMING_PORT:
-		prev_streaming = enableDataStreamingFromReceiver();
-		if (enableDataStreamingFromReceiver(-1)) enableDataStreamingFromReceiver(0);
-		if (enableDataStreamingToClient(-1)) enableDataStreamingToClient(0);
-		break;
 	case CLIENT_STREAMING_PORT:
-		prev_streaming = enableDataStreamingToClient();
+		prev_streaming = (enableDataStreamingFromReceiver() ||  enableDataStreamingToClient());
 		if (enableDataStreamingFromReceiver(-1)) enableDataStreamingFromReceiver(0);
 		if (enableDataStreamingToClient(-1)) enableDataStreamingToClient(0);
 		break;
@@ -3764,12 +3760,9 @@ string multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 	if (prev_streaming) {
 		switch (p) {
 		case RECEIVER_STREAMING_PORT:
-			enableDataStreamingFromReceiver(1);
-			enableDataStreamingToClient(1);
-			break;
 		case CLIENT_STREAMING_PORT:
-			enableDataStreamingToClient(1);
 			enableDataStreamingFromReceiver(1);
+			enableDataStreamingToClient(1);
 			break;
 		default: break;
 		}

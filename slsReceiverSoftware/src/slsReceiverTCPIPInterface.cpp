@@ -677,6 +677,12 @@ int slsReceiverTCPIPInterface::send_update() {
 #endif
 	mySock->SendDataOnly(&ind,sizeof(ind));
 
+	// receiver read frequency
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind=(int)receiverBase->getFrameToGuiFrequency();
+#endif
+	mySock->SendDataOnly(&ind,sizeof(ind));
+
 	// streaming port
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getStreamingPort();

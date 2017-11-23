@@ -2093,8 +2093,7 @@ void qDrawPlot::SetPlotTimer(double time){
 void qDrawPlot::SetFrameFactor(int frame){
 	frameFactor = frame;
 	if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG){
-		frame = myDet->setReadReceiverFrequency(1,frame);
-		/*if(frame > 0) frameFactor = 1;*//**what is this*/
+		frame = myDet->setReadReceiverFrequency(frame);
 #ifdef VERBOSE
 		cout << "Receiver read frequency set to : " << frame << endl;
 #endif

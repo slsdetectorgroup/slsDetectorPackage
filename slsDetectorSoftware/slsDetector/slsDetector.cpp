@@ -6259,6 +6259,8 @@ string slsDetector::setReceiverStreamingPort(string port) {
 	else
 		sscanf(port.c_str(),"%d",&arg);
 
+	 thisDetector->receiver_zmqport = arg;
+
 	// send to receiver
 	int fnum=F_SET_RECEIVER_STREAMING_PORT;
 	int ret = FAIL;
@@ -6271,8 +6273,10 @@ string slsDetector::setReceiverStreamingPort(string port) {
 			ret=thisReceiver->sendInt(fnum,retval,arg);
 			disconnectData();
 		}
-		if(ret!=FAIL)
-			thisDetector->receiver_zmqport = retval;
+		if (ret==FAIL) {
+			setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
+			std::cout << "Warning: Could not set receiver zmq port" << std::endl;
+		}
 		if(ret==FORCE_UPDATE)
 			updateReceiver();
 	}

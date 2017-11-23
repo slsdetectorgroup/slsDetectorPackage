@@ -6444,6 +6444,13 @@ string slsDetector::setReceiverStreamingIP(string sourceIP) {
 		}
 	}
 
+	// set it anyway, else it is lost
+	memset(thisDetector->receiver_zmqip, 0, MAX_STR_LENGTH);
+	strcpy(thisDetector->receiver_zmqip, arg);
+	// if zmqip is empty, update it
+	if (! strlen(thisDetector->zmqip))
+		strcpy(thisDetector->zmqip, retval);
+
 
 	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
 #ifdef VERBOSE
@@ -6453,12 +6460,9 @@ string slsDetector::setReceiverStreamingIP(string sourceIP) {
 			ret=thisReceiver->sendString(fnum,retval,arg);
 			disconnectData();
 		}
-		if(ret!=FAIL) {
-			memset(thisDetector->receiver_zmqip, 0, MAX_STR_LENGTH);
-			strcpy(thisDetector->receiver_zmqip, retval);
-			// if zmqip is empty, update it
-			if (! strlen(thisDetector->zmqip))
-				strcpy(thisDetector->zmqip, retval);
+		if(ret==FAIL) {
+			  setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
+			  std::cout << "Warning: Could not set rx_zmqip" << std::endl;
 		}
 		if(ret==FORCE_UPDATE)
 			updateReceiver();

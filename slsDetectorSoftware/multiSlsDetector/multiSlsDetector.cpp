@@ -3734,15 +3734,15 @@ string multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 	switch (p) {
 	case CLIENT_STREAMING_PORT:
 	case CLIENT_STREAMING_SRC_IP:
-		prev_streaming = enableDataStreamingFromReceiver();
-		enableDataStreamingFromReceiver(0);
-		enableDataStreamingToClient(0);
+		prev_streaming = enableDataStreamingToClient();
+		if (enableDataStreamingFromReceiver(-1)) enableDataStreamingFromReceiver(0);
+		if (enableDataStreamingToClient(-1)) enableDataStreamingToClient(0);
 		break;
 	case RECEIVER_STREAMING_PORT:
 	case RECEIVER_STREAMING_SRC_IP:
 		prev_streaming = enableDataStreamingFromReceiver();
-		enableDataStreamingFromReceiver(0);
-		enableDataStreamingToClient(0);
+		if (enableDataStreamingFromReceiver(-1)) enableDataStreamingFromReceiver(0);
+		if (enableDataStreamingToClient(-1)) enableDataStreamingToClient(0);
 		break;
 	default: break;
 	}

@@ -170,12 +170,6 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 */
 	void closeFiles();
 
-	/**
-	 * Set streaming port and restart sockets if streaming was enabled
-	 * @param i streaming port
-	 */
-	void setStreamingPort(const uint32_t i);
-
 
 private:
 

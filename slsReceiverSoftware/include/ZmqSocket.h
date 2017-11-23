@@ -161,6 +161,20 @@ public:
 	void* GetsocketDescriptor () { return socketDescriptor; };
 
 	/**
+	 * Connect client socket to server socket
+	 * @returns 1 for fail, 0 for success
+	 */
+	int Connect() {
+		if (zmq_connect(socketDescriptor, serverAddress) < 0) {
+			PrintError ();
+			Close ();
+			return 1;
+		}
+		return 0;
+	}
+
+
+	/**
 	 * Unbinds the Socket
 	 */
 	void Disconnect () {

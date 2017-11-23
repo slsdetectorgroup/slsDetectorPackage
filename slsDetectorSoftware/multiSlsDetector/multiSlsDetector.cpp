@@ -3694,14 +3694,12 @@ string multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 	// disable data streaming before changing zmq port (but only if they were on)
 	int prev_streaming = 0;
 	switch (p) {
-	case RECEIVER_STREAMING_PORT:
-		prev_streaming = enableDataStreamingFromReceiver();
-		enableDataStreamingFromReceiver(0);
-		enableDataStreamingToClient(0);
-		break;
 	case CLIENT_STREAMING_PORT:
 		prev_streaming = enableDataStreamingToClient();
 		enableDataStreamingToClient(0);
+		break;
+	case RECEIVER_STREAMING_PORT:
+		prev_streaming = enableDataStreamingFromReceiver();
 		enableDataStreamingFromReceiver(0);
 		break;
 	default: break;
@@ -3763,12 +3761,10 @@ string multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 	//enable data streaming if it was on
 	if (prev_streaming) {
 		switch (p) {
-		case RECEIVER_STREAMING_PORT:
-			enableDataStreamingFromReceiver(1);
-			enableDataStreamingToClient(1);
-			break;
 		case CLIENT_STREAMING_PORT:
 			enableDataStreamingToClient(1);
+			break;
+		case RECEIVER_STREAMING_PORT:
 			enableDataStreamingFromReceiver(1);
 			break;
 		default: break;
@@ -5812,6 +5808,8 @@ void multiSlsDetector::readFrameFromReceiver(){
 	int nch;
 
 	bool runningList[numSockets];
+	bool connectList[numSockets];
+
 	int numRunning = 0;
 
 	//wait for real time acquisition to start
@@ -5820,8 +5818,17 @@ void multiSlsDetector::readFrameFromReceiver(){
 	if(checkJoinThread())
 		running = false;
 
-	for(int i = 0; i < numSockets; ++i)
-		runningList[i] = true;
+	for(int i = 0; i < numSockets; ++i) {
+		if(!zmqSocket[i]->Connect()) {
+			connectList[i] = true;
+			runningList[i] = true;
+		} else {
+			connectList[i] = false;
+			cprintf(RED,"Error: Could not connect to socket  %s\n",zmqSocket[i]->GetZmqServerAddress());
+			runningList[i] = false;
+		}
+	}
+
 	numRunning = numSockets;
 
 
@@ -5903,6 +5910,11 @@ void multiSlsDetector::readFrameFromReceiver(){
 		//setting it back for each scan/measurement
 		running = true;
 	}
+
+	// Disconnect resources
+	for (int i = 0; i < numSockets; ++i)
+		if (connectList[i])
+			zmqSocket[i]->Disconnect();
 
 	//free resources
 	delete [] image;

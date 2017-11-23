@@ -275,6 +275,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     int receiver_zmqport;
     /** data streaming (up stream) enable in receiver */
     bool receiver_datastream;
+    /* Receiver read frequency */
+    int receiver_read_freq;
     /**  zmq tcp src ip address in client (only data) **/
     char zmqip[MAX_STR_LENGTH];
     /**  zmq tcp src ip address in receiver (only data) **/
@@ -285,6 +287,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     int nGappixels[2];
     /** data bytes including gap pixels */
     int dataBytesInclGapPixels;
+
+
 
   } sharedSlsDetector;
 
@@ -1800,12 +1804,10 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   /** Sets the read receiver frequency
    	  if data required from receiver randomly readRxrFrequency=0,
    	   else every nth frame to be sent to gui
-   	   @param getFromReceiver is 1 if it should ask the receiver,
-   	   	   0 if it can get it from multi structure
    	   @param freq is the receiver read frequency
    	   /returns read receiver frequency
    */
-  int setReadReceiverFrequency(int getFromReceiver, int freq=-1);
+  int setReadReceiverFrequency(int freq=-1);
 
   /** Sets the read receiver timer
    	  if data required from receiver randomly readRxrFrequency=0,

@@ -207,9 +207,6 @@ class multiSlsDetector  : public slsDetectorUtils {
     mysteps scanSteps[MAX_SCAN_LEVELS];
     int scanPrecision[MAX_SCAN_LEVELS];
     
-    /* Receiver read frequency */
-    int receiver_read_freq;
-
     /** flag for acquiring */
     bool acquiringFlag;
 
@@ -1353,12 +1350,10 @@ class multiSlsDetector  : public slsDetectorUtils {
   /** Sets the read receiver frequency
    	  if data required from receiver randomly readRxrFrequency=0,
    	   else every nth frame to be sent to gui
-   	   @param getFromReceiver is 1 if it should ask the receiver,
-   	   	   0 if it can get it from multi structure
    	   @param freq is the receiver read frequency
    	   /returns read receiver frequency
    */
-  int setReadReceiverFrequency(int getFromReceiver, int freq=-1);
+  int setReadReceiverFrequency(int freq=-1);
 
   /** Sets the read receiver timer
    	  if data required from receiver randomly readRxrFrequency=0,

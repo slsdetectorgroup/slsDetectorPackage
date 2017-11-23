@@ -213,7 +213,6 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
       thisMultiDetector->scanPrecision[iscan]=0;
     }
 
-    thisMultiDetector->receiver_read_freq = 0;
     thisMultiDetector->acquiringFlag = false;
     thisMultiDetector->externalgui = false;
     thisMultiDetector->receiver_datastream = false;
@@ -6317,15 +6316,12 @@ int multiSlsDetector::calibratePedestal(int frames){
 	return ret;
 }
 
-int multiSlsDetector::setReadReceiverFrequency(int getFromReceiver, int freq){
+int multiSlsDetector::setReadReceiverFrequency(int freq){
 	int ret=-100, ret1;
-
-	if(!getFromReceiver)
-		return thisMultiDetector->receiver_read_freq;
 
 	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet) {
 		if (detectors[idet]) {
-			ret1=detectors[idet]->setReadReceiverFrequency(getFromReceiver,freq);
+			ret1=detectors[idet]->setReadReceiverFrequency(freq);
 			if(detectors[idet]->getErrorMask())
 				setErrorMask(getErrorMask()|(1<<idet));
 			if (ret==-100)
@@ -6334,8 +6330,6 @@ int multiSlsDetector::setReadReceiverFrequency(int getFromReceiver, int freq){
 				ret=-1;
 		}
 	}
-
-	thisMultiDetector->receiver_read_freq = ret;
 
 	return ret;
 }

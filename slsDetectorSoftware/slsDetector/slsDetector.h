@@ -274,7 +274,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     /** tcp port from receiver to gui/different process (only data) */
     int receiver_zmqport;
     /** data streaming (up stream) enable in receiver */
-    bool receiver_datastream;
+    bool receiver_upstream;
     /* Receiver read frequency */
     int receiver_read_freq;
     /**  zmq tcp src ip address in client (only data) **/
@@ -463,7 +463,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
   /**
      sets the network parameters
-     \param i network parameter type can be RECEIVER_IP, RECEIVER_MAC, SERVER_MAC
+     must restart streaming in client/receiver if to do with zmq after calling this function
+     \param i network parameter type
      \param s value to be set
      \returns parameter
 
@@ -1816,6 +1817,16 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
    	   /returns read receiver timer
    */
   int setReceiverReadTimer(int time_in_ms=500);
+
+  /**
+   * Enable data streaming to client
+   * @param enable 0 to disable, 1 to enable, -1 to get the value
+   * @returns data streaming to client enable
+   */
+  int enableDataStreamingToClient(int enable=-1) {
+	  cprintf(RED,"ERROR: Must be called from the multi Detector level\n");
+	  return 0;
+  }
 
   /** Enable or disable streaming data from receiver to client
    * @param enable 0 to disable 1 to enable -1 to only get the value

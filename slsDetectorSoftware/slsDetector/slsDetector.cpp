@@ -797,7 +797,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->flippedData[1] = 0;
     thisDetector->zmqport = 0;
     thisDetector->receiver_zmqport = 0;
-    thisDetector->receiver_datastream = false;
+    thisDetector->receiver_upstream = false;
     thisDetector->receiver_read_freq = 0;
 
     for (int ia=0; ia<MAX_ACTIONS; ++ia) {
@@ -3646,6 +3646,8 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 			break;
 		default:
 			printf("Unknown settings %s for this detector!\n", getDetectorSettings(isettings).c_str());
+			setErrorMask((getErrorMask())|(SETTINGS_NOT_SET));
+			break;
 		}
 		return thisDetector->currentSettings;
 	}
@@ -3771,7 +3773,8 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 
 
 	if (isettings !=  thisDetector->currentSettings) {
-		std::cout<< "Unknown settings for this detector!" << std::endl;
+		printf("Unknown settings %s for this detector!\n", getDetectorSettings(isettings).c_str());
+		setErrorMask((getErrorMask())|(SETTINGS_NOT_SET));
 	}else{
 		if (imod<0) {
 			modmi=0;
@@ -6452,9 +6455,11 @@ string slsDetector::setReceiverStreamingIP(string sourceIP) {
 	// set it anyway, else it is lost
 	memset(thisDetector->receiver_zmqip, 0, MAX_STR_LENGTH);
 	strcpy(thisDetector->receiver_zmqip, arg);
+
+
 	// if zmqip is empty, update it
 	if (! strlen(thisDetector->zmqip))
-		strcpy(thisDetector->zmqip, retval);
+		strcpy(thisDetector->zmqip, arg);
 
 
 	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
@@ -8519,7 +8524,7 @@ int slsDetector::updateReceiverNoWait() {
 
   // receiver streaming enable
   n += dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
-  thisDetector->receiver_datastream = ind;
+  thisDetector->receiver_upstream = ind;
 
   // streaming source ip
   n += 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);
@@ -8809,14 +8814,14 @@ int slsDetector::enableDataStreamingFromReceiver(int enable){
 				cout << "could not set data streaming in receiver to " << enable <<" Returned:" << retval << endl;
 				setErrorMask((getErrorMask())|(DATA_STREAMING));
 			} else {
-				thisDetector->receiver_datastream = retval;
+				thisDetector->receiver_upstream = retval;
 				if(ret==FORCE_UPDATE)
 					updateReceiver();
 			}
 		}
 	}
 
-	return thisDetector->receiver_datastream;
+	return thisDetector->receiver_upstream;
 }
 
 

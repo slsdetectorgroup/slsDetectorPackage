@@ -215,7 +215,7 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
 
     thisMultiDetector->acquiringFlag = false;
     thisMultiDetector->externalgui = false;
-    thisMultiDetector->receiver_datastream = false;
+    thisMultiDetector->receiver_upstream = false;
     thisMultiDetector->alreadyExisting=1;
   }
 
@@ -281,7 +281,7 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
 
   getNMods();
   getMaxMods();
-  client_datastream = false;
+  client_downstream = false;
   for(int i=0;i<MAXDET;++i)
 	  zmqSocket[i] = 0;
   threadpool = 0;
@@ -3728,21 +3728,6 @@ string multiSlsDetector::getNetworkParameter(networkParameter p) {
 */
 string multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 
-	// disable data streaming before changing zmq port (but only if they were on)
-	int prev_streaming = 0;
-	switch (p) {
-	case CLIENT_STREAMING_PORT:
-	case CLIENT_STREAMING_SRC_IP:
-	case RECEIVER_STREAMING_PORT:
-	case RECEIVER_STREAMING_SRC_IP:
-		prev_streaming = (enableDataStreamingFromReceiver() ||  enableDataStreamingToClient());
-		if (enableDataStreamingFromReceiver(-1)) enableDataStreamingFromReceiver(0);
-		if (enableDataStreamingToClient(-1)) enableDataStreamingToClient(0);
-		break;
-	default: break;
-	}
-
-
 	if (s.find('+')==string::npos) {
 
 		if(!threadpool){
@@ -3793,20 +3778,6 @@ string multiSlsDetector::setNetworkParameter(networkParameter p, string s){
 				break;
 		}
 
-	}
-
-	//enable data streaming if it was on
-	if (prev_streaming) {
-		switch (p) {
-		case RECEIVER_STREAMING_PORT:
-		case CLIENT_STREAMING_PORT:
-		case RECEIVER_STREAMING_SRC_IP:
-		case CLIENT_STREAMING_SRC_IP:
-			enableDataStreamingFromReceiver(1);
-			enableDataStreamingToClient(1);
-			break;
-		default: break;
-		}
 	}
 
 	return getNetworkParameter(p);
@@ -5760,7 +5731,7 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 					zmqSocket[i] = 0;
 				}
 			}
-			client_datastream = false;
+			client_downstream = false;
 		 cout << "Destroyed Receiving Data Socket(s)" << endl;
 		 return OK;
 	}
@@ -5771,7 +5742,7 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 		uint32_t portnum = 0;
 		sscanf(detectors[i/numSocketsPerDetector]->getClientStreamingPort().c_str(),"%d",&portnum);
 		portnum += (i%numSocketsPerDetector);
-
+		cout<<"ip to be set to :"<<detectors[i/numSocketsPerDetector]->getClientStreamingIP().c_str()<<endl;
 		zmqSocket[i] = new ZmqSocket(detectors[i/numSocketsPerDetector]->getClientStreamingIP().c_str(), portnum);
 		if (zmqSocket[i]->IsError()) {
 			cprintf(RED, "Error: Could not create Zmq socket on port %d\n", portnum);
@@ -5781,7 +5752,7 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 		printf("Zmq Client[%d] at %s\n",i, zmqSocket[i]->GetZmqServerAddress());
 	}
 
-	client_datastream = true;
+	client_downstream = true;
 	cout << "Receiving Data Socket(s) created" << endl;
 	return OK;
 }
@@ -5898,6 +5869,8 @@ void multiSlsDetector::readFrameFromReceiver(){
 		multiframegain = new char[multidatabytes]();
 
 	bool runningList[numSockets];
+	bool connectList[numSockets];
+
 	int numRunning = 0;
 
 	//wait for real time acquisition to start
@@ -5906,8 +5879,17 @@ void multiSlsDetector::readFrameFromReceiver(){
 	if(checkJoinThread())
 		running = false;
 
-	for(int i = 0; i < numSockets; ++i)
-		runningList[i] = true;
+	for(int i = 0; i < numSockets; ++i) {
+		if(!zmqSocket[i]->Connect()) {
+			connectList[i] = true;
+			runningList[i] = true;
+		} else {
+			connectList[i] = false;
+			cprintf(RED,"Error: Could not connect to socket  %s\n",zmqSocket[i]->GetZmqServerAddress());
+			runningList[i] = false;
+		}
+	}
+
 	numRunning = numSockets;
 
 
@@ -5995,6 +5977,11 @@ void multiSlsDetector::readFrameFromReceiver(){
 		//setting it back for each scan/measurement
 		running = true;
 	}
+
+	// Disconnect resources
+	for (int i = 0; i < numSockets; ++i)
+		if (connectList[i])
+			zmqSocket[i]->Disconnect();
 
 	//free resources
 	delete [] image;
@@ -6371,7 +6358,7 @@ int multiSlsDetector::enableDataStreamingToClient(int enable) {
 			}
 		}
 	}
-	return client_datastream;
+	return client_downstream;
 }
 
 int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
@@ -6407,10 +6394,10 @@ int multiSlsDetector::enableDataStreamingFromReceiver(int enable){
 				}
 			}
 		}
-		thisMultiDetector->receiver_datastream = ret;
+		thisMultiDetector->receiver_upstream = ret;
 	}
 
-	return thisMultiDetector->receiver_datastream;
+	return thisMultiDetector->receiver_upstream;
 }
 
 int multiSlsDetector::enableReceiverCompression(int i){

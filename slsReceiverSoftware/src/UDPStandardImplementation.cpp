@@ -600,27 +600,6 @@ void UDPStandardImplementation::closeFiles() {
 }
 
 
-void UDPStandardImplementation::setStreamingPort(const uint32_t i) {
-	streamingPort = i;
-
-	FILE_LOG(logINFO) << "Streaming Port: " << streamingPort;
-	if (dataStreamEnable) {
-		setDataStreamEnable(false);
-		setDataStreamEnable(true);
-	}
-}
-
-void UDPStandardImplementation::setStreamingSourceIP(const char c[]){
-	strcpy(streamingSrcIP, c);
-	FILE_LOG(logINFO) << "Streaming Source IP: " << streamingSrcIP;
-	if (dataStreamEnable) {
-		setDataStreamEnable(false);
-		setDataStreamEnable(true);
-	}
-}
-
-
-
 void UDPStandardImplementation::SetLocalNetworkParameters() {
 	//to increase socket receiver buffer size and max length of input queue by changing kernel settings
 	if (myDetectorType == EIGER)

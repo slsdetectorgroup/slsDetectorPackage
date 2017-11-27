@@ -3556,6 +3556,8 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 			break;
 		default:
 			printf("Unknown settings %s for this detector!\n", getDetectorSettings(isettings).c_str());
+			setErrorMask((getErrorMask())|(SETTINGS_NOT_SET));
+			break;
 		}
 		return thisDetector->currentSettings;
 	}
@@ -3681,7 +3683,8 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 
 
 	if (isettings !=  thisDetector->currentSettings) {
-		std::cout<< "Unknown settings for this detector!" << std::endl;
+		printf("Unknown settings %s for this detector!\n", getDetectorSettings(isettings).c_str());
+		setErrorMask((getErrorMask())|(SETTINGS_NOT_SET));
 	}else{
 		if (imod<0) {
 			modmi=0;

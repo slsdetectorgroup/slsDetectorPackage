@@ -361,7 +361,7 @@ void qDrawPlot::SetupWidgetWindow(){
 
 	// callbacks
 	// Setting the callback function to get data from detector class
-	myDet->registerDataCallback(&(GetDataCallBack),this);
+	myDet->registerDataCallback(&(GetDataCallBack),this); // also enables data streaming in client
 	//Setting the callback function to alert when acquisition finished from detector class
 	myDet->registerAcquisitionFinishedCallback(&(GetAcquisitionFinishedCallBack),this);
 	//Setting the callback function to alert when each measurement finished from detector class
@@ -373,7 +373,6 @@ void qDrawPlot::SetupWidgetWindow(){
 	// if receiver, enable data streaming from receiver and client
 	if(myDet->setReceiverOnline() == slsDetectorDefs::ONLINE_FLAG) {
 		myDet->enableDataStreamingFromReceiver(1);
-		myDet->enableDataStreamingToClient(1);
 	}
 
 	qDefs::checkErrorMessage(myDet,"qDrawPlot::SetupWidgetWindow");
@@ -797,13 +796,6 @@ void* qDrawPlot::DataStartAcquireThread(void *this_pointer){
 		if (((qDrawPlot*)this_pointer)->myDet->enableDataStreamingFromReceiver() != 1) {
 			// switch on receiver
 			if (((qDrawPlot*)this_pointer)->myDet->enableDataStreamingFromReceiver(1) != 1) {
-				qDefs::checkErrorMessage(((qDrawPlot*)this_pointer)->myDet,"qDrawPlot::DataStartAcquireThread");
-				return this_pointer;
-			}
-			// switch off client
-			((qDrawPlot*)this_pointer)->myDet->enableDataStreamingToClient(0);
-			// switch on client
-			if (((qDrawPlot*)this_pointer)->myDet->enableDataStreamingToClient(1) != 1) {
 				qDefs::checkErrorMessage(((qDrawPlot*)this_pointer)->myDet,"qDrawPlot::DataStartAcquireThread");
 				return this_pointer;
 			}

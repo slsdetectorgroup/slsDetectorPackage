@@ -200,8 +200,9 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   virtual string getNetworkParameter(networkParameter i)=0;
 
   /**
-     sets the network parameters  (implemented for gotthard)
-     \param i network parameter type can be RECEIVER_IP, RECEIVER_MAC, SERVER_MAC
+     sets the network parameters
+     must restart streaming in client/receiver if to do with zmq after calling this function
+     \param i network parameter type
      \param s value to be set
      \returns parameter
 
@@ -772,6 +773,13 @@ virtual ROI* getROI(int &n)=0;
  	   /returns read receiver frequency
  */
 virtual int setReadReceiverFrequency(int freq=-1)=0;
+
+/**
+ * Enable data streaming to client
+ * @param enable 0 to disable, 1 to enable, -1 to get the value
+ * @returns data streaming to client enable
+ */
+virtual int enableDataStreamingToClient(int enable=-1)=0;
 
 /** Enable or disable streaming data from receiver to client
  * @param enable 0 to disable 1 to enable -1 to only get the value

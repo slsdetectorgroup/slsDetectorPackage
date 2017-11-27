@@ -1887,14 +1887,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 	/*! \page network
-   - <b>zmqport [port]</b> sets/gets the 0MQ (TCP) port of the client to where final data is streamed to (eg. for GUI). Use single-detector command to set individually or multi-detector command to calculate based on \c port for the rest. \c Returns \c (int)
+   - <b>zmqport [port]</b> sets/gets the 0MQ (TCP) port of the client to where final data is streamed to (eg. for GUI). Use single-detector command to set individually or multi-detector command to calculate based on \c port for the rest. Must restart zmq client streaming in gui/external gui \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="zmqport"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
 	++i;
 
 	/*! \page network
-   - <b>rx_zmqport [port]</b> sets/gets the 0MQ (TCP) port of the receiver from where data is streamed from (eg. to GUI or another process for further processing). Use single-detector command to set individually or multi-detector command to calculate based on \c port for the rest. \c Returns \c (int)
+   - <b>rx_zmqport [port]</b> sets/gets the 0MQ (TCP) port of the receiver from where data is streamed from (eg. to GUI or another process for further processing). Use single-detector command to set individually or multi-detector command to calculate based on \c port for the rest.  put restarts streaming in receiver with new port. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="rx_zmqport"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
@@ -2315,15 +2315,6 @@ string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action) {
 
 	myDet->setOnline(ONLINE_FLAG);
 	int r_online = myDet->setReceiverOnline(ONLINE_FLAG);
-
-	// switch off data streaming to prevent extra images in zmq gui buffer
-	if (r_online == ONLINE_FLAG) {
-		if (myDet->enableDataStreamingFromReceiver() != 0) {
-			if (myDet->enableDataStreamingFromReceiver(0) != 0) {
-				std::cout << "Error: Unable to switch off data streaming in receiver. If GUI on, extra image(s) in zmq GUI buffer" << std::endl;
-			}
-		}
-	}
 
 	if(myDet->acquire() == FAIL)
 		return string("acquire unsuccessful");
@@ -3892,6 +3883,7 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
 
 	networkParameter t;
 	int i;
+	int prev_streaming = 0;
 	if (action==HELP_ACTION)
 		return helpNetworkParameter(narg,args,action);
 
@@ -3955,11 +3947,19 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
 		if (action==PUT_ACTION){
 			if (!(sscanf(args[1],"%d",&i)))
 				return ("cannot parse argument") + string(args[1]);
+			// if streaming, switch it off
+			prev_streaming = myDet->enableDataStreamingFromReceiver();
+			if (prev_streaming) myDet->enableDataStreamingFromReceiver(0);
 		}
 	}else return ("unknown network parameter")+cmd;
 
-	if (action==PUT_ACTION)
+	if (action==PUT_ACTION) {
 		myDet->setNetworkParameter(t, args[1]);
+		// switch it back on, if it had been switched on
+		if (prev_streaming && t == RECEIVER_STREAMING_PORT)
+			myDet->enableDataStreamingFromReceiver(1);
+
+	}
 
 	return myDet->getNetworkParameter(t);
 }
@@ -3981,8 +3981,12 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
 		os << "txndelay_right port \n sets detector transmission delay of the right port"<< std::endl;
 		os << "txndelay_frame port \n sets detector transmission delay of the entire frame"<< std::endl;
 		os << "flowcontrol_10g port \n sets flow control for 10g for eiger"<< std::endl;
-		os << "zmqport port \n sets zmq port (data to client from receiver/different process); setting via multidetector command calculates port for individual detectors"<< std::endl;
-		os << "rx_zmqport port \n sets zmq port (data from receiver to client/different process); setting via multidetector command calculates port for individual detectors"<< std::endl;
+		os << "zmqport port \n sets zmq port (data to client from receiver/different process); \n"
+				"setting via multidetector command calculates port for individual detectors\n"
+				"must restart streaming in client with new port from gui/external gui"<< std::endl;
+		os << "rx_zmqport port \n sets zmq port (data from receiver to client/different process); \n"
+				"setting via multidetector command calculates port for individual detectors\n"
+				"restarts streaming in receiver with new port"<< std::endl;
 	}
 	if (action==GET_ACTION || action==HELP_ACTION) {
 		os << "detectormac \n gets detector mac "<< std::endl;
@@ -5891,19 +5895,11 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 
 
 	myDet->setOnline(ONLINE_FLAG);
-	int r_online = myDet->setReceiverOnline(ONLINE_FLAG);
+	myDet->setReceiverOnline(ONLINE_FLAG);
 
 	if(cmd=="receiver"){
 		if (action==PUT_ACTION) {
 			if(!strcasecmp(args[1],"start")) {
-				// switch off data streaming to prevent extra images in zmq gui buffer
-				if (r_online == ONLINE_FLAG) {
-					if (myDet->enableDataStreamingFromReceiver() != 0) {
-						if (myDet->enableDataStreamingFromReceiver(0) != 0) {
-							std::cout << "Error: Unable to switch off data streaming in receiver. If GUI on, extra image(s) in zmq GUI buffer" << std::endl;
-						}
-					}
-				}
 				myDet->startReceiver();
 			}
 			else if(!strcasecmp(args[1],"stop"))

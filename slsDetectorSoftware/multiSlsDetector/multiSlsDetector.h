@@ -205,7 +205,7 @@ class multiSlsDetector  : public slsDetectorUtils {
     int receiverOnlineFlag;
 
     /** data streaming (up stream) enable in receiver */
-    bool receiver_datastream;
+    bool receiver_upstream;
 
   } sharedMultiSlsDetector;
 
@@ -998,6 +998,15 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
   string getNetworkParameter(networkParameter);
+
+  /**
+     sets the network parameters
+     must restart streaming in client/receiver if to do with zmq after calling this function
+     \param i network parameter type
+     \param s value to be set
+     \returns parameter
+
+  */
   string setNetworkParameter(networkParameter, std::string);
   int setPort(portType, int);
   int lockServer(int);
@@ -1490,7 +1499,7 @@ private:
 
 
 	/** data streaming (down stream) enabled in client (zmq sckets created) */
-	bool client_datastream;
+	bool client_downstream;
 
 	/** ZMQ Socket - Receiver to Client */
 	ZmqSocket* zmqSocket[MAXDET];

@@ -509,11 +509,9 @@ void* postProcessing::processData(int delflag) {
  		 pthread_mutex_unlock(&mg);
  		//cprintf(RED,"In post processing threads\n");
 
-
- 		if(dataReady){
+ 		 if(dataReady) {
  			readFrameFromReceiver();
- 		}
-
+ 		 }
  		//only update progress
  		else{
  			int caught = -1;

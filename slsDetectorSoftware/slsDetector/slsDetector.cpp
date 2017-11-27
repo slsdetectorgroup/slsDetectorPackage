@@ -779,7 +779,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->flippedData[1] = 0;
     thisDetector->zmqport = 0;
     thisDetector->receiver_zmqport = 0;
-    thisDetector->receiver_datastream = false;
+    thisDetector->receiver_upstream = false;
     thisDetector->receiver_read_freq = 0;
 
     for (int ia=0; ia<MAX_ACTIONS; ++ia) {
@@ -8283,7 +8283,7 @@ int slsDetector::updateReceiverNoWait() {
 
   // receiver streaming enable
   n += dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
-  thisDetector->receiver_datastream = ind;
+  thisDetector->receiver_upstream = ind;
 
   if (!n) printf("n: %d\n", n);
 
@@ -8599,14 +8599,14 @@ int slsDetector::enableDataStreamingFromReceiver(int enable){
 				cout << "could not set data streaming in receiver to " << enable <<" Returned:" << retval << endl;
 				setErrorMask((getErrorMask())|(DATA_STREAMING));
 			} else {
-				thisDetector->receiver_datastream = retval;
+				thisDetector->receiver_upstream = retval;
 				if(ret==FORCE_UPDATE)
 					updateReceiver();
 			}
 		}
 	}
 
-	return thisDetector->receiver_datastream;
+	return thisDetector->receiver_upstream;
 }
 
 

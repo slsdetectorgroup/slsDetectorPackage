@@ -361,19 +361,13 @@ void qDrawPlot::SetupWidgetWindow(){
 
 	// callbacks
 	// Setting the callback function to get data from detector class
-	myDet->registerDataCallback(&(GetDataCallBack),this); // also enables data streaming in client
+	myDet->registerDataCallback(&(GetDataCallBack),this); // also enables data streaming in client and receiver (if receiver exists)
 	//Setting the callback function to alert when acquisition finished from detector class
 	myDet->registerAcquisitionFinishedCallback(&(GetAcquisitionFinishedCallBack),this);
 	//Setting the callback function to alert when each measurement finished from detector class
 	myDet->registerMeasurementFinishedCallback(&(GetMeasurementFinishedCallBack),this);
 	//Setting the callback function to get progress from detector class(using receivers)
 	myDet->registerProgressCallback(&(GetProgressCallBack),this);
-
-
-	// if receiver, enable data streaming from receiver and client
-	if(myDet->setReceiverOnline() == slsDetectorDefs::ONLINE_FLAG) {
-		myDet->enableDataStreamingFromReceiver(1);
-	}
 
 	qDefs::checkErrorMessage(myDet,"qDrawPlot::SetupWidgetWindow");
 }

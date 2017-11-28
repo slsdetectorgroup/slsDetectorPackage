@@ -109,7 +109,7 @@ int HDF5File::CreateFile(uint64_t fnum) {
 	}
 	pthread_mutex_unlock(&Mutex);
 	if (dataspace == NULL)
-		bprintf(RED,"Got nothing!\n");
+		cprintf(RED,"Got nothing!\n");
 
 	if(!silentMode)
 		FILE_LOG(logINFO) << *udpPortNumber << ": HDF5 File created: " << currentFileName;
@@ -158,7 +158,7 @@ int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t 
 		}
 	}
 	pthread_mutex_unlock(&Mutex);
-	bprintf(RED,"%d Error: Write to file failed\n", index);
+	cprintf(RED,"%d Error: Write to file failed\n", index);
 	return FAIL;
 }
 

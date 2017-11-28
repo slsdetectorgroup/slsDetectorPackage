@@ -167,7 +167,7 @@ void UDPStandardImplementation::setFileWriteEnable(const bool b){
 
 int UDPStandardImplementation::setShortFrameEnable(const int i) {
 	if (myDetectorType != GOTTHARD) {
-		bprintf(RED, "Error: Can not set short frame for this detector\n");
+		cprintf(RED, "Error: Can not set short frame for this detector\n");
 		return FAIL;
 	}
 
@@ -227,9 +227,9 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {
 			}
 			if (DataStreamer::GetErrorMask() || error) {
 				if (DataStreamer::GetErrorMask())
-					bprintf(RED,"Error: Could not create data callback threads\n");
+					cprintf(RED,"Error: Could not create data callback threads\n");
 				else
-					bprintf(RED,"Error: Could not create zmq sockets\n");
+					cprintf(RED,"Error: Could not create zmq sockets\n");
 				for (vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
 					delete(*it);
 				dataStreamer.clear();
@@ -422,7 +422,7 @@ void UDPStandardImplementation::resetAcquisitionCount() {
 
 
 int UDPStandardImplementation::startReceiver(char *c) {
-	bprintf(GRAY,"\n");
+	cprintf(DARKGRAY,"\n");
 	FILE_LOG(logINFO) << "Starting Receiver";
 
 	ResetParametersforNewMeasurement();
@@ -510,19 +510,19 @@ void UDPStandardImplementation::stopReceiver(){
 
 			uint64_t missingpackets = numberOfFrames*generalData->packetsPerFrame-listener[i]->GetPacketsCaught();
 			if (missingpackets) {
-				bprintf(RED, "\n[Port %d]\n",udpPortNum[i]);
-				bprintf(RED, "Missing Packets\t\t: %lld\n",(long long int)missingpackets);
-				bprintf(RED, "Complete Frames\t\t: %lld\n",(long long int)dataProcessor[i]->GetNumFramesCaught());
-				bprintf(RED, "Last Frame Caught\t: %lld\n",(long long int)listener[i]->GetLastFrameIndexCaught());
+				cprintf(RED, "\n[Port %d]\n",udpPortNum[i]);
+				cprintf(RED, "Missing Packets\t\t: %lld\n",(long long int)missingpackets);
+				cprintf(RED, "Complete Frames\t\t: %lld\n",(long long int)dataProcessor[i]->GetNumFramesCaught());
+				cprintf(RED, "Last Frame Caught\t: %lld\n",(long long int)listener[i]->GetLastFrameIndexCaught());
 			}else{
-				bprintf(GREEN, "\n[Port %d]\n",udpPortNum[i]);
-				bprintf(GREEN, "Missing Packets\t\t: %lld\n",(long long int)missingpackets);
-				bprintf(GREEN, "Complete Frames\t\t: %lld\n",(long long int)dataProcessor[i]->GetNumFramesCaught());
-				bprintf(GREEN, "Last Frame Caught\t: %lld\n",(long long int)listener[i]->GetLastFrameIndexCaught());
+				cprintf(GREEN, "\n[Port %d]\n",udpPortNum[i]);
+				cprintf(GREEN, "Missing Packets\t\t: %lld\n",(long long int)missingpackets);
+				cprintf(GREEN, "Complete Frames\t\t: %lld\n",(long long int)dataProcessor[i]->GetNumFramesCaught());
+				cprintf(GREEN, "Last Frame Caught\t: %lld\n",(long long int)listener[i]->GetLastFrameIndexCaught());
 			}
 		}
 		if(!activated)
-			bprintf(RED,"Note: Deactivated Receiver\n");
+			cprintf(RED,"Note: Deactivated Receiver\n");
 		//callback
 		if (acquisitionFinishedCallBack)
 			acquisitionFinishedCallBack((tot/numThreads), pAcquisitionFinished);
@@ -554,7 +554,7 @@ void UDPStandardImplementation::startReadout(){
 				//wait as long as there is change from prev totalP,
 				while(prev != totalP){
 #ifdef VERY_VERBOSE
-					bprintf(MAGENTA,"waiting for all packets prevP:%d totalP:%d\n",
+					cprintf(MAGENTA,"waiting for all packets prevP:%d totalP:%d\n",
 							prev,totalP);
 
 #endif
@@ -567,7 +567,7 @@ void UDPStandardImplementation::startReadout(){
 					for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
 						totalP += (*it)->GetPacketsCaught();
 #ifdef VERY_VERBOSE
-					bprintf(MAGENTA,"\tupdated:  totalP:%d\n",totalP);
+					cprintf(MAGENTA,"\tupdated:  totalP:%d\n",totalP);
 #endif
 				}
 			}
@@ -657,7 +657,7 @@ int UDPStandardImplementation::SetupFifoStructure() {
 				(generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize),
 				fifoDepth, success));
 		if (!success) {
-			bprintf(RED,"Error: Could not allocate memory for fifo structure of index %d\n", i);
+			cprintf(RED,"Error: Could not allocate memory for fifo structure of index %d\n", i);
 			for (vector<Fifo*>::const_iterator it = fifo.begin(); it != fifo.end(); ++it)
 				delete(*it);
 			fifo.clear();

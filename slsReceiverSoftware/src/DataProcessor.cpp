@@ -196,7 +196,7 @@ void DataProcessor::RecordFirstIndices(uint64_t fnum) {
 	}
 
 #ifdef VERBOSE
-	bprintf(BLUE,"%d First Acquisition Index:%lld\tFirst Measurement Index:%lld\n",
+	cprintf(BLUE,"%d First Acquisition Index:%lld\tFirst Measurement Index:%lld\n",
 			index, (long long int)firstAcquisitionIndex, (long long int)firstMeasurementIndex);
 #endif
 }
@@ -303,13 +303,13 @@ void DataProcessor::ThreadExecution() {
 	char* buffer=0;
 	fifo->PopAddress(buffer);
 #ifdef FIFODEBUG
-	if (!index) bprintf(BLUE,"DataProcessor %d, pop 0x%p buffer:%s\n", index,(void*)(buffer),buffer);
+	if (!index) cprintf(BLUE,"DataProcessor %d, pop 0x%p buffer:%s\n", index,(void*)(buffer),buffer);
 #endif
 
 	//check dummy
 	uint32_t numBytes = (uint32_t)(*((uint32_t*)buffer));
 #ifdef VERBOSE
-	if (!index) bprintf(BLUE,"DataProcessor %d, Numbytes:%u\n", index,numBytes);
+	if (!index) cprintf(BLUE,"DataProcessor %d, Numbytes:%u\n", index,numBytes);
 #endif
 	if (numBytes == DUMMY_PACKET_VALUE) {
 		StopProcessing(buffer);
@@ -329,7 +329,7 @@ void DataProcessor::ThreadExecution() {
 void DataProcessor::StopProcessing(char* buf) {
 #ifdef VERBOSE
 	if (!index)
-		bprintf(RED,"DataProcessing %d: Dummy\n", index);
+		cprintf(RED,"DataProcessing %d: Dummy\n", index);
 #endif
 	//stream or free
 	if (*dataStreamEnable)
@@ -360,12 +360,12 @@ void DataProcessor::ProcessAnImage(char* buf) {
 
 #ifdef VERBOSE
 	if (!index)
-		bprintf(BLUE,"DataProcessing %d: fnum:%lu\n", index, fnum);
+		cprintf(BLUE,"DataProcessing %d: fnum:%lu\n", index, fnum);
 #endif
 
 	if (!measurementStartedFlag) {
 #ifdef VERBOSE
-		if (!index) bprintf(BLUE,"DataProcessing %d: fnum:%lu\n", index, fnum);
+		if (!index) cprintf(BLUE,"DataProcessing %d: fnum:%lu\n", index, fnum);
 #endif
 		RecordFirstIndices(fnum);
 
@@ -441,7 +441,7 @@ bool DataProcessor::CheckTimer() {
 	struct timespec end;
 	clock_gettime(CLOCK_REALTIME, &end);
 #ifdef VERBOSE
-	bprintf(BLUE,"%d Timer elapsed time:%f seconds\n", index, ( end.tv_sec - timerBegin.tv_sec ) + ( end.tv_nsec - timerBegin.tv_nsec ) / 1000000000.0);
+	cprintf(BLUE,"%d Timer elapsed time:%f seconds\n", index, ( end.tv_sec - timerBegin.tv_sec ) + ( end.tv_nsec - timerBegin.tv_nsec ) / 1000000000.0);
 #endif
 	//still less than streaming timer, keep waiting
 	if((( end.tv_sec - timerBegin.tv_sec )	+ ( end.tv_nsec - timerBegin.tv_nsec ) / 1000000000.0) < ((double)*streamingTimerInMs/1000.00))

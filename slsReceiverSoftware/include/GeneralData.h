@@ -157,7 +157,7 @@ public:
 	 * @param tgEnable true if 10GbE is enabled, else false
 	 */
 	virtual void SetDynamicRange(int dr, bool tgEnable) {
-		bprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
 	};
 
 	/**
@@ -166,7 +166,7 @@ public:
 	 * @param dr dynamic range
 	 */
 	virtual void SetTenGigaEnable(bool tgEnable, int dr) {
-		bprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
 	};
 
 	/**
@@ -175,7 +175,7 @@ public:
 	 * @param nroich number of channels in roi
 	 */
 	virtual void setNumberofSamples(const uint64_t ns, uint32_t nroich) {
-		bprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
 	};
 
 	/**
@@ -183,7 +183,7 @@ public:
 	 * @param enable true if gap pixels enable, else false
 	 */
 	virtual void SetGapPixelsEnable(bool b, int dr) {
-		bprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
 	};
 
 

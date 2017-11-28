@@ -60,7 +60,7 @@ void GetData(uint64_t frameNumber, uint32_t expLength, uint32_t packetNumber, ui
 int main(int argc, char *argv[]) {
 
 	keeprunning = true;
-	bprintf(BLUE,"Created [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
+	cprintf(BLUE,"Created [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
 
 	// Catch signal SIGINT to close files and call destructors properly
 	struct sigaction sa;
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
 	sa.sa_handler=sigInterruptHandler;		// handler function
 	sigemptyset(&sa.sa_mask);				// dont block additional signals during invocation of handler
 	if (sigaction(SIGINT, &sa, NULL) == -1) {
-		bprintf(RED, "Could not set handler function for SIGINT\n");
+		cprintf(RED, "Could not set handler function for SIGINT\n");
 	}
 
 
@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
 	asa.sa_handler=SIG_IGN;					// handler function
 	sigemptyset(&asa.sa_mask);				// dont block additional signals during invocation of handler
 	if (sigaction(SIGPIPE, &asa, NULL) == -1) {
-		bprintf(RED, "Could not set handler function for SIGPIPE\n");
+		cprintf(RED, "Could not set handler function for SIGPIPE\n");
 	}
 
 
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
 	slsReceiverUsers *receiver = new slsReceiverUsers(argc, argv, ret);
 	if(ret==slsReceiverDefs::FAIL){
 		delete receiver;
-		bprintf(BLUE,"Exiting [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
+		cprintf(BLUE,"Exiting [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
 		exit(EXIT_FAILURE);
 	}
 
@@ -136,17 +136,17 @@ int main(int argc, char *argv[]) {
 	//start tcp server thread
 	if (receiver->start() == slsReceiverDefs::FAIL){
 		delete receiver;
-		bprintf(BLUE,"Exiting [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
+		cprintf(BLUE,"Exiting [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
 		exit(EXIT_FAILURE);
 	}
 
 	FILE_LOG(logINFO) << "Ready ... ";
-	bprintf(GRAY, "\n[ Press \'Ctrl+c\' to exit ]\n");
+	cprintf(DARKGRAY, "\n[ Press \'Ctrl+c\' to exit ]\n");
 	while(keeprunning)
 		pause();
 
 	delete receiver;
-	bprintf(BLUE,"Exiting [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
+	cprintf(BLUE,"Exiting [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
 	FILE_LOG(logINFO) << "Goodbye!";
 	return 0;
 }

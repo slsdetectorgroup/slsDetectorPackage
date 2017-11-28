@@ -238,7 +238,12 @@ s
   void ResetPositionIndex(){pthread_mutex_lock(&mp); resetPositionIndex();  pthread_mutex_unlock(&mp);};
 
 
-  void registerDataCallback(int( *userCallback)(detectorData*, int, int, void*),  void *pArg) {dataReady = userCallback; pCallbackArg = pArg;enableDataStreamingToClient(1);};
+  void registerDataCallback(int( *userCallback)(detectorData*, int, int, void*),  void *pArg) {	\
+	  dataReady = userCallback;																	\
+	  pCallbackArg = pArg;																		\
+	  if (setReceiverOnline() == slsDetectorDefs::ONLINE_FLAG) {								\
+		  enableDataStreamingToClient(1);														\
+		  enableDataStreamingFromReceiver(1);}};												\
   
 
   void registerRawDataCallback(int( *userCallback)(double*, int, void*),  void *pArg) {rawDataReady = userCallback; pRawDataArg = pArg;};

@@ -583,6 +583,12 @@ virtual void readFrameFromReceiver()=0;
  */
 virtual int enableDataStreamingToClient(int enable=-1)=0;
 
+/** Enable or disable streaming data from receiver to client
+ * @param enable 0 to disable 1 to enable -1 to only get the value
+ * @returns data streaming from receiver enable
+*/
+virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
+
   /** Sets the read receiver frequency
    	  if data required from receiver randomly readRxrFrequency=0,
    	   else every nth frame to be sent to gui

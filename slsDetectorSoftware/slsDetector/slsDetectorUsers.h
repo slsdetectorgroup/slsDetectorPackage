@@ -402,7 +402,7 @@ class slsDetectorUsers
    int setReceiverMode(int n=-1);
 
   /**
-     @short register calbback for accessing detector final data
+     @short register calbback for accessing detector final data, also enables data streaming in client and receiver (if receiver exists)
      \param userCallback function for plotting/analyzing the data. Its arguments are  the data structure d and the frame number f, s is for subframe number for eiger for 32 bit mode
   */
 
@@ -459,7 +459,7 @@ class slsDetectorUsers
     */
    int enableDataStreamingToClient(int i=-1);
 
-   /**
+   /** (for expert users)
     * Set/Get receiver streaming out ZMQ port
     * For multi modules, it calculates (increments), sets the ports and restarts the sockets
     * @param i sets, -1 gets
@@ -467,7 +467,7 @@ class slsDetectorUsers
     */
    int setReceiverDataStreamingOutPort(int i=-1);
 
-   /**
+   /** (for expert users)
     * Set/Get client streaming in ZMQ port
     * For multi modules, it calculates (increments), sets the ports and restarts the sockets
     * @param i sets, -1 gets

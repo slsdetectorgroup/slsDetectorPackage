@@ -19,8 +19,9 @@ class detectorData {
       \param cval pointer to data in char* format (valid only for non MYTHEN detectors)
       \param dbytes number of bytes of image pointed to by cval pointer (valid only for non MYTHEN detectors)
       \param dr dynamic range or bits per pixel (valid only for non MYTHEN detectors)
+      \param file_ind file index
   */
-  detectorData(double *val=NULL, double *err=NULL, double *ang=NULL,  double f_ind=-1, const char *fname="", int np=-1, int ny=1, char *cval=NULL, int dbytes=0, int dr=0) : values(val), errors(err), angles(ang),  progressIndex(f_ind), npoints(np), npy(ny), cvalues(cval), databytes(dbytes), dynamicRange(dr), dgainvalues(NULL) {
+  detectorData(double *val=NULL, double *err=NULL, double *ang=NULL,  double f_ind=-1, const char *fname="", int np=-1, int ny=1, char *cval=NULL, int dbytes=0, int dr=0, long long int file_ind=-1) : values(val), errors(err), angles(ang),  progressIndex(f_ind), npoints(np), npy(ny), cvalues(cval), databytes(dbytes), dynamicRange(dr), dgainvalues(NULL), fileIndex(file_ind) {
 	 strcpy(fileName,fname);
   };
 
@@ -42,6 +43,7 @@ class detectorData {
     int databytes; /**< @short number of bytes of data. Used with cvalues */
     int dynamicRange; /**< @short dynamic range */
     double* dgainvalues; /**< @short pointer to gain data as double array */
+    long long int fileIndex; /**< @short file index */
 };
 
 

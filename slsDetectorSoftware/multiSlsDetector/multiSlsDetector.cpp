@@ -5766,10 +5766,11 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 
 
 int multiSlsDetector::getData(const int isocket, char* image, const int size,
-		uint64_t &acqIndex, uint64_t &frameIndex, uint32_t &subframeIndex, string &filename) {
+		uint64_t &acqIndex, uint64_t &frameIndex, uint32_t &subframeIndex,
+		string &filename, uint64_t &fileIndex) {
 
 	//fail is on parse error or end of acquisition
-	if (!zmqSocket[isocket]->ReceiveHeader(isocket, acqIndex, frameIndex, subframeIndex, filename))
+	if (!zmqSocket[isocket]->ReceiveHeader(isocket, acqIndex, frameIndex, subframeIndex, filename, fileIndex))
 		return FAIL;
 
 	//receiving incorrect size is replaced by 0xFF
@@ -5808,6 +5809,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 	uint64_t currentAcquisitionIndex = -1;
 	uint64_t currentFrameIndex = -1;
 	uint32_t currentSubFrameIndex = -1;
+	uint64_t currentFileIndex = -1;
 	string currentFileName = "";
 
 	//getting sls values
@@ -5903,7 +5905,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 			//if running
 			if (runningList[isocket]) {
 				//get individual images
-				if(FAIL == getData(isocket, image, expectedslssize, currentAcquisitionIndex,currentFrameIndex,currentSubFrameIndex,currentFileName)){
+				if(FAIL == getData(isocket, image, expectedslssize, currentAcquisitionIndex,currentFrameIndex,currentSubFrameIndex,currentFileName, currentFileIndex)){
 					runningList[isocket] = false;
 					--numRunning;
 					continue;
@@ -5961,10 +5963,10 @@ void multiSlsDetector::readFrameFromReceiver(){
 				int nx = thisMultiDetector->numberOfChannelInclGapPixels[X];
 				int ny = thisMultiDetector->numberOfChannelInclGapPixels[Y];
 				int n = processImageWithGapPixels(multiframe, multigappixels);
-				thisData = new detectorData(NULL,NULL,NULL,getCurrentProgress(),currentFileName.c_str(), nx, ny,multigappixels, n, dr);
+				thisData = new detectorData(NULL,NULL,NULL,getCurrentProgress(),currentFileName.c_str(), nx, ny,multigappixels, n, dr, currentFileIndex);
 			}
 			else {
-				thisData = new detectorData(NULL,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),maxX,maxY,multiframe, multidatabytes, dr);
+				thisData = new detectorData(NULL,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),maxX,maxY,multiframe, multidatabytes, dr, currentFileIndex);
 			}
 			dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);
 			delete thisData;

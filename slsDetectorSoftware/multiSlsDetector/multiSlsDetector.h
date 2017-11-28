@@ -1518,8 +1518,11 @@ private:
 	 * @param frameIndex address of frame index
 	 * @param subframeIndex address of subframe index
 	 * @param filename address of file name
+	 * @param fileindex address of file index
 	 */
-	int getData(const int isocket, char* image, const int size, uint64_t &acqIndex, uint64_t &frameIndex, uint32_t &subframeIndex, string &filename);
+	int getData(const int isocket, char* image, const int size,
+			uint64_t &acqIndex, uint64_t &frameIndex, uint32_t &subframeIndex,
+			string &filename, uint64_t &fileIndex);
 
 
 	/**

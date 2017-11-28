@@ -53,7 +53,7 @@ void sigInterruptHandler(int p){
  * prints usage of this example program
  */
 void printHelp() {
-	bprintf(GRAY, "Usage:\n"
+	cprintf(DARKGRAY, "Usage:\n"
 			"./detReceiver [start_tcp_port] [num_receivers] [1 for call back, 0 for none]\n\n");
 	exit(EXIT_FAILURE);
 }
@@ -70,10 +70,10 @@ void printHelp() {
  * \returns ignored
  */
 int StartAcq(char* filepath, char* filename, uint64_t fileindex, uint32_t datasize, void*p){
-	bprintf(BLUE, "#### StartAcq:  filepath:%s  filename:%s fileindex:%llu  datasize:%u ####\n",
+	cprintf(BLUE, "#### StartAcq:  filepath:%s  filename:%s fileindex:%llu  datasize:%u ####\n",
 			filepath, filename, fileindex, datasize);
 
-	bprintf(BLUE, "--StartAcq: returning 0\n");
+	cprintf(BLUE, "--StartAcq: returning 0\n");
 	return 0;
 }
 
@@ -83,7 +83,7 @@ int StartAcq(char* filepath, char* filename, uint64_t fileindex, uint32_t datasi
  * @param p pointer to object
  */
 void AcquisitionFinished(uint64_t frames, void*p){
-	bprintf(BLUE, "#### AcquisitionFinished: frames:%llu ####\n",frames);
+	cprintf(BLUE, "#### AcquisitionFinished: frames:%llu ####\n",frames);
 }
 
 /**
@@ -140,10 +140,10 @@ int main(int argc, char *argv[]) {
 	/**	- get number of receivers and start tcp port from command line arguments */
 	if ( (argc != 4) || (!sscanf(argv[1],"%d", &startTCPPort)) || (!sscanf(argv[2],"%d", &numReceivers)) || (!sscanf(argv[3],"%d", &withCallback)) )
 		printHelp();
-	bprintf(BLUE,"Parent Process Created [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
-	bprintf(GRAY, "Number of Receivers: %d\n", numReceivers);
-	bprintf(GRAY, "Start TCP Port: %d\n", startTCPPort);
-	bprintf(GRAY, "Callback Enable: %d\n", withCallback);
+	cprintf(BLUE,"Parent Process Created [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
+	cprintf(DARKGRAY, "Number of Receivers: %d\n", numReceivers);
+	cprintf(DARKGRAY, "Start TCP Port: %d\n", startTCPPort);
+	cprintf(DARKGRAY, "Callback Enable: %d\n", withCallback);
 
 
 
@@ -153,7 +153,7 @@ int main(int argc, char *argv[]) {
 	sa.sa_handler=sigInterruptHandler;		// handler function
 	sigemptyset(&sa.sa_mask);				// dont block additional signals during invocation of handler
 	if (sigaction(SIGINT, &sa, NULL) == -1) {
-		bprintf(RED, "Could not set handler function for SIGINT\n");
+		cprintf(RED, "Could not set handler function for SIGINT\n");
 	}
 
 	/** - Ignore SIG_PIPE, prevents global signal handler, handle locally,
@@ -163,7 +163,7 @@ int main(int argc, char *argv[]) {
 	asa.sa_handler=SIG_IGN;					// handler function
 	sigemptyset(&asa.sa_mask);				// dont block additional signals during invocation of handler
 	if (sigaction(SIGPIPE, &asa, NULL) == -1) {
-		bprintf(RED, "Could not set handler function for SIGPIPE\n");
+		cprintf(RED, "Could not set handler function for SIGPIPE\n");
 	}
 
 
@@ -175,13 +175,13 @@ int main(int argc, char *argv[]) {
 
 		/**	- if fork failed, raise SIGINT and properly destroy all child processes */
 		if (pid < 0) {
-			bprintf(RED,"fork() failed. Killing all the receiver objects\n");
+			cprintf(RED,"fork() failed. Killing all the receiver objects\n");
 			raise(SIGINT);
 		}
 
 			/**	- if child process */
 		else if (pid == 0) {
-			bprintf(BLUE,"Child process %d [ Tid: %ld ]\n", i, (long)syscall(SYS_gettid));
+			cprintf(BLUE,"Child process %d [ Tid: %ld ]\n", i, (long)syscall(SYS_gettid));
 
 			char temp[10];
 			sprintf(temp,"%d",startTCPPort + i);
@@ -200,15 +200,15 @@ int main(int argc, char *argv[]) {
 			if (withCallback) {
 
 				/** - Call back for start acquisition */
-				bprintf(BLUE, "Registering 	StartAcq()\n");
+				cprintf(BLUE, "Registering 	StartAcq()\n");
 				receiver->registerCallBackStartAcquisition(StartAcq, NULL);
 
 				/** - Call back for acquisition finished */
-				bprintf(BLUE, "Registering 	AcquisitionFinished()\n");
+				cprintf(BLUE, "Registering 	AcquisitionFinished()\n");
 				receiver->registerCallBackAcquisitionFinished(AcquisitionFinished, NULL);
 
 				/* 	- Call back for raw data */
-				bprintf(BLUE, "Registering     GetData() \n");
+				cprintf(BLUE, "Registering     GetData() \n");
 				receiver->registerCallBackRawDataReady(GetData,NULL);
 			}
 
@@ -217,7 +217,7 @@ int main(int argc, char *argv[]) {
 			/**	- start tcp server thread */
 			if (receiver->start() == slsReceiverDefs::FAIL){
 				delete receiver;
-				bprintf(BLUE,"Exiting Child Process [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
+				cprintf(BLUE,"Exiting Child Process [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
 				exit(EXIT_FAILURE);
 			}
 
@@ -226,7 +226,7 @@ int main(int argc, char *argv[]) {
 				pause();
 			/**	- interrupt caught, delete slsReceiverUsers object and exit */
 			delete receiver;
-			bprintf(BLUE,"Exiting Child Process [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
+			cprintf(BLUE,"Exiting Child Process [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
 			exit(EXIT_SUCCESS);
 			break;
 		}
@@ -237,13 +237,13 @@ int main(int argc, char *argv[]) {
 	sa.sa_handler=SIG_IGN;					// handler function
 	sigemptyset(&sa.sa_mask);				// dont block additional signals during invocation of handler
 	if (sigaction(SIGINT, &sa, NULL) == -1) {
-		bprintf(RED, "Could not set handler function for SIGINT\n");
+		cprintf(RED, "Could not set handler function for SIGINT\n");
 	}
 
 
 	/** - Print Ready and Instructions how to exit */
 	cout << "Ready ... " << endl;
-	bprintf(GRAY, "\n[ Press \'Ctrl+c\' to exit ]\n");
+	cprintf(DARKGRAY, "\n[ Press \'Ctrl+c\' to exit ]\n");
 
 	/** - Parent process waits for all child processes to exit */
 	for(;;) {
@@ -252,16 +252,16 @@ int main(int argc, char *argv[]) {
 		// no child closed
 		if (childPid == -1) {
 			if (errno == ECHILD) {
-				bprintf(GREEN,"All Child Processes have been closed\n");
+				cprintf(GREEN,"All Child Processes have been closed\n");
 				break;
 			} else {
-				bprintf(RED, "Unexpected error from waitpid(): (%s)\n",strerror(errno));
+				cprintf(RED, "Unexpected error from waitpid(): (%s)\n",strerror(errno));
 				break;
 			}
 		}
 
 		//child closed
-		bprintf(BLUE,"Exiting Child Process [ Tid: %ld ]\n", (long int) childPid);
+		cprintf(BLUE,"Exiting Child Process [ Tid: %ld ]\n", (long int) childPid);
 	}
 
 	cout << "Goodbye!" << endl;

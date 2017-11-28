@@ -5968,7 +5968,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 			else {
 				thisData = new detectorData(NULL,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),maxX,maxY,multiframe, multidatabytes, dr, currentFileIndex);
 			}
-			dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);
+			dataReady(thisData, currentFrameIndex, (((dr == 32) && (eiger)) ? currentSubFrameIndex : -1), pCallbackArg);
 			delete thisData;
 				//cout<<"Send frame #"<< currentFrameIndex << " to gui"<<endl;
 

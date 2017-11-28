@@ -3977,13 +3977,16 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
 		t=CLIENT_STREAMING_SRC_IP;
 	}else if (cmd=="rx_zmqip") {
 		t=RECEIVER_STREAMING_SRC_IP;
+		// if streaming, switch it off
+		prev_streaming = myDet->enableDataStreamingFromReceiver();
+		if (prev_streaming) myDet->enableDataStreamingFromReceiver(0);
 	}
 	else return ("unknown network parameter")+cmd;
 
 	if (action==PUT_ACTION) {
 		myDet->setNetworkParameter(t, args[1]);
 		// switch it back on, if it had been switched on
-		if (prev_streaming && t == RECEIVER_STREAMING_PORT)
+		if (prev_streaming && (t == RECEIVER_STREAMING_PORT || t == RECEIVER_STREAMING_SRC_IP))
 			myDet->enableDataStreamingFromReceiver(1);
 
 	}

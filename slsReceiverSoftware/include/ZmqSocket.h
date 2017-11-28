@@ -21,6 +21,8 @@
 using namespace rapidjson;
 
 
+#define MAX_STR_LENGTH 1000
+
 //#define ZMQ_DETAIL
 
 class ZmqSocket {
@@ -484,9 +486,7 @@ public:
 			acqIndex 		= d["acqIndex"].GetUint64();
 			frameIndex 		= d["fIndex"].GetUint64();
 			fileIndex		= d["fileIndex"].GetUint64();
-			if(d["bitmode"].GetUint()==32 && d["detType"].GetUint() == slsReceiverDefs::EIGER) {
-				subframeIndex 	= d["expLength"].GetUint();
-			}
+			subframeIndex 	= d["expLength"].GetUint();
 			filename 		= d["fname"].GetString();
 		}
 #ifdef VERYVERBOSE

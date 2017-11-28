@@ -82,13 +82,6 @@ public:
 			PrintError ();
 			Close();
 		 }
-
-
-		//connect socket
-		if (zmq_connect(socketDescriptor, serverAddress) < 0) {
-			PrintError ();
-			Close ();
-		}
 	};
 
 	/**

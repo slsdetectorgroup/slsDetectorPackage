@@ -463,7 +463,7 @@ class slsDetectorUsers
     * Set/Get receiver streaming out ZMQ port
     * For multi modules, it calculates (increments), sets the ports and restarts the sockets
     * @param i sets, -1 gets
-    * @returns receiver streaming out ZMQ port ()
+    * @returns receiver streaming out ZMQ port
     */
    int setReceiverDataStreamingOutPort(int i=-1);
 
@@ -474,6 +474,22 @@ class slsDetectorUsers
     * @returns client streaming in ZMQ port
     */
    int setClientDataStreamingInPort(int i=-1);
+
+   /** (for expert users)
+    * Set/Get receiver streaming out ZMQ IP
+    * By default, it is the IP of receiver hostname
+    * @param ip sets, empty string gets
+    * @returns receiver streaming out ZMQ IP
+    */
+   string setReceiverDataStreamingOutIP(string ip="");
+
+   /** (for expert users)
+    * Set/Get client streaming in ZMQ IP
+    * By default, it is the IP of receiver hostname
+    * @param i sets, empty string gets
+    * @returns client streaming in ZMQ IP
+    */
+   string setClientDataStreamingInIP(string ip="");
 
   /**
      get get Module Firmware Version

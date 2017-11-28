@@ -243,6 +243,14 @@ int slsDetectorUsers::setClientDataStreamingInPort(int i){
 	return myDetector->setClientDataStreamingInPort(i);
 }
 
+string slsDetectorUsers::setReceiverDataStreamingOutIP(string ip){
+	return myDetector->setReceiverDataStreamingOutIP(ip);
+}
+
+string slsDetectorUsers::setClientDataStreamingInIP(string ip){
+	return myDetector->setClientDataStreamingInIP(ip);
+}
+
 int64_t slsDetectorUsers::getModuleFirmwareVersion(){
 	return myDetector->getModuleFirmwareVersion();
 }

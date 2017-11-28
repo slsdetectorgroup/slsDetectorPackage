@@ -127,13 +127,42 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   int setClientDataStreamingInPort(int i){										\
 		  if (i >= 0) {															\
 			  ostringstream ss; ss << i; string s = ss.str();					\
-			  int prev_streaming = enableDataStreamingToClient()();				\
+			  int prev_streaming = enableDataStreamingToClient();				\
 			  setNetworkParameter(CLIENT_STREAMING_PORT, s);					\
 			  if (prev_streaming) {												\
 				  enableDataStreamingToClient(0);								\
 				  enableDataStreamingToClient(1);}}								\
 		  return atoi(getNetworkParameter(CLIENT_STREAMING_PORT).c_str());};	\
 
+  /**
+   * Set/Get receiver streaming out ZMQ port
+   * For multi modules, it calculates (increments) and sets the ports
+   * @param i sets, -1 gets
+   * @returns receiver streaming out ZMQ port
+   */
+   string setReceiverDataStreamingOutIP(string ip) {							\
+		if (ip.length()) {														\
+			int prev_streaming = enableDataStreamingFromReceiver();				\
+			setNetworkParameter(RECEIVER_STREAMING_SRC_IP, ip);					\
+			if (prev_streaming) {												\
+				enableDataStreamingFromReceiver(0);								\
+				enableDataStreamingFromReceiver(1);}}							\
+		return getNetworkParameter(RECEIVER_STREAMING_SRC_IP);};				\
+
+  /**
+   * Set/Get client streaming in ZMQ port
+   * For multi modules, it calculates (increments) and sets the ports
+   * @param i sets, -1 gets
+   * @returns client streaming in ZMQ port
+   */
+   string setClientDataStreamingInIP(string ip){								\
+		if (ip.length()) {														\
+			int prev_streaming = enableDataStreamingToClient();					\
+			setNetworkParameter(CLIENT_STREAMING_SRC_IP, ip);					\
+			if (prev_streaming) {												\
+				enableDataStreamingToClient(0);									\
+				enableDataStreamingToClient(1);}}								\
+		return getNetworkParameter(CLIENT_STREAMING_SRC_IP);};					\
 
 // string getFilePath(){return fileIO::getFilePath();};;
   // string setFilePath(string s){return fileIO::setFilePath(s);};

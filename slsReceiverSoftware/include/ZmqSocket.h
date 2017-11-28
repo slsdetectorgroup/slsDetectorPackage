@@ -375,10 +375,11 @@ public:
 	 * @param frameIndex address of frame index
 	 * @param subframeIndex address of subframe index
 	 * @param filename address of file name
+	 * @param fileindex address of file index
 	 * @returns 0 if error or end of acquisition, else 1
 	 */
 	int ReceiveHeader(const int index, uint64_t &acqIndex,
-			uint64_t &frameIndex, uint32_t &subframeIndex, std::string &filename)
+			uint64_t &frameIndex, uint32_t &subframeIndex, std::string &filename, uint64_t &fileIndex)
 	{
 		zmq_msg_t message;
 		zmq_msg_init (&message);
@@ -388,7 +389,7 @@ public:
 #ifdef ZMQ_DETAIL
 				cprintf( BLUE,"Header %d [%d] Length: %d Header:%s \n", index, portno, len, (char*) zmq_msg_data (&message) );
 #endif
-			if ( ParseHeader (index, len, message, acqIndex, frameIndex, subframeIndex, filename, dummy)) {
+			if ( ParseHeader (index, len, message, acqIndex, frameIndex, subframeIndex, filename, fileIndex, dummy)) {
 #ifdef ZMQ_DETAIL
 				cprintf( RED,"Parsed Header %d [%d] Length: %d Header:%s \n", index, portno, len, (char*) zmq_msg_data (&message) );
 #endif
@@ -450,16 +451,18 @@ public:
 	 * @param frameIndex address of frame index
 	 * @param subframeIndex address of subframe index
 	 * @param filename address of file name
+	 * @param fileindex address of file index
 	 * @param dummy true if end of acquisition else false
 	 * @returns true if successfull else false
 	 */
 	int ParseHeader(const int index, int length, zmq_msg_t& message, uint64_t &acqIndex,
-			uint64_t &frameIndex, uint32_t &subframeIndex, std::string &filename, bool& dummy)
+			uint64_t &frameIndex, uint32_t &subframeIndex, std::string &filename, uint64_t &fileIndex, bool& dummy)
 	{
 
 		acqIndex = -1;
 		frameIndex = -1;
 		subframeIndex = -1;
+		fileIndex = -1;
 		dummy = true;
 
 		Document d;
@@ -480,6 +483,7 @@ public:
 		if (!dummy) {
 			acqIndex 		= d["acqIndex"].GetUint64();
 			frameIndex 		= d["fIndex"].GetUint64();
+			fileIndex		= d["fileIndex"].GetUint64();
 			if(d["bitmode"].GetUint()==32 && d["detType"].GetUint() == slsReceiverDefs::EIGER) {
 				subframeIndex 	= d["expLength"].GetUint();
 			}
@@ -490,9 +494,10 @@ public:
 				"\tAcqIndex:%lu\n"
 				"\tFrameIndex:%lu\n"
 				"\tSubIndex:%u\n"
+				"\tFileIndex:%lu\n"
 				"\tBitMode:%u\n"
 				"\tDetType:%u\n",
-				index, (int)dummy, acqIndex, frameIndex, subframeIndex,
+				index, (int)dummy, acqIndex, frameIndex, subframeIndex, fileIndex,
 				d["bitmode"].GetUint(),d["detType"].GetUint());
 #endif
 		return 1;

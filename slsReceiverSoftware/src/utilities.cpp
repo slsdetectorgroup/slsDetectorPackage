@@ -54,9 +54,9 @@ int read_config_file(string fname, int *tcpip_port_no, map<string, string> * con
 					if(sstr.good()) {
 						sstr >> sargname;
 						if(sscanf(sargname.c_str(),"%d",tcpip_port_no))
-							bprintf(GRAY, "dataport: %d\n" , *tcpip_port_no);
+							cprintf(DARKGRAY, "dataport: %d\n" , *tcpip_port_no);
 						else{
-							bprintf(RED, "could not decode port in config file. Exiting.\n");
+							cprintf(RED, "could not decode port in config file. Exiting.\n");
 							success = slsReceiverDefs::FAIL;
 						}
 					}

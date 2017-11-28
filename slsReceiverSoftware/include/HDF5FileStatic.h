@@ -111,7 +111,7 @@ public:
 				fd = 0;
 			}
 		} catch(Exception error) {
-			bprintf(RED,"Error in closing HDF5 handles of index %d\n", ind);
+			cprintf(RED,"Error in closing HDF5 handles of index %d\n", ind);
 			error.printError();
 		}
 	}
@@ -129,7 +129,7 @@ public:
 				fd = 0;
 			}
 		} catch(Exception error) {
-			bprintf(RED,"Error in closing master HDF5 handles\n");
+			cprintf(RED,"Error in closing master HDF5 handles\n");
 			error.printError();
 		}
 	}
@@ -143,7 +143,7 @@ public:
 	{
 		if(fd) {
 			if (H5Fclose(fd) < 0 )
-				bprintf(RED,"Error in closing virtual HDF5 handles\n");
+				cprintf(RED,"Error in closing virtual HDF5 handles\n");
 			fd = 0;
 		}
 	}
@@ -176,7 +176,7 @@ public:
 			memspace.close();
 		}
 		catch(Exception error){
-			bprintf(RED,"Error in writing to file in object %d\n",ind);
+			cprintf(RED,"Error in writing to file in object %d\n",ind);
 			error.printError();
 			return 1;
 		}
@@ -212,7 +212,7 @@ public:
 			dset_para[12]->write(&header->version, 		ParameterDataTypes[12], memspace, *dspace_para);
 		}
 		catch(Exception error){
-			bprintf(RED,"Error in writing parameters to file in object %d\n",ind);
+			cprintf(RED,"Error in writing parameters to file in object %d\n",ind);
 			error.printError();
 			return 1;
 		}
@@ -327,7 +327,7 @@ public:
 			fd->close();
 
 		} catch(Exception error) {
-			bprintf(RED,"Error in creating master HDF5 handles\n");
+			cprintf(RED,"Error in creating master HDF5 handles\n");
 			error.printError();
 			return 1;
 		}
@@ -411,7 +411,7 @@ public:
 				dset_para[i] = new DataSet(fd->createDataSet(ParameterNames[i], ParameterDataTypes[i], *dspace_para));
 		}
 		catch(Exception error){
-			bprintf(RED,"Error in creating HDF5 handles in object %d\n",ind);
+			cprintf(RED,"Error in creating HDF5 handles in object %d\n",ind);
 			error.printError();
 			fd->close();
 			return 1;
@@ -527,12 +527,12 @@ public:
 
 				//setect hyperslabs
 				if (H5Sselect_hyperslab (vdsDataspace, H5S_SELECT_SET, offset, NULL, count, NULL) < 0) {
-					bprintf(RED,"could not select hyperslab\n");
+					cprintf(RED,"could not select hyperslab\n");
 					error = true;
 					break;
 				}
 				if (H5Sselect_hyperslab (vdsDataspace_para, H5S_SELECT_SET, offset_para, NULL, count_para, NULL) < 0) {
-					bprintf(RED,"could not select hyperslab for parameters\n");
+					cprintf(RED,"could not select hyperslab for parameters\n");
 					error = true;
 					break;
 				}
@@ -559,14 +559,14 @@ public:
 
 				//mapping
 				if (H5Pset_virtual(dcpl, vdsDataspace, srcFileName.c_str(), srcDatasetName.c_str(), srcDataspace) < 0) {
-					bprintf(RED,"could not set mapping for paramter 1\n");
+					cprintf(RED,"could not set mapping for paramter 1\n");
 					error = true;
 					break;
 				}
 
 				for (int k = 0; k < NumberofParameters; ++k) {
 					if (H5Pset_virtual(dcpl_para[k], vdsDataspace_para, srcFileName.c_str(), ParameterNames[k], srcDataspace_para) < 0) {
-						bprintf(RED,"could not set mapping for paramter %d\n", k);
+						cprintf(RED,"could not set mapping for paramter %d\n", k);
 						error = true;
 						break;
 					}
@@ -639,7 +639,7 @@ public:
 			data_out = (T*)malloc(sizeof(T)*(nDimx*nDimy*nDimz));
 			break;
 		default:
-			bprintf(RED,"invalid rank. Options: 2 or 3\n");
+			cprintf(RED,"invalid rank. Options: 2 or 3\n");
 			return 0;
 		}
 		if (datatype == PredType::STD_U16LE) {
@@ -696,7 +696,7 @@ public:
 			newfd->close();
 			oldfd->close();
 		} catch(Exception error){
-			bprintf(RED,"Error in copying virtual files\n");
+			cprintf(RED,"Error in copying virtual files\n");
 			error.printError();
 			free(data_out);
 			oldfd->close();
@@ -780,7 +780,7 @@ public:
 	 * @returns 1 for fail
 	 */
 	static int CloseFileOnError(hid_t& fd, const string msg) {
-		bprintf(RED, "%s", msg.c_str());
+		cprintf(RED, "%s", msg.c_str());
 		if(fd > 0)
 			H5Fclose(fd);
 		fd = 0;
@@ -803,7 +803,7 @@ public:
 		else if (dtype == PredType::STD_U64LE)
 			return H5T_STD_U64LE;
 		else {
-			bprintf(RED, "Invalid Data type\n");
+			cprintf(RED, "Invalid Data type\n");
 			return H5T_STD_U64LE;
 		}
 	}

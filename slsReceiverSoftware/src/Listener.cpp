@@ -190,7 +190,7 @@ void Listener::RecordFirstIndices(uint64_t fnum) {
 	}
 
 	if(!SilentMode) {
-		if (!index) bprintf(BLUE,"%d First Acquisition Index:%lu\n"
+		if (!index) cprintf(BLUE,"%d First Acquisition Index:%lu\n"
 				"%d First Measurement Index:%lu\n",
 				index, firstAcquisitionIndex,
 				index, firstMeasurementIndex);
@@ -262,7 +262,7 @@ void Listener::ThreadExecution() {
 
 	fifo->GetNewAddress(buffer);
 #ifdef FIFODEBUG
-	bprintf(GREEN,"Listener %d, pop 0x%p buffer:%s\n", index,(void*)(buffer),buffer);
+	cprintf(GREEN,"Listener %d, pop 0x%p buffer:%s\n", index,(void*)(buffer),buffer);
 #endif
 
 	//udpsocket doesnt exist
@@ -325,8 +325,8 @@ void Listener::StopListening(char* buf) {
 		udpSocket = 0;
 	}
 #ifdef VERBOSE
-	bprintf(GREEN,"%d: Listening Packets (%u) : %llu\n", index, *udpPortNumber, numPacketsCaught);
-	bprintf(GREEN,"%d: Listening Completed\n", index);
+	cprintf(GREEN,"%d: Listening Packets (%u) : %llu\n", index, *udpPortNumber, numPacketsCaught);
+	cprintf(GREEN,"%d: Listening Completed\n", index);
 #endif
 }
 
@@ -355,7 +355,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 	//look for carry over
 	if (carryOverFlag) {
-		 //bprintf(RED,"%d carry flag\n",index);
+		 //cprintf(RED,"%d carry flag\n",index);
 		//check if its the current image packet
 		// -------------------------- new header ----------------------------------------------------------------------
 		if (standardheader) {
@@ -371,7 +371,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		//------------------------------------------------------------------------------------------------------------
 		if (fnum != currentFrameIndex) {
 			if (fnum < currentFrameIndex) {
-				bprintf(RED,"Error:(Weird), With carry flag: Frame number %lu less than current frame number %lu\n", fnum, currentFrameIndex);
+				cprintf(RED,"Error:(Weird), With carry flag: Frame number %lu less than current frame number %lu\n", fnum, currentFrameIndex);
 				return 0;
 			}
 			new_header->packetNumber = numpackets;
@@ -463,7 +463,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 #ifdef VERBOSE
 		//if (!index)
-		bprintf(GREEN,"Listening %d: currentfindex:%lu, fnum:%lu,   pnum:%u numpackets:%u\n",
+		cprintf(GREEN,"Listening %d: currentfindex:%lu, fnum:%lu,   pnum:%u numpackets:%u\n",
 				index,currentFrameIndex, fnum, pnum, numpackets);
 #endif
 		if (!measurementStartedFlag)
@@ -471,7 +471,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 		//future packet	by looking at image number  (all other detectors)
 		if (fnum != currentFrameIndex) {
-			//bprintf(RED,"setting carry over flag to true num:%llu nump:%u\n",fnum, numpackets );
+			//cprintf(RED,"setting carry over flag to true num:%llu nump:%u\n",fnum, numpackets );
 			carryOverFlag = true;
 			memcpy(carryOverPacket,listeningPacket, generalData->packetSize);
 
@@ -547,9 +547,9 @@ void Listener::PrintFifoStatistics() {
 	numFramesStatistic = 0;
 
 	if (loss)
-		bprintf(RED,"[%u]:  Packet_Loss:%lu  Used_Fifo_Max_Level:%d \tFree_Slots_Min_Level:%d \tCurrent_Frame#:%lu\n",
+		cprintf(RED,"[%u]:  Packet_Loss:%lu  Used_Fifo_Max_Level:%d \tFree_Slots_Min_Level:%d \tCurrent_Frame#:%lu\n",
 				*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound() , fifo->GetMinLevelForFifoFree(), currentFrameIndex);
 	else
-		bprintf(GREEN,"[%u]:  Packet_Loss:%lu  Used_Fifo_Max_Level:%d  \tFree_Slots_Min_Level:%d \tCurrent_Frame#:%lu\n",
+		cprintf(GREEN,"[%u]:  Packet_Loss:%lu  Used_Fifo_Max_Level:%d  \tFree_Slots_Min_Level:%d \tCurrent_Frame#:%lu\n",
 				*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound(), fifo->GetMinLevelForFifoFree(), currentFrameIndex);
 }

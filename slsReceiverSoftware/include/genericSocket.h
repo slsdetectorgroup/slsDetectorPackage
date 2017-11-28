@@ -659,7 +659,7 @@ enum communicationProtocol{
     			    	 continue;
     				 if(nsent != nsending){
     					 if(nsent && (nsent != -1))
-    							 bprintf(RED,"Incomplete Packet size %d\n",nsent);
+    							 cprintf(RED,"Incomplete Packet size %d\n",nsent);
     					 break;
     				 }
     				 length-=nsent;
@@ -672,7 +672,7 @@ enum communicationProtocol{
     			 nsending=packet_size;
     			 while(1){
 #ifdef VERYVERBOSE
-    				bprintf(BLUE,"%d gonna listen\n", portno); fflush(stdout);
+    				cprintf(BLUE,"%d gonna listen\n", portno); fflush(stdout);
 #endif
     				 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
     				 //break out of loop only if read one packets size or read didnt work (cuz of shutdown)
@@ -680,7 +680,7 @@ enum communicationProtocol{
     					 break;
     				 //incomplete packets or header packets ignored and read buffer again
     				 if(nsent != packet_size && nsent != header_packet_size)
-    						bprintf(RED,"%d Incomplete Packet size %d\n", portno, nsent);
+    						cprintf(RED,"%d Incomplete Packet size %d\n", portno, nsent);
     			 }
     			//nsent = 1040;
     			 if(nsent > 0)total_sent+=nsent;

@@ -32,7 +32,7 @@ Fifo::Fifo(uint32_t fifoItemSize, uint32_t depth, bool &success):
 
 Fifo::~Fifo() {
 	FILE_LOG (logDEBUG) << __AT__ << " called";
-	//bprintf(BLUE,"Fifo Object %d: Goodbye\n", index);
+	//cprintf(BLUE,"Fifo Object %d: Goodbye\n", index);
 	DestroyFifos();
 	NumberofFifoClassObjects--;
 }
@@ -64,7 +64,7 @@ int Fifo::CreateFifos(uint32_t fifoItemSize) {
 		while (buffer < (memory + fifoItemSize * (fifoDepth-1))) {
 			//sprintf(buffer,"memory");
 #ifdef FIFODEBUG
-			bprintf(MAGENTA,"Fifofree %d: value:%d, pop 0x%p\n", index, fifoFree->getSemValue(), (void*)(buffer));
+			cprintf(MAGENTA,"Fifofree %d: value:%d, pop 0x%p\n", index, fifoFree->getSemValue(), (void*)(buffer));
 #endif
 			FreeAddress(buffer);
 			buffer += fifoItemSize;

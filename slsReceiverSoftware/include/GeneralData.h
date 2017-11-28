@@ -151,7 +151,7 @@ public:
 	 * @param tgEnable true if 10GbE is enabled, else false
 	 */
 	virtual void SetDynamicRange(int dr, bool tgEnable) {
-		bprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
 	};
 
 	/**
@@ -160,7 +160,7 @@ public:
 	 * @param dr dynamic range
 	 */
 	virtual void SetTenGigaEnable(bool tgEnable, int dr) {
-		bprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
 	};
 
 	/**

@@ -186,7 +186,7 @@ void* slsReceiverTCPIPInterface::startTCPServerThread(void *this_pointer){
 
 
 void slsReceiverTCPIPInterface::startTCPServer(){
-	bprintf(BLUE,"Created [ TCP server Tid: %ld ]\n", (long)syscall(SYS_gettid));
+	cprintf(BLUE,"Created [ TCP server Tid: %ld ]\n", (long)syscall(SYS_gettid));
 
 #ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG5) << "Starting Receiver TCP Server";
@@ -222,7 +222,7 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 			}
 
 			mySock->exitServer();
-			bprintf(BLUE,"Exiting [ TCP server Tid: %ld ]\n", (long)syscall(SYS_gettid));
+			cprintf(BLUE,"Exiting [ TCP server Tid: %ld ]\n", (long)syscall(SYS_gettid));
 			pthread_exit(NULL);
 		}
 
@@ -233,7 +233,7 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 					receiverBase->shutDownUDPSockets();
 				}
 			}
-			bprintf(BLUE,"Exiting [ TCP server Tid: %ld ]\n", (long)syscall(SYS_gettid));
+			cprintf(BLUE,"Exiting [ TCP server Tid: %ld ]\n", (long)syscall(SYS_gettid));
 			pthread_exit(NULL);
 		}
 
@@ -345,7 +345,7 @@ int slsReceiverTCPIPInterface::function_table(){
 int slsReceiverTCPIPInterface::decode_function(){
 	ret = FAIL;
 #ifdef VERYVERBOSE
-	bprintf(GRAY,"\n");
+	cprintf(DARKGRAY,"\n");
 	FILE_LOG(logDEBUG1) <<  "waiting to receive data";
 #endif
 	int n = mySock->ReceiveDataOnly(&fnum,sizeof(fnum));
@@ -475,7 +475,7 @@ int slsReceiverTCPIPInterface::exit_server() {
 	strcpy(mess,"closing server");
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	mySock->SendDataOnly(mess,sizeof(mess));
-	bprintf(RED,"%s\n",mess);
+	cprintf(RED,"%s\n",mess);
 	return ret;
 }
 

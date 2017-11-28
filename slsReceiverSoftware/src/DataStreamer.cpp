@@ -139,7 +139,7 @@ void DataStreamer::RecordFirstIndices(uint64_t fnum) {
 	}
 
 #ifdef VERBOSE
-	bprintf(BLUE,"%d First Acquisition Index:%lld\tFirst Measurement Index:%lld\n",
+	cprintf(BLUE,"%d First Acquisition Index:%lld\tFirst Measurement Index:%lld\n",
 			index, (long long int)firstAcquisitionIndex, (long long int)firstMeasurementIndex);
 #endif
 }
@@ -167,7 +167,7 @@ int DataStreamer::CreateZmqSockets(int* nunits, uint32_t port) {
 
 	zmqSocket = new ZmqSocket(portnum);
 	if (zmqSocket->IsError()) {
-		bprintf(RED, "Error: Could not create Zmq socket on port %d for Streamer %d\n", portnum, index);
+		cprintf(RED, "Error: Could not create Zmq socket on port %d for Streamer %d\n", portnum, index);
 		return FAIL;
 	}
 	FILE_LOG(logINFO) << index << " Streamer: Zmq Server started at " << zmqSocket->GetZmqServerAddress();
@@ -187,13 +187,13 @@ void DataStreamer::ThreadExecution() {
 	char* buffer=0;
 	fifo->PopAddressToStream(buffer);
 #ifdef FIFODEBUG
-	if (!index) bprintf(BLUE,"DataStreamer %d, pop 0x%p buffer:%s\n", index,(void*)(buffer),buffer);
+	if (!index) cprintf(BLUE,"DataStreamer %d, pop 0x%p buffer:%s\n", index,(void*)(buffer),buffer);
 #endif
 
 	//check dummy
 	uint32_t numBytes = (uint32_t)(*((uint32_t*)buffer));
 #ifdef VERBOSE
-	bprintf(GREEN,"DataStreamer %d, Numbytes:%u\n", index,numBytes);
+	cprintf(GREEN,"DataStreamer %d, Numbytes:%u\n", index,numBytes);
 #endif
 	if (numBytes == DUMMY_PACKET_VALUE) {
 		StopProcessing(buffer);
@@ -212,12 +212,12 @@ void DataStreamer::ThreadExecution() {
 void DataStreamer::StopProcessing(char* buf) {
 #ifdef VERBOSE
 	if (!index)
-		bprintf(RED,"DataStreamer %d: Dummy\n", index);
+		cprintf(RED,"DataStreamer %d: Dummy\n", index);
 #endif
 	sls_detector_header* header = (sls_detector_header*) (buf);
 	//send dummy header and data
 	if (!SendHeader(header, true))
-		bprintf(RED,"Error: Could not send zmq dummy header for streamer %d\n", index);
+		cprintf(RED,"Error: Could not send zmq dummy header for streamer %d\n", index);
 
 	fifo->FreeAddress(buf);
 	StopRunning();
@@ -232,31 +232,31 @@ void DataStreamer::ProcessAnImage(char* buf) {
 	sls_detector_header* header = (sls_detector_header*) (buf);
 	uint64_t fnum = header->frameNumber;
 #ifdef VERBOSE
-	bprintf(MAGENTA,"DataStreamer %d: fnum:%lu\n", index,fnum);
+	cprintf(MAGENTA,"DataStreamer %d: fnum:%lu\n", index,fnum);
 #endif
 
 	if (!measurementStartedFlag) {
 #ifdef VERBOSE
-		if (!index) bprintf(MAGENTA,"DataStreamer %d: fnum:%lu\n", index, fnum);
+		if (!index) cprintf(MAGENTA,"DataStreamer %d: fnum:%lu\n", index, fnum);
 #endif
 		RecordFirstIndices(fnum);
 	}
 
 	if (!SendHeader(header))
-		bprintf(RED,"Error: Could not send zmq header for fnum %lld and streamer %d\n",
+		cprintf(RED,"Error: Could not send zmq header for fnum %lld and streamer %d\n",
 				(long long int) fnum, index);
 
 	//shortframe gotthard - data sending
 	if (completeBuffer) {
 		memcpy(completeBuffer + ((generalData->imageSize)**shortFrameEnable), buf + sizeof(sls_detector_header), generalData->imageSize);
 		if (!zmqSocket->SendData(completeBuffer, generalData->imageSize_Streamer))
-			bprintf(RED,"Error: Could not send zmq data for fnum %lld and streamer %d\n",
+			cprintf(RED,"Error: Could not send zmq data for fnum %lld and streamer %d\n",
 					(long long int) fnum, index);
 	}
 	//normal - data sending
 	else {
 		if (!zmqSocket->SendData(buf + sizeof(sls_detector_header), generalData->imageSize))
-			bprintf(RED,"Error: Could not send zmq data for fnum %lld and streamer %d\n",
+			cprintf(RED,"Error: Could not send zmq data for fnum %lld and streamer %d\n",
 					(long long int) fnum, index);
 	}
 }

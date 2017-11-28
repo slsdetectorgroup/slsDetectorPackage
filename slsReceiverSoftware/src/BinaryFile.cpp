@@ -80,7 +80,7 @@ int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_
 	numActualPacketsInFile += nump;
 	if (BinaryFileStatic::WriteDataFile(filefd, buffer, buffersize, fnum) == buffersize)
 		return OK;
-	bprintf(RED,"%d Error: Write to file failed for image number %lld\n", index, (long long int)fnum);
+	cprintf(RED,"%d Error: Write to file failed for image number %lld\n", index, (long long int)fnum);
 	return FAIL;
 }
 

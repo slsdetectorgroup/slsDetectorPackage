@@ -118,12 +118,12 @@ class BinaryFileStatic {
 	{
 		if(!owenable){
 			if (NULL == (fd = fopen((const char *) fname.c_str(), "wx"))){
-				bprintf(RED,"Error in creating binary master file %s\n",fname.c_str());
+				cprintf(RED,"Error in creating binary master file %s\n",fname.c_str());
 				fd = 0;
 				return 1;
 			}
 		}else if (NULL == (fd = fopen((const char *) fname.c_str(), "w"))){
-			bprintf(RED,"Error in creating binary master file %s\n",fname.c_str());
+			cprintf(RED,"Error in creating binary master file %s\n",fname.c_str());
 			fd = 0;
 			return 1;
 		}
@@ -169,7 +169,7 @@ class BinaryFileStatic {
 				(long long int)acquisitionPeriod,
 				ctime(&t));
 		if (strlen(message) > MAX_STR_LENGTH) {
-			bprintf(RED,"Master File Size %d is greater than max str size %d\n",
+			cprintf(RED,"Master File Size %d is greater than max str size %d\n",
 					(int)strlen(message), MAX_STR_LENGTH);
 			return 1;
 		}

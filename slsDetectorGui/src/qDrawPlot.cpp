@@ -826,12 +826,15 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 	cout << "errors " << data->errors << endl;
 	cout << "angle " << data->angles << endl;
 	cout << "databytes " << data->databytes << endl;
+	cout << "dynamicRange " << data->dynamicRange << endl;
+	cout << "fileIndex " << data->fileIndex << endl;
 #endif
 	if(!stop_signal){
 
 		//set progress
 		progress=(int)data->progressIndex;
 		currentFrameIndex = fileIOStatic::getIndicesFromFileName(string(data->fileName),currentFileIndex);
+		currentFileIndex = data->fileIndex;
 		//happens if receiver sends a null and empty file name
 		/*if(string(data->fileName).empty()){
 			cout << "Received empty file name. Exiting function without updating data for plot." << endl;

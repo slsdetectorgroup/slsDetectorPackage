@@ -116,7 +116,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   int setClientDataStreamingInPort(int i){										\
 		  if (i >= 0) {															\
 			  ostringstream ss; ss << i; string s = ss.str();					\
-			  int prev_streaming = enableDataStreamingToClient()();				\
+			  int prev_streaming = enableDataStreamingToClient();				\
 			  setNetworkParameter(CLIENT_STREAMING_PORT, s);					\
 			  if (prev_streaming) {												\
 				  enableDataStreamingToClient(0);								\

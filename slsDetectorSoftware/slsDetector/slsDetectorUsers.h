@@ -461,7 +461,7 @@ class slsDetectorUsers
 
    /**
     * Set/Get receiver streaming out ZMQ port
-    * For multi modules, it calculates (increments) and sets the ports
+    * For multi modules, it calculates (increments), sets the ports and restarts the sockets
     * @param i sets, -1 gets
     * @returns receiver streaming out ZMQ port ()
     */
@@ -469,7 +469,7 @@ class slsDetectorUsers
 
    /**
     * Set/Get client streaming in ZMQ port
-    * For multi modules, it calculates (increments) and sets the ports
+    * For multi modules, it calculates (increments), sets the ports and restarts the sockets
     * @param i sets, -1 gets
     * @returns client streaming in ZMQ port
     */

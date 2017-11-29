@@ -5870,17 +5870,9 @@ void multiSlsDetector::readFrameFromReceiver(){
 	if (jungfrau)
 		multiframegain = new char[multidatabytes]();
 
+
 	bool runningList[numSockets];
 	bool connectList[numSockets];
-
-	int numRunning = 0;
-
-	//wait for real time acquisition to start
-	bool running = true;
-	sem_wait(&sem_newRTAcquisition);
-	if(checkJoinThread())
-		running = false;
-
 	for(int i = 0; i < numSockets; ++i) {
 		if(!zmqSocket[i]->Connect()) {
 			connectList[i] = true;
@@ -5891,8 +5883,14 @@ void multiSlsDetector::readFrameFromReceiver(){
 			runningList[i] = false;
 		}
 	}
+	int numRunning = numSockets;
 
-	numRunning = numSockets;
+
+	//wait for real time acquisition to start
+	bool running = true;
+	sem_wait(&sem_newRTAcquisition);
+	if(checkJoinThread())
+		running = false;
 
 
 	//exit when last message for each socket received

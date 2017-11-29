@@ -1000,7 +1000,10 @@ virtual int setReceiverSilentMode(int i = -1)=0;
   int (*progress_call)(double,void*);
   void *pProgressCallArg;
   
+  /** semaphore to let postprocessing thread continue for next scan/measurement */
   sem_t sem_newRTAcquisition;
+  /** semaphore to let main thread know it got all the dummy packets (also from ext. process) */
+  sem_t sem_endRTAcquisition;
 
 
 };

@@ -58,6 +58,8 @@ int  slsDetectorUtils::acquire(int delflag){
 	//not in the loop for real time acqusition yet,
 	//in the real time acquisition loop, processing thread will wait for a post each time
 	sem_init(&sem_newRTAcquisition,1,0);
+	//in the real time acquistion loop, main thread will wait for processing thread to be done each time (which in turn waits for receiver/ext process)
+	sem_init(&sem_endRTAcquisition,1,0);
 
 
   bool receiver = (setReceiverOnline()==ONLINE_FLAG);
@@ -351,6 +353,11 @@ int  slsDetectorUtils::acquire(int delflag){
 	  else{
 		  if (stopReceiver() == FAIL)
 			  *stoppedFlag = 1;
+		  else {
+			  if (*threadedProcessing && dataReady) // threaded processing
+				  sem_wait(&sem_endRTAcquisition); // waits for receiver's external process to be done sending data to gui
+		  }
+
 		  //	  cout<<"***********receiver stopped"<<endl;
 	  }
 	  pthread_mutex_unlock(&mg);//cout << "unlock"<< endl;
@@ -504,13 +511,15 @@ int  slsDetectorUtils::acquire(int delflag){
   cout << "acquisition finished callback done " << endl;
 #endif
 
-  setAcquiringFlag(false);
   sem_destroy(&sem_newRTAcquisition);
+  sem_destroy(&sem_endRTAcquisition);
 
 #ifdef VERBOSE
   clock_gettime(CLOCK_REALTIME, &end);
   cout << "Elapsed time for acquisition:" << (( end.tv_sec - begin.tv_sec )	+ ( end.tv_nsec - begin.tv_nsec ) / 1000000000.0) << " seconds" << endl;
 #endif
+  setAcquiringFlag(false);
+
   return OK;
 
 }

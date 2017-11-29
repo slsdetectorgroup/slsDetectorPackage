@@ -5942,12 +5942,16 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 		//all done
 		if(!numRunning){
+			// let main thread know that all dummy packets have been received (also from external process),
+			// main thread can now proceed to measurement finished call back
+			sem_post(&sem_endRTAcquisition);
+			// wait for next scan/measurement, else join thread
 			sem_wait(&sem_newRTAcquisition);
 			//done with complete acquisition
 			if(checkJoinThread())
 				break;
 			else{
-				//starting a new scan/measurement
+				//starting a new scan/measurement (got dummy data)
 				for(int i = 0; i < numSockets; ++i)
 					runningList[i] = true;
 				numRunning = numSockets;

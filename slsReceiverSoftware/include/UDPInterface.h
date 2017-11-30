@@ -643,6 +643,12 @@ class UDPInterface {
 	 */
 	virtual void setStreamingSourceIP(const char* c) = 0;
 
+	/*
+	 * Restream stop dummy packet from receiver
+	 * @return OK or FAIL
+	 */
+	virtual int restreamStop() = 0;
+
 
 	//***callback functions***
 	/**

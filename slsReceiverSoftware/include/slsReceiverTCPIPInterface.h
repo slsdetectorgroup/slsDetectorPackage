@@ -267,6 +267,9 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	/** enable gap pixels */
 	int enable_gap_pixels();
 
+	/** restream stop packet */
+	int restream_stop();
+
 
 
 	/** detector type */

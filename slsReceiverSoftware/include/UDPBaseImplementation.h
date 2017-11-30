@@ -555,6 +555,12 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	void setStreamingSourceIP(const char* c);
 
+	/*
+	 * Restream stop dummy packet from receiver
+	 * @return OK or FAIL
+	 */
+	int restreamStop();
+
 	//***callback functions***
 	/**
 	 * Call back for start acquisition

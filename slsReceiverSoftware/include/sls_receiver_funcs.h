@@ -62,6 +62,8 @@ enum recFuncs{
 	F_RECEIVER_STREAMING_SRC_IP,	/** < sets the receiver streaming source IP */
 	F_SET_RECEIVER_SILENT_MODE,		/** < sets the receiver silent mode */
 	F_ENABLE_GAPPIXELS_IN_RECEIVER,	/** < sets gap pixels in the receiver */
+	F_RESTREAM_STOP_FROM_RECEIVER,	/** < restream stop from receiver */
+
 	/* Always append functions hereafter!!! */
 
 

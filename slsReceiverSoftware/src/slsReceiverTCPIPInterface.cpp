@@ -283,7 +283,7 @@ const char* slsReceiverTCPIPInterface::getFunctionName(enum recFuncs func) {
 	case F_SET_RECEIVER_SILENT_MODE:	return "F_SET_RECEIVER_SILENT_MODE";
 	case F_RECEIVER_STREAMING_SRC_IP: 	return "F_RECEIVER_STREAMING_SRC_IP";
 	case F_ENABLE_GAPPIXELS_IN_RECEIVER:return "F_ENABLE_GAPPIXELS_IN_RECEIVER";
-
+	case F_RESTREAM_STOP_FROM_RECEIVER:	return "F_RESTREAM_STOP_FROM_RECEIVER";
 	default:							return "Unknown Function";
 	}
 }
@@ -331,6 +331,7 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_SET_RECEIVER_SILENT_MODE]		= 	&slsReceiverTCPIPInterface::set_silent_mode;
 	flist[F_RECEIVER_STREAMING_SRC_IP]		= 	&slsReceiverTCPIPInterface::set_streaming_source_ip;
 	flist[F_ENABLE_GAPPIXELS_IN_RECEIVER]	=	&slsReceiverTCPIPInterface::enable_gap_pixels;
+	flist[F_RESTREAM_STOP_FROM_RECEIVER]	= 	&slsReceiverTCPIPInterface::restream_stop;
 
 #ifdef VERYVERBOSE
 	for (int i = 0; i < NUM_REC_FUNCTIONS ; i++) {
@@ -2442,6 +2443,7 @@ int slsReceiverTCPIPInterface::set_silent_mode() {
 
 
 
+
 int slsReceiverTCPIPInterface::enable_gap_pixels() {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
@@ -2451,7 +2453,6 @@ int slsReceiverTCPIPInterface::enable_gap_pixels() {
 	// receive arguments
 	if (mySock->ReceiveDataOnly(&enable,sizeof(enable)) < 0 )
 		return printSocketReadError();
-
 
 
 	// execute action
@@ -2488,11 +2489,46 @@ int slsReceiverTCPIPInterface::enable_gap_pixels() {
 	if (ret == OK && mySock->differentClients)
 		ret = FORCE_UPDATE;
 
+	// return ok/fail
+	return ret;
+}
+
+
+
+
+int slsReceiverTCPIPInterface::restream_stop(){
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+
+	// execute action
+	// only a set, not a get
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	if (receiverBase == NULL)
+		invalidReceiverObject();
+	else if (mySock->differentClients && lockStatus)
+		receiverlocked();
+	else if (receiverBase->getStatus() != IDLE)
+		receiverNotIdle();
+	else if (receiverBase->getDataStreamEnable() == false) {
+			ret = FAIL;
+			sprintf(mess,"Could not restream stop packet as data Streaming is disabled.\n");
+			FILE_LOG(logERROR) << "Warning: " << mess;
+	} else {
+		ret = receiverBase->restreamStop();
+		if (ret == FAIL) {
+			sprintf(mess,"Could not restream stop packet.\n");
+			FILE_LOG(logERROR) << "Warning: " << mess;
+		}
+	}
+#endif
+
+	if (ret == OK && mySock->differentClients)
+		ret = FORCE_UPDATE;
+
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if (ret == FAIL)
 		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
 
 	// return ok/fail
 	return ret;

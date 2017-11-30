@@ -600,6 +600,22 @@ void UDPStandardImplementation::closeFiles() {
 }
 
 
+int UDPStandardImplementation::restreamStop() {
+	bool ret = OK;
+	for (vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it) {
+		if ((*it)->restreamStop() == FAIL)
+			ret = FAIL;
+	}
+
+	// if fail, prints in datastreamer
+	if (ret == OK) {
+		FILE_LOG(logINFO) << "Restreaming Dummy Header via ZMQ successful";
+	}
+
+	return ret;
+}
+
+
 void UDPStandardImplementation::SetLocalNetworkParameters() {
 	//to increase socket receiver buffer size and max length of input queue by changing kernel settings
 	if (myDetectorType == EIGER)

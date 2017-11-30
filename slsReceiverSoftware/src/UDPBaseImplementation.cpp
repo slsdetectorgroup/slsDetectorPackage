@@ -597,6 +597,11 @@ void UDPBaseImplementation::setStreamingSourceIP(const char c[]){
 }
 
 
+int UDPBaseImplementation::restreamStop() {
+	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
+	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
+}
+
 /***callback functions***/
 void UDPBaseImplementation::registerCallBackStartAcquisition(int (*func)(char*, char*, uint64_t, uint32_t, void*),void *arg){
 	startAcquisitionCallBack=func;

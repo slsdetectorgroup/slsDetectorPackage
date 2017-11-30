@@ -184,7 +184,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 	/*! \page acquisition
-   - \b busy returns \c 1 if the acquisition is active, \c 0 otherwise. Works when the acquisition is started in blocking mode. Only get! \c Returns \c (int)
+   - <b>  busy i</b> sets/gets acquiring flag. \c 1 the acquisition is active, \c 0 otherwise. Acquire command will set this flag to 1 at the beginning and to 0 at the end. Use this to clear flag if acquisition terminated unexpectedly. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="busy"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdStatus;
@@ -2069,6 +2069,12 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
 	++i;
 
+	/*! \page receiver
+   - <b>r_restreamstop [i]</b> If data streaming in receiver is enabled, restreams the stop dummy packet via zmq. i can be any value. Only put! \cReturns 1 for success 0 for fail \c (int)
+	 */
+	descrToFuncMap[i].m_pFuncName="r_restreamstop"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
+	++i;
 
 
 
@@ -2460,7 +2466,10 @@ string slsDetectorCommand::cmdStatus(int narg, char *args[], int action) {
 	}
 	else if (cmd=="busy") {
 		if (action==PUT_ACTION) {
-			return string ("cannot put");
+			int i;
+			if(!sscanf(args[1],"%d",&i))
+				return string("cannot parse busy mode");
+			myDet->setAcquiringFlag(i);
 		}
 		char answer[100];
 		sprintf(answer,"%d", myDet->getAcquiringFlag());
@@ -2479,8 +2488,10 @@ string slsDetectorCommand::helpStatus(int narg, char *args[], int action) {
 		os << string("status \t gets the detector status - can be: running, error, transmitting, finished, waiting or idle\n");
 		os << string("busy \t gets the status of acquire- can be: 0 or 1. 0 for idle, 1 for running\n");
 	}
-	if (action==PUT_ACTION || action==HELP_ACTION)
+	if (action==PUT_ACTION || action==HELP_ACTION) {
 		os << string("status \t controls the detector acquisition - can be start or stop \n");
+		os << string("busy i\t sets the status of acquire- can be: 0(idle) or 1(running).Command Acquire sets it to 1 at beignning of acquire and back to 0 at the end. Clear Flag for unexpected acquire terminations. \n");
+	}
 	return os.str();
 }
 
@@ -5414,15 +5425,6 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
 
 	ret=myDet->setTimer(index,t);
 
-	//  cout << "here!"<< endl;
-	//set frame index
-	if (index==FRAME_NUMBER || index==CYCLES_NUMBER ){
-		if ((myDet->setTimer(FRAME_NUMBER,-1)*myDet->setTimer(CYCLES_NUMBER,-1))>1) {
-			myDet->setFrameIndex(0);
-		} else
-			myDet->setFrameIndex(-1);
-	}
-
 	if ((ret!=-1) && (index==ACQUISITION_TIME || index==SUBFRAME_ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER)) {
 		rval=(double)ret*1E-9;
 		sprintf(answer,"%0.9f",rval);
@@ -6053,6 +6055,20 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 	}
 
 
+	else if(cmd=="r_restreamstop"){
+		if (action==GET_ACTION)
+			return string("cannot get");
+		else {
+			if ((myDet->getRunStatus() != IDLE) || (myDet->getReceiverStatus() != IDLE)) {
+				std::cout << "Could not restream stop from receiver. Acquisition still in progress" << std::endl;
+				sprintf(answer,"%d",0);
+			}
+			sprintf(answer,"%d",(myDet->restreamStopFromReceiver() == OK) ? 1 : 0);
+		}
+		return string(answer);
+	}
+
+
 	return string("could not decode command");
 
 }
@@ -6063,12 +6079,13 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
 
 	ostringstream os;
 	if (action==PUT_ACTION || action==HELP_ACTION) {
-		os << "receiver [status] \t starts/stops the receiver to listen to detector packets. - can be start or stop" << std::endl;
+		os << "receiver [status] \t starts/stops the receiver to listen to detector packets. - can be start, stop." << std::endl;
 		os << "resetframescaught [any value] \t resets frames caught by receiver" << std::endl;
 		os << "r_readfreq \t sets the gui read frequency of the receiver, 0 if gui requests frame, >0 if receiver sends every nth frame to gui" << std::endl;
 		os << "tengiga \t sets system to be configure for 10Gbe if set to 1, else 1Gbe if set to 0" << std::endl;
 		os << "rx_fifodepth [val]\t sets receiver fifo depth to val" << std::endl;
 		os << "r_silent [i]\t sets receiver in silent mode, ie. it will not print anything during real time acquisition. 1 sets, 0 unsets." << std::endl;
+		os << "r_restreamstop [i]\t If data streaming in receiver is enabled and receiver is idle, restreams the stop dummy packet via zmq. i can be any value." << std::endl;
 	}
 	if (action==GET_ACTION || action==HELP_ACTION){
 		os << "receiver \t returns the status of receiver - can be running or idle" << std::endl;
@@ -6078,16 +6095,9 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
 		os << "tengiga \t returns 1 if the system is configured for 10Gbe else 0 for 1Gbe" << std::endl;
 		os << "rx_fifodepth \t returns receiver fifo depth" << std::endl;
 		os << "r_silent \t returns receiver silent mode enable. 1 is silent, 0 not silent." << std::endl;
+		os << "r_restreamstop \t returns if restreaming the stop dummy packet from receiver via zmq was success(1) or fail(0)" << std:: endl;
 	}
 	return os.str();
-
-
-
-
-
-
-
-
 }
 
 string slsDetectorCommand::helpPattern(int narg, char *args[], int action) {

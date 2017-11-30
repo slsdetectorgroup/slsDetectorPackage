@@ -265,8 +265,6 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     /** 10 Gbe enable*/
     int tenGigaEnable;
 
-    /** flag for acquiring */
-    bool acquiringFlag;
     /** flipped data across x or y axis */
     int flippedData[2];
     /** tcp port from gui/different process to receiver (only data) */
@@ -1951,18 +1949,21 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   bool getAcquiringFlag();
 
   /**
-     Set external gui flag in shared memory
-     \param b set external gui flag
+   * Check if acquiring flag is set, set error if set
+   * \returns FAIL if not ready, OK if ready
    */
-  void setExternalGuiFlag(bool b=false);
+  bool isAcquireReady();
 
   /**
-     Get external gui flag from shared memory
-     \returns external gui flag
+     If data streaming in receiver is enabled,
+     restream the stop dummy packet from receiver
+     Used usually for Moench,
+     in case it is lost in network due to high data rate
+     \returns OK if success else FAIL
    */
-  bool getExternalGuiFlag();
+  int restreamStopFromReceiver();
 
- 
+
  protected:
  
 

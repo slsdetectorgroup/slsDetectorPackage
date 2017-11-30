@@ -83,7 +83,7 @@ using namespace std;
 #define RECEIVER_SILENT_MODE_NOT_SET		0x0000000100000000ULL
 #define RECEIVER_TIMER_NOT_SET				0x0000000200000000ULL
 #define RECEIVER_ENABLE_GAPPIXELS_NOT_SET	0x0000000400000000ULL
-
+#define RESTREAM_STOP_FROM_RECEIVER			0x0000000800000000ULL
 //											0x0000000FFFFFFFFFULL
 
 /** @short class returning all error messages for error mask */
@@ -270,6 +270,11 @@ public:
 
 		if(slsErrorMask&RECEIVER_ENABLE_GAPPIXELS_NOT_SET)
 			retval.append("Could not enable/disable gap pixels in receiver.\n");
+
+		if(slsErrorMask&RESTREAM_STOP_FROM_RECEIVER)
+				retval.append("Could not restream stop from receiver.\n");
+
+
 
 
 		//------------------------------------------------------ length of message

@@ -796,7 +796,11 @@ void* qDrawPlot::DataStartAcquireThread(void *this_pointer){
 		}
 	}
 
+	if (((qDrawPlot*)this_pointer)->myDet->getAcquiringFlag() == true) {
+		((qDrawPlot*)this_pointer)->myDet->setAcquiringFlag(false);
+	}
 	((qDrawPlot*)this_pointer)->myDet->acquire(1);
+
 	return this_pointer;
 }
 
@@ -1292,6 +1296,7 @@ int qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus){
 #ifdef VERBOSE
 	cout << "\nEntering Acquisition Finished with status " ;
 #endif
+	emit AcquisitionFinishedSignal();
 	QString status = QString(slsDetectorBase::runStatusType(slsDetectorDefs::runStatus(detectorStatus)).c_str());
 #ifdef VERBOSE
   cout << status.toAscii().constData() << " and progress " << currentProgress << endl;
@@ -1304,14 +1309,12 @@ int qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus){
 		//stop_signal = 1;//just to be sure
 		emit AcquisitionErrorSignal(status);
 	}
-
+#ifdef VERBOSE
 	//all measurements are over
 	else if(currentProgress==100){
-#ifdef VERBOSE
 		cout << "Acquisition Finished" << endl << endl;
-#endif
 	}
-
+#endif
 	StartStopDaqToggle(true);
 	//this lets the measurement tab know its over, and to enable tabs
 	emit UpdatingPlotFinished();

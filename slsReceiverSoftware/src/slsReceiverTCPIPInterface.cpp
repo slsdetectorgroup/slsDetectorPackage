@@ -2489,6 +2489,12 @@ int slsReceiverTCPIPInterface::enable_gap_pixels() {
 	if (ret == OK && mySock->differentClients)
 		ret = FORCE_UPDATE;
 
+	// send answer
+	mySock->SendDataOnly(&ret,sizeof(ret));
+	if (ret == FAIL)
+		mySock->SendDataOnly(mess,sizeof(mess));
+	mySock->SendDataOnly(&retval,sizeof(retval));
+
 	// return ok/fail
 	return ret;
 }

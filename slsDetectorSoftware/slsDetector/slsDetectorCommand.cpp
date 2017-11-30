@@ -184,7 +184,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 	/*! \page acquisition
-   - \b busy returns \c 1 if the acquisition is active, \c 0 otherwise. Works when the acquisition is started in blocking mode. Only get! \c Returns \c (int)
+   - <b>  busy i</b> sets/gets acquiring flag. \c 1 the acquisition is active, \c 0 otherwise. Acquire command will set this flag to 1 at the beginning and to 0 at the end. Use this to clear flag if acquisition terminated unexpectedly. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="busy"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdStatus;
@@ -2438,7 +2438,10 @@ string slsDetectorCommand::cmdStatus(int narg, char *args[], int action) {
 	}
 	else if (cmd=="busy") {
 		if (action==PUT_ACTION) {
-			return string ("cannot put");
+			int i;
+			if(!sscanf(args[1],"%d",&i))
+				return string("cannot parse busy mode");
+			myDet->setAcquiringFlag(i);
 		}
 		char answer[100];
 		sprintf(answer,"%d", myDet->getAcquiringFlag());
@@ -2457,8 +2460,10 @@ string slsDetectorCommand::helpStatus(int narg, char *args[], int action) {
 		os << string("status \t gets the detector status - can be: running, error, transmitting, finished, waiting or idle\n");
 		os << string("busy \t gets the status of acquire- can be: 0 or 1. 0 for idle, 1 for running\n");
 	}
-	if (action==PUT_ACTION || action==HELP_ACTION)
+	if (action==PUT_ACTION || action==HELP_ACTION) {
 		os << string("status \t controls the detector acquisition - can be start or stop \n");
+		os << string("busy i\t sets the status of acquire- can be: 0(idle) or 1(running).Command Acquire sets it to 1 at beignning of acquire and back to 0 at the end. Clear Flag for unexpected acquire terminations. \n");
+	}
 	return os.str();
 }
 

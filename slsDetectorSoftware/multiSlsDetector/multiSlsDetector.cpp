@@ -207,7 +207,6 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
     }
 
     thisMultiDetector->acquiringFlag = false;
-    thisMultiDetector->externalgui = false;
     thisMultiDetector->receiver_upstream = false;
     thisMultiDetector->alreadyExisting=1;
   }
@@ -1592,7 +1591,7 @@ int multiSlsDetector::stopAcquisition(){
 	}
 
 	*stoppedFlag=1;
-	setAcquiringFlag(false);
+
 	return ret;
 };
 
@@ -6520,11 +6519,6 @@ int multiSlsDetector::pulseChip(int n) {
 
 void multiSlsDetector::setAcquiringFlag(bool b){
 	thisMultiDetector->acquiringFlag = b;
-	for(int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet){
-		if(detectors[idet]){
-			detectors[idet]->setAcquiringFlag(b);
-		}
-	}
 }
 
 bool multiSlsDetector::getAcquiringFlag(){
@@ -6532,10 +6526,12 @@ bool multiSlsDetector::getAcquiringFlag(){
 }
 
 
-void multiSlsDetector::setExternalGuiFlag(bool b){
-	thisMultiDetector->externalgui = b;
-}
+bool multiSlsDetector::isAcquireReady() {
+	if (thisMultiDetector->acquiringFlag) {
+		std::cout << "Acquire has already started. If previous acquisition terminated unexpectedly, reset busy flag to restart.(sls_detector_put busy 0)" << std::endl;
+		return FAIL;
+	}
 
-bool multiSlsDetector::getExternalGuiFlag(){
-	return thisMultiDetector->externalgui;
+	thisMultiDetector->acquiringFlag = true;
+	return OK;
 }

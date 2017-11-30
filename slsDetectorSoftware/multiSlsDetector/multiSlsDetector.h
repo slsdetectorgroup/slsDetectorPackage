@@ -1469,18 +1469,10 @@ class multiSlsDetector  : public slsDetectorUtils {
   bool getAcquiringFlag();
 
   /**
-     Set external gui flag in shared memory
-     \param b set external gui flag
+   * Check if acquiring flag is set, set error if set
+   * \returns FAIL if not ready, OK if ready
    */
-  void setExternalGuiFlag(bool b=false);
-
-  /**
-     Get external gui flag from shared memory
-     \returns external gui flag
-   */
-  bool getExternalGuiFlag();
-
-
+  bool isAcquireReady();
 
 private:
 

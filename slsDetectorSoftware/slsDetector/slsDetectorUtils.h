@@ -899,37 +899,16 @@ virtual int setReceiverSilentMode(int i = -1)=0;
    */
   virtual bool getAcquiringFlag() = 0;
 
-  /**
-     Set external gui flag in shared memory
-     \param b set external gui flag
-   */
-  virtual void setExternalGuiFlag(bool b=false) = 0;
 
   /**
-     Get external gui flag from shared memory
-     \returns external gui flag
+   * Check if acquiring flag is set, set error if set
+   * \returns FAIL if not ready, OK if ready
    */
-  virtual bool getExternalGuiFlag() = 0;
+  virtual bool isAcquireReady() = 0;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  protected:
+ protected:
 
 
   static const int64_t thisSoftwareVersion=0x20141013;

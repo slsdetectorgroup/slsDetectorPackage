@@ -774,7 +774,6 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->actionMask=0;
 
     thisDetector->tenGigaEnable=0;
-    thisDetector->acquiringFlag = false;
     thisDetector->flippedData[0] = 0;
     thisDetector->flippedData[1] = 0;
     thisDetector->zmqport = 0;
@@ -9154,21 +9153,15 @@ int slsDetector::pulseChip(int n) {
 
 
 void slsDetector::setAcquiringFlag(bool b){
-	thisDetector->acquiringFlag = b;
+	parentDet->setAcquiringFlag(b);
 }
 
 bool slsDetector::getAcquiringFlag(){
-	return thisDetector->acquiringFlag;
+	return parentDet->getAcquiringFlag();
 }
 
 
-void slsDetector::setExternalGuiFlag(bool b){
-	pthread_mutex_lock(&ms);
-	parentDet->setExternalGuiFlag(b);
-	pthread_mutex_unlock(&ms);
-}
-
-bool slsDetector::getExternalGuiFlag(){
-	return parentDet->getExternalGuiFlag();
+bool slsDetector::isAcquireReady() {
+	return parentDet->isAcquireReady();
 }
 

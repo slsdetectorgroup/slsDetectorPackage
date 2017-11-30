@@ -65,6 +65,10 @@ public:
 
 public slots:
 
+	/** Unconnects start/stop button when acquisition is finished
+	 */
+	void AcquisitionFinished();
+
 	/** update plot is finished,
 	 * changes start/stop text and enables/disables all widgets
 	 */

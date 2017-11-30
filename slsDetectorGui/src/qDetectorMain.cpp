@@ -329,6 +329,7 @@ void qDetectorMain::Initialization(){
 // Plotting
 	// When the acquisition is finished, must update the meas tab
 	connect(myPlot,	SIGNAL(UpdatingPlotFinished()),				this,				SLOT(EnableTabs()));
+	connect(myPlot,	SIGNAL(AcquisitionFinishedSignal()),		tab_measurement,	SLOT(AcquisitionFinished()));
 	connect(myPlot,	SIGNAL(UpdatingPlotFinished()),				tab_measurement,	SLOT(UpdateFinished()));
 	//This should not be called as it will change file name to measurement when run finished
 	//connect(myPlot,	SIGNAL(UpdatingPlotFinished()),				tab_plot,			SLOT(Refresh()));

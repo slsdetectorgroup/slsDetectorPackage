@@ -374,6 +374,15 @@ void qTabMeasurement::startStopAcquisition(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+void qTabMeasurement::AcquisitionFinished(){
+	disconnect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
+	btnStartStop->setText("Wait");
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 void qTabMeasurement::UpdateFinished(){
 	UpdateProgress();
 	disconnect(spinIndex,			SIGNAL(valueChanged(int)),			this,	SLOT(setRunIndex(int)));
@@ -381,7 +390,7 @@ void qTabMeasurement::UpdateFinished(){
 	connect(spinIndex,			SIGNAL(valueChanged(int)),			this,	SLOT(setRunIndex(int)));
 	progressTimer->stop();
 
-	disconnect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
+	/*disconnect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition())); done in AcquisitionFinished() already */
 	btnStartStop->setText("Start");
 	btnStartStop->setIcon(*iconStart);
 	btnStartStop->setChecked(false);

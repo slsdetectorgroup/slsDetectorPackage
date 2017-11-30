@@ -585,6 +585,7 @@ void SetCurrentMeasurementSignal(int);
 void saveErrorSignal(QString);
 void AcquisitionErrorSignal(QString);
 void UpdatePlotSignal();
+void AcquisitionFinishedSignal();
 };
 
 

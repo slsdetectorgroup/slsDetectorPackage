@@ -624,6 +624,12 @@ class UDPInterface {
 	 */
 	virtual void setStreamingPort(const uint32_t i) = 0;
 
+	/**
+	 * Restream stop dummy packet from receiver
+	 * @return OK or FAIL
+	 */
+	virtual int restreamStop() = 0;
+
 
 	//***callback functions***
 	/**

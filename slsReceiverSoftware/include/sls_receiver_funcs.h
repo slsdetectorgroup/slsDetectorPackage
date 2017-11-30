@@ -63,6 +63,7 @@ enum recFuncs{
 	F_SET_RECEIVER_STREAMING_PORT, 	/** < sets the receiver streaming port */
 
 	F_SET_RECEIVER_SILENT_MODE,		/** < sets the receiver silent mode */
+	F_RESTREAM_STOP_FROM_RECEIVER,	/** < restream stop from receiver */
 	/* Always append functions hereafter!!! */
 
 

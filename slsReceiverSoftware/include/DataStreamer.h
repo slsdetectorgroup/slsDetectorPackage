@@ -116,6 +116,12 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	void CloseZmqSocket();
 
+	/**
+	 * Restream stop dummy packet
+	 * @return OK or FAIL
+	 */
+	int restreamStop();
+
  private:
 
 	/**

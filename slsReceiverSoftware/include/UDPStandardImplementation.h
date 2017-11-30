@@ -170,6 +170,12 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 */
 	void closeFiles();
 
+	/**
+	 * Restream stop dummy packet from receiver
+	 * @return OK or FAIL
+	 */
+	int restreamStop();
+
 
 private:
 

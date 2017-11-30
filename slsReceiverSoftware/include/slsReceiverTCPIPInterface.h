@@ -267,6 +267,9 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	/** set silent mode */
 	int set_silent_mode();
 
+	/** restream stop packet */
+	int restream_stop();
+
 
 
 	/** detector type */

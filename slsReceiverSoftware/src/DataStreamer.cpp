@@ -280,3 +280,15 @@ int DataStreamer::SendHeader(sls_detector_header* header, bool dummy) {
 			header->detType, header->version
 	);
 }
+
+
+
+int DataStreamer::restreamStop() {
+	//send dummy header
+	int ret = zmqSocket->SendHeaderData(index, true, SLS_DETECTOR_JSON_HEADER_VERSION);
+	if (!ret) {
+		FILE_LOG(logERROR) << "Could not Restream Dummy Header via ZMQ for port " << zmqSocket->GetPortNumber();
+		return FAIL;
+	}
+	return OK;
+}

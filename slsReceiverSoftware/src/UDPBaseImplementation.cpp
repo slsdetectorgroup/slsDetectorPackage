@@ -572,6 +572,7 @@ void UDPBaseImplementation::setStreamingPort(const uint32_t i) {
 int UDPBaseImplementation::restreamStop() {
 	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
+	return OK;
 }
 
 /***callback functions***/

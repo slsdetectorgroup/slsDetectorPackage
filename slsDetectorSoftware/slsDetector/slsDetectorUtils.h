@@ -906,6 +906,15 @@ virtual int setReceiverSilentMode(int i = -1)=0;
    */
   virtual bool isAcquireReady() = 0;
 
+  /**
+     If data streaming in receiver is enabled,
+     restream the stop dummy packet from receiver
+     Used usually for Moench,
+     in case it is lost in network due to high data rate
+     \returns OK if success else FAIL
+   */
+  virtual int restreamStopFromReceiver() = 0;
+
 
 
  protected:

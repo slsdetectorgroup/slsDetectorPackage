@@ -6535,3 +6535,20 @@ bool multiSlsDetector::isAcquireReady() {
 	thisMultiDetector->acquiringFlag = true;
 	return OK;
 }
+
+
+
+int multiSlsDetector::restreamStopFromReceiver() {
+	int ret=OK, ret1;
+	for(int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet){
+		if (detectors[idet]) {
+			ret1=detectors[idet]->restreamStopFromReceiver();
+			if(detectors[idet]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<idet));
+			if (ret1!=OK)
+				ret=FAIL;
+		}
+	}
+
+	return ret;
+}

@@ -82,6 +82,7 @@ using namespace std;
 #define RECEIVER_FILE_FORMAT				0x0000000080000000ULL
 #define RECEIVER_SUBF_TIME_NOT_SET			0x0000000100000000ULL
 #define RECEIVER_SILENT_MODE_NOT_SET		0x0000000200000000ULL
+#define RESTREAM_STOP_FROM_RECEIVER			0x0000000400000000ULL
 //											0x0000000FFFFFFFFFULL
 
 /** @short class returning all error messages for error mask */
@@ -265,6 +266,13 @@ public:
 
 		if(slsErrorMask&RECEIVER_SILENT_MODE_NOT_SET)
 			retval.append("Could not set silent mode in receiver.\n");
+
+		if(slsErrorMask&RESTREAM_STOP_FROM_RECEIVER)
+				retval.append("Could not restream stop from receiver.\n");
+
+
+
+
 
 		//------------------------------------------------------ length of message
 

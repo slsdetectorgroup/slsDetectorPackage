@@ -9165,3 +9165,26 @@ bool slsDetector::isAcquireReady() {
 	return parentDet->isAcquireReady();
 }
 
+
+int slsDetector::restreamStopFromReceiver(){
+	int fnum=F_RESTREAM_STOP_FROM_RECEIVER;
+	int ret = FAIL;
+	char mess[MAX_STR_LENGTH] = "";
+
+	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
+#ifdef VERBOSE
+		std::cout << "To Restream stop dummy from Receiver via zmq" << std::endl;
+#endif
+
+		if (connectData() == OK){
+			ret=thisReceiver->executeFunction(fnum,mess);
+			disconnectData();
+		}
+		if(ret==FORCE_UPDATE)
+			ret=updateReceiver();
+		else if (ret == FAIL)
+			setErrorMask((getErrorMask())|(RESTREAM_STOP_FROM_RECEIVER));
+	}
+
+	return ret;
+}

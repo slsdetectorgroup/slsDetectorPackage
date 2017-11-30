@@ -2047,6 +2047,12 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
 	++i;
 
+	/*! \page receiver
+   - <b>r_restreamstop [i]</b> If data streaming in receiver is enabled, restreams the stop dummy packet via zmq. i can be any value. Only put! \cReturns 1 for success 0 for fail \c (int)
+	 */
+	descrToFuncMap[i].m_pFuncName="r_restreamstop"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
+	++i;
 
 
 
@@ -6006,6 +6012,20 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 	}
 
 
+	else if(cmd=="r_restreamstop"){
+		if (action==GET_ACTION)
+			return string("cannot get");
+		else {
+			if ((myDet->getRunStatus() != IDLE) || (myDet->getReceiverStatus() != IDLE)) {
+				std::cout << "Could not restream stop from receiver. Acquisition still in progress" << std::endl;
+				sprintf(answer,"%d",0);
+			}
+			sprintf(answer,"%d",(myDet->restreamStopFromReceiver() == OK) ? 1 : 0);
+		}
+		return string(answer);
+	}
+
+
 	return string("could not decode command");
 
 }
@@ -6016,12 +6036,13 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
 
 	ostringstream os;
 	if (action==PUT_ACTION || action==HELP_ACTION) {
-		os << "receiver [status] \t starts/stops the receiver to listen to detector packets. - can be start or stop" << std::endl;
+		os << "receiver [status] \t starts/stops the receiver to listen to detector packets. - can be start, stop." << std::endl;
 		os << "resetframescaught [any value] \t resets frames caught by receiver" << std::endl;
 		os << "r_readfreq \t sets the gui read frequency of the receiver, 0 if gui requests frame, >0 if receiver sends every nth frame to gui" << std::endl;
 		os << "tengiga \t sets system to be configure for 10Gbe if set to 1, else 1Gbe if set to 0" << std::endl;
 		os << "rx_fifodepth [val]\t sets receiver fifo depth to val" << std::endl;
 		os << "r_silent [i]\t sets receiver in silent mode, ie. it will not print anything during real time acquisition. 1 sets, 0 unsets." << std::endl;
+		os << "r_restreamstop [i]\t If data streaming in receiver is enabled and receiver is idle, restreams the stop dummy packet via zmq. i can be any value." << std::endl;
 	}
 	if (action==GET_ACTION || action==HELP_ACTION){
 		os << "receiver \t returns the status of receiver - can be running or idle" << std::endl;
@@ -6031,16 +6052,9 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
 		os << "tengiga \t returns 1 if the system is configured for 10Gbe else 0 for 1Gbe" << std::endl;
 		os << "rx_fifodepth \t returns receiver fifo depth" << std::endl;
 		os << "r_silent \t returns receiver silent mode enable. 1 is silent, 0 not silent." << std::endl;
+		os << "r_restreamstop \t returns if restreaming the stop dummy packet from receiver via zmq was success(1) or fail(0)" << std:: endl;
 	}
 	return os.str();
-
-
-
-
-
-
-
-
 }
 
 string slsDetectorCommand::helpPattern(int narg, char *args[], int action) {

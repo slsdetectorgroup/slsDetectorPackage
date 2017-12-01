@@ -519,6 +519,30 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
       DO NOT USE!!! ONLY EXPERT USER!!!
   */
   virtual int readRegister(int addr)=0;
+
+
+  /**
+      sets a bit in a register
+      \param addr address
+      \param n nth bit ranging from 0 to 31
+      \returns current register value
+
+      DO NOT USE!!! ONLY EXPERT USER!!!
+  */
+  virtual int setBit(int addr, int n)=0;
+
+
+  /**
+      clear a bit in a register
+      \param addr address
+      \param n nth bit ranging from 0 to 31
+      \returns current register value
+
+      DO NOT USE!!! ONLY EXPERT USER!!!
+  */
+  virtual int clearBit(int addr, int n)=0;
+
+
   /**
      Returns the IP of the last client connecting to the detector
   */

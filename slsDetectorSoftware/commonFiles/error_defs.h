@@ -20,8 +20,12 @@ using namespace std;
 /** Error flags */
 /*Assumption: Only upto 63 detectors */
 
+// multi errors
+//											0xFFF0000000000000ULL
 #define MULTI_DETECTORS_NOT_ADDED			0x8000000000000000ULL
+#define MULTI_HAVE_DIFFERENT_VALUES			0x4000000000000000ULL
 
+// sls errors
 #define CRITICAL_ERROR_MASK 				0xFFFFFFF
 
 //											0xFFFFFFF000000000ULL
@@ -45,6 +49,7 @@ using namespace std;
 #define RECEIVER_MULTI_DET_SIZE_NOT_SET		0x0000200000000000ULL
 #define PREPARE_ACQUISITION					0x0000100000000000ULL
 #define CLEANUP_ACQUISITION					0x0000080000000000ULL
+#define REGISER_WRITE_READ					0x0000040000000000ULL
 //											0xFFFFFFF000000000ULL
 
 //											0x0000000FFFFFFFFFULL
@@ -83,6 +88,7 @@ using namespace std;
 #define RECEIVER_SUBF_TIME_NOT_SET			0x0000000100000000ULL
 #define RECEIVER_SILENT_MODE_NOT_SET		0x0000000200000000ULL
 #define RESTREAM_STOP_FROM_RECEIVER			0x0000000400000000ULL
+
 //											0x0000000FFFFFFFFFULL
 
 /** @short class returning all error messages for error mask */
@@ -155,7 +161,8 @@ public:
 		if(slsErrorMask&CLEANUP_ACQUISITION)
 			retval.append("Could not clean up after acquisition in detector\n");
 
-
+		if(slsErrorMask&REGISER_WRITE_READ)
+			retval.append("Could not read/write register in detector\n");
 
 
 

@@ -879,6 +879,27 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   int readRegister(int addr);
 
   /**
+      sets a bit in a register
+      \param addr address
+      \param n nth bit ranging from 0 to 31
+      \returns current register value
+
+      DO NOT USE!!! ONLY EXPERT USER!!!
+  */
+  int setBit(int addr, int n);
+
+
+  /**
+      clear a bit in a register
+      \param addr address
+      \param n nth bit ranging from 0 to 31
+      \returns current register value
+
+      DO NOT USE!!! ONLY EXPERT USER!!!
+  */
+  int clearBit(int addr, int n);
+
+  /**
      set dacs value
      \param val value (in V)
      \param index DAC index

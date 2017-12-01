@@ -4635,66 +4635,116 @@ int multiSlsDetector::saveCalibrationFile(string fname, int imod) {
 
 int multiSlsDetector::writeRegister(int addr, int val){
 
-  int  i;//imi, ima,
-  int ret, ret1=-100;
+	int ret, ret1=-100;
 
-  for (i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
-    if (detectors[i]) {
-      ret=detectors[i]->writeRegister(addr,val);
-      if(detectors[i]->getErrorMask())
-	setErrorMask(getErrorMask()|(1<<i));
-     if (ret1==-100)
-	ret1=ret;
-      else if (ret!=ret1)
-	ret1=-1;
-    }
-  }
+	for (int i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
+		if (detectors[i]) {
+			ret=detectors[i]->writeRegister(addr,val);
+			if(detectors[i]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<i));
+			if (ret1==-100)
+				ret1=ret;
+			else if (ret!=ret1) {
+				// not setting it to -1 as it is a possible value
+				std::cout << "Error: Different Values for function writeRegister [" << ret << "," << ret1 << "]" << endl;
+				setErrorMask(getErrorMask()|MULTI_HAVE_DIFFERENT_VALUES);
+			}
+		}
+	}
 
-  return ret1;
-};
+	return ret1;
+}
 
 
 
 int multiSlsDetector::writeAdcRegister(int addr, int val){
 
-  int  i;//imi, ima,
-  int ret, ret1=-100;
+	int ret, ret1=-100;
 
-  for (i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
-    if (detectors[i]) {
-      ret=detectors[i]->writeAdcRegister(addr,val);
-      if(detectors[i]->getErrorMask())
-	setErrorMask(getErrorMask()|(1<<i));
-     if (ret1==-100)
-	ret1=ret;
-      else if (ret!=ret1)
-	ret1=-1;
-    }
-  }
+	for (int i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
+		if (detectors[i]) {
+			ret=detectors[i]->writeAdcRegister(addr,val);
+			if(detectors[i]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<i));
+			if (ret1==-100)
+				ret1=ret;
+			else if (ret!=ret1) {
+				// not setting it to -1 as it is a possible value
+				std::cout << "Error: Different Values for function writeAdcRegister [" << ret << "," << ret1 << "]" << endl;
+				setErrorMask(getErrorMask()|MULTI_HAVE_DIFFERENT_VALUES);
+			}
+		}
+	}
 
-  return ret1;
-};
+	return ret1;
+}
 
 
 int multiSlsDetector::readRegister(int addr){
 
-  int  i;//imi, ima,
-  int ret, ret1=-100;
+	int ret, ret1=-100;
 
-  for (i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
-    if (detectors[i]) {
-      ret=detectors[i]->readRegister(addr);
-      if(detectors[i]->getErrorMask())
-	setErrorMask(getErrorMask()|(1<<i));
-      if (ret1==-100)
-	ret1=ret;
-      else if (ret!=ret1)
-	ret1=-1;
-    }
-  }
+	for (int i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
+		if (detectors[i]) {
+			ret=detectors[i]->readRegister(addr);
+			if(detectors[i]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<i));
+			if (ret1==-100)
+				ret1=ret;
+			else if (ret!=ret1) {
+				// not setting it to -1 as it is a possible value
+				std::cout << "Error: Different Values for function readRegister [" << ret << "," << ret1 << "]" << endl;
+				setErrorMask(getErrorMask()|MULTI_HAVE_DIFFERENT_VALUES);
+			}
+		}
+	}
 
-  return ret1;
-};
+	return ret1;
+}
+
+
+int multiSlsDetector::setBit(int addr, int n) {
+	int ret1, ret=-100;
+
+	for (int i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
+		if (detectors[i]) {
+			ret1=detectors[i]->setBit(addr,n);
+			if(detectors[i]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<i));
+			if (ret==-100)
+				ret=ret1;
+			else if (ret!=ret1) {
+				// not setting it to -1 as it is a possible value
+				std::cout << "Error: Different Values for function setBit [" << ret << "," << ret1 << "]" << endl;
+				setErrorMask(getErrorMask()|MULTI_HAVE_DIFFERENT_VALUES);
+			}
+		}
+	}
+
+	return ret;
+}
+
+
+int multiSlsDetector::clearBit(int addr, int n) {
+	int ret1, ret=-100;
+
+	for (int i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
+		if (detectors[i]) {
+			ret1=detectors[i]->clearBit(addr,n);
+			if(detectors[i]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<i));
+			if (ret==-100)
+				ret=ret1;
+			else if (ret!=ret1) {
+				// not setting it to -1 as it is a possible value
+				std::cout << "Error: Different Values for function clearBit [" << ret << "," << ret1 << "]" << endl;
+				setErrorMask(getErrorMask()|MULTI_HAVE_DIFFERENT_VALUES);
+			}
+		}
+	}
+
+	return ret;
+}
 
 
 
@@ -6045,8 +6095,15 @@ string multiSlsDetector::getErrorMessage(int &critical){
 
 	multiMask = getErrorMask();
 	if(multiMask){
-		 if(multiMask & MULTI_DETECTORS_NOT_ADDED)
+		 if(multiMask & MULTI_DETECTORS_NOT_ADDED) {
 			 retval.append("Detectors not added:\n"+string(getNotAddedList())+string("\n"));
+			 critical = 1;
+		 }
+		 if(multiMask & MULTI_HAVE_DIFFERENT_VALUES) {
+			 retval.append("A previous multi detector command gave different values\n"
+					 "Please check the console\n");
+			 critical = 0;
+		 }
 
 		  for (int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet) {
 		    if (detectors[idet]) {

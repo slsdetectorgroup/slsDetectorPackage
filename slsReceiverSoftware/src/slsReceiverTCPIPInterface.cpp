@@ -370,7 +370,7 @@ int slsReceiverTCPIPInterface::decode_function(){
 		ret=(this->*flist[fnum])();
 	}
 	if (ret == FAIL) {
-		FILE_LOG(logERROR) << "Error executing the function = " << fnum << " (" << getFunctionName((enum recFuncs)fnum) << ")";
+		FILE_LOG(logERROR) << "Failed to execute function = " << fnum << " (" << getFunctionName((enum recFuncs)fnum) << ")";
 	}
 	return ret;
 }
@@ -378,7 +378,7 @@ int slsReceiverTCPIPInterface::decode_function(){
 
 
 int slsReceiverTCPIPInterface::printSocketReadError() {
-	FILE_LOG(logERROR) << "Error reading from socket. Possible socket crash";
+	FILE_LOG(logERROR) << "Reading from socket failed. Possible socket crash";
 	return FAIL;
 }
 
@@ -386,27 +386,27 @@ int slsReceiverTCPIPInterface::printSocketReadError() {
 void slsReceiverTCPIPInterface::invalidReceiverObject() {
 	ret=FAIL;
 	strcpy(mess,"Receiver not set up. Please use rx_hostname first.\n");
-	FILE_LOG(logERROR) << "Warning: " << mess;
+	FILE_LOG(logERROR) << mess;
 }
 
 
 void slsReceiverTCPIPInterface::receiverlocked() {
 	ret = FAIL;
 	sprintf(mess,"Receiver locked by %s\n",mySock->lastClientIP);
-	FILE_LOG(logERROR) << "Warning: " << mess;
+	FILE_LOG(logERROR) << mess;
 }
 
 
 void slsReceiverTCPIPInterface::receiverNotIdle() {
 	ret = FAIL;
 	sprintf(mess,"Can not execute %s when receiver is not idle\n", getFunctionName((enum recFuncs)fnum));
-	FILE_LOG(logERROR) << "Warning: " << mess;
+	FILE_LOG(logERROR) << mess;
 }
 
 void slsReceiverTCPIPInterface::functionNotImplemented() {
 	ret = FAIL;
 	sprintf(mess, "Function (%s) is not implemented for this detector\n",getFunctionName((enum recFuncs)fnum));
-	FILE_LOG(logERROR) << "Warning: " << mess;
+	FILE_LOG(logERROR) << mess;
 }
 
 
@@ -458,7 +458,7 @@ int slsReceiverTCPIPInterface::exec_command() {
 		} else {
 			ret = FAIL;
 			sprintf(mess,"Executing Command failed\n");
-			FILE_LOG(logERROR) << "Warning: " << mess;
+			FILE_LOG(logERROR) << mess;
 		}
 	}
 
@@ -553,13 +553,13 @@ int slsReceiverTCPIPInterface::set_port() {
 	if (mySock->differentClients && lockStatus) {
 		ret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",mySock->lastClientIP);
-		FILE_LOG(logERROR) << "Warning: " << mess;
+		FILE_LOG(logERROR) << mess;
 	}
 	else {
 		if (p_number<1024) {
 			ret = FAIL;
 			sprintf(mess,"Port Number (%d) too low\n", p_number);
-			FILE_LOG(logERROR) << "Warning: " << mess;
+			FILE_LOG(logERROR) << mess;
 		}
 		FILE_LOG(logINFO) << "set port to " << p_number <<endl;
 		strcpy(oldLastClientIP, mySock->lastClientIP);
@@ -570,11 +570,11 @@ int slsReceiverTCPIPInterface::set_port() {
 			if (sd < 0) {
 				ret = FAIL;
 				sprintf(mess,"Could not bind port %d\n", p_number);
-				FILE_LOG(logERROR) << "Warning: " << mess;
+				FILE_LOG(logERROR) << mess;
 				if (sd == -10) {
 					ret = FAIL;
 					sprintf(mess,"Port %d already set\n", p_number);
-					FILE_LOG(logERROR) << "Warning: " << mess;
+					FILE_LOG(logERROR) << mess;
 				}
 			}
 			else
@@ -757,7 +757,7 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 		default:
 			ret = FAIL;
 			sprintf(mess,"Unknown detector type: %d\n", dr);
-			FILE_LOG(logERROR) << "Warning: " << mess;
+			FILE_LOG(logERROR) << mess;
 			break;
 		}
 		if(ret == OK) {
@@ -931,7 +931,7 @@ int slsReceiverTCPIPInterface::setup_udp(){
 		if (temp == "none"){
 			ret = FAIL;
 			strcpy(mess, "Failed to get ethernet interface or IP\n");
-			FILE_LOG(logERROR) << "Warning: " << mess;
+			FILE_LOG(logERROR) << mess;
 		}
 		else {
 			char eth[MAX_STR_LENGTH];
@@ -941,7 +941,7 @@ int slsReceiverTCPIPInterface::setup_udp(){
 				strcpy(eth,"");
 				ret = FAIL;
 				strcpy(mess, "Failed to get ethernet interface\n");
-				FILE_LOG(logERROR) << "Warning: " << mess;
+				FILE_LOG(logERROR) << mess;
 			}
 			receiverBase->setEthernetInterface(eth);
 
@@ -952,7 +952,7 @@ int slsReceiverTCPIPInterface::setup_udp(){
 			if ((temp=="00:00:00:00:00:00") || (ret == FAIL)){
 				ret = FAIL;
 				strcpy(mess,"failed to get mac adddress to listen to\n");
-				FILE_LOG(logERROR) << "Warning: " << mess;
+				FILE_LOG(logERROR) << mess;
 			}
 			else {
 				strcpy(retval,temp.c_str());
@@ -1016,7 +1016,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 				default:
 					ret = FAIL;
 					sprintf(mess,"This timer mode (%lld) does not exist for receiver\n", (long long int)index[0]);
-					FILE_LOG(logERROR) << "Warning: " << mess;
+					FILE_LOG(logERROR) << mess;
 				}
 			}
 		}
@@ -1038,14 +1038,14 @@ int slsReceiverTCPIPInterface::set_timer() {
 		default:
 			ret = FAIL;
 			sprintf(mess,"This timer mode (%lld) does not exist for receiver\n", (long long int)index[0]);
-			FILE_LOG(logERROR) << "Warning: " << mess;
+			FILE_LOG(logERROR) << mess;
 		}
 
 		// check
 		if (ret == OK && index[1] >= 0 && retval != index[1]) {
 			ret = FAIL;
 			strcpy(mess,"Could not set timer\n");
-			FILE_LOG(logERROR) << "Warning: " << mess;
+			FILE_LOG(logERROR) << mess;
 		}
 	}
 #endif
@@ -1097,7 +1097,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 	if (!exists) {
 		ret = FAIL;
 		sprintf(mess,"This dynamic range %d does not exist for this detector\n",dr);
-		FILE_LOG(logERROR) << "Warning: " << mess;
+		FILE_LOG(logERROR) << mess;
 	}
 
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
@@ -1115,7 +1115,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 					ret = receiverBase->setDynamicRange(dr);
 					if(ret == FAIL) {
 						strcpy(mess, "Could not allocate memory for fifo or could not start listening/writing threads\n");
-						FILE_LOG(logERROR) << "Warning: " << mess;
+						FILE_LOG(logERROR) << mess;
 					}
 				}
 			}
@@ -1124,7 +1124,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 			if(dr > 0 && retval != dr) {
 				ret = FAIL;
 				strcpy(mess, "Could not set dynamic range\n");
-				FILE_LOG(logERROR) << "Warning: " << mess;
+				FILE_LOG(logERROR) << mess;
 			}
 		}
 	}
@@ -1173,7 +1173,7 @@ int slsReceiverTCPIPInterface::set_read_frequency(){
 				ret = receiverBase->setFrameToGuiFrequency(index);
 				if(ret == FAIL) {
 					strcpy(mess, "Could not allocate memory for listening fifo\n");
-					FILE_LOG(logERROR) << "Warning: " << mess;
+					FILE_LOG(logERROR) << mess;
 				}
 			}
 		}
@@ -1182,7 +1182,7 @@ int slsReceiverTCPIPInterface::set_read_frequency(){
 		if(index >= 0 && retval != index){
 			ret = FAIL;
 			strcpy(mess,"Could not set frame to gui frequency");
-			FILE_LOG(logERROR) << "Warning: " << mess;
+			FILE_LOG(logERROR) << mess;
 		}
 	}
 #endif
@@ -1248,12 +1248,12 @@ int slsReceiverTCPIPInterface::start_receiver(){
 		if (s != IDLE) {
 			ret=FAIL;
 			sprintf(mess,"Cannot start Receiver as it is in %s state\n",runStatusType(s).c_str());
-			FILE_LOG(logERROR) << "Warning: " << mess;
+			FILE_LOG(logERROR) << mess;
 		}
 		else {
 			ret=receiverBase->startReceiver(mess);
 			if (ret == FAIL) {
-				FILE_LOG(logERROR) << "Warning: " << mess;
+				FILE_LOG(logERROR) << mess;
 			}
 		}
 	}
@@ -1296,7 +1296,7 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 		else {
 			ret = FAIL;
 			sprintf(mess,"Could not stop receiver. It is in %s state\n",runStatusType(s).c_str());
-			FILE_LOG(logERROR) << "Warning: " << mess;
+			FILE_LOG(logERROR) << mess;
 		}
 	}
 #endif
@@ -1340,7 +1340,7 @@ int	slsReceiverTCPIPInterface::start_readout(){
 		else {
 			ret = FAIL;
 			strcpy(mess,"Could not start readout");
-			FILE_LOG(logERROR) << "Warning: " << mess;
+			FILE_LOG(logERROR) << mess;
 		}
 	}
 #endif
@@ -1415,7 +1415,7 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 		if (retval == NULL || (strlen(fPath) && strcasecmp(fPath, retval))) {
 			ret = FAIL;
 			strcpy(mess,"receiver file path does not exist\n");
-			FILE_LOG(logERROR) << "Warning: " << mess;
+			FILE_LOG(logERROR) << mess;
 		}
 	}
 #endif
@@ -1476,7 +1476,7 @@ int slsReceiverTCPIPInterface::set_file_name() {
 		if(retval == NULL) {
 			ret = FAIL;
 			strcpy(mess, "file name is empty\n");
-			FILE_LOG(logERROR) << "Warning: " << mess;
+			FILE_LOG(logERROR) << mess;
 		}
 	}
 #endif
@@ -1534,7 +1534,7 @@ int slsReceiverTCPIPInterface::set_file_index() {
 		if(index >= 0 && retval != index) {
 			ret = FAIL;
 			strcpy(mess, "Could not set file index\n");
-			FILE_LOG(logERROR) << "Warning: " << mess;
+			FILE_LOG(logERROR) << mess;
 		}
 	}
 #endif
@@ -1726,7 +1726,7 @@ int slsReceiverTCPIPInterface::enable_file_write(){
 		if(enable >= 0 && enable != retval) {
 			ret=FAIL;
 			strcpy(mess,"Could not set file write enable");
-			FILE_LOG(logERROR) << "Warning: " << mess;
+			FILE_LOG(logERROR) << mess;
 		}
 	}
 #endif
@@ -1762,7 +1762,7 @@ int slsReceiverTCPIPInterface::enable_compression() {
 
 	ret = FAIL;
 	sprintf(mess, "This function (%s) is not implemented yet\n", getFunctionName((enum recFuncs)fnum));
-	FILE_LOG(logERROR) << "Warning: " << mess;
+	FILE_LOG(logERROR) << mess;
 
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
@@ -1804,7 +1804,7 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 		if(index >=0 && retval != index) {
 			ret = FAIL;
 			strcpy(mess,"Could not set file over write enable\n");
-			FILE_LOG(logERROR) << "Warning: " << mess;
+			FILE_LOG(logERROR) << mess;
 		}
 	}
 #endif
@@ -1863,7 +1863,7 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 			if((val >= 0) && (val != retval)) {
 				ret = FAIL;
 				strcpy(mess,"Could not set ten giga enable");
-				FILE_LOG(logERROR) << "Warning: " << mess;
+				FILE_LOG(logERROR) << mess;
 			}
 		}
 	}
@@ -1913,7 +1913,7 @@ int slsReceiverTCPIPInterface::set_fifo_depth() {
 				ret = receiverBase->setFifoDepth(value);
 				if (ret == FAIL) {
 					strcpy(mess,"Could not set fifo depth");
-					FILE_LOG(logERROR) << "Warning: " << mess;
+					FILE_LOG(logERROR) << mess;
 				}
 			}
 		}
@@ -1922,7 +1922,7 @@ int slsReceiverTCPIPInterface::set_fifo_depth() {
 		if(value >= 0 && retval != value) {
 			ret = FAIL;
 			strcpy(mess, "Could not set fifo depth\n");
-			FILE_LOG(logERROR) << "Warning: " << mess;
+			FILE_LOG(logERROR) << mess;
 		}
 	}
 #endif
@@ -1979,7 +1979,7 @@ int slsReceiverTCPIPInterface::set_activate() {
 			if(enable >= 0 && retval != enable){
 				ret = FAIL;
 				sprintf(mess,"Could not set activate to %d, returned %d\n",enable,retval);
-				FILE_LOG(logERROR) << "Warning: " << mess;
+				FILE_LOG(logERROR) << mess;
 			}
 		}
 	}
@@ -2033,7 +2033,7 @@ int slsReceiverTCPIPInterface::set_data_stream_enable(){
 		if(index >= 0 && retval != index){
 			ret = FAIL;
 			strcpy(mess,"Could not set data stream enable");
-			FILE_LOG(logERROR) << "Warning: " << mess;
+			FILE_LOG(logERROR) << mess;
 		}
 	}
 #endif
@@ -2086,7 +2086,7 @@ int slsReceiverTCPIPInterface::set_read_receiver_timer(){
 		if(index >= 0 && retval != index){
 			ret = FAIL;
 			strcpy(mess,"Could not set datastream timer");
-			FILE_LOG(logERROR) << "Warning: " << mess;
+			FILE_LOG(logERROR) << mess;
 		}
 	}
 #endif
@@ -2143,7 +2143,7 @@ int slsReceiverTCPIPInterface::set_flipped_data(){
 			if (args[1] > -1 && retval != args[1]) {
 				ret = FAIL;
 				strcpy(mess, "Could not set flipped data\n");
-				FILE_LOG(logERROR) << "Warning: " << mess;
+				FILE_LOG(logERROR) << mess;
 			}
 		}
 	}
@@ -2198,7 +2198,7 @@ int slsReceiverTCPIPInterface::set_file_format() {
 		if(f >= 0 && retval != f){
 			ret = FAIL;
 			sprintf(mess,"Could not set file format to %s, returned %s\n",getFileFormatType(f).c_str(),getFileFormatType(retval).c_str());
-			FILE_LOG(logERROR) << "Warning: " << mess;
+			FILE_LOG(logERROR) << mess;
 		}
 	}
 #endif
@@ -2251,7 +2251,7 @@ int slsReceiverTCPIPInterface::set_detector_posid() {
 		if (arg >= 0 && retval != arg) {
 			ret = FAIL;
 			strcpy(mess,"Could not set detector position id");
-			FILE_LOG(logERROR) << "Warning: " << mess;
+			FILE_LOG(logERROR) << mess;
 		}
 	}
 #endif
@@ -2447,12 +2447,12 @@ int slsReceiverTCPIPInterface::restream_stop(){
 	else if (receiverBase->getDataStreamEnable() == false) {
 			ret = FAIL;
 			sprintf(mess,"Could not restream stop packet as data Streaming is disabled.\n");
-			FILE_LOG(logERROR) << "Warning: " << mess;
+			FILE_LOG(logERROR) << mess;
 	} else {
 		ret = receiverBase->restreamStop();
 		if (ret == FAIL) {
 			sprintf(mess,"Could not restream stop packet.\n");
-			FILE_LOG(logERROR) << "Warning: " << mess;
+			FILE_LOG(logERROR) << mess;
 		}
 	}
 #endif

@@ -113,14 +113,9 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success) {
 			//VERBOSE_PRINT("Read configuration file of " + iline + " lines");
 		}
 		catch(...){
-			FILE_LOG(logERROR) << "Error opening configuration file " << fname ;
+			FILE_LOG(logERROR) << "Coult not open configuration file " << fname ;
 		success = FAIL;
 		}
-	}
-
-
-	if(success != OK){
-		FILE_LOG(logERROR) << "Failed: see output above for more information " ;
 	}
 
 	if (success==OK){

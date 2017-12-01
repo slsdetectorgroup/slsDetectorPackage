@@ -33,7 +33,7 @@ UDPInterface * UDPInterface::create(string receiver_type){
 	}
 #endif
 	else{
-		FILE_LOG(logWARNING) << "[ERROR] UDP interface not supported, using standard implementation";
+		FILE_LOG(logERROR) << "UDP interface not supported, using base implementation";
 		return new UDPBaseImplementation();
 	}
 }

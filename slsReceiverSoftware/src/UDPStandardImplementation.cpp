@@ -329,7 +329,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	//create fifo structure
 	numberofJobs = -1;
 	if (SetupFifoStructure() == FAIL) {
-		FILE_LOG(logERROR) << "Error: Could not allocate memory for fifo structure";
+		FILE_LOG(logERROR) << "Could not allocate memory for fifo structure";
 		return FAIL;
 	}
 
@@ -340,7 +340,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 				fileWriteEnable, &dataStreamEnable, &frameToGuiFrequency, &frameToGuiTimerinMS,
 				rawDataReadyCallBack,pRawDataReady));
 		if (Listener::GetErrorMask() || DataProcessor::GetErrorMask()) {
-			FILE_LOG(logERROR) << "Error: Could not creates listener/dataprocessor threads (index:" << i << ")";
+			FILE_LOG(logERROR) << "Could not create listener/dataprocessor threads (index:" << i << ")";
 			for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
 				delete(*it);
 			listener.clear();

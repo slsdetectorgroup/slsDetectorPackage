@@ -29,7 +29,7 @@ ThreadObject::~ThreadObject() {
 
 
 void ThreadObject::PrintMembers() {
-	FILE_LOG (logDEBUG) 	<< "Index : " << 	index
+	FILE_LOG(logDEBUG) 	<< "Index : " << 	index
 						<< "\nalive: " <<	alive
 						<< "\nkillThread: " << killThread
 						<< "\npthread: " << thread;
@@ -44,25 +44,25 @@ void  ThreadObject::DestroyThread() {
 		sem_destroy(&semaphore);
 		killThread = false;
 		alive = false;
-		FILE_LOG (logDEBUG) << GetType() << " thread with index " << index << " destroyed successfully.";
+		FILE_LOG(logDEBUG) << GetType() << " thread with index " << index << " destroyed successfully.";
 	}
 }
 
 
 int ThreadObject::CreateThread() {
 	if(alive){
-		FILE_LOG (logERROR) << "Cannot create thread " << index << ". Already alive";
+		FILE_LOG(logERROR) << "Cannot create thread " << index << ". Already alive";
 		return FAIL;
 	}
 	sem_init(&semaphore,1,0);
 	killThread = false;
 
 	if(pthread_create(&thread, NULL,StartThread, (void*) this)){
-		FILE_LOG (logERROR) << "Could not create "  << GetType() << " thread with index " << index;
+		FILE_LOG(logERROR) << "Could not create "  << GetType() << " thread with index " << index;
 		return FAIL;
 	}
 	alive = true;
-	FILE_LOG (logDEBUG) << GetType() << " thread " << index << " created successfully.";
+	FILE_LOG(logDEBUG) << GetType() << " thread " << index << " created successfully.";
 
 	return OK;
 }

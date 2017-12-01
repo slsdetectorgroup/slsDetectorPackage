@@ -67,7 +67,7 @@ DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool fwenable, bool* d
 	}
 
 	NumberofDataProcessors++;
-	FILE_LOG (logDEBUG) << "Number of DataProcessors: " << NumberofDataProcessors;
+	FILE_LOG(logDEBUG) << "Number of DataProcessors: " << NumberofDataProcessors;
 
 	memset((void*)&timerBegin, 0, sizeof(timespec));
 }

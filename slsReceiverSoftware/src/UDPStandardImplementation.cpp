@@ -171,7 +171,7 @@ int UDPStandardImplementation::setShortFrameEnable(const int i) {
 		for (vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
 			(*it)->SetGeneralData(generalData);
 	}
-	FILE_LOG (logINFO) << "Short Frame Enable: " << shortFrameEnable;
+	FILE_LOG(logINFO) << "Short Frame Enable: " << shortFrameEnable;
 	return OK;
 }
 
@@ -191,7 +191,7 @@ int UDPStandardImplementation::setFrameToGuiFrequency(const uint32_t freq) {
 			break;
 		}*/
 	}
-	FILE_LOG (logINFO) << "Frame to Gui Frequency: " << frameToGuiFrequency;
+	FILE_LOG(logINFO) << "Frame to Gui Frequency: " << frameToGuiFrequency;
 	return OK;
 }
 
@@ -230,7 +230,7 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {
 			SetThreadPriorities();
 		}
 	}
-	FILE_LOG (logINFO) << "Data Send to Gui: " << dataStreamEnable;
+	FILE_LOG(logINFO) << "Data Send to Gui: " << dataStreamEnable;
 	return OK;
 }
 
@@ -246,7 +246,7 @@ int UDPStandardImplementation::setDynamicRange(const uint32_t i) {
 		if (SetupFifoStructure() == FAIL)
 			return FAIL;
 	}
-	FILE_LOG (logINFO) << "Dynamic Range: " << dynamicRange;
+	FILE_LOG(logINFO) << "Dynamic Range: " << dynamicRange;
 	return OK;
 }
 
@@ -261,7 +261,7 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b) {
 		if (SetupFifoStructure() == FAIL)
 			return FAIL;
 	}
-	FILE_LOG (logINFO) << "Ten Giga: " << stringEnable(tengigaEnable);
+	FILE_LOG(logINFO) << "Ten Giga: " << stringEnable(tengigaEnable);
 	return OK;
 }
 
@@ -274,7 +274,7 @@ int UDPStandardImplementation::setFifoDepth(const uint32_t i) {
 		if (SetupFifoStructure() == FAIL)
 			return FAIL;
 	}
-	FILE_LOG (logINFO) << "Fifo Depth: " << i;
+	FILE_LOG(logINFO) << "Fifo Depth: " << i;
 	return OK;
 }
 
@@ -291,7 +291,7 @@ void UDPStandardImplementation::setSilentMode(const uint32_t i){
 
 
 int UDPStandardImplementation::setDetectorType(const detectorType d) {
-	FILE_LOG (logDEBUG) << "Setting receiver type";
+	FILE_LOG(logDEBUG) << "Setting receiver type";
 	DeleteMembers();
 	InitializeMembers();
 	myDetectorType = d;
@@ -302,10 +302,10 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	case EIGER:
 	case JUNGFRAUCTB:
 	case JUNGFRAU:
-		FILE_LOG (logINFO) << " ***** " << getDetectorType(d) << " Receiver *****";
+		FILE_LOG(logINFO) << " ***** " << getDetectorType(d) << " Receiver *****";
 		break;
 	default:
-		FILE_LOG (logERROR) << "This is an unknown receiver type " << (int)d;
+		FILE_LOG(logERROR) << "This is an unknown receiver type " << (int)d;
 		return FAIL;
 	}
 
@@ -329,7 +329,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	//create fifo structure
 	numberofJobs = -1;
 	if (SetupFifoStructure() == FAIL) {
-		FILE_LOG (logERROR) << "Error: Could not allocate memory for fifo structure";
+		FILE_LOG(logERROR) << "Error: Could not allocate memory for fifo structure";
 		return FAIL;
 	}
 
@@ -340,7 +340,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 				fileWriteEnable, &dataStreamEnable, &frameToGuiFrequency, &frameToGuiTimerinMS,
 				rawDataReadyCallBack,pRawDataReady));
 		if (Listener::GetErrorMask() || DataProcessor::GetErrorMask()) {
-			FILE_LOG (logERROR) << "Error: Could not creates listener/dataprocessor threads (index:" << i << ")";
+			FILE_LOG(logERROR) << "Error: Could not creates listener/dataprocessor threads (index:" << i << ")";
 			for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
 				delete(*it);
 			listener.clear();
@@ -359,7 +359,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 
 	SetThreadPriorities();
 
-	FILE_LOG (logDEBUG) << " Detector type set to " << getDetectorType(d);
+	FILE_LOG(logDEBUG) << " Detector type set to " << getDetectorType(d);
 	return OK;
 }
 
@@ -387,7 +387,7 @@ void UDPStandardImplementation::resetAcquisitionCount() {
 	for (vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
 		(*it)->ResetParametersforNewAcquisition();
 
-	FILE_LOG (logINFO) << "Acquisition Count has been reset";
+	FILE_LOG(logINFO) << "Acquisition Count has been reset";
 }
 
 
@@ -597,19 +597,19 @@ void UDPStandardImplementation::SetLocalNetworkParameters() {
 	//to increase Socket Receiver Buffer size
 	sprintf(command,"echo $((%d)) > /proc/sys/net/core/rmem_max",RECEIVE_SOCKET_BUFFER_SIZE);
 	if (system(command)) {
-		FILE_LOG (logWARNING) << "No root privileges to change Socket Receiver Buffer size (net.core.rmem_max)";
+		FILE_LOG(logWARNING) << "No root privileges to change Socket Receiver Buffer size (net.core.rmem_max)";
 		return;
 	}
-	FILE_LOG (logINFO) << "Socket Receiver Buffer size (/proc/sys/net/core/rmem_max) modified to " << RECEIVE_SOCKET_BUFFER_SIZE ;
+	FILE_LOG(logINFO) << "Socket Receiver Buffer size (/proc/sys/net/core/rmem_max) modified to " << RECEIVE_SOCKET_BUFFER_SIZE ;
 
 
 	// to increase Max length of input packet queue
 	sprintf(command,"echo %d > /proc/sys/net/core/netdev_max_backlog",MAX_SOCKET_INPUT_PACKET_QUEUE);
 	if (system(command)) {
-		FILE_LOG (logWARNING) << "No root privileges to change Max length of input packet queue (net.core.rmem_max)";
+		FILE_LOG(logWARNING) << "No root privileges to change Max length of input packet queue (net.core.rmem_max)";
 		return;
 	}
-	FILE_LOG (logINFO) << "Max length of input packet queue (/proc/sys/net/core/netdev_max_backlog) modified to " << MAX_SOCKET_INPUT_PACKET_QUEUE ;
+	FILE_LOG(logINFO) << "Max length of input packet queue (/proc/sys/net/core/netdev_max_backlog) modified to " << MAX_SOCKET_INPUT_PACKET_QUEUE ;
 }
 
 
@@ -656,8 +656,8 @@ int UDPStandardImplementation::SetupFifoStructure() {
 		if(dataStreamer.size())dataStreamer[i]->SetFifo(fifo[i]);
 	}
 
-	FILE_LOG (logINFO) << "Memory Allocated Per Fifo: " << ( ((generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize)) * fifoDepth) << " bytes" ;
-	FILE_LOG (logINFO) << " Fifo structure(s) reconstructed: " << numThreads;
+	FILE_LOG(logINFO) << "Memory Allocated Per Fifo: " << ( ((generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize)) * fifoDepth) << " bytes" ;
+	FILE_LOG(logINFO) << " Fifo structure(s) reconstructed: " << numThreads;
 	return OK;
 }
 

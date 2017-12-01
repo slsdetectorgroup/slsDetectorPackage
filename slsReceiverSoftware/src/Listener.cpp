@@ -59,7 +59,7 @@ Listener::Listener(detectorType dtype, Fifo*& f, runStatus* s, uint32_t* portno,
 		pthread_mutex_unlock(&Mutex);
 	}
 	NumberofListeners++;
-	FILE_LOG (logDEBUG) << "Number of Listeners: " << NumberofListeners;
+	FILE_LOG(logDEBUG) << "Number of Listeners: " << NumberofListeners;
 
 	switch(myDetectorType){
 	case JUNGFRAU:

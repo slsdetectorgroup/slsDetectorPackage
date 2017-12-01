@@ -238,7 +238,7 @@ char *UDPBaseImplementation::getStreamingSourceIP() const{
 
 /**initial parameters***/
 void UDPBaseImplementation::configure(map<string, string> config_map){
-	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
+	FILE_LOG(logERROR) << __AT__ << " doing nothing...";
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
 }
 
@@ -312,7 +312,7 @@ void UDPBaseImplementation::setFilePath(const char c[]){
 		if(stat(c,&st) == 0)
 			strcpy(filePath,c);
 		else
-			FILE_LOG(logWARNING) << "FilePath does not exist: " << filePath;
+			FILE_LOG(logERROR) << "FilePath does not exist: " << filePath;
 	}
 	FILE_LOG(logINFO) << "Info: File path: " << filePath;
 }
@@ -545,30 +545,30 @@ void UDPBaseImplementation::resetAcquisitionCount(){
 }
 
 int UDPBaseImplementation::startReceiver(char *c){
-	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
+	FILE_LOG(logERROR) << __AT__ << " doing nothing...";
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
 	return OK;
 }
 
 void UDPBaseImplementation::stopReceiver(){
-	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
+	FILE_LOG(logERROR) << __AT__ << " doing nothing...";
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
 }
 
 void UDPBaseImplementation::startReadout(){
-	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
+	FILE_LOG(logERROR) << __AT__ << " doing nothing...";
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
 }
 
 void UDPBaseImplementation::shutDownUDPSockets(){
-	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
+	FILE_LOG(logERROR) << __AT__ << " doing nothing...";
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
 }
 
 
 //FIXME: needed, isnt stopReceiver enough?
 void UDPBaseImplementation::abort(){
-	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
+	FILE_LOG(logERROR) << __AT__ << " doing nothing...";
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
 }
 
@@ -598,7 +598,7 @@ void UDPBaseImplementation::setStreamingSourceIP(const char c[]){
 
 
 int UDPBaseImplementation::restreamStop() {
-	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
+	FILE_LOG(logERROR) << __AT__ << " doing nothing...";
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
 	return OK;
 }

@@ -47,7 +47,7 @@ DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, int* sEnable, uint64_t* fi) :
 	}
 
 	NumberofDataStreamers++;
-	FILE_LOG (logDEBUG) << "Number of DataStreamers: " << NumberofDataStreamers;
+	FILE_LOG(logDEBUG) << "Number of DataStreamers: " << NumberofDataStreamers;
 
 	strcpy(fileNametoStream, "");
 }

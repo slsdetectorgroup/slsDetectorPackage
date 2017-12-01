@@ -4866,9 +4866,9 @@ string slsDetectorCommand::cmdRegister(int narg, char *args[], int action) {
 				return string("Bit number out of range")+string(args[2]);
 
 			if (cmd=="setbit")
-				sprintf(answer,"0x%x",myDet->writeRegister(addr,myDet->readRegister(addr)| 1<<n));
+				sprintf(answer,"0x%x",myDet->setBit(addr,n));
 			if (cmd=="clearbit")
-				sprintf(answer,"0x%x",myDet->writeRegister(addr,myDet->readRegister(addr) & ~(1<<n)));
+				sprintf(answer,"0x%x",myDet->clearBit(addr,n));
 		}
 
 

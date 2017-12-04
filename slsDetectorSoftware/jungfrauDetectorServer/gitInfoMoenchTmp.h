@@ -1,0 +1,11 @@
+//#define SVNPATH ""
+#define SVNURL ""
+//#define SVNREPPATH ""
+#define SVNREPUUID ""
+//#define SVNREV ""
+//#define SVNKIND ""
+//#define SVNSCHED ""
+#define SVNAUTH ""
+#define SVNREV ""
+#define SVNDATE ""
+//

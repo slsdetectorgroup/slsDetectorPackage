@@ -1,0 +1,28 @@
+
+Internal setup: 
+    setdac
+    trimbits
+    rate correction tau
+    high voltage
+
+ 
+Setup:
+    photon energy
+    dynamic range (4,8,16,32)
+    number of images
+    exposure time
+    exposure period
+    readout speed(full speed, 1/2 speed, 1/4 or super slow)
+    readout mode (parallel, non-parallel or super safe)
+    trigger mode (internal,external start of series, external start of acquisitions, external window)
+    trigger polarity (pos/neg)
+    external gating (on, pos/neg)
+
+
+Acquisition:
+    start acquisition
+    stop acquisition
+    acquisition in progress
+    wait until daq is finished
+    status (needs to be implemented)
+

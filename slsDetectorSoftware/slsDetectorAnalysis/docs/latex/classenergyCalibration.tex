@@ -1,0 +1,337 @@
+\section{energy\-Calibration Class Reference}
+\label{classenergyCalibration}\index{energyCalibration@{energyCalibration}}
+{\tt \#include $<$energy\-Calibration.h$>$}
+
+\subsection*{Public Member Functions}
+\begin{CompactItemize}
+\item 
+\bf{energy\-Calibration} ()
+\item 
+\bf{$\sim$energy\-Calibration} ()
+\item 
+int \bf{set\-Plot\-Flag} (int p=-1)
+\item 
+int \bf{set\-Scan\-Sign} (int s=0)
+\item 
+int \bf{set\-Charge\-Sharing} (int p=-1)
+\item 
+void \bf{set\-Fit\-Range} (Double\_\-t mi, Double\_\-t ma)
+\item 
+void \bf{get\-Fit\-Range} (Double\_\-t \&mi, Double\_\-t \&ma)
+\item 
+void \bf{set\-Start\-Parameters} (Double\_\-t $\ast$par)
+\item 
+void \bf{get\-Start\-Parameters} (Double\_\-t $\ast$par)
+\item 
+TF1 $\ast$ \bf{fit\-SCurve} (TH1 $\ast$h1, Double\_\-t $\ast$mypar, Double\_\-t $\ast$emypar)
+\item 
+TF1 $\ast$ \bf{fit\-Spectrum} (TH1 $\ast$h1, Double\_\-t $\ast$mypar, Double\_\-t $\ast$emypar)
+\item 
+TGraph\-Errors $\ast$ \bf{linear\-Calibration} (int nscan, Double\_\-t $\ast$en, Double\_\-t $\ast$een, Double\_\-t $\ast$fl, Double\_\-t $\ast$efl, Double\_\-t \&gain, Double\_\-t \&off, Double\_\-t \&egain, Double\_\-t \&eoff)
+\item 
+TGraph\-Errors $\ast$ \bf{calibrate\-Scurves} (int nscan, Double\_\-t $\ast$en, Double\_\-t $\ast$een, TH1F $\ast$$\ast$h1, Double\_\-t \&gain, Double\_\-t \&off, Double\_\-t \&egain, Double\_\-t \&eoff)
+\item 
+TGraph\-Errors $\ast$ \bf{calibrate\-Spectra} (int nscan, Double\_\-t $\ast$en, Double\_\-t $\ast$een, TH1F $\ast$$\ast$h1, Double\_\-t \&gain, Double\_\-t \&off, Double\_\-t \&egain, Double\_\-t \&eoff)
+\end{CompactItemize}
+\subsection*{Private Member Functions}
+\begin{CompactItemize}
+\item 
+TGraph\-Errors $\ast$ \bf{calibrate} (int nscan, Double\_\-t $\ast$en, Double\_\-t $\ast$een, TH1F $\ast$$\ast$h1, Double\_\-t \&gain, Double\_\-t \&off, Double\_\-t \&egain, Double\_\-t \&eoff, int integral=1)
+\item 
+void \bf{init\-Fit\-Function} (TF1 $\ast$fun, TH1 $\ast$h1)
+\item 
+TF1 $\ast$ \bf{fit\-Function} (TF1 $\ast$fun, TH1 $\ast$h1, Double\_\-t $\ast$mypar, Double\_\-t $\ast$emypar)
+\end{CompactItemize}
+\subsection*{Private Attributes}
+\begin{CompactItemize}
+\item 
+int \bf{plot\_\-flag}
+\item 
+int \bf{cs\_\-flag}
+\item 
+Double\_\-t \bf{fit\_\-min}
+\item 
+Double\_\-t \bf{fit\_\-max}
+\item 
+Double\_\-t \bf{bg\_\-offset}
+\item 
+Double\_\-t \bf{bg\_\-slope}
+\item 
+Double\_\-t \bf{flex}
+\item 
+Double\_\-t \bf{noise}
+\item 
+Double\_\-t \bf{ampl}
+\item 
+Double\_\-t \bf{cs\_\-slope}
+\item 
+\bf{energy\-Calibration\-Functions} $\ast$ \bf{funcs}
+\item 
+TF1 $\ast$ \bf{fscurve}
+\item 
+TF1 $\ast$ \bf{fspectrum}
+\end{CompactItemize}
+
+
+\subsection{Detailed Description}
+class alowing the energy calibration of photon counting and anlogue detectors 
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{energyCalibration@{energy\-Calibration}!energyCalibration@{energyCalibration}}
+\index{energyCalibration@{energyCalibration}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}energy\-Calibration::energy\-Calibration ()}\label{classenergyCalibration_16f0658d2b526f52784057b2166efd22}
+
+
+default constructor - creates the function with which the s-curves will be fitted \index{energyCalibration@{energy\-Calibration}!~energyCalibration@{$\sim$energyCalibration}}
+\index{~energyCalibration@{$\sim$energyCalibration}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}energy\-Calibration::$\sim$energy\-Calibration ()}\label{classenergyCalibration_3bae2b9c26893daa8f583758509c844f}
+
+
+default destructor - deletes the function with which the s-curves will be fitted 
+
+\subsection{Member Function Documentation}
+\index{energyCalibration@{energy\-Calibration}!calibrate@{calibrate}}
+\index{calibrate@{calibrate}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}TGraph\-Errors$\ast$ energy\-Calibration::calibrate (int {\em nscan}, Double\_\-t $\ast$ {\em en}, Double\_\-t $\ast$ {\em een}, TH1F $\ast$$\ast$ {\em h1}, Double\_\-t \& {\em gain}, Double\_\-t \& {\em off}, Double\_\-t \& {\em egain}, Double\_\-t \& {\em eoff}, int {\em integral} = {\tt 1})\hspace{0.3cm}{\tt  [private]}}\label{classenergyCalibration_378daeddde40b6127ee6ed595506928c}
+
+
+calculates gain and offset for the set of energies \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em nscan}]number of energy scans \item[{\em en}]array of energies (nscan long) \item[{\em een}]array of errors on energies (nscan long) - can be NULL! \item[{\em h1}]array of TH1 \item[{\em gain}]reference to gain resulting from the fit \item[{\em offset}]reference to offset resulting from the fit \item[{\em integral}]1 is an s-curve set (default), 0 spectra \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]graph energy vs peak/inflection point \end{Desc}
+\index{energyCalibration@{energy\-Calibration}!calibrateScurves@{calibrateScurves}}
+\index{calibrateScurves@{calibrateScurves}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}TGraph\-Errors$\ast$ energy\-Calibration::calibrate\-Scurves (int {\em nscan}, Double\_\-t $\ast$ {\em en}, Double\_\-t $\ast$ {\em een}, TH1F $\ast$$\ast$ {\em h1}, Double\_\-t \& {\em gain}, Double\_\-t \& {\em off}, Double\_\-t \& {\em egain}, Double\_\-t \& {\em eoff})\hspace{0.3cm}{\tt  [inline]}}\label{classenergyCalibration_6f5ee6771522a31e4fe1eca143e2aa9b}
+
+
+calculates gain and offset for the set of energy scans \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em nscan}]number of energy scans \item[{\em en}]array of energies (nscan long) \item[{\em een}]array of errors on energies (nscan long) - can be NULL! \item[{\em h1}]array of TH1 \item[{\em gain}]reference to gain resulting from the fit \item[{\em off}]reference to offset resulting from the fit \item[{\em egain}]reference to error on the gain resulting from the fit \item[{\em eoff}]reference to the error on the offset resulting from the fit \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]graph energy vs inflection point \end{Desc}
+\index{energyCalibration@{energy\-Calibration}!calibrateSpectra@{calibrateSpectra}}
+\index{calibrateSpectra@{calibrateSpectra}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}TGraph\-Errors$\ast$ energy\-Calibration::calibrate\-Spectra (int {\em nscan}, Double\_\-t $\ast$ {\em en}, Double\_\-t $\ast$ {\em een}, TH1F $\ast$$\ast$ {\em h1}, Double\_\-t \& {\em gain}, Double\_\-t \& {\em off}, Double\_\-t \& {\em egain}, Double\_\-t \& {\em eoff})\hspace{0.3cm}{\tt  [inline]}}\label{classenergyCalibration_092637f656c0b88d57797e3ebd0f3e58}
+
+
+calculates gain and offset for the set of energy spectra \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em nscan}]number of energy scans \item[{\em en}]array of energies (nscan long) \item[{\em een}]array of errors on energies (nscan long) - can be NULL! \item[{\em h1}]array of TH1 \item[{\em gain}]reference to gain resulting from the fit \item[{\em off}]reference to offset resulting from the fit \item[{\em egain}]reference to error on the gain resulting from the fit \item[{\em eoff}]reference to the error on the offset resulting from the fit \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]graph energy vs peak \end{Desc}
+\index{energyCalibration@{energy\-Calibration}!fitFunction@{fitFunction}}
+\index{fitFunction@{fitFunction}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}TF1$\ast$ energy\-Calibration::fit\-Function (TF1 $\ast$ {\em fun}, TH1 $\ast$ {\em h1}, Double\_\-t $\ast$ {\em mypar}, Double\_\-t $\ast$ {\em emypar})\hspace{0.3cm}{\tt  [private]}}\label{classenergyCalibration_fe1c6dc5f56d12fe06569f401da19729}
+
+
+Perfors the fit according to the flags specified and returns the fitted function \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em fun}]function to fit \item[{\em h1}]histogram to fit \item[{\em mypar}]pointer to fit parameters array \item[{\em emypar}]pointer to fit parameter errors \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]the fitted function - can be used e.g. to get the Chi2 or similar \end{Desc}
+\index{energyCalibration@{energy\-Calibration}!fitSCurve@{fitSCurve}}
+\index{fitSCurve@{fitSCurve}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}TF1$\ast$ energy\-Calibration::fit\-SCurve (TH1 $\ast$ {\em h1}, Double\_\-t $\ast$ {\em mypar}, Double\_\-t $\ast$ {\em emypar})}\label{classenergyCalibration_0dcd8e06e31f7b70488a012db12b2bf8}
+
+
+fits histogram with the s-curve function \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em h1}]1d-histogram to be fitted \item[{\em mypar}]pointer to fit parameters array \item[{\em emypar}]pointer to fit parameter errors \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]the fitted function - can be used e.g. to get the Chi2 or similar \end{Desc}
+\index{energyCalibration@{energy\-Calibration}!fitSpectrum@{fitSpectrum}}
+\index{fitSpectrum@{fitSpectrum}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}TF1$\ast$ energy\-Calibration::fit\-Spectrum (TH1 $\ast$ {\em h1}, Double\_\-t $\ast$ {\em mypar}, Double\_\-t $\ast$ {\em emypar})}\label{classenergyCalibration_7d22b28cd2fad3d334f15f3d6dc7975a}
+
+
+fits histogram with the spectrum \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em h1}]1d-histogram to be fitted \item[{\em mypar}]pointer to fit parameters array \item[{\em emypar}]pointer to fit parameter errors \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]the fitted function - can be used e.g. to get the Chi2 or similar \end{Desc}
+\index{energyCalibration@{energy\-Calibration}!getFitRange@{getFitRange}}
+\index{getFitRange@{getFitRange}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void energy\-Calibration::get\-Fit\-Range (Double\_\-t \& {\em mi}, Double\_\-t \& {\em ma})\hspace{0.3cm}{\tt  [inline]}}\label{classenergyCalibration_bfb02327a6897bd97525c01697a1ba4f}
+
+
+gets the s-curve fit range \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em mi}]reference for minimum of the fit range (-1 is histogram x-min) \item[{\em ma}]reference for maximum of the fit range (-1 is histogram x-max) \end{description}
+\end{Desc}
+\index{energyCalibration@{energy\-Calibration}!getStartParameters@{getStartParameters}}
+\index{getStartParameters@{getStartParameters}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void energy\-Calibration::get\-Start\-Parameters (Double\_\-t $\ast$ {\em par})}\label{classenergyCalibration_fc7411b7a3191748dfcc90f86b823bf4}
+
+
+get start parameters for the s-curve function \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em par}]parameters, -1 means auto-calculated par[0] is the pedestal par[1] is the slope of the pedestal par[2] is the inflection point par[3] is the RMS par[4] is the amplitude par[5] is the angual coefficient of the charge sharing slope (scales with par[3]) -- always positive \end{description}
+\end{Desc}
+\index{energyCalibration@{energy\-Calibration}!initFitFunction@{initFitFunction}}
+\index{initFitFunction@{initFitFunction}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void energy\-Calibration::init\-Fit\-Function (TF1 $\ast$ {\em fun}, TH1 $\ast$ {\em h1})\hspace{0.3cm}{\tt  [private]}}\label{classenergyCalibration_3e84328c11772b6263224340ec924e37}
+
+
+Initializes the start parameters and the range of the fit depending on the histogram characteristics and/or on the start parameters specified by the user \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em fun}]pointer to function to be initialized \item[{\em h1}]histogram from which to extract the range and start parameters, if not already specified by the user \end{description}
+\end{Desc}
+\index{energyCalibration@{energy\-Calibration}!linearCalibration@{linearCalibration}}
+\index{linearCalibration@{linearCalibration}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}TGraph\-Errors$\ast$ energy\-Calibration::linear\-Calibration (int {\em nscan}, Double\_\-t $\ast$ {\em en}, Double\_\-t $\ast$ {\em een}, Double\_\-t $\ast$ {\em fl}, Double\_\-t $\ast$ {\em efl}, Double\_\-t \& {\em gain}, Double\_\-t \& {\em off}, Double\_\-t \& {\em egain}, Double\_\-t \& {\em eoff})}\label{classenergyCalibration_c7f46f2d051f28211681e851f99d3fc4}
+
+
+calculates gain and offset for the set of inflection points \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em nscan}]number of energy scans \item[{\em en}]array of energies (nscan long) \item[{\em een}]array of errors on energies (nscan long) - can be NULL! \item[{\em fl}]array of inflection points (nscan long) \item[{\em efl}]array of errors on the inflection points (nscan long) \item[{\em gain}]reference to gain resulting from the fit \item[{\em off}]reference to offset resulting from the fit \item[{\em egain}]reference to error on the gain resulting from the fit \item[{\em eoff}]reference to the error on the offset resulting from the fit \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]graph energy vs inflection point \end{Desc}
+\index{energyCalibration@{energy\-Calibration}!setChargeSharing@{setChargeSharing}}
+\index{setChargeSharing@{setChargeSharing}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int energy\-Calibration::set\-Charge\-Sharing (int {\em p} = {\tt -1})}\label{classenergyCalibration_e2809b419799e8b199944f185d4ebab8}
+
+
+sets plot flag \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em p}]plot flag (-1 gets, 0 unsets, $>$0 plot) \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]current plot flag \end{Desc}
+\index{energyCalibration@{energy\-Calibration}!setFitRange@{setFitRange}}
+\index{setFitRange@{setFitRange}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void energy\-Calibration::set\-Fit\-Range (Double\_\-t {\em mi}, Double\_\-t {\em ma})\hspace{0.3cm}{\tt  [inline]}}\label{classenergyCalibration_695cef5428a833d515172d987774f67b}
+
+
+sets the s-curve fit range \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em mi}]minimum of the fit range (-1 is histogram x-min) \item[{\em ma}]maximum of the fit range (-1 is histogram x-max) \end{description}
+\end{Desc}
+\index{energyCalibration@{energy\-Calibration}!setPlotFlag@{setPlotFlag}}
+\index{setPlotFlag@{setPlotFlag}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int energy\-Calibration::set\-Plot\-Flag (int {\em p} = {\tt -1})\hspace{0.3cm}{\tt  [inline]}}\label{classenergyCalibration_3d9af0857f7a68b7e4519917ea97e6be}
+
+
+sets plot flag \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em p}]plot flag (-1 gets, 0 unsets, $>$0 plot) \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]current plot flag \end{Desc}
+\index{energyCalibration@{energy\-Calibration}!setScanSign@{setScanSign}}
+\index{setScanSign@{setScanSign}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int energy\-Calibration::set\-Scan\-Sign (int {\em s} = {\tt 0})\hspace{0.3cm}{\tt  [inline]}}\label{classenergyCalibration_7dbf1676b30ffe90c5aa917f1b2b77ee}
+
+
+sets scan sign \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em s}]can be 1 (energy and x-axis have the same direction) or -1 (energy and x-axis have opposite directions) otherwise gets \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]current scan sign can be 1 (energy and x-axis have the same direction) or -1 (energy and x-axis have opposite directions) \end{Desc}
+\index{energyCalibration@{energy\-Calibration}!setStartParameters@{setStartParameters}}
+\index{setStartParameters@{setStartParameters}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void energy\-Calibration::set\-Start\-Parameters (Double\_\-t $\ast$ {\em par})}\label{classenergyCalibration_ba156f5290f7b404d7b8ea735fd7e7bf}
+
+
+set start parameters for the s-curve function \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em par}]parameters, -1 sets to auto-calculation par[0] is the pedestal par[1] is the slope of the pedestal par[2] is the inflection point par[3] is the RMS par[4] is the amplitude par[5] is the angual coefficient of the charge sharing slope (scales with par[3]) -- always positive \end{description}
+\end{Desc}
+
+
+\subsection{Member Data Documentation}
+\index{energyCalibration@{energy\-Calibration}!ampl@{ampl}}
+\index{ampl@{ampl}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t \bf{energy\-Calibration::ampl}\hspace{0.3cm}{\tt  [private]}}\label{classenergyCalibration_77b954cd513271d2cfafee6033435584}
+
+
+start value for the number of photons \index{energyCalibration@{energy\-Calibration}!bg_offset@{bg\_\-offset}}
+\index{bg_offset@{bg\_\-offset}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t \bf{energy\-Calibration::bg\_\-offset}\hspace{0.3cm}{\tt  [private]}}\label{classenergyCalibration_aa11f256a8b0a94c28a98d068013b327}
+
+
+start value for the background pedestal \index{energyCalibration@{energy\-Calibration}!bg_slope@{bg\_\-slope}}
+\index{bg_slope@{bg\_\-slope}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t \bf{energy\-Calibration::bg\_\-slope}\hspace{0.3cm}{\tt  [private]}}\label{classenergyCalibration_9676e5cc2757c723c2262d641fb4b8b4}
+
+
+start value for the background slope \index{energyCalibration@{energy\-Calibration}!cs_flag@{cs\_\-flag}}
+\index{cs_flag@{cs\_\-flag}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{energy\-Calibration::cs\_\-flag}\hspace{0.3cm}{\tt  [private]}}\label{classenergyCalibration_ce0be11dcc8418db3c7c2b139a015c96}
+
+
+0 functions without charge sharing contribution, $>$0 with charge sharing contribution \index{energyCalibration@{energy\-Calibration}!cs_slope@{cs\_\-slope}}
+\index{cs_slope@{cs\_\-slope}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t \bf{energy\-Calibration::cs\_\-slope}\hspace{0.3cm}{\tt  [private]}}\label{classenergyCalibration_ca1efedbfea0ad5c9ea2d794e3fb368d}
+
+
+start value for the charge sharing slope \index{energyCalibration@{energy\-Calibration}!fit_max@{fit\_\-max}}
+\index{fit_max@{fit\_\-max}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t \bf{energy\-Calibration::fit\_\-max}\hspace{0.3cm}{\tt  [private]}}\label{classenergyCalibration_e979386a3f787ef706f4a9ec5bf41d7d}
+
+
+maximum of the s-curve fitting range, -1 is histogram x-max \index{energyCalibration@{energy\-Calibration}!fit_min@{fit\_\-min}}
+\index{fit_min@{fit\_\-min}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t \bf{energy\-Calibration::fit\_\-min}\hspace{0.3cm}{\tt  [private]}}\label{classenergyCalibration_262f574732186cdd8d3a11344d03d0bb}
+
+
+minimum of the s-curve fitting range, -1 is histogram x-min \index{energyCalibration@{energy\-Calibration}!flex@{flex}}
+\index{flex@{flex}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t \bf{energy\-Calibration::flex}\hspace{0.3cm}{\tt  [private]}}\label{classenergyCalibration_b99d770f1c9af68d591ed20847813ad1}
+
+
+start value for the inflection point \index{energyCalibration@{energy\-Calibration}!fscurve@{fscurve}}
+\index{fscurve@{fscurve}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}TF1$\ast$ \bf{energy\-Calibration::fscurve}\hspace{0.3cm}{\tt  [private]}}\label{classenergyCalibration_57706a328324c25dd9f8ba6d1486e4ce}
+
+
+function with which the s-curve will be fitted \index{energyCalibration@{energy\-Calibration}!fspectrum@{fspectrum}}
+\index{fspectrum@{fspectrum}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}TF1$\ast$ \bf{energy\-Calibration::fspectrum}\hspace{0.3cm}{\tt  [private]}}\label{classenergyCalibration_2ee734ab28b78dc5786a7ba430f8baa5}
+
+
+function with which the spectrum will be fitted \index{energyCalibration@{energy\-Calibration}!funcs@{funcs}}
+\index{funcs@{funcs}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{energy\-Calibration\-Functions}$\ast$ \bf{energy\-Calibration::funcs}\hspace{0.3cm}{\tt  [private]}}\label{classenergyCalibration_e9b3307bf858331241871bde42fdd24e}
+
+
+\index{energyCalibration@{energy\-Calibration}!noise@{noise}}
+\index{noise@{noise}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t \bf{energy\-Calibration::noise}\hspace{0.3cm}{\tt  [private]}}\label{classenergyCalibration_4461206397e2442c92be9151ee231ec5}
+
+
+start value for the noise \index{energyCalibration@{energy\-Calibration}!plot_flag@{plot\_\-flag}}
+\index{plot_flag@{plot\_\-flag}!energyCalibration@{energy\-Calibration}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{energy\-Calibration::plot\_\-flag}\hspace{0.3cm}{\tt  [private]}}\label{classenergyCalibration_4edfb157df3624be677177dec0f9555b}
+
+
+0 does not plot, $>$0 plots (flags?) 
+
+The documentation for this class was generated from the following file:\begin{CompactItemize}
+\item 
+\bf{energy\-Calibration.h}\end{CompactItemize}

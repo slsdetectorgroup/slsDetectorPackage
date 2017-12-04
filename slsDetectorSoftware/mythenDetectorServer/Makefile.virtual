@@ -1,0 +1,18 @@
+DESTDIR?= ./
+PROGS= 		$(DESTDIR)/mythenVirtualServer 
+
+SRCS= 		 server.c server_funcs.c communication_funcs.c firmware_funcs.c mcb_funcs.c trimming_funcs.c  sharedmemory.c
+
+OBJS= 	$(SRCS:%.c=%.o) 
+
+CFLAGS+= -Wall -DC_ONLY -DMCB_FUNCS -DDACS_INT $(VFLAGS) -DVIRTUAL -DVERBOSE
+
+LDLIBS+= -lm
+mythenVirtualServer : clean $(PROGS)
+
+$(PROGS): $(SRCS)
+	gcc $(LDFLAGS) $(SRCS) $(LDLIBS) $(CFLAGS) -o $@
+
+clean:
+	rm -f *.o $(PROGS)
+

@@ -1,0 +1,12 @@
+
+
+#detector setup
+#add_beb base_address mac_1GBE ip_1GBE  mac_10GBE ip_10GBE 
+
+add_beb 26 0 00:50:c2:46:d9:34 129.129.205.78 00:50:c2:46:d9:35 10.0.26.1
+
+
+
+
+
+

@@ -1,0 +1,135 @@
+\section{energy\-Calibration\-Functions Class Reference}
+\label{classenergyCalibrationFunctions}\index{energyCalibrationFunctions@{energyCalibrationFunctions}}
+Energy calibration functions.  
+
+
+{\tt \#include $<$energy\-Calibration.h$>$}
+
+\subsection*{Public Member Functions}
+\begin{CompactItemize}
+\item 
+\bf{energy\-Calibration\-Functions} (int s=-1)
+\item 
+int \bf{set\-Scan\-Sign} (int s=0)
+\item 
+Double\_\-t \bf{gauss\-Charge\-Sharing} (Double\_\-t $\ast$x, Double\_\-t $\ast$par)
+\item 
+Double\_\-t \bf{erf\-Function} (Double\_\-t $\ast$x, Double\_\-t $\ast$par)
+\item 
+Double\_\-t \bf{erf\-Function\-Charge\-Sharing} (Double\_\-t $\ast$x, Double\_\-t $\ast$par)
+\item 
+Double\_\-t \bf{erf\-Func\-Fluo} (Double\_\-t $\ast$x, Double\_\-t $\ast$par)
+\item 
+Double\_\-t \bf{spectrum} (Double\_\-t $\ast$x, Double\_\-t $\ast$par)
+\item 
+Double\_\-t \bf{scurve} (Double\_\-t $\ast$x, Double\_\-t $\ast$par)
+\item 
+Double\_\-t \bf{scurve\-Fluo} (Double\_\-t $\ast$x, Double\_\-t $\ast$par)
+\end{CompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{CompactItemize}
+\item 
+static float \bf{median} (float $\ast$x, int n)
+\item 
+static int \bf{quick\_\-select} (int arr[$\,$], int n)
+\item 
+static int \bf{kth\_\-smallest} (int $\ast$a, int n, int k)
+\end{CompactItemize}
+\subsection*{Private Attributes}
+\begin{CompactItemize}
+\item 
+int \bf{sign}
+\end{CompactItemize}
+
+
+\subsection{Detailed Description}
+Energy calibration functions. 
+
+class containing all the possible energy calibration functions (scurves with and without charge sharing, gaussian spectrum with and without charge sharing, possibility of chosing the sign of the X-axis) 
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{energyCalibrationFunctions@{energy\-Calibration\-Functions}!energyCalibrationFunctions@{energyCalibrationFunctions}}
+\index{energyCalibrationFunctions@{energyCalibrationFunctions}!energyCalibrationFunctions@{energy\-Calibration\-Functions}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}energy\-Calibration\-Functions::energy\-Calibration\-Functions (int {\em s} = {\tt -1})\hspace{0.3cm}{\tt  [inline]}}\label{classenergyCalibrationFunctions_8c17162b89f3b2e642004e7c88a22ac2}
+
+
+
+
+\subsection{Member Function Documentation}
+\index{energyCalibrationFunctions@{energy\-Calibration\-Functions}!erfFuncFluo@{erfFuncFluo}}
+\index{erfFuncFluo@{erfFuncFluo}!energyCalibrationFunctions@{energy\-Calibration\-Functions}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t energy\-Calibration\-Functions::erf\-Func\-Fluo (Double\_\-t $\ast$ {\em x}, Double\_\-t $\ast$ {\em par})}\label{classenergyCalibrationFunctions_a5fbe9da48bc2ef90b699e06ea8c5111}
+
+
+Double Erf function with charge sharing slope par[0] is the pedestal par[1] is the slope of the pedestal par[2] is the inflection point of the first energy par[3] is the RMS of the first energy par[4] is the amplitude of the first energy par[5] is the angual coefficient of the charge sharing slope of the first energy (scales with par[3]) par[6] is the inflection point of the second energy par[7] is the RMS of the second energy par[8] is the amplitude of the second energy par[9] is the angual coefficient of the charge sharing slope of the second energy (scales with par[8]) \index{energyCalibrationFunctions@{energy\-Calibration\-Functions}!erfFunction@{erfFunction}}
+\index{erfFunction@{erfFunction}!energyCalibrationFunctions@{energy\-Calibration\-Functions}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t energy\-Calibration\-Functions::erf\-Function (Double\_\-t $\ast$ {\em x}, Double\_\-t $\ast$ {\em par})}\label{classenergyCalibrationFunctions_2da1e3b9a10d23233256f8c2234f2457}
+
+
+Basic erf function par[0] is the inflection point par[1] is the RMS par[2] is the amplitude \index{energyCalibrationFunctions@{energy\-Calibration\-Functions}!erfFunctionChargeSharing@{erfFunctionChargeSharing}}
+\index{erfFunctionChargeSharing@{erfFunctionChargeSharing}!energyCalibrationFunctions@{energy\-Calibration\-Functions}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t energy\-Calibration\-Functions::erf\-Function\-Charge\-Sharing (Double\_\-t $\ast$ {\em x}, Double\_\-t $\ast$ {\em par})}\label{classenergyCalibrationFunctions_8d1b3d0f8b30423dad56d8ce5323a4a8}
+
+
+Erf function with charge sharing slope par[0] is the pedestal par[1] is the slope of the pedestal par[2] is the inflection point par[3] is the RMS par[4] is the amplitude par[5] is the angual coefficient of the charge sharing slope (scales with par[3]) \index{energyCalibrationFunctions@{energy\-Calibration\-Functions}!gaussChargeSharing@{gaussChargeSharing}}
+\index{gaussChargeSharing@{gaussChargeSharing}!energyCalibrationFunctions@{energy\-Calibration\-Functions}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t energy\-Calibration\-Functions::gauss\-Charge\-Sharing (Double\_\-t $\ast$ {\em x}, Double\_\-t $\ast$ {\em par})}\label{classenergyCalibrationFunctions_e9582e5c46d27ad25d6139d0386698f7}
+
+
+Gaussian Function with charge sharing pedestal par[0] is the absolute height of the background pedestal par[1] is the slope of the background pedestal par[2] is the gaussian peak position par[3] is the RMS of the gaussian (and of the pedestal) par[4] is the height of the function par[5] is the fractional height of the charge sharing pedestal (scales with par[3]) \index{energyCalibrationFunctions@{energy\-Calibration\-Functions}!kth_smallest@{kth\_\-smallest}}
+\index{kth_smallest@{kth\_\-smallest}!energyCalibrationFunctions@{energy\-Calibration\-Functions}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}static int energy\-Calibration\-Functions::kth\_\-smallest (int $\ast$ {\em a}, int {\em n}, int {\em k})\hspace{0.3cm}{\tt  [static]}}\label{classenergyCalibrationFunctions_7d9a7b8d0c8ff69638a5fbb9f4c04b90}
+
+
+Calculates the median of an array of n elements (swaps the arrays!) \index{energyCalibrationFunctions@{energy\-Calibration\-Functions}!median@{median}}
+\index{median@{median}!energyCalibrationFunctions@{energy\-Calibration\-Functions}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}static float energy\-Calibration\-Functions::median (float $\ast$ {\em x}, int {\em n})\hspace{0.3cm}{\tt  [static]}}\label{classenergyCalibrationFunctions_37f557bacb75213073c8d421cc1240f4}
+
+
+Calculates the median of an array of n elements \index{energyCalibrationFunctions@{energy\-Calibration\-Functions}!quick_select@{quick\_\-select}}
+\index{quick_select@{quick\_\-select}!energyCalibrationFunctions@{energy\-Calibration\-Functions}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}static int energy\-Calibration\-Functions::quick\_\-select (int {\em arr}[$\,$], int {\em n})\hspace{0.3cm}{\tt  [static]}}\label{classenergyCalibrationFunctions_a3ab0e7c3c862fb51dfda78f1b09a55c}
+
+
+Calculates the median of an array of n elements (swaps the arrays!) \index{energyCalibrationFunctions@{energy\-Calibration\-Functions}!scurve@{scurve}}
+\index{scurve@{scurve}!energyCalibrationFunctions@{energy\-Calibration\-Functions}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t energy\-Calibration\-Functions::scurve (Double\_\-t $\ast$ {\em x}, Double\_\-t $\ast$ {\em par})}\label{classenergyCalibrationFunctions_e220482622e88a46b12498b0e4d8113a}
+
+
+Erf function with charge sharing slope with the correct scan sign par[0] is the pedestal par[1] is the slope of the pedestal par[2] is the inflection point par[3] is the RMS par[4] is the amplitude par[5] is the angual coefficient of the charge sharing slope (scales with par[3]) \index{energyCalibrationFunctions@{energy\-Calibration\-Functions}!scurveFluo@{scurveFluo}}
+\index{scurveFluo@{scurveFluo}!energyCalibrationFunctions@{energy\-Calibration\-Functions}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t energy\-Calibration\-Functions::scurve\-Fluo (Double\_\-t $\ast$ {\em x}, Double\_\-t $\ast$ {\em par})}\label{classenergyCalibrationFunctions_4eba39623b518d67a63192970a78f530}
+
+
+Double Erf function with charge sharing slope par[0] is the pedestal par[1] is the slope of the pedestal par[2] is the inflection point of the first energy par[3] is the RMS of the first energy par[4] is the amplitude of the first energy par[5] is the angual coefficient of the charge sharing slope of the first energy (scales with par[3]) par[6] is the inflection point of the second energy par[7] is the RMS of the second energy par[8] is the amplitude of the second energy par[9] is the angual coefficient of the charge sharing slope of the second energy (scales with par[8]) \index{energyCalibrationFunctions@{energy\-Calibration\-Functions}!setScanSign@{setScanSign}}
+\index{setScanSign@{setScanSign}!energyCalibrationFunctions@{energy\-Calibration\-Functions}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int energy\-Calibration\-Functions::set\-Scan\-Sign (int {\em s} = {\tt 0})\hspace{0.3cm}{\tt  [inline]}}\label{classenergyCalibrationFunctions_716759a1ae09ea3c841f824af3ece415}
+
+
+sets scan sign \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em s}]can be 1 (energy and x-axis have the same direction) or -1 (energy and x-axis have opposite directions) otherwise gets \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]current scan sign can be 1 (energy and x-axis have the same direction) or -1 (energy and x-axis have opposite directions) \end{Desc}
+\index{energyCalibrationFunctions@{energy\-Calibration\-Functions}!spectrum@{spectrum}}
+\index{spectrum@{spectrum}!energyCalibrationFunctions@{energy\-Calibration\-Functions}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t energy\-Calibration\-Functions::spectrum (Double\_\-t $\ast$ {\em x}, Double\_\-t $\ast$ {\em par})}\label{classenergyCalibrationFunctions_015eb05dc34b77642ab2a2a9f126f170}
+
+
+static function Gaussian with charge sharing pedestal with the correct scan sign par[0] is the absolute height of the background pedestal par[1] is the fractional height of the charge sharing pedestal (scales with par[3] par[2] is the gaussian peak position par[3] is the RMS of the gaussian (and of the pedestal) par[4] is the height of the function 
+
+\subsection{Member Data Documentation}
+\index{energyCalibrationFunctions@{energy\-Calibration\-Functions}!sign@{sign}}
+\index{sign@{sign}!energyCalibrationFunctions@{energy\-Calibration\-Functions}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{energy\-Calibration\-Functions::sign}\hspace{0.3cm}{\tt  [private]}}\label{classenergyCalibrationFunctions_4fc7c435169b5bf4672cf654270097d0}
+
+
+
+
+The documentation for this class was generated from the following file:\begin{CompactItemize}
+\item 
+\bf{energy\-Calibration.h}\end{CompactItemize}

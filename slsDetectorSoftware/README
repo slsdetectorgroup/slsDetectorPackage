@@ -1,0 +1,19 @@
+This subversion repository contains 
+
+Common directories
+Please inform Anna or Dhanya if you make modifications to these directories
+- MySocketTCP : socket class
+- commonFiles : header file common to server and client
+- slsDetector : base class with all main detector functionalities (client side)
+
+
+Mythen specific directories
+Please inform Anna if you make modifications to these directories
+- mythenDetector : mythen specific funcs (mainly files I/O and angular conversion)
+- mythenDetectorServer : mythen server (for etrax compiler)
+- firmware lib might be added in the future
+
+Other Detector specific directories
+Please inform Dhanya if you make modifications to these directories
+
+make doc

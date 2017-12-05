@@ -4775,12 +4775,11 @@ int multiSlsDetector::printReceiverConfiguration(){
 
 int multiSlsDetector::readConfigurationFile(string const fname){
 
-  
+
 
   int nd=thisMultiDetector->numberOfDetectors;
-  
+
   for (int i=0; i<nd; ++i) {
-    //    sprintf(ext,".det%d",i);
     if (detectors[i]) {
       detectors[i]->freeSharedMemory();
     }
@@ -4788,7 +4787,7 @@ int multiSlsDetector::readConfigurationFile(string const fname){
   thisMultiDetector->numberOfDetectors=0;
 
   multiSlsDetectorClient *cmd;
-  // char ext[100];
+
 
   setAcquiringFlag(false);
   clearAllErrorMask();
@@ -4802,7 +4801,7 @@ int multiSlsDetector::readConfigurationFile(string const fname){
 
   char myargs[1000][1000];
 
-    
+
   string sargname, sargval;
   int iline=0;
   std::cout<< "config file name "<< fname << std::endl;
@@ -4898,92 +4897,93 @@ int multiSlsDetector::readConfigurationFile(string const fname){
 
 int multiSlsDetector::writeConfigurationFile(string const fname){
 
+	string names[]={				\
+			"detsizechan",			\
+			"hostname",				\
+			"master",				\
+			"sync",					\
+			"outdir",				\
+			"ffdir",				\
+			"headerbefore",			\
+			"headerafter",			\
+			"headerbeforepar",		\
+			"headerafterpar",		\
+			"badchannels",			\
+			"angconv",				\
+			"globaloff",			\
+			"binsize",				\
+			"threaded"				};
+
+	int nvar=15;
+	char *args[100];
+	for (int ia=0; ia<100; ++ia) {
+		args[ia]=new char[1000];
+	}
+	int ret=OK,ret1=OK;
 
 
 
-  string names[]={				\
-    "type",					\
-    "master",					\
-    "sync",					\
-    "outdir",					\
-    "ffdir",					\
-    "headerbefore",				\
-    "headerafter",				\
-    "headerbeforepar",				\
-    "headerafterpar",				\
-    "badchannels",				\
-    "angconv",					\
-    "globaloff",				\
-    "binsize",					\
-    "threaded"				};
+	ofstream outfile;
+	int iline = 0;
 
-  int nvar=14;
- 
-  //  char ext[100];
-  
-  int iv=0;
-  char *args[100];
-  for (int ia=0; ia<100; ++ia) {
-    args[ia]=new char[1000];
-  }
-  int ret=OK;
-  
-  
-
-  ofstream outfile;
-  int iline = 0;
-
-  outfile.open(fname.c_str(),ios_base::out);
-  if (outfile.is_open()) {
+	outfile.open(fname.c_str(),ios_base::out);
+	if (outfile.is_open()) {
 
 
 
-    slsDetectorCommand *cmd=new slsDetectorCommand(this);
-    
-    // detector types!!!
-    cout << iv << " " << names[iv] << endl;
-    strcpy(args[0],names[iv].c_str());
-    outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
-    ++iline;
-    // single detector configuration
-    for (int i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
-      //    sprintf(ext,".det%d",i);
-      if (detectors[i]) {
-	iv+=detectors[i]->writeConfigurationFile(outfile,i);
-	if(detectors[i]->getErrorMask())
-	  setErrorMask(getErrorMask()|(1<<i));
-      }
-    }
-  
+		slsDetectorCommand *cmd=new slsDetectorCommand(this);
 
-    //other configurations
-    for (iv=1; iv<nvar; ++iv) {
-      
-      cout << iv << " " << names[iv] << endl;
-      strcpy(args[0],names[iv].c_str());
-      outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
-      ++iline;
-    }
-    
-    
-  
-    delete cmd;
-    outfile.close();
+		// complete size of detector
+		cout << iline << " " << names[iline] << endl;
+		strcpy(args[0],names[iline].c_str());
+		outfile << names[iline] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
+		++iline;
+
+		// hostname of the detectors
+		cout << iline << " " << names[iline] << endl;
+		strcpy(args[0],names[iline].c_str());
+		outfile << names[iline] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
+		++iline;
+
+		// single detector configuration
+		for (int i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
+			//    sprintf(ext,".det%d",i);
+			if (detectors[i]) {
+				ret1 = detectors[i]->writeConfigurationFile(outfile,i);
+				if(detectors[i]->getErrorMask())
+					setErrorMask(getErrorMask()|(1<<i));
+				if (ret1 == FAIL)
+					ret = FAIL;
+			}
+		}
+
+
+		//other configurations
+		while (iline < nvar) {
+			cout << iline << " " << names[iline] << endl;
+			strcpy(args[0],names[iline].c_str());
+			outfile << names[iline] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
+			++iline;
+		}
+
+
+
+		delete cmd;
+		outfile.close();
 #ifdef VERBOSE
-  std::cout<< "wrote " <<iline << " lines to configuration file " << std::endl;
+		std::cout<< "wrote " <<iline << " lines to configuration file " << std::endl;
 #endif
-  }  else {
-    std::cout<< "Error opening configuration file " << fname << " for writing" << std::endl;
-    ret = FAIL;
-  }
+	}  else {
+		std::cout<< "Error opening configuration file " << fname << " for writing" << std::endl;
+		ret = FAIL;
+	}
 
-  for (int ia=0; ia<100; ++ia) {
-    delete [] args[ia];
-  }
-  
-  return ret;
-  
-};
+	for (int ia=0; ia<100; ++ia) {
+		delete [] args[ia];
+	}
+
+	return ret;
+}
 
 
 

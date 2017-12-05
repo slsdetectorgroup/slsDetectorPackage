@@ -295,11 +295,8 @@ void qTabDeveloper::CreateADCWidgets(){
 
 	for(int i=0;i<NUM_ADC_WIDGETS;i++){
 		lblAdcs[i] 	= new QLabel(QString(adcNames[i].c_str()),boxAdcs);
-		spinAdcs[i]	= new QDoubleSpinBox(boxAdcs);
-		spinAdcs[i]->setMaximum(10000);
-		spinAdcs[i]->setMinimum(-1);
-		if(NUM_ADC_WIDGETS)
-			spinAdcs[i]->setSuffix(0x00b0+QString("C"));
+		spinAdcs[i]	= new QLineEdit(boxAdcs);
+		spinAdcs[i]->setReadOnly(true);
 
 		adcLayout->addWidget(lblAdcs[i],(int)(i/2),((i%2)==0)?1:4);
 		adcLayout->addWidget(spinAdcs[i],(int)(i/2),((i%2)==0)?2:5);
@@ -522,25 +519,23 @@ void qTabDeveloper::RefreshAdcs(){
 	for(int i=0;i<NUM_ADC_WIDGETS;i++){
 		//all detectors
 		if(!detid){
-			if(detType == slsDetectorDefs::EIGER || detType == slsDetectorDefs::JUNGFRAU){
-				double value = (double)myDet->getADC(getSLSIndex(i+NUM_DAC_WIDGETS),-1);
-				if(value == -1)
-					spinAdcs[i]->setValue(value);
-				else {
-					printf("value:%f\n",value/1000);
-					spinAdcs[i]->setValue(value/1000.00);
-				}
+			double value = (double)myDet->getADC(getSLSIndex(i+NUM_DAC_WIDGETS),-1);
 
+			if(value == -1)
+				spinAdcs[i]->setText(QString("Different values"));
+			else {
+				if(detType == slsDetectorDefs::EIGER || detType == slsDetectorDefs::JUNGFRAU)
+					value/=1000.00;
+				spinAdcs[i]->setText(QString::number(value,'f',2)+0x00b0+QString("C"));
 			}
-			else
-				spinAdcs[i]->setValue((double)myDet->getADC(getSLSIndex(i+NUM_DAC_WIDGETS),-1));
 		}
 		//specific detector
 		else{
+			double value = (double)det->getADC(getSLSIndex(i+NUM_DAC_WIDGETS));
+
 			if(detType == slsDetectorDefs::EIGER || detType == slsDetectorDefs::JUNGFRAU)
-				spinAdcs[i]->setValue((double)det->getADC(getSLSIndex(i+NUM_DAC_WIDGETS))/1000.00);
-			else
-				spinAdcs[i]->setValue((double)det->getADC(getSLSIndex(i+NUM_DAC_WIDGETS)));
+				value/=1000.00;
+			spinAdcs[i]->setText(QString::number(value,'f',2)+0x00b0+QString("C"));
 		}
 	}
 

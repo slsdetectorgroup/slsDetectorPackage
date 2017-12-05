@@ -5245,8 +5245,13 @@ string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
 
 	myDet->setOnline(ONLINE_FLAG);
 #ifdef DACS_INT
-	if (myDet->getDetectorsType() == EIGER || myDet->getDetectorsType() == JUNGFRAU)
-		sprintf(answer,"%.2f",(double)myDet->getADC(adc)/1000.00);
+	if (myDet->getDetectorsType() == EIGER || myDet->getDetectorsType() == JUNGFRAU){
+		int val = myDet->getADC(adc);
+		if (val == -1)
+			sprintf(answer,"%d",val);
+		else
+			sprintf(answer,"%.2f", (double)val/1000.000);
+	}
 	else sprintf(answer,"%d",myDet->getADC(adc));
 #else
 	sprintf(answer,"%f",myDet->getADC(adc));

@@ -17,6 +17,7 @@ class multiSlsDetector;
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QLabel>
+#include <QLineEdit>
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QScrollArea>
@@ -101,7 +102,7 @@ private:
 	QLabel			*lblAdcs[20];
 	MyDoubleSpinBox	*spinDacs[20];
 	QLabel			*lblDacsmV[20];
-	QDoubleSpinBox	*spinAdcs[20];
+	QLineEdit		*spinAdcs[20];
 	QLabel			*lblHV;
 	QComboBox		*comboHV;
 	QTimer 			*adcTimer;

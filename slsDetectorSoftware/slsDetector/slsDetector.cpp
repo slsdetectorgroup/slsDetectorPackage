@@ -7179,7 +7179,6 @@ int slsDetector::readConfigurationFile(ifstream &infile){
 
 int slsDetector::writeConfigurationFile(string const fname){
 
-
   ofstream outfile;
 #ifdef VERBOSE
   int ret;
@@ -7207,55 +7206,77 @@ int slsDetector::writeConfigurationFile(string const fname){
 
 
 int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
-
+;
   slsDetectorCommand *cmd=new slsDetectorCommand(this);
-  int nvar=15;
+  detectorType type = thisDetector->myDetectorType;
+  string names[100];
+  int nvar=0;
 
-  string names[20]={				\
-    "hostname",					\
-    "port",					\
-    "stopport",					\
-    "settingsdir",				\
-    "outdir",					\
-    "angdir",					\
-    "moveflag",					\
-    "lock",					\
-    "caldir",					\
-    "ffdir",					\
-    "nmod",					\
-    "waitstates",				\
-    "setlength",				\
-    "clkdivider",				\
-    "extsig"					  };
+  // common config
+  names[nvar++] = "hostname";
+  names[nvar++] = "port";
+  names[nvar++] = "stopport";
+  names[nvar++] = "settingsdir";
+  names[nvar++] = "caldir";
+  names[nvar++] = "ffdir";
+  names[nvar++] = "outdir";
+  names[nvar++] = "angdir";
+  names[nvar++] = "moveflag";
+  names[nvar++] = "lock";
 
-  // to be added in the future
-  //    "trimen",
-  //   "receiverTCPPort",
-
-  if ((thisDetector->myDetectorType==GOTTHARD)||
-		  (thisDetector->myDetectorType==PROPIX)||
-		  (thisDetector->myDetectorType==JUNGFRAU)||
-		  (thisDetector->myDetectorType==MOENCH)) {
-	names[0]= "hostname";
-	names[1]= "port";
-	names[2]= "stopport";
-	names[3]= "settingsdir";
-	names[4]= "angdir";
-	names[5]= "moveflag";
-	names[6]= "lock";
-	names[7]= "caldir";
-	names[8]= "ffdir";
-	names[9]= "extsig";
-    names[10]="detectormac";
-    names[11]="detectorip";
-	names[12]= "rx_tcpport";
-	names[13]= "rx_udpport";
-    names[14]="rx_udpip";
-    names[15]="rx_hostname";
-    names[16]="outdir";
-    names[17]="vhighvoltage";
-    nvar=18;
+  // receiver config
+  if (type != MYTHEN) {
+	  names[nvar++] = "detectormac";
+	  names[nvar++] = "detectorip";
+	  names[nvar++] = "zmqport";
+	  names[nvar++] = "rx_zmqport";
+	  names[nvar++] = "rx_tcpport";
+	  names[nvar++] = "rx_udpport";
+	  names[nvar++] = "rx_udpport2";
+	  names[nvar++] = "rx_udpip";
+	  names[nvar++] = "rx_hostname";
+	  names[nvar++] = "r_readfreq";
   }
+
+  // detector specific config
+  switch (type) {
+  case MYTHEN:
+	  names[nvar++] = "nmod";
+	  names[nvar++] = "waitstates";
+	  names[nvar++] = "setlength";
+	  names[nvar++] = "clkdivider";
+	  names[nvar++] = "extsig";
+	  break;
+  case GOTTHARD:
+  case PROPIX:
+	  names[nvar++] = "extsig";
+	  names[nvar++] = "vhighvoltage";
+	  break;
+	  break;
+  case MOENCH:
+	  names[nvar++] = "extsig";
+	  names[nvar++] = "vhighvoltage";
+	  break;
+  case EIGER:
+	  names[nvar++] = "vhighvoltage";
+	  names[nvar++] = "trimen";
+	  names[nvar++] = "iodelay";
+	  names[nvar++] = "tengiga";
+	  break;
+  case JUNGFRAU:
+	  names[nvar++] = "powerchip";
+	  names[nvar++] = "vhighvoltage";
+	  break;
+  case JUNGFRAUCTB:
+	  names[nvar++] = "powerchip";
+	  names[nvar++] = "vhighvoltage";
+	  break;
+  default:
+	  std::cout << "detector type " << getDetectorType(thisDetector->myDetectorType) << " not implemented in writing config file" << std::endl;
+	  nvar = 0;
+	  break;
+  }
+
 
 
   int nsig=4;//-1;
@@ -7264,8 +7285,6 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
   char myargs[100][1000];
 
   for (int ia=0; ia<100; ++ia) {
-    //args[ia]=new char[1000];
-
     args[ia]=myargs[ia];
   }
 
@@ -7288,6 +7307,7 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
       outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
     }
   }
+
   delete cmd;
   return OK;
 }

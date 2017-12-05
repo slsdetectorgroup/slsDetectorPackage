@@ -735,37 +735,51 @@ int slsDetectorUtils::retrieveDetectorSetup(string const fname1, int level){
 
 int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
 
-  slsDetectorCommand *cmd;
-  string names[100];
-  int nvar=0;
+	slsDetectorCommand *cmd;
+	detectorType type = getDetectorsType();
+	string names[100];
+	int nvar=0;
 
-  names[nvar++]="fname";
-  names[nvar++]="index";
-  names[nvar++]="dr";
-  names[nvar++]="settings";
-  names[nvar++]="exptime";
-  names[nvar++]="period";
-  names[nvar++]="frames";
-  names[nvar++]="cycles";
-  names[nvar++]="measurements";
-  names[nvar++]="timing";
+	// common config
+	names[nvar++]="fname";
+	names[nvar++]="index";
+	names[nvar++]="enablefwrite";
+	names[nvar++]="overwrite";
+	names[nvar++]="dr";
+	names[nvar++]="settings";
+	names[nvar++]="exptime";
+	names[nvar++]="period";
+	names[nvar++]="frames";
+	names[nvar++]="cycles";
+	names[nvar++]="measurements";
+	names[nvar++]="timing";
+	names[nvar++]="flatfield";
+	names[nvar++]="badchannels";
 
-  switch (getDetectorsType()) {
-  case EIGER:
-    names[nvar++]="flags";
+	switch (type) {
+	case EIGER:
+		names[nvar++]="flags";
+		names[nvar++]="clkdivider";
 		names[nvar++]="threshold";
 		names[nvar++]="ratecorr";
+		names[nvar++]="trimbits";
 		break;
-  case GOTTHARD:
-  case PROPIX:
-  case JUNGFRAU:
-  names[nvar++]="flags";
+	case GOTTHARD:
+	case PROPIX:
+		names[nvar++]="flags";
 		names[nvar++]="delay";
 		names[nvar++]="gates";
 		names[nvar++]="ratecorr";
 		break;
-  case MYTHEN:
-    names[nvar++]="flags";
+	case JUNGFRAU:
+		names[nvar++]="flags";
+		names[nvar++]="delay";
+		names[nvar++]="gates";
+		names[nvar++]="ratecorr";
+		names[nvar++]="clkdivider";
+		break;
+	case MYTHEN:
+		names[nvar++]="flags";
 		names[nvar++]="threshold";
 		names[nvar++]="delay";
 		names[nvar++]="gates";
@@ -774,188 +788,160 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
 		names[nvar++]="ratecorr";
 		names[nvar++]="trimbits";
 		break;
-  case JUNGFRAUCTB:
-
-  names[nvar++]="dac:0";
-  names[nvar++]="dac:1";
-  names[nvar++]="dac:2";
-  names[nvar++]="dac:3";
-  names[nvar++]="dac:4";
-  names[nvar++]="dac:5";
-  names[nvar++]="dac:6";
-  names[nvar++]="dac:7";
-  names[nvar++]="dac:8";
-  names[nvar++]="dac:9";
-  names[nvar++]="dac:10";
-  names[nvar++]="dac:11";
-  names[nvar++]="dac:12";
-  names[nvar++]="dac:13";
-  names[nvar++]="dac:14";
-  names[nvar++]="dac:15";
-  names[nvar++]="adcvpp";
-
-
-
-  names[nvar++]="adcclk";
-  names[nvar++]="clkdivider";
-  names[nvar++]="adcphase";
-  names[nvar++]="adcpipeline";
-  names[nvar++]="adcinvert"; //
-  names[nvar++]="adcdisable"; 
-  names[nvar++]="patioctrl"; 
-  names[nvar++]="patclkctrl"; 
-  names[nvar++]="patlimits";
-  names[nvar++]="patloop0"; 
-  names[nvar++]="patnloop0";
-  names[nvar++]="patwait0"; 
-  names[nvar++]="patwaittime0"; 
-  names[nvar++]="patloop1"; 
-  names[nvar++]="patnloop1";
-  names[nvar++]="patwait1";
-  names[nvar++]="patwaittime1";
-  names[nvar++]="patloop2"; 
-  names[nvar++]="patnloop2";
-  names[nvar++]="patwait2"; 
-  names[nvar++]="patwaittime2"; 
-  break;
-  default:
-	  break;
-  }
+	case JUNGFRAUCTB:
+		names[nvar++]="dac:0";
+		names[nvar++]="dac:1";
+		names[nvar++]="dac:2";
+		names[nvar++]="dac:3";
+		names[nvar++]="dac:4";
+		names[nvar++]="dac:5";
+		names[nvar++]="dac:6";
+		names[nvar++]="dac:7";
+		names[nvar++]="dac:8";
+		names[nvar++]="dac:9";
+		names[nvar++]="dac:10";
+		names[nvar++]="dac:11";
+		names[nvar++]="dac:12";
+		names[nvar++]="dac:13";
+		names[nvar++]="dac:14";
+		names[nvar++]="dac:15";
+		names[nvar++]="adcvpp";
 
 
 
-  names[nvar++]="startscript";
-  names[nvar++]="startscriptpar";
-  names[nvar++]="stopscript";
-  names[nvar++]="stopscriptpar";
-  names[nvar++]="scriptbefore";
-  names[nvar++]="scriptbeforepar";
-  names[nvar++]="scriptafter";
-  names[nvar++]="scriptafterpar";
-  names[nvar++]="scan0script";
-  names[nvar++]="scan0par";
-  names[nvar++]="scan0prec";
-  names[nvar++]="scan0steps";
-  names[nvar++]="scan1script";
-  names[nvar++]="scan1par";
-  names[nvar++]="scan1prec";
-  names[nvar++]="scan1steps";
-
-  switch (getDetectorsType()) {
-  case EIGER:
-  case MYTHEN:
-  case GOTTHARD:
-  case PROPIX:
-  case JUNGFRAU:
-  names[nvar++]="flatfield";
-  names[nvar++]="badchannels";
-  break;
-  default:
-	  break;
-  }
-
- switch (getDetectorsType()) {
-  case EIGER:
-  case MYTHEN:
-  names[nvar++]="trimbits";
-  break;
-  default:
-	  break;
-  }
-
- // char ext[100];
-
-  int iv=0;
-  string fname1;
+		names[nvar++]="adcclk";
+		names[nvar++]="clkdivider";
+		names[nvar++]="adcphase";
+		names[nvar++]="adcpipeline";
+		names[nvar++]="adcinvert"; //
+		names[nvar++]="adcdisable";
+		names[nvar++]="patioctrl";
+		names[nvar++]="patclkctrl";
+		names[nvar++]="patlimits";
+		names[nvar++]="patloop0";
+		names[nvar++]="patnloop0";
+		names[nvar++]="patwait0";
+		names[nvar++]="patwaittime0";
+		names[nvar++]="patloop1";
+		names[nvar++]="patnloop1";
+		names[nvar++]="patwait1";
+		names[nvar++]="patwaittime1";
+		names[nvar++]="patloop2";
+		names[nvar++]="patnloop2";
+		names[nvar++]="patwait2";
+		names[nvar++]="patwaittime2";
+		break;
+	default:
+		break;
+	}
 
 
+	names[nvar++]="startscript";
+	names[nvar++]="startscriptpar";
+	names[nvar++]="stopscript";
+	names[nvar++]="stopscriptpar";
+	names[nvar++]="scriptbefore";
+	names[nvar++]="scriptbeforepar";
+	names[nvar++]="scriptafter";
+	names[nvar++]="scriptafterpar";
+	names[nvar++]="scan0script";
+	names[nvar++]="scan0par";
+	names[nvar++]="scan0prec";
+	names[nvar++]="scan0steps";
+	names[nvar++]="scan1script";
+	names[nvar++]="scan1par";
+	names[nvar++]="scan1prec";
+	names[nvar++]="scan1steps";
 
-  ofstream outfile;
-  char *args[4];
-  for (int ia=0; ia<4; ia++) {
-    args[ia]=new char[1000];
-  }
+
+	int iv=0;
+	string fname1;
 
 
 
+	ofstream outfile;
+	char *args[4];
+	for (int ia=0; ia<4; ia++) {
+		args[ia]=new char[1000];
+	}
 
 
-  int nargs;
-  if (level==2)
-    nargs=2;
-  else
-    nargs=1;
+	int nargs;
+	if (level==2)
+		nargs=2;
+	else
+		nargs=1;
 
 
-  if (level==2) {
-    fname1=fname+string(".config");
-    writeConfigurationFile(fname1);
-    fname1=fname+string(".det");
-  } else
-    fname1=fname;
-
-
-
-  outfile.open(fname1.c_str(),ios_base::out);
-  if (outfile.is_open()) {
-    cmd=new slsDetectorCommand(this);
-    for (iv=0; iv<nvar-3; iv++) {
-      strcpy(args[0],names[iv].c_str());
-      outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
-    }
-
-
-    strcpy(args[0],names[iv].c_str());
-    if (level==2) {
-      fname1=fname+string(".ff");
-      strcpy(args[1],fname1.c_str());
-    }
-    outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
-    iv++;
-
-    strcpy(args[0],names[iv].c_str());
-    if (level==2) {
-      fname1=fname+string(".bad");
-      strcpy(args[1],fname1.c_str());
-    }
-    outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
-    iv++;
+	if (level==2) {
+		fname1=fname+string(".config");
+		writeConfigurationFile(fname1);
+		fname1=fname+string(".det");
+	} else
+		fname1=fname;
 
 
 
-    if (level==2) {
-      strcpy(args[0],names[iv].c_str());
-      size_t c=fname.rfind('/');
-      if (c<string::npos) {
-	fname1=fname.substr(0,c+1)+string("trim_")+fname.substr(c+1);
-      } else {
-	fname1=string("trim_")+fname;
-      }
-      strcpy(args[1],fname1.c_str());
+	outfile.open(fname1.c_str(),ios_base::out);
+	if (outfile.is_open()) {
+		cmd=new slsDetectorCommand(this);
+		for (iv=0; iv<nvar-3; iv++) {
+			strcpy(args[0],names[iv].c_str());
+			outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
+		}
+
+
+		strcpy(args[0],names[iv].c_str());
+		if (level==2) {
+			fname1=fname+string(".ff");
+			strcpy(args[1],fname1.c_str());
+		}
+		outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
+		iv++;
+
+		strcpy(args[0],names[iv].c_str());
+		if (level==2) {
+			fname1=fname+string(".bad");
+			strcpy(args[1],fname1.c_str());
+		}
+		outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
+		iv++;
+
+
+
+		if (level==2) {
+			strcpy(args[0],names[iv].c_str());
+			size_t c=fname.rfind('/');
+			if (c<string::npos) {
+				fname1=fname.substr(0,c+1)+string("trim_")+fname.substr(c+1);
+			} else {
+				fname1=string("trim_")+fname;
+			}
+			strcpy(args[1],fname1.c_str());
 #ifdef VERBOSE
-      std::cout<< "writing to file " << fname1 << std::endl;
+			std::cout<< "writing to file " << fname1 << std::endl;
 #endif
-      outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
-      iv++;
-  
+			outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
+			iv++;
 
-    }
 
- 
-    delete cmd;
+		}
 
-    outfile.close();
-  }
-  else {
-    std::cout<< "Error opening parameters file " << fname1 << " for writing" << std::endl;
-    return FAIL;
-  }
-  
+
+		delete cmd;
+
+		outfile.close();
+	}
+	else {
+		std::cout<< "Error opening parameters file " << fname1 << " for writing" << std::endl;
+		return FAIL;
+	}
+
 #ifdef VERBOSE
-  std::cout<< "wrote " <<iv << " lines to  "<< fname1 << std::endl;
+	std::cout<< "wrote " <<iv << " lines to  "<< fname1 << std::endl;
 #endif
-  
-  return OK;
+
+	return OK;
 
 } 
 

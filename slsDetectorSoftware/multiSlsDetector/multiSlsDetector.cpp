@@ -5028,6 +5028,7 @@ int multiSlsDetector::writeConfigurationFile(string const fname){
 		for (int i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
 			//    sprintf(ext,".det%d",i);
 			if (detectors[i]) {
+				outfile << endl;
 				ret1 = detectors[i]->writeConfigurationFile(outfile,i);
 				if(detectors[i]->getErrorMask())
 					setErrorMask(getErrorMask()|(1<<i));
@@ -5036,7 +5037,7 @@ int multiSlsDetector::writeConfigurationFile(string const fname){
 			}
 		}
 
-
+		outfile << endl;
 		//other configurations
 		while (iline < nvar) {
 			cout << iline << " " << names[iline] << endl;

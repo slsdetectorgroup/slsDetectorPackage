@@ -7230,6 +7230,8 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
 	  names[nvar++] = "detectorip";
 	  names[nvar++] = "zmqport";
 	  names[nvar++] = "rx_zmqport";
+	  names[nvar++] = "zmqip";
+	  names[nvar++] = "rx_zmqip";
 	  names[nvar++] = "rx_tcpport";
 	  names[nvar++] = "rx_udpport";
 	  names[nvar++] = "rx_udpport2";

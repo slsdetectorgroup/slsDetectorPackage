@@ -1560,6 +1560,7 @@ int slsDetector::connectStop() {
 			return OK;
 		else{
 			std::cout << "cannot connect to stop server" << endl;
+			setErrorMask((getErrorMask())|(CANNOT_CONNECT_TO_DETECTOR));
 			return FAIL;
 		}
 	}
@@ -2661,22 +2662,23 @@ dacs_t slsDetector::getADC(dacIndex index, int imod){
   std::cout<< "Getting ADC "<< index << " of module " << imod  <<   std::endl;
 #endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
-    if (connectControl() == OK){
-      controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-      controlSocket->SendDataOnly(arg,sizeof(arg));
-      controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+    if (connectStop() == OK){
+      stopSocket->SendDataOnly(&fnum,sizeof(fnum));
+      stopSocket->SendDataOnly(arg,sizeof(arg));
+      stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
       if (ret!=FAIL) {
-	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+    	  stopSocket->ReceiveDataOnly(&retval,sizeof(retval));
 	if (adcs) {
 	  *(adcs+index+imod*thisDetector->nAdcs)=retval;
 	}
       } else {
-	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+    	  stopSocket->ReceiveDataOnly(mess,sizeof(mess));
 	std::cout<< "Detector returned error: " << mess << std::endl;
       }
-      disconnectControl();
+      disconnectStop();
+     /*commented out to allow adc read during acquire, also not required
       if (ret==FORCE_UPDATE)
-	updateDetector();
+	updateDetector();*/
     }
   }
 #ifdef VERBOSE

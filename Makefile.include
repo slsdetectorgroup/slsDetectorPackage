@@ -34,26 +34,6 @@ endif
 
 
 ##############################################################
-# EigerSLS specific. Set this to yes, if you want to compile
-# EigerSLS code: in this case, you need also POCO and JsonBox 
-# libraries
-##############################################################   
-
-REST = no
-
-
-POCODIR = /afs/psi.ch/user/s/sala/public/poco
-JSONBOXDIR = /opt/JsonBox-0.5
-
-RESTFLAGS = -L$(POCODIR)/lib -Wl,-rpath=$(POCODIR)/lib  -L$(JSONBOXDIR) -Wl,-rpath=$(JSONBOXDIR)  -lPocoNet -lPocoFoundation -lJsonBox
-
-ifeq ($(REST),yes)
-     LDFLAGRXR = -L$(LIBDIR) -Wl,-rpath=$(LIBDIR) -lSlsReceiver $(RESTFLAGS) -DREST
-     INCLUDESRXR = $(EIGERFLAGS) -I$(POCODIR)/include -I$(JSONBOXDIR)/include
-endif
-
-
-##############################################################
 # ROOTSLS specific. Set this to yes, if you want to compile
 # ROOTSLS code: in this case, you need also root libraries
 ##############################################################   

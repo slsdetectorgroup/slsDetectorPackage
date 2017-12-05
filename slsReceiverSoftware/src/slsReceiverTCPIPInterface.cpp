@@ -776,9 +776,8 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 			break;
 		}
 		if(ret == OK) {
-#ifndef REST
 			if(receiverBase == NULL){
-				receiverBase = UDPInterface::create("standard");
+				receiverBase = UDPInterface::create();
 				if(startAcquisitionCallBack)
 					receiverBase->registerCallBackStartAcquisition(startAcquisitionCallBack,pStartAcquisition);
 				if(acquisitionFinishedCallBack)
@@ -786,7 +785,6 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 				if(rawDataReadyCallBack)
 					receiverBase->registerCallBackRawDataReady(rawDataReadyCallBack,pRawDataReady);
 			}
-#endif
 			myDetectorType = dr;
 			ret = receiverBase->setDetectorType(myDetectorType);
 			retval = myDetectorType;

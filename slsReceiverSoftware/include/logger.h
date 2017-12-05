@@ -78,17 +78,11 @@ public:
 class FILELOG_DECLSPEC FILELog : public Log<Output2FILE> {};
 //typedef Log<Output2FILE> FILELog;
 
-#ifdef REST
 #define FILE_LOG(level) \
 	if (level > FILELOG_MAX_LEVEL) ;				\
 	else if (level > FILELog::ReportingLevel() || !Output2FILE::Stream()) ; \
 	else FILELog().Get(level)
-#else
-	#define FILE_LOG(level) \
-	if (level > FILELOG_MAX_LEVEL) ;				\
-	else if (level > FILELog::ReportingLevel() || !Output2FILE::Stream()) ; \
-	else FILELog().Get(level)
-#endif
+
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
 
@@ -151,11 +145,7 @@ template <typename T> std::ostringstream& Log<T>::Get(TLogLevel level)
 template <typename T> Log<T>::~Log()
 {
     os << std::endl;
-#ifdef REST
-    T::Output( os.str());
-#else
-    T::Output( os.str(),lev);
-#endif
+    T::Output( os.str(),lev); // T::Output( os.str());
 }
 
 template <typename T> TLogLevel& Log<T>::ReportingLevel()

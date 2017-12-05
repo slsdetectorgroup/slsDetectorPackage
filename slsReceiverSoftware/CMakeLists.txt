@@ -17,16 +17,6 @@ set(SOURCES
 )
 
 
-# REST
-if (REST)
-    MESSAGE("\n *** Using REST Implementation *** \n")
-    list (APPEND SOURCES src/UDPRestImplementation.cpp)
-    # add_library(poco etc.)
-else (REST)
-    MESSAGE("\n *** Using Standard Implementation *** \n")
-endif (REST)
-
-
 # HDF5
 if (USE_HDF5)
 	if (HDF5_FOUND)

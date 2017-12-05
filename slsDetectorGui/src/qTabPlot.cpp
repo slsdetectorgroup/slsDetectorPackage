@@ -1093,6 +1093,8 @@ void qTabPlot::EnableScanBox(){
 	disconnect(btnGroupPlotType,SIGNAL(buttonClicked(int)),this, SLOT(SetPlot()));
 	disconnect(boxScan,	  	SIGNAL(toggled(bool)),		this, SLOT(EnableScanBox()));
 
+	int oldfreqvalue = myDet->setReadReceiverFrequency();
+
 	int mode0 = myDet->getScanMode(0);
 	int mode1 = myDet->getScanMode(1);
 
@@ -1262,6 +1264,18 @@ void qTabPlot::EnableScanBox(){
 	}else{
 		pageHistogram->setEnabled(false);
 		pageHistogram_2->setEnabled(false);
+	}
+
+
+	// if it was set to read every frame
+	if (oldfreqvalue != 0 && (comboFrequency->currentIndex() != 1 || spinNthFrame->value() != oldfreqvalue)) {
+		disconnect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+		disconnect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
+		comboFrequency->setCurrentIndex(1);
+		spinNthFrame->setValue(1);
+		SetFrequency();
+		connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+		connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
 	}
 
 	connect(btnGroupPlotType,SIGNAL(buttonClicked(int)),this, SLOT(SetPlot()));

@@ -221,7 +221,6 @@ help:
 	@echo ""
 	@echo ""
 	@echo "Makefile variables"
-	@echo "REST=yes		 compile REST-aware Receiver (POCO and JsonBox libraries required)"
 	@echo "DEBUG=1,2		 set debug level to 1 (VERBOSE) or 2 (VERYVERBOSE)"
 	@echo ""
 	@echo ""

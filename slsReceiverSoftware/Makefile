@@ -33,10 +33,6 @@ ifeq ($(HDF5),yes)
 	SRC_CLNT += HDF5File.cpp HDF5FileStatic.cpp
 endif
 
-ifeq ($(REST), yes)
-	SRC_CLNT += UDPRESTImplementation.cpp
-endif
-
 MAIN_SRC = main.cpp
 
 
@@ -48,15 +44,6 @@ $(info #   In slsReceiverSoftware Makefile   #)
 $(info #######################################)
 $(info )
 
-ifeq ($(REST), yes)
-$(info )
-$(info !#####################################!)
-$(info !    PLEASE ENSURE THAT VARIABLES     !)
-$(info !       POCODIR and JSONBOXDIR        !)
-$(info !        ARE PROPERLY SETUP!!!        !)
-$(info !#####################################!)
-$(info )
-endif
 
 .PHONY: all intdoc  package eigerReceiver clean
 

@@ -54,7 +54,7 @@ class UDPInterface {
 	 *
 	 *  supported sequence of method-calls:
 	 *
-	 *  initialize() : once and only once after create() //FIXME: only once functionality implemented in the derived REST class, so not mention here?
+	 *  initialize() : once and only once after create()
 	 *
 	 *	get*()       : anytime after initialize(), multiples times
 	 *
@@ -106,8 +106,8 @@ class UDPInterface {
 	/**
 	 * Constructor
 	 * Only non virtual function implemented in this class
-	 * Factory create method to create a standard or REST object
-	 * @param [in] receiver_type type can be standard or REST
+	 * Factory create method to create a standard or custom object
+	 * @param [in] receiver_type type can be standard or custom (must be derived from base class)
 	 * @return a UDPInterface reference to object depending on receiver type
 	 */
 	static UDPInterface *create(string receiver_type = "standard");
@@ -556,9 +556,9 @@ class UDPInterface {
 	virtual void setDetectorPositionId(const int i) = 0;
 
 	/**
-	 * Sets detector hostname (and corresponding detector variables in derived REST class)
+	 * Sets detector hostname
 	 * It is second function called by the client when connecting to receiver.
-	 * you can call this function only once. //FIXME: is this still valid, this implemented in derived REST class?
+	 * you can call this function only once.
 	 * @param c detector hostname
 	 */
 	virtual void initialize(const char *c) = 0;

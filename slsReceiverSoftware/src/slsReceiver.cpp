@@ -18,51 +18,36 @@ using namespace std;
 
 
 
-slsReceiver::slsReceiver(int argc, char *argv[], int &success) {
-
-	/** 
-	 * Constructor method to start up a Receiver server. Reads configuration file, options, and 
-	 * assembles a Receiver using TCP and UDP detector interfaces
-	 * 
-	 * @param iarg 
-	 * 
-	 * @return 
-	 */
+slsReceiver::slsReceiver(int argc, char *argv[], int &success):
+		tcpipInterface (NULL),
+		udp_interface (NULL)
+{
+	success=OK;
 	
-	udp_interface = NULL;
-	tcpipInterface = NULL;
-
-	//creating base receiver
+	// options
 	map<string, string> configuration_map;
 	int tcpip_port_no = 1954;
-	success=OK;
 	string fname = "";
-	string udp_interface_type = "standard";
-	string rest_hostname = "localhost:8081";
-	udp_interface = NULL;
 
 	//parse command line for config
 	static struct option long_options[] = {
-		/* These options set a flag. */
+		// These options set a flag.
 		//{"verbose", no_argument,       &verbose_flag, 1},
-		/* These options don’t set a flag.
-		   We distinguish them by their indices. */
-		{"type",     required_argument,       0, 't'},
-		{"config",     required_argument,       0, 'f'},
-		{"rx_tcpport",  required_argument,       0, 'b'},
-		{"rest_hostname",  required_argument,       0, 'r'},
-		{"help",  no_argument,       0, 'h'},
-		{0, 0, 0, 0}
+		// These options don’t set a flag. We distinguish them by their indices.
+		{"config",     	required_argument,  0, 'f'},
+		{"rx_tcpport",  required_argument,  0, 't'},
+		{"help",  		no_argument,       	0, 'h'},
+		{0, 			0, 					0, 	0}
         };
-	/* getopt_long stores the option index here. */
+	// getopt_long stores the option index here.
 	int option_index = 0;
 	int c=0;
 	optind = 1;
 	
 	while ( c != -1 ){
-		c = getopt_long (argc, argv, "bfhtr", long_options, &option_index);
+		c = getopt_long (argc, argv, "hf:t:", long_options, &option_index);
 		
-		/* Detect the end of the options. */
+		// Detect the end of the options.
 		if (c == -1)
 			break;
 	
@@ -75,27 +60,16 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success) {
 #endif
 			break;
 
-		case 'b':
+		case 't':
 			sscanf(optarg, "%d", &tcpip_port_no);
 			break;
 			
-		case 't':
-			udp_interface_type = optarg;
-			break;
-
-		case 'r':
-			rest_hostname = optarg;
-			configuration_map["rest_hostname"] = rest_hostname;
-			break;
-
 		case 'h':
-			string help_message = """\nSLS Receiver Server\n\n""";
-			help_message += """usage: slsReceiver --config config_fname [--rx_tcpport port]\n\n""";
-			help_message += """\t--config:\t configuration filename for SLS Detector receiver\n""";
-			help_message += """\t--rx_tcpport:\t TCP Communication Port with the client. Default: 1954.\n\n""";
-			help_message += """\t--rest_hostname:\t Receiver hostname:port. It applies only to REST receivers, and indicates the hostname of the REST backend. Default: localhost:8081.\n\n""";
-
-			help_message += """\t--type:\t Type of the receiver. Possible arguments are: standard, REST. Default: standard.\n\n""";
+			string help_message = "\nSLS Receiver Server\n\n";
+			help_message += "Usage: slsReceiver [arguments]\nPossible arguments are:\n";
+			help_message += "\t-f, --config:     Configuration filename\n";
+			help_message += "\t-t, --rx_tcpport: TCP Port with the client. Default: 1954.\n"
+					        "\t                  Required for multiple receivers\n\n";
 
 			FILE_LOG(logINFO) << help_message << endl;
 			break;
@@ -103,9 +77,6 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success) {
 		}
 	}
 
-	// if required fname parameter not available, fail
-	//if (fname == "")
-	//	success = FAIL;
 	if( !fname.empty() ){
 		try{
 			FILE_LOG(logINFO) << "config file name " << fname;
@@ -119,11 +90,7 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success) {
 	}
 
 	if (success==OK){
-		FILE_LOG(logINFO) << "SLS Receiver starting " << udp_interface_type << " on port " << tcpip_port_no << endl;
-#ifdef REST
-		udp_interface = UDPInterface::create(udp_interface_type);
-		udp_interface->configure(configuration_map);
-#endif
+		FILE_LOG(logINFO) << "SLS Receiver starting TCP Server on port " << tcpip_port_no << endl;
 		tcpipInterface = new slsReceiverTCPIPInterface(success, udp_interface, tcpip_port_no);
 	}
 }

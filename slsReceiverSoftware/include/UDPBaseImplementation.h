@@ -473,9 +473,9 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	void setDetectorPositionId(const int i);
 
 	/**
-	 * Sets detector hostname (and corresponding detector variables in derived REST class)
+	 * Sets detector hostname
 	 * It is second function called by the client when connecting to receiver.
-	 * you can call this function only once. //FIXME: is this still valid, this implemented in derived REST class?
+	 * you can call this function only once.
 	 * @param c detector hostname
 	 */
 	void initialize(const char *c);

@@ -23,7 +23,8 @@ class slsReceiver : private virtual slsReceiverDefs {
  public:
 	/**
 	 * Constructor
-	 * creates the tcp interface and the udp class
+	 * Starts up a Receiver server. Reads configuration file, options, and
+	 * assembles a Receiver using TCP and UDP detector interfaces
 	 * @param argc from command line
 	 * @param argv from command line
 	 * @param succecc socket creation was successfull

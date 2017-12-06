@@ -1,16 +1,21 @@
 #ifndef ANALOGDETECTOR_H
 #define  ANALOGDETECTOR_H
 
+//#include <mutex>
 
+#include <pthread.h>
 #include "slsDetectorData.h"
 #include "pedestalSubtraction.h"
 #include "commonModeSubtraction.h"
 #include "tiffIO.h"
 
+
+using namespace std;
+
 #ifndef FRAMEMODE_DEF
 #define FRAMEMODE_DEF
 /** 
-enum to define the flags of the data set, which are needed to seect the type of processing it should undergo
+enum to define the flags of the data set, which are needed to seect the type of processing it should undergo: frame, pedestal, flat
 */
  enum frameMode { eFrame, ePedestal, eFlat };
 #endif
@@ -53,10 +58,17 @@ template <class dataType> class analogDetector {
       }
     }
     image=new int[nx*ny];
-    
+    xmin=0;
+    xmax=nx;
+    ymin=0;
+    ymax=ny;
+    fMode=ePedestal;
+    thr=0;
+    myFile=NULL;
+    fm=new pthread_mutex_t ;
   };
   /**
-     destructor. Deletes the cluster structure and the pdestalSubtraction array
+     destructor. Deletes the pdestalSubtraction array and the image
   */
   virtual ~analogDetector() {for (int i=0; i<ny; i++) delete [] stat[i]; delete [] stat; delete [] image;};
 
@@ -74,6 +86,16 @@ template <class dataType> class analogDetector {
     gmap=orig->gmap;
     cmSub=orig->cmSub;
     id=orig->id;
+    xmin=orig->xmin;
+    xmax=orig->xmax;
+    ymin=orig->ymin;
+    ymax=orig->ymax;
+    thr=orig->thr;
+    // nSigma=orig->nSigma;
+    fMode=orig->fMode;
+    myFile=orig->myFile;
+    fm=orig->fm;
+    
 
     stat=new pedestalSubtraction*[ny];
     for (int i=0; i<ny; i++) {
@@ -92,8 +114,10 @@ template <class dataType> class analogDetector {
     
   }
 
+
   /**
      clone. Must be virtual!
+     \returns a clone of the original analog detector
    */
   virtual analogDetector *Clone() {
     return new analogDetector(this);
@@ -165,12 +189,13 @@ template <class dataType> class analogDetector {
     return NULL;
   }
    /**
-     wrties a 32 bit tiff file of the size of the detector and contaning the gain map value, if any. If file doesn'e exist or gainmap is undefined, does not do anything.
+     writes a 32 bit tiff file of the size of the detector and contaning the gain map value, if any. If file doesn'e exist or gainmap is undefined, does not do anything.
      \param imgname complete name of the file to be written
-     \returns NULL
+     \returns NULL if file writing didn't succeed, else a pointer
   */
   void *writeGainMap(const char * imgname) {
     float *gm=NULL;
+    void *ret;
     if (gmap)  {
       gm=new float[nx*ny];
       for (int ix=0; ix<nx; ix++) {
@@ -178,19 +203,27 @@ template <class dataType> class analogDetector {
 	  gm[iy*nx+ix]=gmap[iy*nx+ix];
 	}
       }
-      WriteToTiff(gm, imgname, ny, nx);   
+      ret=WriteToTiff(gm, imgname, ny, nx);   
       delete [] gm;
     }
-    return NULL;
+    return ret;
   }
   
   
+  /** resets the pedestalSubtraction array, the commonModeSubtraction and the image data*/
     
-  /** resets the pedestalSubtraction array and the commonModeSubtraction */
-  void newDataSet(){iframe=-1; for (int iy=0; iy<ny; iy++) for (int ix=0; ix<nx; ix++) stat[iy][ix].Clear(); if (cmSub) cmSub->Clear(); };  
+  virtual void newDataSet(){
+    iframe=-1; 
+    for (int iy=0; iy<ny; iy++) 
+      for (int ix=0; ix<nx; ix++) {
+	stat[iy][ix].Clear(); 
+	image[iy*nx+ix]=0;
+      }
+    if (cmSub) cmSub->Clear(); 
+  };  
   
-  /** resets the eventMask to undefined and the commonModeSubtraction */
-  void newFrame(){iframe++; if (cmSub) cmSub->newFrame();};
+  /** resets the commonModeSubtraction and increases the frame index */
+  virtual void newFrame(){iframe++; if (cmSub) cmSub->newFrame();};
   
 
     /** sets the commonModeSubtraction algorithm to be used 
@@ -198,6 +231,11 @@ template <class dataType> class analogDetector {
 	\returns pointer to the actual common mode subtraction algorithm
     */
     commonModeSubtraction *setCommonModeSubtraction(commonModeSubtraction *cm) {cmSub=cm; return cmSub;};
+/** 
+      gets the commonModeSubtraction algorithm to be used 
+	\returns pointer to the actual common mode subtraction algorithm
+    */
+    commonModeSubtraction *getCommonModeSubtraction() {return cmSub;};
 
 
     /**
@@ -213,6 +251,7 @@ template <class dataType> class analogDetector {
        \param val value to be added
        \param ix pixel x coordinate
        \param iy pixel y coordinate
+       \param cm 1 adds the value to common mod, 0 skips it. Defaults to 0. - not properly implemented
     */
     virtual void addToPedestal(double val, int ix, int iy=0){ 
       if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
@@ -310,8 +349,8 @@ template <class dataType> class analogDetector {
     */
     virtual void setPedestal(double *ped, double *rms=NULL, int m=-1){
       double rr=0;
-      for (int ix=0; ix<nx; ix++) {
-	for (int iy=0; iy<ny; iy++) {
+      for (int ix=xmin; ix<xmax; ix++) {
+	for (int iy=ymin; iy<ymax; iy++) {
 	  if (rms) rr=rms[iy*nx+ix];
 	  stat[iy][ix].setPedestal(ped[iy*nx+ix],rr, m);
 	};
@@ -331,9 +370,16 @@ template <class dataType> class analogDetector {
     */
     virtual void setPedestalRMS(int ix, int iy, double rms=0){if (ix>=0 && ix<nx && iy>=0 && iy<ny) stat[iy][ix].setPedestalRMS(rms);};
     
+
+
+
+    /**
+       sets  pedestal rms for all pixels
+       \param rms pointer to array of pedestal rms
+    */
  virtual void setPedestalRMS(double *rms){
-      for (int ix=0; ix<nx; ix++) {
-	for (int iy=0; iy<ny; iy++) {
+      for (int ix=xmin; ix<xmax; ix++) {
+	for (int iy=ymin; iy<ymax; iy++) {
 	  stat[iy][ix].setPedestalRMS(rms[iy*nx+ix]);
 	};
       };
@@ -343,27 +389,33 @@ template <class dataType> class analogDetector {
 
 
      /**
-       sets  pedestal rms
-       \param ix pixel x coordinate
-       \param iy pixel y coordinate
-       \param rms value to set
+       write 32bit tiff file with detector image data
+       \param imgname file name to be written
+       \returns NULL if file writing didn't succed, otherwise a pointer
     */
   virtual void *writeImage(const char * imgname) {
     float *gm=NULL;
+    void *ret;
       gm=new float[nx*ny];
       for (int ix=0; ix<nx; ix++) {
 	for (int iy=0; iy<ny; iy++) {
 	    gm[iy*nx+ix]=image[iy*nx+ix];
 	}
       }
-      WriteToTiff(gm, imgname, ny, nx);   
+      ret=WriteToTiff(gm, imgname, ny, nx);   
       delete [] gm;
-      return NULL;
+      return ret;
   }
    
+       /**
+       write 32bit tiff file containing the pedestals
+       \param imgname file name to be written
+       \returns NULL if file writing didn't succed, otherwise a pointer
+    */
     
   virtual void *writePedestals(const char * imgname) {
     float *gm=NULL;
+    void *ret;
       gm=new float[nx*ny];
       for (int ix=0; ix<nx; ix++) {
 	for (int iy=0; iy<ny; iy++) {
@@ -373,11 +425,16 @@ template <class dataType> class analogDetector {
 	    gm[iy*nx+ix]=stat[iy][ix].getPedestal();
 	}
       }
-      WriteToTiff(gm, imgname, ny, nx);   
+      ret=WriteToTiff(gm, imgname, ny, nx);   
       delete [] gm;
-      return NULL;
+      return ret;
   }
   
+ /**
+      read 32bit tiff file containing the pedestals
+       \param imgname file name to be read
+       \returns 0 if file reading didn't succed, otherwise 1
+    */
   int readPedestals(const char * imgname) {
     uint32 nnx, nny;
     float *gm=ReadFromTiff( imgname, nny, nnx);
@@ -398,6 +455,11 @@ template <class dataType> class analogDetector {
     return NULL;
   }
   
+ /**
+      read 32bit tiff file containing the image data
+       \param imgname file name to be read
+       \returns 0 if file reading didn't succed, otherwise 1
+    */
   int readImage(const char * imgname) {
     uint32 nnx, nny;
     float *gm=ReadFromTiff( imgname, nny, nnx);
@@ -418,22 +480,37 @@ template <class dataType> class analogDetector {
     return NULL;
   }
   
-    
+   
+    /**
+      returns pointer to image data
+       \returns pointer to image data
+    */  
   virtual int *getImage(){return image;};
-    
+      /**
+      write 32bit tiff file containing the pedestals RMS
+       \param imgname file name to be written
+       \returns NULL if file writing didn't succed, otherwise a pointer
+    */
   void *writePedestalRMS(const char * imgname) {
     float *gm=NULL;
+    void *ret;
       gm=new float[nx*ny];
       for (int ix=0; ix<nx; ix++) {
 	for (int iy=0; iy<ny; iy++) {
 	    gm[iy*nx+ix]=stat[iy][ix].getPedestalRMS();
 	}
       }
-      WriteToTiff(gm, imgname, ny, nx);  
+      ret=WriteToTiff(gm, imgname, ny, nx);  
       delete [] gm;
-      return   NULL;
+      return ret;
     }
   
+   /**
+      read 32bit tiff file containing the pedestals RMS
+       \param imgname file name to be read
+       \returns 0 if file reading didn't succed, otherwise 1
+    */
+
   int readPedestalRMS(const char * imgname) {
     uint32 nnx, nny;
     float *gm=ReadFromTiff( imgname, nny, nnx);
@@ -455,6 +532,11 @@ template <class dataType> class analogDetector {
 
 
 
+
+  /**
+      Adds all the data for each pixels in the selected region of interest to the pedestal
+       \param data pointer to the data
+    */
     
     virtual void addToPedestal(char *data) {
       
@@ -462,8 +544,8 @@ template <class dataType> class analogDetector {
       newFrame();
       
       
-      for (int ix=0; ix<nx; ix++) {
-	for (int iy=0; iy<ny; iy++) {
+      for (int ix=xmin; ix<xmax; ix++) {
+	for (int iy=ymin; iy<ymax; iy++) {
 	  
 	  
 	  addToPedestal(data,ix,iy);
@@ -474,6 +556,58 @@ template <class dataType> class analogDetector {
       return ;
       
     };
+
+
+
+  /**
+     Sets region of interest in which data should be processed
+       \param xmi minimum x. if -1 or out of range remains unchanged
+       \param xma maximum x. if -1 or out of range remains unchanged
+       \param ymi minimum y. if -1 or out of range remains unchanged
+       \param yma maximum y. if -1 or out of range remains unchanged
+    */
+
+    void setROI(int xmi=-1, int xma=-1, int ymi=-1, int yma=-1) {
+      if (xmi>=0 && xmi<=nx) xmin=xmi;
+      if (xma>=0 && xma<=nx) xmax=xma;
+      if (xmax<xmin) {
+	xmi=xmin;
+	xmin=xmax;
+	xmax=xmi;
+      }
+      
+      if (ymi>=0 && ymi<=ny) ymin=ymi;
+      if (yma>=0 && yma<=ny) ymax=yma;
+      if (ymax<ymin) {
+	ymi=ymin;
+	ymin=ymax;
+	ymax=ymi;
+      }
+      
+
+
+    };
+      /**
+     Gets region of interest in which data are processed
+       \param xmi reference to minimum x.
+       \param xma reference to maximum x. 
+       \param ymi reference to minimum y. 
+       \param yma reference to maximum y. 
+    */
+
+    void getROI(int &xmi, int &xma, int &ymi, int &yma) {xmi=xmin; xma=xmax; ymi=ymin; yma=ymax;};
+
+
+
+
+  /**
+      Adds all the data for the selected pixel to the pedestal
+       \param data pointer to the data
+       \param ix pixel x coordinate
+       \param iy pixel y coordinate
+    */
+
+
     virtual void addToPedestal(char *data, int ix, int iy=0) {
       
       
@@ -491,7 +625,14 @@ template <class dataType> class analogDetector {
       
     };
       
- 
+  
+  /**
+     Subtracts pedestal from the data array in the region of interest
+       \param data pointer to the data
+       \param val pointer where the pedestal subtracted data should be added. If NULL, the internal image is used
+       \returns pointer to the pedestal subtracted data
+    */
+
         
    virtual  double *subtractPedestal(char *data, double *val=NULL) {
       
@@ -500,8 +641,8 @@ template <class dataType> class analogDetector {
       if (val==NULL)
 	val=new double[nx*ny];
 
-      for (int ix=0; ix<nx; ix++) {
-	for (int iy=0; iy<ny; iy++) {
+      for (int ix=xmin; ix<xmax; ix++) {
+	for (int iy=ymin; iy<ymax; iy++) {
 	  val[iy*nx+ix]+=subtractPedestal(data, ix, iy);
 	}
       }
@@ -509,6 +650,15 @@ template <class dataType> class analogDetector {
     };
       
 
+
+
+ /**
+     Subtracts pedestal from the data for a selected pixel
+       \param data pointer to the data
+       \param ix pixel x coordinate
+       \param iy pixel y coordinate
+       \returns pedestal subtracted value
+    */
 
 
 
@@ -528,52 +678,73 @@ template <class dataType> class analogDetector {
    };
       
 
+   /**
+      sets threshold value for conversion into number of photons
+      \param t threshold to be set 
+      \returns threshold value
+    */
+   double setThreshold(double t){thr=t; return thr;};
+     
+   /**
+      gets threshold value for conversion into number of photons
+      \returns threshold value
+    */
+   double getThreshold(){return thr;};
+     /**
+      converts the data into number of photons for the selected pixel
+      \param data pointer to the data
+      \param ix pixel x coordinate
+      \param iy pixel y coordinate
+      \returns converted number of photons. If no threshold is set, returns gain converted pedestal subtracted data.
+    */
 
-   virtual  int getNPhotons(char *data, int ix, int iy=0, int thr=-1) {
-     double g=1.;
-     int v;
+   virtual  int getNPhotons(char *data, int ix, int iy=0) {
+     int nph=0;
+     double v;
      if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
-	
-       if (gmap) {
-	  g=gmap[iy*nx+ix];
-	  if (g==0) g=-1.;
-	}
-
-	if (thr<=0) thr=-1*thr*getPedestalRMS(ix,iy)/g;
-	
-	/* if (det) */
-	/*   return (dataSign*det->getValue(data, ix, iy)-getPedestal(ix,iy))/g/thr; */
-	/* else { */
-	//if (ix==30 && iy==50 )
-	  v=subtractPedestal(data,ix,iy)/g/thr;
-	  if (v>0)
-	  return v;
-	  //cout << v << endl;
-	  return 0;
-	  //	}
-      }
-      return 0;
-      
+       v=subtractPedestal(data,ix,iy);
+       if (thr>0) {
+	 v+=0.5*thr;
+	 nph=v/thr;
+	 return nph;
+       } else
+	 return v;
+     }
+     return 0;  
    };
+   
+   /**
+      converts the data into number of photons for all pixels
+      \param data pointer to the data
+      \param nph pointer where the photons should added. If NULL,the internal image is used
+      \returns pointer to array containing the number of photons
+   */
+     int *getNPhotons(char *data,  int *nph=NULL) {
+       
+       double val;
+     if (nph==NULL)
+       nph=image;
+     newFrame();
+     for (int ix=xmin; ix<xmax; ix++) {
+       for (int iy=ymin; iy<ymax; iy++) {
+	 nph[iy*nx+ix]+=getNPhotons(data, ix, iy);
+       }
+     }
+     return nph;
+     
+   }
 
-   int *getNPhotons(char *data, double thr=-1, int *nph=NULL) {
-
-      double val;
-      if (nph==NULL)
-	nph=image;//image=new int[nx*ny];   
-      double tthr=thr;
-      newFrame();
-      for (int ix=0; ix<nx; ix++) {
-	for (int iy=0; iy<ny; iy++) {
-	  nph[iy*nx+ix]+=getNPhotons(data, ix, iy, thr);
-	}
-      }
-      return nph;
-
-    }
-
-   virtual void clearImage(){  for (int ix=0; ix<nx; ix++) {
-       for (int iy=0; iy<ny; iy++) { image[iy*nx+ix]=0;}}};
+ /**
+      clears the image array
+     
+    */
+   virtual void clearImage(){  
+     for (int ix=0; ix<nx; ix++) {
+       for (int iy=0; iy<ny; iy++) { 
+	 image[iy*nx+ix]=0;
+       }
+     }
+   };
 
     /** sets/gets number of samples for moving average pedestal calculation
 	\param i number of samples to be set (0 or negative gets)
@@ -588,6 +759,9 @@ template <class dataType> class analogDetector {
       return stat[0][0].SetNPedestals();
     };
 
+ /** gets number of samples for moving average pedestal calculation
+	\returns actual number of samples
+    */
     int GetNPedestals(int ix, int iy) {
       if  (ix>=0 &&  ix<nx && iy>=0 && iy<ny) 
 	return stat[iy][ix].GetNPedestals(); 
@@ -596,29 +770,74 @@ template <class dataType> class analogDetector {
     };
 
  
-    double getROI(char *data, int xmin, int xmax, int ymin=0, int ymax=1) {
-      double val=0;
-      for (int ix=xmin; ix<xmax; ix++)
-	for (int iy=ymin; iy<ymax; iy++)
+ /** calculates the sum of photons in the specified region of interest. 
+     \param data pointer to the data
+     \param xmi minimum x for the calculation. If -1 the minimum x of the predefined region of interest is used
+     \param xma maximum x for the calculation. If -1 the maximum x of the predefined region of interest is used
+     \param ymi minimum y for the calculation. If -1 the minimum y of the predefined region of interest is used
+     \param yma maximum y for the calculation. If -1 the maximum y of the predefined region of interest is used
+     
+	\returns total number of photons in
+    */
+    virtual int getTotalNumberOfPhotons(char *data, int xmi=-1, int xma=-1, int ymi=-1, int yma=-1) {
+      int val=0;
+      if (xmi<0) xmi=xmin;
+      if (xma<0) xma=xmax;
+      if (ymi<0) ymi=ymin;
+      if (yma<0) yma=ymax;
+      
+      for (int ix=xmi; ix<xma; ix++)
+	for (int iy=ymi; iy<yma; iy++)
 	  if (ix>=0 && ix<nx && iy>=0 && iy<ny) 
-	    val+=subtractPedestal(data, ix, iy);
+	    val+=getNPhotons(data, ix, iy);
       return val;
       
     };
 
 
-    virtual void processData(char *data, frameMode i=eFrame, int *val=NULL) {
-      switch(i) {
+ /** 
+     calculates the image converted into number of photons. If the frame mode is pedestal, it also it to the pdedestal subtraction.
+     \param data pointer to the data to be processed
+     \param val pointer of the data to be added to. If NULL, the internal image will be used
+     \param pointer to the processed data
+     \returns 
+    */
+
+    virtual void processData(char *data,int *val=NULL) {
+      switch(fMode) {
       case ePedestal:
 	addToPedestal(data);
 	break;
       default:
-	getNPhotons(data,-1,val);
+	getNPhotons(data,val);
       }
     };
 
     virtual char *getInterpolation(){return NULL;};
 
+ /** sets the current frame mode for the detector
+     \param f frame mode to be set
+     
+     \returns current frame mode
+    */
+    frameMode setFrameMode(frameMode f) {fMode=f; return fMode;};
+    
+ /** gets the current frame mode for the detector
+     \returns current frame mode
+    */
+    frameMode getFrameMode() {return fMode;};
+    
+/** sets file pointer where to write the clusters to 
+    \param f file pointer
+    \returns current file pointer
+*/
+FILE *setFilePointer(FILE *f){myFile=f; return myFile;};
+
+/** gets file pointer where to write the clusters to 
+    \returns current file pointer
+*/
+FILE *getFilePointer(){return myFile;};
+ void setMutex(pthread_mutex_t *m){fm=m;};
  protected:
   
     slsDetectorData<dataType> *det; /**< slsDetectorData to be used */
@@ -631,7 +850,17 @@ template <class dataType> class analogDetector {
     double *gmap;
     int *image;
     int id;
-    //int xmin, xmax, ymin, ymax;
+    //int xmin, xmax, ymin, ymax;  int xmin; /**< minimum x of the region of interest */
+    int xmin; /**< minimum x of the region of interest */
+    int xmax; /**< maximum x of the region of interest */
+    int ymin;/**< minimum y of the region of interest */
+    int ymax;/**< maximum y of the region of interest */
+    double thr; /**< threshold to be used for conversion into number of photons */
+    //  int nSigma; /**< number of sigma to be used for conversion into number of photons if threshold is undefined */
+    frameMode fMode; /**< current detector frame mode */
+    FILE *myFile; /**< file pointer to write to */
+    
+    pthread_mutex_t *fm;
 };
 
 #endif

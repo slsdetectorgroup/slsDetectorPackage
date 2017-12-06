@@ -80,8 +80,24 @@ LATEX_HIDE_INDICES = YES
 
 PREDEFINED           = __cplusplus
 
-INPUT		= analogDetector.h pedestalSubtraction.h MovingStat.h singlePhotonDetector.h interpolatingDetector.h tiffIO.h single_photon_hit.h slsDetectorData.h moench03Ctb10GbT1Data.h moench03TCtbData.h moench03T1CtbData.h moench03CtbData.h moench03Ctb10GbData.h moench03TCtb10GbData.h Mythen3_01_jctbData.h adcSar2_jctbData.h eigerHalfModuleData.h energyCalibration.h slsReceiverData.h gotthardModuleData.h gotthardShortModuleData.h jungfrau02Data.h jungfrau10ModuleData.h moench02Ctb10GbData.h moench02CtbData.h moench02ModuleData.h moench03CommonMode.h moenchCommonMode.h chiptestBoardData.h commonModeSubtraction.h RunningStat.h etaVEL/etaInterpolationBase.h etaVEL/slsInterpolation.h etaVEL/etaInterpolationPosXY.h etaVEL/linearInterpolation.h etaVEL/noInterpolation.h etaVEL/etaInterpolationGlobal.h etaVEL/interpolation_EtaVEL.h etaVEL/EtaVEL.h etaVEL/iterativeEtaInterpolation.h multiThreadedDetector.h moench03T1ZmqData.h	
+INPUT		= analogDetector.h \
+		pedestalSubtraction.h \ 
+		MovingStat.h  \
+		singlePhotonDetector.h  \
+		interpolatingDetector.h tiffIO.h \
+		single_photon_hit.h \
+		dataStructures/slsDetectorData.h \
+		commonModeSubtraction.h \			 
+		RunningStat.h \
+		interpolations/etaInterpolationBase.h \
+		interpolations/slsInterpolation.h \
+		interpolations/etaInterpolationPosXY.h \
+		interpolations/linearInterpolation.h \
+		interpolations/noInterpolation.h \
+		interpolations/etaInterpolationGlobal.h \
+		multiThreadedAnalogDetector.h 
 				
 			
 OUTPUT_DIRECTORY = slsDetectorCalibrationDocs
 
+#moench03Ctb10GbT1Data.h moench03TCtbData.h moench03T1CtbData.h moench03CtbData.h moench03Ctb10GbData.h moench03TCtb10GbData.h Mythen3_01_jctbData.h adcSar2_jctbData.h eigerHalfModuleData.h energyCalibration.h slsReceiverData.h gotthardModuleData.h gotthardShortModuleData.h jungfrau02Data.h jungfrau10ModuleData.h moench02Ctb10GbData.h moench02CtbData.h moench02ModuleData.h moench03CommonMode.h moenchCommonMode.h chiptestBoardData.h interpolation/etaVEL/interpolation_EtaVEL.h interpolation/etaVEL/EtaVEL.h etaVEL/iterativeEtaInterpolation.h dataStructures/moench03T1ZmqData.h	

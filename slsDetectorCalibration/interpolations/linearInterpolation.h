@@ -98,18 +98,18 @@ class linearInterpolation : public slsInterpolation{
       {
       case TOP_LEFT:
 	dX=-1.; 
-	dY=+1.; 
+	dY=0; 
 	break;
       case TOP_RIGHT:
-	dX=+1.; 
-	dY=+1.; 
+	dX=0; 
+	dY=0; 
 	break;
       case BOTTOM_LEFT:
 	dX=-1.; 
 	dY=-1.; 
 	break;
       case BOTTOM_RIGHT:
-	dX=+1.; 
+	dX=0; 
 	dY=-1.; 
 	break;
       default:
@@ -125,8 +125,8 @@ class linearInterpolation : public slsInterpolation{
       xpos_eta=0;
       xpos_eta=0;
     }
-    int_x=((double)x) + 0.5*dX + xpos_eta;
-    int_y=((double)y) + 0.5*dY + ypos_eta;
+    int_x=((double)x) + dX + xpos_eta;
+    int_y=((double)y) + dY + ypos_eta;
     
     return;
   };

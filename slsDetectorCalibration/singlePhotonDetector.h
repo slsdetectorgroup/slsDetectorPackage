@@ -16,13 +16,14 @@
 
 #ifndef EVTYPE_DEF
 #define EVTYPE_DEF
+/** enum to define the even types */
 enum eventType {
-  PEDESTAL=0,
-  NEIGHBOUR=1,
-  PHOTON=2,
-  PHOTON_MAX=3,
-  NEGATIVE_PEDESTAL=4,
-  UNDEFINED_EVENT=-1
+  PEDESTAL=0, /** pedestal */
+  NEIGHBOUR=1, /** neighbour i.e. below threshold, but in the cluster of a photon */
+  PHOTON=2, /** photon i.e. above threshold */
+  PHOTON_MAX=3, /** maximum of a cluster satisfying the photon conditions */
+  NEGATIVE_PEDESTAL=4, /** negative value, will not be accounted for as pedestal in order to avoid drift of the pedestal towards negative values */
+  UNDEFINED_EVENT=-1 /** undefined */
 };
 #endif
 
@@ -70,26 +71,31 @@ public analogDetector<uint16_t> {
     if (ny==1)
       clusterSizeY=1;
 
-    cluster=new single_photon_hit(clusterSize,clusterSizeY);
+    // cluster=new single_photon_hit(clusterSize,clusterSizeY);
+    clusters=new single_photon_hit[nx*ny];
+   
+    cluster=clusters;
     setClusterSize(csize);
-    
+    nphTot=0;
+    nphFrame=0;
   };
     /**
-       destructor. Deletes the cluster structure and the pdestalSubtraction array
+       destructor. Deletes the cluster structure, the pdestalSubtraction and the image array
     */
   virtual ~singlePhotonDetector() {delete cluster; for (int i=0; i<ny; i++) delete [] eventMask[i]; delete [] eventMask; };
 
     
   
-    /* /\** resets the eventMask to undefined and the commonModeSubtraction *\/ */
-    /* void newFrame(){analogDetector::newFrame(); for (int iy=0; iy<ny; iy++) for (int ix=0; ix<nx; ix++) eventMask[iy][ix]=UNDEFINED_EVENT; }; */
-
-    
+  /**
+     copy constructor
+     \param orig detector to be copied
+     
+  */
  
  singlePhotonDetector(singlePhotonDetector *orig) : analogDetector<uint16_t>(orig) {
 
     nDark=orig->nDark;
-    
+    myFile=orig->myFile;
     
     eventMask=new eventType*[ny];
     for (int i=0; i<ny; i++) {
@@ -100,16 +106,29 @@ public analogDetector<uint16_t> {
     nSigma=orig->nSigma;
     clusterSize=orig->clusterSize;
     clusterSizeY=orig->clusterSizeY;
-    cluster=new single_photon_hit(clusterSize,clusterSizeY);
+    // cluster=new single_photon_hit(clusterSize,clusterSizeY);
+    clusters=new single_photon_hit[nx*ny];
 
+    cluster=clusters;
+    
+    setClusterSize(clusterSize);
+    
     quad=UNDEFINED_QUADRANT;
     tot=0;
     quadTot=0;
     gmap=orig->gmap;
+    nphTot=0;
+    nphFrame=0;
 
   }
   
 
+  
+  /**
+     duplicates the detector structure
+     \returns new single photon detector with same parameters
+     
+  */
   virtual singlePhotonDetector *Clone() {
     return new singlePhotonDetector(this);
   }
@@ -130,17 +149,29 @@ public analogDetector<uint16_t> {
 	clusterSize=n;
 	if (cluster)
 	  delete cluster;
-	if (ny>1)
+	if (ny>clusterSize)
 	  clusterSizeY=clusterSize;
-	cluster=new single_photon_hit(clusterSize,clusterSizeY);
+	else
+	  clusterSizeY=1;
+	for (int ip=0; ip<nx*ny; ip++)
+	  (clusters+ip)->set_cluster_size(clusterSize,clusterSizeY);
+	    //cluster=new single_photon_hit(clusterSize,clusterSizeY);
       }
       return clusterSize;
     }
 
 
 
-    virtual int *getNPhotons(char *data, double thr=-1, int *nph=NULL) {
-      
+    /**
+       converts the image into number of photons
+       \param data pointer to data
+       \param nph pointer where to add the calculated photons. If NULL, the internal image will be used
+       \returns array with data converted into number of photons.
+    */
+    
+    virtual int *getNPhotons(char *data,  int *nph=NULL) {
+
+      nphFrame=0;
       double val;
       if (nph==NULL)
 	nph=image;
@@ -174,50 +205,25 @@ public analogDetector<uint16_t> {
 	return nph;
       }	else {
 	if (thr>0) {
-	cout << "threshold" << endl;
-	for (int ix=0; ix<nx; ix++) {
-	  for (int iy=0; iy<ny; iy++) {
-	    //	cout << id << " " << ix << " " << iy << endl;
-	    
-	    if (gmap) {
-	      g=gmap[iy*nx+ix];
-	      if (g==0) g=-1.;
+	 
+	  for (int ix=xmin; ix<xmax; ix++) {
+	    for (int iy=ymin; iy<ymax; iy++) {
+	      
+	      val=subtractPedestal(data,ix,iy);
+	      
+	      nn=analogDetector<uint16_t>::getNPhotons(data,ix,iy);
+	      nph[ix+nx*iy]+=nn;
+	      rest[iy][ix]=(val-nn*tthr);
+	      
 	    }
-	    
-
-	    //return UNDEFINED_EVENT;
-    
-	    val=subtractPedestal(data,ix,iy);
-	    
-	    
-	    /* if (thr<=0) { */
-	      
-	    /*   tthr=nSigma*getPedestalRMS(ix,iy)/g; */
-	      
-	    /* } */
-	    
-	    /*  */
-		  nn=analogDetector<uint16_t>::getNPhotons(data,ix,iy,tthr);
-		  nph[ix+nx*iy]+=nn;
-		  rest[iy][ix]=(val-nn*tthr);
-	    
 	  }
-	}
-	}
-	for (int ix=0; ix<nx; ix++) {
-	  for (int iy=0; iy<ny; iy++) {
+	  //	}
+	for (int ix=xmin; ix<xmax; ix++) {
+	  for (int iy=ymin; iy<ymax; iy++) {
 	    
 	    //  for (int ix=clusterSize/2; ix<clusterSize/2-1; ix++) {
 	    // for (int iy=clusterSizeY/2; iy<ny-clusterSizeY/2; iy++) {
 	    eventMask[iy][ix]=PEDESTAL;
-	    
-	    if (thr<=0) {
-	      tthr=nSigma*getPedestalRMS(ix,iy)/g;
-	      if (ix==0 || iy==0)
-		rest[iy][ix]=subtractPedestal(data,ix,iy);
-	     
-	    }
-	    
 	    max=0;
 	    tl=0;
 	    tr=0;
@@ -231,9 +237,7 @@ public analogDetector<uint16_t> {
 		if ((iy+ir)>=0 && (iy+ir)<ny && (ix+ic)>=0 && (ix+ic)<nx) {
 		  //cluster->set_data(rest[iy+ir][ix+ic], ic, ir);
 		  
-		  if (thr<=0 && ir>=0 && ic>=0 ) 
-		    rest[iy+ir][ix+ic]=subtractPedestal(data,ix+ic,iy+ir);
-		  
+		
 		  v=rest[iy+ir][ix+ic];//cluster->get_data(ic,ir);
 		  tot+=v;
 		  
@@ -257,10 +261,7 @@ public analogDetector<uint16_t> {
 		}
 	      }
 	    }
-	    if (rest[iy][ix]<=-tthr) {
-	      eventMask[iy][ix]=NEGATIVE_PEDESTAL;
-	      //if (cluster->get_data(0,0)>=max) {
-	    } else if (rest[iy][ix]>=max) { 
+	    if (rest[iy][ix]>=max) { 
 	      if (bl>=br && bl>=tl && bl>=tr) {
 		quad=BOTTOM_LEFT;
 		quadTot=bl;
@@ -275,35 +276,21 @@ public analogDetector<uint16_t> {
 		quadTot=tr;
 	      }
 	      if (max>tthr || tot>sqrt(ccy*ccs)*tthr || quadTot>sqrt(cy*cs)*tthr) {
-	      /* 	cout << ix << " " << iy << " " << rest[iy][ix] <<" " <<  tot << " " << quadTot << endl; */
-	      /* 	 for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) { */
-	      /* for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) */
-	      /* 	cout << rest[iy+ir][ix+ic] << " " ; */
-	      /* cout << endl; */
-	      /* 	 } */
 		eventMask[iy][ix]=PHOTON;
 		nph[ix+nx*iy]++;
-		// rest[iy][ix]-=tthr;
-	      } //else if (thr<=0 ) {
-		//addToPedestal(data,ix,iy);
-	      // }
-	    }
-	    if (thr<0 && eventMask[iy][ix]==PEDESTAL) {
-	      addToPedestal(data,ix,iy);
+		nphFrame+=nph[ix+nx*iy];
+		nphTot+=nph[ix+nx*iy];
+		
+	      } 
 	    }
 	  }
 	}
+	
+	return nph;
+	} else return getClusters(data);
       }
-      
-      //	}
-      // }
-      
-      
-      
-      return nph;
-
-    }
-
+      return NULL;
+    };
 
 
     /** finds event type for pixel and fills cluster structure. The algorithm loops only if the evenMask for this pixel is still undefined.
@@ -415,7 +402,16 @@ public analogDetector<uint16_t> {
   };
 
 
-int getClusters(char *data, single_photon_hit *clusters) {
+
+
+/**
+   Loops in the region of interest to find the clusters
+   \param data pointer to the data structure
+   \returns number of clusters found
+
+ */
+
+int *getClusters(char *data) {
 
  
   int nph=0;
@@ -431,8 +427,8 @@ int getClusters(char *data, single_photon_hit *clusters) {
     return 0;
   }
   newFrame();
-  for (int ix=0; ix<nx; ix++) {
-    for (int iy=0; iy<ny; iy++) {
+  for (int ix=xmin; ix<xmax; ix++) {
+    for (int iy=ymin; iy<ymax; iy++) {
       
       max=0;
       tl=0;
@@ -502,6 +498,7 @@ int getClusters(char *data, single_photon_hit *clusters) {
 	  (clusters+nph)->tot=tot;
 	  (clusters+nph)->x=ix;
 	  (clusters+nph)->y=iy;
+	  (clusters+nph)->iframe=det->getFrameNumber(data);
 	  (clusters+nph)->ped=getPedestal(ix,iy,0);
 	  for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
 	    for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
@@ -509,7 +506,7 @@ int getClusters(char *data, single_photon_hit *clusters) {
 	    }
 	  }
 	  nph++;
-
+	  image[iy*nx+ix]++;
 
 	  } else {
 	    eventMask[iy][ix]=PHOTON;
@@ -521,8 +518,12 @@ int getClusters(char *data, single_photon_hit *clusters) {
 
     }
   }
-
-  return  nph;
+  nphFrame=nph;
+  nphTot+=nph;
+  //cout << nphFrame << endl;
+  // cout <<"**********************************"<< endl;
+  writeClusters();
+  return  image;
   
 };
 
@@ -593,27 +594,46 @@ int getClusters(char *data, single_photon_hit *clusters) {
       return tall;
     };
 #else
-    /** write cluster to filer*/
-    void writeCluster(FILE* myFile){cluster->write(myFile);};
+/** write cluster to filer
+     \param f file pointer
+*/
+    void writeCluster(FILE* f){cluster->write(f);};
 
+/** 
+    write clusters to file
+    \param f file pointer
+    \param clusters array of clusters structures
+    \param nph number of clusters to be written to file
+
+*/
+
+static void writeClusters(FILE *f, single_photon_hit *clusters, int nph){for (int i=0; i<nph; i++) (clusters+i)->write(f);};
+void writeClusters(FILE *f){for (int i=0; i<nphFrame; i++) (clusters+i)->write(f);};
+ void writeClusters(){if (myFile) {  
+     //cout << "++" << endl;  
+     pthread_mutex_lock(fm);
+     for (int i=0; i<nphFrame; i++) 
+       (clusters+i)->write(myFile);
+     pthread_mutex_unlock(fm); 
+     //cout << "--" << endl; 
+   } 
+ };
 #endif
 
-    virtual void processData(char *data, frameMode i=eFrame, int *val=NULL) {
+    virtual void processData(char *data, int *val=NULL) {
       // cout << "sp" << endl;
-      switch(i) {
+      switch(fMode) {
       case ePedestal:
 	addToPedestal(data);
 	break;
       default:
-	getNPhotons(data,-1,val);
+	getNPhotons(data,val);
       }
       iframe++;
       //	cout << "done" << endl;
     };
 
-
  protected:
-  
 
     int nDark; /**< number of frames to be used at the beginning of the dataset to calculate pedestal without applying photon discrimination */
     eventType **eventMask; /**< matrix of event type or each pixel */
@@ -621,12 +641,15 @@ int getClusters(char *data, single_photon_hit *clusters) {
     int clusterSize; /**< cluster size in the x direction */
     int clusterSizeY; /**< cluster size in the y direction i.e. 1 for strips, clusterSize for pixels */
     single_photon_hit *cluster; /**< single photon hit data structure */
+    single_photon_hit *clusters; /**< single photon hit data structure */
     quadrant quad; /**< quadrant where the photon is located */
     double tot; /**< sum of the 3x3 cluster */
     double quadTot; /**< sum of the maximum 2x2cluster */
+    int nphTot;
+    int nphFrame;
 
 
-};
+    };
 
 
 

@@ -71,26 +71,48 @@ class etaInterpolationPosXY : public etaInterpolationBase{
      ii=0;
      
      for (int ibx=0; ibx<nbeta; ibx++) {
-       if (hix[ibx]>(ii+1)*tot_eta_x*bsize) ii++;
+       if (tot_eta_x==0) {
+	 hhx[ibx+ib*nbeta]=((float)ibx)/((float)nbeta);
+	 ii=(ibx)/nbeta;
+       } else //if (hix[ibx]>(ii+1)*tot_eta_x*bsize) 
+	 {
+	 //ii++;
+	 // cout << ib << " x " << ibx << " " << tot_eta_x << " " << (ii)*tot_eta_x*bsize << " " << ii << endl;
+	 // }
 #ifdef MYROOT1  
        hhx->SetBinContent(ibx+1,ib+1,ii);
 #endif
 #ifndef MYROOT1  
-       hhx[ibx+ib*nbeta]=ii; 
+       hhx[ibx+ib*nbeta]=hix[ibx]/((float)tot_eta_x);//ii; 
 #endif
+	 }
      }
+     /* if (ii!=(nSubPixels-1)) */
+     /*   cout << ib << " x " <<  tot_eta_x << " " << (ii+1)*tot_eta_x*bsize << " " << ii << " " << hix[nbeta-1]<< endl; */
      
      ii=0;
      
      for (int ibx=0; ibx<nbeta; ibx++) {
-       if (hiy[ibx]>(ii+1)*tot_eta_y*bsize) ii++;
+       if (tot_eta_y==0) {
+	 hhx[ibx+ib*nbeta]=((float)ibx)/((float)nbeta);
+	 ii=(ibx*nSubPixels)/nbeta;
+       } else //if (hiy[ibx]>(ii+1)*tot_eta_y*bsize) 
+	 {
+	   //ii++;
+	 //cout << ib << " y " << ibx << " " << tot_eta_y << " "<< (ii)*tot_eta_y*bsize << " " << ii << endl;
+	   //}
 #ifdef MYROOT1  
        hhy->SetBinContent(ib+1,ibx+1,ii);
 #endif
 #ifndef MYROOT1  
-       hhy[ib+ibx*nbeta]=ii; 
+       hhy[ib+ibx*nbeta]=hiy[ibx]/((float)tot_eta_y);//ii; 
 #endif
+	 }
      }
+     /* if (ii!=(nSubPixels-1)) */
+     /*   cout << ib << " y " <<  tot_eta_y << " " << (ii+1)*tot_eta_y*bsize << " " << ii << " " << hiy[nbeta-1]<< endl; */
+     
+     //	 cout << "y " << nbeta << " " << (ii+1)*tot_eta_x*bsize << " " << ii << endl;
      
 
 

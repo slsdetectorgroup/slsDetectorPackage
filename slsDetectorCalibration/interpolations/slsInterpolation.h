@@ -7,6 +7,7 @@
 #include <TH2F.h>
 #endif
 
+#include <cstdlib> 
 #include "tiffIO.h"
 #ifndef DEF_QUAD
 #define DEF_QUAD
@@ -18,7 +19,9 @@
     UNDEFINED_QUADRANT=-1
   };
 #endif
+#include <memory.h>
 
+using namespace std;
 //#ifdef MYROOT1
 //: public TObject
 //#endif
@@ -136,7 +139,7 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
 
 #ifndef MYROOT1
   virtual int *addToImage(double int_x, double int_y){ int iy=nSubPixels*int_y; int ix=nSubPixels*int_x; 
-    //       cout << int_x << " " << int_y << " " << "  " << ix << " " << iy << " " << ix+iy*nPixelsX*nSubPixels << endl;
+    // cout << int_x << " " << int_y << " " << "  " << ix << " " << iy << " " << ix+iy*nPixelsX*nSubPixels << endl;
     if (ix>=0 && ix<(nPixelsX*nSubPixels) && iy<(nSubPixels*nPixelsY) && iy>=0 )(*(hint+ix+iy*nPixelsX*nSubPixels))+=1; 
     return hint;
   };

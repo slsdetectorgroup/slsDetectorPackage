@@ -40,11 +40,11 @@ class noInterpolation : public slsInterpolation{
   };
   virtual void getInterpolatedPosition(int x, int y, double etax, double etay, int corner, double &int_x, double &int_y)
   {
-    return getInterpolatedPosition(x, y, NULL, int_x, int_y);
+    getInterpolatedPosition(x, y, NULL, int_x, int_y);
   };
-  virtual int getInterpolatedPosition(int x, int y, double totquad,int quad,double *cl,double &etax, double &etay){
-    return getInterpolatedPosition(x, y, NULL, int_x, int_y);
-  }
+  virtual void getInterpolatedPosition(int x, int y, double totquad,int quad,double *cl,double &etax, double &etay){
+    getInterpolatedPosition(x, y, NULL, etax, etay);
+  };
   
   //////////////////////////////////////////////////////////////////////////////////////
   virtual void getPositionETA3(int x, int y, double *data, double &int_x, double &int_y)

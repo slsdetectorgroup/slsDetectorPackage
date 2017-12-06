@@ -33,13 +33,24 @@ class single_photon_hit {
   /** binary write to file of all elements of the structure, except size of the cluster
       \param myFile file descriptor
   */
-  void write(FILE *myFile) {fwrite((void*)this, 1, 3*sizeof(int)+4*sizeof(double)+sizeof(quad), myFile); fwrite((void*)data, 1, dx*dy*sizeof(double), myFile);};   
+  size_t write(FILE *myFile) {
+    //fwrite((void*)this, 1, 3*sizeof(int)+4*sizeof(double)+sizeof(quad), myFile); 
+    if (fwrite((void*)this, 1, 3*sizeof(int), myFile)) 
+      return fwrite((void*)data, 1, dx*dy*sizeof(double), myFile);
+    return 0;
+  };   
   
   /** 
       binary read from file of all elements of the structure, except size of the cluster. The structure is then filled with those args
       \param myFile file descriptor
   */
-  void read(FILE *myFile) {fread((void*)this, 1,  3*sizeof(int)+4*sizeof(double)+sizeof(quad), myFile); fread((void*)data, 1, dx*dy*sizeof(double), myFile);};
+  size_t read(FILE *myFile) {
+    //fread((void*)this, 1,  3*sizeof(int)+4*sizeof(double)+sizeof(quad), myFile); 
+    
+    if (fread((void*)this, 1,  3*sizeof(int), myFile))  
+      return fread((void*)data, 1, dx*dy*sizeof(double), myFile);
+    return 0;
+  };
 
     /** 
 	assign the value to the element of the cluster matrix, with relative coordinates where the center of the cluster is (0,0)
@@ -49,6 +60,9 @@ class single_photon_hit {
   */
   void set_data(double v, int ix, int iy=0){data[(iy+dy/2)*dx+ix+dx/2]=v;};
 
+  void set_cluster_size(int nx, int ny) {if (nx>0) dx=nx; if (ny>0) dy=ny; delete [] data; data=new double[dx*dy];};
+  void get_cluster_size(int &nx, int &ny) {nx=dx; ny=dy;};
+  void get_pixel(int &x1, int &y1) {x1=x; y1=y;};
 
     /** 
 	gets the value to the element of the cluster matrix, with relative coordinates where the center of the cluster is (0,0)
@@ -58,16 +72,17 @@ class single_photon_hit {
   */
   double get_data(int ix, int iy=0){return data[(iy+dy/2)*dx+ix+dx/2];};
   double *get_cluster() {return data;};
+
+  int	iframe; 	        /**< frame number */
   int 	x; 			/**< x-coordinate of the center of hit */
   int	y; 			/**< x-coordinate of the center of hit */
   double	rms; 		/**< noise of central pixel l -- at some point it can be removed*/
   double 	ped; 		/**< pedestal of the central pixel -- at some point it can be removed*/
-  int	iframe; 	        /**< frame number */
-  const int dx;	                /**< size of data cluster in x */
-  const int dy;                 /**< size of data cluster in y */   
-  quadrant quad; /**< quadrant where the photon is located */
-  double tot; /**< sum of the 3x3 cluster */
-  double quadTot; /**< sum of the maximum 2x2cluster */
+   double tot; /**< sum of the 3x3 cluster */
+   quadrant quad; /**< quadrant where the photon is located */
+   double quadTot; /**< sum of the maximum 2x2cluster */ 
+  int dx;	                /**< size of data cluster in x */
+  int dy;                 /**< size of data cluster in y */  
   double *data;		        /**< pointer to data */
 };
 

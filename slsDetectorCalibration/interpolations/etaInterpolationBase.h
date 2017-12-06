@@ -29,8 +29,8 @@ class etaInterpolationBase : public slsInterpolation {
 #endif
 #ifndef MYROOT1
     heta=new int[nbeta*nbeta];
-    hhx=new int[nbeta*nbeta];
-    hhy=new int[nbeta*nbeta];
+    hhx=new float[nbeta*nbeta];
+    hhy=new float[nbeta*nbeta];
     
 #endif
     
@@ -51,10 +51,10 @@ class etaInterpolationBase : public slsInterpolation {
 #ifndef MYROOT1
     heta=new int[nbeta*nbeta];
     memcpy(heta,orig->heta,nbeta*nbeta*sizeof(int));
-    hhx=new int[nbeta*nbeta];
-    memcpy(hhx,orig->hhx,nbeta*nbeta*sizeof(int));
-    hhy=new int[nbeta*nbeta];
-    memcpy(hhy,orig->hhy,nbeta*nbeta*sizeof(int));
+    hhx=new float[nbeta*nbeta];
+    memcpy(hhx,orig->hhx,nbeta*nbeta*sizeof(float));
+    hhy=new float[nbeta*nbeta];
+    memcpy(hhy,orig->hhy,nbeta*nbeta*sizeof(float));
     
 #endif
     
@@ -148,7 +148,7 @@ class etaInterpolationBase : public slsInterpolation {
     if (nnx!=nny) {
       cout << "different number of bins in x " << nnx << "  and y " << nny<< " !"<< endl;
       cout << "Aborting read"<< endl;
-      return NULL;
+      return 0;
     }
     nbeta=nnx;
     if (gm) {
@@ -159,8 +159,8 @@ class etaInterpolationBase : public slsInterpolation {
       }
       
       heta=new int[nbeta*nbeta];
-      hhx=new int[nbeta*nbeta];
-      hhy=new int[nbeta*nbeta];
+      hhx=new float[nbeta*nbeta];
+      hhy=new float[nbeta*nbeta];
       
       for (int ix=0; ix<nbeta; ix++) {
 	for (int iy=0; iy<nbeta; iy++) {
@@ -170,7 +170,7 @@ class etaInterpolationBase : public slsInterpolation {
       delete [] gm;
       return 1;
     }
-    return NULL;
+    return 0;
   };
   
     
@@ -199,13 +199,13 @@ TH2D *gethhx()
 #endif
     
 #ifndef MYROOT1
-int *gethhx()
+float *gethhx()
   {
     // hhx->Scale((double)nSubPixels);
     return hhx;
   };
   
-  int *gethhy()
+  float *gethhy()
   {
     // hhy->Scale((double)nSubPixels);
     return hhy;
@@ -224,7 +224,7 @@ int *gethhx()
     corner=calcQuad(data, tot, totquad, sDum); 
     if (nSubPixels>2) 
       calcEta(totquad, sDum, etax, etay); 
-      getInterpolatedPosition(x,y,etax,etay,corner,int_x,int_y);
+    getInterpolatedPosition(x,y,etax,etay,corner,int_x,int_y);
 
     return;
   };
@@ -285,20 +285,25 @@ int *gethhx()
     switch (corner)
       {
       case TOP_LEFT:
-	dX=-.99; 
-	dY=+.99; 
+	dX=-1.;//.99; 
+	dY=0;//+1.;//.99; 
+	//etay=1-etay;
 	break;
       case TOP_RIGHT:
-	dX=+.99; 
-	dY=+.99; 
+	;
+	dX=0;//+1.;//.99; 
+	dY=0;//+1.;//.99; 
 	break;
       case BOTTOM_LEFT:
-	dX=-.99; 
-	dY=-.99; 
+	//etax=1-etax;
+	//etay=1-etay;
+	dX=-1.;//99; 
+	dY=-1.;//.99; 
 	break;
       case BOTTOM_RIGHT:
-	dX=+.99; 
-	dY=-.99; 
+	//etay=1-etay;
+	dX=0;//1.;//+.99; 
+	dY=-1.;//-.99; 
 	break;
       default:
 	cout << "bad quadrant" << endl;
@@ -316,27 +321,47 @@ int *gethhx()
 #ifndef MYROOT1
     ex=(etax-etamin)/etastep;
     ey=(etay-etamin)/etastep;
-    if (ex<0) ex=0;
-    if (ex>=nbeta) ex=nbeta-1;
-    if (ey<0) ey=0;
-    if (ey>=nbeta) ey=nbeta-1;
+    if (ex<0) {
+      ex=0;
+      cout << "x*"<< ex << endl;
+	} 
+    if (ex>=nbeta) {
+      ex=nbeta-1;
+      cout << "x?"<< ex << endl;
+      
+    }
+    if (ey<0) {
+      ey=0;
+      cout << "y*"<< ey << endl;
+	} 
+    if (ey>=nbeta) {
+      ey=nbeta-1;
+      cout << "y?"<< ey << endl;
+      
+    }
+    
     
    
-    xpos_eta=(((double)hhx[(ey*nbeta+ex)]))/((double)nSubPixels);
-    ypos_eta=(((double)hhy[(ey*nbeta+ex)]))/((double)nSubPixels);
-      //else
-      //return 0;
-
+    xpos_eta=(((double)hhx[(ey*nbeta+ex)]))+dX ;///((double)nSubPixels);
+    ypos_eta=(((double)hhy[(ey*nbeta+ex)]))+dY ;///((double)nSubPixels);
+    //else
+    //return 0;
+    
 #endif
      } else {
-       xpos_eta=-dX*0.25;
-       ypos_eta=-0.25*dY;
+       xpos_eta=0.5*dX+0.25;
+       ypos_eta=0.5*dY+0.25;
      }
        
-    int_x=((double)x) + 0.5*dX + xpos_eta;
-    int_y=((double)y) + 0.5*dY + ypos_eta;
-    // cout << "***"<< x <<" " << y << " " << int_x << " " << int_y << endl;
-    //   cout << etax << " " << ex << " " << etay << " " << ey << " " << xpos_eta << " " << int_x << " " << ypos_eta << " " << int_y << endl;
+     //  int_x=((double)x) + 0.5*dX + xpos_eta;
+     //  int_y=((double)y) + 0.5*dY + ypos_eta;
+       int_x=((double)x) + xpos_eta;
+       int_y=((double)y) +  ypos_eta;
+     /*   if (int_x<x-0.5  || int_y<y-0.5 ) { */
+    /* // cout << "***"<< x <<" " << y << " " << int_x << " " << int_y << endl; */
+    /*   cout << corner << " X "<< x <<  " " << etax << " " << xpos_eta << " " << int_x <<" Y "<< y << " " << etay <<  " "  << ypos_eta << " "  <<int_y  <<  endl; */
+    /*   } */
+  
     //return 1;
 
   }
@@ -480,8 +505,8 @@ int *gethhx()
 #endif
 #ifndef MYROOT1
   int *heta;
-  int *hhx;
-  int *hhy;
+  float *hhx;
+  float *hhy;
 #endif
   int nbeta;
   double etamin, etamax, etastep;

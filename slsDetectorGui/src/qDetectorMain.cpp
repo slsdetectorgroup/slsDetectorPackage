@@ -658,8 +658,8 @@ void qDetectorMain::ExecuteHelp(QAction *action){
 		cout << "About: Common GUI for Mythen, Eiger, Gotthard, Jungfrau, Moench and Propix detectors" << endl;
 #endif
 		char version[200];
-		long long unsigned int retval= SVNREV;
-		retval= (retval <<32) | SVNDATE;
+		long long unsigned int retval= GITREV;
+		retval= (retval <<32) | GITDATE;
 		sprintf(version,"%llx",retval);
 		string thisGUIVersion = string(version);
 

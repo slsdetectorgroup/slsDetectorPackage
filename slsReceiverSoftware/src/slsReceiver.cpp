@@ -12,7 +12,7 @@
 #include <getopt.h>
 
 #include "slsReceiver.h"
-//#include "UDPInterface.h"
+#include "gitInfoReceiver.h"
 
 using namespace std;
 
@@ -36,6 +36,7 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success):
 		// These options don’t set a flag. We distinguish them by their indices.
 		{"config",     	required_argument,  0, 'f'},
 		{"rx_tcpport",  required_argument,  0, 't'},
+		{"version",  	no_argument,  		0, 'v'},
 		{"help",  		no_argument,       	0, 'h'},
 		{0, 			0, 					0, 	0}
         };
@@ -44,8 +45,10 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success):
 	int c=0;
 	optind = 1;
 	
+	int64_t tempval = 0;
+
 	while ( c != -1 ){
-		c = getopt_long (argc, argv, "hf:t:", long_options, &option_index);
+		c = getopt_long (argc, argv, "hvf:t:", long_options, &option_index);
 		
 		// Detect the end of the options.
 		if (c == -1)
@@ -58,6 +61,13 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success):
 #ifdef VERYVERBOSE
 			FILE_LOG(logDEBUG) << long_options[option_index].name << " " << optarg << endl;
 #endif
+			break;
+
+		case 'v':
+			tempval = GITREV;
+			tempval = (tempval <<32) | GITDATE;
+			cout << "SLS Receiver " << GITBRANCH << " (0x" << hex << tempval << ")" << endl;
+			success = FAIL; // to exit
 			break;
 
 		case 't':

@@ -6064,11 +6064,22 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 		if (action==GET_ACTION)
 			return string("cannot get");
 		else {
-			if ((myDet->getRunStatus() != IDLE) || (myDet->getReceiverStatus() != IDLE)) {
-				std::cout << "Could not restream stop from receiver. Acquisition still in progress" << std::endl;
+			runStatus s = myDet->getRunStatus();
+			if (s != IDLE) {
+				std::cout << "Could not restream stop from receiver.\n"
+						"Detector Acquisition still in progress. Status: " << myDet->runStatusType(s) << std::endl;
 				sprintf(answer,"%d",0);
+				return string (answer);
 			}
-			sprintf(answer,"%d",(myDet->restreamStopFromReceiver() == OK) ? 1 : 0);
+			s = myDet->getReceiverStatus();
+			if (s != IDLE) {
+				std::cout << "Could not restream stop from receiver.\n"
+						"Receiver Acquisition still in progress. Status: " << myDet->runStatusType(s) << std::endl;
+				sprintf(answer,"%d",0);
+				return string (answer);
+			}
+			else
+				sprintf(answer,"%d",(myDet->restreamStopFromReceiver() == OK) ? 1 : 0);
 		}
 		return string(answer);
 	}

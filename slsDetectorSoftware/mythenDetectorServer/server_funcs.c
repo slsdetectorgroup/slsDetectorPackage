@@ -586,8 +586,8 @@ int get_id(int file_des) {
     retval=getMcsVersion();
     break;
   case DETECTOR_SOFTWARE_VERSION:
-	retval= SVNREV;
-	retval= (retval <<32) | SVNDATE;
+	retval= GITREV;
+	retval= (retval <<32) | GITDATE;
 /*  sscanf(THIS_REVISION,"$Rev : %x",&rev1);
     rev=((int64_t)rev1);
     dat=THIS_SOFTWARE_VERSION;

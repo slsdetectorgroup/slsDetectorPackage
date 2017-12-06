@@ -184,8 +184,8 @@ int64_t getDetectorId(enum idMode arg){
 	//case SOFTWARE_FIRMWARE_API_VERSION:
 	//return GetFirmwareSoftwareAPIVersion();
 	case DETECTOR_SOFTWARE_VERSION:
-		retval= SVNREV;
-		retval= (retval <<32) | SVNDATE;
+		retval= GITREV;
+		retval= (retval <<32) | GITDATE;
 		break;
 	default:
 		break;

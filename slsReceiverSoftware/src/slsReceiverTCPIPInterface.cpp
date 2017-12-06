@@ -152,8 +152,8 @@ void slsReceiverTCPIPInterface::stop(){
 
 
 int64_t slsReceiverTCPIPInterface::getReceiverVersion(){
-	int64_t retval = SVNREV;
-	retval= (retval <<32) | SVNDATE;
+	int64_t retval = GITREV;
+	retval= (retval <<32) | GITDATE;
 	return retval;
 }
 

@@ -55,10 +55,11 @@ public:
 	 *  This is mainly used to create detector object and all the tabs
 	 *   @param argc number of command line arguments for server options
 	 *   @param argv server options
-	 *   @param app the qapplication
+	 *   @param app the qapplication3
+	 *   @param ret OK or FAIL of constructor (from command line arguments)
 	 *   @param parent makes the parent window 0 by default
 	 *   */
-	qDetectorMain(int argc, char **argv, QApplication *app, QWidget *parent = 0);
+	qDetectorMain(int argc, char **argv, QApplication *app, int& ret, QWidget *parent = 0);
 
 	/**Destructor
 	 * */

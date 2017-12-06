@@ -20,9 +20,9 @@ OLDDATE=$(more $INCLFILE | grep '#define GITDATE' | awk '{print $3}')
 
 
 #update INCLFILE if changes
-if [ "$OLDDATE" != "$NEWDATE" ]; then
+#if [ "$OLDDATE" != "$NEWDATE" ]; then
 	echo Path: ${MAINDIR}/${SPECDIR}  $'\n'URL: ${GITREPO}  $'\n'Repository Root: ${GITREPO}  $'\n'Repsitory UUID: ${REPUID}  $'\n'Revision: ${FOLDERREV}  $'\n'Branch: ${BRANCH}  $'\n'Last Changed Author: ${AUTH1}_${AUTH2}  $'\n'Last Changed Rev: ${REV}  $'\n'Last Changed Date: ${RDATE} > gitInfo.txt 
 	cd ..
 	./genVersionHeader.sh $SPECDIR/gitInfo.txt $SPECDIR/$TMPFILE $SPECDIR/$INCLFILE 
 	cd $WD
-fi
+#fi

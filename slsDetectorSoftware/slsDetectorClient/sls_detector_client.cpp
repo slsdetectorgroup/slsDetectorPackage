@@ -1,4 +1,5 @@
 #include "multiSlsDetectorClient.h"
+#include "gitInfoLib.h"
 
 
 #include <stdlib.h>
@@ -7,6 +8,15 @@ using namespace std;
 int main(int argc, char *argv[])
   
 {
+	for (int i = 1; i < argc; ++i ) {
+		if (!(strcmp (argv[i],"--version")) || !(strcmp (argv[i],"-v"))) {
+			int64_t tempval = GITREV;
+			tempval = (tempval <<32) | GITDATE;
+			cout << argv[0] << " " << GITBRANCH << " (0x" << hex << tempval << ")" << endl;
+			return 0;
+		}
+	}
+
 #ifdef PUT
   int action=slsDetectorDefs::PUT_ACTION;
 #endif

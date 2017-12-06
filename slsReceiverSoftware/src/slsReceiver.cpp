@@ -23,37 +23,37 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success):
 		udp_interface (NULL)
 {
 	success=OK;
-	
+
 	// options
 	map<string, string> configuration_map;
 	int tcpip_port_no = 1954;
 	string fname = "";
+	int64_t tempval = 0;
 
 	//parse command line for config
 	static struct option long_options[] = {
-		// These options set a flag.
-		//{"verbose", no_argument,       &verbose_flag, 1},
-		// These options don’t set a flag. We distinguish them by their indices.
-		{"config",     	required_argument,  0, 'f'},
-		{"rx_tcpport",  required_argument,  0, 't'},
-		{"version",  	no_argument,  		0, 'v'},
-		{"help",  		no_argument,       	0, 'h'},
-		{0, 			0, 					0, 	0}
-        };
+			// These options set a flag.
+			//{"verbose", no_argument,       &verbose_flag, 1},
+			// These options don’t set a flag. We distinguish them by their indices.
+			{"config",     	required_argument,  0, 'f'},
+			{"rx_tcpport",  required_argument,  0, 't'},
+			{"version",  	no_argument,  		0, 'v'},
+			{"help",  		no_argument,       	0, 'h'},
+			{0, 			0, 					0, 	0}
+	};
+
+
 	// getopt_long stores the option index here.
 	int option_index = 0;
-	int c=0;
-	optind = 1;
-	
-	int64_t tempval = 0;
+	int c = 0;
 
 	while ( c != -1 ){
 		c = getopt_long (argc, argv, "hvf:t:", long_options, &option_index);
-		
+
 		// Detect the end of the options.
 		if (c == -1)
 			break;
-	
+
 		switch(c){
 
 		case 'f':
@@ -63,6 +63,10 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success):
 #endif
 			break;
 
+		case 't':
+			sscanf(optarg, "%d", &tcpip_port_no);
+			break;
+
 		case 'v':
 			tempval = GITREV;
 			tempval = (tempval <<32) | GITDATE;
@@ -70,20 +74,20 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success):
 			success = FAIL; // to exit
 			break;
 
-		case 't':
-			sscanf(optarg, "%d", &tcpip_port_no);
-			break;
-			
 		case 'h':
-			string help_message = "\nSLS Receiver Server\n\n";
-			help_message += "Usage: slsReceiver [arguments]\nPossible arguments are:\n";
-			help_message += "\t-f, --config:     Configuration filename\n";
-			help_message += "\t-t, --rx_tcpport: TCP Port with the client. Default: 1954.\n"
-					        "\t                  Required for multiple receivers\n\n";
+		default:
+			string help_message = "\n"
+					+ string(argv[0]) + "\n"
+					+ "Usage: " + string(argv[0]) + " [arguments]\n"
+					+ "Possible arguments are:\n"
+					+ "\t-f, --config <fname>    : Loads config from file\n"
+					+ "\t-t, --rx_tcpport <port> : TCP Communication Port with client. \n"
+					+ "\t                          Default: 1954. Required for multiple \n"
+					+ "\t                          receivers\n\n";
 
 			FILE_LOG(logINFO) << help_message << endl;
 			break;
-		       
+
 		}
 	}
 
@@ -95,7 +99,7 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success):
 		}
 		catch(...){
 			FILE_LOG(logERROR) << "Coult not open configuration file " << fname ;
-		success = FAIL;
+			success = FAIL;
 		}
 	}
 

@@ -36,7 +36,10 @@ int main (int argc, char **argv) {
   //	QApplication *theApp = new QApplication(argc, argv);
 	theApp->setStyle(new QPlastiqueStyle);//not default when desktop is windows
 	theApp->setWindowIcon(QIcon( ":/icons/images/mountain.png" ));
-	qDetectorMain *det=new qDetectorMain(argc, argv, theApp,0);
+	int ret = 1;
+	qDetectorMain *det=new qDetectorMain(argc, argv, theApp,ret,0);
+	if (ret == 1)
+		return EXIT_FAILURE;
 	det->show();
 	//theApp->connect( theApp, SIGNAL(lastWindowClosed()), theApp, SLOT(quit()));
 	return theApp->exec();
@@ -46,75 +49,82 @@ int main (int argc, char **argv) {
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *parent) :
+qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, int& ret, QWidget *parent) :
 				QMainWindow(parent), theApp(app),myDet(0),detID(0),myPlot(0),tabs(0),isDeveloper(0){
-//	bool found;
-	int c;
-	string configFName = "";
-	optind=1;
-	// Getting all the command line arguments
-	while(1) {
-		static struct option long_options[] = {
+
+	// options
+	string fname = "";
+	int64_t tempval = 0;
+
+	//parse command line for config
+	static struct option long_options[] = {
+			// These options set a flag.
+			//{"verbose", no_argument,       &verbose_flag, 1},
+			// These options don’t set a flag. We distinguish them by their indices.
 			{ "developer", no_argument,       0, 'd' },
 			{ "config",    required_argument, 0, 'f' },
 			{ "id",        required_argument, 0, 'i' },
-			{ "f",         required_argument, 0, 'f' },
+			{"version",    no_argument,  	  0, 'v'},
 			{ "help",      no_argument,       0, 'h' },
 			{ 0,           0,                 0,  0  }
-		};
-		c = getopt_long (argc, argv, "hdf:i:", long_options, NULL);
-		if (c == -1) break;
+	};
 
-		switch (c) {
-			case 'd' :
-				isDeveloper=1;
-				break;
-			case 'f' :
-				configFName=string(optarg);
-				break;
-			case 'i' :
-				detID=atoi(optarg);
-				break;
-			case 'h' :
-			default:
-				cout << endl;
-				cout << "\t" << argv[0] << " [ARGUMENT]..." << endl;
-				cout << endl;
-				cout << "Possible Arguments are:" << endl;
-				cout << "\t-d, --developer \t\t : \t Enables the developer tab" << endl;
-				cout << "\t-f, --f, --config fname\t\t : \t Loads config file fname" << endl;
-				cout << "\t-i, --id NUMBER \t\t : \t Sets the multi detector id to NUMBER (the default is 0). "
-					"Required only when more than one multi detector object is needed." << endl;
-				exit(-1);
+
+	// getopt_long stores the option index here.
+	int option_index = 0;
+	int c = 0;
+
+	while ( c != -1 ){
+		c = getopt_long (argc, argv, "hvdf:i:", long_options, &option_index);
+
+		// Detect the end of the options.
+		if (c == -1)
+			break;
+
+		switch(c){
+
+		case 'f':
+			fname=string(optarg);
+#ifdef VERYVERBOSE
+			cout << long_options[option_index].name << " " << optarg << endl;
+#endif
+			break;
+
+		case 'd' :
+			isDeveloper = 1;
+			break;
+
+		case 'i' :
+			detID=atoi(optarg);
+			break;
+
+		case 'v':
+			tempval = GITREV;
+			tempval = (tempval <<32) | GITDATE;
+			cout << "SLS Detector GUI " << GITBRANCH << " (0x" << hex << tempval << ")" << endl;
+			return;
+
+		case 'h':
+		default:
+			string help_message = "\n"
+					+ string(argv[0]) + "\n"
+					+ "Usage: " + string(argv[0]) + " [arguments]\n"
+					+ "Possible arguments are:\n"
+					+ "\t-d, --developer           : Enables the developer tab\n"
+					+ "\t-f, --f, --config <fname> : Loads config from file\n"
+					+ "\t-i, --id <i>              : Sets the multi detector id to i. Default: 0. Required \n"
+					+ "\t                            only when more than one multi detector object is needed.\n\n";
+			cout << help_message << endl;
+			return;
+
 		}
 	}
-	if (optind < argc) {
-		cout << "invalid option, try --help" << endl;
-		exit(-1);
-	}
-/*
-	for(int iarg=1; iarg<argc; iarg++){
-		found = false;
-		if(!strcasecmp(argv[iarg],"--developer"))					{isDeveloper=1;found = true;}
-		if((!strcasecmp(argv[iarg],"--id")) && (iarg+1 < argc))		{detID=atoi(argv[iarg+1]);iarg++;found = true;}
-		if((!strcasecmp(argv[iarg],"--config")) && (iarg+1 < argc))	{configFName=string(argv[iarg+1]);iarg++;found = true;}
-		if((!strcasecmp(argv[iarg],"--f")) && (iarg+1 < argc))		{configFName=string(argv[iarg+1]);iarg++;found = true;}
-		if(!found){
-			cout << "Possible Arguments are:" << endl;
-			cout << "--developer \t\t : \t Enables the developer tab" << endl;
-			cout << "--f [fname]\t\t : \t Loads config file fname" << endl;
-			cout << "--config [fname]\t : \t Loads config file fname" << endl;
-			cout << "--id [i] \t\t : \t Sets the multi detector id to i (the default is 0). "
-				"Required only when more than one multi detector object is needed." << endl;
-			exit(-1);
-		}
-	}
-*/
+
 	setupUi(this);
-	SetUpDetector(configFName);
+	SetUpDetector(fname);
 	SetUpWidgetWindow();
 	Initialization();
-
+	ret = 0;
 }
 
 

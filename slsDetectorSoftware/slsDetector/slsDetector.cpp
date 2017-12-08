@@ -8137,9 +8137,8 @@ string slsDetector::setFileName(string s) {
 			pthread_mutex_lock(&ms);
 			fileIO::setFileName(parentDet->getNameFromReceiverFilePrefix(string(retval)));
 			pthread_mutex_unlock(&ms);
-			*/
+			 */
 			sretval = fileIO::getNameFromReceiverFilePrefix(string(retval));
-
 		}
 
 		if(ret==FORCE_UPDATE)

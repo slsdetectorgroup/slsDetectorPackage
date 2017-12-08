@@ -418,9 +418,7 @@ int postProcessing::fillBadChannelMask() {
 
 
 void* postProcessing::processData(int delflag) {
-  	pthread_mutex_lock(&mg);
 	if(setReceiverOnline()==OFFLINE_FLAG){
-	  pthread_mutex_unlock(&mg);
 
 #ifdef VERBOSE
 		std::cout<< " ??????????????????????????????????????????? processing data - threaded mode " << *threadedProcessing << endl;
@@ -505,8 +503,6 @@ void* postProcessing::processData(int delflag) {
 		}
 	} //receiver 
 	else{
- 	  
- 		 pthread_mutex_unlock(&mg);
  		//cprintf(RED,"In post processing threads\n");
 
  		 if(dataReady) {
@@ -535,11 +531,11 @@ void* postProcessing::processData(int delflag) {
 
 
  				//get progress
- 				pthread_mutex_lock(&mg);
  				if(setReceiverOnline() == ONLINE_FLAG){
+ 					pthread_mutex_lock(&mg);
  					caught = getFramesCaughtByAnyReceiver();
+ 					pthread_mutex_unlock(&mg);
  				}
- 				pthread_mutex_unlock(&mg);
 
 
  				//updating progress

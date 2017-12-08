@@ -28,7 +28,6 @@ public:
   int add_task(Task* task);
   void startExecuting();
   void wait_for_tasks_to_complete();
-  void setzeromqThread();
 
 private:
   int m_pool_size;
@@ -48,6 +47,5 @@ private:
 
  sem_t semStart;
  sem_t semDone;
- bool zmqthreadpool;
 };
 

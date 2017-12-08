@@ -1495,14 +1495,6 @@ class multiSlsDetector  : public slsDetectorUtils {
    */
   bool isAcquireReady();
 
-  /**
-     If data streaming in receiver is enabled,
-     restream the stop dummy packet from receiver
-     Used usually for Moench,
-     in case it is lost in network due to high data rate
-     \returns OK if success else FAIL
-   */
-  int restreamStopFromReceiver();
 
 private:
 

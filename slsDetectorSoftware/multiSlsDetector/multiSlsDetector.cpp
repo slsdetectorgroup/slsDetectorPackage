@@ -1547,6 +1547,7 @@ int multiSlsDetector::startAcquisition(){
 
 
 int multiSlsDetector::stopAcquisition(){
+	pthread_mutex_lock(&mg); // locks due to processing thread using threadpool when in use
 	int i=0;
 	int ret=OK,ret1=OK;
 	int posmin=0, posmax=thisMultiDetector->numberOfDetectors;
@@ -1591,7 +1592,7 @@ int multiSlsDetector::stopAcquisition(){
 	}
 
 	*stoppedFlag=1;
-
+	pthread_mutex_unlock(&mg);
 	return ret;
 };
 
@@ -1840,7 +1841,7 @@ int* multiSlsDetector::startAndReadAll(){
 
 
 int multiSlsDetector::startAndReadAllNoWait(){
-
+	pthread_mutex_lock(&mg); // locks due to processing thread using threadpool when in use
 	int i=0;
 	int ret=OK;
 	int posmin=0, posmax=thisMultiDetector->numberOfDetectors;
@@ -1885,7 +1886,7 @@ int multiSlsDetector::startAndReadAllNoWait(){
 				ret=FAIL;
 		}
 	}
-
+	pthread_mutex_unlock(&mg);
 	return ret;
 
 }
@@ -6594,19 +6595,3 @@ bool multiSlsDetector::isAcquireReady() {
 	return OK;
 }
 
-
-
-int multiSlsDetector::restreamStopFromReceiver() {
-	int ret=OK, ret1;
-	for(int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet){
-		if (detectors[idet]) {
-			ret1=detectors[idet]->restreamStopFromReceiver();
-			if(detectors[idet]->getErrorMask())
-				setErrorMask(getErrorMask()|(1<<idet));
-			if (ret1!=OK)
-				ret=FAIL;
-		}
-	}
-
-	return ret;
-}

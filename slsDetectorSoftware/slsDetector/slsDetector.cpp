@@ -4106,6 +4106,9 @@ int slsDetector::startAcquisition(){
 };
 int slsDetector::stopAcquisition(){
 
+	runStatus s = getRunStatus();
+	runStatus r = getReceiverStatus();
+
   int fnum=F_STOP_ACQUISITION;
   int ret=FAIL;
   char mess[MAX_STR_LENGTH]="";
@@ -4127,6 +4130,11 @@ int slsDetector::stopAcquisition(){
     }
   }
   thisDetector->stoppedFlag=1;
+
+  if ((thisDetector->receiver_upstream) && (s == IDLE) && (r == IDLE)) {
+	  restreamStopFromReceiver();
+  }
+
   return ret;
 
 
@@ -9232,8 +9240,10 @@ int slsDetector::restreamStopFromReceiver(){
 		}
 		if(ret==FORCE_UPDATE)
 			ret=updateReceiver();
-		else if (ret == FAIL)
+		else if (ret == FAIL) {
 			setErrorMask((getErrorMask())|(RESTREAM_STOP_FROM_RECEIVER));
+			std::cout << " Could not restream stop dummy packet from receiver" << endl;
+		}
 	}
 
 	return ret;

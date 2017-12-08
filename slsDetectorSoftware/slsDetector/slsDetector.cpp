@@ -4104,10 +4104,16 @@ int slsDetector::startAcquisition(){
 
 
 };
+
+
 int slsDetector::stopAcquisition(){
 
-	runStatus s = getRunStatus();
-	runStatus r = getReceiverStatus();
+	// get status before stopping acquisition
+	runStatus s = ERROR, r = ERROR;
+	if (thisDetector->receiver_upstream) {
+		s = getRunStatus();
+		r = getReceiverStatus();
+	}
 
   int fnum=F_STOP_ACQUISITION;
   int ret=FAIL;
@@ -4131,6 +4137,7 @@ int slsDetector::stopAcquisition(){
   }
   thisDetector->stoppedFlag=1;
 
+  // if rxr streaming and acquisition finished, restream dummy stop packet
   if ((thisDetector->receiver_upstream) && (s == IDLE) && (r == IDLE)) {
 	  restreamStopFromReceiver();
   }

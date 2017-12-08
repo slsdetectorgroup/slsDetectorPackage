@@ -5274,7 +5274,8 @@ string multiSlsDetector::setFileName(string s) {
 
 	if(!s.empty()){
 		fileIO::setFileName(s);
-		s=createReceiverFilePrefix();
+		if (thisMultiDetector->receiverOnlineFlag == ONLINE_FLAG)
+			s=createReceiverFilePrefix();
 	}
 
 	if(!threadpool){
@@ -5308,7 +5309,7 @@ string multiSlsDetector::setFileName(string s) {
 		}
 	}
 
-	if ((ret != "error") || (ret != "")) {
+	if ((thisMultiDetector->receiverOnlineFlag == ONLINE_FLAG) && ((ret != "error") || (ret != ""))) {
 #ifdef VERBOSE
 			std::cout << "Complete file prefix from receiver: " << ret << std::endl;
 #endif

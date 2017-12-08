@@ -7907,21 +7907,28 @@ string slsDetector::setFileName(string s) {
 			pthread_mutex_lock(&ms);
 			fileIO::setFileName(parentDet->getNameFromReceiverFilePrefix(string(retval)));
 			pthread_mutex_unlock(&ms);
-			*/
+			 */
 			sretval = fileIO::getNameFromReceiverFilePrefix(string(retval));
-
 		}
 
 		if(ret==FORCE_UPDATE)
 			updateReceiver();
+		return sretval;
 	}
 
-	/*pthread_mutex_lock(&ms);
-	s = fileIO::getFileName();
-	pthread_mutex_unlock(&ms);
+	// no reciever
+	else {
+		if(!s.empty()){
+			pthread_mutex_lock(&ms);
+			fileIO::setFileName(s);
+			pthread_mutex_unlock(&ms);
+		}
+		pthread_mutex_lock(&ms);
+		s = fileIO::getFileName();
+		pthread_mutex_unlock(&ms);
 
-	return s;*/
-	return sretval;
+		return s;
+	}
 }
 
 

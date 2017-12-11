@@ -3929,7 +3929,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 	if(gainval)	delete [] gainval;
 	if(offsetval) delete [] offsetval;
 
-	switch(thisDetector->myDetectorType==MYTHEN){
+	if (thisDetector->myDetectorType==MYTHEN){
 	if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
 		int isett=getSettings(imod);
 		double t[]=defaultTDead;

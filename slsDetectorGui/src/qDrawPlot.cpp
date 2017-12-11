@@ -245,7 +245,7 @@ void qDrawPlot::SetupWidgetWindow(){
 	layout = new QGridLayout;
 		this->setLayout(layout);
 
-		histFrameIndexTitle= histFrameIndexTitle = new QLabel("");
+		histFrameIndexTitle = new QLabel("");
 
 	boxPlot = new QGroupBox("");
 		layout->addWidget(boxPlot,1,0);

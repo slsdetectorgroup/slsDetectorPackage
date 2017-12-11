@@ -3,6 +3,10 @@ BUILDDIR="build"
 HDF5DIR="/opt/hdf5v1.10.0"
 HDF5=0
 COMPILERTHREADS=0
+TEXTCLIENT=0
+RECEIVER=0
+GUI=0
+
 
 CLEAN=0
 REBUILD=0
@@ -16,6 +20,9 @@ Usage: $0 [-c] [-b] [-h] [-d <HDF5 directory>] [-j]
  -b: Builds/Rebuilds CMake files normal mode
  -h: Builds/Rebuilds Cmake files with HDF5 package
  -d: HDF5 Custom Directory
+ -t: Build/Rebuilds only text client
+ -r: Build/Rebuilds only receiver
+ -g: Build/Rebuilds only gui
  -j: Number of threads to compile through
  
 For only make:
@@ -39,10 +46,14 @@ For using multiple cores to compile faster:
 ./cmk.sh -cj9 #with clean
 ./cmk.sh -hj9 #with hdf5
 ./cmk.sh -j9 -h #with hdf
+
+For rebuilding only certain sections
+./cmk.sh -tg #only text client and gui
+./cmk.sh -r #only receiver
  
  " ; exit 1; }
 
-while getopts ":bchd:j:" opt ; do
+while getopts ":bchd:j:trg" opt ; do
 	case $opt in
 	b) 
 		echo "Building of CMake files Required"
@@ -65,6 +76,21 @@ while getopts ":bchd:j:" opt ; do
 		echo "Number of compiler threads: $OPTARG" 
 		COMPILERTHREADS=$OPTARG
 		;;
+	t) 
+    	echo "Compiling Options: Text Client" 
+		TEXTCLIENT=1
+		REBUILD=1
+		;;      
+	r) 
+		echo "Compiling Options: Receiver" 
+		RECEIVER=1
+		REBUILD=1
+		;;      
+	g) 
+		echo "Compiling Options: GUI" 
+		GUI=1
+		REBUILD=1
+		;;      
     \?)
      	echo "Invalid option: -$OPTARG" 
 		usage
@@ -78,6 +104,29 @@ while getopts ":bchd:j:" opt ; do
 	esac
 done
 
+
+
+
+
+
+if [ $TEXTCLIENT -eq 0 ] && [ $RECEIVER -eq 0 ]  && [ $GUI -eq 0 ]; then
+       CMAKE_POST+=" -DUSE_TEXTCLIENT=ON -DUSE_RECEIVER=ON -DUSE_GUI=ON "
+       echo "Compile Option: TextClient, Receiver and GUI"
+else 
+       if [ $TEXTCLIENT -eq 1 ]; then
+              CMAKE_POST+=" -DUSE_TEXTCLIENT=ON "
+               echo "Compile Option: TextClient"
+       fi
+       if [ $RECEIVER -eq 1 ]; then
+               CMAKE_POST+=" -DUSE_RECEIVER=ON "
+               echo "Compile Option: Receiver"
+       fi
+                               
+       if [ $GUI -eq 1 ]; then
+               CMAKE_POST+=" -DUSE_GUI=ON "
+               echo "Compile Option: GUI"
+       fi
+fi
 
 
 
@@ -101,10 +150,10 @@ CMAKE_POST+=" -DCMAKE_BUILD_TYPE=Debug "
 #hdf5 rebuild
 if [ $HDF5 -eq 1 ]; then
 	CMAKE_PRE+="HDF5_ROOT="$HDF5DIR
-	CMAKE_POST+="-DUSE_HDF5=ON"
+	CMAKE_POST+=" -DUSE_HDF5=ON "
 #normal mode rebuild
 else
-	CMAKE_POST+="-DUSE_HDF5=OFF "
+	CMAKE_POST+=" -DUSE_HDF5=OFF "
 fi
 
 

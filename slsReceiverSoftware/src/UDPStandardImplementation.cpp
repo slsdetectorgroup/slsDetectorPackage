@@ -674,8 +674,8 @@ void UDPStandardImplementation::ResetParametersforNewMeasurement() {
 		(*it)->ResetParametersforNewMeasurement();
 
 	if (dataStreamEnable) {
-		char fnametostream[1000];
-		sprintf(fnametostream, "%s/%s", filePath, fileName);
+		char fnametostream[MAX_STR_LENGTH];
+		snprintf(fnametostream, MAX_STR_LENGTH, "%s/%s", filePath, fileName);
 		for (vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
 			(*it)->ResetParametersforNewMeasurement(fnametostream);
 	}

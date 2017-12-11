@@ -7,7 +7,7 @@ Mutex::Mutex() {
 
 Mutex::~Mutex() {
   while(is_locked);
-  unlock(); // Unlock Mutex after shared resource is safe
+  //unlock(); // Unlock Mutex after shared resource is safe
   pthread_mutex_destroy(&m_lock);
 }
 

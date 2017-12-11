@@ -1,5 +1,5 @@
 #include "ThreadPool.h"
-
+#include <pthread.h>
 
 ThreadPool::ThreadPool(int pool_size) : m_pool_size(pool_size){
 #ifdef VERBOSE
@@ -62,24 +62,29 @@ int ThreadPool::destroy_threadpool(){
 	//to other threads until its modified in a lock!
 	m_task_mutex.lock();
 	m_pool_state = STOPPED;
-	m_task_mutex.unlock();
 	/*cout << "Broadcasting STOP signal to all threads..." << endl;*/
 	m_task_cond_var.broadcast(); // notify all threads we are shttung down
+	m_task_mutex.unlock();
 
 //	int ret = -1;
 	for (int i = 0; i < m_pool_size; i++) {
-		void* result;
 		sem_post(&semStart);
 		sem_post(&semDone);
-		//ret =
+
+		void* result;
 		pthread_join(m_threads[i], &result);
 		/*cout << "pthread_join() returned " << ret << ": " << strerror(errno) << endl;*/
+		m_task_mutex.lock();
 		m_task_cond_var.broadcast(); // try waking up a bunch of threads that are still waiting
+		m_task_mutex.unlock();
 	}
+
+
 	sem_destroy(&semStart);
 	sem_destroy(&semDone);
 	number_of_ongoing_tasks = 0;
 	number_of_total_tasks = 0;
+
 	/* cout << m_pool_size << " threads exited from the thread pool" << endl;*/
 	return 0;
 }

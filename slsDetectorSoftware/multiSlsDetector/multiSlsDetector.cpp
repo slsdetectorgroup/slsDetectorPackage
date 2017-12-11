@@ -300,9 +300,8 @@ multiSlsDetector::~multiSlsDetector() {
 
 
 int multiSlsDetector::createThreadPool(){
-	if(threadpool){
-		threadpool->destroy_threadpool();
-	}
+	if(threadpool)
+		destroyThreadPool();
 	int numthreads = thisMultiDetector->numberOfDetectors;
 	if(numthreads < 1){
 		numthreads = 1; //create threadpool anyway, threads initialized only when >1 detector added
@@ -328,7 +327,6 @@ int multiSlsDetector::createThreadPool(){
 
 void multiSlsDetector::destroyThreadPool(){
 	if(threadpool){
-		threadpool->destroy_threadpool();
 		delete threadpool;
 		threadpool=0;
 #ifdef VERBOSE

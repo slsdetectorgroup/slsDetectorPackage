@@ -1,0 +1,20 @@
+
+CBFLIBDIR=/afs/psi.ch/project/sls_det_software/CBFlib-0.9.5
+LIBRARYCBF=$(CBFLIBDIR)/lib/*.o
+INCDIR=-IslsDetectorCalibration -I../slsReceiverSoftware/include -I$(CBFLIBDIR)/include/ -I. -IetaVEL
+LIBHDF5=-L$(CBFLIBDIR)/lib/ -lhdf5
+LDFLAG= -L/usr/lib64/ -lpthread
+#-L../../bin 
+MAIN=moench03OnTheFlyAnalysis.C
+
+#DESTDIR?=../bin
+
+all: moench03OnTheFlyAnalysis
+
+
+
+moench03OnTheFlyAnalysis:  $(MAIN)  $(INCS) clean
+			   g++ -o moench03OnTheFlyAnalysis  $(MAIN)  -lm -ltiff -lstdc++ $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL
+
+clean:
+	rm -f moench03OnTheFlyAnalysis

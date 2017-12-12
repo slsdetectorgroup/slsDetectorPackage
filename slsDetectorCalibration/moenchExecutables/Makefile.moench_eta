@@ -1,0 +1,23 @@
+
+CBFLIBDIR= /home/l_msdetect/CBFlib-0.9.5
+ZMQLIB=../slsReceiverSoftware/include
+LIBRARYCBF=$(CBFLIBDIR)/lib/*.o
+INCDIR=-IslsDetectorCalibration -I../slsReceiverSoftware/include -I$(CBFLIBDIR)/include/ -I. 
+#-IetaVEL
+LIBHDF5=
+LDFLAG= -L/usr/lib64/ -lpthread -lm  -lstdc++ -L. -lzmq -pthread -lrt -L$(CBFLIBDIR)/lib/ -lhdf5 -ltiff -L$(ZMQLIB)
+#-L../../bin 
+MAIN=moench03ClusterFinder.cpp
+
+#DESTDIR?=../bin
+
+all: moench03ClusterFinder
+
+
+
+moench03ClusterFinder:  $(MAIN)  $(INCS) clean
+			 g++ -o moenchClusterFinder  $(MAIN)  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) tiffIO.cpp -DSAVE_ALL
+
+clean: 	
+	rm -f  moench03ClusterFinder
+

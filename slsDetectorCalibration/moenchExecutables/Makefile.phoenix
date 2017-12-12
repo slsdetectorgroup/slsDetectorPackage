@@ -1,0 +1,30 @@
+
+CBFLIBDIR= /afs/psi.ch/project/sls_det_software/CBFlib-0.9.5/
+#ZMQLIB=../slsReceiverSoftware/include
+LIBRARYCBF=$(CBFLIBDIR)/lib/*.o
+INCDIR=-IslsDetectorCalibration  -I. -IetaVEL -I../slsReceiverSoftware/include -I$(CBFLIBDIR)/include/
+#LIBHDF5=
+LDFLAG= -L/usr/lib64/ -lpthread -lm  -lstdc++ -L.  -pthread -lrt -L$(CBFLIBDIR)/lib/   -ltiff -lhdf5
+#-L$(ZMQLIB) -lzmq
+#-L../../bin 
+MAIN=moench03ClusterFinderPhoenix.cpp
+#
+#DESTDIR?=../bin
+
+all: moenchClusterFinderPhoenix 
+#moenchMakeEtaPhoenix moenchInterpolationPhoenix
+
+
+
+moenchClusterFinderPhoenix:  $(MAIN)  $(INCS) clean
+			 g++ -o moenchClusterFinderPhoenix  $(MAIN)  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) tiffIO.cpp -DSAVE_ALL
+
+moenchMakeEtaPhoenix:  moench03MakeEtaPhoenix.cpp  $(INCS) clean
+			 g++ -o moenchMakeEta moench03MakeEta.cpp    $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) tiffIO.cpp -DSAVE_ALL
+
+moenchInterpolationPhoenix:  moench03InterpolationPhoenix.cpp  $(INCS) clean
+			 g++ -o moenchInterpolation moench03Interpolation.cpp    $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) tiffIO.cpp -DSAVE_ALL
+
+clean: 	
+	rm -f  moenchClusterFinderPhoenix moenchMakeEtaPhoenix  moenchInterpolationPhoenix
+

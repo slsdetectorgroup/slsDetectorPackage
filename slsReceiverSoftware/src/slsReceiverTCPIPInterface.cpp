@@ -347,7 +347,7 @@ int slsReceiverTCPIPInterface::function_table(){
 int slsReceiverTCPIPInterface::decode_function(){
 	ret = FAIL;
 #ifdef VERYVERBOSE
-	cprintf(DARKGRAY,"\n");
+	cprintf(RESET,"\n");
 	FILE_LOG(logDEBUG1) <<  "waiting to receive data";
 #endif
 	int n = mySock->ReceiveDataOnly(&fnum,sizeof(fnum));

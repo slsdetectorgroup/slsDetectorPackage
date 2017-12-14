@@ -393,7 +393,7 @@ void UDPStandardImplementation::resetAcquisitionCount() {
 
 
 int UDPStandardImplementation::startReceiver(char *c) {
-	cprintf(DARKGRAY,"\n");
+	cprintf(RESET,"\n");
 	FILE_LOG(logINFO) << "Starting Receiver";
 
 	ResetParametersforNewMeasurement();

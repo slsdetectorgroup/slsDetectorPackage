@@ -141,7 +141,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	FILE_LOG(logINFO) << "Ready ... ";
-	cprintf(DARKGRAY, "\n[ Press \'Ctrl+c\' to exit ]\n");
+	cprintf(RESET, "\n[ Press \'Ctrl+c\' to exit ]\n");
 	while(keeprunning)
 		pause();
 

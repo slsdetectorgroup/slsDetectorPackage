@@ -53,7 +53,7 @@ void sigInterruptHandler(int p){
  * prints usage of this example program
  */
 void printHelp() {
-	cprintf(DARKGRAY, "Usage:\n"
+	cprintf(RESET, "Usage:\n"
 			"./detReceiver [start_tcp_port] [num_receivers] [1 for call back, 0 for none]\n\n");
 	exit(EXIT_FAILURE);
 }
@@ -141,9 +141,9 @@ int main(int argc, char *argv[]) {
 	if ( (argc != 4) || (!sscanf(argv[1],"%d", &startTCPPort)) || (!sscanf(argv[2],"%d", &numReceivers)) || (!sscanf(argv[3],"%d", &withCallback)) )
 		printHelp();
 	cprintf(BLUE,"Parent Process Created [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
-	cprintf(DARKGRAY, "Number of Receivers: %d\n", numReceivers);
-	cprintf(DARKGRAY, "Start TCP Port: %d\n", startTCPPort);
-	cprintf(DARKGRAY, "Callback Enable: %d\n", withCallback);
+	cprintf(RESET, "Number of Receivers: %d\n", numReceivers);
+	cprintf(RESET, "Start TCP Port: %d\n", startTCPPort);
+	cprintf(RESET, "Callback Enable: %d\n", withCallback);
 
 
 
@@ -243,7 +243,7 @@ int main(int argc, char *argv[]) {
 
 	/** - Print Ready and Instructions how to exit */
 	cout << "Ready ... " << endl;
-	cprintf(DARKGRAY, "\n[ Press \'Ctrl+c\' to exit ]\n");
+	cprintf(RESET, "\n[ Press \'Ctrl+c\' to exit ]\n");
 
 	/** - Parent process waits for all child processes to exit */
 	for(;;) {

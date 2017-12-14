@@ -831,13 +831,13 @@ template <class dataType> class analogDetector {
     \param f file pointer
     \returns current file pointer
 */
-FILE *setFilePointer(FILE *f){myFile=f; return myFile;};
+    FILE *setFilePointer(FILE *f){myFile=f; return myFile;};
 
 /** gets file pointer where to write the clusters to 
     \returns current file pointer
 */
-FILE *getFilePointer(){return myFile;};
- void setMutex(pthread_mutex_t *m){fm=m;};
+    FILE *getFilePointer(){return myFile;};
+    void setMutex(pthread_mutex_t *m){fm=m;};
  protected:
   
     slsDetectorData<dataType> *det; /**< slsDetectorData to be used */

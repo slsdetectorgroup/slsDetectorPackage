@@ -285,8 +285,7 @@ public analogDetector<uint16_t> {
 	    }
 	  }
 	}
-	
-	return nph;
+	cout << iframe << " " << nph << endl;
 	} else return getClusters(data);
       }
       return NULL;
@@ -632,7 +631,8 @@ void writeClusters(FILE *f){for (int i=0; i<nphFrame; i++) (clusters+i)->write(f
       iframe++;
       //	cout << "done" << endl;
     };
-
+    int getPhFrame(){return nphFrame;};
+    int getPhTot(){return nphTot;};
  protected:
 
     int nDark; /**< number of frames to be used at the beginning of the dataset to calculate pedestal without applying photon discrimination */

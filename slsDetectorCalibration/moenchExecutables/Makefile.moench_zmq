@@ -1,8 +1,8 @@
 
 CBFLIBDIR=/afs/psi.ch/project/sls_det_software/CBFlib-0.9.5
-ZMQLIB=../slsReceiverSoftware/include
+ZMQLIB=../../slsReceiverSoftware/include
 LIBRARYCBF=$(CBFLIBDIR)/lib/*.o
-INCDIR=-IslsDetectorCalibration -I../slsReceiverSoftware/include -I$(CBFLIBDIR)/include/ -I. -IetaVEL
+INCDIR=-I../../slsReceiverSoftware/include -I$(CBFLIBDIR)/include/ -I. -I../interpolations/etaVEL -I../dataStructures ../tiffIO.cpp -I../ -I../interpolations/
 LIBHDF5=
 LDFLAG= -L/usr/lib64/ -lpthread -lm  -lstdc++ -L. -lzmq -pthread -lrt -L$(CBFLIBDIR)/lib/ -lhdf5 -ltiff -L$(ZMQLIB)
 #-L../../bin 
@@ -10,13 +10,16 @@ MAIN=moench03ZmqOnTheFly.cpp
 
 #DESTDIR?=../bin
 
-all: moench03ZmqOnTheFly
-
+all: moenchZmqClusterFinder
+#moench03ZmqOnTheFly
 
 
 moench03ZmqOnTheFly:  $(MAIN)  $(INCS) clean
 		      g++ -o moench03ZmqOnTheFly  $(MAIN)  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) tiffIO.cpp -DSAVE_ALL
 
+moenchZmqClusterFinder:  $(MAIN)  $(INCS) clean
+		      g++ -o moenchZmqClusterFinder  moenchZmqClusterFinder.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL
+
 clean: 	
-	rm -f  moench03ZmqOnTheFlyEta
+	rm -f  moench03ZmqOnTheFlyEta moench03ZmqClusterFinder
 

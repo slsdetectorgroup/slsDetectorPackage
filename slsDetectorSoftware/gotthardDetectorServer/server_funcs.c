@@ -1052,7 +1052,7 @@ int get_adc(int file_des) {
 		ret=FAIL;
 	}
 	ind=arg[0];
-	imod=arg[1];
+	imod=0;//arg[1];
 
 #ifdef VERBOSE
 	printf("Getting ADC %d of module %d\n", ind, imod);

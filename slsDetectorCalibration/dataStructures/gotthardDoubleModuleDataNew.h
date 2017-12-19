@@ -50,9 +50,9 @@ public:
 		for(int ix=0; ix<xpixels; ix++) {
 		  imod=ix%2;
 		  if (imod==0)
-		  dMap[0][ix] =ix+offset;
+		    dMap[0][ix] =ix+offset;
 		  else
-		    dMap[0][ix] =dataSize-2-ix;//+2*offset;
+		    dMap[0][ix] = 1280*2+2*offset+2*(1280-1-ix/2);//dataSize-2-ix;//+2*offset;
 		  // dMap[0][ix] = 2*ipix+offset*(imod+1)+1280*2*imod; 
 		  dMask[0][ix] = 0x0;
 		}

@@ -286,7 +286,7 @@ public analogDetector<uint16_t> {
 	  }
 	}
 	cout << iframe << " " << nph << endl;
-	} else return getClusters(data);
+	} else return getClusters(data, nph);
       }
       return NULL;
     };
@@ -410,7 +410,7 @@ public analogDetector<uint16_t> {
 
  */
 
-int *getClusters(char *data) {
+int *getClusters(char *data,  int *ph=NULL) {
 
  
   int nph=0;
@@ -420,6 +420,9 @@ int *getClusters(char *data) {
   int ir, ic;
   
   double max=0, tl=0, tr=0, bl=0,br=0, *v, vv;
+
+  if (ph==NULL)
+    ph=image;
 
   if (iframe<nDark) {
     addToPedestal(data);

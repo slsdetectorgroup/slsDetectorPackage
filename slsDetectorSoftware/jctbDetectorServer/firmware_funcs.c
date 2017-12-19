@@ -1346,11 +1346,11 @@ int64_t setDelay(int64_t value){
   if (value!=-1) {
     value*=(1E-3*clkDivider[1]);//(1E-9*CLK_FREQ);
   }
-  return set64BitReg(value,SET_DELAY_LSB_REG, SET_DELAY_MSB_REG)/(1E-3*clkDivider[0]);//(1E-9*CLK_FREQ);
+  return set64BitReg(value,SET_DELAY_LSB_REG, SET_DELAY_MSB_REG)/(1E-3*clkDivider[1]);//(1E-9*CLK_FREQ);
 }
 
 int64_t getDelay(){
-  return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG)/(1E-3*clkDivider[0]);//(1E-9*CLK_FREQ);
+  return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG)/(1E-3*clkDivider[1]);//(1E-9*CLK_FREQ);
 }
 
 int64_t setTrains(int64_t value){

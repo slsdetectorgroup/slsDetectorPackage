@@ -111,13 +111,13 @@ class interpolatingDetector : public singlePhotonDetector {
  }
 
 #ifdef MYROOT1
-  virtual TH2F *addToInterpolatedImage(char *data, single_photon_hit *clusters, int &nph)
+  virtual TH2F *addToInterpolatedImage(char *data, int *val, int &nph)
 #endif
 #ifndef MYROOT1
-  virtual int *addToInterpolatedImage(char *data, single_photon_hit *clusters, int &nph)
+    virtual int *addToInterpolatedImage(char *data, int *val, int &nph)
 #endif
   {
-    nph=addFrame(data,clusters,0); 
+    nph=addFrame(data,val,0); 
     if (interp)
       return interp->getInterpolatedImage();
     else
@@ -127,13 +127,13 @@ class interpolatingDetector : public singlePhotonDetector {
   
 
 #ifdef MYROOT1
-  virtual TH2F *addToFlatField(char *data, single_photon_hit *clusters, int &nph)
+  virtual TH2F *addToFlatField(char *data, int *val, int &nph)
 #endif
 #ifndef MYROOT1
-    virtual int *addToFlatField(char *data, single_photon_hit *clusters, int &nph)
+    virtual int *addToFlatField(char *data, int *val, int &nph)
 #endif
   {
-    nph=addFrame(data,clusters,1); 
+    nph=addFrame(data,val,1); 
     if (interp)
       return interp->getFlatField();
     else
@@ -149,8 +149,151 @@ class interpolatingDetector : public singlePhotonDetector {
      return NULL;
    }
   
+int addFrame(char *data,  int *ph=NULL, int ff=0) {
+
+ 
+  int nph=0;
+  double val[ny][nx];
+  int cy=(clusterSizeY+1)/2;
+  int cs=(clusterSize+1)/2;
+  int ir, ic;
   
-  int addFrame(char *data, single_photon_hit *clusters=NULL, int ff=0) {
+    double int_x,int_y, eta_x, eta_y;
+  double max=0, tl=0, tr=0, bl=0,br=0, *v, vv;
+
+  if (ph==NULL)
+    ph=image;
+
+  if (iframe<nDark) {
+    addToPedestal(data);
+    return 0;
+  }
+  newFrame();
+  for (int ix=xmin; ix<xmax; ix++) {
+    for (int iy=ymin; iy<ymax; iy++) {
+      
+      max=0;
+      tl=0;
+      tr=0;
+      bl=0;
+      br=0;
+      tot=0;
+      quadTot=0;
+      quad=UNDEFINED_QUADRANT;
+
+     
+
+      eventMask[iy][ix]=PEDESTAL;
+      
+	
+      (clusters+nph)->rms=getPedestalRMS(ix,iy);
+      
+      
+      
+      for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
+	for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
+	  
+	  if ((iy+ir)>=iy && (iy+ir)<ny && (ix+ic)>=ix && (ix+ic)<nx) {
+	    val[iy+ir][ix+ic]=subtractPedestal(data,ix+ic,iy+ir);
+	  }
+	  
+	  v=&(val[iy+ir][ix+ic]);
+	  tot+=*v;
+	  if (ir<=0 && ic<=0)
+	    bl+=*v;
+	  if (ir<=0 && ic>=0)
+	    br+=*v;
+	  if (ir>=0 && ic<=0)
+	    tl+=*v;
+	  if (ir>=0 && ic>=0)
+	    tr+=*v;
+	  if (*v>max) {
+	    max=*v;
+	  }
+	  
+	  
+	  if (ir==0 && ic==0) {
+	    if (*v<-nSigma*cluster->rms)
+	      eventMask[iy][ix]=NEGATIVE_PEDESTAL;
+	  }
+	  
+	}
+      }
+      
+      if (bl>=br && bl>=tl && bl>=tr) {
+	(clusters+nph)->quad=BOTTOM_LEFT;
+	(clusters+nph)->quadTot=bl;
+      } else if (br>=bl && br>=tl && br>=tr) {
+	(clusters+nph)->quad=BOTTOM_RIGHT;
+	(clusters+nph)->quadTot=br;
+      } else if (tl>=br && tl>=bl && tl>=tr) {
+	(clusters+nph)->quad=TOP_LEFT;
+	(clusters+nph)->quadTot=tl;
+      } else if   (tr>=bl && tr>=tl && tr>=br) {
+	(clusters+nph)->quad=TOP_RIGHT;
+	(clusters+nph)->quadTot=tr;
+      }
+      
+      if (max>nSigma*cluster->rms || tot>sqrt(clusterSizeY*clusterSize)*nSigma*cluster->rms || ((clusters+nph)->quadTot)>sqrt(cy*cs)*nSigma*cluster->rms) {
+	if (val[iy][ix]>=max) {
+	  eventMask[iy][ix]=PHOTON_MAX;
+	  (clusters+nph)->tot=tot;
+	  (clusters+nph)->x=ix;
+	  (clusters+nph)->y=iy;
+	  (clusters+nph)->iframe=det->getFrameNumber(data);
+	  (clusters+nph)->ped=getPedestal(ix,iy,0);
+	  for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
+	    for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
+	      (clusters+nph)->set_data(val[iy+ir][ix+ic],ic,ir);
+	    }
+	  }
+
+
+
+	    
+	    if (interp) {
+	      if (ff) {
+		  interp->addToFlatField((clusters+nph)->quadTot,(clusters+nph)->quad,(clusters+nph)->get_cluster(),eta_x, eta_y);
+	      } else {
+		interp->getInterpolatedPosition(ix, iy, (clusters+nph)->quadTot,(clusters+nph)->quad,(clusters+nph)->get_cluster(),int_x, int_y);
+		interp->addToImage(int_x, int_y);
+	      }
+	    }  else 
+	      image[ix+nx*iy]++;    
+
+
+
+
+
+
+
+
+
+
+	  nph++;
+	  image[iy*nx+ix]++;
+
+	  } else {
+	    eventMask[iy][ix]=PHOTON;
+	  }
+      } else if (eventMask[iy][ix]==PEDESTAL) {
+	addToPedestal(data,ix,iy);
+      }
+
+
+    }
+  }
+  nphFrame=nph;
+  nphTot+=nph;
+  //cout << nphFrame << endl;
+  // cout <<"**********************************"<< endl;
+  writeClusters();
+  return  nphFrame;
+  
+};
+
+   /*********************************************************
+  int addFrame(char *data, int ff=0) {
     
     double g=1;
     
@@ -262,13 +405,6 @@ class interpolatingDetector : public singlePhotonDetector {
 	      }
 	     
 	
-
-	      /* 	cout << ix << " " << iy << " " << rest[iy][ix] <<" " <<  tot << " " << quadTot << endl; */
-	      /* 	 for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) { */
-	      /* for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) */
-	      /* 	cout << rest[iy+ir][ix+ic] << " " ; */
-	      /* cout << endl; */
-	      /* 	 } */
 		eventMask[iy][ix]=PHOTON_MAX;
 		cl->tot=tot;
 		cl->x=ix;
@@ -322,7 +458,7 @@ class interpolatingDetector : public singlePhotonDetector {
 	return nph;
   }
       
-
+   ******************************************/
 
 
 
@@ -485,20 +621,20 @@ class interpolatingDetector : public singlePhotonDetector {
 
 
   
-    virtual void processData(char *data, frameMode i=eFrame, int *val=NULL) {
+    virtual void processData(char *data, int *val=NULL) {
       if (interp){
-      switch(i) {
-      case ePedestal:
-	addToPedestal(data);
-	break;
-      case eFlat:
-	  addFrame(data,NULL,1);
-	break;
-      default:
-	  addFrame(data,NULL,0);
-      }
-      }      else
-	singlePhotonDetector::processData(data,i,val);
+	switch(fMode) {
+	case ePedestal:
+	  addToPedestal(data);
+	  break;
+	case eFlat:
+	  addFrame(data,val,1);
+	  break;
+	default:
+	  addFrame(data,val,0);
+	}
+      } else
+	singlePhotonDetector::processData(data,val);
       
 	
     };

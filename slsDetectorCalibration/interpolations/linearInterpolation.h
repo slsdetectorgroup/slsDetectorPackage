@@ -32,7 +32,7 @@ class linearInterpolation : public slsInterpolation{
     
     int corner;
     corner=calcQuad(data, tot, totquad, sDum); 
-    if (ns>2) {
+    if (nSubPixels>2) {
       calcEta(totquad, sDum, etax, etay);
     } 
     getInterpolatedPosition(x, y, etax,etay, corner, int_x, int_y);
@@ -41,14 +41,16 @@ class linearInterpolation : public slsInterpolation{
   };
 
 
-   virtual int getInterpolatedPosition(int x, int y, double totquad,int quad,double *cl,double &etax, double &etay) {
+   virtual void getInterpolatedPosition(int x, int y, double totquad,int quad,double *cl,double &int_x, double &int_y) {
     
-    if (ns>2) {
+     double eta_x, eta_y;
+    if (nSubPixels>2) {
      double cc[2][2];
      double *cluster[3];
      cluster[0]=cl;
      cluster[1]=cl+3;
      cluster[2]=cl+6;
+     int xoff, yoff;
      
      switch (quad) {
      case BOTTOM_LEFT:
@@ -74,10 +76,9 @@ class linearInterpolation : public slsInterpolation{
      cc[1][0]=cluster[yoff+1][xoff];
      cc[0][1]=cluster[yoff][xoff+1];
      cc[1][1]=cluster[yoff+1][xoff+1];
-     double eta_x, eta_y;
-     calcEta(quadTot,cc,eta_x,eta_y);
+     calcEta(totquad,cc,eta_x,eta_y);
     }
-     return getInterpolatedPosition(x,y,etax, etay,quad,int_x,int_y);
+    return getInterpolatedPosition(x,y,eta_x, eta_y,quad,int_x,int_y);
 
 
 
@@ -113,20 +114,21 @@ class linearInterpolation : public slsInterpolation{
 	dY=-1.; 
 	break;
       default:
+	cout << "bad quadrant" << endl;
 	dX=0.; 
 	dY=0.;
       }
     
     
-    if (ns>2) {
-      xpos_eta=(etax);
-      ypos_eta=(etay);
+    if (nSubPixels>2) {
+      xpos_eta=(etax)+dX;
+      ypos_eta=(etay)+dY;
     } else {
-      xpos_eta=0;
-      xpos_eta=0;
+      xpos_eta=0.5*dX+0.25;
+      xpos_eta=0.5*dY+0.25;
     }
-    int_x=((double)x) + dX + xpos_eta;
-    int_y=((double)y) + dY + ypos_eta;
+    int_x=((double)x) +  xpos_eta;
+    int_y=((double)y) +  ypos_eta;
     
     return;
   };

@@ -11,7 +11,8 @@
 #include<iostream>
 
 //#include "analogDetector.h"
-#include "singlePhotonDetector.h"
+#include "interpolatingDetector.h"
+#include "linearInterpolation.h"
 #include "multiThreadedAnalogDetector.h"
 #include "ansi.h"
 #include <iostream>
@@ -29,6 +30,7 @@ int main(int argc, char *argv[]) {
   FILE *of=NULL;
   int fifosize=1000;
   int nthreads=20;
+  int nsubpixels=2;
 	// help
 	if (argc < 3 ) {
 		cprintf(RED, "Help: ./trial [receive socket ip] [receive starting port number] [send_socket ip] [send starting port number]\n");
@@ -56,11 +58,14 @@ int main(int argc, char *argv[]) {
 				"\nsd port num  : " <<  portnum2;
 	}
 	cout << endl;
-
 	//slsDetectorData *det=new moench03T1ZmqDataNew(); 
-	 moench03T1ZmqDataNew *det=new moench03T1ZmqDataNew(); 
-	 //analogDetector<uint16_t> *filter=new analogDetector<uint16_t>(det,1,NULL,1000);
-	 singlePhotonDetector *filter=new singlePhotonDetector(det,3, 5, 1, 0, 1000, 10);
+	int npx, npy;
+	moench03T1ZmqDataNew *det=new moench03T1ZmqDataNew(); 
+	det->getDetectorSize(npx, npy);
+	//analogDetector<uint16_t> *filter=new analogDetector<uint16_t>(det,1,NULL,1000);
+	//singlePhotonDetector *filter=new singlePhotonDetector(det,3, 5, 1, 0, 1000, 10);
+	linearInterpolation *interp=new linearInterpolation(npx,npy,nsubpixels);
+	interpolatingDetector *filter=new interpolatingDetector(det,interp, 5, 1, 0, 1000, 100,npx,npy);
 
 
 	  char* buff;
@@ -119,9 +124,11 @@ int main(int argc, char *argv[]) {
 	int length;
 	int *detimage;
 	int nnx, nny,nns;
+	int nix, niy,nis;
 	filter->getImageSize(nnx, nny,nns);
 	int16_t *dout=new int16_t [nnx*nny];
 	// infinite loop
+	int ix, iy, isx, isy;
 	while(1) {
 
 
@@ -129,38 +136,50 @@ int main(int argc, char *argv[]) {
 		// get header, (if dummy, fail is on parse error or end of acquisition)
 	  if (!zmqsocket->ReceiveHeader(0, acqIndex, frameIndex, subframeIndex, filename, fileindex)){
 	    //	  if (!zmqsocket->ReceiveHeader(0, acqIndex, frameIndex, subframeIndex, filename, fileindex)) {
-	    cprintf(RED, "Got Dummy\n");
+	    // cprintf(RED, "Got Dummy\n");
 	    while (mt->isBusy()) {;}//wait until all data are processed from the queues
 			
 	    
-	    detimage=mt->getImage(nnx,nny,nns);
-	    for (int ix=0; ix<nnx; ix++) {
-	      for (int iy=0; iy<nny; iy++) {
-		dout[iy*nnx+ix]=detimage[iy*nnx+ix];
+	    detimage=mt->getImage(nix,niy,nis);
+	    
+	    if (detimage) {
+	      for (ix=0; ix<nnx; ix++) {
+		for (iy=0; iy<nny; iy++) {
+		  dout[iy*nnx+ix]=0;
+		  for (isx=0; isx<nis; isx++) {
+		    for (isy=0; isy<nis; isy++) {
+		      dout[iy*nnx+ix]+=detimage[(iy+isy)*nix+(ix+isx)];
+		    }
+		  }
+		}
 	      }
-	    }
 
-	    if (send) {
-	      strcpy(fname,filename.c_str());
-	      //  zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,16,fileindex,400,400,400*400, acqIndex,frameIndex,fname, acqIndex, 0,0,0,0,0,0,0,0,0,0,0,1);
-	      zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,0,0,0,0,0, 0,0,fname, 0, 0,0,0,0,0,0,0,0,0,0,0,1);
-	     
-	      zmqsocket2->SendData((char*)dout,length);
-	      cprintf(GREEN, "Sent Data\n");
+
+	      if (send) {
+		strcpy(fname,filename.c_str());
+		//  zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,16,fileindex,400,400,400*400, acqIndex,frameIndex,fname, acqIndex, 0,0,0,0,0,0,0,0,0,0,0,1);
+		zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,0,0,0,0,0, 0,0,fname, 0, 0,0,0,0,0,0,0,0,0,0,0,1);
+		
+		zmqsocket2->SendData((char*)dout,length);
+		cprintf(GREEN, "Sent Data\n");
+	      }
+	      
+	      sprintf(ofname,"%s_%d.tiff",filename.c_str(),fileindex);
+	      mt->writeImage(ofname);
+	      
 	    }
-	    
-	    
 	    // stream dummy  to socket2 to signal end of acquisition
 	    if (send) {
 	      zmqsocket2->SendHeaderData(0, true, SLS_DETECTOR_JSON_HEADER_VERSION);
-	      cprintf(RED, "Sent Dummy\n");
+	      // cprintf(RED, "Sent Dummy\n");
+	      cprintf(RED, "Received %d frames\n", iframe);
 	    }
 	    mt->clearImage();
 	    if (of) {
 	      fclose(of);
 	      of=NULL;
 	    }
-	    
+	    iframe=0;
 	    continue; //continue to not get out
 	  }
 
@@ -182,9 +201,6 @@ int main(int argc, char *argv[]) {
 	  mt->nextThread();
 	  mt->popFree(buff);
 	  
-	
-	  
-	  
 	  iframe++;
 	}	// exiting infinite loop
 
@@ -195,7 +211,7 @@ int main(int argc, char *argv[]) {
 	  delete zmqsocket2;
 
 	
-	cout<<"Goodbye"<<  endl;
+	//	cout<<"Goodbye"<<  endl;
 	return 0;
 }
 

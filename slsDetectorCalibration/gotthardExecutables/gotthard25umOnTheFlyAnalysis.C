@@ -16,7 +16,7 @@
 #include "singlePhotonDetector.h"
 //#include "interpolatingDetector.h"
 //#include "linearInterpolation.h"
-//#include "multiThreadedAnalogDetector.h"
+#include "multiThreadedAnalogDetector.h"
 
 #include <ctime>
 
@@ -27,9 +27,60 @@
 
 
 void *gotthardProcessFrame() {
+
+
+
+
+
+	if (argc < 3 ) {
+		cprintf(RED, "Help: ./trial [receive socket ip] [receive starting port number] [send_socket ip] [send starting port number]\n");
+		return EXIT_FAILURE;
+	}
+
+	// receive parameters
+	bool send = false;
+	  char* socketip=argv[1];
+	uint32_t portnum = atoi(argv[2]);
+	int size = 32*2*5000;//atoi(argv[3]);
+
+	// send parameters if any
+	char* socketip2 = 0;
+	uint32_t portnum2 = 0;
+	if (argc > 3) {
+		send = true;
+		socketip2 = argv[3];
+		portnum2 = atoi(argv[4]);
+	}
+	cout << "\nrx socket ip : " << socketip <<
+	  "\nrx port num  : " <<  portnum ;
+	if (send) {
+	  cout << "\nsd socket ip : " << socketip2 <<
+	    "\nsd port num  : " <<  portnum2;
+	}
+	cout << endl;
+  
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   char fname0[10000], fname1[10000];
   char fformat[10000];
-  strcpy(fformat,"/external_pool/gotthard_data/datadir_gotthardI/bchip074075/20170731/Xray/xray_15kV_200uA_5us_d%d_f000000040000_0.raw");
+  int fifosize=1000;
+  strcpy(fformat,"/external_pool/gotthard_data/datadir_gotthardI/bchip074075/20170731/Xray/xray_15kV_200uA_5us_d%d_f000000000000_0.raw");
   sprintf(fname0,fformat,0,0);
   sprintf(fname1,fformat,1,1);
   
@@ -65,9 +116,20 @@ void *gotthardProcessFrame() {
 
   filter->setFrameMode(eFrame);
   
-  char buff[2*(48+1280*2)];
-  char *buff0=buff;
-  char *buff1=buff+48+1280*2;
+  char *buff;//[2*(48+1280*2)];
+
+
+  char *buff0;
+  char *buff1;
+
+
+  multiThreadedAnalogDetector *mt=new multiThreadedAnalogDetector(filter,nthreads,fifosize);
+  mt->setFrameMode(eFrame);
+  mt->StartThreads();
+  mt->popFree(buff);
+  buff0=buff;
+  buff1=buff+48+1280*2;
+
 
   int photons[1280*2];
 
@@ -75,33 +137,16 @@ void *gotthardProcessFrame() {
   int ok=0;
   ifstream filebin0,filebin1;
   std::time_t end_time;
- 
+  int16_t dout[1280*2];
   int iFrame=-1;
   int np=-1;
-	// typedef struct {
-	// 	uint64_t frameNumber;	/**< is the frame number */
-	// 	uint32_t expLength;		/**< is the subframe number (32 bit eiger) or real time exposure time in 100ns (others) */
-	// 	uint32_t packetNumber;	/**< is the packet number */
-	// 	uint64_t bunchId;		/**< is the bunch id from beamline */
-	// 	uint64_t timestamp;		/**< is the time stamp with 10 MHz clock */
-	// 	uint16_t modId;			/**< is the unique module id (unique even for left, right, top, bottom) */
-	// 	uint16_t xCoord;		/**< is the x coordinate in the complete detector system */
-	// 	uint16_t yCoord;		/**< is the y coordinate in the complete detector system */
-	// 	uint16_t zCoord;		/**< is the z coordinate in the complete detector system */
-	// 	uint32_t debug;			/**< is for debugging purposes */
-	// 	uint16_t roundRNumber;	/**< is the round robin set number */
-	// 	uint8_t detType;		/**< is the detector type see :: detectorType */
-	// 	uint8_t version;		/**< is the version number of this structure format */
-	// } sls_detector_header;
 
-
-  //  multiThreadedDetector *mt=new multiThreadedDetector(filter,nthreads,100);
   nph=0;
   nph1=0;
   //int np;
   int iph;
   int data_ready=1;
-
+  int *image;
 
   // filter->setROI(0,512,0,1);
 
@@ -117,39 +162,49 @@ void *gotthardProcessFrame() {
       nf=0;
       iFrame=-1;
       while ((decoder->readNextFrame(filebin0, iFrame, np, buff0)) && (decoder->readNextFrame(filebin1, iFrame, np, buff1))) {
-	filter->processData(buff, photons);
-	cout << nf << " " << decoder->getFrameNumber(buff0) << " " << decoder->getFrameNumber(buff1) << " " << filter->getPhFrame() << " " << filter->getPhTot() << endl; 
+	//filter->processData(buff, photons);
+	//	cout << nf << " " << decoder->getFrameNumber(buff0) << " " << decoder->getFrameNumber(buff1) << " " << filter->getPhFrame() << " " << filter->getPhTot() << endl; 
+	// for (int i=0; i<1280*2; i++) {
+	//   filter->addToPedestal(buff,i,0);
+	//   dout[i]=filter->subtractPedestal(buff,i,0);
+	//   if (nf>10 && i<512)
+	//     if (i%2)
+	//       cout << nf << " " << i << " " << filter->getPedestal(i,0) << " " << det->getValue(buff,i,0) << " " << decoder->getValue(buff1,1280-1-i/2,0)<< " " << dout[i] << endl;
+	//     else
+	//       cout << nf << " " << i << " " << filter->getPedestal(i,0) << " " << det->getValue(buff,i,0) << " " << decoder->getValue(buff0,i/2,0)<< " " << dout[i] << endl;
+	
+	// }
+	  mt->pushData(buff);
+	  mt->nextThread();
+	  mt->popFree(buff);
+	  buff0=buff;
+	  buff1=buff+48+1280*2;
+	  
 	nf++;
-	}
 	
 	//	cout << id << " " << nf << endl;
-      if (nf%1000==0) {
-	std::time(&end_time);
-	cout << std::ctime(&end_time) << " " << nf <<   endl;
+	if (nf%10000==0) {
+	  while (mt->isBusy()) {;}
+	  image=filter->getImage();
+	  if (image) {
+	    cout << nf << "*****************" << endl;
+	    for (int i=0; i<512; i++) {
+	      cout << image[i] << "\t";
+	    }
+	    cout << endl;
+	  }
+	  filter->clearImage();
+	  std::time(&end_time);
+	  cout << std::ctime(&end_time) << " " << nf <<   endl;
+	}
+	iFrame=-1;
       }
-      
-      //delete [] buff;
-      iFrame=-1;
-      
       
       filebin0.close();
       filebin1.close();
     }
     else
       cout << "Could not open file " << fname0<< " or " << fname1 <<  endl;
-
-
-  //mt->StopThreads();
- 
-  // char tit[10000];
-  //sprintf(tit,"/scratch/int_image_mt%d.tiff",nthreads);
- 
-  //mt->writeInterpolatedImage(tit);
-  // delete [] etah;
- 
-  // delete interp;
-  //delete decoder;
-  //cout << "Read " << nf << " frames" << endl;
   return NULL;
 }
   

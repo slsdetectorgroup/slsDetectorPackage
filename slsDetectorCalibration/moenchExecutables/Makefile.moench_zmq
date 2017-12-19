@@ -6,16 +6,14 @@ INCDIR=-I../../slsReceiverSoftware/include -I$(CBFLIBDIR)/include/ -I. -I../inte
 LIBHDF5=
 LDFLAG= -L/usr/lib64/ -lpthread -lm  -lstdc++ -L. -lzmq -pthread -lrt -L$(CBFLIBDIR)/lib/ -lhdf5 -ltiff -L$(ZMQLIB)
 #-L../../bin 
-MAIN=moench03ZmqOnTheFly.cpp
 
 #DESTDIR?=../bin
 
-all: moenchZmqClusterFinder
-#moench03ZmqOnTheFly
+all: moenchZmqClusterFinder moenchZmqInterpolating
 
 
-moench03ZmqOnTheFly:  $(MAIN)  $(INCS) clean
-		      g++ -o moench03ZmqOnTheFly  $(MAIN)  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) tiffIO.cpp -DSAVE_ALL
+moenchZmqInterpolating:  $(MAIN)  $(INCS) clean
+		      g++ -o moenchZmqInterpolating  moenchZmqInterpolating.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL
 
 moenchZmqClusterFinder:  $(MAIN)  $(INCS) clean
 		      g++ -o moenchZmqClusterFinder  moenchZmqClusterFinder.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL

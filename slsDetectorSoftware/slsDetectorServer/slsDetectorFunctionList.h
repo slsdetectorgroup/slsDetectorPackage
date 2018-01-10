@@ -17,7 +17,7 @@ Here are the definitions, but the actual implementation should be done for each 
 
 
 // basic tests
-void 		checkFirmwareCompatibility();
+void 		checkFirmwareCompatibility(int flag);
 #ifdef JUNGFRAUD
 int 		checkType();
 u_int32_t 	testFpga(void);

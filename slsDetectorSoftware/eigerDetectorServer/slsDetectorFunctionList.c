@@ -68,7 +68,7 @@ int normal = 0;
 
 /* basic tests */
 
-void checkFirmwareCompatibility(){
+void checkFirmwareCompatibility(int flag){
 	uint32_t ipadd	= getDetectorIP();
 	uint64_t macadd	= getDetectorMAC();
 	int64_t fwversion = getDetectorId(DETECTOR_FIRMWARE_VERSION);

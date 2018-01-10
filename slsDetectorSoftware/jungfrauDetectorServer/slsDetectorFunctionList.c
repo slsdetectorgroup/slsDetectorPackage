@@ -25,11 +25,17 @@ int32_t clkPhase[2] = {0, 0};
 
 /* basic tests */
 
-void checkFirmwareCompatibility() {
+void checkFirmwareCompatibility(int flag) {
 
 	defineGPIOpins();
 	resetFPGA();
-	if ((mapCSP0() == FAIL) || (checkType() == FAIL) || (testFpga() == FAIL) || (testBus() == FAIL)) {
+    if (mapCSP0() == FAIL) {
+        cprintf(BG_RED, "Dangerous to continue. Goodbye!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // does check only if flag is 0 (by default), set by command line
+	if ((!flag) && ((checkType() == FAIL) || (testFpga() == FAIL) || (testBus() == FAIL))) {
 		cprintf(BG_RED, "Dangerous to continue. Goodbye!\n");
 		exit(EXIT_FAILURE);
 	}
@@ -254,7 +260,7 @@ u_int32_t  getDetectorIP(){
 /* initialization */
 
 void initControlServer(){
-
+    clkPhase[0] = 0; clkPhase[1] = 0;
 	setupDetector();
 	printf("\n");
 }

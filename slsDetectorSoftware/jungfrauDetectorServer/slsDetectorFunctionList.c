@@ -187,7 +187,7 @@ int64_t getDetectorId(enum idMode arg){
 	case SOFTWARE_FIRMWARE_API_VERSION:
 	    return getFirmwareAPIVersion();
 	case DETECTOR_SOFTWARE_VERSION:
-		return  GITDATE;
+		return  (GITDATE & 0xFFFFFF);
 	default:
 		return retval;
 	}

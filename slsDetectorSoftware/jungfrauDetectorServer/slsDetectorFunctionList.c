@@ -1148,7 +1148,7 @@ void configurePll() {
 
 int setNetworkParameter(enum NETWORKINDEX mode, int value) {
     if (mode != TXN_FRAME)
-        return -1;\
+        return -1;
 
     if (value >= 0) {
         printf("\nSetting transmission delay: %d\n", value);

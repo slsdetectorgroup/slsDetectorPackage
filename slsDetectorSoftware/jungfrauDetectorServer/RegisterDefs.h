@@ -341,7 +341,8 @@
 #define SET_EXPTIME_MSB_REG    			(0x69 << 11)
 
 /* Trigger Delay 32 bit register */
-#define SET_TRIGGER_DELAY_REG           (0x70 << 11)
+#define SET_TRIGGER_DELAY_LSB_REG       (0x70 << 11)
+#define SET_TRIGGER_DELAY_MSB_REG       (0x71 << 11)
 
 /* Module Coordinates Register 0 */
 #define COORD_0							(0x7C << 11)

@@ -578,7 +578,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 			printf("\nSetting delay to %lldns\n", (long long int)val);
 			val *= (1E-3 * CLK_SYNC);
 		}
-		retval = set64BitReg(val, SET_DELAY_LSB_REG, SET_DELAY_MSB_REG) / (1E-3 * CLK_SYNC);
+		retval = set64BitReg(val, SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG) / (1E-3 * CLK_SYNC);
 		printf("Getting delay: %lldns\n", (long long int)retval);
 		break;
 

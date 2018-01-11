@@ -1146,6 +1146,24 @@ void configurePll() {
 
 
 
+int setNetworkParameter(enum NETWORKINDEX mode, int value) {
+    if (mode != TXN_FRAME)
+        return -1;\
+
+    if (value >= 0) {
+        printf("\nSetting transmission delay: %d\n", value);
+        bus_w(CONFIG_REG, ((value  << CONFIG_TDMA_TIMESLOT_OFST) & CONFIG_TDMA_TIMESLOT_MSK));
+#ifdef VERBOSE
+        printf("Transmission delay set to %d\n", ((bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK) >> CONFIG_TDMA_TIMESLOT_OFST));
+#endif
+    }
+
+    return ((bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK) >> CONFIG_TDMA_TIMESLOT_OFST);
+}
+
+
+
+
 
 /* aquisition */
 

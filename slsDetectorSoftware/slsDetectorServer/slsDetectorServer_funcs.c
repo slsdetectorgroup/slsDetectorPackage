@@ -4405,7 +4405,7 @@ int set_network_parameter(int file_des) {
 	int retval=-1;
 	sprintf(mess,"set network parameter failed\n");
 
-#ifndef EIGERD
+#if !defined(EIGERD) && !defined(JUNGFRAUD)
 	//to receive any arguments
 	while (n > 0)
 		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
@@ -4426,7 +4426,7 @@ int set_network_parameter(int file_des) {
 	if (n < 0) return printSocketReadError();
 
 	// execute action
-	if (differentClients && lockStatus && value<0) {
+	if (differentClients && lockStatus && value >= 0) {
 		ret = FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		cprintf(RED, "Warning: %s", mess);
@@ -4437,17 +4437,27 @@ int set_network_parameter(int file_des) {
 		printf("setting network parameter mode %d to %d\n",(int)mode,value);
 #endif
 		switch (mode) {
+
+#ifdef EIGERD
+        case FLOW_CONTROL_10G:
+            index = FLOWCTRL_10G;
+            break;
 		case DETECTOR_TXN_DELAY_LEFT:
 			index = TXN_LEFT;
 			break;
 		case DETECTOR_TXN_DELAY_RIGHT:
 			index = TXN_RIGHT;
 			break;
+#endif
 		case DETECTOR_TXN_DELAY_FRAME:
 			index = TXN_FRAME;
-			break;
-		case FLOW_CONTROL_10G:
-			index = FLOWCTRL_10G;
+#ifdef JUNGFRAUD
+			if (value > MAX_TIMESLOT_VAL)	{
+			    ret=FAIL;
+			    sprintf(mess,"Transmission delay %d should be in range: 0 - 31\n", value);
+			    cprintf(RED, "Warning: %s", mess);
+			}
+#endif
 			break;
 		default:
 			ret=FAIL;

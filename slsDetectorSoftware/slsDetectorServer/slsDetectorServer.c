@@ -83,8 +83,10 @@ int main(int argc, char *argv[]){
 	printf("function table assigned \n");
 #endif
 
-
-	printf("\nReady...\n\n");
+	if (b)
+	    printf("\nControl Server Ready...\n\n");
+	else
+	    printf("\nStop Server Ready...\n\n");
 
 	/* waits for connection */
 	while(retval!=GOODBYE) {

@@ -49,13 +49,14 @@ enum DACINDEX				{VB_COMP, VDD_PROT, VIN_COM, VREF_PRECH, VB_PIXBUF, VB_DS, VREF
   	  	  	  	  	  	  	  	0x1f00,		/* FORCESWITCHG1	*/	\
  	  	  	  	  	  	  	  	0x3f00		/* FORCESWITCHG2	*/	\
  	  	  	  	  	  	  	 };
-#define DEFAULT_SETT_NAMES	{	"Dynamic Gain", 		/* DYNAMICGAIN	*/	\
+#define DEFAULT_SETT_NAMES  {	"Dynamic Gain", 		/* DYNAMICGAIN	*/	\
 								"Dynamic High Gain 0",	/* DYNAMICHG0	*/	\
 								"Fix Gain 1",			/* FIXGAIN1		*/	\
 								"Fix Gain 2",			/* FIXGAIN2		*/	\
 								"Force Switch Gain 1",	/* FORCESWITCHG1*/	\
 								"Force Switch Gain 2"	/* FORCESWITCHG2*/	\
- 	  	  	  	  	  	  	 };
+							};
+enum NETWORKINDEX           { TXN_FRAME };
 
 
 
@@ -89,6 +90,7 @@ enum DACINDEX				{VB_COMP, VDD_PROT, VIN_COM, VREF_PRECH, VB_PIXBUF, VB_DS, VREF
 /* Defines in the Firmware */
 #define FIX_PATT_VAL    			(0xACDC2014)
 #define ADC_PORT_INVERT_VAL   		(0x453b2a9c)
+#define MAX_TIMESLOT_VAL            (0x1F)
 
 
 #define SAMPLE_ADC_HALF_SPEED	 	(SAMPLE_DECMT_FACTOR_2_VAL + SAMPLE_DGTL_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL + SAMPLE_ADC_SAMPLE_0_VAL)	/* 0x1000 */

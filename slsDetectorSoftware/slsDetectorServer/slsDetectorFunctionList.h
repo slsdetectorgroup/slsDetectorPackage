@@ -192,7 +192,9 @@ int 		setAllTrimbits(int val);
 int 		getAllTrimbits();
 int 		getBebFPGATemp();
 int 		activate(int enable);
-int 		setNetworkParameter(enum NETWORKINDEX mode, int value);
+#endif
+#if defined(JUNGFRAUD) || defined(EIGERD)
+int         setNetworkParameter(enum NETWORKINDEX mode, int value);
 #endif
 
 

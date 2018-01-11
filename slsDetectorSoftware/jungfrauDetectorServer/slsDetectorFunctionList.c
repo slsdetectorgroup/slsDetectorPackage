@@ -1146,13 +1146,67 @@ void configurePll() {
 
 
 
+int setThresholdTemperature(int val) {
+    if (val >= 0) {
+        printf("\nThreshold Temperature: %d\n", val);
+
+        val *= (10.0/625.0);
+#ifdef VERBOSE
+        printf("Converted Threshold Temperature: %d\n", val);
+#endif
+
+        bus_w(TEMP_CTRL_REG, bus_r(TEMP_CTRL_REG) | (((val  << TEMP_CTRL_PROTCT_THRSHLD_OFST) & TEMP_CTRL_PROTCT_THRSHLD_MSK)));
+#ifdef VERBOSE
+        printf("Converted Threshold Temperature set to %d\n", ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_PROTCT_THRSHLD_MSK) >> TEMP_CTRL_PROTCT_THRSHLD_OFST));
+#endif
+    }
+    uint32_t temp = ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_PROTCT_THRSHLD_MSK) >> TEMP_CTRL_PROTCT_THRSHLD_OFST);
+
+    // conversion
+    temp *= (625.0/10.0);
+    printf("Threshold Temperature  %f °C\n",(double)temp/1000.00);
+
+    return temp;
+
+}
+
+
+int setTemperatureControl(int val) {
+    if (val >= 0) {
+        // binary value
+        if (val > 0 ) val = 1;
+        printf("\nTemperature control: %d\n", val);
+        bus_w(TEMP_CTRL_REG, bus_r(TEMP_CTRL_REG) | (((val  << TEMP_CTRL_PROTCT_ENABLE_OFST) & TEMP_CTRL_PROTCT_ENABLE_MSK)));
+#ifdef VERBOSE
+        printf("Temperature control set to %d\n", ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_PROTCT_ENABLE_MSK) >> TEMP_CTRL_PROTCT_ENABLE_OFST));
+#endif
+    }
+    return ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_PROTCT_ENABLE_MSK) >> TEMP_CTRL_PROTCT_ENABLE_OFST);
+}
+
+
+int setTemperatureEvent(int val) {
+    if (val >= 0) {
+        // set bit to clear it
+        val = 1;
+        printf("\nTemperature Event: %d\n", val);
+        bus_w(TEMP_CTRL_REG, bus_r(TEMP_CTRL_REG) | (((val  << TEMP_CTRL_OVR_TMP_EVNT_OFST) & TEMP_CTRL_OVR_TMP_EVNT_MSK)));
+#ifdef VERBOSE
+        printf("Temperature Event set to %d\n", ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_OVR_TMP_EVNT_MSK) >> TEMP_CTRL_OVR_TMP_EVNT_OFST));
+#endif
+    }
+    return ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_OVR_TMP_EVNT_MSK) >> TEMP_CTRL_OVR_TMP_EVNT_OFST);
+}
+
+
+
 int setNetworkParameter(enum NETWORKINDEX mode, int value) {
     if (mode != TXN_FRAME)
         return -1;
 
     if (value >= 0) {
         printf("\nSetting transmission delay: %d\n", value);
-        bus_w(CONFIG_REG, ((value  << CONFIG_TDMA_TIMESLOT_OFST) & CONFIG_TDMA_TIMESLOT_MSK));
+        bus_w(CONFIG_REG, bus_r(CONFIG_REG) | (((value  << CONFIG_TDMA_TIMESLOT_OFST) & CONFIG_TDMA_TIMESLOT_MSK)));
 #ifdef VERBOSE
         printf("Transmission delay set to %d\n", ((bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK) >> CONFIG_TDMA_TIMESLOT_OFST));
 #endif

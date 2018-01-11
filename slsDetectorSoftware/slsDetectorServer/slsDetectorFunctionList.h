@@ -169,6 +169,9 @@ int 		calibratePedestal(int frames);
 void 		resetPLL();
 u_int32_t 	setPllReconfigReg(u_int32_t reg, u_int32_t val);
 void 		configurePll();
+int         setThresholdTemperature(int val);
+int         setTemperatureControl(int val);
+int         setTemperatureEvent(int val);
 extern void eraseFlash();													// programfpga.h
 extern int 	startWritingFPGAprogram(FILE** filefp);							// programfpga.h
 extern void stopWritingFPGAprogram(FILE* filefp);							// programfpga.h

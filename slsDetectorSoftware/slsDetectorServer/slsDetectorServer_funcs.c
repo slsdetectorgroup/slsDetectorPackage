@@ -181,6 +181,10 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_ACTIVATE:						return "F_ACTIVATE";
 	case F_PREPARE_ACQUISITION:				return "F_PREPARE_ACQUISITION";
 	case F_CLEANUP_ACQUISITION:				return "F_CLEANUP_ACQUISITION";
+	case F_THRESHOLD_TEMP:                  return "F_THRESHOLD_TEMP";
+	case F_TEMP_CONTROL:                    return "F_TEMP_CONTROL";
+	case F_TEMP_EVENT:                      return "F_TEMP_EVENT";
+
 	default:								return "Unknown Function";
 	}
 }
@@ -259,6 +263,9 @@ void function_table() {
 	flist[F_ACTIVATE]							= &set_activate;
 	flist[F_PREPARE_ACQUISITION]				= &prepare_acquisition;
 	flist[F_CLEANUP_ACQUISITION]				= &cleanup_acquisition;
+	flist[F_THRESHOLD_TEMP]                     = &threshold_temp;
+	flist[F_TEMP_CONTROL]                       = &temp_control;
+	flist[F_TEMP_EVENT]                         = &temp_event;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= TOO_MANY_FUNCTIONS_DEFINED) {
@@ -4454,7 +4461,7 @@ int set_network_parameter(int file_des) {
 #ifdef JUNGFRAUD
 			if (value > MAX_TIMESLOT_VAL)	{
 			    ret=FAIL;
-			    sprintf(mess,"Transmission delay %d should be in range: 0 - 31\n", value);
+			    sprintf(mess,"Transmission delay %d should be in range: 0 - %d\n", value, MAX_TIMESLOT_VAL);
 			    cprintf(RED, "Warning: %s", mess);
 			}
 #endif
@@ -4901,4 +4908,178 @@ int cleanup_acquisition(int file_des) {
 	return ret;
 }
 
+
+
+
+int threshold_temp(int file_des) {
+    int ret=OK,ret1=OK;
+    int n=0;
+    int arg[2]={-1,-1};
+    int val=-1;
+    int retval=-1;
+    sprintf(mess,"could not set/get threshold temperature\n");
+
+#ifndef JUNGFRAUD
+    //to receive any arguments
+    while (n > 0)
+        n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+    ret = FAIL;
+    sprintf(mess,"Function (Threshold Temp) is not implemented for this detector\n");
+    cprintf(RED, "%s", mess);
+#else
+    // receive arguments
+    n = receiveData(file_des,arg,sizeof(arg),INT32);
+    if (n < 0) return printSocketReadError();
+    val=arg[0];
+    //ignoring imod
+    if (val > MAX_THRESHOLD_TEMP_VAL)   {
+        ret=FAIL;
+        sprintf(mess,"Threshold Temp %d should be in range: 0 - %d\n", val, MAX_THRESHOLD_TEMP_VAL);
+        cprintf(RED, "Warning: %s", mess);
+    }
+#endif
+
+
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+    if (ret==OK) {
+#ifdef VERBOSE
+    printf("Setting Threshold Temperature to  %d\n", val);
+#endif
+        retval=setThresholdTemperature(val);
+    }
+#endif
+#ifdef VERBOSE
+    printf("Threshold temperature is %d\n",  retval);
+#endif
+
+    if (ret==OK && differentClients && val >= 0)
+        ret=FORCE_UPDATE;
+
+    // ret could be swapped during sendData
+    ret1 = ret;
+    // send ok / fail
+    n = sendData(file_des,&ret1,sizeof(ret),INT32);
+    // send return argument
+    if (ret!=FAIL) {
+        n += sendData(file_des,&retval,sizeof(retval),INT32);
+    } else {
+        n += sendData(file_des,mess,sizeof(mess),OTHER);
+    }
+
+    // return ok / fail
+    return ret;
+}
+
+
+
+int temp_control(int file_des) {
+    int ret=OK,ret1=OK;
+    int n=0;
+    int arg[2]={-1,-1};
+    int val=-1;
+    int retval=-1;
+    sprintf(mess,"could not set/get temperature control\n");
+
+#ifndef JUNGFRAUD
+    //to receive any arguments
+    while (n > 0)
+        n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+    ret = FAIL;
+    sprintf(mess,"Function (Temperature control) is not implemented for this detector\n");
+    cprintf(RED, "%s", mess);
+#else
+    // receive arguments
+    n = receiveData(file_des,arg,sizeof(arg),INT32);
+    if (n < 0) return printSocketReadError();
+    val=arg[0];
+    //ignoring imod
+#endif
+
+
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+    if (ret==OK) {
+#ifdef VERBOSE
+    printf("Setting Temperature control to  %d\n", val);
+#endif
+        retval=setTemperatureControl(val);
+    }
+#endif
+#ifdef VERBOSE
+    printf("Temperature control is %d\n",  retval);
+#endif
+
+    if (ret==OK && differentClients && val >= 0)
+        ret=FORCE_UPDATE;
+
+    // ret could be swapped during sendData
+    ret1 = ret;
+    // send ok / fail
+    n = sendData(file_des,&ret1,sizeof(ret),INT32);
+    // send return argument
+    if (ret!=FAIL) {
+        n += sendData(file_des,&retval,sizeof(retval),INT32);
+    } else {
+        n += sendData(file_des,mess,sizeof(mess),OTHER);
+    }
+
+    // return ok / fail
+    return ret;
+}
+
+
+
+
+int temp_event(int file_des) {
+    int ret=OK,ret1=OK;
+    int n=0;
+    int arg[2]={-1,-1};
+    int val=-1;
+    int retval=-1;
+    sprintf(mess,"could not set/get temperature event\n");
+
+#ifndef JUNGFRAUD
+    //to receive any arguments
+    while (n > 0)
+        n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+    ret = FAIL;
+    sprintf(mess,"Function (Temperature Event) is not implemented for this detector\n");
+    cprintf(RED, "%s", mess);
+#else
+    // receive arguments
+    n = receiveData(file_des,arg,sizeof(arg),INT32);
+    if (n < 0) return printSocketReadError();
+    val=arg[0];
+    //ignoring imod
+#endif
+
+
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+    if (ret==OK) {
+#ifdef VERBOSE
+    printf("Setting Temperature Event to  %d\n", val);
+#endif
+        retval=setTemperatureEvent(val);
+    }
+#endif
+#ifdef VERBOSE
+    printf("Temperature Event is %d\n",  retval);
+#endif
+
+    if (ret==OK && differentClients && val >= 0)
+        ret=FORCE_UPDATE;
+
+    // ret could be swapped during sendData
+    ret1 = ret;
+    // send ok / fail
+    n = sendData(file_des,&ret1,sizeof(ret),INT32);
+    // send return argument
+    if (ret!=FAIL) {
+        n += sendData(file_des,&retval,sizeof(retval),INT32);
+    } else {
+        n += sendData(file_des,mess,sizeof(mess),OTHER);
+    }
+
+    // return ok / fail
+    return ret;
+}
 

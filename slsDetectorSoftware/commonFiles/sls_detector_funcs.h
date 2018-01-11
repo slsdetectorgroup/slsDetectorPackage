@@ -112,6 +112,10 @@ enum detFuncs{
   F_ACTIVATE,				/** < activate */
   F_PREPARE_ACQUISITION,	/** < prepare acquisition */
   F_CLEANUP_ACQUISITION,		/** < clean up after acquisition */
+
+  F_THRESHOLD_TEMP,          /** < set threshold temperature */
+  F_TEMP_CONTROL,            /** < set temperature control */
+  F_TEMP_EVENT,              /** < set temperature event */
   /* Always append functions hereafter!!! */
 
   /* Always append functions before!!! */

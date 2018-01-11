@@ -619,6 +619,30 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   virtual dacs_t getADC(dacIndex index, int imod=-1)=0;
 
   /**
+     set/gets threshold temperature (Jungfrau only)
+     \param val value in millidegrees, -1 gets
+     \param imod module number, -1 is all
+     \returns threshold temperature in millidegrees
+  */
+  virtual int setThresholdTemperature(int val=-1, int imod=-1)=0;
+
+  /**
+     enables/disables temperature control (Jungfrau only)
+     \param val value, -1 gets
+     \param imod module number, -1 is all
+     \returns temperature control enable
+  */
+  virtual int setTemperatureControl(int val=-1, int imod=-1)=0;
+
+  /**
+     Resets/ gets over-temperature event (Jungfrau only)
+     \param val value, -1 gets
+     \param imod module number, -1 is all
+     \returns over-temperature event
+  */
+  virtual int setTemperatureEvent(int val=-1, int imod=-1)=0;
+
+  /**
      get the maximum size of the detector
      \param d dimension
      \returns maximum number of modules that can be installed in direction d

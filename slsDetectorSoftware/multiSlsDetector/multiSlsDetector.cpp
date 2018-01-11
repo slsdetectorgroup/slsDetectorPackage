@@ -3331,6 +3331,173 @@ dacs_t multiSlsDetector::getADC(dacIndex idac, int imod) {
 	return ret;
 }
 
+
+
+int multiSlsDetector::setThresholdTemperature(int val, int imod) {
+    int ret = -100;
+
+    // single
+    {
+        int id=-1, im=-1;
+        if (decodeNMod(imod, id, im)>=0) {
+            if(detectors[id]){
+                ret = detectors[id]->setThresholdTemperature(val, im);
+                if(detectors[id]->getErrorMask())
+                    setErrorMask(getErrorMask()|(1<<id));
+                return ret;
+            }
+            return -1;
+        }
+    }
+
+    // multi
+    if(!threadpool){
+        cout << "Error in creating threadpool. Exiting" << endl;
+        return -1;
+    }
+
+    int posmin=0, posmax=thisMultiDetector->numberOfDetectors;
+    int* iret[posmax-posmin];
+
+    for(int idet=posmin; idet<posmax; ++idet){
+        if(detectors[idet]){
+            iret[idet]= new dacs_t(-1);
+            Task* task = new Task(new func2_t<int,int,int>(&slsDetector::setThresholdTemperature,
+                    detectors[idet], val, imod, iret[idet]));
+            threadpool->add_task(task);
+        }
+    }
+    threadpool->startExecuting();
+    threadpool->wait_for_tasks_to_complete();
+    for(int idet=posmin; idet<posmax; ++idet){
+        if(detectors[idet]){
+            if(iret[idet] != NULL){
+                if (ret==-100)
+                    ret=*iret[idet];
+                else if (ret!=*iret[idet])
+                    ret=-1;
+                delete iret[idet];
+            }else ret=-1;
+            if(detectors[idet]->getErrorMask())
+                setErrorMask(getErrorMask()|(1<<idet));
+        }
+    }
+
+    return ret;
+}
+
+
+int multiSlsDetector::setTemperatureControl(int val, int imod) {
+    int ret = -100;
+
+    // single
+    {
+        int id=-1, im=-1;
+        if (decodeNMod(imod, id, im)>=0) {
+            if(detectors[id]){
+                ret = detectors[id]->setTemperatureControl(val, im);
+                if(detectors[id]->getErrorMask())
+                    setErrorMask(getErrorMask()|(1<<id));
+                return ret;
+            }
+            return -1;
+        }
+    }
+
+    // multi
+    if(!threadpool){
+        cout << "Error in creating threadpool. Exiting" << endl;
+        return -1;
+    }
+
+    int posmin=0, posmax=thisMultiDetector->numberOfDetectors;
+    int* iret[posmax-posmin];
+
+    for(int idet=posmin; idet<posmax; ++idet){
+        if(detectors[idet]){
+            iret[idet]= new dacs_t(-1);
+            Task* task = new Task(new func2_t<int,int,int>(&slsDetector::setTemperatureControl,
+                    detectors[idet], val, imod, iret[idet]));
+            threadpool->add_task(task);
+        }
+    }
+    threadpool->startExecuting();
+    threadpool->wait_for_tasks_to_complete();
+    for(int idet=posmin; idet<posmax; ++idet){
+        if(detectors[idet]){
+            if(iret[idet] != NULL){
+                if (ret==-100)
+                    ret=*iret[idet];
+                else if (ret!=*iret[idet])
+                    ret=-1;
+                delete iret[idet];
+            }else ret=-1;
+            if(detectors[idet]->getErrorMask())
+                setErrorMask(getErrorMask()|(1<<idet));
+        }
+    }
+
+    return ret;
+}
+
+
+
+int multiSlsDetector::setTemperatureEvent(int val, int imod) {
+    int ret = -100;
+
+    // single
+    {
+        int id=-1, im=-1;
+        if (decodeNMod(imod, id, im)>=0) {
+            if(detectors[id]){
+                ret = detectors[id]->setTemperatureEvent(val, im);
+                if(detectors[id]->getErrorMask())
+                    setErrorMask(getErrorMask()|(1<<id));
+                return ret;
+            }
+            return -1;
+        }
+    }
+
+    // multi
+    if(!threadpool){
+        cout << "Error in creating threadpool. Exiting" << endl;
+        return -1;
+    }
+
+    int posmin=0, posmax=thisMultiDetector->numberOfDetectors;
+    int* iret[posmax-posmin];
+
+    for(int idet=posmin; idet<posmax; ++idet){
+        if(detectors[idet]){
+            iret[idet]= new dacs_t(-1);
+            Task* task = new Task(new func2_t<int,int,int>(&slsDetector::setTemperatureEvent,
+                    detectors[idet], val, imod, iret[idet]));
+            threadpool->add_task(task);
+        }
+    }
+    threadpool->startExecuting();
+    threadpool->wait_for_tasks_to_complete();
+    for(int idet=posmin; idet<posmax; ++idet){
+        if(detectors[idet]){
+            if(iret[idet] != NULL){
+                if (ret==-100)
+                    ret=*iret[idet];
+                else if (ret!=*iret[idet])
+                    ret=-1;
+                delete iret[idet];
+            }else ret=-1;
+            if(detectors[idet]->getErrorMask())
+                setErrorMask(getErrorMask()|(1<<idet));
+        }
+    }
+
+    return ret;
+}
+
+
+
+
 int multiSlsDetector::setChannel(int64_t reg, int ichan, int ichip, int imod) {
   int ret, ret1=-100;
   int id=-1, im=-1;

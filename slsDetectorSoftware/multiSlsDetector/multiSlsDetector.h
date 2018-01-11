@@ -948,6 +948,31 @@ class multiSlsDetector  : public slsDetectorUtils {
      \returns current DAC value (temperature for eiger and jungfrau in millidegrees)
   */
   dacs_t getADC(dacIndex index, int imod=-1);
+
+  /**
+     set/gets threshold temperature (Jungfrau only)
+     \param val value in millidegrees, -1 gets
+     \param imod module number, -1 is all
+     \returns threshold temperature in millidegrees
+  */
+  int setThresholdTemperature(int val=-1, int imod=-1);
+
+  /**
+     enables/disables temperature control (Jungfrau only)
+     \param val value, -1 gets
+     \param imod module number, -1 is all
+     \returns temperature control enable
+  */
+  int setTemperatureControl(int val=-1, int imod=-1);
+
+  /**
+     Resets/ gets over-temperature event (Jungfrau only)
+     \param val value, -1 gets
+     \param imod module number, -1 is all
+     \returns over-temperature event
+  */
+  int setTemperatureEvent(int val=-1, int imod=-1);
+
   /**
      configure channel
      \param reg channel register

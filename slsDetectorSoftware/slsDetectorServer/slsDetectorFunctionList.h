@@ -35,6 +35,7 @@ u_int64_t  	getFirmwareVersion();
 #ifdef MYTHEND
 int64_t 	getModuleId(enum idMode arg, int imod);
 #elif JUNGFRAUD
+u_int64_t   getFirmwareAPIVersion();
 u_int16_t 	getHardwareVersionNumber();
 u_int16_t 	getHardwareSerialNumber();
 #endif

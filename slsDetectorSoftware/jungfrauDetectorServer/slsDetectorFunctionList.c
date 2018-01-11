@@ -46,7 +46,9 @@ void checkFirmwareCompatibility(int flag) {
 	uint64_t macadd				= getDetectorMAC();
 	int64_t fwversion 			= getDetectorId(DETECTOR_FIRMWARE_VERSION);
 	int64_t swversion 			= getDetectorId(DETECTOR_SOFTWARE_VERSION);
-	//int64_t sw_fw_apiversion 	= getDetectorId(SOFTWARE_FIRMWARE_API_VERSION);
+	int64_t sw_fw_apiversion    = 0;
+	if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
+	    sw_fw_apiversion 	    = getDetectorId(SOFTWARE_FIRMWARE_API_VERSION);
 	cprintf(BLUE,"\n\n"
 			"********************************************************\n"
 			"****************** Jungfrau Server *********************\n"
@@ -55,46 +57,49 @@ void checkFirmwareCompatibility(int flag) {
 			"Hardware Serial Nr:\t\t 0x%x\n"
 
 			"Detector IP Addr:\t\t 0x%x\n"
-			"Detector MAC Addr:\t\t 0x%llx\n"
+			"Detector MAC Addr:\t\t 0x%llx\n\n"
 
 			"Firmware Version:\t\t 0x%llx\n"
 			"Software Version:\t\t 0x%llx\n"
-			//"F/w-S/w API Version:\t\t 0x%llx\n"
-			//"Required Firmware Version:\t 0x%x\n"
+			"F/w-S/w API Version:\t\t 0x%llx\n"
+			"Required Firmware Version:\t 0x%x\n"
 			"\n"
 			"********************************************************\n",
 			hversion, hsnumber,
 			ipadd, macadd,
-			fwversion, swversion
-			//, sw_fw_apiversion, REQUIRED_FIRMWARE_VERSION
+			fwversion, swversion,
+			sw_fw_apiversion, REQRD_FRMWR_VRSN
 	);
 
+	// return if flag is not zero, debug mode
+	if (flag)
+	    return;
 
-/*
- * 	printf("Testing firmware capability... ");
+
 	//cant read versions
+    printf("Testing Firmware-software compatibility ...\n");
 	if(!fwversion || !sw_fw_apiversion){
 		cprintf(RED,"FATAL ERROR: Cant read versions from FPGA. Please update firmware\n");
 		cprintf(RED,"Exiting Server. Goodbye!\n\n");
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 
 	//check for API compatibility - old server
-	if(sw_fw_apiversion > REQUIRED_FIRMWARE_VERSION){
+	if(sw_fw_apiversion > REQRD_FRMWR_VRSN){
 		cprintf(RED,"FATAL ERROR: This software version is incompatible.\n"
 				"Please update it to be compatible with this firmware\n\n");
 		cprintf(RED,"Exiting Server. Goodbye!\n\n");
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 
 	//check for firmware compatibility - old firmware
-	if( REQUIRED_FIRMWARE_VERSION > fwversion){
+	if( REQRD_FRMWR_VRSN > fwversion){
 		cprintf(RED,"FATAL ERROR: This firmware version is incompatible.\n"
-				"Please update it to v%d to be compatible with this server\n\n", REQUIRED_FIRMWARE_VERSION);
+				"Please update it to v%d to be compatible with this server\n\n", REQRD_FRMWR_VRSN);
 		cprintf(RED,"Exiting Server. Goodbye!\n\n");
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
-*/
+	printf("Compatibility - success\n");
 }
 
 
@@ -176,26 +181,24 @@ int64_t getDetectorId(enum idMode arg){
 
 	switch(arg){
 	case DETECTOR_SERIAL_NUMBER:
-		retval =  getDetectorNumber();// or getDetectorMAC()
-		break;
+		return getDetectorNumber();// or getDetectorMAC()
 	case DETECTOR_FIRMWARE_VERSION:
-		retval = getFirmwareVersion();
-		break;
-	//case SOFTWARE_FIRMWARE_API_VERSION:
-	//return GetFirmwareSoftwareAPIVersion();
+		return getFirmwareVersion();
+	case SOFTWARE_FIRMWARE_API_VERSION:
+	    return getFirmwareAPIVersion();
 	case DETECTOR_SOFTWARE_VERSION:
-		retval= GITREV;
-		retval= (retval <<32) | GITDATE;
-		break;
+		return  GITDATE;
 	default:
-		break;
+		return retval;
 	}
-
-	return retval;
 }
 
 u_int64_t getFirmwareVersion() {
 	return ((bus_r(FPGA_VERSION_REG) & BOARD_REVISION_MSK) >> BOARD_REVISION_OFST);
+}
+
+u_int64_t getFirmwareAPIVersion() {
+    return ((bus_r(API_VERSION_REG) & API_VERSION_MSK) >> API_VERSION_OFST);
 }
 
 u_int16_t getHardwareVersionNumber() {
@@ -455,33 +458,65 @@ int setSpeed(enum speedVariable arg, int val) {
 	// setting
 	if(val >= 0) {
 
-		switch(val){
+        // stop state machine if running
+        if(runBusy())
+            stopStateMachine();
 
-		// stop state machine if running
-		if(runBusy())
-			stopStateMachine();
+        uint32_t txndelay_msk = 0;
+
+		switch(val){
 
 		// todo in firmware, for now setting half speed
 		case FULL_SPEED://40
 			printf("\nSetting Half Speed (20 MHz):\n");
-			printf("Setting Sample Reg to 0x%x\n", SAMPLE_ADC_HALF_SPEED);		bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
-			printf("Setting Config Reg to 0x%x\n", CONFIG_HALF_SPEED);			bus_w(CONFIG_REG, CONFIG_HALF_SPEED);
-			printf("Setting ADC Ofst Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL);	bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
-			printf("Setting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED);	adcPhase(ADC_PHASE_HALF_SPEED);
+
+			printf("Setting Sample Reg to 0x%x\n", SAMPLE_ADC_HALF_SPEED);
+			bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
+
+	        txndelay_msk = (bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK); // read config tdma timeslot value
+			printf("Setting Config Reg to 0x%x\n", CONFIG_HALF_SPEED | txndelay_msk);
+			bus_w(CONFIG_REG, CONFIG_HALF_SPEED | txndelay_msk);
+
+			printf("Setting ADC Ofst Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL);
+			bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
+
+			printf("Setting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED);
+			adcPhase(ADC_PHASE_HALF_SPEED);
+
 			break;
 		case HALF_SPEED:
 			printf("\nSetting Half Speed (20 MHz):\n");
-			printf("Setting Sample Reg to 0x%x\n", SAMPLE_ADC_HALF_SPEED);		bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
-			printf("Setting Config Reg to 0x%x\n", CONFIG_HALF_SPEED);			bus_w(CONFIG_REG, CONFIG_HALF_SPEED);
-			printf("Setting ADC Ofst Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL);	bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
-			printf("Setting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED);	adcPhase(ADC_PHASE_HALF_SPEED);
+
+			printf("Setting Sample Reg to 0x%x\n", SAMPLE_ADC_HALF_SPEED);
+			bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
+
+			txndelay_msk = (bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK); // read config tdma timeslot value
+			printf("Setting Config Reg to 0x%x\n", CONFIG_HALF_SPEED | txndelay_msk);
+			bus_w(CONFIG_REG, CONFIG_HALF_SPEED | txndelay_msk);
+
+			printf("Setting ADC Ofst Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL);
+			bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
+
+			printf("Setting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED);
+			adcPhase(ADC_PHASE_HALF_SPEED);
+
 			break;
 		case QUARTER_SPEED:
 			printf("\nSetting Half Speed (10 MHz):\n");
-			printf("Setting Sample Reg to 0x%x\n", SAMPLE_ADC_QUARTER_SPEED);		bus_w(SAMPLE_REG, SAMPLE_ADC_QUARTER_SPEED);
-			printf("Setting Config Reg to 0x%x\n", CONFIG_QUARTER_SPEED);			bus_w(CONFIG_REG, CONFIG_QUARTER_SPEED);
-			printf("Setting ADC Ofst Reg to 0x%x\n", ADC_OFST_QUARTER_SPEED_VAL);	bus_w(ADC_OFST_REG, ADC_OFST_QUARTER_SPEED_VAL);
-			printf("Setting ADC Phase Reg to 0x%x\n", ADC_PHASE_QUARTER_SPEED);		adcPhase(ADC_PHASE_QUARTER_SPEED);
+
+			printf("Setting Sample Reg to 0x%x\n", SAMPLE_ADC_QUARTER_SPEED);
+			bus_w(SAMPLE_REG, SAMPLE_ADC_QUARTER_SPEED);
+
+			txndelay_msk = (bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK); // read config tdma timeslot value
+			printf("Setting Config Reg to 0x%x\n", CONFIG_QUARTER_SPEED | txndelay_msk);
+			bus_w(CONFIG_REG, CONFIG_QUARTER_SPEED | txndelay_msk);
+
+			printf("Setting ADC Ofst Reg to 0x%x\n", ADC_OFST_QUARTER_SPEED_VAL);
+			bus_w(ADC_OFST_REG, ADC_OFST_QUARTER_SPEED_VAL);
+
+			printf("Setting ADC Phase Reg to 0x%x\n", ADC_PHASE_QUARTER_SPEED);
+			adcPhase(ADC_PHASE_QUARTER_SPEED);
+
 			break;
 		}
 		printf("\n");

@@ -2641,8 +2641,6 @@ int slsDetector::setThresholdTemperature(int val, int imod) {
                 setErrorMask((getErrorMask())|(TEMPERATURE_CONTROL));
             }
             disconnectStop();
-            if (ret==FORCE_UPDATE)
-                updateDetector();
         }
     }
 
@@ -2683,8 +2681,6 @@ int slsDetector::setTemperatureControl(int val, int imod) {
                 setErrorMask((getErrorMask())|(TEMPERATURE_CONTROL));
             }
             disconnectStop();
-            if (ret==FORCE_UPDATE)
-                updateDetector();
         }
     }
 
@@ -2726,8 +2722,6 @@ int slsDetector::setTemperatureEvent(int val, int imod) {
                 setErrorMask((getErrorMask())|(TEMPERATURE_CONTROL));
             }
             disconnectStop();
-            if (ret==FORCE_UPDATE)
-                updateDetector();
         }
     }
 

@@ -4733,7 +4733,10 @@ int power_chip(int file_des) {
 			ret=OK;
 		} else {
 			ret=FAIL;
-			sprintf(mess,"Powering chip failed, wrote %d but read %d\n", arg, retval);
+			if(setTemperatureEvent(-1) == 1)
+			    sprintf(mess,"Powering chip failed due to over-temperature event. Clear event & power chip again.\n", arg, retval);
+			else
+			    sprintf(mess,"Powering chip failed, wrote %d but read %d\n", arg, retval);
 			cprintf(RED, "Warning: %s", mess);
 		}
 	}

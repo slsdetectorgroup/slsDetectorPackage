@@ -383,7 +383,7 @@ int powerChip (int on){
 			bus_w(CHIP_POWER_REG, bus_r(CHIP_POWER_REG) & ~CHIP_POWER_ENABLE_MSK);
 		}
 	}
-	return bus_r(CHIP_POWER_REG);
+	return (bus_r(CHIP_POWER_REG & CHIP_POWER_STATUS_MSK) >> CHIP_POWER_STATUS_OFST);
 }
 
 void cleanFifos() {
@@ -1147,6 +1147,7 @@ void configurePll() {
 
 
 int setThresholdTemperature(int val) {
+
     if (val >= 0) {
         printf("\nThreshold Temperature: %d\n", val);
 
@@ -1154,8 +1155,8 @@ int setThresholdTemperature(int val) {
 #ifdef VERBOSE
         printf("Converted Threshold Temperature: %d\n", val);
 #endif
-
-        bus_w(TEMP_CTRL_REG, bus_r(TEMP_CTRL_REG) | (((val  << TEMP_CTRL_PROTCT_THRSHLD_OFST) & TEMP_CTRL_PROTCT_THRSHLD_MSK)));
+        bus_w(TEMP_CTRL_REG, (bus_r(TEMP_CTRL_REG) &~(TEMP_CTRL_PROTCT_THRSHLD_MSK) &~(TEMP_CTRL_OVR_TMP_EVNT_MSK))
+                | (((val  << TEMP_CTRL_PROTCT_THRSHLD_OFST) & TEMP_CTRL_PROTCT_THRSHLD_MSK)));
 #ifdef VERBOSE
         printf("Converted Threshold Temperature set to %d\n", ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_PROTCT_THRSHLD_MSK) >> TEMP_CTRL_PROTCT_THRSHLD_OFST));
 #endif
@@ -1176,7 +1177,8 @@ int setTemperatureControl(int val) {
         // binary value
         if (val > 0 ) val = 1;
         printf("\nTemperature control: %d\n", val);
-        bus_w(TEMP_CTRL_REG, bus_r(TEMP_CTRL_REG) | (((val  << TEMP_CTRL_PROTCT_ENABLE_OFST) & TEMP_CTRL_PROTCT_ENABLE_MSK)));
+        bus_w(TEMP_CTRL_REG, (bus_r(TEMP_CTRL_REG)  &~(TEMP_CTRL_PROTCT_ENABLE_MSK) &~(TEMP_CTRL_OVR_TMP_EVNT_MSK))
+                | (((val  << TEMP_CTRL_PROTCT_ENABLE_OFST) & TEMP_CTRL_PROTCT_ENABLE_MSK)));
 #ifdef VERBOSE
         printf("Temperature control set to %d\n", ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_PROTCT_ENABLE_MSK) >> TEMP_CTRL_PROTCT_ENABLE_OFST));
 #endif
@@ -1190,7 +1192,8 @@ int setTemperatureEvent(int val) {
         // set bit to clear it
         val = 1;
         printf("\nTemperature Event: %d\n", val);
-        bus_w(TEMP_CTRL_REG, bus_r(TEMP_CTRL_REG) | (((val  << TEMP_CTRL_OVR_TMP_EVNT_OFST) & TEMP_CTRL_OVR_TMP_EVNT_MSK)));
+        bus_w(TEMP_CTRL_REG, (bus_r(TEMP_CTRL_REG)   &~TEMP_CTRL_OVR_TMP_EVNT_MSK)
+                | (((val  << TEMP_CTRL_OVR_TMP_EVNT_OFST) & TEMP_CTRL_OVR_TMP_EVNT_MSK)));
 #ifdef VERBOSE
         printf("Temperature Event set to %d\n", ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_OVR_TMP_EVNT_MSK) >> TEMP_CTRL_OVR_TMP_EVNT_OFST));
 #endif
@@ -1206,7 +1209,8 @@ int setNetworkParameter(enum NETWORKINDEX mode, int value) {
 
     if (value >= 0) {
         printf("\nSetting transmission delay: %d\n", value);
-        bus_w(CONFIG_REG, bus_r(CONFIG_REG) | (((value  << CONFIG_TDMA_TIMESLOT_OFST) & CONFIG_TDMA_TIMESLOT_MSK)));
+        bus_w(CONFIG_REG, (bus_r(CONFIG_REG) &~CONFIG_TDMA_TIMESLOT_MSK)
+                | (((value  << CONFIG_TDMA_TIMESLOT_OFST) & CONFIG_TDMA_TIMESLOT_MSK)));
 #ifdef VERBOSE
         printf("Transmission delay set to %d\n", ((bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK) >> CONFIG_TDMA_TIMESLOT_OFST));
 #endif

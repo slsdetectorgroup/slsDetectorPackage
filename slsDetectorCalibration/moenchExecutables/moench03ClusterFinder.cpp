@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
   int ok;
   int iprog=0;
 
-  moench03T1ReceiverData *decoder=new  moench03T1ReceiverData();
+  moench03T1ReceiverDataNew *decoder=new  moench03T1ReceiverDataNew();
   //moench03T1ZmqData *decoder=new  moench03T1ZmqData();
   singlePhotonDetector *filter=new singlePhotonDetector(decoder,csize, nsigma, 1, 0, nped, 200);
   //  char tit[10000];

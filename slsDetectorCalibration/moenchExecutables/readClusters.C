@@ -13,23 +13,23 @@ TH2F *readClusters(char *fname, int nx, int ny, TH2F *h2=NULL) {
       h2=new TH2F("h2",fname,nx, -0.5, nx-0.5, ny, -0.5, ny-0.5);
     //h2mult=new TH2F("h2mult",fname,nx, -0.5, nx-0.5, ny, -0.5, ny-0.5);
       // TH2F *hint=new TH2F("hint",fname,nx*ns, -0.5, nx-0.5, ny*ns, -0.5, ny-0.5); 
-    TH1F *hf=new TH1F("hf","hf",1000,0,30000);
+    TH1F *hf=new TH1F("hf","hf",1000,0,3000000);
 	//TH2F *hff=new TH2F("hff","hff",ns, -0.5, 0.5, ns, -0.5, +0.5); 
     TH1F *hsp=new TH1F("hsp",fname,500,0,2000); 
     TH1F *hsp1=new TH1F("hsp1",fname,500,0,2000);
-    TH1F *hsp2=new TH1F("hsp2",fname,500,0,2000); 
-    TH1F *hsp3=new TH1F("hsp3",fname,500,0,2000);
-    hsp1->SetLineColor(2);
-    hsp2->SetLineColor(3);
-    hsp3->SetLineColor(4);
+    // TH1F *hsp2=new TH1F("hsp2",fname,500,0,1000); 
+    // TH1F *hsp3=new TH1F("hsp3",fname,500,0,1000);
+     hsp1->SetLineColor(2);
+    // hsp2->SetLineColor(3);
+    // hsp3->SetLineColor(4);
     TCanvas *c=new TCanvas();
     c->SetLogz(kTRUE);
     h2->Draw("colz");
     TCanvas *c1=new TCanvas();
     hsp->Draw();
     hsp1->Draw("same");
-    hsp2->Draw("same");
-    hsp3->Draw("same");
+    // hsp2->Draw("same");
+    // hsp3->Draw("same");
     TCanvas *c2=new TCanvas();
     hf->Draw();
     // hint->Draw("colz");
@@ -75,26 +75,34 @@ TH2F *readClusters(char *fname, int nx, int ny, TH2F *h2=NULL) {
 	//max at 340
 	//if (tot>200) {
 	w=1;
+	
+	if (qt/tot>0.8 && qt/tot<1.2){
 	    if (f0<0)
 	      f0=cl.iframe;
 	    hf->Fill(cl.iframe-f0);
+	    if (qt>540) w++;
+	    if (qt>820) w++;
 	//(tot+3.5*phs)/phw;
 	  //} else
 	  //w=0;
 	    //	if (w) {
-	    // if (qt/tot>0.8 && qt/tot<1.2){
-	    if (cl.y<350) {
-	      if (cl.y<100 || cl.y>300) {
-		hsp->Fill(qt);
-		hsp2->Fill(cl.get_data(0,0));
-	      } else { 
-		hsp1->Fill(qt);
-		hsp3->Fill(cl.get_data(0,0));
-	      }
+	    // if (cl.y<350) {
+	    //   if (cl.y<100 || cl.y>300) {
+		if (cl.x>150 && cl.x<250 && cl.y>200 && cl.y<250)
+		  hsp1->Fill(qt);
+		else
+		  hsp->Fill(qt);
+		  
+	      // 	hsp2->Fill(cl.get_data(0,0));
+	      // } else { 
+	      // 	hsp1->Fill(qt);
+	      // 	hsp3->Fill(cl.get_data(0,0));
+	      // }
 	      //if (cl.x>160 && cl.x<260 && cl.y>30 && cl.y<80 && tot>0) 
 	      //if (w==1) {
-	      h2->Fill(cl.x,cl.y,w);
-	    }
+		//	if (w==2)
+		  h2->Fill(cl.x,cl.y,w);
+	      //  }
 		//}
 	    //  hint->Fill(px+cl.x,py+cl.y,w);
 	    // if (cl.y<350)
@@ -104,7 +112,7 @@ TH2F *readClusters(char *fname, int nx, int ny, TH2F *h2=NULL) {
 	 
 	    //h2mult->Fill(cl.x,cl.y,w);
 	    
-	//}
+	    }
 	  iph+=w;
 	  if (iph%100000==0) {
 	    c->Modified();
@@ -139,7 +147,7 @@ TH2F *readClusters(char *fname, int nx, int ny, TH2F *h2=NULL) {
 
     return h2;
   
-  } else
+} else
     cout << "could not open file " << fname << endl;
   return NULL;
 

@@ -333,7 +333,7 @@ int receiveData(int file_des, void* buf,int length, intType itype){
 #endif
 
   while(length > 0) {
-    nreceiving = (length>send_rec_max_size) ? send_rec_max_size:length; // (condition) ? if_true : if_false
+    nreceiving = (length>send_rec_max_size) ? send_rec_max_size:length;
     nreceived = read(file_des,(char*)buf+total_received,nreceiving); 
     if(!nreceived){
     	if(!total_received) {

@@ -71,9 +71,6 @@ Here is an explanation of the LED color scheme of the bchip100:
 \end{itemize}
 You can also Check temperatures and water flow in a browser (from the same subnet where the 9M is: http://bchip100/status.cgi
 
-
-
-  
 \subsection{Mandatory setup - Receiver}
 
 The receiver is a process run on a PC closely connected to the detector. Open one receiver for every half module board (remember, a module has two receivers!!!) . Go to {\tt{slsDetectorsPackage/bin/}}, \textbf{slsReceiver} should be started on the machine expected to receive the data from the detector.
@@ -85,9 +82,17 @@ The receiver is a process run on a PC closely connected to the detector. Open on
 where xxxx, yyyy are the tcp port numbers. Use 1955 and 1956 for example. Note that in older version of the software {\tt{--mode 1}} was used only for the ``bottom'' half module. Now, the receiver for the bottom is open without arguments anymore, but still in the configuration file one needs to write {\tt{n:flippeddatax 1}}, where {\tt{n}} indicated the half module number, 1 if it is a module.
 \\ Open as many receiver as half module boards. A single module has two half module boards.
 
+From the software version 3.0.1, one can decide weather start a zmq callback from the receiver to the client (for example to visualize data in the slsDetectorGui or another gui). If the zmq steam is not required (cased of the command line for example, one can switch off the streaming with {\tt{./sls\_detector\_put rx\_datastream 0}}, enable it with {\tt{./sls\_detector\_put rx\_datastream 1}}. In the case of inizialising the stream to use the slsDetectorGui, nothing needs to be taken care of by the user. If instead you want to stream the streaming on different channels, the zmq port of the client can be set stealing from the slsDetectorGui stream having {\tt{./sls\_detector\_put n:zmqport 300y}}, where n is each half module independently, matching the receiver stream {\tt{./sls\_detector\_put n:rx\_zmqport 300y}}.
+ 
+
+There is an example code that can be compiled in {\tt{manual/manual-api/mainReceiver.cpp}} and gives the executable {\tt{./detReceiver}}, use it with two or more receivers to open all receivers in one single terminal: {\tt{./detReceiver startTCPPort numReceivers withCallback}}, where startTCPPort assumes the other ports are consecutively increased.
+
+ 
+
+
 \subsection{Mandatory setup - Client}
 
-\underline{In the case of cSAXS, the detector software is installed on the x12sa-ed-1 machine:}\\
+\underline{In the case of cSAXS, the detector software is installed on:}\\
 \underline{/sls/X12SA/data/x12saop/EigerPackage/slsDetectorsPackage}
 
 The command line interface consists in these main functions:
@@ -97,7 +102,7 @@ The command line interface consists in these main functions:
 \item[sls\_detector\_get] to retrieve detector parameters
 \end{description}
 
-First, your detector should always be configured for each PC that you might want to use for controlling the detector. All the examples given here show the command {\tt{0-}}, which could be omitted for the EIGER system $0$. In the case more EIGER systems are controlled at once, the call of {\tt{1-}},.. becomes compulsory.
+First, your detector should always be configured for each PC that you might want to use for controlling the detector. All the examples given here show the command {\tt{0-}}, which could be omitted for the EIGER system $0$. In the case more EIGER systems are controlled at once, the call of {\tt{1-}},.. becomes compulsory. 
 
 To make sure the shared memory is cleaned, before starting, one should do:  
 \begin{verbatim}
@@ -120,6 +125,7 @@ hostname beb059+beb058+ #1Gb detector hostname for controls
 1:rx_udpport2 50014 #udp port second quadrant, second halfmodule      
 rx_hostname x12sa-vcons #1Gb receiver pc hostname
 outdir /sls/X12SA/data/x12saop/Data10/Eiger0.5M
+threaded 1
 \end{verbatim}
 
 In the config file, if client, receiver and detector commands are on 1Gb, but detector data to receiver are sent using \textbf{10GbE} the following lines are mandatory (see slsDetectorsPackage/examples/eiger\_10Gb.config):
@@ -139,7 +145,16 @@ hostname beb059+beb058+ #1Gb detector hostname for controls
 1:detectorip 10.0.40.101 #second half module 10 Gb IP 
 rx_hostname x12sa-vcons #1Gb receiver pc hostname
 outdir /sls/X12SA/data/x12saop/Data10/Eiger0.5M
+threaded 1
 \end{verbatim}
+
+
+In the case you are developing your own receiver, then you need to remove the 1Gb receiver hostname {\tt{rx\_hostname}} and substitute it with the mac address of the device:
+\begin{verbatim}
+configuremac 0
+rx_udpmac xx:xx:...
+\end{verbatim}
+
 
 One can configure all the detector settings in a parameter file {\tt{setup.det}}, which is loaded by doing:
 \begin{verbatim}
@@ -186,7 +201,7 @@ The first line requires to specify how many ({\tt{N}}) and at which energies in 
 NORMALLY, in this new calibration scheme, only {\tt{settings standard}} will be provided to you, unless specific cases to be discussed.
 The threshold at 6000 eV , for example would be set as:{\tt{sls\_detector\_put 0-threshold 6000}}.
 
-We have added a special command, {\tt{thresholdnotb}}, which allows to scan the threshold energy without reloading the trimbits at every stage. One cain either keep the trimbits at a specific value (es.32 if the range of energies to scan is large) or use the trimbits from a specific energy (like a central energy).
+We have added a special command, {\tt{thresholdnotb}}, which allows to scan the threshold energy without reloading the trimbits at every stage. One can either keep the trimbits at a specific value (es.32 if the range of energies to scan is large) or use the trimbits from a specific energy (like a central energy).
 \begin{verbatim}
 sls_detector_put 0-thresholdnotb energy_in_eV
 \end{verbatim}
@@ -440,148 +455,8 @@ If \textbf{dr} is 32 and \textbf{clkdivider} is not 2, whatever the detector get
 \item If the variable \textbf{frames} is greater than what the memory can store (table~\ref{timgs}) and the frame rate exceed the continuos streaming (table~\ref{tcont}), limits on the maximum number of images need to be implemented if the period is lower than the one listed in table~\ref{tcont}. Check table~\ref{tframes} to see the different cases.
 \item Running at a speed that does not support the frame rate you are asking: see table~\ref{tframes} to check if the frame rate (\textbf{period}) you are asking is compatible with the \textbf{clkdivider} you are asking.
 \item Running at a redout time that does not support the frame rate you are asking. Check table~\ref{tframes} to check if the frame rate (\textbf{period}) you are asking is compatible with the \textbf{flags} you are asking.
-\item The minimum allowed value for \textbf{epttime} should be 10~$\mu$s. 
+\item The minimum allowed value for \textbf{exptime} should be 10~$\mu$s. 
 \item By default the {\textbf{subexptime}} is set to 2.621440~ms. Values smaller than 500~$\mu$s do not make sense. The maximum value is 5.2~s. This limits should be checked.
-\end{enumerate}
-
-\section{Client checks - command line}
-
-Guide on returned strings:
-\begin{enumerate}
-\item \begin{verbatim}
-sls_detector_get free
-\end{verbatim}
-Returns a list of shared memories cleaned (variable number depending on detector):
-\begin{verbatim}
-Shared memory 273612805 deleted
-Shared memory 276922374 deleted
-Shared memory 270270468 deleted
-free freed
-\end{verbatim}
-Note that occasionally if there is a shared memory of a different size (from an older software version), it will return also a line like this:
-\begin{verbatim}
-*** shmget error (server) ***-1
-\end{verbatim}
-This needs to be cleaned with {\tt{ipcs -m}} and then {\tt{ipcrm -M xxx}}, where xxx are the keys with nattch 0. 
-\item \begin{verbatim}sls_detector_get settings
-settings standard
-\end{verbatim} 
-{\tt{standard}} is only if correct. {\tt{undefined}} or anything else is wrong. 
-
-\item \begin{verbatim}
-sls_detector_get threshold
-threshold xxxx
-\end{verbatim}
-Returns a string (xxxx) that can be interpreted as the threshold in eV. If it fails to set it, returns the last threshold it was set (which the detector still has). If settings are not defined or different trimbits are chosen, it will return "undefined".
-
-\item \begin{verbatim}
-sls_detector_get fname
-fname string
-\end{verbatim}
-
-\item \begin{verbatim}
-sls_detector_get exptime
-exptime number
-\end{verbatim}
-where {\tt{number}} is a string to be interpreted as a float in (s). 
-
-\item \begin{verbatim}
-sls_detector_get period
-period number
-\end{verbatim}
-where {\tt{nuymber}} is a string to be interpreted as a float in (s). 
-
-\item \begin{verbatim}
-sls_detector_get frames
-frames number 
-\end{verbatim}
-where {\tt{number}} is a string to be interpreted as an integer.
-
-\item \begin{verbatim}
-sls_detector_get cycles
-cycles number 
-\end{verbatim}
-where {\tt{number}} is a string to be interpreted as an integer.
-
-\item \begin{verbatim}
-sls_detector_get status
-status string 
-\end{verbatim}
-where {\tt{string}} can be {\tt{idle}} or {\tt{running}}.
-
-\item \begin{verbatim}
-sls_detector_get index
-status number
-\end{verbatim}
-where {\tt{number}} is a string to be interpreted as an integer.
-
-\item \begin{verbatim}
-sls_detector_get dr
-dr number
-\end{verbatim}
-where {\tt{number}} is a string that should be interpreted as an integer (4/8/16/32).
-
-\item \begin{verbatim}
-sls_detector_get clkdivider
-clkdivider number
-\end{verbatim}
-where {\tt{number}} is a string that should be interpreted as an integer (0/1/2/3).
-
-\item \begin{verbatim}
-sls_detector_get flags
-flags string1 string2 
-\end{verbatim}
-where {\tt{string1}} is a string should be always {\tt{continous}} and {\tt{string2}} can be either {\tt{nonparallel}} or {\tt{parallel}}.
-
-\item \begin{verbatim}
-sls_detector_get timing 
-timing string
-\end{verbatim}
-where {\tt{string}} is a string which can be {\tt{auto/trigger/burst\_trigger/gating}}.
-
-\item \begin{verbatim}
-sls_detector_get enablefwrite
-enablefwrite number
-\end{verbatim}
-where {\tt{number}} is a string which should be interpreted as an integer "0" or "1".
-
-\item \begin{verbatim}
-sls_detector_get framescaught
-framescaught number
-\end{verbatim}
-where {\tt{number}} is a string which should be interpreted as an integer of the complete frames got by the receiver.
-
-\item \begin{verbatim}
-sls_detector_get frameindex
-frameindex number
-\end{verbatim}
-where {\tt{number}} is a string which should be interpreted as an integer of the last frame number read from firmware. It comes from the receiver, though and reset after every acquisition series.
-
-\item \begin{verbatim}
-sls_detector_get subexptime
-subexptime number
-\end{verbatim}
-where {\tt{number}} is a string that should be interpreted as a float in s. The default value is 0.002621440. 
-
-\item \begin{verbatim}
-sls_detector_get ratecorr
-ratecorr number
-\end{verbatim}
-where {\tt{number}} is a string that should be interpreted as a float in s.  0.000000 means correction off. Values above zero are the value of $\tau$ in ns.
-
-\item \begin{verbatim}
-sls_detector_get vhighvoltage
-vhighvoltage number
-\end{verbatim}
-where {\tt{number}} is a string that should be interpreted as an int and for proper Eiger setting is approximately 150~V if it is correctly set. If two master modules are presents (multi systems), the average is returned (still to be tested). If one asks for the individual $n$ half module bias voltage through {\tt{sls\_detector\_get n:vhighvoltage}}, if the $n$ module is a master, the actual voltage will be returned. If it is a slave, -999 will be returned. 
-  
-\item \begin{verbatim}
-sls_detector_get busy
-busy number
-\end{verbatim}
-where  {\tt{number}} is a string that should be interpreted as an int for 0/1 meaning no/yes. This command tells if the sharedmemory has in memory that an acquisition has been started or not. It should allows to use the non blocking acquire, regardless of any delay to the detector getting into 'running' mode. 
-
-
 \end{enumerate}
 
 
@@ -1006,6 +881,149 @@ Scroll up in the terminal till you find:\\
 *************** TOP/BOTTOM ***************\\
 *************** MASTER/SLAVE ***************\\
 *************** NORMAL/SPECIAL ***************\\
+
+
+
+
+\section{Client checks - command line}
+
+Guide on returned strings:
+\begin{enumerate}
+\item \begin{verbatim}
+sls_detector_get free
+\end{verbatim}
+Returns a list of shared memories cleaned (variable number depending on detector):
+\begin{verbatim}
+Shared memory 273612805 deleted
+Shared memory 276922374 deleted
+Shared memory 270270468 deleted
+free freed
+\end{verbatim}
+Note that occasionally if there is a shared memory of a different size (from an older software version), it will return also a line like this:
+\begin{verbatim}
+*** shmget error (server) ***-1
+\end{verbatim}
+This needs to be cleaned with {\tt{ipcs -m}} and then {\tt{ipcrm -M xxx}}, where xxx are the keys with nattch 0. 
+\item \begin{verbatim}sls_detector_get settings
+settings standard
+\end{verbatim} 
+{\tt{standard}} is only if correct. {\tt{undefined}} or anything else is wrong. 
+
+\item \begin{verbatim}
+sls_detector_get threshold
+threshold xxxx
+\end{verbatim}
+Returns a string (xxxx) that can be interpreted as the threshold in eV. If it fails to set it, returns the last threshold it was set (which the detector still has). If settings are not defined or different trimbits are chosen, it will return "undefined".
+
+\item \begin{verbatim}
+sls_detector_get fname
+fname string
+\end{verbatim}
+
+\item \begin{verbatim}
+sls_detector_get exptime
+exptime number
+\end{verbatim}
+where {\tt{number}} is a string to be interpreted as a float in (s). 
+
+\item \begin{verbatim}
+sls_detector_get period
+period number
+\end{verbatim}
+where {\tt{nuymber}} is a string to be interpreted as a float in (s). 
+
+\item \begin{verbatim}
+sls_detector_get frames
+frames number 
+\end{verbatim}
+where {\tt{number}} is a string to be interpreted as an integer.
+
+\item \begin{verbatim}
+sls_detector_get cycles
+cycles number 
+\end{verbatim}
+where {\tt{number}} is a string to be interpreted as an integer.
+
+\item \begin{verbatim}
+sls_detector_get status
+status string 
+\end{verbatim}
+where {\tt{string}} can be {\tt{idle}} or {\tt{running}}.
+
+\item \begin{verbatim}
+sls_detector_get index
+status number
+\end{verbatim}
+where {\tt{number}} is a string to be interpreted as an integer.
+
+\item \begin{verbatim}
+sls_detector_get dr
+dr number
+\end{verbatim}
+where {\tt{number}} is a string that should be interpreted as an integer (4/8/16/32).
+
+\item \begin{verbatim}
+sls_detector_get clkdivider
+clkdivider number
+\end{verbatim}
+where {\tt{number}} is a string that should be interpreted as an integer (0/1/2/3).
+
+\item \begin{verbatim}
+sls_detector_get flags
+flags string1 string2 
+\end{verbatim}
+where {\tt{string1}} is a string should be always {\tt{continous}} and {\tt{string2}} can be either {\tt{nonparallel}} or {\tt{parallel}}.
+
+\item \begin{verbatim}
+sls_detector_get timing 
+timing string
+\end{verbatim}
+where {\tt{string}} is a string which can be {\tt{auto/trigger/burst\_trigger/gating}}.
+
+\item \begin{verbatim}
+sls_detector_get enablefwrite
+enablefwrite number
+\end{verbatim}
+where {\tt{number}} is a string which should be interpreted as an integer "0" or "1".
+
+\item \begin{verbatim}
+sls_detector_get framescaught
+framescaught number
+\end{verbatim}
+where {\tt{number}} is a string which should be interpreted as an integer of the complete frames got by the receiver.
+
+\item \begin{verbatim}
+sls_detector_get frameindex
+frameindex number
+\end{verbatim}
+where {\tt{number}} is a string which should be interpreted as an integer of the last frame number read from firmware. It comes from the receiver, though and reset after every acquisition series.
+
+\item \begin{verbatim}
+sls_detector_get subexptime
+subexptime number
+\end{verbatim}
+where {\tt{number}} is a string that should be interpreted as a float in s. The default value is 0.002621440. 
+
+\item \begin{verbatim}
+sls_detector_get ratecorr
+ratecorr number
+\end{verbatim}
+where {\tt{number}} is a string that should be interpreted as a float in s.  0.000000 means correction off. Values above zero are the value of $\tau$ in ns.
+
+\item \begin{verbatim}
+sls_detector_get vhighvoltage
+vhighvoltage number
+\end{verbatim}
+where {\tt{number}} is a string that should be interpreted as an int and for proper Eiger setting is approximately 150~V if it is correctly set. If two master modules are presents (multi systems), the average is returned (still to be tested). If one asks for the individual $n$ half module bias voltage through {\tt{sls\_detector\_get n:vhighvoltage}}, if the $n$ module is a master, the actual voltage will be returned. If it is a slave, -999 will be returned. 
+  
+\item \begin{verbatim}
+sls_detector_get busy
+busy number
+\end{verbatim}
+where  {\tt{number}} is a string that should be interpreted as an int for 0/1 meaning no/yes. This command tells if the sharedmemory has in memory that an acquisition has been started or not. It should allows to use the non blocking acquire, regardless of any delay to the detector getting into 'running' mode. 
+
+
+\end{enumerate}
 
 
 

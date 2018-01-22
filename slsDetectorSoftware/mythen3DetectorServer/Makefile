@@ -1,14 +1,14 @@
 CROSS  = bfin-uclinux-
 CC    = $(CROSS)gcc
 #CC			=	gcc
-CLAGS		+=  -Wall -DVIRTUAL  -DDACS_INT  -DGENERICD # -DSLS_DETECTOR_FUNCTION_LIST 
+CLAGS		+=  -Wall -DVIRTUAL  -DDACS_INT  -DMYTHEN3D -DVERBOSE   -DSLS_DETECTOR_FUNCTION_LIST #-DGENERICD
 LDLIBS		+= 	-lm  
-INCS          = -I. -I../../slsReceiverSoftware/include/
+INCS          = -I. -I../../slsReceiverSoftware/include/ -I../commonFiles
 PROGS		= 	mythen3Server
 #DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
-SRC_CLNT	=	slsDetectorServer.c slsDetectorServer_funcs.c communication_funcs.c  slsDetectorFunctionList.c 
+SRC_CLNT	=	slsDetectorServer.c mythen3Server_funcs.c ../commonFiles/communication_funcs.c  mythen3FunctionList.c 
 OBJS 		= 	$(SRC_CLNT:.c=.o) 
 
 
@@ -25,4 +25,4 @@ $(PROGS):
 
 
 clean:
-	rm -rf $(DESTDIR)/$(PROGS)  *.o 
+	rm -rf $(PROGS)  *.o 

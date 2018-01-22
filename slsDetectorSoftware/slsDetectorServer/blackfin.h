@@ -144,7 +144,7 @@ int mapCSP0(void) {
 		}
 		printf("CSPOBASE mapped from %08x to %08x\n",CSP0BASE,CSP0BASE+MEM_SIZE);
 #endif
-		printf("Status Register: %08x\n",bus_r(STATUS_REG));
+		//printf("Status Register: %08x\n",bus_r(STATUS_REG));
 	}else
 		printf("Memory already mapped before\n");
 	return OK;

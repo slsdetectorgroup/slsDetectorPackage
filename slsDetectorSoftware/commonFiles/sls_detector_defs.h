@@ -371,6 +371,18 @@ enum dacIndex {
   TEMPERATURE_SODR,		/**< temperature sensor (close to SODR) */
   TEMPERATURE_FPGA2, /**< temperature sensor (fpga2 (eiger:febl) */
   TEMPERATURE_FPGA3, /**< temperature sensor (fpga3 (eiger:febr) */
+  M_vIpre,      /**< mythen 3 >*/
+  M_vIbias,     /**< mythen 3 >*/
+  M_Vth2,       /**< mythen 3 >*/
+  M_Vth3,       /**< mythen 3 >*/
+  M_VPL,        /**< mythen 3 >*/
+  M_vIinSh,     /**< mythen 3 >*/
+  M_VdcSh,      /**< mythen 3 >*/
+  M_cas,        /**< mythen 3 >*/
+  M_casSh,      /**< mythen 3 >*/
+  M_vIbiasSh,   /**< mythen 3 >*/
+  M_vIcin,      /**< mythen 3 >*/
+  M_vIpreOut,    /**< mythen 3 >*/
   V_POWER_A = 100, /**new chiptest board */
   V_POWER_B = 101, /**new chiptest board */
   V_POWER_C = 102, /**new chiptest board */

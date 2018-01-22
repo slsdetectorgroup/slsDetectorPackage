@@ -848,7 +848,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 	/*! \page data
    - <b>flatfield [fn]</b> \c put sets flatfield file to \c fn (relative to \c ffdir). \get returns the flatfield file name relative to \c ffdir (string). If \fn is specified, it writes the flat field correction factors and errors to \c fn.  \c Returns \c (string) fn
-\c none disables flat field corrections.
+	\c none disables flat field corrections.
 	 */
 	descrToFuncMap[i].m_pFuncName="flatfield"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFlatField;
@@ -1420,6 +1420,78 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	++i;
 
+
+
+	/* MYTHEN 3.01  
+	all values are in DACu */
+
+	
+	descrToFuncMap[i].m_pFuncName="vIpre"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	descrToFuncMap[i].m_pFuncName="VcdSh"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	/*! \page settings
+   - <b>Vth1</b> Sets/gets first detector threshold voltage for Mythen 3.01. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+	descrToFuncMap[i].m_pFuncName="Vth1"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	/*! \page settings
+   - <b>Vth1</b> Sets/gets second detector threshold voltage for Mythen 3.01. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+	descrToFuncMap[i].m_pFuncName="Vth2"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	/*! \page settings
+   - <b>Vth1</b> Sets/gets third detector threshold voltage for Mythen 3.01. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+	descrToFuncMap[i].m_pFuncName="Vth3"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	descrToFuncMap[i].m_pFuncName="VPL"; // baseline for analog pulsing
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	descrToFuncMap[i].m_pFuncName="Vtrim"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	descrToFuncMap[i].m_pFuncName="vIbias"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	descrToFuncMap[i].m_pFuncName="vIinSh"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	descrToFuncMap[i].m_pFuncName="cas"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	descrToFuncMap[i].m_pFuncName="casSh"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	descrToFuncMap[i].m_pFuncName="vIbiasSh"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	descrToFuncMap[i].m_pFuncName="vIcin"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	descrToFuncMap[i].m_pFuncName="vIpreOut"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+
 	/* r/w timers */
 	/*! \page settings
 		\section settingsadcs ADCs
@@ -1567,9 +1639,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncName="vm_io"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	++i;
-
-
-
 
 	/* file name */
 
@@ -5055,6 +5124,35 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
 		dac=V_POWER_CHIP;
 	else if (cmd== "v_limit")
 		dac=V_LIMIT;
+	else if (cmd== "vIpre")
+		dac=M_vIpre;
+	else if (cmd== "vIbias")
+		dac=M_vIbias;
+	else if (cmd== "vIinSh")
+		dac=M_vIinSh;
+	else if (cmd== "VcdSh")
+		dac=M_VdcSh;
+	else if (cmd== "Vth1")
+		dac=THRESHOLD;
+	else if (cmd== "Vth2")
+		dac=M_Vth2;
+	else if (cmd== "VTh3")
+		dac=M_Vth3;
+	else if (cmd== "VPL")
+		dac=M_VPL;
+	else if (cmd== "Vtrim")
+		dac=TRIMBIT_SIZE;
+	else if (cmd== "casSh")
+		dac=M_casSh;
+	else if (cmd== "cas")
+		dac=M_cas;
+	else if (cmd== "vIcin")
+		dac=M_vIcin;
+	else if (cmd== "vIbiasSh")
+		dac=M_vIbiasSh;
+	else if (cmd== "vIpreOut")
+		dac=M_vIpreOut;
+
 	else
 		return string("cannot decode dac ")+cmd;
 

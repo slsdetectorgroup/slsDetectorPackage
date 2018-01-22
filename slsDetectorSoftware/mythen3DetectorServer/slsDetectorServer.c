@@ -2,10 +2,10 @@
    The port number is passed as an argument */
 
 #include "sls_detector_defs.h"
-#include "slsDetectorServer_defs.h"
+#include "mythen3Server_defs.h"
 
 #include "communication_funcs.h"
-#include "slsDetectorServer_funcs.h"
+#include "mythen3Server_funcs.h"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -74,4 +74,4 @@ if(DOXYGEN_FOUND)
     )
 endif()
 
-install(TARGETS slsDetectorShared DESTINATION lib)
+install(TARGETS slsDetectorShared slsDetectorStatic zmq DESTINATION lib)

@@ -82,3 +82,10 @@ target_link_libraries(slsReceiver
 if (HDF5_FOUND)
     target_link_libraries(slsReceiver ${HDF5_LIBRARIES})
 endif ()
+
+
+
+install(TARGETS slsReceiverShared slsReceiverStatic slsReceiver
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)

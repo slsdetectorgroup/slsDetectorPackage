@@ -74,3 +74,4 @@ if(DOXYGEN_FOUND)
     )
 endif()
 
+install(TARGETS slsDetectorShared DESTINATION lib)

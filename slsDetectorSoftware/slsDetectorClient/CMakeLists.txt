@@ -68,4 +68,4 @@ set_target_properties(sls_detector_help PROPERTIES
     COMPILE_DEFINITIONS HELP=1
 )
 
-install(TARGETS sls_detector_put DESTINATION bin)
+install(TARGETS sls_detector_put sls_detector_get sls_detector_acquire sls_detector_help DESTINATION bin)

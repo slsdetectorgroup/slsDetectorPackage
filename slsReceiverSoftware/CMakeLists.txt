@@ -85,7 +85,7 @@ endif ()
 
 
 
-install(TARGETS slsReceiverShared slsReceiverStatic slsReceiver zmq
+install(TARGETS slsReceiverShared slsReceiverStatic slsReceiver
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)

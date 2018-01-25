@@ -13,8 +13,7 @@ find_package(Qt4)
 find_package(Qwt 6)
 find_package(CBF)
 find_package(Doxygen)
-find_package(PNG 1.6 REQUIRED)
-include_directories(${PNG_INCLUDE_DIR})
+
 
 if (USE_HDF5)
 	find_package(HDF5 1.10 COMPONENTS CXX)

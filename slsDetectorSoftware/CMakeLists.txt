@@ -65,6 +65,7 @@ commonFiles/sls_detector_funcs.h
 slsDetector/slsDetectorUtils.h
 slsDetector/slsDetector.h
 slsDetector/slsDetectorActions.h
+slsDetector/slsDetectorBase.h
 
 )
 set_target_properties(slsDetectorShared PROPERTIES

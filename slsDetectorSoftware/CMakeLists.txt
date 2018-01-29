@@ -74,6 +74,7 @@ slsDetectorAnalysis/angularConversion.h
 slsDetectorAnalysis/angularConversionStatic.h
 slsDetectorAnalysis/badChannelCorrections.h
 slsDetectorAnalysis/fileIO.h
+slsDetectorAnalysis/fileIOStatic.h
 
 )
 set_target_properties(slsDetectorShared PROPERTIES

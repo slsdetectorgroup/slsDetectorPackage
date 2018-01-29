@@ -73,6 +73,7 @@ slsDetectorAnalysis/detectorData.h
 slsDetectorAnalysis/angularConversion.h
 slsDetectorAnalysis/angularConversionStatic.h
 slsDetectorAnalysis/badChannelCorrections.h
+slsDetectorAnalysis/energyConversion.h
 slsDetectorAnalysis/fileIO.h
 slsDetectorAnalysis/fileIOStatic.h
 multiSlsDetector/multiSlsDetector.h

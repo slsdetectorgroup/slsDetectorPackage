@@ -69,6 +69,7 @@ slsDetector/slsDetectorActions.h
 slsDetector/slsDetectorBase.h
 slsDetector/slsDetectorUsers.h
 slsDetectorAnalysis/postProcessing.h
+slsDetectorAnalysis/detectorData.h
 
 )
 set_target_properties(slsDetectorShared PROPERTIES

@@ -67,6 +67,7 @@ set(PUBLICHEADERS
     include/ansi.h
     include/sls_receiver_funcs.h
     include/MySocketTCP.h
+    include/genericSocket.h
 
 )
 

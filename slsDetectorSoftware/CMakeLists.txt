@@ -71,6 +71,7 @@ slsDetector/slsDetectorUsers.h
 slsDetectorAnalysis/postProcessing.h
 slsDetectorAnalysis/detectorData.h
 slsDetectorAnalysis/angularConversion.h
+slsDetectorAnalysis/angularConversionStatic.h
 
 )
 set_target_properties(slsDetectorShared PROPERTIES

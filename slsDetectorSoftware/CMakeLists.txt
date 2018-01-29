@@ -60,24 +60,24 @@ add_library(slsDetectorShared SHARED
 )
 
 set(PUBLICHEADERS
-commonFiles/sls_detector_defs.h
-commonFiles/sls_detector_funcs.h
-commonFiles/error_defs.h
-slsDetector/slsDetectorUtils.h
-slsDetector/slsDetector.h
-slsDetector/slsDetectorActions.h
-slsDetector/slsDetectorBase.h
-slsDetector/slsDetectorUsers.h
-slsDetectorAnalysis/postProcessing.h
-slsDetectorAnalysis/detectorData.h
-slsDetectorAnalysis/angularConversion.h
-slsDetectorAnalysis/angularConversionStatic.h
-slsDetectorAnalysis/angleConversionConstant.h
-slsDetectorAnalysis/badChannelCorrections.h
-slsDetectorAnalysis/energyConversion.h
-slsDetectorAnalysis/fileIO.h
-slsDetectorAnalysis/fileIOStatic.h
-multiSlsDetector/multiSlsDetector.h
+    commonFiles/sls_detector_defs.h
+    commonFiles/sls_detector_funcs.h
+    commonFiles/error_defs.h
+    slsDetector/slsDetectorUtils.h
+    slsDetector/slsDetector.h
+    slsDetector/slsDetectorActions.h
+    slsDetector/slsDetectorBase.h
+    slsDetector/slsDetectorUsers.h
+    slsDetectorAnalysis/postProcessing.h
+    slsDetectorAnalysis/detectorData.h
+    slsDetectorAnalysis/angularConversion.h
+    slsDetectorAnalysis/angularConversionStatic.h
+    slsDetectorAnalysis/angleConversionConstant.h
+    slsDetectorAnalysis/badChannelCorrections.h
+    slsDetectorAnalysis/energyConversion.h
+    slsDetectorAnalysis/fileIO.h
+    slsDetectorAnalysis/fileIOStatic.h
+    multiSlsDetector/multiSlsDetector.h
 
 )
 set_target_properties(slsDetectorShared PROPERTIES

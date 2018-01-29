@@ -61,10 +61,20 @@ add_library(slsReceiverShared SHARED
     ${SOURCES}
     ${HEADERS}
 )
+
+set(PUBLICHEADERS
+    include/sls_receiver_defs.h
+    include/ansi.h
+    include/sls_receiver_funcs.h
+    include/MySocketTCP.h
+
+)
+
+
 set_target_properties(slsReceiverShared PROPERTIES
     LIBRARY_OUTPUT_NAME SlsReceiver
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-    PUBLIC_HEADER "include/sls_receiver_defs.h;include/ansi.h;include/sls_receiver_funcs.h"
+    PUBLIC_HEADER "${PUBLICHEADERS}"
 )
 
 add_executable(slsReceiver

@@ -62,6 +62,7 @@ add_library(slsDetectorShared SHARED
 set(PUBLICHEADERS
 commonFiles/sls_detector_defs.h
 commonFiles/sls_detector_funcs.h
+commonFiles/error_defs.h
 slsDetector/slsDetectorUtils.h
 slsDetector/slsDetector.h
 slsDetector/slsDetectorActions.h

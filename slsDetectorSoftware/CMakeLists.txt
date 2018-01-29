@@ -61,7 +61,8 @@ add_library(slsDetectorShared SHARED
 set_target_properties(slsDetectorShared PROPERTIES
     LIBRARY_OUTPUT_NAME SlsDetector
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-    PUBLIC_HEADER "commonFiles/sls_detector_defs.h;commonFiles/sls_detector_funcs.h;slsDetector/slsDetectorUtils.h;slsDetector/slsDetector.h"
+    PUBLIC_HEADER "commonFiles/sls_detector_defs.h;commonFiles/sls_detector_funcs.h;slsDetector/slsDetectorUtils.h;slsDetector/slsDetector.h;
+    slsDetector/slsDetectorActions.h"
 )
 
 

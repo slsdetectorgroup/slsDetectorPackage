@@ -64,6 +64,7 @@ add_library(slsReceiverShared SHARED
 set_target_properties(slsReceiverShared PROPERTIES
     LIBRARY_OUTPUT_NAME SlsReceiver
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    PUBLIC_HEADER "include/sls_receiver_defs.h"
 )
 
 add_executable(slsReceiver
@@ -88,4 +89,5 @@ endif ()
 install(TARGETS slsReceiverShared slsReceiverStatic slsReceiver
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib)
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION include)

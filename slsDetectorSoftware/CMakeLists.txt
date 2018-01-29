@@ -63,6 +63,8 @@ set_target_properties(slsDetectorShared PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
+
+
 add_subdirectory(slsDetectorClient)
 
 if(DOXYGEN_FOUND)
@@ -74,4 +76,7 @@ if(DOXYGEN_FOUND)
     )
 endif()
 
-install(TARGETS slsDetectorShared slsDetectorStatic DESTINATION lib)
+install(TARGETS slsDetectorShared slsDetectorStatic
+    LIBRARY DESTINATION lib
+    PUBLIC_HEADER DESTINATION include
+    ARCHIVE DESTINATION lib)

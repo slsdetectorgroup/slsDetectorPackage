@@ -285,25 +285,21 @@ float *gethhx()
     switch (corner)
       {
       case TOP_LEFT:
-	dX=-1.;//.99; 
-	dY=0;//+1.;//.99; 
-	//etay=1-etay;
+	dX=-1.;
+	dY=0;
 	break;
       case TOP_RIGHT:
 	;
-	dX=0;//+1.;//.99; 
-	dY=0;//+1.;//.99; 
+	dX=0;
+	dY=0;
 	break;
       case BOTTOM_LEFT:
-	//etax=1-etax;
-	//etay=1-etay;
-	dX=-1.;//99; 
-	dY=-1.;//.99; 
+	dX=-1.;
+	dY=-1.;
 	break;
       case BOTTOM_RIGHT:
-	//etay=1-etay;
-	dX=0;//1.;//+.99; 
-	dY=-1.;//-.99; 
+	dX=0;
+	dY=-1.;
 	break;
       default:
 	cout << "bad quadrant" << endl;
@@ -353,16 +349,9 @@ float *gethhx()
        ypos_eta=0.5*dY+0.25;
      }
        
-     //  int_x=((double)x) + 0.5*dX + xpos_eta;
-     //  int_y=((double)y) + 0.5*dY + ypos_eta;
-       int_x=((double)x) + xpos_eta;
-       int_y=((double)y) +  ypos_eta;
-     /*   if (int_x<x-0.5  || int_y<y-0.5 ) { */
-    /* // cout << "***"<< x <<" " << y << " " << int_x << " " << int_y << endl; */
-    /*   cout << corner << " X "<< x <<  " " << etax << " " << xpos_eta << " " << int_x <<" Y "<< y << " " << etay <<  " "  << ypos_eta << " "  <<int_y  <<  endl; */
-    /*   } */
-  
-    //return 1;
+       int_x=((double)x) + xpos_eta+0.5;
+       int_y=((double)y) +  ypos_eta+0.5;
+    
 
   }
 

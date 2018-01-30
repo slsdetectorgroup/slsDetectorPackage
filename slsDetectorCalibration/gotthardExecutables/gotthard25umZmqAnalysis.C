@@ -54,7 +54,7 @@ int main(int argc, char *argv[]){
 
 
   int fifosize=1000;
-  int nthreads=3;
+  int nthreads=1;
   int nph, nph1;
   int etabins=550;
   double etamin=-1, etamax=2;
@@ -72,8 +72,8 @@ int main(int argc, char *argv[]){
 
   gotthardModuleDataNew *decoder=new   gotthardModuleDataNew();
   gotthardDoubleModuleDataNew *det=new   gotthardDoubleModuleDataNew(offset);
-  singlePhotonDetector *filter=new singlePhotonDetector(det,3, 5, 1, 0, 1000, 200);
-  filter->setROI(0,512,0,1);
+  singlePhotonDetector *filter=new singlePhotonDetector(det,3, 5, 1, 0, 1000, 100);
+  filter->setROI(0,2560,0,1);
   char *buff;//[2*(48+1280*2)];
   char *buff0;
   char *buff1;
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]){
   mt->StartThreads();
   mt->popFree(buff);
   buff0=buff;
-  buff1=buff+48+1280*2;
+  buff1=buff+offset*2+1280*2;
   int photons[1280*2];
   int nf=0;
   int ok=0;
@@ -249,7 +249,6 @@ int main(int argc, char *argv[]){
   int runmax=atoi(argv[4]);
   char *outdir=argv[5];
   sprintf(ff,"%s/%s",indir,fformat);
-
   // strcpy(fformat,"/external_pool/gotthard_data/datadir_gotthardI/bchip074075/20170731/Xray/xray_15kV_200uA_5us_d%d_f000000000000_0.raw");
   // sprintf(fname0,fformat,0,0);
   // sprintf(fname1,fformat,1,1);
@@ -277,21 +276,37 @@ int main(int argc, char *argv[]){
 
 #ifdef ZMQ
 
+	int end_of_acquisition;
 	while(1) {
-	  if ((!zmqsocket0->ReceiveHeader(0, acqIndex0, frameIndex0, subframeIndex0, filename0, fileindex0)) && (!zmqsocket1->ReceiveHeader(0, acqIndex1, frameIndex1, subframeIndex1, filename1, fileindex1))){
+	  end_of_acquisition=0;
+	  //  cout << "Receive header " << nf << endl;
+	  if (!zmqsocket0->ReceiveHeader(0, acqIndex0, frameIndex0, subframeIndex0, filename0, fileindex0)) {
+	    
+	    cout << "************************************************************************** packet0!*****************************"<< endl;
 
+	    end_of_acquisition++;
+	  } 
+	  if (!zmqsocket1->ReceiveHeader(0, acqIndex1, frameIndex1, subframeIndex1, filename1, fileindex1)) {
+	    cout << "************************************************************************** packet1!*****************************"<< endl;
 
+	    end_of_acquisition++;
+	  }
+	 
+	  //	  if ((!zmqsocket0->ReceiveHeader(0, acqIndex0, frameIndex0, subframeIndex0, filename0, fileindex0)) && (!zmqsocket1->ReceiveHeader(0, acqIndex1, frameIndex1, subframeIndex1, filename1, fileindex1))){
+	  if (end_of_acquisition) {
+	    cout << "************************************************************************** END OF FRAME" << end_of_acquisition << " !*****************************"<< endl;
+	    //  return 0;
 
 	    while (mt->isBusy()) {;}
 	    image=filter->getImage();
 	    if (image) {
-	      fout=fopen(ofname,"w");
-	      //cout << nf << "*****************" << endl;
-	      for (int i=0; i<512; i++) {
-		fprintf(fout,"%d %d\n",i,image[i]);
-		dout[i]=image[i];
+	      //fout=fopen(ofname,"w");
+	     cout << nf << "*****************" << endl;
+	      for (int i=0; i<2560; i++) {
+	      // // 	fprintf(fout,"%d %d\n",i,image[i]);
+	      	dout[i]=image[i];
 	      }
-	      fclose(fout);;
+	      // // fclose(fout);;
 	    }
 
 
@@ -330,9 +345,10 @@ int main(int argc, char *argv[]){
 	    cout << "different frame indexes " << frameIndex0 << " and " << frameIndex1 << endl;
 
 
-
+	  //	  cout << "Receive data " << nf << endl;
 	  length = zmqsocket0->ReceiveData(0, buff0, size/2);
-	  length += zmqsocket0->ReceiveData(0, buff1, size/2);
+	  length += zmqsocket1->ReceiveData(0, buff1, size/2);  
+	    
 	  irun=fileindex0;
 	  sprintf(ofname,"%s_%d.ph",filename0.c_str(),fileindex0);
 	  
@@ -344,7 +360,7 @@ int main(int argc, char *argv[]){
 	mt->nextThread();
 	mt->popFree(buff);
 	buff0=buff;
-	buff1=buff+48+1280*2;
+	buff1=buff+offset*2+1280*2;
 	  
 	nf++;
 	

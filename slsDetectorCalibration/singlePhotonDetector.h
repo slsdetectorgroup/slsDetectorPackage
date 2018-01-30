@@ -447,7 +447,7 @@ int *getClusters(char *data,  int *ph=NULL) {
       
 	
       (clusters+nph)->rms=getPedestalRMS(ix,iy);
-      
+      cluster=clusters+nph;
       
       
       for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {

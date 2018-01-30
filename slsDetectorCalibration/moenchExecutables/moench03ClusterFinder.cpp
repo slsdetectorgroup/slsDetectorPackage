@@ -1,8 +1,18 @@
 //#include "ansi.h"
 #include <iostream>
 
+
+
 //#include "moench03T1ZmqData.h"
+#ifdef NEWRECEIVER
+#include "moench03T1ReceiverDataNew.h"
+#endif
+#ifdef CSAXS_FP
 #include "moench03T1ReceiverData.h"
+#endif 
+#ifdef OLDDATA
+#include "moench03Ctb10GbT1Data.h"
+#endif 
 
 // #include "interpolatingDetector.h"
 //#include "etaInterpolationPosXY.h"
@@ -24,12 +34,13 @@ using namespace std;
 int main(int argc, char *argv[]) {
 
 
-  if (argc<7) {
-    cout << "Usage is " << argv[0] << "indir outdir fname runmin runmax pedfname" << endl;
+  if (argc<6) {
+    cout << "Usage is " << argv[0] << "indir outdir fname runmin runmax " << endl;
+    return 1;
   }
   int p=10000;
   int fifosize=1000;
-  int nthreads=20;
+  int nthreads=8;
   int nsubpix=25;
   int etabins=nsubpix*10;
   double etamin=-1, etamax=2;
@@ -42,11 +53,30 @@ int main(int argc, char *argv[]) {
   int ok;
   int iprog=0;
 
+
+
+
+
+#ifdef NEWRECEIVER
   moench03T1ReceiverDataNew *decoder=new  moench03T1ReceiverDataNew();
+  cout << "RECEIVER DATA WITH ONE HEADER!"<<endl;
+#endif
+
+#ifdef CSAXS_FP
+  moench03T1ReceiverData *decoder=new  moench03T1ReceiverData();
+  cout << "RECEIVER DATA WITH ALL HEADERS!"<<endl;
+#endif
+
+#ifdef OLDDATA
+  moench03Ctb10GbT1Data *decoder=new  moench03Ctb10GbT1Data();
+  cout << "OLD RECEIVER DATA!"<<endl;
+#endif
+
+
   //moench03T1ZmqData *decoder=new  moench03T1ZmqData();
   singlePhotonDetector *filter=new singlePhotonDetector(decoder,csize, nsigma, 1, 0, nped, 200);
   //  char tit[10000];
-
+  cout << "filter " << endl;
 
 
 
@@ -80,7 +110,7 @@ int main(int argc, char *argv[]) {
   char outfname[10000];
   char imgfname[10000];
   char pedfname[10000];
-  strcpy(pedfname,argv[6]);
+  //  strcpy(pedfname,argv[6]);
   char fn[10000];
   
   std::time_t end_time;
@@ -89,52 +119,52 @@ int main(int argc, char *argv[]) {
   cout << "input directory is " << indir << endl;
   cout << "output directory is " << outdir << endl;
   cout << "fileformat is " << fformat << endl;
-  cout << "pedestal file is " << fformat << endl;
+  //  cout << "pedestal file is " << fformat << endl;
   
 
   std::time(&end_time);
   cout << std::ctime(&end_time) <<   endl;
-filter->setFrameMode(eFrame);
-	//  mt->setFrameMode(ePedestal);
-  cout <<   pedfname<< endl;
+  // filter->setFrameMode(eFrame);
+  // mt->setFrameMode(ePedestal);
+  // cout <<   pedfname<< endl;
 
-    filebin.open((const char *)(pedfname), ios::in | ios::binary);
-    //filebin.open((const char *)(fname), ios::in | ios::binary);
+  //   filebin.open((const char *)(pedfname), ios::in | ios::binary);
+  //   //filebin.open((const char *)(fname), ios::in | ios::binary);
 
-  //      //open file
-  if (filebin.is_open()){
-      //     //while read frame 
-    cout << "pedestal file " << endl;
-    while (decoder->readNextFrame(filebin, ff, np,data)) {
-      //   cout << ff << " " << np << endl;
-      //         //push
-      // mt->pushData(buff);
-      // //         //pop
-      //mt->nextThread();
-      // // 		//	cout << " " << (void*)buff;
-      //mt->popFree(buff);
-      filter->processData(data);
-      }
-    filebin.close();	 
-    //      //close file 
-    //     //join threads
-    //   while (mt->isBusy()) {;}//wait until all data are processed from the queues
-    // cout << outfname << endl; 
-    // filter->writePedestals(outfname); 
-    // sprintf(outfname,"%s/%s_pedimg.tiff",outdir,fn);
+  // //      //open file
+  // if (filebin.is_open()){
+  //     //     //while read frame 
+  //   cout << "pedestal file " << endl;
+  //   while (decoder->readNextFrame(filebin, ff, np,data)) {
+  //     //   cout << ff << " " << np << endl;
+  //     //         //push
+  //     // mt->pushData(buff);
+  //     // //         //pop
+  //     //mt->nextThread();
+  //     // // 		//	cout << " " << (void*)buff;
+  //     //mt->popFree(buff);
+  //     filter->processData(data);
+  //     }
+  //   filebin.close();	 
+  //   //      //close file 
+  //   //     //join threads
+  //   //   while (mt->isBusy()) {;}//wait until all data are processed from the queues
+  //   // cout << outfname << endl; 
+  //   // filter->writePedestals(outfname); 
+  //   // sprintf(outfname,"%s/%s_pedimg.tiff",outdir,fn);
 
-    // cout << outfname << endl; 
+  //   // cout << outfname << endl; 
     
-    // filter->writeImage(outfname);
-    // //mt->clearImage();
-  } else 
-     cout << "Could not open "<< pedfname << " for reading " << endl;
+  //   // filter->writeImage(outfname);
+  //   // //mt->clearImage();
+  // } else 
+  //    cout << "Could not open "<< pedfname << " for reading " << endl;
   
 
 
-  // for (int ix=0; ix<400; ix++)
-  //   for (int iy=0; iy<400; iy++)
-  //     cout << ix << " " << iy << " " << filter->getPedestal(ix,iy) << " " << filter->getPedestalRMS(ix,iy) << endl;
+  // // for (int ix=0; ix<400; ix++)
+  // //   for (int iy=0; iy<400; iy++)
+  // //     cout << ix << " " << iy << " " << filter->getPedestal(ix,iy) << " " << filter->getPedestalRMS(ix,iy) << endl;
 
 
 
@@ -149,11 +179,12 @@ filter->setFrameMode(eFrame);
   
   // mt->setFrameMode(eFrame); //need to find a way to switch between flat and frames!
   // mt->prepareInterpolation(ok);
- mt->setFrameMode(eFrame);
+  mt->setFrameMode(eFrame);
   mt->StartThreads();
   mt->popFree(buff);
 
 
+  cout << "mt " << endl;
 
   int ifr=0;
   // //loop on files
@@ -165,37 +196,37 @@ filter->setFrameMode(eFrame);
 
 
 
-  for (int irun=runmin; irun<runmin+5; irun++) {
-    sprintf(fn,fformat,irun);
-    sprintf(fname,"%s/%s.raw",indir,fn);
+  // for (int irun=runmin; irun<runmin+5; irun++) {
+  //   sprintf(fn,fformat,irun);
+  //   sprintf(fname,"%s/%s.raw",indir,fn);
 
 
 
-    filebin.open((const char *)(fname), ios::in | ios::binary);
-    //      //open file
-    if (filebin.is_open()){
-      //     //while read frame 
-      while (decoder->readNextFrame(filebin, ff, np,buff)) {
-	//	cout << "*"<<ifr++<<"*"<<ff<< endl;
-	//	cout << ff << " " << np << endl;
-  	//         //push
-  		mt->pushData(buff);
-  // 	//         //pop
-  		mt->nextThread();
-  // // 		//	cout << " " << (void*)buff;
-   		mt->popFree(buff);
+  //   filebin.open((const char *)(fname), ios::in | ios::binary);
+  //   //      //open file
+  //   if (filebin.is_open()){
+  //     //     //while read frame 
+  //     while (decoder->readNextFrame(filebin, ff, np,buff)) {
+  // 	//	cout << "*"<<ifr++<<"*"<<ff<< endl;
+  // 	//	cout << ff << " " << np << endl;
+  // 	//         //push
+  // 		mt->pushData(buff);
+  // // 	//         //pop
+  // 		mt->nextThread();
+  // // // 		//	cout << " " << (void*)buff;
+  //  		mt->popFree(buff);
 	
-      }
-      //  cout << "--" << endl;
-      filebin.close();	 
+  //     }
+  //     //  cout << "--" << endl;
+  //     filebin.close();	 
     
 
-    }
+  //   }
 
-  }
+  // }
 
-  while (mt->isBusy()) {;}//wait until all data are processed from the queues
-  mt->clearImage();
+  // while (mt->isBusy()) {;}//wait until all data are processed from the queues
+  // mt->clearImage();
 
   for (int irun=runmin; irun<runmax; irun++) {
     sprintf(fn,fformat,irun);
@@ -218,18 +249,19 @@ filter->setFrameMode(eFrame);
   	return 1;
       }
       //     //while read frame 
+      ff=-1;
       while (decoder->readNextFrame(filebin, ff, np,buff)) {
 	//	cout << "*"<<ifr++<<"*"<<ff<< endl;
 	//	cout << ff << " " << np << endl;
   	//         //push
-  		mt->pushData(buff);
+	mt->pushData(buff);
   // 	//         //pop
-  		mt->nextThread();
+	mt->nextThread();
   // // 		//	cout << " " << (void*)buff;
-   		mt->popFree(buff);
-	
+	mt->popFree(buff);
+	ff=-1;
       }
-      //  cout << "--" << endl;
+        cout << "--" << endl;
       filebin.close();	 
       //      //close file 
       //     //join threads

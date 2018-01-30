@@ -5,8 +5,8 @@
 #include "moench03T1ZmqData.h"
 #include "single_photon_hit.h"
 
- #include "etaInterpolationPosXY.h"
-
+// #include "etaInterpolationPosXY.h"
+#include "etaInterpolationAdaptiveBins.h"
 using namespace std;
 #define NC 400
 #define NR 400
@@ -43,9 +43,13 @@ int main(int argc, char *argv[]) {
     FILE *f=NULL;
 
     single_photon_hit cl(3,3);
-    etaInterpolationPosXY *interp=new etaInterpolationPosXY(NC, NR, nsubpix, etabins, etamin, etamax);
+    // etaInterpolationPosXY *interp=new etaInterpolationPosXY(NC, NR, nsubpix, etabins, etamin, etamax);
+    etaInterpolationAdaptiveBins *interp=new etaInterpolationAdaptiveBins (NC, NR, nsubpix, etabins, etamin, etamax);
+    //#ifndef FF
+    cout << "read ff " << argv[2] << endl;
     interp->readFlatField(argv[2]);
     interp->prepareInterpolation(ok);
+    //#endif
 
     int *img;
     float *totimg=new float[NC*NR*nsubpix*nsubpix];
@@ -133,7 +137,7 @@ int main(int argc, char *argv[]) {
 	    }
 	  }
 	
-
+	  cout << "writing eta!" << endl;
 	  WriteToTiff(ffimg, outfname,NC*nsubpix,NR*nsubpix); 
 
 

@@ -54,7 +54,7 @@ add_library(slsReceiverStatic STATIC
 )
 set_target_properties(slsReceiverStatic PROPERTIES
     ARCHIVE_OUTPUT_NAME SlsReceiver
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
 )
 
 add_library(slsReceiverShared SHARED
@@ -74,7 +74,7 @@ set(PUBLICHEADERS
 
 set_target_properties(slsReceiverShared PROPERTIES
     LIBRARY_OUTPUT_NAME SlsReceiver
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
 

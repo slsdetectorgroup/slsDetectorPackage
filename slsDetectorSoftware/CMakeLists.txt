@@ -51,7 +51,7 @@ add_library(slsDetectorStatic STATIC
 )
 set_target_properties(slsDetectorStatic PROPERTIES
     ARCHIVE_OUTPUT_NAME SlsDetector
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
 )
 
 add_library(slsDetectorShared SHARED
@@ -83,7 +83,7 @@ set(PUBLICHEADERS
 )
 set_target_properties(slsDetectorShared PROPERTIES
     LIBRARY_OUTPUT_NAME SlsDetector
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
 

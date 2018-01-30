@@ -5136,7 +5136,7 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
 		dac=THRESHOLD;
 	else if (cmd== "Vth2")
 		dac=M_Vth2;
-	else if (cmd== "VTh3")
+	else if (cmd== "Vth3")
 		dac=M_Vth3;
 	else if (cmd== "VPL")
 		dac=M_VPL;

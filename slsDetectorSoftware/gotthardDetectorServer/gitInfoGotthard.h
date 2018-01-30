@@ -1,6 +1,6 @@
-#define GITURL "git@git.psi.ch:sls_detectors_software/sls_detector_software.git"
-#define GITREPUUID "c5777e517c451226e3275e6948895baee21a1f94"
+#define GITURL "git@github.com:slsdetectorgroup/slsDetectorPackage.git"
+#define GITREPUUID "0649626842512b772ab660c36dece505f3244aee"
 #define GITAUTH "Dhanya_Maliakal"
-#define GITREV 0x1585
-#define GITDATE 0x20171109
-#define GITBRANCH "blabla"
+#define GITREV 0x3318
+#define GITDATE 0x20171219
+#define GITBRANCH "3.0.1"

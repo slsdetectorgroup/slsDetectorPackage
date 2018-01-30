@@ -72,7 +72,8 @@ public:
 		MOENCH, /**< moench */
 		JUNGFRAU, /**< jungfrau */
 		JUNGFRAUCTB, /**< jungfrauCTBversion */
-		PROPIX /**< propix */
+		PROPIX, /**< propix */
+		MYTHEN3 /**< mythen 3 */
 	};
 
 

@@ -3717,21 +3717,21 @@ int setDac(int dacnum,int dacvalue){
       csdx=2; 
     else 
       csdx=ichip+2; 
-  //setting int reference 
-  offw=DAC_REG;
+    //setting int reference 
+    offw=DAC_REG;
 
 
-  valw=bus_r(offw)|0xff;
+    valw=bus_r(offw)|0xff; // alles auf 1 setzen (START)
   
-  bus_w(offw,(valw)); // start point
-  valw=((valw&(~(0x1<<csdx))));bus_w(offw,valw); //chip sel bar down
-  valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
+    bus_w(offw,(valw)); // start point
+    valw=((valw&(~(0x1<<csdx))));bus_w(offw,valw); //chip sel bar down
+    valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //clk dwn
 
     //#ifdef CTB  
     if  (myDetectorType==JUNGFRAUCTB) {
       for (i=0; i<ichip; i++) {
-	nextDac();
-	printf("next DAC\n");
+	      nextDac();
+	      printf("next DAC\n");
       }
     }
     //#endif
@@ -3744,8 +3744,8 @@ int setDac(int dacnum,int dacvalue){
     
     if  (myDetectorType==JUNGFRAUCTB) {
       for (i=ichip+1; i<N_DAC/8; i++) {
-	nextDac();
-	printf("next DAC\n");
+	      nextDac();
+	      printf("next DAC\n");
       }
     }
     valw=bus_r(offw);

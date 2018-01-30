@@ -1039,7 +1039,7 @@ int set_dac(int file_des) {
 		    }
 		    
 		    if (vLimitCompliant(v))
-		      retval=setDac(ind,val);
+		      retval=setDac(ind,val); // in DACu
 
 
 		  } else {
@@ -2150,7 +2150,7 @@ int set_timer(int file_des) {
     ret=FAIL;
   }
   
-  n = receiveDataOnly(file_des,&tns,sizeof(tns));
+  n = receiveDataOnly(file_des,&tns,sizeof(tns)); // total received data
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;

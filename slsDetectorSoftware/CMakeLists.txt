@@ -101,6 +101,6 @@ if(DOXYGEN_FOUND)
 endif()
 
 install(TARGETS slsDetectorShared slsDetectorStatic
-    LIBRARY DESTINATION lib
+    LIBRARY DESTINATION bin
     PUBLIC_HEADER DESTINATION include
-    ARCHIVE DESTINATION lib)
+    ARCHIVE DESTINATION bin)

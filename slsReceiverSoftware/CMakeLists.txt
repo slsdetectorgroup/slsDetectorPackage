@@ -99,6 +99,6 @@ endif ()
 
 install(TARGETS slsReceiverShared slsReceiverStatic slsReceiver
         RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION bin
+        ARCHIVE DESTINATION bin
         PUBLIC_HEADER DESTINATION include)

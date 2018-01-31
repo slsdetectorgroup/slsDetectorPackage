@@ -5,9 +5,9 @@
 CBFLIBDIR= /afs/psi.ch/project/sls_det_software/CBFlib-0.9.5/
 ZMQLIB=../slsReceiverSoftware/include
 LIBRARYCBF=$(CBFLIBDIR)/lib/*.o
-INCDIR=-IslsDetectorCalibration  -I. -IetaVEL -I../slsReceiverSoftware/include -I$(CBFLIBDIR)/include/ -I$(ROOTSYS)/include
+INCDIR=-I. -I../ -I../interpolations  -I../interpolations/etaVEL  -I../dataStructures -I../../slsReceiverSoftware/include -I$(CBFLIBDIR)/include/ -I$(ROOTSYS)/include
 #LIBHDF5=
-LDFLAG= -L/usr/lib64/ -lpthread -lm  -lstdc++ -L.  -pthread -lrt -L$(CBFLIBDIR)/lib/ -lhdf5  -ltiff -L$(ZMQLIB) -lzmq
+LDFLAG= -L/usr/lib64/ -lpthread -lm  -lstdc++ -L.  -pthread -lrt -L$(CBFLIBDIR)/lib/ -lhdf5  -ltiff 
 
 MAIN=tiff_to_th2f.cpp 
 
@@ -18,7 +18,7 @@ all: tiff_to_th2f
 
 tiff_to_th2f: $(MAIN)  $(INCS) 
 	      	
-	   g++ -o tiff_to_th2f  $(MAIN) `root-config --cflags --glibs` -lMinuit -lm -ltiff -lstdc++ $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) tiffIO.cpp 
+	   g++ -o tiff_to_th2f  $(MAIN) `root-config --cflags --glibs` -lMinuit -lm -ltiff -lstdc++ $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) ../tiffIO.cpp 
 
 clean: 	
 	rm -f tiff_to_th2f

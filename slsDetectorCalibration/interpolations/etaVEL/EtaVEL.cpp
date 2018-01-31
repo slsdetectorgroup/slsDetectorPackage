@@ -2,19 +2,19 @@
 #include <iomanip>
 
 
-ClassImp(EtaVEL);
+// ClassImp(EtaVEL);
 
-double Median(const TH1D * histo1) {
+// double Median(const TH1D * histo1) {
 
-  int numBins = histo1->GetXaxis()->GetNbins();
-  Double_t *x = new Double_t[numBins];
-  Double_t* y = new Double_t[numBins];
-  for (int i = 0; i < numBins; i++) {
-    x[i] = histo1->GetBinCenter(i);
-    y[i] = histo1->GetBinContent(i);
-  }
-  return TMath::Median(numBins, x, y);
-}
+//   int numBins = histo1->GetXaxis()->GetNbins();
+//   Double_t *x = new Double_t[numBins];
+//   Double_t* y = new Double_t[numBins];
+//   for (int i = 0; i < numBins; i++) {
+//     x[i] = histo1->GetBinCenter(i);
+//     y[i] = histo1->GetBinContent(i);
+//   }
+//   return TMath::Median(numBins, x, y);
+// }
 
 
 double *EtaVEL::getPixelCorners(int x, int y){

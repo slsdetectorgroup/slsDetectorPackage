@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
   }
   int p=10000;
   int fifosize=1000;
-  int nthreads=20;
+  int nthreads=1;
   int nsubpix=25;
   int etabins=nsubpix*10;
   double etamin=-1, etamax=2;
@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
   cout << "decoder" << endl;
   //moench03T1ReceiverData *decoder=new  moench03T1ReceiverData();
   //moench03T1ZmqData *decoder=new  moench03T1ZmqData();
-  singlePhotonDetector *filter=new singlePhotonDetector(decoder,csize, nsigma, 1, 0, nped, 200);
+  singlePhotonDetector *filter=new singlePhotonDetector(decoder,csize, nsigma, 1, 0, nped, 100);
   //  char tit[10000];
   cout << "filter" << endl;
 
@@ -117,21 +117,21 @@ int main(int argc, char *argv[]) {
   
   // mt->setFrameMode(eFrame); //need to find a way to switch between flat and frames!
   // mt->prepareInterpolation(ok);
- mt->setFrameMode(eFrame);
+  mt->setFrameMode(eFrame);
   mt->StartThreads();
   mt->popFree(buff);
+  
 
-
-
+  
   int ifr=0;
   // //loop on files
   // mt->setFrameMode(eFrame);
- //mt->setFrameMode(eFlat);
-
-
-
-
-
+  //mt->setFrameMode(eFlat);
+  
+  
+  
+  
+  
   for (int irun=runmin; irun<runmax; irun++) {
     sprintf(fn,fformat,irun);
     sprintf(fname,"%s/%s.raw",indir,fn);
@@ -155,8 +155,8 @@ int main(int argc, char *argv[]) {
       //     //while read frame 
       ff=-1;
       while (decoder->readNextFrame(filebin, ff, np,buff)) {
-	//	cout << "*"<<ifr++<<"*"<<ff<< endl;
-	//	cout << ff << " " << np << endl;
+	//cout << "*"<<ifr++<<"*"<<ff<< endl;
+	//cout << ff << " " << np << endl;
   	//         //push
   		mt->pushData(buff);
   // 	//         //pop
@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
   // // 		//	cout << " " << (void*)buff;
    		mt->popFree(buff);
 	
-      ff=-1;
+		ff=-1;
       }
       //  cout << "--" << endl;
       filebin.close();	 

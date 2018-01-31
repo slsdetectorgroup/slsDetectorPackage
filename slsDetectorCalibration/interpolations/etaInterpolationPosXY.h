@@ -143,6 +143,7 @@ class etaInterpolationPosXY : public etaInterpolationBase{
   }
   sprintf(tit,"/scratch/eta_%d.tiff",id);
   WriteToTiff(etah, tit, etabins, etabins);
+  delete [] etah;
 #endif	  
   return ;
   }

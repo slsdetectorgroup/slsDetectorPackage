@@ -1,0 +1,602 @@
+rm -rf mythen3Server  *.o 
+echo slsDetectorServer.o mythen3Server_funcs.o communication_funcs.o mythen3FunctionList.o 
+slsDetectorServer.o mythen3Server_funcs.o communication_funcs.o mythen3FunctionList.o
+bfin-uclinux-gcc slsDetectorServer.c mythen3Server_funcs.c communication_funcs.c  mythen3FunctionList.c  -Wall -DVIRTUAL  -DDACS_INT  -DMYTHEN3D -DVERBOSE   -DSLS_DETECTOR_FUNCTION_LIST  -lm   -I. -I../../slsReceiverSoftware/include/ -o mythen3Server   
+In file included from /afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:27,
+                 from communication_funcs.h:7,
+                 from mythen3Server_funcs.c:5:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/uio.h: In function ‘setDAC’:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/uio.h:40: error: storage class specified for parameter ‘readv’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/uio.h:50: error: storage class specified for parameter ‘writev’
+In file included from /afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:35,
+                 from communication_funcs.h:7,
+                 from mythen3Server_funcs.c:5:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/bits/socket.h:36: error: storage class specified for parameter ‘socklen_t’
+In file included from /afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/bits/socket.h:142,
+                 from /afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:35,
+                 from communication_funcs.h:7,
+                 from mythen3Server_funcs.c:5:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/bits/sockaddr.h:29: error: storage class specified for parameter ‘sa_family_t’
+In file included from /afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:35,
+                 from communication_funcs.h:7,
+                 from mythen3Server_funcs.c:5:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/bits/socket.h:147: error: expected specifier-qualifier-list before ‘sa_family_t’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/bits/socket.h:164: error: expected specifier-qualifier-list before ‘sa_family_t’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/bits/socket.h:223: error: expected specifier-qualifier-list before ‘socklen_t’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/bits/socket.h:271: error: storage class specified for parameter ‘__cmsg_nxthdr’
+In file included from communication_funcs.h:7,
+                 from mythen3Server_funcs.c:5:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:100: error: storage class specified for parameter ‘socket’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:107: error: storage class specified for parameter ‘socketpair’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:110: error: expected declaration specifiers or ‘...’ before ‘socklen_t’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:111: error: storage class specified for parameter ‘bind’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:115: error: expected declaration specifiers or ‘...’ before ‘socklen_t’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:115: error: storage class specified for parameter ‘getsockname’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:124: error: expected declaration specifiers or ‘...’ before ‘socklen_t’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:124: error: storage class specified for parameter ‘connect’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:129: error: expected declaration specifiers or ‘...’ before ‘socklen_t’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:129: error: storage class specified for parameter ‘getpeername’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:136: error: storage class specified for parameter ‘send’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:143: error: storage class specified for parameter ‘recv’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:152: error: expected declaration specifiers or ‘...’ before ‘socklen_t’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:152: error: storage class specified for parameter ‘sendto’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:163: error: expected declaration specifiers or ‘...’ before ‘socklen_t’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:163: error: storage class specified for parameter ‘recvfrom’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:172: error: storage class specified for parameter ‘sendmsg’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:179: error: storage class specified for parameter ‘recvmsg’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:187: error: expected declaration specifiers or ‘...’ before ‘socklen_t’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:187: error: storage class specified for parameter ‘getsockopt’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:193: error: expected declaration specifiers or ‘...’ before ‘socklen_t’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:193: error: storage class specified for parameter ‘setsockopt’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:199: error: storage class specified for parameter ‘listen’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:210: error: expected declaration specifiers or ‘...’ before ‘socklen_t’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:210: error: storage class specified for parameter ‘accept’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:218: error: storage class specified for parameter ‘shutdown’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/socket.h:231: error: storage class specified for parameter ‘isfdtype’
+In file included from /afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/arpa/inet.h:23,
+                 from communication_funcs.h:10,
+                 from mythen3Server_funcs.c:5:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netinet/in.h:93: error: storage class specified for parameter ‘in_port_t’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netinet/in.h:137: error: storage class specified for parameter ‘in_addr_t’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netinet/in.h:140: error: expected specifier-qualifier-list before ‘in_addr_t’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netinet/in.h:207: error: storage class specified for parameter ‘in6addr_any’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netinet/in.h:208: error: storage class specified for parameter ‘in6addr_loopback’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netinet/in.h:223: error: expected specifier-qualifier-list before ‘sa_family_t’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netinet/in.h:238: error: expected specifier-qualifier-list before ‘sa_family_t’
+In file included from /afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/arpa/inet.h:23,
+                 from communication_funcs.h:10,
+                 from mythen3Server_funcs.c:5:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netinet/in.h:357: error: storage class specified for parameter ‘ntohl’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netinet/in.h:359: error: storage class specified for parameter ‘ntohs’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netinet/in.h:361: error: storage class specified for parameter ‘htonl’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netinet/in.h:363: error: storage class specified for parameter ‘htons’
+In file included from /afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/arpa/inet.h:23,
+                 from communication_funcs.h:10,
+                 from mythen3Server_funcs.c:5:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netinet/in.h:431: error: storage class specified for parameter ‘bindresvport’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netinet/in.h:435: error: storage class specified for parameter ‘bindresvport6’
+In file included from communication_funcs.h:10,
+                 from mythen3Server_funcs.c:5:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/arpa/inet.h:35: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘inet_addr’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/arpa/inet.h:38: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘inet_lnaof’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/arpa/inet.h:42: error: expected ‘)’ before ‘__net’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/arpa/inet.h:46: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘inet_netof’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/arpa/inet.h:50: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘inet_network’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/arpa/inet.h:54: error: storage class specified for parameter ‘inet_ntoa’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/arpa/inet.h:56: error: storage class specified for parameter ‘inet_ntoa_r’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/arpa/inet.h:62: error: storage class specified for parameter ‘inet_pton’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/arpa/inet.h:68: error: expected declaration specifiers or ‘...’ before ‘socklen_t’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/arpa/inet.h:69: error: storage class specified for parameter ‘inet_ntop’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/arpa/inet.h:76: error: storage class specified for parameter ‘inet_aton’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/arpa/inet.h:80: error: expected ‘)’ before ‘__net’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/arpa/inet.h:86: error: storage class specified for parameter ‘inet_net_ntop’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/arpa/inet.h:92: error: storage class specified for parameter ‘inet_net_pton’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/arpa/inet.h:98: error: storage class specified for parameter ‘inet_nsap_addr’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/arpa/inet.h:103: error: storage class specified for parameter ‘inet_nsap_ntoa’
+In file included from /afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:33,
+                 from communication_funcs.h:11,
+                 from mythen3Server_funcs.c:5:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/rpc/netdb.h:53: error: storage class specified for parameter ‘setrpcent’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/rpc/netdb.h:54: error: storage class specified for parameter ‘endrpcent’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/rpc/netdb.h:55: error: storage class specified for parameter ‘getrpcbyname’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/rpc/netdb.h:56: error: storage class specified for parameter ‘getrpcbynumber’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/rpc/netdb.h:57: error: storage class specified for parameter ‘getrpcent’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/rpc/netdb.h:62: error: storage class specified for parameter ‘getrpcbyname_r’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/rpc/netdb.h:66: error: storage class specified for parameter ‘getrpcbynumber_r’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/rpc/netdb.h:69: error: storage class specified for parameter ‘getrpcent_r’
+In file included from communication_funcs.h:11,
+                 from mythen3Server_funcs.c:5:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:60: error: storage class specified for parameter ‘h_errno’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:66: error: storage class specified for parameter ‘__h_errno_location’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:93: error: storage class specified for parameter ‘herror’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:96: error: storage class specified for parameter ‘hstrerror’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:116: error: storage class specified for parameter ‘sethostent’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:122: error: storage class specified for parameter ‘endhostent’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:129: error: storage class specified for parameter ‘gethostent’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:137: error: storage class specified for parameter ‘gethostbyaddr’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:143: error: storage class specified for parameter ‘gethostbyname’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:154: error: storage class specified for parameter ‘gethostbyname2’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:169: error: storage class specified for parameter ‘gethostent_r’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:176: error: storage class specified for parameter ‘gethostbyaddr_r’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:182: error: storage class specified for parameter ‘gethostbyname_r’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:188: error: storage class specified for parameter ‘gethostbyname2_r’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:197: error: storage class specified for parameter ‘setnetent’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:203: error: storage class specified for parameter ‘endnetent’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:210: error: storage class specified for parameter ‘getnetent’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:217: error: storage class specified for parameter ‘getnetbyaddr’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:223: error: storage class specified for parameter ‘getnetbyname’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:272: error: storage class specified for parameter ‘setservent’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:278: error: storage class specified for parameter ‘endservent’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:285: error: storage class specified for parameter ‘getservent’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:293: error: storage class specified for parameter ‘getservbyname’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:300: error: storage class specified for parameter ‘getservbyport’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:313: error: storage class specified for parameter ‘getservent_r’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:319: error: storage class specified for parameter ‘getservbyname_r’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:324: error: storage class specified for parameter ‘getservbyport_r’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:341: error: storage class specified for parameter ‘setprotoent’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:347: error: storage class specified for parameter ‘endprotoent’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:354: error: storage class specified for parameter ‘getprotoent’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:360: error: storage class specified for parameter ‘getprotobyname’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:366: error: storage class specified for parameter ‘getprotobynumber’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:379: error: storage class specified for parameter ‘getprotoent_r’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:384: error: storage class specified for parameter ‘getprotobyname_r’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:389: error: storage class specified for parameter ‘getprotobynumber_r’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:446: error: storage class specified for parameter ‘ruserpass’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:464: error: storage class specified for parameter ‘rcmd’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:495: error: storage class specified for parameter ‘rexec’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:508: error: expected declaration specifiers or ‘...’ before ‘sa_family_t’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:508: error: storage class specified for parameter ‘rexec_af’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:519: error: storage class specified for parameter ‘ruserok’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:543: error: storage class specified for parameter ‘rresvport’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:568: error: expected specifier-qualifier-list before ‘socklen_t’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:640: error: storage class specified for parameter ‘getaddrinfo’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:643: error: storage class specified for parameter ‘freeaddrinfo’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:646: error: storage class specified for parameter ‘gai_strerror’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:653: error: expected declaration specifiers or ‘...’ before ‘socklen_t’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:654: error: expected declaration specifiers or ‘...’ before ‘socklen_t’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:655: error: expected declaration specifiers or ‘...’ before ‘socklen_t’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/netdb.h:655: error: storage class specified for parameter ‘getnameinfo’
+In file included from communication_funcs.h:13,
+                 from mythen3Server_funcs.c:5:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:256: error: storage class specified for parameter ‘access’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:299: error: storage class specified for parameter ‘lseek’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:318: error: storage class specified for parameter ‘close’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:325: error: storage class specified for parameter ‘read’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:331: error: storage class specified for parameter ‘write’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:382: error: storage class specified for parameter ‘pipe’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:391: error: storage class specified for parameter ‘alarm’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:403: error: storage class specified for parameter ‘sleep’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:411: error: storage class specified for parameter ‘ualarm’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:418: error: storage class specified for parameter ‘usleep’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:427: error: storage class specified for parameter ‘pause’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:432: error: storage class specified for parameter ‘chown’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:436: error: storage class specified for parameter ‘fchown’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:442: error: storage class specified for parameter ‘lchown’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:455: error: storage class specified for parameter ‘chdir’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:459: error: storage class specified for parameter ‘fchdir’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:469: error: storage class specified for parameter ‘getcwd’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:488: error: storage class specified for parameter ‘dup’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:491: error: storage class specified for parameter ‘dup2’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:494: error: storage class specified for parameter ‘__environ’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:503: error: storage class specified for parameter ‘execve’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:515: error: storage class specified for parameter ‘execv’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:520: error: storage class specified for parameter ‘execle’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:525: error: storage class specified for parameter ‘execl’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:530: error: storage class specified for parameter ‘execvp’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:536: error: storage class specified for parameter ‘execlp’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:541: error: storage class specified for parameter ‘nice’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:546: error: storage class specified for parameter ‘_exit’
+In file included from communication_funcs.h:13,
+                 from mythen3Server_funcs.c:5:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:556: error: storage class specified for parameter ‘pathconf’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:559: error: storage class specified for parameter ‘fpathconf’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:562: error: storage class specified for parameter ‘sysconf’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:566: error: storage class specified for parameter ‘confstr’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:571: error: storage class specified for parameter ‘getpid’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:574: error: storage class specified for parameter ‘getppid’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:579: error: storage class specified for parameter ‘getpgrp’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:589: error: storage class specified for parameter ‘__getpgid’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:598: error: storage class specified for parameter ‘setpgid’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:615: error: storage class specified for parameter ‘setpgrp’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:632: error: storage class specified for parameter ‘setsid’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:640: error: storage class specified for parameter ‘getuid’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:643: error: storage class specified for parameter ‘geteuid’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:646: error: storage class specified for parameter ‘getgid’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:649: error: storage class specified for parameter ‘getegid’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:654: error: storage class specified for parameter ‘getgroups’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:665: error: storage class specified for parameter ‘setuid’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:670: error: storage class specified for parameter ‘setreuid’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:675: error: storage class specified for parameter ‘seteuid’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:682: error: storage class specified for parameter ‘setgid’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:687: error: storage class specified for parameter ‘setregid’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:692: error: storage class specified for parameter ‘setegid’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:732: error: storage class specified for parameter ‘vfork’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:738: error: storage class specified for parameter ‘ttyname’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:743: error: storage class specified for parameter ‘ttyname_r’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:747: error: storage class specified for parameter ‘isatty’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:759: error: storage class specified for parameter ‘link’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:772: error: storage class specified for parameter ‘symlink’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:779: error: storage class specified for parameter ‘readlink’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:794: error: storage class specified for parameter ‘unlink’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:803: error: storage class specified for parameter ‘rmdir’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:807: error: storage class specified for parameter ‘tcgetpgrp’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:810: error: storage class specified for parameter ‘tcsetpgrp’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:817: error: storage class specified for parameter ‘getlogin’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:825: error: storage class specified for parameter ‘getlogin_r’
+In file included from /afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:840,
+                 from communication_funcs.h:13,
+                 from mythen3Server_funcs.c:5:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/bits/getopt.h:61: error: storage class specified for parameter ‘optarg’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/bits/getopt.h:75: error: storage class specified for parameter ‘optind’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/bits/getopt.h:80: error: storage class specified for parameter ‘opterr’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/bits/getopt.h:84: error: storage class specified for parameter ‘optopt’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/bits/getopt.h:155: error: storage class specified for parameter ‘getopt’
+In file included from communication_funcs.h:13,
+                 from mythen3Server_funcs.c:5:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:848: error: storage class specified for parameter ‘gethostname’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:856: error: storage class specified for parameter ‘sethostname’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:860: error: storage class specified for parameter ‘sethostid’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:867: error: storage class specified for parameter ‘getdomainname’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:869: error: storage class specified for parameter ‘setdomainname’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:875: error: storage class specified for parameter ‘vhangup’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:896: error: storage class specified for parameter ‘acct’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:900: error: storage class specified for parameter ‘getusershell’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:901: error: storage class specified for parameter ‘endusershell’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:902: error: storage class specified for parameter ‘setusershell’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:908: error: storage class specified for parameter ‘daemon’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:915: error: storage class specified for parameter ‘chroot’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:919: error: storage class specified for parameter ‘getpass’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:928: error: storage class specified for parameter ‘fsync’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:935: error: storage class specified for parameter ‘gethostid’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:938: error: storage class specified for parameter ‘sync’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:943: error: storage class specified for parameter ‘getpagesize’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:948: error: storage class specified for parameter ‘getdtablesize’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:954: error: storage class specified for parameter ‘truncate’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:975: error: storage class specified for parameter ‘ftruncate’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:995: error: storage class specified for parameter ‘brk’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:1001: error: storage class specified for parameter ‘sbrk’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:1016: error: storage class specified for parameter ‘syscall’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:1039: error: storage class specified for parameter ‘lockf’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/unistd.h:1071: error: storage class specified for parameter ‘fdatasync’
+In file included from communication_funcs.h:15,
+                 from mythen3Server_funcs.c:5:
+sls_detector_defs.h:594: error: expected declaration specifiers before ‘;’ token
+In file included from mythen3Server_funcs.c:5:
+communication_funcs.h:24: error: storage class specified for parameter ‘intType’
+communication_funcs.h:34: error: expected declaration specifiers or ‘...’ before ‘intType’
+communication_funcs.h:35: error: expected declaration specifiers or ‘...’ before ‘intType’
+communication_funcs.h:36: error: expected declaration specifiers or ‘...’ before ‘intType’
+In file included from mythen3RegisterDefs.h:5,
+                 from mythen3Server_funcs.c:7:
+sls_detector_defs.h:594: error: expected declaration specifiers before ‘;’ token
+In file included from mythen3Server_funcs.c:7:
+mythen3RegisterDefs.h:456: warning: empty declaration
+In file included from blackfin.h:7,
+                 from mythen3Server_funcs.c:8:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/fcntl.h:74: error: storage class specified for parameter ‘fcntl’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/fcntl.h:93: error: storage class specified for parameter ‘open’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/fcntl.h:138: error: storage class specified for parameter ‘creat’
+In file included from blackfin.h:8,
+                 from mythen3Server_funcs.c:8:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:59: error: storage class specified for parameter ‘mmap’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:77: error: storage class specified for parameter ‘munmap’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:82: error: storage class specified for parameter ‘mprotect’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:97: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:104: error: storage class specified for parameter ‘madvise’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:134: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:135: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:136: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:137: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:148: error: storage class specified for parameter ‘mincore’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:168: error: storage class specified for parameter ‘shm_open’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:171: error: storage class specified for parameter ‘shm_unlink’
+In file included from mythen3Server_funcs.c:8:
+blackfin.h:12: error: parameter ‘CSP0BASE’ is initialized
+blackfin.h:23: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+blackfin.h:34: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+blackfin.h:45: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+blackfin.h:56: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+blackfin.h:68: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+blackfin.h:86: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+blackfin.h:105: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+blackfin.h:114: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+blackfin.h:123: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+In file included from mythen3Server_funcs.c:11:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:40: error: storage class specified for parameter ‘memcpy’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:44: error: storage class specified for parameter ‘memmove’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:53: error: storage class specified for parameter ‘memccpy’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:59: error: storage class specified for parameter ‘memset’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:63: error: storage class specified for parameter ‘memcmp’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:67: error: storage class specified for parameter ‘memchr’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:85: error: storage class specified for parameter ‘strcpy’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:89: error: storage class specified for parameter ‘strncpy’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:93: error: storage class specified for parameter ‘strcat’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:96: error: storage class specified for parameter ‘strncat’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:100: error: storage class specified for parameter ‘strcmp’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:103: error: storage class specified for parameter ‘strncmp’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:107: error: storage class specified for parameter ‘strcoll’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:111: error: storage class specified for parameter ‘strxfrm’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:131: error: storage class specified for parameter ‘strdup’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:168: error: storage class specified for parameter ‘strchr’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:171: error: storage class specified for parameter ‘strrchr’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:185: error: storage class specified for parameter ‘strcspn’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:189: error: storage class specified for parameter ‘strspn’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:192: error: storage class specified for parameter ‘strpbrk’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:195: error: storage class specified for parameter ‘strstr’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:200: error: storage class specified for parameter ‘strtok’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:214: error: storage class specified for parameter ‘strtok_r’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:247: error: storage class specified for parameter ‘strlen’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:260: error: storage class specified for parameter ‘strerror’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:286: error: storage class specified for parameter ‘__glibc_strerror_r’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:288: error: storage class specified for parameter ‘strerror_r’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:307: error: storage class specified for parameter ‘bcopy’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:310: error: storage class specified for parameter ‘bzero’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:314: error: storage class specified for parameter ‘bcmp’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:318: error: storage class specified for parameter ‘index’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:322: error: storage class specified for parameter ‘rindex’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:339: error: storage class specified for parameter ‘ffs’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:353: error: storage class specified for parameter ‘strcasecmp’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:357: error: storage class specified for parameter ‘strncasecmp’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:377: error: storage class specified for parameter ‘strsep’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:430: error: storage class specified for parameter ‘strlcat’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:432: error: storage class specified for parameter ‘strlcpy’
+mythen3Server_funcs.c:16: error: storage class specified for parameter ‘lockStatus’
+mythen3Server_funcs.c:17: error: storage class specified for parameter ‘lastClientIP’
+mythen3Server_funcs.c:18: error: storage class specified for parameter ‘thisClientIP’
+mythen3Server_funcs.c:19: error: storage class specified for parameter ‘differentClients’
+mythen3Server_funcs.c:40: error: parameter ‘myDetectorType’ is initialized
+mythen3Server_funcs.c:45: error: parameter ‘dataBytes’ is initialized
+mythen3Server_funcs.c:46: error: parameter ‘isControlServer’ is initialized
+mythen3Server_funcs.c:47: error: parameter ‘debugflag’ is initialized
+mythen3Server_funcs.c:49: error: parameter ‘N_DAC’ is initialized
+mythen3Server_funcs.c:50: error: parameter ‘N_PWR’ is initialized
+mythen3Server_funcs.c:52: error: parameter ‘vPowerLimit’ is initialized
+mythen3Server_funcs.c:56: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:61: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:69: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:92: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:124: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:203: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:295: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:321: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:361: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:380: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:408: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:462: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:505: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:579: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:642: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:724: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:836: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:855: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:874: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:894: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:1239: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:1340: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:1398: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:1441: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:1459: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:1478: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:1549: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:1620: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:1641: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:1717: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:1784: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:1805: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:2020: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:2135: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:2155: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:2221: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:2278: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:2349: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:2386: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:2425: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:2475: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:2502: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:2532: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:2577: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:2595: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:2686: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:2766: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:2865: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:2949: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:3049: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:3128: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:3215: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:3229: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:3271: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:3286: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:3350: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:3359: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:3489: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:3618: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:3696: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:3747: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:3796: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:3857: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:3911: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:3971: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:4031: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:4102: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:4121: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:4179: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:4238: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:4290: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:4344: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:4397: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:4471: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:4515: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:4604: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:4747: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:4792: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:4858: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:4918: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:4963: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3Server_funcs.c:5007: error: old-style parameter declarations in prototyped function definition
+mythen3Server_funcs.c:5005: error: expected ‘{’ at end of input
+communication_funcs.c: In function ‘receiveModuleGeneral’:
+communication_funcs.c:540: warning: unused variable ‘id’
+In file included from blackfin.h:7,
+                 from commonServerFunctions.h:5,
+                 from AD9257.h:6,
+                 from mythen3FunctionList.c:5:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/fcntl.h: In function ‘setDAC’:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/fcntl.h:74: error: storage class specified for parameter ‘fcntl’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/fcntl.h:93: error: storage class specified for parameter ‘open’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/fcntl.h:138: error: storage class specified for parameter ‘creat’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/fcntl.h:167: error: storage class specified for parameter ‘lockf’
+In file included from blackfin.h:8,
+                 from commonServerFunctions.h:5,
+                 from AD9257.h:6,
+                 from mythen3FunctionList.c:5:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:59: error: storage class specified for parameter ‘mmap’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:77: error: storage class specified for parameter ‘munmap’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:82: error: storage class specified for parameter ‘mprotect’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:97: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:104: error: storage class specified for parameter ‘madvise’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:134: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:135: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:136: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:137: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:148: error: storage class specified for parameter ‘mincore’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:168: error: storage class specified for parameter ‘shm_open’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/sys/mman.h:171: error: storage class specified for parameter ‘shm_unlink’
+In file included from commonServerFunctions.h:5,
+                 from AD9257.h:6,
+                 from mythen3FunctionList.c:5:
+blackfin.h:12: error: parameter ‘CSP0BASE’ is initialized
+blackfin.h:23: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+blackfin.h:34: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+blackfin.h:45: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+blackfin.h:56: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+blackfin.h:68: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+blackfin.h:86: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+blackfin.h:105: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+blackfin.h:114: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+blackfin.h:123: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+In file included from AD9257.h:6,
+                 from mythen3FunctionList.c:5:
+commonServerFunctions.h:9: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+In file included from mythen3FunctionList.c:5:
+AD9257.h:80: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+AD9257.h:89: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+In file included from mythen3FunctionList.c:8:
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:40: error: storage class specified for parameter ‘memcpy’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:44: error: storage class specified for parameter ‘memmove’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:53: error: storage class specified for parameter ‘memccpy’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:59: error: storage class specified for parameter ‘memset’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:63: error: storage class specified for parameter ‘memcmp’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:67: error: storage class specified for parameter ‘memchr’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:85: error: storage class specified for parameter ‘strcpy’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:89: error: storage class specified for parameter ‘strncpy’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:93: error: storage class specified for parameter ‘strcat’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:96: error: storage class specified for parameter ‘strncat’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:100: error: storage class specified for parameter ‘strcmp’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:103: error: storage class specified for parameter ‘strncmp’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:107: error: storage class specified for parameter ‘strcoll’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:111: error: storage class specified for parameter ‘strxfrm’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:131: error: storage class specified for parameter ‘strdup’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:168: error: storage class specified for parameter ‘strchr’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:171: error: storage class specified for parameter ‘strrchr’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:185: error: storage class specified for parameter ‘strcspn’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:189: error: storage class specified for parameter ‘strspn’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:192: error: storage class specified for parameter ‘strpbrk’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:195: error: storage class specified for parameter ‘strstr’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:200: error: storage class specified for parameter ‘strtok’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:214: error: storage class specified for parameter ‘strtok_r’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:247: error: storage class specified for parameter ‘strlen’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:260: error: storage class specified for parameter ‘strerror’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:286: error: storage class specified for parameter ‘__glibc_strerror_r’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:288: error: storage class specified for parameter ‘strerror_r’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:307: error: storage class specified for parameter ‘bcopy’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:310: error: storage class specified for parameter ‘bzero’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:314: error: storage class specified for parameter ‘bcmp’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:318: error: storage class specified for parameter ‘index’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:322: error: storage class specified for parameter ‘rindex’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:339: error: storage class specified for parameter ‘ffs’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:353: error: storage class specified for parameter ‘strcasecmp’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:357: error: storage class specified for parameter ‘strncasecmp’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:377: error: storage class specified for parameter ‘strsep’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:430: error: storage class specified for parameter ‘strlcat’
+/afs/psi.ch/project/sls_det_firmware/jungfrau_software/uClinux-2010_64bit/bfin-uclinux/bin/../bfin-uclinux/runtime/usr/include/string.h:432: error: storage class specified for parameter ‘strlcpy’
+mythen3FunctionList.c:11: error: parameter ‘nChans’ is initialized
+mythen3FunctionList.c:12: error: parameter ‘nChips’ is initialized
+mythen3FunctionList.c:13: error: parameter ‘nDacs’ is initialized
+mythen3FunctionList.c:14: error: parameter ‘nAdcs’ is initialized
+mythen3FunctionList.c:15: error: parameter ‘allSelected’ is initialized
+mythen3FunctionList.c:16: error: parameter ‘noneSelected’ is initialized
+mythen3FunctionList.c:18: error: parameter ‘detectorModules’ is initialized
+mythen3FunctionList.c:19: error: parameter ‘detectorChips’ is initialized
+mythen3FunctionList.c:20: error: parameter ‘detectorChans’ is initialized
+mythen3FunctionList.c:21: error: parameter ‘detectorDacs’ is initialized
+mythen3FunctionList.c:22: error: parameter ‘detectorAdcs’ is initialized
+mythen3FunctionList.c:24: error: parameter ‘nModY’ is initialized
+mythen3FunctionList.c:25: error: parameter ‘nModX’ is initialized
+mythen3FunctionList.c:26: error: parameter ‘dynamicRange’ is initialized
+mythen3FunctionList.c:27: error: parameter ‘dataBytes’ is initialized
+mythen3FunctionList.c:28: error: parameter ‘masterMode’ is initialized
+mythen3FunctionList.c:29: error: parameter ‘syncMode’ is initialized
+mythen3FunctionList.c:30: error: parameter ‘timingMode’ is initialized
+mythen3FunctionList.c:37: error: storage class specified for parameter ‘dataBytes’
+mythen3FunctionList.c:37: error: redefinition of parameter ‘dataBytes’
+mythen3FunctionList.c:27: error: previous definition of ‘dataBytes’ was here
+mythen3FunctionList.c:40: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:89: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:110: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:116: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:127: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:136: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:145: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:164: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:176: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:188: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:197: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:203: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:235: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:256: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:356: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:492: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:500: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:507: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:514: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:520: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:525: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:530: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:535: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:542: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:550: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:557: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:568: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:576: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:583: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:590: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:599: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:668: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:682: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:688: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:696: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:702: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:716: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:724: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:730: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:736: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:741: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:746: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:751: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:756: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:760: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:761: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:762: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:763: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:764: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:765: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:766: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:767: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:775: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:785: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:836: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:954: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:1086: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
+mythen3FunctionList.c:1197: error: old-style parameter declarations in prototyped function definition
+mythen3FunctionList.c:1193: error: expected ‘{’ at end of input
+make: *** [mythen3Server] Error 1

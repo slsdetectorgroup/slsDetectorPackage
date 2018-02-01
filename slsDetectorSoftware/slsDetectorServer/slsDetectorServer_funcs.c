@@ -29,6 +29,8 @@ const enum detectorType myDetectorType=PICASSO;
 const enum detectorType myDetectorType=MOENCH;
 #elif JUNGFRAUD
 const enum detectorType myDetectorType=JUNGFRAU;
+#elif MYTHEN3D
+const enum detectorType myDetectorType=MYTHEN3;
 #else
 const enum detectorType myDetectorType=GENERIC;
 #endif
@@ -877,134 +879,134 @@ int calibration_pulse(int file_des) {
 
 
 int set_dac(int file_des) {
-	int ret=OK,ret1=OK;
-	int n=0;
-	int arg[3]={-1,-1,-1};
-	int val=-1;
-	enum dacIndex ind=0;
-	int imod=-1;
-	int retval[2]={-1,-1};
-	int mV=0;
-	sprintf(mess,"set DAC failed\n");
+    int ret=OK,ret1=OK;
+    int n=0;
+    int arg[3]={-1,-1,-1};
+    int val=-1;
+    enum dacIndex ind=0;
+    int imod=-1;
+    int retval[2]={-1,-1};
+    int mV=0;
+    sprintf(mess,"set DAC failed\n");
 
-	// receive arguments
-	n = receiveData(file_des,arg,sizeof(arg),INT32);
-	if (n < 0) return printSocketReadError();
-	ind=arg[0];
-	imod=arg[1];
-	mV=arg[2];
+    // receive arguments
+    n = receiveData(file_des,arg,sizeof(arg),INT32);
+    if (n < 0) return printSocketReadError();
+    ind=arg[0];
+    imod=arg[1];
+    mV=arg[2];
 
-	n = receiveData(file_des,&val,sizeof(val),INT32);
-	if (n < 0) return printSocketReadError();
+    n = receiveData(file_des,&val,sizeof(val),INT32);
+    if (n < 0) return printSocketReadError();
 
-	// checks
+    // checks
 #ifdef MYTHEND
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-	if (imod>=getTotalNumberOfModules()) {
-		ret = FAIL;
-		sprintf(mess,"Module number %d out of range\n",imod);
-		cprintf(RED, "Warning: %s", mess);
-	}
+    if (imod>=getTotalNumberOfModules()) {
+        ret = FAIL;
+        sprintf(mess,"Module number %d out of range\n",imod);
+        cprintf(RED, "Warning: %s", mess);
+    }
 #endif
 #endif
-	// check if dac exists for this detector
-	enum DACINDEX idac=0;
+    // check if dac exists for this detector
+    enum DACINDEX idac=0;
 #ifdef JUNGFRAUD
-	if ((ind != HV_NEW) && (ind >= NDAC_OLDBOARD)) {	//for compatibility with old board
-		ret = FAIL;
-		sprintf(mess,"Dac Index (%d) is not implemented for this detector\n",(int)ind);
-		cprintf(RED, "Warning: %s", mess);
-	}else
-		idac = ind;
+    if ((ind != HV_NEW) && (ind >= NDAC_OLDBOARD)) {	//for compatibility with old board
+        ret = FAIL;
+        sprintf(mess,"Dac Index (%d) is not implemented for this detector\n",(int)ind);
+        cprintf(RED, "Warning: %s", mess);
+    }else
+        idac = ind;
 #else
-	switch (ind) {
+    switch (ind) {
 #ifdef MYTHEND
-	case  TRIMBIT_SIZE:			//ind = VTRIM;
-	case THRESHOLD:
-	case SHAPER1:
-	case SHAPER2:
-	case CALIBRATION_PULSE:
-	case PREAMP:
-		break;
+    case  TRIMBIT_SIZE:			//ind = VTRIM;
+    case THRESHOLD:
+    case SHAPER1:
+    case SHAPER2:
+    case CALIBRATION_PULSE:
+    case PREAMP:
+        break;
 #elif GOTTHARDD
-	case G_VREF_DS :
-		break;
-	case G_VCASCN_PB:
-		break;
-	case G_VCASCP_PB:
-		break;
-	case G_VOUT_CM:
-		break;
-	case G_VCASC_OUT:
-		break;
-	case G_VIN_CM:
-		break;
-	case G_VREF_COMP:
-		break;
-	case G_IB_TESTC:
-		break;
-	case HV_POT:
-		break;
+    case G_VREF_DS :
+        break;
+    case G_VCASCN_PB:
+        break;
+    case G_VCASCP_PB:
+        break;
+    case G_VOUT_CM:
+        break;
+    case G_VCASC_OUT:
+        break;
+    case G_VIN_CM:
+        break;
+    case G_VREF_COMP:
+        break;
+    case G_IB_TESTC:
+        break;
+    case HV_POT:
+        break;
 #elif EIGERD
-	case TRIMBIT_SIZE:
-		idac = VTR;
-		break;
-	case THRESHOLD:
-		idac = VTHRESHOLD;
-		break;
-	case E_SvP:
-		idac = SVP;
-		break;
-	case E_SvN:
-		idac = SVN;
-		break;
-	case E_Vtr:
-		idac = VTR;
-		break;
-	case E_Vrf:
-		idac = VRF;
-		break;
-	case E_Vrs:
-		idac = VRS;
-		break;
-	case E_Vtgstv:
-		idac = VTGSTV;
-		break;
-	case E_Vcmp_ll:
-		idac = VCMP_LL;
-		break;
-	case E_Vcmp_lr:
-		idac = VCMP_LR;
-		break;
-	case E_cal:
-		idac = CAL;
-		break;
-	case E_Vcmp_rl:
-		idac = VCMP_RL;
-		break;
-	case E_Vcmp_rr:
-		idac = VCMP_RR;
-		break;
-	case E_rxb_rb:
-		idac = RXB_RB;
-		break;
-	case E_rxb_lb:
-		idac = RXB_LB;
-		break;
-	case E_Vcp:
-		idac = VCP;
-		break;
-	case E_Vcn:
-		idac = VCN;
-		break;
-	case E_Vis:
-		idac = VIS;
-		break;
-	case HV_NEW:
-		break;
-	case IO_DELAY:
-		break;
-		/*
+    case TRIMBIT_SIZE:
+        idac = VTR;
+        break;
+    case THRESHOLD:
+        idac = VTHRESHOLD;
+        break;
+    case E_SvP:
+        idac = SVP;
+        break;
+    case E_SvN:
+        idac = SVN;
+        break;
+    case E_Vtr:
+        idac = VTR;
+        break;
+    case E_Vrf:
+        idac = VRF;
+        break;
+    case E_Vrs:
+        idac = VRS;
+        break;
+    case E_Vtgstv:
+        idac = VTGSTV;
+        break;
+    case E_Vcmp_ll:
+        idac = VCMP_LL;
+        break;
+    case E_Vcmp_lr:
+        idac = VCMP_LR;
+        break;
+    case E_cal:
+        idac = CAL;
+        break;
+    case E_Vcmp_rl:
+        idac = VCMP_RL;
+        break;
+    case E_Vcmp_rr:
+        idac = VCMP_RR;
+        break;
+    case E_rxb_rb:
+        idac = RXB_RB;
+        break;
+    case E_rxb_lb:
+        idac = RXB_LB;
+        break;
+    case E_Vcp:
+        idac = VCP;
+        break;
+    case E_Vcn:
+        idac = VCN;
+        break;
+    case E_Vis:
+        idac = VIS;
+        break;
+    case HV_NEW:
+        break;
+    case IO_DELAY:
+        break;
+        /*
 #elif JUNGFRAUD
 	case V_DAC0:
 		idac = VB_COMP;
@@ -1032,107 +1034,233 @@ int set_dac(int file_des) {
 		break;
 	case HV_POT:
 		break;
-		 */
+         */
+#elif MYTHEN3D
+    case M_vIpre:
+        idac = vIpre;
+        break;
+    case M_vIbias:
+        idac = vIbias;
+        break;
+    case PREAMP:
+        idac = Vrf;
+        break;
+    case SHAPER1:
+        idac = VrfSh;
+        break;
+    case M_vIinSh:
+        idac = vIinSh;
+        break;
+    case M_VdcSh:
+        idac = VdcSh;
+        break;
+    case M_Vth2:
+        idac = Vth2;
+        break;
+    case M_VPL:
+        idac = VPL;
+        break;
+    case THRESHOLD:
+        idac = Vth1;
+        break;
+    case M_Vth3:
+        idac = Vth3;
+        break;
+    case TRIMBIT_SIZE:
+        idac = Vtrim;
+        break;
+    case M_casSh:
+        idac = casSh;
+        break;
+    case M_cas:
+        idac = cas;
+        break;
+    case M_vIbiasSh:
+        idac = vIbiasSh;
+        break;
+    case M_vIcin:
+        idac = vIcin;
+        break;
+    case CALIBRATION_PULSE: // !!! pulse height + 1400 DACu
+        idac = VPH;
+        break;
+    case M_vIpreOut:
+        idac = vIpreOut;
+        break;
+    case V_POWER_A:
+        idac = V_A;
+        break;
+    case V_POWER_B:
+        ipwr = V_B;
+        break;
+    case V_POWER_IO:
+        idac = V_IO;
+        break;
+    case V_POWER_CHIP:
+        idac = V_CHIP;
+        break;
+    case V_LIMIT:
+        idac = V_LIM;
+        break;
 #endif
-	default:
-		ret = FAIL;
-		sprintf(mess,"Dac Index (%d) is not implemented for this detector\n",(int)ind);
-		cprintf(RED, "Warning: %s", mess);
-		break;
-	}
+    default:
+        ret = FAIL;
+        sprintf(mess,"Dac Index (%d) is not implemented for this detector\n",(int)ind);
+        cprintf(RED, "Warning: %s", mess);
+        break;
+    }
 #endif
 
-	// execute action
+    // execute action
 #ifdef VERBOSE
-	printf("Setting DAC %d of module %d to %d \n", idac, imod, val);
+    printf("Setting DAC %d of module %d to %d \n", idac, imod, val);
 #endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-	int temp;
-	if (ret==OK) {
-		if (differentClients && lockStatus && val!=-1) {
-			ret = FAIL;
-			sprintf(mess,"Detector locked by %s\n",lastClientIP);
-			cprintf(RED, "Warning: %s", mess);
-		} else {
+    int temp;
+    if (ret==OK) {
+        if (differentClients && lockStatus && val!=-1) {
+            ret = FAIL;
+            sprintf(mess,"Detector locked by %s\n",lastClientIP);
+            cprintf(RED, "Warning: %s", mess);
+        } else {
 #ifdef EIGERD
-			//iodelay
-			if(ind == IO_DELAY)
-				retval[0] = setIODelay(val,imod);
-			//high voltage
-			else
+            //iodelay
+            if(ind == IO_DELAY)
+                retval[0] = setIODelay(val,imod);
+            //high voltage
+            else
 #endif
-				if((ind == HV_POT) || (ind == HV_NEW)) {
-				retval[0] = setHighVoltage(val);
+                if((ind == HV_POT) || (ind == HV_NEW)) {
+                    retval[0] = setHighVoltage(val);
 #ifdef EIGERD
-				if ((retval[0] != SLAVE_HIGH_VOLTAGE_READ_VAL) && (retval[0] < 0)) {
-					ret = FAIL;
-					if(retval[0] == -1)
-						sprintf(mess, "Setting high voltage failed.Bad value %d. The range is from 0 to 200 V.\n",val);
-					else if(retval[0] == -2)
-						strcpy(mess, "Setting high voltage failed. Serial/i2c communication failed.\n");
-					else if(retval[0] == -3)
-						strcpy(mess, "Getting high voltage failed. Serial/i2c communication failed.\n");
-					cprintf(RED, "Warning: %s", mess);
-				}
+                    if ((retval[0] != SLAVE_HIGH_VOLTAGE_READ_VAL) && (retval[0] < 0)) {
+                        ret = FAIL;
+                        if(retval[0] == -1)
+                            sprintf(mess, "Setting high voltage failed.Bad value %d. The range is from 0 to 200 V.\n",val);
+                        else if(retval[0] == -2)
+                            strcpy(mess, "Setting high voltage failed. Serial/i2c communication failed.\n");
+                        else if(retval[0] == -3)
+                            strcpy(mess, "Getting high voltage failed. Serial/i2c communication failed.\n");
+                        cprintf(RED, "Warning: %s", mess);
+                    }
 #endif
-			}
-			//dac
-			else{
-				setDAC(idac,val,imod,mV,retval);
+                }
+#ifdef MYTHEN3D
+                else if	((ind >= V_POWER_A  && ind <= V_POWER_CHIP) || ind == V_LIMIT) {
+                    printf("Setting a power %d to %d\n",ind, val);
+
+                    if (!mV) {
+                        ret = FAIL;
+                        strcpy(mess, "Power of index %d should be set in mV instead of DACu", idac);
+                        cprintf(RED, "Warning: %s", mess);
+                        val = -1;
+                    }
+
+                    int lim = getVLimit();
+                    if (ind != V_LIMIT && lim != -1 && val > lim) {
+                        ret = FAIL;
+                        strcpy(mess, "Power of index %d is %d, should be less than %dmV\n", idac, val, lim);
+                        cprintf(RED, "Warning: %s", mess);
+                        val = -1;
+                    }
+
+                    retval[1] = retval[0] = setPower(idac,val);
+                    if (val >= 0 && retval[1] != val) {
+                        ret = FAIL;
+                        sprintf(mess,"Setting power %d failed: wrote %d but read %d\n", idac, val, retval[1]);
+                        cprintf(RED, "Warning: %s", mess);
+                    }
+                }
+#endif
+            //dac
+                else{
+#ifdef MYTHEN3D
+                    if( mV && val > MAX_DACVOLTVAL) {
+                        ret = FAIL;
+                        strcpy(mess, "Dac of index %d should be less than %dmV\n", idac, val, MAX_DACVOLTVAL);
+                        cprintf(RED, "Warning: %s", mess);
+                        val = -1;
+                    }
+                    else if( !mV && val >= MAX_DACVAL) {
+                        ret = FAIL;
+                        strcpy(mess, "Dac of index %d should be less than %d (dac value)\n", idac, val, MAX_DACVAL);
+                        cprintf(RED, "Warning: %s", mess);
+                        val = -1;
+                    }
+
+                    if (val >= 0) {
+                        // conver to mV
+                        int v = val;
+                        if (!mV)
+                            v = dacToVoltage(val);
+
+                        //checkvlimit compliant
+                        int lim = getVLimit();
+                        if (lim!= -1 && v > lim) {
+                            ret = FAIL;
+                            strcpy(mess, "Dac of index %d should be less than %dmV (%d dac value)\n", idac, lim, voltageToDac(lim));
+                            cprintf(RED, "Warning: %s", mess);
+                            val = -1;
+                        }
+                    }
+#endif
+                    setDAC(idac,val,imod,mV,retval);
 #ifdef EIGERD
-				if(val != -1) {
-					//changing dac changes settings to undefined
-					switch(idac){
-					case VCMP_LL:
-					case VCMP_LR:
-					case VCMP_RL:
-					case VCMP_RR:
-					case VRF:
-					case VCP:
-						setSettings(UNDEFINED,-1);
-						cprintf(RED,"Settings has been changed to undefined (changed specific dacs)\n");
-						break;
-					default:
-						break;
-					}
-				}
+                    if(val != -1) {
+                        //changing dac changes settings to undefined
+                        switch(idac){
+                        case VCMP_LL:
+                        case VCMP_LR:
+                        case VCMP_RL:
+                        case VCMP_RR:
+                        case VRF:
+                        case VCP:
+                            setSettings(UNDEFINED,-1);
+                            cprintf(RED,"Settings has been changed to undefined (changed specific dacs)\n");
+                            break;
+                        default:
+                            break;
+                        }
+                    }
 #endif
-				//check
-				if(mV)
-					temp = retval[1];
-				else
-					temp = retval[0];
-				if ((abs(temp-val)<=5) || val==-1) {
-					ret=OK;
-				} else {
-					ret = FAIL;
-					sprintf(mess,"Setting dac %d of module %d: wrote %d but read %d\n", idac, imod, val, temp);
-					cprintf(RED, "Warning: %s", mess);
-				}
-			}
-		}
-	}
+                    //check
+                    if (ret == OK) {
+                        if(mV)
+                            temp = retval[1];
+                        else
+                            temp = retval[0];
+                        if ((abs(temp-val)<=5) || val==-1) {
+                            ret = OK;
+                        } else {
+                            ret = FAIL;
+                            sprintf(mess,"Setting dac %d of module %d: wrote %d but read %d\n", idac, imod, val, temp);
+                            cprintf(RED, "Warning: %s", mess);
+                        }
+                    }
+                }
+        }
+    }
 #endif
 #ifdef VERBOSE
-	printf("DAC set to %d in dac units and %d mV\n",  retval[0],retval[1]);
+    printf("DAC set to %d in dac units and %d mV\n",  retval[0],retval[1]);
 #endif
 
-	if(ret == OK && differentClients)
-		ret=FORCE_UPDATE;
+    if(ret == OK && differentClients)
+        ret=FORCE_UPDATE;
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret!=FAIL) {
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
-	} else {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
+    // ret could be swapped during sendData
+    ret1 = ret;
+    // send ok / fail
+    n = sendData(file_des,&ret1,sizeof(ret),INT32);
+    // send return argument
+    if (ret!=FAIL) {
+        n += sendData(file_des,&retval,sizeof(retval),INT32);
+    } else {
+        n += sendData(file_des,mess,sizeof(mess),OTHER);
+    }
 
-	// return ok / fail
-	return ret;
+    // return ok / fail
+    return ret;
 }
 
 
@@ -1148,6 +1276,15 @@ int get_adc(int file_des) {
 	enum dacIndex ind=0;
 	int imod=-1;
 	sprintf(mess,"get ADC failed\n");
+
+#ifdef MYTHEN3D
+    //to receive any arguments
+    while (n > 0)
+        n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+    ret = FAIL;
+    sprintf(mess,"Function (Get ADC) is not implemented for this detector\n");
+    cprintf(RED, "Warning: %s", mess);
+#else
 
 	// receive arguments
 	n = receiveData(file_des,arg,sizeof(arg),INT32);
@@ -1217,6 +1354,7 @@ int get_adc(int file_des) {
 #endif
 #ifdef VERBOSE
 	printf("ADC is %f\n",  retval);
+#endif
 #endif
 
 	if (ret==OK && differentClients)
@@ -1553,7 +1691,7 @@ int set_chip(int file_des) {
 	while (n > 0)
 		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
-	sprintf(mess,"Function (Set Channel) is not implemented for this detector\n");
+	sprintf(mess,"Function (Set Chip) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
 	sls_detector_chip myChip;
@@ -1629,7 +1767,7 @@ int get_chip(int file_des) {
 	while (n > 0)
 		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
-	sprintf(mess,"Function (Set Channel) is not implemented for this detector\n");
+	sprintf(mess,"Function (Get Chip) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
 
@@ -1717,6 +1855,17 @@ int set_module(int file_des) {
 	int myEV=-1;
 #endif
 	sprintf(mess,"set module failed\n");
+
+
+#ifdef MYTHEN3D
+    //to receive any arguments
+    while (n > 0)
+        n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+    ret = FAIL;
+    sprintf(mess,"Function (Set Module) is not implemented for this detector\n");
+    cprintf(RED, "Warning: %s", mess);
+#else
+
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	int *myDac=NULL;
@@ -1897,6 +2046,7 @@ int set_module(int file_des) {
 	if (ret==OK && differentClients)
 		ret=FORCE_UPDATE;
 #endif
+#endif
 
 	// ret could be swapped during sendData
 	ret1 = ret;
@@ -1927,6 +2077,15 @@ int get_module(int file_des) {
 	int  imod=-1;
 	sls_detector_module myModule;
 	sprintf(mess,"get module failed\n");
+
+#ifdef MYTHEN3D
+    //to receive any arguments
+    while (n > 0)
+        n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+    ret = FAIL;
+    sprintf(mess,"Function (Get Module) is not implemented for this detector\n");
+    cprintf(RED, "Warning: %s", mess);
+#else
 
 	// receive arguments
 	n = receiveData(file_des,&arg,sizeof(arg),INT32);
@@ -2001,6 +2160,7 @@ int get_module(int file_des) {
 		}
 	}
 #endif
+#endif
 	if (ret==OK && differentClients)
 		ret=FORCE_UPDATE;
 
@@ -2064,6 +2224,16 @@ int set_settings(int file_des) {
 	enum detectorSettings isett=-1;
 	sprintf(mess,"set settings failed\n");
 
+#ifdef MYTHEN3D
+    //to receive any arguments
+    while (n > 0)
+        n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+    ret = FAIL;
+    sprintf(mess,"Function (Set Settings) is not implemented for this detector\n");
+    cprintf(RED, "Warning: %s", mess);
+#else
+
+
 	// receive arguments
 	n = receiveData(file_des,&arg,sizeof(arg),INT32);
 	if (n < 0) return printSocketReadError();
@@ -2098,6 +2268,7 @@ int set_settings(int file_des) {
 			cprintf(RED, "Warning: %s", mess);
 		}
 	}
+#endif
 #endif
 
 	if (ret==OK && differentClients)
@@ -2536,6 +2707,11 @@ int set_timer(int file_des) {
 		case DELAY_AFTER_TRIGGER:
 #elif JUNGFRAUD
 		case DELAY_AFTER_TRIGGER:
+#elif MYTHEN3D
+		case DELAY_AFTER_TRIGGER:
+		case GATES_NUMBER:
+		case PROBES_NUMBER:
+		case SAMPLES_JCTB:
 #endif
 		case FRAME_NUMBER:
 		case ACQUISITION_TIME:
@@ -2615,22 +2791,25 @@ int get_time_left(int file_des) {
 	switch(ind) {
 #ifdef MYTHEND
 	case PROBES_NUMBER:
+#elif JUNGFRAUD
+    case FRAMES_FROM_START:
+    case FRAMES_FROM_START_PG:
+#elif MYTHEN3D
+    case GATES_NUMBER:
+    case PROBES_NUMBER:
+    case SAMPLES_JCTB:
+#endif
+#ifndef JUNGFRAUD
+    case GATES_NUMBER:
 #endif
 	case FRAME_NUMBER:
 	case ACQUISITION_TIME:
 	case FRAME_PERIOD:
 	case DELAY_AFTER_TRIGGER:
-#ifndef JUNGFRAUD
-	case GATES_NUMBER:
-#endif
 	case CYCLES_NUMBER:
 	case PROGRESS:
 	case ACTUAL_TIME:
 	case MEASUREMENT_TIME:
-#ifdef JUNGFRAUD
-	case FRAMES_FROM_START:
-	case FRAMES_FROM_START_PG:
-#endif
 		retval=getTimeLeft(ind);
 		break;
 	default:
@@ -2991,6 +3170,9 @@ int set_speed(int file_des) {
 		case CLOCK_DIVIDER:
 #elif JUNGFRAUD
 		case CLOCK_DIVIDER:
+#elif MYTHEN3D
+		case DBIT_CLOCK:
+		case DBIT_PHASE:
 #endif
 			retval=setSpeed(arg, val);
 			if ((retval!=val) && (val>=0)) {
@@ -4003,20 +4185,180 @@ int set_all_trimbits(int file_des){
 
 
 int set_ctb_pattern(int file_des) {
-	int ret=FAIL,ret1=FAIL;
-	int n=0;
-	sprintf(mess,"Function (Set CTB Pattern) is not implemented for this detector\n");
-	cprintf(RED, "Error: %s", mess);
+    int ret=OK,ret1=OK;
+    int n=0;
+    int retval=-1;
 
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+    int mode = -1;
+    int addr = -1, level = -1, nl = -1, start = -1, stop = -1;
+    uint64_t word = -1,retval64 = -1, t = -1;
+    sprintf(mess,"Could not set pattern\n");
 
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	n = sendData(file_des,mess,MAX_STR_LENGTH,OTHER);
+#ifndef MYTHEN3D
+    //to receive any arguments
+    while (n > 0)
+        n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 
-	// return ok / fail
-	return ret;
+    ret = FAIL;
+    sprintf(mess,"Function (Set CTB Pattern) is not implemented for this detector\n");
+    cprintf(RED, "Error: %s", mess);
+
+    // ret could be swapped during sendData
+    ret1 = ret;
+    // send ok / fail
+    n = sendData(file_des,&ret1,sizeof(ret),INT32);
+    // send return argument
+    n += sendData(file_des,mess,sizeof(mess),OTHER);
+
+    return ret;
+
+#endif
+    n = receiveDataOnly(file_des, &mode, sizeof(mode));
+    printf("pattern mode is %d\n",mode);
+
+    switch (mode) {
+
+    case 0: //sets word
+        n = receiveDataOnly(file_des,&addr,sizeof(addr));
+        n = receiveDataOnly(file_des,&word,sizeof(word));
+        ret=OK;
+
+        printf("pattern addr is %d %x\n",addr, word);
+        switch (addr) {
+        case -1:
+            retval64=writePatternIOControl(word);
+            break;
+        case -2:
+            retval64=writePatternClkControl(word);
+            break;
+        default:
+            retval64=writePatternWord(addr,word);
+        };
+
+
+        //write word;
+        //@param addr address of the word, -1 is I/O control register,  -2 is clk control register
+        //@param word 64bit word to be written, -1 gets
+
+        n = sendDataOnly(file_des,&ret,sizeof(ret));
+        if (ret==FAIL)
+            n += sendDataOnly(file_des,mess,sizeof(mess));
+        else
+            n += sendDataOnly(file_des,&retval64,sizeof(retval64));
+        break;
+
+        case 1: //pattern loop
+            // printf("loop\n");
+            n = receiveDataOnly(file_des,&level,sizeof(level));
+            n = receiveDataOnly(file_des,&start,sizeof(start));
+            n = receiveDataOnly(file_des,&stop,sizeof(stop));
+            n = receiveDataOnly(file_des,&nl,sizeof(nl));
+
+
+
+            //       printf("level %d start %x stop %x nl %d\n",level, start, stop, nl);
+            /** Sets the pattern or loop limits in the CTB
+          @param level -1 complete pattern, 0,1,2, loop level
+          @param start start address if >=0
+          @param stop stop address if >=0
+          @param n number of loops (if level >=0)
+          @returns OK/FAIL
+             */
+            ret=setPatternLoop(level, &start, &stop, &nl);
+
+            n = sendDataOnly(file_des,&ret,sizeof(ret));
+            if (ret==FAIL)
+                n += sendDataOnly(file_des,mess,sizeof(mess));
+            else {
+                n += sendDataOnly(file_des,&start,sizeof(start));
+                n += sendDataOnly(file_des,&stop,sizeof(stop));
+                n += sendDataOnly(file_des,&nl,sizeof(nl));
+            }
+            break;
+
+
+
+        case 2: //wait address
+            printf("wait\n");
+            n = receiveDataOnly(file_des,&level,sizeof(level));
+            n = receiveDataOnly(file_des,&addr,sizeof(addr));
+
+
+
+            /** Sets the wait address in the CTB
+          @param level  0,1,2, wait level
+          @param addr wait address, -1 gets
+          @returns actual value
+             */
+            printf("wait addr %d %x\n",level, addr);
+            retval=setPatternWaitAddress(level,addr);
+            printf("ret: wait addr %d %x\n",level, retval);
+            ret=OK;
+            n = sendDataOnly(file_des,&ret,sizeof(ret));
+            if (ret==FAIL)
+                n += sendDataOnly(file_des,mess,sizeof(mess));
+            else {
+                n += sendDataOnly(file_des,&retval,sizeof(retval));
+
+            }
+
+
+            break;
+
+
+        case 3: //wait time
+            printf("wait time\n");
+            n = receiveDataOnly(file_des,&level,sizeof(level));
+            n = receiveDataOnly(file_des,&t,sizeof(t));
+
+
+            /** Sets the wait time in the CTB
+          @param level  0,1,2, wait level
+          @param t wait time, -1 gets
+          @returns actual value
+             */
+
+            ret=OK;
+
+            retval64=setPatternWaitTime(level,t);
+
+            n = sendDataOnly(file_des,&ret,sizeof(ret));
+            if (ret==FAIL)
+                n += sendDataOnly(file_des,mess,sizeof(mess));
+            else
+                n += sendDataOnly(file_des,&retval64,sizeof(retval64));
+
+            break;
+
+
+
+        case 4:
+            n = receiveDataOnly(file_des,pat,sizeof(pat));
+            for (addr=0; addr<1024; addr++)
+                writePatternWord(addr,word);
+            ret=OK;
+            retval=0;
+            n = sendDataOnly(file_des,&ret,sizeof(ret));
+            if (ret==FAIL)
+                n += sendDataOnly(file_des,mess,sizeof(mess));
+            else
+                n += sendDataOnly(file_des,&retval64,sizeof(retval64));
+
+            break;
+
+
+
+        default:
+            ret=FAIL;
+            printf(mess);
+            sprintf(mess,"%s - wrong mode %d\n",mess, mode);
+            n = sendDataOnly(file_des,&ret,sizeof(ret));
+            n += sendDataOnly(file_des,mess,sizeof(mess));
+    }
+
+
+    // return ok / fail
+    return ret;
 }
 
 

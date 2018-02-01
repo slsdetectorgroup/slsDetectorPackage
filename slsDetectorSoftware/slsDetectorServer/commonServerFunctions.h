@@ -16,44 +16,56 @@ void serializeToSPI(u_int32_t addr, u_int32_t val, u_int32_t csmask, int numbits
 
 	u_int32_t valw;
 
-	// start point
-	valw = 0xffffffff; 			// old board compatibility (not using specific bits)
-	bus_w (addr, valw);
+	SPIChipSelect (valw, addr, csmask);
 
-	// chip sel bar down
-	valw &= ~csmask; 			/* todo with test: done a bit different, not with previous value */
-	bus_w (addr, valw);
+	sendDataToSPI(valw, addr, val, numbitstosend, clkmask, digoutmask, digofset);
 
-	{
-		int i = 0;
-		for (i = 0; i < numbitstosend; ++i) {
+	SPIChipDeselect(valw, addr, csmask, clkmask);
+}
 
-			// clk down
-			valw &= ~clkmask;
-			bus_w (addr, valw);
+void SPIChipSelect (u_int32_t& valw, u_int32_t addr,  u_int32_t csmask) {
 
-			// write data (i)
-			valw = ((valw & ~digoutmask) + 										// unset bit
-					(((val >> (numbitstosend - 1 - i)) & 0x1) << digofset)); 	// each bit from val starting from msb
-			bus_w (addr, valw);
+    // start point
+    valw = 0xffffffff;          // old board compatibility (not using specific bits)
+    bus_w (addr, valw);
 
-			// clk up
-			valw |= clkmask ;
-			bus_w (addr, valw);
-		}
-	}
+    // chip sel bar down
+    valw &= ~csmask;            /* todo with test: done a bit different, not with previous value */
+    bus_w (addr, valw);
+}
 
-	// chip sel bar up
-	valw |= csmask; /* todo with test: not done for spi */
-	bus_w (addr, valw);
 
-	//clk down
-	valw &= ~clkmask;
-	bus_w (addr, valw);
+void SPIChipDeselect (u_int32_t& valw, u_int32_t addr,  u_int32_t csmask, u_int32_t clkmask) {
+    // chip sel bar up
+    valw |= csmask; /* todo with test: not done for spi */
+    bus_w (addr, valw);
 
-	// stop point = start point of course
-	valw = 0xffffffff; 				// old board compatibility (not using specific bits)
-	bus_w (addr, valw);
+    //clk down
+    valw &= ~clkmask;
+    bus_w (addr, valw);
+
+    // stop point = start point of course
+    valw = 0xffffffff;              // old board compatibility (not using specific bits)
+    bus_w (addr, valw);
+}
+
+void sendDataToSPI (u_int32_t& valw, u_int32_t addr, u_int32_t val, int numbitstosend, u_int32_t clkmask, u_int32_t digoutmask, int digofset) {
+    int i = 0;
+    for (i = 0; i < numbitstosend; ++i) {
+
+        // clk down
+        valw &= ~clkmask;
+        bus_w (addr, valw);
+
+        // write data (i)
+        valw = ((valw & ~digoutmask) +                                      // unset bit
+                (((val >> (numbitstosend - 1 - i)) & 0x1) << digofset));    // each bit from val starting from msb
+        bus_w (addr, valw);
+
+        // clk up
+        valw |= clkmask ;
+        bus_w (addr, valw);
+    }
 }
 
 

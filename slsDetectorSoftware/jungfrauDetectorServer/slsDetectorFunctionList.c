@@ -390,9 +390,9 @@ int powerChip (int on){
 		}
 	}
 
-	return (bus_r(CHIP_POWER_REG & CHIP_POWER_ENABLE_MSK) >> CHIP_POWER_ENABLE_OFST);
+	return ((bus_r(CHIP_POWER_REG) & CHIP_POWER_ENABLE_MSK) >> CHIP_POWER_ENABLE_OFST);
 	/* temporary setup until new firmware fixes bug */
-	//return (bus_r(CHIP_POWER_REG & CHIP_POWER_STATUS_MSK) >> CHIP_POWER_STATUS_OFST);
+	//return ((bus_r(CHIP_POWER_REG) & CHIP_POWER_STATUS_MSK) >> CHIP_POWER_STATUS_OFST);
 }
 
 void cleanFifos() {

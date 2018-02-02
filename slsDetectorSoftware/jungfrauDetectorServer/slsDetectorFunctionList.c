@@ -362,6 +362,12 @@ void setupDetector() {
 	/*setSpeed(CLOCK_DIVIDER, HALF_SPEED); depends if all the previous stuff works*/
 	setTiming(DEFAULT_TIMING_MODE);
 	setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+
+	/* temporary set up until new firmware fixes bug */
+	// set temperature threshold
+	setThresholdTemperature(DEFAULT_TMP_THRSHLD);
+	// reset temp event
+	setTemperatureEvent(0);
 }
 
 
@@ -383,7 +389,10 @@ int powerChip (int on){
 			bus_w(CHIP_POWER_REG, bus_r(CHIP_POWER_REG) & ~CHIP_POWER_ENABLE_MSK);
 		}
 	}
-	return (bus_r(CHIP_POWER_REG & CHIP_POWER_STATUS_MSK) >> CHIP_POWER_STATUS_OFST);
+
+	return (bus_r(CHIP_POWER_REG & CHIP_POWER_ENABLE_MSK) >> CHIP_POWER_ENABLE_OFST);
+	/* temporary setup until new firmware fixes bug */
+	//return (bus_r(CHIP_POWER_REG & CHIP_POWER_STATUS_MSK) >> CHIP_POWER_STATUS_OFST);
 }
 
 void cleanFifos() {

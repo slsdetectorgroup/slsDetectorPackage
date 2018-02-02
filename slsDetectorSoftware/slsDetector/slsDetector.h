@@ -551,6 +551,12 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   */
   int powerChip(int ival= -1);
 
+  /** automatic comparator disable for Jungfrau only
+     \param ival on is 1, off is 0, -1 to get
+      \returns OK or FAIL
+  */
+  int setAutoComparatorDisableMode(int ival= -1);
+
 
   /** loads the modules settings/trimbits reading from a file  
       \param fname file name . If not specified, extension is automatically generated!

@@ -291,7 +291,7 @@
 #define VREF_COMP_MOD_REG				(0x5C << 11)
 
 #define VREF_COMP_MOD_OFST              (0)
-#define VREF_COMP_MOD_MSK               (0x00000FFF << VREF_COMP_OFST)
+#define VREF_COMP_MOD_MSK               (0x00000FFF << VREF_COMP_MOD_OFST)
 #define VREF_COMP_MOD_ENABLE_OFST       (31)
 #define VREF_COMP_MOD_ENABLE_MSK        (0x00000FFF << VREF_COMP_MOD_ENABLE_OFST)
 

@@ -395,6 +395,24 @@ int powerChip (int on){
 	//return ((bus_r(CHIP_POWER_REG) & CHIP_POWER_STATUS_MSK) >> CHIP_POWER_STATUS_OFST);
 }
 
+
+
+int autoCompDisable(int on) {
+    if(on != -1){
+        if(on){
+            cprintf(BLUE, "\n*** Auto comp disable mode: enabling ***\n");
+            bus_w(VREF_COMP_MOD_REG, bus_r(VREF_COMP_MOD_REG) | VREF_COMP_MOD_ENABLE_MSK);
+        }
+        else{
+            cprintf(BLUE, "\n*** Auto comp disable mode: disabling *** \n");
+            bus_w(VREF_COMP_MOD_REG, bus_r(VREF_COMP_MOD_REG) & ~VREF_COMP_MOD_ENABLE_MSK);
+        }
+    }
+
+    return (bus_r(VREF_COMP_MOD_REG) & VREF_COMP_MOD_ENABLE_MSK);
+}
+
+
 void cleanFifos() {
 	printf("\nClearing Acquisition Fifos\n");
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_ACQ_FIFO_CLR_MSK);
@@ -879,6 +897,11 @@ void setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]){
 				DAC_SERIAL_CLK_OUT_MSK, DAC_SERIAL_DIGITAL_OUT_MSK, DAC_SERIAL_DIGITAL_OUT_OFST);
 
 		dacValues[ind] = dacval;
+
+		if (ind == VREF_COMP) {
+		    bus_w (VREF_COMP_MOD_REG, (bus_r(VREF_COMP_MOD_REG) &~ (VREF_COMP_MOD_MSK))   // reset
+		            | ((val << VREF_COMP_MOD_OFST) & VREF_COMP_MOD_MSK));   // or it with value
+		}
 	}
 
 	printf("Getting DAC %d : ",ind);

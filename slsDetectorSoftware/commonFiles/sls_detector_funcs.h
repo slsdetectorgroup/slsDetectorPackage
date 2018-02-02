@@ -116,6 +116,8 @@ enum detFuncs{
   F_THRESHOLD_TEMP,          /** < set threshold temperature */
   F_TEMP_CONTROL,            /** < set temperature control */
   F_TEMP_EVENT,              /** < set temperature event */
+
+  F_AUTO_COMP_DISABLE,      /** < auto comp disable mode */
   /* Always append functions hereafter!!! */
 
   /* Always append functions before!!! */

@@ -69,6 +69,7 @@ uint32_t  	readRegister(uint32_t offset);
 // firmware functions (resets)
 #ifdef JUNGFRAUD
 int 		powerChip (int on);
+int         autoCompDisable(int on);
 void 		cleanFifos();
 void 		resetCore();
 void 		resetPeripheral();

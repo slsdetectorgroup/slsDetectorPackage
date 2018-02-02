@@ -91,5 +91,6 @@ int cleanup_acquisition(int);
 int threshold_temp(int);
 int temp_control(int);
 int temp_event(int);
+int auto_comp_disable(int);
 
 #endif

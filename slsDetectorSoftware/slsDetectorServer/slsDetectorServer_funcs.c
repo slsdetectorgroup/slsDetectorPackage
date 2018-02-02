@@ -184,6 +184,7 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_THRESHOLD_TEMP:                  return "F_THRESHOLD_TEMP";
 	case F_TEMP_CONTROL:                    return "F_TEMP_CONTROL";
 	case F_TEMP_EVENT:                      return "F_TEMP_EVENT";
+    case F_AUTO_COMP_DISABLE:               return "F_AUTO_COMP_DISABLE";
 
 	default:								return "Unknown Function";
 	}
@@ -266,6 +267,7 @@ void function_table() {
 	flist[F_THRESHOLD_TEMP]                     = &threshold_temp;
 	flist[F_TEMP_CONTROL]                       = &temp_control;
 	flist[F_TEMP_EVENT]                         = &temp_event;
+    flist[F_AUTO_COMP_DISABLE]                  = &auto_comp_disable;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= TOO_MANY_FUNCTIONS_DEFINED) {
@@ -4734,7 +4736,7 @@ int power_chip(int file_des) {
 		} else {
 			ret=FAIL;
 			if(setTemperatureEvent(-1) == 1)
-			    sprintf(mess,"Powering chip failed due to over-temperature event. Clear event & power chip again.\n", arg, retval);
+			    sprintf(mess,"Powering chip failed due to over-temperature event. Clear event & power chip again. Wrote %d, read %d \n", arg, retval);
 			else
 			    sprintf(mess,"Powering chip failed, wrote %d but read %d\n", arg, retval);
 			cprintf(RED, "Warning: %s", mess);
@@ -5081,6 +5083,73 @@ int temp_event(int file_des) {
     } else {
         n += sendData(file_des,mess,sizeof(mess),OTHER);
     }
+
+    // return ok / fail
+    return ret;
+}
+
+
+
+
+
+int auto_comp_disable(int file_des) {
+    int ret=OK,ret1=OK;
+    int n=0;
+    int retval=-1;
+    sprintf(mess,"auto comp disable failed\n");
+
+#ifndef JUNGFRAUD
+    //to receive any arguments
+    while (n > 0)
+        n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+    ret = FAIL;
+    sprintf(mess,"Function (Auto Comp Disable) is not implemented for this detector\n");
+    cprintf(RED, "%s", mess);
+#else
+
+    // receive arguments
+    int arg=-1;
+    n = receiveData(file_des,&arg,sizeof(arg),INT32);
+    if (n < 0) return printSocketReadError();
+
+    // execute action
+    if (differentClients && lockStatus && arg!=-1) {
+        ret = FAIL;
+        sprintf(mess,"Detector locked by %s\n",lastClientIP);
+        cprintf(RED, "Warning: %s", mess);
+    }
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+    else {
+#ifdef VERBOSE
+    printf("Auto Comp Disable to %d\n", arg);
+#endif
+        retval=autoCompDisable(arg);
+
+#ifdef VERBOSE
+        printf("Auto comp disable set to: %d\n",retval);
+#endif
+        if (retval==arg || arg<0) {
+            ret=OK;
+        } else {
+            ret=FAIL;
+            sprintf(mess,"Atuo Comp Disable failed, wrote %d but read %d\n", arg, retval);
+            cprintf(RED, "Warning: %s", mess);
+        }
+    }
+#endif
+    if (ret==OK && differentClients)
+        ret=FORCE_UPDATE;
+#endif
+
+    // ret could be swapped during sendData
+    ret1 = ret;
+    // send ok / fail
+    n = sendData(file_des,&ret1,sizeof(ret),INT32);
+    // send return argument
+    if (ret==FAIL) {
+        n += sendData(file_des,mess,sizeof(mess),OTHER);
+    } else
+        n += sendData(file_des,&retval,sizeof(retval),INT32);
 
     // return ok / fail
     return ret;

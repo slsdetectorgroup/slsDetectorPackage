@@ -582,6 +582,12 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual int powerChip(int ival= -1)=0;
 
+  /** automatic comparator disable for Jungfrau only
+     \param ival on is 1, off is 0, -1 to get
+      \returns OK or FAIL
+  */
+  virtual int setAutoComparatorDisableMode(int ival= -1)=0;
+
   /** saves the modules settings/trimbits writing to  a file
       \param fname file name . Axtension is automatically generated!
       \param imod module number, -1 means all modules

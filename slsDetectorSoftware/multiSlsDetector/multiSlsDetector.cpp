@@ -4595,6 +4595,22 @@ int multiSlsDetector::powerChip(int ival){
 }
 
 
+int multiSlsDetector::setAutoComparatorDisableMode(int ival) {
+    int ret=OK, ret1=OK;
+
+    for (int i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
+        if (detectors[i]) {
+            ret=detectors[i]->setAutoComparatorDisableMode(ival);
+            if(detectors[i]->getErrorMask())
+                setErrorMask(getErrorMask()|(1<<i));
+            if (ret==FAIL)
+                ret1=FAIL;
+        }
+    }
+    return ret1;
+}
+
+
 int multiSlsDetector::loadSettingsFile(string fname, int imod) {
 	int ret=OK;
 

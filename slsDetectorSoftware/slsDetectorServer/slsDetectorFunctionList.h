@@ -37,6 +37,7 @@ u_int64_t  	getFirmwareVersion();
 #ifdef MYTHEND
 int64_t 	getModuleId(enum idMode arg, int imod);
 #elif JUNGFRAUD
+u_int64_t   getFirmwareAPIVersion();
 u_int16_t 	getHardwareVersionNumber();
 u_int16_t 	getHardwareSerialNumber();
 #endif
@@ -75,11 +76,13 @@ int 		powerChip (int on);
 void 		cleanFifos();
 void 		resetCore();
 void 		resetPeripheral();
+#endif
+#ifdef MYTHEN3D
 int         getPhase(int i);
 int         configurePhase(int val, enum CLKINDEX i);
 int         configureFrequency(int val, int i);
-#endif
-#ifdef JUNGFRAUD
+#elif JUNGFRAUD
+int         autoCompDisable(int on);
 int 		adcPhase(int st);
 int 		getPhase();
 #endif
@@ -197,6 +200,9 @@ int 		calibratePedestal(int frames);
 void 		resetPLL();
 u_int32_t 	setPllReconfigReg(u_int32_t reg, u_int32_t val);
 void 		configurePll();
+int         setThresholdTemperature(int val);
+int         setTemperatureControl(int val);
+int         setTemperatureEvent(int val);
 extern void eraseFlash();													// programfpga.h
 extern int 	startWritingFPGAprogram(FILE** filefp);							// programfpga.h
 extern void stopWritingFPGAprogram(FILE* filefp);							// programfpga.h
@@ -220,7 +226,9 @@ int 		setAllTrimbits(int val);
 int 		getAllTrimbits();
 int 		getBebFPGATemp();
 int 		activate(int enable);
-int 		setNetworkParameter(enum NETWORKINDEX mode, int value);
+#endif
+#if defined(JUNGFRAUD) || defined(EIGERD)
+int         setNetworkParameter(enum NETWORKINDEX mode, int value);
 #endif
 
 

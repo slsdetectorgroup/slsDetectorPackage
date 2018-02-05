@@ -2694,6 +2694,129 @@ dacs_t slsDetector::getADC(dacIndex index, int imod){
 
 };
 
+
+
+
+int slsDetector::setThresholdTemperature(int val, int imod) {
+
+    int retval = -1;
+    int fnum = F_THRESHOLD_TEMP;
+    int ret = FAIL;
+    char mess[MAX_STR_LENGTH] = "";
+
+    int arg[2];
+    arg[0]=val;
+    arg[1]=imod;
+
+
+#ifdef VERBOSE
+    std::cout<< std::endl;
+    std::cout<< "Setting/Getting Threshold Temperature to "<< val << " of module " << imod  << std::endl;
+#endif
+    if (thisDetector->onlineFlag==ONLINE_FLAG) {
+        if (connectStop() == OK){
+            stopSocket->SendDataOnly(&fnum,sizeof(fnum));
+            stopSocket->SendDataOnly(arg,sizeof(arg));
+            stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
+            if (ret!=FAIL) {
+                stopSocket->ReceiveDataOnly(&retval,sizeof(retval));
+#ifdef VERBOSE
+                std::cout<< "Threshold Temperature returned "<< retval << std::endl;
+#endif
+            } else {
+                stopSocket->ReceiveDataOnly(mess,sizeof(mess));
+                std::cout<< "Detector returned error: " << mess << std::endl;
+                setErrorMask((getErrorMask())|(TEMPERATURE_CONTROL));
+            }
+            disconnectStop();
+        }
+    }
+
+    return retval;
+}
+
+
+
+int slsDetector::setTemperatureControl(int val, int imod) {
+
+    int retval = -1;
+    int fnum = F_TEMP_CONTROL;
+    int ret = FAIL;
+    char mess[MAX_STR_LENGTH] = "";
+
+    int arg[2];
+    arg[0]=val;
+    arg[1]=imod;
+
+
+#ifdef VERBOSE
+    std::cout<< std::endl;
+    std::cout<< "Setting/Getting Threshold Temperature to "<< val << " of module " << imod  << std::endl;
+#endif
+    if (thisDetector->onlineFlag==ONLINE_FLAG) {
+        if (connectStop() == OK){
+            stopSocket->SendDataOnly(&fnum,sizeof(fnum));
+            stopSocket->SendDataOnly(arg,sizeof(arg));
+            stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
+            if (ret!=FAIL) {
+                stopSocket->ReceiveDataOnly(&retval,sizeof(retval));
+#ifdef VERBOSE
+                std::cout<< "Threshold Temperature returned "<< retval << std::endl;
+#endif
+            } else {
+                stopSocket->ReceiveDataOnly(mess,sizeof(mess));
+                std::cout<< "Detector returned error: " << mess << std::endl;
+                setErrorMask((getErrorMask())|(TEMPERATURE_CONTROL));
+            }
+            disconnectStop();
+        }
+    }
+
+    return retval;
+}
+
+
+
+
+int slsDetector::setTemperatureEvent(int val, int imod) {
+
+    int retval = -1;
+    int fnum = F_TEMP_EVENT;
+    int ret = FAIL;
+    char mess[MAX_STR_LENGTH] = "";
+
+    int arg[2];
+    arg[0]=val;
+    arg[1]=imod;
+
+
+#ifdef VERBOSE
+    std::cout<< std::endl;
+    std::cout<< "Setting/Getting Threshold Temperature to "<< val << " of module " << imod  << std::endl;
+#endif
+    if (thisDetector->onlineFlag==ONLINE_FLAG) {
+        if (connectStop() == OK){
+            stopSocket->SendDataOnly(&fnum,sizeof(fnum));
+            stopSocket->SendDataOnly(arg,sizeof(arg));
+            stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
+            if (ret!=FAIL) {
+                stopSocket->ReceiveDataOnly(&retval,sizeof(retval));
+#ifdef VERBOSE
+                std::cout<< "Threshold Temperature returned "<< retval << std::endl;
+#endif
+            } else {
+                stopSocket->ReceiveDataOnly(mess,sizeof(mess));
+                std::cout<< "Detector returned error: " << mess << std::endl;
+                setErrorMask((getErrorMask())|(TEMPERATURE_CONTROL));
+            }
+            disconnectStop();
+        }
+    }
+
+    return retval;
+}
+
+
 /*
    configure single channel
    enum channelRegisterBit {
@@ -7614,6 +7737,43 @@ int slsDetector::powerChip(int ival){
 	return retval;
 
 }
+
+
+int slsDetector::setAutoComparatorDisableMode(int ival){
+    int ret=FAIL;
+    int fnum=F_AUTO_COMP_DISABLE;
+    char mess[MAX_STR_LENGTH]="";
+    int retval=-1;
+
+    if(thisDetector->myDetectorType != JUNGFRAU){
+        std::cout << "Not implemented for this detector" << std::endl;
+        return FAIL;
+    }
+#ifdef VERBOSE
+    std::cout<< "Enabling/disabling Auto comp disable mode " << endl;
+#endif
+    if (thisDetector->onlineFlag==ONLINE_FLAG) {
+        if (connectControl() == OK){
+            controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+            controlSocket->SendDataOnly(&ival,sizeof(ival));
+            //check opening error
+            controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+            if (ret==FAIL) {
+                controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+                std::cout<< "Detector returned error: " << mess << std::endl;
+                setErrorMask((getErrorMask())|(AUTO_COMP_DISABLE));
+            }else
+                controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+            disconnectControl();
+            if (ret==FORCE_UPDATE)
+                updateDetector();
+        }
+    }
+    return retval;
+
+}
+
+
 int slsDetector::loadSettingsFile(string fname, int imod) {
 
   sls_detector_module  *myMod=NULL;

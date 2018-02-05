@@ -50,7 +50,7 @@ int printSocketReadError() {
 }
 
 void basictests(int flag) {
-	debugflag = flag;
+    debugflag = flag;
 #ifdef	SLS_DETECTOR_FUNCTION_LIST
 	checkFirmwareCompatibility(debugflag);
 #endif
@@ -64,7 +64,7 @@ void init_detector(int controlserver) {
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (controlserver) {
-		isControlServer = 1;
+	    isControlServer = 1;
 		initControlServer();
 	}
 	else initStopServer();
@@ -183,6 +183,11 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_ACTIVATE:						return "F_ACTIVATE";
 	case F_PREPARE_ACQUISITION:				return "F_PREPARE_ACQUISITION";
 	case F_CLEANUP_ACQUISITION:				return "F_CLEANUP_ACQUISITION";
+	case F_THRESHOLD_TEMP:                  return "F_THRESHOLD_TEMP";
+	case F_TEMP_CONTROL:                    return "F_TEMP_CONTROL";
+	case F_TEMP_EVENT:                      return "F_TEMP_EVENT";
+    case F_AUTO_COMP_DISABLE:               return "F_AUTO_COMP_DISABLE";
+
 	default:								return "Unknown Function";
 	}
 }
@@ -261,6 +266,10 @@ void function_table() {
 	flist[F_ACTIVATE]							= &set_activate;
 	flist[F_PREPARE_ACQUISITION]				= &prepare_acquisition;
 	flist[F_CLEANUP_ACQUISITION]				= &cleanup_acquisition;
+	flist[F_THRESHOLD_TEMP]                     = &threshold_temp;
+	flist[F_TEMP_CONTROL]                       = &temp_control;
+	flist[F_TEMP_EVENT]                         = &temp_event;
+    flist[F_AUTO_COMP_DISABLE]                  = &auto_comp_disable;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= TOO_MANY_FUNCTIONS_DEFINED) {
@@ -4187,11 +4196,6 @@ int set_all_trimbits(int file_des){
 int set_ctb_pattern(int file_des) {
     int ret=OK,ret1=OK;
     int n=0;
-    int retval=-1;
-
-    int mode = -1;
-    int addr = -1, level = -1, nl = -1, start = -1, stop = -1;
-    uint64_t word = -1,retval64 = -1, t = -1;
     sprintf(mess,"Could not set pattern\n");
 
 #ifndef MYTHEN3D
@@ -4212,7 +4216,13 @@ int set_ctb_pattern(int file_des) {
 
     return ret;
 
-#endif
+#else
+
+    int retval=-1;
+    int mode = -1;
+    int addr = -1, level = -1, nl = -1, start = -1, stop = -1;
+    uint64_t word = -1,retval64 = -1, t = -1;
+
     n = receiveDataOnly(file_des, &mode, sizeof(mode));
     printf("pattern mode is %d\n",mode);
 
@@ -4223,7 +4233,7 @@ int set_ctb_pattern(int file_des) {
         n = receiveDataOnly(file_des,&word,sizeof(word));
         ret=OK;
 
-        printf("pattern addr is %d %x\n",addr, word);
+        printf("pattern addr is %d %llx\n",addr, word);
         switch (addr) {
         case -1:
             retval64=writePatternIOControl(word);
@@ -4359,6 +4369,7 @@ int set_ctb_pattern(int file_des) {
 
     // return ok / fail
     return ret;
+#endif
 }
 
 
@@ -4763,7 +4774,7 @@ int set_network_parameter(int file_des) {
 	int retval=-1;
 	sprintf(mess,"set network parameter failed\n");
 
-#ifndef EIGERD
+#if !defined(EIGERD) && !defined(JUNGFRAUD)
 	//to receive any arguments
 	while (n > 0)
 		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
@@ -4784,7 +4795,7 @@ int set_network_parameter(int file_des) {
 	if (n < 0) return printSocketReadError();
 
 	// execute action
-	if (differentClients && lockStatus && value<0) {
+	if (differentClients && lockStatus && value >= 0) {
 		ret = FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		cprintf(RED, "Warning: %s", mess);
@@ -4795,17 +4806,27 @@ int set_network_parameter(int file_des) {
 		printf("setting network parameter mode %d to %d\n",(int)mode,value);
 #endif
 		switch (mode) {
+
+#ifdef EIGERD
+        case FLOW_CONTROL_10G:
+            index = FLOWCTRL_10G;
+            break;
 		case DETECTOR_TXN_DELAY_LEFT:
 			index = TXN_LEFT;
 			break;
 		case DETECTOR_TXN_DELAY_RIGHT:
 			index = TXN_RIGHT;
 			break;
+#endif
 		case DETECTOR_TXN_DELAY_FRAME:
 			index = TXN_FRAME;
-			break;
-		case FLOW_CONTROL_10G:
-			index = FLOWCTRL_10G;
+#ifdef JUNGFRAUD
+			if (value > MAX_TIMESLOT_VAL)	{
+			    ret=FAIL;
+			    sprintf(mess,"Transmission delay %d should be in range: 0 - %d\n", value, MAX_TIMESLOT_VAL);
+			    cprintf(RED, "Warning: %s", mess);
+			}
+#endif
 			break;
 		default:
 			ret=FAIL;
@@ -4963,9 +4984,9 @@ int program_fpga(int file_des) {
 #ifdef VERY_VERBOSE
 	printf("Done with program receiving command\n");
 #endif
-	if (isControlServer)
-		basictests(debugflag);
-	init_detector(isControlServer);
+    if (isControlServer)
+        basictests(debugflag);
+    init_detector(isControlServer);
 	}
 #endif
 		if (ret==OK)
@@ -5011,9 +5032,9 @@ int reset_fpga(int file_des) {
 	}
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	else {
-		if (isControlServer)
-			basictests(debugflag);
-		init_detector(isControlServer);
+	    if (isControlServer)
+	        basictests(debugflag);
+		initControlServer(isControlServer);
 		ret = FORCE_UPDATE;
 	}
 #endif
@@ -5074,7 +5095,10 @@ int power_chip(int file_des) {
 			ret=OK;
 		} else {
 			ret=FAIL;
-			sprintf(mess,"Powering chip failed, wrote %d but read %d\n", arg, retval);
+			if(setTemperatureEvent(-1) == 1)
+			    sprintf(mess,"Powering chip failed due to over-temperature event. Clear event & power chip again. Wrote %d, read %d \n", arg, retval);
+			else
+			    sprintf(mess,"Powering chip failed, wrote %d but read %d\n", arg, retval);
 			cprintf(RED, "Warning: %s", mess);
 		}
 	}
@@ -5249,4 +5273,256 @@ int cleanup_acquisition(int file_des) {
 	return ret;
 }
 
+
+
+
+int threshold_temp(int file_des) {
+    int ret=OK,ret1=OK;
+    int n=0;
+    int retval=-1;
+    sprintf(mess,"could not set/get threshold temperature\n");
+
+#ifndef JUNGFRAUD
+    //to receive any arguments
+    while (n > 0)
+        n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+    ret = FAIL;
+    sprintf(mess,"Function (Threshold Temp) is not implemented for this detector\n");
+    cprintf(RED, "%s", mess);
+#else
+
+    int arg[2]={-1,-1};
+    int val=-1;
+
+    // receive arguments
+    n = receiveData(file_des,arg,sizeof(arg),INT32);
+    if (n < 0) return printSocketReadError();
+    val=arg[0];
+    //ignoring imod
+    if (val > MAX_THRESHOLD_TEMP_VAL)   {
+        ret=FAIL;
+        sprintf(mess,"Threshold Temp %d should be in range: 0 - %d\n", val, MAX_THRESHOLD_TEMP_VAL);
+        cprintf(RED, "Warning: %s", mess);
+    }
+
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+    if (ret==OK) {
+#ifdef VERBOSE
+    printf("Setting Threshold Temperature to  %d\n", val);
+#endif
+        retval=setThresholdTemperature(val);
+    }
+#endif
+#ifdef VERBOSE
+    printf("Threshold temperature is %d\n",  retval);
+#endif
+
+    if (ret==OK && differentClients && val >= 0)
+        ret=FORCE_UPDATE;
+#endif
+
+    // ret could be swapped during sendData
+    ret1 = ret;
+    // send ok / fail
+    n = sendData(file_des,&ret1,sizeof(ret),INT32);
+    // send return argument
+    if (ret!=FAIL) {
+        n += sendData(file_des,&retval,sizeof(retval),INT32);
+    } else {
+        n += sendData(file_des,mess,sizeof(mess),OTHER);
+    }
+
+    // return ok / fail
+    return ret;
+}
+
+
+
+int temp_control(int file_des) {
+    int ret=OK,ret1=OK;
+    int n=0;
+    int retval=-1;
+    sprintf(mess,"could not set/get temperature control\n");
+
+#ifndef JUNGFRAUD
+    //to receive any arguments
+    while (n > 0)
+        n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+    ret = FAIL;
+    sprintf(mess,"Function (Temperature control) is not implemented for this detector\n");
+    cprintf(RED, "%s", mess);
+#else
+    int arg[2]={-1,-1};
+    int val=-1;
+
+    // receive arguments
+    n = receiveData(file_des,arg,sizeof(arg),INT32);
+    if (n < 0) return printSocketReadError();
+    val=arg[0];
+    //ignoring imod
+
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+    if (ret==OK) {
+#ifdef VERBOSE
+    printf("Setting Temperature control to  %d\n", val);
+#endif
+        retval=setTemperatureControl(val);
+    }
+#endif
+#ifdef VERBOSE
+    printf("Temperature control is %d\n",  retval);
+#endif
+
+    if (ret==OK && differentClients && val >= 0)
+        ret=FORCE_UPDATE;
+#endif
+
+    // ret could be swapped during sendData
+    ret1 = ret;
+    // send ok / fail
+    n = sendData(file_des,&ret1,sizeof(ret),INT32);
+    // send return argument
+    if (ret!=FAIL) {
+        n += sendData(file_des,&retval,sizeof(retval),INT32);
+    } else {
+        n += sendData(file_des,mess,sizeof(mess),OTHER);
+    }
+
+    // return ok / fail
+    return ret;
+}
+
+
+
+
+int temp_event(int file_des) {
+    int ret=OK,ret1=OK;
+    int n=0;
+    int retval=-1;
+    sprintf(mess,"could not set/get temperature event\n");
+
+#ifndef JUNGFRAUD
+    //to receive any arguments
+    while (n > 0)
+        n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+    ret = FAIL;
+    sprintf(mess,"Function (Temperature Event) is not implemented for this detector\n");
+    cprintf(RED, "%s", mess);
+#else
+    int arg[2]={-1,-1};
+    int val=-1;
+
+    // receive arguments
+    n = receiveData(file_des,arg,sizeof(arg),INT32);
+    if (n < 0) return printSocketReadError();
+    val=arg[0];
+    //ignoring imod
+
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+    if (ret==OK) {
+#ifdef VERBOSE
+    printf("Setting Temperature Event to  %d\n", val);
+#endif
+        retval=setTemperatureEvent(val);
+    }
+#endif
+#ifdef VERBOSE
+    printf("Temperature Event is %d\n",  retval);
+#endif
+
+    if (ret==OK && differentClients && val >= 0)
+        ret=FORCE_UPDATE;
+#endif
+
+    // ret could be swapped during sendData
+    ret1 = ret;
+    // send ok / fail
+    n = sendData(file_des,&ret1,sizeof(ret),INT32);
+    // send return argument
+    if (ret!=FAIL) {
+        n += sendData(file_des,&retval,sizeof(retval),INT32);
+    } else {
+        n += sendData(file_des,mess,sizeof(mess),OTHER);
+    }
+
+    // return ok / fail
+    return ret;
+}
+
+
+
+
+
+int auto_comp_disable(int file_des) {
+    int ret=OK,ret1=OK;
+    int n=0;
+    int retval=-1;
+    sprintf(mess,"auto comp disable failed\n");
+
+#ifndef JUNGFRAUD
+    //to receive any arguments
+    while (n > 0)
+        n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+    ret = FAIL;
+    sprintf(mess,"Function (Auto Comp Disable) is not implemented for this detector\n");
+    cprintf(RED, "%s", mess);
+#else
+
+    //to receive any arguments
+    while (n > 0)
+        n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+    ret = FAIL;
+    sprintf(mess,"Function (Auto Comp Disable) is not yet implemented for this detector\n");
+    cprintf(RED, "%s", mess);
+
+    /* will be connected after teh fpga upgrade
+
+    // receive arguments
+    int arg=-1;
+    n = receiveData(file_des,&arg,sizeof(arg),INT32);
+    if (n < 0) return printSocketReadError();
+
+    // execute action
+    if (differentClients && lockStatus && arg!=-1) {
+        ret = FAIL;
+        sprintf(mess,"Detector locked by %s\n",lastClientIP);
+        cprintf(RED, "Warning: %s", mess);
+    }
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+    else {
+#ifdef VERBOSE
+    printf("Auto Comp Disable to %d\n", arg);
+#endif
+        retval=autoCompDisable(arg);
+
+#ifdef VERBOSE
+        printf("Auto comp disable set to: %d\n",retval);
+#endif
+        if (retval==arg || arg<0) {
+            ret=OK;
+        } else {
+            ret=FAIL;
+            sprintf(mess,"Atuo Comp Disable failed, wrote %d but read %d\n", arg, retval);
+            cprintf(RED, "Warning: %s", mess);
+        }
+    }
+#endif
+    if (ret==OK && differentClients)
+        ret=FORCE_UPDATE;
+        */
+#endif
+
+    // ret could be swapped during sendData
+    ret1 = ret;
+    // send ok / fail
+    n = sendData(file_des,&ret1,sizeof(ret),INT32);
+    // send return argument
+    if (ret==FAIL) {
+        n += sendData(file_des,mess,sizeof(mess),OTHER);
+    } else
+        n += sendData(file_des,&retval,sizeof(retval),INT32);
+
+    // return ok / fail
+    return ret;
+}
 

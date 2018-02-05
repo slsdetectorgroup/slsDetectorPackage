@@ -849,13 +849,13 @@ void setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]){
         int i;
 
         // start and chip select bar down -----------------
-        SPIChipSelect (valw, SPI_REG, (0x1 << csdx));
+        SPIChipSelect (&valw, SPI_REG, (0x1 << csdx));
 
 
         // next dac --------------------------------------
         for (i = 0; i < ichip; ++i) {
             printf("%d next DAC\n", i);
-            sendDataToSPI (valw, SPI_REG, LTC2620_DAC_CMD_MSK, LTC2620_DAC_NUMBITS,
+            sendDataToSPI (&valw, SPI_REG, LTC2620_DAC_CMD_MSK, LTC2620_DAC_NUMBITS,
                     DAC_SERIAL_CLK_OUT_MSK, DAC_SERIAL_DIGITAL_OUT_MSK, DAC_SERIAL_DIGITAL_OUT_OFST);
         }
 
@@ -892,13 +892,13 @@ void setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]){
         // next dac -----------------------------------------------------------
         for (i = ichip+1; i < (N_DAC / NDAC_PER_SET); ++i) {
             printf("%d next DAC\n", i);
-            sendDataToSPI (valw, SPI_REG, LTC2620_DAC_CMD_MSK, LTC2620_DAC_NUMBITS,
+            sendDataToSPI (&valw, SPI_REG, LTC2620_DAC_CMD_MSK, LTC2620_DAC_NUMBITS,
                     DAC_SERIAL_CLK_OUT_MSK, DAC_SERIAL_DIGITAL_OUT_MSK, DAC_SERIAL_DIGITAL_OUT_OFST);
         }
 
 
         //chip select bar up, clk down and stop --------------------------------
-        SPIChipDeselect (valw, SPI_REG, (0x1 << csdx), DAC_SERIAL_CLK_OUT_MSK);
+        SPIChipDeselect (&valw, SPI_REG, (0x1 << csdx), DAC_SERIAL_CLK_OUT_MSK);
 
         // writes to register
         setDacRegister(ind, dacval);

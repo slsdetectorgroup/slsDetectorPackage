@@ -234,7 +234,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 
 
-
 	/*! \page config Configuration commands
     Commands to configure the detector. these commands are often left to the configuration file.
 	 - \ref configstructure "Data Structure": commands to configure detector data structure
@@ -468,6 +467,13 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncName="led";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
 	++i;
+
+    /*! \page config
+   - <b>auto_comp_disable i </b> Currently not implemented. this mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us). 1 enables mode, 0 disables mode. By default, mode is disabled (comparator is enabled throughout). (JUNGFRAU only). \c Returns \c (int)
+     */
+    descrToFuncMap[i].m_pFuncName="auto_comp_disable"; //
+    descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
+    ++i;
 
 	/*! \page config
    - <b>pulse [n] [x] [y]</b> pulses pixel at coordinates (x,y) n number of times. Used in EIGER only. Only put! \c Returns \c ("successful", "unsuccessful")
@@ -966,6 +972,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
     - \ref settingssett "Settings and Threshold": commands to configure settings and threshold of detector
     - \ref settingsdacs "DACs": commands to configure DACs of detector
     - \ref settingsadcs "ADCs": commands to readout ADCs of detector
+    - \ref settingstmp  "Temp Control": commands to monitor and handle temperature overshoot (only JUNGFRAU)
 	 */
 
 	/* trim/cal directories */
@@ -1639,6 +1646,35 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncName="vm_io"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
 	++i;
+
+
+	/* temperature control */
+    /*! \page settings
+        \section settingsadcs Temp Control
+  commands to monitor and handle temperature overshoot (only JUNGFRAU)
+     */
+
+    /*! \page settings
+   - <b>temp_threshold</b> Sets/gets the threshold temperature. JUNGFRAU ONLY. \c Returns \c (double"°C")
+     */
+    descrToFuncMap[i].m_pFuncName="temp_threshold"; //
+    descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTempControl;
+    ++i;
+
+    /*! \page settings
+   - <b>temp_control</b> Enables/Disables the temperature control. 1 enables, 0 disables.  JUNGFRAU ONLY. \c Returns \c int
+     */
+    descrToFuncMap[i].m_pFuncName="temp_control"; //
+    descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTempControl;
+    ++i;
+
+    /*! \page settings
+   - <b>temp_event</b> Resets/gets over-temperative event. Put only with option 0 to clear event. Gets 1 if temperature went over threshold and control is enabled, else 0. /Disables the temperature control.  JUNGFRAU ONLY. \c Returns \c int
+     */
+    descrToFuncMap[i].m_pFuncName="temp_event"; //
+    descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTempControl;
+    ++i;
+
 
 	/* file name */
 
@@ -5438,6 +5474,80 @@ string slsDetectorCommand::helpADC(int narg, char *args[], int action) {
 	return os.str();
 }
 
+
+
+
+string slsDetectorCommand::cmdTempControl(int narg, char *args[], int action) {
+    char answer[1000]="";
+    int val = -1;
+
+    if (action==HELP_ACTION)
+        return helpTempControl(narg, args, action);
+
+    myDet->setOnline(ONLINE_FLAG);
+
+    if (cmd == "temp_threshold") {
+        if (action==PUT_ACTION) {
+            double fval=0.0;
+            if (!sscanf(args[1],"%lf", &fval))
+                return string("cannot scan temp control value ")+string(args[1]);
+            val = fval * 1000;
+            myDet->setThresholdTemperature(val);
+        }
+        val = myDet->setThresholdTemperature();
+        if (val == -1)
+            sprintf(answer,"%d",val);
+        else
+            sprintf(answer,"%.2f°C", (double)val/1000.000);
+    }
+
+    else if (cmd == "temp_control") {
+        if (action==PUT_ACTION) {
+            if (!sscanf(args[1],"%d", &val))
+                return string("cannot scan temp control value ")+string(args[1]);
+            if ((val!=0) && (val!=1))
+                return string ("temp_control option must be 0 or 1");
+            myDet->setTemperatureControl(val);
+        }
+        sprintf(answer,"%d", myDet->setTemperatureControl());
+    }
+
+    else if (cmd == "temp_event") {
+        if (action==PUT_ACTION) {
+            if (!sscanf(args[1],"%d", &val))
+                return string("cannot scan temp control value ")+string(args[1]);
+            if (val!=0)
+                return string ("temp_event option must be 0 to clear event");
+            myDet->setTemperatureEvent(val);
+        }
+        sprintf(answer,"%d", myDet->setTemperatureEvent());
+    }
+
+    else
+        return string ("cannot scan command " + cmd);
+
+    return string(answer);
+}
+
+
+
+string slsDetectorCommand::helpTempControl(int narg, char *args[], int action) {
+    ostringstream os;
+    if (action==PUT_ACTION || action==HELP_ACTION) {
+        os << "temp_threshold t \t sets the threshold temperature. Jungfrau only" << std::endl;
+        os << "temp_control t \t Enables/Disables the temperature control. 1 enables, 0 disables. JUNGFRAU ONLY" << std::endl;
+        os << "temp_event t \t Resets over-temperative event. Put only with option 0 to clear event. JUNGFRAU ONLY." << std::endl;
+    }
+    if (action==GET_ACTION || action==HELP_ACTION) {
+        os << "temp_threshold  \t gets the threshold temperature. Jungfrau only." << std::endl;
+        os << "temp_control  \t gets temperature control enable. 1 enabled, 0 disabled. JUNGFRAU ONLY" << std::endl;
+        os << "temp_event  \t gets over-temperative event. Gets 1 if temperature went over threshold and control is enabled, else 0. /Disables the temperature control. JUNGFRAU ONLY." << std::endl;
+    }
+    return os.str();
+}
+
+
+
 string slsDetectorCommand::cmdTiming(int narg, char *args[], int action){
 #ifdef VERBOSE
 	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
@@ -5894,7 +6004,9 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action) {
 		}
 		sprintf(ans,"%d",myDet->powerChip());
 		return string(ans);
-	} else if (cmd=="led") {
+	}
+
+	else if (cmd=="led") {
 		char ans[100];
 		int val=0;
 		myDet->setOnline(ONLINE_FLAG);
@@ -5908,6 +6020,19 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action) {
 		sprintf(ans,"%d",~(myDet->readRegister(0x4d))&1);
 		return string(ans);
 	}
+
+	else if (cmd=="auto_comp_disable") {
+        char ans[100];
+        myDet->setOnline(ONLINE_FLAG);
+        if (action==PUT_ACTION){
+            int ival = -1;
+            if (!sscanf(args[1],"%d",&ival))
+                return string("could not scan auto_comp_control parameter " + string(args[1]));
+            myDet->setAutoComparatorDisableMode(ival);
+        }
+        sprintf(ans,"%d",myDet->setAutoComparatorDisableMode());
+        return string(ans);
+    }
 	else
 		return string("unknown command ")+cmd;
 
@@ -5927,6 +6052,7 @@ string slsDetectorCommand::helpAdvanced(int narg, char *args[], int action) {
 
 		os << "led s \t sets led status (0 off, 1 on)" << std::endl;
 		os << "powerchip i \t powers on or off the chip. i = 1 for on, i = 0 for off" << std::endl;
+        os << "auto_comp_disable i \t Currently not implemented. this mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us). 1 enables mode, 0 disables mode. By default, mode is disabled (comparator is enabled throughout). (JUNGFRAU only). " << std::endl;
 	}
 	if (action==GET_ACTION || action==HELP_ACTION) {
 
@@ -5936,6 +6062,7 @@ string slsDetectorCommand::helpAdvanced(int narg, char *args[], int action) {
 		os << "led \t returns led status (0 off, 1 on)" << std::endl;
 		os << "flags \t gets the readout flags. can be none, storeinram, tot, continous, parallel, nonparallel, safe, unknown" << std::endl;
 		os << "powerchip \t gets if the chip has been powered on or off" << std::endl;
+        os << "auto_comp_disable \t Currently not implemented. gets if the automatic comparator diable mode is enabled/disabled" << std::endl;
 
 	}
 	return os.str();

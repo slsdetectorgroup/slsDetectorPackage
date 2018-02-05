@@ -461,7 +461,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
     /*! \page config
-   - <b>auto_comp_disable i </b> this mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us). 1 enables mode, 0 disables mode. By default, mode is disabled (comparator is enabled throughout). (JUNGFRAU only). \c Returns \c (int)
+   - <b>auto_comp_disable i </b> Currently not implemented. this mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us). 1 enables mode, 0 disables mode. By default, mode is disabled (comparator is enabled throughout). (JUNGFRAU only). \c Returns \c (int)
      */
     descrToFuncMap[i].m_pFuncName="auto_comp_disable"; //
     descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
@@ -5908,7 +5908,7 @@ string slsDetectorCommand::helpAdvanced(int narg, char *args[], int action) {
 
 		os << "led s \t sets led status (0 off, 1 on)" << std::endl;
 		os << "powerchip i \t powers on or off the chip. i = 1 for on, i = 0 for off" << std::endl;
-        os << "auto_comp_disable i \t this mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us). 1 enables mode, 0 disables mode. By default, mode is disabled (comparator is enabled throughout). (JUNGFRAU only). " << std::endl;
+        os << "auto_comp_disable i \t Currently not implemented. this mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us). 1 enables mode, 0 disables mode. By default, mode is disabled (comparator is enabled throughout). (JUNGFRAU only). " << std::endl;
 	}
 	if (action==GET_ACTION || action==HELP_ACTION) {
 
@@ -5918,7 +5918,7 @@ string slsDetectorCommand::helpAdvanced(int narg, char *args[], int action) {
 		os << "led \t returns led status (0 off, 1 on)" << std::endl;
 		os << "flags \t gets the readout flags. can be none, storeinram, tot, continous, parallel, nonparallel, safe, unknown" << std::endl;
 		os << "powerchip \t gets if the chip has been powered on or off" << std::endl;
-        os << "auto_comp_disable \t gets if the automatic comparator diable mode is enabled/disabled" << std::endl;
+        os << "auto_comp_disable \t Currently not implemented. gets if the automatic comparator diable mode is enabled/disabled" << std::endl;
 
 	}
 	return os.str();

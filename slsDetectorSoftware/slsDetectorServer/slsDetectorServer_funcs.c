@@ -5107,6 +5107,15 @@ int auto_comp_disable(int file_des) {
     cprintf(RED, "%s", mess);
 #else
 
+    //to receive any arguments
+    while (n > 0)
+        n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+    ret = FAIL;
+    sprintf(mess,"Function (Auto Comp Disable) is not yet implemented for this detector\n");
+    cprintf(RED, "%s", mess);
+
+    /* will be connected after teh fpga upgrade
+
     // receive arguments
     int arg=-1;
     n = receiveData(file_des,&arg,sizeof(arg),INT32);
@@ -5139,6 +5148,7 @@ int auto_comp_disable(int file_des) {
 #endif
     if (ret==OK && differentClients)
         ret=FORCE_UPDATE;
+        */
 #endif
 
     // ret could be swapped during sendData

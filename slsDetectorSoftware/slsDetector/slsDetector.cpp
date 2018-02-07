@@ -6727,12 +6727,12 @@ int slsDetector::configureMAC(){
 				    if (strcasecmp(arg[0],thisDetector->detectorMAC)) {
 				        memset(thisDetector->detectorMAC, 0, MAX_STR_LENGTH);
 				        strcpy(thisDetector->detectorMAC, arg[0]);
-				        std::cout << "Detector MAC updated to " << thisDetector->detectorMAC << endl;
+				        cprintf(RESET,"%d: Detector MAC updated to %s\n", detId, thisDetector->detectorMAC);
 				    }
                     if (strcasecmp(arg[1],thisDetector->detectorIP)) {
                         memset(thisDetector->detectorIP, 0, MAX_STR_LENGTH);
-                        strcpy(thisDetector->detectorIP, arg[0]);
-                        std::cout << "Detector IP updated to " << thisDetector->detectorIP << endl;
+                        strcpy(thisDetector->detectorIP, arg[1]);
+                        cprintf(RESET,"%d: Detector IP updated to %s\n", detId, thisDetector->detectorIP);
                     }
 				}
 			}

@@ -255,7 +255,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   /**
      returns currently the loaded trimfile/settingsfile name
   */
-  virtual const char *getSettingsFile()=0;
+  virtual string getSettingsFile()=0;
 
   
   /** 

@@ -828,23 +828,6 @@ enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
 /* configure mac */
 
 int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2, int ival) {
-	if (sourcemac != getDetectorMAC()){
-		printf("*************************************************\n");
-		printf("WARNING: actual detector mac address %llx does not match the one from client %llx\n",getDetectorMAC(),sourcemac);
-		sourcemac = getDetectorMAC();
-		printf("WARNING: Matched detectormac to the hardware mac now\n");
-		printf("*************************************************\n");
-	}
-	//only for 1Gbe
-	if(!send_to_ten_gig){
-		if (sourceip != getDetectorIP()){
-			printf("*************************************************\n");
-			printf("WARNING: actual detector ip address %x does not match the one from client %x\n",getDetectorIP(),sourceip);
-			sourceip = getDetectorIP();
-			printf("WARNING: Matched detector ip to the hardware ip now\n");
-			printf("*************************************************\n");
-		}
-	}
 
 	char src_mac[50], src_ip[50],dst_mac[50], dst_ip[50];
 	int src_port = 0xE185;

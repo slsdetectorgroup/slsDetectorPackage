@@ -6701,8 +6701,41 @@ int slsDetector::configureMAC(){
 				std::cout<< "Detector returned error: " << mess << std::endl;
 				setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
 			}
-			else
+			else {
 				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+				if (thisDetector->myDetectorType == EIGER) {
+                    //rewrite detectormac, detector ip
+			        char arg[2][50];
+			        memset(arg,0,sizeof(arg));
+                    uint64_t idetectormac = 0;
+                    uint32_t idetectorip = 0;
+				    controlSocket->ReceiveDataOnly(arg,sizeof(arg));
+                    sscanf(arg[0], "%lx",    &idetectormac);
+				    sscanf(arg[1], "%x",    &idetectorip);
+				    sprintf(arg[0],"%02x:%02x:%02x:%02x:%02x:%02x",
+				                (unsigned int)((idetectormac>>40)&0xFF),
+				                (unsigned int)((idetectormac>>32)&0xFF),
+				                (unsigned int)((idetectormac>>24)&0xFF),
+				                (unsigned int)((idetectormac>>16)&0xFF),
+				                (unsigned int)((idetectormac>>8)&0xFF),
+				                (unsigned int)((idetectormac>>0)&0xFF));
+				    sprintf(arg[1],"%d.%d.%d.%d",
+				            (idetectorip>>24)&0xff,
+				            (idetectorip>>16)&0xff,
+				            (idetectorip>>8)&0xff,
+				            (idetectorip)&0xff);
+				    if (strcasecmp(arg[0],thisDetector->detectorMAC)) {
+				        memset(thisDetector->detectorMAC, 0, MAX_STR_LENGTH);
+				        strcpy(thisDetector->detectorMAC, arg[0]);
+				        std::cout << "Detector MAC updated to " << thisDetector->detectorMAC << endl;
+				    }
+                    if (strcasecmp(arg[1],thisDetector->detectorIP)) {
+                        memset(thisDetector->detectorIP, 0, MAX_STR_LENGTH);
+                        strcpy(thisDetector->detectorIP, arg[0]);
+                        std::cout << "Detector IP updated to " << thisDetector->detectorIP << endl;
+                    }
+				}
+			}
 			disconnectControl();
 			if (ret==FORCE_UPDATE)
 				updateDetector();

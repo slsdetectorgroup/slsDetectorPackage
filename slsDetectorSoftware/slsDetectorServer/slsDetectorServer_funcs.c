@@ -3479,6 +3479,26 @@ int configure_mac(int file_des) {
 				cprintf(RED, "Warning: %s", mess);
 			}
 			else {
+#ifdef EIGERD
+			    // change mac to hardware mac, (for 1 gbe) change ip to hardware ip
+			    if (idetectormacadd != getDetectorMAC()){
+			        printf("*************************************************\n");
+			        printf("WARNING: actual detector mac address %llx does not match the one from client %llx\n",getDetectorMAC(),idetectormacadd);
+			        idetectormacadd = getDetectorMAC();
+			        printf("WARNING: Matched detectormac to the hardware mac now\n");
+			        printf("*************************************************\n");
+			    }
+			    //only for 1Gbe
+			    if(!enableTenGigabitEthernet(-1)){
+			        if (detipad != getDetectorIP()){
+			            printf("*************************************************\n");
+			            printf("WARNING: actual detector ip address %x does not match the one from client %x\n",getDetectorIP(),detipad);
+			            detipad = getDetectorIP();
+			            printf("WARNING: Matched detector ip to the hardware ip now\n");
+			            printf("*************************************************\n");
+			        }
+			    }
+#endif
 				retval=configureMAC(ipad,imacadd,idetectormacadd,detipad,udpport,udpport2,0);	//digitalTestBit);
 				if(retval==-1) {
 					ret = FAIL;
@@ -3505,9 +3525,16 @@ int configure_mac(int file_des) {
 	// send return argument
 	if (ret==FAIL) {
 		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else
+	} else {
 		n += sendData(file_des,&retval,sizeof(retval),INT32);
-
+#ifdef EIGERD
+		char arg[2][50];
+		memset(arg,0,sizeof(arg));
+		sprintf(arg[0],"%llx",idetectormacadd);
+        sprintf(arg[1],"%x",detipad);
+        n += sendData(file_des,arg,sizeof(arg),OTHER);
+#endif
+	}
 	// return ok / fail
 	return ret;
 }

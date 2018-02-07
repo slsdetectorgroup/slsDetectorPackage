@@ -4508,7 +4508,7 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
 			} else if (action==PUT_ACTION) {
 				myDet->loadSettingsFile(sval,-1);
 			}
-		}
+		}//cout<<"settingsfile:"<<myDet->getSettingsFile()<<endl;
 		return string(myDet->getSettingsFile());
 	} else if (cmd=="trim") {
 		if (action==GET_ACTION)

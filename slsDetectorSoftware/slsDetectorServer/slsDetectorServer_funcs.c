@@ -2987,7 +2987,12 @@ int set_speed(int file_des) {
 		switch (arg) {
 #ifdef JUNGFRAUD
 		case ADC_PHASE:
-			adcPhase(val);
+			retval = adcPhase(val);
+            if ((retval!=val) && (val>=0)) {
+                ret=FAIL;
+                sprintf(mess,"could not change set adc phase: should be %d but is %d \n", val, retval);
+                cprintf(RED, "Warning: %s", mess);
+            }
 			break;
 #endif
 #ifdef MYTHEND
@@ -4919,8 +4924,6 @@ int cleanup_acquisition(int file_des) {
 int threshold_temp(int file_des) {
     int ret=OK,ret1=OK;
     int n=0;
-    int arg[2]={-1,-1};
-    int val=-1;
     int retval=-1;
     sprintf(mess,"could not set/get threshold temperature\n");
 
@@ -4932,6 +4935,9 @@ int threshold_temp(int file_des) {
     sprintf(mess,"Function (Threshold Temp) is not implemented for this detector\n");
     cprintf(RED, "%s", mess);
 #else
+    int arg[2]={-1,-1};
+    int val=-1;
+
     // receive arguments
     n = receiveData(file_des,arg,sizeof(arg),INT32);
     if (n < 0) return printSocketReadError();
@@ -4942,7 +4948,6 @@ int threshold_temp(int file_des) {
         sprintf(mess,"Threshold Temp %d should be in range: 0 - %d\n", val, MAX_THRESHOLD_TEMP_VAL);
         cprintf(RED, "Warning: %s", mess);
     }
-#endif
 
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
@@ -4959,6 +4964,7 @@ int threshold_temp(int file_des) {
 
     if (ret==OK && differentClients && val >= 0)
         ret=FORCE_UPDATE;
+#endif
 
     // ret could be swapped during sendData
     ret1 = ret;
@@ -4980,8 +4986,6 @@ int threshold_temp(int file_des) {
 int temp_control(int file_des) {
     int ret=OK,ret1=OK;
     int n=0;
-    int arg[2]={-1,-1};
-    int val=-1;
     int retval=-1;
     sprintf(mess,"could not set/get temperature control\n");
 
@@ -4993,12 +4997,14 @@ int temp_control(int file_des) {
     sprintf(mess,"Function (Temperature control) is not implemented for this detector\n");
     cprintf(RED, "%s", mess);
 #else
+    int arg[2]={-1,-1};
+    int val=-1;
+
     // receive arguments
     n = receiveData(file_des,arg,sizeof(arg),INT32);
     if (n < 0) return printSocketReadError();
     val=arg[0];
     //ignoring imod
-#endif
 
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
@@ -5012,9 +5018,9 @@ int temp_control(int file_des) {
 #ifdef VERBOSE
     printf("Temperature control is %d\n",  retval);
 #endif
-
     if (ret==OK && differentClients && val >= 0)
         ret=FORCE_UPDATE;
+#endif
 
     // ret could be swapped during sendData
     ret1 = ret;
@@ -5037,8 +5043,6 @@ int temp_control(int file_des) {
 int temp_event(int file_des) {
     int ret=OK,ret1=OK;
     int n=0;
-    int arg[2]={-1,-1};
-    int val=-1;
     int retval=-1;
     sprintf(mess,"could not set/get temperature event\n");
 
@@ -5050,13 +5054,14 @@ int temp_event(int file_des) {
     sprintf(mess,"Function (Temperature Event) is not implemented for this detector\n");
     cprintf(RED, "%s", mess);
 #else
+    int arg[2]={-1,-1};
+    int val=-1;
+
     // receive arguments
     n = receiveData(file_des,arg,sizeof(arg),INT32);
     if (n < 0) return printSocketReadError();
     val=arg[0];
     //ignoring imod
-#endif
-
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
     if (ret==OK) {
@@ -5072,6 +5077,7 @@ int temp_event(int file_des) {
 
     if (ret==OK && differentClients && val >= 0)
         ret=FORCE_UPDATE;
+#endif
 
     // ret could be swapped during sendData
     ret1 = ret;

@@ -1151,18 +1151,19 @@ int slsDetector::sendModule(sls_detector_module *myMod) {
 	ts+=controlSocket->SendDataOnly(&(myMod->ndac),sizeof(myMod->ndac));
 	ts+=controlSocket->SendDataOnly(&(myMod->nadc),sizeof(myMod->nadc));
 	ts+=controlSocket->SendDataOnly(&(myMod->reg),sizeof(myMod->reg));
-	ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(myMod->ndac));
-	ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(myMod->nadc));
-
-	if(thisDetector->myDetectorType != JUNGFRAU){
-		ts+=controlSocket->SendDataOnly(myMod->chipregs,sizeof(myMod->nchip));
-		ts+=controlSocket->SendDataOnly(myMod->chanregs,sizeof(myMod->nchan));
+	// only for sending structures like in old mythen server
+	if (thisDetector->myDetectorType == MYTHEN) {
+	    ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(myMod->ndac));
+	    ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(myMod->nadc));
+        ts+=controlSocket->SendDataOnly(myMod->chipregs,sizeof(myMod->nchip));
+        ts+=controlSocket->SendDataOnly(myMod->chanregs,sizeof(myMod->nchan));
 	}
 	ts+=controlSocket->SendDataOnly(&(myMod->gain),sizeof(myMod->gain));
 	ts+=controlSocket->SendDataOnly(&(myMod->offset), sizeof(myMod->offset));
+
+	// actual data to the pointers
 	ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(dacs_t)*(myMod->ndac));
 	ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(dacs_t)*(myMod->nadc));
-
 	if(thisDetector->myDetectorType != JUNGFRAU){
 		ts+=controlSocket->SendDataOnly(myMod->chipregs,sizeof(int)*(myMod->nchip));
 		ts+=controlSocket->SendDataOnly(myMod->chanregs,sizeof(int)*(myMod->nchan));
@@ -1219,13 +1220,14 @@ int  slsDetector::receiveModule(sls_detector_module* myMod) {
 	ts+=controlSocket->ReceiveDataOnly(&(myMod->ndac),sizeof(myMod->ndac));
 	ts+=controlSocket->ReceiveDataOnly(&(myMod->nadc),sizeof(myMod->nadc));
 	ts+=controlSocket->ReceiveDataOnly(&(myMod->reg),sizeof(myMod->reg));
-	ts+=controlSocket->ReceiveDataOnly(myMod->dacs,sizeof(myMod->ndac));
-	ts+=controlSocket->ReceiveDataOnly(myMod->adcs,sizeof(myMod->nadc));
-
-	if(thisDetector->myDetectorType != JUNGFRAU){
-		ts+=controlSocket->ReceiveDataOnly(myMod->chipregs,sizeof(myMod->nchip));
-		ts+=controlSocket->ReceiveDataOnly(myMod->chanregs,sizeof(myMod->nchan));
+    // only for sending structures like in old mythen server
+	if (thisDetector->myDetectorType == MYTHEN) {
+	    ts+=controlSocket->ReceiveDataOnly(myMod->dacs,sizeof(myMod->ndac));
+	    ts+=controlSocket->ReceiveDataOnly(myMod->adcs,sizeof(myMod->nadc));
+	    ts+=controlSocket->ReceiveDataOnly(myMod->chipregs,sizeof(myMod->nchip));
+	    ts+=controlSocket->ReceiveDataOnly(myMod->chanregs,sizeof(myMod->nchan));
 	}
+
 	ts+=controlSocket->ReceiveDataOnly(&(myMod->gain), sizeof(myMod->gain));
 	ts+=controlSocket->ReceiveDataOnly(&(myMod->offset), sizeof(myMod->offset));
 
@@ -3861,11 +3863,11 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 				std::cout<< thisDetector->settingsDir<<endl<< thisDetector->calDir <<endl;
 #endif
 				break;
-			case MOENCH:
-			case GOTTHARD:
-			case PROPIX:
-			case JUNGFRAU:
-			case JUNGFRAUCTB:
+			case MYTHEN:
+		        ostfn << thisDetector->settingsDir << ssettings <<"/noise.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
+		        oscfn << thisDetector->calDir << ssettings << "/calibration.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
+		        break;
+			default:
 				//settings is saved in myMod.reg
 				myMod->reg=thisDetector->currentSettings;
 				ostfn << thisDetector->settingsDir << ssettings <<"/settings.sn";//  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
@@ -3874,9 +3876,6 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 				std::cout<< thisDetector->settingsDir<<endl<< thisDetector->calDir <<endl;
 #endif
 				break;
-			default:
-				ostfn << thisDetector->settingsDir << ssettings <<"/noise.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
-				oscfn << thisDetector->calDir << ssettings << "/calibration.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
 			}
 
 
@@ -3889,16 +3888,12 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 				//if it didnt open, try default settings file
 				ostringstream ostfn_default;
 				switch(thisDetector->myDetectorType){
-				case MOENCH:
-				case GOTTHARD:
-				case PROPIX:
-				case JUNGFRAU:
-				case JUNGFRAUCTB:
+		        case EIGER:
+		        case MYTHEN:
+	                ostfn_default << thisDetector->settingsDir << ssettings << ssettings << ".trim";
+	                break;
+		        default:
 					ostfn_default << thisDetector->settingsDir << ssettings << ssettings << ".settings";
-					break;
-				case EIGER:
-				default:
-					ostfn_default << thisDetector->settingsDir << ssettings << ssettings << ".trim";
 					break;
 				}
 				settingsfname=ostfn_default.str();
@@ -7567,15 +7562,21 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
   for (int im=mmin; im<mmax; ++im) {
     ostringstream ostfn;
     ostfn << fname;
-    if(thisDetector->myDetectorType != EIGER){
-    	if (fname.find(".sn")==string::npos && fname.find(".trim")==string::npos && fname.find(".settings")==string::npos) {
-    		ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im);
-    		fn=ostfn.str();
-    	}
-    }else if (fname.find(".sn")==string::npos && fname.find(".trim")==string::npos && fname.find(".settings")==string::npos) {
-      ostfn << ".sn"  << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER, im);
-      fn=ostfn.str();
+    switch (thisDetector->myDetectorType) {
+    case MYTHEN:
+        if (fname.find(".sn")==string::npos && fname.find(".trim")==string::npos && fname.find(".settings")==string::npos) {
+            ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im);
+        }
+        break;
+    case EIGER:
+        if (fname.find(".sn")==string::npos && fname.find(".trim")==string::npos && fname.find(".settings")==string::npos) {
+            ostfn << ".sn"  << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER, im);
+        }
+        break;
+    default:
+        break;
     }
+    fn=ostfn.str();
     myMod=readSettingsFile(fn, thisDetector->myDetectorType,iodelay, tau, myMod);
 
     if (myMod) {
@@ -7605,18 +7606,27 @@ int slsDetector::saveSettingsFile(string fname, int imod) {
     mmax=imod+1;
   }
   for (int im=mmin; im<mmax; ++im) {
+    string fn=fname;
     ostringstream ostfn;
-    if(thisDetector->myDetectorType == EIGER){
-    	ostfn << fname << ".sn"  << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER);
-    } else
-    	ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER,im);
+    ostfn << fname;
+    switch (thisDetector->myDetectorType) {
+    case MYTHEN:
+        ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER,im);
+        break;
+    case EIGER:
+        ostfn << ".sn"  << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER);
+        break;
+    default:
+        break;
+    }
+    fn=ostfn.str();
     if ((myMod=getModule(im))) {
 
     	 if(thisDetector->myDetectorType == EIGER){
     		 iodelay = (int)setDAC((dacs_t)-1,IO_DELAY,0,-1);
     		 tau = (int64_t)getRateCorrectionTau();
     	 }
-   		 ret=writeSettingsFile(ostfn.str(), thisDetector->myDetectorType, *myMod, iodelay, tau);
+   		 ret=writeSettingsFile(fn, thisDetector->myDetectorType, *myMod, iodelay, tau);
    		 deleteModule(myMod);
     }
   }
@@ -7693,14 +7703,22 @@ int slsDetector::loadCalibrationFile(string fname, int imod) {
     mmax=imod+1;
   }
   for (int im=mmin; im<mmax; ++im) {
+    string fn=fname;
     ostringstream ostfn;
     ostfn << fname ;
-    if(thisDetector->myDetectorType != EIGER){
-    	if (fname.find(".sn")==string::npos && fname.find(".cal")==string::npos) {
-    		ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im);
-    	}
-    }else if (fname.find(".sn")==string::npos && fname.find(".cal")==string::npos) {
-      ostfn << "."  << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER);
+    switch (thisDetector->myDetectorType) {
+    case MYTHEN:
+        if (fname.find(".sn")==string::npos && fname.find(".cal")==string::npos) {
+            ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im);
+        }
+        break;
+    case EIGER:
+        if (fname.find(".sn")==string::npos && fname.find(".cal")==string::npos) {
+            ostfn << "."  << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER);
+        }
+        break;
+    default:
+        break;
     }
     fn=ostfn.str();
     if((myMod=getModule(im))){
@@ -7737,18 +7755,27 @@ int slsDetector::saveCalibrationFile(string fname, int imod) {
     mmax=imod+1;
   }
   for (int im=mmin; im<mmax; ++im) {
+    string fn=fname;
     ostringstream ostfn;
-    if(thisDetector->myDetectorType == EIGER)
-    	ostfn << fname << ".sn" << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER);
-    else
-    	ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER,im);
+    ostfn << fname;
+    switch (thisDetector->myDetectorType) {
+    case MYTHEN:
+        ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER,im);
+        break;
+    case EIGER:
+    	ostfn << ".sn" << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER);
+    	break;
+    default:
+        break;
+    }
+    fn=ostfn.str();
     if ((myMod=getModule(im))) {
         //extra gain and offset
         if(thisDetector->nGain)
-        	ret=writeCalibrationFile(ostfn.str(),gain, offset);
+        	ret=writeCalibrationFile(fn,gain, offset);
          //normal gain and offset inside sls_detector_module
         else
-        	ret=writeCalibrationFile(ostfn.str(),myMod->gain, myMod->offset);
+        	ret=writeCalibrationFile(fn,myMod->gain, myMod->offset);
 
       deleteModule(myMod);
     }else

@@ -4633,7 +4633,7 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
 				myDet->loadSettingsFile(sval,-1);
 			}
 		}
-		return string(myDet->getSettingsFile());
+		return myDet->getSettingsFile();
 	} else if (cmd=="trim") {
 		if (action==GET_ACTION)
 			return string("cannot get!");

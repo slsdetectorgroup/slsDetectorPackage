@@ -3166,7 +3166,12 @@ int set_speed(int file_des) {
 		switch (arg) {
 #ifdef JUNGFRAUD
 		case ADC_PHASE:
-			adcPhase(val);
+			retval = adcPhase(val);
+            if ((retval!=val) && (val>=0)) {
+                ret=FAIL;
+                sprintf(mess,"could not change set adc phase: should be %d but is %d \n", val, retval);
+                cprintf(RED, "Warning: %s", mess);
+            }
 			break;
 #endif
 #ifdef MYTHEND
@@ -5290,7 +5295,6 @@ int threshold_temp(int file_des) {
     sprintf(mess,"Function (Threshold Temp) is not implemented for this detector\n");
     cprintf(RED, "%s", mess);
 #else
-
     int arg[2]={-1,-1};
     int val=-1;
 
@@ -5304,6 +5308,7 @@ int threshold_temp(int file_des) {
         sprintf(mess,"Threshold Temp %d should be in range: 0 - %d\n", val, MAX_THRESHOLD_TEMP_VAL);
         cprintf(RED, "Warning: %s", mess);
     }
+
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
     if (ret==OK) {
@@ -5361,6 +5366,7 @@ int temp_control(int file_des) {
     val=arg[0];
     //ignoring imod
 
+
 #ifdef SLS_DETECTOR_FUNCTION_LIST
     if (ret==OK) {
 #ifdef VERBOSE
@@ -5372,7 +5378,6 @@ int temp_control(int file_des) {
 #ifdef VERBOSE
     printf("Temperature control is %d\n",  retval);
 #endif
-
     if (ret==OK && differentClients && val >= 0)
         ret=FORCE_UPDATE;
 #endif

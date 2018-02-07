@@ -4105,7 +4105,7 @@ slsDetectorDefs::externalSignalFlag multiSlsDetector::setExternalSignalFlags(ext
 
 
 
-const char * multiSlsDetector::getSettingsFile() {
+string multiSlsDetector::getSettingsFile() {
 
   string s0="", s1="",s ;
   
@@ -4126,9 +4126,9 @@ const char * multiSlsDetector::getSettingsFile() {
     }
   }
   if (s1=="bad")
-    return s0.c_str();
+    return s0;
   else
-    return s1.c_str();
+    return s1;
 
 }
 

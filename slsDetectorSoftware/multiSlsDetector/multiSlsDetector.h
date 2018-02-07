@@ -532,7 +532,7 @@ class multiSlsDetector  : public slsDetectorUtils {
   int64_t getId(idMode mode, int imod=0);
   int digitalTest(digitalTestMode mode, int imod=0);
   int executeTrimming(trimMode mode, int par1, int par2, int imod=-1);
-  const char *getSettingsFile();
+  string getSettingsFile();
 
 
   int decodeNMod(int i, int &idet, int &imod);

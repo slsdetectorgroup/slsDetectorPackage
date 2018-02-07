@@ -541,13 +541,13 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   /**
      returns currently the loaded trimfile/settingsfile name
   */
-  const char *getSettingsFile(){\
+  string getSettingsFile(){\
     string s(thisDetector->settingsFile); \
     if (s.length()>6) {\
       if (s.substr(s.length()-6,3)==string(".sn") && s.substr(s.length()-3)!=string("xxx") ) \
-	return s.substr(0,s.length()-6).c_str();			\
+	return s.substr(0,s.length()-6);			\
     }									\
-    return thisDetector->settingsFile;\
+    return string(thisDetector->settingsFile);\
   };
 
 

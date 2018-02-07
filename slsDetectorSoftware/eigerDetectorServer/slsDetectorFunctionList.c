@@ -136,10 +136,7 @@ int64_t getDetectorId(enum idMode arg){
 	case SOFTWARE_FIRMWARE_API_VERSION:
 		return (int64_t)Beb_GetFirmwareSoftwareAPIVersion();
 	case DETECTOR_SOFTWARE_VERSION:
-		retval= GITREV;
-		retval= (retval <<32) | GITDATE;
-		//cprintf(BLUE,"git date:%x, git rev:%x\n",GITDATE,GITREV);
-		break;
+        return  (GITDATE & 0xFFFFFF);
 	default:
 		break;
 	}

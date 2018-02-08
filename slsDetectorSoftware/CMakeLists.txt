@@ -58,10 +58,36 @@ add_library(slsDetectorShared SHARED
     ${SOURCES}
     ${HEADERS}
 )
+
+set(PUBLICHEADERS
+    commonFiles/sls_detector_defs.h
+    commonFiles/sls_detector_funcs.h
+    commonFiles/error_defs.h
+    slsDetector/slsDetectorUtils.h
+    slsDetector/slsDetector.h
+    slsDetector/slsDetectorActions.h
+    slsDetector/slsDetectorBase.h
+    slsDetector/slsDetectorUsers.h
+    slsDetectorAnalysis/postProcessing.h
+    slsDetectorAnalysis/detectorData.h
+    slsDetectorAnalysis/angularConversion.h
+    slsDetectorAnalysis/angularConversionStatic.h
+    slsDetectorAnalysis/angleConversionConstant.h
+    slsDetectorAnalysis/badChannelCorrections.h
+    slsDetectorAnalysis/energyConversion.h
+    slsDetectorAnalysis/fileIO.h
+    slsDetectorAnalysis/fileIOStatic.h
+    multiSlsDetector/multiSlsDetector.h
+    slsReceiverInterface/receiverInterface.h
+
+)
 set_target_properties(slsDetectorShared PROPERTIES
     LIBRARY_OUTPUT_NAME SlsDetector
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    PUBLIC_HEADER "${PUBLICHEADERS}"
 )
+
+
 
 add_subdirectory(slsDetectorClient)
 
@@ -74,3 +100,7 @@ if(DOXYGEN_FOUND)
     )
 endif()
 
+install(TARGETS slsDetectorShared slsDetectorStatic
+    LIBRARY DESTINATION lib
+    PUBLIC_HEADER DESTINATION include
+    ARCHIVE DESTINATION lib)

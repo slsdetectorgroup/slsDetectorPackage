@@ -61,9 +61,21 @@ add_library(slsReceiverShared SHARED
     ${SOURCES}
     ${HEADERS}
 )
+
+set(PUBLICHEADERS
+    include/sls_receiver_defs.h
+    include/ansi.h
+    include/sls_receiver_funcs.h
+    include/MySocketTCP.h
+    include/genericSocket.h
+
+)
+
+
 set_target_properties(slsReceiverShared PROPERTIES
     LIBRARY_OUTPUT_NAME SlsReceiver
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    PUBLIC_HEADER "${PUBLICHEADERS}"
 )
 
 add_executable(slsReceiver
@@ -82,3 +94,11 @@ target_link_libraries(slsReceiver
 if (HDF5_FOUND)
     target_link_libraries(slsReceiver ${HDF5_LIBRARIES})
 endif ()
+
+
+
+install(TARGETS slsReceiverShared slsReceiverStatic slsReceiver
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION include)

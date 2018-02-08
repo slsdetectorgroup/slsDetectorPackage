@@ -287,11 +287,12 @@
 #define INT_RSTN_OFFSET              12
 #define DIGITAL_TEST_BIT             0x00004000
 #define DIGITAL_TEST_OFFSET          14
-//#define CHANGE_AT_POWER_ON_BIT       0x00008000
-//#define CHANGE_AT_POWER_ON_OFFSET    15
+//#define CHANGE_AT_POWER_ON_BIT     0x00008000
+//#define CHANGE_AT_POWER_ON_OFFSET  15
 #define RST_TO_SW1_DELAY_MSK         0x000F0000
 #define RST_TO_SW1_DELAY_OFFSET      16
-
+#define START_ACQ_DELAY_MSK          0x00F00000
+#define START_ACQ_DELAY_OFFSET       20
 
 /* settings/conf gain register */
 #define GAIN_MASK                    0x000000ff

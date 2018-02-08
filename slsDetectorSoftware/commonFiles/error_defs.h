@@ -50,9 +50,9 @@ using namespace std;
 #define PREPARE_ACQUISITION					0x0000100000000000ULL
 #define CLEANUP_ACQUISITION					0x0000080000000000ULL
 #define REGISER_WRITE_READ					0x0000040000000000ULL
-//											0xFFFFFFF000000000ULL
+//											0xFFFFFF0000000000ULL
 
-//											0x0000000FFFFFFFFFULL
+//											0x000000FFFFFFFFFFULL
 #define COULDNOT_SET_NETWORK_PARAMETER		0x0000000000000001ULL
 #define COULDNOT_SET_ROI					0x0000000000000002ULL
 #define RECEIVER_READ_FREQUENCY				0x0000000000000004ULL
@@ -88,8 +88,9 @@ using namespace std;
 #define RECEIVER_SUBF_TIME_NOT_SET			0x0000000100000000ULL
 #define RECEIVER_SILENT_MODE_NOT_SET		0x0000000200000000ULL
 #define RESTREAM_STOP_FROM_RECEIVER			0x0000000400000000ULL
-
-//											0x0000000FFFFFFFFFULL
+#define TEMPERATURE_CONTROL                 0x0000000800000000ULL
+#define AUTO_COMP_DISABLE                   0x0000001000000000ULL
+//											0x000000FFFFFFFFFFULL
 
 /** @short class returning all error messages for error mask */
 class errorDefs {
@@ -277,9 +278,11 @@ public:
 		if(slsErrorMask&RESTREAM_STOP_FROM_RECEIVER)
 				retval.append("Could not restream stop from receiver.\n");
 
+        if(slsErrorMask&TEMPERATURE_CONTROL)
+                retval.append("Could not set/get threshold temperature, temp control or temp event.\n");
 
-
-
+        if(slsErrorMask&AUTO_COMP_DISABLE)
+                retval.append("Could not set/get auto comparator disable\n");
 
 		//------------------------------------------------------ length of message
 

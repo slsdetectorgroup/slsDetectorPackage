@@ -62,6 +62,14 @@
 #define HARDWARE_VERSION_NUM_MSK		(0x0000003F << HARDWARE_VERSION_NUM_OFST)	//Not used in software
 
 
+/* API Version Register */
+#define API_VERSION_REG                 (0x0F << 11)
+
+#define API_VERSION_OFST                (0)
+#define API_VERSION_MSK                 (0x00FFFFFF << API_VERSION_OFST)
+#define API_VERSION_DETECTOR_TYPE_OFST  (24)                                            //Not used in software
+#define API_VERSION_DETECTOR_TYPE_MSK   (0x000000FF << API_VERSION_DETECTOR_TYPE_OFST)  //Not used in software
+
 /* Time from Start 64 bit register */
 #define TIME_FROM_START_LSB_REG   		(0x10 << 11)
 #define TIME_FROM_START_MSB_REG   		(0x11 << 11)
@@ -188,7 +196,7 @@
 #define CONFIG_TDMA_ENABLE_VAL			((0x1 << CONFIG_TDMA_OFST) & CONFIG_TDMA_MSK)
 #define CONFIG_TDMA_TIMESLOT_OFST		(25)
 #define CONFIG_TDMA_TIMESLOT_MSK		(0x0000001F << CONFIG_TDMA_TIMESLOT_OFST)
-#define CONFIG_TDMA_TIMESLOT_0_VAL		((0x0 << CONFIG_TDMA_TIMESLOT_OFST) & CONFIG_TDMA_TIMESLOT_MSK)
+
 
 /* External Signal Register */
 #define EXT_SIGNAL_REG        			(0x4E << 11)
@@ -211,6 +219,8 @@
 #define CONTROL_DDR3_MEM_RST_MSK		(0x00000001 << CONTROL_DDR3_MEM_RST_OFST)	//only PHY, not DDR3 PLL ,Not used in software
 #define CONTROL_ACQ_FIFO_CLR_OFST		(14)
 #define CONTROL_ACQ_FIFO_CLR_MSK		(0x00000001 << CONTROL_ACQ_FIFO_CLR_OFST)
+#define CONTROL_STORAGE_CELL_NUM_OFST   (16)
+#define CONTROL_STORAGE_CELL_NUM_MSK    (0x0000000F << CONTROL_STORAGE_CELL_NUM_OFST)
 
 /* Reconfiguratble PLL Paramater Register */
 #define PLL_PARAM_REG					(0x50 << 11)
@@ -278,7 +288,13 @@
 #define SAMPLE_DECMT_FACTOR_4_VAL		((0x2 << SAMPLE_DGTL_DECMT_FACTOR_OFST) & SAMPLE_DGTL_DECMT_FACTOR_MSK)
 
 /** Vref Comp Mod Register */
-#define VREF_COMP_MOD_REG				(0x5C << 11)								//Not used in software, TBD in firmware
+#define VREF_COMP_MOD_REG				(0x5C << 11)
+
+#define VREF_COMP_MOD_OFST              (0)
+#define VREF_COMP_MOD_MSK               (0x00000FFF << VREF_COMP_MOD_OFST)
+#define VREF_COMP_MOD_ENABLE_OFST       (31)
+#define VREF_COMP_MOD_ENABLE_MSK        (0x00000FFF << VREF_COMP_MOD_ENABLE_OFST)
+
 
 /** DAQ Register */
 #define DAQ_REG							(0x5D << 11)								//TBD in firmware
@@ -288,6 +304,21 @@
 
 #define CHIP_POWER_ENABLE_OFST			(0)
 #define CHIP_POWER_ENABLE_MSK			(0x00000001 << CHIP_POWER_ENABLE_OFST)
+#define CHIP_POWER_STATUS_OFST          (1)
+#define CHIP_POWER_STATUS_MSK           (0x00000001 << CHIP_POWER_STATUS_OFST)
+
+
+/** Temperature Control Register */
+#define TEMP_CTRL_REG                   (0x5F << 11)
+
+#define TEMP_CTRL_PROTCT_THRSHLD_OFST   (0)
+#define TEMP_CTRL_PROTCT_THRSHLD_MSK    (0x000007FF << TEMP_CTRL_PROTCT_THRSHLD_OFST)
+#define TEMP_CTRL_PROTCT_ENABLE_OFST    (16)
+#define TEMP_CTRL_PROTCT_ENABLE_MSK     (0x00000001 << TEMP_CTRL_PROTCT_ENABLE_OFST)
+#define TEMP_CTRL_OVR_TMP_EVNT_OFST     (31)
+#define TEMP_CTRL_OVR_TMP_EVNT_MSK      (0x00000001 << TEMP_CTRL_OVR_TMP_EVNT_OFST)
+#define TEMP_CTRL_CLR_OVR_TMP_EVNT_VAL  ((0x1 << TEMP_CTRL_OVR_TMP_EVNT_OFST) & TEMP_CTRL_OVR_TMP_EVNT_MSK)
+
 
 /* Set Delay 64 bit register */
 #define SET_DELAY_LSB_REG     			(0x60 << 11)
@@ -309,6 +340,10 @@
 #define SET_EXPTIME_LSB_REG    			(0x68 << 11)
 #define SET_EXPTIME_MSB_REG    			(0x69 << 11)
 
+/* Trigger Delay 32 bit register */
+#define SET_TRIGGER_DELAY_LSB_REG       (0x70 << 11)
+#define SET_TRIGGER_DELAY_MSB_REG       (0x71 << 11)
+
 /* Module Coordinates Register 0 */
 #define COORD_0							(0x7C << 11)
 
@@ -322,6 +357,14 @@
 
 #define COORD_0_Z_OFST					(0)
 #define COORD_0_Z_MSK					(0x0000FFFF << COORD_0_Z_OFST)
+
+/* ASIC Control Register */
+#define ASIC_CTRL_REG                   (0x7F)
+
+#define ASIC_CTRL_PRCHRG_TMR_OFST       (0)
+#define ASIC_CTRL_PRCHRG_TMR_MSK        (0x000000FF << ASIC_CTRL_PRCHRG_TMR_OFST)
+#define ASIC_CTRL_DS_TMR_OFST           (8)
+#define ASIC_CTRL_DS_TMR_MSK            (0x000000FF << ASIC_CTRL_DS_TMR_OFST)
 
 
 #endif  //REGISTERS_G_H

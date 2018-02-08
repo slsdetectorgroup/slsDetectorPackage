@@ -17,7 +17,7 @@ Here are the definitions, but the actual implementation should be done for each 
 
 
 // basic tests
-void 		checkFirmwareCompatibility();
+void 		checkFirmwareCompatibility(int flag);
 #ifdef JUNGFRAUD
 int 		checkType();
 u_int32_t 	testFpga(void);
@@ -35,6 +35,7 @@ u_int64_t  	getFirmwareVersion();
 #ifdef MYTHEND
 int64_t 	getModuleId(enum idMode arg, int imod);
 #elif JUNGFRAUD
+u_int64_t   getFirmwareAPIVersion();
 u_int16_t 	getHardwareVersionNumber();
 u_int16_t 	getHardwareSerialNumber();
 #endif
@@ -68,6 +69,7 @@ uint32_t  	readRegister(uint32_t offset);
 // firmware functions (resets)
 #ifdef JUNGFRAUD
 int 		powerChip (int on);
+int         autoCompDisable(int on);
 void 		cleanFifos();
 void 		resetCore();
 void 		resetPeripheral();
@@ -168,6 +170,9 @@ int 		calibratePedestal(int frames);
 void 		resetPLL();
 u_int32_t 	setPllReconfigReg(u_int32_t reg, u_int32_t val);
 void 		configurePll();
+int         setThresholdTemperature(int val);
+int         setTemperatureControl(int val);
+int         setTemperatureEvent(int val);
 extern void eraseFlash();													// programfpga.h
 extern int 	startWritingFPGAprogram(FILE** filefp);							// programfpga.h
 extern void stopWritingFPGAprogram(FILE* filefp);							// programfpga.h
@@ -191,7 +196,9 @@ int 		setAllTrimbits(int val);
 int 		getAllTrimbits();
 int 		getBebFPGATemp();
 int 		activate(int enable);
-int 		setNetworkParameter(enum NETWORKINDEX mode, int value);
+#endif
+#if defined(JUNGFRAUD) || defined(EIGERD)
+int         setNetworkParameter(enum NETWORKINDEX mode, int value);
 #endif
 
 

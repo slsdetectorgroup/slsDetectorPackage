@@ -3331,6 +3331,173 @@ dacs_t multiSlsDetector::getADC(dacIndex idac, int imod) {
 	return ret;
 }
 
+
+
+int multiSlsDetector::setThresholdTemperature(int val, int imod) {
+    int ret = -100;
+
+    // single
+    {
+        int id=-1, im=-1;
+        if (decodeNMod(imod, id, im)>=0) {
+            if(detectors[id]){
+                ret = detectors[id]->setThresholdTemperature(val, im);
+                if(detectors[id]->getErrorMask())
+                    setErrorMask(getErrorMask()|(1<<id));
+                return ret;
+            }
+            return -1;
+        }
+    }
+
+    // multi
+    if(!threadpool){
+        cout << "Error in creating threadpool. Exiting" << endl;
+        return -1;
+    }
+
+    int posmin=0, posmax=thisMultiDetector->numberOfDetectors;
+    int* iret[posmax-posmin];
+
+    for(int idet=posmin; idet<posmax; ++idet){
+        if(detectors[idet]){
+            iret[idet]= new dacs_t(-1);
+            Task* task = new Task(new func2_t<int,int,int>(&slsDetector::setThresholdTemperature,
+                    detectors[idet], val, imod, iret[idet]));
+            threadpool->add_task(task);
+        }
+    }
+    threadpool->startExecuting();
+    threadpool->wait_for_tasks_to_complete();
+    for(int idet=posmin; idet<posmax; ++idet){
+        if(detectors[idet]){
+            if(iret[idet] != NULL){
+                if (ret==-100)
+                    ret=*iret[idet];
+                else if (ret!=*iret[idet])
+                    ret=-1;
+                delete iret[idet];
+            }else ret=-1;
+            if(detectors[idet]->getErrorMask())
+                setErrorMask(getErrorMask()|(1<<idet));
+        }
+    }
+
+    return ret;
+}
+
+
+int multiSlsDetector::setTemperatureControl(int val, int imod) {
+    int ret = -100;
+
+    // single
+    {
+        int id=-1, im=-1;
+        if (decodeNMod(imod, id, im)>=0) {
+            if(detectors[id]){
+                ret = detectors[id]->setTemperatureControl(val, im);
+                if(detectors[id]->getErrorMask())
+                    setErrorMask(getErrorMask()|(1<<id));
+                return ret;
+            }
+            return -1;
+        }
+    }
+
+    // multi
+    if(!threadpool){
+        cout << "Error in creating threadpool. Exiting" << endl;
+        return -1;
+    }
+
+    int posmin=0, posmax=thisMultiDetector->numberOfDetectors;
+    int* iret[posmax-posmin];
+
+    for(int idet=posmin; idet<posmax; ++idet){
+        if(detectors[idet]){
+            iret[idet]= new dacs_t(-1);
+            Task* task = new Task(new func2_t<int,int,int>(&slsDetector::setTemperatureControl,
+                    detectors[idet], val, imod, iret[idet]));
+            threadpool->add_task(task);
+        }
+    }
+    threadpool->startExecuting();
+    threadpool->wait_for_tasks_to_complete();
+    for(int idet=posmin; idet<posmax; ++idet){
+        if(detectors[idet]){
+            if(iret[idet] != NULL){
+                if (ret==-100)
+                    ret=*iret[idet];
+                else if (ret!=*iret[idet])
+                    ret=-1;
+                delete iret[idet];
+            }else ret=-1;
+            if(detectors[idet]->getErrorMask())
+                setErrorMask(getErrorMask()|(1<<idet));
+        }
+    }
+
+    return ret;
+}
+
+
+
+int multiSlsDetector::setTemperatureEvent(int val, int imod) {
+    int ret = -100;
+
+    // single
+    {
+        int id=-1, im=-1;
+        if (decodeNMod(imod, id, im)>=0) {
+            if(detectors[id]){
+                ret = detectors[id]->setTemperatureEvent(val, im);
+                if(detectors[id]->getErrorMask())
+                    setErrorMask(getErrorMask()|(1<<id));
+                return ret;
+            }
+            return -1;
+        }
+    }
+
+    // multi
+    if(!threadpool){
+        cout << "Error in creating threadpool. Exiting" << endl;
+        return -1;
+    }
+
+    int posmin=0, posmax=thisMultiDetector->numberOfDetectors;
+    int* iret[posmax-posmin];
+
+    for(int idet=posmin; idet<posmax; ++idet){
+        if(detectors[idet]){
+            iret[idet]= new dacs_t(-1);
+            Task* task = new Task(new func2_t<int,int,int>(&slsDetector::setTemperatureEvent,
+                    detectors[idet], val, imod, iret[idet]));
+            threadpool->add_task(task);
+        }
+    }
+    threadpool->startExecuting();
+    threadpool->wait_for_tasks_to_complete();
+    for(int idet=posmin; idet<posmax; ++idet){
+        if(detectors[idet]){
+            if(iret[idet] != NULL){
+                if (ret==-100)
+                    ret=*iret[idet];
+                else if (ret!=*iret[idet])
+                    ret=-1;
+                delete iret[idet];
+            }else ret=-1;
+            if(detectors[idet]->getErrorMask())
+                setErrorMask(getErrorMask()|(1<<idet));
+        }
+    }
+
+    return ret;
+}
+
+
+
+
 int multiSlsDetector::setChannel(int64_t reg, int ichan, int ichip, int imod) {
   int ret, ret1=-100;
   int id=-1, im=-1;
@@ -3900,7 +4067,7 @@ slsDetectorDefs::externalSignalFlag multiSlsDetector::setExternalSignalFlags(ext
 
 
 
-const char * multiSlsDetector::getSettingsFile() {
+string multiSlsDetector::getSettingsFile() {
 
   string s0="", s1="",s ;
   
@@ -3921,9 +4088,9 @@ const char * multiSlsDetector::getSettingsFile() {
     }
   }
   if (s1=="bad")
-    return s0.c_str();
+    return s0;
   else
-    return s1.c_str();
+    return s1;
 
 }
 
@@ -4061,39 +4228,58 @@ int multiSlsDetector::setCounterBit(int i){
 
 int multiSlsDetector::setDynamicRange(int p) {
 
-  int ret=-100, ret1;
-  thisMultiDetector->dataBytes=0;
-  thisMultiDetector->numberOfChannels=0;
-  
-  for (int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet) {
-    if (detectors[idet]) {
-      ret1=detectors[idet]->setDynamicRange(p);
-      if(detectors[idet]->getErrorMask())
-	setErrorMask(getErrorMask()|(1<<idet));
-      thisMultiDetector->dataBytes+=detectors[idet]->getDataBytes();
-      //   cout << "db " << idet << " " << detectors[idet]->getDataBytes() << endl;
-      thisMultiDetector->numberOfChannels+=detectors[idet]->getTotalNumberOfChannels();
-      if (ret==-100)
-	ret=ret1;
-      else if (ret!=ret1)
-	ret=-1;
-    }
-  }
- 
-  //for usability for the user
-  if (getDetectorsType() == EIGER){
-	  if(p == 32){
-		  std::cout << "Setting Clock to Quarter Speed to cope with Dynamic Range of 32" << std::endl;
-		  setSpeed(CLOCK_DIVIDER,2);
-	  }
-	  else if(p == 16){
-		  std::cout << "Setting Clock to Half Speed for Dynamic Range of 16" << std::endl;
-		  setSpeed(CLOCK_DIVIDER,1);
-	  }
-  }
-  return ret;
+    int ret=-100;
+    thisMultiDetector->dataBytes=0;
+    thisMultiDetector->numberOfChannels=0;
 
+    if(!threadpool){
+        cout << "Error in creating threadpool. Exiting" << endl;
+        return -1;
+    }else{
+        //return storage values
+        int* iret[thisMultiDetector->numberOfDetectors];
+        for(int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet){
+            if(detectors[idet]){
+                iret[idet]= new int(-1);
+                Task* task = new Task(new func1_t<int,int>(&slsDetector::setDynamicRange,
+                        detectors[idet],p,iret[idet]));
+                threadpool->add_task(task);
+            }
+        }
+        threadpool->startExecuting();
+        threadpool->wait_for_tasks_to_complete();
+        for(int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet){
+            if(detectors[idet]){
+                if(iret[idet] != NULL){
+                    thisMultiDetector->dataBytes+=detectors[idet]->getDataBytes();
+                    thisMultiDetector->numberOfChannels+=detectors[idet]->getTotalNumberOfChannels();
+                    if (ret==-100)
+                        ret=*iret[idet];
+                    else if (ret!=*iret[idet])
+                        ret=-1;
+                    delete iret[idet];
+                }else ret=-1;
+                if(detectors[idet]->getErrorMask())
+                    setErrorMask(getErrorMask()|(1<<idet));
+            }
+        }
+    }
+
+    //for usability for the user
+    if (getDetectorsType() == EIGER){
+        if(p == 32){
+            std::cout << "Setting Clock to Quarter Speed to cope with Dynamic Range of 32" << std::endl;
+            setSpeed(CLOCK_DIVIDER,2);
+        }
+        else if(p == 16){
+            std::cout << "Setting Clock to Half Speed for Dynamic Range of 16" << std::endl;
+            setSpeed(CLOCK_DIVIDER,1);
+        }
+    }
+    return ret;
 }
+
+
 
 int multiSlsDetector::getMaxMods() {
 
@@ -4425,6 +4611,22 @@ int multiSlsDetector::powerChip(int ival){
 		}
 	}
 	return ret1;
+}
+
+
+int multiSlsDetector::setAutoComparatorDisableMode(int ival) {
+    int ret=OK, ret1=OK;
+
+    for (int i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
+        if (detectors[i]) {
+            ret=detectors[i]->setAutoComparatorDisableMode(ival);
+            if(detectors[i]->getErrorMask())
+                setErrorMask(getErrorMask()|(1<<i));
+            if (ret==FAIL)
+                ret1=FAIL;
+        }
+    }
+    return ret1;
 }
 
 

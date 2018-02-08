@@ -255,7 +255,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   /**
      returns currently the loaded trimfile/settingsfile name
   */
-  virtual const char *getSettingsFile()=0;
+  virtual string getSettingsFile()=0;
 
   
   /** 
@@ -582,6 +582,12 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual int powerChip(int ival= -1)=0;
 
+  /** automatic comparator disable for Jungfrau only
+     \param ival on is 1, off is 0, -1 to get
+      \returns OK or FAIL
+  */
+  virtual int setAutoComparatorDisableMode(int ival= -1)=0;
+
   /** saves the modules settings/trimbits writing to  a file
       \param fname file name . Axtension is automatically generated!
       \param imod module number, -1 means all modules
@@ -617,6 +623,30 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
      \returns current ADC value
   */
   virtual dacs_t getADC(dacIndex index, int imod=-1)=0;
+
+  /**
+     set/gets threshold temperature (Jungfrau only)
+     \param val value in millidegrees, -1 gets
+     \param imod module number, -1 is all
+     \returns threshold temperature in millidegrees
+  */
+  virtual int setThresholdTemperature(int val=-1, int imod=-1)=0;
+
+  /**
+     enables/disables temperature control (Jungfrau only)
+     \param val value, -1 gets
+     \param imod module number, -1 is all
+     \returns temperature control enable
+  */
+  virtual int setTemperatureControl(int val=-1, int imod=-1)=0;
+
+  /**
+     Resets/ gets over-temperature event (Jungfrau only)
+     \param val value, -1 gets
+     \param imod module number, -1 is all
+     \returns over-temperature event
+  */
+  virtual int setTemperatureEvent(int val=-1, int imod=-1)=0;
 
   /**
      get the maximum size of the detector

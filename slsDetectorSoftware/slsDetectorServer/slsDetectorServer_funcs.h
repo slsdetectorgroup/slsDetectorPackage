@@ -6,7 +6,7 @@
 
 // initialization functions
 int printSocketReadError();
-void basictests();
+void basictests(int);
 void init_detector(int);
 int decode_function(int);
 const char* getFunctionName(enum detFuncs func);
@@ -88,6 +88,9 @@ int power_chip(int);
 int set_activate(int);
 int prepare_acquisition(int);
 int cleanup_acquisition(int);
-
+int threshold_temp(int);
+int temp_control(int);
+int temp_event(int);
+int auto_comp_disable(int);
 
 #endif

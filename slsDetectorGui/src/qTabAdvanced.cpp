@@ -374,7 +374,7 @@ void qTabAdvanced::SetOutputFile(){
 		//gets the clean absolute path
 		dirPath = dir.absoluteFilePath(dirPath);
 		dirPath = dir.cleanPath(dirPath);
-		QString trimdir = QString(myDet->getSettingsFile()).section('/',0,-2,QString::SectionIncludeLeadingSep);
+		QString trimdir = QString::fromStdString(myDet->getSettingsFile()).section('/',0,-2,QString::SectionIncludeLeadingSep);
 		trimdir = dir.absoluteFilePath(trimdir);
 		trimdir = dir.cleanPath(trimdir);
 		if(!dirPath.compare(trimdir)){

@@ -524,13 +524,13 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   /**
      returns currently the loaded trimfile/settingsfile name
   */
-  const char *getSettingsFile(){\
+  string getSettingsFile(){\
     string s(thisDetector->settingsFile); \
     if (s.length()>6) {\
       if (s.substr(s.length()-6,3)==string(".sn") && s.substr(s.length()-3)!=string("xxx") ) \
-	return s.substr(0,s.length()-6).c_str();			\
+	return s.substr(0,s.length()-6);			\
     }									\
-    return thisDetector->settingsFile;\
+    return string(thisDetector->settingsFile);\
   };
 
 
@@ -550,6 +550,12 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
       \returns OK or FAIL
   */
   int powerChip(int ival= -1);
+
+  /** automatic comparator disable for Jungfrau only
+     \param ival on is 1, off is 0, -1 to get
+      \returns OK or FAIL
+  */
+  int setAutoComparatorDisableMode(int ival= -1);
 
 
   /** loads the modules settings/trimbits reading from a file  
@@ -916,7 +922,31 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      \returns current ADC value  (temperature for eiger and jungfrau in millidegrees)
   */
   dacs_t getADC(dacIndex index, int imod=0);
+
+  /**
+     set/gets threshold temperature (Jungfrau only)
+     \param val value in millidegrees, -1 gets
+     \param imod module number, -1 is all
+     \returns threshold temperature in millidegrees
+  */
+  int setThresholdTemperature(int val=-1, int imod=-1);
  
+  /**
+     enables/disables temperature control (Jungfrau only)
+     \param val value, -1 gets
+     \param imod module number, -1 is all
+     \returns temperature control enable
+  */
+  int setTemperatureControl(int val=-1, int imod=-1);
+
+  /**
+     Resets/ gets over-temperature event (Jungfrau only)
+     \param val value, -1 gets
+     \param imod module number, -1 is all
+     \returns over-temperature event
+  */
+  int setTemperatureEvent(int val=-1, int imod=-1);
+
   /**
      configure channel
      \param reg channel register

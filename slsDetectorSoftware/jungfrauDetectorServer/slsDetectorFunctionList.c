@@ -25,11 +25,17 @@ int32_t clkPhase[2] = {0, 0};
 
 /* basic tests */
 
-void checkFirmwareCompatibility() {
+void checkFirmwareCompatibility(int flag) {
 
 	defineGPIOpins();
 	resetFPGA();
-	if ((mapCSP0() == FAIL) || (checkType() == FAIL) || (testFpga() == FAIL) || (testBus() == FAIL)) {
+    if (mapCSP0() == FAIL) {
+        cprintf(BG_RED, "Dangerous to continue. Goodbye!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // does check only if flag is 0 (by default), set by command line
+	if ((!flag) && ((checkType() == FAIL) || (testFpga() == FAIL) || (testBus() == FAIL))) {
 		cprintf(BG_RED, "Dangerous to continue. Goodbye!\n");
 		exit(EXIT_FAILURE);
 	}
@@ -40,7 +46,9 @@ void checkFirmwareCompatibility() {
 	uint64_t macadd				= getDetectorMAC();
 	int64_t fwversion 			= getDetectorId(DETECTOR_FIRMWARE_VERSION);
 	int64_t swversion 			= getDetectorId(DETECTOR_SOFTWARE_VERSION);
-	//int64_t sw_fw_apiversion 	= getDetectorId(SOFTWARE_FIRMWARE_API_VERSION);
+	int64_t sw_fw_apiversion    = 0;
+	if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
+	    sw_fw_apiversion 	    = getDetectorId(SOFTWARE_FIRMWARE_API_VERSION);
 	cprintf(BLUE,"\n\n"
 			"********************************************************\n"
 			"****************** Jungfrau Server *********************\n"
@@ -49,46 +57,49 @@ void checkFirmwareCompatibility() {
 			"Hardware Serial Nr:\t\t 0x%x\n"
 
 			"Detector IP Addr:\t\t 0x%x\n"
-			"Detector MAC Addr:\t\t 0x%llx\n"
+			"Detector MAC Addr:\t\t 0x%llx\n\n"
 
 			"Firmware Version:\t\t 0x%llx\n"
 			"Software Version:\t\t 0x%llx\n"
-			//"F/w-S/w API Version:\t\t 0x%llx\n"
-			//"Required Firmware Version:\t 0x%x\n"
+			"F/w-S/w API Version:\t\t 0x%llx\n"
+			"Required Firmware Version:\t 0x%x\n"
 			"\n"
 			"********************************************************\n",
 			hversion, hsnumber,
 			ipadd, macadd,
-			fwversion, swversion
-			//, sw_fw_apiversion, REQUIRED_FIRMWARE_VERSION
+			fwversion, swversion,
+			sw_fw_apiversion, REQRD_FRMWR_VRSN
 	);
 
+	// return if flag is not zero, debug mode
+	if (flag)
+	    return;
 
-/*
- * 	printf("Testing firmware capability... ");
+
 	//cant read versions
+    printf("Testing Firmware-software compatibility ...\n");
 	if(!fwversion || !sw_fw_apiversion){
 		cprintf(RED,"FATAL ERROR: Cant read versions from FPGA. Please update firmware\n");
 		cprintf(RED,"Exiting Server. Goodbye!\n\n");
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 
 	//check for API compatibility - old server
-	if(sw_fw_apiversion > REQUIRED_FIRMWARE_VERSION){
+	if(sw_fw_apiversion > REQRD_FRMWR_VRSN){
 		cprintf(RED,"FATAL ERROR: This software version is incompatible.\n"
 				"Please update it to be compatible with this firmware\n\n");
 		cprintf(RED,"Exiting Server. Goodbye!\n\n");
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 
 	//check for firmware compatibility - old firmware
-	if( REQUIRED_FIRMWARE_VERSION > fwversion){
+	if( REQRD_FRMWR_VRSN > fwversion){
 		cprintf(RED,"FATAL ERROR: This firmware version is incompatible.\n"
-				"Please update it to v%d to be compatible with this server\n\n", REQUIRED_FIRMWARE_VERSION);
+				"Please update it to v%d to be compatible with this server\n\n", REQRD_FRMWR_VRSN);
 		cprintf(RED,"Exiting Server. Goodbye!\n\n");
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
-*/
+	printf("Compatibility - success\n");
 }
 
 
@@ -170,26 +181,24 @@ int64_t getDetectorId(enum idMode arg){
 
 	switch(arg){
 	case DETECTOR_SERIAL_NUMBER:
-		retval =  getDetectorNumber();// or getDetectorMAC()
-		break;
+		return getDetectorNumber();// or getDetectorMAC()
 	case DETECTOR_FIRMWARE_VERSION:
-		retval = getFirmwareVersion();
-		break;
-	//case SOFTWARE_FIRMWARE_API_VERSION:
-	//return GetFirmwareSoftwareAPIVersion();
+		return getFirmwareVersion();
+	case SOFTWARE_FIRMWARE_API_VERSION:
+	    return getFirmwareAPIVersion();
 	case DETECTOR_SOFTWARE_VERSION:
-		retval= GITREV;
-		retval= (retval <<32) | GITDATE;
-		break;
+		return  (GITDATE & 0xFFFFFF);
 	default:
-		break;
+		return retval;
 	}
-
-	return retval;
 }
 
 u_int64_t getFirmwareVersion() {
 	return ((bus_r(FPGA_VERSION_REG) & BOARD_REVISION_MSK) >> BOARD_REVISION_OFST);
+}
+
+u_int64_t getFirmwareAPIVersion() {
+    return ((bus_r(API_VERSION_REG) & API_VERSION_MSK) >> API_VERSION_OFST);
 }
 
 u_int16_t getHardwareVersionNumber() {
@@ -254,7 +263,7 @@ u_int32_t  getDetectorIP(){
 /* initialization */
 
 void initControlServer(){
-
+    clkPhase[0] = 0; clkPhase[1] = 0;
 	setupDetector();
 	printf("\n");
 }
@@ -353,6 +362,12 @@ void setupDetector() {
 	/*setSpeed(CLOCK_DIVIDER, HALF_SPEED); depends if all the previous stuff works*/
 	setTiming(DEFAULT_TIMING_MODE);
 	setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+
+	/* temporary set up until new firmware fixes bug */
+	// set temperature threshold
+	setThresholdTemperature(DEFAULT_TMP_THRSHLD);
+	// reset temp event
+	setTemperatureEvent(0);
 }
 
 
@@ -374,8 +389,29 @@ int powerChip (int on){
 			bus_w(CHIP_POWER_REG, bus_r(CHIP_POWER_REG) & ~CHIP_POWER_ENABLE_MSK);
 		}
 	}
-	return bus_r(CHIP_POWER_REG);
+
+	return ((bus_r(CHIP_POWER_REG) & CHIP_POWER_ENABLE_MSK) >> CHIP_POWER_ENABLE_OFST);
+	/* temporary setup until new firmware fixes bug */
+	//return ((bus_r(CHIP_POWER_REG) & CHIP_POWER_STATUS_MSK) >> CHIP_POWER_STATUS_OFST);
 }
+
+
+
+int autoCompDisable(int on) {
+    if(on != -1){
+        if(on){
+            cprintf(BLUE, "\n*** Auto comp disable mode: enabling ***\n");
+            bus_w(VREF_COMP_MOD_REG, bus_r(VREF_COMP_MOD_REG) | VREF_COMP_MOD_ENABLE_MSK);
+        }
+        else{
+            cprintf(BLUE, "\n*** Auto comp disable mode: disabling *** \n");
+            bus_w(VREF_COMP_MOD_REG, bus_r(VREF_COMP_MOD_REG) & ~VREF_COMP_MOD_ENABLE_MSK);
+        }
+    }
+
+    return (bus_r(VREF_COMP_MOD_REG) & VREF_COMP_MOD_ENABLE_MSK);
+}
+
 
 void cleanFifos() {
 	printf("\nClearing Acquisition Fifos\n");
@@ -449,33 +485,65 @@ int setSpeed(enum speedVariable arg, int val) {
 	// setting
 	if(val >= 0) {
 
-		switch(val){
+        // stop state machine if running
+        if(runBusy())
+            stopStateMachine();
 
-		// stop state machine if running
-		if(runBusy())
-			stopStateMachine();
+        uint32_t txndelay_msk = 0;
+
+		switch(val){
 
 		// todo in firmware, for now setting half speed
 		case FULL_SPEED://40
 			printf("\nSetting Half Speed (20 MHz):\n");
-			printf("Setting Sample Reg to 0x%x\n", SAMPLE_ADC_HALF_SPEED);		bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
-			printf("Setting Config Reg to 0x%x\n", CONFIG_HALF_SPEED);			bus_w(CONFIG_REG, CONFIG_HALF_SPEED);
-			printf("Setting ADC Ofst Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL);	bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
-			printf("Setting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED);	adcPhase(ADC_PHASE_HALF_SPEED);
+
+			printf("Setting Sample Reg to 0x%x\n", SAMPLE_ADC_HALF_SPEED);
+			bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
+
+	        txndelay_msk = (bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK); // read config tdma timeslot value
+			printf("Setting Config Reg to 0x%x\n", CONFIG_HALF_SPEED | txndelay_msk);
+			bus_w(CONFIG_REG, CONFIG_HALF_SPEED | txndelay_msk);
+
+			printf("Setting ADC Ofst Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL);
+			bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
+
+			printf("Setting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED);
+			adcPhase(ADC_PHASE_HALF_SPEED);
+
 			break;
 		case HALF_SPEED:
 			printf("\nSetting Half Speed (20 MHz):\n");
-			printf("Setting Sample Reg to 0x%x\n", SAMPLE_ADC_HALF_SPEED);		bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
-			printf("Setting Config Reg to 0x%x\n", CONFIG_HALF_SPEED);			bus_w(CONFIG_REG, CONFIG_HALF_SPEED);
-			printf("Setting ADC Ofst Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL);	bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
-			printf("Setting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED);	adcPhase(ADC_PHASE_HALF_SPEED);
+
+			printf("Setting Sample Reg to 0x%x\n", SAMPLE_ADC_HALF_SPEED);
+			bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
+
+			txndelay_msk = (bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK); // read config tdma timeslot value
+			printf("Setting Config Reg to 0x%x\n", CONFIG_HALF_SPEED | txndelay_msk);
+			bus_w(CONFIG_REG, CONFIG_HALF_SPEED | txndelay_msk);
+
+			printf("Setting ADC Ofst Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL);
+			bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
+
+			printf("Setting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED);
+			adcPhase(ADC_PHASE_HALF_SPEED);
+
 			break;
 		case QUARTER_SPEED:
 			printf("\nSetting Half Speed (10 MHz):\n");
-			printf("Setting Sample Reg to 0x%x\n", SAMPLE_ADC_QUARTER_SPEED);		bus_w(SAMPLE_REG, SAMPLE_ADC_QUARTER_SPEED);
-			printf("Setting Config Reg to 0x%x\n", CONFIG_QUARTER_SPEED);			bus_w(CONFIG_REG, CONFIG_QUARTER_SPEED);
-			printf("Setting ADC Ofst Reg to 0x%x\n", ADC_OFST_QUARTER_SPEED_VAL);	bus_w(ADC_OFST_REG, ADC_OFST_QUARTER_SPEED_VAL);
-			printf("Setting ADC Phase Reg to 0x%x\n", ADC_PHASE_QUARTER_SPEED);		adcPhase(ADC_PHASE_QUARTER_SPEED);
+
+			printf("Setting Sample Reg to 0x%x\n", SAMPLE_ADC_QUARTER_SPEED);
+			bus_w(SAMPLE_REG, SAMPLE_ADC_QUARTER_SPEED);
+
+			txndelay_msk = (bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK); // read config tdma timeslot value
+			printf("Setting Config Reg to 0x%x\n", CONFIG_QUARTER_SPEED | txndelay_msk);
+			bus_w(CONFIG_REG, CONFIG_QUARTER_SPEED | txndelay_msk);
+
+			printf("Setting ADC Ofst Reg to 0x%x\n", ADC_OFST_QUARTER_SPEED_VAL);
+			bus_w(ADC_OFST_REG, ADC_OFST_QUARTER_SPEED_VAL);
+
+			printf("Setting ADC Phase Reg to 0x%x\n", ADC_PHASE_QUARTER_SPEED);
+			adcPhase(ADC_PHASE_QUARTER_SPEED);
+
 			break;
 		}
 		printf("\n");
@@ -537,7 +605,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 			printf("\nSetting delay to %lldns\n", (long long int)val);
 			val *= (1E-3 * CLK_SYNC);
 		}
-		retval = set64BitReg(val, SET_DELAY_LSB_REG, SET_DELAY_MSB_REG) / (1E-3 * CLK_SYNC);
+		retval = set64BitReg(val, SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG) / (1E-3 * CLK_SYNC);
 		printf("Getting delay: %lldns\n", (long long int)retval);
 		break;
 
@@ -829,6 +897,11 @@ void setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]){
 				DAC_SERIAL_CLK_OUT_MSK, DAC_SERIAL_DIGITAL_OUT_MSK, DAC_SERIAL_DIGITAL_OUT_OFST);
 
 		dacValues[ind] = dacval;
+
+		if (ind == VREF_COMP) {
+		    bus_w (VREF_COMP_MOD_REG, (bus_r(VREF_COMP_MOD_REG) &~ (VREF_COMP_MOD_MSK))   // reset
+		            | ((val << VREF_COMP_MOD_OFST) & VREF_COMP_MOD_MSK));   // or it with value
+		}
 	}
 
 	printf("Getting DAC %d : ",ind);
@@ -1102,6 +1175,82 @@ void configurePll() {
 	}
 	usleep(10000);
 }
+
+
+
+int setThresholdTemperature(int val) {
+
+    if (val >= 0) {
+        printf("\nThreshold Temperature: %d\n", val);
+
+        val *= (10.0/625.0);
+#ifdef VERBOSE
+        printf("Converted Threshold Temperature: %d\n", val);
+#endif
+        bus_w(TEMP_CTRL_REG, (bus_r(TEMP_CTRL_REG) &~(TEMP_CTRL_PROTCT_THRSHLD_MSK) &~(TEMP_CTRL_OVR_TMP_EVNT_MSK))
+                | (((val  << TEMP_CTRL_PROTCT_THRSHLD_OFST) & TEMP_CTRL_PROTCT_THRSHLD_MSK)));
+#ifdef VERBOSE
+        printf("Converted Threshold Temperature set to %d\n", ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_PROTCT_THRSHLD_MSK) >> TEMP_CTRL_PROTCT_THRSHLD_OFST));
+#endif
+    }
+    uint32_t temp = ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_PROTCT_THRSHLD_MSK) >> TEMP_CTRL_PROTCT_THRSHLD_OFST);
+
+    // conversion
+    temp *= (625.0/10.0);
+    printf("Threshold Temperature  %f °C\n",(double)temp/1000.00);
+
+    return temp;
+
+}
+
+
+int setTemperatureControl(int val) {
+    if (val >= 0) {
+        // binary value
+        if (val > 0 ) val = 1;
+        printf("\nTemperature control: %d\n", val);
+        bus_w(TEMP_CTRL_REG, (bus_r(TEMP_CTRL_REG)  &~(TEMP_CTRL_PROTCT_ENABLE_MSK) &~(TEMP_CTRL_OVR_TMP_EVNT_MSK))
+                | (((val  << TEMP_CTRL_PROTCT_ENABLE_OFST) & TEMP_CTRL_PROTCT_ENABLE_MSK)));
+#ifdef VERBOSE
+        printf("Temperature control set to %d\n", ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_PROTCT_ENABLE_MSK) >> TEMP_CTRL_PROTCT_ENABLE_OFST));
+#endif
+    }
+    return ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_PROTCT_ENABLE_MSK) >> TEMP_CTRL_PROTCT_ENABLE_OFST);
+}
+
+
+int setTemperatureEvent(int val) {
+    if (val >= 0) {
+        // set bit to clear it
+        val = 1;
+        printf("\nTemperature Event: %d\n", val);
+        bus_w(TEMP_CTRL_REG, (bus_r(TEMP_CTRL_REG)   &~TEMP_CTRL_OVR_TMP_EVNT_MSK)
+                | (((val  << TEMP_CTRL_OVR_TMP_EVNT_OFST) & TEMP_CTRL_OVR_TMP_EVNT_MSK)));
+#ifdef VERBOSE
+        printf("Temperature Event set to %d\n", ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_OVR_TMP_EVNT_MSK) >> TEMP_CTRL_OVR_TMP_EVNT_OFST));
+#endif
+    }
+    return ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_OVR_TMP_EVNT_MSK) >> TEMP_CTRL_OVR_TMP_EVNT_OFST);
+}
+
+
+
+int setNetworkParameter(enum NETWORKINDEX mode, int value) {
+    if (mode != TXN_FRAME)
+        return -1;
+
+    if (value >= 0) {
+        printf("\nSetting transmission delay: %d\n", value);
+        bus_w(CONFIG_REG, (bus_r(CONFIG_REG) &~CONFIG_TDMA_TIMESLOT_MSK)
+                | (((value  << CONFIG_TDMA_TIMESLOT_OFST) & CONFIG_TDMA_TIMESLOT_MSK)));
+#ifdef VERBOSE
+        printf("Transmission delay set to %d\n", ((bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK) >> CONFIG_TDMA_TIMESLOT_OFST));
+#endif
+    }
+
+    return ((bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK) >> CONFIG_TDMA_TIMESLOT_OFST);
+}
+
 
 
 

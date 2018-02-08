@@ -10,6 +10,7 @@
 #include "trimming_funcs.h"
 #include "registers_g.h"
 #include "gitInfoGotthard.h"
+#include "AD9257.h"     // include "commonServerFunctions.h"
 
 #define FIFO_DATA_REG_OFF     0x50<<11
 #define CONTROL_REG           0x24<<11
@@ -460,24 +461,21 @@ int set_external_signal_flag(int file_des) {
 			break;
 
 		default:
-			if (differentClients==0 || lockStatus==0) {
-				retval=setExtSignal(signalindex,flag);
-			} else {
-				if (lockStatus!=0) {
-					ret=FAIL;
-					sprintf(mess,"Detector locked by %s\n", lastClientIP);
-				}
-			}
-
+		    if (lockStatus && differentClients) {
+                ret=FAIL;
+                sprintf(mess,"Detector locked by %s\n", lastClientIP);
+		    } else if (signalindex > 0) {
+                ret=FAIL;
+                sprintf(mess,"Signal index %d is reserved. Only index 0 can be configured.\n", signalindex);
+		    } else {
+		        retval=setExtSignal(flag);
+		    }
 		}
-
 #ifdef VERBOSE
 		printf("Setting external signal %d to flag %d\n",signalindex,flag );
 		printf("Set to flag %d\n",retval);
 #endif
 
-	} else {
-		ret=FAIL;
 	}
 
 	if (ret==OK && differentClients!=0)

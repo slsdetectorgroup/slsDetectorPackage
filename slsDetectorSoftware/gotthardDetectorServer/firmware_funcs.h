@@ -47,11 +47,11 @@ u_int32_t getTotClockDivider();
 u_int32_t setTotDutyCycle(int d);
 u_int32_t getTotDutyCycle();
 
-u_int32_t setExtSignal(int d, enum externalSignalFlag  mode);
-int  getExtSignal(int d);
+u_int32_t setExtSignal(enum externalSignalFlag  mode);
+int  getExtSignal();
 
-u_int32_t setFPGASignal(int d, enum externalSignalFlag  mode);
-int  getFPGASignal(int d);
+u_int32_t setFPGASignal(enum externalSignalFlag  mode);
+int  getFPGASignal();
 
 int setTiming(int t);
 

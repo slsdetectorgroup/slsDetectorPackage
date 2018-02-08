@@ -62,6 +62,7 @@ int adcphase = 0;
 int slavepatternphase = 0;
 int slaveadcphase = 0;
 int rsttosw1delay = 2;
+int startacqdelay = 1;
 
 
 #ifdef MCB_FUNCS
@@ -293,6 +294,8 @@ void setMasterSlaveConfiguration(){
 				slaveadcphase = ival;
 			else if (!strcasecmp(key,"rsttosw1delay"))
 				rsttosw1delay = ival;
+            else if (!strcasecmp(key,"startacqdelay"))
+                startacqdelay = ival;
 			else {
 				cprintf(RED,"could not scan parameter name %s from config file\n",key);
 				exit(EXIT_FAILURE);
@@ -307,13 +310,15 @@ void setMasterSlaveConfiguration(){
 			"slavepatternphase:%d\n"
 			"slaveadcphase:%d\n"
 			"rsttosw1delay:%d\n",
+	        "startacqdelay:%d\n",
 			masterflags,
 			masterdefaultdelay,
 			patternphase,
 			adcphase,
 			slavepatternphase,
 			slaveadcphase,
-			rsttosw1delay);
+			rsttosw1delay,
+			startacqdelay);
 
 
 
@@ -341,16 +346,24 @@ void setMasterSlaveConfiguration(){
 		val = (val & (~(PLL_CLK_SEL_MSK))) | PLL_CLK_SEL_SLAVE_ADC_VAL;
 		bus_w(MULTI_PURPOSE_REG,val);
 		setPhaseShift(slaveadcphase);
+	    /* Set start acq delay */
+	    val=bus_r(MULTI_PURPOSE_REG);
+#ifdef VERBOSE
+	    printf("Multipurpose reg:0x%x\n",bus_r(MULTI_PURPOSE_REG));
+#endif
+	    val = (val & (~(START_ACQ_DELAY_MSK))) | ((startacqdelay << START_ACQ_DELAY_OFFSET) & (START_ACQ_DELAY_MSK));
+	    bus_w(MULTI_PURPOSE_REG,val);
+	    printf("Start acq delay set. Multipurpose reg: 0x%x\n",bus_r(MULTI_PURPOSE_REG));
 	}
 
 	/* Set RST to SW1 delay */
 	val=bus_r(MULTI_PURPOSE_REG);
-	//#ifdef VERBOSE
-	printf("Value of multipurpose reg:%d\n",bus_r(MULTI_PURPOSE_REG));
-	//#endif
+#ifdef VERBOSE
+	  printf("Multipurpose reg:0x%x\n",bus_r(MULTI_PURPOSE_REG));
+#endif
 	val = (val & (~(RST_TO_SW1_DELAY_MSK))) | ((rsttosw1delay << RST_TO_SW1_DELAY_OFFSET) & (RST_TO_SW1_DELAY_MSK));
 	bus_w(MULTI_PURPOSE_REG,val);
-
+	printf("RST to SW1 delay set. Multipurpose reg:0x%x\n",bus_r(MULTI_PURPOSE_REG));
 
 	fclose(fd);
 }

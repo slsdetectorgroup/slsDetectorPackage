@@ -5,16 +5,16 @@ The detectors currently supported are namely MYTHEN, GOTTHARD, EIGER, JUNGFRAU a
 
 ## Installation
 
-### Get binaries
+### Binaries
 Documentation to obtain the binaries via the conda package is available [here.](https://github.com/slsdetectorgroup/sls_detector_software)
 
-### Get source code
+### Source code
 One can also obtain the source code from this repository and compile while realizing the setup dependencies as required.
 ```
 git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git --branch 3.0.1
 
 ```
-### Setup dependencies 
+#### Setup dependencies 
 * Gui Client <br>
 Requirements: Qt 4.8 and Qwt 6.0
 ```
@@ -29,7 +29,7 @@ Requirements: ROOT
     export ROOTSYS=/usr/local/root-5.34
 ```
 
-### Compilation 
+#### Compilation 
 
 Compiling can be done in two ways.
 

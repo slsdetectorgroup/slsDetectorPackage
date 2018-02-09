@@ -33,7 +33,7 @@ Requirements: ROOT
 
 Compiling can be done in two ways.
 
-1. Compile using script cmk.sh<br>
+**1. Compile using script cmk.sh**<br>
 
 After compiling, the libraries and executables will be found in `slsDetectorPackage/build/bin` directory<br>
 
@@ -72,7 +72,7 @@ For rebuilding only certain sections<br>
 ./cmk.sh -r #only receiver<br>
 
 
-2. Compile without script
+**2. Compile without script**
 Use cmake to create out-of-source builds, by creating a build folder parallel to source directory.
 ```
     $ cd ..

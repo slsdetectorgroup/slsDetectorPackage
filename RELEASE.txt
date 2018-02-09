@@ -1,4 +1,4 @@
-SLS Detector Package 3.0.1 released on 2017-09-27
+SLS Detector Package 3.0.1 released on 2018-02-12
 =================================================
 
 
@@ -7,17 +7,31 @@ INTRODUCTION
 
 This document describes the differences between 3.0.0 and 3.0.1 release.
 
+The conda package of the binaries can be downloaded from
+	
+	https://github.com/erikfrojdh/sls_detector_software.git
+	
+The conda package of the python API wrap-around to the software package is at 
+	
+	https://github.com/slsdetectorgroup/sls_detector.git
+	
 Manual (both HTML and pdf versions) are provided in
+	
 	manual/docs/
 
-Documentation from Source Code can be found for the Command Line and for the API in
+Documentation from Source Code can be found for the Command Line and C++ API in
+	
 	html:
 		manual/docs/html/slsDetectorClientDocs/index.html
 		manual/docs/html/slsDetectorUsersDocs/index.html
 	pdf:
 		manual/docs/pdf/slsDetectorClientDocs.pdf
 		manual/docs/pdf/slsDetectorUsersDocs.pdf
+		
+Documentation to the python API is available at
 
+	https://slsdetectorgroup.github.io/sls_detector/
+		
 Example including binaries for detector and receiver user classes can be found in 
 
 	manual/manual-api
@@ -30,6 +44,10 @@ If you have any software related questions or comments, please send them to:
 
     dhanya.thattil@psi.ch
     anna.bergamaschi@psi.ch
+    
+If you have any python related questions or commens, please send them to:
+	
+	erik.frojdh@psi.ch
 
 
 CONTENTS
@@ -44,110 +62,231 @@ CONTENTS
 Changes in User Interface
 ========================= 
 	
+	
+	Client
+	------
+	1.	Additional functions added for advanced users in users class:
+		(setSpeed, setClockDivider, setReadOutFlags, setDac, getADC, 
+		setAllTrimbits, startReceiver, stopReceiver,
+		startAcquisition non blocking, setReceiverSilentMode, setHighVoltage,
+		enableDataStreamingToClient, enableDataStreamingFromReceiver, 
+		setReceiverDataStreamingOutPort, setClientDataStreamingInPort)
+			
+	2.	Zmq set up for client and receiver are separated.
+		zmqport for client and rx_zmqport for receiver. By default, they are the
+		same for the slsDetectorGui to work.
+		
+	3. 	Users example also works without config file, where detector already
+		configured in shared memory.
+		
+	4. 	Use "sls_detector_get busy 0" to clear acquiring flag in shared memory
+		caused due to an earlier interrupted acquisition from Ctrl+C"
+		
+	5. 	Set bit, clear bit, read register and write register cannot give -1 for
+		inconsistent values from multiple detectors. One has to check error from 
+		API or read the values individually.
+		
+	6. 	multiSlsDetector::char* getSettingsFile() function signature has been 
+		changed to string getSettingsFile().
+
+		
+		
 	Receiver
-	--------	
-	
-	1.	Bug Fix: Example receiver users code now handles child process exit
-		better.	Example receiver code in slsDetectorsPackage/manual/manual-api 
-		folder (mainReceiver.cpp).
-
-	2.	detReceiver is now executed with [start tcp port] [number of receivers]
-		as arguments. By default, start tcp port is 1954 and number of receivers
-		is 1.
+	--------
+	7.	Modified the help manaual/main-api/mainReceiver.cpp to make it more
+		robust (handling child process exit) and flexible to determine upon 
+		start up the number of receivers (child processes), the start TCP port 
+		and whether to call back data.
 		
-	User
-	----
-	
-	3.	Added a few advanced user functions in slsDetectorUser class. 
+		detReceiver is now executed with [start tcp port] [number of receivers]
+		[1 for call back, 0 for none] as arguments. 
+		By default, start tcp port is 1954, number of receivers	is 1, and call
+		back is initiated.
 		
-
+	8.	rx_datastream to enable/disable data streaming in receiver. Using the GUI
+		or registering data call back in client automatically enables zmq in 
+		receiver and client. "externalgui" is removed from the command line. Use
+		this command instead.
+		
+		
 
 New Features
 ============
 
+
+	Package
+	-------
+	1.	In addition to the C++ API, the Python API is also now provided.
+	
+	2. 	CMAKE now with debug flag and rpath, show warnings, compile only certain 
+		components (such as receiver or gui)
+	
+	3. 	One repository for entire package and made available at github.
+	
+	4. 	One can do --version or -v to all the binaries to find out the release
+		version of the particular executable.
+		
+	5. 	All the software version numbers have only date in format YYMMDD.
+	
+	  
+   	Client
+	------
+	6. 	Parallelized more commands to detector. Beneficial for large detectors.
+		(setTimer, setFileIndex, setOnline, setReceiverOnline, getReceiverStatus,
+		resetFramesCaught, setFrameIndex, setFileName, getFramesCaughtByReceiver,
+		setDynamicRange, setRateCorrection)
+		
+		Option to also use "sls_detector_put threaded 0" to improve speed by 
+		eliminating progress display during acquisition. Effective only for 
+		large detectors.
+		
+	
 	Detector Server
 	---------------
-	1.	(Eiger): Virtual class to execute on pc for integration.
-
+	7.	(Eiger) Virtual class to execute on pc.
 	
-	Client
-	------
-	
-	2.	Parallelized more commands to detector. Beneficial for large multi detector systems.
-	
-	3.	One can set "threaded" to 0 in the config file and acquire from command line. It will
-		not give you progress, but might be faster for large multi detector systems.
+	8. 	One can now read temperatures during acquisition. It goes via the stop
+		server.
 		
+	9. 	(Jungfrau) One can start server in "debug" mode and then program the
+		new firmware via software command "sls_detector_put programfpga xx.pof".
+		
+	10. (Jungfrau) Server can exit on start up if either the firmware or the 
+		server is incompatible with each other.
+	
+	11.(Jungfrau) One is able to set transmission delay (ms) of image for each
+		individual detector using "txndelay_frame" command. Beneficial for 
+		large detectors.
+		
+	12.(Jungfrau) One can set a threshold temperature (temp_threshold) and 
+		enable the temperature control feature (temp_control). When the 
+		temperature (temp_fpga) overshoots the threshold temperature, it will
+		set the temperature event (temp_event) and power off the chip. One must
+		then switch off the detector and check cooling. Switching back on starts
+		with defaults.
+		
+	13.	(25um Gotthard) Added start acquisition delay to master module.
+	
 	
 	Receiver
 	--------
-	
-	4.	Added silent mode to receiver using command r_silent [i] from client. 
+	14.	Added silent mode to receiver using command r_silent [i] from client. 
 		It might be beneficial for max frame rate applications.
+		
+	15.	Receiver print out can handle black or white backgrounds.
+	
+	16.	zmq package included updated to v4.0.8.
+	
+	17.	Zmq streaming from receiver also sends file index in json header.
+	
+	
+	Gui
+	---
+	18.	If acquisition is done, but "stop dummy packet" to the gui was lost in 
+		the network, stop acquisition command will restream it so that the gui
+		doesnt hang forever. This is used only for very fast detectors like 
+		Moench.
+
 
 
 Resolved Issues
 ===============
 
+
+	Client
+	------
+	1.  gethostbyname used in connecting to sockets was not thread safe for 
+		multiple detectors. Using getaddrinfo for stability in multi threaded
+		environment.
+	
+	2. 	Updated writing content of config and parameter dump into files.
+	
+	3. 	More locking to handle main and processing threads using the threadpool.
+		Removing unlock twice, which is undefined behavior.
+		
+
+	Detector Server
+	---------------
+	4. 	(Eiger) The hardware MAC of the detector is used during configuration 
+		and relayed  back to client. Similarly, hardware IP for 1 Gbe data mode.
+		
+	5. 	(Eiger) Status will return error if there was the unlikely trouble 
+		reading status register in the front end board. Earlier, it would only 
+		return idle.
+		
+	6.	(Jungfrau) patch server v3.0.0.6.3
+		Able to set settings, high voltage now correctly reads 0 when 
+		switched off, dacs are properly set.
+			
+	7. 	(Jungfrau) FPGA reset and programming FPGA firmware via software is done
+		properly
+		
+	8. 	(Gotthard) patch server v3.0.0.5.1
+		Able to read temperature properly.
+		
+	9. 	(Gotthard) butst mode if set too fast had unwanted behavior such as 
+		sending same image continuously. Now it is handled to display error
+		and stop acquisition.
+		
+	10.	(Gotthard) completely removed the possibility to set timing modes 
+		other than auto and trigger as they are not implemented anyway.
+		
+	11.	Non Mythen and non Eiger detectors can also now get settings file from 
+		board.
+	
+	
+	Receiver
+	--------
+	12.	Made it easier to disable the standard receiver and fixing bugs related 
+		to the use of a custom one. 
+		
+	13.	(Jungfrau) HDF5 dimensions (npixelsY) required for mapping fixed.
+	
+	14.	patch2-v3.0.0-slsReceiverSoftware.patch
+		x, y and z coordinates in the call backs and the files are hardcoded 
+		for this release. 
+		
+	15.	Rest implementation (not used by standard receiver) removed.
+
+	
 	Gui
 	---
-	
-	1.	Bug fix:(Eiger) In expert mode and in advanced tab, when trimbits 
+	16.	patch1-v3.0.0-slsDetectorGui.patch
+		(Eiger) In expert mode and in advanced tab, when trimbits 
 		loaded are different for every pixel, the gui complains and sets 
 		all trimbits to zero. This has been resolved. Now, the "Set All 
 		Trimbits" field is just set to -1.
-	
-	2. 	Minor alignment issue in Advanced Tab fixed.
-	
-	Client
-	------
-	
-	3.	Made it easier to disable the standard receiver and fixing bugs related to the use of a 
-		custom one.
-	
-	Detector Server
-	---------------
-	
-	4.	(Eiger): Status will return error if there was the unlikely trouble reading status 
-		register in the front end board. Earlier, it would only return idle.
 		
-	Receiver
-	--------
+	17.	Fixed segmentation fault of xputsn properly.
 	
-	5.	Bug fix: x, y and z coordinates in the call backs and the files 
-		are still not corrected in the detector	udp header and must be 
-		hardcoded for this release. It is done now.
+	18.	Upon clicking on "Start", clears acquiring flag in shared memory
+		caused due to an earlier interrupted acquisition from Ctrl+C"
+		
+	19.	Fixed plotting twice caused due to unzooming the first time.
 	
-	6. 	File class in receiver should be created only if file write is
-		enabled. This has been corrected to that.
+	20.	Removed option for compression in Gui as it is not available currently.
 
 
-
+	
 Known Issues
 ============
 
+
 	Client
 	------
-	
-	1. 	Changing file name prefix at the single detector level will not concatenate scan or 
-		position variables to the file name prefix. This is now done only at the multi
-		detector level. 
-	
+	1.	File name prefix can only be done at multi deector level. Changing at 
+		individual detector level will not include scan or position variables.
 
+	
 	Detector Server
 	---------------
-	
-	2.	(Eiger) The hardware mac of the detector is used (not relayed back to the client). 
-	  	For 1 GbE, the hardware IP of the detector is used (also not relayed back to the 
-	  	client). 
-	  	
-	3.	Standard header fills x-coord in 1D. y-coord and z-coord is not implemented (3D).
-	
-	
+	2.	Standard header fills x-coord in 1D. y-coord and z-coord is not 
+		implemented (3D).
+
+
 	Receiver
 	--------
-	
-	4. 	HDF5 compression and filters are not implemented yet.
+	3. 	HDF5 compression and filters are not implemented yet.
 	
 
 	

@@ -9,7 +9,7 @@ The detectors currently supported are namely MYTHEN, GOTTHARD, EIGER, JUNGFRAU a
 Documentation to obtain the binaries via the conda package is available [here.](https://github.com/slsdetectorgroup/sls_detector_software)
 
 ### Get source code
-One can also obtain the source code from this repository and compile as follows.
+One can also obtain the source code from this repository and compile while realizing the setup dependencies as required.
 ```
 git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git --branch 3.0.1
 

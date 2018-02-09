@@ -92,3 +92,6 @@ After compiling, the libraries and executables will be found at `bin` directory
     gui_client  libSlsDetector.a  libSlsDetector.so  libSlsReceiver.a  libSlsReceiver.so
     sls_detector_acquire  sls_detector_get  slsDetectorGui  sls_detector_help  sls_detector_put  slsReceiver
 ```
+
+### Usage
+How to use the package can be found [here.](https://github.com/slsdetectorgroup/slsDetectorPackage/wiki)

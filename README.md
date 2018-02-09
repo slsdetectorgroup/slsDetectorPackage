@@ -10,14 +10,16 @@ Documentation to obtain the binaries via the conda package is available [here.](
 One can also obtain the source code from this repository and compile as follows.
 
 ### Setup dependencies 
-* Gui Client. <br>Requirements: Qt 4.8 and Qwt 6.0
+* Gui Client <br>
+Requirements: Qt 4.8 and Qwt 6.0
 ```
     export QTDIR=/usr/local/Trolltech/
     export QWTDIR=/usr/local/qwt-6.0.1/
 ```
 If either of them does not exist, the GUI client will not be built.
 
-* Calibration wizards. <br>Requirements: ROOT
+* Calibration wizards<br>
+Requirements: ROOT
 ```
     export ROOTSYS=/usr/local/root-5.34
 ```

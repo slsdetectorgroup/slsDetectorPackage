@@ -1,12 +1,11 @@
-
-SLS Detector Package 3.1.0 released on 2017-10-02
+SLS Detector Package 3.0.1 released on 2017-09-27
 =================================================
 
 
 
 INTRODUCTION
 
-This document describes the differences between 3.1.0 and 3.0.1 release.
+This document describes the differences between 3.0.0 and 3.0.1 release.
 
 Manual (both HTML and pdf versions) are provided in
 	manual/docs/
@@ -43,43 +42,116 @@ CONTENTS
 
 
 Changes in User Interface
-========================= 	
+========================= 
 	
-	Client
-	------
-	1. 	User Detector API for call back has been changed. Instead of providing double* data,
-		it will now provided in char* with the bit width. One can decode the char* to get an 
-		array with data type of their own choosing.
-			
 	Receiver
-	--------
-	2.	(Eiger) Gap Pixels are included in the data provided. It can be enabled/disabled using 
-		'gappixels' from the command line.		
-
+	--------	
 	
+	1.	Bug Fix: Example receiver users code now handles child process exit
+		better.	Example receiver code in slsDetectorsPackage/manual/manual-api 
+		folder (mainReceiver.cpp).
+
+	2.	detReceiver is now executed with [start tcp port] [number of receivers]
+		as arguments. By default, start tcp port is 1954 and number of receivers
+		is 1.
+		
+	User
+	----
+	
+	3.	Added a few advanced user functions in slsDetectorUser class. 
+		
+
 
 New Features
 ============
 
+	Detector Server
+	---------------
+	1.	(Eiger): Virtual class to execute on pc for integration.
+
+	
+	Client
+	------
+	
+	2.	Parallelized more commands to detector. Beneficial for large multi detector systems.
+	
+	3.	One can set "threaded" to 0 in the config file and acquire from command line. It will
+		not give you progress, but might be faster for large multi detector systems.
+		
+	
+	Receiver
+	--------
+	
+	4.	Added silent mode to receiver using command r_silent [i] from client. 
+		It might be beneficial for max frame rate applications.
+
+
+Resolved Issues
+===============
+
 	Gui
 	---
-	1.	(Jungfrau) Now features gain plot. Enabled or disabled on the fly using the check button
-		in the tab plot under 2D options.
-
-
-Resolved Issues
-===============
-
-
-
-Resolved Issues
-===============
+	
+	1.	Bug fix:(Eiger) In expert mode and in advanced tab, when trimbits 
+		loaded are different for every pixel, the gui complains and sets 
+		all trimbits to zero. This has been resolved. Now, the "Set All 
+		Trimbits" field is just set to -1.
+	
+	2. 	Minor alignment issue in Advanced Tab fixed.
+	
+	Client
+	------
+	
+	3.	Made it easier to disable the standard receiver and fixing bugs related to the use of a 
+		custom one.
+	
+	Detector Server
+	---------------
+	
+	4.	(Eiger): Status will return error if there was the unlikely trouble reading status 
+		register in the front end board. Earlier, it would only return idle.
+		
+	Receiver
+	--------
+	
+	5.	Bug fix: x, y and z coordinates in the call backs and the files 
+		are still not corrected in the detector	udp header and must be 
+		hardcoded for this release. It is done now.
+	
+	6. 	File class in receiver should be created only if file write is
+		enabled. This has been corrected to that.
 
 
 
 Known Issues
 ============
 
+	Client
+	------
 	
+	1. 	Changing file name prefix at the single detector level will not concatenate scan or 
+		position variables to the file name prefix. This is now done only at the multi
+		detector level. 
+	
+
+	Detector Server
+	---------------
+	
+	2.	(Eiger) The hardware mac of the detector is used (not relayed back to the client). 
+	  	For 1 GbE, the hardware IP of the detector is used (also not relayed back to the 
+	  	client). 
+	  	
+	3.	Standard header fills x-coord in 1D. y-coord and z-coord is not implemented (3D).
+	
+	
+	Receiver
+	--------
+	
+	4. 	HDF5 compression and filters are not implemented yet.
+	
+
+	
+
+
 
 

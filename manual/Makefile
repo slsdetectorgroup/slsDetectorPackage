@@ -5,7 +5,7 @@ DESTDIR?=docs
 
 
 
-MAINDIRS= manual-main 
+MAINDIRS= manual-main manual-api  manual-calwiz manual-client manual-gui
 #manual-calwiz manual-calwiz manual-gui manual-client manual-api
 CLEANDIRS=$(MAINDIRS:manual-%=clean-%)
 PDFDIRS=$(MAINDIRS:manual-%=pdf-%)

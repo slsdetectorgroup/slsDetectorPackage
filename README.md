@@ -31,7 +31,16 @@ Requirements: ROOT
 
 ### Compilation 
 
-#### Compile using script cmk.sh
+After compiling, the libraries and executables will be found at `bin` directory
+```
+    $ ls bin/
+    gui_client  libSlsDetector.a  libSlsDetector.so  libSlsReceiver.a  libSlsReceiver.so
+    sls_detector_acquire  sls_detector_get  slsDetectorGui  sls_detector_help  sls_detector_put  slsReceiver
+```
+
+Compiling can be done in two ways.
+
+1. Compile using script cmk.sh
 Usage: [-c] [-b] [-h] [-d HDF5 directory] [-j]<br>
  * -[no option]: only make<br>
  * -c: Clean<br>
@@ -67,7 +76,7 @@ For rebuilding only certain sections<br>
 ./cmk.sh -r #only receiver<br>
 
 
-#### Compile without script
+2. Compile without script
 Use cmake to create out-of-source builds, by creating a build folder parallel to source directory.
 ```
     $ cd ..
@@ -81,9 +90,3 @@ Use the following as an example to compile statically and using specific hdf5 fo
 ```
     $ HDF5_ROOT=/opt/hdf5v1.10.0 cmake ../slsDetectorPackage -DUSE_TEXTCLIENT=ON -DUSE_RECEIVER=ON -DUSE_GUI=OFF -DCMAKE_BUILD_TYPE=Debug -DUSE_HDF5=ON
  ```  
-The libraries and executables will be found at `bin` directory
-```
-    $ ls bin/
-    gui_client  libSlsDetector.a  libSlsDetector.so  libSlsReceiver.a  libSlsReceiver.so
-    sls_detector_acquire  sls_detector_get  slsDetectorGui  sls_detector_help  sls_detector_put  slsReceiver
-```

@@ -10,7 +10,10 @@ Documentation to obtain the binaries via the conda package is available [here.](
 
 ### Get source code
 One can also obtain the source code from this repository and compile as follows.
+```
+git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git --branch 3.0.1
 
+```
 ### Setup dependencies 
 * Gui Client <br>
 Requirements: Qt 4.8 and Qwt 6.0
@@ -26,7 +29,9 @@ Requirements: ROOT
     export ROOTSYS=/usr/local/root-5.34
 ```
 
-### Compile using script cmk.sh
+### Compilation 
+
+#### Compile using script cmk.sh
 Usage: [-c] [-b] [-h] [-d HDF5 directory] [-j]<br>
  * -[no option]: only make<br>
  * -c: Clean<br>
@@ -62,7 +67,7 @@ For rebuilding only certain sections<br>
 ./cmk.sh -r #only receiver<br>
 
 
-### Compile without script
+#### Compile without script
 Use cmake to create out-of-source builds, by creating a build folder parallel to source directory.
 ```
     $ cd ..

@@ -195,7 +195,7 @@ Resolved Issues
 
 	Client
 	------
-	1.  gethostbyname used in connecting to sockets was not thread safe for 
+	1. 	gethostbyname used in connecting to sockets was not thread safe for 
 		multiple detectors. Using getaddrinfo for stability in multi threaded
 		environment.
 	

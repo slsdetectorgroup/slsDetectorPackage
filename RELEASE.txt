@@ -45,7 +45,7 @@ If you have any software related questions or comments, please send them to:
     dhanya.thattil@psi.ch
     anna.bergamaschi@psi.ch
     
-If you have any python related questions or commens, please send them to:
+If you have any python related questions or comments, please send them to:
 	
 	erik.frojdh@psi.ch
 

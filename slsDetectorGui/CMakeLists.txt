@@ -129,4 +129,5 @@ set_target_properties(gui_client PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-install(TARGETS slsDetectorGui gui_client DESTINATION bin)
+install(TARGETS slsDetectorGui gui_client
+    RUNTIME DESTINATION bin)

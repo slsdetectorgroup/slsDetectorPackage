@@ -1,19 +1,12 @@
 # slsDetector package
 
 
-## Installation
+## Installation of binaries via the conda package
+Documentation to obtain the binaries is available [here.](https://github.com/slsdetectorgroup/sls_detector_software)
 
-### Get source
-The source code is organised into several submodules, and the top level module is
-sls_detectors_package.
+## Installation of source code and compiling
 
-```
-    $ git clone git@git.psi.ch:sls_detectors_software/sls_detectors_package.git
-    $ cd sls_detectors_package
-    $ ./checkout.sh
-```
-
-### Setup dependencies
+### Setup dependencies for GUI client and calibration wizards
 The GUI client requires Qt 4.8 and Qwt 6.0
 ```
     export QTDIR=/usr/local/Trolltech/
@@ -26,19 +19,55 @@ The calibration wizards require ROOT
     export ROOTSYS=/usr/local/root-5.34
 ```
 
-### Compile
-Use cmake to create out-of-source builds, by creating an build folder parallel to source directory.
+### Compile using script cmk.sh
+Usage: [-c] [-b] [-h] [-d <HDF5 directory>] [-j]
+ -[no option]: only make
+ -c: Clean
+ -b: Builds/Rebuilds CMake files normal mode
+ -h: Builds/Rebuilds Cmake files with HDF5 package
+ -d: HDF5 Custom Directory
+ -t: Build/Rebuilds only text client
+ -r: Build/Rebuilds only receiver
+ -g: Build/Rebuilds only gui
+ -j: Number of threads to compile through
+ 
+For only make:
+./cmk.sh
+
+For make clean;make:
+./cmk.sh -c
+
+For using hdf5 without custom dir /blabla:
+./cmk.sh -h -d /blabla
+
+For rebuilding cmake without hdf5 
+./cmk.sh -b
+
+For using multiple cores to compile faster:
+(all these options work)
+./cmk.sh -j9
+./cmk.sh -cj9 #with clean
+./cmk.sh -hj9 #with hdf5
+./cmk.sh -j9 -h #with hdf
+
+For rebuilding only certain sections
+./cmk.sh -tg #only text client and gui
+./cmk.sh -r #only receiver
+
+
+### Compile without script
+Use cmake to create out-of-source builds, by creating a build folder parallel to source directory.
 ```
     $ cd ..
-    $ mkdir sls_detectors_package-build
-    $ cd sls_detectors_package-build
-    $ cmake ../sls_detectors_package
+    $ mkdir slsDetectorPackage-build
+    $ cd slsDetectorPackage-build
+    $ cmake ../slsDetectorPackage -DUSE_TEXTCLIENT=ON -DUSE_RECEIVER=ON -DUSE_GUI=OFF -DCMAKE_BUILD_TYPE=Debug -DUSE_HDF5=OFF 
     $ make
 ```
 
 Use the following as an example to compile statically and using specific hdf5 folder
 ```
-    $ HDF5_ROOT=/opt/hdf5v1.10.0 cmake -DHDF5_USE_STATIC_LIBRARIES=TRUE ../slsDetectorsPackage
+    $ HDF5_ROOT=/opt/hdf5v1.10.0 cmake ../slsDetectorPackage -DUSE_TEXTCLIENT=ON -DUSE_RECEIVER=ON -DUSE_GUI=OFF -DCMAKE_BUILD_TYPE=Debug -DUSE_HDF5=ON
  ```  
 The libraries and executables will be found at `bin` directory
 ```

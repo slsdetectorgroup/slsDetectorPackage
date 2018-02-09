@@ -108,6 +108,8 @@ Changes in User Interface
 		receiver and client. "externalgui" is removed from the command line. Use
 		this command instead.
 		
+	9.	Rx_tcpport argument to the slsReceiver can be given using -t. 
+		Eg. slsReceiver -t1955
 		
 
 New Features

@@ -1,10 +1,13 @@
 # slsDetector package
 
 
-## Installation of binaries via the conda package
-Documentation to obtain the binaries is available [here.](https://github.com/slsdetectorgroup/sls_detector_software)
+## Installation
 
-## Installation of source code and compiling
+### Get binaries
+Documentation to obtain the binaries via the conda package is available [here.](https://github.com/slsdetectorgroup/sls_detector_software)
+
+### Get source code
+One can also obtain the source code from this repository and compile as follows.
 
 ### Setup dependencies for GUI client and calibration wizards
 The GUI client requires Qt 4.8 and Qwt 6.0

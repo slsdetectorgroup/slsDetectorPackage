@@ -72,19 +72,19 @@ For rebuilding only certain sections<br>
 ./cmk.sh -r #only receiver<br>
 
 
-**2. Compile without script**
+**2. Compile without script**<br>
 Use cmake to create out-of-source builds, by creating a build folder parallel to source directory.
 ```
     $ cd ..
     $ mkdir slsDetectorPackage-build
     $ cd slsDetectorPackage-build
-    $ cmake ../slsDetectorPackage -DUSE_TEXTCLIENT=ON -DUSE_RECEIVER=ON -DUSE_GUI=OFF -DCMAKE_BUILD_TYPE=Debug -DUSE_HDF5=OFF 
+    $ cmake ../slsDetectorPackage  -DCMAKE_BUILD_TYPE=Debug -DUSE_HDF5=OFF 
     $ make
 ```
 
 Use the following as an example to compile statically and using specific hdf5 folder
 ```
-    $ HDF5_ROOT=/opt/hdf5v1.10.0 cmake ../slsDetectorPackage -DUSE_TEXTCLIENT=ON -DUSE_RECEIVER=ON -DUSE_GUI=OFF -DCMAKE_BUILD_TYPE=Debug -DUSE_HDF5=ON
+    $ HDF5_ROOT=/opt/hdf5v1.10.0 cmake ../slsDetectorPackage -DCMAKE_BUILD_TYPE=Debug -DUSE_HDF5=ON
  ```  
 After compiling, the libraries and executables will be found at `bin` directory
 ```

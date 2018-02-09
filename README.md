@@ -1,5 +1,7 @@
 # slsDetector package
 
+The SLS Detectors Package is intended to control the detectors developed by the SLS Detectors Group. <br> 
+The detectors currently supported are namely MYTHEN, GOTTHARD, EIGER, JUNGFRAU and MOENCH.<br>
 
 ## Installation
 

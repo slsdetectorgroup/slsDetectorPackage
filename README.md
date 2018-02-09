@@ -25,16 +25,16 @@ Requirements: ROOT
 ```
 
 ### Compile using script cmk.sh
-Usage: [-c] [-b] [-h] [-d <HDF5 directory>] [-j]
- -[no option]: only make
- -c: Clean
- -b: Builds/Rebuilds CMake files normal mode
- -h: Builds/Rebuilds Cmake files with HDF5 package
- -d: HDF5 Custom Directory
- -t: Build/Rebuilds only text client
- -r: Build/Rebuilds only receiver
- -g: Build/Rebuilds only gui
- -j: Number of threads to compile through
+Usage: [-c] [-b] [-h] [-d HDF5 directory] [-j]<br>
+ -[no option]: only make<br>
+ -c: Clean<br>
+ -b: Builds/Rebuilds CMake files normal mode<br>
+ -h: Builds/Rebuilds Cmake files with HDF5 package<br>
+ -d: HDF5 Custom Directory<br>
+ -t: Build/Rebuilds only text client<br>
+ -r: Build/Rebuilds only receiver<br>
+ -g: Build/Rebuilds only gui<br>
+ -j: Number of threads to compile through<br>
  
 For only make:
 ./cmk.sh
@@ -48,16 +48,16 @@ For using hdf5 without custom dir /blabla:
 For rebuilding cmake without hdf5 
 ./cmk.sh -b
 
-For using multiple cores to compile faster:
-(all these options work)
-./cmk.sh -j9
-./cmk.sh -cj9 #with clean
-./cmk.sh -hj9 #with hdf5
-./cmk.sh -j9 -h #with hdf
+For using multiple cores to compile faster:<br>
+(all these options work)<br>
+./cmk.sh -j9<br>
+./cmk.sh -cj9 #with clean<br>
+./cmk.sh -hj9 #with hdf5<br>
+./cmk.sh -j9 -h #with hdf<br>
 
-For rebuilding only certain sections
-./cmk.sh -tg #only text client and gui
-./cmk.sh -r #only receiver
+For rebuilding only certain sections<br>
+./cmk.sh -tg #only text client and gui<br>
+./cmk.sh -r #only receiver<br>
 
 
 ### Compile without script

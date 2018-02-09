@@ -148,17 +148,17 @@ New Features
 	8. 	One can now read temperatures during acquisition. It goes via the stop
 		server.
 		
-	9. 	(Jungfrau) One can start server in "debug" mode and then program the
+	9.	(Jungfrau) One can start server in "debug" mode and then program the
 		new firmware via software command "sls_detector_put programfpga xx.pof".
 		
-	10. (Jungfrau) Server can exit on start up if either the firmware or the 
+	10.	(Jungfrau) Server can exit on start up if either the firmware or the 
 		server is incompatible with each other.
 	
-	11.(Jungfrau) One is able to set transmission delay (ms) of image for each
+	11.	(Jungfrau) One is able to set transmission delay (ms) of image for each
 		individual detector using "txndelay_frame" command. Beneficial for 
 		large detectors.
 		
-	12.(Jungfrau) One can set a threshold temperature (temp_threshold) and 
+	12.	(Jungfrau) One can set a threshold temperature (temp_threshold) and 
 		enable the temperature control feature (temp_control). When the 
 		temperature (temp_fpga) overshoots the threshold temperature, it will
 		set the temperature event (temp_event) and power off the chip. One must

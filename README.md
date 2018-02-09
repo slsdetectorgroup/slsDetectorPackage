@@ -26,15 +26,15 @@ Requirements: ROOT
 
 ### Compile using script cmk.sh
 Usage: [-c] [-b] [-h] [-d HDF5 directory] [-j]<br>
- -[no option]: only make<br>
- -c: Clean<br>
- -b: Builds/Rebuilds CMake files normal mode<br>
- -h: Builds/Rebuilds Cmake files with HDF5 package<br>
- -d: HDF5 Custom Directory<br>
- -t: Build/Rebuilds only text client<br>
- -r: Build/Rebuilds only receiver<br>
- -g: Build/Rebuilds only gui<br>
- -j: Number of threads to compile through<br>
+ * -[no option]: only make<br>
+ * -c: Clean<br>
+ * -b: Builds/Rebuilds CMake files normal mode<br>
+ * -h: Builds/Rebuilds Cmake files with HDF5 package<br>
+ * -d: HDF5 Custom Directory<br>
+ * -t: Build/Rebuilds only text client<br>
+ * -r: Build/Rebuilds only receiver<br>
+ * -g: Build/Rebuilds only gui<br>
+ * -j: Number of threads to compile through<br>
  
 For only make:
 ./cmk.sh

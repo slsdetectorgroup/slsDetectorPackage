@@ -12,6 +12,7 @@
 u_int32_t CSP0BASE = 0;
 #define CSP0 0x20200000
 #define MEM_SIZE 0x100000
+#define MEM_MAP_SHIFT 1
 
 
 
@@ -103,7 +104,7 @@ int64_t set64BitReg(int64_t value, int aLSB, int aMSB){
  * @retuns 32 bit data read
  */
 u_int32_t readRegister(u_int32_t offset) {
-	return bus_r(offset << 11);
+	return bus_r(offset << MEM_MAP_SHIFT);
 }
 
 /**
@@ -112,7 +113,7 @@ u_int32_t readRegister(u_int32_t offset) {
  * @param data 32 bit data
  */
 u_int32_t writeRegister(u_int32_t offset, u_int32_t data) {
-	bus_w(offset << 11, data);
+	bus_w(offset << MEM_MAP_SHIFT, data);
 	return readRegister(offset);
 }
 

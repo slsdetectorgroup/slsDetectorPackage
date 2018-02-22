@@ -8,8 +8,8 @@
 
 
 #define GOODBYE 					(-200)
-#define MIN_REQRD_VRSN_T_RD_API     0x171113
-#define REQRD_FRMWR_VRSN            0x171113
+#define MIN_REQRD_VRSN_T_RD_API     0x171220
+#define REQRD_FRMWR_VRSN            0x171220
 
 
 /* Struct Definitions */

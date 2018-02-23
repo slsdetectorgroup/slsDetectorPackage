@@ -3149,7 +3149,7 @@ int slsDetector::setModule(int reg, int imod){
 int slsDetector::setModule(sls_detector_module module, int iodelay, int tau, int e_eV, int* gainval, int* offsetval, int tb){
 
 	int fnum=F_SET_MODULE;
-	int retval;
+	int retval=-1;
 	int ret=FAIL;
 	char mess[MAX_STR_LENGTH]="";
 
@@ -3254,6 +3254,9 @@ int slsDetector::setModule(sls_detector_module module, int iodelay, int tau, int
 			for (int i=0; i<thisDetector->nOffset; ++i)
 				offset[i+imod*thisDetector->nOffset]=offsetval[i];
 		}
+
+		if (e_eV != -1)
+		    thisDetector->currentThresholdEV = e_eV;
 
 	}
 
@@ -3459,7 +3462,7 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
 	//currently only for eiger
 	if (thisDetector->myDetectorType == EIGER) {
 		setThresholdEnergyAndSettings(e_eV,isettings,tb);
-			return  thisDetector->currentThresholdEV;
+		return  thisDetector->currentThresholdEV;
 	}
 
 	int fnum=  F_SET_THRESHOLD_ENERGY;

@@ -1180,7 +1180,7 @@ int multiSlsDetector::getThresholdEnergy(int pos) {
       if (ret1==-100)
 	ret1=ret;
       else if (ret<(ret1-200) || ret>(ret1+200))
-	ret1=FAIL;
+	ret1=-1;
       
     }
    
@@ -1225,7 +1225,7 @@ int multiSlsDetector::setThresholdEnergy(int e_eV, int pos, detectorSettings ise
 				if(iret[idet] != NULL){
 					if (ret==-100)
 						ret=*iret[idet];
-					else if (ret<(*iret[idet]-200) || ret>(*iret[idet]+200))
+					else if (*iret[idet]<(ret-200) || *iret[idet]>(ret+200))
 							ret=-1;
 					delete iret[idet];
 				}else ret=-1;

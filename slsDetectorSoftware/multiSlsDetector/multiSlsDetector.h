@@ -1206,6 +1206,8 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
   slsDetector *getSlsDetector(int pos) {if (pos>=0 && pos< MAXDET) return detectors[pos]; return NULL;};
+  //additional way of accessing
+  slsDetector *operator()(int pos) {if (pos>=0 && pos< MAXDET) return detectors[pos]; return NULL;};
 
 
 

@@ -119,6 +119,11 @@ target_link_libraries(slsDetectorGui
     pthread
     zmq
     rt
+    png
+    z
+    Qt4::QtOpenGL
+    Qt4::QtSvg
+
 )
 
 add_executable(gui_client

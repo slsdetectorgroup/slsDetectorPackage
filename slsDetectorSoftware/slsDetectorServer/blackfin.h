@@ -9,7 +9,7 @@
 
 
 /* global variables */
-u_int32_t CSP0BASE = 0;
+u_int64_t CSP0BASE = 0;
 #define CSP0 0x20200000
 #define MEM_SIZE 0x100000
 
@@ -122,10 +122,14 @@ u_int32_t writeRegister(u_int32_t offset, u_int32_t data) {
  */
 int mapCSP0(void) {
 	// if not mapped
-	if (!CSP0BASE) {
+	if (CSP0BASE == 0) {
 		printf("Mapping memory\n");
 #ifdef VIRTUAL
 		CSP0BASE = malloc(MEM_SIZE);
+		if (CSP0BASE == NULL) {
+		    cprintf(BG_RED, "Error: Could not allocate virtual memory.\n");
+		    return FAIL;
+		}
 		printf("memory allocated\n");
 #else
 		int fd;
@@ -137,14 +141,15 @@ int mapCSP0(void) {
 #ifdef VERBOSE
 		printf("/dev/mem opened\n");
 #endif
-		CSP0BASE = (u_int32_t)mmap(0, MEM_SIZE, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, CSP0);
-		if (CSP0BASE == (u_int32_t)MAP_FAILED) {
+		CSP0BASE = mmap(0, MEM_SIZE, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, CSP0);
+		if (CSP0BASE == MAP_FAILED) {
 			cprintf(BG_RED, "Error: Can't map memmory area\n");
 			return FAIL;
 		}
-		printf("CSPOBASE mapped from %08x to %08x\n",CSP0BASE,CSP0BASE+MEM_SIZE);
 #endif
+		printf("CSPOBASE mapped from 0x%llx to 0x%llx\n",CSP0BASE, CSP0BASE+MEM_SIZE);
 		printf("Status Register: %08x\n",bus_r(STATUS_REG));
+
 	}else
 		printf("Memory already mapped before\n");
 	return OK;

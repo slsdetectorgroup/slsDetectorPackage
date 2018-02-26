@@ -388,7 +388,6 @@ void setupDetector() {
 				cprintf(RED, "Warning: Setting dac %d failed, wrote %d, read %d\n",i ,defaultvals[i], retval[0]);
 		}
 	}
-    printf("reading stats reg:0x%p\n",(CSP0BASE+DAQ_REG*2));
 	bus_w(DAQ_REG, 0x0);         /* Only once at server startup */
 	setSpeed(CLOCK_DIVIDER, HALF_SPEED);
 	cleanFifos();	/* todo might work without */

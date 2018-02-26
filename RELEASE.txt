@@ -267,6 +267,8 @@ Resolved Issues
 	19.	Fixed plotting twice caused due to unzooming the first time.
 	
 	20.	Removed option for compression in Gui as it is not available currently.
+	
+	21. Can also show Jungfrau multi detector in x direction in gui.
 
 
 	

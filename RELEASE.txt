@@ -240,6 +240,9 @@ Resolved Issues
 		
 	11.	Non Mythen and non Eiger detectors can also now get settings file from 
 		board.
+		
+	12. (Gotthard) Did not get first few images initially after configuring MAC
+		of detector. Fixed.
 	
 	
 	Receiver
@@ -274,6 +277,9 @@ Resolved Issues
 	20.	Removed option for compression in Gui as it is not available currently.
 	
 	21. Can also show Jungfrau multi detector in x direction in gui.
+	
+	22. Switching tabs sometimes results in delay and gates fields being incorrectly
+		enabled. Fixed.
 
 
 	

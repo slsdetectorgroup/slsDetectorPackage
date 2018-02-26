@@ -1474,6 +1474,7 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 #endif 
 	//  if(val!=0x2820) return -1;
 
+    usleep(1000 * 1000);
 
 	return adcConfigured;
 }

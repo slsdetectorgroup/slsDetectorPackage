@@ -5952,7 +5952,8 @@ int multiSlsDetector::getData(const int isocket, const bool masking, int* image,
 	if(masking){
 		unsigned int snel = size/sizeof(int);
 		for(unsigned int i=0;i<snel;++i){
-			image[i] = (image[i] & 0x3FFF3FFF);
+		    if((unsigned int)image[i] != 0xFFFFFFFF)
+		        image[i] = (image[i] & 0x3FFF3FFF);
 		}
 	}
 
@@ -5970,8 +5971,10 @@ void multiSlsDetector::readFrameFromReceiver(){
 	int numSockets = thisMultiDetector->numberOfDetectors;
 	int numSocketsPerSLSDetector = 1;
 	bool jungfrau = false;
+	bool eiger = false;
 	switch(getDetectorsType()){
 	case EIGER:
+	    eiger = true;
 		numSocketsPerSLSDetector = 2;
 		numSockets *= numSocketsPerSLSDetector;
 		maxX = thisMultiDetector->numberOfChannel[X];
@@ -5979,6 +5982,8 @@ void multiSlsDetector::readFrameFromReceiver(){
 		break;
 	case JUNGFRAU:
 		jungfrau = true;
+        maxX = thisMultiDetector->numberOfChannel[X];
+        maxY = thisMultiDetector->numberOfChannel[Y];
 		break;
 	default:
 		break;
@@ -6007,7 +6012,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 	//calculating offsets (for eiger interleaving ports)
 	int offsetX[numSockets]; int offsetY[numSockets];
 	int bottom[numSockets];
-	if(maxX){
+	if(eiger){
 		for(int i=0; i<numSockets; ++i){
 			offsetY[i] = (maxY - (thisMultiDetector->offsetY[i/numSocketsPerSLSDetector] + slsmaxY)) * maxX * bytesperchannel;
 			//the left half or right half
@@ -6070,7 +6075,7 @@ void multiSlsDetector::readFrameFromReceiver(){
 				}
 
 				//assemble data with interleaving
-				if(maxX){
+				if(eiger){
 
 					//bottom
 					if(bottom[isocket]){
@@ -6093,7 +6098,11 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 				//assemble data with no interleaving, assumed detectors appended vertically
 				else{
-					memcpy((char*)multiframe+slsdatabytes*isocket,(char*)image,slsdatabytes);
+				    for(int i=0;i<slsmaxY;++i){
+				        memcpy(((char*)multiframe) + (((thisMultiDetector->offsetY[isocket] + i) * maxX) + thisMultiDetector->offsetX[isocket])* (int)bytesperchannel,
+				                (char*)image+ (i*slsmaxX*(int)bytesperchannel),
+				                (slsmaxX*(int)bytesperchannel));
+				    }
 				}
 			}
 

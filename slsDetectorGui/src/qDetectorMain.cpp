@@ -305,11 +305,8 @@ void qDetectorMain::SetUpDetector(const string fName){
 	cout << endl << "Type : " << slsDetectorBase::getDetectorType(detType) << "\nDetector : " << host << endl;
 //#endif
 	myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
-	if(detType != slsDetectorDefs::MYTHEN) {
-		if(myDet->setReceiverOnline(slsDetectorDefs::GET_ONLINE_FLAG) == slsDetectorDefs::ONLINE_FLAG) {
-			myDet->setReceiverOnline(slsDetectorDefs::ONLINE_FLAG);
-		}else cprintf(RED,"is not online!\n");
-	}
+	if(detType != slsDetectorDefs::MYTHEN)
+	    myDet->setReceiverOnline(slsDetectorDefs::ONLINE_FLAG);
 	qDefs::checkErrorMessage(myDet,"qDetectorMain::SetUpDetector");
 }
 

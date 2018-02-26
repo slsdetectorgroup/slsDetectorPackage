@@ -209,6 +209,10 @@ Resolved Issues
 	3. 	More locking to handle main and processing threads using the threadpool.
 		Removing unlock twice, which is undefined behavior.
 		
+	4. 	Setting rx_udpmac should overwrite the receiver defined mac address. 
+		Should be after rx_hostname command and followed by 
+		"sls_detector_put configuremac 0"
+		
 
 	Detector Server
 	---------------

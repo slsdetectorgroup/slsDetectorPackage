@@ -6349,9 +6349,9 @@ string slsDetector::setReceiverUDPMAC(string udpmac){
 #else
       	  ;
 #endif
-      else  if(setUDPConnection()==FAIL){
+     /* else  if(setUDPConnection()==FAIL){ commented out to be replaced by user defined udpmac
     	  std::cout<< "Warning: UDP connection set up failed" << std::endl;
-      }
+      }*/
     }else{
       setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
       std::cout << "Warning: receiver udp mac address should be in xx:xx:xx:xx:xx:xx format" << std::endl;

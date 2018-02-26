@@ -1725,12 +1725,10 @@ int stop_acquisition(int file_des) {
   int ret=OK;
   int n;
   
-
   sprintf(mess,"can't stop acquisition\n");
 
-#ifdef VERBOSE
-  printf("Stopping acquisition\n");
-#endif 
+  cprintf(BG_RED,"Client command received to stop acquisition\n");
+
 
     
   if (differentClients==1 && lockStatus==1) {

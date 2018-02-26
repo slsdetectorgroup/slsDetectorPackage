@@ -169,6 +169,9 @@ New Features
 		
 	13.	(25um Gotthard) Added start acquisition delay to master module.
 	
+	14. (Gotthard) New constraints include minimum exposure time is 186 ns and
+		minimum period is 1278 ns + current exposure time.
+	
 	
 	Receiver
 	--------
@@ -231,7 +234,9 @@ Resolved Issues
 		and stop acquisition.
 		
 	10.	(Gotthard) completely removed the possibility to set timing modes 
-		other than auto and trigger as they are not implemented anyway.
+		other than auto and trigger as they are not implemented anyway. Also
+		signal index 1, 2 and 3 are reserved and hence, cannot be configured for
+		an external trigger.
 		
 	11.	Non Mythen and non Eiger detectors can also now get settings file from 
 		board.

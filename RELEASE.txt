@@ -175,14 +175,20 @@ New Features
 	
 	Receiver
 	--------
-	14.	Added silent mode to receiver using command r_silent [i] from client. 
+	14. The detectorip and rx_udpip does not have to be in the same subnet anymore.
+		Add the following commands after rx_hostname in config file to overwrite
+		mac configuration:
+		rx_udpmac [router mac]
+		configuremac 0 
+		
+	15.	Added silent mode to receiver using command r_silent [i] from client. 
 		It might be beneficial for max frame rate applications.
 		
-	15.	Receiver print out can handle black or white backgrounds.
+	16.	Receiver print out can handle black or white backgrounds.
 	
-	16.	zmq package included updated to v4.0.8.
+	17.	zmq package included updated to v4.0.8.
 	
-	17.	Zmq streaming from receiver also sends file index in json header.
+	18.	Zmq streaming from receiver also sends file index in json header.
 	
 	
 	Gui
@@ -208,11 +214,7 @@ Resolved Issues
 	
 	3. 	More locking to handle main and processing threads using the threadpool.
 		Removing unlock twice, which is undefined behavior.
-		
-	4. 	Setting rx_udpmac should overwrite the receiver defined mac address. 
-		Should be after rx_hostname command and followed by 
-		"sls_detector_put configuremac 0"
-		
+			
 
 	Detector Server
 	---------------

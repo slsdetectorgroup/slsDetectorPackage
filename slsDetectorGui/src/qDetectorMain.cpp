@@ -111,7 +111,7 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, int& ret,
 					+ "Usage: " + string(argv[0]) + " [arguments]\n"
 					+ "Possible arguments are:\n"
 					+ "\t-d, --developer           : Enables the developer tab\n"
-					+ "\t-f, --f, --config <fname> : Loads config from file\n"
+					+ "\t-f, --config <fname>      : Loads config from file\n"
 					+ "\t-i, --id <i>              : Sets the multi detector id to i. Default: 0. Required \n"
 					+ "\t                            only when more than one multi detector object is needed.\n\n";
 			cout << help_message << endl;

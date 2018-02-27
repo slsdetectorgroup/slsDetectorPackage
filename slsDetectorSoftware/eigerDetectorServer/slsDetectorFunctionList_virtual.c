@@ -78,7 +78,7 @@ int normal = 0;
 
 /* basic tests */
 
-void checkFirmwareCompatibility(){
+void checkFirmwareCompatibility(int flag){
 	cprintf(BLUE,"\n\n"
 			"********************************************************\n"
 			"***************** EIGER Virtual Server *****************\n"

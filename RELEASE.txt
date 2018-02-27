@@ -63,14 +63,32 @@ CONTENTS
 Firmware Requirements
 =====================
 
+Please refer to the link below for more details on the firmware versions.
+	https://www.psi.ch/detectors/firmware.
+
 	Gotthard
-	========
-    Minimum compatible version: old one
+	========   
+    Minimum compatible version	: old one
+    Latest version				: 08.02.2018 (50um and 25um Master)
+        						  09.02.2018 (25 um Slave) 
 
-    Latest version:
-        08.02.2018 (50um and 25um Master)
-        09.02.2018 (25 um Slave): Solves bugs. 
+   	-Can not be upgraded remotely.
+    
+    
+    Eiger
+	=====  
+    Minimum compatible version	: 16
+    Latest version				: 21
+        
+    -Can be upgraded remotely via bit files.
+    
+        
+    Jungfrau
+    ========       
+    Minimum compatible version	: 13.11.2017
+    Latest version				: 13.11.2017
 
+    -Can be upgraded remotely via sls_detector_put programfpga <pof>.
 	 
 
 

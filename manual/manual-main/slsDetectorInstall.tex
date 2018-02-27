@@ -23,8 +23,8 @@
 
 
 
-\section{The Software Package}
 
+\section{The Software Package}
 The SLS detectors software is intended to control the detectors developed by
 the SLS Detectors group. The detectors currently supported are:
 
@@ -80,9 +80,15 @@ This section is useful only if one wants to download only the binaries for
 specific distribution and use the package via command line. Please refer later
 sections to download source code and compile them.\bigskip
 
+\noindent One can download and install Miniconda via 
+
+\url{https://conda.io/miniconda.html} \bigskip
+
 \noindent The conda package uses Travis CI for continuous integration with
 automatic deployment to Anaconda Cloud. One can download only the package or the
-package including the python interface.
+package including the python interface. \bigskip
+
+\noindent After the installation, the binaries will be available in your path.
 
 
 \begin{itemize}
@@ -117,6 +123,7 @@ conda install sls_detector=3.0.1
 conda install sls_detector=SL6_3.0.1
 \end{verbatim}
 \end{itemize}
+
 
 \clearpage
 \section{Install via Source Code}

@@ -34,7 +34,8 @@ $(HTMLS): $(TEXS) $(MAINTEXS)
 	$(shell test -d $(DESTDIR)/html/$@ && rm -fr $(DESTDIR)/html/$@)
 	echo "*****************************  $@"
 	latex $@.tex
-	latex2html -split 16 -no_navigation -info "" -address  ""  -long_titles 5 -link 0 $@.tex	
+	latex2html -split 16 -no_navigation -info "" -address  "" -long_titles 5 -link 0  $@.tex
+	#-show_section_numbers $@.tex	
 	# -local_icons
 	mv $@ $(DESTDIR)/html
 

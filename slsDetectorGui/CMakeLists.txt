@@ -119,7 +119,7 @@ target_link_libraries(slsDetectorGui
     pthread
     zmq
     rt
-#    png
+    png
     z
     Qt4::QtOpenGL
     Qt4::QtSvg

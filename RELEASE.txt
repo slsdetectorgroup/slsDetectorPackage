@@ -52,11 +52,26 @@ If you have any python related questions or comments, please send them to:
 
 CONTENTS
 
+- Firmware Requirements
 - Changes in User Interface
 - New Features
 - Resolved Issues
 - Known Issues
 
+
+
+Firmware Requirements
+=====================
+
+	Gotthard
+	========
+    Minimum compatible version: old one
+
+    Latest version:
+        08.02.2018 (50um and 25um Master)
+        09.02.2018 (25 um Slave): Solves bugs. 
+
+	 
 
 
 Changes in User Interface

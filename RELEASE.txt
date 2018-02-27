@@ -68,7 +68,7 @@ Please refer to the link below for more details on the firmware versions.
 
 	Gotthard
 	========   
-    Minimum compatible version	: old one
+    Minimum compatible version	: 11.01.2013
     Latest version				: 08.02.2018 (50um and 25um Master)
         						  09.02.2018 (25 um Slave) 
 
@@ -202,8 +202,9 @@ New Features
 		
 	13.	(25um Gotthard) Added start acquisition delay to master module.
 	
-	14. (Gotthard) New constraints include minimum exposure time is 186 ns and
-		minimum period is 1278 ns + current exposure time.
+	14. (Gotthard) New constraints for firmware dated 08.02.2018 and 09.02.2018 
+		(25 um Slave) include minimum exposure time is 186 ns and minimum 
+		period is 1278 ns + current exposure time.
 	
 	
 	Receiver

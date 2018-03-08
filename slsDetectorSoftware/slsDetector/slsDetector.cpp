@@ -2309,13 +2309,13 @@ int slsDetector::digitalTest( digitalTestMode mode, int imod){
 
 /* write or read register */
 
-int slsDetector::writeRegister(int addr, int val){
+uint32_t slsDetector::writeRegister(uint32_t addr, uint32_t val){
 
-	int retval=-1;
+	uint32_t retval = 0;
 	int fnum=F_WRITE_REGISTER;
 	int ret=FAIL;
 	char mess[MAX_STR_LENGTH]="";
-	int arg[2];
+	uint32_t arg[2];
 	arg[0]=addr;
 	arg[1]=val;
 
@@ -2358,7 +2358,7 @@ int slsDetector::writeAdcRegister(int addr, int val){
 	int ret=FAIL;
 	char mess[MAX_STR_LENGTH]="";
 
-	int arg[2];
+	uint32_t arg[2];
 	arg[0]=addr;
 	arg[1]=val;
 
@@ -2397,13 +2397,13 @@ int slsDetector::writeAdcRegister(int addr, int val){
 
 
 
-int slsDetector::readRegister(int addr){
+uint32_t slsDetector::readRegister(uint32_t addr){
 
-	int retval=-1;
+	uint32_t retval = 0;
 	int fnum=F_READ_REGISTER;
 	int ret=FAIL;
 	char mess[MAX_STR_LENGTH]="";
-	int arg;
+	uint32_t arg;
 	arg=addr;
 
 

@@ -4834,16 +4834,16 @@ int multiSlsDetector::saveCalibrationFile(string fname, int imod) {
 
 
 
-int multiSlsDetector::writeRegister(int addr, int val){
+uint32_t multiSlsDetector::writeRegister(uint32_t addr, uint32_t val){
 
-	int ret, ret1=-100;
+	uint32_t ret, ret1;
 
 	for (int i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
 		if (detectors[i]) {
 			ret=detectors[i]->writeRegister(addr,val);
 			if(detectors[i]->getErrorMask())
 				setErrorMask(getErrorMask()|(1<<i));
-			if (ret1==-100)
+			if (i==0)
 				ret1=ret;
 			else if (ret!=ret1) {
 				// not setting it to -1 as it is a possible value
@@ -4881,16 +4881,16 @@ int multiSlsDetector::writeAdcRegister(int addr, int val){
 }
 
 
-int multiSlsDetector::readRegister(int addr){
+uint32_t multiSlsDetector::readRegister(uint32_t addr){
 
-	int ret, ret1=-100;
+	uint32_t ret, ret1;
 
 	for (int i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
 		if (detectors[i]) {
 			ret=detectors[i]->readRegister(addr);
 			if(detectors[i]->getErrorMask())
 				setErrorMask(getErrorMask()|(1<<i));
-			if (ret1==-100)
+			if (i==0)
 				ret1=ret;
 			else if (ret!=ret1) {
 				// not setting it to -1 as it is a possible value

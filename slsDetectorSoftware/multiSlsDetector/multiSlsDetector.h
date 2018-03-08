@@ -1066,13 +1066,13 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
 
-  int writeRegister(int addr, int val);
+  uint32_t writeRegister(uint32_t addr, uint32_t val);
   
 
   int writeAdcRegister(int addr, int val);
   
 
-  int readRegister(int addr);
+  uint32_t readRegister(uint32_t addr);
 
   /**
       sets a bit in a register

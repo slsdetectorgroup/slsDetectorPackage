@@ -497,7 +497,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
       
       DO NOT USE!!! ONLY EXPERT USER!!!
   */
-  virtual int writeRegister(int addr, int val)=0; 
+  virtual uint32_t writeRegister(uint32_t addr, uint32_t val)=0;
 
 
   /** 
@@ -508,7 +508,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
       
       DO NOT USE!!! ONLY EXPERT USER!!!
   */
-  virtual int writeAdcRegister(int addr, int val)=0; 
+  virtual int writeAdcRegister(int addr, int val)=0;
 
  
   /** 
@@ -518,7 +518,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
       DO NOT USE!!! ONLY EXPERT USER!!!
   */
-  virtual int readRegister(int addr)=0;
+  virtual uint32_t readRegister(uint32_t addr)=0;
 
 
   /**

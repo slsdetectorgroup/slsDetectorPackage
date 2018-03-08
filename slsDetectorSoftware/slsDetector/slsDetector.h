@@ -864,7 +864,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
       \returns current register value
 
   */
-  int writeRegister(int addr, int val);
+  uint32_t writeRegister(uint32_t addr, uint32_t val);
   
 
   /** 
@@ -882,7 +882,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
       \returns current register value
 
   */
-  int readRegister(int addr);
+  uint32_t readRegister(uint32_t addr);
 
   /**
       sets a bit in a register

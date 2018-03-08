@@ -1,11 +1,11 @@
-SLS Detector Package 3.0.1 released on 2018-02-12
+SLS Detector Package 3.1.0 released on 2018-03-08
 =================================================
 
 
 
 INTRODUCTION
 
-This document describes the differences between 3.0.0 and 3.0.1 release.
+This document describes the differences between 3.1.0 and 3.0.0 releases.
 
 The conda package of the binaries can be downloaded from
 	
@@ -68,25 +68,25 @@ Please refer to the link below for more details on the firmware versions.
 
 	Gotthard
 	========   
-    Minimum compatible version	: 11.01.2013
-    Latest version				: 08.02.2018 (50um and 25um Master)
-        						  09.02.2018 (25 um Slave) 
+    Minimum compatible version  : 11.01.2013
+    Latest version              : 08.02.2018 (50um and 25um Master)
+                                  09.02.2018 (25 um Slave) 
 
    	-Can not be upgraded remotely.
     
     
     Eiger
 	=====  
-    Minimum compatible version	: 16
-    Latest version				: 21
+    Minimum compatible version  : 16
+    Latest version              : 21
         
     -Can be upgraded remotely via bit files.
     
         
     Jungfrau
     ========       
-    Minimum compatible version	: 13.11.2017
-    Latest version				: 13.11.2017
+    Minimum compatible version  : 13.11.2017
+    Latest version              : 13.11.2017
 
     -Can be upgraded remotely via sls_detector_put programfpga <pof>.
 	 
@@ -202,14 +202,14 @@ New Features
 		
 	13.	(25um Gotthard) Added start acquisition delay to master module.
 	
-	14. (Gotthard) New constraints for firmware dated 08.02.2018 and 09.02.2018 
+	14. 	(Gotthard) New constraints for firmware dated 08.02.2018 and 09.02.2018 
 		(25 um Slave) include minimum exposure time is 186 ns and minimum 
 		period is 1278 ns + current exposure time.
 	
 	
 	Receiver
 	--------
-	14. The detectorip and rx_udpip does not have to be in the same subnet anymore.
+	14. 	The detectorip and rx_udpip does not have to be in the same subnet anymore.
 		Add the following commands after rx_hostname in config file to overwrite
 		mac configuration:
 		rx_udpmac [router mac]
@@ -227,7 +227,7 @@ New Features
 	
 	Gui
 	---
-	18.	If acquisition is done, but "stop dummy packet" to the gui was lost in 
+	19.	If acquisition is done, but "stop dummy packet" to the gui was lost in 
 		the network, stop acquisition command will restream it so that the gui
 		doesnt hang forever. This is used only for very fast detectors like 
 		Moench.
@@ -248,6 +248,8 @@ Resolved Issues
 	
 	3. 	More locking to handle main and processing threads using the threadpool.
 		Removing unlock twice, which is undefined behavior.
+		
+	4.	(Jungfrau) adcphase returns the correct value, instead of -1.
 			
 
 	Detector Server
@@ -281,7 +283,7 @@ Resolved Issues
 	11.	Non Mythen and non Eiger detectors can also now get settings file from 
 		board.
 		
-	12. (Gotthard) Did not get first few images initially after configuring MAC
+	12. 	(Gotthard) Did not get first few images initially after configuring MAC
 		of detector. Fixed.
 	
 	
@@ -316,9 +318,9 @@ Resolved Issues
 	
 	20.	Removed option for compression in Gui as it is not available currently.
 	
-	21. Can also show Jungfrau multi detector in x direction in gui.
+	21. 	Can also show Jungfrau multi detector in x direction in gui.
 	
-	22. Switching tabs sometimes results in delay and gates fields being incorrectly
+	22. 	Switching tabs sometimes results in delay and gates fields being incorrectly
 		enabled. Fixed.
 
 

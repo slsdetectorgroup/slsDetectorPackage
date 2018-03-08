@@ -892,7 +892,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
       DO NOT USE!!! ONLY EXPERT USER!!!
   */
-  int setBit(int addr, int n);
+  uint32_t setBit(uint32_t addr, int n);
 
 
   /**
@@ -903,7 +903,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
       DO NOT USE!!! ONLY EXPERT USER!!!
   */
-  int clearBit(int addr, int n);
+  uint32_t clearBit(uint32_t addr, int n);
 
   /**
      set dacs value

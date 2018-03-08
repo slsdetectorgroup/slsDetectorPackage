@@ -2440,25 +2440,24 @@ uint32_t slsDetector::readRegister(uint32_t addr){
 }
 
 
-int slsDetector::setBit(int addr, int n) {
+uint32_t slsDetector::setBit(uint32_t addr, int n) {
 	if (n<0 || n>31) {
 		std::cout << "Bit number out of Range" << std:: endl;
 		setErrorMask((getErrorMask())|(REGISER_WRITE_READ));
 	}
 
 	// normal bit range
+	//TODO! (Erik) Check for errors! cannot use value since reg is 32bits
 	else {
-		int val = readRegister(addr);
-		if (val != -1) {
-			writeRegister(addr,val | 1<<n);
-		}
+		uint32_t val = readRegister(addr);
+		writeRegister(addr,val | 1<<n);
 	}
 
 	return readRegister(addr);
 }
 
 
-int slsDetector::clearBit(int addr, int n) {
+uint32_t slsDetector::clearBit(uint32_t addr, int n) {
 	if (n<0 || n>31) {
 		std::cout << "Bit number out of Range" << std:: endl;
 		setErrorMask((getErrorMask())|(REGISER_WRITE_READ));
@@ -2466,10 +2465,8 @@ int slsDetector::clearBit(int addr, int n) {
 
 	// normal bit range
 	else {
-		int val = readRegister(addr);
-		if (val != -1) {
-			writeRegister(addr,val & ~(1<<n));
-		}
+		uint32_t val = readRegister(addr);
+		writeRegister(addr,val & ~(1<<n));
 	}
 
 	return readRegister(addr);

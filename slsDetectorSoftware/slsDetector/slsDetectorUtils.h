@@ -529,7 +529,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
       DO NOT USE!!! ONLY EXPERT USER!!!
   */
-  virtual int setBit(int addr, int n)=0;
+  virtual uint32_t setBit(uint32_t addr, int n)=0;
 
 
   /**
@@ -540,7 +540,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
       DO NOT USE!!! ONLY EXPERT USER!!!
   */
-  virtual int clearBit(int addr, int n)=0;
+  virtual uint32_t clearBit(uint32_t addr, int n)=0;
 
 
   /**

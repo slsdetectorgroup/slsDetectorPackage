@@ -4904,15 +4904,15 @@ uint32_t multiSlsDetector::readRegister(uint32_t addr){
 }
 
 
-int multiSlsDetector::setBit(int addr, int n) {
-	int ret1, ret=-100;
+uint32_t multiSlsDetector::setBit(uint32_t addr, int n) {
+	uint32_t ret, ret1;
 
 	for (int i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
 		if (detectors[i]) {
 			ret1=detectors[i]->setBit(addr,n);
 			if(detectors[i]->getErrorMask())
 				setErrorMask(getErrorMask()|(1<<i));
-			if (ret==-100)
+			if (i==0)
 				ret=ret1;
 			else if (ret!=ret1) {
 				// not setting it to -1 as it is a possible value
@@ -4926,15 +4926,15 @@ int multiSlsDetector::setBit(int addr, int n) {
 }
 
 
-int multiSlsDetector::clearBit(int addr, int n) {
-	int ret1, ret=-100;
+uint32_t multiSlsDetector::clearBit(uint32_t addr, int n) {
+	uint32_t ret, ret1;
 
 	for (int i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
 		if (detectors[i]) {
 			ret1=detectors[i]->clearBit(addr,n);
 			if(detectors[i]->getErrorMask())
 				setErrorMask(getErrorMask()|(1<<i));
-			if (ret==-100)
+			if (i==0)
 				ret=ret1;
 			else if (ret!=ret1) {
 				// not setting it to -1 as it is a possible value

@@ -842,10 +842,12 @@ void qTabMeasurement::Refresh(){
 		cout  << "Getting delay after trigger, number of triggers and number of gates" << endl;
 #endif
 		//delay
-		time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,-1)*(1E-9))));
+		if (detType != slsDetectorDefs::EIGER)
+		    time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,-1)*(1E-9))));
 
 		//gates
-		spinNumGates->setValue((int)myDet->setTimer(slsDetectorDefs::GATES_NUMBER,-1));
+	    if ((detType != slsDetectorDefs::EIGER) && (detType != slsDetectorDefs::JUNGFRAU))
+	        spinNumGates->setValue((int)myDet->setTimer(slsDetectorDefs::GATES_NUMBER,-1));
 
 		//Number of Triggers
 		spinNumTriggers->setValue((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1));

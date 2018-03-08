@@ -1253,7 +1253,7 @@ int get_adc(int file_des) {
 int write_register(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int retval=-1;
+	uint32_t retval=-1;
 	sprintf(mess,"write to register failed\n");
 
 	// receive arguments
@@ -1261,7 +1261,7 @@ int write_register(int file_des) {
 	n = receiveData(file_des,arg,sizeof(arg),INT32);
 	if (n < 0) return printSocketReadError();
 	int addr=arg[0];
-	int val=arg[1];
+	uint32_t val=arg[1];
 
 	// execute action
 	if (differentClients && lockStatus) {
@@ -1311,7 +1311,7 @@ int write_register(int file_des) {
 int read_register(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int retval=-1;
+	uint32_t retval=-1;
 	sprintf(mess,"read register failed\n");
 
 	// receive arguments

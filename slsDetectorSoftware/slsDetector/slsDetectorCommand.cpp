@@ -1571,7 +1571,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 	/* temperature control */
     /*! \page settings
-        \section settingsadcs Temp Control
+        \section settingstmp Temp Control
   commands to monitor and handle temperature overshoot (only JUNGFRAU)
      */
 

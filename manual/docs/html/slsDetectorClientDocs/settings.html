@@ -44,7 +44,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li><a class="el" href="settings.html#settingssett">Settings and Threshold</a>: commands to configure settings and threshold of detector</li>
 <li><a class="el" href="settings.html#settingsdacs">DACs</a>: commands to configure DACs of detector</li>
 <li><a class="el" href="settings.html#settingsadcs">ADCs</a>: commands to readout ADCs of detector</li>
-<li>Temp Control: commands to monitor and handle temperature overshoot (only JUNGFRAU)</li>
+<li><a class="el" href="settings.html#settingstmp">Temp Control</a>: commands to monitor and handle temperature overshoot (only JUNGFRAU)</li>
 </ul>
 <h2><a class="anchor" id="settingsdir">
 Settings, trim &amp; cal Directories</a></h2>
@@ -290,8 +290,8 @@ ADCs</a></h2>
 <ul>
 <li><b>vm_io</b> Gets the measured voltage of the power supply io on the new chiptest board <code>Returns</code> <code></code>(int"mV")</li>
 </ul>
-<h2><a class="anchor" id="settingsadcs">
-ADCs</a></h2>
+<h2><a class="anchor" id="settingstmp">
+Temp Control</a></h2>
 <p>commands to monitor and handle temperature overshoot (only JUNGFRAU)</p>
 <ul>
 <li><b>temp_threshold</b> Sets/gets the threshold temperature. JUNGFRAU ONLY. <code>Returns</code> <code></code>(double"°C")</li>

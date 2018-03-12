@@ -11,7 +11,7 @@ The conda package of the binaries can be downloaded from
 	
 	https://github.com/slsdetectorgroup/sls_detector_software.git
 	
-The conda package of the python API wrap-around to the software package is at 
+The Python interface to the software package (including the package) is at 
 	
 	https://github.com/slsdetectorgroup/sls_detector.git
 	

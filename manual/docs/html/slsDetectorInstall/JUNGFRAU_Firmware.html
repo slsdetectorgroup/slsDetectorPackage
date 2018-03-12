@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>JUNGFRAU Firmware</TITLE>
+<META NAME="description" CONTENT="JUNGFRAU Firmware">
+<META NAME="keywords" CONTENT="slsDetectorInstall">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectorInstall.css">
+
+</HEAD>
+
+<BODY >
+
+<H3><A NAME="SECTION00054100000000000000">
+JUNGFRAU Firmware</A>
+</H3>
+<I>For SLS Detector Package v3.1.0</I> 
+<BR>
+Minimum compatible version: 13.11.2017 
+<BR>
+Latest version: 13.11.2017 
+<BR>
+<P>
+At times, one has to update the firmware, which then also requires updating the
+on-board software. 
+
+<P>
+<B><I>Jungfrau firmware can be upgraded via the SLS Detector Package
+binaries from the command line.</I></B>
+
+<P>
+
+<OL>
+<LI>One must get the latest package's corresponding POF file from the SLS
+Detector Group.
+</LI>
+<LI>Update the latest SLS Detector package installed.
+</LI>
+<LI>Update the on-board software as per the instructions in the next
+section.
+</LI>
+<LI>Start the on-board server in debug mode:
+  
+<OL>
+<LI>Connect to the blackfin on the detector
+<BR><code>telnet bchipxxx</code>
+</LI>
+<LI>Prevent existing on-board server from respawning by:
+    
+<OL>
+<LI>Edit <code>/etc/inittab</code> 
+</LI>
+<LI>Comment out the line
+<code>#ttyS0::respawn:/jungfrauDetectorServervxxx</code> 
+</LI>
+<LI>Reboot blackfin using <code>reboot</code>
+</LI>
+<LI>Run <code>ps</code> to ensure no gotthardDetectorServers are running
+    
+</LI>
+</OL>
+</LI>
+<LI>Start the server in debug mode using: 
+<BR><code>./jungfrauDetectorServerxxx -debug</code> 
+<BR>
+Leave this console on to come back to it later.
+  
+</LI>
+</OL>
+</LI>
+<LI>From the command line of the pc, clear shared memory 
+<BR><code>./sls_detector_get free</code> 
+<BR>
+If one gets shmget error, please clean the shared memory properly using the
+script in <code>slsDetectorPackage/cleansharedmemory.sh</code>
+</LI>
+<LI>Add the detector to shared memory using 
+<BR><code>./sls_detector_put hostname bchipxxx</code>
+</LI>
+<LI>Program the FPGA using 
+<BR><code>./sls_detector_put programfpga xxx.pof</code> 
+</LI>
+<LI>Once the programming is done:
+  
+<OL>
+<LI>Switch to the console that has the debug server running and kill it
+using Ctrl+C and ensure no jungfrauDetectorServers are
+running
+</LI>
+<LI>Restart the new server to see if it runs with the new firmware 
+<BR><code>./jungfrauDetectorServerxxx</code> 
+<BR>
+If the server didn't start properly, please contact us with the error message
+shown when starting the server up, else continue with the following steps.
+</LI>
+<LI>Respawn the new server (server starts at detector statup): 
+    
+<OL>
+<LI>Edit <code>/etc/inittab</code> 
+</LI>
+<LI>Uncomment out the line
+<code>ttyS0::respawn:/jungfrauDetectorServervxxx</code> 
+</LI>
+<LI>Reboot blackfin using <code>reboot</code>
+</LI>
+<LI>Run <code>ps</code> to ensure that both the gotthardDetectorServers are
+running.
+<BR><code>jungfrauDetectorServervxxx</code> 
+<BR><code>jungfrauDetectorServervxxx 1953</code>
+    
+</LI>
+</OL>
+</LI>
+</OL>
+
+<P>
+</LI>
+</OL>
+
+<P>
+<BR><HR>
+
+</BODY>
+</HTML>

@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Clean Shared Memory</TITLE>
+<META NAME="description" CONTENT="Clean Shared Memory">
+<META NAME="keywords" CONTENT="slsDetectorInstall">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectorInstall.css">
+
+</HEAD>
+
+<BODY >
+
+<H2><A NAME="SECTION00045000000000000000">
+Clean Shared Memory</A>
+</H2>
+It is very crucial to clean the shared memory, before using a new version of
+the SLS Detector Package or a different detector type.
+
+<P>
+One can use the <code>cleansharedmemory.sh</code> script available under the
+slsDetector Package.
+
+<P>
+One can also just use the following commands to clean the shared memory
+segments one by one.
+<PRE>
+#displays list of shared memeory segments 
+ipcs -m
+#remove segments that have nattach equal to zero. They key is the first column
+ipcrm -M [key]
+</PRE>
+
+<P>
+<BR><HR>
+
+</BODY>
+</HTML>

@@ -1,0 +1,465 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Scaling Poisson variates</TITLE>
+<META NAME="description" CONTENT="Scaling Poisson variates">
+<META NAME="keywords" CONTENT="slsDetectors-FAQ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectors-FAQ.css">
+
+<LINK REL="next" HREF="node64.html">
+<LINK REL="previous" HREF="node54.html">
+<LINK REL="up" HREF="node46.html">
+<LINK REL="next" HREF="node64.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html967"
+  HREF="node64.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html963"
+  HREF="node46.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html957"
+  HREF="node62.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html965"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html968"
+  HREF="node64.html">Bibliography</A>
+<B> Up:</B> <A NAME="tex2html964"
+  HREF="node46.html">How are different positions</A>
+<B> Previous:</B> <A NAME="tex2html958"
+  HREF="node62.html">Numerical comparison of averages</A>
+ &nbsp; <B>  <A NAME="tex2html966"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION00626000000000000000"></A><A NAME="sec:3"></A>
+<BR>
+Scaling Poisson variates
+</H2>
+
+<P>
+If we have a count value <IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img128.png"
+ ALT="$ C_0$">
+ that follows a Poisson distribution, 
+we can assume immediately that the average is <IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img128.png"
+ ALT="$ C_0$">
+ and the s.d. is <!-- MATH
+ $\sqrt{C_0}$
+ -->
+<IMG
+ WIDTH="36" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img129.png"
+ ALT="$ \sqrt{C_0}$">
+. 
+I.e., repeated experiments would give values <IMG
+ WIDTH="14" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+ SRC="img130.png"
+ ALT="$ n$">
+ 
+distributed according to the normalized distribution
+<P><!-- MATH
+ \begin{displaymath}
+P(n)={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{C_0^n{\ensuremath{\mathrm{e}}}^{-C_0}
+}}}}{{\ensuremath{\displaystyle{
+n!}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="118" HEIGHT="58" ALIGN="MIDDLE" BORDER="0"
+ SRC="img131.png"
+ ALT="$\displaystyle P(n)={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{C_0^n{\ensuremath{\mathrm{e}}}^{-C_0}
+}}}}{{\ensuremath{\displaystyle{
+n!}}}}}}}
+$">
+</DIV><P>
+</P>
+This obeys
+<P><!-- MATH
+ \begin{displaymath}
+\mathop{\sum}_{n=0}^{+\infty}
+P(n)=1\ ;
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="104" HEIGHT="65" ALIGN="MIDDLE" BORDER="0"
+ SRC="img132.png"
+ ALT="$\displaystyle \mathop{\sum}_{n=0}^{+\infty}
+P(n)=1\ ;
+$">
+</DIV><P>
+</P>
+<P><!-- MATH
+ \begin{displaymath}
+\langle n\rangle=\mathop{\sum}_{n=0}^{+\infty}
+nP(n)=C_0\ ;
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="168" HEIGHT="65" ALIGN="MIDDLE" BORDER="0"
+ SRC="img133.png"
+ ALT="$\displaystyle \langle n\rangle=\mathop{\sum}_{n=0}^{+\infty}
+nP(n)=C_0\ ;
+$">
+</DIV><P>
+</P>
+<P><!-- MATH
+ \begin{displaymath}
+\langle n^2\rangle=\mathop{\sum}_{n=0}^{+\infty}
+n^2 P(n)=C_0^2+C_0\ ;
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="221" HEIGHT="65" ALIGN="MIDDLE" BORDER="0"
+ SRC="img134.png"
+ ALT="$\displaystyle \langle n^2\rangle=\mathop{\sum}_{n=0}^{+\infty}
+n^2 P(n)=C_0^2+C_0\ ;
+$">
+</DIV><P>
+</P>
+<P><!-- MATH
+ \begin{displaymath}
+\sigma_{C_0}=\sqrt{\langle n^2\rangle-\langle n\rangle^2}=\sqrt{C_0}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="200" HEIGHT="40" ALIGN="MIDDLE" BORDER="0"
+ SRC="img135.png"
+ ALT="$\displaystyle \sigma_{C_0}=\sqrt{\langle n^2\rangle-\langle n\rangle^2}=\sqrt{C_0}
+$">
+</DIV><P>
+</P>
+Suppose now that
+our observable is 
+<P><!-- MATH
+ \begin{displaymath}
+X_0=\eta_0 C_0
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="80" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img212.png"
+ ALT="$\displaystyle X_0=\eta_0 C_0
+$">
+</DIV><P>
+</P>
+where <IMG
+ WIDTH="20" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img213.png"
+ ALT="$ \eta_0$">
+ is a known error-free scaling factor. 
+The distribution of <IMG
+ WIDTH="19" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img214.png"
+ ALT="$ X$">
+ is
+<P><!-- MATH
+ \begin{displaymath}
+P'(X)=P(X/\eta_0)=P(n)\qquad\Biggl|\Biggr.\qquad \frac{X}{\eta_0}\equiv n\in\mathbb{Z}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="335" HEIGHT="64" ALIGN="MIDDLE" BORDER="0"
+ SRC="img215.png"
+ ALT="$\displaystyle P'(X)=P(X/\eta_0)=P(n)\qquad\Biggl\vert\Biggr.\qquad \frac{X}{\eta_0}\equiv n\in\mathbb{Z}
+$">
+</DIV><P>
+</P>
+and now,
+<P><!-- MATH
+ \begin{displaymath}
+\mathop{\sum}_{n=0}^{+\infty}
+P(n)=1\ ;
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="104" HEIGHT="65" ALIGN="MIDDLE" BORDER="0"
+ SRC="img132.png"
+ ALT="$\displaystyle \mathop{\sum}_{n=0}^{+\infty}
+P(n)=1\ ;
+$">
+</DIV><P>
+</P>
+<P><!-- MATH
+ \begin{displaymath}
+\langle X\rangle=\mathop{\sum}_{n=0}^{+\infty}
+\eta_0 nP(n)=\eta_0 C_0=X_0\ ;
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="244" HEIGHT="65" ALIGN="MIDDLE" BORDER="0"
+ SRC="img216.png"
+ ALT="$\displaystyle \langle X\rangle=\mathop{\sum}_{n=0}^{+\infty}
+\eta_0 nP(n)=\eta_0 C_0=X_0\ ;
+$">
+</DIV><P>
+</P>
+<P><!-- MATH
+ \begin{displaymath}
+\langle X^2\rangle=\mathop{\sum}_{n=0}^{+\infty}
+\eta_0^2 n^2 P(n)=\eta_0^2(C_0^2+C_0)=X_0^2+\eta_0 X_0\ ;
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="367" HEIGHT="65" ALIGN="MIDDLE" BORDER="0"
+ SRC="img217.png"
+ ALT="$\displaystyle \langle X^2\rangle=\mathop{\sum}_{n=0}^{+\infty}
+\eta_0^2 n^2 P(n)=\eta_0^2(C_0^2+C_0)=X_0^2+\eta_0 X_0\ ;
+$">
+</DIV><P>
+</P>
+<P><!-- MATH
+ \begin{displaymath}
+\sigma_X=\sqrt{\langle X^2\rangle-\langle X\rangle^2}=\sqrt{\eta_0 X_0}=\eta_0\sqrt{C_0}=\sqrt{\eta_0}\sqrt{X_0}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="379" HEIGHT="40" ALIGN="MIDDLE" BORDER="0"
+ SRC="img218.png"
+ ALT="$\displaystyle \sigma_X=\sqrt{\langle X^2\rangle-\langle X\rangle^2}=\sqrt{\eta_0 X_0}=\eta_0\sqrt{C_0}=\sqrt{\eta_0}\sqrt{X_0}
+$">
+</DIV><P>
+</P>
+Now it is no more valid that <!-- MATH
+ $\sigma_X=\sqrt{\langle X\rangle}=\sqrt{X_0}$
+ -->
+<IMG
+ WIDTH="144" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img219.png"
+ ALT="$ \sigma_X=\sqrt{\langle X\rangle}=\sqrt{X_0}$">
+, instead
+<P><!-- MATH
+ \begin{displaymath}
+\sigma_X=\sqrt{\eta_0}\sqrt{X_0}=\eta_0\sqrt{C_0}=\eta_0\sigma_{C_0}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="244" HEIGHT="40" ALIGN="MIDDLE" BORDER="0"
+ SRC="img220.png"
+ ALT="$\displaystyle \sigma_X=\sqrt{\eta_0}\sqrt{X_0}=\eta_0\sqrt{C_0}=\eta_0\sigma_{C_0}
+$">
+</DIV><P>
+</P>
+that is the characteristic relationship for a normal-variate distribution.
+
+<P>
+Moreover, assume now that the scaling factor is not exctly known 
+but instead it is a normal-variate itself with average <IMG
+ WIDTH="20" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img213.png"
+ ALT="$ \eta_0$">
+, s.d. 
+<!-- MATH
+ $\sigma_{\eta_0}$
+ -->
+<IMG
+ WIDTH="27" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img221.png"
+ ALT="$ \sigma_{\eta_0}$">
+, and distribution
+<P><!-- MATH
+ \begin{displaymath}
+\widehat{P}(\eta)={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{
+{\ensuremath{\mathrm{e}}}^{
+-\frac{1}{2}
+{\ensuremath{\left({
+\frac{\eta-\eta_0}{\sigma_{\eta_0}}
+}\right)}}^2
+}
+}}}}{{\ensuremath{\displaystyle{
+\sigma_{\eta_0}\sqrt{2\pi}
+}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="142" HEIGHT="77" ALIGN="MIDDLE" BORDER="0"
+ SRC="img222.png"
+ ALT="$\displaystyle \widehat{P}(\eta)={\ensuremath{\displaystyle{\frac{{\ensuremath{\...
+...ght)}}^2
+}
+}}}}{{\ensuremath{\displaystyle{
+\sigma_{\eta_0}\sqrt{2\pi}
+}}}}}}}
+$">
+</DIV><P>
+</P>
+Then,
+<P><!-- MATH
+ \begin{displaymath}
+\int_{-\infty}^{+\infty}{\ensuremath{\mathrm{d}{\eta}\, }}\mathop{\sum}_{n=0}^{+\infty}
+P(n)\widehat{P}(\eta)=1\ ;
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="202" HEIGHT="65" ALIGN="MIDDLE" BORDER="0"
+ SRC="img223.png"
+ ALT="$\displaystyle \int_{-\infty}^{+\infty}{\ensuremath{\mathrm{d}{\eta}\, }}\mathop{\sum}_{n=0}^{+\infty}
+P(n)\widehat{P}(\eta)=1\ ;
+$">
+</DIV><P>
+</P>
+<P><!-- MATH
+ \begin{displaymath}
+\langle X\rangle=\int_{-\infty}^{+\infty}{\ensuremath{\mathrm{d}{\eta}\, }}\mathop{\sum}_{n=0}^{+\infty}
+\widehat{P}(\eta)\eta nP(n)=
+\mathop{\sum}_{n=0}^{+\infty}
+ nP(n)
+\int_{-\infty}^{+\infty}{\ensuremath{\mathrm{d}{\eta}\, }} \widehat{P}(\eta)\eta
+ =
+\eta_0 C_0=X_0\ ;
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="533" HEIGHT="65" ALIGN="MIDDLE" BORDER="0"
+ SRC="img224.png"
+ ALT="$\displaystyle \langle X\rangle=\int_{-\infty}^{+\infty}{\ensuremath{\mathrm{d}{...
+...}{\ensuremath{\mathrm{d}{\eta}\, }} \widehat{P}(\eta)\eta
+=
+\eta_0 C_0=X_0\ ;
+$">
+</DIV><P>
+</P>
+<P><!-- MATH
+ \begin{displaymath}
+\langle X^2\rangle=\int_{-\infty}^{+\infty}{\ensuremath{\mathrm{d}{\eta}\, }}\mathop{\sum}_{n=0}^{+\infty}
+\widehat{P}(\eta)\eta^2 n^2 P(n)=
+\int_{-\infty}^{+\infty}{\ensuremath{\mathrm{d}{\eta}\, }}\widehat{P}(\eta)\eta^2
+\mathop{\sum}_{n=0}^{+\infty}
+ n^2 P(n)
+=
+(\eta_0^2+\sigma_{\eta_0}^2)(C_0^2+C_0)\ ;
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="631" HEIGHT="65" ALIGN="MIDDLE" BORDER="0"
+ SRC="img225.png"
+ ALT="$\displaystyle \langle X^2\rangle=\int_{-\infty}^{+\infty}{\ensuremath{\mathrm{d...
+...p{\sum}_{n=0}^{+\infty}
+n^2 P(n)
+=
+(\eta_0^2+\sigma_{\eta_0}^2)(C_0^2+C_0)\ ;
+$">
+</DIV><P>
+</P>
+<P><!-- MATH
+ \begin{displaymath}
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{\sigma_X}}}}{{\ensuremath{\displaystyle{\langle X\rangle}}}}}}}={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{\sqrt{\langle X^2\rangle-\langle X\rangle^2}}}}}{{\ensuremath{\displaystyle{\langle X\rangle}}}}}}}
+={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{\sqrt{
+\eta_0^2 C_0+\sigma_{\eta_0}^2C_0^2+\sigma_{\eta_0}^2 C_0
+}}}}}{{\ensuremath{\displaystyle{\eta_0C_0}}}}}}}=
+\sqrt{
+{\ensuremath{\left({{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{ \sigma_{C_0}}}}}{{\ensuremath{\displaystyle{C_0}}}}}}}}\right)}}^2
++{\ensuremath{\left({{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{\sigma_{\eta_0}}}}}{{\ensuremath{\displaystyle{\eta_0}}}}}}}}\right)}}^2+{\ensuremath{\left({{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{\sigma_{\eta_0}}}}}{{\ensuremath{\displaystyle{\eta_0}}}}}}}{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{\sigma_{C_0}}}}}{{\ensuremath{\displaystyle{C_0}}}}}}}}\right)}}^2
+}\approx\sqrt{
+{\ensuremath{\left({{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{ \sigma_{C_0}}}}}{{\ensuremath{\displaystyle{C_0}}}}}}}}\right)}}^2
++{\ensuremath{\left({{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{\sigma_{\eta_0}}}}}{{\ensuremath{\displaystyle{\eta_0}}}}}}}}\right)}}^2
+}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="812" HEIGHT="79" ALIGN="MIDDLE" BORDER="0"
+ SRC="img226.png"
+ ALT="$\displaystyle {\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{\sigm...
+...yle{\sigma_{\eta_0}}}}}{{\ensuremath{\displaystyle{\eta_0}}}}}}}}\right)}}^2
+}
+$">
+</DIV><P>
+</P>
+where in the last we discard, as usual, the 4th order in the relative errors. Both the exact and approximated forms 
+are exactly the same as if both distributions were to be normal.
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html967"
+  HREF="node64.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html963"
+  HREF="node46.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html957"
+  HREF="node62.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html965"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html968"
+  HREF="node64.html">Bibliography</A>
+<B> Up:</B> <A NAME="tex2html964"
+  HREF="node46.html">How are different positions</A>
+<B> Previous:</B> <A NAME="tex2html958"
+  HREF="node62.html">Numerical comparison of averages</A>
+ &nbsp; <B>  <A NAME="tex2html966"
+  HREF="node1.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-03-12
+</ADDRESS>
+</BODY>
+</HTML>

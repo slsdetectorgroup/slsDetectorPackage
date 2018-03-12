@@ -1,0 +1,311 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>How do I chose the comparator threshold?</TITLE>
+<META NAME="description" CONTENT="How do I chose the comparator threshold?">
+<META NAME="keywords" CONTENT="slsDetectors-FAQ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectors-FAQ.css">
+
+<LINK REL="next" HREF="node29.html">
+<LINK REL="previous" HREF="node26.html">
+<LINK REL="up" HREF="node25.html">
+<LINK REL="next" HREF="node29.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html506"
+  HREF="node29.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html502"
+  HREF="node25.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html496"
+  HREF="node27.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html504"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html507"
+  HREF="node29.html">How does the flat</A>
+<B> Up:</B> <A NAME="tex2html503"
+  HREF="node25.html">Single photon counting detectors</A>
+<B> Previous:</B> <A NAME="tex2html497"
+  HREF="node27.html">MYTHEN</A>
+ &nbsp; <B>  <A NAME="tex2html505"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00420000000000000000">
+How do I chose the comparator threshold?</A>
+</H1>
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:thrscan"></A><A NAME="1156"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 3.2:</STRONG>
+Number of counts as a function of the threshold detected in an ideal case.</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="556" HEIGHT="539" ALIGN="BOTTOM" BORDER="0"
+ SRC="img18.png"
+ ALT="\includegraphics[width=\textwidth]{images/thr_scan_expl}">
+
+</DIV></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:thrscanfluo"></A><A NAME="1163"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 3.3:</STRONG>
+Number of counts as a function of the threshold detected in presence of fluorescent radiation</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="556" HEIGHT="539" ALIGN="BOTTOM" BORDER="0"
+ SRC="img19.png"
+ ALT="\includegraphics[width=\textwidth]{images/thr_scan_fluo}">
+
+</DIV></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+Once selected the settings, the threshold should be selected.
+Figure&nbsp;<A HREF="#fig:thrscan">3.2</A> shows the number of counts as a function of the threshold value in the ideal case of monoenergetix X-rays of energy <IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ E_0$">
+=10&nbsp;keV.
+For thresholds larger than the X-ray energy the detector should always count 0 and for lower thresholds it should always count all the photons. However the curve is smoothed around <IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ E_0$">
+ because of the electronic noise (ENC) and is not perfectly flat for lower energies because the photons absorbed in the region between two strips distribute their energy between them and it is not flully collected by a single channel (charge sharing).
+<BR>
+In order to count once al X-rays the threshold should be set at half of the X-ray energy <IMG
+ WIDTH="78" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ E_t=E_0/2$">
+: if the threshold would be higher some photons would not be counted, leading to a loss of efficiency, while if it would be lower some photons would be counted twice leading to a loss of spatial resolution. 
+
+<P>
+Since the detector threshold can't be precisely set at the same value for all channels but there will always be some spread of the order of 200&nbsp;eV (threshold dispersion) there will always be some fluctuations on the number of counts between channels, which however should be corrected by the flat field correction.
+
+<P>
+The choice of the threshold should also depend from  considerations regarding the emission of fluorescent radiation from the sample.
+<BR>
+Figure&nbsp;<A HREF="#fig:thrscanfluo">3.3</A> shows  how the curve of the counts would look like for monochromatic X-rays of energy <IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ E_0$">
+ in presence of radiation of energy <IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ E_f$">
+ emitted by the sample. The curve would show a second step at <IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ E_f$">
+. 
+
+<P>
+Since the fluorecence emission is not present in the flat field data, the difference of counts between the channels due to the fluorescent radiation cannot be corrected and the threshold <IMG
+ WIDTH="22" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ E_t$">
+ should be set at an energy larger than <IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ E_f$">
+. This also helps to cut down the background.
+<BR>
+The difference of counts between the channels will be particularly large if the threshold is set in some ``steep'' part of the curve i.e. close to <IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ E_f$">
+ or to <IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ E_0$">
+ (but in this case it would be corrected by the flat field, at cost of loss of efficiency).
+Because of the presence of the electronic noise, <IMG
+ WIDTH="22" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ E_t$">
+ should be at least 3&nbsp;keV larger than <IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ E_f$">
+.
+
+<P>
+Here is a short list of rules to select the appropriate working threshold in order of importance (and eventually modify the X-ray energy):
+
+<OL>
+<LI>List the fluorescent emission lines <IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ E_f$">
+ that you expect from your sample. 
+</LI>
+<LI>If there is no fluorescent emission (<IMG
+ WIDTH="65" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img24.png"
+ ALT="$ E_f&lt;E_0$">
+) <IMG
+ WIDTH="78" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ E_t=E_0/2$">
+
+</LI>
+<LI>If there is fluorescent emission 
+
+<OL>
+<LI><IMG
+ WIDTH="91" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img25.png"
+ ALT="$ E_t&gt;E_f+3$">
+&nbsp;keV
+</LI>
+<LI><IMG
+ WIDTH="89" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img26.png"
+ ALT="$ E_t&lt;E_0-3$">
+&nbsp;keV 
+</LI>
+</OL>
+If the range where both requirements are satisfied is large, try to increase the distance of <IMG
+ WIDTH="22" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ E_t$">
+ from <IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ E_f$">
+ up to 5&nbsp;keV and then set <IMG
+ WIDTH="22" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ E_t$">
+ as close as possible to the ideal value <IMG
+ WIDTH="78" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ E_t=E_0/2$">
+
+</LI>
+<LI>If it is not possible to satisfy the previous minimal requirements:
+
+<OL>
+<LI>If you need high quality data and you can sacrifice detector efficiency (a lot!)  <IMG
+ WIDTH="91" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img25.png"
+ ALT="$ E_t&gt;E_f+3$">
+&nbsp;keV
+</LI>
+<LI>If you need fast measurments and you can sacrifice detector uniformity (difficult to say how much) and increase the background <IMG
+ WIDTH="91" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img27.png"
+ ALT="$ E_t&lt;E_f-3$">
+&nbsp;keV. Remember that <IMG
+ WIDTH="22" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ E_t$">
+ is klimited by the electronic noise <IMG
+ WIDTH="51" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img28.png"
+ ALT="$ E_t&gt;4$">
+&nbsp;keV (3&nbsp;keV for <I>High gain</I> settings).
+</LI>
+<LI>Consider to change <IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ E_0$">
+ to values lower than <IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ E_f$">
+ or at least 6-8&nbsp;keV larger than <IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$ E_f$">
+
+</LI>
+</OL>
+</LI>
+</OL>
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:samplefluo"></A><A NAME="1179"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 3.4:</STRONG>
+Example of data from a sample emitting fluorescent light and detector threshold set at a value close to the emission line. The background data cannot be properly flat field corrected.</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="556" HEIGHT="539" ALIGN="BOTTOM" BORDER="0"
+ SRC="img29.png"
+ ALT="\includegraphics[width=\textwidth]{images/sample_with_fluorescence}">
+
+</DIV></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html506"
+  HREF="node29.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html502"
+  HREF="node25.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html496"
+  HREF="node27.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html504"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html507"
+  HREF="node29.html">How does the flat</A>
+<B> Up:</B> <A NAME="tex2html503"
+  HREF="node25.html">Single photon counting detectors</A>
+<B> Previous:</B> <A NAME="tex2html497"
+  HREF="node27.html">MYTHEN</A>
+ &nbsp; <B>  <A NAME="tex2html505"
+  HREF="node1.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-03-12
+</ADDRESS>
+</BODY>
+</HTML>

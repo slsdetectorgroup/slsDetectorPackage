@@ -1,0 +1,217 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Data acquisition</TITLE>
+<META NAME="description" CONTENT="Data acquisition">
+<META NAME="keywords" CONTENT="angularCalibrationHowTo">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="angularCalibrationHowTo.css">
+
+<LINK REL="next" HREF="node3.html">
+<LINK REL="previous" HREF="node1.html">
+<LINK REL="up" HREF="angularCalibrationHowTo.html">
+<LINK REL="next" HREF="node3.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html33"
+  HREF="node3.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html31"
+  HREF="angularCalibrationHowTo.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html25"
+  HREF="node1.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html34"
+  HREF="node3.html">Data analysis</A>
+<B> Up:</B> <A NAME="tex2html32"
+  HREF="angularCalibrationHowTo.html">Angular calibration wizard manual</A>
+<B> Previous:</B> <A NAME="tex2html26"
+  HREF="node1.html">Introduction</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html35"
+  HREF="node2.html#SECTION00021000000000000000">Software</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00020000000000000000">
+Data acquisition</A>
+</H1>
+
+<P>
+The angular calibration consists in acquiring a set of diffraction patterns of a well known powder standard (e.g. Silicon) at different encoder positions.  In order to facilitate the procedure, the sample should not emit fluorescent light and should present relatively symmetric peaks. 
+<BR>
+During the measurement, a strong intensity peak (e.g. Si(111)) should pass through the field of view of every module such that it can be used as a reference angular position to perform the calibration of the modules position. In general the highest peak will be used for the calibration, but this is not necessary in case there would be e.g. geometrical limitations for shifting the detector. 
+<BR><B>Do not forget to properly position the beam stopper if the detector is scanned in front of the direct beam.</B>
+<BR>
+The detector should be shifted of an angular step of the order of about 2% of the module size, such that about 50 patterns can contribute to the fitting of the 3 parameters necessary for the angular calibration.
+<BR>
+<P>
+All the angular calibration procedure should be acquired using a trimmed detector with the threshold set at half of the X-ray energy (Assuming no fluorescent element in the standard). A flat field should also be acquired in order to precisely correct the data, while the X-ray intensity should be kept lower than about 100&nbsp;kHz per strip in order to avoid the need for rate corrections.
+
+<P>
+A rough angular conversion file starting from a previous calibration or from the geometric characteristics of the mechanics is an advantage. The angular conversion file should contain a line for each module of the detector with its module number <IMG
+ WIDTH="10" HEIGHT="17" ALIGN="BOTTOM" BORDER="0"
+ SRC="img3.png"
+ ALT="$i$">, center  <!-- MATH
+ $C_{center}^{i}$
+ -->
+<IMG
+ WIDTH="53" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img7.png"
+ ALT="$C_{center}^{i}$"> and error, conversion radius <IMG
+ WIDTH="38" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img13.png"
+ ALT="$p/R^i$"> and error, offset <IMG
+ WIDTH="24" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img6.png"
+ ALT="$\Theta_o^i$"> and error:
+<PRE>
+module 0 center 639.5 +- 0 conversion 6.56E-05 +- 0 offset 0 +- 0
+</PRE>
+Also the <I>global offset</I> value of the beamline should be approximately known i.e. the angular position of channel 0 of module 0 when the motor is set at 0. 
+<BR>
+All the documentation assumes that the detector is oriented in the same direction as the encoder position i.e. large channel number at higher angles (both per module and absolute). If this is not the case, the <I>angular direction</I> should be set to -1. 
+
+<P>
+
+<H2><A NAME="SECTION00021000000000000000">
+Software</A>
+</H2>
+
+<P>
+For the acquisition ot the data you need to install the slsDetector software package (please refere to separate documentation). The use of the GUI is optional and all operations can be performed also using the text client.
+<BR>
+<P>
+Please make sure that you have edited the 
+<BR><I>slsDetectorSoftware/usersFunctions/angleFunction.h</I> 
+<BR>
+in order to match the angular conversion for your geometry and 
+<BR><I>slsDetectorSoftware/usersFunctions/usersFunctions.cpp</I> 
+<BR>
+in order to be able to move the detector and read out its position by using the slsDetector software.
+
+<P>
+In the following the command to acquire a dataset for the angular calibration with an exposure time of 1&nbsp;s, and position shift 
+<PRE>
+#setup angular calibration log mode
+&gt; sls_detector_put angcallog 1 
+#set exposure time to 1s
+&gt; sls_detector_put exptime 1. 
+#setup threshold scan
+&gt; sls_detector_put scan0script position 
+#setup the precision for the scan variable in the file name
+&gt; sls_detector_put scan0prec 2 
+#set scan range between 20deg and -60deg, step of -0.1deg
+# (at 12.4 keV the Si(111) peak is at approx 19deg
+&gt; sls_detector_put scan0range 20 -60 -0.1 
+#acquire the data
+&gt; sls_detector_acquire
+#unset angular calibration log mode
+&gt; sls_detector_put angcallog 0
+</PRE>
+
+<P>
+With the GUI you can obtain the same results by clicking on the <I>Angular calibration</I> log button in the advanced tab (see figure&nbsp;<A HREF="#fig:guiangcallog">1</A>) and setting up the motor position scan in the Actions tab (see figure&nbsp;<A HREF="#fig:guiposscan">2</A>). The exposure time should also be set in the measurement tab.
+
+<P>
+Additional to the data files, the acquisition will produce a .angcal file containing an header and, for each step of the acquisition, the exect value of the motor position and the file name. 
+<BR>
+In case you forgot to enable the angcallog flag in the software, you can produce the file with the syntax as follows, assuming that you know the exact values of your encoder for each frame:
+<PRE>
+type Mythen
+maxmod 32
+nmod 32
+angconv /scratch/angcal20120422/ang.off
+globaloff 5.088
+fineoff 0.0
+angdir 1
+ffdir /scratch/angcal20120422/
+flatfield flatfield_E12keV_T6keV_0.raw
+badchannels /scratch/cal/bad.chans
+19.99998 angcal_S20.00_0
+19.90001 angcal_S19.90_0
+19.79999 angcal_S19.80_0
+19.70002 angcal_S19.70_0
+......
+</PRE>
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:guiangcallog"></A><A NAME="46"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 1:</STRONG>
+Acquisition GUI window to enable the angular calibration log.</CAPTION>
+<TR><TD><IMG
+ WIDTH="555" HEIGHT="603" ALIGN="BOTTOM" BORDER="0"
+ SRC="img14.png"
+ ALT="\includegraphics[width=\textwidth]{enable_angcal.eps}"></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:guiposscan"></A><A NAME="51"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 2:</STRONG>
+Acquisition GUI window to setup the motor position scan.</CAPTION>
+<TR><TD><IMG
+ WIDTH="555" HEIGHT="603" ALIGN="BOTTOM" BORDER="0"
+ SRC="img15.png"
+ ALT="\includegraphics[width=\textwidth]{position_scan.eps}"></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html33"
+  HREF="node3.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html31"
+  HREF="angularCalibrationHowTo.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html25"
+  HREF="node1.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html34"
+  HREF="node3.html">Data analysis</A>
+<B> Up:</B> <A NAME="tex2html32"
+  HREF="angularCalibrationHowTo.html">Angular calibration wizard manual</A>
+<B> Previous:</B> <A NAME="tex2html26"
+  HREF="node1.html">Introduction</A>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-03-12
+</ADDRESS>
+</BODY>
+</HTML>

@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Comparison</TITLE>
+<META NAME="description" CONTENT="Comparison">
+<META NAME="keywords" CONTENT="slsDetectors-FAQ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectors-FAQ.css">
+
+<LINK REL="next" HREF="node61.html">
+<LINK REL="previous" HREF="node59.html">
+<LINK REL="up" HREF="node54.html">
+<LINK REL="next" HREF="node61.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html933"
+  HREF="node61.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html929"
+  HREF="node54.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html923"
+  HREF="node59.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html931"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html934"
+  HREF="node61.html">Analytical comparison of averages</A>
+<B> Up:</B> <A NAME="tex2html930"
+  HREF="node54.html">Average vs. weighted average</A>
+<B> Previous:</B> <A NAME="tex2html924"
+  HREF="node59.html">Mighell-Poisson weighted average</A>
+ &nbsp; <B>  <A NAME="tex2html932"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00625600000000000000">
+Comparison</A>
+</H3>
+
+<P>
+We have seen four different ways to take an average -
+two simple averages (the second skipping zero values) 
+and two weighted averages (using straight Poisson and Poisson-Mighell [6] <IMG
+ WIDTH="22" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$ \chi ^2$">
+ formulations). 
+We know that the simple average (not skipping zeros) is the best possible result. However, 
+there are inconveniences with it. If for instance we need to scale our data before averaging, then the 
+simple average is no more usable (it will give the correct average but a bad estimate of the s.d.) .
+In any case, the passage to normal statistics (using Mighell's correction) needs to be done before or later. 
+Therefore a comparison is due in order to ascertain 
+how wrong can it be using the different methods. 
+
+<P>
+We have to give a measure of what is negligible first. 
+The relative error is a measure of the smallest relative variation of an estimate <IMG
+ WIDTH="14" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+ SRC="img144.png"
+ ALT="$ x$">
+ that is <I>not</I> negligible:
+<P><!-- MATH
+ \begin{displaymath}
+\epsilon_x = {\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{\sigma_x}}}}{{\ensuremath{\displaystyle{x}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="61" HEIGHT="45" ALIGN="MIDDLE" BORDER="0"
+ SRC="img171.png"
+ ALT="$\displaystyle \epsilon_x = {\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{\sigma_x}}}}{{\ensuremath{\displaystyle{x}}}}}}}
+$">
+</DIV><P>
+</P>
+We shall then consider negligible 
+(w.r.t. <IMG
+ WIDTH="14" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+ SRC="img144.png"
+ ALT="$ x$">
+) terms whose relative magnitude is <!-- MATH
+ $O(\epsilon_x^2)$
+ -->
+<IMG
+ WIDTH="44" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img172.png"
+ ALT="$ O(\epsilon_x^2)$">
+.
+As the s.d. of <IMG
+ WIDTH="14" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+ SRC="img144.png"
+ ALT="$ x$">
+ is <!-- MATH
+ $\propto\epsilon_x$
+ -->
+<IMG
+ WIDTH="36" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img173.png"
+ ALT="$ \propto\epsilon_x$">
+, we may not discard terms <!-- MATH
+ $O(\epsilon_x^2)$
+ -->
+<IMG
+ WIDTH="44" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img172.png"
+ ALT="$ O(\epsilon_x^2)$">
+ on the s.d.; 
+there instead we may neglect terms <!-- MATH
+ $O(\epsilon_x^3)$
+ -->
+<IMG
+ WIDTH="44" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img174.png"
+ ALT="$ O(\epsilon_x^3)$">
+.
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html933"
+  HREF="node61.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html929"
+  HREF="node54.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html923"
+  HREF="node59.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html931"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html934"
+  HREF="node61.html">Analytical comparison of averages</A>
+<B> Up:</B> <A NAME="tex2html930"
+  HREF="node54.html">Average vs. weighted average</A>
+<B> Previous:</B> <A NAME="tex2html924"
+  HREF="node59.html">Mighell-Poisson weighted average</A>
+ &nbsp; <B>  <A NAME="tex2html932"
+  HREF="node1.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-03-12
+</ADDRESS>
+</BODY>
+</HTML>

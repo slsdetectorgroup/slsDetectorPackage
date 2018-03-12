@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Zero-skipping average</TITLE>
+<META NAME="description" CONTENT="Zero-skipping average">
+<META NAME="keywords" CONTENT="slsDetectors-FAQ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectors-FAQ.css">
+
+<LINK REL="next" HREF="node57.html">
+<LINK REL="previous" HREF="node55.html">
+<LINK REL="up" HREF="node54.html">
+<LINK REL="next" HREF="node57.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html885"
+  HREF="node57.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html881"
+  HREF="node54.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html875"
+  HREF="node55.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html883"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html886"
+  HREF="node57.html">Weighted average: definition and</A>
+<B> Up:</B> <A NAME="tex2html882"
+  HREF="node54.html">Average vs. weighted average</A>
+<B> Previous:</B> <A NAME="tex2html876"
+  HREF="node55.html">Simple average</A>
+ &nbsp; <B>  <A NAME="tex2html884"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00625200000000000000">
+Zero-skipping average</A>
+</H3>
+
+<P>
+In some cases, in order to avoid possible singularities, 
+values <IMG
+ WIDTH="52" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img148.png"
+ ALT="$ C_j=0$">
+ are skipped. Then if <!-- MATH
+ $N_{\mathrm{obs}}^*$
+ -->
+<IMG
+ WIDTH="37" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img149.png"
+ ALT="$ N_{\mathrm{obs}}^*$">
+ is the number of non-zero data points,
+we can evaluate the 'zero-skipping' average as
+<P><!-- MATH
+ \begin{displaymath}
+x=\langle x\rangle^*={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{1}}}}{{\ensuremath{\displaystyle{ N_{\mathrm{obs}}^*}}}}}}}
+ \mathop{\sum}_ {\stackrel{1\leqslant j\leqslant N_{\mathrm{obs}}}{{C_j>0}}}
+ C_j={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{1}}}}{{\ensuremath{\displaystyle{ N_{\mathrm{obs}}^*}}}}}}}
+ \mathop{\sum}_{j=1}^{N_{\mathrm{obs}}}C_j = {\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{N_{\mathrm{obs}}}}}}{{\ensuremath{\displaystyle{N_{\mathrm{obs}}^*}}}}}}}\langle x\rangle
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="382" HEIGHT="78" ALIGN="MIDDLE" BORDER="0"
+ SRC="img150.png"
+ ALT="$\displaystyle x=\langle x\rangle^*={\ensuremath{\displaystyle{\frac{{\ensuremat...
+...obs}}}}}}{{\ensuremath{\displaystyle{N_{\mathrm{obs}}^*}}}}}}}\langle x\rangle
+$">
+</DIV><P>
+</P>
+The standard deviation is then
+<P><!-- MATH
+ \begin{displaymath}
+\sigma_{x^*}= {\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{N_{\mathrm{obs}}}}}}{{\ensuremath{\displaystyle{N_{\mathrm{obs}}^*}}}}}}}\sigma_x = \sqrt{{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{N_{\mathrm{obs}}}}}}{{\ensuremath{\displaystyle{N_{\mathrm{obs}}^*}}}}}}}}
+\sqrt{{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{\langle x\rangle}}}}{{\ensuremath{\displaystyle{N_{\mathrm{obs}}^*}}}}}}}}=\sqrt{{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{\langle x\rangle^*}}}}{{\ensuremath{\displaystyle{N_{\mathrm{obs}}^*}}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="300" HEIGHT="68" ALIGN="MIDDLE" BORDER="0"
+ SRC="img151.png"
+ ALT="$\displaystyle \sigma_{x^*}= {\ensuremath{\displaystyle{\frac{{\ensuremath{\disp...
+...e{\langle x\rangle^*}}}}{{\ensuremath{\displaystyle{N_{\mathrm{obs}}^*}}}}}}}}
+$">
+</DIV><P>
+</P>
+Note that the s.d. is evaluated exactly as if the non-zero <IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img152.png"
+ ALT="$ C_j$">
+ were the only observations, 
+whilst the average is overestimated by the fraction of zero-counting events.
+
+<P>
+<BR><HR>
+<ADDRESS>
+Thattil Dhanya
+2018-03-12
+</ADDRESS>
+</BODY>
+</HTML>

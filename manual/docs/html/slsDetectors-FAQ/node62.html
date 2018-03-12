@@ -1,0 +1,976 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Numerical comparison of averages</TITLE>
+<META NAME="description" CONTENT="Numerical comparison of averages">
+<META NAME="keywords" CONTENT="slsDetectors-FAQ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectors-FAQ.css">
+
+<LINK REL="previous" HREF="node61.html">
+<LINK REL="up" HREF="node54.html">
+<LINK REL="next" HREF="node63.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html955"
+  HREF="node63.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html951"
+  HREF="node54.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html947"
+  HREF="node61.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html953"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html956"
+  HREF="node63.html">Scaling Poisson variates</A>
+<B> Up:</B> <A NAME="tex2html952"
+  HREF="node54.html">Average vs. weighted average</A>
+<B> Previous:</B> <A NAME="tex2html948"
+  HREF="node61.html">Analytical comparison of averages</A>
+ &nbsp; <B>  <A NAME="tex2html954"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00625800000000000000">
+Numerical comparison of averages</A>
+</H3>
+
+<P>
+In the next table numerical results are displayed. An exact random-Poisson generator has been used to generate Poisson deviates of given average value 
+<IMG
+ WIDTH="14" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img181.png"
+ ALT="$ \lambda$">
+, with <!-- MATH
+ $\lambda=1,10,100,\ldots,1000000$
+ -->
+<IMG
+ WIDTH="188" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img195.png"
+ ALT="$ \lambda=1,10,100,\ldots,1000000$">
+. For each value <IMG
+ WIDTH="14" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img181.png"
+ ALT="$ \lambda$">
+
+<IMG
+ WIDTH="63" HEIGHT="16" ALIGN="BOTTOM" BORDER="0"
+ SRC="img196.png"
+ ALT="$ N=10^8$">
+ deviates have been generated. Then averages have been taken for each value <IMG
+ WIDTH="14" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img181.png"
+ ALT="$ \lambda$">
+ and compared with the true value. 
+For each value <IMG
+ WIDTH="14" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img181.png"
+ ALT="$ \lambda$">
+ - in order to have a scale for comparison - 
+we evaluate the expected absolute s.d. of averages as <!-- MATH
+ $\xi_\lambda=\sqrt{\lambda/N}$
+ -->
+<IMG
+ WIDTH="88" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img197.png"
+ ALT="$ \xi_\lambda=\sqrt{\lambda/N}$">
+, and the relative s.d. of averages as <!-- MATH
+ $\epsilon_\lambda=\sqrt{\lambda/N}/\lambda=1/\sqrt{N\lambda}$
+ -->
+<IMG
+ WIDTH="179" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img198.png"
+ ALT="$ \epsilon_\lambda=\sqrt{\lambda/N}/\lambda=1/\sqrt{N\lambda}$">
+. Then - for each averaging method - we evaluate the error <IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img199.png"
+ ALT="$ E_\lambda$">
+ (average minus <IMG
+ WIDTH="14" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img181.png"
+ ALT="$ \lambda$">
+), 
+the relative error <!-- MATH
+ $e_\lambda=E_\lambda/\lambda$
+ -->
+<IMG
+ WIDTH="79" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img200.png"
+ ALT="$ e_\lambda=E_\lambda/\lambda$">
+, and finally the comparison criterion <!-- MATH
+ $e_\lambda/\epsilon_\lambda$
+ -->
+<IMG
+ WIDTH="43" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img201.png"
+ ALT="$ e_\lambda/\epsilon_\lambda$">
+ (bold). The comparison criterion is expected to be close to 1 in absolute value. Values much larger than one mean that we are introducing a systematic error.
+
+<P>
+
+<P>
+<TABLE CELLPADDING=3 BORDER="1">
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1">
+<FONT SIZE="-1"> </FONT></FONT></TD>
+<TD></TD>
+<TD></TD>
+<TD></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> </FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+</FONT></TD>
+<TD ALIGN="LEFT" COLSPAN=4><FONT SIZE="-1"> <IMG
+ WIDTH="31" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img202.png"
+ ALT="$ \lambda =$">
+ 1. ; <!-- MATH
+ $\xi_\lambda =$
+ -->
+<IMG
+ WIDTH="37" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img203.png"
+ ALT="$ \xi_\lambda = $">
+0.0001 ; <!-- MATH
+ $\epsilon_\lambda$
+ -->
+<IMG
+ WIDTH="19" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img204.png"
+ ALT="$ \epsilon_\lambda$">
+ =  0.0001</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> <!-- MATH
+ ${\langle x \rangle_{\!\mathrm{w(1)}}}$
+ -->
+<IMG
+ WIDTH="50" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img205.png"
+ ALT="$ {\langle x \rangle_{\!\mathrm{w(1)}}}$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ ${\langle x \rangle_{\!\mathrm{w(2)}}}$
+ -->
+<IMG
+ WIDTH="50" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img206.png"
+ ALT="$ {\langle x \rangle_{\!\mathrm{w(2)}}}$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ $\langle  x \rangle^*$
+ -->
+<IMG
+ WIDTH="33" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img163.png"
+ ALT="$ \langle x\rangle^*$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ $\langle  x \rangle$
+ -->
+<IMG
+ WIDTH="26" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img192.png"
+ ALT="$ \langle x \rangle$">
+</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+Averages </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> 1.303772380383934  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.9999155361216990  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  1.581941754994651  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.9999283300000000    </FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+<IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img199.png"
+ ALT="$ E_\lambda$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> 0.3037723803839338  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  -0.8446387830096658E-04  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.5819417549946508  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  -0.7166999999996815E-04</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+<IMG
+ WIDTH="20" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img207.png"
+ ALT="$ e_\lambda$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> 0.3037723803839338  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  -0.8446387830096658E-04  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.5819417549946508  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  -0.7166999999996815E-04</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+<!-- MATH
+ $e_\lambda/\epsilon_\lambda$
+ -->
+<IMG
+ WIDTH="43" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img201.png"
+ ALT="$ e_\lambda/\epsilon_\lambda$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B> 3037.723803839338  </B></FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B>  -0.8446387830096658  </B></FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B>  5819.417549946508  </B></FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B>  -0.7166999999996815   </B> </FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+ </FONT></TD>
+<TD></TD>
+<TD></TD>
+<TD></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> </FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+ </FONT></TD>
+<TD ALIGN="LEFT" COLSPAN=4><FONT SIZE="-1"> <IMG
+ WIDTH="31" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img202.png"
+ ALT="$ \lambda =$">
+ 10.000000000000002 ; <!-- MATH
+ $\xi_\lambda =$
+ -->
+<IMG
+ WIDTH="37" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img203.png"
+ ALT="$ \xi_\lambda = $">
+0.00031622776601683794 ; <!-- MATH
+ $\epsilon_\lambda$
+ -->
+<IMG
+ WIDTH="19" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img204.png"
+ ALT="$ \epsilon_\lambda$">
+ =  0.00003162277660168379</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ ${\langle x \rangle_{\!\mathrm{w(1)}}}$
+ -->
+<IMG
+ WIDTH="50" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img205.png"
+ ALT="$ {\langle x \rangle_{\!\mathrm{w(1)}}}$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ ${\langle x \rangle_{\!\mathrm{w(2)}}}$
+ -->
+<IMG
+ WIDTH="50" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img206.png"
+ ALT="$ {\langle x \rangle_{\!\mathrm{w(2)}}}$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ $\langle  x \rangle^*$
+ -->
+<IMG
+ WIDTH="33" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img163.png"
+ ALT="$ \langle x\rangle^*$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ $\langle  x \rangle$
+ -->
+<IMG
+ WIDTH="26" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img192.png"
+ ALT="$ \langle x \rangle$">
+</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+Averages </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> 8.848248847530357  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  10.00025732384808  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  10.00052232372917  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  10.00006800000000    </FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+<IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img199.png"
+ ALT="$ E_\lambda$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> -1.151751152469645  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.2573238480785278E-03  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.5223237291644978E-03  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.6799999999884676E-04</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+<IMG
+ WIDTH="20" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img207.png"
+ ALT="$ e_\lambda$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> -0.1151751152469645  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.2573238480785278E-04  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.5223237291644977E-04  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.6799999999884675E-05</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+<!-- MATH
+ $e_\lambda/\epsilon_\lambda$
+ -->
+<IMG
+ WIDTH="43" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img201.png"
+ ALT="$ e_\lambda/\epsilon_\lambda$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B> -3642.156939527943  </B></FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B>  0.8137294562072904  </B></FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B>  1.651732660112730  </B></FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B>  0.2150348808878029 </B>   </FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+ </FONT></TD>
+<TD></TD>
+<TD></TD>
+<TD></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> </FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+ </FONT></TD>
+<TD ALIGN="LEFT" COLSPAN=4><FONT SIZE="-1"> <IMG
+ WIDTH="31" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img202.png"
+ ALT="$ \lambda =$">
+ 100.00000000000004 ; <!-- MATH
+ $\xi_\lambda =$
+ -->
+<IMG
+ WIDTH="37" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img203.png"
+ ALT="$ \xi_\lambda = $">
+0.0010000000000000002 ; <!-- MATH
+ $\epsilon_\lambda$
+ -->
+<IMG
+ WIDTH="19" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img204.png"
+ ALT="$ \epsilon_\lambda$">
+ =  0.000009999999999999997</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ ${\langle x \rangle_{\!\mathrm{w(1)}}}$
+ -->
+<IMG
+ WIDTH="50" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img205.png"
+ ALT="$ {\langle x \rangle_{\!\mathrm{w(1)}}}$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ ${\langle x \rangle_{\!\mathrm{w(2)}}}$
+ -->
+<IMG
+ WIDTH="50" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img206.png"
+ ALT="$ {\langle x \rangle_{\!\mathrm{w(2)}}}$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ $\langle  x \rangle^*$
+ -->
+<IMG
+ WIDTH="33" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img163.png"
+ ALT="$ \langle x\rangle^*$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ $\langle  x \rangle$
+ -->
+<IMG
+ WIDTH="26" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img192.png"
+ ALT="$ \langle x \rangle$">
+</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+Averages </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> 98.98978896904168  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  100.0001037814804  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  100.0002153600000  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  100.0002153600000    </FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+<IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img199.png"
+ ALT="$ E_\lambda$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> -1.010211030958359  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.1037814803765968E-03  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.2153599999559219E-03  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.2153599999559219E-03</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+<IMG
+ WIDTH="20" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img207.png"
+ ALT="$ e_\lambda$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> -0.1010211030958359E-01  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.1037814803765968E-05  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.2153599999559218E-05  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.2153599999559218E-05</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+<!-- MATH
+ $e_\lambda/\epsilon_\lambda$
+ -->
+<IMG
+ WIDTH="43" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img201.png"
+ ALT="$ e_\lambda/\epsilon_\lambda$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B> -1010.211030958359  </B></FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B>  0.1037814803765968  </B></FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B>  0.2153599999559219  </B></FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B>  0.2153599999559219  </B>  </FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+ </FONT></TD>
+<TD></TD>
+<TD></TD>
+<TD></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> </FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+ </FONT></TD>
+<TD ALIGN="LEFT" COLSPAN=4><FONT SIZE="-1"> <IMG
+ WIDTH="31" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img202.png"
+ ALT="$ \lambda =$">
+ 1000.0000000000007 ; <!-- MATH
+ $\xi_\lambda =$
+ -->
+<IMG
+ WIDTH="37" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img203.png"
+ ALT="$ \xi_\lambda = $">
+0.0031622776601683803 ; <!-- MATH
+ $\epsilon_\lambda$
+ -->
+<IMG
+ WIDTH="19" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img204.png"
+ ALT="$ \epsilon_\lambda$">
+ =  0.000003162277660168378</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ ${\langle x \rangle_{\!\mathrm{w(1)}}}$
+ -->
+<IMG
+ WIDTH="50" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img205.png"
+ ALT="$ {\langle x \rangle_{\!\mathrm{w(1)}}}$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ ${\langle x \rangle_{\!\mathrm{w(2)}}}$
+ -->
+<IMG
+ WIDTH="50" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img206.png"
+ ALT="$ {\langle x \rangle_{\!\mathrm{w(2)}}}$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ $\langle  x \rangle^*$
+ -->
+<IMG
+ WIDTH="33" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img163.png"
+ ALT="$ \langle x\rangle^*$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ $\langle  x \rangle$
+ -->
+<IMG
+ WIDTH="26" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img192.png"
+ ALT="$ \langle x \rangle$">
+</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+Averages </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> 999.0029754507847  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  1000.003978305674  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  1000.003836760000  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  1000.003836760000    </FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+<IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img199.png"
+ ALT="$ E_\lambda$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> -0.9970245492160075  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.3978305673513205E-02  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.3836759999330752E-02  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.3836759999330752E-02</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+<IMG
+ WIDTH="20" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img207.png"
+ ALT="$ e_\lambda$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> -0.9970245492160069E-03  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.3978305673513202E-05  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.3836759999330750E-05  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.3836759999330750E-05</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+<!-- MATH
+ $e_\lambda/\epsilon_\lambda$
+ -->
+<IMG
+ WIDTH="43" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img201.png"
+ ALT="$ e_\lambda/\epsilon_\lambda$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B> -315.2868458625229  </B></FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B>  1.258050715667192  </B></FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B>  1.213290043331128  </B></FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B>  1.213290043331128  </B>  </FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+ </FONT></TD>
+<TD></TD>
+<TD></TD>
+<TD></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> </FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+ </FONT></TD>
+<TD ALIGN="LEFT" COLSPAN=4><FONT SIZE="-1"> <IMG
+ WIDTH="31" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img202.png"
+ ALT="$ \lambda =$">
+ 10000.00000000001 ; <!-- MATH
+ $\xi_\lambda =$
+ -->
+<IMG
+ WIDTH="37" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img203.png"
+ ALT="$ \xi_\lambda = $">
+0.010000000000000005 ; <!-- MATH
+ $\epsilon_\lambda$
+ -->
+<IMG
+ WIDTH="19" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img204.png"
+ ALT="$ \epsilon_\lambda$">
+ =  9.999999999999995E-7</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ ${\langle x \rangle_{\!\mathrm{w(1)}}}$
+ -->
+<IMG
+ WIDTH="50" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img205.png"
+ ALT="$ {\langle x \rangle_{\!\mathrm{w(1)}}}$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ ${\langle x \rangle_{\!\mathrm{w(2)}}}$
+ -->
+<IMG
+ WIDTH="50" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img206.png"
+ ALT="$ {\langle x \rangle_{\!\mathrm{w(2)}}}$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ $\langle  x \rangle^*$
+ -->
+<IMG
+ WIDTH="33" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img163.png"
+ ALT="$ \langle x\rangle^*$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ $\langle  x \rangle$
+ -->
+<IMG
+ WIDTH="26" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img192.png"
+ ALT="$ \langle x \rangle$">
+</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+Averages </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> 9998.995728116572  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  9999.995828163173  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  9999.995919900000  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  9999.995919900000    </FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+<IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img199.png"
+ ALT="$ E_\lambda$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> -1.004271883437468  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  -0.4171836835666909E-02  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">-0.4080100008650334E-02  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">-0.4080100008650334E-02</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+<IMG
+ WIDTH="20" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img207.png"
+ ALT="$ e_\lambda$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> -0.1004271883437467E-03 </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> -0.4171836835666905E-06 </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> -0.4080100008650330E-06  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">-0.4080100008650330E-06</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+<!-- MATH
+ $e_\lambda/\epsilon_\lambda$
+ -->
+<IMG
+ WIDTH="43" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img201.png"
+ ALT="$ e_\lambda/\epsilon_\lambda$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B> -100.4271883437468  </B></FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B>  -0.4171836835666907  </B></FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B>  -0.4080100008650331  </B></FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B>  -0.4080100008650331  </B>  </FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+ </FONT></TD>
+<TD></TD>
+<TD></TD>
+<TD></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> </FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+ </FONT></TD>
+<TD ALIGN="LEFT" COLSPAN=4><FONT SIZE="-1"> <IMG
+ WIDTH="31" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img202.png"
+ ALT="$ \lambda =$">
+ 100000.0000000002 ; <!-- MATH
+ $\xi_\lambda =$
+ -->
+<IMG
+ WIDTH="37" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img203.png"
+ ALT="$ \xi_\lambda = $">
+0.031622776601683826 ; <!-- MATH
+ $\epsilon_\lambda$
+ -->
+<IMG
+ WIDTH="19" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img204.png"
+ ALT="$ \epsilon_\lambda$">
+ =  3.162277660168376E-7</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ ${\langle x \rangle_{\!\mathrm{w(1)}}}$
+ -->
+<IMG
+ WIDTH="50" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img205.png"
+ ALT="$ {\langle x \rangle_{\!\mathrm{w(1)}}}$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ ${\langle x \rangle_{\!\mathrm{w(2)}}}$
+ -->
+<IMG
+ WIDTH="50" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img206.png"
+ ALT="$ {\langle x \rangle_{\!\mathrm{w(2)}}}$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ $\langle  x \rangle^*$
+ -->
+<IMG
+ WIDTH="33" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img163.png"
+ ALT="$ \langle x\rangle^*$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ $\langle  x \rangle$
+ -->
+<IMG
+ WIDTH="26" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img192.png"
+ ALT="$ \langle x \rangle$">
+</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+Averages </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> 99999.01275394148  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  100000.0127639189  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  100000.0125627100  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  100000.0125627100    </FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+<IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img199.png"
+ ALT="$ E_\lambda$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> -0.9872460587212117  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.1276391866849735E-01  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.1256270980229601E-01  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.1256270980229601E-01</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+<IMG
+ WIDTH="20" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img207.png"
+ ALT="$ e_\lambda$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> -0.9872460587212097E-05  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.1276391866849733E-06  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.1256270980229599E-06  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.1256270980229599E-06</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+<!-- MATH
+ $e_\lambda/\epsilon_\lambda$
+ -->
+<IMG
+ WIDTH="43" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img201.png"
+ ALT="$ e_\lambda/\epsilon_\lambda$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B> -31.21946156583365  </B></FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B>  0.4036305486159527  </B></FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B>  0.3972677655897895  </B></FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B>  0.3972677655897895   </B> </FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+ </FONT></TD>
+<TD></TD>
+<TD></TD>
+<TD></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> </FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+ </FONT></TD>
+<TD ALIGN="LEFT" COLSPAN=4><FONT SIZE="-1"> <IMG
+ WIDTH="31" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img202.png"
+ ALT="$ \lambda =$">
+ 1000000.0000000013 ; <!-- MATH
+ $\xi_\lambda =$
+ -->
+<IMG
+ WIDTH="37" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img203.png"
+ ALT="$ \xi_\lambda = $">
+0.10000000000000006 ; <!-- MATH
+ $\epsilon_\lambda$
+ -->
+<IMG
+ WIDTH="19" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img204.png"
+ ALT="$ \epsilon_\lambda$">
+ =  9.999999999999993E-8</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ ${\langle x \rangle_{\!\mathrm{w(1)}}}$
+ -->
+<IMG
+ WIDTH="50" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img205.png"
+ ALT="$ {\langle x \rangle_{\!\mathrm{w(1)}}}$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ ${\langle x \rangle_{\!\mathrm{w(2)}}}$
+ -->
+<IMG
+ WIDTH="50" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img206.png"
+ ALT="$ {\langle x \rangle_{\!\mathrm{w(2)}}}$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ $\langle  x \rangle^*$
+ -->
+<IMG
+ WIDTH="33" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img163.png"
+ ALT="$ \langle x\rangle^*$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  <!-- MATH
+ $\langle  x \rangle$
+ -->
+<IMG
+ WIDTH="26" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img192.png"
+ ALT="$ \langle x \rangle$">
+</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+Averages </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> 999999.1188353101  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  1000000.118835812  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  1000000.118809340  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  1000000.118809340    </FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+<IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img199.png"
+ ALT="$ E_\lambda$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> -0.8811646911781281  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.1188358106883243  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.1188093387754634  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.1188093387754634  </FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+<IMG
+ WIDTH="20" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img207.png"
+ ALT="$ e_\lambda$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"> -0.8811646911781270E-06  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.1188358106883241E-06  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.1188093387754633E-06  </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1">  0.1188093387754633E-06</FONT></TD>
+</TR>
+<TR><TD ALIGN="LEFT"><FONT SIZE="-1"> 
+<!-- MATH
+ $e_\lambda/\epsilon_\lambda$
+ -->
+<IMG
+ WIDTH="43" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img201.png"
+ ALT="$ e_\lambda/\epsilon_\lambda$">
+ </FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B> -8.811646911781276  </B></FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B>  1.188358106883242  </B></FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B>  1.188093387754633  </B></FONT></TD>
+<TD ALIGN="LEFT"><FONT SIZE="-1"><B> 1.188093387754633</B> </FONT></TD>
+</TR>
+</TABLE>
+<P>
+
+<P>
+As it is visible from the table:
+<DL COMPACT>
+<DT>1.&nbsp;&nbsp;&nbsp;&nbsp;</DT>
+<DD><!-- MATH
+ ${\langle x \rangle_{\!\mathrm{w(1)}}}\ :$
+ -->
+<IMG
+ WIDTH="64" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img208.png"
+ ALT="$ {\langle x \rangle_{\!\mathrm{w(1)}}}\ :$">
+ the weighted average using straight Poisson statistics is consistenty bad at all values of <IMG
+ WIDTH="14" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img181.png"
+ ALT="$ \lambda$">
+, that means at all counting levels;
+</DD>
+<DT>2.&nbsp;&nbsp;&nbsp;&nbsp;</DT>
+<DD><!-- MATH
+ ${\langle x \rangle^*}\$
+ -->
+<IMG
+ WIDTH="39" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img209.png"
+ ALT="$ {\langle x \rangle^*}\ $">
+:  the normal average skipping zero count data is bad for <!-- MATH
+ $\lambda<100$
+ -->
+<IMG
+ WIDTH="59" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img210.png"
+ ALT="$ \lambda&lt;100$">
+, that means at low counting levels (of course at higher counting levels zeroes are not happening);
+</DD>
+<DT>3.&nbsp;&nbsp;&nbsp;&nbsp;</DT>
+<DD><!-- MATH
+ ${\langle x \rangle}\ \text{and}\ {\langle x \rangle_{\!\mathrm{w(2)}}}$
+ -->
+<IMG
+ WIDTH="31" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img211.png"
+ ALT="$ {\langle x \rangle}\ $">&nbsp; &nbsp;and<IMG
+ WIDTH="50" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img206.png"
+ ALT="$ {\langle x \rangle_{\!\mathrm{w(2)}}}$">
+: the normal average including zero count data and the Mighell-Poisson weighted average 
+are consistently and equivalently good at all counting levels.
+</DD>
+</DL>
+Therefore there is no bias when using the Mighell-Poisson weighted method to average data w.r.t. the usual average. The former, however, 
+has already accomplished the passage to normal statistics, therefore all operations on data that are not simple averaging can be done in 
+the framework of normal statistics, where everything is known and clear. In the next section, on the opposite, it is shown that 
+even simple operations as scaling data lead to the necessity of abandoning Poisson statistics in order to estimate correctly the standard deviations.
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html955"
+  HREF="node63.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html951"
+  HREF="node54.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html947"
+  HREF="node61.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html953"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html956"
+  HREF="node63.html">Scaling Poisson variates</A>
+<B> Up:</B> <A NAME="tex2html952"
+  HREF="node54.html">Average vs. weighted average</A>
+<B> Previous:</B> <A NAME="tex2html948"
+  HREF="node61.html">Analytical comparison of averages</A>
+ &nbsp; <B>  <A NAME="tex2html954"
+  HREF="node1.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-03-12
+</ADDRESS>
+</BODY>
+</HTML>

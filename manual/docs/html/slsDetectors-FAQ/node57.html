@@ -1,0 +1,264 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Weighted average: definition and relationship with </TITLE>
+<META NAME="description" CONTENT="Weighted average: definition and relationship with ">
+<META NAME="keywords" CONTENT="slsDetectors-FAQ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectors-FAQ.css">
+
+<LINK REL="next" HREF="node58.html">
+<LINK REL="previous" HREF="node56.html">
+<LINK REL="up" HREF="node54.html">
+<LINK REL="next" HREF="node58.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html897"
+  HREF="node58.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html893"
+  HREF="node54.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html887"
+  HREF="node56.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html895"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html898"
+  HREF="node58.html">Straight Poisson (zero-skipping) weighted</A>
+<B> Up:</B> <A NAME="tex2html894"
+  HREF="node54.html">Average vs. weighted average</A>
+<B> Previous:</B> <A NAME="tex2html888"
+  HREF="node56.html">Zero-skipping average</A>
+ &nbsp; <B>  <A NAME="tex2html896"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00625300000000000000">
+Weighted average: definition and relationship with <IMG
+ WIDTH="22" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$ \chi ^2$">
+</A>
+</H3>
+
+<P>
+A weighted average is the result of the special case of a data fitting to a model function which is a constant.
+It is easy to see that minimizing w.r.t <IMG
+ WIDTH="14" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+ SRC="img144.png"
+ ALT="$ x$">
+
+<P><!-- MATH
+ \begin{displaymath}
+\chi^2 = \mathop{\sum}_{j=1}^{N_{\mathrm{obs}}}
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{{\ensuremath{\left({x-O_j}\right)}}^2
+}}}}{{\ensuremath{\displaystyle{
+\sigma_j^2
+}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="143" HEIGHT="67" ALIGN="MIDDLE" BORDER="0"
+ SRC="img153.png"
+ ALT="$\displaystyle \chi^2 = \mathop{\sum}_{j=1}^{N_{\mathrm{obs}}}
+{\ensuremath{\dis...
+...h{\left({x-O_j}\right)}}^2
+}}}}{{\ensuremath{\displaystyle{
+\sigma_j^2
+}}}}}}}
+$">
+</DIV><P>
+</P>
+yields
+<P><!-- MATH
+ \begin{displaymath}
+x= \langle x \rangle_{\!\mathrm{w}}={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{
+\mathop{\sum}_{j=1}^{N_{\mathrm{obs}}}
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{O_j
+}}}}{{\ensuremath{\displaystyle{
+\sigma_j^2
+}}}}}}}
+}}}}{{\ensuremath{\displaystyle{
+\mathop{\sum}_{j=1}^{N_{\mathrm{obs}}}
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{1
+}}}}{{\ensuremath{\displaystyle{
+\sigma_j^2
+}}}}}}}
+}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="141" HEIGHT="126" ALIGN="MIDDLE" BORDER="0"
+ SRC="img154.png"
+ ALT="$\displaystyle x= \langle x \rangle_{\!\mathrm{w}}={\ensuremath{\displaystyle{\f...
+...th{\displaystyle{1
+}}}}{{\ensuremath{\displaystyle{
+\sigma_j^2
+}}}}}}}
+}}}}}}}
+$">
+</DIV><P>
+</P>
+The good-faith s.d. (square-root of twice the inverse of the second derivative of <IMG
+ WIDTH="22" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$ \chi ^2$">
+ at the minimum) 
+is then
+<P><!-- MATH
+ \begin{displaymath}
+\sigma_{\langle x \rangle_{\!\mathrm{w}}} = {\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{
+1
+}}}}{{\ensuremath{\displaystyle{\sqrt{
+\mathop{\sum}_{j=1}^{N_{\mathrm{obs}}}
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{1
+}}}}{{\ensuremath{\displaystyle{
+\sigma_j^2
+}}}}}}}
+}}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="130" HEIGHT="122" ALIGN="MIDDLE" BORDER="0"
+ SRC="img155.png"
+ ALT="$\displaystyle \sigma_{\langle x \rangle_{\!\mathrm{w}}} = {\ensuremath{\display...
+...h{\displaystyle{1
+}}}}{{\ensuremath{\displaystyle{
+\sigma_j^2
+}}}}}}}
+}}}}}}}}
+$">
+</DIV><P>
+</P>
+I use the term 'good-faith' to indicate the case when it is really appropriate to use a constant as a model functions, 
+i.e. when the observations are truly different observations of the same observable. 
+When this is not the case but we do not know what to do better we can at least increase the s.d. 
+In fact, there is a correction factor for the s.d., given - in this case - by
+<P><!-- MATH
+ \begin{displaymath}
+\mathsf{GoF}=
+\sqrt{
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{
+\mathop{\sum}_{j=1}^{N_{\mathrm{obs}}}
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{O_j^2
+}}}}{{\ensuremath{\displaystyle{
+\sigma_j^2
+}}}}}}}
+-{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{
+{\ensuremath{\left[{
+\mathop{\sum}_{j=1}^{N_{\mathrm{obs}}}
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{O_j
+}}}}{{\ensuremath{\displaystyle{
+\sigma_j^2
+}}}}}}}
+}\right]}}^2
+}}}}{{\ensuremath{\displaystyle{ \mathop{\sum}_{j=1}^{N_{\mathrm{obs}}}
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{1
+}}}}{{\ensuremath{\displaystyle{
+\sigma_j^2
+}}}}}}} }}}}}}}
+}}}}{{\ensuremath{\displaystyle{
+N_{\mathrm{obs}}-1
+}}}}}}}
+}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="230" HEIGHT="267" ALIGN="MIDDLE" BORDER="0"
+ SRC="img156.png"
+ ALT="$\displaystyle \mathsf{GoF}=
+\sqrt{
+{\ensuremath{\displaystyle{\frac{{\ensuremat...
+...
+}}}}}}} }}}}}}}
+}}}}{{\ensuremath{\displaystyle{
+N_{\mathrm{obs}}-1
+}}}}}}}
+}
+$">
+</DIV><P>
+</P>
+so that
+<P><!-- MATH
+ \begin{displaymath}
+{\sigma}_{\langle x \rangle_{\!\mathrm{w}}}^{\mathrm{corrected}} = \mathsf{GoF}\ \sigma_{\langle x \rangle_{\!\mathrm{w}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="154" HEIGHT="37" ALIGN="MIDDLE" BORDER="0"
+ SRC="img157.png"
+ ALT="$\displaystyle {\sigma}_{\langle x \rangle_{\!\mathrm{w}}}^{\mathrm{corrected}} = \mathsf{GoF}\ \sigma_{\langle x \rangle_{\!\mathrm{w}}}
+$">
+</DIV><P>
+</P> 
+
+<P>
+Specializing now to the two cases above, 
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html897"
+  HREF="node58.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html893"
+  HREF="node54.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html887"
+  HREF="node56.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html895"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html898"
+  HREF="node58.html">Straight Poisson (zero-skipping) weighted</A>
+<B> Up:</B> <A NAME="tex2html894"
+  HREF="node54.html">Average vs. weighted average</A>
+<B> Previous:</B> <A NAME="tex2html888"
+  HREF="node56.html">Zero-skipping average</A>
+ &nbsp; <B>  <A NAME="tex2html896"
+  HREF="node1.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-03-12
+</ADDRESS>
+</BODY>
+</HTML>

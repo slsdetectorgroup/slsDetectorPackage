@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>What limits the maximum frame rate?</TITLE>
+<META NAME="description" CONTENT="What limits the maximum frame rate?">
+<META NAME="keywords" CONTENT="slsDetectors-FAQ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectors-FAQ.css">
+
+<LINK REL="previous" HREF="node21.html">
+<LINK REL="up" HREF="node20.html">
+<LINK REL="next" HREF="node25.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html446"
+  HREF="node25.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html442"
+  HREF="node20.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html438"
+  HREF="node23.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html444"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html447"
+  HREF="node25.html">Single photon counting detectors</A>
+<B> Up:</B> <A NAME="tex2html443"
+  HREF="node20.html">General questions about detectors</A>
+<B> Previous:</B> <A NAME="tex2html439"
+  HREF="node23.html">Frontend electronics</A>
+ &nbsp; <B>  <A NAME="tex2html445"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00320000000000000000">
+What limits the maximum frame rate?</A>
+</H1>
+
+<P>
+In order to acquired the data, they should be:
+
+<UL>
+<LI>Transferred from readout electronics to readout board memory. This readou time is very dependent on the detector and on the dynamic range chose (for single photon counting detectors if configurable) and can range from hundreds or tens to few us. 
+<BR>
+In case the board has some memory that can be accessed by the hardware, this is the only limitation on the maximum frame rate as long as the memory is not filled (burst mode). Frame rates as high as a few tens of kHz can be achieved for photon countign detectors (EIGER) or up to 1&nbsp;MHz for charge integrating (GOTTHARD).
+
+<P>
+</LI>
+<LI>Transferred from readout board to client PC or file server. In this case the main bottleneck is normally given by the data transfer rate on the network and on the performances of the receiver PC. This limits the frame rate in continous mode. However also the data writing capabilities and amount of data which are being acquired should be taken into consideration when setting up very fast acquisitions.
+
+<P>
+</LI>
+</UL>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html446"
+  HREF="node25.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html442"
+  HREF="node20.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html438"
+  HREF="node23.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html444"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html447"
+  HREF="node25.html">Single photon counting detectors</A>
+<B> Up:</B> <A NAME="tex2html443"
+  HREF="node20.html">General questions about detectors</A>
+<B> Previous:</B> <A NAME="tex2html439"
+  HREF="node23.html">Frontend electronics</A>
+ &nbsp; <B>  <A NAME="tex2html445"
+  HREF="node1.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-03-12
+</ADDRESS>
+</BODY>
+</HTML>

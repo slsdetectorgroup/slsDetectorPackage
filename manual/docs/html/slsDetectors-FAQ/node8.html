@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>MYTHEN</TITLE>
+<META NAME="description" CONTENT="MYTHEN">
+<META NAME="keywords" CONTENT="slsDetectors-FAQ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectors-FAQ.css">
+
+<LINK REL="next" HREF="node9.html">
+<LINK REL="previous" HREF="node7.html">
+<LINK REL="up" HREF="node7.html">
+<LINK REL="next" HREF="node9.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html255"
+  HREF="node9.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html251"
+  HREF="node7.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html245"
+  HREF="node7.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html253"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html256"
+  HREF="node9.html">GOTTHARD</A>
+<B> Up:</B> <A NAME="tex2html252"
+  HREF="node7.html">What are settings and</A>
+<B> Previous:</B> <A NAME="tex2html246"
+  HREF="node7.html">What are settings and</A>
+ &nbsp; <B>  <A NAME="tex2html254"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION00241000000000000000">
+MYTHEN</A>
+</H2>
+For mythen, an example of <I>settingsdir</I> and <I>caldir</I> is  given in the software package by the directory <code>trimdir</code>. 
+Since these directories are customized by producing trimbit files and calibration for each detector, make sure not to overwrite yours every time you upgrade the software.
+
+<P>
+<I>settingsdir</I> should contain three subdirectories <code>standard</code>,  <code>fast</code> and  <code>highgain</code> containing respectively the trimfiles <code>standard.trim</code>,  <code>fast.trim</code> and  <code>highgain.trim</code> which contain the correct voltage settings for the detector although all the individual channel thresholds set to 0. The original files contained in the package should be used, infact in case of error the detector would not recognize the correct settings.
+<BR>
+The default trimbit files for each file will be stored in the directory according to the settings with the name <code>noise.snxxx</code> where <code>xxx</code> is the module serial number.
+<BR>
+<P>
+<I>caldir</I> should contain three subdirectories <code>standard</code>,  <code>fast</code> and  <code>highgain</code> containing respectively the trimfiles <code>standard.cal</code>,  <code>fast.cal</code> and  <code>highgain.cal</code> which contain an average calibration of the modules for the diffrent settings. However this can different from the correct one for each individual module even of several kev and therefore it is very important to perform an energy calibration on a module basis.
+<BR>
+The default calibration files for each file will be stored in the directory according to the settings with the name <code>calibration.snxxx</code> where <code>xxx</code> is the module serial number.
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html255"
+  HREF="node9.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html251"
+  HREF="node7.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html245"
+  HREF="node7.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html253"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html256"
+  HREF="node9.html">GOTTHARD</A>
+<B> Up:</B> <A NAME="tex2html252"
+  HREF="node7.html">What are settings and</A>
+<B> Previous:</B> <A NAME="tex2html246"
+  HREF="node7.html">What are settings and</A>
+ &nbsp; <B>  <A NAME="tex2html254"
+  HREF="node1.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-03-12
+</ADDRESS>
+</BODY>
+</HTML>

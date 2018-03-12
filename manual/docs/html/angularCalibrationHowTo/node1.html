@@ -1,0 +1,186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Introduction</TITLE>
+<META NAME="description" CONTENT="Introduction">
+<META NAME="keywords" CONTENT="angularCalibrationHowTo">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="angularCalibrationHowTo.css">
+
+<LINK REL="next" HREF="node2.html">
+<LINK REL="previous" HREF="angularCalibrationHowTo.html">
+<LINK REL="up" HREF="angularCalibrationHowTo.html">
+<LINK REL="next" HREF="node2.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html23"
+  HREF="node2.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html21"
+  HREF="angularCalibrationHowTo.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html15"
+  HREF="angularCalibrationHowTo.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html24"
+  HREF="node2.html">Data acquisition</A>
+<B> Up:</B> <A NAME="tex2html22"
+  HREF="angularCalibrationHowTo.html">Angular calibration wizard manual</A>
+<B> Previous:</B> <A NAME="tex2html16"
+  HREF="angularCalibrationHowTo.html">Angular calibration wizard manual</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00010000000000000000">
+Introduction</A>
+</H1>
+
+<P>
+In order to convert from strip number to 2<IMG
+ WIDTH="12" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img1.png"
+ ALT="$\theta$">-angle, an accurate angular calibration of the detector must be performed (for details see the paper Bergamaschi, A. et al. (2010). J. Synchrotron Rad. 17, 653-668). 
+<BR>
+<P>
+For this purpose, a series of patterns of a powder standard with symmetric peaks (e.g. silicon) must acquired while shifting the detector by an angular step of the order of about 2% of the module size. During the measurement, a strong intensity peak (e.g. Si(111)) should pass through the field of view of every module such that it can be used as a reference angular position to perform the calibration of the modules position.
+<BR>
+<P>
+In a first step, the   peak is fitted with a Gaussian in order to determine its position <IMG
+ WIDTH="43" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img2.png"
+ ALT="$C_{peak}$"> in channel number for each of the acquired patterns.
+<BR>
+In a second step, for each module <IMG
+ WIDTH="10" HEIGHT="17" ALIGN="BOTTOM" BORDER="0"
+ SRC="img3.png"
+ ALT="$i$">, the encoder position  <IMG
+ WIDTH="24" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img4.png"
+ ALT="$\Theta_e$"> is fitted as a function of the peak position  <IMG
+ WIDTH="43" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img2.png"
+ ALT="$C_{peak}$"> according to:
+<BR>
+<DIV ALIGN="RIGHT">
+
+<!-- MATH
+ \begin{equation}
+\Theta_e=\Theta_o^i-\arctan\Big(\frac{p \cdot (C_{peak}-C_{center}^i)}{R^i}\Big),
+\end{equation}
+ -->
+<TABLE WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE"><TD ALIGN="CENTER" NOWRAP><A NAME="eq:angcal"></A><IMG
+ WIDTH="291" HEIGHT="41" BORDER="0"
+ SRC="img5.png"
+ ALT="\begin{displaymath}
+\Theta_e=\Theta_o^i-\arctan\Big(\frac{p \cdot (C_{peak}-C_{center}^i)}{R^i}\Big),
+\end{displaymath}"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(1)</TD></TR>
+</TABLE>
+<BR CLEAR="ALL"></DIV><P></P>
+where the parameters <IMG
+ WIDTH="24" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img6.png"
+ ALT="$\Theta_o^i$"> is the angular offset with respect to the diffractometer zero position, <!-- MATH
+ $C_{center}^{i}$
+ -->
+<IMG
+ WIDTH="53" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img7.png"
+ ALT="$C_{center}^{i}$"> is the central channel  and <IMG
+ WIDTH="22" HEIGHT="16" ALIGN="BOTTOM" BORDER="0"
+ SRC="img8.png"
+ ALT="$R^i$"> is the distance of the module <IMG
+ WIDTH="10" HEIGHT="17" ALIGN="BOTTOM" BORDER="0"
+ SRC="img3.png"
+ ALT="$i$"> from the diffractometer center while <IMG
+ WIDTH="79" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img9.png"
+ ALT="$p=50~\mu m$"> is the strip pitch of the detector. 
+<BR>
+Finally, the global offset of the detector system is precisely determined by refining a silicon pattern at a well-defined energy (i.e., knowing the position of the peak).
+
+<P>
+The same function of equation&nbsp;<A HREF="#eq:angcal">1</A>, with the parameters obtained from the calibration, is used in order to convert from channel number to 2<IMG
+ WIDTH="12" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img1.png"
+ ALT="$\theta$">-angle.
+
+<P>
+The parallax at the borders of the modules due to the thickness of the silicon sensor is a function of the X-ray energy (higher energy X-rays are absorbed deeper inside the sensor) and is of the order of 0.2&nbsp;mdeg at 12&nbsp;keV and 0.5&nbsp;mdeg at 30&nbsp;keV. 
+<BR>
+The differences in pixel size due to the different portion of solid angle covered by the strips on the border of the modules and  the higher efficiency due to the longer path of the X-rays in the sensor are removed by the flat field correction. This also normalizes additional differences in pixel size between channels which are also present because of mismatches in the strip sensor fabrication and in fluctuations of the channels threshold level.
+
+<P>
+Patterns acquired at different detector positions are generally merged together  in order to fill the gaps between the modules and correct possibly bad functioning channels. In this procedure the data from different positions which are closer than 4&nbsp;mdeg (the average pixel size) are averaged and the new position is set to the mean of the positions of the original points.
+
+<P>
+The position and width of the peaks results from a fit over several detector channels. Geometrical distortions might disturb this determination mainly because of errors in the angular calibration, fluctuations in the encoder position, variations between channels and parallax effects.
+<BR>
+The resolution in locating the peak center and determining its width and integrated intensity has been estimated by acquiring several patterns of a LaB<IMG
+ WIDTH="12" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img10.png"
+ ALT="$_6$"> sample in a 300&nbsp;<IMG
+ WIDTH="14" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img11.png"
+ ALT="$\mu$">m capillary with the detector shifted in 5&nbsp;mdeg steps between 30.4 and 36.5 degrees. The 16&nbsp;peaks acquired have been fitted with a Gaussian function plus background and the fluctuations on the fitted parameters have been calculated. The resulting average resolutions are  0.63<IMG
+ WIDTH="17" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img12.png"
+ ALT="$\pm$">0.06&nbsp;mdeg for the peak center and 0.22<IMG
+ WIDTH="17" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img12.png"
+ ALT="$\pm$">0.05&nbsp;mdeg for the peak Full-Width at Half-Maximum (FWHM) for an average peak FWHM of 27.0<IMG
+ WIDTH="17" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img12.png"
+ ALT="$\pm$">2.5&nbsp;mdeg. 
+<BR>
+These results show that  the angular calibration allows a resolution in determining the peaks position and width which is appropriate for structural determination.
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html23"
+  HREF="node2.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html21"
+  HREF="angularCalibrationHowTo.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html15"
+  HREF="angularCalibrationHowTo.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html24"
+  HREF="node2.html">Data acquisition</A>
+<B> Up:</B> <A NAME="tex2html22"
+  HREF="angularCalibrationHowTo.html">Angular calibration wizard manual</A>
+<B> Previous:</B> <A NAME="tex2html16"
+  HREF="angularCalibrationHowTo.html">Angular calibration wizard manual</A>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-03-12
+</ADDRESS>
+</BODY>
+</HTML>

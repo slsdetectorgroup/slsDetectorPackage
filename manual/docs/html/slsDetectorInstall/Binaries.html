@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Binaries</TITLE>
+<META NAME="description" CONTENT="Binaries">
+<META NAME="keywords" CONTENT="slsDetectorInstall">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectorInstall.css">
+
+</HEAD>
+
+<BODY >
+
+<H2><A NAME="SECTION00021000000000000000">
+Binaries</A>
+</H2>
+The complete software package is composed of several programs which
+can be installed (or locally compiled) depending on one's requirements:
+
+<P>
+
+<UL>
+<LI><FONT COLOR="#0000ff">libSlsDetector.so, libSlsReceiver.so</FONT>:
+<BR>
+The <I>slsDetector shared and static libraries</I>, which are
+necessary for all user interfaces. The <I>C++ API</I> via the class
+<I>slsDetectorUsers</I> (installed with the default package) or the
+<I>Python API</I> via the class <I>sls_detector</I> (installed with the
+package including Python API), which can be used from the user's acquisition
+software to control the detectors and the data receivers.
+
+<P>
+</LI>
+<LI><FONT COLOR="#0000ff">sls_detector_put, sls_detector_get,
+sls_detector_acquire, sls_detector_help</FONT>: 
+<BR>
+The <I>command line interfaces</I>, which are provided to communicate with the
+detectors and data receivers using the command line.
+
+<P>
+</LI>
+<LI><FONT COLOR="#0000ff">slsReceiver</FONT>: 
+<BR>
+The <I>data receiver</I>, which can be run on a different machine than the
+client, receives the data from the detector and processes it. The receiver can
+be configured, controlled and monitored by the client.
+
+<P>
+</LI>
+<LI><FONT COLOR="#0000ff">slsDetectorGUI</FONT>: 
+<BR>
+The <I>graphical user interface</I>, which provides a user friendly way
+of operating the detectors and data receivers with online data preview.
+
+<P>
+</LI>
+<LI><FONT COLOR="#0000ff">energyCalibrationWizard,angularCalibrationWizard</FONT>: 
+<BR>
+The <I>calibration wizards</I> to analyze the data and produce the energy or
+angular calibration files.
+
+<P>
+</LI>
+<LI>The <I>virtual Detector servers</I> to simulate the detectors behavior.
+However, only control commands work, not the data acquisition itself.
+</LI>
+</UL>
+
+<P>
+<BR><HR>
+
+</BODY>
+</HTML>

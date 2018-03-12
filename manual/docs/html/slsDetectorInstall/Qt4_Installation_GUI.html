@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Qt4 Installation for GUI</TITLE>
+<META NAME="description" CONTENT="Qt4 Installation for GUI">
+<META NAME="keywords" CONTENT="slsDetectorInstall">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectorInstall.css">
+
+</HEAD>
+
+<BODY >
+
+<H3><A NAME="SECTION00042100000000000000">
+Qt4 Installation for GUI</A>
+</H3>
+It must be installed before Qwt. A Qt version equal or higher than 4.6 is
+required. One can install it:
+
+<UL>
+<LI>via YUM:
+<PRE>
+ yum install qt-devel
+</PRE>
+</LI>
+<LI>via download from:
+<BR><TT><A NAME="tex2html2"
+  HREF="
+https://download.qt.io/archive/qt/4.8/4.8.2/qt-everywhere-opensource-src-4.8.2.t
+ar.gz">https://download.qt.io/archive/qt/4.8/4.8.2/qt-everywhere-opensource-src-4.8.2.t
+ar.gz</A></TT> 
+
+<P>
+To install:
+<PRE>
+&gt; gunzip qt-everywhere-opensource-src-4.8.2.tar.gz
+&gt; tar xvf qt-everywhere-opensource-src-4.8.2.tar
+&gt; ./configure
+&gt; make
+&gt; make install
+</PRE>
+By default Qt4 will be installed in /usr/local/Trolltech/Qt-4.8.2/. 
+</LI>
+</UL>
+
+<P>
+<B>Setup Environment</B> 
+
+<P>
+One has to ensure that <code>PATH</code> and <code>LD_LIBRARY_PATH</code> have
+been updated to include Qt4 install path, binaries and libraries.
+Confirm by executing <code>qmake -v</code> and ensuring the result points to Qt4 (not
+Qt3 or Qt5). 
+
+<P>
+If the environment is not set up, one can add the libraries and
+executables to the .bashrc by adding
+<code>LD_LIBRARY_PATH</code> and <code>PATH</code>:
+<PRE>
+export QTDIR=/usr/local/Trolltech/Qt-4.8.2
+export PATH=$QTDIR/bin:$PATH
+export LD_LIBRARY_PATH=$QTDIR/lib:$LD_LIBRARY_PATH
+</PRE>
+
+<P>
+<BR><HR>
+
+</BODY>
+</HTML>

@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>GOTTHARD</TITLE>
+<META NAME="description" CONTENT="GOTTHARD">
+<META NAME="keywords" CONTENT="slsDetectors-FAQ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectors-FAQ.css">
+
+<LINK REL="next" HREF="node18.html">
+<LINK REL="previous" HREF="node16.html">
+<LINK REL="up" HREF="node16.html">
+<LINK REL="next" HREF="node18.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html362"
+  HREF="node18.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html358"
+  HREF="node16.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html352"
+  HREF="node16.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html360"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html363"
+  HREF="node18.html">EIGER</A>
+<B> Up:</B> <A NAME="tex2html359"
+  HREF="node16.html">In which data format</A>
+<B> Previous:</B> <A NAME="tex2html353"
+  HREF="node16.html">In which data format</A>
+ &nbsp; <B>  <A NAME="tex2html361"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION002111000000000000000">
+GOTTHARD</A>
+</H2>
+Each file contains 100 frames.
+<DL>
+<DT><STRONG>Normal mode</STRONG></DT>
+<DD>Each frame is split into 2 packets of 1286 bytes each, where actual data is 1280 bytes each. Both the packets (incl header and footer) are written one after the other into the file.
+
+<P>
+Representation of each packet:
+
+<UL>
+<LI>The first 4 bytes represents a number from which, the frame number and packet number can be derived.
+If the number was 108601, increment it by 1 to get 108602.
+<BR>
+Then this <!-- MATH
+ $(108602\&0xFFFFFFFE)>>1 = 54301$
+ -->
+<IMG
+ WIDTH="296" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img12.png"
+ ALT="$ (108602\&amp;0xFFFFFFFE)&gt;&gt;1 = 54301$">
+ is the frame number
+and  <!-- MATH
+ $(108602\&0x1) =0$
+ -->
+<IMG
+ WIDTH="131" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img13.png"
+ ALT="$ (108602\&amp;0x1) =0$">
+ is the packet number.
+<BR>
+0 is the packet on the left and 1 is the packet on the right.
+<BR>
+On a side note, when you use the data call back, we also give you the derived frame number as an argument.
+
+<P>
+</LI>
+<LI>Data of 1280 bytes. 16 bits per pixel.
+
+<P>
+</LI>
+<LI>2 bytes of insignificant footer.
+</LI>
+</UL>
+
+<P>
+</DD>
+<DT><STRONG>Short Frame Mode</STRONG></DT>
+<DD>One Frame has only one packet of 518 bytes, where actual data is 512 bytes.
+
+<UL>
+<LI>first 4 bytes is the frame number. There is no packet number or increment required herecompared to the normal mode.
+</LI>
+<LI>Data of 512 bytes.
+</LI>
+<LI>2 bytes of insignificant footer.
+</LI>
+</UL>
+
+<P>
+</DD>
+</DL>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html362"
+  HREF="node18.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html358"
+  HREF="node16.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html352"
+  HREF="node16.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html360"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html363"
+  HREF="node18.html">EIGER</A>
+<B> Up:</B> <A NAME="tex2html359"
+  HREF="node16.html">In which data format</A>
+<B> Previous:</B> <A NAME="tex2html353"
+  HREF="node16.html">In which data format</A>
+ &nbsp; <B>  <A NAME="tex2html361"
+  HREF="node1.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-03-12
+</ADDRESS>
+</BODY>
+</HTML>

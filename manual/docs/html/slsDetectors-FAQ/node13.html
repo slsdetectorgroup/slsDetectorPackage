@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>How can I synchronize my detector with the experiment?</TITLE>
+<META NAME="description" CONTENT="How can I synchronize my detector with the experiment?">
+<META NAME="keywords" CONTENT="slsDetectors-FAQ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectors-FAQ.css">
+
+<LINK REL="next" HREF="node14.html">
+<LINK REL="previous" HREF="node12.html">
+<LINK REL="up" HREF="node2.html">
+<LINK REL="next" HREF="node14.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html313"
+  HREF="node14.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html309"
+  HREF="node2.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html303"
+  HREF="node12.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html311"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html314"
+  HREF="node14.html">How can several controllers</A>
+<B> Up:</B> <A NAME="tex2html310"
+  HREF="node2.html">SLS Detectors Software</A>
+<B> Previous:</B> <A NAME="tex2html304"
+  HREF="node12.html">Which is the sequence</A>
+ &nbsp; <B>  <A NAME="tex2html312"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00280000000000000000"></A><A NAME="sec:timing"></A>
+<BR>
+How can I synchronize my detector with the experiment?
+</H1>
+
+<P>
+The timing of the detector is always defined by an active detection time followed by a dead time during which the detector is read out. This read out time as a fixed duration depending on the detector type and its configuration (e.g. dynamic range) which limits the maximum frame rate achievable.
+<BR>
+In the following is a list of the main parameters involved in the acquisition timing:
+<DL>
+<DT><STRONG>Exposure time</STRONG></DT>
+<DD>is the time during which the detector is detecting X-rays for each image (ignored is the timing mode is <I>gating</I>).
+</DD>
+<DT><STRONG>Period</STRONG></DT>
+<DD>is the period of the images acquired. If it is shorter than the exposure time plus readout time, it will be ignored.
+</DD>
+<DT><STRONG>Delay after trigger</STRONG></DT>
+<DD>can be set as a delay between the trigger signal and the start of the detection time. 
+</DD>
+<DT><STRONG>Number of gates</STRONG></DT>
+<DD>is used only in <I>gating</I> mode and is the number of times that the gate is toggled before the detector is read out. Useful for stroboscopic measurements with gate period shorter than the minim acquisition period of the detector, otherwise can be left to 1.
+</DD>
+<DT><STRONG>Number of frames</STRONG></DT>
+<DD>is the number of images to be acquired per cycle. Frames and cycles have the same meaning except in trigger mode, when frames means the number of images per trigger. The total number of images is frames time cycles.
+</DD>
+<DT><STRONG>Number of cycles</STRONG></DT>
+<DD>is the number of times that the frames are acquired. Frames and cycles have the same meaning except in trigger mode, when cycles means the number of triggers that will be accepted. The total number of images is frames time cycles.
+</DD>
+<DT><STRONG>Number of probes</STRONG></DT>
+<DD>is used in stoboscopic measurements when the period is longer than the minimum acquisition period, but shorter than the frame rate.
+<BR>
+In this case the data can be summed in firmware. 
+<BR>
+Currently it is implemented for Mythen only. If probes is set to 0, works normallyreturning an image for each readout, otherwise set number of cycles to 1. The maximum number of probes that can be set is 3. The detector will return a number of image equal to the number of probes, where all frames are going to be accumulated. The total number of readouts is number of frames time probes and for  probes=1 the detector will return one image where all frames have been summed, for  probes=2 two images where every second frame has been summed (each image accumulates the number of frames), for probes=3 three images where every third image has been summed (each image accumulates the number of frames).
+<BR>
+The returned images will always have 32&nbsp;bit dynamic range, while the dynamic range if the detector defines the bit depth of the counters in rder to limit the readout time, if necessary.
+<BR>
+The probes counter waorks also in trigger and gating modes.
+</DD>
+</DL>
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:autotiming"></A><A NAME="820"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 1.3:</STRONG>
+Auto timing: the detection time is defined by the exposure time and the period by period (if longer than exposure time plus readout time). The total number of images is frames (in the example 3) times cycles (in the example 2), and in this case there is no difference between the acquisition of the two.</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="555" HEIGHT="159" ALIGN="BOTTOM" BORDER="0"
+ SRC="img8.png"
+ ALT="\includegraphics[width=\textwidth]{images/normal_acquisition.eps}">
+
+</DIV></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:gating"></A><A NAME="873"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 1.4:</STRONG>
+Gating mode: the detector acquires for a number of gates define by the  user (in this case 4) before being read out, independently on the timing of the gates. The detector remains insensitive during the readout time and then starts being active again. External gates given during the readout time are ignored. The total number of images is frames (in the example 3) times cycles (in the example 2), and in this case there is no difference between the acquisition of the two. The polarity of the external gate signal can be defined by the user through the <I>external signal flag</I> (in the example active high).</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="555" HEIGHT="194" ALIGN="BOTTOM" BORDER="0"
+ SRC="img9.png"
+ ALT="\includegraphics[width=\textwidth]{images/gated_acquisition.eps}">
+
+</DIV></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:trig"></A><A NAME="874"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 1.5:</STRONG>
+Trigger mode: the external trigger signal defines the start of the beginning of the acquisition, which starts after the delay set by the user. For each trigger, the number of frames is acquired (in the example 3) and all trigger signals ignored. The number of trigger accepted is given by the number of cycles (in the example 2). The polarity of the external trigger signal can be defined by the user through the <I>external signal flag</I> (in the example rising edge).</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="555" HEIGHT="199" ALIGN="BOTTOM" BORDER="0"
+ SRC="img10.png"
+ ALT="\includegraphics[width=\textwidth]{images/trigger_acquisition.eps}">
+
+</DIV></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:trig"></A><A NAME="875"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 1.6:</STRONG>
+Read Out Trigger mode: the external trigger signal defines the beginning of the readout. The exposure time works as a time out for the waiting time for the trigger signal. The number of trigger accepted is given by the number of cycles (in the example 3) and it does not make sense to program more than one frame. The polarity of the external trigger signal can be defined by the user through the <I>external signal flag</I> (in the example rising edge).</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="555" HEIGHT="161" ALIGN="BOTTOM" BORDER="0"
+ SRC="img11.png"
+ ALT="\includegraphics[width=\textwidth]{images/ro_trigger_acquisition.eps}">
+
+</DIV></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html313"
+  HREF="node14.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html309"
+  HREF="node2.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html303"
+  HREF="node12.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html311"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html314"
+  HREF="node14.html">How can several controllers</A>
+<B> Up:</B> <A NAME="tex2html310"
+  HREF="node2.html">SLS Detectors Software</A>
+<B> Previous:</B> <A NAME="tex2html304"
+  HREF="node12.html">Which is the sequence</A>
+ &nbsp; <B>  <A NAME="tex2html312"
+  HREF="node1.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-03-12
+</ADDRESS>
+</BODY>
+</HTML>

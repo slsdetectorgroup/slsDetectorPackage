@@ -1,0 +1,284 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>How is the channel number coverted into angle?</TITLE>
+<META NAME="description" CONTENT="How is the channel number coverted into angle?">
+<META NAME="keywords" CONTENT="slsDetectors-FAQ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectors-FAQ.css">
+
+<LINK REL="next" HREF="node46.html">
+<LINK REL="previous" HREF="node44.html">
+<LINK REL="up" HREF="node44.html">
+<LINK REL="next" HREF="node46.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html728"
+  HREF="node46.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html724"
+  HREF="node44.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html718"
+  HREF="node44.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html726"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html729"
+  HREF="node46.html">How are different positions</A>
+<B> Up:</B> <A NAME="tex2html725"
+  HREF="node44.html">Angular conversion</A>
+<B> Previous:</B> <A NAME="tex2html719"
+  HREF="node44.html">Angular conversion</A>
+ &nbsp; <B>  <A NAME="tex2html727"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00610000000000000000"></A><A NAME="sec:angcal"></A>
+<BR>
+How is the channel number coverted into angle?
+</H1>
+
+<P>
+Mythen II modules are composed by 1280 pixels, each having width p=0.05&nbsp;mm, and numbered with j=0,..,1279. 
+Angles are counted counterclockwise from the beam direction. For the m-th module, the angle <!-- MATH
+ $\alpha_{jm}$
+ -->
+<IMG
+ WIDTH="33" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img41.png"
+ ALT="$ \alpha_{jm}$">
+ of its j-th pixel center 
+can be determined using the three geometric parameters <IMG
+ WIDTH="29" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img42.png"
+ ALT="$ R_m$">
+&nbsp;[mm], <IMG
+ WIDTH="28" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img43.png"
+ ALT="$ \Phi_m$">
+&nbsp;[deg], <IMG
+ WIDTH="30" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img44.png"
+ ALT="$ D_m$">
+&nbsp;[mm], as in Fig.&nbsp;<A HREF="#acon"><IMG  ALIGN="BOTTOM" BORDER="1" ALT="[*]"
+ SRC="file:/usr/share/latex2html/icons/crossref.png"></A>. 
+The detector group uses instead the 3 parameters center <IMG
+ WIDTH="24" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img45.png"
+ ALT="$ c_m$">
+&nbsp;[ ], offset <IMG
+ WIDTH="24" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img46.png"
+ ALT="$ o_m$">
+&nbsp;[deg], conversion <IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img47.png"
+ ALT="$ k_m$">
+&nbsp;[ ]. 
+The law with the 3 geometric parameter is
+<P></P>
+<DIV ALIGN="CENTER"><!-- MATH
+ \begin{equation}
+\alpha_{jm}=\Phi_m-{\ensuremath{\left({{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{180}}}}{{\ensuremath{\displaystyle{\pi}}}}}}}}\right)}}\arctan{\ensuremath{\left({{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{D_m-pj}}}}{{\ensuremath{\displaystyle{R_m}}}}}}}}\right)}}
+\end{equation}
+ -->
+<TABLE CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="CENTER"><IMG
+ WIDTH="285" HEIGHT="54" ALIGN="MIDDLE" BORDER="0"
+ SRC="img48.png"
+ ALT="$\displaystyle \alpha_{jm}=\Phi_m-{\ensuremath{\left({{\ensuremath{\displaystyle...
+...remath{\displaystyle{D_m-pj}}}}{{\ensuremath{\displaystyle{R_m}}}}}}}}\right)}}$"></TD>
+<TD NOWRAP WIDTH="10" ALIGN="RIGHT">
+(5.1)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL"><P></P>
+The corresponding law using DG's parameters is
+<P></P>
+<DIV ALIGN="CENTER"><!-- MATH
+ \begin{equation}
+\alpha_{jm}=o_m+{\ensuremath{\left({{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{180}}}}{{\ensuremath{\displaystyle{\pi}}}}}}}}\right)}}c_mk_m+{\ensuremath{\left({{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{180}}}}{{\ensuremath{\displaystyle{\pi}}}}}}}}\right)}}\arctan{\ensuremath{\left[{{\ensuremath{\left({j-c_m}\right)}}k_m}\right]}}
+\end{equation}
+ -->
+<TABLE CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="CENTER"><IMG
+ WIDTH="391" HEIGHT="54" ALIGN="MIDDLE" BORDER="0"
+ SRC="img49.png"
+ ALT="$\displaystyle \alpha_{jm}=o_m+{\ensuremath{\left({{\ensuremath{\displaystyle{\f...
+...t)}}\arctan{\ensuremath{\left[{{\ensuremath{\left({j-c_m}\right)}}k_m}\right]}}$"></TD>
+<TD NOWRAP WIDTH="10" ALIGN="RIGHT">
+(5.2)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL"><P></P>
+One can convert the two forms by equating separately the term out of the arctan and the argument of arctan for two different values of j. 
+It results
+<BR>
+<DIV ALIGN="CENTER">
+<!-- MATH
+ \begin{eqnarray}
+c_m&=&{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{D_m}}}}{{\ensuremath{\displaystyle{p}}}}}}};\\
+k_m&=&{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{p}}}}{{\ensuremath{\displaystyle{R_m}}}}}}};\\
+o_m&=&\Phi_m-{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{180}}}}{{\ensuremath{\displaystyle{\pi}}}}}}}{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{D_m}}}}{{\ensuremath{\displaystyle{R_m}}}}}}}.
+\end{eqnarray}
+ -->
+<TABLE CELLPADDING="0" ALIGN="CENTER" WIDTH="100%">
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="24" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img50.png"
+ ALT="$\displaystyle c_m$"></TD>
+<TD WIDTH="10" ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="17" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img51.png"
+ ALT="$\displaystyle =$"></TD>
+<TD ALIGN="LEFT" NOWRAP><IMG
+ WIDTH="38" HEIGHT="53" ALIGN="MIDDLE" BORDER="0"
+ SRC="img52.png"
+ ALT="$\displaystyle {\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{D_m}}}}{{\ensuremath{\displaystyle{p}}}}}}};$"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(5.3)</TD></TR>
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img53.png"
+ ALT="$\displaystyle k_m$"></TD>
+<TD WIDTH="10" ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="17" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img51.png"
+ ALT="$\displaystyle =$"></TD>
+<TD ALIGN="LEFT" NOWRAP><IMG
+ WIDTH="37" HEIGHT="45" ALIGN="MIDDLE" BORDER="0"
+ SRC="img54.png"
+ ALT="$\displaystyle {\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{p}}}}{{\ensuremath{\displaystyle{R_m}}}}}}};$"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(5.4)</TD></TR>
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="24" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img55.png"
+ ALT="$\displaystyle o_m$"></TD>
+<TD WIDTH="10" ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="17" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img51.png"
+ ALT="$\displaystyle =$"></TD>
+<TD ALIGN="LEFT" NOWRAP><IMG
+ WIDTH="109" HEIGHT="53" ALIGN="MIDDLE" BORDER="0"
+ SRC="img56.png"
+ ALT="$\displaystyle \Phi_m-{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyl...
+...\frac{{\ensuremath{\displaystyle{D_m}}}}{{\ensuremath{\displaystyle{R_m}}}}}}}.$"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(5.5)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL">
+
+Conversely,
+<BR>
+<DIV ALIGN="CENTER">
+<!-- MATH
+ \begin{eqnarray}
+\Phi_m&=&o_m+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{180}}}}{{\ensuremath{\displaystyle{\pi}}}}}}}c_mk_m;\\
+R_m&=&{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{p}}}}{{\ensuremath{\displaystyle{k_m}}}}}}};\\
+D_m&=&c_m p.
+\end{eqnarray}
+ -->
+<TABLE CELLPADDING="0" ALIGN="CENTER" WIDTH="100%">
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="28" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img57.png"
+ ALT="$\displaystyle \Phi_m$"></TD>
+<TD WIDTH="10" ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="17" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img51.png"
+ ALT="$\displaystyle =$"></TD>
+<TD ALIGN="LEFT" NOWRAP><IMG
+ WIDTH="115" HEIGHT="50" ALIGN="MIDDLE" BORDER="0"
+ SRC="img58.png"
+ ALT="$\displaystyle o_m+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{180}}}}{{\ensuremath{\displaystyle{\pi}}}}}}}c_mk_m;$"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(5.6)</TD></TR>
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="29" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img59.png"
+ ALT="$\displaystyle R_m$"></TD>
+<TD WIDTH="10" ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="17" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img51.png"
+ ALT="$\displaystyle =$"></TD>
+<TD ALIGN="LEFT" NOWRAP><IMG
+ WIDTH="33" HEIGHT="45" ALIGN="MIDDLE" BORDER="0"
+ SRC="img60.png"
+ ALT="$\displaystyle {\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{p}}}}{{\ensuremath{\displaystyle{k_m}}}}}}};$"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(5.7)</TD></TR>
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="30" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img61.png"
+ ALT="$\displaystyle D_m$"></TD>
+<TD WIDTH="10" ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="17" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img51.png"
+ ALT="$\displaystyle =$"></TD>
+<TD ALIGN="LEFT" NOWRAP><IMG
+ WIDTH="36" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img62.png"
+ ALT="$\displaystyle c_m p.$"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(5.8)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL">
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html728"
+  HREF="node46.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html724"
+  HREF="node44.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html718"
+  HREF="node44.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html726"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html729"
+  HREF="node46.html">How are different positions</A>
+<B> Up:</B> <A NAME="tex2html725"
+  HREF="node44.html">Angular conversion</A>
+<B> Previous:</B> <A NAME="tex2html719"
+  HREF="node44.html">Angular conversion</A>
+ &nbsp; <B>  <A NAME="tex2html727"
+  HREF="node1.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-03-12
+</ADDRESS>
+</BODY>
+</HTML>

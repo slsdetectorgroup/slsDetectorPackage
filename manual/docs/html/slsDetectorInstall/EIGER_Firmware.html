@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>EIGER Firmware</TITLE>
+<META NAME="description" CONTENT="EIGER Firmware">
+<META NAME="keywords" CONTENT="slsDetectorInstall">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectorInstall.css">
+
+</HEAD>
+
+<BODY >
+
+<H3><A NAME="SECTION00053100000000000000">
+EIGER Firmware</A>
+</H3>
+<I>For SLS Detector Package v3.1.0</I> 
+<BR>
+Minimum compatible version:  16 
+<BR>
+Latest version:	20  
+<BR>
+<P>
+
+<OL>
+<LI>One must get the latest package's corresponding bit files from the SLS
+Detector Group.
+</LI>
+<LI>If one does not have the bcp script, that should also be obtained from
+the SLS Detector Group. It is required to program the bit files and requires
+that tftp be installed on the pc.
+</LI>
+<LI>Run the following to update firmware
+<PRE>
+ #update back end fpga
+bcp download.bit bebxxx:/fw0
+
+ #update front left fpga
+bcp download.bit bebxxx:/febl
+
+ #update front right fpga
+bcp download.bit bebxxx:/febr
+
+ #update kernel
+bcp download.bit bebxxx:/kernel
+</PRE>
+Please update bit files with great caution as it could make your board
+inaccessible, if done incorrectly.
+</LI>
+</OL>
+
+<P>
+<BR><HR>
+
+</BODY>
+</HTML>

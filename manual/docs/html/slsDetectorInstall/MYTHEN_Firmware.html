@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>MYTHEN Firmware</TITLE>
+<META NAME="description" CONTENT="MYTHEN Firmware">
+<META NAME="keywords" CONTENT="slsDetectorInstall">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectorInstall.css">
+
+</HEAD>
+
+<BODY >
+
+<H3><A NAME="SECTION00051100000000000000">
+MYTHEN Firmware</A>
+</H3>
+
+<P>
+To upgrade the firmware you need either a working version of the Altera
+Quartus software or of the Quartus programmer, which can easily be downloaded
+from: 
+<BR><TT><A NAME="tex2html4"
+  HREF="https://www.altera.com/download/programming/quartus2/pq2-index.jsp">https://www.altera.com/download/programming/quartus2/pq2-index.jsp</A></TT>
+<P>
+<BR>
+
+<P>
+Normally, installation of the software and of the driver for the
+USB-Blaster (provided together with the MYTHEN detector) are simpler under
+Windows. 
+
+<P>
+Under Windows, the first time that you connect the USB-Blaster to one
+of your USB ports, you will be asked to install new hardware. Set the path to
+search for the driver to:
+<code>C:\altera\80sp1\qprogrammer\drivers\usb-blasterp</code> (where 
+<code>C:\altera\80sp1\qprogrammer\</code> is assumed to be ther path where your
+Quartus version is installed).
+
+<OL>
+<LI>After starting the Quartus programmer, click on Hardware Setup and in the
+"Currently selected hardware" window select USB-Blaster.
+</LI>
+<LI>In the Mode combo box select "Active Serial Programming".
+</LI>
+<LI>Plug the end of your USB-Blaster WITH THE ADAPTER PROVIDED in the
+connector ASMI on the MCS board taking care that pin1 corresponds to the one
+indexed and with the rectangualr pad.
+</LI>
+<LI>Click on add file and from select the programming file provided when
+the upgrade has been reccomended.
+</LI>
+<LI>Check "Program/Configure" and "Verify".
+</LI>
+<LI>Push the start button and wait until the programming process is
+finished (progress bar top left).
+</LI>
+<LI>In case the programmer gives you error messages, check the polarity of
+your cable (pin1 corresponds) and that you have selected the correct programming
+connector.
+</LI>
+</OL>
+
+<P>
+<BR><HR>
+
+</BODY>
+</HTML>

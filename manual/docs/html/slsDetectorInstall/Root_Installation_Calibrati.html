@@ -1,0 +1,63 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Root Installation for Calibration Wizards</TITLE>
+<META NAME="description" CONTENT="Root Installation for Calibration Wizards">
+<META NAME="keywords" CONTENT="slsDetectorInstall">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectorInstall.css">
+
+</HEAD>
+
+<BODY >
+
+<H3><A NAME="SECTION00042300000000000000">
+Root Installation for Calibration Wizards</A>
+</H3>
+The software has been developed and tested with root 5.20, but any version
+should work. One can download it from:
+<PRE>
+&gt; svn co https://root.cern.ch/svn/root/trunk root
+</PRE>
+
+<P>
+To install:
+<PRE>
+&gt; cd root
+&gt; ./configure --enable-qt
+&gt; make
+&gt; make install
+</PRE>
+
+<P>
+Edit your .bashrc to define the ROOTSYS enviroment variable and annd
+the libraries and executables to the <code>LD_LIBRARY_PATH</code> and <code>PATH</code>:
+<PRE>
+export ROOTSYS=/usr/local/root-5.34
+export PATH=$ROOTSYS/bin:$PATH
+export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
+</PRE>
+
+<P>
+You can also download the binaries, assuming that your linux and gcc versions
+match as in:
+<PRE>
+http://root.cern.ch/drupal/content/production-version-534
+</PRE>
+
+<P>
+<BR><HR>
+
+</BODY>
+</HTML>

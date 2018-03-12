@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>MYTHEN On-board Software</TITLE>
+<META NAME="description" CONTENT="MYTHEN On-board Software">
+<META NAME="keywords" CONTENT="slsDetectorInstall">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectorInstall.css">
+
+</HEAD>
+
+<BODY >
+
+<H3><A NAME="SECTION00051200000000000000">
+MYTHEN On-board Software</A>
+</H3>
+
+<OL>
+<LI>Connect to the board using telnet:
+<PRE>
+telnet  mymcs.mydomain.com
+username: root
+password: pass
+</PRE>
+</LI>
+<LI>Kill currently running servers and ensure <code>/mnt/flash/root</code> exists.
+<PRE>
+killall mythenDetectorServer
+ls /mnt/flash/root
+#if the directory does not exist mkdir /mnt/flash/root
+</PRE>
+</LI>
+<LI>Transfer the provided software by ftp to the MCS.
+<PRE>
+ftp  mymcs.mydomain.com
+username: root
+password: pass
+cd /mnt/flash/root
+put mythenDetectorServer
+quit
+</PRE>
+
+<P>
+</LI>
+<LI>After pressing reset on the board, the board should reboot.
+
+<P>
+</LI>
+<LI>If the program does not correctly start
+ 
+<OL>
+<LI>Check by using the http interface that it is started by the inittab
+(check that the file <code>/mnt/etc/inittab</code> ends with the line 
+<BR><code>myid2:3:once:/mnt/flash/root/mythenDetectorServer</code>).  
+</LI>
+<LI>If program has not started, make the program executable by telnetting to
+the MCS and executing: 
+<BR><code>chmod a+xrw  /mnt/flash/root/mythenDetectorServer</code>
+</LI>
+<LI>After pressing reset on the board, the board should reboot and the
+acqusition program correctly start.
+ 
+</LI>
+</OL>
+</LI>
+</OL>
+
+<P>
+<BR><HR>
+
+</BODY>
+</HTML>

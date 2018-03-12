@@ -9,7 +9,7 @@ This document describes the differences between 3.1.0 and 3.0.0 releases.
 
 The conda package of the binaries can be downloaded from
 	
-	https://github.com/erikfrojdh/sls_detector_software.git
+	https://github.com/slsdetectorgroup/sls_detector_software.git
 	
 The conda package of the python API wrap-around to the software package is at 
 	

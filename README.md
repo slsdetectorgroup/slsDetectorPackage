@@ -1,3 +1,6 @@
+### Documentation
+Detailed documentation can be found on the [official site.](https://www.psi.ch/detectors/users-support)
+
 ### Binaries
 Documentation to obtain the binaries via the conda package is available [here.](https://github.com/slsdetectorgroup/sls_detector_software)
 

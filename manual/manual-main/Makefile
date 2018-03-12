@@ -12,6 +12,7 @@ TEXS=slsDetector-softFAQ.tex singlePhotonCounting-FAQ.tex angConv-FAQ.tex genera
 DVIS = $(MAINTEXS:.tex=.dvi)
 PSS = $(MAINTEXS:.tex=.ps)
 PDFS = $(MAINTEXS:.tex=.pdf)
+PDFS2 = $(MAINTEXS2:.tex=.pdf)
 HTMLS = $(MAINTEXS:%.tex=%)
 HTMLS2 = $(MAINTEXS2:%.tex=%)
 
@@ -20,13 +21,15 @@ HTMLS2 = $(MAINTEXS2:%.tex=%)
 all: pdf html
 	echo $(PWD)
 	echo $(PDFS)
+	echo $(PDFS2)
 	echo $(HTMLS)
 	echo $(HTMLS2)
 
-pdf: $(PDFS)
+pdf: $(PDFS) $(PDFS2)
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
 	$(shell test -d $(DESTDIR)/pdf || mkdir -p $(DESTDIR)/pdf)
-	mv $(PDFS) $(DESTDIR)/pdf	
+	mv $(PDFS) $(DESTDIR)/pdf
+	mv $(PDFS2) $(DESTDIR)/pdf	
 
 html: $(HTMLS) $(HTMLS2)
 
@@ -65,7 +68,7 @@ $(HTMLS2): $(MAINTEXS2)
 
 
 clean:
-	rm -rf *.aux *.log *.toc *.out $(DVIS) $(PSS) $(PDFS) $(HTMLS) $(HTMLS2)
+	rm -rf *.aux *.log *.toc *.out $(DVIS) $(PSS) $(PDFS) $(PDFS2) $(HTMLS) $(HTMLS2)
 	rm -rf $(DESTDIR)/html/slsDetectors-FAQ
 	rm -rf $(DESTDIR)/html/slsDetectorInstall
 	rm -rf $(DESTDIR)/pdf/slsDetectors-FAQ.pdf

@@ -28,9 +28,10 @@
 The SLS detectors software is intended to control the detectors developed by
 the SLS Detectors group. The detectors currently supported are:
 
-MYTHEN, GOTTHARD, EIGER and JUNGFRAU.\bigskip
+\indent MYTHEN, GOTTHARD, EIGER and JUNGFRAU.
 
-\noindent The package provides software for the distributed system that comprises of
+
+The package provides software for the distributed system that comprises of
 detectors, data receivers (to process detector data), and the client (to control
 or monitor the system). The client and data receivers can be embedded in
 the user's acquisitions system. Furthermore, the package also provides some
@@ -78,18 +79,28 @@ However, only control commands work, not the data acquisition itself.
 \section{Install Binaries via Conda}
 This section is useful only if one wants to download only the binaries for
 specific distribution and use the package via command line. Please refer later
-sections to download source code and compile them.\bigskip
+sections to download source code and compile them.
 
-\noindent One can download and install Miniconda via 
 
-\url{https://conda.io/miniconda.html} \bigskip
+One can download and install Miniconda via 
 
-\noindent The conda package uses Travis CI for continuous integration with
+\url{https://conda.io/miniconda.html}
+
+
+The conda package uses Travis CI for continuous integration with
 automatic deployment to Anaconda Cloud. One can download only the package or the
-package including the python interface. \bigskip
+package including the python interface.
 
-\noindent After the installation, the binaries will be available in your path.
 
+After the installation, the binaries will be available in your path.
+
+Please remember to clear shared memory after installation.
+\begin{verbatim}
+#displays list of shared memeory segments 
+ipcs -m
+#remove segments that have nattach equal to zero. They key is the first column
+ipcrm -M [key]
+\end{verbatim}
 
 \begin{itemize}
  \item Only the package
@@ -194,9 +205,10 @@ required. One can install it:
  \item via download from:\\
 \url{
 https://download.qt.io/archive/qt/4.8/4.8.2/qt-everywhere-opensource-src-4.8.2.t
-ar.gz} \bigskip
+ar.gz} 
 
-\noindent To install:
+
+To install:
 \begin{verbatim}
 > gunzip qt-everywhere-opensource-src-4.8.2.tar.gz
 > tar xvf qt-everywhere-opensource-src-4.8.2.tar
@@ -207,14 +219,17 @@ ar.gz} \bigskip
 By default Qt4 will be installed in /usr/local/Trolltech/Qt-4.8.2/. 
 \end{itemize}
 
-\noindent \textbf{Setup Environment} 
 
-\noindent One has to ensure that \verb=PATH= and \verb=LD_LIBRARY_PATH= have
+\textbf{Setup Environment} 
+
+
+One has to ensure that \verb=PATH= and \verb=LD_LIBRARY_PATH= have
 been updated to include Qt4 install path, binaries and libraries.
 Confirm by executing \verb=qmake -v= and ensuring the result points to Qt4 (not
-Qt3 or Qt5). \bigskip
+Qt3 or Qt5). 
 
-\noindent If the environment is not set up, one can add the libraries and
+
+If the environment is not set up, one can add the libraries and
 executables to the .bashrc by adding
 \verb=LD_LIBRARY_PATH= and \verb=PATH=:
 \begin{verbatim}
@@ -228,9 +243,10 @@ export LD_LIBRARY_PATH=$QTDIR/lib:$LD_LIBRARY_PATH
 Before installing Qwt, one must install Qt
 and ensure that \verb=QTDIR=, \verb=LD_LIBRARY_PATH= and \verb=PATH= point to
 the correct Qt4
-version. \bigskip
+version.
 
-\noindent A Qwt version equal or higher than 6 is required. One can
+
+A Qwt version equal or higher than 6 is required. One can
 install it:
 \begin{itemize}
  \item via YUM:
@@ -240,9 +256,9 @@ install it:
  \item via download from:\\
 \url{
 https://sourceforge.net/projects/qwt/files/qwt/6.0.0/qwt-6.0.0.zip/download}
-\bigskip
 
-\noindent To install:
+
+To install:
 \begin{verbatim}
 > cd qwt-6.0.0
 > qmake
@@ -252,12 +268,14 @@ https://sourceforge.net/projects/qwt/files/qwt/6.0.0/qwt-6.0.0.zip/download}
 By default Qwt will be installed int /usr/local/qwt-6.0.0 
 \end{itemize}
 
-\noindent \textbf{Setup Environment} 
+\textbf{Setup Environment} 
 
-\noindent One has to ensure that \verb=QWTDIR= and \verb=LD_LIBRARY_PATH= have
-been updated to include Qwt install path and libraries. \bigskip
 
-\noindent If the environment is not set up, one can add the libraries to the
+One has to ensure that \verb=QWTDIR= and \verb=LD_LIBRARY_PATH= have
+been updated to include Qwt install path and libraries.
+
+
+If the environment is not set up, one can add the libraries to the
 .bashrc by adding \verb=LD_LIBRARY_PATH=:
 \begin{verbatim}
 export QWTDIR=/usr/local/qwt-6.0.0/
@@ -324,6 +342,8 @@ Usage: [-c] [-b] [-h] [-d HDF5 directory] [-j]
 
 Some example options for compilation:
 
+Most basic option: \verb=./cmk.sh -b=
+
 For only make: \verb=./cmk.sh=
 
 For make clean;make: \verb=./cmk.sh -c=
@@ -367,10 +387,69 @@ sls_detector_help sls_detector_put  slsReceiver
 
 
 
+
+\subsection{Setting environment variables}
+One can set up the environment variables in the following ways.
+
+\subsubsection{Using .bashrc file}
+\begin{enumerate}
+ \item \verb=emacs ~/.bashrc=
+ \item Add the following function \verb=setup_slsdet= and replace \verb=path=
+with absolute path of installed directory
+\begin{verbatim}
+function setup_slsdet
+{ 
+export PKGPATH=[path]
+export LD_LIBRARY_PATH=$PKGPATH/slsDetectorPackage/build/bin:$LD_LIBRARY_PATH
+export PATH=$PKGPATH/slsDetectorPackage/build/bin:$PATH
+cd $PKGPATH/slsDetectorPackage/build/bin
+} 
+\end{verbatim}
+  \item \verb=source ~/.bashrc=
+  \item Next time, just run \verb=setup_slsdet= to load the environment
+variables.
+\end{enumerate}
+
+
+One can also add the GUI environment variables if installed locally by adding
+the following in the function \verb=setup_sldet= \\
+\begin{verbatim}
+export QTDIR=/path-where-it-is/Qt-4.8.2
+export QWTDIR=/path-where-it-is/qwt-6.0.1
+export QWT3D=/path-where-it-is/qwtplot3d
+export QMAKESPEC=$QTDIR/mkspecs/linux-g++
+export LD_LIBRARY_PATH=$QTDIR/lib:$QWTDIR/lib:$QWT3D/lib:$LD_LIBRARY _PATH
+export PATH=$QTDIR/bin:$PATH
+\end{verbatim}
+
+\subsubsection{Without .bashrc file}
+Go to binaries folder slsDetectorPackage/build/bin and execute the following:
+\begin{verbatim}
+export LD_LIBRARY_PATH=$PWD:$LD_LIBRARY_PATH
+export PATH=$PWD:$PATH
+\end{verbatim}
+
+
+\subsection{Clean Shared Memory}
+It is very crucial to clean the shared memory, before using a new version of
+the SLS Detector Package or a different detector type.
+
+One can use the \verb=cleansharedmemory.sh= script available under the
+slsDetector Package.
+
+One can also just use the following commands to clean the shared memory
+segments one by one.
+\begin{verbatim}
+#displays list of shared memeory segments 
+ipcs -m
+#remove segments that have nattach equal to zero. They key is the first column
+ipcrm -M [key]
+\end{verbatim}
+
 \section{Software Upgrade}
 
 The upgrade of the package could require an upgrade of the on-board detector
-server and/or firmware running on the detector as well. 
+server and/or firmware running on the detector as well.
 
 
 \subsection{MYTHEN}
@@ -379,7 +458,7 @@ themselves (which would require dedicated softwares) but only to download on the
 detector board the programming files and/or software package provided by
 the SLS Detectors group.
 
-\subsubsection{Firmware}
+\subsubsection{MYTHEN Firmware}
 
 To upgrade the firmware you need either a working version of the Altera
 Quartus software or of the Quartus programmer, which can easily be downloaded
@@ -389,9 +468,10 @@ from: \\
 
 \noindent Normally, installation of the software and of the driver for the
 USB-Blaster (provided together with the MYTHEN detector) are simpler under
-Windows. \bigskip
+Windows. 
 
-\noindent Under Windows, the first time that you connect the USB-Blaster to one
+
+Under Windows, the first time that you connect the USB-Blaster to one
 of your USB ports, you will be asked to install new hardware. Set the path to
 search for the driver to:
 \verb=C:\altera\80sp1\qprogrammer\drivers\usb-blasterp= (where 
@@ -414,7 +494,7 @@ your cable (pin1 corresponds) and that you have selected the correct programming
 connector.
 \end{enumerate}
 
-\subsubsection{On-board Software}
+\subsubsection{MYTHEN On-board Software}
 \begin{enumerate}
  \item Connect to the board using telnet:
 \begin{verbatim}
@@ -452,6 +532,297 @@ the MCS and executing: \\
 acqusition program correctly start.
  \end{enumerate}
 \end{enumerate}
+
+
+
+
+\subsection{GOTTHARD}
+
+In such cases, the users are not expected to compile the software
+themselves (which would require dedicated softwares) but only to download on the
+detector board the programming files and/or software package provided by
+the SLS Detectors group.
+
+\subsubsection{GOTTHARD Firmware}
+\textit{For SLS Detector Package v3.1.0} \\
+\indent Minimum compatible version: \\
+\indent \indent 11.01.2013 \\
+\indent Latest version:	\\
+\indent \indent 08.02.2018 (50um and 25um Master) \\
+\indent \indent 09.02.2018 (25 um Slave) \\
+
+
+Normally, the firmware will be upgraded by us as it requires programming the
+FPGA via the USB-Blaster.
+
+
+To upgrade the firmware you need either a working version of the Altera
+Quartus software or of the Quartus programmer, which can easily be downloaded
+from: \\
+\url{https://www.altera.com/download/programming/quartus2/pq2-index.jsp}
+
+
+Normally, installation of the software and of the driver for the
+USB-Blaster (provided together with the MYTHEN detector) are simpler under
+Windows.
+
+
+Under Windows, the first time that you connect the USB-Blaster to one
+of your USB ports, you will be asked to install new hardware. Set the path to
+search for the driver to:
+\verb=C:\altera\80sp1\qprogrammer\drivers\usb-blasterp= (where 
+\verb=C:\altera\80sp1\qprogrammer\= is assumed to be ther path where your
+Quartus version is installed).
+\begin{enumerate}
+\item After starting the Quartus programmer, click on Hardware Setup and in the
+"Currently selected hardware" window select USB-Blaster.
+\item In the Mode combo box select "Active Serial Programming".
+\item Plug the end of your USB-Blaster WITH THE ADAPTER PROVIDED in the
+connector ASMI on the MCS board taking care that pin1 corresponds to the one
+indexed and with the rectangualr pad.
+\item Click on add file and from select the programming file provided when
+the upgrade has been reccomended.
+\item Check "Program/Configure" and "Verify".
+\item Push the start button and wait until the programming process is
+finished (progress bar top left).
+\item In case the programmer gives you error messages, check the polarity of
+your cable (pin1 corresponds) and that you have selected the correct programming
+connector.
+\end{enumerate}
+
+\subsubsection{GOTTHARD On-board Software}
+Every SLS Detector package release will have its coresponding matching on-board
+server under \textbf{slsDetectorPackage/serverBin}.
+
+\begin{enumerate}
+  \item Install tftp if the pc does not have it.
+  \item Copy the server from serverBin folder to /tftpboot (or equivalent tftp
+folder) of the pc
+  \item Copy the server to the detector by:
+  \begin{enumerate}
+    \item Connect to the blackfin on the detector\\ 
+\verb=telnet bchipxxx=
+    \item Prevent existing on-board server from respawning by:
+    \begin{enumerate}
+      \item Edit \verb=/etc/inittab= 
+      \item Comment out the line
+\verb=#ttyS0::respawn:/gotthardDetectorServervxxx= 
+      \item Reboot blackfin using \verb=reboot=
+      \item Run \verb=ps= to ensure no gotthardDetectorServers are running
+    \end{enumerate}
+    \item Copy new on-board server from pc to the blackfin using: \\
+\verb=tftp pcxxx -r gotthardDetectorServerxxx -g= 
+    \item Respawn the new server (server starts at detector statup): 
+    \begin{enumerate}
+      \item Edit \verb=/etc/inittab= 
+      \item Uncomment out the line
+\verb=ttyS0::respawn:/gotthardDetectorServervxxx= 
+      \item Reboot blackfin using \verb=reboot=
+      \item Run \verb=ps= to ensure that both the gotthardDetectorServers are
+running.\\
+\verb=gotthardDetectorServerxxx= \\
+\verb=gotthardDetectorServerxxx 1953=
+    \end{enumerate}
+  \end{enumerate}
+\end{enumerate}
+
+
+
+\subsection{EIGER}
+
+In such cases, the users are not expected to compile the software
+themselves (which would require dedicated softwares) but only to download on the
+detector board the programming files and/or software package provided by
+the SLS Detectors group.
+
+\subsubsection{EIGER Firmware}
+\textit{For SLS Detector Package v3.1.0} \\
+\indent Minimum compatible version:  16 \\
+\indent Latest version:	20  \\
+
+
+\begin{enumerate}
+  \item One must get the latest package's corresponding bit files from the SLS
+Detector Group.
+  \item If one does not have the bcp script, that should also be obtained from
+the SLS Detector Group. It is required to program the bit files and requires
+that tftp be installed on the pc.
+  \item Run the following to update firmware
+\begin{verbatim}
+ #update back end fpga
+bcp download.bit bebxxx:/fw0
+
+ #update front left fpga
+bcp download.bit bebxxx:/febl
+
+ #update front right fpga
+bcp download.bit bebxxx:/febr
+
+ #update kernel
+bcp download.bit bebxxx:/kernel
+\end{verbatim}
+Please update bit files with great caution as it could make your board
+inaccessible, if done incorrectly.
+\end{enumerate}
+
+
+
+\subsubsection{EIGER On-board Software}
+Every SLS Detector package release will have its coresponding matching on-board
+server under \textbf{slsDetectorPackage/serverBin}.
+
+
+Update the on-board software without connecting to the detector
+\begin{verbatim}
+#password for the boards: root
+
+#Kill existing servers that are running on the detector
+ssh root@beb031 killall eigerDetectorServer;
+
+#Copy on-board server to detector inside executables folder
+scp ~/path-where-it-is/eigerDetectorServerxxx root@bebxxx:~/executables;
+
+#Overwrite the actual eigerDetectorServer on board
+scp ~/path-where-it-is/eigerDetectorServerxxx
+root@bebxxx:~/executables/eigerDetectorServer;
+
+#sync
+ssh root@bebxxx sync; 
+
+#reboot the eiger board
+\end{verbatim}
+
+
+\bigskip One can connect to the detector by:
+\begin{verbatim}
+ssh root@bebxxx
+password: root
+\end{verbatim}
+
+
+The on-board server is in ~/executables folder and respawned at startup in \\
+\verb=/etc/rc5.d/S50board_com.sh= 
+
+
+
+
+
+\subsection{JUNGFRAU}
+
+In such cases, the users are not expected to compile the software
+themselves (which would require dedicated softwares) but only to download on the
+detector board the programming files and/or software package provided by
+the SLS Detectors group.
+
+\subsubsection{JUNGFRAU Firmware}
+\textit{For SLS Detector Package v3.1.0} \\
+\indent Minimum compatible version: 13.11.2017 \\
+\indent Latest version: 13.11.2017 \\
+
+
+At times, one has to update the firmware, which then also requires updating the
+on-board software. 
+
+
+\textbf{\textit{Jungfrau firmware can be upgraded via the SLS Detector Package
+binaries from the command line.}}
+
+\begin{enumerate}
+  \item One must get the latest package's corresponding POF file from the SLS
+Detector Group.
+  \item Update the latest SLS Detector package installed.
+  \item Update the on-board software as per the instructions in the next
+section.
+  \item Start the on-board server in debug mode:
+  \begin{enumerate}
+    \item Connect to the blackfin on the detector\\ 
+\verb=telnet bchipxxx=
+    \item Prevent existing on-board server from respawning by:
+    \begin{enumerate}
+      \item Edit \verb=/etc/inittab= 
+      \item Comment out the line
+\verb=#ttyS0::respawn:/jungfrauDetectorServervxxx= 
+      \item Reboot blackfin using \verb=reboot=
+      \item Run \verb=ps= to ensure no gotthardDetectorServers are running
+    \end{enumerate}
+    \item Start the server in debug mode using: \\
+\verb=./jungfrauDetectorServerxxx -debug= \\
+    Leave this console on to come back to it later.
+  \end{enumerate}
+  \item From the command line of the pc, clear shared memory \\
+\verb=./sls_detector_get free= \\
+  If one gets shmget error, please clean the shared memory properly using the
+script in \verb=slsDetectorPackage/cleansharedmemory.sh=
+  \item Add the detector to shared memory using \\
+\verb=./sls_detector_put hostname bchipxxx=
+  \item Program the FPGA using \\
+\verb=./sls_detector_put programfpga xxx.pof= 
+  \item Once the programming is done:
+  \begin{enumerate}
+    \item Switch to the console that has the debug server running and kill it
+using Ctrl+C and ensure no jungfrauDetectorServers are
+running
+    \item Restart the new server to see if it runs with the new firmware \\
+\verb=./jungfrauDetectorServerxxx= \\
+If the server didn't start properly, please contact us with the error message
+shown when starting the server up, else continue with the following steps.
+    \item Respawn the new server (server starts at detector statup): 
+    \begin{enumerate}
+      \item Edit \verb=/etc/inittab= 
+      \item Uncomment out the line
+\verb=ttyS0::respawn:/jungfrauDetectorServervxxx= 
+      \item Reboot blackfin using \verb=reboot=
+      \item Run \verb=ps= to ensure that both the gotthardDetectorServers are
+running.\\
+\verb=jungfrauDetectorServervxxx= \\
+\verb=jungfrauDetectorServervxxx 1953=
+    \end{enumerate}
+  \end{enumerate}
+
+\end{enumerate}
+
+
+
+\subsubsection{JUNGFRAU On-board Software}
+Every SLS Detector package release will have its coresponding matching on-board
+server under \textbf{slsDetectorPackage/serverBin}.
+
+
+\begin{enumerate}
+  \item Install tftp if the pc does not have it.
+  \item Copy the server from serverBin folder to /tftpboot (or equivalent tftp
+folder) of the pc
+  \item Copy the server to the detector by:
+  \begin{enumerate}
+    \item Connect to the blackfin on the detector\\ 
+\verb=telnet bchipxxx=
+    \item Prevent existing on-board server from respawning by:
+    \begin{enumerate}
+      \item Edit \verb=/etc/inittab= 
+      \item Comment out the line
+\verb=#ttyS0::respawn:/jungfrauDetectorServervxxx= 
+      \item Reboot blackfin using \verb=reboot=
+      \item Run \verb=ps= to ensure no gotthardDetectorServers are running
+    \end{enumerate}
+    \item Copy new on-board server from pc to the blackfin using: \\
+\verb=tftp pcxxx -r jungfrauDetectorServervxxx -g= 
+    \item Respawn the new server (server starts at detector statup): 
+    \begin{enumerate}
+      \item Edit \verb=/etc/inittab= 
+      \item Uncomment out the line
+\verb=ttyS0::respawn:/jungfrauDetectorServervxxx= 
+      \item Reboot blackfin using \verb=reboot=
+      \item Run \verb=ps= to ensure that both the gotthardDetectorServers are
+running.\\
+\verb=jungfrauDetectorServervxxx= \\
+\verb=jungfrauDetectorServervxxx 1953=
+    \end{enumerate}
+  \end{enumerate}
+\end{enumerate}
+
+
+
+
 
 
 \begin{comment}

@@ -1,4 +1,4 @@
-SLS Detector Package 3.1.0 released on 2018-03-08
+SLS Detector Package 3.1.0 released on 2018-03-12
 =================================================
 
 
@@ -63,32 +63,32 @@ CONTENTS
 Firmware Requirements
 =====================
 
-Please refer to the link below for more details on the firmware versions.
-	https://www.psi.ch/detectors/firmware.
+	Please refer to the link below for more details on the firmware versions.
+		https://www.psi.ch/detectors/firmware.
 
-	Gotthard
-	========   
-    Minimum compatible version  : 11.01.2013
-    Latest version              : 08.02.2018 (50um and 25um Master)
-                                  09.02.2018 (25 um Slave) 
+    	Gotthard
+    	========   
+    	Minimum compatible version  : 11.01.2013
+    	Latest version              : 08.02.2018 (50um and 25um Master)
+                                      09.02.2018 (25 um Slave) 
 
    	-Can not be upgraded remotely.
     
     
-    Eiger
-	=====  
-    Minimum compatible version  : 16
-    Latest version              : 21
+    	Eiger
+    	=====  
+    	Minimum compatible version  : 16
+    	Latest version              : 20
         
-    -Can be upgraded remotely via bit files.
+    	-Can be upgraded remotely via bit files.
     
         
-    Jungfrau
-    ========       
-    Minimum compatible version  : 13.11.2017
-    Latest version              : 13.11.2017
+    	Jungfrau
+    	========       
+    	Minimum compatible version  : 13.11.2017
+    	Latest version              : 13.11.2017
 
-    -Can be upgraded remotely via sls_detector_put programfpga <pof>.
+    	-Can be upgraded remotely via sls_detector_put programfpga <pof>.
 	 
 
 

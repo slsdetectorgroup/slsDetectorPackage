@@ -1650,7 +1650,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 	/* temperature control */
     /*! \page settings
-        \section settingsadcs Temp Control
+        \section settingstmp Temp Control
   commands to monitor and handle temperature overshoot (only JUNGFRAU)
      */
 
@@ -5829,6 +5829,9 @@ string slsDetectorCommand::cmdSpeed(int narg, char *args[], int action) {
 			return string("cannot scan speed value ")+string(args[1]);
 
 	}
+	// -1 could work
+	else if (cmd=="adcphase")
+	    t = 65536;
 
 	myDet->setOnline(ONLINE_FLAG);
 

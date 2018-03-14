@@ -26,6 +26,17 @@ int32_t clkPhase[2] = {0, 0};
 /* basic tests */
 
 void checkFirmwareCompatibility(int flag) {
+#ifdef VIRTUAL
+    cprintf(BLUE,"\n\n"
+            "********************************************************\n"
+            "************** Jungfrau Virtual Server *****************\n"
+            "********************************************************\n\n");
+    if (mapCSP0() == FAIL) {
+        cprintf(BG_RED, "Dangerous to continue. Goodbye!\n");
+        exit(EXIT_FAILURE);
+    }
+    return;
+#endif
 
 	defineGPIOpins();
 	resetFPGA();
@@ -104,6 +115,9 @@ void checkFirmwareCompatibility(int flag) {
 
 
 int checkType() {
+#ifdef VIRTUAL
+    return OK;
+#endif
 	volatile u_int32_t type = ((bus_r(FPGA_VERSION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
 	if (type != JUNGFRAU){
 			cprintf(BG_RED,"This is not a Jungfrau Server (read %d, expected %d)\n",type, JUNGFRAU);
@@ -116,6 +130,9 @@ int checkType() {
 
 
 u_int32_t testFpga(void) {
+#ifdef VIRTUAL
+    return OK;
+#endif
 	printf("\nTesting FPGA...\n");
 
 	//fixed pattern
@@ -132,6 +149,9 @@ u_int32_t testFpga(void) {
 
 
 int testBus() {
+#ifdef VIRTUAL
+    return OK;
+#endif
 	printf("\nTesting Bus...\n");
 
 	int ret = OK;
@@ -158,6 +178,9 @@ int moduleTest( enum digitalTestMode arg, int imod){
 }
 
 int detectorTest( enum digitalTestMode arg){
+#ifdef VIRTUAL
+    return OK;
+#endif
 	switch(arg){
 	case DETECTOR_FIRMWARE_TEST:	return testFpga();
 	case DETECTOR_BUS_TEST: 		return testBus();
@@ -194,26 +217,44 @@ int64_t getDetectorId(enum idMode arg){
 }
 
 u_int64_t getFirmwareVersion() {
+#ifdef VIRTUAL
+    return 0;
+#endif
 	return ((bus_r(FPGA_VERSION_REG) & BOARD_REVISION_MSK) >> BOARD_REVISION_OFST);
 }
 
 u_int64_t getFirmwareAPIVersion() {
+#ifdef VIRTUAL
+    return 0;
+#endif
     return ((bus_r(API_VERSION_REG) & API_VERSION_MSK) >> API_VERSION_OFST);
 }
 
 u_int16_t getHardwareVersionNumber() {
+#ifdef VIRTUAL
+    return 0;
+#endif
 	return ((bus_r(MOD_SERIAL_NUM_REG) & HARDWARE_VERSION_NUM_MSK) >> HARDWARE_VERSION_NUM_OFST);
 }
 
 u_int16_t getHardwareSerialNumber() {
+#ifdef VIRTUAL
+    return 0;
+#endif
 	return ((bus_r(MOD_SERIAL_NUM_REG) & HARDWARE_SERIAL_NUM_MSK) >> HARDWARE_SERIAL_NUM_OFST);
 }
 
 u_int32_t getDetectorNumber(){
+#ifdef VIRTUAL
+    return 0;
+#endif
 	return bus_r(MOD_SERIAL_NUM_REG);
 }
 
 u_int64_t  getDetectorMAC() {
+#ifdef VIRTUAL
+    return 0;
+#endif
 	char output[255],mac[255]="";
 	u_int64_t res=0;
 	FILE* sysFile = popen("ifconfig eth0 | grep HWaddr | cut -d \" \" -f 11", "r");
@@ -231,6 +272,9 @@ u_int64_t  getDetectorMAC() {
 }
 
 u_int32_t  getDetectorIP(){
+#ifdef VIRTUAL
+    return 0;
+#endif
 	char temp[50]="";
 	u_int32_t res=0;
 	//execute and get address
@@ -325,9 +369,9 @@ void setupDetector() {
 	resetCore();
 	resetPeripheral();
 	cleanFifos();
-
+#ifndef VIRTUAL
 	prepareADC();
-
+#endif
 	// initialize dac series
 	initDac(0);		/* todo might work without */
 	initDac(8); 	//only for old board compatibility
@@ -344,8 +388,7 @@ void setupDetector() {
 				cprintf(RED, "Warning: Setting dac %d failed, wrote %d, read %d\n",i ,defaultvals[i], retval[0]);
 		}
 	}
-
-	bus_w(DAQ_REG, 0x0);		/* Only once at server startup */
+	bus_w(DAQ_REG, 0x0);         /* Only once at server startup */
 	setSpeed(CLOCK_DIVIDER, HALF_SPEED);
 	cleanFifos();	/* todo might work without */
 	resetCore();	/* todo might work without */
@@ -414,18 +457,27 @@ int autoCompDisable(int on) {
 
 
 void cleanFifos() {
+#ifdef VIRTUAL
+    return;
+#endif
 	printf("\nClearing Acquisition Fifos\n");
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_ACQ_FIFO_CLR_MSK);
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_ACQ_FIFO_CLR_MSK);
 }
 
 void resetCore() {
+#ifdef VIRTUAL
+    return;
+#endif
 	printf("\nResetting Core\n");
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_CORE_RST_MSK);
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_CORE_RST_MSK);
 }
 
 void resetPeripheral() {
+#ifdef VIRTUAL
+    return;
+#endif
 	printf("\nResetting Peripheral\n");
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_PERIPHERAL_RST_MSK);
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_PERIPHERAL_RST_MSK);
@@ -628,6 +680,9 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 
 
 int64_t getTimeLeft(enum timerIndex ind){
+#ifdef VIRTUAL
+    return 0;
+#endif
 	int64_t retval = -1;
 	switch(ind){
 
@@ -810,6 +865,9 @@ enum detectorSettings getSettings(){
 
 
 void initDac(int dacnum) {
+#ifdef VIRTUAL
+    return;
+#endif
 	printf("\nInitializing dac for %d to \n",dacnum);
 
 	u_int32_t codata;
@@ -871,6 +929,9 @@ void setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]){
 	}
 
 	if ( (val >= 0) || (val == -100)) {
+#ifdef VIRTUAL
+	    dacValues[ind] = dacval;
+#else
 		u_int32_t codata;
 		int csdx 		= ind / NDAC + DAC_SERIAL_CS_OUT_OFST; 	// old board (16 dacs),so can be DAC_SERIAL_CS_OUT_OFST or +1
 		int dacchannel 	= ind % NDAC;							// 0-8, dac channel number (also for dacnum 9-15 in old board)
@@ -902,6 +963,7 @@ void setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]){
 		    bus_w (VREF_COMP_MOD_REG, (bus_r(VREF_COMP_MOD_REG) &~ (VREF_COMP_MOD_MSK))   // reset
 		            | ((val << VREF_COMP_MOD_OFST) & VREF_COMP_MOD_MSK));   // or it with value
 		}
+#endif
 	}
 
 	printf("Getting DAC %d : ",ind);
@@ -911,6 +973,9 @@ void setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]){
 
 
 int getADC(enum ADCINDEX ind,  int imod){
+#ifdef VIRTUAL
+    return 0;
+#endif
 	char tempnames[2][40]={"VRs/FPGAs Temperature", "ADCs/ASICs Temperature"};
 	printf("Getting Temperature for %s\n",tempnames[ind]);
 	u_int32_t addr = GET_TEMPERATURE_TMP112_REG;
@@ -936,6 +1001,11 @@ int getADC(enum ADCINDEX ind,  int imod){
 
 
 int setHighVoltage(int val){
+#ifdef VIRTUAL
+    if (val >= 0)
+        highvoltage = val;
+    return highvoltage;
+#endif
 	u_int32_t dacvalue;
 	float alpha		= 0.55;
 	// setting hv
@@ -1029,6 +1099,9 @@ long int calcChecksum(int sourceip, int destip) {
 
 
 int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2, int ival){
+#ifdef VIRTUAL
+    return 0;
+#endif
 	cprintf(BLUE, "\n*** Configuring MAC ***\n");
 	uint32_t sourceport  =  DEFAULT_TX_UDP_PORT;
 
@@ -1137,6 +1210,9 @@ int setDetectorPosition(int pos[]) {
 
 
 void resetPLL() {
+#ifdef VIRTUAL
+    return;
+#endif
 	// reset PLL Reconfiguration and PLL
 	bus_w(PLL_CONTROL_REG, bus_r(PLL_CONTROL_REG) | PLL_CTRL_RECONFIG_RST_MSK | PLL_CTRL_RST_MSK);
 	usleep(100);
@@ -1145,7 +1221,9 @@ void resetPLL() {
 
 
 u_int32_t setPllReconfigReg(u_int32_t reg, u_int32_t val) {
-
+#ifdef VIRTUAL
+    return val;
+#endif
 	// set parameter
 	bus_w(PLL_PARAM_REG, val);
 
@@ -1165,6 +1243,9 @@ u_int32_t setPllReconfigReg(u_int32_t reg, u_int32_t val) {
 
 
 void configurePll() {
+#ifdef VIRTUAL
+    return;
+#endif
 	u_int32_t val;
 	int32_t phase=0, inv=0;
 
@@ -1238,6 +1319,9 @@ int setTemperatureControl(int val) {
 
 
 int setTemperatureEvent(int val) {
+#ifdef VIRTUAL
+    return 0;
+#endif
     if (val >= 0) {
         // set bit to clear it
         val = 1;
@@ -1261,6 +1345,10 @@ int setNetworkParameter(enum NETWORKINDEX mode, int value) {
         printf("\nSetting transmission delay: %d\n", value);
         bus_w(CONFIG_REG, (bus_r(CONFIG_REG) &~CONFIG_TDMA_TIMESLOT_MSK)
                 | (((value  << CONFIG_TDMA_TIMESLOT_OFST) & CONFIG_TDMA_TIMESLOT_MSK)));
+        if (value == 0)
+            bus_w(CONFIG_REG, bus_r(CONFIG_REG) &~ CONFIG_TDMA_MSK);
+        else
+            bus_w(CONFIG_REG, bus_r(CONFIG_REG) | CONFIG_TDMA_MSK);
 #ifdef VERBOSE
         printf("Transmission delay set to %d\n", ((bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK) >> CONFIG_TDMA_TIMESLOT_OFST));
 #endif
@@ -1276,6 +1364,9 @@ int setNetworkParameter(enum NETWORKINDEX mode, int value) {
 /* aquisition */
 
 int startStateMachine(){
+#ifdef VIRTUAL
+    return OK;
+#endif
 	printf("*******Starting State Machine*******\n");
 
 	cleanFifos();
@@ -1290,6 +1381,9 @@ int startStateMachine(){
 
 
 int stopStateMachine(){
+#ifdef VIRTUAL
+    return OK;
+#endif
 	cprintf(BG_RED,"*******Stopping State Machine*******\n");
 
 	//stop state machine
@@ -1306,6 +1400,9 @@ int stopStateMachine(){
 
 
 enum runStatus getRunStatus(){
+#ifdef VIRTUAL
+    return IDLE;
+#endif
 #ifdef VERBOSE
 	printf("Getting status\n");
 #endif
@@ -1349,7 +1446,11 @@ enum runStatus getRunStatus(){
 
 
 void readFrame(int *ret, char *mess){
-
+#ifdef VIRTUAL
+    *ret = (int)FAIL;
+    sprintf(mess,"virtual detector, no acquisition taken\n");
+    return;
+#endif
 	// wait for status to be done
 	while(runBusy()){
 		usleep(500);
@@ -1371,6 +1472,9 @@ void readFrame(int *ret, char *mess){
 
 
 u_int32_t runBusy(void) {
+#ifdef VIRTUAL
+    return 0;
+#endif
 	u_int32_t s = ((bus_r(STATUS_REG) & RUN_BUSY_MSK) >> RUN_BUSY_OFST);
 #ifdef VERBOSE
 	printf("Status Register: %08x\n", s);

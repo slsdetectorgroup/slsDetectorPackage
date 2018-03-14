@@ -535,8 +535,10 @@ void qTabDataOutput::GetOutputDir(){
 		dispOutputDir->setText(QString(myDet->getFilePath().c_str()));
 		//multi file path blank means sls file paths are different
 		if (dispOutputDir->text().isEmpty()) {
+#ifdef VERYVERBOSE
 			qDefs::Message(qDefs::INFORMATION,"The file path for individual units are different.\n"
 					"Hence, leaving the common field blank.","qTabDataOutput::GetOutputDir");
+#endif
 #ifdef VERBOSE
 						cout << "The file path for individual units are different.\n"
 					"Hence, leaving the common field blank." << endl;

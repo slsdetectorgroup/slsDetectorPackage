@@ -2397,13 +2397,13 @@ int slsDetector::digitalTest( digitalTestMode mode, int imod){
 
 /* write or read register */
 
-int slsDetector::writeRegister(int addr, int val){
+uint32_t slsDetector::writeRegister(uint32_t addr, uint32_t val){
 
-	int retval=-1;
+	uint32_t retval = 0;
 	int fnum=F_WRITE_REGISTER;
 	int ret=FAIL;
 	char mess[MAX_STR_LENGTH]="";
-	int arg[2];
+	uint32_t arg[2];
 	arg[0]=addr;
 	arg[1]=val;
 
@@ -2446,7 +2446,7 @@ int slsDetector::writeAdcRegister(int addr, int val){
 	int ret=FAIL;
 	char mess[MAX_STR_LENGTH]="";
 
-	int arg[2];
+	uint32_t arg[2];
 	arg[0]=addr;
 	arg[1]=val;
 
@@ -2485,13 +2485,13 @@ int slsDetector::writeAdcRegister(int addr, int val){
 
 
 
-int slsDetector::readRegister(int addr){
+uint32_t slsDetector::readRegister(uint32_t addr){
 
-	int retval=-1;
+	uint32_t retval = 0;
 	int fnum=F_READ_REGISTER;
 	int ret=FAIL;
 	char mess[MAX_STR_LENGTH]="";
-	int arg;
+	uint32_t arg;
 	arg=addr;
 
 
@@ -2528,25 +2528,24 @@ int slsDetector::readRegister(int addr){
 }
 
 
-int slsDetector::setBit(int addr, int n) {
+uint32_t slsDetector::setBit(uint32_t addr, int n) {
 	if (n<0 || n>31) {
 		std::cout << "Bit number out of Range" << std:: endl;
 		setErrorMask((getErrorMask())|(REGISER_WRITE_READ));
 	}
 
 	// normal bit range
+	//TODO! (Erik) Check for errors! cannot use value since reg is 32bits
 	else {
-		int val = readRegister(addr);
-		if (val != -1) {
-			writeRegister(addr,val | 1<<n);
-		}
+		uint32_t val = readRegister(addr);
+		writeRegister(addr,val | 1<<n);
 	}
 
 	return readRegister(addr);
 }
 
 
-int slsDetector::clearBit(int addr, int n) {
+uint32_t slsDetector::clearBit(uint32_t addr, int n) {
 	if (n<0 || n>31) {
 		std::cout << "Bit number out of Range" << std:: endl;
 		setErrorMask((getErrorMask())|(REGISER_WRITE_READ));
@@ -2554,10 +2553,8 @@ int slsDetector::clearBit(int addr, int n) {
 
 	// normal bit range
 	else {
-		int val = readRegister(addr);
-		if (val != -1) {
-			writeRegister(addr,val & ~(1<<n));
-		}
+		uint32_t val = readRegister(addr);
+		writeRegister(addr,val & ~(1<<n));
 	}
 
 	return readRegister(addr);
@@ -3239,7 +3236,7 @@ int slsDetector::setModule(int reg, int imod){
 int slsDetector::setModule(sls_detector_module module, int iodelay, int tau, int e_eV, int* gainval, int* offsetval, int tb){
 
 	int fnum=F_SET_MODULE;
-	int retval;
+	int retval=-1;
 	int ret=FAIL;
 	char mess[MAX_STR_LENGTH]="";
 
@@ -3344,6 +3341,9 @@ int slsDetector::setModule(sls_detector_module module, int iodelay, int tau, int
 			for (int i=0; i<thisDetector->nOffset; ++i)
 				offset[i+imod*thisDetector->nOffset]=offsetval[i];
 		}
+
+		if (e_eV != -1)
+		    thisDetector->currentThresholdEV = e_eV;
 
 	}
 
@@ -3549,7 +3549,7 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
 	//currently only for eiger
 	if (thisDetector->myDetectorType == EIGER) {
 		setThresholdEnergyAndSettings(e_eV,isettings,tb);
-			return  thisDetector->currentThresholdEV;
+		return  thisDetector->currentThresholdEV;
 	}
 
 	int fnum=  F_SET_THRESHOLD_ENERGY;
@@ -6455,9 +6455,9 @@ string slsDetector::setReceiverUDPMAC(string udpmac){
 #else
       	  ;
 #endif
-      else  if(setUDPConnection()==FAIL){
+     /* else  if(setUDPConnection()==FAIL){ commented out to be replaced by user defined udpmac
     	  std::cout<< "Warning: UDP connection set up failed" << std::endl;
-      }
+      }*/
     }else{
       setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
       std::cout << "Warning: receiver udp mac address should be in xx:xx:xx:xx:xx:xx format" << std::endl;

@@ -1474,6 +1474,7 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 #endif 
 	//  if(val!=0x2820) return -1;
 
+    usleep(1000 * 1000);
 
 	return adcConfigured;
 }
@@ -1536,12 +1537,8 @@ int startStateMachine(){
 int stopStateMachine(){
 
 //#ifdef VERBOSE
-	  printf("*******Stopping State Machine*******\n");
+	  cprintf(BG_RED,"*******Stopping State Machine*******\n");
 //#endif
-#ifdef SHAREDMEMORY
-  write_stop_sm(1);
-  write_status_sm("Stopped");
-#endif
   bus_w16(CONTROL_REG, STOP_ACQ_BIT);
   bus_w16(CONTROL_REG, 0x0);
   usleep(500);

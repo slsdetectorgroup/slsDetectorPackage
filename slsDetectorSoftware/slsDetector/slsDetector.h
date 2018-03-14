@@ -892,7 +892,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
       \returns current register value
 
   */
-  int writeRegister(int addr, int val);
+  uint32_t writeRegister(uint32_t addr, uint32_t val);
   
 
   /** 
@@ -910,7 +910,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
       \returns current register value
 
   */
-  int readRegister(int addr);
+  uint32_t readRegister(uint32_t addr);
 
   /**
       sets a bit in a register
@@ -920,7 +920,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
       DO NOT USE!!! ONLY EXPERT USER!!!
   */
-  int setBit(int addr, int n);
+  uint32_t setBit(uint32_t addr, int n);
 
 
   /**
@@ -931,7 +931,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
       DO NOT USE!!! ONLY EXPERT USER!!!
   */
-  int clearBit(int addr, int n);
+  uint32_t clearBit(uint32_t addr, int n);
 
   /**
      set dacs value

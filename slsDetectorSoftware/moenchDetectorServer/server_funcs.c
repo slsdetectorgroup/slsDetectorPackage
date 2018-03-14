@@ -593,9 +593,11 @@ int get_id(int file_des) {
     retval=getDetectorNumber();
     break;
   case DETECTOR_FIRMWARE_VERSION:
-    return  (getFirmwareVersion() & 0xFFFFFF);
+    retval = (getFirmwareVersion() & 0xFFFFFF);
+    break;
   case DETECTOR_SOFTWARE_VERSION:
-    return  (GITDATE & 0xFFFFFF);
+    retval = (GITDATE & 0xFFFFFF);
+    break;
   default:
     printf("Required unknown id %d \n", arg);
     ret=FAIL;

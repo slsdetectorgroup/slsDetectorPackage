@@ -1100,13 +1100,13 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
 
-  int writeRegister(int addr, int val);
+  uint32_t writeRegister(uint32_t addr, uint32_t val);
   
 
   int writeAdcRegister(int addr, int val);
   
 
-  int readRegister(int addr);
+  uint32_t readRegister(uint32_t addr);
 
   /**
       sets a bit in a register
@@ -1116,7 +1116,7 @@ class multiSlsDetector  : public slsDetectorUtils {
 
       DO NOT USE!!! ONLY EXPERT USER!!!
   */
-  int setBit(int addr, int n);
+  uint32_t setBit(uint32_t addr, int n);
 
 
   /**
@@ -1127,7 +1127,7 @@ class multiSlsDetector  : public slsDetectorUtils {
 
       DO NOT USE!!! ONLY EXPERT USER!!!
   */
-  int clearBit(int addr, int n);
+  uint32_t clearBit(uint32_t addr, int n);
 
 
 
@@ -1242,6 +1242,7 @@ class multiSlsDetector  : public slsDetectorUtils {
   slsDetector *getSlsDetector(int pos) {if (pos>=0 && pos< MAXDET) return detectors[pos]; return NULL;};
   //additional way of accessing
   slsDetector *operator()(int pos) {if (pos>=0 && pos< MAXDET) return detectors[pos]; return NULL;};
+
 
 
   //receiver

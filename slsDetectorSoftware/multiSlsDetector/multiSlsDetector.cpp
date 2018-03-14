@@ -1215,7 +1215,7 @@ int multiSlsDetector::getThresholdEnergy(int pos) {
       if (ret1==-100)
 	ret1=ret;
       else if (ret<(ret1-200) || ret>(ret1+200))
-	ret1=FAIL;
+	ret1=-1;
       
     }
    
@@ -1260,7 +1260,7 @@ int multiSlsDetector::setThresholdEnergy(int e_eV, int pos, detectorSettings ise
 				if(iret[idet] != NULL){
 					if (ret==-100)
 						ret=*iret[idet];
-					else if (ret<(*iret[idet]-200) || ret>(*iret[idet]+200))
+					else if (*iret[idet]<(ret-200) || *iret[idet]>(ret+200))
 							ret=-1;
 					delete iret[idet];
 				}else ret=-1;
@@ -4912,16 +4912,16 @@ int multiSlsDetector::saveCalibrationFile(string fname, int imod) {
 
 
 
-int multiSlsDetector::writeRegister(int addr, int val){
+uint32_t multiSlsDetector::writeRegister(uint32_t addr, uint32_t val){
 
-	int ret, ret1=-100;
+	uint32_t ret, ret1;
 
 	for (int i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
 		if (detectors[i]) {
 			ret=detectors[i]->writeRegister(addr,val);
 			if(detectors[i]->getErrorMask())
 				setErrorMask(getErrorMask()|(1<<i));
-			if (ret1==-100)
+			if (i==0)
 				ret1=ret;
 			else if (ret!=ret1) {
 				// not setting it to -1 as it is a possible value
@@ -4959,16 +4959,16 @@ int multiSlsDetector::writeAdcRegister(int addr, int val){
 }
 
 
-int multiSlsDetector::readRegister(int addr){
+uint32_t multiSlsDetector::readRegister(uint32_t addr){
 
-	int ret, ret1=-100;
+	uint32_t ret, ret1;
 
 	for (int i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
 		if (detectors[i]) {
 			ret=detectors[i]->readRegister(addr);
 			if(detectors[i]->getErrorMask())
 				setErrorMask(getErrorMask()|(1<<i));
-			if (ret1==-100)
+			if (i==0)
 				ret1=ret;
 			else if (ret!=ret1) {
 				// not setting it to -1 as it is a possible value
@@ -4982,15 +4982,15 @@ int multiSlsDetector::readRegister(int addr){
 }
 
 
-int multiSlsDetector::setBit(int addr, int n) {
-	int ret1, ret=-100;
+uint32_t multiSlsDetector::setBit(uint32_t addr, int n) {
+	uint32_t ret, ret1;
 
 	for (int i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
 		if (detectors[i]) {
 			ret1=detectors[i]->setBit(addr,n);
 			if(detectors[i]->getErrorMask())
 				setErrorMask(getErrorMask()|(1<<i));
-			if (ret==-100)
+			if (i==0)
 				ret=ret1;
 			else if (ret!=ret1) {
 				// not setting it to -1 as it is a possible value
@@ -5004,15 +5004,15 @@ int multiSlsDetector::setBit(int addr, int n) {
 }
 
 
-int multiSlsDetector::clearBit(int addr, int n) {
-	int ret1, ret=-100;
+uint32_t multiSlsDetector::clearBit(uint32_t addr, int n) {
+	uint32_t ret, ret1;
 
 	for (int i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
 		if (detectors[i]) {
 			ret1=detectors[i]->clearBit(addr,n);
 			if(detectors[i]->getErrorMask())
 				setErrorMask(getErrorMask()|(1<<i));
-			if (ret==-100)
+			if (i==0)
 				ret=ret1;
 			else if (ret!=ret1) {
 				// not setting it to -1 as it is a possible value
@@ -6051,6 +6051,8 @@ void multiSlsDetector::readFrameFromReceiver(){
 		break;
 	case JUNGFRAU:
 		jungfrau = true;
+        maxX = thisMultiDetector->numberOfChannel[X];
+        maxY = thisMultiDetector->numberOfChannel[Y];
 		break;
 	default:
 		break;
@@ -6184,7 +6186,11 @@ void multiSlsDetector::readFrameFromReceiver(){
 
 				//assemble data with no interleaving, assumed detectors appended vertically
 				else{
-					memcpy(multiframe+slsdatabytes*isocket,image,slsdatabytes);
+				    for(int i=0;i<slsmaxY;++i){
+				        memcpy(((char*)multiframe) + (((thisMultiDetector->offsetY[isocket] + i) * maxX) + thisMultiDetector->offsetX[isocket])* (int)bytesperchannel,
+				                (char*)image+ (i*slsmaxX*(int)bytesperchannel),
+				                (slsmaxX*(int)bytesperchannel));
+				    }
 				}
 			}
 

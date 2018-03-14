@@ -843,28 +843,14 @@ void qTabMeasurement::Refresh(){
 		cout  << "Getting delay after trigger, number of triggers and number of gates" << endl;
 #endif
 		//delay
-		//delay
-		if (detType == slsDetectorDefs::EIGER) {
-			lblDelay->setEnabled(false);
-			spinDelay->setEnabled(false);
-			comboDelayUnit->setEnabled(false);
-		} else {
-			lblDelay->setEnabled(true);
-			spinDelay->setEnabled(true);
-			comboDelayUnit->setEnabled(true);
-			time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,-1)*(1E-9))));
-			spinDelay->setValue(time);
-			comboDelayUnit->setCurrentIndex((int)unit);
-		}
+		if (detType != slsDetectorDefs::EIGER)
+		    time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,-1)*(1E-9))));
+
 		//gates
-		if ((detType == slsDetectorDefs::EIGER) || (detType == slsDetectorDefs::JUNGFRAU) || (detType == slsDetectorDefs::JUNGFRAUCTB)) {
-			lblNumGates->setEnabled(false);
-			spinNumGates->setEnabled(false);
-		} else {
-			lblNumGates->setEnabled(true);
-			spinNumGates->setEnabled(true);
-			spinNumGates->setValue((int)myDet->setTimer(slsDetectorDefs::GATES_NUMBER,-1));
-		}
+	    if ((detType != slsDetectorDefs::EIGER) && (detType != slsDetectorDefs::JUNGFRAU) && (detType != slsDetectorDefs::JUNGFRAUCTB)  )
+	        spinNumGates->setValue((int)myDet->setTimer(slsDetectorDefs::GATES_NUMBER,-1));
+
+
 		//Number of Triggers
 		spinNumTriggers->setValue((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1));
 

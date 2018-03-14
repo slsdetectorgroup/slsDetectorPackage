@@ -579,16 +579,18 @@ int get_id(int file_des) {
 
 #ifdef VERBOSE
       printf("Getting id %d\n", arg);
-#endif  
+#endif
 
   switch (arg) {
   case DETECTOR_SERIAL_NUMBER:
     retval=getDetectorNumber();
     break;
   case DETECTOR_FIRMWARE_VERSION:
-    return  (getFirmwareVersion() & 0xFFFFFF);
+    retval = (getFirmwareVersion() & 0xFFFFFF);
+    break;
   case DETECTOR_SOFTWARE_VERSION:
-    return  (GITDATE & 0xFFFFFF);
+    retval = (GITDATE & 0xFFFFFF);
+    break;
   default:
     printf("Required unknown id %d \n", arg);
     ret=FAIL;
@@ -1725,12 +1727,10 @@ int stop_acquisition(int file_des) {
   int ret=OK;
   int n;
   
-
   sprintf(mess,"can't stop acquisition\n");
 
-#ifdef VERBOSE
-  printf("Stopping acquisition\n");
-#endif 
+  cprintf(BG_RED,"Client command received to stop acquisition\n");
+
 
     
   if (differentClients==1 && lockStatus==1) {

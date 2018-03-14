@@ -7,7 +7,7 @@ Documentation to obtain the binaries via the conda package is available [here.](
 ### Source code
 One can also obtain the source code from this repository and compile while realizing the setup dependencies as required.
 ```
-git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git --branch 3.1.0
+git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git
 
 ```
 #### Setup dependencies 
@@ -43,6 +43,9 @@ Usage: [-c] [-b] [-h] [-d HDF5 directory] [-j]<br>
  * -r: Build/Rebuilds only receiver<br>
  * -g: Build/Rebuilds only gui<br>
  * -j: Number of threads to compile through<br>
+ 
+Basic Option:
+./cmk.sh -b
  
 For only make:
 ./cmk.sh

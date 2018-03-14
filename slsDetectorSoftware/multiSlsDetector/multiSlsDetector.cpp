@@ -6051,8 +6051,6 @@ void multiSlsDetector::readFrameFromReceiver(){
 		break;
 	case JUNGFRAU:
 		jungfrau = true;
-        maxX = thisMultiDetector->numberOfChannel[X];
-        maxY = thisMultiDetector->numberOfChannel[Y];
 		break;
 	default:
 		break;

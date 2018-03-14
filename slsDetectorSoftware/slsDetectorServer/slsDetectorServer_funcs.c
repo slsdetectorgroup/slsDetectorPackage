@@ -3167,7 +3167,7 @@ int set_speed(int file_des) {
 #ifdef JUNGFRAUD
 		case ADC_PHASE:
 			retval = adcPhase(val);
-            if ((val != 65536) && (retval!=val) && (val>=0)) {
+            if ((val != 100000) && (retval!=val) && (val>=0)) {
                 ret=FAIL;
                 sprintf(mess,"could not change set adc phase: should be %d but is %d \n", val, retval);
                 cprintf(RED, "Warning: %s", mess);

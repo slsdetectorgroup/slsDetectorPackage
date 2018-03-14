@@ -487,9 +487,11 @@ int adcPhase(int st){ /**carlos needed clkphase 1 and 2?  cehck with Aldo */
 	printf("Setting ADC Phase to %d\n",st);
 	if (st > 65535 || st < -65535)
 		return clkPhase[0];
-	clkPhase[1] = st - clkPhase[0];
 
-	printf(" phase %d\n", clkPhase[1] );
+	clkPhase[1] = st - clkPhase[0];
+	if (clkPhase[1] == 0)
+	    return clkPhase[0];
+
 	configurePll();
 	clkPhase[0] = st;
 	return clkPhase[0];
@@ -1249,7 +1251,7 @@ void configurePll() {
 	u_int32_t val;
 	int32_t phase=0, inv=0;
 
-	printf(" phase in %d\n", clkPhase[1]);
+	printf("Configuring PLL with phase in %d\n", clkPhase[1]);
 	if (clkPhase[1]>0) {
 		inv=0;
 		phase=clkPhase[1];

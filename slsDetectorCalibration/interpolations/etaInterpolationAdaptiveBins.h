@@ -181,53 +181,73 @@ class etaInterpolationAdaptiveBins : public etaInterpolationPosXY {
    double avg=tot_eta/((double)(nSubPixels*nSubPixels));
    cout << "total eta entries is :"<< tot_eta << " avg: "<< avg << endl;   
    cout << "Start " << endl;
-   double old_diff=calcDiff(avg, hhx, hhy), new_diff=old_diff+1;
-   cout << " diff= " << new_diff << endl;
+   double old_diff=calcDiff(avg, hhx, hhy), new_diff=old_diff+1, best_diff=old_diff;
+   cout << " diff= " << old_diff << endl;
    
 
    int iint=0;
    float *newhhx=new float[nbeta*nbeta]; //profile x
    float *newhhy=new float[nbeta*nbeta]; //profile y
+   float *besthhx=hhx; //profile x
+   float *besthhy=hhy; //profile y
    while (iint<nint) {
      
      cout << "Iteration " << iint << endl;
      iterate(newhhx,newhhy);
      new_diff=calcDiff(avg, newhhx, newhhy);
      cout << " diff= " << new_diff << endl;
-#ifdef SAVE_ALL
-  for (int ii=0; ii<etabins*etabins; ii++) {
-    etah[ii]=newhhx[ii];
-    if (etah[ii]>1 || etah[ii]<0  ) cout << "***"<< ii << etah[ii] << endl;
+/* #ifdef SAVE_ALL */
+/*   for (int ii=0; ii<etabins*etabins; ii++) { */
+/*     etah[ii]=newhhx[ii]; */
+/*     if (etah[ii]>1 || etah[ii]<0  ) cout << "***"<< ii << etah[ii] << endl; */
    
-  }
-  sprintf(tit,"/scratch/neweta_hhx_%d.tiff",iint);
-  WriteToTiff(etah, tit, etabins, etabins);
+/*   } */
+/*   sprintf(tit,"/scratch/neweta_hhx_%d.tiff",iint); */
+/*   WriteToTiff(etah, tit, etabins, etabins); */
 	  
-  for (int ii=0; ii<etabins*etabins; ii++) {
-    etah[ii]=newhhy[ii];
-    if (etah[ii]>1 || etah[ii]<0  ) cout << "***"<< ii << etah[ii] << endl;
+/*   for (int ii=0; ii<etabins*etabins; ii++) { */
+/*     etah[ii]=newhhy[ii]; */
+/*     if (etah[ii]>1 || etah[ii]<0  ) cout << "***"<< ii << etah[ii] << endl; */
+/*   } */
+/*   sprintf(tit,"/scratch/neweta_hhy_%d.tiff",iint); */
+/*   WriteToTiff(etah, tit, etabins, etabins); */
+/* #endif */
+  if (new_diff<best_diff) {
+    best_diff=new_diff;
+    besthhx=newhhx;
+    besthhy=newhhy;
   }
-  sprintf(tit,"/scratch/neweta_hhy_%d.tiff",iint);
-  WriteToTiff(etah, tit, etabins, etabins);
-#endif
-  //  if (new_diff<old_diff) {
-       delete [] hhx;
-       delete [] hhy;
-       hhx=newhhx;
-       hhy=newhhy;
-       newhhx=new float[nbeta*nbeta]; //profile x
-       newhhy=new float[nbeta*nbeta]; //profile y
-       old_diff=new_diff;
-       //  } /* else { */
+  
+  if (hhx!=besthhx)
+    delete [] hhx;
+  if (hhy!=besthhy)
+    delete [] hhy;
+  
+  hhx=newhhx;
+  hhy=newhhy;
+  newhhx=new float[nbeta*nbeta]; //profile x
+  newhhy=new float[nbeta*nbeta]; //profile y
+
+  old_diff=new_diff;
+  //} /* else { */
      /*   cout << "Difference not decreasing after "<< iint << " iterations (" << old_diff << " < " << new_diff << ")"<< endl; */
      /*   break; */
      /* } */
-     
-     iint++;
+  
+  iint++;
    }
-   delete [] newhhx;
-   delete [] newhhy;
+     delete [] newhhx;
+     delete [] newhhy;
+     
+  if (hhx!=besthhx)
+    delete [] hhx;
+  if (hhy!=besthhy)
+    delete [] hhy;
+  
+  hhx=besthhx;
+  hhy=besthhy;
 
+   
 
 
 

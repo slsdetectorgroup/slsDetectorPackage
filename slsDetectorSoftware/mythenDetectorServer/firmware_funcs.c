@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 
 #include <stdlib.h>
+//#define VERBOSE
 
 //for memory mapping
 u_int64_t CSP0BASE;
@@ -702,9 +703,9 @@ int setNMod(int n) {
     shiftfifo=SHIFTFIFO;
 
 
-#ifdef VERBOSE
+  //#ifdef VERBOSE
   printf("SetNMod called arg %d -- dr %d shiftfifo %d\n",n,dynamicRange,shiftfifo);
-#endif
+  //#endif
   if (n>=0 && n<=ntot) {
     nModX=n;
  
@@ -713,12 +714,16 @@ int setNMod(int n) {
 	reg=bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo));
       if (ififo<n*NCHIP) {
 	if (reg&FIFO_DISABLED_BIT) {
+
 	  bus_w(FIFO_CNTRL_REG_OFF+(ififo<<shiftfifo), FIFO_DISABLE_TOGGLE_BIT); 
 #ifdef VERBOSE
-	  if (bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo))&FIFO_DISABLED_BIT) {
+	  //  if (bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo))&FIFO_DISABLED_BIT) {
+	    
+
 	    printf("Fifo %d is %x (nm %d nc %d addr %08x)",ififo,reg, (reg&FIFO_NM_MASK)>>FIFO_NM_OFF, (reg&FIFO_NC_MASK)>>FIFO_NC_OFF, FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo));
 	    printf(" enabling  %08x\n",bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo)));
-	  }
+
+	    // }
 #endif
 	}
 	//#ifdef VERBOSE
@@ -729,10 +734,10 @@ int setNMod(int n) {
 	if ((reg&FIFO_ENABLED_BIT)) {
 	  bus_w(FIFO_CNTRL_REG_OFF+(ififo<<shiftfifo), FIFO_DISABLE_TOGGLE_BIT); 
 #ifdef VERBOSE
-	  if ((bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo))&FIFO_ENABLED_BIT))  { 
+	  //  if ((bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo))&FIFO_ENABLED_BIT))  { 
 	    printf("Fifo %d is %x (nm %d nc %d addr %08x)",ififo,reg, (reg&FIFO_NM_MASK)>>FIFO_NM_OFF, (reg&FIFO_NC_MASK)>>FIFO_NC_OFF, FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo));
 	    printf(" disabling %08x\n",bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo)));
-	  }
+	    //	  }
 #endif
 	}
 	//#ifdef VERBOSE

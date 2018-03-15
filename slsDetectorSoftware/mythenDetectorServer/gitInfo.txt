@@ -1,9 +1,9 @@
 Path: slsDetectorsPackage/slsDetectorSoftware/mythenDetectorServer 
-URL: origin git@git.psi.ch:sls_detectors_software/sls_detector_software.git/mythenDetectorServer 
-Repository Root: origin git@git.psi.ch:sls_detectors_software/sls_detector_software.git 
-Repsitory UUID: 8aceb5d4b0ca6bd95a11b53e7a799b463b92d51b 
-Revision: 106 
-Branch: developer 
-Last Changed Author: Dhanya_Maliakal 
-Last Changed Rev: 334 
-Last Changed Date: 2016-08-12 11:08:03 +0200
+URL: 
+Repository Root: 
+Repsitory UUID: 
+Revision: 0 
+Branch: 
+Last Changed Author: _ 
+Last Changed Rev: 0 
+Last Changed Date: 2018-01-30 10:42:45.000000000 +0100 ./Makefile

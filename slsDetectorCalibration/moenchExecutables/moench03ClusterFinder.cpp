@@ -119,53 +119,11 @@ int main(int argc, char *argv[]) {
   cout << "input directory is " << indir << endl;
   cout << "output directory is " << outdir << endl;
   cout << "fileformat is " << fformat << endl;
-  //  cout << "pedestal file is " << fformat << endl;
   
 
   std::time(&end_time);
   cout << std::ctime(&end_time) <<   endl;
-  // filter->setFrameMode(eFrame);
-  // mt->setFrameMode(ePedestal);
-  // cout <<   pedfname<< endl;
-
-  //   filebin.open((const char *)(pedfname), ios::in | ios::binary);
-  //   //filebin.open((const char *)(fname), ios::in | ios::binary);
-
-  // //      //open file
-  // if (filebin.is_open()){
-  //     //     //while read frame 
-  //   cout << "pedestal file " << endl;
-  //   while (decoder->readNextFrame(filebin, ff, np,data)) {
-  //     //   cout << ff << " " << np << endl;
-  //     //         //push
-  //     // mt->pushData(buff);
-  //     // //         //pop
-  //     //mt->nextThread();
-  //     // // 		//	cout << " " << (void*)buff;
-  //     //mt->popFree(buff);
-  //     filter->processData(data);
-  //     }
-  //   filebin.close();	 
-  //   //      //close file 
-  //   //     //join threads
-  //   //   while (mt->isBusy()) {;}//wait until all data are processed from the queues
-  //   // cout << outfname << endl; 
-  //   // filter->writePedestals(outfname); 
-  //   // sprintf(outfname,"%s/%s_pedimg.tiff",outdir,fn);
-
-  //   // cout << outfname << endl; 
-    
-  //   // filter->writeImage(outfname);
-  //   // //mt->clearImage();
-  // } else 
-  //    cout << "Could not open "<< pedfname << " for reading " << endl;
-  
-
-
-  // // for (int ix=0; ix<400; ix++)
-  // //   for (int iy=0; iy<400; iy++)
-  // //     cout << ix << " " << iy << " " << filter->getPedestal(ix,iy) << " " << filter->getPedestalRMS(ix,iy) << endl;
-
+ 
 
 
 
@@ -176,9 +134,7 @@ int main(int argc, char *argv[]) {
   char* buff;
   multiThreadedAnalogDetector *mt=new multiThreadedAnalogDetector(filter,nthreads,fifosize);
 
-  
-  // mt->setFrameMode(eFrame); //need to find a way to switch between flat and frames!
-  // mt->prepareInterpolation(ok);
+ 
   mt->setFrameMode(eFrame);
   mt->StartThreads();
   mt->popFree(buff);
@@ -187,46 +143,7 @@ int main(int argc, char *argv[]) {
   cout << "mt " << endl;
 
   int ifr=0;
-  // //loop on files
-  // mt->setFrameMode(eFrame);
- //mt->setFrameMode(eFlat);
-
-
-
-
-
-
-  // for (int irun=runmin; irun<runmin+5; irun++) {
-  //   sprintf(fn,fformat,irun);
-  //   sprintf(fname,"%s/%s.raw",indir,fn);
-
-
-
-  //   filebin.open((const char *)(fname), ios::in | ios::binary);
-  //   //      //open file
-  //   if (filebin.is_open()){
-  //     //     //while read frame 
-  //     while (decoder->readNextFrame(filebin, ff, np,buff)) {
-  // 	//	cout << "*"<<ifr++<<"*"<<ff<< endl;
-  // 	//	cout << ff << " " << np << endl;
-  // 	//         //push
-  // 		mt->pushData(buff);
-  // // 	//         //pop
-  // 		mt->nextThread();
-  // // // 		//	cout << " " << (void*)buff;
-  //  		mt->popFree(buff);
-	
-  //     }
-  //     //  cout << "--" << endl;
-  //     filebin.close();	 
-    
-
-  //   }
-
-  // }
-
-  // while (mt->isBusy()) {;}//wait until all data are processed from the queues
-  // mt->clearImage();
+ 
 
   for (int irun=runmin; irun<runmax; irun++) {
     sprintf(fn,fformat,irun);
@@ -259,6 +176,8 @@ int main(int argc, char *argv[]) {
 	mt->nextThread();
   // // 		//	cout << " " << (void*)buff;
 	mt->popFree(buff);
+	ifr++;
+	if (ifr%10000==0) cout << ifr << " " << ff << endl;
 	ff=-1;
       }
         cout << "--" << endl;

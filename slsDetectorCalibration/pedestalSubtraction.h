@@ -51,8 +51,11 @@ class pedestalSubtraction  {
     /** sets the moving average */
     virtual void setPedestalRMS(double rms) {stat.SetRMS(rms);}
 
-  
-  
+    /**sets/gets the number of samples for the moving average
+      \returns actual number of samples for the moving average
+    */
+    virtual int getNumpedestals() {return stat.NumDataValues();};
+
  private:
     MovingStat stat; /**< approximated moving average struct */
 

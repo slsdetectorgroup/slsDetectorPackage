@@ -8,7 +8,10 @@
 #endif
 
 #include <cstdlib> 
+#ifndef MY_TIFF_IO_H
 #include "tiffIO.h"
+#endif
+
 #ifndef DEF_QUAD
 #define DEF_QUAD
  enum quadrant {
@@ -88,7 +91,7 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
 
     
   void *writeInterpolatedImage(const char * imgname) {
-    cout << "!" <<endl;
+    //cout << "!" <<endl;
     float *gm=NULL;
     gm=new float[ nSubPixels*  nSubPixels* nPixelsX*nPixelsY];
     if (gm) {
@@ -107,8 +110,10 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
 
   //return position inside the pixel for the given photon
   virtual void getInterpolatedPosition(int x, int y, double *data, double &int_x, double &int_y)=0;
+  virtual void getInterpolatedPosition(int x, int y, int *data, double &int_x, double &int_y)=0;
   //return position inside the pixel for the given photon
   virtual void getInterpolatedPosition(int x, int y, double etax, double etay, int quad, double &int_x, double &int_y)=0;
+  virtual void getInterpolatedPosition(int x, int y, double totquad,int quad,int *cluster,double &etax, double &etay)=0;
   virtual void getInterpolatedPosition(int x, int y, double totquad,int quad,double *cluster,double &etax, double &etay)=0;
 
 
@@ -138,7 +143,9 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
 #endif
 
 #ifndef MYROOT1
-  virtual int *addToImage(double int_x, double int_y){ int iy=nSubPixels*int_y; int ix=nSubPixels*int_x; 
+  virtual int *addToImage(double int_x, double int_y){ 
+    int iy=((double)nSubPixels)*int_y; 
+    int ix=((double)nSubPixels)*int_x; 
     // cout << int_x << " " << int_y << " " << "  " << ix << " " << iy << " " << ix+iy*nPixelsX*nSubPixels << endl;
     if (ix>=0 && ix<(nPixelsX*nSubPixels) && iy<(nSubPixels*nPixelsY) && iy>=0 )(*(hint+ix+iy*nPixelsX*nSubPixels))+=1; 
     return hint;
@@ -147,9 +154,10 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
 
 
   virtual int addToFlatField(double *cluster, double &etax, double &etay)=0;
-  virtual int addToFlatField(double etax, double etay)=0;
-
+  virtual int addToFlatField(int *cluster, double &etax, double &etay)=0;
+  virtual int addToFlatField(double totquad,int quad,int *cl,double &etax, double &etay)=0;
   virtual int  addToFlatField(double totquad,int quad,double *cluster,double &etax, double &etay)=0;
+  virtual int addToFlatField(double etax, double etay)=0;
 
 #ifdef MYROOT1
   virtual TH2D *getFlatField(){return NULL;};
@@ -167,6 +175,14 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
 
   //virtual void Streamer(TBuffer &b);
 
+  static int calcQuad(int *cl, double &sum, double &totquad, double sDum[2][2]){
+    double cli[3*3];//=new int[3*3];
+    for (int i=0; i<9; i++)
+      cli[i]=cl[i];
+    return calcQuad(cli, sum, totquad, sDum);
+
+  }
+    
 
   static int calcQuad(double *cl, double &sum, double &totquad, double sDum[2][2]){
     
@@ -175,48 +191,64 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
     cluster[0]=cl;
     cluster[1]=cl+3;
     cluster[2]=cl+6;
+    
+    sum=0;
+    double sumBL=0;
+    double sumTL=0;
+    double sumBR=0;
+    double sumTR=0;
+    int xoff=0, yoff=0;
+    for (int ix=0; ix<3; ix++) {
+      for (int iy=0; iy<3; iy++) {
+	sum+=cluster[iy][ix];
+	 if (ix<=1 && iy<=1) sumBL+=cluster[iy][ix];
+	 if (ix<=1 && iy>=1) sumTL+=cluster[iy][ix];
+	 if (ix>=1 && iy<=1) sumBR+=cluster[iy][ix];
+	 if (ix>=1 && iy>=1) sumTR+=cluster[iy][ix];
+      }
+    }
 
-    sum = cluster[0][0] + cluster[1][0] + cluster[2][0] + cluster[0][1] + cluster[1][1] + cluster[2][1] + cluster[0][2] + cluster[1][2] + cluster[2][2];
-    
-    double sumBL = cluster[0][0] + cluster[1][0] + cluster[0][1] + cluster[1][1]; //2 ->BL
-    double sumTL = cluster[1][0] + cluster[2][0] + cluster[2][1] + cluster[1][1]; //0 ->TL
-    double sumBR = cluster[0][1] + cluster[0][2] + cluster[1][2] + cluster[1][1]; //3 ->BR
-    double sumTR = cluster[1][2] + cluster[2][1] + cluster[2][2] + cluster[1][1]; //1 ->TR
-    double sumMax = 0;
-    double t, r;
-    
-    // if(sumTL  >= sumMax){
-    sDum[0][0] = cluster[0][0]; sDum[1][0] = cluster[1][0];
-    sDum[0][1] = cluster[0][1]; sDum[1][1] = cluster[1][1];
+    /* sDum[0][0] = cluster[0][0]; sDum[1][0] = cluster[1][0]; */
+    /* sDum[0][1] = cluster[0][1]; sDum[1][1] = cluster[1][1]; */
     corner = BOTTOM_LEFT;
-    sumMax=sumBL;
-    // } 
-    
-    if(sumTL  >= sumMax){
-      sDum[0][0] = cluster[1][0]; sDum[1][0] = cluster[2][0];
-      sDum[0][1] = cluster[1][1]; sDum[1][1] = cluster[2][1];
+    totquad=sumBL;
 
+    
+    if(sumTL  >= totquad){
+      /* sDum[0][0] = cluster[1][0]; sDum[1][0] = cluster[2][0]; */
+      /* sDum[0][1] = cluster[1][1]; sDum[1][1] = cluster[2][1]; */
+      
       corner = TOP_LEFT;
-      sumMax=sumTL;
+      totquad=sumTL;
+      xoff=0;
+      yoff=1;
     } 
 
-    if(sumBR  >= sumMax){
-      sDum[0][0] = cluster[0][1]; sDum[1][0] = cluster[1][1];
-      sDum[0][1] = cluster[0][2]; sDum[1][1] = cluster[1][2];
+    if(sumBR  >= totquad){
+      /* sDum[0][0] = cluster[0][1]; sDum[1][0] = cluster[1][1]; */
+      /* sDum[0][1] = cluster[0][2]; sDum[1][1] = cluster[1][2]; */
       
+      xoff=1;
+      yoff=0;
       corner = BOTTOM_RIGHT;
-      sumMax=sumBR;
+      totquad=sumBR;
     }
     
-    if(sumTR  >= sumMax){
-      sDum[0][0] = cluster[1][1]; sDum[1][0] = cluster[2][1];
-      sDum[0][1] = cluster[1][2]; sDum[1][1] = cluster[2][2];
-      
+    if(sumTR  >= totquad){
+      xoff=1;
+      yoff=1;
+      /* sDum[0][0] = cluster[1][1]; sDum[1][0] = cluster[2][1]; */
+      /* sDum[0][1] = cluster[1][2]; sDum[1][1] = cluster[2][2]; */
       corner = TOP_RIGHT;
-      sumMax=sumTR;
+      totquad=sumTR;
     }
     
-    totquad=sumMax;
+
+    for (int ix=0; ix<2; ix++) {
+      for (int iy=0; iy<2; iy++) {
+	sDum[iy][ix] = cluster[iy+yoff][ix+xoff]; 
+      }
+    }
   
     return corner;
     
@@ -235,8 +267,15 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
     
   } 
 
-
   static int calcEta(double *cl, double &etax, double &etay, double &sum, double &totquad, double sDum[2][2]) {
+    int corner = calcQuad(cl,sum,totquad,sDum);
+    calcEta(totquad, sDum, etax, etay);
+    
+    return corner;
+  }
+
+
+  static int calcEta(int *cl, double &etax, double &etay, double &sum, double &totquad, double sDum[2][2]) {
     int corner = calcQuad(cl,sum,totquad,sDum);
     calcEta(totquad, sDum, etax, etay);
     
@@ -294,6 +333,13 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
     return corner;
   }
 
+  static int calcEtaL(int *cl, double &etax, double &etay, double &sum, double &totquad, double sDum[2][2]) {
+    int corner = calcQuad(cl,sum,totquad,sDum);
+    calcEtaL(totquad, corner, sDum, etax, etay);
+    
+    return corner;
+  }
+
 
 
   static int calcEtaC3(double *cl, double &etax, double &etay, double &sum, double &totquad, double sDum[2][2]){
@@ -306,19 +352,63 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
 
 
 
+  static int calcEtaC3(int *cl, double &etax, double &etay, double &sum, double &totquad, double sDum[2][2]){
+    
+    int corner = calcQuad(cl,sum,totquad,sDum);
+    calcEta(sum, sDum, etax, etay);
+    return corner;
+    
+  }
+
+
+
   static int calcEta3(double *cl, double &etax, double &etay, double &sum) {
-    double l,r,t,b;
-    sum=cl[0]+cl[1]+cl[2]+cl[3]+cl[4]+cl[5]+cl[6]+cl[7]+cl[8];
+    double l=0,r=0,t=0,b=0, val;
+    sum=0;
+    //  int quad;
+    for (int ix=0; ix<3; ix++) {
+      for (int iy=0; iy<3; iy++) {
+	val=cl[iy+3*ix];
+	sum+=val;
+	if (iy==0) l+=val;
+	if (iy==2) r+=val;
+	if (ix==0) b+=val;
+	if (ix==2) t+=val;
+      }
+    }
     if (sum>0) {
-      l=cl[0]+cl[3]+cl[6];
-      r=cl[2]+cl[5]+cl[8];
-      b=cl[0]+cl[1]+cl[2];
-      t=cl[6]+cl[7]+cl[8];
       etax=(-l+r)/sum;
       etay=(-b+t)/sum;
     }
+    /* if (etax<-1 || etax>1 || etay<-1 || etay>1) { */
+    /*   cout << "**********" << etax << " " << etay << endl; */
+    /*    for (int ix=0; ix<3; ix++) { */
+    /*   for (int iy=0; iy<3; iy++) { */
+    /* 	cout << cl[iy+3*ix] << "\t" ; */
+
+    /*   } */
+    /*   cout << endl; */
+    /* } */
+    /*    cout << sum << " " << l << " " << r << " " << t << " " << b << endl; */
+
+    /* } */
+
+
+    if (etax>=0 && etay>=0)
+      return TOP_RIGHT;
+    if (etax<0 && etay>=0)
+      return TOP_LEFT;
+    if (etax<0 && etay<0)
+      return BOTTOM_LEFT;
+    return BOTTOM_RIGHT;
+  }
+
+
+  static int calcEta3(int *cl, double &etax, double &etay, double &sum) {
+    double cli[9];
+    for (int ix=0; ix<9; ix++) cli[ix]=cl[ix];
     
-    return -1;
+    return calcEta3(cli, etax, etay, sum);
   }
 
 
@@ -350,9 +440,52 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
     return -1;
   }
 
+  static int calcMyEta(double totquad, int quad, int *cl, double &etax, double &etay) {
+    double l,r,t,b, sum;
+    int yoff;
+    switch (quad) {
+     case BOTTOM_LEFT:
+     case BOTTOM_RIGHT:
+       yoff=0;
+       break;
+     case TOP_LEFT:
+     case TOP_RIGHT:
+       yoff=1;
+       break;
+     default:
+       ;
+     } 
+      l=cl[0+yoff*3]+cl[0+yoff*3+3];
+      r=cl[2+yoff*3]+cl[2+yoff*3+3];
+      b=cl[0+yoff*3]+cl[1+yoff*3]*cl[2+yoff*3];
+      t=cl[0+yoff*3+3]+cl[1+yoff*3+3]*cl[0+yoff*3+3];
+      sum=t+b;
+    if (sum>0) {
+      etax=(-l+r)/sum;
+      etay=(+t)/sum;
+    }
+    
+    return -1;
+  }
+
 
 
   static int calcEta3X(double *cl, double &etax, double &etay, double &sum) {
+    double l,r,t,b;
+    sum=cl[0]+cl[1]+cl[2]+cl[3]+cl[4]+cl[5]+cl[6]+cl[7]+cl[8];
+    if (sum>0) {
+      l=cl[3];
+      r=cl[5];
+      b=cl[1];
+      t=cl[7];
+      etax=(-l+r)/sum;
+      etay=(-b+t)/sum;
+    }
+    return -1;
+  }
+
+
+  static int calcEta3X(int *cl, double &etax, double &etay, double &sum) {
     double l,r,t,b;
     sum=cl[0]+cl[1]+cl[2]+cl[3]+cl[4]+cl[5]+cl[6]+cl[7]+cl[8];
     if (sum>0) {

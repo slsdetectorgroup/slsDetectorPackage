@@ -1,5 +1,6 @@
-
+#ifndef MY_TIFF_IO_H
 #include "tiffIO.h"
+#endif
 #include<iostream>
 using namespace std;
 // #undef cbf_failnez 

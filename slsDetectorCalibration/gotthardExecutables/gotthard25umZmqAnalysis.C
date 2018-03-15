@@ -16,6 +16,7 @@
 
 #include "gotthardModuleDataNew.h"
 #include "gotthardDoubleModuleDataNew.h"
+#include "gotthardDoubleModuleCommonModeSubtractionNew.h"
 
 #include "singlePhotonDetector.h"
 //#include "interpolatingDetector.h"
@@ -27,7 +28,7 @@
 #define NC 1280
 #define NR 1
 
-#include "tiffIO.h"
+//#include "tiffIO.h"
 
 
 
@@ -37,19 +38,6 @@
 #define SLS_DETECTOR_JSON_HEADER_VERSION 0x2
 int main(int argc, char *argv[]){
   //void *gotthardProcessFrame() {
-
-
-
-	
-
-
-
-
-
-
-
-
-
 
 
 
@@ -69,16 +57,20 @@ int main(int argc, char *argv[]){
   offset=48;
   #endif
  
+  commonModeSubtraction *cm=NULL;
 
+  cm=new gotthardDoubleModuleCommonModeSubtraction();
   gotthardModuleDataNew *decoder=new   gotthardModuleDataNew();
   gotthardDoubleModuleDataNew *det=new   gotthardDoubleModuleDataNew(offset);
-  singlePhotonDetector *filter=new singlePhotonDetector(det,3, 5, 1, 0, 1000, 100);
+  // singlePhotonDetector *filter=new singlePhotonDetector(det,3, 5, 1, 0, 1000, 100);
+  analogDetector<uint16_t> *filter=new analogDetector<uint16_t>(det, 1, cm, 1000);
   filter->setROI(0,2560,0,1);
   char *buff;//[2*(48+1280*2)];
   char *buff0;
   char *buff1;
   multiThreadedAnalogDetector *mt=new multiThreadedAnalogDetector(filter,nthreads,fifosize);
-  mt->setFrameMode(eFrame);
+  // mt->setFrameMode(eFrame);
+  mt->setFrameMode(ePedestal);
   mt->StartThreads();
   mt->popFree(buff);
   buff0=buff;
@@ -297,39 +289,44 @@ int main(int argc, char *argv[]){
 	    cout << "************************************************************************** END OF FRAME" << end_of_acquisition << " !*****************************"<< endl;
 	    //  return 0;
 
-	    while (mt->isBusy()) {;}
-	    image=filter->getImage();
-	    if (image) {
-	      //fout=fopen(ofname,"w");
-	     cout << nf << "*****************" << endl;
-	      for (int i=0; i<2560; i++) {
-	      // // 	fprintf(fout,"%d %d\n",i,image[i]);
-	      	dout[i]=image[i];
-	      }
-	      // // fclose(fout);;
-	    }
+	    //  while (mt->isBusy()) {;}
+	    // image=filter->getImage();
+	    // if (image) {
+	    //   fout=fopen(ofname,"w");
+	    //  cout << nf << "*****************" << endl;
+	    //   for (int i=0; i<2560; i++) {
+	    //    	fprintf(fout,"%d %d\n",i,image[i]);
+	    //   	dout[i]=image[i];
+	    // 	if (image[i]<0)
+	    // 	  dout[i]=0;
+	    //   }
+	    //   fclose(fout);
+	    // }
 
 
-	    if (send) {
-		strcpy(fname0,filename0.c_str());
-		strcpy(fname1,filename1.c_str());
-		//  zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,16,fileindex,400,400,400*400, acqIndex,frameIndex,fname, acqIndex, 0,0,0,0,0,0,0,0,0,0,0,1);
-		zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,0,0,0,0,0, 0,0,fname0, 0, 0,0,0,0,0,0,0,0,0,0,0,1);
-		zmqsocket3->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,0,0,0,0,0, 0,0,fname1, 0, 0,0,0,0,0,0,0,0,0,0,0,1);
+	     if (send) {
+	 //    	strcpy(fname0,filename0.c_str());
+	 //    	strcpy(fname1,filename1.c_str());
+	 //    	//  zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,16,fileindex,400,400,400*400, acqIndex,frameIndex,fname, acqIndex, 0,0,0,0,0,0,0,0,0,0,0,1);
+	 //    	zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,0,0,0,0,0, 0,0,fname0, 0, 0,0,0,0,0,0,0,0,0,0,0,1);
+	 //    	zmqsocket3->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,0,0,0,0,0, 0,0,fname1, 0, 0,0,0,0,0,0,0,0,0,0,0,1);
 		
-		zmqsocket2->SendData((char*)dout,size/2);
-		zmqsocket3->SendData(((char*)dout)+size/2,size/2);
-		//	cprintf(GREEN, "Sent Data\n");
+	 //    	zmqsocket2->SendData((char*)dout,size/2);
+	 //    	zmqsocket3->SendData(((char*)dout)+size/2,size/2);
+	 //    	//	cprintf(GREEN, "Sent Data\n");
 
 
-	      zmqsocket2->SendHeaderData(0, true, SLS_DETECTOR_JSON_HEADER_VERSION);
-	      zmqsocket3->SendHeaderData(0, true, SLS_DETECTOR_JSON_HEADER_VERSION);
+	 //    	zmqsocket2->SendHeaderData(0, true, SLS_DETECTOR_JSON_HEADER_VERSION);
+	 //    	zmqsocket3->SendHeaderData(0, true, SLS_DETECTOR_JSON_HEADER_VERSION);
 
-	      cprintf(RED, "Received %d frames\n", nf);
+	 //    	cprintf(RED, "Received %d frames\n", nf);
 
-	    }
+	       zmqsocket2->SendHeaderData(0, true, SLS_DETECTOR_JSON_HEADER_VERSION);
+	       zmqsocket3->SendHeaderData(0, true, SLS_DETECTOR_JSON_HEADER_VERSION);
+	   }
 
 	    
+	    mt->setFrameMode(eFrame);
 	    filter->clearImage();
 	    // std::time(&end_time);
 	    // cout << std::ctime(&end_time) << " " << nf <<   endl;
@@ -352,16 +349,61 @@ int main(int argc, char *argv[]){
 	  irun=fileindex0;
 	  sprintf(ofname,"%s_%d.ph",filename0.c_str(),fileindex0);
 	  
+
+	    while (mt->isBusy()) {;}
+	    image=filter->getImage();
+	    if (image) {
+	      for (int i=0; i<2560; i++) {
+		//  	fprintf(fout,"%d %d\n",i,image[i]);
+	      	dout[i]=det->getChannel(buff,i,0);//image[i]+1000;//filter->getPedestal(i,0);//
+		// if (image[i]<0)
+		//   dout[i]=0;
+		//	cout << i << " " << image[i] << " " << dout[i] << endl;
+	      }
+	    }
+
+
+
+
+
+	    if (send) {
+		strcpy(fname0,filename0.c_str());
+		strcpy(fname1,filename1.c_str());
+		//  zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,16,fileindex,400,400,400*400, acqIndex,frameIndex,fname, acqIndex, 0,0,0,0,0,0,0,0,0,0,0,1);
+		zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,0,0,0,0,0, 0,0,fname0, 0, 0,0,0,0,0,0,0,0,0,0,0,1);
+		zmqsocket3->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,0,0,0,0,0, 0,0,fname1, 0, 0,0,0,0,0,0,0,0,0,0,0,1);
+		
+		zmqsocket2->SendData((char*)dout,size/2);
+		zmqsocket3->SendData(((char*)dout)+size/2,size/2);
+		//	cprintf(GREEN, "Sent Data\n");
+
+
+		// zmqsocket2->SendHeaderData(0, true, SLS_DETECTOR_JSON_HEADER_VERSION);
+		// zmqsocket3->SendHeaderData(0, true, SLS_DETECTOR_JSON_HEADER_VERSION);
+
+		//	cprintf(RED, "Received %d frames\n", nf);
+
+	    }
+	    
+	    
+	    if (nf>100)
+	      mt->setFrameMode(eFrame);
+	    filter->clearImage();
+
+
 #endif
-	  
-	  
+
 
 	mt->pushData(buff);
 	mt->nextThread();
+
+
 	mt->popFree(buff);
 	buff0=buff;
 	buff1=buff+offset*2+1280*2;
 	  
+
+
 	nf++;
 	
 

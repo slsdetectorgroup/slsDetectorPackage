@@ -253,16 +253,54 @@ template <class dataType> class analogDetector {
        \param iy pixel y coordinate
        \param cm 1 adds the value to common mod, 0 skips it. Defaults to 0. - not properly implemented
     */
-    virtual void addToPedestal(double val, int ix, int iy=0){ 
-      if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
+    virtual void addToPedestal(double val, int ix, int iy=0, int cm=0){ 
+      if (ix>=0 && ix<nx && iy>=0 && iy<ny) { 
+	if (cmSub && cm>0)  { 
+	  val-=	getCommonMode(ix, iy);
+	}
 	stat[iy][ix].addToPedestal(val); 
-	if (cmSub)  {
-	  if (det) if (det->isGood(ix, iy)==0) return;
-	  cmSub->addToCommonMode(val, ix, iy);
-	};
+	/* if (cmSub && cm>0)  { */
+	/*   if (det) if (det->isGood(ix, iy)==0) return; */
+	/*   cmSub->addToCommonMode(val, ix, iy); */
+	/* }; */
       };
     }
-    
+
+    double getCommonMode(int ix, int iy) {
+      if (cmSub) return cmSub->getCommonMode(ix, iy);
+      else return 0;
+    }
+
+    virtual void addToCommonMode(double val, int ix, int iy=0){ 
+      
+      if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
+	if (cmSub)  {
+	  if (det) if (det->isGood(ix, iy)==0) return;
+	  if (getNumpedestals(ix,iy)>0)
+	    cmSub->addToCommonMode(val-getPedestal(ix,iy), ix, iy);
+	};
+	
+      }
+    }   
+  
+    virtual void addToCommonMode(char *data){ 
+      if (cmSub) {
+	for (int ix=xmin; ix<xmax; ix++) {
+	  for (int iy=ymin; iy<ymax; iy++) { 
+	  if (getNumpedestals(ix,iy)>0) 
+	    addToCommonMode(data, ix, iy);
+	  }
+	}
+	cout << "cm " << getCommonMode(0,0) << " " << getCommonMode(1,0) << endl;
+      }
+    }      
+    virtual void addToCommonMode(char *data, int ix, int iy=0){ 
+      if (cmSub) {
+	if (det) if (det->isGood(ix, iy)==0) return;
+	if (getNumpedestals(ix,iy)>0)
+	    cmSub->addToCommonMode(subtractPedestal(data,ix,iy,0), ix, iy);
+      }
+    }      
     /**
        gets  pedestal (and common mode)
        \param ix pixel x coordinate
@@ -270,7 +308,13 @@ template <class dataType> class analogDetector {
        \param cm 0 (default) without common mode subtraction, 1 with common mode subtraction (if defined)
        \returns pedestal value
     */
-    virtual double getPedestal(int ix, int iy, int cm=0){if (ix>=0 && ix<nx && iy>=0 && iy<ny) if (cmSub && cm>0) return stat[iy][ix].getPedestal()-cmSub->getCommonMode(); else return stat[iy][ix].getPedestal(); else return -1;};
+    virtual double getPedestal(int ix, int iy, int cm=0){
+      if (ix>=0 && ix<nx && iy>=0 && iy<ny) 
+	if (cmSub && cm>0) 
+	  return stat[iy][ix].getPedestal()+getCommonMode(ix,iy); 
+	else return stat[iy][ix].getPedestal(); 
+      else return -1;
+    };
 
     /**
        gets  pedestal rms (i.e. noise)
@@ -278,9 +322,17 @@ template <class dataType> class analogDetector {
        \param iy pixel y coordinate
        \returns pedestal rms
     */
-    virtual double getPedestalRMS(int ix, int iy){if (ix>=0 && ix<nx && iy>=0 && iy<ny) return stat[iy][ix].getPedestalRMS();else return -1;};
+    virtual double getPedestalRMS(int ix, int iy){
+      if (ix>=0 && ix<nx && iy>=0 && iy<ny) 
+	return stat[iy][ix].getPedestalRMS();
+      else return -1;
+    };
 
-   
+     virtual int getNumpedestals(int ix, int iy){
+      if (ix>=0 && ix<nx && iy>=0 && iy<ny) 
+	return stat[iy][ix].getNumpedestals();
+      else return -1;
+    };
     /**
        gets  pedestal (and common mode)
        \param ix pixel x coordinate
@@ -419,9 +471,6 @@ template <class dataType> class analogDetector {
       gm=new float[nx*ny];
       for (int ix=0; ix<nx; ix++) {
 	for (int iy=0; iy<ny; iy++) {
-	  if (cmSub) 
-	    gm[iy*nx+ix]=stat[iy][ix].getPedestal()-cmSub->getCommonMode();
-	  else
 	    gm[iy*nx+ix]=stat[iy][ix].getPedestal();
 	}
       }
@@ -538,17 +587,18 @@ template <class dataType> class analogDetector {
        \param data pointer to the data
     */
     
-    virtual void addToPedestal(char *data) {
+  virtual void addToPedestal(char *data, int cm=0) {
       
       
       newFrame();
-      
-      
+      if (cmSub) {
+	addToCommonMode(data);
+      }
+            
       for (int ix=xmin; ix<xmax; ix++) {
 	for (int iy=ymin; iy<ymax; iy++) {
-	  
-	  
-	  addToPedestal(data,ix,iy);
+  
+	  addToPedestal(data,ix,iy, 1);
 	  
 	  
 	}
@@ -608,7 +658,7 @@ template <class dataType> class analogDetector {
     */
 
 
-    virtual void addToPedestal(char *data, int ix, int iy=0) {
+    virtual void addToPedestal(char *data, int ix, int iy=0, int cm=0) {
       
       
       double val;
@@ -618,7 +668,8 @@ template <class dataType> class analogDetector {
 	  val=dataSign*det->getValue(data, ix, iy);
 	else
 	  val=((double*)data)[iy*nx+ix];
-	
+	if (cm && cmSub)
+	  val-=getCommonMode(ix,iy);
 	addToPedestal(val,ix,iy);
       }
       return  ;
@@ -634,7 +685,7 @@ template <class dataType> class analogDetector {
     */
 
         
-   virtual  double *subtractPedestal(char *data, double *val=NULL) {
+    virtual  double *subtractPedestal(char *data, double *val=NULL, int cm=0) {
       
       newFrame();
 
@@ -643,7 +694,7 @@ template <class dataType> class analogDetector {
 
       for (int ix=xmin; ix<xmax; ix++) {
 	for (int iy=ymin; iy<ymax; iy++) {
-	  val[iy*nx+ix]+=subtractPedestal(data, ix, iy);
+	  val[iy*nx+ix]+=subtractPedestal(data, ix, iy, cm);
 	}
       }
       return  val;
@@ -662,18 +713,20 @@ template <class dataType> class analogDetector {
 
 
 
-   virtual  double subtractPedestal(char *data, int ix, int iy=0) {
+   virtual  double subtractPedestal(char *data, int ix, int iy=0, int cm=0) {
      double g=1.;
       if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
 	if (gmap) {
 	  g=gmap[iy*nx+ix];
 	  if (g==0) g=-1.;
 	}
-
-	if (det)
-	  return (dataSign*det->getValue(data, ix, iy)-getPedestal(ix,iy))/g;
+	
+	if (det) {
+	  // cout << det->getValue(data, ix, iy) << " " << getPedestal(ix,iy) << " " <<  (dataSign*det->getValue(data, ix, iy)-getPedestal(ix,iy))/g << endl;
+	  return (dataSign*det->getValue(data, ix, iy)-getPedestal(ix,iy, cm))/g;
+	}
 	else
-	  return (((double*)data)[iy*nx+ix]-getPedestal(ix,iy))/g;
+	  return (((double*)data)[iy*nx+ix]-getPedestal(ix,iy,cm))/g;
       }
    };
       
@@ -700,15 +753,22 @@ template <class dataType> class analogDetector {
 
    virtual  int getNPhotons(char *data, int ix, int iy=0) {
      int nph=0;
-     double v;
+     double v; 
+     int cm=0;
+     if (cmSub) cm=1;
      if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
-       v=subtractPedestal(data,ix,iy);
+       v=subtractPedestal(data,ix,iy,cm);
        if (thr>0) {
 	 v+=0.5*thr;
 	 nph=v/thr;
 	 return nph;
-       } else
-	 return v;
+       } else { 
+	 // cout << v << endl;
+	 //if (v>0)
+	   return v;
+	   //else
+	   //return 0;
+       }
      }
      return 0;  
    };
@@ -721,10 +781,14 @@ template <class dataType> class analogDetector {
    */
      int *getNPhotons(char *data,  int *nph=NULL) {
        
-       double val;
+       //  double val;
      if (nph==NULL)
        nph=image;
      newFrame();
+
+
+     addToCommonMode(data);
+
      for (int ix=xmin; ix<xmax; ix++) {
        for (int iy=ymin; iy<ymax; iy++) {
 	 nph[iy*nx+ix]+=getNPhotons(data, ix, iy);

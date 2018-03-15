@@ -1,9 +1,9 @@
 Path: slsDetectorsPackage/slsReceiverSoftware 
-URL: origin git@git.psi.ch:sls_detectors_software/slsDetectorPackage.git 
-Repository Root: origin git@git.psi.ch:sls_detectors_software/slsDetectorPackage.git 
-Repsitory UUID: 7436d6c8d3538cef443e0fa76bc01762fd6cc246 
-Revision: 688 
-Branch: 3.0.1 
-Last Changed Author: Dhanya_Maliakal 
-Last Changed Rev: 3186 
-Last Changed Date: 2017-12-06 08:45:14.000000002 +0100 ./src/UDPStandardImplementation.cpp
+URL: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
+Repository Root: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
+Repsitory UUID: b58c3e8951625ed9124669404f6b68aca340a1b8 
+Revision: 764 
+Branch: developer 
+Last Changed Author: Dhanya_Thattil 
+Last Changed Rev: 3727 
+Last Changed Date: 2018-03-13 10:29:32.000000002 +0100 ./src/slsReceiverTCPIPInterface.cpp

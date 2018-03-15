@@ -4,8 +4,6 @@
 #include "mcb_funcs.h"
 #include "registers_g.h"
 
-#include "AD9257.h"		// include "commonServerFunctions.h"
-
 #ifdef SHAREDMEMORY
 #include "sharedmemory.h"
 #endif
@@ -15,7 +13,7 @@
 #include <sys/stat.h>
 
 #include <stdlib.h>
-
+#include <math.h>
 
 
 //for memory mapping
@@ -53,7 +51,7 @@ int ififostart, ififostop, ififostep, ififo;
 
 int masterMode=NO_MASTER, syncMode=NO_SYNCHRONIZATION, timingMode=AUTO_TIMING;
 
-enum externalSignalFlag  signals[4]={EXT_SIG_OFF, EXT_SIG_OFF, EXT_SIG_OFF, EXT_SIG_OFF};
+enum externalSignalFlag  signalMode=EXT_SIG_OFF;
 
 
 //for the 25um detectors
@@ -64,6 +62,7 @@ int adcphase = 0;
 int slavepatternphase = 0;
 int slaveadcphase = 0;
 int rsttosw1delay = 2;
+int startacqdelay = 1;
 
 
 #ifdef MCB_FUNCS
@@ -295,6 +294,8 @@ void setMasterSlaveConfiguration(){
 				slaveadcphase = ival;
 			else if (!strcasecmp(key,"rsttosw1delay"))
 				rsttosw1delay = ival;
+            else if (!strcasecmp(key,"startacqdelay"))
+                startacqdelay = ival;
 			else {
 				cprintf(RED,"could not scan parameter name %s from config file\n",key);
 				exit(EXIT_FAILURE);
@@ -309,13 +310,15 @@ void setMasterSlaveConfiguration(){
 			"slavepatternphase:%d\n"
 			"slaveadcphase:%d\n"
 			"rsttosw1delay:%d\n",
+	        "startacqdelay:%d\n",
 			masterflags,
 			masterdefaultdelay,
 			patternphase,
 			adcphase,
 			slavepatternphase,
 			slaveadcphase,
-			rsttosw1delay);
+			rsttosw1delay,
+			startacqdelay);
 
 
 
@@ -343,16 +346,24 @@ void setMasterSlaveConfiguration(){
 		val = (val & (~(PLL_CLK_SEL_MSK))) | PLL_CLK_SEL_SLAVE_ADC_VAL;
 		bus_w(MULTI_PURPOSE_REG,val);
 		setPhaseShift(slaveadcphase);
+	    /* Set start acq delay */
+	    val=bus_r(MULTI_PURPOSE_REG);
+#ifdef VERBOSE
+	    printf("Multipurpose reg:0x%x\n",bus_r(MULTI_PURPOSE_REG));
+#endif
+	    val = (val & (~(START_ACQ_DELAY_MSK))) | ((startacqdelay << START_ACQ_DELAY_OFFSET) & (START_ACQ_DELAY_MSK));
+	    bus_w(MULTI_PURPOSE_REG,val);
+	    printf("Start acq delay set. Multipurpose reg: 0x%x\n",bus_r(MULTI_PURPOSE_REG));
 	}
 
 	/* Set RST to SW1 delay */
 	val=bus_r(MULTI_PURPOSE_REG);
-	//#ifdef VERBOSE
-	printf("Value of multipurpose reg:%d\n",bus_r(MULTI_PURPOSE_REG));
-	//#endif
+#ifdef VERBOSE
+	  printf("Multipurpose reg:0x%x\n",bus_r(MULTI_PURPOSE_REG));
+#endif
 	val = (val & (~(RST_TO_SW1_DELAY_MSK))) | ((rsttosw1delay << RST_TO_SW1_DELAY_OFFSET) & (RST_TO_SW1_DELAY_MSK));
 	bus_w(MULTI_PURPOSE_REG,val);
-
+	printf("RST to SW1 delay set. Multipurpose reg:0x%x\n",bus_r(MULTI_PURPOSE_REG));
 
 	fclose(fd);
 }
@@ -544,259 +555,109 @@ u_int32_t getTotDutyCycle() {
 }
 
 
-u_int32_t setExtSignal(int d, enum externalSignalFlag  mode) {
+u_int32_t setExtSignal(enum externalSignalFlag  mode) {
 
-	//int modes[]={EXT_SIG_OFF, EXT_GATE_IN_ACTIVEHIGH, EXT_GATE_IN_ACTIVELOW,EXT_TRIG_IN_RISING,EXT_TRIG_IN_FALLING,EXT_RO_TRIG_IN_RISING, EXT_RO_TRIG_IN_FALLING,EXT_GATE_OUT_ACTIVEHIGH, EXT_GATE_OUT_ACTIVELOW, EXT_TRIG_OUT_RISING, EXT_TRIG_OUT_FALLING, EXT_RO_TRIG_OUT_RISING, EXT_RO_TRIG_OUT_FALLING};
-	// int off=d*SIGNAL_OFFSET;
+    u_int32_t c;
+    c = bus_r(EXT_SIGNAL_REG);
 
-	u_int32_t c;
-	c=bus_r(EXT_SIGNAL_REG);
-
-	if (d>=0 && d<4) {
-		signals[d]=mode;
 #ifdef VERBOSE
-		printf("settings signal variable number %d to value %04x\n", d, signals[d]);
+    printf("settings signal variable number %d to value %04x\n", d, signals[d]);
 #endif
 
-		// if output signal, set it!
+    switch (mode) {
+    case TRIGGER_IN_RISING_EDGE:
+    case TRIGGER_IN_FALLING_EDGE:
 
-		switch (mode) {
-		case GATE_IN_ACTIVE_HIGH:
-		case GATE_IN_ACTIVE_LOW:
-			if (timingMode==GATE_FIX_NUMBER || timingMode==GATE_WITH_START_TRIGGER)
-				setFPGASignal(d,mode);
-			else
-				setFPGASignal(d,SIGNAL_OFF);
-			break;
-		case TRIGGER_IN_RISING_EDGE:
-		case TRIGGER_IN_FALLING_EDGE:
-			if (timingMode==TRIGGER_EXPOSURE || timingMode==GATE_WITH_START_TRIGGER)
-				setFPGASignal(d,mode);
-			else
-				setFPGASignal(d,SIGNAL_OFF);
-			break;
-		case RO_TRIGGER_IN_RISING_EDGE:
-		case RO_TRIGGER_IN_FALLING_EDGE:
-			if (timingMode==TRIGGER_READOUT)
-				setFPGASignal(d,mode);
-			else
-				setFPGASignal(d,SIGNAL_OFF);
-			break;
-		case MASTER_SLAVE_SYNCHRONIZATION:
-			setSynchronization(syncMode);
-			break;
-		default:
-			setFPGASignal(d,mode);
-			break;
-		}
+        // set variable
+        signalMode = mode;
 
-		setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
-	}
+        // set signal only if trigger mode
+        if (timingMode==TRIGGER_EXPOSURE)
+            setFPGASignal(mode);
+        // switch off if not trigger mode, but variable remembers value
+        else
+            setFPGASignal(SIGNAL_OFF);
+        break;
+
+    default:
+        mode = SIGNAL_OFF;
+        signalMode = mode;
+        setFPGASignal(mode);
+        break;
+    }
+
+    return getExtSignal();
+}
 
 
-//  if (mode<=RO_TRIGGER_OUT_FALLING_EDGE && mode>=0)
-//    bus_w(EXT_SIGNAL_REG,((modes[mode])<<off)|(c&~(SIGNAL_MASK<<off)));
+int getExtSignal() {
+    return signalMode;
+}
 
 
-  return getExtSignal(d);
+u_int32_t setFPGASignal(enum externalSignalFlag  mode) {
+
+    u_int32_t c = bus_r(EXT_SIGNAL_REG);
+    // offset is 0 as we only deal with the first signal index now. //int off = d * SIGNAL_OFFSET;
+
+    // check and then write
+    if ((mode == SIGNAL_OFF) || (mode == TRIGGER_IN_RISING_EDGE) || (mode == TRIGGER_IN_FALLING_EDGE)) {
+#ifdef VERBOSE
+        printf("writing signal register number %d mode %04x\n",0, (int) mode);
+#endif
+        bus_w(EXT_SIGNAL_REG,( (c &~ (SIGNAL_MASK))  | ((int)mode) ));
+    }
+    return getFPGASignal();
 }
 
 
 
-u_int32_t setFPGASignal(int d, enum externalSignalFlag  mode) {
 
+int getFPGASignal() {
 
-  int modes[]={EXT_SIG_OFF, EXT_GATE_IN_ACTIVEHIGH, EXT_GATE_IN_ACTIVELOW,EXT_TRIG_IN_RISING,EXT_TRIG_IN_FALLING,EXT_RO_TRIG_IN_RISING, EXT_RO_TRIG_IN_FALLING,EXT_GATE_OUT_ACTIVEHIGH, EXT_GATE_OUT_ACTIVELOW, EXT_TRIG_OUT_RISING, EXT_TRIG_OUT_FALLING, EXT_RO_TRIG_OUT_RISING, EXT_RO_TRIG_OUT_FALLING};
+    // offset is 0 as we only deal with the first signal index now. //int off = d * SIGNAL_OFFSET;
+    int mode = ((bus_r(EXT_SIGNAL_REG)) & SIGNAL_MASK);
 
-  u_int32_t c;
-  int off=d*SIGNAL_OFFSET;
-  c=bus_r(EXT_SIGNAL_REG);
-
-
-  if (mode<=RO_TRIGGER_OUT_FALLING_EDGE &&  mode>=0) {
-#ifdef VERBOSE
-    printf("writing signal register number %d mode %04x\n",d, modes[mode]);
+    // check and then update variable
+    if ((mode == SIGNAL_OFF) || (mode == TRIGGER_IN_RISING_EDGE) || (mode == TRIGGER_IN_FALLING_EDGE)) {
+     #ifdef VERYVERBOSE
+        printf("gettings signal register number %d  value %04x\n", d, (int)mode);
 #endif
-    bus_w(EXT_SIGNAL_REG,((modes[mode])<<off)|(c&~(SIGNAL_MASK<<off)));
-  }
-  return getExtSignal(d);
-}
-
-
-
-int getExtSignal(int d) {
-
-/*  int modes[]={SIGNAL_OFF, GATE_IN_ACTIVE_HIGH, GATE_IN_ACTIVE_LOW,TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE,RO_TRIGGER_IN_RISING_EDGE, RO_TRIGGER_IN_FALLING_EDGE, GATE_OUT_ACTIVE_HIGH,   GATE_OUT_ACTIVE_LOW, TRIGGER_OUT_RISING_EDGE, TRIGGER_OUT_FALLING_EDGE, RO_TRIGGER_OUT_RISING_EDGE,RO_TRIGGER_OUT_FALLING_EDGE};
-
-    int off=d*SIGNAL_OFFSET;
-    int mode=((bus_r(EXT_SIGNAL_REG)&(SIGNAL_MASK<<off))>>off);
-
-    if (mode<RO_TRIGGER_OUT_FALLING_EDGE)
-      return modes[mode];
-    else 
-      return -1;*/
-
-	if (d>=0 && d<4) {
-#ifdef VERBOSE
-		printf("gettings signal variable number %d  value %04x\n", d, signals[d]);
-#endif
-		return signals[d];
-	} else
-		return -1;
-
-
-}
-
-
-int getFPGASignal(int d) {
-
-  int modes[]={SIGNAL_OFF, GATE_IN_ACTIVE_HIGH, GATE_IN_ACTIVE_LOW,TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE,RO_TRIGGER_IN_RISING_EDGE, RO_TRIGGER_IN_FALLING_EDGE, GATE_OUT_ACTIVE_HIGH,   GATE_OUT_ACTIVE_LOW, TRIGGER_OUT_RISING_EDGE, TRIGGER_OUT_FALLING_EDGE, RO_TRIGGER_OUT_RISING_EDGE,RO_TRIGGER_OUT_FALLING_EDGE};
-
-    int off=d*SIGNAL_OFFSET;
-    int mode=((bus_r(EXT_SIGNAL_REG)&(SIGNAL_MASK<<off))>>off);
-
-    if (mode<=RO_TRIGGER_OUT_FALLING_EDGE) {
-      if (modes[mode]!=SIGNAL_OFF && signals[d]!=MASTER_SLAVE_SYNCHRONIZATION)
-	signals[d]=modes[mode];
-#ifdef VERYVERBOSE
-      printf("gettings signal register number %d  value %04x\n", d, modes[mode]);
-#endif
-      return modes[mode];
+        return (int)mode;
     } else
-      return -1;
-
+        return -1;
 }
 
 
 
-
-
-/*
-enum externalCommunicationMode{
-  GET_EXTERNAL_COMMUNICATION_MODE,
-  AUTO,
-  TRIGGER_EXPOSURE_SERIES,
-  TRIGGER_EXPOSURE_BURST,
-  TRIGGER_READOUT,
-  TRIGGER_COINCIDENCE_WITH_INTERNAL_ENABLE,
-  GATE_FIX_NUMBER,
-  GATE_FIX_DURATION,
-  GATE_WITH_START_TRIGGER,
-  GATE_COINCIDENCE_WITH_INTERNAL_ENABLE
-};
-*/
 
 
 int setTiming(int ti) {
 
+    // set
+    if (ti != GET_EXTERNAL_COMMUNICATION_MODE) {
 
-  int ret=GET_EXTERNAL_COMMUNICATION_MODE;
+        // trigger
+        if (ti == TRIGGER_EXPOSURE) {
+            timingMode = ti;
+            if ((signalMode == TRIGGER_IN_RISING_EDGE) || (signalMode == TRIGGER_IN_FALLING_EDGE))
+                setFPGASignal(signalMode);
+            else
+                setFPGASignal(SIGNAL_OFF); // only if both (timing & extsig) configured, its set to trigger, else off
+        }
 
-  int g=-1, t=-1, rot=-1;
-
-  int i;
-
-  switch (ti) {
-  case AUTO_TIMING:
-    timingMode=ti;
-    // disable all gates/triggers in except if used for master/slave synchronization
-    for (i=0; i<4; i++) {
-      if (getFPGASignal(i)>0 && getFPGASignal(i)<GATE_OUT_ACTIVE_HIGH && signals[i]!=MASTER_SLAVE_SYNCHRONIZATION)
-	setFPGASignal(i,SIGNAL_OFF);
+        // auto
+        else {
+            timingMode = AUTO_TIMING;
+            setFPGASignal(SIGNAL_OFF);
+        }
     }
-    break;
 
-  case   TRIGGER_EXPOSURE:
-    timingMode=ti;
-    // if one of the signals is configured to be trigger, set it and unset possible gates
-    for (i=0; i<4; i++) {
-      if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
-	setFPGASignal(i,signals[i]);
-      else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
-	setFPGASignal(i,SIGNAL_OFF);
-      else if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
-	setFPGASignal(i,SIGNAL_OFF);
-
-    }
-    break;
-
-
-
-  case  TRIGGER_READOUT:
-    timingMode=ti;
-    // if one of the signals is configured to be trigger, set it and unset possible gates
-    for (i=0; i<4; i++) {
-      if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
-	setFPGASignal(i,signals[i]);
-      else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
-	setFPGASignal(i,SIGNAL_OFF);
-      else if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
-	setFPGASignal(i,SIGNAL_OFF);
-    }
-    break;
-
-  case GATE_FIX_NUMBER:
-    timingMode=ti;
-    // if one of the signals is configured to be trigger, set it and unset possible gates
-    for (i=0; i<4; i++) {
-      if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
-	setFPGASignal(i,SIGNAL_OFF);
-      else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
-	setFPGASignal(i,signals[i]);
-      else if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
-	setFPGASignal(i,SIGNAL_OFF);
-    }
-    break;
-
-
-
-  case GATE_WITH_START_TRIGGER:
-    timingMode=ti;
-    for (i=0; i<4; i++) {
-      if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
-	setFPGASignal(i,SIGNAL_OFF);
-      else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
-	setFPGASignal(i,signals[i]);
-      else if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
-	setFPGASignal(i,signals[i]);
-    }
-    break;
-
-  default:
-	  break;
-
-  }
-
-
-
-  for (i=0; i<4; i++) {
-    if (signals[i]!=MASTER_SLAVE_SYNCHRONIZATION) {
-      if (getFPGASignal(i)==RO_TRIGGER_IN_RISING_EDGE ||  getFPGASignal(i)==RO_TRIGGER_IN_FALLING_EDGE)
-	rot=i;
-      else if (getFPGASignal(i)==GATE_IN_ACTIVE_HIGH || getFPGASignal(i)==GATE_IN_ACTIVE_LOW)
-	g=i;
-      else if (getFPGASignal(i)==TRIGGER_IN_RISING_EDGE ||  getFPGASignal(i)==TRIGGER_IN_FALLING_EDGE)
-	t=i;
-    }
-  }
-
-
-  if (g>=0 && t>=0 && rot<0) {
-    ret=GATE_WITH_START_TRIGGER;
-  } else if (g<0 && t>=0 && rot<0) {
-    ret=TRIGGER_EXPOSURE;
-  } else if (g>=0 && t<0 && rot<0) {
-    ret=GATE_FIX_NUMBER;
-  } else if (g<0 && t<0 && rot>0) {
-    ret=TRIGGER_READOUT;
-  } else if (g<0 && t<0 && rot<0) {
-    ret=AUTO_TIMING;
-  }
-
-  // timingMode=ret;
-
-  return ret;
-
+    // get
+    int s = getFPGASignal();
+    if ((s == TRIGGER_IN_RISING_EDGE) || (s == TRIGGER_IN_FALLING_EDGE))
+        return TRIGGER_EXPOSURE;
+    return AUTO_TIMING;
 }
 
 
@@ -1158,13 +1019,13 @@ int64_t getActualTime(){
 
 int64_t getMeasurementTime(){
   int64_t v=get64BitReg(GET_MEASUREMENT_TIME_LSB_REG, GET_MEASUREMENT_TIME_MSB_REG);
-  u_int64_t mask=0x8000000000000000;
+ /* u_int64_t mask=0x8000000000000000;
   if (v & mask ) {
 #ifdef VERBOSE
     printf("no measurement time left\n");
 #endif
     return -1E+9;
-  } else
+  } else*/
     return v/(1E-9*CLK_FREQ);
 }
 
@@ -1613,6 +1474,7 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 #endif 
 	//  if(val!=0x2820) return -1;
 
+    usleep(1000 * 1000);
 
 	return adcConfigured;
 }
@@ -1675,12 +1537,8 @@ int startStateMachine(){
 int stopStateMachine(){
 
 //#ifdef VERBOSE
-	  printf("*******Stopping State Machine*******\n");
+	  cprintf(BG_RED,"*******Stopping State Machine*******\n");
 //#endif
-#ifdef SHAREDMEMORY
-  write_stop_sm(1);
-  write_status_sm("Stopped");
-#endif
   bus_w16(CONTROL_REG, STOP_ACQ_BIT);
   bus_w16(CONTROL_REG, 0x0);
   usleep(500);
@@ -2139,239 +1997,13 @@ int clearRAM() {
 
 
 int setMaster(int f) {
-
-	int i;
-	switch(f) {
-	case NO_MASTER:
-		// switch of gates or triggers
-		masterMode=NO_MASTER;
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				setFPGASignal(i,SIGNAL_OFF);
-			}
-		}
-		break;
-	case IS_MASTER:
-		// configure gate or trigger out
-		masterMode=IS_MASTER;
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				switch (syncMode) {
-				case NO_SYNCHRONIZATION:
-					setFPGASignal(i,SIGNAL_OFF);
-					break;
-				case MASTER_GATES:
-					setFPGASignal(i,GATE_OUT_ACTIVE_HIGH);
-					break;
-				case MASTER_TRIGGERS:
-					setFPGASignal(i,TRIGGER_OUT_RISING_EDGE);
-					break;
-				case SLAVE_STARTS_WHEN_MASTER_STOPS:
-					setFPGASignal(i,RO_TRIGGER_OUT_RISING_EDGE);
-					break;
-				default:
-					;
-				}
-			}
-		}
-		break;
-	case IS_SLAVE:
-		// configure gate or trigger in
-		masterMode=IS_SLAVE;
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				switch (syncMode) {
-				case NO_SYNCHRONIZATION:
-					setFPGASignal(i,SIGNAL_OFF);
-					break;
-				case MASTER_GATES:
-					setFPGASignal(i,GATE_IN_ACTIVE_HIGH);
-					break;
-				case MASTER_TRIGGERS:
-					setFPGASignal(i,TRIGGER_IN_RISING_EDGE);
-					break;
-				case SLAVE_STARTS_WHEN_MASTER_STOPS:
-					setFPGASignal(i,TRIGGER_IN_RISING_EDGE);
-					break;
-				default:
-					;
-				}
-			}
-		}
-		break;
-	default:
-		//do nothing
-		break;
-	}
-
-	switch(masterMode) {
-	case NO_MASTER:
-		return NO_MASTER;
-
-
-	case IS_MASTER:
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				switch (syncMode) {
-				case NO_SYNCHRONIZATION:
-					return IS_MASTER;
-				case MASTER_GATES:
-					if (getFPGASignal(i)==GATE_OUT_ACTIVE_HIGH)
-						return IS_MASTER;
-					else
-						return NO_MASTER;
-				case MASTER_TRIGGERS:
-					if (getFPGASignal(i)==TRIGGER_OUT_RISING_EDGE)
-						return IS_MASTER;
-					else
-						return NO_MASTER;
-				case SLAVE_STARTS_WHEN_MASTER_STOPS:
-					if (getFPGASignal(i)==RO_TRIGGER_OUT_RISING_EDGE)
-						return IS_MASTER;
-					else
-						return NO_MASTER;
-				default:
-					return NO_MASTER;
-				}
-
-			}
-		}
-		break;
-
-	case IS_SLAVE:
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				switch (syncMode) {
-				case NO_SYNCHRONIZATION:
-					return IS_SLAVE;
-				case MASTER_GATES:
-					if (getFPGASignal(i)==GATE_IN_ACTIVE_HIGH)
-						return IS_SLAVE;
-					else
-						return NO_MASTER;
-				case MASTER_TRIGGERS:
-				case SLAVE_STARTS_WHEN_MASTER_STOPS:
-					if (getFPGASignal(i)==TRIGGER_IN_RISING_EDGE)
-						return IS_SLAVE;
-					else
-						return NO_MASTER;
-				default:
-					return NO_MASTER;
-				}
-			}
-		}
-		break;
-	}
-	return masterMode;
+    return NO_MASTER;
 }
 
 
 
 int setSynchronization(int s) {
-
-	int i;
-
-	switch(s) {
-	case NO_SYNCHRONIZATION:
-		syncMode=NO_SYNCHRONIZATION;
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				setFPGASignal(i,SIGNAL_OFF);
-			}
-		}
-		break;
-		// disable external signals?
-	case MASTER_GATES:
-		// configure gate in or out
-		syncMode=MASTER_GATES;
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				if (masterMode==IS_MASTER)
-					setFPGASignal(i,GATE_OUT_ACTIVE_HIGH);
-				else if (masterMode==IS_SLAVE)
-					setFPGASignal(i,GATE_IN_ACTIVE_HIGH);
-			}
-		}
-
-		break;
-	case MASTER_TRIGGERS:
-		// configure trigger in or out
-		syncMode=MASTER_TRIGGERS;
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				if (masterMode==IS_MASTER)
-					setFPGASignal(i,TRIGGER_OUT_RISING_EDGE);
-				else if (masterMode==IS_SLAVE)
-					setFPGASignal(i,TRIGGER_IN_RISING_EDGE);
-			}
-		}
-		break;
-
-
-	case SLAVE_STARTS_WHEN_MASTER_STOPS:
-		// configure trigger in or out
-		syncMode=SLAVE_STARTS_WHEN_MASTER_STOPS;
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				if (masterMode==IS_MASTER)
-					setFPGASignal(i,RO_TRIGGER_OUT_RISING_EDGE);
-				else if (masterMode==IS_SLAVE)
-					setFPGASignal(i,TRIGGER_IN_RISING_EDGE);
-			}
-		}
-		break;
-
-
-	default:
-		//do nothing
-		break;
-	}
-
-	switch (syncMode) {
-
-	case NO_SYNCHRONIZATION:
-		return NO_SYNCHRONIZATION;
-
-	case MASTER_GATES:
-
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				if (masterMode==IS_MASTER && getFPGASignal(i)==GATE_OUT_ACTIVE_HIGH)
-					return MASTER_GATES;
-				else if (masterMode==IS_SLAVE && getFPGASignal(i)==GATE_IN_ACTIVE_HIGH)
-					return MASTER_GATES;
-			}
-		}
-		return NO_SYNCHRONIZATION;
-
-	case MASTER_TRIGGERS:
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				if (masterMode==IS_MASTER && getFPGASignal(i)==TRIGGER_OUT_RISING_EDGE)
-					return MASTER_TRIGGERS;
-				else if (masterMode==IS_SLAVE && getFPGASignal(i)==TRIGGER_IN_RISING_EDGE)
-					return MASTER_TRIGGERS;
-			}
-		}
-		return NO_SYNCHRONIZATION;
-
-	case SLAVE_STARTS_WHEN_MASTER_STOPS:
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				if (masterMode==IS_MASTER &&	getFPGASignal(i)==RO_TRIGGER_OUT_RISING_EDGE)
-					return SLAVE_STARTS_WHEN_MASTER_STOPS;
-				else if (masterMode==IS_SLAVE && getFPGASignal(i)==TRIGGER_IN_RISING_EDGE)
-					return SLAVE_STARTS_WHEN_MASTER_STOPS;
-			}
-		}
-		return NO_SYNCHRONIZATION;
-
-	default:
-		return NO_SYNCHRONIZATION;
-
-	}
-	return NO_SYNCHRONIZATION;
-
+    return NO_SYNCHRONIZATION;
 }
 
 

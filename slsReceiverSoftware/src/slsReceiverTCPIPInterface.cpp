@@ -631,17 +631,18 @@ int slsReceiverTCPIPInterface::send_update() {
 	char defaultVal[MAX_STR_LENGTH];
 	memset(defaultVal, 0, sizeof(defaultVal));
 	char* path = NULL;
+	int n = 0;
 
-	mySock->SendDataOnly(mySock->lastClientIP,sizeof(mySock->lastClientIP));
+	n += mySock->SendDataOnly(mySock->lastClientIP,sizeof(mySock->lastClientIP));
 
 	// filepath
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	path = receiverBase->getFilePath();
 #endif
 	if (path == NULL)
-		mySock->SendDataOnly(defaultVal,MAX_STR_LENGTH);
+	    n += mySock->SendDataOnly(defaultVal,MAX_STR_LENGTH);
 	else {
-		mySock->SendDataOnly(path,MAX_STR_LENGTH);
+	    n += mySock->SendDataOnly(path,MAX_STR_LENGTH);
 		delete[] path;
 	}
 
@@ -650,9 +651,9 @@ int slsReceiverTCPIPInterface::send_update() {
 	path = receiverBase->getFileName();
 #endif
 	if(path == NULL)
-		mySock->SendDataOnly(defaultVal,MAX_STR_LENGTH);
+	    n += mySock->SendDataOnly(defaultVal,MAX_STR_LENGTH);
 	else {
-		mySock->SendDataOnly(path,MAX_STR_LENGTH);
+	    n += mySock->SendDataOnly(path,MAX_STR_LENGTH);
 		delete[] path;
 	}
 
@@ -660,43 +661,43 @@ int slsReceiverTCPIPInterface::send_update() {
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=receiverBase->getFileIndex();
 #endif
-	mySock->SendDataOnly(&ind,sizeof(ind));
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	//file format
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getFileFormat();
 #endif
-	mySock->SendDataOnly(&ind,sizeof(ind));
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// file write enable
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getFileWriteEnable();
 #endif
-	mySock->SendDataOnly(&ind,sizeof(ind));
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// file overwrite enable
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getOverwriteEnable();
 #endif
-	mySock->SendDataOnly(&ind,sizeof(ind));
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// receiver read frequency
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getFrameToGuiFrequency();
 #endif
-	mySock->SendDataOnly(&ind,sizeof(ind));
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// streaming port
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getStreamingPort();
 #endif
-	mySock->SendDataOnly(&ind,sizeof(ind));
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// data streaming enable
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getDataStreamEnable();
 #endif
-	mySock->SendDataOnly(&ind,sizeof(ind));
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// streaming source ip
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS

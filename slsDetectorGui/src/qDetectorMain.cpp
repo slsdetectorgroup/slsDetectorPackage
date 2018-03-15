@@ -111,7 +111,7 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, int& ret,
 					+ "Usage: " + string(argv[0]) + " [arguments]\n"
 					+ "Possible arguments are:\n"
 					+ "\t-d, --developer           : Enables the developer tab\n"
-					+ "\t-f, --f, --config <fname> : Loads config from file\n"
+					+ "\t-f, --config <fname>      : Loads config from file\n"
 					+ "\t-i, --id <i>              : Sets the multi detector id to i. Default: 0. Required \n"
 					+ "\t                            only when more than one multi detector object is needed.\n\n";
 			cout << help_message << endl;
@@ -306,11 +306,8 @@ void qDetectorMain::SetUpDetector(const string fName){
 	cout << endl << "Type : " << slsDetectorBase::getDetectorType(detType) << "\nDetector : " << host << endl;
 //#endif
 	myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
-	if(detType != slsDetectorDefs::MYTHEN) {
-		if(myDet->setReceiverOnline(slsDetectorDefs::GET_ONLINE_FLAG) == slsDetectorDefs::ONLINE_FLAG) {
-			myDet->setReceiverOnline(slsDetectorDefs::ONLINE_FLAG);
-		}else cprintf(RED,"is not online!\n");
-	}
+	if(detType != slsDetectorDefs::MYTHEN)
+	    myDet->setReceiverOnline(slsDetectorDefs::ONLINE_FLAG);
 	qDefs::checkErrorMessage(myDet,"qDetectorMain::SetUpDetector");
 }
 

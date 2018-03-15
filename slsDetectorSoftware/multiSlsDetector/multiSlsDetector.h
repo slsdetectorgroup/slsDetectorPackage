@@ -532,7 +532,7 @@ class multiSlsDetector  : public slsDetectorUtils {
   int64_t getId(idMode mode, int imod=0);
   int digitalTest(digitalTestMode mode, int imod=0);
   int executeTrimming(trimMode mode, int par1, int par2, int imod=-1);
-  const char *getSettingsFile();
+  string getSettingsFile();
 
 
   int decodeNMod(int i, int &idet, int &imod);
@@ -553,6 +553,12 @@ class multiSlsDetector  : public slsDetectorUtils {
       \returns OK or FAIL
   */
   int powerChip(int ival= -1);
+
+  /** automatic comparator disable for Jungfrau only
+     \param ival on is 1, off is 0, -1 to get
+      \returns OK or FAIL
+  */
+  int setAutoComparatorDisableMode(int ival= -1);
 
   /** loads the modules settings/trimbits reading from a file -  file name extension is automatically generated! */
   int loadSettingsFile(string fname, int nmod=-1);
@@ -975,6 +981,31 @@ class multiSlsDetector  : public slsDetectorUtils {
      \returns current DAC value (temperature for eiger and jungfrau in millidegrees)
   */
   dacs_t getADC(dacIndex index, int imod=-1);
+
+  /**
+     set/gets threshold temperature (Jungfrau only)
+     \param val value in millidegrees, -1 gets
+     \param imod module number, -1 is all
+     \returns threshold temperature in millidegrees
+  */
+  int setThresholdTemperature(int val=-1, int imod=-1);
+
+  /**
+     enables/disables temperature control (Jungfrau only)
+     \param val value, -1 gets
+     \param imod module number, -1 is all
+     \returns temperature control enable
+  */
+  int setTemperatureControl(int val=-1, int imod=-1);
+
+  /**
+     Resets/ gets over-temperature event (Jungfrau only)
+     \param val value, -1 gets
+     \param imod module number, -1 is all
+     \returns over-temperature event
+  */
+  int setTemperatureEvent(int val=-1, int imod=-1);
+
   /**
      configure channel
      \param reg channel register
@@ -1069,13 +1100,13 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
 
-  int writeRegister(int addr, int val);
+  uint32_t writeRegister(uint32_t addr, uint32_t val);
   
 
   int writeAdcRegister(int addr, int val);
   
 
-  int readRegister(int addr);
+  uint32_t readRegister(uint32_t addr);
 
   /**
       sets a bit in a register
@@ -1085,7 +1116,7 @@ class multiSlsDetector  : public slsDetectorUtils {
 
       DO NOT USE!!! ONLY EXPERT USER!!!
   */
-  int setBit(int addr, int n);
+  uint32_t setBit(uint32_t addr, int n);
 
 
   /**
@@ -1096,7 +1127,7 @@ class multiSlsDetector  : public slsDetectorUtils {
 
       DO NOT USE!!! ONLY EXPERT USER!!!
   */
-  int clearBit(int addr, int n);
+  uint32_t clearBit(uint32_t addr, int n);
 
 
 
@@ -1209,6 +1240,8 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
   slsDetector *getSlsDetector(int pos) {if (pos>=0 && pos< MAXDET) return detectors[pos]; return NULL;};
+  //additional way of accessing
+  slsDetector *operator()(int pos) {if (pos>=0 && pos< MAXDET) return detectors[pos]; return NULL;};
 
 
 

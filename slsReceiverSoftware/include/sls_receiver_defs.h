@@ -196,6 +196,7 @@ public:
 	    case JUNGFRAU:    	return std::string("Jungfrau");	\
 	    case JUNGFRAUCTB:   return std::string("JungfrauCTB");	\
 	    case PROPIX:    	return std::string("Propix");	\
+	    case MYTHEN3:		return std::string("Mythen3");  \
 	    default:    		return std::string("Unknown");	\
 	    }};
 
@@ -213,6 +214,7 @@ public:
 	    if (type=="Jungfrau")    	return JUNGFRAU;	\
 	    if (type=="JungfrauCTB") 	return JUNGFRAUCTB;	\
 	    if (type=="Propix")    		return PROPIX;		\
+	    if (type=="Mythen3")		return MYTHEN3;		\
 	    							return GENERIC;		\
 	  };
 

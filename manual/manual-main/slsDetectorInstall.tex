@@ -3,135 +3,299 @@
 \usepackage[dvips]{graphicx}
 \usepackage{verbatim}
 \usepackage{hyperref}
+\usepackage{color}
+
+
+
 \begin{document}
 
 \title{SLS Detectors software installation}
-\author{Anna Bergamaschi}
+\author{Anna Bergamaschi, Dhanya Thattil}
 \date{\today}
 \maketitle
 \tableofcontents
 \clearpage
 
+%setcounter{tocdepth}{4} and \setcounter{secnumdepth}{4}
 
 
 
-The SLS detectors software is intended to control the detectors developed by the SLS Detectors group.
-
-It provides a command line interface (text client), a graphical user interface (GUI) as well as an API that can be embedded in your acquisitions system, some tools for detector calibration and the software to receive the data from detector with high data throughput (e.g. GOTTHARD, EIGER).
 
 
 
-\section{The software package}
+
+\section{The Software Package}
+The SLS detectors software is intended to control the detectors developed by
+the SLS Detectors group. The detectors currently supported are:
+
+\indent MYTHEN, GOTTHARD, EIGER and JUNGFRAU.
 
 
-The complete software package is composed of several programs which can be installed (or locally compiled) depending on the needs:
+The package provides software for the distributed system that comprises of
+detectors, data receivers (to process detector data), and the client (to control
+or monitor the system). The client and data receivers can be embedded in
+the user's acquisitions system. Furthermore, the package also provides some
+tools for detector calibration.
+
+\subsection{Binaries}
+\noindent The complete software package is composed of several programs which
+can be installed (or locally compiled) depending on one's requirements:
 
 \begin{itemize}
-\item The \textbf{slsDetector shared and static libraries} which are necessary for all user interfaces. \\
-  The class slsDetectorUsers can be used as API from your acquisition software (see separate documentation).
-\item The \textbf{command line interfaces (sls\_detector\_put, sls\_detector\_get, sls\_detector\_acquire, sls\_detector\_help)}, which are provided to communicate with the detectors using the command line and eventually to the data receiver
-\item The \textbf{data receiver (slsReceiver)}, which can be run on a different machine, receives the data from the detector and interfaces to the control software via TCP/IP for defining e.g. the file name, output path and return status and progress of the acquisition
-\item The  \textbf{graphical user interface (slsDetectorGUI)} which provides a user friendly way of operating the detectors with online data preview
-\item The  \textbf{calibration wizards (energyCalibrationWizard, angularCalibrationWizard)} to analyze the data and produce the energy or angular calibration files
-\item The  \textbf{GOTTHARD and MYTHEN virtual servers} to simulate the detectors behavior (however only control commands work, not the data acquisition itself)
+
+\item \textcolor{blue}{libSlsDetector.so, libSlsReceiver.so}:\\
+The \textit{slsDetector shared and static libraries}, which are
+necessary for all user interfaces. The \textit{C++ API} via the class
+\textit{slsDetectorUsers} (installed with the default package) or the
+\textit{Python API} via the class \textit{sls\_detector} (installed with the
+package including Python API), which can be used from the user's acquisition
+software to control the detectors and the data receivers.
+
+\item \textcolor{blue}{sls\_detector\_put, sls\_detector\_get,
+sls\_detector\_acquire, sls\_detector\_help}: \\
+The \textit{command line interfaces}, which are provided to communicate with the
+detectors and data receivers using the command line.
+
+\item \textcolor{blue}{slsReceiver}: \\
+The \textit{data receiver}, which can be run on a different machine than the
+client, receives the data from the detector and processes it. The receiver can
+be configured, controlled and monitored by the client.
+
+\item \textcolor{blue}{slsDetectorGUI}: \\
+The \textit{graphical user interface}, which provides a user friendly way
+of operating the detectors and data receivers with online data preview.
+
+\item \textcolor{blue}{energyCalibrationWizard,angularCalibrationWizard}: \\
+The \textit{calibration wizards} to analyze the data and produce the energy or
+angular calibration files.
+
+\item The \textit{virtual Detector servers} to simulate the detectors behavior.
+However, only control commands work, not the data acquisition itself.
 \end{itemize}
 
-Please refere to the SLS Detectors FAQ for additional documentation.
 
-\section{Requirements}
 
-The software is written in C/C++.\\
-It needs to be able to access the shared memeory of the control PC and communicate to the detectors over TCP/IP. Therefore the detector should receive a proper IP address (either DHCP or static) and no firewall should be present between th control PC and the detector.
 
-For installing the slsDetector shared and static libraries and the slsDetectorClient software, any Linux installation with a working gcc should be fine.
+\section{Install Binaries via Conda}
+This section is useful only if one wants to download only the binaries for
+specific distribution and use the package via command line. Please refer later
+sections to download source code and compile them.
 
-The slsDetectorGUI is based on Qt4 with Qwt libraries.
 
-The calibration wizards are based on the CERN Root data analysis framework.
+One can download and install Miniconda via 
 
-To compile the software you will need the whole Qt4, Qwt and Root installation, including the header files.\\
-To run the software, it is enough to have the Qt4, Qwt or Root libraries appended to the  \verb=LD_LIBRARY_PATH=.
+\url{https://conda.io/miniconda.html}
 
-\subsection{Qt4 installation}
 
-A Qt version equal or higher than 4.6 is required.
+The conda package uses Travis CI for continuous integration with
+automatic deployment to Anaconda Cloud. One can download only the package or the
+package including the python interface.
 
-You can retrieve the Qt4 libraries using YUM or download the open source version from e.g. \url{ftp://ftp.qt.nokia.com/qt/source/qt-everywhere-opensource-src-4.8.1.tar.gz}
+
+After the installation, the binaries will be available in your path.
+
+Please remember to clear shared memory after installation.
+\begin{verbatim}
+#displays list of shared memeory segments 
+ipcs -m
+#remove segments that have nattach equal to zero. They key is the first column
+ipcrm -M [key]
+\end{verbatim}
+
+\begin{itemize}
+ \item Only the package
+\begin{verbatim}
+#Add conda channels
+conda config --add channels conda-forge
+conda config --add channels slsdetectorgroup
+
+#Install latest version
+conda install sls_detector_software
+
+#Install specific release (GLIBC2.14)
+conda install sls_detector_software=3.1.0
+
+#Scientific Linux 6 version (GLIBC2.12)
+conda install sls_detector_software=SL6_3.1.0
+\end{verbatim}
+ \item The package including Python interface
+\begin{verbatim}
+#Add conda channels
+conda config --add channels conda-forge
+conda config --add channels sls_detector
+
+#Install latest version
+conda install sls_detector
+
+#Install specific release (GLIBC2.14)
+conda install sls_detector=3.1.0
+
+#Scientific Linux 6 version (GLIBC2.12)
+conda install sls_detector=SL6_3.1.0
+\end{verbatim}
+\end{itemize}
+
+
+\clearpage
+\section{Install via Source Code}
+This section is useful if one wants to use the API and embed it in their
+acquisition system, or if one wants to download the source code and compile.
+
+\subsection{Download Source Code}
+
+\begin{itemize}
+ \item Only the package
+\begin{verbatim}
+#Clone source code with specific release
+git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git --branch
+3.1.0
+\end{verbatim}
+ \item The package including Python interface
+\begin{verbatim}
+#Clone source code with specific release
+git clone https://github.com/slsdetectorgroup/sls_detector.git --branch
+3.1.0
+\end{verbatim}
+\end{itemize}
+
+
+
+\subsection{Requirements}
+These are the basic requirements to install and use the software. Fine Tuning
+the system will be discussed in other documentation provided.
+\begin{itemize}
+
+ \item \emph{C/C++}:\\
+The software is written in C/C++. If Python API is used, it is a wrap around
+to the C++ software.  Any Linux installation with working libgcc should be
+sufficient.
+
+ \item \emph{Shared Memory}:\\
+Access to the shared memory of the control PC is required for the client.
+
+ \item \emph{Network}:\\
+The control PC communicates to the detectors and data receivers over TCP/IP.
+Therefore, the detector should receive a proper IP address (either DHCP or
+static) and no firewall should be present between the control PC and the
+detector.
+
+\item \emph{Compilation}:\\
+cmake is required to compile. make is also possible, but is harder to find
+dependencies.
+
+\item \emph{GUI}:\\
+To use the GUI, one requires atleast Qt4.8.2 and Qwt6.0. Installation of these
+are discussed in the next sections.
+
+\item \emph{Calibration Wizards}:\\
+They are based on the CERN Root data analysis framework. Installation of it is
+discussed in the next sections.
+
+\end{itemize}
+
+
+\subsubsection{Qt4 Installation for GUI}
+It must be installed before Qwt. A Qt version equal or higher than 4.6 is
+required. One can install it:
+\begin{itemize}
+ \item via YUM:
+\begin{verbatim}
+ yum install qt-devel
+\end{verbatim}
+ \item via download from:\\
+\url{
+https://download.qt.io/archive/qt/4.8/4.8.2/qt-everywhere-opensource-src-4.8.2.t
+ar.gz} 
+
 
 To install:
 \begin{verbatim}
-> gunzip qt-everywhere-opensource-src-4.6.2.tar.gz
-> tar xvf qt-everywhere-opensource-src-4.6.2.tar
+> gunzip qt-everywhere-opensource-src-4.8.2.tar.gz
+> tar xvf qt-everywhere-opensource-src-4.8.2.tar
 > ./configure
 > make
 > make install
 \end{verbatim}
+By default Qt4 will be installed in /usr/local/Trolltech/Qt-4.8.2/. 
+\end{itemize}
 
-By default Qt4 will be installed int /usr/local/Trolltech/Qt-4.8.1/
-Edit your .bashrc to define the enviroment variable  \verb=QTDIR= and add the libraries and exacutables to your \verb=LD_LIBRARY_PATH= and \verb=PATH=:
+
+\textbf{Setup Environment} 
+
+
+One has to ensure that \verb=PATH= and \verb=LD_LIBRARY_PATH= have
+been updated to include Qt4 install path, binaries and libraries.
+Confirm by executing \verb=qmake -v= and ensuring the result points to Qt4 (not
+Qt3 or Qt5). 
+
+
+If the environment is not set up, one can add the libraries and
+executables to the .bashrc by adding
+\verb=LD_LIBRARY_PATH= and \verb=PATH=:
 \begin{verbatim}
-export QTDIR=/usr/local/Trolltech/Qt-4.8.1
+export QTDIR=/usr/local/Trolltech/Qt-4.8.2
 export PATH=$QTDIR/bin:$PATH
 export LD_LIBRARY_PATH=$QTDIR/lib:$LD_LIBRARY_PATH
 \end{verbatim}
 
-If your system also have Qt3 installed, make sure that  \verb=QTDIR=, \verb=PATH= and \verb=LD_LIBRARY_PATH= point to Qt4 before installing Qwt (and of course compiling and running the GUI).
 
-\subsection{Qwt installation}
-A Qwt version equal or higher than 5 is required.\\
-Before installing it, make sure that your  \verb=QTDIR=, \verb=LD_LIBRARY_PATH= and \verb=PATH= point to the correct Qt4 version.
+\subsubsection{Qwt Installation for GUI}
+Before installing Qwt, one must install Qt
+and ensure that \verb=QTDIR=, \verb=LD_LIBRARY_PATH= and \verb=PATH= point to
+the correct Qt4
+version.
 
-You can retrieve the Qwt libraries using YUM or download the open source version via svn:
+
+A Qwt version equal or higher than 6 is required. One can
+install it:
+\begin{itemize}
+ \item via YUM:
 \begin{verbatim}
-> svn co https://qwt.svn.sourceforge.net/svnroot/qwt/branches/qwt-6.0
+ yum install qwt-devel
 \end{verbatim}
+ \item via download from:\\
+\url{
+https://sourceforge.net/projects/qwt/files/qwt/6.0.0/qwt-6.0.0.zip/download}
+
 
 To install:
 \begin{verbatim}
-> cd qwt-6.0
+> cd qwt-6.0.0
 > qmake
 > make
 > make install
 \end{verbatim}
+By default Qwt will be installed int /usr/local/qwt-6.0.0 
+\end{itemize}
 
-By default Qwt will be installed in /usr/local/qwt-6.0
-Edit your .bashrc to define the enviroment variable \verb=QWTDIR= and add the libraries to the \verb=LD_LIBRARY_PATH=:
+\textbf{Setup Environment} 
+
+
+One has to ensure that \verb=QWTDIR= and \verb=LD_LIBRARY_PATH= have
+been updated to include Qwt install path and libraries.
+
+
+If the environment is not set up, one can add the libraries to the
+.bashrc by adding \verb=LD_LIBRARY_PATH=:
 \begin{verbatim}
-export QWTDIR=/usr/local/qwt-6.0-svn/
+export QWTDIR=/usr/local/qwt-6.0.0/
 export LD_LIBRARY_PATH=$QWTDIR/lib:$LD_LIBRARY_PATH
 \end{verbatim}
 
-\subsection{Installation with YUM}
-
-You must install the qt4 and qwt development package i.e.
-\begin{verbatim}
-> yum install qt-devel qwt-devel 
-\end{verbatim}
- and then edit edit your .bashrc as follows
-\begin{verbatim}
-export ROOTSYS=/opt/root/5.28.00
-export QTDIR=/usr/lib64/qt4
-export QWTDIR=/usr/include/qwt
-export PATH=$QTDIR:bin:$PATH
-\end{verbatim}
-
-You should then continue with the root installation.
-
-To compile, you should edit the file slsDetectorGui/slsDetectorGui.pro as follows.\\
-All lines containing \verb=$QTDIR= and \verb=$QWTDIR= should be commented, except in the INCLUDEPATH (\verb=$QWTDIR \=).\\
-Moreover the  \verb=LIBS= line should be changed \verb=-L$(QWTDIR)/lib= to \verb=-L$(QWTDIR)/lib64=. 
 
 
-\subsection{Root installation}
 
-The software has been developed and tested with root 5.20, but any version should work.
 
-Download the sources via svn:
+
+
+\subsubsection{Root Installation for Calibration Wizards}
+The software has been developed and tested with root 5.20, but any version
+should work. One can download it from:
 \begin{verbatim}
 > svn co https://root.cern.ch/svn/root/trunk root
 \end{verbatim}
 
-To install:
+\noindent To install:
 \begin{verbatim}
 > cd root
 > ./configure --enable-qt
@@ -139,120 +303,212 @@ To install:
 > make install
 \end{verbatim}
 
-Edit your .bashrc to define the ROOTSYS enviroment variable and annd the libraries and executables to the \verb=LD_LIBRARY_PATH= and \verb=PATH=:
+Edit your .bashrc to define the ROOTSYS enviroment variable and annd
+the libraries and executables to the \verb=LD_LIBRARY_PATH= and \verb=PATH=:
 \begin{verbatim}
-export ROOTSYS=/usr/local/root
+export ROOTSYS=/usr/local/root-5.34
 export PATH=$ROOTSYS/bin:$PATH
 export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
 \end{verbatim}
 
-You can also download the binaries, assuming that your linuc and gcc versions match:
+You can also download the binaries, assuming that your linux and gcc versions
+match as in:
 \begin{verbatim}
 http://root.cern.ch/drupal/content/production-version-534
 \end{verbatim}
 
 
-\section{Compilation} 
 
 
 
-If you simply want to install the software in the working directory you can:
+\subsection{Compilation}
+One requires \verb=cmake= to compile and can be done in two ways:
+
+\subsubsection{Using script cmk.sh}
+The script uses \verb=cmake=. After compiling, the libraries and executables
+will be found in `slsDetectorPackage/build/bin` directory.
+Usage: [-c] [-b] [-h] [-d HDF5 directory] [-j]
 \begin{itemize}
-\item[make] compile the library, the command line interface and the receiver 
-
-\item[make lib]  compile only the library 
-
-\item[make textclient] compile the command line interface (and the library, since it is required)
-
-\item[make stextclient] compile the command line interface statically linking the library (and the library, since it is required)
-
-\item[make receiver] compile the data reciever (and the library, since it is required)
-
-\item[make sreceiver] compile the data reciever statically linking the library (and the library, since it is required)
-
-\item[make gui]  compile slsDetectorGUI - requires a working Qt4 and Qwt installation
-
-\item[make calWiz] compile the calibration wizards - requires a working root installation
-
-\item[make doc] compile documentation in pdf format
-
-\item[make htmldoc] compile documentation in html format
-
-\item[make install\_lib]        installs the libraries, the text clients, the documentation and the includes for the API
-
-\item[make install]            installs all software, including the gui, the cal wizards and the includes for the API
-
-\item[make confinstall]         installs all software, including the gui, the cal wizards and the includes for the API, prompting for the install paths
-
-\item[make clean]              remove object files and executables
-
-\item[make help]               lists possible targets
-
-\item[make mythen\_virtual]     compile a virtual MYTHEN detector server (works for control commands, not for data taking)
-
-\item[make gotthard\_virtual]     compile a virtual GOTTHARD detector server (works for control commands, not for data taking)
+ \item -[no option]: only make
+ \item -c: Clean
+ \item -b: Builds/Rebuilds CMake files normal mode
+ \item -h: Builds/Rebuilds Cmake files with HDF5 package
+ \item -d: HDF5 Custom Directory
+ \item -t: Build/Rebuilds only text client
+ \item -r: Build/Rebuilds only receiver
+ \item -g: Build/Rebuilds only gui
+ \item -j: Number of threads to compile through
 \end{itemize}
 
-The path where the files binaries, libraries, documentation and includes  will be installed can either be defined interactively by sourcing the  \verb=configure= script (not executing!) or during compilation using \verb=make confinstall= or defined on the command line deifning one (or all) the following variables (normally \verb=INSTALLROOT= is enough:
-\begin{itemize}
-\item[INSTALLROOT] Directory where you want to install the software. Defaults to \verb=PWD= 
-\item[BINDIR] Directory where you want to install the binaries. Defaults to bin/
-\item[INCDIR] Directory where you want to pute the header files. Defaults to include
-\item[LIBDIR] Directory where you want to install the libraries. Defaults to bin/
-\item[DOCDIR] Directory where you want to copy the documentation. Defaults to doc/
-\end{itemize}
+Some example options for compilation:
+
+Most basic option: \verb=./cmk.sh -b=
+
+For only make: \verb=./cmk.sh=
+
+For make clean;make: \verb=./cmk.sh -c=
+
+For using hdf5 without custom dir /blabla: \verb=./cmk.sh -h -d /blabla=
+
+For rebuilding cmake without hdf5: \verb=./cmk.sh -b=
+
+For using multiple cores to compile faster: \verb=./cmk.sh -j9=
+
+For rebuilding only certain parts: \verb=./cmk.sh -tg= (only text client and
+gui)
+
+
+\subsubsection{Directly using cmake}
+
+Use cmake to create out-of-source builds, by creating a build folder parallel to
+source directory. 
+\begin{verbatim}
+ $ cd ..
+ $ mkdir slsDetectorPackage-build
+ $ cd slsDetectorPackage-build
+ $ cmake ../slsDetectorPackage  -DCMAKE_BUILD_TYPE=Debug -DUSE_HDF5=OFF 
+ $ make
+\end{verbatim}
+
+Use the following as an example to compile statically and using specific hdf5
+folder 
+\begin{verbatim}
+ $ HDF5_ROOT=/opt/hdf5v1.10.0 cmake ../slsDetectorPackage
+-DCMAKE_BUILD_TYPE=Debug -DUSE_HDF5=ON
+\end{verbatim}
+
+After compiling, the libraries and executables will be found at `bin` directory 
+\begin{verbatim}
+ $ ls bin/
+    gui_client  libSlsDetector.a  libSlsDetector.so  libSlsReceiver.a 
+libSlsReceiver.so    sls_detector_acquire  sls_detector_get  slsDetectorGui 
+sls_detector_help sls_detector_put  slsReceiver
+\end{verbatim}
 
 
 
-To be able to run the executables, append the \verb=BINDIR= directory to your \verb=PATH= and \verb=LIBDIR= to the \verb=LD_LIBRARY_PATH=.
 
-To run the GUI, you also need to add to your \verb=LD_LIBRARY_PATH= the Qt4 and Qwt libraries, without the need to install the whole Qt and Qwt developer package:
-\begin{itemize}
-\item libqwt.so.6 
-\item libQtGui.so.4 
-\item libQtCore.so.4 
-\item libQtSvg.so.4 
-\end{itemize}
+\subsection{Setting environment variables}
+One can set up the environment variables in the following ways.
 
-To run the calibration wizards it is preferrable to have a complete Root installation (binaries), with \verb=ROOTSYS= defined and the libraries added to the \verb=LD_LIBRARY_PATH=.
-
-
-\section{Detector upgrade}
-
-Sometimes the upgarde of the communication software, can require an upgrade of the software and/or firmware running on the detector as well.\\
-In these cases, the users are not expected to compile teh software themselves (which would require dedicated softwares) but only to download on the detector board the programming files and/or communication program provided by the SLS Detectors group.
-
-
-\subsection{MYTHEN upgrade}
-\subsubsection{Firmware upgrade}
-
-To upgrade the firmware you need either a working version of the Altera Quartus software or of the Quartus programmer, which can easly be downloade from \\
-\verb=https://www.altera.com/download/programming/quartus2/pq2-index.jsp= \\
-Normally installation of the software and of the driver for the USB-Blaster (provided together with the MYTHEN detector) are simpler under Windows.\\
-Under Windows, the first time that you connect the USB-Blasterto one of your USB ports, you will be asked to install new hardware. Set the path to search
-for the driver to: \verb=C:\altera\80sp1\qprogrammer\drivers\usb-blasterp= (where  \verb=C:\altera\80sp1\qprogrammer\= is assumed to be ther path where your Quartus version is installed).\\
+\subsubsection{Using .bashrc file}
 \begin{enumerate}
-\item After starting the Quartus programmer, click on Hardware Setup and in the "Currently selected hardware" window select USB-Blaster.
-\item In the Mode combo box select "Active Serial Programming".
-\item Plug the end of your USB-Blaster WITH THE ADAPTER PROVIDED in the connector ASMI on the MCS board taking care that pin1 corresponds to the one indexed and with the rectangualr pad.
-\item Click on add file and from select the programming file provided when the upgrade has been reccomended.
-\item Check "Program/Configure" and "Verify".
-\item Push the start button and wait until the programming process is finished (progress bar top left).
-\item In case the programmer gives you error messages, check the polarity of your cable (pin1 corresponds) and that you have selected the correct programming connector.
+ \item \verb=emacs ~/.bashrc=
+ \item Add the following function \verb=setup_slsdet= and replace \verb=path=
+with absolute path of installed directory
+\begin{verbatim}
+function setup_slsdet
+{ 
+export PKGPATH=[path]
+export LD_LIBRARY_PATH=$PKGPATH/slsDetectorPackage/build/bin:$LD_LIBRARY_PATH
+export PATH=$PKGPATH/slsDetectorPackage/build/bin:$PATH
+cd $PKGPATH/slsDetectorPackage/build/bin
+} 
+\end{verbatim}
+  \item \verb=source ~/.bashrc=
+  \item Next time, just run \verb=setup_slsdet= to load the environment
+variables.
 \end{enumerate}
 
-\subsubsection{Software upgrade}
-First telent to the board:
+
+One can also add the GUI environment variables if installed locally by adding
+the following in the function \verb=setup_sldet= \\
+\begin{verbatim}
+export QTDIR=/path-where-it-is/Qt-4.8.2
+export QWTDIR=/path-where-it-is/qwt-6.0.1
+export QWT3D=/path-where-it-is/qwtplot3d
+export QMAKESPEC=$QTDIR/mkspecs/linux-g++
+export LD_LIBRARY_PATH=$QTDIR/lib:$QWTDIR/lib:$QWT3D/lib:$LD_LIBRARY _PATH
+export PATH=$QTDIR/bin:$PATH
+\end{verbatim}
+
+\subsubsection{Without .bashrc file}
+Go to binaries folder slsDetectorPackage/build/bin and execute the following:
+\begin{verbatim}
+export LD_LIBRARY_PATH=$PWD:$LD_LIBRARY_PATH
+export PATH=$PWD:$PATH
+\end{verbatim}
+
+
+\subsection{Clean Shared Memory}
+It is very crucial to clean the shared memory, before using a new version of
+the SLS Detector Package or a different detector type.
+
+One can use the \verb=cleansharedmemory.sh= script available under the
+slsDetector Package.
+
+One can also just use the following commands to clean the shared memory
+segments one by one.
+\begin{verbatim}
+#displays list of shared memeory segments 
+ipcs -m
+#remove segments that have nattach equal to zero. They key is the first column
+ipcrm -M [key]
+\end{verbatim}
+
+\section{Software Upgrade}
+
+The upgrade of the package could require an upgrade of the on-board detector
+server and/or firmware running on the detector as well.
+
+
+\subsection{MYTHEN}
+In such cases, the users are not expected to compile the software
+themselves (which would require dedicated softwares) but only to download on the
+detector board the programming files and/or software package provided by
+the SLS Detectors group.
+
+\subsubsection{MYTHEN Firmware}
+
+To upgrade the firmware you need either a working version of the Altera
+Quartus software or of the Quartus programmer, which can easily be downloaded
+from: \\
+\url{https://www.altera.com/download/programming/quartus2/pq2-index.jsp}
+\medskip
+
+\noindent Normally, installation of the software and of the driver for the
+USB-Blaster (provided together with the MYTHEN detector) are simpler under
+Windows. 
+
+
+Under Windows, the first time that you connect the USB-Blaster to one
+of your USB ports, you will be asked to install new hardware. Set the path to
+search for the driver to:
+\verb=C:\altera\80sp1\qprogrammer\drivers\usb-blasterp= (where 
+\verb=C:\altera\80sp1\qprogrammer\= is assumed to be ther path where your
+Quartus version is installed).
+\begin{enumerate}
+\item After starting the Quartus programmer, click on Hardware Setup and in the
+"Currently selected hardware" window select USB-Blaster.
+\item In the Mode combo box select "Active Serial Programming".
+\item Plug the end of your USB-Blaster WITH THE ADAPTER PROVIDED in the
+connector ASMI on the MCS board taking care that pin1 corresponds to the one
+indexed and with the rectangualr pad.
+\item Click on add file and from select the programming file provided when
+the upgrade has been reccomended.
+\item Check "Program/Configure" and "Verify".
+\item Push the start button and wait until the programming process is
+finished (progress bar top left).
+\item In case the programmer gives you error messages, check the polarity of
+your cable (pin1 corresponds) and that you have selected the correct programming
+connector.
+\end{enumerate}
+
+\subsubsection{MYTHEN On-board Software}
+\begin{enumerate}
+ \item Connect to the board using telnet:
 \begin{verbatim}
 telnet  mymcs.mydomain.com
 username: root
 password: pass
+\end{verbatim}
+ \item Kill currently running servers and ensure \verb=/mnt/flash/root= exists.
+\begin{verbatim}
 killall mythenDetectorServer
 ls /mnt/flash/root
 #if the directory does not exist mkdir /mnt/flash/root
 \end{verbatim}
-
-To upgrade the software on the detector board transfer the provided software by ftp to the MCS:
+ \item Transfer the provided software by ftp to the MCS.
 \begin{verbatim}
 ftp  mymcs.mydomain.com
 username: root
@@ -262,14 +518,312 @@ put mythenDetectorServer
 quit
 \end{verbatim}
 
-After pressing reset on the board, the board should reboot.\\
+\item After pressing reset on the board, the board should reboot.
 
-If the program does not correctly start either check by using the http interface that it is started by the inittab (check that the file \verb=/mnt/etc/inittab= ends with the line \verb=myid2:3:once:/mnt/flash/root/mythenDetectorServer= ). \\
+\item If the program does not correctly start
+ \begin{enumerate}
+  \item Check by using the http interface that it is started by the inittab
+(check that the file \verb=/mnt/etc/inittab= ends with the line \\
+\verb=myid2:3:once:/mnt/flash/root/mythenDetectorServer=).  
+  \item If program has not started, make the program executable by telnetting to
+the MCS and executing: \\
+\verb=chmod a+xrw  /mnt/flash/root/mythenDetectorServer=
+  \item After pressing reset on the board, the board should reboot and the
+acqusition program correctly start.
+ \end{enumerate}
+\end{enumerate}
 
-Otherwise make the program executable by telnetting to the MCS and executing:
-\verb=chmod a+xrw  /mnt/flash/root/mythenDetectorServer=\\
 
-After pressing reset on the board, the board should reboot and the acqusition program correctly start.
+
+
+\subsection{GOTTHARD}
+
+In such cases, the users are not expected to compile the software
+themselves (which would require dedicated softwares) but only to download on the
+detector board the programming files and/or software package provided by
+the SLS Detectors group.
+
+\subsubsection{GOTTHARD Firmware}
+\textit{For SLS Detector Package v3.1.0} \\
+\indent Minimum compatible version: \\
+\indent \indent 11.01.2013 \\
+\indent Latest version:	\\
+\indent \indent 08.02.2018 (50um and 25um Master) \\
+\indent \indent 09.02.2018 (25 um Slave) \\
+
+
+Normally, the firmware will be upgraded by us as it requires programming the
+FPGA via the USB-Blaster.
+
+
+To upgrade the firmware you need either a working version of the Altera
+Quartus software or of the Quartus programmer, which can easily be downloaded
+from: \\
+\url{https://www.altera.com/download/programming/quartus2/pq2-index.jsp}
+
+
+Normally, installation of the software and of the driver for the
+USB-Blaster (provided together with the MYTHEN detector) are simpler under
+Windows.
+
+
+Under Windows, the first time that you connect the USB-Blaster to one
+of your USB ports, you will be asked to install new hardware. Set the path to
+search for the driver to:
+\verb=C:\altera\80sp1\qprogrammer\drivers\usb-blasterp= (where 
+\verb=C:\altera\80sp1\qprogrammer\= is assumed to be ther path where your
+Quartus version is installed).
+\begin{enumerate}
+\item After starting the Quartus programmer, click on Hardware Setup and in the
+"Currently selected hardware" window select USB-Blaster.
+\item In the Mode combo box select "Active Serial Programming".
+\item Plug the end of your USB-Blaster WITH THE ADAPTER PROVIDED in the
+connector ASMI on the MCS board taking care that pin1 corresponds to the one
+indexed and with the rectangualr pad.
+\item Click on add file and from select the programming file provided when
+the upgrade has been reccomended.
+\item Check "Program/Configure" and "Verify".
+\item Push the start button and wait until the programming process is
+finished (progress bar top left).
+\item In case the programmer gives you error messages, check the polarity of
+your cable (pin1 corresponds) and that you have selected the correct programming
+connector.
+\end{enumerate}
+
+\subsubsection{GOTTHARD On-board Software}
+Every SLS Detector package release will have its coresponding matching on-board
+server under \textbf{slsDetectorPackage/serverBin}.
+
+\begin{enumerate}
+  \item Install tftp if the pc does not have it.
+  \item Copy the server from serverBin folder to /tftpboot (or equivalent tftp
+folder) of the pc
+  \item Copy the server to the detector by:
+  \begin{enumerate}
+    \item Connect to the blackfin on the detector\\ 
+\verb=telnet bchipxxx=
+    \item Prevent existing on-board server from respawning by:
+    \begin{enumerate}
+      \item Edit \verb=/etc/inittab= 
+      \item Comment out the line
+\verb=#ttyS0::respawn:/gotthardDetectorServervxxx= 
+      \item Reboot blackfin using \verb=reboot=
+      \item Run \verb=ps= to ensure no gotthardDetectorServers are running
+    \end{enumerate}
+    \item Copy new on-board server from pc to the blackfin using: \\
+\verb=tftp pcxxx -r gotthardDetectorServerxxx -g= 
+    \item Respawn the new server (server starts at detector statup): 
+    \begin{enumerate}
+      \item Edit \verb=/etc/inittab= 
+      \item Uncomment out the line
+\verb=ttyS0::respawn:/gotthardDetectorServervxxx= 
+      \item Reboot blackfin using \verb=reboot=
+      \item Run \verb=ps= to ensure that both the gotthardDetectorServers are
+running.\\
+\verb=gotthardDetectorServerxxx= \\
+\verb=gotthardDetectorServerxxx 1953=
+    \end{enumerate}
+  \end{enumerate}
+\end{enumerate}
+
+
+
+\subsection{EIGER}
+
+In such cases, the users are not expected to compile the software
+themselves (which would require dedicated softwares) but only to download on the
+detector board the programming files and/or software package provided by
+the SLS Detectors group.
+
+\subsubsection{EIGER Firmware}
+\textit{For SLS Detector Package v3.1.0} \\
+\indent Minimum compatible version:  16 \\
+\indent Latest version:	20  \\
+
+
+\begin{enumerate}
+  \item One must get the latest package's corresponding bit files from the SLS
+Detector Group.
+  \item If one does not have the bcp script, that should also be obtained from
+the SLS Detector Group. It is required to program the bit files and requires
+that tftp be installed on the pc.
+  \item Run the following to update firmware
+\begin{verbatim}
+ #update back end fpga
+bcp download.bit bebxxx:/fw0
+
+ #update front left fpga
+bcp download.bit bebxxx:/febl
+
+ #update front right fpga
+bcp download.bit bebxxx:/febr
+
+ #update kernel
+bcp download.bit bebxxx:/kernel
+\end{verbatim}
+Please update bit files with great caution as it could make your board
+inaccessible, if done incorrectly.
+\end{enumerate}
+
+
+
+\subsubsection{EIGER On-board Software}
+Every SLS Detector package release will have its coresponding matching on-board
+server under \textbf{slsDetectorPackage/serverBin}.
+
+
+Update the on-board software without connecting to the detector
+\begin{verbatim}
+#password for the boards: root
+
+#Kill existing servers that are running on the detector
+ssh root@beb031 killall eigerDetectorServer;
+
+#Copy on-board server to detector inside executables folder
+scp ~/path-where-it-is/eigerDetectorServerxxx root@bebxxx:~/executables;
+
+#Overwrite the actual eigerDetectorServer on board
+scp ~/path-where-it-is/eigerDetectorServerxxx
+root@bebxxx:~/executables/eigerDetectorServer;
+
+#sync
+ssh root@bebxxx sync; 
+
+#reboot the eiger board
+\end{verbatim}
+
+
+\bigskip One can connect to the detector by:
+\begin{verbatim}
+ssh root@bebxxx
+password: root
+\end{verbatim}
+
+
+The on-board server is in ~/executables folder and respawned at startup in \\
+\verb=/etc/rc5.d/S50board_com.sh= 
+
+
+
+
+
+\subsection{JUNGFRAU}
+
+In such cases, the users are not expected to compile the software
+themselves (which would require dedicated softwares) but only to download on the
+detector board the programming files and/or software package provided by
+the SLS Detectors group.
+
+\subsubsection{JUNGFRAU Firmware}
+\textit{For SLS Detector Package v3.1.0} \\
+\indent Minimum compatible version: 13.11.2017 \\
+\indent Latest version: 13.11.2017 \\
+
+
+At times, one has to update the firmware, which then also requires updating the
+on-board software. 
+
+
+\textbf{\textit{Jungfrau firmware can be upgraded via the SLS Detector Package
+binaries from the command line.}}
+
+\begin{enumerate}
+  \item One must get the latest package's corresponding POF file from the SLS
+Detector Group.
+  \item Update the latest SLS Detector package installed.
+  \item Update the on-board software as per the instructions in the next
+section.
+  \item Start the on-board server in debug mode:
+  \begin{enumerate}
+    \item Connect to the blackfin on the detector\\ 
+\verb=telnet bchipxxx=
+    \item Prevent existing on-board server from respawning by:
+    \begin{enumerate}
+      \item Edit \verb=/etc/inittab= 
+      \item Comment out the line
+\verb=#ttyS0::respawn:/jungfrauDetectorServervxxx= 
+      \item Reboot blackfin using \verb=reboot=
+      \item Run \verb=ps= to ensure no gotthardDetectorServers are running
+    \end{enumerate}
+    \item Start the server in debug mode using: \\
+\verb=./jungfrauDetectorServerxxx -debug= \\
+    Leave this console on to come back to it later.
+  \end{enumerate}
+  \item From the command line of the pc, clear shared memory \\
+\verb=./sls_detector_get free= \\
+  If one gets shmget error, please clean the shared memory properly using the
+script in \verb=slsDetectorPackage/cleansharedmemory.sh=
+  \item Add the detector to shared memory using \\
+\verb=./sls_detector_put hostname bchipxxx=
+  \item Program the FPGA using \\
+\verb=./sls_detector_put programfpga xxx.pof= 
+  \item Once the programming is done:
+  \begin{enumerate}
+    \item Switch to the console that has the debug server running and kill it
+using Ctrl+C and ensure no jungfrauDetectorServers are
+running
+    \item Restart the new server to see if it runs with the new firmware \\
+\verb=./jungfrauDetectorServerxxx= \\
+If the server didn't start properly, please contact us with the error message
+shown when starting the server up, else continue with the following steps.
+    \item Respawn the new server (server starts at detector statup): 
+    \begin{enumerate}
+      \item Edit \verb=/etc/inittab= 
+      \item Uncomment out the line
+\verb=ttyS0::respawn:/jungfrauDetectorServervxxx= 
+      \item Reboot blackfin using \verb=reboot=
+      \item Run \verb=ps= to ensure that both the gotthardDetectorServers are
+running.\\
+\verb=jungfrauDetectorServervxxx= \\
+\verb=jungfrauDetectorServervxxx 1953=
+    \end{enumerate}
+  \end{enumerate}
+
+\end{enumerate}
+
+
+
+\subsubsection{JUNGFRAU On-board Software}
+Every SLS Detector package release will have its coresponding matching on-board
+server under \textbf{slsDetectorPackage/serverBin}.
+
+
+\begin{enumerate}
+  \item Install tftp if the pc does not have it.
+  \item Copy the server from serverBin folder to /tftpboot (or equivalent tftp
+folder) of the pc
+  \item Copy the server to the detector by:
+  \begin{enumerate}
+    \item Connect to the blackfin on the detector\\ 
+\verb=telnet bchipxxx=
+    \item Prevent existing on-board server from respawning by:
+    \begin{enumerate}
+      \item Edit \verb=/etc/inittab= 
+      \item Comment out the line
+\verb=#ttyS0::respawn:/jungfrauDetectorServervxxx= 
+      \item Reboot blackfin using \verb=reboot=
+      \item Run \verb=ps= to ensure no gotthardDetectorServers are running
+    \end{enumerate}
+    \item Copy new on-board server from pc to the blackfin using: \\
+\verb=tftp pcxxx -r jungfrauDetectorServervxxx -g= 
+    \item Respawn the new server (server starts at detector statup): 
+    \begin{enumerate}
+      \item Edit \verb=/etc/inittab= 
+      \item Uncomment out the line
+\verb=ttyS0::respawn:/jungfrauDetectorServervxxx= 
+      \item Reboot blackfin using \verb=reboot=
+      \item Run \verb=ps= to ensure that both the gotthardDetectorServers are
+running.\\
+\verb=jungfrauDetectorServervxxx= \\
+\verb=jungfrauDetectorServervxxx 1953=
+    \end{enumerate}
+  \end{enumerate}
+\end{enumerate}
+
+
+
+
+
 
 \begin{comment}
 \section{Detector system architecture}
@@ -346,7 +900,11 @@ The \textit{settingsdir} and \textit{caldir} should be properly configured for y
 
 \subsection{GOTTHARD}
 A \textit{settingsdir} should be configured, as the directory  \verb=settings= in this software package.\\
-It must contain the subdirectories \verb=dynamicgain=, \verb=gain1=,  \verb=gain2=,  \verb=gain3=,  \verb=highgain=,  \verb=lowgain=,  \verb=mediumgain=, and   \verb=veryhighgain= in order to properly configure the GOTTHARD detector using the various gain settings.
+It must contain the subdirectories \verb=dynamicgain=, \verb=gain1=, 
+\verb=gain2=,  \verb=gain3=,  \verb=highgain=,  \verb=lowgain=, 
+\verb=mediumgain=, and   \verb=veryhighgain= in order to properly configure the
+GOTTHARD detector using the various gain settings.
+
 \end{comment}
 
 \end{document}

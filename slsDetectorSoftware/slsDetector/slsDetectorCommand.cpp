@@ -234,7 +234,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 
 
-
 	/*! \page config Configuration commands
     Commands to configure the detector. these commands are often left to the configuration file.
 	 - \ref configstructure "Data Structure": commands to configure detector data structure
@@ -468,6 +467,13 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncName="led";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
 	++i;
+
+    /*! \page config
+   - <b>auto_comp_disable i </b> Currently not implemented. this mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us). 1 enables mode, 0 disables mode. By default, mode is disabled (comparator is enabled throughout). (JUNGFRAU only). \c Returns \c (int)
+     */
+    descrToFuncMap[i].m_pFuncName="auto_comp_disable"; //
+    descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
+    ++i;
 
 	/*! \page config
    - <b>pulse [n] [x] [y]</b> pulses pixel at coordinates (x,y) n number of times. Used in EIGER only. Only put! \c Returns \c ("successful", "unsuccessful")
@@ -848,7 +854,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 	/*! \page data
    - <b>flatfield [fn]</b> \c put sets flatfield file to \c fn (relative to \c ffdir). \get returns the flatfield file name relative to \c ffdir (string). If \fn is specified, it writes the flat field correction factors and errors to \c fn.  \c Returns \c (string) fn
-\c none disables flat field corrections.
+	\c none disables flat field corrections.
 	 */
 	descrToFuncMap[i].m_pFuncName="flatfield"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFlatField;
@@ -966,6 +972,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
     - \ref settingssett "Settings and Threshold": commands to configure settings and threshold of detector
     - \ref settingsdacs "DACs": commands to configure DACs of detector
     - \ref settingsadcs "ADCs": commands to readout ADCs of detector
+    - \ref settingstmp  "Temp Control": commands to monitor and handle temperature overshoot (only JUNGFRAU)
 	 */
 
 	/* trim/cal directories */
@@ -1420,6 +1427,78 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	++i;
 
+
+
+	/* MYTHEN 3.01  
+	all values are in DACu */
+
+	
+	descrToFuncMap[i].m_pFuncName="vIpre"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	descrToFuncMap[i].m_pFuncName="VcdSh"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	/*! \page settings
+   - <b>Vth1</b> Sets/gets first detector threshold voltage for Mythen 3.01. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+	descrToFuncMap[i].m_pFuncName="Vth1"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	/*! \page settings
+   - <b>Vth1</b> Sets/gets second detector threshold voltage for Mythen 3.01. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+	descrToFuncMap[i].m_pFuncName="Vth2"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	/*! \page settings
+   - <b>Vth1</b> Sets/gets third detector threshold voltage for Mythen 3.01. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+	descrToFuncMap[i].m_pFuncName="Vth3"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	descrToFuncMap[i].m_pFuncName="VPL"; // baseline for analog pulsing
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	descrToFuncMap[i].m_pFuncName="Vtrim"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	descrToFuncMap[i].m_pFuncName="vIbias"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	descrToFuncMap[i].m_pFuncName="vIinSh"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	descrToFuncMap[i].m_pFuncName="cas"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	descrToFuncMap[i].m_pFuncName="casSh"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	descrToFuncMap[i].m_pFuncName="vIbiasSh"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	descrToFuncMap[i].m_pFuncName="vIcin"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+	descrToFuncMap[i].m_pFuncName="vIpreOut"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
+
+
 	/* r/w timers */
 	/*! \page settings
 		\section settingsadcs ADCs
@@ -1569,6 +1648,32 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 
+	/* temperature control */
+    /*! \page settings
+        \section settingstmp Temp Control
+  commands to monitor and handle temperature overshoot (only JUNGFRAU)
+     */
+
+    /*! \page settings
+   - <b>temp_threshold</b> Sets/gets the threshold temperature. JUNGFRAU ONLY. \c Returns \c (double"°C")
+     */
+    descrToFuncMap[i].m_pFuncName="temp_threshold"; //
+    descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTempControl;
+    ++i;
+
+    /*! \page settings
+   - <b>temp_control</b> Enables/Disables the temperature control. 1 enables, 0 disables.  JUNGFRAU ONLY. \c Returns \c int
+     */
+    descrToFuncMap[i].m_pFuncName="temp_control"; //
+    descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTempControl;
+    ++i;
+
+    /*! \page settings
+   - <b>temp_event</b> Resets/gets over-temperative event. Put only with option 0 to clear event. Gets 1 if temperature went over threshold and control is enabled, else 0. /Disables the temperature control.  JUNGFRAU ONLY. \c Returns \c int
+     */
+    descrToFuncMap[i].m_pFuncName="temp_event"; //
+    descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTempControl;
+    ++i;
 
 
 	/* file name */
@@ -4528,7 +4633,7 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
 				myDet->loadSettingsFile(sval,-1);
 			}
 		}
-		return string(myDet->getSettingsFile());
+		return myDet->getSettingsFile();
 	} else if (cmd=="trim") {
 		if (action==GET_ACTION)
 			return string("cannot get!");
@@ -5055,6 +5160,35 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
 		dac=V_POWER_CHIP;
 	else if (cmd== "v_limit")
 		dac=V_LIMIT;
+	else if (cmd== "vIpre")
+		dac=M_vIpre;
+	else if (cmd== "vIbias")
+		dac=M_vIbias;
+	else if (cmd== "vIinSh")
+		dac=M_vIinSh;
+	else if (cmd== "VcdSh")
+		dac=M_VdcSh;
+	else if (cmd== "Vth1")
+		dac=THRESHOLD;
+	else if (cmd== "Vth2")
+		dac=M_Vth2;
+	else if (cmd== "Vth3")
+		dac=M_Vth3;
+	else if (cmd== "VPL")
+		dac=M_VPL;
+	else if (cmd== "Vtrim")
+		dac=TRIMBIT_SIZE;
+	else if (cmd== "casSh")
+		dac=M_casSh;
+	else if (cmd== "cas")
+		dac=M_cas;
+	else if (cmd== "vIcin")
+		dac=M_vIcin;
+	else if (cmd== "vIbiasSh")
+		dac=M_vIbiasSh;
+	else if (cmd== "vIpreOut")
+		dac=M_vIpreOut;
+
 	else
 		return string("cannot decode dac ")+cmd;
 
@@ -5340,6 +5474,80 @@ string slsDetectorCommand::helpADC(int narg, char *args[], int action) {
 	return os.str();
 }
 
+
+
+
+string slsDetectorCommand::cmdTempControl(int narg, char *args[], int action) {
+    char answer[1000]="";
+    int val = -1;
+
+    if (action==HELP_ACTION)
+        return helpTempControl(narg, args, action);
+
+    myDet->setOnline(ONLINE_FLAG);
+
+    if (cmd == "temp_threshold") {
+        if (action==PUT_ACTION) {
+            double fval=0.0;
+            if (!sscanf(args[1],"%lf", &fval))
+                return string("cannot scan temp control value ")+string(args[1]);
+            val = fval * 1000;
+            myDet->setThresholdTemperature(val);
+        }
+        val = myDet->setThresholdTemperature();
+        if (val == -1)
+            sprintf(answer,"%d",val);
+        else
+            sprintf(answer,"%.2f°C", (double)val/1000.000);
+    }
+
+    else if (cmd == "temp_control") {
+        if (action==PUT_ACTION) {
+            if (!sscanf(args[1],"%d", &val))
+                return string("cannot scan temp control value ")+string(args[1]);
+            if ((val!=0) && (val!=1))
+                return string ("temp_control option must be 0 or 1");
+            myDet->setTemperatureControl(val);
+        }
+        sprintf(answer,"%d", myDet->setTemperatureControl());
+    }
+
+    else if (cmd == "temp_event") {
+        if (action==PUT_ACTION) {
+            if (!sscanf(args[1],"%d", &val))
+                return string("cannot scan temp control value ")+string(args[1]);
+            if (val!=0)
+                return string ("temp_event option must be 0 to clear event");
+            myDet->setTemperatureEvent(val);
+        }
+        sprintf(answer,"%d", myDet->setTemperatureEvent());
+    }
+
+    else
+        return string ("cannot scan command " + cmd);
+
+    return string(answer);
+}
+
+
+
+string slsDetectorCommand::helpTempControl(int narg, char *args[], int action) {
+    ostringstream os;
+    if (action==PUT_ACTION || action==HELP_ACTION) {
+        os << "temp_threshold t \t sets the threshold temperature. Jungfrau only" << std::endl;
+        os << "temp_control t \t Enables/Disables the temperature control. 1 enables, 0 disables. JUNGFRAU ONLY" << std::endl;
+        os << "temp_event t \t Resets over-temperative event. Put only with option 0 to clear event. JUNGFRAU ONLY." << std::endl;
+    }
+    if (action==GET_ACTION || action==HELP_ACTION) {
+        os << "temp_threshold  \t gets the threshold temperature. Jungfrau only." << std::endl;
+        os << "temp_control  \t gets temperature control enable. 1 enabled, 0 disabled. JUNGFRAU ONLY" << std::endl;
+        os << "temp_event  \t gets over-temperative event. Gets 1 if temperature went over threshold and control is enabled, else 0. /Disables the temperature control. JUNGFRAU ONLY." << std::endl;
+    }
+    return os.str();
+}
+
+
+
 string slsDetectorCommand::cmdTiming(int narg, char *args[], int action){
 #ifdef VERBOSE
 	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
@@ -5622,6 +5830,7 @@ string slsDetectorCommand::cmdSpeed(int narg, char *args[], int action) {
 
 	}
 
+
 	myDet->setOnline(ONLINE_FLAG);
 
 	ret=myDet->setSpeed(index,t);
@@ -5796,7 +6005,9 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action) {
 		}
 		sprintf(ans,"%d",myDet->powerChip());
 		return string(ans);
-	} else if (cmd=="led") {
+	}
+
+	else if (cmd=="led") {
 		char ans[100];
 		int val=0;
 		myDet->setOnline(ONLINE_FLAG);
@@ -5810,6 +6021,19 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action) {
 		sprintf(ans,"%d",~(myDet->readRegister(0x4d))&1);
 		return string(ans);
 	}
+
+	else if (cmd=="auto_comp_disable") {
+        char ans[100];
+        myDet->setOnline(ONLINE_FLAG);
+        if (action==PUT_ACTION){
+            int ival = -1;
+            if (!sscanf(args[1],"%d",&ival))
+                return string("could not scan auto_comp_control parameter " + string(args[1]));
+            myDet->setAutoComparatorDisableMode(ival);
+        }
+        sprintf(ans,"%d",myDet->setAutoComparatorDisableMode());
+        return string(ans);
+    }
 	else
 		return string("unknown command ")+cmd;
 
@@ -5829,6 +6053,7 @@ string slsDetectorCommand::helpAdvanced(int narg, char *args[], int action) {
 
 		os << "led s \t sets led status (0 off, 1 on)" << std::endl;
 		os << "powerchip i \t powers on or off the chip. i = 1 for on, i = 0 for off" << std::endl;
+        os << "auto_comp_disable i \t Currently not implemented. this mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us). 1 enables mode, 0 disables mode. By default, mode is disabled (comparator is enabled throughout). (JUNGFRAU only). " << std::endl;
 	}
 	if (action==GET_ACTION || action==HELP_ACTION) {
 
@@ -5838,6 +6063,7 @@ string slsDetectorCommand::helpAdvanced(int narg, char *args[], int action) {
 		os << "led \t returns led status (0 off, 1 on)" << std::endl;
 		os << "flags \t gets the readout flags. can be none, storeinram, tot, continous, parallel, nonparallel, safe, unknown" << std::endl;
 		os << "powerchip \t gets if the chip has been powered on or off" << std::endl;
+        os << "auto_comp_disable \t Currently not implemented. gets if the automatic comparator diable mode is enabled/disabled" << std::endl;
 
 	}
 	return os.str();

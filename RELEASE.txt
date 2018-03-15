@@ -1,13 +1,20 @@
-
-SLS Detector Package 3.1.0 released on 2017-10-02
+SLS Detector Package 3.1.1 released on 2018-03-12
 =================================================
 
 
 
 INTRODUCTION
 
-This document describes the differences between 3.1.0 and 3.0.1 release.
+This document describes the differences between 3.1.0 and 3.1.0 releases.
 
+The conda package of the binaries can be downloaded from
+	
+	https://github.com/slsdetectorgroup/sls_detector_software.git
+	
+The Python interface to the software package (including the package) is at 
+	
+	https://github.com/slsdetectorgroup/sls_detector.git
+	
 Manual (both HTML and pdf versions) are provided in
 	manual/docs/
 
@@ -31,10 +38,15 @@ If you have any software related questions or comments, please send them to:
 
     dhanya.thattil@psi.ch
     anna.bergamaschi@psi.ch
+    
+If you have any python related questions or comments, please send them to:
+	
+	erik.frojdh@psi.ch
 
 
 CONTENTS
 
+- Firmware Requirements
 - Changes in User Interface
 - New Features
 - Resolved Issues
@@ -42,44 +54,60 @@ CONTENTS
 
 
 
-Changes in User Interface
-========================= 	
-	
-	Client
-	------
-	1. 	User Detector API for call back has been changed. Instead of providing double* data,
-		it will now provided in char* with the bit width. One can decode the char* to get an 
-		array with data type of their own choosing.
-			
-	Receiver
-	--------
-	2.	(Eiger) Gap Pixels are included in the data provided. It can be enabled/disabled using 
-		'gappixels' from the command line.		
+Firmware Requirements
+=====================
 
+	Please refer to the link below for more details on the firmware versions.
+		https://www.psi.ch/detectors/firmware.
+
+    	Gotthard
+    	========   
+    	Minimum compatible version  : 11.01.2013
+    	Latest version              : 08.02.2018 (50um and 25um Master)
+                                      09.02.2018 (25 um Slave) 
+
+   	-Can not be upgraded remotely.
+    
+    
+    	Eiger
+    	=====  
+    	Minimum compatible version  : 16
+    	Latest version              : 20
+        
+    	-Can be upgraded remotely via bit files.
+    
+        
+    	Jungfrau
+    	========       
+    	Minimum compatible version  : 13.11.2017
+    	Latest version              : 13.11.2017
+
+    	-Can be upgraded remotely via sls_detector_put programfpga <pof>.
+	 
+
+
+Changes in User Interface
+========================= 
 	
+
+
 
 New Features
 ============
 
-	Gui
-	---
-	1.	(Jungfrau) Now features gain plot. Enabled or disabled on the fly using the check button
-		in the tab plot under 2D options.
 
 
 Resolved Issues
 ===============
-
-
-
-Resolved Issues
-===============
-
 
 
 Known Issues
 ============
 
 	
+
+	
+
+
 
 

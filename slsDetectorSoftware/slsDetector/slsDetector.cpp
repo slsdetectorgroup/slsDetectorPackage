@@ -1161,18 +1161,19 @@ int slsDetector::sendModule(sls_detector_module *myMod) {
 	ts+=controlSocket->SendDataOnly(&(myMod->ndac),sizeof(myMod->ndac));
 	ts+=controlSocket->SendDataOnly(&(myMod->nadc),sizeof(myMod->nadc));
 	ts+=controlSocket->SendDataOnly(&(myMod->reg),sizeof(myMod->reg));
-	ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(myMod->ndac));
-	ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(myMod->nadc));
-
-	if(thisDetector->myDetectorType != JUNGFRAU){
-		ts+=controlSocket->SendDataOnly(myMod->chipregs,sizeof(myMod->nchip));
-		ts+=controlSocket->SendDataOnly(myMod->chanregs,sizeof(myMod->nchan));
+	// only for sending structures like in old mythen server
+	if (thisDetector->myDetectorType == MYTHEN) {
+	    ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(myMod->ndac));
+	    ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(myMod->nadc));
+        ts+=controlSocket->SendDataOnly(myMod->chipregs,sizeof(myMod->nchip));
+        ts+=controlSocket->SendDataOnly(myMod->chanregs,sizeof(myMod->nchan));
 	}
 	ts+=controlSocket->SendDataOnly(&(myMod->gain),sizeof(myMod->gain));
 	ts+=controlSocket->SendDataOnly(&(myMod->offset), sizeof(myMod->offset));
+
+	// actual data to the pointers
 	ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(dacs_t)*(myMod->ndac));
 	ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(dacs_t)*(myMod->nadc));
-
 	if(thisDetector->myDetectorType != JUNGFRAU){
 		ts+=controlSocket->SendDataOnly(myMod->chipregs,sizeof(int)*(myMod->nchip));
 		ts+=controlSocket->SendDataOnly(myMod->chanregs,sizeof(int)*(myMod->nchan));
@@ -1229,13 +1230,14 @@ int  slsDetector::receiveModule(sls_detector_module* myMod) {
 	ts+=controlSocket->ReceiveDataOnly(&(myMod->ndac),sizeof(myMod->ndac));
 	ts+=controlSocket->ReceiveDataOnly(&(myMod->nadc),sizeof(myMod->nadc));
 	ts+=controlSocket->ReceiveDataOnly(&(myMod->reg),sizeof(myMod->reg));
-	ts+=controlSocket->ReceiveDataOnly(myMod->dacs,sizeof(myMod->ndac));
-	ts+=controlSocket->ReceiveDataOnly(myMod->adcs,sizeof(myMod->nadc));
-
-	if(thisDetector->myDetectorType != JUNGFRAU){
-		ts+=controlSocket->ReceiveDataOnly(myMod->chipregs,sizeof(myMod->nchip));
-		ts+=controlSocket->ReceiveDataOnly(myMod->chanregs,sizeof(myMod->nchan));
+    // only for sending structures like in old mythen server
+	if (thisDetector->myDetectorType == MYTHEN) {
+	    ts+=controlSocket->ReceiveDataOnly(myMod->dacs,sizeof(myMod->ndac));
+	    ts+=controlSocket->ReceiveDataOnly(myMod->adcs,sizeof(myMod->nadc));
+	    ts+=controlSocket->ReceiveDataOnly(myMod->chipregs,sizeof(myMod->nchip));
+	    ts+=controlSocket->ReceiveDataOnly(myMod->chanregs,sizeof(myMod->nchan));
 	}
+
 	ts+=controlSocket->ReceiveDataOnly(&(myMod->gain), sizeof(myMod->gain));
 	ts+=controlSocket->ReceiveDataOnly(&(myMod->offset), sizeof(myMod->offset));
 
@@ -2395,13 +2397,13 @@ int slsDetector::digitalTest( digitalTestMode mode, int imod){
 
 /* write or read register */
 
-int slsDetector::writeRegister(int addr, int val){
+uint32_t slsDetector::writeRegister(uint32_t addr, uint32_t val){
 
-	int retval=-1;
+	uint32_t retval = 0;
 	int fnum=F_WRITE_REGISTER;
 	int ret=FAIL;
 	char mess[MAX_STR_LENGTH]="";
-	int arg[2];
+	uint32_t arg[2];
 	arg[0]=addr;
 	arg[1]=val;
 
@@ -2444,7 +2446,7 @@ int slsDetector::writeAdcRegister(int addr, int val){
 	int ret=FAIL;
 	char mess[MAX_STR_LENGTH]="";
 
-	int arg[2];
+	uint32_t arg[2];
 	arg[0]=addr;
 	arg[1]=val;
 
@@ -2483,13 +2485,13 @@ int slsDetector::writeAdcRegister(int addr, int val){
 
 
 
-int slsDetector::readRegister(int addr){
+uint32_t slsDetector::readRegister(uint32_t addr){
 
-	int retval=-1;
+	uint32_t retval = 0;
 	int fnum=F_READ_REGISTER;
 	int ret=FAIL;
 	char mess[MAX_STR_LENGTH]="";
-	int arg;
+	uint32_t arg;
 	arg=addr;
 
 
@@ -2526,25 +2528,24 @@ int slsDetector::readRegister(int addr){
 }
 
 
-int slsDetector::setBit(int addr, int n) {
+uint32_t slsDetector::setBit(uint32_t addr, int n) {
 	if (n<0 || n>31) {
 		std::cout << "Bit number out of Range" << std:: endl;
 		setErrorMask((getErrorMask())|(REGISER_WRITE_READ));
 	}
 
 	// normal bit range
+	//TODO! (Erik) Check for errors! cannot use value since reg is 32bits
 	else {
-		int val = readRegister(addr);
-		if (val != -1) {
-			writeRegister(addr,val | 1<<n);
-		}
+		uint32_t val = readRegister(addr);
+		writeRegister(addr,val | 1<<n);
 	}
 
 	return readRegister(addr);
 }
 
 
-int slsDetector::clearBit(int addr, int n) {
+uint32_t slsDetector::clearBit(uint32_t addr, int n) {
 	if (n<0 || n>31) {
 		std::cout << "Bit number out of Range" << std:: endl;
 		setErrorMask((getErrorMask())|(REGISER_WRITE_READ));
@@ -2552,10 +2553,8 @@ int slsDetector::clearBit(int addr, int n) {
 
 	// normal bit range
 	else {
-		int val = readRegister(addr);
-		if (val != -1) {
-			writeRegister(addr,val & ~(1<<n));
-		}
+		uint32_t val = readRegister(addr);
+		writeRegister(addr,val & ~(1<<n));
 	}
 
 	return readRegister(addr);
@@ -2693,6 +2692,129 @@ dacs_t slsDetector::getADC(dacIndex index, int imod){
 
 
 };
+
+
+
+
+int slsDetector::setThresholdTemperature(int val, int imod) {
+
+    int retval = -1;
+    int fnum = F_THRESHOLD_TEMP;
+    int ret = FAIL;
+    char mess[MAX_STR_LENGTH] = "";
+
+    int arg[2];
+    arg[0]=val;
+    arg[1]=imod;
+
+
+#ifdef VERBOSE
+    std::cout<< std::endl;
+    std::cout<< "Setting/Getting Threshold Temperature to "<< val << " of module " << imod  << std::endl;
+#endif
+    if (thisDetector->onlineFlag==ONLINE_FLAG) {
+        if (connectStop() == OK){
+            stopSocket->SendDataOnly(&fnum,sizeof(fnum));
+            stopSocket->SendDataOnly(arg,sizeof(arg));
+            stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
+            if (ret!=FAIL) {
+                stopSocket->ReceiveDataOnly(&retval,sizeof(retval));
+#ifdef VERBOSE
+                std::cout<< "Threshold Temperature returned "<< retval << std::endl;
+#endif
+            } else {
+                stopSocket->ReceiveDataOnly(mess,sizeof(mess));
+                std::cout<< "Detector returned error: " << mess << std::endl;
+                setErrorMask((getErrorMask())|(TEMPERATURE_CONTROL));
+            }
+            disconnectStop();
+        }
+    }
+
+    return retval;
+}
+
+
+
+int slsDetector::setTemperatureControl(int val, int imod) {
+
+    int retval = -1;
+    int fnum = F_TEMP_CONTROL;
+    int ret = FAIL;
+    char mess[MAX_STR_LENGTH] = "";
+
+    int arg[2];
+    arg[0]=val;
+    arg[1]=imod;
+
+
+#ifdef VERBOSE
+    std::cout<< std::endl;
+    std::cout<< "Setting/Getting Threshold Temperature to "<< val << " of module " << imod  << std::endl;
+#endif
+    if (thisDetector->onlineFlag==ONLINE_FLAG) {
+        if (connectStop() == OK){
+            stopSocket->SendDataOnly(&fnum,sizeof(fnum));
+            stopSocket->SendDataOnly(arg,sizeof(arg));
+            stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
+            if (ret!=FAIL) {
+                stopSocket->ReceiveDataOnly(&retval,sizeof(retval));
+#ifdef VERBOSE
+                std::cout<< "Threshold Temperature returned "<< retval << std::endl;
+#endif
+            } else {
+                stopSocket->ReceiveDataOnly(mess,sizeof(mess));
+                std::cout<< "Detector returned error: " << mess << std::endl;
+                setErrorMask((getErrorMask())|(TEMPERATURE_CONTROL));
+            }
+            disconnectStop();
+        }
+    }
+
+    return retval;
+}
+
+
+
+
+int slsDetector::setTemperatureEvent(int val, int imod) {
+
+    int retval = -1;
+    int fnum = F_TEMP_EVENT;
+    int ret = FAIL;
+    char mess[MAX_STR_LENGTH] = "";
+
+    int arg[2];
+    arg[0]=val;
+    arg[1]=imod;
+
+
+#ifdef VERBOSE
+    std::cout<< std::endl;
+    std::cout<< "Setting/Getting Threshold Temperature to "<< val << " of module " << imod  << std::endl;
+#endif
+    if (thisDetector->onlineFlag==ONLINE_FLAG) {
+        if (connectStop() == OK){
+            stopSocket->SendDataOnly(&fnum,sizeof(fnum));
+            stopSocket->SendDataOnly(arg,sizeof(arg));
+            stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
+            if (ret!=FAIL) {
+                stopSocket->ReceiveDataOnly(&retval,sizeof(retval));
+#ifdef VERBOSE
+                std::cout<< "Threshold Temperature returned "<< retval << std::endl;
+#endif
+            } else {
+                stopSocket->ReceiveDataOnly(mess,sizeof(mess));
+                std::cout<< "Detector returned error: " << mess << std::endl;
+                setErrorMask((getErrorMask())|(TEMPERATURE_CONTROL));
+            }
+            disconnectStop();
+        }
+    }
+
+    return retval;
+}
+
 
 /*
    configure single channel
@@ -3114,7 +3236,7 @@ int slsDetector::setModule(int reg, int imod){
 int slsDetector::setModule(sls_detector_module module, int iodelay, int tau, int e_eV, int* gainval, int* offsetval, int tb){
 
 	int fnum=F_SET_MODULE;
-	int retval;
+	int retval=-1;
 	int ret=FAIL;
 	char mess[MAX_STR_LENGTH]="";
 
@@ -3219,6 +3341,9 @@ int slsDetector::setModule(sls_detector_module module, int iodelay, int tau, int
 			for (int i=0; i<thisDetector->nOffset; ++i)
 				offset[i+imod*thisDetector->nOffset]=offsetval[i];
 		}
+
+		if (e_eV != -1)
+		    thisDetector->currentThresholdEV = e_eV;
 
 	}
 
@@ -3424,7 +3549,7 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
 	//currently only for eiger
 	if (thisDetector->myDetectorType == EIGER) {
 		setThresholdEnergyAndSettings(e_eV,isettings,tb);
-			return  thisDetector->currentThresholdEV;
+		return  thisDetector->currentThresholdEV;
 	}
 
 	int fnum=  F_SET_THRESHOLD_ENERGY;
@@ -3828,11 +3953,11 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 				std::cout<< thisDetector->settingsDir<<endl<< thisDetector->calDir <<endl;
 #endif
 				break;
-			case MOENCH:
-			case GOTTHARD:
-			case PROPIX:
-			case JUNGFRAU:
-			case JUNGFRAUCTB:
+			case MYTHEN:
+		        ostfn << thisDetector->settingsDir << ssettings <<"/noise.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
+		        oscfn << thisDetector->calDir << ssettings << "/calibration.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
+		        break;
+			default:
 				//settings is saved in myMod.reg
 				myMod->reg=thisDetector->currentSettings;
 				ostfn << thisDetector->settingsDir << ssettings <<"/settings.sn";//  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
@@ -3841,9 +3966,6 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 				std::cout<< thisDetector->settingsDir<<endl<< thisDetector->calDir <<endl;
 #endif
 				break;
-			default:
-				ostfn << thisDetector->settingsDir << ssettings <<"/noise.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
-				oscfn << thisDetector->calDir << ssettings << "/calibration.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
 			}
 
 
@@ -3856,16 +3978,12 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 				//if it didnt open, try default settings file
 				ostringstream ostfn_default;
 				switch(thisDetector->myDetectorType){
-				case MOENCH:
-				case GOTTHARD:
-				case PROPIX:
-				case JUNGFRAU:
-				case JUNGFRAUCTB:
+		        case EIGER:
+		        case MYTHEN:
+	                ostfn_default << thisDetector->settingsDir << ssettings << ssettings << ".trim";
+	                break;
+		        default:
 					ostfn_default << thisDetector->settingsDir << ssettings << ssettings << ".settings";
-					break;
-				case EIGER:
-				default:
-					ostfn_default << thisDetector->settingsDir << ssettings << ssettings << ".trim";
 					break;
 				}
 				settingsfname=ostfn_default.str();
@@ -6337,9 +6455,9 @@ string slsDetector::setReceiverUDPMAC(string udpmac){
 #else
       	  ;
 #endif
-      else  if(setUDPConnection()==FAIL){
+     /* else  if(setUDPConnection()==FAIL){ commented out to be replaced by user defined udpmac
     	  std::cout<< "Warning: UDP connection set up failed" << std::endl;
-      }
+      }*/
     }else{
       setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
       std::cout << "Warning: receiver udp mac address should be in xx:xx:xx:xx:xx:xx format" << std::endl;
@@ -6798,8 +6916,41 @@ int slsDetector::configureMAC(){
 				std::cout<< "Detector returned error: " << mess << std::endl;
 				setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
 			}
-			else
+			else {
 				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+				if (thisDetector->myDetectorType == EIGER) {
+                    //rewrite detectormac, detector ip
+			        char arg[2][50];
+			        memset(arg,0,sizeof(arg));
+                    uint64_t idetectormac = 0;
+                    uint32_t idetectorip = 0;
+				    controlSocket->ReceiveDataOnly(arg,sizeof(arg));
+                    sscanf(arg[0], "%lx",    &idetectormac);
+				    sscanf(arg[1], "%x",    &idetectorip);
+				    sprintf(arg[0],"%02x:%02x:%02x:%02x:%02x:%02x",
+				                (unsigned int)((idetectormac>>40)&0xFF),
+				                (unsigned int)((idetectormac>>32)&0xFF),
+				                (unsigned int)((idetectormac>>24)&0xFF),
+				                (unsigned int)((idetectormac>>16)&0xFF),
+				                (unsigned int)((idetectormac>>8)&0xFF),
+				                (unsigned int)((idetectormac>>0)&0xFF));
+				    sprintf(arg[1],"%d.%d.%d.%d",
+				            (idetectorip>>24)&0xff,
+				            (idetectorip>>16)&0xff,
+				            (idetectorip>>8)&0xff,
+				            (idetectorip)&0xff);
+				    if (strcasecmp(arg[0],thisDetector->detectorMAC)) {
+				        memset(thisDetector->detectorMAC, 0, MAX_STR_LENGTH);
+				        strcpy(thisDetector->detectorMAC, arg[0]);
+				        cprintf(RESET,"%d: Detector MAC updated to %s\n", detId, thisDetector->detectorMAC);
+				    }
+                    if (strcasecmp(arg[1],thisDetector->detectorIP)) {
+                        memset(thisDetector->detectorIP, 0, MAX_STR_LENGTH);
+                        strcpy(thisDetector->detectorIP, arg[1]);
+                        cprintf(RESET,"%d: Detector IP updated to %s\n", detId, thisDetector->detectorIP);
+                    }
+				}
+			}
 			disconnectControl();
 			if (ret==FORCE_UPDATE)
 				updateDetector();
@@ -7614,6 +7765,43 @@ int slsDetector::powerChip(int ival){
 	return retval;
 
 }
+
+
+int slsDetector::setAutoComparatorDisableMode(int ival){
+    int ret=FAIL;
+    int fnum=F_AUTO_COMP_DISABLE;
+    char mess[MAX_STR_LENGTH]="";
+    int retval=-1;
+
+    if(thisDetector->myDetectorType != JUNGFRAU){
+        std::cout << "Not implemented for this detector" << std::endl;
+        return FAIL;
+    }
+#ifdef VERBOSE
+    std::cout<< "Enabling/disabling Auto comp disable mode " << endl;
+#endif
+    if (thisDetector->onlineFlag==ONLINE_FLAG) {
+        if (connectControl() == OK){
+            controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+            controlSocket->SendDataOnly(&ival,sizeof(ival));
+            //check opening error
+            controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+            if (ret==FAIL) {
+                controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+                std::cout<< "Detector returned error: " << mess << std::endl;
+                setErrorMask((getErrorMask())|(AUTO_COMP_DISABLE));
+            }else
+                controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+            disconnectControl();
+            if (ret==FORCE_UPDATE)
+                updateDetector();
+        }
+    }
+    return retval;
+
+}
+
+
 int slsDetector::loadSettingsFile(string fname, int imod) {
 
   sls_detector_module  *myMod=NULL;
@@ -7631,15 +7819,21 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
   for (int im=mmin; im<mmax; ++im) {
     ostringstream ostfn;
     ostfn << fname;
-    if(thisDetector->myDetectorType != EIGER){
-    	if (fname.find(".sn")==string::npos && fname.find(".trim")==string::npos && fname.find(".settings")==string::npos) {
-    		ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im);
-    		fn=ostfn.str();
-    	}
-    }else if (fname.find(".sn")==string::npos && fname.find(".trim")==string::npos && fname.find(".settings")==string::npos) {
-      ostfn << ".sn"  << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER, im);
-      fn=ostfn.str();
+    switch (thisDetector->myDetectorType) {
+    case MYTHEN:
+        if (fname.find(".sn")==string::npos && fname.find(".trim")==string::npos && fname.find(".settings")==string::npos) {
+            ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im);
+        }
+        break;
+    case EIGER:
+        if (fname.find(".sn")==string::npos && fname.find(".trim")==string::npos && fname.find(".settings")==string::npos) {
+            ostfn << ".sn"  << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER, im);
+        }
+        break;
+    default:
+        break;
     }
+    fn=ostfn.str();
     myMod=readSettingsFile(fn, thisDetector->myDetectorType,iodelay, tau, myMod);
 
     if (myMod) {
@@ -7669,18 +7863,27 @@ int slsDetector::saveSettingsFile(string fname, int imod) {
     mmax=imod+1;
   }
   for (int im=mmin; im<mmax; ++im) {
+    string fn=fname;
     ostringstream ostfn;
-    if(thisDetector->myDetectorType == EIGER){
-    	ostfn << fname << ".sn"  << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER);
-    } else
-    	ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER,im);
+    ostfn << fname;
+    switch (thisDetector->myDetectorType) {
+    case MYTHEN:
+        ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER,im);
+        break;
+    case EIGER:
+        ostfn << ".sn"  << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER);
+        break;
+    default:
+        break;
+    }
+    fn=ostfn.str();
     if ((myMod=getModule(im))) {
 
     	 if(thisDetector->myDetectorType == EIGER){
     		 iodelay = (int)setDAC((dacs_t)-1,IO_DELAY,0,-1);
     		 tau = (int64_t)getRateCorrectionTau();
     	 }
-   		 ret=writeSettingsFile(ostfn.str(), thisDetector->myDetectorType, *myMod, iodelay, tau);
+   		 ret=writeSettingsFile(fn, thisDetector->myDetectorType, *myMod, iodelay, tau);
    		 deleteModule(myMod);
     }
   }
@@ -7763,14 +7966,22 @@ int slsDetector::loadCalibrationFile(string fname, int imod) {
     mmax=imod+1;
   }
   for (int im=mmin; im<mmax; ++im) {
+    string fn=fname;
     ostringstream ostfn;
     ostfn << fname ;
-    if(thisDetector->myDetectorType != EIGER){
-    	if (fname.find(".sn")==string::npos && fname.find(".cal")==string::npos) {
-    		ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im);
-    	}
-    }else if (fname.find(".sn")==string::npos && fname.find(".cal")==string::npos) {
-      ostfn << "."  << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER);
+    switch (thisDetector->myDetectorType) {
+    case MYTHEN:
+        if (fname.find(".sn")==string::npos && fname.find(".cal")==string::npos) {
+            ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im);
+        }
+        break;
+    case EIGER:
+        if (fname.find(".sn")==string::npos && fname.find(".cal")==string::npos) {
+            ostfn << "."  << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER);
+        }
+        break;
+    default:
+        break;
     }
     fn=ostfn.str();
     if((myMod=getModule(im))){
@@ -7807,18 +8018,27 @@ int slsDetector::saveCalibrationFile(string fname, int imod) {
     mmax=imod+1;
   }
   for (int im=mmin; im<mmax; ++im) {
+    string fn=fname;
     ostringstream ostfn;
-    if(thisDetector->myDetectorType == EIGER)
-    	ostfn << fname << ".sn" << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER);
-    else
-    	ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER,im);
+    ostfn << fname;
+    switch (thisDetector->myDetectorType) {
+    case MYTHEN:
+        ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER,im);
+        break;
+    case EIGER:
+    	ostfn << ".sn" << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER);
+    	break;
+    default:
+        break;
+    }
+    fn=ostfn.str();
     if ((myMod=getModule(im))) {
         //extra gain and offset
         if(thisDetector->nGain)
-        	ret=writeCalibrationFile(ostfn.str(),gain, offset);
+        	ret=writeCalibrationFile(fn,gain, offset);
          //normal gain and offset inside sls_detector_module
         else
-        	ret=writeCalibrationFile(ostfn.str(),myMod->gain, myMod->offset);
+        	ret=writeCalibrationFile(fn,myMod->gain, myMod->offset);
 
       deleteModule(myMod);
     }else

@@ -10,6 +10,7 @@
 #include "trimming_funcs.h"
 #include "registers_g.h"
 #include "gitInfoGotthard.h"
+#include "AD9257.h"     // include "commonServerFunctions.h"
 
 #define FIFO_DATA_REG_OFF     0x50<<11
 #define CONTROL_REG           0x24<<11
@@ -460,24 +461,21 @@ int set_external_signal_flag(int file_des) {
 			break;
 
 		default:
-			if (differentClients==0 || lockStatus==0) {
-				retval=setExtSignal(signalindex,flag);
-			} else {
-				if (lockStatus!=0) {
-					ret=FAIL;
-					sprintf(mess,"Detector locked by %s\n", lastClientIP);
-				}
-			}
-
+		    if (lockStatus && differentClients) {
+                ret=FAIL;
+                sprintf(mess,"Detector locked by %s\n", lastClientIP);
+		    } else if (signalindex > 0) {
+                ret=FAIL;
+                sprintf(mess,"Signal index %d is reserved. Only index 0 can be configured.\n", signalindex);
+		    } else {
+		        retval=setExtSignal(flag);
+		    }
 		}
-
 #ifdef VERBOSE
 		printf("Setting external signal %d to flag %d\n",signalindex,flag );
 		printf("Set to flag %d\n",retval);
 #endif
 
-	} else {
-		ret=FAIL;
 	}
 
 	if (ret==OK && differentClients!=0)
@@ -581,19 +579,17 @@ int get_id(int file_des) {
 
 #ifdef VERBOSE
       printf("Getting id %d\n", arg);
-#endif  
+#endif
 
   switch (arg) {
   case DETECTOR_SERIAL_NUMBER:
     retval=getDetectorNumber();
     break;
   case DETECTOR_FIRMWARE_VERSION:
-    retval=getFirmwareSVNVersion();
-    retval=(retval <<32) | getFirmwareVersion();
+    retval = (getFirmwareVersion() & 0xFFFFFF);
     break;
   case DETECTOR_SOFTWARE_VERSION:
-	retval= GITREV;
-	retval= (retval <<32) | GITDATE;
+    retval = (GITDATE & 0xFFFFFF);
     break;
   default:
     printf("Required unknown id %d \n", arg);
@@ -1731,12 +1727,10 @@ int stop_acquisition(int file_des) {
   int ret=OK;
   int n;
   
-
   sprintf(mess,"can't stop acquisition\n");
 
-#ifdef VERBOSE
-  printf("Stopping acquisition\n");
-#endif 
+  cprintf(BG_RED,"Client command received to stop acquisition\n");
+
 
     
   if (differentClients==1 && lockStatus==1) {

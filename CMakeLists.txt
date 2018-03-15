@@ -13,6 +13,8 @@ find_package(Qt4)
 find_package(Qwt 6)
 find_package(CBF)
 find_package(Doxygen)
+find_package(PNG REQUIRED)
+
 if (USE_HDF5)
 	find_package(HDF5 1.10 COMPONENTS CXX)
 endif (USE_HDF5)

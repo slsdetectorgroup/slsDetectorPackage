@@ -1,28 +1,33 @@
 CROSS  = bfin-uclinux-
 CC    = $(CROSS)gcc
 #CC			=	gcc
-CLAGS		+=  -Wall -DVIRTUAL  -DDACS_INT  -DGENERICD # -DSLS_DETECTOR_FUNCTION_LIST 
-LDLIBS		+= 	-lm  
-INCS          = -I. -I../../slsReceiverSoftware/include/
-PROGS		= 	mythen3Server
-#DESTDIR		?= 	bin
+CLAGS		+=  -Wall -DMYTHEN3D -DSLS_DETECTOR_FUNCTION_LIST -DDACS_INT -DSTOP_SERVER #-DVERBOSEI #-DVERBOSE
+LDLIBS		+= 	-lm   -lstdc++ 
+
+
+PROGS		= 	mythen3DetectorServer
+DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
-SRC_CLNT	=	slsDetectorServer.c slsDetectorServer_funcs.c communication_funcs.c  slsDetectorFunctionList.c 
+SRC_CLNT	=	communication_funcs.c slsDetectorServer.c slsDetectorServer_funcs.c slsDetectorFunctionList.c 
 OBJS 		= 	$(SRC_CLNT:.c=.o) 
 
 
 
-all: clean $(PROGS)
+all: clean versioning $(PROGS)
 
 boot: $(OBJS)
 
-$(PROGS): 
-	echo $(OBJS)
-#	mkdir -p $(DESTDIR) 
-	$(CC) $(SRC_CLNT) $(CLAGS) $(LDLIBS) $(INCS) -o $@   
-#	mv $(PROGS) $(DESTDIR)
+versioning: 
+	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`
 
+$(PROGS): $(OBJS)
+#	echo $(OBJS) 
+	mkdir -p $(DESTDIR) 
+	$(CC) -o $@ $^ $(CFLAGS) $(LDLIBS) 
+	mv $(PROGS) $(DESTDIR)
+	rm *.gdb
 
 clean:
-	rm -rf $(DESTDIR)/$(PROGS)  *.o 
+	rm -rf $(DESTDIR)/$(PROGS)  *.o
+

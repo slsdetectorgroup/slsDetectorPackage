@@ -119,6 +119,11 @@ target_link_libraries(slsDetectorGui
     pthread
     zmq
     rt
+    png
+    z
+    Qt4::QtOpenGL
+    Qt4::QtSvg
+
 )
 
 add_executable(gui_client
@@ -128,3 +133,6 @@ add_executable(gui_client
 set_target_properties(gui_client PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
+
+install(TARGETS slsDetectorGui gui_client
+    RUNTIME DESTINATION bin)

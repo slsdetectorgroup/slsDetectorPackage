@@ -12,7 +12,6 @@
 #include <signal.h>
 #include <string.h>
 
-
 extern int sockfd;
 
 
@@ -30,14 +29,13 @@ int main(int argc, char *argv[]){
 	// subsequent read/write to socket gives error - must handle locally
 	signal(SIGPIPE, SIG_IGN);
 
-	// circumvent the basic tests
-	if(argc > 1) {
-		if(!strcasecmp(argv[1],"-debug")){
-			debugflag = 1;
-			argc=1;
-		}
-	}
-
+    // circumvent the basic tests
+    if(argc > 1) {
+        if(!strcasecmp(argv[1],"-debug")){
+            debugflag = 1;
+            argc=1;
+        }
+    }
 
 #ifdef STOP_SERVER
 	char cmd[100];
@@ -85,8 +83,10 @@ int main(int argc, char *argv[]){
 	printf("function table assigned \n");
 #endif
 
-
-	printf("\nReady...\n\n");
+	if (b)
+	    printf("\nControl Server Ready...\n\n");
+	else
+	    printf("\nStop Server Ready...\n\n");
 
 	/* waits for connection */
 	while(retval!=GOODBYE) {

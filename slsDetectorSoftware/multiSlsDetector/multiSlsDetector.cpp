@@ -24,7 +24,7 @@ ID:         $Id$
 #include  <sys/shm.h>
 #include  <iostream>
 #include  <string>
-using namespace std;
+
 
 
 char ans[MAX_STR_LENGTH];

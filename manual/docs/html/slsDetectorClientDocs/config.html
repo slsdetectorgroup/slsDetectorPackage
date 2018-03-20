@@ -183,7 +183,7 @@ Versions</a></h2>
 Speed</a></h2>
 <p>commands to configure speed of detector</p>
 <ul>
-<li><b>clkdivider [i]</b> sets/gets the readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)]. MYTHEN[???]. <code>Returns</code> <code></code>(int)</li>
+<li><b>clkdivider [i]</b> sets/gets the readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)]. Jungfrau, full speed is not implemented and overwrites adcphase to recommended default. MYTHEN[???]. <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
 <li><b>setlength [i]</b> sets/gets length of set/reset signals (in clock cycles). Used in MYTHEN only. <code>Returns</code> <code></code>(int)</li>
@@ -207,7 +207,7 @@ Speed</a></h2>
 <li><b>adcclk [i]</b> sets/gets the ADC clock frequency in MHz. For the new chiptestboard!<code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
-<li><b>adcphase [i]</b> Sets/gets the ADC clock frequency in MHz. For the new chiptestboard!<code>Returns</code> <code></code>(int)</li>
+<li><b>adcphase [i]</b> Sets/gets phase of the sampling clock. For JUNGFRAU, setting speed (clkdivider) overwrites adcphase to its default recommended value. (Not for EIGER) <code>Returns</code> <code></code>(int)</li>
 </ul>
 <ul>
 <li><b>adcpipeline [i]</b> Sets/gets the pipeline of the ADC. For the new chiptestbaord!<code>Returns</code> <code></code>(int)</li>
@@ -251,7 +251,7 @@ Detector Parameters</a></h2>
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 12 Mar 2018 by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 20 Mar 2018 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

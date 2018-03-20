@@ -24,7 +24,7 @@ Resolved Issues
 	
 		Updated Command Line Manual for adcphase and clkdivider.
 		
-	2. (Eiger) Bug Fix: This bug was introduced in 3.1.0 release.
+	2. 	(Eiger) Bug Fix: This bug was introduced in 3.1.0 release.
 		In 10GbE mode, if "detectorip" is before "tengiga", the detector still
 		used the 1G IP (DHCP IP). This is fixed in this release.
 

@@ -8,9 +8,10 @@ INTRODUCTION
 This document describes the differences between 3.1.0 into 3.1.0 releases.
 
 
-Detector Concerning
+Topics Concerning
 ==================
-	Jungfrau
+	Jungfrau adcphase
+	Eiger in 10 Giga mode
 
 
 Resolved Issues
@@ -21,7 +22,10 @@ Resolved Issues
 	1. 	(Jungfrau) Bug fix: Same adc phase given to the PLL will still shift
 		adc by one step. One can now give same adc phase repeatedly.
 	
-	2. 	Updated Command Line Manual for adcphase and clkdivider.
-
+		Updated Command Line Manual for adcphase and clkdivider.
+		
+	2. (Eiger) Bug Fix: This bug was introduced in 3.1.0 release.
+		In 10GbE mode, if "detectorip" is before "tengiga", the detector still
+		used the 1G IP (DHCP IP). This is fixed in this release.
 
 

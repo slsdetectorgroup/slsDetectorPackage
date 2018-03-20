@@ -694,7 +694,15 @@ Start the server again:
 \begin{verbatim}
 ./eigerDetectorServer &
 \end{verbatim}
+\textbf{Note that the server appropiate for the software version used is located inside the package: {\tt{slsDetectorsPackage/serverBin/eigerDetectorServerxx.yy.}}}.
 
+To copy the detector server on many boards, a script can be implemented on the lines of:
+\begin{verbatim}
+for i in beb111 beb070; 
+do ssh root@$i killall eigerDetectorServer; 
+scp eigerDetectorServer root@$i:~/executables/eigerDetectorServer ; 
+ssh root@$i sync; done
+\end{verbatim}
 
 \section{Loading firmware bitfiles}
 
@@ -834,6 +842,10 @@ It is connected to the TCPport which the receiver uses:
 \item In rare cases, it might be that the TCP port crashes. To find out which process uses the TCPPOrt do: \textbf{netstat -nlp | grep xxxx}, where xxxx is the tcpport number. To display open ports and established TCP connections, enter: \textbf{netstat -vatn}. Kill the process.
 %%%#To display only open UDP ports try the following command: netstat -vaun
  \end{itemize}
+
+\subsection{Zmq socket is blocked}
+It is connected to the TCPport which is used. In rare cases, it might be that the TCP port crashes. To find out which process uses the TCPPOrt do: \textbf{netstat -nlp | grep xxxx}, where xxxx is the tcpport number. To display open ports and established TCP connections, enter: \textbf{netstat -vatn}. Kill the process.
+
 
 \subsection{Client has \textbf{shmget error}}
 Note that occasionally if there is a shared memory of a different size (from an older software version), it will return also a line like this:

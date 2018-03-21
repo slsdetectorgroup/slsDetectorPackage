@@ -5864,7 +5864,7 @@ string slsDetectorCommand::helpSpeed(int narg, char *args[], int action) {
 		os << "waitstates  \t gets the waitstates of the bus interface" << std::endl;
 		os << "totdivider \t gets the clock divider in tot mode" << std::endl;
 		os << "totdutycycle \t gets the duty cycle of the tot clock" << std::endl;
-        os << "totdutycycle \t gets phase of the sampling clock. For JUNGFRAU, setting speed (clkdivider) overwrites adcphase to its default recommended value. (Not for EIGER)" << std::endl;
+        os << "adcphase \t gets phase of the sampling clock. For JUNGFRAU, setting speed (clkdivider) overwrites adcphase to its default recommended value. (Not for EIGER)" << std::endl;
 		os << std::endl;
 
 	}

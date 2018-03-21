@@ -1,9 +1,9 @@
 Path: slsDetectorsPackage/slsDetectorSoftware 
 URL: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
 Repository Root: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
-Repsitory UUID: b58c3e8951625ed9124669404f6b68aca340a1b8 
-Revision: 1842 
+Repsitory UUID: 98752e1cdbd78167ad20c6a01a17852b1a2263a7 
+Revision: 1846 
 Branch: developer 
-Last Changed Author: Dhanya_Thattil 
-Last Changed Rev: 3727 
-Last Changed Date: 2018-03-14 16:10:22.000000002 +0100 ./multiSlsDetector/multiSlsDetector.cpp
+Last Changed Author: Gemma_Tinti 
+Last Changed Rev: 3733 
+Last Changed Date: 2018-03-21 09:01:24.000000002 +0100 ./threadFiles/ThreadPool.o

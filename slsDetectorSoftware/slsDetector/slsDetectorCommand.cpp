@@ -718,7 +718,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page config
-   - <b>clkdivider [i]</b> sets/gets the readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)]. MYTHEN[???]. \c Returns \c (int)
+   - <b>clkdivider [i]</b> sets/gets the readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)]. Jungfrau, full speed is not implemented and overwrites adcphase to recommended default. MYTHEN[???]. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="clkdivider"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
@@ -774,7 +774,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 	/*! \page config
-   - <b>adcphase [i]</b> Sets/gets the ADC clock frequency in MHz. For the new chiptestboard!\c Returns \c (int)
+   - <b>adcphase [i]</b> Sets/gets phase of the sampling clock. For JUNGFRAU, setting speed (clkdivider) overwrites adcphase to its default recommended value. (Not for EIGER) \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="adcphase"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
@@ -5830,7 +5830,6 @@ string slsDetectorCommand::cmdSpeed(int narg, char *args[], int action) {
 
 	}
 
-
 	myDet->setOnline(ONLINE_FLAG);
 
 	ret=myDet->setSpeed(index,t);
@@ -5849,21 +5848,23 @@ string slsDetectorCommand::helpSpeed(int narg, char *args[], int action) {
 	ostringstream os;
 	if (action==PUT_ACTION || action==HELP_ACTION) {
 
-		os << "clkdivider c  \t sets readout clock divider" << std::endl;
+		os << "clkdivider c  \t sets readout clock divider. For Jungfrau, it also overwrites adcphase to recommended default" << std::endl;
 		os << "setlength  c\t sets the length of the set/reset signals (in clock cycles)" << std::endl;
 		os << "waitstates c \t sets the waitstates of the bus interface" << std::endl;
 		os << "totdivider  c\t sets the clock divider in tot mode" << std::endl;
 		os << "totdutycycle  c\t sets the duty cycle of the tot clock" << std::endl;
+		os << "adcphase  c\t Sets phase of the sampling clock. For JUNGFRAU, setting speed (clkdivider) overwrites adcphase to its default recommended value. (Not for EIGER)" << std::endl;
 		os << std::endl;
 
 	}
 	if (action==GET_ACTION || action==HELP_ACTION) {
 
-		os << "clkdivider  \t gets readout clock divider" << std::endl;
+		os << "clkdivider  \t gets readout clock divider. For Jungfrau, it also overwrites adcphase to recommended default" << std::endl;
 		os << "setlength  \t gets the length of the set/reset signals (in clock cycles)" << std::endl;
 		os << "waitstates  \t gets the waitstates of the bus interface" << std::endl;
 		os << "totdivider \t gets the clock divider in tot mode" << std::endl;
 		os << "totdutycycle \t gets the duty cycle of the tot clock" << std::endl;
+        os << "totdutycycle \t gets phase of the sampling clock. For JUNGFRAU, setting speed (clkdivider) overwrites adcphase to its default recommended value. (Not for EIGER)" << std::endl;
 		os << std::endl;
 
 	}

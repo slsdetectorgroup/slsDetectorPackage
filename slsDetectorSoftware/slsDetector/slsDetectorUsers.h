@@ -77,7 +77,7 @@ You can  find examples of how this classes can be instatiated in mainClient.cpp 
 @libdoc The slsDetectorUsers class is a minimal interface class which should be instantiated by the users in their acquisition software (EPICS, spec etc.). More advanced configuration functions are not implemented and can be written in a configuration or parameters file that can be read/written.
 */
 /**
-  @short Class for detector functionalitiesto embed the detector controls in the users custom interface e.g. EPICS, Lima etc.
+  @short Class for detector functionalities to embed the detector controls in the users custom interface e.g. EPICS, Lima etc.
 
 */
 
@@ -270,7 +270,7 @@ class slsDetectorUsers
   */
    int getDetectorSize(int &x0, int &y0, int &nx, int &ny);
   /**
-     @short setsthe maximum detector size
+     @short gets the maximum detector size
      \param x0 horizontal position origin in channel number 
      \param y0 vertical position origin in channel number 
      \param nx number of channels in horiziontal

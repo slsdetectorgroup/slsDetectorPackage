@@ -101,8 +101,8 @@ enum NETWORKINDEX           { TXN_FRAME };
 #define CONFIG_QUARTER_SPEED		(CONFIG_TDMA_DISABLE_VAL + CONFIG_QUARTER_SPEED_10MHZ_VAL + CONFIG_MODE_1_X_10GBE_VAL)
 #define ADC_OFST_HALF_SPEED_VAL		(0x20) //adc pipeline
 #define ADC_OFST_QUARTER_SPEED_VAL	(0x0f)
-#define ADC_PHASE_HALF_SPEED 		(0x41)
-#define ADC_PHASE_QUARTER_SPEED 	(0x19)
+#define ADC_PHASE_HALF_SPEED 		(0x48) //72
+#define ADC_PHASE_QUARTER_SPEED 	(0x48) //72
 
 /* Maybe not required for jungfrau */
 #define NTRIMBITS 					(6)

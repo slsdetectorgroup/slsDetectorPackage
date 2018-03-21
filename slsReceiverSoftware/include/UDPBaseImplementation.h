@@ -600,10 +600,12 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * detType is the detector type see :: detectorType
 	 * version is the version number of this structure format
 	 * dataPointer is the pointer to the data
-	 * dataSize in bytes is the size of the data in bytes
+	 * dataSize in bytes is the size of the data in bytes. To write/stream a smaller size of processed data, change this value (only smaller value is allowed).
 	 */
-	void registerCallBackRawDataReady(void (*func)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
-			char*, uint32_t, void*),void *arg);
+	void registerCallBackRawDataReady(void (*func)(uint64_t, uint32_t, uint32_t,
+	        uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t,
+	        uint16_t, uint8_t, uint8_t,
+			char*, uint32_t*, void*),void *arg);
 
 
 
@@ -736,10 +738,11 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * detType is the detector type see :: detectorType
 	 * version is the version number of this structure format
 	 * dataPointer is the pointer to the data
-	 * dataSize in bytes is the size of the data in bytes
+	 * dataSize in bytes is the size of the data in bytes. To write/stream a smaller size of processed data, change this value (only smaller value is allowed).
 	 */
-	void (*rawDataReadyCallBack)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
-			char*, uint32_t, void*);
+	void (*rawDataReadyCallBack)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t,
+	        uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+			char*, uint32_t*, void*);
 	void *pRawDataReady;
 
 

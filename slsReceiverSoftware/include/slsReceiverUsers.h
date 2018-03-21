@@ -69,7 +69,7 @@ public:
 	 */
 	void registerCallBackRawDataReady(void (*func)(uint64_t frameNumber, uint32_t expLength, uint32_t packetNumber, uint64_t bunchId, uint64_t timestamp,
 			uint16_t modId, uint16_t xCoord, uint16_t yCoord, uint16_t zCoord, uint32_t debug, uint16_t roundRNumber, uint8_t detType, uint8_t version,
-			char* datapointer, uint32_t datasize, void*),void *arg);
+			char* datapointer, uint32_t* datasize, void*),void *arg);
 	
 	//receiver object
 	slsReceiver* receiver;

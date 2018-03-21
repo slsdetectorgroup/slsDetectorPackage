@@ -33,12 +33,14 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param freq pointer to streaming frequency
 	 * @param timer pointer to timer if streaming frequency is random
 	 * @param dataReadycb pointer to data ready call back function
-	 * @param pDataReadycb pointer to arguments of data ready call back function
+	 * @param pDataReadycb pointer to arguments of data ready call back function. To write/stream a smaller size of processed data, change this value (only smaller value is allowed).
 	 */
 	DataProcessor(Fifo*& f, fileFormat* ftype, bool fwenable, bool* dsEnable, bool* gpEnable, uint32_t* dr,
 						uint32_t* freq, uint32_t* timer,
-						void (*dataReadycb)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
-								char*, uint32_t, void*),
+						void (*dataReadycb)(uint64_t, uint32_t, uint32_t, uint64_t,
+						        uint64_t, uint16_t, uint16_t, uint16_t, uint16_t,
+						        uint32_t, uint16_t, uint8_t, uint8_t,
+								char*, uint32_t*, void*),
 						void *pDataReadycb);
 
 	/**
@@ -393,10 +395,11 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * detType is the detector type see :: detectorType
 	 * version is the version number of this structure format
 	 * dataPointer is the pointer to the data
-	 * dataSize in bytes is the size of the data in bytes
+	 * dataSize in bytes is the size of the data in bytes. To write/stream a smaller size of processed data, change this value (only smaller value is allowed).
 	 */
-	void (*rawDataReadyCallBack)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
-			char*, uint32_t, void*);
+	void (*rawDataReadyCallBack)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t,
+	        uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+			char*, uint32_t*, void*);
 	void *pRawDataReady;
 
 

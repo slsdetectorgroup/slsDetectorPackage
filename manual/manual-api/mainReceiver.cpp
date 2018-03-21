@@ -103,12 +103,12 @@ void AcquisitionFinished(uint64_t frames, void*p){
  * @param detType detector type see :: detectorType
  * @param version version of standard header (structure format)
  * @param datapointer pointer to data
- * @param datasize data size in bytes
+ * @param datasize data size in bytes. To write/stream a smaller size of processed data, change this value (only smaller value is allowed).
  * @param p pointer to object
  */
 void GetData(uint64_t frameNumber, uint32_t expLength, uint32_t packetNumber, uint64_t bunchId, uint64_t timestamp,
 		uint16_t modId, uint16_t xCoord, uint16_t yCoord, uint16_t zCoord, uint32_t debug, uint16_t roundRNumber, uint8_t detType, uint8_t version,
-		char* datapointer, uint32_t datasize, void* p){
+		char* datapointer, uint32_t* datasize, void* p){
 
 	PRINT_IN_COLOR (modId?modId:xCoord,
 			"#### %d GetData: ####\n"
@@ -117,7 +117,8 @@ void GetData(uint64_t frameNumber, uint32_t expLength, uint32_t packetNumber, ui
 			"version: %u\t\tfirstbytedata: 0x%x\t\tdatsize: %u\n\n",
 			xCoord, frameNumber, expLength, packetNumber, bunchId, timestamp, modId,
 			xCoord, yCoord, zCoord, debug, roundRNumber, detType, version,
-			((uint8_t)(*((uint8_t*)(datapointer)))), datasize);
+			((uint8_t)(*((uint8_t*)(datapointer)))), *datasize);
+	*datasize = 26000;
 }
 
 

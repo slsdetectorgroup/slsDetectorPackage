@@ -98,7 +98,32 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	void registerCallBackRawDataReady(void (*func)(uint64_t, uint32_t, uint32_t,
 	        uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t,
 	        uint16_t, uint8_t, uint8_t,
-			char*, uint32_t*, void*),void *arg);
+			char*, uint32_t, void*),void *arg);
+
+    /**
+     * Call back for raw data (modified)
+     * args to raw data ready callback are
+     * frameNumber is the frame number
+     * expLength is the subframe number (32 bit eiger) or real time exposure time in 100ns (others)
+     * packetNumber is the packet number
+     * bunchId is the bunch id from beamline
+     * timestamp is the time stamp with 10 MHz clock
+     * modId is the unique module id (unique even for left, right, top, bottom)
+     * xCoord is the x coordinate in the complete detector system
+     * yCoord is the y coordinate in the complete detector system
+     * zCoord is the z coordinate in the complete detector system
+     * debug is for debugging purposes
+     * roundRNumber is the round robin set number
+     * detType is the detector type see :: detectorType
+     * version is the version number of this structure format
+     * dataPointer is the pointer to the data
+     * revDatasize is the reference of data size in bytes. Can be modified to the new size to be written/streamed. (only smaller value).
+     */
+    void registerCallBackRawDataModifyReady(void (*func)(uint64_t, uint32_t,
+            uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t,
+            uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+            char*, uint32_t &,void*),void *arg);
+
 
  private:
 
@@ -346,11 +371,36 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	 * detType is the detector type see :: detectorType
 	 * version is the version number of this structure format
 	 * dataPointer is the pointer to the data
-	 * dataSize in bytes is the size of the data in bytes. To write/stream a smaller size of processed data, change this value (only smaller value is allowed).
+	 * dataSize in bytes is the size of the data in bytes.
 	 */
 	void (*rawDataReadyCallBack)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t,
 	        uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
-			char*, uint32_t*, void*);
+			char*, uint32_t, void*);
+
+    /**
+     * Call back for raw data (modified)
+     * args to raw data ready callback are
+     * frameNumber is the frame number
+     * expLength is the subframe number (32 bit eiger) or real time exposure time in 100ns (others)
+     * packetNumber is the packet number
+     * bunchId is the bunch id from beamline
+     * timestamp is the time stamp with 10 MHz clock
+     * modId is the unique module id (unique even for left, right, top, bottom)
+     * xCoord is the x coordinate in the complete detector system
+     * yCoord is the y coordinate in the complete detector system
+     * zCoord is the z coordinate in the complete detector system
+     * debug is for debugging purposes
+     * roundRNumber is the round robin set number
+     * detType is the detector type see :: detectorType
+     * version is the version number of this structure format
+     * dataPointer is the pointer to the data
+     * revDatasize is the reference of data size in bytes. Can be modified to the new size to be written/streamed. (only smaller value).
+     */
+    void (*rawDataModifyReadyCallBack)(uint64_t, uint32_t,
+            uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t,
+            uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+            char*, uint32_t &, void*);
+
 	void *pRawDataReady;
 
 

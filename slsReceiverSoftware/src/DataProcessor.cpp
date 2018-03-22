@@ -37,7 +37,11 @@ DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool fwenable, bool* d
 		uint32_t* freq, uint32_t* timer,
 		void (*dataReadycb)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t,
 		        uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
-				char*, uint32_t*, void*),
+				char*, uint32_t, void*),
+		void (*dataModifyReadycb)(uint64_t, uint32_t, uint32_t, uint64_t,
+		        uint64_t, uint16_t, uint16_t, uint16_t, uint16_t,
+		        uint32_t, uint16_t, uint8_t, uint8_t,
+		        char*, uint32_t &, void*),
 		void *pDataReadycb) :
 
 		ThreadObject(NumberofDataProcessors),
@@ -62,6 +66,7 @@ DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool fwenable, bool* d
 		numFramesCaught(0),
 		currentFrameIndex(0),
 		rawDataReadyCallBack(dataReadycb),
+		rawDataModifyReadyCallBack(dataModifyReadycb),
 		pRawDataReady(pDataReadycb)
 {
 	if(ThreadObject::CreateThread()){
@@ -411,9 +416,31 @@ void DataProcessor::ProcessAnImage(char* buf) {
 				header->detType,
 				header->version,
 				buf + FIFO_HEADER_NUMBYTES + sizeof(sls_detector_header),
-				(uint32_t*)buf,
+				(uint32_t)(*((uint32_t*)buf)),
 				pRawDataReady);
 	}
+
+	else if (rawDataModifyReadyCallBack) {cprintf(BG_GREEN,"Calling rawdatamodify\n");
+        uint32_t revsize = (uint32_t)(*((uint32_t*)buf));
+        rawDataModifyReadyCallBack(
+                header->frameNumber,
+                header->expLength,
+                header->packetNumber,
+                header->bunchId,
+                header->timestamp,
+                header->modId,
+                header->xCoord,
+                header->yCoord,
+                header->zCoord,
+                header->debug,
+                header->roundRNumber,
+                header->detType,
+                header->version,
+                buf + FIFO_HEADER_NUMBYTES + sizeof(sls_detector_header),
+                revsize,
+                pRawDataReady);
+        (*((uint32_t*)buf)) =  revsize;
+    }
 
 
 	if (file)

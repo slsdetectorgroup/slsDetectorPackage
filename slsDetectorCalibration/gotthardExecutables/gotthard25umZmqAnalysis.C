@@ -407,11 +407,12 @@ int main(int argc, char *argv[]){
 	    strcpy(fn1,filename1.c_str());
 	    sprintf(ofname,"%s_%d.clust",fn0,irun);
 	    fclust=fopen(ofname,"w");
-	    
+	    while (mt->isBusy()) {;}
+	    mt->setFilePointer(fclust);
 	  }
 
-	  strcpy(fn0,filename0.c_str());
-	  strcpy(fn1,filename1.c_str());
+	  // strcpy(fn0,filename0.c_str());
+	  // strcpy(fn1,filename1.c_str());
 	  
 	  //	  cout << "Receive data " << nf << endl;
 	  length = zmqsocket0->ReceiveData(0, buff0, size/2);

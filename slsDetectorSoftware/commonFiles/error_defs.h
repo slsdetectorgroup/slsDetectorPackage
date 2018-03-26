@@ -24,6 +24,7 @@ using namespace std;
 //											0xFFF0000000000000ULL
 #define MULTI_DETECTORS_NOT_ADDED			0x8000000000000000ULL
 #define MULTI_HAVE_DIFFERENT_VALUES			0x4000000000000000ULL
+#define MULTI_CONFIG_FILE_ERROR             0x2000000000000000ULL
 
 // sls errors
 #define CRITICAL_ERROR_MASK 				0xFFFFFFF
@@ -91,6 +92,7 @@ using namespace std;
 #define RESTREAM_STOP_FROM_RECEIVER			0x0000000800000000ULL
 #define TEMPERATURE_CONTROL                 0x0000001000000000ULL
 #define AUTO_COMP_DISABLE                   0x0000002000000000ULL
+#define CONFIG_FILE                         0x0000004000000000ULL
 //											0x000000FFFFFFFFFFULL
 
 
@@ -289,6 +291,8 @@ public:
         if(slsErrorMask&AUTO_COMP_DISABLE)
                 retval.append("Could not set/get auto comparator disable\n");
 
+        if(slsErrorMask&CONFIG_FILE)
+                retval.append("Could not load/write config file\n");
 
 		//------------------------------------------------------ length of message
 

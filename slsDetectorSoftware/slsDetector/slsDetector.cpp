@@ -7265,6 +7265,7 @@ int slsDetector::readConfigurationFile(string const fname){
     infile.close();
   } else {
     std::cout<< "Error opening configuration file " << fname << " for reading" << std::endl;
+    setErrorMask((getErrorMask())|(CONFIG_FILE));
     return FAIL;
   }
 #ifdef VERBOSE
@@ -7362,6 +7363,7 @@ int slsDetector::writeConfigurationFile(string const fname){
   }
   else {
     std::cout<< "Error opening configuration file " << fname << " for writing" << std::endl;
+    setErrorMask((getErrorMask())|(CONFIG_FILE));
     return FAIL;
   }
 #ifdef VERBOSE

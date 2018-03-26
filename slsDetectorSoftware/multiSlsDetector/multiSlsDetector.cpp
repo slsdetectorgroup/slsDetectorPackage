@@ -5149,6 +5149,7 @@ int multiSlsDetector::readConfigurationFile(string const fname){
 
   } else {
     std::cout<< "Error opening configuration file " << fname << " for reading" << std::endl;
+    setErrorMask(getErrorMask()|MULTI_CONFIG_FILE_ERROR);
     return FAIL;
   }
 #ifdef VERBOSE
@@ -5255,6 +5256,7 @@ int multiSlsDetector::writeConfigurationFile(string const fname){
 #endif
 	}  else {
 		std::cout<< "Error opening configuration file " << fname << " for writing" << std::endl;
+		setErrorMask(getErrorMask()|MULTI_CONFIG_FILE_ERROR);
 		ret = FAIL;
 	}
 
@@ -6509,6 +6511,10 @@ string multiSlsDetector::getErrorMessage(int &critical){
 			 retval.append("A previous multi detector command gave different values\n"
 					 "Please check the console\n");
 			 critical = 0;
+		 }
+		 if(multiMask & MULTI_CONFIG_FILE_ERROR) {
+		     retval.append("Could not load Config File\n");
+		     critical = 0;
 		 }
 
 		  for (int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet) {

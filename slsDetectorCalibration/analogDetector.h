@@ -271,34 +271,37 @@ template <class dataType> class analogDetector {
       else return 0;
     }
 
-    virtual void addToCommonMode(double val, int ix, int iy=0){ 
+    /* virtual void addToCommonMode(double val, int ix, int iy=0){  */
       
-      if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
-	if (cmSub)  {
-	  if (det) if (det->isGood(ix, iy)==0) return;
-	  if (getNumpedestals(ix,iy)>0)
-	    cmSub->addToCommonMode(val-getPedestal(ix,iy), ix, iy);
-	};
+    /*   if (ix>=0 && ix<nx && iy>=0 && iy<ny) { */
+    /* 	if (cmSub)  { */
+    /* 	  if (det) if (det->isGood(ix, iy)==0) return; */
+    /* 	  if (getNumpedestals(ix,iy)>0) { */
+    /* 	    cmSub->addToCommonMode(val-getPedestal(ix,iy), ix, iy); */
+    /* 	  } */
+    /* 	}; */
 	
-      }
-    }   
+    /*   } */
+    /* }    */
   
     virtual void addToCommonMode(char *data){ 
       if (cmSub) {
 	for (int ix=xmin; ix<xmax; ix++) {
 	  for (int iy=ymin; iy<ymax; iy++) { 
-	  if (getNumpedestals(ix,iy)>0) 
+	    // if (getNumpedestals(ix,iy)>0) 
 	    addToCommonMode(data, ix, iy);
 	  }
 	}
-	cout << "cm " << getCommonMode(0,0) << " " << getCommonMode(1,0) << endl;
+	//cout << "cm " << getCommonMode(0,0) << " " << getCommonMode(1,0) << endl;
       }
     }      
     virtual void addToCommonMode(char *data, int ix, int iy=0){ 
       if (cmSub) {
 	if (det) if (det->isGood(ix, iy)==0) return;
-	if (getNumpedestals(ix,iy)>0)
+	if (getNumpedestals(ix,iy)>0){
 	    cmSub->addToCommonMode(subtractPedestal(data,ix,iy,0), ix, iy);
+	    // cout << ix << " " <<subtractPedestal(data,ix,iy,0)  << endl;
+	}
       }
     }      
     /**
@@ -668,9 +671,9 @@ template <class dataType> class analogDetector {
 	  val=dataSign*det->getValue(data, ix, iy);
 	else
 	  val=((double*)data)[iy*nx+ix];
-	if (cm && cmSub)
-	  val-=getCommonMode(ix,iy);
-	addToPedestal(val,ix,iy);
+	/* if (cm && cmSub) */
+	/*   val-=getCommonMode(ix,iy); */
+	addToPedestal(val,ix,iy, cm);
       }
       return  ;
       
@@ -722,7 +725,6 @@ template <class dataType> class analogDetector {
 	}
 	
 	if (det) {
-	  // cout << det->getValue(data, ix, iy) << " " << getPedestal(ix,iy) << " " <<  (dataSign*det->getValue(data, ix, iy)-getPedestal(ix,iy))/g << endl;
 	  return (dataSign*det->getValue(data, ix, iy)-getPedestal(ix,iy, cm))/g;
 	}
 	else

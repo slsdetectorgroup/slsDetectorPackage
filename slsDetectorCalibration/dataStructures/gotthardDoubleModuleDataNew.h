@@ -34,6 +34,9 @@ public:
     
     
     
+#ifdef BCHIP074_BCHIP075
+		  cout << "This is a bchip074-bchip075 system " << endl;
+#endif
 
 
 		uint16_t **dMask;
@@ -59,6 +62,11 @@ public:
 		    dMap[0][ix] = 1280*2+2*offset+ipix*2;//dataSize-2-ix;//+2*offset;
 		  // dMap[0][ix] = 2*ipix+offset*(imod+1)+1280*2*imod; 
 		  dMask[0][ix] = 0x0;
+#ifdef BCHIP074_BCHIP075
+		  int ibad=ix/2+1280*imod;
+		  if ((ibad>=128*4 && ibad<128*5) || (ibad>=9*128 && ibad<10*128) || (ibad>=(1280+128*4) && ibad<ibad>=(1280+128*6))) 
+		    	dataROIMask[0][ix]=0; 
+#endif
 		}
 
 		setDataMap(dMap);
@@ -78,7 +86,7 @@ public:
 
   int getFrameNumber(char *buff){if (offset>=sizeof(sls_detector_header)) return ((sls_detector_header*)buff)->frameNumber; return iframe;};//*((int*)(buff+5))&0xffffff;};   
 
-
+ 
 
 	/**
      gets the packets number (last packet is labelled with 0 and is replaced with 40)

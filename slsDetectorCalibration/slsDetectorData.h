@@ -298,7 +298,7 @@ class slsDetectorData {
      
   */
   virtual  int getFrameNumber(char *buff)=0;   
-  
+   
   /**
      
      Returns the packet number for the given dataset. purely virtual func

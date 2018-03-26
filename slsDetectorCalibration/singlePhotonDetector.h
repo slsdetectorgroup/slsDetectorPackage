@@ -429,7 +429,8 @@ int *getClusters(char *data,  int *ph=NULL) {
   int ir, ic;
   
   double max=0, tl=0, tr=0, bl=0,br=0, *v, vv;
-
+  int cm=0;
+  if (cmSub) cm=1;
   if (ph==NULL)
     ph=image;
 
@@ -438,6 +439,13 @@ int *getClusters(char *data,  int *ph=NULL) {
     return 0;
   }
   newFrame();
+
+
+  
+  if (cm)
+    addToCommonMode(data);
+
+
   for (int ix=xmin; ix<xmax; ix++) {
     for (int iy=ymin; iy<ymax; iy++) {
       
@@ -463,7 +471,7 @@ int *getClusters(char *data,  int *ph=NULL) {
 	for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
 	  
 	  if ((iy+ir)>=iy && (iy+ir)<ny && (ix+ic)>=ix && (ix+ic)<nx) {
-	    val[iy+ir][ix+ic]=subtractPedestal(data,ix+ic,iy+ir);
+	    val[iy+ir][ix+ic]=subtractPedestal(data,ix+ic,iy+ir, cm);
 	  }
 	  
 	  v=&(val[iy+ir][ix+ic]);
@@ -516,6 +524,7 @@ int *getClusters(char *data,  int *ph=NULL) {
 	      (clusters+nph)->set_data(val[iy+ir][ix+ic],ic,ir);
 	    }
 	  }
+	  //	  cout << (clusters+nph)->iframe << " " << ix << " " << nph << " " << tot << " " << (clusters+nph)->quadTot << endl;
 	  nph++;
 	  image[iy*nx+ix]++;
 
@@ -523,7 +532,7 @@ int *getClusters(char *data,  int *ph=NULL) {
 	    eventMask[iy][ix]=PHOTON;
 	  }
       } else if (eventMask[iy][ix]==PEDESTAL) {
-	addToPedestal(data,ix,iy);
+	addToPedestal(data,ix,iy,cm);
       }
 
 

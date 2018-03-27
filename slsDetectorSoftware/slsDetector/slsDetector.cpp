@@ -2246,8 +2246,7 @@ int64_t slsDetector::getId( idMode mode, int imod){
 #endif
   if (mode==THIS_SOFTWARE_VERSION) {
     ret=OK;
-    retval=GITREV;
-    retval=(retval<<32) | GITDATE;
+    retval=GITDATE;
   } else if (mode==RECEIVER_VERSION) {
     if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
     	if (connectData() == OK){

@@ -1,9 +1,9 @@
 Path: slsDetectorsPackage/slsDetectorGui 
 URL: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
 Repository Root: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
-Repsitory UUID: b8bdbf4da61f95b88893b02ddabc2491b16fa10f 
-Revision: 492 
+Repsitory UUID: fe2ba8621b33bc00f51c8cd4d33e98b7d4ebfa41 
+Revision: 493 
 Branch: developer 
 Last Changed Author: Dhanya_Thattil 
-Last Changed Rev: 3746 
-Last Changed Date: 2018-03-26 17:27:44.000000002 +0200 ./src/qTabSettings.cpp
+Last Changed Rev: 3747 
+Last Changed Date: 2018-03-27 17:30:53.000000002 +0200 ./include/qTabMeasurement.h

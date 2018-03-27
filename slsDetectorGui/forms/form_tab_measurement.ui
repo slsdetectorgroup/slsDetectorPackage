@@ -133,44 +133,6 @@
     </property>
    </widget>
   </widget>
-  <widget class="QPushButton" name="btnStartStop">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>289</y>
-     <width>319</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-   <property name="focusPolicy">
-    <enum>Qt::NoFocus</enum>
-   </property>
-   <property name="toolTip">
-    <string>Starts or Stops Acquisition</string>
-   </property>
-   <property name="text">
-    <string>Start</string>
-   </property>
-   <property name="icon">
-    <iconset resource="../include/icons.qrc">
-     <normaloff>:/icons/images/start.png</normaloff>:/icons/images/start.png</iconset>
-   </property>
-   <property name="shortcut">
-    <string>Shift+Space</string>
-   </property>
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="flat">
-    <bool>false</bool>
-   </property>
-  </widget>
   <widget class="QFrame" name="frameTimeResolved">
    <property name="geometry">
     <rect>
@@ -998,6 +960,107 @@ Frame period between exposures.
      </item>
     </layout>
    </widget>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>297</y>
+     <width>318</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QPushButton" name="btnStart">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="focusPolicy">
+       <enum>Qt::NoFocus</enum>
+      </property>
+      <property name="toolTip">
+       <string>Starts Acquisition</string>
+      </property>
+      <property name="text">
+       <string>Start</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../include/icons.qrc">
+        <normaloff>:/icons/images/start.png</normaloff>:/icons/images/start.png</iconset>
+      </property>
+      <property name="shortcut">
+       <string>Shift+Space</string>
+      </property>
+      <property name="checkable">
+       <bool>false</bool>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer_2">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Fixed</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>10</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QPushButton" name="btnStop">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>70</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="focusPolicy">
+       <enum>Qt::NoFocus</enum>
+      </property>
+      <property name="toolTip">
+       <string>Stops Acquisition</string>
+      </property>
+      <property name="text">
+       <string>Stop</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../include/icons.qrc">
+        <normaloff>:/icons/images/stop.png</normaloff>:/icons/images/stop.png</iconset>
+      </property>
+      <property name="shortcut">
+       <string>Shift+Space</string>
+      </property>
+      <property name="checkable">
+       <bool>false</bool>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
  <tabstops>

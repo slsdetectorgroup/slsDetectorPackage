@@ -617,7 +617,6 @@ void saveErrorSignal(QString);
 void AcquisitionErrorSignal(QString);
 void UpdatePlotSignal();
 void GainPlotSignal(bool);
-void AcquisitionFinishedSignal();
 };
 
 

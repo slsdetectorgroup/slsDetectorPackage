@@ -94,12 +94,6 @@ void qTabMeasurement::SetupWidgetWindow(){
 	chkFile->setChecked(myDet->enableWriteToFile());
 	dispFileName->setEnabled(myDet->enableWriteToFile());
 
-
-	//creating the icons for the buttons
-	iconStart = new QIcon(":/icons/images/start.png");
-	iconStop = new QIcon(":/icons/images/stop.png");
-
-
 	//Timer to update the progress bar
 	progressTimer = new QTimer(this);
 
@@ -267,8 +261,10 @@ void qTabMeasurement::Initialization(){
 	connect(dispFileName,		SIGNAL(editingFinished()),this,	SLOT(setFileName()));
 	//File Index
 	connect(spinIndex,			SIGNAL(valueChanged(int)),			this,	SLOT(setRunIndex(int)));
-	//Start/Stop Acquisition
-	connect(btnStartStop,		SIGNAL(clicked()),					this,	SLOT(startStopAcquisition()));
+	//Start Acquisition
+	connect(btnStart,		    SIGNAL(clicked()),					this,	SLOT(startAcquisition()));
+    //Stop Acquisition
+    connect(btnStop,            SIGNAL(clicked()),                  this,   SLOT(stopAcquisition()));
 	//Timing Mode
 	connect(comboTimingMode,	SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetTimingMode(int)));//
 	//progress bar
@@ -309,75 +305,53 @@ void qTabMeasurement::Enable(bool enable){
 	frameNotTimeResolved->setEnabled(enable);
 
 	//shortcut each time, else it doesnt work a second time
-	btnStartStop->setShortcut(QApplication::translate("TabMeasurementObject", "Shift+Space", 0, QApplication::UnicodeUTF8));
+	btnStart->setShortcut(QApplication::translate("TabMeasurementObject", "Shift+Space", 0, QApplication::UnicodeUTF8));
 }
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabMeasurement::startStopAcquisition(){
-	if(btnStartStop->isChecked()){
-
-		//if file write enabled and output dir doesnt exist
-		if((chkFile->isChecked())&&(thisParent->DoesOutputDirExist() == slsDetectorDefs::FAIL)){
-			if(qDefs::Message(qDefs::QUESTION,
-					"<nobr>Your data will not be saved.</nobr><br><nobr>Disable File write and Proceed with acquisition anyway?</nobr>",
-					"qTabMeasurement::startStopAcquisition") == slsDetectorDefs::FAIL){
-				disconnect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
-				btnStartStop->click();
-				connect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
-				return;
-			}else{
-				//done because for receiver it cant save a file with blank file path and returns without acquiring even to the gui
-				disconnect(chkFile, 			SIGNAL(toggled(bool)), 				this, SLOT(EnableFileWrite(bool)));
-				chkFile->setChecked(false);
-				EnableFileWrite(false);
-				connect(chkFile, 			SIGNAL(toggled(bool)), 				this, SLOT(EnableFileWrite(bool)));
-			}
-		}
+void qTabMeasurement::startAcquisition(){
+    btnStart->setEnabled(false);
+    //if file write enabled and output dir doesnt exist
+    if((chkFile->isChecked())&&(thisParent->DoesOutputDirExist() == slsDetectorDefs::FAIL)){
+        if(qDefs::Message(qDefs::QUESTION,
+                "<nobr>Your data will not be saved.</nobr><br><nobr>Disable File write and Proceed with acquisition anyway?</nobr>",
+                "qTabMeasurement::startAcquisition") == slsDetectorDefs::FAIL){
+            btnStart->setEnabled(true);
+            return;
+        }else{
+            //done because for receiver it cant save a file with blank file path and returns without acquiring even to the gui
+            disconnect(chkFile, 			SIGNAL(toggled(bool)), 				this, SLOT(EnableFileWrite(bool)));
+            chkFile->setChecked(false);
+            EnableFileWrite(false);
+            connect(chkFile, 			SIGNAL(toggled(bool)), 				this, SLOT(EnableFileWrite(bool)));
+        }
+    }
 
 #ifdef VERBOSE
-		cout << endl << endl << "Starting Acquisition" << endl;
+    cout << endl << endl << "Starting Acquisition" << endl;
 #endif
-		//btnStartStop->setStyleSheet("color:red");
-		btnStartStop->setText("Stop");
-		btnStartStop->setIcon(*iconStop);
-		lblProgressIndex->setText(QString::number(0));
-		Enable(0);
-		progressBar->setValue(0);
-		progressTimer->start(100);
+    lblProgressIndex->setText(QString::number(0));
+    Enable(0);
+    progressBar->setValue(0);
+    progressTimer->start(100);
 
-		emit StartSignal();
-	}else{
-#ifdef VERBOSE
-		cout << "Stopping Acquisition" << endl<< endl;
-#endif
-		//emit StopSignal(); commented out to prevent undefined state
-		myDet->stopAcquisition();
-		/* commented out to prevent undefined state
-		myDet->waitForReceiverReadToFinish();
-		UpdateProgress();
-		//spin index
-		disconnect(spinIndex,			SIGNAL(valueChanged(int)),			this,	SLOT(setRunIndex(int)));
-		spinIndex->setValue(myDet->getFileIndex());
-		connect(spinIndex,			SIGNAL(valueChanged(int)),			this,	SLOT(setRunIndex(int)));
-		progressTimer->stop();
-		btnStartStop->setText("Start");
-		btnStartStop->setIcon(*iconStart);
-		btnStartStop->setChecked(false);
-		Enable(1);*/
-	}
-	qDefs::checkErrorMessage(myDet,"qTabMeasurement::startStopAcquisition");
+    emit StartSignal();
+    qDefs::checkErrorMessage(myDet,"qTabMeasurement::startAcquisition");
 }
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabMeasurement::AcquisitionFinished(){
-	disconnect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
-	btnStartStop->setText("Wait");
+void qTabMeasurement::stopAcquisition(){
+#ifdef VERBOSE
+    cout << "Stopping Acquisition" << endl<< endl;
+#endif
+    myDet->stopAcquisition();
+    qDefs::checkErrorMessage(myDet,"qTabMeasurement::stopAcquisition");
 }
 
 
@@ -391,12 +365,8 @@ void qTabMeasurement::UpdateFinished(){
 	connect(spinIndex,			SIGNAL(valueChanged(int)),			this,	SLOT(setRunIndex(int)));
 	progressTimer->stop();
 
-	/*disconnect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition())); done in AcquisitionFinished() already */
-	btnStartStop->setText("Start");
-	btnStartStop->setIcon(*iconStart);
-	btnStartStop->setChecked(false);
 	Enable(1);
-	connect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
+    btnStart->setEnabled(true);
 	qDefs::checkErrorMessage(myDet,"qTabMeasurement::UpdateFinished");
 }
 

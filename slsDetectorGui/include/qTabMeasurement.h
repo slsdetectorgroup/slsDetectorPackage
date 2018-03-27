@@ -50,24 +50,20 @@ public:
 	 */
 	void SetExpertMode(bool enable);
 
-	/** Returns the status of the Start/Stop Acquisition button
+	/** Returns the status of the acquisition in gui
 	 */
-	bool GetStartStatus(){return btnStartStop->isChecked();};
+	bool GetStartStatus(){return (!btnStart->isEnabled());};
 
 	/** Click the Start/Stop Acquisition button
 	 *  This is used if this command came from gui client
 	 */
-	void ClickStartStop(){btnStartStop->click();myPlot->SetClientInitiated();};
+	void ClickStartStop(){startAcquisition();myPlot->SetClientInitiated();};
 
 	/** Returns progress bar value */
 	int GetProgress(){return progressBar->value();};
 
 
 public slots:
-
-	/** Unconnects start/stop button when acquisition is finished
-	 */
-	void AcquisitionFinished();
 
 	/** update plot is finished,
 	 * changes start/stop text and enables/disables all widgets
@@ -131,9 +127,13 @@ private slots:
 	 */
 	void setRunIndex(int index);
 
-	/** starts/stops Acquisition
+	/** starts Acquisition
 	 */
-	void startStopAcquisition();
+	void startAcquisition();
+
+    /** stops Acquisition
+     */
+    void stopAcquisition();
 
 	/** Set number of frames
 	 *  @param val number of frames to be set
@@ -193,8 +193,6 @@ private:
 	QPalette	red;
 	/** expert mode */
 	bool expertMode;
-	QIcon	*iconStart;
-	QIcon	*iconStop;
 	/** to access items in settings combobox */
 	QStandardItemModel* model;
 

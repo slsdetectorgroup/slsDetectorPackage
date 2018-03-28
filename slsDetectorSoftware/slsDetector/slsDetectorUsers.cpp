@@ -275,8 +275,9 @@ int64_t slsDetectorUsers::getThisSoftwareVersion(){
 	return myDetector->getThisSoftwareVersion();
 }
 
-
-
+int slsDetectorUsers::enableGapPixels(int enable) {
+    return myDetector->enableGapPixels(enable);
+}
 
 void slsDetectorUsers::registerDataCallback(int( *userCallback)(detectorData*, int, int, void*), void *pArg){
   myDetector->registerDataCallback(userCallback,pArg);

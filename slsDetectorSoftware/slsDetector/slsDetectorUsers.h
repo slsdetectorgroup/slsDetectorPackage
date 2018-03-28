@@ -529,6 +529,14 @@ class slsDetectorUsers
   int64_t getThisSoftwareVersion();
 
   /**
+   * Enable gap pixels, only for Eiger and for 8,16 and 32 bit mode.
+   * 4 bit mode gap pixels only in gui call back (registerDataCallback)
+   * @param enable 1 sets, 0 unsets, -1 gets
+   * @return gap pixel enable or -1 for error
+   */
+  int enableGapPixels(int enable=-1);
+
+  /**
      @short register calbback for accessing detector final data
      \param func function to be called at the end of the acquisition. gets detector status and progress index as arguments
   */

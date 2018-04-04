@@ -27,8 +27,7 @@
 //versions
 #define HDF5_WRITER_VERSION 				1.0 //1 decimal places
 #define BINARY_WRITER_VERSION 				1.0 //1 decimal places
-#define SLS_DETECTOR_HEADER_VERSION 		0x1
-#define SLS_DETECTOR_JSON_HEADER_VERSION 	0x2
+
 
 //parameters to calculate fifo depth
 #define SAMPLE_TIME_IN_NS				100000000//100ms

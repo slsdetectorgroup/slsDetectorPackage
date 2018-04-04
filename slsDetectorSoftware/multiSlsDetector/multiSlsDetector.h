@@ -1361,6 +1361,7 @@ class multiSlsDetector  : public slsDetectorUtils {
  /** Reads frames from receiver through a constant socket
  */
  void readFrameFromReceiver();
+
    /** Locks/Unlocks the connection to the receiver
       /param lock sets (1), usets (0), gets (-1) the lock
       /returns lock status of the receiver
@@ -1555,21 +1556,6 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
 private:
-
-	/**
-	 * Gets data from socket
-	 * @param isocket socket index
-	 * @param image image buffer
-	 * @param size size of image
-	 * @param acqIndex address of acquisition index
-	 * @param frameIndex address of frame index
-	 * @param subframeIndex address of subframe index
-	 * @param filename address of file name
-	 * @param fileindex address of file index
-	 */
-	int getData(const int isocket, char* image, const int size,
-			uint64_t &acqIndex, uint64_t &frameIndex, uint32_t &subframeIndex,
-			string &filename, uint64_t &fileIndex);
 
 
 	/**

@@ -24,7 +24,7 @@ ID:         $Id$
 #include  <sys/shm.h>
 #include  <iostream>
 #include  <string>
-
+#include <rapidjson/document.h> //json header in zmq stream
 
 
 char ans[MAX_STR_LENGTH];
@@ -6015,243 +6015,165 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 
 
 
-
-
-
-int multiSlsDetector::getData(const int isocket, char* image, const int size,
-		uint64_t &acqIndex, uint64_t &frameIndex, uint32_t &subframeIndex,
-		string &filename, uint64_t &fileIndex) {
-
-	//fail is on parse error or end of acquisition
-	if (!zmqSocket[isocket]->ReceiveHeader(isocket, acqIndex, frameIndex, subframeIndex, filename, fileIndex))
-		return FAIL;
-
-	//receiving incorrect size is replaced by 0xFF
-	zmqSocket[isocket]->ReceiveData(isocket, image, size);
-
-	return OK;
-}
-
-
-
-
-
 void multiSlsDetector::readFrameFromReceiver(){
 
-	//determine number of sockets
-	int numSockets = thisMultiDetector->numberOfDetectors;
-	int numSocketsPerSLSDetector = 1;
-	bool jungfrau = false;
-	bool eiger = false;
-	/*double* gdata = NULL;*/
-	slsDetectorDefs::detectorType myDetType = getDetectorsType();
-	switch(myDetType){
-	case EIGER:
-		eiger = true;
-		numSocketsPerSLSDetector = 2;
-		numSockets *= numSocketsPerSLSDetector;
-		break;
-	case JUNGFRAU:
-		jungfrau = true;
-		break;
-	default:
-		break;
-	}
+    int numSockets = thisMultiDetector->numberOfDetectors;
+    bool gappixelsenable = false;
+    if (getDetectorsType() == EIGER) {
+        numSockets *= 2;
+        gappixelsenable = detectors[0]->enableGapPixels(-1) >= 1 ? true: false;
+    }
 
-	//gui variables
-	uint64_t currentAcquisitionIndex = -1;
-	uint64_t currentFrameIndex = -1;
-	uint32_t currentSubFrameIndex = -1;
-	uint64_t currentFileIndex = -1;
-	string currentFileName = "";
+    bool runningList[numSockets];
+    bool connectList[numSockets];
+    int numRunning = 0;
+    for(int i = 0; i < numSockets; ++i) {
+        if(!zmqSocket[i]->Connect()) {
+            connectList[i] = true;
+            runningList[i] = true;
+            ++numRunning;
+        } else {
+            // to remember the list it connected to, to disconnect later
+            connectList[i] = false;
+            cprintf(RED,"Error: Could not connect to socket  %s\n",zmqSocket[i]->GetZmqServerAddress());
+            runningList[i] = false;
+        }
+    }
+    int numConnected = numRunning;
+    bool data = false;
+    char* image = NULL;
+    char* multiframe = NULL;
+    char* multigappixels = NULL
+    int multisize = 0;
+    // header info
+    uint32_t size = 0;  // only first message header
+    uint32_t nPixelsx = 0, nPixelsY = 0;
+    uint32_t dynamicRange = 0;
+    string currentFileName = "";
+    uint64_t currentAcquisitionIndex = -1;
+    uint64_t currentFrameIndex = -1;
+    uint32_t currentSubFrameIndex = -1;
+    uint64_t currentFileIndex = -1;
 
-	//getting sls values
-	int slsdatabytes = 0, slsmaxchannels = 0, slsmaxX = 0, slsmaxY=0;
-	double bytesperchannel = 0;
-	bool gappixelsenable = false;
-	if(detectors[0]){
-		slsmaxchannels = detectors[0]->getMaxNumberOfChannels(X) * detectors[0]->getMaxNumberOfChannels(Y);
-		slsdatabytes = detectors[0]->getDataBytes();
-		bytesperchannel = (double)slsdatabytes/(double)slsmaxchannels;
+    //wait for real time acquisition to start
+    bool running = true;
+    sem_wait(&sem_newRTAcquisition);
+    if(checkJoinThread())
+        running = false;
 
+    //exit when checkJoinThread() (all sockets done)
+    while(running){
 
-		// recalculate with gap pixels (for >= 8 bit mode)
-		if (bytesperchannel >= 1.0) {
-			slsdatabytes = detectors[0]->getDataBytesInclGapPixels();
-			slsmaxchannels = detectors[0]->getMaxNumberOfChannelsInclGapPixels(X)*detectors[0]->getMaxNumberOfChannelsInclGapPixels(Y);
-		}
+        //get each frame
+        for(int isocket=0; isocket<numSockets; ++isocket){
 
-		slsmaxX = (bytesperchannel >= 1.0) ? detectors[0]->getTotalNumberOfChannelsInclGapPixels(X) : detectors[0]->getTotalNumberOfChannels(X);
-		slsmaxY = (bytesperchannel >= 1.0) ? detectors[0]->getTotalNumberOfChannelsInclGapPixels(Y) : detectors[0]->getTotalNumberOfChannels(Y);
-		gappixelsenable = detectors[0]->enableGapPixels(-1) >= 1 ? true: false;
-	}
-	// max channel values
-	int maxX = (bytesperchannel >= 1.0) ? thisMultiDetector->numberOfChannelInclGapPixels[X] : thisMultiDetector->numberOfChannel[X];
-	int maxY = (bytesperchannel >= 1.0) ? thisMultiDetector->numberOfChannelInclGapPixels[Y] : thisMultiDetector->numberOfChannel[Y];
-	int multidatabytes = (bytesperchannel >= 1.0) ? thisMultiDetector->dataBytesInclGapPixels : thisMultiDetector->dataBytes;
-	int dr = bytesperchannel * 8;
-	if (myDetType == JUNGFRAUCTB) {
-		maxY = (int)(thisMultiDetector->timerValue[SAMPLES_JCTB] * 2)/25; // for moench 03
-		maxX = 400;
-		dr = 16;
-	}
+            // reset data
+            data = false;
+            if (multiframe != NULL)
+                memset(multiframe, 0xFF, multisize);
 
+            //if running
+            if (runningList[isocket]) {
+                // sub images - header
+                rapidjson::Document doc;
+                if(!zmqSocket[isocket]->ReceiveHeader(isocket, doc, SLS_DETECTOR_JSON_HEADER_VERSION)){
+                    zmqSocket[isocket]->CloseHeaderMessage();
+                    // parse error, version error or end of acquisition for socket
+                    runningList[isocket] = false;
+                    --numRunning;
+                    continue;
+                }
 
+                // if first message, allocate (all one time stuff)
+                if (image == NULL) {
+                    // allocate
+                    size = doc["size"].GetUint();
+                    multisize = size * numSockets;
+                    image = new char[size];
+                    multiframe = new char[multisize];
 
-	//getting multi values
-	//calculating offsets (for eiger interleaving ports)
-	int offsetX[numSockets]; int offsetY[numSockets];
-	int bottom[numSockets];
-	if(eiger){
-		for(int i=0; i<numSockets; ++i){
-			offsetY[i] = (maxY - (thisMultiDetector->offsetY[i/numSocketsPerSLSDetector] + slsmaxY)) * maxX * bytesperchannel;
-			//the left half or right half
-			if(!(i%numSocketsPerSLSDetector))
-				offsetX[i] = thisMultiDetector->offsetX[i/numSocketsPerSLSDetector];
-			else
-				offsetX[i] = thisMultiDetector->offsetX[i/numSocketsPerSLSDetector] + (slsmaxX/numSocketsPerSLSDetector);
-			offsetX[i] *= bytesperchannel;
-			bottom[i] = detectors[i/numSocketsPerSLSDetector]->getFlippedData(X);/*only for eiger*/
-		}
-	}
+                    // one time values
+                    // dynamic range
+                    dynamicRange = doc["bitmode"].GetUint();
+                    // shape
+                    if (dynamicRange == 4) {
+                        nPixelsx = thisMultiDetector->numberOfChannelInclGapPixels[X];
+                        nPixelsY = thisMultiDetector->numberOfChannelInclGapPixels[Y];
+                    } else {
+                        const Value& a = doc["shape"];
+                        nPixelsx = a[0].GetUint(); /* later try doc["shape"].GetUint();*/
+                        nPixelsY = a[1].GetUint();
+                    }
+                }
+                // parse rest of header
+                currentFileName = doc["fname"].GetString();
+                currentAcquisitionIndex = doc["acqIndex"].GetUint64();
+                currentFrameIndex = doc["fIndex"].GetUint64();
+                currentFileIndex = doc["fileIndex"].GetUint64();
+                currentSubFrameIndex = doc["expLength"].GetUint();
+                zmqSocket[isocket]->CloseHeaderMessage();
 
-	int expectedslssize = slsdatabytes/numSocketsPerSLSDetector;
-	char* image = new char[expectedslssize]();
-	char* multiframe = new char[multidatabytes]();
-	char* multiframegain = NULL;
-	char* multigappixels = NULL; // used only for 4 bit mode with gap pixels enabled
-	if (jungfrau)
-		multiframegain = new char[multidatabytes]();
+                // copying data (receiving incorrect size is replaced by 0xFF)
+                data = true;
+                zmqSocket[isocket]->ReceiveData(isocket, image, size);
 
-
-	bool runningList[numSockets];
-	bool connectList[numSockets];
-	for(int i = 0; i < numSockets; ++i) {
-		if(!zmqSocket[i]->Connect()) {
-			connectList[i] = true;
-			runningList[i] = true;
-		} else {
-			connectList[i] = false;
-			cprintf(RED,"Error: Could not connect to socket  %s\n",zmqSocket[i]->GetZmqServerAddress());
-			runningList[i] = false;
-		}
-	}
-	int numRunning = numSockets;
-
-
-	//wait for real time acquisition to start
-	bool running = true;
-	sem_wait(&sem_newRTAcquisition);
-	if(checkJoinThread())
-		running = false;
+                // creaing multi image
 
 
-	//exit when last message for each socket received
-	while(running){
-		memset(multiframe,0xFF,slsdatabytes*thisMultiDetector->numberOfDetectors);	//reset frame memory
+            }
 
-		//get each frame
-		for(int isocket=0; isocket<numSockets; ++isocket){
+        }
 
-			//if running
-			if (runningList[isocket]) {
-				//get individual images
-				if(FAIL == getData(isocket, image, expectedslssize, currentAcquisitionIndex,currentFrameIndex,currentSubFrameIndex,currentFileName, currentFileIndex)){
-					runningList[isocket] = false;
-					--numRunning;
-					continue;
-				}
+        //send data to callback
+        if(data){
+            // 4bit gap pixels
+            if (dynamicRange == 4 && gappixelsenable) {
+                int n = processImageWithGapPixels(multiframe, multigappixels);
+                thisData = new detectorData(NULL,NULL,NULL,getCurrentProgress(),
+                        currentFileName.c_str(), nPixelsx, nPixelsY,
+                        multigappixels, n, dynamicRange, currentFileIndex);
+            }
+            // normal pixels
+            else
+                thisData = new detectorData(NULL, NULL, NULL, getCurrentProgress(),
+                    currentFileName.c_str(), nPixelsx, nPixelsY,
+                    multiframe, multisize, dynamicRange, currentFileIndex);
+            dataReady(thisData, currentFrameIndex,
+                    ((dynamicRange == 32) ? currentSubFrameIndex : -1),
+                    pCallbackArg);
+            delete thisData;
+            setCurrentProgress(currentAcquisitionIndex + 1);
+        }
 
-				//assemble data with interleaving
-				if(eiger){
+        //all done
+        if(!numRunning){
+            // let main thread know that all dummy packets have been received (also from external process),
+            // main thread can now proceed to measurement finished call back
+            sem_post(&sem_endRTAcquisition);
+            // wait for next scan/measurement, else join thread
+            sem_wait(&sem_newRTAcquisition);
+            //done with complete acquisition
+            if(checkJoinThread())
+                running = false;
+            else{
+                //starting a new scan/measurement (got dummy data)
+                for(int i = 0; i < numSockets; ++i)
+                    runningList[i] = connectList[i];
+                numRunning = numConnected;
+            }
+        }
 
-					//bottom
-					if(bottom[isocket]){
-					//if((((isocket/numSocketsPerSLSDetector)+1)%2) == 0){
-						for(int i=0;i<slsmaxY;++i){
-							memcpy(multiframe + offsetY[isocket] + offsetX[isocket] + (int)((slsmaxY-1-i)*maxX*bytesperchannel),
-									image+ (int)(i*(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel),
-									(int)((slsmaxX/numSocketsPerSLSDetector)*bytesperchannel));
-						}
-					}
-					//top
-					else{
-						for(int i=0;i<slsmaxY;++i){
-							memcpy(multiframe + offsetY[isocket] + offsetX[isocket] + (int)(i*maxX*bytesperchannel),
-									image+ (int)(i*(slsmaxX/numSocketsPerSLSDetector)*bytesperchannel),
-									(int)((slsmaxX/numSocketsPerSLSDetector)*bytesperchannel));
-						}
-					}
-				}
+    }
 
-				//assemble data with no interleaving, assumed detectors appended vertically
-				else{
-				    for(int i=0;i<slsmaxY;++i){
-				        memcpy(((char*)multiframe) + (((thisMultiDetector->offsetY[isocket] + i) * maxX) + thisMultiDetector->offsetX[isocket])* (int)bytesperchannel,
-				                (char*)image+ (i*slsmaxX*(int)bytesperchannel),
-				                (slsmaxX*(int)bytesperchannel));
-				    }
-				}
-			}
+    // Disconnect resources
+    for (int i = 0; i < numSockets; ++i)
+        if (connectList[i])
+            zmqSocket[i]->Disconnect();
 
-		}
-
-
-		//all done
-		if(!numRunning){
-			// let main thread know that all dummy packets have been received (also from external process),
-			// main thread can now proceed to measurement finished call back
-			sem_post(&sem_endRTAcquisition);
-			// wait for next scan/measurement, else join thread
-			sem_wait(&sem_newRTAcquisition);
-			//done with complete acquisition
-			if(checkJoinThread())
-				break;
-			else{
-				//starting a new scan/measurement (got dummy data)
-				for(int i = 0; i < numSockets; ++i)
-					runningList[i] = true;
-				numRunning = numSockets;
-				running = false;
-			}
-		}
-
-		//send data to callback
-		if(running){
-			if (gappixelsenable && bytesperchannel < 1) {//inside this function, allocate if it doesnt exist
-				int nx = thisMultiDetector->numberOfChannelInclGapPixels[X];
-				int ny = thisMultiDetector->numberOfChannelInclGapPixels[Y];
-				int n = processImageWithGapPixels(multiframe, multigappixels);
-				thisData = new detectorData(NULL,NULL,NULL,getCurrentProgress(),currentFileName.c_str(), nx, ny,multigappixels, n, dr, currentFileIndex);
-			}
-			else {
-				thisData = new detectorData(NULL,NULL,NULL,getCurrentProgress(),currentFileName.c_str(),maxX,maxY,multiframe, multidatabytes, dr, currentFileIndex);
-			}
-			dataReady(thisData, currentFrameIndex, (((dr == 32) && (eiger)) ? currentSubFrameIndex : -1), pCallbackArg);
-			delete thisData;
-				//cout<<"Send frame #"<< currentFrameIndex << " to gui"<<endl;
-
-
-			setCurrentProgress(currentAcquisitionIndex+1);
-		}
-
-		//setting it back for each scan/measurement
-		running = true;
-	}
-
-	// Disconnect resources
-	for (int i = 0; i < numSockets; ++i)
-		if (connectList[i])
-			zmqSocket[i]->Disconnect();
-
-	//free resources
-	delete [] image;
-	delete[] multiframe;
-	if (jungfrau)
-		delete [] multiframegain;
-	if (multigappixels != NULL)
-		delete [] multigappixels;
-
+    //free resources
+    if (image != NULL)          delete [] image;
+    if (multiframe != NULL)     delete [] multiframe;
+    if (multigappixels != NULL) delete [] multigappixels;
 }
 
 

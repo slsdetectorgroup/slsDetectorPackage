@@ -36,6 +36,9 @@ typedef  int int32_t;
 #define DEFAULT_ZMQ_CL_PORTNO 	30001
 #define DEFAULT_ZMQ_RX_PORTNO 	30001
 
+#define SLS_DETECTOR_HEADER_VERSION         0x1
+#define SLS_DETECTOR_JSON_HEADER_VERSION    0x2
+
 /** 
     \file sls_receiver_defs.h
 This file contains all the basic definitions common to the slsReceiver class

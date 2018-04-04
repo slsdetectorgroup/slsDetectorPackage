@@ -576,6 +576,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   */
 virtual void readFrameFromReceiver()=0;
 
+
 /**
  * Enable data streaming to client
  * @param enable 0 to disable, 1 to enable, -1 to get the value

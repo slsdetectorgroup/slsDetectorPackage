@@ -4563,6 +4563,17 @@ int64_t multiSlsDetector::getId(idMode mode, int imod) {
     }
   }
 
+  ret = -100; int64_t ret1;
+    for (int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet)
+        if (detectors[idet]){
+            ret1=detectors[idet]->getId(mode, imod);
+            if(ret==-100)
+                ret=ret1;
+            else if (ret!=ret1)
+                ret=-1;
+        }
+    return ret;
+
   return -1;
 
 }

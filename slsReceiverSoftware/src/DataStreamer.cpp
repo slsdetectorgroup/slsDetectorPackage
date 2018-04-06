@@ -26,7 +26,7 @@ pthread_mutex_t DataStreamer::Mutex = PTHREAD_MUTEX_INITIALIZER;
 bool DataStreamer::SilentMode(false);
 
 
-DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, int* sEnable, uint64_t* fi) :
+DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, int* sEnable, uint64_t* fi, int* fd) :
 		ThreadObject(NumberofDataStreamers),
 		generalData(0),
 		fifo(f),
@@ -38,7 +38,8 @@ DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, int* sEnable, uint64_t* fi) :
 		measurementStartedFlag(false),
 		firstAcquisitionIndex(0),
 		firstMeasurementIndex(0),
-		completeBuffer(0)
+		completeBuffer(0),
+		flippedData(fd)
 {
 	if(ThreadObject::CreateThread()){
 		pthread_mutex_lock(&Mutex);
@@ -285,7 +286,8 @@ int DataStreamer::SendHeader(sls_detector_header* header, uint32_t size, uint32_
 			header->frameNumber, header->expLength, header->packetNumber, header->bunchId, header->timestamp,
 			header->modId, header->xCoord, header->yCoord, header->zCoord,
 			header->debug, header->roundRNumber,
-			header->detType, header->version
+			header->detType, header->version,
+			flippedData
 	);
 }
 

@@ -276,7 +276,7 @@ public:
 			uint64_t bunchId = 0, uint64_t timestamp = 0,
 			uint16_t modId = 0, uint16_t xCoord = 0, uint16_t yCoord = 0, uint16_t zCoord = 0,
 			uint32_t debug = 0, uint16_t roundRNumber = 0,
-			uint8_t detType = 0, uint8_t version = 0) {
+			uint8_t detType = 0, uint8_t version = 0, int* flippedData = 0) {
 
 
 		char buf[MAX_STR_LENGTH] = "";
@@ -305,14 +305,23 @@ public:
 				"\"debug\":%u, "
 				"\"roundRNumber\":%u, "
 				"\"detType\":%u, "
-				"\"version\":%u"
+				"\"version\":%u, "
+
+		        //additional stuff
+		        "\"flippedDataX\":%u"
+
 				"}\n\0";
 		int length = sprintf(buf, jsonHeaderFormat,
 				jsonversion, dynamicrange, fileIndex, npixelsx, npixelsy, imageSize,
 				acqIndex, fIndex, (fname == NULL)? "":fname, dummy?0:1,
-						frameNumber, expLength, packetNumber, bunchId, timestamp,
+
+				        frameNumber, expLength, packetNumber, bunchId, timestamp,
 						modId, xCoord, yCoord, zCoord, debug, roundRNumber,
-						detType, version);
+						detType, version,
+
+						//additional stuff
+						((flippedData == 0 ) ? 0 :flippedData[0])
+		);
 #ifdef VERBOSE
 		//if(!index)
 			FILE_LOG(logINFO) << index << ": Streamer: buf:" << buf;

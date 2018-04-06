@@ -151,9 +151,9 @@
    <widget class="QWidget" name="gridLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>35</x>
+      <x>0</x>
       <y>10</y>
-      <width>326</width>
+      <width>357</width>
       <height>321</height>
      </rect>
     </property>
@@ -965,9 +965,9 @@ Frame period between exposures.
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>297</y>
+     <y>298</y>
      <width>318</width>
-     <height>30</height>
+     <height>31</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
@@ -1048,9 +1048,6 @@ Frame period between exposures.
       <property name="icon">
        <iconset resource="../include/icons.qrc">
         <normaloff>:/icons/images/stop.png</normaloff>:/icons/images/stop.png</iconset>
-      </property>
-      <property name="shortcut">
-       <string>Shift+Space</string>
       </property>
       <property name="checkable">
        <bool>false</bool>

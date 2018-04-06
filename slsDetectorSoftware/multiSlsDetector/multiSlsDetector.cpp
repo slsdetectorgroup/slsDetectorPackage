@@ -6028,15 +6028,19 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 
 void multiSlsDetector::readFrameFromReceiver(){
 
+    int nX = thisMultiDetector->numberOfDetector[X]; // to copy data in multi module
+    int nY = thisMultiDetector->numberOfDetector[Y]; // for eiger, to reverse the data
     int numSockets = thisMultiDetector->numberOfDetectors;
     bool gappixelsenable = false;
+    bool eiger = false;
     if (getDetectorsType() == EIGER) {
+        eiger = true;
+        nX *= 2;
         numSockets *= 2;
         gappixelsenable = detectors[0]->enableGapPixels(-1) >= 1 ? true: false;
     }
 
-    bool runningList[numSockets];
-    bool connectList[numSockets];
+    bool runningList[numSockets], connectList[numSockets];
     int numRunning = 0;
     for(int i = 0; i < numSockets; ++i) {
         if(!zmqSocket[i]->Connect()) {
@@ -6054,17 +6058,15 @@ void multiSlsDetector::readFrameFromReceiver(){
     bool data = false;
     char* image = NULL;
     char* multiframe = NULL;
-    char* multigappixels = NULL
+    char* multigappixels = NULL;
     int multisize = 0;
-    // header info
-    uint32_t size = 0;  // only first message header
-    uint32_t nPixelsx = 0, nPixelsY = 0;
-    uint32_t dynamicRange = 0;
+    // only first message header
+    uint32_t size = 0, nPixelsX = 0, nPixelsY = 0, dynamicRange = 0;
+    float bytesPerPixel = 0;
+    // header info every header
     string currentFileName = "";
-    uint64_t currentAcquisitionIndex = -1;
-    uint64_t currentFrameIndex = -1;
-    uint32_t currentSubFrameIndex = -1;
-    uint64_t currentFileIndex = -1;
+    uint64_t currentAcquisitionIndex = -1, currentFrameIndex = -1, currentFileIndex = -1;
+    uint32_t currentSubFrameIndex = -1, coordX = -1, coordY = -1, flippedDataX = -1;
 
     //wait for real time acquisition to start
     bool running = true;
@@ -6075,64 +6077,109 @@ void multiSlsDetector::readFrameFromReceiver(){
     //exit when checkJoinThread() (all sockets done)
     while(running){
 
+        // reset data
+        data = false;
+        if (multiframe != NULL)
+            memset(multiframe, 0xFF, multisize);
+
         //get each frame
         for(int isocket=0; isocket<numSockets; ++isocket){
 
-            // reset data
-            data = false;
-            if (multiframe != NULL)
-                memset(multiframe, 0xFF, multisize);
-
             //if running
             if (runningList[isocket]) {
-                // sub images - header
-                rapidjson::Document doc;
-                if(!zmqSocket[isocket]->ReceiveHeader(isocket, doc, SLS_DETECTOR_JSON_HEADER_VERSION)){
-                    zmqSocket[isocket]->CloseHeaderMessage();
-                    // parse error, version error or end of acquisition for socket
-                    runningList[isocket] = false;
-                    --numRunning;
-                    continue;
-                }
 
-                // if first message, allocate (all one time stuff)
-                if (image == NULL) {
-                    // allocate
-                    size = doc["size"].GetUint();
-                    multisize = size * numSockets;
-                    image = new char[size];
-                    multiframe = new char[multisize];
-
-                    // one time values
-                    // dynamic range
-                    dynamicRange = doc["bitmode"].GetUint();
-                    // shape
-                    if (dynamicRange == 4) {
-                        nPixelsx = thisMultiDetector->numberOfChannelInclGapPixels[X];
-                        nPixelsY = thisMultiDetector->numberOfChannelInclGapPixels[Y];
-                    } else {
-                        const Value& a = doc["shape"];
-                        nPixelsx = a[0].GetUint(); /* later try doc["shape"].GetUint();*/
-                        nPixelsY = a[1].GetUint();
+                // HEADER
+                {
+                    rapidjson::Document doc;
+                    if(!zmqSocket[isocket]->ReceiveHeader(isocket, doc, SLS_DETECTOR_JSON_HEADER_VERSION)){
+                        zmqSocket[isocket]->CloseHeaderMessage();
+                        // parse error, version error or end of acquisition for socket
+                        runningList[isocket] = false;
+                        --numRunning;
+                        continue;
                     }
-                }
-                // parse rest of header
-                currentFileName = doc["fname"].GetString();
-                currentAcquisitionIndex = doc["acqIndex"].GetUint64();
-                currentFrameIndex = doc["fIndex"].GetUint64();
-                currentFileIndex = doc["fileIndex"].GetUint64();
-                currentSubFrameIndex = doc["expLength"].GetUint();
-                zmqSocket[isocket]->CloseHeaderMessage();
 
-                // copying data (receiving incorrect size is replaced by 0xFF)
+                    // if first message, allocate (all one time stuff)
+                    if (image == NULL) {
+                        // allocate
+                        size = doc["size"].GetUint();
+                        multisize = size * numSockets;
+                        image = new char[size];
+                        multiframe = new char[multisize];
+                        memset(multiframe, 0xFF, multisize);
+                        // dynamic range
+                        dynamicRange = doc["bitmode"].GetUint();
+                        bytesPerPixel = (float)dynamicRange / 8;
+                        // shape
+                        nPixelsX = doc["shape"][0].GetUint();
+                        nPixelsY = doc["shape"][1].GetUint();
+#ifdef VERBOSE
+                        cprintf(BLUE,"(Debug) One Time Header Info:\n"
+                                "size: %u\n"
+                                "multisize: %u\n"
+                                "dynamicRange: %u\n"
+                                "bytesPerPixel: %f\n"
+                                "nPixelsX: %u\n"
+                                "nPixelsY: %u\n",
+                                size, multisize, dynamicRange, bytesPerPixel, nPixelsX, nPixelsY);
+#endif
+                    }
+                    // each time, parse rest of header
+                    currentFileName = doc["fname"].GetString();
+                    currentAcquisitionIndex = doc["acqIndex"].GetUint64();
+                    currentFrameIndex = doc["fIndex"].GetUint64();
+                    currentFileIndex = doc["fileIndex"].GetUint64();
+                    currentSubFrameIndex = doc["expLength"].GetUint();
+                    coordX = doc["xCoord"].GetUint();
+                    coordY = doc["yCoord"].GetUint();
+                    if (eiger)
+                        coordY = (nY - 1) - coordY;
+                    //cout << "X:" << doc["xCoord"].GetUint() <<" Y:"<<doc["yCoord"].GetUint();
+                    flippedDataX = doc["flippedDataX"].GetUint();
+#ifdef VERBOSE
+                    cprintf(BLUE,"(Debug) Header Info:\n"
+                            "currentFileName: %s\n"
+                            "currentAcquisitionIndex: %lu\n"
+                            "currentFrameIndex: %lu\n"
+                            "currentFileIndex: %lu\n"
+                            "currentSubFrameIndex: %u\n"
+                            "coordX: %u\n"
+                            "coordY: %u\n"
+                            "flippedDataX: %u\n",
+                            currentFileName.c_str(), currentAcquisitionIndex, currentFrameIndex,
+                            currentFileIndex, currentSubFrameIndex, coordX, coordY, flippedDataX);
+#endif
+                    zmqSocket[isocket]->CloseHeaderMessage();
+                }
+
+
+                // DATA
                 data = true;
                 zmqSocket[isocket]->ReceiveData(isocket, image, size);
 
-                // creaing multi image
+                // creating multi image
+                {
+                    uint32_t xoffset = coordX * nPixelsX * bytesPerPixel;
+                    uint32_t yoffset = coordY * nPixelsY;
+                    uint32_t singledetrowoffset = nPixelsX * bytesPerPixel;
+                    uint32_t rowoffset = nX * singledetrowoffset;
 
-
+                    if (eiger && flippedDataX) {
+                        for (uint32_t i = 0; i < nPixelsY; ++i) {
+                            memcpy( ((char*)multiframe) + ((yoffset + (nPixelsY - 1 - i) ) * rowoffset) + xoffset,
+                                    (char*)image + (i * singledetrowoffset),
+                                    singledetrowoffset);
+                        }
+                    }
+                    else {
+                        for (uint32_t i = 0; i < nPixelsY; ++i) {
+                            memcpy( ((char*)multiframe) + ((yoffset + i ) * rowoffset) + xoffset,
+                                    (char*)image + (i * singledetrowoffset),
+                                    singledetrowoffset);
+                        }
+                    }
+                }
             }
-
         }
 
         //send data to callback
@@ -6140,15 +6187,18 @@ void multiSlsDetector::readFrameFromReceiver(){
             // 4bit gap pixels
             if (dynamicRange == 4 && gappixelsenable) {
                 int n = processImageWithGapPixels(multiframe, multigappixels);
+                nPixelsX = thisMultiDetector->numberOfChannelInclGapPixels[X];
+                nPixelsY = thisMultiDetector->numberOfChannelInclGapPixels[Y];
                 thisData = new detectorData(NULL,NULL,NULL,getCurrentProgress(),
-                        currentFileName.c_str(), nPixelsx, nPixelsY,
+                        currentFileName.c_str(), nPixelsX, nPixelsY,
                         multigappixels, n, dynamicRange, currentFileIndex);
             }
             // normal pixels
-            else
+            else {
                 thisData = new detectorData(NULL, NULL, NULL, getCurrentProgress(),
-                    currentFileName.c_str(), nPixelsx, nPixelsY,
+                    currentFileName.c_str(), nPixelsX, nPixelsY,
                     multiframe, multisize, dynamicRange, currentFileIndex);
+            }
             dataReady(thisData, currentFrameIndex,
                     ((dynamicRange == 32) ? currentSubFrameIndex : -1),
                     pCallbackArg);

@@ -6782,10 +6782,13 @@ int slsDetector::configureMAC(){
 			pos[0] = 0;
 			pos[1] = 0;
 		} else {
-			pos[0] = posId / max;
-			pos[1] = (posId % max) * ((thisDetector->myDetectorType == EIGER) ? 2 : 1); // for horiz. udp ports
+			pos[1] = posId / max;
+			pos[0] = (posId % max) * ((thisDetector->myDetectorType == EIGER) ? 2 : 1); // for horiz. udp ports
 		}
 	}
+#ifdef VERBOSE
+	cout << "SLS [" << posId << "] - (" << pos[0] << "," << pos[1] << "," << pos[2] << ")" << endl;
+#endif
 
 
 	//if udpip wasnt initialized in config file

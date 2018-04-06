@@ -24,8 +24,9 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param dr pointer to dynamic range
 	 * @param sEnable pointer to short frame enable
 	 * @param fi pointer to file index
+	 * @param fd flipped data enable for x and y dimensions
 	 */
-	DataStreamer(Fifo*& f, uint32_t* dr, int* sEnable, uint64_t* fi);
+	DataStreamer(Fifo*& f, uint32_t* dr, int* sEnable, uint64_t* fi, int* fd);
 
 	/**
 	 * Destructor
@@ -229,5 +230,8 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** Complete buffer used for roi, eg. shortGotthard */
 	char* completeBuffer;
+
+	/** flipped data across both dimensions enable */
+	int* flippedData;
 };
 

@@ -653,7 +653,7 @@ int get_id(int file_des) {
 	n = receiveData(file_des,&arg,sizeof(arg),INT32);
 	if (n < 0) return printSocketReadError();
 
-	if (arg == MODULE_FIRMWARE_VERSION) {
+	if (arg == MODULE_SERIAL_NUMBER) {
 		n = receiveData(file_des,&imod,sizeof(imod),INT32);
 		if (n < 0) return printSocketReadError();
 	}

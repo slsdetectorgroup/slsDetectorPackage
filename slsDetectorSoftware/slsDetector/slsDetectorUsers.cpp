@@ -383,3 +383,7 @@ int slsDetectorUsers::setReceiverSilentMode(int i) {
 int slsDetectorUsers::setHighVoltage(int i) {
 	return myDetector->setHighVoltage(i);
 }
+
+int slsDetectorUsers::resetFramesCaughtInReceiver() {
+    return myDetector->resetFramesCaught();
+}

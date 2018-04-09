@@ -6114,7 +6114,7 @@ void multiSlsDetector::readFrameFromReceiver(){
                         nPixelsX = doc["shape"][0].GetUint();
                         nPixelsY = doc["shape"][1].GetUint();
 
-//#ifdef VERBOSE
+#ifdef VERBOSE
                         cprintf(BLUE,"(Debug) One Time Header Info:\n"
                                 "size: %u\n"
                                 "multisize: %u\n"
@@ -6123,7 +6123,7 @@ void multiSlsDetector::readFrameFromReceiver(){
                                 "nPixelsX: %u\n"
                                 "nPixelsY: %u\n",
                                 size, multisize, dynamicRange, bytesPerPixel, nPixelsX, nPixelsY);
-//#endif
+#endif
                     }
                     // each time, parse rest of header
                     currentFileName = doc["fname"].GetString();
@@ -6137,7 +6137,7 @@ void multiSlsDetector::readFrameFromReceiver(){
                         coordY = (nY - 1) - coordY;
                     //cout << "X:" << doc["xCoord"].GetUint() <<" Y:"<<doc["yCoord"].GetUint();
                     flippedDataX = doc["flippedDataX"].GetUint();
-//#ifdef VERBOSE
+#ifdef VERBOSE
                     cprintf(BLUE,"(Debug) Header Info:\n"
                             "currentFileName: %s\n"
                             "currentAcquisitionIndex: %lu\n"
@@ -6149,7 +6149,7 @@ void multiSlsDetector::readFrameFromReceiver(){
                             "flippedDataX: %u\n",
                             currentFileName.c_str(), currentAcquisitionIndex, currentFrameIndex,
                             currentFileIndex, currentSubFrameIndex, coordX, coordY, flippedDataX);
-//#endif
+#endif
                     zmqSocket[isocket]->CloseHeaderMessage();
                 }
 
@@ -6164,13 +6164,14 @@ void multiSlsDetector::readFrameFromReceiver(){
                     uint32_t yoffset = coordY * nPixelsY;
                     uint32_t singledetrowoffset = nPixelsX * bytesPerPixel;
                     uint32_t rowoffset = nX * singledetrowoffset;
+#ifdef VERBOSE
                     cprintf(BLUE,"(Debug) Multi Image Info:\n"
                             "xoffset: %u\n"
                             "yoffset: %u\n"
                             "singledetrowoffset: %u\n"
                             "rowoffset: %u\n",
                             xoffset, yoffset, singledetrowoffset, rowoffset);
-                    flippedDataX = 0;
+#endif
                     if (eiger && flippedDataX) {
                         for (uint32_t i = 0; i < nPixelsY; ++i) {
                             memcpy( ((char*)multiframe) + ((yoffset + (nPixelsY - 1 - i) ) * rowoffset) + xoffset,

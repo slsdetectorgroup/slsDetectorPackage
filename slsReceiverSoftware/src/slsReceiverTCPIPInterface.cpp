@@ -293,6 +293,7 @@ const char* slsReceiverTCPIPInterface::getFunctionName(enum recFuncs func) {
 	case F_RECEIVER_STREAMING_SRC_IP: 	return "F_RECEIVER_STREAMING_SRC_IP";
 	case F_ENABLE_GAPPIXELS_IN_RECEIVER:return "F_ENABLE_GAPPIXELS_IN_RECEIVER";
 	case F_RESTREAM_STOP_FROM_RECEIVER:	return "F_RESTREAM_STOP_FROM_RECEIVER";
+    case F_ADDITIONAL_JSON_HEADER:      return "F_ADDITIONAL_JSON_HEADER";
 	default:							return "Unknown Function";
 	}
 }
@@ -341,6 +342,7 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_RECEIVER_STREAMING_SRC_IP]		= 	&slsReceiverTCPIPInterface::set_streaming_source_ip;
 	flist[F_ENABLE_GAPPIXELS_IN_RECEIVER]	=	&slsReceiverTCPIPInterface::enable_gap_pixels;
 	flist[F_RESTREAM_STOP_FROM_RECEIVER]	= 	&slsReceiverTCPIPInterface::restream_stop;
+	flist[F_ADDITIONAL_JSON_HEADER]         =   &slsReceiverTCPIPInterface::set_additional_json_header;
 
 #ifdef VERYVERBOSE
 	for (int i = 0; i < NUM_REC_FUNCTIONS ; i++) {
@@ -715,6 +717,14 @@ int slsReceiverTCPIPInterface::send_update() {
 	mySock->SendDataOnly(path,MAX_STR_LENGTH);
 	if (path != NULL)
 		delete[] path;
+
+    // additional json header
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+    path = receiverBase->getAdditionalJsonHeader();
+#endif
+    mySock->SendDataOnly(path,MAX_STR_LENGTH);
+    if (path != NULL)
+        delete[] path;
 
 	// gap pixels enable
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
@@ -2548,4 +2558,53 @@ int slsReceiverTCPIPInterface::restream_stop(){
 
 	// return ok/fail
 	return ret;
+}
+
+
+
+int slsReceiverTCPIPInterface::set_additional_json_header() {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    char arg[MAX_STR_LENGTH];
+    memset(arg, 0, sizeof(arg));
+    char* retval=NULL;
+
+    // receive arguments
+    if (mySock->ReceiveDataOnly(arg,MAX_STR_LENGTH) < 0 )
+        return printSocketReadError();
+
+    // execute action
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+    if (receiverBase == NULL)
+        invalidReceiverObject();
+    else {
+        // set
+        if (mySock->differentClients && lockStatus)
+            receiverlocked();
+        else if (receiverBase->getStatus() != IDLE)
+            receiverNotIdle();
+        else {
+                receiverBase->setAdditionalJsonHeader(arg);
+        }
+
+        //get
+        retval = receiverBase->getAdditionalJsonHeader();
+    }
+#endif
+#ifdef VERYVERBOSE
+    FILE_LOG(logDEBUG1) << "additional json header:" << retval;
+#endif
+
+    if (ret == OK && mySock->differentClients)
+        ret = FORCE_UPDATE;
+
+    // send answer
+    mySock->SendDataOnly(&ret,sizeof(ret));
+    if (ret == FAIL)
+        mySock->SendDataOnly(mess,sizeof(mess));
+    mySock->SendDataOnly(retval,MAX_STR_LENGTH);
+    delete[] retval;
+
+    // return ok/fail
+    return ret;
 }

@@ -25,8 +25,9 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param sEnable pointer to short frame enable
 	 * @param fi pointer to file index
 	 * @param fd flipped data enable for x and y dimensions
+	 * @param ajh additional json header
 	 */
-	DataStreamer(Fifo*& f, uint32_t* dr, int* sEnable, uint64_t* fi, int* fd);
+	DataStreamer(Fifo*& f, uint32_t* dr, int* sEnable, uint64_t* fi, int* fd, char* ajh);
 
 	/**
 	 * Destructor
@@ -233,5 +234,8 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** flipped data across both dimensions enable */
 	int* flippedData;
+
+	/** additional json header */
+	char* additionJsonHeader;
 };
 

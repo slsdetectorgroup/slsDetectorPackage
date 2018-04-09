@@ -297,6 +297,9 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	/** restream stop packet */
 	int restream_stop();
 
+    /** set additional json header */
+    int set_additional_json_header();
+
 
 
 	/** detector type */

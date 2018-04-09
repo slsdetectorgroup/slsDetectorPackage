@@ -271,6 +271,12 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	char *getStreamingSourceIP() const;
 
+    /**
+     * Get additional json header
+     * @return additional json header
+     */
+    char *getAdditionalJsonHeader() const;
+
 
 	/*************************************************************************
 	 * Setters ***************************************************************
@@ -555,6 +561,11 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	void setStreamingSourceIP(const char* c);
 
+    /**
+     * Set additional json header
+     */
+    void setAdditionalJsonHeader(const char* c);
+
 	/*
 	 * Restream stop dummy packet from receiver
 	 * @return OK or FAIL
@@ -712,6 +723,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	uint32_t streamingPort;
 	/** streaming port */
 	char streamingSrcIP[MAX_STR_LENGTH];
+	/** additional json header */
+	char additionalJsonHeader[MAX_STR_LENGTH];
 
 	//***receiver parameters***
 	uint32_t silentMode;

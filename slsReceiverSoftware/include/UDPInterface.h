@@ -51,6 +51,7 @@ class UDPInterface {
 	 *	-setGapPixelsEnable
 	 *	-setStreamingPort
 	 *	-setStreamingSourceIP
+	 *	-setAdditionalJsonHeader
 	 *	-setDataStreamEnable
 	 *
 	 *
@@ -357,6 +358,12 @@ class UDPInterface {
 	 */
 	virtual char *getStreamingSourceIP() const = 0;
 
+    /**
+     * Get additional json header
+     * @return additional json header
+     */
+    virtual char *getAdditionalJsonHeader() const = 0;
+
 
 	/*************************************************************************
 	 * Setters ***************************************************************
@@ -642,6 +649,11 @@ class UDPInterface {
 	 * @param c streaming source ip
 	 */
 	virtual void setStreamingSourceIP(const char* c) = 0;
+
+    /**
+     * Set additional json header
+     */
+    virtual void setAdditionalJsonHeader(const char* c) = 0;
 
 	/*
 	 * Restream stop dummy packet from receiver

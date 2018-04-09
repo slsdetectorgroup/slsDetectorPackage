@@ -83,6 +83,7 @@ void UDPBaseImplementation::initializeMembers(){
 	dataStreamEnable = false;
 	streamingPort = 0;
 	memset(streamingSrcIP, 0, sizeof(streamingSrcIP));
+    memset(additionalJsonHeader, 0, sizeof(additionalJsonHeader));
 
 	//***receiver parameters***
 	silentMode = 0;
@@ -230,6 +231,16 @@ char *UDPBaseImplementation::getStreamingSourceIP() const{
 	strcpy(output,streamingSrcIP);
 	//freed by calling function
 	return output;
+}
+
+char *UDPBaseImplementation::getAdditionalJsonHeader() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+    char* output = new char[MAX_STR_LENGTH]();
+    memset(output, 0, MAX_STR_LENGTH);
+    strcpy(output,additionalJsonHeader);
+    //freed by calling function
+    return output;
 }
 
 /*************************************************************************
@@ -597,6 +608,11 @@ void UDPBaseImplementation::setStreamingSourceIP(const char c[]){
 	FILE_LOG(logINFO) << "Streaming Source IP: " << streamingSrcIP;
 }
 
+void UDPBaseImplementation::setAdditionalJsonHeader(const char c[]){
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    strcpy(additionalJsonHeader, c);
+    FILE_LOG(logINFO) << "Additional JSON Header: " << additionalJsonHeader;
+}
 
 int UDPBaseImplementation::restreamStop() {
 	FILE_LOG(logERROR) << __AT__ << " doing nothing...";

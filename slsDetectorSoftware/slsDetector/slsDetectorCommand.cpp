@@ -2034,6 +2034,13 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
 	i++;
 
+    /*! \page network
+   - <b>rx_jsonaddheader [t]</b> sets/gets additional json header to be streamed out with the zmq from receiver. Default is empty. \c t must be in the format "\"label1\":\"value1\",\"label2\":\"value2\"" etc. Use only if it needs to be processed by an intermediate process. \c Returns \c (string)
+     */
+    descrToFuncMap[i].m_pFuncName="rx_jsonaddheader"; //
+    descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
+    i++;
+
 	/*! \page network
    - <b>configuremac [i]</b> configures the MAC of the detector with these parameters: detectorip, detectormac, rx_udpip, rx_udpmac, rx_udpport, rx_udpport2 (if applicable). This command is already included in \c rx_hsotname. Only put!. \c Returns \c (int)
 	 */
@@ -4089,6 +4096,8 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
 		// if streaming, switch it off
 		prev_streaming = myDet->enableDataStreamingFromReceiver();
 		if (prev_streaming) myDet->enableDataStreamingFromReceiver(0);
+	} else if (cmd=="rx_jsonaddheader") {
+	    t=ADDITIONAL_JSON_HEADER;
 	}
 	else return ("unknown network parameter")+cmd;
 
@@ -4132,6 +4141,9 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
 		os << "rx_zmqip ip \n sets/gets the 0MQ (TCP) ip of the receiver from where data is streamed from (eg. to GUI or another process for further processing). "
 				"Default is ip of rx_hostname and works for GUI. This is usually used to stream out to an external process for further processing."
 				"restarts streaming in receiver with new port" << std::endl;
+		os << "rx_jsonaddheader [t]\n sets additional json header to be streamed "
+		        "out with the zmq from receiver. Default is empty. \c t must be in the format '\"label1\":\"value1\",\"label2\":\"value2\"' etc."
+		        "Use only if it needs to be processed by an intermediate process." << std::endl;
 	}
 	if (action==GET_ACTION || action==HELP_ACTION) {
 		os << "detectormac \n gets detector mac "<< std::endl;
@@ -4148,6 +4160,8 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
 		os << "rx_zmqport \n gets the 0MQ (TCP) port of the receiver from where data is streamed from"<< std::endl;
 		os << "zmqip \n gets the 0MQ (TCP) ip of the client to where final data is streamed to.If no custom ip, empty until first time connect to receiver" << std::endl;
 		os << "rx_zmqip \n gets/gets the 0MQ (TCP) ip of the receiver from where data is streamed from. If no custom ip, empty until first time connect to receiver" << std::endl;
+        os << "rx_jsonaddheader \n gets additional json header to be streamed "
+                "out with the zmq from receiver." << std::endl;
 	}
 	return os.str();
 

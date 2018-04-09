@@ -276,7 +276,8 @@ public:
 			uint64_t bunchId = 0, uint64_t timestamp = 0,
 			uint16_t modId = 0, uint16_t xCoord = 0, uint16_t yCoord = 0, uint16_t zCoord = 0,
 			uint32_t debug = 0, uint16_t roundRNumber = 0,
-			uint8_t detType = 0, uint8_t version = 0, int* flippedData = 0) {
+			uint8_t detType = 0, uint8_t version = 0, int* flippedData = 0,
+			char* additionalJsonHeader = 0) {
 
 
 		char buf[MAX_STR_LENGTH] = "";
@@ -310,7 +311,7 @@ public:
 		        //additional stuff
 		        "\"flippedDataX\":%u"
 
-				"}\n\0";
+				;//"}\n\0";
 		int length = sprintf(buf, jsonHeaderFormat,
 				jsonversion, dynamicrange, fileIndex, npixelsx, npixelsy, imageSize,
 				acqIndex, fIndex, (fname == NULL)? "":fname, dummy?0:1,
@@ -322,9 +323,15 @@ public:
 						//additional stuff
 						((flippedData == 0 ) ? 0 :flippedData[0])
 		);
+		if (additionalJsonHeader && strlen(additionalJsonHeader)) {
+		    length = sprintf(buf, "%s, %s}\n%c", buf, additionalJsonHeader, '\0');
+		} else {
+		    length = sprintf(buf, "%s}\n%c", buf, '\0');
+		}
+
 #ifdef VERBOSE
 		//if(!index)
-			FILE_LOG(logINFO) << index << ": Streamer: buf:" << buf;
+			cprintf(BLUE,"%d : STreamer: buf: %s\n", index, buf);
 #endif
 
 		if(zmq_send (socketDescriptor, buf, length, dummy?0:ZMQ_SNDMORE) < 0) {

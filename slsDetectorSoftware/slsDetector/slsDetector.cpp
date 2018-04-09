@@ -563,6 +563,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     memset(thisDetector->zmqip,0,MAX_STR_LENGTH);
     /** set zmq tcp src ip address in receiver*/
     memset(thisDetector->receiver_zmqip,0,MAX_STR_LENGTH);
+    /** set additional json header in receiver*/
+    memset(thisDetector->receiver_additionalJsonHeader,0,MAX_STR_LENGTH);
 
 
     /** sets onlineFlag to OFFLINE_FLAG */
@@ -6214,6 +6216,9 @@ string slsDetector::setNetworkParameter(networkParameter index, string value) {
 		return setClientStreamingIP(value);
 	case RECEIVER_STREAMING_SRC_IP:
 		return setReceiverStreamingIP(value);
+	case ADDITIONAL_JSON_HEADER:
+	    return setAdditionalJsonHeader(value);
+
   default:
     return (char*)("unknown network parameter");
   }
@@ -6252,6 +6257,8 @@ string slsDetector::getNetworkParameter(networkParameter index) {
   	return getClientStreamingIP();
   case RECEIVER_STREAMING_SRC_IP:
 	return getReceiverStreamingIP();
+  case ADDITIONAL_JSON_HEADER:
+      return getAdditionalJsonHeader();
   default:
     return (char*)("unknown network parameter");
   }
@@ -6352,6 +6359,7 @@ string slsDetector::setReceiver(string receiverIP){
 		std::cout << "flippeddatax:" << thisDetector->flippedData[d] << endl;
 		std::cout << "10GbE:" << thisDetector->tenGigaEnable << endl << endl;
 		std::cout << "rx streaming source ip:" << thisDetector->receiver_zmqip << endl;
+        std::cout << "rx additional json header:" << thisDetector->receiver_additionalJsonHeader << endl;
 		std::cout << "enable gap pixels:" << thisDetector->gappixels << endl;
 		std::cout << "rx streaming port:" << thisDetector->receiver_zmqport << endl;
 		std::cout << "r_readfreq:" << thisDetector->receiver_read_freq << endl << endl;
@@ -6399,6 +6407,7 @@ string slsDetector::setReceiver(string receiverIP){
 			setReadReceiverFrequency(thisDetector->receiver_read_freq);
 			setReceiverStreamingPort(getReceiverStreamingPort());
 			setReceiverStreamingIP(getReceiverStreamingIP());
+			setAdditionalJsonHeader(getAdditionalJsonHeader());
 			enableDataStreamingFromReceiver(enableDataStreamingFromReceiver(-1));
 		}
 	}
@@ -6640,6 +6649,39 @@ string slsDetector::setReceiverStreamingIP(string sourceIP) {
 	}
 
 	return getReceiverStreamingIP();
+}
+
+
+
+string slsDetector::setAdditionalJsonHeader(string jsonheader) {
+
+    int fnum=F_ADDITIONAL_JSON_HEADER;
+    int ret = FAIL;
+    char arg[MAX_STR_LENGTH];
+    memset(arg,0,sizeof(arg));
+    char retval[MAX_STR_LENGTH];
+    memset(retval,0, sizeof(retval));
+
+    strcpy(arg, jsonheader.c_str());
+
+    if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+#ifdef VERBOSE
+        std::cout << "Sending additional json header " << arg << std::endl;
+#endif
+        if (connectData() == OK){
+            ret=thisReceiver->sendString(fnum,retval,arg);
+            disconnectData();
+        }
+        if(ret==FAIL) {
+              setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
+              std::cout << "Warning: Could not set additional json header" << std::endl;
+        } else
+            strcpy(thisDetector->receiver_additionalJsonHeader, retval);
+        if(ret==FORCE_UPDATE)
+            updateReceiver();
+    }
+
+    return getAdditionalJsonHeader();
 }
 
 
@@ -8818,6 +8860,10 @@ int slsDetector::updateReceiverNoWait() {
   // streaming source ip
   n += 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);
   strcpy(thisDetector->receiver_zmqip, path);
+
+  // additional json header
+  n +=  dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);
+  strcpy(thisDetector->receiver_additionalJsonHeader, path);
 
   // gap pixels
   n += dataSocket->ReceiveDataOnly(&ind,sizeof(ind));

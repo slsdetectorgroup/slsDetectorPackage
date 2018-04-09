@@ -285,6 +285,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     int nGappixels[2];
     /** data bytes including gap pixels */
     int dataBytesInclGapPixels;
+    /** additional json header */
+    char receiver_additionalJsonHeader[MAX_STR_LENGTH];
 
 
 
@@ -1824,6 +1826,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   string getClientStreamingIP(){return string(thisDetector->zmqip);};
   /** gets the zmq source ip in receiver, returns "none" if default setting and no custom ip set*/
   string getReceiverStreamingIP(){return string(thisDetector->receiver_zmqip);};
+  /** gets the additional json header, returns "none" if default setting and no custom set*/
+  string getAdditionalJsonHeader(){return string(thisDetector->receiver_additionalJsonHeader);};
 
   /** validates the format of detector MAC address and sets it \sa sharedSlsDetector  */
   string setDetectorMAC(string detectorMAC);
@@ -1847,6 +1851,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   string setClientStreamingIP(string sourceIP);
   /** sets the zmq source ip in receiver. if empty, uses rx_hostname*/
   string setReceiverStreamingIP(string sourceIP);
+  /** additional json header, returns "none" if default setting and no custom set */
+  string setAdditionalJsonHeader(string jsonheader);
 
   /** sets the transmission delay for left or right port or for an entire frame*/
   string setDetectorNetworkParameter(networkParameter index, int delay);

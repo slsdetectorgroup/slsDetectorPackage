@@ -218,7 +218,7 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {
 		if (enable) {
 			bool error = false;
 			for ( int i = 0; i < numThreads; ++i ) {
-				dataStreamer.push_back(new DataStreamer(fifo[i], &dynamicRange, &shortFrameEnable, &fileIndex, flippedData));
+				dataStreamer.push_back(new DataStreamer(fifo[i], &dynamicRange, &shortFrameEnable, &fileIndex, flippedData, additionalJsonHeader));
 				dataStreamer[i]->SetGeneralData(generalData);
 				if (dataStreamer[i]->CreateZmqSockets(&numThreads, streamingPort, streamingSrcIP) == FAIL) {
 					error = true;

@@ -331,7 +331,7 @@ public:
 
 #ifdef VERBOSE
 		//if(!index)
-			cprintf(BLUE,"%d : STreamer: buf: %s\n", index, buf);
+			cprintf(BLUE,"%d : Streamer: buf: %s\n", index, buf);
 #endif
 
 		if(zmq_send (socketDescriptor, buf, length, dummy?0:ZMQ_SNDMORE) < 0) {

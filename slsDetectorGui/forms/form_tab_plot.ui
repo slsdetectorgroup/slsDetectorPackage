@@ -99,7 +99,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>4</number>
     </property>
     <widget class="QWidget" name="page_6">
      <widget class="QWidget" name="gridLayoutWidget_5">
@@ -548,7 +548,7 @@
        <rect>
         <x>25</x>
         <y>5</y>
-        <width>314</width>
+        <width>335</width>
         <height>26</height>
        </rect>
       </property>
@@ -587,7 +587,7 @@ Displays minimum, maximum and sum of values for each plot.
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>100</width>
+           <width>10</width>
            <height>10</height>
           </size>
          </property>
@@ -596,7 +596,7 @@ Displays minimum, maximum and sum of values for each plot.
        <item>
         <widget class="QCheckBox" name="chkGainPlot">
          <property name="enabled">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -611,6 +611,43 @@ Displays minimum, maximum and sum of values for each plot.
          </property>
          <property name="text">
           <string>Gain Plot</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_22">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>10</width>
+           <height>10</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="chkGapPixels">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>&lt;nobr&gt;
+Displays minimum, maximum and sum of values for each plot.
+&lt;nobr&gt;</string>
+         </property>
+         <property name="text">
+          <string>Gap Pixels</string>
          </property>
         </widget>
        </item>
@@ -1695,7 +1732,7 @@ Displays minimum, maximum and sum of values for each plot.
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>331</width>
+      <width>357</width>
       <height>26</height>
      </rect>
     </property>
@@ -2522,7 +2559,7 @@ Interval between plots has 2 modes. A condition to be satisfied, in order to avo
      <rect>
       <x>10</x>
       <y>12</y>
-      <width>331</width>
+      <width>365</width>
       <height>36</height>
      </rect>
     </property>

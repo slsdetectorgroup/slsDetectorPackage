@@ -387,3 +387,15 @@ int slsDetectorUsers::setHighVoltage(int i) {
 int slsDetectorUsers::resetFramesCaughtInReceiver() {
     return myDetector->resetFramesCaught();
 }
+
+int slsDetectorUsers::setReceiverFifoDepth(int i) {
+    return myDetector->setReceiverFifoDepth(i);
+}
+
+int slsDetectorUsers::setFlowControl10G(int i) {
+    return myDetector->setFlowControl10G(i);
+}
+
+int slsDetectorUsers::setTenGigabitEthernet(int i) {
+    return myDetector->enableTenGigabitEthernet(i);
+}

@@ -666,16 +666,23 @@ class slsDetectorUsers
    /**
     * set receiver in silent mode
     * @param i 1 sets, 0 unsets (-1 gets)
-    * @return silent mode of receiver
+    * @returns silent mode of receiver
     */
    int setReceiverSilentMode(int i);
 
    /**
     * set high voltage
     * @param i > 0 sets, 0 unsets, (-1 gets)
-    * @return high voltage
+    * @returns high voltage
     */
    int setHighVoltage(int i);
+
+   /**
+    * reset frames caught in receiver
+    * should be called before startReceiver()
+    * @retuns OK or FAIL
+    */
+   int resetFramesCaughtInReceiver();
 
   /************************************************************************
 

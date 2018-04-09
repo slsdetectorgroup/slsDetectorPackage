@@ -684,6 +684,27 @@ class slsDetectorUsers
     */
    int resetFramesCaughtInReceiver();
 
+   /**
+    * set receiver fifo depth
+    * @param i number of images in fifo depth (-1 gets)
+    * @returns receiver fifo depth
+    */
+   int setReceiverFifoDepth(int i = -1);
+
+   /**
+    * set flow control for 10Gbe (Eiger only)
+    * @param i 1 sets, 0 unsets (-1 gets)
+    * @return flow control enable for 10 Gbe
+    */
+   int setFlowControl10G(int i = -1);
+
+   /**
+    * enable/disable 10GbE (Eiger only)
+    * @param i 1 sets, 0 unsets (-1 gets)
+    * @return 10GbE enable
+    */
+   int setTenGigabitEthernet(int i = -1);
+
   /************************************************************************
 
                            STATIC FUNCTIONS

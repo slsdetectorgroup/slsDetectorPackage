@@ -4142,7 +4142,7 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
 				"Default is ip of rx_hostname and works for GUI. This is usually used to stream out to an external process for further processing."
 				"restarts streaming in receiver with new port" << std::endl;
 		os << "rx_jsonaddheader [t]\n sets additional json header to be streamed "
-		        "out with the zmq from receiver. Default is empty. \c t must be in the format '\"label1\":\"value1\",\"label2\":\"value2\"' etc."
+		        "out with the zmq from receiver. Default is empty. t must be in the format '\"label1\":\"value1\",\"label2\":\"value2\"' etc."
 		        "Use only if it needs to be processed by an intermediate process." << std::endl;
 	}
 	if (action==GET_ACTION || action==HELP_ACTION) {

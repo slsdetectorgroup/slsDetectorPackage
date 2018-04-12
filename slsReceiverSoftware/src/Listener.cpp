@@ -60,12 +60,13 @@ Listener::Listener(detectorType dtype, Fifo*& f, runStatus* s, uint32_t* portno,
 	}
 	NumberofListeners++;
 	FILE_LOG(logDEBUG) << "Number of Listeners: " << NumberofListeners;
-
 }
 
 
 Listener::~Listener() {
 	if (udpSocket) delete udpSocket;
+	sem_post(&semaphore_socket);
+    sem_destroy(&semaphore_socket);
 	if (carryOverPacket) delete [] carryOverPacket;
 	if (listeningPacket) delete [] listeningPacket;
 	ThreadObject::DestroyThread();
@@ -230,6 +231,7 @@ int Listener::CreateUDPSockets() {
 		return FAIL;
 	}
 	udpSocketAlive = true;
+    sem_init(&semaphore_socket,1,0);
 	return OK;
 }
 
@@ -242,6 +244,10 @@ void Listener::ShutDownUDPSocket() {
 		FILE_LOG(logINFO) << "Shut down of UDP port " << *udpPortNumber;
 		fflush(stdout);
 		//delete socket at stoplistening
+	    sem_wait(&semaphore_socket);
+        delete udpSocket;
+        udpSocket = 0;
+	    sem_destroy(&semaphore_socket);
 	}
 }
 
@@ -311,10 +317,8 @@ void Listener::StopListening(char* buf) {
 	(*((uint32_t*)buf)) = DUMMY_PACKET_VALUE;
 	fifo->PushAddress(buf);
 	StopRunning();
-	if (udpSocket) {
-		delete udpSocket;
-		udpSocket = 0;
-	}
+
+	 sem_post(&semaphore_socket);
 #ifdef VERBOSE
 	cprintf(GREEN,"%d: Listening Packets (%u) : %llu\n", index, *udpPortNumber, numPacketsCaught);
 	cprintf(GREEN,"%d: Listening Completed\n", index);

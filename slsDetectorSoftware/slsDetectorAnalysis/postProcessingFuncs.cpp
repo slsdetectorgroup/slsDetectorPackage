@@ -303,16 +303,17 @@ int postProcessingFuncs::initDataset(int *nModules,int *chPerMod,int modMask[],i
   totalChans=0;
 
 
- 
-  chansPerMod=new int [nMods];
+  if (nMods)
+      chansPerMod=new int [nMods];
   
- 
-  moduleMask=new int [nMods];
+  if (nMods)
+      moduleMask=new int [nMods];
   
   nBins=0;
   if (angRadius && angOffset && angCenter && (binSize>0)) {
     // cout << "??????? creating angConv"<< endl;
-    angConv=new angleConversionConstant*[nMods];
+    if (nMods)
+        angConv=new angleConversionConstant*[nMods];
     nBins=(int)(360./binSize)+1;
   }
   //#ifdef VERBOSE
@@ -380,11 +381,15 @@ int postProcessingFuncs::initDataset(int *nModules,int *chPerMod,int modMask[],i
 
 void postProcessingFuncs::deletePointers() {
 
-  delete [] chansPerMod;
-  chansPerMod=NULL;
+    if(chansPerMod != NULL) {
+        delete [] chansPerMod;
+        chansPerMod=NULL;
+    }
   
-  delete [] moduleMask;
-  moduleMask=NULL;
+    if (moduleMask != NULL) {
+        delete [] moduleMask;
+        moduleMask=NULL;
+    }
 
 
   if (badChannelMask) {

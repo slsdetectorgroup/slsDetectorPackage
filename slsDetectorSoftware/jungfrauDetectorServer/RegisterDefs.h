@@ -345,7 +345,7 @@
 #define SET_TRIGGER_DELAY_MSB_REG       (0x71 << MEM_MAP_SHIFT)
 
 /* Module Coordinates Register 0 */
-#define COORD_0							(0x7C << MEM_MAP_SHIFT)
+#define COORD_0_REG						(0x7C << MEM_MAP_SHIFT)
 
 #define COORD_0_Y_OFST					(0)
 #define COORD_0_Y_MSK					(0x0000FFFF << COORD_0_Y_OFST)
@@ -353,13 +353,13 @@
 #define COORD_0_X_MSK					(0x0000FFFF << COORD_0_X_OFST)
 
 /* Module Coordinates Register 1 */
-#define COORD_1							(0x7D << MEM_MAP_SHIFT)
+#define COORD_1_REG						(0x7D << MEM_MAP_SHIFT)
 
 #define COORD_0_Z_OFST					(0)
 #define COORD_0_Z_MSK					(0x0000FFFF << COORD_0_Z_OFST)
 
 /* ASIC Control Register */
-#define ASIC_CTRL_REG                   (0x7F)
+#define ASIC_CTRL_REG                   (0x7F << MEM_MAP_SHIFT)
 
 #define ASIC_CTRL_PRCHRG_TMR_OFST       (0)
 #define ASIC_CTRL_PRCHRG_TMR_MSK        (0x000000FF << ASIC_CTRL_PRCHRG_TMR_OFST)

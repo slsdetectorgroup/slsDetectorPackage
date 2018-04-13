@@ -502,8 +502,10 @@ int getPhase() {
 }
 
 void configureASICTimer() {
-    bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_PRCHRG_TMR_MSK) | ASIC_CTRL_PRCHRG_TMR_VAL);
-    bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_DS_TMR_MSK) | ASIC_CTRL_DS_TMR_VAL);
+cprintf(RED," in here\n");
+    //cprintf(RED,"asic reg:0x%x\n", bus_r(ASIC_CTRL_REG));
+    //bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_PRCHRG_TMR_MSK) | ASIC_CTRL_PRCHRG_TMR_VAL);
+    //bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_DS_TMR_MSK) | ASIC_CTRL_DS_TMR_VAL);
 }
 
 
@@ -1191,16 +1193,16 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 int setDetectorPosition(int pos[]) {
 	int ret = OK;
 
-	bus_w(COORD_0, bus_r(COORD_0) | ((pos[0] << COORD_0_X_OFST) & COORD_0_X_MSK));
-	if ((bus_r(COORD_0) &  COORD_0_X_MSK) != ((pos[0] << COORD_0_X_OFST) & COORD_0_X_MSK))
+	bus_w(COORD_0_REG, bus_r(COORD_0_REG) | ((pos[0] << COORD_0_X_OFST) & COORD_0_X_MSK));
+	if ((bus_r(COORD_0_REG) &  COORD_0_X_MSK) != ((pos[0] << COORD_0_X_OFST) & COORD_0_X_MSK))
 		ret = FAIL;
 
-	bus_w(COORD_0, bus_r(COORD_0) | ((pos[1] << COORD_0_Y_OFST) & COORD_0_Y_MSK));
-	if ((bus_r(COORD_0) &  COORD_0_Y_MSK) != ((pos[1] << COORD_0_Y_OFST) & COORD_0_Y_MSK))
+	bus_w(COORD_0_REG, bus_r(COORD_0_REG) | ((pos[1] << COORD_0_Y_OFST) & COORD_0_Y_MSK));
+	if ((bus_r(COORD_0_REG) &  COORD_0_Y_MSK) != ((pos[1] << COORD_0_Y_OFST) & COORD_0_Y_MSK))
 		ret = FAIL;
 
-	bus_w(COORD_1, bus_r(COORD_1) | ((pos[2] << COORD_0_Z_OFST) & COORD_0_Z_MSK));
-	if ((bus_r(COORD_1) &  COORD_0_Z_MSK) != ((pos[2] << COORD_0_Z_OFST) & COORD_0_Z_MSK))
+	bus_w(COORD_1_REG, bus_r(COORD_1_REG) | ((pos[2] << COORD_0_Z_OFST) & COORD_0_Z_MSK));
+	if ((bus_r(COORD_1_REG) &  COORD_0_Z_MSK) != ((pos[2] << COORD_0_Z_OFST) & COORD_0_Z_MSK))
 		ret = FAIL;
 
 	if (ret == OK)

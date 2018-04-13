@@ -193,6 +193,7 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_TEMP_CONTROL:                    return "F_TEMP_CONTROL";
 	case F_TEMP_EVENT:                      return "F_TEMP_EVENT";
     case F_AUTO_COMP_DISABLE:               return "F_AUTO_COMP_DISABLE";
+    case F_STORAGE_CELL_START:              return "F_STORAGE_CELL_START";
 
 	default:								return "Unknown Function";
 	}
@@ -276,6 +277,7 @@ void function_table() {
 	flist[F_TEMP_CONTROL]                       = &temp_control;
 	flist[F_TEMP_EVENT]                         = &temp_event;
     flist[F_AUTO_COMP_DISABLE]                  = &auto_comp_disable;
+    flist[F_STORAGE_CELL_START]                 = &storage_cell_start;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= TOO_MANY_FUNCTIONS_DEFINED) {
@@ -5526,8 +5528,6 @@ int auto_comp_disable(int file_des) {
     sprintf(mess,"Function (Auto Comp Disable) is not yet implemented for this detector\n");
     cprintf(RED, "%s", mess);
 
-    /* will be connected after teh fpga upgrade
-
     // receive arguments
     int arg=-1;
     n = receiveData(file_des,&arg,sizeof(arg),INT32);
@@ -5560,7 +5560,72 @@ int auto_comp_disable(int file_des) {
 #endif
     if (ret==OK && differentClients)
         ret=FORCE_UPDATE;
-        */
+#endif
+
+    // ret could be swapped during sendData
+    ret1 = ret;
+    // send ok / fail
+    n = sendData(file_des,&ret1,sizeof(ret),INT32);
+    // send return argument
+    if (ret==FAIL) {
+        n += sendData(file_des,mess,sizeof(mess),OTHER);
+    } else
+        n += sendData(file_des,&retval,sizeof(retval),INT32);
+
+    // return ok / fail
+    return ret;
+}
+
+
+
+
+
+int storage_cell_start(int file_des) {
+    int ret=OK,ret1=OK;
+    int n=0;
+    int retval=-1;
+    sprintf(mess,"storage cell start failed\n");
+
+#ifndef JUNGFRAUD
+    //to receive any arguments
+    while (n > 0)
+        n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+    ret = FAIL;
+    sprintf(mess,"Function (Storage cell start) is not implemented for this detector\n");
+    cprintf(RED, "%s", mess);
+#else
+
+    // receive arguments
+    int arg=-1;
+    n = receiveData(file_des,&arg,sizeof(arg),INT32);
+    if (n < 0) return printSocketReadError();
+
+    // execute action
+    if (differentClients && lockStatus && arg!=-1) {
+        ret = FAIL;
+        sprintf(mess,"Detector locked by %s\n",lastClientIP);
+        cprintf(RED, "Warning: %s", mess);
+    }
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+    else {
+#ifdef VERBOSE
+    printf("Storage cell start to %d\n", arg);
+#endif
+        retval=selectStoragecellStart(arg);
+
+#ifdef VERBOSE
+        printf("Storage cell start: %d\n",retval);
+#endif
+        if (retval==arg || arg<0) {
+            ret=OK;
+        } else {
+            sprintf(mess,"Storage cell start select failed, wrote %d but read %d\n", arg, retval);
+            cprintf(RED, "Warning: %s", mess);
+        }
+    }
+#endif
+    if (ret==OK && differentClients)
+        ret=FORCE_UPDATE;
 #endif
 
     // ret could be swapped during sendData

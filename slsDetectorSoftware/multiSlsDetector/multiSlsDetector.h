@@ -726,6 +726,13 @@ class multiSlsDetector  : public slsDetectorUtils {
   */
   int64_t getTimeLeft(timerIndex index);
 
+  /**
+   * set storage cell that stores first acquisition of the series (Jungfrau only)
+   * \param value storage cell index. Value can be 0 to 15. (-1 gets)
+   * \returns the storage cell that stores the first acquisition of the series
+   */
+  int setStoragecellStart(int pos=-1);
+
   /*   /\**  */
   /*       get current timer value */
   /*       \param index timer index */

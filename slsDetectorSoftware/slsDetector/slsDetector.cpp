@@ -5267,6 +5267,38 @@ int64_t slsDetector::getTimeLeft(timerIndex index){
 };
 
 
+int slsDetector::setStoragecellStart(int pos) {
+    int ret=FAIL;
+    int fnum=F_STORAGE_CELL_START;
+    char mess[MAX_STR_LENGTH];
+    memset(mess, 0, MAX_STR_LENGTH);
+    int retval=-1;
+
+#ifdef VERBOSE
+    std::cout<< "Sending storage cell start index " << pos << endl;
+#endif
+    if (thisDetector->onlineFlag==ONLINE_FLAG) {
+        if (connectControl() == OK){
+            controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+            controlSocket->SendDataOnly(&pos,sizeof(pos));
+            //check opening error
+            controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+            if (ret==FAIL) {
+                controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+                std::cout<< "Detector returned error: " << mess << std::endl;
+                setErrorMask((getErrorMask())|(STORAGE_CELL_START));
+            }else
+                controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+            disconnectControl();
+            if (ret==FORCE_UPDATE)
+                updateDetector();
+        }
+    }
+    return retval;
+}
+
+
+
 // Flags
 int slsDetector::setDynamicRange(int n){
 

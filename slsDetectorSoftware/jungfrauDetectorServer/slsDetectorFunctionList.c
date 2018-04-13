@@ -388,7 +388,9 @@ void setupDetector() {
 				cprintf(RED, "Warning: Setting dac %d failed, wrote %d, read %d\n",i ,defaultvals[i], retval[0]);
 		}
 	}
+
 	bus_w(DAQ_REG, 0x0);         /* Only once at server startup */
+
 	setSpeed(CLOCK_DIVIDER, HALF_SPEED);
 	cleanFifos();
 	resetCore();
@@ -631,6 +633,15 @@ int setSpeed(enum speedVariable arg, int val) {
 
 
 /* parameters - timer */
+int selectStoragecellStart(int pos) {
+    if (pos >= 0) {
+        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_STRG_CELL_SLCT_MSK);
+        bus_w(DAQ_REG, bus_r(DAQ_REG) | ((pos << DAQ_STRG_CELL_SLCT_OFST) & DAQ_STRG_CELL_SLCT_MSK));
+    }
+    return ((bus_r(DAQ_REG) & DAQ_STRG_CELL_SLCT_MSK) >> DAQ_STRG_CELL_SLCT_OFST);
+}
+
+
 
 int64_t setTimer(enum timerIndex ind, int64_t val) {
 
@@ -647,9 +658,11 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 	case ACQUISITION_TIME:
 		if(val >= 0){
 			printf("\nSetting exptime: %lldns\n", (long long int)val);
-			val *= (1E-3 * CLK_RUN); /*(-2)*/
+			val *= (1E-3 * CLK_RUN);
+			val -= ACQ_TIME_MIN_CLOCK;
+			if(val < 0) val = 0;
 		}
-		retval = set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) / (1E-3 * CLK_RUN);/*(+2)*/
+		retval = (set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) + ACQ_TIME_MIN_CLOCK) / (1E-3 * CLK_RUN);
 		printf("Getting exptime: %lldns\n", (long long int)retval);
 		break;
 
@@ -799,38 +812,46 @@ int getModule(sls_detector_module *myMod){
 
 
 enum detectorSettings setSettings(enum detectorSettings sett, int imod){
-	if(sett == UNINITIALIZED){
+	if(sett == UNINITIALIZED)
 		return thisSettings;
-	}
 
-	uint32_t val = -1;
-	const int defaultIndex[NUM_SETTINGS] = DEFAULT_SETT_INDX;
-	const int defaultvals[NUM_SETTINGS] = DEFAULT_SETT_VALS;
-	const char defaultNames[NUM_SETTINGS][100]=DEFAULT_SETT_NAMES;
-
+	// set settings
 	if(sett != GET_SETTINGS) {
+	    switch (sett) {
+	    case DYNAMICGAIN:
+	        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
+            printf("\nConfigured settings - Dyanmic Gain, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
+	        break;
+	    case DYNAMICHG0:
+            bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
+            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_HIGH_GAIN_MSK);
+            printf("\nConfigured settings - Dyanmic High Gain 0, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
+            break;
+	    case FIXGAIN1:
+            bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
+            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_STG_1_MSK);
+            printf("\nConfigured settings - Fix Gain 1, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
+            break;
+	    case FIXGAIN2:
+            bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
+            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_STG_2_MSK);
+            printf("\nConfigured settings - Fix Gain 2, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
+            break;
+	    case FORCESWITCHG1:
+            bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
+            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FRCE_SWTCH_GAIN_STG_1_MSK);
+            printf("\nConfigured settings - Force Switch Gain 1, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
+            break;
+	    case FORCESWITCHG2:
+            bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
+            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FRCE_SWTCH_GAIN_STG_2_MSK);
+            printf("\nConfigured settings - Force Switch Gain 2, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
+            break;
+	    default:
+	        cprintf(RED, "Error: This settings is not defined for this detector %d\n", (int)sett);
+	        return -1;
+	    }
 
-		// find gain val
-		{
-			int i;
-			for (i = 0; i < NUM_SETTINGS; ++i) {
-				if (sett == defaultIndex[i]) {
-					val = defaultvals[i];
-					break;
-				}
-			}
-
-
-			//not found
-			if (val == -1) {
-				cprintf(RED, "Error: This settings is not defined for this detector %d\n", (int)sett);
-				return val;
-			}
-
-			printf("\nConfiguring to settings %s (%d)\n"
-					" Writing to DAQ Register with val:0x%x\n", defaultNames[i], sett, val);
-		}
-		bus_w(DAQ_REG, val);
 		thisSettings = sett;
 	}
 
@@ -841,35 +862,39 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 
 enum detectorSettings getSettings(){
 
-	enum detectorSettings sett = -1;
-	const int defaultIndex[NUM_SETTINGS] = DEFAULT_SETT_INDX;
-	const int defaultvals[NUM_SETTINGS] = DEFAULT_SETT_VALS;
-	const char defaultNames[NUM_SETTINGS][100]=DEFAULT_SETT_NAMES;
-
 	uint32_t val = bus_r(DAQ_REG);
 	printf("\nGetting Settings\n Reading DAQ Register :0x%x\n", val);
 
-	//find setting
-	{
-		int i;
-		for (i = 0; i < NUM_SETTINGS; ++i) {
-			if (val == defaultvals[i]) {
-				sett = defaultIndex[i];
-				break;
-			}
-		}
-
-
-		//not found
-		if (sett == -1) {
-			cprintf(RED, "Error: Undefined settings read for this detector (DAQ Reg val: 0x%x)\n", val);
-			thisSettings = UNDEFINED;
-			return sett;
-		}
-
-		thisSettings = sett;
-		printf("Settings Read: %s (%d)\n", defaultNames[i], thisSettings);
+	if (val & DAQ_FRCE_SWTCH_GAIN_STG_2_MSK) {
+	    thisSettings = FORCESWITCHG2;
+	    printf("Settings read: FORCESWITCHG2\n");
 	}
+
+	else if  (val & DAQ_FRCE_SWTCH_GAIN_STG_1_MSK) {
+	    thisSettings = FORCESWITCHG1;
+        printf("Settings read: FORCESWITCHG1\n");
+	}
+
+	else if (val & DAQ_FIX_GAIN_STG_2_MSK) {
+	    thisSettings = FIXGAIN2;
+        printf("Settings read: FIXGAIN2\n");
+	}
+
+	else if (val & DAQ_FIX_GAIN_STG_1_MSK) {
+	    thisSettings = FIXGAIN1;
+        printf("Settings read: FIXGAIN1\n");
+	}
+
+	else if (val & DAQ_HIGH_GAIN_MSK) {
+	    thisSettings = DYNAMICHG0;
+        printf("Settings read: DYNAMICHG0\n");
+	}
+
+	else {
+	    thisSettings = DYNAMICGAIN;
+        printf("Settings read: DYNAMICGAIN\n");
+	}
+
 	return thisSettings;
 }
 

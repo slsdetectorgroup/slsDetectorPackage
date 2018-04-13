@@ -106,6 +106,9 @@ int 		executeTrimming(enum trimMode mode, int par1, int par2, int imod);
 #endif
 
 // parameters - timer
+#ifdef JUNGFRAUD
+int         selectStoragecellStart(int pos);
+#endif
 int64_t 	setTimer(enum timerIndex ind, int64_t val);
 #ifndef EIGERD
 int64_t 	getTimeLeft(enum timerIndex ind);

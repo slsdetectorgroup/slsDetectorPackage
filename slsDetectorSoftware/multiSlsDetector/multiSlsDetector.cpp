@@ -2072,6 +2072,42 @@ int64_t multiSlsDetector::getTimeLeft(timerIndex index){
 
 
 
+int multiSlsDetector::setStoragecellStart(int pos) {
+    int ret=-100;
+    if(!threadpool){
+        cout << "Error in creating threadpool. Exiting" << endl;
+        return -1;
+    }else{
+        //return storage values
+        int* iret[thisMultiDetector->numberOfDetectors];
+        for(int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet){
+            if(detectors[idet]){
+                iret[idet]= new int(-1);
+                Task* task = new Task(new func1_t<int,int>(&slsDetector::setStoragecellStart,
+                        detectors[idet],pos,iret[idet]));
+                threadpool->add_task(task);
+            }
+        }
+        threadpool->startExecuting();
+        threadpool->wait_for_tasks_to_complete();
+        for(int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet){
+            if(detectors[idet]){
+                if(iret[idet] != NULL){
+                    if (ret==-100)
+                        ret=*iret[idet];
+                    else if (ret!=*iret[idet])
+                        ret=-1;
+                    delete iret[idet];
+                }else ret=-1;
+                if(detectors[idet]->getErrorMask())
+                    setErrorMask(getErrorMask()|(1<<idet));
+            }
+        }
+    }
+
+    return ret;
+}
+
 int multiSlsDetector::setSpeed(speedVariable index, int value){
   int i;
   int ret1=-100, ret;

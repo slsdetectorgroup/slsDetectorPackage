@@ -92,5 +92,6 @@ int threshold_temp(int);
 int temp_control(int);
 int temp_event(int);
 int auto_comp_disable(int);
+int storage_cell_start(int);
 
 #endif

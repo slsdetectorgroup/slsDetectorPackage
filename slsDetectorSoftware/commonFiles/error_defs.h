@@ -93,6 +93,7 @@ using namespace std;
 #define TEMPERATURE_CONTROL                 0x0000001000000000ULL
 #define AUTO_COMP_DISABLE                   0x0000002000000000ULL
 #define CONFIG_FILE                         0x0000004000000000ULL
+#define STORAGE_CELL_START                  0x0000008000000000ULL
 //											0x000000FFFFFFFFFFULL
 
 

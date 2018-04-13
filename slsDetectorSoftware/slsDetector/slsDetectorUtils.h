@@ -318,6 +318,13 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual int64_t getTimeLeft(timerIndex index)=0;
 
+  /**
+   * set storage cell that stores first acquisition of the series (Jungfrau only)
+   * \param value storage cell index. Value can be 0 to 15. (-1 gets)
+   * \returns the storage cell that stores the first acquisition of the series
+   */
+  virtual int setStoragecellStart(int pos=-1)=0;
+
 
 
   /** sets the number of trim energies and their value  \sa sharedSlsDetector 

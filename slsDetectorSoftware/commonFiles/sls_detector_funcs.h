@@ -118,6 +118,7 @@ enum detFuncs{
   F_TEMP_EVENT,              /** < set temperature event */
 
   F_AUTO_COMP_DISABLE,      /** < auto comp disable mode */
+  F_STORAGE_CELL_START,     /** < storage cell start */
   /* Always append functions hereafter!!! */
 
   /* Always append functions before!!! */

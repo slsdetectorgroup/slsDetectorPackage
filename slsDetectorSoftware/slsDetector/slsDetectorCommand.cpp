@@ -642,6 +642,12 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
     descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
     ++i;
 
+    /*! \page timing
+   - <b>storagecell_start [i]</b> sets/gets the storage cell that stores the first acquisition of the series. Default is 0. For very advanced users only! For JUNGFRAU only. Range: 0-15. \c Returns \c (int)
+     */
+    descrToFuncMap[i].m_pFuncName="storagecell_start"; //
+    descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
+    ++i;
 
 	/* read only timers */
 
@@ -5631,6 +5637,17 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
 		index=SAMPLES_JCTB;
     else if (cmd=="storagecells")
         index=STORAGE_CELL_NUMBER;
+    else if (cmd=="storagecell_start") {
+        myDet->setOnline(ONLINE_FLAG);
+        if (action==PUT_ACTION) {
+            int ival =-1;
+            if (!sscanf(args[1],"%d", &ival))
+                return string("cannot scan storage cell start value ")+string(args[1]);
+            myDet->setStoragecellStart(ival);
+        }
+        sprintf(answer,"%d", myDet->setStoragecellStart());
+        return string(answer);
+    }
 	else
 		return string("could not decode timer ")+cmd;
 
@@ -5683,6 +5700,7 @@ string slsDetectorCommand::helpTimer(int narg, char *args[], int action) {
 		os << "probes t \t sets the number of probes to accumulate (max 3! cycles should be set to 1, frames to the number of pump-probe events)" << std::endl;
 		os << "samples t \t sets the number of samples expected from the jctb" << std::endl;
 		os << "storagecells t \t sets number of storage cells per acquisition. For very advanced users only! For JUNGFRAU only. Range: 0-15. The #images = #frames * #cycles * (#storagecells+1)." << std::endl;
+		os << "storagecell_start t \t sets the storage cell that stores the first acquisition of the series. Default is 0. For very advanced users only! For JUNGFRAU only. Range: 0-15." << std::endl;
 		os << std::endl;
 
 
@@ -5698,6 +5716,7 @@ string slsDetectorCommand::helpTimer(int narg, char *args[], int action) {
 		os << "probes  \t gets the number of probes to accumulate" << std::endl;
 		os << "samples \t gets the number of samples expected from the jctb" << std::endl;
 		os << "storagecells \t gets number of storage cells per acquisition.For JUNGFRAU only." << std::endl;
+		os << "storagecell_start \t gets the storage cell that stores the first acquisition of the series." << std::endl;
 		os << std::endl;
 
 	}

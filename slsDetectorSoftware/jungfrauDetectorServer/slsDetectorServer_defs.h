@@ -40,22 +40,6 @@ enum DACINDEX				{VB_COMP, VDD_PROT, VIN_COM, VREF_PRECH, VB_PIXBUF, VB_DS, VREF
 								420		/* VREF_COMP */		\
 							};
 
-#define NUM_SETTINGS		6
-#define DEFAULT_SETT_INDX	{DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2};
-#define DEFAULT_SETT_VALS	{	0x0f00,		/* DYNAMICGAIN	 	*/	\
- 	  	  	  	  	  	  	  	0x0f01,		/* DYNAMICHG0		*/	\
-  	  	  	  	  	  	  	  	0x0f02,		/* FIXGAIN1			*/	\
-  	  	  	  	  	  	  	  	0x0f06,		/* FIXGAIN2			*/	\
-  	  	  	  	  	  	  	  	0x1f00,		/* FORCESWITCHG1	*/	\
- 	  	  	  	  	  	  	  	0x3f00		/* FORCESWITCHG2	*/	\
- 	  	  	  	  	  	  	 };
-#define DEFAULT_SETT_NAMES  {	"Dynamic Gain", 		/* DYNAMICGAIN	*/	\
-								"Dynamic High Gain 0",	/* DYNAMICHG0	*/	\
-								"Fix Gain 1",			/* FIXGAIN1		*/	\
-								"Fix Gain 2",			/* FIXGAIN2		*/	\
-								"Force Switch Gain 1",	/* FORCESWITCHG1*/	\
-								"Force Switch Gain 2"	/* FORCESWITCHG2*/	\
-							};
 enum NETWORKINDEX           { TXN_FRAME };
 
 
@@ -94,6 +78,7 @@ enum NETWORKINDEX           { TXN_FRAME };
 #define MAX_TIMESLOT_VAL            (0x1F)
 #define MAX_THRESHOLD_TEMP_VAL      (127999) //millidegrees
 #define MAX_STORAGE_CELL_VAL        (15) //0xF
+#define ACQ_TIME_MIN_CLOCK          (2)
 
 
 #define SAMPLE_ADC_HALF_SPEED	 	(SAMPLE_DECMT_FACTOR_2_VAL + SAMPLE_DGTL_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL + SAMPLE_ADC_SAMPLE_0_VAL)	/* 0x1000 */

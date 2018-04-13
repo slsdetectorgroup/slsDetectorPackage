@@ -198,6 +198,9 @@ private slots:
 	 */
 	void SetAllTrimbits();
 
+	/** Set storage cells */
+	void SetNumStoragecells(int value);
+
 private:
 	/** The multi detector object */
 	multiSlsDetector *myDet;

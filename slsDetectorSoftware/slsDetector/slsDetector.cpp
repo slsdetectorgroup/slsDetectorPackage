@@ -4746,10 +4746,6 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	  cout << "Changing samples: data size = " << thisDetector->dataBytes <<endl;
 	}
 	
-	/* set progress */
-	if ((index==FRAME_NUMBER) || (index==CYCLES_NUMBER)) {
-	  setTotalProgress();
-	}
 
 	if(t!=-1){
 		if ((thisDetector->myDetectorType==MYTHEN)&&(index==PROBES_NUMBER)) {
@@ -4758,7 +4754,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 		}
 
 		/* set progress */
-		if ((index==FRAME_NUMBER) || (index==CYCLES_NUMBER)) {
+		if ((index==FRAME_NUMBER) || (index==CYCLES_NUMBER) || (index==STORAGE_CELL_NUMBER)) {
 			setTotalProgress();
 		}
 
@@ -4780,7 +4776,9 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 
 
 	//send acquisiton time/period/subexptime/frame/cycles/samples to receiver
-	if((index==FRAME_NUMBER)||(index==FRAME_PERIOD)||(index==CYCLES_NUMBER)||(index==ACQUISITION_TIME) || (index==SUBFRAME_ACQUISITION_TIME) || (index==SAMPLES_JCTB)){
+	if((index==FRAME_NUMBER)||(index==FRAME_PERIOD)||(index==CYCLES_NUMBER)||
+	        (index==ACQUISITION_TIME) || (index==SUBFRAME_ACQUISITION_TIME) ||
+	        (index==SAMPLES_JCTB) || (index==STORAGE_CELL_NUMBER)){
 		string timername = getTimerType(index);
 		if(ret != FAIL){
 			int64_t args[2];
@@ -4791,15 +4789,14 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 			if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
 
 				//set #frames * #cycles
-				if((index==FRAME_NUMBER)||(index==CYCLES_NUMBER)){
-					timername.assign("(Number of Frames) * (Number of cycles)");
+				if((index==FRAME_NUMBER)||(index==CYCLES_NUMBER)||(index==STORAGE_CELL_NUMBER)){
+					timername.assign("(Number of Frames) * (Number of cycles) * (Number of storage cells)");
+					args[1] = thisDetector->timerValue[FRAME_NUMBER] *
+					        ((thisDetector->timerValue[CYCLES_NUMBER] > 0) ? (thisDetector->timerValue[CYCLES_NUMBER]) : 1) *
+					        ((thisDetector->timerValue[STORAGE_CELL_NUMBER] > 0) ? (thisDetector->timerValue[STORAGE_CELL_NUMBER])+1 : 1);
 #ifdef VERBOSE
-					std::cout << "Setting/Getting " << timername  << " " << index <<" to/from receiver " << args[1] << std::endl;
+                    std::cout << "Setting/Getting " << timername  << " " << index <<" to/from receiver " << args[1] << std::endl;
 #endif
-					if(thisDetector->timerValue[CYCLES_NUMBER]==0)
-						args[1] = thisDetector->timerValue[FRAME_NUMBER];
-					else
-						args[1] = thisDetector->timerValue[FRAME_NUMBER]*thisDetector->timerValue[CYCLES_NUMBER];
 				}
 #ifdef VERBOSE
 				// set period/exptime/subexptime
@@ -5123,13 +5120,16 @@ int slsDetector::setPort(portType index, int num){
 
 int slsDetector::setTotalProgress() {
 
-  int nf=1, npos=1, nscan[MAX_SCAN_LEVELS]={1,1}, nc=1, nm=1;
+  int nf=1, npos=1, nscan[MAX_SCAN_LEVELS]={1,1}, nc=1, nm=1, ns=1;
 
   if (thisDetector->timerValue[FRAME_NUMBER])
     nf=thisDetector->timerValue[FRAME_NUMBER];
 
   if (thisDetector->timerValue[CYCLES_NUMBER]>0)
     nc=thisDetector->timerValue[CYCLES_NUMBER];
+
+  if (thisDetector->timerValue[STORAGE_CELL_NUMBER]>0)
+    ns=thisDetector->timerValue[STORAGE_CELL_NUMBER]+1;
 
   if (thisDetector->numberOfPositions>0)
     npos=thisDetector->numberOfPositions;
@@ -5144,12 +5144,13 @@ int slsDetector::setTotalProgress() {
   if ((thisDetector->nScanSteps[1]>0) && (thisDetector->actionMask & (1 << (MAX_ACTIONS+1))))
     nscan[1]=thisDetector->nScanSteps[1];
 
-  thisDetector->totalProgress=nf*nc*npos*nm*nscan[0]*nscan[1];
+  thisDetector->totalProgress=nf*nc*ns*npos*nm*nscan[0]*nscan[1];
 
 #ifdef VERBOSE
   cout << "nc " << nc << endl;
   cout << "nm " << nm << endl;
   cout << "nf " << nf << endl;
+  cout << "ns " << ns << endl;
   cout << "npos " << npos << endl;
   cout << "nscan[0] " << nscan[0] << endl;
   cout << "nscan[1] " << nscan[1] << endl;

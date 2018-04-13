@@ -197,15 +197,22 @@ void qTabAdvanced::SetupWidgetWindow(){
 
 	//updates roi
 	cout << "Getting ROI" << endl;
-	if (myDet->getDetectorsType() == slsDetectorDefs::GOTTHARD)
+	if (detType == slsDetectorDefs::GOTTHARD)
 		updateROIList();
 #ifdef VERYVERBOSE
 	//  print receiver configurations
-	if(myDet->getDetectorsType() != slsDetectorDefs::MYTHEN){
+	if(detType != slsDetectorDefs::MYTHEN){
 		cout << endl;
 		myDet->printReceiverConfiguration();
 	}
 #endif
+
+	// jungfrau
+	if (detType == slsReceiverDefs::JUNGFRAU) {
+	    lblNumStoragecells->setEnabled(true);
+	    spinNumStoragecells->setEnabled(true);
+	    spinNumStoragecells->setValue((int)myDet->setTimer(slsDetectorDefs::STORAGE_CELL_NUMBER,-1));
+	}
 
 	Initialization();
 
@@ -288,10 +295,14 @@ void qTabAdvanced::Initialization(){
 
 	//roi
 
-	if (myDet->getDetectorsType() == slsDetectorDefs::GOTTHARD) {
+	if (detType == slsDetectorDefs::GOTTHARD) {
 		connect(btnClearRoi,		SIGNAL(clicked()),			this, SLOT(clearROIinDetector()));
 		connect(btnGetRoi,			SIGNAL(clicked()),			this, SLOT(updateROIList()));
 		connect(btnSetRoi,			SIGNAL(clicked()),			this, SLOT(setROI()));
+	}
+
+	if(detType == slsReceiverDefs::JUNGFRAU) {
+	    connect(spinNumStoragecells, SIGNAL(valueChanged(int)),  this,  SLOT(SetNumStoragecells(int)));
 	}
 }
 
@@ -1225,6 +1236,23 @@ void qTabAdvanced::updateAllTrimbitsFromServer(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+void qTabAdvanced::SetNumStoragecells(int value) {
+#ifdef VERBOSE
+    cout << "Setting number of stoarge cells to " << value << endl;
+#endif
+    myDet->setTimer(slsDetectorDefs::STORAGE_CELL_NUMBER,value);
+
+    disconnect(spinNumStoragecells,SIGNAL(valueChanged(int)),this,   SLOT(SetNumStoragecells(int)));
+    spinNumStoragecells->setValue((int)myDet->setTimer(slsDetectorDefs::STORAGE_CELL_NUMBER,-1));
+    connect(spinNumStoragecells,SIGNAL(valueChanged(int)),   this,   SLOT(SetNumStoragecells(int)));
+
+    qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetNumStoragecells");
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 void qTabAdvanced::Refresh(){
 
 
@@ -1407,12 +1435,19 @@ void qTabAdvanced::Refresh(){
 #ifdef VERBOSE
 		cout << "Getting ROI" << endl;
 #endif
-		if (myDet->getDetectorsType() == slsDetectorDefs::GOTTHARD)
+		if (detType == slsDetectorDefs::GOTTHARD)
 			updateROIList();
 
 	//update alltirmbits from server
 	if(boxSetAllTrimbits->isEnabled())
 		updateAllTrimbitsFromServer();
+
+	// storage cells
+	if (detType == slsReceiverDefs::JUNGFRAU) {
+	    disconnect(spinNumStoragecells,SIGNAL(valueChanged(int)),this,   SLOT(SetNumStoragecells(int)));
+	    spinNumStoragecells->setValue((int)myDet->setTimer(slsDetectorDefs::STORAGE_CELL_NUMBER,-1));
+	    connect(spinNumStoragecells,SIGNAL(valueChanged(int)),   this,   SLOT(SetNumStoragecells(int)));
+	}
 
 #ifdef VERBOSE
 		cout  << "**Updated Advanced Tab" << endl << endl;

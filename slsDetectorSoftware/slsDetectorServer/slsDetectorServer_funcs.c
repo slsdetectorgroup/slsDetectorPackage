@@ -2708,6 +2708,14 @@ int set_timer(int file_des) {
 		printf("setting timer %d to %lld ns\n",ind,tns);
 #endif
 		switch(ind) {
+#ifdef JUNGFRAUD
+        case STORAGE_CELL_NUMBER:
+            if (tns > MAX_STORAGE_CELL_VAL) {
+                ret=FAIL;
+                strcpy(mess,"Max Storage cell number should not exceed 15\n");
+                break;
+            }
+#endif
 #ifdef EIGERD
 		case SUBFRAME_ACQUISITION_TIME:
 			if (tns > ((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) ){
@@ -2740,6 +2748,8 @@ int set_timer(int file_des) {
 			cprintf(RED, "%s", mess);
 			break;
 		}
+
+
 #if defined(MYTHEND) || defined(GOTTHARD)
 		if (ret == OK && ind==FRAME_NUMBER) {
 			ret=allocateRAM();

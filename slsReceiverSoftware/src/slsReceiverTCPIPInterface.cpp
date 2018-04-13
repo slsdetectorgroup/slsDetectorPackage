@@ -1043,6 +1043,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 					break;
 				case FRAME_NUMBER:
 				case CYCLES_NUMBER:
+				case STORAGE_CELL_NUMBER:
 					receiverBase->setNumberOfFrames(index[1]);
 					break;
 				case SUBFRAME_ACQUISITION_TIME:
@@ -1074,6 +1075,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 			break;
 		case FRAME_NUMBER:
 		case CYCLES_NUMBER:
+		case STORAGE_CELL_NUMBER:
 			retval=receiverBase->getNumberOfFrames();
 			break;
 		case SUBFRAME_ACQUISITION_TIME:

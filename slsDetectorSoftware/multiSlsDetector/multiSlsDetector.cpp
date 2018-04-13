@@ -1995,19 +1995,7 @@ void multiSlsDetector::resetFinalDataQueue() {
 
 
 
-/*
-   set or read the acquisition timers
-   enum timerIndex {
-   FRAME_NUMBER,
-   ACQUISITION_TIME,
-   FRAME_PERIOD,
-   DELAY_AFTER_TRIGGER,
-   GATES_NUMBER,
-   PROBES_NUMBER
-   CYCLES_NUMBER,
-   GATE_INTEGRATED_TIME
-   }
- */
+
 int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t){
 
 	int64_t ret=-100;

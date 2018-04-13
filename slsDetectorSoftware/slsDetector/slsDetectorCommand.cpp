@@ -635,6 +635,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	++i;
 
+    /*! \page timing
+   - <b>storagecells [i]</b> sets/gets number of storage cells per acquisition. For very advanced users only! For JUNGFRAU only. Range: 0-15. The #images = #frames * #cycles * (#storagecells +1). \c Returns \c (long long int)
+     */
+    descrToFuncMap[i].m_pFuncName="storagecells"; //
+    descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
+    ++i;
+
+
 	/* read only timers */
 
 	/*! \page timing
@@ -5621,6 +5629,8 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
 		index=MEASUREMENTS_NUMBER;
 	else if (cmd=="samples")
 		index=SAMPLES_JCTB;
+    else if (cmd=="storagecells")
+        index=STORAGE_CELL_NUMBER;
 	else
 		return string("could not decode timer ")+cmd;
 
@@ -5672,6 +5682,7 @@ string slsDetectorCommand::helpTimer(int narg, char *args[], int action) {
 		os << "cycles t \t sets the number of cycles (e.g. number of triggers)" << std::endl;
 		os << "probes t \t sets the number of probes to accumulate (max 3! cycles should be set to 1, frames to the number of pump-probe events)" << std::endl;
 		os << "samples t \t sets the number of samples expected from the jctb" << std::endl;
+		os << "storagecells t \t sets number of storage cells per acquisition. For very advanced users only! For JUNGFRAU only. Range: 0-15. The #images = #frames * #cycles * (#storagecells+1)." << std::endl;
 		os << std::endl;
 
 
@@ -5685,8 +5696,8 @@ string slsDetectorCommand::helpTimer(int narg, char *args[], int action) {
 		os << "frames  \t gets the number of frames per cycle (e.g. after each trigger)" << std::endl;
 		os << "cycles  \t gets the number of cycles (e.g. number of triggers)" << std::endl;
 		os << "probes  \t gets the number of probes to accumulate" << std::endl;
-		os << "samples t \t gets the number of samples expected from the jctb" << std::endl;
-
+		os << "samples \t gets the number of samples expected from the jctb" << std::endl;
+		os << "storagecells \t gets number of storage cells per acquisition.For JUNGFRAU only." << std::endl;
 		os << std::endl;
 
 	}

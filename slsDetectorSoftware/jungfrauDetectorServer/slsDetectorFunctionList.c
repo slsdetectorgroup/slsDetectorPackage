@@ -392,7 +392,9 @@ void setupDetector() {
 	setSpeed(CLOCK_DIVIDER, HALF_SPEED);
 	cleanFifos();
 	resetCore();
+
 	configureASICTimer();
+	bus_w(ADC_PORT_INVERT_REG, ADC_PORT_INVERT_VAL);
 
 	//Initialization of acquistion parameters
 	setSettings(DEFAULT_SETTINGS,-1);
@@ -411,6 +413,8 @@ void setupDetector() {
 	setThresholdTemperature(DEFAULT_TMP_THRSHLD);
 	// reset temp event
 	setTemperatureEvent(0);
+
+
 }
 
 
@@ -434,7 +438,7 @@ int powerChip (int on){
 	}
 
 	return ((bus_r(CHIP_POWER_REG) & CHIP_POWER_ENABLE_MSK) >> CHIP_POWER_ENABLE_OFST);
-	/* temporary setup until new firmware fixes bug */
+	/**temporary fix until power reg status can be read */
 	//return ((bus_r(CHIP_POWER_REG) & CHIP_POWER_STATUS_MSK) >> CHIP_POWER_STATUS_OFST);
 }
 
@@ -502,10 +506,9 @@ int getPhase() {
 }
 
 void configureASICTimer() {
-cprintf(RED," in here\n");
-    //cprintf(RED,"asic reg:0x%x\n", bus_r(ASIC_CTRL_REG));
-    //bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_PRCHRG_TMR_MSK) | ASIC_CTRL_PRCHRG_TMR_VAL);
-    //bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_DS_TMR_MSK) | ASIC_CTRL_DS_TMR_VAL);
+    printf("\nConfiguring ASIC Timer\n");
+    bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_PRCHRG_TMR_MSK) | ASIC_CTRL_PRCHRG_TMR_VAL);
+    bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_DS_TMR_MSK) | ASIC_CTRL_DS_TMR_VAL);
 }
 
 
@@ -644,9 +647,9 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 	case ACQUISITION_TIME:
 		if(val >= 0){
 			printf("\nSetting exptime: %lldns\n", (long long int)val);
-			val *= (1E-3 * CLK_RUN);
+			val *= (1E-3 * CLK_RUN); /*(-2)*/
 		}
-		retval = set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) / (1E-3 * CLK_RUN);
+		retval = set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) / (1E-3 * CLK_RUN);/*(+2)*/
 		printf("Getting exptime: %lldns\n", (long long int)retval);
 		break;
 
@@ -674,6 +677,16 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 		retval = set64BitReg(val,  SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
 		printf("Getting #cycles: %lld\n", (long long int)retval);
 		break;
+
+	case STORAGE_CELL_NUMBER:
+        if(val >= 0) {
+            printf("\nSetting #storage cells to %lld\n", (long long int)val);
+            bus_w(CONTROL_REG, (bus_r(CONTROL_REG) & ~CONTROL_STORAGE_CELL_NUM_MSK) |
+                    ((val << CONTROL_STORAGE_CELL_NUM_OFST) & CONTROL_STORAGE_CELL_NUM_MSK));
+        }
+        retval = ((bus_r(CONTROL_REG) & CONTROL_STORAGE_CELL_NUM_MSK) >> CONTROL_STORAGE_CELL_NUM_OFST);
+        printf("Getting #storage cells: %lld\n", (long long int)retval);
+        break;
 
 	default:
 		cprintf(RED,"Warning: Timer Index not implemented for this detector: %d\n", ind);

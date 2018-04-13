@@ -833,8 +833,8 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
     }};
 
   /** returns string from timer index
-      \param s can be FRAME_NUMBER,ACQUISITION_TIME,FRAME_PERIOD, DELAY_AFTER_TRIGGER,GATES_NUMBER,PROBES_NUMBER, CYCLES_NUMBER, ACTUAL_TIME,MEASUREMENT_TIME, PROGRESS,MEASUREMENTS_NUMBER,FRAMES_FROM_START,FRAMES_FROM_START_PG,SAMPLES_JCTB,SUBFRAME_ACQUISITION_TIME
-      \returns string frame_number,acquisition_time,frame_period, delay_after_trigger,gates_number,probes_number, cycles_number, actual_time,measurement_time, progress,measurements_number,frames_from_start,frames_from_start_pg,samples_jctb,subframe_acquisition_time
+      \param s can be FRAME_NUMBER,ACQUISITION_TIME,FRAME_PERIOD, DELAY_AFTER_TRIGGER,GATES_NUMBER,PROBES_NUMBER, CYCLES_NUMBER, ACTUAL_TIME,MEASUREMENT_TIME, PROGRESS,MEASUREMENTS_NUMBER,FRAMES_FROM_START,FRAMES_FROM_START_PG,SAMPLES_JCTB,SUBFRAME_ACQUISITION_TIME,STORAGE_CELL_NUMBER
+      \returns string frame_number,acquisition_time,frame_period, delay_after_trigger,gates_number,probes_number, cycles_number, actual_time,measurement_time, progress,measurements_number,frames_from_start,frames_from_start_pg,samples_jctb,subframe_acquisition_time,storage_cell_number
   */
   static string getTimerType(timerIndex t){										\
     switch (t) {																\
@@ -853,6 +853,7 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
     case FRAMES_FROM_START_PG: 		return string("frames_from_start_pg"); 		\
     case SAMPLES_JCTB: 				return string("samples_jctb"); 				\
     case SUBFRAME_ACQUISITION_TIME:	return string("subframe_acquisition_time");	\
+    case STORAGE_CELL_NUMBER:       return string("storage_cell_number");       \
     default:       					return string("unknown");					\
     }};
 

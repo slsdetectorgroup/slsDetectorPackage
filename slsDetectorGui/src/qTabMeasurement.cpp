@@ -211,7 +211,10 @@ void qTabMeasurement::GetModeFromDetector(bool startup){
 		if(mode==slsDetectorDefs::AUTO_TIMING){
 			int frames = spinNumFrames->value();
 			int triggers = spinNumTriggers->value();
-			if((frames==1)&&(triggers==1)){
+			int storagecells = 0;
+			if (detType == slsDetectorDefs::JUNGFRAU)
+			    storagecells = myDet->setTimer(slsDetectorDefs::STORAGE_CELL_NUMBER, -1);
+			if((frames==1)&&(triggers==1)&&(storagecells==0)){
 				comboTimingMode->setCurrentIndex((int)None);
 				SetTimingMode((int)None);
 			}else{
@@ -630,6 +633,8 @@ void qTabMeasurement::SetTimingMode(int mode){
 		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
 		spinNumTriggers->setValue(1);
 		spinNumFrames->setValue(1);
+		if (detType == slsDetectorDefs::JUNGFRAU)
+		    myDet->setTimer(slsReceiverDefs::STORAGE_CELL_NUMBER, 0);
 		if(myDet->setExternalCommunicationMode(slsDetectorDefs::AUTO_TIMING)==slsDetectorDefs::AUTO_TIMING)
 			success = true;
 		break;
@@ -708,6 +713,8 @@ void qTabMeasurement::SetTimingMode(int mode){
 				"Number of Frames \t: 1\nNumber of Triggers \t: 1","qTabMeasurement::SetTimingMode");
 		spinNumFrames->setValue(1);
 		spinNumTriggers->setValue(1);
+		if (detType == slsReceiverDefs::JUNGFRAU)
+		    myDet->setTimer(slsDetectorDefs::STORAGE_CELL_NUMBER, 0);
 		comboTimingMode->setCurrentIndex((int)None);
 		return;
 	}

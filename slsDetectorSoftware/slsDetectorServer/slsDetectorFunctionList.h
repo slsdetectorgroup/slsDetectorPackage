@@ -85,6 +85,7 @@ int         configureFrequency(int val, int i);
 int         autoCompDisable(int on);
 int 		adcPhase(int st);
 int 		getPhase();
+void        configureASICTimer();
 #endif
 
 // parameters - nmod, dr, roi

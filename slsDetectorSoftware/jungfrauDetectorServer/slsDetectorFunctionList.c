@@ -390,9 +390,9 @@ void setupDetector() {
 	}
 	bus_w(DAQ_REG, 0x0);         /* Only once at server startup */
 	setSpeed(CLOCK_DIVIDER, HALF_SPEED);
-	cleanFifos();	/* todo might work without */
-	resetCore();	/* todo might work without */
-
+	cleanFifos();
+	resetCore();
+	configureASICTimer();
 
 	//Initialization of acquistion parameters
 	setSettings(DEFAULT_SETTINGS,-1);
@@ -501,7 +501,10 @@ int getPhase() {
 	return clkPhase[0];
 }
 
-
+void configureASICTimer() {
+    bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_PRCHRG_TMR_MSK) | ASIC_CTRL_PRCHRG_TMR_VAL);
+    bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_DS_TMR_MSK) | ASIC_CTRL_DS_TMR_VAL);
+}
 
 
 

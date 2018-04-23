@@ -150,7 +150,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::interpolateTrim(detector
 
 	//Copy other dacs
 	int num_dacs_to_copy = 9;
-	int dacs_to_copy[] = {SVP,VTR,VRS,SVN,VTGSTV,RXB_RB,RXB_LB,VCN,VIS};
+	int dacs_to_copy[] = {SVP,VTR,SVN,VTGSTV,RXB_RB,RXB_LB,VCN,VIS};
 	for (int i = 0; i <  num_dacs_to_copy; ++i) {
 		if(a->dacs[dacs_to_copy[i]] != b->dacs[dacs_to_copy[i]]) {
 			deleteModule(myMod);

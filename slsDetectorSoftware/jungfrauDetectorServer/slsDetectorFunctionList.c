@@ -829,22 +829,22 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
             break;
 	    case FIXGAIN1:
             bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_STG_1_MSK);
+            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_STG_1_VAL);
             printf("\nConfigured settings - Fix Gain 1, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
             break;
 	    case FIXGAIN2:
             bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_STG_2_MSK);
+            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_STG_2_VAL);
             printf("\nConfigured settings - Fix Gain 2, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
             break;
 	    case FORCESWITCHG1:
             bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FRCE_SWTCH_GAIN_STG_1_MSK);
+            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FRCE_GAIN_STG_1_VAL);
             printf("\nConfigured settings - Force Switch Gain 1, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
             break;
 	    case FORCESWITCHG2:
             bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FRCE_SWTCH_GAIN_STG_2_MSK);
+            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FRCE_GAIN_STG_2_VAL);
             printf("\nConfigured settings - Force Switch Gain 2, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
             break;
 	    default:
@@ -865,22 +865,22 @@ enum detectorSettings getSettings(){
 	uint32_t val = bus_r(DAQ_REG);
 	printf("\nGetting Settings\n Reading DAQ Register :0x%x\n", val);
 
-	if (val & DAQ_FRCE_SWTCH_GAIN_STG_2_MSK) {
+	if (val & DAQ_FRCE_GAIN_STG_2_VAL) {
 	    thisSettings = FORCESWITCHG2;
 	    printf("Settings read: FORCESWITCHG2\n");
 	}
 
-	else if  (val & DAQ_FRCE_SWTCH_GAIN_STG_1_MSK) {
+	else if  (val & DAQ_FRCE_GAIN_STG_1_VAL) {
 	    thisSettings = FORCESWITCHG1;
         printf("Settings read: FORCESWITCHG1\n");
 	}
 
-	else if (val & DAQ_FIX_GAIN_STG_2_MSK) {
+	else if (val & DAQ_FIX_GAIN_STG_2_VAL) {
 	    thisSettings = FIXGAIN2;
         printf("Settings read: FIXGAIN2\n");
 	}
 
-	else if (val & DAQ_FIX_GAIN_STG_1_MSK) {
+	else if (val & DAQ_FIX_GAIN_STG_1_VAL) {
 	    thisSettings = FIXGAIN1;
         printf("Settings read: FIXGAIN1\n");
 	}

@@ -399,3 +399,7 @@ int slsDetectorUsers::setFlowControl10G(int i) {
 int slsDetectorUsers::setTenGigabitEthernet(int i) {
     return myDetector->enableTenGigabitEthernet(i);
 }
+
+int slsDetectorUsers::getNMods() {
+    return myDetector->getNMods();
+}

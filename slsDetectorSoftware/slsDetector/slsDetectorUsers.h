@@ -705,6 +705,12 @@ class slsDetectorUsers
     */
    int setTenGigabitEthernet(int i = -1);
 
+   /**
+    * returns total number of detector modules
+    * @returns the total number of detector modules
+    */
+   int getNMods();
+
   /************************************************************************
 
                            STATIC FUNCTIONS

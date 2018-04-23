@@ -686,7 +686,7 @@ int UDPStandardImplementation::SetupFifoStructure() {
 	}
 
 	FILE_LOG(logINFO) << "Memory Allocated Per Fifo: " << ( ((generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize)) * fifoDepth) << " bytes" ;
-	FILE_LOG(logINFO) << " Fifo structure(s) reconstructed: " << numThreads;
+	FILE_LOG(logINFO) << numThreads << " Fifo structure(s) reconstructed";
 	return OK;
 }
 

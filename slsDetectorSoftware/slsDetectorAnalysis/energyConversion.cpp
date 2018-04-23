@@ -150,7 +150,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::interpolateTrim(detector
 
 	//Copy other dacs
 	int num_dacs_to_copy = 9;
-	int dacs_to_copy[] = {SVP,VTR,SVN,VTGSTV,CAL,RXB_RB,RXB_LB,VCN,VIS};
+	int dacs_to_copy[] = {SVP,VTR,VRS,SVN,VTGSTV,RXB_RB,RXB_LB,VCN,VIS};
 	for (int i = 0; i <  num_dacs_to_copy; ++i) {
 		if(a->dacs[dacs_to_copy[i]] != b->dacs[dacs_to_copy[i]]) {
 			deleteModule(myMod);
@@ -158,6 +158,16 @@ slsDetectorDefs::sls_detector_module* energyConversion::interpolateTrim(detector
 		}
 		myMod->dacs[dacs_to_copy[i]] = a->dacs[dacs_to_copy[i]];
 	}
+
+
+	//Copy irrelevant dacs (without failing): CAL
+	if (a->dacs[CAL] != b->dacs[CAL]) {
+	    printf("Warning: DAC CAL differs in both energies (%d, %d)! ",
+	            a->dacs[CAL], b->dacs[CAL]);
+	    printf("Taking first: %d\n", a->dacs[CAL]);
+	}
+	myMod->dacs[CAL] = a->dacs[CAL];
+
 
 	//Interpolate vrf, vcmp, vcp
 	int num_dacs_to_interpolate = 7;

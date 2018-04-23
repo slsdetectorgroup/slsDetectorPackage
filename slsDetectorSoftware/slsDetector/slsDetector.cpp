@@ -3720,6 +3720,9 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV, detectorSettings isetti
 		if (myMod == NULL) {
 			printf("Could not interpolate, different dac values in files\n");
 			setErrorMask((getErrorMask())|(SETTINGS_NOT_SET));
+	        deleteModule(myMod1);
+	        deleteModule(myMod2);
+	        return FAIL;
 		}
 		//interpolate tau
 		tau = linearInterpolation(e_eV, trim1, trim2, tau1, tau2);

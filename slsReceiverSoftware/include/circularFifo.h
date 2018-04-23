@@ -50,14 +50,8 @@ private:
    unsigned int tail; // input index
    unsigned int head; // output index
    unsigned int Capacity;
-//#ifdef __cplusplus >= 201103L
    mutable sem_t data_mutex;
    mutable sem_t free_mutex;
-//#else
-//   sem_t free_mutex;
-
-//#endif
-
    unsigned int increment(unsigned int idx_) const;
 };
 

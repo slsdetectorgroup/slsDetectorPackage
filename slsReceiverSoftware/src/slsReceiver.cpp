@@ -42,7 +42,8 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success):
 			{0, 			0, 					0, 	0}
 	};
 
-
+	//initialize global optind variable (required when instantiating multiple receivers in the same process)
+	optind = 1;
 	// getopt_long stores the option index here.
 	int option_index = 0;
 	int c = 0;

@@ -24,6 +24,7 @@ using namespace rapidjson;
 #define MAX_STR_LENGTH 1000
 
 //#define ZMQ_DETAIL
+#define ROIVERBOSITY
 
 class ZmqSocket {
 
@@ -426,7 +427,15 @@ public:
 			memcpy(buf, (char*)zmq_msg_data(&message), size);
 		}
 
-		//incorrect size
+		//incorrect size (smaller)
+        else if (length < size){
+#ifdef ROIVERBOSITY
+            cprintf(RED,"Error: Received smaller packet size %d for socket %d\n", length, index);
+#endif
+            memcpy(buf, (char*)zmq_msg_data(&message), length);
+            memset(buf+length,0xFF,size-length);
+        }
+        //incorrect size (larger)
 		else {
 			cprintf(RED,"Error: Received weird packet size %d for socket %d\n", length, index);
 			memset(buf,0xFF,size);

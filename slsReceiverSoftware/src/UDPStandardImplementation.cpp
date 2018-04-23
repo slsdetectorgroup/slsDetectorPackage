@@ -367,7 +367,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 		listener.push_back(new Listener(myDetectorType, fifo[i], &status, &udpPortNum[i], eth, &activated, &numberOfFrames, &dynamicRange));
 		dataProcessor.push_back(new DataProcessor(fifo[i], &fileFormatType,
 				fileWriteEnable, &dataStreamEnable, &gapPixelsEnable, &dynamicRange, &frameToGuiFrequency, &frameToGuiTimerinMS,
-				rawDataReadyCallBack,pRawDataReady));
+				rawDataReadyCallBack, rawDataModifyReadyCallBack, pRawDataReady));
 		if (Listener::GetErrorMask() || DataProcessor::GetErrorMask()) {
 			FILE_LOG(logERROR) << "Could not create listener/dataprocessor threads (index:" << i << ")";
 			for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)

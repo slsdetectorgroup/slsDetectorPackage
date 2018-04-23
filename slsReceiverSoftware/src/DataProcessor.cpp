@@ -35,8 +35,13 @@ bool DataProcessor::SilentMode(false);
 
 DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool fwenable, bool* dsEnable, bool* gpEnable, uint32_t* dr,
 		uint32_t* freq, uint32_t* timer,
-		void (*dataReadycb)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+		void (*dataReadycb)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t,
+		        uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
 				char*, uint32_t, void*),
+		void (*dataModifyReadycb)(uint64_t, uint32_t, uint32_t, uint64_t,
+		        uint64_t, uint16_t, uint16_t, uint16_t, uint16_t,
+		        uint32_t, uint16_t, uint8_t, uint8_t,
+		        char*, uint32_t &, void*),
 		void *pDataReadycb) :
 
 		ThreadObject(NumberofDataProcessors),
@@ -61,6 +66,7 @@ DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool fwenable, bool* d
 		numFramesCaught(0),
 		currentFrameIndex(0),
 		rawDataReadyCallBack(dataReadycb),
+		rawDataModifyReadyCallBack(dataModifyReadycb),
 		pRawDataReady(pDataReadycb)
 {
 	if(ThreadObject::CreateThread()){
@@ -316,7 +322,7 @@ void DataProcessor::ThreadExecution() {
 		return;
 	}
 
-	ProcessAnImage(buffer + FIFO_HEADER_NUMBYTES);
+	ProcessAnImage(buffer);
 
 	//stream (if time/freq to stream) or free
 	if (*dataStreamEnable && SendToStreamer())
@@ -348,7 +354,7 @@ void DataProcessor::StopProcessing(char* buf) {
 /** buf includes only the standard header */
 void DataProcessor::ProcessAnImage(char* buf) {
 
-	sls_detector_header* header = (sls_detector_header*) (buf);
+	sls_detector_header* header = (sls_detector_header*) (buf + FIFO_HEADER_NUMBYTES);
 	uint64_t fnum = header->frameNumber;
 	currentFrameIndex = fnum;
 	uint32_t nump = header->packetNumber;
@@ -381,7 +387,7 @@ void DataProcessor::ProcessAnImage(char* buf) {
 	}
 
 	if (*gapPixelsEnable && (*dynamicRange!=4))
-		InsertGapPixels(buf + sizeof(sls_detector_header), *dynamicRange);
+		InsertGapPixels(buf + FIFO_HEADER_NUMBYTES + sizeof(sls_detector_header), *dynamicRange);
 
 	// x coord is 0 for detector in pos [0,0,0]
 	if (xcoordin1D) {
@@ -409,14 +415,36 @@ void DataProcessor::ProcessAnImage(char* buf) {
 				header->roundRNumber,
 				header->detType,
 				header->version,
-				buf + sizeof(sls_detector_header),
-				generalData->imageSize,
+				buf + FIFO_HEADER_NUMBYTES + sizeof(sls_detector_header),
+				(uint32_t)(*((uint32_t*)buf)),
 				pRawDataReady);
 	}
 
+	else if (rawDataModifyReadyCallBack) {cprintf(BG_GREEN,"Calling rawdatamodify\n");
+        uint32_t revsize = (uint32_t)(*((uint32_t*)buf));
+        rawDataModifyReadyCallBack(
+                header->frameNumber,
+                header->expLength,
+                header->packetNumber,
+                header->bunchId,
+                header->timestamp,
+                header->modId,
+                header->xCoord,
+                header->yCoord,
+                header->zCoord,
+                header->debug,
+                header->roundRNumber,
+                header->detType,
+                header->version,
+                buf + FIFO_HEADER_NUMBYTES + sizeof(sls_detector_header),
+                revsize,
+                pRawDataReady);
+        (*((uint32_t*)buf)) =  revsize;
+    }
+
 
 	if (file)
-		file->WriteToFile(buf, sizeof(sls_detector_header) + generalData->imageSize, fnum-firstMeasurementIndex, nump);
+		file->WriteToFile(buf + FIFO_HEADER_NUMBYTES, sizeof(sls_detector_header) + (uint32_t)(*((uint32_t*)buf)), fnum-firstMeasurementIndex, nump);
 
 
 

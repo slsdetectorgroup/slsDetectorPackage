@@ -150,7 +150,9 @@ void slsReceiver::registerCallBackAcquisitionFinished(void (*func)(uint64_t, voi
 }
 
 
-void slsReceiver::registerCallBackRawDataReady(void (*func)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+void slsReceiver::registerCallBackRawDataReady(void (*func)(uint64_t, uint32_t,
+        uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t,
+        uint32_t, uint16_t, uint8_t, uint8_t,
 		char*, uint32_t, void*),void *arg){
 	//tcpipInterface
 	if(udp_interface)
@@ -160,3 +162,13 @@ void slsReceiver::registerCallBackRawDataReady(void (*func)(uint64_t, uint32_t, 
 }
 
 
+void slsReceiver::registerCallBackRawDataModifyReady(void (*func)(uint64_t, uint32_t,
+        uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t,
+        uint32_t, uint16_t, uint8_t, uint8_t,
+        char*, uint32_t &, void*),void *arg){
+    //tcpipInterface
+    if(udp_interface)
+        udp_interface->registerCallBackRawDataModifyReady(func,arg);
+    else
+        tcpipInterface->registerCallBackRawDataModifyReady(func,arg);
+}

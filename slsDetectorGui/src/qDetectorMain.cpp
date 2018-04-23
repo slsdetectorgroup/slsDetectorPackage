@@ -99,8 +99,7 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, int& ret,
 			break;
 
 		case 'v':
-			tempval = GITREV;
-			tempval = (tempval <<32) | GITDATE;
+			tempval = GITDATE;
 			cout << "SLS Detector GUI " << GITBRANCH << " (0x" << hex << tempval << ")" << endl;
 			return;
 
@@ -337,7 +336,6 @@ void qDetectorMain::Initialization(){
 // Plotting
 	// When the acquisition is finished, must update the meas tab
 	connect(myPlot,	SIGNAL(UpdatingPlotFinished()),				this,				SLOT(EnableTabs()));
-	connect(myPlot,	SIGNAL(AcquisitionFinishedSignal()),		tab_measurement,	SLOT(AcquisitionFinished()));
 	connect(myPlot,	SIGNAL(UpdatingPlotFinished()),				tab_measurement,	SLOT(UpdateFinished()));
 	//This should not be called as it will change file name to measurement when run finished
 	//connect(myPlot,	SIGNAL(UpdatingPlotFinished()),				tab_plot,			SLOT(Refresh()));
@@ -666,8 +664,7 @@ void qDetectorMain::ExecuteHelp(QAction *action){
 		cout << "About: Common GUI for Mythen, Eiger, Gotthard, Jungfrau, Moench and Propix detectors" << endl;
 #endif
 		char version[200];
-		long long unsigned int retval= GITREV;
-		retval= (retval <<32) | GITDATE;
+		long long unsigned int retval= GITDATE;
 		sprintf(version,"%llx",retval);
 		string thisGUIVersion = string(version);
 

@@ -259,6 +259,19 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual string setNetworkParameter(networkParameter i, string s)=0;
 
+  int setFlowControl10G(int i = -1) {
+      string sret="";
+      if (i != -1) {
+          ostringstream o;
+          o << ((i >= 1) ? 1 : 0);
+          string sval = o.str();
+          sret = setNetworkParameter(FLOW_CONTROL_10G, sval);
+      } else
+          sret = getNetworkParameter(FLOW_CONTROL_10G);
+
+      return atoi(sret.c_str());
+  }
+
   /**
      changes/gets the port number
      \param t type port type can be CONTROL_PORT, DATA_PORT, STOP_PORT

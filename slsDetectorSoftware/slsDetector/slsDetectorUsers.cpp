@@ -275,8 +275,9 @@ int64_t slsDetectorUsers::getThisSoftwareVersion(){
 	return myDetector->getThisSoftwareVersion();
 }
 
-
-
+int slsDetectorUsers::enableGapPixels(int enable) {
+    return myDetector->enableGapPixels(enable);
+}
 
 void slsDetectorUsers::registerDataCallback(int( *userCallback)(detectorData*, int, int, void*), void *pArg){
   myDetector->registerDataCallback(userCallback,pArg);
@@ -381,4 +382,20 @@ int slsDetectorUsers::setReceiverSilentMode(int i) {
 
 int slsDetectorUsers::setHighVoltage(int i) {
 	return myDetector->setHighVoltage(i);
+}
+
+int slsDetectorUsers::resetFramesCaughtInReceiver() {
+    return myDetector->resetFramesCaught();
+}
+
+int slsDetectorUsers::setReceiverFifoDepth(int i) {
+    return myDetector->setReceiverFifoDepth(i);
+}
+
+int slsDetectorUsers::setFlowControl10G(int i) {
+    return myDetector->setFlowControl10G(i);
+}
+
+int slsDetectorUsers::setTenGigabitEthernet(int i) {
+    return myDetector->enableTenGigabitEthernet(i);
 }

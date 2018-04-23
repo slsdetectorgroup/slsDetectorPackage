@@ -174,6 +174,9 @@ private slots:
 	/** Set histogram options */
 	void SetHistogramOptions();
 
+	/** Enable Gap pixels */
+	void EnableGapPixels(bool enable);
+
 signals:
 	void DisableZoomSignal(bool);
 	void ResetZMinZMaxSignal(bool,bool,double,double);

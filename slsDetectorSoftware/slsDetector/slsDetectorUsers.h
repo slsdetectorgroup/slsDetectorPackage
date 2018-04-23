@@ -77,7 +77,7 @@ You can  find examples of how this classes can be instatiated in mainClient.cpp 
 @libdoc The slsDetectorUsers class is a minimal interface class which should be instantiated by the users in their acquisition software (EPICS, spec etc.). More advanced configuration functions are not implemented and can be written in a configuration or parameters file that can be read/written.
 */
 /**
-  @short Class for detector functionalitiesto embed the detector controls in the users custom interface e.g. EPICS, Lima etc.
+  @short Class for detector functionalities to embed the detector controls in the users custom interface e.g. EPICS, Lima etc.
 
 */
 
@@ -270,7 +270,7 @@ class slsDetectorUsers
   */
    int getDetectorSize(int &x0, int &y0, int &nx, int &ny);
   /**
-     @short setsthe maximum detector size
+     @short gets the maximum detector size
      \param x0 horizontal position origin in channel number 
      \param y0 vertical position origin in channel number 
      \param nx number of channels in horiziontal
@@ -529,6 +529,14 @@ class slsDetectorUsers
   int64_t getThisSoftwareVersion();
 
   /**
+   * Enable gap pixels, only for Eiger and for 8,16 and 32 bit mode.
+   * 4 bit mode gap pixels only in gui call back (registerDataCallback)
+   * @param enable 1 sets, 0 unsets, -1 gets
+   * @return gap pixel enable or -1 for error
+   */
+  int enableGapPixels(int enable=-1);
+
+  /**
      @short register calbback for accessing detector final data
      \param func function to be called at the end of the acquisition. gets detector status and progress index as arguments
   */
@@ -658,16 +666,44 @@ class slsDetectorUsers
    /**
     * set receiver in silent mode
     * @param i 1 sets, 0 unsets (-1 gets)
-    * @return silent mode of receiver
+    * @returns silent mode of receiver
     */
    int setReceiverSilentMode(int i);
 
    /**
     * set high voltage
     * @param i > 0 sets, 0 unsets, (-1 gets)
-    * @return high voltage
+    * @returns high voltage
     */
    int setHighVoltage(int i);
+
+   /**
+    * reset frames caught in receiver
+    * should be called before startReceiver()
+    * @retuns OK or FAIL
+    */
+   int resetFramesCaughtInReceiver();
+
+   /**
+    * set receiver fifo depth
+    * @param i number of images in fifo depth (-1 gets)
+    * @returns receiver fifo depth
+    */
+   int setReceiverFifoDepth(int i = -1);
+
+   /**
+    * set flow control for 10Gbe (Eiger only)
+    * @param i 1 sets, 0 unsets (-1 gets)
+    * @return flow control enable for 10 Gbe
+    */
+   int setFlowControl10G(int i = -1);
+
+   /**
+    * enable/disable 10GbE (Eiger only)
+    * @param i 1 sets, 0 unsets (-1 gets)
+    * @return 10GbE enable
+    */
+   int setTenGigabitEthernet(int i = -1);
 
   /************************************************************************
 

@@ -1250,6 +1250,10 @@ void configurePll() {
 #endif
 	u_int32_t val;
 	int32_t phase=0, inv=0;
+	// ensuring PLL is never configured with same phase
+    if (clkPhase[1] == 0) {
+        return;
+    }
 
 	printf("Configuring PLL with phase in %d\n", clkPhase[1]);
 	if (clkPhase[1]>0) {

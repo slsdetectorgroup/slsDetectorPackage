@@ -70,7 +70,17 @@ public:
 	void registerCallBackRawDataReady(void (*func)(uint64_t frameNumber, uint32_t expLength, uint32_t packetNumber, uint64_t bunchId, uint64_t timestamp,
 			uint16_t modId, uint16_t xCoord, uint16_t yCoord, uint16_t zCoord, uint32_t debug, uint16_t roundRNumber, uint8_t detType, uint8_t version,
 			char* datapointer, uint32_t datasize, void*),void *arg);
+
 	
+    /**
+       @sort register callback to be called when data are available (to process and/or save the data).
+       \param func raw data ready callback. arguments are frameNumber, expLength, packetNumber, bunchId, timestamp, modId, xCoord, yCoord, zCoord, debug, roundRNumber, detType, version, dataPointer, revDatasize is the reference of data size in bytes. Can be modified to the new size to be written/streamed. (only smaller value).
+       \returns nothing
+     */
+    void registerCallBackRawDataModifyReady(void (*func)(uint64_t frameNumber, uint32_t expLength, uint32_t packetNumber, uint64_t bunchId, uint64_t timestamp,
+            uint16_t modId, uint16_t xCoord, uint16_t yCoord, uint16_t zCoord, uint32_t debug, uint16_t roundRNumber, uint8_t detType, uint8_t version,
+            char* datapointer, uint32_t &revDatasize, void*),void *arg);
+
 	//receiver object
 	slsReceiver* receiver;
 };

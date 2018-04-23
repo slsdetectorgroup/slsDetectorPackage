@@ -156,9 +156,6 @@ void qTabPlot::SetupWidgetWindow(){
 	stackedWidget->setCurrentIndex(0);
 	stackedWidget_2->setCurrentIndex(0);
 
-	//gain plot
-	chkGainPlot->setEnabled(false);
-
 	// Depending on whether the detector is 1d or 2d
 	switch(myDet->getDetectorsType()){
 	case slsDetectorDefs::MYTHEN:
@@ -174,6 +171,7 @@ void qTabPlot::SetupWidgetWindow(){
 		pagePedestal_2->setEnabled(false);
 		chkBinary->setEnabled(false);
 		chkBinary_2->setEnabled(false);
+		chkGapPixels->setEnabled(true);
 		break;
 	case slsDetectorDefs::GOTTHARD:
 		isOriginallyOneD = true;
@@ -201,6 +199,12 @@ void qTabPlot::SetupWidgetWindow(){
 
 	//disable histogram initially
 	boxHistogram->hide();
+
+    if (chkGapPixels->isEnabled()) {
+        int ret =  myDet->enableGapPixels(-1);
+        qDefs::checkErrorMessage(myDet,"qTabPlot::SetupWidgetWindow");
+        chkGapPixels->setChecked((ret == 1) ? true : false);
+    }
 
 	qDefs::checkErrorMessage(myDet,"qTabPlot::SetupWidgetWindow");
 }
@@ -376,6 +380,10 @@ void qTabPlot::Initialization(){
 	//gainplot
 	if (chkGainPlot->isEnabled())
 		connect(chkGainPlot, SIGNAL(toggled(bool)),myPlot, SIGNAL(GainPlotSignal(bool)));
+
+	// gap pixels
+    if (chkGapPixels->isEnabled())
+        connect(chkGapPixels, SIGNAL(toggled(bool)),this, SLOT(EnableGapPixels(bool)));
 }
 
 
@@ -1474,6 +1482,24 @@ void qTabPlot::SetHistogramOptions(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+void qTabPlot::EnableGapPixels(bool enable) {
+#ifdef VERBOSE
+    cout  << "Setting Gap pixels to " << enable << endl;
+#endif
+    disconnect(chkGapPixels, SIGNAL(toggled(bool)),this, SLOT(EnableGapPixels(bool)));
+
+    myDet->enableGapPixels(enable);
+    int ret =  myDet->enableGapPixels(-1);
+    qDefs::checkErrorMessage(myDet,"qTabPlot::SetScanArgument");
+    chkGapPixels->setChecked((ret == 1) ? true : false);
+
+    connect(chkGapPixels, SIGNAL(toggled(bool)),this, SLOT(EnableGapPixels(bool)));
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 void qTabPlot::Refresh(){
 #ifdef VERBOSE
 	cout  << endl << "**Updating Plot Tab" << endl;
@@ -1486,6 +1512,14 @@ void qTabPlot::Refresh(){
 		/*if(myDet->getDetectorsType() == slsDetectorDefs::EIGER)
 			comboFrequency->setCurrentIndex(1);*/
 		SetFrequency();
+
+	    if (chkGapPixels->isEnabled()) {
+	        disconnect(chkGapPixels, SIGNAL(toggled(bool)),this, SLOT(EnableGapPixels(bool)));
+	        int ret =  myDet->enableGapPixels(-1);
+	        qDefs::checkErrorMessage(myDet,"qTabPlot::Refresh");
+	        chkGapPixels->setChecked((ret == 1) ? true : false);
+	        connect(chkGapPixels, SIGNAL(toggled(bool)),this, SLOT(EnableGapPixels(bool)));
+	    }
 
 	}else{
 		boxFrequency->setEnabled(false);

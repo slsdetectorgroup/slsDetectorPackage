@@ -46,6 +46,7 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 	acquisitionFinishedCallBack = NULL;
 	pAcquisitionFinished = NULL;
 	rawDataReadyCallBack = NULL;
+	rawDataModifyReadyCallBack = NULL;
 	pRawDataReady = NULL;
 
 	unsigned short int port_no=portNumber;
@@ -152,8 +153,7 @@ void slsReceiverTCPIPInterface::stop(){
 
 
 int64_t slsReceiverTCPIPInterface::getReceiverVersion(){
-	int64_t retval = GITREV;
-	retval= (retval <<32) | GITDATE;
+	int64_t retval = GITDATE;
 	return retval;
 }
 
@@ -170,12 +170,21 @@ void slsReceiverTCPIPInterface::registerCallBackAcquisitionFinished(void (*func)
 	pAcquisitionFinished=arg;
 }
 
-void slsReceiverTCPIPInterface::registerCallBackRawDataReady(void (*func)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+void slsReceiverTCPIPInterface::registerCallBackRawDataReady(void (*func)(uint64_t,
+        uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t,
+        uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
 		char*, uint32_t, void*),void *arg){
 	rawDataReadyCallBack=func;
 	pRawDataReady=arg;
 }
 
+void slsReceiverTCPIPInterface::registerCallBackRawDataModifyReady(void (*func)(uint64_t,
+        uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t,
+        uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+        char*, uint32_t &,void*),void *arg){
+    rawDataModifyReadyCallBack=func;
+    pRawDataReady=arg;
+}
 
 
 
@@ -785,6 +794,8 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 					receiverBase->registerCallBackAcquisitionFinished(acquisitionFinishedCallBack,pAcquisitionFinished);
 				if(rawDataReadyCallBack)
 					receiverBase->registerCallBackRawDataReady(rawDataReadyCallBack,pRawDataReady);
+                if(rawDataModifyReadyCallBack)
+                    receiverBase->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,pRawDataReady);
 			}
 			myDetectorType = dr;
 			ret = receiverBase->setDetectorType(myDetectorType);

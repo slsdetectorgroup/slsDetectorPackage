@@ -24,6 +24,8 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	/**
 	 * Constructor
 	 * Calls Base Class CreateThread(), sets ErrorMask if error and increments NumberofDataProcessors
+     * @param ret OK or FAIL if thread creation succeeded or failed
+     * @param ind self index
 	 * @param f address of Fifo pointer
 	 * @param ftype pointer to file format type
 	 * @param fwenable file writer enable
@@ -35,7 +37,7 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param dataReadycb pointer to data ready call back function
 	 * @param pDataReadycb pointer to arguments of data ready call back function. To write/stream a smaller size of processed data, change this value (only smaller value is allowed).
 	 */
-	DataProcessor(Fifo*& f, fileFormat* ftype, bool fwenable, bool* dsEnable, bool* gpEnable, uint32_t* dr,
+	DataProcessor(int& ret, int ind, Fifo*& f, fileFormat* ftype, bool fwenable, bool* dsEnable, bool* gpEnable, uint32_t* dr,
 						uint32_t* freq, uint32_t* timer,
 						void (*dataReadycb)(uint64_t, uint32_t, uint32_t, uint64_t,
 						        uint64_t, uint16_t, uint16_t, uint16_t, uint16_t,
@@ -54,32 +56,13 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	~DataProcessor();
 
 
-	//*** static functions ***
-	/**
-	 * Get ErrorMask
-	 * @return ErrorMask
-	 */
-	static uint64_t GetErrorMask();
-
-	/**
-	 * Get RunningMask
-	 * @return RunningMask
-	 */
-	static uint64_t GetRunningMask();
-
-	/**
-	 * Reset RunningMask
-	 */
-	static void ResetRunningMask();
-
-	/**
-	 * Set Silent Mode
-	 * @param mode 1 sets 0 unsets
-	 */
-	static void SetSilentMode(bool mode);
-
-	//*** non static functions ***
 	//*** getters ***
+    /**
+     * Returns if the thread is currently running
+     * @returns true if thread is running, else false
+     */
+    bool IsRunning();
+
 	/**
 	 * Get acquisition started flag
 	 * @return acquisition started flag
@@ -177,7 +160,7 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param findex pointer to file index
 	 * @param owenable pointer to over write enable
 	 * @param dindex pointer to detector index
-	 * @param nunits pointer to number of theads/ units per detector
+	 * @param nunits pointer to number of threads/ units per detector
 	 * @param nf pointer to number of images in acquisition
 	 * @param dr pointer to dynamic range
 	 * @param portno pointer to udp port number
@@ -213,6 +196,12 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	void SetPixelDimension();
 
+    /**
+     * Set Silent Mode
+     * @param mode 1 sets 0 unsets
+     */
+    void SetSilentMode(bool mode);
+
 
  private:
 
@@ -221,12 +210,6 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @return type
 	 */
 	std::string GetType();
-
-	/**
-	 * Returns if the thread is currently running
-	 * @returns true if thread is running, else false
-	 */
-	bool IsRunning();
 
 	/**
 	 * Record First Indices (firstAcquisitionIndex, firstMeasurementIndex)
@@ -292,26 +275,14 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	/** type of thread */
 	static const std::string TypeName;
 
-	/** Total Number of DataProcessor Objects */
-	static int NumberofDataProcessors;
-
-	/** Mask of errors on any object eg.thread creation */
-	static uint64_t ErrorMask;
-
-	/** Mask of all listener objects running */
-	static uint64_t RunningMask;
-
-	/** mutex to update static items among objects (threads)*/
-	static pthread_mutex_t Mutex;
+    /** Object running status */
+    bool runningFlag;
 
 	/** GeneralData (Detector Data) object */
 	const GeneralData* generalData;
 
 	/** Fifo structure */
 	Fifo* fifo;
-
-	/** Silent Mode */
-	static bool SilentMode;
 
 
 	//individual members
@@ -380,6 +351,8 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	uint64_t currentFrameIndex;
 
 
+    /** Silent Mode */
+    bool silentMode;
 
 	//call back
     /**

@@ -21,6 +21,8 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	/**
 	 * Constructor
 	 * Calls Base Class CreateThread(), sets ErrorMask if error and increments NumberofListerners
+	 * @param ret OK or FAIL if thread creation succeeded or failed
+	 * @param ind self index
 	 * @param dtype detector type
 	 * @param f address of Fifo pointer
 	 * @param s pointer to receiver status
@@ -30,7 +32,8 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param nf pointer to number of images to catch
 	 * @param dr pointer to dynamic range
 	 */
-	Listener(detectorType dtype, Fifo*& f, runStatus* s, uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr);
+	Listener(int& ret, int ind, detectorType dtype, Fifo*& f, runStatus* s,
+	        uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr);
 
 	/**
 	 * Destructor
@@ -39,33 +42,13 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	~Listener();
 
 
-	//*** static functions ***
-	/**
-	 * Get ErrorMask
-	 * @return ErrorMask
-	 */
-	static uint64_t GetErrorMask();
-
-	/**
-	 * Get RunningMask
-	 * @return RunningMask
-	 */
-	static uint64_t GetRunningMask();
-
-	/**
-	 * Reset RunningMask
-	 */
-	static void ResetRunningMask();
-
-	/**
-	 * Set Silent Mode
-	 * @param mode 1 sets 0 unsets
-	 */
-	static void SetSilentMode(bool mode);
-
-
-	//*** non static functions ***
 	//*** getters ***
+    /**
+     * Returns if the thread is currently running
+     * @returns true if thread is running, else false
+     */
+    bool IsRunning();
+
 	/**
 	 * Get acquisition started flag
 	 * @return acquisition started flag
@@ -142,6 +125,12 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	void ShutDownUDPSocket();
 
+    /**
+     * Set Silent Mode
+     * @param mode 1 sets 0 unsets
+     */
+    void SetSilentMode(bool mode);
+
 
 
 
@@ -152,12 +141,6 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * @return type
 	 */
 	std::string GetType();
-
-	/**
-	 * Returns if the thread is currently running
-	 * @returns true if thread is running, else false
-	 */
-	bool IsRunning();
 
 	/**
 	 * Record First Indices (firstAcquisitionIndex, firstMeasurementIndex)
@@ -205,26 +188,14 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	/** type of thread */
 	static const std::string TypeName;
 
-	/** Total Number of Listener Objects */
-	static int NumberofListeners;
-
-	/** Mask of errors on any object eg.thread creation */
-	static uint64_t ErrorMask;
-
-	/** Mask of all listener objects running */
-	static uint64_t RunningMask;
-
-	/** Mutex to update static items among objects (threads)*/
-	static pthread_mutex_t Mutex;
+	/** Object running status */
+	bool runningFlag;
 
 	/** GeneralData (Detector Data) object */
 	const GeneralData* generalData;
 
 	/** Fifo structure */
 	Fifo* fifo;
-
-	/** Silent Mode */
-	static bool SilentMode;
 
 
 	// individual members
@@ -303,5 +274,8 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** number of images for statistic */
 	uint32_t numFramesStatistic;
+
+    /** Silent Mode */
+    bool silentMode;
 };
 

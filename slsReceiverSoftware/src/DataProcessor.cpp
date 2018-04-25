@@ -22,18 +22,8 @@ using namespace std;
 
 const string DataProcessor::TypeName = "DataProcessor";
 
-int DataProcessor::NumberofDataProcessors(0);
 
-uint64_t DataProcessor::ErrorMask(0x0);
-
-uint64_t DataProcessor::RunningMask(0x0);
-
-pthread_mutex_t DataProcessor::Mutex = PTHREAD_MUTEX_INITIALIZER;
-
-bool DataProcessor::SilentMode(false);
-
-
-DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool fwenable, bool* dsEnable, bool* gpEnable, uint32_t* dr,
+DataProcessor::DataProcessor(int& ret, int ind, Fifo*& f, fileFormat* ftype, bool fwenable, bool* dsEnable, bool* gpEnable, uint32_t* dr,
 		uint32_t* freq, uint32_t* timer,
 		void (*dataReadycb)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t,
 		        uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
@@ -44,7 +34,8 @@ DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool fwenable, bool* d
 		        char*, uint32_t &, void*),
 		void *pDataReadycb) :
 
-		ThreadObject(NumberofDataProcessors),
+		ThreadObject(ind),
+		runningFlag(0),
 		generalData(0),
 		fifo(f),
 		file(0),
@@ -65,18 +56,16 @@ DataProcessor::DataProcessor(Fifo*& f, fileFormat* ftype, bool fwenable, bool* d
 		numTotalFramesCaught(0),
 		numFramesCaught(0),
 		currentFrameIndex(0),
+        silentMode(false),
 		rawDataReadyCallBack(dataReadycb),
 		rawDataModifyReadyCallBack(dataModifyReadycb),
 		pRawDataReady(pDataReadycb)
 {
-	if(ThreadObject::CreateThread()){
-		pthread_mutex_lock(&Mutex);
-		ErrorMask ^= (1<<index);
-		pthread_mutex_unlock(&Mutex);
-	}
+    ret = FAIL;
+    if(ThreadObject::CreateThread() == OK)
+        ret = OK;
 
-	NumberofDataProcessors++;
-	FILE_LOG(logDEBUG) << "Number of DataProcessors: " << NumberofDataProcessors;
+    FILE_LOG(logDEBUG) << "DataProcessor " << ind << " created";
 
 	memset((void*)&timerBegin, 0, sizeof(timespec));
 }
@@ -86,35 +75,15 @@ DataProcessor::~DataProcessor() {
 	if (file) delete file;
 	if (tempBuffer) delete [] tempBuffer;
 	ThreadObject::DestroyThread();
-	NumberofDataProcessors--;
 }
 
-/** static functions */
-
-uint64_t DataProcessor::GetErrorMask() {
-	return ErrorMask;
-}
-
-uint64_t DataProcessor::GetRunningMask() {
-	return RunningMask;
-}
-
-void DataProcessor::ResetRunningMask() {
-	RunningMask = 0x0;
-}
-
-void DataProcessor::SetSilentMode(bool mode) {
-	SilentMode = mode;
-}
-
-/** non static functions */
 /** getters */
 string DataProcessor::GetType(){
 	return TypeName;
 }
 
 bool DataProcessor::IsRunning() {
-	return ((1 << index) & RunningMask);
+	return runningFlag;
 }
 
 bool DataProcessor::GetAcquisitionStartedFlag(){
@@ -149,16 +118,12 @@ uint64_t DataProcessor::GetProcessedMeasurementIndex() {
 
 /** setters */
 void DataProcessor::StartRunning() {
-	pthread_mutex_lock(&Mutex);
-	RunningMask |= (1<<index);
-	pthread_mutex_unlock(&Mutex);
+    runningFlag = true;
 }
 
 
 void DataProcessor::StopRunning() {
-	pthread_mutex_lock(&Mutex);
-	RunningMask ^= (1<<index);
-	pthread_mutex_unlock(&Mutex);
+    runningFlag = false;
 }
 
 void DataProcessor::SetFifo(Fifo*& f) {
@@ -173,6 +138,7 @@ void DataProcessor::ResetParametersforNewAcquisition() {
 }
 
 void DataProcessor::ResetParametersforNewMeasurement(){
+    runningFlag = false;
 	numFramesCaught = 0;
 	firstMeasurementIndex = 0;
 	measurementStartedFlag = false;
@@ -253,7 +219,7 @@ void DataProcessor::SetupFileWriter(bool fwe, int* nd, char* fname, char* fpath,
 	if (g)
 		generalData = g;
 	// fix xcoord as detector is not providing it right now
-	xcoordin1D = ((NumberofDataProcessors > (*nunits)) ? index : ((*dindex) * (*nunits)) + index);
+	xcoordin1D =  ((*dindex) * (*nunits)) + index;
 
 
 	if (file) {
@@ -267,13 +233,13 @@ void DataProcessor::SetupFileWriter(bool fwe, int* nd, char* fname, char* fpath,
 		file = new HDF5File(index, generalData->maxFramesPerFile,
 				nd, fname, fpath, findex, owenable,
 				dindex, nunits, nf, dr, portno,
-				generalData->nPixelsX, generalData->nPixelsY, &SilentMode);
+				generalData->nPixelsX, generalData->nPixelsY, &silentMode);
 		break;
 #endif
 	default:
 		file = new BinaryFile(index, generalData->maxFramesPerFile,
 				nd, fname, fpath, findex, owenable,
-				dindex, nunits, nf, dr, portno, &SilentMode);
+				dindex, nunits, nf, dr, portno, &silentMode);
 		break;
 		}
 	}
@@ -497,6 +463,10 @@ void DataProcessor::SetPixelDimension() {
 			file->SetNumberofPixels(generalData->nPixelsX, generalData->nPixelsY);
 		}
 	}
+}
+
+void DataProcessor::SetSilentMode(bool mode) {
+    silentMode = mode;
 }
 
 

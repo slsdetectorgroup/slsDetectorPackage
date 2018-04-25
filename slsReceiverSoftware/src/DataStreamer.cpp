@@ -15,19 +15,10 @@ using namespace std;
 
 const string DataStreamer::TypeName = "DataStreamer";
 
-int DataStreamer::NumberofDataStreamers(0);
 
-uint64_t DataStreamer::ErrorMask(0x0);
-
-uint64_t DataStreamer::RunningMask(0x0);
-
-pthread_mutex_t DataStreamer::Mutex = PTHREAD_MUTEX_INITIALIZER;
-
-bool DataStreamer::SilentMode(false);
-
-
-DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, int* sEnable, uint64_t* fi, int* fd, char* ajh) :
-		ThreadObject(NumberofDataStreamers),
+DataStreamer::DataStreamer(int& ret, int ind, Fifo*& f, uint32_t* dr, int* sEnable, uint64_t* fi, int* fd, char* ajh) :
+		ThreadObject(ind),
+		runningFlag(0),
 		generalData(0),
 		fifo(f),
 		zmqSocket(0),
@@ -40,16 +31,14 @@ DataStreamer::DataStreamer(Fifo*& f, uint32_t* dr, int* sEnable, uint64_t* fi, i
 		firstMeasurementIndex(0),
 		completeBuffer(0),
 		flippedData(fd),
-		additionJsonHeader(ajh)
+		additionJsonHeader(ajh),
+        silentMode(false)
 {
-	if(ThreadObject::CreateThread()){
-		pthread_mutex_lock(&Mutex);
-		ErrorMask ^= (1<<index);
-		pthread_mutex_unlock(&Mutex);
-	}
+    ret = FAIL;
+    if(ThreadObject::CreateThread() == OK)
+        ret = OK;
 
-	NumberofDataStreamers++;
-	FILE_LOG(logDEBUG) << "Number of DataStreamers: " << NumberofDataStreamers;
+    FILE_LOG(logDEBUG) << "DataStreamer " << ind << " created";
 
 	strcpy(fileNametoStream, "");
 }
@@ -59,51 +48,26 @@ DataStreamer::~DataStreamer() {
 	CloseZmqSocket();
 	if (completeBuffer) delete [] completeBuffer;
 	ThreadObject::DestroyThread();
-	NumberofDataStreamers--;
 }
 
-/** static functions */
-
-uint64_t DataStreamer::GetErrorMask() {
-	return ErrorMask;
-}
-
-uint64_t DataStreamer::GetRunningMask() {
-	return RunningMask;
-}
-
-void DataStreamer::ResetRunningMask() {
-	RunningMask = 0x0;
-}
-
-void DataStreamer::SetSilentMode(bool mode) {
-	SilentMode = mode;
-}
-
-
-/** non static functions */
 /** getters */
 string DataStreamer::GetType(){
 	return TypeName;
 }
 
 bool DataStreamer::IsRunning() {
-	return ((1 << index) & RunningMask);
+	return runningFlag;
 }
 
 
 /** setters */
 void DataStreamer::StartRunning() {
-	pthread_mutex_lock(&Mutex);
-	RunningMask |= (1<<index);
-	pthread_mutex_unlock(&Mutex);
+    runningFlag = true;
 }
 
 
 void DataStreamer::StopRunning() {
-	pthread_mutex_lock(&Mutex);
-	RunningMask ^= (1<<index);
-	pthread_mutex_unlock(&Mutex);
+    runningFlag = false;
 }
 
 void DataStreamer::SetFifo(Fifo*& f) {
@@ -116,6 +80,7 @@ void DataStreamer::ResetParametersforNewAcquisition() {
 }
 
 void DataStreamer::ResetParametersforNewMeasurement(char* fname){
+    runningFlag = false;
 	firstMeasurementIndex = 0;
 	measurementStartedFlag = false;
 	strcpy(fileNametoStream, fname);
@@ -295,7 +260,7 @@ int DataStreamer::SendHeader(sls_detector_header* header, uint32_t size, uint32_
 
 
 
-int DataStreamer::restreamStop() {
+int DataStreamer::RestreamStop() {
 	//send dummy header
 	int ret = zmqSocket->SendHeaderData(index, true, SLS_DETECTOR_JSON_HEADER_VERSION);
 	if (!ret) {
@@ -304,3 +269,9 @@ int DataStreamer::restreamStop() {
 	}
 	return OK;
 }
+
+
+void DataStreamer::SetSilentMode(bool mode) {
+    silentMode = mode;
+}
+

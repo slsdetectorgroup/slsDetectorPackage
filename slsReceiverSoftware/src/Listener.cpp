@@ -18,19 +18,11 @@ using namespace std;
 
 const string Listener::TypeName = "Listener";
 
-int Listener::NumberofListeners(0);
 
-uint64_t Listener::ErrorMask(0x0);
-
-uint64_t Listener::RunningMask(0x0);
-
-pthread_mutex_t Listener::Mutex = PTHREAD_MUTEX_INITIALIZER;
-
-bool Listener::SilentMode(false);
-
-
-Listener::Listener(detectorType dtype, Fifo*& f, runStatus* s, uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr) :
-		ThreadObject(NumberofListeners),
+Listener::Listener(int& ret, int ind, detectorType dtype, Fifo*& f, runStatus* s,
+        uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr) :
+		ThreadObject(ind),
+		runningFlag(0),
 		generalData(0),
 		fifo(f),
 		myDetectorType(dtype),
@@ -51,15 +43,14 @@ Listener::Listener(detectorType dtype, Fifo*& f, runStatus* s, uint32_t* portno,
 		carryOverFlag(0),
 		carryOverPacket(0),
 		listeningPacket(0),
-		udpSocketAlive(0)
+		udpSocketAlive(0),
+		silentMode(false)
 {
-	if(ThreadObject::CreateThread()){
-		pthread_mutex_lock(&Mutex);
-		ErrorMask ^= (1<<index);
-		pthread_mutex_unlock(&Mutex);
-	}
-	NumberofListeners++;
-	FILE_LOG(logDEBUG) << "Number of Listeners: " << NumberofListeners;
+    ret = FAIL;
+	if(ThreadObject::CreateThread() == OK)
+	    ret = OK;
+
+	FILE_LOG(logDEBUG) << "Listener " << ind << " created";
 }
 
 
@@ -70,35 +61,15 @@ Listener::~Listener() {
 	if (carryOverPacket) delete [] carryOverPacket;
 	if (listeningPacket) delete [] listeningPacket;
 	ThreadObject::DestroyThread();
-	NumberofListeners--;
 }
 
-/** static functions */
-
-uint64_t Listener::GetErrorMask() {
-	return ErrorMask;
-}
-
-uint64_t Listener::GetRunningMask() {
-	return RunningMask;
-}
-
-void Listener::ResetRunningMask() {
-	RunningMask = 0x0;
-}
-
-void Listener::SetSilentMode(bool mode) {
-	SilentMode = mode;
-}
-
-/** non static functions */
 /** getters */
 string Listener::GetType(){
 	return TypeName;
 }
 
 bool Listener::IsRunning() {
-	return ((1 << index) & RunningMask);
+	return runningFlag;
 }
 
 bool Listener::GetAcquisitionStartedFlag(){
@@ -119,16 +90,12 @@ uint64_t Listener::GetLastFrameIndexCaught() {
 
 /** setters */
 void Listener::StartRunning() {
-	pthread_mutex_lock(&Mutex);
-	RunningMask |= (1<<index);
-	pthread_mutex_unlock(&Mutex);
+    runningFlag = true;
 }
 
 
 void Listener::StopRunning() {
-	pthread_mutex_lock(&Mutex);
-	RunningMask ^= (1<<index);
-	pthread_mutex_unlock(&Mutex);
+    runningFlag = false;
 }
 
 
@@ -146,6 +113,7 @@ void Listener::ResetParametersforNewAcquisition() {
 
 
 void Listener::ResetParametersforNewMeasurement() {
+    runningFlag = false;
 	measurementStartedFlag = false;
 	numPacketsCaught = 0;
 	firstMeasurementIndex = 0;
@@ -181,7 +149,7 @@ void Listener::RecordFirstIndices(uint64_t fnum) {
 		firstAcquisitionIndex = fnum;
 	}
 
-	if(!SilentMode) {
+	if(!silentMode) {
 		if (!index) cprintf(BLUE,"%d First Acquisition Index:%lu\n"
 				"%d First Measurement Index:%lu\n",
 				index, firstAcquisitionIndex,
@@ -252,6 +220,10 @@ void Listener::ShutDownUDPSocket() {
 }
 
 
+void Listener::SetSilentMode(bool mode) {
+    silentMode = mode;
+}
+
 
 void Listener::ThreadExecution() {
 	char* buffer;
@@ -304,7 +276,7 @@ void Listener::ThreadExecution() {
 	fifo->PushAddress(buffer);
 
 	//Statistics
-	if(!SilentMode) {
+	if(!silentMode) {
 		numFramesStatistic++;
 		if (numFramesStatistic >=  generalData->maxFramesPerFile)
 			PrintFifoStatistics();

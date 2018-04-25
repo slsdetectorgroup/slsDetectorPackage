@@ -20,6 +20,8 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	/**
 	 * Constructor
 	 * Calls Base Class CreateThread(), sets ErrorMask if error and increments NumberofDataStreamers
+     * @param ret OK or FAIL if thread creation succeeded or failed
+     * @param ind self index
 	 * @param f address of Fifo pointer
 	 * @param dr pointer to dynamic range
 	 * @param sEnable pointer to short frame enable
@@ -27,7 +29,7 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param fd flipped data enable for x and y dimensions
 	 * @param ajh additional json header
 	 */
-	DataStreamer(Fifo*& f, uint32_t* dr, int* sEnable, uint64_t* fi, int* fd, char* ajh);
+	DataStreamer(int& ret, int ind, Fifo*& f, uint32_t* dr, int* sEnable, uint64_t* fi, int* fd, char* ajh);
 
 	/**
 	 * Destructor
@@ -35,34 +37,12 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	~DataStreamer();
 
-
-	//*** static functions ***
-	/**
-	 * Get RunningMask
-	 * @return RunningMask
-	 */
-	static uint64_t GetErrorMask();
-
-	/**
-	 * Get RunningMask
-	 * @return RunningMask
-	 */
-	static uint64_t GetRunningMask();
-
-	/**
-	 * Reset RunningMask
-	 */
-	static void ResetRunningMask();
-
-	/**
-	 * Set Silent Mode
-	 * @param mode 1 sets 0 unsets
-	 */
-	static void SetSilentMode(bool mode);
-
-	//*** non static functions ***
 	//*** getters ***
-
+    /**
+     * Returns if the thread is currently running
+     * @returns true if thread is running, else false
+     */
+    bool IsRunning();
 
 
 	//*** setters ***
@@ -123,7 +103,13 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	 * Restream stop dummy packet
 	 * @return OK or FAIL
 	 */
-	int restreamStop();
+	int RestreamStop();
+
+    /**
+     * Set Silent Mode
+     * @param mode 1 sets 0 unsets
+     */
+    void SetSilentMode(bool mode);
 
  private:
 
@@ -132,12 +118,6 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	 * @return type
 	 */
 	std::string GetType();
-
-	/**
-	 * Returns if the thread is currently running
-	 * @returns true if thread is running, else false
-	 */
-	bool IsRunning();
 
 	/**
 	 * Record First Indices (firstAcquisitionIndex, firstMeasurementIndex)
@@ -179,26 +159,14 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	/** type of thread */
 	static const std::string TypeName;
 
-	/** Total Number of DataStreamer Objects */
-	static int NumberofDataStreamers;
-
-	/** Mask of errors on any object eg.thread creation */
-	static uint64_t ErrorMask;
-
-	/** Mask of all listener objects running */
-	static uint64_t RunningMask;
-
-	/** mutex to update static items among objects (threads)*/
-	static pthread_mutex_t Mutex;
+    /** Object running status */
+    bool runningFlag;
 
 	/** GeneralData (Detector Data) object */
 	const GeneralData* generalData;
 
 	/** Fifo structure */
 	Fifo* fifo;
-
-	/** Silent Mode */
-	static bool SilentMode;
 
 
 
@@ -237,5 +205,8 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** additional json header */
 	char* additionJsonHeader;
+
+    /** Silent Mode */
+    bool silentMode;
 };
 

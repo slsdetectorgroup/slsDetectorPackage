@@ -12,10 +12,9 @@
 #include <cstring>
 using namespace std;
 
-int Fifo::NumberofFifoClassObjects(0);
 
-Fifo::Fifo(uint32_t fifoItemSize, uint32_t depth, bool &success):
-		index(NumberofFifoClassObjects),
+Fifo::Fifo(int ind, uint32_t fifoItemSize, uint32_t depth, bool &success):
+		index(ind),
 		memory(0),
 		fifoBound(0),
 		fifoFree(0),
@@ -24,7 +23,7 @@ Fifo::Fifo(uint32_t fifoItemSize, uint32_t depth, bool &success):
 		status_fifoBound(0),
 		status_fifoFree(depth){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
-	NumberofFifoClassObjects++;
+	success = true;
 	if(CreateFifos(fifoItemSize) == FAIL)
 		success = false;
 }
@@ -34,7 +33,6 @@ Fifo::~Fifo() {
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 	//cprintf(BLUE,"Fifo Object %d: Goodbye\n", index);
 	DestroyFifos();
-	NumberofFifoClassObjects--;
 }
 
 

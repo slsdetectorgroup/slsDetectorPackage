@@ -216,26 +216,31 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {
 		dataStreamer.clear();
 
 		if (enable) {
-			bool error = false;
 			for ( int i = 0; i < numThreads; ++i ) {
-				dataStreamer.push_back(new DataStreamer(fifo[i], &dynamicRange, &shortFrameEnable, &fileIndex, flippedData, additionalJsonHeader));
-				dataStreamer[i]->SetGeneralData(generalData);
-				if (dataStreamer[i]->CreateZmqSockets(&numThreads, streamingPort, streamingSrcIP) == FAIL) {
-					error = true;
-					break;
+
+			    int ret = FAIL;
+			    DataStreamer* s = new DataStreamer(ret, i, fifo[i], &dynamicRange, &shortFrameEnable, &fileIndex, flippedData, additionalJsonHeader);
+			    if (ret == FAIL)
+			        cprintf(RED,"Error: Could not create data callback threads\n");
+			    else {
+	                dataStreamer.push_back(s);
+	                dataStreamer[i]->SetGeneralData(generalData);
+	                if (dataStreamer[i]->CreateZmqSockets(&numThreads, streamingPort, streamingSrcIP) == FAIL) {
+	                    cprintf(RED,"Error: Could not create zmq sockets\n");
+	                    ret = FAIL;
+	                }
+			    }
+
+			    // error in creating threads or zmq sockets
+			    if (ret == FAIL) {
+	                for (vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
+	                    delete(*it);
+	                dataStreamer.clear();
+	                dataStreamEnable = false;
+	                return FAIL;
 				}
 			}
-			if (DataStreamer::GetErrorMask() || error) {
-				if (DataStreamer::GetErrorMask())
-					cprintf(RED,"Error: Could not create data callback threads\n");
-				else
-					cprintf(RED,"Error: Could not create zmq sockets\n");
-				for (vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
-					delete(*it);
-				dataStreamer.clear();
-				dataStreamEnable = false;
-				return FAIL;
-			}
+
 			SetThreadPriorities();
 		}
 	}
@@ -311,9 +316,12 @@ int UDPStandardImplementation::setFifoDepth(const uint32_t i) {
 void UDPStandardImplementation::setSilentMode(const uint32_t i){
 	silentMode = i;
 
-	Listener::SetSilentMode(i);
-	DataProcessor::SetSilentMode(i);
-	DataStreamer::SetSilentMode(i);
+    for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
+        (*it)->SetSilentMode(i);
+    for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
+        (*it)->SetSilentMode(i);
+    for (vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
+        (*it)->SetSilentMode(i);
 
 	FILE_LOG(logINFO) << "Silent Mode: " << i;
 }
@@ -363,12 +371,18 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	}
 
 	//create threads
-	for ( int i=0; i < numThreads; ++i ) {
-		listener.push_back(new Listener(myDetectorType, fifo[i], &status, &udpPortNum[i], eth, &activated, &numberOfFrames, &dynamicRange));
-		dataProcessor.push_back(new DataProcessor(fifo[i], &fileFormatType,
-				fileWriteEnable, &dataStreamEnable, &gapPixelsEnable, &dynamicRange, &frameToGuiFrequency, &frameToGuiTimerinMS,
-				rawDataReadyCallBack, rawDataModifyReadyCallBack, pRawDataReady));
-		if (Listener::GetErrorMask() || DataProcessor::GetErrorMask()) {
+	for ( int i = 0; i < numThreads; ++i ) {
+
+	    int ret = FAIL;
+	    Listener* l = new Listener(ret, i, myDetectorType, fifo[i], &status, &udpPortNum[i], eth, &activated, &numberOfFrames, &dynamicRange);
+	    DataProcessor* p = NULL;
+	    if (ret == OK)
+	        p = new DataProcessor(ret, i, fifo[i], &fileFormatType,
+	                fileWriteEnable, &dataStreamEnable, &gapPixelsEnable, &dynamicRange, &frameToGuiFrequency, &frameToGuiTimerinMS,
+	                rawDataReadyCallBack, rawDataModifyReadyCallBack, pRawDataReady);
+
+	    // error in creating threads
+	    if (ret == FAIL) {
 			FILE_LOG(logERROR) << "Could not create listener/dataprocessor threads (index:" << i << ")";
 			for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
 				delete(*it);
@@ -378,6 +392,9 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 			dataProcessor.clear();
 			return FAIL;
 		}
+
+	    listener.push_back(l);
+	    dataProcessor.push_back(p);
 	}
 
 	//set up writer and callbacks
@@ -474,13 +491,19 @@ void UDPStandardImplementation::stopReceiver(){
 	//set status to transmitting
 	startReadout();
 
-	//wait for the processes to be done
-	while(Listener::GetRunningMask()){
-		usleep(5000);
+	//wait for the processes (Listener and DataProcessor) to be done
+	bool running = true;
+	while(running) {
+	    running = false;
+	    for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
+	        if ((*it)->IsRunning())
+	            running = true;
+	    for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
+            if ((*it)->IsRunning())
+                running = true;
+	    usleep(5000);
 	}
-	while(DataProcessor::GetRunningMask()){
-		usleep(5000);
-	}
+
 
 	//create virtual file
 	if (fileWriteEnable && fileFormatType == HDF5) {
@@ -495,9 +518,15 @@ void UDPStandardImplementation::stopReceiver(){
 			dataProcessor[0]->EndofAcquisition(maxIndexCaught); //to create virtual file
 	}
 
-	while(DataStreamer::GetRunningMask()){
-		usleep(5000);
-	}
+	//wait for the processes (DataStreamer) to be done
+	running = true;
+    while(running) {
+        running = false;
+        for (vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
+            if ((*it)->IsRunning())
+                running = true;
+        usleep(5000);
+    }
 
 	status = RUN_FINISHED;
 	FILE_LOG(logINFO)  << "Status: " << runStatusType(status);
@@ -603,7 +632,7 @@ void UDPStandardImplementation::closeFiles() {
 int UDPStandardImplementation::restreamStop() {
 	bool ret = OK;
 	for (vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it) {
-		if ((*it)->restreamStop() == FAIL)
+		if ((*it)->RestreamStop() == FAIL)
 			ret = FAIL;
 	}
 
@@ -667,11 +696,13 @@ int UDPStandardImplementation::SetupFifoStructure() {
 		delete(*it);
 	fifo.clear();
 	for ( int i = 0; i < numThreads; i++ ) {
+
 		//create fifo structure
 		bool success = true;
-		fifo.push_back( new Fifo (
-				(generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize),
-				fifoDepth, success));
+		Fifo* f = new Fifo (i,
+		        (generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize),
+                fifoDepth, success);
+		//error
 		if (!success) {
 			cprintf(RED,"Error: Could not allocate memory for fifo structure of index %d\n", i);
 			for (vector<Fifo*>::const_iterator it = fifo.begin(); it != fifo.end(); ++it)
@@ -679,6 +710,8 @@ int UDPStandardImplementation::SetupFifoStructure() {
 			fifo.clear();
 			return FAIL;
 		}
+        fifo.push_back(f);
+
 		//set the listener & dataprocessor threads to point to the right fifo
 		if(listener.size())listener[i]->SetFifo(fifo[i]);
 		if(dataProcessor.size())dataProcessor[i]->SetFifo(fifo[i]);
@@ -693,10 +726,6 @@ int UDPStandardImplementation::SetupFifoStructure() {
 
 
 void UDPStandardImplementation::ResetParametersforNewMeasurement() {
-	Listener::ResetRunningMask();
-	DataProcessor::ResetRunningMask();
-	DataStreamer::ResetRunningMask();
-
 	for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
 		(*it)->ResetParametersforNewMeasurement();
 	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)

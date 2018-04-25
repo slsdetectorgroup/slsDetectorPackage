@@ -511,8 +511,8 @@ public:
 		}
 
 		//hyperslab
-		int numMajorHyperslab = numf/maxFramesPerFile;
-		if (numf%maxFramesPerFile) numMajorHyperslab++;
+		int numMajorHyperslab = (numf-1)/maxFramesPerFile;
+		if ((numf-1)%maxFramesPerFile) numMajorHyperslab++;
 		bool error = false;
 		uint64_t framesSaved = 0;
 		for (int j = 0; j < numMajorHyperslab; j++) {

@@ -22,13 +22,12 @@ hid_t HDF5File::virtualfd = 0;
 
 
 HDF5File::HDF5File(int ind, uint32_t maxf,
-		int* nd, char* fname, char* fpath, uint64_t* findex,
-		bool* frindexenable, bool* owenable,
+		int* nd, char* fname, char* fpath, uint64_t* findex, bool* owenable,
 		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
 		uint32_t nx, uint32_t ny,
 		bool* smode):
 
-		File(ind, maxf, nd, fname, fpath, findex, frindexenable, owenable, dindex, nunits, nf, dr, portno, smode),
+		File(ind, maxf, nd, fname, fpath, findex, owenable, dindex, nunits, nf, dr, portno, smode),
 		filefd(0),
 		dataspace(0),
 		dataset(0),
@@ -217,7 +216,7 @@ int HDF5File::CreateVirtualFile(uint64_t numf) {
 				virtualfd, masterFileName,
 				filePath, fileNamePrefix, *fileIndex, (*numImages > 1),
 				*detIndex, *numUnitsPerDetector,
-				maxFramesPerFile, numf,
+				maxFramesPerFile, numf+1,
 				"data",	datatype,
 				numDetY, numDetX, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
 				HDF5_WRITER_VERSION);

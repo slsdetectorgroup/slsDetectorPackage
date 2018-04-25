@@ -563,7 +563,9 @@ void qDrawPlot::SetScanArgument(int scanArg){
 	// Number of Exposures - must be calculated here to get npixelsy for allframes/frameindex scans
 	int numFrames = (isFrameEnabled)*((int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1));
 	int numTriggers = (isTriggerEnabled)*((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1));
-	int numStoragecells = (int)myDet->setTimer(slsDetectorDefs::STORAGE_CELL_NUMBER, -1);
+	int numStoragecells = 0;
+	if (detType == slsDetectorDefs::JUNGFRAU)
+	    numStoragecells = (int)myDet->setTimer(slsDetectorDefs::STORAGE_CELL_NUMBER, -1);
 	numFrames = ((numFrames==0)?1:numFrames);
 	numTriggers = ((numTriggers==0)?1:numTriggers);
 	numStoragecells = ((numStoragecells<=0)?1:numStoragecells+1);

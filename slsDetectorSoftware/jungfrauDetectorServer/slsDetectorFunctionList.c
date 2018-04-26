@@ -406,6 +406,8 @@ void setupDetector() {
 	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
 	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY);
+	setTimer(STORAGE_CELL_NUMBER, DEFAULT_NUM_STRG_CLLS);
+	selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
 	/*setSpeed(CLOCK_DIVIDER, HALF_SPEED); depends if all the previous stuff works*/
 	setTiming(DEFAULT_TIMING_MODE);
 	setHighVoltage(DEFAULT_HIGH_VOLTAGE);

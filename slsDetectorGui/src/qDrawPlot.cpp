@@ -2234,9 +2234,9 @@ void qDrawPlot::toDoublePixelData(double* dest, char* source,int size, int datab
 			// only data plot
 			else {
 				for (ichan = 0; ichan < size; ++ichan) {
-					if (  (*((u_int16_t*)source)) == 0xFFFF  )
+					/*if (  (*((u_int16_t*)source)) == 0xFFFF  )
 						dest[ichan] = 0xFFFF;
-					else
+					else*/
 						dest[ichan] = ((*((u_int16_t*)source)) & 0x3FFF);
 					source += 2;
 				}

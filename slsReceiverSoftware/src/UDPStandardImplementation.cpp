@@ -15,6 +15,7 @@
 #include <cstdlib>			//system
 #include <cstring>			//strcpy
 #include <errno.h>			//eperm
+#include <fstream>
 using namespace std;
 
 

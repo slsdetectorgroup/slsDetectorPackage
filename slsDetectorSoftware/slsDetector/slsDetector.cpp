@@ -4392,7 +4392,7 @@ slsDetectorDefs::runStatus slsDetector::getRunStatus(){
   int fnum=F_GET_RUN_STATUS;
   int ret=FAIL;
   char mess[MAX_STR_LENGTH]="";
-  strcpy(mess,"aaaaa");
+  strcpy(mess,"could not get run status");
   runStatus retval=ERROR;
 #ifdef VERBOSE
   std::cout<< "Getting status "<< std::endl;

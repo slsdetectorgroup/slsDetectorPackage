@@ -646,28 +646,29 @@ int UDPStandardImplementation::restreamStop() {
 
 
 void UDPStandardImplementation::SetLocalNetworkParameters() {
-	//to increase socket receiver buffer size and max length of input queue by changing kernel settings
-	if (myDetectorType == EIGER)
-		return;
-
 	char command[255];
 
-	//to increase Socket Receiver Buffer size
-	sprintf(command,"echo $((%d)) > /proc/sys/net/core/rmem_max",RECEIVE_SOCKET_BUFFER_SIZE);
-	if (system(command)) {
-		FILE_LOG(logWARNING) << "No root privileges to change Socket Receiver Buffer size (net.core.rmem_max)";
-		return;
-	}
-	FILE_LOG(logINFO) << "Socket Receiver Buffer size (/proc/sys/net/core/rmem_max) modified to " << RECEIVE_SOCKET_BUFFER_SIZE ;
-
-
 	// to increase Max length of input packet queue
-	sprintf(command,"echo %d > /proc/sys/net/core/netdev_max_backlog",MAX_SOCKET_INPUT_PACKET_QUEUE);
-	if (system(command)) {
-		FILE_LOG(logWARNING) << "No root privileges to change Max length of input packet queue (net.core.rmem_max)";
-		return;
+	int max_back_log;
+	const char *proc_file_name = "/proc/sys/net/core/netdev_max_backlog";
+	{
+	    ifstream proc_file(proc_file_name);
+	    proc_file >> max_back_log;
 	}
-	FILE_LOG(logINFO) << "Max length of input packet queue (/proc/sys/net/core/netdev_max_backlog) modified to " << MAX_SOCKET_INPUT_PACKET_QUEUE ;
+
+	if (max_back_log < MAX_SOCKET_INPUT_PACKET_QUEUE) {
+	    ofstream proc_file(proc_file_name);
+	    if (proc_file.good()) {
+	        proc_file << MAX_SOCKET_INPUT_PACKET_QUEUE << endl;
+	        cprintf(GREEN, "Max length of input packet queue "
+	                "(/proc/sys/net/core/netdev_max_backlog) modified to %d\n",
+	                 MAX_SOCKET_INPUT_PACKET_QUEUE);
+	    } else {
+	        const char *msg = "Could not change max length of"
+	                "input packet queue (net.core.netdev_max_backlog): no root privileges?";
+	        cprintf(RED, "WARNING: %s\n", msg);
+	    }
+	}
 }
 
 

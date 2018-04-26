@@ -5607,7 +5607,11 @@ int storage_cell_start(int file_des) {
         cprintf(RED, "Warning: %s", mess);
     }
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-    else {
+    else if (arg > MAX_STORAGE_CELL_VAL) {
+        ret=FAIL;
+        strcpy(mess,"Max Storage cell number should not exceed 15\n");
+        cprintf(RED, "Warning: %s", mess);
+    } else {
 #ifdef VERBOSE
     printf("Storage cell start to %d\n", arg);
 #endif

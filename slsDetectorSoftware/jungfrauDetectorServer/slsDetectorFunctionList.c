@@ -406,6 +406,8 @@ void setupDetector() {
 	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
 	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY);
+	setTimer(STORAGE_CELL_NUMBER, DEFAULT_NUM_STRG_CLLS);
+	selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
 	/*setSpeed(CLOCK_DIVIDER, HALF_SPEED); depends if all the previous stuff works*/
 	setTiming(DEFAULT_TIMING_MODE);
 	setHighVoltage(DEFAULT_HIGH_VOLTAGE);
@@ -824,7 +826,7 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 	        break;
 	    case DYNAMICHG0:
             bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_HIGH_GAIN_MSK);
+            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_HIGHGAIN_VAL);
             printf("\nConfigured settings - Dyanmic High Gain 0, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
             break;
 	    case FIXGAIN1:
@@ -862,37 +864,37 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 
 enum detectorSettings getSettings(){
 
-	uint32_t val = bus_r(DAQ_REG);
+	uint32_t val = bus_r(DAQ_REG) & DAQ_SETTINGS_MSK;
 	printf("\nGetting Settings\n Reading DAQ Register :0x%x\n", val);
 
-	if (val & DAQ_FRCE_GAIN_STG_2_VAL) {
-	    thisSettings = FORCESWITCHG2;
-	    printf("Settings read: FORCESWITCHG2\n");
-	}
-
-	else if  (val & DAQ_FRCE_GAIN_STG_1_VAL) {
-	    thisSettings = FORCESWITCHG1;
-        printf("Settings read: FORCESWITCHG1\n");
-	}
-
-	else if (val & DAQ_FIX_GAIN_STG_2_VAL) {
-	    thisSettings = FIXGAIN2;
-        printf("Settings read: FIXGAIN2\n");
-	}
-
-	else if (val & DAQ_FIX_GAIN_STG_1_VAL) {
-	    thisSettings = FIXGAIN1;
-        printf("Settings read: FIXGAIN1\n");
-	}
-
-	else if (val & DAQ_HIGH_GAIN_MSK) {
-	    thisSettings = DYNAMICHG0;
-        printf("Settings read: DYNAMICHG0\n");
-	}
-
-	else {
-	    thisSettings = DYNAMICGAIN;
+	switch(val) {
+	case DAQ_FIX_GAIN_DYNMC_VAL:
+        thisSettings = DYNAMICGAIN;
         printf("Settings read: DYNAMICGAIN\n");
+        break;
+    case DAQ_FIX_GAIN_HIGHGAIN_VAL:
+        thisSettings = DYNAMICHG0;
+        printf("Settings read: DYNAMICHG0\n");
+        break;
+    case DAQ_FIX_GAIN_STG_1_VAL:
+        thisSettings = FIXGAIN1;
+        printf("Settings read: FIXGAIN1\n");
+        break;
+    case DAQ_FIX_GAIN_STG_2_VAL:
+        thisSettings = FIXGAIN2;
+        printf("Settings read: FIXGAIN2\n");
+        break;
+    case DAQ_FRCE_GAIN_STG_1_VAL:
+        thisSettings = FORCESWITCHG1;
+        printf("Settings read: FORCESWITCHG1\n");
+        break;
+    case DAQ_FRCE_GAIN_STG_2_VAL:
+        thisSettings = FORCESWITCHG2;
+        printf("Settings read: FORCESWITCHG2\n");
+        break;
+    default:
+        thisSettings = UNDEFINED;
+        printf("Settings read: Undefined. Value read:0x%x\n", val);
 	}
 
 	return thisSettings;

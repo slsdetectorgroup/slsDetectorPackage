@@ -71,6 +71,8 @@ enum NETWORKINDEX           { TXN_FRAME };
 #define DEFAULT_SETTINGS			(DYNAMICGAIN)
 #define DEFAULT_TX_UDP_PORT			(0x7e9a)
 #define DEFAULT_TMP_THRSHLD         (65*1000) //milli degree Celsius
+#define DEFAULT_NUM_STRG_CLLS       (0)
+#define DEFAULT_STRG_CLL_STRT       (0xf)
 
 /* Defines in the Firmware */
 #define FIX_PATT_VAL    			(0xACDC2014)

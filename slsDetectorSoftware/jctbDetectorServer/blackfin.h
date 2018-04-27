@@ -3,8 +3,10 @@
 
 #define CSP0 0x20200000
 #define MEM_SIZE 0x100000 
+#define MEM_MAP_SHIFT 1
 
- #include <sys/types.h>
+#include <sys/types.h>
+
 int mapCSP0(void);
 
 u_int16_t bus_r16(u_int32_t offset);

@@ -7,8 +7,9 @@
 #include "slow_adc.h"
 #include "registers_m.h"
 #include "gitInfoMoench.h"
+#include "blackfin.h"
 
-#define FIFO_DATA_REG_OFF     0x50<<11
+#define FIFO_DATA_REG_OFF     0x50 << MEM_MAP_SHIFT
 // Global variables
 
 
@@ -866,7 +867,7 @@ int write_register(int file_des) {
 
 
   if(ret!=FAIL){
-    address=(addr<<11);
+    address=(addr << MEM_MAP_SHIFT);
     if((address==FIFO_DATA_REG_OFF)||(address==CONTROL_REG))
     	ret = bus_w16(address,val);
     else
@@ -932,7 +933,7 @@ int read_register(int file_des) {
   //#endif
 
   if(ret!=FAIL){
-	  address=(addr<<11);
+	  address=(addr << MEM_MAP_SHIFT);
 	  if((address==FIFO_DATA_REG_OFF)||(address==CONTROL_REG))
 		  retval=bus_r16(address);
 	  else

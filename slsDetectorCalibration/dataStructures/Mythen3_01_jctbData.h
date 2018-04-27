@@ -43,7 +43,7 @@ class mythen3_01_jctbData : public slsDetectorData<short unsigned int> {
  }
  
 
- static short unsigned int* mythen03_frame(char *ptr, int dr=24,  int nch=64*3, int off=5) {
+ virtual short unsigned int* mythen03_frame(char *ptr, int dr=24,  int nch=64*3, int off=5) {
    // off=0;
     int iarg;
     int64_t word, *wp;

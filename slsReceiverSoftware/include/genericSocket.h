@@ -257,7 +257,6 @@ enum communicationProtocol{
              // buffer size too large
              else {
                  actual_udp_socket_buffer_size = ret_size;
-                 cprintf(BLUE, "[Port %u] wanted : %u, actualsize: %u\n", port_number, real_size, ret_size);
                  // force a value larger than system limit (if run in a privileged context (capability CAP_NET_ADMIN set))
                  int ret = setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUFFORCE, &desired_size, optlen);
                  getsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUF, &ret_size, &optlen);

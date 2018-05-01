@@ -6750,7 +6750,7 @@ string slsDetector::setReceiverUDPSocketBufferSize(int udpsockbufsize) {
         }
         if(ret==FAIL) {
             setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
-            std::cout << "Warning: Could not set udp socket buffer size" << std::endl;
+            printf("Warning: Could not set udp socket buffer size\n");
         }
         if(ret==FORCE_UPDATE)
             updateReceiver();
@@ -6779,7 +6779,7 @@ string slsDetector::getReceiverRealUDPSocketBufferSize() {
         }
         if(ret==FAIL) {
             setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
-            std::cout << "Warning: Could not get real socket buffer size" << std::endl;
+            printf("Warning: Could not get real socket buffer size\n");
         }
         if(ret==FORCE_UPDATE)
             updateReceiver();

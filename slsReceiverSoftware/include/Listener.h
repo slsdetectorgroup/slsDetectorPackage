@@ -31,9 +31,12 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param act pointer to activated
 	 * @param nf pointer to number of images to catch
 	 * @param dr pointer to dynamic range
+	 * @param us pointer to udp socket buffer size
+	 * @param as pointer to actual udp socket buffer size
 	 */
 	Listener(int& ret, int ind, detectorType dtype, Fifo*& f, runStatus* s,
-	        uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr);
+	        uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr,
+	        uint32_t* us, uint32_t* as);
 
 	/**
 	 * Destructor
@@ -131,7 +134,13 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
      */
     void SetSilentMode(bool mode);
 
-
+    /**
+     * Create & closes a dummy UDP socket
+     * to set & get actual buffer size
+     * @param s UDP socket buffer size to be set
+     * @return OK or FAIL of dummy socket creation
+     */
+    int CreateDummySocketForUDPSocketBufferSize(uint32_t s);
 
 
  private:
@@ -222,6 +231,12 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** Dynamic Range */
 	uint32_t* dynamicRange;
+
+	/** UDP Socket Buffer Size */
+	uint32_t* udpSocketBufferSize;
+
+	/** actual UDP Socket Buffer Size (double due to kernel bookkeeping) */
+	uint32_t* actualUDPSocketBufferSize;
 
 
 	// acquisition start

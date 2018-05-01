@@ -64,7 +64,8 @@ enum recFuncs{
 	F_ENABLE_GAPPIXELS_IN_RECEIVER,	/** < sets gap pixels in the receiver */
 	F_RESTREAM_STOP_FROM_RECEIVER,	/** < restream stop from receiver */
 	F_ADDITIONAL_JSON_HEADER,       /** < additional json header */
-
+	F_RECEIVER_UDP_SOCK_BUF_SIZE,   /** < UDP socket buffer size */
+    F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE,   /** < real UDP socket buffer size */
 
 	/* Always append functions hereafter!!! */
 

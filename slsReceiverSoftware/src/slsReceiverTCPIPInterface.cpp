@@ -294,6 +294,9 @@ const char* slsReceiverTCPIPInterface::getFunctionName(enum recFuncs func) {
 	case F_ENABLE_GAPPIXELS_IN_RECEIVER:return "F_ENABLE_GAPPIXELS_IN_RECEIVER";
 	case F_RESTREAM_STOP_FROM_RECEIVER:	return "F_RESTREAM_STOP_FROM_RECEIVER";
     case F_ADDITIONAL_JSON_HEADER:      return "F_ADDITIONAL_JSON_HEADER";
+    case F_RECEIVER_UDP_SOCK_BUF_SIZE:  return "F_RECEIVER_UDP_SOCK_BUF_SIZE";
+    case F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE:  return "F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE";
+
 	default:							return "Unknown Function";
 	}
 }
@@ -343,6 +346,8 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_ENABLE_GAPPIXELS_IN_RECEIVER]	=	&slsReceiverTCPIPInterface::enable_gap_pixels;
 	flist[F_RESTREAM_STOP_FROM_RECEIVER]	= 	&slsReceiverTCPIPInterface::restream_stop;
 	flist[F_ADDITIONAL_JSON_HEADER]         =   &slsReceiverTCPIPInterface::set_additional_json_header;
+    flist[F_RECEIVER_UDP_SOCK_BUF_SIZE]     =   &slsReceiverTCPIPInterface::set_udp_socket_buffer_size;
+    flist[F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE]=   &slsReceiverTCPIPInterface::get_real_udp_socket_buffer_size;
 
 #ifdef VERYVERBOSE
 	for (int i = 0; i < NUM_REC_FUNCTIONS ; i++) {
@@ -2610,3 +2615,86 @@ int slsReceiverTCPIPInterface::set_additional_json_header() {
     // return ok/fail
     return ret;
 }
+
+
+
+int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int index = -1;
+    int retval = -1;
+
+    // receive arguments
+    if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
+        return printSocketReadError();
+
+    // execute action
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+    if (receiverBase == NULL)
+        invalidReceiverObject();
+    else {
+        // set
+        if(index >= 0) {
+            if (mySock->differentClients && lockStatus)
+                receiverlocked();
+            else if (receiverBase->getStatus() != IDLE)
+                receiverNotIdle();
+            else {
+                if (receiverBase->setUDPSocketBufferSize(index) == FAIL) {
+                    ret = FAIL;
+                    strcpy(mess, "Could not create dummy UDP Socket to test buffer size\n");
+                    FILE_LOG(logERROR) << mess;
+                }
+            }
+        }
+        //get
+        retval=receiverBase->getUDPSocketBufferSize();
+        if(index >= 0 && retval != index) {
+            ret = FAIL;
+            strcpy(mess, "Could not set UDP Socket buffer size\n");
+            FILE_LOG(logERROR) << mess;
+        }
+    }
+#endif
+#ifdef VERYVERBOSE
+    FILE_LOG(logDEBUG1) << "UDP Socket Buffer Size:" << retval;
+#endif
+
+    if (ret == OK && mySock->differentClients)
+        ret = FORCE_UPDATE;
+
+    // send answer
+    mySock->SendDataOnly(&ret,sizeof(ret));
+    if (ret == FAIL)
+        mySock->SendDataOnly(mess,sizeof(mess));
+    mySock->SendDataOnly(&retval,sizeof(retval));
+
+    // return ok/fail
+    return ret;
+}
+
+
+
+int slsReceiverTCPIPInterface::get_real_udp_socket_buffer_size(){
+    ret = OK;
+    int retval = -1;
+
+    // execute action
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+    if (receiverBase == NULL)
+        invalidReceiverObject();
+    else retval = receiverBase->getActualUDPSocketBufferSize();
+#endif
+
+    if (ret == OK && mySock->differentClients)
+        ret = FORCE_UPDATE;
+
+    // send answer
+    mySock->SendDataOnly(&ret,sizeof(ret));
+    mySock->SendDataOnly(&retval,sizeof(retval));
+
+    // return ok/fail
+    return ret;
+}
+
+

@@ -277,6 +277,18 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
      */
     char *getAdditionalJsonHeader() const;
 
+    /** (not saved in client shared memory)
+     * Get UDP Socket Buffer Size
+     * @return UDP Socket Buffer Size
+     */
+    uint32_t getUDPSocketBufferSize() const;
+
+
+    /** (not saved in client shared memory)
+     * Get actual UDP Socket Buffer Size
+     * @return actual UDP Socket Buffer Size
+     */
+    uint32_t getActualUDPSocketBufferSize() const;
 
 	/*************************************************************************
 	 * Setters ***************************************************************
@@ -566,6 +578,13 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
      */
     void setAdditionalJsonHeader(const char* c);
 
+    /** (not saved in client shared memory)
+     * Set UDP Socket Buffer Size
+     * @param s UDP Socket Buffer Size
+     * @return OK or FAIL if dummy socket could be created
+     */
+    int setUDPSocketBufferSize(const uint32_t s);
+
 	/*
 	 * Restream stop dummy packet from receiver
 	 * @return OK or FAIL
@@ -691,6 +710,10 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	char eth[MAX_STR_LENGTH];
 	/** Server UDP Port Number*/
 	uint32_t udpPortNum[MAX_NUMBER_OF_LISTENING_THREADS];
+	/** udp socket buffer size */
+	uint32_t udpSocketBufferSize;
+    /** actual UDP Socket Buffer Size (halved due to kernel bookkeeping) */
+    uint32_t actualUDPSocketBufferSize;
 
 	//***file parameters***
 	/** File format */

@@ -197,7 +197,9 @@ enum networkParameter {
   CLIENT_STREAMING_PORT,	/**< client streaming TCP(ZMQ) port */
   RECEIVER_STREAMING_SRC_IP,/**< receiever streaming TCP(ZMQ) ip */
   CLIENT_STREAMING_SRC_IP,	/**< client streaming TCP(ZMQ) ip */
-  ADDITIONAL_JSON_HEADER    /**< additional json header (ZMQ) */
+  ADDITIONAL_JSON_HEADER,    /**< additional json header (ZMQ) */
+  RECEIVER_UDP_SCKT_BUF_SIZE, /**< UDP socket buffer size */
+  RECEIVER_REAL_UDP_SCKT_BUF_SIZE /**< real UDP socket buffer size */
 };
 
 /**

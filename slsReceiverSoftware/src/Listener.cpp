@@ -20,7 +20,8 @@ const string Listener::TypeName = "Listener";
 
 
 Listener::Listener(int& ret, int ind, detectorType dtype, Fifo*& f, runStatus* s,
-        uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr) :
+        uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr,
+        uint32_t* us, uint32_t* as) :
 		ThreadObject(ind),
 		runningFlag(0),
 		generalData(0),
@@ -44,7 +45,9 @@ Listener::Listener(int& ret, int ind, detectorType dtype, Fifo*& f, runStatus* s
 		carryOverPacket(0),
 		listeningPacket(0),
 		udpSocketAlive(0),
-		silentMode(false)
+		silentMode(false),
+		udpSocketBufferSize(us),
+		actualUDPSocketBufferSize(as)
 {
     ret = FAIL;
 	if(ThreadObject::CreateThread() == OK)
@@ -182,15 +185,17 @@ int Listener::CreateUDPSockets() {
 
 	//if eth is mistaken with ip address
 	if (strchr(eth,'.') != NULL){
-		strncpy(eth,"", MAX_STR_LENGTH);
+	    memset(eth, 0, MAX_STR_LENGTH);
 	}
 	if(!strlen(eth)){
 		FILE_LOG(logWARNING) << "eth is empty. Listening to all";
 	}
 
 	ShutDownUDPSocket();
-	udpSocket = new genericSocket(*udpPortNumber, genericSocket::UDP,
-			generalData->packetSize, (strlen(eth)?eth:NULL), generalData->headerPacketSize);
+
+    udpSocket = new genericSocket(*udpPortNumber, genericSocket::UDP,
+			generalData->packetSize, (strlen(eth)?eth:NULL), generalData->headerPacketSize,
+			*udpSocketBufferSize);
 	int iret = udpSocket->getErrorStatus();
 	if(!iret){
 		FILE_LOG(logINFO) << index << ": UDP port opened at port " << *udpPortNumber;
@@ -200,6 +205,10 @@ int Listener::CreateUDPSockets() {
 	}
 	udpSocketAlive = true;
     sem_init(&semaphore_socket,1,0);
+
+    // doubled due to kernel bookkeeping (could also be less due to permissions)
+    *actualUDPSocketBufferSize = udpSocket->getActualUDPSocketBufferSize();
+
 	return OK;
 }
 
@@ -222,6 +231,54 @@ void Listener::ShutDownUDPSocket() {
 
 void Listener::SetSilentMode(bool mode) {
     silentMode = mode;
+}
+
+
+int Listener::CreateDummySocketForUDPSocketBufferSize(uint32_t s) {
+    uint32_t temp = *udpSocketBufferSize;
+    *udpSocketBufferSize = s;
+
+    if (!(*activated))
+        return OK;
+
+
+
+    //if eth is mistaken with ip address
+    if (strchr(eth,'.') != NULL){
+        memset(eth, 0, MAX_STR_LENGTH);
+    }
+
+    // shutdown if any open
+    if(udpSocket){
+        udpSocket->ShutDownSocket();
+        delete udpSocket;
+    }
+
+    //create dummy socket
+    udpSocket = new genericSocket(*udpPortNumber, genericSocket::UDP,
+            generalData->packetSize, (strlen(eth)?eth:NULL), generalData->headerPacketSize,
+            *udpSocketBufferSize);
+    int iret = udpSocket->getErrorStatus();
+    if (iret){
+        FILE_LOG(logERROR) << "Could not create a test UDP socket on port " << *udpPortNumber << " error: " << iret;
+        return FAIL;
+    }
+
+    // doubled due to kernel bookkeeping (could also be less due to permissions)
+    *actualUDPSocketBufferSize = udpSocket->getActualUDPSocketBufferSize();
+    if (*actualUDPSocketBufferSize != (s*2))
+        *udpSocketBufferSize = temp;
+
+
+    // shutdown socket
+    if(udpSocket){
+        udpSocketAlive = false;
+        udpSocket->ShutDownSocket();
+        delete udpSocket;
+        udpSocket = 0;
+    }
+
+    return OK;
 }
 
 

@@ -332,7 +332,7 @@ class UDPInterface {
 	 */
 	virtual slsReceiverDefs::runStatus getStatus() const = 0;
 
-	/**
+	/** (not saved in client shared memory)
 	 * Get Silent Mode
 	 * @return silent mode
 	 */
@@ -364,6 +364,18 @@ class UDPInterface {
      */
     virtual char *getAdditionalJsonHeader() const = 0;
 
+
+    /** (not saved in client shared memory)
+     * Get UDP Socket Buffer Size
+     * @return UDP Socket Buffer Size
+     */
+    virtual uint32_t getUDPSocketBufferSize() const = 0;
+
+    /** (not saved in client shared memory)
+     * Get actual UDP Socket Buffer Size
+     * @return actual UDP Socket Buffer Size
+     */
+    virtual uint32_t getActualUDPSocketBufferSize() const = 0;
 
 	/*************************************************************************
 	 * Setters ***************************************************************
@@ -654,6 +666,13 @@ class UDPInterface {
      * Set additional json header
      */
     virtual void setAdditionalJsonHeader(const char* c) = 0;
+
+    /** (not saved in client shared memory)
+     * Set UDP Socket Buffer Size
+     * @param s UDP Socket Buffer Size
+     * @return OK or FAIL if dummy socket could be created
+     */
+    virtual int setUDPSocketBufferSize(const uint32_t s) = 0;
 
 	/*
 	 * Restream stop dummy packet from receiver

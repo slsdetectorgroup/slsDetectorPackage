@@ -49,6 +49,8 @@ class sockaddr_in;
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <ifaddrs.h>
+#include <sys/prctl.h> // capabilities
+#include <linux/capability.h>
 
 #endif
 
@@ -63,7 +65,7 @@ class sockaddr_in;
 using namespace std;
 
 #define DEFAULT_PACKET_SIZE 1286
-#define SOCKET_BUFFER_SIZE (2000*1024*1024) //2GB, previously 100MB
+#define SOCKET_BUFFER_SIZE (100*1024*1024) //100 MB
 #define DEFAULT_BACKLOG 5
 
 
@@ -92,7 +94,8 @@ enum communicationProtocol{
 	 nsending(0),
 	 nsent(0),
 	 total_sent(0),// sender (client): where to? ip
-	 header_packet_size(0)
+	 header_packet_size(0),
+	 actual_udp_socket_buffer_size(0)
    { 
 	 memset(&serverAddress, 0, sizeof(serverAddress));
 	 memset(&clientAddress, 0, sizeof(clientAddress));
@@ -143,7 +146,7 @@ enum communicationProtocol{
   
    genericSocket(unsigned short int const port_number, communicationProtocol p,
            int ps = DEFAULT_PACKET_SIZE, const char *eth=NULL, int hsize=0,
-           int buf_size=SOCKET_BUFFER_SIZE):
+           uint32_t buf_size=SOCKET_BUFFER_SIZE):
      portno(port_number),
      protocol(p),
      is_a_server(1),
@@ -153,7 +156,8 @@ enum communicationProtocol{
 	 nsending(0),
 	 nsent(0),
 	 total_sent(0),
-	 header_packet_size(hsize)
+	 header_packet_size(hsize),
+	 actual_udp_socket_buffer_size(0)
    {
 
 
@@ -209,47 +213,67 @@ enum communicationProtocol{
 
 
      // reuse port
-     int val=1;
-     if (setsockopt(socketDescriptor,SOL_SOCKET,SO_REUSEADDR,&val,sizeof(int)) == -1) {
-         cprintf(RED, "setsockopt REUSEADDR failed\n");
-    	 socketDescriptor=-1;
-         return;
+     {
+         int val=1;
+         if (setsockopt(socketDescriptor,SOL_SOCKET,SO_REUSEADDR,&val,sizeof(int)) == -1) {
+             cprintf(RED, "setsockopt REUSEADDR failed\n");
+             socketDescriptor=-1;
+             return;
+         }
      }
-
 
      //increase buffer size if its udp
      if (p == UDP) {
-         val = buf_size;
-         int real_val = -1;
+         uint32_t desired_size = buf_size;
+         uint32_t real_size = desired_size * 2; // kernel doubles this value for bookkeeping overhead
+         uint32_t ret_size = -1;
          socklen_t optlen = sizeof(int);
-         // set buffer size (could not set)
-         if (setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUF, &val, optlen) == -1) {
-             FILE_LOG(logWARNING) << "Could not set socket receive buffer size: "
-                     << val << " : no root privileges?";
+
+        // confirm if sufficient
+         if (getsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUF, &ret_size, &optlen) == -1) {
+             FILE_LOG(logWARNING) << "[Port " << port_number << "] Could not get Socket Receive Buffer Size";
+         } else if (ret_size >= real_size) {
+             actual_udp_socket_buffer_size = ret_size;
+#ifdef VEBOSE
+         FILE_LOG(logINFO) << "[Port " << port_number << "] UDP Socket Buffer Size is sufficient (" << ret_size << ")";
+#endif
          }
-         // confirm size (could not get)
-         else if (getsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUF, &real_val, &optlen) == -1) {
-             FILE_LOG(logWARNING) << "Could not get socket receive buffer size";
-         }
-         // set buffer size worked if real val is twice the requested value
-         else if (real_val == val * 2) {
-             cprintf(GREEN, "UDP Socket buffer size modified to %d\n", real_val);
-         }
-         // buffer size too large
+
+         // not sufficient, enhance size
          else {
-             // force a value larger than system limit (if run in a privileged context (capability CAP_NET_ADMIN set))
-             int ret = setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUFFORCE, &val, optlen);
-             getsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUF, &real_val, &optlen);
-             if (ret == -1) {
-                 FILE_LOG(logWARNING) << "Could not force socket receive buffer size to "
-                         << val << ", real size is " << real_val <<
-                         " : no root privileges?";
-             } else {
-                 cprintf(GREEN,  "UDP socket buffer size modified to %d\n", real_val);
+             // set buffer size (could not set)
+             if (setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUF, &desired_size, optlen) == -1) {
+                 FILE_LOG(logWARNING) << "[Port " << port_number << "] Could not set Socket Receive Buffer Size to "
+                         << desired_size << ". No Root Privileges?";
+             }
+             // confirm size
+             else if (getsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUF, &ret_size, &optlen) == -1) {
+                 FILE_LOG(logWARNING) << "[Port " << port_number << "] Could not get Socket Receive Buffer Size";
+             }
+             else if (ret_size >= real_size) {
+                 actual_udp_socket_buffer_size = ret_size;
+                 FILE_LOG(logINFO) << "[Port " << port_number << "] UDP Socket Buffer Size modified to " << ret_size;
+             }
+             // buffer size too large
+             else {
+                 actual_udp_socket_buffer_size = ret_size;
+                 cprintf(BLUE, "[Port %u] wanted : %u, actualsize: %u\n", port_number, real_size, ret_size);
+                 // force a value larger than system limit (if run in a privileged context (capability CAP_NET_ADMIN set))
+                 int ret = setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUFFORCE, &desired_size, optlen);
+                 getsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUF, &ret_size, &optlen);
+                 if (ret == -1) {
+                     FILE_LOG(logWARNING) << "[Port " << port_number << "] "
+                             "Could not force Socket Receive Buffer Size to "
+                             << desired_size << ". Real size is " << ret_size <<
+                             ". (No Root Privileges?)\n"
+                             "Set rx_udpsocksize from the client to <= " <<
+                             (ret_size/2) << " (Real size:" << ret_size << ") to remove this warning.\n";
+                 } else {
+                     FILE_LOG(logINFO) << "[Port " << port_number << "] UDP socket buffer size modified to " << ret_size;
+                 }
              }
          }
      }
-
 
 
      if(bind(socketDescriptor,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
@@ -267,8 +291,13 @@ enum communicationProtocol{
 
 
 
-
-
+   /**
+    * Returns actual udp socket buffer size/2.
+    * Halving is because of kernel book keeping
+    */
+   int getActualUDPSocketBufferSize(){
+       return actual_udp_socket_buffer_size;
+   }
 
 
 
@@ -464,7 +493,7 @@ enum communicationProtocol{
 
 
      void ShutDownSocket(){
-    	 while(!shutdown(socketDescriptor, SHUT_RDWR));
+    	 shutdown(socketDescriptor, SHUT_RDWR);
     	 Disconnect();
      };
 
@@ -801,6 +830,7 @@ enum communicationProtocol{
   int nsent;
   int total_sent;
   int header_packet_size;
+  int actual_udp_socket_buffer_size;
 
   // pthread_mutex_t mp;
 };

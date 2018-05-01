@@ -1833,6 +1833,11 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   string getReceiverStreamingIP(){return string(thisDetector->receiver_zmqip);};
   /** gets the additional json header, returns "none" if default setting and no custom set*/
   string getAdditionalJsonHeader(){return string(thisDetector->receiver_additionalJsonHeader);};
+  /** returns the receiver UDP socket buffer size  */
+   string getReceiverUDPSocketBufferSize() {return setReceiverUDPSocketBufferSize();};
+   /** returns the real receiver UDP socket buffer size  */
+   string getReceiverRealUDPSocketBufferSize();
+
 
   /** validates the format of detector MAC address and sets it \sa sharedSlsDetector  */
   string setDetectorMAC(string detectorMAC);
@@ -1858,6 +1863,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   string setReceiverStreamingIP(string sourceIP);
   /** additional json header, returns "none" if default setting and no custom set */
   string setAdditionalJsonHeader(string jsonheader);
+  /** sets the receiver UDP socket buffer size  */
+   string setReceiverUDPSocketBufferSize(int udpsockbufsize=-1);
 
   /** sets the transmission delay for left or right port or for an entire frame*/
   string setDetectorNetworkParameter(networkParameter index, int delay);

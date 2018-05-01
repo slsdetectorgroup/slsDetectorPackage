@@ -7,6 +7,7 @@
 //socket
 #define GOODBYE 						-200
 #define RECEIVE_SOCKET_BUFFER_SIZE 		(100*1024*1024)
+
 #define MAX_SOCKET_INPUT_PACKET_QUEUE 	250000
 
 

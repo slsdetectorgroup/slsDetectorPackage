@@ -1978,6 +1978,21 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
 	++i;
 
+    /*! \page network
+   - <b>rx_udpsocksize [size]</b> sets/gets the UDP socket buffer size. Already trying to set by default to 100mb, 2gb for Jungfrau. Does not remember in client shared memory, so must be initialized each time after setting receiver hostname in config file.\c Returns \c (int)
+     */
+    descrToFuncMap[i].m_pFuncName="rx_udpsocksize"; //
+    descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
+    ++i;
+
+    /*! \page network
+   - <b>rx_realudpsocksize [size]</b> gets the actual UDP socket buffer size. Usually double the set udp socket buffer size due to kernel bookkeeping. Get only. \c Returns \c (int)
+     */
+    descrToFuncMap[i].m_pFuncName="rx_realudpsocksize"; //
+    descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
+    ++i;
+
+
 	/*! \page network
    - <b>detectormac [mac]</b> sets/gets the mac address of the detector UDP interface from where the detector will stream data. Use single-detector command. Normally unused. \c Returns \c (string)
 	 */
@@ -4071,7 +4086,18 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
 			if (!(sscanf(args[1],"%d",&i)))
 				return ("cannot parse argument") + string(args[1]);
 		}
-	} else if (cmd=="txndelay_left") {
+	} else if (cmd=="rx_udpsocksize") {
+        t=RECEIVER_UDP_SCKT_BUF_SIZE;
+        if (action==PUT_ACTION){
+            if (!(sscanf(args[1],"%d",&i)))
+                return ("cannot parse argument") + string(args[1]);
+        }
+    } else if (cmd=="rx_realudpsocksize") {
+        t=RECEIVER_REAL_UDP_SCKT_BUF_SIZE;
+        if (action==PUT_ACTION){
+            return ("cannot put!");
+        }
+    } else if (cmd=="txndelay_left") {
 		t=DETECTOR_TXN_DELAY_LEFT;
 		if (action==PUT_ACTION){
 			if (!(sscanf(args[1],"%d",&i)))
@@ -4165,6 +4191,10 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
 		os << "rx_jsonaddheader [t]\n sets additional json header to be streamed "
 		        "out with the zmq from receiver. Default is empty. t must be in the format '\"label1\":\"value1\",\"label2\":\"value2\"' etc."
 		        "Use only if it needs to be processed by an intermediate process." << std::endl;
+		os << "rx_udpsocksize [t]\n sets the UDP socket buffer size. Different defaults for Jungfrau. "
+		        "Does not remember in client shared memory, "
+		        "so must be initialized each time after setting receiver "
+		        "hostname in config file." << std::endl;
 	}
 	if (action==GET_ACTION || action==HELP_ACTION) {
 		os << "detectormac \n gets detector mac "<< std::endl;
@@ -4183,6 +4213,9 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
 		os << "rx_zmqip \n gets/gets the 0MQ (TCP) ip of the receiver from where data is streamed from. If no custom ip, empty until first time connect to receiver" << std::endl;
         os << "rx_jsonaddheader \n gets additional json header to be streamed "
                 "out with the zmq from receiver." << std::endl;
+        os << "rx_udpsocksize \n gets the UDP socket buffer size." << std::endl;
+        os << "rx_realudpsocksize \n gets the actual UDP socket buffer size. Usually double the set udp socket buffer size due to kernel bookkeeping." << std::endl;
+
 	}
 	return os.str();
 

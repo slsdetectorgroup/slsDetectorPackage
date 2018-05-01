@@ -83,6 +83,9 @@ public:
 	/** if standard header implemented in firmware */
 	bool standardheader;
 
+	/** default udp socket buffer size */
+	uint32_t defaultUdpSocketBufferSize;
+
 
 
 
@@ -109,7 +112,8 @@ public:
 		nPixelsXComplete(0),
 		nPixelsYComplete(0),
 		imageSizeComplete(0),
-		standardheader(false)
+		standardheader(false),
+		defaultUdpSocketBufferSize(RECEIVE_SOCKET_BUFFER_SIZE)
 		{};
 
 	/** Destructor */
@@ -214,6 +218,7 @@ public:
 		FILE_LOG(logDEBUG) << "Complete Pixels Y: " << nPixelsYComplete;
 		FILE_LOG(logDEBUG) << "Complete Image Size: " << imageSizeComplete;
 		FILE_LOG(logDEBUG) << "Standard Header: " << standardheader;
+		FILE_LOG(logDEBUG) << "UDP Socket Buffer Size: " << defaultUdpSocketBufferSize;
 	};
 };
 
@@ -494,6 +499,7 @@ class JungfrauData : public GeneralData {
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 2500;
 		standardheader		= true;
+		defaultUdpSocketBufferSize = (2000 * 1024 * 1024);
 	};
 
 };

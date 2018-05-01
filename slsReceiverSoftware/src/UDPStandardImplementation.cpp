@@ -360,6 +360,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	}
 	numThreads = generalData->threadsPerReceiver;
 	fifoDepth = generalData->defaultFifoDepth;
+	udpSocketBufferSize = generalData->defaultUdpSocketBufferSize;
 
 	//local network parameters
 	SetLocalNetworkParameters();
@@ -375,11 +376,14 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	for ( int i = 0; i < numThreads; ++i ) {
 
 	    int ret = FAIL;
-	    Listener* l = new Listener(ret, i, myDetectorType, fifo[i], &status, &udpPortNum[i], eth, &activated, &numberOfFrames, &dynamicRange);
+	    Listener* l = new Listener(ret, i, myDetectorType, fifo[i], &status,
+	            &udpPortNum[i], eth, &activated, &numberOfFrames, &dynamicRange,
+	            &udpSocketBufferSize, &actualUDPSocketBufferSize);
 	    DataProcessor* p = NULL;
 	    if (ret == OK)
 	        p = new DataProcessor(ret, i, fifo[i], &fileFormatType,
-	                fileWriteEnable, &dataStreamEnable, &gapPixelsEnable, &dynamicRange, &frameToGuiFrequency, &frameToGuiTimerinMS,
+	                fileWriteEnable, &dataStreamEnable, &gapPixelsEnable,
+	                &dynamicRange, &frameToGuiFrequency, &frameToGuiTimerinMS,
 	                rawDataReadyCallBack, rawDataModifyReadyCallBack, pRawDataReady);
 
 	    // error in creating threads
@@ -405,6 +409,9 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 		(*it)->SetGeneralData(generalData);
 
 	SetThreadPriorities();
+
+	// check udp socket buffer size
+	setUDPSocketBufferSize(udpSocketBufferSize);
 
 	FILE_LOG(logDEBUG) << " Detector type set to " << getDetectorType(d);
 	return OK;
@@ -629,6 +636,10 @@ void UDPStandardImplementation::closeFiles() {
 		dataProcessor[0]->EndofAcquisition(maxIndexCaught);
 }
 
+int UDPStandardImplementation::setUDPSocketBufferSize(const uint32_t s) {
+    if (listener.size())
+        return listener[0]->CreateDummySocketForUDPSocketBufferSize(s);
+}
 
 int UDPStandardImplementation::restreamStop() {
 	bool ret = OK;
@@ -666,8 +677,8 @@ void UDPStandardImplementation::SetLocalNetworkParameters() {
 	                 MAX_SOCKET_INPUT_PACKET_QUEUE);
 	    } else {
 	        const char *msg = "Could not change max length of"
-	                "input packet queue (net.core.netdev_max_backlog): no root privileges?";
-	        cprintf(RED, "WARNING: %s\n", msg);
+	                "input packet queue (net.core.netdev_max_backlog). No Root Privileges?";
+	        FILE_LOG(logWARNING) << msg;
 	    }
 	}
 }
@@ -678,7 +689,7 @@ void UDPStandardImplementation::SetThreadPriorities() {
 
 	for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it){
 		if ((*it)->SetThreadPriority(LISTENER_PRIORITY) == FAIL) {
-			FILE_LOG(logWARNING) << "No root privileges to prioritize listener threads";
+			FILE_LOG(logWARNING) << "Could not prioritize listener threads. No Root Privileges?";
 			return;
 		}
 	}

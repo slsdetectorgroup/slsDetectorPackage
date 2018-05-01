@@ -6257,6 +6257,10 @@ string slsDetector::setNetworkParameter(networkParameter index, string value) {
 		return setReceiverStreamingIP(value);
 	case ADDITIONAL_JSON_HEADER:
 	    return setAdditionalJsonHeader(value);
+	case RECEIVER_UDP_SCKT_BUF_SIZE:
+	    sscanf(value.c_str(),"%d",&i);
+	    setReceiverUDPSocketBufferSize(i);
+	    return getReceiverUDPSocketBufferSize();
 
   default:
     return (char*)("unknown network parameter");
@@ -6298,6 +6302,11 @@ string slsDetector::getNetworkParameter(networkParameter index) {
 	return getReceiverStreamingIP();
   case ADDITIONAL_JSON_HEADER:
       return getAdditionalJsonHeader();
+  case RECEIVER_UDP_SCKT_BUF_SIZE:
+      return getReceiverUDPSocketBufferSize();
+  case RECEIVER_REAL_UDP_SCKT_BUF_SIZE:
+      return getReceiverRealUDPSocketBufferSize();
+
   default:
     return (char*)("unknown network parameter");
   }
@@ -6723,6 +6732,64 @@ string slsDetector::setAdditionalJsonHeader(string jsonheader) {
     return getAdditionalJsonHeader();
 }
 
+
+string slsDetector::setReceiverUDPSocketBufferSize(int udpsockbufsize) {
+
+    int fnum=F_RECEIVER_UDP_SOCK_BUF_SIZE;
+    int ret = FAIL;
+    int retval = -1;
+    int arg = udpsockbufsize;
+
+    if(thisDetector->receiverOnlineFlag == ONLINE_FLAG){
+#ifdef VERBOSE
+        std::cout << "Sending UDP Socket Buffer size to receiver " << arg << std::endl;
+#endif
+        if (connectData() == OK){
+            ret=thisReceiver->sendInt(fnum,retval,arg);
+            disconnectData();
+        }
+        if(ret==FAIL) {
+            setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
+            std::cout << "Warning: Could not set udp socket buffer size" << std::endl;
+        }
+        if(ret==FORCE_UPDATE)
+            updateReceiver();
+    }
+
+    ostringstream ss;
+    ss << retval;
+    string s = ss.str();
+    return s;
+}
+
+
+string slsDetector::getReceiverRealUDPSocketBufferSize() {
+
+    int fnum=F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE;
+    int ret = FAIL;
+    int retval = -1;
+
+    if(thisDetector->receiverOnlineFlag == ONLINE_FLAG){
+#ifdef VERBOSE
+        std::cout << "Getting real UDP Socket Buffer size to receiver " << std::endl;
+#endif
+        if (connectData() == OK){
+            ret=thisReceiver->getInt(fnum,retval);
+            disconnectData();
+        }
+        if(ret==FAIL) {
+            setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
+            std::cout << "Warning: Could not get real socket buffer size" << std::endl;
+        }
+        if(ret==FORCE_UPDATE)
+            updateReceiver();
+    }
+
+    ostringstream ss;
+    ss << retval;
+    string s = ss.str();
+    return s;
+}
 
 
 string slsDetector::setDetectorNetworkParameter(networkParameter index, int delay){

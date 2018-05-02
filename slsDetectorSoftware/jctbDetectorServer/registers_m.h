@@ -20,7 +20,7 @@
 #define FPGA_INIT_ADDR    0xb0000000
 
 //#ifdef JUNGFRAU_DHANYA
-#define POWER_ON_REG 			0x5e<<11
+#define POWER_ON_REG 			0x5e << MEM_MAP_SHIFT
 //  Pwr_I2C_SDA <= PowerReg_s(1) when PowerReg_s(3)='1' else 'Z';
 //  Pwr_I2C_SCL <= PowerReg_s(0) when PowerReg_s(2)='1' else 'Z';
 
@@ -29,71 +29,71 @@
 #define PWR_I2C_SCL_EN_BIT  2
 #define PWR_I2C_SDA_EN_BIT  3
 
-#define POWER_STATUS_REG 		41<<11	
+#define POWER_STATUS_REG 		41 << MEM_MAP_SHIFT	
 
 #define ADCREG1 			0x08  
 #define ADCREG2 			0x14//20 
 #define ADCREG3 			0x4  
 #define ADCREG4 			0x5  
 #define ADCREG_VREFS 			24 
-#define DBIT_PIPELINE_REG 		89<<11 //0x59 same PATTERN_N_LOOP2_REG
-#define MEM_MACHINE_FIFOS_REG 		79<<11 //from gotthard
-#define CONFGAIN_REG 			93<<11 //from gotthard
-#define ADC_PIPELINE_REG 		66<<11 //0x42 same as ADC_OFFSET_REG
+#define DBIT_PIPELINE_REG 		89 << MEM_MAP_SHIFT //0x59 same PATTERN_N_LOOP2_REG
+#define MEM_MACHINE_FIFOS_REG 		79 << MEM_MAP_SHIFT //from gotthard
+#define CONFGAIN_REG 			93 << MEM_MAP_SHIFT //from gotthard
+#define ADC_PIPELINE_REG 		66 << MEM_MAP_SHIFT //0x42 same as ADC_OFFSET_REG
 //#endif
 
-//#define ADC_OFFSET_REG      		93<<11 //same as DAQ_REG
-#define ADC_INVERSION_REG   		67<<11
+//#define ADC_OFFSET_REG      		93 << MEM_MAP_SHIFT //same as DAQ_REG
+#define ADC_INVERSION_REG   		67 << MEM_MAP_SHIFT
 
-#define DAC_REG     64<<11//0x17<<11// control the dacs
+#define DAC_REG     64 << MEM_MAP_SHIFT//0x17 << MEM_MAP_SHIFT// control the dacs
 //ADC
-#define ADC_WRITE_REG         65<<11//0x18<<11
-//#define ADC_SYNC_REG          66<<11//0x19<<11
-//#define HV_REG                67<<11//0x20<<11
+#define ADC_WRITE_REG         65 << MEM_MAP_SHIFT//0x18 << MEM_MAP_SHIFT
+//#define ADC_SYNC_REG          66 << MEM_MAP_SHIFT//0x19 << MEM_MAP_SHIFT
+//#define HV_REG                67 << MEM_MAP_SHIFT//0x20 << MEM_MAP_SHIFT
 
 
 
 
-//#define MUTIME_REG            0x1a<<11
+//#define MUTIME_REG            0x1a << MEM_MAP_SHIFT
 //temperature
-#define TEMP_IN_REG           0x1b<<11
-#define TEMP_OUT_REG          0x1c<<11
+#define TEMP_IN_REG           0x1b << MEM_MAP_SHIFT
+#define TEMP_OUT_REG          0x1c << MEM_MAP_SHIFT
 //configure MAC
-#define TSE_CONF_REG          0x1d<<11
-#define ENET_CONF_REG         0x1e<<11
-//#define WRTSE_SHAD_REG        0x1f<<11
+#define TSE_CONF_REG          0x1d << MEM_MAP_SHIFT
+#define ENET_CONF_REG         0x1e << MEM_MAP_SHIFT
+//#define WRTSE_SHAD_REG        0x1f << MEM_MAP_SHIFT
 //HV
 
 
-#define DUMMY_REG             68<<11//0x21<<11
-#define FPGA_VERSION_REG      0<<11 //0x22<<11
-#define PCB_REV_REG			  0<<11
-#define FIX_PATT_REG          1<<11 //0x23<<11
-#define CONTROL_REG           79<<11//0x24<<11
-#define STATUS_REG            2<<11 //0x25<<11
-#define CONFIG_REG            77<<11//0x26<<11
-#define EXT_SIGNAL_REG        78<<11//	  0x27<<11
-//#define FPGA_SVN_REG    	  0x29<<11
+#define DUMMY_REG             68 << MEM_MAP_SHIFT//0x21 << MEM_MAP_SHIFT
+#define FPGA_VERSION_REG      0 << MEM_MAP_SHIFT //0x22 << MEM_MAP_SHIFT
+#define PCB_REV_REG			  0 << MEM_MAP_SHIFT
+#define FIX_PATT_REG          1 << MEM_MAP_SHIFT //0x23 << MEM_MAP_SHIFT
+#define CONTROL_REG           79 << MEM_MAP_SHIFT//0x24 << MEM_MAP_SHIFT
+#define STATUS_REG            2 << MEM_MAP_SHIFT //0x25 << MEM_MAP_SHIFT
+#define CONFIG_REG            77 << MEM_MAP_SHIFT//0x26 << MEM_MAP_SHIFT
+#define EXT_SIGNAL_REG        78 << MEM_MAP_SHIFT//	  0x27 << MEM_MAP_SHIFT
+//#define FPGA_SVN_REG    	  0x29 << MEM_MAP_SHIFT
 
 
-#define CHIP_OF_INTRST_REG    0x2A<<11
+#define CHIP_OF_INTRST_REG    0x2A << MEM_MAP_SHIFT
 
 //FIFO
-#define LOOK_AT_ME_REG          3<<11 //0x28<<11
-#define SYSTEM_STATUS_REG       4<<11
+#define LOOK_AT_ME_REG          3 << MEM_MAP_SHIFT //0x28 << MEM_MAP_SHIFT
+#define SYSTEM_STATUS_REG       4 << MEM_MAP_SHIFT
 
-#define FIFO_DATA_REG 6<<11
-#define FIFO_STATUS_REG  7<<11
+#define FIFO_DATA_REG 6 << MEM_MAP_SHIFT
+#define FIFO_STATUS_REG  7 << MEM_MAP_SHIFT
 
 //   constant FifoDigitalInReg_c : integer := 60;
-#define FIFO_DIGITAL_DATA_LSB_REG 60<<11
-#define FIFO_DIGITAL_DATA_MSB_REG 61<<11
+#define FIFO_DIGITAL_DATA_LSB_REG 60 << MEM_MAP_SHIFT
+#define FIFO_DIGITAL_DATA_MSB_REG 61 << MEM_MAP_SHIFT
 
-#define FIFO_DATA_REG_OFF     0x50<<11 ///////
+#define FIFO_DATA_REG_OFF     0x50 << MEM_MAP_SHIFT ///////
 //to read back dac registers
-//#define MOD_DACS1_REG         0x65<<11
-//#define MOD_DACS2_REG         0x66<<11
-//#define MOD_DACS3_REG         0x67<<11
+//#define MOD_DACS1_REG         0x65 << MEM_MAP_SHIFT
+//#define MOD_DACS2_REG         0x66 << MEM_MAP_SHIFT
+//#define MOD_DACS3_REG         0x67 << MEM_MAP_SHIFT
 
 //user entered
 
@@ -102,135 +102,135 @@
 
 
 
-#define GET_ACTUAL_TIME_LSB_REG     16<<11
-#define GET_ACTUAL_TIME_MSB_REG     17<<11
+#define GET_ACTUAL_TIME_LSB_REG     16 << MEM_MAP_SHIFT
+#define GET_ACTUAL_TIME_MSB_REG     17 << MEM_MAP_SHIFT
 
-#define GET_MEASUREMENT_TIME_LSB_REG     38<<11
-#define GET_MEASUREMENT_TIME_MSB_REG     39<<11
+#define GET_MEASUREMENT_TIME_LSB_REG     38 << MEM_MAP_SHIFT
+#define GET_MEASUREMENT_TIME_MSB_REG     39 << MEM_MAP_SHIFT
 
 
-#define SET_DELAY_LSB_REG     96<<11 //0x68<<11
-#define SET_DELAY_MSB_REG     97<<11 //0x69<<11
-#define GET_DELAY_LSB_REG     18<<11//0x6a<<11
-#define GET_DELAY_MSB_REG     19<<11//0x6b<<11
+#define SET_DELAY_LSB_REG     96 << MEM_MAP_SHIFT //0x68 << MEM_MAP_SHIFT
+#define SET_DELAY_MSB_REG     97 << MEM_MAP_SHIFT //0x69 << MEM_MAP_SHIFT
+#define GET_DELAY_LSB_REG     18 << MEM_MAP_SHIFT//0x6a << MEM_MAP_SHIFT
+#define GET_DELAY_MSB_REG     19 << MEM_MAP_SHIFT//0x6b << MEM_MAP_SHIFT
 
-#define SET_CYCLES_LSB_REG    98<<11//0x6c<<11
-#define SET_CYCLES_MSB_REG    99<<11//0x6d<<11
-#define GET_CYCLES_LSB_REG    20<<11//0x6e<<11
-#define GET_CYCLES_MSB_REG    21<<11//0x6f<<11
+#define SET_CYCLES_LSB_REG    98 << MEM_MAP_SHIFT//0x6c << MEM_MAP_SHIFT
+#define SET_CYCLES_MSB_REG    99 << MEM_MAP_SHIFT//0x6d << MEM_MAP_SHIFT
+#define GET_CYCLES_LSB_REG    20 << MEM_MAP_SHIFT//0x6e << MEM_MAP_SHIFT
+#define GET_CYCLES_MSB_REG    21 << MEM_MAP_SHIFT//0x6f << MEM_MAP_SHIFT
 
-#define SET_FRAMES_LSB_REG    100<<11//0x70<<11
-#define SET_FRAMES_MSB_REG    101<<11//0x71<<11
-#define GET_FRAMES_LSB_REG    22<<11//0x72<<11
-#define GET_FRAMES_MSB_REG    23<<11//0x73<<11
+#define SET_FRAMES_LSB_REG    100 << MEM_MAP_SHIFT//0x70 << MEM_MAP_SHIFT
+#define SET_FRAMES_MSB_REG    101 << MEM_MAP_SHIFT//0x71 << MEM_MAP_SHIFT
+#define GET_FRAMES_LSB_REG    22 << MEM_MAP_SHIFT//0x72 << MEM_MAP_SHIFT
+#define GET_FRAMES_MSB_REG    23 << MEM_MAP_SHIFT//0x73 << MEM_MAP_SHIFT
 
-#define SET_PERIOD_LSB_REG    102<<11//0x74<<11
-#define SET_PERIOD_MSB_REG    103<<11//0x75<<11
-#define GET_PERIOD_LSB_REG    24<<11//0x76<<11
-#define GET_PERIOD_MSB_REG    25<<11//0x77<<11
+#define SET_PERIOD_LSB_REG    102 << MEM_MAP_SHIFT//0x74 << MEM_MAP_SHIFT
+#define SET_PERIOD_MSB_REG    103 << MEM_MAP_SHIFT//0x75 << MEM_MAP_SHIFT
+#define GET_PERIOD_LSB_REG    24 << MEM_MAP_SHIFT//0x76 << MEM_MAP_SHIFT
+#define GET_PERIOD_MSB_REG    25 << MEM_MAP_SHIFT//0x77 << MEM_MAP_SHIFT
 
-//#define PATTERN_WAIT0_TIME_REG_LSB 114<<11
-//#define PATTERN_WAIT0_TIME_REG_MSB 115<<11
-#define SET_EXPTIME_LSB_REG   114<<11//0x78<<11
-#define SET_EXPTIME_MSB_REG   115<<11//0x79<<11
-#define GET_EXPTIME_LSB_REG   26<<11//0x7a<<11
-#define GET_EXPTIME_MSB_REG   27<<11//0x7b<<11
+//#define PATTERN_WAIT0_TIME_REG_LSB 114 << MEM_MAP_SHIFT
+//#define PATTERN_WAIT0_TIME_REG_MSB 115 << MEM_MAP_SHIFT
+#define SET_EXPTIME_LSB_REG   114 << MEM_MAP_SHIFT//0x78 << MEM_MAP_SHIFT
+#define SET_EXPTIME_MSB_REG   115 << MEM_MAP_SHIFT//0x79 << MEM_MAP_SHIFT
+#define GET_EXPTIME_LSB_REG   26 << MEM_MAP_SHIFT//0x7a << MEM_MAP_SHIFT
+#define GET_EXPTIME_MSB_REG   27 << MEM_MAP_SHIFT//0x7b << MEM_MAP_SHIFT
 
-#define SET_GATES_LSB_REG     106<<11//0x7c<<11
-#define SET_GATES_MSB_REG     107<<11//0x7d<<11
-#define GET_GATES_LSB_REG     28<<11//0x7e<<11
-#define GET_GATES_MSB_REG     29<<11//0x7f<<11
+#define SET_GATES_LSB_REG     106 << MEM_MAP_SHIFT//0x7c << MEM_MAP_SHIFT
+#define SET_GATES_MSB_REG     107 << MEM_MAP_SHIFT//0x7d << MEM_MAP_SHIFT
+#define GET_GATES_LSB_REG     28 << MEM_MAP_SHIFT//0x7e << MEM_MAP_SHIFT
+#define GET_GATES_MSB_REG     29 << MEM_MAP_SHIFT//0x7f << MEM_MAP_SHIFT
 
-#define DATA_IN_LSB_REG 30<<11
-#define DATA_IN_MSB_REG 31<<11
+#define DATA_IN_LSB_REG 30 << MEM_MAP_SHIFT
+#define DATA_IN_MSB_REG 31 << MEM_MAP_SHIFT
 
-#define PATTERN_OUT_LSB_REG 32<<11
-#define PATTERN_OUT_MSB_REG 33<<11
+#define PATTERN_OUT_LSB_REG 32 << MEM_MAP_SHIFT
+#define PATTERN_OUT_MSB_REG 33 << MEM_MAP_SHIFT
 
-#define FRAMES_FROM_START_LSB_REG 34<<11
-#define FRAMES_FROM_START_MSB_REG 35<<11
+#define FRAMES_FROM_START_LSB_REG 34 << MEM_MAP_SHIFT
+#define FRAMES_FROM_START_MSB_REG 35 << MEM_MAP_SHIFT
 
-#define FRAMES_FROM_START_PG_LSB_REG 36<<11
-#define FRAMES_FROM_START_PG_MSB_REG 37<<11
+#define FRAMES_FROM_START_PG_LSB_REG 36 << MEM_MAP_SHIFT
+#define FRAMES_FROM_START_PG_MSB_REG 37 << MEM_MAP_SHIFT
 
-#define SLOW_ADC_REG 43<<11
+#define SLOW_ADC_REG 43 << MEM_MAP_SHIFT
  
    
 
-#define PLL_PARAM_REG  80<<11//0x37<<11
-#define PLL_PARAM_OUT_REG 5<<11 //0x38<<11
-#define PLL_CNTRL_REG 81<<11//0x34<<11
+#define PLL_PARAM_REG  80 << MEM_MAP_SHIFT//0x37 << MEM_MAP_SHIFT
+#define PLL_PARAM_OUT_REG 5 << MEM_MAP_SHIFT //0x38 << MEM_MAP_SHIFT
+#define PLL_CNTRL_REG 81 << MEM_MAP_SHIFT//0x34 << MEM_MAP_SHIFT
 
 
 #ifdef NEW_GBE_INTERFACE
-#define GBE_PARAM_OUT_REG 40<<11
-#define GBE_PARAM_REG 69<<11
-#define GBE_CNTRL_REG 70<<11
+#define GBE_PARAM_OUT_REG 40 << MEM_MAP_SHIFT
+#define GBE_PARAM_REG 69 << MEM_MAP_SHIFT
+#define GBE_CNTRL_REG 70 << MEM_MAP_SHIFT
 #else
-#define RX_UDP_AREG    69<<11 //rx_udpip_AReg_c     : integer:= 69; *\/ 
-#define UDPPORTS_AREG 70<<11// udpports_AReg_c   : integer:= 70; *\/
-#define RX_UDPMACL_AREG 71<<11//rx_udpmacL_AReg_c   : integer:= 71; *\/ 
-#define RX_UDPMACH_AREG 72<<11//rx_udpmacH_AReg_c   : integer:= 72; *\/
-#define DETECTORMACL_AREG 73<<11//detectormacL_AReg_c : integer:= 73; *\/
-#define DETECTORMACH_AREG 74<<11//detectormacH_AReg_c : integer:= 74; *\/ 
-#define DETECTORIP_AREG 75<<11//detectorip_AReg_c   : integer:= 75; *\/
-#define IPCHKSUM_AREG 76<<11//ipchksum_AReg_c : integer:= 76; *\/ */
+#define RX_UDP_AREG    69 << MEM_MAP_SHIFT //rx_udpip_AReg_c     : integer:= 69; *\/ 
+#define UDPPORTS_AREG 70 << MEM_MAP_SHIFT// udpports_AReg_c   : integer:= 70; *\/
+#define RX_UDPMACL_AREG 71 << MEM_MAP_SHIFT//rx_udpmacL_AReg_c   : integer:= 71; *\/ 
+#define RX_UDPMACH_AREG 72 << MEM_MAP_SHIFT//rx_udpmacH_AReg_c   : integer:= 72; *\/
+#define DETECTORMACL_AREG 73 << MEM_MAP_SHIFT//detectormacL_AReg_c : integer:= 73; *\/
+#define DETECTORMACH_AREG 74 << MEM_MAP_SHIFT//detectormacH_AReg_c : integer:= 74; *\/ 
+#define DETECTORIP_AREG 75 << MEM_MAP_SHIFT//detectorip_AReg_c   : integer:= 75; *\/
+#define IPCHKSUM_AREG 76 << MEM_MAP_SHIFT//ipchksum_AReg_c : integer:= 76; *\/ */
 #endif
 
 
-#define PATTERN_CNTRL_REG 82<<11
-#define PATTERN_LIMITS_AREG 83<<11
+#define PATTERN_CNTRL_REG 82 << MEM_MAP_SHIFT
+#define PATTERN_LIMITS_AREG 83 << MEM_MAP_SHIFT
 
-#define PATTERN_LOOP0_AREG 84<<11
-#define PATTERN_N_LOOP0_REG 85<<11
+#define PATTERN_LOOP0_AREG 84 << MEM_MAP_SHIFT
+#define PATTERN_N_LOOP0_REG 85 << MEM_MAP_SHIFT
 
-#define PATTERN_LOOP1_AREG 86<<11
-#define PATTERN_N_LOOP1_REG 87<<11
+#define PATTERN_LOOP1_AREG 86 << MEM_MAP_SHIFT
+#define PATTERN_N_LOOP1_REG 87 << MEM_MAP_SHIFT
 
-#define PATTERN_LOOP2_AREG 88<<11
-#define PATTERN_N_LOOP2_REG 89<<11
+#define PATTERN_LOOP2_AREG 88 << MEM_MAP_SHIFT
+#define PATTERN_N_LOOP2_REG 89 << MEM_MAP_SHIFT
 
-#define PATTERN_WAIT0_AREG 90<<11
-#define PATTERN_WAIT1_AREG 91<<11
-#define PATTERN_WAIT2_AREG 92<<11
-
-
-
-//#define DAQ_REG   93<<11 //unused
-#define NSAMPLES_REG 93<<11 
+#define PATTERN_WAIT0_AREG 90 << MEM_MAP_SHIFT
+#define PATTERN_WAIT1_AREG 91 << MEM_MAP_SHIFT
+#define PATTERN_WAIT2_AREG 92 << MEM_MAP_SHIFT
 
 
-#define HV_REG 95<<11
+
+//#define DAQ_REG   93 << MEM_MAP_SHIFT //unused
+#define NSAMPLES_REG 93 << MEM_MAP_SHIFT 
+
+
+#define HV_REG 95 << MEM_MAP_SHIFT
    
 
 
-#define PATTERN_IOCTRL_REG_LSB 108<<11
-#define PATTERN_IOCTRL_REG_MSB 109<<11
+#define PATTERN_IOCTRL_REG_LSB 108 << MEM_MAP_SHIFT
+#define PATTERN_IOCTRL_REG_MSB 109 << MEM_MAP_SHIFT
 
-#define PATTERN_IOCLKCTRL_REG_LSB 110<<11
-#define PATTERN_IOCLKCTRL_REG_MSB 111<<11
-#define PATTERN_IN_REG_LSB 112<<11
-#define PATTERN_IN_REG_MSB 113<<11
-#define PATTERN_WAIT0_TIME_REG_LSB 114<<11
-#define PATTERN_WAIT0_TIME_REG_MSB 115<<11
-#define PATTERN_WAIT1_TIME_REG_LSB 116<<11
-#define PATTERN_WAIT1_TIME_REG_MSB 117<<11
-#define PATTERN_WAIT2_TIME_REG_LSB 118<<11
-#define PATTERN_WAIT2_TIME_REG_MSB 119<<11
+#define PATTERN_IOCLKCTRL_REG_LSB 110 << MEM_MAP_SHIFT
+#define PATTERN_IOCLKCTRL_REG_MSB 111 << MEM_MAP_SHIFT
+#define PATTERN_IN_REG_LSB 112 << MEM_MAP_SHIFT
+#define PATTERN_IN_REG_MSB 113 << MEM_MAP_SHIFT
+#define PATTERN_WAIT0_TIME_REG_LSB 114 << MEM_MAP_SHIFT
+#define PATTERN_WAIT0_TIME_REG_MSB 115 << MEM_MAP_SHIFT
+#define PATTERN_WAIT1_TIME_REG_LSB 116 << MEM_MAP_SHIFT
+#define PATTERN_WAIT1_TIME_REG_MSB 117 << MEM_MAP_SHIFT
+#define PATTERN_WAIT2_TIME_REG_LSB 118 << MEM_MAP_SHIFT
+#define PATTERN_WAIT2_TIME_REG_MSB 119 << MEM_MAP_SHIFT
    
 //#define DAC_REG_OFF 120 
-//#define DAC_0_1_VAL_REG 120<<11 
-//#define DAC_2_3_VAL_REG 121<<11  
-//#define DAC_4_5_VAL_REG 122<<11  
-//#define DAC_6_7_VAL_REG 123<<11  
-//#define DAC_8_9_VAL_REG 124<<11  
-//#define DAC_10_11_VAL_REG 125<<11  
-//#define DAC_12_13_VAL_REG 126<<11  
-//#define DAC_14_15_VAL_REG 127<<11  
-#define DAC_VAL_REG 121<<11
-#define DAC_NUM_REG 122<<11
-#define DAC_VAL_OUT_REG 42<<11
-#define ADC_LATCH_DISABLE_REG   120<<11
+//#define DAC_0_1_VAL_REG 120 << MEM_MAP_SHIFT 
+//#define DAC_2_3_VAL_REG 121 << MEM_MAP_SHIFT  
+//#define DAC_4_5_VAL_REG 122 << MEM_MAP_SHIFT  
+//#define DAC_6_7_VAL_REG 123 << MEM_MAP_SHIFT  
+//#define DAC_8_9_VAL_REG 124 << MEM_MAP_SHIFT  
+//#define DAC_10_11_VAL_REG 125 << MEM_MAP_SHIFT  
+//#define DAC_12_13_VAL_REG 126 << MEM_MAP_SHIFT  
+//#define DAC_14_15_VAL_REG 127 << MEM_MAP_SHIFT  
+#define DAC_VAL_REG 121 << MEM_MAP_SHIFT
+#define DAC_NUM_REG 122 << MEM_MAP_SHIFT
+#define DAC_VAL_OUT_REG 42 << MEM_MAP_SHIFT
+#define ADC_LATCH_DISABLE_REG   120 << MEM_MAP_SHIFT
  
  
 
@@ -241,27 +241,27 @@
 
 /* registers defined in FPGA */
 #define GAIN_REG              0
-//#define FLOW_CONTROL_REG      0x11<<11
-//#define FLOW_STATUS_REG       0x12<<11
-//#define FRAME_REG             0x13<<11
+//#define FLOW_CONTROL_REG      0x11 << MEM_MAP_SHIFT
+//#define FLOW_STATUS_REG       0x12 << MEM_MAP_SHIFT
+//#define FRAME_REG             0x13 << MEM_MAP_SHIFT
 #define MULTI_PURPOSE_REG     0
-//#define TIME_FROM_START_REG   0x16<<11
+//#define TIME_FROM_START_REG   0x16 << MEM_MAP_SHIFT
 
 
-#define ROI_REG 0 // 0x35<<11
-#define OVERSAMPLING_REG 0 // 0x36<<11
-#define MOENCH_CNTR_REG 0 // 0x31<<11
-#define MOENCH_CNTR_OUT_REG 0 // 0x33<<11
-#define MOENCH_CNTR_CONF_REG 0 // 0x32<<11
+#define ROI_REG 0 // 0x35 << MEM_MAP_SHIFT
+#define OVERSAMPLING_REG 0 // 0x36 << MEM_MAP_SHIFT
+#define MOENCH_CNTR_REG 0 // 0x31 << MEM_MAP_SHIFT
+#define MOENCH_CNTR_OUT_REG 0 // 0x33 << MEM_MAP_SHIFT
+#define MOENCH_CNTR_CONF_REG 0 // 0x32 << MEM_MAP_SHIFT
 
 
 
 //image
-#define DARK_IMAGE_REG     0 // 0x81<<11
-#define GAIN_IMAGE_REG     0 // 0x82<<11
+#define DARK_IMAGE_REG     0 // 0x81 << MEM_MAP_SHIFT
+#define GAIN_IMAGE_REG     0 // 0x82 << MEM_MAP_SHIFT
 
 //counter block memory
-#define COUNTER_MEMORY_REG 0 // 0x85<<11
+#define COUNTER_MEMORY_REG 0 // 0x85 << MEM_MAP_SHIFT
 
 
 //not used

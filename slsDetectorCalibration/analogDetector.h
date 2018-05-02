@@ -10,6 +10,17 @@
 #include "tiffIO.h"
 
 
+#ifdef ROOTSPECTRUM
+#include <TPaveText.h> 
+#include <TLegend.h> 
+#include <TF1.h> 
+#include <TGraphErrors.h> 
+#include <TH2F.h> 
+#include <TASImage.h> 
+#include <TImage.h> 
+#include <TFile.h> 
+#endif
+
 using namespace std;
 
 #ifndef FRAMEMODE_DEF
@@ -66,11 +77,30 @@ template <class dataType> class analogDetector {
     thr=0;
     myFile=NULL;
     fm=new pthread_mutex_t ;
+#ifdef ROOTSPECTRUM
+    hs=new TH2F("hs","hs",2000,-100,10000,nx*ny,-0.5,nx*ny-0.5);
+#ifdef ROOTCLUST
+    hs3=new TH2F("hs3","hs3",2000,-100,3*3*10000,nx*ny,-0.5,nx*ny-0.5);
+    hs5=new TH2F("hs5","hs5",2000,-100,5*5*10000,nx*ny,-0.5,nx*ny-0.5);
+    hs7=new TH2F("hs7","hs7",2000,-100,7*7*10000,nx*ny,-0.5,nx*ny-0.5);
+    hs9=new TH2F("hs9","hs9",2000,-100,9*9*10000,nx*ny,-0.5,nx*ny-0.5);
+#endif
+#endif
   };
   /**
      destructor. Deletes the pdestalSubtraction array and the image
   */
-  virtual ~analogDetector() {for (int i=0; i<ny; i++) delete [] stat[i]; delete [] stat; delete [] image;};
+  virtual ~analogDetector() {for (int i=0; i<ny; i++) delete [] stat[i]; delete [] stat; delete [] image;
+#ifdef ROOTSPECTRUM
+    delete hs;
+#ifdef ROOTCLUST
+    delete hs3;
+    delete hs5;
+    delete hs7;
+    delete hs9;
+#endif
+#endif
+};
 
   /**
      constructor cloning another analog detector
@@ -111,7 +141,16 @@ template <class dataType> class analogDetector {
       }
     }
     image=new int[nx*ny];
-    
+#ifdef ROOTSPECTRUM
+    hs=(TH2F*)(orig->hs)->Clone();//new TH2F("hs","hs",(orig->hs)-getNbins,-500,9500,nx*ny,-0.5,nx*ny-0.5);
+#ifdef ROOTCLUST
+     hs3=(TH2F*)(orig->hs3)->Clone();//new TH2F("hs","hs",(orig->hs)-getNbins,-500,9500,nx*ny,-0.5,nx*ny-0.5);
+     hs5=(TH2F*)(orig->hs5)->Clone();//new TH2F("hs","hs",(orig->hs)-getNbins,-500,9500,nx*ny,-0.5,nx*ny-0.5); 
+     hs7=(TH2F*)(orig->hs7)->Clone();//new TH2F("hs","hs",(orig->hs)-getNbins,-500,9500,nx*ny,-0.5,nx*ny-0.5); 
+     hs9=(TH2F*)(orig->hs9)->Clone();//new TH2F("hs","hs",(orig->hs)-getNbins,-500,9500,nx*ny,-0.5,nx*ny-0.5); 
+#endif
+#endif
+
   }
 
 
@@ -220,6 +259,15 @@ template <class dataType> class analogDetector {
 	image[iy*nx+ix]=0;
       }
     if (cmSub) cmSub->Clear(); 
+#ifdef ROOTSPECTRUM
+    hs->Reset();
+#ifdef ROOTCLUST
+     hs3->Reset();//new TH2F("hs","hs",(orig->hs)-getNbins,-500,9500,nx*ny,-0.5,nx*ny-0.5);
+     hs5->Reset();//new TH2F("hs","hs",(orig->hs)-getNbins,-500,9500,nx*ny,-0.5,nx*ny-0.5); 
+     hs7->Reset();//new TH2F("hs","hs",(orig->hs)-getNbins,-500,9500,nx*ny,-0.5,nx*ny-0.5); 
+     hs9->Reset();//new TH2F("hs","hs",(orig->hs)-getNbins,-500,9500,nx*ny,-0.5,nx*ny-0.5); 
+#endif
+#endif
   };  
   
   /** resets the commonModeSubtraction and increases the frame index */
@@ -253,24 +301,60 @@ template <class dataType> class analogDetector {
        \param iy pixel y coordinate
        \param cm 1 adds the value to common mod, 0 skips it. Defaults to 0. - not properly implemented
     */
-    virtual void addToPedestal(double val, int ix, int iy=0){ 
-      if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
+    virtual void addToPedestal(double val, int ix, int iy=0, int cm=0){ 
+      if (ix>=0 && ix<nx && iy>=0 && iy<ny) { 
+	if (cmSub && cm>0)  { 
+	  val-=	getCommonMode(ix, iy);
+	}
 	stat[iy][ix].addToPedestal(val); 
-	if (cmSub)  {
-	  if (det) if (det->isGood(ix, iy)==0) return;
-	  cmSub->addToCommonMode(val, ix, iy);
-	};
+	/* if (cmSub && cm>0)  { */
+	/*   if (det) if (det->isGood(ix, iy)==0) return; */
+	/*   cmSub->addToCommonMode(val, ix, iy); */
+	/* }; */
       };
     }
     
-    /**
+    double getCommonMode(int ix, int iy) {
+      if (cmSub) return cmSub->getCommonMode(ix, iy);
+      else return 0;
+    }
+
+
+    virtual void addToCommonMode(char *data){ 
+      if (cmSub) {
+	for (int ix=xmin; ix<xmax; ix++) {
+	  for (int iy=ymin; iy<ymax; iy++) { 
+	    // if (getNumpedestals(ix,iy)>0) 
+	    addToCommonMode(data, ix, iy);
+	  }
+	}
+	//cout << "cm " << getCommonMode(0,0) << " " << getCommonMode(1,0) << endl;
+      }
+    }      
+    virtual void addToCommonMode(char *data, int ix, int iy=0){ 
+      if (cmSub) {
+	if (det) if (det->isGood(ix, iy)==0) return;
+	if (getNumpedestals(ix,iy)>0){
+	    cmSub->addToCommonMode(subtractPedestal(data,ix,iy,0), ix, iy);
+	    // cout << ix << " " <<subtractPedestal(data,ix,iy,0)  << endl;
+	}
+      }
+    }      
+  /**
        gets  pedestal (and common mode)
        \param ix pixel x coordinate
        \param iy pixel y coordinate
        \param cm 0 (default) without common mode subtraction, 1 with common mode subtraction (if defined)
        \returns pedestal value
     */
-    virtual double getPedestal(int ix, int iy, int cm=0){if (ix>=0 && ix<nx && iy>=0 && iy<ny) if (cmSub && cm>0) return stat[iy][ix].getPedestal()-cmSub->getCommonMode(); else return stat[iy][ix].getPedestal(); else return -1;};
+    virtual double getPedestal(int ix, int iy, int cm=0){
+      if (ix>=0 && ix<nx && iy>=0 && iy<ny) 
+	if (cmSub && cm>0) 
+	  return stat[iy][ix].getPedestal()+getCommonMode(ix,iy); 
+	else return stat[iy][ix].getPedestal(); 
+      else return -1;
+    };
+
 
     /**
        gets  pedestal rms (i.e. noise)
@@ -278,9 +362,17 @@ template <class dataType> class analogDetector {
        \param iy pixel y coordinate
        \returns pedestal rms
     */
-    virtual double getPedestalRMS(int ix, int iy){if (ix>=0 && ix<nx && iy>=0 && iy<ny) return stat[iy][ix].getPedestalRMS();else return -1;};
+    virtual double getPedestalRMS(int ix, int iy){
+      if (ix>=0 && ix<nx && iy>=0 && iy<ny) 
+	return stat[iy][ix].getPedestalRMS();
+      else return -1;
+    };
 
-   
+     virtual int getNumpedestals(int ix, int iy){
+      if (ix>=0 && ix<nx && iy>=0 && iy<ny) 
+	return stat[iy][ix].getNumpedestals();
+      else return -1;
+    };
     /**
        gets  pedestal (and common mode)
        \param ix pixel x coordinate
@@ -315,7 +407,6 @@ template <class dataType> class analogDetector {
       }
       return ped;
     };
-
 
 
 
@@ -396,17 +487,45 @@ template <class dataType> class analogDetector {
   virtual void *writeImage(const char * imgname) {
     float *gm=NULL;
     void *ret;
+#ifdef ROOTSPECTRUM
+
+      TH2F *hmap=new TH2F("hmap","hmap",nx, -0.5,nx-0.5, ny, -0.5, ny-0.5);
+
+#endif
       gm=new float[nx*ny];
       for (int ix=0; ix<nx; ix++) {
 	for (int iy=0; iy<ny; iy++) {
 	    gm[iy*nx+ix]=image[iy*nx+ix];
+#ifdef ROOTSPECTRUM
+	    hmap->SetBinContent(ix+1, iy+1,image[iy*nx+ix]);
+#endif
 	}
       }
       ret=WriteToTiff(gm, imgname, ny, nx);   
       delete [] gm;
+#ifdef ROOTSPECTRUM
+      char rootfn[10000];
+      sprintf(rootfn,"%s.root",imgname);
+      TFile *f=new TFile(rootfn,"RECREATE");
+      hs->Write("hs");
+#ifdef ROOTCLUST
+      hs3->Write("hs3");
+      hs5->Write("hs5");
+      hs7->Write("hs7");
+      hs9->Write("hs9");
+#endif    
+      hmap->Write("hmap");
+      
+
+      f->Close();
+      delete f;
+      delete hmap;
+#endif
       return ret;
   }
-   
+#ifdef ROOTSPECTRUM
+  TH2F *getSpectrum(){return hs;};
+#endif
        /**
        write 32bit tiff file containing the pedestals
        \param imgname file name to be written
@@ -416,18 +535,43 @@ template <class dataType> class analogDetector {
   virtual void *writePedestals(const char * imgname) {
     float *gm=NULL;
     void *ret;
-      gm=new float[nx*ny];
-      for (int ix=0; ix<nx; ix++) {
-	for (int iy=0; iy<ny; iy++) {
-	  if (cmSub) 
-	    gm[iy*nx+ix]=stat[iy][ix].getPedestal()-cmSub->getCommonMode();
-	  else
-	    gm[iy*nx+ix]=stat[iy][ix].getPedestal();
-	}
+    gm=new float[nx*ny];
+#ifdef ROOTSPECTRUM
+
+      TH2F *hmap=new TH2F("hmap","hmap",nx, -0.5,nx-0.5, ny, -0.5, ny-0.5);
+
+#endif
+    for (int ix=0; ix<nx; ix++) {
+      for (int iy=0; iy<ny; iy++) {
+	/* if (cmSub)  */
+	/*     gm[iy*nx+ix]=stat[iy][ix].getPedestal()-cmSub->getCommonMode(); */
+	/* else */
+	  gm[iy*nx+ix]=stat[iy][ix].getPedestal();
+#ifdef ROOTSPECTRUM
+	  hmap->SetBinContent(ix+1, iy+1,gm[iy*nx+ix]);
+#endif
       }
-      ret=WriteToTiff(gm, imgname, ny, nx);   
-      delete [] gm;
-      return ret;
+    }
+    ret=WriteToTiff(gm, imgname, ny, nx);   
+    delete [] gm;
+    
+#ifdef ROOTSPECTRUM
+    char rootfn[10000];
+    sprintf(rootfn,"%s.root",imgname);
+    TFile *f=new TFile(rootfn,"RECREATE");
+    hs->Write("hs");
+#ifdef ROOTCLUST
+    hs3->Write("hs3");
+    hs5->Write("hs5");
+    hs7->Write("hs7");
+    hs9->Write("hs9");
+#endif
+    hmap->Write("hmap");
+    f->Close();
+    delete f;
+    delete hmap;
+#endif
+    return ret;
   }
   
  /**
@@ -538,18 +682,24 @@ template <class dataType> class analogDetector {
        \param data pointer to the data
     */
     
-    virtual void addToPedestal(char *data) {
+    virtual void addToPedestal(char *data, int cm=0) {
       
       
       newFrame();
       
-      
+      if (cmSub) {
+	addToCommonMode(data);
+      }
+            
+      // cout << xmin << " " << xmax << endl;
+      // cout << ymin << " " << ymax << endl;
       for (int ix=xmin; ix<xmax; ix++) {
 	for (int iy=ymin; iy<ymax; iy++) {
+	  addToPedestal(data,ix,iy,1);
 	  
-	  
-	  addToPedestal(data,ix,iy);
-	  
+ #ifdef ROOTSPECTRUM 
+	  subtractPedestal(data,ix,iy,cm); 
+ #endif 
 	  
 	}
       }
@@ -585,6 +735,20 @@ template <class dataType> class analogDetector {
       }
       
 
+#ifdef ROOTSPECTRUM
+      delete hs;
+      hs=new TH2F("hs","hs",2000,-100,10000,(xmax-xmin)*(ymax-ymin),-0.5,(xmax-xmin)*(ymax-ymin)-0.5);
+#ifdef ROOTCLUST
+      delete hs3;
+      hs3=new TH2F("hs3","hs3",2000,-100,3*3*10000,(xmax-xmin)*(ymax-ymin),-0.5,(xmax-xmin)*(ymax-ymin)-0.5);
+      delete hs5;
+      hs5=new TH2F("hs5","hs5",2000,-100,5*5*10000,(xmax-xmin)*(ymax-ymin),-0.5,(xmax-xmin)*(ymax-ymin)-0.5);
+      delete hs7;
+      hs7=new TH2F("hs7","hs7",2000,-100,7*7*10000,(xmax-xmin)*(ymax-ymin),-0.5,(xmax-xmin)*(ymax-ymin)-0.5);
+      delete hs9;
+      hs9=new TH2F("hs9","hs9",2000,-100,9*9*10000,(xmax-xmin)*(ymax-ymin),-0.5,(xmax-xmin)*(ymax-ymin)-0.5);
+#endif
+#endif
 
     };
       /**
@@ -608,7 +772,7 @@ template <class dataType> class analogDetector {
     */
 
 
-    virtual void addToPedestal(char *data, int ix, int iy=0) {
+    virtual void addToPedestal(char *data, int ix, int iy=0, int cm=0) {
       
       
       double val;
@@ -619,7 +783,15 @@ template <class dataType> class analogDetector {
 	else
 	  val=((double*)data)[iy*nx+ix];
 	
+	  /* if (ix==10 && iy==10) */
+	  /*   cout << ix << " " << iy << " " << val ; */
+	  /* if (ix==100 && iy==100) */
+	  /*   cout << ix << " " << iy << " " << val; */
 	addToPedestal(val,ix,iy);
+	  /* if (ix==10 && iy==10) */
+	  /*   cout <<" " << getPedestal(ix,iy)<< endl; */
+	  /* if (ix==100 && iy==100) */
+	  /*   cout << " " << getPedestal(ix,iy)<< endl; */
       }
       return  ;
       
@@ -631,19 +803,19 @@ template <class dataType> class analogDetector {
        \param data pointer to the data
        \param val pointer where the pedestal subtracted data should be added. If NULL, the internal image is used
        \returns pointer to the pedestal subtracted data
-    */
-
-        
-   virtual  double *subtractPedestal(char *data, double *val=NULL) {
+    */ 
+  // virtual  int *subtractPedestal(char *data, int *val=NULL) {
+      
+    virtual  int *subtractPedestal(char *data, int *val=NULL, int cm=0) {
       
       newFrame();
-
+      
       if (val==NULL)
-	val=new double[nx*ny];
-
+	val=image;//new double[nx*ny];
+      
       for (int ix=xmin; ix<xmax; ix++) {
 	for (int iy=ymin; iy<ymax; iy++) {
-	  val[iy*nx+ix]+=subtractPedestal(data, ix, iy);
+	  val[iy*nx+ix]+=subtractPedestal(data, ix, iy,cm);
 	}
       }
       return  val;
@@ -662,8 +834,9 @@ template <class dataType> class analogDetector {
 
 
 
-   virtual  double subtractPedestal(char *data, int ix, int iy=0) {
+   virtual  double subtractPedestal(char *data, int ix, int iy=0, int cm=0) {
      double g=1.;
+     double val;
       if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
 	if (gmap) {
 	  g=gmap[iy*nx+ix];
@@ -671,10 +844,41 @@ template <class dataType> class analogDetector {
 	}
 
 	if (det)
-	  return (dataSign*det->getValue(data, ix, iy)-getPedestal(ix,iy))/g;
+	  val= (dataSign*det->getValue(data, ix, iy)-getPedestal(ix,iy,cm))/g;
 	else
-	  return (((double*)data)[iy*nx+ix]-getPedestal(ix,iy))/g;
-      }
+	  val= (((double*)data)[iy*nx+ix]-getPedestal(ix,iy))/g;
+    
+#ifdef ROOTSPECTRUM
+	hs->Fill(val,(iy-ymin)*(xmax-xmin)+(ix-xmin));
+#ifdef ROOTCLUST
+	double v3=0,v5=0,v7=0,v9=0;
+	for (int iix=-4; iix<5; iix++)
+	  for (int iiy=-4; iiy<5; iiy++) {
+	    if (det)
+	      val= (dataSign*det->getValue(data, ix+iix, iy+iiy)-getPedestal(ix+iix,iy+iiy,cm))/g;
+	    else
+	      val= (((double*)data)[(iy+iiy)*nx+ix+iix]-getPedestal(ix+iix,iy+iiy,cm))/g;
+	    
+	    if (iix>-4 && iiy>-4 && iix<4 && iiy<4) {
+	      if (iix>-3 && iiy>-3 && iix<3 && iiy<3){
+		if (iix>-2 && iiy>-2 && iix<2 && iiy<2){
+		  v3+=val;
+		}
+		v5+=val;
+	      }
+	      v7+=val;
+	    }
+	    v9+=val;
+	  }
+	hs3->Fill(v3,(iy-ymin)*(xmax-xmin)+(ix-xmin));
+	hs5->Fill(v5,(iy-ymin)*(xmax-xmin)+(ix-xmin));
+	hs7->Fill(v7,(iy-ymin)*(xmax-xmin)+(ix-xmin));
+	hs9->Fill(v9,(iy-ymin)*(xmax-xmin)+(ix-xmin));
+
+#endif
+#endif
+	return val;
+      }	  
    };
       
 
@@ -703,12 +907,20 @@ template <class dataType> class analogDetector {
      double v;
      if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
        v=subtractPedestal(data,ix,iy);
+
+/*        // cout << v << " " ; */
+/* #ifdef ROOTSPECTRUM */
+/*        // cout << (iy-ymin)*(xmax-xmin)+(ix-xmin) << endl; */
+/*        hs->Fill(v,(iy-ymin)*(xmax-xmin)+(ix-xmin)); */
+/* #endif */
        if (thr>0) {
 	 v+=0.5*thr;
 	 nph=v/thr;
-	 return nph;
-       } else
-	 return v;
+	 if (nph>0)
+	   return nph;
+	 return 0;
+       } 
+       return v;
      }
      return 0;  
    };
@@ -722,15 +934,18 @@ template <class dataType> class analogDetector {
      int *getNPhotons(char *data,  int *nph=NULL) {
        
        double val;
-     if (nph==NULL)
-       nph=image;
-     newFrame();
-     for (int ix=xmin; ix<xmax; ix++) {
-       for (int iy=ymin; iy<ymax; iy++) {
-	 nph[iy*nx+ix]+=getNPhotons(data, ix, iy);
+       if (nph==NULL)
+	 nph=image;
+       newFrame();
+
+       addToCommonMode(data);
+
+       for (int ix=xmin; ix<xmax; ix++) {
+	 for (int iy=ymin; iy<ymax; iy++) {
+	   nph[iy*nx+ix]+=getNPhotons(data, ix, iy);
+	 }
        }
-     }
-     return nph;
+       return nph;
      
    }
 
@@ -744,6 +959,23 @@ template <class dataType> class analogDetector {
 	 image[iy*nx+ix]=0;
        }
      }
+#ifdef ROOTSPECTRUM
+     //cout << "reset histogram " << endl;
+     if (hs)
+       hs->Reset();
+#ifdef ROOTCLUST
+
+     if (hs3)
+       hs3->Reset();
+     if (hs5)
+       hs5->Reset();
+     if (hs7)
+       hs7->Reset();
+     if (hs9)
+       hs9->Reset();
+#endif
+     //cout << "done " << endl;
+#endif
    };
 
     /** sets/gets number of samples for moving average pedestal calculation
@@ -806,10 +1038,12 @@ template <class dataType> class analogDetector {
     virtual void processData(char *data,int *val=NULL) {
       switch(fMode) {
       case ePedestal:
+	//	cout << "ped " << endl;
 	addToPedestal(data);
 	break;
       default:
-	getNPhotons(data,val);
+	//subtractPedestal(data);
+	getNPhotons(data);
       }
     };
 
@@ -831,13 +1065,13 @@ template <class dataType> class analogDetector {
     \param f file pointer
     \returns current file pointer
 */
-    FILE *setFilePointer(FILE *f){myFile=f; return myFile;};
+FILE *setFilePointer(FILE *f){myFile=f; return myFile;};
 
 /** gets file pointer where to write the clusters to 
     \returns current file pointer
 */
-    FILE *getFilePointer(){return myFile;};
-    void setMutex(pthread_mutex_t *m){fm=m;};
+FILE *getFilePointer(){return myFile;};
+ void setMutex(pthread_mutex_t *m){fm=m;};
  protected:
   
     slsDetectorData<dataType> *det; /**< slsDetectorData to be used */
@@ -859,7 +1093,15 @@ template <class dataType> class analogDetector {
     //  int nSigma; /**< number of sigma to be used for conversion into number of photons if threshold is undefined */
     frameMode fMode; /**< current detector frame mode */
     FILE *myFile; /**< file pointer to write to */
-    
+#ifdef ROOTSPECTRUM
+    TH2F *hs;
+#ifdef ROOTCLUST
+    TH2F *hs3;
+    TH2F *hs5;
+    TH2F *hs7;
+    TH2F *hs9;
+#endif
+#endif
     pthread_mutex_t *fm;
 };
 

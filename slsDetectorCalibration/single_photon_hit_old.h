@@ -37,7 +37,6 @@ class single_photon_hit {
   */
   size_t write(FILE *myFile) {
     //fwrite((void*)this, 1, 3*sizeof(int)+4*sizeof(double)+sizeof(quad), myFile); 
-    
     if (fwrite((void*)this, 1, sizeof(int)+2*sizeof(int16_t), myFile)) 
       return fwrite((void*)data, 1, dx*dy*sizeof(int), myFile);
     return 0;

@@ -1,6 +1,7 @@
 #include "firmware_funcs.h"
 #include "registers_m.h"
 #include "server_defs.h"
+#include "blackfin.h"
 
 int prepareSlowADCSeq() {
 

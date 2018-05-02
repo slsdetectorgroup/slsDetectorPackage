@@ -14,8 +14,11 @@
 #include <fstream>
 #include <cstring>
 
+//#define BCHIP074_BCHIP075
+
 #include "gotthardModuleDataNew.h"
 #include "gotthardDoubleModuleDataNew.h"
+#include "gotthardDoubleModuleCommonModeSubtractionNew.h"
 
 #include "singlePhotonDetector.h"
 //#include "interpolatingDetector.h"
@@ -27,8 +30,7 @@
 #define NC 1280
 #define NR 1
 
-#include "tiffIO.h"
-
+//#include "tiffIO.h"
 
 
 
@@ -37,19 +39,6 @@
 #define SLS_DETECTOR_JSON_HEADER_VERSION 0x2
 int main(int argc, char *argv[]){
   //void *gotthardProcessFrame() {
-
-
-
-	
-
-
-
-
-
-
-
-
-
 
 
 
@@ -69,16 +58,22 @@ int main(int argc, char *argv[]){
   offset=48;
   #endif
  
+  //commonModeSubtraction *cm=NULL;
 
+  gotthardDoubleModuleCommonModeSubtraction *cm=new gotthardDoubleModuleCommonModeSubtraction();
   gotthardModuleDataNew *decoder=new   gotthardModuleDataNew();
   gotthardDoubleModuleDataNew *det=new   gotthardDoubleModuleDataNew(offset);
-  singlePhotonDetector *filter=new singlePhotonDetector(det,3, 5, 1, 0, 1000, 100);
+  singlePhotonDetector *filter=new singlePhotonDetector(det,3, 5, 1, cm, 1000, 100);
+  // analogDetector<uint16_t> *filter=new analogDetector<uint16_t>(det, 1, cm, 1000);
+  // analogDetector<uint16_t> *filter_nocm=new analogDetector<uint16_t>(det, 1, NULL, 1000);
   filter->setROI(0,2560,0,1);
   char *buff;//[2*(48+1280*2)];
   char *buff0;
   char *buff1;
   multiThreadedAnalogDetector *mt=new multiThreadedAnalogDetector(filter,nthreads,fifosize);
   mt->setFrameMode(eFrame);
+  // mt->setFrameMode(eFrame);
+  // mt->setFrameMode(ePedestal);
   mt->StartThreads();
   mt->popFree(buff);
   buff0=buff;
@@ -210,7 +205,8 @@ int main(int argc, char *argv[]){
 	string filename0 = "";
 
 
-
+	int eoa0=0;
+	int eoa1=0;
 
 
 
@@ -230,7 +226,9 @@ int main(int argc, char *argv[]){
 
 
 	char ofname[10000];
+	char fn0[10000], fn1[10000];
 	FILE *fout=NULL;
+	FILE *fclust=NULL;
 	for (int i=0; i<nnx; i++)
 	  dout[i]=0;
 	char fname0[10000], fname1[10000];
@@ -279,89 +277,204 @@ int main(int argc, char *argv[]){
 	int end_of_acquisition;
 	while(1) {
 	  end_of_acquisition=0;
+	  eoa0=0;
+	  eoa1=0;
+	  
 	  //  cout << "Receive header " << nf << endl;
 	  if (!zmqsocket0->ReceiveHeader(0, acqIndex0, frameIndex0, subframeIndex0, filename0, fileindex0)) {
 	    
-	    cout << "************************************************************************** packet0!*****************************"<< endl;
-
+	    //   cout << "************************************************************************** packet0!*****************************"<< endl;
+	    eoa0=1;
 	    end_of_acquisition++;
 	  } 
 	  if (!zmqsocket1->ReceiveHeader(0, acqIndex1, frameIndex1, subframeIndex1, filename1, fileindex1)) {
-	    cout << "************************************************************************** packet1!*****************************"<< endl;
-
+	    //cout << "************************************************************************** packet1!*****************************"<< endl;
+	    eoa1=1;
 	    end_of_acquisition++;
 	  }
-	 
-	  //	  if ((!zmqsocket0->ReceiveHeader(0, acqIndex0, frameIndex0, subframeIndex0, filename0, fileindex0)) && (!zmqsocket1->ReceiveHeader(0, acqIndex1, frameIndex1, subframeIndex1, filename1, fileindex1))){
-	  if (end_of_acquisition) {
-	    cout << "************************************************************************** END OF FRAME" << end_of_acquisition << " !*****************************"<< endl;
-	    //  return 0;
 
+
+
+
+
+	  //	  if ((!zmqsocket0->ReceiveHeader(0, acqIndex0, frameIndex0, subframeIndex0, filename0, fileindex0)) && (!zmqsocket1->ReceiveHeader(0, acqIndex1, frameIndex1, subframeIndex1, filename1, fileindex1))){
+	  if (end_of_acquisition==0) {
+	    
+	    if (acqIndex0!=acqIndex1)
+	      cout << "different acquisition indexes " << acqIndex0 << " and " << acqIndex1 << endl;
+	    if (frameIndex0!=frameIndex1)
+	      cout << "different frame indexes " << frameIndex0 << " and " << frameIndex1 << endl;
+	    
+	    
+	    while (frameIndex0<frameIndex1) {
+	      cout << "aligning det 0 " << endl; 
+	      length = zmqsocket0->ReceiveData(0, buff0, size/2);
+	      if (!zmqsocket0->ReceiveHeader(0, acqIndex0, frameIndex0, subframeIndex0, filename0, fileindex0)) {
+		end_of_acquisition++;
+		eoa0=1;
+		break;
+	      } 
+	    }
+	    
+	    while (frameIndex1<frameIndex0) {
+	      cout << "aligning det 1 " << endl; 
+	      length = zmqsocket1->ReceiveData(0, buff1, size/2);
+	      if (!zmqsocket1->ReceiveHeader(0, acqIndex1, frameIndex1, subframeIndex1, filename1, fileindex1)) {
+		end_of_acquisition++;
+		eoa1=1;
+		break;
+	      } 
+	    }
+	  }
+
+
+
+	  if (eoa0!=eoa1) {
+
+	    while (eoa0<1) {
+	      length = zmqsocket0->ReceiveData(0, buff0, size/2);
+	      if (!zmqsocket0->ReceiveHeader(0, acqIndex0, frameIndex0, subframeIndex0, filename0, fileindex0)) {
+		end_of_acquisition++;
+		eoa0=1;
+	      }
+	    }
+
+
+	    while (eoa1<1) {
+	      length = zmqsocket1->ReceiveData(0, buff1, size/2);
+	      if (!zmqsocket1->ReceiveHeader(0, acqIndex1, frameIndex1, subframeIndex1, filename1, fileindex1)) {
+		end_of_acquisition++;
+		eoa1=1;
+	      }
+	    }
+	  }
+
+	  
+
+
+
+	  
+	  if (end_of_acquisition) {
+	    // cout << "************************************************************************** END OF FRAME" << end_of_acquisition << " !*****************************"<< endl;
+	    //  return 0;
+	    
+	    sprintf(ofname,"%s_%d.ph",fn0,irun);
 	    while (mt->isBusy()) {;}
 	    image=filter->getImage();
 	    if (image) {
-	      //fout=fopen(ofname,"w");
-	     cout << nf << "*****************" << endl;
+	      fout=fopen(ofname,"w");
+	      cout << nf << "*****************" << endl;
 	      for (int i=0; i<2560; i++) {
-	      // // 	fprintf(fout,"%d %d\n",i,image[i]);
-	      	dout[i]=image[i];
+		fprintf(fout,"%d %d\n",i,image[i]);
+		dout[i]=image[i];
+		if (dout[i]<0)
+		   dout[i]=0;
 	      }
-	      // // fclose(fout);;
+	      fclose(fout);
 	    }
-
+	    
 
 	    if (send) {
-		strcpy(fname0,filename0.c_str());
-		strcpy(fname1,filename1.c_str());
-		//  zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,16,fileindex,400,400,400*400, acqIndex,frameIndex,fname, acqIndex, 0,0,0,0,0,0,0,0,0,0,0,1);
-		zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,0,0,0,0,0, 0,0,fname0, 0, 0,0,0,0,0,0,0,0,0,0,0,1);
-		zmqsocket3->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,0,0,0,0,0, 0,0,fname1, 0, 0,0,0,0,0,0,0,0,0,0,0,1);
-		
-		zmqsocket2->SendData((char*)dout,size/2);
-		zmqsocket3->SendData(((char*)dout)+size/2,size/2);
-		//	cprintf(GREEN, "Sent Data\n");
+	      
+	      zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,0,0,0,0,0, 0,0,fn0, 0, 0,0,0,0,0,0,0,0,0,0,0,1);
+	      zmqsocket3->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,0,0,0,0,0, 0,0,fn1, 0, 0,0,0,0,0,0,0,0,0,0,0,1);
+	      
+	      zmqsocket2->SendData((char*)dout,size/2);
+	      zmqsocket3->SendData(((char*)dout)+size/2,size/2);
+	      //    	//	cprintf(GREEN, "Sent Data\n");
 
-
+	      
 	      zmqsocket2->SendHeaderData(0, true, SLS_DETECTOR_JSON_HEADER_VERSION);
 	      zmqsocket3->SendHeaderData(0, true, SLS_DETECTOR_JSON_HEADER_VERSION);
-
-	      cprintf(RED, "Received %d frames\n", nf);
-
 	    }
-
 	    
+	    
+	    //mt->setFrameMode(eFrame);
 	    filter->clearImage();
 	    // std::time(&end_time);
 	    // cout << std::ctime(&end_time) << " " << nf <<   endl;
-
-
-	
-
+	    fclose(fclust);
+	    fclust=NULL;
+	    
+	    
+	    
 	    continue; 
 	  }
-	  if (acqIndex0!=acqIndex1)
-	    cout << "different acquisition indexes " << acqIndex0 << " and " << acqIndex1 << endl;
-	  if (frameIndex0!=frameIndex1)
-	    cout << "different frame indexes " << frameIndex0 << " and " << frameIndex1 << endl;
+	  
+	  if (fclust==NULL) {
 
+	    strcpy(fn0,filename0.c_str());
+	    strcpy(fn1,filename1.c_str());
+	    sprintf(ofname,"%s_%d.clust",fn0,irun);
+	    fclust=fopen(ofname,"w");
+	    while (mt->isBusy()) {;}
+	    mt->setFilePointer(fclust);
+	  }
 
+	  // strcpy(fn0,filename0.c_str());
+	  // strcpy(fn1,filename1.c_str());
+	  
 	  //	  cout << "Receive data " << nf << endl;
 	  length = zmqsocket0->ReceiveData(0, buff0, size/2);
 	  length += zmqsocket1->ReceiveData(0, buff1, size/2);  
-	    
+	  
 	  irun=fileindex0;
-	  sprintf(ofname,"%s_%d.ph",filename0.c_str(),fileindex0);
 	  
+	  
+	    
+	    // //  if (nf>100)
+	    // //  mt->setFrameMode(eFrame);
+	    // //filter->clearImage();
+
+
 #endif
-	  
-	  
+
 
 	mt->pushData(buff);
 	mt->nextThread();
+	// cout << "==" << nf << endl;
+
+	    // while (mt->isBusy()) {;}
+	    // image=filter->getImage();
+	    // if (image) {
+	    //   for (int i=0; i<2560; i++) {
+	    // 	//	if (i<512)
+	
+	    // 	//  	fprintf(fout,"%d %d\n",i,image[i]);
+	    //   	dout[i]=filter->subtractPedestal(buff,i,0,1);//image[i];//filter->getPedestal(i,0);//
+	    // 	if (dout[i]<0)
+	    // 	   dout[i]=0;
+	    // 	//	cout << i << " " << image[i] << " " << dout[i] << endl;
+	    //   }
+	    // }
+
+
+	    // if (send) {
+	    // 	strcpy(fname0,filename0.c_str());
+	    // 	strcpy(fname1,filename1.c_str());
+	    // 	//  zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,16,fileindex,400,400,400*400, acqIndex,frameIndex,fname, acqIndex, 0,0,0,0,0,0,0,0,0,0,0,1);
+	    // 	zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,0,0,0,0,0, 0,0,fname0, 0, 0,0,0,0,0,0,0,0,0,0,0,1);
+	    // 	zmqsocket3->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,0,0,0,0,0, 0,0,fname1, 0, 0,0,0,0,0,0,0,0,0,0,0,1);
+		
+	    // 	zmqsocket2->SendData((char*)dout,size/2);
+	    // 	zmqsocket3->SendData(((char*)dout)+size/2,size/2);
+	    // 	//	cprintf(GREEN, "Sent Data\n");
+
+
+	    // 	// zmqsocket2->SendHeaderData(0, true, SLS_DETECTOR_JSON_HEADER_VERSION);
+	    // 	// zmqsocket3->SendHeaderData(0, true, SLS_DETECTOR_JSON_HEADER_VERSION);
+
+	    // 	//	cprintf(RED, "Received %d frames\n", nf);
+
+	    // }
+	    
+
 	mt->popFree(buff);
 	buff0=buff;
 	buff1=buff+offset*2+1280*2;
 	  
+
+
 	nf++;
 	
 
@@ -369,6 +482,8 @@ int main(int argc, char *argv[]){
 
 #ifndef ZMQ
 
+
+	 
 
 	  while (mt->isBusy()) {;}
 	  image=filter->getImage();
@@ -378,7 +493,7 @@ int main(int argc, char *argv[]){
 	      for (int i=0; i<512; i++) {
 		fprintf(fout,"%d %d\n",i,image[i]);
 	      }
-	      fclose(fout);;
+	      fclose(fout);
 	  }
 	  filter->clearImage();
       

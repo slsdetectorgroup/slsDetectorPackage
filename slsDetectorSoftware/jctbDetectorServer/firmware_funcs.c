@@ -1289,6 +1289,7 @@ int64_t setExposureTime(int64_t value){
   /* time is in ns */
   if (value!=-1)
     value*=(1E-3*clkDivider[0]);//(1E-9*CLK_FREQ);
+    setPatternWaitTime(0,value);
     return set64BitReg(value,SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG)/(1E-3*clkDivider[0]);//(1E-9*CLK_FREQ);
 }
 

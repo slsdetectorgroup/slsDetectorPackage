@@ -38,13 +38,31 @@ class noInterpolation : public slsInterpolation{
    
     return ;
   };
+
+ virtual void getInterpolatedPosition(int x, int y, int *data, double &int_x, double &int_y)
+  {
+    return getInterpolatedPosition(x, y, (double*)NULL, int_x, int_y);
+  }
+  
+
   virtual void getInterpolatedPosition(int x, int y, double etax, double etay, int corner, double &int_x, double &int_y)
   {
-    getInterpolatedPosition(x, y, NULL, int_x, int_y);
+    getInterpolatedPosition(x, y, (double*)NULL, int_x, int_y);
   };
+
+
+
+
   virtual void getInterpolatedPosition(int x, int y, double totquad,int quad,double *cl,double &etax, double &etay){
-    getInterpolatedPosition(x, y, NULL, etax, etay);
+    getInterpolatedPosition(x, y, (double*)NULL, etax, etay);
   };
+
+
+  virtual void getInterpolatedPosition(int x, int y, double totquad,int quad,int *cl,double &etax, double &etay){
+    getInterpolatedPosition(x, y, (double*)NULL, etax, etay);
+  };
+
+
   
   //////////////////////////////////////////////////////////////////////////////////////
   virtual void getPositionETA3(int x, int y, double *data, double &int_x, double &int_y)
@@ -55,11 +73,25 @@ class noInterpolation : public slsInterpolation{
    
     return ;
   };
+
+  virtual void getPositionETA3(int x, int y, int *data, double &int_x, double &int_y)
+  {
+    return getPositionETA3(x, y, (double*)NULL, int_x, int_y);
+  };
+
+
+  
   //////////////////////////////////////////////////////////////////////////////////////
   virtual int addToFlatField(double *cluster, double &etax, double &etay){return 0;};
+  
+  virtual int addToFlatField(int *cluster, double &etax, double &etay){return 0;};
+  
   virtual int addToFlatField(double etax, double etay){return 0;};
   
   virtual int addToFlatField(double totquad,int quad,double *cl,double &etax, double &etay){return 0;};
+
+
+  virtual int addToFlatField(double totquad,int quad,int *cl,double &etax, double &etay){return 0;};
 
 
  protected:

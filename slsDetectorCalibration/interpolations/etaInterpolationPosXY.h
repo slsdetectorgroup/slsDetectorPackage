@@ -2,24 +2,27 @@
 #define ETA_INTERPOLATION_POSXY_H
 
 
-#include "tiffIO.h"
+//#include "tiffIO.h"
 #include "etaInterpolationBase.h"
+#include "eta2InterpolationBase.h"
+#include "eta3InterpolationBase.h"
 
-class etaInterpolationPosXY : public etaInterpolationBase{
+class etaInterpolationPosXY : public virtual etaInterpolationBase{
  public:
- etaInterpolationPosXY(int nx=400, int ny=400, int ns=25, int nb=-1, double emin=1, double emax=0) : etaInterpolationBase(nx,ny,ns, nb, emin,emax){};
+ etaInterpolationPosXY(int nx=400, int ny=400, int ns=25, int nb=-1, double emin=1, double emax=0) : etaInterpolationBase(nx,ny,ns, nb, emin,emax){
+    //  cout << "epxy " << nb << " " << emin << " " << emax << endl; cout << nbeta << " " << etamin << " " << etamax << endl; 
+  };
 
- etaInterpolationPosXY(etaInterpolationPosXY *orig): etaInterpolationBase(orig){};
+ etaInterpolationPosXY(etaInterpolationPosXY *orig): etaInterpolationBase(orig) {};
 
-  virtual etaInterpolationPosXY* Clone() {
+  virtual etaInterpolationPosXY* Clone()=0;/** {
 
     return new etaInterpolationPosXY(this);
 
-  };
+    };*/
 
   virtual void prepareInterpolation(int &ok)
   {
-    cout <<"?"<< endl;
    ok=1;  
 #ifdef MYROOT1   
    if (hhx) delete hhx;
@@ -114,10 +117,6 @@ class etaInterpolationPosXY : public etaInterpolationBase{
      
      //	 cout << "y " << nbeta << " " << (ii+1)*tot_eta_x*bsize << " " << ii << endl;
      
-
-
-
-     
    }
 
 #ifdef SAVE_ALL
@@ -148,6 +147,27 @@ class etaInterpolationPosXY : public etaInterpolationBase{
   return ;
   }
 
+};
+
+class eta2InterpolationPosXY : public virtual eta2InterpolationBase, public virtual etaInterpolationPosXY {
+ public:
+ eta2InterpolationPosXY(int nx=400, int ny=400, int ns=25, int nb=-1, double emin=1, double emax=0) : etaInterpolationBase(nx,ny,ns, nb, emin,emax),eta2InterpolationBase(nx,ny,ns, nb, emin,emax),etaInterpolationPosXY(nx,ny,ns, nb, emin,emax){
+    //  cout << "e2pxy " << nb << " " << emin << " " << emax << endl; 
+  };
+ eta2InterpolationPosXY(eta2InterpolationPosXY *orig): etaInterpolationBase(orig), etaInterpolationPosXY(orig)  {};
+
+  virtual eta2InterpolationPosXY* Clone() { return new eta2InterpolationPosXY(this);};
+
+};
+class eta3InterpolationPosXY : public virtual eta3InterpolationBase, public virtual etaInterpolationPosXY {
+ public:
+ eta3InterpolationPosXY(int nx=400, int ny=400, int ns=25, int nb=-1, double emin=1, double emax=0) : etaInterpolationBase(nx,ny,ns, nb, emin,emax),eta3InterpolationBase(nx,ny,ns, nb, emin,emax), etaInterpolationPosXY(nx,ny,ns, nb, emin,emax){
+      cout << "e3pxy " << nbeta << " " << etamin << " " << etamax << " " << nSubPixels<< endl;  
+  };
+
+ eta3InterpolationPosXY(eta3InterpolationPosXY *orig): etaInterpolationBase(orig), etaInterpolationPosXY(orig)  {};
+
+  virtual eta3InterpolationPosXY* Clone() { return new eta3InterpolationPosXY(this);};
 };
 
 #endif

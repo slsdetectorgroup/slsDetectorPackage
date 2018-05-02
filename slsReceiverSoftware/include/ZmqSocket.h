@@ -58,7 +58,7 @@ public:
 		struct addrinfo *result;
 		if ((ConvertHostnameToInternetAddress(hostname_or_ip, &result)) ||
 		 (ConvertInternetAddresstoIpString(result, ip, MAX_STR_LENGTH)))
-			return;
+		    throw std::exception();
 
 		// construct address
 		sprintf (serverAddress, "tcp://%s:%d", ip, portno);
@@ -69,29 +69,32 @@ public:
 		// create context
 		contextDescriptor = zmq_ctx_new();
 		if (contextDescriptor == NULL)
-			return;
+		    throw std::exception();
 
 		// create publisher
 		socketDescriptor = zmq_socket (contextDescriptor, ZMQ_SUB);
 		if (socketDescriptor == NULL) {
-			PrintError ();
-			Close ();
+		    PrintError ();
+		    Close ();
+		    throw std::exception();
 		}
 
 		//Socket Options provided above
 	    // an empty string implies receiving any messages
 		if ( zmq_setsockopt(socketDescriptor, ZMQ_SUBSCRIBE, "", 0)) {
-			PrintError ();
-			Close();
+		    PrintError ();
+		    Close();
+		    throw std::exception();
 		}
 		//ZMQ_LINGER default is already -1 means no messages discarded. use this options if optimizing required
 		//ZMQ_SNDHWM default is 0 means no limit. use this to optimize if optimizing required
 		// eg. int value = -1;
 		int value = 0;
-		 if (zmq_setsockopt(socketDescriptor, ZMQ_LINGER, &value,sizeof(value))) {
-			PrintError ();
-			Close();
-		 }
+		if (zmq_setsockopt(socketDescriptor, ZMQ_LINGER, &value,sizeof(value))) {
+		    PrintError ();
+		    Close();
+		    throw std::exception();
+		}
 	};
 
 	/**
@@ -111,13 +114,13 @@ public:
 		// create context
 		contextDescriptor = zmq_ctx_new();
 		if (contextDescriptor == NULL)
-			return;
+		    throw std::exception();
 		// create publisher
 		socketDescriptor = zmq_socket (contextDescriptor, ZMQ_PUB);
 		if (socketDescriptor == NULL) {
 			PrintError ();
 			Close ();
-			return;
+			throw std::exception();
 		}
 
 		//Socket Options provided above
@@ -131,7 +134,7 @@ public:
 		if (zmq_bind (socketDescriptor, serverAddress) < 0) {
 			PrintError ();
 			Close ();
-			return;
+			throw std::exception();
 		}
 
 		//sleep for a few milliseconds to allow a slow-joiner
@@ -146,11 +149,6 @@ public:
 		Close();
 	};
 
-	/**
-	 * Returns error status
-	 * @returns true if error else false
-	 */
-	bool IsError() { if (socketDescriptor == NULL) return true; return false; };
 
 	/**
 	 * Returns Server Address

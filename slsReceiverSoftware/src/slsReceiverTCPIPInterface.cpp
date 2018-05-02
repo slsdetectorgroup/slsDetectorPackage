@@ -2649,7 +2649,7 @@ int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
         }
         //get
         retval=receiverBase->getUDPSocketBufferSize();
-        if(index >= 0 && retval != index) {
+        if(index >= 0 && ((retval != index) || (receiverBase->getActualUDPSocketBufferSize() != (index*2)))) {
             ret = FAIL;
             strcpy(mess, "Could not set UDP Socket buffer size (No CAP_NET_ADMIN privileges?)\n");
             FILE_LOG(logERROR) << mess;

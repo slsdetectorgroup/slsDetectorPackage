@@ -6420,6 +6420,7 @@ string slsDetector::setReceiver(string receiverIP){
 			setDetectorId();
 			setDetectorHostname();
 			setUDPConnection();
+			//setReceiverUDPSocketBufferSize(atoi(getReceiverUDPSocketBufferSize().c_str()));
 
 			setFilePath(fileIO::getFilePath());
 			setFileName(fileIO::getFileName());

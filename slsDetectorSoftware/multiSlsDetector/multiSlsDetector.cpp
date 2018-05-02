@@ -6030,9 +6030,10 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy){
 		uint32_t portnum = 0;
 		sscanf(detectors[i/numSocketsPerDetector]->getClientStreamingPort().c_str(),"%d",&portnum);
 		portnum += (i%numSocketsPerDetector);
-		cout<<"ip to be set to :"<<detectors[i/numSocketsPerDetector]->getClientStreamingIP().c_str()<<endl;
+		//cout<<"ip to be set to :"<<detectors[i/numSocketsPerDetector]->getClientStreamingIP().c_str()<<endl;
+		try {
 		zmqSocket[i] = new ZmqSocket(detectors[i/numSocketsPerDetector]->getClientStreamingIP().c_str(), portnum);
-		if (zmqSocket[i]->IsError()) {
+		} catch(...) {
 			cprintf(RED, "Error: Could not create Zmq socket on port %d\n", portnum);
 			createReceivingDataSockets(true);
 			return FAIL;

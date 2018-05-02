@@ -28,7 +28,7 @@ int receiverInterface::sendString(int fnum, char retval[], char arg[]){
 	dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
 	if (ret==slsDetectorDefs::FAIL){
 		dataSocket->ReceiveDataOnly(mess,sizeof(mess));
-		std::cout<< "Receiver returned error: " << mess << std::endl;
+		cprintf(RED, "Receiver returned error: %s", mess);
 	}
 	dataSocket->ReceiveDataOnly(retval,MAX_STR_LENGTH);
 
@@ -47,7 +47,7 @@ int receiverInterface::sendUDPDetails(int fnum, char retval[], char arg[3][MAX_S
 	dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
 	if (ret==slsDetectorDefs::FAIL){
 		dataSocket->ReceiveDataOnly(mess,sizeof(mess));
-		std::cout<< "Receiver returned error: " << mess << std::endl;
+	    cprintf(RED, "Receiver returned error: %s", mess);
 	}
 	else
 		dataSocket->ReceiveDataOnly(retval,MAX_STR_LENGTH);
@@ -65,7 +65,7 @@ int receiverInterface::sendInt(int fnum, int &retval, int arg){
 	dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
 	if (ret==slsDetectorDefs::FAIL){
 		dataSocket->ReceiveDataOnly(mess,sizeof(mess));
-		std::cout<< "Receiver returned error: " << mess << std::endl;
+	    cprintf(RED, "Receiver returned error: %s", mess);
 	}
 	dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
 
@@ -82,7 +82,7 @@ int receiverInterface::getInt(int fnum, int &retval){
 	dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
 	if (ret==slsDetectorDefs::FAIL){
 		dataSocket->ReceiveDataOnly(mess,sizeof(mess));
-		std::cout<< "Receiver returned error: " << mess << std::endl;
+	    cprintf(RED, "Receiver returned error: %s", mess);
 	}
 	dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
 
@@ -100,7 +100,7 @@ int receiverInterface::sendInt(int fnum, int64_t &retval, int64_t arg){
 	dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
 	if (ret==slsDetectorDefs::FAIL){
 		dataSocket->ReceiveDataOnly(mess,sizeof(mess));
-		std::cout<< "Receiver returned error: " << mess << std::endl;
+	    cprintf(RED, "Receiver returned error: %s", mess);
 	}
 	dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
 
@@ -118,7 +118,7 @@ int receiverInterface::sendIntArray(int fnum, int64_t &retval, int64_t arg[2], c
 	dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
 	if (ret==slsDetectorDefs::FAIL){
 		dataSocket->ReceiveDataOnly(mess,sizeof(messs));
-		std::cout<< "Receiver returned error: " << mess << std::endl;
+	    cprintf(RED, "Receiver returned error: %s", mess);
 	}
 	dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
 
@@ -136,7 +136,7 @@ int receiverInterface::sendIntArray(int fnum, int &retval, int arg[2]){
 	dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
 	if (ret==slsDetectorDefs::FAIL){
 		dataSocket->ReceiveDataOnly(mess,sizeof(mess));
-		std::cout<< "Receiver returned error: " << mess << std::endl;
+	    cprintf(RED, "Receiver returned error: %s", mess);
 	}
 	dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
 
@@ -175,7 +175,7 @@ int receiverInterface::executeFunction(int fnum,char mess[]){
 	dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
 	if (ret==slsDetectorDefs::FAIL){
 		dataSocket->ReceiveDataOnly(mess,MAX_STR_LENGTH);
-		std::cout<< "Receiver returned error: " << mess << std::endl;
+	    cprintf(RED, "Receiver returned error: %s", mess);
 	}
 
 	return ret;

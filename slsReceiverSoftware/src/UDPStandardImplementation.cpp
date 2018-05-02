@@ -217,32 +217,23 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {
 		dataStreamer.clear();
 
 		if (enable) {
-			for ( int i = 0; i < numThreads; ++i ) {
-
-			    int ret = FAIL;
-			    DataStreamer* s = new DataStreamer(ret, i, fifo[i], &dynamicRange, &shortFrameEnable, &fileIndex, flippedData, additionalJsonHeader);
-			    if (ret == FAIL)
-			        cprintf(RED,"Error: Could not create data callback threads\n");
-			    else {
-	                dataStreamer.push_back(s);
-	                dataStreamer[i]->SetGeneralData(generalData);
-	                if (dataStreamer[i]->CreateZmqSockets(&numThreads, streamingPort, streamingSrcIP) == FAIL) {
-	                    cprintf(RED,"Error: Could not create zmq sockets\n");
-	                    ret = FAIL;
-	                }
-			    }
-
-			    // error in creating threads or zmq sockets
-			    if (ret == FAIL) {
-	                for (vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
-	                    delete(*it);
-	                dataStreamer.clear();
-	                dataStreamEnable = false;
-	                return FAIL;
-				}
-			}
-
-			SetThreadPriorities();
+		    for ( int i = 0; i < numThreads; ++i ) {
+		        try {
+		            DataStreamer* s = new DataStreamer(i, fifo[i], &dynamicRange,
+		                    &shortFrameEnable, &fileIndex, flippedData, additionalJsonHeader);
+		            dataStreamer.push_back(s);
+		            dataStreamer[i]->SetGeneralData(generalData);
+		            dataStreamer[i]->CreateZmqSockets(&numThreads, streamingPort, streamingSrcIP);
+		        }
+		        catch(...) {
+		            for (vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
+		                delete(*it);
+		            dataStreamer.clear();
+		            dataStreamEnable = false;
+		            return FAIL;
+		        }
+		    }
+		    SetThreadPriorities();
 		}
 	}
 	FILE_LOG(logINFO) << "Data Send to Gui: " << dataStreamEnable;
@@ -375,31 +366,28 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	//create threads
 	for ( int i = 0; i < numThreads; ++i ) {
 
-	    int ret = FAIL;
-	    Listener* l = new Listener(ret, i, myDetectorType, fifo[i], &status,
-	            &udpPortNum[i], eth, &activated, &numberOfFrames, &dynamicRange,
-	            &udpSocketBufferSize, &actualUDPSocketBufferSize);
-	    DataProcessor* p = NULL;
-	    if (ret == OK)
-	        p = new DataProcessor(ret, i, fifo[i], &fileFormatType,
+	    try {
+	        Listener* l = new Listener(i, myDetectorType, fifo[i], &status,
+	                &udpPortNum[i], eth, &activated, &numberOfFrames, &dynamicRange,
+	                &udpSocketBufferSize, &actualUDPSocketBufferSize);
+	        listener.push_back(l);
+
+	        DataProcessor* p = new DataProcessor(i, fifo[i], &fileFormatType,
 	                fileWriteEnable, &dataStreamEnable, &gapPixelsEnable,
 	                &dynamicRange, &frameToGuiFrequency, &frameToGuiTimerinMS,
 	                rawDataReadyCallBack, rawDataModifyReadyCallBack, pRawDataReady);
-
-	    // error in creating threads
-	    if (ret == FAIL) {
-			FILE_LOG(logERROR) << "Could not create listener/dataprocessor threads (index:" << i << ")";
-			for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
-				delete(*it);
-			listener.clear();
-			for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
-				delete(*it);
-			dataProcessor.clear();
-			return FAIL;
-		}
-
-	    listener.push_back(l);
-	    dataProcessor.push_back(p);
+	        dataProcessor.push_back(p);
+	    }
+	    catch (...) {
+	         FILE_LOG(logERROR) << "Could not create listener/dataprocessor threads (index:" << i << ")";
+	            for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
+	                delete(*it);
+	            listener.clear();
+	            for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
+	                delete(*it);
+	            dataProcessor.clear();
+	            return FAIL;
+	    }
 	}
 
 	//set up writer and callbacks
@@ -410,8 +398,8 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 
 	SetThreadPriorities();
 
-	// check udp socket buffer size
-	setUDPSocketBufferSize(udpSocketBufferSize);
+    // check udp socket buffer size
+    setUDPSocketBufferSize(udpSocketBufferSize);
 
 	FILE_LOG(logDEBUG) << " Detector type set to " << getDetectorType(d);
 	return OK;
@@ -673,11 +661,11 @@ void UDPStandardImplementation::SetLocalNetworkParameters() {
 	    if (proc_file.good()) {
 	        proc_file << MAX_SOCKET_INPUT_PACKET_QUEUE << endl;
 	        cprintf(GREEN, "Max length of input packet queue "
-	                "(/proc/sys/net/core/netdev_max_backlog) modified to %d\n",
+	                "[/proc/sys/net/core/netdev_max_backlog] modified to %d\n",
 	                 MAX_SOCKET_INPUT_PACKET_QUEUE);
 	    } else {
 	        const char *msg = "Could not change max length of"
-	                "input packet queue (net.core.netdev_max_backlog). No Root Privileges?";
+	                "input packet queue [net.core.netdev_max_backlog]. (No Root Privileges?)";
 	        FILE_LOG(logWARNING) << msg;
 	    }
 	}
@@ -689,7 +677,7 @@ void UDPStandardImplementation::SetThreadPriorities() {
 
 	for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it){
 		if ((*it)->SetThreadPriority(LISTENER_PRIORITY) == FAIL) {
-			FILE_LOG(logWARNING) << "Could not prioritize listener threads. No Root Privileges?";
+			FILE_LOG(logWARNING) << "Could not prioritize listener threads. (No Root Privileges?)";
 			return;
 		}
 	}
@@ -711,20 +699,18 @@ int UDPStandardImplementation::SetupFifoStructure() {
 	for ( int i = 0; i < numThreads; i++ ) {
 
 		//create fifo structure
-		bool success = true;
-		Fifo* f = new Fifo (i,
-		        (generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize),
-                fifoDepth, success);
-		//error
-		if (!success) {
-			cprintf(RED,"Error: Could not allocate memory for fifo structure of index %d\n", i);
-			for (vector<Fifo*>::const_iterator it = fifo.begin(); it != fifo.end(); ++it)
-				delete(*it);
-			fifo.clear();
-			return FAIL;
-		}
-        fifo.push_back(f);
-
+	    try {
+	        Fifo* f = new Fifo (i,
+	                (generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize),
+	                fifoDepth);
+	        fifo.push_back(f);
+	    } catch (...) {
+            cprintf(RED,"Error: Could not allocate memory for fifo structure of index %d\n", i);
+            for (vector<Fifo*>::const_iterator it = fifo.begin(); it != fifo.end(); ++it)
+                delete(*it);
+            fifo.clear();
+            return FAIL;
+	    }
 		//set the listener & dataprocessor threads to point to the right fifo
 		if(listener.size())listener[i]->SetFifo(fifo[i]);
 		if(dataProcessor.size())dataProcessor[i]->SetFifo(fifo[i]);

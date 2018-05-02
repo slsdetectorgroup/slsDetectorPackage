@@ -13,7 +13,7 @@
 using namespace std;
 
 
-Fifo::Fifo(int ind, uint32_t fifoItemSize, uint32_t depth, bool &success):
+Fifo::Fifo(int ind, uint32_t fifoItemSize, uint32_t depth):
 		index(ind),
 		memory(0),
 		fifoBound(0),
@@ -23,9 +23,8 @@ Fifo::Fifo(int ind, uint32_t fifoItemSize, uint32_t depth, bool &success):
 		status_fifoBound(0),
 		status_fifoFree(depth){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
-	success = true;
 	if(CreateFifos(fifoItemSize) == FAIL)
-		success = false;
+	    throw std::exception();
 }
 
 

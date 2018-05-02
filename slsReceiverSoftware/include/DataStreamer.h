@@ -20,7 +20,6 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	/**
 	 * Constructor
 	 * Calls Base Class CreateThread(), sets ErrorMask if error and increments NumberofDataStreamers
-     * @param ret OK or FAIL if thread creation succeeded or failed
      * @param ind self index
 	 * @param f address of Fifo pointer
 	 * @param dr pointer to dynamic range
@@ -29,7 +28,7 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param fd flipped data enable for x and y dimensions
 	 * @param ajh additional json header
 	 */
-	DataStreamer(int& ret, int ind, Fifo*& f, uint32_t* dr, int* sEnable, uint64_t* fi, int* fd, char* ajh);
+	DataStreamer(int ind, Fifo*& f, uint32_t* dr, int* sEnable, uint64_t* fi, int* fd, char* ajh);
 
 	/**
 	 * Destructor
@@ -87,12 +86,12 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 
 	/**
 	 * Creates Zmq Sockets
+	 * (throws an exception if it couldnt create zmq sockets)
 	 * @param nunits pointer to number of theads/ units per detector
 	 * @param port streaming port start index
 	 * @param srcip streaming source ip
-	 * @return OK or FAIL
 	 */
-	int CreateZmqSockets(int* nunits, uint32_t port, const char* srcip);
+	void CreateZmqSockets(int* nunits, uint32_t port, const char* srcip);
 
 	/**
 	 * Shuts down and deletes Zmq Sockets

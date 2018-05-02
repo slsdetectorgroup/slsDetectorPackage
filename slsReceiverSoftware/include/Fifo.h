@@ -23,9 +23,8 @@ class Fifo : private virtual slsReceiverDefs {
 	 * @param ind self index
 	 * @param fifoItemSize size of each fifo item
 	 * @param depth fifo depth
-	 * @param success true if successful, else false
 	 */
-	Fifo(int ind, uint32_t fifoItemSize, uint32_t depth, bool &success);
+	Fifo(int ind, uint32_t fifoItemSize, uint32_t depth);
 
 	/**
 	 * Destructor

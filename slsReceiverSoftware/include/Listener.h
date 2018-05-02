@@ -21,7 +21,6 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	/**
 	 * Constructor
 	 * Calls Base Class CreateThread(), sets ErrorMask if error and increments NumberofListerners
-	 * @param ret OK or FAIL if thread creation succeeded or failed
 	 * @param ind self index
 	 * @param dtype detector type
 	 * @param f address of Fifo pointer
@@ -34,7 +33,7 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param us pointer to udp socket buffer size
 	 * @param as pointer to actual udp socket buffer size
 	 */
-	Listener(int& ret, int ind, detectorType dtype, Fifo*& f, runStatus* s,
+	Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
 	        uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr,
 	        uint32_t* us, uint32_t* as);
 

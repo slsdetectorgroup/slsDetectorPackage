@@ -16,7 +16,7 @@ using namespace std;
 const string DataStreamer::TypeName = "DataStreamer";
 
 
-DataStreamer::DataStreamer(int& ret, int ind, Fifo*& f, uint32_t* dr, int* sEnable, uint64_t* fi, int* fd, char* ajh) :
+DataStreamer::DataStreamer(int ind, Fifo*& f, uint32_t* dr, int* sEnable, uint64_t* fi, int* fd, char* ajh) :
 		ThreadObject(ind),
 		runningFlag(0),
 		generalData(0),
@@ -34,13 +34,12 @@ DataStreamer::DataStreamer(int& ret, int ind, Fifo*& f, uint32_t* dr, int* sEnab
 		additionJsonHeader(ajh),
         silentMode(false)
 {
-    ret = FAIL;
-    if(ThreadObject::CreateThread() == OK)
-        ret = OK;
+    if(ThreadObject::CreateThread() == FAIL)
+        throw std::exception();
 
     FILE_LOG(logDEBUG) << "DataStreamer " << ind << " created";
 
-	strcpy(fileNametoStream, "");
+	memset(fileNametoStream, 0, MAX_STR_LENGTH);
 }
 
 
@@ -129,16 +128,16 @@ int DataStreamer::SetThreadPriority(int priority) {
 }
 
 
-int DataStreamer::CreateZmqSockets(int* nunits, uint32_t port, const char* srcip) {
+void DataStreamer::CreateZmqSockets(int* nunits, uint32_t port, const char* srcip) {
 	uint32_t portnum = port + index;
 
-	zmqSocket = new ZmqSocket(portnum, (strlen(srcip)?srcip:NULL));
-	if (zmqSocket->IsError()) {
+	try {
+	    zmqSocket = new ZmqSocket(portnum, (strlen(srcip)?srcip:NULL));
+	} catch (...) {
 		cprintf(RED, "Error: Could not create Zmq socket on port %d for Streamer %d\n", portnum, index);
-		return FAIL;
+		throw;
 	}
 	FILE_LOG(logINFO) << index << " Streamer: Zmq Server started at " << zmqSocket->GetZmqServerAddress();
-	return OK;
 }
 
 

@@ -23,7 +23,7 @@ using namespace std;
 const string DataProcessor::TypeName = "DataProcessor";
 
 
-DataProcessor::DataProcessor(int& ret, int ind, Fifo*& f, fileFormat* ftype, bool fwenable, bool* dsEnable, bool* gpEnable, uint32_t* dr,
+DataProcessor::DataProcessor(int ind, Fifo*& f, fileFormat* ftype, bool fwenable, bool* dsEnable, bool* gpEnable, uint32_t* dr,
 		uint32_t* freq, uint32_t* timer,
 		void (*dataReadycb)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t,
 		        uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
@@ -61,9 +61,8 @@ DataProcessor::DataProcessor(int& ret, int ind, Fifo*& f, fileFormat* ftype, boo
 		rawDataModifyReadyCallBack(dataModifyReadycb),
 		pRawDataReady(pDataReadycb)
 {
-    ret = FAIL;
-    if(ThreadObject::CreateThread() == OK)
-        ret = OK;
+     if(ThreadObject::CreateThread() == FAIL)
+         throw std::exception();
 
     FILE_LOG(logDEBUG) << "DataProcessor " << ind << " created";
 

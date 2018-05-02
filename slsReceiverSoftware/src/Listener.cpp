@@ -19,7 +19,7 @@ using namespace std;
 const string Listener::TypeName = "Listener";
 
 
-Listener::Listener(int& ret, int ind, detectorType dtype, Fifo*& f, runStatus* s,
+Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
         uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr,
         uint32_t* us, uint32_t* as) :
 		ThreadObject(ind),
@@ -49,9 +49,8 @@ Listener::Listener(int& ret, int ind, detectorType dtype, Fifo*& f, runStatus* s
 		udpSocketBufferSize(us),
 		actualUDPSocketBufferSize(as)
 {
-    ret = FAIL;
-	if(ThreadObject::CreateThread() == OK)
-	    ret = OK;
+	if(ThreadObject::CreateThread() == FAIL)
+	    throw std::exception();
 
 	FILE_LOG(logDEBUG) << "Listener " << ind << " created";
 }
@@ -235,6 +234,7 @@ void Listener::SetSilentMode(bool mode) {
 
 
 int Listener::CreateDummySocketForUDPSocketBufferSize(uint32_t s) {
+    FILE_LOG(logINFO) << "Testing UDP Socket Buffer size with test port " << *udpPortNumber;
     uint32_t temp = *udpSocketBufferSize;
     *udpSocketBufferSize = s;
 
@@ -263,11 +263,11 @@ int Listener::CreateDummySocketForUDPSocketBufferSize(uint32_t s) {
         FILE_LOG(logERROR) << "Could not create a test UDP socket on port " << *udpPortNumber << " error: " << iret;
         return FAIL;
     }
-
     // doubled due to kernel bookkeeping (could also be less due to permissions)
     *actualUDPSocketBufferSize = udpSocket->getActualUDPSocketBufferSize();
-    if (*actualUDPSocketBufferSize != (s*2))
+    if (*actualUDPSocketBufferSize != (s*2)) {
         *udpSocketBufferSize = temp;
+    }
 
 
     // shutdown socket

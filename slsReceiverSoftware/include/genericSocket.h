@@ -231,11 +231,11 @@ enum communicationProtocol{
 
         // confirm if sufficient
          if (getsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUF, &ret_size, &optlen) == -1) {
-             FILE_LOG(logWARNING) << "[Port " << port_number << "] Could not get Socket Receive Buffer Size";
+             FILE_LOG(logWARNING) << "[Port " << port_number << "] Could not get rx socket receive buffer size";
          } else if (ret_size >= real_size) {
              actual_udp_socket_buffer_size = ret_size;
 #ifdef VEBOSE
-         FILE_LOG(logINFO) << "[Port " << port_number << "] UDP Socket Buffer Size is sufficient (" << ret_size << ")";
+         FILE_LOG(logINFO) << "[Port " << port_number << "] UDP rx socket buffer size is sufficient (" << ret_size << ")";
 #endif
          }
 
@@ -243,16 +243,16 @@ enum communicationProtocol{
          else {
              // set buffer size (could not set)
              if (setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUF, &desired_size, optlen) == -1) {
-                 FILE_LOG(logWARNING) << "[Port " << port_number << "] Could not set Socket Receive Buffer Size to "
-                         << desired_size << ". No Root Privileges?";
+                 FILE_LOG(logWARNING) << "[Port " << port_number << "] Could not set rx socket buffer size to "
+                         << desired_size << ". (No Root Privileges?)";
              }
              // confirm size
              else if (getsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUF, &ret_size, &optlen) == -1) {
-                 FILE_LOG(logWARNING) << "[Port " << port_number << "] Could not get Socket Receive Buffer Size";
+                 FILE_LOG(logWARNING) << "[Port " << port_number << "] Could not get rx socket buffer size";
              }
              else if (ret_size >= real_size) {
                  actual_udp_socket_buffer_size = ret_size;
-                 FILE_LOG(logINFO) << "[Port " << port_number << "] UDP Socket Buffer Size modified to " << ret_size;
+                 FILE_LOG(logINFO) << "[Port " << port_number << "] UDP rx socket buffer size modified to " << ret_size;
              }
              // buffer size too large
              else {
@@ -262,13 +262,13 @@ enum communicationProtocol{
                  getsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUF, &ret_size, &optlen);
                  if (ret == -1) {
                      FILE_LOG(logWARNING) << "[Port " << port_number << "] "
-                             "Could not force Socket Receive Buffer Size to "
-                             << desired_size << ". Real size is " << ret_size <<
+                             "Could not force rx socket buffer size to "
+                             << desired_size << ".\n  Real size: " << ret_size <<
                              ". (No Root Privileges?)\n"
-                             "Set rx_udpsocksize from the client to <= " <<
-                             (ret_size/2) << " (Real size:" << ret_size << ") to remove this warning.\n";
+                             "  To remove this warning: set rx_udpsocksize from client to <= " <<
+                             (ret_size/2) << " (Real size:" << ret_size << ").";
                  } else {
-                     FILE_LOG(logINFO) << "[Port " << port_number << "] UDP socket buffer size modified to " << ret_size;
+                     FILE_LOG(logINFO) << "[Port " << port_number << "] UDP rx socket buffer size modified to " << ret_size;
                  }
              }
          }

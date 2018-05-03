@@ -7678,26 +7678,38 @@ int slsDetector::programFPGA(string fname){
 		setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
 		return FAIL;
 	}
-	//create destination file name,replaces original filename with Jungfrau.rawbin
-	string destfname;
-	size_t found = fname.find_last_of("/\\");
-	if(found == string::npos)
-		destfname = "";
-	else
-		destfname = fname.substr(0,found+1);
-	destfname.append("Jungfrau_MCB.rawbin");
-#ifdef VERBOSE
-	std::cout << "Converting " << fname << " to " <<  destfname << std::endl;
-#endif
-	int filepos,x,y,i;
+
+	// open src
 	FILE* src = fopen(fname.c_str(),"rb");
-	FILE* dst = fopen(destfname.c_str(),"wb");
+	if (src == NULL) {
+	    std::cout << "Could not open source file for programming: " << fname << std::endl;
+	    setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+	    return FAIL;
+	}
+
+	// create temp destination file
+	char destfname[] = "/tmp/Jungfrau_MCB.XXXXXX";
+	int dst = mkstemp(destfname); // create temporary file and open it in r/w
+	if (dst == -1) {
+        std::cout << "Could not create destination file in /tmp for programming: " << destfname << std::endl;
+        setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+        return FAIL;
+	}
+
+	// convert src to dst rawbin
+#ifdef VERBOSE
+    std::cout << "Converting " << fname << " to " <<  destfname << std::endl;
+#endif
+    int filepos,x,y,i;
 	// Remove header (0...11C)
 	for (filepos=0; filepos < 0x11C; ++filepos)
 		fgetc(src);
 	// Write 0x80 times 0xFF (0...7F)
+	{
+	char c = 0xFF;
 	for (filepos=0; filepos < 0x80; ++filepos)
-		fputc(0xFF,dst);
+	    write(dst, &c, 1);
+	}
 	// Swap bits and write to file
 	for (filepos=0x80; filepos < 0x1000000; ++filepos)	{
 		x = fgetc(src);
@@ -7705,18 +7717,29 @@ int slsDetector::programFPGA(string fname){
 		y=0;
 		for (i=0; i < 8; ++i)
 			y=y| (   (( x & (1<<i) ) >> i)    << (7-i)     );	// This swaps the bits
-		fputc(y,dst);
+		write(dst, &y, 1);
 	}
 	if (filepos < 0x1000000){
 		std::cout << "Could not convert programming file. EOF before end of flash" << std::endl;
 		setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
 		return FAIL;
 	}
+	if(fclose(src)){
+        std::cout << "Could not close source file" << std::endl;
+        setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+        return FAIL;
+	}
+    if(close(dst)){
+        std::cout << "Could not close destination file" << std::endl;
+        setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+        return FAIL;
+    }
 #ifdef VERBOSE
 	std::cout << "File has been converted to "  <<  destfname << std::endl;
 #endif
-	//loading file to memory
-	FILE* fp = fopen(destfname.c_str(),"r");
+
+	//loading dst file to memory
+	FILE* fp = fopen(destfname,"r");
 	if(fp == NULL){
 		std::cout << "Could not open rawbin file" << std::endl;
 		setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
@@ -7747,16 +7770,17 @@ int slsDetector::programFPGA(string fname){
 	}
 
 	if(fclose(fp)){
-		std::cout << "Could not close rawbin file" << std::endl;
+		std::cout << "Could not close destination file after converting" << std::endl;
 		setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
 		return FAIL;
 	}
+	unlink(destfname); // delete temporary file
 #ifdef VERBOSE
 	std::cout << "Successfully loaded the rawbin file to program memory" << std::endl;
 #endif
 
 
-
+	// send program from memory to detector
 #ifdef VERBOSE
 	std::cout<< "Sending programming binary to detector " << endl;
 #endif

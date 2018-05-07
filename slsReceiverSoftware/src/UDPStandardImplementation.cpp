@@ -618,7 +618,9 @@ void UDPStandardImplementation::closeFiles() {
 	uint64_t maxIndexCaught = 0;
 	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it) {
 		(*it)->CloseFiles();
-		maxIndexCaught = max(maxIndexCaught, (*it)->GetProcessedMeasurementIndex());
+		uint64_t temp = 0;
+		temp = max(maxIndexCaught, (*it)->GetProcessedMeasurementIndex());
+		maxIndexCaught = temp;
 	}
 	if (maxIndexCaught)
 		dataProcessor[0]->EndofAcquisition(maxIndexCaught);
@@ -627,6 +629,7 @@ void UDPStandardImplementation::closeFiles() {
 int UDPStandardImplementation::setUDPSocketBufferSize(const uint32_t s) {
     if (listener.size())
         return listener[0]->CreateDummySocketForUDPSocketBufferSize(s);
+    return FAIL;
 }
 
 int UDPStandardImplementation::restreamStop() {

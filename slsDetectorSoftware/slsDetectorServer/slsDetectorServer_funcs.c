@@ -5117,7 +5117,7 @@ int reset_fpga(int file_des) {
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	else {
 	    if (isControlServer) {
-	        basictests(debugflag)	// mapping of control server at lease
+	        basictests(debugflag);	// mapping of control server at lease
 #ifdef JUNGFRAUD
 	    if (debugflag != PROGRAMMING_MODE)
 #endif

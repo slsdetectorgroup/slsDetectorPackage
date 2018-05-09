@@ -20,8 +20,8 @@ void error(char *msg){
 }
 
 int main(int argc, char *argv[]){
-	int  portno, b;
-	int retval=OK;
+	int  portno = DEFAULT_PORTNO;
+	int retval = OK;
 	int sd, fd;
 	int debugflag = 0;
 	int controlserver = 1;
@@ -101,7 +101,7 @@ int main(int argc, char *argv[]){
 	printf("function table assigned \n");
 #endif
 
-	if (b)
+	if (controlserver)
 	    printf("\nControl Server Ready...\n\n");
 	else
 	    printf("\nStop Server Ready...\n\n");

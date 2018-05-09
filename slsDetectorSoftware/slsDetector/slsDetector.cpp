@@ -7834,6 +7834,7 @@ int slsDetector::programFPGA(string fname){
 				updateDetector();
 		}
 
+
 		//remapping stop server
 		fnum=F_RESET_FPGA;
 		int stopret;

@@ -11,7 +11,8 @@
 /* global variables */
 #define CTRL_SRVR_INIT_TIME_US		(300 * 1000)
 int gpioDefined=0;
-char mtdvalue[10];
+#define MTDSIZE 10
+char mtdvalue[MTDSIZE];
 
 
 
@@ -85,9 +86,12 @@ int startWritingFPGAprogram(FILE** filefp){
 
 	//getting the drive
 	char output[255];
+	memset(output, 0, 255);
 	FILE* fp = popen("awk \'$4== \"\\\"bitfile(spi)\\\"\" {print $1}\' /proc/mtd", "r");
 	fgets(output, sizeof(output), fp);
 	pclose(fp);
+	//cprintf(RED,"output: %s\n", output);
+	memset(mtdvalue, 0, MTDSIZE);
 	strcpy(mtdvalue,"/dev/");
 	char* pch = strtok(output,":");
 	if(pch == NULL){
@@ -161,12 +165,12 @@ int writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp){
 #ifdef VERY_VERBOSE
 	printf("\nWriting of FPGA Program\n");
 	cprintf(BLUE,"address of fpgasrc:%p\n",(void *)fpgasrc);
-	cprintf(BLUE,"fsize:%d\n",fsize);
+	cprintf(BLUE,"fsize:%lu\n",fsize);
 	cprintf(BLUE,"pointer:%p\n",(void*)filefp);
 #endif
 
 	if(fwrite((void*)fpgasrc , sizeof(char) , fsize , filefp )!= fsize){
-		cprintf(RED,"Could not write FPGA source to flash\n");
+		cprintf(RED,"Could not write FPGA source to flash (size:%lu)\n", fsize);
 		return 1;
 	}
 #ifdef VERY_VERBOSE

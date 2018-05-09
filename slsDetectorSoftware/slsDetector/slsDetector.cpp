@@ -7868,6 +7868,9 @@ int slsDetector::programFPGA(string fname){
 			disconnectControl();
 		}
 	}
+	if (ret != FAIL) {
+		printf("You can now restart the detector servers in normal mode.\n");
+	}
 
 	//free resources
 	if(fpgasrc != NULL)

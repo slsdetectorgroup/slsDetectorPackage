@@ -68,6 +68,7 @@ void eraseFlash(){
 	printf("\nErasing Flash\n");
 #endif
 	char command[255];
+	memset(command, 0, 255);
 	sprintf(command,"flash_eraseall %s",mtdvalue);
 	system(command);
 	printf("Flash erased\n");
@@ -88,7 +89,14 @@ int startWritingFPGAprogram(FILE** filefp){
 	char output[255];
 	memset(output, 0, 255);
 	FILE* fp = popen("awk \'$4== \"\\\"bitfile(spi)\\\"\" {print $1}\' /proc/mtd", "r");
-	fgets(output, sizeof(output), fp);
+	if (fp == NULL) {
+		cprintf(RED,"popen returned NULL. Need that to get mtd drive.\n");
+		return 1;
+	}
+	if (fgets(output, sizeof(output), fp) == NULL) {
+		cprintf(RED,"fgets returned NULL. Need that to get mtd drive.\n");
+		return 1;
+	}
 	pclose(fp);
 	//cprintf(RED,"output: %s\n", output);
 	memset(mtdvalue, 0, MTDSIZE);
@@ -96,7 +104,7 @@ int startWritingFPGAprogram(FILE** filefp){
 	char* pch = strtok(output,":");
 	if(pch == NULL){
 		cprintf(RED,"Could not get mtd value\n");
-		return FAIL;
+		return 1;
 	}
 	strcat(mtdvalue,pch);
 	printf ("\nFlash drive found: %s\n",mtdvalue);

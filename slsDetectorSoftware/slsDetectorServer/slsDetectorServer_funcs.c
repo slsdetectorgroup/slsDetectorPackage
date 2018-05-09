@@ -52,8 +52,11 @@ int printSocketReadError() {
 	return FAIL;
 }
 
-void basictests(int flag) {
+void setModeFlag(int flag) {
     debugflag = flag;
+}
+
+void basictests() {
 #ifdef	SLS_DETECTOR_FUNCTION_LIST
 	checkFirmwareCompatibility(debugflag);
 #endif
@@ -68,6 +71,10 @@ void init_detector(int controlserver) {
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (controlserver) {
 	    isControlServer = 1;
+	    basictests();
+#ifdef JUNGFRAUD
+	    if (debugflag != PROGRAMMING_MODE)
+#endif
 		initControlServer();
 #ifdef EIGERD
 		dhcpipad = getDetectorIP();
@@ -102,6 +109,14 @@ int decode_function(int file_des) {
 
 #ifdef VERBOSE
 	printf(" calling function fnum=%d, (%s) located at 0x%x\n", fnum,  getFunctionName((enum detFuncs)fnum), (unsigned int)flist[fnum]);
+#endif
+#ifdef JUNGFRAUD
+	if ((debugflag == PROGRAMMING_MODE) &&
+			((fnum != F_PROGRAM_FPGA) && (fnum != F_GET_DETECTOR_TYPE) &&
+					(fnum != F_RESET_FPGA) && (fnum != F_UPDATE_CLIENT))) {
+		sprintf(mess,"This Function %s cannot be executed. ", getFunctionName((enum detFuncs)fnum));
+		ret=(M_nofuncMode)(file_des);
+	} else
 #endif
 	if (fnum<0 || fnum>=NUM_DET_FUNCTIONS) {
 		cprintf(BG_RED,"Unknown function enum %d\n", fnum);
@@ -315,6 +330,21 @@ int  M_nofunc(int file_des){
 
 
 
+int  M_nofuncMode(int file_des){
+	int ret=FAIL,ret1=FAIL;
+	int n=0;
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+
+	strcat(mess, "On-board detector server in programming mode. Restart detector server in normal mode (without any arguments).\n");
+	cprintf(BG_RED,"Error: %s",mess);
+	n = sendData(file_des,&ret1,sizeof(ret1),INT32);
+	n = sendData(file_des,mess,sizeof(mess),OTHER); // mess is defined at function call
+
+	// return ok / fail
+	return ret;
+}
 
 
 
@@ -4924,7 +4954,7 @@ int program_fpga(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
 	sprintf(mess,"program FPGA failed\n");
-
+	printf("Programming FPGA...")
 
 #ifndef JUNGFRAUD
 	//to receive any arguments
@@ -4987,10 +5017,10 @@ int program_fpga(int file_des) {
 			unitprogramsize = MAX_FPGAPROGRAMSIZE;  //2mb
 			if(unitprogramsize > filesize) //less than 2mb
 				unitprogramsize = filesize;
-	#ifdef VERY_VERBOSE
+#ifdef VERY_VERBOSE
 			printf("unit size to receive is:%d\n",unitprogramsize);
 			printf("filesize:%d currentpointer:%d\n",filesize,currentPointer);
-	#endif
+#endif
 
 			//receive
 			n = receiveData(file_des,fpgasrc,unitprogramsize,OTHER);
@@ -5035,15 +5065,16 @@ int program_fpga(int file_des) {
 		if(fp!=NULL)
 			fclose(fp);
 #ifdef VERY_VERBOSE
-	printf("Done with program receiving command\n");
+		printf("Done with program receiving command\n");
 #endif
-    if (isControlServer)
-        basictests(debugflag);
-    init_detector(isControlServer);
+
+		if (isControlServer)
+			basictests(debugflag);
+		init_detector(isControlServer);
 	}
 #endif
-		if (ret==OK)
-			ret=FORCE_UPDATE;
+	if (ret==OK)
+		ret=FORCE_UPDATE;
 #endif
 
 	// ret could be swapped during sendData
@@ -5085,9 +5116,13 @@ int reset_fpga(int file_des) {
 	}
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	else {
-	    if (isControlServer)
+	    if (isControlServer) {
 	        basictests(debugflag);
-		initControlServer(isControlServer);
+#ifdef JUNGFRAUD
+	    if (debugflag != PROGRAMMING_MODE)
+#endif
+	    	initControlServer();
+	    }
 		ret = FORCE_UPDATE;
 	}
 #endif

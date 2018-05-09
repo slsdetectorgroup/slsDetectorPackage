@@ -70,7 +70,7 @@ void eraseFlash(){
 	char command[255];
 	sprintf(command,"flash_eraseall %s",mtdvalue);
 	system(command);
-	printf("flash erased\n");
+	printf("Flash erased\n");
 }
 
 /**
@@ -109,7 +109,7 @@ int startWritingFPGAprogram(FILE** filefp){
 		cprintf(RED,"Unable to open %s in write mode\n",mtdvalue);
 		return 1;
 	}
-	printf("flash ready for writing\n");
+	printf("Flash ready for writing\n");
 
 	return 0;
 }

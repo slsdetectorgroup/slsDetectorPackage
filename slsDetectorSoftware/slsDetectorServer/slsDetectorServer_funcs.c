@@ -4954,7 +4954,7 @@ int program_fpga(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
 	sprintf(mess,"program FPGA failed\n");
-	printf("Programming FPGA...")
+	printf("Programming FPGA...");
 
 #ifndef JUNGFRAUD
 	//to receive any arguments
@@ -5117,12 +5117,13 @@ int reset_fpga(int file_des) {
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	else {
 	    if (isControlServer) {
-	        basictests(debugflag);
+	        basictests(debugflag)	// mapping of control server at lease
 #ifdef JUNGFRAUD
 	    if (debugflag != PROGRAMMING_MODE)
 #endif
 	    	initControlServer();
 	    }
+	    else initStopServer(); //remapping of stop server
 		ret = FORCE_UPDATE;
 	}
 #endif

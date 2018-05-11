@@ -7847,11 +7847,16 @@ int slsDetector::programFPGA(string fname){
 			std::cout<<std::endl;
 
 			//check ending error
-			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-			if (ret==FAIL) {
-				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-				std::cout<< "Detector returned error: " << mess << std::endl;
-				setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+			if ((ret == FAIL) &&
+					(strstr(mess,"not implemented") == NULL) &&
+					(strstr(mess,"locked") == NULL) &&
+					(strstr(mess,"-update") == NULL)) {
+				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret==FAIL) {
+					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Detector returned error: " << mess << std::endl;
+					setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+				}
 			}
 			disconnectControl();
 			if (ret==FORCE_UPDATE)
@@ -7860,12 +7865,22 @@ int slsDetector::programFPGA(string fname){
 
 
 		//remapping stop server
-		fnum=F_RESET_FPGA;
-		int stopret;
-		if (connectStop() == OK){
-			stopSocket->SendDataOnly(&fnum,sizeof(fnum));
-			stopSocket->ReceiveDataOnly(&stopret,sizeof(stopret));
-			disconnectControl();
+		if ((ret == FAIL) &&
+				(strstr(mess,"not implemented") == NULL) &&
+				(strstr(mess,"locked") == NULL) &&
+				(strstr(mess,"-update") == NULL)) {
+			fnum=F_RESET_FPGA;
+			int stopret;
+			if (connectStop() == OK){
+				stopSocket->SendDataOnly(&fnum,sizeof(fnum));
+				stopSocket->ReceiveDataOnly(&stopret,sizeof(stopret));
+				if (stopret==FAIL) {
+					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Detector returned error: " << mess << std::endl;
+					setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+				}
+				disconnectControl();
+			}
 		}
 	}
 	if (ret != FAIL) {

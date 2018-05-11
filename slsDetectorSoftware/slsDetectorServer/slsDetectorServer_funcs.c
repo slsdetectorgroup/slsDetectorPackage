@@ -337,7 +337,7 @@ int  M_nofuncMode(int file_des){
 	while (n > 0)
 		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 
-	strcat(mess, "On-board detector server in programming mode. Restart detector server in normal mode (without any arguments).\n");
+	strcat(mess, "On-board detector server in update mode. Restart detector server in normal mode (without any arguments) to continue.\n");
 	cprintf(BG_RED,"Error: %s",mess);
 	n = sendData(file_des,&ret1,sizeof(ret1),INT32);
 	n = sendData(file_des,mess,sizeof(mess),OTHER); // mess is defined at function call
@@ -4954,7 +4954,6 @@ int program_fpga(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
 	sprintf(mess,"program FPGA failed\n");
-	printf("Programming FPGA...");
 
 #ifndef JUNGFRAUD
 	//to receive any arguments
@@ -4964,78 +4963,48 @@ int program_fpga(int file_des) {
 	sprintf(mess,"Function (Program FPGA) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
-
-	size_t filesize = 0;
-	size_t totalsize = 0;
-	size_t unitprogramsize = 0;
-	char* fpgasrc = NULL;
-	FILE* fp = NULL;
-
-	// receive arguments - filesize
-	n = receiveData(file_des,&filesize,sizeof(filesize),INT32);
-	if (n < 0) return printSocketReadError();
-	totalsize = filesize;
-#ifdef VERY_VERBOSE
-	printf("\n\n Total size is:%d\n",totalsize);
-#endif
-
-	// execute action
-	if (differentClients && lockStatus) {
-		ret = FAIL;
-		sprintf(mess,"Detector locked by %s\n",lastClientIP);
+	if (!debugflag) {
+		//to receive any arguments
+		while (n > 0)
+			n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+		ret=FAIL;
+		sprintf(mess,"FPGA cannot be programmed in this mode. "
+				"Restart on-board detector server with -update for update mode to continue.\n");
 		cprintf(RED, "Warning: %s", mess);
 	}
-#ifdef SLS_DETECTOR_FUNCTION_LIST
+
 	else {
-		//opening file pointer to flash and telling FPGA to not touch flash
-		if(startWritingFPGAprogram(&fp) != OK) {
-			ret=FAIL;
-			sprintf(mess,"Could not write to flash. Error at startup.\n");
-			cprintf(RED,"%s",mess);
-		}
+		printf("Programming FPGA...");
+		size_t filesize = 0;
+		size_t totalsize = 0;
+		size_t unitprogramsize = 0;
+		char* fpgasrc = NULL;
+		FILE* fp = NULL;
 
-		//---------------- first ret ----------------
-		// ret could be swapped during sendData
-		ret1 = ret;
-		// send ok / fail
-		n = sendData(file_des,&ret1,sizeof(ret),INT32);
-		// send return argument
-		if (ret==FAIL) {
-			n += sendData(file_des,mess,sizeof(mess),OTHER);
-		}
-		//---------------- first ret ----------------
-
-		if(ret!=FAIL) {
-			//erasing flash
-			eraseFlash();
-			fpgasrc = (char*)malloc(MAX_FPGAPROGRAMSIZE);
-		}
-
-		//writing to flash part by part
-		while(ret != FAIL && filesize){
-
-			unitprogramsize = MAX_FPGAPROGRAMSIZE;  //2mb
-			if(unitprogramsize > filesize) //less than 2mb
-				unitprogramsize = filesize;
+		// receive arguments - filesize
+		n = receiveData(file_des,&filesize,sizeof(filesize),INT32);
+		if (n < 0) return printSocketReadError();
+		totalsize = filesize;
 #ifdef VERY_VERBOSE
-			printf("unit size to receive is:%d\n",unitprogramsize);
-			printf("filesize:%d currentpointer:%d\n",filesize,currentPointer);
+		printf("\n\n Total size is:%d\n",totalsize);
 #endif
 
-			//receive
-			n = receiveData(file_des,fpgasrc,unitprogramsize,OTHER);
-			if (n < 0) return printSocketReadError();
+		// execute action
+		if (differentClients && lockStatus) {
+			ret = FAIL;
+			sprintf(mess,"Detector locked by %s\n",lastClientIP);
+			cprintf(RED, "Warning: %s", mess);
+		}
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+		else {
+			//opening file pointer to flash and telling FPGA to not touch flash
+			if(startWritingFPGAprogram(&fp) != OK) {
+				ret=FAIL;
+				sprintf(mess,"Could not write to flash. Error at startup.\n");
+				cprintf(RED,"%s",mess);
+			}
 
-			if(!(unitprogramsize - filesize)){
-				fpgasrc[unitprogramsize]='\0';
-				filesize-=unitprogramsize;
-				unitprogramsize++;
-			}else
-				filesize-=unitprogramsize;
-
-			ret = writeFPGAProgram(fpgasrc,unitprogramsize,fp);
-
-			//---------------- middle rets ----------------
+			//---------------- first ret ----------------
 			// ret could be swapped during sendData
 			ret1 = ret;
 			// send ok / fail
@@ -5043,38 +5012,80 @@ int program_fpga(int file_des) {
 			// send return argument
 			if (ret==FAIL) {
 				n += sendData(file_des,mess,sizeof(mess),OTHER);
-				cprintf(RED,"Failure: Breaking out of program receiving\n");
 			}
-			//---------------- middle rets ----------------
+			//---------------- first ret ----------------
 
-			if(ret != FAIL){
-				//print progress
-				printf("Writing to Flash:%d%%\r",(int) (((double)(totalsize-filesize)/totalsize)*100) );
-				fflush(stdout);
+			if(ret!=FAIL) {
+				//erasing flash
+				eraseFlash();
+				fpgasrc = (char*)malloc(MAX_FPGAPROGRAMSIZE);
 			}
-		}
 
-		printf("\n");
+			//writing to flash part by part
+			while(ret != FAIL && filesize){
 
-		//closing file pointer to flash and informing FPGA
-		stopWritingFPGAprogram(fp);
-
-		//free resources
-		if(fpgasrc != NULL)
-			free(fpgasrc);
-		if(fp!=NULL)
-			fclose(fp);
+				unitprogramsize = MAX_FPGAPROGRAMSIZE;  //2mb
+				if(unitprogramsize > filesize) //less than 2mb
+					unitprogramsize = filesize;
 #ifdef VERY_VERBOSE
-		printf("Done with program receiving command\n");
+				printf("unit size to receive is:%d\n",unitprogramsize);
+				printf("filesize:%d currentpointer:%d\n",filesize,currentPointer);
 #endif
 
-		if (isControlServer)
-			basictests(debugflag);
-		init_detector(isControlServer);
-	}
+				//receive
+				n = receiveData(file_des,fpgasrc,unitprogramsize,OTHER);
+				if (n < 0) return printSocketReadError();
+
+				if(!(unitprogramsize - filesize)){
+					fpgasrc[unitprogramsize]='\0';
+					filesize-=unitprogramsize;
+					unitprogramsize++;
+				}else
+					filesize-=unitprogramsize;
+
+				ret = writeFPGAProgram(fpgasrc,unitprogramsize,fp);
+
+				//---------------- middle rets ----------------
+				// ret could be swapped during sendData
+				ret1 = ret;
+				// send ok / fail
+				n = sendData(file_des,&ret1,sizeof(ret),INT32);
+				// send return argument
+				if (ret==FAIL) {
+					n += sendData(file_des,mess,sizeof(mess),OTHER);
+					cprintf(RED,"Failure: Breaking out of program receiving\n");
+				}
+				//---------------- middle rets ----------------
+
+				if(ret != FAIL){
+					//print progress
+					printf("Writing to Flash:%d%%\r",(int) (((double)(totalsize-filesize)/totalsize)*100) );
+					fflush(stdout);
+				}
+			}
+
+			printf("\n");
+
+			//closing file pointer to flash and informing FPGA
+			stopWritingFPGAprogram(fp);
+
+			//free resources
+			if(fpgasrc != NULL)
+				free(fpgasrc);
+			if(fp!=NULL)
+				fclose(fp);
+#ifdef VERY_VERBOSE
+			printf("Done with program receiving command\n");
 #endif
-	if (ret==OK)
-		ret=FORCE_UPDATE;
+
+			if (isControlServer)
+				basictests(debugflag);
+			init_detector(isControlServer);
+		}
+#endif
+		if (ret==OK)
+			ret=FORCE_UPDATE;
+	}
 #endif
 
 	// ret could be swapped during sendData
@@ -5104,8 +5115,7 @@ int reset_fpga(int file_des) {
 	while (n > 0)
 		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
-	sprintf(mess,"Function (Start Readout) is not implemented for this detector\n");
-	cprintf(RED, "%s", mess);
+	sprintf(mess,"Function (Reset FPGA) is not implemented for this detector\n");	cprintf(RED, "%s", mess);
 #else
 
 	// execute action

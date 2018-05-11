@@ -35,16 +35,16 @@ int main(int argc, char *argv[]){
 		int i;
 		for (i = 1; i < argc; ++i) {
 			if(!strcasecmp(argv[i],"-stopserver")) {
-				cprintf(BLUE,"detected stop server\n");
+				cprintf(BLUE,"Detected stop server\n");
 				controlserver = 0;
 			}
-			else if(!strcasecmp(argv[i],"-debug")){
-				cprintf(BLUE,"detected debug mode\n");
+			else if(!strcasecmp(argv[i],"-devel")){
+				cprintf(BLUE,"Detected developer mode\n");
 				debugflag = 1;
 			}
 #ifdef JUNGFRAUD
-			else if(!strcasecmp(argv[i],"-programming")){
-				cprintf(BLUE,"detected programming mode\n");
+			else if(!strcasecmp(argv[i],"-update")){
+				cprintf(BLUE,"Detected update mode\n");
 				debugflag = PROGRAMMING_MODE;
 			}
 #endif

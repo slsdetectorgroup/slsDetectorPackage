@@ -42,6 +42,7 @@ unsigned int Feb_Control_subFrameMode;
 unsigned int Feb_Control_nimages;
 double Feb_Control_exposure_time_in_sec;
 int64_t Feb_Control_subframe_exposure_time_in_10nsec;
+int64_t Feb_Control_subframe_period_in_10nsec;
 double Feb_Control_exposure_period_in_sec;
 
 int64_t Feb_Control_RateTable_Tau_in_nsec = -1;
@@ -1380,6 +1381,14 @@ int Feb_Control_SetSubFrameExposureTime(int64_t the_subframe_exposure_time_in_10
 }
 int64_t Feb_Control_GetSubFrameExposureTime(){return Feb_Control_subframe_exposure_time_in_10nsec*10;}
 
+int Feb_Control_SetSubFramePeriod(int64_t the_subframe_period_in_10nsec){
+	Feb_Control_subframe_period_in_10nsec = the_subframe_period_in_10nsec;
+	printf("Sub Frame Period set to: %lld\n",(long long int)Feb_Control_subframe_period_in_10nsec);
+	return 1;
+}
+int64_t Feb_Control_GetSubFramePeriod(){return Feb_Control_subframe_period_in_10nsec*10;}
+
+
 int Feb_Control_SetExposurePeriod(double the_exposure_period_in_sec){
 	Feb_Control_exposure_period_in_sec = the_exposure_period_in_sec;
 	printf("Exposure period set to: %f\n",Feb_Control_exposure_period_in_sec);
@@ -1510,9 +1519,11 @@ int Feb_Control_PrepareForAcquisition(){//return 1;
 	reg_vals[4]=(Feb_Control_acquireNReadoutMode|Feb_Control_triggerMode|Feb_Control_externalEnableMode|Feb_Control_subFrameMode);
 	reg_nums[5]=DAQ_REG_SUBFRAME_EXPOSURES;
 	reg_vals[5]= Feb_Control_subframe_exposure_time_in_10nsec; //(1 means 10ns, 100 means 1000ns)
+	reg_nums[6]=DAQ_REG_SUBFRAME_PERIOD;
+	reg_vals[6]= Feb_Control_subframe_period_in_10nsec; //(1 means 10ns, 100 means 1000ns)
 	// if(!Feb_Interface_WriteRegisters((Module_GetTopLeftAddress(&modules[1])|Module_GetTopRightAddress(&modules[1])),20,reg_nums,reg_vals,0,0)){
 	if(Feb_Control_activated){
-		if(!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(),6,reg_nums,reg_vals,0,0)){
+		if(!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(),7,reg_nums,reg_vals,0,0)){
 			printf("Trouble starting acquisition....\n");;
 			return 0;
 		}

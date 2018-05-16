@@ -328,7 +328,8 @@ void setupDetector() {
 	//setting default measurement parameters
 	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
 	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
-	setTimer(SUBFRAME_ACQUISITION_TIME, DEFAULT_SUBFRAME_EXPOSURE_VAL);
+	setTimer(SUBFRAME_ACQUISITION_TIME, DEFAULT_SUBFRAME_EXPOSURE);
+	setTimer(SUBFRAME_PERIOD, DEFAULT_SUBFRAME_PERIOD);
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
 	setDynamicRange(DEFAULT_DYNAMIC_RANGE);
 	eiger_photonenergy = DEFAULT_PHOTON_ENERGY;
@@ -498,6 +499,12 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 		}
 		return (Feb_Control_GetSubFrameExposureTime());
 
+	case SUBFRAME_PERIOD:
+		if(val >= 0){
+			printf(" Setting sub period: %lldns\n",(long long int)val/10);
+			Feb_Control_SetSubFramePeriod(val/10);
+		}
+		return (Feb_Control_GetSubFramePeriod());
 
 	case FRAME_PERIOD:
 		if(val >= 0){

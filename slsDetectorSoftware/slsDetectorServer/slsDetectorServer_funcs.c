@@ -2755,6 +2755,16 @@ int set_timer(int file_des) {
 				strcpy(mess,"Sub Frame exposure time should not exceed 5.368 seconds\n");
 				break;
 			}
+			retval = setTimer(ind,tns);
+			break;
+		case SUBFRAME_PERIOD:
+			if (tns > ((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) ){
+				ret=FAIL;
+				strcpy(mess,"Sub Frame Period should not exceed 5.368 seconds\n");
+				break;
+			}
+			retval = setTimer(ind,tns);
+			break;
 #endif
 #ifdef MYTHEN
 		case PROBES_NUMBER:

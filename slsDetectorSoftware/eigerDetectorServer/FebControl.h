@@ -164,6 +164,8 @@ int Feb_Control_GetModuleNumber();
   int64_t Feb_Control_GetExposureTime_in_nsec();
   int Feb_Control_SetSubFrameExposureTime(int64_t the_subframe_exposure_time_in_10nsec);
   int64_t Feb_Control_GetSubFrameExposureTime();
+  int Feb_Control_SetSubFramePeriod(int64_t the_subframe_period_in_10nsec);
+  int64_t Feb_Control_GetSubFramePeriod();
   int Feb_Control_SetExposurePeriod(double the_exposure_period_in_sec);
   double Feb_Control_GetExposurePeriod();
   int Feb_Control_SetDynamicRange(unsigned int four_eight_sixteen_or_thirtytwo);

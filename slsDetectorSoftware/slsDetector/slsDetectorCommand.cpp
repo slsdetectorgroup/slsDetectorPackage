@@ -5662,7 +5662,7 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
 	else if (cmd=="period")
 		index=FRAME_PERIOD;
     else if (cmd=="subperiod")
-        index=SUBFRAME_FRAME_PERIOD;
+        index=SUBFRAME_PERIOD;
 	else if (cmd=="delay")
 		index=DELAY_AFTER_TRIGGER;
 	else if (cmd=="gates")
@@ -5701,7 +5701,7 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
 			return string("cannot scan timer value ")+string(args[1]);
 		if (index==ACQUISITION_TIME || index==SUBFRAME_ACQUISITION_TIME ||
 		        index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER ||
-		        index == SUBFRAME_FRAME_PERIOD) {
+		        index == SUBFRAME_PERIOD) {
 			// 	t=(int64_t)(val*1E+9); for precision of eg.0.0000325, following done
 			val*=1E9;
 			t = (int64_t)val;
@@ -5718,7 +5718,7 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
 
 	if ((ret!=-1) && (index==ACQUISITION_TIME || index==SUBFRAME_ACQUISITION_TIME
 	        || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER ||
-	        index == SUBFRAME_FRAME_PERIOD)) {
+	        index == SUBFRAME_PERIOD)) {
 		rval=(double)ret*1E-9;
 		sprintf(answer,"%0.9f",rval);
 	}

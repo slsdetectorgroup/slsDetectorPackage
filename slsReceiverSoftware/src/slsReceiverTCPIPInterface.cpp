@@ -1195,7 +1195,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 		}
 	}
 #ifdef VERYVERBOSE
-	FILE_LOG(logDEBUG1) << "dynamic range" << dr;
+	FILE_LOG(logDEBUG1) << "dynamic range: " << retval;
 #endif
 #endif
 

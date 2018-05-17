@@ -163,7 +163,8 @@ int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t 
 
 
 int HDF5File::CreateMasterFile(bool en, uint32_t size,
-		uint32_t nx, uint32_t ny, uint64_t at, uint64_t st, uint64_t ap) {
+		uint32_t nx, uint32_t ny, uint64_t at, uint64_t st, uint64_t sp,
+		uint64_t ap) {
 
 	//beginning of every acquisition
 	numFramesInFile = 0;
@@ -171,12 +172,15 @@ int HDF5File::CreateMasterFile(bool en, uint32_t size,
 
 	if (master && (*detIndex==0)) {
 		virtualfd = 0;
-		masterFileName = HDF5FileStatic::CreateMasterFileName(filePath, fileNamePrefix, *fileIndex);
+		masterFileName = HDF5FileStatic::CreateMasterFileName(filePath,
+				fileNamePrefix, *fileIndex);
 		if(!silentMode)
 			FILE_LOG(logINFO) << "Master File: " << masterFileName;
 		pthread_mutex_lock(&Mutex);
-		int ret = HDF5FileStatic::CreateMasterDataFile(masterfd, masterFileName, *overWriteEnable,
-				*dynamicRange, en, size, nx, ny, *numImages, at, st, ap, HDF5_WRITER_VERSION);
+		int ret = HDF5FileStatic::CreateMasterDataFile(masterfd, masterFileName,
+				*overWriteEnable,
+				*dynamicRange, en, size, nx, ny, *numImages, at, st, sp, ap,
+				HDF5_WRITER_VERSION);
 		pthread_mutex_unlock(&Mutex);
 		return ret;
 	}

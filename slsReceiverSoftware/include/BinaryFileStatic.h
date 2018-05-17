@@ -109,12 +109,15 @@ class BinaryFileStatic {
 	 * @param acquisitionTime acquisition time
 	 * @param acquisitionPeriod acquisition period
 	 * @param subexposuretime sub exposure time
+	 * @param subperiod sub period
 	 * @param version version of software for binary writing
 	 * @returns 0 for success and 1 for fail
 	 */
 	static int CreateMasterDataFile(FILE*& fd, string fname, bool owenable,
-					uint32_t dr, bool tenE,	uint32_t size, uint32_t nPixelsX, uint32_t nPixelsY, uint64_t nf,
-					uint64_t acquisitionTime, uint64_t subexposuretime, uint64_t acquisitionPeriod, double version)
+					uint32_t dr, bool tenE,	uint32_t size,
+					uint32_t nPixelsX, uint32_t nPixelsY, uint64_t nf,
+					uint64_t acquisitionTime, uint64_t subexposuretime,
+					uint64_t subperiod, uint64_t acquisitionPeriod, double version)
 	{
 		if(!owenable){
 			if (NULL == (fd = fopen((const char *) fname.c_str(), "wx"))){
@@ -130,32 +133,33 @@ class BinaryFileStatic {
 		time_t t = time(0);
 		char message[MAX_STR_LENGTH];
 		sprintf(message,
-				"Version            		: %.1f\n"
-				"Dynamic Range      		: %d\n"
-				"Ten Giga           		: %d\n"
-				"Image Size         		: %d bytes\n"
-				"x                  		: %d pixels\n"
-				"y                  		: %d pixels\n"
-				"Total Frames       		: %lld\n"
-				"Exptime (ns)       		: %lld\n"
-				"SubExptime (ns)    		: %lld\n"
-				"Period (ns)        		: %lld\n"
-				"Timestamp          		: %s\n\n"
+				"Version                    : %.1f\n"
+				"Dynamic Range              : %d\n"
+				"Ten Giga                   : %d\n"
+				"Image Size                 : %d bytes\n"
+				"x                          : %d pixels\n"
+				"y                          : %d pixels\n"
+				"Total Frames               : %lld\n"
+				"Exptime (ns)               : %lld\n"
+				"SubExptime (ns)            : %lld\n"
+				"SubPeriod(ns)              : %lld\n"
+				"Period (ns)                : %lld\n"
+				"Timestamp                  : %s\n\n"
 
 				"#Frame Header\n"
-				"Frame Number       		: 8 bytes\n"
-				"SubFrame Number/ExpLength	: 4 bytes\n"
-				"Packet Number      		: 4 bytes\n"
-				"Bunch ID           		: 8 bytes\n"
-				"Timestamp          		: 8 bytes\n"
-				"Module Id         		 	: 2 bytes\n"
-				"X Coordinate       		: 2 bytes\n"
-				"Y Coordinate       		: 2 bytes\n"
-				"Z Coordinate       		: 2 bytes\n"
-				"Debug              		: 4 bytes\n"
-				"Round Robin Number 		: 2 bytes\n"
-				"Detector Type      		: 1 byte\n"
-				"Header Version     		: 1 byte\n"
+				"Frame Number               : 8 bytes\n"
+				"SubFrame Number/ExpLength  : 4 bytes\n"
+				"Packet Number              : 4 bytes\n"
+				"Bunch ID                   : 8 bytes\n"
+				"Timestamp                  : 8 bytes\n"
+				"Module Id                  : 2 bytes\n"
+				"X Coordinate               : 2 bytes\n"
+				"Y Coordinate               : 2 bytes\n"
+				"Z Coordinate               : 2 bytes\n"
+				"Debug                      : 4 bytes\n"
+				"Round Robin Number         : 2 bytes\n"
+				"Detector Type              : 1 byte\n"
+				"Header Version             : 1 byte\n"
 				,
 				version,
 				dr,
@@ -166,6 +170,7 @@ class BinaryFileStatic {
 				(long long int)nf,
 				(long long int)acquisitionTime,
 				(long long int)subexposuretime,
+				(long long int)subperiod,
 				(long long int)acquisitionPeriod,
 				ctime(&t));
 		if (strlen(message) > MAX_STR_LENGTH) {

@@ -232,13 +232,16 @@ public:
 	 * @param nf number of images
 	 * @param acquisitionTime acquisition time
 	 * @param subexposuretime sub exposure time
+	 * @param subperiod sub period
 	 * @param acquisitionPeriod acquisition period
 	 * @param version version of software for hdf5 writing
 	 * @returns 0 for success and 1 for fail
 	 */
 	static int CreateMasterDataFile(H5File*& fd, string fname, bool owenable,
-			uint32_t dr, bool tenE,	uint32_t size, uint32_t nPixelsx, uint32_t nPixelsy, uint64_t nf,
-			uint64_t acquisitionTime, uint64_t subexposuretime, uint64_t acquisitionPeriod, double version)
+			uint32_t dr, bool tenE,	uint32_t size,
+			uint32_t nPixelsx, uint32_t nPixelsy, uint64_t nf,
+			uint64_t acquisitionTime, uint64_t subexposuretime,
+			uint64_t subperiod, uint64_t acquisitionPeriod, double version)
 	{
 		try {
 			Exception::dontPrint(); //to handle errors
@@ -246,9 +249,13 @@ public:
 			FileAccPropList flist;
 			flist.setFcloseDegree(H5F_CLOSE_STRONG);
 			if(!owenable)
-				fd = new H5File( fname.c_str(), H5F_ACC_EXCL, NULL, flist );
+				fd = new H5File( fname.c_str(), H5F_ACC_EXCL,
+						FileCreatPropList::DEFAULT,
+						flist );
 			else
-				fd = new H5File( fname.c_str(), H5F_ACC_TRUNC, NULL, flist );
+				fd = new H5File( fname.c_str(), H5F_ACC_TRUNC,
+						FileCreatPropList::DEFAULT,
+						flist );
 
 			//variables
 			DataSpace dataspace = DataSpace (H5S_SCALAR);
@@ -313,6 +320,12 @@ public:
 			attribute = dataset.createAttribute("unit",strdatatype, dataspace);
 			attribute.write(strdatatype, string("ns"));
 
+			//SubPeriod
+			dataset = group5.createDataSet ( "sub period", PredType::STD_U64LE, dataspace );
+			dataset.write ( &subperiod, PredType::STD_U64LE);
+			attribute = dataset.createAttribute("unit",strdatatype, dataspace);
+			attribute.write(strdatatype, string("ns"));
+
 			//Period
 			dataset = group5.createDataSet ( "acquisition period", PredType::STD_U64LE, dataspace );
 			dataset.write ( &acquisitionPeriod, PredType::STD_U64LE);
@@ -374,9 +387,13 @@ public:
 			FileAccPropList fapl;
 			fapl.setFcloseDegree(H5F_CLOSE_STRONG);
 			if(!owenable)
-				fd = new H5File( fname.c_str(), H5F_ACC_EXCL, NULL,fapl );
+				fd = new H5File( fname.c_str(), H5F_ACC_EXCL,
+						FileCreatPropList::DEFAULT,
+						fapl );
 			else
-				fd = new H5File( fname.c_str(), H5F_ACC_TRUNC, NULL, fapl );
+				fd = new H5File( fname.c_str(), H5F_ACC_TRUNC,
+						FileCreatPropList::DEFAULT,
+						fapl );
 
 			//attributes - version
 			double dValue=version;
@@ -678,9 +695,13 @@ public:
 			FileAccPropList fapl;
 			fapl.setFcloseDegree(H5F_CLOSE_STRONG);
 			if(!owenable)
-				newfd = new H5File( newFileName.c_str(), H5F_ACC_EXCL, NULL,fapl );
+				newfd = new H5File( newFileName.c_str(), H5F_ACC_EXCL,
+						FileCreatPropList::DEFAULT,
+						fapl );
 			else
-				newfd = new H5File( newFileName.c_str(), H5F_ACC_TRUNC, NULL, fapl );
+				newfd = new H5File( newFileName.c_str(), H5F_ACC_TRUNC,
+						FileCreatPropList::DEFAULT,
+						fapl );
 			//dataspace and dataset
 			DataSpace* newDataspace;
 			if (rank == 3) {

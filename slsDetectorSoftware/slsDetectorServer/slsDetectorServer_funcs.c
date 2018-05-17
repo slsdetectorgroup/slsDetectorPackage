@@ -3587,6 +3587,12 @@ int send_update(int file_des) {
 #endif
 	n = sendData(file_des,&retval,sizeof(int64_t),INT64);
 	if (n < 0) return printSocketReadError();
+
+#ifdef	SLS_DETECTOR_FUNCTION_LIST
+	retval=setTimer(SUBFRAME_PERIOD,GET_FLAG);
+#endif
+	n = sendData(file_des,&retval,sizeof(int64_t),INT64);
+	if (n < 0) return printSocketReadError();
 #endif
 
 

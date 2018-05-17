@@ -4156,6 +4156,10 @@ int slsDetector::updateDetectorNoWait() {
 	   //retval=setSubFrameExposureTime(tns);
 	  n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
 	  thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME]=retval;
+
+	   //retval=setSubFramePeriod(tns);
+	  n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+	  thisDetector->timerValue[SUBFRAME_PERIOD]=retval;
   }
 
   //retval=setPeriod(tns);
@@ -4781,6 +4785,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	//send acquisiton time/period/subexptime/frame/cycles/samples to receiver
 	if((index==FRAME_NUMBER)||(index==FRAME_PERIOD)||(index==CYCLES_NUMBER)||
 	        (index==ACQUISITION_TIME) || (index==SUBFRAME_ACQUISITION_TIME) ||
+			(index==SUBFRAME_PERIOD) ||
 	        (index==SAMPLES_JCTB) || (index==STORAGE_CELL_NUMBER)){
 		string timername = getTimerType(index);
 		if(ret != FAIL){
@@ -4802,7 +4807,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 #endif
 				}
 #ifdef VERBOSE
-				// set period/exptime/subexptime
+				// set period/exptime/subexptime/subperiod
 				else std::cout << "Setting/Getting " << timername  << " " << index << " to/from receiver " << args[1] << std::endl;
 #endif
 
@@ -4824,8 +4829,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 							setErrorMask((getErrorMask())|(RECEIVER_ACQ_PERIOD_NOT_SET));
 							break;
 						case SUBFRAME_ACQUISITION_TIME:
-							setErrorMask((getErrorMask())|(RECEIVER_TIMER_NOT_SET));
-							break;
+						case SUBFRAME_PERIOD:
 						case SAMPLES_JCTB:
 							setErrorMask((getErrorMask())|(RECEIVER_TIMER_NOT_SET));
 							break;
@@ -6403,6 +6407,7 @@ string slsDetector::setReceiver(string receiverIP){
 		std::cout << "frame period:" << thisDetector->timerValue[FRAME_PERIOD] << endl;
 		std::cout << "frame number:" << thisDetector->timerValue[FRAME_NUMBER] << endl;
 		std::cout << "sub exp time:" << thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME] << endl;
+		std::cout << "sub period:" << thisDetector->timerValue[SUBFRAME_PERIOD] << endl;
 		std::cout << "dynamic range:" << thisDetector->dynamicRange << endl << endl;
 		std::cout << "flippeddatax:" << thisDetector->flippedData[d] << endl;
 		std::cout << "10GbE:" << thisDetector->tenGigaEnable << endl << endl;
@@ -6437,8 +6442,10 @@ string slsDetector::setReceiver(string receiverIP){
 			setTimer(FRAME_PERIOD,thisDetector->timerValue[FRAME_PERIOD]);
 			setTimer(FRAME_NUMBER,thisDetector->timerValue[FRAME_NUMBER]);
 			setTimer(ACQUISITION_TIME,thisDetector->timerValue[ACQUISITION_TIME]);
-			if(thisDetector->myDetectorType == EIGER)
+			if(thisDetector->myDetectorType == EIGER) {
 				setTimer(SUBFRAME_ACQUISITION_TIME,thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME]);
+				setTimer(SUBFRAME_PERIOD,thisDetector->timerValue[SUBFRAME_PERIOD]);
+			}
 			if(thisDetector->myDetectorType == JUNGFRAUCTB)
 				setTimer(SAMPLES_JCTB,thisDetector->timerValue[SAMPLES_JCTB]);
 			setDynamicRange(thisDetector->dynamicRange);

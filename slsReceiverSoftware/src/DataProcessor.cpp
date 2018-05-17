@@ -245,12 +245,12 @@ void DataProcessor::SetupFileWriter(bool fwe, int* nd, char* fname, char* fpath,
 }
 
 // only the first file
-int DataProcessor::CreateNewFile(bool en, uint64_t nf, uint64_t at, uint64_t st, uint64_t ap) {
+int DataProcessor::CreateNewFile(bool en, uint64_t nf, uint64_t at, uint64_t st, uint64_t sp, uint64_t ap) {
 	if (file == NULL)
 		return FAIL;
 	file->CloseAllFiles();
 	if (file->CreateMasterFile(en,	generalData->imageSize, generalData->nPixelsX, generalData->nPixelsY,
-			at, st, ap) == FAIL)
+			at, st, sp, ap) == FAIL)
 		return FAIL;
 	if (file->CreateFile(currentFrameIndex) == FAIL)
 		return FAIL;

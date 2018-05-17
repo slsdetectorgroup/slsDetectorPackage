@@ -89,7 +89,8 @@ class File : private virtual slsReceiverDefs {
 	 * @returns OK or FAIL
 	 */
 	virtual int CreateFile(uint64_t fnum){
-		cprintf(RED,"This is a generic function CreateFile that should be overloaded by a derived class\n");
+		cprintf(RED,"This is a generic function CreateFile that should be "
+				"overloaded by a derived class\n");
 		return OK;
 	}
 
@@ -97,14 +98,16 @@ class File : private virtual slsReceiverDefs {
 	 * Close Current File
 	 */
 	virtual void CloseCurrentFile() {
-		cprintf(RED,"This is a generic function CloseCurrentFile that should be overloaded by a derived class\n");
+		cprintf(RED,"This is a generic function CloseCurrentFile that should be "
+				"overloaded by a derived class\n");
 	}
 
 	/**
 	 * Close Files
 	 */
 	virtual void CloseAllFiles() {
-		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+		cprintf(RED,"This is a generic function that should be overloaded "
+				"by a derived class\n");
 	}
 
 	/**
@@ -115,7 +118,8 @@ class File : private virtual slsReceiverDefs {
 	 * @param OK or FAIL
 	 */
 	virtual int WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) {
-		cprintf(RED,"This is a generic function WriteToFile that should be overloaded by a derived class\n");
+		cprintf(RED,"This is a generic function WriteToFile that "
+				"should be overloaded by a derived class\n");
 		return FAIL;
 	}
 
@@ -126,13 +130,16 @@ class File : private virtual slsReceiverDefs {
 	  * @param nx number of pixels in x direction
 	  * @param ny number of pixels in y direction
 	  * @param at acquisition time
-	  * @param at sub exposure time
+	  * @param st sub exposure time
+	  * @param sp sub period
 	  * @param ap acquisition period
 	  * @returns OK or FAIL
 	  */
 	virtual int CreateMasterFile(bool en, uint32_t size,
-				uint32_t nx, uint32_t ny, uint64_t at, uint64_t st, uint64_t ap) {
-		cprintf(RED,"This is a generic function CreateMasterFile that should be overloaded by a derived class\n");
+				uint32_t nx, uint32_t ny, uint64_t at, uint64_t st,
+				uint64_t sp, uint64_t ap) {
+		cprintf(RED,"This is a generic function CreateMasterFile that "
+				"should be overloaded by a derived class\n");
 		return OK;
 	}
 
@@ -143,7 +150,8 @@ class File : private virtual slsReceiverDefs {
 	 * @param ny number of pixels in y direction
 	 */
 	virtual void SetNumberofPixels(uint32_t nx, uint32_t ny) {
-		cprintf(RED,"This is a generic function SetNumberofPixels that should be overloaded by a derived class\n");
+		cprintf(RED,"This is a generic function SetNumberofPixels that "
+				"should be overloaded by a derived class\n");
 	}
 
 	/**
@@ -151,7 +159,8 @@ class File : private virtual slsReceiverDefs {
 	 * @param numf number of images caught
 	 */
 	virtual void EndofAcquisition(uint64_t numf) {
-		cprintf(RED,"This is a generic function EndofAcquisition that should be overloaded by a derived class\n");
+		cprintf(RED,"This is a generic function EndofAcquisition that "
+				"should be overloaded by a derived class\n");
 	}
 
  protected:

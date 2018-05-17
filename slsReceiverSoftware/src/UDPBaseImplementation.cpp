@@ -47,6 +47,7 @@ void UDPBaseImplementation::initializeMembers(){
 	acquisitionPeriod = 0;
 	acquisitionTime = 0;
 	subExpTime = 0;
+	subPeriod = 0;
 	numberOfFrames = 0;
 	numberOfSamples = 0;
 	dynamicRange = 16;
@@ -103,11 +104,13 @@ UDPBaseImplementation::~UDPBaseImplementation(){}
 /**initial parameters***/
 int* UDPBaseImplementation::getMultiDetectorSize() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return (int*) numDet;}
+    return (int*) numDet;
+}
 
 int UDPBaseImplementation::getDetectorPositionId() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return detID;}
+    return detID;
+}
 
 char *UDPBaseImplementation::getDetectorHostname() const{
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
@@ -136,7 +139,8 @@ bool UDPBaseImplementation::getGapPixelsEnable() const {
 /***file parameters***/
 slsReceiverDefs::fileFormat UDPBaseImplementation::getFileFormat() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return fileFormatType;}
+    return fileFormatType;
+}
 
 
 char *UDPBaseImplementation::getFileName() const{
@@ -167,46 +171,56 @@ char *UDPBaseImplementation::getFilePath() const{
 
 uint64_t UDPBaseImplementation::getFileIndex() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return fileIndex;}
+    return fileIndex;
+}
 
 int UDPBaseImplementation::getScanTag() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return scanTag;}
+    return scanTag;
+}
 
 bool UDPBaseImplementation::getFileWriteEnable() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return fileWriteEnable;}
+    return fileWriteEnable;
+}
 
 bool UDPBaseImplementation::getOverwriteEnable() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return overwriteEnable;}
+    return overwriteEnable;
+}
 
 bool UDPBaseImplementation::getDataCompressionEnable() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return dataCompressionEnable;}
+    return dataCompressionEnable;
+}
 
 /***acquisition count parameters***/
 uint64_t UDPBaseImplementation::getTotalFramesCaught() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return 0;}
+    return 0;
+}
 
 uint64_t UDPBaseImplementation::getFramesCaught() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return 0;}
+    return 0;
+}
 
 int64_t UDPBaseImplementation::getAcquisitionIndex() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return -1;}
+    return -1;
+}
 
 
 /***connection parameters***/
 uint32_t UDPBaseImplementation::getUDPPortNumber() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return udpPortNum[0];}
+    return udpPortNum[0];
+}
 
 uint32_t UDPBaseImplementation::getUDPPortNumber2() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return udpPortNum[1];}
+    return udpPortNum[1];
+}
 
 char *UDPBaseImplementation::getEthernetInterface() const{
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
@@ -221,39 +235,53 @@ char *UDPBaseImplementation::getEthernetInterface() const{
 /***acquisition parameters***/
 int UDPBaseImplementation::getShortFrameEnable() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return shortFrameEnable;}
+    return shortFrameEnable;
+}
 
 uint32_t UDPBaseImplementation::getFrameToGuiFrequency() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return frameToGuiFrequency;}
+    return frameToGuiFrequency;
+}
 
 uint32_t UDPBaseImplementation::getFrameToGuiTimer() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return frameToGuiTimerinMS;}
+    return frameToGuiTimerinMS;
+}
 
 bool UDPBaseImplementation::getDataStreamEnable() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return dataStreamEnable;}
+    return dataStreamEnable;
+}
 
 uint64_t UDPBaseImplementation::getAcquisitionPeriod() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return acquisitionPeriod;}
+    return acquisitionPeriod;
+}
 
 uint64_t UDPBaseImplementation::getAcquisitionTime() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return acquisitionTime;}
+    return acquisitionTime;
+}
 
 uint64_t UDPBaseImplementation::getSubExpTime() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return subExpTime;}
+    return subExpTime;
+}
+
+uint64_t UDPBaseImplementation::getSubPeriod() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return subPeriod;
+}
 
 uint64_t UDPBaseImplementation::getNumberOfFrames() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return numberOfFrames;}
+    return numberOfFrames;
+}
 
 uint64_t UDPBaseImplementation::getNumberofSamples() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return numberOfSamples;}
+    return numberOfSamples;
+}
 
 uint32_t UDPBaseImplementation::getDynamicRange() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
@@ -261,11 +289,13 @@ uint32_t UDPBaseImplementation::getDynamicRange() const{
 
 bool UDPBaseImplementation::getTenGigaEnable() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return tengigaEnable;}
+    return tengigaEnable;
+}
 
 uint32_t UDPBaseImplementation::getFifoDepth() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return fifoDepth;}
+    return fifoDepth;
+}
 
 /***receiver status***/
 slsReceiverDefs::runStatus UDPBaseImplementation::getStatus() const{
@@ -278,11 +308,13 @@ uint32_t UDPBaseImplementation::getSilentMode() const{
 
 int UDPBaseImplementation::getActivate() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return activated;}
+    return activated;
+}
 
 uint32_t UDPBaseImplementation::getStreamingPort() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return streamingPort;}
+    return streamingPort;
+}
 
 char *UDPBaseImplementation::getStreamingSourceIP() const{
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
@@ -527,6 +559,13 @@ void UDPBaseImplementation::setSubExpTime(const uint64_t i){
 
 	subExpTime = i;
 	FILE_LOG(logINFO) << "Sub Exposure Time: " <<  (double)subExpTime/(1E9) << "s";
+}
+
+void UDPBaseImplementation::setSubPeriod(const uint64_t i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	subPeriod = i;
+	FILE_LOG(logINFO) << "Sub Exposure Time: " <<  (double)subPeriod/(1E9) << "s";
 }
 
 int UDPBaseImplementation::setNumberOfFrames(const uint64_t i){

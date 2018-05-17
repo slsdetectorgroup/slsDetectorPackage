@@ -711,6 +711,22 @@ class slsDetectorUsers
     */
    int getNMods();
 
+   /**
+    * Set sub frame exposure time (only for Eiger)
+    * @param i sub frame exposure time (-1 gets)
+    * @param inseconds true if the value is in s, else ns
+    * @returns sub frame exposure time in ns, or s if specified
+    */
+   double setSubFrameExposureTime(double t=-1, bool inseconds=false);
+
+   /**
+    * Set sub frame period (only for Eiger)
+    * @param i sub frame period (-1 gets)
+    * @param inseconds true if the value is in s, else ns
+    * @returns sub frame period in ns, or s if specified
+    */
+   double setSubFrameExposurePeriod(double t=-1, bool inseconds=false);
+
   /************************************************************************
 
                            STATIC FUNCTIONS

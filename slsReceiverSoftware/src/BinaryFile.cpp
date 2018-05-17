@@ -84,19 +84,22 @@ int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_
 
 
 int BinaryFile::CreateMasterFile(bool en, uint32_t size,
-		uint32_t nx, uint32_t ny, uint64_t at,  uint64_t st, uint64_t ap) {
+		uint32_t nx, uint32_t ny, uint64_t at,  uint64_t st, uint64_t sp,
+		uint64_t ap) {
 	//beginning of every acquisition
 	numFramesInFile = 0;
 	numActualPacketsInFile = 0;
 
 	if (master && (*detIndex==0)) {
-		masterFileName = BinaryFileStatic::CreateMasterFileName(filePath, fileNamePrefix, *fileIndex);
+		masterFileName = BinaryFileStatic::CreateMasterFileName(filePath,
+				fileNamePrefix, *fileIndex);
 		if(!silentMode) {
 			FILE_LOG(logINFO) << "Master File: " << masterFileName;
 		}
-		return BinaryFileStatic::CreateMasterDataFile(masterfd, masterFileName, *overWriteEnable,
+		return BinaryFileStatic::CreateMasterDataFile(masterfd, masterFileName,
+				*overWriteEnable,
 				*dynamicRange, en, size, nx, ny, *numImages,
-				at, st, ap, BINARY_WRITER_VERSION);
+				at, st, sp, ap, BINARY_WRITER_VERSION);
 	}
 	return OK;
 }

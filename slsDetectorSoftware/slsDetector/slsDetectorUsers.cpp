@@ -403,3 +403,22 @@ int slsDetectorUsers::setTenGigabitEthernet(int i) {
 int slsDetectorUsers::getNMods() {
     return myDetector->getNMods();
 }
+
+double slsDetectorUsers::setSubFrameExposureTime(double t, bool inseconds){
+  int64_t tms = (int64_t)(t * (1E+9));
+  if (t < 0) tms = -1;
+  if(!inseconds)
+    return myDetector->setSubFrameExposureTime((int64_t)t);
+  else
+    return  ((1E-9) * (double)myDetector->setSubFrameExposureTime(tms));
+}
+
+double slsDetectorUsers::setSubFrameExposurePeriod(double t, bool inseconds){
+  int64_t tms = (int64_t)(t * (1E+9));
+  if (t < 0) tms = -1;
+  if(!inseconds)
+    return myDetector->setSubFramePeriod((int64_t)t);
+  else
+    return  ((1E-9) * (double)myDetector->setSubFramePeriod(tms));
+}
+

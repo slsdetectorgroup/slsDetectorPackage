@@ -1054,6 +1054,9 @@ int slsReceiverTCPIPInterface::set_timer() {
 				case SUBFRAME_ACQUISITION_TIME:
 					receiverBase->setSubExpTime(index[1]);
 					break;
+				case SUBFRAME_PERIOD:
+					receiverBase->setSubPeriod(index[1]);
+					break;
 				case SAMPLES_JCTB:
 					if (myDetectorType != JUNGFRAUCTB) {
 						ret = FAIL;
@@ -1085,6 +1088,9 @@ int slsReceiverTCPIPInterface::set_timer() {
 			break;
 		case SUBFRAME_ACQUISITION_TIME:
 			retval=receiverBase->getSubExpTime();
+			break;
+		case SUBFRAME_PERIOD:
+			retval=receiverBase->getSubPeriod();
 			break;
 		case SAMPLES_JCTB:
 			if (myDetectorType != JUNGFRAUCTB) {

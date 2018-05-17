@@ -294,6 +294,12 @@ class UDPInterface {
 	 */
 	virtual uint64_t getSubExpTime() const = 0;
 
+	/**
+	 * Get Sub Period
+	 * @return Sub Period
+	 */
+	virtual uint64_t getSubPeriod() const = 0;
+
 	/*
 	 * Get Number of Frames expected by receiver from detector
 	 * The data receiver status will change from running to idle when it gets this number of frames FIXME: (for Leo? Not implemented)
@@ -530,6 +536,13 @@ class UDPInterface {
 	 * @return OK or FAIL
 	 */
 	virtual void setSubExpTime(const uint64_t i) = 0;
+
+	/**
+	 * Set Sub Period
+	 * @param i Period
+	 * @return OK or FAIL
+	 */
+	virtual void setSubPeriod(const uint64_t i) = 0;
 
 	/**
 	 * Set Number of Frames expected by receiver from detector

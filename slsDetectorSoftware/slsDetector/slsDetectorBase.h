@@ -374,6 +374,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   virtual int64_t setTimer(timerIndex index, int64_t t=-1)=0;
   int64_t setExposureTime(int64_t t=-1){return setTimer(ACQUISITION_TIME,t);};
   int64_t setSubFrameExposureTime(int64_t t=-1){return setTimer(SUBFRAME_ACQUISITION_TIME,t);};
+  int64_t setSubFramePeriod(int64_t t=-1){return setTimer(SUBFRAME_PERIOD,t);};
   int64_t setExposurePeriod(int64_t t=-1){return setTimer(FRAME_PERIOD,t);};
   int64_t setDelayAfterTrigger(int64_t t=-1){return setTimer(DELAY_AFTER_TRIGGER,t);};
   int64_t setNumberOfGates(int64_t t=-1){return setTimer(GATES_NUMBER,t);};
@@ -833,8 +834,8 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
     }};
 
   /** returns string from timer index
-      \param s can be FRAME_NUMBER,ACQUISITION_TIME,FRAME_PERIOD, DELAY_AFTER_TRIGGER,GATES_NUMBER,PROBES_NUMBER, CYCLES_NUMBER, ACTUAL_TIME,MEASUREMENT_TIME, PROGRESS,MEASUREMENTS_NUMBER,FRAMES_FROM_START,FRAMES_FROM_START_PG,SAMPLES_JCTB,SUBFRAME_ACQUISITION_TIME,STORAGE_CELL_NUMBER
-      \returns string frame_number,acquisition_time,frame_period, delay_after_trigger,gates_number,probes_number, cycles_number, actual_time,measurement_time, progress,measurements_number,frames_from_start,frames_from_start_pg,samples_jctb,subframe_acquisition_time,storage_cell_number
+      \param s can be FRAME_NUMBER,ACQUISITION_TIME,FRAME_PERIOD, DELAY_AFTER_TRIGGER,GATES_NUMBER,PROBES_NUMBER, CYCLES_NUMBER, ACTUAL_TIME,MEASUREMENT_TIME, PROGRESS,MEASUREMENTS_NUMBER,FRAMES_FROM_START,FRAMES_FROM_START_PG,SAMPLES_JCTB,SUBFRAME_ACQUISITION_TIME,STORAGE_CELL_NUMBER, SUBFRAME_PERIOD
+      \returns string frame_number,acquisition_time,frame_period, delay_after_trigger,gates_number,probes_number, cycles_number, actual_time,measurement_time, progress,measurements_number,frames_from_start,frames_from_start_pg,samples_jctb,subframe_acquisition_time,storage_cell_number, subframe_period
   */
   static string getTimerType(timerIndex t){										\
     switch (t) {																\
@@ -853,6 +854,7 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
     case FRAMES_FROM_START_PG: 		return string("frames_from_start_pg"); 		\
     case SAMPLES_JCTB: 				return string("samples_jctb"); 				\
     case SUBFRAME_ACQUISITION_TIME:	return string("subframe_acquisition_time");	\
+    case SUBFRAME_PERIOD:			return string("subframe_period");			\
     case STORAGE_CELL_NUMBER:       return string("storage_cell_number");       \
     default:       					return string("unknown");					\
     }};

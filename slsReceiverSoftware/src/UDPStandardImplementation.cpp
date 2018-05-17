@@ -764,7 +764,7 @@ int UDPStandardImplementation::SetupWriter() {
 	bool error = false;
 	for (unsigned int i = 0; i < dataProcessor.size(); ++i)
 		if (dataProcessor[i]->CreateNewFile(tengigaEnable,
-				numberOfFrames, acquisitionTime, subExpTime, acquisitionPeriod) == FAIL) {
+				numberOfFrames, acquisitionTime, subExpTime, subPeriod, acquisitionPeriod) == FAIL) {
 			error = true;
 			break;
 		}

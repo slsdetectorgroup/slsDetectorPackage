@@ -72,6 +72,14 @@ void qTabAdvanced::SetupWidgetWindow(){
 	rxrOnlineTip = comboRxrOnline->toolTip();
 	errOnlineTip = QString("<nobr><br><br><font color=\"red\"><nobr>It is offline!</nobr></font>");
 
+	acqSubPeriodTip = spinSubPeriod->toolTip();
+	errSubPeriodTip = acqSubPeriodTip +
+					QString("<nobr><br><br><font color=\"red\"><b>Sub Frame Period</b> "
+							"should be greater than or equal to "
+							"<b>Sub Frame Exposure Time</b>.</font></nobr>");
+
+
+
 	detType = myDet->getDetectorsType();
 	switch(detType){
 	case slsDetectorDefs::MYTHEN:
@@ -91,6 +99,12 @@ void qTabAdvanced::SetupWidgetWindow(){
 		dispMAC->setEnabled(true);
 		boxRxr->setEnabled(true);
 		boxSetAllTrimbits->setEnabled(true);
+		lblSubExpTime->setEnabled(true);
+		spinSubExpTime->setEnabled(true);
+		comboSubExpTimeUnit->setEnabled(true);
+		lblSubPeriod->setEnabled(true);
+		spinSubPeriod->setEnabled(true);
+		comboSubPeriodUnit->setEnabled(true);
 		break;
 	case slsDetectorDefs::MOENCH:
 		isEnergy = false;
@@ -212,6 +226,18 @@ void qTabAdvanced::SetupWidgetWindow(){
 	    lblNumStoragecells->setEnabled(true);
 	    spinNumStoragecells->setEnabled(true);
 	    spinNumStoragecells->setValue((int)myDet->setTimer(slsDetectorDefs::STORAGE_CELL_NUMBER,-1));
+	} else if (detType == slsDetectorDefs::EIGER) {
+		//subexptime
+		qDefs::timeUnit unit;
+		double time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::SUBFRAME_ACQUISITION_TIME,-1)*(1E-9))));
+		spinSubExpTime->setValue(time);
+		comboSubExpTimeUnit->setCurrentIndex((int)unit);
+		//period
+		time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::SUBFRAME_PERIOD,-1)*(1E-9))));
+		spinSubPeriod->setValue(time);
+		comboSubPeriodUnit->setCurrentIndex((int)unit);
+
+		CheckAcqPeriodGreaterThanExp();
 	}
 
 	Initialization();
@@ -303,6 +329,14 @@ void qTabAdvanced::Initialization(){
 
 	if(detType == slsReceiverDefs::JUNGFRAU) {
 	    connect(spinNumStoragecells, SIGNAL(valueChanged(int)),  this,  SLOT(SetNumStoragecells(int)));
+	} else if (detType == slsDetectorDefs::EIGER) {
+		//Exposure Time
+		connect(spinSubExpTime,SIGNAL(valueChanged(double)),			this,	SLOT(SetSubExposureTime()));
+		connect(comboSubExpTimeUnit,SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetSubExposureTime()));
+		//Frame Period between exposures
+		connect(spinSubPeriod,SIGNAL(valueChanged(double)),			this,	SLOT(SetSubPeriod()));
+		connect(comboSubPeriodUnit,SIGNAL(currentIndexChanged(int)),this,	SLOT(SetSubPeriod()));
+
 	}
 }
 
@@ -1253,6 +1287,110 @@ void qTabAdvanced::SetNumStoragecells(int value) {
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+void qTabAdvanced::SetSubExposureTime() {
+	disconnect(spinSubExpTime,SIGNAL(valueChanged(double)),			this,	SLOT(SetSubExposureTime()));
+	disconnect(comboSubExpTimeUnit,SIGNAL(currentIndexChanged(int)),this,	SLOT(SetSubExposureTime()));
+
+	//Get the value of timer in ns
+	double timeNS = qDefs::getNSTime(
+			(qDefs::timeUnit)comboSubExpTimeUnit->currentIndex(),
+			spinSubExpTime->value());
+
+	// set value
+#ifdef VERBOSE
+	cout << "Setting sub frame acquisition time to " << timeNS << " clocks" <<
+			"/" << spinSubExpTime->value() <<
+			qDefs::getUnitString((qDefs::timeUnit)comboSubExpTimeUnit->currentIndex()) << endl;
+#endif
+	myDet->setTimer(slsDetectorDefs::SUBFRAME_ACQUISITION_TIME,(int64_t)timeNS);
+	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetSubExposureTime");
+
+	// update value in gui
+	qDefs::timeUnit unit;
+	double time = qDefs::getCorrectTime(unit,((double)(
+			myDet->setTimer(slsDetectorDefs::SUBFRAME_ACQUISITION_TIME,-1)*(1E-9))));
+	spinSubExpTime->setValue(time);
+	comboSubExpTimeUnit->setCurrentIndex((int)unit);
+
+
+	// highlight if period < exptime
+	CheckAcqPeriodGreaterThanExp();
+
+	connect(spinSubExpTime,SIGNAL(valueChanged(double)),			this,	SLOT(SetSubExposureTime()));
+	connect(comboSubExpTimeUnit,SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetSubExposureTime()));
+
+
+	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetSubExposureTime");
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabAdvanced::SetSubPeriod() {
+	disconnect(spinSubPeriod,SIGNAL(valueChanged(double)),		   this,	SLOT(SetSubPeriod()));
+	disconnect(comboSubPeriodUnit,SIGNAL(currentIndexChanged(int)),this,	SLOT(SetSubPeriod()));
+
+	//Get the value of timer in ns
+	double timeNS = qDefs::getNSTime(
+			(qDefs::timeUnit)comboSubPeriodUnit->currentIndex(),
+			spinSubPeriod->value());
+
+	// set value
+#ifdef VERBOSE
+	cout << "Setting sub frame period to " << timeNS << " clocks" <<
+			"/" << spinSubPeriod->value() <<
+			qDefs::getUnitString((qDefs::timeUnit)comboSubPeriodUnit->currentIndex()) << endl;
+#endif
+	myDet->setTimer(slsDetectorDefs::SUBFRAME_PERIOD,(int64_t)timeNS);
+	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetSubPeriod");
+
+	// update value in gui
+	qDefs::timeUnit unit;
+	double time = qDefs::getCorrectTime(unit,((double)(
+			myDet->setTimer(slsDetectorDefs::SUBFRAME_PERIOD,-1)*(1E-9))));
+	spinSubPeriod->setValue(time);
+	comboSubPeriodUnit->setCurrentIndex((int)unit);
+
+	// highlight if period < exptime
+	CheckAcqPeriodGreaterThanExp();
+
+	connect(spinSubPeriod,SIGNAL(valueChanged(double)),			this,	SLOT(SetSubPeriod()));
+	connect(comboSubPeriodUnit,SIGNAL(currentIndexChanged(int)),this,	SLOT(SetSubPeriod()));
+
+
+	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetSubPeriod");
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabAdvanced::CheckAcqPeriodGreaterThanExp(){
+	double exptimeNS = qDefs::getNSTime(
+			(qDefs::timeUnit)comboSubExpTimeUnit->currentIndex(),
+			spinSubExpTime->value());
+	double acqtimeNS = qDefs::getNSTime(
+			(qDefs::timeUnit)comboSubPeriodUnit->currentIndex(),
+			spinSubPeriod->value());
+	if(exptimeNS>acqtimeNS && acqtimeNS > 0) {
+		spinSubPeriod->setToolTip(errSubPeriodTip);
+		lblSubPeriod->setToolTip(errSubPeriodTip);
+		lblSubPeriod->setPalette(red);
+		lblSubPeriod->setText("Sub Frame Period:*");
+	}
+	else {
+		spinSubPeriod->setToolTip(acqSubPeriodTip);
+		lblSubPeriod->setToolTip(acqSubPeriodTip);
+		lblSubPeriod->setPalette(lblExpTime->palette());
+		lblSubPeriod->setText("Sub Frame Period:");
+	}
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 void qTabAdvanced::Refresh(){
 
 
@@ -1447,6 +1585,38 @@ void qTabAdvanced::Refresh(){
 	    disconnect(spinNumStoragecells,SIGNAL(valueChanged(int)),this,   SLOT(SetNumStoragecells(int)));
 	    spinNumStoragecells->setValue((int)myDet->setTimer(slsDetectorDefs::STORAGE_CELL_NUMBER,-1));
 	    connect(spinNumStoragecells,SIGNAL(valueChanged(int)),   this,   SLOT(SetNumStoragecells(int)));
+	}
+
+	// sub exptime and sub period
+	else if (detType == slsReceiverDefs::EIGER) {
+		disconnect(spinSubExpTime,SIGNAL(valueChanged(double)),			this,	SLOT(SetSubExposureTime()));
+		disconnect(comboSubExpTimeUnit,SIGNAL(currentIndexChanged(int)),this,	SLOT(SetSubExposureTime()));
+		disconnect(spinSubPeriod,SIGNAL(valueChanged(double)),		   this,	SLOT(SetSubPeriod()));
+		disconnect(comboSubPeriodUnit,SIGNAL(currentIndexChanged(int)),this,	SLOT(SetSubPeriod()));
+
+#ifdef VERBOSE
+		cout  << "Getting Sub Exposure time and Sub Period" << endl;
+#endif
+		// subexptime
+		qDefs::timeUnit unit;
+		double time = qDefs::getCorrectTime(unit,((double)(
+				myDet->setTimer(slsDetectorDefs::SUBFRAME_ACQUISITION_TIME,-1)*(1E-9))));
+		spinSubExpTime->setValue(time);
+		comboSubExpTimeUnit->setCurrentIndex((int)unit);
+
+		// subperiod
+		time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::SUBFRAME_PERIOD,-1)*(1E-9))));
+		spinSubPeriod->setValue(time);
+		comboSubPeriodUnit->setCurrentIndex((int)unit);
+
+
+		// highlight if period < exptime
+		CheckAcqPeriodGreaterThanExp();
+
+		connect(spinSubExpTime,SIGNAL(valueChanged(double)),			this,	SLOT(SetSubExposureTime()));
+		connect(comboSubExpTimeUnit,SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetSubExposureTime()));
+		connect(spinSubPeriod,SIGNAL(valueChanged(double)),			this,	SLOT(SetSubPeriod()));
+		connect(comboSubPeriodUnit,SIGNAL(currentIndexChanged(int)),this,	SLOT(SetSubPeriod()));
 	}
 
 #ifdef VERBOSE

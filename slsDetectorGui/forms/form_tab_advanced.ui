@@ -256,7 +256,7 @@ Plots Trimbits from Detector. This will take time.
         <x>25</x>
         <y>25</y>
         <width>696</width>
-        <height>199</height>
+        <height>208</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_3">
@@ -977,7 +977,7 @@ An extension given by the modules serial number will be attached.
         <x>25</x>
         <y>25</y>
         <width>686</width>
-        <height>128</height>
+        <height>148</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_8">
@@ -1357,7 +1357,7 @@ An extension given by the modules serial number will be attached.
        <x>35</x>
        <y>15</y>
        <width>686</width>
-       <height>128</height>
+       <height>146</height>
       </rect>
      </property>
      <layout class="QGridLayout" name="gridLayout_6">
@@ -1750,7 +1750,7 @@ An extension given by the modules serial number will be attached.
    </widget>
    <widget class="QWidget" name="tab_2">
     <attribute name="title">
-     <string>Others</string>
+     <string>Acquisition</string>
     </attribute>
     <widget class="QWidget" name="gridLayoutWidget_2">
      <property name="geometry">
@@ -1758,10 +1758,48 @@ An extension given by the modules serial number will be attached.
        <x>14</x>
        <y>13</y>
        <width>367</width>
-       <height>39</height>
+       <height>110</height>
       </rect>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
+      <item row="1" column="2">
+       <widget class="QDoubleSpinBox" name="spinSubExpTime">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>&lt;nobr&gt;
+Exposure Time of a sub frame. Only for Eiger in 32 bit mode
+&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
+ #subexptime#
+&lt;/nobr&gt;</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
+        </property>
+        <property name="decimals">
+         <number>9</number>
+        </property>
+        <property name="minimum">
+         <double>-1.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>2000000000.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>1.000000000000000</double>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="1">
        <spacer name="horizontalSpacer_8">
         <property name="orientation">
@@ -1791,7 +1829,80 @@ An extension given by the modules serial number will be attached.
         </property>
        </widget>
       </item>
-      <item row="0" column="2">
+      <item row="1" column="0">
+       <widget class="QLabel" name="lblSubExpTime">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>&lt;nobr&gt;
+Exposure Time of a sub frame. Only for Eiger in 32 bit mode
+&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
+ #subexptime#
+&lt;/nobr&gt;</string>
+        </property>
+        <property name="text">
+         <string>Sub Frame Exposure Time:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QComboBox" name="comboSubExpTimeUnit">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>&lt;nobr&gt;
+Exposure Time of a sub frame. Only for Eiger in 32 bit mode
+&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
+ #subexptime#
+&lt;/nobr&gt;</string>
+        </property>
+        <property name="layoutDirection">
+         <enum>Qt::LeftToRight</enum>
+        </property>
+        <property name="currentIndex">
+         <number>2</number>
+        </property>
+        <item>
+         <property name="text">
+          <string>hr</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>min</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>s</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>ms</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>us</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>ns</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="0" column="2" colspan="2">
        <widget class="QSpinBox" name="spinNumStoragecells">
         <property name="enabled">
          <bool>false</bool>
@@ -1829,6 +1940,123 @@ An extension given by the modules serial number will be attached.
         <property name="value">
          <number>0</number>
         </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="lblSubPeriod">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>&lt;nobr&gt;
+Period between sub frames. Only for Eiger in 32 bit mode.
+&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
+Default value is 0. A value less than the required minimum is ignored.
+&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
+ #subperiod#
+&lt;/nobr&gt;</string>
+        </property>
+        <property name="text">
+         <string>Sub Frame Period:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QDoubleSpinBox" name="spinSubPeriod">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>&lt;nobr&gt;
+Period between sub frames. Only for Eiger in 32 bit mode.
+&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
+Default value is 0. A value less than the required minimum is ignored.
+&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
+ #subperiod#
+&lt;/nobr&gt;</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
+        </property>
+        <property name="decimals">
+         <number>9</number>
+        </property>
+        <property name="minimum">
+         <double>-1.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>2000000000.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>1.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="3">
+       <widget class="QComboBox" name="comboSubPeriodUnit">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>&lt;nobr&gt;
+Period between sub frames. Only for Eiger in 32 bit mode.
+&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
+Default value is 0. A value less than the required minimum is ignored.
+&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
+ #subperiod#
+&lt;/nobr&gt;</string>
+        </property>
+        <property name="layoutDirection">
+         <enum>Qt::LeftToRight</enum>
+        </property>
+        <property name="currentIndex">
+         <number>2</number>
+        </property>
+        <item>
+         <property name="text">
+          <string>hr</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>min</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>s</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>ms</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>us</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>ns</string>
+         </property>
+        </item>
        </widget>
       </item>
      </layout>

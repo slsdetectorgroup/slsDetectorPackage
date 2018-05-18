@@ -34,6 +34,7 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param freq pointer to streaming frequency
 	 * @param timer pointer to timer if streaming frequency is random
 	 * @param dataReadycb pointer to data ready call back function
+	 * @param dataModifyReadycb pointer to data ready call back function with modified
 	 * @param pDataReadycb pointer to arguments of data ready call back function. To write/stream a smaller size of processed data, change this value (only smaller value is allowed).
 	 */
 	DataProcessor(int ind, Fifo*& f, fileFormat* ftype, bool fwenable, bool* dsEnable, bool* gpEnable, uint32_t* dr,
@@ -154,6 +155,7 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * Set up file writer object and call backs
 	 * @param fwe file write enable
 	 * @param nd pointer to number of detectors in each dimension
+	 * @param maxf pointer to max frames per file
 	 * @param fname pointer to file name prefix
 	 * @param fpath pointer to file path
 	 * @param findex pointer to file index
@@ -165,8 +167,10 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param portno pointer to udp port number
 	 * @param g address of GeneralData (Detector Data) pointer
 	 */
-	void SetupFileWriter(bool fwe, int* nd, char* fname, char* fpath, uint64_t* findex,
-			 bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno, GeneralData* g = 0);
+	void SetupFileWriter(bool fwe, int* nd, uint32_t* maxf, char* fname,
+			char* fpath, uint64_t* findex,
+			 bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr,
+			 uint32_t* portno, GeneralData* g = 0);
 
 	/**
 	 * Create New File
@@ -323,7 +327,6 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** x coord hardcoded ad 1D, if detector does not send them yet **/
 	uint16_t xcoordin1D;
-
 
 
 

@@ -1754,7 +1754,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 
 
-
 	/* Acquisition actions */
 
 	/*! \page actions Actions
@@ -2214,6 +2213,13 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
    - <b>r_silent [i]</b> sets/gets receiver in silent mode, ie. it will not print anything during real time acquisition. 1 sets, 0 unsets. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="r_silent"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
+	++i;
+
+	/*! \page receiver
+    - <b>r_framesperfile</b> sets/gets the frames per file in receiver. 0 means infinite or all frames in a single file. \c Returns \c (int)
+	 */
+	descrToFuncMap[i].m_pFuncName="r_framesperfile"; //OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
 	++i;
 
@@ -6369,6 +6375,16 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 			sprintf(answer,"%d",myDet->setReceiverSilentMode());
 		return string(answer);
 
+	} else if(cmd=="r_framesperfile") {
+		if (action==PUT_ACTION){
+			if (sscanf(args[1],"%d",&ival)) {
+				myDet->setReceiverFramesPerFile(ival);
+			} else return string("could not scan max frames per file\n");
+		}
+		char answer[100];
+		memset(answer, 0, 100);
+		sprintf(answer,"%s %d",answer, myDet->setReceiverFramesPerFile());
+		return string(answer);
 	}
 
 
@@ -6388,6 +6404,7 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
 		os << "tengiga \t sets system to be configure for 10Gbe if set to 1, else 1Gbe if set to 0" << std::endl;
 		os << "rx_fifodepth [val]\t sets receiver fifo depth to val" << std::endl;
 		os << "r_silent [i]\t sets receiver in silent mode, ie. it will not print anything during real time acquisition. 1 sets, 0 unsets." << std::endl;
+		os << "r_framesperfile \t gets the number of frames per file in receiver. 0 means infinite or all frames in a single file." << std::endl;
 	}
 	if (action==GET_ACTION || action==HELP_ACTION){
 		os << "receiver \t returns the status of receiver - can be running or idle" << std::endl;
@@ -6397,6 +6414,7 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
 		os << "tengiga \t returns 1 if the system is configured for 10Gbe else 0 for 1Gbe" << std::endl;
 		os << "rx_fifodepth \t returns receiver fifo depth" << std::endl;
 		os << "r_silent \t returns receiver silent mode enable. 1 is silent, 0 not silent." << std::endl;
+		os << "r_framesperfile s\t sets the number of frames per file in receiver. 0 means infinite or all frames in a single file." << std::endl;
 	}
 	return os.str();
 }

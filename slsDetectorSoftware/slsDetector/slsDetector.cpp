@@ -803,6 +803,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->receiver_zmqport = 0;
     thisDetector->receiver_upstream = false;
     thisDetector->receiver_read_freq = 0;
+    thisDetector->receiver_framesPerFile = -1;
 
     for (int ia=0; ia<MAX_ACTIONS; ++ia) {
       strcpy(thisDetector->actionScript[ia],"none");
@@ -938,6 +939,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
   if (thisReceiver != NULL)
 	  delete thisReceiver;
   thisReceiver = new receiverInterface(dataSocket);
+  setReceiverFramesPerFile();
 
   // zmq ports
   if (posId != -1) {
@@ -6417,6 +6419,7 @@ string slsDetector::setReceiver(string receiverIP){
 		std::cout << "rx streaming port:" << thisDetector->receiver_zmqport << endl;
 		std::cout << "r_readfreq:" << thisDetector->receiver_read_freq << endl << endl;
 		std::cout << "rx_datastream:" << enableDataStreamingFromReceiver(-1) << endl << endl;
+		std::cout << "r_framesperfile:" << thisDetector->receiver_framesPerFile << endl;
 /** enable compresison, */
 #endif
 		if(setDetectorType()!= GENERIC){
@@ -6431,6 +6434,7 @@ string slsDetector::setReceiver(string receiverIP){
 			setFileName(fileIO::getFileName());
 			setFileIndex(fileIO::getFileIndex());
 			setFileFormat(fileIO::getFileFormat());
+			setReceiverFramesPerFile(thisDetector->receiver_framesPerFile);
 			pthread_mutex_lock(&ms);
 			int imask = parentDet->enableWriteToFileMask();
 			pthread_mutex_unlock(&ms);
@@ -8585,7 +8589,30 @@ string slsDetector::setFileName(string s) {
 }
 
 
+int slsDetector::setReceiverFramesPerFile(int f) {
+	int fnum = F_SET_RECEIVER_FRAMES_PER_FILE;
+	int ret = FAIL;
+	int retval = -1;
+	int arg = f;
 
+
+	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+#ifdef VERBOSE
+		std::cout << "Sending frames per file to receiver " << arg << std::endl;
+#endif
+		if (connectData() == OK){
+			ret=thisReceiver->sendInt(fnum,retval,arg);
+			disconnectData();
+		}
+		if(ret!=FAIL && retval > -1){
+			thisDetector->receiver_framesPerFile = retval;
+		}
+		if(ret==FORCE_UPDATE)
+			updateReceiver();
+	}
+
+	return thisDetector->receiver_framesPerFile;
+}
 
 slsReceiverDefs::fileFormat slsDetector::setFileFormat(fileFormat f){
 	int fnum=F_SET_RECEIVER_FILE_FORMAT;

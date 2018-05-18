@@ -35,6 +35,7 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 
 
 	//*** Overloaded Functions called by TCP Interface ***
+
 	/**
 	 * Get Total Frames Caught for an entire acquisition (including all scans)
 	 * @return total number of frames caught for entire acquisition

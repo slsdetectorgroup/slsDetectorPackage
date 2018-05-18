@@ -10,7 +10,7 @@
 using namespace std;
 
 
-File::File(int ind, uint32_t maxf,
+File::File(int ind, uint32_t* maxf,
 		int* nd, char* fname, char* fpath, uint64_t* findex, bool* owenable,
 		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
 		bool* smode):
@@ -42,7 +42,7 @@ string File::GetCurrentFileName() {
 void File::PrintMembers() {
 	FILE_LOG(logINFO) << "\nGeneral Writer Variables:" << endl
 			<< "Index: " << index << endl
-			<< "Max Frames Per File: " << maxFramesPerFile << endl
+			<< "Max Frames Per File: " << *maxFramesPerFile << endl
 			<< "Number of Detectors in x dir: " << numDetX << endl
 			<< "Number of Detectors in y dir: " << numDetY << endl
 			<< "File Name Prefix: " << fileNamePrefix << endl
@@ -61,11 +61,12 @@ void File::PrintMembers() {
 }
 
 
-void File::GetMemberPointerValues(int* nd, char*& fname, char*& fpath, uint64_t*& findex, bool*& owenable,
+void File::GetMemberPointerValues(int* nd, uint32_t*& maxf, char*& fname, char*& fpath, uint64_t*& findex, bool*& owenable,
 		int*& dindex, int*& nunits, uint64_t*& nf, uint32_t*& dr, uint32_t*& portno)
 {
 	nd[0] = numDetX;
 	nd[1] = numDetY;
+	maxf = maxFramesPerFile;
 	fname = fileNamePrefix;
 	fpath = filePath;
 	findex = fileIndex;
@@ -77,7 +78,4 @@ void File::GetMemberPointerValues(int* nd, char*& fname, char*& fpath, uint64_t*
 	portno = udpPortNumber;
 }
 
-void File::SetMaxFramesPerFile(uint32_t maxf) {
-	maxFramesPerFile = maxf;
-}
 

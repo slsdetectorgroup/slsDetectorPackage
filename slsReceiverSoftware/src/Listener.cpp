@@ -21,7 +21,7 @@ const string Listener::TypeName = "Listener";
 
 Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
         uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr,
-        uint32_t* us, uint32_t* as) :
+        uint32_t* us, uint32_t* as, uint32_t* fpf) :
 		ThreadObject(ind),
 		runningFlag(0),
 		generalData(0),
@@ -34,6 +34,9 @@ Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
 		activated(act),
 		numImages(nf),
 		dynamicRange(dr),
+		udpSocketBufferSize(us),
+		actualUDPSocketBufferSize(as),
+		framesPerFile(fpf),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
 		firstAcquisitionIndex(0),
@@ -45,9 +48,9 @@ Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
 		carryOverPacket(0),
 		listeningPacket(0),
 		udpSocketAlive(0),
-		silentMode(false),
-		udpSocketBufferSize(us),
-		actualUDPSocketBufferSize(as)
+		numPacketsStatistic(0),
+		numFramesStatistic(0),
+		silentMode(false)
 {
 	if(ThreadObject::CreateThread() == FAIL)
 	    throw std::exception();
@@ -335,7 +338,7 @@ void Listener::ThreadExecution() {
 	//Statistics
 	if(!silentMode) {
 		numFramesStatistic++;
-		if (numFramesStatistic >=  generalData->maxFramesPerFile)
+		if (numFramesStatistic >=  *framesPerFile)
 			PrintFifoStatistics();
 	}
 }

@@ -112,6 +112,7 @@ int64_t UDPStandardImplementation::getAcquisitionIndex() const {
 }
 
 
+
 int UDPStandardImplementation::setGapPixelsEnable(const bool b) {
 	if (gapPixelsEnable != b) {
 		gapPixelsEnable = b;
@@ -151,12 +152,13 @@ void UDPStandardImplementation::setFileFormat(const fileFormat f){
 
 
 void UDPStandardImplementation::setFileWriteEnable(const bool b){
-
 	if (fileWriteEnable != b){
 		fileWriteEnable = b;
 		for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
-				dataProcessor[i]->SetupFileWriter(fileWriteEnable, (int*)numDet, fileName, filePath, &fileIndex,
-					&overwriteEnable, &detID, &numThreads, &numberOfFrames, &dynamicRange, &udpPortNum[i], generalData);
+				dataProcessor[i]->SetupFileWriter(fileWriteEnable, (int*)numDet,
+					&framesPerFile, fileName, filePath, &fileIndex,	&overwriteEnable,
+					&detID, &numThreads, &numberOfFrames, &dynamicRange, &udpPortNum[i],
+					generalData);
 		}
 	}
 
@@ -181,6 +183,8 @@ int UDPStandardImplementation::setShortFrameEnable(const int i) {
 			generalData = new ShortGotthardData();
 		else
 			generalData = new GotthardData();
+		framesPerFile = generalData->maxFramesPerFile;
+
 		numberofJobs = -1; //changes to imagesize has to be noted to recreate fifo structure
 		if (SetupFifoStructure() == FAIL)
 			return FAIL;
@@ -352,6 +356,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	numThreads = generalData->threadsPerReceiver;
 	fifoDepth = generalData->defaultFifoDepth;
 	udpSocketBufferSize = generalData->defaultUdpSocketBufferSize;
+	framesPerFile = generalData->maxFramesPerFile;
 
 	//local network parameters
 	SetLocalNetworkParameters();
@@ -369,7 +374,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	    try {
 	        Listener* l = new Listener(i, myDetectorType, fifo[i], &status,
 	                &udpPortNum[i], eth, &activated, &numberOfFrames, &dynamicRange,
-	                &udpSocketBufferSize, &actualUDPSocketBufferSize);
+	                &udpSocketBufferSize, &actualUDPSocketBufferSize, &framesPerFile);
 	        listener.push_back(l);
 
 	        DataProcessor* p = new DataProcessor(i, fifo[i], &fileFormatType,
@@ -409,12 +414,13 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 
 
 void UDPStandardImplementation::setDetectorPositionId(const int i){
-
 	detID = i;
 	FILE_LOG(logINFO) << "Detector Position Id:" << detID;
 	for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
-		dataProcessor[i]->SetupFileWriter(fileWriteEnable, (int*)numDet, fileName, filePath, &fileIndex,
-									&overwriteEnable, &detID, &numThreads, &numberOfFrames, &dynamicRange, &udpPortNum[i], generalData);
+		dataProcessor[i]->SetupFileWriter(fileWriteEnable, (int*)numDet,
+				&framesPerFile,	fileName, filePath, &fileIndex,	&overwriteEnable,
+				&detID,	&numThreads, &numberOfFrames, &dynamicRange, &udpPortNum[i],
+				generalData);
 	}
 }
 

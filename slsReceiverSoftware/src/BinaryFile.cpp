@@ -14,7 +14,7 @@ using namespace std;
 
 FILE* BinaryFile::masterfd = 0;
 
-BinaryFile::BinaryFile(int ind, uint32_t maxf,
+BinaryFile::BinaryFile(int ind, uint32_t* maxf,
 		int* nd, char* fname, char* fpath, uint64_t* findex, bool* owenable,
 		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
 		bool* smode):
@@ -34,7 +34,7 @@ BinaryFile::~BinaryFile() {
 
 void BinaryFile::PrintMembers() {
 	File::PrintMembers();
-	FILE_LOG(logINFO) << "Max Frames Per File: " << maxFramesPerFile;
+	FILE_LOG(logINFO) << "Max Frames Per File: " << *maxFramesPerFile;
 	FILE_LOG(logINFO) << "Number of Frames in File: " << numFramesInFile;
 }
 
@@ -70,7 +70,7 @@ void BinaryFile::CloseAllFiles() {
 }
 
 int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) {
-	if (numFramesInFile >= maxFramesPerFile) {
+	if (numFramesInFile >= (*maxFramesPerFile)) {
 		CloseCurrentFile();
 		CreateFile(fnum);
 	}

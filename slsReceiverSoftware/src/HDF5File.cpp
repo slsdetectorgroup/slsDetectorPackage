@@ -21,7 +21,7 @@ hid_t HDF5File::virtualfd = 0;
 
 
 
-HDF5File::HDF5File(int ind, uint32_t maxf,
+HDF5File::HDF5File(int ind, uint32_t* maxf,
 		int* nd, char* fname, char* fpath, uint64_t* findex, bool* owenable,
 		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
 		uint32_t nx, uint32_t ny,
@@ -95,8 +95,7 @@ int HDF5File::CreateFile(uint64_t fnum) {
 
 	//first time
 	if(!fnum) UpdateDataType();
-
-	uint64_t framestosave = ((*numImages - fnum) > maxFramesPerFile) ? maxFramesPerFile : (*numImages-fnum);
+	uint64_t framestosave = ((*numImages - fnum) > (*maxFramesPerFile)) ? (*maxFramesPerFile) : (*numImages-fnum);
 	pthread_mutex_lock(&Mutex);
 	if (HDF5FileStatic::CreateDataFile(index, *overWriteEnable, currentFileName, (*numImages > 1),
 			fnum, framestosave, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
@@ -137,7 +136,7 @@ void HDF5File::CloseAllFiles() {
 
 
 int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) {
-	if (numFramesInFile >= maxFramesPerFile) {
+	if (numFramesInFile >= (*maxFramesPerFile)) {
 		CloseCurrentFile();
 		CreateFile(fnum);
 	}
@@ -145,12 +144,12 @@ int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t 
 	numActualPacketsInFile += nump;
 	pthread_mutex_lock(&Mutex);
 	if (HDF5FileStatic::WriteDataFile(index, buffer + sizeof(sls_detector_header),
-			fnum%maxFramesPerFile, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
+			fnum%(*maxFramesPerFile), nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
 			dataspace, dataset, datatype) == OK) {
 		sls_detector_header* header = (sls_detector_header*) (buffer);
 		/*header->xCoord = ((*detIndex) * (*numUnitsPerDetector) + index); */
 		if (HDF5FileStatic::WriteParameterDatasets(index, dataspace_para,
-				fnum%maxFramesPerFile,
+				fnum%(*maxFramesPerFile),
 				dataset_para, header) == OK) {
 			pthread_mutex_unlock(&Mutex);
 			return OK;
@@ -220,7 +219,7 @@ int HDF5File::CreateVirtualFile(uint64_t numf) {
 				virtualfd, masterFileName,
 				filePath, fileNamePrefix, *fileIndex, (*numImages > 1),
 				*detIndex, *numUnitsPerDetector,
-				maxFramesPerFile, numf+1,
+				*maxFramesPerFile, numf+1,
 				"data",	datatype,
 				numDetY, numDetX, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
 				HDF5_WRITER_VERSION);

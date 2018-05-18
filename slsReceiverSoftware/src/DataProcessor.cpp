@@ -23,10 +23,12 @@ using namespace std;
 const string DataProcessor::TypeName = "DataProcessor";
 
 
-DataProcessor::DataProcessor(int ind, Fifo*& f, fileFormat* ftype, bool fwenable, bool* dsEnable, bool* gpEnable, uint32_t* dr,
+DataProcessor::DataProcessor(int ind, Fifo*& f, fileFormat* ftype, bool fwenable,
+		bool* dsEnable, bool* gpEnable, uint32_t* dr,
 		uint32_t* freq, uint32_t* timer,
 		void (*dataReadycb)(uint64_t, uint32_t, uint32_t, uint64_t, uint64_t,
-		        uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+		        uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t,
+				uint8_t, uint8_t,
 				char*, uint32_t, void*),
 		void (*dataModifyReadycb)(uint64_t, uint32_t, uint32_t, uint64_t,
 		        uint64_t, uint16_t, uint16_t, uint16_t, uint16_t,
@@ -179,7 +181,6 @@ void DataProcessor::SetGeneralData(GeneralData* g) {
 	generalData->Print();
 #endif
 	if (file) {
-		file->SetMaxFramesPerFile(generalData->maxFramesPerFile);
 		if (file->GetFileType() == HDF5) {
 			file->SetNumberofPixels(generalData->nPixelsX, generalData->nPixelsY);
 		}
@@ -201,16 +202,17 @@ void DataProcessor::SetFileFormat(const fileFormat f) {
 	if (file && file->GetFileType() != f) {
 		//remember the pointer values before they are destroyed
 		int nd[MAX_DIMENSIONS];nd[0] = 0; nd[1] = 0;
+		uint32_t* maxf = 0;
 		char* fname=0; char* fpath=0; uint64_t* findex=0;
 		bool* owenable=0; int* dindex=0; int* nunits=0; uint64_t* nf = 0; uint32_t* dr = 0; uint32_t* port = 0;
-		file->GetMemberPointerValues(nd, fname, fpath, findex, owenable, dindex, nunits, nf, dr, port);
+		file->GetMemberPointerValues(nd, maxf, fname, fpath, findex, owenable, dindex, nunits, nf, dr, port);
 		//create file writer with same pointers
-		SetupFileWriter(fileWriteEnable, nd, fname, fpath, findex, owenable, dindex, nunits, nf, dr, port);
+		SetupFileWriter(fileWriteEnable, nd, maxf, fname, fpath, findex, owenable, dindex, nunits, nf, dr, port);
 	}
 }
 
 
-void DataProcessor::SetupFileWriter(bool fwe, int* nd, char* fname, char* fpath, uint64_t* findex,
+void DataProcessor::SetupFileWriter(bool fwe, int* nd, uint32_t* maxf, char* fname, char* fpath, uint64_t* findex,
 		bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
 		GeneralData* g)
 {
@@ -229,14 +231,14 @@ void DataProcessor::SetupFileWriter(bool fwe, int* nd, char* fname, char* fpath,
 		switch(*fileFormatType){
 #ifdef HDF5C
 	case HDF5:
-		file = new HDF5File(index, generalData->maxFramesPerFile,
+		file = new HDF5File(index, maxf,
 				nd, fname, fpath, findex, owenable,
 				dindex, nunits, nf, dr, portno,
 				generalData->nPixelsX, generalData->nPixelsY, &silentMode);
 		break;
 #endif
 	default:
-		file = new BinaryFile(index, generalData->maxFramesPerFile,
+		file = new BinaryFile(index, maxf,
 				nd, fname, fpath, findex, owenable,
 				dindex, nunits, nf, dr, portno, &silentMode);
 		break;

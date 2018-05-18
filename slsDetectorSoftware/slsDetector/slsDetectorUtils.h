@@ -794,6 +794,14 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   virtual string setFileName(string s="")=0;
 
   /**
+     Sets the max frames per file in receiver
+     @param f max frames per file
+     \returns max frames per file in receiver
+  */
+  virtual int setReceiverFramesPerFile(int f = -1) = 0;
+
+
+  /**
      Sets up the file format
      @param f file format
      \returns file format

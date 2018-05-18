@@ -98,6 +98,12 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	uint64_t getFileIndex() const;
 
 	/**
+	 * Get Frames per File
+	 * @return Frames per File
+	 */
+	uint32_t getFramesPerFile() const;
+
+	/**
 	 * Get Scan Tag
 	 * @return scan tag //FIXME: needed? (unsigned integer?)
 	 */
@@ -355,6 +361,12 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * @param i file index of acquisition
 	 */
 	void setFileIndex(const uint64_t i);
+
+	/**
+	 * Set Frames per File
+	 * @param i Frames per File
+	 */
+	void setFramesPerFile(const uint32_t i);
 
 	/**
 	 * Set Scan Tag
@@ -739,6 +751,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	char filePath[MAX_STR_LENGTH];
 	/** File Index */
 	uint64_t fileIndex;
+	/** Frames per file */
+	uint32_t framesPerFile;
 	/** Scan Tag */
 	int scanTag;
 	/** File Write enable */

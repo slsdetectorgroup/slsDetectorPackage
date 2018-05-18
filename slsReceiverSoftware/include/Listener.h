@@ -32,10 +32,11 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param dr pointer to dynamic range
 	 * @param us pointer to udp socket buffer size
 	 * @param as pointer to actual udp socket buffer size
+	 * @param fpf pointer to frames per file
 	 */
 	Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
 	        uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr,
-	        uint32_t* us, uint32_t* as);
+	        uint32_t* us, uint32_t* as, uint32_t* fpf);
 
 	/**
 	 * Destructor
@@ -236,6 +237,9 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** actual UDP Socket Buffer Size (double due to kernel bookkeeping) */
 	uint32_t* actualUDPSocketBufferSize;
+
+	/** frames per file */
+	uint32_t* framesPerFile;
 
 
 	// acquisition start

@@ -1280,6 +1280,13 @@ class multiSlsDetector  : public slsDetectorUtils {
   string setFileName(string s="");
 
   /**
+     Sets the max frames per file in receiver
+     @param f max frames per file
+     \returns max frames per file in receiver
+  */
+  int setReceiverFramesPerFile(int f = -1);
+
+  /**
      Sets up the file format
      @param f file format
      \returns file format

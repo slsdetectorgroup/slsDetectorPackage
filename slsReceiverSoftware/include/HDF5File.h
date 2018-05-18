@@ -27,7 +27,7 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	 * Constructor
 	 * creates the File Writer
 	 * @param ind self index
-	 * @param maxf max frames per file
+	 * @param maxf pointer to max frames per file
 	 * @param nd pointer to number of detectors in each dimension
 	 * @param fname pointer to file name prefix
 	 * @param fpath pointer to file path
@@ -42,7 +42,7 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	 * @param ny number of pixels in y direction
 	 * @param smode pointer to silent mode
 	 */
-	HDF5File(int ind, uint32_t maxf,
+	HDF5File(int ind, uint32_t* maxf,
 			int* nd, char* fname, char* fpath, uint64_t* findex, bool* owenable,
 			int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
 			uint32_t nx, uint32_t ny,

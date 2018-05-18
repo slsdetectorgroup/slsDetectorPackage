@@ -74,6 +74,7 @@ void UDPBaseImplementation::initializeMembers(){
 	strcpy(fileName,"run");
 	strcpy(filePath,"");
 	fileIndex = 0;
+	framesPerFile = 0;
 	scanTag = 0;
 	fileWriteEnable = true;
 	overwriteEnable = true;
@@ -172,6 +173,11 @@ char *UDPBaseImplementation::getFilePath() const{
 uint64_t UDPBaseImplementation::getFileIndex() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
     return fileIndex;
+}
+
+uint32_t UDPBaseImplementation::getFramesPerFile() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return framesPerFile;
 }
 
 int UDPBaseImplementation::getScanTag() const{
@@ -436,6 +442,13 @@ void UDPBaseImplementation::setFileIndex(const uint64_t i){
 
 	fileIndex = i;
 	FILE_LOG(logINFO) << "File Index: " << fileIndex;
+}
+
+void UDPBaseImplementation::setFramesPerFile(const uint32_t i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	framesPerFile = i;
+	FILE_LOG(logINFO) << "Frames per file: " << framesPerFile;
 }
 
 //FIXME: needed?

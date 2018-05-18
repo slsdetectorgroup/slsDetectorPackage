@@ -306,7 +306,8 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
     /** get real udp socket buffer size */
     int get_real_udp_socket_buffer_size();
 
-
+    /** set frames per file */
+    int set_frames_per_file();
 
 	/** detector type */
 	detectorType myDetectorType;

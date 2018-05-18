@@ -287,7 +287,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     int dataBytesInclGapPixels;
     /** additional json header */
     char receiver_additionalJsonHeader[MAX_STR_LENGTH];
-
+    /** frames per file in receiver */
+    int receiver_framesPerFile;
 
 
   } sharedSlsDetector;
@@ -1670,6 +1671,13 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      \returns file name
   */
   string setFileName(string s="");
+
+  /**
+     Sets the max frames per file in receiver
+     @param f max frames per file
+     \returns max frames per file in receiver
+  */
+  int setReceiverFramesPerFile(int f = -1);
 
   /**
      Sets up the file format

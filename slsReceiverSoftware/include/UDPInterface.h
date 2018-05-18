@@ -181,9 +181,15 @@ class UDPInterface {
 
 	/**
 	 * Get File Index
-	 * @return NULL or file index of acquisition
+	 * @return file index of acquisition
 	 */
 	virtual uint64_t getFileIndex() const = 0;
+
+	/**
+	 * Get Frames per File
+	 * @return Frames per File
+	 */
+	virtual uint32_t getFramesPerFile() const = 0;
 
 	/**
 	 * Get Scan Tag
@@ -442,6 +448,12 @@ class UDPInterface {
 	 * @param i file index of acquisition
 	 */
 	virtual void setFileIndex(const uint64_t i) = 0;
+
+	/**
+	 * Set Frames per File
+	 * @param i Frames per File
+	 */
+	virtual void setFramesPerFile(const uint32_t i) = 0;
 
 	/**
 	 * Set Scan Tag

@@ -21,7 +21,7 @@ class File : private virtual slsReceiverDefs {
 	 * Constructor
 	 * creates the File Writer
 	 * @param ind self index
-	 * @param maxf max frames per file
+	 * @param maxf pointer to max frames per file
 	 * @param nd pointer to number of detectors in each dimension
 	 * @param fname pointer to file name prefix
 	 * @param fpath pointer to file path
@@ -34,7 +34,7 @@ class File : private virtual slsReceiverDefs {
 	 * @param portno pointer to udp port number for logging
 	 * @param smode pointer to silent mode
 	 */
-	File(int ind, uint32_t maxf,
+	File(int ind, uint32_t* maxf,
 			int* nd, char* fname, char* fpath, uint64_t* findex, bool* owenable,
 			int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
 			bool* smode);
@@ -64,6 +64,7 @@ class File : private virtual slsReceiverDefs {
 	/**
 	 * Get Member Pointer Values before the object is destroyed
 	 * @param nd pointer to number of detectors in each dimension
+	 * @param maxf pointer to max frames per file
 	 * @param fname pointer to file name prefix
 	 * @param fpath pointer to file path
 	 * @param findex pointer to file index
@@ -74,14 +75,9 @@ class File : private virtual slsReceiverDefs {
 	 * @param dr pointer to dynamic range
 	 * @param portno pointer to dynamic range
 	 */
-	void GetMemberPointerValues(int* nd, char*& fname, char*& fpath, uint64_t*& findex, bool*& owenable,
+	void GetMemberPointerValues(int* nd, uint32_t*& maxf, char*& fname, char*& fpath,
+			uint64_t*& findex, bool*& owenable,
 			int*& dindex, int*& nunits, uint64_t*& nf, uint32_t*& dr, uint32_t*& portno);
-
-	/**
-	 * Set Max frames per file
-	 * @param maxf maximum frames per file
-	 */
-	void SetMaxFramesPerFile(uint32_t maxf);
 
 	/**
 	 * Create file
@@ -172,7 +168,7 @@ class File : private virtual slsReceiverDefs {
 	int index;
 
 	/** Maximum frames per file */
-	uint32_t maxFramesPerFile;
+	uint32_t* maxFramesPerFile;
 
 	/** Master File Name */
 	std::string masterFileName;

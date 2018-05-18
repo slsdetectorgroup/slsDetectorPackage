@@ -186,7 +186,7 @@ class UDPInterface {
 	virtual uint64_t getFileIndex() const = 0;
 
 	/**
-	 * Get Frames per File
+	 * Get Frames per File (0 means infinite)
 	 * @return Frames per File
 	 */
 	virtual uint32_t getFramesPerFile() const = 0;
@@ -450,7 +450,7 @@ class UDPInterface {
 	virtual void setFileIndex(const uint64_t i) = 0;
 
 	/**
-	 * Set Frames per File
+	 * Set Frames per File (0 means infinite)
 	 * @param i Frames per File
 	 */
 	virtual void setFramesPerFile(const uint32_t i) = 0;

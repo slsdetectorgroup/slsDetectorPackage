@@ -98,7 +98,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	uint64_t getFileIndex() const;
 
 	/**
-	 * Get Frames per File
+	 * Get Frames per File (0 means infinite)
 	 * @return Frames per File
 	 */
 	uint32_t getFramesPerFile() const;
@@ -363,7 +363,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	void setFileIndex(const uint64_t i);
 
 	/**
-	 * Set Frames per File
+	 * Set Frames per File (0 means infinite)
 	 * @param i Frames per File
 	 */
 	void setFramesPerFile(const uint32_t i);
@@ -751,7 +751,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	char filePath[MAX_STR_LENGTH];
 	/** File Index */
 	uint64_t fileIndex;
-	/** Frames per file */
+	/** Frames per file  (0 means infinite) */
 	uint32_t framesPerFile;
 	/** Scan Tag */
 	int scanTag;

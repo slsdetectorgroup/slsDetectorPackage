@@ -338,7 +338,9 @@ void Listener::ThreadExecution() {
 	//Statistics
 	if(!silentMode) {
 		numFramesStatistic++;
-		if (numFramesStatistic >=  *framesPerFile)
+		if (numFramesStatistic >=
+				//second condition also for infinite #number of frames
+				(((*framesPerFile) == 0) ? STATISTIC_FRAMENUMBER_INFINITE : (*framesPerFile)) )
 			PrintFifoStatistics();
 	}
 }

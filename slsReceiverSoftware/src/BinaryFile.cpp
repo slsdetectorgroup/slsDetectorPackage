@@ -70,7 +70,8 @@ void BinaryFile::CloseAllFiles() {
 }
 
 int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) {
-	if (numFramesInFile >= (*maxFramesPerFile)) {
+	// check if maxframesperfile = 0 for infinite
+	if ((*maxFramesPerFile) && (numFramesInFile >= (*maxFramesPerFile))) {
 		CloseCurrentFile();
 		CreateFile(fnum);
 	}

@@ -516,8 +516,8 @@ void UDPStandardImplementation::stopReceiver(){
 			if((*it)->GetMeasurementStartedFlag())
 				anycaught = true;
 		}
-		if (anycaught)
-			dataProcessor[0]->EndofAcquisition(maxIndexCaught); //to create virtual file
+		//to create virtual file & set files/acquisition to 0 (only hdf5 at the moment)
+		dataProcessor[0]->EndofAcquisition(anycaught, maxIndexCaught);
 	}
 
 	//wait for the processes (DataStreamer) to be done
@@ -622,14 +622,15 @@ void UDPStandardImplementation::shutDownUDPSockets() {
 
 void UDPStandardImplementation::closeFiles() {
 	uint64_t maxIndexCaught = 0;
+	bool anycaught = false;
 	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it) {
 		(*it)->CloseFiles();
-		uint64_t temp = 0;
-		temp = max(maxIndexCaught, (*it)->GetProcessedMeasurementIndex());
-		maxIndexCaught = temp;
+		maxIndexCaught = max(maxIndexCaught, (*it)->GetProcessedMeasurementIndex());
+		if((*it)->GetMeasurementStartedFlag())
+			anycaught = true;
 	}
-	if (maxIndexCaught)
-		dataProcessor[0]->EndofAcquisition(maxIndexCaught);
+	//to create virtual file & set files/acquisition to 0 (only hdf5 at the moment)
+	dataProcessor[0]->EndofAcquisition(anycaught, maxIndexCaught);
 }
 
 int UDPStandardImplementation::setUDPSocketBufferSize(const uint32_t s) {

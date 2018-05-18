@@ -152,9 +152,10 @@ class File : private virtual slsReceiverDefs {
 
 	/**
 	 * End of Acquisition
+	 * @param anyPacketsCaught true if any packets are caught, else false
 	 * @param numf number of images caught
 	 */
-	virtual void EndofAcquisition(uint64_t numf) {
+	virtual void EndofAcquisition(bool anyPacketsCaught, uint64_t numf) {
 		cprintf(RED,"This is a generic function EndofAcquisition that "
 				"should be overloaded by a derived class\n");
 	}

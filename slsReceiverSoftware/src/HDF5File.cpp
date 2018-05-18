@@ -187,11 +187,11 @@ int HDF5File::CreateMasterFile(bool en, uint32_t size,
 }
 
 
-void HDF5File::EndofAcquisition(uint64_t numf) {
+void HDF5File::EndofAcquisition(bool anyPacketsCaught, uint64_t numf) {
 	//not created before
-	if (!virtualfd) {
+	if (!virtualfd && anyPacketsCaught) {
 
-		//only one file and one sub image
+		//only one file and one sub image (link current file in master)
 		if (((numFilesinAcquisition == 1) && (numDetY*numDetX) == 1)) {
 			//dataset name
 			ostringstream osfn;
@@ -203,7 +203,7 @@ void HDF5File::EndofAcquisition(uint64_t numf) {
 			pthread_mutex_unlock(&Mutex);
 		}
 
-		//link current file in master file
+		//create virutal file
 		else
 			CreateVirtualFile(numf);
 	}
@@ -213,7 +213,6 @@ void HDF5File::EndofAcquisition(uint64_t numf) {
 
 int HDF5File::CreateVirtualFile(uint64_t numf) {
 	if (master && (*detIndex==0)) {
-
 		pthread_mutex_lock(&Mutex);
 		int ret = HDF5FileStatic::CreateVirtualDataFile(
 				virtualfd, masterFileName,

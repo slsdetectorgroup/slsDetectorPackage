@@ -3460,8 +3460,10 @@ slsDetectorDefs::sls_detector_module  *slsDetector::getModule(int imod){
 				}
 
 				if (dacs) {
-					for (int i=0; i<thisDetector->nDacs; ++i)
+					for (int i=0; i<thisDetector->nDacs; ++i) {
 						dacs[i+imod*thisDetector->nDacs]=myMod->dacs[i];
+						//cprintf(BLUE,"dac%d:%d\n",i, myMod->dacs[i]);
+					}
 				}
 				(detectorModules+imod)->gain=myMod->gain;
 				(detectorModules+imod)->offset=myMod->offset;

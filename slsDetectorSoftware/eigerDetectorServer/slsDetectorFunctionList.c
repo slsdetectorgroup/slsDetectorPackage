@@ -548,22 +548,26 @@ int setModule(sls_detector_module myMod, int delay){
 	printf("Setting module with settings %d\n",myMod.reg);
 	//#endif
 
+	//copy module locally (module number, serial number, gain offset,
+	//dacs (pointless), trimbit values(if needed)
+	if (detectorModules)
+		if (copyModule(detectorModules,&myMod) == FAIL)
+			return FAIL;
+
+	// settings
 	setSettings( (enum detectorSettings)myMod.reg,-1);
 
+	// iodelay
 	if(setIODelay(delay, -1)!= delay){
 		cprintf(RED,"could not set iodelay %d\n",delay);
 		return FAIL;
 	}
 
-	//copy module locally
-	if (detectorModules)
-		copyModule(detectorModules,&myMod);
-
-	//set dac values
+	// dacs
 	for(i=0;i<myMod.ndac;i++)
 		setDAC((enum DACINDEX)i,myMod.dacs[i],myMod.module,0,retval);
 
-
+	// trimbits
 	if(myMod.nchan==0 && myMod.nchip == 0)
 		cprintf(BLUE,"Setting module without trimbits\n");
 	else{
@@ -599,8 +603,10 @@ int getModule(sls_detector_module *myMod){
 	int retval[2];
 
 	//dacs
-	for(i=0;i<NDAC;i++)
+	for(i=0;i<NDAC;i++) {
 		setDAC((enum DACINDEX)i,-1,-1,0,retval);
+		//cprintf(BLUE,"dac%d:%d\n",i, *((detectorModules->dacs)+i));
+	}
 
 	//trimbits
 	unsigned int* tt;
@@ -620,9 +626,11 @@ int getModule(sls_detector_module *myMod){
 		}
 	}
 
-	//copy to local copy as well
-	if (detectorModules)
-		copyModule(detectorModules,myMod);
+	//copy local module to myMod
+	if (detectorModules) {
+		if (copyModule(myMod, detectorModules) == FAIL)
+			return FAIL;
+    }
 	else
 		return FAIL;
 	return OK;
@@ -1309,8 +1317,9 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod){
 	else printf("Not Copying trimbits\n");
 #endif
 	for (idac=0; idac<(srcMod->ndac); idac++) {
-		if (*((srcMod->dacs)+idac)>=0)
+		if (*((srcMod->dacs)+idac)>=0) {
 			*((destMod->dacs)+idac)=*((srcMod->dacs)+idac);
+		}
 	}
 	for (iadc=0; iadc<(srcMod->nadc); iadc++) {
 		if (*((srcMod->adcs)+iadc)>=0)

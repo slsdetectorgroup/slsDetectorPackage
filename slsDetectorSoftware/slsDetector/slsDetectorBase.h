@@ -407,6 +407,15 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
 	  }													\
   };
 
+  void setOverflowMode(int value){						\
+	  if(value>=0){										\
+		  switch(value){								\
+		  case 1: setReadOutFlags(SHOW_OVERFLOW);break;	\
+		  case 0: setReadOutFlags(NOOVERFLOW);break;	\
+		  }												\
+	  }													\
+  };
+
   /**
    	 get readout mode of detector (eiger specific)
    	 \returns 0 for nonparallel, 1 for parallel, 2 for safe
@@ -416,6 +425,18 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
 	  if (ret&NONPARALLEL) return 0;					\
 	  if (ret&PARALLEL) return 1;						\
 	  if (ret&SAFE) return 2; 							\
+	  return -1;										\
+  }
+
+
+  /**
+   	 get readout overflow mode of detector (eiger specific)
+   	 \returns 1 for show overflow, 0 for do not show overflow
+   */
+  int getOverflowMode(){								\
+	  int ret = setReadOutFlags();						\
+	  if (ret&SHOW_OVERFLOW) return 1;					\
+	  if (ret&NOOVERFLOW) return 0;						\
 	  return -1;										\
   }														\
 

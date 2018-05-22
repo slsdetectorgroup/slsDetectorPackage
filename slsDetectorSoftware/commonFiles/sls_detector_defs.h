@@ -490,6 +490,8 @@ enum readOutFlags {
   DIGITAL_ONLY=0x80000, /** chiptest board read only digital bits (not adc values)*/
   ANALOG_AND_DIGITAL=0x100000, /** chiptest board read adc values and digital bits digital bits */
   DUT_CLK=0x200000, /** chiptest board fifo clock comes from device under test */
+  SHOW_OVERFLOW=0x400000, /** eiger 32 bit mode, show saturated for overflow of single subframes */
+  NOOVERFLOW=0x800000 /** eiger 32 bit mode, do not show saturated for overflow of single subframes */
 };
 /**
    trimming modes

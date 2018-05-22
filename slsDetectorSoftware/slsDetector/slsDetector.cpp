@@ -5440,17 +5440,7 @@ int slsDetector::sendROI(int n,ROI roiLimits[]){
 
 
 
-/*
 
-enum readOutFlags {
-NORMAL_READOUT,
-setReadOutFlags(STORE_IN_RAM,
-READ_HITS,
-ZERO_COMPRESSION,
-BACKGROUND_CORRECTION
-}{};
-
-*/
 
 int slsDetector::setReadOutFlags(readOutFlags flag){
 

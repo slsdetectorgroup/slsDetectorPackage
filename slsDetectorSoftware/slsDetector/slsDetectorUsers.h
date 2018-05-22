@@ -612,6 +612,13 @@ class slsDetectorUsers
     */
    int setParallelMode(int value);
 
+   /**
+    * @short show saturated for overflow in subframes in 32 bit mode (eiger only)
+    * \param value 0 for do not show saturatd, 1 for show saturated (-1 gets)
+    * \returns overflow mode enable in 32 bit mode
+    */
+   int setOverflowMode(int value);
+
     /**
       @short sets all trimbits to value (only available for eiger)
       \param val value to be set (-1 gets)

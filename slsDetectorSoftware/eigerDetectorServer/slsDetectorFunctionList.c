@@ -36,6 +36,7 @@ int eiger_photonenergy = 0;
 int eiger_dynamicrange = 0;
 int eiger_readoutmode = 0;
 int eiger_storeinmem = 0;
+int eiger_overflow32 = 0;
 int eiger_readoutspeed = 0;
 int eiger_triggermode = 0;
 int eiger_extgating = 0;
@@ -333,7 +334,9 @@ void setupDetector() {
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
 	setDynamicRange(DEFAULT_DYNAMIC_RANGE);
 	eiger_photonenergy = DEFAULT_PHOTON_ENERGY;
-	setReadOutFlags(DEFAULT_READOUT_FLAG);
+	setReadOutFlags(DEFAULT_READOUT_MODE);
+	setReadOutFlags(DEFAULT_READOUT_STOREINRAM_MODE);
+	setReadOutFlags(DEFAULT_READOUT_OVERFLOW32_MODE);
 	setSpeed(CLOCK_DIVIDER, DEFAULT_CLK_SPEED);//clk_devider,half speed
 	setIODelay(DEFAULT_IO_DELAY, DEFAULT_MOD_INDEX);
 	setTiming(DEFAULT_TIMING_MODE);
@@ -430,7 +433,24 @@ enum readOutFlags setReadOutFlags(enum readOutFlags val){
 				eiger_readoutmode = val;
 			else return -1;
 
-		}else{
+		}
+
+		else if (val&0xF00000) {
+			switch(val){
+			case SHOW_OVERFLOW:  	val=1; 	printf(" Setting Read out Flag: Overflow in 32 bit mode\n"); 	break;
+			case NOOVERFLOW:	val=0; 	printf(" Setting Read out Flag: No overflow in 32 bit mode\n");	break;
+			default:
+				cprintf(RED,"Cannot set unknown readout flag. 0x%x\n", val);
+				return -1;
+			}
+			printf(" Setting Read out Flag: %d\n",val);
+			if(Beb_Set32bitOverflow(val) != -1)
+				eiger_overflow32 = val;
+			else return -1;
+		}
+
+
+		else{
 			switch(val){
 			case STORE_IN_RAM:  	val=1; 		printf(" Setting Read out Flag: Store in Ram\n"); 		break;
 			case CONTINOUS_RO:		val=0; 		printf(" Setting Read out Flag: Continuous Readout\n");		break;
@@ -451,10 +471,19 @@ enum readOutFlags setReadOutFlags(enum readOutFlags val){
 	case E_SAFE:			retval=SAFE; 			break;
 	}
 
+	switch(eiger_overflow32){
+	case 1: 		retval|=SHOW_OVERFLOW; 		break;
+	case 0:			retval|=NOOVERFLOW; 	break;
+	}
+
+
 	switch(eiger_storeinmem){
 	case 0: 		retval|=CONTINOUS_RO; 	break;
 	case 1:			retval|=STORE_IN_RAM; 	break;
 	}
+
+
+
 	printf("Read out Flag: 0x%x\n",retval);
 	return retval;
 }

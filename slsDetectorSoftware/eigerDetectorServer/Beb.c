@@ -415,6 +415,43 @@ int Beb_Activate(int enable){
 }
 
 
+int Beb_Set32bitOverflow(int val) {
+	if(!Beb_activated)
+		return val;
+
+	//mapping new memory
+	u_int32_t* csp0base=0;
+	u_int32_t valueread = 0;
+	u_int32_t offset = FLOW_REG_OFFSET;
+	if(val>0) val = 1;
+
+	//open file pointer
+	int fd = Beb_open(&csp0base,XPAR_PLB_GPIO_SYS_BASEADDR);
+	if(fd < 0){
+		cprintf(BG_RED,"Could not read register to set overflow flag in 32 bit mode. FAIL\n");
+		return -1;
+	}
+	else{
+		if(val > -1){
+			// reset bit
+			valueread = Beb_Read32(csp0base, offset);
+			Beb_Write32(csp0base, offset,valueread & ~FLOW_REG_OVERFLOW_32_BIT_MSK);
+
+			// set bit
+			valueread = Beb_Read32(csp0base, offset);
+			Beb_Write32(csp0base, offset,valueread |
+					((val << FLOW_REG_OVERFLOW_32_BIT_OFST) &  FLOW_REG_OVERFLOW_32_BIT_MSK));
+		}
+
+		valueread = (Beb_Read32(csp0base, offset) & FLOW_REG_OVERFLOW_32_BIT_MSK) >> FLOW_REG_OVERFLOW_32_BIT_OFST;
+	}
+	//close file pointer
+	if(fd > 0)
+		Beb_close(fd,csp0base);
+
+	return valueread;
+}
+
 int Beb_SetNetworkParameter(enum NETWORKINDEX mode, int val){
 
 	if(!Beb_activated)
@@ -441,7 +478,7 @@ int Beb_SetNetworkParameter(enum NETWORKINDEX mode, int val){
 		strcpy(modename,"Transmission Delay Frame");
 		break;
 	case FLOWCTRL_10G:
-		offset = TXM_FLOW_CONTROL_10G;
+		offset = FLOW_REG_OFFSET;
 		strcpy(modename,"Flow Control for 10G");
 		if(val>0) val = 1;
 		break;
@@ -455,14 +492,29 @@ int Beb_SetNetworkParameter(enum NETWORKINDEX mode, int val){
 	}
 	else{
 		if(val > -1){
-			valueread = Beb_Read32(csp0base, offset);
-			//cprintf(BLUE, "%s value before:%d\n",modename,valueread);
-			Beb_Write32(csp0base, offset,val);
-			cprintf(BLUE,"%s value:%d\n", modename,valueread);
+			if (mode != FLOWCTRL_10G) {
+				valueread = Beb_Read32(csp0base, offset);
+				Beb_Write32(csp0base, offset,val);
+			}
+			// flow control reg has other bits for other control
+			else {
+				// reset bit
+				valueread = Beb_Read32(csp0base, offset);
+				Beb_Write32(csp0base, offset,valueread & ~FLOW_REG_TXM_FLOW_CNTRL_10G_MSK);
+
+				// set bit
+				valueread = Beb_Read32(csp0base, offset);
+				Beb_Write32(csp0base, offset,valueread |
+						((val << FLOW_REG_TXM_FLOW_CNTRL_10G_OFST) &  FLOW_REG_TXM_FLOW_CNTRL_10G_MSK));
+
+			}
+
 		}
 
 		valueread = Beb_Read32(csp0base, offset);
-		//cprintf(BLUE,"%s value:%d\n", modename,valueread);
+		if (mode == FLOWCTRL_10G)
+			valueread = (valueread & FLOW_REG_TXM_FLOW_CNTRL_10G_MSK) >> FLOW_REG_TXM_FLOW_CNTRL_10G_OFST;
+
 	}
 	//close file pointer
 	if(fd > 0)

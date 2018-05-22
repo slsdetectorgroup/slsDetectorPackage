@@ -343,6 +343,12 @@ int slsDetectorUsers::setParallelMode(int value) {
 	return myDetector->getParallelMode();
 }
 
+int slsDetectorUsers::setOverflowMode(int value) {
+	if(value >= 0)
+		myDetector->setOverflowMode(value);
+	return myDetector->getOverflowMode();
+}
+
 int slsDetectorUsers::setAllTrimbits(int val, int id) {
 	return myDetector->setAllTrimbits(val, id);
 }

@@ -3102,6 +3102,8 @@ int set_readout_flags(int file_des) {
 		case PARALLEL:
 		case NONPARALLEL:
 		case SAFE:
+		case SHOW_OVERFLOW:
+		case NOOVERFLOW:
 #endif
 			retval=setReadOutFlags(arg);
 			break;

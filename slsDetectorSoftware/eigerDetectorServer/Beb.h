@@ -51,6 +51,7 @@ struct BebInfo{
   int Beb_SetMasterViaSoftware();
   int Beb_SetSlaveViaSoftware();
   int Beb_Activate(int enable);
+  int Beb_Set32bitOverflow(int val);
   int Beb_SetNetworkParameter(enum NETWORKINDEX mode, int val);
   int Beb_ResetToHardwareSettings();
   u_int32_t Beb_GetFirmwareRevision();

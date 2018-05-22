@@ -2272,20 +2272,19 @@ int set_settings(int file_des) {
 	sprintf(mess,"set settings failed\n");
 
 #ifdef MYTHEN3D
-    //to receive any arguments
-    while (n > 0)
-        n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-    ret = FAIL;
-    sprintf(mess,"Function (Set Settings) is not implemented for this detector\n");
-    cprintf(RED, "Warning: %s", mess);
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+	ret = FAIL;
+	sprintf(mess,"Function (Set Settings) is not implemented for this detector\n");
+	cprintf(RED, "Warning: %s", mess);
 #else
-
 
 	// receive arguments
 	n = receiveData(file_des,&arg,sizeof(arg),INT32);
 	if (n < 0) return printSocketReadError();
-	imod=arg[1];
 	isett=arg[0];
+	imod=arg[1];
 
 	// execute action
 	if (differentClients && lockStatus && isett!=GET_SETTINGS) {
@@ -2294,20 +2293,57 @@ int set_settings(int file_des) {
 		cprintf(RED, "Warning: %s", mess);
 	}
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-	else if (imod>=getTotalNumberOfModules()) {
+
+#ifdef MYTHEND
+	if ( (ret != FAIL) && (imod>=getTotalNumberOfModules())) {
 		ret = FAIL;
 		sprintf(mess,"Module number %d out of range\n",imod);
 		cprintf(RED, "Warning: %s", mess);
 	}
-	else {
+#endif
+	switch(isett) {
+	case GET_SETTINGS:
+	case UNINITIALIZED:
+#ifdef JUNGFRAUD
+	case DYNAMICGAIN:
+	case DYNAMICHG0:
+	case FIXGAIN1:
+	case FIXGAIN2:
+	case FORCESWITCHG1:
+	case FORCESWITCHG2:
+		break;
+	default:
+		ret = FAIL;
+		sprintf(mess,"Setting (%d) is not implemented for this detector.\n"
+				"Options are dynamicgain, dynamichg0, fixgain1, fixgain2, "
+				"forceswitchg1 and forceswitchg2.\n", isett);
+		cprintf(RED, "Warning: %s", mess);
+		break;
+// other detectors
+// #elif GOTTHARDD, MOENCHD, PROPIXD
+#else
+		break;
+	default:
+		ret = FAIL;
+#ifdef EIGERD
+		sprintf(mess,"Cannot set settings via SET_SETTINGS, use SET_MODULE\n");
+#else
+		sprintf(mess,"Setting (%d) is not implemented for this detector\n", isett);
+#endif
+		cprintf(RED, "Warning: %s", mess);
+		break;
+#endif
+	}
+
+	if (ret != FAIL) {
 #ifdef VERBOSE
-	printf("Changing settings of module %d to %d\n", imod,  isett);
+		printf("Changing settings of module %d to %d\n", imod,  isett);
 #endif
 		retval=setSettings(isett, imod);
 #ifdef VERBOSE
 		printf("Settings changed to %d\n",  isett);
 #endif
-		if (retval==isett || isett<0) {
+		if (retval == isett || isett < 0) {
 			ret=OK;
 		} else {
 			ret = FAIL;
@@ -2315,6 +2351,17 @@ int set_settings(int file_des) {
 			cprintf(RED, "Warning: %s", mess);
 		}
 	}
+	// set to default dacs,
+//# also for #elif GOTTHARDD, MOENCHD, PROPIXD
+#ifdef JUNGFRAUD
+		if (ret == OK && isett >= 0) {
+			ret = setDefaultDacs();
+			if (ret == FAIL) {
+				strcpy(mess,"Could change settings, but could not set to default dacs\n");
+				cprintf(RED, "Warning: %s", mess);
+			}
+		}
+#endif
 #endif
 #endif
 

@@ -356,6 +356,13 @@ void allocateDetectorStructureMemory(){
 	(detectorModules)->offset=0;
 	(detectorModules)->reg=0;
 	thisSettings = UNINITIALIZED;
+
+	{ // initialize to -1
+		int i = 0;
+		for (i = 0; i < NDAC; ++i) {
+			dacValues[i] = -1;
+		}
+	}
 }
 
 
@@ -377,17 +384,7 @@ void setupDetector() {
 	initDac(8); 	//only for old board compatibility
 
 	//set dacs
-	printf("Setting Default Dac values\n");
-	{
-		int i = 0;
-		int retval[2]={-1,-1};
-		const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
-		for(i = 0; i < NDAC; ++i) {
-			setDAC((enum DACINDEX)i,defaultvals[i],0,0,retval);
-			if (retval[0] != defaultvals[i])
-				cprintf(RED, "Warning: Setting dac %d failed, wrote %d, read %d\n",i ,defaultvals[i], retval[0]);
-		}
-	}
+	setDefaultDacs();
 
 	bus_w(DAQ_REG, 0x0);         /* Only once at server startup */
 
@@ -422,7 +419,26 @@ void setupDetector() {
 }
 
 
-
+int setDefaultDacs() {
+	int ret = OK;
+	printf("Setting Default Dac values\n");
+	{
+		int i = 0;
+		int retval[2]={-1,-1};
+		const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
+		for(i = 0; i < NDAC; ++i) {
+			// if not already default, set it to default
+			if (dacValues[i] != defaultvals[i]) {
+				setDAC((enum DACINDEX)i,defaultvals[i],0,0,retval);
+				if (retval[0] != defaultvals[i]) {
+					cprintf(RED, "Warning: Setting dac %d failed, wrote %d, read %d\n",i ,defaultvals[i], retval[0]);
+					ret = FAIL;
+				}
+			}
+		}
+	}
+	return ret;
+}
 
 
 

@@ -58,6 +58,9 @@ void 		getModuleConfiguration();
 // set up detector
 void		allocateDetectorStructureMemory();
 void 		setupDetector();
+#ifdef JUNGFRAUD
+int			setDefaultDacs();
+#endif
 
 
 // advanced read/write reg

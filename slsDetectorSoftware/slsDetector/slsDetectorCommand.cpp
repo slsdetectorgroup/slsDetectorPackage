@@ -4652,7 +4652,10 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
 	if (cmd=="settings") {
 		detectorSettings sett = GET_SETTINGS;
 		if (action==PUT_ACTION) {
-			sett = myDet->setSettings(myDet->getDetectorSettings(string(args[1])));
+			sett = myDet->getDetectorSettings(string(args[1]));
+			if (sett == -1)
+				return string ("unknown settings scanned " + string(args[1]));
+			sett = myDet->setSettings(sett);
 			if (myDet->getDetectorsType() == EIGER) {
 				return myDet->getDetectorSettings(sett);
 			}

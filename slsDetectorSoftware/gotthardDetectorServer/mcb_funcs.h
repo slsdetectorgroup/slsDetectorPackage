@@ -18,6 +18,16 @@
 
 // DAC definitions
 enum dacsVal{VREF_DS, VCASCN_PB, VCASCP_PB, VOUT_CM, VCASC_OUT, VIN_CM, VREF_COMP, IB_TESTC,HIGH_VOLTAGE, CONFGAIN};
+#define DEFAULT_DAC_VALS   	{		\
+	660,	/* VREF_DS */			\
+		650,	/* VCASCN_PB */		\
+		1480,	/* VCASCP_PB */		\
+		1520,	/* VOUT_CM */		\
+		1320,	/* VCASC_OUT */		\
+		1350,	/* VIN_CM */		\
+		350,	/* VREF_COMP */		\
+		2001	/* IB_TESTC */		\
+		};
 
 /* DAC adresses */
 #define DACCS   {0,0,1,1,2,2,3,3,4,4,5,5,6,6}
@@ -84,6 +94,7 @@ enum adcVals{TEMP_FPGA, TEMP_ADC};
 void showbits(int h);
 
 int initDetector();
+int setDefaultDacs();
 int copyChannel(sls_detector_channel *destChan, sls_detector_channel *srcChan);
 int copyChip(sls_detector_chip *destChip, sls_detector_chip *srcChip);
 int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod);

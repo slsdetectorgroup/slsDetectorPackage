@@ -87,9 +87,10 @@ int init_detector( int b) {
     setPhaseShiftOnce();
     configureADC();
     setADC(-1); //already does setdaqreg and clean fifo
-    setSettings(GET_SETTINGS,-1);
+    setSettings(DYNAMICGAIN,-1);
+    setDefaultDacs();
 
-    //Initialization
+	//Initialization
     setFrames(1);
     setTrains(1);
     setExposureTime(1e6);
@@ -1660,19 +1661,43 @@ int set_settings(int file_des) {
     sprintf(mess,"Detector locked by %s\n",lastClientIP);  
   } else {
 #ifdef MCB_FUNCS
-    retval=setSettings(arg[0],imod);
-#endif
+		switch(isett) {
+			case GET_SETTINGS:
+			case UNINITIALIZED:
+			case DYNAMICGAIN:
+			case HIGHGAIN:
+			case LOWGAIN:
+			case MEDIUMGAIN:
+			case VERYHIGHGAIN:
+				break;
+			default:
+				ret = FAIL;
+				sprintf(mess,"Setting (%d) is not implemented for this detector.\n"
+						"Options are dynamicgain, highgain, lowgain, mediumgain and "
+						"veryhighgain.\n", isett);
+				cprintf(RED, "Warning: %s", mess);
+				break;
+		}
+		if (ret != FAIL) {
+			retval=setSettings(isett,imod);
 #ifdef VERBOSE
-    printf("Settings changed to %d\n",retval);
-#endif  
-    
-    if (retval==isett || isett<0) {
-      ret=OK;
-    } else {
-      ret=FAIL;
-      printf("Changing settings of module %d: wrote %d but read %d\n", imod, isett, retval);
-    }
-    
+			printf("Settings changed to %d\n",retval);
+#endif
+			if (retval != isett && isett >= 0) {
+				ret=FAIL;
+				sprintf(mess, "Changing settings of module %d: wrote %d but read %d\n", imod, isett, retval);
+				printf("Warning: %s",mess);
+			}
+
+			else {
+				ret = setDefaultDacs();
+				if (ret == FAIL) {
+					strcpy(mess,"Could change settings, but could not set to default dacs\n");
+					cprintf(RED, "Warning: %s", mess);
+				}
+			}
+		}
+#endif
   }
   if (ret==OK && differentClients==1)
     ret=FORCE_UPDATE;

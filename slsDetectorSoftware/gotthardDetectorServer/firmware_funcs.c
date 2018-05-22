@@ -303,13 +303,14 @@ void setMasterSlaveConfiguration(){
 		}
 
 	}
-	cprintf(BLUE, "masterflags: %d\n"
+	cprintf(BLUE,
+			"masterflags: %d\n"
 			"masterdefaultdelay:%d\n"
 			"patternphase:%d\n"
 			"adcphase:%d\n"
 			"slavepatternphase:%d\n"
 			"slaveadcphase:%d\n"
-			"rsttosw1delay:%d\n",
+			"rsttosw1delay:%d\n"
 	        "startacqdelay:%d\n",
 			masterflags,
 			masterdefaultdelay,

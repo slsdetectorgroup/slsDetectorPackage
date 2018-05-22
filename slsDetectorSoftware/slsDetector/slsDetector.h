@@ -1105,7 +1105,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   /**
      get detector settings
      \param imod module number (-1 all)
-     \returns current settings
+     \returns current settings  detectorSettings sendSettingsOnly(detectorSettings isettings);
   */
   detectorSettings getSettings(int imod=-1);  
 
@@ -1118,6 +1118,19 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      in this function trimbits/settings and calibration files are searched in the settingsDir and calDir directories and the detector is initialized
   */
   detectorSettings setSettings(detectorSettings isettings, int imod=-1);
+
+
+  /**
+     send detector settings only (set only for Jungfrau, Gotthard, Moench, get for all)
+     \param isettings  settings
+     \param imod module number (-1 all)
+     \returns current settings
+
+     in this function only the settings is sent to the detector, where it will initialize all the dacs already stored in the detector server.
+  */
+  detectorSettings sendSettingsOnly(detectorSettings isettings, int imod=-1);
+
+
   //virtual detectorSettings setSettings(detectorSettings isettings, int imod=-1);
 
   /**

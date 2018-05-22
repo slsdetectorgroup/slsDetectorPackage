@@ -137,13 +137,13 @@ void SlsQtNumberEntry::SetupNumberField(int type, int which_number_field){
     num_field[i]->setAlignment(Qt::AlignRight);
     
     if(i==0){
-      connect(num_field[i],SIGNAL(lostFocus()),this,SLOT(RefreshFirstNumberEntry()));
+      connect(num_field[i],SIGNAL(editingFinished()),this,SLOT(RefreshFirstNumberEntry()));
       connect(num_field[i],SIGNAL(returnPressed()),this,SLOT(FirstValueEntered()));
-      connect(num_field[i],SIGNAL(lostFocus()),this,SLOT(FirstValueEntered()));      
+      connect(num_field[i],SIGNAL(editingFinished()),this,SLOT(FirstValueEntered()));      
     }else{
-      connect(num_field[i],SIGNAL(lostFocus()),this,SLOT(RefreshSecondNumberEntry()));
+      connect(num_field[i],SIGNAL(editingFinished()),this,SLOT(RefreshSecondNumberEntry()));
       connect(num_field[i],SIGNAL(returnPressed()),this,SLOT(SecondValueEntered()));
-      connect(num_field[i],SIGNAL(lostFocus()),this,SLOT(SecondValueEntered()));
+      connect(num_field[i],SIGNAL(editingFinished()),this,SLOT(SecondValueEntered()));
     }
   }else if(type==3){
     spin_box[i] = new QSpinBox();

@@ -1,16 +1,20 @@
-#ifdef SLS_DETECTOR_FUNCTION_LIST
+//#ifdef SLS_DETECTOR_FUNCTION_LIST
 
 
 #include <stdio.h>
 #include <unistd.h> //to gethostname
 #include <string.h>
-
-
+#ifdef VIRTUAL
+#include <pthread.h>
+#include <time.h>
+#endif
 
 #include "slsDetectorFunctionList.h"
+#ifndef VIRTUAL
 #include "gitInfoEiger.h"
 #include "FebControl.h"
 #include "Beb.h"
+#endif
 
 int default_tau_from_file= -1;
 
@@ -20,8 +24,6 @@ enum detectorSettings thisSettings;
 const char* dac_names[16] = {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};
 
 enum{E_PARALLEL, E_NON_PARALLEL, E_SAFE};
-
-//static const string dacNames[16] = {"Svp","Svn","Vtr","Vrf","Vrs","Vtgstv","Vcmp_ll","Vcmp_lr","Cal","Vcmp_rl","Vcmp_rr","Rxb_rb","Rxb_lb","Vcp","Vcn","Vis"};
 
 sls_detector_module *detectorModules=NULL;
 int *detectorChips=NULL;
@@ -47,6 +49,27 @@ int eiger_nexposures = 1;
 int eiger_ncycles = 1;
 
 
+#ifdef VIRTUAL
+//values for virtual server
+double eiger_virtual_exptime = 0;
+int64_t eiger_virtual_subexptime = 0;
+int64_t eiger_virtual_subperiod = 0;
+double eiger_virtual_period = 0;
+int eiger_virtual_counter_bit=1;
+int eiger_virtual_ratecorrection_variable=0;
+int64_t eiger_virtual_ratetable_tau_in_ns=-1;
+int64_t eiger_virtual_ratetable_period_in_ns=-1;
+int eiger_virtual_transmission_delay_left=0;
+int eiger_virtual_transmission_delay_right=0;
+int eiger_virtual_transmission_delay_frame=0;
+int eiger_virtual_transmission_flowcontrol_10g=0;
+int eiger_virtual_status=0;
+int eiger_virtual_activate=1;
+pthread_t eiger_virtual_tid;
+int eiger_virtual_stop = 0;
+#endif
+
+
 int send_to_ten_gig = 0;
 int  ndsts_in_use=32;
 unsigned int nimages_per_request=1;
@@ -62,8 +85,9 @@ enum masterFlags  masterMode=IS_SLAVE;
 int top = 0;
 int master = 0;
 int normal = 0;
+#ifndef VIRTUAL
 uint32_t detid = 0;
-
+#endif
 
 
 
@@ -72,6 +96,13 @@ uint32_t detid = 0;
 /* basic tests */
 
 void checkFirmwareCompatibility(int flag){
+#ifdef VIRTUAL
+	cprintf(BLUE,"\n\n"
+			"********************************************************\n"
+			"***************** EIGER Virtual Server *****************\n"
+			"********************************************************\n");
+	return;
+#endif
 	uint32_t ipadd	= getDetectorIP();
 	uint64_t macadd	= getDetectorMAC();
 	int64_t fwversion = getDetectorId(DETECTOR_FIRMWARE_VERSION);
@@ -91,9 +122,12 @@ void checkFirmwareCompatibility(int flag){
 			"F/w-S/w API Version:\t\t %lld\n"
 			"Required Firmware Version:\t %d\n\n"
 			"********************************************************\n",
-			ipadd, macadd,
-			fwversion,swversion,
-			sw_fw_apiversion,REQUIRED_FIRMWARE_VERSION);
+			(unsigned int)ipadd,
+			(long long unsigned int)macadd,
+			(long long int)fwversion,
+			(long long int)swversion,
+			(long long int)sw_fw_apiversion,
+			REQUIRED_FIRMWARE_VERSION);
 
 	//cant read versions
 	if(!fwversion || !sw_fw_apiversion){
@@ -126,6 +160,9 @@ void checkFirmwareCompatibility(int flag){
 /* Ids */
 
 int64_t getDetectorId(enum idMode arg){
+#ifdef VIRTUAL
+	return 0;
+#else
 	int64_t retval = -1;
 
 	switch(arg){
@@ -143,20 +180,32 @@ int64_t getDetectorId(enum idMode arg){
 	}
 
 	return retval;
+#endif
 }
 
 u_int64_t getFirmwareVersion() {
+#ifdef VIRTUAL
+	return 0;
+#else
 	return Beb_GetFirmwareRevision();
+#endif
 }
 
 
 
 u_int32_t getDetectorNumber(){
+#ifdef VIRTUAL
+	return 0;
+#else
 	return detid;
+#endif
 }
 
 
 u_int64_t  getDetectorMAC() {
+#ifdef VIRTUAL
+	return 0;
+#else
 	char mac[255]="";
 	u_int64_t res=0;
 
@@ -181,10 +230,14 @@ u_int64_t  getDetectorMAC() {
 	//printf("mac:%llx\n",res);
 
 	return res;
+#endif
 }
 
 
 u_int32_t  getDetectorIP(){
+#ifdef VIRTUAL
+	return 0;
+#endif
 	char temp[50]="";
 	u_int32_t res=0;
 	//execute and get address
@@ -214,6 +267,12 @@ u_int32_t  getDetectorIP(){
 /* initialization */
 
 void initControlServer(){
+#ifdef VIRTUAL
+	getModuleConfiguration();
+	setupDetector();
+	printf("\n");
+	return;
+#else
 	//Feb and Beb Initializations
 	getModuleConfiguration();
 	Feb_Interface_FebInterface();
@@ -231,22 +290,48 @@ void initControlServer(){
 
 
 	setupDetector();
-
+#endif
 	printf("\n");
 }
 
 void initStopServer(){
+#ifdef VIRTUAL
+	getModuleConfiguration();
+	printf("\n");
+	return;
+#else
 	getModuleConfiguration();
 	Feb_Interface_FebInterface();
 	Feb_Control_FebControl();
 	Feb_Control_Init(master,top,normal,getDetectorNumber());
 	printf("FEB Initialization done\n");
-
+#endif
 	printf("\n");
 }
 
 
 void getModuleConfiguration(){
+#ifdef VIRTUAL
+#ifdef VIRTUAL_MASTER
+	master = 1;
+	top = 1;
+#else
+	master = 0;
+	top = 1;
+#endif
+#ifdef VIRTUAL_9M
+	normal = 0;
+#else
+	normal = 1;
+#endif
+	if(top)	printf("*************** TOP ***************\n");
+	else	printf("*************** BOTTOM ***************\n");
+	if(master)	printf("*************** MASTER ***************\n");
+	else		printf("*************** SLAVE ***************\n");
+	if(normal)	printf("*************** NORMAL ***************\n");
+	else		printf("*************** SPECIAL ***************\n");
+	return;
+#else
 	int *m=&master;
 	int *t=&top;
 	int *n=&normal;
@@ -265,6 +350,7 @@ void getModuleConfiguration(){
 	pclose(sysFile);
 	sscanf(output,"%u",&detid);
 	printf("detector id: %u\n",detid);
+#endif
 }
 
 
@@ -332,6 +418,7 @@ void setupDetector() {
 	setTimer(SUBFRAME_ACQUISITION_TIME, DEFAULT_SUBFRAME_EXPOSURE);
 	setTimer(SUBFRAME_PERIOD, DEFAULT_SUBFRAME_PERIOD);
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
+	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
 	setDynamicRange(DEFAULT_DYNAMIC_RANGE);
 	eiger_photonenergy = DEFAULT_PHOTON_ENERGY;
 	setReadOutFlags(DEFAULT_READOUT_MODE);
@@ -344,9 +431,13 @@ void setupDetector() {
 	setRateCorrection(DEFAULT_RATE_CORRECTION);
 	int enable[2] = {DEFAULT_EXT_GATING_ENABLE, DEFAULT_EXT_GATING_POLARITY};
 	setExternalGating(enable);//disable external gating
+#ifndef VIRTUAL
 	Feb_Control_SetInTestModeVariable(DEFAULT_TEST_MODE);
+#endif
 	setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+#ifndef VIRTUAL
 	Feb_Control_CheckSetup();
+#endif
 }
 
 
@@ -354,11 +445,19 @@ void setupDetector() {
 
 /* advanced read/write reg */
 uint32_t writeRegister(uint32_t offset, uint32_t data) {
+#ifdef VIRTUAL
+	return 0;
+#else
 	return Feb_Control_WriteRegister(offset, data);
+#endif
 }
 
 uint32_t readRegister(uint32_t offset) {
+#ifdef VIRTUAL
+	return 0;
+#else
 	return Feb_Control_ReadRegister(offset);
+#endif
 }
 
 
@@ -374,6 +473,13 @@ int getNModBoard(enum dimension arg){
 }
 
 int setDynamicRange(int dr){
+#ifdef VIRTUAL
+	if(dr > 0){
+		printf(" Setting dynamic range: %d\n",dr);
+		eiger_dynamicrange = dr;
+	}
+	return eiger_dynamicrange;
+#else
 	if(dr > 0){
 		printf(" Setting dynamic range: %d\n",dr);
 		if(Feb_Control_SetDynamicRange(dr)){
@@ -391,6 +497,7 @@ int setDynamicRange(int dr){
 	dr= Feb_Control_GetDynamicRange();
 
 	return dr;
+#endif
 }
 
 
@@ -405,7 +512,9 @@ int setSpeed(enum speedVariable arg, int val){
 
 	if(val != -1){
 		printf(" Setting Read out Speed: %d\n",val);
+#ifndef VIRTUAL
 		if(Feb_Control_SetReadoutSpeed(val))
+#endif
 			eiger_readoutspeed = val;
 	}
 	return 	eiger_readoutspeed;
@@ -429,9 +538,13 @@ enum readOutFlags setReadOutFlags(enum readOutFlags val){
 				return -1;
 			}
 			printf(" Setting Read out Flag: %d\n",val);
+#ifndef VIRTUAL
 			if(Feb_Control_SetReadoutMode(val))
+#endif
 				eiger_readoutmode = val;
+#ifndef VIRTUAL
 			else return -1;
+#endif
 
 		}
 
@@ -444,9 +557,13 @@ enum readOutFlags setReadOutFlags(enum readOutFlags val){
 				return -1;
 			}
 			printf(" Setting Read out Flag: %d\n",val);
+#ifndef VIRTUAL
 			if(Beb_Set32bitOverflow(val) != -1)
+#endif
 				eiger_overflow32 = val;
+#ifndef VIRTUAL
 			else return -1;
+#endif
 		}
 
 
@@ -498,11 +615,11 @@ enum readOutFlags setReadOutFlags(enum readOutFlags val){
 /* parameters - timer */
 
 int64_t setTimer(enum timerIndex ind, int64_t val){
-
 	switch(ind){
 	case FRAME_NUMBER:
 		if(val >= 0){
 			printf(" Setting number of frames: %d * %d\n",(unsigned int)val,eiger_ncycles);
+#ifndef VIRTUAL
 			if(Feb_Control_SetNExposures((unsigned int)val*eiger_ncycles)){
 				eiger_nexposures = val;
 				//SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
@@ -512,39 +629,76 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 				ndsts_in_use = 1;
 				nimages_per_request = eiger_nexposures * eiger_ncycles;
 			}
+#else
+			eiger_nexposures = val;
+			nimages_per_request = eiger_nexposures * eiger_ncycles;
+#endif
 		}return eiger_nexposures;
 
 	case ACQUISITION_TIME:
 		if(val >= 0){
 			printf(" Setting exp time: %fs\n",val/(1E9));
+#ifndef VIRTUAL
 			Feb_Control_SetExposureTime(val/(1E9));
+#else
+			eiger_virtual_exptime = (val/(1E9));
+#endif
 		}
+#ifndef VIRTUAL
 		return (Feb_Control_GetExposureTime()*(1E9));
+#else
+		return eiger_virtual_exptime*1e9;
+#endif
 
 	case SUBFRAME_ACQUISITION_TIME:
 		if(val >= 0){
 			printf(" Setting sub exp time: %lldns\n",(long long int)val/10);
+#ifndef VIRTUAL
 			Feb_Control_SetSubFrameExposureTime(val/10);
+#else
+			eiger_virtual_subexptime = (val/(10));
+#endif
 		}
+#ifndef VIRTUAL
 		return (Feb_Control_GetSubFrameExposureTime());
+#else
+		return eiger_virtual_subexptime*10;
+#endif
 
 	case SUBFRAME_PERIOD:
 		if(val >= 0){
 			printf(" Setting sub period: %lldns\n",(long long int)val/10);
+#ifndef VIRTUAL
 			Feb_Control_SetSubFramePeriod(val/10);
+#else
+			eiger_virtual_subperiod = (val/(1E9));
+#endif
 		}
+#ifndef VIRTUAL
 		return (Feb_Control_GetSubFramePeriod());
+#else
+		return eiger_virtual_subperiod*1e9;
+#endif
 
 	case FRAME_PERIOD:
 		if(val >= 0){
 			printf(" Setting acq period: %fs\n",val/(1E9));
+#ifndef VIRTUAL
 			Feb_Control_SetExposurePeriod(val/(1E9));
+#else
+			eiger_virtual_period = (val/(1E9));
+#endif
 		}
+#ifndef VIRTUAL
 		return (Feb_Control_GetExposurePeriod()*(1E9));
+#else
+		return eiger_virtual_period*1e9;
+#endif
 
 	case CYCLES_NUMBER:
 		if(val >= 0){
 			printf(" Setting number of triggers: %d * %d\n",(unsigned int)val,eiger_nexposures);
+#ifndef VIRTUAL
 			if(Feb_Control_SetNExposures((unsigned int)val*eiger_nexposures)){
 				eiger_ncycles = val;
 				//SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
@@ -553,7 +707,12 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 				for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
 				nimages_per_request = eiger_nexposures * eiger_ncycles;
 			}
-		}return eiger_ncycles;
+#else
+			eiger_ncycles = val;
+			nimages_per_request = eiger_nexposures * eiger_ncycles;
+#endif
+		}
+		return eiger_ncycles;
 	default:
 		cprintf(RED,"Warning: Timer Index not implemented for this detector: %d\n", ind);
 		break;
@@ -597,6 +756,7 @@ int setModule(sls_detector_module myMod, int delay){
 		setDAC((enum DACINDEX)i,myMod.dacs[i],myMod.module,0,retval);
 
 	// trimbits
+#ifndef VIRTUAL
 	if(myMod.nchan==0 && myMod.nchip == 0)
 		cprintf(BLUE,"Setting module without trimbits\n");
 	else{
@@ -622,12 +782,14 @@ int setModule(sls_detector_module myMod, int delay){
 			return FAIL;
 		}
 	}
-
+#endif
 	return thisSettings;
 }
 
 
 int getModule(sls_detector_module *myMod){
+
+#ifndef VIRTUAL
 	int i;
 	int retval[2];
 
@@ -654,6 +816,7 @@ int getModule(sls_detector_module *myMod){
 			}
 		}
 	}
+#endif
 
 	//copy local module to myMod
 	if (detectorModules) {
@@ -752,6 +915,14 @@ void setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]){
 	else
 		printf("in dac units\n");
 #endif
+#ifdef VIRTUAL
+	if (mV){
+		retval[0] = (int)(((val-0)/(2048-0))*(4096-1) + 0.5);
+		retval[1] = val;
+	}else
+		retval[0] = val;
+
+#else
 	if(val >= 0)
 		Feb_Control_SetDAC(iname,val,mV);
 	int k;
@@ -759,7 +930,7 @@ void setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]){
 	retval[0] = k;
 	Feb_Control_GetDAC(iname,&k,1);
 	retval[1] = k;
-
+#endif
 	(detectorModules)->dacs[ind] = retval[0];
 
 }
@@ -767,6 +938,9 @@ void setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]){
 
 
 int getADC(enum ADCINDEX ind,  int imod){
+#ifdef VIRTUAL
+	return 0;
+#else
 	int retval = -1;
 	char tempnames[6][20]={"FPGA EXT", "10GE","DCDC", "SODL", "SODR", "FPGA"};
 	char cstore[255];
@@ -799,10 +973,23 @@ int getADC(enum ADCINDEX ind,  int imod){
 	printf("Temperature %s: %f°C\n",tempnames[ind],(double)retval/1000.00);
 
 	return retval;
+#endif
 }
 
 
 int setHighVoltage(int val){
+#ifdef VIRTUAL
+	if (master) {
+		// set
+		if(val!=-1){
+			eiger_theo_highvoltage = val;
+		}
+		return eiger_theo_highvoltage;
+	}
+
+	return SLAVE_HIGH_VOLTAGE_READ_VAL;
+#else
+
 	if (master) {
 
 		// set
@@ -830,6 +1017,7 @@ int setHighVoltage(int val){
 	}
 
 	return SLAVE_HIGH_VOLTAGE_READ_VAL;
+#endif
 }
 
 
@@ -850,7 +1038,9 @@ enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
 		case GATE_FIX_NUMBER:		ret = 3;	break;
 		}
 		printf(" Setting Triggering Mode: %d\n",(int)ret);
+#ifndef VIRTUAL
 		if(Feb_Control_SetTriggerMode(ret,1))
+#endif
 			eiger_triggermode = ret;
 	}
 
@@ -875,7 +1065,7 @@ enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
 /* configure mac */
 
 int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2, int ival) {
-
+#ifndef VIRTUAL
 	char src_mac[50], src_ip[50],dst_mac[50], dst_ip[50];
 	int src_port = 0xE185;
 	sprintf(src_ip,"%d.%d.%d.%d",(sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff);
@@ -933,14 +1123,18 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 
 	for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
 	nimages_per_request=eiger_nexposures * eiger_ncycles;
-
+#endif
 	return 0;
 }
 
 
 
 int	setDetectorPosition(int pos[]) {
+#ifdef VIRTUAL
+	return OK;
+#else
 	return Beb_SetDetectorPosition(pos);
+#endif
 }
 
 
@@ -952,7 +1146,9 @@ int	setDetectorPosition(int pos[]) {
 int setIODelay(int val, int imod){
 	if(val!=-1){
 		printf(" Setting IO Delay: %d\n",val);
+#ifndef VIRTUAL
 		if(Feb_Control_SetIDelays(Feb_Control_GetModuleNumber(),val))
+#endif
 			eiger_iodelay = val;
 	}
 	return eiger_iodelay;
@@ -976,35 +1172,92 @@ int enableTenGigabitEthernet(int val){
 
 int setCounterBit(int val){
 	if(val!=-1){
+#ifdef VIRTUAL
+		eiger_virtual_counter_bit = val;
+#else
 		Feb_Control_Set_Counter_Bit(val);
+#endif
 #ifdef VERBOSE
 	printf("Counter Bit:%d\n",val);
 #endif
 	}
-
+#ifdef VIRTUAL
+	return eiger_virtual_counter_bit;
+#else
 	return Feb_Control_Get_Counter_Bit();
+#endif
 }
 
 
 int pulsePixel(int n, int x, int y){
+#ifndef VIRTUAL
 	if(!Feb_Control_Pulse_Pixel(n,x,y))
 		return FAIL;
+#endif
 	return OK;
 }
 
 int pulsePixelNMove(int n, int x, int y){
+#ifndef VIRTUAL
 	if(!Feb_Control_PulsePixelNMove(n,x,y))
 		return FAIL;
+#endif
 	return OK;
 }
 
 int pulseChip(int n){
+#ifndef VIRTUAL
 	if(!Feb_Control_PulseChip(n))
 		return FAIL;
+#endif
 	return OK;
 }
 
 int64_t setRateCorrection(int64_t custom_tau_in_nsec){//in nanosec (will never be -1)
+#ifdef VIRTUAL
+	//deactivating rate correction
+	if(custom_tau_in_nsec==0){
+		eiger_virtual_ratecorrection_variable = 0;
+		return 0;
+	}
+
+	//when dynamic range changes, use old tau
+	else if(custom_tau_in_nsec == -1)
+		custom_tau_in_nsec = eiger_virtual_ratetable_tau_in_ns;
+
+	//get period = subexptime if 32bit , else period = exptime if 16 bit
+	int64_t actual_period = eiger_virtual_subexptime*10; //already in nsec
+	if(eiger_dynamicrange == 16)
+		actual_period = eiger_virtual_exptime;
+
+	int64_t ratetable_period_in_nsec = eiger_virtual_ratetable_period_in_ns;
+	int64_t tau_in_nsec = eiger_virtual_ratetable_tau_in_ns;
+
+
+
+	//same setting
+	if((tau_in_nsec == custom_tau_in_nsec) && (ratetable_period_in_nsec == actual_period)){
+		if(eiger_dynamicrange == 32)
+			printf("Rate Table already created before: Same Tau %lldns, Same subexptime %lldns\n",
+					(long long int)tau_in_nsec,(long long int)ratetable_period_in_nsec);
+		else
+			printf("Rate Table already created before: Same Tau %lldns, Same exptime %lldns\n",
+					(long long int)tau_in_nsec,(long long int)ratetable_period_in_nsec);
+	}
+	//different setting, calculate table
+	else{
+		eiger_virtual_ratetable_tau_in_ns = custom_tau_in_nsec;
+		double period_in_sec = (double)(eiger_virtual_subexptime*10)/(double)1e9;
+		if(eiger_dynamicrange == 16)
+			period_in_sec = eiger_virtual_exptime;
+		eiger_virtual_ratetable_period_in_ns = period_in_sec*1e9;
+	}
+	//activating rate correction
+	eiger_virtual_ratecorrection_variable = 1;
+	printf("Rate Correction Value set to %lld ns\n",(long long int)eiger_virtual_ratetable_tau_in_ns);
+
+	return eiger_virtual_ratetable_tau_in_ns;
+#else
 
 	//deactivating rate correction
 	if(custom_tau_in_nsec==0){
@@ -1030,8 +1283,8 @@ int64_t setRateCorrection(int64_t custom_tau_in_nsec){//in nanosec (will never b
 	//same setting
 	if((tau_in_nsec == custom_tau_in_nsec) && (ratetable_period_in_nsec == actual_period)){
 		if(dr == 32)
-		printf("Rate Table already created before: Same Tau %lldns, Same subexptime %lldns\n",
-				tau_in_nsec,ratetable_period_in_nsec);
+			printf("Rate Table already created before: Same Tau %lldns, Same subexptime %lldns\n",
+					tau_in_nsec,ratetable_period_in_nsec);
 		else
 			printf("Rate Table already created before: Same Tau %lldns, Same exptime %lldns\n",
 					tau_in_nsec,ratetable_period_in_nsec);
@@ -1053,10 +1306,15 @@ int64_t setRateCorrection(int64_t custom_tau_in_nsec){//in nanosec (will never b
 #endif
 
 	return Feb_Control_Get_RateTable_Tau_in_nsec();
+#endif
 }
 
 int getRateCorrectionEnable(){
+#ifdef VIRTUAL
+	return eiger_virtual_ratecorrection_variable;
+#else
 	return Feb_Control_GetRateCorrectionVariable();
+#endif
 }
 
 int getDefaultSettingsTau_in_nsec(){
@@ -1072,12 +1330,18 @@ int64_t getCurrentTau(){
 	if(!getRateCorrectionEnable())
 		return 0;
 	else
+#ifndef VIRTUAL
 		return Feb_Control_Get_RateTable_Tau_in_nsec();
+#else
+		return eiger_virtual_ratetable_tau_in_ns;
+#endif
 }
 
 void setExternalGating(int enable[]){
 	if(enable>=0){
+#ifndef VIRTUAL
 		Feb_Control_SetExternalEnableMode(enable[0], enable[1]);//enable = 0 or 1, polarity = 0 or 1 , where 1 is positive
+#endif
 		eiger_extgating = enable[0];
 		eiger_extgatingpolarity = enable[1];
 	}
@@ -1086,20 +1350,22 @@ void setExternalGating(int enable[]){
 }
 
 int setAllTrimbits(int val){
-	int ichan;
+#ifndef VIRTUAL
 	if(!Feb_Control_SaveAllTrimbitsTo(val)){
 		cprintf(RED,"error in setting all trimbits to value\n");
 		return FAIL;
-	}else{
-#ifdef VERBOSE
-		printf("Copying register %x value %d\n",destMod->reg,val);
+	}
 #endif
-		if (detectorModules){
-			for (ichan=0; ichan<(detectorModules->nchan); ichan++) {
-				*((detectorModules->chanregs)+ichan)=val;
-			}
+#ifdef VERBOSE
+	printf("Copying register %x value %d\n",destMod->reg,val);
+#endif
+	if (detectorModules){
+		int ichan;
+		for (ichan=0; ichan<(detectorModules->nchan); ichan++) {
+			*((detectorModules->chanregs)+ichan)=val;
 		}
 	}
+
 	cprintf(GREEN, "All trimbits have been set to %d\n", val);
 	return OK;
 }
@@ -1121,17 +1387,61 @@ int getAllTrimbits(){
 }
 
 int getBebFPGATemp(){
+#ifdef VIRTUAL
+	return 0;
+#else
 	return Beb_GetBebFPGATemp();
+#endif
 }
 
 int activate(int enable){
+#ifdef VIRTUAL
+	if (enable >=0)
+		eiger_virtual_activate = enable;
+	return eiger_virtual_activate;
+#else
 	int ret = Beb_Activate(enable);
 	Feb_Control_activate(ret);
 	return ret;
+#endif
 }
 
 int setNetworkParameter(enum NETWORKINDEX mode, int value){
+#ifndef VIRTUAL
 	return Beb_SetNetworkParameter(mode, value);
+#else
+	if (value>-1) {
+		switch(mode){
+		case TXN_LEFT:
+			eiger_virtual_transmission_delay_left = value;
+			break;
+		case TXN_RIGHT:
+			eiger_virtual_transmission_delay_right = value;
+			break;
+		case TXN_FRAME:
+			eiger_virtual_transmission_delay_frame = value;
+			break;
+		case FLOWCTRL_10G:
+			eiger_virtual_transmission_flowcontrol_10g = value;
+			if(value>0) value = 1;
+			break;
+		default: cprintf(BG_RED,"Unrecognized mode in network parameter: %d\n",mode);
+			return -1;
+		}
+	}
+	switch(mode){
+	case TXN_LEFT:
+		return eiger_virtual_transmission_delay_left;
+	case TXN_RIGHT:
+		return eiger_virtual_transmission_delay_right;
+	case TXN_FRAME:
+		return eiger_virtual_transmission_delay_frame;
+	case FLOWCTRL_10G:
+		return eiger_virtual_transmission_flowcontrol_10g;
+	default: cprintf(BG_RED,"Unrecognized mode in network parameter: %d\n",mode);
+		return -1;
+	}
+#endif
 }
 
 
@@ -1144,17 +1454,30 @@ int setNetworkParameter(enum NETWORKINDEX mode, int value){
 
 
 int prepareAcquisition(){
-
+#ifndef VIRTUAL
 	printf("Going to prepare for acquisition with counter_bit:%d\n",Feb_Control_Get_Counter_Bit());
 	Feb_Control_PrepareForAcquisition();
 	printf("Going to reset Frame Number\n");
 	Beb_ResetFrameNumber();
-
+#endif
 	return OK;
+
 }
 
 
 int startStateMachine(){
+#ifdef VIRTUAL
+	eiger_virtual_status = 1;
+	eiger_virtual_stop = 0;
+	if(pthread_create(&eiger_virtual_tid, NULL, &start_timer, NULL)) {
+		cprintf(RED,"Could not start Virtual acquisition thread\n");
+		eiger_virtual_status = 0;
+		return FAIL;
+	}
+	cprintf(GREEN,"***Virtual Acquisition started\n");
+	return OK;
+#else
+
 	int ret = OK,prev_flag;
 	//get the DAQ toggle bit
 	prev_flag = Feb_Control_AcquisitionStartedBit();
@@ -1179,21 +1502,48 @@ int startStateMachine(){
 	/*while(getRunStatus() == IDLE){printf("waiting for being not idle anymore\n");}*/
 
 	return ret;
+#endif
 }
+
+#ifdef VIRTUAL
+void* start_timer(void* arg) {
+	eiger_virtual_status = 1;
+	int wait_in_s = nimages_per_request * eiger_virtual_period;
+	cprintf(GREEN,"going to wait for %d s\n", wait_in_s);
+	while(!eiger_virtual_stop && (wait_in_s >= 0)) {
+		usleep(1000 * 1000);
+		wait_in_s--;
+	}
+	cprintf(GREEN,"Virtual Timer Done***\n");
+
+	eiger_virtual_status = 0;
+	return NULL;
+}
+#endif
+
 
 
 int stopStateMachine(){
 	cprintf(BG_RED,"Going to stop acquisition\n");
+#ifdef VIRTUAL
+	eiger_virtual_stop = 0;
+	return OK;
+#else
+
 	if((Feb_Control_StopAcquisition() == STATUS_IDLE) & Beb_StopAcquisition())
 		return OK;
 	cprintf(BG_RED,"failed to stop acquisition\n");
 	return FAIL;
+#endif
 }
 
 
 int startReadOut(){
 
 	printf("Requesting images...\n");
+#ifdef VIRTUAL
+	return OK;
+#else
 	//RequestImages();
 	int ret_val = 0;
 	dst_requested[0] = 1;
@@ -1214,10 +1564,20 @@ int startReadOut(){
 		return FAIL;
 	else
 		return OK;
+#endif
 }
 
 
 enum runStatus getRunStatus(){
+#ifdef VIRTUAL
+	if(eiger_virtual_status == 0){
+		printf("Status: IDLE\n");
+		return IDLE;
+	}else{
+		printf("Status: RUNNING...\n");
+		return RUNNING;
+	}
+#else
 
 	int i = Feb_Control_AcquisitionInProgress();
 	switch (i) {
@@ -1233,11 +1593,22 @@ enum runStatus getRunStatus(){
 	}
 
 	return IDLE;
+#endif
 }
 
 
 
 void readFrame(int *ret, char *mess){
+#ifdef VIRTUAL
+	while(eiger_virtual_status) {
+		//cprintf(RED,"Waiting for finished flag\n");
+		usleep(5000);
+	}
+	*ret = (int)FINISHED;
+	strcpy(mess,"acquisition successfully finished\n");
+	return;
+#else
+
 	if(Feb_Control_WaitForFinishedFlag(5000) == STATUS_ERROR) {
 		cprintf(RED,"Error: Waiting for finished flag\n");
 		*ret = FAIL;
@@ -1261,6 +1632,7 @@ void readFrame(int *ret, char *mess){
 	printf("*****Done Waiting...\n");
 	*ret = (int)FINISHED;
 	strcpy(mess,"acquisition successfully finished\n");
+#endif
 }
 
 
@@ -1400,4 +1772,4 @@ enum synchronizationMode setSynchronization(enum synchronizationMode arg){
 
 
 
-#endif
+//#endif

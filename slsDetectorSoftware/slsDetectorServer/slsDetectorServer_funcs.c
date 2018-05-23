@@ -3786,7 +3786,10 @@ int configure_mac(int file_des) {
 			    // change mac to hardware mac, (for 1 gbe) change ip to hardware ip
 			    if (idetectormacadd != getDetectorMAC()){
 			        printf("*************************************************\n");
-			        printf("WARNING: actual detector mac address %llx does not match the one from client %llx\n",getDetectorMAC(),idetectormacadd);
+			        printf("WARNING: actual detector mac address %llx does not match "
+			        		"the one from client %llx\n",
+							(long long unsigned int)getDetectorMAC(),
+							(long long unsigned int)idetectormacadd);
 			        idetectormacadd = getDetectorMAC();
 			        printf("WARNING: Matched detectormac to the hardware mac now\n");
 			        printf("*************************************************\n");
@@ -3844,7 +3847,7 @@ int configure_mac(int file_des) {
 #ifdef EIGERD
 		char arg[2][50];
 		memset(arg,0,sizeof(arg));
-		sprintf(arg[0],"%llx",idetectormacadd);
+		sprintf(arg[0],"%llx",(long long unsigned int)idetectormacadd);
         sprintf(arg[1],"%x",detipad);
         n += sendData(file_des,arg,sizeof(arg),OTHER);
 #endif

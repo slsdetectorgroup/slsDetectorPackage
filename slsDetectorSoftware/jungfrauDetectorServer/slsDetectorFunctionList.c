@@ -3,11 +3,14 @@
 
 #include "slsDetectorFunctionList.h"
 #include "gitInfoJungfrau.h"
-
-
 #include "AD9257.h"		// include "commonServerFunctions.h", which in turn includes "blackfin.h"
 #include "programfpga.h"
 
+
+#ifdef VIRTUAL
+#include <pthread.h>
+#include <time.h>
+#endif
 /* global variables */
 //jungfrau doesnt require chips and chans (save memory)
 sls_detector_module *detectorModules=NULL;
@@ -21,6 +24,11 @@ int highvoltage = 0;
 int dacValues[NDAC];
 int32_t clkPhase[2] = {0, 0};
 
+#ifdef VIRTUAL
+pthread_t pthread_virtual_tid;
+int virtual_status = 0;
+int virtual_stop = 0;
+#endif
 
 
 /* basic tests */
@@ -77,9 +85,12 @@ void checkFirmwareCompatibility(int flag) {
 			"\n"
 			"********************************************************\n",
 			hversion, hsnumber,
-			ipadd, macadd,
-			fwversion, swversion,
-			sw_fw_apiversion, REQRD_FRMWR_VRSN
+			ipadd,
+			(long  long unsigned int)macadd,
+			(long  long int)fwversion,
+			(long  long int)swversion,
+			(long  long int)sw_fw_apiversion,
+			REQRD_FRMWR_VRSN
 	);
 
 	// return if flag is not zero, debug mode
@@ -254,7 +265,7 @@ u_int32_t getDetectorNumber(){
 u_int64_t  getDetectorMAC() {
 #ifdef VIRTUAL
     return 0;
-#endif
+#else
 	char output[255],mac[255]="";
 	u_int64_t res=0;
 	FILE* sysFile = popen("ifconfig eth0 | grep HWaddr | cut -d \" \" -f 11", "r");
@@ -269,6 +280,7 @@ u_int64_t  getDetectorMAC() {
 	}
 	sscanf(mac,"%llx",&res);
 	return res;
+#endif
 }
 
 u_int32_t  getDetectorIP(){
@@ -1176,7 +1188,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 			(unsigned int)((sourcemac>>16)&0xFF),
 			(unsigned int)((sourcemac>>8)&0xFF),
 			(unsigned int)((sourcemac>>0)&0xFF),
-			sourcemac);
+			(long  long unsigned int)sourcemac);
 	printf("Source Port : %d \t\t\t(0x%08x)\n",sourceport, sourceport);
 
 	printf("Dest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",(destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff, destip);
@@ -1187,7 +1199,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 			(unsigned int)((destmac>>16)&0xFF),
 			(unsigned int)((destmac>>8)&0xFF),
 			(unsigned int)((destmac>>0)&0xFF),
-			destmac);
+			(long  long unsigned int)destmac);
 	printf("Dest. Port  : %d \t\t\t(0x%08x)\n",udpport, udpport);
 
 	long int checksum=calcChecksum(sourceip, destip);
@@ -1432,7 +1444,15 @@ int setNetworkParameter(enum NETWORKINDEX mode, int value) {
 
 int startStateMachine(){
 #ifdef VIRTUAL
-    return OK;
+	virtual_status = 1;
+	virtual_stop = 0;
+	if(pthread_create(&pthread_virtual_tid, NULL, &start_timer, NULL)) {
+		virtual_status = 0;
+		cprintf(RED,"Could not start Virtual acquisition thread\n");
+		return FAIL;
+	}
+	cprintf(GREEN,"***Virtual Acquisition started\n");
+	return OK;
 #endif
 	printf("*******Starting State Machine*******\n");
 
@@ -1447,12 +1467,30 @@ int startStateMachine(){
 }
 
 
-int stopStateMachine(){
 #ifdef VIRTUAL
-    return OK;
-#endif
-	cprintf(BG_RED,"*******Stopping State Machine*******\n");
+void* start_timer(void* arg) {
+	int wait_in_s = 	(setTimer(FRAME_NUMBER, -1) *
+						setTimer(CYCLES_NUMBER, -1) *
+						(setTimer(STORAGE_CELL_NUMBER, -1) + 1) *
+						(setTimer(FRAME_PERIOD, -1)/(1E9)));
+	cprintf(GREEN,"going to wait for %d s\n", wait_in_s);
+	while(!virtual_stop && (wait_in_s >= 0)) {
+		usleep(1000 * 1000);
+		wait_in_s--;
+	}
+	cprintf(GREEN,"Virtual Timer Done***\n");
 
+	virtual_status = 0;
+	return NULL;
+}
+#endif
+
+int stopStateMachine(){
+	cprintf(BG_RED,"*******Stopping State Machine*******\n");
+#ifdef VIRTUAL
+	virtual_stop = 0;
+	return OK;
+#endif
 	//stop state machine
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STOP_ACQ_MSK);
 	usleep(100);
@@ -1468,7 +1506,13 @@ int stopStateMachine(){
 
 enum runStatus getRunStatus(){
 #ifdef VIRTUAL
-    return IDLE;
+	if(virtual_status == 0){
+		printf("Status: IDLE\n");
+		return IDLE;
+	}else{
+		printf("Status: RUNNING...\n");
+		return RUNNING;
+	}
 #endif
 #ifdef VERBOSE
 	printf("Getting status\n");
@@ -1514,9 +1558,13 @@ enum runStatus getRunStatus(){
 
 void readFrame(int *ret, char *mess){
 #ifdef VIRTUAL
-    *ret = (int)FAIL;
-    sprintf(mess,"virtual detector, no acquisition taken\n");
-    return;
+	while(virtual_status) {
+		//cprintf(RED,"Waiting for finished flag\n");
+		usleep(5000);
+	}
+	*ret = (int)FINISHED;
+	strcpy(mess,"acquisition successfully finished\n");
+	return;
 #endif
 	// wait for status to be done
 	while(runBusy()){
@@ -1527,7 +1575,7 @@ void readFrame(int *ret, char *mess){
 	int64_t retval = getTimeLeft(FRAME_NUMBER) + 1;
 	if ( retval > 0) {
 		*ret = (int)FAIL;
-		sprintf(mess,"no data and run stopped: %lld frames left\n",retval);
+		sprintf(mess,"no data and run stopped: %lld frames left\n",(long  long int)retval);
 		cprintf(RED,"%s\n",mess);
 	} else {
 		*ret = (int)FINISHED;
@@ -1540,7 +1588,7 @@ void readFrame(int *ret, char *mess){
 
 u_int32_t runBusy(void) {
 #ifdef VIRTUAL
-    return 0;
+    return virtual_status;
 #endif
 	u_int32_t s = ((bus_r(STATUS_REG) & RUN_BUSY_MSK) >> RUN_BUSY_OFST);
 #ifdef VERBOSE

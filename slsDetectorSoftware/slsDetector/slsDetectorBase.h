@@ -518,6 +518,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
 
   virtual int setThresholdEnergy(int e_eV,  int imod, detectorSettings isettings=GET_SETTINGS, int tb=1)=0;
   int setThresholdEnergy(int e_eV){return setThresholdEnergy(e_eV,-1);};
+  int setThresholdEnergy(int e_ev, int tb, int isettings, int id){return setThresholdEnergy(e_ev, id, (detectorSettings)isettings, tb);}
 
 
   /**

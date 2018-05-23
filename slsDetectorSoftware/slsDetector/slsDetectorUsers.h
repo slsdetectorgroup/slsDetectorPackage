@@ -310,6 +310,16 @@ class slsDetectorUsers
   */
    int setThresholdEnergy(int e_eV);
 
+   /**
+    @short set threshold energy with choice to load trimbits (eiger only)
+    \param e_ev threshold in ev
+    \param tb 1 loads trimbits, 0 does not load trimbits
+    \param isettings settings index (-1 uses current setting)
+    \param id module index (-1 for all)
+    \returns current threshold value in ev (-1 failed)
+    */
+   int setThresholdEnergy(int e_ev, int tb, int isettings = -1, int id = -1);
+
 
    /**
         @short set/get exposure time value

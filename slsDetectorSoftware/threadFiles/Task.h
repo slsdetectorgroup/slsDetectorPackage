@@ -6,15 +6,11 @@
 #include <iostream>
 #include <vector>
 #include <errno.h>
-#include <string.h>
-
+#include <string>
+#include <stdio.h>
 
 #include "Global.h"
 #include "sls_detector_defs.h"
-
-#include <iostream>
-#include <stdio.h>
-// using namespace std;
 
 class slsDetector;
 

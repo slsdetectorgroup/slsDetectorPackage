@@ -6,6 +6,8 @@
 #include <cstdlib>
 
 #include <iomanip>
+using namespace std;
+
 /*! \mainpage Introduction
 
 This program is intended to control the SLS detectors via command line interface.

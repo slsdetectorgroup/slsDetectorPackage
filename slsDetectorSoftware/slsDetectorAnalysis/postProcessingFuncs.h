@@ -17,7 +17,7 @@
 #include "angularConversionStatic.h"
 class angleConversionConstant;
 
-using namespace std;
+
 
 
 class postProcessingFuncs : public virtual angularConversionStatic

@@ -18,7 +18,7 @@
 
 class angularConversion;
 
-using namespace std;
+;
 
 #define MAX_BADCHANS 2000
 

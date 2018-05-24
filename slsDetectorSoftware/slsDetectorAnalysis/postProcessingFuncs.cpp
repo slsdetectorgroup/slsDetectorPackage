@@ -1,6 +1,6 @@
 #include "postProcessingFuncs.h"
 #include "angleConversionConstant.h"
-
+using namespace std;
 //#define VERBOSE
 
 postProcessingFuncs::postProcessingFuncs(int *nModules,int *chPerMod,int modMask[],int badCh[], double ffcoeff[], double fferr[], double* t, int *dir, double angRadius[], double angOffset[], double angCentre[], double* to, double* bs, double *sX, double *sY):

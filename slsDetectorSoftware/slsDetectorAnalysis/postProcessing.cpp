@@ -8,7 +8,7 @@
 #endif
 #include <time.h>
 
-
+using namespace std;
 //#define VERBOSE
 
 static void* startProcessData(void *n){

@@ -16,7 +16,7 @@
 #include <queue>
 #include <math.h>
 
-using namespace std;
+;
 
 
 typedef  double double32_t;

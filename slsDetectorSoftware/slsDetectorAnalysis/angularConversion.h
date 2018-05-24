@@ -19,7 +19,7 @@
   //double angle(int ichan, double encoder, double totalOffset, double conv_r, double center, double offset, double tilt, int direction)
 
 
-// using namespace std;
+// 
 
 /**
    @short Angular conversion constants needed  for a detector module
@@ -256,7 +256,7 @@ class angularConversion : public virtual slsDetectorBase, public angularConversi
   /**
       returns the angular conversion file
      */
-  std::string getAngularConversionFile(){if (setAngularCorrectionMask()) return string(angConvFile); else return string("none");};
+  std::string getAngularConversionFile(){if (setAngularCorrectionMask()) return std::string(angConvFile); else return std::string("none");};
 
 
   /**

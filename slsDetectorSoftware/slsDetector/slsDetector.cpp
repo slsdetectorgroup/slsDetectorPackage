@@ -11,6 +11,7 @@
 #include <math.h>
 #include "gitInfoLib.h"
 
+using namespace std;
 int slsDetector::initSharedMemory(detectorType type, int id) {
 
 

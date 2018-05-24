@@ -1,6 +1,6 @@
 #include "fileIO.h"
 
-			   
+using namespace std;	   
 				   
 
 /* I/O */

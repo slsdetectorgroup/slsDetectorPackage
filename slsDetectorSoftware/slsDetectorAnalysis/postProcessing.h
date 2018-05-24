@@ -23,7 +23,7 @@ class postProcessingFuncs;
 
 
 
-using namespace std;
+// using namespace std;
 
 #define MAX_BADCHANS 20000
 

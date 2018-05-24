@@ -1044,31 +1044,6 @@ slsDetectorDefs::synchronizationMode multiSlsDetector::setSynchronization(synchr
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 int multiSlsDetector::setOnline(int off) {
 
   if (off!=GET_ONLINE_FLAG) {
@@ -2077,8 +2052,6 @@ int multiSlsDetector::setSpeed(speedVariable index, int value){
   int i;
   int ret1=-100, ret;
 
-
-
   for (i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
     if (detectors[i]) {
       ret=detectors[i]->setSpeed(index,value);
@@ -2098,22 +2071,13 @@ int multiSlsDetector::setSpeed(speedVariable index, int value){
 
 
 
-
-
-
-
-
-
-
-
-
 int  multiSlsDetector::getDataBytes(){
-  int ret=0;
+  int n_bytes = 0;
   for (int ip=0; ip<thisMultiDetector->numberOfDetectors; ++ip) {
     if (detectors[ip])
-      ret+=detectors[ip]->getDataBytes();
+      n_bytes += detectors[ip]->getDataBytes();
   }
-  return ret;
+  return n_bytes;
 }
 
 
@@ -3656,7 +3620,8 @@ int multiSlsDetector::exitServer() {
 
 
 /** returns the detector trimbit/settings directory  */
-char* multiSlsDetector::getSettingsDir() {
+// char* multiSlsDetector::getSettingsDir() {
+string multiSlsDetector::getSettingsDir() {
   string s0="", s1="", s;
 
 
@@ -3678,16 +3643,16 @@ char* multiSlsDetector::getSettingsDir() {
     }
   }
   if (s1=="bad")
-    strcpy(ans,s0.c_str());
+    return s0;
   else
-    strcpy(ans,s1.c_str());
-  return ans;
+    return s1;
+  // return ans;
 }
 
 
 
 /** sets the detector trimbit/settings directory  \sa sharedSlsDetector */
-char* multiSlsDetector::setSettingsDir(string s){
+string multiSlsDetector::setSettingsDir(string s){
 
   if (s.find('+')==string::npos) {
     for (int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet) {

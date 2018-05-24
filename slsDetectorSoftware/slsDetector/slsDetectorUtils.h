@@ -405,10 +405,10 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   /** 
       returns the detector trimbit/settings directory   
   */
-  virtual char* getSettingsDir()=0;
+  virtual std::string getSettingsDir()=0;
 
   /** sets the detector trimbit/settings directory  */
-  virtual char* setSettingsDir(std::string s)=0;
+  virtual std::string setSettingsDir(std::string s)=0;
 
   /**
      returns the location of the calibration files

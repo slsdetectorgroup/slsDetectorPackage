@@ -483,9 +483,9 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   /* I/O */
 
   /** returns the detector trimbit/settings directory  \sa sharedSlsDetector */
-  char* getSettingsDir() {return thisDetector->settingsDir;};
+  std::string getSettingsDir() {return std::string(thisDetector->settingsDir);};
   /** sets the detector trimbit/settings directory  \sa sharedSlsDetector */
-  char* setSettingsDir(string s) {sprintf(thisDetector->settingsDir, s.c_str()); return thisDetector->settingsDir;};
+  std::string setSettingsDir(string s) {sprintf(thisDetector->settingsDir, s.c_str()); return thisDetector->settingsDir;};
 
 
 

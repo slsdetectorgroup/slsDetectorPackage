@@ -1047,9 +1047,9 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
   /** returns the detector trimbit/settings directory  \sa sharedSlsDetector */
-  char* getSettingsDir();
+  std::string getSettingsDir();
   /** sets the detector trimbit/settings directory  \sa sharedSlsDetector */
-  char* setSettingsDir(std::string s);
+  std::string setSettingsDir(std::string s);
   /**
      returns the location of the calibration files
      \sa  sharedSlsDetector

@@ -3031,9 +3031,9 @@ string slsDetectorCommand::cmdSettingsDir(int narg, char *args[], int action){
 	if (action==PUT_ACTION) {
 		myDet->setSettingsDir(string(args[1]));
 	}
-	if (myDet->getSettingsDir()==NULL)
+	if (myDet->getSettingsDir()=="")
 		return string("undefined");
-	return string(myDet->getSettingsDir());
+	return myDet->getSettingsDir();
 }
 
 

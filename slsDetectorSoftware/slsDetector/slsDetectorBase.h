@@ -54,11 +54,6 @@
 
 #include <string>
 
-// using std::string;
-// using std::ofstream;
-// using std::ifstream;
-
-// using namespace std;
 /** 
 
 @libdoc The slsDetectorBase contains also a set of purely virtual functions useful for the implementation of the derived classes

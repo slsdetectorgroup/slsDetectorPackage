@@ -31,7 +31,7 @@ extern "C" {
 #include <math.h>
 #include <semaphore.h>
 #include <cstdlib>
-//using namespace std;
+
 
 
 //#include "slsDetectorActions_Standalone.h"

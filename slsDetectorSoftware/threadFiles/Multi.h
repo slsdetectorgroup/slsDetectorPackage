@@ -4,7 +4,6 @@
 #include "Global.h"
 
 #include <string>
-using namespace std;
 
 class Single;
 class ThreadPool;
@@ -15,10 +14,10 @@ public:
 	Multi();
 	~Multi();
 
-	string executeCommand(int argc,char* argv[]);
+	std::string executeCommand(int argc,char* argv[]);
 
 	int printNumber(int inum);
-	string printString(string s);
+	std::string printString(std::string s);
 	char* printCharArray(char a[]);
 
 	int createThreadPool();

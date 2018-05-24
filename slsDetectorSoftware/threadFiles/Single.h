@@ -3,7 +3,7 @@
 #include "Multi.h"
 
 #include <string>
-using namespace std;
+// using namespace std;
 
 class Single {
 public:

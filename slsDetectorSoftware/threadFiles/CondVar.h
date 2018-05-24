@@ -8,7 +8,6 @@
 
 #include "Global.h"
 
-using namespace std;
 
 class CondVar {
 public:

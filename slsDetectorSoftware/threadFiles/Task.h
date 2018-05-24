@@ -14,7 +14,7 @@
 
 #include <iostream>
 #include <stdio.h>
-using namespace std;
+// using namespace std;
 
 class slsDetector;
 
@@ -121,14 +121,14 @@ protected:
 	func0_t <runStatus			>* 								m4;
 	func1_t <int,				int>* 							m5;
 	func1_t <int,				double>*						m6;
-	func1_t <string,			string>* 						m7;
+	func1_t <std::string,		std::string>* 					m7;
 	func1_t <detectorSettings,	int>* 							m8;
 	func2_t <int,				int,int>* 						m9;
-	func2_t <int,				string,int>* 					m10;
+	func2_t <int,				std::string,int>* 				m10;
 	func2_t <dacs_t,			dacIndex,int>* 					m11;
 	func2_t <detectorSettings,	detectorSettings,int>* 			m12;
 	func2_t <int64_t,			timerIndex,int64_t>* 			m13;
-	func2_t <string,			networkParameter,string>* 		m14;
+	func2_t <std::string,		networkParameter,std::string>* 	m14;
 	func3_t <int,				int,int,int>* 					m15;
 	func4_t <int,				trimMode,int,int,int>* 			m16;
 	func4_t <int,				int,int,detectorSettings,int>*	m17;
@@ -146,14 +146,14 @@ public:
 	Task(func0_t <runStatus			>* t):									SuperTask(),fnum(4){m4 = t;};
 	Task(func1_t <int,				int>* t):								SuperTask(),fnum(5){m5 = t;};
 	Task(func1_t <int,				double>* t):							SuperTask(),fnum(6){m6 = t;};
-	Task(func1_t <string,			string>* t):							SuperTask(),fnum(7){m7 = t;};
+	Task(func1_t <std::string,		std::string>* t):						SuperTask(),fnum(7){m7 = t;};
 	Task(func1_t <detectorSettings,	int>* t):								SuperTask(),fnum(8){m8 = t;};
 	Task(func2_t <int,				int,int>* t):	 						SuperTask(),fnum(9){m9 = t;};
-	Task(func2_t <int,				string,int>* t):						SuperTask(),fnum(10){m10 = t;};
+	Task(func2_t <int,				std::string,int>* t):					SuperTask(),fnum(10){m10 = t;};
 	Task(func2_t <dacs_t,			dacIndex,int>* t):                  	SuperTask(),fnum(11){m11 = t;};
 	Task(func2_t <detectorSettings,	detectorSettings,int>* t):				SuperTask(),fnum(12){m12 = t;};
 	Task(func2_t <int64_t,			timerIndex,int64_t>* t):				SuperTask(),fnum(13){m13 = t;};
-	Task(func2_t <string,			networkParameter,string>* t):			SuperTask(),fnum(14){m14 = t;};
+	Task(func2_t <std::string,		networkParameter,std::string>* t):		SuperTask(),fnum(14){m14 = t;};
 	Task(func3_t <int,				int,int,int>* t): 						SuperTask(),fnum(15){m15 = t;};
 	Task(func4_t <int,				trimMode,int,int,int>* t):				SuperTask(),fnum(16){m16 = t;};
 	Task(func4_t <int,				int,int,detectorSettings,int>* t): 		SuperTask(),fnum(17){m17 = t;};

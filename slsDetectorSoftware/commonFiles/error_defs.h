@@ -15,7 +15,7 @@
 #include <string>
 #include <cstring>
 #include <iostream>
-// using namespace std;
+// 
 
 /** Error flags */
 /*Assumption: Only upto 63 detectors */

@@ -7,7 +7,7 @@
 
 
 #include <stdlib.h>
-//using namespace std;
+
 
 int dummyCallback(detectorData* d, int p,void*) {
 	cout << "got data "	<< p <<  endl;

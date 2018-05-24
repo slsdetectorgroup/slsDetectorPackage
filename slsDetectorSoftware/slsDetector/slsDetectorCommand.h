@@ -5,7 +5,7 @@
 
 #include "sls_detector_defs.h"
 #include "slsDetectorUtils.h"
-//using namespace std;
+
 
 
 /** @short This class handles the command line I/Os, help etc. of the text clients  */

@@ -22,7 +22,7 @@ class multiSlsDetectorCommand;
 #include <string>
 
 
-//using namespace std;
+
 
 
 

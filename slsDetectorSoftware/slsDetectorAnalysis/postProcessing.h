@@ -7,7 +7,6 @@
 #include "angularConversion.h"
 #include "badChannelCorrections.h"
 #include "fileIO.h"
-#include <string>
 
 #include <iostream>
 #include <fstream>
@@ -20,7 +19,6 @@
 #include <semaphore.h>
 
 class postProcessingFuncs;
-
 
 
 // using namespace std;

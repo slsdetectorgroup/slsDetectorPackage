@@ -54,7 +54,7 @@
 
 #include <string>
 
-using std::string;
+// using std::string;
 using std::ofstream;
 using std::ifstream;
 
@@ -637,19 +637,19 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
   */
   static std::string getDetectorType(detectorType t){\
     switch (t) {\
-    case MYTHEN:    return string("Mythen");	\
-    case PILATUS:    return string("Pilatus");	\
-    case EIGER:    return string("Eiger");	\
-    case GOTTHARD:    return string("Gotthard");	\
-    case AGIPD:    return string("Agipd");		\
-    case MOENCH:    return string("Moench");		\
-    case JUNGFRAU:    return string("Jungfrau");		\
-    case JUNGFRAUCTB:    return string("JungfrauCTB");		\
-    case PROPIX:    return string("Propix");		\
-    default:    return string("Unknown");		\
+    case MYTHEN:    return std::string("Mythen");	\
+    case PILATUS:    return std::string("Pilatus");	\
+    case EIGER:    return std::string("Eiger");	\
+    case GOTTHARD:    return std::string("Gotthard");	\
+    case AGIPD:    return std::string("Agipd");		\
+    case MOENCH:    return std::string("Moench");		\
+    case JUNGFRAU:    return std::string("Jungfrau");		\
+    case JUNGFRAUCTB:    return std::string("JungfrauCTB");		\
+    case PROPIX:    return std::string("Propix");		\
+    default:    return std::string("Unknown");		\
     }};
 
-  /** returns detector type index from detector type string
+  /** returns detector type index from detector type std::string
       \param type can be MYTHEN, PILATUS, EIGER, GOTTHARD, AGIPD, GENERIC
       \returns Mythen, Pilatus, Eiger, Gotthard, Agipd, Mönch, Unknown
   */
@@ -667,7 +667,7 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
 
 
 
-  /** returns synchronization type index from string
+  /** returns synchronization type index from std::string
       \param type can be none, gating, trigger, complementary
       \returns ONE, MASTER_GATES, MASTER_TRIGGERS, SLAVE_STARTS_WHEN_MASTER_STOPS
   */
@@ -685,11 +685,11 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
   */
   static std::string getSyncType(synchronizationMode s ){\
     switch(s) {					    \
-    case NO_SYNCHRONIZATION:    return string("none");	    \
-    case MASTER_GATES:    return string("gating");	\
-    case MASTER_TRIGGERS:    return string("trigger");			\
-    case SLAVE_STARTS_WHEN_MASTER_STOPS:    return string("complementary"); \
-    default:    return string("unknown");				\
+    case NO_SYNCHRONIZATION:    return std::string("none");	    \
+    case MASTER_GATES:    return std::string("gating");	\
+    case MASTER_TRIGGERS:    return std::string("trigger");			\
+    case SLAVE_STARTS_WHEN_MASTER_STOPS:    return std::string("complementary"); \
+    default:    return std::string("unknown");				\
     }};
 
 
@@ -700,29 +700,29 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
   */
   static std::string externalSignalType(externalSignalFlag f){\
     switch(f) {						 \
-    case SIGNAL_OFF:      return string( "off");			\
-    case GATE_IN_ACTIVE_HIGH:    return string( "gate_in_active_high");	\
-    case GATE_IN_ACTIVE_LOW:    return string( "gate_in_active_low");	\
-    case TRIGGER_IN_RISING_EDGE:    return string( "trigger_in_rising_edge"); \
-    case TRIGGER_IN_FALLING_EDGE:    return string( "trigger_in_falling_edge");	\
-    case RO_TRIGGER_IN_RISING_EDGE:    return string( "ro_trigger_in_rising_edge"); \
-    case RO_TRIGGER_IN_FALLING_EDGE:    return string( "ro_trigger_in_falling_edge"); \
-    case GATE_OUT_ACTIVE_HIGH:    return string( "gate_out_active_high"); \
-    case GATE_OUT_ACTIVE_LOW:    return string( "gate_out_active_low");	\
-    case TRIGGER_OUT_RISING_EDGE:    return string( "trigger_out_rising_edge");	\
-    case TRIGGER_OUT_FALLING_EDGE:    return string( "trigger_out_falling_edge"); \
-    case RO_TRIGGER_OUT_RISING_EDGE:      return string( "ro_trigger_out_rising_edge");	\
-    case RO_TRIGGER_OUT_FALLING_EDGE:    return string( "ro_trigger_out_falling_edge");	\
-    case MASTER_SLAVE_SYNCHRONIZATION: return string("sync");		\
-    case OUTPUT_LOW: return string("gnd");		\
-    case OUTPUT_HIGH: return string("vcc");		\
-    default:    return string( "unknown");				\
+    case SIGNAL_OFF:      return std::string( "off");			\
+    case GATE_IN_ACTIVE_HIGH:    return std::string( "gate_in_active_high");	\
+    case GATE_IN_ACTIVE_LOW:    return std::string( "gate_in_active_low");	\
+    case TRIGGER_IN_RISING_EDGE:    return std::string( "trigger_in_rising_edge"); \
+    case TRIGGER_IN_FALLING_EDGE:    return std::string( "trigger_in_falling_edge");	\
+    case RO_TRIGGER_IN_RISING_EDGE:    return std::string( "ro_trigger_in_rising_edge"); \
+    case RO_TRIGGER_IN_FALLING_EDGE:    return std::string( "ro_trigger_in_falling_edge"); \
+    case GATE_OUT_ACTIVE_HIGH:    return std::string( "gate_out_active_high"); \
+    case GATE_OUT_ACTIVE_LOW:    return std::string( "gate_out_active_low");	\
+    case TRIGGER_OUT_RISING_EDGE:    return std::string( "trigger_out_rising_edge");	\
+    case TRIGGER_OUT_FALLING_EDGE:    return std::string( "trigger_out_falling_edge"); \
+    case RO_TRIGGER_OUT_RISING_EDGE:      return std::string( "ro_trigger_out_rising_edge");	\
+    case RO_TRIGGER_OUT_FALLING_EDGE:    return std::string( "ro_trigger_out_falling_edge");	\
+    case MASTER_SLAVE_SYNCHRONIZATION: return std::string("sync");		\
+    case OUTPUT_LOW: return std::string("gnd");		\
+    case OUTPUT_HIGH: return std::string("vcc");		\
+    default:    return std::string( "unknown");				\
     }    };
   
 
 
 
-  /** returns external signal type index from string
+  /** returns external signal type index from std::string
       \param sval  off, gate_in_active_high, gate_in_active_low, trigger_in_rising_edge, trigger_in_falling_edge, ro_trigger_in_rising_edge, ro_trigger_in_falling_edge, gate_out_active_high, gate_out_active_low, trigger_out_rising_edge, trigger_out_falling_edge, ro_trigger_out_rising_edge, ro_trigger_out_falling_edge, gnd, vcc, sync, unknown
       \returns can be SIGNAL_OFF, GATE_IN_ACTIVE_HIGH, GATE_IN_ACTIVE_LOW, TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE, RO_TRIGGER_IN_RISING_EDGE, RO_TRIGGER_IN_FALLING_EDGE, GATE_OUT_ACTIVE_HIGH, GATE_OUT_ACTIVE_LOW, TRIGGER_OUT_RISING_EDGE, TRIGGER_OUT_FALLING_EDGE, RO_TRIGGER_OUT_RISING_EDGE, RO_TRIGGER_OUT_FALLING_EDGE, OUTPUT_LOW, OUTPUT_HIGH, MASTER_SLAVE_SYNCHRONIZATION,  GET_EXTERNAL_SIGNAL_FLAG (if unknown)
   */
@@ -754,21 +754,21 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
   */
   static std::string getDetectorSettings(detectorSettings s){\
     switch(s) {											\
-    case STANDARD:      return string("standard");		\
-    case FAST:      	return string("fast");			\
-    case HIGHGAIN:      return string("highgain");		\
-    case DYNAMICGAIN:   return string("dynamicgain");	\
-    case LOWGAIN:    	return string("lowgain");		\
-    case MEDIUMGAIN:    return string("mediumgain");	\
-    case VERYHIGHGAIN:  return string("veryhighgain");	\
-    case LOWNOISE:      return  string("lownoise");		\
-    case DYNAMICHG0:    return  string("dynamichg0");	\
-    case FIXGAIN1:      return  string("fixgain1");		\
-    case FIXGAIN2:      return  string("fixgain2");		\
-    case FORCESWITCHG1: return  string("forceswitchg1");\
-    case FORCESWITCHG2: return  string("forceswitchg2");\
-    case VERYLOWGAIN: return  string("verylowgain");\
-    default:    		return string("undefined");		\
+    case STANDARD:      return std::string("standard");		\
+    case FAST:      	return std::string("fast");			\
+    case HIGHGAIN:      return std::string("highgain");		\
+    case DYNAMICGAIN:   return std::string("dynamicgain");	\
+    case LOWGAIN:    	return std::string("lowgain");		\
+    case MEDIUMGAIN:    return std::string("mediumgain");	\
+    case VERYHIGHGAIN:  return std::string("veryhighgain");	\
+    case LOWNOISE:      return  std::string("lownoise");		\
+    case DYNAMICHG0:    return  std::string("dynamichg0");	\
+    case FIXGAIN1:      return  std::string("fixgain1");		\
+    case FIXGAIN2:      return  std::string("fixgain2");		\
+    case FORCESWITCHG1: return  std::string("forceswitchg1");\
+    case FORCESWITCHG2: return  std::string("forceswitchg2");\
+    case VERYLOWGAIN: return  std::string("verylowgain");\
+    default:    		return std::string("undefined");		\
     }};
 
   /** returns detector settings std::string from index
@@ -805,19 +805,19 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
 
   static std::string externalCommunicationType(externalCommunicationMode f){	\
     switch(f) {						 \
-    case AUTO_TIMING:      return string( "auto");			\
-    case TRIGGER_EXPOSURE: return string("trigger");			\
-    case TRIGGER_READOUT: return string("ro_trigger");			\
-    case GATE_FIX_NUMBER: return string("gating");			\
-    case GATE_WITH_START_TRIGGER: return string("triggered_gating");	\
-    case BURST_TRIGGER: return string("burst_trigger");	\
-    default:    return string( "unknown");				\
+    case AUTO_TIMING:      return std::string( "auto");			\
+    case TRIGGER_EXPOSURE: return std::string("trigger");			\
+    case TRIGGER_READOUT: return std::string("ro_trigger");			\
+    case GATE_FIX_NUMBER: return std::string("gating");			\
+    case GATE_WITH_START_TRIGGER: return std::string("triggered_gating");	\
+    case BURST_TRIGGER: return std::string("burst_trigger");	\
+    default:    return std::string( "unknown");				\
     }    };
   
 
 
   /**
-     returns external communication mode index from string
+     returns external communication mode index from std::string
      \param sval can be auto, trigger, ro_trigger, gating, triggered_gating
      \returns AUTO_TIMING, TRIGGER_EXPOSURE, TRIGGER_READOUT, GATE_FIX_NUMBER, GATE_WITH_START_TRIGGER, BURST_TRIGGER, GET_EXTERNAL_COMMUNICATION_MODE
   */
@@ -838,12 +838,12 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
   */
   static std::string runStatusType(runStatus s){\
     switch (s) {				\
-    case ERROR:       return string("error");		\
-    case  WAITING:      return  string("waiting");	\
-    case RUNNING:      return string("running");\
-    case TRANSMITTING:      return string("data");	\
-    case  RUN_FINISHED:      return string("finished");	\
-    default:       return string("idle");		\
+    case ERROR:       return std::string("error");		\
+    case  WAITING:      return  std::string("waiting");	\
+    case RUNNING:      return std::string("running");\
+    case TRANSMITTING:      return std::string("data");	\
+    case  RUN_FINISHED:      return std::string("finished");	\
+    default:       return std::string("idle");		\
     }};
 
   /** returns std::string from file format index
@@ -852,10 +852,10 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
   */
   static std::string fileFormats(fileFormat f){\
     switch (f) {				\
-    case BINARY:       return string("binary");		\
-    case ASCII:       return string("ascii");		\
-    case HDF5:      return  string("hdf5");	\
-    default:       return string("unknown");		\
+    case BINARY:       return std::string("binary");		\
+    case ASCII:       return std::string("ascii");		\
+    case HDF5:      return  std::string("hdf5");	\
+    default:       return std::string("unknown");		\
     }};
 
   /** returns std::string from timer index
@@ -864,29 +864,29 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
   */
   static std::string getTimerType(timerIndex t){										\
     switch (t) {																\
-    case FRAME_NUMBER: 				return string("frame_number"); 				\
-    case ACQUISITION_TIME: 			return string("acquisition_time"); 			\
-    case FRAME_PERIOD: 				return string("frame_period"); 				\
-    case DELAY_AFTER_TRIGGER: 		return string("delay_after_trigger"); 		\
-    case GATES_NUMBER: 				return string("gates_number"); 				\
-    case PROBES_NUMBER: 			return string("probes_number"); 			\
-    case CYCLES_NUMBER: 			return string("cycles_number"); 			\
-    case ACTUAL_TIME: 				return string("actual_time"); 				\
-    case MEASUREMENT_TIME: 			return string("measurement_time"); 			\
-    case PROGRESS: 					return string("progress"); 					\
-    case MEASUREMENTS_NUMBER: 		return string("measurements_number"); 		\
-    case FRAMES_FROM_START: 		return string("frames_from_start"); 		\
-    case FRAMES_FROM_START_PG: 		return string("frames_from_start_pg"); 		\
-    case SAMPLES_JCTB: 				return string("samples_jctb"); 				\
-    case SUBFRAME_ACQUISITION_TIME:	return string("subframe_acquisition_time");	\
-    case SUBFRAME_PERIOD:			return string("subframe_period");			\
-    case STORAGE_CELL_NUMBER:       return string("storage_cell_number");       \
-    default:       					return string("unknown");					\
+    case FRAME_NUMBER: 				return std::string("frame_number"); 				\
+    case ACQUISITION_TIME: 			return std::string("acquisition_time"); 			\
+    case FRAME_PERIOD: 				return std::string("frame_period"); 				\
+    case DELAY_AFTER_TRIGGER: 		return std::string("delay_after_trigger"); 		\
+    case GATES_NUMBER: 				return std::string("gates_number"); 				\
+    case PROBES_NUMBER: 			return std::string("probes_number"); 			\
+    case CYCLES_NUMBER: 			return std::string("cycles_number"); 			\
+    case ACTUAL_TIME: 				return std::string("actual_time"); 				\
+    case MEASUREMENT_TIME: 			return std::string("measurement_time"); 			\
+    case PROGRESS: 					return std::string("progress"); 					\
+    case MEASUREMENTS_NUMBER: 		return std::string("measurements_number"); 		\
+    case FRAMES_FROM_START: 		return std::string("frames_from_start"); 		\
+    case FRAMES_FROM_START_PG: 		return std::string("frames_from_start_pg"); 		\
+    case SAMPLES_JCTB: 				return std::string("samples_jctb"); 				\
+    case SUBFRAME_ACQUISITION_TIME:	return std::string("subframe_acquisition_time");	\
+    case SUBFRAME_PERIOD:			return std::string("subframe_period");			\
+    case STORAGE_CELL_NUMBER:       return std::string("storage_cell_number");       \
+    default:       					return std::string("unknown");					\
     }};
 
 
   /**
-     @short returns adc index from string
+     @short returns adc index from std::string
      \param s can be temp_fpga, temp_fpgaext, temp_10ge, temp_dcdc, temp_sodl, temp_sodr, temp_fpgafl, temp_fpgafr
      \returns  TEMPERATURE_FPGA, TEMPERATURE_FPGAEXT, TEMPERATURE_10GE, TEMPERATURE_DCDC, TEMPERATURE_SODL,
      TEMPERATURE_SODR, TEMPERATURE_FPGA2, TEMPERATURE_FPGA3, -1 when unknown mode
@@ -905,7 +905,7 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
 
 
   /**
-     @short returns dac index from string
+     @short returns dac index from std::string
      \param s can be vcmp_ll, vcmp_lr, vcmp_rl, vcmp_rr, vthreshold, vrf, vrs, vtr, vcall, vcp
      \returns E_Vcmp_ll, E_Vcmp_lr, E_Vcmp_rl, E_Vcmp_rr, THRESHOLD, E_Vrf, E_Vrs, E_Vtr, E_cal, E_Vcp , -1 when unknown mode
   */

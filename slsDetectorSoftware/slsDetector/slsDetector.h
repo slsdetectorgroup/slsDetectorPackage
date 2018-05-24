@@ -290,6 +290,12 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     /** frames per file in receiver */
     int receiver_framesPerFile;
 
+    /** detector software API version */
+    int detector_software_api_version;
+
+    /** receiver API version */
+    int receiver_api_version;
+
 
   } sharedSlsDetector;
 

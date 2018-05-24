@@ -9,7 +9,9 @@
 #include  <sys/ipc.h>
 #include  <sys/shm.h>
 #include <time.h> //clock()
+#include <string>
 using namespace std;
+
 slsDetectorUtils::slsDetectorUtils()  {
 
 

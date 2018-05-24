@@ -14,7 +14,7 @@
 #include <math.h>
 #include <semaphore.h>
 
-using namespace std;
+// 
 /**
    @short class handling the data file I/O flags
 */
@@ -50,14 +50,14 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
   using fileIOStatic::writeDataFile;
   using fileIOStatic::createFileName;
 
-  int getFileIndexFromFileName(string fname){
+  int getFileIndexFromFileName(std::string fname){
     int ret; 
     pthread_mutex_lock(&mf);
     ret=fileIOStatic::getFileIndexFromFileName(fname);
     pthread_mutex_unlock(&mf); 
     return ret;
   };
-  int getIndicesFromFileName(string fname, int &index){
+  int getIndicesFromFileName(std::string fname, int &index){
     int ret; 
     pthread_mutex_lock(&mf);
     ret=fileIOStatic::getIndicesFromFileName(fname,index);
@@ -67,7 +67,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
 
 
 
-  int getVariablesFromFileName(string fname, int &index, int &p_index, double &sv0, double &sv1){
+  int getVariablesFromFileName(std::string fname, int &index, int &p_index, double &sv0, double &sv1){
     
     int ret; 
     pthread_mutex_lock(&mf);
@@ -76,7 +76,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
     return ret;
   };
 
-  int getVariablesFromFileName(string fname, int &index, int &f_index, int &p_index, double &sv0, double &sv1, int &detindex){
+  int getVariablesFromFileName(std::string fname, int &index, int &f_index, int &p_index, double &sv0, double &sv1, int &detindex){
 
     
     int ret; 
@@ -91,11 +91,11 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
      \param s file path
      \return actual file path
   */
-  virtual string setFilePath(string s) {
+  virtual std::string setFilePath(std::string s) {
     pthread_mutex_lock(&mf);
     sprintf(filePath, s.c_str()); 
     pthread_mutex_unlock(&mf); 
-    return string(filePath);
+    return std::string(filePath);
   };
 
   /**
@@ -103,11 +103,11 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
      \param s file name to be set
      \returns actual file name
   */
-  virtual  string setFileName(string s) {
+  virtual  std::string setFileName(std::string s) {
     pthread_mutex_lock(&mf);
     sprintf(fileName, s.c_str()); 
     pthread_mutex_unlock(&mf); 
-    return string(fileName);};
+    return std::string(fileName);};
 
   /**
      sets the default output file index
@@ -175,11 +175,11 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
      \returns the  output files path
      
   */
-  virtual string getFilePath() {return string(filePath);};
+  virtual std::string getFilePath() {return std::string(filePath);};
   /**
     \returns the  output files root name
   */
-  virtual string getFileName() {return string(fileName);};
+  virtual std::string getFileName() {return std::string(fileName);};
 
   /**
      \returns the output file index
@@ -212,9 +212,9 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
   virtual fileFormat getFileFormat() {return *fileFormatType;};
 
 
-  string createFileName();
+  std::string createFileName();
 
-  string createReceiverFilePrefix();
+  std::string createReceiverFilePrefix();
 
 
   /**
@@ -227,7 +227,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
   \param nch number of channels to be written to file. if -1 defaults to the number of installed channels of the detector
   \returns OK or FAIL if it could not write the file or data=NULL
   */
-   virtual int writeDataFile(string fname, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int nch=-1);
+   virtual int writeDataFile(std::string fname, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int nch=-1);
   
 
   /**
@@ -244,7 +244,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
   \returns OK or FAIL if it could not write the file or data=NULL
   
   */
-   virtual int writeDataFile(ofstream &outfile, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int nch=-1, int offset=0);
+   virtual int writeDataFile(std::ofstream &outfile, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int nch=-1, int offset=0);
   
 
    /**
@@ -253,7 +253,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
       \param data array of data values
       \returns OK or FAIL if it could not write the file or data=NULL  
   */
-  virtual int writeDataFile(string fname, int *data);
+  virtual int writeDataFile(std::string fname, int *data);
 
   
   virtual int writeDataFile(void *data, int iframe=-1);
@@ -266,7 +266,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
       \param offset start channel number
       \returns OK or FAIL if it could not write the file or data=NULL  
   */
-  virtual int writeDataFile(ofstream &outfile, int *data, int offset=0);
+  virtual int writeDataFile(std::ofstream &outfile, int *data, int offset=0);
   
 
 
@@ -276,7 +276,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
        \param data array of data values
        \returns OK or FAIL if it could not write the file or data=NULL
   */
-  virtual int writeDataFile(string fname, short int *data);    
+  virtual int writeDataFile(std::string fname, short int *data);    
   
 
 
@@ -291,7 +291,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
       \param offset start channel number
       \returns OK or FAIL if it could not write the file or data=NULL  
   */
-  virtual int writeDataFile(ofstream &outfile, short int *data, int offset=0);
+  virtual int writeDataFile(std::ofstream &outfile, short int *data, int offset=0);
 
 
   /**
@@ -304,7 +304,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
        \param dataformat format of the data: can be 'i' integer or 'f' double (default)
        \returns OK or FAIL if it could not read the file or data=NULL
   */
-  virtual int readDataFile(string fname, double *data, double *err=NULL, double *ang=NULL, char dataformat='f');
+  virtual int readDataFile(std::string fname, double *data, double *err=NULL, double *ang=NULL, char dataformat='f');
 
   /**
        reads a data file
@@ -316,7 +316,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
        \param offset start channel number to be expected
        \returns OK or FAIL if it could not read the file or data=NULL
   */
-  int readDataFile(ifstream& infile, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int offset=0);
+  int readDataFile(std::ifstream& infile, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int offset=0);
 
   /**
        reads a raw data file
@@ -324,7 +324,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
        \param data array of data values
        \returns OK or FAIL if it could not read the file or data=NULL
 yes  */
-  virtual int readDataFile(string fname, int *data);  
+  virtual int readDataFile(std::string fname, int *data);  
 
 /**
        reads a raw data file
@@ -333,7 +333,7 @@ yes  */
        \param offset first channel number to be expected
        \returns OK or FAIL if it could not read the file or data=NULL
   */
-  int readDataFile(ifstream &infile, int *data, int offset=0);
+  int readDataFile(std::ifstream &infile, int *data, int offset=0);
 
   /**
 
@@ -342,7 +342,7 @@ yes  */
        \param data array of data values
        \returns OK or FAIL if it could not read the file or data=NULL
   */
-  virtual int readDataFile(string fname, short int *data); 
+  virtual int readDataFile(std::string fname, short int *data); 
   /**
        reads a short int raw data file
        \param infile input file stream
@@ -350,12 +350,12 @@ yes  */
        \param offset first channel number to be expected
        \returns OK or FAIL if it could not read the file or data=NULL
   */
-  int readDataFile(ifstream &infile, short int *data, int offset=0);
+  int readDataFile(std::ifstream &infile, short int *data, int offset=0);
 
   virtual int getDataBytes   (   )=0;
   friend class slsDetector;
 
-  string getCurrentFileName(){return currentFileName;};
+  std::string getCurrentFileName(){return currentFileName;};
  protected:
 
 
@@ -368,12 +368,12 @@ yes  */
   void incrementDetectorIndex() { (detIndex)++; };
 
 
-  string getCurrentReceiverFilePrefix(){return currentReceiverFilePrefix;};
+  std::string getCurrentReceiverFilePrefix(){return currentReceiverFilePrefix;};
 
 
-  string currentFileName;
+  std::string currentFileName;
 
-  string currentReceiverFilePrefix;
+  std::string currentReceiverFilePrefix;
 
     
   /** output directory */
@@ -397,7 +397,7 @@ yes  */
 
 
   FILE *filefd;
-  ofstream fstream;
+  std::ofstream fstream;
 
   int nframes;
   // int fformat;

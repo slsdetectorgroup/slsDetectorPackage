@@ -23,7 +23,7 @@ class ZmqSocket;
 
 
 
-//using namespace std;
+
 
 
 
@@ -258,7 +258,7 @@ class multiSlsDetector  : public slsDetectorUtils {
     
   */
   multiSlsDetector(int id=0);
-  //slsDetector(string  const fname);
+  //slsDetector(std::string  const fname);
   /** destructor */ 
   virtual ~multiSlsDetector();
   
@@ -311,20 +311,20 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
 
-  string setHostname(const char*, int pos=-1);
+  std::string setHostname(const char*, int pos=-1);
 
 
-  string getHostname(int pos=-1);
+  std::string getHostname(int pos=-1);
   using slsDetectorBase::getDetectorType;
 
-  string getDetectorType(){return sgetDetectorsType();};
+  std::string getDetectorType(){return sgetDetectorsType();};
 
   detectorType getDetectorsType(int pos=-1);
   detectorType setDetectorsType(detectorType type=GET_DETECTOR_TYPE, int pos=-1){addSlsDetector(type, pos); return getDetectorsType(pos);}; 
 
-  string sgetDetectorsType(int pos=-1);
-  string ssetDetectorsType(detectorType type=GET_DETECTOR_TYPE, int pos=-1){return getDetectorType(setDetectorsType(type, pos));}; //
-  string ssetDetectorsType(string s, int pos=-1);//{return getDetectorType(setDetectorsType(getDetectorType(s),pos));}; // should decode detector type
+  std::string sgetDetectorsType(int pos=-1);
+  std::string ssetDetectorsType(detectorType type=GET_DETECTOR_TYPE, int pos=-1){return getDetectorType(setDetectorsType(type, pos));}; //
+  std::string ssetDetectorsType(std::string s, int pos=-1);//{return getDetectorType(setDetectorsType(getDetectorType(s),pos));}; // should decode detector type
 
 
   /** adds a detector by id in position pos
@@ -440,7 +440,7 @@ class multiSlsDetector  : public slsDetectorUtils {
   /** checks if each of the detectors are online
       \returns online/offline status and -1 if any of the detector's online status is different from the other
   */
-  string checkOnline();
+  std::string checkOnline();
 
   /**  @short activates the detector (detector specific)
        \param enable can be: -1 returns wether the detector is in active (1) or inactive (0) state
@@ -465,13 +465,13 @@ class multiSlsDetector  : public slsDetectorUtils {
      /sa mythenDetector::readConfigurationFile
   */
 
-  int readConfigurationFile(string const fname);  
+  int readConfigurationFile(std::string const fname);  
   /**  
        Purely virtual function
        Should be implemented in the specific detector class
        /sa mythenDetector::writeConfigurationFile
   */
-  int writeConfigurationFile(string const fname);
+  int writeConfigurationFile(std::string const fname);
 
 
  
@@ -532,7 +532,7 @@ class multiSlsDetector  : public slsDetectorUtils {
   int64_t getId(idMode mode, int imod=0);
   int digitalTest(digitalTestMode mode, int imod=0);
   int executeTrimming(trimMode mode, int par1, int par2, int imod=-1);
-  string getSettingsFile();
+  std::string getSettingsFile();
 
 
   int decodeNMod(int i, int &idet, int &imod);
@@ -541,7 +541,7 @@ class multiSlsDetector  : public slsDetectorUtils {
       \param fname file name
       \returns OK or FAIL
   */
-  int programFPGA(string fname);
+  int programFPGA(std::string fname);
 
   /** resets FPGA
       \returns OK or FAIL
@@ -561,10 +561,10 @@ class multiSlsDetector  : public slsDetectorUtils {
   int setAutoComparatorDisableMode(int ival= -1);
 
   /** loads the modules settings/trimbits reading from a file -  file name extension is automatically generated! */
-  int loadSettingsFile(string fname, int nmod=-1);
+  int loadSettingsFile(std::string fname, int nmod=-1);
 
   /** gets the modules settings/trimbits and writes them to file -  file name extension is automatically generated! */
-  int saveSettingsFile(string fname, int nmod=-1);
+  int saveSettingsFile(std::string fname, int nmod=-1);
 
 
   /** sets all the trimbits to a particular value
@@ -576,10 +576,10 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
   /** loads the modules calibration data reading from a file -  file name extension is automatically generated! */
-  int loadCalibrationFile(string fname, int nmod=-1);
+  int loadCalibrationFile(std::string fname, int nmod=-1);
 
   /** gets the modules calibration data and writes them to file -  file name extension is automatically generated! */
-  int saveCalibrationFile(string fname, int nmod=-1);
+  int saveCalibrationFile(std::string fname, int nmod=-1);
 
 
 
@@ -796,7 +796,7 @@ class multiSlsDetector  : public slsDetectorUtils {
       \param fname name of the flat field file (or "" if disable)
       \returns 0 if disable (or file could not be read), >0 otherwise
   */
-  int setFlatFieldCorrection(string fname=""); 
+  int setFlatFieldCorrection(std::string fname=""); 
 
   /** 
       set flat field corrections
@@ -853,7 +853,7 @@ class multiSlsDetector  : public slsDetectorUtils {
       \param fname file with bad channel list ("" disable)
       \returns 0 if bad channel disabled, >0 otherwise
   */
-  int setBadChannelCorrection(string fname="");
+  int setBadChannelCorrection(std::string fname="");
   
 
   int setBadChannelCorrection(int nch, int *chs, int ff);
@@ -881,9 +881,9 @@ class multiSlsDetector  : public slsDetectorUtils {
   
   
 
-  int readAngularConversionFile(string fname);
+  int readAngularConversionFile(std::string fname);
 
-  int writeAngularConversion(string fname);
+  int writeAngularConversion(std::string fname);
 
   //  double* convertAngles(double pos);
 
@@ -1049,7 +1049,7 @@ class multiSlsDetector  : public slsDetectorUtils {
   /** returns the detector trimbit/settings directory  \sa sharedSlsDetector */
   char* getSettingsDir();
   /** sets the detector trimbit/settings directory  \sa sharedSlsDetector */
-  char* setSettingsDir(string s);
+  char* setSettingsDir(std::string s);
   /**
      returns the location of the calibration files
      \sa  sharedSlsDetector
@@ -1059,10 +1059,10 @@ class multiSlsDetector  : public slsDetectorUtils {
      sets the location of the calibration files
      \sa  sharedSlsDetector
   */
-  char* setCalDir(string s); 
+  char* setCalDir(std::string s); 
 
 
-  string getNetworkParameter(networkParameter);
+  std::string getNetworkParameter(networkParameter);
 
   /**
      sets the network parameters
@@ -1072,11 +1072,11 @@ class multiSlsDetector  : public slsDetectorUtils {
      \returns parameter
 
   */
-  string setNetworkParameter(networkParameter, std::string);
+  std::string setNetworkParameter(networkParameter, std::string);
   int setPort(portType, int);
   int lockServer(int);
     
-  string getLastClientIP();
+  std::string getLastClientIP();
 
   /**
      configures mac for gotthard readout
@@ -1154,7 +1154,7 @@ class multiSlsDetector  : public slsDetectorUtils {
      \fname file name to load data from
      \returns OK or FAIL
   */
-  int loadImageToDetector(imageType index,string const fname);
+  int loadImageToDetector(imageType index,std::string const fname);
 
   /**
      sets the value of s angular conversion parameter
@@ -1179,7 +1179,7 @@ class multiSlsDetector  : public slsDetectorUtils {
   \sa mythenDetector::writeDataFile
  
   */
-  int writeDataFile(string fname, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int nch=-1);
+  int writeDataFile(std::string fname, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int nch=-1);
   
 
   /**
@@ -1190,7 +1190,7 @@ class multiSlsDetector  : public slsDetectorUtils {
   \returns OK or FAIL if it could not write the file or data=NULL  
   \sa mythenDetector::writeDataFile
   */
-  int writeDataFile(string fname, int *data);
+  int writeDataFile(std::string fname, int *data);
   
   /**
    
@@ -1206,7 +1206,7 @@ class multiSlsDetector  : public slsDetectorUtils {
        
   \sa mythenDetector::readDataFile
   */
-  int readDataFile(string fname, double *data, double *err=NULL, double *ang=NULL, char dataformat='f');
+  int readDataFile(std::string fname, double *data, double *err=NULL, double *ang=NULL, char dataformat='f');
 
 
   /**
@@ -1217,7 +1217,7 @@ class multiSlsDetector  : public slsDetectorUtils {
   \returns OK or FAIL if it could not read the file or data=NULL
   \sa mythenDetector::readDataFile
   */
-  int readDataFile(string fname, int *data);
+  int readDataFile(std::string fname, int *data);
 
 
   /**
@@ -1226,7 +1226,7 @@ class multiSlsDetector  : public slsDetectorUtils {
      \param fname file name to load data from
      \returns OK or FAIL
   */
-  int writeCounterBlockFile(string const fname,int startACQ=0);
+  int writeCounterBlockFile(std::string const fname,int startACQ=0);
  
 
   /**
@@ -1262,7 +1262,7 @@ class multiSlsDetector  : public slsDetectorUtils {
   /**
      Checks if the receiver is really online
   */
-  string checkReceiverOnline();
+  std::string checkReceiverOnline();
 
 
   /**
@@ -1270,14 +1270,14 @@ class multiSlsDetector  : public slsDetectorUtils {
      @param s file directory
      \returns file dir
   */
-  string setFilePath(string s="");
+  std::string setFilePath(std::string s="");
 
   /**
      Sets up the file name
      @param s file name
      \returns file name
   */
-  string setFileName(string s="");
+  std::string setFileName(std::string s="");
 
   /**
      Sets the max frames per file in receiver
@@ -1303,12 +1303,12 @@ class multiSlsDetector  : public slsDetectorUtils {
   /**
      \returns file dir
   */
-  string getFilePath(){return setFilePath();};
+  std::string getFilePath(){return setFilePath();};
 
   /**
      \returns file name
   */
-  string getFileName(){return setFileName();};
+  std::string getFileName(){return setFileName();};
 
   /**
      \returns file name
@@ -1385,7 +1385,7 @@ class multiSlsDetector  : public slsDetectorUtils {
   /**
      Returns the IP of the last client connecting to the receiver
   */
-  string getReceiverLastClientIP();
+  std::string getReceiverLastClientIP();
 
   /**
       Turns off the receiver server!
@@ -1411,9 +1411,9 @@ class multiSlsDetector  : public slsDetectorUtils {
   /**checks error mask and returns error message if it exists
    * @param myDet is the multidetector object
    * @param critical is 1 if any of the messages is critical
-	 /returns error message else an empty string
+	 /returns error message else an empty std::string
    */
-  string getErrorMessage(int &critical);
+  std::string getErrorMessage(int &critical);
 
   /** Clears error mask of both multi and sls
      /returns error mask
@@ -1491,7 +1491,7 @@ class multiSlsDetector  : public slsDetectorUtils {
       @param fname pattern file to open
       @returns OK/FAIL
   */
-  int setCTBPattern(string fname);
+  int setCTBPattern(std::string fname);
 
   
   /** Writes a pattern word to the CTB

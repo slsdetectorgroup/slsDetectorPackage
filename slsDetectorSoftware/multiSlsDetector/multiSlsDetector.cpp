@@ -623,31 +623,17 @@ string multiSlsDetector::ssetDetectorsType(string name, int pos) {
 }
 
 string multiSlsDetector::getHostname(int pos) {
-  string s=string("");
-#ifdef VERBOSE
-  cout << "returning hostname" << pos << endl;
-#endif
-  if (pos>=0) {
-    if (detectors[pos])
-      return detectors[pos]->getHostname();
-  } else {
-    for (int ip=0; ip<thisMultiDetector->numberOfDetectors; ++ip) {
-#ifdef VERBOSE
-      cout << "detector " << ip << endl;
-#endif
-      if (detectors[ip]) {
-	s+=detectors[ip]->getHostname();
-	s+=string("+");
-      }
-#ifdef VERBOSE
-      cout << s <<endl;
-      cout << "hostname " << s << endl;
-#endif
-    }
-  }
-  return s;
-
-
+	string hostnames;
+	if (pos>=0){
+		if (detectors[pos])
+			return detectors[pos]->getHostname();
+	} else {
+		for (int ip=0; ip<thisMultiDetector->numberOfDetectors; ++ip) {
+			if (detectors[ip])
+				hostnames += detectors[ip]->getHostname() + "+";
+			}
+	}
+	return hostnames;
 }
 
 
@@ -667,34 +653,18 @@ slsDetectorDefs::detectorType multiSlsDetector::getDetectorsType(int pos) {
 
 
 string multiSlsDetector::sgetDetectorsType(int pos) {
-
-  string s=string("");
-#ifdef VERBOSE
-  cout << "returning type" << pos << endl;
-#endif
+  string s;
   if (pos>=0) {
     if (detectors[pos])
       return detectors[pos]->sgetDetectorsType();
   } else {
     for (int ip=0; ip<thisMultiDetector->numberOfDetectors; ++ip) {
-#ifdef VERBOSE
-      cout << "detector " << ip << endl;
-#endif
-      if (detectors[ip]) {
-	s+=detectors[ip]->sgetDetectorsType();
-	s+=string("+");
-      }
-#ifdef VERBOSE
-      cout << "type " << s << endl;
-#endif
+      if (detectors[ip])
+				s+=detectors[ip]->sgetDetectorsType() + "+";
     }
   }
   return s;
-
 }
-
-
-
 
 int multiSlsDetector::getDetectorId(int pos) {
 
@@ -1144,26 +1114,21 @@ int multiSlsDetector::setOnline(int off) {
 
 
 string multiSlsDetector::checkOnline() {
-  string retval1 = "",retval;
+  string offlineDetectors = "";
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet) {
     if (detectors[idet]) {
-      retval=detectors[idet]->checkOnline();
-      if(!retval.empty()){
-        retval1.append(retval);
-    	retval1.append("+");
-      }
+      string tmp = detectors[idet]->checkOnline();
+    	if(!tmp.empty())
+				offlineDetectors += tmp + "+";
     }
-  }
-  return retval1;
-};
-
-
+	}
+  return offlineDetectors;
+}
 
 int multiSlsDetector::activate(int const enable){
-	int i;
 	int ret1=-100, ret;
 
-	for (i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
+	for (int i=0; i<thisMultiDetector->numberOfDetectors; ++i) {
 		if (detectors[i]) {
 			ret=detectors[i]->activate(enable);
 			if(detectors[i]->getErrorMask())

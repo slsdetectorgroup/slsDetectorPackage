@@ -31,7 +31,7 @@ extern "C" {
 #include <math.h>
 #include <semaphore.h>
 #include <cstdlib>
-using namespace std;
+
 
 
 //#include "slsDetectorActions_Standalone.h"
@@ -110,7 +110,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
    */
   int setReceiverDataStreamingOutPort(int i) {								\
 	  if (i >= 0) {															\
-		  ostringstream ss; ss << i; string s = ss.str();					\
+		  std::ostringstream ss; ss << i; std::string s = ss.str();					\
 		  int prev_streaming = enableDataStreamingFromReceiver();			\
 		  setNetworkParameter(RECEIVER_STREAMING_PORT, s);					\
 		  if (prev_streaming) {												\
@@ -126,7 +126,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
    */
   int setClientDataStreamingInPort(int i){										\
 		  if (i >= 0) {															\
-			  ostringstream ss; ss << i; string s = ss.str();					\
+			  std::ostringstream ss; ss << i; std::string s = ss.str();					\
 			  int prev_streaming = enableDataStreamingToClient();				\
 			  setNetworkParameter(CLIENT_STREAMING_PORT, s);					\
 			  if (prev_streaming) {												\
@@ -140,7 +140,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
    * @param i sets, -1 gets
    * @returns receiver streaming out ZMQ port
    */
-   string setReceiverDataStreamingOutIP(string ip) {							\
+   std::string setReceiverDataStreamingOutIP(std::string ip) {							\
 		if (ip.length()) {														\
 			int prev_streaming = enableDataStreamingFromReceiver();				\
 			setNetworkParameter(RECEIVER_STREAMING_SRC_IP, ip);					\
@@ -155,7 +155,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
    * @param i sets, -1 gets
    * @returns client streaming in ZMQ port
    */
-   string setClientDataStreamingInIP(string ip){								\
+   std::string setClientDataStreamingInIP(std::string ip){								\
 		if (ip.length()) {														\
 			int prev_streaming = enableDataStreamingToClient();					\
 			setNetworkParameter(CLIENT_STREAMING_SRC_IP, ip);					\
@@ -199,7 +199,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
       \param pos position in the multi detector structure (is -1 returns concatenated hostnames divided by a +)
       \returns hostname
   */
-  virtual string getHostname(int pos=-1)=0;
+  virtual std::string getHostname(int pos=-1)=0;
 
   
   /** sets the detector hostname   
@@ -207,22 +207,22 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
       \param pos position in the multi detector structure (is -1 expects concatenated hostnames divided by a +)
       \returns  hostname  
   */
-  virtual string setHostname(const char* name, int pos=-1)=0;
+  virtual std::string setHostname(const char* name, int pos=-1)=0;
 
 
   /** returns the detector type
       \param pos position in the multi detector structure (is -1 returns type of detector with id -1)
       \returns type
   */
-  virtual string sgetDetectorsType(int pos=-1)=0;
+  virtual std::string sgetDetectorsType(int pos=-1)=0;
 
   /** returns the detector type
       \param pos position in the multi detector structure (is -1 returns type of detector with id -1)
       \returns type
   */
   virtual detectorType setDetectorsType(detectorType t=GET_DETECTOR_TYPE, int pos=-1)=0;
-  virtual string ssetDetectorsType(detectorType t=GET_DETECTOR_TYPE, int pos=-1)=0;
-  virtual string ssetDetectorsType(string s, int pos=-1)=0;
+  virtual std::string ssetDetectorsType(detectorType t=GET_DETECTOR_TYPE, int pos=-1)=0;
+  virtual std::string ssetDetectorsType(std::string s, int pos=-1)=0;
 
 
   
@@ -247,7 +247,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
      \returns parameter
 
   */
-  virtual string getNetworkParameter(networkParameter i)=0;
+  virtual std::string getNetworkParameter(networkParameter i)=0;
 
   /**
      sets the network parameters
@@ -257,14 +257,14 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
      \returns parameter
 
   */
-  virtual string setNetworkParameter(networkParameter i, string s)=0;
+  virtual std::string setNetworkParameter(networkParameter i, std::string s)=0;
 
   int setFlowControl10G(int i = -1) {
-      string sret="";
+      std::string sret="";
       if (i != -1) {
-          ostringstream o;
+          std::ostringstream o;
           o << ((i >= 1) ? 1 : 0);
-          string sval = o.str();
+          std::string sval = o.str();
           sret = setNetworkParameter(FLOW_CONTROL_10G, sval);
       } else
           sret = getNetworkParameter(FLOW_CONTROL_10G);
@@ -284,7 +284,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
      checks if the detector(s) are online/offline
      \returns hostname if offline
   */
-  virtual string checkOnline()=0;
+  virtual std::string checkOnline()=0;
 
   /**
      Digital test of the modules
@@ -308,7 +308,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   /**
      returns currently the loaded trimfile/settingsfile name
   */
-  virtual string getSettingsFile()=0;
+  virtual std::string getSettingsFile()=0;
 
   
   /** 
@@ -382,7 +382,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
 
 
-  int setBadChannelCorrection(string fname, int &nbadtot, int *badchanlist, int off=0);
+  int setBadChannelCorrection(std::string fname, int &nbadtot, int *badchanlist, int off=0);
 
 
 
@@ -408,7 +408,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   virtual char* getSettingsDir()=0;
 
   /** sets the detector trimbit/settings directory  */
-  virtual char* setSettingsDir(string s)=0;
+  virtual char* setSettingsDir(std::string s)=0;
 
   /**
      returns the location of the calibration files
@@ -418,7 +418,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   /**
      sets the location of the calibration files
   */
-  virtual char* setCalDir(string s)=0;
+  virtual char* setCalDir(std::string s)=0;
 
   /** Frees the shared memory  -  should not be used except for debugging*/
   virtual int freeSharedMemory()=0;
@@ -467,7 +467,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
      \fname file name to load data from
      \returns OK or FAIL
   */
-  virtual int loadImageToDetector(imageType index,string const fname)=0;
+  virtual int loadImageToDetector(imageType index,std::string const fname)=0;
   
 
   /**
@@ -476,7 +476,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
      \fname file fname to load data from
      \returns OK or FAIL
   */
-  virtual int writeCounterBlockFile(string const fname,int startACQ=0)=0;
+  virtual int writeCounterBlockFile(std::string const fname,int startACQ=0)=0;
 
 
   /**
@@ -606,7 +606,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   /**
      Returns the IP of the last client connecting to the detector
   */
-  virtual string getLastClientIP()=0;
+  virtual std::string getLastClientIP()=0;
 
 
 
@@ -623,13 +623,13 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
       \param imod module number, -1 means all modules
       \returns OK or FAIL
   */
-  virtual int loadSettingsFile(string fname, int imod=-1)=0;
+  virtual int loadSettingsFile(std::string fname, int imod=-1)=0;
 
   /** programs FPGA with pof file
       \param fname file name
       \returns OK or FAIL
   */
-  virtual int programFPGA(string fname)=0;
+  virtual int programFPGA(std::string fname)=0;
 
   /** resets FPGA
       \returns OK or FAIL
@@ -653,7 +653,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
       \param imod module number, -1 means all modules
       \returns OK or FAIL
   */
-  virtual int saveSettingsFile(string fname, int imod=-1)=0;
+  virtual int saveSettingsFile(std::string fname, int imod=-1)=0;
 
   /** sets all the trimbits to a particular value
       \param val trimbit value
@@ -723,7 +723,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
      \param fname file name
      \returns OK or FAIL
   */
-  virtual int writeConfigurationFile(string const fname)=0;
+  virtual int writeConfigurationFile(std::string const fname)=0;
 
 
   void registerGetPositionCallback( double (*func)(void*),void *arg){get_position=func; POarg=arg;};
@@ -747,7 +747,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
       \returns OK or FAIL
   
   */
-  int dumpDetectorSetup(string const fname, int level=0);  
+  int dumpDetectorSetup(std::string const fname, int level=0);  
 
 
   /** 
@@ -757,7 +757,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
       \returns OK or FAIL
   
   */
-  int retrieveDetectorSetup(string const fname, int level=0);
+  int retrieveDetectorSetup(std::string const fname, int level=0);
 
   static int dummyAcquisitionFinished(double prog,int status,void* p){cout <<"Acquisition finished callback! " << prog << " " << status << endl; return 0;}
   static int dummyMeasurementFinished(int im,int findex,void* p){cout <<"Measurement finished callback! " << im << " " << findex << endl; return 0;}
@@ -771,12 +771,12 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   /**
      Checks if the receiver is really online
   */
-  virtual string checkReceiverOnline()=0;
+  virtual std::string checkReceiverOnline()=0;
 
   /**
      Returns the IP of the last client connecting to the receiver
   */
-  virtual string getReceiverLastClientIP()=0;
+  virtual std::string getReceiverLastClientIP()=0;
 
 
   /**
@@ -784,14 +784,14 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
      @param fileName fileDir file directory
      \returns file dir
   */
-  virtual string setFilePath(string s="")=0;
+  virtual std::string setFilePath(std::string s="")=0;
 
   /**
      Sets up the file name
      @param fileName file name
      \returns file name
   */
-  virtual string setFileName(string s="")=0;
+  virtual std::string setFileName(std::string s="")=0;
 
   /**
      Sets the max frames per file in receiver
@@ -811,12 +811,12 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   /**
      \returns file dir
   */
-  virtual string getFilePath()=0;
+  virtual std::string getFilePath()=0;
 
   /**
      \returns file name
   */
-  virtual string getFileName()=0;
+  virtual std::string getFileName()=0;
 
   /**
      \returns file name
@@ -950,7 +950,7 @@ virtual int setReceiverSilentMode(int i = -1)=0;
       @param fname pattern file to open
       @returns OK/FAIL
   */
-  virtual int setCTBPattern(string fname)=0;
+  virtual int setCTBPattern(std::string fname)=0;
 
   
   /** Writes a pattern word to the CTB

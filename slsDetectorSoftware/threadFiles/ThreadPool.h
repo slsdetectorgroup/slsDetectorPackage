@@ -14,7 +14,7 @@
 #include "CondVar.h"
 #include "Global.h"
 #include <semaphore.h>
-using namespace std;
+// 
 
 
 class ThreadPool

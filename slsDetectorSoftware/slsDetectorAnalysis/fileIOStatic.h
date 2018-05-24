@@ -14,8 +14,11 @@
 #define MYROOT
 #endif
 
+using std::endl;
+using std::cout;
+
 #include "sls_detector_defs.h"
-using namespace std;
+// 
 /**
    @short class handling the data file I/O flags
 */
@@ -56,11 +59,11 @@ class fileIOStatic  {
   \param detindex detector id
   \returns file name without extension
   */
-  static string  createFileName(char *filepath, char *filename, int aMask, double sv0, int prec0, double sv1, int prec1, int pindex, int npos, int findex, int frameindex=-1, int detindex=-1){ \
-    ostringstream osfn;							\
+  static std::string  createFileName(char *filepath, char *filename, int aMask, double sv0, int prec0, double sv1, int prec1, int pindex, int npos, int findex, int frameindex=-1, int detindex=-1){ \
+    std::ostringstream osfn;							\
     osfn << filepath << "/" << filename;		\
-    if ( aMask& (1 << (slsDetectorDefs::MAX_ACTIONS)))  osfn << "_S" << fixed << setprecision(prec0) << sv0;		\
-    if (aMask & (1 << (slsDetectorDefs::MAX_ACTIONS+1)))  osfn << "_s" << fixed << setprecision(prec1) << sv1;		\
+    if ( aMask& (1 << (slsDetectorDefs::MAX_ACTIONS)))  osfn << "_S" << std::fixed << std::setprecision(prec0) << sv0;		\
+    if (aMask & (1 << (slsDetectorDefs::MAX_ACTIONS+1)))  osfn << "_s" << std::fixed << std::setprecision(prec1) << sv1;		\
     if (pindex>0 && pindex<=npos)  osfn << "_p" << pindex;		\
     if(detindex>=0) osfn << "_d"<< detindex;	\
     if(frameindex>=0) osfn << "_f" << frameindex;	\
@@ -86,11 +89,11 @@ class fileIOStatic  {
   \param detindex detector id
   \returns file name without extension
   */
-  static string  createReceiverFilePrefix(char *filename, int aMask, double sv0, int prec0, double sv1, int prec1, int pindex, int npos,int detindex=-1){ \
-    ostringstream osfn;							\
+  static std::string  createReceiverFilePrefix(char *filename, int aMask, double sv0, int prec0, double sv1, int prec1, int pindex, int npos,int detindex=-1){ \
+    std::ostringstream osfn;							\
     osfn << filename;				\
-    if ( aMask& (1 << (slsDetectorDefs::MAX_ACTIONS)))  osfn << "_S" << fixed << setprecision(prec0) << sv0;		\
-    if (aMask & (1 << (slsDetectorDefs::MAX_ACTIONS+1)))  osfn << "_s" << fixed << setprecision(prec1) << sv1;		\
+    if ( aMask& (1 << (slsDetectorDefs::MAX_ACTIONS)))  osfn << "_S" << std::fixed << std::setprecision(prec0) << sv0;		\
+    if (aMask & (1 << (slsDetectorDefs::MAX_ACTIONS+1)))  osfn << "_s" << std::fixed << std::setprecision(prec1) << sv1;		\
     if (pindex>0 && pindex<=npos)  osfn << "_p" << pindex;		\
     if(detindex!=-1) osfn << "_d"<< detindex;	\
     return osfn.str();												\
@@ -101,13 +104,13 @@ class fileIOStatic  {
       \param fname file name
       \returns file index
   */
-  static int getFileIndexFromFileName(string fname){	\
+  static int getFileIndexFromFileName(std::string fname){	\
     int i;						\
     size_t dot=fname.rfind(".");			\
-    if (dot==string::npos)				\
+    if (dot==std::string::npos)				\
       return -1;					\
     size_t uscore=fname.rfind("_");			\
-    if (uscore==string::npos)     return -1;				\
+    if (uscore==std::string::npos)     return -1;				\
     if (sscanf( fname.substr(uscore+1,dot-uscore-1).c_str(),"%d",&i))  return i; \
     cout << "******************************** cannot parse file index" << endl;	\
     return 0;								\
@@ -118,11 +121,11 @@ class fileIOStatic  {
       \param index reference to index
       \returns frame index
   */
-  static int getIndicesFromFileName(string fname,int &index){										\
+  static int getIndicesFromFileName(std::string fname,int &index){										\
 	  int i;																				\
-	  string s;  																			\
+	  std::string s;  																			\
 	  size_t uscore=fname.rfind("_");														\
-	  if (uscore==string::npos)       return -1;											\
+	  if (uscore==std::string::npos)       return -1;											\
 	  s=fname;																				\
 	  if (sscanf(s.substr(uscore+1,s.size()-uscore-1).c_str(),"%d",&i)){ 					\
 		  index=i;																			\
@@ -146,16 +149,16 @@ class fileIOStatic  {
       \param sv1 reference to scan variable 1
       \returns file index
   */
-  static int getVariablesFromFileName(string fname, int &index, int &p_index, double &sv0, double &sv1) { \
+  static int getVariablesFromFileName(std::string fname, int &index, int &p_index, double &sv0, double &sv1) { \
     int i;								\
     double f;								\
-    string s;								\
+    std::string s;								\
     index=-1;								\
     p_index=-1;								\
     sv0=-1;								\
     sv1=-1;								\
     size_t uscore=fname.rfind("_");					\
-    if (uscore==string::npos)       return -1;				\
+    if (uscore==std::string::npos)       return -1;				\
     s=fname;								\
     if (sscanf(s.substr(uscore+1,s.size()-uscore-1).c_str(),"%d",&i)) {	\
       index=i;								\
@@ -201,16 +204,16 @@ class fileIOStatic  {
       \param detindex reference to detector id
       \returns file index
   */
-  static int getVariablesFromFileName(string fname, int &index, int &f_index, int &p_index, double &sv0, double &sv1, int &detindex) { \
+  static int getVariablesFromFileName(std::string fname, int &index, int &f_index, int &p_index, double &sv0, double &sv1, int &detindex) { \
     int i;								\
     double f;								\
-    string s;								\
+    std::string s;								\
     index=-1;								\
     p_index=-1;								\
     sv0=-1;								\
     sv1=-1;								\
     size_t uscore=fname.rfind("_");					\
-    if (uscore==string::npos)       return -1;				\
+    if (uscore==std::string::npos)       return -1;				\
     s=fname;								\
     if (sscanf(s.substr(uscore+1,s.size()-uscore-1).c_str(),"%d",&i)) {	\
       index=i;								\
@@ -262,7 +265,7 @@ class fileIOStatic  {
       \param detindex reference to detector id
       \returns file name
   */
-  static int verifySameFrame(string fname, int index, int f_index, int p_index, double sv0, double sv1, int detindex) { \
+  static int verifySameFrame(std::string fname, int index, int f_index, int p_index, double sv0, double sv1, int detindex) { \
 	  int new_index=-1;
   	  int new_f_index=-1;
   	  int new_p_index=-1;
@@ -283,10 +286,10 @@ class fileIOStatic  {
       \param fname complete file name prefix
       \returns file name
   */
-  static string getNameFromReceiverFilePrefix(string fname) { \
+  static std::string getNameFromReceiverFilePrefix(std::string fname) { \
     int i;									\
     double f;								\
-    string s;								\
+    std::string s;								\
     s=fname;								\
     size_t uscore=s.rfind("_");						\
     if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"d%d",&i))  \
@@ -313,14 +316,14 @@ class fileIOStatic  {
       \param fname complete file name
       \returns file name without file name prefix, detector index  or extension
   */
-  static string getReceiverFileNameToConcatenate(string fname) { \
+  static std::string getReceiverFileNameToConcatenate(std::string fname) { \
 	  int i;double f;				\
-	  string s=fname;											\
+	  std::string s=fname;											\
 	  if(fname.empty()) return fname;							\
 	  size_t dot=s.find(".");
 	  size_t uscore=s.rfind("_");	\
 
-	    if (uscore==string::npos)       return "??";				\
+	    if (uscore==std::string::npos)       return "??";				\
 	    if (sscanf(s.substr(uscore+1,s.size()-uscore-1).c_str(),"%d",&i)) 	\
 	      s=fname.substr(0,uscore);						\
 	    uscore=s.rfind("_");						\
@@ -358,13 +361,13 @@ class fileIOStatic  {
  
   */
 
-  static  int  writeDataFile(string fname, int nch, double *data, double *err=NULL, double *ang=NULL, char dataformat='f'){ \
-    ofstream outfile;							\
+  static  int  writeDataFile(std::string fname, int nch, double *data, double *err=NULL, double *ang=NULL, char dataformat='f'){ \
+    std::ofstream outfile;							\
     if (data==NULL)    {						\
       cout << "No data to write!" << endl;				\
       return slsDetectorDefs::FAIL;					\
     }									\
-    outfile.open (fname.c_str(),ios_base::out);			\
+    outfile.open (fname.c_str(),std::ios_base::out);			\
     if (outfile.is_open())   {						\
       writeDataFile(outfile, nch, data, err, ang, dataformat, 0);	\
       outfile.close();							\
@@ -389,7 +392,7 @@ class fileIOStatic  {
        \param offset start channel number
        \returns OK or FAIL if it could not write the file or data=NULL
   */
-  static  int writeDataFile(ofstream &outfile, int nch, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int offset=0){ 
+  static  int writeDataFile(std::ofstream &outfile, int nch, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int offset=0){ 
     int idata;								\
     if (data==NULL || nch==0) {							\
       cout << "No data to write!" << endl;				\
@@ -426,10 +429,10 @@ class fileIOStatic  {
      \param data array of data values
      \returns OK or FAIL if it could not write the file or data=NULL  
   */
-  static int writeDataFile(string fname,int nch,  int *data){	\
-    ofstream outfile;						\
+  static int writeDataFile(std::string fname,int nch,  int *data){	\
+    std::ofstream outfile;						\
     if (data==NULL) return slsDetectorDefs::FAIL;		\
-    outfile.open (fname.c_str(),ios_base::out);		\
+    outfile.open (fname.c_str(),std::ios_base::out);		\
     if (outfile.is_open()) {					\
       writeDataFile(outfile, nch, data, 0);			\
       outfile.close();						\
@@ -447,7 +450,7 @@ class fileIOStatic  {
      \param data array of data values
      \returns OK or FAIL if it could not write the file or data=NULL  
   */
-  static int writeBinaryDataFile(string fname, size_t nbytes, void *data){ \
+  static int writeBinaryDataFile(std::string fname, size_t nbytes, void *data){ \
     FILE *sfilefd;							\
     if (data==NULL) return slsDetectorDefs::FAIL;			\
     sfilefd = fopen(fname.c_str(), "w");				\
@@ -473,7 +476,7 @@ class fileIOStatic  {
      \param offset start channel number
      \returns OK or FAIL if it could not write the file or data=NULL  
   */
-  static  int writeDataFile(ofstream &outfile,int nch,  int *data, int offset=0){ \
+  static  int writeDataFile(std::ofstream &outfile,int nch,  int *data, int offset=0){ \
     if (data==NULL) return slsDetectorDefs::FAIL;			\
     for (int ichan=0; ichan<nch; ichan++)      outfile << ichan+offset << " " << *(data+ichan) << std::endl; \
     return slsDetectorDefs::OK;					\
@@ -490,10 +493,10 @@ class fileIOStatic  {
   \param data array of data values
   \returns OK or FAIL if it could not write the file or data=NULL
   */
-  static int writeDataFile(string fname,int nch, short int *data) {	\
-    ofstream outfile;							\
+  static int writeDataFile(std::string fname,int nch, short int *data) {	\
+    std::ofstream outfile;							\
     if (data==NULL)       return slsDetectorDefs::FAIL;		\
-    outfile.open (fname.c_str(),ios_base::out);			\
+    outfile.open (fname.c_str(),std::ios_base::out);			\
     if (outfile.is_open())       {					\
       writeDataFile(outfile, nch, data, 0);				\
       outfile.close();							\
@@ -514,7 +517,7 @@ class fileIOStatic  {
      \param offset start channel number
      \returns OK or FAIL if it could not write the file or data=NULL  
   */
-  static  int writeDataFile(ofstream &outfile,int nch,  short int *data, int offset=0){ \
+  static  int writeDataFile(std::ofstream &outfile,int nch,  short int *data, int offset=0){ \
     if (data==NULL)    return slsDetectorDefs::FAIL;			\
     for (int ichan=0; ichan<nch; ichan++)      outfile << ichan+offset << " " << *(data+ichan) << std::endl; \
     return slsDetectorDefs::OK;					\
@@ -531,11 +534,11 @@ class fileIOStatic  {
      \returns number of channels read or -1 if it could not read the file or data=NULL
        
   */
-  static int readDataFile(int nch, string fname, double *data, double *err=NULL, double *ang=NULL, char dataformat='f') { \
-    ifstream infile;							\
+  static int readDataFile(int nch, std::string fname, double *data, double *err=NULL, double *ang=NULL, char dataformat='f') { \
+    std::ifstream infile;							\
     int  iline=0;							\
-    string str;							\
-    infile.open(fname.c_str(), ios_base::in);				\
+    std::string str;							\
+    infile.open(fname.c_str(), std::ios_base::in);				\
     if (infile.is_open()) {						\
       iline=readDataFile(nch, infile, data, err, ang, dataformat, 0);	\
       infile.close();							\
@@ -558,17 +561,17 @@ class fileIOStatic  {
      \returns number of channels read or -1 if it could not read the file or data=NULL
        
   */ 
-  static int readDataFile(int nch, ifstream &infile, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int offset=0){ \
+  static int readDataFile(int nch, std::ifstream &infile, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int offset=0){ \
     int  ichan,iline=0;						\
     int interrupt=0;							\
     double fdata, ferr, fang;						\
     int maxchans;							\
     int ich;								\
-    string str;							\
+    std::string str;							\
     maxchans=nch;							\
     while (infile.good() and interrupt==0) {				\
       getline(infile,str);						\
-      istringstream ssstr(str);					\
+      std::istringstream ssstr(str);					\
       if (ang==NULL) {							\
 	ssstr >> ichan >> fdata;					\
 	if (ssstr.fail() || ssstr.bad()) {				\
@@ -617,11 +620,11 @@ class fileIOStatic  {
      \param nch number of channels
      \returns OK or FAIL if it could not read the file or data=NULL
   */
-  static int readDataFile(string fname, int *data, int nch) { \
-    ifstream infile;					       \
+  static int readDataFile(std::string fname, int *data, int nch) { \
+    std::ifstream infile;					       \
     int  iline=0;					       \
-    string str;					       \
-    infile.open(fname.c_str(), ios_base::in);		       \
+    std::string str;					       \
+    infile.open(fname.c_str(), std::ios_base::in);		       \
     if (infile.is_open()) {				       \
       iline=readDataFile(infile, data, nch, 0);	       \
       infile.close();					       \
@@ -641,13 +644,13 @@ class fileIOStatic  {
      \param offset start channel value
      \returns OK or FAIL if it could not read the file or data=NULL
   */
-  static int readDataFile(ifstream &infile, int *data, int nch, int offset) { \
+  static int readDataFile(std::ifstream &infile, int *data, int nch, int offset) { \
     int ichan, idata, iline=0;						\
     int interrupt=0;							\
-    string str;							\
+    std::string str;							\
     while (infile.good() and interrupt==0) {				\
       getline(infile,str);						\
-      istringstream ssstr(str);					\
+      std::istringstream ssstr(str);					\
       ssstr >> ichan >> idata;						\
       if (ssstr.fail() || ssstr.bad()) {				\
 	interrupt=1;							\
@@ -673,11 +676,11 @@ class fileIOStatic  {
      \param nch number of channels
      \returns OK or FAIL if it could not read the file or data=NULL
   */
-  static int readDataFile(string fname, short int *data, int nch){	\
-    ifstream infile;							\
+  static int readDataFile(std::string fname, short int *data, int nch){	\
+    std::ifstream infile;							\
     int iline=0;							\
-    string str;							\
-    infile.open(fname.c_str(), ios_base::in);				\
+    std::string str;							\
+    infile.open(fname.c_str(), std::ios_base::in);				\
     if (infile.is_open()) {						\
       iline=readDataFile(infile, data, nch, 0);			\
       infile.close();							\
@@ -696,14 +699,14 @@ class fileIOStatic  {
      \param offset start channel value
      \returns OK or FAIL if it could not read the file or data=NULL
   */
-  static int readDataFile(ifstream &infile, short int *data, int nch, int offset) { \
+  static int readDataFile(std::ifstream &infile, short int *data, int nch, int offset) { \
     int ichan, iline=0;						\
     short int idata;							\
     int interrupt=0;							\
-    string str;							\
+    std::string str;							\
     while (infile.good() and interrupt==0) {				\
       getline(infile,str);						\
-      istringstream ssstr(str);					\
+      std::istringstream ssstr(str);					\
       ssstr >> ichan >> idata;						\
       if (ssstr.fail() || ssstr.bad()) {				\
 	interrupt=1;							\

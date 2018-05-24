@@ -7,7 +7,6 @@
 #include "angularConversion.h"
 #include "badChannelCorrections.h"
 #include "fileIO.h"
-#include <string>
 
 #include <iostream>
 #include <fstream>
@@ -22,8 +21,7 @@
 class postProcessingFuncs;
 
 
-
-using namespace std;
+// 
 
 #define MAX_BADCHANS 20000
 
@@ -77,7 +75,7 @@ class postProcessing : public angularConversion, public fileIO, public badChanne
       \param fname file with bad channel list ("" disable)
       \returns 0 if bad channel disabled, >0 otherwise
   */
-  virtual int setBadChannelCorrection(string fname="")=0;
+  virtual int setBadChannelCorrection(std::string fname="")=0;
 
  
   /** 
@@ -87,7 +85,7 @@ class postProcessing : public angularConversion, public fileIO, public badChanne
       \param badlist array of badchannels
       \returns 0 if bad channel disabled, >0 otherwise
   */
-  virtual int setBadChannelCorrection(string fname, int &nbad, int *badlist, int off=0)=0;
+  virtual int setBadChannelCorrection(std::string fname, int &nbad, int *badlist, int off=0)=0;
   using badChannelCorrections::setBadChannelCorrection;
   
   /** 
@@ -118,26 +116,26 @@ class postProcessing : public angularConversion, public fileIO, public badChanne
   
   
   /** returns the bad channel list file */
-  string getBadChannelCorrectionFile() {if ((*correctionMask)&(1<< DISCARD_BAD_CHANNELS)) return string(badChanFile); else return string("none");};
+  std::string getBadChannelCorrectionFile() {if ((*correctionMask)&(1<< DISCARD_BAD_CHANNELS)) return std::string(badChanFile); else return std::string("none");};
 
 
   /** 
       get flat field corrections file directory
       \returns flat field correction file directory
   */
-  string getFlatFieldCorrectionDir(){return string(flatFieldDir);};
+  std::string getFlatFieldCorrectionDir(){return std::string(flatFieldDir);};
  /** 
       set flat field corrections file directory
       \param flat field correction file directory
       \returns flat field correction file directory
   */
-  string setFlatFieldCorrectionDir(string dir){strcpy(flatFieldDir,dir.c_str()); return string(flatFieldDir);};
+  std::string setFlatFieldCorrectionDir(std::string dir){strcpy(flatFieldDir,dir.c_str()); return std::string(flatFieldDir);};
   
  /** 
       get flat field corrections file name
       \returns flat field correction file name
   */
-  string getFlatFieldCorrectionFile(){ if ((*correctionMask)&(1<<FLAT_FIELD_CORRECTION)) return string(flatFieldFile); else return string("none");};
+  std::string getFlatFieldCorrectionFile(){ if ((*correctionMask)&(1<<FLAT_FIELD_CORRECTION)) return std::string(flatFieldFile); else return std::string("none");};
 
 
 
@@ -172,7 +170,7 @@ s
       \returns nothing
       
   */
-  void doProcessing(double* myData, int delflag, string fname);
+  void doProcessing(double* myData, int delflag, std::string fname);
 
 
   /**
@@ -260,7 +258,7 @@ s
 
 
   void initDataset(int refresh);
-  void addFrame(double *data, double pos, double i0, double t, string fname, double var);
+  void addFrame(double *data, double pos, double i0, double t, std::string fname, double var);
   void finalizeDataset(double *a, double *v, double *e, int &np); 
 
  virtual detectorType getDetectorsType(int pos=-1)=0;
@@ -295,11 +293,11 @@ s
  /**
      data queue
   */
-  queue<int*> dataQueue;
+  std::queue<int*> dataQueue;
   /**
      queue containing the postprocessed data
   */
-  queue<detectorData*> finalDataQueue;
+  std::queue<detectorData*> finalDataQueue;
 
  /** data queue size */
   int queuesize;

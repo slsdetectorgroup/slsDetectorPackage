@@ -19,7 +19,7 @@
 
 class angleConversionConstant;
 
-using namespace std;
+;
 
 /**
    @short Angular conversion constants needed  for a detector module
@@ -47,7 +47,7 @@ class angularConversionStatic
  
 
 
-  //virtual int readAngularConversion(string fname)=0;
+  //virtual int readAngularConversion(std::string fname)=0;
 
 
 
@@ -60,7 +60,7 @@ class angularConversionStatic
       \param angOff pointer to array of angleConversionConstants
       \returns OK or FAIL
   */
-   static int readAngularConversion(string fname, int nmod, angleConversionConstant *angOff); 
+   static int readAngularConversion(std::string fname, int nmod, angleConversionConstant *angOff); 
    
    /**
       reads an angular conversion file
@@ -70,7 +70,7 @@ class angularConversionStatic
       \returns OK or FAIL
       
   */
-   static int readAngularConversion(ifstream& ifs, int nmod, angleConversionConstant *angOff);
+   static int readAngularConversion(std::ifstream& ifs, int nmod, angleConversionConstant *angOff);
   /**
      writes an angular conversion file
       \param fname file to be written
@@ -78,7 +78,7 @@ class angularConversionStatic
       \param angOff pointer to array of angleConversionConstants
       \returns OK or FAIL
   */
-   static int writeAngularConversion(string fname, int nmod, angleConversionConstant *angOff);
+   static int writeAngularConversion(std::string fname, int nmod, angleConversionConstant *angOff);
 
  /**
      writes an angular conversion file
@@ -87,7 +87,7 @@ class angularConversionStatic
       \param angOff pointer to array of angleConversionConstants
       \returns OK or FAIL
   */
-   static int writeAngularConversion(ofstream& ofs, int nmod, angleConversionConstant *angOff);
+   static int writeAngularConversion(std::ofstream& ofs, int nmod, angleConversionConstant *angOff);
 
    /** 
        sets the arrays of the merged data to 0. NB The array should be created with size nbins >= 360./getBinSize(); 

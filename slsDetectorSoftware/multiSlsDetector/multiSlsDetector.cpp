@@ -622,7 +622,6 @@ string multiSlsDetector::ssetDetectorsType(string name, int pos) {
 
 }
 
-
 string multiSlsDetector::getHostname(int pos) {
 	string hostnames;
 	if (pos>=0){
@@ -654,34 +653,18 @@ slsDetectorDefs::detectorType multiSlsDetector::getDetectorsType(int pos) {
 
 
 string multiSlsDetector::sgetDetectorsType(int pos) {
-
-  string s=string("");
-#ifdef VERBOSE
-  cout << "returning type" << pos << endl;
-#endif
+  string s;
   if (pos>=0) {
     if (detectors[pos])
       return detectors[pos]->sgetDetectorsType();
   } else {
     for (int ip=0; ip<thisMultiDetector->numberOfDetectors; ++ip) {
-#ifdef VERBOSE
-      cout << "detector " << ip << endl;
-#endif
-      if (detectors[ip]) {
-	s+=detectors[ip]->sgetDetectorsType();
-	s+=string("+");
-      }
-#ifdef VERBOSE
-      cout << "type " << s << endl;
-#endif
+      if (detectors[ip])
+				s+=detectors[ip]->sgetDetectorsType() + "+";
     }
   }
   return s;
-
 }
-
-
-
 
 int multiSlsDetector::getDetectorId(int pos) {
 

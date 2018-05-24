@@ -4,6 +4,8 @@
 #include "multiSlsDetectorCommand.h"
 
 
+using namespace std;
+
 slsDetectorUsers::slsDetectorUsers(int id) : myDetector(NULL){
 
   myDetector=new multiSlsDetector(id);

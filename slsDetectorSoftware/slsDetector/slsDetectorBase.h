@@ -55,7 +55,7 @@
 #include <string>
 
 
-using namespace std;
+//using namespace std;
 /** 
 
 @libdoc The slsDetectorBase contains also a set of purely virtual functions useful for the implementation of the derived classes

@@ -244,7 +244,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
   \returns OK or FAIL if it could not write the file or data=NULL
   
   */
-   virtual int writeDataFile(ofstream &outfile, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int nch=-1, int offset=0);
+   virtual int writeDataFile(std::ofstream &outfile, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int nch=-1, int offset=0);
   
 
    /**
@@ -266,7 +266,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
       \param offset start channel number
       \returns OK or FAIL if it could not write the file or data=NULL  
   */
-  virtual int writeDataFile(ofstream &outfile, int *data, int offset=0);
+  virtual int writeDataFile(std::ofstream &outfile, int *data, int offset=0);
   
 
 
@@ -291,7 +291,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
       \param offset start channel number
       \returns OK or FAIL if it could not write the file or data=NULL  
   */
-  virtual int writeDataFile(ofstream &outfile, short int *data, int offset=0);
+  virtual int writeDataFile(std::ofstream &outfile, short int *data, int offset=0);
 
 
   /**
@@ -316,7 +316,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
        \param offset start channel number to be expected
        \returns OK or FAIL if it could not read the file or data=NULL
   */
-  int readDataFile(ifstream& infile, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int offset=0);
+  int readDataFile(std::ifstream& infile, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int offset=0);
 
   /**
        reads a raw data file
@@ -333,7 +333,7 @@ yes  */
        \param offset first channel number to be expected
        \returns OK or FAIL if it could not read the file or data=NULL
   */
-  int readDataFile(ifstream &infile, int *data, int offset=0);
+  int readDataFile(std::ifstream &infile, int *data, int offset=0);
 
   /**
 
@@ -350,7 +350,7 @@ yes  */
        \param offset first channel number to be expected
        \returns OK or FAIL if it could not read the file or data=NULL
   */
-  int readDataFile(ifstream &infile, short int *data, int offset=0);
+  int readDataFile(std::ifstream &infile, short int *data, int offset=0);
 
   virtual int getDataBytes   (   )=0;
   friend class slsDetector;
@@ -397,7 +397,7 @@ yes  */
 
 
   FILE *filefd;
-  ofstream fstream;
+  std::ofstream fstream;
 
   int nframes;
   // int fformat;

@@ -54,8 +54,11 @@
 
 #include <string>
 
+using std::string;
+using std::ofstream;
+using std::ifstream;
 
-//using namespace std;
+// using namespace std;
 /** 
 
 @libdoc The slsDetectorBase contains also a set of purely virtual functions useful for the implementation of the derived classes
@@ -83,7 +86,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   */
   virtual detectorType getDetectorsType(int pos=-1)=0;
 
-  string getDetectorDeveloper(){return string("PSI");};
+  std::string getDetectorDeveloper(){return std::string("PSI");};
   // protected:
 
   /**
@@ -91,14 +94,14 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
      \param fname file with angular conversion constants ("" disable)
      \returns 0 if angular conversion disabled, >0 otherwise
   */
-  virtual int setAngularConversionFile(string fname="")=0;
+  virtual int setAngularConversionFile(std::string fname="")=0;
   
 
   /**
      pure virtual function
      returns the angular conversion file
   */
-  virtual string getAngularConversionFile()=0;
+  virtual std::string getAngularConversionFile()=0;
 
 
  
@@ -108,7 +111,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
      \param fname for script ("" disable)
      \returns 0 if action disabled, >0 otherwise
   */
-  virtual int setActionScript(int iaction, string fname="")=0;
+  virtual int setActionScript(int iaction, std::string fname="")=0;
 
   /**
      set action
@@ -116,21 +119,21 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
      \param par for script ("" disable)
      \returns 0 if action disabled, >0 otherwise
   */
-  virtual int setActionParameter(int iaction, string par="")=0;
+  virtual int setActionParameter(int iaction, std::string par="")=0;
 
   /**
      returns action script
      \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
      \returns action script
   */
-  virtual string getActionScript(int iaction)=0;
+  virtual std::string getActionScript(int iaction)=0;
 
   /**
      returns action parameter
      \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
      \returns action parameter
   */
-  virtual string getActionParameter(int iaction)=0;
+  virtual std::string getActionParameter(int iaction)=0;
 
   /**
      set scan script
@@ -138,7 +141,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
      \param script fname for script ("" disable, "none" disables and overwrites current, "threshold" makes threshold scan, "trimbits" make trimbits scan, "energy" makes energy scan)
      \returns 0 if scan disabled, >0 otherwise
   */
-  virtual int setScanScript(int index, string script="")=0;
+  virtual int setScanScript(int index, std::string script="")=0;
 
   /**
      set scan script parameter
@@ -146,7 +149,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
      \param spar parameter to be passed to the scan script with syntax par=spar
      \returns 0 if scan disabled, >0 otherwise
   */
-  virtual int setScanParameter(int index, string spar="")=0;
+  virtual int setScanParameter(int index, std::string spar="")=0;
 
  
   /**     set scan precision
@@ -169,14 +172,14 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
      \param index is the scan index (0 or 1)
      \returns "none" if disables, "threshold" threshold scan, "trimbits" trimbits scan, "energy"  energy scan or scan script name
   */
-  virtual string getScanScript(int index)=0;
+  virtual std::string getScanScript(int index)=0;
 
   /**
      get scan script
      \param index is the scan index (0 or 1)
      \returns scan script parameter
   */
-  virtual string getScanParameter(int index)=0;
+  virtual std::string getScanParameter(int index)=0;
 
   /**
      get scan precision
@@ -199,7 +202,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
      \param fname file name
      \returns OK or FAIL
   */
-  virtual int writeConfigurationFile(string const fname)=0;
+  virtual int writeConfigurationFile(std::string const fname)=0;
 
 
   /**
@@ -208,7 +211,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
      \param fname file name to load data from
      \returns OK or FAIL
   */
-  virtual int loadImageToDetector(imageType index,string const fname)=0;
+  virtual int loadImageToDetector(imageType index,std::string const fname)=0;
 
   /**
      \returns number of positions
@@ -241,7 +244,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   virtual int getTotalNumberOfChannels(dimension d)=0;
 
   /** generates file name without extension */
-  virtual string createFileName()=0;
+  virtual std::string createFileName()=0;
 
 
   virtual void incrementProgress()=0;
@@ -254,12 +257,12 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   virtual double* decodeData(int *datain, int &nn, double *fdata=NULL)=0;
 
 
-  virtual string getCurrentFileName()=0;
+  virtual std::string getCurrentFileName()=0;
 
 
-  virtual int getFileIndexFromFileName(string fname)=0;
+  virtual int getFileIndexFromFileName(std::string fname)=0;
 
-  virtual int getIndicesFromFileName(string fname,int &index)=0;
+  virtual int getIndicesFromFileName(std::string fname,int &index)=0;
 
   virtual double *convertAngles()=0;
   /** 
@@ -282,9 +285,9 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   */
   virtual int getRateCorrection()=0;
 
-  virtual int setFlatFieldCorrection(string fname="")=0; 
+  virtual int setFlatFieldCorrection(std::string fname="")=0; 
 
-  int setFlatFieldCorrectionFile(string fname=""){return setFlatFieldCorrection(fname);};
+  int setFlatFieldCorrectionFile(std::string fname=""){return setFlatFieldCorrection(fname);};
     
   /** 
       set/get dynamic range
@@ -532,12 +535,12 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
      \param fname file name
      \returns OK or FAIL
   */
-  virtual int readConfigurationFile(string const fname)=0; 
+  virtual int readConfigurationFile(std::string const fname)=0; 
 
-  virtual int dumpDetectorSetup(string const fname, int level)=0;  
-  int dumpDetectorSetup(string const fname){return dumpDetectorSetup(fname,0);};
-  virtual int retrieveDetectorSetup(string const fname, int level)=0;
-  int retrieveDetectorSetup(string const fname){return retrieveDetectorSetup(fname,0);};
+  virtual int dumpDetectorSetup(std::string const fname, int level)=0;  
+  int dumpDetectorSetup(std::string const fname){return dumpDetectorSetup(fname,0);};
+  virtual int retrieveDetectorSetup(std::string const fname, int level)=0;
+  int retrieveDetectorSetup(std::string const fname){return retrieveDetectorSetup(fname,0);};
   /** 
       @short 
       \returns the default output file index
@@ -628,11 +631,11 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
   virtual runStatus startReceiverReadout()=0;
 
 
-  /** returns detector type string from detector type index
-      \param t string can be Mythen, Pilatus, Eiger, Gotthard, Agipd, Unknown
+  /** returns detector type std::string from detector type index
+      \param t std::string can be Mythen, Pilatus, Eiger, Gotthard, Agipd, Unknown
       \returns MYTHEN, PILATUS, EIGER, GOTTHARD, AGIPD, MÖNCH, GENERIC
   */
-  static string getDetectorType(detectorType t){\
+  static std::string getDetectorType(detectorType t){\
     switch (t) {\
     case MYTHEN:    return string("Mythen");	\
     case PILATUS:    return string("Pilatus");	\
@@ -650,7 +653,7 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
       \param type can be MYTHEN, PILATUS, EIGER, GOTTHARD, AGIPD, GENERIC
       \returns Mythen, Pilatus, Eiger, Gotthard, Agipd, Mönch, Unknown
   */
-  static detectorType getDetectorType(string const type){\
+  static detectorType getDetectorType(std::string const type){\
     if (type=="Mythen")      return MYTHEN;\
     if  (type=="Pilatus")      return PILATUS;	\
     if  (type=="Eiger")    return EIGER;		\
@@ -668,7 +671,7 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
       \param type can be none, gating, trigger, complementary
       \returns ONE, MASTER_GATES, MASTER_TRIGGERS, SLAVE_STARTS_WHEN_MASTER_STOPS
   */
-  static synchronizationMode getSyncType(string const type){\
+  static synchronizationMode getSyncType(std::string const type){\
     if (type=="none")    return NO_SYNCHRONIZATION;\
     if (type=="gating")    return MASTER_GATES;\
     if (type=="trigger")    return MASTER_TRIGGERS;		\
@@ -676,11 +679,11 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
     return GET_SYNCHRONIZATION_MODE;				\
   };
 
-  /** returns synchronization type string from index
+  /** returns synchronization type std::string from index
       \param s can be NONE, MASTER_GATES, MASTER_TRIGGERS, SLAVE_STARTS_WHEN_MASTER_STOPS
       \returns none, gating, trigger, complementary, unknown
   */
-  static string getSyncType(synchronizationMode s ){\
+  static std::string getSyncType(synchronizationMode s ){\
     switch(s) {					    \
     case NO_SYNCHRONIZATION:    return string("none");	    \
     case MASTER_GATES:    return string("gating");	\
@@ -691,11 +694,11 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
 
 
 
-  /** returns string from external signal type index
+  /** returns std::string from external signal type index
       \param f can be SIGNAL_OFF, GATE_IN_ACTIVE_HIGH, GATE_IN_ACTIVE_LOW, TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE, RO_TRIGGER_IN_RISING_EDGE, RO_TRIGGER_IN_FALLING_EDGE, GATE_OUT_ACTIVE_HIGH, GATE_OUT_ACTIVE_LOW, =TRIGGER_OUT_RISING_EDGE, TRIGGER_OUT_FALLING_EDGE, RO_TRIGGER_OUT_RISING_EDGE, RO_TRIGGER_OUT_FALLING_EDGE, OUTPUT_LOW, OUTPUT_HIGH, MASTER_SLAVE_SYNCHRONIZATION,  GET_EXTERNAL_SIGNAL_FLAG
-      \returns string  off, gate_in_active_high, gate_in_active_low, trigger_in_rising_edge, trigger_in_falling_edge, ro_trigger_in_rising_edge, ro_trigger_in_falling_edge, gate_out_active_high, gate_out_active_low, trigger_out_rising_edge, trigger_out_falling_edge, ro_trigger_out_rising_edge, ro_trigger_out_falling_edge, gnd, vcc, sync, unknown
+      \returns std::string  off, gate_in_active_high, gate_in_active_low, trigger_in_rising_edge, trigger_in_falling_edge, ro_trigger_in_rising_edge, ro_trigger_in_falling_edge, gate_out_active_high, gate_out_active_low, trigger_out_rising_edge, trigger_out_falling_edge, ro_trigger_out_rising_edge, ro_trigger_out_falling_edge, gnd, vcc, sync, unknown
   */
-  static string externalSignalType(externalSignalFlag f){\
+  static std::string externalSignalType(externalSignalFlag f){\
     switch(f) {						 \
     case SIGNAL_OFF:      return string( "off");			\
     case GATE_IN_ACTIVE_HIGH:    return string( "gate_in_active_high");	\
@@ -724,7 +727,7 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
       \returns can be SIGNAL_OFF, GATE_IN_ACTIVE_HIGH, GATE_IN_ACTIVE_LOW, TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE, RO_TRIGGER_IN_RISING_EDGE, RO_TRIGGER_IN_FALLING_EDGE, GATE_OUT_ACTIVE_HIGH, GATE_OUT_ACTIVE_LOW, TRIGGER_OUT_RISING_EDGE, TRIGGER_OUT_FALLING_EDGE, RO_TRIGGER_OUT_RISING_EDGE, RO_TRIGGER_OUT_FALLING_EDGE, OUTPUT_LOW, OUTPUT_HIGH, MASTER_SLAVE_SYNCHRONIZATION,  GET_EXTERNAL_SIGNAL_FLAG (if unknown)
   */
 
-  static externalSignalFlag externalSignalType(string sval){\
+  static externalSignalFlag externalSignalType(std::string sval){\
     if (sval=="off")      return SIGNAL_OFF;\
     if (sval=="gate_in_active_high")      return GATE_IN_ACTIVE_HIGH;	\
     if  (sval=="gate_in_active_low") return GATE_IN_ACTIVE_LOW;\
@@ -743,13 +746,13 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
     if  (sval=="vcc") return OUTPUT_HIGH;\
     return GET_EXTERNAL_SIGNAL_FLAG ;};
 
-  /** returns detector settings string from index
+  /** returns detector settings std::string from index
       \param s can be STANDARD, FAST, HIGHGAIN, DYNAMICGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN, LOWNOISE,
        DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2, GET_SETTINGS
       \returns standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, lownoise,
       dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2, verylowgain, undefined
   */
-  static string getDetectorSettings(detectorSettings s){\
+  static std::string getDetectorSettings(detectorSettings s){\
     switch(s) {											\
     case STANDARD:      return string("standard");		\
     case FAST:      	return string("fast");			\
@@ -768,14 +771,14 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
     default:    		return string("undefined");		\
     }};
 
-  /** returns detector settings string from index
+  /** returns detector settings std::string from index
       \param s can be standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, lownoise,
       dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2, undefined
       \returns   setting index STANDARD, FAST, HIGHGAIN, DYNAMICGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN,LOWNOISE,
       DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2, VERYLOWGAIN, GET_SETTINGS
   */
 
-  static detectorSettings getDetectorSettings(string s){	\
+  static detectorSettings getDetectorSettings(std::string s){	\
     if (s=="standard") 		return STANDARD;				\
     if (s=="fast") 			return FAST;					\
     if (s=="highgain") 		return HIGHGAIN;				\
@@ -795,12 +798,12 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
 
 
   /**
-     returns external communication mode string from index
+     returns external communication mode std::string from index
      \param f can be AUTO_TIMING, TRIGGER_EXPOSURE, TRIGGER_READOUT, GATE_FIX_NUMBER, GATE_WITH_START_TRIGGER, BURST_TRIGGER, GET_EXTERNAL_COMMUNICATION_MODE
      \returns  auto, trigger, ro_trigger, gating, triggered_gating, unknown
   */
 
-  static string externalCommunicationType(externalCommunicationMode f){	\
+  static std::string externalCommunicationType(externalCommunicationMode f){	\
     switch(f) {						 \
     case AUTO_TIMING:      return string( "auto");			\
     case TRIGGER_EXPOSURE: return string("trigger");			\
@@ -819,7 +822,7 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
      \returns AUTO_TIMING, TRIGGER_EXPOSURE, TRIGGER_READOUT, GATE_FIX_NUMBER, GATE_WITH_START_TRIGGER, BURST_TRIGGER, GET_EXTERNAL_COMMUNICATION_MODE
   */
 
-  static externalCommunicationMode externalCommunicationType(string sval){\
+  static externalCommunicationMode externalCommunicationType(std::string sval){\
     if (sval=="auto")      return AUTO_TIMING;\
     if (sval=="trigger")     return TRIGGER_EXPOSURE;	\
     if  (sval=="ro_trigger") return TRIGGER_READOUT;\
@@ -829,11 +832,11 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
     return GET_EXTERNAL_COMMUNICATION_MODE;			\
   };
 
-  /** returns string from run status index
+  /** returns std::string from run status index
       \param s can be ERROR, WAITING, RUNNING, TRANSMITTING, RUN_FINISHED
-      \returns string error, waiting, running, data, finished
+      \returns std::string error, waiting, running, data, finished
   */
-  static string runStatusType(runStatus s){\
+  static std::string runStatusType(runStatus s){\
     switch (s) {				\
     case ERROR:       return string("error");		\
     case  WAITING:      return  string("waiting");	\
@@ -843,11 +846,11 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
     default:       return string("idle");		\
     }};
 
-  /** returns string from file format index
+  /** returns std::string from file format index
       \param s can be RAW, HDF5
-      \returns string raw, hdf5
+      \returns std::string raw, hdf5
   */
-  static string fileFormats(fileFormat f){\
+  static std::string fileFormats(fileFormat f){\
     switch (f) {				\
     case BINARY:       return string("binary");		\
     case ASCII:       return string("ascii");		\
@@ -855,11 +858,11 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
     default:       return string("unknown");		\
     }};
 
-  /** returns string from timer index
+  /** returns std::string from timer index
       \param s can be FRAME_NUMBER,ACQUISITION_TIME,FRAME_PERIOD, DELAY_AFTER_TRIGGER,GATES_NUMBER,PROBES_NUMBER, CYCLES_NUMBER, ACTUAL_TIME,MEASUREMENT_TIME, PROGRESS,MEASUREMENTS_NUMBER,FRAMES_FROM_START,FRAMES_FROM_START_PG,SAMPLES_JCTB,SUBFRAME_ACQUISITION_TIME,STORAGE_CELL_NUMBER, SUBFRAME_PERIOD
-      \returns string frame_number,acquisition_time,frame_period, delay_after_trigger,gates_number,probes_number, cycles_number, actual_time,measurement_time, progress,measurements_number,frames_from_start,frames_from_start_pg,samples_jctb,subframe_acquisition_time,storage_cell_number, subframe_period
+      \returns std::string frame_number,acquisition_time,frame_period, delay_after_trigger,gates_number,probes_number, cycles_number, actual_time,measurement_time, progress,measurements_number,frames_from_start,frames_from_start_pg,samples_jctb,subframe_acquisition_time,storage_cell_number, subframe_period
   */
-  static string getTimerType(timerIndex t){										\
+  static std::string getTimerType(timerIndex t){										\
     switch (t) {																\
     case FRAME_NUMBER: 				return string("frame_number"); 				\
     case ACQUISITION_TIME: 			return string("acquisition_time"); 			\
@@ -888,7 +891,7 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
      \returns  TEMPERATURE_FPGA, TEMPERATURE_FPGAEXT, TEMPERATURE_10GE, TEMPERATURE_DCDC, TEMPERATURE_SODL,
      TEMPERATURE_SODR, TEMPERATURE_FPGA2, TEMPERATURE_FPGA3, -1 when unknown mode
   */
-  static int getADCIndex(string s){
+  static int getADCIndex(std::string s){
 	  if (s=="temp_fpga")	  	return TEMPERATURE_FPGA;
 	  if (s=="temp_fpgaext")	return TEMPERATURE_FPGAEXT;
 	  if (s=="temp_10ge")	  	return TEMPERATURE_10GE;
@@ -906,7 +909,7 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
      \param s can be vcmp_ll, vcmp_lr, vcmp_rl, vcmp_rr, vthreshold, vrf, vrs, vtr, vcall, vcp
      \returns E_Vcmp_ll, E_Vcmp_lr, E_Vcmp_rl, E_Vcmp_rr, THRESHOLD, E_Vrf, E_Vrs, E_Vtr, E_cal, E_Vcp , -1 when unknown mode
   */
-  static int getDACIndex(string s){
+  static int getDACIndex(std::string s){
 	  if (s=="vcmp_ll")	  	return E_Vcmp_ll;
 	  if (s=="vcmp_lr")	  	return E_Vcmp_lr;
 	  if (s=="vcmp_rl")		return E_Vcmp_rl;

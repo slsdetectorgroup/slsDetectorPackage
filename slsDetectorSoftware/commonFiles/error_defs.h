@@ -15,7 +15,7 @@
 #include <string>
 #include <cstring>
 #include <iostream>
-using namespace std;
+// using namespace std;
 
 /** Error flags */
 /*Assumption: Only upto 63 detectors */
@@ -112,9 +112,9 @@ public:
 	 * param errorMask error mask
 	 /returns error message from error mask
 	*/
-	static string getErrorMessage(int64_t slsErrorMask){
+	static std::string getErrorMessage(int64_t slsErrorMask){
 
-		string retval = "";
+		std::string retval = "";
 
 		if(slsErrorMask&CANNOT_CONNECT_TO_DETECTOR)
 			retval.append("Cannot connect to Detector\n");

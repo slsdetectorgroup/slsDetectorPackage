@@ -3620,33 +3620,33 @@ int multiSlsDetector::exitServer() {
 
 
 /** returns the detector trimbit/settings directory  */
-// char* multiSlsDetector::getSettingsDir() {
 string multiSlsDetector::getSettingsDir() {
-  string s0="", s1="", s;
 
+	string concatenatedDir, firstDir;
+	bool dirNotSame = false;
 
-  //char ans[1000];
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet) {
     if (detectors[idet]) {
-      s=detectors[idet]->getSettingsDir();
+      string thisDir = detectors[idet]->getSettingsDir();
       if(detectors[idet]->getErrorMask())
-	setErrorMask(getErrorMask()|(1<<idet));
+				setErrorMask(getErrorMask()|(1<<idet));
 
-      if (s0=="")
-	s0=s;
-      else
-	s0+=string("+")+s;
-      if (s1=="")
-	s1=s;
-      else if (s1!=s)
-	s1="bad";
+      if (firstDir.empty()){
+				concatenatedDir = thisDir;
+				firstDir = thisDir;
+			}
+      else{
+				concatenatedDir += "+" + thisDir;
+			}
+				
+      if (firstDir != thisDir)
+				dirNotSame = true;
     }
   }
-  if (s1=="bad")
-    return s0;
+  if (dirNotSame)
+    return concatenatedDir;
   else
-    return s1;
-  // return ans;
+    return firstDir;
 }
 
 

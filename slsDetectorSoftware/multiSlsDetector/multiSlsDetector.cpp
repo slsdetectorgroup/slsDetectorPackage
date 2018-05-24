@@ -1144,20 +1144,16 @@ int multiSlsDetector::setOnline(int off) {
 
 
 string multiSlsDetector::checkOnline() {
-  string retval1 = "",retval;
+  string offlineDetectors = "";
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet) {
     if (detectors[idet]) {
-      retval=detectors[idet]->checkOnline();
-      if(!retval.empty()){
-        retval1.append(retval);
-    	retval1.append("+");
-      }
+      string tmp = detectors[idet]->checkOnline();
+    	if(!tmp.empty())
+				offlineDetectors += tmp + "+";
     }
-  }
-  return retval1;
-};
-
-
+	}
+  return offlineDetectors;
+}
 
 int multiSlsDetector::activate(int const enable){
 	int i;

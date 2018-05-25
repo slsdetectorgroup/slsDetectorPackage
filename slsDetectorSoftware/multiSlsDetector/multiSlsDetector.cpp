@@ -1047,21 +1047,7 @@ string multiSlsDetector::checkOnline()
 
 int multiSlsDetector::activate(int const enable)
 {
-    int ret1 = -100, ret;
-
-    for (int i = 0; i < thisMultiDetector->numberOfDetectors; ++i) {
-        if (detectors[i]) {
-            ret = detectors[i]->activate(enable);
-            if (detectors[i]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << i));
-            if (ret1 == -100)
-                ret1 = ret;
-            else if (ret != ret1)
-                ret1 = -1;
-        }
-    }
-
-    return ret1;
+	return callDetectorMemeber(&slsDetector::activate, enable);
 }
 
 int multiSlsDetector::exists()
@@ -2799,11 +2785,9 @@ double multiSlsDetector::getRateCorrectionTau()
 
 int multiSlsDetector::getRateCorrection()
 {
-
     if (getDetectorsType() == EIGER) {
         return getRateCorrectionTau();
     }
-
     if (thisMultiDetector->correctionMask & (1 << RATE_CORRECTION)) {
         return 1;
     } else
@@ -3509,9 +3493,7 @@ string multiSlsDetector::setSettingsDir(string s)
 
 int multiSlsDetector::setTrimEn(int ne, int* ene)
 {
-
     int ret = -100, ret1;
-
     for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
         if (detectors[idet]) {
             ret1 = detectors[idet]->setTrimEn(ne, ene);
@@ -3528,9 +3510,7 @@ int multiSlsDetector::setTrimEn(int ne, int* ene)
 
 int multiSlsDetector::getTrimEn(int* ene)
 {
-
     int ret = -100, ret1;
-
     for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
         if (detectors[idet]) {
             ret1 = detectors[idet]->getTrimEn(ene);
@@ -3598,7 +3578,6 @@ string multiSlsDetector::getNetworkParameter(networkParameter p)
 {
     string s0 = "", s1 = "", s;
     string ans = "";
-    //char ans[1000];
     for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
         if (detectors[idet]) {
             s = detectors[idet]->getNetworkParameter(p);
@@ -3618,10 +3597,8 @@ string multiSlsDetector::getNetworkParameter(networkParameter p)
     }
     if (s1 == "bad")
         ans = s0;
-    // strcpy(ans,s0.c_str());
     else
         ans = s1;
-    // strcpy(ans,s1.c_str());
     return ans;
 }
 
@@ -3705,22 +3682,7 @@ int multiSlsDetector::setPort(portType t, int p)
 
 int multiSlsDetector::lockServer(int p)
 {
-
-    int ret = -100, ret1;
-
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-        if (detectors[idet]) {
-            ret1 = detectors[idet]->lockServer(p);
-            if (detectors[idet]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << idet));
-            if (ret == -100)
-                ret = ret1;
-            else if (ret != ret1)
-                ret = -1;
-        }
-    }
-
-    return ret;
+	return callDetectorMemeber(&slsDetector::lockServer, p);
 }
 
 string multiSlsDetector::getLastClientIP()
@@ -3730,7 +3692,6 @@ string multiSlsDetector::getLastClientIP()
 
 int multiSlsDetector::setReadOutFlags(readOutFlags flag)
 {
-
     int ret = -100, ret1;
 
     for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
@@ -3750,7 +3711,6 @@ int multiSlsDetector::setReadOutFlags(readOutFlags flag)
 
 slsDetectorDefs::externalCommunicationMode multiSlsDetector::setExternalCommunicationMode(externalCommunicationMode pol)
 {
-
     externalCommunicationMode ret, ret1;
 
     if (detectors[0])
@@ -3805,9 +3765,7 @@ string multiSlsDetector::getSettingsFile()
 
 int multiSlsDetector::configureMAC()
 {
-
     int ret = -100, ret1;
-
     for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
         if (detectors[idet]) {
             ret1 = detectors[idet]->configureMAC();
@@ -3819,7 +3777,6 @@ int multiSlsDetector::configureMAC()
                 ret = -1;
         }
     }
-
     return ret;
 }
 
@@ -3901,36 +3858,12 @@ int multiSlsDetector::writeCounterBlockFile(string const fname, int startACQ)
 
 int multiSlsDetector::resetCounterBlock(int startACQ)
 {
-
-    int ret = -100, ret1;
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-        if (detectors[idet]) {
-            ret1 = detectors[idet]->resetCounterBlock(startACQ);
-            if (detectors[idet]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << idet));
-            if (ret == -100)
-                ret = ret1;
-            else if (ret != ret1)
-                ret = -1;
-        }
-    }
-    return ret;
+    return callDetectorMemeber(&slsDetector::resetCounterBlock, startACQ);
 }
 
 int multiSlsDetector::setCounterBit(int i)
 {
-    int ret = -100, ret1;
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet)
-        if (detectors[idet]) {
-            ret1 = detectors[idet]->setCounterBit(i);
-            if (detectors[idet]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << idet));
-            if (ret == -100)
-                ret = ret1;
-            else if (ret != ret1)
-                ret = -1;
-        }
-    return ret;
+    return callDetectorMemeber(&slsDetector::setCounterBit, i);
 }
 
 int multiSlsDetector::setDynamicRange(int p)
@@ -6012,22 +5945,7 @@ int multiSlsDetector::processImageWithGapPixels(char* image, char*& gpImage)
 
 int multiSlsDetector::lockReceiver(int lock)
 {
-
-    int ret = -100, ret1;
-
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-        if (detectors[idet]) {
-            ret1 = detectors[idet]->lockReceiver(lock);
-            if (detectors[idet]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << idet));
-            if (ret == -100)
-                ret = ret1;
-            else if (ret != ret1)
-                ret = -1;
-        }
-    }
-
-    return ret;
+    return callDetectorMemeber(&slsDetector::lockReceiver, lock);
 }
 
 string multiSlsDetector::getReceiverLastClientIP()
@@ -6051,40 +5969,12 @@ int multiSlsDetector::exitReceiver()
 
 int multiSlsDetector::enableWriteToFile(int enable)
 {
-    int ret = -100, ret1;
-
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-        if (detectors[idet]) {
-            ret1 = detectors[idet]->enableWriteToFile(enable);
-            if (detectors[idet]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << idet));
-            if (ret == -100)
-                ret = ret1;
-            else if (ret != ret1)
-                ret = -1;
-        }
-    }
-
-    return ret;
+    return callDetectorMemeber(&slsDetector::enableWriteToFile, enable);
 }
 
 int multiSlsDetector::overwriteFile(int enable)
 {
-    int ret = -100, ret1;
-
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-        if (detectors[idet]) {
-            ret1 = detectors[idet]->overwriteFile(enable);
-            if (detectors[idet]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << idet));
-            if (ret == -100)
-                ret = ret1;
-            else if (ret != ret1)
-                ret = -1;
-        }
-    }
-
-    return ret;
+    return callDetectorMemeber(&slsDetector::overwriteFile, enable);
 }
 
 string multiSlsDetector::getErrorMessage(int& critical)

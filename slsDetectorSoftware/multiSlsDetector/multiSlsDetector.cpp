@@ -24,6 +24,7 @@ ID:         $Id$
 #include <sys/shm.h>
 #include <sys/types.h>
 
+#include <vector>
 // char ans[MAX_STR_LENGTH];
 
 int multiSlsDetector::freeSharedMemory()
@@ -1047,7 +1048,7 @@ string multiSlsDetector::checkOnline()
 
 int multiSlsDetector::activate(int const enable)
 {
-	return callDetectorMemeber(&slsDetector::activate, enable);
+    return callDetectorMemeber(&slsDetector::activate, enable);
 }
 
 int multiSlsDetector::exists()
@@ -3412,7 +3413,6 @@ int multiSlsDetector::callDetectorMemeber(int (slsDetector::*somefunc)(int), int
     int ret = -100, ret1;
     for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet)
         if (detectors[idet]) {
-            // ret1 = detectors[idet]->setReceiverSilentMode(i);
             ret1 = (detectors[idet]->*somefunc)(value);
             if (detectors[idet]->getErrorMask())
                 setErrorMask(getErrorMask() | (1 << idet));
@@ -3451,6 +3451,42 @@ string multiSlsDetector::callDetectorMemeber(string (slsDetector::*somefunc)())
     else
         return firstValue;
 }
+
+int multiSlsDetector::parallelCallDetectorMember(int (slsDetector::*somefunc)(int), int value)
+{
+    int ret = -100;
+
+    if (!threadpool) {
+        cout << "Error in creating threadpool. Exiting" << endl;
+        return -1;
+    } else {
+        std::vector<int> return_values(thisMultiDetector->numberOfDetectors, -1);
+        for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
+            if (detectors[idet]) {
+                Task* task = new Task(new func1_t<int, int>(somefunc,
+                    detectors[idet], value, &return_values[idet]));
+                threadpool->add_task(task);
+            }
+        }
+        threadpool->startExecuting();
+        threadpool->wait_for_tasks_to_complete();
+
+        for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
+            cout << return_values[idet] << "\n";
+            if (detectors[idet]) {
+                if (ret == -100)
+                    ret = return_values[idet];
+                else if (ret != return_values[idet])
+                    ret = -1;
+                if (detectors[idet]->getErrorMask())
+                    setErrorMask(getErrorMask() | (1 << idet));
+            }
+        }
+    }
+
+    return ret;
+}
+
 
 /** returns the detector trimbit/settings directory  */
 string multiSlsDetector::getSettingsDir()
@@ -3682,7 +3718,7 @@ int multiSlsDetector::setPort(portType t, int p)
 
 int multiSlsDetector::lockServer(int p)
 {
-	return callDetectorMemeber(&slsDetector::lockServer, p);
+    return callDetectorMemeber(&slsDetector::lockServer, p);
 }
 
 string multiSlsDetector::getLastClientIP()
@@ -6329,43 +6365,11 @@ int multiSlsDetector::pulsePixelNMove(int n, int x, int y)
     return ret;
 }
 
+
+
 int multiSlsDetector::pulseChip(int n)
 {
-    int ret = -100;
-
-    if (!threadpool) {
-        cout << "Error in creating threadpool. Exiting" << endl;
-        return -1;
-    } else {
-        //return storage values
-        int* iret[thisMultiDetector->numberOfDetectors];
-        for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-            if (detectors[idet]) {
-                iret[idet] = new int(-1);
-                Task* task = new Task(new func1_t<int, int>(&slsDetector::pulseChip,
-                    detectors[idet], n, iret[idet]));
-                threadpool->add_task(task);
-            }
-        }
-        threadpool->startExecuting();
-        threadpool->wait_for_tasks_to_complete();
-        for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-            if (detectors[idet]) {
-                if (iret[idet] != NULL) {
-                    if (ret == -100)
-                        ret = *iret[idet];
-                    else if (ret != *iret[idet])
-                        ret = -1;
-                    delete iret[idet];
-                } else
-                    ret = -1;
-                if (detectors[idet]->getErrorMask())
-                    setErrorMask(getErrorMask() | (1 << idet));
-            }
-        }
-    }
-
-    return ret;
+		return parallelCallDetectorMember(&slsDetector::pulseChip, n);
 }
 
 void multiSlsDetector::setAcquiringFlag(bool b)

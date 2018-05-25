@@ -3429,7 +3429,8 @@ std::string multiSlsDetector::callDetectors(std::string (slsDetector::*somefunc)
     bool valueNotSame = false;
     for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
         if (detectors[idet]) {
-            string thisValue = (detectors[idet]->*somefunc)();;
+            string thisValue = (detectors[idet]->*somefunc)();
+            ;
             if (detectors[idet]->getErrorMask())
                 setErrorMask(getErrorMask() | (1 << idet));
 
@@ -3451,7 +3452,7 @@ std::string multiSlsDetector::callDetectors(std::string (slsDetector::*somefunc)
 /** returns the detector trimbit/settings directory  */
 string multiSlsDetector::getSettingsDir()
 {
-	return callDetectors(&slsDetector::getSettingsDir);
+    return callDetectors(&slsDetector::getSettingsDir);
     // string concatenatedDir, firstDir;
     // bool dirNotSame = false;
 
@@ -3554,30 +3555,7 @@ int multiSlsDetector::getTrimEn(int* ene)
 */
 string multiSlsDetector::getCalDir()
 {
-	return callDetectors(&slsDetector::getCalDir);
-    // string s0 = "", s1 = "", s;
-    // //char ans[1000];
-    // for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-    //     if (detectors[idet]) {
-    //         s = detectors[idet]->getCalDir();
-    //         if (detectors[idet]->getErrorMask())
-    //             setErrorMask(getErrorMask() | (1 << idet));
-
-    //         if (s0 == "")
-    //             s0 = s;
-    //         else
-    //             s0 += string("+") + s;
-    //         if (s1 == "")
-    //             s1 = s;
-    //         else if (s1 != s)
-    //             s1 = "bad";
-    //     }
-    // }
-    // if (s1 == "bad")
-    //     strcpy(ans, s0.c_str());
-    // else
-    //     strcpy(ans, s1.c_str());
-    // return ans;
+    return callDetectors(&slsDetector::getCalDir);
 }
 
 /**
@@ -3751,28 +3729,7 @@ int multiSlsDetector::lockServer(int p)
 
 string multiSlsDetector::getLastClientIP()
 {
-    string s0 = "", s1 = "", s;
-
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-        if (detectors[idet]) {
-            s = detectors[idet]->getLastClientIP();
-            if (detectors[idet]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << idet));
-
-            if (s0 == "")
-                s0 = s;
-            else
-                s0 += string("+") + s;
-            if (s1 == "")
-                s1 = s;
-            else if (s1 != s)
-                s1 = "bad";
-        }
-    }
-    if (s1 == "bad")
-        return s0;
-    else
-        return s1;
+    return callDetectors(&slsDetector::getLastClientIP);
 }
 
 int multiSlsDetector::setReadOutFlags(readOutFlags flag)
@@ -6101,28 +6058,7 @@ int multiSlsDetector::lockReceiver(int lock)
 
 string multiSlsDetector::getReceiverLastClientIP()
 {
-    string s0 = "", s1 = "", s;
-
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-        if (detectors[idet]) {
-            s = detectors[idet]->getReceiverLastClientIP();
-            if (detectors[idet]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << idet));
-
-            if (s0 == "")
-                s0 = s;
-            else
-                s0 += string("+") + s;
-            if (s1 == "")
-                s1 = s;
-            else if (s1 != s)
-                s1 = "bad";
-        }
-    }
-    if (s1 == "bad")
-        return s0;
-    else
-        return s1;
+    return callDetectors(&slsDetector::getReceiverLastClientIP);
 }
 
 int multiSlsDetector::exitReceiver()

@@ -5280,10 +5280,8 @@ slsDetectorDefs::runStatus multiSlsDetector::getReceiverStatus()
 
 int multiSlsDetector::getFramesCaughtByAnyReceiver()
 {
-
     int ret = 0;
     int i   = thisMultiDetector->masterPosition;
-
     if (i >= 0) {
         if (detectors[i]) {
             ret = detectors[i]->getFramesCaughtByReceiver();
@@ -5293,7 +5291,6 @@ int multiSlsDetector::getFramesCaughtByAnyReceiver()
             return ret;
         }
     }
-
     for (int i = 0; i < thisMultiDetector->numberOfDetectors; ++i)
         if (detectors[i]) {
             ret = detectors[i]->getFramesCaughtByReceiver();
@@ -5870,11 +5867,9 @@ int multiSlsDetector::setReceiverReadTimer(int time_in_ms)
 int multiSlsDetector::enableDataStreamingToClient(int enable)
 {
     if (enable >= 0) {
-
         //destroy data threads
         if (!enable)
             createReceivingDataSockets(true);
-
         //create data threads
         else {
             if (createReceivingDataSockets() == FAIL) {
@@ -5922,11 +5917,8 @@ int multiSlsDetector::setReceiverSilentMode(int i)
   */
 int multiSlsDetector::setCTBPattern(string fname)
 {
-
     uint64_t word;
-
     int addr = 0;
-
     FILE* fd = fopen(fname.c_str(), "r");
     if (fd > 0) {
         while (fread(&word, sizeof(word), 1, fd)) {

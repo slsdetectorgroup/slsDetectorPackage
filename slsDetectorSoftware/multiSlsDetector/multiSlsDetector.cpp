@@ -639,7 +639,6 @@ string multiSlsDetector::sgetDetectorsType(int pos)
 
 int multiSlsDetector::getDetectorId(int pos)
 {
-
 #ifdef VERBOSE
     cout << "Getting detector ID " << pos << endl;
 #endif
@@ -653,7 +652,6 @@ int multiSlsDetector::getDetectorId(int pos)
 
 int multiSlsDetector::setDetectorId(int ival, int pos)
 {
-
     if (pos >= 0) {
         addSlsDetector(ival, pos);
         if (detectors[pos])
@@ -666,7 +664,6 @@ int multiSlsDetector::setDetectorId(int ival, int pos)
 
 int multiSlsDetector::addSlsDetector(const char* name, int pos)
 {
-
     detectorType t = getDetectorType(string(name));
     int online     = 0;
     slsDetector* s = NULL;
@@ -3426,34 +3423,58 @@ int multiSlsDetector::exitServer()
     return ival;
 }
 
-/** returns the detector trimbit/settings directory  */
-string multiSlsDetector::getSettingsDir()
+std::string multiSlsDetector::callDetectors(std::string (slsDetector::*somefunc)())
 {
-
-    string concatenatedDir, firstDir;
-    bool dirNotSame = false;
-
+    string concatenatedValue, firstValue;
+    bool valueNotSame = false;
     for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
         if (detectors[idet]) {
-            string thisDir = detectors[idet]->getSettingsDir();
+            string thisValue = (detectors[idet]->*somefunc)();;
             if (detectors[idet]->getErrorMask())
                 setErrorMask(getErrorMask() | (1 << idet));
 
-            if (firstDir.empty()) {
-                concatenatedDir = thisDir;
-                firstDir        = thisDir;
+            if (firstValue.empty()) {
+                concatenatedValue = thisValue;
+                firstValue        = thisValue;
             } else {
-                concatenatedDir += "+" + thisDir;
+                concatenatedValue += "+" + thisValue;
             }
-
-            if (firstDir != thisDir)
-                dirNotSame = true;
+            if (firstValue != thisValue)
+                valueNotSame = true;
         }
     }
-    if (dirNotSame)
-        return concatenatedDir;
+    if (valueNotSame)
+        return concatenatedValue;
     else
-        return firstDir;
+        return firstValue;
+}
+/** returns the detector trimbit/settings directory  */
+string multiSlsDetector::getSettingsDir()
+{
+	return callDetectors(&slsDetector::getSettingsDir);
+    // string concatenatedDir, firstDir;
+    // bool dirNotSame = false;
+
+    // for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
+    //     if (detectors[idet]) {
+    //         string thisDir = detectors[idet]->getSettingsDir();
+    //         if (detectors[idet]->getErrorMask())
+    //             setErrorMask(getErrorMask() | (1 << idet));
+
+    //         if (firstDir.empty()) {
+    //             concatenatedDir = thisDir;
+    //             firstDir        = thisDir;
+    //         } else {
+    //             concatenatedDir += "+" + thisDir;
+    //         }
+    //         if (firstDir != thisDir)
+    //             dirNotSame = true;
+    //     }
+    // }
+    // if (dirNotSame)
+    //     return concatenatedDir;
+    // else
+    //     return firstDir;
 }
 
 /** sets the detector trimbit/settings directory  \sa sharedSlsDetector */

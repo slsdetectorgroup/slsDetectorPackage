@@ -1044,7 +1044,7 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
 
-  std::string callDetectors(std::string(slsDetector::*somefunc)());
+  std::string callDetectorMemeber(std::string(slsDetector::*somefunc)());
 
   /** returns the detector trimbit/settings directory  \sa sharedSlsDetector */
   std::string getSettingsDir();

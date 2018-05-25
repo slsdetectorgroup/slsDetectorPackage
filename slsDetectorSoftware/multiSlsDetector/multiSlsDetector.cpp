@@ -3423,10 +3423,11 @@ int multiSlsDetector::exitServer()
     return ival;
 }
 
-std::string multiSlsDetector::callDetectors(std::string (slsDetector::*somefunc)())
+string multiSlsDetector::callDetectorMemeber(string (slsDetector::*somefunc)())
 {
     string concatenatedValue, firstValue;
     bool valueNotSame = false;
+
     for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
         if (detectors[idet]) {
             string thisValue = (detectors[idet]->*somefunc)();
@@ -3449,10 +3450,11 @@ std::string multiSlsDetector::callDetectors(std::string (slsDetector::*somefunc)
     else
         return firstValue;
 }
+
 /** returns the detector trimbit/settings directory  */
 string multiSlsDetector::getSettingsDir()
 {
-    return callDetectors(&slsDetector::getSettingsDir);
+    return callDetectorMemeber(&slsDetector::getSettingsDir);
 }
 
 /** sets the detector trimbit/settings directory  \sa sharedSlsDetector */
@@ -3532,7 +3534,7 @@ int multiSlsDetector::getTrimEn(int* ene)
 */
 string multiSlsDetector::getCalDir()
 {
-    return callDetectors(&slsDetector::getCalDir);
+    return callDetectorMemeber(&slsDetector::getCalDir);
 }
 
 /**
@@ -3706,7 +3708,7 @@ int multiSlsDetector::lockServer(int p)
 
 string multiSlsDetector::getLastClientIP()
 {
-    return callDetectors(&slsDetector::getLastClientIP);
+    return callDetectorMemeber(&slsDetector::getLastClientIP);
 }
 
 int multiSlsDetector::setReadOutFlags(readOutFlags flag)
@@ -3781,7 +3783,7 @@ slsDetectorDefs::externalSignalFlag multiSlsDetector::setExternalSignalFlags(ext
 
 string multiSlsDetector::getSettingsFile()
 {
-	return callDetectors(&slsDetector::getSettingsFile);
+	return callDetectorMemeber(&slsDetector::getSettingsFile);
 }
 
 int multiSlsDetector::configureMAC()
@@ -6013,7 +6015,7 @@ int multiSlsDetector::lockReceiver(int lock)
 
 string multiSlsDetector::getReceiverLastClientIP()
 {
-    return callDetectors(&slsDetector::getReceiverLastClientIP);
+    return callDetectorMemeber(&slsDetector::getReceiverLastClientIP);
 }
 
 int multiSlsDetector::exitReceiver()

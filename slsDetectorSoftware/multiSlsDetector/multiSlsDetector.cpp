@@ -24,7 +24,7 @@ ID:         $Id$
 #include <sys/shm.h>
 #include <sys/types.h>
 
-char ans[MAX_STR_LENGTH];
+// char ans[MAX_STR_LENGTH];
 
 int multiSlsDetector::freeSharedMemory()
 {
@@ -3453,29 +3453,6 @@ std::string multiSlsDetector::callDetectors(std::string (slsDetector::*somefunc)
 string multiSlsDetector::getSettingsDir()
 {
     return callDetectors(&slsDetector::getSettingsDir);
-    // string concatenatedDir, firstDir;
-    // bool dirNotSame = false;
-
-    // for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-    //     if (detectors[idet]) {
-    //         string thisDir = detectors[idet]->getSettingsDir();
-    //         if (detectors[idet]->getErrorMask())
-    //             setErrorMask(getErrorMask() | (1 << idet));
-
-    //         if (firstDir.empty()) {
-    //             concatenatedDir = thisDir;
-    //             firstDir        = thisDir;
-    //         } else {
-    //             concatenatedDir += "+" + thisDir;
-    //         }
-    //         if (firstDir != thisDir)
-    //             dirNotSame = true;
-    //     }
-    // }
-    // if (dirNotSame)
-    //     return concatenatedDir;
-    // else
-    //     return firstDir;
 }
 
 /** sets the detector trimbit/settings directory  \sa sharedSlsDetector */
@@ -3804,29 +3781,7 @@ slsDetectorDefs::externalSignalFlag multiSlsDetector::setExternalSignalFlags(ext
 
 string multiSlsDetector::getSettingsFile()
 {
-
-    string s0 = "", s1 = "", s;
-
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-        if (detectors[idet]) {
-            s = detectors[idet]->getSettingsFile();
-            if (detectors[idet]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << idet));
-
-            if (s0 == "")
-                s0 = s;
-            else
-                s0 += string("+") + s;
-            if (s1 == "")
-                s1 = s;
-            else if (s1 != s)
-                s1 = "bad";
-        }
-    }
-    if (s1 == "bad")
-        return s0;
-    else
-        return s1;
+	return callDetectors(&slsDetector::getSettingsFile);
 }
 
 int multiSlsDetector::configureMAC()

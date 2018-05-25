@@ -413,12 +413,12 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   /**
      returns the location of the calibration files
   */
-  virtual char* getCalDir()=0; 
+  virtual std::string getCalDir()=0; 
 
   /**
      sets the location of the calibration files
   */
-  virtual char* setCalDir(std::string s)=0;
+  virtual std::string setCalDir(std::string s)=0;
 
   /** Frees the shared memory  -  should not be used except for debugging*/
   virtual int freeSharedMemory()=0;

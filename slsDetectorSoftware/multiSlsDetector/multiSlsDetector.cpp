@@ -3552,38 +3552,39 @@ int multiSlsDetector::getTrimEn(int* ene)
    returns the location of the calibration files
    \sa  sharedSlsDetector
 */
-char* multiSlsDetector::getCalDir()
+string multiSlsDetector::getCalDir()
 {
-    string s0 = "", s1 = "", s;
-    //char ans[1000];
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-        if (detectors[idet]) {
-            s = detectors[idet]->getCalDir();
-            if (detectors[idet]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << idet));
+	return callDetectors(&slsDetector::getCalDir);
+    // string s0 = "", s1 = "", s;
+    // //char ans[1000];
+    // for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
+    //     if (detectors[idet]) {
+    //         s = detectors[idet]->getCalDir();
+    //         if (detectors[idet]->getErrorMask())
+    //             setErrorMask(getErrorMask() | (1 << idet));
 
-            if (s0 == "")
-                s0 = s;
-            else
-                s0 += string("+") + s;
-            if (s1 == "")
-                s1 = s;
-            else if (s1 != s)
-                s1 = "bad";
-        }
-    }
-    if (s1 == "bad")
-        strcpy(ans, s0.c_str());
-    else
-        strcpy(ans, s1.c_str());
-    return ans;
+    //         if (s0 == "")
+    //             s0 = s;
+    //         else
+    //             s0 += string("+") + s;
+    //         if (s1 == "")
+    //             s1 = s;
+    //         else if (s1 != s)
+    //             s1 = "bad";
+    //     }
+    // }
+    // if (s1 == "bad")
+    //     strcpy(ans, s0.c_str());
+    // else
+    //     strcpy(ans, s1.c_str());
+    // return ans;
 }
 
 /**
    sets the location of the calibration files
    \sa  sharedSlsDetector
 */
-char* multiSlsDetector::setCalDir(string s)
+string multiSlsDetector::setCalDir(string s)
 {
 
     if (s.find('+') == string::npos) {

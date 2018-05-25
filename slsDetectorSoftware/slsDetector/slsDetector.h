@@ -493,12 +493,12 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      returns the location of the calibration files
      \sa  sharedSlsDetector
   */
-  char* getCalDir() {return thisDetector->calDir;};
+  std::string getCalDir() {return thisDetector->calDir;};
   /**
      sets the location of the calibration files
      \sa  sharedSlsDetector
   */
-  char* setCalDir(string s) {sprintf(thisDetector->calDir, s.c_str()); return thisDetector->calDir;}; 
+  std::string setCalDir(string s) {sprintf(thisDetector->calDir, s.c_str()); return thisDetector->calDir;}; 
 
 
 

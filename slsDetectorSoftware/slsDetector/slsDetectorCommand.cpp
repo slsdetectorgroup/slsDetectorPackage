@@ -3061,9 +3061,9 @@ string slsDetectorCommand::cmdCalDir(int narg, char *args[], int action){
 	if (action==PUT_ACTION) {
 		myDet->setCalDir(string(args[1]));
 	}
-	if (myDet->getCalDir()==NULL)
+	if ( (myDet->getCalDir()).empty() )
 		return string("undefined");
-	return string(myDet->getCalDir());
+	return myDet->getCalDir();
 }
 
 

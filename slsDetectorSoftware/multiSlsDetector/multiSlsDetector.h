@@ -1054,12 +1054,12 @@ class multiSlsDetector  : public slsDetectorUtils {
      returns the location of the calibration files
      \sa  sharedSlsDetector
   */
-  char* getCalDir();
+  std::string getCalDir();
   /**
      sets the location of the calibration files
      \sa  sharedSlsDetector
   */
-  char* setCalDir(std::string s); 
+  std::string setCalDir(std::string s); 
 
 
   std::string getNetworkParameter(networkParameter);

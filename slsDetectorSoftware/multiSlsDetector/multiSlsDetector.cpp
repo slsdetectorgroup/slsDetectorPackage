@@ -3423,12 +3423,13 @@ int multiSlsDetector::exitServer()
     return ival;
 }
 
-int multiSlsDetector::callDetectorMemeber(int (slsDetector::*somefunc)(int), int value){
-	  int ret = -100, ret1;
+int multiSlsDetector::callDetectorMemeber(int (slsDetector::*somefunc)(int), int value)
+{
+    int ret = -100, ret1;
     for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet)
         if (detectors[idet]) {
             // ret1 = detectors[idet]->setReceiverSilentMode(i);
-						ret1 = (detectors[idet]->*somefunc)(value);
+            ret1 = (detectors[idet]->*somefunc)(value);
             if (detectors[idet]->getErrorMask())
                 setErrorMask(getErrorMask() | (1 << idet));
             if (ret == -100)
@@ -3438,8 +3439,6 @@ int multiSlsDetector::callDetectorMemeber(int (slsDetector::*somefunc)(int), int
         }
     return ret;
 }
-
-
 
 string multiSlsDetector::callDetectorMemeber(string (slsDetector::*somefunc)())
 {
@@ -3801,7 +3800,7 @@ slsDetectorDefs::externalSignalFlag multiSlsDetector::setExternalSignalFlags(ext
 
 string multiSlsDetector::getSettingsFile()
 {
-	return callDetectorMemeber(&slsDetector::getSettingsFile);
+    return callDetectorMemeber(&slsDetector::getSettingsFile);
 }
 
 int multiSlsDetector::configureMAC()
@@ -6151,59 +6150,17 @@ int64_t multiSlsDetector::clearAllErrorMask()
 
 int multiSlsDetector::calibratePedestal(int frames)
 {
-    int ret = -100, ret1;
-
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-        if (detectors[idet]) {
-            ret1 = detectors[idet]->calibratePedestal(frames);
-            if (detectors[idet]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << idet));
-            if (ret == -100)
-                ret = ret1;
-            else if (ret != ret1)
-                ret = -1;
-        }
-    }
-
-    return ret;
+    return callDetectorMemeber(&slsDetector::calibratePedestal, frames);
 }
 
 int multiSlsDetector::setReadReceiverFrequency(int freq)
 {
-    int ret = -100, ret1;
-
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-        if (detectors[idet]) {
-            ret1 = detectors[idet]->setReadReceiverFrequency(freq);
-            if (detectors[idet]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << idet));
-            if (ret == -100)
-                ret = ret1;
-            else if (ret != ret1)
-                ret = -1;
-        }
-    }
-
-    return ret;
+    return callDetectorMemeber(&slsDetector::setReadReceiverFrequency, freq);
 }
 
 int multiSlsDetector::setReceiverReadTimer(int time_in_ms)
 {
-    int ret = -100, ret1;
-
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-        if (detectors[idet]) {
-            ret1 = detectors[idet]->setReceiverReadTimer(time_in_ms);
-            if (detectors[idet]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << idet));
-            if (ret == -100)
-                ret = ret1;
-            else if (ret != ret1)
-                ret = -1;
-        }
-    }
-
-    return ret;
+    return callDetectorMemeber(&slsDetector::setReceiverReadTimer, time_in_ms);
 }
 
 int multiSlsDetector::enableDataStreamingToClient(int enable)
@@ -6270,22 +6227,22 @@ int multiSlsDetector::enableDataStreamingFromReceiver(int enable)
 
 int multiSlsDetector::enableReceiverCompression(int i)
 {
-	return callDetectorMemeber(&slsDetector::enableReceiverCompression, i);
+    return callDetectorMemeber(&slsDetector::enableReceiverCompression, i);
 }
 
 int multiSlsDetector::enableTenGigabitEthernet(int i)
 {
-	return callDetectorMemeber(&slsDetector::enableTenGigabitEthernet, i);
+    return callDetectorMemeber(&slsDetector::enableTenGigabitEthernet, i);
 }
 
 int multiSlsDetector::setReceiverFifoDepth(int i)
 {
-		return callDetectorMemeber(&slsDetector::setReceiverFifoDepth, i);
+    return callDetectorMemeber(&slsDetector::setReceiverFifoDepth, i);
 }
 
 int multiSlsDetector::setReceiverSilentMode(int i)
 {
-	return callDetectorMemeber(&slsDetector::setReceiverSilentMode, i);
+    return callDetectorMemeber(&slsDetector::setReceiverSilentMode, i);
 }
 
 /** opens pattern file and sends pattern to CTB

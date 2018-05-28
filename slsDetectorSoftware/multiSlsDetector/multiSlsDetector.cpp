@@ -17,8 +17,6 @@ ID:         $Id$
 #include "slsDetector.h"
 #include "usersFunctions.h"
 
-
-
 #include <iostream>
 #include <rapidjson/document.h> //json header in zmq stream
 #include <string>
@@ -642,10 +640,6 @@ string multiSlsDetector::sgetDetectorsType(int pos)
 
 int multiSlsDetector::getDetectorId(int pos)
 {
-#ifdef VERBOSE
-    cout << "Getting detector ID " << pos << endl;
-#endif
-
     if (pos >= 0) {
         if (detectors[pos])
             return detectors[pos]->getDetectorId();
@@ -3307,9 +3301,10 @@ int multiSlsDetector::exitServer()
     return ival;
 }
 
+/* utility function to check a range of return values*/
 int multiSlsDetector::minusOneIfDifferent(const std::vector<int>& return_values)
 {
-	int ret = -100;
+    int ret = -100;
     for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
         if (detectors[idet]) {
             if (ret == -100)
@@ -3323,36 +3318,43 @@ int multiSlsDetector::minusOneIfDifferent(const std::vector<int>& return_values)
     return ret;
 }
 
+// int multiSlsDetector::callDetectorMemeber(int (slsDetector::*somefunc)())
+// {
+//     int ret = -100, ret1;
+//     for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet)
+//         if (detectors[idet]) {
+//             ret1 = (detectors[idet]->*somefunc)();
+//             if (detectors[idet]->getErrorMask())
+//                 setErrorMask(getErrorMask() | (1 << idet));
+//             if (ret == -100)
+//                 ret = ret1;
+//             else if (ret != ret1)
+//                 ret = -1;
+//         }
+//     return ret;
+// }
 int multiSlsDetector::callDetectorMemeber(int (slsDetector::*somefunc)())
 {
-    int ret = -100, ret1;
+    std::vector<int> values(thisMultiDetector->numberOfDetectors, -1);
     for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet)
         if (detectors[idet]) {
-            ret1 = (detectors[idet]->*somefunc)();
+            values[idet] = (detectors[idet]->*somefunc)();
             if (detectors[idet]->getErrorMask())
                 setErrorMask(getErrorMask() | (1 << idet));
-            if (ret == -100)
-                ret = ret1;
-            else if (ret != ret1)
-                ret = -1;
         }
-    return ret;
+    return minusOneIfDifferent(values);
 }
 
 int multiSlsDetector::callDetectorMemeber(int (slsDetector::*somefunc)(int), int value)
 {
-    int ret = -100, ret1;
+    std::vector<int> values(thisMultiDetector->numberOfDetectors, -1);
     for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet)
         if (detectors[idet]) {
-            ret1 = (detectors[idet]->*somefunc)(value);
+            values[idet] = (detectors[idet]->*somefunc)(value);
             if (detectors[idet]->getErrorMask())
                 setErrorMask(getErrorMask() | (1 << idet));
-            if (ret == -100)
-                ret = ret1;
-            else if (ret != ret1)
-                ret = -1;
         }
-    return ret;
+    return minusOneIfDifferent(values);
 }
 
 string multiSlsDetector::callDetectorMemeber(string (slsDetector::*somefunc)())
@@ -3399,7 +3401,7 @@ int multiSlsDetector::parallelCallDetectorMember(int (slsDetector::*somefunc)(in
         }
         threadpool->startExecuting();
         threadpool->wait_for_tasks_to_complete();
-				return minusOneIfDifferent(return_values);
+        return minusOneIfDifferent(return_values);
     }
 }
 
@@ -3419,7 +3421,7 @@ int multiSlsDetector::parallelCallDetectorMember(int (slsDetector::*somefunc)(in
         }
         threadpool->startExecuting();
         threadpool->wait_for_tasks_to_complete();
-				return minusOneIfDifferent(return_values);
+        return minusOneIfDifferent(return_values);
     }
 }
 
@@ -3439,7 +3441,7 @@ int multiSlsDetector::parallelCallDetectorMember(int (slsDetector::*somefunc)())
         }
         threadpool->startExecuting();
         threadpool->wait_for_tasks_to_complete();
-				return minusOneIfDifferent(return_values);
+        return minusOneIfDifferent(return_values);
     }
 }
 

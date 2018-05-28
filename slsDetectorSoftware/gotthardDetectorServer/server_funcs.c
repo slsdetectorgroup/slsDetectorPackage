@@ -55,6 +55,8 @@ char mess[MAX_STR_LENGTH];
 
 int digitalTestBit = 0;
 
+int isControlServer = 0;
+
 
 int init_detector( int b) {
 
@@ -70,6 +72,7 @@ int init_detector( int b) {
   }
 
   if (b) {
+	  isControlServer = 1;
 #ifdef PROPIXD
 	  printf("***This is a PROPIX detector***\n");
 #else
@@ -196,6 +199,7 @@ int function_table() {
   flist[F_CLEANUP_ACQUISITION]=&stop_receiver;
   flist[F_CALIBRATE_PEDESTAL]=&calibrate_pedestal;
   flist[F_WRITE_ADC_REG]=&write_adc_register;
+  flist[F_CHECK_VERSION]= &check_version;
   return OK;
 }
 
@@ -3136,6 +3140,98 @@ int write_adc_register(int file_des) {
 		n = sendDataOnly(file_des,mess,sizeof(mess));
 	} else
 		n = sendDataOnly(file_des,&retval,sizeof(retval));
+
+	// return ok / fail
+	return ret;
+}
+
+
+
+
+int check_version(int file_des) {
+	int ret=OK,ret1=OK;
+	int n=0;
+	sprintf(mess,"check version failed\n");
+
+
+
+	// receive arguments
+	int64_t arg=-1;
+	n = receiveData(file_des,&arg,sizeof(arg),INT64);
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+
+
+	// execute action
+#ifdef MCB_FUNCS
+
+	// check software- firmware compatibility and basic tests
+	if (isControlServer) {
+#ifdef VERBOSE
+		printf("Checking software-firmware compatibility and basic test result\n");
+#endif
+		// check if firmware check is done
+		if (!isFirmwareCheckDone()) {
+			usleep(3 * 1000 * 1000);
+			if (!isFirmwareCheckDone()) {
+				ret = FAIL;
+				strcpy(mess,"Firmware Software Compatibility Check (Server Initialization) "
+						"still not done done in server. Unexpected.\n");
+				cprintf(RED, "Warning: %s", mess);
+			}
+		}
+		// check firmware check result
+		if (ret == OK) {
+			char* firmware_message = NULL;
+			if (getFirmwareCheckResult(&firmware_message) == FAIL) {
+				ret = FAIL;
+				strcpy(mess, firmware_message);
+				cprintf(RED, "Warning: %s", mess);
+			}
+		}
+	}
+
+	if (ret == OK) {
+#ifdef VERBOSE
+		printf("Checking versioning compatibility with value %d\n",arg);
+#endif
+		int64_t client_requiredVersion = arg;
+		int64_t det_apiVersion = getDetectorId(CLIENT_SOFTWARE_API_VERSION);
+		int64_t det_version = getDetectorId(DETECTOR_SOFTWARE_VERSION);
+
+		// old client
+		if (det_apiVersion > client_requiredVersion) {
+			ret = FAIL;
+			sprintf(mess,"Client's detector SW API version: (0x%llx). "
+					"Detector's SW API Version: (0x%llx). "
+					"Incompatible, update client!\n",
+					client_requiredVersion, det_apiVersion);
+			cprintf(RED, "Warning: %s", mess);
+		}
+
+		// old software
+		else if (client_requiredVersion > det_version) {
+			ret = FAIL;
+			sprintf(mess,"Detector SW Version: (0x%llx). "
+					"Client's detector SW API Version: (0x%llx). "
+					"Incompatible, update detector software!\n",
+					det_version, client_requiredVersion);
+			cprintf(RED, "Warning: %s", mess);
+		}
+	}
+#endif
+
+
+	// ret could be swapped during sendData
+	ret1 = ret;
+	// send ok / fail
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
+	// send return argument
+	if (ret==FAIL) {
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
+	}
 
 	// return ok / fail
 	return ret;

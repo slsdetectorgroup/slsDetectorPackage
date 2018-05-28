@@ -1029,6 +1029,14 @@ virtual int setReceiverSilentMode(int i = -1)=0;
   virtual bool isAcquireReady() = 0;
 
 
+  /**
+   * Check version compatibility with detector/receiver software
+   * (if hostname/rx_hostname has been set/ sockets created)
+   * \param p port type control port or data (receiver) port
+   * \returns FAIL for incompatibility, OK for compatibility
+   */
+  virtual int checkVersionCompatibility(portType t) = 0;
+
  protected:
 
 

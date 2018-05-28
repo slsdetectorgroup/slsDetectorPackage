@@ -51,6 +51,7 @@
 #define PREPARE_ACQUISITION					0x0000100000000000ULL
 #define CLEANUP_ACQUISITION					0x0000080000000000ULL
 #define REGISER_WRITE_READ					0x0000040000000000ULL
+#define VERSION_COMPATIBILITY				0x0000020000000000ULL
 //											0xFFFFFF0000000000ULL
 
 //											0x000000FFFFFFFFFFULL
@@ -169,6 +170,9 @@ public:
 
 		if(slsErrorMask&REGISER_WRITE_READ)
 			retval.append("Could not read/write register in detector\n");
+
+		if(slsErrorMask&VERSION_COMPATIBILITY)
+			retval.append("Incompatible versions with detector or receiver. Please check log for more details.\n");
 
 
 

@@ -14,6 +14,7 @@
 #include "gitInfoEiger.h"
 #include "FebControl.h"
 #include "Beb.h"
+#include "versionAPI.h"
 #endif
 
 int default_tau_from_file= -1;
@@ -89,18 +90,32 @@ int normal = 0;
 uint32_t detid = 0;
 #endif
 
-
-
-
-
 /* basic tests */
 
+int firmware_compatibility = OK;
+int firmware_check_done = 0;
+char firmware_message[MAX_STR_LENGTH];
+
+
+int isFirmwareCheckDone() {
+	return firmware_check_done;
+}
+
+int getFirmwareCheckResult(char** mess) {
+	*mess = firmware_message;
+	return firmware_compatibility;
+}
+
 void checkFirmwareCompatibility(int flag){
+	firmware_compatibility = OK;
+	firmware_check_done = 0;
+	memset(firmware_message, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
 	cprintf(BLUE,"\n\n"
 			"********************************************************\n"
 			"***************** EIGER Virtual Server *****************\n"
 			"********************************************************\n");
+	firmware_check_done = 1;
 	return;
 #endif
 	uint32_t ipadd	= getDetectorIP();
@@ -108,6 +123,7 @@ void checkFirmwareCompatibility(int flag){
 	int64_t fwversion = getDetectorId(DETECTOR_FIRMWARE_VERSION);
 	int64_t swversion = getDetectorId(DETECTOR_SOFTWARE_VERSION);
 	int64_t sw_fw_apiversion = getDetectorId(SOFTWARE_FIRMWARE_API_VERSION);
+	int64_t client_sw_apiversion = getDetectorId(CLIENT_SOFTWARE_API_VERSION);
 
 	cprintf(BLUE,"\n\n"
 			"********************************************************\n"
@@ -120,37 +136,61 @@ void checkFirmwareCompatibility(int flag){
 			"Firmware Version:\t\t %lld\n"
 			"Software Version:\t\t %llx\n"
 			"F/w-S/w API Version:\t\t %lld\n"
-			"Required Firmware Version:\t %d\n\n"
+			"Required Firmware Version:\t %d\n"
+			"Client-Software API Version:\t 0x%llx\n"
+			"\n"
 			"********************************************************\n",
 			(unsigned int)ipadd,
 			(long long unsigned int)macadd,
 			(long long int)fwversion,
 			(long long int)swversion,
 			(long long int)sw_fw_apiversion,
-			REQUIRED_FIRMWARE_VERSION);
+			REQUIRED_FIRMWARE_VERSION,
+			(long long int)client_sw_apiversion);
+
+	// return if flag is not zero, debug mode
+	if (flag) {
+		firmware_check_done = 1;
+	    return;
+	}
 
 	//cant read versions
 	if(!fwversion || !sw_fw_apiversion){
-		cprintf(RED,"FATAL ERROR: Cant read versions from FPGA. Please update firmware\n");
-		cprintf(RED,"Exiting Server. Goodbye!\n\n");
-		exit(-1);
+		strcpy(firmware_message,
+				"FATAL ERROR: Cant read versions from FPGA. Please update firmware.\n");
+		cprintf(RED,"%s\n\n", firmware_message);
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
 	}
 
 	//check for API compatibility - old server
 	if(sw_fw_apiversion > REQUIRED_FIRMWARE_VERSION){
-		cprintf(RED,"FATAL ERROR: This software version is incompatible.\n"
-				"Please update it to be compatible with this firmware\n\n");
-		cprintf(RED,"Exiting Server. Goodbye!\n\n");
-		exit(-1);
+		sprintf(firmware_message,
+				"FATAL ERROR: This detector software software version (%lld) is incompatible.\n"
+				"Please update detector software (min. %lld) to be compatible with this firmware.\n",
+				(long long int)sw_fw_apiversion,
+				(long long int)REQUIRED_FIRMWARE_VERSION);
+		cprintf(RED,"%s\n\n", firmware_message);
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
 	}
 
 	//check for firmware compatibility - old firmware
 	if( REQUIRED_FIRMWARE_VERSION > fwversion){
-		cprintf(RED,"FATAL ERROR: This firmware version is incompatible.\n"
-				"Please update it to v%d to be compatible with this server\n\n", REQUIRED_FIRMWARE_VERSION);
-		cprintf(RED,"Exiting Server. Goodbye!\n\n");
-		exit(-1);
+		sprintf(firmware_message,
+				"FATAL ERROR: This firmware version (%lld) is incompatible.\n"
+				"Please update firmware (min. %lld) to be compatible with this server.\n",
+				(long long int)fwversion,
+				(long long int)REQUIRED_FIRMWARE_VERSION);
+		cprintf(RED,"%s\n\n", firmware_message);
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
 	}
+	printf("Compatibility - success\n");
+	firmware_check_done = 1;
 }
 
 
@@ -175,6 +215,8 @@ int64_t getDetectorId(enum idMode arg){
 		return (int64_t)Beb_GetFirmwareSoftwareAPIVersion();
 	case DETECTOR_SOFTWARE_VERSION:
         return  (GITDATE & 0xFFFFFF);
+	case CLIENT_SOFTWARE_API_VERSION:
+		return APIEIGER;
 	default:
 		break;
 	}

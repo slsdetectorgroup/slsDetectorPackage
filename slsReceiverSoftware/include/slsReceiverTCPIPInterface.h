@@ -309,6 +309,10 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
     /** set frames per file */
     int set_frames_per_file();
 
+
+    /** check version compatibility */
+    int check_version_compatibility();
+
 	/** detector type */
 	detectorType myDetectorType;
 

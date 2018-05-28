@@ -674,7 +674,7 @@ void UDPStandardImplementation::SetLocalNetworkParameters() {
 	                "[/proc/sys/net/core/netdev_max_backlog] modified to %d\n",
 	                 MAX_SOCKET_INPUT_PACKET_QUEUE);
 	    } else {
-	        const char *msg = "Could not change max length of"
+	        const char *msg = "Could not change max length of "
 	                "input packet queue [net.core.netdev_max_backlog]. (No Root Privileges?)";
 	        FILE_LOG(logWARNING) << msg;
 	    }

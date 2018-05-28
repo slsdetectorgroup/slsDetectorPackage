@@ -119,6 +119,8 @@ enum detFuncs{
 
   F_AUTO_COMP_DISABLE,      /** < auto comp disable mode */
   F_STORAGE_CELL_START,     /** < storage cell start */
+
+  F_CHECK_VERSION,			/** < check version compatibility */
   /* Always append functions hereafter!!! */
 
   /* Always append functions before!!! */

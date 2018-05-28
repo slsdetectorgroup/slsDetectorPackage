@@ -17,6 +17,11 @@ Here are the definitions, but the actual implementation should be done for each 
 
 
 // basic tests
+#if defined(EIGERD) || defined(JUNGFRAUD) || defined(GOTTHARD)
+int			isFirmwareCheckDone();
+int			getFirmwareCheckResult(char** mess);
+#endif
+
 void 		checkFirmwareCompatibility(int flag);
 #if defined(MYTHEN3D) || defined(JUNGFRAUD)
 int 		checkType();

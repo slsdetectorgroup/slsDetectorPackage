@@ -105,7 +105,7 @@ private:
 class SuperTask:  public virtual slsDetectorDefs {
 public:
 	SuperTask():
-		m1(0),m2(0),m3(0),m4(0),m5(0),m6(0),m7(0),m8(0),m9(0),m10(0),m11(0),m12(0),m13(0),m14(0),m15(0),m16(0),m17(0),m18(0){};
+		m1(0),m2(0),m3(0),m4(0),m5(0),m6(0),m7(0),m8(0),m9(0),m10(0),m11(0),m12(0),m13(0),m14(0),m15(0),m16(0),m17(0),m18(0),m19(0){};
 	virtual ~SuperTask(){};
 protected:
 	/** Function signature defined
@@ -129,6 +129,7 @@ protected:
 	func4_t <int,				trimMode,int,int,int>* 			m16;
 	func4_t <int,				int,int,detectorSettings,int>*	m17;
 	func4_t <dacs_t,			dacs_t,dacIndex,int,int>* 		m18;
+	func1_t <int,				portType>* 						m19;
 };
 
 class Task:  public virtual SuperTask {
@@ -154,6 +155,7 @@ public:
 	Task(func4_t <int,				trimMode,int,int,int>* t):				SuperTask(),fnum(16){m16 = t;};
 	Task(func4_t <int,				int,int,detectorSettings,int>* t): 		SuperTask(),fnum(17){m17 = t;};
 	Task(func4_t <dacs_t,			dacs_t,dacIndex,int,int>* t):       	SuperTask(),fnum(18){m18 = t;};
+	Task(func1_t <int,				portType>* t):       					SuperTask(),fnum(19){m19 = t;};
 
 	virtual ~Task(){
         switch(fnum) {
@@ -175,6 +177,7 @@ public:
         case 16: delete m16;  break;
         case 17: delete m17;  break;
         case 18: delete m18;  break;
+        case 19: delete m19;  break;
         default:
             cprintf(RED, "Error: Task not defined. Abort!\n");
             break;
@@ -202,6 +205,7 @@ public:
 		case 16:    (*m16)();	break;
 		case 17:    (*m17)();	break;
 		case 18:    (*m18)();	break;
+		case 19:    (*m19)();	break;
 		default:
 			cprintf(RED, "Error: Task not defined. Abort!\n");
 			break;

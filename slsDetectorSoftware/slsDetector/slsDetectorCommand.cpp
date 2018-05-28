@@ -508,6 +508,22 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page config
+   - <b>checkdetversion</b> Checks the version compatibility with detector software (if hostname is in shared memory). Only get! Only for Eiger, Jungfrau & Gotthard. \c Returns \c ("compatible", "incompatible")
+	 */
+	descrToFuncMap[i].m_pFuncName="checkdetversion"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
+	++i;
+
+
+	/*! \page config
+   - <b>checkrecversion</b> Checks the version compatibility with receiver software (if rx_hostname is in shared memory). Only get! Only for Eiger, Jungfrau & Gotthard. \c Returns \c ("compatible", "incompatible")
+	 */
+	descrToFuncMap[i].m_pFuncName="checkrecversion"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
+	++i;
+
+
+	/*! \page config
    - <b>moduleversion:[i]</b> Gets the firmware version of module i. Used for MYTHEN only. Only get! \c Returns \c (long int) in hexadecimal or "undefined module number"
 	 */
 	descrToFuncMap[i].m_pFuncName="moduleversion"; //
@@ -4895,6 +4911,24 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
 			sprintf(answer,"0x%lx", retval);
 		return string(answer);
 	}
+
+	if (cmd=="checkdetversion") {
+		int retval = myDet->checkVersionCompatibility(CONTROL_PORT);
+		if (retval < 0)
+			sprintf(answer, "%d", -1);
+		sprintf(answer,"%s", retval == OK ? "compatible" : "incompatible");
+		return string(answer);
+	}
+
+	if (cmd=="checkrecversion") {
+		myDet->setReceiverOnline(ONLINE_FLAG);
+		int retval = myDet->checkVersionCompatibility(DATA_PORT);
+		if (retval < 0)
+			sprintf(answer, "%d", -1);
+		sprintf(answer,"%s", retval == OK ? "compatible" : "incompatible");
+		return string(answer);
+	}
+
 	return string("unknown id mode ")+cmd;
 
 }
@@ -4903,6 +4937,8 @@ string slsDetectorCommand::helpSN(int narg, char *args[], int action) {
 
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION) {
+		os << "checkdetversion \n gets the version compatibility with detector software (if hostname is in shared memory). Only for Eiger, Jungfrau & Gotthard. Prints compatible/ incompatible."<< std::endl;
+		os << "checkrecversion \n gets the version compatibility with receiver software (if rx_hostname is in shared memory). Only for Eiger, Jungfrau & Gotthard. Prints compatible/ incompatible."<< std::endl;
 		os << "moduleversion:i \n gets the firmwareversion of the module i"<< std::endl;
 		os << "modulenumber:i \n gets the serial number of the module i"<< std::endl;
 		os << "detectornumber \n gets the serial number of the detector (MAC)"<< std::endl;

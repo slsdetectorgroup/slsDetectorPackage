@@ -209,6 +209,7 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_TEMP_EVENT:                      return "F_TEMP_EVENT";
     case F_AUTO_COMP_DISABLE:               return "F_AUTO_COMP_DISABLE";
     case F_STORAGE_CELL_START:              return "F_STORAGE_CELL_START";
+    case F_CHECK_VERSION:              		return "F_CHECK_VERSION";
 
 	default:								return "Unknown Function";
 	}
@@ -293,6 +294,7 @@ void function_table() {
 	flist[F_TEMP_EVENT]                         = &temp_event;
     flist[F_AUTO_COMP_DISABLE]                  = &auto_comp_disable;
     flist[F_STORAGE_CELL_START]                 = &storage_cell_start;
+    flist[F_CHECK_VERSION]                 		= &check_version;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= TOO_MANY_FUNCTIONS_DEFINED) {
@@ -5146,9 +5148,10 @@ int program_fpga(int file_des) {
 			printf("Done with program receiving command\n");
 #endif
 
-			if (isControlServer)
+			if (isControlServer) {
 				basictests(debugflag);
-			init_detector(isControlServer);
+				initControlServer();
+			}
 		}
 #endif
 		if (ret==OK)
@@ -5760,3 +5763,97 @@ int storage_cell_start(int file_des) {
     return ret;
 }
 
+
+
+
+int check_version(int file_des) {
+	int ret=OK,ret1=OK;
+	int n=0;
+	sprintf(mess,"check version failed\n");
+
+#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(GOTTHARD)
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+	ret=FAIL;
+	sprintf(mess,"Function (Check Version Compatibility) is not implemented for this detector\n");
+	cprintf(RED, "Warning: %s", mess);
+#else
+
+	// receive arguments
+	int64_t arg=-1;
+	n = receiveData(file_des,&arg,sizeof(arg),INT64);
+	if (n < 0) return printSocketReadError();
+
+	// execute action
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+
+	// check software- firmware compatibility and basic tests
+	if (isControlServer) {
+#ifdef VERBOSE
+		printf("Checking software-firmware compatibility and basic test result\n");
+#endif
+		// check if firmware check is done
+		if (!isFirmwareCheckDone()) {
+			usleep(3 * 1000 * 1000);
+			if (!isFirmwareCheckDone()) {
+				ret = FAIL;
+				strcpy(mess,"Firmware Software Compatibility Check (Server Initialization) "
+						"still not done done in server. Unexpected.\n");
+				cprintf(RED, "Warning: %s", mess);
+			}
+		}
+		// check firmware check result
+		if (ret == OK) {
+			char* firmware_message = NULL;
+			if (getFirmwareCheckResult(&firmware_message) == FAIL) {
+				ret = FAIL;
+				strcpy(mess, firmware_message);
+				cprintf(RED, "Warning: %s", mess);
+			}
+		}
+	}
+
+	if (ret == OK) {
+#ifdef VERBOSE
+		printf("Checking versioning compatibility with value %d\n",arg);
+#endif
+		int64_t client_requiredVersion = arg;
+		int64_t det_apiVersion = getDetectorId(CLIENT_SOFTWARE_API_VERSION);
+		int64_t det_version = getDetectorId(DETECTOR_SOFTWARE_VERSION);
+
+		// old client
+		if (det_apiVersion > client_requiredVersion) {
+			ret = FAIL;
+			sprintf(mess,"Client's detector SW API version: (0x%llx). "
+					"Detector's SW API Version: (0x%llx). "
+					"Incompatible, update client!\n",
+					client_requiredVersion, det_apiVersion);
+			cprintf(RED, "Warning: %s", mess);
+		}
+
+		// old software
+		else if (client_requiredVersion > det_version) {
+			ret = FAIL;
+			sprintf(mess,"Detector SW Version: (0x%llx). "
+					"Client's detector SW API Version: (0x%llx). "
+					"Incompatible, update detector software!\n",
+					det_version, client_requiredVersion);
+			cprintf(RED, "Warning: %s", mess);
+		}
+	}
+#endif
+#endif
+
+	// ret could be swapped during sendData
+	ret1 = ret;
+	// send ok / fail
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
+	// send return argument
+	if (ret==FAIL) {
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
+	}
+
+	// return ok / fail
+	return ret;
+}

@@ -1568,6 +1568,14 @@ class multiSlsDetector  : public slsDetectorUtils {
    */
   bool isAcquireReady();
 
+  /**
+   * Check version compatibility with detector/receiver software
+   * (if hostname/rx_hostname has been set/ sockets created)
+   * \param p port type control port or receiver port
+   * \returns FAIL for incompatibility, OK for compatibility
+   */
+  int checkVersionCompatibility(portType t);
+
 
 private:
 

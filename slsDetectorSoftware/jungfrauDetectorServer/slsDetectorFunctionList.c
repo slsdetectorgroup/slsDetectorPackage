@@ -5,7 +5,7 @@
 #include "gitInfoJungfrau.h"
 #include "AD9257.h"		// include "commonServerFunctions.h", which in turn includes "blackfin.h"
 #include "programfpga.h"
-
+#include "versionAPI.h"
 
 #ifdef VIRTUAL
 #include <pthread.h>
@@ -33,6 +33,19 @@ int virtual_stop = 0;
 
 /* basic tests */
 
+int firmware_compatibility = OK;
+int firmware_check_done = 0;
+char firmware_message[MAX_STR_LENGTH];
+
+int isFirmwareCheckDone() {
+	return firmware_check_done;
+}
+
+int getFirmwareCheckResult(char** mess) {
+	*mess = firmware_message;
+	return firmware_compatibility;
+}
+
 void checkFirmwareCompatibility(int flag) {
 #ifdef VIRTUAL
     cprintf(BLUE,"\n\n"
@@ -40,23 +53,36 @@ void checkFirmwareCompatibility(int flag) {
             "************** Jungfrau Virtual Server *****************\n"
             "********************************************************\n\n");
     if (mapCSP0() == FAIL) {
-        cprintf(BG_RED, "Dangerous to continue. Goodbye!\n");
-        exit(EXIT_FAILURE);
+    	strcpy(firmware_message,
+				"FATAL ERROR: Could not map to memory. Dangerous to continue.\n");
+		cprintf(RED,"%s\n\n", firmware_message);
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
     }
+    firmware_check_done = 1;
     return;
 #endif
 
 	defineGPIOpins();
 	resetFPGA();
     if (mapCSP0() == FAIL) {
-        cprintf(BG_RED, "Dangerous to continue. Goodbye!\n");
-        exit(EXIT_FAILURE);
+    	strcpy(firmware_message,
+				"FATAL ERROR: Could not map to memory. Dangerous to continue.\n");
+		cprintf(RED,"%s\n\n", firmware_message);
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
     }
 
     // does check only if flag is 0 (by default), set by command line
 	if ((!flag) && ((checkType() == FAIL) || (testFpga() == FAIL) || (testBus() == FAIL))) {
-		cprintf(BG_RED, "Dangerous to continue. Goodbye!\n");
-		exit(EXIT_FAILURE);
+		strcpy(firmware_message,
+				"FATAL ERROR: Could not pass basic tests of FPGA and bus. Dangerous to continue.\n");
+		cprintf(RED,"%s\n\n", firmware_message);
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
 	}
 
 	uint16_t hversion			= getHardwareVersionNumber();
@@ -66,6 +92,9 @@ void checkFirmwareCompatibility(int flag) {
 	int64_t fwversion 			= getDetectorId(DETECTOR_FIRMWARE_VERSION);
 	int64_t swversion 			= getDetectorId(DETECTOR_SOFTWARE_VERSION);
 	int64_t sw_fw_apiversion    = 0;
+	int64_t client_sw_apiversion = getDetectorId(CLIENT_SOFTWARE_API_VERSION);
+
+
 	if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
 	    sw_fw_apiversion 	    = getDetectorId(SOFTWARE_FIRMWARE_API_VERSION);
 	cprintf(BLUE,"\n\n"
@@ -82,6 +111,7 @@ void checkFirmwareCompatibility(int flag) {
 			"Software Version:\t\t 0x%llx\n"
 			"F/w-S/w API Version:\t\t 0x%llx\n"
 			"Required Firmware Version:\t 0x%x\n"
+			"Client-Software API Version:\t 0x%llx\n"
 			"\n"
 			"********************************************************\n",
 			hversion, hsnumber,
@@ -90,38 +120,55 @@ void checkFirmwareCompatibility(int flag) {
 			(long  long int)fwversion,
 			(long  long int)swversion,
 			(long  long int)sw_fw_apiversion,
-			REQRD_FRMWR_VRSN
+			REQRD_FRMWR_VRSN,
+			(long long int)client_sw_apiversion
 	);
 
 	// return if flag is not zero, debug mode
-	if (flag)
-	    return;
+	if (flag) {
+		firmware_check_done = 1;
+		return;
+	}
 
 
 	//cant read versions
     printf("Testing Firmware-software compatibility ...\n");
 	if(!fwversion || !sw_fw_apiversion){
-		cprintf(RED,"FATAL ERROR: Cant read versions from FPGA. Please update firmware\n");
-		cprintf(RED,"Exiting Server. Goodbye!\n\n");
-		exit(EXIT_FAILURE);
+		strcpy(firmware_message,
+				"FATAL ERROR: Cant read versions from FPGA. Please update firmware.\n");
+		cprintf(RED,"%s\n\n", firmware_message);
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
 	}
 
 	//check for API compatibility - old server
 	if(sw_fw_apiversion > REQRD_FRMWR_VRSN){
-		cprintf(RED,"FATAL ERROR: This software version is incompatible.\n"
-				"Please update it to be compatible with this firmware\n\n");
-		cprintf(RED,"Exiting Server. Goodbye!\n\n");
-		exit(EXIT_FAILURE);
+		sprintf(firmware_message,
+				"FATAL ERROR: This detector software software version (0x%llx) is incompatible.\n"
+				"Please update detector software (min. 0x%llx) to be compatible with this firmware.\n",
+				(long long int)sw_fw_apiversion,
+				(long long int)REQRD_FRMWR_VRSN);
+		cprintf(RED,"%s\n\n", firmware_message);
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
 	}
 
 	//check for firmware compatibility - old firmware
 	if( REQRD_FRMWR_VRSN > fwversion){
-		cprintf(RED,"FATAL ERROR: This firmware version is incompatible.\n"
-				"Please update it to v%d to be compatible with this server\n\n", REQRD_FRMWR_VRSN);
-		cprintf(RED,"Exiting Server. Goodbye!\n\n");
-		exit(EXIT_FAILURE);
+		sprintf(firmware_message,
+				"FATAL ERROR: This firmware version (0x%llx) is incompatible.\n"
+				"Please update firmware (min. 0x%llx) to be compatible with this server.\n",
+				(long long int)fwversion,
+				(long long int)REQRD_FRMWR_VRSN);
+		cprintf(RED,"%s\n\n", firmware_message);
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
 	}
 	printf("Compatibility - success\n");
+	firmware_check_done = 1;
 }
 
 
@@ -222,6 +269,8 @@ int64_t getDetectorId(enum idMode arg){
 	    return getFirmwareAPIVersion();
 	case DETECTOR_SOFTWARE_VERSION:
 		return  (GITDATE & 0xFFFFFF);
+	case CLIENT_SOFTWARE_API_VERSION:
+		return APIJUNGFRAU;
 	default:
 		return retval;
 	}

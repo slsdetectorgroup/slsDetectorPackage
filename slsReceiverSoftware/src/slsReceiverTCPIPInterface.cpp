@@ -8,6 +8,7 @@
 #include "gitInfoReceiver.h"
 #include "slsReceiverUsers.h"
 #include "slsReceiver.h"
+#include "versionAPI.h"
 
 #include  <stdlib.h>	//EXIT
 #include <iostream>
@@ -153,7 +154,7 @@ void slsReceiverTCPIPInterface::stop(){
 
 
 int64_t slsReceiverTCPIPInterface::getReceiverVersion(){
-	int64_t retval = GITDATE;
+	int64_t retval = GITDATE & 0xFFFFFF;
 	return retval;
 }
 
@@ -297,6 +298,7 @@ const char* slsReceiverTCPIPInterface::getFunctionName(enum recFuncs func) {
     case F_RECEIVER_UDP_SOCK_BUF_SIZE:  return "F_RECEIVER_UDP_SOCK_BUF_SIZE";
     case F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE:  return "F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE";
     case F_SET_RECEIVER_FRAMES_PER_FILE:return "F_SET_RECEIVER_FRAMES_PER_FILE";
+    case F_RECEIVER_CHECK_VERSION:		return "F_RECEIVER_CHECK_VERSION";
 
 	default:							return "Unknown Function";
 	}
@@ -350,6 +352,7 @@ int slsReceiverTCPIPInterface::function_table(){
     flist[F_RECEIVER_UDP_SOCK_BUF_SIZE]     =   &slsReceiverTCPIPInterface::set_udp_socket_buffer_size;
     flist[F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE]=   &slsReceiverTCPIPInterface::get_real_udp_socket_buffer_size;
     flist[F_SET_RECEIVER_FRAMES_PER_FILE]	=   &slsReceiverTCPIPInterface::set_frames_per_file;
+    flist[F_RECEIVER_CHECK_VERSION]			=   &slsReceiverTCPIPInterface::check_version_compatibility;
 
 #ifdef VERYVERBOSE
 	for (int i = 0; i < NUM_REC_FUNCTIONS ; i++) {
@@ -367,20 +370,22 @@ int slsReceiverTCPIPInterface::decode_function(){
 	ret = FAIL;
 #ifdef VERYVERBOSE
 	cprintf(RESET,"\n");
-	FILE_LOG(logDEBUG1) <<  "waiting to receive data";
 #endif
+	FILE_LOG(logDEBUG1) <<  "waiting to receive data";
 	int n = mySock->ReceiveDataOnly(&fnum,sizeof(fnum));
 	if (n <= 0) {
-#ifdef VERYVERBOSE
-		FILE_LOG(logDEBUG1) << "ERROR reading from socket. Received " << n << " bytes, fd: " << file_des << " fnum:" << fnum << " (" << getFunctionName((enum recFuncs)fnum) << ")";
-#endif
+		FILE_LOG(logDEBUG1) << "ERROR reading from socket. "
+				"Received " << n << " bytes," <<
+						"fnum:" << fnum << " "
+								"(" << getFunctionName((enum recFuncs)fnum) << ")";
 		return FAIL;
 	}
-#ifdef VERYVERBOSE
 	else
 		FILE_LOG(logDEBUG1) << "Received " << n << " bytes";
-	FILE_LOG(logDEBUG1) <<  "calling function fnum: "<< fnum << " (" << getFunctionName((enum recFuncs)fnum) << ") located at " << flist[fnum];
-#endif
+
+	FILE_LOG(logDEBUG1) <<  "calling function fnum: "<< fnum << " "
+			"(" << getFunctionName((enum recFuncs)fnum) << ") "
+					"located at " << flist[fnum];
 
 	if (fnum < REC_FUNC_START_INDEX || fnum >= NUM_REC_FUNCTIONS) {
 		FILE_LOG(logERROR) << "Unknown function enum " << fnum;
@@ -429,7 +434,7 @@ void slsReceiverTCPIPInterface::functionNotImplemented() {
 }
 
 
-int slsReceiverTCPIPInterface::M_nofunc(){
+int slsReceiverTCPIPInterface::M_nofunc(){printf("111 \n");
 	ret = FAIL;
 	memset(mess, 0, sizeof(mess));
 	int n = 0;
@@ -438,7 +443,7 @@ int slsReceiverTCPIPInterface::M_nofunc(){
 	while (n > 0)
 		n = mySock->ReceiveDataOnly(mess,MAX_STR_LENGTH);
 
-	sprintf(mess,"Unrecognized Function\n");
+	strcpy(mess,"Unrecognized Function. Please do not proceed.\n");
 	FILE_LOG(logERROR) << mess;
 
 	// send ok / fail
@@ -2753,6 +2758,63 @@ int slsReceiverTCPIPInterface::set_frames_per_file() {
 	if (ret == FAIL)
 		mySock->SendDataOnly(mess,sizeof(mess));
 	mySock->SendDataOnly(&retval,sizeof(retval));
+
+	// return ok/fail
+	return ret;
+}
+
+
+
+
+
+
+int slsReceiverTCPIPInterface::check_version_compatibility() {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t arg = -1;
+	int64_t retval = -1;
+
+	// receive arguments
+	if (mySock->ReceiveDataOnly(&arg,sizeof(arg)) < 0 )
+		return printSocketReadError();
+
+
+	// execute action
+	FILE_LOG(logDEBUG1) << "Checking versioning compatibility with value " << arg;
+
+	int64_t client_requiredVersion = arg;
+	int64_t rx_apiVersion = APIRECEIVER;
+	int64_t rx_version = getReceiverVersion();
+
+	// old client
+	if (rx_apiVersion > client_requiredVersion) {
+		ret = FAIL;
+		sprintf(mess,"This client is incompatible.\n"
+				"Client's receiver API Version: (0x%llx). Receiver API Version: (0x%llx).\n"
+				"Incompatible, update client!\n",
+				client_requiredVersion, rx_apiVersion);
+		FILE_LOG(logERROR) << mess;
+	}
+
+	// old software
+	else if (client_requiredVersion > rx_version) {
+		ret = FAIL;
+		sprintf(mess,"This receiver is incompatible.\n"
+				"Receiver Version: (0x%llx). Client's receiver API Version: (0x%llx).\n"
+				"Incompatible, update receiver!\n",
+				rx_version, client_requiredVersion);
+		FILE_LOG(logERROR) << mess;
+	}
+	else FILE_LOG(logINFO) << "Compatibility with Client: Successful";
+
+	if (ret == OK && mySock->differentClients)
+		ret = FORCE_UPDATE;
+
+	// send answer
+	mySock->SendDataOnly(&ret,sizeof(ret));
+	if (ret == FAIL)
+		mySock->SendDataOnly(mess,sizeof(mess));
+	mySock->SendDataOnly(&retval,sizeof(retval)); // sending crap (because of thisReceiver interface)
 
 	// return ok/fail
 	return ret;

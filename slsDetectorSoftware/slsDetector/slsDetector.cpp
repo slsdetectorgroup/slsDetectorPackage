@@ -10,6 +10,8 @@
 #include <cstdlib>
 #include <math.h>
 #include "gitInfoLib.h"
+#include "versionAPI.h"
+
 
 using namespace std;
 int slsDetector::initSharedMemory(detectorType type, int id) {
@@ -806,6 +808,10 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->receiver_read_freq = 0;
     thisDetector->receiver_framesPerFile = -1;
 
+    thisDetector->detectorControlAPIVersion = 0;
+    thisDetector->detectorStopAPIVersion = 0;
+    thisDetector->receiverAPIVersion = 0;
+
     for (int ia=0; ia<MAX_ACTIONS; ++ia) {
       strcpy(thisDetector->actionScript[ia],"none");
       strcpy(thisDetector->actionParameter[ia],"none");
@@ -1430,7 +1436,6 @@ int slsDetector::activate(int const enable){
 */
 
 int slsDetector::setTCPSocket(string const name, int const control_port, int const stop_port){
-
   char thisName[MAX_STR_LENGTH];
   int thisCP, thisSP;
   int retval=OK;
@@ -1511,6 +1516,22 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
   }
   if (retval!=FAIL) {
     checkOnline();
+
+    // check for version compatibility
+    switch (thisDetector->myDetectorType) {
+    case EIGER:
+    case JUNGFRAU:
+    case GOTTHARD:
+    	if ((thisDetector->detectorControlAPIVersion == 0) ||
+    			(thisDetector->detectorStopAPIVersion == 0))    	{
+    		if (checkVersionCompatibility(CONTROL_PORT) == FAIL)
+    		      thisDetector->onlineFlag=OFFLINE_FLAG;
+    	}
+    	break;
+    default:
+    	break;
+    }
+
   } else {
     thisDetector->onlineFlag=OFFLINE_FLAG;
 #ifdef VERBOSE
@@ -8364,15 +8385,28 @@ int slsDetector::setReceiverTCPSocket(string const name, int const receiver_port
   }
   //check if it connects
   if (retval!=FAIL) {
-    if(checkReceiverOnline().empty())
-      retval=FAIL;
+    checkReceiverOnline();
+    thisReceiver->setSocket(dataSocket);
+        // check for version compatibility
+        switch (thisDetector->myDetectorType) {
+        case EIGER:
+        case JUNGFRAU:
+        case GOTTHARD:
+        	if (thisDetector->receiverAPIVersion == 0){
+        		if (checkVersionCompatibility(DATA_PORT) == FAIL)
+        		      thisDetector->receiverOnlineFlag=OFFLINE_FLAG;
+        	}
+        	break;
+        default:
+        	break;
+        }
+
   } else {
 	thisDetector->receiverOnlineFlag=OFFLINE_FLAG;
 #ifdef VERBOSE
     std::cout<< "offline!" << std::endl;
 #endif
   }
-  thisReceiver->setSocket(dataSocket);
   return retval;
 };
 
@@ -9816,6 +9850,102 @@ int slsDetector::restreamStopFromReceiver(){
 		else if (ret == FAIL) {
 			setErrorMask((getErrorMask())|(RESTREAM_STOP_FROM_RECEIVER));
 			std::cout << " Could not restream stop dummy packet from receiver" << endl;
+		}
+	}
+
+	return ret;
+}
+
+
+int slsDetector::checkVersionCompatibility(portType t) {
+	int fnum = F_CHECK_VERSION;
+	if (t == DATA_PORT)
+		fnum = F_RECEIVER_CHECK_VERSION;
+	int ret = FAIL;
+	char mess[MAX_STR_LENGTH];
+	memset(mess, 0, MAX_STR_LENGTH);
+	int64_t arg = 0;
+
+	// detector
+	if (t == CONTROL_PORT) {
+
+		switch (thisDetector->myDetectorType) {
+		case EIGER:		arg = APIEIGER; break;
+		case JUNGFRAU:	arg = APIJUNGFRAU; break;
+		case GOTTHARD:	arg = APIGOTTHARD; break;
+		default:
+			std::cout<< "Check version compatibility is not implemented for this detector" << std::endl;
+			setErrorMask((getErrorMask())|(VERSION_COMPATIBILITY));
+			return FAIL;
+		}
+
+#ifdef VERBOSE
+		std::cout<< std::endl<< "Checking version compatibility with detector with value " << hex << arg << std::endl;
+#endif
+		if (thisDetector->onlineFlag==ONLINE_FLAG) {
+			// control port
+			if (connectControl() == OK){
+				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+				controlSocket->SendDataOnly(&arg,sizeof(arg));
+				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret == FAIL) {
+					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+					cprintf(RED, "Detector returned error: (Control Server) %s", mess);
+					if(strstr(mess,"Unrecognized Function")!=NULL)
+						std::cout << "The detector server is too old to get API version. Please update detector server!" << std::endl;
+					setErrorMask((getErrorMask())|(VERSION_COMPATIBILITY));
+					thisDetector->detectorControlAPIVersion = 0;
+				} else {
+					thisDetector->detectorControlAPIVersion = arg;
+				}
+				disconnectControl();
+			}
+			if (ret!= FAIL) {
+				ret = FAIL;
+
+				// stop port
+				if (connectStop() == OK){
+					stopSocket->SendDataOnly(&fnum,sizeof(fnum));
+					stopSocket->SendDataOnly(&arg,sizeof(arg));
+					stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
+					if (ret == FAIL) {
+						stopSocket->ReceiveDataOnly(mess,sizeof(mess));
+						cprintf(RED, "Detector returned error: (Stop Server) %s", mess);
+						if(strstr(mess,"Unrecognized Function")!=NULL)
+							std::cout << "The detector server is too old to get API version. Please update detector server!" << std::endl;
+						setErrorMask((getErrorMask())|(VERSION_COMPATIBILITY));
+						thisDetector->detectorStopAPIVersion = 0;
+					}  else {
+						thisDetector->detectorStopAPIVersion = arg;
+					}
+					disconnectStop();
+				}
+			}
+		}
+	}
+
+	// receiver
+	else {
+		arg = APIRECEIVER;
+#ifdef VERBOSE
+		std::cout<< std::endl<< "Checking version compatibility with receiver with value " << hex << arg << std::endl;
+#endif
+		if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
+			// data port
+			if (connectData() == OK){
+				// ignoring retval
+				int64_t retval = -1;
+				ret=thisReceiver->sendInt(fnum,retval,arg);
+				if (ret==FAIL){
+					setErrorMask((getErrorMask())|(VERSION_COMPATIBILITY));
+					if(strstr(mess,"Unrecognized Function")!=NULL)
+						std::cout << "The receiver software is too old to get API version. Please update receiver software!" << std::endl;
+					thisDetector->receiverAPIVersion = 0;
+				} else  {
+					thisDetector->receiverAPIVersion = arg;
+				}
+				disconnectData();
+			}
 		}
 	}
 

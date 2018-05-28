@@ -290,11 +290,12 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     /** frames per file in receiver */
     int receiver_framesPerFile;
 
-    /** detector software API version */
-    int detector_software_api_version;
-
-    /** receiver API version */
-    int receiver_api_version;
+    /** detector control server software API version */
+    int64_t detectorControlAPIVersion;
+    /** detector stop server software API version */
+    int64_t detectorStopAPIVersion;
+    /** receiver server software API version */
+    int64_t receiverAPIVersion;
 
 
   } sharedSlsDetector;
@@ -2058,6 +2059,14 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      \returns OK if success else FAIL
    */
   int restreamStopFromReceiver();
+
+  /**
+   * Check version compatibility with detector/receiver software
+   * (if hostname/rx_hostname has been set/ sockets created)
+   * \param p port type control port or receiver port
+   * \returns FAIL for incompatibility, OK for compatibility
+   */
+  int checkVersionCompatibility(portType t);
 
 
  protected:

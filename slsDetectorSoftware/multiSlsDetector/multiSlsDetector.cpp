@@ -1007,7 +1007,7 @@ string multiSlsDetector::checkOnline()
 
 int multiSlsDetector::activate(int const enable)
 {
-    return callDetectorMemeber(&slsDetector::activate, enable);
+    return callDetectorMember(&slsDetector::activate, enable);
 }
 
 int multiSlsDetector::exists()
@@ -1779,50 +1779,58 @@ void multiSlsDetector::resetFinalDataQueue()
     }
 }
 
+// int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t)
+// {
+
+//     int64_t ret = -100;
+
+//     if (!threadpool) {
+//         cout << "Error in creating threadpool. Exiting" << endl;
+//         return -1;
+//     } else {
+//         //return storage values
+//         int64_t* iret[thisMultiDetector->numberOfDetectors];
+//         for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
+//             if (detectors[idet]) {
+//                 iret[idet] = new int64_t(-1);
+//                 Task* task = new Task(new func2_t<int64_t, timerIndex, int64_t>(&slsDetector::setTimer,
+//                     detectors[idet], index, t, iret[idet]));
+//                 threadpool->add_task(task);
+//             }
+//         }
+//         threadpool->startExecuting();
+//         threadpool->wait_for_tasks_to_complete();
+//         for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
+//             if (detectors[idet]) {
+//                 if (iret[idet] != NULL) {
+//                     if (ret == -100)
+//                         ret = *iret[idet];
+//                     else if (ret != *iret[idet])
+//                         ret = -1;
+//                     delete iret[idet];
+//                 } else
+//                     ret = -1;
+//                 if (detectors[idet]->getErrorMask())
+//                     setErrorMask(getErrorMask() | (1 << idet));
+//             }
+//         }
+//     }
+
+//     if (index == SAMPLES_JCTB)
+//         setDynamicRange();
+
+//     thisMultiDetector->timerValue[index] = ret;
+//     return ret;
+// }
 int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t)
 {
-
-    int64_t ret = -100;
-
-    if (!threadpool) {
-        cout << "Error in creating threadpool. Exiting" << endl;
-        return -1;
-    } else {
-        //return storage values
-        int64_t* iret[thisMultiDetector->numberOfDetectors];
-        for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-            if (detectors[idet]) {
-                iret[idet] = new int64_t(-1);
-                Task* task = new Task(new func2_t<int64_t, timerIndex, int64_t>(&slsDetector::setTimer,
-                    detectors[idet], index, t, iret[idet]));
-                threadpool->add_task(task);
-            }
-        }
-        threadpool->startExecuting();
-        threadpool->wait_for_tasks_to_complete();
-        for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-            if (detectors[idet]) {
-                if (iret[idet] != NULL) {
-                    if (ret == -100)
-                        ret = *iret[idet];
-                    else if (ret != *iret[idet])
-                        ret = -1;
-                    delete iret[idet];
-                } else
-                    ret = -1;
-                if (detectors[idet]->getErrorMask())
-                    setErrorMask(getErrorMask() | (1 << idet));
-            }
-        }
-    }
-
+    int64_t ret = parallelCallDetectorMember(&slsDetector::setTimer, index, t);
     if (index == SAMPLES_JCTB)
         setDynamicRange();
 
     thisMultiDetector->timerValue[index] = ret;
     return ret;
 }
-
 int64_t multiSlsDetector::getTimeLeft(timerIndex index)
 {
     int i;
@@ -3302,16 +3310,16 @@ int multiSlsDetector::exitServer()
 }
 
 /* utility function to check a range of return values*/
-template<typename T>
+template <typename T>
 T multiSlsDetector::minusOneIfDifferent(const std::vector<T>& return_values)
 {
-    T ret = -100;
+    T ret = static_cast<T>(-100);
     for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
         if (detectors[idet]) {
-            if (ret == -100)
+            if (ret == static_cast<T>(-100))
                 ret = return_values[idet];
             else if (ret != return_values[idet])
-                ret = -1;
+                ret = static_cast<T>(-1);
             if (detectors[idet]->getErrorMask())
                 setErrorMask(getErrorMask() | (1 << idet));
         }
@@ -3319,24 +3327,36 @@ T multiSlsDetector::minusOneIfDifferent(const std::vector<T>& return_values)
     return ret;
 }
 
-// int multiSlsDetector::callDetectorMemeber(int (slsDetector::*somefunc)())
-// {
-//     int ret = -100, ret1;
-//     for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet)
-//         if (detectors[idet]) {
-//             ret1 = (detectors[idet]->*somefunc)();
-//             if (detectors[idet]->getErrorMask())
-//                 setErrorMask(getErrorMask() | (1 << idet));
-//             if (ret == -100)
-//                 ret = ret1;
-//             else if (ret != ret1)
-//                 ret = -1;
-//         }
-//     return ret;
-// }
-int multiSlsDetector::callDetectorMemeber(int (slsDetector::*somefunc)())
+void multiSlsDetector::setErrorMaskFromAllDetectors()
 {
-    std::vector<int> values(thisMultiDetector->numberOfDetectors, -1);
+    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
+        if (detectors[idet]) {
+            if (detectors[idet]->getErrorMask())
+                setErrorMask(getErrorMask() | (1 << idet));
+        }
+    }
+}
+
+template <typename T>
+bool allElementsEqual(const std::vector<T>& v)
+{
+    if (v.empty())
+        return true;
+
+    const T& first = v[0];
+    for (int i = 1; i != v.size(); ++i) {
+        if (v[i] != first)
+            return false;
+    }
+    return true;
+}
+
+template <typename T>
+T multiSlsDetector::callDetectorMember(T (slsDetector::*somefunc)())
+{
+    //(Erik) to handle enums, probably a bad idea but follow previous code
+    T defaultValue = static_cast<T>(-1);
+    std::vector<T> values(thisMultiDetector->numberOfDetectors, defaultValue);
     for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet)
         if (detectors[idet]) {
             values[idet] = (detectors[idet]->*somefunc)();
@@ -3346,9 +3366,12 @@ int multiSlsDetector::callDetectorMemeber(int (slsDetector::*somefunc)())
     return minusOneIfDifferent(values);
 }
 
-int multiSlsDetector::callDetectorMemeber(int (slsDetector::*somefunc)(int), int value)
+template <typename T, typename V>
+T multiSlsDetector::callDetectorMember(T (slsDetector::*somefunc)(V), V value)
 {
-    std::vector<int> values(thisMultiDetector->numberOfDetectors, -1);
+    //(Erik) to handle enums, probably a bad idea but follow previous code
+    T defaultValue = static_cast<T>(-1);
+    std::vector<T> values(thisMultiDetector->numberOfDetectors, defaultValue);
     for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet)
         if (detectors[idet]) {
             values[idet] = (detectors[idet]->*somefunc)(value);
@@ -3358,7 +3381,22 @@ int multiSlsDetector::callDetectorMemeber(int (slsDetector::*somefunc)(int), int
     return minusOneIfDifferent(values);
 }
 
-string multiSlsDetector::callDetectorMemeber(string (slsDetector::*somefunc)())
+template <typename T, typename P1, typename P2>
+T multiSlsDetector::callDetectorMember(T (slsDetector::*somefunc)(P1, P2), P1 par1, P2 par2)
+{
+    //(Erik) to handle enums, probably a bad idea but follow previous code
+    T defaultValue = static_cast<T>(-1);
+    std::vector<T> values(thisMultiDetector->numberOfDetectors, defaultValue);
+    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet)
+        if (detectors[idet]) {
+            values[idet] = (detectors[idet]->*somefunc)(par1, par2);
+            if (detectors[idet]->getErrorMask())
+                setErrorMask(getErrorMask() | (1 << idet));
+        }
+    return minusOneIfDifferent(values);
+}
+
+std::string multiSlsDetector::callDetectorMember(string (slsDetector::*somefunc)())
 {
     string concatenatedValue, firstValue;
     bool valueNotSame = false;
@@ -3386,17 +3424,60 @@ string multiSlsDetector::callDetectorMemeber(string (slsDetector::*somefunc)())
         return firstValue;
 }
 
-int multiSlsDetector::parallelCallDetectorMember(int (slsDetector::*somefunc)(int), int value)
+template <typename T>
+T multiSlsDetector::parallelCallDetectorMember(T (slsDetector::*somefunc)())
 {
     if (!threadpool) {
         cout << "Error in creating threadpool. Exiting" << endl;
         return -1;
     } else {
-        std::vector<int> return_values(thisMultiDetector->numberOfDetectors, -1);
+        std::vector<T> return_values(thisMultiDetector->numberOfDetectors, -1);
         for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
             if (detectors[idet]) {
-                Task* task = new Task(new func1_t<int, int>(somefunc,
+                Task* task = new Task(new func0_t<T>(somefunc,
+                    detectors[idet], &return_values[idet]));
+                threadpool->add_task(task);
+            }
+        }
+        threadpool->startExecuting();
+        threadpool->wait_for_tasks_to_complete();
+        return minusOneIfDifferent(return_values);
+    }
+}
+
+template <typename T, typename P1>
+T multiSlsDetector::parallelCallDetectorMember(T (slsDetector::*somefunc)(P1), P1 value)
+{
+    if (!threadpool) {
+        cout << "Error in creating threadpool. Exiting" << endl;
+        return -1;
+    } else {
+        std::vector<P1> return_values(thisMultiDetector->numberOfDetectors, -1);
+        for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
+            if (detectors[idet]) {
+                Task* task = new Task(new func1_t<T, P1>(somefunc,
                     detectors[idet], value, &return_values[idet]));
+                threadpool->add_task(task);
+            }
+        }
+        threadpool->startExecuting();
+        threadpool->wait_for_tasks_to_complete();
+        return minusOneIfDifferent(return_values);
+    }
+}
+
+template <typename T, typename P1, typename P2>
+T multiSlsDetector::parallelCallDetectorMember(T (slsDetector::*somefunc)(P1, P2), P1 par1, P2 par2)
+{
+    if (!threadpool) {
+        cout << "Error in creating threadpool. Exiting" << endl;
+        return -1;
+    } else {
+        std::vector<T> return_values(thisMultiDetector->numberOfDetectors, -1);
+        for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
+            if (detectors[idet]) {
+                Task* task = new Task(new func2_t<T, P1, P2>(somefunc,
+                    detectors[idet], par1, par2, &return_values[idet]));
                 threadpool->add_task(task);
             }
         }
@@ -3426,30 +3507,10 @@ int multiSlsDetector::parallelCallDetectorMember(int (slsDetector::*somefunc)(in
     }
 }
 
-int multiSlsDetector::parallelCallDetectorMember(int (slsDetector::*somefunc)())
-{
-    if (!threadpool) {
-        cout << "Error in creating threadpool. Exiting" << endl;
-        return -1;
-    } else {
-        std::vector<int> return_values(thisMultiDetector->numberOfDetectors, -1);
-        for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-            if (detectors[idet]) {
-                Task* task = new Task(new func0_t<int>(somefunc,
-                    detectors[idet], &return_values[idet]));
-                threadpool->add_task(task);
-            }
-        }
-        threadpool->startExecuting();
-        threadpool->wait_for_tasks_to_complete();
-        return minusOneIfDifferent(return_values);
-    }
-}
-
 /** returns the detector trimbit/settings directory  */
 string multiSlsDetector::getSettingsDir()
 {
-    return callDetectorMemeber(&slsDetector::getSettingsDir);
+    return callDetectorMember(&slsDetector::getSettingsDir);
 }
 
 /** sets the detector trimbit/settings directory  \sa sharedSlsDetector */
@@ -3525,7 +3586,7 @@ int multiSlsDetector::getTrimEn(int* ene)
 */
 string multiSlsDetector::getCalDir()
 {
-    return callDetectorMemeber(&slsDetector::getCalDir);
+    return callDetectorMember(&slsDetector::getCalDir);
 }
 
 /**
@@ -3676,12 +3737,12 @@ int multiSlsDetector::setPort(portType t, int p)
 
 int multiSlsDetector::lockServer(int p)
 {
-    return callDetectorMemeber(&slsDetector::lockServer, p);
+    return callDetectorMember(&slsDetector::lockServer, p);
 }
 
 string multiSlsDetector::getLastClientIP()
 {
-    return callDetectorMemeber(&slsDetector::getLastClientIP);
+    return callDetectorMember(&slsDetector::getLastClientIP);
 }
 
 int multiSlsDetector::setReadOutFlags(readOutFlags flag)
@@ -3751,12 +3812,12 @@ slsDetectorDefs::externalSignalFlag multiSlsDetector::setExternalSignalFlags(ext
 
 string multiSlsDetector::getSettingsFile()
 {
-    return callDetectorMemeber(&slsDetector::getSettingsFile);
+    return callDetectorMember(&slsDetector::getSettingsFile);
 }
 
 int multiSlsDetector::configureMAC()
 {
-    return callDetectorMemeber(&slsDetector::configureMAC);
+    return callDetectorMember(&slsDetector::configureMAC);
 }
 
 int multiSlsDetector::loadImageToDetector(imageType index, string const fname)
@@ -3836,12 +3897,12 @@ int multiSlsDetector::writeCounterBlockFile(string const fname, int startACQ)
 
 int multiSlsDetector::resetCounterBlock(int startACQ)
 {
-    return callDetectorMemeber(&slsDetector::resetCounterBlock, startACQ);
+    return callDetectorMember(&slsDetector::resetCounterBlock, startACQ);
 }
 
 int multiSlsDetector::setCounterBit(int i)
 {
-    return callDetectorMemeber(&slsDetector::setCounterBit, i);
+    return callDetectorMember(&slsDetector::setCounterBit, i);
 }
 
 int multiSlsDetector::setDynamicRange(int p)
@@ -3972,20 +4033,6 @@ int multiSlsDetector::getMaxNumberOfModules(dimension d)
     return ret;
 }
 
-int multiSlsDetector::getFlippedData(dimension d)
-{
-    int ret = -100, ret1;
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet)
-        if (detectors[idet]) {
-            ret1 = detectors[idet]->getFlippedData(d);
-            if (ret == -100)
-                ret = ret1;
-            else if (ret != ret1)
-                ret = -1;
-        }
-    return ret;
-}
-
 int multiSlsDetector::setNumberOfModules(int p, dimension d)
 {
 
@@ -4027,18 +4074,14 @@ int multiSlsDetector::setNumberOfModules(int p, dimension d)
     return ret;
 }
 
+int multiSlsDetector::getFlippedData(dimension d)
+{
+    return callDetectorMember(&slsDetector::getFlippedData, d);
+}
+
 int multiSlsDetector::setFlippedData(dimension d, int value)
 {
-    int ret = -100, ret1;
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet)
-        if (detectors[idet]) {
-            ret1 = detectors[idet]->setFlippedData(d, value);
-            if (ret == -100)
-                ret = ret1;
-            else if (ret != ret1)
-                ret = -1;
-        }
-    return ret;
+    return callDetectorMember(&slsDetector::setFlippedData, d, value);
 }
 
 int multiSlsDetector::enableGapPixels(int val)
@@ -4047,7 +4090,7 @@ int multiSlsDetector::enableGapPixels(int val)
         std::cout << "Not implemented for this detector" << std::endl;
         val = -1;
     }
-    int ret = callDetectorMemeber(&slsDetector::enableGapPixels, val);
+    int ret = callDetectorMember(&slsDetector::enableGapPixels, val);
 
     if (val != -1) {
         // update data bytes incl gap pixels
@@ -4117,18 +4160,6 @@ int64_t multiSlsDetector::getId(idMode mode, int imod)
             return ret;
         }
     }
-
-    ret = -100;
-    int64_t ret1;
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet)
-        if (detectors[idet]) {
-            ret1 = detectors[idet]->getId(mode, imod);
-            if (ret == -100)
-                ret = ret1;
-            else if (ret != ret1)
-                ret = -1;
-        }
-    return ret;
 
     return -1;
 }
@@ -5083,20 +5114,7 @@ int multiSlsDetector::setReceiverFramesPerFile(int f)
 
 slsReceiverDefs::fileFormat multiSlsDetector::setFileFormat(fileFormat f)
 {
-    int ret = -100, ret1;
-
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-        if (detectors[idet]) {
-            ret1 = (int)detectors[idet]->setFileFormat(f);
-            if (detectors[idet]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << idet));
-            if (ret == -100)
-                ret = ret1;
-            else if (ret != ret1)
-                ret = -1;
-        }
-    }
-    return (fileFormat)ret;
+    return callDetectorMember(&slsDetector::setFileFormat, f);
 }
 
 int multiSlsDetector::setFileIndex(int i)
@@ -5761,12 +5779,12 @@ int multiSlsDetector::processImageWithGapPixels(char* image, char*& gpImage)
 
 int multiSlsDetector::lockReceiver(int lock)
 {
-    return callDetectorMemeber(&slsDetector::lockReceiver, lock);
+    return callDetectorMember(&slsDetector::lockReceiver, lock);
 }
 
 string multiSlsDetector::getReceiverLastClientIP()
 {
-    return callDetectorMemeber(&slsDetector::getReceiverLastClientIP);
+    return callDetectorMember(&slsDetector::getReceiverLastClientIP);
 }
 
 int multiSlsDetector::exitReceiver()
@@ -5785,12 +5803,12 @@ int multiSlsDetector::exitReceiver()
 
 int multiSlsDetector::enableWriteToFile(int enable)
 {
-    return callDetectorMemeber(&slsDetector::enableWriteToFile, enable);
+    return callDetectorMember(&slsDetector::enableWriteToFile, enable);
 }
 
 int multiSlsDetector::overwriteFile(int enable)
 {
-    return callDetectorMemeber(&slsDetector::overwriteFile, enable);
+    return callDetectorMember(&slsDetector::overwriteFile, enable);
 }
 
 string multiSlsDetector::getErrorMessage(int& critical)
@@ -5856,17 +5874,17 @@ int64_t multiSlsDetector::clearAllErrorMask()
 
 int multiSlsDetector::calibratePedestal(int frames)
 {
-    return callDetectorMemeber(&slsDetector::calibratePedestal, frames);
+    return callDetectorMember(&slsDetector::calibratePedestal, frames);
 }
 
 int multiSlsDetector::setReadReceiverFrequency(int freq)
 {
-    return callDetectorMemeber(&slsDetector::setReadReceiverFrequency, freq);
+    return callDetectorMember(&slsDetector::setReadReceiverFrequency, freq);
 }
 
 int multiSlsDetector::setReceiverReadTimer(int time_in_ms)
 {
-    return callDetectorMemeber(&slsDetector::setReceiverReadTimer, time_in_ms);
+    return callDetectorMember(&slsDetector::setReceiverReadTimer, time_in_ms);
 }
 
 int multiSlsDetector::enableDataStreamingToClient(int enable)
@@ -5898,22 +5916,22 @@ int multiSlsDetector::enableDataStreamingFromReceiver(int enable)
 
 int multiSlsDetector::enableReceiverCompression(int i)
 {
-    return callDetectorMemeber(&slsDetector::enableReceiverCompression, i);
+    return callDetectorMember(&slsDetector::enableReceiverCompression, i);
 }
 
 int multiSlsDetector::enableTenGigabitEthernet(int i)
 {
-    return callDetectorMemeber(&slsDetector::enableTenGigabitEthernet, i);
+    return callDetectorMember(&slsDetector::enableTenGigabitEthernet, i);
 }
 
 int multiSlsDetector::setReceiverFifoDepth(int i)
 {
-    return callDetectorMemeber(&slsDetector::setReceiverFifoDepth, i);
+    return callDetectorMember(&slsDetector::setReceiverFifoDepth, i);
 }
 
 int multiSlsDetector::setReceiverSilentMode(int i)
 {
-    return callDetectorMemeber(&slsDetector::setReceiverSilentMode, i);
+    return callDetectorMember(&slsDetector::setReceiverSilentMode, i);
 }
 
 /** opens pattern file and sends pattern to CTB
@@ -5949,18 +5967,7 @@ int multiSlsDetector::setCTBPattern(string fname)
   */
 uint64_t multiSlsDetector::setCTBWord(int addr, uint64_t word)
 {
-    uint64_t ret = -100, ret1;
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet)
-        if (detectors[idet]) {
-            ret1 = detectors[idet]->setCTBWord(addr, word);
-            if (detectors[idet]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << idet));
-            if (ret == (long long unsigned int)-100)
-                ret = ret1;
-            else if (ret != ret1)
-                ret = (long long unsigned int)-1;
-        }
-    return ret;
+    return callDetectorMember(&slsDetector::setCTBWord, addr, word);
 }
 
 /** Sets the pattern or loop limits in the CTB
@@ -5993,18 +6000,7 @@ int multiSlsDetector::setCTBPatLoops(int level, int& start, int& stop, int& n)
   */
 int multiSlsDetector::setCTBPatWaitAddr(int level, int addr)
 {
-    int ret = -100, ret1;
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet)
-        if (detectors[idet]) {
-            ret1 = detectors[idet]->setCTBPatWaitAddr(level, addr);
-            if (detectors[idet]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << idet));
-            if (ret == -100)
-                ret = ret1;
-            else if (ret != ret1)
-                ret = -1;
-        }
-    return ret;
+    return callDetectorMember(&slsDetector::setCTBPatWaitAddr, level, addr);
 }
 
 /** Sets the wait time in the CTB
@@ -6014,18 +6010,7 @@ int multiSlsDetector::setCTBPatWaitAddr(int level, int addr)
   */
 int multiSlsDetector::setCTBPatWaitTime(int level, uint64_t t)
 {
-    int ret = -100, ret1;
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet)
-        if (detectors[idet]) {
-            ret1 = detectors[idet]->setCTBPatWaitTime(level, t);
-            if (detectors[idet]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << idet));
-            if (ret == -100)
-                ret = ret1;
-            else if (ret != ret1)
-                ret = -1;
-        }
-    return ret;
+    return callDetectorMember(&slsDetector::setCTBPatWaitTime, level, t);
 }
 
 int multiSlsDetector::pulsePixel(int n, int x, int y)

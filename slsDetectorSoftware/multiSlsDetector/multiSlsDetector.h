@@ -1042,13 +1042,36 @@ class multiSlsDetector  : public slsDetectorUtils {
   //virtual runStatus  getRunStatus()=0;
   runStatus  getRunStatus();
 
+void setErrorMaskFromAllDetectors();
+
+template<typename T>
+  bool allElemetsEqual(const std::vector<T>&);
+
+  template<typename T>
+  T callDetectorMember(T (slsDetector::*somefunc)());
+
+  std::string callDetectorMember(std::string(slsDetector::*somefunc)());
+
+  template<typename T, typename V>
+  T callDetectorMember(T (slsDetector::*somefunc)(V), V value);
+
+  template<typename T, typename P1, typename P2>
+  T callDetectorMember(T (slsDetector::*somefunc)(P1, P2), P1 par1, P2 par2);
 
 
-  std::string callDetectorMemeber(std::string(slsDetector::*somefunc)());
-  int callDetectorMemeber(int (slsDetector::*somefunc)(int), int value);
-  int callDetectorMemeber(int (slsDetector::*somefunc)());
-  int parallelCallDetectorMember(int (slsDetector::*somefunc)());
-  int parallelCallDetectorMember(int (slsDetector::*somefunc)(int), int value); //Should probably be templated
+//func0_t
+  template<typename T>
+  T parallelCallDetectorMember(T (slsDetector::*somefunc)());
+
+//func1_t
+  template<typename T, typename P1>
+  T parallelCallDetectorMember(T (slsDetector::*somefunc)(P1), P1 value); //Should probably be templated
+  
+  //func2_t
+  template<typename T, typename P1, typename P2>
+  T parallelCallDetectorMember(T (slsDetector::*somefunc)(P1, P2), P1 par1, P2 par2);
+  
+
   int parallelCallDetectorMember(int (slsDetector::*somefunc)(int, int, int), int v0, int v1, int v2); //Should probably be templated
   
   template<typename T>

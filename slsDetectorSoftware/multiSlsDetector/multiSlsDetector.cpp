@@ -3302,9 +3302,10 @@ int multiSlsDetector::exitServer()
 }
 
 /* utility function to check a range of return values*/
-int multiSlsDetector::minusOneIfDifferent(const std::vector<int>& return_values)
+template<typename T>
+T multiSlsDetector::minusOneIfDifferent(const std::vector<T>& return_values)
 {
-    int ret = -100;
+    T ret = -100;
     for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
         if (detectors[idet]) {
             if (ret == -100)

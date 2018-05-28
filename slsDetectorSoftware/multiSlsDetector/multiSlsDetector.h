@@ -1050,7 +1050,9 @@ class multiSlsDetector  : public slsDetectorUtils {
   int parallelCallDetectorMember(int (slsDetector::*somefunc)());
   int parallelCallDetectorMember(int (slsDetector::*somefunc)(int), int value); //Should probably be templated
   int parallelCallDetectorMember(int (slsDetector::*somefunc)(int, int, int), int v0, int v1, int v2); //Should probably be templated
-  int minusOneIfDifferent(const std::vector<int>&);
+  
+  template<typename T>
+  T minusOneIfDifferent(const std::vector<T>&);
 
   /** returns the detector trimbit/settings directory  \sa sharedSlsDetector */
   std::string getSettingsDir();

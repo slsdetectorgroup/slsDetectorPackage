@@ -5789,7 +5789,7 @@ string multiSlsDetector::getReceiverLastClientIP()
 
 int multiSlsDetector::exitReceiver()
 {
-
+    //(Erik) logic is flawed should return fail if any fails
     int ival = FAIL, iv;
     for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
         if (detectors[idet]) {

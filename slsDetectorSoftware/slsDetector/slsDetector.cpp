@@ -1316,7 +1316,7 @@ int slsDetector::setOnline(int off) {
 
 
 string slsDetector::checkOnline() {
-  string retval = string("");
+  string retval;
   if(!controlSocket){
     //this already sets the online/offline flag
     setTCPSocket();

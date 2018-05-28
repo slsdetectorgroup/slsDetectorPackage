@@ -519,7 +519,7 @@ class EigerData : public GeneralData {
 		packetSize 			= headerSizeinPacket + dataSize;
 		packetsPerFrame 	= 256;
 		imageSize 			= dataSize*packetsPerFrame;
-		maxFramesPerFile 	= 5;//EIGER_MAX_FRAMES_PER_FILE;
+		maxFramesPerFile 	= EIGER_MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
 		defaultFifoDepth 	= 100;
 		threadsPerReceiver	= 2;

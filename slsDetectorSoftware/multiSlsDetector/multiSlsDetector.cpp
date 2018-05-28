@@ -17,6 +17,8 @@ ID:         $Id$
 #include "slsDetector.h"
 #include "usersFunctions.h"
 
+
+
 #include <iostream>
 #include <rapidjson/document.h> //json header in zmq stream
 #include <string>
@@ -3305,7 +3307,7 @@ int multiSlsDetector::exitServer()
     return ival;
 }
 
-int multiSlsDetector::compareReturnValues(const std::vector<int>& return_values)
+int multiSlsDetector::minusOneIfDifferent(const std::vector<int>& return_values)
 {
 	int ret = -100;
     for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
@@ -3397,7 +3399,7 @@ int multiSlsDetector::parallelCallDetectorMember(int (slsDetector::*somefunc)(in
         }
         threadpool->startExecuting();
         threadpool->wait_for_tasks_to_complete();
-				return compareReturnValues(return_values);
+				return minusOneIfDifferent(return_values);
     }
 }
 
@@ -3417,7 +3419,7 @@ int multiSlsDetector::parallelCallDetectorMember(int (slsDetector::*somefunc)(in
         }
         threadpool->startExecuting();
         threadpool->wait_for_tasks_to_complete();
-				return compareReturnValues(return_values);
+				return minusOneIfDifferent(return_values);
     }
 }
 
@@ -3437,7 +3439,7 @@ int multiSlsDetector::parallelCallDetectorMember(int (slsDetector::*somefunc)())
         }
         threadpool->startExecuting();
         threadpool->wait_for_tasks_to_complete();
-				return compareReturnValues(return_values);
+				return minusOneIfDifferent(return_values);
     }
 }
 

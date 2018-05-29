@@ -405,6 +405,7 @@ public:
 			hsize_t srcdims[3] = {nDimx, nDimy, nDimz};
 			dspace = new DataSpace (3,srcdims);
 
+
 			//dataset name
 			ostringstream osfn;
 			osfn << "/data";
@@ -412,14 +413,16 @@ public:
 			string dsetname = osfn.str();
 
 			//dataset
+			//fill value
+			DSetCreatPropList plist;
+			int fill_value = -1;
+			plist.setFillValue(dtype, &fill_value);
 			//chunked dataset if greater than max_chunked_images
 			if(nDimx > maxchunkedimages){
-				DSetCreatPropList plist;
 				hsize_t chunk_dims[3] ={maxchunkedimages, nDimy, nDimz};
 				plist.setChunk(3, chunk_dims);
-				dset = new DataSet (fd->createDataSet(dsetname.c_str(), dtype, *dspace, plist));
-			}else
-				dset = new DataSet (fd->createDataSet(dsetname.c_str(), dtype, *dspace));
+			}
+			dset = new DataSet (fd->createDataSet(dsetname.c_str(), dtype, *dspace, plist));
 
 			//create parameter datasets
 			hsize_t dims[1] = {nDimx};
@@ -558,6 +561,14 @@ public:
 				string srcFileName = HDF5FileStatic::CreateFileName(fpath, fnameprefix, findex,
 						frindexenable, framesSaved, dindex, numunits, i);
 
+				// find relative path
+				string relative_srcFileName = srcFileName;
+				{
+					size_t i = srcFileName.rfind('/', srcFileName.length());
+					if (i != string::npos)
+						relative_srcFileName = (srcFileName.substr(i+1, srcFileName.length() - i));
+				}
+
 				//source dataset name
 				ostringstream osfn;
 				osfn << "/data";
@@ -575,14 +586,14 @@ public:
 					return CloseFileOnError(fd, string("Error in creating source dataspace (parameters) in virtual file ") + virtualFileName + string("\n"));
 
 				//mapping
-				if (H5Pset_virtual(dcpl, vdsDataspace, srcFileName.c_str(), srcDatasetName.c_str(), srcDataspace) < 0) {
+				if (H5Pset_virtual(dcpl, vdsDataspace, relative_srcFileName.c_str(), srcDatasetName.c_str(), srcDataspace) < 0) {
 					cprintf(RED,"could not set mapping for paramter 1\n");
 					error = true;
 					break;
 				}
 
 				for (int k = 0; k < NumberofParameters; ++k) {
-					if (H5Pset_virtual(dcpl_para[k], vdsDataspace_para, srcFileName.c_str(), ParameterNames[k], srcDataspace_para) < 0) {
+					if (H5Pset_virtual(dcpl_para[k], vdsDataspace_para, relative_srcFileName.c_str(), ParameterNames[k], srcDataspace_para) < 0) {
 						cprintf(RED,"could not set mapping for paramter %d\n", k);
 						error = true;
 						break;
@@ -760,6 +771,14 @@ public:
 			return CloseFileOnError( vfd, string("Error in opening virtual file\n"));
 		}
 
+		// find relative path
+		string relative_virtualfname = virtualfname;
+		{
+			size_t i = virtualfname.rfind('/', virtualfname.length());
+			if (i != string::npos)
+				relative_virtualfname = (virtualfname.substr(i+1, virtualfname.length() - i));
+		}
+
 		//**data dataset**
 		hid_t vdset = H5Dopen2( vfd, virtualDatasetname.c_str(), H5P_DEFAULT);
 		if (vdset < 0) {
@@ -767,7 +786,7 @@ public:
 			return CloseFileOnError( vfd, string("Error in opening virtual data dataset\n"));
 		}
 		sprintf(linkname, "/entry/data/%s",virtualDatasetname.c_str());
-		if(H5Lcreate_external( virtualfname.c_str(), virtualDatasetname.c_str(),
+		if(H5Lcreate_external( relative_virtualfname.c_str(), virtualDatasetname.c_str(),
 										mfd, linkname, H5P_DEFAULT, H5P_DEFAULT) < 0) {
 			H5Fclose(mfd); mfd = 0;
 			return CloseFileOnError( vfd, string("Error in creating link to data dataset\n"));
@@ -782,7 +801,8 @@ public:
 				return CloseFileOnError( vfd, string("Error in opening virtual parameter dataset to create link\n"));
 			}
 			sprintf(linkname, "/entry/data/%s",(string("/virtual_") + string (ParameterNames[i])).c_str());
-			if(H5Lcreate_external( virtualfname.c_str(), (string("/virtual_") + string (ParameterNames[i])).c_str(),
+
+			if(H5Lcreate_external( relative_virtualfname.c_str(), (string("/virtual_") + string (ParameterNames[i])).c_str(),
 					mfd, linkname, H5P_DEFAULT, H5P_DEFAULT) < 0) {
 				H5Fclose(mfd); mfd = 0;
 				return CloseFileOnError( vfd, string("Error in creating link to virtual parameter dataset\n"));

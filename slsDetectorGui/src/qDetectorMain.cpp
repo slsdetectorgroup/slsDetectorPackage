@@ -521,7 +521,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		}
 	}
 	else if(action==actionLoadTrimbits){
-		QString fName = QString(myDet->getSettingsDir());
+		QString fName = QString( (myDet->getSettingsDir()).c_str());
 		qDefs::checkErrorMessage(myDet,"qDetectorMain::ExecuteUtilities");
 		//gotthard
 		if(actionLoadTrimbits->text().contains("Settings")){
@@ -568,7 +568,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 			cout << "Saving Settings" << endl;
 #endif
 			//different output directory so as not to overwrite
-			QString fName = QString(myDet->getSettingsDir());
+			QString fName = QString( (myDet->getSettingsDir()).c_str() );
 			qDefs::checkErrorMessage(myDet,"qDetectorMain::ExecuteUtilities");
 			fName = QFileDialog::getSaveFileName(this,
 					tr("Save Current Detector Settings"),fName,
@@ -585,7 +585,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 #ifdef VERBOSE
 			cout << "Saving Trimbits" << endl;
 #endif//different output directory so as not to overwrite
-			QString fName = QString(myDet->getSettingsDir());
+			QString fName = QString( (myDet->getSettingsDir()).c_str() );
 			qDefs::checkErrorMessage(myDet,"qDetectorMain::ExecuteUtilities");
 			fName = QFileDialog::getSaveFileName(this,
 					tr("Save Current Detector Trimbits"),fName,
@@ -603,7 +603,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 #ifdef VERBOSE
 		cout << "Loading Calibration Data" << endl;
 #endif
-		QString fName = QString(myDet->getCalDir());
+		QString fName = QString( (myDet->getCalDir()).c_str() );
 		qDefs::checkErrorMessage(myDet);
 
 		//so that even nonexisting files can be selected
@@ -626,7 +626,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 #ifdef VERBOSE
 		cout << "Saving Calibration Data" << endl;
 #endif//different output directory so as not to overwrite
-		QString fName = QString(myDet->getCalDir());
+		QString fName = QString( (myDet->getCalDir()).c_str()  );
 		qDefs::checkErrorMessage(myDet);
 		fName = QFileDialog::getSaveFileName(this,
 				tr("Save Current Detector Calibration Data"),fName,

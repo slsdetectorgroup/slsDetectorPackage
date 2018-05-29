@@ -1833,30 +1833,15 @@ int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t)
 }
 int64_t multiSlsDetector::getTimeLeft(timerIndex index)
 {
-    int i;
-    int64_t ret1 = -100, ret;
-
+    int64_t ret = -100;
     if (thisMultiDetector->masterPosition >= 0)
         if (detectors[thisMultiDetector->masterPosition]) {
-            ret1 = detectors[thisMultiDetector->masterPosition]->getTimeLeft(index);
+            ret = detectors[thisMultiDetector->masterPosition]->getTimeLeft(index);
             if (detectors[thisMultiDetector->masterPosition]->getErrorMask())
                 setErrorMask(getErrorMask() | (1 << thisMultiDetector->masterPosition));
-            return ret1;
+            return ret;
         }
-
-    for (i = 0; i < thisMultiDetector->numberOfDetectors; ++i) {
-        if (detectors[i]) {
-            ret = detectors[i]->getTimeLeft(index);
-            if (detectors[i]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << i));
-            if (ret1 == -100)
-                ret1 = ret;
-            else if (ret != ret1)
-                ret1 = -1;
-        }
-    }
-
-    return ret1;
+    return callDetectorMember(&slsDetector::getTimeLeft, index);
 }
 
 int multiSlsDetector::setStoragecellStart(int pos)
@@ -3335,20 +3320,6 @@ void multiSlsDetector::setErrorMaskFromAllDetectors()
                 setErrorMask(getErrorMask() | (1 << idet));
         }
     }
-}
-
-template <typename T>
-bool allElementsEqual(const std::vector<T>& v)
-{
-    if (v.empty())
-        return true;
-
-    const T& first = v[0];
-    for (int i = 1; i != v.size(); ++i) {
-        if (v[i] != first)
-            return false;
-    }
-    return true;
 }
 
 template <typename T>

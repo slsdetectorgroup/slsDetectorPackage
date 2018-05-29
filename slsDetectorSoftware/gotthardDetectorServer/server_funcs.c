@@ -11,6 +11,7 @@
 #include "registers_g.h"
 #include "gitInfoGotthard.h"
 #include "AD9257.h"     // include "commonServerFunctions.h"
+#include "versionAPI.h"
 
 #define FIFO_DATA_REG_OFF     0x50<<11
 #define CONTROL_REG           0x24<<11
@@ -55,8 +56,6 @@ char mess[MAX_STR_LENGTH];
 
 int digitalTestBit = 0;
 
-int isControlServer = 0;
-
 
 int init_detector( int b) {
 
@@ -72,7 +71,6 @@ int init_detector( int b) {
   }
 
   if (b) {
-	  isControlServer = 1;
 #ifdef PROPIXD
 	  printf("***This is a PROPIX detector***\n");
 #else
@@ -596,6 +594,8 @@ int get_id(int file_des) {
   case DETECTOR_SOFTWARE_VERSION:
     retval = (GITDATE & 0xFFFFFF);
     break;
+	case CLIENT_SOFTWARE_API_VERSION:
+		return APIGOTTHARD;
   default:
     printf("Required unknown id %d \n", arg);
     ret=FAIL;
@@ -3165,41 +3165,13 @@ int check_version(int file_des) {
 
 
 	// execute action
-#ifdef MCB_FUNCS
-
-	// check software- firmware compatibility and basic tests
-	if (isControlServer) {
-#ifdef VERBOSE
-		printf("Checking software-firmware compatibility and basic test result\n");
-#endif
-		// check if firmware check is done
-		if (!isFirmwareCheckDone()) {
-			usleep(3 * 1000 * 1000);
-			if (!isFirmwareCheckDone()) {
-				ret = FAIL;
-				strcpy(mess,"Firmware Software Compatibility Check (Server Initialization) "
-						"still not done done in server. Unexpected.\n");
-				cprintf(RED, "Warning: %s", mess);
-			}
-		}
-		// check firmware check result
-		if (ret == OK) {
-			char* firmware_message = NULL;
-			if (getFirmwareCheckResult(&firmware_message) == FAIL) {
-				ret = FAIL;
-				strcpy(mess, firmware_message);
-				cprintf(RED, "Warning: %s", mess);
-			}
-		}
-	}
-
 	if (ret == OK) {
 #ifdef VERBOSE
 		printf("Checking versioning compatibility with value %d\n",arg);
 #endif
 		int64_t client_requiredVersion = arg;
-		int64_t det_apiVersion = getDetectorId(CLIENT_SOFTWARE_API_VERSION);
-		int64_t det_version = getDetectorId(DETECTOR_SOFTWARE_VERSION);
+		int64_t det_apiVersion = APIGOTTHARD;
+		int64_t det_version = (GITDATE & 0xFFFFFF);
 
 		// old client
 		if (det_apiVersion > client_requiredVersion) {
@@ -3221,7 +3193,7 @@ int check_version(int file_des) {
 			cprintf(RED, "Warning: %s", mess);
 		}
 	}
-#endif
+
 
 
 	// ret could be swapped during sendData

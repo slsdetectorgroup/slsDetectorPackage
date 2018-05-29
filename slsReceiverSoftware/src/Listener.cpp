@@ -20,7 +20,7 @@ const string Listener::TypeName = "Listener";
 
 
 Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
-        uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr,
+        uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
         uint32_t* us, uint32_t* as, uint32_t* fpf) :
 		ThreadObject(ind),
 		runningFlag(0),
@@ -31,7 +31,6 @@ Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
 		udpSocket(0),
 		udpPortNumber(portno),
 		eth(e),
-		activated(act),
 		numImages(nf),
 		dynamicRange(dr),
 		udpSocketBufferSize(us),
@@ -182,9 +181,6 @@ int Listener::SetThreadPriority(int priority) {
 
 int Listener::CreateUDPSockets() {
 
-	if (!(*activated))
-		return OK;
-
 	//if eth is mistaken with ip address
 	if (strchr(eth,'.') != NULL){
 	    memset(eth, 0, MAX_STR_LENGTH);
@@ -241,11 +237,6 @@ int Listener::CreateDummySocketForUDPSocketBufferSize(uint32_t s) {
     uint32_t temp = *udpSocketBufferSize;
     *udpSocketBufferSize = s;
 
-    if (!(*activated))
-        return OK;
-
-
-
     //if eth is mistaken with ip address
     if (strchr(eth,'.') != NULL){
         memset(eth, 0, MAX_STR_LENGTH);
@@ -295,7 +286,7 @@ void Listener::ThreadExecution() {
 #endif
 
 	//udpsocket doesnt exist
-	if (*activated && !udpSocketAlive && !carryOverFlag) {
+	if (!udpSocketAlive && !carryOverFlag) {
 		//FILE_LOG(logERROR) << "Listening_Thread " << index << ": UDP Socket not created or shut down earlier";
 		(*((uint32_t*)buffer)) = 0;
 		StopListening(buffer);
@@ -304,18 +295,9 @@ void Listener::ThreadExecution() {
 
 	//get data
 	if ((*status != TRANSMITTING && udpSocketAlive) || carryOverFlag) {
-		if (*activated)
-			rc = ListenToAnImage(buffer);
-		else
-			rc = CreateAnImage(buffer + generalData->fifoBufferHeaderSize);
+		rc = ListenToAnImage(buffer);
 	}
 
-
-	/*//done acquiring (removing this, else the last incomplete image will not be sent, directly going to dummy msg)
-	if ((*status == TRANSMITTING) || ( (!(*activated)) && (rc == 0)) ) {
-		StopListening(buffer);
-		return;
-	}*/
 
 	//error check, (should not be here) if not transmitting yet (previous if) rc should be > 0
 	if (rc <= 0) {
@@ -559,22 +541,6 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 }
 
 
-uint32_t Listener::CreateAnImage(char* buf) {
-
-	if (!measurementStartedFlag)
-		RecordFirstIndices(0);
-
-	if (currentFrameIndex == *numImages)
-		return 0;
-
-	//update parameters
-	numPacketsCaught++;		//record immediately to get more time before socket shutdown
-
-	//reset data to -1
-	memset(buf, 0xFF, generalData->dataSize);
-
-	return generalData->imageSize;
-}
 
 
 void Listener::PrintFifoStatistics() {

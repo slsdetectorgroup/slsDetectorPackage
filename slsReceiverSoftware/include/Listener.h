@@ -27,7 +27,6 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param s pointer to receiver status
 	 * @param portno pointer to udp port number
 	 * @param e ethernet interface
-	 * @param act pointer to activated
 	 * @param nf pointer to number of images to catch
 	 * @param dr pointer to dynamic range
 	 * @param us pointer to udp socket buffer size
@@ -35,7 +34,7 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param fpf pointer to frames per file
 	 */
 	Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
-	        uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr,
+	        uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
 	        uint32_t* us, uint32_t* as, uint32_t* fpf);
 
 	/**
@@ -181,13 +180,6 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	uint32_t ListenToAnImage(char* buf);
 
 	/**
-	 * Create an image (for deactivated detectors),
-	 * @param buffer
-	 * @returns image size or 0
-	 */
-	uint32_t CreateAnImage(char* buf);
-
-	/**
 	 * Print Fifo Statistics
 	 */
 	void PrintFifoStatistics();
@@ -222,9 +214,6 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** ethernet interface */
 	char* eth;
-
-	/** if the detector is activated */
-	int* activated;
 
 	/** Number of Images to catch */
 	uint64_t* numImages;

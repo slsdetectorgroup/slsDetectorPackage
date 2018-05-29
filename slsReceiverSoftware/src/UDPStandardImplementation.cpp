@@ -373,7 +373,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 
 	    try {
 	        Listener* l = new Listener(i, myDetectorType, fifo[i], &status,
-	                &udpPortNum[i], eth, &activated, &numberOfFrames, &dynamicRange,
+	                &udpPortNum[i], eth, &numberOfFrames, &dynamicRange,
 	                &udpSocketBufferSize, &actualUDPSocketBufferSize, &framesPerFile);
 	        listener.push_back(l);
 

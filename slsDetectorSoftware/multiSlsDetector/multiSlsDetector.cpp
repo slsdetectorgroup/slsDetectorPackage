@@ -3718,21 +3718,7 @@ string multiSlsDetector::setNetworkParameter(networkParameter p, string s)
 
 int multiSlsDetector::setPort(portType t, int p)
 {
-
-    int ret = -100, ret1;
-
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-        if (detectors[idet]) {
-            ret1 = detectors[idet]->setPort(t, p);
-            if (detectors[idet]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << idet));
-            if (ret == -100)
-                ret = ret1;
-            else if (ret != ret1)
-                ret = -1;
-        }
-    }
-    return ret;
+    return callDetectorMember(&slsDetector::setPort, t, p);
 }
 
 int multiSlsDetector::lockServer(int p)
@@ -5789,7 +5775,7 @@ string multiSlsDetector::getReceiverLastClientIP()
 
 int multiSlsDetector::exitReceiver()
 {
-    //(Erik) logic is flawed should return fail if any fails
+    //(Erik) logic is flawed should return fail if any fails?
     int ival = FAIL, iv;
     for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
         if (detectors[idet]) {
@@ -6047,8 +6033,6 @@ bool multiSlsDetector::isAcquireReady()
     thisMultiDetector->acquiringFlag = true;
     return OK;
 }
-
-
 
 int multiSlsDetector::checkVersionCompatibility(portType t) {
     return parallelCallDetectorMember(&slsDetector::checkVersionCompatibility, t);

@@ -1044,6 +1044,9 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 void setErrorMaskFromAllDetectors();
 
+
+ std::string concatResultOrPos(std::string (slsDetector::*somefunc)(int), int pos);
+
 template<typename T>
   bool allElemetsEqual(const std::vector<T>&);
 

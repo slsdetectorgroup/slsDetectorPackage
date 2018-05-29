@@ -595,47 +595,23 @@ string multiSlsDetector::ssetDetectorsType(string name, int pos)
 
 string multiSlsDetector::getHostname(int pos)
 {
-    string hostnames;
-    if (pos >= 0) {
-        if (detectors[pos])
-            return detectors[pos]->getHostname();
-    } else {
-        for (int ip = 0; ip < thisMultiDetector->numberOfDetectors; ++ip) {
-            if (detectors[ip])
-                hostnames += detectors[ip]->getHostname() + "+";
-        }
-    }
-    return hostnames;
+    return concatResultOrPos(&slsDetector::getHostname, pos);
 }
 
 slsDetectorDefs::detectorType multiSlsDetector::getDetectorsType(int pos)
 {
-
-    detectorType s = GENERIC;
-#ifdef VERBOSE
-    cout << "returning type of detector with ID " << pos << endl;
-#endif
+    detectorType dt = GENERIC;
     if (pos >= 0) {
         if (detectors[pos])
             return detectors[pos]->getDetectorsType();
     } else if (detectors[0])
         return detectors[0]->getDetectorsType();
-    return s;
+    return dt;
 }
 
-string multiSlsDetector::sgetDetectorsType(int pos)
+std::string multiSlsDetector::sgetDetectorsType(int pos)
 {
-    string s;
-    if (pos >= 0) {
-        if (detectors[pos])
-            return detectors[pos]->sgetDetectorsType();
-    } else {
-        for (int ip = 0; ip < thisMultiDetector->numberOfDetectors; ++ip) {
-            if (detectors[ip])
-                s += detectors[ip]->sgetDetectorsType() + "+";
-        }
-    }
-    return s;
+    return concatResultOrPos(&slsDetector::sgetDetectorsType, pos);
 }
 
 int multiSlsDetector::getDetectorId(int pos)
@@ -3276,6 +3252,21 @@ void multiSlsDetector::setErrorMaskFromAllDetectors()
             if (detectors[idet]->getErrorMask())
                 setErrorMask(getErrorMask() | (1 << idet));
         }
+    }
+}
+
+std::string multiSlsDetector::concatResultOrPos(std::string (slsDetector::*somefunc)(int), int pos)
+{
+    if (pos >= 0) {
+        if (detectors[pos])
+            return (detectors[pos]->*somefunc)(pos);
+    } else {
+        std::string s;
+        for (int i = 0; i < thisMultiDetector->numberOfDetectors; ++i) {
+            if (detectors[i])
+                s += (detectors[i]->*somefunc)(pos) + "+";
+        }
+        return s;
     }
 }
 
@@ -5962,6 +5953,7 @@ bool multiSlsDetector::isAcquireReady()
     return OK;
 }
 
-int multiSlsDetector::checkVersionCompatibility(portType t) {
+int multiSlsDetector::checkVersionCompatibility(portType t)
+{
     return parallelCallDetectorMember(&slsDetector::checkVersionCompatibility, t);
 }

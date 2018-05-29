@@ -5563,7 +5563,7 @@ void multiSlsDetector::readFrameFromReceiver()
         delete[] multigappixels;
 }
 
-/** eiger 4 bit mode */
+// eiger 4 bit mode
 int multiSlsDetector::processImageWithGapPixels(char* image, char*& gpImage)
 {
     int nxb          = thisMultiDetector->numberOfDetector[X] * (512 + 3);

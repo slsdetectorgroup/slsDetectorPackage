@@ -1779,7 +1779,7 @@ int64_t multiSlsDetector::getTimeLeft(timerIndex index)
 
 int multiSlsDetector::setStoragecellStart(int pos)
 {
-    parallelCallDetectorMember(&slsDetector::setStoragecellStart, pos);
+    return parallelCallDetectorMember(&slsDetector::setStoragecellStart, pos);
 }
 
 int multiSlsDetector::setSpeed(speedVariable index, int value)

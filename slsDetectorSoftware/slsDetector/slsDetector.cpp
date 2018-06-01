@@ -5299,8 +5299,7 @@ int slsDetector::setDynamicRange(int n){
 	 thisDetector->dataBytesInclGapPixels =
   			 (thisDetector->nMod[X] * thisDetector->nChip[X] * thisDetector->nChan[X] + thisDetector->gappixels * thisDetector->nGappixels[X]) *
 			 (thisDetector->nMod[Y] * thisDetector->nChip[Y] * thisDetector->nChan[Y] + thisDetector->gappixels * thisDetector->nGappixels[Y]) *
-			 thisDetector->dynamicRange/8;
-
+			 retval/8;
     if (thisDetector->myDetectorType==JUNGFRAUCTB) {
       // thisDetector->nChip[X]=retval/16;
       // thisDetector->nChips=thisDetector->nChip[X]*thisDetector->nChip[Y];

@@ -82,7 +82,7 @@ The receiver is a process run on a PC closely connected to the detector. Open on
 where xxxx, yyyy are the tcp port numbers. Use 1955 and 1956 for example. Note that in older version of the software {\tt{--mode 1}} was used only for the ``bottom'' half module. Now, the receiver for the bottom is open without arguments anymore, but still in the configuration file one needs to write {\tt{n:flippeddatax 1}}, where {\tt{n}} indicated the half module number, 1 if it is a module.
 \\ Open as many receiver as half module boards. A single module has two half module boards.
 
-From the software version 3.0.1, one can decide weather start a zmq callback from the receiver to the client (for example to visualize data in the slsDetectorGui or another gui). If the zmq steam is not required (cased of the command line for example, one can switch off the streaming with {\tt{./sls\_detector\_put rx\_datastream 0}}, enable it with {\tt{./sls\_detector\_put rx\_datastream 1}}. In the case of inizialising the stream to use the slsDetectorGui, nothing needs to be taken care of by the user. If instead you want to stream the streaming on different channels, the zmq port of the client can be set stealing from the slsDetectorGui stream having {\tt{./sls\_detector\_put zmqport 300y}}. Note taht if this is done globally (not for every half module n independently, then the client automatically takes into account that for every half module, there are 2 zmq stream. The receiver stream {\tt{./sls\_detector\_put rx\_zmqport 300y}} has to match such that the GUI can work. 
+From the software version 3.0.1, one can decide weather start a zmq callback from the receiver to the client (for example to visualize data in the slsDetectorGui or another gui). If the zmq steam is not required (cased of the command line for example, one can switch off the streaming with {\tt{./sls\_detector\_put rx\_datastream 0}}, enable it with {\tt{./sls\_detector\_put rx\_datastream 1}}. In the case of inizialising the stream to use the slsDetectorGui, nothing needs to be taken care of by the user. If instead you want to stream the streaming on different channels, the zmq port of the client can be set stealing from the slsDetectorGui stream having {\tt{./sls\_detector\_put zmqport 300y}}. Note that if this is done globally (not for every half module n independently, then the client automatically takes into account that for every half module, there are 2 zmq stream. The receiver stream {\tt{./sls\_detector\_put rx\_zmqport 300y}} has to match such that the GUI can work. 
 If one desires to set the zmqport manually, he offset has to be taken into account: {\tt{./sls\_detector\_put 0:rx\_zmqport 300y}}, {\tt{./sls\_detector\_put 1:rx\_zmqport 300y+2}} and so on..
 
 There is an example code that can be compiled in {\tt{manual/manual-api/mainReceiver.cpp}} and gives the executable {\tt{./detReceiver}}, use it with two or more receivers to open all receivers in one single terminal: {\tt{./detReceiver startTCPPort numReceivers withCallback}}, where startTCPPort assumes the other ports are consecutively increased.
@@ -174,7 +174,7 @@ Other important settings that are configured in the {\tt{setup.det}} file are:
 One should notice that, by default, by choosing the option {\tt{dr 32}}, then the software automatically sets the detector to  {\tt{clkdivider 2}}. By choosing the option {\tt{dr 16}}, the software automatically sets the detector to  {\tt{clkdivider 1}}. One needs to choose {\tt{clkdivider 0}} after setting the {\tt{dr 16}} option to have the fastest frame rate. 
 We would recommend expert users (beamline people) to write their parameters file for the users. 
 
-\section{API versioning}
+\section{API versioning} \label{api}
 The eigerDetectorServer running on the boards has a versioning API scheme that will make it crash if used with a wrong firmware.
 You can also check your versioning by hand with the code:
 \begin{verbatim}
@@ -216,7 +216,8 @@ sls_detector_put 0-period 0[time_is_s]
 \end{verbatim}
 In this acquisition 10 consecutive 1~s frames will be acquired. Note that {\tt{period}} defines the sum of the acquisition time and the desired dead time before the next frame. If {\tt{period}} is set to 0, then the next frame will start as soon as the detector is ready to take another acquisition. \\
 
-For \E, at the moment 5 settings are possible: {\tt{standard}}, {\tt{lowgain}}, {\tt{verylowgain}}, {\tt{veryhighgain}} and {\tt{highgain}}. According to the setting chosen, one can reach different requirements (low noise or high rate). Refer to the settings requirements for your detector.\\ 
+For \E, at the moment normally only {\tt{standard}} settings are possible.
+ {\tt{lowgain}}, {\tt{verylowgain}}, {\tt{veryhighgain}} and {\tt{highgain}} are theoretically possible, but we never calibrate like this. Thei could be implemented later if needed.\\
 Notice that the option {\tt{settings standard/highgain/lowgain/veryhighgain/verylowgain}} actually loads the trimbit files so it is time consuming. Only setting the {\tt{threshold}} does not load trimbit files.  
 
 The threshold is expressed in (eV) as the proper threshold setting, i.e. normally is set to 50\% of the beam energy.  
@@ -378,8 +379,17 @@ In table~\ref{tframes} is a list of all the readout times in the different confi
 \textbf{We recommend to use the detector in 32 bit mode with {\tt{clkdivider 2}}, {\tt{flags parallel}}. We recommend to use the detector in 16 bit mode with {\tt{clkdivider 1}}, {\tt{flags parallel}}}. In general, choose first the desired dead time: this will tell you if you want to run in parallel or non parallel mode. Then, choose the maximum frame rate you want to aim, not exceeding what you aim for not to increase the noise.
 
 
-\section{External triggering options}
-The detector can be setup such to receive external triggers. Connect a LEMO signal to the TRIGGER IN connector in the Power Distribution Board. The logic 0 for the board is passed by low level 0$-$0.7~V, the logic 1 is passed to the board with a signal between 1.2$-$5~V. Eiger is 50~$\Omega$ terminated. By default the positive polarity is used (negative should not be passed to the board).  
+\section{External triggering options}\label{triggering}
+The detector can be setup such to receive external triggers. Connect a LEMO signal to the TRIGGER IN connector in the Power Distribution Board (see Fig.). The logic 0 for the board is passed by low level 0$-$0.7~V, the logic 1 is passed to the board with a signal between 1.2$-$5~V. Eiger is 50~$\Omega$ terminated. By default the positive polarity is used (negative should not be passed to the board).
+
+\begin{figure}[t]
+\begin{center}
+\includegraphics[width=.4\textwidth]{tiggerIN}
+\end{center}
+\caption{\textbf{Trigger INPUT} (looking at a single module from the back, top) is the \textbf{rightmost, down}.}
+\label{triggerIN}
+\end{figure}
+
 \begin{verbatim}
 sls_detector_put 0-timing [auto/trigger/burst_trigger/gating]
 sls_detector_put 0-frames x
@@ -458,6 +468,14 @@ If \textbf{dr} is 32 and \textbf{clkdivider} is not 2, whatever the detector get
 \item The minimum allowed value for \textbf{exptime} should be 10~$\mu$s. 
 \item By default the {\textbf{subexptime}} is set to 2.621440~ms. Values smaller than 500~$\mu$s do not make sense. The maximum value is 5.2~s. This limits should be checked.
 \end{enumerate}
+
+Here is a list of parameters that should be reset:
+\begin{enumerate}
+\item  \textbf{resetframescaught} should be reset to zero after every acquisition taken with {\tt{receiver start}},{\tt{status start}},{\tt{receiver stop}}. If the acquisition is taken with {\tt{sls\_detector\_acquire}}, there is no need to reset this.
+\item After changing the {\tt{timing}} mode of the detector, one should reset to '1' the unused value, in that specific timing mode, between \textbf{frames} and \textbf{cycles}. See section~\ref{triggering} for how to use the timing. At the present moment the detector will acquire more frames than planned if the variable not used between \textbf{frames} and \textbf{cycles} is not reset. In future releases, the unused variable will be ignored. Still resetting is a good practice.
+      
+\end{enumerate}
+
 
 
 \section{1Gb/s, 10Gb/s links}
@@ -843,6 +861,10 @@ It is connected to the TCPport which the receiver uses:
 %%%#To display only open UDP ports try the following command: netstat -vaun
  \end{itemize}
 
+\subsection{The client ignores the commands}
+Make sure that in the configuration file you do not have {\tt{lock 1}} activated, as this will let only one username from one IP address talk to the detector. 
+To deactivate it, you need to run {\tt{lock 0}} from the client session where you locked it. 
+
 \subsection{Zmq socket is blocked}
 It is connected to the TCPport which is used. In rare cases, it might be that the TCP port crashes. To find out which process uses the TCPPOrt do: \textbf{netstat -nlp | grep xxxx}, where xxxx is the tcpport number. To display open ports and established TCP connections, enter: \textbf{netstat -vatn}. Kill the process.
 
@@ -855,14 +877,18 @@ Note that occasionally if there is a shared memory of a different size (from an 
 This needs to be cleaned with {\tt{ipcs -m}} and then {\tt{ipcrm -M xxx}}, where xxx are the keys with nattch 0. Alternative in the main slsDetectorFolder there is a script that can be used as {\tt{sh cleansharedmemory.sh}}. Note that you need to run the script with the account of the client user, as the shared memory belongs to the client. It is good procedure to implement an automatic cleanup of the shared memory if the client user changes often.   
 
 \subsection{Measure the HV}
-For every system but not the 9M: 
+For every system: 
 \begin{itemize}
 \item Software-wise measure it (now the software returns the measured value), with {\tt{sls\_detector\_get vhighvoltage}}. The returned value is the HV (for proper Eiger setting is approximately 150~V) if it is correctly set. If two master modules are presents (multi systems), the average is returned (still to be tested). If one asks for the individual $n$ half module bias voltage through {\tt{sls\_detector\_get n:vhighvoltage}}, if the $n$ module is a master, the actual voltage will be returned. If it is a slave, -999 will be returned. 
-\item Hardware-wise measure value of HV on C14 on the power distribution board. Check also that the small HV connector cable is really connected. 
+\item Hardware-wise (opening the detector) measure value of HV on C14 on the power distribution board. Check also that the small HV connector cable is really connected. 
  \end{itemize}
 
+The 2M system at ESRF has a HV enable signal that needs to be shortcut in order to owerwirite vacuum protections (when not in vacuum). 
+The 1.5M for OMNY has a relay system that enables HV only when the vacuum is good. 
+For both systems, it makes sense not to set the HV while running the configuration file but set it at a later stage when sure about the vacuum. 
+
 \subsection{The image now has a vertical line}
-Check if the vertical line has a length of 256 pixels and a width of 8 columns. In this case it is a dataline beeing bad. It can be either a wirebond problem or a frontend board problem. try to read the FEB temperature (see Section~\ref{}) and report the problem to the SLSDetector group. Most likely it will be a long term fix by checking the hardware.
+Check if the vertical line has a length of 256 pixels and a width of 8 columns. In this case it is a dataline being bad. It can be either a wirebond problem or a frontend board problem. try to read the FEB temperature (see Section~\ref{}) and report the problem to the SLSDetector group. Most likely it will be a long term fix by checking the hardware.
 
 \subsection{The image now has more vertical lines}
 
@@ -872,7 +898,7 @@ If you see strange lines in vertical occurring at period patterns, it is a memor
 Depending on your network setup,  to speed up the ssh to the boards from a pc with internal dhcp server running: \textbf{iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE; echo "1" > /proc/sys/net/ipv4/ip\_forward}, where eth1 has to be the 1Gb network device on the pc
 
 \subsection{Check firmware version installed on BEB}
-Follow some steps described in Section~\label{server}. 
+You can either ask in the client as described in section~\ref{api}, or login to the boards directly. Follow some steps described in Section~\ref{server}. 
 \begin{verbatim}
 ssh root@bebxxx #password is root
 killall eigerDetectorServer # kill server and stopserver
@@ -882,7 +908,7 @@ cd executables/
 Scroll up in the terminal till you find {\tt{Firmware Version: xx}}
 
 \subsection{Check if half-module is a master, a slave, a top or a bottom}
-Follow some steps described in Section~\label{server}.
+Follow some steps described in Section~\ref{server}.
 \begin{verbatim}
 ssh root@bebxxx #password is root
 killall eigerDetectorServer # kill server and stopserver
@@ -894,8 +920,13 @@ Scroll up in the terminal till you find:\\
 *************** MASTER/SLAVE ***************\\
 *************** NORMAL/SPECIAL ***************\\
 
+\subsection{'Cannot connect to socket'}
+This error is typically due to the detector server not running. For why, see section~\ref{servernot}.
 
+\subsection{Detector server is not running}\label{servernot}
+The detector server could not be running: either the detector was powered off, or it powered off itself due to too high temperature or, in the case of the 9M, if the waterflow sensor detected no flux and powered it off (the chiller stops occasionally as cSAXS).
 
+If the powering and the temperature are OK, instead, it can be that the firmware version is incompatible to the server version and/or the client software version. So check the consistency of firmware/software/server versions.
 
 \section{Client checks - command line}
 

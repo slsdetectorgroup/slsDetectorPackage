@@ -37,18 +37,17 @@ multiSlsDetector::multiSlsDetector(int id, bool verify, bool update)
 	client_downstream(false),
 	threadpool(0)
 {
-	bool created = initSharedMemory(verify, update);
-	initializeDetectorStructure(created, verify, update);
-
-    getNMods();
-    getMaxMods();
-    if (createThreadPool() == FAIL)
-        exit(-1);
+	bool created = initSharedMemory(verify);
+	initializeDetectorStructure(created, verify);
+	initializeMembers();
+    if (update)
+    	updateUserdetails();
 }
 
 
 
-multiSlsDetector::~multiSlsDetector(){
+multiSlsDetector::~multiSlsDetector()
+{
 	for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
 		delete(*it);
 	}
@@ -67,7 +66,8 @@ multiSlsDetector::~multiSlsDetector(){
     destroyThreadPool();
 }
 
-slsDetector* multiSlsDetector::getSlsDetector(unsigned int pos) {
+slsDetector* multiSlsDetector::getSlsDetector(unsigned int pos)
+{
 	if (pos >= 0 && pos < detectors.size()) {
 		return detectors[pos];
 	}
@@ -76,7 +76,8 @@ slsDetector* multiSlsDetector::getSlsDetector(unsigned int pos) {
 
 
 
-void multiSlsDetector::freeSharedMemory(int multiId) {
+void multiSlsDetector::freeSharedMemory(int multiId)
+{
 	// get number of detectors
 	int numDetectors = 0;
 	SharedMemory* shm = new SharedMemory(multiId, -1);
@@ -101,7 +102,8 @@ void multiSlsDetector::freeSharedMemory(int multiId) {
 
 
 
-void multiSlsDetector::freeSharedMemory() {
+void multiSlsDetector::freeSharedMemory()
+{
 
 	// single detector vector
 	for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
@@ -119,7 +121,8 @@ void multiSlsDetector::freeSharedMemory() {
 }
 
 
-std::string multiSlsDetector::getUserDetails() {
+std::string multiSlsDetector::getUserDetails()
+{
 	std::ostringstream sstream;
 
 	if (!detectors.size()) {
@@ -132,7 +135,7 @@ std::string multiSlsDetector::getUserDetails() {
 	sstream<< "\nType: ";
 
 	for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it)
-		sstream<< (*it)->sgetDetectorsType() << "+"; /*change funtion signature without argument*/
+		sstream<< (*it)->sgetDetectorsType() << "+";
 	//PID
 	sstream << "\nPID: " << thisMultiDetector->lastPID
 	//user
@@ -144,7 +147,8 @@ std::string multiSlsDetector::getUserDetails() {
 }
 
 
-bool multiSlsDetector::initSharedMemory(bool verify, bool update) {
+bool multiSlsDetector::initSharedMemory(bool verify)
+{
 
 	// clear
 	if (sharedMemory)
@@ -184,134 +188,165 @@ bool multiSlsDetector::initSharedMemory(bool verify, bool update) {
 }
 
 
-void multiSlsDetector::initializeDetectorStructure(bool created, bool verify, bool update) {
-	// set up new structure
+void multiSlsDetector::initializeDetectorStructure(bool created, bool verify)
+{
 	if (created) {
 		thisMultiDetector->shmversion = MULTI_SHMVERSION;
 		thisMultiDetector->numberOfDetectors = 0;
         thisMultiDetector->numberOfDetector[X] = 0;
         thisMultiDetector->numberOfDetector[Y] = 0;
 		thisMultiDetector->onlineFlag = 1;
-
-		stoppedFlag = 0;
-		masterPosition = -1;
-		syncMode;
-		dataBytes = 0;
-		dataBytesInclGapPixels = 0;
-		numberOfChannels = 0;
-		numberOfChannel[X] = 0;
-		numberOfChannel[Y] = 0;
-		numberOfChannelInclGapPixels[X] = 0;
-		numberOfChannelInclGapPixels[Y] = 0;
-		maxNumberOfChannels = 0;
-		maxNumberOfChannel[X] = 0;
-		maxNumberOfChannel[Y] = 0;
-		maxNumberOfChannelInclGapPixels[X] = 0;
-		maxNumberOfChannelInclGapPixels[Y] = 0;
-		maxNumberOfChannelsPerDetector[X] = 0;
-		maxNumberOfChannelsPerDetector[Y] = 0;
-
-		int64_t timerValue[MAX_TIMERS];
-		detectorSettings currentSettings;
-		currentThresholdEV;
-		progressIndex = 0;
-		totalProgress = 1;
-		fileIndex = 0;
+		thisMultiDetector->stoppedFlag = 0;
+		thisMultiDetector->masterPosition = -1;
+		thisMultiDetector->syncMode = GET_SYNCHRONIZATION_MODE;
+		thisMultiDetector->dataBytes = 0;
+		thisMultiDetector->dataBytesInclGapPixels = 0;
+		thisMultiDetector->numberOfChannels = 0;
+		thisMultiDetector->numberOfChannel[X] = 0;
+		thisMultiDetector->numberOfChannel[Y] = 0;
+		thisMultiDetector->numberOfChannelInclGapPixels[X] = 0;
+		thisMultiDetector->numberOfChannelInclGapPixels[Y] = 0;
+		thisMultiDetector->maxNumberOfChannels = 0;
+		thisMultiDetector->maxNumberOfChannel[X] = 0;
+		thisMultiDetector->maxNumberOfChannel[Y] = 0;
+		thisMultiDetector->maxNumberOfChannelInclGapPixels[X] = 0;
+		thisMultiDetector->maxNumberOfChannelInclGapPixels[Y] = 0;
+		thisMultiDetector->maxNumberOfChannelsPerDetector[X] = 0;
+		thisMultiDetector->maxNumberOfChannelsPerDetector[Y] = 0;
+		for (int i = 0; i < MAX_TIMERS; ++i) {
+			thisMultiDetector->timerValue[i] = 0;
+		}
+		thisMultiDetector->currentSettings = -1;
+		thisMultiDetector->currentThresholdEV = -1;
+		thisMultiDetector->progressIndex = 0;
+		thisMultiDetector->totalProgress = 1;
+		thisMultiDetector->fileIndex = 0;
 		strncpy(thisMultiDetector->fileName, "run", MAX_STR_LENGTH);
 		strncpy(thisMultiDetector->filePath, "/", MAX_STR_LENGTH);
-
-		framesPerFile = 1;
-		fileFormat fileFormatType = ASCII;
-		correctionMask = (1 << WRITE_FILE) | (1 << OVERWRITE_FILE);
-		threadedProcessing;
-		tDead = 0;
+		thisMultiDetector->framesPerFile = 1;
+		thisMultiDetector->fileFormatType = ASCII;
+		thisMultiDetector->correctionMask = (1 << WRITE_FILE) | (1 << OVERWRITE_FILE);
+		thisMultiDetector->threadedProcessing = 1;
+		thisMultiDetector->tDead = 0;
 		strncpy(flatFieldDir, getenv("HOME"), MAX_STR_LENGTH);
 		strncpy(flatFieldFile, "none", MAX_STR_LENGTH);
 		strncpy(thisMultiDetector->badChanFile, "none", MAX_STR_LENGTH);
-		angConvFile[MAX_STR_LENGTH];
-		angDirection;
-		fineOffset;
-		globalOffset;
-		binSize;
-		sampleDisplacement[2];
-		numberOfPositions;
-		detPositions[MAXPOS];
-		actionMask;
-		mystring actionScript[MAX_ACTIONS];
-		mystring actionParameter[MAX_ACTIONS];
-		scanMode[MAX_SCAN_LEVELS];
-		mystring scanScript[MAX_SCAN_LEVELS];
-		mystring scanParameter[MAX_SCAN_LEVELS];
-		nScanSteps[MAX_SCAN_LEVELS];
-		mysteps scanSteps[MAX_SCAN_LEVELS];
-		scanPrecision[MAX_SCAN_LEVELS];
-		acquiringFlag;
-		externalgui;
-		receiverOnlineFlag;
-		receiver_upstream;
+		strncpy(thisMultiDetector->angConvFile, "none", MAX_STR_LENGTH);
+		thisMultiDetector->angDirection = 1;
+		thisMultiDetector->fineOffset = 0;
+		thisMultiDetector->globalOffset = 0;
+		thisMultiDetector->binSize = 0.001;
+		for (int i = 0; i < 2; ++i) {
+			thisMultiDetector->sampleDisplacement[i] = 0.0;
+		}
+		thisMultiDetector->numberOfPositions = 0;
+		for (int i = 0; i < MAXPOS; ++i) {
+			thisMultiDetector->detPositions[i] = 0.0;
+		}
+		thisMultiDetector->actionMask = 0;
+		for (int i = 0; i < MAX_ACTIONS; ++i) {
+			strncpy(thisMultiDetector->actionScript[i], "none", MAX_STR_LENGTH);
+			strncpy(thisMultiDetector->actionParameter[i], "none", MAX_STR_LENGTH);
+		}
+		for (int i = 0; i < MAX_SCAN_LEVELS; ++i) {
+			thisMultiDetector->scanMode[i] = 0;
+			strncpy(thisMultiDetector->scanScript[i], "none", MAX_STR_LENGTH);
+			strncpy(thisMultiDetector->	scanParameter[i], "none", MAX_STR_LENGTH);
+			thisMultiDetector->nScanSteps[i] = 0;
+			thisMultiDetector->scanSteps[i] = 0.0;
+			thisMultiDetector->scanPrecision[i] = 0;
+
+		}
+		thisMultiDetector->acquiringFlag = false;
+		thisMultiDetector->externalgui = false;
+		thisMultiDetector->receiverOnlineFlag = OFFLINE_FLAG;
+		thisMultiDetector->receiver_upstream = false;
 	}
+
 
 	// get objects from single det shared memory (open)
 	for (int i = 0; i < thisMultiDetector->numberOfDetectors; i++) {
 		slsDetector* sdet = new slsDetector(detId, i, verify, this);
 		detectors.push_back(sdet);
 	}
+}
+
+void multiSlsDetector::initializeMembers()
+{
+	//slsDetectorUtils
+	stoppedFlag = &thisMultiDetector->stoppedFlag;
+	timerValue = thisMultiDetector->timerValue;
+	currentSettings = &thisMultiDetector->currentSettings;
+	currentThresholdEV = &thisMultiDetector->currentThresholdEV;
+
+	//fileIO.h
+	filePath = thisMultiDetector->filePath;
+	fileName = thisMultiDetector->fileName;
+	fileIndex = &thisMultiDetector->fileIndex;
+	framesPerFile = &thisMultiDetector->framesPerFile;
+	fileFormatType = &thisMultiDetector->fileFormatType;
 
 
-	//update user details
-	if (update) {
-		thisMultiDetector->lastPID = getpid();
-		memset(thisMultiDetector->lastUser, 0, SHORT_STRING_LENGTH);
-		memset(thisMultiDetector->lastDate, 0, SHORT_STRING_LENGTH);
-		try {
-			strncpy(thisMultiDetector->lastUser, exec("whoami").c_str(), SHORT_STRING_LENGTH);
-			strncpy(thisMultiDetector->lastDate, exec("date").c_str(), DATE_LENGTH);
-		} catch(...) {
-			strncpy(thisMultiDetector->lastUser, exec("errorreading").c_str(), SHORT_STRING_LENGTH);
-			strncpy(thisMultiDetector->lastDate, exec("errorreading").c_str(), SHORT_STRING_LENGTH);
-		}
+	//postprocessing
+	threadedProcessing = &thisMultiDetector->threadedProcessing;
+	correctionMask = &thisMultiDetector->correctionMask;
+	flatFieldDir = thisMultiDetector->flatFieldDir;
+	flatFieldFile = thisMultiDetector->flatFieldFile;
+	expTime = &timerValue[ACQUISITION_TIME];
+
+
+	//slsDetectorActions
+	actionMask = &thisMultiDetector->actionMask;
+	actionScript = thisMultiDetector->actionScript;
+	actionParameter = thisMultiDetector->actionParameter;
+	nScanSteps = thisMultiDetector->nScanSteps;
+	scanSteps = thisMultiDetector->scanSteps;
+	scanMode = thisMultiDetector->scanMode;
+	scanPrecision = thisMultiDetector->scanPrecision;
+	scanScript = thisMultiDetector->scanScript;
+	scanParameter = thisMultiDetector->scanParameter;
+
+	//angularConversion.h
+	numberOfPositions = &thisMultiDetector->numberOfPositions;
+	detPositions = thisMultiDetector->detPositions;
+	angConvFile = thisMultiDetector->angConvFile;
+	binSize = &thisMultiDetector->binSize;
+	fineOffset = &thisMultiDetector->fineOffset;
+	globalOffset = &thisMultiDetector->globalOffset;
+	angDirection = &thisMultiDetector->angDirection;
+	moveFlag = NULL;
+	sampleDisplacement = thisMultiDetector->sampleDisplacement;
+
+	//badChannelCorrections.h or postProcessing_Standalone.h
+	badChanFile = thisMultiDetector->badChanFile;
+
+	//multiSlsDetector
+	for (int i = 0; i < MAXDET; ++i)
+		zmqSocket[i] = 0;
+	getNMods();
+	getMaxMods();
+	if (createThreadPool() == FAIL)
+		exit(-1);
+}
+
+
+void multiSlsDetector::updateUserdetails()
+{
+	thisMultiDetector->lastPID = getpid();
+	memset(thisMultiDetector->lastUser, 0, SHORT_STRING_LENGTH);
+	memset(thisMultiDetector->lastDate, 0, SHORT_STRING_LENGTH);
+	try {
+		strncpy(thisMultiDetector->lastUser, exec("whoami").c_str(), SHORT_STRING_LENGTH);
+		strncpy(thisMultiDetector->lastDate, exec("date").c_str(), DATE_LENGTH);
+	} catch(...) {
+		strncpy(thisMultiDetector->lastUser, exec("errorreading").c_str(), SHORT_STRING_LENGTH);
+		strncpy(thisMultiDetector->lastDate, exec("errorreading").c_str(), SHORT_STRING_LENGTH);
 	}
 }
 
 
-void multiSlsDetector::AddSingleDetector (std::string s) {
-
-	cout << "Adding detector " << s << endl;
-
-	for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
-		if ((*it)->GetHostname() == s) {
-            cout << "Detector " << s << "already part of the multiDetector!" << endl
-                 << "Remove it before adding it back in a new position!" << endl;
-            return;
-		}
-	}
-
-    //check entire shared memory if it doesnt exist?? needed?
-	//could be that detectors not loaded completely cuz of crash in new slsdetector in initsharedmemory
-
-	// get type by connecting
-	detectorType type = slsDetector::GetDetectorTypeFromDetector(s, DEFAULT_PORTNO);
-	if (type == GENERIC) {
-		cout << "Detector " << s << "does not exist in shared memory "
-				"and could not connect to it to determine the type!" << endl;
-		setErrorMask(getErrorMask() | MULTI_DETECTORS_NOT_ADDED);
-		 appendNotAddedList(name);
-		return;
-	}
-
-
-
-	int pos = detectors.size();
-	slsDetector* sdet = new slsDetector(type, detId, pos, false, this);
-	detectors.push_back(sdet);
-	detectors[pos]->SetHostname(s);
-	detectors[pos]->SetOnline(1);
-	++thisMultiDetector->numberOfDetectors;
-}
-
-
-
-std::string multiSlsDetector::exec(const char* cmd) {
+std::string multiSlsDetector::exec(const char* cmd)
+{
 	int bufsize = 1char buffer[bufsize];
 	std::string result = "";
 	FILE* pipe = popen(cmd, "r");
@@ -331,153 +366,107 @@ std::string multiSlsDetector::exec(const char* cmd) {
 }
 
 
-
-
-
-multiSlsDetector::multiSlsDetector(int id)
-    : slsDetectorUtils()
-    , shmId(-1)
+void multiSlsDetector::setHostname(string s)
 {
+	 size_t p1 = 0;
+	 string temp = string(s);
+	 size_t p2 = temp.find('+', p1);
+	 //single
+	 if (p2 == string::npos) {
+		 addSlsDetector(s);
+	 }
+	 // multi
+	 else {
+		 while(p2 != string::npos) {
+			 addSlsDetector(temp.substr(p1, p2-p1));
+			 temp = temp.substr(p2 + 1);
+			 p2 = temp.find('+');
+		 }
+	 }
 
-    while (shmId < 0) {
-        shmId = initSharedMemory(id);
-        ++id;
-    }
-    --id;
-
-    for (int id = 0; id < MAXDET; ++id) {
-        detectors[id] = NULL;
-    }
-    if (thisMultiDetector->alreadyExisting == 0) {
-
-
-        thisMultiDetector->receiverOnlineFlag  = OFFLINE_FLAG;
-
-
-
-
-
-
-        /** sets flat field correction directory */
-        strcpy(thisMultiDetector->flatFieldDir, getenv("HOME"));
-        /** sets flat field correction file */
-        strcpy(thisMultiDetector->flatFieldFile, "none");
-        /** set angular direction to 1*/
-        thisMultiDetector->angDirection = 1;
-        /** set fine offset to 0*/
-        thisMultiDetector->fineOffset = 0;
-        /** set global offset to 0*/
-        thisMultiDetector->globalOffset = 0;
-
-        /** set threshold to -1*/
-        thisMultiDetector->currentThresholdEV = -1;
-        // /** set clockdivider to 1*/
-        // thisMultiDetector->clkDiv=1;
-        /** set number of positions to 0*/
-        thisMultiDetector->numberOfPositions = 0;
-        /** sets angular conversion file to none */
-        strcpy(thisMultiDetector->angConvFile, "none");
-        /** set binsize*/
-        thisMultiDetector->binSize     = 0.001;
+	 setOnline(ONLINE_FLAG);
+}
 
 
-        thisMultiDetector->threadedProcessing = 1;
+string multiSlsDetector::getHostname(int pos)
+{
+    return concatResultOrPos(&slsDetector::getHostname, pos);
+}
 
-        thisMultiDetector->actionMask = 0;
 
-        for (int ia = 0; ia < MAX_ACTIONS; ++ia) {
-            //thisMultiDetector->actionMode[ia]=0;
-            strcpy(thisMultiDetector->actionScript[ia], "none");
-            strcpy(thisMultiDetector->actionParameter[ia], "none");
-        }
 
-        for (int iscan = 0; iscan < MAX_SCAN_LEVELS; ++iscan) {
-
-            thisMultiDetector->scanMode[iscan] = 0;
-            strcpy(thisMultiDetector->scanScript[iscan], "none");
-            strcpy(thisMultiDetector->scanParameter[iscan], "none");
-            thisMultiDetector->nScanSteps[iscan]    = 0;
-            thisMultiDetector->scanPrecision[iscan] = 0;
-        }
-
-        thisMultiDetector->acquiringFlag     = false;
-        thisMultiDetector->receiver_upstream = false;
-        thisMultiDetector->alreadyExisting   = 1;
-    }
-
-    //assigned before creating detector
-    stoppedFlag        = &thisMultiDetector->stoppedFlag;
-    threadedProcessing = &thisMultiDetector->threadedProcessing;
-    actionMask         = &thisMultiDetector->actionMask;
-    actionScript       = thisMultiDetector->actionScript;
-    actionParameter    = thisMultiDetector->actionParameter;
-    nScanSteps         = thisMultiDetector->nScanSteps;
-    scanMode           = thisMultiDetector->scanMode;
-    scanScript         = thisMultiDetector->scanScript;
-    scanParameter      = thisMultiDetector->scanParameter;
-    scanSteps          = thisMultiDetector->scanSteps;
-    scanPrecision      = thisMultiDetector->scanPrecision;
-    numberOfPositions  = &thisMultiDetector->numberOfPositions;
-    detPositions       = thisMultiDetector->detPositions;
-    angConvFile        = thisMultiDetector->angConvFile;
-    correctionMask     = &thisMultiDetector->correctionMask;
-    binSize            = &thisMultiDetector->binSize;
-    fineOffset         = &thisMultiDetector->fineOffset;
-    globalOffset       = &thisMultiDetector->globalOffset;
-    angDirection       = &thisMultiDetector->angDirection;
-    flatFieldDir       = thisMultiDetector->flatFieldDir;
-    flatFieldFile      = thisMultiDetector->flatFieldFile;
-    badChanFile        = thisMultiDetector->badChanFile;
-    timerValue         = thisMultiDetector->timerValue;
-
-    expTime = &timerValue[ACQUISITION_TIME];
-
-    currentSettings    = &thisMultiDetector->currentSettings;
-    currentThresholdEV = &thisMultiDetector->currentThresholdEV;
-    moveFlag           = NULL;
-
-    sampleDisplacement = thisMultiDetector->sampleDisplacement;
-
-    filePath       = thisMultiDetector->filePath;
-    fileName       = thisMultiDetector->fileName;
-    fileIndex      = &thisMultiDetector->fileIndex;
-    framesPerFile  = &thisMultiDetector->framesPerFile;
-    fileFormatType = &thisMultiDetector->fileFormatType;
-
-    for (int i = 0; i < thisMultiDetector->numberOfDetectors; ++i) {
+void multiSlsDetector::addSlsDetector (std::string s)
+{
 #ifdef VERBOSE
-        cout << thisMultiDetector->detectorIds[i] << endl;
+	cout << "Adding detector " << s << endl;
 #endif
-        detectors[i] = new slsDetector(i, thisMultiDetector->detectorIds[i], this);
+	for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
+		if ((*it)->getHostname((it-detectors.begin())) == s) {
+            cout << "Detector " << s << "already part of the multiDetector!" << endl
+                 << "Remove it before adding it back in a new position!" << endl;
+            return;
+		}
+	}
 
-        //  setAngularConversionPointer(detectors[i]->getAngularConversionPointer(),detectors[i]->getNModsPointer(),detectors[i]->getNChans()*detectors[i]->getNChips(), i);
-    }
-    // for (int i=thisMultiDetector->numberOfDetectors; i<MAXDET; ++i)
-    // detectors[i]=NULL;
+    //check entire shared memory if it doesnt exist?? needed?
+	//could be that detectors not loaded completely cuz of crash in new slsdetector in initsharedmemory
 
-    /** modifies the last PID accessing the detector system*/
-    thisMultiDetector->lastPID = getpid();
+	// get type by connecting
+	detectorType type = slsDetector::getDetectorType(s.c_str(), DEFAULT_PORTNO);
+	if (type == GENERIC) {
+		cout << "Detector " << s << "does not exist in shared memory "
+				"and could not connect to it to determine the type!" << endl;
+		setErrorMask(getErrorMask() | MULTI_DETECTORS_NOT_ADDED);
+		appendNotAddedList(s.c_str());
+		return;
+	}
 
-    getNMods();
+
+
+	int pos = detectors.size();
+	slsDetector* sdet = new slsDetector(type, detId, pos, false, this);
+	detectors.push_back(sdet);
+	detectors[pos]->setTCPSocket(s.c_str());
+	detectors[pos]->setOnline(ONLINE_FLAG);
+
+	++thisMultiDetector->numberOfDetectors;
+
+    thisMultiDetector->dataBytes += detectors[pos]->getDataBytes();
+    thisMultiDetector->dataBytesInclGapPixels += detectors[pos]->getDataBytesInclGapPixels();
+
+    thisMultiDetector->numberOfChannels += detectors[pos]->getTotalNumberOfChannels();
+    thisMultiDetector->maxNumberOfChannels += detectors[pos]->getMaxNumberOfChannels();
+
     getMaxMods();
-    client_downstream = false;
-    for (int i = 0; i < MAXDET; ++i)
-        zmqSocket[i] = 0;
-    threadpool = 0;
+    getNMods();
+    getMaxMod(X);
+    getNMod(X);
+    getMaxMod(Y);
+    getNMod(Y);
+
+    updateOffsets(); /// needed??
     if (createThreadPool() == FAIL)
         exit(-1);
 }
 
-multiSlsDetector::~multiSlsDetector()
+
+slsDetectorDefs::detectorType multiSlsDetector::getDetectorsType(int pos)
 {
-    //removeSlsDetector();
-    for (int i = 0; i < MAXDET; ++i) {
-        if (zmqSocket[i]) {
-            delete zmqSocket[i];
-        }
-    }
-    destroyThreadPool();
+    detectorType dt = GENERIC;
+    if (pos >= 0 && pos < detectors.size()) {
+      return detectors[pos]->getDetectorsType();
+    } else
+        return detectors[0]->getDetectorsType();// needed??
+    return dt;
 }
+
+std::string multiSlsDetector::sgetDetectorsType(int pos)
+{
+    return concatResultOrPos(&slsDetector::sgetDetectorsType, pos);
+}
+
+
+
 
 int multiSlsDetector::createThreadPool()
 {
@@ -517,616 +506,232 @@ void multiSlsDetector::destroyThreadPool()
     }
 }
 
-int multiSlsDetector::addSlsDetector(int id, int pos)
-{
-    int j = thisMultiDetector->numberOfDetectors;
 
-    if (slsDetector::exists(id) == 0) {
-        cout << "Detector " << id << " does not exist - You should first create it to determine type etc." << endl;
-    }
-
-#ifdef VERBOSE
-    cout << "Adding detector " << id << " in position " << pos << endl;
-#endif
-
-    if (pos < 0)
-        pos = j;
-
-    if (pos > j)
-        pos = thisMultiDetector->numberOfDetectors;
-
-    //check that it is not already in the list
-
-    for (int i = 0; i < thisMultiDetector->numberOfDetectors; ++i) {
-        //check that it is not already in the list, in that case move to new position
-        if (detectors[i]) {
-            if (detectors[i]->getDetectorId() == id) {
-                cout << "Detector " << id << "already part of the multiDetector in position " << i << "!" << endl
-                     << "Remove it before adding it back in a new position!" << endl;
-                return -1;
-            }
-        }
-    }
-
-    if (pos != thisMultiDetector->numberOfDetectors) {
-        for (int ip = thisMultiDetector->numberOfDetectors - 1; ip >= pos; --ip) {
-#ifdef VERBOSE
-            cout << "Moving detector " << thisMultiDetector->detectorIds[ip] << " from position " << ip << " to " << ip + 1 << endl;
-#endif
-            thisMultiDetector->detectorIds[ip + 1] = thisMultiDetector->detectorIds[ip];
-            detectors[ip + 1]                      = detectors[ip];
-        }
-    }
-#ifdef VERBOSE
-    cout << "Creating new detector " << pos << endl;
-#endif
-
-    detectors[pos]                      = new slsDetector(pos, id, this);
-    thisMultiDetector->detectorIds[pos] = detectors[pos]->getDetectorId();
-    ++thisMultiDetector->numberOfDetectors;
-
-    thisMultiDetector->dataBytes += detectors[pos]->getDataBytes();
-    thisMultiDetector->dataBytesInclGapPixels += detectors[pos]->getDataBytesInclGapPixels();
-
-    thisMultiDetector->numberOfChannels += detectors[pos]->getTotalNumberOfChannels();
-    thisMultiDetector->maxNumberOfChannels += detectors[pos]->getMaxNumberOfChannels();
-
-    getMaxMods();
-    getNMods();
-    getMaxMod(X);
-    getNMod(X);
-    getMaxMod(Y);
-    getNMod(Y);
-
-#ifdef VERBOSE
-    cout << "Detector added " << thisMultiDetector->numberOfDetectors << endl;
-
-    for (int ip = 0; ip < thisMultiDetector->numberOfDetectors; ++ip) {
-        cout << "Detector " << thisMultiDetector->detectorIds[ip] << " position " << ip << " " << detectors[ip]->getHostname() << endl;
-    }
-#endif
-
-    //set offsets
-    updateOffsets();
-    if (createThreadPool() == FAIL)
-        exit(-1);
-
-    return thisMultiDetector->numberOfDetectors;
-}
 
 void multiSlsDetector::updateOffsets()
-{ //cannot paralllize due to slsdetector calling this via parentdet->
+{
+	//cannot paralllize due to slsdetector calling this via parentdet->
 #ifdef VERBOSE
-    cout << endl
-         << "Updating Multi-Detector Offsets" << endl;
+	cout << endl
+			<< "Updating Multi-Detector Offsets" << endl;
 #endif
-    int offsetX = 0, offsetY = 0, numX = 0, numY = 0, maxX = 0, maxY = 0;
-    int maxChanX   = thisMultiDetector->maxNumberOfChannelsPerDetector[X];
-    int maxChanY   = thisMultiDetector->maxNumberOfChannelsPerDetector[Y];
-    int prevChanX  = 0;
-    int prevChanY  = 0;
-    bool firstTime = true;
+	int offsetX = 0, offsetY = 0, numX = 0, numY = 0, maxX = 0, maxY = 0;
+	int maxChanX   = thisMultiDetector->maxNumberOfChannelsPerDetector[X];
+	int maxChanY   = thisMultiDetector->maxNumberOfChannelsPerDetector[Y];
+	int prevChanX  = 0;
+	int prevChanY  = 0;
+	bool firstTime = true;
 
-    thisMultiDetector->numberOfChannel[X]    = 0;
-    thisMultiDetector->numberOfChannel[Y]    = 0;
-    thisMultiDetector->maxNumberOfChannel[X] = 0;
-    thisMultiDetector->maxNumberOfChannel[Y] = 0;
-    thisMultiDetector->numberOfDetector[X]   = 0;
-    thisMultiDetector->numberOfDetector[Y]   = 0;
+	thisMultiDetector->numberOfChannel[X]    = 0;
+	thisMultiDetector->numberOfChannel[Y]    = 0;
+	thisMultiDetector->maxNumberOfChannel[X] = 0;
+	thisMultiDetector->maxNumberOfChannel[Y] = 0;
+	thisMultiDetector->numberOfDetector[X]   = 0;
+	thisMultiDetector->numberOfDetector[Y]   = 0;
 
-    // gap pixels
-    int offsetX_gp = 0, offsetY_gp = 0, numX_gp = 0, numY_gp = 0, maxX_gp = 0, maxY_gp = 0;
-    int prevChanX_gp = 0, prevChanY_gp = 0;
-    thisMultiDetector->numberOfChannelInclGapPixels[X]    = 0;
-    thisMultiDetector->numberOfChannelInclGapPixels[Y]    = 0;
-    thisMultiDetector->maxNumberOfChannelInclGapPixels[X] = 0;
-    thisMultiDetector->maxNumberOfChannelInclGapPixels[Y] = 0;
+	// gap pixels
+	int offsetX_gp = 0, offsetY_gp = 0, numX_gp = 0, numY_gp = 0, maxX_gp = 0, maxY_gp = 0;
+	int prevChanX_gp = 0, prevChanY_gp = 0;
+	thisMultiDetector->numberOfChannelInclGapPixels[X]    = 0;
+	thisMultiDetector->numberOfChannelInclGapPixels[Y]    = 0;
+	thisMultiDetector->maxNumberOfChannelInclGapPixels[X] = 0;
+	thisMultiDetector->maxNumberOfChannelInclGapPixels[Y] = 0;
 
-    for (int i = 0; i < thisMultiDetector->numberOfDetectors; ++i) {
-        if (detectors[i]) {
+	for (int i = 0; i < thisMultiDetector->numberOfDetectors; ++i) {
+		if (detectors[i]) {
 #ifdef VERBOSE
-            cout << "offsetX:" << offsetX << " prevChanX:" << prevChanX << " offsetY:" << offsetY << " prevChanY:" << prevChanY << endl;
-            cout << "offsetX_gp:" << offsetX_gp << " prevChanX_gp:" << prevChanX_gp << " offsetY_gp:" << offsetY_gp << " prevChanY_gp:" << prevChanY_gp << endl;
+			cout << "offsetX:" << offsetX << " prevChanX:" << prevChanX << " offsetY:" << offsetY << " prevChanY:" << prevChanY << endl;
+			cout << "offsetX_gp:" << offsetX_gp << " prevChanX_gp:" << prevChanX_gp << " offsetY_gp:" << offsetY_gp << " prevChanY_gp:" << prevChanY_gp << endl;
 #endif
-            //cout<<" totalchan:"<< detectors[i]->getTotalNumberOfChannels(Y) <<" maxChanY:"<<maxChanY<<endl;
-            //incrementing in both direction
-            if (firstTime) {
-                //incrementing in both directions
-                firstTime = false;
-                if ((maxChanX > 0) && ((offsetX + detectors[i]->getTotalNumberOfChannels(X)) > maxChanX))
-                    cout << "\nDetector[" << i << "] exceeds maximum channels allowed for complete detector set in X dimension!" << endl;
-                if ((maxChanY > 0) && ((offsetY + detectors[i]->getTotalNumberOfChannels(Y)) > maxChanY))
-                    cout << "\nDetector[" << i << "] exceeds maximum channels allowed for complete detector set in Y dimension!" << endl;
-                prevChanX    = detectors[i]->getTotalNumberOfChannels(X);
-                prevChanY    = detectors[i]->getTotalNumberOfChannels(Y);
-                prevChanX_gp = detectors[i]->getTotalNumberOfChannelsInclGapPixels(X);
-                prevChanY_gp = detectors[i]->getTotalNumberOfChannelsInclGapPixels(Y);
-                numX += detectors[i]->getTotalNumberOfChannels(X);
-                numY += detectors[i]->getTotalNumberOfChannels(Y);
-                numX_gp += detectors[i]->getTotalNumberOfChannelsInclGapPixels(X);
-                numY_gp += detectors[i]->getTotalNumberOfChannelsInclGapPixels(Y);
-                maxX += detectors[i]->getMaxNumberOfChannels(X);
-                maxY += detectors[i]->getMaxNumberOfChannels(Y);
-                maxX_gp += detectors[i]->getMaxNumberOfChannelsInclGapPixels(X);
-                maxY_gp += detectors[i]->getMaxNumberOfChannelsInclGapPixels(Y);
-                ++thisMultiDetector->numberOfDetector[X];
-                ++thisMultiDetector->numberOfDetector[Y];
+			//cout<<" totalchan:"<< detectors[i]->getTotalNumberOfChannels(Y) <<" maxChanY:"<<maxChanY<<endl;
+			//incrementing in both direction
+			if (firstTime) {
+				//incrementing in both directions
+				firstTime = false;
+				if ((maxChanX > 0) && ((offsetX + detectors[i]->getTotalNumberOfChannels(X)) > maxChanX))
+					cout << "\nDetector[" << i << "] exceeds maximum channels allowed for complete detector set in X dimension!" << endl;
+				if ((maxChanY > 0) && ((offsetY + detectors[i]->getTotalNumberOfChannels(Y)) > maxChanY))
+					cout << "\nDetector[" << i << "] exceeds maximum channels allowed for complete detector set in Y dimension!" << endl;
+				prevChanX    = detectors[i]->getTotalNumberOfChannels(X);
+				prevChanY    = detectors[i]->getTotalNumberOfChannels(Y);
+				prevChanX_gp = detectors[i]->getTotalNumberOfChannelsInclGapPixels(X);
+				prevChanY_gp = detectors[i]->getTotalNumberOfChannelsInclGapPixels(Y);
+				numX += detectors[i]->getTotalNumberOfChannels(X);
+				numY += detectors[i]->getTotalNumberOfChannels(Y);
+				numX_gp += detectors[i]->getTotalNumberOfChannelsInclGapPixels(X);
+				numY_gp += detectors[i]->getTotalNumberOfChannelsInclGapPixels(Y);
+				maxX += detectors[i]->getMaxNumberOfChannels(X);
+				maxY += detectors[i]->getMaxNumberOfChannels(Y);
+				maxX_gp += detectors[i]->getMaxNumberOfChannelsInclGapPixels(X);
+				maxY_gp += detectors[i]->getMaxNumberOfChannelsInclGapPixels(Y);
+				++thisMultiDetector->numberOfDetector[X];
+				++thisMultiDetector->numberOfDetector[Y];
 #ifdef VERBOSE
-                cout << "incrementing in both direction" << endl;
+cout << "incrementing in both direction" << endl;
 #endif
-            }
+			}
 
-            //incrementing in y direction
-            else if ((maxChanY == -1) || ((maxChanY > 0) && ((offsetY + prevChanY + detectors[i]->getTotalNumberOfChannels(Y)) <= maxChanY))) {
-                offsetY += prevChanY;
-                offsetY_gp += prevChanY_gp;
-                prevChanY    = detectors[i]->getTotalNumberOfChannels(Y);
-                prevChanY_gp = detectors[i]->getTotalNumberOfChannelsInclGapPixels(Y);
-                numY += detectors[i]->getTotalNumberOfChannels(Y);
-                numY_gp += detectors[i]->getTotalNumberOfChannelsInclGapPixels(Y);
-                maxY += detectors[i]->getMaxNumberOfChannels(Y);
-                maxY_gp += detectors[i]->getMaxNumberOfChannelsInclGapPixels(Y);
-                ++thisMultiDetector->numberOfDetector[Y];
+			//incrementing in y direction
+			else if ((maxChanY == -1) || ((maxChanY > 0) && ((offsetY + prevChanY + detectors[i]->getTotalNumberOfChannels(Y)) <= maxChanY))) {
+				offsetY += prevChanY;
+				offsetY_gp += prevChanY_gp;
+				prevChanY    = detectors[i]->getTotalNumberOfChannels(Y);
+				prevChanY_gp = detectors[i]->getTotalNumberOfChannelsInclGapPixels(Y);
+				numY += detectors[i]->getTotalNumberOfChannels(Y);
+				numY_gp += detectors[i]->getTotalNumberOfChannelsInclGapPixels(Y);
+				maxY += detectors[i]->getMaxNumberOfChannels(Y);
+				maxY_gp += detectors[i]->getMaxNumberOfChannelsInclGapPixels(Y);
+				++thisMultiDetector->numberOfDetector[Y];
 #ifdef VERBOSE
-                cout << "incrementing in y direction" << endl;
+cout << "incrementing in y direction" << endl;
 #endif
-            }
+			}
 
-            //incrementing in x direction
-            else {
-                if ((maxChanX > 0) && ((offsetX + prevChanX + detectors[i]->getTotalNumberOfChannels(X)) > maxChanX))
-                    cout << "\nDetector[" << i << "] exceeds maximum channels allowed for complete detector set in X dimension!" << endl;
-                offsetY      = 0;
-                offsetY_gp   = 0;
-                prevChanY    = detectors[i]->getTotalNumberOfChannels(Y);
-                prevChanY_gp = detectors[i]->getTotalNumberOfChannelsInclGapPixels(Y);
-                numY         = 0; //assuming symmetry with this statement. whats on 1st column should be on 2nd column
-                numY_gp      = 0;
-                maxY         = 0;
-                maxY_gp      = 0;
-                offsetX += prevChanX;
-                offsetX_gp += prevChanX_gp;
-                prevChanX    = detectors[i]->getTotalNumberOfChannels(X);
-                prevChanX_gp = detectors[i]->getTotalNumberOfChannelsInclGapPixels(X);
-                numX += detectors[i]->getTotalNumberOfChannels(X);
-                numX_gp += detectors[i]->getTotalNumberOfChannelsInclGapPixels(X);
-                maxX += detectors[i]->getMaxNumberOfChannels(X);
-                maxX_gp += detectors[i]->getMaxNumberOfChannelsInclGapPixels(X);
-                ++thisMultiDetector->numberOfDetector[X];
+			//incrementing in x direction
+			else {
+				if ((maxChanX > 0) && ((offsetX + prevChanX + detectors[i]->getTotalNumberOfChannels(X)) > maxChanX))
+					cout << "\nDetector[" << i << "] exceeds maximum channels allowed for complete detector set in X dimension!" << endl;
+				offsetY      = 0;
+				offsetY_gp   = 0;
+				prevChanY    = detectors[i]->getTotalNumberOfChannels(Y);
+				prevChanY_gp = detectors[i]->getTotalNumberOfChannelsInclGapPixels(Y);
+				numY         = 0; //assuming symmetry with this statement. whats on 1st column should be on 2nd column
+				numY_gp      = 0;
+				maxY         = 0;
+				maxY_gp      = 0;
+				offsetX += prevChanX;
+				offsetX_gp += prevChanX_gp;
+				prevChanX    = detectors[i]->getTotalNumberOfChannels(X);
+				prevChanX_gp = detectors[i]->getTotalNumberOfChannelsInclGapPixels(X);
+				numX += detectors[i]->getTotalNumberOfChannels(X);
+				numX_gp += detectors[i]->getTotalNumberOfChannelsInclGapPixels(X);
+				maxX += detectors[i]->getMaxNumberOfChannels(X);
+				maxX_gp += detectors[i]->getMaxNumberOfChannelsInclGapPixels(X);
+				++thisMultiDetector->numberOfDetector[X];
 #ifdef VERBOSE
-                cout << "incrementing in x direction" << endl;
+cout << "incrementing in x direction" << endl;
 #endif
-            }
+			}
 
-            double bytesperchannel        = (double)detectors[i]->getDataBytes() / (double)(detectors[i]->getMaxNumberOfChannels(X) * detectors[i]->getMaxNumberOfChannels(Y));
-            thisMultiDetector->offsetX[i] = (bytesperchannel >= 1.0) ? offsetX_gp : offsetX;
-            thisMultiDetector->offsetY[i] = (bytesperchannel >= 1.0) ? offsetY_gp : offsetY;
-#ifdef VERBOSE
-            cout << "Detector[" << i << "] has offsets (" << thisMultiDetector->offsetX[i] << ", " << thisMultiDetector->offsetY[i] << ")" << endl;
+			double bytesperchannel        = (double)detectors[i]->getDataBytes() / (double)(detectors[i]->getMaxNumberOfChannels(X) * detectors[i]->getMaxNumberOfChannels(Y));
+			fdef VERBOSE
+			cout << "Detector[" << i << "] has offsets (" << thisMultiDetector->offsetX[i] << ", " << thisMultiDetector->offsetY[i] << ")" << endl;
 #endif
-            //offsetY has been reset sometimes and offsetX the first time, but remember the highest values
-            if (numX > thisMultiDetector->numberOfChannel[X])
-                thisMultiDetector->numberOfChannel[X] = numX;
-            if (numY > thisMultiDetector->numberOfChannel[Y])
-                thisMultiDetector->numberOfChannel[Y] = numY;
-            if (numX_gp > thisMultiDetector->numberOfChannelInclGapPixels[X])
-                thisMultiDetector->numberOfChannelInclGapPixels[X] = numX_gp;
-            if (numY_gp > thisMultiDetector->numberOfChannelInclGapPixels[Y])
-                thisMultiDetector->numberOfChannelInclGapPixels[Y] = numY_gp;
-            if (maxX > thisMultiDetector->maxNumberOfChannel[X])
-                thisMultiDetector->maxNumberOfChannel[X] = maxX;
-            if (maxY > thisMultiDetector->maxNumberOfChannel[Y])
-                thisMultiDetector->maxNumberOfChannel[Y] = maxY;
-            if (maxX_gp > thisMultiDetector->maxNumberOfChannelInclGapPixels[X])
-                thisMultiDetector->maxNumberOfChannelInclGapPixels[X] = maxX_gp;
-            if (maxY_gp > thisMultiDetector->maxNumberOfChannelInclGapPixels[Y])
-                thisMultiDetector->maxNumberOfChannelInclGapPixels[Y] = maxY_gp;
-        }
-    }
+			//offsetY has been reset sometimes and offsetX the first time, but remember the highest values
+			if (numX > thisMultiDetector->numberOfChannel[X])
+				thisMultiDetector->numberOfChannel[X] = numX;
+			if (numY > thisMultiDetector->numberOfChannel[Y])
+				thisMultiDetector->numberOfChannel[Y] = numY;
+			if (numX_gp > thisMultiDetector->numberOfChannelInclGapPixels[X])
+				thisMultiDetector->numberOfChannelInclGapPixels[X] = numX_gp;
+			if (numY_gp > thisMultiDetector->numberOfChannelInclGapPixels[Y])
+				thisMultiDetector->numberOfChannelInclGapPixels[Y] = numY_gp;
+			if (maxX > thisMultiDetector->maxNumberOfChannel[X])
+				thisMultiDetector->maxNumberOfChannel[X] = maxX;
+			if (maxY > thisMultiDetector->maxNumberOfChannel[Y])
+				thisMultiDetector->maxNumberOfChannel[Y] = maxY;
+			if (maxX_gp > thisMultiDetector->maxNumberOfChannelInclGapPixels[X])
+				thisMultiDetector->maxNumberOfChannelInclGapPixels[X] = maxX_gp;
+			if (maxY_gp > thisMultiDetector->maxNumberOfChannelInclGapPixels[Y])
+				thisMultiDetector->maxNumberOfChannelInclGapPixels[Y] = maxY_gp;
+		}
+	}
 #ifdef VERBOSE
-    cout << "Number of Channels in X direction:" << thisMultiDetector->numberOfChannel[X] << endl;
-    cout << "Number of Channels in Y direction:" << thisMultiDetector->numberOfChannel[Y] << endl
-         << endl;
-    cout << "Number of Channels in X direction with Gap Pixels:" << thisMultiDetector->numberOfChannelInclGapPixels[X] << endl;
-    cout << "Number of Channels in Y direction with Gap Pixels:" << thisMultiDetector->numberOfChannelInclGapPixels[Y] << endl
-         << endl;
+	cout << "Number of Channels in X direction:" << thisMultiDetector->numberOfChannel[X] << endl;
+	cout << "Number of Channels in Y direction:" << thisMultiDetector->numberOfChannel[Y] << endl
+			<< endl;
+	cout << "Number of Channels in X direction with Gap Pixels:" << thisMultiDetector->numberOfChannelInclGapPixels[X] << endl;
+	cout << "Number of Channels in Y direction with Gap Pixels:" << thisMultiDetector->numberOfChannelInclGapPixels[Y] << endl
+			<< endl;
 #endif
 }
 
-string multiSlsDetector::setHostname(const char* name, int pos)
-{
 
-    // int id=0;
-    string s;
-    if (pos >= 0) {
-        addSlsDetector(name, pos);
-        if (detectors[pos])
-            return detectors[pos]->getHostname();
-    } else {
-        size_t p1 = 0;
-        s         = string(name);
-        size_t p2 = s.find('+', p1);
-        char hn[1000];
-        if (p2 == string::npos) {
-            strcpy(hn, s.c_str());
-            addSlsDetector(hn, pos);
-        } else {
-            while (p2 != string::npos) {
-                strcpy(hn, s.substr(p1, p2 - p1).c_str());
-                addSlsDetector(hn, pos);
-                s  = s.substr(p2 + 1);
-                p2 = s.find('+');
-            }
-        }
-    }
-#ifdef VERBOSE
-    cout << "-----------------------------set online!" << endl;
-#endif
-    setOnline(ONLINE_FLAG);
 
-    return getHostname(pos);
-}
 
-string multiSlsDetector::ssetDetectorsType(string name, int pos)
-{
 
-    // int id=0;
-    string s;
-    if (pos >= 0) {
-        if (getDetectorType(name) != GET_DETECTOR_TYPE)
-            addSlsDetector(name.c_str(), pos);
-    } else {
-        removeSlsDetector(); //reset detector list!
-        size_t p1 = 0;
-        s         = string(name);
-        size_t p2 = s.find('+', p1);
-        char hn[1000];
-        if (p2 == string::npos) {
-            strcpy(hn, s.c_str());
-            addSlsDetector(hn, pos);
-        } else {
-            while (p2 != string::npos) {
-                strcpy(hn, s.substr(p1, p2 - p1).c_str());
-                if (getDetectorType(hn) != GET_DETECTOR_TYPE)
-                    addSlsDetector(hn, pos);
-                s  = s.substr(p2 + 1);
-                p2 = s.find('+');
-            }
-        }
-    }
-    return sgetDetectorsType(pos);
-}
 
-string multiSlsDetector::getHostname(int pos)
-{
-    return concatResultOrPos(&slsDetector::getHostname, pos);
-}
-
-slsDetectorDefs::detectorType multiSlsDetector::getDetectorsType(int pos)
-{
-    detectorType dt = GENERIC;
-    if (pos >= 0) {
-        if (detectors[pos])
-            return detectors[pos]->getDetectorsType();
-    } else if (detectors[0])
-        return detectors[0]->getDetectorsType();
-    return dt;
-}
-
-std::string multiSlsDetector::sgetDetectorsType(int pos)
-{
-    return concatResultOrPos(&slsDetector::sgetDetectorsType, pos);
-}
-
-int multiSlsDetector::getDetectorId(int pos)
-{
-    if (pos >= 0) {
-        if (detectors[pos])
-            return detectors[pos]->getDetectorId();
-    }
-    return -1;
-}
-
-int multiSlsDetector::setDetectorId(int ival, int pos)
-{
-    if (pos >= 0) {
-        addSlsDetector(ival, pos);
-        if (detectors[pos])
-            return detectors[pos]->getDetectorId();
-    } else {
-        return -1;
-    }
-    return -1;
-}
-
-int multiSlsDetector::addSlsDetector(const char* name, int pos)
-{
-    detectorType t = getDetectorType(string(name));
-    int online     = 0;
-    slsDetector* s = NULL;
-    int id;
-#ifdef VERBOSE
-    cout << "Adding detector " << name << " in position " << pos << endl;
-#endif
-
-    if (t == GENERIC) {
-        for (int i = 0; i < thisMultiDetector->numberOfDetectors; ++i) {
-            if (detectors[i]) {
-                if (detectors[i]->getHostname() == string(name)) {
-                    cout << "Detector " << name << "already part of the multiDetector in position " << i << "!" << endl
-                         << "Remove it before adding it back in a new position!" << endl;
-                    return -1;
-                }
-            }
-        }
-
-        //checking that the detector doesn't already exists
-
-        for (id = 0; id < MAXDET; ++id) {
-            if (slsDetector::exists(id) > 0) {
-#ifdef VERBOSE
-                cout << "Detector " << id << " already exists" << endl;
-#endif
-                s = new slsDetector(pos, id, this);
-                if (s->getHostname() == string(name))
-                    break;
-                delete s;
-                s = NULL;
-                //++id;
-            }
-        }
-
-        if (s == NULL) {
-            t = slsDetector::getDetectorType(name, DEFAULT_PORTNO);
-            if (t == GENERIC) {
-                cout << "Detector " << name << "does not exist in shared memory and could not connect to it to determine the type (which is not specified)!" << endl;
-                setErrorMask(getErrorMask() | MULTI_DETECTORS_NOT_ADDED);
-                appendNotAddedList(name);
-                return -1;
-            }
-#ifdef VERBOSE
-            else
-                cout << "Detector type is " << t << endl;
-#endif
-            online = 1;
-        }
-    }
-#ifdef VERBOSE
-    else
-        cout << "Adding detector by type " << getDetectorType(t) << endl;
-#endif
-
-    if (s == NULL) {
-        for (id = 0; id < MAXDET; ++id) {
-            if (slsDetector::exists(id) == 0) {
-                break;
-            }
-        }
-
-#ifdef VERBOSE
-        cout << "Creating detector " << id << " of type " << getDetectorType(t) << endl;
-#endif
-        s = new slsDetector(pos, t, id, this);
-        if (online) {
-            s->setTCPSocket(name);
-            setOnline(ONLINE_FLAG);
-        }
-        delete s;
-    }
-#ifdef VERBOSE
-    cout << "Adding it to the multi detector structure" << endl;
-#endif
-    return addSlsDetector(id, pos);
-}
-
-int multiSlsDetector::addSlsDetector(detectorType t, int pos)
-{
-
-    int id;
-
-    if (t == GENERIC) {
-        return -1;
-    }
-
-    for (id = 0; id < MAXDET; ++id) {
-        if (slsDetector::exists(id) == 0) {
-            break;
-        }
-    }
-
-#ifdef VERBOSE
-    cout << "Creating detector " << id << " of type " << getDetectorType(t) << endl;
-#endif
-    new slsDetector(pos, t, id, this);
-
-#ifdef VERBOSE
-    cout << "Adding it to the multi detector structure" << endl;
-#endif
-
-    return addSlsDetector(id, pos);
-}
-
-int multiSlsDetector::getDetectorOffset(int pos, int& ox, int& oy)
-{
-    ox      = -1;
-    oy      = -1;
-    int ret = FAIL;
-    if (pos >= 0 && pos < thisMultiDetector->numberOfDetectors) {
-        if (detectors[pos]) {
-            ox  = thisMultiDetector->offsetX[pos];
-            oy  = thisMultiDetector->offsetY[pos];
-            ret = OK;
-        }
-    }
-    return ret;
-}
-
-int multiSlsDetector::setDetectorOffset(int pos, int ox, int oy)
-{
-
-    int ret = FAIL;
-
-    if (pos >= 0 && pos < thisMultiDetector->numberOfDetectors) {
-        if (detectors[pos]) {
-            if (ox != -1)
-                thisMultiDetector->offsetX[pos] = ox;
-            if (oy != -1)
-                thisMultiDetector->offsetY[pos] = oy;
-            ret = OK;
-        }
-    }
-    return ret;
-}
-
-int multiSlsDetector::removeSlsDetector(char* name)
-{
-    for (int id = 0; id < thisMultiDetector->numberOfDetectors; ++id) {
-        if (detectors[id]) {
-            if (detectors[id]->getHostname() == string(name)) {
-                removeSlsDetector(id);
-            }
-        }
-    }
-    return thisMultiDetector->numberOfDetectors;
-};
-
-int multiSlsDetector::removeSlsDetector(int pos)
-{
-    int j;
-
-#ifdef VERBOSE
-    cout << "Removing detector in position " << pos << endl;
-#endif
-
-    int mi = 0, ma = thisMultiDetector->numberOfDetectors, single = 0;
-
-    if (pos >= 0) {
-        mi     = pos;
-        ma     = pos + 1;
-        single = 1;
-    }
-
-    //   if (pos<0 )
-    //     pos=thisMultiDetector->numberOfDetectors-1;
-
-    if (pos >= thisMultiDetector->numberOfDetectors)
-        return thisMultiDetector->numberOfDetectors;
-
-    //j=pos;
-    for (j = mi; j < ma; ++j) {
-
-        if (detectors[j]) {
-
-            thisMultiDetector->dataBytes -= detectors[j]->getDataBytes();
-            thisMultiDetector->dataBytesInclGapPixels -= detectors[j]->getDataBytesInclGapPixels();
-            thisMultiDetector->numberOfChannels -= detectors[j]->getTotalNumberOfChannels();
-            thisMultiDetector->maxNumberOfChannels -= detectors[j]->getMaxNumberOfChannels();
-
-            delete detectors[j];
-            detectors[j] = 0;
-            --thisMultiDetector->numberOfDetectors;
-
-            if (single) {
-                for (int i = j + 1; i < thisMultiDetector->numberOfDetectors + 1; ++i) {
-                    detectors[i - 1]                      = detectors[i];
-                    thisMultiDetector->detectorIds[i - 1] = thisMultiDetector->detectorIds[i];
-                }
-                detectors[thisMultiDetector->numberOfDetectors]                      = NULL;
-                thisMultiDetector->detectorIds[thisMultiDetector->numberOfDetectors] = -1;
-            }
-        }
-    }
-
-    updateOffsets();
-    if (createThreadPool() == FAIL)
-        exit(-1);
-
-    return thisMultiDetector->numberOfDetectors;
-}
 
 int multiSlsDetector::setMaster(int i)
 {
 
-    int ret = -1, slave = 0;
-    masterFlags f;
+	int ret = -1, slave = 0;
+	masterFlags f;
 #ifdef VERBOSE
-    cout << "settin master in position " << i << endl;
+	cout << "settin master in position " << i << endl;
 #endif
-    if (i >= 0 && i < thisMultiDetector->numberOfDetectors) {
-        if (detectors[i]) {
+	if (i >= 0 && i < detectors.size()) {
 #ifdef VERBOSE
-            cout << "detector position " << i << " ";
+		cout << "detector position " << i << " ";
 #endif
-            thisMultiDetector->masterPosition = i;
-            detectors[i]->setMaster(IS_MASTER);
-            if (detectors[i]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << i));
-        }
-        for (int id = 0; id < thisMultiDetector->numberOfDetectors; ++id) {
-            if (i != id) {
-                if (detectors[id]) {
+		thisMultiDetector->masterPosition = i;
+		detectors[i]->setMaster(IS_MASTER);
+		if (detectors[i]->getErrorMask())
+			setErrorMask(getErrorMask() | (1 << i));
+
+		for (int id = 0; id < thisMultiDetector->numberOfDetectors; ++id) {
+			if (i != id) {
 #ifdef VERBOSE
-                    cout << "detector position " << id << " ";
+					cout << "detector position " << id << " ";
 #endif
-                    detectors[id]->setMaster(IS_SLAVE);
-                    if (detectors[id]->getErrorMask())
-                        setErrorMask(getErrorMask() | (1 << id));
-                }
-            }
-        }
+					detectors[id]->setMaster(IS_SLAVE);
+					if (detectors[id]->getErrorMask())
+						setErrorMask(getErrorMask() | (1 << id));
+			}
+		}
 
-    } else if (i == -2) {
-        for (int id = 0; id < thisMultiDetector->numberOfDetectors; ++id) {
-            if (detectors[id]) {
+	} else if (i == -2) {
+		for (int id = 0; id < thisMultiDetector->numberOfDetectors; ++id) {
+			if (detectors[id]) {
 #ifdef VERBOSE
-                cout << "detector position " << id << " ";
+				cout << "detector position " << id << " ";
 #endif
-                detectors[id]->setMaster(NO_MASTER);
-                if (detectors[id]->getErrorMask())
-                    setErrorMask(getErrorMask() | (1 << id));
-            }
-        }
-    }
+				detectors[id]->setMaster(NO_MASTER);
+				if (detectors[id]->getErrorMask())
+					setErrorMask(getErrorMask() | (1 << id));
+			}
+		}
+	}
 
-    // check return value
+	// check return value
 
-    for (int id = 0; id < thisMultiDetector->numberOfDetectors; ++id) {
-        if (detectors[id]) {
+	for (int id = 0; id < thisMultiDetector->numberOfDetectors; ++id) {
+		if (detectors[id]) {
 #ifdef VERBOSE
-            cout << "detector position " << id << " ";
+			cout << "detector position " << id << " ";
 #endif
-            f = detectors[id]->setMaster(GET_MASTER);
-            if (detectors[id]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << id));
+			f = detectors[id]->setMaster(GET_MASTER);
+			if (detectors[id]->getErrorMask())
+				setErrorMask(getErrorMask() | (1 << id));
 
-            switch (f) {
-            case NO_MASTER:
-                if (ret != -1)
-                    ret = -2;
-                break;
-            case IS_MASTER:
-                if (ret == -1)
-                    ret = id;
-                else
-                    ret = -2;
-                break;
-            case IS_SLAVE:
-                slave = 1;
-                break;
-            default:
-                ret = -2;
-            }
-        }
-    }
-    if (slave > 0 && ret < 0)
-        ret = -2;
+			switch (f) {
+			case NO_MASTER:
+				if (ret != -1)
+					ret = -2;
+				break;
+			case IS_MASTER:
+				if (ret == -1)
+					ret = id;
+				else
+					ret = -2;
+				break;
+			case IS_SLAVE:
+				slave = 1;
+				break;
+			default:
+				ret = -2;
+			}
+		}
+	}
+	if (slave > 0 && ret < 0)
+		ret = -2;
 
-    if (ret < 0)
-        ret = -1;
+	if (ret < 0)
+		ret = -1;
 
-    thisMultiDetector->masterPosition = ret;
+	thisMultiDetector->masterPosition = ret;
 
-    return thisMultiDetector->masterPosition;
+	return thisMultiDetector->masterPosition;
 }
 
 //   enum synchronyzationMode {

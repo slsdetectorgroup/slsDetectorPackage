@@ -260,7 +260,45 @@ public:
 	 */
 	std::string getUserDetails();
 
+	/**
+	 * Sets the hostname of all sls detectors in shared memory
+	 * @param s concatenated hostname of all the sls detectors
+	 */
+	void setHostname(std::string s);
 
+	/**
+	 * Gets the hostname of detector at particular position
+	 * or concatenated hostnames of all the sls detectors
+	 * @param pos position of detector in array, -1 for all detectors
+	 * @returns concatenated hostnames of all detectors or hostname of specific one
+	 */
+	std::string getHostname(int pos = -1);
+
+
+	using slsDetectorBase::getDetectorType;
+	/**
+	 * Get Detector type for a particular sls detector or get the first one
+	 * @param pos position of sls detector in array, if -1, returns first detector type
+	 * @returns detector type of sls detector in position pos, if -1, returns the first det type
+	 */
+	detectorType getDetectorsType(int pos = -1);
+
+	/**
+	 * Concatenates string types of all sls detectors or
+	 * returns the detector type of the first sls detector
+	 * @param pos position of sls detector in array, if -1, returns first detector type
+	 * @returns detector type of sls detector in position pos, if -1, concatenates
+	 */
+	std::string sgetDetectorsType(int pos=-1);
+
+	/**
+	 * Just to overload getDetectorType
+	 * Concatenates string types of all sls detectors or
+	 * returns the detector type of the first sls detector
+	 * @param pos position of sls detector in array, if -1, returns first detector type
+	 * @returns detector type of sls detector in position pos, if -1, concatenates
+	 */
+	std::string getDetectorType(){return sgetDetectorsType();};
 
 
 
@@ -278,67 +316,6 @@ public:
 
 	/** destroys all the threads in the threadpool */
 	void destroyThreadPool();
-
-
-	/** adds the detector with ID id in postion pos
-      \param id of the detector to be added (should already exist!)
-      \param pos position where it should be added (normally at the end of the list (default to -1)
-      \return the actual number of detectors or -1 if it failed*/
-	int addSlsDetector(int id, int pos=-1);
-
-	/** adds the detector with ID id in postion pos
-      \param name of the detector to be added (should already exist in shared memory or at least be online) 
-      \param pos position where it should be added (normally at the end of the list (default to -1)
-      \return the actual number of detectors or -1 if it failed*/
-	int addSlsDetector(const char *name, int pos=-1);
-
-	int addSlsDetector(detectorType type, int pos=-1);
-
-	/**removes the detector in position pos from the multidetector
-     \param pos position of the detector to be removed from the multidetector system (defaults to -1 i.e. last detector)
-     \returns the actual number of detectors
-	 */
-	int removeSlsDetector(int pos=-1);
-
-	/**removes the detector in position pos from the multidetector
-     \param name is the name of the detector
-     \returns the actual number of detectors
-	 */
-	int removeSlsDetector(char *name);
-
-
-
-
-	std::string setHostname(const char*, int pos=-1);
-
-
-	std::string getHostname(int pos=-1);
-	using slsDetectorBase::getDetectorType;
-
-	std::string getDetectorType(){return sgetDetectorsType();};
-
-	detectorType getDetectorsType(int pos=-1);
-	detectorType setDetectorsType(detectorType type=GET_DETECTOR_TYPE, int pos=-1){addSlsDetector(type, pos); return getDetectorsType(pos);};
-
-	std::string sgetDetectorsType(int pos=-1);
-	std::string ssetDetectorsType(detectorType type=GET_DETECTOR_TYPE, int pos=-1){return getDetectorType(setDetectorsType(type, pos));}; //
-	std::string ssetDetectorsType(std::string s, int pos=-1);//{return getDetectorType(setDetectorsType(getDetectorType(s),pos));}; // should decode detector type
-
-
-	/** adds a detector by id in position pos
-      \param ival detector id to be added
-      \param pos position to add it (-1 fails)
-      \returns detector ID or -1 if detector in position i is empty
-	 */
-	int setDetectorId(int ival, int pos=-1);
-
-
-
-	/** returns the id of the detector in position i
-      \param i position of the detector
-      \returns detector ID or -1 if detector in position i is empty*/
-	int getDetectorId(int i);
-
 
 	/** returns the number of detectors in the multidetector structure
       \returns number of detectors */
@@ -389,21 +366,7 @@ public:
 	int setMaxNumberOfChannelsPerDetector(dimension d,int i){thisMultiDetector->maxNumberOfChannelsPerDetector[d]=i; return thisMultiDetector->maxNumberOfChannelsPerDetector[d];};
 
 	double getScanStep(int index, int istep){return thisMultiDetector->scanSteps[index][istep];};
-	/** returns the detector offset (in number of channels)
-      \param pos position of the detector
-      \param ox reference to the offset in x
-      \param oy reference to the offset in y
-      \returns OK/FAIL if the detector does not exist
-	 */
-	int getDetectorOffset(int pos, int &ox, int &oy);
 
-	/** sets the detector offset (in number of channels)
-      \param pos position of the detector
-      \param ox offset in x (-1 does not change)
-      \param oy offset in y (-1 does not change)
-      \returns OK/FAIL if the detector does not exist
-	 */
-	int setDetectorOffset(int pos, int ox=-1, int oy=-1);
 
 
 
@@ -1613,20 +1576,28 @@ private:
 	 * Initialize (open/create) shared memory for the sharedMultiDetector structure
 	 * @param verify true to verify if shm size matches existing one
 	 * @param update true to update last user pid, date etc
-	 * @returns true if the shared memory was created now
 	 */
-	bool initSharedMemory(bool verify = true, bool update = true);
+	bool initSharedMemory(bool verify = true);
 
 	/**
 	 * Initialize detector structure
 	 * @param created true if shared memory was just created now
 	 * @param verify true to verify if shm size matches existing one
-	 * @param update true to update last user pid, date etc
 	 */
-	void initializeDetectorStructure(bool created, bool verify = true, bool update = true);
+	void initializeDetectorStructure(bool created, bool verify = true);
 
 	/**
-	 * Add single detector
+	 * Initialize class members (and from slsDetectorUtils)
+	 */
+	void initializeMembers();
+
+	/**
+	 * Update user details in detector structure
+	 */
+	void updateUserdetails();
+
+	/**
+	 * Add sls detector
 	 * @param s hostname of the single detector
 	 */
 	void addSlsDetector (std::string s);

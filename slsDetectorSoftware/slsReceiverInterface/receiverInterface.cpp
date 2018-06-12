@@ -15,9 +15,7 @@ receiverInterface::receiverInterface(MySocketTCP *socket):dataSocket(socket){}
 
 
 
-receiverInterface::~receiverInterface(){
-	delete dataSocket;
-}
+receiverInterface::~receiverInterface(){}
 
 
 

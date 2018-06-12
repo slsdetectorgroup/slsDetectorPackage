@@ -110,7 +110,7 @@ class SuperTask:  public virtual slsDetectorDefs {
 public:
 	SuperTask():
 		m1(0),m2(0),m3(0),m4(0),m5(0),m6(0),m7(0),m8(0),m9(0),m10(0),m11(0),m12(0),m13(0),m14(0),m15(0),m16(0),m17(0),m18(0){};
-	~SuperTask(){};
+	virtual ~SuperTask(){};
 protected:
 	/** Function signature defined
 	 * First argument is Return type, the remaining are arguments
@@ -159,7 +159,32 @@ public:
 	Task(func4_t <int,				int,int,detectorSettings,int>* t): 		SuperTask(),fnum(17){m17 = t;};
 	Task(func4_t <dacs_t,			dacs_t,dacIndex,int,int>* t):       	SuperTask(),fnum(18){m18 = t;};
 
-	~Task(){}
+	virtual ~Task(){
+        switch(fnum) {
+        case 1: delete m1;  break;
+        case 2: delete m2;  break;
+        case 3: delete m3;  break;
+        case 4: delete m4;  break;
+        case 5: delete m5;  break;
+        case 6: delete m6;  break;
+        case 7: delete m7;  break;
+        case 8: delete m8;  break;
+        case 9: delete m9;  break;
+        case 10: delete m10;  break;
+        case 11: delete m11;  break;
+        case 12: delete m12;  break;
+        case 13: delete m13;  break;
+        case 14: delete m14;  break;
+        case 15: delete m15;  break;
+        case 16: delete m16;  break;
+        case 17: delete m17;  break;
+        case 18: delete m18;  break;
+        default:
+            cprintf(RED, "Error: Task not defined. Abort!\n");
+            break;
+        }
+
+	};
 
 	void operator()(){
 		switch(fnum) {

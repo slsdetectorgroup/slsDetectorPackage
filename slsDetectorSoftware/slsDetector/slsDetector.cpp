@@ -270,7 +270,10 @@ slsDetector::~slsDetector(){
   else
     printf("Shared memory %d detached\n", shmId);
 #endif
-delete thisReceiver;
+  if(controlSocket) delete controlSocket;
+  if(stopSocket) delete stopSocket;
+  if(dataSocket) delete dataSocket;
+if(thisReceiver)    delete thisReceiver;
 };
 
 slsDetector::slsDetector(int pos, char *name, int id, int cport,multiSlsDetector *p) : slsDetectorUtils(),

@@ -332,15 +332,14 @@ In {\tt{nonparallel}} mode, it is easily possible to calculate the required asic
 Indeed a block of (8*256) pixels are readout, the bits pixel are the {\tt{dr}} and the spead of readout is 5ns/bit *({\tt{clkdivider}}+1) : 
 
 \begin{equation}\label{dtnonparallel}
-\textrm{asics readout time} = 5ns/bit \cdot (clkdivider+1) \cdot dr \cdot (8*256) + 4 \mu s \cdot (clkdivider+1)
+\textrm{asics readout time} = 5ns/bit \cdot 2^{(clkdivider+1)} \cdot dr \cdot (8*256) + 4 \mu s \cdot (clkdivider+1)
 \end{equation}
-This returns roughly 45~$\mu$s for 4 bit mode, 90 ~$\mu$s for 8 bit mode, both with {\tt{clkdivider}} 0.  
 
 While we expose the next frame, we still need to readout the previous frame, so we need to guarantee that the period is large enough at least to readout the frame. So the maximum frame rate has to be $1/(\textrm{asic redout time})$. The minimum period has to be equal to the asic readout time. 
 
 \subsubsection{16 bit mode}
 
-A similar situation happens in 16 bit mode, where this is more complicvated because of three things:
+A similar situation happens in 16 bit mode, where this is more complicated because of three things:
 \begin{enumerate}
 \item The chip actual {\tt{dr}} is 12 bit
 \item The chip is readout as 12-bit/pixel, but the FEB inflates the pixel values to 16-bits when it passes to the BEB. This means that effectively the FEB to BEB connection limits the data throughput in the same way as if the {\tt{dr}} of the chip would really be 16 bits.
@@ -348,54 +347,84 @@ A similar situation happens in 16 bit mode, where this is more complicvated beca
 \end{enumerate}
 
 If we are in parallel mode, the dead time between frames, is also here described by \ref{dtparallel}. If we are in  {\tt{nonparallel}} mode, the dead time between frames is defined by \ref{dtnonparallel}. 
-
-So the maximum frame rate has to be $1/()$. The minimum period has to be equal to 
+So the maximum frame rate has to be $1/(\textrm{board redout time+chip readout time})$. 
 
 \subsubsection{32 bit mode}
  
 
 \subsection{Maximum frame rate}
-
+\begin{tiny}
+\begin{table}
+\begin{flushleft}
+\begin{tabular}{|c|c|c|}
+\hline
+\tiny{dr} & \tiny{clkdivider} & \tiny{expected chip readout t($\mu$s)}\\
+\hline
+4 & 0 & 41\\
+4 & 1 & 82\\
+4 & 2 & 123\\
+\hline
+\hline
+8 & 0 & 82\\
+8 & 1 & 164\\
+8 & 2 & 328\\
+\hline
+\hline
+12 & 0 & 123\\
+12 & 1 & 246\\
+12 & 2 & 491\\
+\hline
+\hline
+16 & 0 & 164\\
+16 & 1 & 372\\
+16 & 2 & 655\\
+\hline
+\end{tabular}
+\caption{Readout time required from the chip to readout the pixels. The numbers are obtained using equation~\ref{dtnonparallel}.}
+\label{tframes}
+\end{flushleft}
+\end{table}
+\end{tiny}
 
 In table~\ref{tframes} is a list of all the readout times in the different configurations:
 \begin{tiny}
 \begin{table}
 \begin{flushleft}
-\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\begin{tabular}{|c|c|c|c|c|c|c|}
 \hline
-\tiny{dr} & \tiny{clkdivider} & \tiny{flags} & \tiny{readout t($\mu$s)} & \tiny{max frame rate (kHz)} & \tiny{max exptime ($\mu$s)} & \tiny{min period ($\mu$s)} & \tiny{max imgs (nominal/our network)}\\
+\tiny{dr} & \tiny{clkdivider} & \tiny{flags} & \tiny{readout t($\mu$s) (chip+board)} &  \tiny{max frame rate (kHz)} & \tiny{min period ($\mu$s)} & \tiny{max imgs (nominal/our network)}\\
 \hline
-4 & 0 & parallel & 3.4 & 22 &  40 & 44 & 30k/50k\\
+4 & 0 & parallel & 3.4 & 22  & 44 & 30k/50k\\
 \hline
-4 & 1 & parallel & 6 & 10.5 &  85 & 92 & 30k/100k\\
+4 & 1 & parallel & 6 & 10.5 & 92 & 30k/100k\\
 \hline
-4 & 2 & parallel & 11.2 & 5.4 &  185 & 197 & infinite\\
-\hline
-\hline
-8 & 0 & parallel & 3.4 & 11.1 &  85 & 89 & 15k/24k\\
-\hline
-8 & 1 & parallel & 6.1 & 5.7 &  174 & 181 & 15k/52k\\
-\hline
-8 & 2 & parallel & 11.2 &  2.9 &  330 & 342 & infinite\\
+4 & 2 & parallel & 11.2 & 5.4 & 197 & infinite\\
 \hline
 \hline
-16 & 0 & parallel & 3.4 & 6 & 164 & 168 & 8k/12k\\
+8 & 0 & parallel & 3.4 & 11.1 & 89 & 15k/24k\\
 \hline
-16 & 0 & nonparallel &  126 & 3.4& 164 & 295 & 8k/23k\\
+8 & 1 & parallel & 6.1 & 5.7 & 181 & 15k/52k\\
 \hline
-16 & 1 & parallel &  6.1 & 2.9&  339 & 346 & 8k/28k\\
-\hline
-16 & 1 & nonparallel & 255 & 1.7&  339 & 592 & infinite\\
-\hline
-16 & 2 & parallel &  11 & 1.5& 66 & 78 & infinite \\
-\hline
-16 & 2 & nonparallel & 504 & 0.85 & 7 & 512 & infinite\\
+8 & 2 & parallel & 11.2 &  2.9 &  342 & infinite\\
 \hline
 \hline
-32 & 2 & parallel &  11 & 2&  & &\\
+16 & 0 & parallel & 3.4 & 6 & 168 & 8k/12k\\
 \hline
-32 & 2 & nonparallel & 504 & $<2$&  & &\\
+16 & 0 & nonparallel &  126 & 3.4 & 295 & 8k/23k\\
 \hline
+16 & 1 & parallel &  6.1 & 2.9&  345 & 8k/28k\\
+\hline
+16 & 1 & nonparallel & 255 & 1.7& 588 & infinite\\
+\hline
+16 & 2 & parallel &  11 & 1.5&  666 & infinite \\
+\hline
+16 & 2 & nonparallel & 504 & 0.85  & 1176 & infinite\\
+\hline
+\hline
+%32 & 2 & parallel &  11 & 2&  & &\\
+%\hline
+%32 & 2 & nonparallel & 504 & $<2$&  & &\\
+%\hline
 \end{tabular}
 \caption{Readout settings. The {\tiny{min exptime}} possible is 5$-$10~$\mu$s. This is due to the time to pass the pixel enable signal in the whole chip.}
 \label{tframes}

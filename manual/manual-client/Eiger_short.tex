@@ -275,7 +275,7 @@ this same command can be used after a non proper abortion of the acquisition to 
 IMPORTANT: to have faster readout and smaller dead time, one can configure {\tt{clkdivider}}, i.e. the speed at which the data are read, i.e. 200/100/50~MHz for {\tt{clkdivider 0/1/2}} and the dead time between frames through {\tt{flags parallel}}, i.e. acquire and read at the same time or acquire and then read out.
 The configuration of this timing variables allows to achieve different frame rates. NOTE THAT IN EIGER, WHATEVER YOU DO, THE FRAME RATE LIMITATIONS COME FROM THE NETWORK BOTTLENECK AS THE HARDWARE GOES FASTER THAN THE DATA OUT.
 
-In the case of REAL CONTINUOUS readout, i.e. continuous acquire and readout from the boards (independent on how the chip is set), the continuous frame rates are listed in table~\ref{tcont}:
+In the case of REAL CONTINUOUS readout, i.e. continuous acquire and readout from the boards (independent on how the chip is set), the continuous frame rates are listed in table~\ref{tcont}.
 \begin{table} 
 \begin{tabular}{|c|c|c|c|}
 \hline
@@ -296,7 +296,7 @@ GbE & dynamic range & continuos maximum frame rate(Hz) & minimum period ($\mu$s)
 \end{tabular}
 \caption{Frame rate limits for the CONTINUOS streaming out of images, i.e. the data rate out is just below 1Gb/s or 10Gb/s.} 
 \label{tcont}\end{table}
-Note that in the {\tt{continuous}} flag mode, some buffering is still done on the memories, so a higher frame rate than the proper real continuous one can be achieved. Still, this extra buffering is possible till the memories are not saturated. The number of images that can be stored on memories are listed in table~\ref{timgs}.
+ Note that in the {\tt{continuous}} flag mode, some buffering is still done on the memories, so a higher frame rate than the proper real continuous one can be achieved. Still, this extra buffering is possible till the memories are not saturated. The number of images that can be stored on the DDR2 on board memories are listed in table~\ref{timgs}.
 \begin{table}
 \begin{tabular}{|c|c|}
 \hline
@@ -313,91 +313,54 @@ dynamic range & images\\
 \label{timgs}
 \end{table}
 
-The maximum frame rate achievable with 10~GbE, {\tt{dr 16}}, {\tt{flags continuous}}, {\tt{flags parallel}},{\tt{clkdivider 0}}, \textbf{6.1~kHz}. This is currently limited by the connection between the Front End Board and the Backend board. We expect the 32 bit mode limit to be \textbf{2~kHz} ({\tt{clkdivider 2}}).
+The maximum frame rate achievable with 10~GbE, {\tt{dr 16}}, {\tt{flags continuous}}, {\tt{flags parallel}},{\tt{clkdivider 0}}, \textbf{6.1~kHz}. This is currently limited by the connection between the Front End Board and the Backend board. We expect the 32 bit mode limit, internally, to be \textbf{2~kHz} ({\tt{clkdivider 2}}).
  In dynamic range {\tt{dr 8}} the frame rate is \textbf{11~kHz} and for{\tt{dr 4}} is \textbf{22~kHz}. For 4 and 8 bit mode the frame rate are directly limited by the speed of the detector chip and not by the readout boards.    
 
-
-\subsection{Minimum between frames}
-
+\subsection{Minimum time between frames and Maximum frame rate}
 
 We need to leave enough time between an exposure and the following. This time is a combination of the time required by the chip, by the readout boards and eventually extra time to reduce some appearance of cross talk noise between the digital and analog parts of the chip. 
- 
-\subsubsection{4 and 8 bit mode}
-In {\tt{parallel}} mode, the minimum time between frames is due to the time required to latch the values of the counter with capacitors. These values are determined in firmware and they can be estimated as:
+\textbf{It is essential to set the {\tt{period}} of the detector, defined as the {\tt{exptime}} plus an extra time, that needs to be at least the chip/board readout time. If this is set wrong (it is $<$ {\tt{exptime}} plus chip/board readout time), then the detector takes the minimum time it can, but you are in a not controlled frame rate situation.} 
 
-\begin{equation} \label{dtparallel}
-\textrm{time between frames, parallel} = 4 \mu s \cdot (clkdivider+1)
-\end{equation}
-
-This time is independent on the {\tt{dr}}.
-
-In {\tt{nonparallel}} mode, it is easily possible to calculate the required asic readout time. 
-
-
-Indeed a block of (8*256) pixels are readout, the bits pixel are the {\tt{dr}} and the speed of readout is 5ns/bit *({\tt{clkdivider}}+1) : 
-
-\begin{equation}\label{dtnonparallel}
-\textrm{asics readout time} = 5ns/bit \cdot 2^{(clkdivider+1)} \cdot dr \cdot (8*256) + 4 \mu s \cdot (clkdivider+1)
-\end{equation}
-
-While we expose the next frame, we still need to readout the previous frame, so we need to guarantee that the period is large enough at least to readout the frame. So the maximum frame rate has to be $1/(\textrm{asic readout time})$. The minimum period has to be equal to the asic readout time. 
-
-\subsubsection{16 bit mode}
-
-A similar situation happens in 16 bit mode, where this is more complicated because of three things:
-\begin{enumerate}
-\item The chip actual {\tt{dr}} is 12 bit
-\item The chip is readout as 12-bit/pixel, but the FEB inflates the pixel values to 16-bits when it passes to the BEB. This means that effectively the FEB to BEB connection limits the data throughput in the same way as if the {\tt{dr}} of the chip would really be 16 bits.
-\item While in 4 and 8 bit mode it makes no sense to run in {\tt{nonparallel}} mode as the exptime/dead time ratio would be not advantageous, in 16 bit mode, one can choose how to run more freely.
-\end{enumerate}
-
-If we are in parallel mode, the dead time between frames, is also here described by \ref{dtparallel}. If we are in  {\tt{nonparallel}} mode, the dead time between frames is defined by \ref{dtnonparallel}. 
-So the maximum frame rate has to be $1/(\textrm{board readout time+chip readout time})$. 
-
-\subsubsection{32 bit mode}
- 
-
-\subsection{Maximum frame rate}
+The expected time difference between frames given by the pure chip readout time is in Table~\ref{tchipro}.    
 \begin{tiny}
 \begin{table}
 \begin{flushleft}
-\begin{tabular}{|c|c|c|}
+\begin{tabular}{|c|c|c|c|}
 \hline
-\tiny{dr} & \tiny{clkdivider} & \tiny{expected chip readout t($\mu$s)}\\
+\tiny{dr} & \tiny{clkdivider} & \tiny{expected chip readout t($\mu$s)} & \tiny{measured chip readout t($\mu$s)}\\
 \hline
-4 & 0 & 41\\
-4 & 1 & 82\\
-4 & 2 & 123\\
-\hline
-\hline
-8 & 0 & 82\\
-8 & 1 & 164\\
-8 & 2 & 328\\
+4 & 0 & 41 & 40\\
+4 & 1 & 82 & 84\\
+4 & 2 & 123 & 172\\
 \hline
 \hline
-12 & 0 & 123\\
-12 & 1 & 246\\
-12 & 2 & 491\\
+8 & 0 & 82 & 82\\
+8 & 1 & 164 & 167\\
+8 & 2 & 328 & 336\\
 \hline
 \hline
-16 & 0 & 164\\
-16 & 1 & 372\\
-16 & 2 & 655\\
+12 & 0 & 123 &122\\
+12 & 1 & 246 & 251\\
+12 & 2 & 491 & 500\\
 \hline
 \end{tabular}
 \caption{Readout time required from the chip to readout the pixels. The numbers are obtained using equation~\ref{dtnonparallel}.}
-\label{tframes}
+\label{tchipro}
 \end{flushleft}
 \end{table}
 \end{tiny}
 
-In table~\ref{tframes} is a list of all the readout times in the different configurations:
+The {\tt{period}} is s is defined as:
+\begin{equation} \label{period}
+\textrm{period}  = \textrm{exptime} + \textrm{minimum time between frames}
+\end{equation}
+where the 'minimum time between frames' and the minimum period will be discussed in Table~\ref{tframes}.
 \begin{tiny}
 \begin{table}
 \begin{flushleft}
 \begin{tabular}{|c|c|c|c|c|c|c|}
 \hline
-\tiny{dr} & \tiny{clkdivider} & \tiny{flags} & \tiny{readout t($\mu$s) (chip+board)} &  \tiny{max frame rate (kHz)} & \tiny{min period ($\mu$s)} & \tiny{max imgs (nominal/our network)}\\
+\tiny{dr} & \tiny{clkdivider} & \tiny{flags} & \tiny{t between frames($\mu$s) } &  \tiny{max frame rate (kHz)} & \tiny{min period ($\mu$s)} & \tiny{max imgs (nominal/our network)}\\
 \hline
 4 & 0 & parallel & 3.4 & 22  & 44 & 30k/50k\\
 \hline
@@ -436,11 +399,85 @@ In table~\ref{tframes} is a list of all the readout times in the different confi
 \end{flushleft}
 \end{table}
 \end{tiny}
-\textbf{As if you run too fast, the detector could become noisier, it is important to match the detector settings to your frame rate. This can be done having more parameters files and load the one suitable with your experiment.} We experienced that {\tt{highgain}} settings could not be used at 6~kHz.
-\textbf{We recommend to use the detector in 32 bit mode with {\tt{clkdivider 2}}, {\tt{flags parallel}}. We recommend to use the detector in 16 bit mode with {\tt{clkdivider 1}}, {\tt{flags parallel}}}. In general, choose first the desired dead time: this will tell you if you want to run in parallel or non parallel mode, although most likely it is parallel mode. Then, choose the maximum frame rate you want to aim, not exceeding what you aim for not to increase the noise. In 4 and 8 bit modes it makes no sense to run nonparallel as the exposure time is too small compared to the readout time. If the detector is noisy (particularly at lower threshold energies), then contact us. But ideally one would have to leave some extra time to the detector to settle. This is obtained either lowering the frame rate if possible or, if the frame rate is required to be high, then lowering the exposure time.    
 
- 
+\textbf{As if you run too fast, the detector could become noisier, it is important to match the detector settings to your frame rate. This can be done having more parameters files and load the one suitable with your experiment.} We experienced that with low energy settings could not reach 6~kHz and no noise.
 
+In 16 bit mode, it could make sense, in case of noise and low threshold to either reduce the frame rate:
+\begin{equation} 
+\textrm{new period}  = \textrm{exptime} + \textrm{minimum time between frames} + (\textrm{10$-$20 }\mu \textrm{s})
+\end{equation}
+to let the signal settle  or,  if the frame rate is important, leave the {\tt{period}} at the same value but reduce the {\tt{exptime}}:
+\begin{equation} 
+\textrm{new exptime}  = \textrm{old exptime} - (\textrm{10$-$20 }\mu \textrm{s})
+\end{equation}
+
+In general, choose first the desired dead time: this will tell you if you want to run in parallel or non parallel mode, although most likely it is parallel mode. Then, choose the maximum frame rate you want to aim, not exceeding what you aim for not to increase the noise. In 4 and 8 bit modes it makes no sense to run nonparallel as the exposure time is too small compared to the readout time. 
+
+\subsubsection{4 and 8 bit mode}
+In {\tt{parallel}} mode, the minimum time between frames is due to the time required to latch the values of the counter with capacitors. These values are determined in firmware and they can be estimated as:
+
+\begin{equation} \label{dtparallel}
+\textrm{time between frames, parallel} = 4 \mu s \cdot (clkdivider+1)
+\end{equation}
+
+This time is independent on the {\tt{dr}}.
+
+In {\tt{nonparallel}} mode, it is easily possible to calculate the required asic readout time. 
+Indeed a block of (8*256) pixels are readout, the bits pixel are the {\tt{dr}} and the speed of readout is 5ns/bit *({\tt{clkdivider}}+1) : 
+
+\begin{equation}\label{dtnonparallel}
+\textrm{asics readout time} = 5ns/bit \cdot 2^{(clkdivider+1)} \cdot dr \cdot (8*256) + 4 \mu s \cdot (clkdivider+1)
+\end{equation}
+
+While we expose the next frame, we still need to readout the previous frame, so we need to guarantee that the period is large enough at least to readout the frame. So the maximum frame rate has to be $1/(\textrm{asic readout time})$. The minimum period has to be equal to the asic readout time. 
+
+\subsubsection{16 bit mode}
+
+A similar situation happens in 16 bit mode, where this is more complicated because of three things:
+\begin{enumerate}
+\item The chip actual {\tt{dr}} is 12 bit
+\item The chip is readout as 12-bit/pixel, but the FEB inflates the pixel values to 16-bits when it passes to the BEB. This means that effectively the FEB to BEB connection limits the data throughput in the same way as if the {\tt{dr}} of the chip would really be 16 bits.
+\item While in 4 and 8 bit mode it makes no sense to run in {\tt{nonparallel}} mode as the exptime/dead time ratio would be not advantageous, in 16 bit mode, one can choose how to run more freely.
+\end{enumerate}
+
+If we are in parallel mode, the dead time between frames, is also here described by equation~\ref{dtparallel}. If we are in {\tt{nonparallel}} mode, the dead time between frames is defined by \ref{dtnonparallel} ONLY for {\tt{clkdivider}} 1 and 2. So the maximum frame rate has to be $1/(\textrm{chip readout time})$ in this case. Only for {\tt{clkdivider}} 0 we hit some limitation in the badwidth of The FEB $\to$ BEB connection. In thsi case, the maximum frame rate is lowered compared to what expected.
+
+\subsubsection{32 bit mode}
+The autosumming mode of Eiger is the intended for long exposure times (frame rate of order of 100Hz, PILATUS like). A single acquisition is broken down into many smaller 12-bit acquisitions, each of a {\tt{subexptime}} of 2.621440~ms by default. Normally, this is a good default value to sustain an intensity of $10^6$ photons/pixel/s with no saturation. To change the value of {\tt{subexptime}} see section~\ref{advanced}. 
+
+The time between 12-bit subframes are listed in table~\ref{t32bitframe}.  
+\begin{tiny}
+\begin{table}
+\begin{flushleft}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\tiny{dr} & \tiny{clkdivider} & \tiny{flags} & \tiny{t difference between subframes($\mu$s)} & \tiny{max internal subframe rate (kHz)} & \tiny{maximum frame rate (Hz)}\\
+\hline
+32 & 2 & parallel & 12 & 2 & 170\\
+\hline
+32 & 2 & nonparallel & 504 & $<2$ & 160\\
+\hline
+\end{tabular}
+\caption{Timing for the 32bit case. The maximum frame rate has been computed assuming 2 subframes of default {\tt{subexptime}} of 2.62144 ms.}
+\label{t32bitframe}
+\end{flushleft}
+\end{table}
+\end{tiny}
+
+\textbf{The exposure time brokend up rounding up to the full next complete subframe that can be started.}
+The number of subframes composing a single 32bit acquisition can be calculated as:
+\begin{equation}
+\textrm{\# subframes}= (int) (\frac{\textrm{exptime (s)}}{\textrm{subtextime (s) + difference between frames (s)}}+0.5)
+%\label{esubframes}
+\end{equation}
+This also means that {\tt{exptime}}$<${\tt{subtextime}} will be rounded to{\tt{subtextime}}. If you want shorter acqisitions, switch two 16-bit mode (you can always sum offline if needed).   
+
+The UDP header will contain, after you receive the data, the effective number of subframe per image (see section~\ref{UDP}) as  "SubFrame Num or Exp Time", i.e. the number of subframes recorded  (32 bit eiger).
+The effective time the detector has recorded data can be computed as:
+\begin{equation}
+\textrm{effective exptime}=(\textrm{subexptime})\cdot (\textrm{\# subframes})
+%\label{esubframes}
+\end{equation}
 
 \section{External triggering options}\label{triggering}
 The detector can be setup such to receive external triggers. Connect a LEMO signal to the TRIGGER IN connector in the Power Distribution Board (see Fig.). The logic 0 for the board is passed by low level 0$-$0.7~V, the logic 1 is passed to the board with a signal between 1.2$-$5~V. Eiger is 50~$\Omega$ terminated. By default the positive polarity is used (negative should not be passed to the board).
@@ -473,7 +510,7 @@ Hardware-wise, the ENABLE OUT signal outputs when the chips are really acquiring
 
 We are planning to change some functionality, i.e. unify the {\tt{trigger}} and {\tt{burst}} trigger modes and make both {\tt{frames}} and {\tt{cycles}} configurable at the same time.
 
-\section{Autosumming and rate corrections}
+\section{Autosumming and rate corrections} \label{advanced}
 
 In the case of autosumming mode, i.e, {\tt{dr 32}}, the acquisition time ({\tt{exptime}} is broken in as many subframes as they fit into the acquisition time minus all the subframes readout times. By default the {\tt{subexptime}} is set to 2.621440~ms. This implies that 12 bit counter of \E will saturate when the rate is above or equal to 1.57~MHz/pixel. The minimum value is of order of 10~ns (although as explained values smaller than 500~$\mu$s do not make sense). The maximum value is 5.2~s.
 
@@ -633,7 +670,7 @@ Set the transmission delays as explained in the manual.
 
 \section{Offline processing and monitoring}
 
-\subsection{Data out of the detector: UDP packets}
+\subsection{Data out of the detector: UDP packets}\label{UDP}
 
 The current UDP header format is described in figure~\ref{UDPheader}.
 \begin{figure}[t]

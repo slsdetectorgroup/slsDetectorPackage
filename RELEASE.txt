@@ -1,31 +1,26 @@
-SLS Detector Package 3.1.1 released on 2018-03-20
+SLS Detector Package 3.1.2 released on 2018-06-12
 =================================================
 
 
 
 INTRODUCTION
 
-This document describes the differences between 3.1.0 into 3.1.0 releases.
+This document describes the differences between 3.1.2 into 3.1.1 releases.
 
 
 Topics Concerning
 ==================
-	Jungfrau adcphase
-	Eiger in 10 GbE mode
+	Memory Leak in Client API
 
 
 Resolved Issues
 ===============
 
-	Detector Server and Client
-	--------------------------
-	1. 	(Jungfrau) Bug fix: Same adc phase given to the PLL will still shift
-		adc by one step. One can now give same adc phase repeatedly.
+	Client
+	------
+	1. 	Memory Leak for every multi threading command in client
+		when using API in multi detector mode. This is fixed now.
 	
-		Updated Command Line Manual for adcphase and clkdivider.
-		
-	2.	(Eiger) Bug Fix: This bug was introduced in 3.1.0 release.
-		In 10GbE mode, if "detectorip" is before "tengiga", the detector still
-		used the 1G IP (DHCP IP). This is fixed in this release.
+
 
 

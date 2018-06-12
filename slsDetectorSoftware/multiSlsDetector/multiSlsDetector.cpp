@@ -9,83 +9,330 @@ ID:         $Id$
 ********************************************************************/
 
 #include "multiSlsDetector.h"
+#include "SharedMemory.h"
+#include "slsDetector.h"
+#include "sls_detector_exceptions.h"
 #include "ThreadPool.h"
 #include "ZmqSocket.h"
 #include "multiSlsDetectorClient.h"
 #include "multiSlsDetectorCommand.h"
 #include "postProcessingFuncs.h"
-#include "slsDetector.h"
 #include "usersFunctions.h"
 
+#include <sys/types.h>
 #include <iostream>
+#include <string.h>
+#include <sstream>
 #include <rapidjson/document.h> //json header in zmq stream
-#include <string>
 #include <sys/ipc.h>
 #include <sys/shm.h>
-#include <sys/types.h>
 
-#include <vector>
-// char ans[MAX_STR_LENGTH];
 
-int multiSlsDetector::freeSharedMemory()
+
+multiSlsDetector::multiSlsDetector(int id, bool verify, bool update)
+	: slsDetectorUtils(),
+	detId(id),
+	sharedMemory(0),
+	thisMultiDetector(0),
+	client_downstream(false),
+	threadpool(0)
 {
-    // Detach Memory address
-    for (int id = 0; id < thisMultiDetector->numberOfDetectors; ++id) {
-        if (detectors[id])
-            detectors[id]->freeSharedMemory();
-    }
+	bool created = initSharedMemory(verify, update);
+	initializeDetectorStructure(created, verify, update);
 
-    if (shmdt(thisMultiDetector) == -1) {
-        perror("shmdt failed\n");
-        return FAIL;
-    }
-#ifdef VERBOSE
-    printf("Shared memory %d detached\n", shmId);
-#endif
-    // remove shared memory
-    if (shmctl(shmId, IPC_RMID, 0) == -1) {
-        perror("shmctl(IPC_RMID) failed\n");
-        return FAIL;
-    }
-    printf("Shared memory %d deleted\n", shmId);
-    return OK;
+    getNMods();
+    getMaxMods();
+    if (createThreadPool() == FAIL)
+        exit(-1);
 }
 
-int multiSlsDetector::initSharedMemory(int id = 0)
-{
 
-    key_t mem_key = DEFAULT_SHM_KEY + MAXDET + id;
-    int shm_id;
-    int sz;
 
-    sz = sizeof(sharedMultiSlsDetector);
+multiSlsDetector::~multiSlsDetector(){
+	for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
+		delete(*it);
+	}
+	detectors.clear();
 
-#ifdef VERBOSE
-    std::cout << "multiSlsDetector: Size of shared memory is " << sz << " - id " << mem_key << std::endl;
-#endif
-    shm_id = shmget(mem_key, sz, IPC_CREAT | 0666); // allocate shared memory
+	if (sharedMemory) {
+		sharedMemory->UnmapSharedMemory(thisMultiDetector);
+		delete sharedMemory;
+	}
 
-    if (shm_id < 0) {
-        std::cout << "*** shmget error (server) ***" << shm_id << std::endl;
-        return shm_id;
+    for (int i = 0; i < MAXDET; ++i) {
+        if (zmqSocket[i]) {
+            delete zmqSocket[i];
+        }
     }
-
-    /**
-     thisMultiDetector pointer is set to the memory address of the shared memory
-  */
-
-    thisMultiDetector = (sharedMultiSlsDetector*)shmat(shm_id, NULL, 0); /* attach */
-
-    if (thisMultiDetector == (void*)-1) {
-        std::cout << "*** shmat error (server) ***" << std::endl;
-        return shm_id;
-    }
-    /**
-     shm_id returns -1 is shared memory initialization fails
-  */
-
-    return shm_id;
+    destroyThreadPool();
 }
+
+slsDetector* multiSlsDetector::getSlsDetector(unsigned int pos) {
+	if (pos >= 0 && pos < detectors.size()) {
+		return detectors[pos];
+	}
+	return 0;
+}
+
+
+
+void multiSlsDetector::freeSharedMemory(int multiId) {
+	// get number of detectors
+	int numDetectors = 0;
+	SharedMemory* shm = new SharedMemory(multiId, -1);
+	std::string shmname = shm->GetName();
+
+	// shm not created before
+	if (SharedMemory::IsExisting(shmname)) {
+		sharedMultiDet* mdet = (sharedMultiSlsDetector*)shm->OpenSharedMemory(
+				sizeof(sharedMultiSlsDetector), false);
+		numDetectors = mdet->numberOfDetectors;
+		shm->UnmapSharedMemory(mdet);
+		shm->RemoveSharedMemory();
+	}
+	delete shm;
+
+	for (int i = 0; i < numDetectors; ++i) {
+		SharedMemory* shm = new SharedMemory(multiId, i);
+		shm->RemoveSharedMemory();
+		delete shm;
+	}
+}
+
+
+
+void multiSlsDetector::freeSharedMemory() {
+
+	// single detector vector
+	for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
+		(*it)->freeSharedMemory();
+		delete (*it);
+	}
+	detectors.clear();
+
+	// multi detector
+	if (sharedMemory) {
+		sharedMemory->RemoveSharedMemory();
+		delete sharedMemory;
+	}
+	thisMultiDetector = 0;
+}
+
+
+std::string multiSlsDetector::getUserDetails() {
+	std::ostringstream sstream;
+
+	if (!detectors.size()) {
+		return std::string("none");
+	}
+
+	//hostname
+	sstream << "\nHostname: " << getHostname();
+	//type
+	sstream<< "\nType: ";
+
+	for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it)
+		sstream<< (*it)->sgetDetectorsType() << "+"; /*change funtion signature without argument*/
+	//PID
+	sstream << "\nPID: " << thisMultiDetector->lastPID
+	//user
+	<< "\nUser: " << thisMultiDetector->lastUser
+	<< "\nDate: " << thisMultiDetector->lastDate << endl;
+
+	string s = sstream.str();
+	return s;
+}
+
+
+bool multiSlsDetector::initSharedMemory(bool verify, bool update) {
+
+	// clear
+	if (sharedMemory)
+		delete sharedMemory;
+	thisMultiDetector = 0;
+
+	for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
+		delete(*it);
+	}
+	detectors.clear();
+
+	// create/open shm and map to structure
+	size_t sz = sizeof(sharedMultiSlsDetector);
+
+	bool created = false;
+	sharedMemory = new SharedMemory(detId, -1);
+	if (SharedMemory::IsExisting(sharedMemory->GetName())) {
+		thisMultiDetector = (sharedMultiSlsDetector*)sharedMemory->OpenSharedMemory(sz, verify);
+		if (verify && thisMultiDetector->shmversion != MULTI_SHMVERSION) {
+			cprintf(RED, "Multi shared memory version mismatch "
+					"(expected 0x%x but got 0x%x)\n",
+					MULTI_SHMVERSION, thisMultiDetector->shmversion);
+			throw SharedMemoryException();
+		}
+	} else {
+		try {
+			thisMultiDetector = (sharedMultiSlsDetector*)sharedMemory->CreateSharedMemory(sz);
+			created = true;
+		} catch(...) {
+			sharedMemory->RemoveSharedMemory();
+			thisMultiDetector = 0;
+			throw;
+		}
+	}
+
+	return created;
+}
+
+
+void multiSlsDetector::initializeDetectorStructure(bool created, bool verify, bool update) {
+	// set up new structure
+	if (created) {
+		thisMultiDetector->shmversion = MULTI_SHMVERSION;
+		thisMultiDetector->numberOfDetectors = 0;
+        thisMultiDetector->numberOfDetector[X] = 0;
+        thisMultiDetector->numberOfDetector[Y] = 0;
+		thisMultiDetector->onlineFlag = 1;
+
+		stoppedFlag = 0;
+		masterPosition = -1;
+		syncMode;
+		dataBytes = 0;
+		dataBytesInclGapPixels = 0;
+		numberOfChannels = 0;
+		numberOfChannel[X] = 0;
+		numberOfChannel[Y] = 0;
+		numberOfChannelInclGapPixels[X] = 0;
+		numberOfChannelInclGapPixels[Y] = 0;
+		maxNumberOfChannels = 0;
+		maxNumberOfChannel[X] = 0;
+		maxNumberOfChannel[Y] = 0;
+		maxNumberOfChannelInclGapPixels[X] = 0;
+		maxNumberOfChannelInclGapPixels[Y] = 0;
+		maxNumberOfChannelsPerDetector[X] = 0;
+		maxNumberOfChannelsPerDetector[Y] = 0;
+
+		int64_t timerValue[MAX_TIMERS];
+		detectorSettings currentSettings;
+		currentThresholdEV;
+		progressIndex = 0;
+		totalProgress = 1;
+		fileIndex = 0;
+		strncpy(thisMultiDetector->fileName, "run", MAX_STR_LENGTH);
+		strncpy(thisMultiDetector->filePath, "/", MAX_STR_LENGTH);
+
+		framesPerFile = 1;
+		fileFormat fileFormatType = ASCII;
+		correctionMask = (1 << WRITE_FILE) | (1 << OVERWRITE_FILE);
+		threadedProcessing;
+		tDead = 0;
+		strncpy(flatFieldDir, getenv("HOME"), MAX_STR_LENGTH);
+		strncpy(flatFieldFile, "none", MAX_STR_LENGTH);
+		strncpy(thisMultiDetector->badChanFile, "none", MAX_STR_LENGTH);
+		angConvFile[MAX_STR_LENGTH];
+		angDirection;
+		fineOffset;
+		globalOffset;
+		binSize;
+		sampleDisplacement[2];
+		numberOfPositions;
+		detPositions[MAXPOS];
+		actionMask;
+		mystring actionScript[MAX_ACTIONS];
+		mystring actionParameter[MAX_ACTIONS];
+		scanMode[MAX_SCAN_LEVELS];
+		mystring scanScript[MAX_SCAN_LEVELS];
+		mystring scanParameter[MAX_SCAN_LEVELS];
+		nScanSteps[MAX_SCAN_LEVELS];
+		mysteps scanSteps[MAX_SCAN_LEVELS];
+		scanPrecision[MAX_SCAN_LEVELS];
+		acquiringFlag;
+		externalgui;
+		receiverOnlineFlag;
+		receiver_upstream;
+	}
+
+	// get objects from single det shared memory (open)
+	for (int i = 0; i < thisMultiDetector->numberOfDetectors; i++) {
+		slsDetector* sdet = new slsDetector(detId, i, verify, this);
+		detectors.push_back(sdet);
+	}
+
+
+	//update user details
+	if (update) {
+		thisMultiDetector->lastPID = getpid();
+		memset(thisMultiDetector->lastUser, 0, SHORT_STRING_LENGTH);
+		memset(thisMultiDetector->lastDate, 0, SHORT_STRING_LENGTH);
+		try {
+			strncpy(thisMultiDetector->lastUser, exec("whoami").c_str(), SHORT_STRING_LENGTH);
+			strncpy(thisMultiDetector->lastDate, exec("date").c_str(), DATE_LENGTH);
+		} catch(...) {
+			strncpy(thisMultiDetector->lastUser, exec("errorreading").c_str(), SHORT_STRING_LENGTH);
+			strncpy(thisMultiDetector->lastDate, exec("errorreading").c_str(), SHORT_STRING_LENGTH);
+		}
+	}
+}
+
+
+void multiSlsDetector::AddSingleDetector (std::string s) {
+
+	cout << "Adding detector " << s << endl;
+
+	for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
+		if ((*it)->GetHostname() == s) {
+            cout << "Detector " << s << "already part of the multiDetector!" << endl
+                 << "Remove it before adding it back in a new position!" << endl;
+            return;
+		}
+	}
+
+    //check entire shared memory if it doesnt exist?? needed?
+	//could be that detectors not loaded completely cuz of crash in new slsdetector in initsharedmemory
+
+	// get type by connecting
+	detectorType type = slsDetector::GetDetectorTypeFromDetector(s, DEFAULT_PORTNO);
+	if (type == GENERIC) {
+		cout << "Detector " << s << "does not exist in shared memory "
+				"and could not connect to it to determine the type!" << endl;
+		setErrorMask(getErrorMask() | MULTI_DETECTORS_NOT_ADDED);
+		 appendNotAddedList(name);
+		return;
+	}
+
+
+
+	int pos = detectors.size();
+	slsDetector* sdet = new slsDetector(type, detId, pos, false, this);
+	detectors.push_back(sdet);
+	detectors[pos]->SetHostname(s);
+	detectors[pos]->SetOnline(1);
+	++thisMultiDetector->numberOfDetectors;
+}
+
+
+
+std::string multiSlsDetector::exec(const char* cmd) {
+	int bufsize = 1char buffer[bufsize];
+	std::string result = "";
+	FILE* pipe = popen(cmd, "r");
+	if (!pipe) throw std::exception();
+	try {
+		while (!feof(pipe)) {
+			if (fgets(buffer, bufsize, pipe) != NULL)
+				result += buffer;
+		}
+	} catch (...) {
+		pclose(pipe);
+		throw;
+	}
+	pclose(pipe);
+	result.erase(result.find_last_not_of(" \t\n\r")+1);
+	return result;
+}
+
+
+
+
 
 multiSlsDetector::multiSlsDetector(int id)
     : slsDetectorUtils()
@@ -103,57 +350,14 @@ multiSlsDetector::multiSlsDetector(int id)
     }
     if (thisMultiDetector->alreadyExisting == 0) {
 
-        thisMultiDetector->onlineFlag          = ONLINE_FLAG;
+
         thisMultiDetector->receiverOnlineFlag  = OFFLINE_FLAG;
-        thisMultiDetector->numberOfDetectors   = 0;
-        thisMultiDetector->numberOfDetector[X] = 0;
-        thisMultiDetector->numberOfDetector[Y] = 0;
-        for (int id = 0; id < MAXDET; ++id) {
-            thisMultiDetector->detectorIds[id] = -1;
-            thisMultiDetector->offsetX[id]     = 0;
-            thisMultiDetector->offsetY[id]     = 0;
-        }
-        thisMultiDetector->masterPosition                  = -1;
-        thisMultiDetector->dataBytes                       = 0;
-        thisMultiDetector->dataBytesInclGapPixels          = 0;
-        thisMultiDetector->numberOfChannels                = 0;
-        thisMultiDetector->numberOfChannel[X]              = 0;
-        thisMultiDetector->numberOfChannel[Y]              = 0;
-        thisMultiDetector->numberOfChannelInclGapPixels[X] = 0;
-        thisMultiDetector->numberOfChannelInclGapPixels[Y] = 0;
 
-        thisMultiDetector->maxNumberOfChannels                = 0;
-        thisMultiDetector->maxNumberOfChannel[X]              = 0;
-        thisMultiDetector->maxNumberOfChannel[Y]              = 0;
-        thisMultiDetector->maxNumberOfChannelInclGapPixels[X] = 0;
-        thisMultiDetector->maxNumberOfChannelInclGapPixels[Y] = 0;
 
-        thisMultiDetector->maxNumberOfChannelsPerDetector[X] = -1;
-        thisMultiDetector->maxNumberOfChannelsPerDetector[Y] = -1;
 
-        /** set trimDsdir, calDir and filePath to default to root directory*/
-        strcpy(thisMultiDetector->filePath, "/");
-        /** set fileName to default to run*/
-        strcpy(thisMultiDetector->fileName, "run");
-        /** set fileIndex to default to 0*/
-        thisMultiDetector->fileIndex = 0;
-        /** set frames per file to default to 1*/
-        thisMultiDetector->framesPerFile = 1;
-        /** set fileFormat to default to ascii*/
-        thisMultiDetector->fileFormatType = ASCII;
 
-        /** set progress Index to default to 0*/
-        thisMultiDetector->progressIndex = 0;
-        /** set total number of frames to be acquired to default to 1*/
-        thisMultiDetector->totalProgress = 1;
 
-        /** set correction mask to 0*/
-        thisMultiDetector->correctionMask = 1 << WRITE_FILE;
-        thisMultiDetector->correctionMask |= (1 << OVERWRITE_FILE);
-        /** set deat time*/
-        thisMultiDetector->tDead = 0;
-        /** sets bad channel list file to none */
-        strcpy(thisMultiDetector->badChanFile, "none");
+
         /** sets flat field correction directory */
         strcpy(thisMultiDetector->flatFieldDir, getenv("HOME"));
         /** sets flat field correction file */
@@ -175,7 +379,7 @@ multiSlsDetector::multiSlsDetector(int id)
         strcpy(thisMultiDetector->angConvFile, "none");
         /** set binsize*/
         thisMultiDetector->binSize     = 0.001;
-        thisMultiDetector->stoppedFlag = 0;
+
 
         thisMultiDetector->threadedProcessing = 1;
 

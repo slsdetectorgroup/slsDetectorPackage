@@ -262,7 +262,7 @@ slsDetector::slsDetector(int pos, detectorType type, int id, multiSlsDetector *p
 }
 
 
-slsDetector::~slsDetector(){
+slsDetector:slsDetector(){
 
   // Detach Memory address
   if (shmdt(thisDetector) == -1) {

@@ -16,4 +16,10 @@ struct SharedMemoryException : public exception {
 public:
     SharedMemoryException() {}
     string GetMessage() const { return "Shared Memory Failed";};
-};//shmException;
+};
+
+struct ThreadpoolException : public exception {
+public:
+	ThreadpoolException() {}
+    string GetMessage() const { return "Threadpool Failed";};
+};

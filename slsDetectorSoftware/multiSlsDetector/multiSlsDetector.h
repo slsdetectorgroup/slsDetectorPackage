@@ -24,7 +24,7 @@ class ZmqSocket;
 #include <string>
 
 
-#define MULTI_SHMVERSION	0x180608
+#define MULTI_SHMVERSION	0x180618
 #define SHORT_STRING_LENGTH	50
 #define DATE_LENGTH			29
 
@@ -76,6 +76,12 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 		/** type of synchronization between detectors */
 		synchronizationMode syncMode;
+
+		/** Detectors offset in the X direction (in number of channels)*/
+		int offsetX[MAXDET];
+
+		/** Detectors offsets  in the Y direction (in number of channels) */
+		int offsetY[MAXDET];
 
 		/**  size of the data that are transfered from all detectors */
 		int dataBytes;
@@ -235,6 +241,11 @@ public:
 	virtual ~multiSlsDetector();
 
 	/**
+	 * returns true. Used when reference is slsDetectorUtils and to determine if command can be implemented as slsDetector/multiSlsDetector object/
+	 */
+	bool isMultiSlsDetectorClass();
+
+	/**
 	 * Get sls detector object from position in detectors array
 	 * @param pos position in detectors array
 	 * @returns pointer to sls detector object
@@ -298,64 +309,246 @@ public:
 	 * @param pos position of sls detector in array, if -1, returns first detector type
 	 * @returns detector type of sls detector in position pos, if -1, concatenates
 	 */
-	std::string getDetectorType(){return sgetDetectorsType();};
-
-
-
-
-	/**
-	 * returns true. Used when reference is slsDetectorUtils and to determine if command can be implemented as slsDetector/multiSlsDetector object/
-	 */
-	bool isMultiSlsDetectorClass(){return 1;};
+	std::string getDetectorType();
 
 	/**
 	 * Creates all the threads in the threadpool
-    \returns OK or FAIL
+	 * throws an exception if it cannot create threads
 	 */
 	int createThreadPool();
 
-	/** destroys all the threads in the threadpool */
+	/**
+	 * Destroys all the threads in the threadpool
+	 */
 	void destroyThreadPool();
 
-	/** returns the number of detectors in the multidetector structure
-      \returns number of detectors */
-	int getNumberOfDetectors() {return thisMultiDetector->numberOfDetectors;};
+	/**
+	 * Returns the number of detectors in the multidetector structure
+	 * @returns number of detectors
+     */
+	int getNumberOfDetectors();
 
-	/**returns number of detectors in dimension d
-	 * \param d dimension d
-	 * \returns number of detectors in dimension d
+	/**
+	 * Returns number of detectors in dimension d
+	 * @param d dimension d
+	 * @returns number of detectors in dimension d
 	 */
-	int getNumberOfDetectors(dimension d) {return thisMultiDetector->numberOfDetector[d];};
+	int getNumberOfDetectors(dimension d);
 
-	/** returns the number of detectors in each direction
-   	   \param nx number of detectors in x direction
-   	   \param ny number of detectors in y direction
+	/**
+	 * Returns the number of detectors in each direction
+   	   @param nx number of detectors in x direction
+   	   @param ny number of detectors in y direction
 	 */
-	void getNumberOfDetectors(int& nx, int& ny){nx=thisMultiDetector->numberOfDetector[X];ny=thisMultiDetector->numberOfDetector[Y];};
+	void getNumberOfDetectors(int& nx, int& ny);
 
-	int getMaxMods();
+	/**
+	 * Returns sum of all modules per sls detector (Mythen)
+	 * Other detectors, it is 1
+	 * @returns sum of all modules per sls detector
+	 */
 	int getNMods();
-	int getMaxMod(dimension d);
+
+	/**
+	 * Returns sum of all modules per sls detector in dimension d (Mythen)
+	 * Other detectors, it is 1
+	 * @param d dimension d
+	 * @returns sum of all modules per sls detector in dimension d
+	 */
 	int getNMod(dimension d);
 
+	/**
+	 * Returns sum of all maximum modules per sls detector (Mythen).
+	 * Other detectors, it is 1
+	 * @returns sum of all maximum modules per sls detector
+	 */
+	int getMaxMods();
+
+
+	/**
+	 * Returns sum of all maximum modules per sls detector in dimension d (Mythen)
+	 * Other detectors, it is 1
+	 * @param d dimension d
+	 * @returns sum of all maximum modules per sls detector in dimension d
+	 */
+	int getMaxMod(dimension d);
+
+	/**
+	 * Returns the sum of all maximum modules per sls detector in dimension d (Mythen).
+	 * from the detector directly.
+	 * Other detectors, it is 1
+	 * @param d dimension d
+	 * @returns sum of all maximum modules per sls detector in dimension d
+	 */
+	int getMaxNumberOfModules(dimension d=X);
+
+	/**
+	 * Sets the sum of all modules per sls detector in dimension d (Mythen).
+	 * from the detector directly.
+	 * Other detectors, it is 1
+	 * @param i the number of modules to set to
+	 * @param d dimension d
+	 * @returns sum of all modules per sls detector in dimension d
+	 */
+	int setNumberOfModules(int i=-1, dimension d=X);
+
+	/**
+	 * Calculates the position of detector based on module number of entire multi
+	 * detector list and returns the number of channels per that module (Mythen)
+	 * @param imod module number of entire multi detector list
+	 * @returns number of channels per module imod
+	 */
 	int getChansPerMod(int imod=0);
+
+	/**
+	 * Returns the total number of channels of all sls detectors
+	 * @returns the total number of channels of all sls detectors
+	 */
+	int getTotalNumberOfChannels();
+
+	/**
+	 * Returns the total number of channels of all sls detectors in dimension d
+	 * @param d dimension d
+	 * @returns the total number of channels of all sls detectors in dimension d
+	 */
+	int getTotalNumberOfChannels(dimension d);
+
+	/**
+	 * Returns the total number of channels of all sls detectors in dimension d
+	 * including gap pixels
+	 * @param d dimension d
+	 * @returns the total number of channels of all sls detectors in dimension d
+	 * including gap pixels
+	 */
+	int getTotalNumberOfChannelsInclGapPixels(dimension d);
+
+	/**
+	 * Returns the maximum number of channels of all sls detectors (Mythen)
+	 * @returns the maximum number of channels of all sls detectors
+	 */
+	int getMaxNumberOfChannels();
+
+	/**
+	 * Returns the maximum number of channels of all sls detectors in dimension d (Mythen)
+	 * @param d dimension d
+	 * @returns the maximum number of channels of all sls detectors in dimension d
+	 */
+	int getMaxNumberOfChannels(dimension d);
+
+	/**
+	 * Returns the total number of channels of all sls detectors in dimension d
+	 * including gap pixels (Mythen)
+	 * @param d dimension d
+	 * @returns the total number of channels of all sls detectors in dimension d
+	 * including gap pixels
+	 */
+	int getMaxNumberOfChannelsInclGapPixels(dimension d);
+
+	/**
+	 * Returns the maximum number of channels of all sls detectors in each dimension d,
+	 * multi detector shared memory variable to calculate offsets for each sls detector
+	 * @param d dimension d
+	 * @returns the maximum number of channels of all sls detectors in dimension d
+	 */
+	int getMaxNumberOfChannelsPerDetector(dimension d);
+
+	/**
+	 * Sets the maximum number of channels of all sls detectors in each dimension d,
+	 * multi detector shared memory variable to calculate offsets for each sls detector
+	 * @param d dimension d
+	 * @param i maximum number of channels for multi structure in dimension d
+	 * @returns the maximum number of channels of all sls detectors in dimension d
+	 */
+	int setMaxNumberOfChannelsPerDetector(dimension d,int i);
+
+	/**
+	 * Updates the channel offsets in X and Y dimension for all the sls detectors
+	 * It is required for decodeNMod and setting ROI
+	 */
+	void updateOffsets();
+
+	/**
+	 * Calculate the detector position index in multi vector and the module index
+	 * using an index for all entire modules in list (Mythen)
+	 * @param i position index of all modules in list
+	 * @param idet position index in multi vector list
+	 * @param imod module index in the sls detector
+	 */
+	int decodeNMod(int i, int &idet, int &imod);
+
+
+	/**
+	 * Checks if the multi detectors are online and sets the online flag
+	 * @param online if GET_ONLINE_FLAG, only returns shared memory online flag,
+	 * else sets the detector in online/offline state
+     * if OFFLINE_FLAG, (i.e. no communication to the detector - using only local structure - no data acquisition possible!);
+     * if ONLINE_FLAG, detector in online state (i.e. communication to the detector updating the local structure)
+     * @returns online/offline status
+	 */
+	int setOnline(int const online=GET_ONLINE_FLAG);
+
+	/**
+	 * Checks if each of the detectors are online/offline
+	 * @returns empty string if they are all online,
+	 * else returns concatenation of strings of all detectors that are offline
+     */
+	std::string checkOnline();
+
+	/**
+	 * Activates the detector (Eiger only)
+	 * @param enable active (1) or inactive (0), -1 gets
+	 * @returns 0 (inactive) or 1 (active)
+	 */
+	int activate(int const enable=GET_ONLINE_FLAG);
+
+	/**
+	 * Load configuration from a configuration File
+	 * @param fname configuration file name
+	 * @return OK or FAIL
+	 */
+	int readConfigurationFile(std::string const fname);
+
+	/**
+	 * Write current configuration to a file
+	 * @param fname configuration file name
+	 * @returns OK or FAIL
+	 */
+	int writeConfigurationFile(std::string const fname);
+
+	/**
+	 * (Not implemented in any detector from the client)
+	 * Sets/gets the detector in position i as master of the structure
+	 * (e.g. it gates the other detectors and therefore must be started as last.
+	 * Assumes that signal 0 is gate in, signal 1 is trigger in, signal 2 is gate out
+	 * @param i position of master (-1 gets, -2 unset)
+	 * @return master's position (-1 none)
+	 */
+	int setMaster(int i=-1);
+
+	/** (Not implemented in any detector from the client)
+	 * Sets/gets the synchronization mode of the various detector
+	 * @param sync syncronization mode
+	 * @returns current syncronization mode
+	 */
+	synchronizationMode setSynchronization(synchronizationMode sync=GET_SYNCHRONIZATION_MODE);
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	angleConversionConstant *getAngularConversionPointer(int imod=0);
 
 
-	int getTotalNumberOfChannels();
 
-	int getTotalNumberOfChannels(dimension d);
-
-	int getTotalNumberOfChannelsInclGapPixels(dimension d);
-
-	int getMaxNumberOfChannels();
-
-	int getMaxNumberOfChannels(dimension d);
-
-	int getMaxNumberOfChannelsInclGapPixels(dimension d);
-
-	int getMaxNumberOfChannelsPerDetector(dimension d){return thisMultiDetector->maxNumberOfChannelsPerDetector[d];};
 
 	/** returns the enable if data will be flipped across x or y axis
 	 *  \param d axis across which data is flipped
@@ -363,55 +556,10 @@ public:
 	 */
 	int getFlippedData(dimension d=X);
 
-	int setMaxNumberOfChannelsPerDetector(dimension d,int i){thisMultiDetector->maxNumberOfChannelsPerDetector[d]=i; return thisMultiDetector->maxNumberOfChannelsPerDetector[d];};
 
 	double getScanStep(int index, int istep){return thisMultiDetector->scanSteps[index][istep];};
 
 
-
-
-	/** sets the detector in position i as master of the structure (e.g. it gates the other detectors and therefore must be started as last. <BR> Assumes that signal 0 is gate in, signal 1 is trigger in, signal 2 is gate out
-      \param i position of master (-1 gets, -2 unset)
-      \return master's position (-1 none)
-	 */
-	int setMaster(int i=-1);
-
-	/**
-      Sets/gets the synchronization mode of the various detectors
-      \param sync syncronization mode
-      \returns current syncronization mode   
-	 */
-	/*   enum synchronizationMode { */
-	/*     GET_SYNCHRONIZATION_MODE=-1, /\**< the multidetector will return its synchronization mode *\/ */
-	/*     NONE, /\**< all detectors are independent (no cabling) *\/ */
-	/*     MASTER_GATES, /\**< the master gates the other detectors *\/ */
-	/*     MASTER_TRIGGERS, /\**< the master triggers the other detectors *\/ */
-	/*     SLAVE_STARTS_WHEN_MASTER_STOPS /\**< the slave acquires when the master finishes, to avoid deadtime *\/ */
-	/*   }; */
-
-	synchronizationMode setSynchronization(synchronizationMode sync=GET_SYNCHRONIZATION_MODE);
-
-
-	/** sets the onlineFlag
-      \param off can be:  GET_ONLINE_FLAG, returns wether the detector is in online or offline state; OFFLINE_FLAG, detector in offline state (i.e. no communication to the detector - using only local structure - no data acquisition possible!); ONLINE_FLAG  detector in online state (i.e. communication to the detector updating the local structure) 
-      \returns online/offline status
-	 */
-	int setOnline(int const online=GET_ONLINE_FLAG);
-
-	/** checks if each of the detectors are online
-      \returns online/offline status and -1 if any of the detector's online status is different from the other
-	 */
-	std::string checkOnline();
-
-	/**  @short activates the detector (detector specific)
-       \param enable can be: -1 returns wether the detector is in active (1) or inactive (0) state
-       \returns 0 (inactive) or 1 (active)
-	 */
-	int activate(int const enable=GET_ONLINE_FLAG);
-
-	/**
-     \returns 1 if the detector structure has already be initlialized with the given id and belongs to this multiDetector instance, 0 otherwise */
-	int exists();
 
 
 	/**
@@ -419,20 +567,6 @@ public:
      \returns OK or FAIL
 	 */
 	int printReceiverConfiguration();
-
-	/**
-     Purely virtual function
-     Should be implemented in the specific detector class
-     /sa mythenDetector::readConfigurationFile
-	 */
-
-	int readConfigurationFile(std::string const fname);
-	/**
-       Purely virtual function
-       Should be implemented in the specific detector class
-       /sa mythenDetector::writeConfigurationFile
-	 */
-	int writeConfigurationFile(std::string const fname);
 
 
 
@@ -496,7 +630,6 @@ public:
 	std::string getSettingsFile();
 
 
-	int decodeNMod(int i, int &idet, int &imod);
 
 	/** programs FPGA with pof file
       \param fname file name
@@ -1079,7 +1212,6 @@ public:
 	 */
 	int configureMAC();
 
-	int setNumberOfModules(int i=-1, dimension d=X);
 
 	/** sets the enable which determines if data will be flipped across x or y axis
 	 *  \param d axis across which data is flipped
@@ -1095,7 +1227,7 @@ public:
 	 */
 	int enableGapPixels(int val=-1);
 
-	int getMaxNumberOfModules(dimension d=X);
+
 	int setDynamicRange(int i=-1);
 
 
@@ -1450,8 +1582,7 @@ public:
 	int enableDataStreamingFromReceiver(int enable=-1);
 
 
-	/** updates the multidetector offsets */
-	void updateOffsets();
+
 
 	/** enable/disable or get data compression in receiver
 	 * @param i is -1 to get, 0 to disable and 1 to enable
@@ -1597,17 +1728,18 @@ private:
 	void updateUserdetails();
 
 	/**
-	 * Add sls detector
-	 * @param s hostname of the single detector
-	 */
-	void addSlsDetector (std::string s);
-
-	/**
 	 * Execute in command line and return result
 	 * @param cmd command
 	 * @returns result
 	 */
 	std::string exec(const char* cmd);
+
+	/**
+	 * Add sls detector
+	 * @param s hostname of the single detector
+	 */
+	void addSlsDetector (std::string s);
+
 
 	/**
 	 * add gap pixels to the image (only for Eiger in 4 bit mode)

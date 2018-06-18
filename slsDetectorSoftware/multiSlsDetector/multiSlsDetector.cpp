@@ -58,13 +58,20 @@ multiSlsDetector::~multiSlsDetector()
 		delete sharedMemory;
 	}
 
-    for (int i = 0; i < MAXDET; ++i) {
-        if (zmqSocket[i]) {
-            delete zmqSocket[i];
-        }
-    }
+	for (vector<ZmqSocket*>::const_iterator it = zmqSocket.begin(); it != zmqSocket.end(); ++it) {
+		delete(*it);
+	}
+	zmqSocket.clear();
+
     destroyThreadPool();
 }
+
+
+bool multiSlsDetector::isMultiSlsDetectorClass()
+{
+	return true;
+}
+
 
 slsDetector* multiSlsDetector::getSlsDetector(unsigned int pos)
 {
@@ -199,6 +206,10 @@ void multiSlsDetector::initializeDetectorStructure(bool created, bool verify)
 		thisMultiDetector->stoppedFlag = 0;
 		thisMultiDetector->masterPosition = -1;
 		thisMultiDetector->syncMode = GET_SYNCHRONIZATION_MODE;
+		for(int i = 0; i < MAXDET; ++i) {
+			thisMultiDetector->offsetX[i] = 0;
+			thisMultiDetector->offsetY[i] = 0;
+		}
 		thisMultiDetector->dataBytes = 0;
 		thisMultiDetector->dataBytesInclGapPixels = 0;
 		thisMultiDetector->numberOfChannels = 0;
@@ -321,12 +332,19 @@ void multiSlsDetector::initializeMembers()
 	badChanFile = thisMultiDetector->badChanFile;
 
 	//multiSlsDetector
-	for (int i = 0; i < MAXDET; ++i)
-		zmqSocket[i] = 0;
+	for (vector<ZmqSocket*>::const_iterator it = zmqSocket.begin(); it != zmqSocket.end(); ++it) {
+		delete(*it);
+	}
+	zmqSocket.clear();
+
 	getNMods();
 	getMaxMods();
-	if (createThreadPool() == FAIL)
-		exit(-1);
+    getMaxMod(X);
+    getNMod(X);
+    getMaxMod(Y);
+    getNMod(Y);
+    updateOffsets();
+	createThreadPool();
 }
 
 
@@ -384,7 +402,8 @@ void multiSlsDetector::setHostname(string s)
 		 }
 	 }
 
-	 setOnline(ONLINE_FLAG);
+	 // a get to update shared memory online flag
+	 setOnline();
 }
 
 
@@ -443,10 +462,8 @@ void multiSlsDetector::addSlsDetector (std::string s)
     getNMod(X);
     getMaxMod(Y);
     getNMod(Y);
-
-    updateOffsets(); /// needed??
-    if (createThreadPool() == FAIL)
-        exit(-1);
+    updateOffsets();
+    createThreadPool();
 }
 
 
@@ -460,19 +477,24 @@ slsDetectorDefs::detectorType multiSlsDetector::getDetectorsType(int pos)
     return dt;
 }
 
+
 std::string multiSlsDetector::sgetDetectorsType(int pos)
 {
     return concatResultOrPos(&slsDetector::sgetDetectorsType, pos);
 }
 
 
+std::string getDetectorType()
+{
+	return sgetDetectorsType();
+}
 
 
-int multiSlsDetector::createThreadPool()
+void multiSlsDetector::createThreadPool()
 {
     if (threadpool)
         destroyThreadPool();
-    int numthreads = thisMultiDetector->numberOfDetectors;
+    int numthreads = detectors.size();
     if (numthreads < 1) {
         numthreads = 1; //create threadpool anyway, threads initialized only when >1 detector added
     }
@@ -480,7 +502,7 @@ int multiSlsDetector::createThreadPool()
     switch (threadpool->initialize_threadpool()) {
     case 0:
         cerr << "Failed to initialize thread pool!" << endl;
-        return FAIL;
+     	throw ThreadpoolException();
     case 1:
 #ifdef VERBOSE
         cout << "Not initializing threads, not multi detector" << endl;
@@ -492,8 +514,8 @@ int multiSlsDetector::createThreadPool()
 #endif
         break;
     }
-    return OK;
 }
+
 
 void multiSlsDetector::destroyThreadPool()
 {
@@ -506,6 +528,166 @@ void multiSlsDetector::destroyThreadPool()
     }
 }
 
+
+int multiSlsDetector::getNumberOfDetectors()
+{
+	return thisMultiDetector->numberOfDetectors;
+}
+
+int multiSlsDetector::getNumberOfDetectors(dimension d)
+{
+	return thisMultiDetector->numberOfDetector[d];
+}
+
+void multiSlsDetector::getNumberOfDetectors(int& nx, int& ny)
+{
+	nx=thisMultiDetector->numberOfDetector[X];ny=thisMultiDetector->numberOfDetector[Y];
+}
+
+int multiSlsDetector::getNMods()
+{
+    int nm = 0;
+    for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
+        nm += (*it)->getNMods();
+    }
+    return nm;
+}
+
+int multiSlsDetector::getNMod(dimension d)
+{
+    int nm = 0;
+    for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
+    	nm += (*it)->getNMod(d);
+    }
+    return nm;
+}
+
+int multiSlsDetector::getMaxMods()
+{
+    int ret = 0;
+    for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
+    	ret += (*it)->getMaxMods();
+    }
+    return ret;
+}
+
+int multiSlsDetector::getMaxMod(dimension d)
+{
+    int ret = 0, ret1;
+    for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
+    	ret1 = (*it)->getNMaxMod(d);
+#ifdef VERBOSE
+    	cout << "detector " << (it-detectors.begin()) << " maxmods " << ret1 << " in direction " << d << endl;
+#endif
+    	ret += ret1;
+    }
+#ifdef VERBOSE
+    cout << "max mods in direction " << d << " is " << ret << endl;
+#endif
+
+    return ret;
+}
+
+int multiSlsDetector::getMaxNumberOfModules(dimension d)
+{
+    int ret = 0;
+    for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
+    	ret += (*it)->getMaxNumberOfModules(d);
+    }
+    return ret;
+}
+
+int multiSlsDetector::setNumberOfModules(int p, dimension d)
+{
+    int ret = 0;
+    int nm = 0, mm = 0, nt = p;
+
+    thisMultiDetector->dataBytes              = 0;
+    thisMultiDetector->dataBytesInclGapPixels = 0;
+    thisMultiDetector->numberOfChannels       = 0;
+
+    for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
+    	if (p < 0)
+    		nm = p;
+    	else {
+    		mm = (*it)->getMaxNumberOfModules();
+    		if (nt > mm) {
+    			nm = mm;
+    			nt -= nm;
+    		} else {
+    			nm = nt;
+    			nt -= nm;
+    		}
+    	}
+    	ret += (*it)->setNumberOfModules(nm);
+    	if ((*it)->getErrorMask())
+    		setErrorMask(getErrorMask() | (1 << (it-detectors.begin())));
+    	thisMultiDetector->dataBytes += (*it)->getDataBytes();
+    	thisMultiDetector->dataBytesInclGapPixels += (*it)->getDataBytesInclGapPixels();
+    	thisMultiDetector->numberOfChannels += (*it)->getTotalNumberOfChannels();
+    }
+
+    if (p != -1)
+        updateOffsets();
+    return ret;
+}
+
+int multiSlsDetector::getChansPerMod(int imod)
+{
+    int id = -1, im = -1;
+    decodeNMod(imod, id, im);
+    if (id >= 0 && id < detectors.size()) {
+    	return detectors[id]->getChansPerMod(im);
+    }
+    return -1;
+}
+
+int multiSlsDetector::getTotalNumberOfChannels()
+{
+    thisMultiDetector->numberOfChannels = 0;
+    for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
+        thisMultiDetector->numberOfChannels += (*it)->getTotalNumberOfChannels();
+    return thisMultiDetector->numberOfChannels;
+}
+
+int multiSlsDetector::getTotalNumberOfChannels(dimension d)
+{
+	return thisMultiDetector->numberOfChannel[d];
+}
+
+int multiSlsDetector::getTotalNumberOfChannelsInclGapPixels(dimension d)
+{
+	return thisMultiDetector->numberOfChannelInclGapPixels[d];
+}
+
+int multiSlsDetector::getMaxNumberOfChannels()
+{
+    thisMultiDetector->maxNumberOfChannels = 0;
+    for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
+        thisMultiDetector->maxNumberOfChannels += (*it)->getMaxNumberOfChannels();
+    return thisMultiDetector->maxNumberOfChannels;
+}
+
+int multiSlsDetector::getMaxNumberOfChannels(dimension d)
+{
+	return thisMultiDetector->maxNumberOfChannel[d];
+}
+
+int multiSlsDetector::getMaxNumberOfChannelsInclGapPixels(dimension d)
+{
+	return thisMultiDetector->maxNumberOfChannelInclGapPixels[d];
+}
+
+int multiSlsDetector::getMaxNumberOfChannelsPerDetector(dimension d)
+{
+	return thisMultiDetector->maxNumberOfChannelsPerDetector[d];
+}
+
+int multiSlsDetector::setMaxNumberOfChannelsPerDetector(dimension d,int i)
+{
+	thisMultiDetector->maxNumberOfChannelsPerDetector[d] = i;
+	return thisMultiDetector->maxNumberOfChannelsPerDetector[d];
+}
 
 
 void multiSlsDetector::updateOffsets()
@@ -537,33 +719,33 @@ void multiSlsDetector::updateOffsets()
 	thisMultiDetector->maxNumberOfChannelInclGapPixels[X] = 0;
 	thisMultiDetector->maxNumberOfChannelInclGapPixels[Y] = 0;
 
-	for (int i = 0; i < thisMultiDetector->numberOfDetectors; ++i) {
-		if (detectors[i]) {
+	for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
+		int currentIndex = (it - detectors.begin());
 #ifdef VERBOSE
 			cout << "offsetX:" << offsetX << " prevChanX:" << prevChanX << " offsetY:" << offsetY << " prevChanY:" << prevChanY << endl;
 			cout << "offsetX_gp:" << offsetX_gp << " prevChanX_gp:" << prevChanX_gp << " offsetY_gp:" << offsetY_gp << " prevChanY_gp:" << prevChanY_gp << endl;
 #endif
-			//cout<<" totalchan:"<< detectors[i]->getTotalNumberOfChannels(Y) <<" maxChanY:"<<maxChanY<<endl;
+			//cout<<" totalchan:"<< (*it)->getTotalNumberOfChannels(Y) <<" maxChanY:"<<maxChanY<<endl;
 			//incrementing in both direction
 			if (firstTime) {
 				//incrementing in both directions
 				firstTime = false;
-				if ((maxChanX > 0) && ((offsetX + detectors[i]->getTotalNumberOfChannels(X)) > maxChanX))
-					cout << "\nDetector[" << i << "] exceeds maximum channels allowed for complete detector set in X dimension!" << endl;
-				if ((maxChanY > 0) && ((offsetY + detectors[i]->getTotalNumberOfChannels(Y)) > maxChanY))
-					cout << "\nDetector[" << i << "] exceeds maximum channels allowed for complete detector set in Y dimension!" << endl;
-				prevChanX    = detectors[i]->getTotalNumberOfChannels(X);
-				prevChanY    = detectors[i]->getTotalNumberOfChannels(Y);
-				prevChanX_gp = detectors[i]->getTotalNumberOfChannelsInclGapPixels(X);
-				prevChanY_gp = detectors[i]->getTotalNumberOfChannelsInclGapPixels(Y);
-				numX += detectors[i]->getTotalNumberOfChannels(X);
-				numY += detectors[i]->getTotalNumberOfChannels(Y);
-				numX_gp += detectors[i]->getTotalNumberOfChannelsInclGapPixels(X);
-				numY_gp += detectors[i]->getTotalNumberOfChannelsInclGapPixels(Y);
-				maxX += detectors[i]->getMaxNumberOfChannels(X);
-				maxY += detectors[i]->getMaxNumberOfChannels(Y);
-				maxX_gp += detectors[i]->getMaxNumberOfChannelsInclGapPixels(X);
-				maxY_gp += detectors[i]->getMaxNumberOfChannelsInclGapPixels(Y);
+				if ((maxChanX > 0) && ((offsetX + (*it)->getTotalNumberOfChannels(X)) > maxChanX))
+					cout << "\nDetector[" << currentIndex << "] exceeds maximum channels allowed for complete detector set in X dimension!" << endl;
+				if ((maxChanY > 0) && ((offsetY + (*it)->getTotalNumberOfChannels(Y)) > maxChanY))
+					cout << "\nDetector[" << currentIndex << "] exceeds maximum channels allowed for complete detector set in Y dimension!" << endl;
+				prevChanX    = (*it)->getTotalNumberOfChannels(X);
+				prevChanY    = (*it)->getTotalNumberOfChannels(Y);
+				prevChanX_gp = (*it)->getTotalNumberOfChannelsInclGapPixels(X);
+				prevChanY_gp = (*it)->getTotalNumberOfChannelsInclGapPixels(Y);
+				numX += (*it)->getTotalNumberOfChannels(X);
+				numY += (*it)->getTotalNumberOfChannels(Y);
+				numX_gp += (*it)->getTotalNumberOfChannelsInclGapPixels(X);
+				numY_gp += (*it)->getTotalNumberOfChannelsInclGapPixels(Y);
+				maxX += (*it)->getMaxNumberOfChannels(X);
+				maxY += (*it)->getMaxNumberOfChannels(Y);
+				maxX_gp += (*it)->getMaxNumberOfChannelsInclGapPixels(X);
+				maxY_gp += (*it)->getMaxNumberOfChannelsInclGapPixels(Y);
 				++thisMultiDetector->numberOfDetector[X];
 				++thisMultiDetector->numberOfDetector[Y];
 #ifdef VERBOSE
@@ -572,15 +754,15 @@ cout << "incrementing in both direction" << endl;
 			}
 
 			//incrementing in y direction
-			else if ((maxChanY == -1) || ((maxChanY > 0) && ((offsetY + prevChanY + detectors[i]->getTotalNumberOfChannels(Y)) <= maxChanY))) {
+			else if ((maxChanY == -1) || ((maxChanY > 0) && ((offsetY + prevChanY + (*it)->getTotalNumberOfChannels(Y)) <= maxChanY))) {
 				offsetY += prevChanY;
 				offsetY_gp += prevChanY_gp;
-				prevChanY    = detectors[i]->getTotalNumberOfChannels(Y);
-				prevChanY_gp = detectors[i]->getTotalNumberOfChannelsInclGapPixels(Y);
-				numY += detectors[i]->getTotalNumberOfChannels(Y);
-				numY_gp += detectors[i]->getTotalNumberOfChannelsInclGapPixels(Y);
-				maxY += detectors[i]->getMaxNumberOfChannels(Y);
-				maxY_gp += detectors[i]->getMaxNumberOfChannelsInclGapPixels(Y);
+				prevChanY    = (*it)->getTotalNumberOfChannels(Y);
+				prevChanY_gp = (*it)->getTotalNumberOfChannelsInclGapPixels(Y);
+				numY += (*it)->getTotalNumberOfChannels(Y);
+				numY_gp += (*it)->getTotalNumberOfChannelsInclGapPixels(Y);
+				maxY += (*it)->getMaxNumberOfChannels(Y);
+				maxY_gp += (*it)->getMaxNumberOfChannelsInclGapPixels(Y);
 				++thisMultiDetector->numberOfDetector[Y];
 #ifdef VERBOSE
 cout << "incrementing in y direction" << endl;
@@ -589,33 +771,33 @@ cout << "incrementing in y direction" << endl;
 
 			//incrementing in x direction
 			else {
-				if ((maxChanX > 0) && ((offsetX + prevChanX + detectors[i]->getTotalNumberOfChannels(X)) > maxChanX))
-					cout << "\nDetector[" << i << "] exceeds maximum channels allowed for complete detector set in X dimension!" << endl;
+				if ((maxChanX > 0) && ((offsetX + prevChanX + (*it)->getTotalNumberOfChannels(X)) > maxChanX))
+					cout << "\nDetector[" << currentIndex << "] exceeds maximum channels allowed for complete detector set in X dimension!" << endl;
 				offsetY      = 0;
 				offsetY_gp   = 0;
-				prevChanY    = detectors[i]->getTotalNumberOfChannels(Y);
-				prevChanY_gp = detectors[i]->getTotalNumberOfChannelsInclGapPixels(Y);
+				prevChanY    = (*it)->getTotalNumberOfChannels(Y);
+				prevChanY_gp = (*it)->getTotalNumberOfChannelsInclGapPixels(Y);
 				numY         = 0; //assuming symmetry with this statement. whats on 1st column should be on 2nd column
 				numY_gp      = 0;
 				maxY         = 0;
 				maxY_gp      = 0;
 				offsetX += prevChanX;
 				offsetX_gp += prevChanX_gp;
-				prevChanX    = detectors[i]->getTotalNumberOfChannels(X);
-				prevChanX_gp = detectors[i]->getTotalNumberOfChannelsInclGapPixels(X);
-				numX += detectors[i]->getTotalNumberOfChannels(X);
-				numX_gp += detectors[i]->getTotalNumberOfChannelsInclGapPixels(X);
-				maxX += detectors[i]->getMaxNumberOfChannels(X);
-				maxX_gp += detectors[i]->getMaxNumberOfChannelsInclGapPixels(X);
+				prevChanX    = (*it)->getTotalNumberOfChannels(X);
+				prevChanX_gp = (*it)->getTotalNumberOfChannelsInclGapPixels(X);
+				numX += (*it)->getTotalNumberOfChannels(X);
+				numX_gp += (*it)->getTotalNumberOfChannelsInclGapPixels(X);
+				maxX += (*it)->getMaxNumberOfChannels(X);
+				maxX_gp += (*it)->getMaxNumberOfChannelsInclGapPixels(X);
 				++thisMultiDetector->numberOfDetector[X];
 #ifdef VERBOSE
 cout << "incrementing in x direction" << endl;
 #endif
 			}
 
-			double bytesperchannel        = (double)detectors[i]->getDataBytes() / (double)(detectors[i]->getMaxNumberOfChannels(X) * detectors[i]->getMaxNumberOfChannels(Y));
-			fdef VERBOSE
-			cout << "Detector[" << i << "] has offsets (" << thisMultiDetector->offsetX[i] << ", " << thisMultiDetector->offsetY[i] << ")" << endl;
+			double bytesperchannel        = (double)(*it)->getDataBytes() / (double)((*it)->getMaxNumberOfChannels(X) * (*it)->getMaxNumberOfChannels(Y));
+#ifdef VERBOSE
+			cout << "Detector[" << currentIndex << "] has offsets (" << thisMultiDetector->offsetX[currentIndex] << ", " << thisMultiDetector->offsetY[currentIndex] << ")" << endl;
 #endif
 			//offsetY has been reset sometimes and offsetX the first time, but remember the highest values
 			if (numX > thisMultiDetector->numberOfChannel[X])
@@ -634,7 +816,6 @@ cout << "incrementing in x direction" << endl;
 				thisMultiDetector->maxNumberOfChannelInclGapPixels[X] = maxX_gp;
 			if (maxY_gp > thisMultiDetector->maxNumberOfChannelInclGapPixels[Y])
 				thisMultiDetector->maxNumberOfChannelInclGapPixels[Y] = maxY_gp;
-		}
 	}
 #ifdef VERBOSE
 	cout << "Number of Channels in X direction:" << thisMultiDetector->numberOfChannel[X] << endl;
@@ -648,13 +829,249 @@ cout << "incrementing in x direction" << endl;
 
 
 
+int multiSlsDetector::decodeNMod(int i, int& id, int& im)
+{
+#ifdef VERBOSE
+    cout << " Module " << i << " belongs to detector " << id << endl;
+    ;
+    cout << getMaxMods();
+#endif
+
+    if (i < 0 || i >= getMaxMods()) {
+        id = -1;
+        im = -1;
+#ifdef VERBOSE
+        cout << " A---------" << id << " position " << im << endl;
+#endif
+
+        return -1;
+    }
+    int nm;
+    for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
+    	nm = (*it)->getNMods();
+    	if (nm > i) {
+    		id = (it - detectors.begin());
+    		im = i;
+#ifdef VERBOSE
+    		cout << " B---------" << id << " position " << im << endl;
+#endif
+    		return im;
+    	} else {
+    		i -= nm;
+    	}
+    }
+    id = -1;
+    im = -1;
+#ifdef VERBOSE
+    cout << " C---------" << id << " position " << im << endl;
+#endif
+    return -1;
+}
+
+
+int multiSlsDetector::setOnline(int off)
+{
+    if (off != GET_ONLINE_FLAG)
+        thisMultiDetector->onlineFlag = parallelCallDetectorMember(&slsDetector::setOnline, off);
+    return thisMultiDetector->onlineFlag;
+}
+
+
+string multiSlsDetector::checkOnline()
+{
+    string offlineDetectors = "";
+    for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
+    	string tmp = (*it)->checkOnline();
+    	if (!tmp.empty())
+    		offlineDetectors += tmp + "+";
+    }
+    return offlineDetectors;
+}
+
+
+int multiSlsDetector::activate(int const enable)
+{
+    return callDetectorMember(&slsDetector::activate, enable);
+}
+
+
+int multiSlsDetector::readConfigurationFile(string const fname)
+{
+    freeSharedMemory();
+    clearAllErrorMask();
+
+    multiSlsDetectorClient* cmd;
+    string ans;
+    string str;
+    ifstream infile;
+    int iargval;
+    int interrupt = 0;
+    char* args[1000];
+
+    char myargs[1000][1000];
+
+    string sargname, sargval;
+    int iline = 0;
+    std::cout << "config file name " << fname << std::endl;
+    infile.open(fname.c_str(), ios_base::in);
+    if (infile.is_open()) {
+
+        while (infile.good() and interrupt == 0) {
+            sargname = "none";
+            sargval  = "0";
+            getline(infile, str);
+            ++iline;
+            str.erase(str.find('#'), str.end());
+#ifdef VERBOSE
+            std::cout << str << std::endl;
+#endif
+            if (str.length() < 2) {
+#ifdef VERBOSE
+                std::cout << "Empty line or Comment " << std::endl;
+#endif
+                continue;
+            } else {
+                istringstream ssstr(str);
+                iargval = 0;
+                while (ssstr.good()) {
+                	ssstr >> sargname;
+#ifdef VERBOSE
+                	std::cout << iargval << " " << sargname << std::endl;
+#endif
+                	strcpy(myargs[iargval], sargname.c_str());
+                	args[iargval] = myargs[iargval];
+#ifdef VERBOSE
+                	std::cout << "--" << iargval << " " << args[iargval] << std::endl;
+#endif
+                	++iargval;
+                }
+#ifdef VERBOSE
+                cout << endl;
+                for (int ia = 0; ia < iargval; ia++)
+                    cout << args[ia] << " ??????? ";
+                cout << endl;
+#endif
+                cmd = new multiSlsDetectorClient(iargval, args, PUT_ACTION, this);
+                delete cmd;
+            }
+            ++iline;
+        }
+
+        infile.close();
+    } else {
+        std::cout << "Error opening configuration file " << fname << " for reading" << std::endl;
+        setErrorMask(getErrorMask() | MULTI_CONFIG_FILE_ERROR);
+        return FAIL;
+    }
+#ifdef VERBOSE
+    std::cout << "Read configuration file of " << iline << " lines" << std::endl;
+#endif
+
+    setNumberOfModules(-1);
+    getMaxNumberOfModules();
+
+    if (getErrorMask()) {
+        int c;
+        cprintf(RED, "\n----------------\n Error Messages\n----------------\n%s\n",
+            getErrorMessage(c).c_str());
+        return FAIL;
+    }
+
+    return OK;
+}
+
+
+int multiSlsDetector::writeConfigurationFile(string const fname)
+{
+
+    string names[] = {
+        "detsizechan",
+        "hostname",
+        "master",
+        "sync",
+        "outdir",
+        "ffdir",
+        "headerbefore",
+        "headerafter",
+        "headerbeforepar",
+        "headerafterpar",
+        "badchannels",
+        "angconv",
+        "globaloff",
+        "binsize",
+        "threaded"
+    };
+
+    int nvar = 15;
+    char* args[100];
+    for (int ia = 0; ia < 100; ++ia) {
+        args[ia] = new char[1000];
+    }
+    int ret = OK, ret1 = OK;
+
+    ofstream outfile;
+    int iline = 0;
+
+    outfile.open(fname.c_str(), ios_base::out);
+    if (outfile.is_open()) {
+
+        slsDetectorCommand* cmd = new slsDetectorCommand(this);
+
+        // complete size of detector
+        cout << iline << " " << names[iline] << endl;
+        strcpy(args[0], names[iline].c_str());
+        outfile << names[iline] << " " << cmd->executeLine(1, args, GET_ACTION) << std::endl;
+        ++iline;
+
+        // hostname of the detectors
+        cout << iline << " " << names[iline] << endl;
+        strcpy(args[0], names[iline].c_str());
+        outfile << names[iline] << " " << cmd->executeLine(1, args, GET_ACTION) << std::endl;
+        ++iline;
+
+        // single detector configuration
+        for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
+        	outfile << endl;
+        	ret1 = detectors[i]->writeConfigurationFile(outfile, (it - detectors.begin()));
+        	if (detectors[i]->getErrorMask())
+        		setErrorMask(getErrorMask() | (1 << (it - detectors.begin())));
+        	if (ret1 == FAIL)
+        		ret = FAIL;
+        }
+
+        outfile << endl;
+        //other configurations
+        while (iline < nvar) {
+            cout << iline << " " << names[iline] << endl;
+            strcpy(args[0], names[iline].c_str());
+            outfile << names[iline] << " " << cmd->executeLine(1, args, GET_ACTION) << std::endl;
+            ++iline;
+        }
+
+        delete cmd;
+        outfile.close();
+#ifdef VERBOSE
+        std::cout << "wrote " << iline << " lines to configuration file " << std::endl;
+#endif
+    } else {
+        std::cout << "Error opening configuration file " << fname << " for writing" << std::endl;
+        setErrorMask(getErrorMask() | MULTI_CONFIG_FILE_ERROR);
+        ret = FAIL;
+    }
+
+    for (int ia = 0; ia < 100; ++ia) {
+        delete[] args[ia];
+    }
+
+    return ret;
+}
+
 
 
 
 
 int multiSlsDetector::setMaster(int i)
 {
-
 	int ret = -1, slave = 0;
 	masterFlags f;
 #ifdef VERBOSE
@@ -669,40 +1086,38 @@ int multiSlsDetector::setMaster(int i)
 		if (detectors[i]->getErrorMask())
 			setErrorMask(getErrorMask() | (1 << i));
 
-		for (int id = 0; id < thisMultiDetector->numberOfDetectors; ++id) {
-			if (i != id) {
+		for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
+			int currentIndex = (it - detectors.begin());
+			if (i != currentIndex) {
 #ifdef VERBOSE
-					cout << "detector position " << id << " ";
+					cout << "detector position " << currentIndex << " ";
 #endif
-					detectors[id]->setMaster(IS_SLAVE);
-					if (detectors[id]->getErrorMask())
-						setErrorMask(getErrorMask() | (1 << id));
+					(*it)->setMaster(IS_SLAVE);
+					if ((*it)->getErrorMask())
+						setErrorMask(getErrorMask() | (1 << currentIndex));
 			}
 		}
 
 	} else if (i == -2) {
-		for (int id = 0; id < thisMultiDetector->numberOfDetectors; ++id) {
-			if (detectors[id]) {
+		for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
 #ifdef VERBOSE
-				cout << "detector position " << id << " ";
+				cout << "detector position " << (it - detectors.begin()) << " ";
 #endif
-				detectors[id]->setMaster(NO_MASTER);
-				if (detectors[id]->getErrorMask())
-					setErrorMask(getErrorMask() | (1 << id));
-			}
+				(*it)->setMaster(NO_MASTER);
+				if ((*it)->getErrorMask())
+					setErrorMask(getErrorMask() | (1 << (it - detectors.begin())));
 		}
 	}
 
 	// check return value
 
-	for (int id = 0; id < thisMultiDetector->numberOfDetectors; ++id) {
-		if (detectors[id]) {
+	for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
 #ifdef VERBOSE
-			cout << "detector position " << id << " ";
+			cout << "detector position " << (it - detectors.begin()) << " ";
 #endif
-			f = detectors[id]->setMaster(GET_MASTER);
-			if (detectors[id]->getErrorMask())
-				setErrorMask(getErrorMask() | (1 << id));
+			f = (*it)->setMaster(GET_MASTER);
+			if ((*it)->getErrorMask())
+				setErrorMask(getErrorMask() | (1 << (it - detectors.begin())));
 
 			switch (f) {
 			case NO_MASTER:
@@ -711,7 +1126,7 @@ int multiSlsDetector::setMaster(int i)
 				break;
 			case IS_MASTER:
 				if (ret == -1)
-					ret = id;
+					ret = (it - detectors.begin());
 				else
 					ret = -2;
 				break;
@@ -721,7 +1136,7 @@ int multiSlsDetector::setMaster(int i)
 			default:
 				ret = -2;
 			}
-		}
+
 	}
 	if (slave > 0 && ret < 0)
 		ret = -2;
@@ -734,35 +1149,20 @@ int multiSlsDetector::setMaster(int i)
 	return thisMultiDetector->masterPosition;
 }
 
-//   enum synchronyzationMode {
-//     GET_SYNCHRONIZATION_MODE=-1, /**< the multidetector will return its synchronization mode */
-//     NONE, /**< all detectors are independent (no cabling) */
-//     MASTER_GATES, /**< the master gates the other detectors */
-//     MASTER_TRIGGERS, /**< the master triggers the other detectors */
-//     SLAVE_STARTS_WHEN_MASTER_STOPS /**< the slave acquires when the master finishes, to avoid deadtime */
-//   }
 
-/**
-    Sets/gets the synchronization mode of the various detectors
-    \param sync syncronization mode
-    \returns current syncronization mode
-*/
 slsDetectorDefs::synchronizationMode multiSlsDetector::setSynchronization(synchronizationMode sync)
 {
-
     synchronizationMode ret = GET_SYNCHRONIZATION_MODE, ret1 = GET_SYNCHRONIZATION_MODE;
 
-    for (int id = 0; id < thisMultiDetector->numberOfDetectors; ++id) {
-        if (detectors[id]) {
-            ret1 = detectors[id]->setSynchronization(sync);
-            if (detectors[id]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << id));
+    for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
+    	ret1 = (*it)->setSynchronization(sync);
+    	if ((*it)->getErrorMask())
+    		setErrorMask(getErrorMask() | (1 << (it - detectors.begin())));
 
-            if (id == 0)
-                ret = ret1;
-            else if (ret != ret1)
-                ret = GET_SYNCHRONIZATION_MODE;
-        }
+    	if (id == 0)
+    		ret = ret1;
+    	else if (ret != ret1)
+    		ret = GET_SYNCHRONIZATION_MODE;
     }
 
     thisMultiDetector->syncMode = ret;
@@ -770,35 +1170,42 @@ slsDetectorDefs::synchronizationMode multiSlsDetector::setSynchronization(synchr
     return thisMultiDetector->syncMode;
 }
 
-int multiSlsDetector::setOnline(int off)
-{
-    if (off != GET_ONLINE_FLAG)
-        thisMultiDetector->onlineFlag = parallelCallDetectorMember(&slsDetector::setOnline, off);
-    return thisMultiDetector->onlineFlag;
-};
 
-string multiSlsDetector::checkOnline()
+
+
+
+
+
+
+
+
+
+
+
+int64_t multiSlsDetector::getId(idMode mode, int imod)
 {
-    string offlineDetectors = "";
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-        if (detectors[idet]) {
-            string tmp = detectors[idet]->checkOnline();
-            if (!tmp.empty())
-                offlineDetectors += tmp + "+";
+
+    int id, im;
+    int64_t ret;
+
+    if (decodeNMod(imod, id, im) >= 0) {
+        if (detectors[id]) {
+            ret = detectors[id]->getId(mode, im);
+            if (detectors[id]->getErrorMask())
+                setErrorMask(getErrorMask() | (1 << id));
+            return ret;
         }
     }
-    return offlineDetectors;
+
+    return -1;
 }
 
-int multiSlsDetector::activate(int const enable)
-{
-    return callDetectorMember(&slsDetector::activate, enable);
-}
 
-int multiSlsDetector::exists()
-{
-    return thisMultiDetector->alreadyExisting;
-}
+
+
+
+
+
 
 // Initialization functions
 int multiSlsDetector::getThresholdEnergy(int pos)
@@ -2177,39 +2584,11 @@ int multiSlsDetector::getFlatFieldCorrection(double* corr, double* ecorr)
     return ff;
 }
 
-int multiSlsDetector::getNMods()
-{
-    int nm = 0;
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-        if (detectors[idet]) {
-            nm += detectors[idet]->getNMods();
-        }
-    }
-    return nm;
-}
 
-int multiSlsDetector::getNMod(dimension d)
-{
-    int nm = 0;
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-        if (detectors[idet]) {
-            nm += detectors[idet]->getNMod(d);
-        }
-    }
-    return nm;
-}
 
-int multiSlsDetector::getChansPerMod(int imod)
-{
-    int id = -1, im = -1;
-    decodeNMod(imod, id, im);
-    if (id >= 0) {
-        if (detectors[id]) {
-            return detectors[id]->getChansPerMod(im);
-        }
-    }
-    return -1;
-}
+
+
+
 
 int multiSlsDetector::getMoveFlag(int imod)
 {
@@ -3677,116 +4056,14 @@ int multiSlsDetector::setDynamicRange(int p)
     return ret;
 }
 
-int multiSlsDetector::getMaxMods()
-{
-    int ret = 0;
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-        if (detectors[idet])
-            ret += detectors[idet]->getMaxMods();
-    }
-    return ret;
-}
 
-int multiSlsDetector::getTotalNumberOfChannels()
-{
-    thisMultiDetector->numberOfChannels = 0;
-    for (int id = 0; id < thisMultiDetector->numberOfDetectors; ++id)
-        thisMultiDetector->numberOfChannels += detectors[id]->getTotalNumberOfChannels();
-    return thisMultiDetector->numberOfChannels;
-};
 
-//int multiSlsDetector::getTotalNumberOfChannels(dimension d){thisMultiDetector->numberOfChannel[d]=0; for (int id=0; id< thisMultiDetector->numberOfDetectors; ++id) thisMultiDetector->numberOfChannel[d]+=detectors[id]->getTotalNumberOfChannels(d); return thisMultiDetector->numberOfChannel[d];};
-int multiSlsDetector::getTotalNumberOfChannels(dimension d) { return thisMultiDetector->numberOfChannel[d]; };
 
-int multiSlsDetector::getTotalNumberOfChannelsInclGapPixels(dimension d) { return thisMultiDetector->numberOfChannelInclGapPixels[d]; }
 
-int multiSlsDetector::getMaxNumberOfChannels()
-{
-    thisMultiDetector->maxNumberOfChannels = 0;
-    for (int id = 0; id < thisMultiDetector->numberOfDetectors; ++id)
-        thisMultiDetector->maxNumberOfChannels += detectors[id]->getMaxNumberOfChannels();
-    return thisMultiDetector->maxNumberOfChannels;
-};
 
-// int multiSlsDetector::getMaxNumberOfChannels(dimension d){thisMultiDetector->maxNumberOfChannel[d]=0; for (int id=0; id< thisMultiDetector->numberOfDetectors; ++id) thisMultiDetector->maxNumberOfChannel[d]+=detectors[id]->getMaxNumberOfChannels(d);return thisMultiDetector->maxNumberOfChannel[d];};
-int multiSlsDetector::getMaxNumberOfChannels(dimension d) { return thisMultiDetector->maxNumberOfChannel[d]; };
 
-int multiSlsDetector::getMaxNumberOfChannelsInclGapPixels(dimension d) { return thisMultiDetector->maxNumberOfChannelInclGapPixels[d]; };
 
-int multiSlsDetector::getMaxMod(dimension d)
-{
 
-    int ret = 0, ret1;
-
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-        if (detectors[idet]) {
-            ret1 = detectors[idet]->getNMaxMod(d);
-#ifdef VERBOSE
-            cout << "detector " << idet << " maxmods " << ret1 << " in direction " << d << endl;
-#endif
-            ret += ret1;
-        }
-    }
-#ifdef VERBOSE
-    cout << "max mods in direction " << d << " is " << ret << endl;
-#endif
-
-    return ret;
-}
-
-int multiSlsDetector::getMaxNumberOfModules(dimension d)
-{
-    int ret = 0, ret1;
-
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-        if (detectors[idet]) {
-            ret1 = detectors[idet]->getMaxNumberOfModules(d);
-            ret += ret1;
-        }
-    }
-    return ret;
-}
-
-int multiSlsDetector::setNumberOfModules(int p, dimension d)
-{
-
-    int ret = 0; //, ret1;
-    int nm, mm, nt = p;
-
-    thisMultiDetector->dataBytes              = 0;
-    thisMultiDetector->dataBytesInclGapPixels = 0;
-    thisMultiDetector->numberOfChannels       = 0;
-
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-
-        //   cout << "detector " << idet << endl;
-        if (detectors[idet]) {
-            if (p < 0)
-                nm = p;
-            else {
-                mm = detectors[idet]->getMaxNumberOfModules();
-                //mm=detectors[idet]->getMaxMods();
-                if (nt > mm) {
-                    nm = mm;
-                    nt -= nm;
-                } else {
-                    nm = nt;
-                    nt -= nm;
-                }
-            }
-            ret += detectors[idet]->setNumberOfModules(nm);
-            if (detectors[idet]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << idet));
-            thisMultiDetector->dataBytes += detectors[idet]->getDataBytes();
-            thisMultiDetector->dataBytesInclGapPixels += detectors[idet]->getDataBytesInclGapPixels();
-            thisMultiDetector->numberOfChannels += detectors[idet]->getTotalNumberOfChannels();
-        }
-    }
-
-    if (p != -1)
-        updateOffsets();
-    return ret;
-}
 
 int multiSlsDetector::getFlippedData(dimension d)
 {
@@ -3819,64 +4096,7 @@ int multiSlsDetector::enableGapPixels(int val)
     return ret;
 }
 
-int multiSlsDetector::decodeNMod(int i, int& id, int& im)
-{
-#ifdef VERBOSE
-    cout << " Module " << i << " belongs to detector " << id << endl;
-    ;
-    cout << getMaxMods();
-#endif
 
-    if (i < 0 || i >= getMaxMods()) {
-        id = -1;
-        im = -1;
-#ifdef VERBOSE
-        cout << " A---------" << id << " position " << im << endl;
-#endif
-
-        return -1;
-    }
-    int nm;
-    for (int idet = 0; idet < thisMultiDetector->numberOfDetectors; ++idet) {
-        if (detectors[idet]) {
-            nm = detectors[idet]->getNMods();
-            if (nm > i) {
-                id = idet;
-                im = i;
-#ifdef VERBOSE
-                cout << " B---------" << id << " position " << im << endl;
-#endif
-                return im;
-            } else {
-                i -= nm;
-            }
-        }
-    }
-    id = -1;
-    im = -1;
-#ifdef VERBOSE
-    cout << " C---------" << id << " position " << im << endl;
-#endif
-    return -1;
-}
-
-int64_t multiSlsDetector::getId(idMode mode, int imod)
-{
-
-    int id, im;
-    int64_t ret;
-
-    if (decodeNMod(imod, id, im) >= 0) {
-        if (detectors[id]) {
-            ret = detectors[id]->getId(mode, im);
-            if (detectors[id]->getErrorMask())
-                setErrorMask(getErrorMask() | (1 << id));
-            return ret;
-        }
-    }
-
-    return -1;
-}
 
 int multiSlsDetector::digitalTest(digitalTestMode mode, int imod)
 {
@@ -4349,204 +4569,7 @@ int multiSlsDetector::printReceiverConfiguration()
     return ret1;
 }
 
-int multiSlsDetector::readConfigurationFile(string const fname)
-{
 
-    int nd = thisMultiDetector->numberOfDetectors;
-
-    for (int i = 0; i < nd; ++i) {
-        if (detectors[i]) {
-            detectors[i]->freeSharedMemory();
-        }
-    }
-    thisMultiDetector->numberOfDetectors = 0;
-
-    multiSlsDetectorClient* cmd;
-
-    setAcquiringFlag(false);
-    clearAllErrorMask();
-
-    string ans;
-    string str;
-    ifstream infile;
-    int iargval;
-    int interrupt = 0;
-    char* args[1000];
-
-    char myargs[1000][1000];
-
-    string sargname, sargval;
-    int iline = 0;
-    std::cout << "config file name " << fname << std::endl;
-    infile.open(fname.c_str(), ios_base::in);
-    if (infile.is_open()) {
-
-        while (infile.good() and interrupt == 0) {
-            sargname = "none";
-            sargval  = "0";
-            getline(infile, str);
-            ++iline;
-#ifdef VERBOSE
-            std::cout << str << std::endl;
-#endif
-            if (str.find('#') != string::npos) {
-#ifdef VERBOSE
-                std::cout << "Line is a comment " << std::endl;
-                std::cout << str << std::endl;
-#endif
-                continue;
-            } else if (str.length() < 2) {
-#ifdef VERBOSE
-                std::cout << "Empty line " << std::endl;
-#endif
-                continue;
-            } else {
-                istringstream ssstr(str);
-                iargval = 0;
-                while (ssstr.good()) {
-                    ssstr >> sargname;
-                    //if (ssstr.good()) {
-#ifdef VERBOSE
-                    std::cout << iargval << " " << sargname << std::endl;
-#endif
-
-                    strcpy(myargs[iargval], sargname.c_str());
-                    args[iargval] = myargs[iargval];
-
-#ifdef VERBOSE
-                    std::cout << "--" << iargval << " " << args[iargval] << std::endl;
-#endif
-
-                    ++iargval;
-                    //}
-                }
-
-#ifdef VERBOSE
-                cout << endl;
-                for (int ia = 0; ia < iargval; ia++)
-                    cout << args[ia] << " ??????? ";
-                cout << endl;
-#endif
-                cmd = new multiSlsDetectorClient(iargval, args, PUT_ACTION, this);
-                delete cmd;
-            }
-            ++iline;
-        }
-
-        infile.close();
-
-        //if(getDetectorsType() != MYTHEN)
-        //	printReceiverConfiguration();
-
-    } else {
-        std::cout << "Error opening configuration file " << fname << " for reading" << std::endl;
-        setErrorMask(getErrorMask() | MULTI_CONFIG_FILE_ERROR);
-        return FAIL;
-    }
-#ifdef VERBOSE
-    std::cout << "Read configuration file of " << iline << " lines" << std::endl;
-#endif
-
-    setNumberOfModules(-1);
-    getMaxNumberOfModules();
-
-    if (getErrorMask()) {
-        int c;
-        cprintf(RED, "\n----------------\n Error Messages\n----------------\n%s\n",
-            getErrorMessage(c).c_str());
-        return FAIL;
-    }
-
-    return OK;
-};
-
-int multiSlsDetector::writeConfigurationFile(string const fname)
-{
-
-    string names[] = {
-        "detsizechan",
-        "hostname",
-        "master",
-        "sync",
-        "outdir",
-        "ffdir",
-        "headerbefore",
-        "headerafter",
-        "headerbeforepar",
-        "headerafterpar",
-        "badchannels",
-        "angconv",
-        "globaloff",
-        "binsize",
-        "threaded"
-    };
-
-    int nvar = 15;
-    char* args[100];
-    for (int ia = 0; ia < 100; ++ia) {
-        args[ia] = new char[1000];
-    }
-    int ret = OK, ret1 = OK;
-
-    ofstream outfile;
-    int iline = 0;
-
-    outfile.open(fname.c_str(), ios_base::out);
-    if (outfile.is_open()) {
-
-        slsDetectorCommand* cmd = new slsDetectorCommand(this);
-
-        // complete size of detector
-        cout << iline << " " << names[iline] << endl;
-        strcpy(args[0], names[iline].c_str());
-        outfile << names[iline] << " " << cmd->executeLine(1, args, GET_ACTION) << std::endl;
-        ++iline;
-
-        // hostname of the detectors
-        cout << iline << " " << names[iline] << endl;
-        strcpy(args[0], names[iline].c_str());
-        outfile << names[iline] << " " << cmd->executeLine(1, args, GET_ACTION) << std::endl;
-        ++iline;
-
-        // single detector configuration
-        for (int i = 0; i < thisMultiDetector->numberOfDetectors; ++i) {
-            //    sprintf(ext,".det%d",i);
-            if (detectors[i]) {
-                outfile << endl;
-                ret1 = detectors[i]->writeConfigurationFile(outfile, i);
-                if (detectors[i]->getErrorMask())
-                    setErrorMask(getErrorMask() | (1 << i));
-                if (ret1 == FAIL)
-                    ret = FAIL;
-            }
-        }
-
-        outfile << endl;
-        //other configurations
-        while (iline < nvar) {
-            cout << iline << " " << names[iline] << endl;
-            strcpy(args[0], names[iline].c_str());
-            outfile << names[iline] << " " << cmd->executeLine(1, args, GET_ACTION) << std::endl;
-            ++iline;
-        }
-
-        delete cmd;
-        outfile.close();
-#ifdef VERBOSE
-        std::cout << "wrote " << iline << " lines to configuration file " << std::endl;
-#endif
-    } else {
-        std::cout << "Error opening configuration file " << fname << " for writing" << std::endl;
-        setErrorMask(getErrorMask() | MULTI_CONFIG_FILE_ERROR);
-        ret = FAIL;
-    }
-
-    for (int ia = 0; ia < 100; ++ia) {
-        delete[] args[ia];
-    }
-
-    return ret;
-}
 
 int multiSlsDetector::writeDataFile(string fname, double* data, double* err, double* ang, char dataformat, int nch)
 {

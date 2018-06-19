@@ -4580,27 +4580,6 @@ int slsDetector::startAndReadAllNoWait(){
   return FAIL;
 };
 
-// int* slsDetector::getDataFromDetectorNoWait() {
-//   int *retval=getDataFromDetector();
-//   if (thisDetector->onlineFlag==ONLINE_FLAG) {
-//     if (controlSocket) {
-//       if (retval==NULL){
-// 	disconnectControl();
-
-// #ifdef VERBOSE
-//   std::cout<< "Run finished "<< std::endl;
-// #endif
-//   } else {
-// #ifdef VERBOSE
-//     std::cout<< "Frame received "<< std::endl;
-// #endif
-//   }
-//     }
-//   }
-//   return retval; // check what we return!
-// };
-
-
 
 
 /*

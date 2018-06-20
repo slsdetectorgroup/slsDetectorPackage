@@ -4220,6 +4220,24 @@ int multiSlsDetector::getFlatFieldCorrection(double* corr, double* ecorr)
 	return ff;
 }
 
+int multiSlsDetector::flatFieldCorrect(double* datain, double* errin, double* dataout, double* errout)
+{
+	int ichdet   = 0;
+	double* perr = errin; //*pdata,
+	for (int idet = 0; idet < detectors.size(); ++idet) {
+#ifdef VERBOSE
+		cout << " detector " << idet << " offset " << ichdet << endl;
+#endif
+		if (errin)
+			perr += ichdet;
+		detectors[idet]->flatFieldCorrect(datain + ichdet, perr,
+				dataout + ichdet, errout + ichdet);
+		if (detectors[idet]->getErrorMask())
+			setErrorMask(getErrorMask() | (1 << idet));
+		ichdet += detectors[idet]->getTotalNumberOfChannels();
+	}
+	return 0;
+}
 
 int multiSlsDetector::setBadChannelCorrection(string fname)
 {
@@ -4450,25 +4468,6 @@ angleConversionConstant* multiSlsDetector::getAngularConversionPointer(int imod)
 	return NULL;
 }
 
-
-int multiSlsDetector::flatFieldCorrect(double* datain, double* errin, double* dataout, double* errout)
-{
-	int ichdet   = 0;
-	double* perr = errin; //*pdata,
-	for (int idet = 0; idet < detectors.size(); ++idet) {
-#ifdef VERBOSE
-		cout << " detector " << idet << " offset " << ichdet << endl;
-#endif
-		if (errin)
-			perr += ichdet;
-		detectors[idet]->flatFieldCorrect(datain + ichdet, perr,
-				dataout + ichdet, errout + ichdet);
-		if (detectors[idet]->getErrorMask())
-			setErrorMask(getErrorMask() | (1 << idet));
-		ichdet += detectors[idet]->getTotalNumberOfChannels();
-	}
-	return 0;
-}
 
 int multiSlsDetector::printReceiverConfiguration()
 {

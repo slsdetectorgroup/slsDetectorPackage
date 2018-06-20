@@ -1039,154 +1039,183 @@ public:
 	 */
 	int setSpeed(speedVariable sp, int value=-1);
 
-
-
-
-
-
 	/**
-      set/get dynamic range and updates the number of dataBytes
-      \param n dynamic range (-1 get)
-      \param pos detector position (-1 all detectors)
-      \returns current dynamic range
-      updates the size of the data expected from the detector
-      \sa sharedSlsDetector
+	 * Set/get dynamic range and updates the number of dataBytes
+	 * (Eiger: If i is 32, also sets clkdivider to 2, if 16, sets clkdivider to 1)
+	 * @param i dynamic range (-1 get)
+	 * @returns current dynamic range
+	 * \sa sharedSlsDetector
 	 */
-	int setDynamicRange(int n, int pos);
-
 	int setDynamicRange(int i=-1);
 
+	/**
+	 * Recalculated number of data bytes for multi detector
+	 * @returns tota number of data bytes for multi detector
+	 */
 	int getDataBytes();
 
-
 	/**
-     set dacs value
-     \param val value (in V)
-     \param index DAC index
-     \param mV 0 in dac units or 1 in mV
-     \param imod module number (if -1 alla modules)
-     \returns current DAC value
+	 * Set/get dacs value
+	 * @param val value (in V)
+	 * @param index DAC index
+	 * @param mV 0 in dac units or 1 in mV
+	 * @param imod module number (if -1 all modules)
+	 * @returns current DAC value
 	 */
 	dacs_t setDAC(dacs_t val, dacIndex index , int mV, int imod=-1);
 
 	/**
-     set dacs value
-     \param val value (in V)
-     \param index DAC index
-     \param imod module number (if -1 alla modules)
-     \returns current DAC value (temperature for eiger and jungfrau in millidegrees)
+	 * Get adc value
+	 * @param index adc(DAC) index
+	 * @param imod module number (if -1 all modules)
+	 * @returns current adc value (temperature for eiger and jungfrau in millidegrees)
 	 */
 	dacs_t getADC(dacIndex index, int imod=-1);
 
+	/**
+	 * Set/get timing mode
+	 * @param pol timing mode (-1 gets)
+	 * @returns current timing mode
+	 */
 	externalCommunicationMode setExternalCommunicationMode(externalCommunicationMode pol=GET_EXTERNAL_COMMUNICATION_MODE);
 
+	/**
+	 * Set/get external signal flags (to specify triggerinrising edge etc) (Gotthard, Mythen)
+	 * @param pol external signal flag (-1 gets)
+	 * @param signalindex singal index (0 - 3)
+	 * @returns current timing mode
+	 */
 	externalSignalFlag setExternalSignalFlags(externalSignalFlag pol=GET_EXTERNAL_SIGNAL_FLAG , int signalindex=0);
 
+	/**
+	 * Set/get readout flags (Eiger, Mythen)
+	 * @param flag readout flag (Eiger options: parallel, nonparallel, safe etc.) (-1 gets)
+	 * @returns readout flag
+	 */
 	int setReadOutFlags(readOutFlags flag=GET_READOUT_FLAGS);
 
-
-
+	/**
+	 * Write in a register. For Advanced users
+	 * @param addr address of register
+	 * @param val value to write into register
+	 * @returns value read after writing
+	 */
 	uint32_t writeRegister(uint32_t addr, uint32_t val);
 
+	/**
+	 * Read from a register. For Advanced users
+	 * @param addr address of register
+	 * @returns value read from register
+	 */
 	uint32_t readRegister(uint32_t addr);
 
-
 	/**
-      sets a bit in a register
-      \param addr address
-      \param n nth bit ranging from 0 to 31
-      \returns current register value
-
-      DO NOT USE!!! ONLY EXPERT USER!!!
+	 * Set bit in a register. For Advanced users
+	 * @param addr address of register
+	 * @param n nth bit
+	 * @returns value read from register
 	 */
 	uint32_t setBit(uint32_t addr, int n);
 
-
 	/**
-      clear a bit in a register
-      \param addr address
-      \param n nth bit ranging from 0 to 31
-      \returns current register value
-
-      DO NOT USE!!! ONLY EXPERT USER!!!
+	 * Clear bit in a register. For Advanced users
+	 * @param addr address of register
+	 * @param n nth bit
+	 * @returns value read from register
 	 */
 	uint32_t clearBit(uint32_t addr, int n);
 
 	/**
-     sets the network parameters
-     must restart streaming in client/receiver if to do with zmq after calling this function
-     \param i network parameter type
-     \param s value to be set
-     \returns parameter
-
+	 * Set network parameter
+	 * @param p network parameter type
+	 * @param s network parameter value
+	 * @returns network parameter value set (from getNetworkParameter)
 	 */
-	std::string setNetworkParameter(networkParameter, std::string);
+	std::string setNetworkParameter(networkParameter p, std::string s);
 
+	/**
+	 * Get network parameter
+	 * @param p network parameter type
+	 * @returns network parameter value set (from getNetworkParameter)
+	 */
 	std::string getNetworkParameter(networkParameter);
 
-
-
-
-
+	/**
+	 * Execute a digital test (Gotthard, Mythen)
+	 * @param mode testmode type
+	 * @param imod module index (-1 for all)
+	 * @returns result of test
+	 */
 	int digitalTest(digitalTestMode mode, int imod=0);
+
+	/**
+	 * Execute trimming (Mythen)
+	 * @param mode trimming mode type
+	 * @param par1 parameter 1
+	 * @param par2 parameter 2
+	 * @param imod module index (-1 for all)
+	 * @returns result of trimming
+	 */
 	int executeTrimming(trimMode mode, int par1, int par2, int imod=-1);
 
 	/**
-     Loads dark image or gain image to the detector
-     \param index can be DARK_IMAGE or GAIN_IMAGE
-     \fname file name to load data from
-     \returns OK or FAIL
+	 * Load dark or gain image to detector (Gotthard)
+	 * @param index image type
+	 * @param fname file name from which to load image
+	 * @returns OK or FAIL
 	 */
 	int loadImageToDetector(imageType index,std::string const fname);
 
-
-
 	/**
-     writes the counter memory block from the detector
-     \param startACQ is 1 to start acquisition after reading counter
-     \param fname file name to load data from
-     \returns OK or FAIL
+	 * Writes the counter memory block from the detector (Gotthard)
+	 * @param fname file name to load data from
+	 * @param startACQ is 1 to start acquisition after reading counter
+	 * @returns OK or FAIL
 	 */
 	int writeCounterBlockFile(std::string const fname,int startACQ=0);
 
-
 	/**
-     Resets counter in detector
-     \param startACQ is 1 to start acquisition after resetting counter
-     \returns OK or FAIL
+	 * Resets counter in detector (Gotthard)
+	 * @param startACQ is 1 to start acquisition after resetting counter
+	 * @returns OK or FAIL
 	 */
 	int resetCounterBlock(int startACQ=0);
 
-	/** set/get counter bit in detector
+	/**
+	 * Set/get counter bit in detector (Gotthard)
 	 * @param i is -1 to get, 0 to reset and any other value to set the counter bit
-     /returns the counter bit in detector
+	 * @returns the counter bit in detector
 	 */
 	int setCounterBit(int i = -1);
 
-
 	/**
- 	 verifies that min is less than max
- 	 \param n number of rois
- 	 \param r array of rois
+	 * Ensures that min is less than max in both dimensions (Gotthard)
+	 * @param n number of rois
+	 * @param r array of rois
 	 */
 	void verifyMinMaxROI(int n, ROI r[]);
 
 	/**
-      set roi
-       \param n number of rois
-       \param roiLimits array of roi
-       \returns success or failure
+	 * Set ROI (Gotthard)
+	 * @param n number of rois
+	 * @param roiLimits array of roi
+	 * @returns OK or FAIL
 	 */
 	int setROI(int n=-1,ROI roiLimits[]=NULL);
 
 	/**
-   	get roi from each detector and convert it to the multi detector scale
-   	\param n number of rois
-   	\returns an array of multidetector's rois
+	 * Get ROI from each detector and convert it to the multi detector scale (Gotthard)
+	 * @param n number of rois
+	 * @returns OK or FAIL
 	 */
 	ROI* getROI(int &n);
 
-
+	/**
+	 * Write to ADC register (Gotthard, Jungfrau, ChipTestBoard). For expert users
+	 * @param addr address of adc register
+	 * @param val value
+	 * @returns return value  (mostly -1 as it can't read adc register)
+	 */
 	int writeAdcRegister(int addr, int val);
 
 	/**
@@ -1196,461 +1225,519 @@ public:
 	 */
 	int activate(int const enable=GET_ONLINE_FLAG);
 
-	/** returns the enable if data will be flipped across x or y axis
-	 *  \param d axis across which data is flipped
-	 *  returns 1 or 0
+	/**
+	 * Returns the enable if data will be flipped across x or y axis (Eiger)
+	 * @param d axis across which data is flipped
+	 * @returns 1 for flipped, else 0
 	 */
 	int getFlippedData(dimension d=X);
 
-	/** sets the enable which determines if data will be flipped across x or y axis
-	 *  \param d axis across which data is flipped
-	 *  \param value 0 or 1 to reset/set or -1 to get value
-	 *  \return enable flipped data across x or y axis
+	/**
+	 * Sets the enable which determines if
+	 * data will be flipped across x or y axis (Eiger)
+	 * @param d axis across which data is flipped
+	 * @param value 0 or 1 to reset/set or -1 to get value
+	 * @returns enable flipped data across x or y axis
 	 */
 	int setFlippedData(dimension d=X, int value=-1);
 
-
-	/** sets all the trimbits to a particular value
-      \param val trimbit value
-      \param imod module number, -1 means all modules
-      \returns OK or FAIL
+	/**
+	 * Sets all the trimbits to a particular value (Eiger)
+	 * @param val trimbit value
+	 * @param imod module number, -1 means all modules
+	 * @returns OK or FAIL
 	 */
 	int setAllTrimbits(int val, int imod=-1);
 
-
 	/**
-	 * Enable gap pixels, only for Eiger and for 8,16 and 32 bit mode. 4 bit mode gap pixels only in gui call back
+	 * Enable gap pixels, only for Eiger and for 8,16 and 32 bit mode. (Eiger)
+	 * 4 bit mode gap pixels only in gui call back
 	 * @param val 1 sets, 0 unsets, -1 gets
-	 * @return gap pixel enable or -1 for error
+	 * @returns gap pixel enable or -1 for error
 	 */
 	int enableGapPixels(int val=-1);
 
+	/**
+	 * Sets the number of trim energies and their value  (Eiger)
+	 * \sa sharedSlsDetector
+	 * @param nen number of energies
+	 * @param en array of energies
+	 * @returns number of trim energies
+	 */
 	int setTrimEn(int nen, int *en=NULL);
+
+	/**
+	 * Returns the number of trim energies and their value  (Eiger)
+	 * \sa sharedSlsDetector
+	 * @param en array of energies
+	 * @returns number of trim energies
+	 */
 	int getTrimEn(int *en=NULL);
 
 	/**
-	     Pulse Pixel
-	     \param n is number of times to pulse
-	     \param x is x coordinate
-	     \param y is y coordinate
-	     \returns OK or FAIL
-		 */
-		int pulsePixel(int n=0,int x=0,int y=0);
-
-		/**
-	     Pulse Pixel and move by a relative value
-	     \param n is number of times to pulse
-	     \param x is relative x value
-	     \param y is relative y value
-	     \returns OK or FAIL
-		 */
-		int pulsePixelNMove(int n=0,int x=0,int y=0);
-
-		/**
-	     Pulse Chip
-	     \param n is number of times to pulse
-	     \returns OK or FAIL
-		 */
-		int pulseChip(int n=0);
-
+	 * Pulse Pixel (Eiger)
+	 * @param n is number of times to pulse
+	 * @param x is x coordinate
+	 * @param y is y coordinate
+	 * @returns OK or FAIL
+	 */
+	int pulsePixel(int n=0,int x=0,int y=0);
 
 	/**
-     set/gets threshold temperature (Jungfrau only)
-     \param val value in millidegrees, -1 gets
-     \param imod module number, -1 is all
-     \returns threshold temperature in millidegrees
+	 * Pulse Pixel and move by a relative value (Eiger)
+	 * @param n is number of times to pulse
+	 * @param x is relative x value
+	 * @param y is relative y value
+	 * @returns OK or FAIL
+	 */
+	int pulsePixelNMove(int n=0,int x=0,int y=0);
+
+	/**
+	 * Pulse Chip (Eiger)
+	 * @param n is number of times to pulse
+	 * @returns OK or FAIL
+	 */
+	int pulseChip(int n=0);
+
+	/**
+	 * Set/gets threshold temperature (Jungfrau)
+	 * @param val value in millidegrees, -1 gets
+	 * @param imod module number, -1 is all
+	 * @returns threshold temperature in millidegrees
 	 */
 	int setThresholdTemperature(int val=-1, int imod=-1);
 
 	/**
-     enables/disables temperature control (Jungfrau only)
-     \param val value, -1 gets
-     \param imod module number, -1 is all
-     \returns temperature control enable
+	 * Enables/disables temperature control (Jungfrau)
+	 * @param val value, -1 gets
+	 * @param imod module number, -1 is all
+	 * @returns temperature control enable
 	 */
 	int setTemperatureControl(int val=-1, int imod=-1);
 
 	/**
-     Resets/ gets over-temperature event (Jungfrau only)
-     \param val value, -1 gets
-     \param imod module number, -1 is all
-     \returns over-temperature event
+	 * Resets/ gets over-temperature event (Jungfrau)
+	 * @param val value, -1 gets
+	 * @param imod module number, -1 is all
+	 * @returns over-temperature event
 	 */
 	int setTemperatureEvent(int val=-1, int imod=-1);
 
 	/**
-	 * set storage cell that stores first acquisition of the series (Jungfrau only)
-	 * \param value storage cell index. Value can be 0 to 15. (-1 gets)
-	 * \returns the storage cell that stores the first acquisition of the series
+	 * Set storage cell that stores first acquisition of the series (Jungfrau)
+	 * @param value storage cell index. Value can be 0 to 15. (-1 gets)
+	 * @returns the storage cell that stores the first acquisition of the series
 	 */
 	int setStoragecellStart(int pos=-1);
 
-
-	/** programs FPGA with pof file
-      \param fname file name
-      \returns OK or FAIL
+	/**
+	 * Programs FPGA with pof file (Jungfrau)
+	 * @param fname file name
+	 * @returns OK or FAIL
 	 */
 	int programFPGA(std::string fname);
 
-	/** resets FPGA
-      \returns OK or FAIL
+	/**
+	 * Resets FPGA (Jungfrau)
+	 * @returns OK or FAIL
 	 */
 	int resetFPGA();
 
-	/** power on/off the chip
-     \param ival on is 1, off is 0, -1 to get
-      \returns OK or FAIL
+	/**
+	 * Power on/off Chip (Jungfrau)
+	 * @param ival on is 1, off is 0, -1 to get
+	 * @returns OK or FAIL
 	 */
 	int powerChip(int ival= -1);
 
-	/** automatic comparator disable for Jungfrau only
-     \param ival on is 1, off is 0, -1 to get
-      \returns OK or FAIL
+	/**
+	 * Automatic comparator disable (Jungfrau)
+	 * @param ival on is 1, off is 0, -1 to get
+	 * @returns OK or FAIL
 	 */
 	int setAutoComparatorDisableMode(int ival= -1);
 
-
-
-
+	/**
+	 * Get Scan steps (Mythen)
+	 * @param index scan index
+	 * @param istep step index
+	 * @returns scan step value
+	 */
 	double getScanStep(int index, int istep);
 
-
 	/**
-     Returns the trimbits from the detector's shared memmory
-     \param retval is the array with the trimbits
-     \param fromDetector is true if the trimbits shared memory have to be uploaded from detector
-     \returns the total number of channels for the detector
+	 * Returns the trimbits from the detector's shared memmory (Mythen, Eiger)
+	 * @param retval is the array with the trimbits
+	 * @param fromDetector is true if the trimbits shared memory have to be
+	 * uploaded from detector
+	 * @returns total number of channels for the detector
 	 */
 	int getChanRegs(double* retval,bool fromDetector);
 
-
-
 	/**
-     configure channel
-     \param reg channel register
-     \param ichan channel number (-1 all)
-     \param ichip chip number (-1 all)
-     \param imod module number (-1 all)
-     \returns current register value
-     \sa ::sls_detector_channel
+	 * Configure channel (Mythen)
+	 * @param reg channel register
+	 * @param ichan channel number (-1 all)
+	 * @param ichip chip number (-1 all)
+	 * @param imod module number (-1 all)
+	 * \sa ::sls_detector_channel
+	 * @returns current register value
 	 */
 	int setChannel(int64_t reg, int ichan=-1, int ichip=-1, int imod=-1);
 
-
-
-
+	/**
+	 * Get Move Flag (Mythen)
+	 * @param imod module number (-1 all)
+	 * @param istep step index
+	 * @returns move flag
+	 */
 	int getMoveFlag(int imod);
 
+	/**
+	 * Fill Module mask for flat field corrections (Mythen)
+	 * @param mM array
+	 * @returns number of modules
+	 */
 	int fillModuleMask(int *mM);
 
-
-
-	/** Starts acquisition, calibrates pedestal and writes to fpga
-     /returns number of frames
+	/**
+	 * Calibrate Pedestal (ChipTestBoard)
+	 * Starts acquisition, calibrates pedestal and writes to fpga
+	 * @param frames number of frames
+	 * @returns number of frames
 	 */
 	int calibratePedestal(int frames = 0);
 
-
+	/**
+	 * Set Rate correction (Mythen, Eiger)
+	 * @param t dead time in ns - if 0 disable correction,
+	 * if >0 set dead time to t, if < 0 set deadtime to default dead time
+	 * for current settings
+	 * @returns 0 if rate correction disabled, >0 otherwise
+	 */
+	int setRateCorrection(double t=0);
 
 	/**
-	      set rate correction
-	      \param t dead time in ns - if 0 disable correction, if >0 set dead time to t, if <0 set deadtime to default dead time for current settings
-	      \returns 0 if rate correction disabled, >0 otherwise
-		 */
-		int setRateCorrection(double t=0);
-
-
-		/**
-	      get rate correction
-	      \param t reference for dead time
-	      \returns 0 if rate correction disabled, >0 otherwise
-		 */
-		int getRateCorrection(double &t);
-
-
-		/**
-	      get rate correction tau
-	      \returns 0 if rate correction disabled, otherwise the tau used for the correction
-		 */
-		double getRateCorrectionTau();
-		/**
-	      get rate correction
-	      \returns 0 if rate correction disabled, >0 otherwise
-		 */
-		int getRateCorrection();
-
-		/**
-	      rate correct data
-	      \param datain data array
-	      \param errin error array on data (if NULL will default to sqrt(datain)
-	      \param dataout array of corrected data
-	      \param errout error on corrected data (if not NULL)
-	      \returns 0
-		 */
-		int rateCorrect(double* datain, double *errin, double* dataout, double *errout);
-
-
-
-
-		/**
-	      set flat field corrections
-	      \param fname name of the flat field file (or "" if disable)
-	      \returns 0 if disable (or file could not be read), >0 otherwise
-		 */
-		int setFlatFieldCorrection(std::string fname="");
-
-		/**
-	      set flat field corrections
-	      \param corr if !=NULL the flat field corrections will be filled with corr (NULL usets ff corrections)
-	      \param ecorr if !=NULL the flat field correction errors will be filled with ecorr (1 otherwise)
-	      \returns 0 if ff correction disabled, >0 otherwise
-		 */
-		int setFlatFieldCorrection(double *corr, double *ecorr=NULL);
-
-		/**
-	      get flat field corrections
-	      \param corr if !=NULL will be filled with the correction coefficients
-	      \param ecorr if !=NULL will be filled with the correction coefficients errors
-	      \returns 0 if ff correction disabled, >0 otherwise
-		 */
-		int getFlatFieldCorrection(double *corr=NULL, double *ecorr=NULL);
-
-
-		/**
-	      set bad channels correction
-	      \param fname file with bad channel list ("" disable)
-	      \returns 0 if bad channel disabled, >0 otherwise
-		 */
-		int setBadChannelCorrection(std::string fname="");
-
-		int setBadChannelCorrection(int nch, int *chs, int ff);
-
-
-		/**
-	      get bad channels correction
-	      \param bad pointer to array that if bad!=NULL will be filled with the bad channel list
-	      \returns 0 if bad channel disabled or no bad channels, >0 otherwise
-		 */
-		int getBadChannelCorrection(int *bad=NULL);
-
-
-		int readAngularConversionFile(std::string fname);
-
-		int writeAngularConversion(std::string fname);
-
-		/**
-	      pure virtual function
-	      get angular conversion
-	      \param reference to diffractometer direction
-	      \param angconv array that will be filled with the angular conversion constants
-	      \returns 0 if angular conversion disabled, >0 otherwise
-	      \sa mythenDetector::getAngularConversion
-		 */
-		int getAngularConversion(int &direction,  angleConversionConstant *angconv=NULL) ;
-
-
-		/**
-	     sets the value of s angular conversion parameter
-	     \param c can be ANGULAR_DIRECTION, GLOBAL_OFFSET, FINE_OFFSET, BIN_SIZE
-	     \param v the value to be set
-	     \returns the actual value
-		 */
-
-		double setAngularConversionParameter(angleConversionParameter c, double v);
-
-		angleConversionConstant *getAngularConversionPointer(int imod=0);
-
-		/**
-	      flat field correct data
-	      \param datain data array
-	      \param errin error array on data (if NULL will default to sqrt(datain)
-	      \param dataout array of corrected data
-	      \param errout error on corrected data (if not NULL)
-	      \returns 0
-		 */
-		int flatFieldCorrect(double* datain, double *errin, double* dataout, double *errout);
-
-
-
-
-		/**
-	     Prints receiver configuration
-	     \returns OK or FAIL
-		 */
-		int printReceiverConfiguration();
-
+	 * Get rate correction (Mythen, Eiger)
+	 * @param t reference for dead time
+	 * @returns 0 if rate correction disabled, > 0 otherwise
+	 */
+	int getRateCorrection(double &t);
 
 	/**
-     calls setReceiverTCPSocket if online and sets the flag
+	 * Get rate correction tau (Mythen, Eiger)
+	 * @returns 0 if rate correction disabled, otherwise the tau used for the correction
+	 */
+	double getRateCorrectionTau();
+
+	/**
+	 * Get rate correction (Mythen, Eiger)
+	 * @returns 0 if rate correction disabled,  > 0 otherwise
+	 */
+	int getRateCorrection();
+
+	/**
+	 * Rate correct data (Mythen)
+	 * @param datain data array
+	 * @param errin error array on data (if NULL will default to sqrt(datain)
+	 * @param dataout array of corrected data
+	 * @param errout error on corrected data (if not NULL)
+	 * @returns 0
+	 */
+	int rateCorrect(double* datain, double *errin, double* dataout, double *errout);
+
+	/**
+	 * Set flat field corrections (Mythen)
+	 * @param fname name of the flat field file (or "" if disable)
+	 * @returns 0 if disable (or file could not be read), >0 otherwise
+	 */
+	int setFlatFieldCorrection(std::string fname="");
+
+	/**
+	 * Set flat field corrections (Mythen)
+	 * @param corr if !=NULL the flat field corrections will be filled with
+	 * corr (NULL usets ff corrections)
+	 * @param  ecorr if !=NULL the flat field correction errors will be filled
+	 * with ecorr (1 otherwise)
+	 * @returns 0 if ff correction disabled, >0 otherwise
+	 */
+	int setFlatFieldCorrection(double *corr, double *ecorr=NULL);
+
+	/**
+	 * Get flat field corrections (Mythen)
+	 * @param corr if !=NULL will be filled with the correction coefficients
+	 * @param ecorr if !=NULL will be filled with the correction coefficients errors
+	 * @returns 0 if ff correction disabled, >0 otherwise
+	 */
+	int getFlatFieldCorrection(double *corr=NULL, double *ecorr=NULL);
+
+	/**
+	 * Flat field correct data (Mythen)
+	 * @param datain data array
+	 * @param errin error array on data (if NULL will default to sqrt(datain)
+	 * @param dataout array of corrected data
+	 * @param errout error on corrected data (if not NULL)
+	 * @returns 0
+	 */
+	int flatFieldCorrect(double* datain, double *errin, double* dataout, double *errout);
+
+	/**
+	 * Set bad channels correction (Mythen)
+	 * @param fname file with bad channel list ("" disable)
+	 * @returns 0 if bad channel disabled, >0 otherwise
+	 */
+	int setBadChannelCorrection(std::string fname="");
+
+	/**
+	 * Set bad channels correction (Mythen)
+	 * @param nch number of bad channels
+	 * @param chs array of channels
+	 * @param ff 0 if normal bad channels, 1 if ff bad channels
+	 * @returns 0 if bad channel disabled, >0 otherwise
+	 */
+	int setBadChannelCorrection(int nch, int *chs, int ff);
+
+	/**
+	 * Get bad channels correction (Mythen)
+	 * @param bad pointer to array that if bad!=NULL will be filled with the
+	 * bad channel list
+	 * @returns 0 if bad channel disabled or no bad channels, >0 otherwise
+	 */
+	int getBadChannelCorrection(int *bad=NULL);
+
+	/**
+	 * Reads an angular conversion file (Mythen, Gotthard)
+	 * \sa angleConversionConstant mythenDetector::readAngularConversion
+	 * @param fname file to be read
+	 * @rreturns 0 if angular conversion disabled, >0 otherwise
+	 */
+	int readAngularConversionFile(std::string fname);
+
+	/**
+	 * Writes an angular conversion file (Mythen, Gotthard)
+	 * \sa angleConversionConstant mythenDetector::writeAngularConversion
+	 * @param fname file to be written
+	 * @returns 0 if angular conversion disabled, >0 otherwise
+	 */
+	int writeAngularConversion(std::string fname);
+
+	/**
+	 * Get angular conversion (Mythen, Gotthard)
+	 * \sa angleConversionConstant mythenDetector::getAngularConversion
+	 * @param direction reference to diffractometer
+	 * @param angconv array that will be filled with the angular conversion constants
+	 * @returns 0 if angular conversion disabled, >0 otherwise
+	 */
+	int getAngularConversion(int &direction,  angleConversionConstant *angconv=NULL) ;
+
+	/**
+	 * Sets the value of angular conversion parameter (Mythen, Gotthard)
+	 * @param c can be ANGULAR_DIRECTION, GLOBAL_OFFSET, FINE_OFFSET, BIN_SIZE
+	 * @param v the value to be set
+	 * @returns the actual value
+	 */
+	double setAngularConversionParameter(angleConversionParameter c, double v);
+
+	/**
+	 * Gets the value of angular conversion parameter (Mythen, Gotthard)
+	 * @param imod module index (-1 for all)
+	 * @returns the actual value
+	 */
+	angleConversionConstant *getAngularConversionPointer(int imod=0);
+
+	/**
+	 * Prints receiver configuration
+	 * @returns  OK or FAIL
+	 */
+	int printReceiverConfiguration();
+
+	/**
+	 * Sets up receiver socket if online and sets the flag
+	 * @param online online/offline flag (-1 gets)
+	 * @returns online/offline flag
 	 */
 	int setReceiverOnline(int const online=GET_ONLINE_FLAG);
 
 	/**
-     Checks if the receiver is really online
+	 * Checks if the receiver is really online
+	 * @returns empty string if all online, else concatenates hostnames of all
+	 * detectors that are offline
 	 */
 	std::string checkReceiverOnline();
 
-	/** Locks/Unlocks the connection to the receiver
-      /param lock sets (1), usets (0), gets (-1) the lock
-      /returns lock status of the receiver
+	/**
+	 * Locks/Unlocks the connection to the receiver
+	 * @param lock sets (1), usets (0), gets (-1) the lock
+	 * @returns lock status of the receiver
 	 */
 	int lockReceiver(int lock=-1);
 
 	/**
-     Returns the IP of the last client connecting to the receiver
+	 * Returns the IP of the last client connecting to the receiver
+	 * @returns IP of last client connecting to receiver
 	 */
 	std::string getReceiverLastClientIP();
 
 	/**
-      Turns off the receiver server!
+	 * Turns off the receiver server!
+	 * @returns OK or FAIL
 	 */
 	int exitReceiver();
 
 	/**
-     \returns file dir
+	 * Returns output file directory
+	 * @returns output file directory
 	 */
 	std::string getFilePath();
 
 	/**
-     Sets up the file directory
-     @param s file directory
-     \returns file dir
+	 * Sets up the file directory
+	 * @param s file directory
+	 * @returns file dir
 	 */
 	std::string setFilePath(std::string s="");
 
 	/**
-     \returns file name
+	 * Returns file name prefix
+	 * @returns file name prefix
 	 */
 	std::string getFileName();
 
 	/**
-     Sets up the file name
-     @param s file name
-     \returns file name
+	 * Sets up the file name prefix
+	 * @param s file name prefix
+	 * @returns file name prefix
 	 */
 	std::string setFileName(std::string s="");
 
 	/**
-     Sets the max frames per file in receiver
-     @param f max frames per file
-     \returns max frames per file in receiver
+	 * Sets the max frames per file in receiver
+	 * @param f max frames per file
+	 * @returns max frames per file in receiver
 	 */
 	int setReceiverFramesPerFile(int f = -1);
 
-
 	/**
-     \returns file name
+	 * Returns file format
+	 * @returns file name
 	 */
 	fileFormat getFileFormat();
 
 	/**
-     Sets up the file format
-     @param f file format
-     \returns file format
+	 * Sets up the file format
+	 * @param f file format
+	 * @returns file format
 	 */
 	fileFormat setFileFormat(fileFormat f=GET_FILE_FORMAT);
 
 	/**
-     \returns file index
+	 * Returns file index
+	 * @returns file index
 	 */
 	int getFileIndex();
 
 	/**
-     Sets up the file index
-     @param i file index
-     \returns file index
+	 * Sets up the file index
+	 * @param i file index
+	 * @returns file index
 	 */
 	int setFileIndex(int i=-1);
 
-
-	/**   Starts the listening mode of receiver
-	\returns OK or FAIL
+	/**
+	 * Receiver starts listening to packets
+	 * @returns OK or FAIL
 	 */
 	int startReceiver();
 
-	/**   Stops the listening mode of receiver
-	\returns OK or FAIL
+	/**
+	 * Stops the listening mode of receiver
+	 * @returns OK or FAIL
 	 */
 	int stopReceiver();
 
-	/** Sets the receiver to start any readout remaining in the fifo and
-	 * change status to transmitting.
+	/**
+	 * Sets the receiver to start any readout remaining in the fifo and
+	 * change status to transmitting (Mythen)
 	 * The status changes to run_finished when fifo is empty
 	 */
 	runStatus startReceiverReadout();
 
-	/**   gets the status of the listening mode of receiver
-	\returns status
+	/**
+	 * Gets the status of the listening mode of receiver
+	 * @returns status
 	 */
 	runStatus getReceiverStatus();
 
-	/**   gets the number of frames caught by receiver
-	\returns number of frames caught by receiver
+	/**
+	 * Gets the number of frames caught by receiver
+	 * @returns number of frames caught by receiver
 	 */
 	int getFramesCaughtByReceiver();
 
-	/**   gets the number of frames caught by any one receiver (to avoid using threadpool)
-	\returns number of frames caught by any one receiver (master receiver if exists)
+	/**
+	 * Gets the number of frames caught by any one receiver (to avoid using threadpool)
+	 * @returns number of frames caught by any one receiver (master receiver if exists)
 	 */
 	int getFramesCaughtByAnyReceiver();
 
-	/**  gets the current frame index of receiver
-     \returns current frame index of receiver
+	/**
+	 * Gets the current frame index of receiver
+	 * @returns current frame index of receiver
 	 */
 	int getReceiverCurrentFrameIndex();
 
 	/**
-	 * resets framescaught
-	 * @param index frames caught by receiver
+	 * Resets framescaught in receiver
+	 * Use this when using startAcquisition instead of acquire
+	 * @returns OK or FAIL
 	 */
 	int resetFramesCaught();
 
 	/**
 	 * Create Receiving Data Sockets
 	 * @param destroy is true to destroy all the sockets
-	 * @return OK or FAIL
+	 * @returns OK or FAIL
 	 */
 	int createReceivingDataSockets(const bool destroy = false);
 
-
-
-	/** Reads frames from receiver through a constant socket
+	/**
+	 * Reads frames from receiver through a constant socket
+	 * Called during acquire() when call back registered or when using gui
 	 */
 	void readFrameFromReceiver();
 
-
-
 	/**
-     Sets/Gets receiver file write enable
-     @param enable 1 or 0 to set/reset file write enable
-     /returns file write enable
+	 * Sets/Gets receiver file write enable
+	 * @param enable 1 or 0 to set/reset file write enable
+	 * @returns file write enable
 	 */
 	int enableWriteToFile(int enable=-1);
 
 	/**
-     Sets/Gets file overwrite enable
-     @param enable 1 or 0 to set/reset file overwrite enable
-     /returns file overwrite enable
+	 * Sets/Gets file overwrite enable
+	 * @param enable 1 or 0 to set/reset file overwrite enable
+	 * @returns file overwrite enable
 	 */
 	int overwriteFile(int enable=-1);
 
-
-	/** Sets the read receiver frequency
-   	  if data required from receiver randomly readRxrFrequency=0,
-   	   else every nth frame to be sent to gui
-   	   @param freq is the receiver read frequency
-   	   /returns read receiver frequency
+	/**
+	 * Sets the read receiver frequency
+	 * if data required from receiver randomly readRxrFrequency=0,
+	 * else every nth frame to be sent to gui/callback
+	 * @param freq is the receiver read frequency. Value 0 is 200 ms timer (other
+	 * frames not sent), 1 is every frame, 2 is every second frame etc.
+	 * @returns read receiver frequency
 	 */
 	int setReadReceiverFrequency(int freq=-1);
 
-	/** Sets the read receiver timer
-   	  if data required from receiver randomly readRxrFrequency=0,
-   	   then the timer between each data stream is set with time_in_ms
-   	   @param time_in_ms timer between frames
-   	   /returns read receiver timer
+	/**
+	 * Sets the read receiver timer
+	 * if data required from receiver randomly readRxrFrequency=0,
+	 * then the timer between each data stream is set with time_in_ms
+	 * @param time_in_ms timer between frames
+	 * @returns read receiver timer
 	 */
 	int setReceiverReadTimer(int time_in_ms=500);
-
 
 	/**
 	 * Enable data streaming to client
@@ -1659,90 +1746,82 @@ public:
 	 */
 	int enableDataStreamingToClient(int enable=-1);
 
-	/** Enable or disable streaming data from receiver to client
+	/**
+	 * Enable or disable streaming data from receiver to client
 	 * @param enable 0 to disable 1 to enable -1 to only get the value
 	 * @returns data streaming from receiver enable
 	 */
 	int enableDataStreamingFromReceiver(int enable=-1);
 
-
-
-
-	/** enable/disable or get data compression in receiver
+	/**
+	 * Enable/disable or get data compression in receiver
 	 * @param i is -1 to get, 0 to disable and 1 to enable
-     /returns data compression in receiver
+	 * @returns data compression in receiver
 	 */
 	int enableReceiverCompression(int i = -1);
 
-	/** enable/disable or 10Gbe
+	/**
+	 * Enable/disable or 10Gbe
 	 * @param i is -1 to get, 0 to disable and 1 to enable
-     /returns if 10Gbe is enabled
+	 * @returns if 10Gbe is enabled
 	 */
 	int enableTenGigabitEthernet(int i = -1);
 
-	/** set/get receiver fifo depth
+	/**
+	 * Set/get receiver fifo depth
 	 * @param i is -1 to get, any other value to set the fifo deph
-     /returns the receiver fifo depth
+	 * @returns the receiver fifo depth
 	 */
 	int setReceiverFifoDepth(int i = -1);
 
-	/** set/get receiver silent mode
+	/**
+	 * Set/get receiver silent mode
 	 * @param i is -1 to get, 0 unsets silent mode, 1 sets silent mode
-     /returns the receiver silent mode enable
+	 * @returns the receiver silent mode enable
 	 */
 	int setReceiverSilentMode(int i = -1);
 
-
-
-
-
-
-
-
-
-	/******** CTB funcs */
-
-	/** opens pattern file and sends pattern to CTB
-      @param fname pattern file to open
-      @returns OK/FAIL
+	/**
+	 * Opens pattern file and sends pattern to CTB
+	 * @param fname pattern file to open
+	 * @returns OK/FAIL
 	 */
 	int setCTBPattern(std::string fname);
 
-
-	/** Writes a pattern word to the CTB
-      @param addr address of the word, -1 is I/O control register,  -2 is clk control register
-      @param word 64bit word to be written, -1 gets
-      @returns actual value
+	/**
+	 * Writes a pattern word to the CTB
+	 * @param addr address of the word, -1 is I/O control register,
+	 * -2 is clk control register
+	 * @param word 64bit word to be written, -1 gets
+	 * @returns actual value
 	 */
 	uint64_t setCTBWord(int addr,uint64_t word=-1);
 
-	/** Sets the pattern or loop limits in the CTB
-      @param level -1 complete pattern, 0,1,2, loop level
-      @param start start address if >=0
-      @param stop stop address if >=0
-      @param n number of loops (if level >=0)
-      @returns OK/FAIL
+	/**
+	 * Sets the pattern or loop limits in the CTB
+	 * @param level -1 complete pattern, 0,1,2, loop level
+	 * @param start start address if >=0
+	 * @param stop stop address if >=0
+	 * @param n number of loops (if level >=0)
+	 * @returns OK/FAIL
 	 */
 	int setCTBPatLoops(int level,int &start, int &stop, int &n);
 
-
-	/** Sets the wait address in the CTB
-      @param level  0,1,2, wait level
-      @param addr wait address, -1 gets
-      @returns actual value
+	/**
+	 * Sets the wait address in the CTB
+	 * @param level  0,1,2, wait level
+	 * @param addr wait address, -1 gets
+	 * @returns actual value
 	 */
 	int setCTBPatWaitAddr(int level, int addr=-1);
 
-	/** Sets the wait time in the CTB
-      @param level  0,1,2, wait level
-      @param t wait time, -1 gets
-      @returns actual value
+	/**
+	 * Sets the wait time in the CTB
+	 * @param level  0,1,2, wait level
+	 * @param t wait time, -1 gets
+	 * @returns actual value
 	 */
 	int setCTBPatWaitTime(int level, uint64_t t=-1);
-
-
-
-
 
 
 private:
@@ -1750,6 +1829,7 @@ private:
 	 * Initialize (open/create) shared memory for the sharedMultiDetector structure
 	 * @param verify true to verify if shm size matches existing one
 	 * @param update true to update last user pid, date etc
+	 * @returns true if shared memory was created in this call, else false
 	 */
 	bool initSharedMemory(bool verify = true);
 
@@ -1782,7 +1862,6 @@ private:
 	 * @param s hostname of the single detector
 	 */
 	void addSlsDetector (std::string s);
-
 
 	/**
 	 * add gap pixels to the image (only for Eiger in 4 bit mode)

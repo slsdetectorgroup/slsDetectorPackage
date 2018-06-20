@@ -452,6 +452,12 @@ public:
 	int64_t clearAllErrorMask();
 
 	/**
+	 * Set Error Mask from all detectors
+	 * if each had errors in the mask already
+	 */
+	void setErrorMaskFromAllDetectors();
+
+	/**
      Set acquiring flag in shared memory
      \param b acquiring flag
 	 */
@@ -987,20 +993,20 @@ public:
 	void resetFinalDataQueue();
 
 	/**
-	 * Configures in detector the destination for UDP packets
+	 * Configures in detector the destination for UDP packets (Not Mythen)
 	 * @returns OK or FAIL
 	 */
 	int configureMAC();
 
 	/**
-	 * Get threshold energy
+	 * Get threshold energy (Mythen and Eiger)
 	 * @param imod module number (-1 all)
 	 * @returns current threshold value for imod in ev (-1 failed)
 	 */
 	int getThresholdEnergy(int imod=-1);
 
 	/**
-	 * Set threshold energy
+	 * Set threshold energy (Mythen and Eiger)
 	 * @param e_eV threshold in eV
 	 * @param imod module number (-1 all)
 	 * @param isettings ev. change settings
@@ -1009,24 +1015,33 @@ public:
 	 */
 	int setThresholdEnergy(int e_eV, int imod=-1, detectorSettings isettings=GET_SETTINGS,int tb=1);
 
-
 	/**
-      set/get timer value
-      \param index timer index
-      \param t time in ns or number of...(e.g. frames, gates, probes)
-      \returns timer set value in ns or number of...(e.g. frames, gates, probes)
+	 * Set/get timer value (not all implemented for all detectors)
+	 * @param index timer index
+	 * @param t time in ns or number of...(e.g. frames, gates, probes)
+	 * @returns timer set value in ns or number of...(e.g. frames, gates, probes)
 	 */
 	int64_t setTimer(timerIndex index, int64_t t=-1);
+
 	/**
-      set/get timer value
-      \param index timer index
-      \param t time in ns or number of...(e.g. frames, gates, probes)
-      \returns timer set value in ns or number of...(e.g. frames, gates, probes)
+	 * Set/get timer value left in acquisition (not all implemented for all detectors)
+	 * @param index timer index
+	 * @param t time in ns or number of...(e.g. frames, gates, probes)
+	 * @returns timer set value in ns or number of...(e.g. frames, gates, probes)
 	 */
 	int64_t getTimeLeft(timerIndex index);
 
-
+	/**
+	 * Set speed
+	 * @param sp speed type  (clkdivider option for Jungfrau and Eiger, others for Mythen/Gotthard)
+	 * @param value (clkdivider 0,1,2 for full, half and quarter speed). Other values check manual
+	 * @returns value of speed set
+	 */
 	int setSpeed(speedVariable sp, int value=-1);
+
+
+
+
 
 
 	/**
@@ -1297,7 +1312,7 @@ public:
 
 
 
-	double getScanStep(int index, int istep){return thisMultiDetector->scanSteps[index][istep];};
+	double getScanStep(int index, int istep);
 
 
 	/**
@@ -1321,7 +1336,7 @@ public:
 	 */
 	int setChannel(int64_t reg, int ichan=-1, int ichip=-1, int imod=-1);
 
-	void setErrorMaskFromAllDetectors();
+
 
 
 	int getMoveFlag(int imod);
@@ -1363,6 +1378,20 @@ public:
 	      \returns 0 if rate correction disabled, >0 otherwise
 		 */
 		int getRateCorrection();
+
+		/**
+	      rate correct data
+	      \param datain data array
+	      \param errin error array on data (if NULL will default to sqrt(datain)
+	      \param dataout array of corrected data
+	      \param errout error on corrected data (if not NULL)
+	      \returns 0
+		 */
+		int rateCorrect(double* datain, double *errin, double* dataout, double *errout);
+
+
+
+
 		/**
 	      set flat field corrections
 	      \param fname name of the flat field file (or "" if disable)
@@ -1441,17 +1470,6 @@ public:
 		 */
 		int flatFieldCorrect(double* datain, double *errin, double* dataout, double *errout);
 
-		/**
-	      rate correct data
-	      \param datain data array
-	      \param errin error array on data (if NULL will default to sqrt(datain)
-	      \param dataout array of corrected data
-	      \param errout error on corrected data (if not NULL)
-	      \returns 0
-		 */
-		int rateCorrect(double* datain, double *errin, double* dataout, double *errout);
-
-
 
 
 
@@ -1488,6 +1506,10 @@ public:
 	 */
 	int exitReceiver();
 
+	/**
+     \returns file dir
+	 */
+	std::string getFilePath();
 
 	/**
      Sets up the file directory
@@ -1495,6 +1517,11 @@ public:
      \returns file dir
 	 */
 	std::string setFilePath(std::string s="");
+
+	/**
+     \returns file name
+	 */
+	std::string getFileName();
 
 	/**
      Sets up the file name
@@ -1510,6 +1537,12 @@ public:
 	 */
 	int setReceiverFramesPerFile(int f = -1);
 
+
+	/**
+     \returns file name
+	 */
+	fileFormat getFileFormat();
+
 	/**
      Sets up the file format
      @param f file format
@@ -1518,31 +1551,16 @@ public:
 	fileFormat setFileFormat(fileFormat f=GET_FILE_FORMAT);
 
 	/**
+     \returns file index
+	 */
+	int getFileIndex();
+
+	/**
      Sets up the file index
      @param i file index
      \returns file index
 	 */
 	int setFileIndex(int i=-1);
-
-	/**
-     \returns file dir
-	 */
-	std::string getFilePath(){return setFilePath();};
-
-	/**
-     \returns file name
-	 */
-	std::string getFileName(){return setFileName();};
-
-	/**
-     \returns file name
-	 */
-	fileFormat getFileFormat(){return setFileFormat();};
-
-	/**
-     \returns file index
-	 */
-	int getFileIndex(){return setFileIndex();};
 
 
 	/**   Starts the listening mode of receiver

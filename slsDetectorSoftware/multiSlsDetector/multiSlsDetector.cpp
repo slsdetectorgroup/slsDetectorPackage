@@ -666,6 +666,7 @@ void multiSlsDetector::freeSharedMemory()
 
 	// multi detector
 	if (sharedMemory) {
+		sharedMemory->Unmap(thisMultiDetector);
 		sharedMemory->RemoveSharedMemory();
 		delete sharedMemory;
 	}
@@ -718,11 +719,13 @@ bool multiSlsDetector::initSharedMemory(bool verify)
 	bool created = false;
 	sharedMemory = new SharedMemory(detId, -1);
 	if (SharedMemory::IsExisting(sharedMemory->GetName())) {
-		thisMultiDetector = (sharedMultiSlsDetector*)sharedMemory->OpenSharedMemory(sz, verify);
+		thisMultiDetector = (sharedMultiSlsDetector*)sharedMemory->OpenSharedMemory(sz);
 		if (verify && thisMultiDetector->shmversion != MULTI_SHMVERSION) {
-			cprintf(RED, "Multi shared memory version mismatch "
-					"(expected 0x%x but got 0x%x)\n",
+			cprintf(RED, "Multi shared memory (%d) version mismatch "
+					"(expected 0x%x but got 0x%x)\n", detId,
 					MULTI_SHMVERSION, thisMultiDetector->shmversion);
+			sharedMemory->UnmapSharedMemory(thisMultiDetector);/** is this unncessary? */
+			delete sharedMemory;/** is this unncessary? */
 			throw SharedMemoryException();
 		}
 	} else {
@@ -930,7 +933,8 @@ std::string multiSlsDetector::exec(const char* cmd)
 
 
 void multiSlsDetector::setHostname(string s)
-{
+{ /* to just add at the end of list,
+	 command line should not clear shm upon command hostname */
 	size_t p1 = 0;
 	string temp = string(s);
 	size_t p2 = temp.find('+', p1);
@@ -990,14 +994,14 @@ void multiSlsDetector::addSlsDetector (std::string s)
 	int pos = detectors.size();
 	slsDetector* sdet = new slsDetector(type, detId, pos, false, this);
 	detectors.push_back(sdet);
-	detectors[pos]->setTCPSocket(s.c_str());
-	detectors[pos]->setOnline(ONLINE_FLAG);
+	thisMultiDetector->numberOfDetectors = detectors.size();
 
-	++thisMultiDetector->numberOfDetectors;
+	detectors[pos]->setHostname(s.c_str());
+	if (detectors[pos]->setOnline() ==ONLINE_FLAG)
+		detectors[pos]->updateDetector();
 
 	thisMultiDetector->dataBytes += detectors[pos]->getDataBytes();
 	thisMultiDetector->dataBytesInclGapPixels += detectors[pos]->getDataBytesInclGapPixels();
-
 	thisMultiDetector->numberOfChannels += detectors[pos]->getTotalNumberOfChannels();
 	thisMultiDetector->maxNumberOfChannels += detectors[pos]->getMaxNumberOfChannels();
 
@@ -1444,8 +1448,16 @@ int multiSlsDetector::exitServer()
 
 int multiSlsDetector::readConfigurationFile(string const fname)
 {
-	freeSharedMemory();
-	clearAllErrorMask();
+	{
+		clearAllErrorMask();
+		freeSharedMemory();
+
+		bool created = initSharedMemory(verify);
+		initializeDetectorStructure(created, verify);
+		initializeMembers(); // also deletes zmq objects and destroys threadpool
+		updateUserdetails();
+	}
+
 
 	multiSlsDetectorClient* cmd;
 	string ans;
@@ -4886,15 +4898,6 @@ int multiSlsDetector::resetFramesCaught()
 
 int multiSlsDetector::createReceivingDataSockets(const bool destroy)
 {
-
-	//number of sockets
-	int numSockets            = detectors.size();
-	int numSocketsPerDetector = 1;
-	if (getDetectorsType() == EIGER) {
-		numSocketsPerDetector = 2;
-	}
-	numSockets *= numSocketsPerDetector;
-
 	if (destroy) {
 		cprintf(MAGENTA, "Going to destroy data sockets\n");
 		//close socket
@@ -4909,6 +4912,13 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy)
 	}
 
 	cprintf(MAGENTA, "Going to create data sockets\n");
+
+	int numSockets            = detectors.size();
+	int numSocketsPerDetector = 1;
+	if (getDetectorsType() == EIGER) {
+		numSocketsPerDetector = 2;
+	}
+	numSockets *= numSocketsPerDetector;
 
 	for (int i = 0; i < numSockets; ++i) {
 		uint32_t portnum = 0;
@@ -4938,19 +4948,17 @@ void multiSlsDetector::readFrameFromReceiver()
 
 	int nX               = thisMultiDetector->numberOfDetector[X]; // to copy data in multi module
 	int nY               = thisMultiDetector->numberOfDetector[Y]; // for eiger, to reverse the data
-	int numSockets       = detectors.size();
 	bool gappixelsenable = false;
 	bool eiger           = false;
 	if (getDetectorsType() == EIGER) {
 		eiger = true;
 		nX *= 2;
-		numSockets *= 2;
 		gappixelsenable = detectors[0]->enableGapPixels(-1) >= 1 ? true : false;
 	}
 
-	bool runningList[numSockets], connectList[numSockets];
+	bool runningList[zmqSocket.size()], connectList[zmqSocket.size()];
 	int numRunning = 0;
-	for (int i = 0; i < numSockets; ++i) {
+	for (int i = 0; i < zmqSocket.size(); ++i) {
 		if (!zmqSocket[i]->Connect()) {
 			connectList[i] = true;
 			runningList[i] = true;
@@ -4991,7 +4999,7 @@ void multiSlsDetector::readFrameFromReceiver()
 			memset(multiframe, 0xFF, multisize);
 
 		//get each frame
-		for (int isocket = 0; isocket < numSockets; ++isocket) {
+		for (int isocket = 0; isocket < zmqSocket.size(); ++isocket) {
 
 			//if running
 			if (runningList[isocket]) {
@@ -5011,7 +5019,7 @@ void multiSlsDetector::readFrameFromReceiver()
 					if (image == NULL) {
 						// allocate
 						size       = doc["size"].GetUint();
-						multisize  = size * numSockets;
+						multisize  = size * zmqSocket.size();
 						image      = new char[size];
 						multiframe = new char[multisize];
 						memset(multiframe, 0xFF, multisize);
@@ -5132,7 +5140,7 @@ void multiSlsDetector::readFrameFromReceiver()
 				running = false;
 			else {
 				//starting a new scan/measurement (got dummy data)
-				for (int i = 0; i < numSockets; ++i)
+				for (int i = 0; i < zmqSocket.size(); ++i)
 					runningList[i] = connectList[i];
 				numRunning = numConnected;
 			}
@@ -5140,7 +5148,7 @@ void multiSlsDetector::readFrameFromReceiver()
 	}
 
 	// Disconnect resources
-	for (int i = 0; i < numSockets; ++i)
+	for (int i = 0; i < zmqSocket.size(); ++i)
 		if (connectList[i])
 			zmqSocket[i]->Disconnect();
 

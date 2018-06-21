@@ -42,18 +42,15 @@ public:
      * Create Shared memory and call MapSharedMemory to map it to an address
      * throws a SharedMemoryException exception on failure to create, ftruncate or map
      * @param sz of shared memory
-     * @param addr double pointer to address to be mapped
      */
     void* CreateSharedMemory(size_t sz);
 
     /**
      * Open existing Shared memory and call MapSharedMemory to map it to an address
-     * throws a SharedMemoryException exception on failure to open, incorrect size if verify true, or map
+     * throws a SharedMemoryException exception on failure to open or map
      * @param sz of shared memory
-     * @param addr double pointer to address to be mapped
-     * @param verify true to verify if the size matches existing one and return fail if does not match
      */
-    void* OpenSharedMemory(size_t sz, bool verify = true);
+    void* OpenSharedMemory(size_t sz);
 
     /**
      * Unmap shared memory from an address
@@ -85,16 +82,13 @@ private:
     /**
      * Map shared memory to an address
      * throws a SharedMemoryException exception on failure
-     * @param addr double pointer to address to be mapped
      * @param sz of shared memory
      */
-	//template <typename myType>
-   // void MapSharedMemory(myType*& addr, size_t sz);
     void* MapSharedMemory(size_t sz);
 
     /**
      * Verify if existing shared memory size matches expected size
-     * @param sz expected size of shared memory, replaced with smaller size if size does not match
+     * @param expectedSize expected size of shared memory, replaced with smaller size if size does not match
      * @return 0 for success, 1 for fail
      */
     int VerifySizeMatch(size_t expectedSize);

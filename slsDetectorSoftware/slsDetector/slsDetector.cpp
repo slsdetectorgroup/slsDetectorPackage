@@ -1,7 +1,14 @@
 #include "slsDetector.h"
+#include "multiSlsDetector.h"
+#include "SharedMemory.h"
+#include "receiverInterface.h"
+#include "gitInfoLib.h"
+#include "versionAPI.h"
 #include "usersFunctions.h"
 #include "slsDetectorCommand.h"
 #include "postProcessingFuncs.h"
+
+
 #include  <sys/types.h>
 #include  <sys/shm.h>
 #include <sys/socket.h>
@@ -9,525 +16,740 @@
 #include <bitset>
 #include <cstdlib>
 #include <math.h>
-#include "gitInfoLib.h"
-#include "versionAPI.h"
 
 
 using namespace std;
-int slsDetector::initSharedMemory(detectorType type, int id) {
 
 
-  /**
-     the shared memory key is set to DEFAULT_SHM_KEY+id
-  */
-  key_t     mem_key=DEFAULT_SHM_KEY+id;
-  int       shm_id;
-  int nch, nm, nc, nd, ng, no;
-  int sz;
+slsDetector::slsDetector(detectorType type, int multiId, int id, bool verify, MultiDet* m)
+: slsDetectorUtils(),
+  detId(id),
+  sharedMemory(0),
+  thisDetector(0),
+  multiDet(m),
+  thisReceiver(0),
+  controlSocket(0),
+  stopSocket(0),
+  dataSocket(0),
+  detectorModules(0),
+  dacs(0),
+  adcs(0),
+  chipregs(0),
+  chanregs(0),
+  gain(0),
+  offset(0),
+  ffcoefficients(0),
+  fferrors(0)
+{
+	/* called from put hostname command,
+	 * so sls shared memory will be created */
+	freeSharedMemory(multiId, id);
+	initSharedMemory(true, type, multiId, verify);
+	initializeDetectorStructure(true, type, verify);
+	initializeMembers();
+}
 
-  //shmId=-1;
-#ifdef VERBOSE
-  cout << "init shm"<< endl;
-#endif
-  switch(type)  {
-  case MYTHEN:
-    nch=128;  // complete mythen system
-    nm=24;
-    nc=10;
-    nd=6; // dacs+adcs
-    ng=0;
-    no=0;
-    break;
-  case PICASSO:
-    nch=128; // complete mythen system
-    nm=24;
-    nc=12;
-    nd=6; // dacs+adcs
-    ng=0;
-    no=0;
-    break;
-  case GOTTHARD:
-    nch=128;
-    nm=1;
-    nc=10;
-    nd=13; // dacs+adcs
-    ng=0;
-    no=0;
-    break;
-  case PROPIX:
-    nch=22*22;
-    nm=1;
-    nc=1;
-    nd=13; // dacs+adcs
-    break;
-  case EIGER:
-    nch=256*256; // one EIGER half module
-    nm=1; //modules/detector
-    nc=4; //chips
-    nd=16; //dacs+adcs
-    ng=4;
-    no=4;
-    break;
-  case MOENCH:
-    nch=160*160;
-    nm=1; //modules/detector
-    nc=1; //chips
-    nd=9; //dacs+adcs
-    ng=0;
-    no=0;
-    break;
-  case JUNGFRAU:
-    nch=256*256;
-    nm=1; //modules/detector
-    nc=8; //chips
-    nd=16; //dacs+adcs
-    ng=0;
-    no=0;
-    break;
-  case JUNGFRAUCTB:
-    nch=36; //36? is using digital value as well
-    nm=1; //modules/detector
-    nc=1; //chips
-    nd=16; //dacs+adcs
-    ng=0;
-    no=0;
-    break;
-  default:
-    nch=0; // dum!
-    nm=0; //modules/detector
-    nc=0; //chips
-    nd=0; //dacs+adcs
-    ng=0;
-    no=0;
-     break;
-  }
-  /**
-     The size of the shared memory is:
-     size of shared structure + ffcoefficents +fferrors + modules+ dacs+adcs+chips+chans+gain+offset
-  */
+slsDetector::slsDetector(int multiId, int id, bool verify, MultiDet* m)
+: slsDetectorUtils(),
+  detId(id),
+  sharedMemory(0),
+  thisDetector(0),
+  multiDet(m),
+  thisReceiver(0),
+  controlSocket(0),
+  stopSocket(0),
+  dataSocket(0),
+  detectorModules(0),
+  dacs(0),
+  adcs(0),
+  chipregs(0),
+  chanregs(0),
+  gain(0),
+  offset(0),
+  ffcoefficients(0),
+  fferrors(0)
+{
+	/* called from multi constructor to populate structure,
+	 * so sls shared memory will be opened, not created */
+	// shared memory will be opened, hence false
+	detectorType type = GetDetectorTypeFromShm(multiId, verify);
+	initSharedMemory(false, type, multiId, verify);
+	initializeDetectorStructure(false, type, verify);
+	initializeMembers();
+}
 
+slsDetector::~slsDetector()
+{
+	if (sharedMemory) {
+		sharedMemory->UnmapSharedMemory(thisMultiDetector);
+		delete sharedMemory;
+	}
+	if(thisReceiver)
+		delete thisReceiver;
+	if(controlSocket)
+		delete controlSocket;
+	if(stopSocket)
+		delete stopSocket;
+	if(dataSocket)
+		delete dataSocket;
 
-  sz=sizeof(sharedSlsDetector)+nm*(2*nch*nc*sizeof(double)+sizeof(sls_detector_module)+sizeof(int)*nc+sizeof(dacs_t)*nd+sizeof(int)*nch*nc+sizeof(int)*ng+sizeof(int)*no);
-#ifdef VERBOSE
-  std::cout<<"Size of shared memory is "<< sz << "(type " << type << " - id " << mem_key << ")"<< std::endl;
-#endif
-  shm_id = shmget(mem_key,sz,IPC_CREAT  | 0666); // allocate shared memory
-
-  if (shm_id < 0) {
-    std::cout<<"*** shmget error (server) ***"<< shm_id << std::endl;
-    return shm_id;
-  }
-
-  /**
-     thisDetector pointer is set to the memory address of the shared memory
-  */
-
-  thisDetector = (sharedSlsDetector*) shmat(shm_id, NULL, 0);  /* attach */
-
-  if (thisDetector == (void*)-1) {
-    std::cout<<"*** shmat error (server) ***" << std::endl;
-    return shm_id;
-  }
-#ifdef VERBOSE
-  cout <<"shm done"<<endl;
-#endif
-
-  /**
-     shm_id returns -1 is shared memory initialization fails
-  */
-  //shmId=shm_id;
-  return shm_id;
-
+	/* detectorModules, dacs..ffoerrors are offsets from the
+	 * shared memory and created within shared memory structure.
+	 * Deleting shared memory will also delete memory pointed to
+	 * by these pointers
+	 */
 }
 
 
-int slsDetector::freeSharedMemory() {
-  // Detach Memory address
-  if (shmdt(thisDetector) == -1) {
-    perror("shmdt failed\n");
-    return FAIL;
-  }
-#ifdef VERBOSE
-  printf("Shared memory %d detached\n", shmId);
-#endif
-  // remove shared memory
-  if (shmctl(shmId, IPC_RMID, 0) == -1) {
-    perror("shmctl(IPC_RMID) failed\n");
-    return FAIL;
-  }
-  printf("Shared memory %d deleted\n", shmId);
-  return OK;
+bool slsDetector::isMultiSlsDetectorClass()
+{
+	return false;
 }
 
 
-
-slsDetector::slsDetector(int pos, int id, multiSlsDetector *p) :slsDetectorUtils(),
-						      thisDetector(NULL),
-						      detId(id),
-							  posId(pos),
-							  parentDet(p),
-						      shmId(-1),
-						      controlSocket(NULL),
-						      stopSocket(NULL),
-						      dataSocket(NULL),
-						      ffcoefficients(NULL),
-						      fferrors(NULL),
-						      detectorModules(NULL),
-						      dacs(NULL),
-						      adcs(NULL),
-						      chipregs(NULL),
-						      chanregs(NULL),
-							  gain(NULL),
-							  offset(NULL),
-						      thisReceiver(NULL)
-
-
+double* slsDetector::decodeData(int *datain, int &nn, double *fdata)
 {
 
+	double *dataout = 0;
+	if (fdata) {
+		dataout=fdata;
+		nn=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;
+		if (thisDetector->myDetectorType == JUNGFRAUCTB)
+			nn=thisDetector->dataBytes/2;
+	} else {
+		if (thisDetector->myDetectorType == JUNGFRAUCTB) {
+			nn=thisDetector->dataBytes/2;
+			dataout=new double[nn];
+		} else {
+			dataout=new double[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
+			nn=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;
+		}
+	}
 
-  detectorType type=(detectorType)getDetectorType(id);
+	int ival = 0, ipos = 0, ichan=0, ibyte = 0;
+	char *ptr = (char*)datain;
+	char iptr = 0;
+	int nbits=thisDetector->dynamicRange;
+	int nch=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;
 
-  while (shmId<0) {
-    /**Initlializes shared memory \sa initSharedMemory
+	if (thisDetector->timerValue[PROBES_NUMBER]==0) {
+		if (thisDetector->myDetectorType==JUNGFRAUCTB) {
+			for (ichan=0; ichan<nn; ++ichan) {
+				dataout[ichan]=*((u_int16_t*)ptr);
+				ptr+=2;
+			}
+			std::cout<< "decoded "<< ichan << " channels" << std::endl;
+		} else {
+			switch (nbits) {
+			case 1:
+				for (ibyte=0; ibyte<thisDetector->dataBytes; ++ibyte) {
+					iptr=ptr[ibyte];
+					for (ipos=0; ipos<8; ++ipos) {
+						ival=(iptr>>(ipos))&0x1;
+						dataout[ichan]=ival;
+						++ichan;
+					}
+				}
+				break;
+			case 4:
+				for (ibyte=0; ibyte<thisDetector->dataBytes; ++ibyte) {
+					iptr=ptr[ibyte];
+					for (ipos=0; ipos<2; ++ipos) {
+						ival=(iptr>>(ipos*4))&0xf;
+						dataout[ichan]=ival;
+						++ichan;
+					}
+				}
+				break;
+			case 8:
+				for (ichan=0; ichan<thisDetector->dataBytes; ++ichan) {
+					ival=ptr[ichan]&0xff;
+					dataout[ichan]=ival;
+				}
+				break;
+			case 16:
+				for (ichan=0; ichan<nch; ++ichan) {
+					dataout[ichan]=*((u_int16_t*)ptr);
+					ptr+=2;
+				}
+				break;
+			default:
+				int mask=0xffffffff;
+				if(thisDetector->myDetectorType == MYTHEN) mask=0xffffff;
+				for (ichan=0; ichan<nch; ++ichan) {
+					dataout[ichan]=datain[ichan]&mask;
+				}
+			}
+		}
+	} else {
+		for (ichan=0; ichan<nch; ++ichan) {
+			dataout[ichan]=datain[ichan];
+		}
+	}
+	return dataout;
+}
 
-    if it fails the detector id is incremented until it succeeds
-    */
-    shmId=initSharedMemory(type,id);
-    ++id;
-  }
-  --id;
-#ifdef VERBOSE
-  std::cout<< "Detector id is " << id << std::endl;
-#endif
-  detId=id;
 
-
-  /**Initializes the detector stucture \sa initializeDetectorSize
-   */
-  initializeDetectorSize(type);
-
-
-
-};
-
-
-
-
-
-slsDetector::slsDetector(int pos, detectorType type, int id, multiSlsDetector *p): slsDetectorUtils(),
-									 thisDetector(NULL),
-									 detId(id),
-									 posId(pos),
-								     parentDet(p),
-									 shmId(-1),
-									 controlSocket(NULL),
-									 stopSocket(NULL),
-									 dataSocket(NULL),
-									 ffcoefficients(NULL),
-									 fferrors(NULL),
-									 detectorModules(NULL),
-									 dacs(NULL),
-									 adcs(NULL),
-									 chipregs(NULL),
-									 chanregs(NULL),
-									  gain(NULL),
-									  offset(NULL),
-								     thisReceiver(NULL)
-
+int64_t slsDetector::clearAllErrorMask()
 {
-  while (shmId<0) {
-    /**Initlializes shared memory \sa initSharedMemory
-
-    if it fails the detector id is incremented until it succeeds
-    */
-    shmId=initSharedMemory(type,id);
-    ++id;
-  }
-  --id;
-#ifdef VERBOSE
-  std::cout<< "Detector id is " << id << " type is " << type << std::endl;
-#endif
-  detId=id;
-
-
-  /**Initializes the detector stucture \sa initializeDetectorSize
-   */
-#ifdef VERBOSE
-  cout << "init det size"<< endl;
-#endif
-  initializeDetectorSize(type);
-
-
-
+	clearErrorMask();
+	 pthread_mutex_lock(&ms);
+	for(int i=0;i<multiDet->getNumberOfDetectors();++i){
+		if(multiDet->getDetectorId(i) == getDetectorId())
+			multiDet->setErrorMask(multiDet->getErrorMask()|(0<<i));
+	}
+	 pthread_mutex_unlock(&ms);
+	return getErrorMask();
 }
 
-
-slsDetector:slsDetector(){
-
-  // Detach Memory address
-  if (shmdt(thisDetector) == -1) {
-    perror("shmdt failed\n");
-    printf("Could not detach shared memory %d\n", shmId);
-  }
-#ifdef VERBOSE
-  else
-    printf("Shared memory %d detached\n", shmId);
-#endif
-  if(controlSocket) delete controlSocket;
-  if(stopSocket) delete stopSocket;
-  if(dataSocket) delete dataSocket;
-if(thisReceiver)    delete thisReceiver;
-};
-
-slsDetector::slsDetector(int pos, char *name, int id, int cport,multiSlsDetector *p) : slsDetectorUtils(),
-									      thisDetector(NULL),
-									      detId(id),
-										  posId(pos),
-									      parentDet(p),
-									      shmId(-1),
-									      controlSocket(NULL),
-									      stopSocket(NULL),
-									      dataSocket(NULL),
-									      ffcoefficients(NULL),
-									      fferrors(NULL),
-									      detectorModules(NULL),
-									      dacs(NULL),
-									      adcs(NULL),
-									      chipregs(NULL),
-									      chanregs(NULL),
-										  gain(NULL),
-										  offset(NULL),
-									      thisReceiver(NULL)
-
-
+void slsDetector::setAcquiringFlag(bool b)
 {
-  detectorType type=(detectorType)getDetectorType(name, cport);
-
-
-  while (shmId<0) {
-    /**Initlializes shared memory \sa initSharedMemory
-
-    if it fails the detector id is incremented until it succeeds
-    */
-    shmId=initSharedMemory(type,id);
-    ++id;
-  }
-  --id;
-#ifdef VERBOSE
-  std::cout<< "Detector id is " << id << std::endl;
-#endif
-  detId=id;
-
-
-  /**Initializes the detector stucture \sa initializeDetectorSize
-   */
-  initializeDetectorSize(type);
-
-
-
-
-
-  setTCPSocket(name, cport);
-  updateDetector();
-
+	multiDet->setAcquiringFlag(b);
 }
 
-slsDetectorDefs::detectorType slsDetector::getDetectorType(const char *name, int cport) {
-
-  int retval=FAIL;
-  detectorType t=GENERIC;
-  int fnum=F_GET_DETECTOR_TYPE;
-  MySocketTCP *s= new MySocketTCP(name, cport);
-  char m[100];
-#ifdef VERBOSE
-  cout << "Getting detector type " << endl;
-#endif
-  if (s->Connect()>=0) {
-    s->SendDataOnly(&fnum,sizeof(fnum));
-    s->ReceiveDataOnly(&retval,sizeof(retval));
-
-    if (retval!=FAIL) {
-      s->ReceiveDataOnly(&t,sizeof(t));
-
-#ifdef VERBOSE
-      cout << "Detector type is "<< t << endl;
-#endif
-
-    } else {
-      s->ReceiveDataOnly(m,sizeof(m));
-      std::cout<< "Detector returned error: " << m << std::endl;
-    }
-    s->Disconnect();
-  } else {
-    cout << "Cannot connect to server " << name << " over port " << cport << endl;
-  }
-
-
-/*
-  //receiver
-  if((t != GENERIC) && (setReceiverOnline()==ONLINE_FLAG)) {
-	  int k;
-	  retval = FAIL;
-	  if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
-#ifdef VERBOSE
-		  std::cout << "Sending detector type to Receiver " << (int)thisDetector->myDetectorType << std::endl;
-#endif
-		  if (connectData() == OK)
-			  retval=thisReceiver->sendInt(fnum2,k,(int)t);
-			   disconnectData();
-		  if(retval==FAIL){
-			  cout << "ERROR: Could not send detector type to receiver" << endl;
-			  setErrorMask((getErrorMask())|(RECEIVER_DET_HOSTTYPE_NOT_SET));
-		  }
-	  }
-  }
-*/
-  delete s;
-  return t;
-
+bool slsDetector::getAcquiringFlag()
+{
+	return multiDet->getAcquiringFlag();
 }
 
 
+bool slsDetector::isAcquireReady()
+{
+	return multiDet->isAcquireReady();
+}
 
 
+int slsDetector::checkVersionCompatibility(portType t)
+{
+	int fnum = F_CHECK_VERSION;
+	if (t == DATA_PORT)
+		fnum = F_RECEIVER_CHECK_VERSION;
+	int ret = FAIL;
+	char mess[MAX_STR_LENGTH];
+	memset(mess, 0, MAX_STR_LENGTH);
+	int64_t arg = 0;
 
+	// detector
+	if (t == CONTROL_PORT) {
 
-
-
-int slsDetector::exists(int id) {
-
-  key_t     mem_key=DEFAULT_SHM_KEY+id;
-  int       shm_id;
-  int sz;
-
-  sz=sizeof(sharedSlsDetector);
-
+		switch (thisDetector->myDetectorType) {
+		case EIGER:		arg = APIEIGER; break;
+		case JUNGFRAU:	arg = APIJUNGFRAU; break;
+		case GOTTHARD:	arg = APIGOTTHARD; break;
+		default:
+			std::cout<< "Check version compatibility is not implemented for this detector" << std::endl;
+			setErrorMask((getErrorMask())|(VERSION_COMPATIBILITY));
+			return FAIL;
+		}
 
 #ifdef VERBOSE
-  cout << "getDetectorType: generic shared memory of size " << sz << endl;
+		std::cout<< std::endl<< "Checking version compatibility with detector with value " << hex << arg << std::endl;
 #endif
-  shm_id = shmget(mem_key,sz,IPC_CREAT  | 0666); // allocate shared memory
+		if (thisDetector->onlineFlag==ONLINE_FLAG) {
+			// control port
+			if (connectControl() == OK){
+				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+				controlSocket->SendDataOnly(&arg,sizeof(arg));
+				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret == FAIL) {
+					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+					cprintf(RED, "Detector returned error: (Control Server) %s", mess);
+					if(strstr(mess,"Unrecognized Function")!=NULL)
+						std::cout << "The detector server is too old to get API version. Please update detector server!" << std::endl;
+					setErrorMask((getErrorMask())|(VERSION_COMPATIBILITY));
+					thisDetector->detectorControlAPIVersion = 0;
+				} else {
+					thisDetector->detectorControlAPIVersion = arg;
+				}
+				disconnectControl();
+			}
+			if (ret!= FAIL) {
+				ret = FAIL;
 
-  if (shm_id < 0) {
-    std::cout<<"*** shmget error (server) ***"<< shm_id << std::endl;
-    return -1;
-  }
+				// stop port
+				if (connectStop() == OK){
+					stopSocket->SendDataOnly(&fnum,sizeof(fnum));
+					stopSocket->SendDataOnly(&arg,sizeof(arg));
+					stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
+					if (ret == FAIL) {
+						stopSocket->ReceiveDataOnly(mess,sizeof(mess));
+						cprintf(RED, "Detector returned error: (Stop Server) %s", mess);
+						if(strstr(mess,"Unrecognized Function")!=NULL)
+							std::cout << "The detector server is too old to get API version. Please update detector server!" << std::endl;
+						setErrorMask((getErrorMask())|(VERSION_COMPATIBILITY));
+						thisDetector->detectorStopAPIVersion = 0;
+					}  else {
+						thisDetector->detectorStopAPIVersion = arg;
+					}
+					disconnectStop();
+				}
+			}
+		}
+	}
 
-  /**
-     thisDetector pointer is set to the memory address of the shared memory
-  */
-
-  sharedSlsDetector* det = (sharedSlsDetector*) shmat(shm_id, NULL, 0);  /* attach */
-
-  if (det == (void*)-1) {
-    std::cout<<"*** shmat error (server) ***" << std::endl;
-    return -1;
-  }
-  /**
-     shm_id returns -1 is shared memory initialization fails
-  */
-  //shmId=shm_id;
-
-
-
-
-  if (det->alreadyExisting==0) {
-    // Detach Memory address
-    if (shmdt(det) == -1) {
-      perror("shmdt failed\n");
-      return 0;
-    }
+	// receiver
+	else {
+		arg = APIRECEIVER;
 #ifdef VERBOSE
-    printf("Shared memory %d detached\n", shm_id);
+		std::cout<< std::endl<< "Checking version compatibility with receiver with value " << hex << arg << std::endl;
 #endif
-    // remove shared memory
-    if (shmctl(shm_id, IPC_RMID, 0) == -1) {
-      perror("shmctl(IPC_RMID) failed\n");
-      return 0;
-    }
-#ifdef VERBOSE
-    printf("Shared memory %d deleted\n", shm_id);
-#endif
-    return 0;
-  }
+		if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
+			// data port
+			if (connectData() == OK){
+				// ignoring retval
+				int64_t retval = -1;
+				ret=thisReceiver->sendInt(fnum,retval,arg);
+				if (ret==FAIL){
+					setErrorMask((getErrorMask())|(VERSION_COMPATIBILITY));
+					if(strstr(mess,"Unrecognized Function")!=NULL)
+						std::cout << "The receiver software is too old to get API version. Please update receiver software!" << std::endl;
+					thisDetector->receiverAPIVersion = 0;
+				} else  {
+					thisDetector->receiverAPIVersion = arg;
+				}
+				disconnectData();
+			}
+		}
+	}
 
-  return 1;
-
-
-
+	return ret;
 }
 
 
 
 
+int64_t slsDetector::getId( idMode mode, int imod)
+{
 
-slsDetectorDefs::detectorType slsDetector::getDetectorType(int id) {
-
-  detectorType t=GENERIC;
-
-
-  key_t     mem_key=DEFAULT_SHM_KEY+id;
-  int       shm_id;
-  int sz;
-
-  sz=sizeof(sharedSlsDetector);
-
+	int64_t retval=-1;
+	int fnum=F_GET_ID,fnum2 = F_GET_RECEIVER_ID;
+	int ret=FAIL;
+	char mess[MAX_STR_LENGTH]="";
 
 #ifdef VERBOSE
-  cout << "getDetectorType: generic shared memory of size " << sz << endl;
+	std::cout<< std::endl;
+	if  (mode==MODULE_SERIAL_NUMBER)
+		std::cout<< "Getting id  of "<< imod << std::endl;
+	else
+		std::cout<< "Getting id type "<< mode << std::endl;
 #endif
-  shm_id = shmget(mem_key,sz,IPC_CREAT  | 0666); // allocate shared memory
-
-  if (shm_id < 0) {
-    std::cout<<"*** shmget error (server) ***"<< shm_id << std::endl;
-    return t;
-  }
-
-  /**
-     thisDetector pointer is set to the memory address of the shared memory
-  */
-
-  sharedSlsDetector* det = (sharedSlsDetector*) shmat(shm_id, NULL, 0);  /* attach */
-
-  if (det == (void*)-1) {
-    std::cout<<"*** shmat error (server) ***" << std::endl;
-    return t;
-  }
-  /**
-     shm_id returns -1 is shared memory initialization fails
-  */
-  //shmId=shm_id;
-
-  t=det->myDetectorType;
-
-
-  if (det->alreadyExisting==0) {
-    // Detach Memory address
-    if (shmdt(det) == -1) {
-      perror("shmdt failed\n");
-      return t;
-    }
+	if (mode==THIS_SOFTWARE_VERSION) {
+		ret=OK;
+		retval=GITDATE;
+	} else if (mode==RECEIVER_VERSION) {
+		if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
+			if (connectData() == OK){
+				ret=thisReceiver->getInt(fnum2,retval);
+				disconnectData();
+			}
+			if(ret==FORCE_UPDATE)
+				ret=updateReceiver();
+		}
+	} else {
+		if (thisDetector->onlineFlag==ONLINE_FLAG) {
+			if (connectControl() != OK)
+				ret = FAIL;
+			else{
+				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+				controlSocket->SendDataOnly(&mode,sizeof(mode));
+				if (mode==MODULE_SERIAL_NUMBER)
+					controlSocket->SendDataOnly(&imod,sizeof(imod));
+				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret!=FAIL)
+					controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+				else {
+					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Detector returned error: " << mess << std::endl;
+				}
+				disconnectControl();
+				if (ret==FORCE_UPDATE)
+					updateDetector();
+			}
+		}
+	}
+	if (ret==FAIL) {
+		std::cout<< "Get id failed " << std::endl;
+		return ret;
+	} else {
 #ifdef VERBOSE
-    printf("Shared memory %d detached\n", shm_id);
+		if  (mode==MODULE_SERIAL_NUMBER)
+			std::cout<< "Id of "<< imod <<" is " << hex <<retval << setbase(10) << std::endl;
+		else
+			std::cout<< "Id "<< mode <<" is " << hex <<retval << setbase(10) << std::endl;
 #endif
-    // remove shared memory
-    if (shmctl(shm_id, IPC_RMID, 0) == -1) {
-      perror("shmctl(IPC_RMID) failed\n");
-      return t;
-    }
-#ifdef VERBOSE
-    printf("Shared memory %d deleted\n", shm_id);
-#endif
-  }
-
-#ifdef VERBOSE
-  cout << "Detector type is " << t << endl;
-#endif
-
-  return t;
-
-
+		return retval;
+	}
 }
+
+
+void slsDetector::FreeSharedMemory(int multiId, int slsId)
+{
+	SharedMemory* shm = new SharedMemory(multiId, slsId);
+	shm->RemoveSharedMemory();
+	delete shm;
+}
+
+void slsDetector::freeSharedMemory()
+{
+	if (sharedMemory) {
+		sharedMemory->UnmapSharedMemory(thisDetector);
+		sharedMemory->RemoveSharedMemory();
+		delete sharedMemory;
+	}
+	thisDetector = 0;
+}
+
+string slsDetector::setHostname(const char *name)
+{
+	setTCPSocket(string(name));
+	return getHostname();
+}
+
+string slsDetector::getHostname()
+{
+	return string(thisDetector->hostname);
+}
+
+
+detectorType slsDetector::getDetectorTypeFromShm(int multiId)
+{
+	SharedMemory* shm = new SharedMemory(multiId, detId);
+	std::string shmname = shm->GetName();
+
+	// shm not created before
+	if (!SharedMemory::IsExisting(shmname)) {
+		cprintf(RED,"Shared memory %s does not exist.\n"
+				"Corrupted Multi Shared memory. Please free shared memory.\n",
+				shmname.c_str());
+		throw SharedMemoryException();
+	}
+
+	// map basic size of sls detector structure (no need of offsets, just version is required)
+	slsDetector* sdet = 0;
+	size_t sz = sizeof(sharedSlsDetector);
+
+	// open, map, verify version, get type
+	sdet = (sharedSlsDetector*)shm->OpenSharedMemory(sz);
+	if (verify && thisDetector->shmversion != SLS_SHMVERSION) {
+		cprintf(RED, "Single shared memory (%d-%d:)version mismatch "
+				"(expected 0x%x but got 0x%x)\n",
+				multiId, detId, SLS_SHMVERSION, thisDetector->shmversion);
+		shm->UnmapSharedMemory(sdet); /** is this unncessary? */
+		delete shm;/** is this unncessary? */
+		throw SharedMemoryException();
+	}
+	detectorType type = sdet->type;
+
+	// unmap
+	shm->UnmapSharedMemory(sdet);
+	delete shm;
+
+	return type;
+}
+
+
+slsDetectorDefs::detectorType slsDetector::getDetectorType(const char *name, int cport)
+{
+	int fnum=F_GET_DETECTOR_TYPE;
+	int retval = FAIL;
+	detectorType t=GENERIC;
+	MySocketTCP *s= new MySocketTCP(name, cport);
+	char m[MAX_STR_LENGTH];
+#ifdef VERBOSE
+	cout << "Getting detector type " << endl;
+#endif
+	if (s->Connect() >= 0) {
+		s->SendDataOnly(&fnum,sizeof(fnum));
+		s->ReceiveDataOnly(&retval,sizeof(retval));
+		if (retval!=FAIL) {
+			s->ReceiveDataOnly(&t,sizeof(t));
+#ifdef VERBOSE
+			cout << "Detector type is "<< t << endl;
+#endif
+		} else {
+			s->ReceiveDataOnly(m,sizeof(m));
+			std::cout<< "Detector returned error: " << m << std::endl;
+		}
+		s->Disconnect();
+	} else {
+		cout << "Cannot connect to server " << name << " over port " << cport << endl;
+	}
+	delete s;
+	return t;
+}
+
+
+void slsDetector::initSharedMemory(bool created, detectorType type, int multiId, bool verify)
+{
+	if (sharedMemory)
+		delete sharedMemory;
+	thisDetector = 0;
+
+	// calculate shared memory size
+	int sz = calculateSharedMemorySize(type);
+
+	// shared memory object with name
+	sharedMemory = new SharedMemory(multiId, detId);
+	// create
+	if (create) {
+		try {
+			thisSingleDet = (sharedSingleDet*)sharedMemory->CreateSharedMemory(sz);
+		} catch(...) {
+			sharedMemory->RemoveSharedMemory();
+			thisSingleDet = 0;
+			throw;
+		}
+	}
+	// open and verify version
+	else {
+		thisSingleDet = (sharedSingleDet*)sharedMemory->OpenSharedMemory(sz, verify);
+		if (verify && thisDetector->shmversion != SLS_SHMVERSION) {
+			cprintf(RED, "Single shared memory (%d-%d:)version mismatch "
+					"(expected 0x%x but got 0x%x)\n",
+					multiId, detId, SLS_SHMVERSION, thisDetector->shmversion);
+			shm->UnmapSharedMemory(sdet); /** is this unncessary? */
+			delete shm;/** is this unncessary? */
+			throw SharedMemoryException();
+		}
+	}
+}
+
+
+int slsDetector::calculateSharedMemorySize(detectorType type)
+{
+	 int nch = 0, nm = 0, nc = 0, nd = 0, ng = 0, no = 0;
+	 switch(type)  {
+	 case MYTHEN:
+		 nch=128;  // complete mythen system
+		 nm=24;
+		 nc=10;
+		 nd=6; // dacs+adcs
+		 ng=0;
+		 no=0;
+		 break;
+	 case PICASSO:
+		 nch=128; // complete mythen system
+		 nm=24;
+		 nc=12;
+		 nd=6; // dacs+adcs
+		 ng=0;
+		 no=0;
+		 break;
+	 case GOTTHARD:
+		 nch=128;
+		 nm=1;
+		 nc=10;
+		 nd=13; // dacs+adcs
+		 ng=0;
+		 no=0;
+		 break;
+	 case PROPIX:
+		 nch=22*22;
+		 nm=1;
+		 nc=1;
+		 nd=13; // dacs+adcs
+		 break;
+	 case EIGER:
+		 nch=256*256; // one EIGER half module
+		 nm=1; //modules/detector
+		 nc=4; //chips
+		 nd=16; //dacs+adcs
+		 ng=4;
+		 no=4;
+		 break;
+	 case MOENCH:
+		 nch=160*160;
+		 nm=1; //modules/detector
+		 nc=1; //chips
+		 nd=9; //dacs+adcs
+		 ng=0;
+		 no=0;
+		 break;
+	 case JUNGFRAU:
+		 nch=256*256;
+		 nm=1; //modules/detector
+		 nc=8; //chips
+		 nd=16; //dacs+adcs
+		 ng=0;
+		 no=0;
+		 break;
+	 case JUNGFRAUCTB:
+		 nch=36; //36? is using digital value as well
+		 nm=1; //modules/detector
+		 nc=1; //chips
+		 nd=16; //dacs+adcs
+		 ng=0;
+		 no=0;
+		 break;
+	 default:
+		 nch=0; // dum!
+		 nm=0; //modules/detector
+		 nc=0; //chips
+		 nd=0; //dacs+adcs
+		 ng=0;
+		 no=0;
+		 break;
+	 }
+
+	  /**
+	     The size of the shared memory is:
+	     size of shared structure + ffcoefficents +fferrors + modules+ dacs+adcs+chips+chans+gain+offset
+	  */
+	 int sz = sizeof(sharedSlsDetector) +
+			 nm * (
+					 2 * nch * nc * sizeof(double) +
+					 sizeof(sls_detector_module) +
+					 sizeof(int) * nc +
+					 sizeof(dacs_t) * nd +
+					 sizeof(int) * nch * nc +
+					 sizeof(int) * ng +
+					 sizeof(int) * no);
+#ifdef VERBOSE
+  std::cout<<"Size of shared memory is " << sz << std::endl;
+#endif
+  return sz;
+}
+
+
+void slsDetector::initializeDetectorStructure(bool created, detectorType type, bool verify)
+{
+	char  *goff = (char*)thisDetector;
+
+	// initialize detector structure to defaults
+	if (created) {
+		thisDetector->shmversion = SLS_SHMVERSION;
+		thisDetector->onlineFlag = OFFLINE_FLAG;
+		thisDetector->stoppedFlag = 0;
+		strncpy(thisDetector->hostname, DEFAULT_HOSTNAME, strlength(DEFAULT_HOSTNAME));
+		thisDetector->controlPort = DEFAULT_PORTNO;
+		thisDetector->stopPort = DEFAULT_PORTNO + 1;
+		thisDetector->myDetectorType = type;
+		strcpy(thisDetector->settingsDir, getenv("HOME"));
+		strcpy(thisDetector->calDir, getenv("HOME"));
+nTrimEn;
+trimEnergies[100];
+progressIndex;
+totalProgress;
+filePath[MAX_STR_LENGTH];
+nMod[2];
+nMods;
+nModMax[2];
+nModsMax;
+nChans;
+nChan[2];
+nChips;
+nChip[2];
+nDacs;
+nAdcs;
+nGain;
+nOffset;
+dynamicRange;
+dataBytes;
+correctionMask;
+threadedProcessing;
+tDead;
+flatFieldDir[MAX_STR_LENGTH];
+flatFieldFile[MAX_STR_LENGTH];
+nBadChans;
+badChanFile[MAX_STR_LENGTH];
+badChansList[MAX_BADCHANS];
+nBadFF;
+badFFList[MAX_BADCHANS];
+angConvFile[MAX_STR_LENGTH];
+angOff[MAXMODS];
+angDirection;
+fineOffset;
+globalOffset;
+numberOfPositions;
+detPositions[MAXPOS];
+binSize;
+moveFlag;
+nROI;
+roiLimits[MAX_ROIS];
+roFlags;
+settingsFile[MAX_STR_LENGTH];
+currentSettings;
+currentThresholdEV;
+timerValue[MAX_TIMERS];
+actionMask;
+actionScript[MAX_ACTIONS];
+actionParameter[MAX_ACTIONS];
+scanMode[MAX_SCAN_LEVELS];
+scanScript[MAX_SCAN_LEVELS];
+scanParameter[MAX_SCAN_LEVELS];
+nScanSteps[MAX_SCAN_LEVELS];
+scanSteps[MAX_SCAN_LEVELS];
+scanPrecision[MAX_SCAN_LEVELS];
+ffoff;
+fferroff;
+modoff;
+dacoff;
+adcoff;
+chipoff;
+chanoff;
+gainoff;
+offsetoff;
+receiver_hostname[MAX_STR_LENGTH];
+receiverTCPPort;
+receiverUDPPort;
+receiverUDPPort2;
+receiverUDPIP[MAX_STR_LENGTH];
+receiverUDPMAC[MAX_STR_LENGTH];
+detectorMAC[MAX_STR_LENGTH];
+detectorIP[MAX_STR_LENGTH];
+receiverOnlineFlag;
+tenGigaEnable;
+flippedData[2];
+zmqport;
+receiver_zmqport;
+receiver_upstream;
+receiver_read_freq;
+zmqip[MAX_STR_LENGTH];
+receiver_zmqip[MAX_STR_LENGTH];
+gappixels;
+nGappixels[2];
+dataBytesInclGapPixels;
+receiver_additionalJsonHeader[MAX_STR_LENGTH];
+receiver_framesPerFile;
+detectorControlAPIVersion;
+detectorStopAPIVersion;
+receiverAPIVersion;
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 int slsDetector::initializeDetectorSize(detectorType type) {
@@ -916,10 +1138,10 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 
   filePath=thisDetector->filePath;
   pthread_mutex_lock(&ms);
-  fileName=parentDet->fileName;
-  fileIndex=parentDet->fileIndex;
-  framesPerFile=parentDet->framesPerFile;
-  fileFormatType=parentDet->fileFormatType;
+  fileName=multiDet->fileName;
+  fileIndex=multiDet->fileIndex;
+  framesPerFile=multiDet->framesPerFile;
+  fileFormatType=multiDet->fileFormatType;
   if((thisDetector->myDetectorType==GOTTHARD)||(thisDetector->myDetectorType==PROPIX)){
 	  fileIO::setFramesPerFile(MAX_FRAMES_PER_FILE);
 	  pthread_mutex_unlock(&ms);
@@ -1939,7 +2161,7 @@ int slsDetector::setNumberOfModules(int n, dimension d){
 
   if(n != GET_FLAG){
 	  pthread_mutex_lock(&ms);
-	  parentDet->updateOffsets();
+	  multiDet->updateOffsets();
 	  pthread_mutex_unlock(&ms);
   }
 
@@ -2240,86 +2462,7 @@ slsDetectorDefs::externalCommunicationMode slsDetector::setExternalCommunication
 };
 
 
-// Tests and identification
-/*
-   Gets versions
 
-   enum idMode{
-   MODULE_SERIAL_NUMBER,
-   MODULE_FIRMWARE_VERSION,
-   DETECTOR_SERIAL_NUMBER,
-   DETECTOR_FIRMWARE_VERSION,
-   DETECTOR_SOFTWARE_VERSION,
-   THIS_SOFTWARE_VERSION,
-   RECEIVER_VERSION
-   }{};
-*/
-
-
-
-
-
-int64_t slsDetector::getId( idMode mode, int imod){
-
-  int64_t retval=-1;
-  int fnum=F_GET_ID,fnum2 = F_GET_RECEIVER_ID;
-  int ret=FAIL;
-  char mess[MAX_STR_LENGTH]="";
-
-#ifdef VERBOSE
-  std::cout<< std::endl;
-  if  (mode==MODULE_SERIAL_NUMBER)
-    std::cout<< "Getting id  of "<< imod << std::endl;
-  else
-    std::cout<< "Getting id type "<< mode << std::endl;
-#endif
-  if (mode==THIS_SOFTWARE_VERSION) {
-    ret=OK;
-    retval=GITDATE;
-  } else if (mode==RECEIVER_VERSION) {
-    if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
-    	if (connectData() == OK){
-    		ret=thisReceiver->getInt(fnum2,retval);
-    		disconnectData();
-    	}
-      if(ret==FORCE_UPDATE)
-	ret=updateReceiver();
-    }
-  } else {
-    if (thisDetector->onlineFlag==ONLINE_FLAG) {
-      if (connectControl() != OK)
-	ret = FAIL;
-      else{
-	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-	controlSocket->SendDataOnly(&mode,sizeof(mode));
-	if (mode==MODULE_SERIAL_NUMBER)
-	  controlSocket->SendDataOnly(&imod,sizeof(imod));
-	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret!=FAIL)
-	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-	else {
-	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-	  std::cout<< "Detector returned error: " << mess << std::endl;
-	}
-	disconnectControl();
-	if (ret==FORCE_UPDATE)
-	  updateDetector();
-      }
-    }
-  }
-  if (ret==FAIL) {
-    std::cout<< "Get id failed " << std::endl;
-    return ret;
-  } else {
-#ifdef VERBOSE
-    if  (mode==MODULE_SERIAL_NUMBER)
-      std::cout<< "Id of "<< imod <<" is " << hex <<retval << setbase(10) << std::endl;
-    else
-      std::cout<< "Id "<< mode <<" is " << hex <<retval << setbase(10) << std::endl;
-#endif
-    return retval;
-  }
-};
 
 
 
@@ -5545,110 +5688,7 @@ int slsDetector::executeTrimming(trimMode mode, int par1, int par2, int imod){
 
 };
 
-double* slsDetector::decodeData(int *datain, int &nn, double *fdata) {
 
-
-  double *dataout;
-  if (fdata) {
-    dataout=fdata;
-    nn=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;
-    //    printf("not allocating fdata!\n");
-    if (thisDetector->myDetectorType==JUNGFRAUCTB) nn=thisDetector->dataBytes/2;
-  } else { 
-    if (thisDetector->myDetectorType==JUNGFRAUCTB) {
-      nn=thisDetector->dataBytes/2;
-      dataout=new double[nn];
-      
-      //  std::cout<< "nn is "<< nn  << std::endl;
-    }    else {
-      dataout=new double[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
-      nn=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;
-    }
-    
-    //  printf("allocating fdata!\n");
-  }
- // const int bytesize=8;
-  
-  int ival=0;
-  char *ptr=(char*)datain;
-  char iptr;
-  
-  int nbits=thisDetector->dynamicRange;
-  int nch=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;
-  int  ipos=0, ichan=0, ibyte;
-  
-  if (thisDetector->timerValue[PROBES_NUMBER]==0) {
-    if (thisDetector->myDetectorType==JUNGFRAUCTB) {
-      
-      for (ichan=0; ichan<nn; ++ichan) {
-	//   //	}
-	dataout[ichan]=*((u_int16_t*)ptr);
-	ptr+=2;
-      }
-
-      std::cout<< "decoded "<< ichan << " channels" << std::endl;		
-    } else {
-			switch (nbits) {
-			case 1:
-				for (ibyte=0; ibyte<thisDetector->dataBytes; ++ibyte) {
-				  iptr=ptr[ibyte];//&0x1;
-					for (ipos=0; ipos<8; ++ipos) {
-						//	dataout[ibyte*2+ichan]=((iptr&((0xf)<<ichan))>>ichan)&0xf;
-						ival=(iptr>>(ipos))&0x1;
-						dataout[ichan]=ival;
-						++ichan;
-					}
-				}
-				break;
-			case 4:
-				for (ibyte=0; ibyte<thisDetector->dataBytes; ++ibyte) {
-					iptr=ptr[ibyte];
-					for (ipos=0; ipos<2; ++ipos) {
-						//	dataout[ibyte*2+ichan]=((iptr&((0xf)<<ichan))>>ichan)&0xf;
-						ival=(iptr>>(ipos*4))&0xf;
-						dataout[ichan]=ival;
-						++ichan;
-					}
-				}
-				break;
-			case 8:
-				for (ichan=0; ichan<thisDetector->dataBytes; ++ichan) {
-					ival=ptr[ichan]&0xff;
-					dataout[ichan]=ival;
-				}
-				break;
-			case 16:
-				for (ichan=0; ichan<nch; ++ichan) {
-					// dataout[ichan]=0;
-					// ival=0;
-					// for (ibyte=0; ibyte<2; ++ibyte) {
-					// 	iptr=ptr[ichan*2+ibyte];
-					// 	ival|=((iptr<<(ibyte*bytesize))&(0xff<<(ibyte*bytesize)));
-					// }
-					dataout[ichan]=*((u_int16_t*)ptr);
-					ptr+=2;
-				}
-				break;
-			default:
-			  int mask=0xffffffff;
-			  if(thisDetector->myDetectorType == MYTHEN) mask=0xffffff;
-			  for (ichan=0; ichan<nch; ++ichan) {
-			    dataout[ichan]=datain[ichan]&mask;
-			  }
-			}
-    }
-  } else {
-    for (ichan=0; ichan<nch; ++ichan) {
-      dataout[ichan]=datain[ichan];
-    }
-  }
-
-
-    //#ifdef VERBOSE
-	//#endif
-
-	return dataout;
-}
 
 //Correction
 /*
@@ -6300,8 +6340,8 @@ string slsDetector::setReceiver(string receiverIP){
 		std::cout << "file index:" << fileIO::getFileIndex() << endl;
 		std::cout << "file format:" << fileIO::getFileFormat() << endl;
 		pthread_mutex_lock(&ms);
-		std::cout << "write enable:" << parentDet->enableWriteToFileMask() << endl;
-		std::cout << "overwrite enable:" << parentDet->enableOverwriteMask() << endl;
+		std::cout << "write enable:" << multiDet->enableWriteToFileMask() << endl;
+		std::cout << "overwrite enable:" << multiDet->enableOverwriteMask() << endl;
 		pthread_mutex_unlock(&ms);
 		std::cout << "frame index needed:" <<  ((thisDetector->timerValue[FRAME_NUMBER]*thisDetector->timerValue[CYCLES_NUMBER])>1) << endl;
 		std::cout << "frame period:" << thisDetector->timerValue[FRAME_PERIOD] << endl;
@@ -6334,11 +6374,11 @@ string slsDetector::setReceiver(string receiverIP){
 			setFileFormat(fileIO::getFileFormat());
 			setReceiverFramesPerFile(thisDetector->receiver_framesPerFile);
 			pthread_mutex_lock(&ms);
-			int imask = parentDet->enableWriteToFileMask();
+			int imask = multiDet->enableWriteToFileMask();
 			pthread_mutex_unlock(&ms);
 			enableWriteToFile(imask);
 			pthread_mutex_lock(&ms);
-			imask = parentDet->enableOverwriteMask();
+			imask = multiDet->enableOverwriteMask();
 			pthread_mutex_unlock(&ms);
 			overwriteFile(imask);
 			setTimer(FRAME_PERIOD,thisDetector->timerValue[FRAME_PERIOD]);
@@ -6835,7 +6875,7 @@ int slsDetector::configureMAC(){
 	// only jungfrau and eiger, send x, y and z in detector udp header
 	if (thisDetector->myDetectorType == JUNGFRAU || thisDetector->myDetectorType == EIGER) {
 		sendpos = true;
-		int max = parentDet->getNumberOfDetectors(X);
+		int max = multiDet->getNumberOfDetectors(X);
 		if(!posId) {
 			pos[0] = 0;
 			pos[1] = 0;
@@ -8454,7 +8494,7 @@ string slsDetector::setFileName(string s) {
 	/*if(!s.empty()){
 		pthread_mutex_lock(&ms);
 		fileIO::setFileName(s);
-		s=parentDet->createReceiverFilePrefix();
+		s=multiDet->createReceiverFilePrefix();
 		pthread_mutex_unlock(&ms);
 	}*/
 
@@ -8473,7 +8513,7 @@ string slsDetector::setFileName(string s) {
 #endif
 			/*
 			pthread_mutex_lock(&ms);
-			fileIO::setFileName(parentDet->getNameFromReceiverFilePrefix(string(retval)));
+			fileIO::setFileName(multiDet->getNameFromReceiverFilePrefix(string(retval)));
 			pthread_mutex_unlock(&ms);
 			 */
 			sretval = fileIO::getNameFromReceiverFilePrefix(string(retval));
@@ -8931,13 +8971,13 @@ int slsDetector::updateReceiverNoWait() {
   // file write enable
   n += 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
   pthread_mutex_lock(&ms);
-  parentDet->enableWriteToFileMask(ind);
+  multiDet->enableWriteToFileMask(ind);
   pthread_mutex_unlock(&ms);
 
   // file overwrite enable
   n += 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
   pthread_mutex_lock(&ms);
-  parentDet->enableOverwriteMask(ind);
+  multiDet->enableOverwriteMask(ind);
   pthread_mutex_unlock(&ms);
 
   // receiver read frequency
@@ -9039,7 +9079,7 @@ int slsDetector::enableWriteToFile(int enable){
 	if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG){
 		if(enable>=0){
 			pthread_mutex_lock(&ms);
-			parentDet->enableWriteToFileMask(enable);
+			multiDet->enableWriteToFileMask(enable);
 			pthread_mutex_unlock(&ms);
 		}
 	}
@@ -9054,7 +9094,7 @@ int slsDetector::enableWriteToFile(int enable){
 		}
 		if(ret!=FAIL){
 			pthread_mutex_lock(&ms);
-			parentDet->enableWriteToFileMask(retval);
+			multiDet->enableWriteToFileMask(retval);
 			pthread_mutex_unlock(&ms);
 		}
 		if(ret==FORCE_UPDATE)
@@ -9062,7 +9102,7 @@ int slsDetector::enableWriteToFile(int enable){
 	}
 
 	pthread_mutex_lock(&ms);
-	retval = parentDet->enableWriteToFileMask();
+	retval = multiDet->enableWriteToFileMask();
 	pthread_mutex_unlock(&ms);
 
 	return retval;
@@ -9081,7 +9121,7 @@ int slsDetector::overwriteFile(int enable){
 	if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG){
 		if(enable>=0){
 		    pthread_mutex_lock(&ms);
-			parentDet->enableOverwriteMask(enable);
+			multiDet->enableOverwriteMask(enable);
 			pthread_mutex_unlock(&ms);
 		}
 	}
@@ -9096,7 +9136,7 @@ int slsDetector::overwriteFile(int enable){
 		}
 		if(ret!=FAIL){
 			pthread_mutex_lock(&ms);
-			parentDet->enableOverwriteMask(retval);
+			multiDet->enableOverwriteMask(retval);
 			pthread_mutex_unlock(&ms);
 		}
 		if(ret==FORCE_UPDATE)
@@ -9104,7 +9144,7 @@ int slsDetector::overwriteFile(int enable){
 	}
 
 	pthread_mutex_lock(&ms);
-	retval = parentDet->enableOverwriteMask();
+	retval = multiDet->enableOverwriteMask();
 	pthread_mutex_unlock(&ms);
 
 	return retval;
@@ -9147,18 +9187,7 @@ int slsDetector::calibratePedestal(int frames){
 
 
 
-int64_t slsDetector::clearAllErrorMask(){
-	clearErrorMask();
 
-	 pthread_mutex_lock(&ms);
-	for(int i=0;i<parentDet->getNumberOfDetectors();++i){
-		if(parentDet->getDetectorId(i) == getDetectorId())
-			parentDet->setErrorMask(parentDet->getErrorMask()|(0<<i));
-	}
-	 pthread_mutex_unlock(&ms);
-
-	return getErrorMask();
-}
 
 
 
@@ -9285,7 +9314,7 @@ void slsDetector::sendMultiDetectorSize(){
 	int arg[2];
 
 	pthread_mutex_lock(&ms);
-	parentDet->getNumberOfDetectors(arg[0],arg[1]);
+	multiDet->getNumberOfDetectors(arg[0],arg[1]);
 	pthread_mutex_unlock(&ms);
 
 	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
@@ -9795,18 +9824,6 @@ int slsDetector::pulseChip(int n) {
 
 
 
-void slsDetector::setAcquiringFlag(bool b){
-	parentDet->setAcquiringFlag(b);
-}
-
-bool slsDetector::getAcquiringFlag(){
-	return parentDet->getAcquiringFlag();
-}
-
-
-bool slsDetector::isAcquireReady() {
-	return parentDet->isAcquireReady();
-}
 
 
 int slsDetector::restreamStopFromReceiver(){
@@ -9834,98 +9851,3 @@ int slsDetector::restreamStopFromReceiver(){
 	return ret;
 }
 
-
-int slsDetector::checkVersionCompatibility(portType t) {
-	int fnum = F_CHECK_VERSION;
-	if (t == DATA_PORT)
-		fnum = F_RECEIVER_CHECK_VERSION;
-	int ret = FAIL;
-	char mess[MAX_STR_LENGTH];
-	memset(mess, 0, MAX_STR_LENGTH);
-	int64_t arg = 0;
-
-	// detector
-	if (t == CONTROL_PORT) {
-
-		switch (thisDetector->myDetectorType) {
-		case EIGER:		arg = APIEIGER; break;
-		case JUNGFRAU:	arg = APIJUNGFRAU; break;
-		case GOTTHARD:	arg = APIGOTTHARD; break;
-		default:
-			std::cout<< "Check version compatibility is not implemented for this detector" << std::endl;
-			setErrorMask((getErrorMask())|(VERSION_COMPATIBILITY));
-			return FAIL;
-		}
-
-#ifdef VERBOSE
-		std::cout<< std::endl<< "Checking version compatibility with detector with value " << hex << arg << std::endl;
-#endif
-		if (thisDetector->onlineFlag==ONLINE_FLAG) {
-			// control port
-			if (connectControl() == OK){
-				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-				controlSocket->SendDataOnly(&arg,sizeof(arg));
-				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-				if (ret == FAIL) {
-					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-					cprintf(RED, "Detector returned error: (Control Server) %s", mess);
-					if(strstr(mess,"Unrecognized Function")!=NULL)
-						std::cout << "The detector server is too old to get API version. Please update detector server!" << std::endl;
-					setErrorMask((getErrorMask())|(VERSION_COMPATIBILITY));
-					thisDetector->detectorControlAPIVersion = 0;
-				} else {
-					thisDetector->detectorControlAPIVersion = arg;
-				}
-				disconnectControl();
-			}
-			if (ret!= FAIL) {
-				ret = FAIL;
-
-				// stop port
-				if (connectStop() == OK){
-					stopSocket->SendDataOnly(&fnum,sizeof(fnum));
-					stopSocket->SendDataOnly(&arg,sizeof(arg));
-					stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
-					if (ret == FAIL) {
-						stopSocket->ReceiveDataOnly(mess,sizeof(mess));
-						cprintf(RED, "Detector returned error: (Stop Server) %s", mess);
-						if(strstr(mess,"Unrecognized Function")!=NULL)
-							std::cout << "The detector server is too old to get API version. Please update detector server!" << std::endl;
-						setErrorMask((getErrorMask())|(VERSION_COMPATIBILITY));
-						thisDetector->detectorStopAPIVersion = 0;
-					}  else {
-						thisDetector->detectorStopAPIVersion = arg;
-					}
-					disconnectStop();
-				}
-			}
-		}
-	}
-
-	// receiver
-	else {
-		arg = APIRECEIVER;
-#ifdef VERBOSE
-		std::cout<< std::endl<< "Checking version compatibility with receiver with value " << hex << arg << std::endl;
-#endif
-		if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
-			// data port
-			if (connectData() == OK){
-				// ignoring retval
-				int64_t retval = -1;
-				ret=thisReceiver->sendInt(fnum,retval,arg);
-				if (ret==FAIL){
-					setErrorMask((getErrorMask())|(VERSION_COMPATIBILITY));
-					if(strstr(mess,"Unrecognized Function")!=NULL)
-						std::cout << "The receiver software is too old to get API version. Please update receiver software!" << std::endl;
-					thisDetector->receiverAPIVersion = 0;
-				} else  {
-					thisDetector->receiverAPIVersion = arg;
-				}
-				disconnectData();
-			}
-		}
-	}
-
-	return ret;
-}

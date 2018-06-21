@@ -13,6 +13,13 @@ ID:         $Id$
 #ifndef MULTI_SLS_DETECTOR_H
 #define MULTI_SLS_DETECTOR_H
 
+/**
+ @libdoc The multiSlsDetector class is used to operate several slsDetectors in parallel.
+ * @short This is the base class for multi detector system functionalities
+ * @author Anna Bergamaschi
+ */
+
+
 #include "slsDetectorUtils.h"
 class slsDetector;
 class SharedMemory;
@@ -28,15 +35,13 @@ class ZmqSocket;
 #define SHORT_STRING_LENGTH	50
 #define DATE_LENGTH			29
 
-/**
- @libdoc The multiSlsDetector class is used to operate several slsDetectors in parallel.
- * @short This is the base class for multi detector system functionalities
- * @author Anna Bergamaschi
- */
-
 class multiSlsDetector  : public slsDetectorUtils {
 
+private:
 
+	/**
+	 * @short structure allocated in shared memory to store detector settings for IPC and cache
+	 */
 	typedef  struct sharedMultiSlsDetector {
 
 
@@ -225,24 +230,17 @@ class multiSlsDetector  : public slsDetectorUtils {
 public:
 
 
-
 	using slsDetectorUtils::flatFieldCorrect;
 	using slsDetectorUtils::rateCorrect;
 	using slsDetectorUtils::setBadChannelCorrection;
 	using slsDetectorUtils::readAngularConversion;
 	using slsDetectorUtils::writeAngularConversion;
 
-	/*
-     @short Structure allocated in shared memory to store detector settings and
-     be accessed in parallel by several applications
-
-	 */
-
 
 	/**
 	 * Constructor
 	 * @param id multi detector id
-	 * @param verify true to verify if shared memory size matches existing one
+	 * @param verify true to verify if shared memory version matches existing one
 	 * @param update true to update last user pid, date etc
 	 */
 	multiSlsDetector(int id = 0, bool verify = true, bool update = true);
@@ -458,20 +456,20 @@ public:
 	void setErrorMaskFromAllDetectors();
 
 	/**
-     Set acquiring flag in shared memory
-     \param b acquiring flag
+	 * Set acquiring flag in shared memory
+	 * @param b acquiring flag
 	 */
 	void setAcquiringFlag(bool b=false);
 
 	/**
-     Get acquiring flag from shared memory
-     \returns acquiring flag
+	 * Get acquiring flag from shared memory
+	 * @returns acquiring flag
 	 */
 	bool getAcquiringFlag();
 
 	/**
 	 * Check if acquiring flag is set, set error if set
-	 * \returns FAIL if not ready, OK if ready
+	 * @returns FAIL if not ready, OK if ready
 	 */
 	bool isAcquireReady();
 
@@ -578,7 +576,7 @@ public:
 	/**
 	 * Returns the number of detectors in the multidetector structure
 	 * @returns number of detectors
-     */
+	 */
 	int getNumberOfDetectors();
 
 	/**
@@ -724,9 +722,9 @@ public:
 	 * Checks if the multi detectors are online and sets the online flag
 	 * @param online if GET_ONLINE_FLAG, only returns shared memory online flag,
 	 * else sets the detector in online/offline state
-     * if OFFLINE_FLAG, (i.e. no communication to the detector - using only local structure - no data acquisition possible!);
-     * if ONLINE_FLAG, detector in online state (i.e. communication to the detector updating the local structure)
-     * @returns online/offline status
+	 * if OFFLINE_FLAG, (i.e. no communication to the detector - using only local structure - no data acquisition possible!);
+	 * if ONLINE_FLAG, detector in online state (i.e. communication to the detector updating the local structure)
+	 * @returns online/offline status
 	 */
 	int setOnline(int const online=GET_ONLINE_FLAG);
 
@@ -734,7 +732,7 @@ public:
 	 * Checks if each of the detectors are online/offline
 	 * @returns empty string if they are all online,
 	 * else returns concatenation of strings of all detectors that are offline
-     */
+	 */
 	std::string checkOnline();
 
 	/**
@@ -1841,7 +1839,7 @@ private:
 	void initializeDetectorStructure(bool created, bool verify = true);
 
 	/**
-	 * Initialize class members (and from slsDetectorUtils)
+	 * Initialize class members (and from parent classes)
 	 */
 	void initializeMembers();
 

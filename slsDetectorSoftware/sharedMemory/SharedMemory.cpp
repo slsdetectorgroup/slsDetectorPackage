@@ -64,7 +64,7 @@ void* SharedMemory::CreateSharedMemory(size_t sz){
     return MapSharedMemory(sz);
 }
 
-void* SharedMemory::OpenSharedMemory(size_t sz, bool verify){
+void* SharedMemory::OpenSharedMemory(size_t sz){
     // open
     fd = shm_open(name.c_str(), O_RDWR, 0);
     if (fd < 0) {
@@ -73,11 +73,6 @@ void* SharedMemory::OpenSharedMemory(size_t sz, bool verify){
         throw SharedMemoryException();
     }
 
-    // verification required and size does not match
-    if (verify)
-        VerifySizeMatch(sz);
-
-    // map
     return MapSharedMemory(sz);
 }
 

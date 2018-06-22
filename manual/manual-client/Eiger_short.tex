@@ -680,6 +680,12 @@ Very important is to activate the flow control in 10Gb (in 1Gb it is on by defau
 \end{verbatim}
 Set the transmission delays as explained in the manual.
 
+It can help to increase the fifo size of the receiver to {\tt{rx\_fifodepth}} to 1000 images
+\begin{verbatim}
+./sls_detector_put rx_fifodepth 1000
+\end{verbatim}
+One needs to keep into account that in 16 bit mode for 1 image we expect each slsReceiver  to allocate 0.5MB. So for 1000 images, we expect  500MB memory for each receiver. This can be monitored in Linux with "top" or "free -m".
+
 \section{Offline processing and monitoring}
 
 \subsection{Data out of the detector: UDP packets}\label{UDP}
@@ -749,9 +755,9 @@ Header Version     : 1 byte
 Note that if one wants to  reconstruct the real time the detector was acquiring in 32 bit (autosumming mode), one would have to multiply the SubExptime (ns) for the SubFrame Number. 
 
 \subsection{Offline image reconstruction}
-The offline image reconstruction is in {\tt{slsDetectorsPackage/slsImageReconstruction}}.
+The offline image reconstruction{\tt{slsImageReconstruction}} is not part of the package anymore.
 
-The detector writes a raw file per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce cbf files. The executable uses the CBFlib-0.9.5 library (downloaded from the web as it download some architecture dependent packages at installation).\\
+The detector writes 2 raw files per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce cbf files. The executable uses the CBFlib-0.9.5 library (downloaded from the web as it download some architecture dependent packages at installation).\\
 \underline{At cSAXS, the CBFlib-0.9.5 has been compiled -such that the required packages are}\\\underline{ downloaded in /sls/X12SA/data/x12saop/EigerPackage/CBFlib-0.9.5.}\\ 
 
 To use it for a single module:
@@ -767,7 +773,7 @@ cbfMaker [filename] [pixels x] [pixels y] ([singlemodulelongside_x] [start det])
 \end{verbatim}
 eg.
 {\tt cbfMaker /scratch/run\_63\_d0\_f000000000000\_3.raw  3072 512 1 0}.\\
-The {\tt{[singlemodulelongside\_x]}} and {\tt{[start det]}} param are optional. Defaults are ``1'', the detector long side is on the x coordinate and start to reconstruct from module 0. 
+The {\tt{[singlemodulelongside\_x]}} {\tt{[option to interpolate gap pixels]}} param are optional. Defaults are ``1'', the detector long side is on the x coordinate and start to reconstruct from module 0. 
 The executables: 
 \begin{verbatim}
 bcfMaker1.5M [file_name_with_dir]

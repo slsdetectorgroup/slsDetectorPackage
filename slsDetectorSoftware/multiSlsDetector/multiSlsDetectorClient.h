@@ -25,6 +25,23 @@ public:
 		int del = 0;					      									\
 		char cmd[100] = "";														\
 
+		if (action==slsDetectorDefs::PUT_ACTION && argc<2) {					\
+			cout << "Wrong usage - should be: "<< argv[0] <<					\
+			"[id-][pos:]channel arg" << endl;									\
+			cout << endl;														\
+			return;																\
+			if (del) delete myDetector;											\
+		};																		\
+		if (action==slsDetectorDefs::GET_ACTION && argc<1) {					\
+			cout << "Wrong usage - should be: "<< argv[0] <<					\
+			"[id-][pos:]channel arg" << endl;									\
+			cout << endl;														\
+			if (del) delete myDetector;											\
+			return;																\
+		};																		\
+
+
+
 		// multi id scanned
 		iv=sscanf(argv[0],"%d-%s",&id, cmd);									\
 		if (iv != 2 || id < 0)                                                  \
@@ -43,47 +60,9 @@ public:
 			cout << pos << ":" ;                                                \
 		}                                                                       \
 
-		// readout
-		if (action==slsDetectorDefs::READOUT_ACTION) { 							\
-			if (pos != -1) {													\
-				cout << "pos " << pos << "is not allowed for readout!" << endl;	\
-			}																	\
-			// create multiSlsDetector class if required
-			if (myDetector==NULL) {												\
-				try {															\
-					myDetector = new multiSlsDetector(id, verify, update);		\
-				} catch (const SharedMemoryException & e) {						\
-					cout << e.GetMessage() << endl;								\
-					return;														\
-				} catch (...) {													\
-					cout << " caught exception" << endl;						\
-					return;														\
-				}																\
-				//myDetector->registerDataCallback(&dummyCallback,  NULL);
-				del=1;															\
-			}																	\
-			myCmd=new multiSlsDetectorCommand(myDetector);	    				\
-			answer=myCmd->executeLine(argc, argv, action);	      				\
-			cout << answer<< endl;				      							\
-			delete myCmd;					      								\
-			if (del)      delete myDetector;			      					\
-			return;						      									\
-		};							      										\
-
-		if (action==slsDetectorDefs::PUT_ACTION && argc<2) {					\
-			cout << "Wrong usage - should be: "<< argv[0] <<					\
-			"[id-][pos:]channel arg" << endl;									\
-			cout << endl;														\
-			return;																\
-			if (del) delete myDetector;											\
-		};
-		if (action==slsDetectorDefs::GET_ACTION && argc<1) {					\
-			cout << "Wrong usage - should be: "<< argv[0] <<					\
-			"[id-][pos:]channel arg" << endl;									\
-			cout << endl;														\
-			if (del) delete myDetector;											\
-			return;																\
-		};																		\
+		if ((action==slsDetectorDefs::READOUT_ACTION) && (pos != -1) ) {		\
+			cout << "pos " << pos << "is not allowed for readout!" << endl;		\
+		}																		\
 
 		// special commands
 		string scmd = cmd;														\
@@ -115,6 +94,18 @@ public:
 			}																	\
 			del=1;																\
 		}																		\
+
+
+		// readout
+		if (action==slsDetectorDefs::READOUT_ACTION) { 							\
+			myCmd=new multiSlsDetectorCommand(myDetector);	    				\
+			answer=myCmd->executeLine(argc, argv, action);	      				\
+			cout << answer<< endl;				      							\
+			delete myCmd;					      								\
+			if (del)      delete myDetector;			      					\
+			return;						      									\
+		};							      										\
+
 
 		// call multi detector command line
 		myCmd=new multiSlsDetectorCommand(myDetector);							\

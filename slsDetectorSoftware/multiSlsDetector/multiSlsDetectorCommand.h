@@ -27,7 +27,7 @@ class multiSlsDetectorCommand : public slsDetectorCommand {
 /*      \param action can be PUT_ACTION or GET_ACTION (from text client even READOUT_ACTION for acquisition) */
 /*      \returns answer string  */
 /*   *\/ */
-    
+
     string executeLine(int narg, char *args[], int action, int id=-1) { \
       string s;								\
       if (id>=0) {
@@ -37,14 +37,14 @@ class multiSlsDetectorCommand : public slsDetectorCommand {
 	  s=cmd->executeLine(narg, args, action);			\
 	  if(d->getErrorMask())					\
 		  myDet->setErrorMask((myDet->getErrorMask())|(1<<id));		\
-	  delete cmd;	
+	  delete cmd;
 	} else
 	  s=string("detector does no exist");			\
       } else							\
 	s=slsDetectorCommand::executeLine(narg,args,action);	\
-      return s;		    
+      return s;
     };
-  
+
     /**
      * calls executeLine with PUT_ACTION
      */

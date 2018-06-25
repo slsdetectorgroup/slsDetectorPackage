@@ -19,13 +19,30 @@ class multiSlsDetector;
 class SharedMemory;
 class receiverInterface;
 
-
-#define SLS_SHMVERSION	0x180620
+#define SLS_SHMVERSION	0x180625
 #define NMODMAXX 24
 #define NMODMAXY 24
 #define NCHIPSMAX 10
 #define NCHANSMAX 65536
 #define NDACSMAX 16
+
+typedef  struct detParameterList {
+	int nModMaxX;
+	int nModMaxY;
+	int nChanX;
+	int nChanY;
+	int nChipX;
+	int nChipY;
+	int nDacs;
+	int nAdcs;
+	int nGain;
+	int nOffset;
+	int dynamicRange;
+	int moveFlag;
+	int nGappixelsX;
+	int nGappixelsY;
+} detParameterList;
+
 
 class slsDetector : public slsDetectorUtils, public energyConversion {
 
@@ -363,6 +380,7 @@ public:
 	using angularConversion::writeAngularConversion;
 	using slsDetectorUtils::getAngularConversion;
 
+	//FIXME: all pos or id arguments needed only for same multi signature
 
 	/**
 	 * Constructor called when creating new shared memory
@@ -463,1177 +481,1277 @@ public:
 	 */
 	void freeSharedMemory();
 
-
-
-	/** returns the detector hostname \sa sharedSlsDetector  */
-	string setHostname(const char *name);
-
-
-	/** returns the detector hostname \sa sharedSlsDetector  */
-	string getHostname();
-
+	/**
+	 * Sets the hostname of all sls detectors in shared memory
+	 * Connects to them to set up online flag
+	 * @param s hostname
+	 */
+	void setHostname(const char *name);
 
 	/**
-     returns the detector type from hostname and controlport
-     \param
-     \param action can be PUT_ACTION or GET_ACTION (from text client even READOUT_ACTION for acquisition)
+	 * Gets the hostname of detector
+	 * @param pos insignificant
+	 * @returns hostname
+	 */
+	string getHostname(int pos = -1);
+
+	/**
+	 * Get detector type by connecting to the detector without creating an object
+	 * @param name hostname of detector
+	 * @param cport TCP control port
+	 * @returns detector tpe or GENERIC if failed
 	 */
 	static detectorType getDetectorType(const char *name, int cport=DEFAULT_PORTNO);
 
-
-
-
 	/**
-     sets/gets detector type
-     normally  the detector knows what type of detector it is
-     \param type is the detector type (defaults to GET_DETECTOR_TYPE)
-     \returns returns detector type index (1 GENERIC, 2 MYTHEN, 3 PILATUS, 4 XFS, 5 GOTTHARD, 6 AGIPD, 7 MOENCH, -1 command failed)
+	 * Gets detector type from detector and set it in receiver
+	 * @param type the detector type
+	 * @returns detector type in receiver
 	 */
 	int setDetectorType(detectorType type=GET_DETECTOR_TYPE);
 
 	/**
-      sets/gets detector type
-      normally  the detector knows what type of detector it is
-      \param type is the detector type ("Mythen", "Pilatus", "XFS", "Gotthard", Agipd", "Mönch")
-      \returns returns detector type index (1 GENERIC, 2 MYTHEN, 3 PILATUS, 4 XFS, 5 GOTTHARD, 6 AGIPD, 7 MOENCH, -1 command failed)
-	 */
-	int setDetectorType(string type);
+	 * Gets detector type (string) from detector and set it in receiver
+	 * @param type string of detector type
+	 * @returns detector type in receiver
+ 	 */
+	int setDetectorType(string stype);
 
 	/**
-      gets detector type
-      normally  the detector knows what type of detector it is
-      \returns returns detector type index (1 GENERIC, 2 MYTHEN, 3 PILATUS, 4 XFS, 5 GOTTHARD, 6 AGIPD, 7 MOENCH,-1 command failed)
+	 * Get Detector type from shared memory variable
+	 * @param pos insignificant
+	 * @returns detector type from shared memory variable
 	 */
-	detectorType getDetectorsType(int pos=-1);
-
-	detectorType setDetectorsType(detectorType type=GET_DETECTOR_TYPE, int pos=-1){return getDetectorsType(pos);};
-
-	string sgetDetectorsType(int pos=-1){return getDetectorType(getDetectorsType(pos));};
-
-	string ssetDetectorsType(detectorType type=GET_DETECTOR_TYPE, int pos=-1){return getDetectorType(getDetectorsType(pos));};
-	string ssetDetectorsType(string t, int pos=-1){return getDetectorType(getDetectorsType(pos));}
-
-	string getDetectorType(){return sgetDetectorsType();};
-
-
-
+	detectorType getDetectorsType(int pos = -1);
 
 	/**
-     returns the detector type from hostname and controlport
-     \param
-     \param action can be PUT_ACTION or GET_ACTION (from text client even READOUT_ACTION for acquisition)
+	 * Gets string version of detector type from shared memory variable
+	 * @param pos insignificant
+	 * @returns string version of detector type from shared memory variable
 	 */
-	static detectorType getDetectorType(int id);
-
-
-
-
-	/** Returns the number of  modules (without connecting to the detector) */
-	int getNMods(){return thisDetector->nMods;}; //
-
-	/** Returns the number of  modules in direction d (without connecting to the detector) */
-	int getNMod(dimension d){return thisDetector->nMod[d];}; //
-
-
-	/** Returns the number of  modules (without connecting to the detector) */
-	int getMaxMods(){return thisDetector->nModsMax;}; //
-
-	/** Returns the max number of  modules in direction d (without connecting to the detector) */
-	int getNMaxMod(dimension d){return thisDetector->nModMax[d];}; //
+	string sgetDetectorsType(int pos=-1);
 
 	/**
-      get the maximum size of the detector
-      \param d dimension
-      \returns maximum number of modules that can be installed in direction d
+	 * Just to overload getDetectorType from users
+	 * Gets string version of detector type from shared memory variable
+	 * @returns gets string version of detector type from shared memory variable
+	 */
+	string getDetectorType();
+
+	/**
+	 * Returns number of modules from shared memory (Mythen)
+	 * Other detectors, it is 1
+	 * @returns number of modules
+	 */
+	int getNMods();
+
+	/**
+	 * Returns number of modules in dimension d from shared memory (Mythen)
+	 * Other detectors, it is 1
+	 * @param d dimension d
+	 * @returns number of modules in dimension d
+	 */
+	int getNMod(dimension d);
+
+	/**
+	 * Returns maximum number of modules from shared memory (Mythen)
+	 * Other detectors, it is 1
+	 * @returns maximum number of modules
+	 */
+	int getMaxMods();
+
+	/**
+	 * Returns maximum number of modules  in dimension d  from shared memory (Mythen)
+	 * Other detectors, it is 1
+	 * @param d dimension d
+	 * @returns maximum number of modules  in dimension d
+	 */
+	int getNMaxMod(dimension d);
+
+	/**
+	 * Returns maximum number of modules in dimension d (Mythen)
+	 * from the detector directly.
+	 * Other detectors, it is 1
+	 * @param d dimension d
+	 * @returns maximum number of modules in dimension d
 	 */
 	int getMaxNumberOfModules(dimension d=X); //
 
+	/**
+	 * Sets/Gets the number of modules in dimension d (Mythen)
+	 * from the detector directly.
+	 * Other detectors, it is 1
+	 * @param i the number of modules to set to (-1 gets)
+	 * @param d dimension d
+	 * @returns the number of modules in dimension d
+	 */
+	int setNumberOfModules(int n=GET_FLAG, dimension d=X);
 
 	/**
-      set/get the size of the detector
-      \param n number of modules
-      \param d dimension
-      \returns current number of modules in direction d
+	 * returns the number of channels per that module
+	 * from shared memory (Mythen)
+	 * @param imod insignificant
+	 * @returns number of channels per module
 	 */
-	int setNumberOfModules(int n=GET_FLAG, dimension d=X); // if n=GET_FLAG returns the number of installed modules
+	int getChansPerMod(int imod=0);
 
+	/**
+	 * returns the number of channels per that module in dimension d
+	 * from shared memory (Mythen)
+	 * @param d dimension d
+	 * @param imod insignificant
+	 * @returns number of channels per module in dimension d
+	 */
+	int getChansPerMod( dimension d,int imod=0);
 
-	int getChansPerMod(int imod=0){return thisDetector->nChans*thisDetector->nChips;};
-
-	int getChansPerMod( dimension d,int imod=0){return thisDetector->nChan[d]*thisDetector->nChip[d];};
-
-
+	/**
+	 * Returns the total number of channels from shared memory
+	 * @returns the total number of channels
+	 */
 	int getTotalNumberOfChannels();
-	//{return thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;};
 
+	/**
+	 * Returns the total number of channels in dimension d from shared memory
+	 * @param d dimension d
+	 * @returns the total number of channels  in dimension d
+	 */
 	int getTotalNumberOfChannels(dimension d);
-	//{return thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nMod[d];};
 
+	/**
+	 * Returns the total number of channels of in dimension d including gap pixels
+	 * from shared memory
+	 * @param d dimension d
+	 * @returns the total number of channels including gap pixels in dimension d
+	 * including gap pixels
+	 */
 	int getTotalNumberOfChannelsInclGapPixels(dimension d);
 
+	/**
+	 * Returns the maximum number of channels from shared memory (Mythen)
+	 * @returns the maximum number of channels
+	 */
+	int getMaxNumberOfChannels();
 
-	int getMaxNumberOfChannels();//{return thisDetector->nChans*thisDetector->nChips*thisDetector->nModsMax;};
+	/**
+	 * Returns the maximum number of channels in dimension d from shared memory (Mythen)
+	 * @param d dimension d
+	 * @returns the maximum number of channels in dimension d
+	 */
+	int getMaxNumberOfChannels(dimension d);
 
-	int getMaxNumberOfChannels(dimension d);//{return thisDetector->nChan[d]*thisDetector->nChip[d]*thisDetector->nModMax[d];};
-
+	/**
+	 * Returns the maximum number of channels in dimension d from shared memory (Mythen)
+	 * @param d dimension d
+	 * @returns the maximum number of channels in dimension d
+	 */
 	int getMaxNumberOfChannelsInclGapPixels(dimension d);
 
+	/**
+	 * returns the number of channels per chip from shared memory (Mythen)
+	 * @returns number of channels per chip
+	 */
+	int getNChans();
 
+	/**
+	 * returns the number of channels per chip in dimension d from shared memory (Mythen)
+	 * @param d dimension d
+	 * @returns number of channels per chip in dimension d
+	 */
+	int getNChans(dimension d);
 
-	/** Returns the number of channels per chip (without connecting to the detector) */
-	int getNChans(){return thisDetector->nChans;}; //
+	/**
+	 * returns the number of chips per module from shared memory (Mythen)
+	 * @returns number of chips per module
+	 */
+	int getNChips();
 
-	/** Returns the number of channels per chip (without connecting to the detector) in one direction */
-	int getNChans(dimension d){return thisDetector->nChan[d];}; //
+	/**
+	 * returns the number of chips per module in dimension d from shared memory (Mythen)
+	 * @param d dimension d
+	 * @returns number of chips per module in dimension d
+	 */
+	int getNChips(dimension d);
 
-	/** Returns the number of chips per module (without connecting to the detector) */
-	int getNChips(){return thisDetector->nChips;}; //
-
-	/** Returns the number of chips per module (without connecting to the detector) */
-	int getNChips(dimension d){return thisDetector->nChip[d];}; //
-
+	/**
+	 * Checks if the detector is online and sets the online flag
+	 * @param online if GET_ONLINE_FLAG, only returns shared memory online flag,
+	 * else sets the detector in online/offline state
+	 * if OFFLINE_FLAG, (i.e. no communication to the detector - using only local structure - no data acquisition possible!);
+	 * if ONLINE_FLAG, detector in online state (i.e. communication to the detector updating the local structure)
+	 * @returns online/offline status
+	 */
 	int setOnline(int const online=GET_ONLINE_FLAG);
 
+	/**
+	 * Checks if each of the detector is online/offline
+	 * @returns empty string if it is online
+	 * else returns hostnameif it is offline
+	 */
 	string checkOnline();
 
 	/**
-      configure the socket communication and initializes the socket instances
-
-      \param name hostname - if "" the current hostname is used
-      \param control_port port for control commands - if -1 the current is used
-      \param stop_port port for stop command - if -1 the current is used
-
-      \returns OK is connection succeded, FAIL otherwise
-      \sa sharedSlsDetector
+	 * Configure the TCP socket communciation and initializes the socket instances
+	 * @param name hostname, empty if current hostname
+	 * @param control_port TCP port for control commands, -1 if current is used
+	 * @param stop_port TCP port for data commands, -1 if current is used
+	 * @returns OK or FAIL
+	 * \sa sharedSlsDetector
 	 */
 	int setTCPSocket(string const name="", int const control_port=-1, int const stop_port=-1);
 
 
 	/**
-     changes/gets the port number
-     \param type port type
-     \param num new port number (-1 gets)
-     \returns actual port number
+	 * Set/Gets TCP Port of detector or receiver
+	 * @param t port type
+	 * @param p port number (-1 gets)
+	 * @returns port number
 	 */
 	int setPort(portType type, int num=-1);
 
-	/** returns the detector control port  \sa sharedSlsDetector */
-	int getControlPort() {return  thisDetector->controlPort;};
-	/** returns the detector stop  port  \sa sharedSlsDetector */
-	int getStopPort() {return thisDetector->stopPort;};
-	/** returns the receiver port  \sa sharedSlsDetector */
-	int getReceiverPort() {return thisDetector->receiverTCPPort;};
+	/**
+	 * Returns the detector TCP control port  \sa sharedSlsDetector
+	 * @returns the detector TCP control port
+	 */
+	int getControlPort();
 
+	/**
+	 * Returns the detector TCP stop port  \sa sharedSlsDetector
+	 * @returns the detector TCP stop port
+	 */
+	int getStopPort();
 
+	/**
+	 * Returns the receiver TCP port  \sa sharedSlsDetector
+	 * @returns the receiver TCP port
+	 */
+	int getReceiverPort();
 
-	/** Locks/Unlocks the connection to the server
-      /param lock sets (1), usets (0), gets (-1) the lock
-      /returns lock status of the server
+	/**
+	 * Lock server for this client IP
+	 * @param p 0 to unlock, 1 to lock (-1 gets)
+	 * @returns 1 for locked or 0 for unlocked
 	 */
 	int lockServer(int lock=-1);
 
 	/**
-      Returns the IP of the last client connecting to the detector
+	 * Get last client IP saved on detector server
+	 * @returns last client IP saved on detector server
 	 */
 	string getLastClientIP();
+
 	/**
-      turns off server
+	 * Exit detector server
+	 * @returns OK or FAIL
 	 */
 	int exitServer();
 
 	/**
-     executes a system command on the server
-     e.g. mount an nfs disk, reboot and returns answer etc.
-     \param cmd is the command to be executed
-     \param answer is the answer from the detector
-     \returns OK or FAIL depending on the command outcome
+	 * Executes a system command on the detector server
+	 * e.g. mount an nfs disk, reboot and returns answer etc.
+	 * @param cmd command to be executed
+	 * @param answer is the answer from the detector
+	 * @returns OK or FAIL
 	 */
 	int execCommand(string cmd, string answer);
 
 	/**
-  updates the shared memory receiving the data from the detector (without asking and closing the connection
-  /returns OK
+	 * Updates some of the shared memory receiving the data from the detector
+	 * @returns OK
 	 */
 	int updateDetectorNoWait();
 
 	/**
-  updates the shared memory receiving the data from the detector
-  /returns OK
-
+	 * Updates soem of the shared memory receiving the data from the detector
+	 * calls updateDetectorNoWait
+	 * @returns OK or FAIL or FORCE_RET
 	 */
 	int updateDetector();
 
-
-	/** connect to the control port */
-	int connectControl();
-	/** disconnect from the control port */
-	int disconnectControl();
-
-	/** connect to the receiver port */
-	int connectData();
-	/** disconnect from the receiver port */
-	int disconnectData();
-
-	/** connect to the stop port */
-	int connectStop();
-	/** disconnect from the stop port */
-	int disconnectStop();
-
-	/** Allocates the memory for a sls_detector_module structure and initializes it
-      \returns myMod the pointer to the allocate dmemory location
-
-	 */
-	sls_detector_module*  createModule(){return createModule(thisDetector->myDetectorType);};
-
-
-	/** Allocates the memory for a sls_detector_module structure and initializes it
-      \returns myMod the pointer to the allocate dmemory location
-
-	 */
-	sls_detector_module*  createModule(detectorType myDetectorType);
-
-	/** frees the memory for a sls_detector_module structure
-      \param myMod the pointer to the memory to be freed
-
-	 */
-
-	void deleteModule(sls_detector_module *myMod);
-
 	/**
-     Reads the configuration file fname
-     \param fname file name
-     \returns OK or FAIL
+	 * Load configuration from a configuration File
+	 * calls readConfigurationFile and gives it the stream
+	 * @param fname configuration file name
+	 * @return OK or FAIL
 	 */
 	int readConfigurationFile(string const fname);
 
-
+	/**
+	 * Load configuration from a stream
+	 * @param infile stream
+	 * @return OK or FAIL
+	 */
 	int readConfigurationFile(ifstream &infile);
 
-
 	/**
-
-  Writes the configuration file fname
-  \param fname file name
-  \returns OK or FAIL
-
+	 * Write current configuration to a file
+	 * calls writeConfigurationFile giving it a stream to write to
+	 * @param fname configuration file name
+	 * @returns OK or FAIL
 	 */
 	int writeConfigurationFile(string const fname);
+
+	/**
+	 * Write current configuration to a stream
+	 * @param outfile outstream
+	 * @param id detector id
+	 * @returns OK or FAIL
+	 */
 	int writeConfigurationFile(ofstream &outfile, int id=-1);
 
-
 	/**
-     returns currently the loaded trimfile/settingsfile name
+	 * Returns the trimfile or settings file name (Useless??)
+	 * @returns the trimfile or settings file name
 	 */
-	string getSettingsFile(){\
-		string s(thisDetector->settingsFile); \
-		if (s.length()>6) {\
-			if (s.substr(s.length()-6,3)==string(".sn") && s.substr(s.length()-3)!=string("xxx") ) \
-			return s.substr(0,s.length()-6);			\
-		}									\
-		return string(thisDetector->settingsFile);\
-	};
-
+	string getSettingsFile();
 
 	/**
-     writes a trim/settings file for module number imod - the values will be read from the current detector structure
-     \param fname name of the file to be written
-     \param imod module number
-     \param iodelay io delay (detector specific)
-     \param tau tau (detector specific)
-     \returns OK or FAIL if the file could not be written
-     \sa ::sls_detector_module sharedSlsDetector mythenDetector::writeSettingsFile(string, int)
+	 * Writes a trim/settings file for module number imod,
+	 * the values will be read from the current detector structure
+	 * @param fname name of the file to be written
+	 * @param imod module number
+	 * @param iodelay io delay (detector specific)
+	 * @param tau tau (detector specific)
+	 * @returns OK or FAIL if the file could not be written
+	 * \sa ::sls_detector_module sharedSlsDetector mythenDetector::writeSettingsFile(string, int)
 	 */
 	using energyConversion::writeSettingsFile;
 	int writeSettingsFile(string fname, int imod, int iodelay, int tau);
 
-
-
 	/**
-     get detector settings
-     \param imod module number (-1 all)
-     \returns current settings  detectorSettings sendSettingsOnly(detectorSettings isettings);
+	 * Get detector settings
+	 * @param imod module number (-1 all)
+	 * @returns current settings
 	 */
 	detectorSettings getSettings(int imod=-1);
 
 	/**
-     set detector settings
-     \param isettings  settings
-     \param imod module number (-1 all)
-     \returns current settings
-
-     in this function trimbits/settings and calibration files are searched in the settingsDir and calDir directories and the detector is initialized
+	 * Load detector settings from the settings file picked from the trimdir/settingsdir
+	 * Eiger only stores in shared memory ( a get will overwrite this)
+	 * For Eiger, one must use threshold
+	 * Gotthard, Propix, Jungfrau and Moench only sends the settings enum to the detector
+	 * @param isettings settings
+	 * @param imod module number (-1 all)
+	 * @returns current settings
 	 */
 	detectorSettings setSettings(detectorSettings isettings, int imod=-1);
 
-
-
-	/** returns the detector trimbit/settings directory  \sa sharedSlsDetector */
-	std::string getSettingsDir() {return std::string(thisDetector->settingsDir);};
-	/** sets the detector trimbit/settings directory  \sa sharedSlsDetector */
-	std::string setSettingsDir(string s) {sprintf(thisDetector->settingsDir, s.c_str()); return thisDetector->settingsDir;};
-
-
+	/**
+	 * Send detector settings only (set only for Jungfrau, Gotthard, Moench, get for all)
+	 * Only the settings enum is sent to the detector, where it will
+	 * initialize al the dacs already hard coded in the detector server
+	 * @param isettings  settings
+	 * @param imod module number (-1 all)
+	 * @returns current settings
+	 */
+	detectorSettings sendSettingsOnly(detectorSettings isettings, int imod=-1);
 
 	/**
-     returns the location of the calibration files
-     \sa  sharedSlsDetector
-	 */
-	std::string getCalDir() {return thisDetector->calDir;};
-	/**
-     sets the location of the calibration files
-     \sa  sharedSlsDetector
-	 */
-	std::string setCalDir(string s) {sprintf(thisDetector->calDir, s.c_str()); return thisDetector->calDir;};
-
-	/** loads the modules settings/trimbits reading from a file
-      \param fname file name . If not specified, extension is automatically generated!
-      \param imod module number, -1 means all modules
-      \returns OK or FAIL
-	 */
-	int loadSettingsFile(string fname, int imod=-1);
-
-
-	/** saves the modules settings/trimbits writing to  a file
-      \param fname file name . Axtension is automatically generated!
-      \param imod module number, -1 means all modules
-      \returns OK or FAIL
-	 */
-	int saveSettingsFile(string fname, int imod=-1);
-
-
-	/** loads the modules calibration data  reading from a file
-      \param fname file name . If not specified, extension is automatically generated!
-      \param imod module number, -1 means all modules
-      \returns OK or FAIL
-	 */
-	int loadCalibrationFile(string fname, int imod=-1);
-
-
-	/** saves the modules calibration data  writing to  a file
-      \param fname file name . Axtension is automatically generated!
-      \param imod module number, -1 means all modules
-      \returns OK or FAIL
-	 */
-	int saveCalibrationFile(string fname, int imod=-1);
-
-
-	/** returns if the detector is Master, slave or nothing
-      \param flag can be GET_MASTER, NO_MASTER, IS_MASTER, IS_SLAVE
-      \returns master flag of the detector
-	 */
-	masterFlags  setMaster(masterFlags flag);
-
-
-	/**
-      Sets/gets the synchronization mode of the various detectors
-      \param sync syncronization mode can be GET_SYNCHRONIZATION_MODE, NONE, MASTER_GATES, MASTER_TRIGGERS, SLAVE_STARTS_WHEN_MASTER_STOPS
-      \returns current syncronization mode
-	 */
-	synchronizationMode setSynchronization(synchronizationMode sync=GET_SYNCHRONIZATION_MODE);
-
-	/** calcualtes the total number of steps of the acquisition.
-      called when number of frames, number of cycles, number of positions and scan steps change
-	 */
-	int setTotalProgress();
-
-	/** returns the current progress in % */
-	double getCurrentProgress();
-
-	runStatus  getRunStatus();
-
-	/**
-     prepares detector for acquisition
-     \returns OK/FAIL
-	 */
-	int prepareAcquisition();
-
-	/**
-     prepares detector for acquisition
-     \returns OK/FAIL
-	 */
-	int cleanupAcquisition();
-
-	/**
-     start detector acquisition
-     \returns OK/FAIL
-	 */
-	int startAcquisition();
-
-	/**
-     stop detector acquisition
-     \returns OK/FAIL
-	 */
-	int stopAcquisition();
-
-	/**
-     start readout (without exposure or interrupting exposure)
-     \returns OK/FAIL
-	 */
-	int startReadOut();
-
-	/**
-     start detector acquisition and read all data putting them a data queue
-     \returns pointer to the front of the data queue
-     \sa startAndReadAllNoWait getDataFromDetector dataQueue
-	 */
-	int* startAndReadAll();
-
-
-	/**
-     start detector acquisition and read out, but does not read data from socket  leaving socket opened
-     \returns OK or FAIL
-
-	 */
-	int startAndReadAllNoWait();
-
-	/**
-      Receives a data frame from the detector socket
-      \returns pointer to the data (or NULL if failed)
-
-	 */
-	int* getDataFromDetector(int *retval=NULL);
-
-	/**
-     asks and  receives a data frame from the detector and puts it in the data queue
-     \returns pointer to the data or NULL.
-     \sa getDataFromDetector
-	 */
-	int* readFrame();
-
-	/**
-     asks and  receives all data  from the detector  and puts them in a data queue
-     \returns pointer to the front of the queue  or NULL.
-     \sa getDataFromDetector  dataQueue
-	 */
-	int* readAll();
-
-	/**
-     asks and  receives all data  from the detector  and leaves the socket opened
-     \returns OK or FAIL
-	 */
-	int readAllNoWait();
-
-	/**
-       configures mac for gotthard, moench readout
-     \returns OK or FAIL
-	 */
-	int configureMAC();
-
-	/**
-     get threshold energy
-     \param imod module number (-1 all)
-     \returns current threshold value for imod in ev (-1 failed)
+	 * Get threshold energy (Mythen and Eiger)
+	 * @param imod module number (-1 all)
+	 * @returns current threshold value for imod in ev (-1 failed)
 	 */
 	int getThresholdEnergy(int imod=-1);
 
 
 	/**
-     set threshold energy
-     \param e_eV threshold in eV
-     \param imod module number (-1 all)
-     \param isettings ev. change settings
-     \param tb 1 to include trimbits, 0 to exclude
-     \returns current threshold value for imod in ev (-1 failed)
+	 * Set threshold energy (Mythen and Eiger)
+	 * For Eiger, calls setThresholdEneryAndSettings
+	 * @param e_eV threshold in eV
+	 * @param imod module number (-1 all)
+	 * @param isettings ev. change settings
+	 * @param tb 1 to include trimbits, 0 to exclude
+	 * @returns current threshold value for imod in ev (-1 failed)
 	 */
 	int setThresholdEnergy(int e_eV, int imod=-1, detectorSettings isettings=GET_SETTINGS, int tb=1);
 
 	/**
-     set threshold energy
-     \param e_eV threshold in eV
-     \param isettings ev. change settings
-     \param tb 1 to include trimbits, 0 to exclude
-     \returns OK if successful, else FAIL
+	 * Set threshold energy and settings (Eiger only)
+	 * @param e_eV threshold in eV
+	 * @param isettings ev. change settings
+	 * @param tb 1 to include trimbits, 0 to exclude
+	 * @returns OK if successful, else FAIL
 	 */
 	int setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings, int tb=1);
 
-
 	/**
-     send detector settings only (set only for Jungfrau, Gotthard, Moench, get for all)
-     \param isettings  settings
-     \param imod module number (-1 all)
-     \returns current settings
-
-     in this function only the settings is sent to the detector, where it will initialize all the dacs already stored in the detector server.
+	 * Returns the detector trimbit/settings directory  \sa sharedSlsDetector
+	 * @returns the trimbit/settings directory
 	 */
-	detectorSettings sendSettingsOnly(detectorSettings isettings, int imod=-1);
-
-
+	std::string getSettingsDir();
 
 	/**
-      set/get timer value
-      \param index timer index
-      \param t time in ns or number of...(e.g. frames, gates, probes)
-      \returns timer set value in ns or number of...(e.g. frames, gates, probes)
+	 * Sets the detector trimbit/settings directory  \sa sharedSlsDetector
+	 * @param s trimbits/settings directory
+	 * @returns the trimbit/settings directory
+	 */
+	std::string setSettingsDir(string s);
+
+	/**
+	 * Returns the calibration files directory   \sa  sharedSlsDetector (Mythen)
+	 * @returns the calibration files directory
+	 */
+	std::string getCalDir();
+
+	/**
+	 * Sets the calibration files directory   \sa  sharedSlsDetector (Mythen)
+	 * @param s the calibration files directory
+	 * @returns the calibration files directory
+	 */
+	std::string setCalDir(string s);
+
+	/**
+	 * Loads the modules settings/trimbits reading from a specific file
+	 * file name extension is automatically generated.
+	 * @param fname specific settings/trimbits file
+	 * @param imod module index of the entire list,
+	 * from which will be calculated the detector index and the module index (-1 for all)
+	 * returns OK or FAIL
+	 */
+	int loadSettingsFile(string fname, int imod=-1);
+
+	/**
+	 * Saves the modules settings/trimbits to a specific file
+	 * file name extension is automatically generated.
+	 * @param fname specific settings/trimbits file
+	 * @param imod module number (-1 for all)
+	 * returns OK or FAIL
+	 */
+	int saveSettingsFile(string fname, int imod=-1);
+
+	/**
+	 * Loads the modules calibration data reading from a specific file (Mythen)
+	 * file name extension is automatically generated.
+	 * @param fname specific calibration file
+	 * @param imod module number (-1 for all)
+	 * returns OK or FAIL
+	 */
+	int loadCalibrationFile(string fname, int imod=-1);
+
+	/**
+	 * Saves the modules calibration data to a specific file (Mythen)
+	 * file name extension is automatically generated.
+	 * @param fname specific calibration file
+	 * @param imod module number (-1 for all)
+	 * returns OK or FAIL
+	 */
+	int saveCalibrationFile(string fname, int imod=-1);
+
+	/**
+	 * Sets/gets the detector in position i as master of the structure (Mythen)
+	 * (e.g. it gates the other detectors and therefore must be started as last.
+	 * Assumes that signal 0 is gate in, signal 1 is trigger in, signal 2 is gate out
+	 * @param i position of master (-1 gets, -2 unset)
+	 * @return master's position (-1 none)
+	 */
+	masterFlags  setMaster(masterFlags flag);
+
+	/**
+	 * Sets/gets the synchronization mode of the various detector (Mythen)
+	 * @param sync syncronization mode
+	 * @returns current syncronization mode
+	 */
+	synchronizationMode setSynchronization(synchronizationMode sync=GET_SYNCHRONIZATION_MODE);
+
+	/**
+	 * Calcualtes the total number of steps of the acquisition
+	 * Called when number of frames, number of cycles, number of positions and scan steps change
+	 * @returns the total number of steps of the acquisition
+	 */
+	int setTotalProgress();
+
+	/**
+	 * Returns the current progress in %
+	 * @returns the current progress in %
+	 */
+	double getCurrentProgress();
+
+	/**
+	 * Get run status of the detector
+	 * @returns the status of the detector
+	 */
+	runStatus  getRunStatus();
+
+	/**
+	 * Prepares detector for acquisition (Eiger and Gotthard)
+	 * For Gotthard, it sets the detector data transmission mode (CPU or receiver)
+	 * @returns OK or FAIL
+	 */
+	int prepareAcquisition();
+
+	/**
+	 * Cleans up after acquisition (Gotthard only)
+	 * For Gotthard, it sets the detector data transmission to default (via CPU)
+	 * @returns OK or FAIL
+	 */
+	int cleanupAcquisition();
+
+	/**
+	 * Start detector acquisition (Non blocking)
+	 * @returns OK or FAIL if even one does not start properly
+	 */
+	int startAcquisition();
+
+	/**
+	 * Stop detector acquisition
+	 * @returns OK or FAIL
+	 */
+	int stopAcquisition();
+
+	/**
+	 * Start readout (without exposure or interrupting exposure) (Mythen)
+	 * @returns OK or FAIL
+	 */
+	int startReadOut();
+
+	/**
+	 * Start detector acquisition and read all data (Blocking until end of acquisition)
+	 * (Mythen, puts all data into a data queue. Others, data at receiver via udp packets)
+	 * @returns pointer to the front of the data queue (return significant only for Mythen)
+	 * \sa startAndReadAllNoWait getDataFromDetector dataQueue
+	 */
+	int* startAndReadAll();
+
+	/**
+	 * Start detector acquisition and call read out, but not reading (data for Mythen,
+	 * and status for other detectors) from the socket.
+	 * (startAndReadAll calls this and getDataFromDetector. Client is not blocking,
+	 * but server is blocked until getDataFromDetector is called. so not recommended
+	 * for users)
+	 * @returns OK or FAIL
+	 */
+	int startAndReadAllNoWait();
+
+	/**
+	 * Reads from the detector socket (data frame for Mythen and status for other
+	 * detectors)
+	 * @returns pointer to the data or NULL. If NULL disconnects the socket
+	 * (return significant only for Mythen)
+	 * Other detectors return NULL
+	 * \sa getDataFromDetector
+	 */
+	int* getDataFromDetector(int *retval=NULL);
+
+	/**
+	 * Requests and receives a single data frame from the detector
+	 * (Mythen: and puts it in the data queue)
+	 * @returns pointer to the data or NULL. (return Mythen significant)
+	 *  Other detectors return NULL
+	 * \sa getDataFromDetector
+	 */
+	int* readFrame();
+
+	/**
+	 * Receives all data from the detector
+	 * (Mythen: and puts them in a data queue)
+	 * @returns pointer to the front of the queue or NULL (return Mythen significant)
+	 * Other detectors return NULL
+	 * \sa getDataFromDetector  dataQueue
+	 */
+	int* readAll();
+
+	/**
+	 * Requests detector for all data, calls readAll afterwards
+	 * (Mythen: and puts them in a data queue)
+	 * @returns pointer to the front of the queue or NULL (return Mythen significant)
+	 * Other detectors return NULL
+	 * \sa getDataFromDetector  dataQueue
+	 */
+	int readAllNoWait();
+
+	/**
+	 * Configures in detector the destination for UDP packets (Not Mythen)
+	 * @returns OK or FAIL
+	 */
+	int configureMAC();
+
+	/**
+	 * Set/get timer value (not all implemented for all detectors)
+	 * @param index timer index
+	 * @param t time in ns or number of...(e.g. frames, gates, probes)
+	 * @returns timer set value in ns or number of...(e.g. frames, gates, probes)
 	 */
 	int64_t setTimer(timerIndex index, int64_t t=-1);
 
 	/**
-      get current timer value
-      \param index timer index
-      \returns elapsed time value in ns or number of...(e.g. frames, gates, probes)
+	 * Set/get timer value left in acquisition (not all implemented for all detectors)
+	 * @param index timer index
+	 * @param t time in ns or number of...(e.g. frames, gates, probes)
+	 * @returns timer set value in ns or number of...(e.g. frames, gates, probes)
 	 */
 	int64_t getTimeLeft(timerIndex index);
 
-	/** sets/gets the value of important readout speed parameters
-      \param sp is the parameter to be set/get
-      \param value is the value to be set, if -1 get value
-      \returns current value for the specified parameter
-      \sa speedVariable
+	/**
+	 * Set speed
+	 * @param sp speed type  (clkdivider option for Jungfrau and Eiger, others for Mythen/Gotthard)
+	 * @param value (clkdivider 0,1,2 for full, half and quarter speed). Other values check manual
+	 * @returns value of speed set
 	 */
 	int setSpeed(speedVariable sp, int value=-1);
 
-	// Flags
 	/**
-      set/get dynamic range
-      \param n dynamic range (-1 get)
-      \returns current dynamic range
-      updates the size of the data expected from the detector
-      \sa sharedSlsDetector
+	 * Set/get dynamic range and updates the number of dataBytes
+	 * (Eiger: If i is 32, also sets clkdivider to 2, if 16, sets clkdivider to 1)
+	 * @param i dynamic range (-1 get)
+	 * @returns current dynamic range
+	 * \sa sharedSlsDetector
 	 */
 	int setDynamicRange(int n=-1);
 
 	/**
-      set/get dynamic range
-      \returns number of bytes sent by the detector
-      \sa sharedSlsDetector
+	 * Recalculated number of data bytes
+	 * @returns tota number of data bytes
 	 */
-	int getDataBytes(){return thisDetector->dataBytes;};
+	int getDataBytes();
 
 	/**
-	 * returns number of bytes sent by detector including gap pixels
-	 * \sa sharedSlsDetector
+	 * Recalculated number of data bytes including gap pixels
+	 * @returns tota number of data bytes including gap pixels
 	 */
-	int getDataBytesInclGapPixels(){return thisDetector->dataBytesInclGapPixels;};
+	int getDataBytesInclGapPixels();
 
 	/**
-     set dacs value
-     \param val value (in V)
-     \param index DAC index
-     \param mV 0 in dac units or 1 in mV
-     \param imod module number (if -1 alla modules)
-     \returns current DAC value
+	 * Set/get dacs value
+	 * @param val value (in V)
+	 * @param index DAC index
+	 * @param mV 0 in dac units or 1 in mV
+	 * @param imod module number (if -1 all modules)
+	 * @returns current DAC value
 	 */
 	dacs_t setDAC(dacs_t val, dacIndex index , int mV, int imod=-1);
 
 	/**
-     set dacs value
-     \param index ADC index
-     \param imod module number
-     \returns current ADC value  (temperature for eiger and jungfrau in millidegrees)
+	 * Get adc value
+	 * @param index adc(DAC) index
+	 * @param imod module number (if -1 all modules)
+	 * @returns current adc value (temperature for eiger and jungfrau in millidegrees)
 	 */
 	dacs_t getADC(dacIndex index, int imod=0);
-	/**
-      set/get the external communication mode
 
-      obsolete \sa setExternalSignalFlags
-      \param pol value to be set \sa externalCommunicationMode
-      \returns current external communication mode
+	/**
+	 * Set/get timing mode
+	 * @param pol timing mode (-1 gets)
+	 * @returns current timing mode
 	 */
 	externalCommunicationMode setExternalCommunicationMode(externalCommunicationMode pol=GET_EXTERNAL_COMMUNICATION_MODE);
 
 	/**
-      set/get the use of an external signal 
-      \param pol meaning of the signal \sa externalSignalFlag
-      \param signalIndex index of the signal
-      \returns current meaning of signal signalIndex
+	 * Set/get external signal flags (to specify triggerinrising edge etc) (Gotthard, Mythen)
+	 * @param pol external signal flag (-1 gets)
+	 * @param signalindex singal index (0 - 3)
+	 * @returns current timing mode
 	 */
 	externalSignalFlag setExternalSignalFlags(externalSignalFlag pol=GET_EXTERNAL_SIGNAL_FLAG , int signalindex=0);
 
 	/**
-     set/get readout flags
-     \param flag readout flag to be set
-     \returns current flag
+	 * Set/get readout flags (Eiger, Mythen)
+	 * @param flag readout flag (Eiger options: parallel, nonparallel, safe etc.) (-1 gets)
+	 * @returns readout flag
 	 */
 	int setReadOutFlags(readOutFlags flag=GET_READOUT_FLAGS);
 
 	/**
-      write  register
-      \param addr address
-      \val value
-      \returns current register value
-
+	 * Write in a register. For Advanced users
+	 * @param addr address of register
+	 * @param val value to write into register
+	 * @returns value read after writing
 	 */
 	uint32_t writeRegister(uint32_t addr, uint32_t val);
 
 	/**
-      read  register
-      \param addr address
-      \returns current register value
-
+	 * Read from a register. For Advanced users
+	 * @param addr address of register
+	 * @returns value read from register
 	 */
 	uint32_t readRegister(uint32_t addr);
 
 	/**
-      sets a bit in a register
-      \param addr address
-      \param n nth bit ranging from 0 to 31
-      \returns current register value
-
-      DO NOT USE!!! ONLY EXPERT USER!!!
+	 * Set bit in a register. For Advanced users
+	 * @param addr address of register
+	 * @param n nth bit
+	 * @returns value read from register
 	 */
 	uint32_t setBit(uint32_t addr, int n);
 
-
 	/**
-      clear a bit in a register
-      \param addr address
-      \param n nth bit ranging from 0 to 31
-      \returns current register value
-
-      DO NOT USE!!! ONLY EXPERT USER!!!
+	 * Clear bit in a register. For Advanced users
+	 * @param addr address of register
+	 * @param n nth bit
+	 * @returns value read from register
 	 */
 	uint32_t clearBit(uint32_t addr, int n);
 
 	/**
-     sets the network parameters
-     must restart streaming in client/receiver if to do with zmq after calling this function
-     \param i network parameter type
-     \param s value to be set
-     \returns parameter
-
+	 * Set network parameter
+	 * @param p network parameter type
+	 * @param s network parameter value
+	 * @returns network parameter value set (from getNetworkParameter)
 	 */
 	string setNetworkParameter(networkParameter index, string value);
 
 	/**
-     gets the network parameters
-     \param i network parameter type can be RECEIVER_IP, RECEIVER_MAC, SERVER_MAC
-     \returns parameter
-
+	 * Get network parameter
+	 * @param p network parameter type
+	 * @returns network parameter value set (from getNetworkParameter)
 	 */
 	string getNetworkParameter(networkParameter index);
 
 	/**
-     Digital test of the modules
-     \param mode test mode
-     \param imod module number for chip test or module firmware test
-     \returns OK or error mask
+	 * Execute a digital test (Gotthard, Mythen)
+	 * @param mode testmode type
+	 * @param imod module index (-1 for all)
+	 * @returns result of test
 	 */
 	int digitalTest(digitalTestMode mode, int imod=0);
 
-
 	/**
-     execute trimming
-     \param mode trim mode
-     \param par1 if noise, beam or fixed setting trimming it is count limit, if improve maximum number of iterations
-     \param par2 if noise or beam nsigma, if improve par2!=means vthreshold will be optimized, if fixed settings par2<0 trimwith median, par2>=0 trim with level
-     \param imod module number (-1 all)
-     \returns OK or FAIl (FAIL also if some channel are 0 or 63
+	 * Execute trimming (Mythen)
+	 * @param mode trimming mode type
+	 * @param par1 parameter 1
+	 * @param par2 parameter 2
+	 * @param imod module index (-1 for all)
+	 * @returns result of trimming
 	 */
 	int executeTrimming(trimMode mode, int par1, int par2, int imod=-1);
-	/**
-     Loads dark image or gain image from a file and sends it to the detector
-     \param index is 0 for dark image and 1 for gain image
-     \param fname file name to load data from
 
+	/**
+	 * Load dark or gain image to detector (Gotthard)
+	 * @param index image type, 0 for dark image and 1 for gain image
+	 * @param fname file name from which to load image
+	 * @returns OK or FAIL
 	 */
 	int loadImageToDetector(imageType index,string const fname);
 
 	/**
-     Called from loadImageToDetector to send the image to detector
-     \param index is 0 for dark image and 1 for gain image
-     \param arg image
-
+	 * Called from loadImageToDetector to send the image to detector
+	 * @param index image type, 0 for dark image and 1 for gain image
+	 * @param imageVals image
+	 * @returns OK or FAIL
 	 */
 	int sendImageToDetector(imageType index,short int imageVals[]);
 
 	/**
-     writes the counter memory block from the detector
-     \param startACQ is 1 to start acquisition after reading counter
-     \param fname file name to load data from
-     \returns OK or FAIL
+	 * Writes the counter memory block from the detector (Gotthard)
+	 * @param fname file name to load data from
+	 * @param startACQ is 1 to start acquisition after reading counter
+	 * @returns OK or FAIL
 	 */
 	int writeCounterBlockFile(string const fname,int startACQ=0);
 
-
 	/**
-     gets counter memory block in detector
-     \param startACQ is 1 to start acquisition after reading counter
-     \param arg counter memory block from detector
-     \returns OK or FAIL
+	 * Gets counter memory block in detector (Gotthard)
+	 * @param arg counter memory block from detector
+	 * @param startACQ 1 to start acquisition afterwards, else 0
+	 * @returns OK or FAIL
 	 */
 	int getCounterBlock(short int arg[],int startACQ=0);
 
-
 	/**
-     Resets counter in detector
-     \param startACQ is 1 to start acquisition after resetting counter
-     \returns OK or FAIL
+	 * Resets counter in detector
+	 * @param startACQ is 1 to start acquisition after resetting counter
+	 * @returns OK or FAIL
 	 */
 	int resetCounterBlock(int startACQ=0);
 
-	/** set/get counter bit in detector
+	/**
+	 * Set/get counter bit in detector (Gotthard)
 	 * @param i is -1 to get, 0 to reset and any other value to set the counter bit
-     /returns the counter bit in detector
+	 * @returns the counter bit in detector
 	 */
 	int setCounterBit(int i = -1);
 
-
 	/**
-      set roi
-       \param n number of rois
-       \param roiLimits array of roi
-       \returns success or failure
+	 * Set ROI (Gotthard)
+	 * At the moment only one set allowed
+	 * @param n number of rois
+	 * @param roiLimits array of roi
+	 * @returns OK or FAIL
 	 */
 	int setROI(int n=-1,ROI roiLimits[]=NULL);
 
 	/**
-    	  get roi from each detector and convert it to the multi detector scale
-    	  \param n number of roi
-    	  \returns an array of multidetector's rois
+	 * Get ROI from each detector and convert it to the multi detector scale (Gotthard)
+	 * @param n number of rois
+	 * @returns OK or FAIL
 	 */
 	slsDetectorDefs::ROI* getROI(int &n);
 
-
-	/** Returns number of rois */
-	int getNRoi(){return thisDetector->nROI;};
-
-
-	int sendROI(int n=-1,ROI roiLimits[]=NULL);
-
+	/**
+	 * Returns number of rois
+	 * @returns number of ROIs
+	 */
+	int getNRoi();
 
 	/**
-      write  register 
-      \param addr address
-      \val value
-      \returns current register value
+	 * Send ROI to the detector after calculating
+	 * from setROI
+	 * @param n number of ROIs (-1 to get)
+	 * @param roiLimits ROI
+	 * @returns OK or FAIL
+	 */
+	int sendROI(int n=-1,ROI roiLimits[]=NULL);
 
+	/**
+	 * Write to ADC register (Gotthard, Jungfrau, ChipTestBoard). For expert users
+	 * @param addr address of adc register
+	 * @param val value
+	 * @returns return value  (mostly -1 as it can't read adc register)
 	 */
 	int writeAdcRegister(int addr, int val);
 
-
-	/**  @short activates the detector (detector specific)
-       \param enable can be: -1 returns wether the detector is in active (1) or inactive (0) state
-       \returns 0 (inactive) or 1 (active)
+	/**
+	 * Activates the detector (Eiger only)
+	 * @param enable active (1) or inactive (0), -1 gets
+	 * @returns 0 (inactive) or 1 (active)
 	 */
 	int activate(int const enable=GET_ONLINE_FLAG);
 
-
-	/** returns the enable if data will be flipped across x or y axis
-	 *  \param d axis across which data is flipped
-	 *  returns 1 or 0
+	/**
+	 * Returns the enable if data will be flipped across x or y axis (Eiger)
+	 * @param d axis across which data is flipped
+	 * @returns 1 for flipped, else 0
 	 */
 	int getFlippedData(dimension d=X){return thisDetector->flippedData[d];};
 
-	/** sets the enable which determines if data will be flipped across x or y axis
-	 *  \param d axis across which data is flipped
-	 *  \param value 0 or 1 to reset/set or -1 to get value
-	 *  \return enable flipped data across x or y axis
+	/**
+	 * Sets the enable which determines if
+	 * data will be flipped across x or y axis (Eiger)
+	 * @param d axis across which data is flipped
+	 * @param value 0 or 1 to reset/set or -1 to get value
+	 * @returns enable flipped data across x or y axis
 	 */
 	int setFlippedData(dimension d=X, int value=-1);
-	/** sets all the trimbits to a particular value
-      \param val trimbit value
-      \param imod module number, -1 means all modules
-      \returns OK or FAIL
+
+	/**
+	 * Sets all the trimbits to a particular value (Eiger)
+	 * @param val trimbit value
+	 * @param imod module number, -1 means all modules
+	 * @returns OK or FAIL
 	 */
 	int setAllTrimbits(int val, int imod=-1);
 
 	/**
-	 * Enable gap pixels, only for Eiger and for 8,16 and 32 bit mode. 4 bit mode gap pixels only in gui call back
+	 * Enable gap pixels, only for Eiger and for 8,16 and 32 bit mode. (Eiger)
+	 * 4 bit mode gap pixels only in gui call back
 	 * @param val 1 sets, 0 unsets, -1 gets
-	 * @return gap pixel enable or -1 for error
+	 * @returns gap pixel enable or -1 for error
 	 */
 	int enableGapPixels(int val=-1);
-	/** sets the number of trim energies and their value  \sa sharedSlsDetector
-      \param nen number of energies
-      \param en array of energies
-      \returns number of trim energies
-
-      unused!
-
-      \sa  sharedSlsDetector
-	 */
-	int setTrimEn(int nen, int *en=NULL) {if (en) {for (int ien=0; ien<nen; ien++) thisDetector->trimEnergies[ien]=en[ien]; thisDetector->nTrimEn=nen;} return (thisDetector->nTrimEn);};
-
-
-	/** returns the number of trim energies and their value  \sa sharedSlsDetector
-      \param point to the array that will contain the trim energies (in ev)
-      \returns number of trim energies
-
-
-      unused!
-
-      \sa  sharedSlsDetector
-	 */
-	int getTrimEn(int *en=NULL) {if (en) {for (int ien=0; ien<thisDetector->nTrimEn; ien++) en[ien]=thisDetector->trimEnergies[ien];} return (thisDetector->nTrimEn);};
 
 	/**
-     Pulse Pixel
-     \param n is number of times to pulse
-     \param x is x coordinate
-     \param y is y coordinate
-     \returns OK or FAIL
+	 * Sets the number of trim energies and their value  (Eiger)
+	 * \sa sharedSlsDetector
+	 * @param nen number of energies
+	 * @param en array of energies
+	 * @returns number of trim energies
+	 */
+	int setTrimEn(int nen, int *en=NULL);
+
+	/**
+	 * Returns the number of trim energies and their value  (Eiger)
+	 * \sa sharedSlsDetector
+	 * @param en array of energies
+	 * @returns number of trim energies
+	 */
+	int getTrimEn(int *en=NULL);
+
+	/**
+	 * Pulse Pixel (Eiger)
+	 * @param n is number of times to pulse
+	 * @param x is x coordinate
+	 * @param y is y coordinate
+	 * @returns OK or FAIL
 	 */
 	int pulsePixel(int n=0,int x=0,int y=0);
 
 	/**
-     Pulse Pixel and move by a relative value
-     \param n is number of times to pulse
-     \param x is relative x value
-     \param y is relative y value
-     \returns OK or FAIL
+	 * Pulse Pixel and move by a relative value (Eiger)
+	 * @param n is number of times to pulse
+	 * @param x is relative x value
+	 * @param y is relative y value
+	 * @returns OK or FAIL
 	 */
 	int pulsePixelNMove(int n=0,int x=0,int y=0);
 
 	/**
-     Pulse Chip
-     \param n is number of times to pulse
-     \returns OK or FAIL
+	 * Pulse Chip (Eiger)
+	 * @param n is number of times to pulse
+	 * @returns OK or FAIL
 	 */
 	int pulseChip(int n=0);
 
 	/**
-     set/gets threshold temperature (Jungfrau only)
-     \param val value in millidegrees, -1 gets
-     \param imod module number, -1 is all
-     \returns threshold temperature in millidegrees
+	 * Set/gets threshold temperature (Jungfrau)
+	 * @param val value in millidegrees, -1 gets
+	 * @param imod module number, -1 is all
+	 * @returns threshold temperature in millidegrees
 	 */
 	int setThresholdTemperature(int val=-1, int imod=-1);
 
 	/**
-     enables/disables temperature control (Jungfrau only)
-     \param val value, -1 gets
-     \param imod module number, -1 is all
-     \returns temperature control enable
+	 * Enables/disables temperature control (Jungfrau)
+	 * @param val value, -1 gets
+	 * @param imod module number, -1 is all
+	 * @returns temperature control enable
 	 */
 	int setTemperatureControl(int val=-1, int imod=-1);
 
 	/**
-     Resets/ gets over-temperature event (Jungfrau only)
-     \param val value, -1 gets
-     \param imod module number, -1 is all
-     \returns over-temperature event
+	 * Resets/ gets over-temperature event (Jungfrau)
+	 * @param val value, -1 gets
+	 * @param imod module number, -1 is all
+	 * @returns over-temperature event
 	 */
 	int setTemperatureEvent(int val=-1, int imod=-1);
 
 	/**
-	 * set storage cell that stores first acquisition of the series (Jungfrau only)
-	 * \param value storage cell index. Value can be 0 to 15. (-1 gets)
-	 * \returns the storage cell that stores the first acquisition of the series
+	 * Set storage cell that stores first acquisition of the series (Jungfrau)
+	 * @param value storage cell index. Value can be 0 to 15. (-1 gets)
+	 * @returns the storage cell that stores the first acquisition of the series
 	 */
 	int setStoragecellStart(int pos=-1);
 
-
-	/** programs FPGA with pof file
-      \param fname file name
-      \returns OK or FAIL
+	/**
+	 * Programs FPGA with pof file (Jungfrau)
+	 * @param fname file name
+	 * @returns OK or FAIL
 	 */
 	int programFPGA(string fname);
 
-	/** resets FPGA
-      \returns OK or FAIL
+	/**
+	 * Resets FPGA (Jungfrau)
+	 * @returns OK or FAIL
 	 */
 	int resetFPGA();
 
-	/** power on/off the chip
-     \param ival on is 1, off is 0, -1 to get
-      \returns OK or FAIL
+	/**
+	 * Power on/off Chip (Jungfrau)
+	 * @param ival on is 1, off is 0, -1 to get
+	 * @returns OK or FAIL
 	 */
 	int powerChip(int ival= -1);
 
-	/** automatic comparator disable for Jungfrau only
-     \param ival on is 1, off is 0, -1 to get
-      \returns OK or FAIL
+	/**
+	 * Automatic comparator disable (Jungfrau)
+	 * @param ival on is 1, off is 0, -1 to get
+	 * @returns OK or FAIL
 	 */
 	int setAutoComparatorDisableMode(int ival= -1);
 
 
 	/**
-     gets the trimbits from shared memory *chanRegs
-     \param retval is the array with the trimbits
-     \param fromDetector is true if the trimbits shared memory have to be uploaded from detector
-     \returns the total number of channels for the detector
-     \sa ::sls_detector_module
+	 * Returns the trimbits from the detector's shared memmory (Mythen, Eiger)
+	 * @param retval is the array with the trimbits
+	 * @param fromDetector is true if the trimbits shared memory have to be
+	 * uploaded from detector
+	 * @returns total number of channels for the detector
 	 */
 	int getChanRegs(double* retval,bool fromDetector);
 
 	/**
-      configure module
-      \param imod module number (-1 all)
-      \returns current register value
-      \sa ::sls_detector_module
+	 * Configure module (who calls this?)
+	 * @param imod module number (-1 all)
+	 * @returns current register value
+	 * \sa ::sls_detector_module
 	 */
 	int setModule(int reg, int imod=-1);
-	//virtual int setModule(int reg, int imod=-1);
 
 	/**
-      configure chip
-      \param module module to be set - must contain correct module number and also channel and chip registers
-      \param iodelay iodelay (detector specific)
-      \param tau tau (detector specific)
-      \param e_eV threashold in eV (detector specific)
-      \param gainval pointer to extra gain values
-      \param offsetval pointer to extra offset values
-      \param tb 1 to include trimbits, 0 to exclude (used for eiger)
-      \returns current register value
-      \sa ::sls_detector_module
+	 * Configure Module (Mythen, Eiger)
+	 * Called for loading trimbits and settings settings to the detector
+	 * @param module module to be set - must contain correct module number and
+	 * also channel and chip registers
+	 * @param iodelay iodelay (detector specific)
+	 * @param tau tau (detector specific)
+	 * @param e_eV threashold in eV (detector specific)
+	 * @param gainval pointer to extra gain values
+	 * @param offsetval pointer to extra offset values
+	 * @param tb 1 to include trimbits, 0 to exclude (used for eiger)
+	 * @returns current register value
+	 * \sa ::sls_detector_module
 	 */
-	int setModule(sls_detector_module module, int iodelay, int tau, int e_eV, int* gainval=0, int* offsetval=0, int tb=1);
-	//virtual int setModule(sls_detector_module module);
+	int setModule(sls_detector_module module, int iodelay, int tau, int e_eV,
+			int* gainval=0, int* offsetval=0, int tb=1);
+
 
 	/**
-     get module
-     \param imod module number
-     \returns pointer to module structure (which has bee created and must then be deleted)
+	 * Get module structure from detector (all detectors)
+	 * @param imod module number
+	 * @returns pointer to module structure (which has been created and must then be deleted)
 	 */
 	sls_detector_module *getModule(int imod);
 
 	/**
-     configure channel
-     \param reg channel register
-     \param ichan channel number (-1 all)
-     \param ichip chip number (-1 all)
-     \param imod module number (-1 all)
-     \returns current register value
-     \sa ::sls_detector_channel
+	 * Configure channel (Mythen)
+	 * @param reg channel register
+	 * @param ichan channel number (-1 all)
+	 * @param ichip chip number (-1 all)
+	 * @param imod module number (-1 all)
+	 * @returns current register value
+	 * \sa ::sls_detector_channel
 	 */
 	int setChannel(int64_t reg, int ichan=-1, int ichip=-1, int imod=-1);
 
 	/**
-     configure channel
-     \param chan channel to be set - must contain correct channel, module and chip number
-     \returns current register value
+	 * Configure channel (Mythen)
+	 * @param chan channel to be set -
+	 * must contain correct channel, module and chip number
+	 * @returns current register value
 	 */
 	int setChannel(sls_detector_channel chan);
 
 	/**
-     get channel
-     \param ichan channel number 
-     \param ichip chip number
-     \param imod module number
-     \returns current channel structure for channel
+	 * Get channel (Mythen)
+	 * @param ichan channel number
+	 * @param ichip chip number
+	 * @param imod module number
+	 * @returns current channel structure for channel
 	 */
 	sls_detector_channel getChannel(int ichan, int ichip, int imod);
 
 	/**
-      configure chip
-      \param reg chip register
-      \param ichip chip number (-1 all)
-      \param imod module number (-1 all)
-      \returns current register value
-      \sa ::sls_detector_chip
+	 * Configure chip (Mythen)
+	 * @param reg chip register
+	 * @param ichip chip number (-1 all)
+	 * @param imod module number (-1 all)
+	 * @returns current register value
+	 * \sa ::sls_detector_chip
 	 */
 	int setChip(int reg, int ichip=-1, int imod=-1);
 
 	/**
-      configure chip
-      \param chip chip to be set - must contain correct module and chip number and also channel registers
-      \returns current register value
-      \sa ::sls_detector_chip
+	 * Configure chip (Mythen)
+	 * @param chip chip to be set
+	 * must contain correct module and chip number and also channel registers
+	 * @returns current register value
+	 * \sa ::sls_detector_chip
 	 */
 	int setChip(sls_detector_chip chip);
 
 	/**
-     get chip
-     \param ichip chip number
-     \param imod module number
-     \returns current chip structure for channel
-
-     \bug probably does not return corretly!
+	 * Get chip (Mythen)
+	 * @param ichip chip number
+	 * @param imod module number
+	 * @returns current chip structure for channel
+	 * \bug probably does not return corretly!
 	 */
 	sls_detector_chip getChip(int ichip, int imod);
 
-	int getMoveFlag(int imod){if (moveFlag) return *moveFlag; else return 1;};
+	/**
+	 * Get Move Flag (Mythen)
+	 * @param imod module number (-1 all)
+	 * @param istep step index
+	 * @returns move flag
+	 */
+	int getMoveFlag(int imod);
 
+	/**
+	 * Fill Module mask for flat field corrections (Mythen)
+	 * @param mM array
+	 * @returns number of modules
+	 */
 	int fillModuleMask(int *mM);
 
-	/** Starts acquisition, calibrates pedestal and writes to fpga
-     /returns number of frames
+	/**
+	 * Calibrate Pedestal (ChipTestBoard)
+	 * Starts acquisition, calibrates pedestal and writes to fpga
+	 * @param frames number of frames
+	 * @returns number of frames
 	 */
 	int calibratePedestal(int frames = 0);
 
 	/**
-      set rate correction
-      \param t dead time in ns - if 0 disable correction, if >0 set dead time to t, if <0 set deadtime to default dead time for current settings
-      \returns 0 if rate correction disabled, >0 otherwise
+	 * Set Rate correction (Mythen, Eiger)
+	 * @param t dead time in ns - if 0 disable correction,
+	 * if >0 set dead time to t, if < 0 set deadtime to default dead time
+	 * for current settings
+	 * @returns 0 if rate correction disabled, >0 otherwise
 	 */
 	int setRateCorrection(double t=0);
 
-
 	/**
-      get rate correction
-      \param t reference for dead time
-      \returns 0 if rate correction disabled, >0 otherwise
+	 * Get rate correction (Mythen, Eiger)
+	 * @param t reference for dead time
+	 * @returns 0 if rate correction disabled, > 0 otherwise
 	 */
 	int getRateCorrection(double &t);
 
-
 	/**
-      get rate correction tau
-      \returns 0 if rate correction disabled, otherwise the tau used for the correction
+	 * Get rate correction tau (Mythen, Eiger)
+	 * @returns 0 if rate correction disabled, otherwise the tau used for the correction
 	 */
 	double getRateCorrectionTau();
+
 	/**
-      get rate correction
-      \returns 0 if rate correction disabled, >0 otherwise
+	 * Get rate correction (Mythen, Eiger)
+	 * @returns 0 if rate correction disabled,  > 0 otherwise
 	 */
 	int getRateCorrection();
 
-
 	/**
-      rate correct data
-      \param datain data array
-      \param errin error array on data (if NULL will default to sqrt(datain)
-      \param dataout array of corrected data
-      \param errout error on corrected data (if not NULL)
-      \returns 0
+	 * Rate correct data (Mythen)
+	 * @param datain data array
+	 * @param errin error array on data (if NULL will default to sqrt(datain)
+	 * @param dataout array of corrected data
+	 * @param errout error on corrected data (if not NULL)
+	 * @returns 0
 	 */
 	int rateCorrect(double* datain, double *errin, double* dataout, double *errout);
 
-
 	/**
-      set flat field corrections
-      \param fname name of the flat field file (or "" if disable)
-      \returns 0 if disable (or file could not be read), >0 otherwise
+	 * Set flat field corrections (Mythen)
+	 * @param fname name of the flat field file (or "" if disable)
+	 * @returns 0 if disable (or file could not be read), >0 otherwise
 	 */
 	int setFlatFieldCorrection(string fname="");
 
 	/**
-      set flat field corrections
-      \param corr if !=NULL the flat field corrections will be filled with corr (NULL usets ff corrections)
-      \param ecorr if !=NULL the flat field correction errors will be filled with ecorr (1 otherwise)
-      \returns 0 if ff correction disabled, >0 otherwise
+	 * Set flat field corrections (Mythen)
+	 * @param corr if !=NULL the flat field corrections will be filled with
+	 * corr (NULL usets ff corrections)
+	 * @param  ecorr if !=NULL the flat field correction errors will be filled
+	 * with ecorr (1 otherwise)
+	 * @returns 0 if ff correction disabled, >0 otherwise
 	 */
 	int setFlatFieldCorrection(double *corr, double *ecorr=NULL);
 
-
 	/**
-      get flat field corrections
-      \param corr if !=NULL will be filled with the correction coefficients
-      \param ecorr if !=NULL will be filled with the correction coefficients errors
-      \returns 0 if ff correction disabled, >0 otherwise
+	 * Get flat field corrections (Mythen)
+	 * @param corr if !=NULL will be filled with the correction coefficients
+	 * @param ecorr if !=NULL will be filled with the correction coefficients errors
+	 * @returns 0 if ff correction disabled, >0 otherwise
 	 */
 	int getFlatFieldCorrection(double *corr=NULL, double *ecorr=NULL);
 
 	/**
-      flat field correct data
-      \param datain data array
-      \param errin error array on data (if NULL will default to sqrt(datain)
-      \param dataout array of corrected data
-      \param errout error on corrected data (if not NULL)
-      \returns 0
+	 * Flat field correct data (Mythen)
+	 * @param datain data array
+	 * @param errin error array on data (if NULL will default to sqrt(datain)
+	 * @param dataout array of corrected data
+	 * @param errout error on corrected data (if not NULL)
+	 * @returns 0
 	 */
 	int flatFieldCorrect(double* datain, double *errin, double* dataout, double *errout);
 
-
-
 	/**
-      set bad channels correction
-      \param fname file with bad channel list ("" disable)
-      \returns 0 if bad channel disabled, >0 otherwise
+	 * Set bad channels correction (Mythen)
+	 * @param fname file with bad channel list ("" disable)
+	 * @returns 0 if bad channel disabled, >0 otherwise
 	 */
 	int setBadChannelCorrection(string fname="");
 
 	/**
-      set bad channels correction
-      \param nch number of bad channels
-      \param chs array of channels
-      \param ff 0 if normal bad channels, 1 if ff bad channels
-      \returns 0 if bad channel disabled, >0 otherwise
+	 * Set bad channels correction (Mythen)
+	 * @param nch number of bad channels
+	 * @param chs array of channels
+	 * @param ff 0 if normal bad channels, 1 if ff bad channels
+	 * @returns 0 if bad channel disabled, >0 otherwise
 	 */
 	int setBadChannelCorrection(int nch, int *chs, int ff=0);
 
 	/**
-      get bad channels correction
-      \param bad pointer to array that if bad!=NULL will be filled with the bad channel list
-      \returns 0 if bad channel disabled or no bad channels, >0 otherwise
+	 * Get bad channels correction (Mythen)
+	 * @param bad pointer to array that if bad!=NULL will be filled with the
+	 * bad channel list
+	 * @returns 0 if bad channel disabled or no bad channels, >0 otherwise
 	 */
 	int getBadChannelCorrection(int *bad=NULL);
 
 	/**
-
-  reads an angular conversion file
-  \param fname file to be read
-  \sa  angleConversionConstant mythenDetector::readAngularConversion
+	 * Reads an angular conversion file (Mythen, Gotthard)
+	 * \sa angleConversionConstant mythenDetector::readAngularConversion
+	 * @param fname file to be read
+	 * @returns 0 if angular conversion disabled, >0 otherwise
 	 */
 	int readAngularConversionFile(string fname="");
 
-
 	/**
-
-  reads an angular conversion file
-  \param fname file to be read
-  \sa  angleConversionConstant mythenDetector::readAngularConversion
+	 * Reads an angular conversion file (Mythen, Gotthard)
+	 * \sa angleConversionConstant mythenDetector::readAngularConversion
+	 * @param ifs input stream
+	 * @returns 0 if angular conversion disabled, >0 otherwise
 	 */
 	int readAngularConversion(ifstream& ifs);
 
-
-
 	/**
-     Pure virtual function
-     writes an angular conversion file
-     \param fname file to be written
-     \sa  angleConversionConstant mythenDetector::writeAngularConversion
+	 * Writes an angular conversion file (Mythen, Gotthard)
+	 * \sa angleConversionConstant mythenDetector::writeAngularConversion
+	 * @param fname file to be written
+	 * @returns 0 if angular conversion disabled, >0 otherwise
 	 */
 	int writeAngularConversion(string fname="");
 
-
-
 	/**
-     Pure virtual function
-     writes an angular conversion file
-     \param fname file to be written
-     \sa  angleConversionConstant mythenDetector::writeAngularConversion
+	 * Writes an angular conversion file (Mythen, Gotthard)
+	 * \sa angleConversionConstant mythenDetector::writeAngularConversion
+	 * @param ofs output stream
+	 * @returns 0 if angular conversion disabled, >0 otherwise
 	 */
 	int writeAngularConversion(ofstream &ofs);
 
-
 	/**
-      pure virtual function
-      get angular conversion
-      \param reference to diffractometer direction
-      \param angconv array that will be filled with the angular conversion constants
-      \returns 0 if angular conversion disabled, >0 otherwise
-      \sa mythenDetector::getAngularConversion
+	 * Get angular conversion (Mythen, Gotthard)
+	 * \sa angleConversionConstant mythenDetector::getAngularConversion
+	 * @param direction reference to diffractometer
+	 * @param angconv array that will be filled with the angular conversion constants
+	 * @returns 0 if angular conversion disabled, >0 otherwise
 	 */
 	int getAngularConversion(int &direction,  angleConversionConstant *angconv=NULL) ;
 
-	angleConversionConstant *getAngularConversionPointer(int imod=0) {return &thisDetector->angOff[imod];};
-
+	/**
+	 * Return angular conversion pointer (Mythen, Gotthard)
+	 * @param imod module number
+	 * @returns angular conversion pointer
+	 */
+	angleConversionConstant *getAngularConversionPointer(int imod=0);
 
 	/**
-     Prints receiver configuration
-     \returns OK or FAIL
+	 * Prints receiver configuration
+	 * @returns OK or FAIL
 	 */
 	int printReceiverConfiguration();
 
-
 	/**
-     calls setReceiverTCPSocket if online and sets the flag
+	 * Checks if receiver is online and set flag
+	 * Also initializes the data socekt
+	 * @param online 1 to set online, 0 to set offline, -1 gets
+	 * @returns online, offline (from shared memory)
 	 */
 	int setReceiverOnline(int const online=GET_ONLINE_FLAG);
 
 	/**
-     Checks if the receiver is really online
+	 * Checks if the receiver is really online
+	 * @returns empty string if online, else returns receiver hostname
 	 */
 	string checkReceiverOnline();
 
 	/**
-     configure the socket communication and initializes the socket instances
-
-     \param name receiver ip - if "" the current receiver hostname is used
-     \param receiver_port port for receiving data - if -1 the current is used
-
-     \returns OK is connection succeded, FAIL otherwise
-     \sa sharedSlsDetector
+	 * Configure the socket communication and initializes the socket instances
+	 * @param name receiver ip - if "" the current receiver hostname is used
+	 * @param receiver_port port for receiving data - if -1 the current is used
+	 * @returns OK is connection succeded, FAIL otherwise
+	 * \sa sharedSlsDetector
 	 */
 	int setReceiverTCPSocket(string const name="", int const receiver_port=-1);
 
-
-
-	/** Locks/Unlocks the connection to the receiver
-      /param lock sets (1), usets (0), gets (-1) the lock
-      /returns lock status of the receiver
+	/**
+	 * Locks/Unlocks the connection to the receiver
+	 * @param lock sets (1), usets (0), gets (-1) the lock
+	 * @returns lock status of the receiver
 	 */
 	int lockReceiver(int lock=-1);
 
 	/**
-     Returns the IP of the last client connecting to the receiver
+	 * Returns the IP of the last client connecting to the receiver
+	 * @returns the IP of the last client connecting to the receiver
 	 */
 	string getReceiverLastClientIP();
+
 	/**
-      Turns off the receiver server!
+	 * Exits the receiver TCP server
+	 * @retutns OK or FAIL
 	 */
 	int exitReceiver();
+
 	/**
      updates the shared memory receiving the data from the detector (without asking and closing the connection
      /returns OK
@@ -1641,8 +1759,8 @@ public:
 	int updateReceiverNoWait();
 
 	/**
-     updates the shared memory receiving the data from the detector
-     /returns OK
+	 * Updates the shared memory receiving the data from the detector
+	 * @returns OK or FAIL
 	 */
 	int updateReceiver();
 
@@ -1651,148 +1769,157 @@ public:
 	 */
 	void sendMultiDetectorSize();
 
-	/** send the detector pos id to the receiver
+	/**
+	 * Send the detector pos id to the receiver
 	 * for various file naming conventions for multi detectors in receiver
 	 */
 	void setDetectorId();
 
-	/** send the detector host name to the  receiver
+	/**
+	 * Send the detector host name to the  receiver
 	 * for various handshaking required with the detector
 	 */
 	void setDetectorHostname();
 
-
 	/**
-     \returns file dir
+	 * Returns output file directory
+	 * @returns output file directory
 	 */
-	string getFilePath(){return setFilePath();};
+	string getFilePath();
 
 	/**
-     Sets up the file directory
-     @param s fileDir file directory
-     \returns file dir
+	 * Sets up the file directory
+	 * @param s file directory
+	 * @returns file dir
 	 */
 	string setFilePath(string s="");
 
+	/**
+	 * Returns file name prefix
+	 * @returns file name prefix
+	 */
+	string getFileName();
 
 	/**
-     \returns file name
-	 */
-	string getFileName(){return setFileName();};
-	/**
-     Sets up the file name
-     @param s file name
-     \returns file name
+	 * Sets up the file name prefix
+	 * @param s file name prefix
+	 * @returns file name prefix
 	 */
 	string setFileName(string s="");
 
-
 	/**
-     Sets the max frames per file in receiver
-     @param f max frames per file
-     \returns max frames per file in receiver
+	 * Sets the max frames per file in receiver
+	 * @param f max frames per file
+	 * @returns max frames per file in receiver
 	 */
 	int setReceiverFramesPerFile(int f = -1);
 
 	/**
-     \returns file name
+	 * Returns file format
+	 * @returns file name
 	 */
-	fileFormat getFileFormat(){return setFileFormat();};
+	fileFormat getFileFormat();
 
 	/**
-     Sets up the file format
-     @param f file format
-     \returns file format
+	 * Sets up the file format
+	 * @param f file format
+	 * @returns file format
 	 */
 	fileFormat setFileFormat(fileFormat f=GET_FILE_FORMAT);
 
 	/**
-     \returns file index
+	 * Returns file index
+	 * @returns file index
 	 */
 	int getFileIndex(){return setFileIndex();};
+
 	/**
-     Sets up the file index
-     @param i file index
-     \returns file index
+	 * Sets up the file index
+	 * @param i file index
+	 * @returns file index
 	 */
 	int setFileIndex(int i=-1);
 
-
-
-
-	/**   Starts the listening mode of receiver
-        \returns OK or FAIL
+	/**
+	 * Receiver starts listening to packets
+	 * @returns OK or FAIL
 	 */
 	int startReceiver();
 
-	/**   Stops the listening mode of receiver
-        \returns OK or FAIL
+	/**
+	 * Stops the listening mode of receiver
+	 * @returns OK or FAIL
 	 */
 	int stopReceiver();
 
-	/** Sets the receiver to start any readout remaining in the fifo and
-	 * change status to transmitting.
+	/**
+	 * Sets the receiver to start any readout remaining in the fifo and
+	 * change status to transmitting (Mythen)
 	 * The status changes to run_finished when fifo is empty
 	 */
 	runStatus startReceiverReadout();
 
-
-	/**   gets the status of the listening mode of receiver
-        \returns status
+	/**
+	 * Gets the status of the listening mode of receiver
+	 * @returns status
 	 */
 	runStatus getReceiverStatus();
 
-	/**   gets the number of frames caught by receiver
-        \returns number of frames caught by receiver
+	/**
+	 * Gets the number of frames caught by receiver
+	 * @returns number of frames caught by receiver
 	 */
 	int getFramesCaughtByReceiver();
 
-	/**   gets the number of frames caught by any one receiver (to avoid using threadpool)
- 	\returns number of frames caught by any one receiver (master receiver if exists)
+	/**
+	 * Gets the number of frames caught by any one receiver (to avoid using threadpool)
+	 * @returns number of frames caught by any one receiver (master receiver if exists)
 	 */
-	int getFramesCaughtByAnyReceiver() {return getFramesCaughtByReceiver();};
+	int getFramesCaughtByAnyReceiver();
 
-	/**  gets the current frame index of receiver
-     \returns current frame index of receiver
+	/**
+	 * Gets the current frame index of receiver
+	 * @returns current frame index of receiver
 	 */
 	int getReceiverCurrentFrameIndex();
 
 	/**
-	 * resets framescaught
-	 * @param index frames caught by receiver
+	 * Resets framescaught in receiver
+	 * Use this when using startAcquisition instead of acquire
+	 * @returns OK or FAIL
 	 */
 	int resetFramesCaught();
 
-
-
 	/**
-     Sets/Gets receiver file write enable
-     @param enable 1 or 0 to set/reset file write enable
-     /returns file write enable
+	 * Sets/Gets receiver file write enable
+	 * @param enable 1 or 0 to set/reset file write enable
+	 * @returns file write enable
 	 */
 	int enableWriteToFile(int enable=-1);
 
 	/**
-     Sets/Gets file overwrite enable
-     @param enable 1 or 0 to set/reset file overwrite enable
-     /returns file overwrite enable
+	 * Sets/Gets file overwrite enable
+	 * @param enable 1 or 0 to set/reset file overwrite enable
+	 * @returns file overwrite enable
 	 */
 	int overwriteFile(int enable=-1);
 
-
-	/** Sets the read receiver frequency
-   	  if data required from receiver randomly readRxrFrequency=0,
-   	   else every nth frame to be sent to gui
-   	   @param freq is the receiver read frequency
-   	   /returns read receiver frequency
+	/**
+	 * Sets the read receiver frequency
+	 * if data required from receiver randomly readRxrFrequency=0,
+	 * else every nth frame to be sent to gui/callback
+	 * @param freq is the receiver read frequency. Value 0 is 200 ms timer (other
+	 * frames not sent), 1 is every frame, 2 is every second frame etc.
+	 * @returns read receiver frequency
 	 */
 	int setReadReceiverFrequency(int freq=-1);
 
-	/** Sets the read receiver timer
-   	  if data required from receiver randomly readRxrFrequency=0,
-   	   then the timer between each data stream is set with time_in_ms
-   	   @param time_in_ms timer between frames
-   	   /returns read receiver timer
+	/**
+	 * Sets the read receiver timer
+	 * if data required from receiver randomly readRxrFrequency=0,
+	 * then the timer between each data stream is set with time_in_ms
+	 * @param time_in_ms timer between frames
+	 * @returns read receiver timer
 	 */
 	int setReceiverReadTimer(int time_in_ms=500);
 
@@ -1801,186 +1928,95 @@ public:
 	 * @param enable 0 to disable, 1 to enable, -1 to get the value
 	 * @returns data streaming to client enable
 	 */
-	int enableDataStreamingToClient(int enable=-1) {
-		cprintf(RED,"ERROR: Must be called from the multi Detector level\n");
-		return 0;
-	}
+	int enableDataStreamingToClient(int enable=-1);
 
-	/** Enable or disable streaming data from receiver to client
+	/**
+	 * Enable or disable streaming data from receiver to client
 	 * @param enable 0 to disable 1 to enable -1 to only get the value
 	 * @returns data streaming from receiver enable
 	 */
 	int enableDataStreamingFromReceiver(int enable=-1);
 
-	/** enable/disable or get data compression in receiver
+	/**
+	 * Enable/disable or get data compression in receiver
 	 * @param i is -1 to get, 0 to disable and 1 to enable
-     /returns data compression in receiver
+	 * @returns data compression in receiver
 	 */
 	int enableReceiverCompression(int i = -1);
 
-	/** enable/disable or 10Gbe
+	/**
+	 * Enable/disable or 10Gbe
 	 * @param i is -1 to get, 0 to disable and 1 to enable
-     /returns if 10Gbe is enabled
+	 * @returns if 10Gbe is enabled
 	 */
 	int enableTenGigabitEthernet(int i = -1);
 
-	/** set/get receiver fifo depth
+	/**
+	 * Set/get receiver fifo depth
 	 * @param i is -1 to get, any other value to set the fifo deph
-     /returns the receiver fifo depth
+	 * @returns the receiver fifo depth
 	 */
 	int setReceiverFifoDepth(int i = -1);
 
-	/** set/get receiver silent mode
+	/**
+	 * Set/get receiver silent mode
 	 * @param i is -1 to get, 0 unsets silent mode, 1 sets silent mode
-     /returns the receiver silent mode enable
+	 * @returns the receiver silent mode enable
 	 */
 	int setReceiverSilentMode(int i = -1);
 
 	/**
-     If data streaming in receiver is enabled,
-     restream the stop dummy packet from receiver
-     Used usually for Moench,
-     in case it is lost in network due to high data rate
-     \returns OK if success else FAIL
+	 * If data streaming in receiver is enabled,
+	 * restream the stop dummy packet from receiver
+	 * Used usually for Moench,
+	 * in case it is lost in network due to high data rate
+	 * @returns OK if success else FAIL
 	 */
 	int restreamStopFromReceiver();
 
-	/** opens pattern file and sends pattern to CTB
-      @param fname pattern file to open
-      @returns OK/FAIL
+	/**
+	 * Opens pattern file and sends pattern to CTB
+	 * @param fname pattern file to open
+	 * @returns OK/FAIL
 	 */
 	int setCTBPattern(string fname);
 
-
-	/** Writes a pattern word to the CTB
-      @param addr address of the word, -1 is I/O control register,  -2 is clk control register
-      @param word 64bit word to be written, -1 gets
-      @returns actual value
+	/**
+	 * Writes a pattern word to the CTB
+	 * @param addr address of the word, -1 is I/O control register,  -2 is clk control register
+	 * @param word 64bit word to be written, -1 gets
+	 * @returns actual value
 	 */
 	uint64_t setCTBWord(int addr,uint64_t word=-1);
 
-	/** Sets the pattern or loop limits in the CTB
-      @param level -1 complete pattern, 0,1,2, loop level
-      @param start start address if >=0
-      @param stop stop address if >=0
-      @param n number of loops (if level >=0)
-      @returns OK/FAIL
+	/**
+	 * Sets the pattern or loop limits in the CTB
+	 * @param level -1 complete pattern, 0,1,2, loop level
+	 * @param start start address if >=0
+	 * @param stop stop address if >=0
+	 * @param n number of loops (if level >=0)
+	 * @returns OK/FAIL
 	 */
 	int setCTBPatLoops(int level,int &start, int &stop, int &n);
 
-
-	/** Sets the wait address in the CTB
-      @param level  0,1,2, wait level
-      @param addr wait address, -1 gets
-      @returns actual value
+	/**
+	 * Sets the wait address in the CTB
+	 * @param level  0,1,2, wait level
+	 * @param addr wait address, -1 gets
+	 * @returns actual value
 	 */
 	int setCTBPatWaitAddr(int level, int addr=-1);
 
-	/** Sets the wait time in the CTB
-      @param level  0,1,2, wait level
-      @param t wait time, -1 gets
-      @returns actual value
+	/**
+	 * Sets the wait time in the CTB
+	 * @param level  0,1,2, wait level
+	 * @param t wait time, -1 gets
+	 * @returns actual value
 	 */
 	int setCTBPatWaitTime(int level, uint64_t t=-1);
 
-	/** returns the  detector MAC address\sa sharedSlsDetector  */
-	string getDetectorMAC() {return string(thisDetector->detectorMAC);};
-	/** returns the  detector IP address\sa sharedSlsDetector  */
-	string getDetectorIP() {return string(thisDetector->detectorIP);};
-	/** returns the receiver IP address \sa sharedSlsDetector  */
-	string getReceiver() {return string(thisDetector->receiver_hostname);};
-	/** returns the receiver UDP IP address \sa sharedSlsDetector  */
-	string getReceiverUDPIP() {return string(thisDetector->receiverUDPIP);};
-	/** returns the receiver UDP MAC address \sa sharedSlsDetector  */
-	string getReceiverUDPMAC() {return string(thisDetector->receiverUDPMAC);};
-	/** returns the receiver UDP IP address \sa sharedSlsDetector  */
-	string getReceiverUDPPort() {ostringstream ss; ss << thisDetector->receiverUDPPort; string s = ss.str(); return s;};
-	/** returns the receiver UDP2 for Eiger IP address \sa sharedSlsDetector  */
-	string getReceiverUDPPort2() {ostringstream ss; ss << thisDetector->receiverUDPPort2; string s = ss.str(); return s;};
-	/** returns the client zmq port \sa sharedSlsDetector  */
-	string getClientStreamingPort() {ostringstream ss; ss << thisDetector->zmqport; string s = ss.str(); return s;};
-	/** returns the receiver zmq port \sa sharedSlsDetector  */
-	string getReceiverStreamingPort() {ostringstream ss; ss << thisDetector->receiver_zmqport; string s = ss.str(); return s;};
-	/** gets the zmq source ip in client, returns "none" if default setting and no custom ip set*/
-	string getClientStreamingIP(){return string(thisDetector->zmqip);};
-	/** gets the zmq source ip in receiver, returns "none" if default setting and no custom ip set*/
-	string getReceiverStreamingIP(){return string(thisDetector->receiver_zmqip);};
-	/** gets the additional json header, returns "none" if default setting and no custom set*/
-	string getAdditionalJsonHeader(){return string(thisDetector->receiver_additionalJsonHeader);};
-	/** returns the receiver UDP socket buffer size  */
-	string getReceiverUDPSocketBufferSize() {return setReceiverUDPSocketBufferSize();};
-	/** returns the real receiver UDP socket buffer size  */
-	string getReceiverRealUDPSocketBufferSize();
-
-
-	/** validates the format of detector MAC address and sets it \sa sharedSlsDetector  */
-	string setDetectorMAC(string detectorMAC);
-	/** validates the format of detector IP address and sets it \sa sharedSlsDetector  */
-	string setDetectorIP(string detectorIP);
-	/** validates and sets the receiver IP address/hostname \sa sharedSlsDetector  */
-	string setReceiver(string receiver);
-	/** validates the format of receiver udp ip and sets it \sa sharedSlsDetector  */
-	string setReceiverUDPIP(string udpip);
-	/** validates the format of receiver udp mac and sets it \sa sharedSlsDetector  */
-	string setReceiverUDPMAC(string udpmac);
-	/** sets the receiver udp port \sa sharedSlsDetector  */
-	int setReceiverUDPPort(int udpport);
-	/** sets the receiver udp port2 for Eiger \sa sharedSlsDetector  */
-	int setReceiverUDPPort2(int udpport);
-	/** sets the zmq port in client (includes "multi" at the end if it should calculate individual ports \sa sharedSlsDetector  */
-	string setClientStreamingPort(string port);
-	/** sets the zmq port in receiver (includes "multi" at the end if it should calculate individual ports \sa sharedSlsDetector  */
-	string setReceiverStreamingPort(string port);
-	/** sets the zmq source ip in client */
-	string setClientStreamingIP(string sourceIP);
-	/** sets the zmq source ip in receiver. if empty, uses rx_hostname*/
-	string setReceiverStreamingIP(string sourceIP);
-	/** additional json header, returns "none" if default setting and no custom set */
-	string setAdditionalJsonHeader(string jsonheader);
-	/** sets the receiver UDP socket buffer size  */
-	string setReceiverUDPSocketBufferSize(int udpsockbufsize=-1);
-
-	/** sets the transmission delay for left or right port or for an entire frame*/
-	string setDetectorNetworkParameter(networkParameter index, int delay);
-
-
-
-	/**
-     analog test
-     \param modte test mode
-     \return pointer to acquired data
-
-     not yet implemented
-	 */
-
-	int* analogTest(analogTestMode mode);
-
-	/**
-      enable analog output of channel ichan
-
-      not yet implemented
-	 */
-	int enableAnalogOutput(int ichan);
-
-	/**
-      enable analog output of channel ichan, chip ichip, module imod
-
-      not yet implemented
-	 */
-	int enableAnalogOutput(int imod, int ichip, int ichan);
-
-	/**
-     give a train of calibration pulses
-     \param vcal pulse amplitude
-     \param npulses number of pulses
-
-     not yet implemented
-
-	 */
-	int giveCalibrationPulse(double vcal, int npulses);
-
-
 private:
+
 	/**
 	 * Get Detector Type from Shared Memory (opening shm without verifying size)
 	 * @param multiId multi detector Id
@@ -1988,6 +2024,7 @@ private:
 	 * @returns detector type
 	 */
 	detectorType getDetectorTypeFromShm(int multiId, bool verify = true);
+
 	/**
 	 * Initialize shared memory
 	 * @param created true if shared memory must be created, else false to open
@@ -1999,54 +2036,331 @@ private:
 	void initSharedMemory(bool created, detectorType type, int multiId, bool verify = true);
 
 	/**
+	 * Sets detector parameters depending detector type
+	 * @param type detector type
+	 * @param list structure of parameters to initialize depending on detector type
+	 */
+	void setDetectorSpecificParameters(detectorType type, detParameterList& list);
+
+	/**
 	 * Calculate shared memory size based on detector type
 	 * @param type type of detector
+	 * @returns size of shared memory of sharedSlsDetector structure
 	 */
 	int calculateSharedMemorySize(detectorType type);
 
 	/**
-	 * Initialize detector structure
-	 * @param created true if shared memory was just created now
+	 * Initialize detector structure to defaults
+	 * Called when new shared memory is created
 	 * @param type type of detector
-	 * @param verify true to verify if shm size matches existing one
 	 */
-	void initializeDetectorStructure(bool created, detectorType type, bool verify = true);
+	void initializeDetectorStructure(detectorType type);
 
 	/**
 	 * Initialize class members (and from parent classes)
+	 * Also connect member pointers to detector structure pointers
+	 * Called when shared memory created/existed
 	 */
 	void initializeMembers();
 
-	/** Gets MAC from receiver and sets up UDP Connection */
+	/**
+	 * Initialize detector structure
+	 * Called when new shared memory created
+	 * Initializes the member pointers to defaults as well
+	 */
+	void initializeDetectorStructurePointers();
+
+	/**
+	 * Allocates the memory for a sls_detector_module structure and initializes it
+	 * Uses current detector type
+	 * @returns myMod the pointer to the allocate dmemory location
+	 */
+	sls_detector_module*  createModule();
+
+	/**
+	 * Allocates the memory for a sls_detector_module structure and initializes it
+	 * Has detector type
+	 * @param myDetectorType detector type
+	 * @returns myMod the pointer to the allocate dmemory location
+	 */
+	sls_detector_module*  createModule(detectorType myDetectorType);
+
+	/**
+	 * Frees the memory for a sls_detector_module structure
+	 * @param myMod the pointer to the memory to be freed
+	 */
+	void deleteModule(sls_detector_module *myMod);
+
+	/**
+	 * Connect to the control port
+	 * @returns OK, FAIL or undefined
+	 */
+	int connectControl();
+
+	/**
+	 * Disconnect the control port
+	 */
+	void disconnectControl();
+
+	/**
+	 * Connect to the data port
+	 * @returns OK, FAIL or undefined
+	 */
+	int connectData();
+
+	/**
+	 * Disconnect the data port
+	 */
+	int disconnectData();
+
+	/**
+	 * Connect to the stop port
+	 * @returns OK, FAIL or undefined
+	 */
+	int connectStop();
+
+	/**
+	 * Disconnect the stop port
+	 */
+	int disconnectStop();
+
+	/**
+	 * Send a sls_detector_channel structure over socket
+	 * @param myChan channel structure to send
+	 * @returns number of bytes sent to the detector
+	 */
+	int sendChannel(sls_detector_channel* myChan);
+
+	/**
+	 * Send a sls_detector_chip structure over socket
+	 * @param myChip chip structure to send
+	 * @returns number of bytes sent to the detector
+	 */
+	int sendChip(sls_detector_chip* myChip);
+
+	/**
+	 * Send a sls_detector_module structure over socket
+	 * @param myMod module structure to send
+	 * @returns number of bytes sent to the detector
+	 */
+	int sendModule(sls_detector_module* myMod);
+
+	/**
+	 * Receive a sls_detector_channel structure over socket
+	 * @param myChan channel structure to receive
+	 * @returns number of bytes received from the detector
+	 */
+	int receiveChannel(sls_detector_channel* myChan);
+
+	/**
+	 * Receive a sls_detector_chip structure over socket
+	 * @param myChip chip structure to receive
+	 * @returns number of bytes received from the detector
+	 */
+	int receiveChip(sls_detector_chip* myChip);
+
+	/**
+	 * Receive a sls_detector_module structure over socket
+	 * @param myMod module structure to receive
+	 * @returns number of bytes received from the detector
+	 */
+	int receiveModule(sls_detector_module* myMod);
+
+	/**
+	 * Returns the detector MAC address\sa sharedSlsDetector
+	 * @returns the detector MAC address
+	 */
+	string getDetectorMAC();
+
+	/**
+	 * Returns the detector IP address\sa sharedSlsDetector
+	 * @returns the detector IP address
+	 */
+	string getDetectorIP();
+
+	/**
+	 * Returns the receiver IP address\sa sharedSlsDetector
+	 * @returns the receiver IP address
+	 */
+	string getReceiver();
+
+	/**
+	 * Returns the receiver UDP IP address\sa sharedSlsDetector
+	 * @returns the receiver UDP IP address
+	 */
+	string getReceiverUDPIP();
+
+	/**
+	 * Returns the receiver UDP MAC address\sa sharedSlsDetector
+	 * @returns the receiver UDP MAC address
+	 */
+	string getReceiverUDPMAC();
+
+	/**
+	 * Returns the receiver UDP port\sa sharedSlsDetector
+	 * @returns the receiver UDP port
+	 */
+	string getReceiverUDPPort();
+
+	/**
+	 * Returns the receiver UDP port 2 of same interface\sa sharedSlsDetector
+	 * @returns the receiver UDP port 2 of same interface
+	 */
+	string getReceiverUDPPort2();
+
+	/**
+	 * Returns the client zmq port \sa sharedSlsDetector
+	 * @returns the client zmq port
+	 */
+	string getClientStreamingPort();
+
+	/**
+	 * Returns the receiver zmq port \sa sharedSlsDetector
+	 * @returns the receiver zmq port
+	 */
+	string getReceiverStreamingPort();
+
+	/**
+	 * Returns the client zmq ip \sa sharedSlsDetector
+	 * @returns the client zmq ip, returns "none" if default setting and no custom ip set
+	 */
+	string getClientStreamingIP();
+
+	/**
+	 * Returns the receiver zmq ip \sa sharedSlsDetector
+	 * @returns the receiver zmq ip, returns "none" if default setting and no custom ip set
+	 */
+	string getReceiverStreamingIP();
+
+	/**
+	 * Returns the additional json header \sa sharedSlsDetector
+	 * @returns the additional json header, returns "none" if default setting and no custom ip set
+	 */
+	string getAdditionalJsonHeader();
+
+	/**
+	 * Returns the receiver UDP socket buffer size\sa sharedSlsDetector
+	 * @returns the receiver UDP socket buffer size
+	 */
+	string getReceiverUDPSocketBufferSize() ;
+
+	/**
+	 * Returns the receiver real UDP socket buffer size\sa sharedSlsDetector
+	 * @returns the receiver real UDP socket buffer size
+	 */
+	string getReceiverRealUDPSocketBufferSize();
+
+	/**
+	 * Validates the format of the detector MAC address and sets it \sa sharedSlsDetector
+	 * @param detectorMAC detector MAC address
+	 * @returns the detector MAC address
+	 */
+	string setDetectorMAC(string detectorMAC);
+
+	/**
+	 * Validates the format of the detector IP address and sets it \sa sharedSlsDetector
+	 * @param detectorIP detector IP address
+	 * @returns the detector IP address
+	 */
+	string setDetectorIP(string detectorIP);
+
+	/**
+	 * Validates and sets the receiver.
+	 * Also updates the receiver with all the shared memory parameters significant for the receiver
+	 * Also configures the detector to the receiver as UDP destination
+	 * @param receiver receiver hostname or IP address
+	 * @returns the receiver IP address from shared memory
+	 */
+	string setReceiver(string receiver);
+
+	/**
+	 * Validates the format of the receiver UDP IP address and sets it \sa sharedSlsDetector
+	 * @param udpip receiver UDP IP address
+	 * @returns the receiver UDP IP address
+	 */
+	string setReceiverUDPIP(string udpip);
+
+	/**
+	 * Validates the format of the receiver UDP MAC address and sets it \sa sharedSlsDetector
+	 * @param udpmac receiver UDP MAC address
+	 * @returns the receiver UDP MAC address
+	 */
+	string setReceiverUDPMAC(string udpmac);
+
+	/**
+	 * Sets the receiver UDP port\sa sharedSlsDetector
+	 * @param udpport receiver UDP port
+	 * @returns the receiver UDP port
+	 */
+	int setReceiverUDPPort(int udpport);
+
+	/**
+	 * Sets the receiver UDP port 2\sa sharedSlsDetector
+	 * @param udpport receiver UDP port 2
+	 * @returns the receiver UDP port 2
+	 */
+	int setReceiverUDPPort2(int udpport);
+
+	/**
+	 * Sets the client zmq port\sa sharedSlsDetector
+	 * @param port client zmq port (includes "multi" at the end if it should
+	 * calculate individual ports)
+	 * @returns the client zmq port
+	 */
+	string setClientStreamingPort(string port);
+
+	/**
+	 * Sets the receiver zmq port\sa sharedSlsDetector
+	 * @param port receiver zmq port (includes "multi" at the end if it should
+	 * calculate individual ports)
+	 * @returns the receiver zmq port
+	 */
+	string setReceiverStreamingPort(string port);
+
+	/**
+	 * Sets the client zmq ip\sa sharedSlsDetector
+	 * @param sourceIP client zmq ip
+	 * @returns the client zmq ip, returns "none" if default setting and no custom ip set
+	 */
+	string setClientStreamingIP(string sourceIP);
+
+	/**
+	 * Sets the receiver zmq ip\sa sharedSlsDetector
+	 * @param sourceIP receiver zmq ip. If empty, uses rx_hostname
+	 * @returns the receiver zmq ip, returns "none" if default setting and no custom ip set
+	 */
+	string setReceiverStreamingIP(string sourceIP);
+
+	/**
+	 * Sets the additional json header\sa sharedSlsDetector
+	 * @param jsonheader additional json header
+	 * @returns additional json header, returns "none" if default setting and no custom ip set
+	 */
+	string setAdditionalJsonHeader(string jsonheader);
+
+	/**
+	 * Sets the receiver UDP socket buffer size
+	 * @param udpsockbufsize additional json header
+	 * @returns receiver udp socket buffer size
+	 */
+	string setReceiverUDPSocketBufferSize(int udpsockbufsize=-1);
+
+	/**
+	 * Sets the transmission delay for left, right or entire frame
+	 * (Eiger, Jungfrau(only entire frame))
+	 * @param index type of delay
+	 * @param delay delay
+	 * @returns transmission delay
+	 */
+	string setDetectorNetworkParameter(networkParameter index, int delay);
+
+
+	/**
+	 * Get MAC from the receiver using udpip and
+	 * set up UDP connection in detector
+	 * @returns Ok or FAIL
+	 */
 	int setUDPConnection();
-
-
-	/**
-     send a sls_detector_channel structure over socket
-	 */
-	int sendChannel(sls_detector_channel*);
-	/**
-     send a sls_detector_chip structure over socket
-	 */
-	int sendChip(sls_detector_chip*);
-	/**
-     send a sls_detector_module structure over socket
-	 */
-	int sendModule(sls_detector_module*);
-	/**
-     receive a sls_detector_channel structure over socket
-	 */
-	int receiveChannel(sls_detector_channel*);
-	/**
-     receive a sls_detector_chip structure over socket
-	 */
-	int receiveChip(sls_detector_chip*);
-	/**
-     receive a sls_detector_module structure over socket
-	 */
-	int receiveModule(sls_detector_module*);
-
-
 
 	/** slsDetector Id or position in the detectors list */
 	int detId;
@@ -2062,35 +2376,41 @@ private:
 
 	receiverInterface *thisReceiver;
 
-	/**    socket for control commands	 */
+	/** socket for control commands	 */
 	MySocketTCP *controlSocket;
 
-	/**     socket for emergency stop	 */
+	/** socket for emergency stop	 */
 	MySocketTCP *stopSocket;
 
-	/**     socket for data acquisition	 */
+	/** socket for data acquisition	 */
 	MySocketTCP *dataSocket;
-
-	/** pointer to detector module structures in shared memory */
-	sls_detector_module *detectorModules;
-	/** pointer to dac valuse in shared memory  */
-	dacs_t *dacs;
-	/** pointer to adc valuse in shared memory  */
-	dacs_t *adcs;
-	/** pointer to chip registers in shared memory */
-	int *chipregs;
-	/** pointer to channal registers  in shared memory */
-	int *chanregs;
-	/** pointer to gain values in shared memory  */
-	int *gain;
-	/** pointer to offset values in shared memory  */
-	int *offset;
 
 	/** pointer to flat field coefficients in shared memory  */
 	double *ffcoefficients;
+
 	/** pointer to flat field coefficient errors in shared memory  */
 	double *fferrors;
 
+	/** pointer to detector module structures in shared memory */
+	sls_detector_module *detectorModules;
+
+	/** pointer to dac valuse in shared memory  */
+	dacs_t *dacs;
+
+	/** pointer to adc valuse in shared memory  */
+	dacs_t *adcs;
+
+	/** pointer to chip registers in shared memory */
+	int *chipregs;
+
+	/** pointer to channal registers  in shared memory */
+	int *chanregs;
+
+	/** pointer to gain values in shared memory  */
+	int *gain;
+
+	/** pointer to offset values in shared memory  */
+	int *offset;
 };
 
 #endif

@@ -216,13 +216,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual std::string sgetDetectorsType(int pos=-1)=0;
 
-  /** returns the detector type
-      \param pos position in the multi detector structure (is -1 returns type of detector with id -1)
-      \returns type
-  */
-  virtual detectorType setDetectorsType(detectorType t=GET_DETECTOR_TYPE, int pos=-1)=0;
-  virtual std::string ssetDetectorsType(detectorType t=GET_DETECTOR_TYPE, int pos=-1)=0;
-  virtual std::string ssetDetectorsType(std::string s, int pos=-1)=0;
+
 
 
   

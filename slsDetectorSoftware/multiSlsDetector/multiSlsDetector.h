@@ -1,15 +1,3 @@
-/*******************************************************************
-
-Date:       $Date$
-Revision:   $Rev$
-Author:     $Author$
-URL:        $URL$
-ID:         $Id$
-
- ********************************************************************/
-
-
-
 #ifndef MULTI_SLS_DETECTOR_H
 #define MULTI_SLS_DETECTOR_H
 
@@ -19,8 +7,8 @@ ID:         $Id$
  * @author Anna Bergamaschi
  */
 
-
 #include "slsDetectorUtils.h"
+
 class slsDetector;
 class SharedMemory;
 class ThreadPool;
@@ -31,7 +19,7 @@ class ZmqSocket;
 #include <string>
 
 
-#define MULTI_SHMVERSION	0x180618
+#define MULTI_SHMVERSION	0x180625
 #define SHORT_STRING_LENGTH	50
 #define DATE_LENGTH			29
 
@@ -524,6 +512,7 @@ public:
 
 	/**
 	 * Sets the hostname of all sls detectors in shared memory
+	 * Connects to them to set up online flag
 	 * @param s concatenated hostname of all the sls detectors
 	 */
 	void setHostname(std::string s);
@@ -554,10 +543,9 @@ public:
 	std::string sgetDetectorsType(int pos=-1);
 
 	/**
-	 * Just to overload getDetectorType
+	 * Just to overload getDetectorType from users
 	 * Concatenates string types of all sls detectors or
 	 * returns the detector type of the first sls detector
-	 * @param pos position of sls detector in array, if -1, returns first detector type
 	 * @returns detector type of sls detector in position pos, if -1, concatenates
 	 */
 	std::string getDetectorType();
@@ -594,14 +582,14 @@ public:
 	void getNumberOfDetectors(int& nx, int& ny);
 
 	/**
-	 * Returns sum of all modules per sls detector (Mythen)
+	 * Returns sum of all modules per sls detector from shared memory (Mythen)
 	 * Other detectors, it is 1
 	 * @returns sum of all modules per sls detector
 	 */
 	int getNMods();
 
 	/**
-	 * Returns sum of all modules per sls detector in dimension d (Mythen)
+	 * Returns sum of all modules per sls detector in dimension d from shared memory (Mythen)
 	 * Other detectors, it is 1
 	 * @param d dimension d
 	 * @returns sum of all modules per sls detector in dimension d
@@ -609,15 +597,14 @@ public:
 	int getNMod(dimension d);
 
 	/**
-	 * Returns sum of all maximum modules per sls detector (Mythen).
+	 * Returns sum of all maximum modules per sls detector from shared memory (Mythen)
 	 * Other detectors, it is 1
 	 * @returns sum of all maximum modules per sls detector
 	 */
 	int getMaxMods();
 
-
 	/**
-	 * Returns sum of all maximum modules per sls detector in dimension d (Mythen)
+	 * Returns sum of all maximum modules per sls detector in dimension d  from shared memory (Mythen)
 	 * Other detectors, it is 1
 	 * @param d dimension d
 	 * @returns sum of all maximum modules per sls detector in dimension d
@@ -625,7 +612,7 @@ public:
 	int getMaxMod(dimension d);
 
 	/**
-	 * Returns the sum of all maximum modules per sls detector in dimension d (Mythen).
+	 * Returns the sum of all maximum modules per sls detector in dimension d Mythen)
 	 * from the detector directly.
 	 * Other detectors, it is 1
 	 * @param d dimension d
@@ -634,7 +621,7 @@ public:
 	int getMaxNumberOfModules(dimension d=X);
 
 	/**
-	 * Sets the sum of all modules per sls detector in dimension d (Mythen).
+	 * Sets/Gets the sum of all modules per sls detector in dimension d (Mythen)
 	 * from the detector directly.
 	 * Other detectors, it is 1
 	 * @param i the number of modules to set to
@@ -644,21 +631,22 @@ public:
 	int setNumberOfModules(int i=-1, dimension d=X);
 
 	/**
-	 * Calculates the position of detector based on module number of entire multi
-	 * detector list and returns the number of channels per that module (Mythen)
+	 * Using module id, returns the number of channels per that module
+	 * from shared memory (Mythen)
 	 * @param imod module number of entire multi detector list
 	 * @returns number of channels per module imod
 	 */
 	int getChansPerMod(int imod=0);
 
 	/**
-	 * Returns the total number of channels of all sls detectors
+	 * Returns the total number of channels of all sls detectors from shared memory
 	 * @returns the total number of channels of all sls detectors
 	 */
 	int getTotalNumberOfChannels();
 
 	/**
 	 * Returns the total number of channels of all sls detectors in dimension d
+	 * from shared memory
 	 * @param d dimension d
 	 * @returns the total number of channels of all sls detectors in dimension d
 	 */
@@ -666,7 +654,7 @@ public:
 
 	/**
 	 * Returns the total number of channels of all sls detectors in dimension d
-	 * including gap pixels
+	 * including gap pixels from shared memory
 	 * @param d dimension d
 	 * @returns the total number of channels of all sls detectors in dimension d
 	 * including gap pixels
@@ -674,13 +662,15 @@ public:
 	int getTotalNumberOfChannelsInclGapPixels(dimension d);
 
 	/**
-	 * Returns the maximum number of channels of all sls detectors (Mythen)
+	 * Returns the maximum number of channels of all sls detectors
+	 * from shared memory (Mythen)
 	 * @returns the maximum number of channels of all sls detectors
 	 */
 	int getMaxNumberOfChannels();
 
 	/**
-	 * Returns the maximum number of channels of all sls detectors in dimension d (Mythen)
+	 * Returns the maximum number of channels of all sls detectors in dimension d
+	 * from shared memory (Mythen)
 	 * @param d dimension d
 	 * @returns the maximum number of channels of all sls detectors in dimension d
 	 */
@@ -688,24 +678,26 @@ public:
 
 	/**
 	 * Returns the total number of channels of all sls detectors in dimension d
-	 * including gap pixels (Mythen)
+	 * including gap pixels from shared memory(Mythen)
 	 * @param d dimension d
-	 * @returns the total number of channels of all sls detectors in dimension d
+	 * @returns the maximum number of channels of all sls detectors in dimension d
 	 * including gap pixels
 	 */
 	int getMaxNumberOfChannelsInclGapPixels(dimension d);
 
 	/**
-	 * Returns the maximum number of channels of all sls detectors in each dimension d,
-	 * multi detector shared memory variable to calculate offsets for each sls detector
+	 * Returns the maximum number of channels of all sls detectors in each dimension d
+	 * from shared memory. multi detector shared memory variable to calculate
+	 * offsets for each sls detector
 	 * @param d dimension d
 	 * @returns the maximum number of channels of all sls detectors in dimension d
 	 */
 	int getMaxNumberOfChannelsPerDetector(dimension d);
 
 	/**
-	 * Sets the maximum number of channels of all sls detectors in each dimension d,
-	 * multi detector shared memory variable to calculate offsets for each sls detector
+	 * Sets the maximum number of channels of all sls detectors in each dimension d
+	 * from shared memory, multi detector shared memory variable to calculate
+	 * offsets for each sls detector
 	 * @param d dimension d
 	 * @param i maximum number of channels for multi structure in dimension d
 	 * @returns the maximum number of channels of all sls detectors in dimension d
@@ -736,9 +728,9 @@ public:
 	std::string checkOnline();
 
 	/**
-	 * Set TCP Port of detector or receiver
+	 * Set/Gets TCP Port of detector or receiver
 	 * @param t port type
-	 * @param p port number
+	 * @param p port number (-1 gets)
 	 * @returns port number
 	 */
 	int setPort(portType t, int p);
@@ -791,11 +783,30 @@ public:
 
 	/**
 	 * Load detector settings from the settings file picked from the trimdir/settingsdir
+	 * Eiger only stores in shared memory ( a get will overwrite this)
+	 * For Eiger, one must use threshold
 	 * @param isettings settings
 	 * @param ipos position in multi list (-1 all)
 	 * @returns current settings
 	 */
 	detectorSettings setSettings(detectorSettings isettings, int pos=-1);
+
+	/**
+	 * Get threshold energy (Mythen and Eiger)
+	 * @param imod module number (-1 all)
+	 * @returns current threshold value for imod in ev (-1 failed)
+	 */
+	int getThresholdEnergy(int imod=-1);
+
+	/**
+	 * Set threshold energy (Mythen and Eiger)
+	 * @param e_eV threshold in eV
+	 * @param imod module number (-1 all)
+	 * @param isettings ev. change settings
+	 * @param tb 1 to include trimbits, 0 to exclude
+	 * @returns current threshold value for imod in ev (-1 failed)
+	 */
+	int setThresholdEnergy(int e_eV, int imod=-1, detectorSettings isettings=GET_SETTINGS,int tb=1);
 
 	/**
 	 * Returns the detector trimbit/settings directory  \sa sharedSlsDetector
@@ -827,8 +838,7 @@ public:
 	 * Loads the modules settings/trimbits reading from a specific file
 	 * file name extension is automatically generated.
 	 * @param fname specific settings/trimbits file
-	 * @param imod module index of the entire list,
-	 * from which will be calculated the detector index and the module index (-1 for all)
+	 * @param imod module number (-1 for all)
 	 * returns OK or FAIL
 	 */
 	int loadSettingsFile(std::string fname, int imod=-1);
@@ -837,8 +847,7 @@ public:
 	 * Saves the modules settings/trimbits to a specific file
 	 * file name extension is automatically generated.
 	 * @param fname specific settings/trimbits file
-	 * @param imod module index of the entire list,
-	 * from which will be calculated the detector index and the module index (-1 for all)
+	 * @param imod module number (-1 for all)
 	 * returns OK or FAIL
 	 */
 	int saveSettingsFile(std::string fname, int imod=-1);
@@ -847,8 +856,7 @@ public:
 	 * Loads the modules calibration data reading from a specific file (Mythen)
 	 * file name extension is automatically generated.
 	 * @param fname specific calibration file
-	 * @param imod module index of the entire list,
-	 * from which will be calculated the detector index and the module index (-1 for all)
+	 * @param imod module number (-1 for all)
 	 * returns OK or FAIL
 	 */
 	int loadCalibrationFile(std::string fname, int imod=-1);
@@ -857,15 +865,13 @@ public:
 	 * Saves the modules calibration data to a specific file (Mythen)
 	 * file name extension is automatically generated.
 	 * @param fname specific calibration file
-	 * @param imod module index of the entire list,
-	 * from which will be calculated the detector index and the module index (-1 for all)
+	 * @param imod module number (-1 for all)
 	 * returns OK or FAIL
 	 */
 	int saveCalibrationFile(std::string fname, int imod=-1);
 
 	/**
-	 * (Not implemented in any detector from the client)
-	 * Sets/gets the detector in position i as master of the structure
+	 * Sets/gets the detector in position i as master of the structure (Mythen)
 	 * (e.g. it gates the other detectors and therefore must be started as last.
 	 * Assumes that signal 0 is gate in, signal 1 is trigger in, signal 2 is gate out
 	 * @param i position of master (-1 gets, -2 unset)
@@ -873,8 +879,8 @@ public:
 	 */
 	int setMaster(int i=-1);
 
-	/** (Not implemented in any detector from the client)
-	 * Sets/gets the synchronization mode of the various detector
+	/**
+	 * Sets/gets the synchronization mode of the various detector (Mythen)
 	 * @param sync syncronization mode
 	 * @returns current syncronization mode
 	 */
@@ -995,23 +1001,6 @@ public:
 	 * @returns OK or FAIL
 	 */
 	int configureMAC();
-
-	/**
-	 * Get threshold energy (Mythen and Eiger)
-	 * @param imod module number (-1 all)
-	 * @returns current threshold value for imod in ev (-1 failed)
-	 */
-	int getThresholdEnergy(int imod=-1);
-
-	/**
-	 * Set threshold energy (Mythen and Eiger)
-	 * @param e_eV threshold in eV
-	 * @param imod module number (-1 all)
-	 * @param isettings ev. change settings
-	 * @param tb 1 to include trimbits, 0 to exclude
-	 * @returns current threshold value for imod in ev (-1 failed)
-	 */
-	int setThresholdEnergy(int e_eV, int imod=-1, detectorSettings isettings=GET_SETTINGS,int tb=1);
 
 	/**
 	 * Set/get timer value (not all implemented for all detectors)
@@ -1195,6 +1184,7 @@ public:
 
 	/**
 	 * Set ROI (Gotthard)
+	 * At the moment only one set allowed
 	 * @param n number of rois
 	 * @param roiLimits array of roi
 	 * @returns OK or FAIL
@@ -1507,7 +1497,7 @@ public:
 	 * Reads an angular conversion file (Mythen, Gotthard)
 	 * \sa angleConversionConstant mythenDetector::readAngularConversion
 	 * @param fname file to be read
-	 * @rreturns 0 if angular conversion disabled, >0 otherwise
+	 * @returns 0 if angular conversion disabled, >0 otherwise
 	 */
 	int readAngularConversionFile(std::string fname);
 

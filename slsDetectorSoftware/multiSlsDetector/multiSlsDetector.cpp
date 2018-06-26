@@ -912,8 +912,7 @@ std::string multiSlsDetector::exec(const char* cmd) {
 
 
 void multiSlsDetector::setHostname(string s) {
-	/* to just add at the end of list,
-	 command line should not clear shm upon command hostname */
+	freeSharedMemory(detId);
 	size_t p1 = 0;
 	string temp = string(s);
 	size_t p2 = temp.find('+', p1);

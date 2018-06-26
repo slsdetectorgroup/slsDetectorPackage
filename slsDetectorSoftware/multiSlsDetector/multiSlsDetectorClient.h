@@ -81,6 +81,7 @@ public:
 			myDetector=NULL;													\
 		}																		\
 
+
 		// create multiSlsDetector class if required
 		if (myDetector==NULL) {													\
 			try {																\

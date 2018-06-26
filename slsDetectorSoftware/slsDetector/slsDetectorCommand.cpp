@@ -271,31 +271,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 	/*! \page config
-   - <b>remove i</b> Removes controller \c i from the multi-detector structure. Can be used for partial readout of the detector.
-	 */
-	descrToFuncMap[i].m_pFuncName="remove";//OK
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdRemove;
-	++i;
-
-	/*! \page config
-   - <b>type</b> Sets/gets detector type. \c Returns \c (string). Normally not used. Using hostname is enough.
-	 */
-	descrToFuncMap[i].m_pFuncName="type"; //OK
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdHostname;
-	++i;
-
-	/*! \page config
    - <b>hostname</b> \c put adds the hostname (ot IP adress) at the end of the multi-detector structure. If used for a single controlled (i:) replaces the current hostname. Returns the list of the hostnames of the multi-detector structure. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="hostname"; //OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdHostname;
-	++i;
-
-	/*! \page config
-   - <b>id[:i]</b> Returns the id of the detector structure. i is the detector position in a multi detector system. If used a \c put, configures the id of the detector structure. i is the detector position in a multi detector system and l is the id of the detector to be added.
-	 */
-	descrToFuncMap[i].m_pFuncName="id"; //OK
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdId;
 	++i;
 
 	/*! \page config
@@ -2726,67 +2705,57 @@ string slsDetectorCommand::cmdAdd(int narg, char *args[], int action) {
 	int ivar, ival;
 	string var=string(args[0]);
 	ostringstream os;
+
 	if (action==HELP_ACTION) {
 		return helpAdd(narg,args,HELP_ACTION);
-	} else    if (action==PUT_ACTION) {
-		size_t p=string(args[0]).find(':');
-		if (p==string::npos)
-			ivar=-1;
-		else {
-			istringstream vvstr(var.substr(p+1));
-			vvstr >> ivar;
-			if (vvstr.fail())
-				ivar=-1; //append at the end
-		}
-
-		if (sscanf(args[1],"%d",&ival)) {
-			// add by detector id
-			os<< myDet->addSlsDetector(ival, ivar)<< endl;;
-		} else {
-			//add by hostname
-			os<< myDet->addSlsDetector(args[1], ivar)<< endl;
-		}
-		return os.str();
+	} else if (action==GET_ACTION) {
+		return string("cannot get");
+	}else if (myDet->isMultiSlsDetectorClass()) {
+		return string ("cannot replace detectors from multi detector level.");
 	}
-	return string("cannot get");
 
+	char hostname[1000];
+	strcpy(hostname,"");
+	// if each argument is a hostname
+	for (int id=1; id<narg; ++id) {
+		strcat(hostname,args[id]);
+		if(narg>2)
+			strcat(hostname,"+");
+	}
+
+	myDet->setHostname(hostname);
+	return myDet->getHostname();
 }
 
 
 string slsDetectorCommand::helpAdd(int narg, char *args[], int action){
-	return string("add[:i] det \t adds a detector in position i to the multi detector structure. i is the detector position, default is appended. det can either be the detector hostname or the detector id. Returns -1 if it fails or the total number of detectors in the multidetector structure\n");
+	return string("add det [det det]\t appends a detector(s) to the multi detector structure. "
+			"det can either be the detector hostname or the detector id. "
+			"Returns hostnames in the multi detector structure\n");
 }
-
-string slsDetectorCommand::cmdRemove(int narg, char *args[], int action){
+/*
+string slsDetectorCommand::cmdReplace(int narg, char *args[], int action){
 #ifdef VERBOSE
 	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 #endif
-
-
-	ostringstream os;
-	int ival;//ivar,
-	string var=string(args[0]);
-
 	if (action==HELP_ACTION) {
 		return helpRemove(narg,args,HELP_ACTION);
-	} else    if (action==PUT_ACTION) {
-		if (sscanf(args[1],"%d",&ival)) {
-			// remove detector in position ival
-			os << myDet->removeSlsDetector(ival);
-		} else {
-			// remove detector by hostname
-			os<< myDet->removeSlsDetector(args[1]);
-		}
-		return os.str();
+	} else if (action==GET_ACTION) {
+		return string ("cannot get");
+	} else if (myDet->isMultiSlsDetectorClass()) {
+		return string ("cannot replace detectors from multi detector level.");
 	}
-	return string("cannot get");
 
+	return myDet->replaceDetector(string(argv[1]));
 }
 
-string slsDetectorCommand::helpRemove(int narg, char *args[], int action){ 
-	return string("remove det \t removes a detector. det can either be the detector hostname or the detector position. Returns the total number of detectors in the multidetector structure\n");
+string slsDetectorCommand::helpReplace(int narg, char *args[], int action){
+	return string("rename det \t replaces a detector. "
+			"det can either be the detector hostname or ip. "
+			"Returns the total number of "
+			"detectors in the multidetector structure\n");
 }
-
+*/
 string slsDetectorCommand::cmdHostname(int narg, char *args[], int action){
 #ifdef VERBOSE
 	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
@@ -2796,129 +2765,42 @@ string slsDetectorCommand::cmdHostname(int narg, char *args[], int action){
 		return helpHostname(narg,args,HELP_ACTION);
 	}
 
-	ostringstream os;
-	int ivar=-1;//, ival;
-	string var=string(args[0]);
-	char hostname[1000];
+	if (action==PUT_ACTION) {
 
-
-	size_t p=string(args[0]).find(':');
-	if (p==string::npos)
-		ivar=-1;
-	else {
-		istringstream vvstr(var.substr(p+1));
-		vvstr >> ivar;
-		if (vvstr.fail())
-			ivar=-1;
-	}
-
-
-
-	p=string(args[0]).find("hostname");
-
-	if (p==string::npos) {
-		//type
-		// cout << "should add by type!" << endl;
-
-		if (action==PUT_ACTION) {
-			//add by type
-			if (ivar==-1) {
-				strcpy(hostname,"");
-				for (int id=1; id<narg; ++id) {
-					strcat(hostname,args[id]);
-					if(narg>2)
-						strcat(hostname,"+");
-				}
-			}  else
-				strcpy(hostname,args[1]);
-
-			myDet->ssetDetectorsType(hostname, ivar);
-		}
-		return myDet->sgetDetectorsType(ivar);
-	} else {
-		if (action==PUT_ACTION) {
-			//add by hostname
-			if (ivar==-1) {
-				strcpy(hostname,"");
-				for (int id=1; id<narg; ++id) {
-					strcat(hostname,args[id]);
-					if(narg>2)
-						strcat(hostname,"+");
-				}
-			}  else
-				strcpy(hostname,args[1]);
-			myDet->setHostname(hostname, ivar);
+		if (!myDet->isMultiSlsDetectorClass()) {
+			return string ("Wrong usage - setting hostname only from "
+					"multiDetector level");
 		}
 
-		return string(myDet->getHostname(ivar));
+		char hostname[1000];
+		strcpy(hostname,"");
+		// if each argument is a hostname
+		for (int id=1; id<narg; ++id) {
+			strcat(hostname,args[id]);
+			if(narg>2)
+				strcat(hostname,"+");
+		}
+		myDet->freeSharedMemory();
+		myDet->setHostname(hostname);
 	}
+
+	return string(myDet->getHostname());
+
 
 }
 
 
 
 string slsDetectorCommand::helpHostname(int narg, char *args[], int action){
-
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION)
-		os << string("hostname[:i] \t returns the hostname(s) of the detector structure. i is the detector position in a multi detector system\n");
+		os << string("hostname \t returns the hostname(s) of the detector structure.");
 	if (action==PUT_ACTION || action==HELP_ACTION)
-		os << string("hostname[:i] name [name name]\t configures the hostnames of the detector structure. i is the detector position in a multi detector system\n");
+		os << string("hostname name [name name]\t frees shared memory and "
+				"configures the hostnames of the detector structure.\n");
 	return os.str();
 }
 
-
-string slsDetectorCommand::cmdId(int narg, char *args[], int action){
-#ifdef VERBOSE
-	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
-#endif
-
-
-	if (action==HELP_ACTION) {
-		return helpId(narg,args,HELP_ACTION);
-	}
-
-	ostringstream os;
-	int ivar, ival;
-	string var=string(args[0]);
-	// char answer[1000];
-
-
-	size_t p=string(args[0]).find(':');
-	if (p==string::npos)
-		ivar=-1;
-	else {
-		istringstream vvstr(var.substr(p+1));
-		vvstr >> ivar;
-		if (vvstr.fail())
-			ivar=-1;
-	}
-
-	if (action==PUT_ACTION) {
-		//add by hostname
-		istringstream vvstr(args[1]);
-
-		vvstr >> ival;
-		if (vvstr.fail())
-			ival=-1;
-
-		myDet->setDetectorId(ival, ivar);
-	}
-	os << myDet->getDetectorId(ivar);
-
-	return os.str();
-
-}
-
-string slsDetectorCommand::helpId(int narg, char *args[], int action){
-	ostringstream os;
-	if (action==GET_ACTION || action==HELP_ACTION)
-		os << string("id[:i] \t returns the id of the detector structure. i is the detector position in a multi detector system\n");
-	if (action==PUT_ACTION || action==HELP_ACTION)
-		os << string("id:i l]\t configures the id of the detector structure. i is the detector position in a multi detector system and l is the id of the detector to be added\n");
-
-	return os.str();
-}
 
 string slsDetectorCommand::cmdMaster(int narg, char *args[], int action){
 #ifdef VERBOSE

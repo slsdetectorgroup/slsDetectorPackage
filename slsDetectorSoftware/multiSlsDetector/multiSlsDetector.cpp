@@ -883,14 +883,15 @@ void multiSlsDetector::initializeMembers(bool verify) {
 	}
 	zmqSocket.clear();
 
-	updateOffsets();
-	createThreadPool();
-
 	// get objects from single det shared memory (open)
 	for (int i = 0; i < thisMultiDetector->numberOfDetectors; i++) {
 		slsDetector* sdet = new slsDetector(detId, i, verify, this);
 		detectors.push_back(sdet);
 	}
+
+	// depend on number of detectors
+	updateOffsets();
+	createThreadPool();
 }
 
 

@@ -2496,7 +2496,10 @@ string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action) {
 	if (action==HELP_ACTION) {
 		return helpAcquire(narg,args,HELP_ACTION);
 	}
-
+	if (!myDet->getNumberOfDetectors()) {
+		cprintf(RED, "Error: This shared memory has no detectors added. Aborting.\n");
+		return string("acquire unsuccessful");
+	}
 	myDet->setOnline(ONLINE_FLAG);
 	int r_online = myDet->setReceiverOnline(ONLINE_FLAG);
 

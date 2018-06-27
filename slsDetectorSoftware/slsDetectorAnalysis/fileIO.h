@@ -160,14 +160,22 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
      \param i detector index to be set
      \returns actual detector index
   */
-  virtual  int setDetectorIndex(int i) {detIndex=i;return detIndex;};
+  virtual  int setDetectorIndex(int i) {
+	  pthread_mutex_lock(&mf);
+	  detIndex=i;
+	  pthread_mutex_unlock(&mf);
+	  return detIndex;};
 
   /**
      sets the default file format
      \param i file format to be set
      \returns actual file frame format
   */
-  virtual fileFormat setFileFormat(int i) {*fileFormatType=(fileFormat)i; return *fileFormatType;};
+  virtual fileFormat setFileFormat(int i) {
+	  pthread_mutex_lock(&mf);
+	  *fileFormatType=(fileFormat)i;
+	  pthread_mutex_unlock(&mf);
+	  return *fileFormatType;  };
 
 
 

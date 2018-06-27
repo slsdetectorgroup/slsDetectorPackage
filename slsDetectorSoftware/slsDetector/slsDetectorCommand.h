@@ -40,7 +40,7 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   static std::string helpStatus(int narg, char *args[], int action);
   static std::string helpDataStream(int narg, char *args[], int action);
   static std::string helpFree(int narg, char *args[], int action);
-  static std::string helpAdd(int narg, char *args[], int action);
+ // static std::string helpAdd(int narg, char *args[], int action);
  // static std::string helpReplace(int narg, char *args[], int action);
   static std::string helpHostname(int narg, char *args[], int action);
   static std::string helpMaster(int narg, char *args[], int action);
@@ -112,7 +112,7 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   std::string cmdStatus(int narg, char *args[], int action); 
   std::string cmdDataStream(int narg, char *args[], int action);
   std::string cmdFree(int narg, char *args[], int action);
-  std::string cmdAdd(int narg, char *args[], int action);
+  //std::string cmdAdd(int narg, char *args[], int action);
   //std::string cmdReplace(int narg, char *args[], int action);
   std::string cmdHostname(int narg, char *args[], int action);
   std::string cmdMaster(int narg, char *args[], int action);

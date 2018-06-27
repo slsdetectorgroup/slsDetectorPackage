@@ -390,7 +390,7 @@ public:
 	 * @param verify true to verify if shared memory version matches existing one
 	 * @param m multiSlsDetector reference
 	 */
-	slsDetector(detectorType type, int multiId = 0, int id = 0, bool verify = true, MultiDet* m = NULL);
+	slsDetector(detectorType type, int multiId = 0, int id = 0, bool verify = true, multiSlsDetector* m = NULL);
 
 	/**
 	 * Constructor called when opening existing shared memory
@@ -399,7 +399,7 @@ public:
 	 * @param verify true to verify if shared memory version matches existing one
 	 * @param m multiSlsDetector reference
 	 */
-	slsDetector(int multiId = 0, int id = 0, bool verify = true, MultiDet* m = NULL);
+	slsDetector(int multiId = 0, int id = 0, bool verify = true, multiSlsDetector* m = NULL);
 
 	/**
 	 * Destructor
@@ -484,7 +484,7 @@ public:
 	/**
 	 * Sets the hostname of all sls detectors in shared memory
 	 * Connects to them to set up online flag
-	 * @param s hostname
+	 * @param name hostname
 	 */
 	void setHostname(const char *name);
 
@@ -494,6 +494,39 @@ public:
 	 * @returns hostname
 	 */
 	string getHostname(int pos = -1);
+
+	/**
+	 * Connect to the control port
+	 * @returns OK, FAIL or undefined
+	 */
+	int connectControl();
+
+	/**
+	 * Disconnect the control port
+	 */
+	void disconnectControl();
+
+	/**
+	 * Connect to the data port
+	 * @returns OK, FAIL or undefined
+	 */
+	int connectData();
+
+	/**
+	 * Disconnect the data port
+	 */
+	void disconnectData();
+
+	/**
+	 * Connect to the stop port
+	 * @returns OK, FAIL or undefined
+	 */
+	int connectStop();
+
+	/**
+	 * Disconnect the stop port
+	 */
+	void disconnectStop();
 
 	/**
 	 * Get detector type by connecting to the detector without creating an object
@@ -1196,6 +1229,153 @@ public:
 	string getNetworkParameter(networkParameter index);
 
 	/**
+	 * Returns the detector MAC address\sa sharedSlsDetector
+	 * @returns the detector MAC address
+	 */
+	string getDetectorMAC();
+
+	/**
+	 * Returns the detector IP address\sa sharedSlsDetector
+	 * @returns the detector IP address
+	 */
+	string getDetectorIP();
+
+	/**
+	 * Returns the receiver IP address\sa sharedSlsDetector
+	 * @returns the receiver IP address
+	 */
+	string getReceiver();
+
+	/**
+	 * Returns the receiver UDP IP address\sa sharedSlsDetector
+	 * @returns the receiver UDP IP address
+	 */
+	string getReceiverUDPIP();
+
+	/**
+	 * Returns the receiver UDP MAC address\sa sharedSlsDetector
+	 * @returns the receiver UDP MAC address
+	 */
+	string getReceiverUDPMAC();
+
+	/**
+	 * Returns the receiver UDP port\sa sharedSlsDetector
+	 * @returns the receiver UDP port
+	 */
+	string getReceiverUDPPort();
+
+	/**
+	 * Returns the receiver UDP port 2 of same interface\sa sharedSlsDetector
+	 * @returns the receiver UDP port 2 of same interface
+	 */
+	string getReceiverUDPPort2();
+
+	/**
+	 * Returns the client zmq port \sa sharedSlsDetector
+	 * @returns the client zmq port
+	 */
+	string getClientStreamingPort();
+
+	/**
+	 * Returns the receiver zmq port \sa sharedSlsDetector
+	 * @returns the receiver zmq port
+	 */
+	string getReceiverStreamingPort();
+
+	/**
+	 * Returns the client zmq ip \sa sharedSlsDetector
+	 * @returns the client zmq ip, returns "none" if default setting and no custom ip set
+	 */
+	string getClientStreamingIP();
+
+	/**
+	 * Returns the receiver zmq ip \sa sharedSlsDetector
+	 * @returns the receiver zmq ip, returns "none" if default setting and no custom ip set
+	 */
+	string getReceiverStreamingIP();
+
+	/**
+	 * Validates the format of the detector MAC address and sets it \sa sharedSlsDetector
+	 * @param detectorMAC detector MAC address
+	 * @returns the detector MAC address
+	 */
+	string setDetectorMAC(string detectorMAC);
+
+	/**
+	 * Validates the format of the detector IP address and sets it \sa sharedSlsDetector
+	 * @param detectorIP detector IP address
+	 * @returns the detector IP address
+	 */
+	string setDetectorIP(string detectorIP);
+
+	/**
+	 * Validates and sets the receiver.
+	 * Also updates the receiver with all the shared memory parameters significant for the receiver
+	 * Also configures the detector to the receiver as UDP destination
+	 * @param receiver receiver hostname or IP address
+	 * @returns the receiver IP address from shared memory
+	 */
+	string setReceiver(string receiver);
+
+	/**
+	 * Validates the format of the receiver UDP IP address and sets it \sa sharedSlsDetector
+	 * @param udpip receiver UDP IP address
+	 * @returns the receiver UDP IP address
+	 */
+	string setReceiverUDPIP(string udpip);
+
+	/**
+	 * Validates the format of the receiver UDP MAC address and sets it \sa sharedSlsDetector
+	 * @param udpmac receiver UDP MAC address
+	 * @returns the receiver UDP MAC address
+	 */
+	string setReceiverUDPMAC(string udpmac);
+
+	/**
+	 * Sets the receiver UDP port\sa sharedSlsDetector
+	 * @param udpport receiver UDP port
+	 * @returns the receiver UDP port
+	 */
+	int setReceiverUDPPort(int udpport);
+
+	/**
+	 * Sets the receiver UDP port 2\sa sharedSlsDetector
+	 * @param udpport receiver UDP port 2
+	 * @returns the receiver UDP port 2
+	 */
+	int setReceiverUDPPort2(int udpport);
+
+	/**
+	 * Sets the client zmq port\sa sharedSlsDetector
+	 * @param port client zmq port (includes "multi" at the end if it should
+	 * calculate individual ports)
+	 * @returns the client zmq port
+	 */
+	string setClientStreamingPort(string port);
+
+	/**
+	 * Sets the receiver zmq port\sa sharedSlsDetector
+	 * @param port receiver zmq port (includes "multi" at the end if it should
+	 * calculate individual ports)
+	 * @returns the receiver zmq port
+	 */
+	string setReceiverStreamingPort(string port);
+
+	/**
+	 * Sets the client zmq ip\sa sharedSlsDetector
+	 * @param sourceIP client zmq ip
+	 * @returns the client zmq ip, returns "none" if default setting and no custom ip set
+	 */
+	string setClientStreamingIP(string sourceIP);
+
+	/**
+	 * Sets the receiver zmq ip\sa sharedSlsDetector
+	 * @param sourceIP receiver zmq ip. If empty, uses rx_hostname
+	 * @returns the receiver zmq ip, returns "none" if default setting and no custom ip set
+	 */
+	string setReceiverStreamingIP(string sourceIP);
+
+	/**
 	 * Execute a digital test (Gotthard, Mythen)
 	 * @param mode testmode type
 	 * @param imod module index (-1 for all)
@@ -1310,7 +1490,7 @@ public:
 	 * @param d axis across which data is flipped
 	 * @returns 1 for flipped, else 0
 	 */
-	int getFlippedData(dimension d=X){return thisDetector->flippedData[d];};
+	int getFlippedData(dimension d=X);
 
 	/**
 	 * Sets the enable which determines if
@@ -1831,7 +2011,7 @@ public:
 	 * Returns file index
 	 * @returns file index
 	 */
-	int getFileIndex(){return setFileIndex();};
+	int getFileIndex();
 
 	/**
 	 * Sets up the file index
@@ -2080,49 +2260,16 @@ private:
 	/**
 	 * Allocates the memory for a sls_detector_module structure and initializes it
 	 * Has detector type
-	 * @param myDetectorType detector type
+	 * @param type detector type
 	 * @returns myMod the pointer to the allocate dmemory location
 	 */
-	sls_detector_module*  createModule(detectorType myDetectorType);
+	sls_detector_module*  createModule(detectorType type);
 
 	/**
 	 * Frees the memory for a sls_detector_module structure
 	 * @param myMod the pointer to the memory to be freed
 	 */
 	void deleteModule(sls_detector_module *myMod);
-
-	/**
-	 * Connect to the control port
-	 * @returns OK, FAIL or undefined
-	 */
-	int connectControl();
-
-	/**
-	 * Disconnect the control port
-	 */
-	void disconnectControl();
-
-	/**
-	 * Connect to the data port
-	 * @returns OK, FAIL or undefined
-	 */
-	int connectData();
-
-	/**
-	 * Disconnect the data port
-	 */
-	int disconnectData();
-
-	/**
-	 * Connect to the stop port
-	 * @returns OK, FAIL or undefined
-	 */
-	int connectStop();
-
-	/**
-	 * Disconnect the stop port
-	 */
-	int disconnectStop();
 
 	/**
 	 * Send a sls_detector_channel structure over socket
@@ -2167,72 +2314,6 @@ private:
 	int receiveModule(sls_detector_module* myMod);
 
 	/**
-	 * Returns the detector MAC address\sa sharedSlsDetector
-	 * @returns the detector MAC address
-	 */
-	string getDetectorMAC();
-
-	/**
-	 * Returns the detector IP address\sa sharedSlsDetector
-	 * @returns the detector IP address
-	 */
-	string getDetectorIP();
-
-	/**
-	 * Returns the receiver IP address\sa sharedSlsDetector
-	 * @returns the receiver IP address
-	 */
-	string getReceiver();
-
-	/**
-	 * Returns the receiver UDP IP address\sa sharedSlsDetector
-	 * @returns the receiver UDP IP address
-	 */
-	string getReceiverUDPIP();
-
-	/**
-	 * Returns the receiver UDP MAC address\sa sharedSlsDetector
-	 * @returns the receiver UDP MAC address
-	 */
-	string getReceiverUDPMAC();
-
-	/**
-	 * Returns the receiver UDP port\sa sharedSlsDetector
-	 * @returns the receiver UDP port
-	 */
-	string getReceiverUDPPort();
-
-	/**
-	 * Returns the receiver UDP port 2 of same interface\sa sharedSlsDetector
-	 * @returns the receiver UDP port 2 of same interface
-	 */
-	string getReceiverUDPPort2();
-
-	/**
-	 * Returns the client zmq port \sa sharedSlsDetector
-	 * @returns the client zmq port
-	 */
-	string getClientStreamingPort();
-
-	/**
-	 * Returns the receiver zmq port \sa sharedSlsDetector
-	 * @returns the receiver zmq port
-	 */
-	string getReceiverStreamingPort();
-
-	/**
-	 * Returns the client zmq ip \sa sharedSlsDetector
-	 * @returns the client zmq ip, returns "none" if default setting and no custom ip set
-	 */
-	string getClientStreamingIP();
-
-	/**
-	 * Returns the receiver zmq ip \sa sharedSlsDetector
-	 * @returns the receiver zmq ip, returns "none" if default setting and no custom ip set
-	 */
-	string getReceiverStreamingIP();
-
-	/**
 	 * Returns the additional json header \sa sharedSlsDetector
 	 * @returns the additional json header, returns "none" if default setting and no custom ip set
 	 */
@@ -2249,87 +2330,6 @@ private:
 	 * @returns the receiver real UDP socket buffer size
 	 */
 	string getReceiverRealUDPSocketBufferSize();
-
-	/**
-	 * Validates the format of the detector MAC address and sets it \sa sharedSlsDetector
-	 * @param detectorMAC detector MAC address
-	 * @returns the detector MAC address
-	 */
-	string setDetectorMAC(string detectorMAC);
-
-	/**
-	 * Validates the format of the detector IP address and sets it \sa sharedSlsDetector
-	 * @param detectorIP detector IP address
-	 * @returns the detector IP address
-	 */
-	string setDetectorIP(string detectorIP);
-
-	/**
-	 * Validates and sets the receiver.
-	 * Also updates the receiver with all the shared memory parameters significant for the receiver
-	 * Also configures the detector to the receiver as UDP destination
-	 * @param receiver receiver hostname or IP address
-	 * @returns the receiver IP address from shared memory
-	 */
-	string setReceiver(string receiver);
-
-	/**
-	 * Validates the format of the receiver UDP IP address and sets it \sa sharedSlsDetector
-	 * @param udpip receiver UDP IP address
-	 * @returns the receiver UDP IP address
-	 */
-	string setReceiverUDPIP(string udpip);
-
-	/**
-	 * Validates the format of the receiver UDP MAC address and sets it \sa sharedSlsDetector
-	 * @param udpmac receiver UDP MAC address
-	 * @returns the receiver UDP MAC address
-	 */
-	string setReceiverUDPMAC(string udpmac);
-
-	/**
-	 * Sets the receiver UDP port\sa sharedSlsDetector
-	 * @param udpport receiver UDP port
-	 * @returns the receiver UDP port
-	 */
-	int setReceiverUDPPort(int udpport);
-
-	/**
-	 * Sets the receiver UDP port 2\sa sharedSlsDetector
-	 * @param udpport receiver UDP port 2
-	 * @returns the receiver UDP port 2
-	 */
-	int setReceiverUDPPort2(int udpport);
-
-	/**
-	 * Sets the client zmq port\sa sharedSlsDetector
-	 * @param port client zmq port (includes "multi" at the end if it should
-	 * calculate individual ports)
-	 * @returns the client zmq port
-	 */
-	string setClientStreamingPort(string port);
-
-	/**
-	 * Sets the receiver zmq port\sa sharedSlsDetector
-	 * @param port receiver zmq port (includes "multi" at the end if it should
-	 * calculate individual ports)
-	 * @returns the receiver zmq port
-	 */
-	string setReceiverStreamingPort(string port);
-
-	/**
-	 * Sets the client zmq ip\sa sharedSlsDetector
-	 * @param sourceIP client zmq ip
-	 * @returns the client zmq ip, returns "none" if default setting and no custom ip set
-	 */
-	string setClientStreamingIP(string sourceIP);
-
-	/**
-	 * Sets the receiver zmq ip\sa sharedSlsDetector
-	 * @param sourceIP receiver zmq ip. If empty, uses rx_hostname
-	 * @returns the receiver zmq ip, returns "none" if default setting and no custom ip set
-	 */
-	string setReceiverStreamingIP(string sourceIP);
 
 	/**
 	 * Sets the additional json header\sa sharedSlsDetector

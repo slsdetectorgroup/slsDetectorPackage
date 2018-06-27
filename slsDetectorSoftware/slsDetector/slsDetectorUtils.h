@@ -204,10 +204,8 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   
   /** sets the detector hostname   
       \param name hostname
-      \param pos position in the multi detector structure (is -1 expects concatenated hostnames divided by a +)
-      \returns  hostname  
   */
-  virtual std::string setHostname(const char* name, int pos=-1)=0;
+  virtual void setHostname(const char* name)=0;
 
 
   /** returns the detector type
@@ -215,25 +213,6 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
       \returns type
   */
   virtual std::string sgetDetectorsType(int pos=-1)=0;
-
-
-
-
-  
-  /** Gets the detector id (shared memory id) of an slsDetector
-      \param i position in the multiSlsDetector structure
-      \return id or -1 if FAIL
-  */
-  virtual int getDetectorId(int i=-1)=0;
-
-  /** Sets the detector id (shared memory id) of an slsDetector in a multiSlsDetector structure
-      \param ival id to be set
-      \param i position in the multiSlsDetector structure
-      \return id or -1 if FAIL  (e.g. in case of an slsDetector)
-  */
-  virtual int setDetectorId(int ival, int i=-1){return -1;};
-
-
 
   /**
      gets the network parameters (implemented for gotthard)
@@ -415,7 +394,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   virtual std::string setCalDir(std::string s)=0;
 
   /** Frees the shared memory  -  should not be used except for debugging*/
-  virtual int freeSharedMemory()=0;
+  virtual void freeSharedMemory()=0;
 
 
   /** adds the detector with ID id in postion pos

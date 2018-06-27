@@ -264,14 +264,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 	/*! \page config
-   - \b add Adds a detector at the end of the multi-detector structure. \c put argument is the hostname or IP adress. Returns the chained  list of detector hostnames.
+   - \b add Adds a detector at the end of the multi-detector structure. \c put argument is the hostname or IP adress. cannot get. \c Returns the current list of detector hostnames. \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="add";//OK
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdd;
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdHostname;
 	++i;
 
 	/*! \page config
-   - <b>hostname</b> \c put adds the hostname (ot IP adress) at the end of the multi-detector structure. If used for a single controlled (i:) replaces the current hostname. Returns the list of the hostnames of the multi-detector structure. \c Returns \c (string)
+   - <b>hostname</b> \c put frees shared memory and sets the hostname (or IP adress).\c Returns the list of the hostnames of the multi-detector structure. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="hostname"; //OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdHostname;
@@ -2697,7 +2697,7 @@ string slsDetectorCommand::helpFree(int narg, char *args[], int action) {
 
 }
 
-
+/*
 string slsDetectorCommand::cmdAdd(int narg, char *args[], int action) {
 #ifdef VERBOSE
 	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
@@ -2733,7 +2733,7 @@ string slsDetectorCommand::helpAdd(int narg, char *args[], int action){
 			"det can either be the detector hostname or the detector id. "
 			"Returns hostnames in the multi detector structure\n");
 }
-/*
+
 string slsDetectorCommand::cmdReplace(int narg, char *args[], int action){
 #ifdef VERBOSE
 	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
@@ -2764,6 +2764,9 @@ string slsDetectorCommand::cmdHostname(int narg, char *args[], int action){
 	if (action==HELP_ACTION) {
 		return helpHostname(narg,args,HELP_ACTION);
 	}
+	if ((action==GET_ACTION) && (cmd == "add")) {
+		return string("cannot get");
+	}
 
 	if (action==PUT_ACTION) {
 
@@ -2780,7 +2783,6 @@ string slsDetectorCommand::cmdHostname(int narg, char *args[], int action){
 			if(narg>2)
 				strcat(hostname,"+");
 		}
-		myDet->freeSharedMemory();
 		myDet->setHostname(hostname);
 	}
 
@@ -2795,9 +2797,13 @@ string slsDetectorCommand::helpHostname(int narg, char *args[], int action){
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION)
 		os << string("hostname \t returns the hostname(s) of the detector structure.");
-	if (action==PUT_ACTION || action==HELP_ACTION)
+	if (action==PUT_ACTION || action==HELP_ACTION) {
 		os << string("hostname name [name name]\t frees shared memory and "
 				"configures the hostnames of the detector structure.\n");
+		os << string ("add det [det det]\t appends a detector(s) to the multi detector structure. "
+				"det can either be the detector hostname or the detector id. "
+				"Returns hostnames in the multi detector structure\n");
+	}
 	return os.str();
 }
 

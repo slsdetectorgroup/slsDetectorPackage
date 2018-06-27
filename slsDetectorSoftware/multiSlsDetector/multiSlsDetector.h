@@ -489,7 +489,7 @@ public:
 	 * @param pos position in the multi list
 	 * @returns slsDetector object
 	 */
-	slsDetector *operator();
+	slsDetector *operator()(int pos);
 
 	/**
 	 * Free shared memory from the command line
@@ -513,9 +513,9 @@ public:
 	/**
 	 * Sets the hostname of all sls detectors in shared memory
 	 * Connects to them to set up online flag
-	 * @param s concatenated hostname of all the sls detectors
+	 * @param name concatenated hostname of all the sls detectors
 	 */
-	void setHostname(std::string s);
+	void setHostname(const char* name);
 
 	/**
 	 * Gets the hostname of detector at particular position
@@ -554,7 +554,7 @@ public:
 	 * Creates all the threads in the threadpool
 	 * throws an exception if it cannot create threads
 	 */
-	int createThreadPool();
+	void createThreadPool();
 
 	/**
 	 * Destroys all the threads in the threadpool
@@ -1822,16 +1822,15 @@ private:
 	bool initSharedMemory(bool verify = true);
 
 	/**
-	 * Initialize detector structure
-	 * @param created true if shared memory was just created now
-	 * @param verify true to verify if shm size matches existing one
+	 * Initialize detector structure for the shared memory just created
 	 */
-	void initializeDetectorStructure(bool created, bool verify = true);
+	void initializeDetectorStructure();
 
 	/**
 	 * Initialize class members (and from parent classes)
+	 * @param verify true to verify if shm size matches existing one
 	 */
-	void initializeMembers();
+	void initializeMembers(bool verify = true);
 
 	/**
 	 * Update user details in detector structure

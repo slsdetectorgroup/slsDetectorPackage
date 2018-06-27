@@ -1,5 +1,6 @@
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
+#include "sls_detector_exceptions.h"
 #include "SharedMemory.h"
 #include "receiverInterface.h"
 #include "gitInfoLib.h"
@@ -21,7 +22,7 @@
 using namespace std;
 
 
-slsDetector::slsDetector(detectorType type, int multiId, int id, bool verify, MultiDet* m)
+slsDetector::slsDetector(detectorType type, int multiId, int id, bool verify, multiSlsDetector* m)
 : slsDetectorUtils(),
   detId(id),
   sharedMemory(0),
@@ -45,8 +46,7 @@ slsDetector::slsDetector(detectorType type, int multiId, int id, bool verify, Mu
 
 	// ensure shared memory was not created before
 	SharedMemory* shm = new SharedMemory(multiId, id);
-	std::string shmname = shm->GetName();
-	if (SharedMemory::IsExisting(shmname)) {
+	if (SharedMemory::IsExisting(shm->GetName())) {
 		cprintf(YELLOW BOLD,"Warning: Weird, this shared memory should have been "
 				"deleted before! %s. Freeing it again.\n", shm->GetName().c_str());
 		freeSharedMemory(multiId, id);
@@ -60,7 +60,7 @@ slsDetector::slsDetector(detectorType type, int multiId, int id, bool verify, Mu
 	initializeDetectorStructurePointers();
 }
 
-slsDetector::slsDetector(int multiId, int id, bool verify, MultiDet* m)
+slsDetector::slsDetector(int multiId, int id, bool verify, multiSlsDetector* m)
 : slsDetectorUtils(),
   detId(id),
   sharedMemory(0),
@@ -85,7 +85,7 @@ slsDetector::slsDetector(int multiId, int id, bool verify, MultiDet* m)
 
 	// ensure shared memory is existing
 	SharedMemory* shm = new SharedMemory(multiId, id);
-	if (!SharedMemory::IsExisting(shmname)) {
+	if (!SharedMemory::IsExisting(shm->GetName())) {
 		cprintf(YELLOW BOLD,"Warning: Corrupted shared memory. It should have been "
 				"created before! %s.\n", shm->GetName().c_str());
 		delete shm; /* is this necessary ?*/
@@ -93,14 +93,14 @@ slsDetector::slsDetector(int multiId, int id, bool verify, MultiDet* m)
 	}
 	delete shm;
 
-	detectorType type = GetDetectorTypeFromShm(multiId, verify);
+	detectorType type = getDetectorTypeFromShm(multiId, verify);
 	initSharedMemory(false, type, multiId, verify);
 	initializeMembers();
 }
 
 slsDetector::~slsDetector() {
 	if (sharedMemory) {
-		sharedMemory->UnmapSharedMemory(thisMultiDetector);
+		sharedMemory->UnmapSharedMemory(thisDetector);
 		delete sharedMemory;
 	}
 	if(thisReceiver)
@@ -211,8 +211,7 @@ int64_t slsDetector::clearAllErrorMask() {
 	clearErrorMask();
 	pthread_mutex_lock(&ms);
 	for(int i=0;i<multiDet->getNumberOfDetectors();++i){
-		if(multiDet->getDetectorId(i) == getDetectorId())
-			multiDet->setErrorMask(multiDet->getErrorMask()|(0<<i));
+		multiDet->setErrorMask(multiDet->getErrorMask()|(0<<i));
 	}
 	pthread_mutex_unlock(&ms);
 	return getErrorMask();
@@ -401,7 +400,7 @@ int64_t slsDetector::getId( idMode mode, int imod) {
 }
 
 
-void slsDetector::FreeSharedMemory(int multiId, int slsId) {
+void slsDetector::freeSharedMemory(int multiId, int slsId) {
 	SharedMemory* shm = new SharedMemory(multiId, slsId);
 	shm->RemoveSharedMemory();
 	delete shm;
@@ -420,7 +419,7 @@ void slsDetector::setHostname(const char *name) {
 	setTCPSocket(string(name));
 }
 
-string slsDetector::getHostname(int pos = -1) {
+string slsDetector::getHostname(int pos) {
 	return string(thisDetector->hostname);
 }
 
@@ -439,22 +438,22 @@ void slsDetector::initSharedMemory(bool created, detectorType type, int multiId,
 	// create
 	if (created) {
 		try {
-			thisSingleDet = (sharedSingleDet*)sharedMemory->CreateSharedMemory(sz);
+			thisDetector = (sharedSlsDetector*)sharedMemory->CreateSharedMemory(sz);
 		} catch(...) {
 			sharedMemory->RemoveSharedMemory();
-			thisSingleDet = 0;
+			thisDetector = 0;
 			throw;
 		}
 	}
 	// open and verify version
 	else {
-		thisSingleDet = (sharedSingleDet*)sharedMemory->OpenSharedMemory(sz, verify);
+		thisDetector = (sharedSlsDetector*)sharedMemory->OpenSharedMemory(sz);
 		if (verify && thisDetector->shmversion != SLS_SHMVERSION) {
 			cprintf(RED, "Single shared memory (%d-%d:)version mismatch "
 					"(expected 0x%x but got 0x%x)\n",
 					multiId, detId, SLS_SHMVERSION, thisDetector->shmversion);
-			shm->UnmapSharedMemory(sdet); /** is this unncessary? */
-			delete shm;/** is this unncessary? */
+			sharedMemory->UnmapSharedMemory(thisDetector); /** is this unncessary? */
+			delete sharedMemory;/** is this unncessary? */
 			throw SharedMemoryException();
 		}
 	}
@@ -464,136 +463,136 @@ void slsDetector::initSharedMemory(bool created, detectorType type, int multiId,
 void slsDetector::setDetectorSpecificParameters(detectorType type, detParameterList& list) {
 	switch (type) {
 	case MYTHEN:
-		detlist.nModMaxX = 24;
-		detlist.nModMaxY = 1;
-		detlist.nChanX = 128;
-		detlist.nChanY = 1;
-		detlist.nChipX = 10;
-		detlist.nChipY = 1;
-		detlist.nDacs = 6;
-		detlist.nAdcs = 0;
-		detlist.nGain = 0;
-		detlist.nOffset = 0;
-		detlist.dynamicRange = 24;
-		detlist.moveFlag = 1;
-		detlist.nGappixelsX = 0;
-		detlist.nGappixelsY = 0;
+		list.nModMaxX = 24;
+		list.nModMaxY = 1;
+		list.nChanX = 128;
+		list.nChanY = 1;
+		list.nChipX = 10;
+		list.nChipY = 1;
+		list.nDacs = 6;
+		list.nAdcs = 0;
+		list.nGain = 0;
+		list.nOffset = 0;
+		list.dynamicRange = 24;
+		list.moveFlag = 1;
+		list.nGappixelsX = 0;
+		list.nGappixelsY = 0;
 		break;
 	case PICASSO: /** is this needed?*/
-		detlist.nModMaxX = 24;
-		detlist.nModMaxY = 1;
-		detlist.nChanX = 128;
-		detlist.nChanY = 1;
-		detlist.nChipX = 12;
-		detlist.nChipY = 1;
-		detlist.nDacs = 6;
-		detlist.nAdcs = 0;
-		detlist.nGain = 0;
-		detlist.nOffset = 0;
-		detlist.dynamicRange = 24;
-		detlist.moveFlag = 0;
-		detlist.nGappixelsX = 0;
-		detlist.nGappixelsY = 0;
+		list.nModMaxX = 24;
+		list.nModMaxY = 1;
+		list.nChanX = 128;
+		list.nChanY = 1;
+		list.nChipX = 12;
+		list.nChipY = 1;
+		list.nDacs = 6;
+		list.nAdcs = 0;
+		list.nGain = 0;
+		list.nOffset = 0;
+		list.dynamicRange = 24;
+		list.moveFlag = 0;
+		list.nGappixelsX = 0;
+		list.nGappixelsY = 0;
 		break;
 	case GOTTHARD:
-		detlist.nModMaxX = 1;
-		detlist.nModMaxY = 1;
-		detlist.nChanX = 128;
-		detlist.nChanY = 1;
-		detlist.nChipX = 10;
-		detlist.nChipY = 1;
-		detlist.nDacs = 8;
-		detlist.nAdcs = 5;
-		detlist.nGain = 0;
-		detlist.nOffset = 0;
-		detlist.dynamicRange = 16;
-		detlist.moveFlag = 0;
-		detlist.nGappixelsX = 0;
-		detlist.nGappixelsY = 0;
+		list.nModMaxX = 1;
+		list.nModMaxY = 1;
+		list.nChanX = 128;
+		list.nChanY = 1;
+		list.nChipX = 10;
+		list.nChipY = 1;
+		list.nDacs = 8;
+		list.nAdcs = 5;
+		list.nGain = 0;
+		list.nOffset = 0;
+		list.dynamicRange = 16;
+		list.moveFlag = 0;
+		list.nGappixelsX = 0;
+		list.nGappixelsY = 0;
 		break;
 	case PROPIX:
-		detlist.nModMaxX = 1;
-		detlist.nModMaxY = 1;
-		detlist.nChanX = 22;
-		detlist.nChanY = 22;
-		detlist.nChipX = 1;
-		detlist.nChipY = 1;
-		detlist.nDacs = 8;
-		detlist.nAdcs = 5;
-		detlist.nGain = 0;
-		detlist.nOffset = 0;
-		detlist.dynamicRange = 16;
-		detlist.moveFlag = 0;
-		detlist.nGappixelsX = 0;
-		detlist.nGappixelsY = 0;
+		list.nModMaxX = 1;
+		list.nModMaxY = 1;
+		list.nChanX = 22;
+		list.nChanY = 22;
+		list.nChipX = 1;
+		list.nChipY = 1;
+		list.nDacs = 8;
+		list.nAdcs = 5;
+		list.nGain = 0;
+		list.nOffset = 0;
+		list.dynamicRange = 16;
+		list.moveFlag = 0;
+		list.nGappixelsX = 0;
+		list.nGappixelsY = 0;
 		break;
 	case MOENCH:
-		detlist.nModMaxX = 1;
-		detlist.nModMaxY = 1;
-		detlist.nChanX = 160;
-		detlist.nChanY = 160;
-		detlist.nChipX = 1;
-		detlist.nChipY = 1;
-		detlist.nDacs = 8;
-		detlist.nAdcs = 1;
-		detlist.nGain = 0;
-		detlist.nOffset = 0;
-		detlist.dynamicRange = 16;
-		detlist.moveFlag = 0;
-		detlist.nGappixelsX = 0;
-		detlist.nGappixelsY = 0;
+		list.nModMaxX = 1;
+		list.nModMaxY = 1;
+		list.nChanX = 160;
+		list.nChanY = 160;
+		list.nChipX = 1;
+		list.nChipY = 1;
+		list.nDacs = 8;
+		list.nAdcs = 1;
+		list.nGain = 0;
+		list.nOffset = 0;
+		list.dynamicRange = 16;
+		list.moveFlag = 0;
+		list.nGappixelsX = 0;
+		list.nGappixelsY = 0;
 		break;
 	case JUNGFRAU:
-		detlist.nModMaxX = 1;
-		detlist.nModMaxY = 1;
-		detlist.nChanX = 256;
-		detlist.nChanY = 256;
-		detlist.nChipX = 4;
-		detlist.nChipY = 2;
-		detlist.nDacs = 16;
-		detlist.nAdcs = 0;
-		detlist.nGain = 0;
-		detlist.nOffset = 0;
-		detlist.dynamicRange = 16;
-		detlist.moveFlag = 0;
-		detlist.nGappixelsX = 0;
-		detlist.nGappixelsY = 0;
+		list.nModMaxX = 1;
+		list.nModMaxY = 1;
+		list.nChanX = 256;
+		list.nChanY = 256;
+		list.nChipX = 4;
+		list.nChipY = 2;
+		list.nDacs = 16;
+		list.nAdcs = 0;
+		list.nGain = 0;
+		list.nOffset = 0;
+		list.dynamicRange = 16;
+		list.moveFlag = 0;
+		list.nGappixelsX = 0;
+		list.nGappixelsY = 0;
 		break;
 	case JUNGFRAUCTB:
-		detlist.nModMaxX = 1;
-		detlist.nModMaxY = 1;
-		detlist.nChanX = 36;
-		detlist.nChanY = 1;
-		detlist.nChipX = 1;
-		detlist.nChipY = 1;
-		detlist.nDacs = 16;
-		detlist.nAdcs = 9;//???? When calculating size, only d+a=16 how come?FIXME
-		detlist.nGain = 0;
-		detlist.nOffset = 0;
-		detlist.dynamicRange =16;
-		detlist.moveFlag = 0;
-		detlist.nGappixelsX = 0;
-		detlist.nGappixelsY = 0;
+		list.nModMaxX = 1;
+		list.nModMaxY = 1;
+		list.nChanX = 36;
+		list.nChanY = 1;
+		list.nChipX = 1;
+		list.nChipY = 1;
+		list.nDacs = 16;
+		list.nAdcs = 9;//???? When calculating size, only d+a=16 how come?FIXME
+		list.nGain = 0;
+		list.nOffset = 0;
+		list.dynamicRange =16;
+		list.moveFlag = 0;
+		list.nGappixelsX = 0;
+		list.nGappixelsY = 0;
 		break;
 	case EIGER:
-		detlist.nModMaxX = 1;
-		detlist.nModMaxY = 1;
-		detlist.nChanX = 256;
-		detlist.nChanY = 256;
-		detlist.nChipX = 4;
-		detlist.nChipY = 1;
-		detlist.nDacs = 16;
-		detlist.nAdcs = 0;
-		detlist.nGain = 0; // can be set back to 4 in case we require it again
-		detlist.nOffset = 0; // can be set back to 4 in case we require it again
-		detlist.dynamicRange = 16;
-		detlist.moveFlag = 0;
-		detlist.nGappixelsX = 6;
-		detlist.nGappixelsY = 1;
+		list.nModMaxX = 1;
+		list.nModMaxY = 1;
+		list.nChanX = 256;
+		list.nChanY = 256;
+		list.nChipX = 4;
+		list.nChipY = 1;
+		list.nDacs = 16;
+		list.nAdcs = 0;
+		list.nGain = 0; // can be set back to 4 in case we require it again
+		list.nOffset = 0; // can be set back to 4 in case we require it again
+		list.dynamicRange = 16;
+		list.moveFlag = 0;
+		list.nGappixelsX = 6;
+		list.nGappixelsY = 1;
 		break;
 	default:
 		cprintf(RED,"Unknown detector type!\n");
-		throw Exception();
+		throw exception();
 	}
 }
 
@@ -629,34 +628,37 @@ int slsDetector::calculateSharedMemorySize(detectorType type) {
 
 
 void slsDetector::initializeDetectorStructure(detectorType type) {
-	char  *goff = (char*)thisDetector;
 	thisDetector->shmversion = SLS_SHMVERSION;
 	thisDetector->onlineFlag = OFFLINE_FLAG;
 	thisDetector->stoppedFlag = 0;
-	strncpy(thisDetector->hostname, DEFAULT_HOSTNAME, strlen(DEFAULT_HOSTNAME));
+	strncpy(thisDetector->hostname, DEFAULT_HOSTNAME, MAX_STR_LENGTH-1);
+	thisDetector->hostname[MAX_STR_LENGTH-1] = 0;
 	thisDetector->controlPort = DEFAULT_PORTNO;
 	thisDetector->stopPort = DEFAULT_PORTNO + 1;
 	thisDetector->myDetectorType = type;
-	strncpy(thisDetector->settingsDir, getenv("HOME"), strlen(getenv("HOME")));
-	strncpy(thisDetector->calDir, getenv("HOME"), strlen(getenv("HOME")));
+	strncpy(thisDetector->settingsDir, getenv("HOME"),  MAX_STR_LENGTH-1);
+	thisDetector->settingsDir[MAX_STR_LENGTH-1] = 0;
+	strncpy(thisDetector->calDir, getenv("HOME"),  MAX_STR_LENGTH-1);
+	thisDetector->calDir[MAX_STR_LENGTH-1] = 0;
 	thisDetector->nTrimEn = 0;
 	thisDetector->trimEnergies[100];
 	thisDetector->progressIndex = 0;
 	thisDetector->totalProgress = 1;
-	strncpy(thisDetector->filePath, "/", strlen("/"));
+	strcpy(thisDetector->filePath, "/");
 	thisDetector->correctionMask = 0;
 	thisDetector->threadedProcessing = 1;
 	thisDetector->tDead = 0;
-	strncpy(thisDetector->flatFieldDir, getenv("HOME"), strlen(getenv("HOME")));
-	strncpy(thisDetector->flatFieldFile, "none", strlen("none"));
+	strncpy(thisDetector->flatFieldDir, getenv("HOME"),  MAX_STR_LENGTH-1);
+	thisDetector->flatFieldDir[MAX_STR_LENGTH-1] = 0;
+	strcpy(thisDetector->flatFieldFile, "none");
 	thisDetector->nBadChans = 0;
-	strncpy(thisDetector->badChanFile, "none", strlen("none"));
+	strcpy(thisDetector->badChanFile, "none");
 	thisDetector->nBadFF = 0;
 	for (int i = 0; i < MAX_BADCHANS; ++i) {
 		thisDetector->badChansList[i] = 0;
 		thisDetector->badFFList[i] = 0;
 	}
-	strncpy(thisDetector->angConvFile, "none", strlen("none"));
+	strcpy(thisDetector->angConvFile, "none");
 	memset(thisDetector->angOff, 0, MAXMODS * sizeof(angleConversionConstant));
 	thisDetector->angDirection = 1;
 	thisDetector->fineOffset = 0;
@@ -669,7 +671,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 	thisDetector->nROI = 0;
 	memset(thisDetector->roiLimits, 0, MAX_ROIS * sizeof(ROI));
 	thisDetector->roFlags = NORMAL_READOUT;
-	strncpy(thisDetector->settingsFile, "none", strlen("none"));
+	strcpy(thisDetector->settingsFile, "none");
 	thisDetector->currentSettings = UNINITIALIZED;
 	thisDetector->currentThresholdEV = -1;
 	thisDetector->timerValue[FRAME_NUMBER] = 1;
@@ -691,25 +693,30 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 	thisDetector->timerValue[SUBFRAME_PERIOD] = 0;
 	thisDetector->actionMask = 0;
 	for (int i = 0; i < MAX_ACTIONS; ++i) {
-		strncpy(thisDetector->actionScript[i], "none", strlen("none"));
-		strncpy(thisDetector->actionParameter[i], "none", strlen("none"));
+		strcpy(thisDetector->actionScript[i], "none");
+		strcpy(thisDetector->actionParameter[i], "none");
 	}
 	for (int i = 0; i < MAX_SCAN_LEVELS; ++i) {
 		thisDetector->scanMode[i] = 0;
-		strncpy(thisDetector->scanScript[i], "none", strlen("none"));
-		strncpy(thisDetector->scanParameter[i], "none", strlen("none"));
+		strcpy(thisDetector->scanScript[i], "none");
+		strcpy(thisDetector->scanParameter[i], "none");
 		thisDetector->nScanSteps[i] = 0;
-		thisDetector->scanSteps[i] = 0.0;
+		{
+			double initValue = 0;
+			std::fill_n(thisDetector->scanSteps[i], MAX_SCAN_STEPS, initValue);
+		}
 		thisDetector->scanPrecision[i] = 0;
 	}
-	strncpy(thisDetector->receiver_hostname, "none", strlen("none"));
+	strcpy(thisDetector->receiver_hostname, "none");
 	thisDetector->receiverTCPPort = DEFAULT_PORTNO+2;
 	thisDetector->receiverUDPPort = DEFAULT_UDP_PORTNO;
 	thisDetector->receiverUDPPort2 = DEFAULT_UDP_PORTNO + 1;
-	strncpy(thisDetector->receiverUDPIP, "none", strlen("none"));
-	strncpy(thisDetector->receiverUDPMAC, "none", strlen("none"));
-	strncpy(thisDetector->detectorMAC, DEFAULT_DET_MAC, strlen(DEFAULT_DET_MAC));
-	strncpy(thisDetector->detectorIP, DEFAULT_DET_IP, strlen(DEFAULT_DET_IP));
+	strcpy(thisDetector->receiverUDPIP, "none");
+	strcpy(thisDetector->receiverUDPMAC, "none");
+	strncpy(thisDetector->detectorMAC, DEFAULT_DET_MAC, MAX_STR_LENGTH-1);
+	thisDetector->detectorMAC[MAX_STR_LENGTH-1] = 0;
+	strncpy(thisDetector->detectorIP, DEFAULT_DET_IP, MAX_STR_LENGTH-1);
+	thisDetector->detectorIP[MAX_STR_LENGTH-1] = 0;
 	thisDetector->receiverOnlineFlag = OFFLINE_FLAG;
 	thisDetector->tenGigaEnable = 0;
 	thisDetector->flippedData[X] = 0;
@@ -813,6 +820,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 void slsDetector::initializeMembers() {
 	// slsdetector
 	// assign addresses
+	char *goff = (char*)thisDetector;
 	ffcoefficients = (double*)(goff + thisDetector->ffoff);
 	fferrors = (double*)(goff + thisDetector->fferroff);
 	detectorModules = (sls_detector_module*)(goff + thisDetector->modoff);
@@ -839,6 +847,7 @@ void slsDetector::initializeMembers() {
 	fileIndex=multiDet->fileIndex;
 	framesPerFile=multiDet->framesPerFile;
 	fileFormatType=multiDet->fileFormatType;
+
 	if (thisDetector->myDetectorType != MYTHEN)
 		fileIO::setFileFormat(BINARY);
 	switch(thisDetector->myDetectorType) {
@@ -870,10 +879,6 @@ void slsDetector::initializeMembers() {
 	badChannelMask = NULL;
 	fdata = NULL;
 	thisData = NULL;
-	ppFun = NULL;
-	ang = NULL;
-	val = NULL;
-	err = NULL;
 
 
 	// slsDetectorActions
@@ -913,12 +918,17 @@ void slsDetector::initializeMembers() {
 
 
 void slsDetector::initializeDetectorStructurePointers() {
-	// initialize with defaults
-	ffcoefficients??
-			fferrors??
-					sls_detector_module *thisMod;
+	sls_detector_module* thisMod;
 	for (int imod = 0; imod < thisDetector->nModsMax; ++imod) {
 
+		// initializes the ffcoefficients values to 0
+		for (int i = 0; i < thisDetector->nChans * thisDetector->nChips; ++i) {
+			*(ffcoefficients + i + thisDetector->nChans * thisDetector->nChips * imod) = 0;
+		}
+		// initializes the fferrors values to 0
+		for (int i = 0; i < thisDetector->nChans * thisDetector->nChips; ++i) {
+			*(fferrors + i + thisDetector->nChans * thisDetector->nChips * imod) = 0;
+		}
 		// set thisMod to point to one of the detector structure modules
 		thisMod = detectorModules + imod;
 
@@ -968,7 +978,7 @@ slsDetectorDefs::sls_detector_module*  slsDetector::createModule() {
 }
 
 
-slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType t) {
+slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType type) {
 	// get the detector parameters based on type
 	detParameterList detlist;
 	int nch = 0, nc = 0, nd = 0, na = 0;
@@ -979,7 +989,7 @@ slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType t)
 		nd = detlist.nDacs;
 		na = detlist.nAdcs;
 	} catch(...) {
-		// FIXME do what here?
+		;// FIXME do what here?
 	}
 	dacs_t *dacs=new dacs_t[nd];
 	dacs_t *adcs=new dacs_t[na];
@@ -1228,20 +1238,18 @@ int  slsDetector::receiveModule(sls_detector_module* myMod) {
 }
 
 
-detectorType slsDetector::getDetectorTypeFromShm(int multiId) {
+slsReceiverDefs::detectorType slsDetector::getDetectorTypeFromShm(int multiId, bool verify) {
 	SharedMemory* shm = new SharedMemory(multiId, detId);
-	std::string shmname = shm->GetName();
-
 	// shm not created before
-	if (!SharedMemory::IsExisting(shmname)) {
+	if (!SharedMemory::IsExisting(shm->GetName())) {
 		cprintf(RED,"Shared memory %s does not exist.\n"
 				"Corrupted Multi Shared memory. Please free shared memory.\n",
-				shmname.c_str());
+				shm->GetName().c_str());
 		throw SharedMemoryException();
 	}
 
 	// map basic size of sls detector structure (no need of offsets, just version is required)
-	slsDetector* sdet = 0;
+	sharedSlsDetector* sdet = 0;
 	size_t sz = sizeof(sharedSlsDetector);
 
 	// open, map, verify version, get type
@@ -1254,7 +1262,7 @@ detectorType slsDetector::getDetectorTypeFromShm(int multiId) {
 		delete shm;/** is this unncessary? */
 		throw SharedMemoryException();
 	}
-	detectorType type = sdet->type;
+	detectorType type = sdet->myDetectorType;
 
 	// unmap
 	shm->UnmapSharedMemory(sdet);
@@ -1376,7 +1384,7 @@ slsDetectorDefs::detectorType slsDetector::getDetectorsType(int pos) {
 	return thisDetector->myDetectorType;
 }
 
-string slsDetector::sgetDetectorsType(int pos=-1) {
+string slsDetector::sgetDetectorsType(int pos) {
 	return getDetectorType(getDetectorsType(pos));
 }
 
@@ -1581,11 +1589,11 @@ std::cout<< "nModX " << thisDetector->nMod[X] << " nModY " << thisDetector->nMod
 
 
 
-int slsDetector::getChansPerMod(int imod=0) {
+int slsDetector::getChansPerMod(int imod) {
 	return thisDetector->nChans*thisDetector->nChips;
 }
 
-int slsDetector::getChansPerMod( dimension d,int imod=0) {
+int slsDetector::getChansPerMod( dimension d,int imod) {
 	return thisDetector->nChan[d]*thisDetector->nChip[d];
 }
 
@@ -2545,8 +2553,8 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id) {
 	}
 
 
-f
-	int nsig=4;//-1;
+
+	int nsig=4;
 	int iv=0;
 	char *args[100];
 	char myargs[100][1000];
@@ -4418,8 +4426,8 @@ int slsDetector::setDynamicRange(int n) {
 		}
 		if(thisDetector->myDetectorType==MYTHEN){
 			if (thisDetector->timerValue[PROBES_NUMBER]!=0) {
-				thisDetector->dataBytes=thisDetector->nMod[X]*t
-						hisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
+				thisDetector->dataBytes=thisDetector->nMod[X]*
+						thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
 				thisDetector->dataBytesInclGapPixels =
 						(thisDetector->nMod[X] * thisDetector->nChip[X] *
 								thisDetector->nChan[X] + thisDetector->gappixels *
@@ -6169,12 +6177,9 @@ int slsDetector::activate(int const enable) {
 
 
 
-
-int slsDetector::getFlippedData(dimension d=X) {
+int slsDetector::getFlippedData(dimension d) {
 	return thisDetector->flippedData[d];
 }
-
-
 
 
 
@@ -6335,8 +6340,7 @@ int slsDetector::enableGapPixels(int val) {
 
 
 
-int slsDetector::setTrimEn(int nen, int *en=NULL) {
-{
+int slsDetector::setTrimEn(int nen, int *en) {
 	if (en) {
 		for (int ien=0; ien<nen; ien++)
 			thisDetector->trimEnergies[ien]=en[ien];
@@ -6346,12 +6350,12 @@ int slsDetector::setTrimEn(int nen, int *en=NULL) {
 }
 
 
-int slsDetector::getTrimEn(int *en=NULL) {
+int slsDetector::getTrimEn(int *en) {
 	if (en) {
 		for (int ien=0; ien<thisDetector->nTrimEn; ien++)
 			en[ien]=thisDetector->trimEnergies[ien];
 	}
-	return (thisDetector->nTrimEn);};
+	return (thisDetector->nTrimEn);
 }
 
 
@@ -8136,7 +8140,7 @@ int slsDetector::getAngularConversion(int &direction,  angleConversionConstant *
 
 
 
-angleConversionConstant* slsDetector::getAngularConversionPointer(int imod=0) {
+angleConversionConstant* slsDetector::getAngularConversionPointer(int imod) {
 	return &thisDetector->angOff[imod];
 }
 
@@ -8738,7 +8742,7 @@ slsReceiverDefs::fileFormat slsDetector::setFileFormat(fileFormat f) {
 
 
 
-fileFormat slsDetector::getFileFormat() {
+slsReceiverDefs::fileFormat slsDetector::getFileFormat() {
 	return setFileFormat();
 }
 
@@ -9141,7 +9145,7 @@ int slsDetector::setReceiverReadTimer(int time_in_ms) {
 }
 
 
-int slsDetector::enableDataStreamingToClient(int enable=-1) {
+int slsDetector::enableDataStreamingToClient(int enable) {
 	cprintf(RED,"ERROR: Must be called from the multi Detector level\n");
 	return 0;
 }

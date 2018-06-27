@@ -264,17 +264,31 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 	/*! \page config
-   - \b add Adds a detector at the end of the multi-detector structure. \c put argument is the hostname or IP adress. cannot get. \c Returns the current list of detector hostnames. \c (string)
+   - <b>hostname</b> \c put frees shared memory and sets the hostname (or IP adress). Only allowed at multi detector level. \c Returns the list of the hostnames of the multi-detector structure. \c (string)
+	 */
+	descrToFuncMap[i].m_pFuncName="hostname"; //OK
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdHostname;
+	++i;
+
+	/*! \page config
+   - \b add appends a hostname (or IP address) at the end of the multi-detector structure. Only allowed at multi detector level. Cannot get. \c Returns the current list of detector hostnames. \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="add";//OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdHostname;
 	++i;
 
 	/*! \page config
-   - <b>hostname</b> \c put frees shared memory and sets the hostname (or IP adress).\c Returns the list of the hostnames of the multi-detector structure. \c Returns \c (string)
+   - <b>replace</b> \c Sets the hostname (or IP adress) for a single detector. Only allowed at single detector level.  Cannot get. \c Returns the hostnames for that detector \c (string)
 	 */
-	descrToFuncMap[i].m_pFuncName="hostname"; //OK
+	descrToFuncMap[i].m_pFuncName="replace"; //OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdHostname;
+	++i;
+
+	/*! \page config
+   - <b>user</b> \c Returns user details from shared memory. Only allowed at multi detector level.  Cannot put. \c (string)
+	 */
+	descrToFuncMap[i].m_pFuncName="user"; //OK
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdUser;
 	++i;
 
 	/*! \page config
@@ -2686,76 +2700,16 @@ string slsDetectorCommand::cmdFree(int narg, char *args[], int action) {
 	if (action==HELP_ACTION) {
 		return helpFree(narg,args,HELP_ACTION);
 	}
-	myDet->freeSharedMemory();
-	return("freed");
+
+	return("Error: Should have been freed before creating constructor\n");
 }
 
 
 string slsDetectorCommand::helpFree(int narg, char *args[], int action) {
-
 	return string("free \t frees the shared memory\n");
-
-}
-
-/*
-string slsDetectorCommand::cmdAdd(int narg, char *args[], int action) {
-#ifdef VERBOSE
-	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
-#endif
-	int ivar, ival;
-	string var=string(args[0]);
-	ostringstream os;
-
-	if (action==HELP_ACTION) {
-		return helpAdd(narg,args,HELP_ACTION);
-	} else if (action==GET_ACTION) {
-		return string("cannot get");
-	}else if (myDet->isMultiSlsDetectorClass()) {
-		return string ("cannot replace detectors from multi detector level.");
-	}
-
-	char hostname[1000];
-	strcpy(hostname,"");
-	// if each argument is a hostname
-	for (int id=1; id<narg; ++id) {
-		strcat(hostname,args[id]);
-		if(narg>2)
-			strcat(hostname,"+");
-	}
-
-	myDet->setHostname(hostname);
-	return myDet->getHostname();
 }
 
 
-string slsDetectorCommand::helpAdd(int narg, char *args[], int action){
-	return string("add det [det det]\t appends a detector(s) to the multi detector structure. "
-			"det can either be the detector hostname or the detector id. "
-			"Returns hostnames in the multi detector structure\n");
-}
-
-string slsDetectorCommand::cmdReplace(int narg, char *args[], int action){
-#ifdef VERBOSE
-	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
-#endif
-	if (action==HELP_ACTION) {
-		return helpRemove(narg,args,HELP_ACTION);
-	} else if (action==GET_ACTION) {
-		return string ("cannot get");
-	} else if (myDet->isMultiSlsDetectorClass()) {
-		return string ("cannot replace detectors from multi detector level.");
-	}
-
-	return myDet->replaceDetector(string(argv[1]));
-}
-
-string slsDetectorCommand::helpReplace(int narg, char *args[], int action){
-	return string("rename det \t replaces a detector. "
-			"det can either be the detector hostname or ip. "
-			"Returns the total number of "
-			"detectors in the multidetector structure\n");
-}
-*/
 string slsDetectorCommand::cmdHostname(int narg, char *args[], int action){
 #ifdef VERBOSE
 	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
@@ -2764,17 +2718,21 @@ string slsDetectorCommand::cmdHostname(int narg, char *args[], int action){
 	if (action==HELP_ACTION) {
 		return helpHostname(narg,args,HELP_ACTION);
 	}
-	if ((action==GET_ACTION) && (cmd == "add")) {
-		return string("cannot get");
+	if (action==GET_ACTION) {
+		if ((cmd == "add") || (cmd == "replace"))
+			return string("cannot get");
 	}
 
 	if (action==PUT_ACTION) {
-
-		if (!myDet->isMultiSlsDetectorClass()) {
-			return string ("Wrong usage - setting hostname only from "
+		if (((cmd == "add") || (cmd == "hostname")) &&
+				(!myDet->isMultiSlsDetectorClass())) {
+			return string ("Wrong usage - setting hostname/add only from "
 					"multiDetector level");
 		}
-
+		if ((cmd == "replace") && (myDet->isMultiSlsDetectorClass())) {
+			return string ("Wrong usage - replace only from "
+					"single detector level");
+		}
 		char hostname[1000];
 		strcpy(hostname,"");
 		// if each argument is a hostname
@@ -2783,29 +2741,71 @@ string slsDetectorCommand::cmdHostname(int narg, char *args[], int action){
 			if(narg>2)
 				strcat(hostname,"+");
 		}
-		myDet->setHostname(hostname);
+
+		if (cmd == "add")
+			myDet->addMultipleDetectors(hostname);
+		else
+			myDet->setHostname(hostname);
 	}
 
-	return string(myDet->getHostname());
-
-
+	return myDet->getHostname();
 }
 
 
 
 string slsDetectorCommand::helpHostname(int narg, char *args[], int action){
 	ostringstream os;
-	if (action==GET_ACTION || action==HELP_ACTION)
-		os << string("hostname \t returns the hostname(s) of the detector structure.");
+	if (action==GET_ACTION || action==HELP_ACTION) {
+		os << string("hostname \t returns the hostname(s) of the multi detector structure.\n");
+		os << string("add \t cannot get\n");
+		os << string("replace \t cannot get\n");
+	}
 	if (action==PUT_ACTION || action==HELP_ACTION) {
 		os << string("hostname name [name name]\t frees shared memory and "
-				"configures the hostnames of the detector structure.\n");
-		os << string ("add det [det det]\t appends a detector(s) to the multi detector structure. "
-				"det can either be the detector hostname or the detector id. "
+				"sets the hostname (or IP adress). Only allowed at multi detector level.\n");
+		os << string ("add det [det det]\t appends a hostname (or IP address) at "
+				"the end of the multi-detector structure. Only allowed at multi detector level."
 				"Returns hostnames in the multi detector structure\n");
+		os << string ("replace det \t Sets the hostname (or IP adress) for a "
+				"single detector. Only allowed at single detector level. "
+				"Returns the hostnames for that detector\n");
 	}
 	return os.str();
 }
+
+
+string slsDetectorCommand::cmdUser(int narg, char *args[], int action){
+#ifdef VERBOSE
+	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
+#endif
+
+	if (action==HELP_ACTION) {
+		return helpHostname(narg,args,HELP_ACTION);
+	}
+	if (action==PUT_ACTION) {
+		return string("cannot put");
+	}
+	if (!myDet->isMultiSlsDetectorClass()) {
+		return string ("Wrong usage - getting user details only from "
+				"multiDetector level");
+	}
+	return myDet->getUserDetails();
+}
+
+
+
+string slsDetectorCommand::helpUser(int narg, char *args[], int action){
+	ostringstream os;
+	if (action==GET_ACTION || action==HELP_ACTION) {
+		os << string("user \t returns user details from shared memory without updating shared memory. "
+				"Only allowed at multi detector level.\n");
+	}
+	if (action==PUT_ACTION || action==HELP_ACTION) {
+		os << string("user \t cannot put\n");
+	}
+	return os.str();
+}
+
 
 
 string slsDetectorCommand::cmdMaster(int narg, char *args[], int action){

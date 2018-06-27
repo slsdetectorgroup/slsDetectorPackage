@@ -36,12 +36,7 @@ multiSlsDetector::multiSlsDetector(int id, bool verify, bool update)
   thisMultiDetector(0),
   client_downstream(false),
   threadpool(0) {
-	if (initSharedMemory(verify))
-		// shared memory just created, so initialize the structure
-		initializeDetectorStructure();
-	initializeMembers(verify);
-	if (update)
-		updateUserdetails();
+	setupMultiDetector(verify, update);
 }
 
 
@@ -68,6 +63,15 @@ multiSlsDetector::~multiSlsDetector() {
 
 bool multiSlsDetector::isMultiSlsDetectorClass() {
 	return true;
+}
+
+void multiSlsDetector::setupMultiDetector(bool verify, bool update) {
+	if (initSharedMemory(verify))
+		// shared memory just created, so initialize the structure
+		initializeDetectorStructure();
+	initializeMembers(verify);
+	if (update)
+		updateUserdetails();
 }
 
 std::string multiSlsDetector::concatResultOrPos(std::string (slsDetector::*somefunc)(int), int pos) {
@@ -637,21 +641,34 @@ void multiSlsDetector::freeSharedMemory(int multiId) {
 
 
 void multiSlsDetector::freeSharedMemory() {
+	// should be done before the detector list is deleted
+	clearAllErrorMask();
 
-	// single detector vector
+	// clear sls detector vector shm
 	for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
 		(*it)->freeSharedMemory();
 		delete (*it);
 	}
 	detectors.clear();
 
-	// multi detector
+	// clear multi detector shm
 	if (sharedMemory) {
 		sharedMemory->UnmapSharedMemory(thisMultiDetector);
 		sharedMemory->RemoveSharedMemory();
 		delete sharedMemory;
+		sharedMemory = 0;
 	}
 	thisMultiDetector = 0;
+
+	// clear zmq vector
+	for (vector<ZmqSocket*>::const_iterator it = zmqSocket.begin(); it != zmqSocket.end(); ++it) {
+		delete(*it);
+	}
+	zmqSocket.clear();
+
+	// zmq
+	destroyThreadPool();
+	client_downstream = false;
 }
 
 
@@ -683,8 +700,9 @@ std::string multiSlsDetector::getUserDetails() {
 bool multiSlsDetector::initSharedMemory(bool verify) {
 
 	// clear
-	if (sharedMemory)
+	if (sharedMemory) {
 		delete sharedMemory;
+	}
 	thisMultiDetector = 0;
 
 	for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
@@ -705,6 +723,7 @@ bool multiSlsDetector::initSharedMemory(bool verify) {
 					MULTI_SHMVERSION, thisMultiDetector->shmversion);
 			sharedMemory->UnmapSharedMemory(thisMultiDetector);/** is this unncessary? */
 			delete sharedMemory;/** is this unncessary? */
+			sharedMemory = 0;
 			throw SharedMemoryException();
 		}
 	} else {
@@ -713,6 +732,8 @@ bool multiSlsDetector::initSharedMemory(bool verify) {
 			created = true;
 		} catch(...) {
 			sharedMemory->RemoveSharedMemory();
+			delete sharedMemory;/** is this unncessary? */
+			sharedMemory = 0;/** is this unncessary? */
 			thisMultiDetector = 0;
 			throw;
 		}
@@ -911,6 +932,22 @@ std::string multiSlsDetector::exec(const char* cmd) {
 
 
 void multiSlsDetector::setHostname(const char* name) {
+	// this check is there only to allow the previous detsizechan command
+	if (thisMultiDetector->numberOfDetectors) {
+		cprintf(RED, "Warning: There are already detector(s) in shared memory."
+				"Freeing Shared memory now.\n");
+		freeSharedMemory();
+		setupMultiDetector();
+	}
+	addMultipleDetectors(name);
+}
+
+
+string multiSlsDetector::getHostname(int pos) {
+	return concatResultOrPos(&slsDetector::getHostname, pos);
+}
+
+void multiSlsDetector::addMultipleDetectors(const char* name) {
 	size_t p1 = 0;
 	string temp = string(name);
 	size_t p2 = temp.find('+', p1);
@@ -931,13 +968,6 @@ void multiSlsDetector::setHostname(const char* name) {
 	setOnline();
 }
 
-
-string multiSlsDetector::getHostname(int pos) {
-	return concatResultOrPos(&slsDetector::getHostname, pos);
-}
-
-
-
 void multiSlsDetector::addSlsDetector (std::string s) {
 #ifdef VERBOSE
 	cout << "Adding detector " << s << endl;
@@ -956,8 +986,7 @@ void multiSlsDetector::addSlsDetector (std::string s) {
 	// get type by connecting
 	detectorType type = slsDetector::getDetectorType(s.c_str(), DEFAULT_PORTNO);
 	if (type == GENERIC) {
-		cout << "Detector " << s << "does not exist in shared memory "
-				"and could not connect to it to determine the type!" << endl;
+		cout << "Could not connect to Detector " << s << " to determine the type!" << endl;
 		setErrorMask(getErrorMask() | MULTI_DETECTORS_NOT_ADDED);
 		appendNotAddedList(s.c_str());
 		return;
@@ -970,9 +999,7 @@ void multiSlsDetector::addSlsDetector (std::string s) {
 	detectors.push_back(sdet);
 	thisMultiDetector->numberOfDetectors = detectors.size();
 
-	detectors[pos]->setHostname(s.c_str());
-	if (detectors[pos]->setOnline() ==ONLINE_FLAG)
-		detectors[pos]->updateDetector();
+	detectors[pos]->setHostname(s.c_str()); // also updates client
 
 	thisMultiDetector->dataBytes += detectors[pos]->getDataBytes();
 	thisMultiDetector->dataBytesInclGapPixels += detectors[pos]->getDataBytesInclGapPixels();
@@ -1386,16 +1413,9 @@ int multiSlsDetector::exitServer() {
 }
 
 int multiSlsDetector::readConfigurationFile(string const fname) {
-	{
-		clearAllErrorMask();
-		freeSharedMemory();
 
-		if (initSharedMemory())
-			// shared memory just created, so initialize the structure
-			initializeDetectorStructure();
-		initializeMembers(true); // also deletes zmq objects and destroys threadpool
-		updateUserdetails();
-	}
+	freeSharedMemory();
+	setupMultiDetector();
 
 
 	multiSlsDetectorClient* cmd;
@@ -1419,9 +1439,12 @@ int multiSlsDetector::readConfigurationFile(string const fname) {
 			sargval  = "0";
 			getline(infile, str);
 			++iline;
-			str.erase(str.find('#'), string::npos);
+
+			// remove comments that come after
+			if (str.find('#') != string::npos)
+				str.erase(str.find('#'));
 #ifdef VERBOSE
-			std::cout << str << std::endl;
+			std::cout << "string:" << str << std::endl;
 #endif
 			if (str.length() < 2) {
 #ifdef VERBOSE

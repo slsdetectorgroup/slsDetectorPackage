@@ -207,6 +207,10 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual void setHostname(const char* name)=0;
 
+  /** adds the detector hostnames to the end of the list
+      \param name hostname
+  */
+  virtual void addMultipleDetectors(const char* name)=0;
 
   /** returns the detector type
       \param pos position in the multi detector structure (is -1 returns type of detector with id -1)
@@ -396,14 +400,11 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   /** Frees the shared memory  -  should not be used except for debugging*/
   virtual void freeSharedMemory()=0;
 
-
-  /** adds the detector with ID id in postion pos
-      \param id of the detector to be added (should already exist!)
-      \param pos position where it should be added (normally at the end of the list (default to -1)
-      \returns the actual number of detectors or -1 if it failed (always for slsDetector)
-  */
-  virtual int addSlsDetector(int id, int pos=-1){return -1;};
-
+	/**
+	 * Get user details of shared memory
+	 * @returns string with user details
+	 */
+  virtual std::string getUserDetails() = 0;
 
   /** adds the detector name in position pos
       \param name of the detector to be added (should already exist in shared memory or at least be online) 
@@ -412,19 +413,6 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual int addSlsDetector(char* name, int pos=-1){return -1;};
 
-
-  /**
-     removes the detector in position pos from the multidetector
-     \param pos position of the detector to be removed from the multidetector system (defaults to -1 i.e. last detector)
-     \returns the actual number of detectors or -1 if it failed (always for slsDetector)
-  */
-  virtual int removeSlsDetector(int pos=-1){return -1;};
-
-  /**removes the detector in position pos from the multidetector
-     \param name is the name of the detector
-     \returns the actual number of detectors or -1 if it failed  (always for slsDetector)
-  */
-  virtual int removeSlsDetector(char* name){return -1;};
 
   /** 
       Turns off the server -  do not use except for debugging!

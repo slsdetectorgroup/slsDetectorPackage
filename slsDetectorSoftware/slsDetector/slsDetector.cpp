@@ -81,18 +81,7 @@ slsDetector::slsDetector(int multiId, int id, bool verify, multiSlsDetector* m)
   offset(0) {
 	/* called from multi constructor to populate structure,
 	 * so sls shared memory will be opened, not created */
-
-
-	// ensure shared memory is existing
-	SharedMemory* shm = new SharedMemory(multiId, id);
-	if (!SharedMemory::IsExisting(shm->GetName())) {
-		cprintf(YELLOW BOLD,"Warning: Corrupted shared memory. It should have been "
-				"created before! %s.\n", shm->GetName().c_str());
-		delete shm; /* is this necessary ?*/
-		throw SharedMemoryException();
-	}
-	delete shm;
-
+	// getDetectorType Froom shm will check if it was already existing
 	detectorType type = getDetectorTypeFromShm(multiId, verify);
 	initSharedMemory(false, type, multiId, verify);
 	initializeMembers();
@@ -411,18 +400,29 @@ void slsDetector::freeSharedMemory() {
 		sharedMemory->UnmapSharedMemory(thisDetector);
 		sharedMemory->RemoveSharedMemory();
 		delete sharedMemory;
+		sharedMemory = 0;
 	}
 	thisDetector = 0;
 }
 
+string slsDetector::getUserDetails() {
+	cprintf(RED, "Error: Get User details should not be called at this level\n");
+	return string("");
+}
+
 void slsDetector::setHostname(const char *name) {
 	setTCPSocket(string(name));
+	if (thisDetector->onlineFlag == ONLINE_FLAG)
+		updateDetector();
 }
 
 string slsDetector::getHostname(int pos) {
 	return string(thisDetector->hostname);
 }
 
+void slsDetector::addMultipleDetectors(const char* name) {
+	cprintf(RED, "Error: Add Multiple Detectors should not be called at this level\n");
+}
 
 void slsDetector::initSharedMemory(bool created, detectorType type, int multiId,
 		bool verify) {
@@ -441,6 +441,8 @@ void slsDetector::initSharedMemory(bool created, detectorType type, int multiId,
 			thisDetector = (sharedSlsDetector*)sharedMemory->CreateSharedMemory(sz);
 		} catch(...) {
 			sharedMemory->RemoveSharedMemory();
+			delete sharedMemory;
+			sharedMemory = 0;
 			thisDetector = 0;
 			throw;
 		}
@@ -454,6 +456,7 @@ void slsDetector::initSharedMemory(bool created, detectorType type, int multiId,
 					multiId, detId, SLS_SHMVERSION, thisDetector->shmversion);
 			sharedMemory->UnmapSharedMemory(thisDetector); /** is this unncessary? */
 			delete sharedMemory;/** is this unncessary? */
+			sharedMemory = 0;
 			throw SharedMemoryException();
 		}
 	}
@@ -830,8 +833,10 @@ void slsDetector::initializeMembers() {
 	chanregs = (int*)(goff + thisDetector->chanoff);
 	gain = (int*)(goff + thisDetector->gainoff);
 	offset = (int*)(goff + thisDetector->offsetoff);
-	if (thisReceiver)
+	if (thisReceiver) {
 		delete thisReceiver;
+		thisReceiver = 0;
+	}
 	thisReceiver = new receiverInterface(dataSocket);
 
 
@@ -1254,10 +1259,10 @@ slsReceiverDefs::detectorType slsDetector::getDetectorTypeFromShm(int multiId, b
 
 	// open, map, verify version, get type
 	sdet = (sharedSlsDetector*)shm->OpenSharedMemory(sz);
-	if (verify && thisDetector->shmversion != SLS_SHMVERSION) {
+	if (verify && sdet->shmversion != SLS_SHMVERSION) {
 		cprintf(RED, "Single shared memory (%d-%d:)version mismatch "
 				"(expected 0x%x but got 0x%x)\n",
-				multiId, detId, SLS_SHMVERSION, thisDetector->shmversion);
+				multiId, detId, SLS_SHMVERSION, sdet->shmversion);
 		shm->UnmapSharedMemory(sdet); /** is this unncessary? */
 		delete shm;/** is this unncessary? */
 		throw SharedMemoryException();

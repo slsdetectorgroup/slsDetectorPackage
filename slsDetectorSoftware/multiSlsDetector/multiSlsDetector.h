@@ -21,7 +21,7 @@ class ZmqSocket;
 
 #define MULTI_SHMVERSION	0x180625
 #define SHORT_STRING_LENGTH	50
-#define DATE_LENGTH			29
+#define DATE_LENGTH			30
 
 class multiSlsDetector  : public slsDetectorUtils {
 
@@ -243,6 +243,14 @@ public:
 	 * if command can be implemented as slsDetector/multiSlsDetector object/
 	 */
 	bool isMultiSlsDetectorClass();
+
+	/**
+	 * Creates/open shared memory, initializes detector structure and members
+	 * Called by constructor/ set hostname / read config file
+	 * @param verify true to verify if shared memory version matches existing one
+	 * @param update true to update last user pid, date etc
+	 */
+	void setupMultiDetector(bool verify = true, bool update = true);
 
 	/**
 	 * If specific position, then provide result with that detector at position pos
@@ -501,6 +509,8 @@ public:
 	/**
 	 * Free shared memory and delete shared memory structure
 	 * occupied by the sharedMultiSlsDetector structure
+	 * Clears all the vectors and destroys threadpool to bring
+	 * object back to state before object creation amap
 	 */
 	void freeSharedMemory();
 
@@ -524,6 +534,13 @@ public:
 	 * @returns concatenated hostnames of all detectors or hostname of specific one
 	 */
 	std::string getHostname(int pos = -1);
+
+	/**
+	 * Appends detectors to the end of the list in shared memory
+	 * Connects to them to set up online flag
+	 * @param name concatenated hostname of the sls detectors to be appended to the list
+	 */
+	 void addMultipleDetectors(const char* name);
 
 
 	using slsDetectorBase::getDetectorType;

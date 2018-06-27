@@ -475,11 +475,17 @@ public:
 	/**
 	 * Free shared memory and delete shared memory structure
 	 * occupied by the sharedSlsDetector structure
-	 * If this is called, must take care to update
-	 * multiSlsDetectors thisMultiDetector->numberofDetectors
-	 * and not use this object again (delete and start anew)
+	 * Is only safe to call if one deletes the slsDetector object afterward
+	 * and frees multi shared memory/updates thisMultiDetector->numberOfDetectors
 	 */
 	void freeSharedMemory();
+
+	/**
+	 * Get user details of shared memory
+	 * Should only be called from multi detector level
+	 * @returns string with user details
+	 */
+	std::string getUserDetails();
 
 	/**
 	 * Sets the hostname of all sls detectors in shared memory
@@ -494,6 +500,14 @@ public:
 	 * @returns hostname
 	 */
 	string getHostname(int pos = -1);
+
+	/**
+	 * Appends detectors to the end of the list in shared memory
+	 * Connects to them to set up online flag
+	 * Should only be called from multi detector level
+	 * @param name concatenated hostname of the sls detectors to be appended to the list
+	 */
+	 void addMultipleDetectors(const char* name);
 
 	/**
 	 * Connect to the control port

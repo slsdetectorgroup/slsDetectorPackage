@@ -55,7 +55,7 @@ public:
 		// sls pos scanned
 		iv=sscanf(argv[0],"%d:%s", &pos, cmd);                                  \
 		if (iv != 2 )                                                           \
-			pos = -1;                                                            \
+			pos = -1;                                                           \
 		if (iv == 2 && pos >= 0) {                                              \
 			argv[0] = cmd;                                                      \
 			cout << pos << ":" ;                                                \
@@ -79,19 +79,8 @@ public:
 				multiSlsDetector::freeSharedMemory(id);							\
 			return;																\
 		}																		\
-		// (sls level): give error message
-		// (multi level): free before calling multiSlsDetector constructor
-		else if (scmd == "hostname") {											\
-			if (pos != -1)	{													\
-				cout << "pos " << pos << "not allowed for hostname. "			\
-				"Only from multi detector level." << endl;						\
-				return;															\
-			}																	\
-			else																\
-				multiSlsDetector::freeSharedMemory(id);							\
-		}																		\
 		// get user details without verify sharedMultiSlsDetector version
-		else if ((scmd == "userdetails") &&  (action==slsDetectorDefs::GET_ACTION)) {\
+		else if ((scmd == "user") &&  (action==slsDetectorDefs::GET_ACTION)) {	\
 			verify = false;														\
 			update = false;														\
 			myDetector=NULL;													\
@@ -123,7 +112,7 @@ public:
 			return;						      									\
 		};							      										\
 
-		cout<<"id:"<<id<<" pos:"<<pos<<endl;
+		//cout<<"id:"<<id<<" pos:"<<pos<<endl;
 		// call multi detector command line
 		myCmd=new multiSlsDetectorCommand(myDetector);							\
 		answer=myCmd->executeLine(argc, argv, action, pos);						\

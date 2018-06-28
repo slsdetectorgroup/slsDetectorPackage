@@ -813,6 +813,7 @@ class slsDetectorUsers
     case 2: return std::string("ro_trigger");				\
     case 3: return std::string("gating");			\
     case 4: return std::string("triggered_gating");	\
+    case 5: return std::string("burst_trigger");	\
     default:    return std::string( "unknown");				\
     }      };
 

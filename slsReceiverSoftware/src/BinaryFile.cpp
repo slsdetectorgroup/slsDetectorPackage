@@ -99,7 +99,7 @@ int BinaryFile::CreateMasterFile(bool en, uint32_t size,
 		}
 		return BinaryFileStatic::CreateMasterDataFile(masterfd, masterFileName,
 				*overWriteEnable,
-				*dynamicRange, en, size, nx, ny, *numImages,
+				*dynamicRange, en, size, nx, ny, *numImages, *maxFramesPerFile,
 				at, st, sp, ap, BINARY_WRITER_VERSION);
 	}
 	return OK;

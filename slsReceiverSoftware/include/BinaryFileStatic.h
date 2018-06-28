@@ -106,6 +106,7 @@ class BinaryFileStatic {
 	 * @param nPixelsX number of pixels in x direction
 	 * @param nPixelsY number of pixels in y direction
 	 * @param nf number of images
+	 * @param maxf maximum frames per file
 	 * @param acquisitionTime acquisition time
 	 * @param acquisitionPeriod acquisition period
 	 * @param subexposuretime sub exposure time
@@ -116,6 +117,7 @@ class BinaryFileStatic {
 	static int CreateMasterDataFile(FILE*& fd, string fname, bool owenable,
 					uint32_t dr, bool tenE,	uint32_t size,
 					uint32_t nPixelsX, uint32_t nPixelsY, uint64_t nf,
+					uint32_t maxf,
 					uint64_t acquisitionTime, uint64_t subexposuretime,
 					uint64_t subperiod, uint64_t acquisitionPeriod, double version)
 	{
@@ -139,6 +141,7 @@ class BinaryFileStatic {
 				"Image Size                 : %d bytes\n"
 				"x                          : %d pixels\n"
 				"y                          : %d pixels\n"
+				"Max. Frames Per File       : %u\n"
 				"Total Frames               : %lld\n"
 				"Exptime (ns)               : %lld\n"
 				"SubExptime (ns)            : %lld\n"
@@ -167,6 +170,7 @@ class BinaryFileStatic {
 				size,
 				nPixelsX,
 				nPixelsY,
+				maxf,
 				(long long int)nf,
 				(long long int)acquisitionTime,
 				(long long int)subexposuretime,

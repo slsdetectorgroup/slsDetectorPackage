@@ -185,7 +185,8 @@ int HDF5File::CreateMasterFile(bool en, uint32_t size,
 		pthread_mutex_lock(&Mutex);
 		int ret = HDF5FileStatic::CreateMasterDataFile(masterfd, masterFileName,
 				*overWriteEnable,
-				*dynamicRange, en, size, nx, ny, *numImages, at, st, sp, ap,
+				*dynamicRange, en, size, nx, ny, *numImages, *maxFramesPerFile,
+				at, st, sp, ap,
 				HDF5_WRITER_VERSION);
 		pthread_mutex_unlock(&Mutex);
 		return ret;

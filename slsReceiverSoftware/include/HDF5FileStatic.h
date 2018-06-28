@@ -230,6 +230,7 @@ public:
 	 * @param nx number of pixels in x direction
 	 * @param ny number of pixels in y direction
 	 * @param nf number of images
+	 * @param maxf maximum frames per file
 	 * @param acquisitionTime acquisition time
 	 * @param subexposuretime sub exposure time
 	 * @param subperiod sub period
@@ -240,6 +241,7 @@ public:
 	static int CreateMasterDataFile(H5File*& fd, string fname, bool owenable,
 			uint32_t dr, bool tenE,	uint32_t size,
 			uint32_t nPixelsx, uint32_t nPixelsy, uint64_t nf,
+			uint32_t maxf,
 			uint64_t acquisitionTime, uint64_t subexposuretime,
 			uint64_t subperiod, uint64_t acquisitionPeriod, double version)
 	{
@@ -303,6 +305,10 @@ public:
 			//y
 			dataset = group5.createDataSet ( "number of pixels in y axis", PredType::NATIVE_INT, dataspace );
 			dataset.write ( &nPixelsy, PredType::NATIVE_INT);
+
+			//Maximum frames per file
+			dataset = group5.createDataSet ( "maximum frames per file", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &maxf, PredType::NATIVE_INT);
 
 			//Total Frames
 			dataset = group5.createDataSet ( "total frames", PredType::STD_U64LE, dataspace );

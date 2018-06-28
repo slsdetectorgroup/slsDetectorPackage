@@ -28,8 +28,8 @@
 #define MAX_CHUNKED_IMAGES 				1
 
 //versions
-#define HDF5_WRITER_VERSION 				1.0 //1 decimal places
-#define BINARY_WRITER_VERSION 				1.0 //1 decimal places
+#define HDF5_WRITER_VERSION 				2.0 //1 decimal places
+#define BINARY_WRITER_VERSION 				2.0 //1 decimal places
 
 
 //parameters to calculate fifo depth

@@ -3517,6 +3517,7 @@ int multiSlsDetector::enableGapPixels(int val) {
 
 int multiSlsDetector::setTrimEn(int ne, int* ene) {
 	int ret = -100, ret1;
+	int* ene1 = 0;
 	for (int idet = 0; idet < detectors.size(); ++idet) {
 		ret1 = detectors[idet]->setTrimEn(ne, ene);
 		if (detectors[idet]->getErrorMask())
@@ -3525,12 +3526,28 @@ int multiSlsDetector::setTrimEn(int ne, int* ene) {
 			ret = ret1;
 		else if (ret != ret1)
 			ret = -1;
+
+		if (ene != NULL) {
+			if (ene1 == 0) {
+				ene1 = new int[ret1];
+				for (int i = 0; i < ret1; ++i){
+					ene1[i] = ene[i];
+				}
+			}else if (ret != -1) {
+				// only check if it is not already a fail
+				for (int i = 0; i < ret; ++i){
+					if (ene1[i] != ene[i])
+						ret = -1;
+				}
+			}
+		}
 	}
 	return ret;
 }
 
 int multiSlsDetector::getTrimEn(int* ene) {
 	int ret = -100, ret1;
+	int* ene1 = 0;
 	for (int idet = 0; idet < detectors.size(); ++idet) {
 		ret1 = detectors[idet]->getTrimEn(ene);
 		if (detectors[idet]->getErrorMask())
@@ -3539,7 +3556,25 @@ int multiSlsDetector::getTrimEn(int* ene) {
 			ret = ret1;
 		else if (ret != ret1)
 			ret = -1;
+
+		if (ene != NULL) {
+			if (ene1 == 0) {
+				ene1 = new int[ret1];
+				for (int i = 0; i < ret1; ++i){
+					ene1[i] = ene[i];
+				}
+			}else if (ret != -1) {
+				// only check if it is not already a fail
+				for (int i = 0; i < ret; ++i){
+					if (ene1[i] != ene[i])
+						ret = -1;
+				}
+			}
+		}
 	}
+
+	if (ene1)
+		delete [] ene1;
 	return ret;
 }
 

@@ -3008,12 +3008,18 @@ string slsDetectorCommand::cmdTrimEn(int narg, char *args[], int action){
 		}
 	}
 	int npos=myDet->getTrimEn();
-	sprintf(answer,"%d",npos);
-	int opos[npos];
-	myDet->getTrimEn(opos);
-	for (int ip=0; ip<npos;++ip) {
-		sprintf(answer,"%s %d",answer,opos[ip]);
+	if (npos != -1) {
+		sprintf(answer,"%d",npos);
+		int opos[npos];
+		npos = myDet->getTrimEn(opos);
+		if (npos != -1) {
+			for (int ip=0; ip<npos;++ip) {
+				sprintf(answer,"%s %d",answer,opos[ip]);
+			}
+		}
 	}
+	if (npos == -1)
+		sprintf(answer,"%d", -1);
 	return string(answer);
 
 }

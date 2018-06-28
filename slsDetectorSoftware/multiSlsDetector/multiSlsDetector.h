@@ -19,7 +19,7 @@ class ZmqSocket;
 #include <string>
 
 
-#define MULTI_SHMVERSION	0x180625
+#define MULTI_SHMVERSION	0x180628
 #define SHORT_STRING_LENGTH	50
 #define DATE_LENGTH			30
 

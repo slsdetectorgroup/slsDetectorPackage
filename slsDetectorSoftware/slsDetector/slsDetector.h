@@ -19,7 +19,7 @@ class multiSlsDetector;
 class SharedMemory;
 class receiverInterface;
 
-#define SLS_SHMVERSION	0x180625
+#define SLS_SHMVERSION	0x180628
 #define NMODMAXX 24
 #define NMODMAXY 24
 #define NCHIPSMAX 10

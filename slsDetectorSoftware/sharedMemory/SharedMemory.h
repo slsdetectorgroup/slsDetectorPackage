@@ -17,9 +17,9 @@ public:
 	 * Constructor
 	 * creates the single/multi detector shared memory name
 	 * @param multiId multi detector id
-     * @param singleId sls detector id, -1 if a multi detector shared memory
+     * @param slsId sls detector id, -1 if a multi detector shared memory
  	 */
-	SharedMemory(int multiId, int singleId);
+	SharedMemory(int multiId, int slsId);
 
 	/**
 	 * Destructor
@@ -74,10 +74,10 @@ private:
      * Create Shared memory name
      * throws exception if name created is longer than required 255(manpages)
      * @param multiId multi detector id
-     * @param singleId sls detector id, -1 if a multi detector shared memory
+     * @param slsId sls detector id, -1 if a multi detector shared memory
      * @returns shared memory name
      */
-    std::string ConstructSharedMemoryName(int multiId, int singleId);
+    std::string ConstructSharedMemoryName(int multiId, int slsId);
 
     /**
      * Map shared memory to an address

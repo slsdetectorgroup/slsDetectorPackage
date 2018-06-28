@@ -13,11 +13,11 @@
 #include <sstream>
 
 
-SharedMemory::SharedMemory(int multiId, int singleId):
+SharedMemory::SharedMemory(int multiId, int slsId):
     fd(-1),
 	shmSize(0)
 {
-	name = ConstructSharedMemoryName(multiId, singleId);
+	name = ConstructSharedMemoryName(multiId, slsId);
 }
 
 
@@ -105,12 +105,12 @@ void* SharedMemory::MapSharedMemory(size_t sz) {
 }
 
 
-std::string SharedMemory::ConstructSharedMemoryName(int multiId, int singleId) {
+std::string SharedMemory::ConstructSharedMemoryName(int multiId, int slsId) {
 	stringstream ss;
-	if (singleId < 0)
+	if (slsId < 0)
 		ss << "/slsDetectorPackage_multi_" << multiId;
 	else
-		ss << "/slsDetectorPackage_multi_" << multiId << "_single_" << singleId;
+		ss << "/slsDetectorPackage_multi_" << multiId << "_sls_" << slsId;
 
 	std::string temp = ss.str();
 	if (temp.length() > NAME_MAX) {

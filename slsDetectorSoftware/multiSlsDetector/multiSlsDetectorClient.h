@@ -109,7 +109,7 @@ public:
 
 
 
-		cout<<"id:"<<id<<" pos:"<<pos<<endl;
+		//cout<<"id:"<<id<<" pos:"<<pos<<endl;
 		// create multiSlsDetector class if required
 		if (myDetector==NULL) {													\
 			try {																\

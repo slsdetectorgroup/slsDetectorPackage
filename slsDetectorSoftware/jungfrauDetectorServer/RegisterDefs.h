@@ -75,8 +75,8 @@
 #define TIME_FROM_START_MSB_REG   		(0x11 << 11)
 
 /* Get Delay 64 bit register */
-#define GET_DELAY_LSB_REG     			(0x12 << 11)
-#define GET_DELAY_MSB_REG     			(0x13 << 11)
+#define GET_DELAY_LSB_REG     			(0x12 << 11) 		// different kind of delay
+#define GET_DELAY_MSB_REG     			(0x13 << 11)		// different kind of delay
 
 /* Get Cycles 64 bit register */
 #define GET_CYCLES_LSB_REG    			(0x14 << 11)
@@ -321,8 +321,8 @@
 
 
 /* Set Delay 64 bit register */
-#define SET_DELAY_LSB_REG     			(0x60 << 11)
-#define SET_DELAY_MSB_REG     			(0x61 << 11)
+#define SET_DELAY_LSB_REG     			(0x60 << 11)  // different kind of delay
+#define SET_DELAY_MSB_REG     			(0x61 << 11)  // different kind of delay
 
 /* Set Cycles 64 bit register */
 #define SET_CYCLES_LSB_REG    			(0x62 << 11)

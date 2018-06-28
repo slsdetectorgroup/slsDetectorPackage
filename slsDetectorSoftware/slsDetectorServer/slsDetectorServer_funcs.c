@@ -2904,39 +2904,53 @@ int get_time_left(int file_des) {
 	printf("getting time left on timer %d \n",ind);
 #endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-	switch(ind) {
+
+#ifdef JUNGFRAUD
+	if (ind == DELAY_AFTER_TRIGGER) {
+		ret = FAIL;
+		sprintf(mess,"Timer Left Index (%d) is not implemented for this release.\n", (int)ind);
+		cprintf(RED, "%s", mess);
+	} else {
+#endif
+
+		switch(ind) {
 #ifdef MYTHEND
-	case PROBES_NUMBER:
+		case PROBES_NUMBER:
 #elif JUNGFRAUD
-    case FRAMES_FROM_START:
-    case FRAMES_FROM_START_PG:
+		case FRAMES_FROM_START:
+		case FRAMES_FROM_START_PG:
 #elif MYTHEN3D
-    case GATES_NUMBER:
-    case PROBES_NUMBER:
-    case SAMPLES_JCTB:
+		case GATES_NUMBER:
+		case PROBES_NUMBER:
+		case SAMPLES_JCTB:
 #endif
 #ifndef JUNGFRAUD
-    case GATES_NUMBER:
+		case GATES_NUMBER:
 #endif
-	case FRAME_NUMBER:
-	case ACQUISITION_TIME:
-	case FRAME_PERIOD:
-	case DELAY_AFTER_TRIGGER:
-	case CYCLES_NUMBER:
-	case PROGRESS:
-	case ACTUAL_TIME:
-	case MEASUREMENT_TIME:
-		retval=getTimeLeft(ind);
-		break;
-	default:
-		ret = FAIL;
-		sprintf(mess,"Timer Left Index (%d) is not implemented for this detector\n", (int)ind);
-		cprintf(RED, "%s", mess);
-		break;
-	}
+		case FRAME_NUMBER:
+		case ACQUISITION_TIME:
+		case FRAME_PERIOD:
+		case DELAY_AFTER_TRIGGER:
+		case CYCLES_NUMBER:
+		case PROGRESS:
+		case ACTUAL_TIME:
+		case MEASUREMENT_TIME:
+			retval=getTimeLeft(ind);
+			break;
+		default:
+			ret = FAIL;
+			sprintf(mess,"Timer Left Index (%d) is not implemented for this detector\n", (int)ind);
+			cprintf(RED, "%s", mess);
+			break;
+		}
 #ifdef VERBOSE
-	printf("Time left on timer %d is %lld\n",ind, retval);
+		printf("Time left on timer %d is %lld\n",ind, retval);
 #endif
+
+#ifdef JUNGFRAUD
+	}	// end of if (ind == DELAY_AFTER_TRIGGER)
+#endif
+
 #endif
 	if (ret==OK && differentClients)
 		ret=FORCE_UPDATE;

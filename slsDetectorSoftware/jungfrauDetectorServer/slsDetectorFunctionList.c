@@ -213,17 +213,20 @@ int testBus() {
 	printf("\nTesting Bus...\n");
 
 	int ret = OK;
-	u_int32_t addr = SET_DELAY_LSB_REG;
+	u_int32_t addr = SET_TRIGGER_DELAY_LSB_REG;
 	int times = 1000 * 1000;
 	int i = 0;
 
 	for (i = 0; i < times; ++i) {
 		bus_w(addr, i * 100);
-		if (i * 100 != bus_r(SET_DELAY_LSB_REG)) {
-			cprintf(RED,"ERROR: Mismatch! Wrote 0x%x, read 0x%x\n", i * 100, bus_r(SET_DELAY_LSB_REG));
+		if (i * 100 != bus_r(addr)) {
+			cprintf(RED,"ERROR: Mismatch! Wrote 0x%x, read 0x%x\n",
+					i * 100, bus_r(addr));
 			ret = FAIL;
 		}
 	}
+
+	bus_w(addr, 0);
 
 	if (ret == OK)
 		printf("Successfully tested bus %d times\n", times);
@@ -807,12 +810,12 @@ int64_t getTimeLeft(enum timerIndex ind){
 		retval = get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG) / (1E-3 * CLK_SYNC);
 		printf("Getting period left: %lldns\n", (long long int)retval);
 		break;
-
+/*
 	case DELAY_AFTER_TRIGGER:
-		retval = get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG) / (1E-3 * CLK_SYNC);
+		retval = get64BitReg(xxx) / (1E-3 * CLK_SYNC);
 		printf("Getting delay left: %lldns\n", (long long int)retval);
 		break;
-
+*/
 	case CYCLES_NUMBER:
 		retval = get64BitReg(GET_CYCLES_LSB_REG, GET_CYCLES_MSB_REG);
 		printf("Getting number of cycles left: %lld\n", (long long int)retval);

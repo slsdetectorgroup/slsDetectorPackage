@@ -512,10 +512,10 @@ No timeout is expected between the start of the acquisition and the arrival of t
 
 Here are the implemented options so far:
 \begin{itemize}
-\item {\tt{auto}} is the software controlled acquisition, where {\tt{exptime}} and {\tt{period}} have to be set.
-\item {\tt{trigger}} 1 frame taken for 1 trigger. You {\tt{frames}} needs to be  1 always, {\tt{cycles}} can be changed and defines how many triggers are considered. In the GUI this is called trigger exposure series. 
-\item {\tt{burst\_trigger}} gets only 1 trigger, but allows to take many frames. With {\tt{frames}} one can change the number of frames. {\tt{cycles}} needs to be 1. In the gui it is called trigger readout.
-\item{\tt{gating}} allows to get a frame only when the trigger pulse is gating. Note that in this case the exp time and period only depend on the gating signal. {\tt{cycles}} allows to select how many gates to consider. 
+\item {\tt{auto}} is the software controlled acquisition (does not use triggers), where {\tt{exptime}} and {\tt{period}} have to be set. Set number of cycles (i.e. triggers) to 1 using {\tt{cycles}}. Set number of frames using {\tt{frames}}.
+\item {\tt{trigger}} 1 frame taken for 1 trigger. Your {\tt{frames}} needs to be  1 always, {\tt{cycles}} can be changed and defines how many triggers are considered.  {\tt{exptime}} needs to be set. In the GUI this is called trigger exposure series.  
+\item {\tt{burst\_trigger}} gets only 1 trigger, but allows to take many frames. With {\tt{frames}} one can change the number of frames. {\tt{cycles}} needs to be 1.  {\tt{exptime}} and {\tt{period}} have to be set. In the gui it is called trigger readout.
+\item{\tt{gating}} allows to get a frame only when the trigger pulse is gating. Note that in this case the exp time and period only depend on the gating signal. {\tt{cycles}} allows to select how many gates to consider.  Set number of frames to 1 using {\tt{frames}}.
 \end{itemize}
 
 Hardware-wise, the ENABLE OUT signal outputs when the chips are really acquiring. This means that the single subframes will be output in 32 bit mode. The TRIGGER OUT outputs the sum-up-signal at the moment (which is useless). This will be changed in the future to output the envelop of the enable signal. 
@@ -588,8 +588,6 @@ Here is a list of parameters that should be reset:
       
 \end{enumerate}
 
-
-
 \section{1Gb/s, 10Gb/s links}
 \subsection{Checking the 1Gb/s, 10Gb/s physical links}\label{led}
 LEDs on the backpanel board at the back of each half module signal:
@@ -627,10 +625,10 @@ Extremely advanced options allow to:
 \end{verbatim}
 As example:
 \begin{verbatim}
-for X in \$(seq 0 4); do ./sls_detector_put \$X:txndelay_left \$((X*100000)); done
+for X in $(seq 0 4); do ./sls_detector_put $X:txndelay_left $((X*100000)); done
  \end{verbatim}
 \begin{verbatim}
-./sls_detector_put \$X:txndelay_right \$((X*100000)); X=\$((X+1)); done
+./sls_detector_put $X:txndelay_right $((X*100000)); X=$((X+1)); done
 \end{verbatim}
 
 \item Set transmission delay of the entire frame. This is required as you want to finish sending the first frame to all receivers before starting sending the second frame to the receivers with shorter delay time.  This value has to be greater than the maximum of the transmission delays of each port.      
@@ -1079,7 +1077,18 @@ If you see the client returning the following error message:\\
 ./sls_detector_put busy 0
 \end{verbatim}
 
-
+\subsection{There is noise running the detector in 32-bit}
+Short story (for now): You are running in {\tt{parallel}} mode, switch {\tt{flags}} to non {\tt{nonparallel}} mode.
+Long story: If you are running the detector in 32-bit (autosumming), there might be some noise, particularly at lower thereshold energies. This is due to the fact that the analog part of the chips require some latency time to settle which is larger than the redout time. At the present moment it is possible to run the detector only in {\tt{parallel}} or {\tt{nonparallel}} mode, respectively with readout times between frames of 12~$\mu$s and 504~$\mu$s. If you switch {\tt{flags}} to non {\tt{nonparallel}} mode you will giveenough time for teh signals to settle.  For future realeas we are planning to introduce some configurable delay, such that you can remain with the {\tt{parallel}} flag, but can obtain a configurable dead time between frames in the range 12$-$504~$\mu$s. 
+ 
+\subsection{There is noise running the detector at high frame rate(4,8,16 bit)}
+If are running in {\tt{parallel}} mode, in particular at low thereshold energies, you might encounter some noise. The reason is that the analog part of the chips require some latency time to settle which is larger than the redout time. 
+\begin{enumerate}
+\item You can lower the frame rate and relax requirements on period: 
+At low frame rate, you normally leave enough time between the end of the acquisition and the starting of the next, so you should not see this effect. In any case setting a {\tt{period}}={\tt{exptime}}+readout time from Table~\ref{tchipro} +extra 20$\mu$s cures the problem. The 20$\mu$s could also be 10~$\mu$s, they are very hardware dependent.
+\item The frame rate requirement are stingent (as for time resolved measurements): the only option here is to reduce the {\tt{exptime}} to let the extra 20~$\mu$s (or 10)~$\mu$s. The {\tt{period}} remains the same.
+\end{enumerate} 
+ 
 \section{Client checks - command line}
 
 Guide on returned strings:

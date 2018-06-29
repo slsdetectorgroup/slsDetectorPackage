@@ -4618,12 +4618,16 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
 #ifdef VERBOSE
 			std::cout<< " trimfile " << sval << std::endl;
 #endif
+			int ret = OK;
 			if (action==GET_ACTION) {
 				//create file names
-				myDet->saveSettingsFile(sval, -1);
+				ret = myDet->saveSettingsFile(sval, -1);
 			} else if (action==PUT_ACTION) {
-				myDet->loadSettingsFile(sval,-1);
+				ret = myDet->loadSettingsFile(sval,-1);
 			}
+			if (ret == OK)
+				return sval;
+			else return string("not successful");
 		}
 		return myDet->getSettingsFile();
 	} else if (cmd=="trim") {

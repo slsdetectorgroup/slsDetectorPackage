@@ -636,6 +636,8 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 	thisDetector->stoppedFlag = 0;
 	strncpy(thisDetector->hostname, DEFAULT_HOSTNAME, MAX_STR_LENGTH-1);
 	thisDetector->hostname[MAX_STR_LENGTH-1] = 0;
+	thisDetector->offset[X] = 0;
+	thisDetector->offset[Y] = 0;
 	thisDetector->controlPort = DEFAULT_PORTNO;
 	thisDetector->stopPort = DEFAULT_PORTNO + 1;
 	thisDetector->myDetectorType = type;
@@ -1692,6 +1694,14 @@ int slsDetector::getNChips(dimension d) {
 	return thisDetector->nChip[d];
 }
 
+int slsDetector::getDetectorOffset(dimension d) {
+	return thisDetector->offset[d];
+}
+
+void slsDetector::setDetectorOffset(dimension d, int off) {
+	if (off >= 0)
+		thisDetector->offset[d] = off;
+}
 
 int slsDetector::setOnline(int off) {
 	int old=thisDetector->onlineFlag;

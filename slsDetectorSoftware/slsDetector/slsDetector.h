@@ -19,7 +19,7 @@ class multiSlsDetector;
 class SharedMemory;
 class receiverInterface;
 
-#define SLS_SHMVERSION	0x180628
+#define SLS_SHMVERSION	0x180629
 #define NMODMAXX 24
 #define NMODMAXY 24
 #define NCHIPSMAX 10
@@ -57,11 +57,6 @@ private:
 		/** shared memory version */
 		int shmversion;
 
-		/** END OF FIXED PATTERN -----------------------------------------------*/
-
-
-
-
 		/** online flag - is set if the detector is connected, unset if socket
 		 * connection is not possible  */
 		int onlineFlag;
@@ -73,6 +68,14 @@ private:
 		/** is the hostname (or IP address) of the detector. needs to be set
 		 * before starting the communication */
 		char hostname[MAX_STR_LENGTH];
+
+		/** END OF FIXED PATTERN -----------------------------------------------*/
+
+
+
+
+		/** Detector offset in the X & Y direction in the multi detector structure */
+		int offset[2];
 
 		/** is the port used for control functions */
 		int controlPort;
@@ -718,6 +721,20 @@ public:
 	 * @returns number of chips per module in dimension d
 	 */
 	int getNChips(dimension d);
+
+	/**
+	 * Get Detector offset from shared memory in dimension d
+	 * @param d dimension d
+	 * @returns offset in dimension d
+	 */
+	int getDetectorOffset(dimension d);
+
+	/**
+	 * Set Detector offset in shared memory in dimension d
+	 * @param d dimension d
+	 * @param off offset for detector
+	 */
+	void setDetectorOffset(dimension d, int off);
 
 	/**
 	 * Checks if the detector is online and sets the online flag

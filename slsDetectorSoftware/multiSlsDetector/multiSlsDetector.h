@@ -19,7 +19,7 @@ class ZmqSocket;
 #include <string>
 
 
-#define MULTI_SHMVERSION	0x180628
+#define MULTI_SHMVERSION	0x180629
 #define SHORT_STRING_LENGTH	50
 #define DATE_LENGTH			30
 
@@ -71,12 +71,6 @@ private:
 
 		/** type of synchronization between detectors */
 		synchronizationMode syncMode;
-
-		/** Detectors offset in the X direction (in number of channels)*/
-		int offsetX[MAXDET];
-
-		/** Detectors offsets  in the Y direction (in number of channels) */
-		int offsetY[MAXDET];
 
 		/**  size of the data that are transfered from all detectors */
 		int dataBytes;
@@ -720,6 +714,22 @@ public:
 	 * @returns the maximum number of channels of all sls detectors in dimension d
 	 */
 	int setMaxNumberOfChannelsPerDetector(dimension d,int i);
+
+	/**
+	 * Get Detector offset from shared memory in dimension d
+	 * @param d dimension d
+	 * @param pos detector position in multi detector list
+	 * @returns offset in dimension d, -1 if pos is not an actual position in list
+	 */
+	int getDetectorOffset(dimension d, int pos);
+
+	/**
+	 * Set Detector offset in shared memory in dimension d
+	 * @param d dimension d
+	 * @param off offset for detector
+	 * @param pos detector position in multi detector list
+	 */
+	void setDetectorOffset(dimension d, int off, int pos);
 
 	/**
 	 * Updates the channel offsets in X and Y dimension for all the sls detectors

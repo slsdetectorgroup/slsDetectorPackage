@@ -68,6 +68,8 @@ enum recFuncs{
     F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE,   /** < real UDP socket buffer size */
 	F_SET_RECEIVER_FRAMES_PER_FILE, /** < receiver frames per file */
 	F_RECEIVER_CHECK_VERSION,		/** < check receiver version compatibility */
+	F_RECEIVER_DISCARD_POLICY,		/** < frames discard policy */
+	F_RECEIVER_PADDING_ENABLE,		/** < partial frames padding enable */
 	/* Always append functions hereafter!!! */
 
 

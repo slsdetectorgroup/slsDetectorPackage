@@ -147,12 +147,12 @@ int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t 
 	numFramesInFile++;
 	numActualPacketsInFile += nump;
 	pthread_mutex_lock(&Mutex);
-	if (HDF5FileStatic::WriteDataFile(index, buffer + sizeof(sls_detector_header),
+	if (HDF5FileStatic::WriteDataFile(index, buffer + sizeof(sls_receiver_header),
 			// infinite then no need for %maxframesperfile
 			((*maxFramesPerFile == 0) ? fnum : fnum%(*maxFramesPerFile)),
 			nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
 			dataspace, dataset, datatype) == OK) {
-		sls_detector_header* header = (sls_detector_header*) (buffer);
+		sls_receiver_header* header = (sls_receiver_header*) (buffer);
 		/*header->xCoord = ((*detIndex) * (*numUnitsPerDetector) + index); */
 		if (HDF5FileStatic::WriteParameterDatasets(index, dataspace_para,
 				// infinite then no need for %maxframesperfile

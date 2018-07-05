@@ -374,12 +374,14 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	    try {
 	        Listener* l = new Listener(i, myDetectorType, fifo[i], &status,
 	                &udpPortNum[i], eth, &numberOfFrames, &dynamicRange,
-	                &udpSocketBufferSize, &actualUDPSocketBufferSize, &framesPerFile);
+	                &udpSocketBufferSize, &actualUDPSocketBufferSize, &framesPerFile,
+					&frameDiscardMode);
 	        listener.push_back(l);
 
-	        DataProcessor* p = new DataProcessor(i, fifo[i], &fileFormatType,
+	        DataProcessor* p = new DataProcessor(i, myDetectorType, fifo[i], &fileFormatType,
 	                fileWriteEnable, &dataStreamEnable, &gapPixelsEnable,
 	                &dynamicRange, &frameToGuiFrequency, &frameToGuiTimerinMS,
+					&framePadding,
 	                rawDataReadyCallBack, rawDataModifyReadyCallBack, pRawDataReady);
 	        dataProcessor.push_back(p);
 	    }

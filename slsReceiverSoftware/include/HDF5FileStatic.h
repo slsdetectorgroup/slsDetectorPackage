@@ -112,7 +112,7 @@ public:
 			}
 		} catch(Exception error) {
 			cprintf(RED,"Error in closing HDF5 handles of index %d\n", ind);
-			error.printError();
+			error.printErrorStack();
 		}
 	}
 
@@ -130,7 +130,7 @@ public:
 			}
 		} catch(Exception error) {
 			cprintf(RED,"Error in closing master HDF5 handles\n");
-			error.printError();
+			error.printErrorStack();
 		}
 	}
 
@@ -177,7 +177,7 @@ public:
 		}
 		catch(Exception error){
 			cprintf(RED,"Error in writing to file in object %d\n",ind);
-			error.printError();
+			error.printErrorStack();
 			return 1;
 		}
 		return 0;
@@ -189,31 +189,32 @@ public:
 	 * Write Parameter Arrays as datasets (to virtual file)
 	 */
 	static int WriteParameterDatasets(int ind, DataSpace* dspace_para, uint64_t fnum,
-			DataSet* dset_para[],sls_detector_header* header)
+			DataSet* dset_para[],sls_receiver_header* rheader)
 	{
+		sls_detector_header header = rheader->detHeader;
 		hsize_t count[1] = {1};
 		hsize_t start[1] = {fnum};
 		try{
 			Exception::dontPrint(); //to handle errors
 			dspace_para->selectHyperslab( H5S_SELECT_SET, count, start);
 			DataSpace memspace(H5S_SCALAR);
-			dset_para[0]->write(&header->frameNumber, 	ParameterDataTypes[0], memspace, *dspace_para);
-			dset_para[1]->write(&header->expLength, 	ParameterDataTypes[1], memspace, *dspace_para);
-			dset_para[2]->write(&header->packetNumber, 	ParameterDataTypes[2], memspace, *dspace_para);
-			dset_para[3]->write(&header->bunchId, 		ParameterDataTypes[3], memspace, *dspace_para);
-			dset_para[4]->write(&header->timestamp, 	ParameterDataTypes[4], memspace, *dspace_para);
-			dset_para[5]->write(&header->modId, 		ParameterDataTypes[5], memspace, *dspace_para);
-			dset_para[6]->write(&header->xCoord, 		ParameterDataTypes[6], memspace, *dspace_para);
-			dset_para[7]->write(&header->yCoord, 		ParameterDataTypes[7], memspace, *dspace_para);
-			dset_para[8]->write(&header->zCoord, 		ParameterDataTypes[8], memspace, *dspace_para);
-			dset_para[9]->write(&header->debug, 		ParameterDataTypes[9], memspace, *dspace_para);
-			dset_para[10]->write(&header->roundRNumber, ParameterDataTypes[10], memspace, *dspace_para);
-			dset_para[11]->write(&header->detType, 		ParameterDataTypes[11], memspace, *dspace_para);
-			dset_para[12]->write(&header->version, 		ParameterDataTypes[12], memspace, *dspace_para);
+			dset_para[0]->write(&header.frameNumber, 	ParameterDataTypes[0], memspace, *dspace_para);
+			dset_para[1]->write(&header.expLength, 		ParameterDataTypes[1], memspace, *dspace_para);
+			dset_para[2]->write(&header.packetNumber, 	ParameterDataTypes[2], memspace, *dspace_para);
+			dset_para[3]->write(&header.bunchId, 		ParameterDataTypes[3], memspace, *dspace_para);
+			dset_para[4]->write(&header.timestamp, 		ParameterDataTypes[4], memspace, *dspace_para);
+			dset_para[5]->write(&header.modId, 			ParameterDataTypes[5], memspace, *dspace_para);
+			dset_para[6]->write(&header.xCoord, 		ParameterDataTypes[6], memspace, *dspace_para);
+			dset_para[7]->write(&header.yCoord, 		ParameterDataTypes[7], memspace, *dspace_para);
+			dset_para[8]->write(&header.zCoord, 		ParameterDataTypes[8], memspace, *dspace_para);
+			dset_para[9]->write(&header.debug, 			ParameterDataTypes[9], memspace, *dspace_para);
+			dset_para[10]->write(&header.roundRNumber, 	ParameterDataTypes[10], memspace, *dspace_para);
+			dset_para[11]->write(&header.detType, 		ParameterDataTypes[11], memspace, *dspace_para);
+			dset_para[12]->write(&header.version, 		ParameterDataTypes[12], memspace, *dspace_para);
 		}
 		catch(Exception error){
 			cprintf(RED,"Error in writing parameters to file in object %d\n",ind);
-			error.printError();
+			error.printErrorStack();
 			return 1;
 		}
 		return 0;
@@ -347,7 +348,7 @@ public:
 
 		} catch(Exception error) {
 			cprintf(RED,"Error in creating master HDF5 handles\n");
-			error.printError();
+			error.printErrorStack();
 			return 1;
 		}
 		return 0;
@@ -438,7 +439,7 @@ public:
 		}
 		catch(Exception error){
 			cprintf(RED,"Error in creating HDF5 handles in object %d\n",ind);
-			error.printError();
+			error.printErrorStack();
 			fd->close();
 			return 1;
 		}
@@ -735,7 +736,7 @@ public:
 			oldfd->close();
 		} catch(Exception error){
 			cprintf(RED,"Error in copying virtual files\n");
-			error.printError();
+			error.printErrorStack();
 			free(data_out);
 			oldfd->close();
 			newfd->close();

@@ -1633,6 +1633,20 @@ public:
 	int setReceiverFramesPerFile(int f = -1);
 
 	/**
+	 * Sets the frames discard policy in receiver
+	 * @param f frames discard policy
+	 * @returns frames discard policy set in receiver
+	 */
+	frameDiscardPolicy setReceiverFramesDiscardPolicy(frameDiscardPolicy f = GET_FRAME_DISCARD_POLICY);
+
+	/**
+	 * Sets the partial frames padding enable in receiver
+	 * @param f partial frames padding enable
+	 * @returns partial frames padding enable in receiver
+	 */
+	int setReceiverPartialFramesPadding(int f = -1);
+
+	/**
 	 * Returns file format
 	 * @returns file name
 	 */

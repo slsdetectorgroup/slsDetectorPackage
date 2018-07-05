@@ -2234,6 +2234,27 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
 	++i;
 
+	/*! \page receiver
+    - <b>r_framesperfile</b> sets/gets the frames per file in receiver. 0 means infinite or all frames in a single file. \c Returns \c (int)
+	 */
+	descrToFuncMap[i].m_pFuncName="r_framesperfile"; //OK
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
+	++i;
+
+	/*! \page receiver
+    - <b>r_discardpolicy</b> sets/gets the frame discard policy in the receiver. 0 - no discard (default), 1 - discard only empty frames, 2 - discard any partial frame(fastest). \c Returns \c (int)
+	 */
+	descrToFuncMap[i].m_pFuncName="r_discardpolicy"; //OK
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
+	++i;
+
+	/*! \page receiver
+    - <b>r_padding</b> sets/gets the frame padding in the receiver. 0 does not pad partial frames(fastest), 1 (default) pads partial frames. \c Returns \c (int)
+	 */
+	descrToFuncMap[i].m_pFuncName="r_padding"; //OK
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
+	++i;
+
 	/* pattern generator */
 
 	/*! \page ctb Chiptest board
@@ -6324,7 +6345,9 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 			sprintf(answer,"%d",myDet->setReceiverSilentMode());
 		return string(answer);
 
-	} else if(cmd=="r_framesperfile") {
+	}
+
+	else if(cmd=="r_framesperfile") {
 		if (action==PUT_ACTION){
 			if (sscanf(args[1],"%d",&ival)) {
 				myDet->setReceiverFramesPerFile(ival);
@@ -6332,9 +6355,34 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 		}
 		char answer[100];
 		memset(answer, 0, 100);
-		sprintf(answer,"%s %d",answer, myDet->setReceiverFramesPerFile());
+		sprintf(answer,"%s", myDet->setReceiverFramesPerFile());
 		return string(answer);
 	}
+
+	else if(cmd=="r_discardpolicy") {
+		if (action==PUT_ACTION){
+			if (sscanf(args[1],"%d",&ival) && (ival >= 0) && (ival < NUM_DISCARD_POLICIES)) {
+				myDet->setReceiverFramesDiscardPolicy((frameDiscardPolicy)ival);
+			} else return string("could not scan frames discard policy\n");
+		}
+		char answer[100];
+		memset(answer, 0, 100);
+		sprintf(answer,"%d",myDet->setReceiverFramesDiscardPolicy());
+		return string(answer);
+	}
+
+	else if(cmd=="r_padding") {
+		if (action==PUT_ACTION){
+			if (sscanf(args[1],"%d",&ival)) {
+				myDet->setReceiverPartialFramesPadding(ival);
+			} else return string("could not scan receiver padding enable\n");
+		}
+		char answer[100];
+		memset(answer, 0, 100);
+		sprintf(answer,"%d",myDet->setReceiverPartialFramesPadding());
+		return string(answer);
+	}
+
 
 
 	return string("could not decode command");
@@ -6353,7 +6401,9 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
 		os << "tengiga \t sets system to be configure for 10Gbe if set to 1, else 1Gbe if set to 0" << std::endl;
 		os << "rx_fifodepth [val]\t sets receiver fifo depth to val" << std::endl;
 		os << "r_silent [i]\t sets receiver in silent mode, ie. it will not print anything during real time acquisition. 1 sets, 0 unsets." << std::endl;
-		os << "r_framesperfile \t gets the number of frames per file in receiver. 0 means infinite or all frames in a single file." << std::endl;
+		os << "r_framesperfile s\t sets the number of frames per file in receiver. 0 means infinite or all frames in a single file." << std::endl;
+		os << "r_discardpolicy s\t sets the frame discard policy in the receiver. 0 - no discard (default), 1 - discard only empty frames, 2 - discard any partial frame(fastest)." << std::endl;
+		os << "r_padding s\t enables/disables partial frames to be padded in the receiver. 0 does not pad partial frames(fastest), 1 (default) pads partial frames." << std::endl;
 	}
 	if (action==GET_ACTION || action==HELP_ACTION){
 		os << "receiver \t returns the status of receiver - can be running or idle" << std::endl;
@@ -6363,7 +6413,9 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
 		os << "tengiga \t returns 1 if the system is configured for 10Gbe else 0 for 1Gbe" << std::endl;
 		os << "rx_fifodepth \t returns receiver fifo depth" << std::endl;
 		os << "r_silent \t returns receiver silent mode enable. 1 is silent, 0 not silent." << std::endl;
-		os << "r_framesperfile s\t sets the number of frames per file in receiver. 0 means infinite or all frames in a single file." << std::endl;
+		os << "r_framesperfile \t gets the number of frames per file in receiver. 0 means infinite or all frames in a single file." << std::endl;
+		os << "r_discardpolicy \t gets the frame discard policy in the receiver. 0 - no discard (default), 1 - discard only empty frames, 2 - discard any partial frame(fastest)." << std::endl;
+		os << "r_padding \t gets partial frames padding enable in the receiver. 0 does not pad partial frames(fastest), 1 (default) pads partial frames." << std::endl;
 	}
 	return os.str();
 }

@@ -32,10 +32,12 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param us pointer to udp socket buffer size
 	 * @param as pointer to actual udp socket buffer size
 	 * @param fpf pointer to frames per file
+	 * @param fdp frame discard policy
 	 */
 	Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
 	        uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
-	        uint32_t* us, uint32_t* as, uint32_t* fpf);
+	        uint32_t* us, uint32_t* as, uint32_t* fpf,
+			frameDiscardPolicy* fdp);
 
 	/**
 	 * Destructor
@@ -175,7 +177,8 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * Listen to the UDP Socket for an image,
 	 * place them in the right order
 	 * @param buffer
-	 * @returns number of bytes of relevant data, can be image size or 0
+	 * @returns number of bytes of relevant data, can be image size or 0 (stop acquisition)
+	 * or -1 to discard image
 	 */
 	uint32_t ListenToAnImage(char* buf);
 
@@ -229,6 +232,9 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** frames per file */
 	uint32_t* framesPerFile;
+
+	/** frame discard policy */
+	frameDiscardPolicy* frameDiscardMode;
 
 
 	// acquisition start

@@ -146,14 +146,14 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 
 	/**
 	 * Create and send Json Header
-	 * @param header header of image
+	 * @param rheader header of image
 	 * @param size data size (could have been modified in call back)
 	 * @param nx number of pixels in x dim
 	 * @param ny number of pixels in y dim
 	 * @param dummy true if its a dummy header
 	 * @returns 0 if error, else 1
 	 */
-	int SendHeader(sls_detector_header* header, uint32_t size = 0, uint32_t nx = 0, uint32_t ny = 0, bool dummy = true);
+	int SendHeader(sls_receiver_header* rheader, uint32_t size = 0, uint32_t nx = 0, uint32_t ny = 0, bool dummy = true);
 
 	/** type of thread */
 	static const std::string TypeName;

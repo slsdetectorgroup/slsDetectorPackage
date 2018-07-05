@@ -4538,6 +4538,14 @@ int multiSlsDetector::setReceiverFramesPerFile(int f) {
 	return parallelCallDetectorMember(&slsDetector::setReceiverFramesPerFile, f);
 }
 
+slsReceiverDefs::frameDiscardPolicy multiSlsDetector::setReceiverFramesDiscardPolicy(frameDiscardPolicy f) {
+	return callDetectorMember(&slsDetector::setReceiverFramesDiscardPolicy, f);
+}
+
+int multiSlsDetector::setReceiverPartialFramesPadding(int f) {
+	return callDetectorMember(&slsDetector::setReceiverPartialFramesPadding, f);
+}
+
 slsReceiverDefs::fileFormat multiSlsDetector::getFileFormat() {
 	return setFileFormat();
 }

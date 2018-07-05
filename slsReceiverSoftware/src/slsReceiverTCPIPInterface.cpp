@@ -171,17 +171,13 @@ void slsReceiverTCPIPInterface::registerCallBackAcquisitionFinished(void (*func)
 	pAcquisitionFinished=arg;
 }
 
-void slsReceiverTCPIPInterface::registerCallBackRawDataReady(void (*func)(uint64_t,
-        uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t,
-        uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+void slsReceiverTCPIPInterface::registerCallBackRawDataReady(void (*func)(char* ,
 		char*, uint32_t, void*),void *arg){
 	rawDataReadyCallBack=func;
 	pRawDataReady=arg;
 }
 
-void slsReceiverTCPIPInterface::registerCallBackRawDataModifyReady(void (*func)(uint64_t,
-        uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t,
-        uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+void slsReceiverTCPIPInterface::registerCallBackRawDataModifyReady(void (*func)(char* ,
         char*, uint32_t &,void*),void *arg){
     rawDataModifyReadyCallBack=func;
     pRawDataReady=arg;
@@ -299,6 +295,8 @@ const char* slsReceiverTCPIPInterface::getFunctionName(enum recFuncs func) {
     case F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE:  return "F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE";
     case F_SET_RECEIVER_FRAMES_PER_FILE:return "F_SET_RECEIVER_FRAMES_PER_FILE";
     case F_RECEIVER_CHECK_VERSION:		return "F_RECEIVER_CHECK_VERSION";
+    case F_RECEIVER_DISCARD_POLICY:		return "F_RECEIVER_DISCARD_POLICY";
+    case F_RECEIVER_PADDING_ENABLE:		return "F_RECEIVER_PADDING_ENABLE";
 
 	default:							return "Unknown Function";
 	}
@@ -353,6 +351,8 @@ int slsReceiverTCPIPInterface::function_table(){
     flist[F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE]=   &slsReceiverTCPIPInterface::get_real_udp_socket_buffer_size;
     flist[F_SET_RECEIVER_FRAMES_PER_FILE]	=   &slsReceiverTCPIPInterface::set_frames_per_file;
     flist[F_RECEIVER_CHECK_VERSION]			=   &slsReceiverTCPIPInterface::check_version_compatibility;
+    flist[F_RECEIVER_DISCARD_POLICY]		=   &slsReceiverTCPIPInterface::set_discard_policy;
+	flist[F_RECEIVER_PADDING_ENABLE]		=   &slsReceiverTCPIPInterface::set_padding_enable;
 
 #ifdef VERYVERBOSE
 	for (int i = 0; i < NUM_REC_FUNCTIONS ; i++) {
@@ -692,6 +692,24 @@ int slsReceiverTCPIPInterface::send_update() {
 #endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
+	//frames per file
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind=(int)receiverBase->getFramesPerFile();
+#endif
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
+
+	//frame discard policy
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind=(int)receiverBase->getFrameDiscardPolicy();
+#endif
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
+
+	//frame padding
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind=(int)receiverBase->getFramePaddingEnable();
+#endif
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
+
 	// file write enable
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getFileWriteEnable();
@@ -704,6 +722,12 @@ int slsReceiverTCPIPInterface::send_update() {
 #endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
+	// gap pixels
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind=(int)receiverBase->getGapPixelsEnable();
+#endif
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
+
 	// receiver read frequency
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getFrameToGuiFrequency();
@@ -713,12 +737,6 @@ int slsReceiverTCPIPInterface::send_update() {
 	// streaming port
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getStreamingPort();
-#endif
-	n += mySock->SendDataOnly(&ind,sizeof(ind));
-
-	// data streaming enable
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	ind=(int)receiverBase->getDataStreamEnable();
 #endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
@@ -738,11 +756,11 @@ int slsReceiverTCPIPInterface::send_update() {
     if (path != NULL)
         delete[] path;
 
-	// gap pixels enable
+	// data streaming enable
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	ind = (int)receiverBase->getGapPixelsEnable();
+	ind=(int)receiverBase->getDataStreamEnable();
 #endif
-	mySock->SendDataOnly(&ind,sizeof(ind));
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	if (!lockStatus)
 		strcpy(mySock->lastClientIP,mySock->thisClientIP);
@@ -2819,4 +2837,115 @@ int slsReceiverTCPIPInterface::check_version_compatibility() {
 	// return ok/fail
 	return ret;
 }
+
+
+
+
+int slsReceiverTCPIPInterface::set_discard_policy() {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int index = -1;
+	int retval = -1;
+
+	// receive arguments
+	if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
+		return printSocketReadError();
+
+	// execute action
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	if (receiverBase == NULL)
+		invalidReceiverObject();
+	else {
+		// set
+		if(index >= 0) {
+			if (mySock->differentClients && lockStatus)
+				receiverlocked();
+			else if (receiverBase->getStatus() != IDLE)
+				receiverNotIdle();
+			else {
+				receiverBase->setFrameDiscardPolicy((frameDiscardPolicy)index);
+			}
+		}
+		//get
+		retval=receiverBase->getFrameDiscardPolicy();
+		if(index >= 0 && retval != index) {
+			ret = FAIL;
+			strcpy(mess, "Could not set frame discard policy\n");
+			FILE_LOG(logERROR) << mess;
+		}
+	}
+#endif
+#ifdef VERYVERBOSE
+	FILE_LOG(logDEBUG1) << "frame discard policy:" << retval;
+#endif
+
+	if (ret == OK && mySock->differentClients)
+		ret = FORCE_UPDATE;
+
+	// send answer
+	mySock->SendDataOnly(&ret,sizeof(ret));
+	if (ret == FAIL)
+		mySock->SendDataOnly(mess,sizeof(mess));
+	mySock->SendDataOnly(&retval,sizeof(retval));
+
+	// return ok/fail
+	return ret;
+}
+
+
+
+
+int slsReceiverTCPIPInterface::set_padding_enable() {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int index = -1;
+	int retval = -1;
+
+	// receive arguments
+	if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
+		return printSocketReadError();
+
+	// execute action
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	if (receiverBase == NULL)
+		invalidReceiverObject();
+	else {
+		// set
+		if(index >= 0) {
+			if (mySock->differentClients && lockStatus)
+				receiverlocked();
+			else if (receiverBase->getStatus() != IDLE)
+				receiverNotIdle();
+			else {
+				index = (index == 0) ? 0 : 1;
+				receiverBase->setFramePaddingEnable(index);
+			}
+		}
+		//get
+		retval=(int)receiverBase->getFramePaddingEnable();
+		if(index >= 0 && retval != index) {
+			ret = FAIL;
+			strcpy(mess, "Could not set frame padding enable\n");
+			FILE_LOG(logERROR) << mess;
+		}
+	}
+#endif
+#ifdef VERYVERBOSE
+	FILE_LOG(logDEBUG1) << "Frame Padding Enable:" << retval;
+#endif
+
+	if (ret == OK && mySock->differentClients)
+		ret = FORCE_UPDATE;
+
+	// send answer
+	mySock->SendDataOnly(&ret,sizeof(ret));
+	if (ret == FAIL)
+		mySock->SendDataOnly(mess,sizeof(mess));
+	mySock->SendDataOnly(&retval,sizeof(retval));
+
+	// return ok/fail
+	return ret;
+}
+
+
 

@@ -740,6 +740,8 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 	thisDetector->detectorControlAPIVersion = 0;
 	thisDetector->detectorStopAPIVersion = 0;
 	thisDetector->receiverAPIVersion = 0;
+	thisDetector->receiver_frameDiscardMode = NO_DISCARD;
+	thisDetector->receiver_framePadding = 1;
 
 
 	// get the detector parameters based on type
@@ -5171,6 +5173,9 @@ string slsDetector::setReceiver(string receiverIP) {
 		std::cout << "file name:" << fileIO::getFileName() << endl;
 		std::cout << "file index:" << fileIO::getFileIndex() << endl;
 		std::cout << "file format:" << fileIO::getFileFormat() << endl;
+		std::cout << "r_framesperfile:" << thisDetector->receiver_framesPerFile << endl;
+		std::cout << "r_discardpolicy:" << thisDetector->receiver_frameDiscardMode << endl;
+		std::cout << "r_padding:" << thisDetector->receiver_framePadding << endl;
 		pthread_mutex_lock(&ms);
 		std::cout << "write enable:" << multiDet->enableWriteToFileMask() << endl;
 		std::cout << "overwrite enable:" << multiDet->enableOverwriteMask() << endl;
@@ -5182,17 +5187,17 @@ string slsDetector::setReceiver(string receiverIP) {
 		std::cout << "sub exp time:" << thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME]
 																 << endl;
 		std::cout << "sub period:" << thisDetector->timerValue[SUBFRAME_PERIOD] << endl;
-		std::cout << "dynamic range:" << thisDetector->dynamicRange << endl << endl;
-		std::cout << "flippeddatax:" << thisDetector->flippedData[d] << endl;
-		std::cout << "10GbE:" << thisDetector->tenGigaEnable << endl << endl;
+		std::cout << "dynamic range:" << thisDetector->dynamicRange << endl;
+		std::cout << "flippeddatax:" << thisDetector->flippedData[X] << endl;
+		std::cout << "10GbE:" << thisDetector->tenGigaEnable << endl;
+		std::cout << "Gap pixels: " << thisDetector->gappixels << endl;
 		std::cout << "rx streaming source ip:" << thisDetector->receiver_zmqip << endl;
 		std::cout << "rx additional json header:" << thisDetector->receiver_additionalJsonHeader << endl;
 		std::cout << "enable gap pixels:" << thisDetector->gappixels << endl;
 		std::cout << "rx streaming port:" << thisDetector->receiver_zmqport << endl;
-		std::cout << "r_readfreq:" << thisDetector->receiver_read_freq << endl << endl;
+		std::cout << "r_readfreq:" << thisDetector->receiver_read_freq << endl;
 		std::cout << "rx_datastream:" << enableDataStreamingFromReceiver(-1) << endl << endl;
-		std::cout << "r_framesperfile:" << thisDetector->receiver_framesPerFile << endl;
-		/** enable compresison, */
+
 #endif
 		if(setDetectorType()!= GENERIC){
 			if(!detId)
@@ -5207,6 +5212,8 @@ string slsDetector::setReceiver(string receiverIP) {
 			setFileIndex(fileIO::getFileIndex());
 			setFileFormat(fileIO::getFileFormat());
 			setReceiverFramesPerFile(thisDetector->receiver_framesPerFile);
+			setReceiverFramesDiscardPolicy(thisDetector->receiver_frameDiscardMode);
+			setReceiverPartialFramesPadding(thisDetector->receiver_framePadding);
 			pthread_mutex_lock(&ms);
 			int imask = multiDet->enableWriteToFileMask();
 			pthread_mutex_unlock(&ms);
@@ -5234,7 +5241,7 @@ string slsDetector::setReceiver(string receiverIP) {
 			if(thisDetector->myDetectorType == EIGER)
 				enableTenGigabitEthernet(thisDetector->tenGigaEnable);
 
-			enableGapPixels(enableGapPixels(-1));
+			enableGapPixels(thisDetector->gappixels);
 
 			// data streaming
 			setReadReceiverFrequency(thisDetector->receiver_read_freq);
@@ -8430,6 +8437,18 @@ int slsDetector::updateReceiverNoWait() {
 	fileIO::setFileFormat(ind);
 	pthread_mutex_unlock(&ms);
 
+	// frames per file
+	n += dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
+	thisDetector->receiver_framesPerFile = ind;
+
+	// frame discard policy
+	n += dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
+	thisDetector->receiver_frameDiscardMode = (frameDiscardPolicy)ind;
+
+	// frame padding
+	n += dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
+	thisDetector->receiver_framePadding = ind;
+
 	// file write enable
 	n += 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
 	pthread_mutex_lock(&ms);
@@ -8442,6 +8461,10 @@ int slsDetector::updateReceiverNoWait() {
 	multiDet->enableOverwriteMask(ind);
 	pthread_mutex_unlock(&ms);
 
+	// gap pixels
+	n += dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
+	thisDetector->gappixels = ind;
+
 	// receiver read frequency
 	n += 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
 	thisDetector->receiver_read_freq = ind;
@@ -8449,10 +8472,6 @@ int slsDetector::updateReceiverNoWait() {
 	// receiver streaming port
 	n += 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
 	thisDetector->receiver_zmqport = ind;
-
-	// receiver streaming enable
-	n += dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
-	thisDetector->receiver_upstream = ind;
 
 	// streaming source ip
 	n += 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);
@@ -8462,9 +8481,11 @@ int slsDetector::updateReceiverNoWait() {
 	n +=  dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);
 	strcpy(thisDetector->receiver_additionalJsonHeader, path);
 
-	// gap pixels
+	// receiver streaming enable
 	n += dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
-	thisDetector->gappixels = ind;
+	thisDetector->receiver_upstream = ind;
+
+
 
 	if (!n) printf("n: %d\n", n);
 
@@ -8706,7 +8727,9 @@ int slsDetector::setReceiverFramesPerFile(int f) {
 			ret=thisReceiver->sendInt(fnum,retval,arg);
 			disconnectData();
 		}
-		if(ret!=FAIL && retval > -1){
+		if(ret==FAIL)
+			setErrorMask((getErrorMask())|(RECEIVER_PARAMETER_NOT_SET));
+		else if(ret!=FAIL && retval > -1){
 			thisDetector->receiver_framesPerFile = retval;
 		}
 		if(ret==FORCE_UPDATE)
@@ -8714,6 +8737,61 @@ int slsDetector::setReceiverFramesPerFile(int f) {
 	}
 
 	return thisDetector->receiver_framesPerFile;
+}
+
+
+slsReceiverDefs::frameDiscardPolicy slsDetector::setReceiverFramesDiscardPolicy(frameDiscardPolicy f) {
+	int fnum = F_RECEIVER_DISCARD_POLICY;
+	int ret = FAIL;
+	int retval = -1;
+	int arg = f;
+
+
+	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+#ifdef VERBOSE
+		std::cout << "Sending frames discard policy to receiver " << arg << std::endl;
+#endif
+		if (connectData() == OK){
+			ret=thisReceiver->sendInt(fnum,retval,arg);
+			disconnectData();
+		}
+		if(ret==FAIL)
+			setErrorMask((getErrorMask())|(RECEIVER_PARAMETER_NOT_SET));
+		else if(ret!=FAIL && retval > -1){
+			thisDetector->receiver_frameDiscardMode = (frameDiscardPolicy)retval;
+		}
+		if(ret==FORCE_UPDATE)
+			updateReceiver();
+	}
+
+	return thisDetector->receiver_frameDiscardMode;
+}
+
+int slsDetector::setReceiverPartialFramesPadding(int f) {
+	int fnum = F_RECEIVER_PADDING_ENABLE;
+	int ret = FAIL;
+	int retval = -1;
+	int arg = f;
+
+
+	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+#ifdef VERBOSE
+		std::cout << "Sending partial frames enable to receiver " << arg << std::endl;
+#endif
+		if (connectData() == OK){
+			ret=thisReceiver->sendInt(fnum,retval,arg);
+			disconnectData();
+		}
+		if(ret==FAIL)
+			setErrorMask((getErrorMask())|(RECEIVER_PARAMETER_NOT_SET));
+		else if(ret!=FAIL && retval > -1){
+			thisDetector->receiver_framePadding = (bool)retval;
+		}
+		if(ret==FORCE_UPDATE)
+			updateReceiver();
+	}
+
+	return thisDetector->receiver_framePadding;
 }
 
 slsReceiverDefs::fileFormat slsDetector::setFileFormat(fileFormat f) {
@@ -9331,7 +9409,7 @@ int slsDetector::setReceiverSilentMode(int i) {
 			disconnectData();
 		}
 		if(ret==FAIL)
-			setErrorMask((getErrorMask())|(RECEIVER_SILENT_MODE_NOT_SET));
+			setErrorMask((getErrorMask())|(RECEIVER_PARAMETER_NOT_SET));
 	}
 	return retval;
 }

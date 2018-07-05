@@ -60,6 +60,8 @@ void UDPBaseImplementation::initializeMembers(){
 	//***receiver parameters***
 	status = IDLE;
 	activated = true;
+	frameDiscardMode = NO_DISCARD;
+	framePadding = false;
 
 	//***connection parameters***
 	strcpy(eth,"");
@@ -178,6 +180,16 @@ uint64_t UDPBaseImplementation::getFileIndex() const{
 uint32_t UDPBaseImplementation::getFramesPerFile() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
     return framesPerFile;
+}
+
+slsReceiverDefs::frameDiscardPolicy UDPBaseImplementation::getFrameDiscardPolicy() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return frameDiscardMode;
+}
+
+bool UDPBaseImplementation::getFramePaddingEnable() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return framePadding;
 }
 
 int UDPBaseImplementation::getScanTag() const{
@@ -449,6 +461,22 @@ void UDPBaseImplementation::setFramesPerFile(const uint32_t i){
 
 	framesPerFile = i;
 	FILE_LOG(logINFO) << "Frames per file: " << framesPerFile;
+}
+
+void UDPBaseImplementation::setFrameDiscardPolicy(const frameDiscardPolicy i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	if (i >= 0 && i < NUM_DISCARD_POLICIES)
+		frameDiscardMode = i;
+
+	FILE_LOG(logINFO) << "Frame Discard Policy: " << getFrameDiscardPolicyType(frameDiscardMode);
+}
+
+void UDPBaseImplementation::setFramePaddingEnable(const bool i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	framePadding = i;
+	FILE_LOG(logINFO) << "Frame Padding: " << framePadding;
 }
 
 //FIXME: needed?
@@ -761,17 +789,13 @@ void UDPBaseImplementation::registerCallBackAcquisitionFinished(void (*func)(uin
 	pAcquisitionFinished=arg;
 }
 
-void UDPBaseImplementation::registerCallBackRawDataReady(void (*func)(uint64_t,
-        uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t,
-        uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+void UDPBaseImplementation::registerCallBackRawDataReady(void (*func)(char* ,
 		char*, uint32_t, void*),void *arg){
 	rawDataReadyCallBack=func;
 	pRawDataReady=arg;
 }
 
-void UDPBaseImplementation::registerCallBackRawDataModifyReady(void (*func)(uint64_t,
-        uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t,
-        uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+void UDPBaseImplementation::registerCallBackRawDataModifyReady(void (*func)(char* ,
         char*, uint32_t&, void*),void *arg){
     rawDataModifyReadyCallBack=func;
     pRawDataReady=arg;

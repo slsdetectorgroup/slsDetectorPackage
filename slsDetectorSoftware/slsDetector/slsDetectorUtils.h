@@ -761,6 +761,19 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual int setReceiverFramesPerFile(int f = -1) = 0;
 
+  /**
+     Sets the frames discard policy in receiver
+     @param f frames discard policy
+     \returns frames discard policy set in receiver
+  */
+  virtual frameDiscardPolicy setReceiverFramesDiscardPolicy(frameDiscardPolicy f = GET_FRAME_DISCARD_POLICY) = 0;
+
+  /**
+     Sets the partial frames padding enable in receiver
+     @param f partial frames padding enable
+     \returns partial frames padding enable in receiver
+  */
+  virtual int setReceiverPartialFramesPadding(int f = -1) = 0;
 
   /**
      Sets up the file format

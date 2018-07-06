@@ -18,6 +18,7 @@ using namespace H5;
 
 #include <iostream>
 #include <string>
+#include <vector>
 #include <iomanip>
 #include <stdlib.h>	 //malloc
 #include <sstream>
@@ -187,9 +188,16 @@ public:
 
 	/**
 	 * Write Parameter Arrays as datasets (to virtual file)
+	 * @param ind self index
+	 * @param dspace_para dataspace of parametrs
+	 * @param fnum frame number
+	 * @param dset_para vector or dataset pointers of parameters
+	 * @param rheader sls_receiver_header pointer
+	 * @param parameterDataTypes parameter datatypes
 	 */
 	static int WriteParameterDatasets(int ind, DataSpace* dspace_para, uint64_t fnum,
-			DataSet* dset_para[],sls_receiver_header* rheader)
+			vector <DataSet*> dset_para,sls_receiver_header* rheader,
+			vector <DataType> parameterDataTypes)
 	{
 		sls_detector_header header = rheader->detHeader;
 		hsize_t count[1] = {1};
@@ -198,19 +206,20 @@ public:
 			Exception::dontPrint(); //to handle errors
 			dspace_para->selectHyperslab( H5S_SELECT_SET, count, start);
 			DataSpace memspace(H5S_SCALAR);
-			dset_para[0]->write(&header.frameNumber, 	ParameterDataTypes[0], memspace, *dspace_para);
-			dset_para[1]->write(&header.expLength, 		ParameterDataTypes[1], memspace, *dspace_para);
-			dset_para[2]->write(&header.packetNumber, 	ParameterDataTypes[2], memspace, *dspace_para);
-			dset_para[3]->write(&header.bunchId, 		ParameterDataTypes[3], memspace, *dspace_para);
-			dset_para[4]->write(&header.timestamp, 		ParameterDataTypes[4], memspace, *dspace_para);
-			dset_para[5]->write(&header.modId, 			ParameterDataTypes[5], memspace, *dspace_para);
-			dset_para[6]->write(&header.xCoord, 		ParameterDataTypes[6], memspace, *dspace_para);
-			dset_para[7]->write(&header.yCoord, 		ParameterDataTypes[7], memspace, *dspace_para);
-			dset_para[8]->write(&header.zCoord, 		ParameterDataTypes[8], memspace, *dspace_para);
-			dset_para[9]->write(&header.debug, 			ParameterDataTypes[9], memspace, *dspace_para);
-			dset_para[10]->write(&header.roundRNumber, 	ParameterDataTypes[10], memspace, *dspace_para);
-			dset_para[11]->write(&header.detType, 		ParameterDataTypes[11], memspace, *dspace_para);
-			dset_para[12]->write(&header.version, 		ParameterDataTypes[12], memspace, *dspace_para);
+			dset_para[0]->write(&header.frameNumber, 	parameterDataTypes[0], memspace, *dspace_para);
+			dset_para[1]->write(&header.expLength, 		parameterDataTypes[1], memspace, *dspace_para);
+			dset_para[2]->write(&header.packetNumber, 	parameterDataTypes[2], memspace, *dspace_para);
+			dset_para[3]->write(&header.bunchId, 		parameterDataTypes[3], memspace, *dspace_para);
+			dset_para[4]->write(&header.timestamp, 		parameterDataTypes[4], memspace, *dspace_para);
+			dset_para[5]->write(&header.modId, 			parameterDataTypes[5], memspace, *dspace_para);
+			dset_para[6]->write(&header.xCoord, 		parameterDataTypes[6], memspace, *dspace_para);
+			dset_para[7]->write(&header.yCoord, 		parameterDataTypes[7], memspace, *dspace_para);
+			dset_para[8]->write(&header.zCoord, 		parameterDataTypes[8], memspace, *dspace_para);
+			dset_para[9]->write(&header.debug, 			parameterDataTypes[9], memspace, *dspace_para);
+			dset_para[10]->write(&header.roundRNumber, 	parameterDataTypes[10], memspace, *dspace_para);
+			dset_para[11]->write(&header.detType, 		parameterDataTypes[11], memspace, *dspace_para);
+			dset_para[12]->write(&header.version, 		parameterDataTypes[12], memspace, *dspace_para);
+			dset_para[13]->write(rheader->packetsMask.to_string().c_str(),	parameterDataTypes[13], memspace, *dspace_para);
 		}
 		catch(Exception error){
 			cprintf(RED,"Error in writing parameters to file in object %d\n",ind);
@@ -360,12 +369,12 @@ public:
 	 * Create File
 	 * @param ind object index for debugging
 	 * @param owenable overwrite enable
-	 * @param numf number of images
 	 * @param fname complete file name
 	 * @param frindexenable frame index enable
 	 * @param fnum current image number
-	 * @param nx number of pixels in x dir
-	 * @param ny number of pixels in y dir
+	 * @param nDimx number of pixels in x dim (#frames)
+	 * @param nDimy number of pixels in y dim (height y dir)
+	 * @param nDimz number of pixels in z dim (width x dir)
 	 * @param dtype data type
 	 * @param fd file pointer
 	 * @param dspace dataspace pointer
@@ -373,19 +382,18 @@ public:
 	 * @param version version of software for hdf5 writing
 	 * @param maxchunkedimages maximum chunked images
 	 * @param dspace_para dataspace of parameters
-	 * @param para1 parameter 1 name
-	 * @param dset_para1 dataset of parameter 1
-	 * @param dtype_para1 datatype of parameter 1
-	 * @param para2 parameter 2 name
-	 * @param dset_para2 dataset of parameter 2
-	 * @param dtype_para2 datatype of parameter 2
+	 * @param dset_para vector of datasets of parameters
+	 * @param parameterNames parameter names
+	 * @param parameterDataTypes parameter datatypes
 	 * @returns 0 for success and 1 for fail
 	 */
 	static int CreateDataFile(int ind, bool owenable, string fname, bool frindexenable,
 			uint64_t fnum, uint64_t nDimx, uint32_t nDimy, uint32_t nDimz,
 			DataType dtype, H5File*& fd, DataSpace*& dspace, DataSet*& dset,
 			double version, uint64_t maxchunkedimages,
-			DataSpace*& dspace_para, DataSet* dset_para[])
+			DataSpace*& dspace_para, vector<DataSet*>& dset_para,
+			vector <const char*> parameterNames,
+			vector <DataType> parameterDataTypes)
 	{
 		try {
 			Exception::dontPrint(); //to handle errors
@@ -434,8 +442,10 @@ public:
 			//create parameter datasets
 			hsize_t dims[1] = {nDimx};
 			dspace_para = new DataSpace (1,dims);
-			for (int i = 0; i < NumberofParameters; ++i)
-				dset_para[i] = new DataSet(fd->createDataSet(ParameterNames[i], ParameterDataTypes[i], *dspace_para));
+			for (int i = 0; i < parameterNames.size(); ++i){
+				DataSet* ds = new DataSet(fd->createDataSet(parameterNames[i], parameterDataTypes[i], *dspace_para));
+				dset_para.push_back(ds);
+			}
 		}
 		catch(Exception error){
 			cprintf(RED,"Error in creating HDF5 handles in object %d\n",ind);
@@ -461,16 +471,14 @@ public:
 	 * @param maxFramesPerFile maximum frames per file
 	 * @param numf number of frames caught
 	 * @param srcDataseName source dataset name
-	 * @param srcP1DatasetName source parameter 1 dataset name
-	 * @param srcP2DatasetName source parameter 2 dataset name
 	 * @param dataType datatype of data dataset
-	 * @param p1DataType datatype of parameter 1
-	 * @param p2DataType datatype of parameter 2
 	 * @param numDety number of readouts in Y dir
 	 * @param numDetz number of readouts in Z dir
 	 * @param nDimy number of objects in y dimension in source file (Number of pixels in y dir)
 	 * @param nDimz number of objects in z dimension in source file (Number of pixels in x dir)
 	 * @param version version of software for hdf5 writing
+	 * @param parameterNames parameter names
+	 * @param parameterDataTypes parameter datatypes
 	 * @returns 0 for success and 1 for fail
 	 */
 	static int CreateVirtualDataFile(
@@ -480,7 +488,9 @@ public:
 			uint32_t maxFramesPerFile, uint64_t numf,
 			string srcDataseName, DataType dataType,
 			int numDety, int numDetz, uint32_t nDimy, uint32_t nDimz,
-			double version)
+			double version,
+			vector <const char*> parameterNames,
+			vector <DataType> parameterDataTypes)
 	{
 		//virtual names
 		string virtualFileName = CreateVirtualFileName(fpath, fnameprefix, findex);
@@ -528,12 +538,12 @@ public:
 		int fill_value = -1;
 		if (H5Pset_fill_value (dcpl, GetDataTypeinC(dataType), &fill_value) < 0)
 			return CloseFileOnError(fd, string("Error in creating fill value in virtual file ") + virtualFileName + string("\n"));
-		hid_t dcpl_para[NumberofParameters];
-		for (int i = 0; i < NumberofParameters; ++i) {
+		hid_t dcpl_para[parameterNames.size()];
+		for (int i = 0; i < parameterNames.size(); ++i) {
 			dcpl_para[i] = H5Pcreate (H5P_DATASET_CREATE);
 			if (dcpl_para[i] < 0)
 				return CloseFileOnError(fd, string("Error in creating file creation properties (parameters) in virtual file ") + virtualFileName + string("\n"));
-			if (H5Pset_fill_value (dcpl_para[i], GetDataTypeinC(ParameterDataTypes[i]), &fill_value) < 0)
+			if (H5Pset_fill_value (dcpl_para[i], GetDataTypeinC(parameterDataTypes[i]), &fill_value) < 0)
 				return CloseFileOnError(fd, string("Error in creating fill value (parameters) in virtual file ") + virtualFileName + string("\n"));
 		}
 
@@ -599,8 +609,8 @@ public:
 					break;
 				}
 
-				for (int k = 0; k < NumberofParameters; ++k) {
-					if (H5Pset_virtual(dcpl_para[k], vdsDataspace_para, relative_srcFileName.c_str(), ParameterNames[k], srcDataspace_para) < 0) {
+				for (int k = 0; k < parameterNames.size(); ++k) {
+					if (H5Pset_virtual(dcpl_para[k], vdsDataspace_para, relative_srcFileName.c_str(), parameterNames[k], srcDataspace_para) < 0) {
 						cprintf(RED,"could not set mapping for paramter %d\n", k);
 						error = true;
 						break;
@@ -629,10 +639,10 @@ public:
 
 
 		//virtual parameter dataset
-		for (int i = 0; i < NumberofParameters; ++i) {
+		for (int i = 0; i < parameterNames.size(); ++i) {
 			hid_t vdsdataset_para = H5Dcreate2 (fd,
-					(string("/virtual_") + string (ParameterNames[i])).c_str(),
-					GetDataTypeinC(ParameterDataTypes[i]), vdsDataspace_para, H5P_DEFAULT, dcpl_para[i], H5P_DEFAULT);
+					(string("/virtual_") + string (parameterNames[i])).c_str(),
+					GetDataTypeinC(parameterDataTypes[i]), vdsDataspace_para, H5P_DEFAULT, dcpl_para[i], H5P_DEFAULT);
 			if (vdsdataset_para < 0)
 				return CloseFileOnError(fd, string("Error in creating virutal dataset (parameters) in virtual file ") + virtualFileName + string("\n"));
 		}
@@ -641,7 +651,7 @@ public:
 		H5Fclose(fd); fd = 0;
 
 		//link
-		return LinkVirtualInMaster(masterFileName, virtualFileName, virtualDatasetName);
+		return LinkVirtualInMaster(masterFileName, virtualFileName, virtualDatasetName, parameterNames);
 	}
 
 
@@ -754,9 +764,11 @@ public:
 	 * @param masterFileName master file name
 	 * @param virtualfname virtual file name
 	 * @param virtualDatasetname virtual dataset name
+	 * @param parameterNames parameter names
 	 * @returns 0 for success and 1 for fail
 	 */
-	static int LinkVirtualInMaster(string masterFileName, string virtualfname, string virtualDatasetname) {
+	static int LinkVirtualInMaster(string masterFileName, string virtualfname,
+			string virtualDatasetname, vector <const char*> parameterNames) {
 		char linkname[100];
 		hid_t vfd = 0;
 
@@ -801,15 +813,15 @@ public:
 		H5Dclose(vdset);
 
 		//**paramter datasets**
-		for (int i = 0; i < NumberofParameters; ++i){
-			hid_t vdset_para = H5Dopen2( vfd, (string("/virtual_") + string (ParameterNames[i])).c_str(), H5P_DEFAULT);
+		for (int i = 0; i < parameterNames.size(); ++i){
+			hid_t vdset_para = H5Dopen2( vfd, (string("/virtual_") + string (parameterNames[i])).c_str(), H5P_DEFAULT);
 			if (vdset_para < 0) {
 				H5Fclose(mfd); mfd = 0;
 				return CloseFileOnError( vfd, string("Error in opening virtual parameter dataset to create link\n"));
 			}
-			sprintf(linkname, "/entry/data/%s",(string("/virtual_") + string (ParameterNames[i])).c_str());
+			sprintf(linkname, "/entry/data/%s",(string("/virtual_") + string (parameterNames[i])).c_str());
 
-			if(H5Lcreate_external( relative_virtualfname.c_str(), (string("/virtual_") + string (ParameterNames[i])).c_str(),
+			if(H5Lcreate_external( relative_virtualfname.c_str(), (string("/virtual_") + string (parameterNames[i])).c_str(),
 					mfd, linkname, H5P_DEFAULT, H5P_DEFAULT) < 0) {
 				H5Fclose(mfd); mfd = 0;
 				return CloseFileOnError( vfd, string("Error in creating link to virtual parameter dataset\n"));
@@ -851,17 +863,11 @@ public:
 		else if (dtype == PredType::STD_U64LE)
 			return H5T_STD_U64LE;
 		else {
-			cprintf(RED, "Invalid Data type\n");
-			return H5T_STD_U64LE;
+			hid_t s = H5Tcopy(H5T_C_S1);
+			H5Tset_size(s, MAX_NUM_PACKETS);
+			return s;
 		}
 	}
-
-
-	static const int NumberofParameters = 13;
-
-private:
-	static const char * const ParameterNames[];
-	static const DataType ParameterDataTypes[];
 
 };
 

@@ -163,6 +163,7 @@ class BinaryFileStatic {
 				"Round Robin Number         : 2 bytes\n"
 				"Detector Type              : 1 byte\n"
 				"Header Version             : 1 byte\n"
+				"Packets Caught Mask        : 64 bytes\n"
 				,
 				version,
 				dr,

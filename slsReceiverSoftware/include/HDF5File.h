@@ -17,7 +17,6 @@
 #ifndef H5_NO_NAMESPACE
     using namespace H5;
 #endif
-#include <string>
 
 
 class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileStatic {
@@ -174,11 +173,17 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	/** Number of files in an acquisition - to verify need of virtual file */
 	int numFilesinAcquisition;
 
+	/** parameter names */
+	vector <const char*> parameterNames;
+
+	/** parameter data types */
+	vector <DataType> parameterDataTypes;
+
 	/** Dataspace of parameters */
 	DataSpace* dataspace_para;
 
 	/** Dataset array for parameters */
-	DataSet* dataset_para[HDF5FileStatic::NumberofParameters];
+	vector <DataSet*> dataset_para;
 
 };
 #endif

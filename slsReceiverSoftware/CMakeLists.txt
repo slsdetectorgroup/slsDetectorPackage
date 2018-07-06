@@ -28,7 +28,6 @@ if (USE_HDF5)
 	    )
 	    list (APPEND SOURCES 
 	        src/HDF5File.cpp 
-	        src/HDF5FileStatic.cpp
 	    )
 	endif ()
 endif (USE_HDF5)

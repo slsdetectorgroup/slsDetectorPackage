@@ -54,7 +54,7 @@ void sigInterruptHandler(int p){
  */
 void printHelp() {
 	cprintf(RESET, "Usage:\n"
-			"./detReceiver [start_tcp_port] [num_receivers] [1 for call back, 0 for none]\n\n");
+			"./slsMultiReceiver(detReceiver) [start_tcp_port] [num_receivers] [1 for call back, 0 for none]\n\n");
 	exit(EXIT_FAILURE);
 }
 

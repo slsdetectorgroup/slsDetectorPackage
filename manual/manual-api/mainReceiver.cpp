@@ -90,34 +90,30 @@ void AcquisitionFinished(uint64_t frames, void*p){
 /**
  * Get Receiver Data Call back
  * Prints in different colors(for each receiver process) the different headers for each image call back.
- * @param frameNumber frame number
- * @param expLength real time exposure length (in 100ns) or sub frame number (Eiger 32 bit mode only)
- * @param packetNumber number of packets caught for this frame
- * @param bunchId bunch id from beamline
- * @param timestamp time stamp  in 10MHz clock (not implemented for most)
- * @param modId module id   (not implemented for most)
- * @param xCoord x coordinates (detector id in 1D)
- * @param yCoord y coordinates (not implemented)
- * @param zCoord z coordinates (not implemented)
- * @param debug debug values if any
- * @param roundRNumber (not implemented)
- * @param detType detector type see :: detectorType
- * @param version version of standard header (structure format)
+ * @param metadata sls_receiver_header metadata
  * @param datapointer pointer to data
  * @param datasize data size in bytes.
  * @param p pointer to object
  */
-void GetData(uint64_t frameNumber, uint32_t expLength, uint32_t packetNumber, uint64_t bunchId, uint64_t timestamp,
-        uint16_t modId, uint16_t xCoord, uint16_t yCoord, uint16_t zCoord, uint32_t debug, uint16_t roundRNumber, uint8_t detType, uint8_t version,
-        char* datapointer, uint32_t datasize, void* p){
+void GetData(char* metadata, char* datapointer, uint32_t datasize, void* p){
+	slsReceiverDefs::sls_receiver_header* header = (slsReceiverDefs::sls_receiver_header*)metadata;
+	slsReceiverDefs::sls_detector_header detectorHeader = header->detHeader;
 
-    PRINT_IN_COLOR (modId?modId:xCoord,
-            "#### %d GetData: ####\n"
-            "frameNumber: %llu\t\texpLength: %u\t\tpacketNumber: %u\t\tbunchId: %llu\t\ttimestamp: %llu\t\tmodId: %u\t\t"
-            "xCoord: %u\t\tyCoord: %u\t\tzCoord: %u\t\tdebug: %u\t\troundRNumber: %u\t\tdetType: %u\t\t"
-            "version: %u\t\tfirstbytedata: 0x%x\t\tdatsize: %u\n\n",
-            xCoord, frameNumber, expLength, packetNumber, bunchId, timestamp, modId,
-            xCoord, yCoord, zCoord, debug, roundRNumber, detType, version,
+	PRINT_IN_COLOR (detectorHeader.modId?detectorHeader.modId:detectorHeader.xCoord,
+			"#### %d GetData: ####\n"
+			"frameNumber: %llu\t\texpLength: %u\t\tpacketNumber: %u\t\tbunchId: %llu"
+			"\t\ttimestamp: %llu\t\tmodId: %u\t\t"
+			"xCoord: %u\t\tyCoord: %u\t\tzCoord: %u\t\tdebug: %u"
+			"\t\troundRNumber: %u\t\tdetType: %u\t\tversion: %u"
+			//"\t\tpacketsMask:%s"
+			"\t\tfirstbytedata: 0x%x\t\tdatsize: %u\n\n",
+			detectorHeader.xCoord, detectorHeader.frameNumber,
+			detectorHeader.expLength, detectorHeader.packetNumber, detectorHeader.bunchId,
+			detectorHeader.timestamp, detectorHeader.modId,
+			detectorHeader.xCoord, detectorHeader.yCoord, detectorHeader.zCoord,
+			detectorHeader.debug, detectorHeader.roundRNumber,
+			detectorHeader.detType, detectorHeader.version,
+			//header->packetsMask.to_string().c_str(),
             ((uint8_t)(*((uint8_t*)(datapointer)))), datasize);
 }
 
@@ -126,36 +122,32 @@ void GetData(uint64_t frameNumber, uint32_t expLength, uint32_t packetNumber, ui
 /**
  * Get Receiver Data Call back (modified)
  * Prints in different colors(for each receiver process) the different headers for each image call back.
- * @param frameNumber frame number
- * @param expLength real time exposure length (in 100ns) or sub frame number (Eiger 32 bit mode only)
- * @param packetNumber number of packets caught for this frame
- * @param bunchId bunch id from beamline
- * @param timestamp time stamp  in 10MHz clock (not implemented for most)
- * @param modId module id	(not implemented for most)
- * @param xCoord x coordinates (detector id in 1D)
- * @param yCoord y coordinates (not implemented)
- * @param zCoord z coordinates (not implemented)
- * @param debug debug values if any
- * @param roundRNumber (not implemented)
- * @param detType detector type see :: detectorType
- * @param version version of standard header (structure format)
+ * @param metadata sls_receiver_header metadata
  * @param datapointer pointer to data
  * @param datasize data size in bytes.
  * @param revDatasize new data size in bytes after the callback.
  * This will be the size written/streamed. (only smaller value is allowed).
  * @param p pointer to object
  */
-void GetData(uint64_t frameNumber, uint32_t expLength, uint32_t packetNumber, uint64_t bunchId, uint64_t timestamp,
-		uint16_t modId, uint16_t xCoord, uint16_t yCoord, uint16_t zCoord, uint32_t debug, uint16_t roundRNumber, uint8_t detType, uint8_t version,
-		char* datapointer, uint32_t &revDatasize, void* p){
+void GetData(char* metadata, char* datapointer, uint32_t &revDatasize, void* p){
+	slsReceiverDefs::sls_receiver_header* header = (slsReceiverDefs::sls_receiver_header*)metadata;
+	slsReceiverDefs::sls_detector_header detectorHeader = header->detHeader;
 
-	PRINT_IN_COLOR (modId?modId:xCoord,
+	PRINT_IN_COLOR (detectorHeader.modId?detectorHeader.modId:detectorHeader.xCoord,
 			"#### %d GetData: ####\n"
-			"frameNumber: %llu\t\texpLength: %u\t\tpacketNumber: %u\t\tbunchId: %llu\t\ttimestamp: %llu\t\tmodId: %u\t\t"
-			"xCoord: %u\t\tyCoord: %u\t\tzCoord: %u\t\tdebug: %u\t\troundRNumber: %u\t\tdetType: %u\t\t"
-			"version: %u\t\tfirstbytedata: 0x%x\t\tdatsize: %u\n\n",
-			xCoord, frameNumber, expLength, packetNumber, bunchId, timestamp, modId,
-			xCoord, yCoord, zCoord, debug, roundRNumber, detType, version,
+			"frameNumber: %llu\t\texpLength: %u\t\tpacketNumber: %u\t\tbunchId: %llu"
+			"\t\ttimestamp: %llu\t\tmodId: %u\t\t"
+			"xCoord: %u\t\tyCoord: %u\t\tzCoord: %u\t\tdebug: %u"
+			"\t\troundRNumber: %u\t\tdetType: %u\t\tversion: %u"
+			//"\t\tpacketsMask:%s"
+			"\t\tfirstbytedata: 0x%x\t\tdatsize: %u\n\n",
+			detectorHeader.xCoord, detectorHeader.frameNumber,
+			detectorHeader.expLength, detectorHeader.packetNumber, detectorHeader.bunchId,
+			detectorHeader.timestamp, detectorHeader.modId,
+			detectorHeader.xCoord, detectorHeader.yCoord, detectorHeader.zCoord,
+			detectorHeader.debug, detectorHeader.roundRNumber,
+			detectorHeader.detType, detectorHeader.version,
+			//header->packetsMask.to_string().c_str(),
 			((uint8_t)(*((uint8_t*)(datapointer)))), revDatasize);
 
 	// if data is modified, eg ROI and size is reduced

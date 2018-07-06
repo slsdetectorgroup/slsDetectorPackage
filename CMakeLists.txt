@@ -36,7 +36,9 @@ endif (USE_TEXTCLIENT)
 
 if (USE_RECEIVER)
        add_subdirectory(slsReceiverSoftware)
+       add_subdirectory(manual/manual-api)    
 endif (USE_RECEIVER)
+               
                
 if (USE_GUI)   
        if (QT4_FOUND AND QWT_FOUND)

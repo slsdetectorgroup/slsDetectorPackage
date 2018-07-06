@@ -11,7 +11,11 @@
 #include <sys/stat.h>   // fstat
 #include <sys/mman.h>   // shared memory
 #include <sstream>
+#include "stdlib.h"
 
+#define SHM_MULTI_PREFIX "/slsDetectorPackage_multi_"
+#define SHM_SLS_PREFIX "_sls_"
+#define SHM_ENV_NAME	"SLS_SHM_NAME"
 
 SharedMemory::SharedMemory(int multiId, int slsId):
     fd(-1),
@@ -116,11 +120,20 @@ void* SharedMemory::MapSharedMemory(size_t sz) {
 
 
 std::string SharedMemory::ConstructSharedMemoryName(int multiId, int slsId) {
+
+	// using environment path
+	string sEnvPath = "";
+	char* envpath = getenv(SHM_ENV_NAME);
+	if (envpath != NULL) {
+		sEnvPath.assign(envpath);
+		sEnvPath.insert(0,"_");
+	}
+
 	stringstream ss;
 	if (slsId < 0)
-		ss << "/slsDetectorPackage_multi_" << multiId;
+		ss << SHM_MULTI_PREFIX << multiId << sEnvPath;
 	else
-		ss << "/slsDetectorPackage_multi_" << multiId << "_sls_" << slsId;
+		ss << SHM_MULTI_PREFIX << multiId << SHM_SLS_PREFIX << slsId << sEnvPath;
 
 	std::string temp = ss.str();
 	if (temp.length() > NAME_MAX) {

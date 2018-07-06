@@ -621,8 +621,8 @@ void multiSlsDetector::freeSharedMemory(int multiId) {
 	int numDetectors = 0;
 	SharedMemory* shm = new SharedMemory(multiId, -1);
 
-	// shm not created before
-	if (SharedMemory::IsExisting(shm->GetName())) {
+	// get number of detectors from multi shm
+	if (shm->IsExisting()) {
 		sharedMultiSlsDetector* mdet = (sharedMultiSlsDetector*)shm->OpenSharedMemory(
 				sizeof(sharedMultiSlsDetector));
 		numDetectors = mdet->numberOfDetectors;
@@ -715,7 +715,7 @@ bool multiSlsDetector::initSharedMemory(bool verify) {
 
 	bool created = false;
 	sharedMemory = new SharedMemory(detId, -1);
-	if (SharedMemory::IsExisting(sharedMemory->GetName())) {
+	if (sharedMemory->IsExisting()) {
 		thisMultiDetector = (sharedMultiSlsDetector*)sharedMemory->OpenSharedMemory(sz);
 		if (verify && thisMultiDetector->shmversion != MULTI_SHMVERSION) {
 			cprintf(RED, "Multi shared memory (%d) version mismatch "

@@ -46,7 +46,7 @@ slsDetector::slsDetector(detectorType type, int multiId, int id, bool verify, mu
 
 	// ensure shared memory was not created before
 	SharedMemory* shm = new SharedMemory(multiId, id);
-	if (SharedMemory::IsExisting(shm->GetName())) {
+	if (shm->IsExisting()) {
 		cprintf(YELLOW BOLD,"Warning: Weird, this shared memory should have been "
 				"deleted before! %s. Freeing it again.\n", shm->GetName().c_str());
 		freeSharedMemory(multiId, id);
@@ -1250,7 +1250,7 @@ int  slsDetector::receiveModule(sls_detector_module* myMod) {
 slsReceiverDefs::detectorType slsDetector::getDetectorTypeFromShm(int multiId, bool verify) {
 	SharedMemory* shm = new SharedMemory(multiId, detId);
 	// shm not created before
-	if (!SharedMemory::IsExisting(shm->GetName())) {
+	if (!shm->IsExisting()) {
 		cprintf(RED,"Shared memory %s does not exist.\n"
 				"Corrupted Multi Shared memory. Please free shared memory.\n",
 				shm->GetName().c_str());

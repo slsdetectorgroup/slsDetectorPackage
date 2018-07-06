@@ -28,13 +28,13 @@ SharedMemory::~SharedMemory(){
 }
 
 
-bool SharedMemory::IsExisting(std::string name) {
+bool SharedMemory::IsExisting() {
     bool ret = true;
-    int fd = shm_open(name.c_str(), O_RDWR, 0);
-    if ((fd < 0) && (errno == ENOENT)) {
+    int tempfd = shm_open(name.c_str(), O_RDWR, 0);
+    if ((tempfd < 0) && (errno == ENOENT)) {
        ret = false;
     }
-    close(fd);
+    close(tempfd);
     return ret;
 }
 
@@ -61,7 +61,9 @@ void* SharedMemory::CreateSharedMemory(size_t sz){
     }
 
     // map
-    return MapSharedMemory(sz);
+    void* addr = MapSharedMemory(sz);
+    printf("Shared memory created %s \n", name.c_str());
+    return addr;
 }
 
 void* SharedMemory::OpenSharedMemory(size_t sz){
@@ -87,7 +89,15 @@ void SharedMemory::UnmapSharedMemory(void* addr) {
 }
 
 void SharedMemory::RemoveSharedMemory() {
-	RemoveSharedMemory(name.c_str());
+    if (shm_unlink(name.c_str()) < 0) {
+        // silent exit if shm did not exist anyway
+        if (errno == ENOENT)
+            return;
+        cprintf(RED, "Error: Free Shared Memory %s Failed: %s\n",
+        		name.c_str(), strerror(errno));
+        throw SharedMemoryException();
+    }
+    printf("Shared memory deleted %s \n", name.c_str());
 }
 
 
@@ -144,17 +154,5 @@ int SharedMemory::VerifySizeMatch(size_t expectedSize) {
     	return 1;
     }
     return 0;
-}
-
-void SharedMemory::RemoveSharedMemory(std::string name) {
-    if (shm_unlink(name.c_str()) < 0) {
-        // silent exit if shm did not exist anyway
-        if (errno == ENOENT)
-            return;
-        cprintf(RED, "Error: Free Shared Memory %s Failed: %s\n",
-        		name.c_str(), strerror(errno));
-        throw SharedMemoryException();
-    }
-    printf("Shared memory deleted %s \n", name.c_str());
 }
 

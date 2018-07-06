@@ -31,7 +31,7 @@ public:
      * @param name of shared memory
      * @return true if exists, else false
      */
-    static bool IsExisting(std::string name);
+    bool IsExisting();
 
 	/**
 	 * Get shared memory name
@@ -92,12 +92,6 @@ private:
      * @return 0 for success, 1 for fail
      */
     int VerifySizeMatch(size_t expectedSize);
-
-    /**
-     * Remove existing Shared memory
-     * @param name name of shared memory (should be less than NAME_MAX)
-     */
-	void RemoveSharedMemory(std::string name);
 
 	/** Shared memory name */
 	std::string name;

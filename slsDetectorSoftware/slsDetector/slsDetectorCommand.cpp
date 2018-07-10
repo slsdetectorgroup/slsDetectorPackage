@@ -6355,7 +6355,7 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 		}
 		char answer[100];
 		memset(answer, 0, 100);
-		sprintf(answer,"%s", myDet->setReceiverFramesPerFile());
+		sprintf(answer,"%d", myDet->setReceiverFramesPerFile());
 		return string(answer);
 	}
 

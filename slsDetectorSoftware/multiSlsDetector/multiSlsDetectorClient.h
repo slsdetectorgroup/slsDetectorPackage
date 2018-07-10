@@ -58,7 +58,7 @@ public:
 				}																\
 				// single id scanned
 				if (strchr(argv[0],':')) {										\
-					iv=sscanf(argv[0],"%d:",&pos, cmd);							\
+					iv=sscanf(argv[0],"%d:",&pos);								\
 					if (iv == 1 && pos >= 0) {									\
 						cout << "pos " << pos << " is not allowed for readout!" << endl;		\
 						return;		                  							\

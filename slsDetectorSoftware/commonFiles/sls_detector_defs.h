@@ -22,6 +22,9 @@
 /** maximum rois */
 #define MAX_ROIS 100
 
+/** maximum trim en */
+#define MAX_TRIMEN 100
+
 /** maximum unit size of program sent to detector */
 #define MAX_FPGAPROGRAMSIZE (2 * 1024 *1024)
 

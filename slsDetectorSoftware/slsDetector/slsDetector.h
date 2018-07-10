@@ -98,7 +98,7 @@ private:
 		int nTrimEn;
 
 		/** list of the energies at which the detector has been trimmed  */
-		int trimEnergies[100];
+		int trimEnergies[MAX_TRIMEN];
 
 		/** indicator for the acquisition progress - set to 0 at the beginning
 		 * of the acquisition and incremented when each frame is processed */

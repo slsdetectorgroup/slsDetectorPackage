@@ -646,7 +646,8 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 	strncpy(thisDetector->calDir, getenv("HOME"),  MAX_STR_LENGTH-1);
 	thisDetector->calDir[MAX_STR_LENGTH-1] = 0;
 	thisDetector->nTrimEn = 0;
-	thisDetector->trimEnergies[100];
+	for(int i = 0; i < MAX_TRIMEN; ++i)
+		thisDetector->trimEnergies[i] = 0;
 	thisDetector->progressIndex = 0;
 	thisDetector->totalProgress = 1;
 	strcpy(thisDetector->filePath, "/");
@@ -875,6 +876,8 @@ void slsDetector::initializeMembers() {
 		break;
 	case JUNGFRAUCTB:
 		fileIO::setFramesPerFile(JFRAU_MAX_FRAMES_PER_FILE);
+		break;
+	default:
 		break;
 	}
 

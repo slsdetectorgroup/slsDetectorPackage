@@ -16,6 +16,8 @@
 #include <string.h>
 using namespace std;
 
+#define MAX_MASTER_FILE_LENGTH 2000
+
 
 class BinaryFileStatic {
 	
@@ -133,7 +135,7 @@ class BinaryFileStatic {
 			return 1;
 		}
 		time_t t = time(0);
-		char message[MAX_STR_LENGTH];
+		char message[MAX_MASTER_FILE_LENGTH];
 		sprintf(message,
 				"Version                    : %.1f\n"
 				"Dynamic Range              : %d\n"
@@ -178,9 +180,9 @@ class BinaryFileStatic {
 				(long long int)subperiod,
 				(long long int)acquisitionPeriod,
 				ctime(&t));
-		if (strlen(message) > MAX_STR_LENGTH) {
+		if (strlen(message) > MAX_MASTER_FILE_LENGTH) {
 			cprintf(RED,"Master File Size %d is greater than max str size %d\n",
-					(int)strlen(message), MAX_STR_LENGTH);
+					(int)strlen(message), MAX_MASTER_FILE_LENGTH);
 			return 1;
 		}
 

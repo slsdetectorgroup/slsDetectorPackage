@@ -187,6 +187,12 @@ public:
 
 	/**
 	 * Write Parameter Arrays as datasets (to virtual file)
+	 * @param ind self index
+	 * @param dpace_para parameter dataspace
+	 * @param fnum frame number current
+	 * @param dset_para parameter dataset
+	 * @param header image header
+	 * @returns 0 for success and 1 for fail
 	 */
 	static int WriteParameterDatasets(int ind, DataSpace* dspace_para, uint64_t fnum,
 			DataSet* dset_para[],sls_detector_header* header)
@@ -219,6 +225,44 @@ public:
 		return 0;
 	}
 
+	/**
+	 * Extend datasets in #images dimension (x dimension)
+	 * @param ind self index
+	 * @param dpace data space pointer address
+	 * @param dset data set pointer
+	 * @param dspace_para parameter dataspace address pointer
+	 * @param dset dataset parameter pointer
+	 * @param initialNumImages initial number of images
+	 * @returns 0 for success and 1 for fail
+	 */
+	static int ExtendDataset(int ind, DataSpace*& dspace, DataSet* dset,
+			DataSpace*& dspace_para, DataSet* dset_para[],
+			uint64_t initialNumImages) {
+		try{
+			Exception::dontPrint(); //to handle errors
+
+			hsize_t dims[3];
+			herr_t status_n = dspace->getSimpleExtentDims(dims);
+			dims[0] += initialNumImages;
+
+			dset->extend(dims);
+			delete dspace;
+			dspace = new DataSpace(dset->getSpace());
+
+			hsize_t dims_para[1] = {dims[0]};
+			for (int i = 0; i < NumberofParameters; ++i)
+				dset_para[i]->extend(dims_para);
+			delete dspace_para;
+			dspace_para = new DataSpace(dset_para[0]->getSpace());
+
+		}
+		catch(Exception error){
+			cprintf(RED,"Error in extending dataset in object %d\n",ind);
+			error.printError();
+			return 1;
+		}
+		return 0;
+	}
 
 	/**
 	 * Create master file
@@ -386,7 +430,8 @@ public:
 
 			//dataspace
 			hsize_t srcdims[3] = {nDimx, nDimy, nDimz};
-			dspace = new DataSpace (3,srcdims);
+			hsize_t srcdimsmax[3] = {H5S_UNLIMITED, nDimy, nDimz};
+			dspace = new DataSpace (3,srcdims,srcdimsmax);
 
 			//dataset name
 			ostringstream osfn;
@@ -396,19 +441,24 @@ public:
 
 			//dataset
 			//chunked dataset if greater than max_chunked_images
-			if(nDimx > maxchunkedimages){
-				DSetCreatPropList plist;
-				hsize_t chunk_dims[3] ={maxchunkedimages, nDimy, nDimz};
-				plist.setChunk(3, chunk_dims);
-				dset = new DataSet (fd->createDataSet(dsetname.c_str(), dtype, *dspace, plist));
-			}else
-				dset = new DataSet (fd->createDataSet(dsetname.c_str(), dtype, *dspace));
+			// always create chunked dataset as unlimited is only supported with chunked layout
+			DSetCreatPropList plist;
+			hsize_t chunk_dims[3] ={maxchunkedimages, nDimy, nDimz};
+			plist.setChunk(3, chunk_dims);
+			dset = new DataSet (fd->createDataSet(dsetname.c_str(), dtype, *dspace, plist));
 
 			//create parameter datasets
 			hsize_t dims[1] = {nDimx};
-			dspace_para = new DataSpace (1,dims);
+			hsize_t dimsmax[1] = {H5S_UNLIMITED};
+			dspace_para = new DataSpace (1,dims,dimsmax);
+
+			// always create chunked dataset as unlimited is only supported with chunked layout
+			DSetCreatPropList paralist;
+			hsize_t chunkpara_dims[3] ={maxchunkedimages};
+			paralist.setChunk(1, chunkpara_dims);
+
 			for (int i = 0; i < NumberofParameters; ++i)
-				dset_para[i] = new DataSet(fd->createDataSet(ParameterNames[i], ParameterDataTypes[i], *dspace_para));
+				dset_para[i] = new DataSet(fd->createDataSet(ParameterNames[i], ParameterDataTypes[i], *dspace_para, paralist));
 		}
 		catch(Exception error){
 			cprintf(RED,"Error in creating HDF5 handles in object %d\n",ind);
@@ -549,11 +599,13 @@ public:
 
 				//source dataspace
 				hsize_t srcdims[3] = {nDimx, nDimy, nDimz};
-				hid_t srcDataspace = H5Screate_simple(3, srcdims, NULL);
+				hsize_t srcdimsmax[3] = {H5S_UNLIMITED, nDimy, nDimz};
+				hid_t srcDataspace = H5Screate_simple(3, srcdims, srcdimsmax);
 				if (srcDataspace < 0)
 					return CloseFileOnError(fd, string("Error in creating source dataspace in virtual file ") + virtualFileName + string("\n"));
 				hsize_t srcdims_para[1] = {nDimx};
-				hid_t srcDataspace_para = H5Screate_simple(1, srcdims_para, NULL);
+				hsize_t srcdimsmax_para[1] = {H5S_UNLIMITED};
+				hid_t srcDataspace_para = H5Screate_simple(1, srcdims_para, srcdimsmax_para);
 				if (srcDataspace_para < 0)
 					return CloseFileOnError(fd, string("Error in creating source dataspace (parameters) in virtual file ") + virtualFileName + string("\n"));
 
@@ -587,7 +639,7 @@ public:
 			return CloseFileOnError(fd, string("Error in mapping files in virtual file ") + virtualFileName + string("\n"));
 
 		//dataset
-		string virtualDatasetName = string("/virtual_") + srcDataseName;
+		string virtualDatasetName = /*string("/virtual_") + */srcDataseName;
 		hid_t vdsdataset = H5Dcreate2 (fd, virtualDatasetName.c_str(), GetDataTypeinC(dataType), vdsDataspace, H5P_DEFAULT, dcpl, H5P_DEFAULT);
 		if (vdsdataset < 0)
 			return CloseFileOnError(fd, string("Error in creating virutal dataset in virtual file ") + virtualFileName + string("\n"));
@@ -596,7 +648,7 @@ public:
 		//virtual parameter dataset
 		for (int i = 0; i < NumberofParameters; ++i) {
 			hid_t vdsdataset_para = H5Dcreate2 (fd,
-					(string("/virtual_") + string (ParameterNames[i])).c_str(),
+					(/*string("/virtual_") + */string (ParameterNames[i])).c_str(),
 					GetDataTypeinC(ParameterDataTypes[i]), vdsDataspace_para, H5P_DEFAULT, dcpl_para[i], H5P_DEFAULT);
 			if (vdsdataset_para < 0)
 				return CloseFileOnError(fd, string("Error in creating virutal dataset (parameters) in virtual file ") + virtualFileName + string("\n"));
@@ -755,13 +807,13 @@ public:
 
 		//**paramter datasets**
 		for (int i = 0; i < NumberofParameters; ++i){
-			hid_t vdset_para = H5Dopen2( vfd, (string("/virtual_") + string (ParameterNames[i])).c_str(), H5P_DEFAULT);
+			hid_t vdset_para = H5Dopen2( vfd, (/*string("/virtual_") + */string (ParameterNames[i])).c_str(), H5P_DEFAULT);
 			if (vdset_para < 0) {
 				H5Fclose(mfd); mfd = 0;
 				return CloseFileOnError( vfd, string("Error in opening virtual parameter dataset to create link\n"));
 			}
-			sprintf(linkname, "/entry/data/%s",(string("/virtual_") + string (ParameterNames[i])).c_str());
-			if(H5Lcreate_external( virtualfname.c_str(), (string("/virtual_") + string (ParameterNames[i])).c_str(),
+			sprintf(linkname, "/entry/data/%s",(/*string("/virtual_") + */string (ParameterNames[i])).c_str());
+			if(H5Lcreate_external( virtualfname.c_str(), (/*string("/virtual_") + */string (ParameterNames[i])).c_str(),
 					mfd, linkname, H5P_DEFAULT, H5P_DEFAULT) < 0) {
 				H5Fclose(mfd); mfd = 0;
 				return CloseFileOnError( vfd, string("Error in creating link to virtual parameter dataset\n"));

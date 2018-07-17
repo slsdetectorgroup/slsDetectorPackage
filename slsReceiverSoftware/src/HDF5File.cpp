@@ -38,7 +38,8 @@ HDF5File::HDF5File(int ind, uint32_t maxf, const uint32_t* ppf,
 		numFramesInFile(0),
 		numActualPacketsInFile(0),
 		numFilesinAcquisition(0),
-		dataspace_para(0)
+		dataspace_para(0),
+		extNumImages(0)
 {
 #ifdef VERBOSE
 	PrintMembers();
@@ -97,7 +98,7 @@ int HDF5File::CreateFile(uint64_t fnum) {
 	//first time
 	if(!fnum) UpdateDataType();
 
-	uint64_t framestosave = ((*numImages - fnum) > maxFramesPerFile) ? maxFramesPerFile : (*numImages-fnum);
+	uint64_t framestosave = ((extNumImages - fnum) > maxFramesPerFile) ? maxFramesPerFile : (extNumImages-fnum);
 	pthread_mutex_lock(&Mutex);
 	if (HDF5FileStatic::CreateDataFile(index, *overWriteEnable, currentFileName, *frameIndexEnable,
 			fnum, framestosave, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
@@ -145,6 +146,19 @@ int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t 
 	numFramesInFile++;
 	numActualPacketsInFile += nump;
 	pthread_mutex_lock(&Mutex);
+
+	// extend dataset (when receiver start followed by many status starts (jungfrau)))
+	if (fnum >= extNumImages) {
+		if (HDF5FileStatic::ExtendDataset(index, dataspace, dataset,
+				dataspace_para, dataset_para, *numImages) == OK) {
+			if (!silentMode) {
+				cprintf(BLUE,"%d Extending HDF5 dataset by %llu, Total x Dimension: %u\n",
+					index, extNumImages, extNumImages + *numImages);
+			}
+			extNumImages += *numImages;
+		}
+	}
+
 	if (HDF5FileStatic::WriteDataFile(index, buffer + sizeof(sls_detector_header),
 			fnum%maxFramesPerFile, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
 			dataspace, dataset, datatype) == OK) {
@@ -163,12 +177,16 @@ int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t 
 }
 
 
+
+
+
 int HDF5File::CreateMasterFile(bool en, uint32_t size,
 		uint32_t nx, uint32_t ny, uint64_t at, uint64_t st, uint64_t ap) {
 
 	//beginning of every acquisition
 	numFramesInFile = 0;
 	numActualPacketsInFile = 0;
+	extNumImages = *numImages;
 
 	if (master && (*detIndex==0)) {
 		virtualfd = 0;
@@ -185,11 +203,11 @@ int HDF5File::CreateMasterFile(bool en, uint32_t size,
 }
 
 
-void HDF5File::EndofAcquisition(uint64_t numf) {
+void HDF5File::EndofAcquisition(bool anyPacketsCaught, uint64_t numf) {
 	//not created before
-	if (!virtualfd) {
+	if (!virtualfd && anyPacketsCaught) {
 
-		//only one file and one sub image
+		//only one file and one sub image (link current file in master)
 		if (((numFilesinAcquisition == 1) && (numDetY*numDetX) == 1)) {
 			//dataset name
 			ostringstream osfn;
@@ -217,7 +235,7 @@ int HDF5File::CreateVirtualFile(uint64_t numf) {
 				virtualfd, masterFileName,
 				filePath, fileNamePrefix, *fileIndex, *frameIndexEnable,
 				*detIndex, *numUnitsPerDetector,
-				maxFramesPerFile, numf,
+				maxFramesPerFile, numf+1,
 				"data",	datatype,
 				numDetY, numDetX, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
 				HDF5_WRITER_VERSION);

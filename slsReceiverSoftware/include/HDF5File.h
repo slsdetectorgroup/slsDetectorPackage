@@ -111,9 +111,10 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 
 	/**
 	 * End of Acquisition
+	 * @param anyPacketsCaught true if any packets are caught, else false
 	 * @param numf number of images caught
 	 */
-	void EndofAcquisition(uint64_t numf);
+	void EndofAcquisition(bool anyPacketsCaught, uint64_t numf);
 
 	/**
 	 * Create Virtual File
@@ -179,6 +180,9 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 
 	/** Dataset array for parameters */
 	DataSet* dataset_para[HDF5FileStatic::NumberofParameters];
+
+	/** Number of Images (including extended during acquisition) */
+	uint64_t extNumImages;
 
 };
 #endif

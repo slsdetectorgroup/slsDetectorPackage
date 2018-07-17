@@ -198,9 +198,10 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 
 	/**
 	 * End of Acquisition
+	 * @param anyPacketsCaught true if any packets are caught, else false
 	 * @param numf number of images caught
 	 */
-	void EndofAcquisition(uint64_t numf);
+	void EndofAcquisition(bool anyPacketsCaught, uint64_t numf);
 
 
  private:

@@ -282,9 +282,9 @@ void DataProcessor::CloseFiles() {
 		file->CloseAllFiles();
 }
 
-void DataProcessor::EndofAcquisition(uint64_t numf) {
+void DataProcessor::EndofAcquisition(bool anyPacketsCaught, uint64_t numf) {
 	if (file && file->GetFileType() == HDF5) {
-		file->EndofAcquisition(numf);
+		file->EndofAcquisition(anyPacketsCaught, numf);
 	}
 }
 

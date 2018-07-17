@@ -462,8 +462,9 @@ void UDPStandardImplementation::stopReceiver(){
 			if((*it)->GetMeasurementStartedFlag())
 				anycaught = true;
 		}
-		if (anycaught)
-			dataProcessor[0]->EndofAcquisition(maxIndexCaught); //to create virtual file
+
+		//to create virtual file & set files/acquisition to 0 (only hdf5 at the moment)
+		dataProcessor[0]->EndofAcquisition(anycaught, maxIndexCaught);
 	}
 
 	while(DataStreamer::GetRunningMask()){
@@ -480,7 +481,7 @@ void UDPStandardImplementation::stopReceiver(){
 			tot += dataProcessor[i]->GetNumFramesCaught();
 
 			uint64_t missingpackets = numberOfFrames*generalData->packetsPerFrame-listener[i]->GetPacketsCaught();
-			if (missingpackets) {
+			if ((int)missingpackets > 0) {
 				cprintf(RED, "\n[Port %d]\n",udpPortNum[i]);
 				cprintf(RED, "Missing Packets\t\t: %lld\n",(long long int)missingpackets);
 				cprintf(RED, "Complete Frames\t\t: %lld\n",(long long int)dataProcessor[i]->GetNumFramesCaught());
@@ -562,12 +563,15 @@ void UDPStandardImplementation::shutDownUDPSockets() {
 
 void UDPStandardImplementation::closeFiles() {
 	uint64_t maxIndexCaught = 0;
+	bool anycaught = false;
 	for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it) {
 		(*it)->CloseFiles();
 		maxIndexCaught = max(maxIndexCaught, (*it)->GetProcessedMeasurementIndex());
+		if((*it)->GetMeasurementStartedFlag())
+			anycaught = true;
 	}
-	if (maxIndexCaught)
-		dataProcessor[0]->EndofAcquisition(maxIndexCaught);
+	//to create virtual file & set files/acquisition to 0 (only hdf5 at the moment)
+	dataProcessor[0]->EndofAcquisition(anycaught, maxIndexCaught);
 }
 
 

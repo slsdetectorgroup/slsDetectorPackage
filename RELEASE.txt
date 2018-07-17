@@ -1,25 +1,39 @@
-SLS Detector Package 3.1.3 released on 2018-06-28
+SLS Detector Package 3.1.4 released on 2018-07-17
 =================================================
 
 
 
 INTRODUCTION
 
-This document describes the differences between 3.1.3 into 3.1.2 releases.
+This document describes the differences between 3.1.4 into 3.1.3 releases.
 
 
 Topics Concerning
 ==================
-	Using delay after trigger for Jungfrau
+	HDF5 in Receiver
 
 
 Resolved Issues
 ===============
 
-	Detector Server
-	---------------
-	1.	Delay after trigger was always set to 5 seconds. This is fixed now.
-	3.	Get delay left after trigger is not available for this version.
+	Receiver
+	--------
+	1.	HDF5 x dimension (#images). Max made unlimited. Chunked Dataset by default.
+	
+	2.	When receiver gets an image more than #frames, the HDF5 dataset will 
+		extend itself in the x dimension by another #frames. So, one can do
+		(in Jungfrau, Gotthard, NOT Eiger)
+		sls_detector_put resetframescaught 0
+		sls_detector_put receiver start
+		sls_detector_put status start
+		sls_detector_put status start
+		...
+		sls_detector_put receiver stop
+		
+	3.	Jungfrau Single Module Master files did not link to the data file properly.
+		This is fixed now.
+		
+	4.	Relative linking is used in the HDF5, instead of absolute now.
 	
 
 

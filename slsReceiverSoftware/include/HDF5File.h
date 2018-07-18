@@ -185,5 +185,8 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	/** Dataset array for parameters */
 	vector <DataSet*> dataset_para;
 
+	/** Number of Images (including extended during acquisition) */
+	uint64_t extNumImages;
+
 };
 #endif

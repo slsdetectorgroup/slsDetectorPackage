@@ -542,7 +542,7 @@ void UDPStandardImplementation::stopReceiver(){
 			tot += dataProcessor[i]->GetNumFramesCaught();
 
 			uint64_t missingpackets = numberOfFrames*generalData->packetsPerFrame-listener[i]->GetPacketsCaught();
-			if (missingpackets) {
+			if ((int)missingpackets > 0) {
 				cprintf(RED, "\n[Port %d]\n",udpPortNum[i]);
 				cprintf(RED, "Missing Packets\t\t: %lld\n",(long long int)missingpackets);
 				cprintf(RED, "Complete Frames\t\t: %lld\n",(long long int)dataProcessor[i]->GetNumFramesCaught());

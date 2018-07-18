@@ -446,7 +446,7 @@ void UDPBaseImplementation::setFilePath(const char c[]){
 		else
 			FILE_LOG(logERROR) << "FilePath does not exist: " << filePath;
 	}
-	FILE_LOG(logINFO) << "Info: File path: " << filePath;
+	FILE_LOG(logINFO) << "File path: " << filePath;
 }
 
 void UDPBaseImplementation::setFileIndex(const uint64_t i){

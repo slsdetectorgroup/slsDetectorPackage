@@ -36,7 +36,9 @@ HDF5File::HDF5File(int ind, uint32_t* maxf,
 		nPixelsY(ny),
 		numFramesInFile(0),
 		numActualPacketsInFile(0),
-		numFilesinAcquisition(0)
+		numFilesinAcquisition(0),
+		dataspace_para(0),
+		extNumImages(0)
 {
 #ifdef VERBOSE
 	PrintMembers();
@@ -45,46 +47,46 @@ HDF5File::HDF5File(int ind, uint32_t* maxf,
 	parameterNames.clear();
 	parameterDataTypes.clear();
 
-	parameterNames.push_back("Frame Number");
+	parameterNames.push_back("frame number");
 	parameterDataTypes.push_back(PredType::STD_U64LE);
 
-	parameterNames.push_back("Exp Length/ Sub Exposure Time");
+	parameterNames.push_back("exp length or sub exposure time");
 	parameterDataTypes.push_back(PredType::STD_U32LE);
 
-	parameterNames.push_back("Packets Caught");
+	parameterNames.push_back("packets caught");
 	parameterDataTypes.push_back(PredType::STD_U32LE);
 
-	parameterNames.push_back("Bunch Id");
+	parameterNames.push_back("bunch id");
 	parameterDataTypes.push_back(PredType::STD_U64LE);
 
-	parameterNames.push_back("Time Stamp");
+	parameterNames.push_back("timestamp");
 	parameterDataTypes.push_back(PredType::STD_U64LE);
 
-	parameterNames.push_back("Mod Id");
+	parameterNames.push_back("mod id");
 	parameterDataTypes.push_back(PredType::STD_U16LE);
 
-	parameterNames.push_back("X Coord");
+	parameterNames.push_back("x Coord");
 	parameterDataTypes.push_back(PredType::STD_U16LE);
 
-	parameterNames.push_back("Y Coord");
+	parameterNames.push_back("y Coord");
 	parameterDataTypes.push_back(PredType::STD_U16LE);
 
-	parameterNames.push_back("Z Coord");
+	parameterNames.push_back("z Coord");
 	parameterDataTypes.push_back(PredType::STD_U16LE);
 
-	parameterNames.push_back("Debug");
+	parameterNames.push_back("debug");
 	parameterDataTypes.push_back(PredType::STD_U32LE);
 
-	parameterNames.push_back("Round Robin Number");
+	parameterNames.push_back("round robin number");
 	parameterDataTypes.push_back(PredType::STD_U16LE);
 
-	parameterNames.push_back("Detector Type");
+	parameterNames.push_back("detector type");
 	parameterDataTypes.push_back(PredType::STD_U8LE);
 
-	parameterNames.push_back("Detector Header Version");
+	parameterNames.push_back("detector header version");
 	parameterDataTypes.push_back(PredType::STD_U8LE);
 
-	parameterNames.push_back("Packets Caught Bit Mask");
+	parameterNames.push_back("packets caught bit mask");
 	StrType strdatatype(PredType::C_S1, MAX_NUM_PACKETS);
 	parameterDataTypes.push_back(strdatatype);
 
@@ -141,8 +143,8 @@ int HDF5File::CreateFile(uint64_t fnum) {
 	if(!fnum) UpdateDataType();
 
 	uint64_t framestosave = ((*maxFramesPerFile == 0) ? *numImages : // infinite images
-			(((*numImages - fnum) > (*maxFramesPerFile)) ?  // save up to maximum at a time
-					(*maxFramesPerFile) : (*numImages-fnum)));
+			(((extNumImages - fnum) > (*maxFramesPerFile)) ?  // save up to maximum at a time
+					(*maxFramesPerFile) : (extNumImages-fnum)));
 	pthread_mutex_lock(&Mutex);
 	if (HDF5FileStatic::CreateDataFile(index, *overWriteEnable, currentFileName, (*numImages > 1),
 			fnum, framestosave, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
@@ -192,6 +194,20 @@ int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t 
 	numFramesInFile++;
 	numActualPacketsInFile += nump;
 	pthread_mutex_lock(&Mutex);
+
+	// extend dataset (when receiver start followed by many status starts (jungfrau)))
+	if (fnum >= extNumImages) {
+		if (HDF5FileStatic::ExtendDataset(index, dataspace, dataset,
+				dataspace_para, dataset_para, *numImages) == OK) {
+			if (!silentMode) {
+				cprintf(BLUE,"%d Extending HDF5 dataset by %llu, Total x Dimension: %llu\n",
+					index, (long long unsigned int)extNumImages,
+					(long long unsigned int)(extNumImages + *numImages));
+			}
+			extNumImages += *numImages;
+		}
+	}
+
 	if (HDF5FileStatic::WriteDataFile(index, buffer + sizeof(sls_receiver_header),
 			// infinite then no need for %maxframesperfile
 			((*maxFramesPerFile == 0) ? fnum : fnum%(*maxFramesPerFile)),
@@ -220,6 +236,7 @@ int HDF5File::CreateMasterFile(bool en, uint32_t size,
 	//beginning of every acquisition
 	numFramesInFile = 0;
 	numActualPacketsInFile = 0;
+	extNumImages = *numImages;
 
 	if (master && (*detIndex==0)) {
 		virtualfd = 0;

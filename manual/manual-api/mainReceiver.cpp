@@ -71,7 +71,7 @@ void printHelp() {
  */
 int StartAcq(char* filepath, char* filename, uint64_t fileindex, uint32_t datasize, void*p){
 	cprintf(BLUE, "#### StartAcq:  filepath:%s  filename:%s fileindex:%llu  datasize:%u ####\n",
-			filepath, filename, fileindex, datasize);
+			filepath, filename, (long long unsigned int)fileindex, datasize);
 
 	cprintf(BLUE, "--StartAcq: returning 0\n");
 	return 0;
@@ -83,7 +83,7 @@ int StartAcq(char* filepath, char* filename, uint64_t fileindex, uint32_t datasi
  * @param p pointer to object
  */
 void AcquisitionFinished(uint64_t frames, void*p){
-	cprintf(BLUE, "#### AcquisitionFinished: frames:%llu ####\n",frames);
+	cprintf(BLUE, "#### AcquisitionFinished: frames:%llu ####\n",(long long unsigned int)frames);
 }
 
 
@@ -107,9 +107,9 @@ void GetData(char* metadata, char* datapointer, uint32_t datasize, void* p){
 			"\t\troundRNumber: %u\t\tdetType: %u\t\tversion: %u"
 			//"\t\tpacketsMask:%s"
 			"\t\tfirstbytedata: 0x%x\t\tdatsize: %u\n\n",
-			detectorHeader.xCoord, detectorHeader.frameNumber,
-			detectorHeader.expLength, detectorHeader.packetNumber, detectorHeader.bunchId,
-			detectorHeader.timestamp, detectorHeader.modId,
+			detectorHeader.xCoord, (long long unsigned int)detectorHeader.frameNumber,
+			detectorHeader.expLength, detectorHeader.packetNumber, (long long unsigned int)detectorHeader.bunchId,
+			(long long unsigned int)detectorHeader.timestamp, detectorHeader.modId,
 			detectorHeader.xCoord, detectorHeader.yCoord, detectorHeader.zCoord,
 			detectorHeader.debug, detectorHeader.roundRNumber,
 			detectorHeader.detType, detectorHeader.version,
@@ -141,9 +141,9 @@ void GetData(char* metadata, char* datapointer, uint32_t &revDatasize, void* p){
 			"\t\troundRNumber: %u\t\tdetType: %u\t\tversion: %u"
 			//"\t\tpacketsMask:%s"
 			"\t\tfirstbytedata: 0x%x\t\tdatsize: %u\n\n",
-			detectorHeader.xCoord, detectorHeader.frameNumber,
-			detectorHeader.expLength, detectorHeader.packetNumber, detectorHeader.bunchId,
-			detectorHeader.timestamp, detectorHeader.modId,
+			detectorHeader.xCoord, (long long unsigned int)detectorHeader.frameNumber,
+			detectorHeader.expLength, detectorHeader.packetNumber, (long long unsigned int)detectorHeader.bunchId,
+			(long long unsigned int)detectorHeader.timestamp, detectorHeader.modId,
 			detectorHeader.xCoord, detectorHeader.yCoord, detectorHeader.zCoord,
 			detectorHeader.debug, detectorHeader.roundRNumber,
 			detectorHeader.detType, detectorHeader.version,

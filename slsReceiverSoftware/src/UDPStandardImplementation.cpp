@@ -658,7 +658,6 @@ int UDPStandardImplementation::restreamStop() {
 
 
 void UDPStandardImplementation::SetLocalNetworkParameters() {
-	char command[255];
 
 	// to increase Max length of input packet queue
 	int max_back_log;

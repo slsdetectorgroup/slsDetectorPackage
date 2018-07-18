@@ -2680,7 +2680,7 @@ int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
         }
         //get
         retval=receiverBase->getUDPSocketBufferSize();
-        if(index >= 0 && ((retval != index) || (receiverBase->getActualUDPSocketBufferSize() != (index*2)))) {
+        if(index >= 0 && ((retval != index) || ((int)receiverBase->getActualUDPSocketBufferSize() != (index*2)))) {
             ret = FAIL;
             strcpy(mess, "Could not set UDP Socket buffer size (No CAP_NET_ADMIN privileges?)\n");
             FILE_LOG(logERROR) << mess;
@@ -2810,7 +2810,8 @@ int slsReceiverTCPIPInterface::check_version_compatibility() {
 		sprintf(mess,"This client is incompatible.\n"
 				"Client's receiver API Version: (0x%llx). Receiver API Version: (0x%llx).\n"
 				"Incompatible, update client!\n",
-				client_requiredVersion, rx_apiVersion);
+				(long long unsigned int)client_requiredVersion,
+				(long long unsigned int)rx_apiVersion);
 		FILE_LOG(logERROR) << mess;
 	}
 
@@ -2820,7 +2821,8 @@ int slsReceiverTCPIPInterface::check_version_compatibility() {
 		sprintf(mess,"This receiver is incompatible.\n"
 				"Receiver Version: (0x%llx). Client's receiver API Version: (0x%llx).\n"
 				"Incompatible, update receiver!\n",
-				rx_version, client_requiredVersion);
+				(long long unsigned int)rx_version,
+				(long long unsigned int)client_requiredVersion);
 		FILE_LOG(logERROR) << mess;
 	}
 	else FILE_LOG(logINFO) << "Compatibility with Client: Successful";

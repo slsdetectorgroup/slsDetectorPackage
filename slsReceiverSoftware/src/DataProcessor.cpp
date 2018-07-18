@@ -481,7 +481,7 @@ void DataProcessor::PadMissingPackets(char* buf) {
 	uint32_t fifohsize = generalData->fifoBufferHeaderSize;
 	uint32_t corrected_dsize = dsize - ((pperFrame * dsize) - generalData->imageSize);
 
-	for (int pnum = 0; pnum < pperFrame; ++pnum) {
+	for (unsigned int pnum = 0; pnum < pperFrame; ++pnum) {
 
 		// not missing packet
 		if (pmask[pnum])

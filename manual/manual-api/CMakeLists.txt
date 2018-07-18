@@ -1,17 +1,35 @@
-
-add_executable(slsMultiReceiver
+set(SOURCES
     mainReceiver.cpp
 )
-set_target_properties(slsMultiReceiver PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+
+include_directories(
+    ../../slsReceiverSoftware/include
+    ../../slsDetectorSoftware/slsDetectorAnalysis 
+    ../../build/bin 
+    ../../slsdetectorSoftware/slsDetector 
 )
+
+add_executable(slsMultiReceiver
+    ${SOURCES}
+)
+
 target_link_libraries(slsMultiReceiver
     slsReceiverShared
     pthread
     zmq
     rt
+    ${HDF5_LIBRARIES}
 )
 
-install(TARGETS slsMultiReceiver  
-        RUNTIME DESTINATION bin)
-        
+if (HDF5_FOUND)
+    target_link_libraries(slsMultiReceiver 
+    ${HDF5_LIBRARIES}
+    )
+endif ()
+
+
+set_target_properties(slsMultiReceiver PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
+
+install(TARGETS slsMultiReceiver DESTINATION bin)

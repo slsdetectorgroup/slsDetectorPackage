@@ -105,7 +105,7 @@ htmldoc:
 
 clean:
 #	cd manual && make clean
-	rm  -rf $(BIN)/sls_detector_put $(BIN)/sls_detector_get $(BIN)/sls_detector_acquire  $(BIN)/sls_detector_help 
+	rm  -rf $(BIN)/sls_detector_put $(BIN)/sls_detector_get $(BIN)/sls_detector_acquire  $(BIN)/sls_detector_help $(BIN)/gui_client
 
 install: clients
 

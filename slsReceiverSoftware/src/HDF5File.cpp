@@ -157,9 +157,9 @@ int HDF5File::CreateFile(uint64_t fnum) {
 	if (dataspace == NULL)
 		cprintf(RED,"Got nothing!\n");
 
-	if(!silentMode)
+	if(!silentMode) {
 		FILE_LOG(logINFO) << *udpPortNumber << ": HDF5 File created: " << currentFileName;
-
+	}
 	return OK;
 }
 
@@ -225,8 +225,9 @@ int HDF5File::CreateMasterFile(bool en, uint32_t size,
 		virtualfd = 0;
 		masterFileName = HDF5FileStatic::CreateMasterFileName(filePath,
 				fileNamePrefix, *fileIndex);
-		if(!silentMode)
+		if(!silentMode) {
 			FILE_LOG(logINFO) << "Master File: " << masterFileName;
+		}
 		pthread_mutex_lock(&Mutex);
 		int ret = HDF5FileStatic::CreateMasterDataFile(masterfd, masterFileName,
 				*overWriteEnable,

@@ -4908,7 +4908,7 @@ void multiSlsDetector::readFrameFromReceiver() {
 			memset(multiframe, 0xFF, multisize);
 
 		//get each frame
-		for (int isocket = 0; isocket < zmqSocket.size(); ++isocket) {
+		for (unsigned int isocket = 0; isocket < zmqSocket.size(); ++isocket) {
 
 			//if running
 			if (runningList[isocket]) {

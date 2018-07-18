@@ -442,7 +442,7 @@ public:
 			//create parameter datasets
 			hsize_t dims[1] = {nDimx};
 			dspace_para = new DataSpace (1,dims);
-			for (int i = 0; i < parameterNames.size(); ++i){
+			for (unsigned int i = 0; i < parameterNames.size(); ++i){
 				DataSet* ds = new DataSet(fd->createDataSet(parameterNames[i], parameterDataTypes[i], *dspace_para));
 				dset_para.push_back(ds);
 			}
@@ -525,7 +525,7 @@ public:
 		hid_t vdsDataspace = H5Screate_simple(3, vdsdims ,NULL);
 		if (vdsDataspace < 0)
 			return CloseFileOnError(fd, string("Error in creating virtual dataspace in virtual file ") + virtualFileName + string("\n"));
-		hsize_t vdsdims_para[2] = {numf, numDety * numDetz};
+		hsize_t vdsdims_para[2] = {numf, (unsigned int) numDety * numDetz};
 		hid_t vdsDataspace_para = H5Screate_simple(2, vdsdims_para, NULL);
 		if (vdsDataspace_para < 0)
 			return CloseFileOnError(fd, string("Error in creating virtual dataspace (parameters) in virtual file ") + virtualFileName + string("\n"));
@@ -539,7 +539,7 @@ public:
 		if (H5Pset_fill_value (dcpl, GetDataTypeinC(dataType), &fill_value) < 0)
 			return CloseFileOnError(fd, string("Error in creating fill value in virtual file ") + virtualFileName + string("\n"));
 		hid_t dcpl_para[parameterNames.size()];
-		for (int i = 0; i < parameterNames.size(); ++i) {
+		for (unsigned int i = 0; i < parameterNames.size(); ++i) {
 			dcpl_para[i] = H5Pcreate (H5P_DATASET_CREATE);
 			if (dcpl_para[i] < 0)
 				return CloseFileOnError(fd, string("Error in creating file creation properties (parameters) in virtual file ") + virtualFileName + string("\n"));
@@ -609,7 +609,7 @@ public:
 					break;
 				}
 
-				for (int k = 0; k < parameterNames.size(); ++k) {
+				for (unsigned int k = 0; k < parameterNames.size(); ++k) {
 					if (H5Pset_virtual(dcpl_para[k], vdsDataspace_para, relative_srcFileName.c_str(), parameterNames[k], srcDataspace_para) < 0) {
 						cprintf(RED,"could not set mapping for paramter %d\n", k);
 						error = true;
@@ -639,7 +639,7 @@ public:
 
 
 		//virtual parameter dataset
-		for (int i = 0; i < parameterNames.size(); ++i) {
+		for (unsigned int i = 0; i < parameterNames.size(); ++i) {
 			hid_t vdsdataset_para = H5Dcreate2 (fd,
 					(string("/virtual_") + string (parameterNames[i])).c_str(),
 					GetDataTypeinC(parameterDataTypes[i]), vdsDataspace_para, H5P_DEFAULT, dcpl_para[i], H5P_DEFAULT);
@@ -813,7 +813,7 @@ public:
 		H5Dclose(vdset);
 
 		//**paramter datasets**
-		for (int i = 0; i < parameterNames.size(); ++i){
+		for (unsigned int i = 0; i < parameterNames.size(); ++i){
 			hid_t vdset_para = H5Dopen2( vfd, (string("/virtual_") + string (parameterNames[i])).c_str(), H5P_DEFAULT);
 			if (vdset_para < 0) {
 				H5Fclose(mfd); mfd = 0;

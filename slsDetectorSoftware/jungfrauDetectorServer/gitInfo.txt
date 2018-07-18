@@ -1,9 +1,9 @@
 Path: slsDetectorsPackage/slsDetectorSoftware/jungfrauDetectorServer 
 URL: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
 Repository Root: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
-Repsitory UUID: c2b1eef75cb3c8a83adc091c656d9d23ad331139 
-Revision: 158 
-Branch: 3.3.0-rc 
+Repsitory UUID: 3b6ead77836f2b6d2a795a9a994259d1dc8c131d 
+Revision: 159 
+Branch: developer 
 Last Changed Author: Dhanya_Thattil 
-Last Changed Rev: 3939 
-Last Changed Date: 2018-07-10 13:27:59.000000002 +0200 ./RegisterDefs.h
+Last Changed Rev: 3943 
+Last Changed Date: 2018-07-17 16:15:43.000000002 +0200 ./RegisterDefs.h

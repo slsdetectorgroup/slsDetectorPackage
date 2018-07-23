@@ -3701,6 +3701,9 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 	std::cout<< "slsDetector setSettings "<< std::endl;
 #endif
 
+	if (isettings == -1)
+		return getSettings(imod);
+
 	//only set client shared memory variable for Eiger, settings threshold loads the module data (trimbits, dacs etc.)
 	if (thisDetector->myDetectorType == EIGER) {
 		switch(isettings) {

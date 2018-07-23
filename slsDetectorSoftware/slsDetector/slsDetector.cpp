@@ -2640,6 +2640,9 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 	std::cout<< "slsDetector setSettings " << isettings << std::endl;
 #endif
 
+	if (isettings == -1)
+		return getSettings(imod);
+
 	detectorType detType = thisDetector->myDetectorType;
 	switch (detType) {
 

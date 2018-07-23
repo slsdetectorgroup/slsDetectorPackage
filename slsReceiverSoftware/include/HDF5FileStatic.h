@@ -112,7 +112,7 @@ public:
 			}
 		} catch(Exception error) {
 			cprintf(RED,"Error in closing HDF5 handles of index %d\n", ind);
-			error.printError();
+			error.printErrorStack();
 		}
 	}
 
@@ -130,7 +130,7 @@ public:
 			}
 		} catch(Exception error) {
 			cprintf(RED,"Error in closing master HDF5 handles\n");
-			error.printError();
+			error.printErrorStack();
 		}
 	}
 
@@ -177,7 +177,7 @@ public:
 		}
 		catch(Exception error){
 			cprintf(RED,"Error in writing to file in object %d\n",ind);
-			error.printError();
+			error.printErrorStack();
 			return 1;
 		}
 		return 0;
@@ -219,7 +219,7 @@ public:
 		}
 		catch(Exception error){
 			cprintf(RED,"Error in writing parameters to file in object %d\n",ind);
-			error.printError();
+			error.printErrorStack();
 			return 1;
 		}
 		return 0;
@@ -258,7 +258,7 @@ public:
 		}
 		catch(Exception error){
 			cprintf(RED,"Error in extending dataset in object %d\n",ind);
-			error.printError();
+			error.printErrorStack();
 			return 1;
 		}
 		return 0;
@@ -372,7 +372,7 @@ public:
 
 		} catch(Exception error) {
 			cprintf(RED,"Error in creating master HDF5 handles\n");
-			error.printError();
+			error.printErrorStack();
 			return 1;
 		}
 		return 0;
@@ -462,7 +462,7 @@ public:
 		}
 		catch(Exception error){
 			cprintf(RED,"Error in creating HDF5 handles in object %d\n",ind);
-			error.printError();
+			error.printErrorStack();
 			fd->close();
 			return 1;
 		}
@@ -757,7 +757,7 @@ public:
 			oldfd->close();
 		} catch(Exception error){
 			cprintf(RED,"Error in copying virtual files\n");
-			error.printError();
+			error.printErrorStack();
 			free(data_out);
 			oldfd->close();
 			newfd->close();

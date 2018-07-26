@@ -907,20 +907,15 @@ int64_t getFrames(){
 int64_t setExposureTime(int64_t value){
   /* time is in ns */
   if (value!=-1) {
-	  double actualvalue = value*(1E-9*CLK_FREQ);
-	  value*=(1E-9*CLK_FREQ);
-	  if(fabs(actualvalue-value)>= 0.5){
-	    if(actualvalue > value)
-	      value++;
-	    else
-	      value--;
-	  }
+	  value = (value * 1E-3 * CLK_FREQ ) + 0.5;
   }
-    return set64BitReg(value,SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG)/(1E-9*CLK_FREQ);
+    return (set64BitReg(value,SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) /
+    		(1E-3 * CLK_FREQ)) + 0.5;
 }
 
 int64_t getExposureTime(){
-  return get64BitReg(GET_EXPTIME_LSB_REG, GET_EXPTIME_MSB_REG)/(1E-9*CLK_FREQ);
+  return (get64BitReg(GET_EXPTIME_LSB_REG, GET_EXPTIME_MSB_REG) /
+		  (1E-3 * CLK_FREQ)) + 0.5;
 }
 
 int64_t setGates(int64_t value){
@@ -934,23 +929,15 @@ int64_t getGates(){
 int64_t setPeriod(int64_t value){
   /* time is in ns */
   if (value!=-1) {
-	  double actualvalue = value*(1E-9*CLK_FREQ);
-	  value*=(1E-9*CLK_FREQ);
-	  if(fabs(actualvalue-value)>= 0.5){
-	    if(actualvalue > value)
-	      value++;
-	    else
-	      value--;
-	  }
+	  value = (value * 1E-3 * CLK_FREQ ) + 0.5;
   }
-
-
-
-  return set64BitReg(value,SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/(1E-9*CLK_FREQ);
+  return (set64BitReg(value,SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG) /
+		  (1E-3 * CLK_FREQ)) + 0.5;
 }
 
 int64_t getPeriod(){
-  return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG)/(1E-9*CLK_FREQ);
+  return (get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG) /
+		  (1E-3 * CLK_FREQ)) + 0.5;
 }
 
 int64_t setDelay(int64_t value){
@@ -960,16 +947,10 @@ int64_t setDelay(int64_t value){
 		  value += masterdefaultdelay;
 		  cprintf(BLUE,"Actual delay for master: %lld\n", (long long int) value);
 	  }
-	  double actualvalue = value*(1E-9*CLK_FREQ);
-	  value*=(1E-9*CLK_FREQ);
-	  if(fabs(actualvalue-value)>= 0.5){
-	    if(actualvalue > value)
-	      value++;
-	    else
-	      value--;
-	  }
+	  value = (value * 1E-3 * CLK_FREQ ) + 0.5;
   }
-  int64_t retval = set64BitReg(value,SET_DELAY_LSB_REG, SET_DELAY_MSB_REG)/(1E-9*CLK_FREQ);
+  int64_t retval = (set64BitReg(value,SET_DELAY_LSB_REG, SET_DELAY_MSB_REG) /
+		  (1E-3 * CLK_FREQ)) + 0.5;
   if (masterflags == IS_MASTER) {
 	  cprintf(BLUE,"Actual delay read from master: %lld\n", (long long int) retval);
 	  retval -= masterdefaultdelay;
@@ -979,7 +960,8 @@ int64_t setDelay(int64_t value){
 }
 
 int64_t getDelay(){
-  return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG)/(1E-9*CLK_FREQ);
+  return (get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG) /
+		  (1E-3 * CLK_FREQ)) + 0.5;
 }
 
 int64_t setTrains(int64_t value){
@@ -997,37 +979,26 @@ int64_t setProbes(int64_t value){
 
 
 int64_t setProgress() {
-
   //????? eventually call after setting the registers
-
 return 0;
 
 }
 
 
 int64_t getProgress() {
-
-
   //should be done in firmware!!!!
-
 	return 0;
 
 }
 
 int64_t getActualTime(){
-  return get64BitReg(GET_ACTUAL_TIME_LSB_REG, GET_ACTUAL_TIME_MSB_REG)/(1E-9*CLK_FREQ);
+  return (get64BitReg(GET_ACTUAL_TIME_LSB_REG, GET_ACTUAL_TIME_MSB_REG) /
+		  (1E-3 * CLK_FREQ)) + 0.5;
 }
 
 int64_t getMeasurementTime(){
   int64_t v=get64BitReg(GET_MEASUREMENT_TIME_LSB_REG, GET_MEASUREMENT_TIME_MSB_REG);
- /* u_int64_t mask=0x8000000000000000;
-  if (v & mask ) {
-#ifdef VERBOSE
-    printf("no measurement time left\n");
-#endif
-    return -1E+9;
-  } else*/
-    return v/(1E-9*CLK_FREQ);
+    return (v / (1E-3 * CLK_FREQ)) + 0.5;
 }
 
 

@@ -54,7 +54,7 @@
 #define DEBUGOUT
 #endif
 
-#define CLK_FREQ 32.1E+6
+#define CLK_FREQ 32.007729
 
 
 #endif

@@ -1,4 +1,4 @@
-SLS Detector Package 3.1.4 released on 2018-07-25
+SLS Detector Package 3.1.4 released on 2018-07-26
 =================================================
 
 
@@ -12,6 +12,7 @@ Topics Concerning
 ==================
 	- get settings in users class
 	- HDF5 in Receiver
+	- gotthard timer accuracy
 
 
 Resolved Issues
@@ -20,6 +21,12 @@ Resolved Issues
 	Client
 	------
 	1.	Users class setSettings(-1) gave undefined settings. Has been fixed.
+
+	
+	Detector Server
+	---------------
+	1.	(Gotthard) Timers converted from time in nanoseconds to number of cycles
+		is made more precise now. Clock value changed from 32.1E+6 to 32.007729E+6. 
 	
 	
 	Receiver
@@ -36,7 +43,7 @@ Resolved Issues
 		...
 		sls_detector_put receiver stop
 		
-	3.	Jungfrau Single Module Master files did not link to the data file properly.
+	3.	Jungfrau Single Module Master files did not link to the HDF5 data file properly.
 		This is fixed now.
 		
 	4.	Relative linking is used in the HDF5, instead of absolute now.

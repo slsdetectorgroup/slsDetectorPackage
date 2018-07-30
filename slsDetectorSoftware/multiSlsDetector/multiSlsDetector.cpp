@@ -42,6 +42,11 @@ multiSlsDetector::multiSlsDetector(int id, bool verify, bool update)
 
 
 multiSlsDetector::~multiSlsDetector() {
+	for (vector<ZmqSocket*>::const_iterator it = zmqSocket.begin(); it != zmqSocket.end(); ++it) {
+		delete(*it);
+	}
+	zmqSocket.clear();
+
 	for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
 		delete(*it);
 	}
@@ -51,11 +56,6 @@ multiSlsDetector::~multiSlsDetector() {
 		sharedMemory->UnmapSharedMemory(thisMultiDetector);
 		delete sharedMemory;
 	}
-
-	for (vector<ZmqSocket*>::const_iterator it = zmqSocket.begin(); it != zmqSocket.end(); ++it) {
-		delete(*it);
-	}
-	zmqSocket.clear();
 
 	destroyThreadPool();
 }

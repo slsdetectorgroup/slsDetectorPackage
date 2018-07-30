@@ -4589,7 +4589,7 @@ int slsDetector::startAndReadAllNoWait(){
    GATE_INTEGRATED_TIME
    }
 */
-int64_t slsDetector::setTimer(timerIndex index, int64_t t){
+int64_t slsDetector::setTimer(timerIndex index, int64_t t, int imod){
 
 
 	int fnum=F_SET_TIMER,fnum2=F_SET_RECEIVER_TIMER;

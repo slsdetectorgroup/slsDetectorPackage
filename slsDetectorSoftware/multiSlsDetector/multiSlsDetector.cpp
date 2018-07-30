@@ -1974,10 +1974,26 @@ void multiSlsDetector::resetFinalDataQueue() {
    GATE_INTEGRATED_TIME
    }
  */
-int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t){
+int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t, int imod){
 
 	int64_t ret=-100;
 
+	// single (for gotthard 25 um)
+	if (imod != -1) {
+		if (imod >= 0 && imod < thisMultiDetector->numberOfDetectors) {
+			if (detectors[imod]) {
+				ret = detectors[imod]->setTimer(index,t,imod);
+				if(detectors[imod]->getErrorMask())
+					setErrorMask(getErrorMask()|(1<<imod));
+				return ret;
+			}
+			return -1;
+		}
+		return -1;
+	}
+
+
+	// multi
 	if(!threadpool){
 		cout << "Error in creating threadpool. Exiting" << endl;
 		return -1;
@@ -1987,8 +2003,8 @@ int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t){
 		for(int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet){
 			if(detectors[idet]){
 				iret[idet]= new int64_t(-1);
-				Task* task = new Task(new func2_t<int64_t,timerIndex,int64_t>(&slsDetector::setTimer,
-						detectors[idet],index,t,iret[idet]));
+				Task* task = new Task(new func3_t<int64_t,timerIndex,int64_t,int>(&slsDetector::setTimer,
+						detectors[idet],index,t,imod,iret[idet]));
 				threadpool->add_task(task);
 			}
 		}

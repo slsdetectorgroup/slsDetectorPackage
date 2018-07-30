@@ -1,6 +1,6 @@
 PKGDIR		=	../..
 LIBDIR		=   $(PKGDIR)/bin
-INCLUDES	=   -I . -I$(PKGDIR)/slsReceiverSoftware/include -I$(PKGDIR)/slsDetectorSoftware/slsDetectorAnalysis -I$(LIBDIR) -I$(PKGDIR)/slsdetectorSoftware/slsDetector 
+INCLUDES	=   -I . -I$(PKGDIR)/slsReceiverSoftware/include -I$(PKGDIR)/slsDetectorSoftware/slsDetectorAnalysis -I$(LIBDIR) -I$(PKGDIR)/slsDetectorSoftware/slsDetector 
 SRC_DET		= 	mainClient.cpp 	
 SRC_REC		=   mainReceiver.cpp
 ZMQLIBDIR	= 	$(PKGDIR)/slsReceiverSoftware/include

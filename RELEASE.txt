@@ -21,6 +21,8 @@ Resolved Issues
 	Client
 	------
 	1.	Users class setSettings(-1) gave undefined settings. Has been fixed.
+	
+	2. 	Users class timers give more precise values now.
 
 	
 	Detector Server
@@ -30,10 +32,27 @@ Resolved Issues
 	
 	
 	Receiver
+	--------	
+	1.	Jungfrau Single Module Master files did not link to the HDF5 data file properly.
+		This is fixed now.
+		
+	2.	Relative linking is used in the HDF5, instead of absolute now.
+	
+
+
+New Features
+============
+
+	Client
+	------
+	1.	Timers can be set/retrieved individually. It has been introduced because
+		Gotthard 25um can have different delays for master and slave modules.
+
+	Receiver
 	--------
 	1.	HDF5 x dimension (#images). Max made unlimited. Chunked Dataset by default.
-	
-	2.	When receiver gets an image more than #frames, the HDF5 dataset will 
+		
+		When receiver gets an image more than #frames, the HDF5 dataset will 
 		extend itself in the x dimension by another #frames. So, one can do
 		(in Jungfrau, Gotthard, NOT Eiger)
 		sls_detector_put resetframescaught 0
@@ -43,11 +62,5 @@ Resolved Issues
 		...
 		sls_detector_put receiver stop
 		
-	3.	Jungfrau Single Module Master files did not link to the HDF5 data file properly.
-		This is fixed now.
-		
-	4.	Relative linking is used in the HDF5, instead of absolute now.
 	
-
-
-
+		

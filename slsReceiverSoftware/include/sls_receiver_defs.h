@@ -169,11 +169,14 @@ public:
 #ifdef __cplusplus
 #define MAX_NUM_PACKETS	512
 
+	typedef std::bitset<MAX_NUM_PACKETS> sls_bitset;
+
 	typedef struct {
-		sls_detector_header detHeader;				/**< is the detector header */
-		std::bitset<MAX_NUM_PACKETS> packetsMask;	/**< is the packets caught bit mask */
+		sls_detector_header detHeader;	/**< is the detector header */
+		sls_bitset packetsMask;			/**< is the packets caught bit mask */
 	} sls_receiver_header;
 
+	typedef uint8_t bitset_storage[MAX_NUM_PACKETS/8];
 
 #endif
 	/**

@@ -77,10 +77,41 @@ int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_
 	}
 	numFramesInFile++;
 	numActualPacketsInFile += nump;
-	if (BinaryFileStatic::WriteDataFile(filefd, buffer, buffersize, fnum) == buffersize)
-		return OK;
-	cprintf(RED,"%d Error: Write to file failed for image number %lld\n", index, (long long int)fnum);
-	return FAIL;
+
+	// write to file
+	int ret = 0;
+
+	// contiguous bitset
+	if (sizeof(sls_bitset) == sizeof(bitset_storage)) {
+		ret = BinaryFileStatic::WriteDataFile(filefd, buffer, buffersize);
+	}
+
+	// not contiguous bitset
+	else {
+		// write detector header
+		ret = BinaryFileStatic::WriteDataFile(filefd, buffer, sizeof(sls_detector_header));
+
+		// get contiguous representation of bit mask
+		bitset_storage storage;
+		memset(storage, 0 , sizeof(bitset_storage));
+		sls_bitset bits = *(sls_bitset*)(buffer + sizeof(sls_detector_header));
+		for (int i = 0; i < MAX_NUM_PACKETS; ++i)
+			storage[i >> 3] |= (bits[i] << (i & 7));
+		// write bitmask
+		ret += BinaryFileStatic::WriteDataFile(filefd, (char*)storage, sizeof(bitset_storage));
+
+		// write data
+		ret += BinaryFileStatic::WriteDataFile(filefd,
+				buffer + sizeof(sls_detector_header), buffersize - sizeof(sls_receiver_header));
+	}
+
+	// if write error
+    if (ret != buffersize) {
+        cprintf(RED,"%d Error: Write to file failed for image number %lld\n",
+                index, (long long int)fnum);
+        return FAIL;
+    }
+    return OK;
 }
 
 

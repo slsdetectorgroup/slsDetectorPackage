@@ -375,16 +375,10 @@ void DataProcessor::ProcessAnImage(char* buf) {
 	}
 
 	// frame padding
-
-	//std::string mystring = rheader->packetsMask.to_string<char,std::string::traits_type,std::string::allocator_type>();
-	//  cprintf(BLUE, "%d: fnum:%llu mystring: %s nump:%u missing:%u \n",index,  (long long unsigned int) fnum, mystring.c_str(), nump, generalData->packetsPerFrame-nump);
-	 //if(!index)cprintf(BLUE, "%d: fnum:%llu nump:%u missing:%u \n",index,  (long long unsigned int) fnum, nump, generalData->packetsPerFrame-nump);
-
-
 	if (*framePadding && nump < generalData->packetsPerFrame)
 		PadMissingPackets(buf);
 
-
+	// normal call back
 	if (rawDataReadyCallBack) {
 		rawDataReadyCallBack(
 				(char*)rheader,
@@ -393,7 +387,8 @@ void DataProcessor::ProcessAnImage(char* buf) {
 				pRawDataReady);
 	}
 
-	else if (rawDataModifyReadyCallBack) {cprintf(BG_GREEN,"Calling rawdatamodify\n");
+	// call back with modified size
+	else if (rawDataModifyReadyCallBack) {
         uint32_t revsize = (uint32_t)(*((uint32_t*)buf));
         rawDataModifyReadyCallBack(
         		(char*)rheader,
@@ -403,7 +398,7 @@ void DataProcessor::ProcessAnImage(char* buf) {
         (*((uint32_t*)buf)) =  revsize;
     }
 
-
+	// write to file
 	if (file)
 		file->WriteToFile(buf + FIFO_HEADER_NUMBYTES,
 				sizeof(sls_receiver_header) + (uint32_t)(*((uint32_t*)buf)),
@@ -475,12 +470,14 @@ void DataProcessor::PadMissingPackets(char* buf) {
 	uint32_t pperFrame = generalData->packetsPerFrame;
 	sls_receiver_header* header = (sls_receiver_header*) (buf + FIFO_HEADER_NUMBYTES);
 	uint32_t nmissing = pperFrame - header->detHeader.packetNumber;
-	bitset<512> pmask = header->packetsMask;
+	sls_bitset pmask = header->packetsMask;
 
 	uint32_t dsize = generalData->dataSize;
 	uint32_t fifohsize = generalData->fifoBufferHeaderSize;
 	uint32_t corrected_dsize = dsize - ((pperFrame * dsize) - generalData->imageSize);
-
+#ifdef VERBOSE
+	cprintf(RED,"bitmask:%s\n", pmask.to_string().c_str());
+#endif
 	for (unsigned int pnum = 0; pnum < pperFrame; ++pnum) {
 
 		// not missing packet

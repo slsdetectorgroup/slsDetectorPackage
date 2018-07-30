@@ -22,6 +22,7 @@ using namespace H5;
 #include <iomanip>
 #include <stdlib.h>	 //malloc
 #include <sstream>
+#include <cstring>	//memset
 using namespace std;
 
 class HDF5FileStatic: public virtual slsReceiverDefs {
@@ -219,7 +220,23 @@ public:
 			dset_para[10]->write(&header.roundRNumber, 	parameterDataTypes[10], memspace, *dspace_para);
 			dset_para[11]->write(&header.detType, 		parameterDataTypes[11], memspace, *dspace_para);
 			dset_para[12]->write(&header.version, 		parameterDataTypes[12], memspace, *dspace_para);
-			dset_para[13]->write(rheader->packetsMask.to_string().c_str(),	parameterDataTypes[13], memspace, *dspace_para);
+
+			// contiguous bitset
+			if (sizeof(sls_bitset) == sizeof(bitset_storage)) {
+				dset_para[13]->write((char*)&(rheader->packetsMask), parameterDataTypes[13], memspace, *dspace_para);
+			}
+
+			// not contiguous bitset
+			else {
+				// get contiguous representation of bit mask
+				bitset_storage storage;
+				memset(storage, 0 , sizeof(bitset_storage));
+				sls_bitset bits = rheader->packetsMask;
+				for (int i = 0; i < MAX_NUM_PACKETS; ++i)
+					storage[i >> 3] |= (bits[i] << (i & 7));
+				// write bitmask
+				dset_para[13]->write((char*)storage,	parameterDataTypes[13], memspace, *dspace_para);
+			}
 		}
 		catch(Exception error){
 			cprintf(RED,"Error in writing parameters to file in object %d\n",ind);
@@ -486,7 +503,7 @@ public:
 
 			// always create chunked dataset as unlimited is only supported with chunked layout
 			DSetCreatPropList paralist;
-			hsize_t chunkpara_dims[3] ={maxchunkedimages};
+			hsize_t chunkpara_dims[3] = {maxchunkedimages};
 			paralist.setChunk(1, chunkpara_dims);
 
 			for (unsigned int i = 0; i < parameterNames.size(); ++i){

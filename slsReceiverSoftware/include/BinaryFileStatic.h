@@ -86,10 +86,9 @@ class BinaryFileStatic {
 	 * @param fd file pointer
 	 * @param buf buffer to write from
 	 * @param bsize size of buffer
-	 * @param fnum current image number
 	 * @returns number of elements written
 	 */
-	static int WriteDataFile(FILE* fd, char* buf, int bsize, uint64_t fnum)
+	static int WriteDataFile(FILE* fd, char* buf, int bsize)
 	{
 		if (!fd)
 			return 0;

@@ -87,7 +87,7 @@ HDF5File::HDF5File(int ind, uint32_t* maxf,
 	parameterDataTypes.push_back(PredType::STD_U8LE);
 
 	parameterNames.push_back("packets caught bit mask");
-	StrType strdatatype(PredType::C_S1, MAX_NUM_PACKETS);
+	StrType strdatatype(PredType::C_S1, sizeof(bitset_storage));
 	parameterDataTypes.push_back(strdatatype);
 
 }

@@ -1140,9 +1140,10 @@ public:
 	 * Set/get timer value (not all implemented for all detectors)
 	 * @param index timer index
 	 * @param t time in ns or number of...(e.g. frames, gates, probes)
+	 * \param imod module number (pointless in slsDetector)
 	 * @returns timer set value in ns or number of...(e.g. frames, gates, probes)
 	 */
-	int64_t setTimer(timerIndex index, int64_t t=-1);
+	int64_t setTimer(timerIndex index, int64_t t=-1, int imod = -1);
 
 	/**
 	 * Set/get timer value left in acquisition (not all implemented for all detectors)

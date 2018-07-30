@@ -123,7 +123,7 @@ protected:
 	func2_t <int,				std::string,int>* 				m10;
 	func2_t <dacs_t,			dacIndex,int>* 					m11;
 	func2_t <detectorSettings,	detectorSettings,int>* 			m12;
-	func2_t <int64_t,			timerIndex,int64_t>* 			m13;
+	func3_t <int64_t,			timerIndex,int64_t,int>* 		m13;
 	func2_t <std::string,		networkParameter,std::string>* 	m14;
 	func3_t <int,				int,int,int>* 					m15;
 	func4_t <int,				trimMode,int,int,int>* 			m16;
@@ -149,7 +149,7 @@ public:
 	Task(func2_t <int,				std::string,int>* t):					SuperTask(),fnum(10){m10 = t;};
 	Task(func2_t <dacs_t,			dacIndex,int>* t):                  	SuperTask(),fnum(11){m11 = t;};
 	Task(func2_t <detectorSettings,	detectorSettings,int>* t):				SuperTask(),fnum(12){m12 = t;};
-	Task(func2_t <int64_t,			timerIndex,int64_t>* t):				SuperTask(),fnum(13){m13 = t;};
+	Task(func3_t <int64_t,			timerIndex,int64_t,int>* t):			SuperTask(),fnum(13){m13 = t;};
 	Task(func2_t <std::string,		networkParameter,std::string>* t):		SuperTask(),fnum(14){m14 = t;};
 	Task(func3_t <int,				int,int,int>* t): 						SuperTask(),fnum(15){m15 = t;};
 	Task(func4_t <int,				trimMode,int,int,int>* t):				SuperTask(),fnum(16){m16 = t;};

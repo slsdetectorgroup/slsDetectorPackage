@@ -157,43 +157,58 @@ int slsDetectorUsers::setThresholdEnergy(int e_ev, int tb, int isettings, int id
   return myDetector->slsDetectorBase::setThresholdEnergy(e_ev, tb, isettings, id);
 }
 
-double slsDetectorUsers::setExposureTime(double t, bool inseconds){
-  int64_t tms = (int64_t)(t * (1E+9));
-  if (t < 0) tms = -1;
-  if(!inseconds)
-    return myDetector->setExposureTime((int64_t)t);
-  else
-    return  ((1E-9) * (double)myDetector->setExposureTime(tms));
+double slsDetectorUsers::setExposureTime(double t, bool inseconds, int imod){
+	if(!inseconds)
+		return myDetector->setExposureTime((int64_t)t,imod);
+	else {
+		// + 0.5 to round for precision lost from converting double to int64_t
+		int64_t tms = (int64_t)(t * (1E+9) + 0.5);
+		if (t < 0) tms = -1;
+		tms = myDetector->setExposureTime(tms,imod);
+		if (tms < 0)
+			return -1;
+		return  ((1E-9) * (double)tms);
+	}
 }
 
-double slsDetectorUsers::setExposurePeriod(double t, bool inseconds){
-  int64_t tms = (int64_t)(t * (1E+9));
-  if (t < 0) tms = -1;
-  if(!inseconds)
-    return myDetector->setExposurePeriod((int64_t)t);
-  else
-    return  ((1E-9) * (double)myDetector->setExposurePeriod(tms));
+double slsDetectorUsers::setExposurePeriod(double t, bool inseconds, int imod){
+	if(!inseconds)
+		return myDetector->setExposurePeriod((int64_t)t,imod);
+	else {
+		// + 0.5 to round for precision lost from converting double to int64_t
+		int64_t tms = (int64_t)(t * (1E+9) + 0.5);
+		if (t < 0) tms = -1;
+		tms = myDetector->setExposurePeriod(tms,imod);
+		if (tms < 0)
+			return -1;
+		return  ((1E-9) * (double)tms);
+	}
 }
 
-double slsDetectorUsers::setDelayAfterTrigger(double t, bool inseconds){
-  int64_t tms = (int64_t)(t * (1E+9));
-  if (t < 0) tms = -1;
-  if(!inseconds)
-    return myDetector->setDelayAfterTrigger((int64_t)t);
-  else
-    return  ((1E-9) * (double)myDetector->setDelayAfterTrigger(tms));
+double slsDetectorUsers::setDelayAfterTrigger(double t, bool inseconds, int imod){
+	if(!inseconds)
+		return myDetector->setDelayAfterTrigger((int64_t)t,imod);
+	else {
+		// + 0.5 to round for precision lost from converting double to int64_t
+		int64_t tms = (int64_t)(t * (1E+9) + 0.5);
+		if (t < 0) tms = -1;
+		tms = myDetector->setDelayAfterTrigger(tms,imod);
+		if (tms < 0)
+			return -1;
+		return  ((1E-9) * (double)tms);
+	}
 }
 
-int64_t slsDetectorUsers::setNumberOfGates(int64_t t){
-  return myDetector->setNumberOfGates(t);
+int64_t slsDetectorUsers::setNumberOfGates(int64_t t, int imod){
+  return myDetector->setNumberOfGates(t,imod);
 } 
 
-int64_t slsDetectorUsers::setNumberOfFrames(int64_t t){
-  return myDetector->setNumberOfFrames(t);
+int64_t slsDetectorUsers::setNumberOfFrames(int64_t t, int imod){
+  return myDetector->setNumberOfFrames(t,imod);
 }
 
-int64_t slsDetectorUsers::setNumberOfCycles(int64_t t){
-  return myDetector->setNumberOfCycles(t);
+int64_t slsDetectorUsers::setNumberOfCycles(int64_t t, int imod){
+  return myDetector->setNumberOfCycles(t,imod);
 }
   
 int slsDetectorUsers::setTimingMode(int pol){

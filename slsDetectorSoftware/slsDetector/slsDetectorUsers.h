@@ -325,47 +325,53 @@ class slsDetectorUsers
         @short set/get exposure time value
         \param t time in sn  (-1 gets)
         \param inseconds true if the value is in s, else ns
+        \param imod module number (-1 for all)
         \returns timer set value in ns, or s if specified
     */
 
-   double setExposureTime(double t=-1, bool inseconds=false);
+   double setExposureTime(double t=-1, bool inseconds=false, int imod = -1);
 
     /**
          @short set/get exposure period
         \param t time in ns   (-1 gets)
         \param inseconds true if the value is in s, else ns
+        \param imod module number (-1 for all)
         \returns timer set value in ns, or s if specified
     */
-   double setExposurePeriod(double t=-1, bool inseconds=false);
+   double setExposurePeriod(double t=-1, bool inseconds=false, int imod = -1);
 
     /**
          @short set/get delay after trigger
         \param t time in ns   (-1 gets)
         \param inseconds true if the value is in s, else ns
+        \param imod module number (-1 for all)
         \returns timer set value in ns, or s if specified
     */
-   double setDelayAfterTrigger(double t=-1, bool inseconds=false);
+   double setDelayAfterTrigger(double t=-1, bool inseconds=false, int imod = -1);
 
   /** 
        @short set/get number of gates
       \param t number of gates  (-1 gets)
+      \param imod module number (-1 for all)
       \returns number of gates
   */
-   int64_t setNumberOfGates(int64_t t=-1); 
+   int64_t setNumberOfGates(int64_t t=-1, int imod = -1);
   
   /** 
        @short set/get number of frames i.e. number of exposure per trigger
       \param t number of frames  (-1 gets) 
+      \param imod module number (-1 for all)
       \returns number of frames
   */
-   int64_t setNumberOfFrames(int64_t t=-1);
+   int64_t setNumberOfFrames(int64_t t=-1, int imod = -1);
 
   /** 
        @short set/get number of cycles i.e. number of triggers
       \param t number of frames  (-1 gets) 
+      \param imod module number (-1 for all)
       \returns number of frames
   */
-   int64_t setNumberOfCycles(int64_t t=-1);
+   int64_t setNumberOfCycles(int64_t t=-1, int imod = -1);
   
 
  /** 

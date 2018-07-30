@@ -2567,8 +2567,22 @@ int multiSlsDetector::configureMAC() {
 	return callDetectorMember(&slsDetector::configureMAC);
 }
 
-int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t) {
-	int64_t ret = parallelCallDetectorMember(&slsDetector::setTimer, index, t);
+int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t, int imod) {
+	int64_t ret=-100;
+
+	// single (for gotthard 25 um)
+	if (imod != -1) {
+		if (imod >= 0 && imod < (int)detectors.size()) {
+			ret = detectors[imod]->setTimer(index,t,imod);
+			if(detectors[imod]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<imod));
+			return ret;
+		}
+		return -1;
+	}
+
+	// multi
+	ret = parallelCallDetectorMember(&slsDetector::setTimer, index, t);
 	if (index == SAMPLES_JCTB)
 		setDynamicRange();
 

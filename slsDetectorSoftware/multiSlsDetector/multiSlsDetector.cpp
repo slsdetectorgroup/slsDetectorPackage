@@ -2582,7 +2582,36 @@ int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t, int imod) {
 	}
 
 	// multi
-	ret = parallelCallDetectorMember(&slsDetector::setTimer, index, t);
+	if(!threadpool){
+		cout << "Error in creating threadpool. Exiting" << endl;
+		return -1;
+	}else{
+		//return storage values
+		int64_t* iret[thisMultiDetector->numberOfDetectors];
+		for(int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet){
+			if(detectors[idet]){
+				iret[idet]= new int64_t(-1);
+				Task* task = new Task(new func3_t<int64_t,timerIndex,int64_t,int>(&slsDetector::setTimer,
+						detectors[idet],index,t,imod,iret[idet]));
+				threadpool->add_task(task);
+			}
+		}
+		threadpool->startExecuting();
+		threadpool->wait_for_tasks_to_complete();
+		for(int idet=0; idet<thisMultiDetector->numberOfDetectors; ++idet){
+			if(detectors[idet]){
+				if(iret[idet] != NULL){
+					if (ret==-100)
+						ret=*iret[idet];
+					else if (ret!=*iret[idet])
+						ret=-1;
+					delete iret[idet];
+				}else ret=-1;
+				if(detectors[idet]->getErrorMask())
+					setErrorMask(getErrorMask()|(1<<idet));
+			}
+		}
+	}
 	if (index == SAMPLES_JCTB)
 		setDynamicRange();
 

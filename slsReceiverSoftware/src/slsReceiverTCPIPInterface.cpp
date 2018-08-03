@@ -38,6 +38,7 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 				fnum(-1),
 				lockStatus(0),
 				killTCPServerThread(0),
+				tcpThreadCreated(false),
 				portNumber(DEFAULT_PORTNO+2),
 				mySock(NULL)
 {
@@ -134,6 +135,7 @@ int slsReceiverTCPIPInterface::start(){
 		FILE_LOG(logERROR) << "Could not create TCP Server thread";
 		return FAIL;
 	}
+	tcpThreadCreated = true;
 	//#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG) << "TCP Server thread created successfully.";
 	//#endif
@@ -142,13 +144,16 @@ int slsReceiverTCPIPInterface::start(){
 
 
 void slsReceiverTCPIPInterface::stop(){
-	FILE_LOG(logINFO) << "Shutting down TCP Socket";
-	killTCPServerThread = 1;
-	if(mySock)	mySock->ShutDownSocket();
-	FILE_LOG(logDEBUG) << "TCP Socket closed";
-	pthread_join(TCPServer_thread, NULL);
-	killTCPServerThread = 0;
-	FILE_LOG(logINFO) << "TCP Server Thread closed";
+	if (tcpThreadCreated) {
+		FILE_LOG(logINFO) << "Shutting down TCP Socket on port " << portNumber;
+		killTCPServerThread = 1;
+		if(mySock)	mySock->ShutDownSocket();
+		FILE_LOG(logDEBUG) << "TCP Socket closed on port " << portNumber;
+		pthread_join(TCPServer_thread, NULL);
+		tcpThreadCreated = false;
+		killTCPServerThread = 0;
+		FILE_LOG(logDEBUG) << "Exiting TCP Server Thread on port " << portNumber;
+	}
 }
 
 
@@ -193,6 +198,7 @@ void* slsReceiverTCPIPInterface::startTCPServerThread(void *this_pointer){
 
 void slsReceiverTCPIPInterface::startTCPServer(){
 	cprintf(BLUE,"Created [ TCP server Tid: %ld ]\n", (long)syscall(SYS_gettid));
+	FILE_LOG(logINFO) << "SLS Receiver starting TCP Server on port " << portNumber << endl;
 
 #ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG5) << "Starting Receiver TCP Server";

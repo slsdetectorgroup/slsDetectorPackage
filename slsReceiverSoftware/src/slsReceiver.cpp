@@ -105,7 +105,6 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success):
 	}
 
 	if (success==OK){
-		FILE_LOG(logINFO) << "SLS Receiver starting TCP Server on port " << tcpip_port_no << endl;
 		tcpipInterface = new slsReceiverTCPIPInterface(success, udp_interface, tcpip_port_no);
 	}
 }

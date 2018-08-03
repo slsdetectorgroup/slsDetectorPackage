@@ -1,4 +1,4 @@
-SLS Detector Package 3.1.4 released on 2018-07-26
+SLS Detector Package 3.1.4 released on 2018-08-03
 =================================================
 
 
@@ -23,6 +23,12 @@ Resolved Issues
 	1.	Users class setSettings(-1) gave undefined settings. Has been fixed.
 	
 	2. 	Users class timers give more precise values now.
+	
+	3.	When deleting slsDetector object, Stop socket deletion includes a close on 
+		default file descriptor zero (which it didn't open, just set for flag).
+		This is fixed with temporary solution, to connect stop socket at checkOnline
+		to set file descriptor to the right one. Later releases will use exception
+		to handle constructor error flags.
 
 	
 	Detector Server

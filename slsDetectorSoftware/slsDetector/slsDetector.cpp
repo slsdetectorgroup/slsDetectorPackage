@@ -1759,6 +1759,26 @@ string slsDetector::checkOnline() {
 #endif
 		}
 	}
+	//still cannot connect to socket, stopSocket=0
+	if(stopSocket){
+		if (connectStop() == FAIL) {
+			stopSocket->SetTimeOut(5);
+			thisDetector->onlineFlag=OFFLINE_FLAG;
+			delete stopSocket;
+			stopSocket=NULL;
+			retval = string(thisDetector->hostname);
+#ifdef VERBOSE
+			std::cout<< "stop offline!" << std::endl;
+#endif
+		}  else {
+			thisDetector->onlineFlag=ONLINE_FLAG;
+			stopSocket->SetTimeOut(100);
+			disconnectStop();
+#ifdef VERBOSE
+			std::cout<< "stop online!" << std::endl;
+#endif
+		}
+	}
 	return retval;
 }
 

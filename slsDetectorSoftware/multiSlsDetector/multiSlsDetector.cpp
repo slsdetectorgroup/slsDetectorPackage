@@ -11,7 +11,7 @@ ID:         $Id$
 #include "multiSlsDetector.h"
 #include "SharedMemory.h"
 #include "slsDetector.h"
-#include "sls_detector_exceptions.h"
+#include "sls_receiver_exceptions.h"
 #include "ThreadPool.h"
 #include "ZmqSocket.h"
 #include "multiSlsDetectorClient.h"

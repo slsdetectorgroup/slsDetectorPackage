@@ -59,7 +59,6 @@ set(PUBLICHEADERS
     commonFiles/sls_detector_defs.h
     commonFiles/sls_detector_funcs.h
     commonFiles/error_defs.h
-    commonFiles/sls_detector_exceptions.h
     commonFiles/versionAPI.h
     sharedMemory/SharedMemory.h
     slsDetector/slsDetectorUtils.h
@@ -78,7 +77,7 @@ set(PUBLICHEADERS
     slsDetectorAnalysis/fileIOStatic.h
     multiSlsDetector/multiSlsDetector.h
     slsReceiverInterface/receiverInterface.h
-
+    ../slsReceiverSoftware/include/sls_receiver_exceptions.h
 )
 set_target_properties(slsDetectorShared PROPERTIES
     LIBRARY_OUTPUT_NAME SlsDetector

@@ -1,5 +1,5 @@
 #include "SharedMemory.h"
-#include "sls_detector_exceptions.h"
+#include "sls_receiver_exceptions.h"
 #include "ansi.h"
 
 #include <iostream>
@@ -122,14 +122,14 @@ void* SharedMemory::MapSharedMemory(size_t sz) {
 std::string SharedMemory::ConstructSharedMemoryName(int multiId, int slsId) {
 
 	// using environment path
-	string sEnvPath = "";
+	std::string sEnvPath = "";
 	char* envpath = getenv(SHM_ENV_NAME);
 	if (envpath != NULL) {
 		sEnvPath.assign(envpath);
 		sEnvPath.insert(0,"_");
 	}
 
-	stringstream ss;
+	std::stringstream ss;
 	if (slsId < 0)
 		ss << SHM_MULTI_PREFIX << multiId << sEnvPath;
 	else

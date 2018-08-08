@@ -26,7 +26,7 @@ LIBZMQ =  -L$(LIBZMQDIR) -Wl,-rpath=$(LIBZMQDIR) -lzmq
 
 
 SRC_CLNT = MySocketTCP.cpp  ThreadObject.cpp Listener.cpp DataProcessor.cpp DataStreamer.cpp Fifo.cpp File.cpp BinaryFile.cpp UDPInterface.cpp  UDPBaseImplementation.cpp UDPStandardImplementation.cpp slsReceiverTCPIPInterface.cpp slsReceiver.cpp slsReceiverUsers.cpp utilities.cpp
-DEPSINCLUDES = $(INCDIR)/ansi.h $(INCDIR)/sls_receiver_defs.h $(INCDIR)/sls_receiver_funcs.h $(INCDIR)/GeneralData.h  $(INCDIR)/circularFifo.h $(INCDIR)/genericSocket.h  $(INCDIR)/logger.h $(INCDIR)/receiver_defs.h $(INCDIR)/UDPInterface.h $(INCDIR)/utilities.h $(INCDIR)/ZmqSocket.h $(INCDIR)/BinaryFileStatic.h $(INCDIR)/HDF5FileStatic.h
+DEPSINCLUDES = $(INCDIR)/ansi.h $(INCDIR)/sls_receiver_defs.h $(INCDIR)/sls_receiver_funcs.h $(INCDIR)/GeneralData.h  $(INCDIR)/circularFifo.h $(INCDIR)/genericSocket.h  $(INCDIR)/logger.h $(INCDIR)/receiver_defs.h $(INCDIR)/UDPInterface.h $(INCDIR)/utilities.h $(INCDIR)/ZmqSocket.h $(INCDIR)/BinaryFileStatic.h $(INCDIR)/HDF5FileStatic.h $(INCDIR)/sls_receiver_exceptions.h
 
 
 ifeq ($(HDF5),yes)

@@ -1,6 +1,6 @@
 #pragma once
 /************************************************
- * @file sls_detector_exceptions.h
+ * @file sls_receiver_exceptions.h
  * @short exceptions defined
  ***********************************************/
 /**
@@ -23,3 +23,17 @@ public:
 	ThreadpoolException() {}
     string GetMessage() const { return "Threadpool Failed";};
 };
+
+struct SocketException : public std::exception {
+public:
+	SocketException() {}
+	std::string GetMessage() const { return "Socket Failed";};
+};
+
+
+struct SamePortSocketException : public SocketException {
+public:
+	SamePortSocketException() {}
+	std::string GetMessage() const { return "Socket Failed";};
+};
+

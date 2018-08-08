@@ -8,6 +8,16 @@
 #include "mcb_funcs.h"
 #include "slow_adc.h"
 #include "registers_m.h"
+#define ADC_SPI_REG ADC_WRITE_REG 			
+
+#define ADC_SERIAL_CLK_OUT_OFST			(0)
+#define ADC_SERIAL_CLK_OUT_MSK			(0x00000001 << ADC_SERIAL_CLK_OUT_OFST)
+#define ADC_SERIAL_DATA_OUT_OFST		(1)
+#define ADC_SERIAL_DATA_OUT_MSK			(0x00000001 << ADC_SERIAL_DATA_OUT_OFST)
+#define ADC_SERIAL_CS_OUT_OFST			(2)
+#define ADC_SERIAL_CS_OUT_MSK			(0x0000000F << ADC_SERIAL_CS_OUT_OFST)
+
+#include "AD9257.h"
 
 //#define VERBOSE
 //#define VERYVERBOSE
@@ -1718,60 +1728,60 @@ int initConfGain(int isettings,int val,int imod){
 
 
 
-int setADC(int adc){
-/* 	int reg,nchips,mask,nchans; */
+/* int setADC(int adc){ */
+/* /\* 	int reg,nchips,mask,nchans; *\/ */
 
-/* 	if(adc==-1)	ROI_flag=0; */
-/* 	else		ROI_flag=1; */
+/* /\* 	if(adc==-1)	ROI_flag=0; *\/ */
+/* /\* 	else		ROI_flag=1; *\/ */
 
-/* 	//	setDAQRegister();//token timing */
-/* 	cleanFifo();//adc sync */
+/* /\* 	//	setDAQRegister();//token timing *\/ */
+/* /\* 	cleanFifo();//adc sync *\/ */
 
-/* 	//with gotthard module */
-/* 	if(withGotthard){ */
-/* 		//set packet size */
-/* 		ipPacketSize= DEFAULT_IP_PACKETSIZE; */
-/* 		udpPacketSize=DEFAULT_UDP_PACKETSIZE; */
-/* 		//set channel mask */
-/* 		nchips = GOTTHARDNCHIP; */
-/* 		nchans = GOTTHARDNCHAN; */
-/* 		mask = ACTIVE_ADC_MASK; */
-/* 	} */
+/* /\* 	//with gotthard module *\/ */
+/* /\* 	if(withGotthard){ *\/ */
+/* /\* 		//set packet size *\/ */
+/* /\* 		ipPacketSize= DEFAULT_IP_PACKETSIZE; *\/ */
+/* /\* 		udpPacketSize=DEFAULT_UDP_PACKETSIZE; *\/ */
+/* /\* 		//set channel mask *\/ */
+/* /\* 		nchips = GOTTHARDNCHIP; *\/ */
+/* /\* 		nchans = GOTTHARDNCHAN; *\/ */
+/* /\* 		mask = ACTIVE_ADC_MASK; *\/ */
+/* /\* 	} *\/ */
 
-/* 	//with moench module all adc */
-/* 	else{/\* if(adc==-1){*\/ */
-/* 		//set packet size */
-/* 		ipPacketSize= DEFAULT_IP_PACKETSIZE; */
-/* 		udpPacketSize=DEFAULT_UDP_PACKETSIZE; */
-/* 		//set channel mask */
-/* 		nchips = N_CHIP; */
-/* 		nchans = N_CHANS; */
-/* 		mask = ACTIVE_ADC_MASK; */
-/* 	}/\* */
-/* 	//with moench module 1 adc -- NOT IMPLEMENTED */
-/* 	else{ */
-/* 		ipPacketSize= ADC1_IP_PACKETSIZE; */
-/* 		udpPacketSize=ADC1_UDP_PACKETSIZE; */
-/* 		//set channel mask */
-/* 		nchips = NCHIPS_PER_ADC; */
-/* 		nchans = GOTTHARDNCHAN; */
-/* 		mask = 1<<adc; */
-/* 	}*\/ */
+/* /\* 	//with moench module all adc *\/ */
+/* /\* 	else{/\\* if(adc==-1){*\\/ *\/ */
+/* /\* 		//set packet size *\/ */
+/* /\* 		ipPacketSize= DEFAULT_IP_PACKETSIZE; *\/ */
+/* /\* 		udpPacketSize=DEFAULT_UDP_PACKETSIZE; *\/ */
+/* /\* 		//set channel mask *\/ */
+/* /\* 		nchips = N_CHIP; *\/ */
+/* /\* 		nchans = N_CHANS; *\/ */
+/* /\* 		mask = ACTIVE_ADC_MASK; *\/ */
+/* /\* 	}/\\* *\/ */
+/* /\* 	//with moench module 1 adc -- NOT IMPLEMENTED *\/ */
+/* /\* 	else{ *\/ */
+/* /\* 		ipPacketSize= ADC1_IP_PACKETSIZE; *\/ */
+/* /\* 		udpPacketSize=ADC1_UDP_PACKETSIZE; *\/ */
+/* /\* 		//set channel mask *\/ */
+/* /\* 		nchips = NCHIPS_PER_ADC; *\/ */
+/* /\* 		nchans = GOTTHARDNCHAN; *\/ */
+/* /\* 		mask = 1<<adc; *\/ */
+/* /\* 	}*\\/ *\/ */
 
-/* 	//set channel mask */
-/* 	reg = (nchans*nchips)<<CHANNEL_OFFSET; */
-/* 	reg&=CHANNEL_MASK; */
-/* 	reg|=(ACTIVE_ADC_MASK & mask); */
-/* 	bus_w(CHIP_OF_INTRST_REG,reg); */
+/* /\* 	//set channel mask *\/ */
+/* /\* 	reg = (nchans*nchips)<<CHANNEL_OFFSET; *\/ */
+/* /\* 	reg&=CHANNEL_MASK; *\/ */
+/* /\* 	reg|=(ACTIVE_ADC_MASK & mask); *\/ */
+/* /\* 	bus_w(CHIP_OF_INTRST_REG,reg); *\/ */
 
-/* //#ifdef DDEBUG */
-/* 	printf("Chip of Interest Reg:%x\n",bus_r(CHIP_OF_INTRST_REG)); */
-/* //#endif */
+/* /\* //#ifdef DDEBUG *\/ */
+/* /\* 	printf("Chip of Interest Reg:%x\n",bus_r(CHIP_OF_INTRST_REG)); *\/ */
+/* /\* //#endif *\/ */
 
-/* 	adcConfigured = adc; */
+/* /\* 	adcConfigured = adc; *\/ */
 
-	return adcConfigured;
-}
+/* 	return adcConfigured; */
+/* } */
 
 
 
@@ -2450,119 +2460,117 @@ int allocateRAM() {
 
 
 int writeADC(int addr, int val) {
-
-
-  u_int32_t valw,codata,csmask;              
-  int i,cdx,ddx;
-   cdx=0; ddx=1;
-   csmask=0xfc; //  1111100
-   
-   codata=val + (addr<< 8);   
-   printf("***** ADC SPI WRITE TO REGISTER %04X value %04X\n",addr,val);
-	// start point
-   valw=0xff;
-   bus_w16(ADC_WRITE_REG,(valw));
-   
-   //chip sel bar down
-   valw=((0xffffffff&(~csmask)));
-   bus_w16(ADC_WRITE_REG,valw);
-
-   for (i=0;i<24;i++) {
-     //cldwn
-     valw=valw&(~(0x1<<cdx));
-     bus_w16(ADC_WRITE_REG,valw);
-     // usleep(0);
-
-     //write data (i)
-     valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx);
-     bus_w16(ADC_WRITE_REG,valw);
-     //  usleep(0);
-
-     //clkup
-     valw=valw+(0x1<<cdx);
-     bus_w16(ADC_WRITE_REG,valw);
-     // usleep(0);
-   }
-   
-		 // stop point =start point
-   valw=valw&(~(0x1<<cdx));
-   // usleep(0);
-   valw=0xff;
-   bus_w16(ADC_WRITE_REG,(valw));
-   
-   //usleep in between
-   //   usleep(50000);
-
+   setAdc(addr,val);
    return OK;
+  /* u_int32_t valw,codata,csmask;               */
+  /* int i,cdx,ddx; */
+  /*  cdx=0; ddx=1; */
+  /*  csmask=0xfc; //  1111100 */
+   
+  /*  codata=val + (addr<< 8);    */
+  /*  printf("***** ADC SPI WRITE TO REGISTER %04X value %04X\n",addr,val); */
+  /* 	// start point */
+  /*  valw=0xff; */
+  /*  bus_w16(ADC_WRITE_REG,(valw)); */
+   
+  /*  //chip sel bar down */
+  /*  valw=((0xffffffff&(~csmask))); */
+  /*  bus_w16(ADC_WRITE_REG,valw); */
+
+  /*  for (i=0;i<24;i++) { */
+  /*    //cldwn */
+  /*    valw=valw&(~(0x1<<cdx)); */
+  /*    bus_w16(ADC_WRITE_REG,valw); */
+  /*    // usleep(0); */
+
+  /*    //write data (i) */
+  /*    valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); */
+  /*    bus_w16(ADC_WRITE_REG,valw); */
+  /*    //  usleep(0); */
+
+  /*    //clkup */
+  /*    valw=valw+(0x1<<cdx); */
+  /*    bus_w16(ADC_WRITE_REG,valw); */
+  /*    // usleep(0); */
+  /*  } */
+   
+  /* 		 // stop point =start point */
+  /*  valw=valw&(~(0x1<<cdx)); */
+  /*  // usleep(0); */
+  /*  valw=0xff; */
+  /*  bus_w16(ADC_WRITE_REG,(valw)); */
+  /*  //usleep in between */
+  /*  //   usleep(50000); */
+  /*  return OK; */
 }
 
-int prepareADC(){
-  printf("Preparing ADC\n");
-  u_int32_t codata,csmask;
-  int cdx,ddx;
-   cdx=0; ddx=1;
-   csmask=0x7c; //  1111100
+/* int prepareADC(){ */
+/*   printf("Preparing ADC\n"); */
+/*   u_int32_t codata,csmask; */
+/*   int cdx,ddx; */
+/*    cdx=0; ddx=1; */
+/*    csmask=0x7c; //  1111100 */
    
-/* #define ADCREG1 			0x08   */
-/* #define ADCREG2 			0x14//20  */
-/* #define ADCREG3 			0x4   */
-/* #define ADCREG4 			0x5   */
-    codata=0;    
-    writeADC(0x08,0x3);//reset
-    writeADC(0x08,0x0);//run! 
-    writeADC(0x04,0xf);//all chans
-    writeADC(0x04,0x3f);//all chans
+/* /\* #define ADCREG1 			0x08   *\/ */
+/* /\* #define ADCREG2 			0x14//20  *\/ */
+/* /\* #define ADCREG3 			0x4   *\/ */
+/* /\* #define ADCREG4 			0x5   *\/ */
+/*     codata=0;     */
+/*     writeADC(0x08,0x3);//reset */
+/*     writeADC(0x08,0x0);//run!  */
+/*     writeADC(0x04,0xf);//all chans */
+/*     writeADC(0x04,0x3f);//all chans */
 
-    // writeADC(0x16,0x4);//output clock phase
-    //  writeADC(0x18,0x4);// vref 1V
-    // writeADC(0x14,0x0);
-    writeADC(0x14,0x40);//lvds reduced range -- offset binary
+/*     // writeADC(0x16,0x4);//output clock phase */
+/*     //  writeADC(0x18,0x4);// vref 1V */
+/*     // writeADC(0x14,0x0); */
+/*     writeADC(0x14,0x40);//lvds reduced range -- offset binary */
 
-     writeADC(0xD,0x0);//no test mode
+/*      writeADC(0xD,0x0);//no test mode */
 
-#ifdef TESTADC
+/* #ifdef TESTADC */
 
 
-    ////////////TEST ADC!!!!!!!!!!
+/*     ////////////TEST ADC!!!!!!!!!! */
     
-    printf("***************************************** *******\n");
-    printf("******* PUTTING ADC IN TEST MODE!!!!!!!!! *******\n");
-    printf("***************************************** *******\n");
+/*     printf("***************************************** *******\n"); */
+/*     printf("******* PUTTING ADC IN TEST MODE!!!!!!!!! *******\n"); */
+/*     printf("***************************************** *******\n"); */
        
 
-    //    writeADC(0xD,0x4);//ALTERNATING CHECKERBOARD
+/*     //    writeADC(0xD,0x4);//ALTERNATING CHECKERBOARD */
 
-    //  writeADC(0xD,0x7);//ONE/ZERO WORD TOGGLE
+/*     //  writeADC(0xD,0x7);//ONE/ZERO WORD TOGGLE */
 
-/*     writeADC(0x19,0xf0);//user input */
-/*     writeADC(0x1A,0xf0);//user input */
-/*     writeADC(0x1B,0x0f);//user input */
-/*     writeADC(0x1C,0x0f);//user input */
-/*      writeADC(0xD,0x48);//user input, alternate */
+/* /\*     writeADC(0x19,0xf0);//user input *\/ */
+/* /\*     writeADC(0x1A,0xf0);//user input *\/ */
+/* /\*     writeADC(0x1B,0x0f);//user input *\/ */
+/* /\*     writeADC(0x1C,0x0f);//user input *\/ */
+/* /\*      writeADC(0xD,0x48);//user input, alternate *\/ */
 
-/*     //writeADC(0xD,0xA);//1xsync */
-//    writeADC(0xD,0xB);//1xbit high 
-      writeADC(0xD,0xC);//1xmixed frequqncy 
-
-
-
-#endif
+/* /\*     //writeADC(0xD,0xA);//1xsync *\/ */
+/* //    writeADC(0xD,0xB);//1xbit high  */
+/*       writeADC(0xD,0xC);//1xmixed frequqncy  */
 
 
+
+/* #endif */
 
 
 
 
 
-    bus_w(ADC_LATCH_DISABLE_REG,0x0); // enable all ADCs
-    //  bus_w(DAQ_REG,0x12); //adc pipeline=18
 
-    //bus_w(DAQ_REG,0xbbbbbbbb);
-    //   bus_w(ADC_INVERSION_REG,0x1f6170c6);
 
-    return OK;
+/*     bus_w(ADC_LATCH_DISABLE_REG,0x0); // enable all ADCs */
+/*     //  bus_w(DAQ_REG,0x12); //adc pipeline=18 */
 
-}
+/*     //bus_w(DAQ_REG,0xbbbbbbbb); */
+/*     //   bus_w(ADC_INVERSION_REG,0x1f6170c6); */
+
+/*     return OK; */
+
+/* } */
 
 
 int clearRAM() {

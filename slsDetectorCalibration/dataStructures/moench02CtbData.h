@@ -31,23 +31,28 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
   */
   
 
-  moench02CtbData(int ns=6400): slsDetectorData<uint16_t>(160, 160, ns*2*32, NULL, NULL) , nadc(4), sc_width(40), sc_height(160) {
+  moench02CtbData(int ns=6400): slsDetectorData<uint16_t>(160, 160, ns*2*32, NULL, NULL) , nadc(32), sc_width(40), sc_height(160) {
 
     
-    int adc_nr[4]={120,0,80,40};
+    int adc_off[4]={0,40,80,120};
+    int adc_nr[4]={8,10,20,23};
     int row, col;
 
     int isample;
-    int iadc;
+    int iadc, iiadc;
     int ix, iy;
     maplength=this->getDataSize()/2;
-    
+    //cout << maplength << endl;
 
-    for (iadc=0; iadc<nadc; iadc++) {
+    for (iiadc=0; iiadc<4; iiadc++) {
+      
+      iadc=adc_nr[iiadc];
+      //cout << iiadc << endl;
       for (int i=0; i<sc_width*sc_height; i++) {
-	col=adc_nr[iadc]+(i%sc_width);
+	
+	col=adc_off[iiadc]+(i%sc_width);
 	row=i/sc_width;
-	dataMap[row][col]=(32*i+iadc+2)*2;
+	dataMap[row][col]=(32*i+iadc)*2;
 	if (dataMap[row][col]<0 || dataMap[row][col]>=dataSize) {
 	  cout << "Error: pointer " << dataMap[row][col] << " out of range "<< endl;	  
 	}
@@ -56,12 +61,17 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
     }
     
     for (int i=0; i<maplength; i++) {
+      //cout << i << endl;
       isample=i/32;
-      iadc=i%32;
+      iiadc=i%32;
+      iadc=-1;
+      for (int iii=0; iii<4; iii++) {
+	if (iiadc==adc_nr[iii]) iadc=iii;
+      }
       ix=isample%sc_width;
       iy=isample/sc_width;
-      if(iadc>1 && iadc<6){
-	xmap[i]=adc_nr[iadc-2]+ix;
+      if(iadc>=0){
+	xmap[i]=adc_off[iadc]+ix;
 	ymap[i]=iy;
       }else{
 	xmap[i]=-1;
@@ -71,7 +81,7 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
     iframe=0;
     cout << "data struct created" << endl;
   };
-    
+  
   void getPixel(int ip, int &x, int &y) {
     if(ip>=0 && ip<maplength){
       x=xmap[ip]; 
@@ -137,7 +147,9 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
 	}
 	if (ib>0) {
 	  iframe++;
-	  //cout << ib << "-" << endl;
+	  //cout << ib/2 << "-" << endl;
+	  //for (int i=0; i<ib/2; i++)
+	  //cout << i << " " << afifo_cont[i] << endl;
 	  return (char*)afifo_cont;
 	} else {
 	  delete [] afifo_cont;

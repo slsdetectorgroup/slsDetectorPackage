@@ -2,9 +2,13 @@
 #define BLACKFIN_H
 
 #define CSP0 0x20200000
-#define MEM_SIZE 0x100000 
+#define MEM_SIZE 0x100000
+#ifndef OLDVERSION 
 #define MEM_MAP_SHIFT 1
-
+#endif
+#ifdef OLDVERSION 
+#define MEM_MAP_SHIFT 11
+#endif
 #include <sys/types.h>
 
 int mapCSP0(void);

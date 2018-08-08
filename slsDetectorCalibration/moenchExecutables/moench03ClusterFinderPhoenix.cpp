@@ -30,9 +30,10 @@ int main(int argc, char *argv[]) {
     cout << "Usage is " << argv[0] << "indir outdir fname runmin runmax " << endl;
     return 0;
   }
+  int ii=0;
   int p=10000;
   int fifosize=1000;
-  int nthreads=1;
+  int nthreads=5;
   int nsubpix=25;
   int etabins=nsubpix*10;
   double etamin=-1, etamax=2;
@@ -165,6 +166,14 @@ int main(int argc, char *argv[]) {
    		mt->popFree(buff);
 	
 		ff=-1;
+		ii++;
+		if (ii%10000==0) {
+
+		  cout << ii << endl;
+
+		  while (mt->isBusy()) {;}//wait until all data are processed from the queues
+		  mt->writeImage("/scratch/tmp.tiff");
+      		}
       }
       //  cout << "--" << endl;
       filebin.close();	 

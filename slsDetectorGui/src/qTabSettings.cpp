@@ -104,7 +104,7 @@ void qTabSettings::SetupDetectorSettings(){
 	int sett = (int)myDet->getSettings();cout<<"sett:"<<sett<<endl;
 	qDefs::checkErrorMessage(myDet,"qTabSettings::SetupDetectorSettings");
 	if(sett==-1) sett = Undefined;
-	if(detType == slsDetectorDefs::JUNGFRAUCTB && sett > slsDetectorDefs::UNDEFINED) sett = Uninitialized;
+	if(detType == slsDetectorDefs::JUNGFRAUCTB) sett = Uninitialized;
 	else if(sett == slsDetectorDefs::UNDEFINED) sett = Undefined;
 	else if(sett == slsDetectorDefs::UNINITIALIZED) sett = Uninitialized;
 	// To be able to index items on a combo box
@@ -186,7 +186,7 @@ void qTabSettings::SetupDetectorSettings(){
 		default:
 			cout << "Unknown detector type. Exiting GUI." << endl;
 			qDefs::Message(qDefs::CRITICAL,"Unknown detector type. Exiting GUI.","qTabSettings::SetupDetectorSettings");
-			exit(-1);
+		exit(-1);
 			break;
 		}
 		// detector settings selected NOT ENABLED.
@@ -197,7 +197,8 @@ void qTabSettings::SetupDetectorSettings(){
 #ifdef VERBOSE
 			cout << "ERROR:  Unknown Detector Settings retrieved from detector." << endl;
 #endif
-			exit(-1);
+			sett= Undefined;
+			//	exit(-1);
 		}
 		// Setting the detector settings
 		else	comboSettings->setCurrentIndex(sett);

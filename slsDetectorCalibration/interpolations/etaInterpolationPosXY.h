@@ -15,11 +15,11 @@ class etaInterpolationPosXY : public virtual etaInterpolationBase{
 
  etaInterpolationPosXY(etaInterpolationPosXY *orig): etaInterpolationBase(orig) {};
 
-  virtual etaInterpolationPosXY* Clone()=0;/** {
+  virtual etaInterpolationPosXY* Clone()=0; /* { */
 
-    return new etaInterpolationPosXY(this);
+    /* return new etaInterpolationPosXY(this); */
 
-    };*/
+    /* }; */
 
   virtual void prepareInterpolation(int &ok)
   {

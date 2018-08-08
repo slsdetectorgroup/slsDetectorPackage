@@ -17,10 +17,7 @@
 #include <iostream>
 
 using namespace std;
-#define XMIN 350/2
-#define XMAX 600/2
-#define YMIN 0
-#define YMAX 400
+
 
 class interpolatingDetector : public singlePhotonDetector {
 
@@ -50,7 +47,7 @@ class interpolatingDetector : public singlePhotonDetector {
 		       commonModeSubtraction *cm=NULL,
 		       int nped=1000, 
 		       int nd=100, int nnx=-1, int nny=-1) : 
-  singlePhotonDetector(d, 3,nsigma,sign, cm, nped, nd, nnx, nny) , interp(inte), id(0), xmin(XMIN), xmax(XMAX), ymin(YMIN), ymax(YMAX)  {
+  singlePhotonDetector(d, 3,nsigma,sign, cm, nped, nd, nnx, nny) , interp(inte), id(0)  {
     cout << "**"<< xmin << " " << xmax << " " << ymin << " " << ymax << endl;
 
 };
@@ -60,10 +57,10 @@ class interpolatingDetector : public singlePhotonDetector {
  interpolatingDetector(interpolatingDetector *orig) : singlePhotonDetector(orig) {
     interp=(orig->interp)->Clone();
     id=orig->id;
-    xmin=orig->xmin;
-    xmax=orig->xmax;
-    ymin=orig->ymin;
-    ymax=orig->ymax;
+    /* xmin=orig->xmin; */
+    /* xmax=orig->xmax; */
+    /* ymin=orig->ymin; */
+    /* ymax=orig->ymax; */
     
   }
 
@@ -157,10 +154,10 @@ int addFrame(char *data,  int *ph=NULL, int ff=0) {
   int cy=(clusterSizeY+1)/2;
   int cs=(clusterSize+1)/2;
   int ir, ic;
-  
+  double rms;
     double int_x,int_y, eta_x, eta_y;
   double max=0, tl=0, tr=0, bl=0,br=0, *v, vv;
-
+  // cout << "********** Add frame "<< iframe << endl;
   if (ph==NULL)
     ph=image;
 
@@ -169,6 +166,7 @@ int addFrame(char *data,  int *ph=NULL, int ff=0) {
     return 0;
   }
   newFrame();
+  // cout << "********** Data "<< endl;
   for (int ix=xmin; ix<xmax; ix++) {
     for (int iy=ymin; iy<ymax; iy++) {
       
@@ -185,8 +183,8 @@ int addFrame(char *data,  int *ph=NULL, int ff=0) {
 
       eventMask[iy][ix]=PEDESTAL;
       
-	
-      (clusters+nph)->rms=getPedestalRMS(ix,iy);
+	rms=getPedestalRMS(ix,iy);
+	(clusters+nph)->rms=rms;
       
       
       
@@ -213,7 +211,7 @@ int addFrame(char *data,  int *ph=NULL, int ff=0) {
 	  
 	  
 	  if (ir==0 && ic==0) {
-	    if (*v<-nSigma*cluster->rms)
+	    if (*v<-nSigma*rms)
 	      eventMask[iy][ix]=NEGATIVE_PEDESTAL;
 	  }
 	  
@@ -234,7 +232,7 @@ int addFrame(char *data,  int *ph=NULL, int ff=0) {
 	(clusters+nph)->quadTot=tr;
       }
       
-      if (max>nSigma*cluster->rms || tot>sqrt(clusterSizeY*clusterSize)*nSigma*cluster->rms || ((clusters+nph)->quadTot)>sqrt(cy*cs)*nSigma*cluster->rms) {
+      if (max>nSigma*rms || tot>sqrt(clusterSizeY*clusterSize)*nSigma*rms || ((clusters+nph)->quadTot)>sqrt(cy*cs)*nSigma*rms) {
 	if (val[iy][ix]>=max) {
 	  eventMask[iy][ix]=PHOTON_MAX;
 	  (clusters+nph)->tot=tot;
@@ -646,8 +644,6 @@ int addFrame(char *data,  int *ph=NULL, int ff=0) {
   
   slsInterpolation *interp;
   int id;
-  //should put it to analogDetector
-  int xmin, xmax, ymin, ymax;
 };
 
 

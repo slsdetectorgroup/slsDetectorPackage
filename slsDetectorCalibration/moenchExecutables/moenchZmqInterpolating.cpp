@@ -22,15 +22,19 @@ using namespace std;
 #define SLS_DETECTOR_JSON_HEADER_VERSION 0x2
 
 
+
+
 int main(int argc, char *argv[]) {
 /**
  * trial.o [socket ip] [starting port number] [send_socket ip] [send port number]
  *
  */
+
   FILE *of=NULL;
   int fifosize=1000;
   int nthreads=20;
-  int nsubpixels=2;
+  int int_ready=0;
+  int ok;
 	// help
 	if (argc < 3 ) {
 		cprintf(RED, "Help: ./trial [receive socket ip] [receive starting port number] [send_socket ip] [send starting port number]\n");
@@ -58,6 +62,10 @@ int main(int argc, char *argv[]) {
 				"\nsd port num  : " <<  portnum2;
 	}
 	cout << endl;
+	int nsubpixels=2;
+	if (argc > 5) {
+	  nsubpixels=atoi(argv[5]);
+	}
 	//slsDetectorData *det=new moench03T1ZmqDataNew(); 
 	int npx, npy;
 	moench03T1ZmqDataNew *det=new moench03T1ZmqDataNew(); 
@@ -70,7 +78,8 @@ int main(int argc, char *argv[]) {
 
 	  char* buff;
 	  multiThreadedAnalogDetector *mt=new multiThreadedAnalogDetector(filter,nthreads,fifosize);
-	  mt->setFrameMode(eFrame);
+	  int frameMode=eFrame;
+	  mt->setFrameMode(frameMode);
 	  mt->StartThreads();
 	  mt->popFree(buff);
 
@@ -113,6 +122,9 @@ int main(int argc, char *argv[]) {
 	uint32_t subframeIndex = -1;
 	uint64_t fileindex = -1;
 	string filename = "";
+	char ffname[10000];
+	int ffindex;
+
 	char* image = new char[size];
 	//int* image = new int[(size/sizeof(int))]();
 
@@ -139,35 +151,42 @@ int main(int argc, char *argv[]) {
 	    // cprintf(RED, "Got Dummy\n");
 	    while (mt->isBusy()) {;}//wait until all data are processed from the queues
 			
-	    
+	    if (frameMode==eFrame) {
 	    detimage=mt->getImage(nix,niy,nis);
-	    
+	   
 	    if (detimage) {
-	      for (ix=0; ix<nnx; ix++) {
-		for (iy=0; iy<nny; iy++) {
+	      for (ix=0; ix<nnx/nis; ix++) {
+		for (iy=0; iy<nny/nis; iy++) {
 		  dout[iy*nnx+ix]=0;
 		  for (isx=0; isx<nis; isx++) {
 		    for (isy=0; isy<nis; isy++) {
 		      dout[iy*nnx+ix]+=detimage[(iy+isy)*nix+(ix+isx)];
+		      //  if (detimage[(iy+isy)*nix+(ix+isx)]) 			cout << ix << " " << iy << " " << isx << " " << isy << " " << detimage[(iy+isy)*nix+(ix+isx)] << " " << dout[iy*nnx+ix] << endl;
 		    }
 		  }
 		}
-	      }
-
-
-	      if (send) {
-		strcpy(fname,filename.c_str());
-		//  zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,16,fileindex,400,400,400*400, acqIndex,frameIndex,fname, acqIndex, 0,0,0,0,0,0,0,0,0,0,0,1);
-		zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,0,0,0,0,0, 0,0,fname, 0, 0,0,0,0,0,0,0,0,0,0,0,1);
 		
-		zmqsocket2->SendData((char*)dout,length);
-		cprintf(GREEN, "Sent Data\n");
 	      }
-	      
-	      sprintf(ofname,"%s_%d.tiff",filename.c_str(),fileindex);
-	      mt->writeImage(ofname);
-	      
 	    }
+	    }
+	    if (send) {
+	      strcpy(fname,filename.c_str());
+	      //  zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,16,fileindex,400,400,400*400, acqIndex,frameIndex,fname, acqIndex, 0,0,0,0,0,0,0,0,0,0,0,1);
+	      zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,0,0,0,0,0, 0,0,fname, 0, 0,0,0,0,0,0,0,0,0,0,0,1);
+	      
+	      zmqsocket2->SendData((char*)dout,length);
+	      cprintf(GREEN, "Sent Data\n");
+	    }
+	    
+	    sprintf(ofname,"%s_%d.tiff",ffname,ffindex);
+	    if (frameMode==eFlat)
+	      mt->writeFlatField(ofname); 
+	    else if (frameMode==ePedestal)
+	      mt->writePedestal(ofname);
+	    else
+	      mt->writeImage(ofname); 
+	    
+	  
 	    // stream dummy  to socket2 to signal end of acquisition
 	    if (send) {
 	      zmqsocket2->SendHeaderData(0, true, SLS_DETECTOR_JSON_HEADER_VERSION);
@@ -184,7 +203,8 @@ int main(int argc, char *argv[]) {
 	  }
 
 
-	  if (of==NULL) {
+	  if (of==NULL) {  
+	    while (mt->isBusy()) {;}
 	    sprintf(ofname,"%s_%d.clust",filename.c_str(),fileindex);
 	    of=fopen(ofname,"w");
 	    if (of) {
@@ -193,6 +213,32 @@ int main(int argc, char *argv[]) {
 	      cout << "Could not open "<< ofname << " for writing " << endl;
 	      mt->setFilePointer(NULL);
 	    }
+	    ffindex=fileindex;
+	    strcpy(ffname,filename.c_str());
+	    if (filename.find("flat")!=std::string::npos) {
+	      cout << "add to ff" << endl;
+	      frameMode=eFlat;//ePedestal;
+	      int_ready=0;
+	      
+	    } else if  (filename.find("newped")!=std::string::npos) {
+	      frameMode=ePedestal;
+	      cout << "new pedestal" << endl;
+	      
+	      mt->newDataSet();
+	    } else if  (filename.find("ped")!=std::string::npos){ 
+	      frameMode=ePedestal;
+	      cout << "pedestal" << endl;
+	    } else { 
+	      frameMode=eFrame;
+	      cout << "data" << endl;
+	      if (int_ready==0) {
+		mt->prepareInterpolation(ok);
+		cout << "prepare interpolation " << endl;
+		int_ready=1;
+	      }
+	    }
+	   
+	    mt->setFrameMode(frameMode);
 	  }
 	  
 	  // get data

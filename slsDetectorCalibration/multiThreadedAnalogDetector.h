@@ -50,7 +50,7 @@ public:
   
 
   virtual int setFrameMode(int fm) {fMode=fm; if (fMode>=0) det->setFrameMode((frameMode)fMode);};
-
+  virtual void newDataSet(){det->newDataSet();};
       //fMode=fm; return fMode;}
 
   /* void prepareInterpolation(int &ok) { */
@@ -235,6 +235,7 @@ public:
 
   int setFrameMode(int fm) { int ret; for (int i=0; i<nThreads; i++) ret=dets[i]->setFrameMode(fm); return ret;};
   
+ void newDataSet(){for (int i=0; i<nThreads; i++) dets[i]->newDataSet();};
   int *getImage(int &nnx, int &nny, int &ns) {
     int *img;
     // int nnx, nny, ns;
@@ -242,13 +243,14 @@ public:
     //for (i=0; i<nn; i++) image[i]=0;
     
     for (int ii=0; ii<nThreads; ii++) {
-      //  cout << ii << " " << dets[ii]->getImageSize(nnx, nny, ns) << " " << nnx << " " << nny << " " << ns << endl;
+      //cout << ii << " " << nn << " " << nnx << " " << nny << " " << ns << endl;
       img=dets[ii]->getImage();
       for (int i=0; i<nn; i++) {
 	if (ii==0)
 	  image[i]=img[i];
 	else
 	  image[i]+=img[i];
+	//if (img[i])	  cout << "det " << ii << " pix " << i << " val " <<  img[i] << " " << image[i] << endl;
       }
     
     }
@@ -280,8 +282,8 @@ public:
      float *gm=new float[nn];
      if (gm) {
        for (int ix=0; ix<nn; ix++) {
-	 //	 if (image[ix]>0) cout << ix << " " << image[ix]<< endl;
 	 gm[ix]=image[ix];
+	 // if (image[ix]>0 && ix/nnx<350) cout << ix/nnx << " " << ix%nnx << " " << image[ix]<< " " << gm[ix] << endl;
        }
        //cout << "image " << nnx << " " << nny << endl;
        WriteToTiff(gm,imgname ,nnx, nny); 
@@ -403,7 +405,7 @@ public:
 	} else cout << "Could not allocate float image " << endl;
       }
     } else
-      cout << "Not interpolating detector! " << endl;
+      cout << "Detector without flat field! " << endl;
     
     return NULL;
     

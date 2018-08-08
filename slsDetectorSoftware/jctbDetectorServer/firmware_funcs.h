@@ -81,7 +81,7 @@ int getTemperature(int tempSensor);
 int initHighVoltage(int val,int imod);
 int initConfGain(int isettings,int val,int imod);
 
-int setADC(int adc);
+//int setADC(int adc);
 //int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int ival, int udpport);
 int configureMAC(uint32_t destip,uint64_t destmac,uint64_t  sourcemac,int detipad,int ival,uint32_t destport);
 int getAdcConfigured();
@@ -160,7 +160,7 @@ int allocateRAM();
 
 
 int writeADC(int addr, int val);
-int prepareADC();
+//int prepareADC();
 
 
 

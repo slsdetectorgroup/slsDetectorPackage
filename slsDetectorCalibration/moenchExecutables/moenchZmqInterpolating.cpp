@@ -30,54 +30,76 @@ int main(int argc, char *argv[]) {
  *
  */
 
+  int nthreads=20;
+  int nsigma=5;
+  int xmin=0;
+  int xmax=400;
+  int ymin=0;
+  int ymax=400;
+  int nsubpixels=2;
+
+
   FILE *of=NULL;
   int fifosize=1000;
-  int nthreads=20;
   int int_ready=0;
   int ok;
-	// help
-	if (argc < 3 ) {
-		cprintf(RED, "Help: ./trial [receive socket ip] [receive starting port number] [send_socket ip] [send starting port number]\n");
-		return EXIT_FAILURE;
-	}
+  // help
+  if (argc < 3 ) {
+    cprintf(RED, "Help: %s [receive socket ip] [receive starting port number] [send_socket ip] [send starting port number] [nsubpixels] [nthreads] [nsigma] [xmin xmax ymin ymax]\n", argv[0]);
+    return EXIT_FAILURE;
+  }
 
+  char* socketip2 = 0;
+  uint32_t portnum2 = 0;
 	// receive parameters
-	bool send = false;
-	  char* socketip=argv[1];
-	uint32_t portnum = atoi(argv[2]);
-	int size = 32*2*5000;//atoi(argv[3]);
-
-	// send parameters if any
-	char* socketip2 = 0;
-	uint32_t portnum2 = 0;
-	if (argc > 3) {
-		send = true;
-		socketip2 = argv[3];
-		portnum2 = atoi(argv[4]);
-	}
-	cout << "\nrx socket ip : " << socketip <<
-			"\nrx port num  : " <<  portnum ;
-	if (send) {
-		cout << "\nsd socket ip : " << socketip2 <<
-				"\nsd port num  : " <<  portnum2;
-	}
-	cout << endl;
-	int nsubpixels=2;
-	if (argc > 5) {
-	  nsubpixels=atoi(argv[5]);
-	}
-	//slsDetectorData *det=new moench03T1ZmqDataNew(); 
-	int npx, npy;
-	moench03T1ZmqDataNew *det=new moench03T1ZmqDataNew(); 
-	det->getDetectorSize(npx, npy);
-	//analogDetector<uint16_t> *filter=new analogDetector<uint16_t>(det,1,NULL,1000);
-	//singlePhotonDetector *filter=new singlePhotonDetector(det,3, 5, 1, 0, 1000, 10);
-	linearInterpolation *interp=new linearInterpolation(npx,npy,nsubpixels);
-	interpolatingDetector *filter=new interpolatingDetector(det,interp, 5, 1, 0, 1000, 100,npx,npy);
+  int size = 32*2*5000;//atoi(argv[3]);
+  bool send = false;
 
 
-	  char* buff;
-	  multiThreadedAnalogDetector *mt=new multiThreadedAnalogDetector(filter,nthreads,fifosize);
+
+  char* socketip=argv[1];
+  uint32_t portnum = atoi(argv[2]);
+  if (argc > 3) {
+    send = true;
+    socketip2 = argv[3];
+    portnum2 = atoi(argv[4]);
+  }
+  if (argc > 5) {
+    nsubpixels=atoi(argv[5]);
+  }
+  if (argc>6) {
+    nthreads=atoi(argv[6]);
+  }
+  if (argc>7) {
+    nsigma=atoi(argv[7]);
+  }
+  if (argc>11) {
+    xmin=atoi(argv[8]);
+    xmax=atoi(argv[8]);
+    ymin=atoi(argv[10]);
+    ymax=atoi(argv[11]);
+  }
+
+  cout << "\nrx socket ip : " << socketip <<
+    "\nrx port num  : " <<  portnum ;
+  if (send) {
+    cout << "\nsd socket ip : " << socketip2 <<
+      "\nsd port num  : " <<  portnum2;
+	}
+  cout << endl;
+
+  //slsDetectorData *det=new moench03T1ZmqDataNew(); 
+  int npx, npy;
+  moench03T1ZmqDataNew *det=new moench03T1ZmqDataNew(); 
+  det->getDetectorSize(npx, npy);
+  linearInterpolation *interp=new linearInterpolation(npx,npy,nsubpixels);
+  interpolatingDetector *filter=new interpolatingDetector(det,interp, nsigma, 1, 0, 1000, 100,npx,npy);
+  cout << "Setting noise cut to " << nsigma << " sigma"<< endl;
+  filter->setROI(xmin,xmax,ymin,ymax);
+  cout << "Setting ROI to "<< xmin << " " << xmax << " " << ymin << " " << ymax << endl;
+  
+  char* buff;
+  multiThreadedAnalogDetector *mt=new multiThreadedAnalogDetector(filter,nthreads,fifosize);
 	  int frameMode=eFrame;
 	  mt->setFrameMode(frameMode);
 	  mt->StartThreads();
@@ -89,9 +111,6 @@ int main(int argc, char *argv[]) {
 
 	// receive socket
 	  ZmqSocket* zmqsocket = new ZmqSocket(socketip,portnum); 
-
-
-	  
 	if (zmqsocket->IsError()) {
 		cprintf(RED, "Error: Could not create Zmq socket on port %d with ip %s\n", portnum, socketip);
 		delete zmqsocket;
@@ -102,7 +121,6 @@ int main(int argc, char *argv[]) {
 
 	// send socket
 	ZmqSocket* zmqsocket2 = 0;
-	  cout << "zmq2 " << endl;
 	if (send) {
 		zmqsocket2 = new ZmqSocket(portnum2, socketip2);
 		if (zmqsocket2->IsError()) {
@@ -150,25 +168,36 @@ int main(int argc, char *argv[]) {
 	    //	  if (!zmqsocket->ReceiveHeader(0, acqIndex, frameIndex, subframeIndex, filename, fileindex)) {
 	    // cprintf(RED, "Got Dummy\n");
 	    while (mt->isBusy()) {;}//wait until all data are processed from the queues
-			
-	    if (frameMode==eFrame) {
-	    detimage=mt->getImage(nix,niy,nis);
-	   
-	    if (detimage) {
-	      for (ix=0; ix<nnx/nis; ix++) {
-		for (iy=0; iy<nny/nis; iy++) {
-		  dout[iy*nnx+ix]=0;
-		  for (isx=0; isx<nis; isx++) {
-		    for (isy=0; isy<nis; isy++) {
-		      dout[iy*nnx+ix]+=detimage[(iy+isy)*nix+(ix+isx)];
-		      //  if (detimage[(iy+isy)*nix+(ix+isx)]) 			cout << ix << " " << iy << " " << isx << " " << isy << " " << detimage[(iy+isy)*nix+(ix+isx)] << " " << dout[iy*nnx+ix] << endl;
-		    }
+	    if (frameMode==ePedestal) {	
+	      detped=mt->getPedestal();
+ 	      if (detped) {
+		
+ 		for (ix=0; ix<400; ix++) {
+ 		  for (iy=0; iy<400; iy++) {
+ 		    dout[iy*400+ix]+=detped[iy*400+ix];
 		  }
 		}
-		
+	      }
+
+	    } else {	      
+ 	      detimage=mt->getImage(nix,niy,nis);
+ 	      if (detimage) {
+ 		for (ix=0; ix<nix/nis; ix++) {
+                   for (iy=0; iy<niy/nis; iy++) {
+                     dout[iy*(nix/nis)+ix]=0;
+ 		  }
+ 		}
+ 		for (ix=0; ix<nix; ix++) {
+ 		  for (iy=0; iy<niy; iy++) {
+ 		    dout[(iy/nis)*(nix/nis)+(ix/nis)]+=detimage[iy*nix+ix];
+		  }
+		}
 	      }
 	    }
-	    }
+	  	    
+	     
+	   
+	   
 	    if (send) {
 	      strcpy(fname,filename.c_str());
 	      //  zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,16,fileindex,400,400,400*400, acqIndex,frameIndex,fname, acqIndex, 0,0,0,0,0,0,0,0,0,0,0,1);

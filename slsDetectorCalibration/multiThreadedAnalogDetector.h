@@ -451,7 +451,7 @@ public:
       p0=dets[i]->getPedestal(p0);
       if (p0) {
 	for (int ib=0; ib<nx*ny; ib++) {
-	  ped[ib]+=p0[ib];
+	  ped[ib]+=p0[ib]/((double)nThreads);
 	}
       }
 	

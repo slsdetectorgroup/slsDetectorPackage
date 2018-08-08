@@ -6,7 +6,7 @@
 
 #include "slsInterpolation.h"
 
-#define M015
+//#define M015
 
 #ifdef MYROOT1
 #include <TTree.h>
@@ -48,7 +48,7 @@ class interpolatingDetector : public singlePhotonDetector {
 		       int nped=1000, 
 		       int nd=100, int nnx=-1, int nny=-1) : 
   singlePhotonDetector(d, 3,nsigma,sign, cm, nped, nd, nnx, nny) , interp(inte), id(0)  {
-    cout << "**"<< xmin << " " << xmax << " " << ymin << " " << ymax << endl;
+    //cout << "**"<< xmin << " " << xmax << " " << ymin << " " << ymax << endl;
 
 };
   

@@ -2,14 +2,15 @@
 CBFLIBDIR=/afs/psi.ch/project/sls_det_software/CBFlib-0.9.5
 ZMQLIB=../../slsReceiverSoftware/include
 LIBRARYCBF=$(CBFLIBDIR)/lib/*.o
-INCDIR=-I../../slsReceiverSoftware/include -I$(CBFLIBDIR)/include/ -I. -I../interpolations/etaVEL -I../dataStructures ../tiffIO.cpp -I../ -I../interpolations/
+INCDIR=-I../../slsReceiverSoftware/include -I$(CBFLIBDIR)/include/ -I. -I../dataStructures ../tiffIO.cpp -I../ -I../interpolations/
 LIBHDF5=
-LDFLAG= -L/usr/lib64/ -lpthread -lm  -lstdc++ -L. -lzmq -pthread -lrt -L$(CBFLIBDIR)/lib/ -lhdf5 -ltiff -L$(ZMQLIB)
+#-I../interpolations/etaVEL 
+LDFLAG= -L/usr/lib64/ -lpthread -lm  -lstdc++ -L. -lzmq -pthread -lrt -lhdf5 -ltiff -L$(ZMQLIB) -L$(CBFLIBDIR)/lib/ 
 #-L../../bin 
 
 #DESTDIR?=../bin
 
-all: moenchZmqClusterFinder moenchZmqInterpolating
+all: moenchZmqClusterFinder moenchZmqInterpolating moenchZmqAnalog
 
 
 moenchZmqInterpolating:  $(MAIN)  $(INCS) clean
@@ -18,6 +19,10 @@ moenchZmqInterpolating:  $(MAIN)  $(INCS) clean
 moenchZmqClusterFinder:  $(MAIN)  $(INCS) clean
 		      g++ -o moenchZmqClusterFinder  moenchZmqClusterFinder.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL
 
+moenchZmqAnalog:  $(MAIN)  $(INCS) clean
+		      g++ -o moenchZmqAnalog  moenchZmqAnalog.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL
+
 clean: 	
-	rm -f  moench03ZmqOnTheFlyEta moench03ZmqClusterFinder
+	rm -f  moench03ZmqInterpolating moench03ZmqClusterFinder moenchZmqAnalog
+
 

@@ -21,16 +21,23 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	/**
 	 * Constructor
 	 * Calls Base Class CreateThread(), sets ErrorMask if error and increments NumberofListerners
+	 * @param ind self index
 	 * @param dtype detector type
 	 * @param f address of Fifo pointer
 	 * @param s pointer to receiver status
 	 * @param portno pointer to udp port number
 	 * @param e ethernet interface
-	 * @param act pointer to activated
 	 * @param nf pointer to number of images to catch
 	 * @param dr pointer to dynamic range
+	 * @param us pointer to udp socket buffer size
+	 * @param as pointer to actual udp socket buffer size
+	 * @param fpf pointer to frames per file
+	 * @param fdp frame discard policy
 	 */
-	Listener(detectorType dtype, Fifo*& f, runStatus* s, uint32_t* portno, char* e, int* act, uint64_t* nf, uint32_t* dr);
+	Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
+	        uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
+	        uint32_t* us, uint32_t* as, uint32_t* fpf,
+			frameDiscardPolicy* fdp);
 
 	/**
 	 * Destructor
@@ -39,33 +46,13 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	~Listener();
 
 
-	//*** static functions ***
-	/**
-	 * Get ErrorMask
-	 * @return ErrorMask
-	 */
-	static uint64_t GetErrorMask();
-
-	/**
-	 * Get RunningMask
-	 * @return RunningMask
-	 */
-	static uint64_t GetRunningMask();
-
-	/**
-	 * Reset RunningMask
-	 */
-	static void ResetRunningMask();
-
-	/**
-	 * Set Silent Mode
-	 * @param mode 1 sets 0 unsets
-	 */
-	static void SetSilentMode(bool mode);
-
-
-	//*** non static functions ***
 	//*** getters ***
+    /**
+     * Returns if the thread is currently running
+     * @returns true if thread is running, else false
+     */
+    bool IsRunning();
+
 	/**
 	 * Get acquisition started flag
 	 * @return acquisition started flag
@@ -142,7 +129,19 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	void ShutDownUDPSocket();
 
+    /**
+     * Set Silent Mode
+     * @param mode 1 sets 0 unsets
+     */
+    void SetSilentMode(bool mode);
 
+    /**
+     * Create & closes a dummy UDP socket
+     * to set & get actual buffer size
+     * @param s UDP socket buffer size to be set
+     * @return OK or FAIL of dummy socket creation
+     */
+    int CreateDummySocketForUDPSocketBufferSize(uint32_t s);
 
 
  private:
@@ -152,12 +151,6 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * @return type
 	 */
 	std::string GetType();
-
-	/**
-	 * Returns if the thread is currently running
-	 * @returns true if thread is running, else false
-	 */
-	bool IsRunning();
 
 	/**
 	 * Record First Indices (firstAcquisitionIndex, firstMeasurementIndex)
@@ -184,16 +177,10 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * Listen to the UDP Socket for an image,
 	 * place them in the right order
 	 * @param buffer
-	 * @returns number of bytes of relevant data, can be image size or 0
+	 * @returns number of bytes of relevant data, can be image size or 0 (stop acquisition)
+	 * or -1 to discard image
 	 */
 	uint32_t ListenToAnImage(char* buf);
-
-	/**
-	 * Create an image (for deactivated detectors),
-	 * @param buffer
-	 * @returns image size or 0
-	 */
-	uint32_t CreateAnImage(char* buf);
 
 	/**
 	 * Print Fifo Statistics
@@ -205,26 +192,14 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	/** type of thread */
 	static const std::string TypeName;
 
-	/** Total Number of Listener Objects */
-	static int NumberofListeners;
-
-	/** Mask of errors on any object eg.thread creation */
-	static uint64_t ErrorMask;
-
-	/** Mask of all listener objects running */
-	static uint64_t RunningMask;
-
-	/** Mutex to update static items among objects (threads)*/
-	static pthread_mutex_t Mutex;
+	/** Object running status */
+	bool runningFlag;
 
 	/** GeneralData (Detector Data) object */
 	const GeneralData* generalData;
 
 	/** Fifo structure */
 	Fifo* fifo;
-
-	/** Silent Mode */
-	static bool SilentMode;
 
 
 	// individual members
@@ -243,14 +218,23 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	/** ethernet interface */
 	char* eth;
 
-	/** if the detector is activated */
-	int* activated;
-
 	/** Number of Images to catch */
 	uint64_t* numImages;
 
 	/** Dynamic Range */
 	uint32_t* dynamicRange;
+
+	/** UDP Socket Buffer Size */
+	uint32_t* udpSocketBufferSize;
+
+	/** actual UDP Socket Buffer Size (double due to kernel bookkeeping) */
+	uint32_t* actualUDPSocketBufferSize;
+
+	/** frames per file */
+	uint32_t* framesPerFile;
+
+	/** frame discard policy */
+	frameDiscardPolicy* frameDiscardMode;
 
 
 	// acquisition start
@@ -293,6 +277,9 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	/** if the udp socket is connected */
 	bool udpSocketAlive;
 
+    /** Semaphore to synchonize deleting udp socket */
+    sem_t semaphore_socket;
+
 
 	// for print progress during acqusition
 	/** number of packets for statistic */
@@ -300,5 +287,8 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** number of images for statistic */
 	uint32_t numFramesStatistic;
+
+    /** Silent Mode */
+    bool silentMode;
 };
 

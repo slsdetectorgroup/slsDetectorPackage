@@ -22,7 +22,7 @@ class multiSlsDetectorCommand;
 #include <string>
 
 
-using namespace std;
+
 
 
 
@@ -100,7 +100,7 @@ class slsDetectorUsers
        @short useful to define subset of working functions
       \returns "PSI" or "Dectris"
    */
-   string getDetectorDeveloper();
+   std::string getDetectorDeveloper();
 
 
 
@@ -138,20 +138,20 @@ class slsDetectorUsers
   /**
       @short returns the default output files path
   */
-   string getFilePath();
+   std::string getFilePath();
 
  /**
       @short sets the default output files path
      \param s file path
      \returns file path
   */
-   string setFilePath(string s);
+   std::string setFilePath(std::string s);
 
   /** 
       @short 
       \returns the default output files root name
   */
-   string getFileName();  
+   std::string getFileName();  
 
   /**
       @short sets the default output files path
@@ -159,7 +159,7 @@ class slsDetectorUsers
      \returns the default output files root name
      
   */
-   string setFileName(string s);  
+   std::string setFileName(std::string s);  
   
   /** 
       @short 
@@ -178,27 +178,27 @@ class slsDetectorUsers
          @short get flat field corrections file directory
     \returns flat field correction file directory
   */
-   string getFlatFieldCorrectionDir(); 
+   std::string getFlatFieldCorrectionDir(); 
   
   /** 
            @short set flat field corrections file directory
       \param dir flat field correction file directory
       \returns flat field correction file directory
   */
-   string setFlatFieldCorrectionDir(string dir);
+   std::string setFlatFieldCorrectionDir(std::string dir);
   
   /** 
            @short get flat field corrections file name
       \returns flat field correction file name
   */
-   string getFlatFieldCorrectionFile();
+   std::string getFlatFieldCorrectionFile();
   
   /** 
            @short set flat field correction file
       \param fname name of the flat field file (or "" if disable)
       \returns 0 if disable (or file could not be read), >0 otherwise
   */
-   int setFlatFieldCorrectionFile(string fname=""); 
+   int setFlatFieldCorrectionFile(std::string fname=""); 
 
   
 
@@ -310,52 +310,68 @@ class slsDetectorUsers
   */
    int setThresholdEnergy(int e_eV);
 
+   /**
+    @short set threshold energy with choice to load trimbits (eiger only)
+    \param e_ev threshold in ev
+    \param tb 1 loads trimbits, 0 does not load trimbits
+    \param isettings settings index (-1 uses current setting)
+    \param id module index (-1 for all)
+    \returns current threshold value in ev (-1 failed)
+    */
+   int setThresholdEnergy(int e_ev, int tb, int isettings = -1, int id = -1);
+
 
    /**
         @short set/get exposure time value
         \param t time in sn  (-1 gets)
         \param inseconds true if the value is in s, else ns
+        \param imod module number (-1 for all)
         \returns timer set value in ns, or s if specified
     */
 
-   double setExposureTime(double t=-1, bool inseconds=false);
+   double setExposureTime(double t=-1, bool inseconds=false, int imod = -1);
 
     /**
          @short set/get exposure period
         \param t time in ns   (-1 gets)
         \param inseconds true if the value is in s, else ns
+        \param imod module number (-1 for all)
         \returns timer set value in ns, or s if specified
     */
-   double setExposurePeriod(double t=-1, bool inseconds=false);
+   double setExposurePeriod(double t=-1, bool inseconds=false, int imod = -1);
 
     /**
          @short set/get delay after trigger
         \param t time in ns   (-1 gets)
         \param inseconds true if the value is in s, else ns
+        \param imod module number (-1 for all)
         \returns timer set value in ns, or s if specified
     */
-   double setDelayAfterTrigger(double t=-1, bool inseconds=false);
+   double setDelayAfterTrigger(double t=-1, bool inseconds=false, int imod = -1);
 
   /** 
        @short set/get number of gates
       \param t number of gates  (-1 gets)
+      \param imod module number (-1 for all)
       \returns number of gates
   */
-   int64_t setNumberOfGates(int64_t t=-1); 
+   int64_t setNumberOfGates(int64_t t=-1, int imod = -1);
   
   /** 
        @short set/get number of frames i.e. number of exposure per trigger
       \param t number of frames  (-1 gets) 
+      \param imod module number (-1 for all)
       \returns number of frames
   */
-   int64_t setNumberOfFrames(int64_t t=-1);
+   int64_t setNumberOfFrames(int64_t t=-1, int imod = -1);
 
   /** 
        @short set/get number of cycles i.e. number of triggers
       \param t number of frames  (-1 gets) 
+      \param imod module number (-1 for all)
       \returns number of frames
   */
-   int64_t setNumberOfCycles(int64_t t=-1);
+   int64_t setNumberOfCycles(int64_t t=-1, int imod = -1);
   
 
  /** 
@@ -370,7 +386,7 @@ class slsDetectorUsers
      \param fname file name
      \returns OK or FAIL
   */  
-   int readConfigurationFile(string const fname);  
+   int readConfigurationFile(std::string const fname);  
 
 
   /** 
@@ -379,20 +395,20 @@ class slsDetectorUsers
       \returns OK or FAIL
   
   */
-   int dumpDetectorSetup(string const fname); 
+   int dumpDetectorSetup(std::string const fname); 
   /** 
       @short Loads the detector setup from file
       \param fname file to read from
       \returns OK or FAIL
   
   */
-   int retrieveDetectorSetup(string const fname);
+   int retrieveDetectorSetup(std::string const fname);
 
   /**
       @short useful for data plotting etc.
      \returns Mythen, Eiger, Gotthard etc.
   */
-   string getDetectorType();
+   std::string getDetectorType();
 
    /**
        @short sets the mode by which gui requests data from receiver
@@ -433,7 +449,7 @@ class slsDetectorUsers
      \param var optional parameter - unused.
   */
   
-  virtual void addFrame(double *data, double pos, double i0, double t, string fname, double var);
+  virtual void addFrame(double *data, double pos, double i0, double t, std::string fname, double var);
 
   /**
      @short finalizes the data set returning the array of angles, values and errors to be used as final data - can be overcome by the user's functions thanks to the virtual property
@@ -478,18 +494,18 @@ class slsDetectorUsers
    /** (for expert users)
     * Set/Get receiver streaming out ZMQ IP
     * By default, it is the IP of receiver hostname
-    * @param ip sets, empty string gets
+    * @param ip sets, empty std::string gets
     * @returns receiver streaming out ZMQ IP
     */
-   string setReceiverDataStreamingOutIP(string ip="");
+   std::string setReceiverDataStreamingOutIP(std::string ip="");
 
    /** (for expert users)
     * Set/Get client streaming in ZMQ IP
     * By default, it is the IP of receiver hostname
-    * @param i sets, empty string gets
+    * @param i sets, empty std::string gets
     * @returns client streaming in ZMQ IP
     */
-   string setClientDataStreamingInIP(string ip="");
+   std::string setClientDataStreamingInIP(std::string ip="");
 
   /**
      get get Module Firmware Version
@@ -580,18 +596,18 @@ class slsDetectorUsers
      \param narg value to be set
      \param args value to be set
      \param pos position of detector in multislsdetector list
-     \returns answer string
+     \returns answer std::string
     */
-   string putCommand(int narg, char *args[], int pos=-1);
+   std::string putCommand(int narg, char *args[], int pos=-1);
 
    /**
      @short gets parameters in command interface http://www.psi.ch/detectors/UsersSupportEN/slsDetectorClientHowTo.pdf
      \param narg value to be set
      \param args value to be set
      \param pos position of detector in multislsdetector list
-     \returns answer string
+     \returns answer std::string
     */
-   string getCommand(int narg, char *args[], int pos=-1);
+   std::string getCommand(int narg, char *args[], int pos=-1);
 
    /************************************************************************
 
@@ -612,6 +628,13 @@ class slsDetectorUsers
     */
    int setParallelMode(int value);
 
+   /**
+    * @short show saturated for overflow in subframes in 32 bit mode (eiger only)
+    * \param value 0 for do not show saturatd, 1 for show saturated (-1 gets)
+    * \returns overflow mode enable in 32 bit mode
+    */
+   int setOverflowMode(int value);
+
     /**
       @short sets all trimbits to value (only available for eiger)
       \param val value to be set (-1 gets)
@@ -622,20 +645,20 @@ class slsDetectorUsers
 
    /**
       @short set dac value
-      \param dac dac as string. can be vcmp_ll, vcmp_lr, vcmp_rl, vcmp_rr, vthreshold, vrf, vrs, vtr, vcall, vcp. others not supported
+      \param dac dac as std::string. can be vcmp_ll, vcmp_lr, vcmp_rl, vcmp_rr, vthreshold, vrf, vrs, vtr, vcall, vcp. others not supported
       \param val value to be set (-1 gets)
       \param id module index (-1 for all)
-      \returns dac value or -1 (if id=-1 & dac value is different for all modules) or -9999 if dac string does not match
+      \returns dac value or -1 (if id=-1 & dac value is different for all modules) or -9999 if dac std::string does not match
     */
-   int setDAC(string dac, int val, int id = -1);
+   int setDAC(std::string dac, int val, int id = -1);
 
    /**
       @short get adc value
-      \param adc adc as string. can be temp_fpga, temp_fpgaext, temp_10ge, temp_dcdc, temp_sodl, temp_sodr, temp_fpgafl, temp_fpgafr. others not supported
+      \param adc adc as std::string. can be temp_fpga, temp_fpgaext, temp_10ge, temp_dcdc, temp_sodl, temp_sodr, temp_fpgafl, temp_fpgafr. others not supported
       \param id module index (-1 for all)
-      \returns adc value in millidegree Celsius or -1 (if id=-1 & adc value is different for all modules) or -9999 if adc string does not match
+      \returns adc value in millidegree Celsius or -1 (if id=-1 & adc value is different for all modules) or -9999 if adc std::string does not match
     */
-   int getADC(string adc, int id = -1);
+   int getADC(std::string adc, int id = -1);
 
    /**
       @short start receiver listening mode
@@ -705,35 +728,57 @@ class slsDetectorUsers
     */
    int setTenGigabitEthernet(int i = -1);
 
+   /**
+    * returns total number of detector modules
+    * @returns the total number of detector modules
+    */
+   int getNMods();
+
+   /**
+    * Set sub frame exposure time (only for Eiger)
+    * @param i sub frame exposure time (-1 gets)
+    * @param inseconds true if the value is in s, else ns
+    * @returns sub frame exposure time in ns, or s if specified
+    */
+   double setSubFrameExposureTime(double t=-1, bool inseconds=false);
+
+   /**
+    * Set sub frame period (only for Eiger)
+    * @param i sub frame period (-1 gets)
+    * @param inseconds true if the value is in s, else ns
+    * @returns sub frame period in ns, or s if specified
+    */
+   double setSubFrameExposurePeriod(double t=-1, bool inseconds=false);
+
   /************************************************************************
 
                            STATIC FUNCTIONS
 
   *********************************************************************/  
 
-  /** @short returns string from run status index
+  /** @short returns std::string from run status index
       \param s run status index
-      \returns string error, waiting, running, data, finished or unknown when wrong index
+      \returns std::string error, waiting, running, data, finished or unknown when wrong index
   */
-  static string runStatusType(int s){					\
+  static std::string runStatusType(int s){					\
     switch (s) {							\
-    case 0:     return string("idle");					\
-    case 1:       return string("error");				\
-    case 2:      return  string("waiting");				\
-    case 3:      return string("finished");				\
-    case 4:      return string("data");					\
-    case 5:      return string("running");				\
-    default:       return string("unknown");				\
+    case 0:     return std::string("idle");					\
+    case 1:       return std::string("error");				\
+    case 2:      return  std::string("waiting");				\
+    case 3:      return std::string("finished");				\
+    case 4:      return std::string("data");					\
+    case 5:      return std::string("running");				\
+    default:       return std::string("unknown");				\
     }};
 
 
 
-  /** @short returns detector settings string from index
+  /** @short returns detector settings std::string from index
       \param s can be standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain
-      \returns   setting index (-1 unknown string)
+      \returns   setting index (-1 unknown std::string)
   */
 
-  static int getDetectorSettings(string s){		\
+  static int getDetectorSettings(std::string s){		\
     if (s=="standard") return 0;			\
     if (s=="fast") return 1;				\
     if (s=="highgain") return 2;			\
@@ -743,47 +788,48 @@ class slsDetectorUsers
     if (s=="veryhighgain") return 6;			\
     return -1;				         };
 
-  /** @short returns detector settings string from index
+  /** @short returns detector settings std::string from index
       \param s settings index
       \returns standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, undefined when wrong index
   */
-  static string getDetectorSettings(int s){\
+  static std::string getDetectorSettings(int s){\
     switch(s) {						\
-    case 0:      return string("standard");\
-    case 1:      return string("fast");\
-    case 2:      return string("highgain");\
-    case 3:    return string("dynamicgain");	\
-    case 4:    return string("lowgain");		\
-    case 5:    return string("mediumgain");	\
-    case 6:    return string("veryhighgain");			\
-    default:    return string("undefined");			\
+    case 0:      return std::string("standard");\
+    case 1:      return std::string("fast");\
+    case 2:      return std::string("highgain");\
+    case 3:    return std::string("dynamicgain");	\
+    case 4:    return std::string("lowgain");		\
+    case 5:    return std::string("mediumgain");	\
+    case 6:    return std::string("veryhighgain");			\
+    default:    return std::string("undefined");			\
     }};
 
 
 
   /**
-     @short returns external communication mode string from index
+     @short returns external communication mode std::string from index
      \param f index for communication mode
      \returns  auto, trigger, ro_trigger, gating, triggered_gating, unknown when wrong mode
   */
 
-  static string getTimingMode(int f){	\
+  static std::string getTimingMode(int f){	\
     switch(f) {						 \
-    case 0:      return string( "auto");			\
-    case 1: return string("trigger");			\
-    case 2: return string("ro_trigger");				\
-    case 3: return string("gating");			\
-    case 4: return string("triggered_gating");	\
-    default:    return string( "unknown");				\
+    case 0:      return std::string( "auto");			\
+    case 1: return std::string("trigger");			\
+    case 2: return std::string("ro_trigger");				\
+    case 3: return std::string("gating");			\
+    case 4: return std::string("triggered_gating");	\
+    case 5: return std::string("burst_trigger");	\
+    default:    return std::string( "unknown");				\
     }      };
 
   /**
-     @short returns external communication mode string from index
+     @short returns external communication mode std::string from index
      \param s index for communication mode
      \returns  auto, trigger, ro_trigger, gating, triggered_gating, unknown when wrong mode
   */
 
-  static int getTimingMode(string s){					\
+  static int getTimingMode(std::string s){					\
     if (s== "auto") return 0;						\
     if (s== "trigger") return 1;					\
     if (s== "ro_trigger") return 2;					\

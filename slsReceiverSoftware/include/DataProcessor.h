@@ -24,6 +24,8 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	/**
 	 * Constructor
 	 * Calls Base Class CreateThread(), sets ErrorMask if error and increments NumberofDataProcessors
+     * @param ind self index
+     * @param dtype detector type
 	 * @param f address of Fifo pointer
 	 * @param ftype pointer to file format type
 	 * @param fwenable file writer enable
@@ -32,19 +34,17 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param dr pointer to dynamic range
 	 * @param freq pointer to streaming frequency
 	 * @param timer pointer to timer if streaming frequency is random
+	 * @param fp pointer to frame padding enable
 	 * @param dataReadycb pointer to data ready call back function
+	 * @param dataModifyReadycb pointer to data ready call back function with modified
 	 * @param pDataReadycb pointer to arguments of data ready call back function. To write/stream a smaller size of processed data, change this value (only smaller value is allowed).
 	 */
-	DataProcessor(Fifo*& f, fileFormat* ftype, bool fwenable, bool* dsEnable, bool* gpEnable, uint32_t* dr,
+	DataProcessor(int ind, detectorType dtype, Fifo*& f, fileFormat* ftype,
+			bool fwenable, bool* dsEnable, bool* gpEnable, uint32_t* dr,
 						uint32_t* freq, uint32_t* timer,
-						void (*dataReadycb)(uint64_t, uint32_t, uint32_t, uint64_t,
-						        uint64_t, uint16_t, uint16_t, uint16_t, uint16_t,
-						        uint32_t, uint16_t, uint8_t, uint8_t,
-								char*, uint32_t, void*),
-				        void (*dataModifyReadycb)(uint64_t, uint32_t, uint32_t, uint64_t,
-				                uint64_t, uint16_t, uint16_t, uint16_t, uint16_t,
-				                uint32_t, uint16_t, uint8_t, uint8_t,
-				                char*, uint32_t &, void*),
+						bool* fp,
+						void (*dataReadycb)(char*, char*, uint32_t, void*),
+				        void (*dataModifyReadycb)(char*, char*, uint32_t &, void*),
 						void *pDataReadycb);
 
 	/**
@@ -54,32 +54,13 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	~DataProcessor();
 
 
-	//*** static functions ***
-	/**
-	 * Get ErrorMask
-	 * @return ErrorMask
-	 */
-	static uint64_t GetErrorMask();
-
-	/**
-	 * Get RunningMask
-	 * @return RunningMask
-	 */
-	static uint64_t GetRunningMask();
-
-	/**
-	 * Reset RunningMask
-	 */
-	static void ResetRunningMask();
-
-	/**
-	 * Set Silent Mode
-	 * @param mode 1 sets 0 unsets
-	 */
-	static void SetSilentMode(bool mode);
-
-	//*** non static functions ***
 	//*** getters ***
+    /**
+     * Returns if the thread is currently running
+     * @returns true if thread is running, else false
+     */
+    bool IsRunning();
+
 	/**
 	 * Get acquisition started flag
 	 * @return acquisition started flag
@@ -172,30 +153,35 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * Set up file writer object and call backs
 	 * @param fwe file write enable
 	 * @param nd pointer to number of detectors in each dimension
+	 * @param maxf pointer to max frames per file
 	 * @param fname pointer to file name prefix
 	 * @param fpath pointer to file path
 	 * @param findex pointer to file index
 	 * @param owenable pointer to over write enable
 	 * @param dindex pointer to detector index
-	 * @param nunits pointer to number of theads/ units per detector
+	 * @param nunits pointer to number of threads/ units per detector
 	 * @param nf pointer to number of images in acquisition
 	 * @param dr pointer to dynamic range
 	 * @param portno pointer to udp port number
 	 * @param g address of GeneralData (Detector Data) pointer
 	 */
-	void SetupFileWriter(bool fwe, int* nd, char* fname, char* fpath, uint64_t* findex,
-			 bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno, GeneralData* g = 0);
+	void SetupFileWriter(bool fwe, int* nd, uint32_t* maxf, char* fname,
+			char* fpath, uint64_t* findex,
+			 bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr,
+			 uint32_t* portno, GeneralData* g = 0);
 
 	/**
 	 * Create New File
 	 * @param en ten giga enable
 	 * @param nf number of frames
 	 * @param at acquisition time
-	 * @param at sub exposure time
+	 * @param st sub exposure time
+	 * @param sp sub period
 	 * @param ap acquisition period
 	 * @returns OK or FAIL
 	 */
-	int CreateNewFile(bool en, uint64_t nf, uint64_t at, uint64_t st, uint64_t ap);
+	int CreateNewFile(bool en, uint64_t nf, uint64_t at, uint64_t st,
+			uint64_t sp, uint64_t ap);
 
 	/**
 	 * Closes files
@@ -204,14 +190,21 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 
 	/**
 	 * End of Acquisition
+	 * @param anyPacketsCaught true if any packets are caught, else false
 	 * @param numf number of images caught
 	 */
-	void EndofAcquisition(uint64_t numf);
+	void EndofAcquisition(bool anyPacketsCaught, uint64_t numf);
 
 	/**
 	 * Update pixel dimensions in file writer
 	 */
 	void SetPixelDimension();
+
+    /**
+     * Set Silent Mode
+     * @param mode 1 sets 0 unsets
+     */
+    void SetSilentMode(bool mode);
 
 
  private:
@@ -221,12 +214,6 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @return type
 	 */
 	std::string GetType();
-
-	/**
-	 * Returns if the thread is currently running
-	 * @returns true if thread is running, else false
-	 */
-	bool IsRunning();
 
 	/**
 	 * Record First Indices (firstAcquisitionIndex, firstMeasurementIndex)
@@ -283,6 +270,12 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	bool CheckCount();
 
 	/**
+	 * Pad Missing Packets from the bit mask
+	 * @param buf buffer
+	 */
+	void PadMissingPackets(char* buf);
+
+	/**
 	 * Processing Function (inserting gap pixels) eiger specific
 	 * @param buf pointer to image
 	 * @param dr dynamic range
@@ -292,17 +285,8 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	/** type of thread */
 	static const std::string TypeName;
 
-	/** Total Number of DataProcessor Objects */
-	static int NumberofDataProcessors;
-
-	/** Mask of errors on any object eg.thread creation */
-	static uint64_t ErrorMask;
-
-	/** Mask of all listener objects running */
-	static uint64_t RunningMask;
-
-	/** mutex to update static items among objects (threads)*/
-	static pthread_mutex_t Mutex;
+    /** Object running status */
+    bool runningFlag;
 
 	/** GeneralData (Detector Data) object */
 	const GeneralData* generalData;
@@ -310,11 +294,11 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	/** Fifo structure */
 	Fifo* fifo;
 
-	/** Silent Mode */
-	static bool SilentMode;
-
 
 	//individual members
+	/** Detector Type */
+	detectorType myDetectorType;
+
 	/** File writer implemented as binary or hdf5 File */
 	File* file;
 
@@ -354,7 +338,6 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 
 
 
-
 	//acquisition start
 	/** Aquisition Started flag */
 	bool acquisitionStartedFlag;
@@ -380,55 +363,32 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	uint64_t currentFrameIndex;
 
 
+    /** Silent Mode */
+    bool silentMode;
+
+	/** frame padding */
+	bool* framePadding;
 
 	//call back
     /**
      * Call back for raw data
      * args to raw data ready callback are
-     * frameNumber is the frame number
-     * expLength is the subframe number (32 bit eiger) or real time exposure time in 100ns (others)
-     * packetNumber is the packet number
-     * bunchId is the bunch id from beamline
-     * timestamp is the time stamp with 10 MHz clock
-     * modId is the unique module id (unique even for left, right, top, bottom)
-     * xCoord is the x coordinate in the complete detector system
-     * yCoord is the y coordinate in the complete detector system
-     * zCoord is the z coordinate in the complete detector system
-     * debug is for debugging purposes
-     * roundRNumber is the round robin set number
-     * detType is the detector type see :: detectorType
-     * version is the version number of this structure format
+     * sls_receiver_header frame metadata
      * dataPointer is the pointer to the data
      * dataSize in bytes is the size of the data in bytes.
      */
-    void (*rawDataReadyCallBack)(uint64_t, uint32_t,
-            uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t,
-            uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+    void (*rawDataReadyCallBack)(char*,
             char*, uint32_t, void*);
 
 
     /**
      * Call back for raw data (modified)
      * args to raw data ready callback are
-     * frameNumber is the frame number
-     * expLength is the subframe number (32 bit eiger) or real time exposure time in 100ns (others)
-     * packetNumber is the packet number
-     * bunchId is the bunch id from beamline
-     * timestamp is the time stamp with 10 MHz clock
-     * modId is the unique module id (unique even for left, right, top, bottom)
-     * xCoord is the x coordinate in the complete detector system
-     * yCoord is the y coordinate in the complete detector system
-     * zCoord is the z coordinate in the complete detector system
-     * debug is for debugging purposes
-     * roundRNumber is the round robin set number
-     * detType is the detector type see :: detectorType
-     * version is the version number of this structure format
+     * sls_receiver_header frame metadata
      * dataPointer is the pointer to the data
      * revDatasize is the reference of data size in bytes. Can be modified to the new size to be written/streamed. (only smaller value).
      */
-    void (*rawDataModifyReadyCallBack)(uint64_t, uint32_t,
-            uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t,
-            uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+    void (*rawDataModifyReadyCallBack)(char*,
             char*, uint32_t &, void*);
 
 	void *pRawDataReady;

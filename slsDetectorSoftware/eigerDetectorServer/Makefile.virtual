@@ -6,7 +6,7 @@ LDLIBS			+= 	-lm  -lstdc++ -pthread
 
 DESTDIR			?= 	bin
 
-SRC_CLNT		=	communication_funcs.c slsDetectorServer.c slsDetectorServer_funcs.c  slsDetectorFunctionList_virtual.c 
+SRC_CLNT		=	communication_funcs.c slsDetectorServer.c slsDetectorServer_funcs.c  slsDetectorFunctionList.c 
 
 
 

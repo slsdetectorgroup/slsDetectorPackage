@@ -19,7 +19,7 @@
   //double angle(int ichan, double encoder, double totalOffset, double conv_r, double center, double offset, double tilt, int direction)
 
 
-using namespace std;
+// 
 
 /**
    @short Angular conversion constants needed  for a detector module
@@ -58,7 +58,7 @@ class angularConversion : public virtual slsDetectorBase, public angularConversi
        pure virtual function
        \param file name to be written (nmod and array of angular conversion constants default to the ones ot the slsDetector
    */
-   virtual int writeAngularConversion(string fname)=0;
+   virtual int writeAngularConversion(std::string fname)=0;
    /** 
        sets the arrays of the merged data to 0. NB The array should be created with size >= 360./getBinSize(); 
        \param mp already merged postions
@@ -250,19 +250,19 @@ class angularConversion : public virtual slsDetectorBase, public angularConversi
      \returns angular conversion flag
   */
 
-  int setAngularConversionFile(string fname);
+  int setAngularConversionFile(std::string fname);
 
   
   /**
       returns the angular conversion file
      */
-  string getAngularConversionFile(){if (setAngularCorrectionMask()) return string(angConvFile); else return string("none");};
+  std::string getAngularConversionFile(){if (setAngularCorrectionMask()) return std::string(angConvFile); else return std::string("none");};
 
 
   /**
      reads teh angular conversion file for the (multi)detector and writes it to shared memory
   */
-  virtual int readAngularConversionFile(string fname="")=0;
+  virtual int readAngularConversionFile(std::string fname="")=0;
 
 
 

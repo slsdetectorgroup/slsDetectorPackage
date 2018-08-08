@@ -11,6 +11,7 @@
 #include "registers_g.h"
 #include "gitInfoGotthard.h"
 #include "AD9257.h"     // include "commonServerFunctions.h"
+#include "versionAPI.h"
 
 #define FIFO_DATA_REG_OFF     0x50<<11
 #define CONTROL_REG           0x24<<11
@@ -87,9 +88,10 @@ int init_detector( int b) {
     setPhaseShiftOnce();
     configureADC();
     setADC(-1); //already does setdaqreg and clean fifo
-    setSettings(GET_SETTINGS,-1);
+    setSettings(DYNAMICGAIN,-1);
+    setDefaultDacs();
 
-    //Initialization
+	//Initialization
     setFrames(1);
     setTrains(1);
     setExposureTime(1e6);
@@ -195,6 +197,7 @@ int function_table() {
   flist[F_CLEANUP_ACQUISITION]=&stop_receiver;
   flist[F_CALIBRATE_PEDESTAL]=&calibrate_pedestal;
   flist[F_WRITE_ADC_REG]=&write_adc_register;
+  flist[F_CHECK_VERSION]= &check_version;
   return OK;
 }
 
@@ -591,6 +594,8 @@ int get_id(int file_des) {
   case DETECTOR_SOFTWARE_VERSION:
     retval = (GITDATE & 0xFFFFFF);
     break;
+	case CLIENT_SOFTWARE_API_VERSION:
+		return APIGOTTHARD;
   default:
     printf("Required unknown id %d \n", arg);
     ret=FAIL;
@@ -1660,19 +1665,43 @@ int set_settings(int file_des) {
     sprintf(mess,"Detector locked by %s\n",lastClientIP);  
   } else {
 #ifdef MCB_FUNCS
-    retval=setSettings(arg[0],imod);
-#endif
+		switch(isett) {
+			case GET_SETTINGS:
+			case UNINITIALIZED:
+			case DYNAMICGAIN:
+			case HIGHGAIN:
+			case LOWGAIN:
+			case MEDIUMGAIN:
+			case VERYHIGHGAIN:
+				break;
+			default:
+				ret = FAIL;
+				sprintf(mess,"Setting (%d) is not implemented for this detector.\n"
+						"Options are dynamicgain, highgain, lowgain, mediumgain and "
+						"veryhighgain.\n", isett);
+				cprintf(RED, "Warning: %s", mess);
+				break;
+		}
+		if (ret != FAIL) {
+			retval=setSettings(isett,imod);
 #ifdef VERBOSE
-    printf("Settings changed to %d\n",retval);
-#endif  
-    
-    if (retval==isett || isett<0) {
-      ret=OK;
-    } else {
-      ret=FAIL;
-      printf("Changing settings of module %d: wrote %d but read %d\n", imod, isett, retval);
-    }
-    
+			printf("Settings changed to %d\n",retval);
+#endif
+			if (retval != isett && isett >= 0) {
+				ret=FAIL;
+				sprintf(mess, "Changing settings of module %d: wrote %d but read %d\n", imod, isett, retval);
+				printf("Warning: %s",mess);
+			}
+
+			else {
+				ret = setDefaultDacs();
+				if (ret == FAIL) {
+					strcpy(mess,"Could change settings, but could not set to default dacs\n");
+					cprintf(RED, "Warning: %s", mess);
+				}
+			}
+		}
+#endif
   }
   if (ret==OK && differentClients==1)
     ret=FORCE_UPDATE;
@@ -3111,6 +3140,70 @@ int write_adc_register(int file_des) {
 		n = sendDataOnly(file_des,mess,sizeof(mess));
 	} else
 		n = sendDataOnly(file_des,&retval,sizeof(retval));
+
+	// return ok / fail
+	return ret;
+}
+
+
+
+
+int check_version(int file_des) {
+	int ret=OK,ret1=OK;
+	int n=0;
+	sprintf(mess,"check version failed\n");
+
+
+
+	// receive arguments
+	int64_t arg=-1;
+	n = receiveData(file_des,&arg,sizeof(arg),INT64);
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+
+
+	// execute action
+	if (ret == OK) {
+#ifdef VERBOSE
+		printf("Checking versioning compatibility with value %d\n",arg);
+#endif
+		int64_t client_requiredVersion = arg;
+		int64_t det_apiVersion = APIGOTTHARD;
+		int64_t det_version = (GITDATE & 0xFFFFFF);
+
+		// old client
+		if (det_apiVersion > client_requiredVersion) {
+			ret = FAIL;
+			sprintf(mess,"Client's detector SW API version: (0x%llx). "
+					"Detector's SW API Version: (0x%llx). "
+					"Incompatible, update client!\n",
+					client_requiredVersion, det_apiVersion);
+			cprintf(RED, "Warning: %s", mess);
+		}
+
+		// old software
+		else if (client_requiredVersion > det_version) {
+			ret = FAIL;
+			sprintf(mess,"Detector SW Version: (0x%llx). "
+					"Client's detector SW API Version: (0x%llx). "
+					"Incompatible, update detector software!\n",
+					det_version, client_requiredVersion);
+			cprintf(RED, "Warning: %s", mess);
+		}
+	}
+
+
+
+	// ret could be swapped during sendData
+	ret1 = ret;
+	// send ok / fail
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
+	// send return argument
+	if (ret==FAIL) {
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
+	}
 
 	// return ok / fail
 	return ret;

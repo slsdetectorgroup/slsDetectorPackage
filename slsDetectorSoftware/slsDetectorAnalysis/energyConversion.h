@@ -13,7 +13,7 @@
 #include <cmath>
 #include <string>
 
-using namespace std;
+
 /**
    @short class handling the energy calibration and trim files IO
 */
@@ -39,7 +39,7 @@ class energyConversion
       \returns OK if successful, else FAIL or -1
 
   */
-  static int readCalibrationFile(string fname, double &gain, double &offset);
+  static int readCalibrationFile(std::string fname, double &gain, double &offset);
   
   /**
       writes a calibration file 
@@ -48,7 +48,7 @@ class energyConversion
       \param offset
       \returns OK if successful, else FAIL or -1
   */
-  static int writeCalibrationFile(string fname, double gain, double offset);
+  static int writeCalibrationFile(std::string fname, double gain, double offset);
 
   /**
       reads a calibration file 
@@ -57,7 +57,7 @@ class energyConversion
       \param offset reference to the offset variable
       \returns OK if successful, else FAIL or -1
   */
-  static int readCalibrationFile(string fname, int *gain, int *offset);
+  static int readCalibrationFile(std::string fname, int *gain, int *offset);
   
   /**
       writes a calibration file 
@@ -66,7 +66,7 @@ class energyConversion
       \param offset reference to the offset variable
       \returns OK if successful, else FAIL or -1
   */
-  static int writeCalibrationFile(string fname, int *gain, int *offset);
+  static int writeCalibrationFile(std::string fname, int *gain, int *offset);
 
 
 
@@ -108,7 +108,7 @@ class energyConversion
      \returns the pointer to myMod or NULL if reading the file failed
   */
 
-  sls_detector_module* readSettingsFile(string fname, detectorType myDetectorType, int& iodelay, int& tau, sls_detector_module* myMod=NULL, int tb=1);
+  sls_detector_module* readSettingsFile(std::string fname, detectorType myDetectorType, int& iodelay, int& tau, sls_detector_module* myMod=NULL, int tb=1);
 
   /**
      writes a trim/settings file
@@ -121,7 +121,7 @@ class energyConversion
 
      \sa ::sls_detector_module mythenDetector::writeSettingsFile(string, sls_detector_module)
   */
-  int writeSettingsFile(string fname, detectorType myDetectorType, sls_detector_module mod, int iodelay, int tau);
+  int writeSettingsFile(std::string fname, detectorType myDetectorType, sls_detector_module mod, int iodelay, int tau);
   
   /** allocates the momery for a detector module structure
       \param myDetectorType detector type (needed for number of channels, chips, dacs etc.)

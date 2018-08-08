@@ -34,7 +34,7 @@
 #include "runningStat.h"
 #include "movingStat.h"
 #include "single_photon_hit.h"
-using namespace std;
+
 
 
 typedef  double double32_t;

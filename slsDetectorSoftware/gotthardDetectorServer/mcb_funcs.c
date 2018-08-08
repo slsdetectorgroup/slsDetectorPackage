@@ -114,6 +114,28 @@ int initDetector() {
 }
 
 
+int setDefaultDacs() {
+	printf("Setting Default Dac values\n");
+
+	int ret = OK;
+	int i = 0;
+	int retval[2]={-1,-1};
+	const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
+
+	for(i = 0; i < NDAC; ++i) {
+		// if not already default, set it to default
+		if (setDACRegister(i,  -1, -1) != defaultvals[i]) {
+			initDACbyIndexDACU(i, defaultvals[i], 0, 0, retval);
+			if (abs(retval[0] - defaultvals[i])<=3) {
+				cprintf(RED, "Warning: Setting dac %d failed, wrote %d, read %d\n",i ,defaultvals[i], retval[0]);
+				ret = FAIL;
+			}
+		}
+	}
+
+	return ret;
+}
+
 
 
 int copyChannel(sls_detector_channel *destChan, sls_detector_channel *srcChan) {

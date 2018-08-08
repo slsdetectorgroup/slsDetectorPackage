@@ -35,6 +35,7 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 
 
 	//*** Overloaded Functions called by TCP Interface ***
+
 	/**
 	 * Get Total Frames Caught for an entire acquisition (including all scans)
 	 * @return total number of frames caught for entire acquisition
@@ -183,6 +184,13 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 * Closes file / all files(data compression involves multiple files)
 	 */
 	void closeFiles();
+
+    /** (not saved in client shared memory)
+     * Set UDP Socket Buffer Size
+     * @param s UDP Socket Buffer Size
+     * @return OK or FAIL if dummy socket could be created
+     */
+    int setUDPSocketBufferSize(const uint32_t s);
 
 	/**
 	 * Restream stop dummy packet from receiver

@@ -22,6 +22,9 @@
 /** maximum rois */
 #define MAX_ROIS 100
 
+/** maximum trim en */
+#define MAX_TRIMEN 100
+
 /** maximum unit size of program sent to detector */
 #define MAX_FPGAPROGRAMSIZE (2 * 1024 *1024)
 
@@ -196,7 +199,10 @@ enum networkParameter {
   RECEIVER_STREAMING_PORT,	/**< receiever streaming TCP(ZMQ) port */
   CLIENT_STREAMING_PORT,	/**< client streaming TCP(ZMQ) port */
   RECEIVER_STREAMING_SRC_IP,/**< receiever streaming TCP(ZMQ) ip */
-  CLIENT_STREAMING_SRC_IP	/**< client streaming TCP(ZMQ) ip */
+  CLIENT_STREAMING_SRC_IP,	/**< client streaming TCP(ZMQ) ip */
+  ADDITIONAL_JSON_HEADER,    /**< additional json header (ZMQ) */
+  RECEIVER_UDP_SCKT_BUF_SIZE, /**< UDP socket buffer size */
+  RECEIVER_REAL_UDP_SCKT_BUF_SIZE /**< real UDP socket buffer size */
 };
 
 /**
@@ -288,7 +294,9 @@ enum idMode{
   DETECTOR_SOFTWARE_VERSION,   /**<return detector system software version */
   THIS_SOFTWARE_VERSION,  /**<return this software version */
   RECEIVER_VERSION,		 /**<return receiver software version */
-  SOFTWARE_FIRMWARE_API_VERSION		/** return software firmware API version **/
+  SOFTWARE_FIRMWARE_API_VERSION,		/** return software firmware API version **/
+  CLIENT_SOFTWARE_API_VERSION,	/** return detector software and client api version */
+  CLIENT_RECEIVER_API_VERSION /** return client and  receiver api version */
 };
 /**
     detector digital test modes
@@ -487,6 +495,8 @@ enum readOutFlags {
   DIGITAL_ONLY=0x80000, /** chiptest board read only digital bits (not adc values)*/
   ANALOG_AND_DIGITAL=0x100000, /** chiptest board read adc values and digital bits digital bits */
   DUT_CLK=0x200000, /** chiptest board fifo clock comes from device under test */
+  SHOW_OVERFLOW=0x400000, /** eiger 32 bit mode, show saturated for overflow of single subframes */
+  NOOVERFLOW=0x800000 /** eiger 32 bit mode, do not show saturated for overflow of single subframes */
 };
 /**
    trimming modes

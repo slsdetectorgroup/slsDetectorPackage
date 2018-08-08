@@ -30,7 +30,7 @@ DEPSINCLUDES = $(INCDIR)/ansi.h $(INCDIR)/sls_receiver_defs.h $(INCDIR)/sls_rece
 
 
 ifeq ($(HDF5),yes)
-	SRC_CLNT += HDF5File.cpp HDF5FileStatic.cpp
+	SRC_CLNT += HDF5File.cpp
 endif
 
 MAIN_SRC = main.cpp

@@ -52,8 +52,11 @@ int printSocketReadError() {
 	return FAIL;
 }
 
-void basictests(int flag) {
+void setModeFlag(int flag) {
     debugflag = flag;
+}
+
+void basictests() {
 #ifdef	SLS_DETECTOR_FUNCTION_LIST
 	checkFirmwareCompatibility(debugflag);
 #endif
@@ -68,6 +71,10 @@ void init_detector(int controlserver) {
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (controlserver) {
 	    isControlServer = 1;
+	    basictests();
+#ifdef JUNGFRAUD
+	    if (debugflag != PROGRAMMING_MODE)
+#endif
 		initControlServer();
 #ifdef EIGERD
 		dhcpipad = getDetectorIP();
@@ -102,6 +109,14 @@ int decode_function(int file_des) {
 
 #ifdef VERBOSE
 	printf(" calling function fnum=%d, (%s) located at 0x%x\n", fnum,  getFunctionName((enum detFuncs)fnum), (unsigned int)flist[fnum]);
+#endif
+#ifdef JUNGFRAUD
+	if ((debugflag == PROGRAMMING_MODE) &&
+			((fnum != F_PROGRAM_FPGA) && (fnum != F_GET_DETECTOR_TYPE) &&
+					(fnum != F_RESET_FPGA) && (fnum != F_UPDATE_CLIENT))) {
+		sprintf(mess,"This Function %s cannot be executed. ", getFunctionName((enum detFuncs)fnum));
+		ret=(M_nofuncMode)(file_des);
+	} else
 #endif
 	if (fnum<0 || fnum>=NUM_DET_FUNCTIONS) {
 		cprintf(BG_RED,"Unknown function enum %d\n", fnum);
@@ -193,6 +208,8 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_TEMP_CONTROL:                    return "F_TEMP_CONTROL";
 	case F_TEMP_EVENT:                      return "F_TEMP_EVENT";
     case F_AUTO_COMP_DISABLE:               return "F_AUTO_COMP_DISABLE";
+    case F_STORAGE_CELL_START:              return "F_STORAGE_CELL_START";
+    case F_CHECK_VERSION:              		return "F_CHECK_VERSION";
 
 	default:								return "Unknown Function";
 	}
@@ -276,6 +293,8 @@ void function_table() {
 	flist[F_TEMP_CONTROL]                       = &temp_control;
 	flist[F_TEMP_EVENT]                         = &temp_event;
     flist[F_AUTO_COMP_DISABLE]                  = &auto_comp_disable;
+    flist[F_STORAGE_CELL_START]                 = &storage_cell_start;
+    flist[F_CHECK_VERSION]                 		= &check_version;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= TOO_MANY_FUNCTIONS_DEFINED) {
@@ -313,6 +332,21 @@ int  M_nofunc(int file_des){
 
 
 
+int  M_nofuncMode(int file_des){
+	int ret=FAIL,ret1=FAIL;
+	int n=0;
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+
+	strcat(mess, "On-board detector server in update mode. Restart detector server in normal mode (without any arguments) to continue.\n");
+	cprintf(BG_RED,"Error: %s",mess);
+	n = sendData(file_des,&ret1,sizeof(ret1),INT32);
+	n = sendData(file_des,mess,sizeof(mess),OTHER); // mess is defined at function call
+
+	// return ok / fail
+	return ret;
+}
 
 
 
@@ -2240,20 +2274,19 @@ int set_settings(int file_des) {
 	sprintf(mess,"set settings failed\n");
 
 #ifdef MYTHEN3D
-    //to receive any arguments
-    while (n > 0)
-        n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-    ret = FAIL;
-    sprintf(mess,"Function (Set Settings) is not implemented for this detector\n");
-    cprintf(RED, "Warning: %s", mess);
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+	ret = FAIL;
+	sprintf(mess,"Function (Set Settings) is not implemented for this detector\n");
+	cprintf(RED, "Warning: %s", mess);
 #else
-
 
 	// receive arguments
 	n = receiveData(file_des,&arg,sizeof(arg),INT32);
 	if (n < 0) return printSocketReadError();
-	imod=arg[1];
 	isett=arg[0];
+	imod=arg[1];
 
 	// execute action
 	if (differentClients && lockStatus && isett!=GET_SETTINGS) {
@@ -2262,20 +2295,57 @@ int set_settings(int file_des) {
 		cprintf(RED, "Warning: %s", mess);
 	}
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-	else if (imod>=getTotalNumberOfModules()) {
+
+#ifdef MYTHEND
+	if ( (ret != FAIL) && (imod>=getTotalNumberOfModules())) {
 		ret = FAIL;
 		sprintf(mess,"Module number %d out of range\n",imod);
 		cprintf(RED, "Warning: %s", mess);
 	}
-	else {
+#endif
+	switch(isett) {
+	case GET_SETTINGS:
+	case UNINITIALIZED:
+#ifdef JUNGFRAUD
+	case DYNAMICGAIN:
+	case DYNAMICHG0:
+	case FIXGAIN1:
+	case FIXGAIN2:
+	case FORCESWITCHG1:
+	case FORCESWITCHG2:
+		break;
+	default:
+		ret = FAIL;
+		sprintf(mess,"Setting (%d) is not implemented for this detector.\n"
+				"Options are dynamicgain, dynamichg0, fixgain1, fixgain2, "
+				"forceswitchg1 and forceswitchg2.\n", isett);
+		cprintf(RED, "Warning: %s", mess);
+		break;
+// other detectors
+// #elif GOTTHARDD, MOENCHD, PROPIXD
+#else
+		break;
+	default:
+		ret = FAIL;
+#ifdef EIGERD
+		sprintf(mess,"Cannot set settings via SET_SETTINGS, use SET_MODULE\n");
+#else
+		sprintf(mess,"Setting (%d) is not implemented for this detector\n", isett);
+#endif
+		cprintf(RED, "Warning: %s", mess);
+		break;
+#endif
+	}
+
+	if (ret != FAIL) {
 #ifdef VERBOSE
-	printf("Changing settings of module %d to %d\n", imod,  isett);
+		printf("Changing settings of module %d to %d\n", imod,  isett);
 #endif
 		retval=setSettings(isett, imod);
 #ifdef VERBOSE
 		printf("Settings changed to %d\n",  isett);
 #endif
-		if (retval==isett || isett<0) {
+		if (retval == isett || isett < 0) {
 			ret=OK;
 		} else {
 			ret = FAIL;
@@ -2283,6 +2353,17 @@ int set_settings(int file_des) {
 			cprintf(RED, "Warning: %s", mess);
 		}
 	}
+	// set to default dacs,
+//# also for #elif GOTTHARDD, MOENCHD, PROPIXD
+#ifdef JUNGFRAUD
+		if (ret == OK && isett >= 0) {
+			ret = setDefaultDacs();
+			if (ret == FAIL) {
+				strcpy(mess,"Could change settings, but could not set to default dacs\n");
+				cprintf(RED, "Warning: %s", mess);
+			}
+		}
+#endif
 #endif
 #endif
 
@@ -2708,6 +2789,14 @@ int set_timer(int file_des) {
 		printf("setting timer %d to %lld ns\n",ind,tns);
 #endif
 		switch(ind) {
+#ifdef JUNGFRAUD
+        case STORAGE_CELL_NUMBER:
+            if (tns > MAX_STORAGE_CELL_VAL) {
+                ret=FAIL;
+                strcpy(mess,"Max Storage cell number should not exceed 15\n");
+                break;
+            }
+#endif
 #ifdef EIGERD
 		case SUBFRAME_ACQUISITION_TIME:
 			if (tns > ((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) ){
@@ -2715,6 +2804,16 @@ int set_timer(int file_des) {
 				strcpy(mess,"Sub Frame exposure time should not exceed 5.368 seconds\n");
 				break;
 			}
+			retval = setTimer(ind,tns);
+			break;
+		case SUBFRAME_PERIOD:
+			if (tns > ((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) ){
+				ret=FAIL;
+				strcpy(mess,"Sub Frame Period should not exceed 5.368 seconds\n");
+				break;
+			}
+			retval = setTimer(ind,tns);
+			break;
 #endif
 #ifdef MYTHEN
 		case PROBES_NUMBER:
@@ -2740,6 +2839,8 @@ int set_timer(int file_des) {
 			cprintf(RED, "%s", mess);
 			break;
 		}
+
+
 #if defined(MYTHEND) || defined(GOTTHARD)
 		if (ret == OK && ind==FRAME_NUMBER) {
 			ret=allocateRAM();
@@ -2803,39 +2904,53 @@ int get_time_left(int file_des) {
 	printf("getting time left on timer %d \n",ind);
 #endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-	switch(ind) {
+
+#ifdef JUNGFRAUD
+	if (ind == DELAY_AFTER_TRIGGER) {
+		ret = FAIL;
+		sprintf(mess,"Timer Left Index (%d) is not implemented for this release.\n", (int)ind);
+		cprintf(RED, "%s", mess);
+	} else {
+#endif
+
+		switch(ind) {
 #ifdef MYTHEND
-	case PROBES_NUMBER:
+		case PROBES_NUMBER:
 #elif JUNGFRAUD
-    case FRAMES_FROM_START:
-    case FRAMES_FROM_START_PG:
+		case FRAMES_FROM_START:
+		case FRAMES_FROM_START_PG:
 #elif MYTHEN3D
-    case GATES_NUMBER:
-    case PROBES_NUMBER:
-    case SAMPLES_JCTB:
+		case GATES_NUMBER:
+		case PROBES_NUMBER:
+		case SAMPLES_JCTB:
 #endif
 #ifndef JUNGFRAUD
-    case GATES_NUMBER:
+		case GATES_NUMBER:
 #endif
-	case FRAME_NUMBER:
-	case ACQUISITION_TIME:
-	case FRAME_PERIOD:
-	case DELAY_AFTER_TRIGGER:
-	case CYCLES_NUMBER:
-	case PROGRESS:
-	case ACTUAL_TIME:
-	case MEASUREMENT_TIME:
-		retval=getTimeLeft(ind);
-		break;
-	default:
-		ret = FAIL;
-		sprintf(mess,"Timer Left Index (%d) is not implemented for this detector\n", (int)ind);
-		cprintf(RED, "%s", mess);
-		break;
-	}
+		case FRAME_NUMBER:
+		case ACQUISITION_TIME:
+		case FRAME_PERIOD:
+		case DELAY_AFTER_TRIGGER:
+		case CYCLES_NUMBER:
+		case PROGRESS:
+		case ACTUAL_TIME:
+		case MEASUREMENT_TIME:
+			retval=getTimeLeft(ind);
+			break;
+		default:
+			ret = FAIL;
+			sprintf(mess,"Timer Left Index (%d) is not implemented for this detector\n", (int)ind);
+			cprintf(RED, "%s", mess);
+			break;
+		}
 #ifdef VERBOSE
-	printf("Time left on timer %d is %lld\n",ind, retval);
+		printf("Time left on timer %d is %lld\n",ind, retval);
 #endif
+
+#ifdef JUNGFRAUD
+	}	// end of if (ind == DELAY_AFTER_TRIGGER)
+#endif
+
 #endif
 	if (ret==OK && differentClients)
 		ret=FORCE_UPDATE;
@@ -3003,6 +3118,8 @@ int set_readout_flags(int file_des) {
 		case PARALLEL:
 		case NONPARALLEL:
 		case SAFE:
+		case SHOW_OVERFLOW:
+		case NOOVERFLOW:
 #endif
 			retval=setReadOutFlags(arg);
 			break;
@@ -3535,6 +3652,12 @@ int send_update(int file_des) {
 #endif
 	n = sendData(file_des,&retval,sizeof(int64_t),INT64);
 	if (n < 0) return printSocketReadError();
+
+#ifdef	SLS_DETECTOR_FUNCTION_LIST
+	retval=setTimer(SUBFRAME_PERIOD,GET_FLAG);
+#endif
+	n = sendData(file_des,&retval,sizeof(int64_t),INT64);
+	if (n < 0) return printSocketReadError();
 #endif
 
 
@@ -3679,7 +3802,10 @@ int configure_mac(int file_des) {
 			    // change mac to hardware mac, (for 1 gbe) change ip to hardware ip
 			    if (idetectormacadd != getDetectorMAC()){
 			        printf("*************************************************\n");
-			        printf("WARNING: actual detector mac address %llx does not match the one from client %llx\n",getDetectorMAC(),idetectormacadd);
+			        printf("WARNING: actual detector mac address %llx does not match "
+			        		"the one from client %llx\n",
+							(long long unsigned int)getDetectorMAC(),
+							(long long unsigned int)idetectormacadd);
 			        idetectormacadd = getDetectorMAC();
 			        printf("WARNING: Matched detectormac to the hardware mac now\n");
 			        printf("*************************************************\n");
@@ -3737,7 +3863,7 @@ int configure_mac(int file_des) {
 #ifdef EIGERD
 		char arg[2][50];
 		memset(arg,0,sizeof(arg));
-		sprintf(arg[0],"%llx",idetectormacadd);
+		sprintf(arg[0],"%llx",(long long unsigned int)idetectormacadd);
         sprintf(arg[1],"%x",detipad);
         n += sendData(file_des,arg,sizeof(arg),OTHER);
 #endif
@@ -4913,7 +5039,6 @@ int program_fpga(int file_des) {
 	int n=0;
 	sprintf(mess,"program FPGA failed\n");
 
-
 #ifndef JUNGFRAUD
 	//to receive any arguments
 	while (n > 0)
@@ -4922,78 +5047,48 @@ int program_fpga(int file_des) {
 	sprintf(mess,"Function (Program FPGA) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
-
-	size_t filesize = 0;
-	size_t totalsize = 0;
-	size_t unitprogramsize = 0;
-	char* fpgasrc = NULL;
-	FILE* fp = NULL;
-
-	// receive arguments - filesize
-	n = receiveData(file_des,&filesize,sizeof(filesize),INT32);
-	if (n < 0) return printSocketReadError();
-	totalsize = filesize;
-#ifdef VERY_VERBOSE
-	printf("\n\n Total size is:%d\n",totalsize);
-#endif
-
-	// execute action
-	if (differentClients && lockStatus) {
-		ret = FAIL;
-		sprintf(mess,"Detector locked by %s\n",lastClientIP);
+	if (!debugflag) {
+		//to receive any arguments
+		while (n > 0)
+			n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+		ret=FAIL;
+		sprintf(mess,"FPGA cannot be programmed in this mode. "
+				"Restart on-board detector server with -update for update mode to continue.\n");
 		cprintf(RED, "Warning: %s", mess);
 	}
-#ifdef SLS_DETECTOR_FUNCTION_LIST
+
 	else {
-		//opening file pointer to flash and telling FPGA to not touch flash
-		if(startWritingFPGAprogram(&fp) != OK) {
-			ret=FAIL;
-			sprintf(mess,"Could not write to flash. Error at startup.\n");
-			cprintf(RED,"%s",mess);
+		printf("Programming FPGA...");
+		size_t filesize = 0;
+		size_t totalsize = 0;
+		size_t unitprogramsize = 0;
+		char* fpgasrc = NULL;
+		FILE* fp = NULL;
+
+		// receive arguments - filesize
+		n = receiveData(file_des,&filesize,sizeof(filesize),INT32);
+		if (n < 0) return printSocketReadError();
+		totalsize = filesize;
+#ifdef VERY_VERBOSE
+		printf("\n\n Total size is:%d\n",totalsize);
+#endif
+
+		// execute action
+		if (differentClients && lockStatus) {
+			ret = FAIL;
+			sprintf(mess,"Detector locked by %s\n",lastClientIP);
+			cprintf(RED, "Warning: %s", mess);
 		}
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+		else {
+			//opening file pointer to flash and telling FPGA to not touch flash
+			if(startWritingFPGAprogram(&fp) != OK) {
+				ret=FAIL;
+				sprintf(mess,"Could not write to flash. Error at startup.\n");
+				cprintf(RED,"%s",mess);
+			}
 
-		//---------------- first ret ----------------
-		// ret could be swapped during sendData
-		ret1 = ret;
-		// send ok / fail
-		n = sendData(file_des,&ret1,sizeof(ret),INT32);
-		// send return argument
-		if (ret==FAIL) {
-			n += sendData(file_des,mess,sizeof(mess),OTHER);
-		}
-		//---------------- first ret ----------------
-
-		if(ret!=FAIL) {
-			//erasing flash
-			eraseFlash();
-			fpgasrc = (char*)malloc(MAX_FPGAPROGRAMSIZE);
-		}
-
-		//writing to flash part by part
-		while(ret != FAIL && filesize){
-
-			unitprogramsize = MAX_FPGAPROGRAMSIZE;  //2mb
-			if(unitprogramsize > filesize) //less than 2mb
-				unitprogramsize = filesize;
-	#ifdef VERY_VERBOSE
-			printf("unit size to receive is:%d\n",unitprogramsize);
-			printf("filesize:%d currentpointer:%d\n",filesize,currentPointer);
-	#endif
-
-			//receive
-			n = receiveData(file_des,fpgasrc,unitprogramsize,OTHER);
-			if (n < 0) return printSocketReadError();
-
-			if(!(unitprogramsize - filesize)){
-				fpgasrc[unitprogramsize]='\0';
-				filesize-=unitprogramsize;
-				unitprogramsize++;
-			}else
-				filesize-=unitprogramsize;
-
-			ret = writeFPGAProgram(fpgasrc,unitprogramsize,fp);
-
-			//---------------- middle rets ----------------
+			//---------------- first ret ----------------
 			// ret could be swapped during sendData
 			ret1 = ret;
 			// send ok / fail
@@ -5001,37 +5096,81 @@ int program_fpga(int file_des) {
 			// send return argument
 			if (ret==FAIL) {
 				n += sendData(file_des,mess,sizeof(mess),OTHER);
-				cprintf(RED,"Failure: Breaking out of program receiving\n");
 			}
-			//---------------- middle rets ----------------
+			//---------------- first ret ----------------
 
-			if(ret != FAIL){
-				//print progress
-				printf("Writing to Flash:%d%%\r",(int) (((double)(totalsize-filesize)/totalsize)*100) );
-				fflush(stdout);
+			if(ret!=FAIL) {
+				//erasing flash
+				eraseFlash();
+				fpgasrc = (char*)malloc(MAX_FPGAPROGRAMSIZE);
+			}
+
+			//writing to flash part by part
+			while(ret != FAIL && filesize){
+
+				unitprogramsize = MAX_FPGAPROGRAMSIZE;  //2mb
+				if(unitprogramsize > filesize) //less than 2mb
+					unitprogramsize = filesize;
+#ifdef VERY_VERBOSE
+				printf("unit size to receive is:%d\n",unitprogramsize);
+				printf("filesize:%d currentpointer:%d\n",filesize,currentPointer);
+#endif
+
+				//receive
+				n = receiveData(file_des,fpgasrc,unitprogramsize,OTHER);
+				if (n < 0) return printSocketReadError();
+
+				if(!(unitprogramsize - filesize)){
+					fpgasrc[unitprogramsize]='\0';
+					filesize-=unitprogramsize;
+					unitprogramsize++;
+				}else
+					filesize-=unitprogramsize;
+
+				ret = writeFPGAProgram(fpgasrc,unitprogramsize,fp);
+
+				//---------------- middle rets ----------------
+				// ret could be swapped during sendData
+				ret1 = ret;
+				// send ok / fail
+				n = sendData(file_des,&ret1,sizeof(ret),INT32);
+				// send return argument
+				if (ret==FAIL) {
+					n += sendData(file_des,mess,sizeof(mess),OTHER);
+					cprintf(RED,"Failure: Breaking out of program receiving\n");
+				}
+				//---------------- middle rets ----------------
+
+				if(ret != FAIL){
+					//print progress
+					printf("Writing to Flash:%d%%\r",(int) (((double)(totalsize-filesize)/totalsize)*100) );
+					fflush(stdout);
+				}
+			}
+
+			printf("\n");
+
+			//closing file pointer to flash and informing FPGA
+			stopWritingFPGAprogram(fp);
+
+			//free resources
+			if(fpgasrc != NULL)
+				free(fpgasrc);
+			if(fp!=NULL)
+				fclose(fp);
+#ifdef VERY_VERBOSE
+			printf("Done with program receiving command\n");
+#endif
+
+			if (isControlServer) {
+				basictests(debugflag);
+				initControlServer();
 			}
 		}
-
-		printf("\n");
-
-		//closing file pointer to flash and informing FPGA
-		stopWritingFPGAprogram(fp);
-
-		//free resources
-		if(fpgasrc != NULL)
-			free(fpgasrc);
-		if(fp!=NULL)
-			fclose(fp);
-#ifdef VERY_VERBOSE
-	printf("Done with program receiving command\n");
-#endif
-    if (isControlServer)
-        basictests(debugflag);
-    init_detector(isControlServer);
-	}
 #endif
 		if (ret==OK)
 			ret=FORCE_UPDATE;
+	}
 #endif
 
 	// ret could be swapped during sendData
@@ -5061,8 +5200,7 @@ int reset_fpga(int file_des) {
 	while (n > 0)
 		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
-	sprintf(mess,"Function (Start Readout) is not implemented for this detector\n");
-	cprintf(RED, "%s", mess);
+	sprintf(mess,"Function (Reset FPGA) is not implemented for this detector\n");	cprintf(RED, "%s", mess);
 #else
 
 	// execute action
@@ -5073,9 +5211,14 @@ int reset_fpga(int file_des) {
 	}
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	else {
-	    if (isControlServer)
-	        basictests(debugflag);
-		initControlServer(isControlServer);
+	    if (isControlServer) {
+	        basictests(debugflag);	// mapping of control server at lease
+#ifdef JUNGFRAUD
+	    if (debugflag != PROGRAMMING_MODE)
+#endif
+	    	initControlServer();
+	    }
+	    else initStopServer(); //remapping of stop server
 		ret = FORCE_UPDATE;
 	}
 #endif
@@ -5516,8 +5659,6 @@ int auto_comp_disable(int file_des) {
     sprintf(mess,"Function (Auto Comp Disable) is not yet implemented for this detector\n");
     cprintf(RED, "%s", mess);
 
-    /* will be connected after teh fpga upgrade
-
     // receive arguments
     int arg=-1;
     n = receiveData(file_des,&arg,sizeof(arg),INT32);
@@ -5550,7 +5691,6 @@ int auto_comp_disable(int file_des) {
 #endif
     if (ret==OK && differentClients)
         ret=FORCE_UPDATE;
-        */
 #endif
 
     // ret could be swapped during sendData
@@ -5567,3 +5707,167 @@ int auto_comp_disable(int file_des) {
     return ret;
 }
 
+
+
+
+
+int storage_cell_start(int file_des) {
+    int ret=OK,ret1=OK;
+    int n=0;
+    int retval=-1;
+    sprintf(mess,"storage cell start failed\n");
+
+#ifndef JUNGFRAUD
+    //to receive any arguments
+    while (n > 0)
+        n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+    ret = FAIL;
+    sprintf(mess,"Function (Storage cell start) is not implemented for this detector\n");
+    cprintf(RED, "%s", mess);
+#else
+
+    // receive arguments
+    int arg=-1;
+    n = receiveData(file_des,&arg,sizeof(arg),INT32);
+    if (n < 0) return printSocketReadError();
+
+    // execute action
+    if (differentClients && lockStatus && arg!=-1) {
+        ret = FAIL;
+        sprintf(mess,"Detector locked by %s\n",lastClientIP);
+        cprintf(RED, "Warning: %s", mess);
+    }
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+    else if (arg > MAX_STORAGE_CELL_VAL) {
+        ret=FAIL;
+        strcpy(mess,"Max Storage cell number should not exceed 15\n");
+        cprintf(RED, "Warning: %s", mess);
+    } else {
+#ifdef VERBOSE
+    printf("Storage cell start to %d\n", arg);
+#endif
+        retval=selectStoragecellStart(arg);
+
+#ifdef VERBOSE
+        printf("Storage cell start: %d\n",retval);
+#endif
+        if (retval==arg || arg<0) {
+            ret=OK;
+        } else {
+            sprintf(mess,"Storage cell start select failed, wrote %d but read %d\n", arg, retval);
+            cprintf(RED, "Warning: %s", mess);
+        }
+    }
+#endif
+    if (ret==OK && differentClients)
+        ret=FORCE_UPDATE;
+#endif
+
+    // ret could be swapped during sendData
+    ret1 = ret;
+    // send ok / fail
+    n = sendData(file_des,&ret1,sizeof(ret),INT32);
+    // send return argument
+    if (ret==FAIL) {
+        n += sendData(file_des,mess,sizeof(mess),OTHER);
+    } else
+        n += sendData(file_des,&retval,sizeof(retval),INT32);
+
+    // return ok / fail
+    return ret;
+}
+
+
+
+
+int check_version(int file_des) {
+	int ret=OK,ret1=OK;
+	int n=0;
+	sprintf(mess,"check version failed\n");
+
+#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(GOTTHARD)
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+	ret=FAIL;
+	sprintf(mess,"Function (Check Version Compatibility) is not implemented for this detector\n");
+	cprintf(RED, "Warning: %s", mess);
+#else
+
+	// receive arguments
+	int64_t arg=-1;
+	n = receiveData(file_des,&arg,sizeof(arg),INT64);
+	if (n < 0) return printSocketReadError();
+
+	// execute action
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+
+	// check software- firmware compatibility and basic tests
+	if (isControlServer) {
+#ifdef VERBOSE
+		printf("Checking software-firmware compatibility and basic test result\n");
+#endif
+		// check if firmware check is done
+		if (!isFirmwareCheckDone()) {
+			usleep(3 * 1000 * 1000);
+			if (!isFirmwareCheckDone()) {
+				ret = FAIL;
+				strcpy(mess,"Firmware Software Compatibility Check (Server Initialization) "
+						"still not done done in server. Unexpected.\n");
+				cprintf(RED, "Warning: %s", mess);
+			}
+		}
+		// check firmware check result
+		if (ret == OK) {
+			char* firmware_message = NULL;
+			if (getFirmwareCheckResult(&firmware_message) == FAIL) {
+				ret = FAIL;
+				strcpy(mess, firmware_message);
+				cprintf(RED, "Warning: %s", mess);
+			}
+		}
+	}
+
+	if (ret == OK) {
+#ifdef VERBOSE
+		printf("Checking versioning compatibility with value %d\n",arg);
+#endif
+		int64_t client_requiredVersion = arg;
+		int64_t det_apiVersion = getDetectorId(CLIENT_SOFTWARE_API_VERSION);
+		int64_t det_version = getDetectorId(DETECTOR_SOFTWARE_VERSION);
+
+		// old client
+		if (det_apiVersion > client_requiredVersion) {
+			ret = FAIL;
+			sprintf(mess,"Client's detector SW API version: (0x%llx). "
+					"Detector's SW API Version: (0x%llx). "
+					"Incompatible, update client!\n",
+					client_requiredVersion, det_apiVersion);
+			cprintf(RED, "Warning: %s", mess);
+		}
+
+		// old software
+		else if (client_requiredVersion > det_version) {
+			ret = FAIL;
+			sprintf(mess,"Detector SW Version: (0x%llx). "
+					"Client's detector SW API Version: (0x%llx). "
+					"Incompatible, update detector software!\n",
+					det_version, client_requiredVersion);
+			cprintf(RED, "Warning: %s", mess);
+		}
+	}
+#endif
+#endif
+
+	// ret could be swapped during sendData
+	ret1 = ret;
+	// send ok / fail
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
+	// send return argument
+	if (ret==FAIL) {
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
+	}
+
+	// return ok / fail
+	return ret;
+}

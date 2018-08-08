@@ -12,10 +12,9 @@
 #include <cstring>
 using namespace std;
 
-int Fifo::NumberofFifoClassObjects(0);
 
-Fifo::Fifo(uint32_t fifoItemSize, uint32_t depth, bool &success):
-		index(NumberofFifoClassObjects),
+Fifo::Fifo(int ind, uint32_t fifoItemSize, uint32_t depth):
+		index(ind),
 		memory(0),
 		fifoBound(0),
 		fifoFree(0),
@@ -24,9 +23,8 @@ Fifo::Fifo(uint32_t fifoItemSize, uint32_t depth, bool &success):
 		status_fifoBound(0),
 		status_fifoFree(depth){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
-	NumberofFifoClassObjects++;
 	if(CreateFifos(fifoItemSize) == FAIL)
-		success = false;
+	    throw std::exception();
 }
 
 
@@ -34,7 +32,6 @@ Fifo::~Fifo() {
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 	//cprintf(BLUE,"Fifo Object %d: Goodbye\n", index);
 	DestroyFifos();
-	NumberofFifoClassObjects--;
 }
 
 
@@ -50,35 +47,30 @@ int Fifo::CreateFifos(uint32_t fifoItemSize) {
 	fifoFree = new CircularFifo<char>(fifoDepth);
 	fifoStream = new CircularFifo<char>(fifoDepth);
 	//allocate memory
-	memory = (char*) calloc (fifoItemSize * fifoDepth, sizeof(char));
-	memset(memory,0,fifoItemSize * fifoDepth* sizeof(char));
+	size_t mem_len = fifoItemSize * fifoDepth * sizeof(char);
+	memory = (char*) malloc (mem_len);
 	if (memory == NULL){
 		FILE_LOG(logERROR) << "Could not allocate memory for fifos";
-		memory = 0;
 		return FAIL;
 	}
-	FILE_LOG(logDEBUG) << "Memory Allocated " << index << ": " << (fifoItemSize * fifoDepth) << " bytes";
+    memset(memory, 0, mem_len);
+	FILE_LOG(logDEBUG) << "Memory Allocated " << index << ": " << mem_len << " bytes";
 
 	{ //push free addresses into fifoFree fifo
 		char* buffer = memory;
-		while (buffer < (memory + fifoItemSize * (fifoDepth-1))) {
+		for (int i = 0; i < fifoDepth; ++i) {
 			//sprintf(buffer,"memory");
-#ifdef FIFODEBUG
-			cprintf(MAGENTA,"Fifofree %d: value:%d, pop 0x%p\n", index, fifoFree->getSemValue(), (void*)(buffer));
-#endif
 			FreeAddress(buffer);
 			buffer += fifoItemSize;
 		}
 	}
-
-	FILE_LOG(logDEBUG) << "Fifo Reconstructed Depth " << index << ": " << fifoDepth;
+	FILE_LOG(logINFO) << "Fifo " << index << " reconstructed Depth (rx_fifodepth): " << fifoFree->getDataValue();
 	return OK;
 }
 
 
 void Fifo::DestroyFifos(){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
-
 
 	if(memory) {
 		free(memory);
@@ -100,25 +92,22 @@ void Fifo::DestroyFifos(){
 
 
 void Fifo::FreeAddress(char*& address) {
-	while(!fifoFree->push(address));
+	fifoFree->push(address);
 }
 
 void Fifo::GetNewAddress(char*& address) {
-	int temp = fifoFree->getSemValue();
+	int temp = fifoFree->getDataValue();
 	if (temp < status_fifoFree)
 		status_fifoFree = temp;
 	fifoFree->pop(address);
-	/*temp = fifoFree->getSemValue();
-	if (temp < status_fifoFree)
-		status_fifoFree = temp;*/
 }
 
 void Fifo::PushAddress(char*& address) {
-	int temp = fifoBound->getSemValue();
+	int temp = fifoBound->getDataValue();
 	if (temp > status_fifoBound)
 		status_fifoBound = temp;
 	while(!fifoBound->push(address));
-	/*temp = fifoBound->getSemValue();
+	/*temp = fifoBound->getDataValue();
 	if (temp > status_fifoBound)
 		status_fifoBound = temp;*/
 }
@@ -128,7 +117,7 @@ void Fifo::PopAddress(char*& address) {
 }
 
 void Fifo::PushAddressToStream(char*& address) {
-	while(!fifoStream->push(address));
+	fifoStream->push(address);
 }
 
 void Fifo::PopAddressToStream(char*& address) {
@@ -140,7 +129,6 @@ int Fifo::GetMaxLevelForFifoBound() {
 	status_fifoBound = 0;
 	return temp;
 }
-
 
 int Fifo::GetMinLevelForFifoFree() {
 	int temp = status_fifoFree;

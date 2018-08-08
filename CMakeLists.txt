@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 set (CALIBRATE OFF)
 
 option (USE_HDF5 "HDF5 File format" OFF)
@@ -7,7 +7,12 @@ option (USE_TEXTCLIENT "Text Client" OFF)
 option (USE_RECEIVER "Receiver" OFF)
 option (USE_GUI "GUI" OFF)
 
-set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -std=c++98 -Wall -Wno-misleading-indentation")
+
+if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
+	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -std=c++98 -Wno-misleading-indentation")
+else ()
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++98")
+endif ()
 
 find_package(Qt4)
 find_package(Qwt 6)
@@ -31,7 +36,9 @@ endif (USE_TEXTCLIENT)
 
 if (USE_RECEIVER)
        add_subdirectory(slsReceiverSoftware)
+       add_subdirectory(manual/manual-api)    
 endif (USE_RECEIVER)
+               
                
 if (USE_GUI)   
        if (QT4_FOUND AND QWT_FOUND)

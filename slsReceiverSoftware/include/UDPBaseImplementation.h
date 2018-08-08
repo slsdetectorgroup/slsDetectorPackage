@@ -98,6 +98,24 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	uint64_t getFileIndex() const;
 
 	/**
+	 * Get Frames per File (0 means infinite)
+	 * @return Frames per File
+	 */
+	uint32_t getFramesPerFile() const;
+
+	/**
+	 * Get Frame Discard Policy
+	 * @return Frame Discard Policy
+	 */
+	frameDiscardPolicy getFrameDiscardPolicy() const;
+
+	/**
+	 * Get Partial Frame Padding Enable
+	 * @return Partial Frame Padding Enable
+	 */
+	bool getFramePaddingEnable() const;
+
+	/**
 	 * Get Scan Tag
 	 * @return scan tag //FIXME: needed? (unsigned integer?)
 	 */
@@ -206,6 +224,12 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	uint64_t getSubExpTime() const;
 
+	/**
+	 * Get Sub Period
+	 * @return Sub Period
+	 */
+	uint64_t getSubPeriod() const;
+
 	/*
 	 * Get Number of Frames expected by receiver from detector
 	 * The data receiver status will change from running to idle when it gets this number of frames FIXME: (Not implemented)
@@ -271,6 +295,24 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	char *getStreamingSourceIP() const;
 
+    /**
+     * Get additional json header
+     * @return additional json header
+     */
+    char *getAdditionalJsonHeader() const;
+
+    /** (not saved in client shared memory)
+     * Get UDP Socket Buffer Size
+     * @return UDP Socket Buffer Size
+     */
+    uint32_t getUDPSocketBufferSize() const;
+
+
+    /** (not saved in client shared memory)
+     * Get actual UDP Socket Buffer Size
+     * @return actual UDP Socket Buffer Size
+     */
+    uint32_t getActualUDPSocketBufferSize() const;
 
 	/*************************************************************************
 	 * Setters ***************************************************************
@@ -331,6 +373,24 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * @param i file index of acquisition
 	 */
 	void setFileIndex(const uint64_t i);
+
+	/**
+	 * Set Frames per File (0 means infinite)
+	 * @param i Frames per File
+	 */
+	void setFramesPerFile(const uint32_t i);
+
+	/**
+	 * Set Frame Discard Policy
+	 * @param i Frame Discard Policy
+	 */
+	void setFrameDiscardPolicy(const frameDiscardPolicy i);
+
+	/**
+	 * Set Partial Frame Padding Enable
+	 * @param i Partial Frame Padding Enable
+	 */
+	void setFramePaddingEnable(const bool i);
 
 	/**
 	 * Set Scan Tag
@@ -426,6 +486,13 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * @return OK or FAIL
 	 */
 	void setSubExpTime(const uint64_t i);
+
+	/**
+	 * Set Sub Period
+	 * @param i Period
+	 * @return OK or FAIL
+	 */
+	void setSubPeriod(const uint64_t i);
 
 	/**
 	 * Set Number of Frames expected by receiver from detector
@@ -555,6 +622,18 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	void setStreamingSourceIP(const char* c);
 
+    /**
+     * Set additional json header
+     */
+    void setAdditionalJsonHeader(const char* c);
+
+    /** (not saved in client shared memory)
+     * Set UDP Socket Buffer Size
+     * @param s UDP Socket Buffer Size
+     * @return OK or FAIL if dummy socket could be created
+     */
+    int setUDPSocketBufferSize(const uint32_t s);
+
 	/*
 	 * Restream stop dummy packet from receiver
 	 * @return OK or FAIL
@@ -583,52 +662,25 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void*),void *arg);
 
-    /**
-     * Call back for raw data
-     * args to raw data ready callback are
-     * frameNumber is the frame number
-     * expLength is the subframe number (32 bit eiger) or real time exposure time in 100ns (others)
-     * packetNumber is the packet number
-     * bunchId is the bunch id from beamline
-     * timestamp is the time stamp with 10 MHz clock
-     * modId is the unique module id (unique even for left, right, top, bottom)
-     * xCoord is the x coordinate in the complete detector system
-     * yCoord is the y coordinate in the complete detector system
-     * zCoord is the z coordinate in the complete detector system
-     * debug is for debugging purposes
-     * roundRNumber is the round robin set number
-     * detType is the detector type see :: detectorType
-     * version is the version number of this structure format
-     * dataPointer is the pointer to the data
-     * dataSize in bytes is the size of the data in bytes.
-     */
-    void registerCallBackRawDataReady(void (*func)(uint64_t, uint32_t,
-            uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t,
-            uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
-            char*, uint32_t, void*),void *arg);
+	/**
+	 * Call back for raw data
+	 * args to raw data ready callback are
+	 * sls_receiver_header frame metadata
+	 * dataPointer is the pointer to the data
+	 * dataSize in bytes is the size of the data in bytes.
+	 */
+	void registerCallBackRawDataReady(void (*func)(char* ,
+			char*, uint32_t, void*),void *arg);
 
     /**
      * Call back for raw data (modified)
      * args to raw data ready callback are
-     * frameNumber is the frame number
-     * expLength is the subframe number (32 bit eiger) or real time exposure time in 100ns (others)
-     * packetNumber is the packet number
-     * bunchId is the bunch id from beamline
-     * timestamp is the time stamp with 10 MHz clock
-     * modId is the unique module id (unique even for left, right, top, bottom)
-     * xCoord is the x coordinate in the complete detector system
-     * yCoord is the y coordinate in the complete detector system
-     * zCoord is the z coordinate in the complete detector system
-     * debug is for debugging purposes
-     * roundRNumber is the round robin set number
-     * detType is the detector type see :: detectorType
-     * version is the version number of this structure format
+     * sls_receiver_header frame metadata
      * dataPointer is the pointer to the data
-     * revDatasize is the reference of data size in bytes. Can be modified to the new size to be written/streamed. (only smaller value).
+     * revDatasize is the reference of data size in bytes.
+     * Can be modified to the new size to be written/streamed. (only smaller value).
      */
-    void registerCallBackRawDataModifyReady(void (*func)(uint64_t, uint32_t,
-            uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t,
-            uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+    void registerCallBackRawDataModifyReady(void (*func)(char* ,
             char*, uint32_t &,void*),void *arg);
 
 
@@ -652,6 +704,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	uint64_t acquisitionTime;
 	/** Sub Exposure Time */
 	uint64_t subExpTime;
+	/** Sub Period */
+	uint64_t subPeriod;
 	/** Frame Number */
 	uint64_t numberOfFrames;
 	/** Samples Number */
@@ -674,12 +728,20 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	runStatus status;
 	/** Activated/Deactivated */
 	int activated;
+	/** frame discard policy */
+	frameDiscardPolicy frameDiscardMode;
+	/** frame padding */
+	bool framePadding;
 
 	//***connection parameters***
 	/** Ethernet Interface */
 	char eth[MAX_STR_LENGTH];
 	/** Server UDP Port Number*/
 	uint32_t udpPortNum[MAX_NUMBER_OF_LISTENING_THREADS];
+	/** udp socket buffer size */
+	uint32_t udpSocketBufferSize;
+    /** actual UDP Socket Buffer Size (halved due to kernel bookkeeping) */
+    uint32_t actualUDPSocketBufferSize;
 
 	//***file parameters***
 	/** File format */
@@ -690,6 +752,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	char filePath[MAX_STR_LENGTH];
 	/** File Index */
 	uint64_t fileIndex;
+	/** Frames per file  (0 means infinite) */
+	uint32_t framesPerFile;
 	/** Scan Tag */
 	int scanTag;
 	/** File Write enable */
@@ -712,6 +776,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	uint32_t streamingPort;
 	/** streaming port */
 	char streamingSrcIP[MAX_STR_LENGTH];
+	/** additional json header */
+	char additionalJsonHeader[MAX_STR_LENGTH];
 
 	//***receiver parameters***
 	uint32_t silentMode;
@@ -743,53 +809,24 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	void *pAcquisitionFinished;
 
 
-    /**
-     * Call back for raw data
-     * args to raw data ready callback are
-     * frameNumber is the frame number
-     * expLength is the subframe number (32 bit eiger) or real time exposure time in 100ns (others)
-     * packetNumber is the packet number
-     * bunchId is the bunch id from beamline
-     * timestamp is the time stamp with 10 MHz clock
-     * modId is the unique module id (unique even for left, right, top, bottom)
-     * xCoord is the x coordinate in the complete detector system
-     * yCoord is the y coordinate in the complete detector system
-     * zCoord is the z coordinate in the complete detector system
-     * debug is for debugging purposes
-     * roundRNumber is the round robin set number
-     * detType is the detector type see :: detectorType
-     * version is the version number of this structure format
-     * dataPointer is the pointer to the data
-     * dataSize in bytes is the size of the data in bytes.
-     */
-	void (*rawDataReadyCallBack)(uint64_t, uint32_t,
-            uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t,
-            uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
-            char*, uint32_t, void*);
-
+	/**
+	 * Call back for raw data
+	 * args to raw data ready callback are
+	 * sls_receiver_header frame metadata
+	 * dataPointer is the pointer to the data
+	 * dataSize in bytes is the size of the data in bytes.
+	 */
+	void (*rawDataReadyCallBack)(char* ,
+			char*, uint32_t, void*);
 
     /**
      * Call back for raw data (modified)
      * args to raw data ready callback are
-     * frameNumber is the frame number
-     * expLength is the subframe number (32 bit eiger) or real time exposure time in 100ns (others)
-     * packetNumber is the packet number
-     * bunchId is the bunch id from beamline
-     * timestamp is the time stamp with 10 MHz clock
-     * modId is the unique module id (unique even for left, right, top, bottom)
-     * xCoord is the x coordinate in the complete detector system
-     * yCoord is the y coordinate in the complete detector system
-     * zCoord is the z coordinate in the complete detector system
-     * debug is for debugging purposes
-     * roundRNumber is the round robin set number
-     * detType is the detector type see :: detectorType
-     * version is the version number of this structure format
+     * sls_receiver_header frame metadata
      * dataPointer is the pointer to the data
      * revDatasize is the reference of data size in bytes. Can be modified to the new size to be written/streamed. (only smaller value).
      */
-    void (*rawDataModifyReadyCallBack)(uint64_t, uint32_t,
-            uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t,
-            uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+    void (*rawDataModifyReadyCallBack)(char* ,
             char*, uint32_t &, void*);
 
 	void *pRawDataReady;

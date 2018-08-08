@@ -563,9 +563,13 @@ void qDrawPlot::SetScanArgument(int scanArg){
 	// Number of Exposures - must be calculated here to get npixelsy for allframes/frameindex scans
 	int numFrames = (isFrameEnabled)*((int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1));
 	int numTriggers = (isTriggerEnabled)*((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1));
+	int numStoragecells = 0;
+	if (detType == slsDetectorDefs::JUNGFRAU)
+	    numStoragecells = (int)myDet->setTimer(slsDetectorDefs::STORAGE_CELL_NUMBER, -1);
 	numFrames = ((numFrames==0)?1:numFrames);
 	numTriggers = ((numTriggers==0)?1:numTriggers);
-	number_of_frames = numFrames * numTriggers;
+	numStoragecells = ((numStoragecells<=0)?1:numStoragecells+1);
+	number_of_frames = numFrames * numTriggers * numStoragecells;
 	cout << "\tNumber of Frames per Scan/Measurement:" << number_of_frames << endl;
 	//get #scansets for level 0 and level 1
 	int numScan0 = myDet->getScanSteps(0);	numScan0 = ((numScan0==0)?1:numScan0);
@@ -2232,9 +2236,9 @@ void qDrawPlot::toDoublePixelData(double* dest, char* source,int size, int datab
 			// only data plot
 			else {
 				for (ichan = 0; ichan < size; ++ichan) {
-					if (  (*((u_int16_t*)source)) == 0xFFFF  )
+					/*if (  (*((u_int16_t*)source)) == 0xFFFF  )
 						dest[ichan] = 0xFFFF;
-					else
+					else*/
 						dest[ichan] = ((*((u_int16_t*)source)) & 0x3FFF);
 					source += 2;
 				}

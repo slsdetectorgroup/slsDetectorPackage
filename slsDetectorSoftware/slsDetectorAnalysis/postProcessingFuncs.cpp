@@ -1,6 +1,6 @@
 #include "postProcessingFuncs.h"
 #include "angleConversionConstant.h"
-
+using namespace std;
 //#define VERBOSE
 
 postProcessingFuncs::postProcessingFuncs(int *nModules,int *chPerMod,int modMask[],int badCh[], double ffcoeff[], double fferr[], double* t, int *dir, double angRadius[], double angOffset[], double angCentre[], double* to, double* bs, double *sX, double *sY):
@@ -303,16 +303,17 @@ int postProcessingFuncs::initDataset(int *nModules,int *chPerMod,int modMask[],i
   totalChans=0;
 
 
- 
-  chansPerMod=new int [nMods];
+  if (nMods)
+      chansPerMod=new int [nMods];
   
- 
-  moduleMask=new int [nMods];
+  if (nMods)
+      moduleMask=new int [nMods];
   
   nBins=0;
   if (angRadius && angOffset && angCenter && (binSize>0)) {
     // cout << "??????? creating angConv"<< endl;
-    angConv=new angleConversionConstant*[nMods];
+    if (nMods)
+        angConv=new angleConversionConstant*[nMods];
     nBins=(int)(360./binSize)+1;
   }
   //#ifdef VERBOSE
@@ -380,11 +381,15 @@ int postProcessingFuncs::initDataset(int *nModules,int *chPerMod,int modMask[],i
 
 void postProcessingFuncs::deletePointers() {
 
-  delete [] chansPerMod;
-  chansPerMod=NULL;
+    if(chansPerMod != NULL) {
+        delete [] chansPerMod;
+        chansPerMod=NULL;
+    }
   
-  delete [] moduleMask;
-  moduleMask=NULL;
+    if (moduleMask != NULL) {
+        delete [] moduleMask;
+        moduleMask=NULL;
+    }
 
 
   if (badChannelMask) {

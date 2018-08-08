@@ -6,12 +6,14 @@
 
 // initialization functions
 int printSocketReadError();
-void basictests(int);
+void setModeFlag(int);
+void basictests();
 void init_detector(int);
 int decode_function(int);
 const char* getFunctionName(enum detFuncs func);
 void function_table();
 int M_nofunc(int);
+int M_nofuncMode(int);
 
 // functions called by client
 int exec_command(int);
@@ -92,5 +94,7 @@ int threshold_temp(int);
 int temp_control(int);
 int temp_event(int);
 int auto_comp_disable(int);
+int storage_cell_start(int);
+int check_version(int);
 
 #endif

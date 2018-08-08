@@ -149,8 +149,8 @@ slsDetectorDefs::sls_detector_module* energyConversion::interpolateTrim(detector
 	enum eiger_DacIndex{SVP,VTR,VRF,VRS,SVN,VTGSTV,VCMP_LL,VCMP_LR,CAL,VCMP_RL,RXB_RB,RXB_LB,VCMP_RR,VCP,VCN,VIS};
 
 	//Copy other dacs
-	int num_dacs_to_copy = 9;
-	int dacs_to_copy[] = {SVP,VTR,SVN,VTGSTV,CAL,RXB_RB,RXB_LB,VCN,VIS};
+	int dacs_to_copy[] = {SVP,VTR,SVN,VTGSTV,RXB_RB,RXB_LB,VCN,VIS};
+    int num_dacs_to_copy = sizeof(dacs_to_copy) / sizeof(dacs_to_copy[0]);
 	for (int i = 0; i <  num_dacs_to_copy; ++i) {
 		if(a->dacs[dacs_to_copy[i]] != b->dacs[dacs_to_copy[i]]) {
 			deleteModule(myMod);
@@ -159,9 +159,19 @@ slsDetectorDefs::sls_detector_module* energyConversion::interpolateTrim(detector
 		myMod->dacs[dacs_to_copy[i]] = a->dacs[dacs_to_copy[i]];
 	}
 
+
+	//Copy irrelevant dacs (without failing): CAL
+	if (a->dacs[CAL] != b->dacs[CAL]) {
+	    printf("Warning: DAC CAL differs in both energies (%d, %d)! ",
+	            a->dacs[CAL], b->dacs[CAL]);
+	    printf("Taking first: %d\n", a->dacs[CAL]);
+	}
+	myMod->dacs[CAL] = a->dacs[CAL];
+
+
 	//Interpolate vrf, vcmp, vcp
-	int num_dacs_to_interpolate = 7;
 	int dacs_to_interpolate[] = {VRF,VCMP_LL,VCMP_LR,VCMP_RL,VCMP_RR,VCP, VRS};
+	int num_dacs_to_interpolate = sizeof(dacs_to_interpolate) / sizeof(dacs_to_interpolate[0]);
 	for (int i = 0; i <  num_dacs_to_interpolate; ++i) {
 		myMod->dacs[dacs_to_interpolate[i]] = linearInterpolation(energy, e1, e2,
 				a->dacs[dacs_to_interpolate[i]], b->dacs[dacs_to_interpolate[i]]);

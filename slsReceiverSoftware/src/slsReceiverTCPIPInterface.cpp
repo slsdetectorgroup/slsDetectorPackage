@@ -8,6 +8,7 @@
 #include "gitInfoReceiver.h"
 #include "slsReceiverUsers.h"
 #include "slsReceiver.h"
+#include "versionAPI.h"
 
 #include  <stdlib.h>	//EXIT
 #include <iostream>
@@ -37,6 +38,7 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 				fnum(-1),
 				lockStatus(0),
 				killTCPServerThread(0),
+				tcpThreadCreated(false),
 				portNumber(DEFAULT_PORTNO+2),
 				mySock(NULL)
 {
@@ -133,6 +135,7 @@ int slsReceiverTCPIPInterface::start(){
 		FILE_LOG(logERROR) << "Could not create TCP Server thread";
 		return FAIL;
 	}
+	tcpThreadCreated = true;
 	//#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG) << "TCP Server thread created successfully.";
 	//#endif
@@ -141,19 +144,22 @@ int slsReceiverTCPIPInterface::start(){
 
 
 void slsReceiverTCPIPInterface::stop(){
-	FILE_LOG(logINFO) << "Shutting down TCP Socket";
-	killTCPServerThread = 1;
-	if(mySock)	mySock->ShutDownSocket();
-	FILE_LOG(logDEBUG) << "TCP Socket closed";
-	pthread_join(TCPServer_thread, NULL);
-	killTCPServerThread = 0;
-	FILE_LOG(logINFO) << "TCP Server Thread closed";
+	if (tcpThreadCreated) {
+		FILE_LOG(logINFO) << "Shutting down TCP Socket on port " << portNumber;
+		killTCPServerThread = 1;
+		if(mySock)	mySock->ShutDownSocket();
+		FILE_LOG(logDEBUG) << "TCP Socket closed on port " << portNumber;
+		pthread_join(TCPServer_thread, NULL);
+		tcpThreadCreated = false;
+		killTCPServerThread = 0;
+		FILE_LOG(logDEBUG) << "Exiting TCP Server Thread on port " << portNumber;
+	}
 }
 
 
 
 int64_t slsReceiverTCPIPInterface::getReceiverVersion(){
-	int64_t retval = GITDATE;
+	int64_t retval = GITDATE & 0xFFFFFF;
 	return retval;
 }
 
@@ -170,17 +176,13 @@ void slsReceiverTCPIPInterface::registerCallBackAcquisitionFinished(void (*func)
 	pAcquisitionFinished=arg;
 }
 
-void slsReceiverTCPIPInterface::registerCallBackRawDataReady(void (*func)(uint64_t,
-        uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t,
-        uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+void slsReceiverTCPIPInterface::registerCallBackRawDataReady(void (*func)(char* ,
 		char*, uint32_t, void*),void *arg){
 	rawDataReadyCallBack=func;
 	pRawDataReady=arg;
 }
 
-void slsReceiverTCPIPInterface::registerCallBackRawDataModifyReady(void (*func)(uint64_t,
-        uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t,
-        uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+void slsReceiverTCPIPInterface::registerCallBackRawDataModifyReady(void (*func)(char* ,
         char*, uint32_t &,void*),void *arg){
     rawDataModifyReadyCallBack=func;
     pRawDataReady=arg;
@@ -196,6 +198,7 @@ void* slsReceiverTCPIPInterface::startTCPServerThread(void *this_pointer){
 
 void slsReceiverTCPIPInterface::startTCPServer(){
 	cprintf(BLUE,"Created [ TCP server Tid: %ld ]\n", (long)syscall(SYS_gettid));
+	FILE_LOG(logINFO) << "SLS Receiver starting TCP Server on port " << portNumber << endl;
 
 #ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG5) << "Starting Receiver TCP Server";
@@ -293,6 +296,14 @@ const char* slsReceiverTCPIPInterface::getFunctionName(enum recFuncs func) {
 	case F_RECEIVER_STREAMING_SRC_IP: 	return "F_RECEIVER_STREAMING_SRC_IP";
 	case F_ENABLE_GAPPIXELS_IN_RECEIVER:return "F_ENABLE_GAPPIXELS_IN_RECEIVER";
 	case F_RESTREAM_STOP_FROM_RECEIVER:	return "F_RESTREAM_STOP_FROM_RECEIVER";
+    case F_ADDITIONAL_JSON_HEADER:      return "F_ADDITIONAL_JSON_HEADER";
+    case F_RECEIVER_UDP_SOCK_BUF_SIZE:  return "F_RECEIVER_UDP_SOCK_BUF_SIZE";
+    case F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE:  return "F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE";
+    case F_SET_RECEIVER_FRAMES_PER_FILE:return "F_SET_RECEIVER_FRAMES_PER_FILE";
+    case F_RECEIVER_CHECK_VERSION:		return "F_RECEIVER_CHECK_VERSION";
+    case F_RECEIVER_DISCARD_POLICY:		return "F_RECEIVER_DISCARD_POLICY";
+    case F_RECEIVER_PADDING_ENABLE:		return "F_RECEIVER_PADDING_ENABLE";
+
 	default:							return "Unknown Function";
 	}
 }
@@ -341,6 +352,13 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_RECEIVER_STREAMING_SRC_IP]		= 	&slsReceiverTCPIPInterface::set_streaming_source_ip;
 	flist[F_ENABLE_GAPPIXELS_IN_RECEIVER]	=	&slsReceiverTCPIPInterface::enable_gap_pixels;
 	flist[F_RESTREAM_STOP_FROM_RECEIVER]	= 	&slsReceiverTCPIPInterface::restream_stop;
+	flist[F_ADDITIONAL_JSON_HEADER]         =   &slsReceiverTCPIPInterface::set_additional_json_header;
+    flist[F_RECEIVER_UDP_SOCK_BUF_SIZE]     =   &slsReceiverTCPIPInterface::set_udp_socket_buffer_size;
+    flist[F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE]=   &slsReceiverTCPIPInterface::get_real_udp_socket_buffer_size;
+    flist[F_SET_RECEIVER_FRAMES_PER_FILE]	=   &slsReceiverTCPIPInterface::set_frames_per_file;
+    flist[F_RECEIVER_CHECK_VERSION]			=   &slsReceiverTCPIPInterface::check_version_compatibility;
+    flist[F_RECEIVER_DISCARD_POLICY]		=   &slsReceiverTCPIPInterface::set_discard_policy;
+	flist[F_RECEIVER_PADDING_ENABLE]		=   &slsReceiverTCPIPInterface::set_padding_enable;
 
 #ifdef VERYVERBOSE
 	for (int i = 0; i < NUM_REC_FUNCTIONS ; i++) {
@@ -358,20 +376,22 @@ int slsReceiverTCPIPInterface::decode_function(){
 	ret = FAIL;
 #ifdef VERYVERBOSE
 	cprintf(RESET,"\n");
-	FILE_LOG(logDEBUG1) <<  "waiting to receive data";
 #endif
+	FILE_LOG(logDEBUG1) <<  "waiting to receive data";
 	int n = mySock->ReceiveDataOnly(&fnum,sizeof(fnum));
 	if (n <= 0) {
-#ifdef VERYVERBOSE
-		FILE_LOG(logDEBUG1) << "ERROR reading from socket. Received " << n << " bytes, fd: " << file_des << " fnum:" << fnum << " (" << getFunctionName((enum recFuncs)fnum) << ")";
-#endif
+		FILE_LOG(logDEBUG1) << "ERROR reading from socket. "
+				"Received " << n << " bytes," <<
+						"fnum:" << fnum << " "
+								"(" << getFunctionName((enum recFuncs)fnum) << ")";
 		return FAIL;
 	}
-#ifdef VERYVERBOSE
 	else
 		FILE_LOG(logDEBUG1) << "Received " << n << " bytes";
-	FILE_LOG(logDEBUG1) <<  "calling function fnum: "<< fnum << " (" << getFunctionName((enum recFuncs)fnum) << ") located at " << flist[fnum];
-#endif
+
+	FILE_LOG(logDEBUG1) <<  "calling function fnum: "<< fnum << " "
+			"(" << getFunctionName((enum recFuncs)fnum) << ") "
+					"located at " << flist[fnum];
 
 	if (fnum < REC_FUNC_START_INDEX || fnum >= NUM_REC_FUNCTIONS) {
 		FILE_LOG(logERROR) << "Unknown function enum " << fnum;
@@ -420,7 +440,7 @@ void slsReceiverTCPIPInterface::functionNotImplemented() {
 }
 
 
-int slsReceiverTCPIPInterface::M_nofunc(){
+int slsReceiverTCPIPInterface::M_nofunc(){printf("111 \n");
 	ret = FAIL;
 	memset(mess, 0, sizeof(mess));
 	int n = 0;
@@ -429,7 +449,7 @@ int slsReceiverTCPIPInterface::M_nofunc(){
 	while (n > 0)
 		n = mySock->ReceiveDataOnly(mess,MAX_STR_LENGTH);
 
-	sprintf(mess,"Unrecognized Function\n");
+	strcpy(mess,"Unrecognized Function. Please do not proceed.\n");
 	FILE_LOG(logERROR) << mess;
 
 	// send ok / fail
@@ -678,6 +698,24 @@ int slsReceiverTCPIPInterface::send_update() {
 #endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
+	//frames per file
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind=(int)receiverBase->getFramesPerFile();
+#endif
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
+
+	//frame discard policy
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind=(int)receiverBase->getFrameDiscardPolicy();
+#endif
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
+
+	//frame padding
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind=(int)receiverBase->getFramePaddingEnable();
+#endif
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
+
 	// file write enable
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getFileWriteEnable();
@@ -687,6 +725,12 @@ int slsReceiverTCPIPInterface::send_update() {
 	// file overwrite enable
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getOverwriteEnable();
+#endif
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
+
+	// gap pixels
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind=(int)receiverBase->getGapPixelsEnable();
 #endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
@@ -702,12 +746,6 @@ int slsReceiverTCPIPInterface::send_update() {
 #endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
-	// data streaming enable
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	ind=(int)receiverBase->getDataStreamEnable();
-#endif
-	n += mySock->SendDataOnly(&ind,sizeof(ind));
-
 	// streaming source ip
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	path = receiverBase->getStreamingSourceIP();
@@ -716,11 +754,19 @@ int slsReceiverTCPIPInterface::send_update() {
 	if (path != NULL)
 		delete[] path;
 
-	// gap pixels enable
+    // additional json header
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	ind = (int)receiverBase->getGapPixelsEnable();
+    path = receiverBase->getAdditionalJsonHeader();
 #endif
-	mySock->SendDataOnly(&ind,sizeof(ind));
+    mySock->SendDataOnly(path,MAX_STR_LENGTH);
+    if (path != NULL)
+        delete[] path;
+
+	// data streaming enable
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind=(int)receiverBase->getDataStreamEnable();
+#endif
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	if (!lockStatus)
 		strcpy(mySock->lastClientIP,mySock->thisClientIP);
@@ -1033,10 +1079,14 @@ int slsReceiverTCPIPInterface::set_timer() {
 					break;
 				case FRAME_NUMBER:
 				case CYCLES_NUMBER:
+				case STORAGE_CELL_NUMBER:
 					receiverBase->setNumberOfFrames(index[1]);
 					break;
 				case SUBFRAME_ACQUISITION_TIME:
 					receiverBase->setSubExpTime(index[1]);
+					break;
+				case SUBFRAME_PERIOD:
+					receiverBase->setSubPeriod(index[1]);
 					break;
 				case SAMPLES_JCTB:
 					if (myDetectorType != JUNGFRAUCTB) {
@@ -1064,10 +1114,14 @@ int slsReceiverTCPIPInterface::set_timer() {
 			break;
 		case FRAME_NUMBER:
 		case CYCLES_NUMBER:
+		case STORAGE_CELL_NUMBER:
 			retval=receiverBase->getNumberOfFrames();
 			break;
 		case SUBFRAME_ACQUISITION_TIME:
 			retval=receiverBase->getSubExpTime();
+			break;
+		case SUBFRAME_PERIOD:
+			retval=receiverBase->getSubPeriod();
 			break;
 		case SAMPLES_JCTB:
 			if (myDetectorType != JUNGFRAUCTB) {
@@ -1172,7 +1226,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 		}
 	}
 #ifdef VERYVERBOSE
-	FILE_LOG(logDEBUG1) << "dynamic range" << dr;
+	FILE_LOG(logDEBUG1) << "dynamic range: " << retval;
 #endif
 #endif
 
@@ -2549,3 +2603,357 @@ int slsReceiverTCPIPInterface::restream_stop(){
 	// return ok/fail
 	return ret;
 }
+
+
+
+int slsReceiverTCPIPInterface::set_additional_json_header() {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    char arg[MAX_STR_LENGTH];
+    memset(arg, 0, sizeof(arg));
+    char* retval=NULL;
+
+    // receive arguments
+    if (mySock->ReceiveDataOnly(arg,MAX_STR_LENGTH) < 0 )
+        return printSocketReadError();
+
+    // execute action
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+    if (receiverBase == NULL)
+        invalidReceiverObject();
+    else {
+        // set
+        if (mySock->differentClients && lockStatus)
+            receiverlocked();
+        else if (receiverBase->getStatus() != IDLE)
+            receiverNotIdle();
+        else {
+                receiverBase->setAdditionalJsonHeader(arg);
+        }
+
+        //get
+        retval = receiverBase->getAdditionalJsonHeader();
+    }
+#endif
+#ifdef VERYVERBOSE
+    FILE_LOG(logDEBUG1) << "additional json header:" << retval;
+#endif
+
+    if (ret == OK && mySock->differentClients)
+        ret = FORCE_UPDATE;
+
+    // send answer
+    mySock->SendDataOnly(&ret,sizeof(ret));
+    if (ret == FAIL)
+        mySock->SendDataOnly(mess,sizeof(mess));
+    mySock->SendDataOnly(retval,MAX_STR_LENGTH);
+    delete[] retval;
+
+    // return ok/fail
+    return ret;
+}
+
+
+
+int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int index = -1;
+    int retval = -1;
+
+    // receive arguments
+    if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
+        return printSocketReadError();
+
+    // execute action
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+    if (receiverBase == NULL)
+        invalidReceiverObject();
+    else {
+        // set
+        if(index >= 0) {
+            if (mySock->differentClients && lockStatus)
+                receiverlocked();
+            else if (receiverBase->getStatus() != IDLE)
+                receiverNotIdle();
+            else {
+                if (receiverBase->setUDPSocketBufferSize(index) == FAIL) {
+                    ret = FAIL;
+                    strcpy(mess, "Could not create dummy UDP Socket to test buffer size\n");
+                    FILE_LOG(logERROR) << mess;
+                }
+            }
+        }
+        //get
+        retval=receiverBase->getUDPSocketBufferSize();
+        if(index >= 0 && ((retval != index) || ((int)receiverBase->getActualUDPSocketBufferSize() != (index*2)))) {
+            ret = FAIL;
+            strcpy(mess, "Could not set UDP Socket buffer size (No CAP_NET_ADMIN privileges?)\n");
+            FILE_LOG(logERROR) << mess;
+        }
+    }
+#endif
+#ifdef VERYVERBOSE
+    FILE_LOG(logDEBUG1) << "UDP Socket Buffer Size:" << retval;
+#endif
+
+    if (ret == OK && mySock->differentClients)
+        ret = FORCE_UPDATE;
+
+    // send answer
+    mySock->SendDataOnly(&ret,sizeof(ret));
+    if (ret == FAIL)
+        mySock->SendDataOnly(mess,sizeof(mess));
+    mySock->SendDataOnly(&retval,sizeof(retval));
+
+    // return ok/fail
+    return ret;
+}
+
+
+
+int slsReceiverTCPIPInterface::get_real_udp_socket_buffer_size(){
+    ret = OK;
+    int retval = -1;
+
+    // execute action
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+    if (receiverBase == NULL)
+        invalidReceiverObject();
+    else retval = receiverBase->getActualUDPSocketBufferSize();
+#endif
+
+    if (ret == OK && mySock->differentClients)
+        ret = FORCE_UPDATE;
+
+    // send answer
+    mySock->SendDataOnly(&ret,sizeof(ret));
+    mySock->SendDataOnly(&retval,sizeof(retval));
+
+    // return ok/fail
+    return ret;
+}
+
+
+
+int slsReceiverTCPIPInterface::set_frames_per_file() {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int index = -1;
+	int retval = -1;
+
+	// receive arguments
+	if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
+		return printSocketReadError();
+
+	// execute action
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	if (receiverBase == NULL)
+		invalidReceiverObject();
+	else {
+		// set
+		if(index >= 0) {
+			if (mySock->differentClients && lockStatus)
+				receiverlocked();
+			else if (receiverBase->getStatus() != IDLE)
+				receiverNotIdle();
+			else {
+				receiverBase->setFramesPerFile(index);
+			}
+		}
+		//get
+		retval=receiverBase->getFramesPerFile();
+		if(index >= 0 && retval != index) {
+			ret = FAIL;
+			strcpy(mess, "Could not set frames per file\n");
+			FILE_LOG(logERROR) << mess;
+		}
+	}
+#endif
+#ifdef VERYVERBOSE
+	FILE_LOG(logDEBUG1) << "frames per file:" << retval;
+#endif
+
+	if (ret == OK && mySock->differentClients)
+		ret = FORCE_UPDATE;
+
+	// send answer
+	mySock->SendDataOnly(&ret,sizeof(ret));
+	if (ret == FAIL)
+		mySock->SendDataOnly(mess,sizeof(mess));
+	mySock->SendDataOnly(&retval,sizeof(retval));
+
+	// return ok/fail
+	return ret;
+}
+
+
+
+
+
+
+int slsReceiverTCPIPInterface::check_version_compatibility() {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t arg = -1;
+	int64_t retval = -1;
+
+	// receive arguments
+	if (mySock->ReceiveDataOnly(&arg,sizeof(arg)) < 0 )
+		return printSocketReadError();
+
+
+	// execute action
+	FILE_LOG(logDEBUG1) << "Checking versioning compatibility with value " << arg;
+
+	int64_t client_requiredVersion = arg;
+	int64_t rx_apiVersion = APIRECEIVER;
+	int64_t rx_version = getReceiverVersion();
+
+	// old client
+	if (rx_apiVersion > client_requiredVersion) {
+		ret = FAIL;
+		sprintf(mess,"This client is incompatible.\n"
+				"Client's receiver API Version: (0x%llx). Receiver API Version: (0x%llx).\n"
+				"Incompatible, update client!\n",
+				(long long unsigned int)client_requiredVersion,
+				(long long unsigned int)rx_apiVersion);
+		FILE_LOG(logERROR) << mess;
+	}
+
+	// old software
+	else if (client_requiredVersion > rx_version) {
+		ret = FAIL;
+		sprintf(mess,"This receiver is incompatible.\n"
+				"Receiver Version: (0x%llx). Client's receiver API Version: (0x%llx).\n"
+				"Incompatible, update receiver!\n",
+				(long long unsigned int)rx_version,
+				(long long unsigned int)client_requiredVersion);
+		FILE_LOG(logERROR) << mess;
+	}
+	else FILE_LOG(logINFO) << "Compatibility with Client: Successful";
+
+	if (ret == OK && mySock->differentClients)
+		ret = FORCE_UPDATE;
+
+	// send answer
+	mySock->SendDataOnly(&ret,sizeof(ret));
+	if (ret == FAIL)
+		mySock->SendDataOnly(mess,sizeof(mess));
+	mySock->SendDataOnly(&retval,sizeof(retval)); // sending crap (because of thisReceiver interface)
+
+	// return ok/fail
+	return ret;
+}
+
+
+
+
+int slsReceiverTCPIPInterface::set_discard_policy() {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int index = -1;
+	int retval = -1;
+
+	// receive arguments
+	if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
+		return printSocketReadError();
+
+	// execute action
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	if (receiverBase == NULL)
+		invalidReceiverObject();
+	else {
+		// set
+		if(index >= 0) {
+			if (mySock->differentClients && lockStatus)
+				receiverlocked();
+			else if (receiverBase->getStatus() != IDLE)
+				receiverNotIdle();
+			else {
+				receiverBase->setFrameDiscardPolicy((frameDiscardPolicy)index);
+			}
+		}
+		//get
+		retval=receiverBase->getFrameDiscardPolicy();
+		if(index >= 0 && retval != index) {
+			ret = FAIL;
+			strcpy(mess, "Could not set frame discard policy\n");
+			FILE_LOG(logERROR) << mess;
+		}
+	}
+#endif
+#ifdef VERYVERBOSE
+	FILE_LOG(logDEBUG1) << "frame discard policy:" << retval;
+#endif
+
+	if (ret == OK && mySock->differentClients)
+		ret = FORCE_UPDATE;
+
+	// send answer
+	mySock->SendDataOnly(&ret,sizeof(ret));
+	if (ret == FAIL)
+		mySock->SendDataOnly(mess,sizeof(mess));
+	mySock->SendDataOnly(&retval,sizeof(retval));
+
+	// return ok/fail
+	return ret;
+}
+
+
+
+
+int slsReceiverTCPIPInterface::set_padding_enable() {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int index = -1;
+	int retval = -1;
+
+	// receive arguments
+	if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
+		return printSocketReadError();
+
+	// execute action
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	if (receiverBase == NULL)
+		invalidReceiverObject();
+	else {
+		// set
+		if(index >= 0) {
+			if (mySock->differentClients && lockStatus)
+				receiverlocked();
+			else if (receiverBase->getStatus() != IDLE)
+				receiverNotIdle();
+			else {
+				index = (index == 0) ? 0 : 1;
+				receiverBase->setFramePaddingEnable(index);
+			}
+		}
+		//get
+		retval=(int)receiverBase->getFramePaddingEnable();
+		if(index >= 0 && retval != index) {
+			ret = FAIL;
+			strcpy(mess, "Could not set frame padding enable\n");
+			FILE_LOG(logERROR) << mess;
+		}
+	}
+#endif
+#ifdef VERYVERBOSE
+	FILE_LOG(logDEBUG1) << "Frame Padding Enable:" << retval;
+#endif
+
+	if (ret == OK && mySock->differentClients)
+		ret = FORCE_UPDATE;
+
+	// send answer
+	mySock->SendDataOnly(&ret,sizeof(ret));
+	if (ret == FAIL)
+		mySock->SendDataOnly(mess,sizeof(mess));
+	mySock->SendDataOnly(&retval,sizeof(retval));
+
+	// return ok/fail
+	return ret;
+}
+
+
+

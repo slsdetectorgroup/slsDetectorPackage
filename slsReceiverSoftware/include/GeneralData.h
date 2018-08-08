@@ -83,6 +83,9 @@ public:
 	/** if standard header implemented in firmware */
 	bool standardheader;
 
+	/** default udp socket buffer size */
+	uint32_t defaultUdpSocketBufferSize;
+
 
 
 
@@ -109,7 +112,8 @@ public:
 		nPixelsXComplete(0),
 		nPixelsYComplete(0),
 		imageSizeComplete(0),
-		standardheader(false)
+		standardheader(false),
+		defaultUdpSocketBufferSize(RECEIVE_SOCKET_BUFFER_SIZE)
 		{};
 
 	/** Destructor */
@@ -214,6 +218,7 @@ public:
 		FILE_LOG(logDEBUG) << "Complete Pixels Y: " << nPixelsYComplete;
 		FILE_LOG(logDEBUG) << "Complete Image Size: " << imageSizeComplete;
 		FILE_LOG(logDEBUG) << "Standard Header: " << standardheader;
+		FILE_LOG(logDEBUG) << "UDP Socket Buffer Size: " << defaultUdpSocketBufferSize;
 	};
 };
 
@@ -236,7 +241,7 @@ class GotthardData : public GeneralData {
 		frameIndexOffset 	= 1;
 		packetIndexMask 	= 1;
 		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
 		defaultFifoDepth 	= 50000;
 	};
 };
@@ -258,7 +263,7 @@ class ShortGotthardData : public GeneralData {
 		imageSize 			= dataSize*packetsPerFrame;
 		frameIndexMask 		= 0xFFFFFFFF;
 		maxFramesPerFile 	= SHORT_MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
 		defaultFifoDepth 	= 50000;
 		nPixelsXComplete 	= 1280;
 		nPixelsYComplete 	= 1;
@@ -322,7 +327,7 @@ class PropixData : public GeneralData {
 		frameIndexOffset 	= 1;
 		packetIndexMask 	= 1;
 		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
 		defaultFifoDepth 	= 50000;
 	};
 };
@@ -349,7 +354,7 @@ class Moench02Data : public GeneralData {
 		frameIndexOffset 	= 8;
 		packetIndexMask 	= 0xFF;
 		maxFramesPerFile 	= MOENCH_MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
 		defaultFifoDepth 	= 2500;
 	};
 
@@ -381,7 +386,7 @@ class Moench03Data : public GeneralData {
 		frameIndexOffset 	= (6+8);
 		packetIndexMask 	= 0xFFFFFFFF;
 		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
 		defaultFifoDepth 	= 2500;
 	};
 };
@@ -419,7 +424,7 @@ private:
 		imageSize 			= nPixelsX * nPixelsY * 2;
 		frameIndexMask 		= 0xFFFFFF;
 		maxFramesPerFile 	= JFCTB_MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
 		defaultFifoDepth 	= 2500;
 	};
 
@@ -491,9 +496,10 @@ class JungfrauData : public GeneralData {
 		packetsPerFrame 	= 128;
 		imageSize 			= dataSize*packetsPerFrame;
 		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
 		defaultFifoDepth 	= 2500;
 		standardheader		= true;
+		defaultUdpSocketBufferSize = (2000 * 1024 * 1024);
 	};
 
 };
@@ -514,7 +520,7 @@ class EigerData : public GeneralData {
 		packetsPerFrame 	= 256;
 		imageSize 			= dataSize*packetsPerFrame;
 		maxFramesPerFile 	= EIGER_MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_detector_header);
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
 		defaultFifoDepth 	= 100;
 		threadsPerReceiver	= 2;
 		headerPacketSize	= 40;

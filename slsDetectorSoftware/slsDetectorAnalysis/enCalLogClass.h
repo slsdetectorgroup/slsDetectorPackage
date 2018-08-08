@@ -15,7 +15,7 @@
 #include "sls_detector_defs.h"
 #endif
 
-using namespace std;
+;
 
 class enCalLogClass {
 
@@ -32,7 +32,7 @@ class enCalLogClass {
     strcpy(vars[3],"modulenumber");					\
     argv[0]=cmd;							\
     sprintf(cmd,"_%d.encal",det->getFileIndex());			\
-    outfile.open(string(det->getFilePath()+string("/")+det->getFileName()+string(cmd)).c_str()); \
+    outfile.open(std::string(det->getFilePath()+std::string("/")+det->getFileName()+std::string(cmd)).c_str()); \
     myDet=new slsDetectorCommand(det);					\
     strcpy(cmd,vars[0]);						\
     outfile << cmd << " " << myDet->executeLine(1,argv,slsDetectorDefs::GET_ACTION) << endl;	\
@@ -58,12 +58,12 @@ class enCalLogClass {
 #endif  
   
 
-  int addStep(double threshold, string fname) {outfile << threshold << " " << fname << endl; return 0;};
+  int addStep(double threshold, std::string fname) {outfile << threshold << " " << fname << endl; return 0;};
   
 
   // 
 
-  int readHeader(ifstream &infile, char *settings, int &nmod, int &chanspermod, int *mods ) {				\
+  int readHeader(std::ifstream &infile, char *settings, int &nmod, int &chanspermod, int *mods ) {				\
     nmod=0; strcpy(settings,"unknown"); chanspermod=0;			\
     char line[1000],myarg[100];						\
     int dum;								\
@@ -75,9 +75,9 @@ class enCalLogClass {
 	break;								\
       case 1:								\
 	sscanf(line,"type %s", myarg);					\
-	if (string(myarg).find("Mythen")!=string::npos)			\
+	if (std::string(myarg).find("Mythen")!=std::string::npos)			\
 	  chanspermod=1280;						\
-	else if (string(myarg).find("Gotthard")!=string::npos)		\
+	else if (std::string(myarg).find("Gotthard")!=std::string::npos)		\
 	  chanspermod=1280;						\
 	else								\
 	  chanspermod=65535;						\
@@ -101,7 +101,7 @@ class enCalLogClass {
     return 0;								\
   };
 
-  int getStep(ifstream &infile, double &threshold, char *datafname){	\
+  int getStep(std::ifstream &infile, double &threshold, char *datafname){	\
       char line[1000];							\
       float v;
       infile.getline(line,1000);					\
@@ -122,7 +122,7 @@ class enCalLogClass {
 #ifndef MYROOT
   slsDetectorCommand *myDet;
 #endif
-  ofstream outfile;
+  std::ofstream outfile;
   char vars[4][100];
 
 };

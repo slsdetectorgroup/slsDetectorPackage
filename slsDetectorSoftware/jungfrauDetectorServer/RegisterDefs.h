@@ -75,8 +75,8 @@
 #define TIME_FROM_START_MSB_REG   		(0x11 << MEM_MAP_SHIFT)
 
 /* Get Delay 64 bit register */
-#define GET_DELAY_LSB_REG     			(0x12 << MEM_MAP_SHIFT)
-#define GET_DELAY_MSB_REG     			(0x13 << MEM_MAP_SHIFT)
+#define GET_DELAY_LSB_REG     			(0x12 << MEM_MAP_SHIFT)						// different kind of delay
+#define GET_DELAY_MSB_REG     			(0x13 << MEM_MAP_SHIFT)						// different kind of delay
 
 /* Get Cycles 64 bit register */
 #define GET_CYCLES_LSB_REG    			(0x14 << MEM_MAP_SHIFT)
@@ -297,7 +297,35 @@
 
 
 /** DAQ Register */
-#define DAQ_REG							(0x5D << MEM_MAP_SHIFT)								//TBD in firmware
+#define DAQ_REG							(0x5D << MEM_MAP_SHIFT)
+
+#define DAQ_SETTINGS_MSK                (DAQ_HIGH_GAIN_MSK | DAQ_FIX_GAIN_MSK | DAQ_FRCE_SWTCH_GAIN_MSK)
+#define DAQ_HIGH_GAIN_OFST              (0)
+#define DAQ_HIGH_GAIN_MSK               (0x00000001 << DAQ_HIGH_GAIN_OFST)
+#define DAQ_FIX_GAIN_DYNMC_VAL          ((0x0 << DAQ_HIGH_GAIN_OFST) & DAQ_HIGH_GAIN_MSK)
+#define DAQ_FIX_GAIN_HIGHGAIN_VAL       ((0x1 << DAQ_HIGH_GAIN_OFST) & DAQ_HIGH_GAIN_MSK)
+#define DAQ_FIX_GAIN_OFST               (1)
+#define DAQ_FIX_GAIN_MSK                (0x00000003 << DAQ_FIX_GAIN_OFST)
+#define DAQ_FIX_GAIN_STG_1_VAL          ((0x1 << DAQ_FIX_GAIN_OFST) & DAQ_FIX_GAIN_MSK)
+#define DAQ_FIX_GAIN_STG_2_VAL          ((0x3 << DAQ_FIX_GAIN_OFST) & DAQ_FIX_GAIN_MSK)
+#define DAQ_CMP_RST_OFST                (4)
+#define DAQ_CMP_RST_MSK                 (0x00000001 << DAQ_CMP_RST_OFST)
+#define DAQ_STRG_CELL_SLCT_OFST         (8)
+#define DAQ_STRG_CELL_SLCT_MSK          (0x0000000F << DAQ_STRG_CELL_SLCT_OFST)
+#define DAQ_FRCE_SWTCH_GAIN_OFST        (12)
+#define DAQ_FRCE_SWTCH_GAIN_MSK         (0x00000003 << DAQ_FRCE_SWTCH_GAIN_OFST)
+#define DAQ_FRCE_GAIN_STG_1_VAL         ((0x1 << DAQ_FRCE_SWTCH_GAIN_OFST) & DAQ_FRCE_SWTCH_GAIN_MSK)
+#define DAQ_FRCE_GAIN_STG_2_VAL         ((0x3 << DAQ_FRCE_SWTCH_GAIN_OFST) & DAQ_FRCE_SWTCH_GAIN_MSK)
+#define DAQ_ELCTRN_CLLCTN_MDE_OFST      (14)
+#define DAQ_ELCTRN_CLLCTN_MDE_MSK       (0x00000001 << DAQ_ELCTRN_CLLCTN_MDE_OFST)
+#define DAQ_G2_CNNT_OFST                (15)
+#define DAQ_G2_CNNT_MSK                 (0x00000001 << DAQ_G2_CNNT_OFST)
+#define DAQ_CRRNT_SRC_ENBL_OFST         (16)
+#define DAQ_CRRNT_SRC_ENBL_MSK          (0x00000001 << DAQ_CRRNT_SRC_ENBL_OFST)
+#define DAQ_CRRNT_SRC_CLMN_FIX_OFST     (17)
+#define DAQ_CRRNT_SRC_CLMN_FIX_MSK      (0x00000001 << DAQ_CRRNT_SRC_CLMN_FIX_OFST)
+#define DAQ_CRRNT_SRC_CLMN_SLCT_OFST    (20)
+#define DAQ_CRRNT_SRC_CLMN_SLCT_MSK     (0x0000003F << DAQ_CRRNT_SRC_CLMN_SLCT_OFST)
 
 /** Chip Power Register */
 #define CHIP_POWER_REG					(0x5E << MEM_MAP_SHIFT)
@@ -321,8 +349,8 @@
 
 
 /* Set Delay 64 bit register */
-#define SET_DELAY_LSB_REG     			(0x60 << MEM_MAP_SHIFT)
-#define SET_DELAY_MSB_REG     			(0x61 << MEM_MAP_SHIFT)
+#define SET_DELAY_LSB_REG     			(0x60 << MEM_MAP_SHIFT)					// different kind of delay
+#define SET_DELAY_MSB_REG     			(0x61 << MEM_MAP_SHIFT)					// different kind of delay
 
 /* Set Cycles 64 bit register */
 #define SET_CYCLES_LSB_REG    			(0x62 << MEM_MAP_SHIFT)
@@ -345,7 +373,7 @@
 #define SET_TRIGGER_DELAY_MSB_REG       (0x71 << MEM_MAP_SHIFT)
 
 /* Module Coordinates Register 0 */
-#define COORD_0							(0x7C << MEM_MAP_SHIFT)
+#define COORD_0_REG						(0x7C << MEM_MAP_SHIFT)
 
 #define COORD_0_Y_OFST					(0)
 #define COORD_0_Y_MSK					(0x0000FFFF << COORD_0_Y_OFST)
@@ -353,18 +381,20 @@
 #define COORD_0_X_MSK					(0x0000FFFF << COORD_0_X_OFST)
 
 /* Module Coordinates Register 1 */
-#define COORD_1							(0x7D << MEM_MAP_SHIFT)
+#define COORD_1_REG						(0x7D << MEM_MAP_SHIFT)
 
 #define COORD_0_Z_OFST					(0)
 #define COORD_0_Z_MSK					(0x0000FFFF << COORD_0_Z_OFST)
 
 /* ASIC Control Register */
-#define ASIC_CTRL_REG                   (0x7F)
+#define ASIC_CTRL_REG                   (0x7F << MEM_MAP_SHIFT)
 
 #define ASIC_CTRL_PRCHRG_TMR_OFST       (0)
 #define ASIC_CTRL_PRCHRG_TMR_MSK        (0x000000FF << ASIC_CTRL_PRCHRG_TMR_OFST)
+#define ASIC_CTRL_PRCHRG_TMR_VAL        ((0x1F << ASIC_CTRL_PRCHRG_TMR_OFST) & ASIC_CTRL_PRCHRG_TMR_MSK)
 #define ASIC_CTRL_DS_TMR_OFST           (8)
 #define ASIC_CTRL_DS_TMR_MSK            (0x000000FF << ASIC_CTRL_DS_TMR_OFST)
+#define ASIC_CTRL_DS_TMR_VAL            ((0x1F << ASIC_CTRL_DS_TMR_OFST) & ASIC_CTRL_DS_TMR_MSK)
 
 
 #endif  //REGISTERS_G_H

@@ -17,7 +17,6 @@
 #ifndef H5_NO_NAMESPACE
     using namespace H5;
 #endif
-#include <string>
 
 
 class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileStatic {
@@ -27,7 +26,7 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	 * Constructor
 	 * creates the File Writer
 	 * @param ind self index
-	 * @param maxf max frames per file
+	 * @param maxf pointer to max frames per file
 	 * @param nd pointer to number of detectors in each dimension
 	 * @param fname pointer to file name prefix
 	 * @param fpath pointer to file path
@@ -42,7 +41,7 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	 * @param ny number of pixels in y direction
 	 * @param smode pointer to silent mode
 	 */
-	HDF5File(int ind, uint32_t maxf,
+	HDF5File(int ind, uint32_t* maxf,
 			int* nd, char* fname, char* fpath, uint64_t* findex, bool* owenable,
 			int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
 			uint32_t nx, uint32_t ny,
@@ -99,18 +98,21 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	 * @param nx number of pixels in x direction
 	 * @param ny number of pixels in y direction
 	 * @param at acquisition time
-	  * @param at sub exposure time
+	 * @param st sub exposure time
+	 * @param sp sub period
 	 * @param ap acquisition period
 	 * @returns OK or FAIL
 	 */
 	int CreateMasterFile(bool en, uint32_t size,
-			uint32_t nx, uint32_t ny, uint64_t at, uint64_t st, uint64_t ap);
+			uint32_t nx, uint32_t ny, uint64_t at, uint64_t st, uint64_t sp,
+			uint64_t ap);
 
 	/**
 	 * End of Acquisition
+	 * @param anyPacketsCaught true if any packets are caught, else false
 	 * @param numf number of images caught
 	 */
-	void EndofAcquisition(uint64_t numf);
+	void EndofAcquisition(bool anyPacketsCaught, uint64_t numf);
 
 	/**
 	 * Create Virtual File
@@ -171,11 +173,20 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	/** Number of files in an acquisition - to verify need of virtual file */
 	int numFilesinAcquisition;
 
+	/** parameter names */
+	vector <const char*> parameterNames;
+
+	/** parameter data types */
+	vector <DataType> parameterDataTypes;
+
 	/** Dataspace of parameters */
 	DataSpace* dataspace_para;
 
 	/** Dataset array for parameters */
-	DataSet* dataset_para[HDF5FileStatic::NumberofParameters];
+	vector <DataSet*> dataset_para;
+
+	/** Number of Images (including extended during acquisition) */
+	uint64_t extNumImages;
 
 };
 #endif

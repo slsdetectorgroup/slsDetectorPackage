@@ -17,6 +17,11 @@ Here are the definitions, but the actual implementation should be done for each 
 
 
 // basic tests
+#if defined(EIGERD) || defined(JUNGFRAUD) || defined(GOTTHARD)
+int			isFirmwareCheckDone();
+int			getFirmwareCheckResult(char** mess);
+#endif
+
 void 		checkFirmwareCompatibility(int flag);
 #if defined(MYTHEN3D) || defined(JUNGFRAUD)
 int 		checkType();
@@ -58,6 +63,9 @@ void 		getModuleConfiguration();
 // set up detector
 void		allocateDetectorStructureMemory();
 void 		setupDetector();
+#ifdef JUNGFRAUD
+int			setDefaultDacs();
+#endif
 
 
 // advanced read/write reg
@@ -85,6 +93,7 @@ int         configureFrequency(int val, int i);
 int         autoCompDisable(int on);
 int 		adcPhase(int st);
 int 		getPhase();
+void        configureASICTimer();
 #endif
 
 // parameters - nmod, dr, roi
@@ -105,6 +114,9 @@ int 		executeTrimming(enum trimMode mode, int par1, int par2, int imod);
 #endif
 
 // parameters - timer
+#ifdef JUNGFRAUD
+int         selectStoragecellStart(int pos);
+#endif
 int64_t 	setTimer(enum timerIndex ind, int64_t val);
 #ifndef EIGERD
 int64_t 	getTimeLeft(enum timerIndex ind);

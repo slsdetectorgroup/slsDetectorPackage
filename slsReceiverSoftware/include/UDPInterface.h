@@ -51,6 +51,7 @@ class UDPInterface {
 	 *	-setGapPixelsEnable
 	 *	-setStreamingPort
 	 *	-setStreamingSourceIP
+	 *	-setAdditionalJsonHeader
 	 *	-setDataStreamEnable
 	 *
 	 *
@@ -180,9 +181,27 @@ class UDPInterface {
 
 	/**
 	 * Get File Index
-	 * @return NULL or file index of acquisition
+	 * @return file index of acquisition
 	 */
 	virtual uint64_t getFileIndex() const = 0;
+
+	/**
+	 * Get Frames per File (0 means infinite)
+	 * @return Frames per File
+	 */
+	virtual uint32_t getFramesPerFile() const = 0;
+
+	/**
+	 * Get Frame Discard Policy
+	 * @return Frame Discard Policy
+	 */
+	virtual slsReceiverDefs::frameDiscardPolicy getFrameDiscardPolicy() const = 0;
+
+	/**
+	 * Get Partial Frame Padding Enable
+	 * @return Partial Frame Padding Enable
+	 */
+	virtual bool getFramePaddingEnable() const = 0;
 
 	/**
 	 * Get Scan Tag
@@ -293,6 +312,12 @@ class UDPInterface {
 	 */
 	virtual uint64_t getSubExpTime() const = 0;
 
+	/**
+	 * Get Sub Period
+	 * @return Sub Period
+	 */
+	virtual uint64_t getSubPeriod() const = 0;
+
 	/*
 	 * Get Number of Frames expected by receiver from detector
 	 * The data receiver status will change from running to idle when it gets this number of frames FIXME: (for Leo? Not implemented)
@@ -331,7 +356,7 @@ class UDPInterface {
 	 */
 	virtual slsReceiverDefs::runStatus getStatus() const = 0;
 
-	/**
+	/** (not saved in client shared memory)
 	 * Get Silent Mode
 	 * @return silent mode
 	 */
@@ -357,6 +382,24 @@ class UDPInterface {
 	 */
 	virtual char *getStreamingSourceIP() const = 0;
 
+    /**
+     * Get additional json header
+     * @return additional json header
+     */
+    virtual char *getAdditionalJsonHeader() const = 0;
+
+
+    /** (not saved in client shared memory)
+     * Get UDP Socket Buffer Size
+     * @return UDP Socket Buffer Size
+     */
+    virtual uint32_t getUDPSocketBufferSize() const = 0;
+
+    /** (not saved in client shared memory)
+     * Get actual UDP Socket Buffer Size
+     * @return actual UDP Socket Buffer Size
+     */
+    virtual uint32_t getActualUDPSocketBufferSize() const = 0;
 
 	/*************************************************************************
 	 * Setters ***************************************************************
@@ -417,6 +460,24 @@ class UDPInterface {
 	 * @param i file index of acquisition
 	 */
 	virtual void setFileIndex(const uint64_t i) = 0;
+
+	/**
+	 * Set Frames per File (0 means infinite)
+	 * @param i Frames per File
+	 */
+	virtual void setFramesPerFile(const uint32_t i) = 0;
+
+	/**
+	 * Set Frame Discard Policy
+	 * @param i Frame Discard Policy
+	 */
+	virtual void setFrameDiscardPolicy(const slsReceiverDefs::frameDiscardPolicy i) = 0;
+
+	/**
+	 * Set Partial Frame Padding Enable
+	 * @param i Partial Frame Padding Enable
+	 */
+	virtual void setFramePaddingEnable(const bool i) = 0;
 
 	/**
 	 * Set Scan Tag
@@ -511,6 +572,13 @@ class UDPInterface {
 	 * @return OK or FAIL
 	 */
 	virtual void setSubExpTime(const uint64_t i) = 0;
+
+	/**
+	 * Set Sub Period
+	 * @param i Period
+	 * @return OK or FAIL
+	 */
+	virtual void setSubPeriod(const uint64_t i) = 0;
 
 	/**
 	 * Set Number of Frames expected by receiver from detector
@@ -643,6 +711,18 @@ class UDPInterface {
 	 */
 	virtual void setStreamingSourceIP(const char* c) = 0;
 
+    /**
+     * Set additional json header
+     */
+    virtual void setAdditionalJsonHeader(const char* c) = 0;
+
+    /** (not saved in client shared memory)
+     * Set UDP Socket Buffer Size
+     * @param s UDP Socket Buffer Size
+     * @return OK or FAIL if dummy socket could be created
+     */
+    virtual int setUDPSocketBufferSize(const uint32_t s) = 0;
+
 	/*
 	 * Restream stop dummy packet from receiver
 	 * @return OK or FAIL
@@ -675,49 +755,21 @@ class UDPInterface {
 	/**
 	 * Call back for raw data
 	 * args to raw data ready callback are
-	 * frameNumber is the frame number
-	 * expLength is the subframe number (32 bit eiger) or real time exposure time in 100ns (others)
-	 * packetNumber is the packet number
-	 * bunchId is the bunch id from beamline
-	 * timestamp is the time stamp with 10 MHz clock
-	 * modId is the unique module id (unique even for left, right, top, bottom)
-	 * xCoord is the x coordinate in the complete detector system
-	 * yCoord is the y coordinate in the complete detector system
-	 * zCoord is the z coordinate in the complete detector system
-	 * debug is for debugging purposes
-	 * roundRNumber is the round robin set number
-	 * detType is the detector type see :: detectorType
-	 * version is the version number of this structure format
+	 * sls_receiver_header frame metadata
 	 * dataPointer is the pointer to the data
 	 * dataSize in bytes is the size of the data in bytes.
 	 */
-	virtual void registerCallBackRawDataReady(void (*func)(uint64_t, uint32_t,
-	        uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t,
-	        uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+	virtual void registerCallBackRawDataReady(void (*func)(char* ,
 			char*, uint32_t, void*),void *arg) = 0;
 
     /**
      * Call back for raw data (modified)
      * args to raw data ready callback are
-     * frameNumber is the frame number
-     * expLength is the subframe number (32 bit eiger) or real time exposure time in 100ns (others)
-     * packetNumber is the packet number
-     * bunchId is the bunch id from beamline
-     * timestamp is the time stamp with 10 MHz clock
-     * modId is the unique module id (unique even for left, right, top, bottom)
-     * xCoord is the x coordinate in the complete detector system
-     * yCoord is the y coordinate in the complete detector system
-     * zCoord is the z coordinate in the complete detector system
-     * debug is for debugging purposes
-     * roundRNumber is the round robin set number
-     * detType is the detector type see :: detectorType
-     * version is the version number of this structure format
+     * sls_receiver_header frame metadata
      * dataPointer is the pointer to the data
      * revDatasize is the reference of data size in bytes. Can be modified to the new size to be written/streamed. (only smaller value).
      */
-    virtual void registerCallBackRawDataModifyReady(void (*func)(uint64_t, uint32_t,
-            uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t,
-            uint16_t, uint32_t, uint16_t, uint8_t, uint8_t,
+    virtual void registerCallBackRawDataModifyReady(void (*func)(char* ,
             char*, uint32_t &,void*),void *arg) = 0;
 
 

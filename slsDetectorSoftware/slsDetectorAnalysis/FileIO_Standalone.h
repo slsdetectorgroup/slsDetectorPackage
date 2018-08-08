@@ -12,7 +12,7 @@
 #include <queue>
 #include <math.h>
 
-using namespace std;
+;
 /**
    @short class handling the data file I/O flags
 */

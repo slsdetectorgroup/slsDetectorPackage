@@ -8,7 +8,7 @@
 #include <fstream>
 
 
-using namespace std;
+//
 
 /**
 
@@ -38,7 +38,7 @@ class slsDetectorActions : public virtual slsDetectorBase
       \param par for script 
       \returns 0 if action disabled, >0 otherwise
   */
-  int setAction(int iaction, string fname="", string par="");
+  int setAction(int iaction,std::string fname="",std::string par="");
 
   /** 
       set action script 
@@ -46,7 +46,7 @@ class slsDetectorActions : public virtual slsDetectorBase
       \param fname for script ("" disable)
       \returns 0 if action disabled, >0 otherwise
   */
-  int setActionScript(int iaction, string fname="");
+  int setActionScript(int iaction, std::string fname="");
 
 
   /** 
@@ -55,7 +55,7 @@ class slsDetectorActions : public virtual slsDetectorBase
       \param par for script
       \returns 0 if action disabled, >0 otherwise
   */
-  int setActionParameter(int iaction, string par="");
+  int setActionParameter(int iaction, std::string par="");
 
 
   /** 
@@ -63,14 +63,14 @@ class slsDetectorActions : public virtual slsDetectorBase
       \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
       \returns action script
   */
-  string getActionScript(int iaction);
+  std::string getActionScript(int iaction);
 
     /** 
 	returns action parameter
 	\param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
 	\returns action parameter
     */
-  string getActionParameter(int iaction);
+  std::string getActionParameter(int iaction);
   
   /** 
       returns action mode
@@ -89,20 +89,20 @@ class slsDetectorActions : public virtual slsDetectorBase
       \param precision to write the scan varaible in the scan name (-1 unchanged)
       \returns 0 is scan disabled, >0 otherwise
   */
-  int setScan(int index, string script="", int nvalues=-1, double *values=NULL, string par="", int precision=-1);
+  int setScan(int index, std::string script="", int nvalues=-1, double *values=NULL, std::string par="", int precision=-1);
   
   /** set scan script
       \param index of the scan (0,1)
       \param script fname for script ("" disables, "none" disables and overwrites current, "threshold" threshold scan, "trimbits", trimbits scan)
       \returns 0 is scan disabled, >0 otherwise
   */
-  int setScanScript(int index, string script=""); 
+  int setScanScript(int index, std::string script=""); 
   /** set scan script parameter
       \param index of the scan (0,1)
       \param script parameter for scan
       \returns 0 is scan disabled, >0 otherwise
   */
-  int setScanParameter(int index, string par="");  
+  int setScanParameter(int index, std::string par="");  
   /** set scan script parameter
       \param index of the scan (0,1)
       \param precision scan varaible precision to be printed in file name
@@ -130,14 +130,14 @@ class slsDetectorActions : public virtual slsDetectorBase
       \param iscan can be (0,1) 
       \returns scan script
   */
-  string getScanScript(int iscan);
+  std::string getScanScript(int iscan);
 
     /** 
 	returns scan parameter
 	\param iscan can be (0,1)
 	\returns scan parameter
     */
-  string getScanParameter(int iscan);
+  std::string getScanParameter(int iscan);
 
    /** 
 	returns scan mode
@@ -273,7 +273,7 @@ class slsDetectorActions : public virtual slsDetectorBase
   int startIndex;
   int lastIndex;
   int nowIndex;
-  string fName;
+  std::string fName;
 
   
 

@@ -20,55 +20,73 @@ void error(char *msg){
 }
 
 int main(int argc, char *argv[]){
-	int  portno, b;
-	int retval=OK;
+	int  portno = DEFAULT_PORTNO;
+	int retval = OK;
 	int sd, fd;
 	int debugflag = 0;
+	int controlserver = 1;
 
 	// if socket crash, ignores SISPIPE, prevents global signal handler
 	// subsequent read/write to socket gives error - must handle locally
 	signal(SIGPIPE, SIG_IGN);
 
     // circumvent the basic tests
-    if(argc > 1) {
-        if(!strcasecmp(argv[1],"-debug")){
-            debugflag = 1;
-            argc=1;
-        }
-    }
+	{
+		int i;
+		for (i = 1; i < argc; ++i) {
+			if(!strcasecmp(argv[i],"-stopserver")) {
+				cprintf(BLUE,"Detected stop server\n");
+				controlserver = 0;
+			}
+			else if(!strcasecmp(argv[i],"-devel")){
+				cprintf(BLUE,"Detected developer mode\n");
+				debugflag = 1;
+			}
+#ifdef JUNGFRAUD
+			else if(!strcasecmp(argv[i],"-update")){
+				cprintf(BLUE,"Detected update mode\n");
+				debugflag = PROGRAMMING_MODE;
+			}
+#endif
+			else if(strchr(argv[i],'-') != NULL) {
+				cprintf(RED,"cannot scan program argument %s\n", argv[1]);
+				return -1;
+			}
+		}
+	}
 
 #ifdef STOP_SERVER
 	char cmd[100];
+	memset(cmd, 0, 100);
 #endif
-	if (argc==1) {
+	if (controlserver) {
 		portno = DEFAULT_PORTNO;
 		cprintf(BLUE,
 		"********************************************************\n"
 		"********* opening control server on port %d **********\n"
 		"********************************************************\n\n"
 		, portno);
-		b=1;
-		basictests(debugflag);
 #ifdef STOP_SERVER
-		sprintf(cmd,"%s %d &",argv[0],DEFAULT_PORTNO+1);
-		//cprintf(BLUE,"cmd:%s\n", cmd);
-		system(cmd);
+		{
+			int i;
+			for (i = 0; i < argc; ++i)
+				sprintf(cmd, "%s %s", cmd, argv[i]);
+			sprintf(cmd,"%s -stopserver&", cmd);
+			cprintf(BLUE,"cmd:%s\n", cmd);
+			system(cmd);
+		}
 #endif
 	} else {
 		portno = DEFAULT_PORTNO+1;
-		if ( sscanf(argv[1],"%d",&portno) == 0) {
-			printf("could not open stop server: unknown port\n");
-			return 1;
-		}
 		cprintf(BLUE,
 		"********************************************************\n"
 		"*********** opening stop server on port %d ***********\n"
 		"********************************************************\n\n"
 		, portno);
-		b=0;
 	}
 
-	init_detector(b); //defined in slsDetectorServer_funcs
+	setModeFlag(debugflag); //defined in slsDetectorServer_funcs
+	init_detector(controlserver); //defined in slsDetectorServer_funcs
 
 	sd=bindSocket(portno); //defined in communication_funcs
 	sockfd=sd;
@@ -83,7 +101,7 @@ int main(int argc, char *argv[]){
 	printf("function table assigned \n");
 #endif
 
-	if (b)
+	if (controlserver)
 	    printf("\nControl Server Ready...\n\n");
 	else
 	    printf("\nStop Server Ready...\n\n");

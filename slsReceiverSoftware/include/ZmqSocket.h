@@ -48,7 +48,8 @@ public:
 		portno (portnumber),
 		server (false),
 		contextDescriptor (NULL),
-		socketDescriptor (NULL)
+		socketDescriptor (NULL),
+		headerMessage(0)
 	{
 		char ip[MAX_STR_LENGTH] = "";
 		memset(ip, 0, MAX_STR_LENGTH);
@@ -57,7 +58,7 @@ public:
 		struct addrinfo *result;
 		if ((ConvertHostnameToInternetAddress(hostname_or_ip, &result)) ||
 		 (ConvertInternetAddresstoIpString(result, ip, MAX_STR_LENGTH)))
-			return;
+		    throw std::exception();
 
 		// construct address
 		sprintf (serverAddress, "tcp://%s:%d", ip, portno);
@@ -68,29 +69,32 @@ public:
 		// create context
 		contextDescriptor = zmq_ctx_new();
 		if (contextDescriptor == NULL)
-			return;
+		    throw std::exception();
 
 		// create publisher
 		socketDescriptor = zmq_socket (contextDescriptor, ZMQ_SUB);
 		if (socketDescriptor == NULL) {
-			PrintError ();
-			Close ();
+		    PrintError ();
+		    Close ();
+		    throw std::exception();
 		}
 
 		//Socket Options provided above
 	    // an empty string implies receiving any messages
 		if ( zmq_setsockopt(socketDescriptor, ZMQ_SUBSCRIBE, "", 0)) {
-			PrintError ();
-			Close();
+		    PrintError ();
+		    Close();
+		    throw std::exception();
 		}
 		//ZMQ_LINGER default is already -1 means no messages discarded. use this options if optimizing required
 		//ZMQ_SNDHWM default is 0 means no limit. use this to optimize if optimizing required
 		// eg. int value = -1;
 		int value = 0;
-		 if (zmq_setsockopt(socketDescriptor, ZMQ_LINGER, &value,sizeof(value))) {
-			PrintError ();
-			Close();
-		 }
+		if (zmq_setsockopt(socketDescriptor, ZMQ_LINGER, &value,sizeof(value))) {
+		    PrintError ();
+		    Close();
+		    throw std::exception();
+		}
 	};
 
 	/**
@@ -104,18 +108,19 @@ public:
 		portno (portnumber),
 		server (true),
 		contextDescriptor (NULL),
-		socketDescriptor (NULL)
+		socketDescriptor (NULL),
+		headerMessage(0)
 	{
 		// create context
 		contextDescriptor = zmq_ctx_new();
 		if (contextDescriptor == NULL)
-			return;
+		    throw std::exception();
 		// create publisher
 		socketDescriptor = zmq_socket (contextDescriptor, ZMQ_PUB);
 		if (socketDescriptor == NULL) {
 			PrintError ();
 			Close ();
-			return;
+			throw std::exception();
 		}
 
 		//Socket Options provided above
@@ -129,7 +134,7 @@ public:
 		if (zmq_bind (socketDescriptor, serverAddress) < 0) {
 			PrintError ();
 			Close ();
-			return;
+			throw std::exception();
 		}
 
 		//sleep for a few milliseconds to allow a slow-joiner
@@ -144,11 +149,6 @@ public:
 		Close();
 	};
 
-	/**
-	 * Returns error status
-	 * @returns true if error else false
-	 */
-	bool IsError() { if (socketDescriptor == NULL) return true; return false; };
 
 	/**
 	 * Returns Server Address
@@ -274,7 +274,8 @@ public:
 			uint64_t bunchId = 0, uint64_t timestamp = 0,
 			uint16_t modId = 0, uint16_t xCoord = 0, uint16_t yCoord = 0, uint16_t zCoord = 0,
 			uint32_t debug = 0, uint16_t roundRNumber = 0,
-			uint8_t detType = 0, uint8_t version = 0) {
+			uint8_t detType = 0, uint8_t version = 0, int* flippedData = 0,
+			char* additionalJsonHeader = 0) {
 
 
 		char buf[MAX_STR_LENGTH] = "";
@@ -303,17 +304,32 @@ public:
 				"\"debug\":%u, "
 				"\"roundRNumber\":%u, "
 				"\"detType\":%u, "
-				"\"version\":%u"
-				"}\n\0";
+				"\"version\":%u, "
+
+		        //additional stuff
+		        "\"flippedDataX\":%u"
+
+				;//"}\n\0";
 		int length = sprintf(buf, jsonHeaderFormat,
 				jsonversion, dynamicrange, fileIndex, npixelsx, npixelsy, imageSize,
 				acqIndex, fIndex, (fname == NULL)? "":fname, dummy?0:1,
-						frameNumber, expLength, packetNumber, bunchId, timestamp,
+
+				        frameNumber, expLength, packetNumber, bunchId, timestamp,
 						modId, xCoord, yCoord, zCoord, debug, roundRNumber,
-						detType, version);
+						detType, version,
+
+						//additional stuff
+						((flippedData == 0 ) ? 0 :flippedData[0])
+		);
+		if (additionalJsonHeader && strlen(additionalJsonHeader)) {
+		    length = sprintf(buf, "%s, %s}\n%c", buf, additionalJsonHeader, '\0');
+		} else {
+		    length = sprintf(buf, "%s}\n%c", buf, '\0');
+		}
+
 #ifdef VERBOSE
 		//if(!index)
-			FILE_LOG(logINFO) << index << ": Streamer: buf:" << buf;
+			cprintf(BLUE,"%d : Streamer: buf: %s\n", index, buf);
 #endif
 
 		if(zmq_send (socketDescriptor, buf, length, dummy?0:ZMQ_SNDMORE) < 0) {
@@ -365,19 +381,16 @@ public:
 
 
 	/**
-	 * Receive Header
+	 * Receive Header (Important to close message after parsing header)
 	 * @param index self index for debugging
-	 * @param acqIndex address of acquisition index
-	 * @param frameIndex address of frame index
-	 * @param subframeIndex address of subframe index
-	 * @param filename address of file name
-	 * @param fileindex address of file index
-	 * @returns 0 if error or end of acquisition, else 1
+	 * @param document parsed document reference
+	 * @param version version that has to match, -1 to not care
+	 * @returns 0 if error or end of acquisition, else 1 (call CloseHeaderMessage after parsing header)
 	 */
-	int ReceiveHeader(const int index, uint64_t &acqIndex,
-			uint64_t &frameIndex, uint32_t &subframeIndex, std::string &filename, uint64_t &fileIndex)
+	int ReceiveHeader(const int index, Document& document, uint32_t version)
 	{
 		zmq_msg_t message;
+        headerMessage= &message;
 		zmq_msg_init (&message);
 		int len = ReceiveMessage(index, message);
 		if ( len > 0 ) {
@@ -385,11 +398,10 @@ public:
 #ifdef ZMQ_DETAIL
 				cprintf( BLUE,"Header %d [%d] Length: %d Header:%s \n", index, portno, len, (char*) zmq_msg_data (&message) );
 #endif
-			if ( ParseHeader (index, len, message, acqIndex, frameIndex, subframeIndex, filename, fileIndex, dummy)) {
+			if ( ParseHeader (index, len, message, document, dummy, version)) {
 #ifdef ZMQ_DETAIL
 				cprintf( RED,"Parsed Header %d [%d] Length: %d Header:%s \n", index, portno, len, (char*) zmq_msg_data (&message) );
 #endif
-				zmq_msg_close (&message);
 				if (dummy) {
 #ifdef ZMQ_DETAIL
 					cprintf(RED,"%d [%d] Received end of acquisition\n", index, portno );
@@ -402,9 +414,78 @@ public:
 				return 1;
 			}
 		}
-		zmq_msg_close(&message);
 		return 0;
 	};
+
+
+    /**
+     * Close Header Message. Call this function if ReceiveHeader returned 1
+     */
+    void CloseHeaderMessage() {
+        if (headerMessage)
+            zmq_msg_close(headerMessage);
+        headerMessage = 0;
+    };
+    /**
+     * Parse Header
+     * @param index self index for debugging
+     * @param length length of message
+     * @param message message
+     * @param document parsed document reference
+     * @param dummy true if end of acqusition, else false, loaded upon parsing
+     * @param version version that has to match, -1 to not care
+     * @returns true if successful else false
+     */
+    int ParseHeader(const int index, int length, zmq_msg_t& message,
+            Document& document, bool& dummy, uint32_t version)
+    {
+        if ( document.Parse( (char*) zmq_msg_data (&message), zmq_msg_size (&message)).HasParseError() ) {
+            cprintf( RED,"%d Could not parse. len:%d: Message:%s \n", index, length, (char*) zmq_msg_data (&message) );
+            fflush ( stdout );
+            char* buf =  (char*) zmq_msg_data (&message);
+            for ( int i= 0; i < length; ++i ) {
+                cprintf(RED,"%02x ",buf[i]);
+            }
+            printf("\n");
+            fflush( stdout );
+            return 0;
+        }
+
+        if (document["jsonversion"].GetUint() != version) {
+            cprintf( RED, "version mismatch. required %u, got %u\n", version, document["jsonversion"].GetUint());
+            return 0;
+        }
+
+        dummy = false;
+        int temp = document["data"].GetUint();
+        dummy = temp ? false : true;
+
+        return 1;
+        /*
+        int temp = d["data"].GetUint();
+        dummy = temp ? false : true;
+        if (!dummy) {
+            acqIndex        = d["acqIndex"].GetUint64();
+            frameIndex      = d["fIndex"].GetUint64();
+            fileIndex       = d["fileIndex"].GetUint64();
+            subframeIndex   = d["expLength"].GetUint();
+            filename        = d["fname"].GetString();
+        }
+#ifdef VERYVERBOSE
+        cprintf(BLUE,"%d Dummy:%d\n"
+                "\tAcqIndex:%lu\n"
+                "\tFrameIndex:%lu\n"
+                "\tSubIndex:%u\n"
+                "\tFileIndex:%lu\n"
+                "\tBitMode:%u\n"
+                "\tDetType:%u\n",
+                index, (int)dummy, acqIndex, frameIndex, subframeIndex, fileIndex,
+                d["bitmode"].GetUint(),d["detType"].GetUint());
+#endif
+        return 1;
+        */
+    };
+
 
 	/**
 	 * Receive Data
@@ -445,65 +526,6 @@ public:
 		return length;
 	};
 
-
-	/**
-	 * Parse Header
-	 * @param index self index for debugging
-	 * @param length length of message
-	 * @param message message
-	 * @param acqIndex address of acquisition index
-	 * @param frameIndex address of frame index
-	 * @param subframeIndex address of subframe index
-	 * @param filename address of file name
-	 * @param fileindex address of file index
-	 * @param dummy true if end of acquisition else false
-	 * @returns true if successfull else false
-	 */
-	int ParseHeader(const int index, int length, zmq_msg_t& message, uint64_t &acqIndex,
-			uint64_t &frameIndex, uint32_t &subframeIndex, std::string &filename, uint64_t &fileIndex, bool& dummy)
-	{
-
-		acqIndex = -1;
-		frameIndex = -1;
-		subframeIndex = -1;
-		fileIndex = -1;
-		dummy = true;
-
-		Document d;
-		if ( d.Parse( (char*) zmq_msg_data (&message), zmq_msg_size (&message)).HasParseError() ) {
-			cprintf( RED,"%d Could not parse. len:%d: Message:%s \n", index, length, (char*) zmq_msg_data (&message) );
-			fflush ( stdout );
-			char* buf =  (char*) zmq_msg_data (&message);
-			for ( int i= 0; i < length; ++i ) {
-				cprintf(RED,"%02x ",buf[i]);
-			}
-			printf("\n");
-			fflush( stdout );
-			return 0;
-		}
-
-		int temp = d["data"].GetUint();
-		dummy = temp ? false : true;
-		if (!dummy) {
-			acqIndex 		= d["acqIndex"].GetUint64();
-			frameIndex 		= d["fIndex"].GetUint64();
-			fileIndex		= d["fileIndex"].GetUint64();
-			subframeIndex 	= d["expLength"].GetUint();
-			filename 		= d["fname"].GetString();
-		}
-#ifdef VERYVERBOSE
-		cprintf(BLUE,"%d Dummy:%d\n"
-				"\tAcqIndex:%lu\n"
-				"\tFrameIndex:%lu\n"
-				"\tSubIndex:%u\n"
-				"\tFileIndex:%lu\n"
-				"\tBitMode:%u\n"
-				"\tDetType:%u\n",
-				index, (int)dummy, acqIndex, frameIndex, subframeIndex, fileIndex,
-				d["bitmode"].GetUint(),d["detType"].GetUint());
-#endif
-		return 1;
-	};
 
 
 	/**
@@ -579,5 +601,8 @@ private:
 
 	/** Server Address */
 	char serverAddress[1000];
+
+	/** Header Message pointer */
+	zmq_msg_t* headerMessage;
 
 };

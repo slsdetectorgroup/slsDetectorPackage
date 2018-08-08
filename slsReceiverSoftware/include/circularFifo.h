@@ -28,36 +28,47 @@ public:
    CircularFifo(unsigned int Size) : tail(0), head(0){
 	   Capacity = Size + 1;
 	   array.resize(Capacity);
-	   sem_init(&free_mutex,0,0);
+	   sem_init(&data_mutex,0,0);
+	   sem_init(&free_mutex,0,Size);
    }
    virtual ~CircularFifo() {
-		sem_destroy(&free_mutex);
+       sem_destroy(&data_mutex);
+	   sem_destroy(&free_mutex);
    }
 
-   bool push(Element*& item_);
-   bool pop(Element*& item_);
+   bool push(Element*& item_, bool no_block=false);
+   bool pop(Element*& item_, bool no_block=false);
 
    bool isEmpty() const;
    bool isFull() const;
 
-   int getSemValue();
+   int getDataValue() const;
+   int getFreeValue() const;
 
 private:
-   volatile unsigned int tail; // input index
    vector <Element*> array;
-   volatile unsigned int head; // output index
+   unsigned int tail; // input index
+   unsigned int head; // output index
    unsigned int Capacity;
-   sem_t free_mutex;
-
+   mutable sem_t data_mutex;
+   mutable sem_t free_mutex;
    unsigned int increment(unsigned int idx_) const;
 };
 
 template<typename Element>
-int CircularFifo<Element>::getSemValue()
+int CircularFifo<Element>::getDataValue() const
 {
-	int value;
-	sem_getvalue(&free_mutex, &value);
-	return value;
+   int value;
+   sem_getvalue(&data_mutex, &value);
+   return value;
+}
+
+template<typename Element>
+int CircularFifo<Element>::getFreeValue() const
+{
+    int value;
+    sem_getvalue(&free_mutex, &value);
+    return value;
 }
 
 
@@ -66,21 +77,20 @@ int CircularFifo<Element>::getSemValue()
 * will happen, it is up to the caller to handle this case
 *
 * \param item_ copy by reference the input item
+* \param no_block if true, return immediately if fifo is full
 * \return whether operation was successful or not */
 template<typename Element>
-bool CircularFifo<Element>::push(Element*& item_)
+bool CircularFifo<Element>::push(Element*& item_, bool no_block)
 {
-   unsigned int nextTail = increment(tail);
+    // check for fifo full
+    if (no_block && isFull())
+        return false;
 
-   if(nextTail != head)
-   {
-      array[tail] = item_;
-      tail = nextTail;
-      sem_post(&free_mutex);
-      return true;
-   }
-   // queue was full
-   return false;
+    sem_wait(&free_mutex);
+    array[tail] = item_;
+    tail = increment(tail);
+    sem_post(&data_mutex);
+    return true;
 }
 
 /** Consumer only: Removes and returns item from the queue
@@ -88,15 +98,19 @@ bool CircularFifo<Element>::push(Element*& item_)
 * It is up to the caller to handle this case
 *
 * \param item_ return by reference the wanted item
+* \param no_block if true, return immediately if fifo is full
 * \return whether operation was successful or not */
 template<typename Element>
-bool CircularFifo<Element>::pop(Element*& item_)
+bool CircularFifo<Element>::pop(Element*& item_, bool no_block)
 {
-  sem_wait(&free_mutex);
+    // check for fifo empty
+    if (no_block && isEmpty())
+        return false;
 
+   sem_wait(&data_mutex);
    item_ = array[head];
    head = increment(head);
-
+   sem_post(&free_mutex);
    return true;
 }
 
@@ -108,7 +122,7 @@ bool CircularFifo<Element>::pop(Element*& item_)
 template<typename Element>
 bool CircularFifo<Element>::isEmpty() const
 {
-   return (head == tail);
+    return (getDataValue() == 0);
 }
 
 /** Useful for testing and Producer check of status
@@ -119,9 +133,7 @@ bool CircularFifo<Element>::isEmpty() const
 template<typename Element>
 bool CircularFifo<Element>::isFull() const
 {
-   int tailCheck = increment(tail);
-   //int tailCheck = (tail+1) % Capacity;
-   return (tailCheck == head);
+    return (getFreeValue() == 0);
 }
 
 /** Increment helper function for index of the circular queue

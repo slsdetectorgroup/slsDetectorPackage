@@ -7,12 +7,15 @@
 //socket
 #define GOODBYE 						-200
 #define RECEIVE_SOCKET_BUFFER_SIZE 		(100*1024*1024)
+
 #define MAX_SOCKET_INPUT_PACKET_QUEUE 	250000
 
 
 //files
 #define DO_NOTHING						0
 #define DO_EVERYTHING					1
+
+#define STATISTIC_FRAMENUMBER_INFINITE	20000
 
 //binary
 #define FILE_BUFFER_SIZE        		(16*1024*1024) //16mb
@@ -25,10 +28,9 @@
 #define MAX_CHUNKED_IMAGES 				1
 
 //versions
-#define HDF5_WRITER_VERSION 				1.0 //1 decimal places
-#define BINARY_WRITER_VERSION 				1.0 //1 decimal places
-#define SLS_DETECTOR_HEADER_VERSION 		0x1
-#define SLS_DETECTOR_JSON_HEADER_VERSION 	0x2
+#define HDF5_WRITER_VERSION 				2.0 //1 decimal places
+#define BINARY_WRITER_VERSION 				2.0 //1 decimal places
+
 
 //parameters to calculate fifo depth
 #define SAMPLE_TIME_IN_NS				100000000//100ms

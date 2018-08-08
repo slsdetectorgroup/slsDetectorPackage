@@ -19,11 +19,12 @@ RECEIVERDIR		=	$(LIBRARYRXRDIR)
 CALWIZDIR		=	$(WD)/calibrationWizards
 MANDIR			=	$(WD)/manual
 CALIBDIR		=	$(WD)/slsDetectorCalibration
+MANAPIDIR		=	$(MANDIR)/manual-api
 
 TABSPACE		:=	"\t"
 
  
-INCLUDES=-I. -I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRARYDIR)/usersFunctions -I$(LIBRARYDIR)/multiSlsDetector -I$(LIBRARYDIR)/slsDetectorUtils -I$(LIBRARYDIR)/slsDetectorCommand -I$(LIBRARYDIR)/slsDetectorAnalysis -I$(LIBRARYDIR)/slsReceiverInterface  -I$(LIBRARYRXRDIR)/include -I$(LIBRARYDIR)/threadFiles -I$(ASM)
+INCLUDES=-I. -I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRARYDIR)/usersFunctions -I$(LIBRARYDIR)/multiSlsDetector -I$(LIBRARYDIR)/slsDetectorUtils -I$(LIBRARYDIR)/slsDetectorCommand -I$(LIBRARYDIR)/slsDetectorAnalysis -I$(LIBRARYDIR)/slsReceiverInterface  -I$(LIBRARYRXRDIR)/include -I$(LIBRARYDIR)/threadFiles -I$(LIBRARYDIR)/sharedMemory -I$(ASM)
 
 INCLUDESRXR += -I. -I$(LIBRARYRXRDIR)/include -I$(CALIBDIR) -I$(ASM) 
 #LIBFLAGRXR += 
@@ -79,6 +80,7 @@ slsReceiver_static: receiver
 receiver: #libreceiver
 #	cd  $(RECEIVERDIR) && $(MAKE) receiver FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)'  LIBS='$(LDFLAGRXR)' INCLUDES='$(INCLUDESRXR)' LIBDIR='$(LIBDIR)'
 	cd  $(RECEIVERDIR) && $(MAKE) FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)'  LIBS='$(LDFLAGRXR)' INCLUDES='$(INCLUDESRXR)' LIBDIR='$(LIBDIR)'
+	cd  $(MANAPIDIR) && $(MAKE) slsMultiReceiver
 	@echo ""
 	@echo "#######################################"
 	@echo "# Back in slsDetectorPackage Makefile #"
@@ -151,6 +153,7 @@ clean:
 	cd $(DOCDIR) && rm -rf * 
 	rm -rf 	slsDetectorPackageDocs;
 	rm -rf $(DETAILDOC)
+	rm -rf $(MANAPIDIR)/slsMultiReceiver
 
 
 #install_lib: 

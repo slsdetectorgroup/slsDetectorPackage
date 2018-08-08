@@ -198,6 +198,16 @@ private slots:
 	 */
 	void SetAllTrimbits();
 
+	/** Set storage cells */
+	void SetNumStoragecells(int value);
+
+	/** Set sub frame exposure time */
+	void SetSubExposureTime();
+
+	/** Set sub frame period */
+	void SetSubPeriod();
+
+
 private:
 	/** The multi detector object */
 	multiSlsDetector *myDet;
@@ -242,7 +252,11 @@ private:
 	vector <QSpinBox*> 	spinToY;
 	int numRois;
 
+	/** sub period tool tip variables*/
+	QString 	acqSubPeriodTip;
+	QString 	errSubPeriodTip;
 
+	void CheckAcqPeriodGreaterThanExp();
 
 
 };

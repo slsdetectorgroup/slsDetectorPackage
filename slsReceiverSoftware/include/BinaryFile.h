@@ -21,7 +21,7 @@ class BinaryFile : private virtual slsReceiverDefs, public File, public BinaryFi
 	 * Constructor
 	 * creates the File Writer
 	 * @param ind self index
-	 * @param maxf max frames per file
+	 * @param maxf pointer to max frames per file
 	 * @param nd pointer to number of detectors in each dimension
 	 * @param fname pointer to file name prefix
 	 * @param fpath pointer to file path
@@ -34,7 +34,7 @@ class BinaryFile : private virtual slsReceiverDefs, public File, public BinaryFi
 	 * @param portno pointer to udp port number for logging
 	 * @param smode pointer to silent mode
 	 */
-	BinaryFile(int ind, uint32_t maxf,
+	BinaryFile(int ind, uint32_t* maxf,
 			int* nd, char* fname, char* fpath, uint64_t* findex, bool* owenable,
 			int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
 			bool* smode);
@@ -63,12 +63,14 @@ class BinaryFile : private virtual slsReceiverDefs, public File, public BinaryFi
 	 * @param nx number of pixels in x direction
 	 * @param ny number of pixels in y direction
 	 * @param at acquisition time
-	 * @param at sub exposure time
+	 * @param st sub exposure time
+	 * @param sp sub period
 	 * @param ap acquisition period
 	  * @returns OK or FAIL
 	  */
 	 int CreateMasterFile(bool en, uint32_t size,
-				uint32_t nx, uint32_t ny, uint64_t at, uint64_t st, uint64_t ap);
+				uint32_t nx, uint32_t ny, uint64_t at, uint64_t st, uint64_t sp,
+				uint64_t ap);
 
 	/**
 	 * Close Current File

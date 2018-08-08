@@ -95,5 +95,5 @@ int calibrate_pedestal(int);
 int set_roi(int);
 
 int write_adc_register(int);
-
+int check_version(int);
 #endif

@@ -20,11 +20,11 @@ class Fifo : private virtual slsReceiverDefs {
 	/**
 	 * Constructor
 	 * Calls CreateFifos that creates fifos and allocates memory
+	 * @param ind self index
 	 * @param fifoItemSize size of each fifo item
 	 * @param depth fifo depth
-	 * @param success true if successful, else false
 	 */
-	Fifo(uint32_t fifoItemSize, uint32_t depth, bool &success);
+	Fifo(int ind, uint32_t fifoItemSize, uint32_t depth);
 
 	/**
 	 * Destructor
@@ -87,9 +87,6 @@ class Fifo : private virtual slsReceiverDefs {
 	 */
 	void DestroyFifos();
 
-
-	/** Total Number of Fifo Class Objects */
-	static int NumberofFifoClassObjects;
 
 	/** Self Index */
 	int index;

@@ -40,19 +40,26 @@ void AcquisitionFinished(uint64_t frames, void*p){
 }
 
 
-void GetData(uint64_t frameNumber, uint32_t expLength, uint32_t packetNumber, uint64_t bunchId, uint64_t timestamp,
-		uint16_t modId, uint16_t xCoord, uint16_t yCoord, uint16_t zCoord, uint32_t debug, uint16_t roundRNumber, uint8_t detType, uint8_t version,
-		char* datapointer, uint32_t* datasize, void* p){
+void GetData(char* metadata, char* datapointer, uint32_t datasize, void* p){
+	slsReceiverDefs::sls_receiver_header* header = (slsReceiverDefs::sls_receiver_header*)metadata;
+	slsReceiverDefs::sls_detector_header detectorHeader = header->detHeader;
 
-	PRINT_IN_COLOR (xCoord,
+	PRINT_IN_COLOR (detectorHeader.modId?detectorHeader.modId:detectorHeader.xCoord,
 			"#### %d GetData: ####\n"
-			"frameNumber: %llu\t\texpLength: %u\t\tpacketNumber: %u\t\tbunchId: %llu\t\ttimestamp: %llu\t\tmodId: %u\t\t"
-			"xCoord: %u\t\tyCoord: %u\t\tzCoord: %u\t\tdebug: %u\t\troundRNumber: %u\t\tdetType: %u\t\t"
-			"version: %u\t\tfirstbytedata: 0x%x\t\tdatsize: %u\n\n",
-			xCoord, frameNumber, expLength, packetNumber, bunchId, timestamp, modId,
-			xCoord, yCoord, zCoord, debug, roundRNumber, detType, version,
-			((uint8_t)(*((uint8_t*)(datapointer)))), *datasize);
-
+			"frameNumber: %llu\t\texpLength: %u\t\tpacketNumber: %u\t\tbunchId: %llu"
+			"\t\ttimestamp: %llu\t\tmodId: %u\t\t"
+			"xCoord: %u\t\tyCoord: %u\t\tzCoord: %u\t\tdebug: %u"
+			"\t\troundRNumber: %u\t\tdetType: %u\t\tversion: %u"
+			//"\t\tpacketsMask:%s"
+			"\t\tfirstbytedata: 0x%x\t\tdatsize: %u\n\n",
+			detectorHeader.xCoord, detectorHeader.frameNumber,
+			detectorHeader.expLength, detectorHeader.packetNumber, detectorHeader.bunchId,
+			detectorHeader.timestamp, detectorHeader.modId,
+			detectorHeader.xCoord, detectorHeader.yCoord, detectorHeader.zCoord,
+			detectorHeader.debug, detectorHeader.roundRNumber,
+			detectorHeader.detType, detectorHeader.version,
+			//header->packetsMask.to_string().c_str(),
+            ((uint8_t)(*((uint8_t*)(datapointer)))), datasize);
 }
 */
 
@@ -121,13 +128,13 @@ int main(int argc, char *argv[]) {
 
 	/**
 	  args to raw data ready callback are
-	  framenum
+	  sls_receiver_header frame metadata
 	  datapointer
 	  file descriptor
 	  guidatapointer (NULL, no data required)
 	  NEVER DELETE THE DATA POINTER
 	  REMEMBER THAT THE CALLBACK IS BLOCKING
-	  registerCallBackRawDataReady(void (*func)(int, char*, FILE*, char*, void*),void *arg);
+	  registerCallBackRawDataReady(void (*func)(char*, char*, uint32_t, void*),void *arg);
 	 */
 	//receiver->registerCallBackRawDataReady(rawDataReadyCallBack,NULL);
 

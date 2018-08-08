@@ -63,7 +63,13 @@ enum recFuncs{
 	F_SET_RECEIVER_SILENT_MODE,		/** < sets the receiver silent mode */
 	F_ENABLE_GAPPIXELS_IN_RECEIVER,	/** < sets gap pixels in the receiver */
 	F_RESTREAM_STOP_FROM_RECEIVER,	/** < restream stop from receiver */
-
+	F_ADDITIONAL_JSON_HEADER,       /** < additional json header */
+	F_RECEIVER_UDP_SOCK_BUF_SIZE,   /** < UDP socket buffer size */
+    F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE,   /** < real UDP socket buffer size */
+	F_SET_RECEIVER_FRAMES_PER_FILE, /** < receiver frames per file */
+	F_RECEIVER_CHECK_VERSION,		/** < check receiver version compatibility */
+	F_RECEIVER_DISCARD_POLICY,		/** < frames discard policy */
+	F_RECEIVER_PADDING_ENABLE,		/** < partial frames padding enable */
 	/* Always append functions hereafter!!! */
 
 

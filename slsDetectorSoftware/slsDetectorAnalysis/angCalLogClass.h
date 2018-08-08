@@ -13,7 +13,7 @@
 #include "sls_detector_defs.h"
 #endif
 
-using namespace std;
+;
 
 class angCalLogClass {
 
@@ -27,7 +27,7 @@ class angCalLogClass {
     char *argv[2];							\
     argv[0]=cmd;							\
     sprintf(cmd,"_%d.angcal",det->getFileIndex());			\
-    outfile.open(string(det->getFilePath()+string("/")+det->getFileName()+string(cmd)).c_str()); \
+    outfile.open( std::string(det->getFilePath()+ std::string("/")+det->getFileName()+ std::string(cmd)).c_str()); \
     outfile.precision(8);
     myDet=new slsDetectorCommand(det);					\
     if (outfile.is_open()) {						\
@@ -44,12 +44,12 @@ class angCalLogClass {
 #endif  
   
   
-  int addStep(double pos, string fname) {std::cout.precision(5); outfile << pos << " " << fname << endl; return 0;};
+  int addStep(double pos,  std::string fname) {std::cout.precision(5); outfile << pos << " " << fname << endl; return 0;};
   
   
     // 
 
-  int readHeader(ifstream &infile, int &maxmod, int &nmod, int &chanspermod, char *angconvfile, double &globaloff, double &fineoff, int &angdir, char *ffdir, char *fffile, char *badfile ) { \
+  int readHeader(std::ifstream &infile, int &maxmod, int &nmod, int &chanspermod, char *angconvfile, double &globaloff, double &fineoff, int &angdir, char *ffdir, char *fffile, char *badfile ) { \
     nmod=0; chanspermod=0; globaloff=0; fineoff=0; angdir=1;		\
     strcpy(angconvfile,"none");	 strcpy(ffdir,"none"); strcpy(fffile,"none"); strcpy(badfile,"none"); \
     char line[1000], myvar[100], myarg[100];				\
@@ -57,14 +57,14 @@ class angCalLogClass {
     for (int iv=0; iv<nvars; iv++) {					\
       infile.getline(line,1000);					\
       sscanf(line,"%s %s", myvar, myarg);				\
-      if (string(myvar)!=string(vars[iv]))
+      if ( std::string(myvar)!= std::string(vars[iv]))
 	cout << "Found variable " << myvar << " instead of " << vars[iv] << endl;
       else
 	switch (iv) {							\
 	case 0:								\
-	  if (string(myarg).find("Mythen")!=string::npos)		\
+	  if ( std::string(myarg).find("Mythen")!= std::string::npos)		\
 	    chanspermod=1280;						\
-	  else if (string(myarg).find("Gotthard")!=string::npos)	\
+	  else if ( std::string(myarg).find("Gotthard")!= std::string::npos)	\
 	    chanspermod=1280;						\
 	  else								\
 	    chanspermod=65535;						\
@@ -106,7 +106,7 @@ class angCalLogClass {
     return 0;								\
   };
 
-  int getStep(ifstream &infile, double &threshold, char *datafname){	\
+  int getStep(std::ifstream &infile, double &threshold, char *datafname){	\
       char line[1000];							\
       float v;
       infile.getline(line,1000);					\
@@ -140,7 +140,7 @@ class angCalLogClass {
 #ifndef MYROOT
   slsDetectorCommand *myDet;
 #endif
-  ofstream outfile;
+  std::ofstream outfile;
 
   char vars[100][100];
   int nvars;

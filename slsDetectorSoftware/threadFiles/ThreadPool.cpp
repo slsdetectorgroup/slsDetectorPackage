@@ -1,6 +1,6 @@
 #include "ThreadPool.h"
 #include <pthread.h>
-
+using namespace std;
 ThreadPool::ThreadPool(int pool_size) : m_pool_size(pool_size){
 #ifdef VERBOSE
 	cout << "Constructed ThreadPool of size " << m_pool_size << endl;

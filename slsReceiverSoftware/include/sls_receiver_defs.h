@@ -8,6 +8,7 @@
 
 #include <stdint.h> 
 #ifdef __cplusplus
+#include <bitset>
 #include <string>
 #endif
 #include "ansi.h"
@@ -22,7 +23,7 @@ typedef  int int32_t;
 #define MAX_FRAMES_PER_FILE			20000
 #define SHORT_MAX_FRAMES_PER_FILE	100000
 #define MOENCH_MAX_FRAMES_PER_FILE	1000
-#define EIGER_MAX_FRAMES_PER_FILE	2000
+#define EIGER_MAX_FRAMES_PER_FILE	10000
 #define JFRAU_MAX_FRAMES_PER_FILE 	10000
 #define JFCTB_MAX_FRAMES_PER_FILE   100000
 
@@ -35,6 +36,9 @@ typedef  int int32_t;
 #define DEFAULT_GUI_PORTNO 		65001
 #define DEFAULT_ZMQ_CL_PORTNO 	30001
 #define DEFAULT_ZMQ_RX_PORTNO 	30001
+
+#define SLS_DETECTOR_HEADER_VERSION         0x1
+#define SLS_DETECTOR_JSON_HEADER_VERSION    0x2
 
 /** 
     \file sls_receiver_defs.h
@@ -108,6 +112,8 @@ public:
 		FRAMES_FROM_START_PG,
 		SAMPLES_JCTB,
 		SUBFRAME_ACQUISITION_TIME, /**< subframe exposure time */
+		STORAGE_CELL_NUMBER, /**<number of storage cells */
+		SUBFRAME_PERIOD, /**< subframe period */
 		MAX_TIMERS
 	};
 
@@ -126,6 +132,7 @@ public:
 	};
 
 
+
 	/**
 	    @short  structure for a Detector Packet or Image Header
 	    @li frameNumber is the frame number
@@ -142,21 +149,46 @@ public:
 	    @li detType is the detector type see :: detectorType
 	    @li version is the version number of this structure format
 	*/
+
 	typedef struct {
-		uint64_t frameNumber;	/**< is the frame number */
-		uint32_t expLength;		/**< is the subframe number (32 bit eiger) or real time exposure time in 100ns (others) */
-		uint32_t packetNumber;	/**< is the packet number */
-		uint64_t bunchId;		/**< is the bunch id from beamline */
-		uint64_t timestamp;		/**< is the time stamp with 10 MHz clock */
-		uint16_t modId;			/**< is the unique module id (unique even for left, right, top, bottom) */
-		uint16_t xCoord;		/**< is the x coordinate in the complete detector system */
-		uint16_t yCoord;		/**< is the y coordinate in the complete detector system */
-		uint16_t zCoord;		/**< is the z coordinate in the complete detector system */
-		uint32_t debug;			/**< is for debugging purposes */
-		uint16_t roundRNumber;	/**< is the round robin set number */
-		uint8_t detType;		/**< is the detector type see :: detectorType */
-		uint8_t version;		/**< is the version number of this structure format */
+		uint64_t frameNumber;			/**< is the frame number */
+		uint32_t expLength;				/**< is the subframe number (32 bit eiger) or real time exposure time in 100ns (others) */
+		uint32_t packetNumber;			/**< is the packet number */
+		uint64_t bunchId;				/**< is the bunch id from beamline */
+		uint64_t timestamp;				/**< is the time stamp with 10 MHz clock */
+		uint16_t modId;					/**< is the unique module id (unique even for left, right, top, bottom) */
+		uint16_t xCoord;				/**< is the x coordinate in the complete detector system */
+		uint16_t yCoord;				/**< is the y coordinate in the complete detector system */
+		uint16_t zCoord;				/**< is the z coordinate in the complete detector system */
+		uint32_t debug;					/**< is for debugging purposes */
+		uint16_t roundRNumber;			/**< is the round robin set number */
+		uint8_t detType;				/**< is the detector type see :: detectorType */
+		uint8_t version;				/**< is the version number of this structure format */
 	} sls_detector_header;
+
+#ifdef __cplusplus
+#define MAX_NUM_PACKETS	512
+
+	typedef std::bitset<MAX_NUM_PACKETS> sls_bitset;
+
+	typedef struct {
+		sls_detector_header detHeader;	/**< is the detector header */
+		sls_bitset packetsMask;			/**< is the packets caught bit mask */
+	} sls_receiver_header;
+
+	typedef uint8_t bitset_storage[MAX_NUM_PACKETS/8];
+
+#endif
+	/**
+	 * frameDiscardPolicy
+	 */
+	enum frameDiscardPolicy {
+		GET_FRAME_DISCARD_POLICY = -1,	/**< to get the missing packet mode */
+		NO_DISCARD,						/**< pad incomplete packets with -1, default mode */
+		DISCARD_EMPTY_FRAMES,			/**< discard incomplete frames, fastest mode, save space, not suitable for multiple modules */
+		DISCARD_PARTIAL_FRAMES,			/**< ignore missing packets, must check with packetsMask for data integrity, fast mode and suitable for multiple modules */
+		NUM_DISCARD_POLICIES
+	};
 
 
 	/**
@@ -246,6 +278,19 @@ public:
 	    case BINARY:    return std::string("binary");	\
 	    default:       		return std::string("unknown");		\
 	    }};
+
+	  /**
+	   * Returns string of frame discard policy index
+	   * @param f can be NO_DISCARD, DISCARD_EMPTY_FRAMES, DISCARD_PARTIAL_FRAMES
+	   * @returns No Discard, Discard Empty Frames, Discard Partial Frames, unknown
+	   */
+	  static std::string getFrameDiscardPolicyType(frameDiscardPolicy f) {						\
+		  switch (f) {																		\
+		  case NO_DISCARD: 				return std::string("No Discard");					\
+		  case DISCARD_EMPTY_FRAMES: 	return std::string("Discard Empty Frames");			\
+		  case DISCARD_PARTIAL_FRAMES: 	return std::string("Discard Partial Frames");		\
+		  default:       				return std::string("unknown");						\
+		  }};																				\
 
 #endif
 

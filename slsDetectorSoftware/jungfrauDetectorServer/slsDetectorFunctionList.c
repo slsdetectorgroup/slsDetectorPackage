@@ -3,11 +3,14 @@
 
 #include "slsDetectorFunctionList.h"
 #include "gitInfoJungfrau.h"
-
-
 #include "AD9257.h"		// include "commonServerFunctions.h", which in turn includes "blackfin.h"
 #include "programfpga.h"
+#include "versionAPI.h"
 
+#ifdef VIRTUAL
+#include <pthread.h>
+#include <time.h>
+#endif
 /* global variables */
 //jungfrau doesnt require chips and chans (save memory)
 sls_detector_module *detectorModules=NULL;
@@ -21,9 +24,27 @@ int highvoltage = 0;
 int dacValues[NDAC];
 int32_t clkPhase[2] = {0, 0};
 
+#ifdef VIRTUAL
+pthread_t pthread_virtual_tid;
+int virtual_status = 0;
+int virtual_stop = 0;
+#endif
 
 
 /* basic tests */
+
+int firmware_compatibility = OK;
+int firmware_check_done = 0;
+char firmware_message[MAX_STR_LENGTH];
+
+int isFirmwareCheckDone() {
+	return firmware_check_done;
+}
+
+int getFirmwareCheckResult(char** mess) {
+	*mess = firmware_message;
+	return firmware_compatibility;
+}
 
 void checkFirmwareCompatibility(int flag) {
 #ifdef VIRTUAL
@@ -32,23 +53,36 @@ void checkFirmwareCompatibility(int flag) {
             "************** Jungfrau Virtual Server *****************\n"
             "********************************************************\n\n");
     if (mapCSP0() == FAIL) {
-        cprintf(BG_RED, "Dangerous to continue. Goodbye!\n");
-        exit(EXIT_FAILURE);
+    	strcpy(firmware_message,
+				"FATAL ERROR: Could not map to memory. Dangerous to continue.\n");
+		cprintf(RED,"%s\n\n", firmware_message);
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
     }
+    firmware_check_done = 1;
     return;
 #endif
 
 	defineGPIOpins();
 	resetFPGA();
     if (mapCSP0() == FAIL) {
-        cprintf(BG_RED, "Dangerous to continue. Goodbye!\n");
-        exit(EXIT_FAILURE);
+    	strcpy(firmware_message,
+				"FATAL ERROR: Could not map to memory. Dangerous to continue.\n");
+		cprintf(RED,"%s\n\n", firmware_message);
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
     }
 
     // does check only if flag is 0 (by default), set by command line
 	if ((!flag) && ((checkType() == FAIL) || (testFpga() == FAIL) || (testBus() == FAIL))) {
-		cprintf(BG_RED, "Dangerous to continue. Goodbye!\n");
-		exit(EXIT_FAILURE);
+		strcpy(firmware_message,
+				"FATAL ERROR: Could not pass basic tests of FPGA and bus. Dangerous to continue.\n");
+		cprintf(RED,"%s\n\n", firmware_message);
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
 	}
 
 	uint16_t hversion			= getHardwareVersionNumber();
@@ -58,6 +92,9 @@ void checkFirmwareCompatibility(int flag) {
 	int64_t fwversion 			= getDetectorId(DETECTOR_FIRMWARE_VERSION);
 	int64_t swversion 			= getDetectorId(DETECTOR_SOFTWARE_VERSION);
 	int64_t sw_fw_apiversion    = 0;
+	int64_t client_sw_apiversion = getDetectorId(CLIENT_SOFTWARE_API_VERSION);
+
+
 	if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
 	    sw_fw_apiversion 	    = getDetectorId(SOFTWARE_FIRMWARE_API_VERSION);
 	cprintf(BLUE,"\n\n"
@@ -74,43 +111,64 @@ void checkFirmwareCompatibility(int flag) {
 			"Software Version:\t\t 0x%llx\n"
 			"F/w-S/w API Version:\t\t 0x%llx\n"
 			"Required Firmware Version:\t 0x%x\n"
+			"Client-Software API Version:\t 0x%llx\n"
 			"\n"
 			"********************************************************\n",
 			hversion, hsnumber,
-			ipadd, macadd,
-			fwversion, swversion,
-			sw_fw_apiversion, REQRD_FRMWR_VRSN
+			ipadd,
+			(long  long unsigned int)macadd,
+			(long  long int)fwversion,
+			(long  long int)swversion,
+			(long  long int)sw_fw_apiversion,
+			REQRD_FRMWR_VRSN,
+			(long long int)client_sw_apiversion
 	);
 
 	// return if flag is not zero, debug mode
-	if (flag)
-	    return;
+	if (flag) {
+		firmware_check_done = 1;
+		return;
+	}
 
 
 	//cant read versions
     printf("Testing Firmware-software compatibility ...\n");
 	if(!fwversion || !sw_fw_apiversion){
-		cprintf(RED,"FATAL ERROR: Cant read versions from FPGA. Please update firmware\n");
-		cprintf(RED,"Exiting Server. Goodbye!\n\n");
-		exit(EXIT_FAILURE);
+		strcpy(firmware_message,
+				"FATAL ERROR: Cant read versions from FPGA. Please update firmware.\n");
+		cprintf(RED,"%s\n\n", firmware_message);
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
 	}
 
 	//check for API compatibility - old server
 	if(sw_fw_apiversion > REQRD_FRMWR_VRSN){
-		cprintf(RED,"FATAL ERROR: This software version is incompatible.\n"
-				"Please update it to be compatible with this firmware\n\n");
-		cprintf(RED,"Exiting Server. Goodbye!\n\n");
-		exit(EXIT_FAILURE);
+		sprintf(firmware_message,
+				"FATAL ERROR: This detector software software version (0x%llx) is incompatible.\n"
+				"Please update detector software (min. 0x%llx) to be compatible with this firmware.\n",
+				(long long int)sw_fw_apiversion,
+				(long long int)REQRD_FRMWR_VRSN);
+		cprintf(RED,"%s\n\n", firmware_message);
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
 	}
 
 	//check for firmware compatibility - old firmware
 	if( REQRD_FRMWR_VRSN > fwversion){
-		cprintf(RED,"FATAL ERROR: This firmware version is incompatible.\n"
-				"Please update it to v%d to be compatible with this server\n\n", REQRD_FRMWR_VRSN);
-		cprintf(RED,"Exiting Server. Goodbye!\n\n");
-		exit(EXIT_FAILURE);
+		sprintf(firmware_message,
+				"FATAL ERROR: This firmware version (0x%llx) is incompatible.\n"
+				"Please update firmware (min. 0x%llx) to be compatible with this server.\n",
+				(long long int)fwversion,
+				(long long int)REQRD_FRMWR_VRSN);
+		cprintf(RED,"%s\n\n", firmware_message);
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
 	}
 	printf("Compatibility - success\n");
+	firmware_check_done = 1;
 }
 
 
@@ -155,17 +213,20 @@ int testBus() {
 	printf("\nTesting Bus...\n");
 
 	int ret = OK;
-	u_int32_t addr = SET_DELAY_LSB_REG;
+	u_int32_t addr = SET_TRIGGER_DELAY_LSB_REG;
 	int times = 1000 * 1000;
 	int i = 0;
 
 	for (i = 0; i < times; ++i) {
 		bus_w(addr, i * 100);
-		if (i * 100 != bus_r(SET_DELAY_LSB_REG)) {
-			cprintf(RED,"ERROR: Mismatch! Wrote 0x%x, read 0x%x\n", i * 100, bus_r(SET_DELAY_LSB_REG));
+		if (i * 100 != bus_r(addr)) {
+			cprintf(RED,"ERROR: Mismatch! Wrote 0x%x, read 0x%x\n",
+					i * 100, bus_r(addr));
 			ret = FAIL;
 		}
 	}
+
+	bus_w(addr, 0);
 
 	if (ret == OK)
 		printf("Successfully tested bus %d times\n", times);
@@ -211,6 +272,8 @@ int64_t getDetectorId(enum idMode arg){
 	    return getFirmwareAPIVersion();
 	case DETECTOR_SOFTWARE_VERSION:
 		return  (GITDATE & 0xFFFFFF);
+	case CLIENT_SOFTWARE_API_VERSION:
+		return APIJUNGFRAU;
 	default:
 		return retval;
 	}
@@ -254,7 +317,7 @@ u_int32_t getDetectorNumber(){
 u_int64_t  getDetectorMAC() {
 #ifdef VIRTUAL
     return 0;
-#endif
+#else
 	char output[255],mac[255]="";
 	u_int64_t res=0;
 	FILE* sysFile = popen("ifconfig eth0 | grep HWaddr | cut -d \" \" -f 11", "r");
@@ -269,6 +332,7 @@ u_int64_t  getDetectorMAC() {
 	}
 	sscanf(mac,"%llx",&res);
 	return res;
+#endif
 }
 
 u_int32_t  getDetectorIP(){
@@ -356,6 +420,13 @@ void allocateDetectorStructureMemory(){
 	(detectorModules)->offset=0;
 	(detectorModules)->reg=0;
 	thisSettings = UNINITIALIZED;
+
+	{ // initialize to -1
+		int i = 0;
+		for (i = 0; i < NDAC; ++i) {
+			dacValues[i] = -1;
+		}
+	}
 }
 
 
@@ -377,22 +448,16 @@ void setupDetector() {
 	initDac(8); 	//only for old board compatibility
 
 	//set dacs
-	printf("Setting Default Dac values\n");
-	{
-		int i = 0;
-		int retval[2]={-1,-1};
-		const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
-		for(i = 0; i < NDAC; ++i) {
-			setDAC((enum DACINDEX)i,defaultvals[i],0,0,retval);
-			if (retval[0] != defaultvals[i])
-				cprintf(RED, "Warning: Setting dac %d failed, wrote %d, read %d\n",i ,defaultvals[i], retval[0]);
-		}
-	}
-	bus_w(DAQ_REG, 0x0);         /* Only once at server startup */
-	setSpeed(CLOCK_DIVIDER, HALF_SPEED);
-	cleanFifos();	/* todo might work without */
-	resetCore();	/* todo might work without */
+	setDefaultDacs();
 
+	bus_w(DAQ_REG, 0x0);         /* Only once at server startup */
+
+	setSpeed(CLOCK_DIVIDER, HALF_SPEED);
+	cleanFifos();
+	resetCore();
+
+	configureASICTimer();
+	bus_w(ADC_PORT_INVERT_REG, ADC_PORT_INVERT_VAL);
 
 	//Initialization of acquistion parameters
 	setSettings(DEFAULT_SETTINGS,-1);
@@ -402,6 +467,8 @@ void setupDetector() {
 	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
 	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY);
+	setTimer(STORAGE_CELL_NUMBER, DEFAULT_NUM_STRG_CLLS);
+	selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
 	/*setSpeed(CLOCK_DIVIDER, HALF_SPEED); depends if all the previous stuff works*/
 	setTiming(DEFAULT_TIMING_MODE);
 	setHighVoltage(DEFAULT_HIGH_VOLTAGE);
@@ -411,10 +478,31 @@ void setupDetector() {
 	setThresholdTemperature(DEFAULT_TMP_THRSHLD);
 	// reset temp event
 	setTemperatureEvent(0);
+
+
 }
 
 
-
+int setDefaultDacs() {
+	int ret = OK;
+	printf("Setting Default Dac values\n");
+	{
+		int i = 0;
+		int retval[2]={-1,-1};
+		const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
+		for(i = 0; i < NDAC; ++i) {
+			// if not already default, set it to default
+			if (dacValues[i] != defaultvals[i]) {
+				setDAC((enum DACINDEX)i,defaultvals[i],0,0,retval);
+				if (retval[0] != defaultvals[i]) {
+					cprintf(RED, "Warning: Setting dac %d failed, wrote %d, read %d\n",i ,defaultvals[i], retval[0]);
+					ret = FAIL;
+				}
+			}
+		}
+	}
+	return ret;
+}
 
 
 
@@ -433,9 +521,9 @@ int powerChip (int on){
 		}
 	}
 
-	return ((bus_r(CHIP_POWER_REG) & CHIP_POWER_ENABLE_MSK) >> CHIP_POWER_ENABLE_OFST);
-	/* temporary setup until new firmware fixes bug */
-	//return ((bus_r(CHIP_POWER_REG) & CHIP_POWER_STATUS_MSK) >> CHIP_POWER_STATUS_OFST);
+	//return ((bus_r(CHIP_POWER_REG) & CHIP_POWER_ENABLE_MSK) >> CHIP_POWER_ENABLE_OFST);
+	/**temporary fix until power reg status can be read */
+	return ((bus_r(CHIP_POWER_REG) & CHIP_POWER_STATUS_MSK) >> CHIP_POWER_STATUS_OFST);
 }
 
 
@@ -501,7 +589,11 @@ int getPhase() {
 	return clkPhase[0];
 }
 
-
+void configureASICTimer() {
+    printf("\nConfiguring ASIC Timer\n");
+    bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_PRCHRG_TMR_MSK) | ASIC_CTRL_PRCHRG_TMR_VAL);
+    bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_DS_TMR_MSK) | ASIC_CTRL_DS_TMR_VAL);
+}
 
 
 
@@ -623,6 +715,15 @@ int setSpeed(enum speedVariable arg, int val) {
 
 
 /* parameters - timer */
+int selectStoragecellStart(int pos) {
+    if (pos >= 0) {
+        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_STRG_CELL_SLCT_MSK);
+        bus_w(DAQ_REG, bus_r(DAQ_REG) | ((pos << DAQ_STRG_CELL_SLCT_OFST) & DAQ_STRG_CELL_SLCT_MSK));
+    }
+    return ((bus_r(DAQ_REG) & DAQ_STRG_CELL_SLCT_MSK) >> DAQ_STRG_CELL_SLCT_OFST);
+}
+
+
 
 int64_t setTimer(enum timerIndex ind, int64_t val) {
 
@@ -640,8 +741,10 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 		if(val >= 0){
 			printf("\nSetting exptime: %lldns\n", (long long int)val);
 			val *= (1E-3 * CLK_RUN);
+			val -= ACQ_TIME_MIN_CLOCK;
+			if(val < 0) val = 0;
 		}
-		retval = set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) / (1E-3 * CLK_RUN);
+		retval = (set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) + ACQ_TIME_MIN_CLOCK) / (1E-3 * CLK_RUN);
 		printf("Getting exptime: %lldns\n", (long long int)retval);
 		break;
 
@@ -670,6 +773,16 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 		printf("Getting #cycles: %lld\n", (long long int)retval);
 		break;
 
+	case STORAGE_CELL_NUMBER:
+        if(val >= 0) {
+            printf("\nSetting #storage cells to %lld\n", (long long int)val);
+            bus_w(CONTROL_REG, (bus_r(CONTROL_REG) & ~CONTROL_STORAGE_CELL_NUM_MSK) |
+                    ((val << CONTROL_STORAGE_CELL_NUM_OFST) & CONTROL_STORAGE_CELL_NUM_MSK));
+        }
+        retval = ((bus_r(CONTROL_REG) & CONTROL_STORAGE_CELL_NUM_MSK) >> CONTROL_STORAGE_CELL_NUM_OFST);
+        printf("Getting #storage cells: %lld\n", (long long int)retval);
+        break;
+
 	default:
 		cprintf(RED,"Warning: Timer Index not implemented for this detector: %d\n", ind);
 		break;
@@ -697,12 +810,12 @@ int64_t getTimeLeft(enum timerIndex ind){
 		retval = get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG) / (1E-3 * CLK_SYNC);
 		printf("Getting period left: %lldns\n", (long long int)retval);
 		break;
-
+/*
 	case DELAY_AFTER_TRIGGER:
-		retval = get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG) / (1E-3 * CLK_SYNC);
+		retval = get64BitReg(xxx) / (1E-3 * CLK_SYNC);
 		printf("Getting delay left: %lldns\n", (long long int)retval);
 		break;
-
+*/
 	case CYCLES_NUMBER:
 		retval = get64BitReg(GET_CYCLES_LSB_REG, GET_CYCLES_MSB_REG);
 		printf("Getting number of cycles left: %lld\n", (long long int)retval);
@@ -781,38 +894,46 @@ int getModule(sls_detector_module *myMod){
 
 
 enum detectorSettings setSettings(enum detectorSettings sett, int imod){
-	if(sett == UNINITIALIZED){
+	if(sett == UNINITIALIZED)
 		return thisSettings;
-	}
 
-	uint32_t val = -1;
-	const int defaultIndex[NUM_SETTINGS] = DEFAULT_SETT_INDX;
-	const int defaultvals[NUM_SETTINGS] = DEFAULT_SETT_VALS;
-	const char defaultNames[NUM_SETTINGS][100]=DEFAULT_SETT_NAMES;
-
+	// set settings
 	if(sett != GET_SETTINGS) {
+	    switch (sett) {
+	    case DYNAMICGAIN:
+	        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
+            printf("\nConfigured settings - Dyanmic Gain, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
+	        break;
+	    case DYNAMICHG0:
+            bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
+            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_HIGHGAIN_VAL);
+            printf("\nConfigured settings - Dyanmic High Gain 0, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
+            break;
+	    case FIXGAIN1:
+            bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
+            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_STG_1_VAL);
+            printf("\nConfigured settings - Fix Gain 1, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
+            break;
+	    case FIXGAIN2:
+            bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
+            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_STG_2_VAL);
+            printf("\nConfigured settings - Fix Gain 2, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
+            break;
+	    case FORCESWITCHG1:
+            bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
+            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FRCE_GAIN_STG_1_VAL);
+            printf("\nConfigured settings - Force Switch Gain 1, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
+            break;
+	    case FORCESWITCHG2:
+            bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
+            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FRCE_GAIN_STG_2_VAL);
+            printf("\nConfigured settings - Force Switch Gain 2, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
+            break;
+	    default:
+	        cprintf(RED, "Error: This settings is not defined for this detector %d\n", (int)sett);
+	        return -1;
+	    }
 
-		// find gain val
-		{
-			int i;
-			for (i = 0; i < NUM_SETTINGS; ++i) {
-				if (sett == defaultIndex[i]) {
-					val = defaultvals[i];
-					break;
-				}
-			}
-
-
-			//not found
-			if (val == -1) {
-				cprintf(RED, "Error: This settings is not defined for this detector %d\n", (int)sett);
-				return val;
-			}
-
-			printf("\nConfiguring to settings %s (%d)\n"
-					" Writing to DAQ Register with val:0x%x\n", defaultNames[i], sett, val);
-		}
-		bus_w(DAQ_REG, val);
 		thisSettings = sett;
 	}
 
@@ -823,35 +944,39 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 
 enum detectorSettings getSettings(){
 
-	enum detectorSettings sett = -1;
-	const int defaultIndex[NUM_SETTINGS] = DEFAULT_SETT_INDX;
-	const int defaultvals[NUM_SETTINGS] = DEFAULT_SETT_VALS;
-	const char defaultNames[NUM_SETTINGS][100]=DEFAULT_SETT_NAMES;
-
-	uint32_t val = bus_r(DAQ_REG);
+	uint32_t val = bus_r(DAQ_REG) & DAQ_SETTINGS_MSK;
 	printf("\nGetting Settings\n Reading DAQ Register :0x%x\n", val);
 
-	//find setting
-	{
-		int i;
-		for (i = 0; i < NUM_SETTINGS; ++i) {
-			if (val == defaultvals[i]) {
-				sett = defaultIndex[i];
-				break;
-			}
-		}
-
-
-		//not found
-		if (sett == -1) {
-			cprintf(RED, "Error: Undefined settings read for this detector (DAQ Reg val: 0x%x)\n", val);
-			thisSettings = UNDEFINED;
-			return sett;
-		}
-
-		thisSettings = sett;
-		printf("Settings Read: %s (%d)\n", defaultNames[i], thisSettings);
+	switch(val) {
+	case DAQ_FIX_GAIN_DYNMC_VAL:
+        thisSettings = DYNAMICGAIN;
+        printf("Settings read: DYNAMICGAIN\n");
+        break;
+    case DAQ_FIX_GAIN_HIGHGAIN_VAL:
+        thisSettings = DYNAMICHG0;
+        printf("Settings read: DYNAMICHG0\n");
+        break;
+    case DAQ_FIX_GAIN_STG_1_VAL:
+        thisSettings = FIXGAIN1;
+        printf("Settings read: FIXGAIN1\n");
+        break;
+    case DAQ_FIX_GAIN_STG_2_VAL:
+        thisSettings = FIXGAIN2;
+        printf("Settings read: FIXGAIN2\n");
+        break;
+    case DAQ_FRCE_GAIN_STG_1_VAL:
+        thisSettings = FORCESWITCHG1;
+        printf("Settings read: FORCESWITCHG1\n");
+        break;
+    case DAQ_FRCE_GAIN_STG_2_VAL:
+        thisSettings = FORCESWITCHG2;
+        printf("Settings read: FORCESWITCHG2\n");
+        break;
+    default:
+        thisSettings = UNDEFINED;
+        printf("Settings read: Undefined. Value read:0x%x\n", val);
 	}
+
 	return thisSettings;
 }
 
@@ -1115,7 +1240,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 			(unsigned int)((sourcemac>>16)&0xFF),
 			(unsigned int)((sourcemac>>8)&0xFF),
 			(unsigned int)((sourcemac>>0)&0xFF),
-			sourcemac);
+			(long  long unsigned int)sourcemac);
 	printf("Source Port : %d \t\t\t(0x%08x)\n",sourceport, sourceport);
 
 	printf("Dest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",(destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff, destip);
@@ -1126,7 +1251,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 			(unsigned int)((destmac>>16)&0xFF),
 			(unsigned int)((destmac>>8)&0xFF),
 			(unsigned int)((destmac>>0)&0xFF),
-			destmac);
+			(long  long unsigned int)destmac);
 	printf("Dest. Port  : %d \t\t\t(0x%08x)\n",udpport, udpport);
 
 	long int checksum=calcChecksum(sourceip, destip);
@@ -1188,16 +1313,16 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 int setDetectorPosition(int pos[]) {
 	int ret = OK;
 
-	bus_w(COORD_0, bus_r(COORD_0) | ((pos[0] << COORD_0_X_OFST) & COORD_0_X_MSK));
-	if ((bus_r(COORD_0) &  COORD_0_X_MSK) != ((pos[0] << COORD_0_X_OFST) & COORD_0_X_MSK))
+	bus_w(COORD_0_REG, bus_r(COORD_0_REG) | ((pos[0] << COORD_0_X_OFST) & COORD_0_X_MSK));
+	if ((bus_r(COORD_0_REG) &  COORD_0_X_MSK) != ((pos[0] << COORD_0_X_OFST) & COORD_0_X_MSK))
 		ret = FAIL;
 
-	bus_w(COORD_0, bus_r(COORD_0) | ((pos[1] << COORD_0_Y_OFST) & COORD_0_Y_MSK));
-	if ((bus_r(COORD_0) &  COORD_0_Y_MSK) != ((pos[1] << COORD_0_Y_OFST) & COORD_0_Y_MSK))
+	bus_w(COORD_0_REG, bus_r(COORD_0_REG) | ((pos[1] << COORD_0_Y_OFST) & COORD_0_Y_MSK));
+	if ((bus_r(COORD_0_REG) &  COORD_0_Y_MSK) != ((pos[1] << COORD_0_Y_OFST) & COORD_0_Y_MSK))
 		ret = FAIL;
 
-	bus_w(COORD_1, bus_r(COORD_1) | ((pos[2] << COORD_0_Z_OFST) & COORD_0_Z_MSK));
-	if ((bus_r(COORD_1) &  COORD_0_Z_MSK) != ((pos[2] << COORD_0_Z_OFST) & COORD_0_Z_MSK))
+	bus_w(COORD_1_REG, bus_r(COORD_1_REG) | ((pos[2] << COORD_0_Z_OFST) & COORD_0_Z_MSK));
+	if ((bus_r(COORD_1_REG) &  COORD_0_Z_MSK) != ((pos[2] << COORD_0_Z_OFST) & COORD_0_Z_MSK))
 		ret = FAIL;
 
 	if (ret == OK)
@@ -1371,7 +1496,15 @@ int setNetworkParameter(enum NETWORKINDEX mode, int value) {
 
 int startStateMachine(){
 #ifdef VIRTUAL
-    return OK;
+	virtual_status = 1;
+	virtual_stop = 0;
+	if(pthread_create(&pthread_virtual_tid, NULL, &start_timer, NULL)) {
+		virtual_status = 0;
+		cprintf(RED,"Could not start Virtual acquisition thread\n");
+		return FAIL;
+	}
+	cprintf(GREEN,"***Virtual Acquisition started\n");
+	return OK;
 #endif
 	printf("*******Starting State Machine*******\n");
 
@@ -1386,12 +1519,30 @@ int startStateMachine(){
 }
 
 
-int stopStateMachine(){
 #ifdef VIRTUAL
-    return OK;
-#endif
-	cprintf(BG_RED,"*******Stopping State Machine*******\n");
+void* start_timer(void* arg) {
+	int wait_in_s = 	(setTimer(FRAME_NUMBER, -1) *
+						setTimer(CYCLES_NUMBER, -1) *
+						(setTimer(STORAGE_CELL_NUMBER, -1) + 1) *
+						(setTimer(FRAME_PERIOD, -1)/(1E9)));
+	cprintf(GREEN,"going to wait for %d s\n", wait_in_s);
+	while(!virtual_stop && (wait_in_s >= 0)) {
+		usleep(1000 * 1000);
+		wait_in_s--;
+	}
+	cprintf(GREEN,"Virtual Timer Done***\n");
 
+	virtual_status = 0;
+	return NULL;
+}
+#endif
+
+int stopStateMachine(){
+	cprintf(BG_RED,"*******Stopping State Machine*******\n");
+#ifdef VIRTUAL
+	virtual_stop = 0;
+	return OK;
+#endif
 	//stop state machine
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STOP_ACQ_MSK);
 	usleep(100);
@@ -1407,7 +1558,13 @@ int stopStateMachine(){
 
 enum runStatus getRunStatus(){
 #ifdef VIRTUAL
-    return IDLE;
+	if(virtual_status == 0){
+		printf("Status: IDLE\n");
+		return IDLE;
+	}else{
+		printf("Status: RUNNING...\n");
+		return RUNNING;
+	}
 #endif
 #ifdef VERBOSE
 	printf("Getting status\n");
@@ -1453,9 +1610,13 @@ enum runStatus getRunStatus(){
 
 void readFrame(int *ret, char *mess){
 #ifdef VIRTUAL
-    *ret = (int)FAIL;
-    sprintf(mess,"virtual detector, no acquisition taken\n");
-    return;
+	while(virtual_status) {
+		//cprintf(RED,"Waiting for finished flag\n");
+		usleep(5000);
+	}
+	*ret = (int)FINISHED;
+	strcpy(mess,"acquisition successfully finished\n");
+	return;
 #endif
 	// wait for status to be done
 	while(runBusy()){
@@ -1466,7 +1627,7 @@ void readFrame(int *ret, char *mess){
 	int64_t retval = getTimeLeft(FRAME_NUMBER) + 1;
 	if ( retval > 0) {
 		*ret = (int)FAIL;
-		sprintf(mess,"no data and run stopped: %lld frames left\n",retval);
+		sprintf(mess,"no data and run stopped: %lld frames left\n",(long  long int)retval);
 		cprintf(RED,"%s\n",mess);
 	} else {
 		*ret = (int)FINISHED;
@@ -1479,7 +1640,7 @@ void readFrame(int *ret, char *mess){
 
 u_int32_t runBusy(void) {
 #ifdef VIRTUAL
-    return 0;
+    return virtual_status;
 #endif
 	u_int32_t s = ((bus_r(STATUS_REG) & RUN_BUSY_MSK) >> RUN_BUSY_OFST);
 #ifdef VERBOSE

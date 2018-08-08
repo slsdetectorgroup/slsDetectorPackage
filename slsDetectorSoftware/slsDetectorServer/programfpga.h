@@ -11,7 +11,8 @@
 /* global variables */
 #define CTRL_SRVR_INIT_TIME_US		(300 * 1000)
 int gpioDefined=0;
-char mtdvalue[10];
+#define MTDSIZE 10
+char mtdvalue[MTDSIZE];
 
 
 
@@ -67,9 +68,10 @@ void eraseFlash(){
 	printf("\nErasing Flash\n");
 #endif
 	char command[255];
+	memset(command, 0, 255);
 	sprintf(command,"flash_eraseall %s",mtdvalue);
 	system(command);
-	printf("flash erased\n");
+	printf("Flash erased\n");
 }
 
 /**
@@ -85,14 +87,24 @@ int startWritingFPGAprogram(FILE** filefp){
 
 	//getting the drive
 	char output[255];
+	memset(output, 0, 255);
 	FILE* fp = popen("awk \'$4== \"\\\"bitfile(spi)\\\"\" {print $1}\' /proc/mtd", "r");
-	fgets(output, sizeof(output), fp);
+	if (fp == NULL) {
+		cprintf(RED,"popen returned NULL. Need that to get mtd drive.\n");
+		return 1;
+	}
+	if (fgets(output, sizeof(output), fp) == NULL) {
+		cprintf(RED,"fgets returned NULL. Need that to get mtd drive.\n");
+		return 1;
+	}
 	pclose(fp);
+	//cprintf(RED,"output: %s\n", output);
+	memset(mtdvalue, 0, MTDSIZE);
 	strcpy(mtdvalue,"/dev/");
 	char* pch = strtok(output,":");
 	if(pch == NULL){
 		cprintf(RED,"Could not get mtd value\n");
-		return FAIL;
+		return 1;
 	}
 	strcat(mtdvalue,pch);
 	printf ("\nFlash drive found: %s\n",mtdvalue);
@@ -105,7 +117,7 @@ int startWritingFPGAprogram(FILE** filefp){
 		cprintf(RED,"Unable to open %s in write mode\n",mtdvalue);
 		return 1;
 	}
-	printf("flash ready for writing\n");
+	printf("Flash ready for writing\n");
 
 	return 0;
 }
@@ -161,12 +173,12 @@ int writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp){
 #ifdef VERY_VERBOSE
 	printf("\nWriting of FPGA Program\n");
 	cprintf(BLUE,"address of fpgasrc:%p\n",(void *)fpgasrc);
-	cprintf(BLUE,"fsize:%d\n",fsize);
+	cprintf(BLUE,"fsize:%lu\n",fsize);
 	cprintf(BLUE,"pointer:%p\n",(void*)filefp);
 #endif
 
 	if(fwrite((void*)fpgasrc , sizeof(char) , fsize , filefp )!= fsize){
-		cprintf(RED,"Could not write FPGA source to flash\n");
+		cprintf(RED,"Could not write FPGA source to flash (size:%lu)\n", fsize);
 		return 1;
 	}
 #ifdef VERY_VERBOSE

@@ -8,8 +8,9 @@
 
 
 #define GOODBYE 					(-200)
+#define PROGRAMMING_MODE			(-200)
 #define MIN_REQRD_VRSN_T_RD_API     0x171220
-#define REQRD_FRMWR_VRSN            0x171220
+#define REQRD_FRMWR_VRSN            0x180226
 
 
 /* Struct Definitions */
@@ -40,22 +41,6 @@ enum DACINDEX				{VB_COMP, VDD_PROT, VIN_COM, VREF_PRECH, VB_PIXBUF, VB_DS, VREF
 								420		/* VREF_COMP */		\
 							};
 
-#define NUM_SETTINGS		6
-#define DEFAULT_SETT_INDX	{DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2};
-#define DEFAULT_SETT_VALS	{	0x0f00,		/* DYNAMICGAIN	 	*/	\
- 	  	  	  	  	  	  	  	0x0f01,		/* DYNAMICHG0		*/	\
-  	  	  	  	  	  	  	  	0x0f02,		/* FIXGAIN1			*/	\
-  	  	  	  	  	  	  	  	0x0f06,		/* FIXGAIN2			*/	\
-  	  	  	  	  	  	  	  	0x1f00,		/* FORCESWITCHG1	*/	\
- 	  	  	  	  	  	  	  	0x3f00		/* FORCESWITCHG2	*/	\
- 	  	  	  	  	  	  	 };
-#define DEFAULT_SETT_NAMES  {	"Dynamic Gain", 		/* DYNAMICGAIN	*/	\
-								"Dynamic High Gain 0",	/* DYNAMICHG0	*/	\
-								"Fix Gain 1",			/* FIXGAIN1		*/	\
-								"Fix Gain 2",			/* FIXGAIN2		*/	\
-								"Force Switch Gain 1",	/* FORCESWITCHG1*/	\
-								"Force Switch Gain 2"	/* FORCESWITCHG2*/	\
-							};
 enum NETWORKINDEX           { TXN_FRAME };
 
 
@@ -87,22 +72,27 @@ enum NETWORKINDEX           { TXN_FRAME };
 #define DEFAULT_SETTINGS			(DYNAMICGAIN)
 #define DEFAULT_TX_UDP_PORT			(0x7e9a)
 #define DEFAULT_TMP_THRSHLD         (65*1000) //milli degree Celsius
+#define DEFAULT_NUM_STRG_CLLS       (0)
+#define DEFAULT_STRG_CLL_STRT       (0xf)
 
 /* Defines in the Firmware */
 #define FIX_PATT_VAL    			(0xACDC2014)
 #define ADC_PORT_INVERT_VAL   		(0x453b2a9c)
 #define MAX_TIMESLOT_VAL            (0x1F)
 #define MAX_THRESHOLD_TEMP_VAL      (127999) //millidegrees
+#define MAX_STORAGE_CELL_VAL        (15) //0xF
+#define ACQ_TIME_MIN_CLOCK          (2)
 
 
 #define SAMPLE_ADC_HALF_SPEED	 	(SAMPLE_DECMT_FACTOR_2_VAL + SAMPLE_DGTL_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL + SAMPLE_ADC_SAMPLE_0_VAL)	/* 0x1000 */
 #define SAMPLE_ADC_QUARTER_SPEED 	(SAMPLE_DECMT_FACTOR_4_VAL + SAMPLE_DGTL_SAMPLE_8_VAL + SAMPLE_ADC_DECMT_FACTOR_1_VAL + SAMPLE_ADC_SAMPLE_0_VAL)	/* 0x2810 */
 #define CONFIG_HALF_SPEED			(CONFIG_TDMA_DISABLE_VAL + CONFIG_HALF_SPEED_20MHZ_VAL + CONFIG_MODE_1_X_10GBE_VAL)
 #define CONFIG_QUARTER_SPEED		(CONFIG_TDMA_DISABLE_VAL + CONFIG_QUARTER_SPEED_10MHZ_VAL + CONFIG_MODE_1_X_10GBE_VAL)
-#define ADC_OFST_HALF_SPEED_VAL		(0x20) //adc pipeline
-#define ADC_OFST_QUARTER_SPEED_VAL	(0x0f)
-#define ADC_PHASE_HALF_SPEED 		(0x48) //72
-#define ADC_PHASE_QUARTER_SPEED 	(0x48) //72
+#define ADC_OFST_HALF_SPEED_VAL		(0x1f) //(0x20)
+#define ADC_OFST_QUARTER_SPEED_VAL	(0x0f) //(0x0f)
+#define ADC_PHASE_HALF_SPEED 		(0x2D) //45
+#define ADC_PHASE_QUARTER_SPEED 	(0x2D) //45
+#define ADC_PORT_INVERT_VAL         (0x453b2a9c)
 
 /* Maybe not required for jungfrau */
 #define NTRIMBITS 					(6)

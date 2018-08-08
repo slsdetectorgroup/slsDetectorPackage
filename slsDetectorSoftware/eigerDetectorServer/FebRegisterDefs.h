@@ -6,19 +6,28 @@
 
 
 //daq register definitions
-#define DAQ_REG_CTRL                  1
-#define DAQ_REG_CHIP_CMDS             2
-#define DAQ_REG_STATIC_BITS           3
-#define DAQ_REG_CLK_ROW_CLK_NTIMES    3
-#define DAQ_REG_SHIFT_IN_32           3
-#define DAQ_REG_READOUT_NROWS         3
-#define DAQ_REG_SEND_N_TESTPULSES     3
+#define DAQ_REG_CTRL                  	1
+#define DAQ_REG_CHIP_CMDS             	2
+#define DAQ_REG_STATIC_BITS           	3
+#define DAQ_REG_CLK_ROW_CLK_NTIMES    	3
+#define DAQ_REG_SHIFT_IN_32           	3
+#define DAQ_REG_READOUT_NROWS         	3
+#define DAQ_REG_SEND_N_TESTPULSES     	3
 
-#define DAQ_REG_NEXPOSURES            3
-#define DAQ_REG_EXPOSURE_TIMER        4 // == (31 downto 3) * 10^(2 downto 0) 
-#define DAQ_REG_EXPOSURE_REPEAT_TIMER 5 // == (31 downto 3) * 10^(2 downto 0) 
-#define DAQ_REG_SUBFRAME_EXPOSURES    6
-#define DAQ_REG_STATUS                7 //also pg and fifo status register
+#define DAQ_REG_NEXPOSURES            	3
+#define DAQ_REG_EXPOSURE_TIMER        	4 // == (31 downto 3) * 10^(2 downto 0)
+#define DAQ_REG_EXPOSURE_REPEAT_TIMER 	5 // == (31 downto 3) * 10^(2 downto 0)
+#define DAQ_REG_SUBFRAME_EXPOSURES   	6
+#define DAQ_REG_SUBFRAME_PERIOD       	7 //also pg and fifo status register
+
+
+#define DAQ_REG_RO_OFFSET				12
+#define DAQ_REG_STATUS					(0 + DAQ_REG_RO_OFFSET) //also pg and fifo status register
+//temp so far
+#define FEB_REG_STATUS              	(3 + DAQ_REG_RO_OFFSET)
+
+
+
 
 #define DAQ_CTRL_RESET              0x80000000
 #define DAQ_CTRL_START              0x40000000
@@ -130,7 +139,12 @@
 #define TXM_DELAY_LEFT_OFFSET		0x180
 #define TXM_DELAY_RIGHT_OFFSET		0x1A0
 #define TXM_DELAY_FRAME_OFFSET		0x1C0
-#define TXM_FLOW_CONTROL_10G		0x140
+#define FLOW_REG_OFFSET				0x140
+
+#define FLOW_REG_TXM_FLOW_CNTRL_10G_OFST	(0)
+#define FLOW_REG_TXM_FLOW_CNTRL_10G_MSK		(0x1 << FLOW_REG_TXM_FLOW_CNTRL_10G_OFST)
+#define FLOW_REG_OVERFLOW_32_BIT_OFST		(2)
+#define FLOW_REG_OVERFLOW_32_BIT_MSK		(0x1 << FLOW_REG_OVERFLOW_32_BIT_OFST)
 
 //command memory
 #define LEFT_OFFSET					0x0
@@ -151,9 +165,6 @@
 #define FIRMWARESOFTWARE_API_OFFSET 0x0
 
 #define FRAME_NUM_RESET_OFFSET		0xA0
-
-//temp so far
-#define FEB_REG_STATUS              0xa
 
 //1g counters
 #define ONE_GIGA_LEFT_INDEX_LSB_COUNTER		0x04

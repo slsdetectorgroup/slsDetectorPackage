@@ -73,7 +73,7 @@ int64_t get64BitReg(int aLSB, int aMSB){
 	vMSB=bus_r(aMSB);
 	v64=vMSB;
 	v64=(v64<<32) | vLSB;
-	printf(" reg64(%x,%x) %x %x %llx\n", aLSB, aMSB, vLSB, vMSB, v64);
+	printf(" reg64(%x,%x) %x %x %llx\n", aLSB, aMSB, vLSB, vMSB, (long long unsigned int)v64);
 	return v64;
 }
 
@@ -148,7 +148,9 @@ int mapCSP0(void) {
 			return FAIL;
 		}
 #endif
-		printf("CSPOBASE mapped from 0x%llx to 0x%llx\n",CSP0BASE, CSP0BASE+MEM_SIZE);
+		printf("CSPOBASE mapped from 0x%llx to 0x%llx\n",
+				(long long unsigned int)CSP0BASE,
+				(long long unsigned int)(CSP0BASE+MEM_SIZE));
 		printf("Status Register: %08x\n",bus_r(STATUS_REG));
 
 	}else

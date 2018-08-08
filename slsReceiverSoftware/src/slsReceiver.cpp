@@ -42,7 +42,8 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success):
 			{0, 			0, 					0, 	0}
 	};
 
-
+	//initialize global optind variable (required when instantiating multiple receivers in the same process)
+	optind = 1;
 	// getopt_long stores the option index here.
 	int option_index = 0;
 	int c = 0;
@@ -104,7 +105,6 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success):
 	}
 
 	if (success==OK){
-		FILE_LOG(logINFO) << "SLS Receiver starting TCP Server on port " << tcpip_port_no << endl;
 		tcpipInterface = new slsReceiverTCPIPInterface(success, udp_interface, tcpip_port_no);
 	}
 }
@@ -150,9 +150,7 @@ void slsReceiver::registerCallBackAcquisitionFinished(void (*func)(uint64_t, voi
 }
 
 
-void slsReceiver::registerCallBackRawDataReady(void (*func)(uint64_t, uint32_t,
-        uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t,
-        uint32_t, uint16_t, uint8_t, uint8_t,
+void slsReceiver::registerCallBackRawDataReady(void (*func)(char*,
 		char*, uint32_t, void*),void *arg){
 	//tcpipInterface
 	if(udp_interface)
@@ -162,9 +160,7 @@ void slsReceiver::registerCallBackRawDataReady(void (*func)(uint64_t, uint32_t,
 }
 
 
-void slsReceiver::registerCallBackRawDataModifyReady(void (*func)(uint64_t, uint32_t,
-        uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t,
-        uint32_t, uint16_t, uint8_t, uint8_t,
+void slsReceiver::registerCallBackRawDataModifyReady(void (*func)(char*,
         char*, uint32_t &, void*),void *arg){
     //tcpipInterface
     if(udp_interface)

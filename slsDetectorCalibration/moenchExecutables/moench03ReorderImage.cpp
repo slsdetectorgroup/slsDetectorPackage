@@ -4,22 +4,13 @@
 
 
 //#include "moench03T1ZmqData.h"
-#ifdef NEWRECEIVER
+
 #include "moench03T1ReceiverDataNew.h"
-#endif
-#ifdef CSAXS_FP
-#include "moench03T1ReceiverData.h"
-#endif 
-#ifdef OLDDATA
-#include "moench03Ctb10GbT1Data.h"
-#endif 
 
 // #include "interpolatingDetector.h"
 //#include "etaInterpolationPosXY.h"
 // #include "linearInterpolation.h"
 // #include "noInterpolation.h"
-#include "multiThreadedAnalogDetector.h"
-#include "singlePhotonDetector.h"
 //#include "interpolatingDetector.h"
 
 #include <stdio.h>
@@ -27,9 +18,13 @@
 #include <fstream>
 #include <sys/stat.h>
 
+#include <cstdlib>
+
 #include <ctime>
 using namespace std;
 
+#define NX 400 //number of x pixels
+#define NY 400 //number of y pixels
 
 int main(int argc, char *argv[]) {
 
@@ -40,7 +35,7 @@ int main(int argc, char *argv[]) {
   }
   int p=10000;
   int fifosize=1000;
-  int nthreads=1;
+  int nthreads=8;
   int nsubpix=25;
   int etabins=nsubpix*10;
   double etamin=-1, etamax=2;
@@ -56,48 +51,21 @@ int main(int argc, char *argv[]) {
 
 
 
-
-#ifdef NEWRECEIVER
   moench03T1ReceiverDataNew *decoder=new  moench03T1ReceiverDataNew();
-  cout << "RECEIVER DATA WITH ONE HEADER!"<<endl;
-#endif
-
-#ifdef CSAXS_FP
-  moench03T1ReceiverData *decoder=new  moench03T1ReceiverData();
-  cout << "RECEIVER DATA WITH ALL HEADERS!"<<endl;
-#endif
-
-#ifdef OLDDATA
-  moench03Ctb10GbT1Data *decoder=new  moench03Ctb10GbT1Data();
-  cout << "OLD RECEIVER DATA!"<<endl;
-#endif
 
 
-  //moench03T1ZmqData *decoder=new  moench03T1ZmqData();
-  singlePhotonDetector *filter=new singlePhotonDetector(decoder,csize, nsigma, 1, 0, nped, 200);
-  //  char tit[10000];
-  cout << "filter " << endl;
+  uint16_t data[NY*NX];
 
-
-
-  // filter->readPedestals("/scratch/ped_100.tiff");
-  // interp->readFlatField("/scratch/eta_100.tiff",etamin,etamax);
-  // cout << "filter "<< endl;
-  
 
   int size = 327680;////atoi(argv[3]);
   
   int* image;
-	//int* image =new int[327680/sizeof(int)];
-  filter->newDataSet();
-
 
   int ff, np;
   int dsize=decoder->getDataSize();
-  cout << " data size is " << dsize;
   
 
-  char data[dsize];
+  //char data[dsize];
 
   ifstream filebin;
   char *indir=argv[1];
@@ -130,17 +98,10 @@ int main(int argc, char *argv[]) {
 
 
 
-
   char* buff;
-  multiThreadedAnalogDetector *mt=new multiThreadedAnalogDetector(filter,nthreads,fifosize);
 
  
-  mt->setFrameMode(eFrame);
-  mt->StartThreads();
-  mt->popFree(buff);
 
-
-  cout << "mt " << endl;
 
   int ifr=0;
  
@@ -148,8 +109,7 @@ int main(int argc, char *argv[]) {
   for (int irun=runmin; irun<runmax; irun++) {
     sprintf(fn,fformat,irun);
     sprintf(fname,"%s/%s.raw",indir,fn);
-    sprintf(outfname,"%s/%s.clust",outdir,fn);
-    sprintf(imgfname,"%s/%s.tiff",outdir,fn);
+    sprintf(outfname,"%s/%s_image.raw",outdir,fn);
     std::time(&end_time);
     cout << std::ctime(&end_time) <<    endl;
     cout <<  fname << " " << outfname << " " << imgfname <<  endl;
@@ -158,39 +118,36 @@ int main(int argc, char *argv[]) {
     if (filebin.is_open()){
       of=fopen(outfname,"w");
       if (of) {
-  	mt->setFilePointer(of);
-	//	cout << "file pointer set " << endl;
+	;
       } else {
   	cout << "Could not open "<< outfname << " for writing " << endl;
-  	mt->setFilePointer(NULL);
   	return 1;
       }
       //     //while read frame 
       ff=-1;
       while (decoder->readNextFrame(filebin, ff, np,buff)) {
-	//	cout << "*"<<ifr++<<"*"<<ff<< endl;
-	//	cout << ff << " " << np << endl;
-  	//         //push
-	mt->pushData(buff);
-  // 	//         //pop
-	mt->nextThread();
-  // // 		//	cout << " " << (void*)buff;
-	mt->popFree(buff);
+	for (int ix=0; ix<400; ix++)
+	  for (int iy=0; iy<400; iy++)
+	    data[iy*NX+ix]=decoder->getChannel(buff,ix,iy);
+	
 	ifr++;
+
+	fwrite(&ff, 8, 1,of);//write detector frame number
+	fwrite(&ifr, 8, 1,of);//write datset frame number
+	fwrite(data,2,NX*NY,of);//write reordered data
+
 	if (ifr%10000==0) cout << ifr << " " << ff << endl;
 	ff=-1;
+
       }
         cout << "--" << endl;
       filebin.close();	 
       //      //close file 
       //     //join threads
-      while (mt->isBusy()) {;}//wait until all data are processed from the queues
+  
       if (of)
   	fclose(of);
       
-      mt->writeImage(imgfname);
-      mt->clearImage();
-   
       std::time(&end_time);
       cout << std::ctime(&end_time) <<   endl;
 

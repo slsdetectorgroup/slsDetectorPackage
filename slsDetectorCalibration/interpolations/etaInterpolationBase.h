@@ -97,7 +97,9 @@ class etaInterpolationBase : public slsInterpolation {
 #ifndef MYROOT1
   int *setEta(int *h, int nb=-1, double emin=1, double emax=0)
   {  
-    if (h) {heta=h;
+    if (h) {
+      if (heta) delete [] heta;
+      heta=h;
       nbeta=nb;
       if (nb<=0) nbeta=nSubPixels*10;
       etamin=emin;

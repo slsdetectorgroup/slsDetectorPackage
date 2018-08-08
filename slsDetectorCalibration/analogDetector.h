@@ -709,6 +709,7 @@ template <class dataType> class analogDetector {
 
 
 
+
   /**
      Sets region of interest in which data should be processed
        \param xmi minimum x. if -1 or out of range remains unchanged

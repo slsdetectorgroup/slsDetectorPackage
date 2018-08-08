@@ -1,0 +1,22 @@
+
+CBFLIBDIR= /afs/psi.ch/project/sls_det_software/CBFlib-0.9.5/
+#ZMQLIB=../slsReceiverSoftware/include
+INCDIR=-I. -I../ -I../interpolations  -I../interpolations/etaVEL  -I../dataStructures -I../../slsReceiverSoftware/include -I$(CBFLIBDIR)/include/ 
+LDFLAG= ../tiffIO.cpp -L/usr/lib64/ -lpthread -lm  -lstdc++ -L.  -pthread -lrt -L$(CBFLIBDIR)/lib/   -ltiff 
+MAIN=moench03ReorderImage.cpp
+
+all: moenchReorderImage moenchClusterFinder
+
+
+
+moenchReorderImage:  $(MAIN)  $(INCS) clean
+			 g++ -o moenchReorderImage  $(MAIN)  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL -DNEWRECEIVER 
+
+moenchClusterFinder: moench03ClusterFinder.cpp
+			 g++ -o moenchClusterFinder  $(MAIN)  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL -DNEWRECEIVER 
+
+
+clean: 	
+	rm -f  moenchReorderImage moenchClusterFinder
+
+

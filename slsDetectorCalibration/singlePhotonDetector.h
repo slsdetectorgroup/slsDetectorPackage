@@ -187,10 +187,10 @@ public analogDetector<uint16_t> {
       double g=1.;
 
       
-      double tthr=thr;
+      double tthr=thr, tthr1, tthr2;
       int nn=0;
       double max=0, tl=0, tr=0, bl=0,br=0, v;
-      
+      double rms=0;
       
       int cm=0;
       if (cmSub) cm=1;
@@ -240,56 +240,62 @@ public analogDetector<uint16_t> {
 	    tot=0;
 	    quadTot=0;
 
-	    for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
-	      for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
-		if ((iy+ir)>=0 && (iy+ir)<ny && (ix+ic)>=0 && (ix+ic)<nx) {
-		  //clusters->set_data(rest[iy+ir][ix+ic], ic, ir);
-		  
+	    if (rest[iy][ix]>0.25*tthr) {
+	      eventMask[iy][ix]=NEIGHBOUR;
+	      for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
+		for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
+		  if ((iy+ir)>=0 && (iy+ir)<ny && (ix+ic)>=0 && (ix+ic)<nx) {
+		    //clusters->set_data(rest[iy+ir][ix+ic], ic, ir);
+		    
 		
-		  v=rest[iy+ir][ix+ic];//clusters->get_data(ic,ir);
-		  tot+=v;
-		  
-		  if (ir<=0 && ic<=0)
-		    bl+=v;
-		  if (ir<=0 && ic>=0)
-		    br+=v;
-		  if (ir>=0 && ic<=0)
-		    tl+=v;
-		  if (ir>=0 && ic>=0)
-		    tr+=v;
-		  
-		  if (v>max) {
-		    max=v;
-		  }
-		  // if (ir==0 && ic==0) {
-		    if (v>tthr) {
-		      eventMask[iy][ix]=NEIGHBOUR;
+		    v=rest[iy+ir][ix+ic];//clusters->get_data(ic,ir);
+		    tot+=v;
+		    
+		    if (ir<=0 && ic<=0)
+		      bl+=v;
+		    if (ir<=0 && ic>=0)
+		      br+=v;
+		    if (ir>=0 && ic<=0)
+		      tl+=v;
+		    if (ir>=0 && ic>=0)
+		      tr+=v;
+		    
+		    if (v>max) {
+		      max=v;
 		    }
+		    // if (ir==0 && ic==0) {
 		    //}
+		  }
 		}
 	      }
-	    }
-	    if (rest[iy][ix]>=max) { 
-	      if (bl>=br && bl>=tl && bl>=tr) {
-		quad=BOTTOM_LEFT;
-		quadTot=bl;
-	      } else if (br>=bl && br>=tl && br>=tr) {
-		quad=BOTTOM_RIGHT;
-		quadTot=br;
+	      
+	      if (rest[iy][ix]>=max) { 
+		if (bl>=br && bl>=tl && bl>=tr) {
+		  quad=BOTTOM_LEFT;
+		  quadTot=bl;
+		} else if (br>=bl && br>=tl && br>=tr) {
+		  quad=BOTTOM_RIGHT;
+		  quadTot=br;
 	      } else if (tl>=br && tl>=bl && tl>=tr) {
-		quad=TOP_LEFT;
-		quadTot=tl;
+		  quad=TOP_LEFT;
+		  quadTot=tl;
 	      } else if   (tr>=bl && tr>=tl && tr>=br) {
-		quad=TOP_RIGHT;
-		quadTot=tr;
+		  quad=TOP_RIGHT;
+		  quadTot=tr;
+		}
+		rms=getPedestalRMS(ix,iy);
+		tthr1=tthr-sqrt(ccy*ccs)*rms;
+		tthr2=tthr-sqrt(cy*cs)*rms;
+		if (tthr>sqrt(ccy*ccs)*rms) tthr1=tthr-sqrt(ccy*ccs)*rms; else tthr1=sqrt(ccy*ccs)*rms;
+		if (tthr>sqrt(cy*cs)*rms) tthr2=tthr-sqrt(cy*cs)*rms; else tthr2=sqrt(cy*cs)*rms;
+		if (tot>tthr1 || quadTot>tthr2) {
+		  eventMask[iy][ix]=PHOTON;
+		  nph[ix+nx*iy]++;
+		  nphFrame++;
+		  nphTot++;
+		  
+		} 
 	      }
-	      if (max>tthr || tot>sqrt(ccy*ccs)*tthr || quadTot>sqrt(cy*cs)*tthr) {
-		eventMask[iy][ix]=PHOTON;
-		nph[ix+nx*iy]++;
-		nphFrame++;
-		nphTot++;
-		
-	      } 
 	    }
 	  }
 	}

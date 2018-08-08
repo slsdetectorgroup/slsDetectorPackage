@@ -6,10 +6,10 @@
 CROSS  = bfin-uclinux-
 CC    = $(CROSS)gcc
 
-CFLAGS += -Wall -DMOENCHD -DMCB_FUNCS -DDACS_INT  -DDEBUG -DV1 -DCTB #-DVERBOSE #-DVERYVERBOSE  #-DVIRTUAL  #-DDACS_INT_CSERVER
+CFLAGS += -Wall -DMOENCHD -DMCB_FUNCS -DDACS_INT  -DDEBUG -DV1 -DCTB -DOLDVERSION #-DVERBOSE #-DVERYVERBOSE  #-DVIRTUAL  #-DDACS_INT_CSERVER
 
 
-PROGS= 	 jctbDetectorServer
+PROGS= 	 jctbDetectorServer 
 INSTDIR= 	/tftpboot
 INSTMODE= 	0777
 
@@ -31,9 +31,13 @@ boot: $(OBJS)
 versioning: 
 	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`
 
-jctbDetectorServer: $(OBJS)
+jctbDetectorServerNew: $(OBJS)
 	echo $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@)
+
+jctbDetectorServer: $(OBJS)
+	echo $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@) -DOLDVERSION 
 
 jungfrauADCTEst: $(OBJS)
 	echo $(OBJS)

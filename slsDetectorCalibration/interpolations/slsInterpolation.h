@@ -24,7 +24,10 @@
 #endif
 #include <memory.h>
 
+#include <stdio.h>
+#include <iostream>
 using namespace std;
+
 //#ifdef MYROOT1
 //: public TObject
 //#endif
@@ -84,7 +87,13 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
 #endif
 
 #ifndef MYROOT1
-  virtual int *getInterpolatedImage(){return hint;};
+  virtual int *getInterpolatedImage(){
+    //  cout << "return interpolated image " << endl;
+    /* for (int i=0; i<nSubPixels*  nSubPixels* nPixelsX*nPixelsY; i++) { */
+    /*   cout << i << " " << hint[i] << endl; */
+    /* } */
+    return hint;
+  };
 #endif
 
 
@@ -146,8 +155,13 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
   virtual int *addToImage(double int_x, double int_y){ 
     int iy=((double)nSubPixels)*int_y; 
     int ix=((double)nSubPixels)*int_x; 
-    // cout << int_x << " " << int_y << " " << "  " << ix << " " << iy << " " << ix+iy*nPixelsX*nSubPixels << endl;
-    if (ix>=0 && ix<(nPixelsX*nSubPixels) && iy<(nSubPixels*nPixelsY) && iy>=0 )(*(hint+ix+iy*nPixelsX*nSubPixels))+=1; 
+     if (ix>=0 && ix<(nPixelsX*nSubPixels) && iy<(nSubPixels*nPixelsY) && iy>=0 ){
+       // cout << int_x << " " << int_y << " " << "  " << ix << " " << iy << " " << ix+iy*nPixelsX*nSubPixels << " " << hint[ix+iy*nPixelsX*nSubPixels];
+       (*(hint+ix+iy*nPixelsX*nSubPixels))+=1; 
+       // cout << " " << hint[ix+iy*nPixelsX*nSubPixels] << endl;
+     }// else
+      // cout << "bad! "<< int_x << " " << int_y << " " << "  " << ix << " " << iy << " " << ix+iy*nPixelsX*nSubPixels << endl;
+       
     return hint;
   };
 #endif

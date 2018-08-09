@@ -24,7 +24,7 @@ using namespace rapidjson;
 
 #define MAX_STR_LENGTH 1000
 
-#define ZMQ_DETAIL
+// #define ZMQ_DETAIL
 #define ROIVERBOSITY
 
 class ZmqSocket {
@@ -37,8 +37,14 @@ public:
 	// eg. int value = -1;
 	// if (zmq_setsockopt(socketDescriptor, ZMQ_LINGER, &value,sizeof(value))) {
 	//	Close();
-	// }
-
+	//    git_rev: developer
+   git_url: https://github.com/slsdetectorgroup/slsDetectorPackage.git
+   patches:
+- 00-linking-of-SlsDetector.patch}
+   git_rev: developer
+   git_url: https://github.com/slsdetectorgroup/slsDetectorPackage.git
+   patches:
+- 00-linking-of-SlsDetector.patch
 	/**
 	 * Constructor for a client
 	 * Creates socket, context and connects to server

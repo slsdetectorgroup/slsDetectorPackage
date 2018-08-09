@@ -370,7 +370,7 @@ public:
 		// zmq_msg_init (&message);
 		// int len = ReceiveMessage(index, message);
 		std::vector<char>buffer(MAX_STR_LENGTH);
-		int len = zmq_recv(socketDescriptor, buffer.data(), buffer.size(),0);
+		int len = zmq_recv(sockfd.socketDescriptor, buffer.data(), buffer.size(),0);
 		if ( len > 0 ) {
 			bool dummy = false;
 #ifdef ZMQ_DETAIL

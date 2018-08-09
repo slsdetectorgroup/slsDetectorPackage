@@ -113,7 +113,8 @@ public:
 		// create multiSlsDetector class if required
 		if (myDetector==NULL) {													\
 			try {																\
-				myDetector = new multiSlsDetector(id, verify, update);			\
+				multiSlsDetector* m = new multiSlsDetector(id, verify, update);			\
+				myDetector = m;													\
 			} catch (const SharedMemoryException & e) {							\
 				cout << e.GetMessage() << endl;									\
 				return;															\

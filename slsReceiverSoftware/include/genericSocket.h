@@ -50,31 +50,6 @@ using namespace std;
 #define DEFAULT_BACKLOG 5
 
 
-/**
- * Class to close socket descriptors automatically
- * upon encountering exceptions in the constructor
- */
-class mySocketDescriptors {
-public:
-	mySocketDescriptors():fd(-1), newfd(-1){};
-	~mySocketDescriptors() {
-		// close TCP server new socket descriptor from accept
-		if (newfd >= 0) {
-			close(newfd);
-		}
-		// close socket descriptor
-		if (fd >= 0) {
-			close(fd);
-		}
-	}
-	/** socket descriptor */
-	int fd;
-	/** new socket descriptor in TCP server from accept */
-	int newfd;
-};
-
-
-
 class genericSocket{
 
 public:
@@ -813,6 +788,33 @@ public:
 	char lastClientIP[INET_ADDRSTRLEN];
 	char thisClientIP[INET_ADDRSTRLEN];
 	int differentClients;
+
+private:
+	/**
+	 * Class to close socket descriptors automatically
+	 * upon encountering exceptions in the genericSocket constructor
+	 */
+	class mySocketDescriptors {
+	public:
+
+		/** Constructor */
+		mySocketDescriptors():fd(-1), newfd(-1){};
+		/** Destructor */
+		~mySocketDescriptors() {
+			// close TCP server new socket descriptor from accept
+			if (newfd >= 0) {
+				close(newfd);
+			}
+			// close socket descriptor
+			if (fd >= 0) {
+				close(fd);
+			}
+		}
+		/** socket descriptor */
+		int fd;
+		/** new socket descriptor in TCP server from accept */
+		int newfd;
+	};
 
 protected:
 	int portno;

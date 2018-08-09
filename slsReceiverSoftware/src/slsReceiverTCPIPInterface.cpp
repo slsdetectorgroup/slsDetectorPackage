@@ -31,16 +31,16 @@ slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 		delete receiverBase;
 }
 
-slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface* rbase, int pn):
+slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int pn):
 				myDetectorType(GOTTHARD),
-				receiverBase(rbase),
+				receiverBase(0),
 				ret(OK),
 				fnum(-1),
 				lockStatus(0),
 				killTCPServerThread(0),
 				tcpThreadCreated(false),
 				portNumber(DEFAULT_PORTNO+2),
-				mySock(NULL)
+				mySock(0)
 {
 	//***callback parameters***
 	startAcquisitionCallBack = NULL;
@@ -51,81 +51,23 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 	rawDataModifyReadyCallBack = NULL;
 	pRawDataReady = NULL;
 
-	unsigned short int port_no=portNumber;
-	if(receiverBase == NULL)
-		receiverBase = 0;
+	// create socket
+	portNumber = (pn > 0 ? pn : DEFAULT_PORTNO + 2);
+	MySocketTCP* m = new MySocketTCP(portNumber);
+	mySock = m;
 
-	if (pn>0)
-		port_no = pn;
+	//initialize variables
+	strcpy(mySock->lastClientIP,"none");
+	strcpy(mySock->thisClientIP,"none1");
+	memset(mess,0,sizeof(mess));
+	strcpy(mess,"dummy message");
 
-	success=OK;
-
-	//create socket
-	if(success == OK){
-		mySock = new MySocketTCP(port_no);
-		if (mySock->getErrorStatus()) {
-			success = FAIL;
-			delete mySock;
-			mySock=NULL;
-		}	else {
-			portNumber=port_no;
-			//initialize variables
-			strcpy(mySock->lastClientIP,"none");
-			strcpy(mySock->thisClientIP,"none1");
-			memset(mess,0,sizeof(mess));
-			strcpy(mess,"dummy message");
-			function_table();
+	function_table();
 #ifdef VERYVERBOSE
-			FILE_LOG(logINFO) << "Function table assigned.";
+	FILE_LOG(logINFO) << "Function table assigned.";
 #endif
-		}
-	}
 
 }
-
-
-int slsReceiverTCPIPInterface::setPortNumber(int pn){
-	memset(mess, 0, sizeof(mess));
-	int p_number;
-
-	MySocketTCP *oldsocket = NULL;;
-	int sd = 0;
-
-	if (pn > 0) {
-		p_number = pn;
-
-		if (p_number < 1024) {
-			sprintf(mess,"Too low port number %d\n", p_number);
-			FILE_LOG(logERROR) << mess;
-		} else {
-
-			oldsocket=mySock;
-			mySock = new MySocketTCP(p_number);
-			if(mySock){
-				sd = mySock->getErrorStatus();
-				if (!sd){
-					portNumber=p_number;
-					strcpy(mySock->lastClientIP,oldsocket->lastClientIP);
-					delete oldsocket;
-				} else {
-					FILE_LOG(logERROR) <<  "Could not bind port " << p_number;
-					if (sd == -10) {
-						FILE_LOG(logINFO) << "Port "<< p_number << " already set";
-					} else {
-						delete mySock;
-						mySock=oldsocket;
-					}
-				}
-
-			} else {
-				mySock=oldsocket;
-			}
-		}
-	}
-
-	return portNumber;
-}
-
 
 
 int slsReceiverTCPIPInterface::start(){
@@ -566,15 +508,14 @@ int slsReceiverTCPIPInterface::get_last_client_ip() {
 int slsReceiverTCPIPInterface::set_port() {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int unused = 0;
+	int p_type = 0;
 	int p_number = -1;
-	MySocketTCP* mySocket = NULL;
+	MySocketTCP* mySocket = 0;
 	char oldLastClientIP[INET_ADDRSTRLEN];
 	memset(oldLastClientIP, 0, sizeof(oldLastClientIP));
-	int sd = -1;
 
 	// receive arguments
-	if (mySock->ReceiveDataOnly(&unused,sizeof(unused)) < 0 )
+	if (mySock->ReceiveDataOnly(&p_type,sizeof(p_type)) < 0 )
 		return printSocketReadError();
 	if (mySock->ReceiveDataOnly(&p_number,sizeof(p_number)) < 0 )
 		return printSocketReadError();
@@ -586,29 +527,26 @@ int slsReceiverTCPIPInterface::set_port() {
 		FILE_LOG(logERROR) << mess;
 	}
 	else {
-		if (p_number<1024) {
+		if (p_number < 1024) {
 			ret = FAIL;
 			sprintf(mess,"Port Number (%d) too low\n", p_number);
 			FILE_LOG(logERROR) << mess;
-		}
-		FILE_LOG(logINFO) << "set port to " << p_number <<endl;
-		strcpy(oldLastClientIP, mySock->lastClientIP);
-		mySocket = new MySocketTCP(p_number);
+		} else {
+			FILE_LOG(logINFO) << "set port to " << p_number <<endl;
+			strcpy(oldLastClientIP, mySock->lastClientIP);
 
-		if(mySocket){
-			sd = mySocket->getErrorStatus();
-			if (sd < 0) {
-				ret = FAIL;
-				sprintf(mess,"Could not bind port %d\n", p_number);
-				FILE_LOG(logERROR) << mess;
-				if (sd == -10) {
-					ret = FAIL;
-					sprintf(mess,"Port %d already set\n", p_number);
-					FILE_LOG(logERROR) << mess;
-				}
-			}
-			else
+			try {
+				mySocket = new MySocketTCP(p_number);
 				strcpy(mySock->lastClientIP,oldLastClientIP);
+			} catch(SamePortSocketException e) {
+				ret = FAIL;
+				sprintf(mess, "Could not bind port %d. It is already set\n", p_number);
+				FILE_LOG(logERROR) << mess;
+			} catch (...) {
+				ret = FAIL;
+				sprintf(mess, "Could not bind port %d.\n", p_number);
+				FILE_LOG(logERROR) << mess;
+			}
 		}
 	}
 
@@ -621,7 +559,7 @@ int slsReceiverTCPIPInterface::set_port() {
 		mySock->SendDataOnly(mess,sizeof(mess));
 	else {
 		mySock->SendDataOnly(&p_number,sizeof(p_number));
-		if(sd>=0){
+		if(ret != FAIL){
 			mySock->Disconnect();
 			delete mySock;
 			mySock = mySocket;

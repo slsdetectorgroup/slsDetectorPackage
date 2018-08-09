@@ -27,7 +27,7 @@ int qServer::gui_server_thread_running(0);
 
 
 qServer::qServer(qDetectorMain *t):
-		  myMainTab(t), mySocket(NULL),myStopSocket(NULL),port_no(DEFAULT_GUI_PORTNO),lockStatus(0),checkStarted(0),checkStopStarted(0){
+		  myMainTab(t), mySocket(0),myStopSocket(0),port_no(DEFAULT_GUI_PORTNO),lockStatus(0),checkStarted(0),checkStopStarted(0){
 	strcpy(mess,"");
 	FunctionTable();
 
@@ -196,7 +196,7 @@ int qServer::StartStopServer(int start){
 			pthread_join(gui_server_thread,NULL);
 			if(mySocket){
 				delete mySocket;
-				mySocket = NULL;
+				mySocket = 0;
 			}
 
 			if(myStopSocket)
@@ -204,7 +204,7 @@ int qServer::StartStopServer(int start){
 			pthread_join(gui_stop_server_thread,NULL);
 			if(myStopSocket){
 				delete myStopSocket;
-				myStopSocket = NULL;
+				myStopSocket = 0;
 			}
 		}
 #ifdef VERBOSE
@@ -235,8 +235,10 @@ int qServer::StopServer(){
 #endif
 	int ret = qDefs::OK;
 
-	myStopSocket = new MySocketTCP(port_no+1);
-	if (myStopSocket->getErrorStatus()){
+	try {
+		MySocketTCP* s = new MySocketTCP(port_no+1);
+		myStopSocket = s;
+	} catch(...) {
 		gui_server_thread_running = 0;
 		qDefs::Message(qDefs::WARNING,"Could not start gui stop server socket","qServer::StopServer");
 	}
@@ -270,7 +272,7 @@ int qServer::StopServer(){
 	//delete socket(via exit server)
 	if(myStopSocket){
 		delete myStopSocket;
-		myStopSocket = NULL;
+		myStopSocket = 0;
 	}
 
 	if(!gui_server_thread_running)
@@ -300,8 +302,10 @@ int qServer::StartServer(){
 #endif
 	int ret = qDefs::OK;
 
-	mySocket = new MySocketTCP(port_no);
-	if (mySocket->getErrorStatus()){
+	try {
+		MySocketTCP* s = new MySocketTCP(port_no);
+		mySocket = s;
+	} catch(...) {
 		gui_server_thread_running = 0;
 		qDefs::Message(qDefs::WARNING,"Could not start gui server socket","qServer::StartServer");
 	}
@@ -335,7 +339,7 @@ int qServer::StartServer(){
 	//delete socket(via exit server)
 	if(mySocket){
 		delete mySocket;
-		mySocket = NULL;
+		mySocket = 0;
 	}
 
 	if(!gui_server_thread_running)

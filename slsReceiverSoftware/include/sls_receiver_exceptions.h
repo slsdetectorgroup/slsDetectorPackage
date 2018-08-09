@@ -9,19 +9,18 @@
 
 #include <iostream>
 #include <exception>
-using namespace std;
 
 
-struct SharedMemoryException : public exception {
+struct SharedMemoryException : public std::exception {
 public:
     SharedMemoryException() {}
-    string GetMessage() const { return "Shared Memory Failed";};
+    std::string GetMessage() const { return "Shared Memory Failed";};
 };
 
-struct ThreadpoolException : public exception {
+struct ThreadpoolException : public std::exception {
 public:
 	ThreadpoolException() {}
-    string GetMessage() const { return "Threadpool Failed";};
+	std::string GetMessage() const { return "Threadpool Failed";};
 };
 
 struct SocketException : public std::exception {

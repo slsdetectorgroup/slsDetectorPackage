@@ -5,8 +5,6 @@
  ***********************************************/
 
 #include "UDPBaseImplementation.h"
-#include "genericSocket.h"
-#include "ZmqSocket.h"
 
 #include <sys/stat.h> 		// stat
 #include <iostream>

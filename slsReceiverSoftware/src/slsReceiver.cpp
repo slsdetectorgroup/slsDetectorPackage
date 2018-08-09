@@ -18,11 +18,8 @@ using namespace std;
 
 
 
-slsReceiver::slsReceiver(int argc, char *argv[], int &success):
-		tcpipInterface (NULL),
-		udp_interface (NULL)
-{
-	success=OK;
+slsReceiver::slsReceiver(int argc, char *argv[]):
+		tcpipInterface (0) {
 
 	// options
 	map<string, string> configuration_map;
@@ -72,8 +69,7 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success):
 			tempval = GITREV;
 			tempval = (tempval <<32) | GITDATE;
 			cout << "SLS Receiver " << GITBRANCH << " (0x" << hex << tempval << ")" << endl;
-			success = FAIL; // to exit
-			break;
+			throw exception();
 
 		case 'h':
 		default:
@@ -87,26 +83,18 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success):
 					+ "\t                          receivers\n\n";
 
 			FILE_LOG(logINFO) << help_message << endl;
-			break;
+			throw exception();
 
 		}
 	}
 
-	if( !fname.empty() ){
-		try{
-			FILE_LOG(logINFO) << "config file name " << fname;
-			success = read_config_file(fname, &tcpip_port_no, &configuration_map);
-			//VERBOSE_PRINT("Read configuration file of " + iline + " lines");
-		}
-		catch(...){
-			FILE_LOG(logERROR) << "Coult not open configuration file " << fname ;
-			success = FAIL;
-		}
+	if( !fname.empty() && read_config_file(fname, &tcpip_port_no, &configuration_map) == FAIL) {
+		throw exception();
 	}
 
-	if (success==OK){
-		tcpipInterface = new slsReceiverTCPIPInterface(success, udp_interface, tcpip_port_no);
-	}
+	// might throw an exception
+	tcpipInterface = new slsReceiverTCPIPInterface(tcpip_port_no);
+
 }
 
 
@@ -131,40 +119,26 @@ int64_t slsReceiver::getReceiverVersion(){
 }
 
 
-void slsReceiver::registerCallBackStartAcquisition(int (*func)(char*, char*, uint64_t, uint32_t, void*),void *arg){
-  //tcpipInterface
-	if(udp_interface)
-		udp_interface->registerCallBackStartAcquisition(func,arg);
-	else
-		tcpipInterface->registerCallBackStartAcquisition(func,arg);
+void slsReceiver::registerCallBackStartAcquisition(int (*func)(
+		char*, char*, uint64_t, uint32_t, void*),void *arg){
+	tcpipInterface->registerCallBackStartAcquisition(func,arg);
 }
 
 
 
-void slsReceiver::registerCallBackAcquisitionFinished(void (*func)(uint64_t, void*),void *arg){
-  //tcpipInterface
-	if(udp_interface)
-		udp_interface->registerCallBackAcquisitionFinished(func,arg);
-	else
-		tcpipInterface->registerCallBackAcquisitionFinished(func,arg);
+void slsReceiver::registerCallBackAcquisitionFinished(
+		void (*func)(uint64_t, void*),void *arg){
+	tcpipInterface->registerCallBackAcquisitionFinished(func,arg);
 }
 
 
 void slsReceiver::registerCallBackRawDataReady(void (*func)(char*,
 		char*, uint32_t, void*),void *arg){
-	//tcpipInterface
-	if(udp_interface)
-		udp_interface->registerCallBackRawDataReady(func,arg);
-	else
-		tcpipInterface->registerCallBackRawDataReady(func,arg);
+	tcpipInterface->registerCallBackRawDataReady(func,arg);
 }
 
 
 void slsReceiver::registerCallBackRawDataModifyReady(void (*func)(char*,
         char*, uint32_t &, void*),void *arg){
-    //tcpipInterface
-    if(udp_interface)
-        udp_interface->registerCallBackRawDataModifyReady(func,arg);
-    else
-        tcpipInterface->registerCallBackRawDataModifyReady(func,arg);
+	tcpipInterface->registerCallBackRawDataModifyReady(func,arg);
 }

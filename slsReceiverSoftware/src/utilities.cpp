@@ -8,6 +8,7 @@
 #include <map>
 
 #include "utilities.h"
+#include "logger.h"
 
 
 using namespace std;
@@ -21,9 +22,15 @@ int read_config_file(string fname, int *tcpip_port_no, map<string, string> * con
 	int success = slsReceiverDefs::OK;
 
 
+	FILE_LOG(logINFO) << "config file name " << fname;
+	try {
+		infile.open(fname.c_str(), ios_base::in);
+	} catch(...) {
+		FILE_LOG(logERROR) << "Could not open configuration file " << fname ;
+		success = slsReceiverDefs::FAIL;
+	}
 
-	infile.open(fname.c_str(), ios_base::in);
-	if (infile.is_open()) {
+	if (success == slsReceiverDefs::OK  && infile.is_open()) {
 		while(infile.good()){
 			getline(infile,sLine);
 			iline++;

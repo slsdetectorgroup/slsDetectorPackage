@@ -7,28 +7,9 @@
  * @author Anna Bergamaschi
  * @version 0.0
  */
-//version 1.0, base development, Ian 19/01/09
-/* Modified by anna on 19.01.2009 */
-/*
-  canceled SetupParameters() and varaibles intialized in the constructors' headers;
-  defined SEND_REC_MAX_SIZE (for compatibilty with mythen (and possibly other)  pure C servers (i would move it to the common header file)
-
-  added #ifndef C_ONLY... to cutout class definition when including in pure C servers (can be removed if SEND_REC_MAX_SIZE is moved to the common header file)
-
-  defined private variables char hostname[1000] and int portno to store connection informations;
-
-  defined public functions  int getHostname(char *name) and  int getPortNumber() to retrieve connection informations
-
-  added public function int getErrorStatus() returning 1 if socketDescriptor<0
-
-  remove exits in the constructors and replace them with socketDescriptor=-1
-
-  replaced the argument of send/receive data with void (to avoid too much casting or compiler errors/warnings)
-
-  added a function which really does not close the socket between send/receive (senddataonly, receivedataonly)
- */
 
 #include "ansi.h"
+#include "sls_receiver_exceptions.h"
 
 #ifdef __CINT__
 //class  sockaddr_in;
@@ -69,6 +50,31 @@ using namespace std;
 #define DEFAULT_BACKLOG 5
 
 
+/**
+ * Class to close socket descriptors automatically
+ * upon encountering exceptions in the constructor
+ */
+class mySocketDescriptors {
+public:
+	mySocketDescriptors():fd(-1), newfd(-1){};
+	~mySocketDescriptors() {
+		// close TCP server new socket descriptor from accept
+		if (newfd >= 0) {
+			close(newfd);
+		}
+		// close socket descriptor
+		if (fd >= 0) {
+			close(fd);
+		}
+	}
+	/** socket descriptor */
+	int fd;
+	/** new socket descriptor in TCP server from accept */
+	int newfd;
+};
+
+
+
 class genericSocket{
 
 public:
@@ -81,6 +87,7 @@ public:
 
 	/**
 	 * The constructor for a client
+	 * throws an exception if the hostname/ip could not be converted to an internet address
 	 * @param host_ip_or_name hostname or ip of the client
 	 * @param port_number port number to connect to
 	 * @param p TCP or UDP
@@ -92,8 +99,6 @@ public:
 				portno(port_number),
 				protocol(p),
 				is_a_server(0),
-				socketDescriptor(-1),
-				file_des(-1),
 				packet_size(ps),
 				nsending(0),
 				nsent(0),
@@ -108,20 +113,23 @@ public:
 		differentClients = 0;
 
 		struct addrinfo *result;
-		if (!ConvertHostnameToInternetAddress(host_ip_or_name, &result)) {
-			serverAddress.sin_family = result->ai_family;
-			memcpy((char *) &serverAddress.sin_addr.s_addr,
-					&((struct sockaddr_in *) result->ai_addr)->sin_addr, sizeof(in_addr_t));
-			freeaddrinfo(result);
-			serverAddress.sin_port = htons(port_number);
-			socketDescriptor=0;
+		if (ConvertHostnameToInternetAddress(host_ip_or_name, &result)) {
+			sockfd.fd  = -1;
+			throw SocketException();
 		}
+
+		sockfd.fd = 0;
+		serverAddress.sin_family = result->ai_family;
+		memcpy((char *) &serverAddress.sin_addr.s_addr,
+				&((struct sockaddr_in *) result->ai_addr)->sin_addr, sizeof(in_addr_t));
+		freeaddrinfo(result);
+		serverAddress.sin_port = htons(port_number);
 		clientAddress_length=sizeof(clientAddress);
 	};
 
 	/**
 	 * The constructor for a server
-	 * throws an exception if
+	 * throws an exception if socket could not be created, closes descriptor before throwing
 	 * @param port_number port number to connect to
 	 * @param p TCP or UDP
 	 * @param ps a single packet size
@@ -133,8 +141,6 @@ public:
 				portno(port_number),
 				protocol(p),
 				is_a_server(1),
-				socketDescriptor(-1),
-				file_des(-1),
 				packet_size(ps),
 				nsending(0),
 				nsent(0),
@@ -152,8 +158,8 @@ public:
 
 		// same port
 		if(serverAddress.sin_port == htons(port_number)){
-			socketDescriptor = -10;
-			return;
+			sockfd.fd = -10;
+			throw SamePortSocketException();
 		}
 
 		char ip[20];
@@ -166,11 +172,12 @@ public:
 				strcpy(ip,eth);
 		}
 
-		socketDescriptor = socket(AF_INET, getProtocol(),0); //tcp
+		sockfd.fd = socket(AF_INET, getProtocol(),0); //tcp
 
-		if (socketDescriptor < 0) {
+		if (sockfd.fd < 0) {
 			cprintf(RED, "Can not create socket\n");
-			return;
+			sockfd.fd =-1;
+			throw SocketException();
 		}
 
 		// Set some fields in the serverAddress structure.
@@ -189,15 +196,15 @@ public:
 		// reuse port
 		{
 			int val=1;
-			if (setsockopt(socketDescriptor,SOL_SOCKET,SO_REUSEADDR,
+			if (setsockopt(sockfd.fd,SOL_SOCKET,SO_REUSEADDR,
 					&val,sizeof(int)) == -1) {
 				cprintf(RED, "setsockopt REUSEADDR failed\n");
-				socketDescriptor=-1;
-				return;
+				sockfd.fd =-1;
+				throw SocketException();
 			}
 		}
 
-		//increase buffer size if its udp
+		//increase socket buffer size if its udp
 		if (p == UDP) {
 			uint32_t desired_size = buf_size;
 			uint32_t real_size = desired_size * 2; // kernel doubles this value for bookkeeping overhead
@@ -205,7 +212,7 @@ public:
 			socklen_t optlen = sizeof(int);
 
 			// confirm if sufficient
-			if (getsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUF, &ret_size, &optlen) == -1) {
+			if (getsockopt(sockfd.fd, SOL_SOCKET, SO_RCVBUF, &ret_size, &optlen) == -1) {
 				FILE_LOG(logWARNING) << "[Port " << port_number << "] "
 						"Could not get rx socket receive buffer size";
 			} else if (ret_size >= real_size) {
@@ -219,14 +226,14 @@ public:
 			// not sufficient, enhance size
 			else {
 				// set buffer size (could not set)
-				if (setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUF,
+				if (setsockopt(sockfd.fd, SOL_SOCKET, SO_RCVBUF,
 						&desired_size, optlen) == -1) {
 					FILE_LOG(logWARNING) << "[Port " << port_number << "] "
 							"Could not set rx socket buffer size to "
 							<< desired_size << ". (No Root Privileges?)";
 				}
 				// confirm size
-				else if (getsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUF,
+				else if (getsockopt(sockfd.fd, SOL_SOCKET, SO_RCVBUF,
 						&ret_size, &optlen) == -1) {
 					FILE_LOG(logWARNING) << "[Port " << port_number << "] "
 							"Could not get rx socket buffer size";
@@ -241,9 +248,9 @@ public:
 					actual_udp_socket_buffer_size = ret_size;
 					// force a value larger than system limit
 					// (if run in a privileged context (capability CAP_NET_ADMIN set))
-					int ret = setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUFFORCE,
+					int ret = setsockopt(sockfd.fd, SOL_SOCKET, SO_RCVBUFFORCE,
 							&desired_size, optlen);
-					getsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUF,
+					getsockopt(sockfd.fd, SOL_SOCKET, SO_RCVBUF,
 							&ret_size, &optlen);
 					if (ret == -1) {
 						FILE_LOG(logWARNING) << "[Port " << port_number << "] "
@@ -261,15 +268,15 @@ public:
 		}
 
 
-		if(bind(socketDescriptor,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
+		if(bind(sockfd.fd,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
 			cprintf(RED, "Can not bind socket\n");
-			socketDescriptor=-1;
-			return;
+			sockfd.fd =-1;
+			throw SocketException();
 		}
 
 
 		if (getProtocol()==SOCK_STREAM)
-			listen(socketDescriptor, DEFAULT_BACKLOG);
+			listen(sockfd.fd, DEFAULT_BACKLOG);
 
 	}
 
@@ -277,8 +284,7 @@ public:
 	 * The destructor: disconnects and close the socket
 	 */
 	~genericSocket() {
-		Disconnect();
-		CloseServerTCPSocketDescriptor();
+		//mySocketDescriptor destructor also gets called
 		serverAddress.sin_port=-1;
 	};
 
@@ -305,13 +311,13 @@ public:
 	 * Get TCP Server File Descriptor
 	 * @returns TCP Server file descriptor
 	 */
-	int getFileDes(){return file_des;};
+	int getFileDes(){return sockfd.newfd;};
 
 	/**
 	 * Get socket descriptor
 	 * @returns socket descriptor
 	 */
-	int getsocketDescriptor(){return socketDescriptor;};
+	int getsocketDescriptor(){return sockfd.fd;};
 
 	/**
 	 * Get total bytes sent/received
@@ -343,21 +349,14 @@ public:
 	 */
 	int getProtocol() {return getProtocol(protocol);};
 
-    /**
-     * Get error status
-     * @returns 1 if error
-     */
-     int getErrorStatus(){if (socketDescriptor==-10) return -10;
-     else if (socketDescriptor<0) return 1; else return 0;};
-
 	/**
 	 * Close TCP Server socket descriptor
 	 */
 	void CloseServerTCPSocketDescriptor() {
-		if (getProtocol() == TCP && is_a_server) {
-			if (socketDescriptor >= 0) {
-				close(socketDescriptor);
-				socketDescriptor = -1;
+		if (protocol == TCP && is_a_server) {
+			if (sockfd.fd >= 0) {
+				close(sockfd.fd);
+				sockfd.fd = -1;
 			}
 		}
 	};
@@ -367,15 +366,15 @@ public:
 	 */
 	void Disconnect(){
 		if (protocol == TCP && is_a_server) {
-			if (file_des >= 0) {
-				close(file_des);
-				file_des = -1;
+			if (sockfd.newfd >= 0) {
+				close(sockfd.newfd);
+				sockfd.newfd = -1;
 			}
 			return;
 		}
-		if (socketDescriptor >= 0) {
-			close(socketDescriptor);
-			socketDescriptor = -1;
+		if (sockfd.fd >= 0) {
+			close(sockfd.fd);
+			sockfd.fd = -1;
 		}
 	};
 
@@ -385,12 +384,12 @@ public:
 	 */
 	int  Connect(){
 
-		if(file_des>0) return file_des;
+		if(sockfd.newfd>0) return sockfd.newfd;
 		if (protocol==UDP) return -1;
 
 		if(is_a_server && protocol==TCP){ //server tcp; the server will wait for the clients connection
-			if (socketDescriptor>0) {
-				if ((file_des = accept(socketDescriptor,(struct sockaddr *) &clientAddress, &clientAddress_length)) < 0) {
+			if (sockfd.fd>0) {
+				if ((sockfd.newfd = accept(sockfd.fd,(struct sockaddr *) &clientAddress, &clientAddress_length)) < 0) {
 					cprintf(RED, "Error: with server accept, connection refused\n");
 					switch(errno) {
 					case EWOULDBLOCK:
@@ -442,27 +441,27 @@ public:
 				else{
 					inet_ntop(AF_INET, &(clientAddress.sin_addr), dummyClientIP, INET_ADDRSTRLEN);
 #ifdef VERY_VERBOSE
-					cout << "client connected "<< file_des << endl;
+					cout << "client connected "<< sockfd.newfd << endl;
 #endif
 				}
 			}
 #ifdef VERY_VERBOSE
-			cout << "fd " << file_des  << endl;
+			cout << "fd " << sockfd.newfd  << endl;
 #endif
-			return file_des;
+			return sockfd.newfd;
 		} else {
-			if (socketDescriptor<=0)
-				socketDescriptor = socket(AF_INET, getProtocol(),0);
+			if (sockfd.fd<=0)
+				sockfd.fd = socket(AF_INET, getProtocol(),0);
 			//    SetTimeOut(10);
-			if (socketDescriptor < 0){
+			if (sockfd.fd < 0){
 				cprintf(RED, "Can not create socket\n");
 			} else {
-				if(connect(socketDescriptor,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
+				if(connect(sockfd.fd,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
 					cprintf(RED, "Can not connect to socket\n");
 					return -1;
 				}
 			}
-			return socketDescriptor;
+			return sockfd.fd;
 		}
 	};
 
@@ -478,7 +477,7 @@ public:
 	 * Shut down socket
 	 */
 	void ShutDownSocket(){
-		shutdown(socketDescriptor, SHUT_RDWR);
+		shutdown(sockfd.fd, SHUT_RDWR);
 		Disconnect();
 	};
 
@@ -494,13 +493,13 @@ public:
 		struct timeval tout;
 		tout.tv_sec  = 0;
 		tout.tv_usec = 0;
-		if(::setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVTIMEO,
+		if(::setsockopt(sockfd.fd, SOL_SOCKET, SO_RCVTIMEO,
 				&tout, sizeof(struct timeval)) <0) {
 			cprintf(RED, "Error in setsockopt SO_RCVTIMEO %d\n", 0);
 		}
 		tout.tv_sec  = ts;
 		tout.tv_usec = 0;
-		if(::setsockopt(socketDescriptor, SOL_SOCKET, SO_SNDTIMEO,
+		if(::setsockopt(sockfd.fd, SOL_SOCKET, SO_SNDTIMEO,
 				&tout, sizeof(struct timeval)) < 0)	{
 			cprintf(RED, "Error in setsockopt SO_SNDTIMEO %d\n", ts);
 		}
@@ -684,11 +683,11 @@ public:
 		if (buf==NULL) return -1;
 
 		total_sent=0;
-		int tcpfd = socketDescriptor;
+		int tcpfd = sockfd.fd;
 
 		switch(protocol) {
 		case TCP:
-			tcpfd = (is_a_server ? file_des : socketDescriptor);
+			tcpfd = (is_a_server ? sockfd.newfd : sockfd.fd);
 			if (tcpfd<0) return -1;
 			while(length>0){
 				nsending = (length>packet_size) ? packet_size:length;
@@ -713,12 +712,12 @@ public:
 
 			break;
 		case UDP:
-			if (socketDescriptor<0) return -1;
+			if (sockfd.fd<0) return -1;
 			//if length given, listens to length, else listens for packetsize till length is reached
 			if(length){
 				while(length>0){
 					nsending = (length>packet_size) ? packet_size:length;
-					nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
+					nsent = recvfrom(sockfd.fd,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
 					if(nsent == header_packet_size)
 						continue;
 					if(nsent != nsending){
@@ -738,7 +737,7 @@ public:
 #ifdef VERYVERBOSE
 					cprintf(BLUE,"%d gonna listen\n", portno); fflush(stdout);
 #endif
-					nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
+					nsent = recvfrom(sockfd.fd,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
 					//break out of loop only if read one packets size or read didnt work (cuz of shutdown)
 					if(nsent<=0 || nsent == packet_size)
 						break;
@@ -773,11 +772,11 @@ public:
 
 		total_sent=0;
 
-		int tcpfd = socketDescriptor;
+		int tcpfd = sockfd.fd;
 
 		switch(protocol) {
 		case TCP:
-			tcpfd = (is_a_server ? file_des : socketDescriptor);
+			tcpfd = (is_a_server ? sockfd.newfd : sockfd.fd);
 			if (tcpfd<0) return -1;
 			while(length>0){
 				nsending = (length>packet_size) ? packet_size:length;
@@ -792,10 +791,10 @@ public:
 			}
 			break;
 		case UDP:
-			if (socketDescriptor<0) return -1;
+			if (sockfd.fd<0) return -1;
 			while(length>0){
 				nsending = (length>packet_size) ? packet_size:length;
-				nsent = sendto(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, clientAddress_length);
+				nsent = sendto(sockfd.fd,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, clientAddress_length);
 				if(!nsent) break;
 				length-=nsent;
 				total_sent+=nsent;
@@ -819,8 +818,7 @@ protected:
 	int portno;
 	communicationProtocol protocol;
 	int is_a_server;
-	int socketDescriptor;
-	int file_des;
+	mySocketDescriptors sockfd;
 	int packet_size;
 	struct sockaddr_in clientAddress, serverAddress;
 	socklen_t clientAddress_length;

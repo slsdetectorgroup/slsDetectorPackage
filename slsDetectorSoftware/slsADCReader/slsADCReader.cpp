@@ -88,24 +88,27 @@ int main(int argc, char* argv[])
 	int ret=slsReceiverDefs::FAIL;
 	int arg[2]={idx,0};
 
+	MySocketTCP* mySocket = 0;
 
-	MySocketTCP* tempSocket=new MySocketTCP(argv[1],1952);
-    if (tempSocket->getErrorStatus()){
+	try	{
+		MySocketTCP* s = new MySocketTCP(argv[1],1952);
+		mySocket = s;
+    } catch (...) {
     	cerr << "could not create socket with " << argv[1] << endl;
     	help();
     }
 
-    if (tempSocket->Connect()) {
-    	tempSocket->SendDataOnly(&fnum, sizeof(fnum));
-    	tempSocket->SendDataOnly(arg,sizeof(arg));
-    	tempSocket->ReceiveDataOnly(&ret, sizeof(ret));
+    if (mySocket->Connect()) {
+    	mySocket->SendDataOnly(&fnum, sizeof(fnum));
+    	mySocket->SendDataOnly(arg,sizeof(arg));
+    	mySocket->ReceiveDataOnly(&ret, sizeof(ret));
     	if (ret != slsReceiverDefs::FAIL) {
-    		tempSocket->ReceiveDataOnly(&retval, sizeof(retval));
+    		mySocket->ReceiveDataOnly(&retval, sizeof(retval));
     	} else {
-    		tempSocket->ReceiveDataOnly(mess,sizeof(mess));
+    		mySocket->ReceiveDataOnly(mess,sizeof(mess));
     		printf("Detector returned Error: %s",mess);
     	}
-    	tempSocket->Disconnect();
+    	mySocket->Disconnect();
     } else
     	cerr << "could not connect to " << argv[1] << endl;
 

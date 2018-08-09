@@ -193,16 +193,17 @@ int Listener::CreateUDPSockets() {
 
 	ShutDownUDPSocket();
 
-    udpSocket = new genericSocket(*udpPortNumber, genericSocket::UDP,
-			generalData->packetSize, (strlen(eth)?eth:NULL), generalData->headerPacketSize,
-			*udpSocketBufferSize);
-	int iret = udpSocket->getErrorStatus();
-	if(!iret){
+	try{
+		genericSocket* g = new genericSocket(*udpPortNumber, genericSocket::UDP,
+				generalData->packetSize, (strlen(eth)?eth:NULL), generalData->headerPacketSize,
+				*udpSocketBufferSize);
+		udpSocket = g;
 		FILE_LOG(logINFO) << index << ": UDP port opened at port " << *udpPortNumber;
-	}else{
-		FILE_LOG(logERROR) << "Could not create UDP socket on port " << *udpPortNumber << " error: " << iret;
+	} catch (...) {
+		FILE_LOG(logERROR) << "Could not create UDP socket on port " << *udpPortNumber;
 		return FAIL;
 	}
+
 	udpSocketAlive = true;
     sem_init(&semaphore_socket,1,0);
 
@@ -248,17 +249,21 @@ int Listener::CreateDummySocketForUDPSocketBufferSize(uint32_t s) {
     if(udpSocket){
         udpSocket->ShutDownSocket();
         delete udpSocket;
+        udpSocket = 0;
     }
 
     //create dummy socket
-    udpSocket = new genericSocket(*udpPortNumber, genericSocket::UDP,
+    try {
+    	genericSocket* g = new genericSocket(*udpPortNumber, genericSocket::UDP,
             generalData->packetSize, (strlen(eth)?eth:NULL), generalData->headerPacketSize,
             *udpSocketBufferSize);
-    int iret = udpSocket->getErrorStatus();
-    if (iret){
-        FILE_LOG(logERROR) << "Could not create a test UDP socket on port " << *udpPortNumber << " error: " << iret;
+    	udpSocket = g;
+    } catch (...) {
+        FILE_LOG(logERROR) << "Could not create a test UDP socket on port " << *udpPortNumber;
         return FAIL;
     }
+
+
     // doubled due to kernel bookkeeping (could also be less due to permissions)
     *actualUDPSocketBufferSize = udpSocket->getActualUDPSocketBufferSize();
     if (*actualUDPSocketBufferSize != (s*2)) {

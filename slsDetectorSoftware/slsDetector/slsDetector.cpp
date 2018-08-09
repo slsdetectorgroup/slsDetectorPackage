@@ -1287,29 +1287,39 @@ slsReceiverDefs::detectorType slsDetector::getDetectorTypeFromShm(int multiId, b
 slsDetectorDefs::detectorType slsDetector::getDetectorType(const char *name, int cport) {
 	int fnum=F_GET_DETECTOR_TYPE;
 	int retval = FAIL;
-	detectorType t=GENERIC;
-	MySocketTCP *s= new MySocketTCP(name, cport);
+	detectorType t = GENERIC;
+	MySocketTCP* mySocket = 0;
+
+	try {
+		MySocketTCP* s= new MySocketTCP(name, cport);
+		mySocket = s;
+	} catch(...) {
+		cout << "Cannot create socket to server " << name << " over port " << cport << endl;
+		return t;
+	}
+
+
 	char m[MAX_STR_LENGTH];
 #ifdef VERBOSE
 	cout << "Getting detector type " << endl;
 #endif
-	if (s->Connect() >= 0) {
-		s->SendDataOnly(&fnum,sizeof(fnum));
-		s->ReceiveDataOnly(&retval,sizeof(retval));
+	if (mySocket->Connect() >= 0) {
+		mySocket->SendDataOnly(&fnum,sizeof(fnum));
+		mySocket->ReceiveDataOnly(&retval,sizeof(retval));
 		if (retval!=FAIL) {
-			s->ReceiveDataOnly(&t,sizeof(t));
+			mySocket->ReceiveDataOnly(&t,sizeof(t));
 #ifdef VERBOSE
 			cout << "Detector type is "<< t << endl;
 #endif
 		} else {
-			s->ReceiveDataOnly(m,sizeof(m));
+			mySocket->ReceiveDataOnly(m,sizeof(m));
 			std::cout<< "Detector returned error: " << m << std::endl;
 		}
-		s->Disconnect();
+		mySocket->Disconnect();
 	} else {
 		cout << "Cannot connect to server " << name << " over port " << cport << endl;
 	}
-	delete s;
+	delete mySocket;
 	return t;
 }
 
@@ -1834,40 +1844,46 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
 		thisSP=thisDetector->stopPort;
 
 
+	// create control socket
 	if (!controlSocket) {
-		controlSocket= new MySocketTCP(thisName, thisCP);
-		if (controlSocket->getErrorStatus()){
-#ifdef VERBOSE
-			std::cout<< "Could not connect Control socket " << thisName  << " "
-					<< thisCP << std::endl;
-#endif
-			delete controlSocket;
-			controlSocket=NULL;
-			retval=FAIL;
-		}
+		try {
+			MySocketTCP* s = new MySocketTCP(thisName, thisCP);
+			controlSocket = s;
 #ifdef VERYVERBOSE
-		else
-			std::cout<< "Control socket connected " <<thisName  << " " << thisCP
-			<< std::endl;
+			std::cout<< "Control socket connected " <<
+					thisName  << " " << thisCP << std::endl;
 #endif
+		} catch(...) {
+#ifdef VERBOSE
+			std::cout<< "Could not connect Control socket " <<
+					thisName  << " " << thisCP << std::endl;
+#endif
+			controlSocket = NULL;
+			retval = FAIL;
+		}
 	}
+
+
+	// create stop socket
 	if (!stopSocket) {
-		stopSocket=new MySocketTCP(thisName, thisSP);
-		if (stopSocket->getErrorStatus()){
-#ifdef VERBOSE
-			std::cout<< "Could not connect Stop socket "<<thisName  << " " << thisSP
-					<< std::endl;
-#endif
-			delete stopSocket;
-			stopSocket=NULL;
-			retval=FAIL;
-		}
+		try {
+			MySocketTCP* s = new MySocketTCP(thisName, thisSP);
+			stopSocket = s;
 #ifdef VERYVERBOSE
-		else
-			std::cout<< "Stop socket connected " << thisName << " " << thisSP
-			<< std::endl;
+			std::cout<< "Stop socket connected " <<
+					thisName  << " " << thisSP << std::endl;
 #endif
+		} catch(...) {
+#ifdef VERBOSE
+			std::cout<< "Could not connect Stop socket " <<
+					thisName  << " " << thisSP << std::endl;
+#endif
+			stopSocket = NULL;
+			retval = FAIL;
+		}
 	}
+
+
 	if (retval!=FAIL) {
 		checkOnline();
 
@@ -8313,21 +8329,24 @@ int slsDetector::setReceiverTCPSocket(string const name, int const receiver_port
 
 	//create data socket
 	if (!dataSocket) {
-		dataSocket=new MySocketTCP(thisName, thisRP);
-		if (dataSocket->getErrorStatus()){
-#ifdef VERBOSE
-			std::cout<< "Could not connect Data socket "<<thisName  << " " <<
-					thisRP << std::endl;
-#endif
-			delete dataSocket;
-			dataSocket=NULL;
-			retval=FAIL;
-		}
+		try {
+			MySocketTCP* s = new MySocketTCP(thisName, thisRP);
+			dataSocket = s;
 #ifdef VERYVERBOSE
-		else
-			std::cout<< "Data socket connected "<< thisName << " " << thisRP << std::endl;
+			std::cout<< "Data socket connected " <<
+					thisName  << " " << thisRP << std::endl;
 #endif
+		} catch(...) {
+#ifdef VERBOSE
+			std::cout<< "Could not connect Data socket " <<
+					thisName  << " " << thisRP << std::endl;
+#endif
+			dataSocket = NULL;
+			retval = FAIL;
+		}
 	}
+
+
 	//check if it connects
 	if (retval!=FAIL) {
 		checkReceiverOnline();

@@ -721,8 +721,8 @@ bool multiSlsDetector::initSharedMemory(bool verify) {
 			cprintf(RED, "Multi shared memory (%d) version mismatch "
 					"(expected 0x%x but got 0x%x)\n", detId,
 					MULTI_SHMVERSION, thisMultiDetector->shmversion);
-			sharedMemory->UnmapSharedMemory(thisMultiDetector);/** is this unncessary? */
-			delete sharedMemory;/** is this unncessary? */
+			sharedMemory->UnmapSharedMemory(thisMultiDetector);
+			delete sharedMemory;
 			sharedMemory = 0;
 			throw SharedMemoryException();
 		}
@@ -732,8 +732,8 @@ bool multiSlsDetector::initSharedMemory(bool verify) {
 			created = true;
 		} catch(...) {
 			sharedMemory->RemoveSharedMemory();
-			delete sharedMemory;/** is this unncessary? */
-			sharedMemory = 0;/** is this unncessary? */
+			delete sharedMemory;
+			sharedMemory = 0;
 			thisMultiDetector = 0;
 			throw;
 		}
@@ -4852,6 +4852,7 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy) {
 		cprintf(MAGENTA, "Going to destroy data sockets\n");
 		//close socket
 		for (vector<ZmqSocket*>::const_iterator it = zmqSocket.begin(); it != zmqSocket.end(); ++it) {
+			(*it)->Close();
 			delete(*it);
 		}
 		zmqSocket.clear();

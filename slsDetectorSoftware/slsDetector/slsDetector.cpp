@@ -1001,7 +1001,7 @@ slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType ty
 		nd = detlist.nDacs;
 		na = detlist.nAdcs;
 	} catch(...) {
-		;// FIXME do what here?
+		return NULL;
 	}
 	dacs_t *dacs=new dacs_t[nd];
 	dacs_t *adcs=new dacs_t[na];

@@ -270,13 +270,17 @@ public:
 
 			dset->extend(dims);
 			delete dspace;
-			dspace = new DataSpace(dset->getSpace());
+			dspace = 0;
+			DataSpace* d = new DataSpace(dset->getSpace());
+			dspace = d;
 
 			hsize_t dims_para[1] = {dims[0]};
 			for (unsigned int i = 0; i < dset_para.size(); ++i)
 				dset_para[i]->extend(dims_para);
 			delete dspace_para;
-			dspace_para = new DataSpace(dset_para[0]->getSpace());
+			dspace_para = 0;
+			DataSpace* ds = new DataSpace(dset_para[0]->getSpace());
+			dspace_para = ds;
 
 		}
 		catch(Exception error){
@@ -318,14 +322,16 @@ public:
 
 			FileAccPropList flist;
 			flist.setFcloseDegree(H5F_CLOSE_STRONG);
+			int k = 0;
 			if(!owenable)
-				fd = new H5File( fname.c_str(), H5F_ACC_EXCL,
+				k = new H5File( fname.c_str(), H5F_ACC_EXCL,
 						FileCreatPropList::DEFAULT,
 						flist );
 			else
-				fd = new H5File( fname.c_str(), H5F_ACC_TRUNC,
+				k = new H5File( fname.c_str(), H5F_ACC_TRUNC,
 						FileCreatPropList::DEFAULT,
 						flist );
+			fd = k;
 
 			//variables
 			DataSpace dataspace = DataSpace (H5S_SCALAR);
@@ -416,6 +422,7 @@ public:
 		} catch(Exception error) {
 			cprintf(RED,"Error in creating master HDF5 handles\n");
 			error.printErrorStack();
+			if (fd) fd->close();
 			return 1;
 		}
 		return 0;
@@ -459,14 +466,16 @@ public:
 			//file
 			FileAccPropList fapl;
 			fapl.setFcloseDegree(H5F_CLOSE_STRONG);
+			int k = 0;
 			if(!owenable)
-				fd = new H5File( fname.c_str(), H5F_ACC_EXCL,
+				k = new H5File( fname.c_str(), H5F_ACC_EXCL,
 						FileCreatPropList::DEFAULT,
 						fapl );
 			else
-				fd = new H5File( fname.c_str(), H5F_ACC_TRUNC,
+				k = new H5File( fname.c_str(), H5F_ACC_TRUNC,
 						FileCreatPropList::DEFAULT,
 						fapl );
+			fd = k;
 
 			//attributes - version
 			double dValue=version;
@@ -477,7 +486,8 @@ public:
 			//dataspace
 			hsize_t srcdims[3] = {nDimx, nDimy, nDimz};
 			hsize_t srcdimsmax[3] = {H5S_UNLIMITED, nDimy, nDimz};
-			dspace = new DataSpace (3,srcdims,srcdimsmax);
+			DataSpace* d = new DataSpace (3,srcdims,srcdimsmax);
+			dspace = d;
 
 
 			//dataset name
@@ -494,12 +504,14 @@ public:
 			// always create chunked dataset as unlimited is only supported with chunked layout
 			hsize_t chunk_dims[3] ={maxchunkedimages, nDimy, nDimz};
 			plist.setChunk(3, chunk_dims);
-			dset = new DataSet (fd->createDataSet(dsetname.c_str(), dtype, *dspace, plist));
+			DataSet* ds = new DataSet (fd->createDataSet(dsetname.c_str(), dtype, *dspace, plist));
+			dset = ds;
 
 			//create parameter datasets
 			hsize_t dims[1] = {nDimx};
 			hsize_t dimsmax[1] = {H5S_UNLIMITED};
-			dspace_para = new DataSpace (1,dims,dimsmax);
+			DataSpace* dsp = new DataSpace (1,dims,dimsmax);
+			dspace_para = dsp;
 
 			// always create chunked dataset as unlimited is only supported with chunked layout
 			DSetCreatPropList paralist;
@@ -515,7 +527,7 @@ public:
 		catch(Exception error){
 			cprintf(RED,"Error in creating HDF5 handles in object %d\n",ind);
 			error.printErrorStack();
-			fd->close();
+			if (fd) fd->close();
 			return 1;
 		}
 		return 0;

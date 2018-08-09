@@ -603,7 +603,7 @@ private:
 	void* socketDescriptor;
 
 	/** Server Address */
-	char serverAddress[1000];
+	char serverAddress[MAX_STR_LENGTH];
 
 	/** Header Message pointer */
 	// zmq_msg_t* headerMessage;

@@ -475,6 +475,13 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
   int acquire(int delflag=1);
 
+  /**
+   * Give an internal software trigger to the detector (Eiger only)
+   * @return OK or FAIL
+   */
+  virtual int sendSoftwareTrigger()=0;
+
+
 
   //  double* convertAngles(){return convertAngles(currentPosition);};
   // virtual double* convertAngles(double pos)=0;

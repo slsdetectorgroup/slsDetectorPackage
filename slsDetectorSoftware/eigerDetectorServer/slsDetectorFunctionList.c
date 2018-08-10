@@ -764,6 +764,16 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 }
 
 
+int64_t getTimeLeft(enum timerIndex ind) {
+	switch(ind){
+	case MEASURED_PERIOD: return Feb_Control_GetMeasuredPeriod();
+	case MEASURED_SUBPERIOD: return Feb_Control_GetSubMeasuredPeriod();
+	default:
+		cprintf(RED,"This timer left index (%d) not defined for Eiger\n",ind);
+		return -1;
+	}
+}
+
 
 
 
@@ -1577,6 +1587,12 @@ int stopStateMachine(){
 	cprintf(BG_RED,"failed to stop acquisition\n");
 	return FAIL;
 #endif
+}
+
+int	softwareTrigger() {
+	if (!Feb_Control_SoftwareTrigger())
+		return FAIL;
+	return OK;
 }
 
 

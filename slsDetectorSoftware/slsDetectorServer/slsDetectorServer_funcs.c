@@ -210,6 +210,7 @@ const char* getFunctionName(enum detFuncs func) {
     case F_AUTO_COMP_DISABLE:               return "F_AUTO_COMP_DISABLE";
     case F_STORAGE_CELL_START:              return "F_STORAGE_CELL_START";
     case F_CHECK_VERSION:              		return "F_CHECK_VERSION";
+    case F_SOFTWARE_TRIGGER:              	return "F_SOFTWARE_TRIGGER";
 
 	default:								return "Unknown Function";
 	}
@@ -295,6 +296,7 @@ void function_table() {
     flist[F_AUTO_COMP_DISABLE]                  = &auto_comp_disable;
     flist[F_STORAGE_CELL_START]                 = &storage_cell_start;
     flist[F_CHECK_VERSION]                 		= &check_version;
+    flist[F_SOFTWARE_TRIGGER]                 	= &software_trigger;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= TOO_MANY_FUNCTIONS_DEFINED) {
@@ -2885,16 +2887,6 @@ int get_time_left(int file_des) {
 	sprintf(mess,"get timer left failed\n");
 
 
-
-#ifdef EIGERD
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-	ret = FAIL;
-	sprintf(mess,"Function (Get Timer Left) is not implemented for this detector\n");
-	cprintf(RED, "%s", mess);
-#else
-
 	// receive arguments
 	enum timerIndex ind=0;
 	n = receiveData(file_des,&ind,sizeof(ind),INT32);
@@ -2914,7 +2906,10 @@ int get_time_left(int file_des) {
 #endif
 
 		switch(ind) {
-#ifdef MYTHEND
+#ifdef EIGERD
+		case MEASURED_PERIOD:
+		case MEASURED_SUBPERIOD:
+#elif MYTHEND
 		case PROBES_NUMBER:
 #elif JUNGFRAUD
 		case FRAMES_FROM_START:
@@ -2924,6 +2919,7 @@ int get_time_left(int file_des) {
 		case PROBES_NUMBER:
 		case SAMPLES_JCTB:
 #endif
+#ifndef EIGERD
 #ifndef JUNGFRAUD
 		case GATES_NUMBER:
 #endif
@@ -2935,6 +2931,7 @@ int get_time_left(int file_des) {
 		case PROGRESS:
 		case ACTUAL_TIME:
 		case MEASUREMENT_TIME:
+#endif
 			retval=getTimeLeft(ind);
 			break;
 		default:
@@ -2954,7 +2951,7 @@ int get_time_left(int file_des) {
 #endif
 	if (ret==OK && differentClients)
 		ret=FORCE_UPDATE;
-#endif
+
 
 	// ret could be swapped during sendData
 	ret1 = ret;
@@ -5871,3 +5868,52 @@ int check_version(int file_des) {
 	// return ok / fail
 	return ret;
 }
+
+
+
+
+int software_trigger(int file_des) {
+	int ret=OK,ret1=OK;
+	int n=0;
+	sprintf(mess,"software trigger failed\n");
+
+#ifndef EIGERD
+    //to receive any arguments
+    while (n > 0)
+        n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+    ret = FAIL;
+    sprintf(mess,"Function (Software Trigger) is not implemented for this detector\n");
+    cprintf(RED, "%s", mess);
+#else
+
+	// execute action
+	if (differentClients && lockStatus) {
+		ret = FAIL;
+		sprintf(mess,"Detector locked by %s\n",lastClientIP);
+		cprintf(RED, "Warning: %s", mess);
+	}
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+	 else {
+		printf("Software Trigger\n");
+		ret=softwareTrigger();
+		if (ret==FAIL)
+			cprintf(RED, "Warning: %s", mess);
+	}
+#endif
+	if (ret==OK && differentClients)
+		ret=FORCE_UPDATE;
+#endif
+
+	// ret could be swapped during sendData
+	ret1 = ret;
+	// send ok / fail
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
+	// send return argument
+	if (ret==FAIL) {
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
+	}
+
+	// return ok / fail
+	return ret;
+}
+

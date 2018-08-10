@@ -2290,6 +2290,56 @@ int multiSlsDetector::stopAcquisition() {
 }
 
 
+
+int multiSlsDetector::sendSoftwareTrigger() {
+	int i      = 0;
+	int ret    = OK;
+	int posmin = 0, posmax = detectors.size();
+
+	if (!threadpool) {
+		cout << "Error in creating threadpool. Exiting" << endl;
+		return FAIL;
+	} else {
+		int* iret[posmax - posmin];
+		for (int idet = posmin; idet < posmax; ++idet) {
+			if (idet != thisMultiDetector->masterPosition) {
+				iret[idet] = new int(OK);
+				Task* task = new Task(new func0_t<int>(&slsDetector::sendSoftwareTrigger,
+						detectors[idet], iret[idet]));
+				threadpool->add_task(task);
+			}
+		}
+		threadpool->startExecuting();
+		threadpool->wait_for_tasks_to_complete();
+		for (int idet = posmin; idet < posmax; ++idet) {
+			if (idet != thisMultiDetector->masterPosition) {
+				if (iret[idet] != NULL) {
+					if (*iret[idet] != OK)
+						ret = FAIL;
+					delete iret[idet];
+				} else
+					ret = FAIL;
+				if (detectors[idet]->getErrorMask())
+					setErrorMask(getErrorMask() | (1 << idet));
+			}
+		}
+	}
+
+	//master
+	int ret1 = OK;
+	i        = thisMultiDetector->masterPosition;
+	if (thisMultiDetector->masterPosition >= 0) {
+		ret1 = detectors[i]->sendSoftwareTrigger();
+		if (detectors[i]->getErrorMask())
+			setErrorMask(getErrorMask() | (1 << i));
+		if (ret1 != OK)
+			ret = FAIL;
+	}
+	return ret;
+}
+
+
+
 int multiSlsDetector::startReadOut() {
 	unsigned int i   = 0;
 	int ret = OK, ret1 = OK;

@@ -12,7 +12,7 @@
 #include <stdint.h>
 
 #define GOODBYE 					 		(-200)
-#define REQUIRED_FIRMWARE_VERSION 	 		(21)
+#define REQUIRED_FIRMWARE_VERSION 	 		(22)
 #define IDFILECOMMAND						"more /home/root/executables/detid.txt"
 
 #define STATUS_IDLE		0

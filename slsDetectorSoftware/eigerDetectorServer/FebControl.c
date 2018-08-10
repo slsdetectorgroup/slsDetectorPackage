@@ -37,6 +37,7 @@ unsigned int Feb_Control_acquireNReadoutMode; //safe or parallel, half or full s
 unsigned int Feb_Control_triggerMode;         //internal timer, external start, external window, signal polarity (external trigger and enable)
 unsigned int Feb_Control_externalEnableMode;  //external enabling engaged and it's polarity
 unsigned int Feb_Control_subFrameMode;
+unsigned int Feb_Control_softwareTrigger;
 
 
 unsigned int Feb_Control_nimages;
@@ -1956,6 +1957,56 @@ int Feb_Control_GetRightFPGATemp(){
 	temperature = ((((float)(temperature)/65536.0f)/0.00198421639f ) - 273.15f)*1000; // Static conversation, copied from xps sysmon standalone driver
 	//division done in client to send int over network
 	return (int)temperature;
+}
+
+int64_t Feb_Control_GetMeasuredPeriod() {
+	unsigned int sub_num = (Module_TopAddressIsValid(&modules[1])) ?
+			Module_GetTopLeftAddress (&modules[1]):
+			Module_GetBottomLeftAddress (&modules[1]);
+
+	unsigned int  value = 0;
+	Feb_Interface_ReadRegister(sub_num,MEAS_PERIOD_REG, &value);
+	return value*10;
+}
+
+int64_t Feb_Control_GetSubMeasuredPeriod() {
+	unsigned int sub_num = (Module_TopAddressIsValid(&modules[1])) ?
+			Module_GetTopLeftAddress (&modules[1]):
+			Module_GetBottomLeftAddress (&modules[1]);
+
+	unsigned int value = 0;
+	Feb_Interface_ReadRegister(sub_num,MEAS_SUBPERIOD_REG, &value);
+	return value*10;
+}
+
+
+int Feb_Control_SoftwareTrigger() {
+	unsigned int orig_value = 0;
+	Feb_Interface_ReadRegister(Feb_Control_AddressToAll(),DAQ_REG_CHIP_CMDS, &orig_value);
+
+	unsigned int cmd = orig_value | DAQ_REG_CHIP_CMDS_INT_TRIGGER;
+
+	if(Feb_Control_activated) {
+		// set trigger bit
+#ifdef VERBOSE
+		cprintf(BLUE,"Setting Trigger, Register:0x%x\n",cmd);
+#endif
+		if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CHIP_CMDS,cmd,0,0)) {
+			cprintf(RED,"Warning: Could not give software trigger\n");
+			return 0;
+		}
+		// unset trigger bit
+#ifdef VERBOSE
+		cprintf(BLUE,"Unsetting Trigger, Register:0x%x\n",orig_value);
+#endif
+		if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CHIP_CMDS,orig_value,0,0)) {
+			cprintf(RED,"Warning: Could not give software trigger\n");
+			return 0;
+		}
+		cprintf(BLUE,"Software Internal Trigger Sent!\n");
+	}
+
+	return 1;
 }
 
 

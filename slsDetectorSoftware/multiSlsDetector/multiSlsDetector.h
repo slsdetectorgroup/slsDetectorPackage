@@ -946,6 +946,12 @@ public:
 	int stopAcquisition();
 
 	/**
+	 * Give an internal software trigger to the detector (Eiger only)
+	 * @return OK or FAIL
+	 */
+	int sendSoftwareTrigger();
+
+	/**
 	 * Start readout (without exposure or interrupting exposure) (Mythen)
 	 * @returns OK or FAIL
 	 */

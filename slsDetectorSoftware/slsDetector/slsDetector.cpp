@@ -3621,7 +3621,6 @@ int slsDetector::cleanupAcquisition() {
 
 int slsDetector::startAcquisition() {
 
-
 	int fnum=F_START_ACQUISITION;
 	int ret=FAIL;
 	char mess[MAX_STR_LENGTH]="";
@@ -3644,9 +3643,6 @@ int slsDetector::startAcquisition() {
 		}
 	}
 	return ret;
-
-
-
 }
 
 
@@ -3690,6 +3686,35 @@ int slsDetector::stopAcquisition() {
 
 
 }
+
+
+int slsDetector::sendSoftwareTrigger() {
+
+	int fnum=F_SOFTWARE_TRIGGER;
+	int ret=FAIL;
+	char mess[MAX_STR_LENGTH]="";
+
+#ifdef VERBOSE
+	std::cout<< "Sending software trigger "<< std::endl;
+#endif
+	thisDetector->stoppedFlag=0;
+	if (thisDetector->onlineFlag==ONLINE_FLAG) {
+		if (connectControl() == OK){
+			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			if (ret==FAIL) {
+				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+				std::cout<< "Detector returned error: " << mess << std::endl;
+			}
+			disconnectControl();
+			if (ret==FORCE_UPDATE)
+				updateDetector();
+		}
+	}
+	return ret;
+}
+
+
 
 int slsDetector::startReadOut() {
 

@@ -193,7 +193,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 	/*! \page acquisition
-   - <b> status [s] </b> starts or stops acquisition in detector in non blocking mode. When using stop acquisition and if acquisition is done, it will restream the stop packet from receiver (if data streaming in receiver is on). \c s: [\c start, \c stop]. \c Returns the detector status: [\c running, \c error, \c transmitting, \c finished, \c waiting, \c idle]. \c Returns \c (string)
+   - <b> status [s] </b> starts or stops acquisition in detector in non blocking mode. When using stop acquisition and if acquisition is done, it will restream the stop packet from receiver (if data streaming in receiver is on). Eiger can also provide an internal software trigger. \c s: [\c start, \c stop, \c trigger(EIGER only)]. \c Returns the detector status: [\c running, \c error, \c transmitting, \c finished, \c waiting, \c idle]. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="status"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdStatus;
@@ -742,6 +742,20 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncName="nframes"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	++i;
+
+    /*! \page timing
+   - <b>measuredperiod</b> gets the measured frame period (time between last frame and the previous one) in s. For Eiger only. Makes sense only for acquisitions of more than 1 frame. \c Returns \c  (double with 9 decimal digits)
+     */
+    descrToFuncMap[i].m_pFuncName="measuredperiod"; //
+    descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
+    ++i;
+
+    /*! \page timing
+   - <b>measuredsubperiod</b> gets the measured subframe period (time between last subframe and the previous one) in s. For Eiger only and in 32 bit mode. \c Returns \c  (double with 9 decimal digits)
+     */
+    descrToFuncMap[i].m_pFuncName="measuredsubperiod"; //
+    descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
+    ++i;
 
 	/* speed */
 	/*! \page config
@@ -2637,8 +2651,11 @@ string slsDetectorCommand::cmdStatus(int narg, char *args[], int action) {
 			if (string(args[1])=="start")
 				myDet->startAcquisition();
 			else if (string(args[1])=="stop") {
-				myDet->setReceiverOnline(ONLINE_FLAG);
+				myDet->setReceiverOnline(ONLINE_FLAG);//restream stop
 				myDet->stopAcquisition();
+			}
+			else if (string(args[1])=="trigger") {
+				myDet->sendSoftwareTrigger();
 			}
 			else
 				return string("unknown action");
@@ -2671,7 +2688,7 @@ string slsDetectorCommand::helpStatus(int narg, char *args[], int action) {
 		os << string("busy \t gets the status of acquire- can be: 0 or 1. 0 for idle, 1 for running\n");
 	}
 	if (action==PUT_ACTION || action==HELP_ACTION) {
-		os << string("status \t controls the detector acquisition - can be start or stop.  When using stop acquisition and if acquisition is done, it will restream the stop packet from receiver (if data streaming in receiver is on). \n");
+		os << string("status \t controls the detector acquisition - can be start or stop or trigger(EIGER only).  When using stop acquisition and if acquisition is done, it will restream the stop packet from receiver (if data streaming in receiver is on). Eiger can also provide an internal software trigger\n");
 		os << string("busy i\t sets the status of acquire- can be: 0(idle) or 1(running).Command Acquire sets it to 1 at beignning of acquire and back to 0 at the end. Clear Flag for unexpected acquire terminations. \n");
 	}
 	return os.str();
@@ -5777,6 +5794,10 @@ string slsDetectorCommand::cmdTimeLeft(int narg, char *args[], int action) {
 		index=MEASUREMENT_TIME;
 	else if (cmd=="nframes")
 		index=FRAMES_FROM_START;
+    else if (cmd=="measuredperiod")
+        index=MEASURED_PERIOD;
+    else if (cmd=="measuredsubperiod")
+        index=MEASURED_SUBPERIOD;
 	else
 		return string("could not decode timer ")+cmd;
 
@@ -5786,13 +5807,13 @@ string slsDetectorCommand::cmdTimeLeft(int narg, char *args[], int action) {
 	}
 
 
-
-
 	myDet->setOnline(ONLINE_FLAG);
 
 	ret=myDet->getTimeLeft(index);
 
-	if (index==ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER || index==ACTUAL_TIME || index==MEASUREMENT_TIME)
+	if ((ret!=-1) && (index==ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER
+			|| index==ACTUAL_TIME || index==MEASUREMENT_TIME ||
+			MEASURED_PERIOD || MEASURED_SUBPERIOD))
 		rval=(double)ret*1E-9;
 	else rval=ret;
 
@@ -5820,6 +5841,8 @@ string slsDetectorCommand::helpTimeLeft(int narg, char *args[], int action) {
 		os << "framesl  \t gets the number of frames left" << std::endl;
 		os << "cyclesl  \t gets the number of cycles left" << std::endl;
 		os << "probesl  \t gets the number of probes left" << std::endl;
+		os << "measuredperiod \t gets the measured frame period (time between last frame and the previous one) in s. For Eiger only. Makes sense only for acquisitions of more than 1 frame." << std::endl;
+		os << "measuredsubperiod \t gets the measured subframe period (time between last subframe and the previous one) in s. For Eiger only and in 32 bit mode." << std::endl;
 		os << std::endl;
 
 	}

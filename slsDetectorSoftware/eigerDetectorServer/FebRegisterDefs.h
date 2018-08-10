@@ -22,10 +22,10 @@
 
 
 #define DAQ_REG_RO_OFFSET				12
-#define DAQ_REG_STATUS					(0 + DAQ_REG_RO_OFFSET) //also pg and fifo status register
-//temp so far
-#define FEB_REG_STATUS              	(3 + DAQ_REG_RO_OFFSET)
-
+#define DAQ_REG_STATUS					(DAQ_REG_RO_OFFSET + 0) //also pg and fifo status register
+#define FEB_REG_STATUS              	(DAQ_REG_RO_OFFSET + 3)
+#define MEAS_SUBPERIOD_REG 	 			(DAQ_REG_RO_OFFSET + 4)
+#define MEAS_PERIOD_REG   				(DAQ_REG_RO_OFFSET + 5)
 
 
 
@@ -64,7 +64,8 @@
 #define DAQ_CHIP_CONTROLLER_QUARTER_SPEED      0x00080000 //everything at  50 MHz (25MHz ddr readout)
 #define DAQ_CHIP_CONTROLLER_SUPER_SLOW_SPEED   0x000c0000 //everything at  ~200 kHz (200 kHz MHz ddr readout)
 
-#define DAQ_FIFO_ENABLE                        0x00100000
+//#define DAQ_FIFO_ENABLE                       0x00100000 commented out as it is not used anywhere
+#define DAQ_REG_CHIP_CMDS_INT_TRIGGER			0x00100000
 
 //direct chip commands to the DAQ_REG_CHIP_CMDS register
 #define DAQ_NEXPOSURERS_SAFEST_MODE_ROW_CLK_BEFORE_MODE 0x00200000 //row clk is before main clk readout sequence

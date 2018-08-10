@@ -114,6 +114,8 @@ public:
 		SUBFRAME_ACQUISITION_TIME, /**< subframe exposure time */
 		STORAGE_CELL_NUMBER, /**<number of storage cells */
 		SUBFRAME_PERIOD, /**< subframe period */
+		MEASURED_PERIOD,	/**< measured period */
+		MEASURED_SUBPERIOD,	/**< measured subperiod */
 		MAX_TIMERS
 	};
 

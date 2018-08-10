@@ -271,16 +271,14 @@ public:
 			dset->extend(dims);
 			delete dspace;
 			dspace = 0;
-			DataSpace* d = new DataSpace(dset->getSpace());
-			dspace = d;
+			dspace = new DataSpace(dset->getSpace());
 
 			hsize_t dims_para[1] = {dims[0]};
 			for (unsigned int i = 0; i < dset_para.size(); ++i)
 				dset_para[i]->extend(dims_para);
 			delete dspace_para;
 			dspace_para = 0;
-			DataSpace* ds = new DataSpace(dset_para[0]->getSpace());
-			dspace_para = ds;
+			dspace_para = new DataSpace(dset_para[0]->getSpace());
 
 		}
 		catch(Exception error){
@@ -322,16 +320,15 @@ public:
 
 			FileAccPropList flist;
 			flist.setFcloseDegree(H5F_CLOSE_STRONG);
-			int k = 0;
+			fd = 0;
 			if(!owenable)
-				k = new H5File( fname.c_str(), H5F_ACC_EXCL,
+				fd = new H5File( fname.c_str(), H5F_ACC_EXCL,
 						FileCreatPropList::DEFAULT,
 						flist );
 			else
-				k = new H5File( fname.c_str(), H5F_ACC_TRUNC,
+				fd = new H5File( fname.c_str(), H5F_ACC_TRUNC,
 						FileCreatPropList::DEFAULT,
 						flist );
-			fd = k;
 
 			//variables
 			DataSpace dataspace = DataSpace (H5S_SCALAR);
@@ -466,16 +463,15 @@ public:
 			//file
 			FileAccPropList fapl;
 			fapl.setFcloseDegree(H5F_CLOSE_STRONG);
-			int k = 0;
+			fd = 0;
 			if(!owenable)
-				k = new H5File( fname.c_str(), H5F_ACC_EXCL,
+				fd = new H5File( fname.c_str(), H5F_ACC_EXCL,
 						FileCreatPropList::DEFAULT,
 						fapl );
 			else
-				k = new H5File( fname.c_str(), H5F_ACC_TRUNC,
+				fd = new H5File( fname.c_str(), H5F_ACC_TRUNC,
 						FileCreatPropList::DEFAULT,
 						fapl );
-			fd = k;
 
 			//attributes - version
 			double dValue=version;
@@ -486,8 +482,8 @@ public:
 			//dataspace
 			hsize_t srcdims[3] = {nDimx, nDimy, nDimz};
 			hsize_t srcdimsmax[3] = {H5S_UNLIMITED, nDimy, nDimz};
-			DataSpace* d = new DataSpace (3,srcdims,srcdimsmax);
-			dspace = d;
+			dspace = 0;
+			dspace = new DataSpace (3,srcdims,srcdimsmax);
 
 
 			//dataset name
@@ -504,14 +500,14 @@ public:
 			// always create chunked dataset as unlimited is only supported with chunked layout
 			hsize_t chunk_dims[3] ={maxchunkedimages, nDimy, nDimz};
 			plist.setChunk(3, chunk_dims);
-			DataSet* ds = new DataSet (fd->createDataSet(dsetname.c_str(), dtype, *dspace, plist));
-			dset = ds;
+			dset = 0;
+			dset = new DataSet (fd->createDataSet(dsetname.c_str(), dtype, *dspace, plist));
 
 			//create parameter datasets
 			hsize_t dims[1] = {nDimx};
 			hsize_t dimsmax[1] = {H5S_UNLIMITED};
-			DataSpace* dsp = new DataSpace (1,dims,dimsmax);
-			dspace_para = dsp;
+			dspace_para = 0;
+			dspace_para = new DataSpace (1,dims,dimsmax);
 
 			// always create chunked dataset as unlimited is only supported with chunked layout
 			DSetCreatPropList paralist;
@@ -842,6 +838,7 @@ public:
 			//new file
 			FileAccPropList fapl;
 			fapl.setFcloseDegree(H5F_CLOSE_STRONG);
+			newfd = 0;
 			if(!owenable)
 				newfd = new H5File( newFileName.c_str(), H5F_ACC_EXCL,
 						FileCreatPropList::DEFAULT,
@@ -851,7 +848,7 @@ public:
 						FileCreatPropList::DEFAULT,
 						fapl );
 			//dataspace and dataset
-			DataSpace* newDataspace;
+			DataSpace* newDataspace = 0;
 			if (rank == 3) {
 				hsize_t dims[3] = {nDimx, nDimy, nDimz};
 				newDataspace = new DataSpace (3,dims);
@@ -859,7 +856,8 @@ public:
 				hsize_t dims[2] = {nDimx, nDimy};
 				newDataspace = new DataSpace (2,dims);
 			}
-			DataSet* newDataset = new DataSet( newfd->createDataSet(newDatasetName.c_str(), datatype, *newDataspace));
+			DataSet* newDataset = 0;
+			newDataset = new DataSet( newfd->createDataSet(newDatasetName.c_str(), datatype, *newDataspace));
 			//write and close
 			newDataset->write(data_out,datatype);
 			newfd->close();

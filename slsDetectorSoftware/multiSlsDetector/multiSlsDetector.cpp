@@ -42,6 +42,7 @@ multiSlsDetector::multiSlsDetector(int id, bool verify, bool update)
 
 
 multiSlsDetector::~multiSlsDetector() {
+	// delete zmq sockets first
 	for (vector<ZmqSocket*>::const_iterator it = zmqSocket.begin(); it != zmqSocket.end(); ++it) {
 		delete(*it);
 	}
@@ -641,6 +642,12 @@ void multiSlsDetector::freeSharedMemory(int multiId) {
 
 
 void multiSlsDetector::freeSharedMemory() {
+	// clear zmq vector
+	for (vector<ZmqSocket*>::const_iterator it = zmqSocket.begin(); it != zmqSocket.end(); ++it) {
+		delete(*it);
+	}
+	zmqSocket.clear();
+
 	// should be done before the detector list is deleted
 	clearAllErrorMask();
 
@@ -653,18 +660,14 @@ void multiSlsDetector::freeSharedMemory() {
 
 	// clear multi detector shm
 	if (sharedMemory) {
-		sharedMemory->UnmapSharedMemory(thisMultiDetector);
+		if (thisMultiDetector) {
+			sharedMemory->UnmapSharedMemory(thisMultiDetector);
+			thisMultiDetector = 0;
+		}
 		sharedMemory->RemoveSharedMemory();
 		delete sharedMemory;
 		sharedMemory = 0;
 	}
-	thisMultiDetector = 0;
-
-	// clear zmq vector
-	for (vector<ZmqSocket*>::const_iterator it = zmqSocket.begin(); it != zmqSocket.end(); ++it) {
-		delete(*it);
-	}
-	zmqSocket.clear();
 
 	// zmq
 	destroyThreadPool();
@@ -696,47 +699,46 @@ std::string multiSlsDetector::getUserDetails() {
 	return s;
 }
 
-
+/*
+ * pre: sharedMemory=0, thisMultiDetector = 0, detectors.size() = 0
+ * exceptions are caught in calling function, shm unmapped and deleted
+ */
 bool multiSlsDetector::initSharedMemory(bool verify) {
 
-	// clear
-	if (sharedMemory) {
-		delete sharedMemory;
-	}
-	thisMultiDetector = 0;
-
-	for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
-		delete(*it);
-	}
-	detectors.clear();
-
-	// create/open shm and map to structure
 	size_t sz = sizeof(sharedMultiSlsDetector);
-
 	bool created = false;
-	sharedMemory = new SharedMemory(detId, -1);
-	if (sharedMemory->IsExisting()) {
-		thisMultiDetector = (sharedMultiSlsDetector*)sharedMemory->OpenSharedMemory(sz);
-		if (verify && thisMultiDetector->shmversion != MULTI_SHMVERSION) {
-			cprintf(RED, "Multi shared memory (%d) version mismatch "
-					"(expected 0x%x but got 0x%x)\n", detId,
-					MULTI_SHMVERSION, thisMultiDetector->shmversion);
-			sharedMemory->UnmapSharedMemory(thisMultiDetector);
-			delete sharedMemory;
-			sharedMemory = 0;
-			throw SharedMemoryException();
-		}
-	} else {
-		try {
+
+	try {
+		// shared memory object with name
+		sharedMemory = new SharedMemory(detId, -1);
+
+		//create
+		if (!sharedMemory->IsExisting()) {
 			thisMultiDetector = (sharedMultiSlsDetector*)sharedMemory->CreateSharedMemory(sz);
 			created = true;
-		} catch(...) {
-			sharedMemory->RemoveSharedMemory();
+		}
+		// open and verify version
+		else {
+			thisMultiDetector = (sharedMultiSlsDetector*)sharedMemory->OpenSharedMemory(sz);
+			if (verify && thisMultiDetector->shmversion != MULTI_SHMVERSION) {
+				cprintf(RED, "Multi shared memory (%d) version mismatch "
+						"(expected 0x%x but got 0x%x)\n", detId,
+						MULTI_SHMVERSION, thisMultiDetector->shmversion);
+				throw SharedMemoryException();
+			}
+		}
+	} catch (...) {
+		if (sharedMemory) {
+			// unmap
+			if (thisMultiDetector) {
+				sharedMemory->UnmapSharedMemory(thisMultiDetector);
+				thisMultiDetector = 0;
+			}
+			// delete
 			delete sharedMemory;
 			sharedMemory = 0;
-			thisMultiDetector = 0;
-			throw;
 		}
+		throw;
 	}
 
 	return created;
@@ -881,8 +883,17 @@ void multiSlsDetector::initializeMembers(bool verify) {
 
 	// get objects from single det shared memory (open)
 	for (int i = 0; i < thisMultiDetector->numberOfDetectors; i++) {
-		slsDetector* sdet = new slsDetector(detId, i, verify, this);
-		detectors.push_back(sdet);
+		try {
+			slsDetector* sdet = new slsDetector(detId, i, verify, this);
+			detectors.push_back(sdet);
+		} catch (...) {
+			// clear detectors list
+			for (vector<slsDetector*>::const_iterator it = detectors.begin(); it != detectors.end(); ++it) {
+				delete(*it);
+			}
+			detectors.clear();
+			throw;
+		}
 	}
 
 	// depend on number of detectors

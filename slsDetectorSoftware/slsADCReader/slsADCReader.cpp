@@ -91,8 +91,7 @@ int main(int argc, char* argv[])
 	MySocketTCP* mySocket = 0;
 
 	try	{
-		MySocketTCP* s = new MySocketTCP(argv[1],1952);
-		mySocket = s;
+		mySocket = new MySocketTCP(argv[1],1952);
     } catch (...) {
     	cerr << "could not create socket with " << argv[1] << endl;
     	help();

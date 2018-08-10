@@ -23,8 +23,7 @@ using namespace std;
 int main(int argc, char *argv[]){
 	qClient* cl = 0;
 	try {
-		qClient *c = new qClient(argv[1]);
-		cl = c;
+		cl = new qClient(argv[1]);
 	} catch(...) {
 		return 0;
 	}
@@ -42,14 +41,11 @@ qClient::qClient(char* hostname):
 	mySocket(0),
 	myStopSocket(0){
 
-
 	try {
 		// control socket
-		MySocketTCP* s = new MySocketTCP(hostname, DEFAULT_GUI_PORTNO);
-		mySocket = s;
+		mySocket = new MySocketTCP(hostname, DEFAULT_GUI_PORTNO);
 		// stop socket
-		s = new MySocketTCP(hostname, DEFAULT_GUI_PORTNO+1);
-		myStopSocket = s;
+		myStopSocket = new MySocketTCP(hostname, DEFAULT_GUI_PORTNO+1);
 	} catch(...) {
 		if (mySocket == 0)
 			cout << "Error: could not connect to control server:" <<

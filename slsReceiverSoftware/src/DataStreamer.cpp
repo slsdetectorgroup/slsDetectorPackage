@@ -132,8 +132,7 @@ void DataStreamer::CreateZmqSockets(int* nunits, uint32_t port, const char* srci
 	uint32_t portnum = port + index;
 
 	try {
-	    ZmqSocket* z = new ZmqSocket(portnum, (strlen(srcip)?srcip:NULL));
-	    zmqSocket = z;
+		zmqSocket = new ZmqSocket(portnum, (strlen(srcip)?srcip:NULL));
 	} catch (...) {
 		cprintf(RED, "Error: Could not create Zmq socket on port %d for Streamer %d\n", portnum, index);
 		throw;

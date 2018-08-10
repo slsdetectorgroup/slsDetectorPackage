@@ -115,8 +115,8 @@ public:
 			try {																\
 				multiSlsDetector* m = new multiSlsDetector(id, verify, update);			\
 				myDetector = m;													\
-			} catch (const SharedMemoryException & e) {							\
-				cout << e.GetMessage() << endl;									\
+			} catch (const SlsDetectorPackageExceptions & e) {							\
+				/*cout << e.GetMessage() << endl;*/									\
 				return;															\
 			} catch (...) {														\
 				cout << " caught exception" << endl;							\
@@ -129,8 +129,8 @@ public:
 		myCmd=new multiSlsDetectorCommand(myDetector);							\
 		try {																	\
 			answer=myCmd->executeLine(argc, argv, action, pos);					\
-		} catch (const SharedMemoryException & e) {								\
-			cout << e.GetMessage() << endl;										\
+		} catch (const SlsDetectorPackageExceptions & e) {								\
+			/*cout << e.GetMessage() << endl;	*/									\
 			delete myCmd;														\
 			if (del) delete myDetector;											\
 			return;																\

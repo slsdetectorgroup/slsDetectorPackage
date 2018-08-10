@@ -61,6 +61,7 @@ void* SharedMemory::CreateSharedMemory(size_t sz){
         cprintf(RED, "Error: Create shared memory %s failed at ftruncate: %s\n",
         		name.c_str(), strerror(errno));
         close(fd);
+        RemoveSharedMemory();
         throw SharedMemoryException();
     }
 
@@ -137,8 +138,10 @@ std::string SharedMemory::ConstructSharedMemoryName(int multiId, int slsId) {
 
 	std::string temp = ss.str();
 	if (temp.length() > NAME_MAX) {
-		 cprintf(RED, "Error: Shared memory initialization %s failed: %s\n",
-				 name.c_str(), strerror(errno));
+		 cprintf(RED, "Error: Shared memory initialization failed. "
+				 "%s has %lu characters. \n"
+				 "Maximum is %d. Change the environment variable %s\n",
+				 temp.c_str(), temp.length(), NAME_MAX, SHM_ENV_NAME);
 		 throw SharedMemoryException();
 	}
 	return temp;

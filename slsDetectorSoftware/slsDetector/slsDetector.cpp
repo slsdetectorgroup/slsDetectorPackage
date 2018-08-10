@@ -53,7 +53,6 @@ slsDetector::slsDetector(detectorType type, int multiId, int id, bool verify, mu
 	}
 	delete shm;
 
-
 	initSharedMemory(true, type, multiId, verify);
 	initializeDetectorStructure(type);
 	initializeMembers();
@@ -81,8 +80,10 @@ slsDetector::slsDetector(int multiId, int id, bool verify, multiSlsDetector* m)
   offset(0) {
 	/* called from multi constructor to populate structure,
 	 * so sls shared memory will be opened, not created */
+
 	// getDetectorType Froom shm will check if it was already existing
 	detectorType type = getDetectorTypeFromShm(multiId, verify);
+
 	initSharedMemory(false, type, multiId, verify);
 	initializeMembers();
 }
@@ -424,41 +425,46 @@ void slsDetector::addMultipleDetectors(const char* name) {
 	cprintf(RED, "Error: Add Multiple Detectors should not be called at this level\n");
 }
 
+/*
+ * pre: sharedMemory=0, thisDetector = 0
+ * exceptions are caught in calling function, shm unmapped and deleted
+ */
 void slsDetector::initSharedMemory(bool created, detectorType type, int multiId,
 		bool verify) {
-	if (sharedMemory)
-		delete sharedMemory;
-	thisDetector = 0;
+	try {
+		// calculate shared memory size
+		int sz = calculateSharedMemorySize(type);
 
-	// calculate shared memory size
-	int sz = calculateSharedMemorySize(type);
+		// shared memory object with name
+		sharedMemory = new SharedMemory(multiId, detId);
 
-	// shared memory object with name
-	sharedMemory = new SharedMemory(multiId, detId);
-	// create
-	if (created) {
-		try {
+		// create
+		if (created) {
 			thisDetector = (sharedSlsDetector*)sharedMemory->CreateSharedMemory(sz);
-		} catch(...) {
-			sharedMemory->RemoveSharedMemory();
+		}
+		// open and verify version
+		else {
+			thisDetector = (sharedSlsDetector*)sharedMemory->OpenSharedMemory(sz);
+			if (verify && thisDetector->shmversion != SLS_SHMVERSION) {
+				cprintf(RED, "Single shared memory (%d-%d:)version mismatch "
+						"(expected 0x%x but got 0x%x)\n",
+						multiId, detId, SLS_SHMVERSION,
+						thisDetector->shmversion);
+				throw SharedMemoryException();
+			}
+		}
+	}  catch(...) {
+		if (sharedMemory) {
+			// unmap
+			if (thisDetector) {
+				sharedMemory->UnmapSharedMemory(thisDetector);
+				thisDetector = 0;
+			}
+			// delete
 			delete sharedMemory;
 			sharedMemory = 0;
-			thisDetector = 0;
-			throw;
 		}
-	}
-	// open and verify version
-	else {
-		thisDetector = (sharedSlsDetector*)sharedMemory->OpenSharedMemory(sz);
-		if (verify && thisDetector->shmversion != SLS_SHMVERSION) {
-			cprintf(RED, "Single shared memory (%d-%d:)version mismatch "
-					"(expected 0x%x but got 0x%x)\n",
-					multiId, detId, SLS_SHMVERSION, thisDetector->shmversion);
-			sharedMemory->UnmapSharedMemory(thisDetector); /** is this unncessary? */
-			delete sharedMemory;/** is this unncessary? */
-			sharedMemory = 0;
-			throw SharedMemoryException();
-		}
+		throw;
 	}
 }
 
@@ -1251,34 +1257,47 @@ int  slsDetector::receiveModule(sls_detector_module* myMod) {
 
 
 slsReceiverDefs::detectorType slsDetector::getDetectorTypeFromShm(int multiId, bool verify) {
-	SharedMemory* shm = new SharedMemory(multiId, detId);
-	// shm not created before
-	if (!shm->IsExisting()) {
-		cprintf(RED,"Shared memory %s does not exist.\n"
-				"Corrupted Multi Shared memory. Please free shared memory.\n",
-				shm->GetName().c_str());
-		throw SharedMemoryException();
+
+	detectorType type = GENERIC;
+	SharedMemory* shm = 0;
+
+	try {
+		// create
+		shm = new SharedMemory(multiId, detId);
+
+		// shm not created before
+		if (!shm->IsExisting()) {
+			cprintf(RED,"Shared memory %s does not exist.\n"
+					"Corrupted Multi Shared memory. Please free shared memory.\n",
+					shm->GetName().c_str());
+			throw SharedMemoryException();
+		}
+
+		// only basic size of structure (just version is required)
+		sharedSlsDetector* sdet = 0;
+		size_t sz = sizeof(sharedSlsDetector);
+
+		// open, map, verify version
+		sdet = (sharedSlsDetector*)shm->OpenSharedMemory(sz);
+		if (verify && sdet->shmversion != SLS_SHMVERSION) {
+			cprintf(RED, "Single shared memory (%d-%d:)version mismatch "
+					"(expected 0x%x but got 0x%x)\n",
+					multiId, detId, SLS_SHMVERSION, sdet->shmversion);
+			// unmap and throw
+			sharedMemory->UnmapSharedMemory(thisDetector);
+			throw SharedMemoryException();
+		}
+
+		// get type, unmap
+		type = sdet->myDetectorType;
+		shm->UnmapSharedMemory(sdet);
+		delete shm;
+
+	} catch (...) {
+		if (shm)
+			delete shm;
+		throw;
 	}
-
-	// map basic size of sls detector structure (no need of offsets, just version is required)
-	sharedSlsDetector* sdet = 0;
-	size_t sz = sizeof(sharedSlsDetector);
-
-	// open, map, verify version, get type
-	sdet = (sharedSlsDetector*)shm->OpenSharedMemory(sz);
-	if (verify && sdet->shmversion != SLS_SHMVERSION) {
-		cprintf(RED, "Single shared memory (%d-%d:)version mismatch "
-				"(expected 0x%x but got 0x%x)\n",
-				multiId, detId, SLS_SHMVERSION, sdet->shmversion);
-		shm->UnmapSharedMemory(sdet); /** is this unncessary? */
-		delete shm;/** is this unncessary? */
-		throw SharedMemoryException();
-	}
-	detectorType type = sdet->myDetectorType;
-
-	// unmap
-	shm->UnmapSharedMemory(sdet);
-	delete shm;
 
 	return type;
 }
@@ -1291,8 +1310,7 @@ slsDetectorDefs::detectorType slsDetector::getDetectorType(const char *name, int
 	MySocketTCP* mySocket = 0;
 
 	try {
-		MySocketTCP* s= new MySocketTCP(name, cport);
-		mySocket = s;
+		mySocket = new MySocketTCP(name, cport);
 	} catch(...) {
 		cout << "Cannot create socket to server " << name << " over port " << cport << endl;
 		return t;
@@ -1755,7 +1773,7 @@ string slsDetector::checkOnline() {
 			controlSocket->SetTimeOut(5);
 			thisDetector->onlineFlag=OFFLINE_FLAG;
 			delete controlSocket;
-			controlSocket=NULL;
+			controlSocket=0;
 			retval = string(thisDetector->hostname);
 #ifdef VERBOSE
 			std::cout<< "offline!" << std::endl;
@@ -1775,7 +1793,7 @@ string slsDetector::checkOnline() {
 			stopSocket->SetTimeOut(5);
 			thisDetector->onlineFlag=OFFLINE_FLAG;
 			delete stopSocket;
-			stopSocket=NULL;
+			stopSocket=0;
 			retval = string(thisDetector->hostname);
 #ifdef VERBOSE
 			std::cout<< "stop offline!" << std::endl;
@@ -1808,11 +1826,11 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
 		strcpy(thisDetector->hostname,thisName);
 		if (controlSocket) {
 			delete controlSocket;
-			controlSocket=NULL;
+			controlSocket=0;
 		}
 		if (stopSocket) {
 			delete stopSocket;
-			stopSocket=NULL;
+			stopSocket=0;
 		}
 	} else
 		strcpy(thisName,thisDetector->hostname);
@@ -1825,7 +1843,7 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
 		thisDetector->controlPort=thisCP;
 		if (controlSocket) {
 			delete controlSocket;
-			controlSocket=NULL;
+			controlSocket=0;
 		}
 	} else
 		thisCP=thisDetector->controlPort;
@@ -1838,7 +1856,7 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
 		thisDetector->stopPort=thisSP;
 		if (stopSocket) {
 			delete stopSocket;
-			stopSocket=NULL;
+			stopSocket=0;
 		}
 	} else
 		thisSP=thisDetector->stopPort;
@@ -1847,8 +1865,7 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
 	// create control socket
 	if (!controlSocket) {
 		try {
-			MySocketTCP* s = new MySocketTCP(thisName, thisCP);
-			controlSocket = s;
+			controlSocket = new MySocketTCP(thisName, thisCP);
 #ifdef VERYVERBOSE
 			std::cout<< "Control socket connected " <<
 					thisName  << " " << thisCP << std::endl;
@@ -1858,7 +1875,7 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
 			std::cout<< "Could not connect Control socket " <<
 					thisName  << " " << thisCP << std::endl;
 #endif
-			controlSocket = NULL;
+			controlSocket = 0;
 			retval = FAIL;
 		}
 	}
@@ -1867,8 +1884,7 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
 	// create stop socket
 	if (!stopSocket) {
 		try {
-			MySocketTCP* s = new MySocketTCP(thisName, thisSP);
-			stopSocket = s;
+			stopSocket = new MySocketTCP(thisName, thisSP);
 #ifdef VERYVERBOSE
 			std::cout<< "Stop socket connected " <<
 					thisName  << " " << thisSP << std::endl;
@@ -1878,7 +1894,7 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
 			std::cout<< "Could not connect Stop socket " <<
 					thisName  << " " << thisSP << std::endl;
 #endif
-			stopSocket = NULL;
+			stopSocket = 0;
 			retval = FAIL;
 		}
 	}
@@ -1921,7 +1937,7 @@ int slsDetector::setPort(portType index, int num) {
 	char mess[MAX_STR_LENGTH]="";
 	int ret=FAIL;
 	bool online=false;
-	MySocketTCP *s;
+	MySocketTCP *s = 0;
 
 	if (num>1024) {
 		switch(index) {
@@ -1933,7 +1949,7 @@ int slsDetector::setPort(portType index, int num) {
 			cout << thisDetector->controlPort<< " " << " " << thisDetector->stopPort
 					<< endl;
 #endif
-			if (s==NULL) {
+			if (s==0) {
 
 #ifdef VERBOSE
 				cout << "s=NULL"<< endl;
@@ -1971,7 +1987,7 @@ int slsDetector::setPort(portType index, int num) {
 			s=dataSocket;
 			retval=thisDetector->receiverTCPPort;
 			if(strcmp(thisDetector->receiver_hostname,"none")){
-				if (s==NULL) setReceiverTCPSocket("",retval);
+				if (s==0) setReceiverTCPSocket("",retval);
 				if (dataSocket)s=dataSocket;
 			}
 			online =  (thisDetector->receiverOnlineFlag==ONLINE_FLAG);
@@ -1991,7 +2007,7 @@ int slsDetector::setPort(portType index, int num) {
 		case STOP_PORT:
 			s=stopSocket;
 			retval=thisDetector->stopPort;
-			if (s==NULL) setTCPSocket("",-1,DEFAULT_PORTNO+1);
+			if (s==0) setTCPSocket("",-1,DEFAULT_PORTNO+1);
 			if (stopSocket) s=stopSocket;
 			else setTCPSocket("",-1,retval);
 			online =  (thisDetector->onlineFlag==ONLINE_FLAG);
@@ -2008,7 +2024,7 @@ int slsDetector::setPort(portType index, int num) {
 			break;
 
 		default:
-			s=NULL;
+			s=0;
 			break;
 		}
 
@@ -8271,7 +8287,7 @@ string slsDetector::checkReceiverOnline() {
 			dataSocket->SetTimeOut(5);
 			thisDetector->receiverOnlineFlag=OFFLINE_FLAG;
 			delete dataSocket;
-			dataSocket=NULL;
+			dataSocket=0;
 #ifdef VERBOSE
 			std::cout<< "receiver offline!" << std::endl;
 #endif
@@ -8308,7 +8324,7 @@ int slsDetector::setReceiverTCPSocket(string const name, int const receiver_port
 		strcpy(thisDetector->receiver_hostname,thisName);
 		if (dataSocket){
 			delete dataSocket;
-			dataSocket=NULL;
+			dataSocket=0;
 		}
 	} else
 		strcpy(thisName,thisDetector->receiver_hostname);
@@ -8322,7 +8338,7 @@ int slsDetector::setReceiverTCPSocket(string const name, int const receiver_port
 		thisDetector->receiverTCPPort=thisRP;
 		if (dataSocket){
 			delete dataSocket;
-			dataSocket=NULL;
+			dataSocket=0;
 		}
 	} else
 		thisRP=thisDetector->receiverTCPPort;
@@ -8330,8 +8346,7 @@ int slsDetector::setReceiverTCPSocket(string const name, int const receiver_port
 	//create data socket
 	if (!dataSocket) {
 		try {
-			MySocketTCP* s = new MySocketTCP(thisName, thisRP);
-			dataSocket = s;
+			dataSocket = new MySocketTCP(thisName, thisRP);
 #ifdef VERYVERBOSE
 			std::cout<< "Data socket connected " <<
 					thisName  << " " << thisRP << std::endl;
@@ -8341,7 +8356,7 @@ int slsDetector::setReceiverTCPSocket(string const name, int const receiver_port
 			std::cout<< "Could not connect Data socket " <<
 					thisName  << " " << thisRP << std::endl;
 #endif
-			dataSocket = NULL;
+			dataSocket = 0;
 			retval = FAIL;
 		}
 	}

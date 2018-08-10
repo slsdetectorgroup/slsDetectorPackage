@@ -4962,7 +4962,6 @@ void multiSlsDetector::readFrameFromReceiver() {
 					rapidjson::Document doc;
 					if (!zmqSocket[isocket]->ReceiveHeader(isocket, doc,
 							SLS_DETECTOR_JSON_HEADER_VERSION)) {
-						// zmqSocket[isocket]->CloseHeaderMessage();
 						// parse error, version error or end of acquisition for socket
 						runningList[isocket] = false;
 						--numRunning;
@@ -5023,7 +5022,6 @@ void multiSlsDetector::readFrameFromReceiver() {
 							coordX, coordY,
 							flippedDataX);
 #endif
-					// zmqSocket[isocket]->CloseHeaderMessage();
 				}
 
 				// DATA

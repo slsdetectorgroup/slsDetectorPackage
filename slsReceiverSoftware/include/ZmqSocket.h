@@ -365,10 +365,6 @@ public:
 	 */
 	int ReceiveHeader(const int index, Document& document, uint32_t version)
 	{
-		// zmq_msg_t message;
-        // headerMessage= &message;
-		// zmq_msg_init (&message);
-		// int len = ReceiveMessage(index, message);
 		std::vector<char>buffer(MAX_STR_LENGTH);
 		int len = zmq_recv(sockfd.socketDescriptor, buffer.data(), buffer.size(),0);
 		if ( len > 0 ) {
@@ -593,7 +589,4 @@ private:
 
 	/** Socket descriptor */
 	mySocketDescriptors sockfd;
-
-	/** Header Message pointer */
-	//zmq_msg_t* headerMessage;
 };

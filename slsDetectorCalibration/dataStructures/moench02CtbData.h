@@ -34,7 +34,7 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
   moench02CtbData(int ns=6400): slsDetectorData<uint16_t>(160, 160, ns*2*32, NULL, NULL) , nadc(32), sc_width(40), sc_height(160) {
 
     
-    int adc_off[4]={0,40,80,120};
+    int adc_off[4]={40,0,120,80};
     int adc_nr[4]={8,10,20,23};
     int row, col;
 
@@ -86,10 +86,10 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
     if(ip>=0 && ip<maplength){
       x=xmap[ip]; 
       y=ymap[ip];
-    }else{
+    }/*else{
       cerr<<"WRONG ARRAY LENGTH"<<endl;
       cerr<<"Trying to access the "<<ip<<"-th element"<<endl;
-    }
+      }*/
 
   };
   

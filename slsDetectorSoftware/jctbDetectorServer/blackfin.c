@@ -28,7 +28,7 @@
 #include "registers_m.h"
 
 //for memory mapping
-u_int32_t CSP0BASE;
+u_int64_t CSP0BASE;
 
 u_int16_t volatile  *values;
 
@@ -43,8 +43,8 @@ int mapCSP0(void) {
   }
   printf("/dev/mem opened\n");
 
-  CSP0BASE = (u_int32_t)mmap(0, MEM_SIZE, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, CSP0);
-  if (CSP0BASE == (u_int32_t)MAP_FAILED) {
+  CSP0BASE = mmap(0, MEM_SIZE, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, CSP0);
+  if (CSP0BASE == MAP_FAILED) {
     printf("\nCan't map memmory area!!\n");
     return FAIL;
   }
@@ -61,8 +61,8 @@ int mapCSP0(void) {
     return FAIL;
   }
 #endif
-  printf("CSPObase is 0x%08x \n",CSP0BASE);
-  printf("CSPOBASE=from %08x to %08x\n",CSP0BASE,CSP0BASE+MEM_SIZE);
+  printf("CSPObase is 0x%08llx \n",CSP0BASE);
+  printf("CSPOBASE=from %08llx to %08llx\n",CSP0BASE,CSP0BASE+MEM_SIZE);
 
   u_int32_t address;
   address = FIFO_DATA_REG;//_OFF;
@@ -73,10 +73,22 @@ int mapCSP0(void) {
   return OK;
 }
 
-u_int16_t bus_r16(u_int32_t offset){
+
+
+
+u_int16_t a_bus_r16(u_int32_t offset){
   volatile u_int16_t *ptr1;
   ptr1=(u_int16_t*)(CSP0BASE+offset*2);
   return *ptr1;
+}
+
+u_int16_t bus_r16(u_int32_t offset){
+  u_int16_t r= a_bus_r16(offset);
+#ifndef OLDVERSION 
+  while (r!=a_bus_r16(offset))
+    r=a_bus_r16(offset);
+#endif
+  return r;
 }
 
 u_int16_t bus_w16(u_int32_t offset, u_int16_t data) {
@@ -97,10 +109,19 @@ u_int32_t bus_w(u_int32_t offset, u_int32_t data) {
 }
 
 
-u_int32_t bus_r(u_int32_t offset) {
+u_int32_t a_bus_r(u_int32_t offset) {
   volatile u_int32_t  *ptr1;
   ptr1=(u_int32_t*)(CSP0BASE+offset*2);
   return *ptr1;
+}
+
+u_int32_t bus_r(u_int32_t offset){
+  u_int32_t r= a_bus_r(offset);
+#ifndef OLDVERSION 
+  while (r!=a_bus_r(offset))
+    r=a_bus_r(offset);
+#endif
+  return r;
 }
 
 // program dacq settings 

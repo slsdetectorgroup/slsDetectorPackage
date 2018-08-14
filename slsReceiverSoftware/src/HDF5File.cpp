@@ -170,6 +170,13 @@ void HDF5File::CloseCurrentFile() {
 	pthread_mutex_lock(&Mutex);
 	HDF5FileStatic::CloseDataFile(index, filefd);
 	pthread_mutex_unlock(&Mutex);
+	for (int i = 0; i < dataset_para.size(); ++i)
+		delete dataset_para[i];
+	dataset_para.clear();
+	if(dataspace_para) {delete dataspace_para;dataspace_para=0;}
+	if(dataset) {delete dataset;dataset=0;}
+	if(dataspace) {delete dataspace;dataspace=0;}
+	if(filefd) {delete filefd;filefd=0;}
 }
 
 
@@ -182,6 +189,14 @@ void HDF5File::CloseAllFiles() {
 		HDF5FileStatic::CloseVirtualDataFile(virtualfd);
 	}
 	pthread_mutex_unlock(&Mutex);
+
+	for (int i = 0; i < dataset_para.size(); ++i)
+		delete dataset_para[i];
+	dataset_para.clear();
+	if(dataspace_para) delete dataspace_para;
+	if(dataset) delete dataset;
+	if(dataspace) delete dataspace;
+	if(filefd) delete filefd;
 }
 
 

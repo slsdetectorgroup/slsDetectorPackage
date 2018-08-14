@@ -240,7 +240,7 @@ public:
 			}i=14;
 		}
 		catch(Exception error){
-			cprintf(RED,"Error in writing parameters (parameter index %d) to file in object %d\n", i, ind);
+			cprintf(RED,"Error in writing parameters (index:%d) to file in object %d\n", i, ind);
 			error.printErrorStack();
 			return 1;
 		}

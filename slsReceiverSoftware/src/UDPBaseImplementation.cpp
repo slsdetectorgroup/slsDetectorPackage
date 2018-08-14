@@ -58,6 +58,7 @@ void UDPBaseImplementation::initializeMembers(){
 	//***receiver parameters***
 	status = IDLE;
 	activated = true;
+	deactivatedPaddingEnable = true;
 	frameDiscardMode = NO_DISCARD;
 	framePadding = false;
 
@@ -322,9 +323,14 @@ uint32_t UDPBaseImplementation::getSilentMode() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
     return silentMode;}
 
-int UDPBaseImplementation::getActivate() const{
+bool UDPBaseImplementation::getActivate() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
     return activated;
+}
+
+bool UDPBaseImplementation::getDeactivatedPadding() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return deactivatedPaddingEnable;
 }
 
 uint32_t UDPBaseImplementation::getStreamingPort() const{
@@ -733,15 +739,18 @@ void UDPBaseImplementation::abort(){
 }
 
 
-int UDPBaseImplementation::setActivate(int enable){
+bool UDPBaseImplementation::setActivate(bool enable){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
-
-	if(enable != -1){
-		activated = enable;
-		FILE_LOG(logINFO) << "Activation: " << stringEnable(activated);
-	}
-
+	activated = enable;
+	FILE_LOG(logINFO) << "Activation: " << stringEnable(activated);
 	return activated;
+}
+
+bool UDPBaseImplementation::setDeactivatedPadding(bool enable){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	deactivatedPaddingEnable = enable;
+	FILE_LOG(logINFO) << "Deactivated Padding Enable: " << stringEnable(deactivatedPaddingEnable);
+	return deactivatedPaddingEnable;
 }
 
 void UDPBaseImplementation::setStreamingPort(const uint32_t i) {

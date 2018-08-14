@@ -324,7 +324,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
 	++i;
 	/*! \page config
-    - <b>activate</b> Activates/Deactivates the detector. Deactivated detector does not send data. Used for EIGER only. \c Returns \c (int)
+    - <b>activate [b] [p]</b> Activates/Deactivates the detector. \c b is 1 for activate, 0 for deactivate. Deactivated detector does not send data. \c p is optional and can be padding (default) or nonpadding for receivers for deactivated detectors. Used for EIGER only. \c Returns \c (int) (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="activate"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
@@ -4363,11 +4363,20 @@ string slsDetectorCommand::cmdOnline(int narg, char *args[], int action) {
 		if (action==PUT_ACTION) {
 			if (!sscanf(args[1],"%d",&ival))
 				return string("Could not scan activate mode ")+string(args[1]);
-			/*  if(dynamic_cast<slsDetector*>(myDet) != NULL)
-			  return string("Can only set it from the multiDetector mode");*/
 			myDet->activate(ival);
+			bool padding = true;
+			if (narg > 2) {
+				if (string(args[2]) == "padding")
+					padding = true;
+				else if (string(args[2]) == "nopadding")
+					padding = false;
+				else
+					return string ("Could not scan activate mode's padding option " + string(args[2]));
+				myDet->setDeactivatedRxrPaddingMode(padding);
+			}
 		}
-		sprintf(ans,"%d",myDet->activate());
+		int ret = myDet->setDeactivatedRxrPaddingMode();
+		sprintf(ans,"%d %s", myDet->activate(), ret == 1 ? "padding" : (ret == 0 ? "nopadding" : "unknown"));
 	}
 	else if(cmd=="r_online"){
 		if (action==PUT_ACTION) {
@@ -4398,14 +4407,14 @@ string slsDetectorCommand::helpOnline(int narg, char *args[], int action) {
 	if (action==PUT_ACTION || action==HELP_ACTION) {
 		os << "online i \n sets the detector in online (1) or offline (0) mode"<< std::endl;
 		os << "r_online i \n sets the receiver in online (1) or offline (0) mode"<< std::endl;
-		os << "activate i \n sets the detector in  activated (1) or deactivated (0) mode (does not send data). Only for Eiger."<< std::endl;
+		os << "activate i [p]\n sets the detector in  activated (1) or deactivated (0) mode (does not send data).  p is optional and can be padding (default) or nonpadding for receivers for deactivated detectors. Only for Eiger."<< std::endl;
 	}
 	if (action==GET_ACTION || action==HELP_ACTION) {
 		os << "online \n gets the detector online (1) or offline (0) mode"<< std::endl;
 		os << "checkonline \n returns the hostnames of all detectors in offline mode"<< std::endl;
 		os << "r_online \n gets the receiver online (1) or offline (0) mode"<< std::endl;
 		os << "r_checkonline \n returns the hostnames of all receiver in offline mode"<< std::endl;
-		os << "activate \n gets the detector activated (1) or deactivated (0) mode. Only for Eiger."<< std::endl;
+		os << "activate \n gets the detector activated (1) or deactivated (0) mode. And padding or nonpadding for the deactivated receiver. Only for Eiger."<< std::endl;
 	}
 	return os.str();
 

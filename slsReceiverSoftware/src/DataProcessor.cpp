@@ -27,7 +27,7 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo*& f,
 		fileFormat* ftype, bool fwenable,
 		bool* dsEnable, bool* gpEnable, uint32_t* dr,
 		uint32_t* freq, uint32_t* timer,
-		bool* fp,
+		bool* fp, bool* act, bool* depaden,
 		void (*dataReadycb)(char*, char*, uint32_t, void*),
 		void (*dataModifyReadycb)(char*, char*, uint32_t &, void*),
 		void *pDataReadycb) :
@@ -48,6 +48,8 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo*& f,
 		currentFreqCount(0),
 		tempBuffer(0),
 		xcoordin1D(0),
+		activated(act),
+		deactivatedPaddingEnable(depaden),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
 		firstAcquisitionIndex(0),
@@ -374,8 +376,10 @@ void DataProcessor::ProcessAnImage(char* buf) {
 			header.xCoord = xcoordin1D;
 	}
 
-	// frame padding
-	if (*framePadding && nump < generalData->packetsPerFrame)
+	// deactivated and padding enabled
+	if ((!(*activated) && *deactivatedPaddingEnable) ||
+			// frame padding
+			(*framePadding && nump < generalData->packetsPerFrame))
 		PadMissingPackets(buf);
 
 	// normal call back

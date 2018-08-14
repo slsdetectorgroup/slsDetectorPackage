@@ -33,11 +33,13 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param as pointer to actual udp socket buffer size
 	 * @param fpf pointer to frames per file
 	 * @param fdp frame discard policy
+	 * @param act pointer to activated
+	 * @param depaden pointer to deactivated padding enable
 	 */
 	Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
 	        uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
 	        uint32_t* us, uint32_t* as, uint32_t* fpf,
-			frameDiscardPolicy* fdp);
+			frameDiscardPolicy* fdp, bool* act, bool* depaden);
 
 	/**
 	 * Destructor
@@ -235,6 +237,12 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** frame discard policy */
 	frameDiscardPolicy* frameDiscardMode;
+
+	/** Activated/Deactivated */
+	bool* activated;
+
+	/** Deactivated padding enable */
+	bool* deactivatedPaddingEnable;
 
 
 	// acquisition start

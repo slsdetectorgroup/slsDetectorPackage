@@ -245,6 +245,7 @@ const char* slsReceiverTCPIPInterface::getFunctionName(enum recFuncs func) {
     case F_RECEIVER_CHECK_VERSION:		return "F_RECEIVER_CHECK_VERSION";
     case F_RECEIVER_DISCARD_POLICY:		return "F_RECEIVER_DISCARD_POLICY";
     case F_RECEIVER_PADDING_ENABLE:		return "F_RECEIVER_PADDING_ENABLE";
+    case F_RECEIVER_DEACTIVATED_PADDING_ENABLE: return "F_RECEIVER_DEACTIVATED_PADDING_ENABLE";
 
 	default:							return "Unknown Function";
 	}
@@ -301,6 +302,8 @@ int slsReceiverTCPIPInterface::function_table(){
     flist[F_RECEIVER_CHECK_VERSION]			=   &slsReceiverTCPIPInterface::check_version_compatibility;
     flist[F_RECEIVER_DISCARD_POLICY]		=   &slsReceiverTCPIPInterface::set_discard_policy;
 	flist[F_RECEIVER_PADDING_ENABLE]		=   &slsReceiverTCPIPInterface::set_padding_enable;
+	flist[F_RECEIVER_DEACTIVATED_PADDING_ENABLE] = &slsReceiverTCPIPInterface::set_deactivated_receiver_padding_enable;
+
 
 #ifdef VERYVERBOSE
 	for (int i = 0; i < NUM_REC_FUNCTIONS ; i++) {
@@ -705,6 +708,19 @@ int slsReceiverTCPIPInterface::send_update() {
 	ind=(int)receiverBase->getDataStreamEnable();
 #endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
+
+	// activate
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind=(int)receiverBase->getActivate();
+#endif
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
+
+	// deactivated padding enable
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind=(int)receiverBase->getDeactivatedPadding();
+#endif
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
+
 
 	if (!lockStatus)
 		strcpy(mySock->lastClientIP,mySock->thisClientIP);
@@ -1931,11 +1947,11 @@ int slsReceiverTCPIPInterface::set_activate() {
 				else if (receiverBase->getStatus() != IDLE)
 					receiverNotIdle();
 				else {
-					receiverBase->setActivate(enable);
+					receiverBase->setActivate(enable > 0 ? true : false);
 				}
 			}
 			//get
-			retval = receiverBase->getActivate();
+			retval = (int)receiverBase->getActivate();
 			if(enable >= 0 && retval != enable){
 				ret = FAIL;
 				sprintf(mess,"Could not set activate to %d, returned %d\n",enable,retval);
@@ -2485,7 +2501,7 @@ int slsReceiverTCPIPInterface::enable_gap_pixels() {
 	}
 #endif
 #ifdef VERYVERBOSE
-	FILE_LOG(logDEBUG1) << "Activate: " << retval;
+	FILE_LOG(logDEBUG1) << "Gap Pixels Enable: " << retval;
 #endif
 
 	if (ret == OK && mySock->differentClients)
@@ -2895,3 +2911,59 @@ int slsReceiverTCPIPInterface::set_padding_enable() {
 
 
 
+
+int slsReceiverTCPIPInterface::set_deactivated_receiver_padding_enable() {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int enable = -1;
+	int retval = -1;
+
+	// receive arguments
+	if (mySock->ReceiveDataOnly(&enable,sizeof(enable)) < 0 )
+		return printSocketReadError();
+
+	if (myDetectorType != EIGER)
+		functionNotImplemented();
+
+	// execute action
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	else {
+		if (receiverBase == NULL)
+			invalidReceiverObject();
+		else {
+			// set
+			if(enable >= 0) {
+				if (mySock->differentClients && lockStatus)
+					receiverlocked();
+				else if (receiverBase->getStatus() != IDLE)
+					receiverNotIdle();
+				else {
+					receiverBase->setDeactivatedPadding(enable > 0 ? true : false);
+				}
+			}
+			//get
+			retval = (int)receiverBase->getDeactivatedPadding();
+			if(enable >= 0 && retval != enable){
+				ret = FAIL;
+				sprintf(mess,"Could not set deactivated padding enable to %d, returned %d\n",enable,retval);
+				FILE_LOG(logERROR) << mess;
+			}
+		}
+	}
+#endif
+#ifdef VERYVERBOSE
+	FILE_LOG(logDEBUG1) << "Deactivated Padding Enable: " << retval;
+#endif
+
+	if (ret == OK && mySock->differentClients)
+		ret = FORCE_UPDATE;
+
+	// send answer
+	mySock->SendDataOnly(&ret,sizeof(ret));
+	if (ret == FAIL)
+		mySock->SendDataOnly(mess,sizeof(mess));
+	mySock->SendDataOnly(&retval,sizeof(retval));
+
+	// return ok/fail
+	return ret;
+}

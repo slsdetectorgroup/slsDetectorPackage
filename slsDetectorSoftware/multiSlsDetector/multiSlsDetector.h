@@ -1241,11 +1241,18 @@ public:
 	int writeAdcRegister(int addr, int val);
 
 	/**
-	 * Activates the detector (Eiger only)
+	 * Activates/Deactivates the detector (Eiger only)
 	 * @param enable active (1) or inactive (0), -1 gets
-	 * @returns 0 (inactive) or 1 (active)
+	 * @returns 0 (inactive) or 1 (active)for activate mode
 	 */
-	int activate(int const enable=GET_ONLINE_FLAG);
+	int activate(int const enable=-1);
+
+	/**
+	 * Set deactivated Receiver padding mode (Eiger only)
+	 * @param padding padding option for deactivated receiver. Can be 1 (padding), 0 (no padding), -1 (gets)
+	 * @returns 1 (padding), 0 (no padding), -1 (inconsistent values) for padding option
+	 */
+	int setDeactivatedRxrPaddingMode(int padding=-1);
 
 	/**
 	 * Returns the enable if data will be flipped across x or y axis (Eiger)

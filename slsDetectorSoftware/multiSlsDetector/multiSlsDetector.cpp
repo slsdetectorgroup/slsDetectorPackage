@@ -3556,6 +3556,10 @@ int multiSlsDetector::activate(int const enable) {
 	return callDetectorMember(&slsDetector::activate, enable);
 }
 
+int multiSlsDetector::setDeactivatedRxrPaddingMode(int padding) {
+	return callDetectorMember(&slsDetector::setDeactivatedRxrPaddingMode, padding);
+}
+
 int multiSlsDetector::getFlippedData(dimension d) {
 	return callDetectorMember(&slsDetector::getFlippedData, d);
 }

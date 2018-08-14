@@ -375,13 +375,13 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	        Listener* l = new Listener(i, myDetectorType, fifo[i], &status,
 	                &udpPortNum[i], eth, &numberOfFrames, &dynamicRange,
 	                &udpSocketBufferSize, &actualUDPSocketBufferSize, &framesPerFile,
-					&frameDiscardMode);
+					&frameDiscardMode, &activated, &deactivatedPaddingEnable);
 	        listener.push_back(l);
 
 	        DataProcessor* p = new DataProcessor(i, myDetectorType, fifo[i], &fileFormatType,
 	                fileWriteEnable, &dataStreamEnable, &gapPixelsEnable,
 	                &dynamicRange, &frameToGuiFrequency, &frameToGuiTimerinMS,
-					&framePadding,
+					&framePadding, &activated, &deactivatedPaddingEnable,
 	                rawDataReadyCallBack, rawDataModifyReadyCallBack, pRawDataReady);
 	        dataProcessor.push_back(p);
 	    }
@@ -573,38 +573,36 @@ void UDPStandardImplementation::stopReceiver(){
 void UDPStandardImplementation::startReadout(){
 	if(status == RUNNING){
 
-		//needs to wait for packets only if activated
-		if(activated){
+		// wait for incoming delayed packets
+		//current packets caught
+		volatile int totalP = 0,prev=-1;
+		for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
+			totalP += (*it)->GetPacketsCaught();
 
-			//current packets caught
-			volatile int totalP = 0,prev=-1;
-			for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
-				totalP += (*it)->GetPacketsCaught();
+		//wait for all packets
+		if((unsigned long long int)totalP!=numberOfFrames*generalData->packetsPerFrame*listener.size()){
 
-			//wait for all packets
-			if((unsigned long long int)totalP!=numberOfFrames*generalData->packetsPerFrame*listener.size()){
-
-				//wait as long as there is change from prev totalP,
-				while(prev != totalP){
+			//wait as long as there is change from prev totalP,
+			while(prev != totalP){
 #ifdef VERY_VERBOSE
-					cprintf(MAGENTA,"waiting for all packets prevP:%d totalP:%d\n",
-							prev,totalP);
+				cprintf(MAGENTA,"waiting for all packets prevP:%d totalP:%d\n",
+						prev,totalP);
 
 #endif
-					//usleep(1*1000*1000);usleep(1*1000*1000);usleep(1*1000*1000);usleep(1*1000*1000);
-					usleep(5*1000);/* Need to find optimal time **/
+				//usleep(1*1000*1000);usleep(1*1000*1000);usleep(1*1000*1000);usleep(1*1000*1000);
+				usleep(5*1000);/* Need to find optimal time **/
 
-					prev = totalP;
-					totalP = 0;
+				prev = totalP;
+				totalP = 0;
 
-					for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
-						totalP += (*it)->GetPacketsCaught();
+				for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
+					totalP += (*it)->GetPacketsCaught();
 #ifdef VERY_VERBOSE
-					cprintf(MAGENTA,"\tupdated:  totalP:%d\n",totalP);
+				cprintf(MAGENTA,"\tupdated:  totalP:%d\n",totalP);
 #endif
-				}
 			}
 		}
+
 
 		//set status
 		status = TRANSMITTING;

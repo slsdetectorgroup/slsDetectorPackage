@@ -35,6 +35,8 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param freq pointer to streaming frequency
 	 * @param timer pointer to timer if streaming frequency is random
 	 * @param fp pointer to frame padding enable
+	 * @param act pointer to activated
+	 * @param depaden pointer to deactivated padding enable
 	 * @param dataReadycb pointer to data ready call back function
 	 * @param dataModifyReadycb pointer to data ready call back function with modified
 	 * @param pDataReadycb pointer to arguments of data ready call back function. To write/stream a smaller size of processed data, change this value (only smaller value is allowed).
@@ -42,7 +44,7 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	DataProcessor(int ind, detectorType dtype, Fifo*& f, fileFormat* ftype,
 			bool fwenable, bool* dsEnable, bool* gpEnable, uint32_t* dr,
 						uint32_t* freq, uint32_t* timer,
-						bool* fp,
+						bool* fp, bool* act, bool* depaden,
 						void (*dataReadycb)(char*, char*, uint32_t, void*),
 				        void (*dataModifyReadycb)(char*, char*, uint32_t &, void*),
 						void *pDataReadycb);
@@ -335,6 +337,12 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** x coord hardcoded ad 1D, if detector does not send them yet **/
 	uint16_t xcoordin1D;
+
+	/** Activated/Deactivated */
+	bool* activated;
+
+	/** Deactivated padding enable */
+	bool* deactivatedPaddingEnable;
 
 
 

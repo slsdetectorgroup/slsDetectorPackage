@@ -203,23 +203,24 @@ public:
 		sls_detector_header header = rheader->detHeader;
 		hsize_t count[1] = {1};
 		hsize_t start[1] = {fnum};
+		int i = 0;
 		try{
 			Exception::dontPrint(); //to handle errors
 			dspace_para->selectHyperslab( H5S_SELECT_SET, count, start);
 			DataSpace memspace(H5S_SCALAR);
-			dset_para[0]->write(&header.frameNumber, 	parameterDataTypes[0], memspace, *dspace_para);
-			dset_para[1]->write(&header.expLength, 		parameterDataTypes[1], memspace, *dspace_para);
-			dset_para[2]->write(&header.packetNumber, 	parameterDataTypes[2], memspace, *dspace_para);
-			dset_para[3]->write(&header.bunchId, 		parameterDataTypes[3], memspace, *dspace_para);
-			dset_para[4]->write(&header.timestamp, 		parameterDataTypes[4], memspace, *dspace_para);
-			dset_para[5]->write(&header.modId, 			parameterDataTypes[5], memspace, *dspace_para);
-			dset_para[6]->write(&header.xCoord, 		parameterDataTypes[6], memspace, *dspace_para);
-			dset_para[7]->write(&header.yCoord, 		parameterDataTypes[7], memspace, *dspace_para);
-			dset_para[8]->write(&header.zCoord, 		parameterDataTypes[8], memspace, *dspace_para);
-			dset_para[9]->write(&header.debug, 			parameterDataTypes[9], memspace, *dspace_para);
-			dset_para[10]->write(&header.roundRNumber, 	parameterDataTypes[10], memspace, *dspace_para);
-			dset_para[11]->write(&header.detType, 		parameterDataTypes[11], memspace, *dspace_para);
-			dset_para[12]->write(&header.version, 		parameterDataTypes[12], memspace, *dspace_para);
+			dset_para[0]->write(&header.frameNumber, 	parameterDataTypes[0], memspace, *dspace_para);i=1;
+			dset_para[1]->write(&header.expLength, 		parameterDataTypes[1], memspace, *dspace_para);i=2;
+			dset_para[2]->write(&header.packetNumber, 	parameterDataTypes[2], memspace, *dspace_para);i=3;
+			dset_para[3]->write(&header.bunchId, 		parameterDataTypes[3], memspace, *dspace_para);i=4;
+			dset_para[4]->write(&header.timestamp, 		parameterDataTypes[4], memspace, *dspace_para);i=5;
+			dset_para[5]->write(&header.modId, 			parameterDataTypes[5], memspace, *dspace_para);i=6;
+			dset_para[6]->write(&header.xCoord, 		parameterDataTypes[6], memspace, *dspace_para);i=7;
+			dset_para[7]->write(&header.yCoord, 		parameterDataTypes[7], memspace, *dspace_para);i=8;
+			dset_para[8]->write(&header.zCoord, 		parameterDataTypes[8], memspace, *dspace_para);i=9;
+			dset_para[9]->write(&header.debug, 			parameterDataTypes[9], memspace, *dspace_para);i=10;
+			dset_para[10]->write(&header.roundRNumber, 	parameterDataTypes[10], memspace, *dspace_para);i=11;
+			dset_para[11]->write(&header.detType, 		parameterDataTypes[11], memspace, *dspace_para);i=12;
+			dset_para[12]->write(&header.version, 		parameterDataTypes[12], memspace, *dspace_para);i=13;
 
 			// contiguous bitset
 			if (sizeof(sls_bitset) == sizeof(bitset_storage)) {
@@ -236,10 +237,10 @@ public:
 					storage[i >> 3] |= (bits[i] << (i & 7));
 				// write bitmask
 				dset_para[13]->write((char*)storage,	parameterDataTypes[13], memspace, *dspace_para);
-			}
+			}i=14;
 		}
 		catch(Exception error){
-			cprintf(RED,"Error in writing parameters to file in object %d\n",ind);
+			cprintf(RED,"Error in writing parameters (parameter index %d) to file in object %d\n", i, ind);
 			error.printErrorStack();
 			return 1;
 		}

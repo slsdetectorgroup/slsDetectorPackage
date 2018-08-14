@@ -281,6 +281,9 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
     /** set partial frame padding enable*/
     int set_padding_enable();
 
+    /** set deactivated receiver padding enable */
+    int set_deactivated_receiver_padding_enable();
+
 
 	/** detector type */
 	detectorType myDetectorType;

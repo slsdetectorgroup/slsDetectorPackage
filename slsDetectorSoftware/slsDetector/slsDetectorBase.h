@@ -481,12 +481,19 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   */
   virtual int setOnline(int const online=-1)=0;
 
-  /**  @short activates the detector (detector specific)
-       \param enable can be: -1 returns wether the detector is in active (1) or inactive (0) state
-       \returns 0 (inactive) or 1 (active)
-  */
-  virtual int activate(int const enable=GET_ONLINE_FLAG)=0;
+	/**
+	 * Activates/Deactivates the detector (Eiger only)
+	 * @param enable active (1) or inactive (0), -1 gets
+	 * @returns 0 (inactive) or 1 (active)for activate mode
+	 */
+  virtual int activate(int const enable=-1)=0;
 
+	/**
+	 * Set deactivated Receiver padding mode (Eiger only)
+	 * @param padding padding option for deactivated receiver.  Can be 1 (padding), 0 (no padding), -1 (gets)
+	 * @returns 1 (padding), 0 (no padding), -1 (inconsistent values) for padding option
+	 */
+  virtual int setDeactivatedRxrPaddingMode(int padding=-1)=0;
 
   /**
      @short set detector settings

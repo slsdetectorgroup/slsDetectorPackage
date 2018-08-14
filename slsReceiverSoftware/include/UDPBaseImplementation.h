@@ -277,11 +277,19 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 
 	/**
 	 * Get activate
-	 * If deactivated, receiver will write dummy packets 0xFF
+	 * If deactivated, receiver will create dummy data if deactivated padding is enabled
 	 * (as it will receive nothing from detector)
-	 * @return 0 for deactivated, 1 for activated
+	 * @return false for deactivated, true for activated
 	 */
-	int getActivate() const;
+	bool getActivate() const;
+
+	/**
+	 * Get deactivated padding enable
+	 * If enabled, receiver will create dummy packets (0xFF), else it will create nothing
+	 * (as it will receive nothing from detector)
+	 * @return 0 for disabled, 1 for enabled
+	 */
+	bool getDeactivatedPadding() const;
 
 	/**
 	 * Get Streaming Port
@@ -605,10 +613,21 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 
 	/**
 	 * Activate / Deactivate Receiver
-	 * If deactivated, receiver will write dummy packets 0xFF
+	 * If deactivated, receiver will create dummy data if deactivated padding is enabled
 	 * (as it will receive nothing from detector)
+	 * @param enable enable
+	 * @return false for disabled, true for enabled
 	 */
-	int setActivate(int enable = -1);
+	bool setActivate(const bool enable);
+
+	/**
+	 * Set deactivated padding enable
+	 * If enabled, receiver will create dummy packets (0xFF), else it will create nothing
+	 * (as it will receive nothing from detector)
+	 * @param enable enable
+	 * @return false for disabled, true for enabled
+	 */
+	bool setDeactivatedPadding(const bool enable);
 
 	/**
 	 * Set streaming port
@@ -727,7 +746,9 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	/** Receiver Status */
 	runStatus status;
 	/** Activated/Deactivated */
-	int activated;
+	bool activated;
+	/** Deactivated padding enable */
+	bool deactivatedPaddingEnable;
 	/** frame discard policy */
 	frameDiscardPolicy frameDiscardMode;
 	/** frame padding */

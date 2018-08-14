@@ -22,7 +22,7 @@ const string Listener::TypeName = "Listener";
 Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
         uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
         uint32_t* us, uint32_t* as, uint32_t* fpf,
-		frameDiscardPolicy* fdp) :
+		frameDiscardPolicy* fdp, bool* act, bool* depaden) :
 		ThreadObject(ind),
 		runningFlag(0),
 		generalData(0),
@@ -38,6 +38,8 @@ Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
 		actualUDPSocketBufferSize(as),
 		framesPerFile(fpf),
 		frameDiscardMode(fdp),
+		activated(act),
+		deactivatedPaddingEnable(depaden),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
 		firstAcquisitionIndex(0),
@@ -183,6 +185,10 @@ int Listener::SetThreadPriority(int priority) {
 
 int Listener::CreateUDPSockets() {
 
+    if (!(*activated)) {
+    	return OK;
+    }
+
 	//if eth is mistaken with ip address
 	if (strchr(eth,'.') != NULL){
 	    memset(eth, 0, MAX_STR_LENGTH);
@@ -236,6 +242,12 @@ void Listener::SetSilentMode(bool mode) {
 
 int Listener::CreateDummySocketForUDPSocketBufferSize(uint32_t s) {
     FILE_LOG(logINFO) << "Testing UDP Socket Buffer size with test port " << *udpPortNumber;
+
+    if (!(*activated)) {
+    	*actualUDPSocketBufferSize = (s*2);
+    	return OK;
+    }
+
     uint32_t temp = *udpSocketBufferSize;
     *udpSocketBufferSize = s;
 
@@ -291,7 +303,7 @@ void Listener::ThreadExecution() {
 #endif
 
 	//udpsocket doesnt exist
-	if (!udpSocketAlive && !carryOverFlag) {
+	if (*activated && !udpSocketAlive && !carryOverFlag) {
 		//FILE_LOG(logERROR) << "Listening_Thread " << index << ": UDP Socket not created or shut down earlier";
 		(*((uint32_t*)buffer)) = 0;
 		StopListening(buffer);
@@ -299,7 +311,7 @@ void Listener::ThreadExecution() {
 	}
 
 	//get data
-	if ((*status != TRANSMITTING && udpSocketAlive) || carryOverFlag) {
+	if ((*status != TRANSMITTING && (!(*activated) || udpSocketAlive)) || carryOverFlag) {
 		rc = ListenToAnImage(buffer);
 	}
 
@@ -357,6 +369,7 @@ void Listener::StopListening(char* buf) {
 
 /* buf includes the fifo header and packet header */
 uint32_t Listener::ListenToAnImage(char* buf) {
+
 	int rc = 0;
 	uint64_t fnum = 0, bid = 0;
 	uint32_t pnum = 0, snum = 0;
@@ -377,6 +390,20 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 	memset(buf, 0, fifohsize);
 	/*memset(buf + fifohsize, 0xFF, generalData->imageSize);*/
 	new_header = (sls_receiver_header*) (buf + FIFO_HEADER_NUMBYTES);
+
+	// deactivated (eiger)
+	if (!(*activated)) {cprintf(RED,"deactivated receiver\n");
+		// no padding
+		if (!(*deactivatedPaddingEnable)) {
+			return 0;}
+		// padding without setting bitmask (all missing packets padded in dataProcessor)
+		if (currentFrameIndex >= *numImages)
+			return 0;
+		new_header->detHeader.frameNumber = currentFrameIndex+1; //(eiger)
+		new_header->detHeader.detType = (uint8_t) generalData->myDetectorType;
+		new_header->detHeader.version = (uint8_t) SLS_DETECTOR_HEADER_VERSION;
+		return generalData->imageSize;
+	}
 
 
 

@@ -47,6 +47,7 @@ class UDPInterface {
 	 *	-setDynamicRange
 	 *	-setFlippedData (if eiger)
 	 *	-setActivate (if eiger)
+	 *	-setDeactivatedPadding (if eiger)
 	 *	-setTenGigaEnable (if eiger)
 	 *	-setGapPixelsEnable
 	 *	-setStreamingPort
@@ -364,11 +365,19 @@ class UDPInterface {
 
 	/**
 	 * Get activate
-	 * If deactivated, receiver will write dummy packets 0xFF
+	 * If deactivated, receiver will create dummy data if deactivated padding is enabled
 	 * (as it will receive nothing from detector)
-	 * @return 0 for deactivated, 1 for activated
+	 * @return false for deactivated, true for activated
 	 */
-	virtual int getActivate() const = 0;
+	virtual bool getActivate() const = 0;
+
+	/**
+	 * Get deactivated padding enable
+	 * If enabled, receiver will create dummy packets (0xFF), else it will create nothing
+	 * (as it will receive nothing from detector)
+	 * @return false for disabled, true for enabled
+	 */
+	virtual bool getDeactivatedPadding() const = 0;
 
 	/**
 	 * Get Streaming Port
@@ -694,10 +703,21 @@ class UDPInterface {
 
 	/**
 	 * Activate / Deactivate Receiver
-	 * If deactivated, receiver will write dummy packets 0xFF
+	 * If deactivated, receiver will create dummy data if deactivated padding is enabled
 	 * (as it will receive nothing from detector)
+	 * @param enable enable
+	 * @return false for disabled, true for enabled
 	 */
-	virtual int setActivate(int enable = -1) = 0;
+	virtual bool setActivate(const bool enable) = 0;
+
+	/**
+	 * Set deactivated padding enable
+	 * If enabled, receiver will create dummy packets (0xFF), else it will create nothing
+	 * (as it will receive nothing from detector)
+	 * @param enable enable
+	 * @return false for disabled, true for enabled
+	 */
+	virtual bool setDeactivatedPadding(const bool enable) = 0;
 
 	/**
 	 * Set streaming port

@@ -749,7 +749,8 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 	thisDetector->receiverAPIVersion = 0;
 	thisDetector->receiver_frameDiscardMode = NO_DISCARD;
 	thisDetector->receiver_framePadding = 1;
-
+	thisDetector->activated = true;
+	thisDetector->receiver_deactivatedPaddingEnable = true;
 
 	// get the detector parameters based on type
 	detParameterList detlist;
@@ -5272,6 +5273,10 @@ string slsDetector::setReceiver(string receiverIP) {
 		std::cout << "sub period:" << thisDetector->timerValue[SUBFRAME_PERIOD] << endl;
 		std::cout << "dynamic range:" << thisDetector->dynamicRange << endl;
 		std::cout << "flippeddatax:" << thisDetector->flippedData[X] << endl;
+		if (thisDetector->myDetectorType == EIGER) {
+			std::cout << "activated: " << thisDetector->activated << endl;
+			std::cout << "receiver deactivated padding: " << thisDetector->receiver_deactivatedPaddingEnable << endl;
+		}
 		std::cout << "10GbE:" << thisDetector->tenGigaEnable << endl;
 		std::cout << "Gap pixels: " << thisDetector->gappixels << endl;
 		std::cout << "rx streaming source ip:" << thisDetector->receiver_zmqip << endl;
@@ -5319,6 +5324,7 @@ string slsDetector::setReceiver(string receiverIP) {
 			if(thisDetector->myDetectorType == EIGER){
 				setFlippedData(X,-1);
 				activate(-1);
+				setDeactivatedRxrPaddingMode(thisDetector->receiver_deactivatedPaddingEnable);
 			}
 
 			if(thisDetector->myDetectorType == EIGER)
@@ -6211,7 +6217,7 @@ int slsDetector::activate(int const enable) {
 	int retval = -1;
 	int arg = enable;
 	char mess[MAX_STR_LENGTH]="";
-	int ret = OK;
+	int ret = FAIL;
 
 	if(thisDetector->myDetectorType != EIGER){
 		std::cout<< "Not implemented for this detector" << std::endl;
@@ -6238,6 +6244,7 @@ int slsDetector::activate(int const enable) {
 				setErrorMask((getErrorMask())|(DETECTOR_ACTIVATE));
 			} else {
 				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+				thisDetector->activated = retval;
 			}
 			disconnectControl();
 			if (ret==FORCE_UPDATE)
@@ -6254,12 +6261,13 @@ int slsDetector::activate(int const enable) {
 #endif
 
 	if(ret!=FAIL){
+		int arg = thisDetector->activated;
 		if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
 #ifdef VERBOSE
-			std::cout << "Activating/Deactivating Receiver: " << retval << std::endl;
+			std::cout << "Activating/Deactivating Receiver: " << arg << std::endl;
 #endif
 			if (connectData() == OK){
-				ret=thisReceiver->sendInt(fnum2,retval,retval);
+				ret=thisReceiver->sendInt(fnum2,retval,arg);
 				disconnectData();
 			}
 			if(ret==FAIL)
@@ -6276,9 +6284,41 @@ int slsDetector::activate(int const enable) {
 #endif
 
 
-	return retval;
+	return thisDetector->activated;
 
 }
+
+
+
+int slsDetector::setDeactivatedRxrPaddingMode(int padding) {
+	int fnum = F_RECEIVER_DEACTIVATED_PADDING_ENABLE;
+	int retval = -1;
+	int arg = padding;
+	int ret = OK;
+
+	if(thisDetector->myDetectorType != EIGER){
+		std::cout<< "Not implemented for this detector" << std::endl;
+		setErrorMask((getErrorMask())|(RECEIVER_ACTIVATE));
+		return -1;
+	}
+
+	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+#ifdef VERBOSE
+			std::cout << "Deactivated Receiver Padding Enable: " << arg << std::endl;
+#endif
+			if (connectData() == OK){
+				ret=thisReceiver->sendInt(fnum,retval,arg);
+				disconnectData();
+			}
+			if(ret==FAIL)
+				setErrorMask((getErrorMask())|(RECEIVER_ACTIVATE));
+			else
+				thisDetector->receiver_deactivatedPaddingEnable = retval;
+		}
+
+	return thisDetector->receiver_deactivatedPaddingEnable;
+}
+
 
 
 
@@ -8570,7 +8610,13 @@ int slsDetector::updateReceiverNoWait() {
 	n += dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
 	thisDetector->receiver_upstream = ind;
 
+	// activate
+	n += dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
+	thisDetector->activated = ind;
 
+	// deactivated padding enable
+	n += dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
+	thisDetector->receiver_deactivatedPaddingEnable = ind;
 
 	if (!n) printf("n: %d\n", n);
 

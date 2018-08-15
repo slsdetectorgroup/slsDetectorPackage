@@ -361,7 +361,7 @@ class UDPInterface {
 	 * Get Silent Mode
 	 * @return silent mode
 	 */
-	virtual uint32_t getSilentMode() const = 0;
+	virtual bool getSilentMode() const = 0;
 
 	/**
 	 * Get activate
@@ -629,9 +629,9 @@ class UDPInterface {
 	//***receiver parameters***
 	/**
 	 * Set Silent Mode
-	 * @param i silent mode. 1 sets, 0 unsets
+	 * @param i silent mode. true sets, false unsets
 	 */
-	virtual void setSilentMode(const uint32_t i) = 0;
+	virtual void setSilentMode(const bool i) = 0;
 
 
 	/*************************************************************************

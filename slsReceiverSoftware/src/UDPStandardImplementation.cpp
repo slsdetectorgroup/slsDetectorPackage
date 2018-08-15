@@ -224,7 +224,7 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {
 		    for ( int i = 0; i < numThreads; ++i ) {
 		        try {
 		            DataStreamer* s = new DataStreamer(i, fifo[i], &dynamicRange,
-		                    &shortFrameEnable, &fileIndex, flippedData, additionalJsonHeader);
+		                    &shortFrameEnable, &fileIndex, flippedData, additionalJsonHeader, &silentMode);
 		            dataStreamer.push_back(s);
 		            dataStreamer[i]->SetGeneralData(generalData);
 		            dataStreamer[i]->CreateZmqSockets(&numThreads, streamingPort, streamingSrcIP);
@@ -309,19 +309,6 @@ int UDPStandardImplementation::setFifoDepth(const uint32_t i) {
 }
 
 
-void UDPStandardImplementation::setSilentMode(const uint32_t i){
-	silentMode = i;
-
-    for (vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
-        (*it)->SetSilentMode(i);
-    for (vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
-        (*it)->SetSilentMode(i);
-    for (vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
-        (*it)->SetSilentMode(i);
-
-	FILE_LOG(logINFO) << "Silent Mode: " << i;
-}
-
 
 int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	FILE_LOG(logDEBUG) << "Setting receiver type";
@@ -375,13 +362,13 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	        Listener* l = new Listener(i, myDetectorType, fifo[i], &status,
 	                &udpPortNum[i], eth, &numberOfFrames, &dynamicRange,
 	                &udpSocketBufferSize, &actualUDPSocketBufferSize, &framesPerFile,
-					&frameDiscardMode, &activated, &deactivatedPaddingEnable);
+					&frameDiscardMode, &activated, &deactivatedPaddingEnable, &silentMode);
 	        listener.push_back(l);
 
 	        DataProcessor* p = new DataProcessor(i, myDetectorType, fifo[i], &fileFormatType,
 	                fileWriteEnable, &dataStreamEnable, &gapPixelsEnable,
 	                &dynamicRange, &frameToGuiFrequency, &frameToGuiTimerinMS,
-					&framePadding, &activated, &deactivatedPaddingEnable,
+					&framePadding, &activated, &deactivatedPaddingEnable, &silentMode,
 	                rawDataReadyCallBack, rawDataModifyReadyCallBack, pRawDataReady);
 	        dataProcessor.push_back(p);
 	    }

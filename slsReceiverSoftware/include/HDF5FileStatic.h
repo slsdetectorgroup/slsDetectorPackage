@@ -534,6 +534,7 @@ public:
 	/**
 	 * Create virtual file
 	 * (in C because H5Pset_virtual doesnt exist yet in C++)
+	 * @param virtualFileName virtual file name
 	 * @param fd virtual file handle
 	 * @param masterFileName master file name
 	 * @param fpath file path
@@ -556,6 +557,7 @@ public:
 	 * @returns 0 for success and 1 for fail
 	 */
 	static int CreateVirtualDataFile(
+			string virtualFileName,
 			hid_t& fd, string masterFileName,
 			char* fpath, char* fnameprefix, uint64_t findex, bool frindexenable,
 			int dindex, int numunits,
@@ -566,10 +568,6 @@ public:
 			vector <const char*> parameterNames,
 			vector <DataType> parameterDataTypes)
 	{
-		//virtual names
-		string virtualFileName = CreateVirtualFileName(fpath, fnameprefix, findex);
-		FILE_LOG(logINFO) << "Virtual File: " << virtualFileName;
-
 		//file
 		hid_t dfal = H5Pcreate (H5P_FILE_ACCESS);
 		if (dfal < 0)

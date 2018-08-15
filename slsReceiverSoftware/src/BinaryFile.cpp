@@ -53,7 +53,7 @@ int BinaryFile::CreateFile(uint64_t fnum) {
 	if (BinaryFileStatic::CreateDataFile(filefd, *overWriteEnable, currentFileName, FILE_BUFFER_SIZE) == FAIL)
 		return FAIL;
 
-	if(!silentMode) {
+	if(!(*silentMode)) {
 		FILE_LOG(logINFO) << "[" << *udpPortNumber << "]: Binary File created: " << currentFileName;
 	}
 	return OK;
@@ -125,7 +125,7 @@ int BinaryFile::CreateMasterFile(bool en, uint32_t size,
 	if (master && (*detIndex==0)) {
 		masterFileName = BinaryFileStatic::CreateMasterFileName(filePath,
 				fileNamePrefix, *fileIndex);
-		if(!silentMode) {
+		if(!(*silentMode)) {
 			FILE_LOG(logINFO) << "Master File: " << masterFileName;
 		}
 		return BinaryFileStatic::CreateMasterDataFile(masterfd, masterFileName,

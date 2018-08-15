@@ -273,7 +273,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * Get Silent Mode
 	 * @return silent mode
 	 */
-	uint32_t getSilentMode() const;
+	bool getSilentMode() const;
 
 	/**
 	 * Get activate
@@ -540,9 +540,9 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	//***receiver parameters***
 	/**
 	 * Set Silent Mode
-	 * @param i silent mode. 1 sets, 0 unsets
+	 * @param i silent mode. true sets, false unsets
 	 */
-	void setSilentMode(const uint32_t i);
+	void setSilentMode(const bool i);
 
 	/*************************************************************************
 	 * Behavioral functions***************************************************
@@ -801,7 +801,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	char additionalJsonHeader[MAX_STR_LENGTH];
 
 	//***receiver parameters***
-	uint32_t silentMode;
+	bool silentMode;
 
 
 

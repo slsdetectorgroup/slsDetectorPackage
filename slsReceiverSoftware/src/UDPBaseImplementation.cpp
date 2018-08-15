@@ -91,7 +91,7 @@ void UDPBaseImplementation::initializeMembers(){
     memset(additionalJsonHeader, 0, sizeof(additionalJsonHeader));
 
 	//***receiver parameters***
-	silentMode = 0;
+	silentMode = false;
 
 }
 
@@ -319,7 +319,7 @@ slsReceiverDefs::runStatus UDPBaseImplementation::getStatus() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
     return status;}
 
-uint32_t UDPBaseImplementation::getSilentMode() const{
+bool UDPBaseImplementation::getSilentMode() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
     return silentMode;}
 
@@ -664,7 +664,7 @@ int UDPBaseImplementation::setFifoDepth(const uint32_t i){
 }
 
 /***receiver parameters***/
-void UDPBaseImplementation::setSilentMode(const uint32_t i){
+void UDPBaseImplementation::setSilentMode(const bool i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	silentMode = i;

@@ -721,6 +721,11 @@ int slsReceiverTCPIPInterface::send_update() {
 #endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
+	// silent mode
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind=(int)receiverBase->getSilentMode();
+#endif
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	if (!lockStatus)
 		strcpy(mySock->lastClientIP,mySock->thisClientIP);
@@ -2437,7 +2442,7 @@ int slsReceiverTCPIPInterface::set_silent_mode() {
 			}
 		}
 		//get
-		retval = receiverBase->getSilentMode(); // no check required
+		retval = (int)receiverBase->getSilentMode(); // no check required
 	}
 #endif
 #ifdef VERYVERBOSE

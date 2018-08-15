@@ -159,7 +159,7 @@ int HDF5File::CreateFile(uint64_t fnum) {
 	if (dataspace == NULL)
 		cprintf(RED,"Got nothing!\n");
 
-	if(!silentMode) {
+	if(!(*silentMode)) {
 		FILE_LOG(logINFO) << *udpPortNumber << ": HDF5 File created: " << currentFileName;
 	}
 	return OK;
@@ -215,7 +215,7 @@ int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t 
 	if (fnum >= extNumImages) {
 		if (HDF5FileStatic::ExtendDataset(index, dataspace, dataset,
 				dataspace_para, dataset_para, *numImages) == OK) {
-			if (!silentMode) {
+			if (!(*silentMode)) {
 				cprintf(BLUE,"%d Extending HDF5 dataset by %llu, Total x Dimension: %llu\n",
 					index, (long long unsigned int)extNumImages,
 					(long long unsigned int)(extNumImages + *numImages));
@@ -258,7 +258,7 @@ int HDF5File::CreateMasterFile(bool en, uint32_t size,
 		virtualfd = 0;
 		masterFileName = HDF5FileStatic::CreateMasterFileName(filePath,
 				fileNamePrefix, *fileIndex);
-		if(!silentMode) {
+		if(!(*silentMode)) {
 			FILE_LOG(logINFO) << "Master File: " << masterFileName;
 		}
 		pthread_mutex_lock(&Mutex);
@@ -297,7 +297,13 @@ void HDF5File::EndofAcquisition(bool anyPacketsCaught, uint64_t numf) {
 // called only by the one maser receiver
 int HDF5File::CreateVirtualFile(uint64_t numf) {
 	pthread_mutex_lock(&Mutex);
-	int ret = HDF5FileStatic::CreateVirtualDataFile(
+
+	string vname = HDF5FileStatic::CreateVirtualFileName(filePath, fileNamePrefix, *fileIndex);
+	if(!(*silentMode)) {
+		FILE_LOG(logINFO) << "Virtual File: " << vname;
+	}
+
+	int ret = HDF5FileStatic::CreateVirtualDataFile(vname,
 			virtualfd, masterFileName,
 			filePath, fileNamePrefix, *fileIndex, (*numImages > 1),
 			*detIndex, *numUnitsPerDetector,

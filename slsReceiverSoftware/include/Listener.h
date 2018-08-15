@@ -35,11 +35,12 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param fdp frame discard policy
 	 * @param act pointer to activated
 	 * @param depaden pointer to deactivated padding enable
+	 * @param sm pointer to silent mode
 	 */
 	Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
 	        uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
 	        uint32_t* us, uint32_t* as, uint32_t* fpf,
-			frameDiscardPolicy* fdp, bool* act, bool* depaden);
+			frameDiscardPolicy* fdp, bool* act, bool* depaden, bool* sm);
 
 	/**
 	 * Destructor
@@ -130,12 +131,6 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * Shuts down and deletes UDP Sockets
 	 */
 	void ShutDownUDPSocket();
-
-    /**
-     * Set Silent Mode
-     * @param mode 1 sets 0 unsets
-     */
-    void SetSilentMode(bool mode);
 
     /**
      * Create & closes a dummy UDP socket
@@ -253,6 +248,9 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	/** Deactivated padding enable */
 	bool* deactivatedPaddingEnable;
 
+    /** Silent Mode */
+    bool* silentMode;
+
 	/** x coord hardcoded as 1D or 2d,
 	 * if detector does not send them yet or
 	 * missing packets/deactivated (eiger/jungfrau sends 2d pos) **/
@@ -313,8 +311,5 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** number of images for statistic */
 	uint32_t numFramesStatistic;
-
-    /** Silent Mode */
-    bool silentMode;
 };
 

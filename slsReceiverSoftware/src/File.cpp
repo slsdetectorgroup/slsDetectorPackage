@@ -57,7 +57,7 @@ void File::PrintMembers() {
 			<< "UDP Port number: " << *udpPortNumber << endl
 			<< "Master File Name: " << masterFileName << endl
 			<< "Current File Name: " << currentFileName << endl
-			<< "Silent Mode: " << silentMode;
+			<< "Silent Mode: " << *silentMode;
 }
 
 

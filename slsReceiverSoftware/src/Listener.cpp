@@ -22,7 +22,7 @@ const string Listener::TypeName = "Listener";
 Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
         uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
         uint32_t* us, uint32_t* as, uint32_t* fpf,
-		frameDiscardPolicy* fdp, bool* act, bool* depaden) :
+		frameDiscardPolicy* fdp, bool* act, bool* depaden, bool* sm) :
 		ThreadObject(ind),
 		runningFlag(0),
 		generalData(0),
@@ -40,6 +40,7 @@ Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
 		frameDiscardMode(fdp),
 		activated(act),
 		deactivatedPaddingEnable(depaden),
+		silentMode(sm),
 		xcoord(0),
 		ycoord(0),
 		acquisitionStartedFlag(false),
@@ -54,8 +55,7 @@ Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
 		listeningPacket(0),
 		udpSocketAlive(0),
 		numPacketsStatistic(0),
-		numFramesStatistic(0),
-		silentMode(false)
+		numFramesStatistic(0)
 {
 	if(ThreadObject::CreateThread() == FAIL)
 	    throw std::exception();
@@ -159,7 +159,7 @@ void Listener::RecordFirstIndices(uint64_t fnum) {
 		firstAcquisitionIndex = fnum;
 	}
 
-	if(!silentMode) {
+	if(!(*silentMode)) {
 		if (!index) cprintf(BLUE,"%d First Acquisition Index:%lu\n"
 				"%d First Measurement Index:%lu\n",
 				index, firstAcquisitionIndex,
@@ -234,11 +234,6 @@ void Listener::ShutDownUDPSocket() {
         udpSocket = 0;
 	    sem_destroy(&semaphore_socket);
 	}
-}
-
-
-void Listener::SetSilentMode(bool mode) {
-    silentMode = mode;
 }
 
 
@@ -349,7 +344,7 @@ void Listener::ThreadExecution() {
 	fifo->PushAddress(buffer);
 
 	//Statistics
-	if(!silentMode) {
+	if(!(*silentMode)) {
 		numFramesStatistic++;
 		if (numFramesStatistic >=
 				//second condition also for infinite #number of frames

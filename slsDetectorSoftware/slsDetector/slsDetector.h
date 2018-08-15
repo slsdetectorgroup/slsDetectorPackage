@@ -381,6 +381,9 @@ private:
 		/** padding enable in deactivated receiver */
 		bool receiver_deactivatedPaddingEnable;
 
+		/** silent receiver */
+		bool receiver_silentMode;
+
 	} sharedSlsDetector;
 
 

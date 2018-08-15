@@ -27,7 +27,7 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo*& f,
 		fileFormat* ftype, bool fwenable,
 		bool* dsEnable, bool* gpEnable, uint32_t* dr,
 		uint32_t* freq, uint32_t* timer,
-		bool* fp, bool* act, bool* depaden,
+		bool* fp, bool* act, bool* depaden, bool* sm,
 		void (*dataReadycb)(char*, char*, uint32_t, void*),
 		void (*dataModifyReadycb)(char*, char*, uint32_t &, void*),
 		void *pDataReadycb) :
@@ -49,6 +49,8 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo*& f,
 		tempBuffer(0),
 		activated(act),
 		deactivatedPaddingEnable(depaden),
+        silentMode(sm),
+		framePadding(fp),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
 		firstAcquisitionIndex(0),
@@ -56,8 +58,6 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo*& f,
 		numTotalFramesCaught(0),
 		numFramesCaught(0),
 		currentFrameIndex(0),
-        silentMode(false),
-		framePadding(fp),
 		rawDataReadyCallBack(dataReadycb),
 		rawDataModifyReadyCallBack(dataModifyReadycb),
 		pRawDataReady(pDataReadycb)
@@ -236,13 +236,13 @@ void DataProcessor::SetupFileWriter(bool fwe, int* nd, uint32_t* maxf,
 		file = new HDF5File(index, maxf,
 				nd, fname, fpath, findex, owenable,
 				dindex, nunits, nf, dr, portno,
-				generalData->nPixelsX, generalData->nPixelsY, &silentMode);
+				generalData->nPixelsX, generalData->nPixelsY, silentMode);
 		break;
 #endif
 	default:
 		file = new BinaryFile(index, maxf,
 				nd, fname, fpath, findex, owenable,
-				dindex, nunits, nf, dr, portno, &silentMode);
+				dindex, nunits, nf, dr, portno, silentMode);
 		break;
 		}
 	}
@@ -453,9 +453,6 @@ void DataProcessor::SetPixelDimension() {
 	}
 }
 
-void DataProcessor::SetSilentMode(bool mode) {
-    silentMode = mode;
-}
 
 void DataProcessor::PadMissingPackets(char* buf) {
 	FILE_LOG(logDEBUG) << index << ": Padding Missing Packets";

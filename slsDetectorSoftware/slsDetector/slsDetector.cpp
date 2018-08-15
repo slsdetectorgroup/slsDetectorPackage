@@ -751,6 +751,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 	thisDetector->receiver_framePadding = 1;
 	thisDetector->activated = true;
 	thisDetector->receiver_deactivatedPaddingEnable = true;
+	thisDetector->receiver_silentMode = false;
 
 	// get the detector parameters based on type
 	detParameterList detlist;
@@ -5273,6 +5274,7 @@ string slsDetector::setReceiver(string receiverIP) {
 			std::cout << "activated: " << thisDetector->activated << endl;
 			std::cout << "receiver deactivated padding: " << thisDetector->receiver_deactivatedPaddingEnable << endl;
 		}
+		std::cout << "silent Mode:" << thisDetector->receiver_silentMode << endl;
 		std::cout << "10GbE:" << thisDetector->tenGigaEnable << endl;
 		std::cout << "Gap pixels: " << thisDetector->gappixels << endl;
 		std::cout << "rx streaming source ip:" << thisDetector->receiver_zmqip << endl;
@@ -5321,6 +5323,7 @@ string slsDetector::setReceiver(string receiverIP) {
 				activate(-1);
 				setDeactivatedRxrPaddingMode(thisDetector->receiver_deactivatedPaddingEnable);
 			}
+			setReceiverSilentMode(thisDetector->receiver_silentMode);
 
 			if(thisDetector->myDetectorType == EIGER)
 				enableTenGigabitEthernet(thisDetector->tenGigaEnable);
@@ -8613,6 +8616,10 @@ int slsDetector::updateReceiverNoWait() {
 	n += dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
 	thisDetector->receiver_deactivatedPaddingEnable = ind;
 
+	// silent mode
+	n += dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
+	thisDetector->receiver_silentMode = ind;
+
 	if (!n) printf("n: %d\n", n);
 
 	return OK;
@@ -9536,8 +9543,10 @@ int slsDetector::setReceiverSilentMode(int i) {
 		}
 		if(ret==FAIL)
 			setErrorMask((getErrorMask())|(RECEIVER_PARAMETER_NOT_SET));
+		else
+			thisDetector->receiver_silentMode = retval;
 	}
-	return retval;
+	return thisDetector->receiver_silentMode;
 }
 
 

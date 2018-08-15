@@ -27,8 +27,10 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param fi pointer to file index
 	 * @param fd flipped data enable for x and y dimensions
 	 * @param ajh additional json header
+	 * @param sm pointer to silent mode
 	 */
-	DataStreamer(int ind, Fifo*& f, uint32_t* dr, int* sEnable, uint64_t* fi, int* fd, char* ajh);
+	DataStreamer(int ind, Fifo*& f, uint32_t* dr, int* sEnable,
+			uint64_t* fi, int* fd, char* ajh, bool* sm);
 
 	/**
 	 * Destructor
@@ -104,11 +106,6 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	int RestreamStop();
 
-    /**
-     * Set Silent Mode
-     * @param mode 1 sets 0 unsets
-     */
-    void SetSilentMode(bool mode);
 
  private:
 
@@ -181,6 +178,16 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	/** Pointer to file index */
 	uint64_t* fileIndex;
 
+	/** flipped data across both dimensions enable */
+	int* flippedData;
+
+	/** additional json header */
+	char* additionJsonHeader;
+
+    /** Silent Mode */
+    bool* silentMode;
+
+
 	/** Aquisition Started flag */
 	bool acquisitionStartedFlag;
 
@@ -199,13 +206,5 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	/** Complete buffer used for roi, eg. shortGotthard */
 	char* completeBuffer;
 
-	/** flipped data across both dimensions enable */
-	int* flippedData;
-
-	/** additional json header */
-	char* additionJsonHeader;
-
-    /** Silent Mode */
-    bool silentMode;
 };
 

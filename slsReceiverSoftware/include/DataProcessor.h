@@ -37,6 +37,7 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param fp pointer to frame padding enable
 	 * @param act pointer to activated
 	 * @param depaden pointer to deactivated padding enable
+	 * @param sm pointer to silent mode
 	 * @param dataReadycb pointer to data ready call back function
 	 * @param dataModifyReadycb pointer to data ready call back function with modified
 	 * @param pDataReadycb pointer to arguments of data ready call back function. To write/stream a smaller size of processed data, change this value (only smaller value is allowed).
@@ -44,7 +45,7 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	DataProcessor(int ind, detectorType dtype, Fifo*& f, fileFormat* ftype,
 			bool fwenable, bool* dsEnable, bool* gpEnable, uint32_t* dr,
 						uint32_t* freq, uint32_t* timer,
-						bool* fp, bool* act, bool* depaden,
+						bool* fp, bool* act, bool* depaden, bool* sm,
 						void (*dataReadycb)(char*, char*, uint32_t, void*),
 				        void (*dataModifyReadycb)(char*, char*, uint32_t &, void*),
 						void *pDataReadycb);
@@ -202,11 +203,6 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	void SetPixelDimension();
 
-    /**
-     * Set Silent Mode
-     * @param mode 1 sets 0 unsets
-     */
-    void SetSilentMode(bool mode);
 
 
 
@@ -342,6 +338,11 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	/** Deactivated padding enable */
 	bool* deactivatedPaddingEnable;
 
+    /** Silent Mode */
+    bool* silentMode;
+
+	/** frame padding */
+	bool* framePadding;
 
 	//acquisition start
 	/** Aquisition Started flag */
@@ -368,12 +369,6 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	uint64_t currentFrameIndex;
 
 
-    /** Silent Mode */
-    bool silentMode;
-
-	/** frame padding */
-	bool* framePadding;
-
 	//call back
     /**
      * Call back for raw data
@@ -384,7 +379,6 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
      */
     void (*rawDataReadyCallBack)(char*,
             char*, uint32_t, void*);
-
 
     /**
      * Call back for raw data (modified)

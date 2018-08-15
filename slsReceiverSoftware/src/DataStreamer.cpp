@@ -16,7 +16,8 @@ using namespace std;
 const string DataStreamer::TypeName = "DataStreamer";
 
 
-DataStreamer::DataStreamer(int ind, Fifo*& f, uint32_t* dr, int* sEnable, uint64_t* fi, int* fd, char* ajh) :
+DataStreamer::DataStreamer(int ind, Fifo*& f, uint32_t* dr, int* sEnable,
+		uint64_t* fi, int* fd, char* ajh, bool* sm) :
 		ThreadObject(ind),
 		runningFlag(0),
 		generalData(0),
@@ -25,14 +26,14 @@ DataStreamer::DataStreamer(int ind, Fifo*& f, uint32_t* dr, int* sEnable, uint64
 		dynamicRange(dr),
 		shortFrameEnable(sEnable),
 		fileIndex(fi),
+		flippedData(fd),
+		additionJsonHeader(ajh),
+        silentMode(sm),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
 		firstAcquisitionIndex(0),
 		firstMeasurementIndex(0),
-		completeBuffer(0),
-		flippedData(fd),
-		additionJsonHeader(ajh),
-        silentMode(false)
+		completeBuffer(0)
 {
     if(ThreadObject::CreateThread() == FAIL)
         throw std::exception();
@@ -271,8 +272,4 @@ int DataStreamer::RestreamStop() {
 	return OK;
 }
 
-
-void DataStreamer::SetSilentMode(bool mode) {
-    silentMode = mode;
-}
 

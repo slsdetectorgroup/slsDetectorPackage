@@ -211,7 +211,7 @@ class File : private virtual slsReceiverDefs {
 	uint32_t* udpPortNumber;
 
 	/** Silent Mode */
-	bool silentMode;
+	bool* silentMode;
 
 };
 

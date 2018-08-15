@@ -114,6 +114,9 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	 */
 	void EndofAcquisition(bool anyPacketsCaught, uint64_t numf);
 
+
+ private:
+
 	/**
 	 * Create Virtual File
 	 * @param numf number of images caught
@@ -121,8 +124,12 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	 */
 	int CreateVirtualFile(uint64_t numf);
 
-
- private:
+	/**
+	 * Link virtual file in master file
+	 * Only for Jungfrau at the moment for 1 module and 1 data file
+	 * @returns OK or FAIL
+	 */
+	int LinkVirtualFileinMasterFile();
 
 	/**
 	 * Get Type

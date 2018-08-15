@@ -3976,14 +3976,10 @@ int slsDetector::configureMAC() {
 	if (thisDetector->myDetectorType == JUNGFRAU ||
 			thisDetector->myDetectorType == EIGER) {
 		sendpos = true;
-		int max = multiDet->getNumberOfDetectors(X);
-		if(!detId) {
-			pos[0] = 0;
-			pos[1] = 0;
-		} else {
-			pos[1] = detId / max;
-			pos[0] = (detId % max) * ((thisDetector->myDetectorType == EIGER) ? 2 : 1); // for horiz. udp ports
-		}
+		int max = multiDet->getNumberOfDetectors(Y);
+
+		pos[0] = (detId % max); // row
+		pos[1] = (detId / max) * ((thisDetector->myDetectorType == EIGER) ? 2 : 1);// col for horiz. udp ports
 	}
 #ifdef VERBOSE
 	cout << "SLS [" << detId << "] - (" << pos[0] << "," << pos[1] << "," <<
@@ -5288,8 +5284,7 @@ string slsDetector::setReceiver(string receiverIP) {
 
 #endif
 		if(setDetectorType()!= GENERIC){
-			if(!detId)
-				sendMultiDetectorSize();
+			sendMultiDetectorSize();
 			setDetectorId();
 			setDetectorHostname();
 			setUDPConnection();

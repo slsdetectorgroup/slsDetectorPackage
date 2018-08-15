@@ -170,7 +170,7 @@ void HDF5File::CloseCurrentFile() {
 	pthread_mutex_lock(&Mutex);
 	HDF5FileStatic::CloseDataFile(index, filefd);
 	pthread_mutex_unlock(&Mutex);
-	for (int i = 0; i < dataset_para.size(); ++i)
+	for (unsigned int i = 0; i < dataset_para.size(); ++i)
 		delete dataset_para[i];
 	dataset_para.clear();
 	if(dataspace_para) {delete dataspace_para;dataspace_para=0;}
@@ -190,7 +190,7 @@ void HDF5File::CloseAllFiles() {
 	}
 	pthread_mutex_unlock(&Mutex);
 
-	for (int i = 0; i < dataset_para.size(); ++i)
+	for (unsigned int i = 0; i < dataset_para.size(); ++i)
 		delete dataset_para[i];
 	dataset_para.clear();
 	if(dataspace_para) delete dataspace_para;
@@ -201,6 +201,7 @@ void HDF5File::CloseAllFiles() {
 
 
 int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) {
+
 	// check if maxframesperfile = 0 for infinite
 	if ((*maxFramesPerFile) && (numFramesInFile >= (*maxFramesPerFile))) {
 		CloseCurrentFile();
@@ -228,12 +229,12 @@ int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t 
 			((*maxFramesPerFile == 0) ? fnum : fnum%(*maxFramesPerFile)),
 			nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
 			dataspace, dataset, datatype) == OK) {
-		sls_receiver_header* header = (sls_receiver_header*) (buffer);
-		/*header->xCoord = ((*detIndex) * (*numUnitsPerDetector) + index); */
+
 		if (HDF5FileStatic::WriteParameterDatasets(index, dataspace_para,
 				// infinite then no need for %maxframesperfile
 				((*maxFramesPerFile == 0) ? fnum : fnum%(*maxFramesPerFile)),
-				dataset_para, header, parameterDataTypes) == OK) {
+				dataset_para, (sls_receiver_header*) (buffer),
+				parameterDataTypes) == OK) {
 			pthread_mutex_unlock(&Mutex);
 			return OK;
 		}
@@ -277,43 +278,51 @@ void HDF5File::EndofAcquisition(bool anyPacketsCaught, uint64_t numf) {
 	//not created before
 	if (!virtualfd && anyPacketsCaught) {
 
-		//only one file and one sub image (link current file in master)
-		if (((numFilesinAcquisition == 1) && (numDetY*numDetX) == 1)) {
-			//dataset name
-			ostringstream osfn;
-			osfn << "/data";
-			if ((*numImages > 1)) osfn << "_f" << setfill('0') << setw(12) << 0;
-			string dsetname = osfn.str();
-			pthread_mutex_lock(&Mutex);
-			HDF5FileStatic::LinkVirtualInMaster(masterFileName, currentFileName,
-					dsetname, parameterNames);
-			pthread_mutex_unlock(&Mutex);
-		}
+		// called only by the one maser receiver
+		if (master && (*detIndex==0)) {
 
-		//create virutal file
-		else
-			CreateVirtualFile(numf);
+			//only one file and one sub image (link current file in master)
+			if (((numFilesinAcquisition == 1) && (numDetY*numDetX) == 1)) {
+				LinkVirtualFileinMasterFile();
+			}
+			//create virutal file
+			else{
+				CreateVirtualFile(numf);}
+		}
 	}
 	numFilesinAcquisition = 0;
 }
 
 
+// called only by the one maser receiver
 int HDF5File::CreateVirtualFile(uint64_t numf) {
-	if (master && (*detIndex==0)) {
-		pthread_mutex_lock(&Mutex);
-		int ret = HDF5FileStatic::CreateVirtualDataFile(
-				virtualfd, masterFileName,
-				filePath, fileNamePrefix, *fileIndex, (*numImages > 1),
-				*detIndex, *numUnitsPerDetector,
-				// infinite images in 1 file, then maxfrperfile = numf
-				((*maxFramesPerFile == 0) ? numf+1 : *maxFramesPerFile),
-				numf+1,
-				"data",	datatype,
-				numDetY, numDetX, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
-				HDF5_WRITER_VERSION,
-				parameterNames, parameterDataTypes);
-		pthread_mutex_unlock(&Mutex);
-		return ret;
-	}
-	return OK;
+	pthread_mutex_lock(&Mutex);
+	int ret = HDF5FileStatic::CreateVirtualDataFile(
+			virtualfd, masterFileName,
+			filePath, fileNamePrefix, *fileIndex, (*numImages > 1),
+			*detIndex, *numUnitsPerDetector,
+			// infinite images in 1 file, then maxfrperfile = numf
+			((*maxFramesPerFile == 0) ? numf+1 : *maxFramesPerFile),
+			numf+1,
+			"data",	datatype,
+			numDetY, numDetX, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
+			HDF5_WRITER_VERSION,
+			parameterNames, parameterDataTypes);
+	pthread_mutex_unlock(&Mutex);
+	return ret;
+}
+
+// called only by the one maser receiver
+int HDF5File::LinkVirtualFileinMasterFile() {
+	//dataset name
+	ostringstream osfn;
+	osfn << "/data";
+	if ((*numImages > 1)) osfn << "_f" << setfill('0') << setw(12) << 0;
+	string dsetname = osfn.str();
+
+	pthread_mutex_lock(&Mutex);
+	int ret = HDF5FileStatic::LinkVirtualInMaster(masterFileName, currentFileName,
+			dsetname, parameterNames);
+	pthread_mutex_unlock(&Mutex);
+	return ret;
 }

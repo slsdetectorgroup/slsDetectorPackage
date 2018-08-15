@@ -40,6 +40,8 @@ Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
 		frameDiscardMode(fdp),
 		activated(act),
 		deactivatedPaddingEnable(depaden),
+		xcoord(0),
+		ycoord(0),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
 		firstAcquisitionIndex(0),
@@ -292,6 +294,10 @@ int Listener::CreateDummySocketForUDPSocketBufferSize(uint32_t s) {
     return OK;
 }
 
+void Listener::SetHardCodedCoords(uint16_t x, uint16_t y) {
+	xcoord = x;
+	ycoord = y;
+}
 
 void Listener::ThreadExecution() {
 	char* buffer;
@@ -392,14 +398,21 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 	new_header = (sls_receiver_header*) (buf + FIFO_HEADER_NUMBYTES);
 
 	// deactivated (eiger)
-	if (!(*activated)) {cprintf(RED,"deactivated receiver\n");
+	if (!(*activated)) {
 		// no padding
-		if (!(*deactivatedPaddingEnable)) {
-			return 0;}
+		if (!(*deactivatedPaddingEnable))
+			return 0;
 		// padding without setting bitmask (all missing packets padded in dataProcessor)
 		if (currentFrameIndex >= *numImages)
 			return 0;
-		new_header->detHeader.frameNumber = currentFrameIndex+1; //(eiger)
+
+		//(eiger) first fnum starts at 1
+		if (!currentFrameIndex) {
+			++currentFrameIndex;
+		}
+		new_header->detHeader.frameNumber = currentFrameIndex;
+		new_header->detHeader.xCoord = xcoord;
+		new_header->detHeader.yCoord = ycoord;
 		new_header->detHeader.detType = (uint8_t) generalData->myDetectorType;
 		new_header->detHeader.version = (uint8_t) SLS_DETECTOR_HEADER_VERSION;
 		return generalData->imageSize;
@@ -439,6 +452,10 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 				break;
 			}
 			new_header->detHeader.packetNumber = numpackets;
+			if(isHeaderEmpty) {
+				new_header->detHeader.xCoord = xcoord;
+				new_header->detHeader.yCoord = ycoord;
+			}
 			return generalData->imageSize;
 		}
 
@@ -476,6 +493,8 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 			// -------------------old header ------------------------------------------------------------------------------
 			else {
 				new_header->detHeader.frameNumber = fnum;
+				new_header->detHeader.xCoord = xcoord;
+				new_header->detHeader.yCoord = ycoord;
 				new_header->detHeader.detType = (uint8_t) generalData->myDetectorType;
 				new_header->detHeader.version = (uint8_t) SLS_DETECTOR_HEADER_VERSION;
 			}
@@ -510,6 +529,10 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 				break;
 			}
 			new_header->detHeader.packetNumber = numpackets; 	//number of packets caught
+			if(isHeaderEmpty) {
+				new_header->detHeader.xCoord = xcoord;
+				new_header->detHeader.yCoord = ycoord;
+			}
 			return generalData->imageSize;	//empty packet now, but not empty image
 		}
 
@@ -565,6 +588,10 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 				break;
 			}
 			new_header->detHeader.packetNumber = numpackets; 	//number of packets caught
+			if(isHeaderEmpty) {
+				new_header->detHeader.xCoord = xcoord;
+				new_header->detHeader.yCoord = ycoord;
+			}
 			return generalData->imageSize;
 		}
 
@@ -599,6 +626,8 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 			// -------------------old header ------------------------------------------------------------------------------
 			else {
 				new_header->detHeader.frameNumber = fnum;
+				new_header->detHeader.xCoord = xcoord;
+				new_header->detHeader.yCoord = ycoord;
 				new_header->detHeader.detType = (uint8_t) generalData->myDetectorType;
 				new_header->detHeader.version = (uint8_t) SLS_DETECTOR_HEADER_VERSION;
 			}

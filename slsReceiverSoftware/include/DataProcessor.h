@@ -209,6 +209,7 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
     void SetSilentMode(bool mode);
 
 
+
  private:
 
 	/**
@@ -335,15 +336,11 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	/** temporary buffer for processing */
 	char* tempBuffer;
 
-	/** x coord hardcoded ad 1D, if detector does not send them yet **/
-	uint16_t xcoordin1D;
-
 	/** Activated/Deactivated */
 	bool* activated;
 
 	/** Deactivated padding enable */
 	bool* deactivatedPaddingEnable;
-
 
 
 	//acquisition start

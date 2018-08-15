@@ -47,7 +47,6 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo*& f,
 		streamingTimerInMs(timer),
 		currentFreqCount(0),
 		tempBuffer(0),
-		xcoordin1D(0),
 		activated(act),
 		deactivatedPaddingEnable(depaden),
 		acquisitionStartedFlag(false),
@@ -224,8 +223,6 @@ void DataProcessor::SetupFileWriter(bool fwe, int* nd, uint32_t* maxf,
 	fileWriteEnable = fwe;
 	if (g)
 		generalData = g;
-	// fix xcoord as detector is not providing it right now
-	xcoordin1D =  ((*dindex) * (*nunits)) + index;
 
 
 	if (file) {
@@ -366,15 +363,6 @@ void DataProcessor::ProcessAnImage(char* buf) {
 		InsertGapPixels(buf + FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header),
 				*dynamicRange);
 
-	// x coord is 0 for detector in pos [0,0,0]
-	if (xcoordin1D) {
-		// do nothing as detector has correctly send them
-		if (header.xCoord || header.yCoord || header.zCoord)
-			;
-		// detector has send all 0's when there should have been a value greater than 0 in some dimension
-		else
-			header.xCoord = xcoordin1D;
-	}
 
 	// deactivated and padding enabled
 	if ((!(*activated) && *deactivatedPaddingEnable) ||
@@ -402,10 +390,11 @@ void DataProcessor::ProcessAnImage(char* buf) {
         (*((uint32_t*)buf)) =  revsize;
     }
 
+
 	// write to file
 	if (file)
 		file->WriteToFile(buf + FIFO_HEADER_NUMBYTES,
-				sizeof(sls_receiver_header) + (uint32_t)(*((uint32_t*)buf)),
+				sizeof(sls_receiver_header) + (uint32_t)(*((uint32_t*)buf)), //+ size of data (resizable from previous call back
 				fnum-firstMeasurementIndex, nump);
 
 

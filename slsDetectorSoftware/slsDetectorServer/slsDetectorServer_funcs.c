@@ -113,7 +113,7 @@ int decode_function(int file_des) {
 #ifdef JUNGFRAUD
 	if ((debugflag == PROGRAMMING_MODE) &&
 			((fnum != F_PROGRAM_FPGA) && (fnum != F_GET_DETECTOR_TYPE) &&
-					(fnum != F_RESET_FPGA) && (fnum != F_UPDATE_CLIENT))) {
+					(fnum != F_RESET_FPGA) && (fnum != F_UPDATE_CLIENT) && (fnum != F_CHECK_VERSION))) {
 		sprintf(mess,"This Function %s cannot be executed. ", getFunctionName((enum detFuncs)fnum));
 		ret=(M_nofuncMode)(file_des);
 	} else

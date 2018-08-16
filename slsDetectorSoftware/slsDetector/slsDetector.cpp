@@ -7418,7 +7418,7 @@ int slsDetector::programFPGA(string fname){
 #endif
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
 		if (connectControl() == OK){
-			controlSocket->SendDataOnly(&fnum,sizeof(fnum));cprintf(BG_RED,"size of filesize:%lu\n",sizeof(filesize));
+			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 			controlSocket->SendDataOnly(&filesize,sizeof(filesize));
 			//check opening error
 			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));

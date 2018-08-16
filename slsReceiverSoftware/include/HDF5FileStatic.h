@@ -242,7 +242,7 @@ public:
 			Exception::dontPrint(); //to handle errors
 
 			hsize_t dims[3];
-			herr_t status_n = dspace->getSimpleExtentDims(dims);
+			dspace->getSimpleExtentDims(dims);
 			dims[0] += initialNumImages;
 
 			dset->extend(dims);
@@ -290,9 +290,9 @@ public:
 			FileAccPropList flist;
 			flist.setFcloseDegree(H5F_CLOSE_STRONG);
 			if(!owenable)
-				fd = new H5File( fname.c_str(), H5F_ACC_EXCL, NULL, flist );
+				fd = new H5File( fname.c_str(), H5F_ACC_EXCL, FileCreatPropList::DEFAULT, flist );
 			else
-				fd = new H5File( fname.c_str(), H5F_ACC_TRUNC, NULL, flist );
+				fd = new H5File( fname.c_str(), H5F_ACC_TRUNC, FileCreatPropList::DEFAULT, flist );
 
 			//variables
 			DataSpace dataspace = DataSpace (H5S_SCALAR);
@@ -418,9 +418,9 @@ public:
 			FileAccPropList fapl;
 			fapl.setFcloseDegree(H5F_CLOSE_STRONG);
 			if(!owenable)
-				fd = new H5File( fname.c_str(), H5F_ACC_EXCL, NULL,fapl );
+				fd = new H5File( fname.c_str(), H5F_ACC_EXCL, FileCreatPropList::DEFAULT,fapl );
 			else
-				fd = new H5File( fname.c_str(), H5F_ACC_TRUNC, NULL, fapl );
+				fd = new H5File( fname.c_str(), H5F_ACC_TRUNC, FileCreatPropList::DEFAULT, fapl );
 
 			//attributes - version
 			double dValue=version;
@@ -538,7 +538,7 @@ public:
 		hid_t vdsDataspace = H5Screate_simple(3, vdsdims ,NULL);
 		if (vdsDataspace < 0)
 			return CloseFileOnError(fd, string("Error in creating virtual dataspace in virtual file ") + virtualFileName + string("\n"));
-		hsize_t vdsdims_para[2] = {numf, numDety * numDetz};
+		hsize_t vdsdims_para[2] = {numf, (unsigned int)numDety * numDetz};
 		hid_t vdsDataspace_para = H5Screate_simple(2, vdsdims_para, NULL);
 		if (vdsDataspace_para < 0)
 			return CloseFileOnError(fd, string("Error in creating virtual dataspace (parameters) in virtual file ") + virtualFileName + string("\n"));

@@ -598,9 +598,9 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
     /*! \page timing
-   - <b>subperiod [i]</b> sets/gets sub frame period in s. Used in EIGER only in 32 bit mode. \c Returns \c (double with 9 decimal digits)
+   - <b>subdeadtime [i]</b> sets/gets sub frame dead time in s. Subperiod is set in the detector = subexptime + subdeadtime. This value is normally a constant in the config file. Used in EIGER only in 32 bit mode. \c Returns \c (double with 9 decimal digits)
      */
-    descrToFuncMap[i].m_pFuncName="subperiod"; //
+    descrToFuncMap[i].m_pFuncName="subdeadtime"; //
     descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
     ++i;
 
@@ -5656,8 +5656,8 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
 		index=SUBFRAME_ACQUISITION_TIME;
 	else if (cmd=="period")
 		index=FRAME_PERIOD;
-    else if (cmd=="subperiod")
-        index=SUBFRAME_PERIOD;
+    else if (cmd=="subdeadtime")
+        index=SUBFRAME_DEADTIME;
 	else if (cmd=="delay")
 		index=DELAY_AFTER_TRIGGER;
 	else if (cmd=="gates")
@@ -5696,7 +5696,7 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
 			return string("cannot scan timer value ")+string(args[1]);
 		if (index==ACQUISITION_TIME || index==SUBFRAME_ACQUISITION_TIME ||
 		        index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER ||
-		        index == SUBFRAME_PERIOD) {
+		        index == SUBFRAME_DEADTIME) {
 			// 	+0.5 for precision of eg.0.0000325
 			t = ( val * 1E9 + 0.5);
 		}else t=(int64_t)val;
@@ -5710,7 +5710,7 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
 
 	if ((ret!=-1) && (index==ACQUISITION_TIME || index==SUBFRAME_ACQUISITION_TIME
 	        || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER ||
-	        index == SUBFRAME_PERIOD)) {
+	        index == SUBFRAME_DEADTIME)) {
 		rval=(double)ret*1E-9;
 		sprintf(answer,"%0.9f",rval);
 	}
@@ -5739,7 +5739,7 @@ string slsDetectorCommand::helpTimer(int narg, char *args[], int action) {
 		os << "samples t \t sets the number of samples expected from the jctb" << std::endl;
 		os << "storagecells t \t sets number of storage cells per acquisition. For very advanced users only! For JUNGFRAU only. Range: 0-15. The #images = #frames * #cycles * (#storagecells+1)." << std::endl;
 		os << "storagecell_start t \t sets the storage cell that stores the first acquisition of the series. Default is 0. For very advanced users only! For JUNGFRAU only. Range: 0-15." << std::endl;
-		os << "subperiod t \t sets sub frame period in s. Used in EIGER only in 32 bit mode. " << std::endl;
+		os << "subdeadtime t \t sets sub frame dead time in s. Subperiod is set in the detector = subexptime + subdeadtime. This value is normally a constant in the config file. Used in EIGER only in 32 bit mode. " << std::endl;
 		os << std::endl;
 
 
@@ -5756,7 +5756,7 @@ string slsDetectorCommand::helpTimer(int narg, char *args[], int action) {
 		os << "samples \t gets the number of samples expected from the jctb" << std::endl;
 		os << "storagecells \t gets number of storage cells per acquisition.For JUNGFRAU only." << std::endl;
 		os << "storagecell_start \t gets the storage cell that stores the first acquisition of the series." << std::endl;
-		os << "subperiod \t gets sub frame period in s. Used in EIGER in 32 bit only." << std::endl;
+		os << "subperiod \t gets sub frame dead time in s. Used in EIGER in 32 bit only." << std::endl;
 		os << std::endl;
 
 	}

@@ -113,7 +113,7 @@ public:
 		SAMPLES_JCTB,
 		SUBFRAME_ACQUISITION_TIME, /**< subframe exposure time */
 		STORAGE_CELL_NUMBER, /**<number of storage cells */
-		SUBFRAME_PERIOD, /**< subframe period */
+		SUBFRAME_DEADTIME, /**< subframe deadtime */
 		MEASURED_PERIOD,	/**< measured period */
 		MEASURED_SUBPERIOD,	/**< measured subperiod */
 		MAX_TIMERS

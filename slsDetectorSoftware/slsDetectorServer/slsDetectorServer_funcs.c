@@ -2790,12 +2790,14 @@ int set_timer(int file_des) {
 #ifdef VERBOSE
 		printf("setting timer %d to %lld ns\n",ind,tns);
 #endif
+		int64_t subexptime = 0;
 		switch(ind) {
 #ifdef JUNGFRAUD
         case STORAGE_CELL_NUMBER:
             if (tns > MAX_STORAGE_CELL_VAL) {
                 ret=FAIL;
                 strcpy(mess,"Max Storage cell number should not exceed 15\n");
+            	cprintf(RED, "Warning: %s", mess);
                 break;
             }
 #endif
@@ -2804,14 +2806,19 @@ int set_timer(int file_des) {
 			if (tns > ((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) ){
 				ret=FAIL;
 				strcpy(mess,"Sub Frame exposure time should not exceed 5.368 seconds\n");
+				cprintf(RED, "Warning: %s", mess);
 				break;
 			}
 			retval = setTimer(ind,tns);
 			break;
-		case SUBFRAME_PERIOD:
-			if (tns > ((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) ){
+		case SUBFRAME_DEADTIME:
+			subexptime = setTimer(SUBFRAME_ACQUISITION_TIME, -1);
+			if ((tns + subexptime) > ((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) ){
 				ret=FAIL;
-				strcpy(mess,"Sub Frame Period should not exceed 5.368 seconds\n");
+				sprintf(mess,"Sub Frame Period should not exceed 5.368 seconds. "
+						"So sub frame dead time should not exceed %lfu seconds (subexptime = %lf seconds)\n",
+						((((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) - subexptime)/1E9), (subexptime/1E9));
+				cprintf(RED, "Warning: %s", mess);
 				break;
 			}
 			retval = setTimer(ind,tns);
@@ -3651,7 +3658,7 @@ int send_update(int file_des) {
 	if (n < 0) return printSocketReadError();
 
 #ifdef	SLS_DETECTOR_FUNCTION_LIST
-	retval=setTimer(SUBFRAME_PERIOD,GET_FLAG);
+	retval=setTimer(SUBFRAME_DEADTIME,GET_FLAG);
 #endif
 	n = sendData(file_des,&retval,sizeof(int64_t),INT64);
 	if (n < 0) return printSocketReadError();

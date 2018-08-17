@@ -233,7 +233,7 @@ void qTabAdvanced::SetupWidgetWindow(){
 		spinSubExpTime->setValue(time);
 		comboSubExpTimeUnit->setCurrentIndex((int)unit);
 		//period
-		time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::SUBFRAME_PERIOD,-1)*(1E-9))));
+		time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::SUBFRAME_DEADTIME,-1)*(1E-9))));
 		spinSubPeriod->setValue(time);
 		comboSubPeriodUnit->setCurrentIndex((int)unit);
 
@@ -1342,13 +1342,13 @@ void qTabAdvanced::SetSubPeriod() {
 			"/" << spinSubPeriod->value() <<
 			qDefs::getUnitString((qDefs::timeUnit)comboSubPeriodUnit->currentIndex()) << endl;
 #endif
-	myDet->setTimer(slsDetectorDefs::SUBFRAME_PERIOD,(int64_t)timeNS);
+	myDet->setTimer(slsDetectorDefs::SUBFRAME_DEADTIME,(int64_t)timeNS);
 	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetSubPeriod");
 
 	// update value in gui
 	qDefs::timeUnit unit;
 	double time = qDefs::getCorrectTime(unit,((double)(
-			myDet->setTimer(slsDetectorDefs::SUBFRAME_PERIOD,-1)*(1E-9))));
+			myDet->setTimer(slsDetectorDefs::SUBFRAME_DEADTIME,-1)*(1E-9))));
 	spinSubPeriod->setValue(time);
 	comboSubPeriodUnit->setCurrentIndex((int)unit);
 
@@ -1605,7 +1605,7 @@ void qTabAdvanced::Refresh(){
 		comboSubExpTimeUnit->setCurrentIndex((int)unit);
 
 		// subperiod
-		time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::SUBFRAME_PERIOD,-1)*(1E-9))));
+		time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::SUBFRAME_DEADTIME,-1)*(1E-9))));
 		spinSubPeriod->setValue(time);
 		comboSubPeriodUnit->setCurrentIndex((int)unit);
 

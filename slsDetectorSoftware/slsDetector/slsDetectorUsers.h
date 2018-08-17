@@ -738,17 +738,20 @@ class slsDetectorUsers
     * Set sub frame exposure time (only for Eiger)
     * @param i sub frame exposure time (-1 gets)
     * @param inseconds true if the value is in s, else ns
+    * @param imod module number (-1 for all)
     * @returns sub frame exposure time in ns, or s if specified
     */
-   double setSubFrameExposureTime(double t=-1, bool inseconds=false);
+   double setSubFrameExposureTime(double t=-1, bool inseconds=false, int imod = -1);
 
    /**
-    * Set sub frame period (only for Eiger)
-    * @param i sub frame period (-1 gets)
+    * Set sub frame dead time (only for Eiger)
+    * Very advanced feature. Meant to be a constant in config file by an expert for each individual module
+    * @param i sub frame dead time (-1 gets)
     * @param inseconds true if the value is in s, else ns
-    * @returns sub frame period in ns, or s if specified
+    * @param imod module number (-1 for all)
+    * @returns sub frame dead time in ns, or s if specified
     */
-   double setSubFrameExposurePeriod(double t=-1, bool inseconds=false);
+   double setSubFrameExposureDeadTime(double t=-1, bool inseconds=false, int imod = -1);
 
   /************************************************************************
 

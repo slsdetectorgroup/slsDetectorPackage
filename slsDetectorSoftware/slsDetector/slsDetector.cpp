@@ -702,7 +702,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 	thisDetector->timerValue[SAMPLES_JCTB] = 1;
 	thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME] = 0;
 	thisDetector->timerValue[STORAGE_CELL_NUMBER] = 0;
-	thisDetector->timerValue[SUBFRAME_PERIOD] = 0;
+	thisDetector->timerValue[SUBFRAME_DEADTIME] = 0;
 	thisDetector->actionMask = 0;
 	for (int i = 0; i < MAX_ACTIONS; ++i) {
 		strcpy(thisDetector->actionScript[i], "none");
@@ -2311,63 +2311,51 @@ int slsDetector::updateDetectorNoWait() {
 	n += 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
 	thisDetector->dataBytes=nm;
 
-	//t=setSettings(GET_SETTINGS);
 	n += 	controlSocket->ReceiveDataOnly( &t,sizeof(t));
 	thisDetector->currentSettings=t;
 
 	if((thisDetector->myDetectorType == EIGER) ||
 			(thisDetector->myDetectorType == MYTHEN)){
-		//thr=getThresholdEnergy();
 		n += 	controlSocket->ReceiveDataOnly( &thr,sizeof(thr));
 		thisDetector->currentThresholdEV=thr;
 	}
 
-	//retval=setFrames(tns);
 	n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
 	thisDetector->timerValue[FRAME_NUMBER]=retval;
 
-	// retval=setExposureTime(tns);
 	n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
 	thisDetector->timerValue[ACQUISITION_TIME]=retval;
 
 	if(thisDetector->myDetectorType == EIGER){
-		//retval=setSubFrameExposureTime(tns);
 		n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
 		thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME]=retval;
 
-		//retval=setSubFramePeriod(tns);
 		n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
-		thisDetector->timerValue[SUBFRAME_PERIOD]=retval;
+		thisDetector->timerValue[SUBFRAME_DEADTIME]=retval;
 	}
 
-	//retval=setPeriod(tns);
 	n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
 	thisDetector->timerValue[FRAME_PERIOD]=retval;
 
 	if(thisDetector->myDetectorType != EIGER) {
-		//retval=setDelay(tns);
 		n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
 		thisDetector->timerValue[DELAY_AFTER_TRIGGER]=retval;
 	}
 
-	// retval=setGates(tns);
 	if ((thisDetector->myDetectorType != JUNGFRAU) &&
 			(thisDetector->myDetectorType != EIGER)){
 		n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
 		thisDetector->timerValue[GATES_NUMBER]=retval;
 	}
 
-	//retval=setProbes(tns);
 	if (thisDetector->myDetectorType == MYTHEN){
 		n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
 		thisDetector->timerValue[PROBES_NUMBER]=retval;
 	}
 
-	//retval=setTrains(tns);
 	n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
 	thisDetector->timerValue[CYCLES_NUMBER]=retval;
 
-	//retval=setProbes(tns);
 	if (thisDetector->myDetectorType == JUNGFRAUCTB){
 		n += 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
 		if (retval>=0)
@@ -2376,10 +2364,7 @@ int slsDetector::updateDetectorNoWait() {
 
 		thisDetector->roFlags=ro;
 
-		//retval=setProbes(tns);
 		getTotalNumberOfChannels();
-		//    thisDetector->dataBytes=getTotalNumberOfChannels()*
-		//thisDetector->dynamicRange/8*thisDetector->timerValue[SAMPLES_JCTB];
 	}
 
 
@@ -4299,7 +4284,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t, int imod) {
 	//send acquisiton time/period/subexptime/frame/cycles/samples to receiver
 	if((index==FRAME_NUMBER)||(index==FRAME_PERIOD)||(index==CYCLES_NUMBER)||
 			(index==ACQUISITION_TIME) || (index==SUBFRAME_ACQUISITION_TIME) ||
-			(index==SUBFRAME_PERIOD) ||
+			(index==SUBFRAME_DEADTIME) ||
 			(index==SAMPLES_JCTB) || (index==STORAGE_CELL_NUMBER)){
 		string timername = getTimerType(index);
 		if(ret != FAIL){
@@ -4350,7 +4335,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t, int imod) {
 							setErrorMask((getErrorMask())|(RECEIVER_ACQ_PERIOD_NOT_SET));
 							break;
 						case SUBFRAME_ACQUISITION_TIME:
-						case SUBFRAME_PERIOD:
+						case SUBFRAME_DEADTIME:
 						case SAMPLES_JCTB:
 							setErrorMask((getErrorMask())|(RECEIVER_TIMER_NOT_SET));
 							break;
@@ -5267,7 +5252,7 @@ string slsDetector::setReceiver(string receiverIP) {
 		std::cout << "frame number:" << thisDetector->timerValue[FRAME_NUMBER] << endl;
 		std::cout << "sub exp time:" << thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME]
 																 << endl;
-		std::cout << "sub period:" << thisDetector->timerValue[SUBFRAME_PERIOD] << endl;
+		std::cout << "sub dead time:" << thisDetector->timerValue[SUBFRAME_DEADTIME] << endl;
 		std::cout << "dynamic range:" << thisDetector->dynamicRange << endl;
 		std::cout << "flippeddatax:" << thisDetector->flippedData[X] << endl;
 		if (thisDetector->myDetectorType == EIGER) {
@@ -5313,7 +5298,7 @@ string slsDetector::setReceiver(string receiverIP) {
 			if(thisDetector->myDetectorType == EIGER) {
 				setTimer(SUBFRAME_ACQUISITION_TIME,
 						thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME]);
-				setTimer(SUBFRAME_PERIOD,thisDetector->timerValue[SUBFRAME_PERIOD]);
+				setTimer(SUBFRAME_DEADTIME,thisDetector->timerValue[SUBFRAME_DEADTIME]);
 			}
 			if(thisDetector->myDetectorType == JUNGFRAUCTB)
 				setTimer(SAMPLES_JCTB,thisDetector->timerValue[SAMPLES_JCTB]);

@@ -458,7 +458,7 @@ void setupDetector() {
 	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
 	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
 	setTimer(SUBFRAME_ACQUISITION_TIME, DEFAULT_SUBFRAME_EXPOSURE);
-	setTimer(SUBFRAME_PERIOD, DEFAULT_SUBFRAME_PERIOD);
+	setTimer(SUBFRAME_DEADTIME, DEFAULT_SUBFRAME_DEADTIME);
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
 	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
 	setDynamicRange(DEFAULT_DYNAMIC_RANGE);
@@ -657,6 +657,8 @@ enum readOutFlags setReadOutFlags(enum readOutFlags val){
 /* parameters - timer */
 
 int64_t setTimer(enum timerIndex ind, int64_t val){
+	int64_t subdeadtime = 0;
+	int64_t subexptime = 0;
 	switch(ind){
 	case FRAME_NUMBER:
 		if(val >= 0){
@@ -694,11 +696,20 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 
 	case SUBFRAME_ACQUISITION_TIME:
 		if(val >= 0){
-			printf(" Setting sub exp time: %lldns\n",(long long int)val/10);
+			printf(" Setting sub exp time: %lldns\n",(long long int)val);
 #ifndef VIRTUAL
+			// calculate subdeadtime before settings subexptime
+			subdeadtime = Feb_Control_GetSubFramePeriod() -
+					Feb_Control_GetSubFrameExposureTime();
+
 			Feb_Control_SetSubFrameExposureTime(val/10);
+			// set subperiod
+			Feb_Control_SetSubFramePeriod((val+subdeadtime)/10);
 #else
+			int64_t subdeadtime = eiger_virtual_subperiod*10 -
+					eiger_virtual_subexptime*10;
 			eiger_virtual_subexptime = (val/(10));
+			eiger_virtual_subperiod = (val+subdeadtime/10);
 #endif
 		}
 #ifndef VIRTUAL
@@ -707,19 +718,30 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 		return eiger_virtual_subexptime*10;
 #endif
 
-	case SUBFRAME_PERIOD:
+	case SUBFRAME_DEADTIME:
+#ifndef VIRTUAL
+			// get subexptime
+			subexptime = Feb_Control_GetSubFrameExposureTime();
+#else
+			int64_t subexptime = eiger_virtual_subexptime*10;
+#endif
 		if(val >= 0){
-			printf(" Setting sub period: %lldns\n",(long long int)val/10);
+			printf(" Setting sub period: %lldns = subexptime(%lld) + subdeadtime(%lld)\n",
+					(long long int)(val + subexptime),
+					(long long int)subexptime,
+					(long long int)val);
+			//calculate subperiod
+			val += subexptime;
 #ifndef VIRTUAL
 			Feb_Control_SetSubFramePeriod(val/10);
 #else
-			eiger_virtual_subperiod = (val/(1E9));
+			eiger_virtual_subperiod = (val/10);
 #endif
 		}
 #ifndef VIRTUAL
-		return (Feb_Control_GetSubFramePeriod());
+		return (Feb_Control_GetSubFramePeriod() - subexptime);
 #else
-		return eiger_virtual_subperiod*1e9;
+		return (eiger_virtual_subperiod*10 - subexptime);
 #endif
 
 	case FRAME_PERIOD:

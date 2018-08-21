@@ -89,7 +89,7 @@ int main(int argc,  char **argv) {
 
 	/** - start measurement */
 	pDetector->startMeasurement();
-	std::cout << "measurement finished" << std::endl;	usleep(1*1000*1000);
+	std::cout << "measurement finished" << std::endl;
 
 	/** - returning when acquisition is finished or data are avilable */
 

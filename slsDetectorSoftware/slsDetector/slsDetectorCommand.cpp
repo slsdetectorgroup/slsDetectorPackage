@@ -501,7 +501,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page config
-   - <b>checkdetversion</b> Checks the version compatibility with detector software (if hostname is in shared memory). Only get! Only for Eiger, Jungfrau & Gotthard. \c Returns \c ("compatible", "incompatible")
+   - <b>checkdetversion</b> Checks the version compatibility with detector server (if hostname is in shared memory). Only get! Only for Eiger, Jungfrau & Gotthard. \c Returns \c ("compatible", "incompatible")
 	 */
 	descrToFuncMap[i].m_pFuncName="checkdetversion"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
@@ -509,7 +509,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 
 	/*! \page config
-   - <b>checkrecversion</b> Checks the version compatibility with receiver software (if rx_hostname is in shared memory). Only get! Only for Eiger, Jungfrau & Gotthard. \c Returns \c ("compatible", "incompatible")
+   - <b>checkrecversion</b> Checks the version compatibility with receiver server (if rx_hostname is in shared memory). Only get! Only for Eiger, Jungfrau & Gotthard. \c Returns \c ("compatible", "incompatible")
 	 */
 	descrToFuncMap[i].m_pFuncName="checkrecversion"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
@@ -654,14 +654,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
     /*! \page timing
-   - <b>storagecells [i]</b> sets/gets number of storage cells per acquisition. For very advanced users only! For JUNGFRAU only. Range: 0-15. The #images = #frames * #cycles * (#storagecells +1). \c Returns \c (long long int)
+   - <b>storagecells [i]</b> sets/gets number of additional storage cells per acquisition. For very advanced users only! For JUNGFRAU only. Range: 0-15. The #images = #frames * #cycles * (#storagecells +1). \c Returns \c (long long int)
      */
     descrToFuncMap[i].m_pFuncName="storagecells"; //
     descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
     ++i;
 
     /*! \page timing
-   - <b>storagecell_start [i]</b> sets/gets the storage cell that stores the first acquisition of the series. Default is 0. For very advanced users only! For JUNGFRAU only. Range: 0-15. \c Returns \c (int)
+   - <b>storagecell_start [i]</b> sets/gets the storage cell that stores the first acquisition of the series. Default is 15(0xf).. For very advanced users only! For JUNGFRAU only. Range: 0-15. \c Returns \c (int)
      */
     descrToFuncMap[i].m_pFuncName="storagecell_start"; //
     descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
@@ -2242,14 +2242,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 	/*! \page receiver
-    - <b>r_framesperfile</b> sets/gets the frames per file in receiver. 0 means infinite or all frames in a single file. \c Returns \c (int)
-	 */
-	descrToFuncMap[i].m_pFuncName="r_framesperfile"; //OK
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
-	++i;
-
-	/*! \page receiver
-    - <b>r_framesperfile</b> sets/gets the frames per file in receiver. 0 means infinite or all frames in a single file. \c Returns \c (int)
+    - <b>r_framesperfile [i]</b> sets/gets the frames per file in receiver to i. 0 means infinite or all frames in a single file. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="r_framesperfile"; //OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
@@ -4885,8 +4878,8 @@ string slsDetectorCommand::helpSN(int narg, char *args[], int action) {
 
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION) {
-		os << "checkdetversion \n gets the version compatibility with detector software (if hostname is in shared memory). Only for Eiger, Jungfrau & Gotthard. Prints compatible/ incompatible."<< std::endl;
-		os << "checkrecversion \n gets the version compatibility with receiver software (if rx_hostname is in shared memory). Only for Eiger, Jungfrau & Gotthard. Prints compatible/ incompatible."<< std::endl;
+		os << "checkdetversion \n gets the version compatibility with detector server (if hostname is in shared memory). Only for Eiger, Jungfrau & Gotthard. Prints compatible/ incompatible."<< std::endl;
+		os << "checkrecversion \n gets the version compatibility with receiver server (if rx_hostname is in shared memory). Only for Eiger, Jungfrau & Gotthard. Prints compatible/ incompatible."<< std::endl;
 		os << "moduleversion:i \n gets the firmwareversion of the module i"<< std::endl;
 		os << "modulenumber:i \n gets the serial number of the module i"<< std::endl;
 		os << "detectornumber \n gets the serial number of the detector (MAC)"<< std::endl;
@@ -5738,7 +5731,7 @@ string slsDetectorCommand::helpTimer(int narg, char *args[], int action) {
 		os << "probes t \t sets the number of probes to accumulate (max 3! cycles should be set to 1, frames to the number of pump-probe events)" << std::endl;
 		os << "samples t \t sets the number of samples expected from the jctb" << std::endl;
 		os << "storagecells t \t sets number of storage cells per acquisition. For very advanced users only! For JUNGFRAU only. Range: 0-15. The #images = #frames * #cycles * (#storagecells+1)." << std::endl;
-		os << "storagecell_start t \t sets the storage cell that stores the first acquisition of the series. Default is 0. For very advanced users only! For JUNGFRAU only. Range: 0-15." << std::endl;
+		os << "storagecell_start t \t sets the storage cell that stores the first acquisition of the series. Default is 15(0xf). For very advanced users only! For JUNGFRAU only. Range: 0-15." << std::endl;
 		os << "subdeadtime t \t sets sub frame dead time in s. Subperiod is set in the detector = subexptime + subdeadtime. This value is normally a constant in the config file. Used in EIGER only in 32 bit mode. " << std::endl;
 		os << std::endl;
 

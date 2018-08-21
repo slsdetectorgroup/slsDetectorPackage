@@ -87,8 +87,12 @@ class slsDetectorUsers
 
  public:
 
-  /** @short default constructor */
-   slsDetectorUsers(int id=0);
+  /** @short default constructor
+   * @param id multi detector id
+   * @param ret address of return value. It will be set to 0 for success, else 1 for failure
+   * in creating multidetector object
+   */
+   slsDetectorUsers(int id=0, int& ret);
 
    
    /**  @short virtual destructor */

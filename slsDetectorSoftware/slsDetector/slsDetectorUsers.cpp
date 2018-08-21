@@ -6,10 +6,16 @@
 
 using namespace std;
 
-slsDetectorUsers::slsDetectorUsers(int id) : myDetector(NULL){
+slsDetectorUsers::slsDetectorUsers(int id, int& ret) : myDetector(0), myCmd(0){
+	try {
+		myDetector=new multiSlsDetector(id);
+	} catch(...) {
+		ret = 1;
+		return;
+	}
+	myCmd=new multiSlsDetectorCommand(myDetector);
+	ret = 0;
 
-  myDetector=new multiSlsDetector(id);
-  myCmd=new multiSlsDetectorCommand(myDetector);
 };
 
 

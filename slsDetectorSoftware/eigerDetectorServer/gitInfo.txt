@@ -1,9 +1,9 @@
 Path: slsDetectorsPackage/slsDetectorSoftware/eigerDetectorServer 
 URL: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
 Repository Root: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
-Repsitory UUID: 2a28333a96a40b7e48e68eee5be791b087a01b52 
-Revision: 347 
-Branch: developer 
+Repsitory UUID: 63c130a3806b47332b1532ab00f9f344c5839e0e 
+Revision: 348 
+Branch: 4.0.0-rc 
 Last Changed Author: Dhanya_Thattil 
-Last Changed Rev: 3983 
-Last Changed Date: 2018-08-16 18:51:42.000000002 +0200 ./Makefile.virtual
+Last Changed Rev: 3986 
+Last Changed Date: 2018-08-20 11:38:13.000000002 +0200 ./Makefile.virtual

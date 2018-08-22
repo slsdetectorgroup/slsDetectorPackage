@@ -657,7 +657,9 @@ enum readOutFlags setReadOutFlags(enum readOutFlags val){
 /* parameters - timer */
 
 int64_t setTimer(enum timerIndex ind, int64_t val){
+#ifndef VIRTUAL
 	int64_t subdeadtime = 0;
+#endif
 	int64_t subexptime = 0;
 	switch(ind){
 	case FRAME_NUMBER:
@@ -723,7 +725,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 			// get subexptime
 			subexptime = Feb_Control_GetSubFrameExposureTime();
 #else
-			int64_t subexptime = eiger_virtual_subexptime*10;
+			subexptime = eiger_virtual_subexptime*10;
 #endif
 		if(val >= 0){
 			printf(" Setting sub period: %lldns = subexptime(%lld) + subdeadtime(%lld)\n",
@@ -787,13 +789,18 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 
 
 int64_t getTimeLeft(enum timerIndex ind) {
+#ifdef VIRTUAL
+	return 0;
+#else
 	switch(ind){
 	case MEASURED_PERIOD: return Feb_Control_GetMeasuredPeriod();
 	case MEASURED_SUBPERIOD: return Feb_Control_GetSubMeasuredPeriod();
+	return 0;
 	default:
 		cprintf(RED,"This timer left index (%d) not defined for Eiger\n",ind);
 		return -1;
 	}
+#endif
 }
 
 
@@ -1612,9 +1619,13 @@ int stopStateMachine(){
 }
 
 int	softwareTrigger() {
+#ifdef VIRTUAL
+	return OK;
+#else
 	if (!Feb_Control_SoftwareTrigger())
 		return FAIL;
 	return OK;
+#endif
 }
 
 

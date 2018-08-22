@@ -1048,9 +1048,10 @@ public:
 	 * Set/get timer value left in acquisition (not all implemented for all detectors)
 	 * @param index timer index
 	 * @param t time in ns or number of...(e.g. frames, gates, probes)
+	 * @param imod module number
 	 * @returns timer set value in ns or number of...(e.g. frames, gates, probes)
 	 */
-	int64_t getTimeLeft(timerIndex index);
+	int64_t getTimeLeft(timerIndex index, int imod = -1);
 
 	/**
 	 * Set speed

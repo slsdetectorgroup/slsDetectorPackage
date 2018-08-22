@@ -894,17 +894,17 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
      \returns  TEMPERATURE_FPGA, TEMPERATURE_FPGAEXT, TEMPERATURE_10GE, TEMPERATURE_DCDC, TEMPERATURE_SODL,
      TEMPERATURE_SODR, TEMPERATURE_FPGA2, TEMPERATURE_FPGA3, -1 when unknown mode
   */
-  static int getADCIndex(std::string s){
-	  if (s=="temp_fpga")	  	return TEMPERATURE_FPGA;
-	  if (s=="temp_fpgaext")	return TEMPERATURE_FPGAEXT;
-	  if (s=="temp_10ge")	  	return TEMPERATURE_10GE;
-	  if (s=="temp_dcdc")	  	return TEMPERATURE_DCDC;
-	  if (s=="temp_sodl")	  	return TEMPERATURE_SODL;
-	  if (s=="temp_sodr")	  	return TEMPERATURE_SODR;
-	  if (s=="temp_fpgafl")		return TEMPERATURE_FPGA2;
-	  if (s=="temp_fpgafr")		return TEMPERATURE_FPGA3;
-	  return -1;
-  };
+  static int getADCIndex(std::string s){					\
+	  if (s=="temp_fpga")	  	return TEMPERATURE_FPGA;	\
+	  if (s=="temp_fpgaext")	return TEMPERATURE_FPGAEXT;	\
+	  if (s=="temp_10ge")	  	return TEMPERATURE_10GE;	\
+	  if (s=="temp_dcdc")	  	return TEMPERATURE_DCDC;	\
+	  if (s=="temp_sodl")	  	return TEMPERATURE_SODL;	\
+	  if (s=="temp_sodr")	  	return TEMPERATURE_SODR;	\
+	  if (s=="temp_fpgafl")		return TEMPERATURE_FPGA2;	\
+	  if (s=="temp_fpgafr")		return TEMPERATURE_FPGA3;	\
+	  return -1;											\
+  };														\
 
 
   /**
@@ -912,19 +912,43 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
      \param s can be vcmp_ll, vcmp_lr, vcmp_rl, vcmp_rr, vthreshold, vrf, vrs, vtr, vcall, vcp
      \returns E_Vcmp_ll, E_Vcmp_lr, E_Vcmp_rl, E_Vcmp_rr, THRESHOLD, E_Vrf, E_Vrs, E_Vtr, E_cal, E_Vcp , -1 when unknown mode
   */
-  static int getDACIndex(std::string s){
-	  if (s=="vcmp_ll")	  	return E_Vcmp_ll;
-	  if (s=="vcmp_lr")	  	return E_Vcmp_lr;
-	  if (s=="vcmp_rl")		return E_Vcmp_rl;
-	  if (s=="vcmp_rr")	  	return E_Vcmp_rr;
-	  if (s=="vthreshold")	return THRESHOLD;
-	  if (s=="vrf")	  		return E_Vrf;
-	  if (s=="vrs")	  		return E_Vrs;
-	  if (s=="vtr")			return E_Vtr;
-	  if (s=="vcall")		return E_cal;
-	  if (s=="vcp")			return E_Vcp;
-	  return -1;
-  };
+  static int getDACIndex(std::string s){		\
+	  if (s=="vcmp_ll")	  	return E_Vcmp_ll;	\
+	  if (s=="vcmp_lr")	  	return E_Vcmp_lr;	\
+	  if (s=="vcmp_rl")		return E_Vcmp_rl;	\
+	  if (s=="vcmp_rr")	  	return E_Vcmp_rr;	\
+	  if (s=="vthreshold")	return THRESHOLD;	\
+	  if (s=="vrf")	  		return E_Vrf;		\
+	  if (s=="vrs")	  		return E_Vrs;		\
+	  if (s=="vtr")			return E_Vtr;		\
+	  if (s=="vcall")		return E_cal;		\
+	  if (s=="vcp")			return E_Vcp;		\
+	  return -1;								\
+  };											\
+
+  /**
+     @short returns receiver frame discard policy from std::string
+     \param s can be nodiscard, discardempty, discardpartial
+     \returns NO_DISCARD, DISCARD_EMPTY_FRAMES, DISCARD_PARTIAL_FRAMES, GET_FRAME_DISCARD_POLICY when unknown mode
+  */
+  static frameDiscardPolicy getReceiverFrameDiscardPolicy(std::string s){		\
+	  if (s=="nodiscard")	  	return NO_DISCARD;				\
+	  if (s=="discardempty")	return DISCARD_EMPTY_FRAMES;	\
+	  if (s=="discardpartial")	return DISCARD_PARTIAL_FRAMES;	\
+	  return GET_FRAME_DISCARD_POLICY;							\
+  };															\
+
+  /** returns std::string from frame discard policy
+      \param f can be NO_DISCARD, DISCARD_EMPTY_FRAMES, DISCARD_PARTIAL_FRAMES
+      \returns std::string nodiscard, discardempty, discardpartial, unknown
+  */
+  static std::string getReceiverFrameDiscardPolicy(frameDiscardPolicy f){	\
+    switch (f) {															\
+    case NO_DISCARD: 				return std::string("nodiscard"); 		\
+    case DISCARD_EMPTY_FRAMES: 		return std::string("discardempty"); 	\
+    case DISCARD_PARTIAL_FRAMES: 	return std::string("discardpartial"); 	\
+    default:       					return std::string("unknown");			\
+    }};																		\
 
 
 };

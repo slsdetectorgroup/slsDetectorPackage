@@ -88,25 +88,20 @@ class slsDetectorUsers
  public:
 
   /** @short default constructor
-   * @param id multi detector id
    * @param ret address of return value. It will be set to 0 for success, else 1 for failure
+   * @param id multi detector id
    * in creating multidetector object
    */
-   slsDetectorUsers(int id=0, int& ret);
-
+   slsDetectorUsers(int& ret, int id=0);
    
    /**  @short virtual destructor */
    virtual ~slsDetectorUsers();
-
-
 
    /**
        @short useful to define subset of working functions
       \returns "PSI" or "Dectris"
    */
    std::string getDetectorDeveloper();
-
-
 
   /**  @short sets the onlineFlag
       \param online can be: -1 returns wether the detector is in online (1) or offline (0) state; 0 detector in offline state; 1  detector in online state
@@ -376,7 +371,6 @@ class slsDetectorUsers
       \returns number of frames
   */
    int64_t setNumberOfCycles(int64_t t=-1, int imod = -1);
-  
 
  /** 
       @short set/get the external communication mode 
@@ -557,10 +551,53 @@ class slsDetectorUsers
   int enableGapPixels(int enable=-1);
 
   /**
+   * Sets the frames discard policy in receiver
+   * frame discard policy options:
+   * @param f nodiscard (default),discardempty, discardpartial (fastest), get to get the value
+   * @returns f nodiscard (default),discardempty, discardpartial (fastest)
+   */
+  std::string setReceiverFramesDiscardPolicy(std::string f="get");
+
+  /**
+   * Sets the frame padding in receiver
+   * @param f 0 does not partial frames, 1 pads partial frames (-1 gets)
+   * @returns partial frames padding enable
+   */
+  int setReceiverPartialFramesPadding(int f = -1);
+
+  /**
+   * Sets the frames per file in receiver
+   * @param f frames per file, 0 is infinite ie. every frame in same file (-1 gets)
+   * @returns frames per file
+   */
+  int setReceiverFramesPerFile(int f = -1);
+
+  /**
+   * Sends a software internal trigger (EIGER only)
+   * @returns 0 for success, 1 for fail
+   */
+  int sendSoftwareTrigger();
+
+  /**
+   * get measured period between previous two frames(EIGER only)
+   * @param inseconds true if the value is in s, else ns
+   * @param imod module number (-1 for all)
+   * @returns measured period
+  */
+  double getMeasuredPeriod(bool inseconds=false, int imod = -1);
+
+  /**
+   * get measured sub period between previous two sub frames in 32 bit mode (EIGER only)
+   * @param inseconds true if the value is in s, else ns
+   * @param imod module number (-1 for all)
+   * @returns measured sub period
+  */
+  double getMeasuredSubFramePeriod(bool inseconds=false, int imod = -1);
+
+  /**
      @short register calbback for accessing detector final data
      \param func function to be called at the end of the acquisition. gets detector status and progress index as arguments
   */
-
    void registerAcquisitionFinishedCallback(int( *func)(double,int, void*), void *pArg);
   
   /**
@@ -757,6 +794,21 @@ class slsDetectorUsers
     */
    double setSubFrameExposureDeadTime(double t=-1, bool inseconds=false, int imod = -1);
 
+   /**
+    * set/get number of additional storage cells  (Jungfrau)
+    * @param t number of additional storage cells. Default is 0.  (-1 gets)
+    * @param imod module number (-1 for all)
+    * @returns number of additional storage cells
+   */
+    int64_t setNumberOfStorageCells(int64_t t=-1, int imod = -1);
+
+	/**
+	 * Set storage cell that stores first acquisition of the series (Jungfrau)
+	 * @param value storage cell index. Value can be 0 to 15. Default is 15. (-1 gets)
+	 * @returns the storage cell that stores the first acquisition of the series
+	 */
+	int setStoragecellStart(int pos=-1);
+
   /************************************************************************
 
                            STATIC FUNCTIONS
@@ -836,12 +888,12 @@ class slsDetectorUsers
      \returns  auto, trigger, ro_trigger, gating, triggered_gating, unknown when wrong mode
   */
 
-  static int getTimingMode(std::string s){					\
+  static int getTimingMode(std::string s){			\
     if (s== "auto") return 0;						\
     if (s== "trigger") return 1;					\
     if (s== "ro_trigger") return 2;					\
     if (s== "gating") return 3;						\
-    if (s== "triggered_gating") return 4;				\
+    if (s== "triggered_gating") return 4;			\
     return -1;							};
 
 

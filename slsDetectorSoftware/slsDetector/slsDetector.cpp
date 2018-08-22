@@ -4355,7 +4355,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t, int imod) {
 
 
 
-int64_t slsDetector::getTimeLeft(timerIndex index) {
+int64_t slsDetector::getTimeLeft(timerIndex index, int imod) {
 
 
 	int fnum=F_GET_TIME_LEFT;

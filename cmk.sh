@@ -145,7 +145,7 @@ else
 	fi
 fi
 
-CMAKE_POST+=" -DCMAKE_BUILD_TYPE=Debug "
+#CMAKE_POST+=" -DCMAKE_BUILD_TYPE=Debug "
 
 #hdf5 rebuild
 if [ $HDF5 -eq 1 ]; then

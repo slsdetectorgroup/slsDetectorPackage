@@ -50,9 +50,9 @@ INTRODUCTION
 	-------
 
 	General Software related:
-	    dhanya.thattil@psi.ch
-    	anna.bergamaschi@psi.ch
-    
+		dhanya.thattil@psi.ch
+		anna.bergamaschi@psi.ch
+		
 	Python related:
 		erik.frojdh@psi.ch
 
@@ -99,10 +99,9 @@ CONTENTS
     	https://www.psi.ch/detectors/installation-instructions
     	under Detector Upgrade -> [Detector Type] -> Firmware. 
     	
-    	
-	 
-		Please refer to the link below for more details on the firmware versions.
-		https://www.psi.ch/detectors/firmware.
+    	 
+	Please refer to the link below for more details on the firmware versions.
+	https://www.psi.ch/detectors/firmware.
 		
 
 
@@ -405,7 +404,7 @@ CONTENTS
 		
 	3.	(Jungfrau) Minimum exposure time of 50 us was implemented.
 	
-	4. (Eiger and Jungfrau) They can be configured to have x and y coord values
+	4. 	(Eiger and Jungfrau) They can be configured to have x and y coord values
 		of the detector in their udp header.
 
 

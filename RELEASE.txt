@@ -1,53 +1,60 @@
-SLS Detector Package 4.0.0 released on 2018-08-22
+SLS Detector Package 4.0.0 released on 2018-08-23
 =================================================
 
 
 
 INTRODUCTION
 
-This document describes the differences between 4.0.0 and 3.2.0 releases.
+This document describes the differences between 4.0.0 and 3.1.4 releases.
 
-The conda package of the binaries can be downloaded from
+	Download
+	--------
 	
-	https://github.com/slsdetectorgroup/sls_detector_software.git
+	The Source Code (Default C++ API):
+		 https://github.com/slsdetectorgroup/slsDetectorPackage
+		 
+	The Conda Package:
+		https://github.com/slsdetectorgroup/sls_detector_software
+		
+	The Python Interface (including the package):
+    	https://github.com/slsdetectorgroup/sls_detector
 	
-The Python interface to the software package (including the package) is at 
 	
-	https://github.com/slsdetectorgroup/sls_detector.git
+	Documentation
+	-------------
 	
-Manual (both HTML and pdf versions) are provided in
-	
-	manual/docs/
-
-Documentation from Source Code can be found for the Command Line and C++ API in
-	
-	html:
+	Manual (HTML & PDF):
+		https://www.psi.ch/detectors/documentation
+		slsDetectorPackage/manual/docs/
+		
+	Command Line Documentation:
 		manual/docs/html/slsDetectorClientDocs/index.html
-		manual/docs/html/slsDetectorUsersDocs/index.html
-	pdf:
 		manual/docs/pdf/slsDetectorClientDocs.pdf
+		
+	C++ API Documentation:
+		manual/docs/html/slsDetectorUsersDocs/index.html
 		manual/docs/pdf/slsDetectorUsersDocs.pdf
 		
-Documentation to the python API is available at
-
-	https://slsdetectorgroup.github.io/sls_detector/
+	C++ API Example:
+		manual/manual-api/mainClient.cpp
+		manual/manual-api/mainReceiver.cpp
 		
-Example for detector and receiver API can be found in 
-
-	manual/manual-api
+	Python API Documentation:
+		https://slsdetectorgroup.github.io/sls_detector/
+		
+	Further Documentation:
+		https://www.psi.ch/detectors/users-support
+		
 	
-User documentation can also be accessed directly at this location:
+	Support
+	-------
 
-    https://www.psi.ch/detectors/users-support
-
-Please send any software related questions or comments to:
-
-    dhanya.thattil@psi.ch
-    anna.bergamaschi@psi.ch
+	General Software related:
+	    dhanya.thattil@psi.ch
+    	anna.bergamaschi@psi.ch
     
-Please send any python related questions or comments to:
-	
-	erik.frojdh@psi.ch
+	Python related:
+		erik.frojdh@psi.ch
 
 
 
@@ -60,7 +67,6 @@ CONTENTS
 - Resolved Issues
 - Known Issues
 - Neat Release Plans
-
 
 
 
@@ -79,8 +85,8 @@ Firmware Requirements
         
     	Jungfrau
     	========       
-    	Minimum compatible version  : 26.02.2018
-    	Latest version              : 26.02.2018
+    	Minimum compatible version  : 15.06.2018
+    	Latest version              : 15.06.2018
 
     	
     	Detector Upgrade

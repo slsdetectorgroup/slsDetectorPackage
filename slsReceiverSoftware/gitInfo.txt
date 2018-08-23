@@ -1,9 +1,9 @@
 Path: slsDetectorsPackage/slsReceiverSoftware 
 URL: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
 Repository Root: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
-Repsitory UUID: 6bb7195a2c7dc9526088882e0244a7455d3c15b2 
-Revision: 809 
-Branch: 3.3.0-rc 
+Repsitory UUID: e0b8fb36097aaafca033ca755bad4243bca655bc 
+Revision: 831 
+Branch: 4.0.0 
 Last Changed Author: Dhanya_Thattil 
-Last Changed Rev: 3941 
-Last Changed Date: 2018-07-18 12:11:38.000000002 +0200 ./include/HDF5FileStatic.h
+Last Changed Rev: 3991 
+Last Changed Date: 2018-08-23 11:57:33.000000002 +0200 ./updateAPIVersion.sh

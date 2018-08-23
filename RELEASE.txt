@@ -51,7 +51,7 @@ INTRODUCTION
 
 	General Software related:
 	    dhanya.thattil@psi.ch
-    	anna.bergamaschi@psi.ch
+	    anna.bergamaschi@psi.ch
     
 	Python related:
 		erik.frojdh@psi.ch

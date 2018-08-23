@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2012 (1.2)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Introduction</TITLE>
+<META NAME="description" CONTENT="Introduction">
+<META NAME="keywords" CONTENT="slsDetectorClientHowTo">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2012">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectorClientHowTo.css">
+
+<LINK REL="next" HREF="node2.html">
+<LINK REL="previous" HREF="slsDetectorClientHowTo.html">
+<LINK REL="up" HREF="slsDetectorClientHowTo.html">
+<LINK REL="next" HREF="node2.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html47"
+  HREF="node2.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html45"
+  HREF="slsDetectorClientHowTo.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html39"
+  HREF="slsDetectorClientHowTo.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html48"
+  HREF="node2.html">Acquisition</A>
+<B> Up:</B> <A NAME="tex2html46"
+  HREF="slsDetectorClientHowTo.html">SLS Detector text clients</A>
+<B> Previous:</B> <A NAME="tex2html40"
+  HREF="slsDetectorClientHowTo.html">SLS Detector text clients</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00010000000000000000">
+Introduction</A>
+</H1>
+
+<P>
+This program is intended to control the SLS detectors via command line interface.
+<BR>
+This is the only way to access all possible functionality of the detectors, however it is often recommendable to avoid changing the most advanced settings, rather leaving the task to configuration files, as when using the GUI or the API provided.
+
+<P>
+The command line interface consists in four main functions:
+<DL>
+<DT><STRONG>sls_detector_acquire</STRONG></DT>
+<DD>to acquire data from the detector
+</DD>
+<DT><STRONG>sls_detector_put</STRONG></DT>
+<DD>to set detector parameters
+</DD>
+<DT><STRONG>sls_detector_get</STRONG></DT>
+<DD>to retrieve detector parameters
+</DD>
+<DT><STRONG>sls_detector_help</STRONG></DT>
+<DD>to get help concerning the text commands
+</DD>
+</DL>
+Additionally the program <B>slsReceiver</B> should be started on the machine expected to receive the data from the detector.
+
+<P>
+If you need control a single detector, the use of the command line interface does not need any additional arguments.
+
+<P>
+For commands addressing a single controller of your detector, the command  <code>cmd</code> should be called with the index <code>i</code> of the controller:
+<BR><code>sls_detector_clnt i:cmd</code>
+<BR>
+where <code>sls_detector_clnt</code> is the text client (put, get, acquire, help).
+
+<P>
+In case more than one detector is configured on the control PC, the command  <code>cmd</code> should be called with their respective index  <code>j</code>:
+<code>sls_detector_clnt j-cmd</code>
+<BR>
+where <code>sls_detector_clnt</code> is the text client (put, get, acquire, help).
+
+<P>
+To address a specific controller <code>i</code> of detector <code>j</code> use:
+<BR><code>sls_detector_clnt j-i:cmd</code>
+
+<P>
+For additional questions concerning the indexing of the detector, please refer to the <I>SLS Detectors FAQ</I> documentation.
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html47"
+  HREF="node2.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html45"
+  HREF="slsDetectorClientHowTo.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html39"
+  HREF="slsDetectorClientHowTo.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html48"
+  HREF="node2.html">Acquisition</A>
+<B> Up:</B> <A NAME="tex2html46"
+  HREF="slsDetectorClientHowTo.html">SLS Detector text clients</A>
+<B> Previous:</B> <A NAME="tex2html40"
+  HREF="slsDetectorClientHowTo.html">SLS Detector text clients</A>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-08-23
+</ADDRESS>
+</BODY>
+</HTML>

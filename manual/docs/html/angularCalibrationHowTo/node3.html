@@ -1,0 +1,186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2012 (1.2)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Data analysis</TITLE>
+<META NAME="description" CONTENT="Data analysis">
+<META NAME="keywords" CONTENT="angularCalibrationHowTo">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2012">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="angularCalibrationHowTo.css">
+
+<LINK REL="next" HREF="node4.html">
+<LINK REL="previous" HREF="node2.html">
+<LINK REL="up" HREF="angularCalibrationHowTo.html">
+<LINK REL="next" HREF="node4.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html44"
+  HREF="node4.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html42"
+  HREF="angularCalibrationHowTo.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html36"
+  HREF="node2.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html45"
+  HREF="node4.html">Setup calibration files</A>
+<B> Up:</B> <A NAME="tex2html43"
+  HREF="angularCalibrationHowTo.html">Angular calibration wizard manual</A>
+<B> Previous:</B> <A NAME="tex2html37"
+  HREF="node2.html">Data acquisition</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html46"
+  HREF="node3.html#SECTION00031000000000000000">Software</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00030000000000000000">
+Data analysis</A>
+</H1>
+
+<P>
+The data analysis consists in fitting with a gaussian the selected peak of the powder pattern for each position in order to determine its position is channel number as a function of the encoder position. 
+<BR>
+In a second step, for each module, the channel vs. encoder curve is fitted in order to extrapolate the three parameters necessary for the angular conversion and the result is written to file
+
+<P>
+
+<H2><A NAME="SECTION00031000000000000000">
+Software</A>
+</H2>
+
+<P>
+The software used for the angular calibration data analysis is based on root (see http://root.cern.ch).
+<BR>
+This can be downloaded as binary or installed from sources. The version of the software should not play an important role, but up to now everything has been implemented and tested using version 5.20.
+
+<P>
+To start the data analysis simply launch:
+<PRE>
+&gt; ./angularCalibrationWizard
+</PRE>
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:setangcal"></A><A NAME="60"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 3:</STRONG>
+Overview of the nagular calibration dataset.</CAPTION>
+<TR><TD><IMG
+ WIDTH="555" HEIGHT="707" ALIGN="BOTTOM" BORDER="0"
+ SRC="img16.png"
+ ALT="\includegraphics[width=\textwidth]{setupAngcal.eps}"></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+To setup the angular calibration dataset, the .angcal file should be selected (or digited) and the load button should be pressed to confirm. The parameters of the angular calibration are then read to the file and the data loaded for a quick overview (see figure&nbsp;<A HREF="#fig:setangcal">3</A>).
+<BR>
+The software assumes that the data files (.raw) and the .encal file are in the same directory.
+<BR>
+A 2D color plot will show a rebinned overview of the dataset. The peak to be fitted should be visible as a high intensity diagonal line passing through all the channels.
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:peakfit"></A><A NAME="66"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 4:</STRONG>
+Preview of the fitting of the Si(111) peak for one of the detector positions.</CAPTION>
+<TR><TD><IMG
+ WIDTH="555" HEIGHT="707" ALIGN="BOTTOM" BORDER="0"
+ SRC="img17.png"
+ ALT="\includegraphics[width=\textwidth]{peakFit.eps}"></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+For a more detailed view of the data, one can select an angular calibration step from the combo box, select the plot mode (raw data or processed data as a function of channel number, processed angular converted data, flat field data, or again an overview of the whole dataset). 
+<BR>
+By (right) clicking close to the axis you are able to zoom in/out, set the scale to logarithmic etc.
+<BR>
+<P>
+If the bad channel list, angular conversion file or flat field file are changed compared to the acquisition, they can be reloaded by editing the correspondent text entries and pressing enter.
+
+<P>
+In particular, the angular converted data should be checked in order to view the position of the selected peak. In this case, the plot will be zoomed to the angular region slected in the minimum and maximum angle entries. By pressing fit, the fit of the peak in the selected angular range will be shown (see figure&nbsp;<A HREF="#fig:peakfit">4</A>).  It is useful to check that it works properly in several positions such that then the sequential fitting on all steps can give good results.
+
+<P>
+To automatically fit all positions simply press <I>Proceed to Modules Calibration</I> and wait until all steps are fitted. This can take sometime, depending on the number of steps.
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:anglefit"></A><A NAME="73"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 5:</STRONG>
+Window for fitting the angular calibration parameters of a module.</CAPTION>
+<TR><TD><IMG
+ WIDTH="555" HEIGHT="707" ALIGN="BOTTOM" BORDER="0"
+ SRC="img18.png"
+ ALT="\includegraphics[width=\textwidth]{angleFit.eps}"></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+In the module calibration window (see figure&nbsp;<A HREF="#fig:anglefit">5</A>), you will be able to fit the channel number to encoder position curve to estimate the three angular calibration parameters for each module.
+<BR>
+The entries show the angular calibration parameters used for approximate angular conversion in the previous step of the calibration. These can be edited and will be used as start parameters for the fit.
+By clicking on the check box next to the parameters, the selected parameter will be set and fixed during the fit. Often the center is used as a fix parameter.
+<BR>
+It is possible to navigate between modules by using the Previous and Next module buttons. To refit the current module (e.g. after changing one of the parameters) simply re-click on the module number.
+
+<P>
+After fitting all modules you can click on the <I>Write Angular Calibration</I> button, select the file name to write to and save the calibration angulat calibration data. Please note that the offset of module 0 will always be 0 and the other values will be rescaled to its value. Therefore the global offset of the steup will always need to be specified for a proper angular conversion unless the home of the encoder will not be redifined.
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html44"
+  HREF="node4.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html42"
+  HREF="angularCalibrationHowTo.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html36"
+  HREF="node2.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html45"
+  HREF="node4.html">Setup calibration files</A>
+<B> Up:</B> <A NAME="tex2html43"
+  HREF="angularCalibrationHowTo.html">Angular calibration wizard manual</A>
+<B> Previous:</B> <A NAME="tex2html37"
+  HREF="node2.html">Data acquisition</A>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-08-23
+</ADDRESS>
+</BODY>
+</HTML>

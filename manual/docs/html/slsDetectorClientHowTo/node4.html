@@ -1,0 +1,821 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2012 (1.2)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Retrieving detector parameters</TITLE>
+<META NAME="description" CONTENT="Retrieving detector parameters">
+<META NAME="keywords" CONTENT="slsDetectorClientHowTo">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2012">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectorClientHowTo.css">
+
+<LINK REL="next" HREF="node5.html">
+<LINK REL="previous" HREF="node3.html">
+<LINK REL="up" HREF="slsDetectorClientHowTo.html">
+<LINK REL="next" HREF="node5.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html90"
+  HREF="node5.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html88"
+  HREF="slsDetectorClientHowTo.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html82"
+  HREF="node3.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html91"
+  HREF="node5.html">Usage</A>
+<B> Up:</B> <A NAME="tex2html89"
+  HREF="slsDetectorClientHowTo.html">SLS Detector text clients</A>
+<B> Previous:</B> <A NAME="tex2html83"
+  HREF="node3.html">Detector setup</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html92"
+  HREF="node4.html#SECTION00041000000000000000">Standard commands</A>
+<LI><A NAME="tex2html93"
+  HREF="node4.html#SECTION00042000000000000000">Postprocessing commands</A>
+<UL>
+<LI><A NAME="tex2html94"
+  HREF="node4.html#SECTION00042100000000000000">Angular conversion</A>
+</UL>
+<BR>
+<LI><A NAME="tex2html95"
+  HREF="node4.html#SECTION00043000000000000000">Acquisition</A>
+<LI><A NAME="tex2html96"
+  HREF="node4.html#SECTION00044000000000000000">Debug</A>
+<UL>
+<LI><A NAME="tex2html97"
+  HREF="node4.html#SECTION00044100000000000000">Version</A>
+<LI><A NAME="tex2html98"
+  HREF="node4.html#SECTION00044200000000000000">Tests</A>
+</UL>
+<BR>
+<LI><A NAME="tex2html99"
+  HREF="node4.html#SECTION00045000000000000000">Advanced commands</A>
+<UL>
+<LI><A NAME="tex2html100"
+  HREF="node4.html#SECTION00045100000000000000">Calibration</A>
+<LI><A NAME="tex2html101"
+  HREF="node4.html#SECTION00045200000000000000">Acquisition commands</A>
+<LI><A NAME="tex2html102"
+  HREF="node4.html#SECTION00045300000000000000">Configuration</A>
+<LI><A NAME="tex2html103"
+  HREF="node4.html#SECTION00045400000000000000">Receiver -  GOTTHARD only</A>
+<LI><A NAME="tex2html104"
+  HREF="node4.html#SECTION00045500000000000000">Postprocessing</A>
+</UL>
+<BR>
+<LI><A NAME="tex2html105"
+  HREF="node4.html#SECTION00046000000000000000">Detector settings</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00040000000000000000">
+Retrieving detector parameters</A>
+</H1>
+
+<P>
+<code>sls\_detector\_get [j-][i:]var [arg]</code>
+<BR>
+<P>
+is used to retrieve the detector parameters <code>var</code>.
+<BR>
+For some commands, an additional argument <code>arg</code> is needed.
+
+<P>
+
+<H2><A NAME="SECTION00041000000000000000">
+Standard commands</A>
+</H2>
+All the commends return two strings, where string1 is the command, string2 is teh actual returned string.
+
+<P>
+<DL>
+<DT><STRONG>config fname</STRONG></DT>
+<DD>Dumps the current configuration of the detector to the file fname.
+</DD>
+<DT><STRONG>parameters fname</STRONG></DT>
+<DD>Dumps the current acquisition parameters of the detector to the file fname.
+</DD>
+<DT><STRONG>settings</STRONG></DT>
+<DD>Returns the current settings of the detector. Returns a string 
+
+<P>
+</DD>
+<DT><STRONG>threshold</STRONG></DT>
+<DD>For photon counting detectors, returns the detector threshold in eV, -1 if undefined. Returns ``threshold value_in_eV''. If it fails, the returned threshold is the old set value. 
+
+<P>
+</DD>
+<DT><STRONG>timing</STRONG></DT>
+<DD>Returns the acquisition timing mode of the detector.
+Refer to the detailed documentation to understand how the different timing modes work.
+</DD>
+<DT><STRONG>outdir</STRONG></DT>
+<DD>Returns the path where the output files are saved to.
+</DD>
+<DT><STRONG>fname</STRONG></DT>
+<DD>Returns the prefix of the file name for the data output.
+</DD>
+<DT><STRONG>enablefwrite</STRONG></DT>
+<DD>Returns if data are written to file (1) or not (0).
+</DD>
+<DT><STRONG>exptime</STRONG></DT>
+<DD>Returns the exposure time of a single acquisition in seconds. Example: "exptime 1.000000000''
+Refer to detailed documentation to understand how the different timing modes work. 
+</DD>
+<DT><STRONG>period</STRONG></DT>
+<DD>Returns the frames period (in s). Example: ``period 1.000000000''
+Refer to detailed documentation to understand how the different timing modes work.
+</DD>
+<DT><STRONG>delay</STRONG></DT>
+<DD>Returns the delay after trigger in triggered mode (in s). 
+Refer to detailed documentation to understand how the different timing modes work.
+</DD>
+<DT><STRONG>gates</STRONG></DT>
+<DD>Returns the number of gates per frame in gated (stroboscopic) mode. 
+Refer to detailed documentation to understand how the different timing modes work.
+</DD>
+<DT><STRONG>frames</STRONG></DT>
+<DD>Returns the number of frames acquired sequentially per cycle (e.g. after each trigger), with the exposure time defined by exptime and the period defined by period (unless in gated mode). Returned as a string to be interpreted as an integer ``frames integer''
+Note that the total number of images is  frames times cycles.  
+Refer to detailed documentation to understand how the different timing modes work. 
+</DD>
+<DT><STRONG>cycles n</STRONG></DT>
+<DD>Returns the number of cycles (e.g. number of triggers). Returned as atring to be interpreted as an integer ``cycles integer''
+Note that the total number of images is  frames times cycles. 
+Refer to detailed documentation to understand how the different timing modes work.  
+</DD>
+<DT><STRONG>probes</STRONG></DT>
+<DD>Returns the number of probes to accumulate for stroboscopic measurements.  
+Refer to detailed documentation to understand how the different timing modes work.
+</DD>
+<DT><STRONG>measurements</STRONG></DT>
+<DD>Returns the number of repetitions of the acquisitions (non real time!). 
+Refer to detailed documentation to understand how the different timing modes work.
+</DD>
+<DT><STRONG>dr</STRONG></DT>
+<DD>Returns the dynamic range n (in bits) of the data for a photon counting detector. Returns a string that should be interpreted as an integer.
+
+<P>
+</DD>
+<DT><STRONG>flags s</STRONG></DT>
+<DD>Returns the flags set for your detector. 
+</DD>
+<DT><STRONG>help cmd</STRONG></DT>
+<DD>Returns the help for command cmd.
+</DD>
+<DT><STRONG>lock</STRONG></DT>
+<DD>Returns if the detector is locked to a single PC.
+</DD>
+<DT><STRONG>lastclient</STRONG></DT>
+<DD>Returns the last client which has connected to the detector.
+</DD>
+<DT><STRONG>nmod n</STRONG></DT>
+<DD>Returns the number of modules which are read out. Will be replaced by ROI.
+</DD>
+<DT><STRONG>maxmod</STRONG></DT>
+<DD>Returns the maximum number of modules (size) of the detector.  Will be replaced by size.
+</DD>
+</DL>
+
+<P>
+
+<H2><A NAME="SECTION00042000000000000000">
+Postprocessing commands</A>
+</H2>
+<DL>
+<DT><STRONG>flatfield</STRONG></DT>
+<DD>Returns the flat field file name. 
+</DD>
+<DT><STRONG>ratecorr</STRONG></DT>
+<DD>Returns the dead time used for rate corrections.
+</DD>
+</DL>
+
+<P>
+
+<H3><A NAME="SECTION00042100000000000000">
+Angular conversion</A>
+</H3>
+
+<P>
+<DL>
+<DT><STRONG>fineoff</STRONG></DT>
+<DD>Returns the fine offset used to convert channel number to angles
+</DD>
+<DT><STRONG>samplex</STRONG></DT>
+<DD>Returns the sample displacement from the center of the diffractometerin the X-ray direction, to improve angular conversion (unused).
+</DD>
+<DT><STRONG>sampley</STRONG></DT>
+<DD>Returns the sample displacement from the center of the diffractometer in the ortogonal direction, to improve angular conversion (unused)
+</DD>
+</DL>
+
+<P>
+
+<H2><A NAME="SECTION00043000000000000000">
+Acquisition</A>
+</H2>
+See SLS Detectors Documentation for a detailed description of the acquisition flow.
+<DL>
+<DT><STRONG>positions</STRONG></DT>
+<DD>Returns the number of positions n and their value.
+ 
+</DD>
+<DT><STRONG>startscript</STRONG></DT>
+<DD>Returns the script to be executed at the beginning of each measurement. 
+  
+</DD>
+<DT><STRONG>startscriptpar</STRONG></DT>
+<DD>Returns the parameter to be passed to the start script
+ 
+</DD>
+<DT><STRONG>stopscript</STRONG></DT>
+<DD>Returns the script to be executed at the end of each measurement.  
+ 
+</DD>
+<DT><STRONG>stopscriptpar</STRONG></DT>
+<DD>Returns the parameter to be passed to the stop script.
+ 
+</DD>
+<DT><STRONG>scriptbefore</STRONG></DT>
+<DD>Returns the script to be executed before each acquisition. 
+ 
+</DD>
+<DT><STRONG>scriptbeforepar</STRONG></DT>
+<DD>Returns the parameter to be passed to the script before.
+ 
+</DD>
+<DT><STRONG>scriptafter</STRONG></DT>
+<DD>Returns the script to be executed after each acquisition.        
+ 
+</DD>
+<DT><STRONG>scriptafterpar</STRONG></DT>
+<DD>Returns the parameter to be passed to the script after.    
+ 
+</DD>
+<DT><STRONG>headerbefore</STRONG></DT>
+<DD>Returns the script to be executed to acquire the header of the acquisition.    
+ 
+</DD>
+<DT><STRONG>headerbeforepar</STRONG></DT>
+<DD>Returns the parameter to be passed to the header before.
+ 
+</DD>
+<DT><STRONG>headerafter</STRONG></DT>
+<DD>Returns the script to be executed to append to the header of the acquisition. 
+ 
+</DD>
+<DT><STRONG>headerafterpar</STRONG></DT>
+<DD>Returns the parameter to be passed to the header after.
+ 
+</DD>
+<DT><STRONG>scan0scripts</STRONG></DT>
+<DD>Returns the script to execute at scan 0 level.  
+ 
+</DD>
+<DT><STRONG>scan0par</STRONG></DT>
+<DD>Returns a parameter to be passed to the scan 0 level script.      
+ 
+</DD>
+<DT><STRONG>scan0prec</STRONG></DT>
+<DD>Returns the number of decimal digits for the scan0 level parameter in the file name (default is 0).
+ 
+</DD>
+<DT><STRONG>scan0steps</STRONG></DT>
+<DD>Returns the number of scan 0 level steps n and their value.      
+ 
+</DD>
+<DT><STRONG>scan0range</STRONG></DT>
+<DD>Same as   scan0steps.  
+ 
+</DD>
+<DT><STRONG>scan1script</STRONG></DT>
+<DD>Returns the script to execute at scan 1 level.  
+ 
+</DD>
+<DT><STRONG>scan1par</STRONG></DT>
+<DD>Returns a parameter to be passed to the scan 1 level script.          
+ 
+</DD>
+<DT><STRONG>scan1prec</STRONG></DT>
+<DD>Returns the number of decimal digits for the scan1 level parameter in the file name (default is 0).
+ 
+</DD>
+<DT><STRONG>scan1steps</STRONG></DT>
+<DD>Returns the number of scan 0 level steps n and their value.       
+ 
+</DD>
+<DT><STRONG>scan1range</STRONG></DT>
+<DD>Same as scan1steps.   
+</DD>
+</DL>
+
+<P>
+
+<H2><A NAME="SECTION00044000000000000000">
+Debug</A>
+</H2>
+Commands to be used to retrieve information about the detector version or perform tests.
+
+<H3><A NAME="SECTION00044100000000000000">
+Version</A>
+</H3>
+<DL>
+<DT><STRONG>moduleversion[:i]</STRONG></DT>
+<DD>Returns the version of the module firmware.
+</DD>
+<DT><STRONG>detectornumber</STRONG></DT>
+<DD>Returns the serial number of the module (normally the MAC address).
+</DD>
+<DT><STRONG>modulenumber[:i]</STRONG></DT>
+<DD>Returns the serial number of the module i.
+</DD>
+<DT><STRONG>detectorversion</STRONG></DT>
+<DD>Returns the version of the controller firmware.
+</DD>
+<DT><STRONG>softwareversion</STRONG></DT>
+<DD>Returns the version of the software running on the detector.
+</DD>
+<DT><STRONG>thisversion</STRONG></DT>
+<DD>Returns the version of the control software which is being used.
+</DD>
+<DT><STRONG>detectorsvnversion</STRONG></DT>
+<DD>Returns the SVN version of the software on the detector.
+</DD>
+</DL>
+
+<P>
+
+<H3><A NAME="SECTION00044200000000000000">
+Tests</A>
+</H3>
+
+<P>
+<DL>
+<DT><STRONG>digitest[:i]</STRONG></DT>
+<DD>Makes a digital test of module i.  Afterwards the detector must be reconfigured for the acquisition (settings, threshold, exptime, dr, frames etc.). Returns 0 if succeeded, otherwise an error mask.
+</DD>
+<DT><STRONG>bustest</STRONG></DT>
+<DD>Makes a digital test of the communication between CPU and FPGA. Returns 0 if succeeded, otherwise the number of errors.
+</DD>
+</DL>
+
+<P>
+
+<H2><A NAME="SECTION00045000000000000000">
+Advanced commands</A>
+</H2>
+
+<P>
+
+<H3><A NAME="SECTION00045100000000000000">
+Calibration</A>
+</H3>
+This operations should be performed only rarely to configure the detector
+
+<P>
+<DL>
+<DT><STRONG>encallog</STRONG></DT>
+<DD>returns whether the logging for energy calibration is enabled.
+    
+</DD>
+<DT><STRONG>angcallog</STRONG></DT>
+<DD>returns whether the logging for angular calibration is enabled.  
+</DD>
+</DL>
+
+<P>
+
+<H3><A NAME="SECTION00045200000000000000">
+Acquisition commands</A>
+</H3>
+
+<P>
+It is normally recommended to use <code>sls\_detector\_acquire [j-]</code>, which takes care of everything
+<DL>
+<DT><STRONG>acquire</STRONG></DT>
+<DD>Same as <code>sls\_detector\_acquire</code>
+</DD>
+<DT><STRONG>data</STRONG></DT>
+<DD>Gets, saves and processes all data stored on the detector, if any.
+</DD>
+<DT><STRONG>frame</STRONG></DT>
+<DD>Gets, saves and processes one frame stored on the detector, if any in a Firt-In/First-Out mode.
+</DD>
+<DT><STRONG>status</STRONG></DT>
+<DD>Returns the detector status - can be: running, error, transmitting, finished, waiting or idle
+</DD>
+<DT><STRONG>online</STRONG></DT>
+<DD>Returns whether the detector is in online or offline mode.  
+</DD>
+<DT><STRONG>checkonline</STRONG></DT>
+<DD>Returns whether the detector is in online or offline mode. 
+</DD>
+<DT><STRONG>readctr i fname</STRONG></DT>
+<DD>GOTTHARD related - reads counter in detector to file fname, restarts acquisition if i=1
+</DD>
+<DT><STRONG>exptimel</STRONG></DT>
+<DD>Returns the exposure time left for the current frame.      
+</DD>
+<DT><STRONG>periodl</STRONG></DT>
+<DD>Returns the period left for the current frame.  
+</DD>
+<DT><STRONG>delayl</STRONG></DT>
+<DD>Returns the delay after trigger left for the current frame.  
+</DD>
+<DT><STRONG>gatesl</STRONG></DT>
+<DD>Returns the number of gates left for the current frame.  
+</DD>
+<DT><STRONG>framesl</STRONG></DT>
+<DD>Returns the number of frames left for the current cycle.  
+</DD>
+<DT><STRONG>cyclesl</STRONG></DT>
+<DD>Returns the number of cycles left for the current acquisition. 
+</DD>
+<DT><STRONG>now</STRONG></DT>
+<DD>Returns the current timestamp of the detector clock.
+</DD>
+<DT><STRONG>timestamp</STRONG></DT>
+<DD>Returns the timestamp of the acquisitions in a First-In/First-Out mode i.e. every time it is called it returns the timestamp of the first acquisition start of readout. The FIFO is reset everytime the acquisition is started. 
+</DD>
+</DL>
+
+<P>
+
+<H3><A NAME="SECTION00045300000000000000">
+Configuration</A>
+</H3>
+Advanced commands to configure the detector system. Should be left to the configuration file
+<DL>
+<DT><STRONG>type</STRONG></DT>
+<DD>Returns the types of detector controllers in the system. 
+</DD>
+<DT><STRONG>hostname</STRONG></DT>
+<DD>Returns the hostnames or IP addresses for the detector
+</DD>
+<DT><STRONG>d:extsig:i</STRONG></DT>
+<DD>Returns the usage of the external IO signal i of the controller d.
+</DD>
+<DT><STRONG>master</STRONG></DT>
+<DD>Returns the master of the acquisition in a multicontroller detector. -1 is none.
+</DD>
+<DT><STRONG>sync</STRONG></DT>
+<DD>Returns the synchronization mode of the various controller within a detector structure. 
+</DD>
+<DT><STRONG>trimdir</STRONG></DT>
+<DD>Same ad settingsdir.
+</DD>
+<DT><STRONG>settingsdir</STRONG></DT>
+<DD>Returns the path of the directory where the trim/settings files are stored.
+</DD>
+<DT><STRONG>caldir</STRONG></DT>
+<DD>Returns the path of the directory where the calibration files are stored. 
+</DD>
+<DT><STRONG>trimen n e1 e2 ...en</STRONG></DT>
+<DD>Unused. Returns the list of energies for which trimfiles exist.
+</DD>
+<DT><STRONG>port</STRONG></DT>
+<DD>Returns the port used by the sockets to control the detector. 
+</DD>
+<DT><STRONG>stopport</STRONG></DT>
+<DD>Returns the port used by the sockets to stop/get the status of the detector.
+</DD>
+<DT><STRONG>id[:i]</STRONG></DT>
+<DD>returns the id of the detector structure. i is the detector position in a multi detector system
+</DD>
+<DT><STRONG>free</STRONG></DT>
+<DD>Avoid using it. Frees the shared memory. 
+</DD>
+</DL>
+Settable communication parameters:
+<DL>
+<DT><STRONG>txndelay_left</STRONG></DT>
+<DD>EIGER advanced: Set transmission delay of sending the left port frame  
+</DD>
+<DT><STRONG>txndelay_right</STRONG></DT>
+<DD>EIGER advanced: Set transmission delay of sending the right port frame
+ 
+</DD>
+<DT><STRONG>txndelay_frame</STRONG></DT>
+<DD>EIGER advanced: Set transmission delay of sending the entire frame In addition to left and right. This value has to be greater than the maximum of the transmission delays of each port.    
+</DD>
+</DL>
+
+<P>
+
+<H3><A NAME="SECTION00045400000000000000">
+Receiver -  GOTTHARD only</A>
+</H3>
+<DL>
+<DT><STRONG>detectormac</STRONG></DT>
+<DD>returns the mac of the detector udp interface to mac (if configurable). Should be left to the configuration file. 
+</DD>
+<DT><STRONG>rx_tcpport</STRONG></DT>
+<DD>returns the communication port between client and receiver. Should be left to the configuration file. 
+</DD>
+<DT><STRONG>rx_udpport</STRONG></DT>
+<DD>returns the communication port between detector and receiver. Should be left to the configuration file. 
+</DD>
+<DT><STRONG>rx_hostname</STRONG></DT>
+<DD>returns the hostname (or IP address) of the receiver for the TCP/IP interface with the client.
+</DD>
+<DT><STRONG>rx_udpip</STRONG></DT>
+<DD>returns the IP address of the receiver for the UDP interface with the detector.
+
+<P>
+</DD>
+<DT><STRONG>r_online b</STRONG></DT>
+<DD>Returns whether the receiver in online (1) or offline (0) mode.           
+</DD>
+<DT><STRONG>r_checkonline</STRONG></DT>
+<DD>Returns whether the receiver in online (1) or offline (0) mode.   
+</DD>
+<DT><STRONG>framescaught</STRONG></DT>
+<DD>Returns the number of frames received. Returns: "framescaught n''
+</DD>
+<DT><STRONG>resetframescaught n</STRONG></DT>
+<DD>Sets the number of frames received to 1
+</DD>
+<DT><STRONG>frameindex</STRONG></DT>
+<DD>Returns the index of the last frame received.      
+</DD>
+<DT><STRONG>r_lock</STRONG></DT>
+<DD>Returns whether the receiver is locked (1) or unlocked (0).   
+</DD>
+<DT><STRONG>r_lastclient</STRONG></DT>
+<DD>Returns the IP of the last client which connected to the receiver. 
+</DD>
+</DL> 
+
+<P>
+
+<H3><A NAME="SECTION00045500000000000000">
+Postprocessing</A>
+</H3>
+Some advanced commands to configure data postprocessing.
+<DL>
+<DT><STRONG>ffdir</STRONG></DT>
+<DD>Returns the directory where the flat field files are stored.
+</DD>
+<DT><STRONG>darkimage fname</STRONG></DT>
+<DD>GOTTHARD- ADVANCED- Returns the dark image file for the detector.       
+</DD>
+<DT><STRONG>gainimage fname</STRONG></DT>
+<DD>GOTTHARD- ADVANCED- Returns gain image file for the detector. 
+</DD>
+<DT><STRONG>badchannels fname</STRONG></DT>
+<DD>Returns bad channel file to fname.    
+</DD>
+<DT><STRONG>threaded b</STRONG></DT>
+<DD>Returns whether the data are written to disk in parallel with the acquisition (1) or after the acquisition (0).      
+</DD>
+</DL>
+
+<P>
+<B>Angular conversion</B>
+
+<P>
+<DL>
+<DT><STRONG>globaloff</STRONG></DT>
+<DD>Returns the  offset  of the beamline i.e. angular position of channel 0 when angular encoder at 0. 
+</DD>
+<DT><STRONG>angconv</STRONG></DT>
+<DD>Returns the file used for the coefficients for angular conversion.
+</DD>
+<DT><STRONG>binsize</STRONG></DT>
+<DD>Returns the size of the angular bins for angular conversion. 
+</DD>
+<DT><STRONG>angdir</STRONG></DT>
+<DD>Returns the angular direction of the detector (1 means channel number in the same direction as the angular encoder, -1 different direction). 
+</DD>
+<DT><STRONG>d:moveflag</STRONG></DT>
+<DD>Related to a single controller d. Returns 1 if the detector modules move with the angular encoder, 0 if they are static (useful for multidetector systems).
+</DD>
+</DL>
+
+<P>
+
+<H2><A NAME="SECTION00046000000000000000">
+Detector settings</A>
+</H2>
+Advanced settings changing the analog or digital performance of the acquisition. Use them only if you are sure of what you are doing!
+
+<P>
+<DL>
+<DT><STRONG>vthreshold</STRONG></DT>
+<DD>Returns the DAC value of the detector threshold to n.   
+</DD>
+<DT><STRONG>vcalibration</STRONG></DT>
+<DD>Returns the DAC value of the calibration pulse amplitude to n.   
+</DD>
+<DT><STRONG>vtrimbit</STRONG></DT>
+<DD>Returns the DAC value defining the trimbits LSB size to n.
+</DD>
+<DT><STRONG>vpreamp</STRONG></DT>
+<DD>Returns the DAC value of the preamp feedback  to n.
+</DD>
+<DT><STRONG>vshaper1</STRONG></DT>
+<DD>Returns the DAC value of the shaper1 feedback  to n.  
+</DD>
+<DT><STRONG>vshaper2</STRONG></DT>
+<DD>Returns the DAC value of the shaper2 feedback  to n.      
+</DD>
+<DT><STRONG>vhighvoltage</STRONG></DT>
+<DD>Returns the DAC value of the high voltage to n.           
+</DD>
+<DT><STRONG>vapower</STRONG></DT>
+<DD>CHIPTEST BOARD ONLY - Returns the DAC value of the analog voltage to n. 
+</DD>
+<DT><STRONG>vddpower</STRONG></DT>
+<DD>CHIPTEST BOARD ONLY - Returns the DAC value of the analog voltage to n.      
+</DD>
+<DT><STRONG>vshpower</STRONG></DT>
+<DD>CHIPTEST BOARD ONLY - Returns the comparator power supply in dac units (0-1024).   
+</DD>
+<DT><STRONG>viopower</STRONG></DT>
+<DD>CHIPTEST BOARD ONLY - Returns the FPGA I/O power supply in dac units (0-1024).   
+</DD>
+<DT><STRONG>vref_ds</STRONG></DT>
+<DD>Returns vrefds
+</DD>
+<DT><STRONG>vcascn_pb</STRONG></DT>
+<DD>Returns vcascn_pb
+</DD>
+<DT><STRONG>vcascp_pb</STRONG></DT>
+<DD>Returns vcascp_pb
+</DD>
+<DT><STRONG>vout_cm</STRONG></DT>
+<DD>Returns vout_cm
+</DD>
+<DT><STRONG>vcasc_out</STRONG></DT>
+<DD>Returns  vcasc_out    
+</DD>
+<DT><STRONG>vin_cm</STRONG></DT>
+<DD>Returns vin_cm
+</DD>
+<DT><STRONG>vref_comp</STRONG></DT>
+<DD>Returns vref_comp     
+</DD>
+<DT><STRONG>ib_test_c</STRONG></DT>
+<DD>Returns ib_test_c    
+</DD>
+<DT><STRONG>vsvp</STRONG></DT>
+<DD>Returns vsvp 
+</DD>
+<DT><STRONG>vsvn</STRONG></DT>
+<DD>Returns vsvn 
+</DD>
+<DT><STRONG>vtr</STRONG></DT>
+<DD>Returns vtr trim strength (EIGER)
+</DD>
+<DT><STRONG>vrf</STRONG></DT>
+<DD>Returns vrf preamp gain (EIGER)
+</DD>
+<DT><STRONG>vrs</STRONG></DT>
+<DD>Returns vrs shaper gain (EIGER)
+</DD>
+<DT><STRONG>vtgstv</STRONG></DT>
+<DD>Returns vtgstv (EIGER)
+</DD>
+<DT><STRONG>vcmp_ll</STRONG></DT>
+<DD>Returns vcmp_ll (EIGER) leftmost chip theshold 
+</DD>
+<DT><STRONG>vcmp_lr</STRONG></DT>
+<DD>Returns vcmp_lr (EIGER) second to leftmost chip theshold 
+</DD>
+<DT><STRONG>vcmp_rl</STRONG></DT>
+<DD>Returns vcmp_rl (EIGER) second to rightmost chip theshold 
+</DD>
+<DT><STRONG>vcmp_rr</STRONG></DT>
+<DD>Returns vcmp_rr (EIGER) rightmost chip theshold 
+</DD>
+<DT><STRONG>vcall</STRONG></DT>
+<DD>Returns vcall calibration stength (EIGER)
+</DD>
+<DT><STRONG>rxb_rb</STRONG></DT>
+<DD>Returns rxb_rb rightmost chip value to decode 0-1 in the readout
+</DD>
+<DT><STRONG>rxb_lb</STRONG></DT>
+<DD>Returns rxb_lb leftmost chip value to decode 0-1 in the readout
+</DD>
+<DT><STRONG>vcp</STRONG></DT>
+<DD>Returns vcp cascode p value (EIGER)
+</DD>
+<DT><STRONG>vcn</STRONG></DT>
+<DD>Returns vcn cascode n value (EIGER)
+</DD>
+<DT><STRONG>vis</STRONG></DT>
+<DD>Returns vis shaper current (EIGER)
+</DD>
+<DT><STRONG>iodelay</STRONG></DT>
+<DD>Returns iodelay 
+</DD>
+<DT><STRONG>temp_adc</STRONG></DT>
+<DD>Returns the temperature of the ADCs     
+</DD>
+<DT><STRONG>temp_fpga</STRONG></DT>
+<DD>Returns the temperature of the FPGA.
+</DD>
+<DT><STRONG>temp_fpgaext</STRONG></DT>
+<DD>Returns the temperature close to the fpga (EIGER).
+</DD>
+<DT><STRONG>temp_10ge</STRONG></DT>
+<DD>Returns the temperature close to the 10GE (EIGER).
+</DD>
+<DT><STRONG>temp_dcdc</STRONG></DT>
+<DD>Returns the temperature close to the dc dc converter  (EIGER).
+</DD>
+<DT><STRONG>temp_sodl</STRONG></DT>
+<DD>Returns the temperature close to the left so-dimm memory  (EIGER).
+</DD>
+<DT><STRONG>temp_sodr</STRONG></DT>
+<DD>Returns the temperature close to the right so-dimm memory  (EIGER).
+</DD>
+<DT><STRONG>temp_fpgafl</STRONG></DT>
+<DD>Returns the temperature of the left front end board fpga  (EIGER).
+</DD>
+<DT><STRONG>temp_fpgafr</STRONG></DT>
+<DD>Returns the temperature of the right front end board fpga  (EIGER).
+
+<P>
+</DD>
+<DT><STRONG>reg a</STRONG></DT>
+<DD>Write to register of address a the data d  
+</DD>
+<DT><STRONG>clkdivider</STRONG></DT>
+<DD>Returns the clock divider for the readout.
+</DD>
+<DT><STRONG>setlength</STRONG></DT>
+<DD>Returns the length of the set/reset signals in the acquisition.    
+</DD>
+<DT><STRONG>waitstates</STRONG></DT>
+<DD>Returns the wait states for CPU/FPGA communication. 
+</DD>
+<DT><STRONG>totdivider</STRONG></DT>
+<DD>Returns the tot clock divider.
+</DD>
+<DT><STRONG>totdutycycle</STRONG></DT>
+<DD>Returns the tot duty cycle.
+</DD>
+<DT><STRONG>setup</STRONG></DT>
+<DD>Dumps all settings to file (config, parameters, trimbits etc.).
+</DD>
+<DT><STRONG>trimbits fn</STRONG></DT>
+<DD>Dumps the trimbits to the file files fn.snxxx 
+</DD>
+</DL>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html90"
+  HREF="node5.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html88"
+  HREF="slsDetectorClientHowTo.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html82"
+  HREF="node3.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html91"
+  HREF="node5.html">Usage</A>
+<B> Up:</B> <A NAME="tex2html89"
+  HREF="slsDetectorClientHowTo.html">SLS Detector text clients</A>
+<B> Previous:</B> <A NAME="tex2html83"
+  HREF="node3.html">Detector setup</A>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-08-23
+</ADDRESS>
+</BODY>
+</HTML>

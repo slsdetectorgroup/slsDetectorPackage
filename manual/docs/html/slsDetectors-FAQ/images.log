@@ -1,0 +1,1649 @@
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=latex 2018.8.23)  23 AUG 2018 15:43
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**./images.tex
+(./images.tex
+LaTeX2e <2011/06/27>
+Babel <v3.8m> and hyphenation patterns for english, dumylang, nohyphenation, lo
+aded.
+
+(/usr/share/texlive/texmf-dist/tex/latex/base/report.cls
+Document Class: report 2007/10/19 v1.4h Standard LaTeX document class
+(/usr/share/texlive/texmf-dist/tex/latex/base/size10.clo
+File: size10.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@chapter=\count80
+\c@section=\count81
+\c@subsection=\count82
+\c@subsubsection=\count83
+\c@paragraph=\count84
+\c@subparagraph=\count85
+\c@figure=\count86
+\c@table=\count87
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+) (/usr/share/texlive/texmf-dist/tex/latex/base/ifthen.sty
+Package: ifthen 2001/05/26 v1.1c Standard LaTeX ifthen package (DPC)
+) (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/amssymb.sty
+Package: amssymb 2013/01/14 v3.01 AMS font symbols
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/amsfonts.sty
+Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
+\@emptytoks=\toks14
+\symAMSa=\mathgroup4
+\symAMSb=\mathgroup5
+LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
+(Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
+)) (/usr/share/texlive/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 1999/02/16 v1.0f Enhanced LaTeX Graphics (DPC,SPQR)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
+\KV@toks@=\toks15
+) (/usr/share/texlive/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2009/02/05 v1.0o Standard LaTeX Graphics (DPC,SPQR)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
+) (/usr/share/texlive/texmf-dist/tex/latex/latexconfig/graphics.cfg
+File: graphics.cfg 2010/04/23 v1.9 graphics configuration of TeX Live
+)
+Package graphics Info: Driver file: dvips.def on input line 91.
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/dvips.def
+File: dvips.def 1999/02/16 v3.0i Driver-dependant file (DPC,SPQR)
+))
+\Gin@req@height=\dimen103
+\Gin@req@width=\dimen104
+) (/usr/share/texlive/texmf-dist/tex/latex/tools/verbatim.sty
+Package: verbatim 2003/08/22 v1.5q LaTeX2e package for verbatim enhancements
+\every@verbatim=\toks16
+\verbatim@line=\toks17
+\verbatim@in@stream=\read1
+) (/usr/share/texlive/texmf-local/texmf-compat/tex/latex/html/html.sty (/usr/sh
+are/texlive/texmf-dist/tex/latex/hyperref/hyperref.sty
+Package: hyperref 2012/11/06 v6.83m Hypertext links for LaTeX
+(/usr/share/texlive/texmf-dist/tex/generic/oberdiek/hobsub-hyperref.sty
+Package: hobsub-hyperref 2012/05/28 v1.13 Bundle oberdiek, subset hyperref (HO)
+
+(/usr/share/texlive/texmf-dist/tex/generic/oberdiek/hobsub-generic.sty
+Package: hobsub-generic 2012/05/28 v1.13 Bundle oberdiek, subset generic (HO)
+Package: hobsub 2012/05/28 v1.13 Construct package bundles (HO)
+Package: infwarerr 2010/04/08 v1.3 Providing info/warning/error messages (HO)
+Package: ltxcmds 2011/11/09 v1.22 LaTeX kernel commands for general use (HO)
+Package: ifluatex 2010/03/01 v1.3 Provides the ifluatex switch (HO)
+Package ifluatex Info: LuaTeX not detected.
+Package: ifvtex 2010/03/01 v1.5 Detect VTeX and its facilities (HO)
+Package ifvtex Info: VTeX not detected.
+Package: intcalc 2007/09/27 v1.1 Expandable calculations with integers (HO)
+Package: ifpdf 2011/01/30 v2.3 Provides the ifpdf switch (HO)
+Package ifpdf Info: pdfTeX in PDF mode is not detected.
+Package: etexcmds 2011/02/16 v1.5 Avoid name clashes with e-TeX commands (HO)
+Package etexcmds Info: Could not find \expanded.
+(etexcmds)             That can mean that you are not using pdfTeX 1.50 or
+(etexcmds)             that some package has redefined \expanded.
+(etexcmds)             In the latter case, load this package earlier.
+Package: kvsetkeys 2012/04/25 v1.16 Key value parser (HO)
+Package: kvdefinekeys 2011/04/07 v1.3 Define keys (HO)
+Package: pdftexcmds 2011/11/29 v0.20 Utility functions of pdfTeX for LuaTeX (HO
+)
+Package pdftexcmds Info: LuaTeX not detected.
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode is ignored in DVI mode.
+Package: pdfescape 2011/11/25 v1.13 Implements pdfTeX's escape features (HO)
+Package: bigintcalc 2012/04/08 v1.3 Expandable calculations on big integers (HO
+)
+Package: bitset 2011/01/30 v1.1 Handle bit-vector datatype (HO)
+Package: uniquecounter 2011/01/30 v1.2 Provide unlimited unique counter (HO)
+)
+Package hobsub Info: Skipping package `hobsub' (already loaded).
+Package: letltxmacro 2010/09/02 v1.4 Let assignment for LaTeX macros (HO)
+Package: hopatch 2012/05/28 v1.2 Wrapper for package hooks (HO)
+Package: xcolor-patch 2011/01/30 xcolor patch
+Package: atveryend 2011/06/30 v1.8 Hooks at the very end of document (HO)
+Package atveryend Info: \enddocument detected (standard20110627).
+Package: atbegshi 2011/10/05 v1.16 At begin shipout hook (HO)
+Package: refcount 2011/10/16 v3.4 Data extraction from label references (HO)
+Package: hycolor 2011/01/30 v1.7 Color options for hyperref/bookmark (HO)
+) (/usr/share/texlive/texmf-dist/tex/generic/ifxetex/ifxetex.sty
+Package: ifxetex 2010/09/12 v0.6 Provides ifxetex conditional
+) (/usr/share/texlive/texmf-dist/tex/latex/oberdiek/auxhook.sty
+Package: auxhook 2011/03/04 v1.3 Hooks for auxiliary files (HO)
+) (/usr/share/texlive/texmf-dist/tex/latex/oberdiek/kvoptions.sty
+Package: kvoptions 2011/06/30 v3.11 Key value format for package options (HO)
+)
+\@linkdim=\dimen105
+\Hy@linkcounter=\count88
+\Hy@pagecounter=\count89
+(/usr/share/texlive/texmf-dist/tex/latex/hyperref/pd1enc.def
+File: pd1enc.def 2012/11/06 v6.83m Hyperref: PDFDocEncoding definition (HO)
+)
+\Hy@SavedSpaceFactor=\count90
+(/usr/share/texlive/texmf-dist/tex/latex/latexconfig/hyperref.cfg
+File: hyperref.cfg 2002/06/06 v1.2 hyperref configuration of TeXLive
+)
+Package hyperref Info: Hyper figures OFF on input line 4443.
+Package hyperref Info: Link nesting OFF on input line 4448.
+Package hyperref Info: Hyper index ON on input line 4451.
+Package hyperref Info: Plain pages OFF on input line 4458.
+Package hyperref Info: Backreferencing OFF on input line 4463.
+Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
+Package hyperref Info: Bookmarks ON on input line 4688.
+\c@Hy@tempcnt=\count91
+(/usr/share/texlive/texmf-dist/tex/latex/url/url.sty
+\Urlmuskip=\muskip10
+Package: url 2006/04/12  ver 3.3  Verb mode for urls, etc.
+)
+LaTeX Info: Redefining \url on input line 5041.
+\XeTeXLinkMargin=\dimen106
+\Fld@menulength=\count92
+\Field@Width=\dimen107
+\Fld@charsize=\dimen108
+Package hyperref Info: Hyper figures OFF on input line 6295.
+Package hyperref Info: Link nesting OFF on input line 6300.
+Package hyperref Info: Hyper index ON on input line 6303.
+Package hyperref Info: backreferencing OFF on input line 6310.
+Package hyperref Info: Link coloring OFF on input line 6315.
+Package hyperref Info: Link coloring with OCG OFF on input line 6320.
+Package hyperref Info: PDF/A mode OFF on input line 6325.
+LaTeX Info: Redefining \ref on input line 6365.
+LaTeX Info: Redefining \pageref on input line 6369.
+\Hy@abspage=\count93
+\c@Item=\count94
+\c@Hfootnote=\count95
+)
+
+Package hyperref Message: Driver (default): hdvips.
+
+(/usr/share/texlive/texmf-dist/tex/latex/hyperref/hdvips.def
+File: hdvips.def 2012/11/06 v6.83m Hyperref driver for dvips
+(/usr/share/texlive/texmf-dist/tex/latex/hyperref/pdfmark.def
+File: pdfmark.def 2012/11/06 v6.83m Hyperref definitions for pdfmark specials
+\pdf@docset=\toks18
+\pdf@box=\box26
+\pdf@toks=\toks19
+\pdf@defaulttoks=\toks20
+\HyField@AnnotCount=\count96
+\Fld@listcount=\count97
+\c@bookmark@seq@number=\count98
+(/usr/share/texlive/texmf-dist/tex/latex/oberdiek/rerunfilecheck.sty
+Package: rerunfilecheck 2011/04/15 v1.7 Rerun checks for auxiliary files (HO)
+Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
+82.
+)
+\Hy@SectionHShift=\skip43
+))
+Package: html 1999/07/19 v1.38 hypertext commands for latex2html (nd, hws, rrm)
+
+\c@lpart=\count99
+\c@lchapter=\count100
+\c@lsection=\count101
+\c@lsubsection=\count102
+\c@lsubsubsection=\count103
+\c@lparagraph=\count104
+\c@lsubparagraph=\count105
+\c@lsubsubparagraph=\count106
+\ptrfile=\write3
+) (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsmath.sty
+Package: amsmath 2013/01/14 v2.14 AMS math features
+\@mathmargin=\skip44
+For additional information on amsmath, use the `?' option.
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amstext.sty
+Package: amstext 2000/06/29 v2.01
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsgen.sty
+File: amsgen.sty 1999/11/30 v2.0
+\@emptytoks=\toks21
+\ex@=\dimen109
+)) (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsbsy.sty
+Package: amsbsy 1999/11/29 v1.2d
+\pmbraise@=\dimen110
+) (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsopn.sty
+Package: amsopn 1999/12/14 v2.01 operator names
+)
+\inf@bad=\count107
+LaTeX Info: Redefining \frac on input line 210.
+\uproot@=\count108
+\leftroot@=\count109
+LaTeX Info: Redefining \overline on input line 306.
+\classnum@=\count110
+\DOTSCASE@=\count111
+LaTeX Info: Redefining \ldots on input line 378.
+LaTeX Info: Redefining \dots on input line 381.
+LaTeX Info: Redefining \cdots on input line 466.
+\Mathstrutbox@=\box27
+\strutbox@=\box28
+\big@size=\dimen111
+LaTeX Font Info:    Redeclaring font encoding OML on input line 566.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 567.
+\macc@depth=\count112
+\c@MaxMatrixCols=\count113
+\dotsspace@=\muskip11
+\c@parentequation=\count114
+\dspbrk@lvl=\count115
+\tag@help=\toks22
+\row@=\count116
+\column@=\count117
+\maxfields@=\count118
+\andhelp@=\toks23
+\eqnshift@=\dimen112
+\alignsep@=\dimen113
+\tagshift@=\dimen114
+\tagwidth@=\dimen115
+\totwidth@=\dimen116
+\lineht@=\dimen117
+\@envbody=\toks24
+\multlinegap=\skip45
+\multlinetaggap=\skip46
+\mathdisplay@stack=\toks25
+LaTeX Info: Redefining \[ on input line 2665.
+LaTeX Info: Redefining \] on input line 2666.
+) (/usr/share/texlive/texmf-dist/tex/latex/base/latexsym.sty
+Package: latexsym 1998/08/17 v2.2e Standard LaTeX package (lasy symbols)
+\symlasy=\mathgroup6
+LaTeX Font Info:    Overwriting symbol font `lasy' in version `bold'
+(Font)                  U/lasy/m/n --> U/lasy/b/n on input line 47.
+) (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/eucal.sty
+Package: eucal 2009/06/22 v3.00 Euler Script fonts
+LaTeX Font Info:    Overwriting math alphabet `\EuScript' in version `bold'
+(Font)                  U/eus/m/n --> U/eus/b/n on input line 33.
+) (/usr/share/texlive/texmf-dist/tex/latex/amscls/amsthm.sty
+Package: amsthm 2004/08/06 v2.20
+\thm@style=\toks26
+\thm@bodyfont=\toks27
+\thm@headfont=\toks28
+\thm@notefont=\toks29
+\thm@headpunct=\toks30
+\thm@preskip=\skip47
+\thm@postskip=\skip48
+\thm@headsep=\skip49
+\dth@everypar=\toks31
+) (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsxtra.sty
+Package: amsxtra 1999/11/15 v1.2c
+LaTeX Info: Redefining \nobreakspace on input line 65.
+) (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amscd.sty
+Package: amscd 1999/11/29 v2.0
+\athelp@=\toks32
+\minaw@=\dimen118
+\bigaw@=\dimen119
+\minCDarrowwidth=\dimen120
+) (/usr/share/texlive/texmf-dist/tex/latex/amscls/upref.sty
+Package: upref 2004/07/29 v2.01
+) (/usr/share/texlive/texmf-dist/tex/latex/tools/layout.sty
+Package: layout 2000/09/25 v1.2c Show layout parameters
+\oneinch=\count119
+\cnt@paperwidth=\count120
+\cnt@paperheight=\count121
+\cnt@hoffset=\count122
+\cnt@voffset=\count123
+\cnt@textheight=\count124
+\cnt@textwidth=\count125
+\cnt@topmargin=\count126
+\cnt@oddsidemargin=\count127
+\cnt@evensidemargin=\count128
+\cnt@headheight=\count129
+\cnt@headsep=\count130
+\cnt@marginparsep=\count131
+\cnt@marginparwidth=\count132
+\cnt@marginparpush=\count133
+\cnt@footskip=\count134
+\fheight=\count135
+\ref@top=\count136
+\ref@hoffset=\count137
+\ref@voffset=\count138
+\ref@head=\count139
+\ref@body=\count140
+\ref@foot=\count141
+\ref@margin=\count142
+\ref@marginwidth=\count143
+\ref@marginpar=\count144
+\Interval=\count145
+\ExtraYPos=\count146
+\PositionX=\count147
+\PositionY=\count148
+\ArrowLength=\count149
+) (/usr/share/texlive/texmf-dist/tex/latex/tools/bm.sty
+Package: bm 2004/02/26 v1.1c Bold Symbol Support (DPC/FMi)
+\symboldoperators=\mathgroup7
+\symboldletters=\mathgroup8
+\symboldsymbols=\mathgroup9
+\symboldlasy=\mathgroup10
+LaTeX Font Info:    Redeclaring math alphabet \mathbf on input line 138.
+LaTeX Info: Redefining \bm on input line 204.
+) (/usr/share/texlive/texmf-dist/tex/latex/tools/dcolumn.sty
+Package: dcolumn 2001/05/28 v1.06 decimal alignment package (DPC)
+(/usr/share/texlive/texmf-dist/tex/latex/tools/array.sty
+Package: array 2008/09/09 v2.4c Tabular extension package (FMi)
+\col@sep=\dimen121
+\extrarowheight=\dimen122
+\NC@list=\toks33
+\extratabsurround=\skip50
+\backup@length=\skip51
+)) (/usr/share/texlive/texmf-dist/tex/latex/graphics/color.sty
+Package: color 2005/11/14 v1.0j Standard LaTeX Color (DPC)
+(/usr/share/texlive/texmf-dist/tex/latex/latexconfig/color.cfg
+File: color.cfg 2007/01/18 v1.5 color configuration of teTeX/TeXLive
+)
+Package color Info: Driver file: dvips.def on input line 130.
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/dvipsnam.def
+File: dvipsnam.def 1999/02/16 v3.0i Driver-dependant file (DPC,SPQR)
+)) (/usr/share/texlive/texmf-dist/tex/latex/tools/calc.sty
+Package: calc 2007/08/22 v4.3 Infix arithmetic (KKT,FJ)
+\calc@Acount=\count150
+\calc@Bcount=\count151
+\calc@Adimen=\dimen123
+\calc@Bdimen=\dimen124
+\calc@Askip=\skip52
+\calc@Bskip=\skip53
+LaTeX Info: Redefining \setlength on input line 76.
+LaTeX Info: Redefining \addtolength on input line 77.
+\calc@Ccount=\count152
+\calc@Cskip=\skip54
+) (/usr/share/texlive/texmf-dist/tex/latex/framed/framed.sty
+Package: framed 2011/10/22 v 0.96: framed or shaded text with page breaks
+\OuterFrameSep=\skip55
+\fb@frw=\dimen125
+\fb@frh=\dimen126
+\FrameRule=\dimen127
+\FrameSep=\dimen128
+) (/usr/share/texlive/texmf-dist/tex/latex/base/inputenc.sty
+Package: inputenc 2008/03/30 v1.1d Input encoding file
+\inpenc@prehook=\toks34
+\inpenc@posthook=\toks35
+)
+\sizebox=\box29
+\lthtmlwrite=\write4
+(./images.aux
+
+LaTeX Warning: Label `fig:trig' multiply defined.
+
+)
+\openout1 = `images.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 209.
+LaTeX Font Info:    ... okay on input line 209.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 209.
+LaTeX Font Info:    ... okay on input line 209.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 209.
+LaTeX Font Info:    ... okay on input line 209.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 209.
+LaTeX Font Info:    ... okay on input line 209.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 209.
+LaTeX Font Info:    ... okay on input line 209.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 209.
+LaTeX Font Info:    ... okay on input line 209.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 209.
+LaTeX Font Info:    ... okay on input line 209.
+\AtBeginShipoutBox=\box30
+Package hyperref Info: Link coloring OFF on input line 209.
+(/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
+Package: nameref 2012/10/27 v2.43 Cross-referencing by name of section
+(/usr/share/texlive/texmf-dist/tex/generic/oberdiek/gettitlestring.sty
+Package: gettitlestring 2010/12/03 v1.4 Cleanup title references (HO)
+)
+\c@section@level=\count153
+)
+LaTeX Info: Redefining \ref on input line 209.
+LaTeX Info: Redefining \pageref on input line 209.
+LaTeX Info: Redefining \nameref on input line 209.
+\@outlinefile=\write5
+\openout5 = `images.out'.
+
+
+latex2htmlLength hsize=349.0pt
+
+latex2htmlLength vsize=633.0pt
+
+latex2htmlLength hoffset=0.0pt
+
+latex2htmlLength voffset=0.0pt
+
+latex2htmlLength topmargin=0.0pt
+
+latex2htmlLength topskip=0.00003pt
+
+latex2htmlLength headheight=0.0pt
+
+latex2htmlLength headsep=0.0pt
+
+latex2htmlLength parskip=0.0pt plus 1.0pt
+
+latex2htmlLength oddsidemargin=62.0pt
+
+latex2htmlLength evensidemargin=62.0pt
+
+LaTeX Font Info:    Try loading font information for U+msa on input line 233.
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Try loading font information for U+msb on input line 233.
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+LaTeX Font Info:    Try loading font information for U+lasy on input line 233.
+(/usr/share/texlive/texmf-dist/tex/latex/base/ulasy.fd
+File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
+)
+LaTeX Font Info:    Font shape `U/lasy/b/n' in size <7> not available
+(Font)              Font shape `U/lasy/m/n' tried instead on input line 233.
+LaTeX Font Info:    Font shape `U/lasy/b/n' in size <5> not available
+(Font)              Font shape `U/lasy/m/n' tried instead on input line 233.
+l2hSize :tex2html_wrap_inline7663:8.64003pt::8.64003pt::11.24307pt.
+[1
+
+
+
+]
+File: multi_detector.eps Graphic file (type eps)
+<multi_detector.eps>
+l2hSize :tex2html_wrap7743:89.66235pt::0.0pt::349.0pt.
+[2
+
+
+]
+File: data_receiver.eps Graphic file (type eps)
+<data_receiver.eps>
+l2hSize :tex2html_wrap7749:184.55281pt::0.0pt::349.0pt.
+[3
+
+
+]
+l2hSize :tex2html_wrap_inline7759:6.94444pt::0.0pt::5.7049pt.
+[4
+
+
+]
+l2hSize :tex2html_wrap_inline7762:8.0pt::8.0pt::6.61115pt.
+[5
+
+
+]
+l2hSize :tex2html_wrap_inline7764:6.45831pt::0.0pt::10.50005pt.
+[6
+
+
+]
+Overfull \hbox (137.47572pt too wide) detected at line 349
+[][]  []
+ []
+
+l2hSize :displaymath7766:397.00403pt::0.0pt::349.0pt.
+[7
+
+
+]
+File: images/normal_acquisition.eps Graphic file (type eps)
+<images/normal_acquisition.eps>
+l2hSize :tex2html_wrap7789:99.90501pt::0.0pt::349.0pt.
+[8
+
+
+]
+File: images/gated_acquisition.eps Graphic file (type eps)
+<images/gated_acquisition.eps>
+l2hSize :tex2html_wrap7793:121.80202pt::0.0pt::349.0pt.
+[9
+
+
+]
+File: images/trigger_acquisition.eps Graphic file (type eps)
+<images/trigger_acquisition.eps>
+l2hSize :tex2html_wrap7797:125.8976pt::0.0pt::349.0pt.
+[10
+
+
+]
+File: images/ro_trigger_acquisition.eps Graphic file (type eps)
+<images/ro_trigger_acquisition.eps>
+l2hSize :tex2html_wrap7801:101.6309pt::0.0pt::349.0pt.
+[11
+
+
+]
+l2hSize :tex2html_wrap_inline7812:8.0pt::8.0pt::183.90987pt.
+[12
+
+
+]
+l2hSize :tex2html_wrap_inline7814:8.0pt::8.0pt::80.10426pt.
+[13
+
+
+]
+File: images/effiSiHardXRays2.eps Graphic file (type eps)
+<images/effiSiHardXRays2.eps>
+l2hSize :tex2html_wrap7823:337.30484pt::0.0pt::349.0pt.
+[14
+
+
+]
+l2hSize :tex2html_wrap_inline7825:6.95831pt::6.95831pt::6.52551pt.
+[15
+
+
+]
+File: images/effiThinkBackplanes.eps Graphic file (type eps)
+<images/effiThinkBackplanes.eps>
+l2hSize :tex2html_wrap7829:338.49672pt::0.0pt::349.0pt.
+[16
+
+
+]
+File: images/settings.eps Graphic file (type eps)
+<images/settings.eps>
+l2hSize :tex2html_wrap7834:178.62796pt::0.0pt::349.0pt.
+[17
+
+
+]
+File: images/thr_scan_expl.eps Graphic file (type eps)
+<images/thr_scan_expl.eps>
+l2hSize :tex2html_wrap7844:338.53587pt::0.0pt::349.0pt.
+[18
+
+
+]
+File: images/thr_scan_fluo.eps Graphic file (type eps)
+<images/thr_scan_fluo.eps>
+l2hSize :tex2html_wrap7848:338.53587pt::0.0pt::349.0pt.
+[19
+
+
+]
+l2hSize :tex2html_wrap_inline7853:7.33331pt::7.33331pt::12.3681pt.
+[20
+
+
+]
+l2hSize :tex2html_wrap_inline7857:8.0pt::8.0pt::46.60414pt.
+[21
+
+
+]
+l2hSize :tex2html_wrap_inline7861:7.33331pt::7.33331pt::13.06606pt.
+[22
+
+
+]
+l2hSize :tex2html_wrap_inline7865:7.33331pt::7.33331pt::11.40282pt.
+[23
+
+
+]
+l2hSize :tex2html_wrap_inline7879:7.33331pt::7.33331pt::38.26735pt.
+[24
+
+
+]
+l2hSize :tex2html_wrap_inline7883:7.33331pt::7.33331pt::54.52422pt.
+[25
+
+
+]
+l2hSize :tex2html_wrap_inline7885:7.33331pt::7.33331pt::53.82626pt.
+[26
+
+
+]
+l2hSize :tex2html_wrap_inline7897:7.33331pt::7.33331pt::54.52422pt.
+[27
+
+
+]
+l2hSize :tex2html_wrap_inline7901:7.33331pt::7.33331pt::29.73605pt.
+[28
+
+
+]
+File: images/sample_with_fluorescence.eps Graphic file (type eps)
+<images/sample_with_fluorescence.eps>
+l2hSize :tex2html_wrap7908:338.53587pt::0.0pt::349.0pt.
+[29
+
+
+]
+File: images/bad_ff_col.eps Graphic file (type eps)
+<images/bad_ff_col.eps>
+l2hSize :tex2html_wrap7914:338.49672pt::0.0pt::349.0pt.
+[30
+
+
+]
+File: images/FFSetup.eps Graphic file (type eps)
+<images/FFSetup.eps>
+l2hSize :tex2html_wrap7919:250.12001pt::0.0pt::349.0pt.
+[31
+
+
+]
+l2hSize :tex2html_wrap_inline7926:6.94444pt::0.0pt::69.3889pt.
+[32
+
+
+]
+l2hSize :tex2html_wrap_inline7928:6.83331pt::0.0pt::61.56856pt.
+[33
+
+
+]
+l2hSize :tex2html_wrap_inline7930:6.94444pt::0.0pt::67.50539pt.
+[34
+
+
+]
+l2hSize :tex2html_wrap_inline7932:6.95831pt::6.95831pt::8.27783pt.
+[35
+
+
+]
+File: images/noise_thresholdscanuntrimmed.eps Graphic file (type eps)
+<images/noise_thresholdscanuntrimmed.eps>
+l2hSize :tex2html_wrap7933:173.42374pt::0.0pt::349.0pt.
+[36
+
+
+]
+File: images/trimbitdistribution.eps Graphic file (type eps)
+<images/trimbitdistribution.eps>
+l2hSize :tex2html_wrap7937:173.42374pt::0.0pt::349.0pt.
+[37
+
+
+]
+File: images/trimbitplot.eps Graphic file (type eps)
+<images/trimbitplot.eps>
+l2hSize :tex2html_wrap7941:173.42374pt::0.0pt::349.0pt.
+[38
+
+
+]
+File: images/noise_thresholdscantrimmed.eps Graphic file (type eps)
+<images/noise_thresholdscantrimmed.eps>
+l2hSize :tex2html_wrap7945:173.42374pt::0.0pt::349.0pt.
+[39
+
+
+]
+l2hSize :tex2html_wrap_inline7954:6.45831pt::0.0pt::3.27782pt.
+[40
+
+
+]
+l2hSize :tex2html_wrap_inline7968:6.95831pt::6.95831pt::18.20673pt.
+[41
+
+
+]
+l2hSize :tex2html_wrap_inline7970:7.33331pt::7.33331pt::15.68904pt.
+[42
+
+
+]
+l2hSize :tex2html_wrap_inline7972:7.33331pt::7.33331pt::15.31837pt.
+[43
+
+
+]
+l2hSize :tex2html_wrap_inline7974:7.33331pt::7.33331pt::16.3753pt.
+[44
+
+
+]
+l2hSize :tex2html_wrap_inline7976:6.95831pt::6.95831pt::12.4237pt.
+[45
+
+
+]
+l2hSize :tex2html_wrap_inline7978:6.95831pt::6.95831pt::12.94337pt.
+[46
+
+
+]
+l2hSize :tex2html_wrap_inline7980:7.44444pt::7.44444pt::13.30219pt.
+[47
+
+
+]
+l2hSize :tex2html_wrap_indisplay7982:15.0001pt::15.0001pt::176.78307pt.
+[48
+
+
+]
+l2hSize :tex2html_wrap_indisplay7984:15.0001pt::15.0001pt::243.50876pt.
+[49
+
+
+]
+l2hSize :tex2html_wrap_indisplay7987:6.95831pt::6.95831pt::12.4237pt.
+[50
+
+
+]
+l2hSize :tex2html_wrap_indisplay7989:6.95831pt::6.95831pt::8.27783pt.
+[51
+
+
+]
+l2hSize :tex2html_wrap_indisplay7991:14.09839pt::14.09839pt::21.55309pt.
+[52
+
+
+]
+l2hSize :tex2html_wrap_indisplay7993:7.44444pt::7.44444pt::13.30219pt.
+[53
+
+
+]
+l2hSize :tex2html_wrap_indisplay7997:11.57062pt::11.57062pt::20.86682pt.
+[54
+
+
+]
+l2hSize :tex2html_wrap_indisplay7999:6.95831pt::6.95831pt::12.94337pt.
+[55
+
+
+]
+l2hSize :tex2html_wrap_indisplay8003:14.09839pt::14.09839pt::65.9936pt.
+[56
+
+
+]
+l2hSize :tex2html_wrap_indisplay8006:7.33331pt::7.33331pt::15.31837pt.
+[57
+
+
+]
+l2hSize :tex2html_wrap_indisplay8010:13.70952pt::13.70952pt::70.06917pt.
+[58
+
+
+]
+l2hSize :tex2html_wrap_indisplay8012:7.33331pt::7.33331pt::15.68904pt.
+[59
+
+
+]
+l2hSize :tex2html_wrap_indisplay8016:11.57062pt::11.57062pt::18.47997pt.
+[60
+
+
+]
+l2hSize :tex2html_wrap_indisplay8018:7.33331pt::7.33331pt::16.3753pt.
+[61
+
+
+]
+l2hSize :tex2html_wrap_indisplay8022:6.95831pt::6.95831pt::20.23274pt.
+[62
+
+
+]
+l2hSize :tex2html_wrap_inline8027:6.94444pt::0.0pt::10.47227pt.
+[63
+
+
+]
+l2hSize :tex2html_wrap_inline8029:6.94444pt::0.0pt::10.47227pt.
+[64
+
+
+]
+l2hSize :tex2html_wrap_indisplay8032:14.20952pt::14.20952pt::17.34445pt.
+[65
+
+
+]
+l2hSize :tex2html_wrap_inline8034:6.83331pt::0.0pt::7.72226pt.
+[66
+
+
+]
+l2hSize :tex2html_wrap_indisplay8036:14.20952pt::14.20952pt::53.72649pt.
+[67
+
+
+]
+l2hSize :tex2html_wrap_inline8038:6.83331pt::0.0pt::12.4445pt.
+[68
+
+
+]
+l2hSize :tex2html_wrap_inline8040:6.83331pt::0.0pt::16.05562pt.
+[69
+
+
+]
+l2hSize :tex2html_wrap_inline8042:7.33331pt::7.33331pt::9.382pt.
+[70
+
+
+]
+l2hSize :tex2html_wrap_inline8046:6.94444pt::0.0pt::47.69444pt.
+[71
+
+
+]
+l2hSize :tex2html_wrap_inline8057:6.83331pt::0.0pt::8.30907pt.
+[72
+
+
+]
+l2hSize :tex2html_wrap_inline8059:6.94444pt::0.0pt::6.02087pt.
+[73
+
+
+]
+l2hSize :tex2html_wrap_inline8061:7.44444pt::7.44444pt::54.38521pt.
+[74
+
+
+]
+l2hSize :tex2html_wrap_inline8063:7.33331pt::7.33331pt::13.45491pt.
+[75
+
+
+]
+l2hSize :tex2html_wrap_inline8065:6.94444pt::0.0pt::33.77774pt.
+[76
+
+
+]
+l2hSize :tex2html_wrap_indisplay8067:12.00008pt::12.00008pt::167.62956pt.
+[77
+
+
+]
+l2hSize :tex2html_wrap_indisplay8069:17.38873pt::17.38873pt::85.71771pt.
+[78
+
+
+]
+l2hSize :tex2html_wrap_indisplay8071:9.30559pt::9.30559pt::88.87329pt.
+[79
+
+
+]
+l2hSize :tex2html_wrap_inline8073:7.33331pt::7.33331pt::18.65598pt.
+[80
+
+
+]
+l2hSize :tex2html_wrap_inline8075:6.95831pt::6.95831pt::16.16502pt.
+[81
+
+
+]
+l2hSize :tex2html_wrap_inline8077:6.95831pt::6.95831pt::20.2889pt.
+[82
+
+
+]
+l2hSize :tex2html_wrap_inline8079:7.44444pt::7.44444pt::15.80042pt.
+[83
+
+
+]
+l2hSize :tex2html_wrap_indisplay8081:11.57062pt::11.57062pt::143.29408pt.
+[84
+
+
+]
+l2hSize :tex2html_wrap_indisplay8083:13.1577pt::13.1577pt::108.83537pt.
+[85
+
+
+]
+l2hSize :tex2html_wrap_indisplay8085:14.09839pt::14.09839pt::200.85495pt.
+[86
+
+
+]
+l2hSize :tex2html_wrap_indisplay8087:13.1577pt::13.1577pt::166.44937pt.
+[87
+
+
+]
+l2hSize :tex2html_wrap_inline8089:6.83331pt::0.0pt::11.29169pt.
+[88
+
+
+]
+l2hSize :tex2html_wrap_indisplay8091:8.0pt::8.0pt::218.09163pt.
+[89
+
+
+]
+l2hSize :tex2html_wrap_indisplay8093:8.0pt::8.0pt::38.90797pt.
+[90
+
+
+]
+l2hSize :tex2html_wrap_indisplay8095:9.97221pt::9.97221pt::101.97737pt.
+[91
+
+
+]
+l2hSize :tex2html_wrap_inline8097:7.44444pt::7.44444pt::14.9584pt.
+[92
+
+
+]
+l2hSize :tex2html_wrap_inline8099:7.44444pt::7.44444pt::85.83296pt.
+[93
+
+
+]
+l2hSize :tex2html_wrap_inline8101:6.94444pt::0.0pt::4.66672pt.
+[94
+
+
+]
+l2hSize :tex2html_wrap_indisplay8103:7.44444pt::7.44444pt::15.80042pt.
+[95
+
+
+]
+l2hSize :tex2html_wrap_indisplay8104:8.0pt::8.0pt::85.0104pt.
+[96
+
+
+]
+l2hSize :tex2html_wrap_indisplay8107:10.08334pt::10.08334pt::62.23268pt.
+[97
+
+
+]
+l2hSize :tex2html_wrap_inline8111:7.33331pt::7.33331pt::11.93237pt.
+[98
+
+
+]
+l2hSize :tex2html_wrap_inline8113:7.33331pt::7.33331pt::15.29031pt.
+[99
+
+
+]
+l2hSize :tex2html_wrap_inline8115:7.33331pt::7.33331pt::13.57112pt.
+[100
+
+
+]
+l2hSize :tex2html_wrap_inline8117:6.83331pt::0.0pt::8.40558pt.
+[101
+
+
+]
+l2hSize :tex2html_wrap_inline8119:6.95831pt::6.95831pt::17.70064pt.
+[102
+
+
+]
+l2hSize :tex2html_wrap_inline8121:6.95831pt::6.95831pt::10.88318pt.
+[103
+
+
+]
+l2hSize :tex2html_wrap_indisplay8123:35.47784pt::35.47784pt::89.30644pt.
+[104
+
+
+]
+l2hSize :tex2html_wrap_indisplay8125:14.76508pt::14.76508pt::46.29935pt.
+[105
+
+
+]
+l2hSize :tex2html_wrap_inline8127:7.44444pt::7.44444pt::15.15578pt.
+[106
+
+
+]
+l2hSize :tex2html_wrap_indisplay8131:24.8389pt::24.8389pt::178.6664pt.
+[107
+
+
+]
+l2hSize :tex2html_wrap_indisplay8133:24.8389pt::24.8389pt::157.33359pt.
+[108
+
+
+]
+l2hSize :tex2html_wrap_indisplay8135:14.09839pt::14.09839pt::42.58318pt.
+[109
+
+
+]
+l2hSize :tex2html_wrap_indisplay8137:13.70952pt::13.70952pt::54.38838pt.
+[110
+
+
+]
+l2hSize :tex2html_wrap_inline8139:7.33331pt::7.33331pt::11.94019pt.
+[111
+
+
+]
+l2hSize :tex2html_wrap_inline8141:6.95831pt::6.95831pt::16.22455pt.
+[112
+
+
+]
+l2hSize :tex2html_wrap_inline8143:6.83331pt::0.0pt::8.58684pt.
+[113
+
+
+]
+l2hSize :tex2html_wrap_inline8145:6.83331pt::0.0pt::9.70836pt.
+[114
+
+
+]
+l2hSize :tex2html_wrap_indisplay8149:18.78339pt::18.78339pt::133.39876pt.
+[115
+
+
+]
+l2hSize :tex2html_wrap_indisplay8153:18.78339pt::18.78339pt::72.13547pt.
+[116
+
+
+]
+l2hSize :tex2html_wrap_indisplay8155:9.97221pt::9.97221pt::86.40256pt.
+[117
+
+
+]
+l2hSize :tex2html_wrap_inline8166:7.33331pt::7.33331pt::30.96526pt.
+[118
+
+
+]
+l2hSize :tex2html_wrap_inline8168:7.33331pt::7.33331pt::28.48608pt.
+[119
+
+
+]
+l2hSize :tex2html_wrap_inline8170:6.94444pt::0.0pt::4.79169pt.
+[120
+
+
+]
+l2hSize :tex2html_wrap_indisplay8174:17.03902pt::17.03902pt::236.17503pt.
+[121
+
+
+]
+l2hSize :tex2html_wrap_indisplay8176:17.03902pt::17.03902pt::213.8213pt.
+[122
+
+
+]
+l2hSize :tex2html_wrap_indisplay8178:14.76508pt::14.76508pt::93.05731pt.
+[123
+
+
+]
+l2hSize :tex2html_wrap_indisplay8182:18.95773pt::18.95773pt::159.65314pt.
+[124
+
+
+]
+l2hSize :tex2html_wrap_indisplay8186:18.95773pt::18.95773pt::45.29063pt.
+[125
+
+
+]
+l2hSize :tex2html_wrap_inline8189:10.08334pt::10.08334pt::15.36986pt.
+[126
+
+
+]
+l2hSize :tex2html_wrap_inline8191:9.97221pt::9.97221pt::11.93237pt.
+[127
+
+
+]
+l2hSize :tex2html_wrap_inline8194:7.33331pt::7.33331pt::12.13338pt.
+[128
+
+
+]
+l2hSize :tex2html_wrap_inline8198:9.01662pt::9.01662pt::20.46674pt.
+[129
+
+
+]
+l2hSize :tex2html_wrap_inline8200:6.45831pt::0.0pt::6.50238pt.
+[130
+
+
+]
+l2hSize :tex2html_wrap_indisplay8202:16.17734pt::16.17734pt::71.96126pt.
+[131
+
+
+]
+l2hSize :tex2html_wrap_indisplay8204:18.33339pt::18.33339pt::63.26857pt.
+[132
+
+
+]
+l2hSize :tex2html_wrap_indisplay8206:18.33339pt::18.33339pt::103.01762pt.
+[133
+
+
+]
+l2hSize :tex2html_wrap_indisplay8208:18.33339pt::18.33339pt::136.56064pt.
+[134
+
+
+]
+l2hSize :tex2html_wrap_indisplay8210:10.50487pt::10.50487pt::123.40723pt.
+[135
+
+
+]
+l2hSize :tex2html_wrap_indisplay8214:18.95563pt::18.95563pt::92.34447pt.
+[136
+
+
+]
+l2hSize :tex2html_wrap_inline8216:7.33331pt::7.33331pt::12.34135pt.
+[137
+
+
+]
+l2hSize :tex2html_wrap_inline8218:7.33331pt::7.33331pt::11.14415pt.
+[138
+
+
+]
+l2hSize :tex2html_wrap_inline8220:6.95831pt::6.95831pt::10.42772pt.
+[139
+
+
+]
+l2hSize :tex2html_wrap_indisplay8222:18.95563pt::18.95563pt::98.11395pt.
+[140
+
+
+]
+l2hSize :tex2html_wrap_indisplay8224:18.95563pt::18.95563pt::165.03024pt.
+[141
+
+
+]
+l2hSize :tex2html_wrap_inline8230:7.33331pt::7.33331pt::20.60564pt.
+[142
+
+
+]
+l2hSize :tex2html_wrap_inline8232:7.33331pt::7.33331pt::84.43443pt.
+[143
+
+
+]
+l2hSize :tex2html_wrap_inline8234:6.45831pt::0.0pt::6.2153pt.
+[144
+
+
+]
+l2hSize :tex2html_wrap_indisplay8238:18.95563pt::18.95563pt::106.4156pt.
+[145
+
+
+]
+l2hSize :tex2html_wrap_indisplay8240:25.33836pt::25.33836pt::245.22083pt.
+[146
+
+
+]
+l2hSize :tex2html_wrap_indisplay8242:21.98627pt::21.98627pt::133.23958pt.
+[147
+
+
+]
+l2hSize :tex2html_wrap_inline8245:7.33331pt::7.33331pt::30.19405pt.
+[148
+
+
+]
+l2hSize :tex2html_wrap_inline8247:7.38586pt::7.38586pt::20.60564pt.
+[149
+
+
+]
+l2hSize :tex2html_wrap_indisplay8249:22.53354pt::22.53354pt::238.01314pt.
+[150
+
+
+]
+l2hSize :tex2html_wrap_indisplay8251:19.305pt::19.305pt::186.20044pt.
+[151
+
+
+]
+l2hSize :tex2html_wrap_inline8253:7.33331pt::7.33331pt::11.86081pt.
+[152
+
+
+]
+l2hSize :tex2html_wrap_indisplay8260:18.95563pt::18.95563pt::87.41562pt.
+[153
+
+
+]
+l2hSize :tex2html_wrap_indisplay8262:37.0153pt::37.0153pt::86.36304pt.
+[154
+
+
+]
+l2hSize :tex2html_wrap_indisplay8266:35.80026pt::35.80026pt::79.5173pt.
+[155
+
+
+]
+l2hSize :tex2html_wrap_indisplay8268:81.33606pt::81.33606pt::142.41797pt.
+[156
+
+
+]
+l2hSize :tex2html_wrap_indisplay8270:9.49002pt::9.49002pt::94.47359pt.
+[157
+
+
+]
+l2hSize :tex2html_wrap_inline8273:7.33331pt::7.33331pt::37.03535pt.
+[158
+
+
+]
+l2hSize :tex2html_wrap_inline8275:8.64003pt::8.64003pt::35.75307pt.
+[159
+
+
+]
+l2hSize :tex2html_wrap_indisplay8277:32.0153pt::32.0153pt::76.96254pt.
+[160
+
+
+]
+l2hSize :tex2html_wrap_indisplay8285:41.80032pt::41.80032pt::159.8735pt.
+[161
+
+
+]
+l2hSize :tex2html_wrap_indisplay8287:57.3461pt::57.3461pt::288.90195pt.
+[162
+
+
+]
+l2hSize :tex2html_wrap_inline8289:8.0pt::8.0pt::18.59033pt.
+[163
+
+
+]
+l2hSize :tex2html_wrap_indisplay8291:9.49002pt::9.49002pt::113.94249pt.
+[164
+
+
+]
+l2hSize :tex2html_wrap_inline8294:8.0pt::8.0pt::96.17384pt.
+[165
+
+
+]
+l2hSize :tex2html_wrap_inline8296:8.64003pt::8.64003pt::52.97522pt.
+[166
+
+
+]
+l2hSize :tex2html_wrap_indisplay8298:34.64299pt::34.64299pt::110.70132pt.
+[167
+
+
+]
+l2hSize :tex2html_wrap_indisplay8300:41.80032pt::41.80032pt::177.09566pt.
+[168
+
+
+]
+l2hSize :tex2html_wrap_indisplay8302:57.3461pt::57.3461pt::355.674pt.
+
+Overfull \hbox (9.67401pt too wide) in paragraph at lines 1604--1605
+[]|[] 
+ []
+
+[169
+
+
+]
+l2hSize :tex2html_wrap_indisplay8306:9.49002pt::9.49002pt::113.94249pt.
+[170
+
+
+]
+l2hSize :tex2html_wrap_indisplay8313:11.57062pt::11.57062pt::36.07587pt.
+[171
+
+
+]
+l2hSize :tex2html_wrap_inline8317:8.64003pt::8.64003pt::25.27715pt.
+[172
+
+
+]
+l2hSize :tex2html_wrap_inline8321:6.95831pt::6.95831pt::20.1493pt.
+[173
+
+
+]
+l2hSize :tex2html_wrap_inline8325:8.64003pt::8.64003pt::25.27715pt.
+[174
+
+
+]
+l2hSize :tex2html_wrap_inline8328:7.33331pt::7.33331pt::38.93887pt.
+[175
+
+
+]
+l2hSize :tex2html_wrap_inline8330:7.33331pt::7.33331pt::12.13338pt.
+[176
+
+
+]
+l2hSize :tex2html_wrap_inline8332:7.33331pt::7.33331pt::12.13338pt.
+[177
+
+
+]
+l2hSize :tex2html_wrap_indisplay8334:17.26994pt::17.26994pt::161.63051pt.
+[178
+
+
+]
+l2hSize :tex2html_wrap_indisplay8336:19.79109pt::19.79109pt::279.2141pt.
+[179
+
+
+]
+l2hSize :tex2html_wrap_inline8338:7.33331pt::7.33331pt::28.21114pt.
+[180
+
+
+]
+l2hSize :tex2html_wrap_inline8340:6.94444pt::0.0pt::6.33339pt.
+[181
+
+
+]
+l2hSize :tex2html_wrap_indisplay8342:18.33339pt::18.33339pt::305.93774pt.
+[182
+
+
+]
+l2hSize :tex2html_wrap_indisplay8344:18.33339pt::18.33339pt::247.33661pt.
+[183
+
+
+]
+l2hSize :tex2html_wrap_indisplay8346:15.9051pt::15.9051pt::136.86096pt.
+[184
+
+
+]
+l2hSize :tex2html_wrap_indisplay8348:18.33339pt::18.33339pt::363.07938pt.
+
+Overfull \hbox (17.07939pt too wide) in paragraph at lines 1722--1723
+[]|[] 
+ []
+
+[185
+
+
+]
+l2hSize :tex2html_wrap_inline8350:6.95831pt::6.95831pt::45.52538pt.
+[186
+
+
+]
+l2hSize :tex2html_wrap_inline8352:6.95831pt::6.95831pt::59.07616pt.
+[187
+
+
+]
+l2hSize :tex2html_wrap_inline8354:7.44444pt::7.44444pt::68.26837pt.
+[188
+
+
+]
+l2hSize :tex2html_wrap_inline8356:6.94444pt::0.0pt::44.04147pt.
+[189
+
+
+]
+l2hSize :tex2html_wrap_indisplay8358:18.33339pt::18.33339pt::343.0692pt.
+[190
+
+
+]
+l2hSize :tex2html_wrap_indisplay8360:16.45555pt::16.45555pt::183.95403pt.
+[191
+
+
+]
+l2hSize :tex2html_wrap_inline8362:8.0pt::8.0pt::13.9931pt.
+[192
+
+
+]
+l2hSize :tex2html_wrap_indisplay8364:16.644pt::16.644pt::103.58525pt.
+[193
+
+
+]
+l2hSize :tex2html_wrap_indisplay8366:16.45555pt::16.45555pt::113.2396pt.
+[194
+
+
+]
+l2hSize :tex2html_wrap_inline8371:7.44444pt::7.44444pt::115.7777pt.
+[195
+
+
+]
+l2hSize :tex2html_wrap_inline8375:8.14003pt::0.0pt::37.44438pt.
+[196
+
+
+]
+l2hSize :tex2html_wrap_inline8381:9.85pt::9.85pt::52.85414pt.
+[197
+
+
+]
+l2hSize :tex2html_wrap_inline8383:9.85pt::9.85pt::109.99648pt.
+[198
+
+
+]
+l2hSize :tex2html_wrap_inline8385:7.33331pt::7.33331pt::13.12505pt.
+[199
+
+
+]
+l2hSize :tex2html_wrap_inline8389:8.0pt::8.0pt::47.19098pt.
+[200
+
+
+]
+l2hSize :tex2html_wrap_inline8391:8.0pt::8.0pt::24.70149pt.
+[201
+
+
+]
+l2hSize :tex2html_wrap_inline8393:6.94444pt::0.0pt::16.8889pt.
+[202
+
+
+]
+l2hSize :tex2html_wrap_inline8395:7.44444pt::7.44444pt::20.67363pt.
+[203
+
+
+]
+l2hSize :tex2html_wrap_inline8397:6.95831pt::6.95831pt::9.80214pt.
+[204
+
+
+]
+l2hSize :tex2html_wrap_inline8399:8.0pt::8.0pt::29.07188pt.
+[205
+
+
+]
+l2hSize :tex2html_wrap_inline8401:8.0pt::8.0pt::29.07188pt.
+[206
+
+
+]
+l2hSize :tex2html_wrap_inline8409:6.95831pt::6.95831pt::10.39937pt.
+[207
+
+
+]
+l2hSize :tex2html_wrap_inline8753:8.0pt::8.0pt::37.96071pt.
+[208
+
+
+]
+l2hSize :tex2html_wrap_inline8757:8.0pt::8.0pt::21.92366pt.
+[209
+
+
+]
+l2hSize :tex2html_wrap_inline8759:7.44444pt::7.44444pt::34.66666pt.
+[210
+
+
+]
+l2hSize :tex2html_wrap_inline8761:8.0pt::8.0pt::17.32643pt.
+[211
+
+
+]
+l2hSize :tex2html_wrap_indisplay8786:7.33331pt::7.33331pt::47.68889pt.
+[212
+
+
+]
+l2hSize :tex2html_wrap_inline8788:6.95831pt::6.95831pt::9.95146pt.
+[213
+
+
+]
+l2hSize :tex2html_wrap_inline8790:6.83331pt::0.0pt::9.56946pt.
+[214
+
+
+]
+l2hSize :tex2html_wrap_indisplay8792:18.00015pt::18.00015pt::207.90103pt.
+[215
+
+
+]
+l2hSize :tex2html_wrap_indisplay8796:18.33339pt::18.33339pt::151.09164pt.
+[216
+
+
+]
+l2hSize :tex2html_wrap_indisplay8798:18.33339pt::18.33339pt::228.35915pt.
+[217
+
+
+]
+l2hSize :tex2html_wrap_indisplay8800:10.50487pt::10.50487pt::235.90079pt.
+[218
+
+
+]
+l2hSize :tex2html_wrap_inline8802:9.85pt::9.85pt::88.43417pt.
+[219
+
+
+]
+l2hSize :tex2html_wrap_indisplay8804:10.50487pt::10.50487pt::150.7605pt.
+[220
+
+
+]
+l2hSize :tex2html_wrap_inline8808:6.95831pt::6.95831pt::14.73717pt.
+[221
+
+
+]
+l2hSize :tex2html_wrap_indisplay8810:22.05098pt::22.05098pt::87.08226pt.
+[222
+
+
+]
+l2hSize :tex2html_wrap_indisplay8812:18.33339pt::18.33339pt::124.6702pt.
+[223
+
+
+]
+l2hSize :tex2html_wrap_indisplay8814:18.33339pt::18.33339pt::332.75139pt.
+[224
+
+
+]
+l2hSize :tex2html_wrap_indisplay8816:18.33339pt::18.33339pt::396.02237pt.
+
+Overfull \hbox (50.02238pt too wide) in paragraph at lines 2011--2012
+[]|[] 
+ []
+
+[225
+
+
+]
+l2hSize :tex2html_wrap_indisplay8818:22.80008pt::22.80008pt::508.49103pt.
+
+Overfull \hbox (162.49104pt too wide) in paragraph at lines 2028--2029
+[]|[] 
+ []
+
+[226
+
+
+]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 2033.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 2033.
+(./images.aux)
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 2033.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 2033.
+
+
+Package rerunfilecheck Warning: File `images.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+Package rerunfilecheck Info: Checksums for `images.out':
+(rerunfilecheck)             Before: <no file>
+(rerunfilecheck)             After:  D41D8CD98F00B204E9800998ECF8427E;0.
+
+LaTeX Warning: There were multiply-defined labels.
+
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 2033.
+ ) 
+Here is how much of TeX's memory you used:
+ 6616 strings out of 495064
+ 93570 string characters out of 3182224
+ 186843 words of memory out of 3000000
+ 9690 multiletter control sequences out of 15000+200000
+ 9425 words of font info for 38 fonts, out of 3000000 for 9000
+ 14 hyphenation exceptions out of 8191
+ 36i,49n,26p,738b,519s stack positions out of 5000i,500n,10000p,200000b,50000s
+
+Output written on images.dvi (226 pages, 163320 bytes).

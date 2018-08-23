@@ -1,0 +1,190 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2012 (1.2)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Data analysis</TITLE>
+<META NAME="description" CONTENT="Data analysis">
+<META NAME="keywords" CONTENT="energyCalibrationHowTo">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2012">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="energyCalibrationHowTo.css">
+
+<LINK REL="next" HREF="node4.html">
+<LINK REL="previous" HREF="node2.html">
+<LINK REL="up" HREF="energyCalibrationHowTo.html">
+<LINK REL="next" HREF="node4.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html47"
+  HREF="node4.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html45"
+  HREF="energyCalibrationHowTo.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html39"
+  HREF="node2.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html48"
+  HREF="node4.html">Setup calibration files</A>
+<B> Up:</B> <A NAME="tex2html46"
+  HREF="energyCalibrationHowTo.html">Energy calibration wizard manual</A>
+<B> Previous:</B> <A NAME="tex2html40"
+  HREF="node2.html">Data acquisition</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html49"
+  HREF="node3.html#SECTION00031000000000000000">Software</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00030000000000000000">
+Data analysis</A>
+</H1>
+
+<P>
+The data analysis consists in fitting the S-curves obtained from the datasets acquired as above and then performing a linear fit between the energy values and the inflection points.
+
+<P>
+
+<H2><A NAME="SECTION00031000000000000000">
+Software</A>
+</H2>
+
+<P>
+The software used for the energy calibration data analysis is based on root (see http://root.cern.ch).
+<BR>
+This can be downloaded as binary or installed from sources. The version of the software should not play an important role, but up to now everything has been implemented and tested using version 5.20.
+
+<P>
+To start the data analysis simply launch:
+<PRE>
+&gt; ./energyCalibrationWizard
+</PRE>
+
+<P>
+To add anew energy write the energy value and select (or digit) the name of the .encal file corresponding to that energy (see figure&nbsp;<A HREF="#fig:addenergy">7</A>).
+<BR>
+The software assumes that the data files (.raw) and the .encal file are in the same directory.
+Press  <I>Preview</I> and a 2D color plot will be displayed, showing the channel numbers on the X-axis, the threshold on the Y-axis, and the number of counts as a color scale.
+By (right) clicking close to the axis you are able to zoom in/out, set the scale to logarithmic etc.
+<BR>
+If the plot corresponds to your expectations press <I>Add to list</I>. The energy value will be shown in the combo box on top and labels will display the settings of the detector, the number of modules, the number of channels per module and the modules serial numbers.
+
+<P>
+Add then all the other energies to the calibration always by editing the energy value and .encal file name, pressing <I>preview</I> and <I>add to list</I>.
+<BR>
+If the settings, number of modules or serial numbers do not match, you will not be llowed to add the energy.
+<BR>
+By using the <I>selected energy actions</I> you can navigate in the combo box with list of energies, view the plots and eventually remove the ones you don't want to use in your calibration.
+<BR>
+Once you have uploaded at least 2 energies, you will be allowed to  <I>proceed to module calibration</I>.
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:addenergy"></A><A NAME="94"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 7:</STRONG>
+Window to add energies to the calibration.</CAPTION>
+<TR><TD><IMG
+ WIDTH="514" HEIGHT="654" ALIGN="BOTTOM" BORDER="0"
+ SRC="img39.png"
+ ALT="\includegraphics[width=\textwidth]{addEnergy.eps}"></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+In the module calibration window (see figure&nbsp;<A HREF="#fig:calibratemodule">8</A>), you are still able to look at the calibration summary, and eventually return to the previous windown by pressing <I>Back to energy setup</I>.
+<BR>
+The canvas will show the plot of the S-curves relative to the median of the selected module, fitted with equation&nbsp;<A HREF="node1.html#eq:thrscan">1</A> and the linear fit between the energy values and the fitted inflection points.
+Normally the points lie on a straight line (although often not perfect), therefore it should be simple to spot if there are problems in the fitting of some of the data.
+<BR>
+If <I>Manual save</I> is unclicked, the calibration files will be saved locally, with the extension automatically generated by using the modules serial numbers, every time a linear fit is performed (i.e. if you mess up wiht the linear fit you overwrite a previous good file!). If you click the checkbox, you need to save the calibration by pressing <I>Write to file</I> for each module once you are happy with the fit.
+
+<P>
+To change the Y scale of the plot, edit the <I>Counts</I> entry. After clicking of the energy button (eventually twice) the maximum of the histogram will be set to three times the value.
+
+<P>
+To re-fit one energy with modified range or start parameters, you should press the central button with the energy value once the energy is selected. The text color tells you which curve you are referring to.
+<BR>
+<P>
+You should set the range of the fit. In particular the maximum should be limited in order to avoid to enter the noise range (and can be pretty different for the various modules).
+<BR>
+Normally the data are acquired by collecting holes from the detector and therefore the <I>Invert axis</I> check button should be ckecked. Uncheck it in case your detector collects electrons (e.g. CdTe, Si n in p)
+
+<P>
+You can change the start values of the parameters of the fits by editing the number eneries. The label nearby will show you the actual value of the fitted parameters.
+<BR>
+By checking the checkboxes you can fix the values to the ones you specify.
+<BR>
+Normally it can be useful to fix the pedestal and pedestal slope to 0, unless you have a lot of 3rd armnonics contribution, primary beam background or similar.
+<BR>
+Changing the starting value of the inflection point or of the number of counts can often help the fit to converge.
+<BR>
+Normally it is not very useful to change the starting value for the noise or charge sharing slope.
+
+<P>
+The button <I>Finished</I> will be enebled only once the calibration files have been generated for all modules.
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:calibratemodule"></A><A NAME="107"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 8:</STRONG>
+Window to calibrate the modules.</CAPTION>
+<TR><TD><IMG
+ WIDTH="514" HEIGHT="654" ALIGN="BOTTOM" BORDER="0"
+ SRC="img40.png"
+ ALT="\includegraphics[width=\textwidth]{calibrateModule.eps}"></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html47"
+  HREF="node4.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html45"
+  HREF="energyCalibrationHowTo.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html39"
+  HREF="node2.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html48"
+  HREF="node4.html">Setup calibration files</A>
+<B> Up:</B> <A NAME="tex2html46"
+  HREF="energyCalibrationHowTo.html">Energy calibration wizard manual</A>
+<B> Previous:</B> <A NAME="tex2html40"
+  HREF="node2.html">Data acquisition</A>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-08-23
+</ADDRESS>
+</BODY>
+</HTML>

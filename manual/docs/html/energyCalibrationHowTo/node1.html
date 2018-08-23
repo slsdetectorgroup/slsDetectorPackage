@@ -1,0 +1,383 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2012 (1.2)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Introduction</TITLE>
+<META NAME="description" CONTENT="Introduction">
+<META NAME="keywords" CONTENT="energyCalibrationHowTo">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2012">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="energyCalibrationHowTo.css">
+
+<LINK REL="next" HREF="node2.html">
+<LINK REL="previous" HREF="energyCalibrationHowTo.html">
+<LINK REL="up" HREF="energyCalibrationHowTo.html">
+<LINK REL="next" HREF="node2.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html26"
+  HREF="node2.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html24"
+  HREF="energyCalibrationHowTo.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html18"
+  HREF="energyCalibrationHowTo.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html27"
+  HREF="node2.html">Data acquisition</A>
+<B> Up:</B> <A NAME="tex2html25"
+  HREF="energyCalibrationHowTo.html">Energy calibration wizard manual</A>
+<B> Previous:</B> <A NAME="tex2html19"
+  HREF="energyCalibrationHowTo.html">Energy calibration wizard manual</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00010000000000000000">
+Introduction</A>
+</H1>
+
+<P>
+The choice of the level of the comparator threshold plays a very important role in counting systems since it influences the efficiency of the detector as well as its spatial resolution (for details see the paper Bergamaschi, A. et al. (2010). J. Synchrotron Rad. 17, 653-668).
+
+<P>
+Single-photon-counting detectors are sensitive to single photons and the only limitation on the fluctuations of the number of counts is given by the Poisson-like statistics of the X-ray quanta. 
+The digitized signal does not carry any information concerning the energy of the X-rays and all photons with an energy larger than the threshold are counted as one bit. This means that the choice of the correct comparator threshold level is critical in order to obtain good-quality data.
+<BR>
+Figure&nbsp;<A HREF="#fig:thrscanexpl">1</A> shows the expected number of counts as a function of the threshold energy for <IMG
+ WIDTH="24" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img2.png"
+ ALT="$N_0$"> monochromatic X-rays of energy <IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$E_0$">. This is often denominated  S-curve and can be interpreted as the integral of the signal spectrum between the threshold level and infinity.
+The dashed curve represents the behavior of an ideal counting system: nothing is counted for thresholds larger than the photon energy and all the <IMG
+ WIDTH="24" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img2.png"
+ ALT="$N_0$"> X-rays are counted for thresholds lower than <IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$E_0$">.
+The thick solid line represents the physical curve which also takes into account the electronic noise and the charge sharing between channels.
+
+<P>
+The intrinsic noise on the electronic signal  is defined by the Equivalent Noise Charge (<IMG
+ WIDTH="44" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img3.png"
+ ALT="$ENC$">). The <IMG
+ WIDTH="44" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img3.png"
+ ALT="$ENC$"> describes noise in terms of the charge at the detector input needed to create the same output at the end of the analog chain and is normally expressed in electrons. For silicon sensors, it can be converted into energy units by considering 1&nbsp;<IMG
+ WIDTH="23" HEIGHT="19" ALIGN="BOTTOM" BORDER="0"
+ SRC="img12.png"
+ ALT="$e^-$">=3.6&nbsp;eV.
+The value of the <IMG
+ WIDTH="44" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img3.png"
+ ALT="$ENC$"> normally depends on the shaping settings of the analog chain and increases with shorter shaping times. 
+The resulting electronic signal spectrum is then  given by a convolution between the radiation spectrum and the noise i.e., a Gaussian of standard deviation <IMG
+ WIDTH="44" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img3.png"
+ ALT="$ENC$">.  
+The S-curve for a monochromatic radiation beam is well described by a Gaussian cumulative distribution <IMG
+ WIDTH="18" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img13.png"
+ ALT="$D$"> with an additional increase at low threshold due to the baseline noise, as shown by the solid thin line. 
+
+<P>
+Moreover, when a photon is absorbed in the region between two strips of the sensor, the generated charge is partially collected by the two nearest electronic channels. For this reason the physical S-curve is not flat but can be modeled by a decreasing straight line. The number of shared photons  <IMG
+ WIDTH="27" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$N_S$"> is given by the difference between the number of counts and the number of X-rays whose charge is completely collected by the strip (shown by the dotted line).
+
+<P>
+The number of counts in the physical case is equal to that in the ideal case for a threshold set at half the photon energy. This defines the optimal threshold level <IMG
+ WIDTH="78" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img14.png"
+ ALT="$E_t=E_0/2$">.
+<BR>
+The detector response <IMG
+ WIDTH="19" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img15.png"
+ ALT="$N$"> as a function of the threshold energy <IMG
+ WIDTH="22" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img10.png"
+ ALT="$E_t$"> is given by the sum of the noise counts  <IMG
+ WIDTH="26" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img16.png"
+ ALT="$N_n$"> and the counts originating from photons <IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img17.png"
+ ALT="$N_\gamma$">:
+<BR>
+<DIV ALIGN="RIGHT">
+
+<!-- MATH
+ \begin{equation}
+N_\gamma(E_t)=\frac{N_0}{2}\cdot\Big(1+C_s \frac{E_0-2E_t}{E_0}\Big)D \Big(\frac{E_0-E_t}{ENC} \Big),
+\end{equation}
+ -->
+<TABLE WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE"><TD ALIGN="CENTER" NOWRAP><A NAME="eq:thrscan"></A><IMG
+ WIDTH="335" HEIGHT="41" BORDER="0"
+ SRC="img18.png"
+ ALT="\begin{displaymath}
+N_\gamma(E_t)=\frac{N_0}{2}\cdot\Big(1+C_s \frac{E_0-2E_t}{E_0}\Big)D \Big(\frac{E_0-E_t}{ENC} \Big),
+\end{displaymath}"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(1)</TD></TR>
+</TABLE>
+<BR CLEAR="ALL"></DIV><P></P>
+where <IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$C_s$"> is the fraction of photons which produce a charge cloud which is shared between neighboring strips (<IMG
+ WIDTH="83" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$N_s=C_s N_0$">).
+<BR>
+By assuming a noise of Gaussian type, and considering its bandwidth limited by the shaping time  <IMG
+ WIDTH="18" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$\tau_s$">, the number of noise counts in the acquisition time <IMG
+ WIDTH="16" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img22.png"
+ ALT="$T$"> can be approximated as:
+<BR>
+<DIV ALIGN="RIGHT">
+
+<!-- MATH
+ \begin{equation}
+N_n(E_t) \sim \frac{T}{\tau_s}  D \Big(\frac{-E_t}{ENC} \Big).
+\end{equation}
+ -->
+<TABLE WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE"><TD ALIGN="CENTER" NOWRAP><A NAME="eq:noisescan"></A><IMG
+ WIDTH="169" HEIGHT="41" BORDER="0"
+ SRC="img23.png"
+ ALT="\begin{displaymath}
+N_n(E_t) \sim \frac{T}{\tau_s} D \Big(\frac{-E_t}{ENC} \Big).
+\end{displaymath}"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(2)</TD></TR>
+</TABLE>
+<BR CLEAR="ALL"></DIV><P></P> 
+
+<P>
+The choice of the comparator threshold level <IMG
+ WIDTH="22" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img10.png"
+ ALT="$E_t$"> influences not only the counting efficiency and noise performances, but also the spatial resolution and the counting statistics of the detector. 
+If the threshold is set at values higher than the ideal value <IMG
+ WIDTH="78" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img14.png"
+ ALT="$E_t=E_0/2$">, a fraction of the photons absorbed in the sensor in the region between two strips is not counted thus reducing the detector efficiency but improving its spatial resolution (narrower strip size). On the other hand, if the threshold is set at values lower than <IMG
+ WIDTH="22" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img10.png"
+ ALT="$E_t$">, part of the X-rays absorbed in the region between two strips are counted by both of them, resulting in a deterioration of the spatial resolution of the detector and of the fluctuations on the number of photons because of the increased multiplicity. 
+
+<P>
+Furthermore, the threshold uniformity is particularly critical with regards to fluorescent radiation emitted by the sample under investigation. Since the emission of fluorescent light is isotropic, the data quality will be improved by setting the threshold high enough in order to discard the fluorescence background (see figure&nbsp;<A HREF="#fig:thrscanfluo">3</A>). 
+<BR>
+Moreover, setting the threshold too close to the energy of the fluorescent light gives rise to large fluctuations between channels in the number of counts since the threshold sits on the steepest part of the threshold scan curve for the fluorescent background. These differences cannot be corrected by using a flat-field normalization  since the fluorescent component is not present in the reference image. For this reason, it is extremely important that the threshold uniformity over the whole detector is optimized. The threshold level must be set at least <IMG
+ WIDTH="88" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img24.png"
+ ALT="$\Sigma&gt;3\,ENC$"> away from both the fluorescent energy level and the X-ray energy in order to remove the fluorescence background while efficiently count the diffracted photons. 
+
+<P>
+The comparator threshold is given by a global level which can be set on a module basis and adds to a component which is individually adjustable for each channel. In order to optimize the uniformity of the detector response it is important to properly adjust the threshold for all channels. 
+<BR>
+Since both the signal amplification stages and the comparator  are linear, it is necessary to calibrate the detector offset <IMG
+ WIDTH="17" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img25.png"
+ ALT="$O$"> and gain <IMG
+ WIDTH="17" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img26.png"
+ ALT="$G$"> in order to correctly set its comparator threshold <IMG
+ WIDTH="19" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img27.png"
+ ALT="$V_t$"> at the desired energy <IMG
+ WIDTH="22" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img10.png"
+ ALT="$E_t$">:
+<BR>
+<DIV ALIGN="RIGHT">
+
+<!-- MATH
+ \begin{equation}
+V_{t}=O+G \cdot E_t.
+\end{equation}
+ -->
+<TABLE WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE"><TD ALIGN="CENTER" NOWRAP><A NAME="eq:encal"></A><IMG
+ WIDTH="111" HEIGHT="26" BORDER="0"
+ SRC="img28.png"
+ ALT="\begin{displaymath}
+V_{t}=O+G \cdot E_t.
+\end{displaymath}"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(3)</TD></TR>
+</TABLE>
+<BR CLEAR="ALL"></DIV><P></P>
+This is initially performed by acquiring measurements while scanning the global threshold using different X-ray energies and calculating the median of the counts at each threshold value for each module <IMG
+ WIDTH="10" HEIGHT="17" ALIGN="BOTTOM" BORDER="0"
+ SRC="img29.png"
+ ALT="$i$">. The curves obtained for one of the detector modules at three energies are shown in figure&nbsp;<A HREF="#fig:modulecalibration">4</A>. The experimental data are then fitted according to equation&nbsp;<A HREF="#eq:thrscan">1</A> and for each module a linear relation is found between the X-ray energy and the estimated inflection point, as shown in the inset of figure&nbsp;<A HREF="#fig:modulecalibration">4</A>. The resulting offset  <IMG
+ WIDTH="22" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img30.png"
+ ALT="$O_i$"> and  gain <IMG
+ WIDTH="22" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img31.png"
+ ALT="$G_i$"> are used as a conversion factor between the threshold level and the energy. 
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:thrscanexpl"></A><A NAME="116"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 1:</STRONG>
+Expected counts as a function of a threshold energy for a monochromatic beam of energy <IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$E_0$">=12&nbsp;keV. <IMG
+ WIDTH="24" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img2.png"
+ ALT="$N_0$">=10000 is the number of photons absorbed by the detector during the acquisition time. The dashed line represents the curve in an ideal case without electronic noise and charge sharing, the solid thin line with noise  <IMG
+ WIDTH="44" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img3.png"
+ ALT="$ENC$">=1&nbsp;keV but without charge sharing and the solid thick line is the physical case with noise and <IMG
+ WIDTH="45" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img4.png"
+ ALT="$CS=$">22&nbsp;% charge sharing. <IMG
+ WIDTH="27" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$N_S$"> is the number of photons whose charge is shared between neighbouring strips (<!-- MATH
+ $CS=\frac{N_S}{N_0}$
+ -->
+<IMG
+ WIDTH="71" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img32.png"
+ ALT="$CS=\frac{N_S}{N_0}$">). The dotted line represents the number of photons whose charge is completely collected by a single strip.</CAPTION>
+<TR><TD><IMG
+ WIDTH="556" HEIGHT="539" ALIGN="BOTTOM" BORDER="0"
+ SRC="img33.png"
+ ALT="\includegraphics[width=\textwidth]{fig4.eps}"></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:expthrscan"></A><A NAME="117"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 2:</STRONG>
+Measured threshold scan at 12.5&nbsp;keV with the three different settings. In the inset the fit of the experimental data with the expected curve as in function&nbsp;<A HREF="#eq:thrscan">1</A> is shown in the region of the inflection point.</CAPTION>
+<TR><TD><IMG
+ WIDTH="556" HEIGHT="539" ALIGN="BOTTOM" BORDER="0"
+ SRC="img34.png"
+ ALT="\includegraphics[width=\textwidth]{fig5.eps}"></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:thrscanfluo"></A><A NAME="53"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 3:</STRONG>
+Number of counts as a function of the threshold measured from a sample containing iron (<IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img7.png"
+ ALT="$E_f$">=5.9&nbsp;keV) when using X-rays of energy <IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$E_0$">=12&nbsp;keV. In this case, setting the threshold at <IMG
+ WIDTH="39" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img8.png"
+ ALT="$E_0/2$">, which is very close to <IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img7.png"
+ ALT="$E_f$">, would give <IMG
+ WIDTH="35" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img9.png"
+ ALT="$\Delta \sim $">10% counts from the fluorescense background. Therefore the threshold should be set at an intermediate level <IMG
+ WIDTH="22" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img10.png"
+ ALT="$E_t$"> between the two energy components with a distance of at least <IMG
+ WIDTH="85" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img11.png"
+ ALT="$\Sigma &gt;3ENC$"> from both <IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img7.png"
+ ALT="$E_f$"> and <IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$E_0$">.</CAPTION>
+<TR><TD><IMG
+ WIDTH="556" HEIGHT="553" ALIGN="BOTTOM" BORDER="0"
+ SRC="img35.png"
+ ALT="\includegraphics[width=\textwidth]{fig7.eps}"></TD></TR>
+</TABLE>
+</DIV>
+Differences in gain and offset are present also between individual channels within a module and therefore the use of threshold equalization techniques (trimming) using the internal 6-bit DAC is needed in order to reduce the threshold dispersion.
+Since both gain and offset have variations between channels, the optimal trimming should be performed as a function of the threshold energy.
+Please not that trimming of the channels of the detector should be performed in advanced and is extremely important for a succeful energy calibration of the detector.
+
+<P>
+All energy calibration procedures should be applied to a trimmed detector and only an improvement of the existing trimbits can be performed afterwards, since it does not significatively affect the energy calibration.
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:modulecalibration"></A><A NAME="118"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 4:</STRONG>
+Median of the number of counts as a function of the threshold for X-rays of 12.5, 17.5 and 25&nbsp;keV for one of the detector modules using <I>standard</I> settings. The solid line represents the fit of the experimental points with equation&nbsp;<A HREF="#eq:thrscan">1</A>. In the inset the linear fit between the X-ray energy and the position of the inflection point of the curves is shown.</CAPTION>
+<TR><TD><IMG
+ WIDTH="556" HEIGHT="539" ALIGN="BOTTOM" BORDER="0"
+ SRC="img36.png"
+ ALT="\includegraphics[width=\textwidth]{fig8.eps}"></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html26"
+  HREF="node2.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html24"
+  HREF="energyCalibrationHowTo.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html18"
+  HREF="energyCalibrationHowTo.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html27"
+  HREF="node2.html">Data acquisition</A>
+<B> Up:</B> <A NAME="tex2html25"
+  HREF="energyCalibrationHowTo.html">Energy calibration wizard manual</A>
+<B> Previous:</B> <A NAME="tex2html19"
+  HREF="energyCalibrationHowTo.html">Energy calibration wizard manual</A>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-08-23
+</ADDRESS>
+</BODY>
+</HTML>

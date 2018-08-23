@@ -10,7 +10,7 @@
 #define GOODBYE 					(-200)
 #define PROGRAMMING_MODE			(-200)
 #define MIN_REQRD_VRSN_T_RD_API     0x171220
-#define REQRD_FRMWR_VRSN            0x180226
+#define REQRD_FRMWR_VRSN            0x180615
 
 
 /* Struct Definitions */

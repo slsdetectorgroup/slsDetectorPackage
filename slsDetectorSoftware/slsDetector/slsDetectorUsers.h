@@ -25,7 +25,6 @@ class multiSlsDetectorCommand;
 
 
 
-
 /*
    \mainpage 
 <CENTER><H1>API for SLS detectors data acquisition</H1></CENTER>

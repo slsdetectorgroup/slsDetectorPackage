@@ -1,0 +1,629 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2012 (1.2)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Basic binning</TITLE>
+<META NAME="description" CONTENT="Basic binning">
+<META NAME="keywords" CONTENT="slsDetectors-FAQ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2012">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectors-FAQ.css">
+
+<LINK REL="next" HREF="node52.html">
+<LINK REL="previous" HREF="node47.html">
+<LINK REL="up" HREF="node46.html">
+<LINK REL="next" HREF="node51.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html806"
+  HREF="node51.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html802"
+  HREF="node46.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html796"
+  HREF="node49.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html804"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html807"
+  HREF="node51.html">Special nasty cases</A>
+<B> Up:</B> <A NAME="tex2html803"
+  HREF="node46.html">How are different positions</A>
+<B> Previous:</B> <A NAME="tex2html797"
+  HREF="node49.html">Observables</A>
+ &nbsp; <B>  <A NAME="tex2html805"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION00622000000000000000"></A><A NAME="sec:11"></A>
+<BR>
+Basic binning
+</H2>
+
+<P>
+<DL COMPACT>
+<DT>1. </DT>
+<DD>
+We have several patterns, say <IMG
+ WIDTH="17" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img72.png"
+ ALT="$ P$">
+. Each <IMG
+ WIDTH="13" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img73.png"
+ ALT="$ k$">
+-th pattern, for <!-- MATH
+ $k=1,\ldots,P$
+ -->
+<IMG
+ WIDTH="90" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img74.png"
+ ALT="$ k=1,\ldots,P$">
+, is
+constituted by <IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img75.png"
+ ALT="$ N_k$">
+ angular intervals in the diffraction angle <!-- MATH
+ $2\theta\equiv{\ensuremath{{2\theta}}}$
+ -->
+<IMG
+ WIDTH="57" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img76.png"
+ ALT="$ 2\theta\equiv{\ensuremath{{2\theta}}}$">
+:
+<P><!-- MATH
+ \begin{displaymath}
+b_{k,j}={\ensuremath{\left[{{\ensuremath{{2\theta}}}_{k,j}^{-},{\ensuremath{{2\theta}}}_{k,j}^{+}}\right]}},\qquad j=1,\ldots,N_k
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="270" HEIGHT="45" ALIGN="MIDDLE" BORDER="0"
+ SRC="img77.png"
+ ALT="$\displaystyle b_{k,j}={\ensuremath{\left[{{\ensuremath{{2\theta}}}_{k,j}^{-},{\ensuremath{{2\theta}}}_{k,j}^{+}}\right]}},\qquad j=1,\ldots,N_k
+$">
+</DIV><P>
+</P>
+of center
+<P><!-- MATH
+ \begin{displaymath}
+\hat{b}_{k,j}={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{{\ensuremath{{2\theta}}}_{k,j}^{+}+{\ensuremath{{2\theta}}}_{k,j}^{-}}}}}{{\ensuremath{\displaystyle{2}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="140" HEIGHT="62" ALIGN="MIDDLE" BORDER="0"
+ SRC="img78.png"
+ ALT="$\displaystyle \hat{b}_{k,j}={\ensuremath{\displaystyle{\frac{{\ensuremath{\disp...
+...{+}+{\ensuremath{{2\theta}}}_{k,j}^{-}}}}}{{\ensuremath{\displaystyle{2}}}}}}}
+$">
+</DIV><P>
+</P>
+and width
+<P><!-- MATH
+ \begin{displaymath}
+{\ensuremath{\left|{b_{k,j}}\right|}}={\ensuremath{{2\theta}}}_{k,j}^{+}-{\ensuremath{{2\theta}}}_{k,j}^{-}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="145" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img79.png"
+ ALT="$\displaystyle {\ensuremath{\left\vert{b_{k,j}}\right\vert}}={\ensuremath{{2\theta}}}_{k,j}^{+}-{\ensuremath{{2\theta}}}_{k,j}^{-}
+$">
+</DIV><P>
+</P>
+To each interval is associated a counting <IMG
+ WIDTH="33" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img80.png"
+ ALT="$ C_{k,j}$">
+, an efficiency correction factor <IMG
+ WIDTH="29" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img81.png"
+ ALT="$ e_{k,j}$">
+, a 
+monitor <IMG
+ WIDTH="36" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img82.png"
+ ALT="$ m_{k,j}$">
+ (ionization chamber times acquisition time). All 'bad' intervals have been already flagged down and discarded.
+Efficiency corrections and monitors are supposed to be normalized to a suitable value. 
+Note that intervals <IMG
+ WIDTH="29" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img83.png"
+ ALT="$ b_{k,j}$">
+ might have multiple overlaps and might not cover an compact angular
+range. 
+</DD>
+<DT>2. </DT>
+<DD>Following Mighell's statistics[6] and normal scaling procedures, we first 
+transform those numbers into associated intensities, intensity rates and relevant s.d.:
+<P><!-- MATH
+ \begin{displaymath}
+I_{k,j}={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{e_{k,j}}}}}{{\ensuremath{\displaystyle{m_{k,j}}}}}}}}{\ensuremath{\left({C_{k,j}+\min{\ensuremath{\left({1,C_{k,j}}\right)}}}\right)}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="232" HEIGHT="45" ALIGN="MIDDLE" BORDER="0"
+ SRC="img84.png"
+ ALT="$\displaystyle I_{k,j}={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaysty...
+...nsuremath{\left({C_{k,j}+\min{\ensuremath{\left({1,C_{k,j}}\right)}}}\right)}}
+$">
+</DIV><P>
+</P>
+<P><!-- MATH
+ \begin{displaymath}
+\sigma_{I_{k,j}}={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{e_{k,j}}}}}{{\ensuremath{\displaystyle{m_{k,j}}}}}}}}\sqrt{{\ensuremath{\left({C_{k,j}+1}\right)}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="177" HEIGHT="50" ALIGN="MIDDLE" BORDER="0"
+ SRC="img85.png"
+ ALT="$\displaystyle \sigma_{I_{k,j}}={\ensuremath{\displaystyle{\frac{{\ensuremath{\d...
+...ath{\displaystyle{m_{k,j}}}}}}}}\sqrt{{\ensuremath{\left({C_{k,j}+1}\right)}}}
+$">
+</DIV><P>
+</P>
+<P><!-- MATH
+ \begin{displaymath}
+r_{k,j}={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{I_{k,j}}}}}{{\ensuremath{\displaystyle{{\ensuremath{\left|{b_{k,j}}\right|}}}}}}}}}={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{e_{k,j}}}}}{{\ensuremath{\displaystyle{m_{k,j}{\ensuremath{\left|{b_{k,j}}\right|}}}}}}}}}{\ensuremath{\left({C_{k,j}+\min{\ensuremath{\left({1,C_{k,j}}\right)}}}\right)}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="323" HEIGHT="53" ALIGN="MIDDLE" BORDER="0"
+ SRC="img86.png"
+ ALT="$\displaystyle r_{k,j}={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaysty...
+...nsuremath{\left({C_{k,j}+\min{\ensuremath{\left({1,C_{k,j}}\right)}}}\right)}}
+$">
+</DIV><P>
+</P>
+<P><!-- MATH
+ \begin{displaymath}
+\sigma_{r_{k,j}}={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{\sigma_{I_{k,j}}}}}}{{\ensuremath{\displaystyle{{\ensuremath{\left|{b_{k,j}}\right|}}}}}}}}}={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{e_{k,j}}}}}{{\ensuremath{\displaystyle{{\ensuremath{\left|{b_{k,j}}\right|}}m_{k,j}}}}}}}}\sqrt{{\ensuremath{\left({C_{k,j}+1}\right)}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="269" HEIGHT="50" ALIGN="MIDDLE" BORDER="0"
+ SRC="img87.png"
+ ALT="$\displaystyle \sigma_{r_{k,j}}={\ensuremath{\displaystyle{\frac{{\ensuremath{\d...
+...k,j}}\right\vert}}m_{k,j}}}}}}}}\sqrt{{\ensuremath{\left({C_{k,j}+1}\right)}}}
+$">
+</DIV><P>
+</P>
+</DD>
+<DT>3. </DT>
+<DD>
+We set up the final binned grid, 
+composed of <IMG
+ WIDTH="22" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img88.png"
+ ALT="$ M$">
+ binning intervals
+<P><!-- MATH
+ \begin{displaymath}
+B_\ell=[{\ensuremath{{2\theta}}}_0+(\ell-1)B, {\ensuremath{{2\theta}}}_0+\ell B],\qquad \ell=1,\ldots,M
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="351" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img89.png"
+ ALT="$\displaystyle B_\ell=[{\ensuremath{{2\theta}}}_0+(\ell-1)B, {\ensuremath{{2\theta}}}_0+\ell B],\qquad \ell=1,\ldots,M
+$">
+</DIV><P>
+</P>
+all contiguous and each having the same width <P><!-- MATH
+ \begin{displaymath}
+{\ensuremath{\left|{B_\ell}\right|}}=B
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="66" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img90.png"
+ ALT="$\displaystyle {\ensuremath{\left\vert{B_\ell}\right\vert}}=B$">
+</DIV><P>
+</P>
+and each centered in 
+<P><!-- MATH
+ \begin{displaymath}
+\hat{B}_\ell={\ensuremath{{2\theta}}}_0+(\ell-1/2)B,
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="166" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img91.png"
+ ALT="$\displaystyle \hat{B}_\ell={\ensuremath{{2\theta}}}_0+(\ell-1/2)B,$">
+</DIV><P>
+</P>
+covering completely the angular range between <!-- MATH
+ ${\ensuremath{{2\theta}}}_0$
+ -->
+<IMG
+ WIDTH="28" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img92.png"
+ ALT="$ {\ensuremath{{2\theta}}}_0$">
+ and <!-- MATH
+ ${\ensuremath{{2\theta}}}_{max}={\ensuremath{{2\theta}}}_0+MB$
+ -->
+<IMG
+ WIDTH="140" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img93.png"
+ ALT="$ {\ensuremath{{2\theta}}}_{max}={\ensuremath{{2\theta}}}_0+MB$">
+.
+
+</DD>
+<DT>4. </DT>
+<DD>
+For bin <IMG
+ WIDTH="11" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img94.png"
+ ALT="$ \ell$">
+, we consider only and all the experimental intervals 
+<P><!-- MATH
+ \begin{displaymath}
+b_{k,j}\qquad\text{such\ that}\qquad {\ensuremath{\left|{ b_{k,j}\cap B_\ell }\right|}} > 0.
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="29" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img95.png"
+ ALT="$\displaystyle b_{k,j}$">&nbsp; &nbsp;such that<IMG
+ WIDTH="139" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img96.png"
+ ALT="$\displaystyle \qquad {\ensuremath{\left\vert{ b_{k,j}\cap B_\ell }\right\vert}} &gt; 0.
+$">
+</DIV><P>
+</P>
+More restrictively, one may require to consider only and all the experimental intervals 
+<P><!-- MATH
+ \begin{displaymath}
+b_{k,j}\qquad\text{such\ that}\qquad \hat{b}_{k,j}\in B_\ell .
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="29" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img95.png"
+ ALT="$\displaystyle b_{k,j}$">&nbsp; &nbsp;such that<IMG
+ WIDTH="103" HEIGHT="40" ALIGN="MIDDLE" BORDER="0"
+ SRC="img97.png"
+ ALT="$\displaystyle \qquad \hat{b}_{k,j}\in B_\ell .
+$">
+</DIV><P>
+</P>
+</DD>
+<DT>5. </DT>
+<DD>
+In order to estimate the rate in each <IMG
+ WIDTH="11" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img94.png"
+ ALT="$ \ell$">
+-th bin, 
+we use all above selected rate estimates concerning bin <IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img98.png"
+ ALT="$ B_\ell$">
+ and we get
+a better one with the weighted average method. 
+<BR>
+In the  weighted average method, we suppose to have a number <IMG
+ WIDTH="28" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img99.png"
+ ALT="$ N_E$">
+ of estimates <IMG
+ WIDTH="25" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img100.png"
+ ALT="$ O_n$">
+ 
+of the same observable <IMG
+ WIDTH="17" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img101.png"
+ ALT="$ O$">
+, 
+each one with a known s.d. <!-- MATH
+ $\sigma_{O_n}$
+ -->
+<IMG
+ WIDTH="32" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img102.png"
+ ALT="$ \sigma_{O_n}$">
+ and each (optionally) repeated with a frequency 
+<IMG
+ WIDTH="21" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img103.png"
+ ALT="$ \nu_n$">
+. 
+Then
+<P><!-- MATH
+ \begin{displaymath}
+\langle O\rangle ={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{
+\mathop{\sum}_{n=1}^{N_E}\nu_n
+O_n\sigma_{O_n}^{-2}
+}}}}{{\ensuremath{\displaystyle{
+\mathop{\sum}_{n=1}^{N_E}\nu_n
+\sigma_{O_n}^{-2}
+}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="146" HEIGHT="121" ALIGN="MIDDLE" BORDER="0"
+ SRC="img104.png"
+ ALT="$\displaystyle \langle O\rangle ={\ensuremath{\displaystyle{\frac{{\ensuremath{\...
+...remath{\displaystyle{
+\mathop{\sum}_{n=1}^{N_E}\nu_n
+\sigma_{O_n}^{-2}
+}}}}}}}
+$">
+</DIV><P>
+</P>
+Clearly the place of the frequencies in our case can be taken by coefficients 
+<P><!-- MATH
+ \begin{displaymath}
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{{\ensuremath{\left|{ b_{k,j}\cap B_\ell }\right|}}}}}}{{\ensuremath{\displaystyle{B}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="77" HEIGHT="55" ALIGN="MIDDLE" BORDER="0"
+ SRC="img105.png"
+ ALT="$\displaystyle {\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{{\ens...
+...ert{ b_{k,j}\cap B_\ell }\right\vert}}}}}}{{\ensuremath{\displaystyle{B}}}}}}}
+$">
+</DIV><P>
+</P>
+that weigh the <IMG
+ WIDTH="28" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img106.png"
+ ALT="$ k,j$">
+-th estimate by its relative extension within bin <IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img98.png"
+ ALT="$ B_\ell$">
+.
+
+</DD>
+<DT>6. </DT>
+<DD>
+Now 
+we can simply accumulate registers 
+<P><!-- MATH
+ \begin{displaymath}
+X_\ell=\mathop{\sum_{k,j}}_{ {\ensuremath{\left|{ b_{k,j}\cap B_\ell }\right|}} > 0}
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{{\ensuremath{\left|{ b_{k,j}\cap B_\ell }\right|}}}}}}{{\ensuremath{\displaystyle{B}}}}}}}\  r_{k,j}\ {\ensuremath{\left({\sigma_{r_{k,j}}}\right)}}^{-2}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="288" HEIGHT="87" ALIGN="MIDDLE" BORDER="0"
+ SRC="img107.png"
+ ALT="$\displaystyle X_\ell=\mathop{\sum_{k,j}}_{ {\ensuremath{\left\vert{ b_{k,j}\cap...
+...aystyle{B}}}}}}}\ r_{k,j}\ {\ensuremath{\left({\sigma_{r_{k,j}}}\right)}}^{-2}
+$">
+</DIV><P>
+</P>
+and 
+<P><!-- MATH
+ \begin{displaymath}
+Y_\ell=\mathop{\sum_{k,j}}_{ {\ensuremath{\left|{ b_{k,j}\cap B_\ell }\right|}} > 0}
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{{\ensuremath{\left|{ b_{k,j}\cap B_\ell }\right|}}}}}}{{\ensuremath{\displaystyle{B}}}}}}}\  {\ensuremath{\left({\sigma_{r_{k,j}}}\right)}}^{-2}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="254" HEIGHT="87" ALIGN="MIDDLE" BORDER="0"
+ SRC="img108.png"
+ ALT="$\displaystyle Y_\ell=\mathop{\sum_{k,j}}_{ {\ensuremath{\left\vert{ b_{k,j}\cap...
+...th{\displaystyle{B}}}}}}}\ {\ensuremath{\left({\sigma_{r_{k,j}}}\right)}}^{-2}
+$">
+</DIV><P>
+</P>
+so that we can extract an intensity rate estimate (counts per unit diffraction angle and per unit time at constant incident intensity) as
+<P><!-- MATH
+ \begin{displaymath}
+R_\ell={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{X_\ell}}}}{{\ensuremath{\displaystyle{Y_\ell}}}}}}};
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="72" HEIGHT="53" ALIGN="MIDDLE" BORDER="0"
+ SRC="img109.png"
+ ALT="$\displaystyle R_\ell={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{X_\ell}}}}{{\ensuremath{\displaystyle{Y_\ell}}}}}}};
+$">
+</DIV><P>
+</P>
+<P><!-- MATH
+ \begin{displaymath}
+\sigma_{R_\ell}={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{1}}}}{{\ensuremath{\displaystyle{\sqrt{Y_\ell}}}}}}}}.
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="90" HEIGHT="50" ALIGN="MIDDLE" BORDER="0"
+ SRC="img110.png"
+ ALT="$\displaystyle \sigma_{R_\ell}={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{1}}}}{{\ensuremath{\displaystyle{\sqrt{Y_\ell}}}}}}}}.
+$">
+</DIV><P>
+</P>
+Now optionally we can transforms rates in intensities (multiplying 
+both <IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img111.png"
+ ALT="$ R_\ell$">
+ and <!-- MATH
+ $\sigma_{R_\ell}$
+ -->
+<IMG
+ WIDTH="30" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img112.png"
+ ALT="$ \sigma_{R_\ell}$">
+ by <IMG
+ WIDTH="17" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img113.png"
+ ALT="$ B$">
+).
+We can use any other scaling factor <IMG
+ WIDTH="19" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img114.png"
+ ALT="$ K$">
+ as we wish instead of <IMG
+ WIDTH="17" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img113.png"
+ ALT="$ B$">
+.  
+The best cosmetic scaling is the one where
+<P><!-- MATH
+ \begin{displaymath}
+\mathop{\sum}_{\ell=1}^M{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{KR_\ell}}}}{{\ensuremath{\displaystyle{K^2\sigma_{R_\ell}^2}}}}}}}=
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{1}}}}{{\ensuremath{\displaystyle{K}}}}}}}
+\mathop{\sum}_{\ell=1}^M{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{R_\ell}}}}{{\ensuremath{\displaystyle{\sigma_{R_\ell}^2}}}}}}}=M
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="216" HEIGHT="68" ALIGN="MIDDLE" BORDER="0"
+ SRC="img115.png"
+ ALT="$\displaystyle \mathop{\sum}_{\ell=1}^M{\ensuremath{\displaystyle{\frac{{\ensure...
+...\displaystyle{R_\ell}}}}{{\ensuremath{\displaystyle{\sigma_{R_\ell}^2}}}}}}}=M
+$">
+</DIV><P>
+</P>
+as if the intensities were simply counts. 
+Therefore <IMG
+ WIDTH="19" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img114.png"
+ ALT="$ K$">
+ is given by
+<P><!-- MATH
+ \begin{displaymath}
+K={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{
+1
+}}}}{{\ensuremath{\displaystyle{
+M
+}}}}}}}\mathop{\sum}_{\ell=1}^M{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{R_\ell}}}}{{\ensuremath{\displaystyle{\sigma_{R_\ell}^2}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="119" HEIGHT="68" ALIGN="MIDDLE" BORDER="0"
+ SRC="img116.png"
+ ALT="$\displaystyle K={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{
+1
+...
+...h{\displaystyle{R_\ell}}}}{{\ensuremath{\displaystyle{\sigma_{R_\ell}^2}}}}}}}
+$">
+</DIV><P>
+</P>
+
+<P>
+In output then we give 3-column files 
+with columns
+<P><!-- MATH
+ \begin{displaymath}
+\hat{B}_\ell, \quad KR_\ell, \quad K\sigma_{R_\ell}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="141" HEIGHT="38" ALIGN="MIDDLE" BORDER="0"
+ SRC="img117.png"
+ ALT="$\displaystyle \hat{B}_\ell, \quad KR_\ell, \quad K\sigma_{R_\ell}
+$">
+</DIV><P>
+</P>
+</DD>
+</DL>
+
+<P>
+<BR><HR>
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html808"
+  HREF="node51.html">Special nasty cases</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html806"
+  HREF="node51.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html802"
+  HREF="node46.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html796"
+  HREF="node49.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html804"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html807"
+  HREF="node51.html">Special nasty cases</A>
+<B> Up:</B> <A NAME="tex2html803"
+  HREF="node46.html">How are different positions</A>
+<B> Previous:</B> <A NAME="tex2html797"
+  HREF="node49.html">Observables</A>
+ &nbsp; <B>  <A NAME="tex2html805"
+  HREF="node1.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-08-23
+</ADDRESS>
+</BODY>
+</HTML>

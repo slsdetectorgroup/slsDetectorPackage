@@ -1,0 +1,232 @@
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=latex 2018.8.23)  23 AUG 2018 15:46
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**./images.tex
+(./images.tex
+LaTeX2e <2011/06/27>
+Babel <v3.8m> and hyphenation patterns for english, dumylang, nohyphenation, lo
+aded.
+
+(/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
+(/usr/share/texlive/texmf-dist/tex/latex/base/size10.clo
+File: size10.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@section=\count80
+\c@subsection=\count81
+\c@subsubsection=\count82
+\c@paragraph=\count83
+\c@subparagraph=\count84
+\c@figure=\count85
+\c@table=\count86
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+) (/usr/share/texlive/texmf-dist/tex/latex/base/ifthen.sty
+Package: ifthen 2001/05/26 v1.1c Standard LaTeX ifthen package (DPC)
+) (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/amssymb.sty
+Package: amssymb 2013/01/14 v3.01 AMS font symbols
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/amsfonts.sty
+Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
+\@emptytoks=\toks14
+\symAMSa=\mathgroup4
+\symAMSb=\mathgroup5
+LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
+(Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
+)) (/usr/share/texlive/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 1999/02/16 v1.0f Enhanced LaTeX Graphics (DPC,SPQR)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
+\KV@toks@=\toks15
+) (/usr/share/texlive/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2009/02/05 v1.0o Standard LaTeX Graphics (DPC,SPQR)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
+) (/usr/share/texlive/texmf-dist/tex/latex/latexconfig/graphics.cfg
+File: graphics.cfg 2010/04/23 v1.9 graphics configuration of TeX Live
+)
+Package graphics Info: Driver file: dvips.def on input line 91.
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/dvips.def
+File: dvips.def 1999/02/16 v3.0i Driver-dependant file (DPC,SPQR)
+))
+\Gin@req@height=\dimen103
+\Gin@req@width=\dimen104
+) (/usr/share/texlive/texmf-dist/tex/latex/tools/verbatim.sty
+Package: verbatim 2003/08/22 v1.5q LaTeX2e package for verbatim enhancements
+\every@verbatim=\toks16
+\verbatim@line=\toks17
+\verbatim@in@stream=\read1
+) (/usr/share/texlive/texmf-dist/tex/latex/graphics/color.sty
+Package: color 2005/11/14 v1.0j Standard LaTeX Color (DPC)
+(/usr/share/texlive/texmf-dist/tex/latex/latexconfig/color.cfg
+File: color.cfg 2007/01/18 v1.5 color configuration of teTeX/TeXLive
+)
+Package color Info: Driver file: dvips.def on input line 130.
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/dvipsnam.def
+File: dvipsnam.def 1999/02/16 v3.0i Driver-dependant file (DPC,SPQR)
+)) (/usr/share/texlive/texmf-dist/tex/latex/base/inputenc.sty
+Package: inputenc 2008/03/30 v1.1d Input encoding file
+\inpenc@prehook=\toks18
+\inpenc@posthook=\toks19
+)
+\sizebox=\box26
+\lthtmlwrite=\write3
+(./images.aux)
+\openout1 = `images.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 116.
+LaTeX Font Info:    ... okay on input line 116.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 116.
+LaTeX Font Info:    ... okay on input line 116.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 116.
+LaTeX Font Info:    ... okay on input line 116.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 116.
+LaTeX Font Info:    ... okay on input line 116.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 116.
+LaTeX Font Info:    ... okay on input line 116.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 116.
+LaTeX Font Info:    ... okay on input line 116.
+
+latex2htmlLength hsize=349.0pt
+
+latex2htmlLength vsize=633.0pt
+
+latex2htmlLength hoffset=0.0pt
+
+latex2htmlLength voffset=0.0pt
+
+latex2htmlLength topmargin=0.0pt
+
+latex2htmlLength topskip=0.00003pt
+
+latex2htmlLength headheight=0.0pt
+
+latex2htmlLength headsep=0.0pt
+
+latex2htmlLength parskip=0.0pt plus 1.0pt
+
+latex2htmlLength oddsidemargin=62.0pt
+
+latex2htmlLength evensidemargin=62.0pt
+
+LaTeX Font Info:    Try loading font information for U+msa on input line 141.
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Try loading font information for U+msb on input line 141.
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+l2hSize :tex2html_wrap_inline84:6.94444pt::0.0pt::5.47226pt.
+[1
+
+
+
+]
+l2hSize :tex2html_wrap_inline86:7.33331pt::7.33331pt::24.82152pt.
+[2
+
+
+]
+l2hSize :tex2html_wrap_inline88:6.59525pt::0.0pt::3.94516pt.
+[3
+
+
+]
+l2hSize :tex2html_wrap_inline90:7.33331pt::7.33331pt::12.57195pt.
+[4
+
+
+]
+l2hSize :displaymath18:22.88544pt::0.0pt::349.0pt.
+[5
+
+
+]
+l2hSize :tex2html_wrap_inline94:8.76085pt::8.76085pt::12.72505pt.
+[6
+
+
+]
+l2hSize :tex2html_wrap_inline96:8.76085pt::8.76085pt::31.20164pt.
+[7
+
+
+]
+l2hSize :tex2html_wrap_inline98:8.26085pt::0.0pt::11.49947pt.
+[8
+
+
+]
+l2hSize :tex2html_wrap_inline102:6.95831pt::6.95831pt::47.00348pt.
+[9
+
+
+]
+l2hSize :tex2html_wrap_inline106:6.95831pt::6.95831pt::4.98616pt.
+[10
+
+
+]
+l2hSize :tex2html_wrap_inline108:6.95831pt::6.95831pt::6.52551pt.
+[11
+
+
+]
+l2hSize :tex2html_wrap_inline110:6.95831pt::6.95831pt::8.27783pt.
+[12
+
+
+]
+l2hSize :tex2html_wrap_inline120:8.76085pt::8.76085pt::21.53073pt.
+[13
+
+
+]
+File: enable_angcal.eps Graphic file (type eps)
+<enable_angcal.eps>
+l2hSize :tex2html_wrap330:378.81322pt::0.0pt::349.0pt.
+[14
+
+
+]
+File: position_scan.eps Graphic file (type eps)
+<position_scan.eps>
+l2hSize :tex2html_wrap334:378.81322pt::0.0pt::349.0pt.
+[15
+
+
+]
+File: setupAngcal.eps Graphic file (type eps)
+<setupAngcal.eps>
+l2hSize :tex2html_wrap340:444.03647pt::0.0pt::349.0pt.
+[16
+
+
+]
+File: peakFit.eps Graphic file (type eps)
+<peakFit.eps>
+l2hSize :tex2html_wrap344:444.03647pt::0.0pt::349.0pt.
+[17
+
+
+]
+File: angleFit.eps Graphic file (type eps)
+<angleFit.eps>
+l2hSize :tex2html_wrap348:444.03647pt::0.0pt::349.0pt.
+[18
+
+
+] (./images.aux) ) 
+Here is how much of TeX's memory you used:
+ 1150 strings out of 495064
+ 14686 string characters out of 3182224
+ 55704 words of memory out of 3000000
+ 4358 multiletter control sequences out of 15000+200000
+ 5339 words of font info for 22 fonts, out of 3000000 for 9000
+ 14 hyphenation exceptions out of 8191
+ 25i,6n,26p,206b,199s stack positions out of 5000i,500n,10000p,200000b,50000s
+
+Output written on images.dvi (18 pages, 4432 bytes).

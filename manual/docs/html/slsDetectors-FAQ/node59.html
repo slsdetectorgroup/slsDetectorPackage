@@ -1,0 +1,205 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2012 (1.2)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Mighell-Poisson weighted average</TITLE>
+<META NAME="description" CONTENT="Mighell-Poisson weighted average">
+<META NAME="keywords" CONTENT="slsDetectors-FAQ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2012">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectors-FAQ.css">
+
+<LINK REL="next" HREF="node60.html">
+<LINK REL="previous" HREF="node58.html">
+<LINK REL="up" HREF="node54.html">
+<LINK REL="next" HREF="node60.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html921"
+  HREF="node60.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html917"
+  HREF="node54.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html911"
+  HREF="node58.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html919"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html922"
+  HREF="node60.html">Comparison</A>
+<B> Up:</B> <A NAME="tex2html918"
+  HREF="node54.html">Average vs. weighted average</A>
+<B> Previous:</B> <A NAME="tex2html912"
+  HREF="node58.html">Straight Poisson (zero-skipping) weighted</A>
+ &nbsp; <B>  <A NAME="tex2html920"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00625500000000000000">
+Mighell-Poisson weighted average</A>
+</H3>
+
+<P>
+When <!-- MATH
+ $O_j=C_j+\min{\ensuremath{\left({1,C_j}\right)}}$
+ -->
+<IMG
+ WIDTH="157" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img165.png"
+ ALT="$ O_j=C_j+\min{\ensuremath{\left({1,C_j}\right)}}$">
+ and <!-- MATH
+ $\sigma_j^2=C_j+1$
+ -->
+<IMG
+ WIDTH="88" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img166.png"
+ ALT="$ \sigma_j^2=C_j+1$">
+
+<P><!-- MATH
+ \begin{displaymath}
+\langle x \rangle_{\!\mathrm{w(2)}}={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{
+{N_{\mathrm{obs}}^*}
+}}}}{{\ensuremath{\displaystyle{
+\mathop{\sum}_{\stackrel{1\leqslant j\leqslant N_{\mathrm{obs}}}{{C_j>0}}}
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{1
+}}}}{{\ensuremath{\displaystyle{
+C_j+1
+}}}}}}}
+}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="180" HEIGHT="117" ALIGN="MIDDLE" BORDER="0"
+ SRC="img167.png"
+ ALT="$\displaystyle \langle x \rangle_{\!\mathrm{w(2)}}={\ensuremath{\displaystyle{\f...
+...uremath{\displaystyle{1
+}}}}{{\ensuremath{\displaystyle{
+C_j+1
+}}}}}}}
+}}}}}}}
+$">
+</DIV><P>
+</P>
+<P><!-- MATH
+ \begin{displaymath}
+\sigma_{\langle x \rangle_{\!\mathrm{w(2)}}} = {\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{
+1
+}}}}{{\ensuremath{\displaystyle{\sqrt{
+\mathop{\sum}_{\stackrel{1\leqslant j\leqslant N_{\mathrm{obs}}}{{C_j>0}}}
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{1
+}}}}{{\ensuremath{\displaystyle{
+C_j+1
+}}}}}}}
+}}}}}}}}=\sqrt{{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{\langle x \rangle_{\!\mathrm{w(2)}}}}}}{{\ensuremath{\displaystyle{
+N_{\mathrm{obs}}^*
+}}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="286" HEIGHT="141" ALIGN="MIDDLE" BORDER="0"
+ SRC="img168.png"
+ ALT="$\displaystyle \sigma_{\langle x \rangle_{\!\mathrm{w(2)}}} = {\ensuremath{\disp...
+..._{\!\mathrm{w(2)}}}}}}{{\ensuremath{\displaystyle{
+N_{\mathrm{obs}}^*
+}}}}}}}}
+$">
+</DIV><P>
+</P>
+<P><!-- MATH
+ \begin{displaymath}
+\mathsf{GoF}_{(2)}=
+\sqrt{
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{
+\mathop{\sum}_{\stackrel{1\leqslant j\leqslant N_{\mathrm{obs}}}{{C_j>0}}}
+\!\!\!\!C_j+N_{\mathrm{obs}}^*
+-{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{
+{\ensuremath{\left[{
+N_{\mathrm{obs}}^*
+}\right]}}^2
+}}}}{{\ensuremath{\displaystyle{ \mathop{\sum}_{\stackrel{1\leqslant j\leqslant N_{\mathrm{obs}}}{{C_j>0}}}
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{1
+}}}}{{\ensuremath{\displaystyle{
+C_j+1
+}}}}}}} }}}}}}}
+}}}}{{\ensuremath{\displaystyle{
+N_{\mathrm{obs}}^*-1
+}}}}}}}
+}
+=\sqrt{
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{N_{\mathrm{obs}}^*}}}}{{\ensuremath{\displaystyle{N_{\mathrm{obs}}^*-1}}}}}}}
+{\ensuremath{\left({
+\langle x\rangle^*-\langle x \rangle_{\!\mathrm{w(2)}}+1
+}\right)}}
+}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="568" HEIGHT="189" ALIGN="MIDDLE" BORDER="0"
+ SRC="img169.png"
+ ALT="$\displaystyle \mathsf{GoF}_{(2)}=
+\sqrt{
+{\ensuremath{\displaystyle{\frac{{\ens...
+...{\left({
+\langle x\rangle^*-\langle x \rangle_{\!\mathrm{w(2)}}+1
+}\right)}}
+}
+$">
+</DIV><P>
+</P>
+where <!-- MATH
+ $\langle x\rangle^*$
+ -->
+<IMG
+ WIDTH="33" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img163.png"
+ ALT="$ \langle x\rangle^*$">
+ is the simple average of the non-zero data points; and of course
+<P><!-- MATH
+ \begin{displaymath}
+{\sigma}_{\langle x \rangle_{\!\mathrm{w(2)}}}^{\mathrm{corrected}} = \mathsf{GoF}_{(2)}\ \sigma_{\langle x \rangle_{\!\mathrm{w(2)}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="185" HEIGHT="37" ALIGN="MIDDLE" BORDER="0"
+ SRC="img170.png"
+ ALT="$\displaystyle {\sigma}_{\langle x \rangle_{\!\mathrm{w(2)}}}^{\mathrm{corrected}} = \mathsf{GoF}_{(2)}\ \sigma_{\langle x \rangle_{\!\mathrm{w(2)}}}
+$">
+</DIV><P>
+</P> 
+
+<P>
+<BR><HR>
+<ADDRESS>
+Thattil Dhanya
+2018-08-23
+</ADDRESS>
+</BODY>
+</HTML>

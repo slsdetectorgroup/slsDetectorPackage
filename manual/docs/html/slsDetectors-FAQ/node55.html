@@ -1,0 +1,161 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2012 (1.2)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Simple average</TITLE>
+<META NAME="description" CONTENT="Simple average">
+<META NAME="keywords" CONTENT="slsDetectors-FAQ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2012">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectors-FAQ.css">
+
+<LINK REL="next" HREF="node56.html">
+<LINK REL="previous" HREF="node54.html">
+<LINK REL="up" HREF="node54.html">
+<LINK REL="next" HREF="node56.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html873"
+  HREF="node56.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html869"
+  HREF="node54.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html863"
+  HREF="node54.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html871"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html874"
+  HREF="node56.html">Zero-skipping average</A>
+<B> Up:</B> <A NAME="tex2html870"
+  HREF="node54.html">Average vs. weighted average</A>
+<B> Previous:</B> <A NAME="tex2html864"
+  HREF="node54.html">Average vs. weighted average</A>
+ &nbsp; <B>  <A NAME="tex2html872"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00625100000000000000">
+Simple average</A>
+</H3>
+
+<P>
+Suppose we have <!-- MATH
+ $N_{\mathrm{obs}}$
+ -->
+<IMG
+ WIDTH="37" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img142.png"
+ ALT="$ N_{\mathrm{obs}}$">
+ Poisson-variate experimental evaluations 
+<!-- MATH
+ $C_j,\quad j=1\ldots N_{\mathrm{obs}}$
+ -->
+<IMG
+ WIDTH="138" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img143.png"
+ ALT="$ C_j,\quad j=1\ldots N_{\mathrm{obs}}$">
+, 
+of the same quantity <IMG
+ WIDTH="14" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img144.png"
+ ALT="$ x$">
+.
+There are different ways to obtain from all <!-- MATH
+ $N_{\mathrm{obs}}$
+ -->
+<IMG
+ WIDTH="37" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img142.png"
+ ALT="$ N_{\mathrm{obs}}$">
+ data values a single estimate of the observable which is better than 
+any of them. The most straightforward and the best is the simple average
+<P><!-- MATH
+ \begin{displaymath}
+x=\langle x\rangle={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{1}}}}{{\ensuremath{\displaystyle{ N_{\mathrm{obs}}}}}}}}}
+ \mathop{\sum}_{j=1}^{N_{\mathrm{obs}}}C_j\ .
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="173" HEIGHT="67" ALIGN="MIDDLE" BORDER="0"
+ SRC="img145.png"
+ ALT="$\displaystyle x=\langle x\rangle={\ensuremath{\displaystyle{\frac{{\ensuremath{...
+...aystyle{ N_{\mathrm{obs}}}}}}}}}
+\mathop{\sum}_{j=1}^{N_{\mathrm{obs}}}C_j\ .
+$">
+</DIV><P>
+</P>
+As the sum of Poisson variates is a Poisson variate, the standard deviation 
+<P><!-- MATH
+ \begin{displaymath}
+\sigma_x=\sqrt{\langle x^2\rangle-\langle x\rangle^2}=\sqrt{
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{1}}}}{{\ensuremath{\displaystyle{ N_{\mathrm{obs}}}}}}}}}
+ \mathop{\sum}_{j=1}^{N_{\mathrm{obs}}}C_j^2-{\ensuremath{\left({
+ {\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{1}}}}{{\ensuremath{\displaystyle{ N_{\mathrm{obs}}}}}}}}}
+ \mathop{\sum}_{j=1}^{N_{\mathrm{obs}}}C_j
+ }\right)}}
+ }
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="394" HEIGHT="87" ALIGN="MIDDLE" BORDER="0"
+ SRC="img146.png"
+ ALT="$\displaystyle \sigma_x=\sqrt{\langle x^2\rangle-\langle x\rangle^2}=\sqrt{
+{\en...
+...\mathrm{obs}}}}}}}}}
+\mathop{\sum}_{j=1}^{N_{\mathrm{obs}}}C_j
+}\right)}}
+}
+$">
+</DIV><P>
+</P>
+can be evaluated more comfortably as
+<P><!-- MATH
+ \begin{displaymath}
+\sigma_x={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{1}}}}{{\ensuremath{\displaystyle{ N_{\mathrm{obs}}}}}}}}}\sqrt{  \mathop{\sum}_{j=1}^{N_{\mathrm{obs}}}C_j }
+=\sqrt{{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{\langle x\rangle}}}}{{\ensuremath{\displaystyle{N_{\mathrm{obs}}}}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="216" HEIGHT="78" ALIGN="MIDDLE" BORDER="0"
+ SRC="img147.png"
+ ALT="$\displaystyle \sigma_x={\ensuremath{\displaystyle{\frac{{\ensuremath{\displayst...
+...style{\langle x\rangle}}}}{{\ensuremath{\displaystyle{N_{\mathrm{obs}}}}}}}}}}
+$">
+</DIV><P>
+</P>
+
+<P>
+<BR><HR>
+<ADDRESS>
+Thattil Dhanya
+2018-08-23
+</ADDRESS>
+</BODY>
+</HTML>

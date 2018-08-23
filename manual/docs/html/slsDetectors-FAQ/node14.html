@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2012 (1.2)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>How can several controllers be synchronized?</TITLE>
+<META NAME="description" CONTENT="How can several controllers be synchronized?">
+<META NAME="keywords" CONTENT="slsDetectors-FAQ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2012">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectors-FAQ.css">
+
+<LINK REL="next" HREF="node15.html">
+<LINK REL="previous" HREF="node13.html">
+<LINK REL="up" HREF="node2.html">
+<LINK REL="next" HREF="node15.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html325"
+  HREF="node15.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html321"
+  HREF="node2.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html315"
+  HREF="node13.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html323"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html326"
+  HREF="node15.html">How can the detector</A>
+<B> Up:</B> <A NAME="tex2html322"
+  HREF="node2.html">SLS Detectors Software</A>
+<B> Previous:</B> <A NAME="tex2html316"
+  HREF="node13.html">How can I synchronize</A>
+ &nbsp; <B>  <A NAME="tex2html324"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00290000000000000000"></A> <A NAME="sec:sync"></A>
+<BR>
+How can several controllers be synchronized?
+</H1>
+If you are not performing time resolved measurements, you will probably not need any synchronization of the controllers: they will be started sequentially by the software and their acquisition will have a jitter of a few ms. 
+<BR>
+In the case you need a precise synchronization, on the other hand, hardware connection is required between the controllers through the external IO signals. The external signals used for this synchronization should be configured as <I>sync</I> with the <I>extsig</I> command. 
+<BR>
+In this case a <I>master</I> controller should be defined for the acquisition which will the send the synchronization signal to the other controllers, while the other controllers will use them as inputs.
+<BR>
+The type of synchronization can be<I>gating</I> or <I>trigger</I> depending if the synchronization signal will gate the slave detectors or trigegr the beginning of the acquisition. There are no particular reasons to chose one or the other method, except if the user finds out that one is more stable than the other.
+<BR>
+Normally the configuration of the synchronization is configured inside the configuration file and should not be changed dynamically by the user.
+<BR>
+<P>
+After the configuration, the synchronization of the controllers will be completely transparent for the user, who will simply have to setup the timing parameters of the detector as a whole.
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html325"
+  HREF="node15.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html321"
+  HREF="node2.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html315"
+  HREF="node13.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html323"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html326"
+  HREF="node15.html">How can the detector</A>
+<B> Up:</B> <A NAME="tex2html322"
+  HREF="node2.html">SLS Detectors Software</A>
+<B> Previous:</B> <A NAME="tex2html316"
+  HREF="node13.html">How can I synchronize</A>
+ &nbsp; <B>  <A NAME="tex2html324"
+  HREF="node1.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-08-23
+</ADDRESS>
+</BODY>
+</HTML>

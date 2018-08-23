@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2012 (1.2)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Energy calibration</TITLE>
+<META NAME="description" CONTENT="Energy calibration">
+<META NAME="keywords" CONTENT="slsDetectorGuiHowTo">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2012">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectorGuiHowTo.css">
+
+<LINK REL="next" HREF="node17.html">
+<LINK REL="previous" HREF="node8.html">
+<LINK REL="up" HREF="slsDetectorGuiHowTo.html">
+<LINK REL="next" HREF="node17.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html205"
+  HREF="node17.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html203"
+  HREF="slsDetectorGuiHowTo.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html197"
+  HREF="node15.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html206"
+  HREF="node17.html">About this document ...</A>
+<B> Up:</B> <A NAME="tex2html204"
+  HREF="slsDetectorGuiHowTo.html">Mythen v3.0 manual</A>
+<B> Previous:</B> <A NAME="tex2html198"
+  HREF="node15.html">Other functions</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00300000000000000000"></A> <A NAME="sec:encal"></A>
+<BR>
+Energy calibration
+</H1>
+The energy calibration should be performed by illuminating the detector with monochromatic radiation at at least 2 (better 3-4) energies larger than 8&nbsp;keV. The energy calibration should be performed after trimming and the trim files used should be properly copied in the trimbits directory and used as default.
+
+<P>
+The data can be acquired either with the mythenGUI (by using the calibration wizard or the threshold scan utility in the Action tab) or with the slsDetectorClient (by scanning the threshold using mythen_put 0:vthreshold), but since the analysis needs the use of root, the GUI must be used to finalize the calibration.
+
+<P>
+In the mythenGUI menu Utilities/Calibration wizard it is possible to simply and automatically perform the energy calibration of the detector:
+
+<OL>
+<LI>Check the ``Detector online'' box in case you want to acquire the data, otherwise simply unclick it and you will be required to provide already acquired data and the details about the detector.
+<BR>
+The first time, chose ``Start new calibration'' and chose the directory where you want to store the data you want to acquire. The calibration file names have a''.root'' extension. 
+<BR>
+The calibration should be perormed by acquiring always the same settings and with the same number of modules always connected in the same sequence. The clibration files, however, can be used for the modules also on different systems (i.e. different number of modules, readout board, etc.). A new calibration should be performed for different detector settings.
+</LI>
+<LI>If the detector is online, the settings, the number of modules and their serial number will automatically be retrieved. If you selected the offline mode, you must provide the detector settings for the calibration that you want to perform and the serial numbers of the modules in the correct order (to do so, enter the 3 hexadecimal digits in the right sequence and press enter for each module - in case of error the list is editable).
+</LI>
+<LI>Enter the energy  of your beam (in keV!); 
+<BR>
+If you are in online mode, the acquisition time should be chosen such that there are at least 1000 counts per channel at an intemediate threshold; the range of the threshold scan should be between approx 800-15*keV and 800, better with a step of 1 but up to 5 can be fine in order to reduce the acquisition time: it is more important that each step has a sufficient statistics than that the threshold step is low! After pressing ``Next'', the detector starts acquiring and showing the histogram of the calibration. When it is finished simply press ``Finish'' to accept the data, ``Cancel'' to reject them.
+<BR>
+In offline mode, you are required to enter the range and step of the calibration and to select the  files (in the same sequence as the threshold values!). After pressing ``Next'' (enabled only if the number of steps is the same as the number of files), the histogram showing the threshold scan is drawn. Simply press ``Finish'' to accept the data, ``Cancel'' to reject them.
+</LI>
+<LI>For the following calibration steps, check the ``Detector online'' box in case you want to acquire the data, otherwise simply unclick it and you will be required to provide already acquired data and the details about the detector.
+<BR>
+Chose ``Add calibration step'' and select the file created prevously. The settings, number of modules and serial numbers of the modules and the energies at which the acquisition has been already performed should be displayed.
+</LI>
+<LI>Add a new calibration step like in point 3. and iterate for all the energies at which you want to perform the calibration.
+</LI>
+<LI>To generate the calibration files, chose ``Generate calibration files'' and select the file created prevously. The settings, number of modules and serial numbers of the modules and the energies at which the acquisition has been already performed should be displayed.
+</LI>
+<LI>Chose the directory and the root of the calibrations files name. An extension corresponding to the serial number of the modules will be generated. 
+</LI>
+<LI>The calibration files for each module should be generated. For each energy you can set the start parameters of the fit and the fitting range (press enter after each change) so that the fitted curves nicely fit the data. The linear fit between energies and inflection points can also be checked.
+</LI>
+</OL>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html205"
+  HREF="node17.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html203"
+  HREF="slsDetectorGuiHowTo.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html197"
+  HREF="node15.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html206"
+  HREF="node17.html">About this document ...</A>
+<B> Up:</B> <A NAME="tex2html204"
+  HREF="slsDetectorGuiHowTo.html">Mythen v3.0 manual</A>
+<B> Previous:</B> <A NAME="tex2html198"
+  HREF="node15.html">Other functions</A>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-08-23
+</ADDRESS>
+</BODY>
+</HTML>

@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2012 (1.2)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>How can I configure the data receiver?</TITLE>
+<META NAME="description" CONTENT="How can I configure the data receiver?">
+<META NAME="keywords" CONTENT="slsDetectors-FAQ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2012">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectors-FAQ.css">
+
+<LINK REL="next" HREF="node7.html">
+<LINK REL="previous" HREF="node4.html">
+<LINK REL="up" HREF="node2.html">
+<LINK REL="next" HREF="node7.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html229"
+  HREF="node7.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html225"
+  HREF="node2.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html219"
+  HREF="node5.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html227"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html230"
+  HREF="node7.html">What are settings and</A>
+<B> Up:</B> <A NAME="tex2html226"
+  HREF="node2.html">SLS Detectors Software</A>
+<B> Previous:</B> <A NAME="tex2html220"
+  HREF="node5.html">Examples</A>
+ &nbsp; <B>  <A NAME="tex2html228"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00230000000000000000">
+How can I configure the data receiver?</A>
+</H1>
+
+<P>
+For slower acquisitions, the detector will return the data to the control PC over TCP/IP (e.g. MYTHEN).
+
+<P>
+However, for faster frame rates (e.g. GOTTHARD, EIGER) the controllers will return the data to a data receiver i.e. a process specifically designed to receive the data from the controller over a GBit network and save them to disk. 
+<BR>
+The data receiver can run on any machine (e.g. a file server) accessible by both the control PC and the detector controller, as sketched in figure&nbsp;<A HREF="#fig:datareceiver">1.2</A>. A data receiver process must be configured for each controller. Normally, to avoid performance loss it is better if different data receivers run on different machines.
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:datareceiver"></A><A NAME="667"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 1.2:</STRONG>
+Scketch of the communication between the control PC, the detector and the data receiver.</CAPTION>
+<TR><TD><IMG
+ WIDTH="551" HEIGHT="293" ALIGN="BOTTOM" BORDER="0"
+ SRC="img3.png"
+ ALT="\includegraphics[width=\textwidth]{data_receiver}"></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+To setup the system, you should configure:
+<DL>
+<DT><STRONG>Client-Detector TCP/IP connection</STRONG></DT>
+<DD>i.e. for each controller hostname  or IP address  (<I>hostname</I>) and communication port (<I>port</I>, use default).
+</DD>
+<DT><STRONG>Client-Receiver TCP/IP connection</STRONG></DT>
+<DD>i.e. hostname or IP address of the data receiver (<I>rx_hostname</I>) and communication port (textitrx_tcpport, use default).
+</DD>
+<DT><STRONG>Detector-Receiver UDP connection</STRONG></DT>
+<DD>i.e.  for each controller IP address of the receiver network interface (<I>rx_udpip</I>) and communication port (<I>rx_udpport</I>) used for receiveing the data. By detfault the IP address of the TCP/IP receiver interface will be used also for the UDP conenction. Editing the UDP network interfaces and ports is useful if several controller are sending data to a single receiver (not reccomended to avoid performance loss).
+<BR>
+A MAC  (<I>detectormac</I>) and IP address (<I>detectorudpip</I>) should also be assigned to the controller network interface used for the UDP communication, but the default values can normally be used unless firewalls are defined between the detectors and the receiver.
+</DD>
+</DL>
+All these configurations are normally left to the configuration file and should not be changed dynamically by the user.
+
+<P>
+After starting the data receiver process and correctly configuring the client and the detector, this architecture should be completely transparent for the user, except that the output file path must be properly configured from the client for the data receiver machine (easiest is that the disk is mounted for both machines in the same location).
+<BR>
+The client will take care of communicating with the data receiver and the detector. A feedback about the progress of the acquisition and a preview of the data being acquired can also be obtained by the client from the data receiver.
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html229"
+  HREF="node7.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html225"
+  HREF="node2.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html219"
+  HREF="node5.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html227"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html230"
+  HREF="node7.html">What are settings and</A>
+<B> Up:</B> <A NAME="tex2html226"
+  HREF="node2.html">SLS Detectors Software</A>
+<B> Previous:</B> <A NAME="tex2html220"
+  HREF="node5.html">Examples</A>
+ &nbsp; <B>  <A NAME="tex2html228"
+  HREF="node1.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-08-23
+</ADDRESS>
+</BODY>
+</HTML>

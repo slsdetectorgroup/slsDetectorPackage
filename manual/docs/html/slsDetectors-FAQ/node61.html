@@ -1,0 +1,345 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2012 (1.2)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Analytical comparison of averages</TITLE>
+<META NAME="description" CONTENT="Analytical comparison of averages">
+<META NAME="keywords" CONTENT="slsDetectors-FAQ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2012">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectors-FAQ.css">
+
+<LINK REL="next" HREF="node62.html">
+<LINK REL="previous" HREF="node60.html">
+<LINK REL="up" HREF="node54.html">
+<LINK REL="next" HREF="node62.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html945"
+  HREF="node62.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html941"
+  HREF="node54.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html935"
+  HREF="node60.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html943"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html946"
+  HREF="node62.html">Numerical comparison of averages</A>
+<B> Up:</B> <A NAME="tex2html942"
+  HREF="node54.html">Average vs. weighted average</A>
+<B> Previous:</B> <A NAME="tex2html936"
+  HREF="node60.html">Comparison</A>
+ &nbsp; <B>  <A NAME="tex2html944"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00625700000000000000">
+Analytical comparison of averages</A>
+</H3>
+
+<P>
+First we give an analytical comparison between simple average and Mighell-Poisson weighted average 
+for <!-- MATH
+ $N_{\mathrm{obs}}=2$
+ -->
+<IMG
+ WIDTH="66" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img175.png"
+ ALT="$ N_{\mathrm{obs}}=2$">
+. 
+If the two events are <IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img176.png"
+ ALT="$ C_1$">
+ and <IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img177.png"
+ ALT="$ C_2$">
+, then
+<P><!-- MATH
+ \begin{displaymath}
+\langle x \rangle={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{C_1+C_2}}}}{{\ensuremath{\displaystyle{2}}}}}}}; \qquad \sigma_x={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{\sqrt{C_1+C_2}}}}}{{\ensuremath{\displaystyle{2}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="261" HEIGHT="63" ALIGN="MIDDLE" BORDER="0"
+ SRC="img178.png"
+ ALT="$\displaystyle \langle x \rangle={\ensuremath{\displaystyle{\frac{{\ensuremath{\...
+...nsuremath{\displaystyle{\sqrt{C_1+C_2}}}}}{{\ensuremath{\displaystyle{2}}}}}}}
+$">
+</DIV><P>
+</P>
+For the M-P weighted average,
+<P><!-- MATH
+ \begin{displaymath}
+\langle x \rangle_{\mathrm{w(2)}}={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{2(C_1+1)(C_2+1)}}}}{{\ensuremath{\displaystyle{C_1+C_2+2}}}}}}}; \qquad 
+\sigma_{\langle x \rangle_{\mathrm{w(2)}}}=\sqrt{{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{(C_1+1)(C_2+1)}}}}{{\ensuremath{\displaystyle{C_1+C_2+2}}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="448" HEIGHT="71" ALIGN="MIDDLE" BORDER="0"
+ SRC="img179.png"
+ ALT="$\displaystyle \langle x \rangle_{\mathrm{w(2)}}={\ensuremath{\displaystyle{\fra...
+...{\displaystyle{(C_1+1)(C_2+1)}}}}{{\ensuremath{\displaystyle{C_1+C_2+2}}}}}}}}
+$">
+</DIV><P>
+</P>
+
+<P>
+Now, supposing that the common 'true' value of <IMG
+ WIDTH="49" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img180.png"
+ ALT="$ C_1,C_2$">
+ is <IMG
+ WIDTH="14" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img181.png"
+ ALT="$ \lambda$">
+, 
+we use the Poisson distribution to compare the expectation values of the two results. The expectation value of the simple average is
+<P><!-- MATH
+ \begin{displaymath}
+E{\ensuremath{\left({\langle x \rangle}\right)}} = \mathop{\sum}_{m,n=0}^{+\infty}
+ {\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{n+m}}}}{{\ensuremath{\displaystyle{2}}}}}}}P(n)P(m)=\mathop{\sum}_{m=0}^{+\infty}
+ {\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{m}}}}{{\ensuremath{\displaystyle{2}}}}}}}{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{\lambda^m{\ensuremath{\mathrm{e}}}^{-\lambda}}}}}{{\ensuremath{\displaystyle{m!}}}}}}}
+ +\mathop{\sum}_{n=0}^{+\infty}
+ {\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{n}}}}{{\ensuremath{\displaystyle{2}}}}}}}{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{\lambda^n{\ensuremath{\mathrm{e}}}^{-\lambda}}}}}{{\ensuremath{\displaystyle{n!}}}}}}}
+ =\lambda
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="491" HEIGHT="65" ALIGN="MIDDLE" BORDER="0"
+ SRC="img182.png"
+ ALT="$\displaystyle E{\ensuremath{\left({\langle x \rangle}\right)}} = \mathop{\sum}_...
+...ath{\mathrm{e}}}^{-\lambda}}}}}{{\ensuremath{\displaystyle{n!}}}}}}}
+=\lambda
+$">
+</DIV><P>
+</P>
+As expected, the simple average gives the true value. 
+For its variance, 
+<P><!-- MATH
+ \begin{displaymath}
+E{\ensuremath{\left({\sigma_x^2}\right)}} = \mathop{\sum}_{m,n=0}^{+\infty}
+ {\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{n+m}}}}{{\ensuremath{\displaystyle{4}}}}}}}P(n)P(m)={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{
+ \lambda}}}}{{\ensuremath{\displaystyle{2}}}}}}};\qquad E{\ensuremath{\left({\sigma_x}\right)}} =\sqrt{{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{\lambda}}}}{{\ensuremath{\displaystyle{2}}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="397" HEIGHT="65" ALIGN="MIDDLE" BORDER="0"
+ SRC="img183.png"
+ ALT="$\displaystyle E{\ensuremath{\left({\sigma_x^2}\right)}} = \mathop{\sum}_{m,n=0}...
+...ac{{\ensuremath{\displaystyle{\lambda}}}}{{\ensuremath{\displaystyle{2}}}}}}}}
+$">
+</DIV><P>
+</P>
+
+<P>
+In order to evaluate the difference with the M-P weighted average, we rewrite the latter as
+<P><!-- MATH
+ \begin{displaymath}
+\langle x \rangle_{\mathrm{w(2)}}=\langle x \rangle + 1 -{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{(C_1-C_2)^2}}}}{{\ensuremath{\displaystyle{4(\langle x \rangle+1)}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="222" HEIGHT="57" ALIGN="MIDDLE" BORDER="0"
+ SRC="img184.png"
+ ALT="$\displaystyle \langle x \rangle_{\mathrm{w(2)}}=\langle x \rangle + 1 -{\ensure...
+...style{(C_1-C_2)^2}}}}{{\ensuremath{\displaystyle{4(\langle x \rangle+1)}}}}}}}
+$">
+</DIV><P>
+</P>
+and calculate the expectation value of the last term:
+<P><!-- MATH
+ \begin{displaymath}
+E{\ensuremath{\left({{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{(C_1-C_2)^2}}}}{{\ensuremath{\displaystyle{4(\langle x \rangle+1)}}}}}}}}\right)}} = 
+ \mathop{\sum}_{m,n=0}^{+\infty}
+ {\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{(n-m)^2}}}}{{\ensuremath{\displaystyle{2(n+m+2) }}}}}}}P(n)P(m)={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{{\ensuremath{\mathrm{e}}}^{-2\lambda}}}}}{{\ensuremath{\displaystyle{2}}}}}}}
+ \mathop{\sum}_{m,n=0}^{+\infty}
+ {\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{(n-m)^2}}}}{{\ensuremath{\displaystyle{(n+m+2) }}}}}}}{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{\lambda^{n+m}}}}}{{\ensuremath{\displaystyle{n!m!}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="578" HEIGHT="65" ALIGN="MIDDLE" BORDER="0"
+ SRC="img185.png"
+ ALT="$\displaystyle E{\ensuremath{\left({{\ensuremath{\displaystyle{\frac{{\ensuremat...
+...uremath{\displaystyle{\lambda^{n+m}}}}}{{\ensuremath{\displaystyle{n!m!}}}}}}}
+$">
+</DIV><P>
+</P>
+Rearranging the sums with <IMG
+ WIDTH="76" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img186.png"
+ ALT="$ s=n+m$">
+, <!-- MATH
+ $s=0\ldots +\infty$
+ -->
+<IMG
+ WIDTH="98" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img187.png"
+ ALT="$ s=0\ldots +\infty$">
+; <IMG
+ WIDTH="112" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img188.png"
+ ALT="$ n-m=s-2k$">
+, <!-- MATH
+ $k=0\ldots s$
+ -->
+<IMG
+ WIDTH="74" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img189.png"
+ ALT="$ k=0\ldots s$">
+,
+we get
+<P><!-- MATH
+ \begin{displaymath}
+E{\ensuremath{\left({{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{(C_1-C_2)^2}}}}{{\ensuremath{\displaystyle{4(\langle x \rangle+1)}}}}}}}}\right)}} = 
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{{\ensuremath{\mathrm{e}}}^{-2\lambda}}}}}{{\ensuremath{\displaystyle{2}}}}}}}
+ \mathop{\sum}_{s=0}^{+\infty}
+  \mathop{\sum}_{k=0}^{s}
+ {\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{(s-2k)^2(s+1)}}}}{{\ensuremath{\displaystyle{(s+2)! }}}}}}}{\lambda^{s}}
+ \binom{s}{k}={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{1}}}}{{\ensuremath{\displaystyle{2}}}}}}}-{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{1}}}}{{\ensuremath{\displaystyle{2\lambda}}}}}}}+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{1-{\ensuremath{\mathrm{e}}}^{-2\lambda}}}}}{{\ensuremath{\displaystyle{4\lambda^2}}}}}}}
+ %{n!m!}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="550" HEIGHT="65" ALIGN="MIDDLE" BORDER="0"
+ SRC="img190.png"
+ ALT="$\displaystyle E{\ensuremath{\left({{\ensuremath{\displaystyle{\frac{{\ensuremat...
+...hrm{e}}}^{-2\lambda}}}}}{{\ensuremath{\displaystyle{4\lambda^2}}}}}}}
+%{n!m!}
+$">
+</DIV><P>
+</P>
+So, the relative difference between averages is
+<P><!-- MATH
+ \begin{displaymath}
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{E{\ensuremath{\left({\langle x \rangle_{\mathrm{w(2)}}-\langle x \rangle}\right)}}}}}}{{\ensuremath{\displaystyle{E{\ensuremath{\left({\langle x \rangle}\right)}}}}}}}}}=
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{1}}}}{{\ensuremath{\displaystyle{2\lambda}}}}}}}+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{1}}}}{{\ensuremath{\displaystyle{2\lambda^2}}}}}}}-{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{1-{\ensuremath{\mathrm{e}}}^{-2\lambda}}}}}{{\ensuremath{\displaystyle{4\lambda^3}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="296" HEIGHT="59" ALIGN="MIDDLE" BORDER="0"
+ SRC="img191.png"
+ ALT="$\displaystyle {\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{E{\en...
+...math{\mathrm{e}}}^{-2\lambda}}}}}{{\ensuremath{\displaystyle{4\lambda^3}}}}}}}
+$">
+</DIV><P>
+</P>
+The relative error on <!-- MATH
+ $\langle x \rangle$
+ -->
+<IMG
+ WIDTH="26" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img192.png"
+ ALT="$ \langle x \rangle$">
+ is
+<P><!-- MATH
+ \begin{displaymath}
+\epsilon = {\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{\sigma_x}}}}{{\ensuremath{\displaystyle{\langle x \rangle}}}}}}} = 
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{\lambda^{1/2}}}}}{{\ensuremath{\displaystyle{\sqrt{2} \lambda}}}}}}}={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{1}}}}{{\ensuremath{\displaystyle{\sqrt{2\lambda}}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="169" HEIGHT="61" ALIGN="MIDDLE" BORDER="0"
+ SRC="img193.png"
+ ALT="$\displaystyle \epsilon = {\ensuremath{\displaystyle{\frac{{\ensuremath{\display...
+...suremath{\displaystyle{1}}}}{{\ensuremath{\displaystyle{\sqrt{2\lambda}}}}}}}}
+$">
+</DIV><P>
+</P>
+therefore 
+<P><!-- MATH
+ \begin{displaymath}
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{E{\ensuremath{\left({\langle x \rangle_{\mathrm{w(2)}}-\langle x \rangle}\right)}}}}}}{{\ensuremath{\displaystyle{E{\ensuremath{\left({\langle x \rangle}\right)}}}}}}}}}=
+O(\epsilon^2)
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="184" HEIGHT="59" ALIGN="MIDDLE" BORDER="0"
+ SRC="img194.png"
+ ALT="$\displaystyle {\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{E{\en...
+...aystyle{E{\ensuremath{\left({\langle x \rangle}\right)}}}}}}}}}=
+O(\epsilon^2)
+$">
+</DIV><P>
+</P>
+Therefore, the expectation value of the error (relative) involved in taking 
+the M-P weighted average instead of the simple average is negligible.
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html945"
+  HREF="node62.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html941"
+  HREF="node54.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html935"
+  HREF="node60.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html943"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html946"
+  HREF="node62.html">Numerical comparison of averages</A>
+<B> Up:</B> <A NAME="tex2html942"
+  HREF="node54.html">Average vs. weighted average</A>
+<B> Previous:</B> <A NAME="tex2html936"
+  HREF="node60.html">Comparison</A>
+ &nbsp; <B>  <A NAME="tex2html944"
+  HREF="node1.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-08-23
+</ADDRESS>
+</BODY>
+</HTML>

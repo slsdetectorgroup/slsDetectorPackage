@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2012 (1.2)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Other functions</TITLE>
+<META NAME="description" CONTENT="Other functions">
+<META NAME="keywords" CONTENT="slsDetectorGuiHowTo">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2012">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectorGuiHowTo.css">
+
+<LINK REL="previous" HREF="node14.html">
+<LINK REL="up" HREF="node8.html">
+<LINK REL="next" HREF="node16.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html193"
+  HREF="node16.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html191"
+  HREF="node8.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html187"
+  HREF="node14.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html194"
+  HREF="node16.html">Energy calibration</A>
+<B> Up:</B> <A NAME="tex2html192"
+  HREF="node8.html">slsDetectorClient</A>
+<B> Previous:</B> <A NAME="tex2html188"
+  HREF="node14.html">Acquisition</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html195"
+  HREF="node15.html#SECTION00271000000000000000">Mandatory configuration</A>
+<LI><A NAME="tex2html196"
+  HREF="node15.html#SECTION00272000000000000000">Acquisition setup</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00270000000000000000">
+Other functions</A>
+</H1>
+The text client and the GUI can be operated in parallel (althoug you should not change parameters or acquire data at the same data from the gui and the text client!) and the values displayed by the GUI should normally be the actual ones. 
+However this kind of parallel operation is at your own risk!
+
+<P>
+The main parameters are group in tabs according to their meaning. To enable some tabs you should enter the modes menu and select Advanced/configuration/Debug
+Here is the general subject of the tabs:
+<DL>
+<DT><STRONG>Measurement</STRONG></DT>
+<DD>Main acquisition parameters that you may want to change often
+</DD>
+<DT><STRONG>Data Output</STRONG></DT>
+<DD>Where to write the data, in which format and what to to with them
+</DD>
+<DT><STRONG>Plot</STRONG></DT>
+<DD>What to plot and how (only partially implemented)
+</DD>
+<DT><STRONG>Actions</STRONG></DT>
+<DD>Allows to configure scans and/or execute scripts at teh beginning or at the end of the measurement.
+</DD>
+<DT><STRONG>Time resolved</STRONG></DT>
+<DD>Parameters for time resolved (real time) measurements
+</DD>
+<DT><STRONG>Advanced</STRONG></DT>
+<DD>Must be activated with the modes menu button. Allows to set some advanced configuration which you don't want general users to change (e.g. data size, external signals, advanced acquisition speed)
+</DD>
+<DT><STRONG>Trimming</STRONG></DT>
+<DD>Must be activated with the modes menu button. Allows to trim the detector and/or load specific trim files.
+</DD>
+<DT><STRONG>Configuration</STRONG></DT>
+<DD>Must be activated with the modes menu button. Allows to configure the detector
+</DD>
+<DT><STRONG>Debugging</STRONG></DT>
+<DD>Must be activated with the modes menu button. Allows to test the detectors functionality, acquire serial numbers etc.
+</DD>
+</DL>
+Most of the parameters are explained through a tooltip which appers if you leave the mouse on the widget for a few seconds.
+
+<P>
+The configuration and/or the complete setup of the detector can be loaded and saved using the Utilities menu.
+
+<P>
+
+<H2><A NAME="SECTION00271000000000000000">
+Mandatory configuration</A>
+</H2>
+Where to find some important parameters (should be set only once, then it should remain in memory):
+<DL>
+<DT><STRONG>Hostname</STRONG></DT>
+<DD>Configuration tab. Press enter to update.
+</DD>
+<DT><STRONG>Trim dir</STRONG></DT>
+<DD>Configuration tab. Press enter to update.
+</DD>
+<DT><STRONG>Cal dir</STRONG></DT>
+<DD>Configuration tab. Press enter to update.
+</DD>
+<DT><STRONG>Number of modules</STRONG></DT>
+<DD>Configuration tab or Advanced tab
+</DD>
+<DT><STRONG>Dynamic range</STRONG></DT>
+<DD>Advanced tab
+</DD>
+<DT><STRONG>Output directory</STRONG></DT>
+<DD>Data Output tab.
+</DD>
+<DT><STRONG>File name</STRONG></DT>
+<DD>Measurement tab.
+</DD>
+<DT><STRONG>File index</STRONG></DT>
+<DD>Measurement tab (automatically incremented).
+</DD>
+</DL>
+
+<P>
+
+<H2><A NAME="SECTION00272000000000000000">
+Acquisition setup</A>
+</H2>
+Where to find some important parameters (should be set only once, then it should remain in memory):
+<DL>
+<DT><STRONG>Settings</STRONG></DT>
+<DD>Measurement tab
+</DD>
+<DT><STRONG>Threshold</STRONG></DT>
+<DD>Measurement tab
+</DD>
+<DT><STRONG>Exposure time</STRONG></DT>
+<DD>Measurement tab
+</DD>
+<DT><STRONG>Number of frames</STRONG></DT>
+<DD>Measurement tab for non time-resolved measurement, Time resolved tab for fast real time measurements. if you need some action between frame see Actions tab.
+</DD>
+</DL>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html193"
+  HREF="node16.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html191"
+  HREF="node8.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html187"
+  HREF="node14.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html194"
+  HREF="node16.html">Energy calibration</A>
+<B> Up:</B> <A NAME="tex2html192"
+  HREF="node8.html">slsDetectorClient</A>
+<B> Previous:</B> <A NAME="tex2html188"
+  HREF="node14.html">Acquisition</A>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-08-23
+</ADDRESS>
+</BODY>
+</HTML>

@@ -1,0 +1,318 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2012 (1.2)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Poisson and normal statistics for diffraction</TITLE>
+<META NAME="description" CONTENT="Poisson and normal statistics for diffraction">
+<META NAME="keywords" CONTENT="slsDetectors-FAQ">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2012">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectors-FAQ.css">
+
+<LINK REL="next" HREF="node54.html">
+<LINK REL="previous" HREF="node52.html">
+<LINK REL="up" HREF="node46.html">
+<LINK REL="next" HREF="node54.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html841"
+  HREF="node54.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html837"
+  HREF="node46.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html831"
+  HREF="node52.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html839"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html842"
+  HREF="node54.html">Average vs. weighted average</A>
+<B> Up:</B> <A NAME="tex2html838"
+  HREF="node46.html">How are different positions</A>
+<B> Previous:</B> <A NAME="tex2html832"
+  HREF="node52.html">Advanced binning</A>
+ &nbsp; <B>  <A NAME="tex2html840"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION00624000000000000000">
+Poisson and normal statistics for diffraction</A>
+</H2>
+
+<P>
+The normal situation for diffraction data 
+is that the observed signal is a photon count. 
+Therefore it follows a Poisson distribution. 
+If we have a count value <IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img128.png"
+ ALT="$ C_0$">
+ that follows a Poisson distribution, 
+we can assume immediately that the average is equal to <IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img128.png"
+ ALT="$ C_0$">
+ and the s.d. is <!-- MATH
+ $\sqrt{C_0}$
+ -->
+<IMG
+ WIDTH="36" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img129.png"
+ ALT="$ \sqrt{C_0}$">
+. 
+I.e., repeated experiments would give values <IMG
+ WIDTH="14" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img130.png"
+ ALT="$ n$">
+ 
+distributed according to the normalized distribution
+<P><!-- MATH
+ \begin{displaymath}
+P(n)={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{C_0^n{\ensuremath{\mathrm{e}}}^{-C_0}
+}}}}{{\ensuremath{\displaystyle{
+n!}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="118" HEIGHT="58" ALIGN="MIDDLE" BORDER="0"
+ SRC="img131.png"
+ ALT="$\displaystyle P(n)={\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{C_0^n{\ensuremath{\mathrm{e}}}^{-C_0}
+}}}}{{\ensuremath{\displaystyle{
+n!}}}}}}}
+$">
+</DIV><P>
+</P>
+This obeys
+<P><!-- MATH
+ \begin{displaymath}
+\mathop{\sum}_{n=0}^{+\infty}
+P(n)=1\ ;
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="104" HEIGHT="65" ALIGN="MIDDLE" BORDER="0"
+ SRC="img132.png"
+ ALT="$\displaystyle \mathop{\sum}_{n=0}^{+\infty}
+P(n)=1\ ;
+$">
+</DIV><P>
+</P>
+<P><!-- MATH
+ \begin{displaymath}
+\langle n\rangle=\mathop{\sum}_{n=0}^{+\infty}
+nP(n)=C_0\ ;
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="168" HEIGHT="65" ALIGN="MIDDLE" BORDER="0"
+ SRC="img133.png"
+ ALT="$\displaystyle \langle n\rangle=\mathop{\sum}_{n=0}^{+\infty}
+nP(n)=C_0\ ;
+$">
+</DIV><P>
+</P>
+<P><!-- MATH
+ \begin{displaymath}
+\langle n^2\rangle=\mathop{\sum}_{n=0}^{+\infty}
+n^2 P(n)=C_0^2+C_0\ ;
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="221" HEIGHT="65" ALIGN="MIDDLE" BORDER="0"
+ SRC="img134.png"
+ ALT="$\displaystyle \langle n^2\rangle=\mathop{\sum}_{n=0}^{+\infty}
+n^2 P(n)=C_0^2+C_0\ ;
+$">
+</DIV><P>
+</P>
+The standard deviation comes then to
+<P><!-- MATH
+ \begin{displaymath}
+\sigma_{C_0}=\sqrt{\langle n^2\rangle-\langle n\rangle^2}=\sqrt{C_0}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="200" HEIGHT="40" ALIGN="MIDDLE" BORDER="0"
+ SRC="img135.png"
+ ALT="$\displaystyle \sigma_{C_0}=\sqrt{\langle n^2\rangle-\langle n\rangle^2}=\sqrt{C_0}
+$">
+</DIV><P>
+</P>
+
+<P>
+When the data have to be analyzed, one must compare observations with a model 
+which gives calculated values of the observations in dependence of a certain set of 
+parameters. The best values of the parameters (the target of investigation) 
+are the one that maximize the likelihood function [4,5]. The likelihood function for 
+Poisson variates is pretty difficult to use; furthermore, even simple data manipulations 
+are not straightforward with Poisson variates (see Sec.&nbsp;<A HREF="node63.html#sec:3">5.2.6</A>). The common choice is to approximate 
+Poisson variates with normal variates, and then use the much easier formalism 
+of normal distribution to a) do basic data manipulations and b) fit data with model. 
+To the latter task, in fact, the likelihood function is maximized simply by minimizing 
+the usual weighted-<IMG
+ WIDTH="22" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$ \chi ^2$">
+[4] :
+<P><!-- MATH
+ \begin{displaymath}
+\chi^2 = \mathop{\sum}_{j=1}^{N_{\mathrm{obs}}}
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{{\ensuremath{\left({F_j-O_j}\right)}}^2
+}}}}{{\ensuremath{\displaystyle{
+\sigma_j^2
+}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="151" HEIGHT="67" ALIGN="MIDDLE" BORDER="0"
+ SRC="img136.png"
+ ALT="$\displaystyle \chi^2 = \mathop{\sum}_{j=1}^{N_{\mathrm{obs}}}
+{\ensuremath{\dis...
+...\left({F_j-O_j}\right)}}^2
+}}}}{{\ensuremath{\displaystyle{
+\sigma_j^2
+}}}}}}}
+$">
+</DIV><P>
+</P>
+where <IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img137.png"
+ ALT="$ O_j$">
+ are the experimentally observed values, <IMG
+ WIDTH="21" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img138.png"
+ ALT="$ F_j$">
+ the calculated model values, 
+<IMG
+ WIDTH="20" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img139.png"
+ ALT="$ \sigma_j$">
+ the s.d.s of the observations.
+
+<P>
+Substituting directly the counts (and derived s.d.s) for the observations in the former :
+<P><!-- MATH
+ \begin{displaymath}
+\chi_{(0)}^2 = \mathop{\sum}_{j=1}^{N_{\mathrm{obs}}}
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{{\ensuremath{\left({F_j-C_j}\right)}}^2
+}}}}{{\ensuremath{\displaystyle{
+C_j
+}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="160" HEIGHT="67" ALIGN="MIDDLE" BORDER="0"
+ SRC="img140.png"
+ ALT="$\displaystyle \chi_{(0)}^2 = \mathop{\sum}_{j=1}^{N_{\mathrm{obs}}}
+{\ensuremat...
+...remath{\left({F_j-C_j}\right)}}^2
+}}}}{{\ensuremath{\displaystyle{
+C_j
+}}}}}}}
+$">
+</DIV><P>
+</P>
+is the most common way. It is <I>slightly</I> wrong to do so, however [6], 
+the error being large only when the counts are low. 
+There is also a divergence for zero counts. 
+In fact, a slightly modified form [6] exists, reading
+<P><!-- MATH
+ \begin{displaymath}
+\chi_{(1)}^2 = \mathop{\sum}_{j=1}^{N_{\mathrm{obs}}}
+{\ensuremath{\displaystyle{\frac{{\ensuremath{\displaystyle{{\ensuremath{\left({F_j-{\ensuremath{\left({C_j+\min{\ensuremath{\left({1,C_j}\right)}}}\right)}}}\right)}}^2
+}}}}{{\ensuremath{\displaystyle{
+C_j+1
+}}}}}}}
+\end{displaymath}
+ -->
+</P>
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="266" HEIGHT="67" ALIGN="MIDDLE" BORDER="0"
+ SRC="img141.png"
+ ALT="$\displaystyle \chi_{(1)}^2 = \mathop{\sum}_{j=1}^{N_{\mathrm{obs}}}
+{\ensuremat...
+...\right)}}}\right)}}}\right)}}^2
+}}}}{{\ensuremath{\displaystyle{
+C_j+1
+}}}}}}}
+$">
+</DIV><P>
+</P>
+Minimizing this form of <IMG
+ WIDTH="22" HEIGHT="34" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$ \chi ^2$">
+ is equivalent - to an exceptionally good approximation [6]- 
+to maximizing the proper Poisson-likelihood. 
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html841"
+  HREF="node54.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html837"
+  HREF="node46.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html831"
+  HREF="node52.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html839"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html842"
+  HREF="node54.html">Average vs. weighted average</A>
+<B> Up:</B> <A NAME="tex2html838"
+  HREF="node46.html">How are different positions</A>
+<B> Previous:</B> <A NAME="tex2html832"
+  HREF="node52.html">Advanced binning</A>
+ &nbsp; <B>  <A NAME="tex2html840"
+  HREF="node1.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2018-08-23
+</ADDRESS>
+</BODY>
+</HTML>

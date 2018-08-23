@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2012 (1.2)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Install Binaries via Conda</TITLE>
+<META NAME="description" CONTENT="Install Binaries via Conda">
+<META NAME="keywords" CONTENT="slsDetectorInstall">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2012">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectorInstall.css">
+
+</HEAD>
+
+<BODY >
+
+<H1><A NAME="SECTION00030000000000000000">
+Install Binaries via Conda</A>
+</H1>
+This section is useful only if one wants to download only the binaries for
+specific distribution and use the package via command line. Please refer later
+sections to download source code and compile them.
+
+<P>
+One can download and install Miniconda via 
+
+<P>
+<TT><A NAME="tex2html1"
+  HREF="https://conda.io/miniconda.html">https://conda.io/miniconda.html</A></TT>
+<P>
+The conda package uses Travis CI for continuous integration with
+automatic deployment to Anaconda Cloud. One can download only the package or the
+package including the python interface.
+
+<P>
+After the installation, the binaries will be available in your path.
+
+<P>
+Please remember to clear shared memory after installation.
+<PRE>
+#displays list of shared memeory segments 
+ipcs -m
+#remove segments that have nattach equal to zero. They key is the first column
+ipcrm -M [key]
+</PRE>
+
+<P>
+
+<UL>
+<LI>Only the package
+<PRE>
+#Add conda channels
+conda config --add channels conda-forge
+conda config --add channels slsdetectorgroup
+
+#Install latest version
+conda install sls_detector_software
+
+#Install specific release (GLIBC2.14)
+conda install sls_detector_software=4.0.0
+
+#Scientific Linux 6 version (GLIBC2.12)
+conda install sls_detector_software=SL6_4.0.0
+</PRE>
+</LI>
+<LI>The package including Python interface
+<PRE>
+#Add conda channels
+conda config --add channels conda-forge
+conda config --add channels sls_detector
+
+#Install latest version
+conda install sls_detector
+
+#Install specific release (GLIBC2.14)
+conda install sls_detector=4.0.0
+
+#Scientific Linux 6 version (GLIBC2.12)
+conda install sls_detector=SL6_4.0.0
+</PRE>
+</LI>
+</UL>
+
+<P>
+
+<BR><HR>
+
+</BODY>
+</HTML>

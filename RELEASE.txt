@@ -13,8 +13,11 @@ INTRODUCTION
 	The Source Code (Default C++ API):
 		 https://github.com/slsdetectorgroup/slsDetectorPackage
 		 
-	The Conda Package:
-		https://github.com/slsdetectorgroup/sls_detector_software
+	The Conda Lib Package:
+		https://github.com/slsdetectorgroup/sls_detector_lib
+		
+	The Conda GUI Package:
+		https://github.com/slsdetectorgroup/sls_detector_gui	
 		
 	The Python Interface (including the package):
     	https://github.com/slsdetectorgroup/sls_detector

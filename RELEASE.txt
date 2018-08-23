@@ -1,11 +1,11 @@
-SLS Detector Package 4.0.0 released on 2018-08-23
+SLS Detector Package 4.0.0 released on 23.08.2018
 =================================================
 
 
 
 INTRODUCTION
 
-This document describes the differences between 4.0.0 and 3.1.4 releases.
+	This document describes the differences between 4.0.0 and 3.1.4 releases.
 
 	Download
 	--------
@@ -60,18 +60,18 @@ This document describes the differences between 4.0.0 and 3.1.4 releases.
 
 CONTENTS
 
-- Firmware Requirements
-- Changes in User Interface
-- New/Modified Commands
-- Other New Features
-- Resolved Issues
-- Known Issues
-- Neat Release Plans
+	1.	Firmware Requirements
+	2.	Changes in User Interface
+	3.	New/Modified Commands
+	4.	Other New Features
+	5.	Resolved Issues
+	6.	Known Issues
+	7.	Next Major Release Plans
 
 
 
-Firmware Requirements
-=====================
+1. Firmware Requirements
+========================
 
     	Gotthard
     	========   
@@ -106,8 +106,8 @@ Firmware Requirements
 		
 
 
-Changes in User Interface
-=========================
+2. Changes in User Interface
+============================
 	
 	Client
 	------
@@ -215,8 +215,8 @@ Changes in User Interface
 
 
 
-New/Modified Commands 
-=====================
+3. New/Modified Commands 
+========================
 	
 	Client
 	------
@@ -334,8 +334,8 @@ New/Modified Commands
 
 
 
-Other New Features
-==================
+4. Other New Features
+=====================
 
 	Client
 	------
@@ -411,8 +411,8 @@ Other New Features
 
 
 
-Resolved Issues
-===============
+5. Resolved Issues
+==================
 
 	Client
 	------
@@ -459,8 +459,8 @@ Resolved Issues
 	2.	(Eiger) Bug fix for saving trimbits to file (Advanced users).
 
 	
-Known Issues
-============
+6. Known Issues
+===============
 
 	Receiver
 	--------
@@ -478,8 +478,8 @@ Known Issues
 	
 	
 	
-Neat Release Plans
-==================
+7. Next Major Release Plans
+===========================
 
 	Client
 	------

@@ -54,9 +54,9 @@ int main(int argc,  char **argv) {
 
 
 	/** - slsDetectorUsers Object is instantiated with appropriate ID */
-	int ret = slsReceiverDefs::FAIL;
+	int ret = 1;
 	slsDetectorUsers *pDetector = new slsDetectorUsers (ret, id);
-	if (ret == slsReceiverDefs::FAIL) {
+	if (ret == 1) {
 		std::cout << "Error: Could not instantiate slsDetectorUsers" << std::endl;
 		return EXIT_FAILURE;
 	}

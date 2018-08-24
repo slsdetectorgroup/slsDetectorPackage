@@ -20,7 +20,7 @@ all: docs detUser slsMultiReceiver
 
 docs: createdocs docspdf docshtml removedocs
 
-createdocs: slsDetectorUsers.doxy slsDetectorUsers.h detectorData.h slsReceiverUsers.h mainClient.cpp mainReceiver.cpp
+createdocs: slsDetectorUsers.doxy mainClient.cpp mainReceiver.cpp
 	doxygen slsDetectorUsers.doxy	
 
 docspdf: 

@@ -2790,7 +2790,9 @@ int set_timer(int file_des) {
 #ifdef VERBOSE
 		printf("setting timer %d to %lld ns\n",ind,tns);
 #endif
+#ifdef EIGERD
 		int64_t subexptime = 0;
+#endif
 		switch(ind) {
 #ifdef JUNGFRAUD
         case STORAGE_CELL_NUMBER:
@@ -5846,7 +5848,7 @@ int check_version(int file_des) {
 			sprintf(mess,"Client's detector SW API version: (0x%llx). "
 					"Detector's SW API Version: (0x%llx). "
 					"Incompatible, update client!\n",
-					client_requiredVersion, det_apiVersion);
+					(long long int)client_requiredVersion, (long long int)det_apiVersion);
 			cprintf(RED, "Warning: %s", mess);
 		}
 
@@ -5856,7 +5858,7 @@ int check_version(int file_des) {
 			sprintf(mess,"Detector SW Version: (0x%llx). "
 					"Client's detector SW API Version: (0x%llx). "
 					"Incompatible, update detector software!\n",
-					det_version, client_requiredVersion);
+					(long long int)det_version, (long long int)client_requiredVersion);
 			cprintf(RED, "Warning: %s", mess);
 		}
 	}

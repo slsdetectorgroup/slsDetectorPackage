@@ -44,6 +44,12 @@ To address a specific controller i of detector j use:
 
 <b>sls_detector_clnt j-i:cmd</b>
 
+
+To use different shared memory segements for different detectors on the same
+client pc, one can use environment variable <b>SLSDETNAME</b> set to any string to
+different strings to make the shared memory segments unique. One can then use
+the same multi detector id for both detectors as they have a different shared memory names.
+
 For additional questions concerning the indexing of the detector, please refer to the SLS Detectors FAQ documentation.
 
 The commands are sudivided into different pages depending on their functionalities:

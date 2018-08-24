@@ -37,6 +37,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li class="current"><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -62,7 +63,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Macros</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Macros</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -76,7 +77,32 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">My Project Documentation</div>  </div>
 </div><!--header-->
 <div class="contents">
-</div><!-- contents -->
+<div class="textblock"><h1>API for SLS detectors data acquisition</h1>
+<hr/>
+<p>Although the SLS detectors group delvelops several types of detectors (1/2D, counting/integrating etc.) it is common interest of the group to use a common platfor for data acquisition</p>
+<p>The architecture of the acquisitions system is intended as follows: </p>
+<ul>
+<li>A socket server running on the detector (or more than one in some special cases) </li>
+<li>C++ classes common to all detectors for client-server communication. These can be supplied to users as libraries and embedded also in acquisition systems which are not developed by the SLS </li>
+<li>the possibility of using a Qt-based graphical user interface (with eventually root analisys capabilities) </li>
+<li>the possibility of running all commands from command line. In order to ensure a fast operation of this so called "text client" the detector parameters should not be re-initialized everytime. For this reason a shared memory block is allocated where the main detector flags and parameters are stored </li>
+<li>a Root library for data postprocessing and detector calibration (energy, angle).</li>
+</ul>
+<p><a class="el" href="classslsDetectorUsers.html" title="The slsDetectorUsers class is a minimal interface class which should be instantiated by the users in ...">slsDetectorUsers</a> is a class to control the detector which should be instantiated by the users in their acquisition software (EPICS, spec etc.). A callback for dislaying the data can be registered. More advanced configuration functions are not implemented and can be written in a configuration file tha can be read/written.</p>
+<p><a class="el" href="classslsReceiverUsers.html" title="Class for implementing the SLS data receiver in the users application. Callbacks can be defined for p...">slsReceiverUsers</a> is a class to receive the data for detectors with external data receiver (e.g. GOTTHARD). Callbacks can be registered to process the data or save them in specific formats.</p>
+<p>detectorData is a structure containing the data and additional information which is used to return the data e.g. to the GUI for displaying them.</p>
+<p>You can find examples of how this classes can be instatiated in <a class="el" href="mainClient_8cpp.html">mainClient.cpp</a> and <a class="el" href="mainReceiver_8cpp.html">mainReceiver.cpp</a></p>
+<dl class="section author"><dt>Authors</dt><dd><a href="#" onclick="location.href='mai'+'lto:'+'ann'+'a.'+'ber'+'ga'+'mas'+'ch'+'i@p'+'si'+'.ch'; return false;">Anna Bergamaschi</a>, <a href="#" onclick="location.href='mai'+'lto:'+'dha'+'ny'+'a.t'+'ha'+'tti'+'l@'+'psi'+'.c'+'h'; return false;">Dhanya Thattil</a> </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>3.0 <h2>Currently supported detectors</h2>
+</dd></dl>
+<ul>
+<li>MYTHEN </li>
+<li>GOTTHARD controls </li>
+<li>GOTTHARD data receiver </li>
+<li>EIGER </li>
+<li>JUNGFRAU </li>
+</ul>
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

@@ -82,6 +82,10 @@ SOURCE_BROWSER	= YES
 
 PREDEFINED           = __cplusplus
  
-INPUT            = slsDetectorUsers.h detectorData.h slsReceiverUsers.h mainClient.cpp mainReceiver.cpp
+INPUT            = 		../../slsDetectorSoftware/slsDetector/slsDetectorUsers.h		\
+					 	../../slDetectorSoftware/slsDetectorAnalysis/detectorData.h 	\
+					 	../../slsReceiverSoftware/include/slsReceiverUsers.h 			\
+					 	mainClient.cpp 													\
+					 	mainReceiver.cpp
 
 OUTPUT_DIRECTORY = slsDetectorUsersDocs

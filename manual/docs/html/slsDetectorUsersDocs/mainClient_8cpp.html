@@ -37,6 +37,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
       <li class="current"><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -67,7 +68,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Macros</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Macros</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -84,7 +85,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">mainClient.cpp File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;slsDetectorUsers.h&quot;</code><br/>
+<div class="textblock"><code>#include &quot;<a class="el" href="slsDetectorUsers_8h_source.html">slsDetectorUsers.h</a>&quot;</code><br/>
 <code>#include &quot;detectorData.h&quot;</code><br/>
 <code>#include &lt;iostream&gt;</code><br/>
 <code>#include &lt;cstdlib&gt;</code><br/>
@@ -99,7 +100,7 @@ Functions</h2></td></tr>
 <tr class="separator:a3c04138a5bfe5d72780bb7e82a18e627"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>This file is an example of how to implement the slsDetectorUsers class You can compile it linking it to the slsDetector library</p>
+<div class="textblock"><p>This file is an example of how to implement the <a class="el" href="classslsDetectorUsers.html" title="The slsDetectorUsers class is a minimal interface class which should be instantiated by the users in ...">slsDetectorUsers</a> class You can compile it linking it to the slsDetector library</p>
 <p>g++ <a class="el" href="mainClient_8cpp.html">mainClient.cpp</a> -L lib -lSlsDetector -L/usr/lib64/ -L lib2 -lzmq -pthread -lrt -lm -lstdc++</p>
 <p>where,</p>
 <p>lib is the location of libSlsDetector.so</p>
@@ -181,7 +182,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Example of a main program using the slsDetectorUsers class</p>
+<p>Example of a main program using the <a class="el" href="classslsDetectorUsers.html" title="The slsDetectorUsers class is a minimal interface class which should be instantiated by the users in ...">slsDetectorUsers</a> class</p>
 <ul>
 <li>Arguments are optional<ul>
 <li>argv[1] : Configuration File</li>
@@ -192,7 +193,7 @@ Functions</h2></td></tr>
 </ul>
 <ul>
 <li>if specified, set ID from argv[3]</li>
-<li>slsDetectorUsers Object is instantiated with appropriate ID</li>
+<li><a class="el" href="classslsDetectorUsers.html" title="The slsDetectorUsers class is a minimal interface class which should be instantiated by the users in ...">slsDetectorUsers</a> Object is instantiated with appropriate ID</li>
 <li>if specified, load configuration file (necessary at least the first time it is called to properly configure advanced settings in the shared memory)</li>
 <li>set detector in shared memory online (in case no config file was used)</li>
 <li>set receiver in shared memory online (in case no config file was used)</li>
@@ -201,7 +202,7 @@ Functions</h2></td></tr>
 <li>if provided, load detector settings</li>
 <li>start measurement</li>
 <li>returning when acquisition is finished or data are avilable</li>
-<li>delete slsDetectorUsers object </li>
+<li>delete <a class="el" href="classslsDetectorUsers.html" title="The slsDetectorUsers class is a minimal interface class which should be instantiated by the users in ...">slsDetectorUsers</a> object </li>
 </ul>
 
 <p>Definition at line <a class="el" href="mainClient_8cpp_source.html#l00049">49</a> of file <a class="el" href="mainClient_8cpp_source.html">mainClient.cpp</a>.</p>

@@ -8,9 +8,8 @@ class slsReceiver;
 
   /** 
 @short Class for implementing the SLS data receiver in the users application. Callbacks can be defined for processing and/or saving data
-  */
-/** 
- @libdoc slsReceiverUsers is a class that can be instantiated in the users software to receive the data from the detectors. Callbacks can be defined for processing and/or saving data
+
+ slsReceiverUsers is a class that can be instantiated in the users software to receive the data from the detectors. Callbacks can be defined for processing and/or saving data
  ***********************************************/
 
 class slsReceiverUsers {
@@ -21,7 +20,7 @@ public:
 	 * reads config file, creates socket, assigns function table
 	 * @param argc from command line
 	 * @param argv from command line
-	 * @param succecc socket creation was successfull
+	 * @param success socket creation was successfull
 	 */
 	slsReceiverUsers(int argc, char *argv[], int &success);
 
@@ -46,16 +45,18 @@ public:
 
 	/**
 
-	@sort register calbback for starting the acquisition 
+	@short register calbback for starting the acquisition
 	 \param func  callback to be called when starting the acquisition. Its arguments are  filepath, filename, fileindex, datasize
+	 \param arg argument
 	 \return value is insignificant at the moment, we write depending on file write enable, users get data to write depending on call backs registered
 	*/
 	void registerCallBackStartAcquisition(int (*func)(char* filepath, char* filename, uint64_t fileindex, uint32_t datasize, void*),void *arg);
 
 
 	/**	
-	   @sort register callback for end of acquisition 
+	   @short register callback for end of acquisition
 	  \param func end of acquisition callback. Argument nf is total frames caught
+	  \param arg argument
 	  \returns nothing
 	*/
 	void registerCallBackAcquisitionFinished(void (*func)(uint64_t nf, void*),void *arg);
@@ -63,8 +64,9 @@ public:
 
 
 	/**
-	   @sort register callback to be called when data are available (to process and/or save the data).
+	   @short register callback to be called when data are available (to process and/or save the data).
 	   \param func raw data ready callback. arguments are sls_receiver_header, dataPointer, dataSize
+	   \param arg argument
 	   \returns nothing
 	 */
 	void registerCallBackRawDataReady(void (*func)(char* header,
@@ -72,8 +74,9 @@ public:
 
 	
     /**
-       @sort register callback to be called when data are available (to process and/or save the data).
+       @short register callback to be called when data are available (to process and/or save the data).
        \param func raw data ready callback. arguments are  sls_receiver_header, dataPointer, revDatasize is the reference of data size in bytes. Can be modified to the new size to be written/streamed. (only smaller value).
+       \param arg argument
        \returns nothing
      */
     void registerCallBackRawDataModifyReady(void (*func)(char* header,

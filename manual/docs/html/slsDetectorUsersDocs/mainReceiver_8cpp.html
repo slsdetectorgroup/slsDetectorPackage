@@ -37,6 +37,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
       <li class="current"><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -67,7 +68,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Macros</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Macros</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -87,7 +88,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &quot;sls_receiver_defs.h&quot;</code><br/>
-<code>#include &quot;slsReceiverUsers.h&quot;</code><br/>
+<code>#include &quot;<a class="el" href="slsReceiverUsers_8h_source.html">slsReceiverUsers.h</a>&quot;</code><br/>
 <code>#include &lt;iostream&gt;</code><br/>
 <code>#include &lt;string.h&gt;</code><br/>
 <code>#include &lt;signal.h&gt;</code><br/>
@@ -129,7 +130,7 @@ Variables</h2></td></tr>
 <tr class="separator:a0d26a166bb416ff34512de6fe9e098bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>This file is an example of how to implement the slsReceiverUsers class You can compile it linking it to the slsReceiver library</p>
+<div class="textblock"><p>This file is an example of how to implement the <a class="el" href="classslsReceiverUsers.html" title="Class for implementing the SLS data receiver in the users application. Callbacks can be defined for p...">slsReceiverUsers</a> class You can compile it linking it to the slsReceiver library</p>
 <p>g++ <a class="el" href="mainReceiver_8cpp.html">mainReceiver.cpp</a> -L lib -lSlsReceiver -L/usr/lib64/ -L lib2 -lzmq -pthread -lrt -lm -lstdc++</p>
 <p>where,</p>
 <p>lib is the location of lSlsReceiver.so</p>
@@ -333,7 +334,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Example of main program using the slsReceiverUsers class</p>
+<p>Example of main program using the <a class="el" href="classslsReceiverUsers.html" title="Class for implementing the SLS data receiver in the users application. Callbacks can be defined for p...">slsReceiverUsers</a> class</p>
 <ul>
 <li>Defines in file for:<ul>
 <li>Default Number of receivers is 1</li>
@@ -352,13 +353,13 @@ Variables</h2></td></tr>
 <li>fork process to create child process</li>
 <li>if fork failed, raise SIGINT and properly destroy all child processes</li>
 <li>if child process</li>
-<li>create slsReceiverUsers object with appropriate arguments <pre class="fragment"> - register callbacks. remember to set file write enable to 0 (using the client)
+<li>create <a class="el" href="classslsReceiverUsers.html" title="Class for implementing the SLS data receiver in the users application. Callbacks can be defined for p...">slsReceiverUsers</a> object with appropriate arguments <pre class="fragment"> - register callbacks. remember to set file write enable to 0 (using the client)
 </pre> if we should not write files and you will write data using the callbacks</li>
 <li>Call back for start acquisition</li>
 <li>Call back for acquisition finished</li>
 <li>start tcp server thread</li>
 <li>as long as keeprunning is true (changes with Ctrl+C)</li>
-<li>interrupt caught, delete slsReceiverUsers object and exit</li>
+<li>interrupt caught, delete <a class="el" href="classslsReceiverUsers.html" title="Class for implementing the SLS data receiver in the users application. Callbacks can be defined for p...">slsReceiverUsers</a> object and exit</li>
 <li>Parent process ignores SIGINT (exits only when all child process exits)</li>
 <li>Print Ready and Instructions how to exit</li>
 <li>Parent process waits for all child processes to exit </li>

@@ -37,6 +37,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
       <li class="current"><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -68,7 +69,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Macros</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Macros</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -83,7 +84,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 <a href="mainClient_8cpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;</div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;slsDetectorUsers.h&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="slsDetectorUsers_8h.html">slsDetectorUsers.h</a>&quot;</span></div>
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;detectorData.h&quot;</span></div>
 <div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &lt;iostream&gt;</span></div>
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &lt;cstdlib&gt;</span></div>
@@ -104,7 +105,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;</div>
 <div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;</div>
 <div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="keywordtype">int</span> ret = 1;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    slsDetectorUsers *pDetector = <span class="keyword">new</span> slsDetectorUsers (ret, <span class="keywordtype">id</span>);</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <a class="code" href="classslsDetectorUsers.html">slsDetectorUsers</a> *pDetector = <span class="keyword">new</span> <a class="code" href="classslsDetectorUsers.html">slsDetectorUsers</a> (ret, <span class="keywordtype">id</span>);</div>
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="keywordflow">if</span> (ret == 1) {</div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        std::cout &lt;&lt; <span class="stringliteral">&quot;Error: Could not instantiate slsDetectorUsers&quot;</span> &lt;&lt; std::endl;</div>
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <span class="keywordflow">return</span> EXIT_FAILURE;</div>
@@ -112,30 +113,30 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;</div>
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;</div>
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="keywordflow">if</span> (argc&gt;=2){</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        pDetector-&gt;readConfigurationFile(argv[1]);</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        pDetector-&gt;<a class="code" href="classslsDetectorUsers.html#ac3784508713e85386054a4f9f8a0ba62">readConfigurationFile</a>(argv[1]);</div>
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        std::cout &lt;&lt; <span class="stringliteral">&quot;Detector configured&quot;</span> &lt;&lt; std::endl;</div>
 <div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    }</div>
 <div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    pDetector-&gt;setOnline(1);</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    pDetector-&gt;<a class="code" href="classslsDetectorUsers.html#aee622153ebd6b0dad065d95b07221955">setOnline</a>(1);</div>
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    pDetector-&gt;setReceiverOnline(1);</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    pDetector-&gt;<a class="code" href="classslsDetectorUsers.html#a3f961fb6eb6409f7b98a2267ad674af4">setReceiverOnline</a>(1);</div>
 <div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    pDetector-&gt;registerDataCallback(&amp;<a class="code" href="mainClient_8cpp.html#abba369ecba2066d66cc8b3b74460e778">dataCallback</a>, NULL);</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    pDetector-&gt;<a class="code" href="classslsDetectorUsers.html#add821d94da9b03fe500d27e4433c01f5">registerDataCallback</a>(&amp;<a class="code" href="mainClient_8cpp.html#abba369ecba2066d66cc8b3b74460e778">dataCallback</a>, NULL);</div>
 <div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;</div>
 <div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="keywordtype">int</span> status = pDetector-&gt;getDetectorStatus();</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="keywordtype">int</span> status = pDetector-&gt;<a class="code" href="classslsDetectorUsers.html#ac7d0254e38b8fe783204f691a4ee05b2">getDetectorStatus</a>();</div>
 <div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    <span class="keywordflow">if</span> (status  !=  0){</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        std::cout &lt;&lt; <span class="stringliteral">&quot;Detector not ready: &quot;</span> &lt;&lt; slsDetectorUsers::runStatusType(status) &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        std::cout &lt;&lt; <span class="stringliteral">&quot;Detector not ready: &quot;</span> &lt;&lt; <a class="code" href="classslsDetectorUsers.html#a3f0b478904a981d79cbff394a9540788">slsDetectorUsers::runStatusType</a>(status) &lt;&lt; std::endl;</div>
 <div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;        <span class="keywordflow">return</span> 1;</div>
 <div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    }</div>
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;</div>
 <div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    <span class="keywordflow">if</span> (argc&gt;=3){</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        pDetector-&gt;retrieveDetectorSetup(argv[2]);</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        pDetector-&gt;<a class="code" href="classslsDetectorUsers.html#a98478610ffb3de40629dc7b9ddca2c53">retrieveDetectorSetup</a>(argv[2]);</div>
 <div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        std::cout &lt;&lt; <span class="stringliteral">&quot;Detector measurement set-up done&quot;</span> &lt;&lt; std::endl;</div>
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    }</div>
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;</div>
 <div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    pDetector-&gt;startMeasurement();</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    pDetector-&gt;<a class="code" href="classslsDetectorUsers.html#aa34810bb0e872fdf929ebe62d8582bd3">startMeasurement</a>();</div>
 <div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    std::cout &lt;&lt; <span class="stringliteral">&quot;measurement finished&quot;</span> &lt;&lt; std::endl;</div>
 <div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;</div>
 <div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <span class="keyword">delete</span> pDetector;</div>
@@ -143,7 +144,17 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    <span class="keywordflow">return</span> 0;</div>
 <div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;}</div>
 <div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;</div>
+<div class="ttc" id="classslsDetectorUsers_html_add821d94da9b03fe500d27e4433c01f5"><div class="ttname"><a href="classslsDetectorUsers.html#add821d94da9b03fe500d27e4433c01f5">slsDetectorUsers::registerDataCallback</a></div><div class="ttdeci">void registerDataCallback(int(*userCallback)(detectorData *d, int f, int s, void *), void *pArg)</div><div class="ttdoc">register calbback for accessing detector final data, also enables data streaming in client and receiv...</div></div>
+<div class="ttc" id="classslsDetectorUsers_html_aa34810bb0e872fdf929ebe62d8582bd3"><div class="ttname"><a href="classslsDetectorUsers.html#aa34810bb0e872fdf929ebe62d8582bd3">slsDetectorUsers::startMeasurement</a></div><div class="ttdeci">void startMeasurement()</div><div class="ttdoc">start measurement and acquires </div></div>
 <div class="ttc" id="mainClient_8cpp_html_a3c04138a5bfe5d72780bb7e82a18e627"><div class="ttname"><a href="mainClient_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a></div><div class="ttdeci">int main(int argc, char **argv)</div><div class="ttdef"><b>Definition:</b> <a href="mainClient_8cpp_source.html#l00049">mainClient.cpp:49</a></div></div>
+<div class="ttc" id="classslsDetectorUsers_html_a3f961fb6eb6409f7b98a2267ad674af4"><div class="ttname"><a href="classslsDetectorUsers.html#a3f961fb6eb6409f7b98a2267ad674af4">slsDetectorUsers::setReceiverOnline</a></div><div class="ttdeci">int setReceiverOnline(int const online=-1)</div><div class="ttdoc">sets the receivers onlineFlag </div></div>
+<div class="ttc" id="classslsDetectorUsers_html_a98478610ffb3de40629dc7b9ddca2c53"><div class="ttname"><a href="classslsDetectorUsers.html#a98478610ffb3de40629dc7b9ddca2c53">slsDetectorUsers::retrieveDetectorSetup</a></div><div class="ttdeci">int retrieveDetectorSetup(std::string const fname)</div><div class="ttdoc">Loads the detector setup from file. </div></div>
+<div class="ttc" id="classslsDetectorUsers_html_aee622153ebd6b0dad065d95b07221955"><div class="ttname"><a href="classslsDetectorUsers.html#aee622153ebd6b0dad065d95b07221955">slsDetectorUsers::setOnline</a></div><div class="ttdeci">int setOnline(int const online=-1)</div><div class="ttdoc">sets the onlineFlag </div></div>
+<div class="ttc" id="classslsDetectorUsers_html"><div class="ttname"><a href="classslsDetectorUsers.html">slsDetectorUsers</a></div><div class="ttdoc">The slsDetectorUsers class is a minimal interface class which should be instantiated by the users in ...</div><div class="ttdef"><b>Definition:</b> <a href="slsDetectorUsers_8h_source.html#l00083">slsDetectorUsers.h:83</a></div></div>
+<div class="ttc" id="classslsDetectorUsers_html_ac7d0254e38b8fe783204f691a4ee05b2"><div class="ttname"><a href="classslsDetectorUsers.html#ac7d0254e38b8fe783204f691a4ee05b2">slsDetectorUsers::getDetectorStatus</a></div><div class="ttdeci">int getDetectorStatus()</div><div class="ttdoc">get run status </div></div>
+<div class="ttc" id="slsDetectorUsers_8h_html"><div class="ttname"><a href="slsDetectorUsers_8h.html">slsDetectorUsers.h</a></div></div>
+<div class="ttc" id="classslsDetectorUsers_html_ac3784508713e85386054a4f9f8a0ba62"><div class="ttname"><a href="classslsDetectorUsers.html#ac3784508713e85386054a4f9f8a0ba62">slsDetectorUsers::readConfigurationFile</a></div><div class="ttdeci">int readConfigurationFile(std::string const fname)</div><div class="ttdoc">Reads the configuration file – will contain all the informations needed for the configuration (e...</div></div>
+<div class="ttc" id="classslsDetectorUsers_html_a3f0b478904a981d79cbff394a9540788"><div class="ttname"><a href="classslsDetectorUsers.html#a3f0b478904a981d79cbff394a9540788">slsDetectorUsers::runStatusType</a></div><div class="ttdeci">static std::string runStatusType(int s)</div><div class="ttdoc">returns std::string from run status index </div><div class="ttdef"><b>Definition:</b> <a href="slsDetectorUsers_8h_source.html#l00827">slsDetectorUsers.h:827</a></div></div>
 <div class="ttc" id="mainClient_8cpp_html_abba369ecba2066d66cc8b3b74460e778"><div class="ttname"><a href="mainClient_8cpp.html#abba369ecba2066d66cc8b3b74460e778">dataCallback</a></div><div class="ttdeci">int dataCallback(detectorData *pData, int iframe, int isubframe, void *pArg)</div><div class="ttdef"><b>Definition:</b> <a href="mainClient_8cpp_source.html#l00032">mainClient.cpp:32</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

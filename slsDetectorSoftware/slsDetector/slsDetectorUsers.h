@@ -71,12 +71,11 @@ You can  find examples of how this classes can be instatiated in mainClient.cpp 
 
 
 */
-/**
 
-@libdoc The slsDetectorUsers class is a minimal interface class which should be instantiated by the users in their acquisition software (EPICS, spec etc.). More advanced configuration functions are not implemented and can be written in a configuration or parameters file that can be read/written.
-*/
 /**
-  @short Class for detector functionalities to embed the detector controls in the users custom interface e.g. EPICS, Lima etc.
+  @short The slsDetectorUsers class is a minimal interface class which should be instantiated by the users in their acquisition software (EPICS, spec etc.). More advanced configuration functions are not implemented and can be written in a configuration or parameters file that can be read/written.
+
+  Class for detector functionalities to embed the detector controls in the users custom interface e.g. EPICS, Lima etc.
 
 */
 
@@ -269,8 +268,6 @@ class slsDetectorUsers
    int getDetectorSize(int &x0, int &y0, int &nx, int &ny);
   /**
      @short gets the maximum detector size
-     \param x0 horizontal position origin in channel number 
-     \param y0 vertical position origin in channel number 
      \param nx number of channels in horiziontal
      \param  ny number of channels in vertical 
      \returns OK/FAIL
@@ -417,6 +414,7 @@ class slsDetectorUsers
   /**
      @short register calbback for accessing detector final data, also enables data streaming in client and receiver (if receiver exists)
      \param userCallback function for plotting/analyzing the data. Its arguments are  the data structure d and the frame number f, s is for subframe number for eiger for 32 bit mode
+     \param pArg argument
   */
 
    void registerDataCallback(int( *userCallback)(detectorData* d, int f, int s, void*), void *pArg);
@@ -424,6 +422,7 @@ class slsDetectorUsers
   /**
      @short register callback for accessing raw data - if the rawDataCallback is registered, no filewriting/postprocessing will be carried on automatically by the software - the raw data are deleted by the software
      \param userCallback function for postprocessing and saving the data -  p is the pointer to the data, n is the number of channels
+     \param pArg argument
   */
   
    void registerRawDataCallback(int( *userCallback)(double* p, int n, void*), void *pArg);
@@ -460,7 +459,7 @@ class slsDetectorUsers
 
 
   /** Enable or disable streaming data from receiver (creates transmitting sockets)
-   * @param enable 0 to disable 1 to enable -1 to only get the value
+   * @param i 0 to disable 1 to enable -1 to only get the value
    * @returns data streaming from receiver enable
   */
    int enableDataStreamingFromReceiver(int i=-1);
@@ -499,7 +498,7 @@ class slsDetectorUsers
    /** (for expert users)
     * Set/Get client streaming in ZMQ IP
     * By default, it is the IP of receiver hostname
-    * @param i sets, empty std::string gets
+    * @param ip sets, empty std::string gets
     * @returns client streaming in ZMQ IP
     */
    std::string setClientDataStreamingInIP(std::string ip="");
@@ -596,38 +595,45 @@ class slsDetectorUsers
   /**
      @short register calbback for accessing detector final data
      \param func function to be called at the end of the acquisition. gets detector status and progress index as arguments
+     \param pArg argument
   */
    void registerAcquisitionFinishedCallback(int( *func)(double,int, void*), void *pArg);
   
   /**
      @short register calbback for reading detector position
      \param func function for reading the detector position
+     \param arg argument
   */
   
    void registerGetPositionCallback( double (*func)(void*),void *arg);
   /**
      @short register callback for connecting to the epics channels
      \param func function for connecting to the epics channels
+     \param arg argument
   */
    void registerConnectChannelsCallback( int (*func)(void*),void *arg);
   /**
      @short register callback to disconnect the epics channels
      \param func function to disconnect the epics channels
+     \param arg argument
   */
    void registerDisconnectChannelsCallback( int (*func)(void*),void *arg);  
   /**
      @short register callback for moving the detector
      \param func function for moving the detector
+     \param arg argument
   */
    void registerGoToPositionCallback( int (*func)(double,void*),void *arg);
   /**
      @short register callback for moving the detector without waiting
      \param func function for moving the detector
+     \param arg argument
   */
    void registerGoToPositionNoWaitCallback( int (*func)(double,void*),void *arg);
   /**
      @short register calbback reading to I0
      \param func function for reading the I0 (called with parameter 0 before the acquisition, 1 after and the return value used as I0)
+     \param arg argument
   */
    void registerGetI0Callback( double (*func)(int,void*),void *arg);
 
@@ -702,13 +708,13 @@ class slsDetectorUsers
 
    /**
       @short start receiver listening mode
-      \param returns OK or FAIL
+      \returns returns OK or FAIL
     */
    int startReceiver();
 
    /**
       @short stop receiver listening mode
-      \param returns OK or FAIL
+      \returns returns OK or FAIL
     */
    int stopReceiver();
 
@@ -743,7 +749,7 @@ class slsDetectorUsers
    /**
     * reset frames caught in receiver
     * should be called before startReceiver()
-    * @retuns OK or FAIL
+    * @returns OK or FAIL
     */
    int resetFramesCaughtInReceiver();
 
@@ -776,7 +782,7 @@ class slsDetectorUsers
 
    /**
     * Set sub frame exposure time (only for Eiger)
-    * @param i sub frame exposure time (-1 gets)
+    * @param t sub frame exposure time (-1 gets)
     * @param inseconds true if the value is in s, else ns
     * @param imod module number (-1 for all)
     * @returns sub frame exposure time in ns, or s if specified
@@ -786,7 +792,7 @@ class slsDetectorUsers
    /**
     * Set sub frame dead time (only for Eiger)
     * Very advanced feature. Meant to be a constant in config file by an expert for each individual module
-    * @param i sub frame dead time (-1 gets)
+    * @param t sub frame dead time (-1 gets)
     * @param inseconds true if the value is in s, else ns
     * @param imod module number (-1 for all)
     * @returns sub frame dead time in ns, or s if specified
@@ -803,7 +809,7 @@ class slsDetectorUsers
 
 	/**
 	 * Set storage cell that stores first acquisition of the series (Jungfrau)
-	 * @param value storage cell index. Value can be 0 to 15. Default is 15. (-1 gets)
+	 * @param pos storage cell index. Value can be 0 to 15. Default is 15. (-1 gets)
 	 * @returns the storage cell that stores the first acquisition of the series
 	 */
 	int setStoragecellStart(int pos=-1);

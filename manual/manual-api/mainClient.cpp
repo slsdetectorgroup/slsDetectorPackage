@@ -54,7 +54,12 @@ int main(int argc,  char **argv) {
 
 
 	/** - slsDetectorUsers Object is instantiated with appropriate ID */
-	slsDetectorUsers *pDetector = new  slsDetectorUsers (id);
+	int ret = 1;
+	slsDetectorUsers *pDetector = new slsDetectorUsers (ret, id);
+	if (ret == 1) {
+		std::cout << "Error: Could not instantiate slsDetectorUsers" << std::endl;
+		return EXIT_FAILURE;
+	}
 
 
 	/** - if specified, load configuration file (necessary at least the first time it is called to properly configure advanced settings in the shared memory) */

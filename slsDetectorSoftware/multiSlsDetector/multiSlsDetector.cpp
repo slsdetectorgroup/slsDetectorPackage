@@ -2680,16 +2680,28 @@ int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t, int imod) {
 	return ret;
 }
 
-int64_t multiSlsDetector::getTimeLeft(timerIndex index) {
+int64_t multiSlsDetector::getTimeLeft(timerIndex index, int imod) {
 	int64_t ret = -100;
+
+	{	// single
+		int id = -1, im = -1;
+		if (decodeNMod(imod, id, im) >= 0) {
+			if (id < 0 || id >= (int)detectors.size())
+				return -1;
+			ret = detectors[id]->getTimeLeft(index, im);
+			if (detectors[id]->getErrorMask())
+				setErrorMask(getErrorMask() | (1 << id));
+			return ret;
+		}
+	}
 	if (thisMultiDetector->masterPosition >= 0)
 		if (detectors[thisMultiDetector->masterPosition]) {
-			ret = detectors[thisMultiDetector->masterPosition]->getTimeLeft(index);
+			ret = detectors[thisMultiDetector->masterPosition]->getTimeLeft(index, imod);
 			if (detectors[thisMultiDetector->masterPosition]->getErrorMask())
 				setErrorMask(getErrorMask() | (1 << thisMultiDetector->masterPosition));
 			return ret;
 		}
-	return callDetectorMember(&slsDetector::getTimeLeft, index);
+	return callDetectorMember(&slsDetector::getTimeLeft, index, imod);
 }
 
 int multiSlsDetector::setSpeed(speedVariable index, int value) {

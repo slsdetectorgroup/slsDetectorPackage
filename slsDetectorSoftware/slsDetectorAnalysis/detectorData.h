@@ -21,7 +21,12 @@ class detectorData {
       \param dr dynamic range or bits per pixel (valid only for non MYTHEN detectors)
       \param file_ind file index
   */
-  detectorData(double *val=NULL, double *err=NULL, double *ang=NULL,  double f_ind=-1, const char *fname="", int np=-1, int ny=1, char *cval=NULL, int dbytes=0, int dr=0, long long int file_ind=-1) : values(val), errors(err), angles(ang),  progressIndex(f_ind), npoints(np), npy(ny), cvalues(cval), databytes(dbytes), dynamicRange(dr), dgainvalues(NULL), fileIndex(file_ind) {
+  detectorData(double *val=NULL, double *err=NULL, double *ang=NULL,  double f_ind=-1,
+		  const char *fname="", int np=-1, int ny=1, char *cval=NULL, int dbytes=0, int dr=0,
+		  long long int file_ind=-1) :
+			  values(val), errors(err), angles(ang),  progressIndex(f_ind),
+			  npoints(np), npy(ny), cvalues(cval), databytes(dbytes),
+			  dynamicRange(dr), dgainvalues(NULL), fileIndex(file_ind) {
 	 strcpy(fileName,fname);
   };
 
@@ -30,7 +35,8 @@ class detectorData {
 	deletes also the arrays pointing to data/errors/angles if not NULL
 	cvalues are deleted by caller
    */
-    ~detectorData() {if (values) delete [] values; if (errors) delete [] errors; if (angles) delete [] angles; if(dgainvalues) delete [] dgainvalues;};
+    ~detectorData() {if (values) delete [] values; if (errors) delete [] errors;
+    if (angles) delete [] angles; if(dgainvalues) delete [] dgainvalues;};
     //private:
     double *values; /**< @short pointer to the data as double array (MYTHEN only) */
     double *errors; /**< @short pointer to the errors */

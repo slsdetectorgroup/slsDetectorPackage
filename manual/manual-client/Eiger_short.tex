@@ -28,8 +28,6 @@ Figure ~\ref{boards} show the readout board basic components on an Eiger half mo
 \label{boards}
 \end{figure}
 
-
-
 \subsection{Mandatory setup - Hardware}
 An EIGER single module (500~kpixels) needs:
 \begin{itemize}
@@ -1078,8 +1076,7 @@ If you see the client returning the following error message:\\
 \end{verbatim}
 
 \subsection{There is noise running the detector in 32-bit}
-Short story (for now): You are running in {\tt{parallel}} mode, switch {\tt{flags}} to non {\tt{nonparallel}} mode.
-Long story: If you are running the detector in 32-bit (autosumming), there might be some noise, particularly at lower thereshold energies. This is due to the fact that the analog part of the chips require some latency time to settle which is larger than the redout time. At the present moment it is possible to run the detector only in {\tt{parallel}} or {\tt{nonparallel}} mode, respectively with readout times between frames of 12~$\mu$s and 504~$\mu$s. If you switch {\tt{flags}} to non {\tt{nonparallel}} mode you will giveenough time for teh signals to settle.  For future realeas we are planning to introduce some configurable delay, such that you can remain with the {\tt{parallel}} flag, but can obtain a configurable dead time between frames in the range 12$-$504~$\mu$s. 
+If you are running the detector in 32-bit (autosumming), there might be some noise, particularly at lower thereshold energies. This is due to the fact that the analog part of the chips require some latency time to settle which is larger than the redout time. It is possible to run the detector only in {\tt{parallel}} or {\tt{nonparallel}} mode, respectively with readout times between frames of 12~$\mu$s and 504~$\mu$s. If you switch {\tt{flags}} to non {\tt{nonparallel}} mode you will give enough time for the signals to settle. From release 4.0.0, there is a configurable delay that can be set through the {\tt{subdeadtime}} variable, such that you can remain with the {\tt{parallel}} flag, but can obtain a configurable dead time between frames. Ask the SLS detector group for an appropriate dead time for your detector, but typically a dead time of 20-50~$\mu$s should be enough. Note that this {\tt{subdeadtime}} need to include the 12~$\mu$s minimum readout time, so it has to be larger than 12~$\mu$s to do anything.  
  
 \subsection{There is noise running the detector at high frame rate(4,8,16 bit)}
 If are running in {\tt{parallel}} mode, in particular at low thereshold energies, you might encounter some noise. The reason is that the analog part of the chips require some latency time to settle which is larger than the redout time. 

@@ -94,7 +94,8 @@ where xxxx, yyyy are the tcp port numbers. Use 1955 and 1956 for example. The re
 From the software version 3.0.1, one can decide weather start a zmq callback from the receiver to the client (for example to visualize data in the slsDetectorGui or another gui). If the zmq steam is not required (cased of the command line for example, one can switch off the streaming with {\tt{./sls\_detector\_put rx\_datastream 0}}, enable it with {\tt{./sls\_detector\_put rx\_datastream 1}}. In the case of inizialising the stream to use the slsDetectorGui, nothing needs to be taken care of by the user. If instead you want to stream the streaming on different channels, the zmq port of the client can be set stealing from the slsDetectorGui stream having {\tt{./sls\_detector\_put zmqport 300y}}. Note that if this is done globally (not for every half module n independently, then the client automatically takes into account that for every half module, there are 2 zmq stream. The receiver stream {\tt{./sls\_detector\_put rx\_zmqport 300y}} has to match such that the GUI can work. 
 If one desires to set the zmqport manually, he offset has to be taken into account: {\tt{./sls\_detector\_put 0:rx\_zmqport 300y}}, {\tt{./sls\_detector\_put 1:rx\_zmqport 300y+2}} and so on..
 
-There is an example code that can be compiled in {\tt{manual/manual-api/mainReceiver.cpp}} and gives the executable {\tt{./detReceiver}}, use it with two or more receivers to open all receivers in one single terminal: {\tt{./detReceiver startTCPPort numReceivers withCallback}}, where startTCPPort assumes the other ports are consecutively increased.
+
+{\tt{slsMultiReceiver}} uses two or more receivers in one single terminal: {\tt{./slsMultiReceiver startTCPPort numReceivers withCallback}}, where startTCPPort assumes the other ports are consecutively increased.
 
 The command {\tt{r\_framesperfile}} sets the number of frames written in the same file. By default now it is 10000. It can be changes. It needs to be lowered particularly if one wants to parallelize the following conversion of the files. 
 
@@ -196,6 +197,22 @@ returns the client version. The answer can be {\tt{thisversion 111220160718}}.
 \end{verbatim}
 returns the firmware version . The answer can be {\tt{detectorversion 11}}.
 Killing and starting the server on the boards allows you to check the firmware version you have and also if your board is a top/bottom/master/slave.
+
+\section{Gap pixels}
+The physical pixels at the border of the chips are double in size, to allow not to loose photons in the gaps between the chip allignment. They count double what the other normal pixels would count. 
+
+The gap pixels can be added for the slsDetectorGui, from the datacall back or stealing the zmq port from the GUI (see later). The detector size can be added in the configuraion file as first thing. 
+
+Putting the long side of the module first always as a convenction for the code, WITHOUT GAP PIXELS an EIGER module is:
+\begin{verbatim}
+detsizechan 1024 512 
+\end{verbatim}
+and the client needs to be set {\tt{sls\_detector\_put  gappixels 0}}, which is the default behaviour.\\
+If you want to have GAP PIXELS included: 
+\begin{verbatim}
+detsizechan 1030 514 
+\end{verbatim}
+and the client needs to be set {\tt{sls\_detector\_put  gappixels 1}}.
 
 \section{Setting up the threshold}
 \begin{verbatim}
@@ -411,7 +428,9 @@ where the 'minimum time between frames' and the minimum period will be discussed
 \end{table}
 \end{tiny}
 
-\textbf{As if you run too fast, the detector could become noisier, it is important to match the detector settings to your frame rate. This can be done having more parameters files and load the one suitable with your experiment.} We experienced that with low energy settings could not reach 6~kHz and no noise.
+\textbf{From software version 4.0.0, there is a very useful function {\tt{sls\_detector\_get measuredperiod}} which return the measured period AFTER the acquisition. Thsi is important to check that the settings to obtain the targeted frame rate was correct.} 
+
+\textbf{If you run too fast, the detector could become noisier (see problem shooting), it is important to match the detector settings to your frame rate. This can be done having more parameters files and load the one suitable with your experiment.} We experienced that with low energy settings could not reach 6~kHz and no noise.
 
 In 16 bit mode, it could make sense, in case of noise and low threshold to either reduce the frame rate:
 \begin{equation} 
@@ -483,6 +502,12 @@ The number of subframes composing a single 32bit acquisition can be calculated a
 \end{equation}
 This also means that {\tt{exptime}}$<${\tt{subexptime}} will be rounded to{\tt{subexptime}}. If you want shorter acquisitions, either reduce the {\tt{subexptime}} or switch two 16-bit mode (you can always sum offline if needed).   
 
+From release 4.0.0, an extra {\tt{flag overflow/nooverflow}} is added, with {\tt{nooverflow}} default:
+\begin{itemize}
+\item {\tt{nooverflow}}: the internal 12-bit result is summed, even if there was saturation of the 12-bit counter (4095) in any of the subframes. Note that if there is saturation for every subframe, you might get as a result a value of the counter equal to (4095$\times$~number~of~subframes), which you need to correctly identify. On the other hand if the saturation occourred only one time, you will get something "close'' to the real number.
+\item {\tt{overflow}}: In this case, even if a pixel saturate only 1 time in a subframe, you will be returned as a value of the counter for that pixel: $2^{32}-1$, i.e. 4294967295.  
+\end{itemize}
+
 The UDP header will contain, after you receive the data, the effective number of subframe per image (see section~\ref{UDP}) as  "SubFrame Num or Exp Time", i.e. the number of subframes recorded  (32 bit eiger).
 The effective time the detector has recorded data can be computed as:
 \begin{equation}
@@ -490,7 +515,9 @@ The effective time the detector has recorded data can be computed as:
 %\label{esubframes}
 \end{equation}
 
-In the future release, a configurable extra time difference between subframes will be introduced for the parallel mode, so that some noise appearing in detectors at low threshold can be removed. This will enlarge the time difference between frames form the default 12~$\mu$s to something configurable, expected to be 15-40~$\mu$s (for the 9M it is currently 200~$\mu$s due to a noisier module).
+ From release 4.0.0, a configurable extra time difference between subframes can be introduced for the parallel mode, so that some noise appearing in detectors at low threshold can be removed. This is obtained through the {\tt{subdeadtime}}. You need to add values specific for your detector (ask the detector group). Typically, values between 15-40~$\mu$s should be used (for the 9M it is currently 200~$\mu$s due to a noisier module).
+
+
 
 \section{External triggering options}\label{triggering}
 The detector can be setup such to receive external triggers. Connect a LEMO signal to the TRIGGER IN connector in the Power Distribution Board (see Fig.). The logic 0 for the board is passed by low level 0$-$0.7~V, the logic 1 is passed to the board with a signal between 1.2$-$5~V. Eiger is 50~$\Omega$ terminated. By default the positive polarity is used (negative should not be passed to the board).
@@ -719,36 +746,39 @@ white the option {\tt{n:flippeddatax 1}}, which flips in vertical the content of
 \subsection{``raw'' files}
 If you use the option of writing raw files, you will have a raw file for each UDP port (meaning most likely 2 chips), 4 files per module. In addition to the raw files, you will get also a ``master'' file, containing in ascii some detector general parameters and the explanation of how to interpret the data from the raw files.
    
-The master file is named: {\tt{filename\_master\_0.raw}} and for version ``3.0'' of the slsDetectorSoftware looks like:
+The master file is named: {\tt{filename\_master\_0.raw}} and for version ``4.0.0'' of the slsDetectorSoftware looks like:
  
 \begin{verbatim}
-Version            : 1.0
-Dynamic Range      : 16
-Ten Giga           : 1
-Image Size         : 262144 bytes
-x                  : 512 pixels
-y                  : 256 pixels
-Total Frames       : 1
-Exptime (ns)       : 1000000000
-SubExptime (ns)    : 2621440
-Period (ns)        : 1000000000
-Timestamp          : Thu Aug 17 10:55:19 2017
+Version                    : 2.0
+Dynamic Range              : 32
+Ten Giga                   : 1
+Image Size                 : 524288 bytes
+x                          : 512 pixels
+y                          : 256 pixels
+Max. Frames Per File       : 10000
+Total Frames               : 1
+Exptime (ns)               : 1000000000
+SubExptime (ns)            : 2621440
+SubPeriod(ns)              : 2621440
+Period (ns)                : 1000000000
+Timestamp                  : Mon Sep  3 09:07:05 2018
 
 
 #Frame Header
-Frame Number       : 8 bytes
-SubFrame Number    : 4 bytes
-Packet Number      : 4 bytes
-Bunch ID           : 8 bytes
-Timestamp          : 8 bytes
-Module Id          : 2 bytes
-X Coordinate       : 2 bytes
-Y Coordinate       : 2 bytes
-Z Coordinate       : 2 bytes
-Debug              : 4 bytes
-Round Robin Number : 2 bytes
-Detector Type      : 1 byte
-Header Version     : 1 byte
+Frame Number               : 8 bytes
+SubFrame Number/ExpLength  : 4 bytes
+Packet Number              : 4 bytes
+Bunch ID                   : 8 bytes
+Timestamp                  : 8 bytes
+Module Id                  : 2 bytes
+X Coordinate               : 2 bytes
+Y Coordinate               : 2 bytes
+Z Coordinate               : 2 bytes
+Debug                      : 4 bytes
+Round Robin Number         : 2 bytes
+Detector Type              : 1 byte
+Header Version             : 1 byte
+Packets Caught Mask        : 64 bytes
 \end{verbatim}
 
 Note that if one wants to  reconstruct the real time the detector was acquiring in 32 bit (autosumming mode), one would have to multiply the SubExptime (ns) for the SubFrame Number. 
@@ -910,7 +940,7 @@ for j in $(seq 0 255) ; do
 sls_detector_put pulsenmove N 0 1;
 done;
 done;
-sls_detector_p resmat 0
+sls_detector_put resmat 0
 sls_detector_acquire
 \end{verbatim}
 You read {\tt{N}} in every pixel if you are setup correctly. 
@@ -1017,6 +1047,10 @@ Note that occasionally if there is a shared memory of a different size (from an 
 *** shmget error (server) ***-1
 \end{verbatim}
 This needs to be cleaned with {\tt{ipcs -m}} and then {\tt{ipcrm -M xxx}}, where xxx are the keys with nattch 0. Alternative in the main slsDetectorFolder there is a script that can be used as {\tt{sh cleansharedmemory.sh}}. Note that you need to run the script with the account of the client user, as the shared memory belongs to the client. It is good procedure to implement an automatic cleanup of the shared memory if the client user changes often.   
+
+\subsection{Client has shared memory iusses}
+The shared memoryu from software version 4.0.0 creates shared memory segments in /dev/shm/. You can look at them and cancel them directly. Note that this is still user dependent.
+Environment variable SLSDETNAME can be set for using 2 different detectors from the same client pc. One needs a different multi detector id if the SLSDETNAME is different for both consoles.
 
 \subsection{Measure the HV}
 For every system: 

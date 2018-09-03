@@ -96,6 +96,9 @@ If one desires to set the zmqport manually, he offset has to be taken into accou
 
 There is an example code that can be compiled in {\tt{manual/manual-api/mainReceiver.cpp}} and gives the executable {\tt{./detReceiver}}, use it with two or more receivers to open all receivers in one single terminal: {\tt{./detReceiver startTCPPort numReceivers withCallback}}, where startTCPPort assumes the other ports are consecutively increased.
 
+The command {\tt{r\_framesperfile}} sets the number of frames written in the same file. By default now it is 10000. It can be changes. It needs to be lowered particularly if one wants to parallelize the following conversion of the files. 
+
+
 \subsection{Mandatory setup - Client}
 
 The command line interface consists in these main functions:

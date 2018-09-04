@@ -91,7 +91,7 @@ The receiver is a process run on a PC closely connected to the detector. Open on
 where xxxx, yyyy are the tcp port numbers. Use 1955 and 1956 for example. The receiver for the bottom is open without arguments but still in the configuration file one needs to write {\tt{n:flippeddatax 1}}, where {\tt{2n+1}} indicated the half module number, 1 if it is a module.
 \\ Open as many receiver as half module boards. A single module has two half module boards.
 
-From the software version 3.0.1, one can decide weather start a zmq callback from the receiver to the client (for example to visualize data in the slsDetectorGui or another gui). If the zmq steam is not required (cased of the command line for example, one can switch off the streaming with {\tt{./sls\_detector\_put rx\_datastream 0}}, enable it with {\tt{./sls\_detector\_put rx\_datastream 1}}. In the case of inizialising the stream to use the slsDetectorGui, nothing needs to be taken care of by the user. If instead you want to stream the streaming on different channels, the zmq port of the client can be set stealing from the slsDetectorGui stream having {\tt{./sls\_detector\_put zmqport 300y}}. Note that if this is done globally (not for every half module n independently, then the client automatically takes into account that for every half module, there are 2 zmq stream. The receiver stream {\tt{./sls\_detector\_put rx\_zmqport 300y}} has to match such that the GUI can work. 
+From the software version 3.0.1, one can decide weather start a zmq callback from the receiver to the client (for example to visualize data in the slsDetectorGui or another gui). If the zmq steam is not required (cased of the command line for example, one can switch off the streaming with {\tt{./sls\_detector\_put rx\_datastream 0}}, enable it with {\tt{./sls\_detector\_put rx\_datastream 1}}. In the case of initializing the stream to use the slsDetectorGui, nothing needs to be taken care of by the user. If instead you want to stream the streaming on different channels, the zmq port of the client can be set stealing from the slsDetectorGui stream having {\tt{./sls\_detector\_put zmqport 300y}}. Note that if this is done globally (not for every half module n independently, then the client automatically takes into account that for every half module, there are 2 zmq stream. The receiver stream {\tt{./sls\_detector\_put rx\_zmqport 300y}} has to match such that the GUI can work. 
 If one desires to set the zmqport manually, he offset has to be taken into account: {\tt{./sls\_detector\_put 0:rx\_zmqport 300y}}, {\tt{./sls\_detector\_put 1:rx\_zmqport 300y+2}} and so on..
 
 
@@ -198,16 +198,26 @@ returns the client version. The answer can be {\tt{thisversion 111220160718}}.
 returns the firmware version . The answer can be {\tt{detectorversion 11}}.
 Killing and starting the server on the boards allows you to check the firmware version you have and also if your board is a top/bottom/master/slave.
 
-\section{Gap pixels}
-The physical pixels at the border of the chips are double in size, to allow not to loose photons in the gaps between the chip allignment. They count double what the other normal pixels would count. 
+\section{Gap pixels inside a module}
+A module is composed of 2$\times$4 chips. Each chip is of dimension 256$\times$256 pixels. There is no dead area in a module, as a single sensor covers the 8 chips. The physical pixels at the border of the chips in the sensor are double in size, to allow not to loose photons in the gaps between the chip alignment. They count double what the other normal pixels would count. In the corner between chips, the pixels are 4-times the normal size. See figure~\ref{fgappix} to check the geometry.
 
-The gap pixels can be added for the slsDetectorGui, from the datacall back or stealing the zmq port from the GUI (see later). The detector size can be added in the configuraion file as first thing. 
+\begin{figure}[t]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{GapPixels}
+\end{center}
+\caption{Geometry of gap pixels between a module.}
+\label{fgappix}
+\end{figure}
 
-Putting the long side of the module first always as a convenction for the code, WITHOUT GAP PIXELS an EIGER module is:
+It is possible to interpolated the value on the larger pixels by splitting the events (or properly interpolating) introducing a virtual pixel for every double pixel, or 3 virtual pixels for every corner. In this way the counts of a single large pixel can be shared among the correct amount of pixels of the normal dimension.     
+
+The gap pixels can be added for the slsDetectorGui, from the datacall back or stealing the zmq port from the GUI (see later). The detector size can be added in the configuration file as first thing. 
+
+Putting the long side of the module first always as a convection for the code, WITHOUT GAP PIXELS an EIGER module is:
 \begin{verbatim}
 detsizechan 1024 512 
 \end{verbatim}
-and the client needs to be set {\tt{sls\_detector\_put  gappixels 0}}, which is the default behaviour.\\
+and the client needs to be set {\tt{sls\_detector\_put  gappixels 0}}, which is the default behavior.\\
 If you want to have GAP PIXELS included: 
 \begin{verbatim}
 detsizechan 1030 514 
@@ -422,13 +432,13 @@ where the 'minimum time between frames' and the minimum period will be discussed
 %32 & 2 & nonparallel & 504 & $<2$&  & &\\
 %\hline
 \end{tabular}
-\caption{Readout settings. The {\tiny{min exptime}} possible is 5$-$10~$\mu$s. This is due to the time to pass the pixel enable signal in the whole chip. The time between frames has been measured with the oscilloscope and the maximum frames rate has been tested with an external gating from a pulse generator at known frequence. The minimum period is obtained as 1/$\textrm{max frame rate}$.}
+\caption{Readout settings. The {\tiny{min exptime}} possible is 5$-$10~$\mu$s. This is due to the time to pass the pixel enable signal in the whole chip. The time between frames has been measured with the oscilloscope and the maximum frames rate has been tested with an external gating from a pulse generator at known frequency. The minimum period is obtained as 1/$\textrm{max frame rate}$.}
 \label{tframes}
 \end{flushleft}
 \end{table}
 \end{tiny}
 
-\textbf{From software version 4.0.0, there is a very useful function {\tt{sls\_detector\_get measuredperiod}} which return the measured period AFTER the acquisition. Thsi is important to check that the settings to obtain the targeted frame rate was correct.} 
+\textbf{From software version 4.0.0, there is a very useful function {\tt{sls\_detector\_get measuredperiod}} which return the measured period AFTER the acquisition. This is important to check that the settings to obtain the targeted frame rate was correct.} 
 
 \textbf{If you run too fast, the detector could become noisier (see problem shooting), it is important to match the detector settings to your frame rate. This can be done having more parameters files and load the one suitable with your experiment.} We experienced that with low energy settings could not reach 6~kHz and no noise.
 
@@ -504,7 +514,7 @@ This also means that {\tt{exptime}}$<${\tt{subexptime}} will be rounded to{\tt{s
 
 From release 4.0.0, an extra {\tt{flag overflow/nooverflow}} is added, with {\tt{nooverflow}} default:
 \begin{itemize}
-\item {\tt{nooverflow}}: the internal 12-bit result is summed, even if there was saturation of the 12-bit counter (4095) in any of the subframes. Note that if there is saturation for every subframe, you might get as a result a value of the counter equal to (4095$\times$~number~of~subframes), which you need to correctly identify. On the other hand if the saturation occourred only one time, you will get something "close'' to the real number.
+\item {\tt{nooverflow}}: the internal 12-bit result is summed, even if there was saturation of the 12-bit counter (4095) in any of the subframes. Note that if there is saturation for every subframe, you might get as a result a value of the counter equal to (4095$\times$~number~of~subframes), which you need to correctly identify. On the other hand if the saturation occurred only one time, you will get something "close'' to the real number.
 \item {\tt{overflow}}: In this case, even if a pixel saturate only 1 time in a subframe, you will be returned as a value of the counter for that pixel: $2^{32}-1$, i.e. 4294967295.  
 \end{itemize}
 
@@ -1049,7 +1059,7 @@ Note that occasionally if there is a shared memory of a different size (from an 
 This needs to be cleaned with {\tt{ipcs -m}} and then {\tt{ipcrm -M xxx}}, where xxx are the keys with nattch 0. Alternative in the main slsDetectorFolder there is a script that can be used as {\tt{sh cleansharedmemory.sh}}. Note that you need to run the script with the account of the client user, as the shared memory belongs to the client. It is good procedure to implement an automatic cleanup of the shared memory if the client user changes often.   
 
 \subsection{Client has shared memory iusses}
-The shared memoryu from software version 4.0.0 creates shared memory segments in /dev/shm/. You can look at them and cancel them directly. Note that this is still user dependent.
+The shared memory from software version 4.0.0 creates shared memory segments in /dev/shm/. You can look at them and cancel them directly. Note that this is still user dependent.
 Environment variable SLSDETNAME can be set for using 2 different detectors from the same client pc. One needs a different multi detector id if the SLSDETNAME is different for both consoles.
 
 \subsection{Measure the HV}
@@ -1113,14 +1123,14 @@ If you see the client returning the following error message:\\
 \end{verbatim}
 
 \subsection{There is noise running the detector in 32-bit}
-If you are running the detector in 32-bit (autosumming), there might be some noise, particularly at lower thereshold energies. This is due to the fact that the analog part of the chips require some latency time to settle which is larger than the redout time. It is possible to run the detector only in {\tt{parallel}} or {\tt{nonparallel}} mode, respectively with readout times between frames of 12~$\mu$s and 504~$\mu$s. If you switch {\tt{flags}} to non {\tt{nonparallel}} mode you will give enough time for the signals to settle. From release 4.0.0, there is a configurable delay that can be set through the {\tt{subdeadtime}} variable, such that you can remain with the {\tt{parallel}} flag, but can obtain a configurable dead time between frames. Ask the SLS detector group for an appropriate dead time for your detector, but typically a dead time of 20-50~$\mu$s should be enough. Note that this {\tt{subdeadtime}} need to include the 12~$\mu$s minimum readout time, so it has to be larger than 12~$\mu$s to do anything.  
+If you are running the detector in 32-bit (autosumming), there might be some noise, particularly at lower thereshold energies. This is due to the fact that the analog part of the chips require some latency time to settle which is larger than the readout time. It is possible to run the detector only in {\tt{parallel}} or {\tt{nonparallel}} mode, respectively with readout times between frames of 12~$\mu$s and 504~$\mu$s. If you switch {\tt{flags}} to non {\tt{nonparallel}} mode you will give enough time for the signals to settle. From release 4.0.0, there is a configurable delay that can be set through the {\tt{subdeadtime}} variable, such that you can remain with the {\tt{parallel}} flag, but can obtain a configurable dead time between frames. Ask the SLS detector group for an appropriate dead time for your detector, but typically a dead time of 20-50~$\mu$s should be enough. Note that this {\tt{subdeadtime}} need to include the 12~$\mu$s minimum readout time, so it has to be larger than 12~$\mu$s to do anything.  
  
 \subsection{There is noise running the detector at high frame rate(4,8,16 bit)}
-If are running in {\tt{parallel}} mode, in particular at low thereshold energies, you might encounter some noise. The reason is that the analog part of the chips require some latency time to settle which is larger than the redout time. 
+If are running in {\tt{parallel}} mode, in particular at low thereshold energies, you might encounter some noise. The reason is that the analog part of the chips require some latency time to settle which is larger than the readout time. 
 \begin{enumerate}
 \item You can lower the frame rate and relax requirements on period: 
 At low frame rate, you normally leave enough time between the end of the acquisition and the starting of the next, so you should not see this effect. In any case setting a {\tt{period}}={\tt{exptime}}+readout time from Table~\ref{tchipro} +extra 20$\mu$s cures the problem. The 20$\mu$s could also be 10~$\mu$s, they are very hardware dependent.
-\item The frame rate requirement are stingent (as for time resolved measurements): the only option here is to reduce the {\tt{exptime}} to let the extra 20~$\mu$s (or 10)~$\mu$s. The {\tt{period}} remains the same.
+\item The frame rate requirement are stringent (as for time resolved measurements): the only option here is to reduce the {\tt{exptime}} to let the extra 20~$\mu$s (or 10)~$\mu$s. The {\tt{period}} remains the same.
 \end{enumerate} 
  
 \section{Client checks - command line}
@@ -1323,7 +1333,7 @@ In table~\ref{tframescomplete} is a list of all the readout times in the differe
 \end{table}
 \end{tiny}
 
-Table~\ref{tx} shows the bandwidth of data trasnferring between the FEB and BEB and of the DDR2 memory access. the GTX lanes are only capable of 25.6~Gbit/s. This limits the 12/16 bit frame rate. The 2$\times$DDR2 memories have a bandwidth or 2$\cdot$25.6~Gb/s=51.2~Gb/s. Due to this memory access bandwidth, the 32 bit autosumming mode can only run in {\tt{clkdivider}} 2.   
+Table~\ref{tx} shows the bandwidth of data transferring between the FEB and BEB and of the DDR2 memory access. the GTX lanes are only capable of 25.6~Gbit/s. This limits the 12/16 bit frame rate. The 2$\times$DDR2 memories have a bandwidth or 2$\cdot$25.6~Gb/s=51.2~Gb/s. Due to this memory access bandwidth, the 32 bit autosumming mode can only run in {\tt{clkdivider}} 2.   
 \begin{figure}[t]
 \begin{center}
 \includegraphics[width=1.\textwidth]{TansmissionRates}

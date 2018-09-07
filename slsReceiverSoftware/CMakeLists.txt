@@ -90,11 +90,11 @@ endif ()
 
 
 install(TARGETS slsReceiverShared slsReceiver
+        EXPORT "${TARGETS_EXPORT_NAME}"
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         PUBLIC_HEADER DESTINATION include)
-        
- 
+
 install(FILES ${ZMQ_STATIC_ARCHIVE}
 DESTINATION lib)       

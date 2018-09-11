@@ -84,10 +84,10 @@ u_int16_t a_bus_r16(u_int32_t offset){
 
 u_int16_t bus_r16(u_int32_t offset){
   u_int16_t r= a_bus_r16(offset);
-#ifndef OLDVERSION 
-  while (r!=a_bus_r16(offset))
-    r=a_bus_r16(offset);
-#endif
+/* #ifndef OLDVERSION  */
+/*   while (r!=a_bus_r16(offset)) */
+/*     r=a_bus_r16(offset); */
+/* #endif */
   return r;
 }
 
@@ -117,10 +117,10 @@ u_int32_t a_bus_r(u_int32_t offset) {
 
 u_int32_t bus_r(u_int32_t offset){
   u_int32_t r= a_bus_r(offset);
-#ifndef OLDVERSION 
-  while (r!=a_bus_r(offset))
-    r=a_bus_r(offset);
-#endif
+/* #ifndef OLDVERSION  */
+/*   while (r!=a_bus_r(offset)) */
+/*     r=a_bus_r(offset); */
+/* #endif */
   return r;
 }
 

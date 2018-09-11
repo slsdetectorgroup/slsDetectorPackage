@@ -1053,14 +1053,18 @@ void slsDetector::disconnectControl() {
 
 
 int slsDetector::connectData() {
+  //cout << "connect" << endl;
 	if (dataSocket){
-		if (dataSocket->Connect() >= 0)
-			return OK;
-		else{
+	  if (dataSocket->Connect() >= 0) {
+	    //cout << "ok" << endl;
+	    return OK;
+	  }	else{
 			std::cout << "cannot connect to receiver" << endl;
 			setErrorMask((getErrorMask())|(CANNOT_CONNECT_TO_RECEIVER));
+			//cout << "fail" << endl;
 			return FAIL;}
 	}
+	//cout << "undefined" << endl;
 	return UNDEFINED;
 }
 
@@ -2919,6 +2923,30 @@ int slsDetector::getThresholdEnergy(int imod) {
 				updateDetector();
 		}
 	}
+
+
+
+	if(thisDetector->myDetectorType==JUNGFRAUCTB) {
+
+
+	  int en=-1;
+
+	  string header=getNetworkParameter(ADDITIONAL_JSON_HEADER);
+
+
+	  std::cout<< "Json header: " << header << std::endl;
+
+	  //must be in the format '\"label1\":\"value1\",\"label2\":\"value2\"' etc."
+	  // 
+	  size_t pos0;
+	  pos0=header.find("\"threshold\"");
+	  if (pos0!=std::string::npos) {
+	    if (sscanf(header.substr(pos0).c_str(),"\"threshold\":%d", &en))
+	      thisDetector->currentThresholdEV=en;
+	  }
+	  
+	}
+
 	return  thisDetector->currentThresholdEV;
 }
 
@@ -2962,6 +2990,62 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
 	} else {
 		thisDetector->currentThresholdEV=e_eV;
 	}
+
+	/* add threshold to zmq header */
+
+	 string header=getNetworkParameter(ADDITIONAL_JSON_HEADER);
+	  
+	  std::cout<< "Old json header: " << header << std::endl;
+	  //must be in the format '\"label1\":\"value1\",\"label2\":\"value2\"' etc."
+	  // 
+	  size_t pos0;
+	  pos0=header.find(",\"threshold\"");
+	  if (pos0==std::string::npos) {
+	    pos0=header.find("\"threshold\"");
+	  }
+	  if (pos0!=std::string::npos) {
+	    // remove old roi
+	    // std::cout<< header.substr(0,pos) << std::endl;
+	    // size_t pos0=header.find_last_of(",",0,pos);
+	    // if (pos0==std::string::npos) {
+	    //   pos0=pos;
+	    // } else
+	    //   std::cout<< header.substr(pos0) << std::endl;
+	    size_t pos1=header.find_first_of(",",pos0+1);
+	    // std::cout << pos0 << " " << pos1 << std::endl;
+	     std::cout<< "Replacing old threshold: " << header.substr(pos0,pos1-pos0) << std::endl;
+	    // if (pos1!=std::string::npos)
+	    header.erase(pos0,pos1-pos0);
+	    // else
+	    //  header.erase(pos0);
+	  }
+	  if (header.length()>0) {
+	    if (header.at(0)==',')
+	      header.erase(0,1);
+	    if (header.length()>0)
+		header.append(",");
+	  }
+	  // std::cout<< "Left: " << header << std::endl; 
+	  char h[1000];
+	    sprintf(h,"\"threshold\":%d",e_eV);
+	    // std::cout<< "new ROI: " << h << std::endl;
+	 
+	  header.append(h);
+	  std::cout<< "New json header: " << header << std::endl;
+	  setReceiverOnline(ONLINE_FLAG);
+	  setNetworkParameter(ADDITIONAL_JSON_HEADER, header);
+	  /***** END FOR ZMQ HEADER */
+	  ret=OK;
+
+	  if (thisDetector->myDetectorType==JUNGFRAUCTB) {
+	    thisDetector->currentThresholdEV=e_eV;
+	  }
+
+
+
+
+
+
 	return   thisDetector->currentThresholdEV;
 }
 
@@ -4771,7 +4855,8 @@ int slsDetector::setReadOutFlags(readOutFlags flag) {
 
 
 	int fnum=F_SET_READOUT_FLAGS;
-	readOutFlags retval;
+	//readOutFlags retval;
+	int retval;
 	char mess[MAX_STR_LENGTH]="";
 	int ret=OK;
 
@@ -4790,7 +4875,7 @@ int slsDetector::setReadOutFlags(readOutFlags flag) {
 				setErrorMask((getErrorMask())|(COULD_NOT_SET_READOUT_FLAGS));
 			} else {
 				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-				thisDetector->roFlags=retval;
+				thisDetector->roFlags=(readOutFlags)retval;
 				if (thisDetector->myDetectorType==JUNGFRAUCTB) {
 
 					getTotalNumberOfChannels();
@@ -4807,6 +4892,150 @@ int slsDetector::setReadOutFlags(readOutFlags flag) {
 			thisDetector->roFlags=flag;
 	}
 
+	std::cout<< "***ZMQ: " << hex<< flag << std::endl;
+	
+	if (flag & (PEDESTAL | NEWPEDESTAL | NEWFLAT | FLAT | FRAME)) {
+
+	  std::cout<< "***frameMode: "  << std::endl;
+	  string header=getNetworkParameter(ADDITIONAL_JSON_HEADER);
+	  
+	  std::cout<< "Old json header: " << header << std::endl;
+	  //must be in the format '\"label1\":\"value1\",\"label2\":\"value2\"' etc."
+	  // 
+	  size_t pos0;
+	  pos0=header.find(",\"frameMode\"");
+	  if (pos0==std::string::npos) {
+	    pos0=header.find("\"frameMode\"");
+	  }
+	  if (pos0!=std::string::npos) {
+	    size_t pos1=header.find_first_of(",",pos0+1);
+	    // if (pos1!=std::string::npos)
+	    if (flag!=GET_READOUT_FLAGS) {
+	      cout << dec<< pos0 << " " << pos1 << endl;
+	       std::cout<< "Replacing frame Mode: " << header.substr(pos0,pos1-pos0) << std::endl;
+	       header.erase(pos0,pos1-pos0);
+	    }
+	    else if (header.substr(pos0,pos1+pos0)=="\"frameMode\":\"pedestal\"")
+	      retval|=PEDESTAL;
+	    else if (header.substr(pos0,pos1+pos0)=="\"frameMode\":\"newPedestal\"")
+	      retval|=NEWPEDESTAL;
+	    else if (header.substr(pos0,pos1+pos0)=="\"frameMode\":\"flatfield\"")
+	      retval|=FLAT;
+	    else if (header.substr(pos0,pos1+pos0)=="\"frameMode\":\"newFlatfield\"")
+	      retval|=NEWFLAT;
+	    else
+	      retval|=FRAME;
+	    
+	      
+	  }
+	  char h[1000];
+	  switch (flag) {
+	  case PEDESTAL:
+	    retval=PEDESTAL;
+	    strcpy(h,"\"frameMode\":\"pedestal\"");
+	    break;
+	  case NEWPEDESTAL:
+	    retval=NEWPEDESTAL;
+	    strcpy(h,"\"frameMode\":\"newPedestal\"");
+	    break;
+	  case FLAT:
+	    retval=FLAT;
+	    strcpy(h,"\"frameMode\":\"flatfield\"");
+	    break;
+	  case NEWFLAT:
+	    retval=NEWFLAT;
+	    strcpy(h,"\"frameMode\":\"newFlatfield\"");
+	    break;
+	  default:
+	    retval=FRAME;
+	    strcpy(h,"\"frameMode\":\"frame\"");
+	  }
+	  if (flag!=GET_READOUT_FLAGS) {
+	  if (header.length()>0) {
+	    if (header.at(0)==',')
+	      header.erase(0,1);
+	    if (header.length()>0)
+		header.append(",");
+	  }
+	    header.append(h);
+	    setReceiverOnline(ONLINE_FLAG);
+	    setNetworkParameter(ADDITIONAL_JSON_HEADER, header);
+	  }
+	  std::cout<< "New json header: " << header << std::endl;
+	  /***** END FOR ZMQ HEADER */
+	  ret=OK;
+	  //	  retval=flag;
+
+	}
+	
+	if (flag & (COUNTING | INTERPOLATING | ANALOG)) {
+	  
+	  std::cout<< "***detectorMode: "  << std::endl;
+
+	  string header=getNetworkParameter(ADDITIONAL_JSON_HEADER);
+	  
+	  std::cout<< "Old json header: " << header << std::endl;
+	  //must be in the format '\"label1\":\"value1\",\"label2\":\"value2\"' etc."
+	  // 
+	  size_t pos0;
+	  pos0=header.find(",\"detectorMode\"");
+	  if (pos0==std::string::npos) {
+	    pos0=header.find("\"detectorMode\"");
+	  }
+	  if (pos0!=std::string::npos) {
+	    size_t pos1=header.find_first_of(",",pos0+1);
+	    // if (pos1!=std::string::npos)
+	     if (flag!=GET_READOUT_FLAGS) {
+	       cout << dec<< pos0 << " " << pos1 << endl;
+	       std::cout<< "Replacing detector Mode: " << header.substr(pos0,pos1-pos0) << std::endl;
+	       header.erase(pos0,pos1-pos0);
+	     }
+	    else if (header.substr(pos0,pos1+pos0)=="\"detectorMode\":\"counting\"")
+	      retval|=COUNTING;
+	    else if (header.substr(pos0,pos1+pos0)=="\"detectorMode\":\"interpolating\"")
+	      retval|=INTERPOLATING;
+	     else
+	      retval|=ANALOG;
+	  }
+	  char h[1000];
+	  switch (flag) {
+	  case COUNTING:
+	    strcpy(h,"\"detectorMode\":\"counting\"");
+	    retval=COUNTING;
+	    break;
+	  case INTERPOLATING:
+	    retval=INTERPOLATING;
+	    strcpy(h,"\"detectorMode\":\"interpolating\"");
+	    break;
+	  default:
+	    retval=ANALOG;
+	    strcpy(h,"\"detectorMode\":\"analog\"");
+	  }
+	  if (flag!=GET_READOUT_FLAGS) {
+	  if (header.length()>0) {
+	    if (header.at(0)==',')
+	      header.erase(0,1);
+	    if (header.length()>0)
+		header.append(",");
+	  }
+	    header.append(h);
+	    setReceiverOnline(ONLINE_FLAG);
+	    setNetworkParameter(ADDITIONAL_JSON_HEADER, header);
+	    /***** END FOR ZMQ HEADER */
+	    //  retval=flag;
+	  }
+	  std::cout<< "New json header: " << header << std::endl;
+	  ret=OK;
+	}
+	
+
+	if (ret==OK) {
+	  
+	  // thisDetector->roFlags=flag;
+	  thisDetector->roFlags=(readOutFlags)retval;
+	}
+
+	std::cout<< retval << std::endl;
 #ifdef VERBOSE
 	std::cout<< "Readout flag set to  "<< retval   << std::endl;
 #endif
@@ -5540,12 +5769,14 @@ string slsDetector::setAdditionalJsonHeader(string jsonheader) {
 	strcpy(arg, jsonheader.c_str());
 
 	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
-#ifdef VERBOSE
-		std::cout << "Sending additional json header " << arg << std::endl;
-#endif
+	  //#ifdef VERBOSE
+	  //	std::cout << "* Sending additional json header " << arg << std::endl;
+		//#endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendString(fnum,retval,arg);
-			disconnectData();
+		  
+		  // std::cout << "** Sending additional json header " << arg << std::endl;
+		  ret=thisReceiver->sendString(fnum,retval,arg);
+		  disconnectData();
 		}
 		if(ret==FAIL) {
 			setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
@@ -5994,6 +6225,70 @@ int slsDetector::setROI(int n,ROI roiLimits[]) {
 	//sort ascending order
 	int temp;
 
+	  /***** NEW PART FOR ZMQ HEADER */
+	  //std::cout<< "******* ROI" << std::endl;
+ 
+	  // char header[1000];
+	  string header=getNetworkParameter(ADDITIONAL_JSON_HEADER);
+	  
+	  std::cout<< "Old json header: " << header << std::endl;
+	  //must be in the format '\"label1\":\"value1\",\"label2\":\"value2\"' etc."
+	  // 
+	  size_t pos0;
+	  pos0=header.find(",\"roi\"");
+	  if (pos0==std::string::npos) {
+	    pos0=header.find("\"roi\"");
+	  }
+	  if (pos0!=std::string::npos) {
+	    // remove old roi
+	    // std::cout<< header.substr(0,pos) << std::endl;
+	    // size_t pos0=header.find_last_of(",",0,pos);
+	    // if (pos0==std::string::npos) {
+	    //   pos0=pos;
+	    // } else
+	    //   std::cout<< header.substr(pos0) << std::endl;
+	    size_t pos1=header.find_first_of("]",pos0+1);
+	    // std::cout << pos0 << " " << pos1 << std::endl;
+	     std::cout<< "Replacing old ROI: " << header.substr(pos0,pos1-pos0+1) << std::endl;
+	    // if (pos1!=std::string::npos)
+	      header.erase(pos0,pos1-pos0+1);
+	    // else
+	    //  header.erase(pos0);
+	  }
+	  if (header.length()>0) {
+	    if (header.at(0)==',')
+	      header.erase(0,1);
+	    if (header.length()>0)
+		header.append(",");
+	  }
+	  // std::cout<< "Left: " << header << std::endl; 
+	  char h[1000];
+	  if (n) {
+	    sprintf(h,"\"roi\":[%d, %d, %d, %d]",roiLimits[0].xmin, roiLimits[0].xmax, roiLimits[0].ymin, roiLimits[0].ymax);
+	    // std::cout<< "new ROI: " << h << std::endl;
+	  } else {
+	    sprintf(h,"\"roi\":[%d, %d, %d, %d]",-1, -1, -1, -1);
+	  }
+	  header.append(h);
+	  std::cout<< "New json header: " << header << std::endl;
+	  setReceiverOnline(ONLINE_FLAG);
+	  setNetworkParameter(ADDITIONAL_JSON_HEADER, header);
+	  /***** END FOR ZMQ HEADER */
+	  ret=OK;
+	  
+	if(thisDetector->myDetectorType==JUNGFRAUCTB) {
+
+	  thisDetector->nROI = n;
+	  thisDetector->roiLimits[0].xmin=roiLimits[0].xmin;
+	  thisDetector->roiLimits[0].xmax=roiLimits[0].xmax;
+	  thisDetector->roiLimits[0].ymin=roiLimits[0].ymin;
+	  thisDetector->roiLimits[0].ymax=roiLimits[0].ymax;
+	  // std::cout << "** " <<   thisDetector->nROI << endl;
+	  getTotalNumberOfChannels();
+	  // std::cout << "*** " <<   thisDetector->nROI << endl;
+	  return ret;
+	}
+			//	if(thisDetector->myDetectorType==JUNGFRAUCTB) 
 	for(int i=0;i<n;++i){
 
 		//	  cout << "*** ROI "<< i << " xmin " << roiLimits[i].xmin << " xmax "
@@ -6022,16 +6317,45 @@ int slsDetector::setROI(int n,ROI roiLimits[]) {
 	if(ret==FAIL)
 		setErrorMask((getErrorMask())|(COULDNOT_SET_ROI));
 
-
-	if(thisDetector->myDetectorType==JUNGFRAUCTB) getTotalNumberOfChannels();
+	
 	return ret;
 }
 
 
 slsDetectorDefs::ROI* slsDetector::getROI(int &n) {
-	sendROI(-1,NULL);
-	n=thisDetector->nROI;
-	if(thisDetector->myDetectorType==JUNGFRAUCTB) getTotalNumberOfChannels();
+	if(thisDetector->myDetectorType==JUNGFRAUCTB) {
+
+
+	  int xmin, xmax, ymin, ymax;
+
+	  string header=getNetworkParameter(ADDITIONAL_JSON_HEADER);
+
+
+	  std::cout<< "Json header: " << header << std::endl;
+
+	  //must be in the format '\"label1\":\"value1\",\"label2\":\"value2\"' etc."
+	  // 
+	  size_t pos0;
+	  pos0=header.find("\"roi\"");
+	  if (pos0!=std::string::npos) {
+	    sscanf(header.substr(pos0).c_str(),"\"roi\":[%d, %d, %d, %d]", &xmin, &xmax, &ymin, &ymax);
+	    if (xmin<0 && xmax<0 && ymin<0 && ymax<0) 
+	      thisDetector->nROI=0;
+	    else {
+	      thisDetector->nROI=1;
+	      thisDetector->roiLimits[0].xmin=xmin;
+	      thisDetector->roiLimits[0].xmax=xmax;
+	      thisDetector->roiLimits[0].ymin=ymin;
+	      thisDetector->roiLimits[0].ymax=ymax;
+	    }
+	  } else {
+	    thisDetector->nROI=0;
+	  }
+	    
+	  // cout << thisDetector->nROI << endl;
+	  getTotalNumberOfChannels();
+	} else
+	  sendROI(-1,NULL);
 	return thisDetector->roiLimits;
 }
 

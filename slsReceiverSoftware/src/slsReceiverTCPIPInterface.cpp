@@ -216,6 +216,7 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 #ifdef VERY_VERBOSE
 			FILE_LOG(logDEBUG5) << "Conenction accepted";
 #endif
+			//	std::cout << "connected" << std::endl;
 			v = decode_function();
 #ifdef VERY_VERBOSE
 			FILE_LOG(logDEBUG5) << "function executed";
@@ -2612,11 +2613,12 @@ int slsReceiverTCPIPInterface::set_additional_json_header() {
     char arg[MAX_STR_LENGTH];
     memset(arg, 0, sizeof(arg));
     char* retval=NULL;
-
+    // std::cout << "set additional json header" << std::endl;
     // receive arguments
     if (mySock->ReceiveDataOnly(arg,MAX_STR_LENGTH) < 0 )
         return printSocketReadError();
-
+    
+    //	  std::cout << arg << endl;
     // execute action
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
     if (receiverBase == NULL)

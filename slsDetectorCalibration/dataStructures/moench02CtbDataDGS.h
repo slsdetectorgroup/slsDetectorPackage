@@ -92,6 +92,14 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
 
   };
   
+  /**
+     Returns the gain for the selected pixel (at the moemnt only 3rd supercolumn)
+     \param buff pointer to the dataset
+     \param ix x coordinate 
+     \param iy y coordinate
+     \returns gain value
+   */
+
   int getGain(char *buff, int ix, int iy) {
     int isample=iy*sc_width+iy;
     if (ix<sc_width) return 0; //first supercolumn no gain switching - could return the static gain if wished

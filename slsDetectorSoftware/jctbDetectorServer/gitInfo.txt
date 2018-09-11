@@ -1,9 +1,9 @@
 Path: slsDetectorsPackage/slsDetectorSoftware/jctbDetectorServer 
 URL: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
 Repository Root: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
-Repsitory UUID: 52b1e987263c831adcfab79c1c2b7bb9c68b09c7 
-Revision: 26 
+Repsitory UUID: 83600fcb15c8261173ab15a8ba8d1009693f2d23 
+Revision: 27 
 Branch: anna 
 Last Changed Author: Anna_Bergamaschi 
-Last Changed Rev: 3960 
-Last Changed Date: 2018-08-09 14:00:05.000000002 +0200 ./server_funcs.c
+Last Changed Rev: 3962 
+Last Changed Date: 2018-09-04 11:59:37.000000002 +0200 ./firmware_funcs.c

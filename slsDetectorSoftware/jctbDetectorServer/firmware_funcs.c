@@ -2003,7 +2003,7 @@ int startStateMachine(){
     bus_w16(CONTROL_REG, FIFO_RESET_BIT);
     bus_w16(CONTROL_REG, 0x0);
     bus_w16(CONTROL_REG, START_ACQ_BIT |  START_EXPOSURE_BIT);
-    //  usleep(20);
+    usleep(20);
     bus_w16(CONTROL_REG, 0x0);
 	  //verify
   /*   if(bus_r(STATUS_REG) & RUN_BUSY_BIT) */
@@ -2128,48 +2128,42 @@ u_int16_t* fifo_read_event(int ns)
     a=bus_r16(LOOK_AT_ME_REG);
     while(a==0) {
       if (runBusy()==0) {
+	usleep(100);
 	a = bus_r(LOOK_AT_ME_REG);
 	if (a==0) {
-	printf("no frame found and acquisition finished - exiting\n");
-	printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
-	return NULL;
+	  printf("no frame found and acquisition finished - exiting\n");
+	  printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
+	  return NULL;
 	} else {
 	  break;
 	}
       }
-      a = bus_r(LOOK_AT_ME_REG);
-      //#ifdef VERBOSE
-      //printf(".");
-      //#endif
+      a = bus_r16(LOOK_AT_ME_REG);
     }
-/* #ifdef TIMEDBG  */
-/*     //    tsss=tss; */
-/*     gettimeofday(&tss,NULL); */
-/*     printf("look for data  = %ld usec\n", (tss.tv_usec) - (tse.tv_usec));  */
 
-/*   #endif  */
-
-    //   printf("LAM: %08x\n",a);
   }
-
-  // printf(".");
-  a = bus_r(LOOK_AT_ME_REG);
+  //a = bus_r16(LOOK_AT_ME_REG);
 
   if (analogEnable) {
-  printf("*");
+    // printf("*");
     bus_w16(DUMMY_REG,1<<8); // read strobe to all fifos
     bus_w16(DUMMY_REG,0);
     for (i=0; i<32; i++) {
       if (~(mask&adcDisableMask)) {
-	*((u_int16_t*)now_ptr)=*values;//bus_r16(FIFO_DATA_REG);
-	if (i!=0 || ns!=0) { 
-	  a=0;
-	      while (*((u_int16_t*)now_ptr)==*((u_int16_t*)(now_ptr)-1) && a++<10) {
-	    	*((u_int16_t*)now_ptr)=*values;				
-	      }
-	    }
+	*((u_int16_t*)now_ptr)=bus_r16(FIFO_DATA_REG);
+	/* if (i!=0 || ns!=0) {  */
+	/*   a=0; */
+	/*   while (*((u_int16_t*)now_ptr)==*((u_int16_t*)(now_ptr)-1) && a++<10 && *((u_int16_t*)now_ptr)!=0 && *((u_int16_t*)now_ptr)!=0x3ff) { */
+	/*     printf("%d .",i); */
+	/*     *((u_int16_t*)now_ptr)=bus_r16(FIFO_DATA_REG);//\*values;				 */
+	/*   } */
+	/* } */
+	while (*((u_int16_t*)now_ptr)!=bus_r16(FIFO_DATA_REG)) {
+	  printf("%d ,",i);
+	  *((u_int16_t*)now_ptr)=bus_r16(FIFO_DATA_REG);
+	}
 	now_ptr+=2;
-      } 
+      }
       mask=mask<<1;
       //   if (~(mask&adcDisableMask)
       bus_w16(DUMMY_REG,i+1);
@@ -2177,7 +2171,7 @@ u_int16_t* fifo_read_event(int ns)
   }
   if (digitalEnable) {
      printf("+");
-    
+     
      bus_w16(DUMMY_REG,1<<9); // read strobe to digital fifo
      bus_w16(DUMMY_REG,0<<9); // read strobe to digital fifo
      *((u_int64_t*)now_ptr)=get64BitReg(FIFO_DIGITAL_DATA_LSB_REG,FIFO_DIGITAL_DATA_MSB_REG);
@@ -2186,17 +2180,17 @@ u_int16_t* fifo_read_event(int ns)
      now_ptr+=8;
      
   } 
-    //  bus_w16(DUMMY_REG,0); //
-/* #ifdef TIMEDBG  */
-
-/*   gettimeofday(&tss,NULL); */
-/*   printf("read data loop  = %ld usec\n",(tss.tv_usec) - (tse.tv_usec));  */
-
+  //  bus_w16(DUMMY_REG,0); //
+  /* #ifdef TIMEDBG  */
+  
+  /*   gettimeofday(&tss,NULL); */
+  /*   printf("read data loop  = %ld usec\n",(tss.tv_usec) - (tse.tv_usec));  */
+  
 /* #endif  */
 //#ifdef VERBOSE
-      // printf("*");
+  // printf("*");
   //#endif
-    //    printf("\n"); 
+  //    printf("\n"); 
   return ram_values;
 }
 
@@ -2213,8 +2207,10 @@ u_int16_t* fifo_read_frame()
   now_ptr=(char*)ram_values;
   while(ns<nSamples && fifo_read_event(ns)) {
     // now_ptr+=dataBytes;
+    // printf("%d %x\n",ns,bus_r16(LOOK_AT_ME_REG));
       ns++;
   }
+  // printf("Data in fifo %x\n",bus_r16(LOOK_AT_ME_REG));
 #ifdef TIMEDBG 
   // usleep(10);
   gettimeofday(&tss,NULL);

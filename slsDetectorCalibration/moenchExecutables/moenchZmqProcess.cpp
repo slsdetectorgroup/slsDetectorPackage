@@ -17,7 +17,8 @@
 #include<iostream>
 
 //#include "analogDetector.h"
-#include "singlePhotonDetector.h"
+//#include "singlePhotonDetector.h"
+#include "interpolatingDetector.h"
 #include "multiThreadedAnalogDetector.h"
 #include "ansi.h"
 #include <iostream>
@@ -26,6 +27,7 @@ using namespace std;
 
 #define SLS_DETECTOR_JSON_HEADER_VERSION 0x2
 
+	//	myDet->setNetworkParameter(ADDITIONAL_JSON_HEADER, " \"what\":\"nothing\" ");
 
 int main(int argc, char *argv[]) {
 /**
@@ -59,23 +61,29 @@ int main(int argc, char *argv[]) {
   cout << "\nrx socket ip : " << socketip <<
     "\nrx port num  : " <<  portnum ;
   if (send) {
-    cout << "\nsd socket ip : " << socketip2 <<
-      "\nsd port num  : " <<  portnum2;
+    cout << "\ntx socket ip : " << socketip2 <<
+      "\ntx port num  : " <<  portnum2;
   }
   cout << endl;
   
   //slsDetectorData *det=new moench03T1ZmqDataNew(); 
   moench03T1ZmqDataNew *det=new moench03T1ZmqDataNew(); 
+  cout << endl << " det" <<endl;
+  int npx, npy;
+  det->getDetectorSize(npx, npy);
   //analogDetector<uint16_t> *filter=new analogDetector<uint16_t>(det,1,NULL,1000);
   singlePhotonDetector *filter=new singlePhotonDetector(det,3, 5, 1, 0, 1000, 10);
-  
+  //  interpolatingDetector *filter=new interpolatingDetector(det,NULL, 5, 1, 0, 1000, 10);
+  cout << " filter" <<endl;
 
   char* buff;
   multiThreadedAnalogDetector *mt=new multiThreadedAnalogDetector(filter,nthreads,fifosize);
+  cout << " multi" <<endl;
   mt->setFrameMode(eFrame);
   mt->StartThreads();
+  cout << " start" <<endl;
   mt->popFree(buff);
-  
+  cout << " pop" <<endl;
   
   ZmqSocket* zmqsocket=NULL;
 
@@ -169,7 +177,6 @@ int main(int argc, char *argv[]) {
 	int nnx, nny,nns;
 	uint32_t imageSize = 0, nPixelsX = 0, nPixelsY = 0, dynamicRange = 0;
 	filter->getImageSize(nnx, nny,nns);
-	int16_t *dout=new int16_t [nnx*nny];
 	// infinite loop
 	uint32_t packetNumber = 0;
 	uint64_t bunchId = 0;
@@ -180,22 +187,32 @@ int main(int argc, char *argv[]) {
 	uint16_t zCoord = 0;
 	uint32_t debug = 0;
 	uint32_t dr = 16;
+	int16_t *dout=new int16_t [nnx*nny];
+	//uint32_t dr = 32;
+	//int32_t *dout=new int32_t [nnx*nny];
+	uint32_t nSigma=5;
 	uint16_t roundRNumber = 0;
 	uint8_t detType = 0;
 	uint8_t version = 0;
 	int* flippedData = 0;
 	char* additionalJsonHeader = 0;
 
-	uint32_t threshold=0;
+	int32_t threshold=0;
 	
-	uint32_t xmin=0, xmax=400, ymin=0, ymax=400;
+	int32_t xmin=0, xmax=400, ymin=0, ymax=400;
 	
-	string frameMode_s, detectorMode_s;
+	string frameMode_s, detectorMode_s, intMode_s;
 
 	int emin, emax;
-
-
+	int resetFlat=0;
+	int resetPed=0;
+	int nsubPixels=1;
+	int isPedestal;
+	int isFlat=0;
 	int newFrame=1;
+	detectorMode dMode;
+	frameMode fMode;
+	double *ped;
 
 	while(1) {
 
@@ -219,23 +236,51 @@ int main(int argc, char *argv[]) {
 
 
 	    while (mt->isBusy()) {;}//wait until all data are processed from the queues
-			
 	    
 	    detimage=mt->getImage(nnx,nny,nns);
+	    if (fMode==ePedestal) {
+	      nns=1;
+	      // cout << "get pedestal " << endl;
+	      ped=mt->getPedestal();
+	      // cout << "got pedestal " << endl;
+	      for (int ix=0; ix<nnx; ix++) {
+		for (int iy=0; iy<nny; iy++) {
+		  dout[iy*nnx+ix]=ped[(iy)*nnx+ix];
+		  //  cout << ped[(iy)*nnx+ix] << " " ;
+		}
+	      }
+	      
+	      //  cout <<  endl ;
+	      // cout << "done " << endl;
+	      
+	      
+	    } else {
+	    
 	    for (int ix=0; ix<nnx; ix++) {
 	      for (int iy=0; iy<nny; iy++) {
-		dout[iy*nnx+ix]=detimage[iy*nnx+ix];
+		for (int isx=0; isx<nns; isx++) {
+		  for (int isy=0; isy<nns; isy++) {
+		    if (isx==0 && isy==0)
+		      dout[iy*nnx+ix]=detimage[(iy+isy)*nnx*nns+ix+isx];
+		    else
+		      dout[iy*nnx+ix]+=detimage[(iy+isy)*nnx*nns+ix+isx];
+		      
+		  }
+		}
+		if (dout[iy*nnx+ix]<0) dout[iy*nnx+ix]=0;
 	      }
 	    }
-
+	    }
+	    //  cout << nns*nnx*nny*nns*dr/8 << " " << length << endl;
 	    if (send) {
 	      strcpy(fname,filename.c_str());
 #ifdef NEWZMQ	
 	      //zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dynamicRange, fileindex,
 	      //			  nnx, nny, nns*dynamicRange/8,acqIndex, frameIndex, fname, acqIndex, subFrameIndex, packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, flippedData, additionalJsonHeader);
 	
-	      zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex,
-					  nnx, nny, nns*dr/8,acqIndex, frameIndex, fname, acqIndex, subFrameIndex, packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, flippedData, additionalJsonHeader);
+	      //    zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, nnx, nny, nns*dr/8,acqIndex, frameIndex, fname, acqIndex, subFrameIndex, packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, flippedData, additionalJsonHeader);
+	
+	      zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex, subFrameIndex, packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, flippedData, additionalJsonHeader);
 					   				   
 #endif
 
@@ -243,7 +288,7 @@ int main(int argc, char *argv[]) {
 	        zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,0,0,0,0,0, 0,0,fname, 0, 0,0,0,0,0,0,0,0,0,0,0,1);
 #endif
 	     
-	      zmqsocket2->SendData((char*)dout,length);
+		zmqsocket2->SendData((char*)dout,length);//nns*dr/8);
 	      cprintf(GREEN, "Sent Data\n");
 	    }
 	    
@@ -319,48 +364,128 @@ int main(int argc, char *argv[]) {
 		      frameIndex, fileindex, subFrameIndex,
 		      xCoord, yCoord,zCoord,
 		      flippedDataX, packetNumber, bunchId, timestamp, modId, debug, roundRNumber, detType, version);
-
-
-	      if (doc.HasMember("threshold")) {
-		version=doc["threshold"].GetUint();
-	
-	      }
-
-	      if (doc.HasMember("roi")) {
-		xmin=doc["roi"][0].GetUint();
-		xmax=doc["roi"][1].GetUint();
-		ymin=doc["roi"][2].GetUint();
-		ymax=doc["roi"][3].GetUint();	
-
-	      }
 	      
+	      /* Analog detector commands */
+	      isPedestal=0;
+	      isFlat=0;
+	      fMode=eFrame;
+	      frameMode_s="frame";
+	      cprintf(MAGENTA, "Frame mode: ");
 	      if (doc.HasMember("frameMode")) {
-		frameMode_s=doc["frameMode"].GetString();
-
+		if (doc["frameMode"].IsString()) {
+		  frameMode_s=doc["frameMode"].GetString();
+		  if (frameMode_s == "pedestal"){
+		    fMode=ePedestal;
+		    isPedestal=1;
+		  } else if (frameMode_s == "newPedestal"){
+		    mt->newDataSet(); //resets pedestal  
+		    // cprintf(MAGENTA, "Resetting pedestal\n");
+		    fMode=ePedestal;
+		    isPedestal=1;
+		  } else if (frameMode_s == "flatfield") {
+		    fMode=eFlat;
+		    isFlat=1;
+		  } else if (frameMode_s == "newFlatfield") {
+		    //mt->resetFlatfield();
+		    isFlat=1;
+		    //cprintf(MAGENTA, "Resetting flatfield\n");
+		    fMode=eFlat;
+		  } else
+		    fMode=eFrame;
+		}
 	      }
+	      cprintf(MAGENTA, "%s\n" , frameMode_s.c_str());
+	      mt->setFrameMode(fMode);
+
+	      threshold=0;
+	      cprintf(MAGENTA, "Threshold: ");
+	      if (doc.HasMember("threshold")) {	
+		if (doc["threshold"].IsInt()) 
+		  threshold=doc["threshold"].GetInt();
+	      }
+	      mt->setThreshold(threshold);	
+	      cprintf(MAGENTA, "%d\n", threshold);
 	      
+
+
+	      xmin=0;
+	      xmax=npx;
+	      ymin=0;
+	      ymax=npy;
+	      cprintf(MAGENTA, "ROI: ");
+	      if (doc.HasMember("roi")) {
+		if (doc["roi"].IsArray()) {
+		  if (doc["roi"].Size() > 0 )
+		    if (doc["roi"][0].IsInt())
+		      xmin=doc["roi"][0].GetInt();
+		  
+		  if (doc["roi"].Size() > 1 )
+		    if (doc["roi"][1].IsInt())
+		      xmax=doc["roi"][1].GetInt();
+
+		  if (doc["roi"].Size() > 2 )
+		    if (doc["roi"][2].IsInt())
+		      ymin=doc["roi"][2].GetInt();
+		  
+		  if (doc["roi"].Size() > 3 )
+		    if (doc["roi"][3].IsInt())
+		      ymax=doc["roi"][3].GetInt();
+		}
+	      }
+
+	      cprintf(MAGENTA, "%d %d %d %d\n", xmin, xmax, ymin, ymax);
+	      mt->setROI(xmin, xmax, ymin, ymax);	
+	
+	      // if (doc.HasMember("dynamicRange")) {
+	      // 	dr=doc["dynamicRange"].GetUint();
+	      // }
+
+	      dMode=eAnalog;
+	      detectorMode_s="analog";
+	      cprintf(MAGENTA, "Detector mode: ");
 	      if (doc.HasMember("detectorMode")) {
-		detectorMode_s=doc["detectorMode"].GetString();
+		if (doc["detectorMode"].IsString()) {
+		    detectorMode_s=doc["detectorMode"].GetString();
+		    if (detectorMode_s == "interpolating"){
+		      dMode=eInterpolating;
+		    } else if (detectorMode_s == "counting"){
+		      dMode=ePhotonCounting;
+		    } else {
+		      dMode=eAnalog;
+		    }
+		  }
+		  
+	      }
+	      cprintf(MAGENTA, "%s\n" , detectorMode_s.c_str());
 
-	      }
-	      
-	      if (doc.HasMember("energyRange")) {
-		emin=doc["energyRange"][0].GetUint();
-		emax=doc["energyRange"][0].GetUint();
+	      mt->setDetectorMode(dMode);
 
-	      }
-	      
-	      
-	      if (doc.HasMember("dynamicRange")) {
-		dr=doc["dynamicRange"].GetUint();
-	      }
-	      
-	      if (doc.HasMember("nSubPixels")) {
-		nsubPixels=doc["nSubPixels"].GetUint();
-	      }
-	      
-	      
 
+
+	      /* Single Photon Detector commands */
+
+	      //  if (doc.HasMember("nSigma")) {
+	      //	nSigma=doc["nSigma"].GetUint();
+	
+	      //	      }
+
+	      
+	      // if (doc.HasMember("energyRange")) {
+	      //	emin=doc["energyRange"][0].GetUint();
+	      //		emax=doc["energyRange"][1].GetUint();
+
+	      // }
+	      	      
+	      /* interpolating detector commands */
+
+	      // if (doc.HasMember("nSubPixels")) {
+	      //	nsubPixels=doc["nSubPixels"].GetUint();
+	      // }
+	      
+	      //if (doc.HasMember("interpolation")) {
+	      //	intMode_s=doc["intepolation"].GetString();
+	      //}
+	      
 	      newFrame=0;
 	      zmqsocket->CloseHeaderMessage();
 	    }
@@ -377,6 +502,8 @@ int main(int argc, char *argv[]) {
 	    }
 	  }
 	  
+
+
 	  // get data
 	  length = zmqsocket->ReceiveData(0, buff, size);
 	  mt->pushData(buff);

@@ -58,7 +58,7 @@ public analogDetector<uint16_t> {
 		      int sign=1,
 		      commonModeSubtraction *cm=NULL,
 		      int nped=1000,
-		      int nd=100, int nnx=-1, int nny=-1, double *gm=NULL) : analogDetector<uint16_t>(d, sign, cm, nped, nnx, nny, gm),   nDark(nd), eventMask(NULL),nSigma (nsigma), clusterSize(csize), clusterSizeY(csize), clusters(NULL),   quad(UNDEFINED_QUADRANT), tot(0), quadTot(0) {
+		      int nd=100, int nnx=-1, int nny=-1, double *gm=NULL) : analogDetector<uint16_t>(d, sign, cm, nped, nnx, nny, gm),   nDark(nd), eventMask(NULL),nSigma (nsigma), clusterSize(csize), clusterSizeY(csize), clusters(NULL),   quad(UNDEFINED_QUADRANT), tot(0), quadTot(0), eMin(-1), eMax(-1) {
     
     
     
@@ -101,6 +101,8 @@ public analogDetector<uint16_t> {
     for (int i=0; i<ny; i++) {
       eventMask[i]=new eventType[nx];
     }
+    eMin=orig->eMin;
+    eMax=orig->eMax;
     
     
     nSigma=orig->nSigma;
@@ -178,11 +180,11 @@ public analogDetector<uint16_t> {
       //nph=new int[nx*ny];
       
       double rest[ny][nx];
-      int cy=(clusterSizeY+1)/2;
-      int cs=(clusterSize+1)/2;
+      int cy=(clusterSizeY+1)/2; //quad size
+      int cs=(clusterSize+1)/2; //quad size
       
-      int ccs=clusterSize;
-      int ccy=clusterSizeY;
+      int ccs=clusterSize; //cluster size
+      int ccy=clusterSizeY; //cluster size
       
       double g=1.;
 
@@ -210,6 +212,7 @@ public analogDetector<uint16_t> {
 	if (thr>0) {
 	  newFrame();
 	  if (cmSub) {
+	    cout << "add to common mode?"<< endl;
 	    addToCommonMode(data);
 	  }
 	  for (int ix=xmin; ix<xmax; ix++) {
@@ -217,15 +220,28 @@ public analogDetector<uint16_t> {
 	      
 	      val=subtractPedestal(data,ix,iy, cm);
 	      
-	      nn=val/tthr;//analogDetector<uint16_t>::getNPhotons(data,ix,iy);
+	      nn=analogDetector<uint16_t>::getNPhotons(data,ix,iy);//val/thr;//
+	     if (nn>0) {
+	       /* if (nph[ix+nx*iy]>0) { */
+	       /* 	 cout << nph[ix+nx*iy] << "  => "; */
+	       /* 	 cout << ix << " " << iy << " " << val << " "<< nn << " " <<  nph[ix+nx*iy]+nn << endl; */
+	       /* } */
 	      nph[ix+nx*iy]+=nn;
-	      rest[iy][ix]=(val-nn*tthr);
-	      
+	       /* if (nph[ix+nx*iy]>1) { */
+	       /* 	 cout << nph[ix+nx*iy] << "  => "; */
+	       /* } */
+	      rest[iy][ix]=(val-nn*thr+0.5*thr);
+	      // if (ix==150 && iy==100)
+	      // cout << ix << " " << iy << " " << val << " "<< nn << " " << rest[iy][ix] << " " << nph[ix+nx*iy] << endl;
 	      nphFrame+=nn;
 	      nphTot+=nn;
+	     } else 
+	       rest[iy][ix]=val;
+	       
 	    }
 	  }
 	  //	}
+	  
 	for (int ix=xmin; ix<xmax; ix++) {
 	  for (int iy=ymin; iy<ymax; iy++) {
 	    
@@ -240,7 +256,7 @@ public analogDetector<uint16_t> {
 	    tot=0;
 	    quadTot=0;
 
-	    if (rest[iy][ix]>0.25*tthr) {
+	    if (rest[iy][ix]>0.25*thr) {
 	      eventMask[iy][ix]=NEIGHBOUR;
 	      for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
 		for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
@@ -283,14 +299,25 @@ public analogDetector<uint16_t> {
 		  quad=TOP_RIGHT;
 		  quadTot=tr;
 		}
+		
 		rms=getPedestalRMS(ix,iy);
-		tthr1=tthr-sqrt(ccy*ccs)*rms;
-		tthr2=tthr-sqrt(cy*cs)*rms;
-		if (tthr>sqrt(ccy*ccs)*rms) tthr1=tthr-sqrt(ccy*ccs)*rms; else tthr1=sqrt(ccy*ccs)*rms;
-		if (tthr>sqrt(cy*cs)*rms) tthr2=tthr-sqrt(cy*cs)*rms; else tthr2=sqrt(cy*cs)*rms;
-		if (tot>tthr1 || quadTot>tthr2) {
+		tthr=nSigma*rms; 
+	    
+		tthr1=nSigma*sqrt(clusterSize*clusterSizeY)*rms;
+		tthr2=nSigma*sqrt((clusterSize+1)/2.*((clusterSizeY+1)/2.))*rms;
+		
+		
+		 if (thr>tthr) tthr=thr-tthr; 
+		 if (thr>tthr1) tthr1=tthr-tthr1;  
+		 if (thr>tthr2) tthr2=tthr-tthr2; 
+
+		if (tot>tthr1 || quadTot>tthr2 || max>tthr) {
 		  eventMask[iy][ix]=PHOTON;
 		  nph[ix+nx*iy]++;
+		  //    if (ix==150 && iy==100)
+		  // if (iy<399)
+		  // 	    cout << "** " << ix << " " << iy  <<  " " << quadTot << endl;
+		  rest[iy][ix]-=thr;
 		  nphFrame++;
 		  nphTot++;
 		  
@@ -436,6 +463,7 @@ int *getClusters(char *data,  int *ph=NULL) {
   
   double max=0, tl=0, tr=0, bl=0,br=0, *v, vv;
   int cm=0;
+  int good=1;
   if (cmSub) cm=1;
   if (ph==NULL)
     ph=image;
@@ -531,8 +559,14 @@ int *getClusters(char *data,  int *ph=NULL) {
 	    }
 	  }
 	  //	  cout << (clusters+nph)->iframe << " " << ix << " " << nph << " " << tot << " " << (clusters+nph)->quadTot << endl;
-	  nph++;
-	  image[iy*nx+ix]++;
+	  good=1;
+	  if (eMin>0 && tot<eMin) good=0;
+	  if (eMax>0 && tot>eMax) good=0;
+	  if (good) {
+	    nph++;
+	    image[iy*nx+ix]++;
+	  }
+
 
 	  } else {
 	    eventMask[iy][ix]=PHOTON;
@@ -540,8 +574,6 @@ int *getClusters(char *data,  int *ph=NULL) {
       } else if (eventMask[iy][ix]==PEDESTAL) {
 	addToPedestal(data,ix,iy,cm);
       }
-
-
     }
   }
   nphFrame=nph;
@@ -650,21 +682,35 @@ void writeClusters(FILE *f){for (int i=0; i<nphFrame; i++) (clusters+i)->write(f
       // cout << "sp" << endl;
       switch(fMode) {
       case ePedestal:
+	//cout <<"spc add to ped " << endl;
 	addToPedestal(data);
 	break;
       default:
-	getNPhotons(data,val);
+	switch (dMode) {
+	case eAnalog:
+	  analogDetector<uint16_t>::processData(data,val);
+	  break;
+	default:
+	  //cout <<"spc " << endl;
+	  getNPhotons(data,val);
+	}
       }
       iframe++;
       //	cout << "done" << endl;
     };
     int getPhFrame(){return nphFrame;};
     int getPhTot(){return nphTot;};
+
+    void setEnergyRange(double emi, double ema){eMin=emi; eMax=ema;};
+    void getEnergyRange(double &emi, double &ema){emi=eMin; ema=eMax;};
+
+
  protected:
 
     int nDark; /**< number of frames to be used at the beginning of the dataset to calculate pedestal without applying photon discrimination */
     eventType **eventMask; /**< matrix of event type or each pixel */
     double nSigma; /**< number of sigma parameter for photon discrimination */
+    double eMin, eMax;
     int clusterSize; /**< cluster size in the x direction */
     int clusterSizeY; /**< cluster size in the y direction i.e. 1 for strips, clusterSize for pixels */
     //  single_photon_hit *cluster; /**< single photon hit data structure */

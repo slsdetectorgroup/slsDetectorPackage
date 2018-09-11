@@ -49,7 +49,23 @@ public:
   }
   
 
-  virtual int setFrameMode(int fm) {fMode=fm; if (fMode>=0) det->setFrameMode((frameMode)fMode);};
+  virtual int setFrameMode(int fm) {
+    if (fm>=0) {
+      det->setFrameMode((frameMode)fm); 
+      fMode=fm; 
+    }
+    return fMode;
+  };
+  virtual double setThreshold(double th) {return det->setThreshold(th);};
+  virtual void setROI(int xmin, int xmax, int ymin, int ymax) {det->setROI(xmin,xmax,ymin,ymax);};
+  virtual int setDetectorMode(int dm) {
+    if (dm>=0) {
+      det->setDetectorMode((detectorMode)dm); 
+      dMode=dm; 
+    }
+    return dMode;
+  };
+
   virtual void newDataSet(){det->newDataSet();};
       //fMode=fm; return fMode;}
 
@@ -162,6 +178,7 @@ FILE *getFilePointer(){return det->getFilePointer();};
 private:
    analogDetector<uint16_t> *det;
    int fMode;
+   int dMode;
    int *dataSize;
    pthread_t _thread;
    char *mem;
@@ -176,6 +193,7 @@ private:
      threadedAnalogDetector *This=((threadedAnalogDetector *)ptr); 
      return This->processData();
    }
+
    void * processData() {
      busy=1;
      while (!stop) {
@@ -234,6 +252,9 @@ public:
 
 
   int setFrameMode(int fm) { int ret; for (int i=0; i<nThreads; i++) ret=dets[i]->setFrameMode(fm); return ret;};
+  double setThreshold(int fm) { double ret; for (int i=0; i<nThreads; i++) ret=dets[i]->setThreshold(fm); return ret;};
+  int setDetectorMode(int dm) { int ret; for (int i=0; i<nThreads; i++) ret=dets[i]->setDetectorMode(dm); return ret;};
+  void setROI(int xmin, int xmax, int ymin, int ymax) { for (int i=0; i<nThreads; i++) dets[i]->setROI(xmin, xmax,ymin,ymax);};
   
  void newDataSet(){for (int i=0; i<nThreads; i++) dets[i]->newDataSet();};
   int *getImage(int &nnx, int &nny, int &ns) {
@@ -448,15 +469,17 @@ public:
     
     for (int i=0; i<nThreads; i++) {
       //inte=(slsInterpolation*)dets[i]->getInterpolation(nb,emi,ema);
+      //  cout << i << endl;
       p0=dets[i]->getPedestal(p0);
       if (p0) {
 	for (int ib=0; ib<nx*ny; ib++) {
 	  ped[ib]+=p0[ib]/((double)nThreads);
+	  //  cout << p0[ib] << " ";
 	}
       }
 	
-      delete [] p0;
     } 
+    delete [] p0;
     return ped;
   };
    

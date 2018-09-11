@@ -29,6 +29,10 @@ using namespace std;
 enum to define the flags of the data set, which are needed to seect the type of processing it should undergo: frame, pedestal, flat
 */
  enum frameMode { eFrame, ePedestal, eFlat };
+/** 
+enum to define the detector mode
+*/
+ enum detectorMode { eAnalog, ePhotonCounting, eInterpolating };
 #endif
 
 
@@ -386,6 +390,7 @@ template <class dataType> class analogDetector {
       for (int ix=0; ix<nx; ix++) {
 	for (int iy=0; iy<ny; iy++) {
 	  ped[iy*nx+ix]=stat[iy][ix].getPedestal();
+	  //cout << ped[iy*nx+ix] << " " ;
 	}
       }
       return ped;
@@ -681,22 +686,24 @@ template <class dataType> class analogDetector {
       Adds all the data for each pixels in the selected region of interest to the pedestal
        \param data pointer to the data
     */
+
     
     virtual void addToPedestal(char *data, int cm=0) {
       
-      
+      //    cout << "add to pedestal " << endl;
       newFrame();
       
       if (cmSub) {
 	addToCommonMode(data);
       }
             
-      // cout << xmin << " " << xmax << endl;
+      //cout << xmin << " " << xmax << endl;
       // cout << ymin << " " << ymax << endl;
       for (int ix=xmin; ix<xmax; ix++) {
 	for (int iy=ymin; iy<ymax; iy++) {
 	  addToPedestal(data,ix,iy,1);
-	  
+	  //if (ix==10 && iy==10) 
+	  // cout <<ix << " " << iy << " " << getPedestal(ix,iy)<< endl;
  #ifdef ROOTSPECTRUM 
 	  subtractPedestal(data,ix,iy,cm); 
  #endif 
@@ -784,12 +791,12 @@ template <class dataType> class analogDetector {
 	else
 	  val=((double*)data)[iy*nx+ix];
 	
-	  /* if (ix==10 && iy==10) */
-	  /*   cout << ix << " " << iy << " " << val ; */
+	 /* if (ix==10 && iy==10)  */
+	 /*     cout << ix << " " << iy << " " << val ;  */
 	  /* if (ix==100 && iy==100) */
 	  /*   cout << ix << " " << iy << " " << val; */
 	addToPedestal(val,ix,iy);
-	  /* if (ix==10 && iy==10) */
+	  /* if (ix==10 && iy==10)  */
 	  /*   cout <<" " << getPedestal(ix,iy)<< endl; */
 	  /* if (ix==100 && iy==100) */
 	  /*   cout << " " << getPedestal(ix,iy)<< endl; */
@@ -1039,10 +1046,11 @@ template <class dataType> class analogDetector {
     virtual void processData(char *data,int *val=NULL) {
       switch(fMode) {
       case ePedestal:
-	//	cout << "ped " << endl;
+	//cout << "analog ped " << endl;
 	addToPedestal(data);
 	break;
       default:
+	//	cout << "analog " << endl;
 	//subtractPedestal(data);
 	getNPhotons(data);
       }
@@ -1062,6 +1070,21 @@ template <class dataType> class analogDetector {
     */
     frameMode getFrameMode() {return fMode;};
     
+
+
+    //enum detectorMode { eAnalog, ePhotonCounting, eInterpolating };
+ /** sets the current detector mode for the detector
+     \param f detector mode to be set
+     \returns current detector mode
+    */
+    detectorMode setDetectorMode(detectorMode f) {dMode=f; return dMode;};
+    
+ /** gets the current detector mode for the detector
+     \returns current detector mode
+    */
+    detectorMode getDetectorMode() {return dMode;};
+  
+
 /** sets file pointer where to write the clusters to 
     \param f file pointer
     \returns current file pointer
@@ -1093,6 +1116,7 @@ FILE *getFilePointer(){return myFile;};
     double thr; /**< threshold to be used for conversion into number of photons */
     //  int nSigma; /**< number of sigma to be used for conversion into number of photons if threshold is undefined */
     frameMode fMode; /**< current detector frame mode */
+    detectorMode dMode; /**< current detector frame mode */
     FILE *myFile; /**< file pointer to write to */
 #ifdef ROOTSPECTRUM
     TH2F *hs;

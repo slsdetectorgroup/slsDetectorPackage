@@ -80,7 +80,6 @@ template <class dataType> class analogDetector {
     fMode=ePedestal;
     thr=0;
     myFile=NULL;
-    fm=new pthread_mutex_t ;
 #ifdef ROOTSPECTRUM
     hs=new TH2F("hs","hs",2000,-100,10000,nx*ny,-0.5,nx*ny-0.5);
 #ifdef ROOTCLUST
@@ -128,7 +127,6 @@ template <class dataType> class analogDetector {
     // nSigma=orig->nSigma;
     fMode=orig->fMode;
     myFile=orig->myFile;
-    fm=orig->fm;
     
 
     stat=new pedestalSubtraction*[ny];
@@ -329,7 +327,8 @@ template <class dataType> class analogDetector {
 	for (int ix=xmin; ix<xmax; ix++) {
 	  for (int iy=ymin; iy<ymax; iy++) { 
 	    // if (getNumpedestals(ix,iy)>0) 
-	    addToCommonMode(data, ix, iy);
+	    if (det->isGood(ix,iy))
+	      addToCommonMode(data, ix, iy);
 	  }
 	}
 	//cout << "cm " << getCommonMode(0,0) << " " << getCommonMode(1,0) << endl;
@@ -701,12 +700,14 @@ template <class dataType> class analogDetector {
       // cout << ymin << " " << ymax << endl;
       for (int ix=xmin; ix<xmax; ix++) {
 	for (int iy=ymin; iy<ymax; iy++) {
-	  addToPedestal(data,ix,iy,1);
+	  if (det->isGood(ix,iy)) {
+	    addToPedestal(data,ix,iy,1);
 	  //if (ix==10 && iy==10) 
 	  // cout <<ix << " " << iy << " " << getPedestal(ix,iy)<< endl;
- #ifdef ROOTSPECTRUM 
-	  subtractPedestal(data,ix,iy,cm); 
+#ifdef ROOTSPECTRUM 
+	    subtractPedestal(data,ix,iy,cm); 
  #endif 
+	  }
 	  
 	}
       }
@@ -823,7 +824,8 @@ template <class dataType> class analogDetector {
       
       for (int ix=xmin; ix<xmax; ix++) {
 	for (int iy=ymin; iy<ymax; iy++) {
-	  val[iy*nx+ix]+=subtractPedestal(data, ix, iy,cm);
+	    if (det->isGood(ix,iy))
+	      val[iy*nx+ix]+=subtractPedestal(data, ix, iy,cm);
 	}
       }
       return  val;
@@ -950,7 +952,8 @@ template <class dataType> class analogDetector {
 
        for (int ix=xmin; ix<xmax; ix++) {
 	 for (int iy=ymin; iy<ymax; iy++) {
-	   nph[iy*nx+ix]+=getNPhotons(data, ix, iy);
+	   if (det->isGood(ix,iy))
+	     nph[iy*nx+ix]+=getNPhotons(data, ix, iy);
 	 }
        }
        return nph;
@@ -1028,8 +1031,11 @@ template <class dataType> class analogDetector {
       
       for (int ix=xmi; ix<xma; ix++)
 	for (int iy=ymi; iy<yma; iy++)
-	  if (ix>=0 && ix<nx && iy>=0 && iy<ny) 
-	    val+=getNPhotons(data, ix, iy);
+	  if (det->isGood(ix,iy)) {
+	    if (ix>=0 && ix<nx && iy>=0 && iy<ny) 
+	      val+=getNPhotons(data, ix, iy);
+	  }
+
       return val;
       
     };
@@ -1056,7 +1062,7 @@ template <class dataType> class analogDetector {
       }
     };
 
-    virtual char *getInterpolation(){return NULL;};
+    //  virtual char *getInterpolation(){return NULL;};
 
  /** sets the current frame mode for the detector
      \param f frame mode to be set
@@ -1095,7 +1101,6 @@ FILE *setFilePointer(FILE *f){myFile=f; return myFile;};
     \returns current file pointer
 */
 FILE *getFilePointer(){return myFile;};
- void setMutex(pthread_mutex_t *m){fm=m;};
  protected:
   
     slsDetectorData<dataType> *det; /**< slsDetectorData to be used */
@@ -1127,7 +1132,6 @@ FILE *getFilePointer(){return myFile;};
     TH2F *hs9;
 #endif
 #endif
-    pthread_mutex_t *fm;
 };
 
 #endif

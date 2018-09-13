@@ -19,11 +19,11 @@ class etaInterpolationBase : public slsInterpolation {
     // cout << "eb " << nb << " " << emin << " " << emax << endl;  
     // cout << nb << " " << etamin << " " << etamax << endl;
     if (nbeta<=0) {
-      cout << "aaa:" <<endl;
+      //cout << "aaa:" <<endl;
       nbeta=nSubPixels*10;
     }
     if (etamin>=etamax) {
-      cout << "aaa:" <<endl;
+      // cout << "aaa:" <<endl;
       etamin=-1;
       etamax=2;
     }
@@ -68,12 +68,31 @@ class etaInterpolationBase : public slsInterpolation {
 
  };
 
-  virtual etaInterpolationBase* Clone()=0;/*{
+  
+ /* virtual etaInterpolationBase* Clone()=0; {
     return new etaInterpolationBase(this);
+    };*/
+ 
+
+
+
+  virtual void resetFlatField() {
+#ifndef MYROOT1
+    for (int ibx=0; ibx<nbeta*nbeta; ibx++) {
+      heta[ibx]=0;
+      hhx[ibx]=0;
+      hhy[ibx]=0;
+    }
+#endif
+
+#ifdef MYROOT1
+    heta->Reset();
+    hhx->Reset();
+    hhy->Reset();
+#endif
+
   };
-					  */
-
-
+    
 
 #ifdef MYROOT1
   TH2D *setEta(TH2D *h, int nb=-1, double emin=1, double emax=0)
@@ -117,6 +136,9 @@ class etaInterpolationBase : public slsInterpolation {
   {  
     return setEta(h, nb, emin, emax);
   };
+
+
+
   int *getFlatField(){return setEta(NULL);};
   
   int *getFlatField(int &nb, double &emin, double &emax){
@@ -181,6 +203,8 @@ class etaInterpolationBase : public slsInterpolation {
     }
     return 0;
   };
+  
+    
   
     
 

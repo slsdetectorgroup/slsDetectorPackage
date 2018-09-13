@@ -154,11 +154,15 @@ class eta2InterpolationPosXY : public virtual eta2InterpolationBase, public virt
  eta2InterpolationPosXY(int nx=400, int ny=400, int ns=25, int nb=-1, double emin=1, double emax=0) : etaInterpolationBase(nx,ny,ns, nb, emin,emax),eta2InterpolationBase(nx,ny,ns, nb, emin,emax),etaInterpolationPosXY(nx,ny,ns, nb, emin,emax){
     //  cout << "e2pxy " << nb << " " << emin << " " << emax << endl; 
   };
+ 
  eta2InterpolationPosXY(eta2InterpolationPosXY *orig): etaInterpolationBase(orig), etaInterpolationPosXY(orig)  {};
 
   virtual eta2InterpolationPosXY* Clone() { return new eta2InterpolationPosXY(this);};
 
 };
+
+
+
 class eta3InterpolationPosXY : public virtual eta3InterpolationBase, public virtual etaInterpolationPosXY {
  public:
  eta3InterpolationPosXY(int nx=400, int ny=400, int ns=25, int nb=-1, double emin=1, double emax=0) : etaInterpolationBase(nx,ny,ns, nb, emin,emax),eta3InterpolationBase(nx,ny,ns, nb, emin,emax), etaInterpolationPosXY(nx,ny,ns, nb, emin,emax){

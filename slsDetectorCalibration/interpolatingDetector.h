@@ -49,17 +49,21 @@ class interpolatingDetector : public singlePhotonDetector {
 		       int nd=100, int nnx=-1, int nny=-1) : 
   singlePhotonDetector(d, 3,nsigma,sign, cm, nped, nd, nnx, nny) , interp(inte), id(0)  {
     //cout << "**"<< xmin << " " << xmax << " " << ymin << " " << ymax << endl;
+    fi=new pthread_mutex_t ;
 
 };
   
   
   
  interpolatingDetector(interpolatingDetector *orig) : singlePhotonDetector(orig) {
-    if (orig->interp)
-      interp=(orig->interp)->Clone();
-    else
-      interp=orig->interp;
+    // if (orig->interp)
+    //  interp=(orig->interp)->Clone();
+    // else
+    
+    interp=orig->interp;
+    
     id=orig->id;
+    fi=orig->fi;
   }
 
 
@@ -67,7 +71,11 @@ class interpolatingDetector : public singlePhotonDetector {
     return new interpolatingDetector(this);
   }
 
-  virtual int setId(int i) {id=i; interp->setId(id); return id;};
+  virtual int setId(int i) {
+    id=i; 
+    //  interp->setId(id); 
+    return id;
+  };
 
   virtual void prepareInterpolation(int &ok) {
    /*  cout << "*"<< endl; */
@@ -81,20 +89,28 @@ class interpolatingDetector : public singlePhotonDetector {
 /*       sprintf(tit,"/scratch/gmap_%d.tiff",id); */
 /*       writeGainMap(tit); */
 /*     } */
-/* #endif */
+/* #endif */ 
+    pthread_mutex_lock(fi);
     if (interp)
       interp->prepareInterpolation(ok);
+    pthread_mutex_unlock(fi); 
   } 
 
 
   void clearImage() {
-    if (interp) interp->clearInterpolatedImage(); 
-    else singlePhotonDetector::clearImage();
+    if (interp) {
+      pthread_mutex_lock(fi);
+      interp->clearInterpolatedImage(); 
+      pthread_mutex_unlock(fi); 
+    } else 
+      singlePhotonDetector::clearImage();
   };
 
   int getImageSize(int &nnx, int &nny, int &ns) {
-    if (interp) return interp->getImageSize(nnx, nny, ns); 
-    else return analogDetector<uint16_t>::getImageSize(nnx, nny, ns);
+    if (interp) 
+      return interp->getImageSize(nnx, nny, ns); 
+    else 
+      return analogDetector<uint16_t>::getImageSize(nnx, nny, ns);
   };
 
 
@@ -152,128 +168,7 @@ class interpolatingDetector : public singlePhotonDetector {
      return NULL;
    }
   
-/* int addFrame(char *data,  int *ph=NULL, int ff=0) { */
 
- 
-/*   int nph=0; */
-/*   double val[ny][nx]; */
-/*   int cy=(clusterSizeY+1)/2; */
-/*   int cs=(clusterSize+1)/2; */
-/*   int ir, ic; */
-/*   double rms; */
-/*     double int_x,int_y, eta_x, eta_y; */
-/*   double max=0, tl=0, tr=0, bl=0,br=0, *v, vv; */
-/*   // cout << "********** Add frame "<< iframe << endl; */
-/*   if (ph==NULL) */
-/*     ph=image; */
-
-/*   if (iframe<nDark) { */
-/*     addToPedestal(data); */
-/*     return 0; */
-/*   } */
-/*   newFrame(); */
-/*   // cout << "********** Data "<< endl; */
-/*   for (int ix=xmin; ix<xmax; ix++) { */
-/*     for (int iy=ymin; iy<ymax; iy++) { */
-      
-/*       max=0; */
-/*       tl=0; */
-/*       tr=0; */
-/*       bl=0; */
-/*       br=0; */
-/*       tot=0; */
-/*       quadTot=0; */
-/*       quad=UNDEFINED_QUADRANT; */
-
-     
-
-/*       eventMask[iy][ix]=PEDESTAL; */
-      
-/* 	rms=getPedestalRMS(ix,iy); */
-/* 	(clusters+nph)->rms=rms; */
-      
-      
-      
-/*       for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) { */
-/* 	for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) { */
-	  
-/* 	  if ((iy+ir)>=iy && (iy+ir)<ny && (ix+ic)>=ix && (ix+ic)<nx) { */
-/* 	    val[iy+ir][ix+ic]=subtractPedestal(data,ix+ic,iy+ir); */
-/* 	  } */
-	  
-/* 	  v=&(val[iy+ir][ix+ic]); */
-/* 	  tot+=*v; */
-/* 	  if (ir<=0 && ic<=0) */
-/* 	    bl+=*v; */
-/* 	  if (ir<=0 && ic>=0) */
-/* 	    br+=*v; */
-/* 	  if (ir>=0 && ic<=0) */
-/* 	    tl+=*v; */
-/* 	  if (ir>=0 && ic>=0) */
-/* 	    tr+=*v; */
-/* 	  if (*v>max) { */
-/* 	    max=*v; */
-/* 	  } */
-	  
-	  
-/* 	  if (ir==0 && ic==0) { */
-/* 	    if (*v<-nSigma*rms) */
-/* 	      eventMask[iy][ix]=NEGATIVE_PEDESTAL; */
-/* 	  } */
-	  
-/* 	} */
-/*       } */
-      
-/*       if (bl>=br && bl>=tl && bl>=tr) { */
-/* 	(clusters+nph)->quad=BOTTOM_LEFT; */
-/* 	(clusters+nph)->quadTot=bl; */
-/*       } else if (br>=bl && br>=tl && br>=tr) { */
-/* 	(clusters+nph)->quad=BOTTOM_RIGHT; */
-/* 	(clusters+nph)->quadTot=br; */
-/*       } else if (tl>=br && tl>=bl && tl>=tr) { */
-/* 	(clusters+nph)->quad=TOP_LEFT; */
-/* 	(clusters+nph)->quadTot=tl; */
-/*       } else if   (tr>=bl && tr>=tl && tr>=br) { */
-/* 	(clusters+nph)->quad=TOP_RIGHT; */
-/* 	(clusters+nph)->quadTot=tr; */
-/*       } */
-      
-/*       if (max>nSigma*rms || tot>sqrt(clusterSizeY*clusterSize)*nSigma*rms || ((clusters+nph)->quadTot)>sqrt(cy*cs)*nSigma*rms) { */
-/* 	if (val[iy][ix]>=max) { */
-/* 	  eventMask[iy][ix]=PHOTON_MAX; */
-/* 	  (clusters+nph)->tot=tot; */
-/* 	  (clusters+nph)->x=ix; */
-/* 	  (clusters+nph)->y=iy; */
-/* 	  (clusters+nph)->iframe=det->getFrameNumber(data); */
-/* 	  (clusters+nph)->ped=getPedestal(ix,iy,0); */
-/* 	  for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) { */
-/* 	    for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) { */
-/* 	      (clusters+nph)->set_data(val[iy+ir][ix+ic],ic,ir); */
-/* 	    } */
-/* 	  } */
-
-
-
-/* 	  nph++; */
-/* 	  image[iy*nx+ix]++; */
-
-/* 	  } else { */
-/* 	    eventMask[iy][ix]=PHOTON; */
-/* 	  } */
-/*       } else if (eventMask[iy][ix]==PEDESTAL) { */
-/* 	addToPedestal(data,ix,iy); */
-/*       } */
-
-
-/*     } */
-/*   } */
-/*   nphFrame=nph; */
-/*   nphTot+=nph; */
-/*   writeClusters(); */
-
-/*   return  nphFrame; */
-  
-/* }; */
 
 int addFrame(char *data,  int *ph=NULL, int ff=0) {	    
   
@@ -283,6 +178,7 @@ int addFrame(char *data,  int *ph=NULL, int ff=0) {
   double int_x, int_y;
   double eta_x, eta_y;
   if (interp) {
+    pthread_mutex_lock(fi); 
     for (nph=0; nph<nphFrame; nph++) {
       if (ff) {
 	interp->addToFlatField((clusters+nph)->quadTot,(clusters+nph)->quad,(clusters+nph)->get_cluster(),eta_x, eta_y);
@@ -290,38 +186,75 @@ int addFrame(char *data,  int *ph=NULL, int ff=0) {
 	interp->getInterpolatedPosition((clusters+nph)->x, (clusters+nph)->y, (clusters+nph)->quadTot,(clusters+nph)->quad,(clusters+nph)->get_cluster(),int_x, int_y);
 	interp->addToImage(int_x, int_y);
       }
-    }  
+    } 
+    pthread_mutex_lock(fi);  
   }
   return  nphFrame;
   
 };
   
     virtual void processData(char *data, int *val=NULL) {
-      if (interp){
-	switch(fMode) {
-	case ePedestal:
-	  addToPedestal(data);
+	switch (dMode) {
+	case eAnalog:
+	  analogDetector<uint16_t>::processData(data,val);
 	  break;
-	case eFlat:
-	  addFrame(data,val,1);
-	  break;
+	case ePhotonCounting:
+	  singlePhotonDetector::processData(data,val);
 	default:
-	  addFrame(data,val,0);
+	    switch(fMode) {
+	    case ePedestal:
+	      addToPedestal(data);
+	      break;
+	    case eFlat:
+	      if (interp)
+		addFrame(data,val,1);
+	      else
+		  singlePhotonDetector::processData(data,val);
+	      break;
+	    default:
+	      if (interp)
+		addFrame(data,val,0);
+	      else
+		singlePhotonDetector::processData(data,val);
+	    }
 	}
-      } else
-	singlePhotonDetector::processData(data,val);
+	
     };
 
 
 
     virtual char *getInterpolation(){return (char*)interp;};
-    virtual char *setInterpolation(char *ii){int ok; interp=(slsInterpolation*)ii; interp->prepareInterpolation(ok); return (char*)interp;};
+    virtual char *setInterpolation(char *ii){
+      int ok; 
+      interp=(slsInterpolation*)ii; 
+      pthread_mutex_lock(fi); 
+      interp->prepareInterpolation(ok);
+      pthread_mutex_unlock(fi);  
+      return (char*)interp;};
   
+    virtual void resetFlatField() { if (interp) {
+	pthread_mutex_lock(fi); 
+	interp->resetFlatField(); 
+	pthread_mutex_unlock(fi);  
+      }
+    }
+
+    virtual int getNSubPixels(){ if (interp) return interp->getNSubPixels(); else return 1;}
+    virtual int setNSubPixels(int ns)  { 
+      if (interp) {
+	pthread_mutex_lock(fi); 
+	interp->getNSubPixels(); 
+	pthread_mutex_unlock(fi);  
+      }
+      return getNSubPixels();
+    }
+
  protected:
   
   
   slsInterpolation *interp;
   int id;
+  pthread_mutex_t *fi;
 };
 
 

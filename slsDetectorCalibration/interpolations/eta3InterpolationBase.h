@@ -15,9 +15,9 @@ class eta3InterpolationBase : public virtual etaInterpolationBase  {
  public:
  eta3InterpolationBase(int nx=400, int ny=400, int ns=25, int nb=-1, double emin=1, double emax=0) : etaInterpolationBase(nx, ny, ns, nb, emin, emax) {
     //  cout << "e3ib " << nb << " " << emin << " " << emax << endl; 
-    if (nbeta<=0) {
-      nbeta=nSubPixels*10;   
-    }
+    /* if (nbeta<=0) { */
+    /*   nbeta=nSubPixels*10;    */
+    /* } */
     if (etamin>=etamax) {
       etamin=-1;
       etamax=1; 
@@ -33,13 +33,13 @@ class eta3InterpolationBase : public virtual etaInterpolationBase  {
     hhy=new TH2D("hhy","hhy",nbeta,etamin,etamax,nbeta,etamin,etamax);
 #endif
 #ifndef MYROOT1
-    delete [] heta;
-    delete [] hhx;
-    delete [] hhy;
+    /* delete [] heta; */
+    /* delete [] hhx; */
+    /* delete [] hhy; */
 
-    heta=new int[nbeta*nbeta];
-    hhx=new float[nbeta*nbeta];
-    hhy=new float[nbeta*nbeta];
+    /* heta=new int[nbeta*nbeta]; */
+    /* hhx=new float[nbeta*nbeta]; */
+    /* hhy=new float[nbeta*nbeta]; */
     
 #endif
     //   cout << nbeta << " " << etamin << " " << etamax << endl;
@@ -47,7 +47,7 @@ class eta3InterpolationBase : public virtual etaInterpolationBase  {
   
  eta3InterpolationBase(eta3InterpolationBase *orig): etaInterpolationBase(orig){ };
 
-  virtual eta3InterpolationBase* Clone()=0;
+  /* virtual eta3InterpolationBase* Clone()=0; */
   
   
 

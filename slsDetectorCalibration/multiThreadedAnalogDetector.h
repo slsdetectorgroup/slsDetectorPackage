@@ -1,6 +1,8 @@
 #ifndef MULTITHREADED_ANALOG_DETECTOR_H
 #define MULTITHREADED_ANALOG_DETECTOR_H
 
+#define MAXTHREADS 1000
+
 #include <vector>
 #include <string>
 #include <sstream>
@@ -14,11 +16,8 @@
 #include <cstdlib> 
 #include <pthread.h>
 
-//#include "analogDetector.h"
-#include "singlePhotonDetector.h"
-//#include "interpolatingDetector.h"
+#include "analogDetector.h"
 #include "circularFifo.h"
-#include "slsInterpolation.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,6 +56,9 @@ public:
     return fMode;
   };
   virtual double setThreshold(double th) {return det->setThreshold(th);};
+
+
+
   virtual void setROI(int xmin, int xmax, int ymin, int ymax) {det->setROI(xmin,xmax,ymin,ymax);};
   virtual int setDetectorMode(int dm) {
     if (dm>=0) {
@@ -111,43 +113,7 @@ public:
 
    virtual void clearImage(){det->clearImage();};
 
-   virtual void prepareInterpolation(int &ok){
-     slsInterpolation *interp=(slsInterpolation*)det->getInterpolation();
-     if (interp) 
-       interp->prepareInterpolation(ok);
-   }
-
-   virtual int *getFlatField(){
-     slsInterpolation *interp=(slsInterpolation*)det->getInterpolation();
-     if (interp) 
-       return interp->getFlatField();
-     else
-       return NULL;
-   }
-   
-   virtual int *setFlatField(int *ff, int nb, double emin, double emax){
-     slsInterpolation *interp=(slsInterpolation*)det->getInterpolation();
-     if (interp) 
-       return interp->setFlatField(ff, nb, emin, emax);
-     else
-       return NULL;
-   }
-   
-   virtual int *getFlatField(int &nb, double emi, double ema){
-     slsInterpolation *interp=(slsInterpolation*)det->getInterpolation();
-     int *ff;
-     if (interp) { 
-       ff=interp->getFlatField(nb,emi,ema);
-       //   cout << "tdgff* ff has " << nb << " bins " << endl;
-       return ff;
-     }     else
-       return NULL;
-   }
-   
-   virtual char *getInterpolation() {
-     return det->getInterpolation();
-   }
-   
+ 
    virtual void setPedestal(double *ped, double *rms=NULL, int m=-1){det->setPedestal(ped,rms,m);};
    
    
@@ -173,9 +139,8 @@ public:
 FILE *getFilePointer(){return det->getFilePointer();};
 
 
- void setMutex(pthread_mutex_t *fmutex){det->setMutex(fmutex);};
 
-private:
+protected:
    analogDetector<uint16_t> *det;
    int fMode;
    int dMode;
@@ -219,7 +184,7 @@ private:
 class multiThreadedAnalogDetector
 {
 public:
- multiThreadedAnalogDetector(analogDetector<uint16_t> *d, int n, int fs=1000) : nThreads(n), ithread(0) { 
+ multiThreadedAnalogDetector(analogDetector<uint16_t> *d, int n, int fs=1000) : stop(0), nThreads(n), ithread(0) { 
     dd[0]=d;
     if (nThreads==1)
       dd[0]->setId(100);
@@ -239,6 +204,7 @@ public:
     image=new int[nn];
     ff=NULL;
     ped=NULL;
+    cout << "Ithread is " << ithread << endl;
   }
   
   ~multiThreadedAnalogDetector() { 
@@ -251,13 +217,15 @@ public:
   }
 
 
-  int setFrameMode(int fm) { int ret; for (int i=0; i<nThreads; i++) ret=dets[i]->setFrameMode(fm); return ret;};
-  double setThreshold(int fm) { double ret; for (int i=0; i<nThreads; i++) ret=dets[i]->setThreshold(fm); return ret;};
-  int setDetectorMode(int dm) { int ret; for (int i=0; i<nThreads; i++) ret=dets[i]->setDetectorMode(dm); return ret;};
-  void setROI(int xmin, int xmax, int ymin, int ymax) { for (int i=0; i<nThreads; i++) dets[i]->setROI(xmin, xmax,ymin,ymax);};
+  virtual int setFrameMode(int fm) { int ret; for (int i=0; i<nThreads; i++) {  ret=dets[i]->setFrameMode(fm);} return ret;};
+  virtual double setThreshold(int fm) { double ret; for (int i=0; i<nThreads; i++) ret=dets[i]->setThreshold(fm); return ret;};
+  virtual int setDetectorMode(int dm) { int ret; for (int i=0; i<nThreads; i++) ret=dets[i]->setDetectorMode(dm); return ret;};
+  virtual void setROI(int xmin, int xmax, int ymin, int ymax) { for (int i=0; i<nThreads; i++) dets[i]->setROI(xmin, xmax,ymin,ymax);};
   
- void newDataSet(){for (int i=0; i<nThreads; i++) dets[i]->newDataSet();};
-  int *getImage(int &nnx, int &nny, int &ns) {
+   
+  virtual void newDataSet(){for (int i=0; i<nThreads; i++) dets[i]->newDataSet();};
+  
+  virtual int *getImage(int &nnx, int &nny, int &ns) {
     int *img;
     // int nnx, nny, ns;
     int nn=dets[0]->getImageSize(nnx, nny, ns);
@@ -280,7 +248,7 @@ public:
   }
 
 
-  void clearImage() {
+  virtual void clearImage() {
   
     for (int ii=0; ii<nThreads; ii++) {
       dets[ii]->clearImage();
@@ -315,10 +283,11 @@ public:
   
 
   virtual void StartThreads() { 
-    for (int i=0; i<nThreads; i++) 
+    for (int i=0; i<nThreads; i++) { 
       dets[i]->StartThread(); 
-      
     }
+    
+  }
    
 
 
@@ -329,7 +298,7 @@ public:
     }
 
   
-  int isBusy() {
+  virtual int isBusy() {
     int ret=0, ret1;  
     for (int i=0; i<nThreads; i++) {
       ret1=dets[i]->isBusy();
@@ -340,124 +309,20 @@ public:
   }
   
    
-   bool pushData(char* &ptr) {
+   virtual bool pushData(char* &ptr) {
      dets[ithread]->pushData(ptr);
    }
 
-   bool popFree(char* &ptr) {
+   virtual bool popFree(char* &ptr) {
+     cout << ithread << endl;
      dets[ithread]->popFree(ptr);
    }
    
-   int nextThread() {
+   virtual int nextThread() {
      ithread++;
      if (ithread==nThreads) ithread=0;
      return ithread;
    }
-
-   virtual void prepareInterpolation(int &ok){
-     getFlatField(); //sum up all etas
-     setFlatField(); //set etas to all detectors
-     for (int i=0; i<nThreads; i++) {
-       dets[i]->prepareInterpolation(ok);
-     }
-   }
-   
-   virtual int *getFlatField(){
-     int nb=0;
-     double emi, ema;
-     int *f0;
-     slsInterpolation* inte=(slsInterpolation*)dets[0]->getInterpolation();
-     if (inte) {
-       if (inte->getFlatField(nb,emi,ema)) {
-	 if (ff) delete [] ff;
-	 ff=new int[nb*nb];
-	 for (int i=0; i<nThreads; i++) {
-	   //   cout << "mtgff* ff has " << nb << " bins " << endl;
-	   inte=(slsInterpolation*)dets[i]->getInterpolation();
-	   f0=inte->getFlatField();
-	   if (f0) {
-	     //    cout << "ff " << i << endl;
-	     for (int ib=0; ib<nb*nb; ib++) {
-	       if (i==0)
-		   ff[ib]=f0[ib];
-		 else
-		   ff[ib]+=f0[ib];	  
-	       /* if (i==0 && f0[ib]>0) */
-	       /* 	 cout << i << " " << ib << " " << f0[ib] << " " << ff[ib] << endl; */
-
-	     }
-	   }
-	 }
-	 return ff;
-       }
-     } 
-     return NULL;
-   }
-   
-   
-   virtual int *setFlatField(int *h=NULL, int nb=-1, double emin=1, double emax=0){
-     //int nb=0;
-     double emi, ema;
-     slsInterpolation* inte=(slsInterpolation*)dets[0]->getFlatField(nb,emi,ema);
-     if (inte) {
-       if (h==NULL) h=ff;
-      for (int i=0; i<nThreads; i++) {
-	dets[i]->setFlatField(h, nb, emin, emax);
-      }
-     }
-     return NULL;
-   }; 
-
-   void *writeFlatField(const char * imgname){
-     
-     int nb=0;
-     double emi, ema;
-     slsInterpolation* inte=(slsInterpolation*)dets[0]->getFlatField(nb,emi,ema);
-     if (inte) {
-      if (getFlatField()) {
-	//	cout << "mtwff* ff has " << nb << " bins " << endl;
-	float *gm=new float[nb*nb];
-	if (gm) {
-	  for (int ix=0; ix<nb*nb; ix++) {
-	    gm[ix]=ff[ix];
-	  }    
-	  WriteToTiff(gm,imgname ,nb, nb); 
-	  delete [] gm;
-	} else cout << "Could not allocate float image " << endl;
-      }
-    } else
-      cout << "Detector without flat field! " << endl;
-    
-    return NULL;
-    
-   };
-
-
-  void *readFlatField(const char * imgname, int nb=-1, double emin=1, double emax=0){
-    
-    int* inte=(int*)dets[0]->getFlatField(nb,emin,emax);
-    if (inte) {
-    uint32 nnx;
-    uint32 nny;
-    float *gm=ReadFromTiff(imgname, nnx, nny);
-    if (ff) delete [] ff;
-    if (nnx>nb) nb=nnx;
-    if (nny>nb) nb=nny;
-    ff=new int[nb*nb];
-    
-    for (int ix=0; ix<nb*nb; ix++) {
-      ff[ix]=gm[ix];
-    }
-    delete [] gm;
-      return setFlatField(ff,nb,emin,emax);
-    } else
-       cout << "Not interpolating detector! " << endl;
-    
-    return NULL;
-  };
-  
-
-
 
 
   virtual double *getPedestal(){
@@ -500,7 +365,7 @@ public:
 
 
 
-   void *writePedestal(const char * imgname){     
+   virtual void *writePedestal(const char * imgname){     
     
      int nx, ny;
      dets[0]->getDetectorSize(nx,ny);
@@ -520,7 +385,7 @@ public:
    };
 
 
-  void *readPedestal(const char * imgname, int nb=-1, double emin=1, double emax=0){
+  virtual void *readPedestal(const char * imgname, int nb=-1, double emin=1, double emax=0){
     
      int nx, ny;
      dets[0]->getDetectorSize(nx,ny);
@@ -549,7 +414,7 @@ public:
     \param f file pointer
     \returns current file pointer
 */
-   FILE *setFilePointer(FILE *f){
+   virtual FILE *setFilePointer(FILE *f){
      for (int i=0; i<nThreads; i++) {
        dets[i]->setFilePointer(f);
        //dets[i]->setMutex(&fmutex);
@@ -557,18 +422,18 @@ public:
      return dets[0]->getFilePointer();
    };
 
-/** gets file pointer where to write the clusters to 
-    \returns current file pointer
-*/
-FILE *getFilePointer(){return dets[0]->getFilePointer();};
+   /** gets file pointer where to write the clusters to 
+       \returns current file pointer
+   */
+   virtual FILE *getFilePointer(){return dets[0]->getFilePointer();};
 
 
 
- private:
+ protected:
   bool stop;
   const int nThreads;
-  threadedAnalogDetector *dets[20];
-  analogDetector<uint16_t> *dd[20];
+  threadedAnalogDetector *dets[MAXTHREADS];
+  analogDetector<uint16_t> *dd[MAXTHREADS];
   int ithread;
   int *image;
   int *ff;

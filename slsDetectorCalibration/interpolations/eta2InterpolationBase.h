@@ -16,13 +16,13 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
  eta2InterpolationBase(int nx=400, int ny=400, int ns=25, int nb=-1, double emin=1, double emax=0) :  etaInterpolationBase(nx,ny, ns, nb, emin, emax) {
     // cout << "e2ib " << nb << " " << emin << " " << emax << endl; 
 
-    if (nbeta<=0) {
-      nbeta=nSubPixels*10; 
-    }
+    /* if (nbeta<=0) { */
+    /*   nbeta=nSubPixels*10;  */
+    /* } */
     if (etamin>=etamax) {
       etamin=-1;
       etamax=2; 
-      cout << ":" <<endl;
+      //  cout << ":" <<endl;
     }
     etastep=(etamax-etamin)/nbeta;
 #ifdef MYROOT1
@@ -34,12 +34,12 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
     hhy=new TH2D("hhy","hhy",nbeta,etamin,etamax,nbeta,etamin,etamax);
 #endif
 #ifndef MYROOT1
-    delete [] heta;
-    delete [] hhx;
-    delete [] hhy;
-    heta=new int[nbeta*nbeta];
-    hhx=new float[nbeta*nbeta];
-    hhy=new float[nbeta*nbeta];
+    /* delete [] heta; */
+    /* delete [] hhx; */
+    /* delete [] hhy; */
+    /* heta=new int[nbeta*nbeta]; */
+    /* hhx=new float[nbeta*nbeta]; */
+    /* hhy=new float[nbeta*nbeta]; */
     
 #endif
     
@@ -48,7 +48,7 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
   
  eta2InterpolationBase(eta2InterpolationBase *orig): etaInterpolationBase(orig){ };
 
-  virtual eta2InterpolationBase* Clone()=0;/* {
+/*  virtual eta2InterpolationBase* Clone()=0; {
 
     return new eta2InterpolationBase(this);
 
@@ -56,8 +56,6 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
 
 					   */
  
-
-    
   //////////////////////////////////////////////////////////////////////////////
   //////////// /*It return position hit for the event in input */ //////////////
   virtual void getInterpolatedPosition(int x, int y, int *data, double &int_x, double &int_y)

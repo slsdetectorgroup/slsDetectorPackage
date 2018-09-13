@@ -56,17 +56,29 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
 #endif
    
 #ifndef MYROOT1
- hint=new int[nSubPixels*nPixelsX*nSubPixels*nPixelsY];
- memcpy(hint, orig->hint,nSubPixels*nPixelsX*nSubPixels*nPixelsY*sizeof(int));
+   hint=new int[nSubPixels*nPixelsX*nSubPixels*nPixelsY];
+   memcpy(hint, orig->hint,nSubPixels*nPixelsX*nSubPixels*nPixelsY*sizeof(int));
 #endif
  
  };
 
  virtual int setId(int i) {id=i; return id;};
 
-  virtual slsInterpolation* Clone() = 0;
+ virtual slsInterpolation* Clone() =0; /*{
+   return new slsInterpolation(this);
+   }*/
 
   int getNSubPixels() {return nSubPixels;};
+
+
+  int setNSubPixels(int ns)   {
+    if (ns>0 && ns!=nSubPixels) {
+      delete [] hint;
+      nSubPixels=ns;
+      hint=new int[nSubPixels*nPixelsX*nSubPixels*nPixelsY];
+    }
+    return nSubPixels;
+  }
 
   int getImageSize(int &nnx, int &nny, int &ns) {
     nnx=nSubPixels*nPixelsX;
@@ -186,6 +198,8 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
   void *readFlatField(const char * imgname, int nb=-1, double emin=1, double emax=0){return NULL;};
  virtual int *getFlatField(int &nb, double &emin, double &emax){nb=0; emin=0; emax=0; return getFlatField();}; 
 #endif
+
+ virtual void resetFlatField()=0;
 
   //virtual void Streamer(TBuffer &b);
 

@@ -198,32 +198,6 @@ returns the client version. The answer can be {\tt{thisversion 111220160718}}.
 returns the firmware version . The answer can be {\tt{detectorversion 11}}.
 Killing and starting the server on the boards allows you to check the firmware version you have and also if your board is a top/bottom/master/slave.
 
-\section{Gap pixels inside a module}
-A module is composed of 2$\times$4 chips. Each chip is of dimension 256$\times$256 pixels. There is no dead area in a module, as a single sensor covers the 8 chips. The physical pixels at the border of the chips in the sensor are double in size, to allow not to loose photons in the gaps between the chip alignment. They count double what the other normal pixels would count. In the corner between chips, the pixels are 4-times the normal size. See figure~\ref{fgappix} to check the geometry.
-
-\begin{figure}[t]
-\begin{center}
-\includegraphics[width=0.9\textwidth]{GapPixels}
-\end{center}
-\caption{Geometry of gap pixels between a module.}
-\label{fgappix}
-\end{figure}
-
-It is possible to interpolated the value on the larger pixels by splitting the events (or properly interpolating) introducing a virtual pixel for every double pixel, or 3 virtual pixels for every corner. In this way the counts of a single large pixel can be shared among the correct amount of pixels of the normal dimension.     
-
-The gap pixels can be added for the slsDetectorGui, from the datacall back or stealing the zmq port from the GUI (see later). The detector size can be added in the configuration file as first thing. 
-
-Putting the long side of the module first always as a convection for the code, WITHOUT GAP PIXELS an EIGER module is:
-\begin{verbatim}
-detsizechan 1024 512 
-\end{verbatim}
-and the client needs to be set {\tt{sls\_detector\_put  gappixels 0}}, which is the default behavior.\\
-If you want to have GAP PIXELS included: 
-\begin{verbatim}
-detsizechan 1030 514 
-\end{verbatim}
-and the client needs to be set {\tt{sls\_detector\_put  gappixels 1}}.
-
 \section{Setting up the threshold}
 \begin{verbatim}
 sls_detector_put 0-trimen N xxxx yyyy zzzz
@@ -310,6 +284,39 @@ The detector will not accept other commands while acquiring. If an acquisition w
 \end{itemize}
 this same command can be used after a non proper abortion of the acquisition to reset to normal status the detector.
 
+\section{Gap pixels inside a module}
+A module is composed of 2$\times$4 chips. Each chip is of dimension 256$\times$256 pixels. There is no dead area in a module, as a single sensor covers the 8 chips. The physical pixels at the border of the chips in the sensor are double in size, to allow not to loose photons in the gaps between the chip alignment. They count double what the other normal pixels would count. In the corner between chips, the pixels are 4-times the normal size. See figure~\ref{fgappix} to check the geometry.
+
+\begin{figure}[t]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{GapPixels}
+\end{center}
+\caption{Geometry of gap pixels between a module.}
+\label{fgappix}
+\end{figure}
+
+It is possible to interpolated the value on the larger pixels by splitting the events (or properly interpolating) introducing a virtual pixel for every double pixel, or 3 virtual pixels for every corner. In this way the counts of a single large pixel can be shared among the correct amount of pixels of the normal dimension.     
+
+The gap pixels can be added for the slsDetectorGui, from the datacall back or stealing the zmq port from the GUI (see later). The detector size can be added in the configuration file as first thing. 
+
+Putting the long side of the module first always as a convection for the code, WITHOUT GAP PIXELS an EIGER module is:
+\begin{verbatim}
+detsizechan 1024 512 
+\end{verbatim}
+and the client needs to be set {\tt{sls\_detector\_put  gappixels 0}}, which is the default behavior.\\
+If you want to have GAP PIXELS included: 
+\begin{verbatim}
+detsizechan 1030 514 
+\end{verbatim}
+and the client needs to be set {\tt{sls\_detector\_put  gappixels 1}}.
+
+The size of the gap pixels between modules to insert is 
+\begin{verbatim}
+   GapPixelsBetweenModules_x = 8
+   GapPixelsBetweenModules_y = 36
+\end{verbatim}
+where the {\tt{GapPixelsBetweenModules\_x}} are the one on the short side of the module, while {\tt{GapPixelsBetweenModules\_y} are teh ones on the long side of the module (where the wirebonds take physical space).
+  
 \section{Readout timing- maximum frame rate}\label{timing}
 IMPORTANT: to have faster readout and smaller dead time, one can configure {\tt{clkdivider}}, i.e. the speed at which the data are read, i.e. 200/100/50~MHz for {\tt{clkdivider 0/1/2}} and the dead time between frames through {\tt{flags parallel}}, i.e. acquire and read at the same time or acquire and then read out.
 The configuration of this timing variables allows to achieve different frame rates. NOTE THAT IN EIGER, WHATEVER YOU DO, THE FRAME RATE LIMITATIONS COME FROM THE NETWORK BOTTLENECK AS THE HARDWARE GOES FASTER THAN THE DATA OUT.
@@ -794,9 +801,15 @@ Packets Caught Mask        : 64 bytes
 Note that if one wants to  reconstruct the real time the detector was acquiring in 32 bit (autosumming mode), one would have to multiply the SubExptime (ns) for the SubFrame Number. 
 
 \subsection{Offline image reconstruction}
-The offline image reconstruction{\tt{slsImageReconstruction}} is not part of the package anymore.
+The offline image reconstruction{\tt{slsImageReconstruction}} is not part of the package anymore. The code is still available doing \\
+{\tt{git clone git@git.psi.ch:sls\_detectors\_software/sls\_image\_reconstruction.git slsImageReconstruction}}.
 
-The detector writes 2 raw files per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce cbf files. The executable uses the CBFlib-0.9.5 library (downloaded from the web as it download some architecture dependent packages at installation).\\
+Two possible conversions are possible: into \textbf{cbf} format or \textbf{hdf5}
+format. The detector writes 4 raw files per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce output files. By default an interpolation between the values of the large pixels is performed. Gap pixels between modules are also inserted.
+
+
+\subsubsection{cbf}
+The cbf executable executable uses the CBFlib-0.9.5 library (downloaded from the web as it download some architecture dependent packages at installation).Edit the Makefile to correclty point at it.\\
 \underline{At cSAXS, the CBFlib-0.9.5 has been compiled -such that the required packages are}\\\underline{ downloaded in /sls/X12SA/data/x12saop/EigerPackage/CBFlib-0.9.5.}\\ 
 
 To use it for a single module:
@@ -815,20 +828,16 @@ eg.
 The {\tt{[singlemodulelongside\_x]}} {\tt{[option to interpolate gap pixels]}} param are optional. Defaults are ``1'', the detector long side is on the x coordinate and start to reconstruct from module 0. 
 The executables: 
 \begin{verbatim}
-bcfMaker1.5M [file_name_with_dir]
-bcfMaker9M [file_name_with_dir]
+cbfMaker1.5M [file_name_with_dir]
+cbfMakerOMNY [file_name_with_dir]
+cbfMaker9M [file_name_with_dir]
 \end{verbatim}
-contain the hardcoded geometry for the 1.5M (3 modules horizontal on the long side) and for the 9M at cSAXS: 6(short side)$\times$3 (long side) modules.\\ 
+contain the hardcoded geometry for the 1.5M (3 modules horizontal on the long side), the 1.5M OMNY geometry (3 modules next to each other on the long side) and for the 9M at cSAXS: 6(short side)$\times$3 (long side) modules.\\ 
 Missing packets in a frame and border pixels ($\times 2$ and $\times 4$ are given with value $-1$ at the present time.
 
-It is important to know, that the pixels at the edge between 2 chips count more as double size. We can virtually introduced 1 virtual pixel per double larger pixel, so to have an even number of counts everywhere. Virtual pixels (not filled ) between module gaps are also inserted.
+\subsubsection{hdf5}
+In case of HDF5 output file, we rely on having the HDF5 1.10.1 library installed. Edit the Makefile to correclty point at it. Different compression methods are being tried so different external filters might be to be installed. This work is not finished yet.
 
- \begin{verbatim}
-   GapPixelsBetweenChips_x = 2;
-   GapPixelsBetweenChips_y = 2;
-   GapPixelsBetweenModules_x = 8;
-   GapPixelsBetweenModules_y = 36;
- \end{verbatim}
 
 \subsection{Read temperatures/HV from boards}
 

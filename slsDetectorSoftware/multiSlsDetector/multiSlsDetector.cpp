@@ -5078,8 +5078,8 @@ void multiSlsDetector::readFrameFromReceiver() {
 					currentFrameIndex       = doc["fIndex"].GetUint64();
 					currentFileIndex        = doc["fileIndex"].GetUint64();
 					currentSubFrameIndex    = doc["expLength"].GetUint();
-					coordX                  = doc["xCoord"].GetUint();
-					coordY                  = doc["yCoord"].GetUint();
+					coordY                  = doc["xCoord"].GetUint();
+					coordX                  = doc["yCoord"].GetUint();
 					if (eiger)
 						coordY = (nY - 1) - coordY;
 					//cout << "X:" << doc["xCoord"].GetUint() <<" Y:"<<doc["yCoord"].GetUint();

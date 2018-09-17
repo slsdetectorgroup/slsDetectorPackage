@@ -804,8 +804,7 @@ Note that if one wants to  reconstruct the real time the detector was acquiring 
 The offline image reconstruction{\tt{slsImageReconstruction}} is not part of the package anymore. The code is still available doing \\
 {\tt{git clone git@git.psi.ch:sls\_detectors\_software/sls\_image\_reconstruction.git slsImageReconstruction}}.
 
-Two possible conversions are possible: into \textbf{cbf} format or \textbf{hdf5}
-format. The detector writes 4 raw files per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce output files. By default an interpolation between the values of the large pixels is performed. Gap pixels between modules are also inserted.
+Three possible conversions are possible: into \textbf{cbf}, \textbf{hdf5} and \textbf{root} format. The detector writes 4 raw files per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce output files. By default an interpolation between the values of the large pixels is performed. Gap pixels between modules are also inserted.
 
 
 \subsubsection{cbf}
@@ -892,6 +891,17 @@ To use it any geometry:\\
 {\tt{hdf5Maker [filename] [pixels x, def=1024] [pixels y, def=512] [singlemodulelongside\_x, def=1] [fillgaps, def=Interpolate Big Pixels] [hdf5datasetname, def="Eiger"] [start det,def=0]}}\\
 eg.
 {\tt hdf5Maker /scratch/run\_63\_d0\_f000000000000\_3.raw  3072 512 1 2 ``Eiger'' 0}.\\
+
+\subsubsection{root}
+The data will be written as TH2D in root format. Edit the \tt{Makefile} to point to the correct ROOT library location. Compile the executable as:
+\begin{verbatim}
+make image 
+\end{verbatim}
+There is no program other executable that alredy keeps into account the geometry for it.
+To use it any geometry:\\
+{\tt{image [filename] [pixels x, def=1024] [pixels y, def=512] [singlemodulelongside\_x, def=1] [fillgaps, def=Interpolate Big Pixels] [hdf5datasetname, def="Eiger"] [start det,def=0]}}\\
+eg.
+{\tt image /scratch/run\_63\_d0\_f000000000000\_3.raw  3072 512 1 2 ``Eiger'' 0}.\\
 
 \subsection{Read temperatures/HV from boards}
 

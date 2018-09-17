@@ -803,6 +803,7 @@ Note that if one wants to  reconstruct the real time the detector was acquiring 
 \subsection{Offline image reconstruction}
 The offline image reconstruction{\tt{slsImageReconstruction}} is not part of the package anymore. The code is still available doing \\
 {\tt{git clone git@git.psi.ch:sls\_detectors\_software/sls\_image\_reconstruction.git slsImageReconstruction}}.
+Checkout the \tt{developer} branch if in a 3.1.X release or the \tt{v4.0.0} branch if in 4.0.X release of the \tt{slsDetector} code.
 
 Three possible conversions are possible: into \textbf{cbf}, \textbf{hdf5} and \textbf{root} format. The detector writes 4 raw files per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce output files. By default an interpolation between the values of the large pixels is performed. Gap pixels between modules are also inserted.
 

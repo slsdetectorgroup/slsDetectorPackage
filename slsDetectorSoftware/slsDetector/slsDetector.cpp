@@ -768,7 +768,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 	thisDetector->nOffset = detlist.nOffset;
 	thisDetector->dynamicRange = detlist.dynamicRange;
 	thisDetector->moveFlag = detlist.moveFlag;
-	detlist.nGappixelsY = detlist.nGappixelsX;
+	thisDetector->nGappixels[X] = detlist.nGappixelsX;
 	thisDetector->nGappixels[Y] = detlist.nGappixelsY;
 
 

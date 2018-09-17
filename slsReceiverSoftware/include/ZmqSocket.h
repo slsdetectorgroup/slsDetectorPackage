@@ -285,7 +285,7 @@ public:
 		        //additional stuff
 		        "\"flippedDataX\":%u"
 
-				;//"}\n\0";
+				;//"}\n";
 		int length = sprintf(buf, jsonHeaderFormat,
 				jsonversion, dynamicrange, fileIndex, npixelsx, npixelsy, imageSize,
 				acqIndex, fIndex, (fname == NULL)? "":fname, dummy?0:1,
@@ -298,9 +298,9 @@ public:
 						((flippedData == 0 ) ? 0 :flippedData[0])
 		);
 		if (additionalJsonHeader && strlen(additionalJsonHeader)) {
-		    length = sprintf(buf, "%s, %s}\n%c", buf, additionalJsonHeader, '\0');
+		    length = sprintf(buf, "%s, %s}\n", buf, additionalJsonHeader);
 		} else {
-		    length = sprintf(buf, "%s}\n%c", buf, '\0');
+		    length = sprintf(buf, "%s}\n", buf);
 		}
 
 #ifdef VERBOSE

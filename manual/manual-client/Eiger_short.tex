@@ -819,13 +819,29 @@ cbfMaker [filename with dir]
 eg.
 {\tt{cbfMaker /scratch/run\_63\_d1\_f000000000000\_3.raw}}\\
 
-To use it for a 1.5 multi modules:
-\begin{verbatim}
-cbfMaker [filename] [pixels x] [pixels y] ([singlemodulelongside_x] [start det])
-\end{verbatim}
+To use it any geometry:\\
+{\tt{cbfMaker [filename] [pixels x, def=1024] [pixels y, def=512] [singlemodulelongside\_x, def=1] [fillgaps, def=Interpolate Big Pixels] [hdf5datasetname, def="Eiger"] [start det,def=0]}}\\
 eg.
-{\tt cbfMaker /scratch/run\_63\_d0\_f000000000000\_3.raw  3072 512 1 0}.\\
-The {\tt{[singlemodulelongside\_x]}} {\tt{[option to interpolate gap pixels]}} param are optional. Defaults are ``1'', the detector long side is on the x coordinate and start to reconstruct from module 0. 
+{\tt cbfMaker /scratch/run\_63\_d0\_f000000000000\_3.raw  3072 512 1 2 ``Eiger'' 0}.\\
+
+The {\tt{[singlemodulelongside\_x]}} {\tt{[option to interpolate gap pixels]}} param are optional. Defaults are ``1'', the detector long side is on the x coordinate and to start to reconstruct from module 0.
+The interpolation scheme fro the gap pixels between chips is by default ``interpolate large big pixels'', =2;
+If you want to change interpolation scheme, use:\\
+\begin{tabular}{|c|c|}
+\hline
+interpolation scheme & argument\\
+\hline
+insert gap pixels and assign value only to the first one  & 0\\
+\hline
+equally divide the value of the counter bettern the two pixels & 1\\
+\hline
+interpolate large pixel value & 2\\
+\hline
+mask the value of the two gap pixels & 3\\
+\hline
+\end{tabular}
+\ \\
+\ \\ 
 The executables: 
 \begin{verbatim}
 cbfMaker1.5M [file_name_with_dir]
@@ -835,9 +851,47 @@ cbfMaker9M [file_name_with_dir]
 contain the hardcoded geometry for the 1.5M (3 modules horizontal on the long side), the 1.5M OMNY geometry (3 modules next to each other on the long side) and for the 9M at cSAXS: 6(short side)$\times$3 (long side) modules.\\ 
 Missing packets in a frame and border pixels ($\times 2$ and $\times 4$ are given with value $-1$ at the present time.
 
+Make sure the following options are uncommented in the {\tt{slsImageReconstruction/src/main\_csaxs.cpp}} file. 
+\begin{verbatim}
+#define MYCBF
+##following line only if you need to process with 
+##BUBBLE (Material Science / uXAS beamlines).
+#define MSHeader 
+\end{verbatim}
+Compile it with: 
+\begin{verbatim}
+make cbfMaker; make cbfMakerOMNY;
+\end{verbatim}
+
 \subsubsection{hdf5}
 In case of HDF5 output file, we rely on having the HDF5 1.10.1 library installed. Edit the Makefile to correclty point at it. Different compression methods are being tried so different external filters might be to be installed. This work is not finished yet.
 
+To choose HDF5, with ZLIB implementation, open {\tt{slsImageReconstruction/src/main\_csaxs.cpp}} and make sure that 
+\begin{verbatim}
+#define HDF5f
+#define ZLIB
+\end{verbatim}
+are not commented out. All other options need to be commented out. Copile the code with 
+\begin{verbatim}
+make hdf5Maker; make hdf5MakerOMNY;
+\end{verbatim}
+
+If you are at cSAXS. all images collected will be written in a single file. If you are not at CSAXS, most likely you want to have all the images written in a single raw file into an HDF5 file. The multiple HDF5 files are then linked in a master file, with many subdatasets (can be read by albula) or by a virtual file with a single dataset. If you want a mster o virtual file, uncomment this option:
+\begin{verbatim}
+#define MASTERVIRTUAL
+\end{verbatim}
+and recompile.
+To use it for a single module:
+\begin{verbatim}
+hdf5Maker [filename with dir]
+\end{verbatim}
+eg.
+{\tt{hdf5Maker /scratch/run\_63\_d1\_f000000000000\_3.raw}}\\
+
+To use it any geometry:\\
+{\tt{hdf5Maker [filename] [pixels x, def=1024] [pixels y, def=512] [singlemodulelongside\_x, def=1] [fillgaps, def=Interpolate Big Pixels] [hdf5datasetname, def="Eiger"] [start det,def=0]}}\\
+eg.
+{\tt hdf5Maker /scratch/run\_63\_d0\_f000000000000\_3.raw  3072 512 1 2 ``Eiger'' 0}.\\
 
 \subsection{Read temperatures/HV from boards}
 

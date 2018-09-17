@@ -315,7 +315,7 @@ The size of the gap pixels between modules to insert is
    GapPixelsBetweenModules_x = 8
    GapPixelsBetweenModules_y = 36
 \end{verbatim}
-where the {\tt{GapPixelsBetweenModules\_x}} are the one on the short side of the module, while {\tt{GapPixelsBetweenModules\_y} are teh ones on the long side of the module (where the wirebonds take physical space).
+where the {\tt{GapPixelsBetweenModules\_x}} are the one on the short side of the module, while {\tt{GapPixelsBetweenModules\_y}} are the ones on the long side of the module (where the wirebonds take physical space).
   
 \section{Readout timing- maximum frame rate}\label{timing}
 IMPORTANT: to have faster readout and smaller dead time, one can configure {\tt{clkdivider}}, i.e. the speed at which the data are read, i.e. 200/100/50~MHz for {\tt{clkdivider 0/1/2}} and the dead time between frames through {\tt{flags parallel}}, i.e. acquire and read at the same time or acquire and then read out.
@@ -900,6 +900,16 @@ ssh root@$i sync; done
 \end{verbatim}
 
 \section{Loading firmware bitfiles}
+
+\textbf{As a new procedure, the first thing to do is to kill the server on the boards, copy the new one there without starting it.} Note taht failure to do this step before may cause the linux on the baords to crash and not being able to ping it (this if the registers between the old and new firmware change).
+
+This is teh procedure from a terminal;
+\begin{verbatim}
+for i in beb111 beb070; 
+do ssh root@$i killall eigerDetectorServer; 
+scp eigerDetectorServer root@$i:~/executables/eigerDetectorServer ; 
+ssh root@$i sync; done
+\end{verbatim}
 
 A \textbf{bcp} executable (which needs \textbf{tftp} installed on the PC, is needed. 
 \begin{enumerate}

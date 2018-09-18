@@ -103,6 +103,7 @@ int init_detector( int b) {
     setSynchronization(GET_SYNCHRONIZATION_MODE);
     startReceiver(0);
     setMasterSlaveConfiguration();
+    setADC(-1);
   }
   strcpy(mess,"dummy message");
   strcpy(lastClientIP,"none");
@@ -2341,9 +2342,9 @@ int set_roi(int file_des) {
 			  ret=FAIL;
 		  }
 		  //#ifdef VERBOSE
-		  printf("Setting ROI to:");
+		  printf("\n\nSetting ROI: nroi=%d\n",nroi);
 		  for( i=0;i<nroi;i++)
-			  printf("%d\t%d\t%d\t%d\n",arg[i].xmin,arg[i].xmax,arg[i].ymin,arg[i].ymax);
+			  printf("\t%d\t%d\t%d\t%d\n",arg[i].xmin,arg[i].xmax,arg[i].ymin,arg[i].ymax);
 		  //#endif
 	  }
 	  /* execute action if the arguments correctly arrived*/

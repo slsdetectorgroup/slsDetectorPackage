@@ -2486,7 +2486,7 @@ ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret){
 				}
 			}
 		}
-
+		printf("\tGoing to enable adc: %d\n", adc);
 
 		//set rois for just 1 adc - take only 1st roi
 		if(adc!=-1){
@@ -2495,10 +2495,14 @@ ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret){
 			rois[0].ymin=-1;
 			rois[0].ymax=-1;
 			nROI = 1;
+			printf("\tActual xmin:%d xmax:%d\n",rois[0].xmin,rois[0].xmax);
 		}else
 			nROI = 0;
 
-		if((arg[0].xmin!=rois[0].xmin)||(arg[0].xmax!=rois[0].xmax)||(arg[0].ymin!=rois[0].ymin)||(arg[0].ymax!=rois[0].ymax))
+		if((n!=0) && ((arg[0].xmin!=rois[0].xmin)||
+				(arg[0].xmax!=rois[0].xmax)||
+				(arg[0].ymin!=rois[0].ymin)||
+				(arg[0].ymax!=rois[0].ymax)))
 			*ret=FAIL;
 		if(n!=nROI)
 			*ret=FAIL;
@@ -2508,9 +2512,11 @@ ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret){
 	}
 
 //#ifdef VERBOSE
-	printf("Rois:\n");
-	for( i=0;i<nROI;i++)
-		printf("%d\t%d\t%d\t%d\n",rois[i].xmin,rois[i].xmax,rois[i].ymin,rois[i].ymax);
+	if (nROI) {
+		printf("Rois:\n");
+		for( i=0;i<nROI;i++)
+			printf("\t%d\t%d\t%d\t%d\n\n",rois[i].xmin,rois[i].xmax,rois[i].ymin,rois[i].ymax);
+	}else printf("Rois: 0\n\n");
 //#endif
 	*retvalsize = nROI;
 	return rois;

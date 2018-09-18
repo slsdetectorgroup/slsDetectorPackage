@@ -1261,6 +1261,7 @@ int setADC(int adc){
 
 int configureMAC(int ipad,long long int macad,long long int detectormacad, int detipad, int ival, int udpport){
 
+	startReceiver(1);
 
 #ifdef DDEBUG
 	printf("Chip of Intrst Reg:%x\n",bus_r(CHIP_OF_INTRST_REG));

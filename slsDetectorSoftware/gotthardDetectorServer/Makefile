@@ -31,6 +31,7 @@ versioning:
 $(PROGS): $(OBJS)
 #	echo $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@)
+	rm gotthardDetectorServer.gdb
 
 
 install:	$(PROGS)

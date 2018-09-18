@@ -317,7 +317,7 @@ CONTENTS
 		previous one) in s in 32 bit mode.
 
 	6.	flags(modified):
-		extra flags "overflow" (default) and "nooverflow" for sub images in	32 
+		extra flags "nooverflow" (default) and "overflow" for sub images in	32 
 		bit mode. If set to overflow, it will set MSB of pixel data high if 
 		there was any saturation in any of the sub images 32 bit mode.
 		

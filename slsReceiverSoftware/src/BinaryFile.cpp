@@ -9,7 +9,6 @@
 #include "Fifo.h"
 
 #include <iostream>
-using namespace std;
 
 
 FILE* BinaryFile::masterfd = 0;

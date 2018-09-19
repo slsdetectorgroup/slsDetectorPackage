@@ -14,9 +14,8 @@
 #include <iostream>
 #include <errno.h>
 #include <cstring>
-using namespace std;
 
-const string Listener::TypeName = "Listener";
+const std::string Listener::TypeName = "Listener";
 
 
 Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
@@ -74,7 +73,7 @@ Listener::~Listener() {
 }
 
 /** getters */
-string Listener::GetType(){
+std::string Listener::GetType(){
 	return TypeName;
 }
 

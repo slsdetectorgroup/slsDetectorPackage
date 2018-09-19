@@ -7,7 +7,6 @@
 #include "File.h"
 
 #include <iostream>
-using namespace std;
 
 
 File::File(int ind, uint32_t* maxf,
@@ -35,28 +34,28 @@ File::File(int ind, uint32_t* maxf,
 
 File::~File() {}
 
-string File::GetCurrentFileName() {
+std::string File::GetCurrentFileName() {
 	return currentFileName;
 }
 
 void File::PrintMembers() {
-	FILE_LOG(logINFO) << "\nGeneral Writer Variables:" << endl
-			<< "Index: " << index << endl
-			<< "Max Frames Per File: " << *maxFramesPerFile << endl
-			<< "Number of Detectors in x dir: " << numDetX << endl
-			<< "Number of Detectors in y dir: " << numDetY << endl
-			<< "File Name Prefix: " << fileNamePrefix << endl
-			<< "File Path: " << filePath << endl
-			<< "File Index: " << *fileIndex << endl
-			<< "Over Write Enable: " << *overWriteEnable << endl
+	FILE_LOG(logINFO) << "\nGeneral Writer Variables:" << std::endl
+			<< "Index: " << index << std::endl
+			<< "Max Frames Per File: " << *maxFramesPerFile << std::endl
+			<< "Number of Detectors in x dir: " << numDetX << std::endl
+			<< "Number of Detectors in y dir: " << numDetY << std::endl
+			<< "File Name Prefix: " << fileNamePrefix << std::endl
+			<< "File Path: " << filePath << std::endl
+			<< "File Index: " << *fileIndex << std::endl
+			<< "Over Write Enable: " << *overWriteEnable << std::endl
 
-			<< "Detector Index: " << *detIndex << endl
-			<< "Number of Units Per Detector: " << *numUnitsPerDetector << endl
-			<< "Number of Images in Acquisition: " << *numImages << endl
-			<< "Dynamic Range: " << *dynamicRange << endl
-			<< "UDP Port number: " << *udpPortNumber << endl
-			<< "Master File Name: " << masterFileName << endl
-			<< "Current File Name: " << currentFileName << endl
+			<< "Detector Index: " << *detIndex << std::endl
+			<< "Number of Units Per Detector: " << *numUnitsPerDetector << std::endl
+			<< "Number of Images in Acquisition: " << *numImages << std::endl
+			<< "Dynamic Range: " << *dynamicRange << std::endl
+			<< "UDP Port number: " << *udpPortNumber << std::endl
+			<< "Master File Name: " << masterFileName << std::endl
+			<< "Current File Name: " << currentFileName << std::endl
 			<< "Silent Mode: " << *silentMode;
 }
 

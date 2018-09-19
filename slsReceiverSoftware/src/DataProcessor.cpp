@@ -18,9 +18,8 @@
 #include <iostream>
 #include <errno.h>
 #include <cstring>
-using namespace std;
 
-const string DataProcessor::TypeName = "DataProcessor";
+const std::string DataProcessor::TypeName = "DataProcessor";
 
 
 DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo*& f,
@@ -78,7 +77,7 @@ DataProcessor::~DataProcessor() {
 }
 
 /** getters */
-string DataProcessor::GetType(){
+std::string DataProcessor::GetType(){
 	return TypeName;
 }
 
@@ -478,7 +477,7 @@ void DataProcessor::PadMissingPackets(char* buf) {
 		if (!nmissing)
 			break;
 
-		FILE_LOG(logDEBUG) << "padding for " << index << " for pnum: " << pnum << endl;
+		FILE_LOG(logDEBUG) << "padding for " << index << " for pnum: " << pnum << std::endl;
 
 		// missing packet
 		switch(myDetectorType) {

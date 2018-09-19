@@ -14,7 +14,6 @@
 #include "slsReceiver.h"
 #include "gitInfoReceiver.h"
 
-using namespace std;
 
 
 
@@ -22,9 +21,9 @@ slsReceiver::slsReceiver(int argc, char *argv[]):
 		tcpipInterface (0) {
 
 	// options
-	map<string, string> configuration_map;
+	std::map<std::string, std::string> configuration_map;
 	int tcpip_port_no = 1954;
-	string fname = "";
+	std::string fname = "";
 	int64_t tempval = 0;
 
 	//parse command line for config
@@ -68,28 +67,28 @@ slsReceiver::slsReceiver(int argc, char *argv[]):
 		case 'v':
 			tempval = GITREV;
 			tempval = (tempval <<32) | GITDATE;
-			cout << "SLS Receiver " << GITBRANCH << " (0x" << hex << tempval << ")" << endl;
-			throw exception();
+			std::cout << "SLS Receiver " << GITBRANCH << " (0x" << std::hex << tempval << ")" << std::endl;
+			throw std::exception();
 
 		case 'h':
 		default:
-			string help_message = "\n"
-					+ string(argv[0]) + "\n"
-					+ "Usage: " + string(argv[0]) + " [arguments]\n"
+			std::string help_message = "\n"
+					+ std::string(argv[0]) + "\n"
+					+ "Usage: " + std::string(argv[0]) + " [arguments]\n"
 					+ "Possible arguments are:\n"
 					+ "\t-f, --config <fname>    : Loads config from file\n"
 					+ "\t-t, --rx_tcpport <port> : TCP Communication Port with client. \n"
 					+ "\t                          Default: 1954. Required for multiple \n"
 					+ "\t                          receivers\n\n";
 
-			FILE_LOG(logINFO) << help_message << endl;
-			throw exception();
+			FILE_LOG(logINFO) << help_message << std::endl;
+			throw std::exception();
 
 		}
 	}
 
 	if( !fname.empty() && read_config_file(fname, &tcpip_port_no, &configuration_map) == FAIL) {
-		throw exception();
+		throw std::exception();
 	}
 
 	// might throw an exception

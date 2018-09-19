@@ -14,7 +14,6 @@ class DataProcessor;
 class DataStreamer;
 class Fifo;
 
-#include <vector>
 
 
 class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBaseImplementation {
@@ -74,11 +73,11 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	void setFileWriteEnable(const bool b);
 
 	/**
-	 * Set Short Frame Enabled, later will be moved to getROI (so far only for gotthard)
-	 * @param i index of adc enabled, else -1 if all enabled
+	 * Set ROI
+	 * @param i ROI
 	 * @return OK or FAIL
 	 */
-	int setShortFrameEnable(const int i);
+	int setROI(const std::vector<ROI*> i);
 
 	/**
 	 * Set the Frequency of Frames Sent to GUI

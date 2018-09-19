@@ -11,13 +11,13 @@
  * @short Base class with all the functions for the UDP inteface of the receiver
  */
 
-#include <exception>
-
 #include "sls_receiver_defs.h"
 #include "receiver_defs.h"
 #include "utilities.h"
 #include "logger.h"
 
+#include <exception>
+#include <vector>
 
 class UDPInterface {
 
@@ -54,6 +54,8 @@ class UDPInterface {
 	 *	-setStreamingSourceIP
 	 *	-setAdditionalJsonHeader
 	 *	-setDataStreamEnable
+	 *	-setROI
+	 *
 	 *
 	 *
 	 *  supported sequence of method-calls:
@@ -114,7 +116,7 @@ class UDPInterface {
 	 * @param [in] receiver_type type can be standard or custom (must be derived from base class)
 	 * @return a UDPInterface reference to object depending on receiver type
 	 */
-	static UDPInterface *create(string receiver_type = "standard");
+	static UDPInterface *create(std::string receiver_type = "standard");
 
 	/**
 	 * Destructor
@@ -271,10 +273,10 @@ class UDPInterface {
 
 	//***acquisition parameters***
 	/**
-	 * Get Short Frame Enabled, later will be moved to getROI (so far only for gotthard)
+	 * Get ROI
 	 * @return index of adc enabled, else -1 if all enabled
 	 */
-	virtual int getShortFrameEnable() const = 0;
+	virtual std::vector<slsReceiverDefs::ROI*> getROI() const = 0;
 
 	/**
 	 * Get the Frequency of Frames Sent to GUI
@@ -420,7 +422,7 @@ class UDPInterface {
 	 * Configure command line parameters
 	 * @param config_map mapping of config parameters passed from command line arguments
 	 */
-	virtual void configure(map<string, string> config_map) = 0;
+	virtual void configure(std::map<std::string, std::string> config_map) = 0;
 
 	/*
 	 * Set multi detector size
@@ -535,11 +537,11 @@ class UDPInterface {
 
 	//***acquisition parameters***
 	/**
-	 * Set Short Frame Enabled, later will be moved to getROI (so far only for gotthard)
-	 * @param i index of adc enabled, else -1 if all enabled
+	 * Set ROI
+	 * @param i ROI
 	 * @return OK or FAIL
 	 */
-	virtual int setShortFrameEnable(const int i) = 0;
+	virtual int setROI(const std::vector<slsReceiverDefs::ROI*> i) = 0;
 
 	/**
 	 * Set the Frequency of Frames Sent to GUI

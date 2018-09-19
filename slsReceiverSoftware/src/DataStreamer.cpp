@@ -11,12 +11,11 @@
 
 #include <iostream>
 #include <errno.h>
-using namespace std;
 
-const string DataStreamer::TypeName = "DataStreamer";
+const std::string DataStreamer::TypeName = "DataStreamer";
 
 
-DataStreamer::DataStreamer(int ind, Fifo*& f, uint32_t* dr, int* sEnable,
+DataStreamer::DataStreamer(int ind, Fifo*& f, uint32_t* dr, std::vector<ROI*>* r,
 		uint64_t* fi, int* fd, char* ajh, bool* sm) :
 		ThreadObject(ind),
 		runningFlag(0),
@@ -24,7 +23,8 @@ DataStreamer::DataStreamer(int ind, Fifo*& f, uint32_t* dr, int* sEnable,
 		fifo(f),
 		zmqSocket(0),
 		dynamicRange(dr),
-		shortFrameEnable(sEnable),
+		roi(r),
+		adcConfigured(-1),
 		fileIndex(fi),
 		flippedData(fd),
 		additionJsonHeader(ajh),
@@ -51,7 +51,7 @@ DataStreamer::~DataStreamer() {
 }
 
 /** getters */
-string DataStreamer::GetType(){
+std::string DataStreamer::GetType(){
 	return TypeName;
 }
 
@@ -88,7 +88,9 @@ void DataStreamer::ResetParametersforNewMeasurement(char* fname){
 		delete [] completeBuffer;
 		completeBuffer = 0;
 	}
-	if (*shortFrameEnable >= 0) {
+	if (roi->size()) {
+		if (generalData->myDetectorType == GOTTHARD)
+			adcConfigured = generalData->GetAdcConfigured(index, *roi);
 		completeBuffer = new char[generalData->imageSizeComplete];
 		memset(completeBuffer, 0, generalData->imageSizeComplete);
 	}
@@ -216,7 +218,7 @@ void DataStreamer::ProcessAnImage(char* buf) {
 			cprintf(RED,"Error: Could not send zmq header for fnum %lld and streamer %d\n",
 					(long long int) fnum, index);
 
-		memcpy(completeBuffer + ((generalData->imageSize)**shortFrameEnable), buf + FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header), (uint32_t)(*((uint32_t*)buf)) ); // new size possibly from callback
+		memcpy(completeBuffer + ((generalData->imageSize) * adcConfigured), buf + FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header), (uint32_t)(*((uint32_t*)buf)) ); // new size possibly from callback
 		if (!zmqSocket->SendData(completeBuffer, generalData->imageSizeComplete))
 			cprintf(RED,"Error: Could not send zmq data for fnum %lld and streamer %d\n",
 					(long long int) fnum, index);

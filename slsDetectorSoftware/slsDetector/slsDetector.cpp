@@ -4149,22 +4149,6 @@ int slsDetector::configureMAC() {
 		std::cout<< "Configuring MAC failed " << std::endl;
 		setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
 	}
-	else if (thisDetector->myDetectorType==GOTTHARD){
-
-		// update roi in update receiver
-		if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
-			int fnum=F_RECEIVER_SHORT_FRAME;
-#ifdef VERBOSE
-			std::cout << "Sending adc val to receiver " << retval << std::endl;
-#endif
-			if (connectData() == OK){
-				ret=thisReceiver->sendInt(fnum,retval,retval);
-				disconnectData();
-			}
-			if(ret==FAIL)
-				setErrorMask((getErrorMask())|(COULDNOT_SET_ROI));
-		}
-	}
 
 	return ret;
 }
@@ -5316,6 +5300,9 @@ string slsDetector::setReceiver(string receiverIP) {
 			setReceiverStreamingIP(getReceiverStreamingIP());
 			setAdditionalJsonHeader(getAdditionalJsonHeader());
 			enableDataStreamingFromReceiver(enableDataStreamingFromReceiver(-1));
+
+			if(thisDetector->myDetectorType == GOTTHARD)
+				sendROI(-1, NULL);
 		}
 	}
 
@@ -6060,9 +6047,6 @@ int slsDetector::setROI(int n,ROI roiLimits[]) {
 	}
 
 	ret = sendROI(n,roiLimits);
-	if(ret==FAIL)
-		setErrorMask((getErrorMask())|(COULDNOT_SET_ROI));
-
 
 	if(thisDetector->myDetectorType==JUNGFRAUCTB) getTotalNumberOfChannels();
 	return ret;
@@ -6141,9 +6125,25 @@ int slsDetector::sendROI(int n,ROI roiLimits[]) {
 		<<roiLimits[j].ymin<<"\t"<<roiLimits[j].ymax<<")"<<endl;
 #endif
 
-	// update receiver
-	if (thisDetector->myDetectorType == GOTTHARD)
+	// old firmware requires configuremac after setting roi
+	if (thisDetector->myDetectorType == GOTTHARD) {
 		configureMAC();
+	}
+
+	// update roi in receiver
+	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+		int fnum=F_RECEIVER_SET_ROI;
+#ifdef VERBOSE
+		std::cout << "Sending ROI to receiver " << thisDetector->nROI << std::endl;
+#endif
+		if (connectData() == OK){
+			ret=thisReceiver->sendROI(fnum, thisDetector->nROI, thisDetector->roiLimits);
+			disconnectData();
+		}
+		if(ret==FAIL)
+			setErrorMask((getErrorMask())|(COULDNOT_SET_ROI));
+	}
+
 
 	return ret;
 }

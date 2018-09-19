@@ -10,7 +10,6 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
-using namespace std;
 
 
 Fifo::Fifo(int ind, uint32_t fifoItemSize, uint32_t depth):

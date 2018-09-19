@@ -14,7 +14,6 @@
 #include <string>
 #include <iomanip>
 #include <string.h>
-using namespace std;
 
 #define MAX_MASTER_FILE_LENGTH 2000
 
@@ -44,10 +43,10 @@ class BinaryFileStatic {
 	static std::string CreateFileName(char* fpath, char* fnameprefix, uint64_t findex, bool frindexenable,
 			uint64_t fnum = 0, int dindex = -1, int numunits = 1, int unitindex = 0)
 	{
-		ostringstream osfn;
+		std::ostringstream osfn;
 		osfn << fpath << "/" << fnameprefix;
 		if (dindex >= 0) osfn << "_d" << (dindex * numunits + unitindex);
-		if (frindexenable) osfn << "_f" << setfill('0') << setw(12) << fnum;
+		if (frindexenable) osfn << "_f" << std::setfill('0') << std::setw(12) << fnum;
 		osfn << "_" << findex;
 		osfn << ".raw";
 		return osfn.str();
@@ -60,9 +59,9 @@ class BinaryFileStatic {
 	 * @param findex file index
 	 * @returns master file name
 	 */
-	string CreateMasterFileName(char* fpath, char* fnameprefix, uint64_t findex)
+	std::string CreateMasterFileName(char* fpath, char* fnameprefix, uint64_t findex)
 	{
-		ostringstream osfn;
+		std::ostringstream osfn;
 		osfn << fpath << "/" << fnameprefix;
 		osfn << "_master";
 		osfn << "_" << findex;
@@ -115,7 +114,7 @@ class BinaryFileStatic {
 	 * @param version version of software for binary writing
 	 * @returns 0 for success and 1 for fail
 	 */
-	static int CreateMasterDataFile(FILE*& fd, string fname, bool owenable,
+	static int CreateMasterDataFile(FILE*& fd, std::string fname, bool owenable,
 					uint32_t dr, bool tenE,	uint32_t size,
 					uint32_t nPixelsX, uint32_t nPixelsY, uint64_t nf,
 					uint32_t maxf,

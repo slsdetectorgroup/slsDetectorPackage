@@ -11,8 +11,6 @@
 #include <iomanip>
 #include <libgen.h>			//basename
 #include <string.h>
-using namespace std;
-
 
 
 pthread_mutex_t HDF5File::Mutex = PTHREAD_MUTEX_INITIALIZER;

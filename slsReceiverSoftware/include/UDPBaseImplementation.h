@@ -182,10 +182,10 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 
 	//***acquisition parameters***
 	/**
-	 * Get Short Frame Enabled, later will be moved to getROI (so far only for gotthard)
+	 * Get ROI
 	 * @return index of adc enabled, else -1 if all enabled
 	 */
-	int getShortFrameEnable() const;
+	std::vector<ROI*> getROI() const;
 
 	/**
 	 * Get the Frequency of Frames Sent to GUI
@@ -332,7 +332,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * Configure command line parameters
 	 * @param config_map mapping of config parameters passed from command line arguments
 	 */
-	void configure(map<string, string> config_map);
+	void configure(std::map<std::string, std::string> config_map);
 
 	/*
 	 * Set multi detector size
@@ -448,11 +448,11 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 
 	//***acquisition parameters***
 	/**
-	 * Set Short Frame Enabled, later will be moved to getROI (so far only for gotthard)
-	 * @param i index of adc enabled, else -1 if all enabled
+	 * Set ROI
+	 * @param i ROI
 	 * @return OK or FAIL
 	 */
-	int setShortFrameEnable(const int i);
+	int setROI(const std::vector<ROI*> i);
 
 	/**
 	 * Set the Frequency of Frames Sent to GUI
@@ -785,8 +785,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	bool dataCompressionEnable;
 
 	//***acquisition parameters***
-	/* Short Frame Enable or index of adc enabled, else -1 if all enabled (gotthard specific) TODO: move to setROI */
-	int shortFrameEnable;
+	/* ROI */
+	std::vector<ROI*> roi;
 	/** Frequency of Frames sent to GUI */
 	uint32_t frameToGuiFrequency;
 	/** Timer of Frames sent to GUI when frequency is 0 */

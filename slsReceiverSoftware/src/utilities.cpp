@@ -11,20 +11,19 @@
 #include "logger.h"
 
 
-using namespace std;
 
 
-int read_config_file(string fname, int *tcpip_port_no, map<string, string> * configuration_map ){
+int read_config_file(std::string fname, int *tcpip_port_no, std::map<std::string, std::string> * configuration_map ){
 	
-	ifstream infile;
-	string sLine,sargname, sargvalue;
+	std::ifstream infile;
+	std::string sLine,sargname, sargvalue;
 	int iline = 0;
 	int success = slsReceiverDefs::OK;
 
 
 	FILE_LOG(logINFO) << "config file name " << fname;
 	try {
-		infile.open(fname.c_str(), ios_base::in);
+		infile.open(fname.c_str(), std::ios_base::in);
 	} catch(...) {
 		FILE_LOG(logERROR) << "Could not open configuration file " << fname ;
 		success = slsReceiverDefs::FAIL;
@@ -37,14 +36,14 @@ int read_config_file(string fname, int *tcpip_port_no, map<string, string> * con
 			
 			//VERBOSE_PRINT(sLine);
 			
-			if(sLine.find('#') != string::npos)
+			if(sLine.find('#') != std::string::npos)
 				continue;
 
 			else if(sLine.length()<2)
 				continue;
 
 			else{
-				istringstream sstr(sLine);
+				std::istringstream sstr(sLine);
 				
 				//parameter name
 				if(sstr.good()){

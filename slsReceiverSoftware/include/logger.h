@@ -24,13 +24,13 @@
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 #define MYCONCAT(x,y)  
-#define __AT__  string(__FILE__) + string("::") + string(__func__) + string("(): ")
+#define __AT__  std::string(__FILE__) + std::string("::") + std::string(__func__) + std::string("(): ")
 #define __SHORT_FORM_OF_FILE__ \
 (strrchr(__FILE__,'/') \
 ? strrchr(__FILE__,'/')+1 \
 : __FILE__ \
 )
-#define __SHORT_AT__  string(__SHORT_FORM_OF_FILE__) + string("::") + string(__func__) + string("(): ")
+#define __SHORT_AT__  std::string(__SHORT_FORM_OF_FILE__) + std::string("::") + std::string(__func__) + std::string("(): ")
 
 
 

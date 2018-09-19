@@ -16,7 +16,6 @@
 #include <sys/wait.h>	//wait
 #include <unistd.h> 	//usleep
 #include <syscall.h>
-using namespace std;
 
 
 bool keeprunning;

@@ -23,7 +23,6 @@ using namespace H5;
 #include <stdlib.h>	 //malloc
 #include <sstream>
 #include <cstring>	//memset
-using namespace std;
 
 class HDF5FileStatic: public virtual slsReceiverDefs {
 

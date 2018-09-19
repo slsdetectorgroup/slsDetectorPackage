@@ -19,7 +19,7 @@ class multiSlsDetectorClient  {
 
 public:
 	multiSlsDetectorClient(int argc, char *argv[], int action, multiSlsDetector *myDetector=NULL) {	\
-		string answer;					      									\
+		std::string answer;					      									\
 		multiSlsDetectorCommand *myCmd;					      					\
 		int id = -1, pos = -1, iv = 0;			      							\
 		bool verify = true, update = true;										\
@@ -90,7 +90,7 @@ public:
 				strcpy(cmd, argv[0]);											\
 			}																	\
 			// special commands
-			string scmd = cmd;													\
+			std::string scmd = cmd;													\
 			// free without calling multiSlsDetector constructor
 			if (scmd == "free") {												\
 				if (pos != -1)													\

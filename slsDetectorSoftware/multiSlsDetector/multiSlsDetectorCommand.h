@@ -28,8 +28,8 @@ class multiSlsDetectorCommand : public slsDetectorCommand {
 /*      \returns answer string  */
 /*   *\/ */
 
-    string executeLine(int narg, char *args[], int action, int id=-1) { \
-      string s;								\
+    std::string executeLine(int narg, char *args[], int action, int id=-1) { \
+      std::string s;								\
       if (id>=0) {
 	slsDetector *d=myDet->getSlsDetector(id);			\
 	if (d) {							\
@@ -39,7 +39,7 @@ class multiSlsDetectorCommand : public slsDetectorCommand {
 		  myDet->setErrorMask((myDet->getErrorMask())|(1<<id));		\
 	  delete cmd;
 	} else
-	  s=string("detector does no exist");			\
+	  s=std::string("detector does no exist");			\
       } else							\
 	s=slsDetectorCommand::executeLine(narg,args,action);	\
       return s;
@@ -48,13 +48,13 @@ class multiSlsDetectorCommand : public slsDetectorCommand {
     /**
      * calls executeLine with PUT_ACTION
      */
-    string putCommand(int narg, char *args[], int pos=-1){\
+    std::string putCommand(int narg, char *args[], int pos=-1){\
     	return executeLine(narg, args,slsDetectorDefs::PUT_ACTION,pos);\
     };
     /**
      * calls executeLine with GET_ACTION
      */
-    string getCommand(int narg, char *args[], int pos=-1){\
+    std::string getCommand(int narg, char *args[], int pos=-1){\
     	return executeLine(narg, args,slsDetectorDefs::GET_ACTION,pos);\
     };
 

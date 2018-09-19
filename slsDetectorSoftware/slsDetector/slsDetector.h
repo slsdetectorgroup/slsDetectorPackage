@@ -519,7 +519,7 @@ public:
 	 * @param pos insignificant
 	 * @returns hostname
 	 */
-	string getHostname(int pos = -1);
+	std::string getHostname(int pos = -1);
 
 	/**
 	 * Appends detectors to the end of the list in shared memory
@@ -582,7 +582,7 @@ public:
 	 * @param type string of detector type
 	 * @returns detector type in receiver
  	 */
-	int setDetectorType(string stype);
+	int setDetectorType(std::string stype);
 
 	/**
 	 * Get Detector type from shared memory variable
@@ -596,14 +596,14 @@ public:
 	 * @param pos insignificant
 	 * @returns string version of detector type from shared memory variable
 	 */
-	string sgetDetectorsType(int pos=-1);
+	std::string sgetDetectorsType(int pos=-1);
 
 	/**
 	 * Just to overload getDetectorType from users
 	 * Gets string version of detector type from shared memory variable
 	 * @returns gets string version of detector type from shared memory variable
 	 */
-	string getDetectorType();
+	std::string getDetectorType();
 
 	/**
 	 * Returns number of modules from shared memory (Mythen)
@@ -768,7 +768,7 @@ public:
 	 * @returns empty string if it is online
 	 * else returns hostnameif it is offline
 	 */
-	string checkOnline();
+	std::string checkOnline();
 
 	/**
 	 * Configure the TCP socket communciation and initializes the socket instances
@@ -778,7 +778,7 @@ public:
 	 * @returns OK or FAIL
 	 * \sa sharedSlsDetector
 	 */
-	int setTCPSocket(string const name="", int const control_port=-1, int const stop_port=-1);
+	int setTCPSocket(std::string const name="", int const control_port=-1, int const stop_port=-1);
 
 
 	/**
@@ -802,7 +802,7 @@ public:
 	int getStopPort();
 
 	/**
-	 * Returns the receiver TCP port  \sa sharedSlsDetector
+	 * Returns the receiver TCP 	port  \sa sharedSlsDetector
 	 * @returns the receiver TCP port
 	 */
 	int getReceiverPort();
@@ -818,7 +818,7 @@ public:
 	 * Get last client IP saved on detector server
 	 * @returns last client IP saved on detector server
 	 */
-	string getLastClientIP();
+	std::string getLastClientIP();
 
 	/**
 	 * Exit detector server
@@ -833,7 +833,7 @@ public:
 	 * @param answer is the answer from the detector
 	 * @returns OK or FAIL
 	 */
-	int execCommand(string cmd, string answer);
+	int execCommand(std::string cmd, std::string answer);
 
 	/**
 	 * Updates some of the shared memory receiving the data from the detector
@@ -854,14 +854,14 @@ public:
 	 * @param fname configuration file name
 	 * @return OK or FAIL
 	 */
-	int readConfigurationFile(string const fname);
+	int readConfigurationFile(std::string const fname);
 
 	/**
 	 * Load configuration from a stream
 	 * @param infile stream
 	 * @return OK or FAIL
 	 */
-	int readConfigurationFile(ifstream &infile);
+	int readConfigurationFile(std::ifstream &infile);
 
 	/**
 	 * Write current configuration to a file
@@ -869,7 +869,7 @@ public:
 	 * @param fname configuration file name
 	 * @returns OK or FAIL
 	 */
-	int writeConfigurationFile(string const fname);
+	int writeConfigurationFile(std::string const fname);
 
 	/**
 	 * Write current configuration to a stream
@@ -877,13 +877,13 @@ public:
 	 * @param id detector id
 	 * @returns OK or FAIL
 	 */
-	int writeConfigurationFile(ofstream &outfile, int id=-1);
+	int writeConfigurationFile(std::ofstream &outfile, int id=-1);
 
 	/**
 	 * Returns the trimfile or settings file name (Useless??)
 	 * @returns the trimfile or settings file name
 	 */
-	string getSettingsFile();
+	std::string getSettingsFile();
 
 	/**
 	 * Writes a trim/settings file for module number imod,
@@ -896,7 +896,7 @@ public:
 	 * \sa ::sls_detector_module sharedSlsDetector mythenDetector::writeSettingsFile(string, int)
 	 */
 	using energyConversion::writeSettingsFile;
-	int writeSettingsFile(string fname, int imod, int iodelay, int tau);
+	int writeSettingsFile(std::string fname, int imod, int iodelay, int tau);
 
 	/**
 	 * Get detector settings
@@ -965,7 +965,7 @@ public:
 	 * @param s trimbits/settings directory
 	 * @returns the trimbit/settings directory
 	 */
-	std::string setSettingsDir(string s);
+	std::string setSettingsDir(std::string s);
 
 	/**
 	 * Returns the calibration files directory   \sa  sharedSlsDetector (Mythen)
@@ -978,7 +978,7 @@ public:
 	 * @param s the calibration files directory
 	 * @returns the calibration files directory
 	 */
-	std::string setCalDir(string s);
+	std::string setCalDir(std::string s);
 
 	/**
 	 * Loads the modules settings/trimbits reading from a specific file
@@ -988,7 +988,7 @@ public:
 	 * from which will be calculated the detector index and the module index (-1 for all)
 	 * returns OK or FAIL
 	 */
-	int loadSettingsFile(string fname, int imod=-1);
+	int loadSettingsFile(std::string fname, int imod=-1);
 
 	/**
 	 * Saves the modules settings/trimbits to a specific file
@@ -997,7 +997,7 @@ public:
 	 * @param imod module number (-1 for all)
 	 * returns OK or FAIL
 	 */
-	int saveSettingsFile(string fname, int imod=-1);
+	int saveSettingsFile(std::string fname, int imod=-1);
 
 	/**
 	 * Loads the modules calibration data reading from a specific file (Mythen)
@@ -1006,7 +1006,7 @@ public:
 	 * @param imod module number (-1 for all)
 	 * returns OK or FAIL
 	 */
-	int loadCalibrationFile(string fname, int imod=-1);
+	int loadCalibrationFile(std::string fname, int imod=-1);
 
 	/**
 	 * Saves the modules calibration data to a specific file (Mythen)
@@ -1015,7 +1015,7 @@ public:
 	 * @param imod module number (-1 for all)
 	 * returns OK or FAIL
 	 */
-	int saveCalibrationFile(string fname, int imod=-1);
+	int saveCalibrationFile(std::string fname, int imod=-1);
 
 	/**
 	 * Sets/gets the detector in position i as master of the structure (Mythen)
@@ -1275,94 +1275,94 @@ public:
 	 * @param s network parameter value
 	 * @returns network parameter value set (from getNetworkParameter)
 	 */
-	string setNetworkParameter(networkParameter index, string value);
+	std::string setNetworkParameter(networkParameter index, std::string value);
 
 	/**
 	 * Get network parameter
 	 * @param p network parameter type
 	 * @returns network parameter value set (from getNetworkParameter)
 	 */
-	string getNetworkParameter(networkParameter index);
+	std::string getNetworkParameter(networkParameter index);
 
 	/**
 	 * Returns the detector MAC address\sa sharedSlsDetector
 	 * @returns the detector MAC address
 	 */
-	string getDetectorMAC();
+	std::string getDetectorMAC();
 
 	/**
 	 * Returns the detector IP address\sa sharedSlsDetector
 	 * @returns the detector IP address
 	 */
-	string getDetectorIP();
+	std::string getDetectorIP();
 
 	/**
 	 * Returns the receiver IP address\sa sharedSlsDetector
 	 * @returns the receiver IP address
 	 */
-	string getReceiver();
+	std::string getReceiver();
 
 	/**
 	 * Returns the receiver UDP IP address\sa sharedSlsDetector
 	 * @returns the receiver UDP IP address
 	 */
-	string getReceiverUDPIP();
+	std::string getReceiverUDPIP();
 
 	/**
 	 * Returns the receiver UDP MAC address\sa sharedSlsDetector
 	 * @returns the receiver UDP MAC address
 	 */
-	string getReceiverUDPMAC();
+	std::string getReceiverUDPMAC();
 
 	/**
 	 * Returns the receiver UDP port\sa sharedSlsDetector
 	 * @returns the receiver UDP port
 	 */
-	string getReceiverUDPPort();
+	std::string getReceiverUDPPort();
 
 	/**
 	 * Returns the receiver UDP port 2 of same interface\sa sharedSlsDetector
 	 * @returns the receiver UDP port 2 of same interface
 	 */
-	string getReceiverUDPPort2();
+	std::string getReceiverUDPPort2();
 
 	/**
 	 * Returns the client zmq port \sa sharedSlsDetector
 	 * @returns the client zmq port
 	 */
-	string getClientStreamingPort();
+	std::string getClientStreamingPort();
 
 	/**
 	 * Returns the receiver zmq port \sa sharedSlsDetector
 	 * @returns the receiver zmq port
 	 */
-	string getReceiverStreamingPort();
+	std::string getReceiverStreamingPort();
 
 	/**
 	 * Returns the client zmq ip \sa sharedSlsDetector
 	 * @returns the client zmq ip, returns "none" if default setting and no custom ip set
 	 */
-	string getClientStreamingIP();
+	std::string getClientStreamingIP();
 
 	/**
 	 * Returns the receiver zmq ip \sa sharedSlsDetector
 	 * @returns the receiver zmq ip, returns "none" if default setting and no custom ip set
 	 */
-	string getReceiverStreamingIP();
+	std::string getReceiverStreamingIP();
 
 	/**
 	 * Validates the format of the detector MAC address and sets it \sa sharedSlsDetector
 	 * @param detectorMAC detector MAC address
 	 * @returns the detector MAC address
 	 */
-	string setDetectorMAC(string detectorMAC);
+	std::string setDetectorMAC(std::string detectorMAC);
 
 	/**
 	 * Validates the format of the detector IP address and sets it \sa sharedSlsDetector
 	 * @param detectorIP detector IP address
 	 * @returns the detector IP address
 	 */
-	string setDetectorIP(string detectorIP);
+	std::string setDetectorIP(std::string detectorIP);
 
 	/**
 	 * Validates and sets the receiver.
@@ -1371,21 +1371,21 @@ public:
 	 * @param receiver receiver hostname or IP address
 	 * @returns the receiver IP address from shared memory
 	 */
-	string setReceiver(string receiver);
+	std::string setReceiver(std::string receiver);
 
 	/**
 	 * Validates the format of the receiver UDP IP address and sets it \sa sharedSlsDetector
 	 * @param udpip receiver UDP IP address
 	 * @returns the receiver UDP IP address
 	 */
-	string setReceiverUDPIP(string udpip);
+	std::string setReceiverUDPIP(std::string udpip);
 
 	/**
 	 * Validates the format of the receiver UDP MAC address and sets it \sa sharedSlsDetector
 	 * @param udpmac receiver UDP MAC address
 	 * @returns the receiver UDP MAC address
 	 */
-	string setReceiverUDPMAC(string udpmac);
+	std::string setReceiverUDPMAC(std::string udpmac);
 
 	/**
 	 * Sets the receiver UDP port\sa sharedSlsDetector
@@ -1407,7 +1407,7 @@ public:
 	 * calculate individual ports)
 	 * @returns the client zmq port
 	 */
-	string setClientStreamingPort(string port);
+	std::string setClientStreamingPort(std::string port);
 
 	/**
 	 * Sets the receiver zmq port\sa sharedSlsDetector
@@ -1415,21 +1415,21 @@ public:
 	 * calculate individual ports)
 	 * @returns the receiver zmq port
 	 */
-	string setReceiverStreamingPort(string port);
+	std::string setReceiverStreamingPort(std::string port);
 
 	/**
 	 * Sets the client zmq ip\sa sharedSlsDetector
 	 * @param sourceIP client zmq ip
 	 * @returns the client zmq ip, returns "none" if default setting and no custom ip set
 	 */
-	string setClientStreamingIP(string sourceIP);
+	std::string setClientStreamingIP(std::string sourceIP);
 
 	/**
 	 * Sets the receiver zmq ip\sa sharedSlsDetector
 	 * @param sourceIP receiver zmq ip. If empty, uses rx_hostname
 	 * @returns the receiver zmq ip, returns "none" if default setting and no custom ip set
 	 */
-	string setReceiverStreamingIP(string sourceIP);
+	std::string setReceiverStreamingIP(std::string sourceIP);
 
 	/**
 	 * Execute a digital test (Gotthard, Mythen)
@@ -1455,7 +1455,7 @@ public:
 	 * @param fname file name from which to load image
 	 * @returns OK or FAIL
 	 */
-	int loadImageToDetector(imageType index,string const fname);
+	int loadImageToDetector(imageType index,std::string const fname);
 
 	/**
 	 * Called from loadImageToDetector to send the image to detector
@@ -1471,7 +1471,7 @@ public:
 	 * @param startACQ is 1 to start acquisition after reading counter
 	 * @returns OK or FAIL
 	 */
-	int writeCounterBlockFile(string const fname,int startACQ=0);
+	int writeCounterBlockFile(std::string const fname,int startACQ=0);
 
 	/**
 	 * Gets counter memory block in detector (Gotthard)
@@ -1658,7 +1658,7 @@ public:
 	 * @param fname file name
 	 * @returns OK or FAIL
 	 */
-	int programFPGA(string fname);
+	int programFPGA(std::string fname);
 
 	/**
 	 * Resets FPGA (Jungfrau)
@@ -1845,7 +1845,7 @@ public:
 	 * @param fname name of the flat field file (or "" if disable)
 	 * @returns 0 if disable (or file could not be read), >0 otherwise
 	 */
-	int setFlatFieldCorrection(string fname="");
+	int setFlatFieldCorrection(std::string fname="");
 
 	/**
 	 * Set flat field corrections (Mythen)
@@ -1880,7 +1880,7 @@ public:
 	 * @param fname file with bad channel list ("" disable)
 	 * @returns 0 if bad channel disabled, >0 otherwise
 	 */
-	int setBadChannelCorrection(string fname="");
+	int setBadChannelCorrection(std::string fname="");
 
 	/**
 	 * Set bad channels correction (Mythen)
@@ -1905,7 +1905,7 @@ public:
 	 * @param fname file to be read
 	 * @returns 0 if angular conversion disabled, >0 otherwise
 	 */
-	int readAngularConversionFile(string fname="");
+	int readAngularConversionFile(std::string fname="");
 
 	/**
 	 * Reads an angular conversion file (Mythen, Gotthard)
@@ -1913,7 +1913,7 @@ public:
 	 * @param ifs input stream
 	 * @returns 0 if angular conversion disabled, >0 otherwise
 	 */
-	int readAngularConversion(ifstream& ifs);
+	int readAngularConversion(std::ifstream& ifs);
 
 	/**
 	 * Writes an angular conversion file (Mythen, Gotthard)
@@ -1921,7 +1921,7 @@ public:
 	 * @param fname file to be written
 	 * @returns 0 if angular conversion disabled, >0 otherwise
 	 */
-	int writeAngularConversion(string fname="");
+	int writeAngularConversion(std::string fname="");
 
 	/**
 	 * Writes an angular conversion file (Mythen, Gotthard)
@@ -1929,7 +1929,7 @@ public:
 	 * @param ofs output stream
 	 * @returns 0 if angular conversion disabled, >0 otherwise
 	 */
-	int writeAngularConversion(ofstream &ofs);
+	int writeAngularConversion(std::ofstream &ofs);
 
 	/**
 	 * Get angular conversion (Mythen, Gotthard)
@@ -1965,7 +1965,7 @@ public:
 	 * Checks if the receiver is really online
 	 * @returns empty string if online, else returns receiver hostname
 	 */
-	string checkReceiverOnline();
+	std::string checkReceiverOnline();
 
 	/**
 	 * Configure the socket communication and initializes the socket instances
@@ -1974,7 +1974,7 @@ public:
 	 * @returns OK is connection succeded, FAIL otherwise
 	 * \sa sharedSlsDetector
 	 */
-	int setReceiverTCPSocket(string const name="", int const receiver_port=-1);
+	int setReceiverTCPSocket(std::string const name="", int const receiver_port=-1);
 
 	/**
 	 * Locks/Unlocks the connection to the receiver
@@ -1987,7 +1987,7 @@ public:
 	 * Returns the IP of the last client connecting to the receiver
 	 * @returns the IP of the last client connecting to the receiver
 	 */
-	string getReceiverLastClientIP();
+	std::string getReceiverLastClientIP();
 
 	/**
 	 * Exits the receiver TCP server
@@ -2028,27 +2028,27 @@ public:
 	 * Returns output file directory
 	 * @returns output file directory
 	 */
-	string getFilePath();
+	std::string getFilePath();
 
 	/**
 	 * Sets up the file directory
 	 * @param s file directory
 	 * @returns file dir
 	 */
-	string setFilePath(string s="");
+	std::string setFilePath(std::string s="");
 
 	/**
 	 * Returns file name prefix
 	 * @returns file name prefix
 	 */
-	string getFileName();
+	std::string getFileName();
 
 	/**
 	 * Sets up the file name prefix
 	 * @param s file name prefix
 	 * @returns file name prefix
 	 */
-	string setFileName(string s="");
+	std::string setFileName(std::string s="");
 
 	/**
 	 * Sets the max frames per file in receiver
@@ -2236,7 +2236,7 @@ public:
 	 * @param fname pattern file to open
 	 * @returns OK/FAIL
 	 */
-	int setCTBPattern(string fname);
+	int setCTBPattern(std::string fname);
 
 	/**
 	 * Writes a pattern word to the CTB
@@ -2394,33 +2394,33 @@ private:
 	 * Returns the additional json header \sa sharedSlsDetector
 	 * @returns the additional json header, returns "none" if default setting and no custom ip set
 	 */
-	string getAdditionalJsonHeader();
+	std::string getAdditionalJsonHeader();
 
 	/**
 	 * Returns the receiver UDP socket buffer size\sa sharedSlsDetector
 	 * @returns the receiver UDP socket buffer size
 	 */
-	string getReceiverUDPSocketBufferSize() ;
+	std::string getReceiverUDPSocketBufferSize() ;
 
 	/**
 	 * Returns the receiver real UDP socket buffer size\sa sharedSlsDetector
 	 * @returns the receiver real UDP socket buffer size
 	 */
-	string getReceiverRealUDPSocketBufferSize();
+	std::string getReceiverRealUDPSocketBufferSize();
 
 	/**
 	 * Sets the additional json header\sa sharedSlsDetector
 	 * @param jsonheader additional json header
 	 * @returns additional json header, returns "none" if default setting and no custom ip set
 	 */
-	string setAdditionalJsonHeader(string jsonheader);
+	std::string setAdditionalJsonHeader(std::string jsonheader);
 
 	/**
 	 * Sets the receiver UDP socket buffer size
 	 * @param udpsockbufsize additional json header
 	 * @returns receiver udp socket buffer size
 	 */
-	string setReceiverUDPSocketBufferSize(int udpsockbufsize=-1);
+	std::string setReceiverUDPSocketBufferSize(int udpsockbufsize=-1);
 
 	/**
 	 * Sets the transmission delay for left, right or entire frame
@@ -2429,7 +2429,7 @@ private:
 	 * @param delay delay
 	 * @returns transmission delay
 	 */
-	string setDetectorNetworkParameter(networkParameter index, int delay);
+	std::string setDetectorNetworkParameter(networkParameter index, int delay);
 
 
 	/**

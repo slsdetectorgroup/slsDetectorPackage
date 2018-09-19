@@ -22,7 +22,7 @@ enum recFuncs{
 	F_SEND_RECEIVER_DETHOSTNAME,	/**< set detector hostname to receiver */
 
 	//network functions
-	F_RECEIVER_SHORT_FRAME, 		/**< Sets receiver to receive short frames */
+	F_RECEIVER_SET_ROI, 			/**< Sets receiver ROI */
 	F_SETUP_RECEIVER_UDP,			/**< sets the receiver udp connection and returns receiver mac address */
 
 	//Acquisition setup functions

@@ -160,17 +160,17 @@ public:
 	 * Set ROI
 	 * @param i ROI
 	 */
-	virtual void SetROI(std::vector<slsReceiverDefs::ROI*> i) {
+	virtual void SetROI(std::vector<slsReceiverDefs::ROI> i) {
 		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
 	};
 
 	/**
 	 * Get Adc configured
 	 * @param index thread index for debugging purposes
-	 * @param i ROI
+	 * @param i pointer to a vector of ROI pointers
 	 * @returns adc configured
 	 */
-	virtual const int GetAdcConfigured(int index, std::vector<slsReceiverDefs::ROI*> i)  const{
+	virtual const int GetAdcConfigured(int index, std::vector<slsReceiverDefs::ROI>* i)  const{
 		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
 		return 0;
 	};
@@ -323,7 +323,7 @@ private:
 	 * Set ROI
 	 * @param i ROI
 	 */
-	virtual void SetROI(std::vector<slsReceiverDefs::ROI*> i) {
+	virtual void SetROI(std::vector<slsReceiverDefs::ROI> i) {
 		// all adcs
 		if(!i.size()) {
 			nPixelsX 			= 1280;
@@ -364,23 +364,22 @@ private:
 	/**
 	 * Get Adc configured
 	 * @param index thread index for debugging purposes
-	 * @param i ROI
+	 * @param i pointer to a vector of ROI
 	 * @returns adc configured
 	 */
-	virtual const int GetAdcConfigured(int index, std::vector<slsReceiverDefs::ROI*> i)  const{
+	virtual const int GetAdcConfigured(int index, std::vector<slsReceiverDefs::ROI>* i)  const{
 		int adc = -1;
 		// single adc
-		if(i.size())  {
-
+		if(i->size())  {
 			// gotthard can have only one adc per detector enabled (or all)
 			// so just looking at the first roi is enough (more not possible at the moment)
 
 			//if its for 1 adc or general
-			if ((i[0]->xmin == 0) && (i[0]->xmax == nChip * nChan))
+			if ((i->at(0).xmin == 0) && (i->at(0).xmax == nChip * nChan))
 				adc = -1;
 			else {
 				//adc = mid value/numchans also for only 1 roi
-				adc = ((((i[0]->xmax) + (i[0]->xmin))/2)/
+				adc = ((((i->at(0).xmax) + (i->at(0).xmin))/2)/
 						(nChan * nChipsPerAdc));
 				if((adc < 0) || (adc > 4)) {
 					FILE_LOG(logWARNING) << index << ": Deleting ROI. "
@@ -389,6 +388,7 @@ private:
 				}
 			}
 		}
+		FILE_LOG(logINFO) << "Adc Configured: " << adc;
 		return adc;
 	};
 

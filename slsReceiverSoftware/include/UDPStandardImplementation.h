@@ -77,7 +77,7 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 * @param i ROI
 	 * @return OK or FAIL
 	 */
-	int setROI(const std::vector<ROI*> i);
+	int setROI(const std::vector<ROI> i);
 
 	/**
 	 * Set the Frequency of Frames Sent to GUI

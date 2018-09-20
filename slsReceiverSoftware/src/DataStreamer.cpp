@@ -15,7 +15,7 @@
 const std::string DataStreamer::TypeName = "DataStreamer";
 
 
-DataStreamer::DataStreamer(int ind, Fifo*& f, uint32_t* dr, std::vector<ROI*>* r,
+DataStreamer::DataStreamer(int ind, Fifo*& f, uint32_t* dr, std::vector<ROI>* r,
 		uint64_t* fi, int* fd, char* ajh, bool* sm) :
 		ThreadObject(ind),
 		runningFlag(0),
@@ -89,8 +89,9 @@ void DataStreamer::ResetParametersforNewMeasurement(char* fname){
 		completeBuffer = 0;
 	}
 	if (roi->size()) {
-		if (generalData->myDetectorType == GOTTHARD)
-			adcConfigured = generalData->GetAdcConfigured(index, *roi);
+		if (generalData->myDetectorType == GOTTHARD) {
+			adcConfigured = generalData->GetAdcConfigured(index, roi);
+		}
 		completeBuffer = new char[generalData->imageSizeComplete];
 		memset(completeBuffer, 0, generalData->imageSizeComplete);
 	}
@@ -214,11 +215,19 @@ void DataStreamer::ProcessAnImage(char* buf) {
 	//shortframe gotthard
 	if (completeBuffer) {
 
-		if (!SendHeader(header, (uint32_t)(*((uint32_t*)buf)), generalData->nPixelsXComplete, generalData->nPixelsYComplete, false))
+		//disregarding the size modified from callback (always using imageSizeComplete
+		// instead of buf (32 bit) because gui needs imagesizecomplete and listener
+		//write imagesize
+
+		if (!SendHeader(header, generalData->imageSizeComplete,
+				generalData->nPixelsXComplete, generalData->nPixelsYComplete, false))
 			cprintf(RED,"Error: Could not send zmq header for fnum %lld and streamer %d\n",
 					(long long int) fnum, index);
 
-		memcpy(completeBuffer + ((generalData->imageSize) * adcConfigured), buf + FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header), (uint32_t)(*((uint32_t*)buf)) ); // new size possibly from callback
+		memcpy(completeBuffer + ((generalData->imageSize) * adcConfigured),
+				buf + FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header),
+				(uint32_t)(*((uint32_t*)buf)) );
+
 		if (!zmqSocket->SendData(completeBuffer, generalData->imageSizeComplete))
 			cprintf(RED,"Error: Could not send zmq data for fnum %lld and streamer %d\n",
 					(long long int) fnum, index);
@@ -228,11 +237,13 @@ void DataStreamer::ProcessAnImage(char* buf) {
 	//normal
 	else {
 
-		if (!SendHeader(header, (uint32_t)(*((uint32_t*)buf)), generalData->nPixelsX, generalData->nPixelsY, false)) // new size possibly from callback
+		if (!SendHeader(header, (uint32_t)(*((uint32_t*)buf)),
+				generalData->nPixelsX, generalData->nPixelsY, false)) // new size possibly from callback
 			cprintf(RED,"Error: Could not send zmq header for fnum %lld and streamer %d\n",
 					(long long int) fnum, index);
 
-		if (!zmqSocket->SendData(buf + FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header), (uint32_t)(*((uint32_t*)buf)) )) // new size possibly from callback
+		if (!zmqSocket->SendData(buf + FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header),
+				(uint32_t)(*((uint32_t*)buf)) )) // new size possibly from callback
 			cprintf(RED,"Error: Could not send zmq data for fnum %lld and streamer %d\n",
 					(long long int) fnum, index);
 	}

@@ -167,7 +167,7 @@ void UDPStandardImplementation::setFileWriteEnable(const bool b){
 
 
 
-int UDPStandardImplementation::setROI(const std::vector<slsReceiverDefs::ROI*> i) {
+int UDPStandardImplementation::setROI(const std::vector<slsReceiverDefs::ROI> i) {
 	if (myDetectorType != GOTTHARD) {
 		cprintf(RED, "Error: Can not set ROI for this detector\n");
 		return FAIL;
@@ -180,10 +180,10 @@ int UDPStandardImplementation::setROI(const std::vector<slsReceiverDefs::ROI*> i
 	else {
 		for (unsigned int iloop = 0; iloop < i.size(); ++iloop) {
 			if (
-					(roi[iloop]->xmin != i[iloop]->xmin) ||
-					(roi[iloop]->xmax != i[iloop]->xmax) ||
-					(roi[iloop]->ymin != i[iloop]->ymin) ||
-					(roi[iloop]->xmax != i[iloop]->xmax)) {
+					(roi[iloop].xmin != i[iloop].xmin) ||
+					(roi[iloop].xmax != i[iloop].xmax) ||
+					(roi[iloop].ymin != i[iloop].ymin) ||
+					(roi[iloop].xmax != i[iloop].xmax)) {
 				change = true;
 				break;
 			}
@@ -217,10 +217,10 @@ int UDPStandardImplementation::setROI(const std::vector<slsReceiverDefs::ROI*> i
 	else {
 		for (unsigned int i = 0; i < roi.size(); ++i) {
 			sstm << "( " <<
-					roi[i]->xmin << ", " <<
-					roi[i]->xmax << ", " <<
-					roi[i]->ymin << ", " <<
-					roi[i]->ymax << " )";
+					roi[i].xmin << ", " <<
+					roi[i].xmax << ", " <<
+					roi[i].ymin << ", " <<
+					roi[i].ymax << " )";
 		}
 	}
 	std::string message = sstm.str();
@@ -251,7 +251,6 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {
 		if (enable) {
 		    for ( int i = 0; i < numThreads; ++i ) {
 		        try {
-
 		            DataStreamer* s = new DataStreamer(i, fifo[i], &dynamicRange,
 		                  &roi, &fileIndex, flippedData, additionalJsonHeader, &silentMode);
 		            dataStreamer.push_back(s);
@@ -473,7 +472,6 @@ void UDPStandardImplementation::resetAcquisitionCount() {
 int UDPStandardImplementation::startReceiver(char *c) {
 	cprintf(RESET,"\n");
 	FILE_LOG(logINFO) << "Starting Receiver";
-
 	ResetParametersforNewMeasurement();
 
 	//listener
@@ -733,7 +731,7 @@ int UDPStandardImplementation::SetupFifoStructure() {
 	for (std::vector<Fifo*>::const_iterator it = fifo.begin(); it != fifo.end(); ++it)
 		delete(*it);
 	fifo.clear();
-	for ( int i = 0; i < numThreads; i++ ) {
+	for ( int i = 0; i < numThreads; ++i ) {
 
 		//create fifo structure
 	    try {

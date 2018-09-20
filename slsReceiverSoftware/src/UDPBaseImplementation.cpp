@@ -81,8 +81,6 @@ void UDPBaseImplementation::initializeMembers(){
 	dataCompressionEnable = false;
 
 	//***acquisition parameters***
-	for (std::vector<slsReceiverDefs::ROI*>::const_iterator it = roi.begin(); it != roi.end(); ++it)
-		delete(*it);
 	roi.clear();
 	frameToGuiFrequency = 0;
 	frameToGuiTimerinMS = DEFAULT_STREAMING_TIMER_IN_MS;
@@ -251,7 +249,7 @@ char *UDPBaseImplementation::getEthernetInterface() const{
 
 
 /***acquisition parameters***/
-std::vector<slsReceiverDefs::ROI*> UDPBaseImplementation::getROI() const{
+std::vector<slsReceiverDefs::ROI> UDPBaseImplementation::getROI() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
     return roi;
 }
@@ -542,7 +540,7 @@ void UDPBaseImplementation::setEthernetInterface(const char* c){
 
 
 /***acquisition parameters***/
-int UDPBaseImplementation::setROI(const std::vector<slsReceiverDefs::ROI*> i){
+int UDPBaseImplementation::setROI(const std::vector<slsReceiverDefs::ROI> i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	roi = i;
@@ -554,10 +552,10 @@ int UDPBaseImplementation::setROI(const std::vector<slsReceiverDefs::ROI*> i){
 	else {
 		for (unsigned int i = 0; i < roi.size(); ++i) {
 			sstm << "( " <<
-					roi[i]->xmin << ", " <<
-					roi[i]->xmax << ", " <<
-					roi[i]->ymin << ", " <<
-					roi[i]->ymax << " )";
+					roi[i].xmin << ", " <<
+					roi[i].xmax << ", " <<
+					roi[i].ymin << ", " <<
+					roi[i].ymax << " )";
 		}
 	}
 	std::string message = sstm.str();

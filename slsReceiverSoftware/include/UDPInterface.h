@@ -276,7 +276,7 @@ class UDPInterface {
 	 * Get ROI
 	 * @return index of adc enabled, else -1 if all enabled
 	 */
-	virtual std::vector<slsReceiverDefs::ROI*> getROI() const = 0;
+	virtual std::vector<slsReceiverDefs::ROI> getROI() const = 0;
 
 	/**
 	 * Get the Frequency of Frames Sent to GUI
@@ -541,7 +541,7 @@ class UDPInterface {
 	 * @param i ROI
 	 * @return OK or FAIL
 	 */
-	virtual int setROI(const std::vector<slsReceiverDefs::ROI*> i) = 0;
+	virtual int setROI(const std::vector<slsReceiverDefs::ROI> i) = 0;
 
 	/**
 	 * Set the Frequency of Frames Sent to GUI

@@ -185,7 +185,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * Get ROI
 	 * @return index of adc enabled, else -1 if all enabled
 	 */
-	std::vector<ROI*> getROI() const;
+	std::vector<ROI> getROI() const;
 
 	/**
 	 * Get the Frequency of Frames Sent to GUI
@@ -452,7 +452,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * @param i ROI
 	 * @return OK or FAIL
 	 */
-	int setROI(const std::vector<ROI*> i);
+	int setROI(const std::vector<ROI> i);
 
 	/**
 	 * Set the Frequency of Frames Sent to GUI
@@ -786,7 +786,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 
 	//***acquisition parameters***
 	/* ROI */
-	std::vector<ROI*> roi;
+	std::vector<ROI> roi;
 	/** Frequency of Frames sent to GUI */
 	uint32_t frameToGuiFrequency;
 	/** Timer of Frames sent to GUI when frequency is 0 */

@@ -888,13 +888,13 @@ int slsReceiverTCPIPInterface::set_roi() {
 	if (mySock->ReceiveDataOnly(&nroi,sizeof(nroi)) < 0 )
 		return printSocketReadError();
 
-	std::vector <ROI*> roiLimits;
+	std::vector <ROI> roiLimits;
 	int iloop = 0;
 	for (iloop = 0; iloop < nroi; iloop++) {
 		ROI temp;
 		if ( mySock->ReceiveDataOnly(&temp,sizeof(ROI)) < 0 )
 			return printSocketReadError();
-		roiLimits.push_back(&temp);
+		roiLimits.push_back(temp);
 	}
 
 	//does not exist
@@ -924,6 +924,8 @@ int slsReceiverTCPIPInterface::set_roi() {
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if (ret == FAIL)
 		mySock->SendDataOnly(mess,sizeof(mess));
+
+	roiLimits.clear();
 
 	// return ok/fail
 	return ret;

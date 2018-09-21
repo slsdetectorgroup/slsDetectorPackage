@@ -64,6 +64,8 @@ int slaveadcphase = 0;
 int rsttosw1delay = 2;
 int startacqdelay = 1;
 
+int detectorFirstServer = 1;
+
 
 #ifdef MCB_FUNCS
 extern const int nChans;
@@ -273,12 +275,20 @@ void setMasterSlaveConfiguration(){
 			}
 			else {
 				cprintf(RED,"could not scan masterflags %s value from config file\n",value);
+				fclose(fd);
 				exit(EXIT_FAILURE);
+			}
+
+			if (!detectorFirstServer) {
+				cprintf(BLUE, "Server has been started up before. Ignoring rest of config file\n");
+				fclose(fd);
+				return;
 			}
 		}
 		else {
 			if(sscanf(value,"%d",&ival)<=0) {
 				cprintf(RED,"could not scan patternphase %s value from config file\n",value);
+				fclose(fd);
 				exit(EXIT_FAILURE);
 			}
 
@@ -298,6 +308,7 @@ void setMasterSlaveConfiguration(){
                 startacqdelay = ival;
 			else {
 				cprintf(RED,"could not scan parameter name %s from config file\n",key);
+				fclose(fd);
 				exit(EXIT_FAILURE);
 			}
 		}
@@ -384,6 +395,7 @@ int setPhaseShiftOnce(){
 	//bus_w(addr,0x0);   //clear the reg
 
 	if(reg==0){
+		detectorFirstServer = 1;
 		printf("\nImplementing phase shift of %d\n",phase_shift);
 		for (i=1;i<phase_shift;i++) {
 			bus_w(addr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|PHASE_STEP_BIT));//0x2821
@@ -392,7 +404,7 @@ int setPhaseShiftOnce(){
 #ifdef VERBOSE
 		printf("Multipupose reg now:%x\n",bus_r(addr));
 #endif
-	}
+	} else detectorFirstServer = 0;
 
 	return OK;
 }
@@ -1261,8 +1273,6 @@ int setADC(int adc){
 
 int configureMAC(int ipad,long long int macad,long long int detectormacad, int detipad, int ival, int udpport){
 
-	startReceiver(1);
-
 #ifdef DDEBUG
 	printf("Chip of Intrst Reg:%x\n",bus_r(CHIP_OF_INTRST_REG));
 	printf("IP Packet Size:%d\n",ipPacketSize);
@@ -1858,7 +1868,7 @@ int configureADC(){
 
 
 		// start point
-		valw=0xff;
+		valw=0xffffffff;
 		bus_w(ADC_SPI_REG,(valw));
 
 		 //chip sel bar down
@@ -1869,24 +1879,29 @@ int configureADC(){
 			 //cldwn
 			valw=valw&(~(0x1<<cdx));
 			bus_w(ADC_SPI_REG,valw);
-			usleep(0);
+			//usleep(0);
 
 			//write data (i)
 			valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx);
 			bus_w(ADC_SPI_REG,valw);
-			usleep(0);
+			//usleep(0);
 
 			//clkup
 			valw=valw+(0x1<<cdx);
 			bus_w(ADC_SPI_REG,valw);
-			usleep(0);
+			//usleep(0);
 		}
+
+	    valw |= csmask;
+	    bus_w(ADC_SPI_REG,valw);
+		//usleep(0);
 
 		 // stop point =start point
 		valw=valw&(~(0x1<<cdx));
-		usleep(0);
-		valw=0xff;
 		bus_w(ADC_SPI_REG,(valw));
+
+	    valw = 0xffffffff;
+	    bus_w(ADC_SPI_REG,(valw));
 
 		//usleep in between
 		usleep(50000);

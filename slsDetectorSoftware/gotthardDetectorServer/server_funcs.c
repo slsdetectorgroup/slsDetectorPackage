@@ -87,6 +87,7 @@ int init_detector( int b) {
     //gotthard specific
     setPhaseShiftOnce();
     configureADC();
+
     setADC(-1); //already does setdaqreg and clean fifo
     setSettings(DYNAMICGAIN,-1);
     setDefaultDacs();
@@ -101,9 +102,8 @@ int init_detector( int b) {
     setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
     setMaster(GET_MASTER);
     setSynchronization(GET_SYNCHRONIZATION_MODE);
-    startReceiver(0);
+    startReceiver(1);
     setMasterSlaveConfiguration();
-    setADC(-1);
   }
   strcpy(mess,"dummy message");
   strcpy(lastClientIP,"none");

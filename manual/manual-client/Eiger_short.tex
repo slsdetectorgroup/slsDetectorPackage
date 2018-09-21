@@ -404,42 +404,42 @@ where the 'minimum time between frames' and the minimum period will be discussed
 \begin{tiny}
 \begin{table}
 \begin{flushleft}
-\begin{tabular}{|c|c|c|c|c|c|c|}
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
 \hline
-\tiny{dr} & \tiny{clkdivider} & \tiny{flags} & \tiny{t between frames($\mu$s) } &  \tiny{max frame rate (kHz)} & \tiny{min period ($\mu$s)} & \tiny{max imgs (nominal/our network)}\\
+\tiny{dr} & \tiny{clkdivider} & \tiny{flags} & \tiny{$\Delta$t frames($\mu$s) } &  \tiny{max FR (kHz)} & \tiny{min period ($\mu$s)} & \tiny{meas. period ($\mu$s)} & \tiny{max imgs (nominal/our network)}\\
 \hline
-4 & 0 & parallel & 3.4 & 22  & 44 & 30k/50k\\
+4 & 0 & \tiny {parallel} & 3.4 & 22  & 44 & 44.01 & 30k/50k\\
 \hline
-4 & 1 & parallel & 6 & 10.5 & 92 & 30k/100k\\
+4 & 1 & \tiny {parallel} & 6 & 10.5 & 92 & 92.02 & 30k/100k\\
 \hline
-4 & 2 & parallel & 11.2 & 5.4 & 197 & infinite\\
-\hline
-\hline
-8 & 0 & parallel & 3.4 & 11.1 & 89 & 15k/24k\\
-\hline
-8 & 1 & parallel & 6.1 & 5.7 & 181 & 15k/52k\\
-\hline
-8 & 2 & parallel & 11.2 &  2.9 &  342 & infinite\\
+4 & 2 & \tiny {parallel} & 11.2 & 5.4 & 197& 197.01 & infinite\\
 \hline
 \hline
-16 & 0 & parallel & 3.4 & 6.1 & (126+38)* =164 & 8k/12k\\
+8 & 0 & \tiny {parallel} & 3.4 & 11.1 & 89 & 89.01 & 15k/24k\\
 \hline
-16 & 0 & nonparallel &  126 & 5.6 & (126+52)*= 179 & 8k/23k\\
+8 & 1 & \tiny {parallel} & 6.1 & 5.7 & 181 & 181.01 & 15k/52k\\
 \hline
-16 & 1 & parallel &  6.1 & 3.9 &  257 & 8k/28k\\
+8 & 2 & \tiny {parallel} & 11.2 &  2.9 &  342 & 342.01 & infinite\\
 \hline
-16 & 1 & nonparallel & 255 & 3.3 &  303 & infinite\\
 \hline
-16 & 2 & parallel &  11 & 1.9 & 526 & infinite \\
+16 & 0 & \tiny {parallel} & 3.4 & 6.1 & (126+38)* =164 & 164.02 & 8k/12k\\
 \hline
-16 & 2 & nonparallel & 504 & 1.8  & 555 & infinite\\
+16 & 0 & \tiny {nonparallel} &  127 & 5.6 & (126+52)*= 179 & 179.01& 8k/23k\\
+\hline
+16 & 1 & \tiny {parallel} &  6.1 & 3.9 &  257 & 257.01 & 8k/28k\\
+\hline
+16 & 1 & \tiny {nonparallel} & 255 & 3.3 &  303 & 303.01 & infinite\\
+\hline
+16 & 2 & \tiny {parallel} &  11.2 & 1.9 & 526 & 526.2 & infinite \\
+\hline
+16 & 2 & \tiny {nonparallel} & 505 & 1.8  & 555 & 555.01& infinite\\
 \hline
 %32 & 2 & parallel &  11 & 2&  & &\\
 %\hline
 %32 & 2 & nonparallel & 504 & $<2$&  & &\\
 %\hline
 \end{tabular}
-\caption{Readout settings. The {\tiny{min exptime}} possible is 5$-$10~$\mu$s. This is due to the time to pass the pixel enable signal in the whole chip. The time between frames has been measured with the oscilloscope and the maximum frames rate has been tested with an external gating from a pulse generator at known frequency. The minimum period is obtained as 1/$\textrm{max frame rate}$.}
+\caption{Readout settings. The {\tiny{min exptime}} possible is 5$-$10~$\mu$s. This is due to the time to pass the pixel enable signal in the whole chip. The time between frames ($\Delta$t) has been measured with the oscilloscope and the maximum frames rate (max FR) has been tested with an external gating from a pulse generator at known frequency. The minimum period is obtained as 1/$\textrm{max frame rate}$.}
 \label{tframes}
 \end{flushleft}
 \end{table}
@@ -803,7 +803,7 @@ Note that if one wants to  reconstruct the real time the detector was acquiring 
 \subsection{Offline image reconstruction}
 The offline image reconstruction{\tt{slsImageReconstruction}} is not part of the package anymore. The code is still available doing \\
 {\tt{git clone git@git.psi.ch:sls\_detectors\_software/sls\_image\_reconstruction.git slsImageReconstruction}}.
-Checkout the \tt{developer} branch if in a 3.1.X release or the \tt{v4.0.0} branch if in 4.0.X release of the \tt{slsDetector} code.
+Checkout the {\tt{developer}} branch if in a 3.1.X release or the {\tt{v4.0.0}} branch if in 4.0.X release of the {\tt{slsDetector}} code.
 
 Three possible conversions are possible: into \textbf{cbf}, \textbf{hdf5} and \textbf{root} format. The detector writes 4 raw files per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce output files. By default an interpolation between the values of the large pixels is performed. Gap pixels between modules are also inserted.
 
@@ -894,7 +894,7 @@ eg.
 {\tt hdf5Maker /scratch/run\_63\_d0\_f000000000000\_3.raw  3072 512 1 2 ``Eiger'' 0}.\\
 
 \subsubsection{root}
-The data will be written as TH2D in root format. Edit the \tt{Makefile} to point to the correct ROOT library location. Compile the executable as:
+The data will be written as TH2D in root format. Edit the {\tt{Makefile}} to point to the correct ROOT library location. Compile the executable as:
 \begin{verbatim}
 make image 
 \end{verbatim}

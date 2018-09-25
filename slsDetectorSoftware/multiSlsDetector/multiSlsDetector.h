@@ -491,7 +491,7 @@ public:
 	 * @param pos position in the multi list
 	 * @returns slsDetector object
 	 */
-	slsDetector *operator()(int pos);
+	slsDetector *operator()(int pos) const;
 
 	/**
 	 * Free shared memory from the command line

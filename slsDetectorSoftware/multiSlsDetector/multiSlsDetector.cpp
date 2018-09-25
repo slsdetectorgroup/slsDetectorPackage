@@ -610,7 +610,7 @@ slsDetector* multiSlsDetector::getSlsDetector(unsigned int pos) {
 	return 0;
 }
 
-slsDetector *multiSlsDetector::operator()(int pos) {
+slsDetector *multiSlsDetector::operator()(int pos) const {
 	if (pos >= 0 && pos < (int)detectors.size())
 		return detectors[pos];
 	return NULL;

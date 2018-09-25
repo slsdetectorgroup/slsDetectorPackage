@@ -258,9 +258,9 @@ CONTENTS
 		
 	4.	r_discardpolicy:
 		sets/gets the frame discard policy in the receiver. 
-		0 - no discard (default), 
-		1 - discard only empty frames, 
-		2 - discard any partial frame(fastest)
+		nodiscard - no discard (default), 
+		discardempty - discard only empty frames, 
+		discardpartial - discard any partial frame(fastest)
 		
 	5.	r_padding:
 		sets/gets the frame padding in the receiver. 

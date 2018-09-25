@@ -93,7 +93,7 @@ class noInterpolation : public slsInterpolation{
 
   virtual int addToFlatField(double totquad,int quad,int *cl,double &etax, double &etay){return 0;};
 
-
+  virtual void resetFlatField(){};
  protected:
   ;
   // TRandom *eventGenerator;

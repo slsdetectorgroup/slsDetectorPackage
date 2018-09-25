@@ -688,7 +688,7 @@ void writeClusters(FILE *f){for (int i=0; i<nphFrame; i++) (clusters+i)->write(f
 	  analogDetector<uint16_t>::processData(data,val);
 	  break;
 	default:
-	  //cout <<"spc " << endl;
+	  //	 cout <<"spc " << endl;
 	  getNPhotons(data,val);
 	}
       }

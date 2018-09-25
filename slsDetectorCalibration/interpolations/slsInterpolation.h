@@ -194,8 +194,8 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
 #ifndef MYROOT1
   virtual int *getFlatField(){return NULL;};
   virtual int *setFlatField(int *h, int nb=-1, double emin=-1, double emax=-1){return NULL;}; 
-  void *writeFlatField(const char * imgname){return NULL;};
-  void *readFlatField(const char * imgname, int nb=-1, double emin=1, double emax=0){return NULL;};
+  virtual void *writeFlatField(const char * imgname){return NULL;};
+  virtual void *readFlatField(const char * imgname, int nb=-1, double emin=1, double emax=0){return NULL;};
  virtual int *getFlatField(int &nb, double &emin, double &emax){nb=0; emin=0; emax=0; return getFlatField();}; 
 #endif
 

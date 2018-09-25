@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
 
 
   //analogDetector<uint16_t> *filter=new analogDetector<uint16_t>(det,1,NULL,1000);
-  //singlePhotonDetector *filter=new singlePhotonDetector(det,3, 5, 1, 0, 1000, 10);
+  //  singlePhotonDetector *filter=new singlePhotonDetector(det,3, 5, 1, 0, 1000, 10);
   eta2InterpolationPosXY *interp=new eta2InterpolationPosXY(npx, npy, nSubPixels, etabins, etamin, etamax);
 
   if (etafname) interp->readFlatField(etafname);
@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
   char* buff;
   //  multiThreadedCountingDetector *mt=new multiThreadedCountingDetector(filter,nthreads,fifosize);
   // multiThreadedAnalogDetector *mt=new multiThreadedAnalogDetector(filter,nthreads,fifosize);
-  multiThreadedInterpolatingDetector *mt=new multiThreadedInterpolatingDetector(filter,nthreads,fifosize);
+    multiThreadedInterpolatingDetector *mt=new multiThreadedInterpolatingDetector(filter,nthreads,fifosize);
   mt->setFrameMode(eFrame);
   mt->StartThreads();
   mt->popFree(buff);
@@ -229,10 +229,10 @@ int main(int argc, char *argv[]) {
 	uint16_t yCoord = 0;
 	uint16_t zCoord = 0;
 	uint32_t debug = 0;
-	uint32_t dr = 16;
-	int16_t *dout;//=new int16_t [nnx*nny];
-	//uint32_t dr = 32;
-	//int32_t *dout=new int32_t [nnx*nny];
+	//uint32_t dr = 16;
+	//int16_t *dout;//=new int16_t [nnx*nny];
+	uint32_t dr = 32;
+	int32_t *dout=NULL;//=new int32_t [nnx*nny];
 	uint32_t nSigma=5;
 	uint16_t roundRNumber = 0;
 	uint8_t detType = 0;
@@ -291,53 +291,71 @@ int main(int argc, char *argv[]) {
 	      fclose(of);
 	      of=NULL;
 	    }
-
-	    if (fMode==ePedestal) {
-	      sprintf(ofname,"ped_%s_%d.tiff",fname,fileindex);
-	      mt->writePedestal(ofname);
-	    } else if  (fMode==eFlat) {
-	      mt->prepareInterpolation(ok);
-	      sprintf(ofname,"eta_%s_%d.tiff",fname,fileindex);
-	      mt->writeFlatField(ofname);
+	    if (newFrame>0) {
+	      cprintf(RED,"DIDn't receive any data!\n");
+	    if (send) { 
+	      zmqsocket2->SendHeaderData(0, true, SLS_DETECTOR_JSON_HEADER_VERSION);
+	      cprintf(RED, "Sent Dummy\n");
+	    }
 	    } else {
+	    if (fMode==ePedestal) {
+	      sprintf(ofname,"%s_%d_ped.tiff",fname,fileindex);
+	      mt->writePedestal(ofname);
+	       cout << "Writing pedestal to " << ofname << endl;
+	    }  else if  (fMode==eFlat) {
+	       mt->prepareInterpolation(ok);
+	       sprintf(ofname,"%s_%d_eta.tiff",fname,fileindex);
+	       mt->writeFlatField(ofname);
+	       cout << "Writing eta to " << ofname << endl;
+	     }
+	    else {
 	      sprintf(ofname,"%s_%d.tiff",fname,fileindex);
 	      mt->writeImage(ofname);
+	       cout << "Writing image to " << ofname << endl;
 	    }
 	    //  cout << nns*nnx*nny*nns*dr/8 << " " << length << endl;
+
 	    if (send) {
 
-	    if (fMode==ePedestal) {
+	    if (fMode==ePedestal) {   
+	      cprintf(MAGENTA,"Get pedestal!\n");
 	      nns=1;
 	      nnx=npx;
 	      nny=npy;
-	      dout= new int16_t[nnx*nny*nns*nns];
+	      //dout= new int16_t[nnx*nny*nns*nns];
+	      dout= new int32_t[nnx*nny*nns*nns];
 	      // cout << "get pedestal " << endl;
 	      ped=mt->getPedestal();
 	      // cout << "got pedestal " << endl;
 	      for (int ix=0; ix<nnx*nny; ix++) {
 	
 		  dout[ix]=ped[ix];
+		  // if (ix<100*400)
+		  //   cout << ix << " " << ped[ix] << endl;
 	      }
 	      
 	    } else if  (fMode==eFlat) {
-	      int nb;
+	       int nb;
 	      double emi, ema;
-	      int *ff=mt->getFlatField(nb, emi, ema);
-	      nnx=nb;
-	      nny=nb;
-	      dout= new int16_t[nb*nb];
-	      for (int ix=0; ix<nb*nb; ix++) {
-		dout[ix]=ff[ix];
-	      }
-	    } else {
+	       int *ff=mt->getFlatField(nb, emi, ema);
+	       nnx=nb;
+	       nny=nb;
+	       dout= new int32_t[nb*nb];
+	       for (int ix=0; ix<nb*nb; ix++) {
+	     	dout[ix]=ff[ix];
+	       }
+	     }
+	    else {
 	      detimage=mt->getImage(nnx,nny,nns);
+	      cprintf(MAGENTA,"Get image!\n");
+	      cout << nnx << " " << nny << " " << nns << endl;
 	      // nns=1;
 	      // nnx=npx;
 	      // nny=npy;
-	      nnx=nnx*nns;
-	      nny=nny*nns;
-	      dout= new int16_t[nnx*nny];
-	      for (int ix=0; ix<nnx*nns; ix++) {
+	      // nnx=nnx*nns;
+	      //nny=nny*nns;
+	      dout= new int32_t[nnx*nny];
+	      for (int ix=0; ix<nnx*nny; ix++) {
 		// for (int iy=0; iy<nny*nns; iy++) {
 		 //  for (int isx=0; isx<nns; isx++) {
 		//   for (int isy=0; isy<nns; isy++) {
@@ -350,6 +368,7 @@ int main(int argc, char *argv[]) {
 		// }
 		  dout[ix]=detimage[ix];
 		  if (dout[ix]<0) dout[ix]=0;
+		  //   cout << ix << " " << dout[ix] << endl;
 		  // }
 	      }
 	    }
@@ -357,7 +376,7 @@ int main(int argc, char *argv[]) {
 
 
 #ifdef NEWZMQ	
-	
+	    cout << "Sending image size " << nnx << " " << nny << endl;
 	      zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex, subFrameIndex, packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, flippedData, additionalJsonHeader);
 					   				   
 #endif
@@ -365,16 +384,18 @@ int main(int argc, char *argv[]) {
 #ifndef NEWZMQ
 	        zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,0,0,0,0,0, 0,0,fname, 0, 0,0,0,0,0,0,0,0,0,0,0,1);
 #endif
-	     
-		zmqsocket2->SendData((char*)dout,length);//nns*dr/8);
+		
+		zmqsocket2->SendData((char*)dout,nnx*nny*dr/8);
 		cprintf(GREEN, "Sent Data\n");
 		
 		zmqsocket2->SendHeaderData(0, true, SLS_DETECTOR_JSON_HEADER_VERSION);
 		cprintf(RED, "Sent Dummy\n");
-		delete [] dout;
+		if (dout)
+		  delete [] dout;
+		dout=NULL;
 
 	    }
-
+	    }
 
 	    mt->clearImage();
 	    
@@ -382,7 +403,7 @@ int main(int argc, char *argv[]) {
 	    continue; //continue to not get out
 
 
-	  }
+	    }
 
 #ifdef NEWZMQ
 	    if (newFrame) {
@@ -463,15 +484,21 @@ int main(int argc, char *argv[]) {
 		    fMode=ePedestal;
 		    isPedestal=1;
 		  } else if (frameMode_s == "flatfield") {
-		    fMode=eFlat;
-		    isFlat=1;
-		  } else if (frameMode_s == "newFlatfield") {
-		    mt->resetFlatField();
-		    isFlat=1;
-		    //cprintf(MAGENTA, "Resetting flatfield\n");
-		    fMode=eFlat;
-		  } else
+		     fMode=eFlat;
+		     isFlat=1;
+		   } else if (frameMode_s == "newFlatfield") {
+		     mt->resetFlatField();
+		     isFlat=1;
+		     cprintf(MAGENTA, "Resetting flatfield\n");
+		     fMode=eFlat;
+		   }
+		  else {
 		    fMode=eFrame;
+		    isPedestal=0;
+		    isFlat=0;
+		    fMode=eFrame;
+		    frameMode_s="frame";
+		  }
 		}
 	      }
 	      cprintf(MAGENTA, "%s\n" , frameMode_s.c_str());
@@ -512,12 +539,12 @@ int main(int argc, char *argv[]) {
 		}
 	      }
 
-	      cprintf(MAGENTA, "ROI: %d %d %d %d\n", xmin, xmax, ymin, ymax);
+	      cprintf(MAGENTA, "%d %d %d %d\n", xmin, xmax, ymin, ymax);
 	      mt->setROI(xmin, xmax, ymin, ymax);	
 	
 	      if (doc.HasMember("dynamicRange")) {
 		dr=doc["dynamicRange"].GetUint();
-		dr=16;
+		dr=32;
 	      }
 
 	      dMode=eAnalog;
@@ -528,58 +555,61 @@ int main(int argc, char *argv[]) {
 		    detectorMode_s=doc["detectorMode"].GetString();
 		    if (detectorMode_s == "interpolating"){
 		      dMode=eInterpolating;
+		      mt->setInterpolation(interp);
 		    } else if (detectorMode_s == "counting"){
 		      dMode=ePhotonCounting;
+		      mt->setInterpolation(NULL);
 		    } else {
 		      dMode=eAnalog;
+		      mt->setInterpolation(NULL);
 		    }
 		  }
 		  
 	      }
-	      cprintf(MAGENTA, "%s\n" , detectorMode_s.c_str());
 
 	      mt->setDetectorMode(dMode);
+	      cprintf(MAGENTA, "%s\n" , detectorMode_s.c_str());
 
+	      // cout << "done " << endl;
 
-
-	      /* Single Photon Detector commands */
-	      nSigma=5;
-	      if (doc.HasMember("nSigma")) {
-		if (doc["nSigma"].IsInt())
-		  nSigma=doc["nSigma"].GetInt();
-		mt->setNSigma(nSigma);
-	      }
+	      // /* Single Photon Detector commands */
+	      // nSigma=5;
+	      // if (doc.HasMember("nSigma")) {
+	      // 	if (doc["nSigma"].IsInt())
+	      // 	  nSigma=doc["nSigma"].GetInt();
+	      // 	mt->setNSigma(nSigma);
+	      // }
 	      
-	      emin=-1;
-	      emax=-1;
-	      if (doc.HasMember("energyRange")) {
-		if (doc["energyRange"].IsArray()) {
-		  if (doc["energyRange"].Size() > 0 )
-		    if (doc["energyRange"][0].IsInt())
-		      emin=doc["energyRange"][0].GetInt();
+	      // emin=-1;
+	      // emax=-1;
+	      // if (doc.HasMember("energyRange")) {
+	      // 	if (doc["energyRange"].IsArray()) {
+	      // 	  if (doc["energyRange"].Size() > 0 )
+	      // 	    if (doc["energyRange"][0].IsInt())
+	      // 	      emin=doc["energyRange"][0].GetInt();
 		  
-		  if (doc["energyRange"].Size() > 1 )
-		    if (doc["energyRange"][1].IsInt())
-		      emax=doc["energyRange"][1].GetUint();
-		}
-	      }
-	      if (doc.HasMember("eMin")) {
-		if (doc["eMin"][1].IsInt())
-		  emin=doc["eMin"].GetInt();
-	      }
-	      if (doc.HasMember("eMax")) {
-		if (doc["eMax"][1].IsInt())
-		  emin=doc["eMax"].GetInt();
-	      }
-	      mt->setEnergyRange(emin,emax);
+	      // 	  if (doc["energyRange"].Size() > 1 )
+	      // 	    if (doc["energyRange"][1].IsInt())
+	      // 	      emax=doc["energyRange"][1].GetUint();
+	      // 	}
+	      // }
+	      // if (doc.HasMember("eMin")) {
+	      // 	if (doc["eMin"][1].IsInt())
+	      // 	  emin=doc["eMin"].GetInt();
+	      // }
+	      // if (doc.HasMember("eMax")) {
+	      // 	if (doc["eMax"][1].IsInt())
+	      // 	  emin=doc["eMax"].GetInt();
+	      // }
+	      // mt->setEnergyRange(emin,emax);
 	      
-	      /* interpolating detector commands */
+	      // /* interpolating detector commands */
 
-	      if (doc.HasMember("nSubPixels")) {
-		if (doc["nSubPixels"].IsUint())
-	      	nSubPixels=doc["nSubPixels"].GetUint();
-		mt->setNSubPixels(nSubPixels);
-	      }
+	      // if (doc.HasMember("nSubPixels")) {
+	      // 	if (doc["nSubPixels"].IsUint())
+	      // 	nSubPixels=doc["nSubPixels"].GetUint();
+	      // 	mt->setNSubPixels(nSubPixels);
+	      // }
 	      
 	      
 	      newFrame=0;
@@ -587,6 +617,8 @@ int main(int argc, char *argv[]) {
 	    }
 #endif
 
+	    // cout << "file" << endl;
+	    //  cout << "data " << endl;
 	  if (of==NULL) {
 	    sprintf(ofname,"%s_%d.clust",filename.c_str(),fileindex);
 	    of=fopen(ofname,"w");
@@ -599,7 +631,7 @@ int main(int argc, char *argv[]) {
 	  }
 	  
 
-
+	  // cout << "data" << endl;
 	  // get data
 	  length = zmqsocket->ReceiveData(0, buff, size);
 	  mt->pushData(buff);

@@ -90,10 +90,11 @@ class interpolatingDetector : public singlePhotonDetector {
 /*       writeGainMap(tit); */
 /*     } */
 /* #endif */ 
-    pthread_mutex_lock(fi);
-    if (interp)
+    if (interp){
+      pthread_mutex_lock(fi);
       interp->prepareInterpolation(ok);
-    pthread_mutex_unlock(fi); 
+      pthread_mutex_unlock(fi); 
+    }
   } 
 
 
@@ -187,7 +188,7 @@ int addFrame(char *data,  int *ph=NULL, int ff=0) {
 	interp->addToImage(int_x, int_y);
       }
     } 
-    pthread_mutex_lock(fi);  
+    pthread_mutex_unlock(fi);  
   }
   return  nphFrame;
   
@@ -196,11 +197,15 @@ int addFrame(char *data,  int *ph=NULL, int ff=0) {
     virtual void processData(char *data, int *val=NULL) {
 	switch (dMode) {
 	case eAnalog:
+	  // cout << "an" << endl;
 	  analogDetector<uint16_t>::processData(data,val);
 	  break;
 	case ePhotonCounting:
+	  // cout << "spc" << endl;
 	  singlePhotonDetector::processData(data,val);
+	  break;
 	default:
+	  //cout << "int" << endl;
 	    switch(fMode) {
 	    case ePedestal:
 	      addToPedestal(data);
@@ -223,14 +228,20 @@ int addFrame(char *data,  int *ph=NULL, int ff=0) {
 
 
 
-    virtual char *getInterpolation(){return (char*)interp;};
-    virtual char *setInterpolation(char *ii){
+    virtual slsInterpolation *getInterpolation(){
+      return interp;
+    };
+    
+    virtual slsInterpolation *setInterpolation(slsInterpolation *ii){
       int ok; 
-      interp=(slsInterpolation*)ii; 
-      pthread_mutex_lock(fi); 
-      interp->prepareInterpolation(ok);
-      pthread_mutex_unlock(fi);  
-      return (char*)interp;};
+      interp=ii; 
+      /*  pthread_mutex_lock(fi);
+      if (interp)
+	interp->prepareInterpolation(ok);
+	pthread_mutex_unlock(fi);  */
+      cout << "det" << endl;
+      return interp;
+    };
   
     virtual void resetFlatField() { if (interp) {
 	pthread_mutex_lock(fi); 

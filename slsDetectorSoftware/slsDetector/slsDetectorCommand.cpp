@@ -1106,7 +1106,19 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 		\section settingsdacs DACs
    commands to configure DACs of detector
 	 */
+	/*! \page settings
+   - <b>emin [i] </b> Sets/gets detector minimum energy threshold for the CTB (soft setting)
+	 */
+	descrToFuncMap[i].m_pFuncName="emin"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
 
+	/*! \page settings
+   - <b>emax [i] </b> Sets/gets detector maximum energy threshold for the CTB (soft setting)
+	 */
+	descrToFuncMap[i].m_pFuncName="emax"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
 	/*! \page settings
    - <b>vthreshold [i] [mv]</b> Sets/gets detector threshold voltage for single photon counters. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
@@ -5228,6 +5240,10 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
 		dac=M_vIbiasSh;
 	else if (cmd== "vIpreOut")
 		dac=M_vIpreOut;
+	else if (cmd== "emin")
+		dac=ZMQ_emin;
+	else if (cmd== "emax")
+		dac=ZMQ_emax;
 
 	else
 		return string("cannot decode dac ")+cmd;

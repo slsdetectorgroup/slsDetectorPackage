@@ -391,6 +391,8 @@ enum dacIndex {
   M_vIbiasSh,   /**< mythen 3 >*/
   M_vIcin,      /**< mythen 3 >*/
   M_vIpreOut,    /**< mythen 3 >*/
+  ZMQ_emin, /**< ZMQ */
+  ZMQ_emax,/**< ZMQ */
   V_POWER_A = 100, /**new chiptest board */
   V_POWER_B = 101, /**new chiptest board */
   V_POWER_C = 102, /**new chiptest board */

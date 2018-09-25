@@ -121,7 +121,8 @@ class moench03Ctb10GbT1Data : public slsReceiverData<uint16_t> {
 
 
 
- int getFrameNumber(char *buff){return *((int*)(buff+5))&0xffffff;};   
+  // int getFrameNumber(char *buff){return *((int*)buff)&0xffffffff;}; 
+   int getFrameNumber(char *buff){return *((int*)(buff+5))&0xffffff;};   
 
   /**
 
@@ -199,7 +200,7 @@ class moench03Ctb10GbT1Data : public slsReceiverData<uint16_t> {
 	  int  nd;
 	  int fnum = -1;
 	  np=0;
-	  int  pn;
+	  int  pn, po=0;
 	  char aa[8224];
 	  char *packet=(char *)aa;
 	  //  cout << packetSize*nPackets << endl;
@@ -217,15 +218,16 @@ class moench03Ctb10GbT1Data : public slsReceiverData<uint16_t> {
 	      if (fnum<0)
 		fnum= getFrameNumber(packet);
 	      
-	      // cout << "fn: " << fnum << "\t pn: " << pn << endl;
+	      //   cout << "fn: " << fnum << "\t pn: " << pn << endl;
 	      if (fnum>=0) {
-		if (getFrameNumber(packet) !=fnum) { 
+		if (getFrameNumber(packet) !=fnum || pn<po) { 
 		  
 		  if (np==0){
 		    // delete [] data;
 		    return NULL;
 		  } else
 		    filebin.seekg(-8208,ios_base::cur);
+		  po =pn;
 		    return data;
 		}
 		if (pn>nPackets) {
@@ -234,6 +236,7 @@ class moench03Ctb10GbT1Data : public slsReceiverData<uint16_t> {
 
 		memcpy(data+(pn-1)*packetSize, packet, packetSize);
 		np++;
+		po =pn;
 
 		if (np==nPackets)
 		  break;

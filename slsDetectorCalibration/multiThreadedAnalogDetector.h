@@ -109,7 +109,7 @@ public:
    //protected:
    /** Implement this method in your subclass with the code you want your thread to run. */
    //virtual void InternalThreadEntry() = 0;
-   virtual void *writeImage(const char * imgname) {cout << "a" <<endl; return det->writeImage(imgname);};
+   virtual void *writeImage(const char * imgname) {return det->writeImage(imgname);};
 
    virtual void clearImage(){det->clearImage();};
 
@@ -140,6 +140,74 @@ FILE *getFilePointer(){return det->getFilePointer();};
 
 
 
+  virtual double setNSigma(double n) {return det->setNSigma(n);};
+  virtual void setEnergyRange(double emi, double ema) {det->setEnergyRange(emi,ema);};
+
+
+  virtual void prepareInterpolation(int &ok){
+      slsInterpolation *interp=((interpolatingDetector*)det)->getInterpolation();
+      if (interp) 
+       interp->prepareInterpolation(ok);
+   }
+
+   virtual int *getFlatField(){
+     slsInterpolation *interp=(det)->getInterpolation();
+     if (interp) 
+       return interp->getFlatField();
+     else
+       return NULL;
+   }
+   
+   virtual int *setFlatField(int *ff, int nb, double emin, double emax){
+     slsInterpolation *interp=(det)->getInterpolation();
+     if (interp) 
+       return interp->setFlatField(ff, nb, emin, emax);
+     else
+       return NULL;
+   }
+
+   void *writeFlatField(const char * imgname) {
+     slsInterpolation *interp=(det)->getInterpolation();
+     cout << "interp " << interp << endl;
+     if (interp)  {
+       cout << imgname << endl;
+       interp->writeFlatField(imgname);
+     }
+   }
+   void *readFlatField(const char * imgname, int nb=-1, double emin=1, double emax=0){
+     slsInterpolation *interp=(det)->getInterpolation();
+     if (interp)  
+       interp->readFlatField(imgname, nb, emin, emax);
+   }
+
+   virtual int *getFlatField(int &nb, double emi, double ema){
+     slsInterpolation *interp=(det)->getInterpolation();
+     int *ff=NULL;
+     if (interp) { 
+       ff=interp->getFlatField(nb,emi,ema);
+     }     
+     return ff;
+   }
+   
+   virtual slsInterpolation *getInterpolation() {
+     return (det)->getInterpolation();
+   }
+   
+   virtual void resetFlatField() {
+     slsInterpolation *interp=(det)->getInterpolation();
+     if (interp)   interp->resetFlatField();//((interpolatingDetector*)det)->resetFlatField();
+   }
+
+
+   virtual int setNSubPixels(int ns)  { 
+     slsInterpolation *interp=(det)->getInterpolation();
+     if (interp)  return interp->setNSubPixels(ns);
+     else return 1;};
+
+
+   virtual slsInterpolation *setInterpolation(slsInterpolation *f){
+     return (det)->setInterpolation(f);
+   };
 protected:
    analogDetector<uint16_t> *det;
    int fMode;
@@ -199,9 +267,7 @@ public:
       dets[i]=new threadedAnalogDetector(dd[i], fs);
     }
     
-    int nnx, nny, ns;
-    int nn=dets[0]->getImageSize(nnx, nny,ns);
-    image=new int[nn];
+    image=NULL;
     ff=NULL;
     ped=NULL;
     cout << "Ithread is " << ithread << endl;
@@ -213,7 +279,7 @@ public:
       delete dets[i]; 
     for (int i=1; i<nThreads; i++) 
       delete dd[i];
-    delete [] image;
+    //delete [] image;
   }
 
 
@@ -227,8 +293,15 @@ public:
   
   virtual int *getImage(int &nnx, int &nny, int &ns) {
     int *img;
+    // int nnx, nny, ns; 
     // int nnx, nny, ns;
-    int nn=dets[0]->getImageSize(nnx, nny, ns);
+    int nn=dets[0]->getImageSize(nnx, nny,ns);
+    if (image) {
+      delete image;
+      image=NULL;
+    }
+    image=new int[nn];
+    //int nn=dets[0]->getImageSize(nnx, nny, ns);
     //for (i=0; i<nn; i++) image[i]=0;
     
     for (int ii=0; ii<nThreads; ii++) {
@@ -256,7 +329,7 @@ public:
     
   }
 
-   virtual void *writeImage(const char * imgname) {   
+  virtual void *writeImage(const char * imgname, double t=1) {   
 /* #ifdef SAVE_ALL   */
 /*      for (int ii=0; ii<nThreads; ii++) { */
 /*        char tit[10000];cout << "m" <<endl; */
@@ -271,8 +344,12 @@ public:
      float *gm=new float[nn];
      if (gm) {
        for (int ix=0; ix<nn; ix++) {
-	 gm[ix]=image[ix];
-	 // if (image[ix]>0 && ix/nnx<350) cout << ix/nnx << " " << ix%nnx << " " << image[ix]<< " " << gm[ix] << endl;
+	 if (t)
+	   gm[ix]=(image[ix])/t;
+	 else
+	   gm[ix]=image[ix];
+	   
+	 //if (image[ix]>0 && ix/nnx<350) cout << ix/nnx << " " << ix%nnx << " " << image[ix]<< " " << gm[ix] << endl;
        }
        //cout << "image " << nnx << " " << nny << endl;
        WriteToTiff(gm,imgname ,nnx, nny); 
@@ -314,7 +391,7 @@ public:
    }
 
    virtual bool popFree(char* &ptr) {
-     cout << ithread << endl;
+     //  cout << ithread << endl;
      dets[ithread]->popFree(ptr);
    }
    
@@ -337,9 +414,17 @@ public:
       //  cout << i << endl;
       p0=dets[i]->getPedestal(p0);
       if (p0) {
+	if (i==0) {
+
+	for (int ib=0; ib<nx*ny; ib++) {
+	  ped[ib]=p0[ib]/((double)nThreads);
+	  //  cout << p0[ib] << " ";
+	}
+	} else {
 	for (int ib=0; ib<nx*ny; ib++) {
 	  ped[ib]+=p0[ib]/((double)nThreads);
 	  //  cout << p0[ib] << " ";
+	}
 	}
       }
 	

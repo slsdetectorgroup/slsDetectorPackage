@@ -4618,11 +4618,11 @@ int slsDetector::getDataBytesInclGapPixels() {
 
 
 dacs_t slsDetector::setDAC(dacs_t val, dacIndex index, int mV, int imod) {
-
-
+  
 	dacs_t retval[2];
 	retval[0] = -1;
 	retval[1] = -1;
+  if (index!=ZMQ_emin && index!=ZMQ_emax) { 
 	int fnum=F_SET_DAC;
 	int ret=FAIL;
 	char mess[MAX_STR_LENGTH]="";
@@ -4683,8 +4683,91 @@ dacs_t slsDetector::setDAC(dacs_t val, dacIndex index, int mV, int imod) {
 	}
 	if(mV)
 		return retval[1];
+  } else 	if(thisDetector->myDetectorType==JUNGFRAUCTB) {
+    
+	  string header=getNetworkParameter(ADDITIONAL_JSON_HEADER);
+	  
+	  std::cout<< "Old json header: " << header << std::endl;
 
-	return retval[0];
+	  if (index==ZMQ_emin) {
+
+	    size_t pos0, pos1;
+	  pos0=header.find(",\"eMin\"");
+	  if (pos0==std::string::npos) {
+	    pos0=header.find("\"eMin\"");
+	  } else pos0++;
+	  if (pos0!=std::string::npos) {
+	    pos1=header.find_first_of(",",pos0);
+	    // std::cout << pos0 << " " << pos1 << std::endl;
+	     std::cout<< "Replacing old eMin: " << header.substr(pos0,pos1-pos0) << std::endl;
+	    // if (pos1!=std::string::npos)
+	     if (val>=0)
+	       header.erase(pos0,pos1-pos0);
+	    // else
+	    //  header.erase(pos0);
+	  }
+	  if (val>=0) {
+	    if (header.length()>0) {
+	      if (header.at(0)==',')
+	      header.erase(0,1);
+	      if (header.length()>0)
+		header.append(",");
+	    }
+	    // std::cout<< "Left: " << header << std::endl; 
+	    char h[1000];
+	    sprintf(h,"\"eMin\":%d",val);
+	    // std::cout<< "new ROI: " << h << std::endl;
+	    
+	    header.append(h);
+	  } else {
+	    sscanf(header.substr(pos0,pos1-pos0).c_str(),"\"eMin\":%d",&val);
+	  }
+	  
+	  } else if (index==ZMQ_emax) {
+
+    
+	    size_t pos0, pos1;
+	    pos0=header.find(",\"eMax\"");
+	  if (pos0==std::string::npos) {
+	    pos0=header.find("\"eMax\"");
+	  } else pos0++;
+	  if (pos0!=std::string::npos) {
+	    pos1=header.find_first_of(",",pos0);
+	    // std::cout << pos0 << " " << pos1 << std::endl;
+	     std::cout<< "Replacing old eMax: " << header.substr(pos0,pos1-pos0) << std::endl;
+	    // if (pos1!=std::string::npos)
+	     if (val>=0)
+	       header.erase(pos0,pos1-pos0);
+	    // else
+	    //  header.erase(pos0);
+	  }
+	  if (val>=0) {
+	  if (header.length()>0) {
+	    if (header.at(0)==',')
+	      header.erase(0,1);
+	    if (header.length()>0)
+		header.append(",");
+	  }
+	  // std::cout<< "Left: " << header << std::endl; 
+	  char h[1000];
+	  sprintf(h,"\"eMax\":%d",val);
+	    // std::cout<< "new ROI: " << h << std::endl;
+	    
+	    header.append(h);
+	  } else {
+	    sscanf(header.substr(pos0,pos1-pos0).c_str(),"\"eMax\":%d",&val);
+	  }
+
+	  }
+	  
+	  std::cout<< "New json header: " << header << std::endl;
+	  setReceiverOnline(ONLINE_FLAG);
+	  setNetworkParameter(ADDITIONAL_JSON_HEADER, header);
+	  /***** END FOR ZMQ HEADER */
+	  retval[0]=val;
+  }
+  
+  return retval[0];
 }
 
 
@@ -4892,7 +4975,7 @@ int slsDetector::setReadOutFlags(readOutFlags flag) {
 			thisDetector->roFlags=flag;
 	}
 
-	std::cout<< "***ZMQ: " << hex<< flag << std::endl;
+	//	std::cout<< "***ZMQ: " << hex<< flag << std::endl;
 	
 	if (flag & (PEDESTAL | NEWPEDESTAL | NEWFLAT | FLAT | FRAME)) {
 

@@ -8,6 +8,7 @@
 #include "pedestalSubtraction.h"
 #include "commonModeSubtraction.h"
 #include "tiffIO.h"
+#include "slsInterpolation.h"
 
 
 #ifdef ROOTSPECTRUM
@@ -1101,6 +1102,32 @@ FILE *setFilePointer(FILE *f){myFile=f; return myFile;};
     \returns current file pointer
 */
 FILE *getFilePointer(){return myFile;};
+
+
+
+
+
+
+
+    virtual slsInterpolation *getInterpolation(){
+      return NULL;
+    };
+    
+    virtual slsInterpolation *setInterpolation(slsInterpolation *ii){return NULL;}
+
+
+
+    
+  virtual double setNSigma(double n) {return 0;};
+  virtual void setEnergyRange(double emi, double ema) {;};
+
+
+
+
+
+
+
+
  protected:
   
     slsDetectorData<dataType> *det; /**< slsDetectorData to be used */

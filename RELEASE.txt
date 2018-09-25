@@ -1,4 +1,4 @@
-SLS Detector Package 4.0.0 released on 23.08.2018
+SLS Detector Package 4.0.0 released on 26.09.2018
 =================================================
 
 
@@ -432,6 +432,8 @@ CONTENTS
 	5.	(Jungfrau) Programming FPGA now creates the rawbin file from pof in tmp
 		rather than source file location (for permission issues).
 		
+	6.	(Gotthard) ROI segmentation fault fixed.
+		
 	Receiver
 	--------
 	
@@ -459,6 +461,9 @@ CONTENTS
 		instead of user input register for power.
 	
 	2.	(Eiger) Bug fix for saving trimbits to file (Advanced users).
+	
+	3.	(Gotthard 25um) config.txt is not read again after detector startup,
+		no matter the number of times the detector server is restarted. 
 
 	
 6. Known Issues
@@ -477,6 +482,10 @@ CONTENTS
 		So, please ensure correct on-board server before switching between
 		firmware versions. Else one cannot ping it anymore. Will need to flash firmware
 		again to recover.
+		
+	2.	(Gotthard) To switch back to all ADC from single ADC ROI, one must take
+		even number of images for the receiver to understand complete images.
+		This will be fixed in the next firmware upgrade.
 	
 	
 	

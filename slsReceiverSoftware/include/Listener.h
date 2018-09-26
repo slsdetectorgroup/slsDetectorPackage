@@ -141,12 +141,12 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
     int CreateDummySocketForUDPSocketBufferSize(uint32_t s);
 
     /**
-     * Set xcoord and y coord
-     * xcoord is in 1d if detector has not send them yet in firmware,
-     * xcoord is in 2d for jungfrau and eiger (for missing packets/deactivated eiger)
-     * ycoord when used is in 2d
+     * Set hard coded (calculated but not from detector) row and column
+     * r is in row index if detector has not send them yet in firmware,
+     * c is in col index for jungfrau and eiger (for missing packets/deactivated eiger)
+     * c when used is in 2d
      */
-    void SetHardCodedCoords(uint16_t x, uint16_t y);
+    void SetHardCodedPosition(uint16_t r, uint16_t c);
 
 
 
@@ -251,14 +251,14 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
     /** Silent Mode */
     bool* silentMode;
 
-	/** x coord hardcoded as 1D or 2d,
+	/** row hardcoded as 1D or 2d,
 	 * if detector does not send them yet or
 	 * missing packets/deactivated (eiger/jungfrau sends 2d pos) **/
-	uint16_t xcoord;
+	uint16_t row;
 
-	/** y coord hardcoded as 2D,
+	/** column hardcoded as 2D,
 	 * deactivated eiger/missing packets (eiger/jungfrau sends 2d pos) **/
-	uint16_t ycoord;
+	uint16_t column;
 
 
 	// acquisition start

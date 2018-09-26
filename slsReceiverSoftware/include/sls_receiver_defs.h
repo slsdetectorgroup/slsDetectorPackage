@@ -37,8 +37,8 @@ typedef  int int32_t;
 #define DEFAULT_ZMQ_CL_PORTNO 	30001
 #define DEFAULT_ZMQ_RX_PORTNO 	30001
 
-#define SLS_DETECTOR_HEADER_VERSION         0x1
-#define SLS_DETECTOR_JSON_HEADER_VERSION    0x2
+#define SLS_DETECTOR_HEADER_VERSION         0x2
+#define SLS_DETECTOR_JSON_HEADER_VERSION    0x3
 
 /** 
     \file sls_receiver_defs.h
@@ -143,9 +143,9 @@ public:
 	    @li bunchId is the bunch id from beamline
 	    @li timestamp is the time stamp with 10 MHz clock
 	    @li modId is the unique module id (unique even for left, right, top, bottom)
-	    @li xCoord is the x coordinate in the complete detector system
-	    @li yCoord is the y coordinate in the complete detector system
-	    @li zCoord is the z coordinate in the complete detector system
+	    @li row is the row index in the complete detector system
+	    @li column is the column index in the complete detector system
+	    @li reserved is reserved
 	    @li debug is for debugging purposes
 	    @li roundRNumber is the round robin set number
 	    @li detType is the detector type see :: detectorType
@@ -159,9 +159,9 @@ public:
 		uint64_t bunchId;				/**< is the bunch id from beamline */
 		uint64_t timestamp;				/**< is the time stamp with 10 MHz clock */
 		uint16_t modId;					/**< is the unique module id (unique even for left, right, top, bottom) */
-		uint16_t xCoord;				/**< is the x coordinate in the complete detector system */
-		uint16_t yCoord;				/**< is the y coordinate in the complete detector system */
-		uint16_t zCoord;				/**< is the z coordinate in the complete detector system */
+		uint16_t row;					/**< is the row index in the complete detector system */
+		uint16_t column;				/**< is the column index in the complete detector system */
+		uint16_t reserved;				/**< is reserved */
 		uint32_t debug;					/**< is for debugging purposes */
 		uint16_t roundRNumber;			/**< is the round robin set number */
 		uint8_t detType;				/**< is the detector type see :: detectorType */

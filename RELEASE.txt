@@ -348,8 +348,8 @@ CONTENTS
 		continue to have them.
 		
 	2.	Depending on 1d position of detectors and detsizechan in config file,
-		xcoord and ycoord are given to detector servers (Eiger and Jungfrau)
-		to encode into the udp header.
+		row and column (previously xcoord and ycoord) are given to detector 
+		servers (Eiger and Jungfrau) to encode into the udp header.
 		
 	3.	(Eiger) Setting threshold energy changes such as CAL dac is irrelevant 
 		when interpolating between two energies and VRS dac is interpolated, not copied.
@@ -382,7 +382,8 @@ CONTENTS
 	1.	slsMultiReceiver executable added that creates multiple receiver child processes.
 		./slsMultiReceiver [start_tcp_port] [num_receivers] [1 for call back, 0 for none]
 		
-	2.	Default xcoord and ycoord are hardcoded for missing packets. (Eiger and Jungfrau)
+	2.	Default row and column (previously xcoord and ycoord) are hardcoded 
+		for missing packets. (Eiger and Jungfrau)
 		
 
 	Gui

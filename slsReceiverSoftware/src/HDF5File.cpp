@@ -63,13 +63,13 @@ HDF5File::HDF5File(int ind, uint32_t* maxf,
 	parameterNames.push_back("mod id");
 	parameterDataTypes.push_back(PredType::STD_U16LE);
 
-	parameterNames.push_back("x Coord");
+	parameterNames.push_back("row");
 	parameterDataTypes.push_back(PredType::STD_U16LE);
 
-	parameterNames.push_back("y Coord");
+	parameterNames.push_back("column");
 	parameterDataTypes.push_back(PredType::STD_U16LE);
 
-	parameterNames.push_back("z Coord");
+	parameterNames.push_back("reserved");
 	parameterDataTypes.push_back(PredType::STD_U16LE);
 
 	parameterNames.push_back("debug");

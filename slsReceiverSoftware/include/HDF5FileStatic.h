@@ -213,9 +213,9 @@ public:
 			dset_para[3]->write(&header.bunchId, 		parameterDataTypes[3], memspace, *dspace_para);i=4;
 			dset_para[4]->write(&header.timestamp, 		parameterDataTypes[4], memspace, *dspace_para);i=5;
 			dset_para[5]->write(&header.modId, 			parameterDataTypes[5], memspace, *dspace_para);i=6;
-			dset_para[6]->write(&header.xCoord, 		parameterDataTypes[6], memspace, *dspace_para);i=7;
-			dset_para[7]->write(&header.yCoord, 		parameterDataTypes[7], memspace, *dspace_para);i=8;
-			dset_para[8]->write(&header.zCoord, 		parameterDataTypes[8], memspace, *dspace_para);i=9;
+			dset_para[6]->write(&header.row, 			parameterDataTypes[6], memspace, *dspace_para);i=7;
+			dset_para[7]->write(&header.column, 		parameterDataTypes[7], memspace, *dspace_para);i=8;
+			dset_para[8]->write(&header.reserved, 		parameterDataTypes[8], memspace, *dspace_para);i=9;
 			dset_para[9]->write(&header.debug, 			parameterDataTypes[9], memspace, *dspace_para);i=10;
 			dset_para[10]->write(&header.roundRNumber, 	parameterDataTypes[10], memspace, *dspace_para);i=11;
 			dset_para[11]->write(&header.detType, 		parameterDataTypes[11], memspace, *dspace_para);i=12;

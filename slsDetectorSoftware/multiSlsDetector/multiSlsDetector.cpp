@@ -5078,11 +5078,11 @@ void multiSlsDetector::readFrameFromReceiver() {
 					currentFrameIndex       = doc["fIndex"].GetUint64();
 					currentFileIndex        = doc["fileIndex"].GetUint64();
 					currentSubFrameIndex    = doc["expLength"].GetUint();
-					coordY                  = doc["xCoord"].GetUint();
-					coordX                  = doc["yCoord"].GetUint();
+					coordY                  = doc["row"].GetUint();
+					coordX                  = doc["column"].GetUint();
 					if (eiger)
 						coordY = (nY - 1) - coordY;
-					//cout << "X:" << doc["xCoord"].GetUint() <<" Y:"<<doc["yCoord"].GetUint();
+					//cout << "X:" << doc["row"].GetUint() <<" Y:"<<doc["column"].GetUint();
 					flippedDataX = doc["flippedDataX"].GetUint();
 #ifdef VERBOSE
 					cprintf(BLUE, "(Debug) Header Info:\n"

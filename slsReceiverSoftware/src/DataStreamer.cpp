@@ -265,7 +265,7 @@ int DataStreamer::SendHeader(sls_receiver_header* rheader, uint32_t size, uint32
 			nx, ny, size,
 			acquisitionIndex, frameIndex, fileNametoStream,
 			header.frameNumber, header.expLength, header.packetNumber, header.bunchId, header.timestamp,
-			header.modId, header.xCoord, header.yCoord, header.zCoord,
+			header.modId, header.row, header.column, header.reserved,
 			header.debug, header.roundRNumber,
 			header.detType, header.version,
 			flippedData,

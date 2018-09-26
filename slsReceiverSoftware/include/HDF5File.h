@@ -181,16 +181,16 @@ class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileSt
 	int numFilesinAcquisition;
 
 	/** parameter names */
-	vector <const char*> parameterNames;
+	std::vector <const char*> parameterNames;
 
 	/** parameter data types */
-	vector <DataType> parameterDataTypes;
+	std::vector <DataType> parameterDataTypes;
 
 	/** Dataspace of parameters */
 	DataSpace* dataspace_para;
 
 	/** Dataset array for parameters */
-	vector <DataSet*> dataset_para;
+	std::vector <DataSet*> dataset_para;
 
 	/** Number of Images (including extended during acquisition) */
 	uint64_t extNumImages;

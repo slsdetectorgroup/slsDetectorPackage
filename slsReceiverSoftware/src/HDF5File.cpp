@@ -296,7 +296,7 @@ void HDF5File::EndofAcquisition(bool anyPacketsCaught, uint64_t numf) {
 int HDF5File::CreateVirtualFile(uint64_t numf) {
 	pthread_mutex_lock(&Mutex);
 
-	string vname = HDF5FileStatic::CreateVirtualFileName(filePath, fileNamePrefix, *fileIndex);
+	std::string vname = HDF5FileStatic::CreateVirtualFileName(filePath, fileNamePrefix, *fileIndex);
 	if(!(*silentMode)) {
 		FILE_LOG(logINFO) << "Virtual File: " << vname;
 	}
@@ -319,10 +319,10 @@ int HDF5File::CreateVirtualFile(uint64_t numf) {
 // called only by the one maser receiver
 int HDF5File::LinkVirtualFileinMasterFile() {
 	//dataset name
-	ostringstream osfn;
+	std::ostringstream osfn;
 	osfn << "/data";
-	if ((*numImages > 1)) osfn << "_f" << setfill('0') << setw(12) << 0;
-	string dsetname = osfn.str();
+	if ((*numImages > 1)) osfn << "_f" << std::setfill('0') << std::setw(12) << 0;
+	std::string dsetname = osfn.str();
 
 	pthread_mutex_lock(&Mutex);
 	int ret = HDF5FileStatic::LinkVirtualInMaster(masterFileName, currentFileName,

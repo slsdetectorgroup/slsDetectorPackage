@@ -3808,7 +3808,7 @@ int* slsDetector::getDataFromDetector(int *retval) {
 
 	int nodatadetectortype = false;
 	detectorType types = getDetectorsType();
-	if(types == EIGER || types == JUNGFRAU){
+	if(types == EIGER || types == JUNGFRAU || GOTTHARD || PROPIX){
 		nodatadetectortype = true;
 	}
 

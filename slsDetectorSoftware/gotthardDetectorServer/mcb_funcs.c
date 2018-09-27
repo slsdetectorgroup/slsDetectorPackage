@@ -107,7 +107,6 @@ int initDetector() {
   // initChip(0, 0,ALLMOD);
   //nModX=n; 
   //
-  allocateRAM();
 
 
   return OK;
@@ -1831,205 +1830,19 @@ int testDataInOut(int num, int imod) {
 
 
 int testExtPulse(int imod) {
-  int i, ichan, ichip, result=OK;
-  int *val1;
-
-  printf("Testing counter for module %d\n", imod);
-
-  setCSregister(ALLMOD);
-  setSSregister(ALLMOD);
-  counterClear(ALLMOD);  
-  putout("0000000000000000",ALLMOD);
-  putout("0000100000000000",ALLMOD);
-  putout("0000000000000000",ALLMOD);
-  for (i=0; i<NCHAN; i++) {
-    putout("0000000000000000",ALLMOD);
-    putout("0000000000001000",ALLMOD);
-    putout("0000000000000000",ALLMOD);
-    extPulse(1,ALLMOD);
-  }
-  clearSSregister(ALLMOD);
-  putout("0000000000000000",ALLMOD);
-
- 
-  // Readout with SM 
-
-  //startStateMachine();
-  startReadOut();
-  usleep(100);
-  val1=(int*)(decode_data((int*)(fifo_read_event())));
-  // val1=fifo_read_event();
-  //imod=0;
-  //for (imod=0; imod<nModX; imod++) {
-  for (ichip=0; ichip<NCHIP; ichip++) {
-      for (ichan=0; ichan<NCHAN; ichan++) {//
-	if ((*(val1+ichan+(ichip+imod*NCHIP)*NCHAN))!=ichan) {
-	  result++;
-	  printf("Counter test: channel %d read %d instead of %d\n",ichan+(ichip+imod*NCHIP)*NCHAN, val1[ichan+(ichip+imod*NCHIP)*NCHAN], ichan);
-	  }
-      }
-  }
-  //}
-  free(val1);
-  if (result)
-    return 1;
-  else
+	// reading via cPU doesnt work, so removed this functionality
     return 0;
 }
 
 
 int testExtPulseMux(int imod, int ow) {
-
-  int i, ichan, ichip, result=0,   ind, chipr=0;
-  int  *values, *v1;  
-  int vright,v;
-  int nbit_mask=0xffffff;
-
-  printf("Testing counter for module %d, mux %d\n", imod, ow);
-  setExposureTime(0);
-  setFrames(1);
-  setTrains(1);
-
-
-  if (ow==2)
-    nbit_mask=0xffff;
-  else if (ow==3)
-    nbit_mask=0xff;
-  else if (ow==4)
-    nbit_mask=0xf;
-  else if (ow==5)
-    nbit_mask=0x1;
-  
-
-
-  setCSregister(ALLMOD);
-  setSSregister(ALLMOD);
-  counterClear(ALLMOD); 
-  initChipWithProbes(0, ow,0,ALLMOD); 
-  //  initChip(0, ow,ALLMOD);
-  for (ichip=0; ichip<NCHIP; ichip++) {
-  setSSregister(ALLMOD);
-    for (i=0; i<NCHAN; i++) {
-      putout("0000000000000000",ALLMOD);
-      putout("0000000000001000",ALLMOD);
-      putout("0000000000000000",ALLMOD);
-      extPulse(1,ALLMOD);
-    }
-    nextChip(ALLMOD);
-  }
-  setCSregister(ALLMOD);
-  clearSSregister(ALLMOD);
-  putout("0000000000000000",ALLMOD);
-
-  // Readout with SM 
-
-
-  startReadOut();
-  usleep(100);
-  v1=(int*)(fifo_read_event());
-  if (v1)
-    values=(int*)(decode_data(v1));
-  else {
-    printf("no data found in fifos\n");
-    return 1;
-  }
-  for (ichip=0; ichip<NCHIP; ichip++) {
-    chipr=0;
-      for (ichan=0; ichan<NCHAN; ichan++) { 
-	ind=ichan+(ichip+imod*NCHIP)*NCHAN;
-	v=values[ind];
-	vright=(ichan*(ichip+1))&nbit_mask;
-	if (v!=vright) {
-	  result++;
-	  chipr++;
-	  printf("Counter test mux %d mode: channel %d chip %d read %d instead of %d\n",ow, ichan+(ichip+imod*NCHIP)*NCHAN, ichip, v, vright);
-	  //break;
-	}
-	//printf("\n");
-      }
-      if (chipr)
-	printf("Test Counter  module %d chip%d mux %d: %d errors\n", imod,ichip, ow,chipr);
-  }
-  free(values);
-  if (result)
-    printf("Test Counter  module %d mux %d: %d errors\n", imod,ow,result);
-
-  if (result)
-    return 1;
-  else
+	// reading via cPU doesnt work, so removed this functionality
     return 0;
 
 }
 
 int testDataInOutMux(int imod, int ow, int num) {
-
-  int  ichan, ichip, result=0, chipr=0,  ind;
-  int vright,v;
-  int nbit_mask=0xffffff;
-  int *values, *v1;
-
-  printf("Testing data inout for module %d, mux %d, pattern 0x%x\n", imod, ow, num);
-  setExposureTime(0);
-  setFrames(1);
-  setTrains(1);
-
-
-  if (ow==2)
-    nbit_mask=0xffff;
-  else if (ow==3)
-    nbit_mask=0xff;
-  else if (ow==4)
-    nbit_mask=0xf;
-  else if (ow==5)
-    nbit_mask=0x1;
-
-  vright=num&nbit_mask;
-
-  setCSregister(ALLMOD);
-  //printf("Testin data in out\n");
-  setSSregister(ALLMOD);
-  counterClear(ALLMOD); 
-  initChannel(0,0,0,0,0,num,ALLMOD);
-  putout("0000000000000000",ALLMOD);
-  clearSSregister(ALLMOD);
-  initChipWithProbes(0, ow,0,ALLMOD);
-  clearSSregister(ALLMOD);
-  putout("0000000000000000",ALLMOD);
-
-  // Readout with SM 
-
-  printf("mux %d\n",ow);
-  startReadOut();
-  usleep(100);  
-  v1=(int*)(fifo_read_event());
-  if (v1)
-    values=(int*)(decode_data(v1));
-  else {
-    printf("no data found in fifos\n");
-    return 1;
-  }
-  for (ichip=0; ichip<NCHIP; ichip++) {
-    chipr=0;
-      for (ichan=0; ichan<NCHAN; ichan++) { 
-	ind=ichan+(ichip+imod*NCHIP)*NCHAN;
-	v=values[ind];
-	if (v!=vright) {
-	  result++;
-	  chipr++;
-	  printf("DataInOut test mux %d mode: channel %d chip %d  read %d instead of %d\n",ow, ichan+(ichip+imod*NCHIP)*NCHAN, ichip, v, vright);
-	  //break;
-	}
-	//printf("\n");
-      }
-      if (chipr)
-	printf("Test DatInOut module %d chip %d mux %d: %d errors\n", imod,ichip, ow,chipr);
-  }
-  if (result)
-    printf("Test DatInOut module %d mux %d: %d errors\n", imod,ow,result);
-  free(values);
-  if (result)
-    return 1;
-  else
+	// reading via cPU doesnt work, so removed this functionality
     return 0;
 
 }

@@ -442,13 +442,8 @@ void UDPStandardImplementation::setDetectorPositionId(const int i){
 
 	for (unsigned int i = 0; i < listener.size(); ++i) {
 		uint16_t row = 0, col = 0;
-		if (myDetectorType == EIGER || myDetectorType == JUNGFRAU) {
-			row = detID % numDet[1]; // row
-			col = (detID / numDet[1])  * ((myDetectorType == EIGER) ? 2 : 1) + i; // col for horiz. udp ports
-		}
-		// calculate x in 1d
-		else
-			row = detID * numThreads + i;
+		row = detID % numDet[1]; // row
+		col = (detID / numDet[1])  * ((myDetectorType == EIGER) ? 2 : 1) + i; // col for horiz. udp ports
 		listener[i]->SetHardCodedPosition(row, col);
 	}
 }

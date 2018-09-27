@@ -77,7 +77,6 @@ u_int32_t getFirmwareVersion();
 u_int32_t  getFirmwareSVNVersion();
 int testFifos(void);
 u_int32_t testFpga(void);
-u_int32_t testRAM(void);
 int testBus(void);
 int setDigitalTestBit(int ival);
 
@@ -128,8 +127,8 @@ u_int32_t fifoReadStatus();
 u_int32_t fifo_full(void);
 
 
+void waitForAcquisitionFinish();
 
-u_int32_t* fifo_read_event();
 u_int32_t* decode_data(int* datain);
 //u_int32_t move_data(u_int64_t* datain, u_int64_t* dataout);
 int setDynamicRange(int dr);
@@ -137,8 +136,7 @@ int getDynamicRange();
 int getNModBoard();
 int setNMod(int n);
 int setStoreInRAM(int b);
-int allocateRAM();
-int clearRAM();
+
 
 
 

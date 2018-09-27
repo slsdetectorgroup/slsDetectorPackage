@@ -16,7 +16,7 @@ INSTMODE= 	0777
 
 
 BINS = testlib_sharedlibc
-SRCS = server.c firmware_funcs.c  server_funcs.c communication_funcs.c mcb_funcs.c trimming_funcs.c  sharedmemory.c 
+SRCS = server.c firmware_funcs.c  server_funcs.c communication_funcs.c mcb_funcs.c 
 OBJS = $(SRCS:%.c=%.o) 
 
 

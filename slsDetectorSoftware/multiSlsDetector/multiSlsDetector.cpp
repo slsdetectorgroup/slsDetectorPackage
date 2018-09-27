@@ -2458,7 +2458,7 @@ int* multiSlsDetector::getDataFromDetector() {
 	int nodatadet          = -1;
 	int nodatadetectortype = false;
 	detectorType types     = getDetectorsType();
-	if (types == EIGER || types == JUNGFRAU) {
+	if (types == EIGER || types == JUNGFRAU || GOTTHARD || PROPIX) {
 		nodatadetectortype = true;
 	}
 
@@ -5082,7 +5082,7 @@ void multiSlsDetector::readFrameFromReceiver() {
 					coordX                  = doc["column"].GetUint();
 					if (eiger)
 						coordY = (nY - 1) - coordY;
-					//cout << "X:" << doc["row"].GetUint() <<" Y:"<<doc["column"].GetUint();
+						//cout << "X:" << doc["row"].GetUint() <<" Y:"<<doc["column"].GetUint();
 					flippedDataX = doc["flippedDataX"].GetUint();
 #ifdef VERBOSE
 					cprintf(BLUE, "(Debug) Header Info:\n"

@@ -134,18 +134,18 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    slsReceiverDefs::sls_receiver_header* header = (slsReceiverDefs::sls_receiver_header*)metadata;</div>
 <div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    slsReceiverDefs::sls_detector_header detectorHeader = header-&gt;detHeader;</div>
 <div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <a class="code" href="mainReceiver_8cpp.html#aeac6a4b86729a7e07100fb58600d6481">PRINT_IN_COLOR</a> (detectorHeader.modId?detectorHeader.modId:detectorHeader.xCoord,</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <a class="code" href="mainReceiver_8cpp.html#aeac6a4b86729a7e07100fb58600d6481">PRINT_IN_COLOR</a> (detectorHeader.modId?detectorHeader.modId:detectorHeader.row,</div>
 <div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;            <span class="stringliteral">&quot;#### %d GetData: ####\n&quot;</span></div>
 <div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;            <span class="stringliteral">&quot;frameNumber: %llu\t\texpLength: %u\t\tpacketNumber: %u\t\tbunchId: %llu&quot;</span></div>
 <div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;            <span class="stringliteral">&quot;\t\ttimestamp: %llu\t\tmodId: %u\t\t&quot;</span></div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;            <span class="stringliteral">&quot;xCoord: %u\t\tyCoord: %u\t\tzCoord: %u\t\tdebug: %u&quot;</span></div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;            <span class="stringliteral">&quot;row: %u\t\tcolumn: %u\t\treserved: %u\t\tdebug: %u&quot;</span></div>
 <div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;            <span class="stringliteral">&quot;\t\troundRNumber: %u\t\tdetType: %u\t\tversion: %u&quot;</span></div>
 <div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;            <span class="comment">//&quot;\t\tpacketsMask:%s&quot;</span></div>
 <div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;            <span class="stringliteral">&quot;\t\tfirstbytedata: 0x%x\t\tdatsize: %u\n\n&quot;</span>,</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;            detectorHeader.xCoord, (<span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>)detectorHeader.frameNumber,</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;            detectorHeader.row, (<span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>)detectorHeader.frameNumber,</div>
 <div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;            detectorHeader.expLength, detectorHeader.packetNumber, (<span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>)detectorHeader.bunchId,</div>
 <div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;            (<span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>)detectorHeader.timestamp, detectorHeader.modId,</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;            detectorHeader.xCoord, detectorHeader.yCoord, detectorHeader.zCoord,</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;            detectorHeader.row, detectorHeader.column, detectorHeader.reserved,</div>
 <div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;            detectorHeader.debug, detectorHeader.roundRNumber,</div>
 <div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;            detectorHeader.detType, detectorHeader.version,</div>
 <div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;            <span class="comment">//header-&gt;packetsMask.to_string().c_str(),</span></div>
@@ -158,18 +158,18 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;    slsReceiverDefs::sls_receiver_header* header = (slsReceiverDefs::sls_receiver_header*)metadata;</div>
 <div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;    slsReceiverDefs::sls_detector_header detectorHeader = header-&gt;detHeader;</div>
 <div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;</div>
-<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;    <a class="code" href="mainReceiver_8cpp.html#aeac6a4b86729a7e07100fb58600d6481">PRINT_IN_COLOR</a> (detectorHeader.modId?detectorHeader.modId:detectorHeader.xCoord,</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;    <a class="code" href="mainReceiver_8cpp.html#aeac6a4b86729a7e07100fb58600d6481">PRINT_IN_COLOR</a> (detectorHeader.modId?detectorHeader.modId:detectorHeader.row,</div>
 <div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;            <span class="stringliteral">&quot;#### %d GetData: ####\n&quot;</span></div>
 <div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;            <span class="stringliteral">&quot;frameNumber: %llu\t\texpLength: %u\t\tpacketNumber: %u\t\tbunchId: %llu&quot;</span></div>
 <div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;            <span class="stringliteral">&quot;\t\ttimestamp: %llu\t\tmodId: %u\t\t&quot;</span></div>
-<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;            <span class="stringliteral">&quot;xCoord: %u\t\tyCoord: %u\t\tzCoord: %u\t\tdebug: %u&quot;</span></div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;            <span class="stringliteral">&quot;row: %u\t\tcolumn: %u\t\treserved: %u\t\tdebug: %u&quot;</span></div>
 <div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;            <span class="stringliteral">&quot;\t\troundRNumber: %u\t\tdetType: %u\t\tversion: %u&quot;</span></div>
 <div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;            <span class="comment">//&quot;\t\tpacketsMask:%s&quot;</span></div>
 <div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;            <span class="stringliteral">&quot;\t\tfirstbytedata: 0x%x\t\tdatsize: %u\n\n&quot;</span>,</div>
-<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;            detectorHeader.xCoord, (<span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>)detectorHeader.frameNumber,</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;            detectorHeader.row, (<span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>)detectorHeader.frameNumber,</div>
 <div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;            detectorHeader.expLength, detectorHeader.packetNumber, (<span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>)detectorHeader.bunchId,</div>
 <div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;            (<span class="keywordtype">long</span> <span class="keywordtype">long</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>)detectorHeader.timestamp, detectorHeader.modId,</div>
-<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;            detectorHeader.xCoord, detectorHeader.yCoord, detectorHeader.zCoord,</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;            detectorHeader.row, detectorHeader.column, detectorHeader.reserved,</div>
 <div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;            detectorHeader.debug, detectorHeader.roundRNumber,</div>
 <div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;            detectorHeader.detType, detectorHeader.version,</div>
 <div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;            <span class="comment">//header-&gt;packetsMask.to_string().c_str(),</span></div>

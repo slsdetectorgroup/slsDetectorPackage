@@ -1,0 +1,21 @@
+var searchData=
+[
+  ['readconfigurationfile',['readConfigurationFile',['../classslsDetectorUsers.html#ac3784508713e85386054a4f9f8a0ba62',1,'slsDetectorUsers']]],
+  ['receiver',['receiver',['../classslsReceiverUsers.html#abe77f3f45e0be9c3700c5254a84c0bfe',1,'slsReceiverUsers']]],
+  ['registeracquisitionfinishedcallback',['registerAcquisitionFinishedCallback',['../classslsDetectorUsers.html#a2a85e28ff08e3ec1e08bea3ba7d0fb08',1,'slsDetectorUsers']]],
+  ['registercallbackacquisitionfinished',['registerCallBackAcquisitionFinished',['../classslsReceiverUsers.html#adacc5da9dd812d62936ac456a73c0738',1,'slsReceiverUsers']]],
+  ['registercallbackrawdatamodifyready',['registerCallBackRawDataModifyReady',['../classslsReceiverUsers.html#ae10c5eea94bf3bc63ae1acc210582069',1,'slsReceiverUsers']]],
+  ['registercallbackrawdataready',['registerCallBackRawDataReady',['../classslsReceiverUsers.html#ad7126b940f6d8f11295ed6eed3e0bad4',1,'slsReceiverUsers']]],
+  ['registercallbackstartacquisition',['registerCallBackStartAcquisition',['../classslsReceiverUsers.html#a5ffca5973503b62cefb4a5e3b8f89dfb',1,'slsReceiverUsers']]],
+  ['registerconnectchannelscallback',['registerConnectChannelsCallback',['../classslsDetectorUsers.html#ad1ab73675435879c2c5cef7adab02c32',1,'slsDetectorUsers']]],
+  ['registerdatacallback',['registerDataCallback',['../classslsDetectorUsers.html#add821d94da9b03fe500d27e4433c01f5',1,'slsDetectorUsers']]],
+  ['registerdisconnectchannelscallback',['registerDisconnectChannelsCallback',['../classslsDetectorUsers.html#aa94dd8fce8548ba8e79201ec50fe27d6',1,'slsDetectorUsers']]],
+  ['registergeti0callback',['registerGetI0Callback',['../classslsDetectorUsers.html#a1969785197030aa8e2d3c3d48a9cb45c',1,'slsDetectorUsers']]],
+  ['registergetpositioncallback',['registerGetPositionCallback',['../classslsDetectorUsers.html#ac2b87416288e657a209e1374c778eb16',1,'slsDetectorUsers']]],
+  ['registergotopositioncallback',['registerGoToPositionCallback',['../classslsDetectorUsers.html#a0f7c9bd3c46647d5dda2fa5312f3ef92',1,'slsDetectorUsers']]],
+  ['registergotopositionnowaitcallback',['registerGoToPositionNoWaitCallback',['../classslsDetectorUsers.html#ae807e9f4a015a4bbcb22e36b80577ea5',1,'slsDetectorUsers']]],
+  ['registerrawdatacallback',['registerRawDataCallback',['../classslsDetectorUsers.html#a898cf0db148f0d3de7d4725cc8342c56',1,'slsDetectorUsers']]],
+  ['resetframescaughtinreceiver',['resetFramesCaughtInReceiver',['../classslsDetectorUsers.html#ad50ebcc3cc002f672fa979d77a3a5395',1,'slsDetectorUsers']]],
+  ['retrievedetectorsetup',['retrieveDetectorSetup',['../classslsDetectorUsers.html#a98478610ffb3de40629dc7b9ddca2c53',1,'slsDetectorUsers']]],
+  ['runstatustype',['runStatusType',['../classslsDetectorUsers.html#a3f0b478904a981d79cbff394a9540788',1,'slsDetectorUsers']]]
+];

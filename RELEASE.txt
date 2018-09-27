@@ -1,4 +1,4 @@
-SLS Detector Package 4.0.0 released on 26.09.2018
+SLS Detector Package 4.0.0 released on 28.09.2018
 =================================================
 
 
@@ -444,15 +444,15 @@ CONTENTS
 		used that are handled inside the package.
 
 	3.	Global optind variable initialized to instantiate multiple receivers 
-		in same process.
+		in same process. Also removed static members to enable this feature.
 		
 	4.	Socket buffer size attempts to set for each acquiistion and provide
 		warning if no capabilities. Warnings can be removed using instruction with
 		error provided. Default Jungfrau UDP socket buffer size if 2 GB, default is 
 		100 MB.
 		
-	5.	Refactored code a bit for performance and robustness, including removing
-		many static members, blocking push in buffer between listener and dataprocessor
+	5.	Refactored code a bit for performance and robustness, blocking push 
+		in buffer between listener and dataprocessor
 
 	
 	Detector Server

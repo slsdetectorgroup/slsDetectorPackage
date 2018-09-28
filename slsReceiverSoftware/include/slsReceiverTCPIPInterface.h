@@ -163,8 +163,8 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	/** set detector hostname  */
 	int set_detector_hostname();
 
-	/** set short frame */
-	int set_short_frame();
+	/** set roi */
+	int set_roi();
 
 	/** Set up UDP Details */
 	int setup_udp();

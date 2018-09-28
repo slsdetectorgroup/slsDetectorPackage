@@ -9,7 +9,6 @@
 #include <sys/stat.h> 		// stat
 #include <iostream>
 #include <string.h>
-using namespace std;
 
 
 
@@ -82,7 +81,7 @@ void UDPBaseImplementation::initializeMembers(){
 	dataCompressionEnable = false;
 
 	//***acquisition parameters***
-	shortFrameEnable = -1;
+	roi.clear();
 	frameToGuiFrequency = 0;
 	frameToGuiTimerinMS = DEFAULT_STREAMING_TIMER_IN_MS;
 	dataStreamEnable = false;
@@ -250,9 +249,9 @@ char *UDPBaseImplementation::getEthernetInterface() const{
 
 
 /***acquisition parameters***/
-int UDPBaseImplementation::getShortFrameEnable() const{
+std::vector<slsReceiverDefs::ROI> UDPBaseImplementation::getROI() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return shortFrameEnable;
+    return roi;
 }
 
 uint32_t UDPBaseImplementation::getFrameToGuiFrequency() const{
@@ -373,7 +372,7 @@ uint32_t UDPBaseImplementation::getActualUDPSocketBufferSize() const {
  *************************************************************************/
 
 /**initial parameters***/
-void UDPBaseImplementation::configure(map<string, string> config_map){
+void UDPBaseImplementation::configure(std::map<std::string, std::string> config_map){
 	FILE_LOG(logERROR) << __AT__ << " doing nothing...";
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
 }
@@ -541,11 +540,27 @@ void UDPBaseImplementation::setEthernetInterface(const char* c){
 
 
 /***acquisition parameters***/
-int UDPBaseImplementation::setShortFrameEnable(const int i){
+int UDPBaseImplementation::setROI(const std::vector<slsReceiverDefs::ROI> i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
-	shortFrameEnable = i;
-	FILE_LOG(logINFO) << "Short Frame Enable: " << stringEnable(shortFrameEnable);
+	roi = i;
+
+	std::stringstream sstm;
+	sstm << "ROI: ";
+	if (!roi.size())
+		sstm << "0";
+	else {
+		for (unsigned int i = 0; i < roi.size(); ++i) {
+			sstm << "( " <<
+					roi[i].xmin << ", " <<
+					roi[i].xmax << ", " <<
+					roi[i].ymin << ", " <<
+					roi[i].ymax << " )";
+		}
+	}
+	std::string message = sstm.str();
+	FILE_LOG(logINFO) << message;
+
 	//overrridden child classes might return FAIL
 	return OK;
 }

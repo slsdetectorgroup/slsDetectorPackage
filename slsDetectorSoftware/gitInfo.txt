@@ -1,9 +1,9 @@
 Path: slsDetectorsPackage/slsDetectorSoftware 
 URL: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
 Repository Root: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
-Repsitory UUID: 6bb7195a2c7dc9526088882e0244a7455d3c15b2 
-Revision: 1992 
-Branch: 3.3.0-rc 
+Repsitory UUID: d2bce7e372c241cd235977b92be18555bca6a77d 
+Revision: 2040 
+Branch: 4.0.0 
 Last Changed Author: Dhanya_Thattil 
-Last Changed Rev: 3941 
-Last Changed Date: 2018-07-18 12:26:21.000000002 +0200 ./threadFiles/ThreadPool.o
+Last Changed Rev: 4020 
+Last Changed Date: 2018-09-27 18:22:10.000000002 +0200 ./sharedMemory/SharedMemory.o

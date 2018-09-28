@@ -11,6 +11,7 @@
 #include "receiver_defs.h"
 
 #include <math.h>			//ceil
+#include <vector>
 
 
 class GeneralData {
@@ -156,6 +157,25 @@ public:
 	}
 
 	/**
+	 * Set ROI
+	 * @param i ROI
+	 */
+	virtual void SetROI(std::vector<slsReceiverDefs::ROI> i) {
+		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+	};
+
+	/**
+	 * Get Adc configured
+	 * @param index thread index for debugging purposes
+	 * @param i pointer to a vector of ROI pointers
+	 * @returns adc configured
+	 */
+	virtual const int GetAdcConfigured(int index, std::vector<slsReceiverDefs::ROI>* i)  const{
+		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+		return 0;
+	};
+
+	/**
 	 * Setting dynamic range changes member variables
 	 * @param dr dynamic range
 	 * @param tgEnable true if 10GbE is enabled, else false
@@ -225,6 +245,10 @@ public:
 
 class GotthardData : public GeneralData {
 
+private:
+	const static int nChip = 10;
+	const static int nChan = 128;
+	const static int nChipsPerAdc = 2;
  public:
 
 	/** Constructor */
@@ -244,31 +268,7 @@ class GotthardData : public GeneralData {
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
 		defaultFifoDepth 	= 50000;
 	};
-};
 
-
-class ShortGotthardData : public GeneralData {
-
- public:
-
-	/** Constructor */
-	ShortGotthardData(){
-		myDetectorType		= slsReceiverDefs::GOTTHARD;
-		nPixelsX 			= 256;
-		nPixelsY 			= 1;
-		headerSizeinPacket  = 4;
-		dataSize 			= 512;
-		packetSize 			= 518;
-		packetsPerFrame 	= 1;
-		imageSize 			= dataSize*packetsPerFrame;
-		frameIndexMask 		= 0xFFFFFFFF;
-		maxFramesPerFile 	= SHORT_MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
-		defaultFifoDepth 	= 50000;
-		nPixelsXComplete 	= 1280;
-		nPixelsYComplete 	= 1;
-		imageSizeComplete 	= 1280 * 2;
-	};
 
 	/**
 	 * Get Header Infomation (frame number, packet number)
@@ -279,8 +279,15 @@ class ShortGotthardData : public GeneralData {
 	 */
 	virtual void GetHeaderInfo(int index, char* packetData,	uint64_t& frameNumber, uint32_t& packetNumber) const
 	{
-		frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
-		packetNumber = 0;
+		if (nPixelsX == 1280) {
+			frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
+			frameNumber++;
+			packetNumber = frameNumber&packetIndexMask;
+			frameNumber = (frameNumber & frameIndexMask) >> frameIndexOffset;
+		} else  {
+			frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
+			packetNumber = 0;
+		}
 	}
 
 	/**
@@ -296,11 +303,96 @@ class ShortGotthardData : public GeneralData {
 	virtual void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
 			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t& bunchId) const
 	{
-		subFrameNumber = -1;
-		bunchId = -1;
-		frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
-		packetNumber = 0;
+		if (nPixelsX == 1280) {
+			subFrameNumber = -1;
+			bunchId = -1;
+			frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
+			frameNumber++;
+			packetNumber = frameNumber&packetIndexMask;
+			frameNumber = (frameNumber & frameIndexMask) >> frameIndexOffset;
+		} else  {
+			subFrameNumber = -1;
+			bunchId = -1;
+			frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
+			packetNumber = 0;
+		}
 	}
+
+
+	/**
+	 * Set ROI
+	 * @param i ROI
+	 */
+	virtual void SetROI(std::vector<slsReceiverDefs::ROI> i) {
+		// all adcs
+		if(!i.size()) {
+			nPixelsX 			= 1280;
+			dataSize 			= 1280;
+			packetSize 			= GOTTHARD_PACKET_SIZE;
+			packetsPerFrame 	= 2;
+			imageSize 			= dataSize*packetsPerFrame;
+			frameIndexMask 		= 0xFFFFFFFE;
+			frameIndexOffset 	= 1;
+			packetIndexMask 	= 1;
+			maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
+			fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
+			defaultFifoDepth 	= 50000;
+			nPixelsXComplete 	= 0;
+			nPixelsYComplete 	= 0;
+			imageSizeComplete 	= 0;
+		}
+
+		// single adc
+		else  {
+			nPixelsX 			= 256;
+			dataSize 			= 512;
+			packetSize 			= 518;
+			packetsPerFrame 	= 1;
+			imageSize 			= dataSize*packetsPerFrame;
+			frameIndexMask 		= 0xFFFFFFFF;
+			frameIndexOffset 	= 0;
+			packetIndexMask 	= 0;
+			maxFramesPerFile 	= SHORT_MAX_FRAMES_PER_FILE;
+			fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
+			defaultFifoDepth 	= 25000;
+			nPixelsXComplete 	= 1280;
+			nPixelsYComplete 	= 1;
+			imageSizeComplete 	= 1280 * 2;
+		}
+	};
+
+	/**
+	 * Get Adc configured
+	 * @param index thread index for debugging purposes
+	 * @param i pointer to a vector of ROI
+	 * @returns adc configured
+	 */
+	virtual const int GetAdcConfigured(int index, std::vector<slsReceiverDefs::ROI>* i)  const{
+		int adc = -1;
+		// single adc
+		if(i->size())  {
+			// gotthard can have only one adc per detector enabled (or all)
+			// so just looking at the first roi is enough (more not possible at the moment)
+
+			//if its for 1 adc or general
+			if ((i->at(0).xmin == 0) && (i->at(0).xmax == nChip * nChan))
+				adc = -1;
+			else {
+				//adc = mid value/numchans also for only 1 roi
+				adc = ((((i->at(0).xmax) + (i->at(0).xmin))/2)/
+						(nChan * nChipsPerAdc));
+				if((adc < 0) || (adc > 4)) {
+					FILE_LOG(logWARNING) << index << ": Deleting ROI. "
+							"Adc value should be between 0 and 4";
+					adc = -1;
+				}
+			}
+		}
+		FILE_LOG(logINFO) << "Adc Configured: " << adc;
+		return adc;
+	};
+
+
 };
 
 

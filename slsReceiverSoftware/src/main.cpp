@@ -16,7 +16,6 @@
 #include <sys/wait.h>	//wait
 #include <unistd.h> 	//usleep
 #include <syscall.h>
-using namespace std;
 
 
 bool keeprunning;
@@ -44,18 +43,18 @@ void GetData(char* metadata, char* datapointer, uint32_t datasize, void* p){
 	slsReceiverDefs::sls_receiver_header* header = (slsReceiverDefs::sls_receiver_header*)metadata;
 	slsReceiverDefs::sls_detector_header detectorHeader = header->detHeader;
 
-	PRINT_IN_COLOR (detectorHeader.modId?detectorHeader.modId:detectorHeader.xCoord,
+	PRINT_IN_COLOR (detectorHeader.modId?detectorHeader.modId:detectorHeader.row,
 			"#### %d GetData: ####\n"
 			"frameNumber: %llu\t\texpLength: %u\t\tpacketNumber: %u\t\tbunchId: %llu"
 			"\t\ttimestamp: %llu\t\tmodId: %u\t\t"
-			"xCoord: %u\t\tyCoord: %u\t\tzCoord: %u\t\tdebug: %u"
+			"xCrow%u\t\tcolumn: %u\t\tcolumn: %u\t\tdebug: %u"
 			"\t\troundRNumber: %u\t\tdetType: %u\t\tversion: %u"
 			//"\t\tpacketsMask:%s"
 			"\t\tfirstbytedata: 0x%x\t\tdatsize: %u\n\n",
-			detectorHeader.xCoord, detectorHeader.frameNumber,
+			detectorHeader.row, detectorHeader.frameNumber,
 			detectorHeader.expLength, detectorHeader.packetNumber, detectorHeader.bunchId,
 			detectorHeader.timestamp, detectorHeader.modId,
-			detectorHeader.xCoord, detectorHeader.yCoord, detectorHeader.zCoord,
+			detectorHeader.row, detectorHeader.column, detectorHeader.column,
 			detectorHeader.debug, detectorHeader.roundRNumber,
 			detectorHeader.detType, detectorHeader.version,
 			//header->packetsMask.to_string().c_str(),

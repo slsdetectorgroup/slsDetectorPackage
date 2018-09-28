@@ -1,71 +1,80 @@
-SLS Detector Package 4.0.0 released on 2018-08-22
+SLS Detector Package 4.0.0 released on 27.09.2018
 =================================================
 
 
 
 INTRODUCTION
 
-This document describes the differences between 4.0.0 and 3.2.0 releases.
+	This document describes the differences between 4.0.0 and 3.1.4 releases.
 
-The conda package of the binaries can be downloaded from
+	Download
+	--------
 	
-	https://github.com/slsdetectorgroup/sls_detector_software.git
+	The Source Code (Default C++ API):
+		 https://github.com/slsdetectorgroup/slsDetectorPackage
+		 
+	The Conda Lib Package:
+		https://github.com/slsdetectorgroup/sls_detector_lib
+		
+	The Conda GUI Package:
+		https://github.com/slsdetectorgroup/sls_detector_gui	
+		
+	The Python Interface (including the package):
+    	https://github.com/slsdetectorgroup/sls_detector
 	
-The Python interface to the software package (including the package) is at 
 	
-	https://github.com/slsdetectorgroup/sls_detector.git
+	Documentation
+	-------------
 	
-Manual (both HTML and pdf versions) are provided in
-	
-	manual/docs/
-
-Documentation from Source Code can be found for the Command Line and C++ API in
-	
-	html:
+	Manual (HTML & PDF):
+		https://www.psi.ch/detectors/documentation
+		slsDetectorPackage/manual/docs/
+		
+	Command Line Documentation:
 		manual/docs/html/slsDetectorClientDocs/index.html
-		manual/docs/html/slsDetectorUsersDocs/index.html
-	pdf:
 		manual/docs/pdf/slsDetectorClientDocs.pdf
+		
+	C++ API Documentation:
+		manual/docs/html/slsDetectorUsersDocs/index.html
 		manual/docs/pdf/slsDetectorUsersDocs.pdf
 		
-Documentation to the python API is available at
-
-	https://slsdetectorgroup.github.io/sls_detector/
+	C++ API Example:
+		manual/manual-api/mainClient.cpp
+		manual/manual-api/mainReceiver.cpp
 		
-Example for detector and receiver API can be found in 
-
-	manual/manual-api
+	Python API Documentation:
+		https://slsdetectorgroup.github.io/sls_detector/
+		
+	Further Documentation:
+		https://www.psi.ch/detectors/users-support
+		
 	
-User documentation can also be accessed directly at this location:
+	Support
+	-------
 
-    https://www.psi.ch/detectors/users-support
-
-Please send any software related questions or comments to:
-
-    dhanya.thattil@psi.ch
-    anna.bergamaschi@psi.ch
-    
-Please send any python related questions or comments to:
-	
-	erik.frojdh@psi.ch
+	General Software related:
+		dhanya.thattil@psi.ch
+		anna.bergamaschi@psi.ch
+		
+	Python related:
+		erik.frojdh@psi.ch
 
 
 
 CONTENTS
 
-- Firmware Requirements
-- Changes in User Interface
-- New/Modified Commands
-- Other New Features
-- Resolved Issues
-- Known Issues
-- Neat Release Plans
+	1.	Firmware Requirements
+	2.	Changes in User Interface
+	3.	New/Modified Commands
+	4.	Other New Features
+	5.	Resolved Issues
+	6.	Known Issues
+	7.	Next Major Release Plans
 
 
 
-
-Firmware Requirements
-=====================
+1. Firmware Requirements
+========================
 
     	Gotthard
     	========   
@@ -79,8 +88,8 @@ Firmware Requirements
         
     	Jungfrau
     	========       
-    	Minimum compatible version  : 26.02.2018
-    	Latest version              : 26.02.2018
+    	Minimum compatible version  : 15.06.2018
+    	Latest version              : 15.06.2018
 
     	
     	Detector Upgrade
@@ -93,15 +102,14 @@ Firmware Requirements
     	https://www.psi.ch/detectors/installation-instructions
     	under Detector Upgrade -> [Detector Type] -> Firmware. 
     	
-    	
-	 
-		Please refer to the link below for more details on the firmware versions.
-		https://www.psi.ch/detectors/firmware.
+    	 
+	Please refer to the link below for more details on the firmware versions.
+	https://www.psi.ch/detectors/firmware.
 		
 
 
-Changes in User Interface
-=========================
+2. Changes in User Interface
+============================
 	
 	Client
 	------
@@ -209,8 +217,8 @@ Changes in User Interface
 
 
 
-New/Modified Commands 
-=====================
+3. New/Modified Commands 
+========================
 	
 	Client
 	------
@@ -250,9 +258,9 @@ New/Modified Commands
 		
 	4.	r_discardpolicy:
 		sets/gets the frame discard policy in the receiver. 
-		0 - no discard (default), 
-		1 - discard only empty frames, 
-		2 - discard any partial frame(fastest)
+		nodiscard - no discard (default), 
+		discardempty - discard only empty frames, 
+		discardpartial - discard any partial frame(fastest)
 		
 	5.	r_padding:
 		sets/gets the frame padding in the receiver. 
@@ -309,7 +317,7 @@ New/Modified Commands
 		previous one) in s in 32 bit mode.
 
 	6.	flags(modified):
-		extra flags "overflow" (default) and "nooverflow" for sub images in	32 
+		extra flags "nooverflow" (default) and "overflow" for sub images in	32 
 		bit mode. If set to overflow, it will set MSB of pixel data high if 
 		there was any saturation in any of the sub images 32 bit mode.
 		
@@ -328,8 +336,8 @@ New/Modified Commands
 
 
 
-Other New Features
-==================
+4. Other New Features
+=====================
 
 	Client
 	------
@@ -340,8 +348,8 @@ Other New Features
 		continue to have them.
 		
 	2.	Depending on 1d position of detectors and detsizechan in config file,
-		xcoord and ycoord are given to detector servers (Eiger and Jungfrau)
-		to encode into the udp header.
+		row and column (previously xcoord and ycoord) are given to detector 
+		servers (Eiger and Jungfrau) to encode into the udp header.
 		
 	3.	(Eiger) Setting threshold energy changes such as CAL dac is irrelevant 
 		when interpolating between two energies and VRS dac is interpolated, not copied.
@@ -374,7 +382,8 @@ Other New Features
 	1.	slsMultiReceiver executable added that creates multiple receiver child processes.
 		./slsMultiReceiver [start_tcp_port] [num_receivers] [1 for call back, 0 for none]
 		
-	2.	Default xcoord and ycoord are hardcoded for missing packets. (Eiger and Jungfrau)
+	2.	Default row and column (previously xcoord and ycoord) are hardcoded 
+		for missing packets. (Eiger and Jungfrau)
 		
 
 	Gui
@@ -399,14 +408,14 @@ Other New Features
 		
 	3.	(Jungfrau) Minimum exposure time of 50 us was implemented.
 	
-	4. (Eiger and Jungfrau) They can be configured to have x and y coord values
+	4. 	(Eiger and Jungfrau) They can be configured to have x and y coord values
 		of the detector in their udp header.
 
 
 
 
-Resolved Issues
-===============
+5. Resolved Issues
+==================
 
 	Client
 	------
@@ -424,6 +433,8 @@ Resolved Issues
 	5.	(Jungfrau) Programming FPGA now creates the rawbin file from pof in tmp
 		rather than source file location (for permission issues).
 		
+	6.	(Gotthard) ROI segmentation fault fixed.
+		
 	Receiver
 	--------
 	
@@ -433,15 +444,15 @@ Resolved Issues
 		used that are handled inside the package.
 
 	3.	Global optind variable initialized to instantiate multiple receivers 
-		in same process.
+		in same process. Also removed static members to enable this feature.
 		
 	4.	Socket buffer size attempts to set for each acquiistion and provide
 		warning if no capabilities. Warnings can be removed using instruction with
 		error provided. Default Jungfrau UDP socket buffer size if 2 GB, default is 
 		100 MB.
 		
-	5.	Refactored code a bit for performance and robustness, including removing
-		many static members, blocking push in buffer between listener and dataprocessor
+	5.	Refactored code a bit for performance and robustness, blocking push 
+		in buffer between listener and dataprocessor
 
 	
 	Detector Server
@@ -451,10 +462,13 @@ Resolved Issues
 		instead of user input register for power.
 	
 	2.	(Eiger) Bug fix for saving trimbits to file (Advanced users).
+	
+	3.	(Gotthard 25um) config.txt is not read again after detector startup,
+		no matter the number of times the detector server is restarted. 
 
 	
-Known Issues
-============
+6. Known Issues
+===============
 
 	Receiver
 	--------
@@ -469,11 +483,15 @@ Known Issues
 		So, please ensure correct on-board server before switching between
 		firmware versions. Else one cannot ping it anymore. Will need to flash firmware
 		again to recover.
+		
+	2.	(Gotthard) To switch back to all ADC from single ADC ROI, one must take
+		even number of images for the receiver to understand complete images.
+		This will be fixed in the next firmware upgrade.
 	
 	
 	
-Neat Release Plans
-==================
+7. Next Major Release Plans
+===========================
 
 	Client
 	------

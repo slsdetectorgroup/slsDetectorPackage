@@ -2,7 +2,7 @@
 Detailed documentation can be found on the [official site.](https://www.psi.ch/detectors/users-support)
 
 ### Binaries
-Documentation to obtain the binaries via the conda package is available [here.](https://github.com/slsdetectorgroup/sls_detector_software)
+Documentation to obtain the binaries via the conda package is available for [lib](https://github.com/slsdetectorgroup/sls_detector_lib) and [gui](https://github.com/slsdetectorgroup/sls_detector_gui)
 
 ### Source code
 One can also obtain the source code from this repository and compile while realizing the setup dependencies as required.
@@ -19,7 +19,7 @@ Requirements: Qt 4.8 and Qwt 6.0
 ```
 If either of them does not exist, the GUI client will not be built.
 
-* Calibration wizards<br>
+* Advanced user Calibration wizards<br>
 Requirements: ROOT
 ```
     export ROOTSYS=/usr/local/root-5.34
@@ -43,6 +43,7 @@ Usage: [-c] [-b] [-h] [-d HDF5 directory] [-j]<br>
  * -r: Build/Rebuilds only receiver<br>
  * -g: Build/Rebuilds only gui<br>
  * -j: Number of threads to compile through<br>
+ * -e: Debug mode
  
 Basic Option:
 ./cmk.sh -b
@@ -86,5 +87,5 @@ After compiling, the libraries and executables will be found at `bin` directory
 ```
     $ ls bin/
     gui_client  libSlsDetector.a  libSlsDetector.so  libSlsReceiver.a  libSlsReceiver.so
-    sls_detector_acquire  sls_detector_get  slsDetectorGui  sls_detector_help  sls_detector_put  slsReceiver
+    sls_detector_acquire  sls_detector_get  slsDetectorGui  sls_detector_help  sls_detector_put  slsReceiver slsMultiReceiver
 ```

@@ -11,7 +11,6 @@
 #include <semaphore.h>
 #include <vector>
 #include <iostream>
-using namespace std;
 
 typedef  double double32_t;
 typedef  float float32_t;
@@ -46,7 +45,7 @@ public:
    int getFreeValue() const;
 
 private:
-   vector <Element*> array;
+   std::vector <Element*> array;
    unsigned int tail; // input index
    unsigned int head; // output index
    unsigned int Capacity;

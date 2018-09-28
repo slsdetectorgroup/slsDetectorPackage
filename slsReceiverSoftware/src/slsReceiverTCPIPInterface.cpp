@@ -17,7 +17,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <syscall.h>
-using namespace std;
+#include <vector>
 
 
 
@@ -140,7 +140,7 @@ void* slsReceiverTCPIPInterface::startTCPServerThread(void *this_pointer){
 
 void slsReceiverTCPIPInterface::startTCPServer(){
 	cprintf(BLUE,"Created [ TCP server Tid: %ld ]\n", (long)syscall(SYS_gettid));
-	FILE_LOG(logINFO) << "SLS Receiver starting TCP Server on port " << portNumber << endl;
+	FILE_LOG(logINFO) << "SLS Receiver starting TCP Server on port " << portNumber << std::endl;
 
 #ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG5) << "Starting Receiver TCP Server";
@@ -206,7 +206,7 @@ const char* slsReceiverTCPIPInterface::getFunctionName(enum recFuncs func) {
 	case F_GET_RECEIVER_ID: 			return "F_GET_RECEIVER_ID";
 	case F_GET_RECEIVER_TYPE: 			return "F_GET_RECEIVER_TYPE";
 	case F_SEND_RECEIVER_DETHOSTNAME:	return "F_SEND_RECEIVER_DETHOSTNAME";
-	case F_RECEIVER_SHORT_FRAME: 		return "F_RECEIVER_SHORT_FRAME";
+	case F_RECEIVER_SET_ROI: 			return "F_RECEIVER_SET_ROI";
 	case F_SETUP_RECEIVER_UDP:			return "F_SETUP_RECEIVER_UDP";
 	case F_SET_RECEIVER_TIMER:  		return "F_SET_RECEIVER_TIMER";
 	case F_SET_RECEIVER_DYNAMIC_RANGE:  return "F_SET_RECEIVER_DYNAMIC_RANGE";
@@ -263,7 +263,7 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_GET_RECEIVER_ID]				=	&slsReceiverTCPIPInterface::get_id;
 	flist[F_GET_RECEIVER_TYPE]				=	&slsReceiverTCPIPInterface::set_detector_type;
 	flist[F_SEND_RECEIVER_DETHOSTNAME]		= 	&slsReceiverTCPIPInterface::set_detector_hostname;
-	flist[F_RECEIVER_SHORT_FRAME]			=	&slsReceiverTCPIPInterface::set_short_frame;
+	flist[F_RECEIVER_SET_ROI]				=	&slsReceiverTCPIPInterface::set_roi;
 	flist[F_SETUP_RECEIVER_UDP]				=	&slsReceiverTCPIPInterface::setup_udp;
 	flist[F_SET_RECEIVER_TIMER]				= 	&slsReceiverTCPIPInterface::set_timer;
 	flist[F_SET_RECEIVER_DYNAMIC_RANGE]		= 	&slsReceiverTCPIPInterface::set_dynamic_range;
@@ -535,7 +535,7 @@ int slsReceiverTCPIPInterface::set_port() {
 			sprintf(mess,"Port Number (%d) too low\n", p_number);
 			FILE_LOG(logERROR) << mess;
 		} else {
-			FILE_LOG(logINFO) << "set port to " << p_number <<endl;
+			FILE_LOG(logINFO) << "set port to " << p_number <<std::endl;
 			strcpy(oldLastClientIP, mySock->lastClientIP);
 
 			try {
@@ -879,15 +879,23 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 
 
 
-int slsReceiverTCPIPInterface::set_short_frame() {
+int slsReceiverTCPIPInterface::set_roi() {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int index = 0;
-	int retval = -100;
+	int nroi = 0;
 
 	// receive arguments
-	if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
+	if (mySock->ReceiveDataOnly(&nroi,sizeof(nroi)) < 0 )
 		return printSocketReadError();
+
+	std::vector <ROI> roiLimits;
+	int iloop = 0;
+	for (iloop = 0; iloop < nroi; iloop++) {
+		ROI temp;
+		if ( mySock->ReceiveDataOnly(&temp,sizeof(ROI)) < 0 )
+			return printSocketReadError();
+		roiLimits.push_back(temp);
+	}
 
 	//does not exist
 	if (myDetectorType != GOTTHARD)
@@ -904,8 +912,8 @@ int slsReceiverTCPIPInterface::set_short_frame() {
 		else if (receiverBase->getStatus() != IDLE)
 			receiverNotIdle();
 		else {
-			receiverBase->setShortFrameEnable(index);
-			retval = receiverBase->getShortFrameEnable();
+			ret = receiverBase->setROI(roiLimits);
+			//retval = receiverBase->getROI();
 		}
 #endif
 	}
@@ -916,7 +924,8 @@ int slsReceiverTCPIPInterface::set_short_frame() {
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if (ret == FAIL)
 		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
+
+	roiLimits.clear();
 
 	// return ok/fail
 	return ret;
@@ -957,7 +966,7 @@ int slsReceiverTCPIPInterface::setup_udp(){
 		//setup udpip
 		//get ethernet interface or IP to listen to
 		FILE_LOG(logINFO) << "Receiver UDP IP: " << args[0];
-		string temp = genericSocket::ipToName(args[0]);
+		std::string temp = genericSocket::ipToName(args[0]);
 		if (temp == "none"){
 			ret = FAIL;
 			strcpy(mess, "Failed to get ethernet interface or IP\n");

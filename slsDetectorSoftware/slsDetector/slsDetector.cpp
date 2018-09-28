@@ -768,7 +768,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 	thisDetector->nOffset = detlist.nOffset;
 	thisDetector->dynamicRange = detlist.dynamicRange;
 	thisDetector->moveFlag = detlist.moveFlag;
-	detlist.nGappixelsY = detlist.nGappixelsX;
+	thisDetector->nGappixels[X] = detlist.nGappixelsX;
 	thisDetector->nGappixels[Y] = detlist.nGappixelsY;
 
 
@@ -3808,7 +3808,7 @@ int* slsDetector::getDataFromDetector(int *retval) {
 
 	int nodatadetectortype = false;
 	detectorType types = getDetectorsType();
-	if(types == EIGER || types == JUNGFRAU){
+	if(types == EIGER || types == JUNGFRAU || GOTTHARD || PROPIX){
 		nodatadetectortype = true;
 	}
 
@@ -3949,7 +3949,7 @@ int slsDetector::readAllNoWait() {
 int slsDetector::configureMAC() {
 	int i;
 	int ret=FAIL;
-	int fnum=F_CONFIGURE_MAC,fnum2=F_RECEIVER_SHORT_FRAME;
+	int fnum=F_CONFIGURE_MAC;
 	char mess[MAX_STR_LENGTH]="";
 	char arg[6][50];memset(arg,0,sizeof(char)*6*50);
 	int retval=-1;
@@ -4148,27 +4148,6 @@ int slsDetector::configureMAC() {
 		ret=FAIL;
 		std::cout<< "Configuring MAC failed " << std::endl;
 		setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
-	}
-	else if (thisDetector->myDetectorType==GOTTHARD){
-		//set frames per file - only for gotthard
-		pthread_mutex_lock(&ms);
-		if(retval==-1)
-			setFramesPerFile(MAX_FRAMES_PER_FILE);
-		else
-			setFramesPerFile(SHORT_MAX_FRAMES_PER_FILE);
-		pthread_mutex_unlock(&ms);
-		//connect to receiver
-		if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
-#ifdef VERBOSE
-			std::cout << "Sending adc val to receiver " << retval << std::endl;
-#endif
-			if (connectData() == OK){
-				ret=thisReceiver->sendInt(fnum2,retval,retval);
-				disconnectData();
-			}
-			if(ret==FAIL)
-				setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
-		}
 	}
 
 	return ret;
@@ -5321,6 +5300,9 @@ string slsDetector::setReceiver(string receiverIP) {
 			setReceiverStreamingIP(getReceiverStreamingIP());
 			setAdditionalJsonHeader(getAdditionalJsonHeader());
 			enableDataStreamingFromReceiver(enableDataStreamingFromReceiver(-1));
+
+			if(thisDetector->myDetectorType == GOTTHARD)
+				sendROI(-1, NULL);
 		}
 	}
 
@@ -6065,9 +6047,6 @@ int slsDetector::setROI(int n,ROI roiLimits[]) {
 	}
 
 	ret = sendROI(n,roiLimits);
-	if(ret==FAIL)
-		setErrorMask((getErrorMask())|(COULDNOT_SET_ROI));
-
 
 	if(thisDetector->myDetectorType==JUNGFRAUCTB) getTotalNumberOfChannels();
 	return ret;
@@ -6132,17 +6111,39 @@ int slsDetector::sendROI(int n,ROI roiLimits[]) {
 	}
 
 	//update client
-	if(ret!=FAIL){
+	if(ret==FAIL){
+		setErrorMask((getErrorMask())|(COULDNOT_SET_ROI));
+	} else {
 		for(int i=0;i<retvalsize;++i)
 			thisDetector->roiLimits[i]=retval[i];
 		thisDetector->nROI = retvalsize;
 	}
 
-	//#ifdef VERBOSE
+#ifdef VERBOSE
 	for(int j=0;j<thisDetector->nROI;++j)
-		cout<<"get"<< roiLimits[j].xmin<<"\t"<<roiLimits[j].xmax<<"\t"
-		<<roiLimits[j].ymin<<"\t"<<roiLimits[j].ymax<<endl;
-	//#endif
+		cout<<"ROI [" <<j<<"] ("<< roiLimits[j].xmin<<"\t"<<roiLimits[j].xmax<<"\t"
+		<<roiLimits[j].ymin<<"\t"<<roiLimits[j].ymax<<")"<<endl;
+#endif
+
+	// old firmware requires configuremac after setting roi
+	if (thisDetector->myDetectorType == GOTTHARD) {
+		configureMAC();
+	}
+
+	// update roi in receiver
+	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+		int fnum=F_RECEIVER_SET_ROI;
+#ifdef VERBOSE
+		std::cout << "Sending ROI to receiver " << thisDetector->nROI << std::endl;
+#endif
+		if (connectData() == OK){
+			ret=thisReceiver->sendROI(fnum, thisDetector->nROI, thisDetector->roiLimits);
+			disconnectData();
+		}
+		if(ret==FAIL)
+			setErrorMask((getErrorMask())|(COULDNOT_SET_ROI));
+	}
+
 
 	return ret;
 }
@@ -9026,13 +9027,6 @@ int slsDetector::startReceiver() {
 		}
 	}
 
-
-	// tell detector to send to receiver (if start receiver failed, this is not executed)
-	if(((thisDetector->myDetectorType == GOTTHARD ||
-			thisDetector->myDetectorType == PROPIX)  && ret!= FAIL))
-		return prepareAcquisition(); // send data to receiver for these detectors
-
-
 	return ret;
 }
 
@@ -9043,11 +9037,6 @@ int slsDetector::stopReceiver() {
 	int fnum=F_STOP_RECEIVER;
 	int ret = FAIL;
 	char mess[MAX_STR_LENGTH] = "";
-
-	if(thisDetector->myDetectorType == GOTTHARD ||
-			thisDetector->myDetectorType == PROPIX)
-		cleanupAcquisition(); // reset (send data to receiver) for these detectors,
-	//so back to CPU (dont care about ok/fail at this point)
 
 	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
 #ifdef VERBOSE

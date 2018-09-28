@@ -248,7 +248,7 @@ public:
 			uint64_t acqIndex = 0, uint64_t fIndex = 0, char* fname = NULL,
 			uint64_t frameNumber = 0, uint32_t expLength = 0, uint32_t packetNumber = 0,
 			uint64_t bunchId = 0, uint64_t timestamp = 0,
-			uint16_t modId = 0, uint16_t xCoord = 0, uint16_t yCoord = 0, uint16_t zCoord = 0,
+			uint16_t modId = 0, uint16_t row = 0, uint16_t column = 0, uint16_t reserved = 0,
 			uint32_t debug = 0, uint16_t roundRNumber = 0,
 			uint8_t detType = 0, uint8_t version = 0, int* flippedData = 0,
 			char* additionalJsonHeader = 0) {
@@ -274,9 +274,9 @@ public:
 				"\"bunchId\":%llu, "
 				"\"timestamp\":%llu, "
 				"\"modId\":%u, "
-				"\"xCoord\":%u, "
-				"\"yCoord\":%u, "
-				"\"zCoord\":%u, "
+				"\"row\":%u, "
+				"\"column\":%u, "
+				"\"reserved\":%u, "
 				"\"debug\":%u, "
 				"\"roundRNumber\":%u, "
 				"\"detType\":%u, "
@@ -285,22 +285,22 @@ public:
 		        //additional stuff
 		        "\"flippedDataX\":%u"
 
-				;//"}\n\0";
+				;//"}\n";
 		int length = sprintf(buf, jsonHeaderFormat,
 				jsonversion, dynamicrange, fileIndex, npixelsx, npixelsy, imageSize,
 				acqIndex, fIndex, (fname == NULL)? "":fname, dummy?0:1,
 
 				        frameNumber, expLength, packetNumber, bunchId, timestamp,
-						modId, xCoord, yCoord, zCoord, debug, roundRNumber,
+						modId, row, column, reserved, debug, roundRNumber,
 						detType, version,
 
 						//additional stuff
 						((flippedData == 0 ) ? 0 :flippedData[0])
 		);
 		if (additionalJsonHeader && strlen(additionalJsonHeader)) {
-		    length = sprintf(buf, "%s, %s}\n%c", buf, additionalJsonHeader, '\0');
+		    length = sprintf(buf, "%s, %s}\n", buf, additionalJsonHeader);
 		} else {
-		    length = sprintf(buf, "%s}\n%c", buf, '\0');
+		    length = sprintf(buf, "%s}\n", buf);
 		}
 
 #ifdef VERBOSE

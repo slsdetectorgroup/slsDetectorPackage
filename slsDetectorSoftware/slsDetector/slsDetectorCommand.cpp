@@ -4464,6 +4464,9 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 
 	myDet->setOnline(ONLINE_FLAG);
 
+	if (cmd == "roi")
+		myDet->setReceiverOnline(ONLINE_FLAG);
+
 	if (action==PUT_ACTION) {
 		if (cmd=="maxmod")
 			return string("cannot put!");
@@ -4481,10 +4484,10 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 			ROI allroi[val];
 			pos=2;
 			for(i=0;i<val;++i){
-				if ((!sscanf(args[++pos],"%d",&allroi[i].xmin)) ||
-						(!sscanf(args[++pos],"%d",&allroi[i].xmax)) ||
-						(!sscanf(args[++pos],"%d",&allroi[i].ymin)) ||
-						(!sscanf(args[++pos],"%d",&allroi[i].ymax)) )
+				if ((!sscanf(args[pos++],"%d",&allroi[i].xmin)) ||
+						(!sscanf(args[pos++],"%d",&allroi[i].xmax)) ||
+						(!sscanf(args[pos++],"%d",&allroi[i].ymin)) ||
+						(!sscanf(args[pos++],"%d",&allroi[i].ymax)) )
 					return string("cannot parse arguments for roi");
 			}
 			myDet->setROI(val,allroi);

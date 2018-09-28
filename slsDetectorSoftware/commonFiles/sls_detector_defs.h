@@ -146,19 +146,6 @@ typedef struct {
 } sls_detector_module;
 
 
-/**
-    @short structure for a region of interest
-
-    xmin,xmax,ymin,ymax define the limits of the region
-*/
-typedef struct {
-  int xmin;  /**< is the roi xmin (in channel number) */
-  int xmax;  /**< is the roi xmax  (in channel number)*/
-  int ymin;  /**< is the roi ymin  (in channel number)*/
-  int ymax;   /**< is the roi ymax  (in channel number)*/
-} ROI ;
-
-
 /* /\*  */
 /*     @short structure for a generic integer array */
 /* *\/ */

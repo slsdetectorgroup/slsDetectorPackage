@@ -9,7 +9,6 @@
 
 #include <iostream>
 #include <syscall.h>
-using namespace std;
 
 
 

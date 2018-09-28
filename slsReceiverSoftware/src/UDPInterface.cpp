@@ -7,16 +7,14 @@
 
 #include <iostream>
 #include <string.h>
-using namespace std;
 
 
 #include "UDPInterface.h"
 #include "UDPBaseImplementation.h"
 #include "UDPStandardImplementation.h"
 
-using namespace std;
 
-UDPInterface * UDPInterface::create(string receiver_type){
+UDPInterface * UDPInterface::create(std::string receiver_type){
 	
 	if (receiver_type == "standard"){
 		FILE_LOG(logINFO) << "Starting " << receiver_type;

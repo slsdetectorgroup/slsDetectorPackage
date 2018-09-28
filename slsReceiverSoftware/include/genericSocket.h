@@ -43,7 +43,7 @@ class sockaddr_in;
 #include <errno.h>
 #include <stdio.h>
 #include "logger.h"
-using namespace std;
+
 
 #define DEFAULT_PACKET_SIZE 1286
 #define SOCKET_BUFFER_SIZE (100*1024*1024) //100 MB
@@ -142,8 +142,8 @@ public:
 		strcpy(ip,"0.0.0.0");
 		clientAddress_length=sizeof(clientAddress);
 		if (eth) {
-			strcpy(ip,nameToIp(string(eth)).c_str());
-			if (string(ip)==string("0.0.0.0"))
+			strcpy(ip,nameToIp(std::string(eth)).c_str());
+			if (std::string(ip)==std::string("0.0.0.0"))
 				strcpy(ip,eth);
 		}
 
@@ -161,7 +161,7 @@ public:
 		serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
 
 
-		if (string(ip)!=string("0.0.0.0")) {
+		if (std::string(ip)!=std::string("0.0.0.0")) {
 			if (inet_pton(AF_INET, ip, &(serverAddress.sin_addr)));
 			else
 				serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -493,7 +493,7 @@ public:
 	 * @param ip IP
 	 * @returns hostname
 	 */
-	static string ipToName(string ip) {
+	static std::string ipToName(std::string ip) {
 		struct ifaddrs *addrs, *iap;
 		struct sockaddr_in *sa;
 
@@ -507,7 +507,7 @@ public:
 			if (iap->ifa_addr && (iap->ifa_flags & IFF_UP) && iap->ifa_addr->sa_family == AF_INET) {
 				sa = (struct sockaddr_in *)(iap->ifa_addr);
 				inet_ntop(iap->ifa_addr->sa_family, (void *)&(sa->sin_addr), buf, buf_len);
-				if (ip==string(buf)) {
+				if (ip==std::string(buf)) {
 					//printf("%s\n", iap->ifa_name);
 					strcpy(buf,iap->ifa_name);
 					break;
@@ -515,7 +515,7 @@ public:
 			}
 		}
 		freeifaddrs(addrs);
-		return string(buf);
+		return std::string(buf);
 	};
 
 	/**
@@ -523,7 +523,7 @@ public:
 	 * @param inf interface
 	 * @returns mac address
 	 */
-	static string nameToMac(string inf) {
+	static std::string nameToMac(std::string inf) {
 		struct ifreq ifr;
 		int sock, j, k;
 		char mac[32];
@@ -534,7 +534,7 @@ public:
 
 		if (-1==ioctl(sock, SIOCGIFHWADDR, &ifr)) {
 			perror("ioctl(SIOCGIFHWADDR) ");
-			return string("00:00:00:00:00:00");
+			return std::string("00:00:00:00:00:00");
 		}
 		for (j=0, k=0; j<6; j++) {
 			k+=snprintf(mac+k, mac_len-k-1, j ? ":%02X" : "%02X",
@@ -545,7 +545,7 @@ public:
 		if(sock!=1){
 			close(sock);
 		}
-		return string(mac);
+		return std::string(mac);
 
 	};
 
@@ -554,7 +554,7 @@ public:
 	 * @param inf hostname
 	 * @returns IP
 	 */
-	static string nameToIp(string inf){
+	static std::string nameToIp(std::string inf){
 		struct ifreq ifr;
 		int sock;
 		char *p, addr[32];
@@ -565,7 +565,7 @@ public:
 
 		if (-1==ioctl(sock, SIOCGIFADDR, &ifr)) {
 			perror("ioctl(SIOCGIFADDR) ");
-			return string("0.0.0.0");
+			return std::string("0.0.0.0");
 		}
 		p=inet_ntoa(((struct sockaddr_in *)(&ifr.ifr_addr))->sin_addr);
 		strncpy(addr,p,addr_len-1);
@@ -574,7 +574,7 @@ public:
 		if(sock!=1){
 			close(sock);
 		}
-		return string(addr);
+		return std::string(addr);
 
 	};
 
@@ -584,7 +584,7 @@ public:
 	 * @param ifr interface request structure
 	 * @returns sock
 	 */
-	static int getSock(string inf, struct ifreq *ifr) {
+	static int getSock(std::string inf, struct ifreq *ifr) {
 
 		int sock;
 		sock=socket(PF_INET, SOCK_STREAM, 0);

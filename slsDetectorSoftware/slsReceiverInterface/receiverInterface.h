@@ -131,6 +131,15 @@ public:
 	 */
 	int executeFunction(int fnum,char mess[]);
 
+	/**
+	 * Send an integer to receiver
+	 * @param fnum function enum to determine what parameter
+	 * @param n number of ROIs to send
+	 * @param roiLimits ROI structure
+	 * \returns success of operation
+	 */
+	int sendROI(int fnum, int n, slsReceiverDefs::ROI roiLimits[]);
+
 	//here one should implement the funcs listed in 
 
 private:

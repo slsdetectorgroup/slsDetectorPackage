@@ -11,8 +11,6 @@
 #include <iomanip>
 #include <libgen.h>			//basename
 #include <string.h>
-using namespace std;
-
 
 
 pthread_mutex_t HDF5File::Mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -65,13 +63,13 @@ HDF5File::HDF5File(int ind, uint32_t* maxf,
 	parameterNames.push_back("mod id");
 	parameterDataTypes.push_back(PredType::STD_U16LE);
 
-	parameterNames.push_back("x Coord");
+	parameterNames.push_back("row");
 	parameterDataTypes.push_back(PredType::STD_U16LE);
 
-	parameterNames.push_back("y Coord");
+	parameterNames.push_back("column");
 	parameterDataTypes.push_back(PredType::STD_U16LE);
 
-	parameterNames.push_back("z Coord");
+	parameterNames.push_back("reserved");
 	parameterDataTypes.push_back(PredType::STD_U16LE);
 
 	parameterNames.push_back("debug");
@@ -298,7 +296,7 @@ void HDF5File::EndofAcquisition(bool anyPacketsCaught, uint64_t numf) {
 int HDF5File::CreateVirtualFile(uint64_t numf) {
 	pthread_mutex_lock(&Mutex);
 
-	string vname = HDF5FileStatic::CreateVirtualFileName(filePath, fileNamePrefix, *fileIndex);
+	std::string vname = HDF5FileStatic::CreateVirtualFileName(filePath, fileNamePrefix, *fileIndex);
 	if(!(*silentMode)) {
 		FILE_LOG(logINFO) << "Virtual File: " << vname;
 	}
@@ -321,10 +319,10 @@ int HDF5File::CreateVirtualFile(uint64_t numf) {
 // called only by the one maser receiver
 int HDF5File::LinkVirtualFileinMasterFile() {
 	//dataset name
-	ostringstream osfn;
+	std::ostringstream osfn;
 	osfn << "/data";
-	if ((*numImages > 1)) osfn << "_f" << setfill('0') << setw(12) << 0;
-	string dsetname = osfn.str();
+	if ((*numImages > 1)) osfn << "_f" << std::setfill('0') << std::setw(12) << 0;
+	std::string dsetname = osfn.str();
 
 	pthread_mutex_lock(&Mutex);
 	int ret = HDF5FileStatic::LinkVirtualInMaster(masterFileName, currentFileName,

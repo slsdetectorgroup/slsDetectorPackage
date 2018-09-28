@@ -50,7 +50,7 @@ Detector Group.
 <LI>Update the on-board software as per the instructions in the next
 section.
 </LI>
-<LI>Start the on-board server in debug mode:
+<LI>Start the on-board server in update mode:
   
 <OL>
 <LI>Connect to the blackfin on the detector
@@ -66,13 +66,13 @@ section.
 </LI>
 <LI>Reboot blackfin using <code>reboot</code>
 </LI>
-<LI>Run <code>ps</code> to ensure no gotthardDetectorServers are running
+<LI>Run <code>ps</code> to ensure no jungfrauDetectorServers are running
     
 </LI>
 </OL>
 </LI>
-<LI>Start the server in debug mode using: 
-<BR><code>./jungfrauDetectorServerxxx -debug</code> 
+<LI>Start the server in update mode using: 
+<BR><code>./jungfrauDetectorServerxxx -update</code> 
 <BR>
 Leave this console on to come back to it later.
   
@@ -94,7 +94,7 @@ script in <code>slsDetectorPackage/cleansharedmemory.sh</code>
 <LI>Once the programming is done:
   
 <OL>
-<LI>Switch to the console that has the debug server running and kill it
+<LI>Switch to the console that has the update server running and kill it
 using Ctrl+C and ensure no jungfrauDetectorServers are
 running
 </LI>

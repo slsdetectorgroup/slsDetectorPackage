@@ -548,7 +548,7 @@ the SLS Detectors group.
 \indent Minimum compatible version: \\
 \indent \indent 11.01.2013 \\
 \indent Latest version:	\\
-\indent \indent 26.06.2018 (50um) \\
+\indent \indent 08.02.2018 (50um) \\
 \indent \indent 08.02.2018 (25 um Master) \\
 \indent \indent 09.02.2018 (25 um Slave) \\
 
@@ -747,7 +747,7 @@ Detector Group.
   \item Update the latest SLS Detector package installed.
   \item Update the on-board software as per the instructions in the next
 section.
-  \item Start the on-board server in debug mode:
+  \item Start the on-board server in update mode:
   \begin{enumerate}
     \item Connect to the blackfin on the detector\\ 
 \verb=telnet bchipxxx=
@@ -757,10 +757,10 @@ section.
       \item Comment out the line
 \verb=#ttyS0::respawn:/jungfrauDetectorServervxxx= 
       \item Reboot blackfin using \verb=reboot=
-      \item Run \verb=ps= to ensure no gotthardDetectorServers are running
+      \item Run \verb=ps= to ensure no jungfrauDetectorServers are running
     \end{enumerate}
-    \item Start the server in debug mode using: \\
-\verb=./jungfrauDetectorServerxxx -debug= \\
+    \item Start the server in update mode using: \\
+\verb=./jungfrauDetectorServerxxx -update= \\
     Leave this console on to come back to it later.
   \end{enumerate}
   \item From the command line of the pc, clear shared memory \\
@@ -773,7 +773,7 @@ script in \verb=slsDetectorPackage/cleansharedmemory.sh=
 \verb=./sls_detector_put programfpga xxx.pof= 
   \item Once the programming is done:
   \begin{enumerate}
-    \item Switch to the console that has the debug server running and kill it
+    \item Switch to the console that has the update server running and kill it
 using Ctrl+C and ensure no jungfrauDetectorServers are
 running
     \item Restart the new server to see if it runs with the new firmware \\

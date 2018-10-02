@@ -1,81 +1,68 @@
 #pragma once
 
-#include "utilities.h"
-#include "logger.h"
+
 #include "sls_receiver_defs.h"
 
-#include <iostream>
 #include <string>
-#include <sstream>
-#include <iostream>
 #include <map>
 #include <fstream>
 #include <stdio.h>
 
 
+/**
+ * Read config file for receiver
+ * @param fname config file name
+ * @param tcpip_port_no pointer to tcp port number
+ * @param map map
+ * @returns OK or FAIL
+ */
+int read_config_file(std::string fname, int *tcpip_port_no,
+		std::map<std::string, std::string> * configuration_map);
+
+
+/** (used by multi and sls)
+ * reads a short int raw data file
+ * @param infile input file stream
+ * @param data array of data values
+ * @param nch number of channels
+ * @param offset start channel value
+ * @returns OK or FAIL if it could not read the file or data=NULL
+ */
+int readDataFile(std::ifstream &infile, short int *data, int nch, int offset=0);
+
+
+/** (used by multi and sls)
+ * reads a short int rawdata file
+ * @param name of the file to be read
+ * @param data array of data value
+ * @param nch number of channels
+ * @returns OK or FAIL if it could not read the file or data=NULL
+ */
+int readDataFile(std::string fname, short int *data, int nch);
+
+
+/** (used by multi and sls)
+ * writes a short int raw data file
+ * @param outfile output file stream
+ * @param nch number of channels
+ * @param data array of data values
+ * @param offset start channel number
+ * @returns OK or FAIL if it could not write the file or data=NULL
+ */
+int writeDataFile(std::ofstream &outfile,int nch,  short int *data, int offset=0);
 
 
 
-int read_config_file(std::string fname, int *tcpip_port_no, std::map<std::string, std::string> * configuration_map) {
+/** (used by multi and sls)
+ * writes a short int raw data file
+ * @param fname of the file to be written
+ * @param nch number of channels
+ * @param data array of data values
+ * @returns OK or FAIL if it could not write the file or data=NULL
+ */
+int writeDataFile(std::string fname,int nch, short int *data);
 
-	std::ifstream infile;
-	std::string sLine,sargname, sargvalue;
-	int iline = 0;
-	int success = slsReceiverDefs::OK;
 
 
-	FILE_LOG(logINFO) << "config file name " << fname;
-	try {
-		infile.open(fname.c_str(), std::ios_base::in);
-	} catch(...) {
-		FILE_LOG(logERROR) << "Could not open configuration file " << fname ;
-		success = slsReceiverDefs::FAIL;
-	}
 
-	if (success == slsReceiverDefs::OK  && infile.is_open()) {
-		while(infile.good()){
-			getline(infile,sLine);
-			iline++;
-
-			//VERBOSE_PRINT(sLine);
-
-			if(sLine.find('#') != std::string::npos)
-				continue;
-
-			else if(sLine.length()<2)
-				continue;
-
-			else{
-				std::istringstream sstr(sLine);
-
-				//parameter name
-				if(sstr.good()){
-					sstr >> sargname;
-
-					if (! sstr.good())
-						continue;
-
-					sstr >> sargvalue;
-					(*configuration_map)[sargname] = sargvalue;
-				}
-				//tcp port
-				if(sargname=="rx_tcpport"){
-					if(sstr.good()) {
-						sstr >> sargname;
-						if(sscanf(sargname.c_str(),"%d",tcpip_port_no))
-							cprintf(RESET, "dataport: %d\n" , *tcpip_port_no);
-						else{
-							cprintf(RED, "could not decode port in config file. Exiting.\n");
-							success = slsReceiverDefs::FAIL;
-						}
-					}
-				}
-			}
-		}
-		infile.close();
-	}
-
-	return success;
-}
-}
 

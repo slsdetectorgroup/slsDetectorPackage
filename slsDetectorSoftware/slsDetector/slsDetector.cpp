@@ -6,7 +6,7 @@
 #include "gitInfoLib.h"
 #include "versionAPI.h"
 #include "slsDetectorCommand.h"
-
+#include "utilities.h"
 
 
 #include  <sys/types.h>
@@ -19,6 +19,9 @@
 
 
 using namespace std;
+
+
+#define DEFAULT_HOSTNAME  "localhost"
 
 
 slsDetector::slsDetector(detectorType type, int multiId, int id, bool verify, multiSlsDetector* m)
@@ -629,13 +632,6 @@ void slsDetector::initializeMembers() {
 		thisReceiver = 0;
 	}
 	thisReceiver = new receiverInterface(dataSocket);
-
-
-	// slsDetectorUtils
-	stoppedFlag = &thisDetector->stoppedFlag;
-	timerValue = thisDetector->timerValue;
-	currentSettings = &thisDetector->currentSettings;
-	currentThresholdEV = &thisDetector->currentThresholdEV;
 
 	//postProcessing
 	threadedProcessing = &thisDetector->threadedProcessing;
@@ -3056,12 +3052,6 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t, int imod) {
 
 
 	if(t!=-1){
-		/* set progress */
-		if ((index==FRAME_NUMBER) || (index==CYCLES_NUMBER) ||
-				(index==STORAGE_CELL_NUMBER)) {
-			setTotalProgress();
-		}
-
 		//if eiger, rate corr on, a put statement, dr=32 &setting subexp or dr =16
 		//& setting exptime, set ratecorr to update table
 		double r;
@@ -4571,7 +4561,7 @@ int slsDetector::loadImageToDetector(imageType index,string const fname) {
 	std::cout<<" image from file " << fname << std::endl;
 #endif
 
-	if(readDataFile(fname,arg)){
+	if(readDataFile(fname,arg,getTotalNumberOfChannels())){
 		ret = sendImageToDetector(index,arg);
 		return ret;
 	}
@@ -4629,7 +4619,7 @@ int slsDetector::writeCounterBlockFile(string const fname,int startACQ) {
 
 	ret=getCounterBlock(counterVals,startACQ);
 	if(ret==OK)
-		ret=writeDataFile(fname, counterVals);
+		ret=writeDataFile(fname, getTotalNumberOfChannels(), counterVals);
 	return ret;
 }
 

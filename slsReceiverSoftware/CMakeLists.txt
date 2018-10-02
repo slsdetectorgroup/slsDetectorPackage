@@ -14,6 +14,7 @@ set(SOURCES
     src/DataProcessor.cpp
     src/DataStreamer.cpp
     src/Fifo.cpp
+    ../commonFiles/utilities.cpp
 )
 
 
@@ -64,13 +65,14 @@ add_library(slsReceiverShared SHARED
 )
 
 set(PUBLICHEADERS
-    ../commonfiles/sls_receiver_defs.h
-    ../commonfiles/ansi.h
-    ../commonfiles/sls_receiver_funcs.h
-    ../commonfiles/MySocketTCP.h
-    ../commonfiles/genericSocket.h
-    ../commonfiles/logger.h
-	../commonfiles/sls_receiver_exceptions.h
+    ../commonFiles/sls_receiver_defs.h
+    ../commonFiles/ansi.h
+    ../commonFiles/sls_receiver_funcs.h
+    ../commonFiles/MySocketTCP.h
+    ../commonFiles/genericSocket.h
+    ../commonFiles/logger.h
+	../commonFiles/sls_receiver_exceptions.h
+	../commonFiles/utilities.h
 )
 
 

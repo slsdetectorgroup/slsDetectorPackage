@@ -38,7 +38,7 @@ typedef  struct detParameterList {
 } detParameterList;
 
 
-class slsDetector : public slsDetectorUtils {
+class slsDetector : public postProcessing {
 
 private:
 	/**

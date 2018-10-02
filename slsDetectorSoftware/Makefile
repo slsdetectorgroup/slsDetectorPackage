@@ -16,8 +16,8 @@ INCLUDES?= -I../commonFiles -IslsDetector -I../slsReceiverSoftware/MySocketTCP  
 LIBZMQDIR = ../commonFiles
 LIBZMQ =  -L$(LIBZMQDIR) -Wl,-rpath=$(LIBZMQDIR) -lzmq
 
-SRC_CLNT=  slsDetector/slsDetectorUtils.cpp slsDetector/slsDetectorCommand.cpp slsDetectorAnalysis/postProcessing.cpp slsDetector/slsDetector.cpp multiSlsDetector/multiSlsDetector.cpp slsReceiverInterface/receiverInterface.cpp slsDetector/slsDetectorUsers.cpp threadFiles/CondVar.cpp  threadFiles/Mutex.cpp threadFiles/ThreadPool.cpp sharedMemory/SharedMemory.cpp #../slsReceiverSoftware/MySocketTCP/MySocketTCP.cpp 
-DEPSINCLUDES = ../commonFiles/sls_receiver_defs.h ../commonFiles/sls_receiver_funcs.h ../commonFiles/ansi.h ../commonFiles/sls_detector_defs.h  ../commonFiles/sls_detector_funcs.h ../commonFiles/error_defs.h slsDetector/slsDetectorBase.h slsDetectorAnalysis/detectorData.h  threadFiles/Global.h threadFiles/Task.h sharedMemory/SharedMemory.h ../commonFiles/sls_receiver_exceptions.h ../commonFiles/versionAPI.h
+SRC_CLNT=  slsDetector/slsDetectorUtils.cpp slsDetector/slsDetectorCommand.cpp slsDetectorAnalysis/postProcessing.cpp slsDetector/slsDetector.cpp multiSlsDetector/multiSlsDetector.cpp slsReceiverInterface/receiverInterface.cpp slsDetector/slsDetectorUsers.cpp threadFiles/CondVar.cpp  threadFiles/Mutex.cpp threadFiles/ThreadPool.cpp sharedMemory/SharedMemory.cpp ../commonFiles/utilities.cpp#../slsReceiverSoftware/MySocketTCP/MySocketTCP.cpp 
+DEPSINCLUDES = ../commonFiles/sls_receiver_defs.h ../commonFiles/sls_receiver_funcs.h ../commonFiles/ansi.h ../commonFiles/sls_detector_defs.h  ../commonFiles/sls_detector_funcs.h ../commonFiles/error_defs.h slsDetector/slsDetectorBase.h slsDetectorAnalysis/detectorData.h  threadFiles/Global.h threadFiles/Task.h sharedMemory/SharedMemory.h ../commonFiles/sls_receiver_exceptions.h ../commonFiles/versionAPI.h ../commonFiles/utilities.h
 
 
 

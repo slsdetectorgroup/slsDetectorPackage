@@ -1,13 +1,3 @@
-/*******************************************************************
-
-Date:       $Date$
-Revision:   $Rev$
-Author:     $Author$
-URL:        $URL$
-ID:         $Id$
-
- ********************************************************************/
-
 #include "multiSlsDetector.h"
 #include "SharedMemory.h"
 #include "slsDetector.h"
@@ -16,6 +6,7 @@ ID:         $Id$
 #include "ZmqSocket.h"
 #include "multiSlsDetectorClient.h"
 #include "multiSlsDetectorCommand.h"
+#include "utilities.h"
 
 #include <sys/types.h>
 #include <iostream>
@@ -24,7 +15,7 @@ ID:         $Id$
 #include <rapidjson/document.h> //json header in zmq stream
 #include <sys/ipc.h>
 #include <sys/shm.h>
-
+//#include <time.h> //clock()
 
 
 multiSlsDetector::multiSlsDetector(int id, bool verify, bool update)
@@ -33,7 +24,16 @@ multiSlsDetector::multiSlsDetector(int id, bool verify, bool update)
   sharedMemory(0),
   thisMultiDetector(0),
   client_downstream(false),
-  threadpool(0) {
+  threadpool(0),
+  totalProgress(0),
+  progressIndex(0),
+  acquisition_finished(NULL),
+  measurement_finished(NULL),
+  acqFinished_p(NULL),
+  measFinished_p(NULL),
+  progress_call(0),
+  pProgressCallArg(0)
+{
 	setupMultiDetector(verify, update);
 }
 
@@ -593,12 +593,6 @@ void multiSlsDetector::initializeDetectorStructure() {
 }
 
 void multiSlsDetector::initializeMembers(bool verify) {
-	//slsDetectorUtils
-	stoppedFlag = &thisMultiDetector->stoppedFlag;
-	timerValue = thisMultiDetector->timerValue;
-	currentSettings = &thisMultiDetector->currentSettings;
-	currentThresholdEV = &thisMultiDetector->currentThresholdEV;
-
 	//postprocessing
 	threadedProcessing = &thisMultiDetector->threadedProcessing;
 	fdata = NULL;
@@ -1694,7 +1688,7 @@ int multiSlsDetector::stopAcquisition() {
 		}
 	}
 
-	*stoppedFlag = 1;
+	thisMultiDetector->stoppedFlag = 1;
 	pthread_mutex_unlock(&mg);
 	return ret;
 }
@@ -1782,6 +1776,12 @@ int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t, int imod) {
 			ret = detectors[imod]->setTimer(index,t,imod);
 			if(detectors[imod]->getErrorMask())
 				setErrorMask(getErrorMask()|(1<<imod));
+
+			/* set progress */
+			if ((t!=-1) && ((index==FRAME_NUMBER) || (index==CYCLES_NUMBER) ||
+					(index==STORAGE_CELL_NUMBER))) {
+				setTotalProgress();
+			}
 			return ret;
 		}
 		return -1;
@@ -1820,6 +1820,11 @@ int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t, int imod) {
 	}
 	if (index == SAMPLES_JCTB)
 		setDynamicRange();
+	/* set progress */
+	if ((t!=-1) && ((index==FRAME_NUMBER) || (index==CYCLES_NUMBER) ||
+			(index==STORAGE_CELL_NUMBER))) {
+		setTotalProgress();
+	}
 
 	thisMultiDetector->timerValue[index] = ret;
 	return ret;
@@ -2283,7 +2288,7 @@ int multiSlsDetector::loadImageToDetector(imageType index, std::string const fna
 		std::cout << " image from file " << fname << std::endl;
 #endif
 		for (unsigned int idet = 0; idet < detectors.size(); ++idet) {
-			if (detectors[idet]->readDataFile(infile, imageVals) >= 0) {
+			if (readDataFile(infile, imageVals, getTotalNumberOfChannels()) >= 0) {
 				ret1 = detectors[idet]->sendImageToDetector(index, imageVals);
 				if (ret == -100)
 					ret = ret1;
@@ -2319,7 +2324,7 @@ int multiSlsDetector::writeCounterBlockFile(std::string const fname, int startAC
 			if (ret1 != OK)
 				ret = FAIL;
 			else {
-				ret1 = detectors[idet]->writeDataFile(outfile, arg);
+				ret1 = writeDataFile(outfile, getTotalNumberOfChannels(), arg);
 				if (ret1 != OK)
 					ret = FAIL;
 			}
@@ -3930,3 +3935,456 @@ int multiSlsDetector::setCTBPatWaitAddr(int level, int addr) {
 int multiSlsDetector::setCTBPatWaitTime(int level, uint64_t t) {
 	return callDetectorMember(&slsDetector::setCTBPatWaitTime, level, t);
 }
+
+
+int multiSlsDetector::retrieveDetectorSetup(std::string const fname1, int level){
+
+
+  slsDetectorCommand *cmd;
+
+  int skip=0;
+  std::string fname;
+  std::string str;
+  std::ifstream infile;
+  int iargval;
+  int interrupt=0;
+  char *args[10];
+
+  char myargs[10][1000];
+;
+
+  std::string sargname, sargval;
+  int iline=0;
+
+  if (level==2) {
+#ifdef VERBOSE
+    cout << "config file read" << endl;
+#endif
+    fname=fname1+std::string(".det");
+  }  else
+    fname=fname1;
+
+  infile.open(fname.c_str(), std::ios_base::in);
+  if (infile.is_open()) {
+    cmd=new slsDetectorCommand(this);
+    while (infile.good() and interrupt==0) {
+      sargname="none";
+      sargval="0";
+      getline(infile,str);
+      iline++;
+#ifdef VERBOSE
+      std::cout<<  str << std::endl;
+#endif
+      if (str.find('#')!=std::string::npos) {
+#ifdef VERBOSE
+	std::cout<< "Line is a comment " << std::endl;
+	std::cout<< str << std::endl;
+#endif
+	continue;
+      } else {
+	std::istringstream ssstr(str);
+	iargval=0;
+	while (ssstr.good()) {
+	  ssstr >> sargname;
+	  //  if (ssstr.good()) {
+	  strcpy(myargs[iargval],sargname.c_str());
+	  args[iargval]=myargs[iargval];
+#ifdef VERBOSE
+	  std::cout<< args[iargval]  << std::endl;
+#endif
+	  iargval++;
+	  // }
+	  skip=0;
+	}
+
+	if (level!=2) {
+	  if (std::string(args[0])==std::string("trimbits"))
+	    skip=1;
+	}
+	if (skip==0)
+	  cmd->executeLine(iargval,args,PUT_ACTION);
+      }
+      iline++;
+    }
+    delete cmd;
+    infile.close();
+
+  } else {
+    std::cout<< "Error opening  " << fname << " for reading" << std::endl;
+    return FAIL;
+  }
+#ifdef VERBOSE
+  std::cout<< "Read  " << iline << " lines" << std::endl;
+#endif
+
+  if (getErrorMask())
+	  return FAIL;
+
+  return OK;
+
+
+}
+
+
+int multiSlsDetector::dumpDetectorSetup(std::string const fname, int level){
+
+	slsDetectorCommand *cmd;
+	detectorType type = getDetectorsType();
+	std::string names[100];
+	int nvar=0;
+
+	// common config
+	names[nvar++]="fname";
+	names[nvar++]="index";
+	names[nvar++]="enablefwrite";
+	names[nvar++]="overwrite";
+	names[nvar++]="dr";
+	names[nvar++]="settings";
+	names[nvar++]="exptime";
+	names[nvar++]="period";
+	names[nvar++]="frames";
+	names[nvar++]="cycles";
+	names[nvar++]="measurements";
+	names[nvar++]="timing";
+
+	switch (type) {
+	case EIGER:
+		names[nvar++]="flags";
+		names[nvar++]="clkdivider";
+		names[nvar++]="threshold";
+		names[nvar++]="ratecorr";
+		names[nvar++]="trimbits";
+		break;
+	case GOTTHARD:
+		names[nvar++]="delay";
+		break;
+	case JUNGFRAU:
+		names[nvar++]="delay";
+		names[nvar++]="clkdivider";
+		break;
+	case JUNGFRAUCTB:
+		names[nvar++]="dac:0";
+		names[nvar++]="dac:1";
+		names[nvar++]="dac:2";
+		names[nvar++]="dac:3";
+		names[nvar++]="dac:4";
+		names[nvar++]="dac:5";
+		names[nvar++]="dac:6";
+		names[nvar++]="dac:7";
+		names[nvar++]="dac:8";
+		names[nvar++]="dac:9";
+		names[nvar++]="dac:10";
+		names[nvar++]="dac:11";
+		names[nvar++]="dac:12";
+		names[nvar++]="dac:13";
+		names[nvar++]="dac:14";
+		names[nvar++]="dac:15";
+		names[nvar++]="adcvpp";
+
+
+
+		names[nvar++]="adcclk";
+		names[nvar++]="clkdivider";
+		names[nvar++]="adcphase";
+		names[nvar++]="adcpipeline";
+		names[nvar++]="adcinvert"; //
+		names[nvar++]="adcdisable";
+		names[nvar++]="patioctrl";
+		names[nvar++]="patclkctrl";
+		names[nvar++]="patlimits";
+		names[nvar++]="patloop0";
+		names[nvar++]="patnloop0";
+		names[nvar++]="patwait0";
+		names[nvar++]="patwaittime0";
+		names[nvar++]="patloop1";
+		names[nvar++]="patnloop1";
+		names[nvar++]="patwait1";
+		names[nvar++]="patwaittime1";
+		names[nvar++]="patloop2";
+		names[nvar++]="patnloop2";
+		names[nvar++]="patwait2";
+		names[nvar++]="patwaittime2";
+		break;
+	default:
+		break;
+	}
+
+
+	int iv=0;
+	std::string fname1;
+
+
+
+	std::ofstream outfile;
+	char *args[4];
+	for (int ia=0; ia<4; ia++) {
+		args[ia]=new char[1000];
+	}
+
+
+	if (level==2) {
+		fname1=fname+std::string(".config");
+		writeConfigurationFile(fname1);
+		fname1=fname+std::string(".det");
+	} else
+		fname1=fname;
+
+
+
+	outfile.open(fname1.c_str(),std::ios_base::out);
+	if (outfile.is_open()) {
+		cmd=new slsDetectorCommand(this);
+		for (iv=0; iv<nvar; iv++) {
+			strcpy(args[0],names[iv].c_str());
+			outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
+		}
+
+		delete cmd;
+
+		outfile.close();
+	}
+	else {
+		std::cout<< "Error opening parameters file " << fname1 << " for writing" << std::endl;
+		return FAIL;
+	}
+
+#ifdef VERBOSE
+	std::cout<< "wrote " <<iv << " lines to  "<< fname1 << std::endl;
+#endif
+
+	return OK;
+
+}
+
+
+
+void multiSlsDetector::registerAcquisitionFinishedCallback(int( *func)(double,int, void*), void *pArg) {
+	acquisition_finished=func;
+	acqFinished_p=pArg;
+}
+
+
+void multiSlsDetector::registerMeasurementFinishedCallback(int( *func)(int,int, void*), void *pArg) {
+	measurement_finished=func;
+	measFinished_p=pArg;
+}
+
+void multiSlsDetector::registerProgressCallback(int( *func)(double,void*), void *pArg) {
+	progress_call=func;
+	pProgressCallArg=pArg;
+}
+
+
+int multiSlsDetector::setTotalProgress() {
+	int nf=1, nc=1, ns=1, nm=1;
+
+	if (timerValue[FRAME_NUMBER])
+		nf=timerValue[FRAME_NUMBER];
+
+	if (timerValue[CYCLES_NUMBER]>0)
+		nc=timerValue[CYCLES_NUMBER];
+
+	if (timerValue[STORAGE_CELL_NUMBER]>0)
+		ns=timerValue[STORAGE_CELL_NUMBER]+1;
+
+	if (timerValue[MEASUREMENTS_NUMBER]>0)
+		nm=timerValue[MEASUREMENTS_NUMBER];
+
+	totalProgress=nm*nf*nc*ns;
+
+#ifdef VERBOSE
+	cout << "nm " << nm << endl;
+	cout << "nf " << nf << endl;
+	cout << "nc " << nc << endl;
+	cout << "ns " << ns << endl;
+	cout << "Set total progress " << totalProgress << endl;
+#endif
+	return totalProgress;
+}
+
+
+double multiSlsDetector::getCurrentProgress() {
+	pthread_mutex_lock(&mp);
+#ifdef VERBOSE
+	cout << progressIndex << " / " << totalProgress << endl;
+#endif
+
+	double p=100.*((double)progressIndex)/((double)totalProgress);
+	pthread_mutex_unlock(&mp);
+	return p;
+}
+
+
+void multiSlsDetector::incrementProgress()  {
+	pthread_mutex_lock(&mp);
+	progressIndex++;
+	cout << std::fixed << std::setprecision(2) << std::setw (6)
+	<< 100.*((double)progressIndex)/((double)totalProgress) << " \%";
+	pthread_mutex_unlock(&mp);
+#ifdef VERBOSE
+	cout << endl;
+#else
+	cout << "\r" << flush;
+#endif
+
+};
+
+
+void multiSlsDetector::setCurrentProgress(int i){
+	pthread_mutex_lock(&mp);
+	progressIndex=i;
+	cout << std::fixed << std::setprecision(2) << std::setw (6)
+	<< 100.*((double)progressIndex)/((double)totalProgress) << " \%";
+	pthread_mutex_unlock(&mp);
+#ifdef VERBOSE
+	cout << endl;
+#else
+	cout << "\r" << flush;
+#endif
+}
+
+
+int  multiSlsDetector::acquire(){
+
+	//ensure acquire isnt started multiple times by same client
+	if (isAcquireReady() ==  FAIL)
+		return FAIL;
+
+#ifdef VERBOSE
+	struct timespec begin,end;
+	clock_gettime(CLOCK_REALTIME, &begin);
+#endif
+
+	//in the real time acquisition loop, processing thread will wait for a post each time
+	sem_init(&sem_newRTAcquisition,1,0);
+	//in the real time acquistion loop, main thread will wait for processing thread to be done each time (which in turn waits for receiver/ext process)
+	sem_init(&sem_endRTAcquisition,1,0);
+
+
+	bool receiver = (setReceiverOnline()==ONLINE_FLAG);
+
+	progressIndex=0;
+	thisMultiDetector->stoppedFlag=0;
+	void *status;
+	setJoinThread(0);
+
+	int nm=timerValue[MEASUREMENTS_NUMBER];
+	if (nm<1)
+		nm=1;
+
+	// verify receiver is idle
+	if(receiver){
+		pthread_mutex_lock(&mg);
+		if(getReceiverStatus()!=IDLE)
+			if(stopReceiver() == FAIL)
+				thisMultiDetector->stoppedFlag=1;
+		pthread_mutex_unlock(&mg);
+	}
+
+	// start processing thread
+	if (*threadedProcessing)
+		startThread();
+
+
+	//resets frames caught in receiver
+	if(receiver){
+		pthread_mutex_lock(&mg);
+		if (resetFramesCaught() == FAIL)
+			thisMultiDetector->stoppedFlag=1;
+		pthread_mutex_unlock(&mg);
+	}
+
+	// loop through measurements
+	for(int im=0;im<nm;++im) {
+
+		if (thisMultiDetector->stoppedFlag)
+			break;
+
+		// start receiver
+		if(receiver){
+
+			pthread_mutex_lock(&mg);
+			if(startReceiver() == FAIL) {
+				cout << "Start receiver failed " << endl;
+				stopReceiver();
+				thisMultiDetector->stoppedFlag=1;
+				pthread_mutex_unlock(&mg);
+				break;
+			}
+			pthread_mutex_unlock(&mg);
+
+			//let processing thread listen to these packets
+			sem_post(&sem_newRTAcquisition);
+		}
+
+		// detector start
+		startAndReadAll();
+
+		if (*threadedProcessing==0){
+			processData();
+		}
+
+
+		// stop receiver
+		if(receiver){
+			pthread_mutex_lock(&mg);
+			if (stopReceiver() == FAIL) {
+				thisMultiDetector->stoppedFlag = 1;
+				pthread_mutex_unlock(&mg);
+			} else {
+				pthread_mutex_unlock(&mg);
+				if (*threadedProcessing && dataReady)
+					sem_wait(&sem_endRTAcquisition); // waits for receiver's external process to be done sending data to gui
+			}
+		}
+
+		int findex = 0;
+		pthread_mutex_lock(&mg);
+		findex = incrementFileIndex();
+		pthread_mutex_unlock(&mg);
+
+		if (measurement_finished){
+			pthread_mutex_lock(&mg);
+			measurement_finished(im,findex,measFinished_p);
+			pthread_mutex_unlock(&mg);
+		}
+
+		if (thisMultiDetector->stoppedFlag) {
+			break;
+		}
+
+	}//end measurements loop im
+
+
+	// waiting for the data processing thread to finish!
+	if (*threadedProcessing) {
+		setJoinThread(1);
+
+		//let processing thread continue and checkjointhread
+		sem_post(&sem_newRTAcquisition);
+
+		pthread_join(dataProcessingThread, &status);
+	}
+
+
+	if(progress_call)
+		progress_call(getCurrentProgress(),pProgressCallArg);
+
+	if (acquisition_finished)
+		acquisition_finished(getCurrentProgress(),getDetectorStatus(),acqFinished_p);
+
+	sem_destroy(&sem_newRTAcquisition);
+	sem_destroy(&sem_endRTAcquisition);
+
+#ifdef VERBOSE
+	clock_gettime(CLOCK_REALTIME, &end);
+	cout << "Elapsed time for acquisition:" << (( end.tv_sec - begin.tv_sec )	+ ( end.tv_nsec - begin.tv_nsec ) / 1000000000.0) << " seconds" << endl;
+#endif
+
+	setAcquiringFlag(false);
+
+	return OK;
+
+
+}
+

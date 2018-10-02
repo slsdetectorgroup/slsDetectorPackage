@@ -5,17 +5,11 @@
 
 static void* startProcessData(void *n){
    postProcessing *myDet=(postProcessing*)n;
-   myDet->processData(1);
+   myDet->processData();
    pthread_exit(NULL);
    
 };
 
-static void* startProcessDataNoDelete(void *n){
-  postProcessing *myDet=(postProcessing*)n;
-  myDet->processData(0);
-  pthread_exit(NULL);
-
-};
 
 
 int postProcessing::kbhit(){
@@ -57,7 +51,7 @@ postProcessing::~postProcessing(){
 }
 
 
-void* postProcessing::processData(int delflag) {
+void* postProcessing::processData() {
 	if(setReceiverOnline()==OFFLINE_FLAG){
 		return 0;
 	} //receiver 
@@ -138,7 +132,7 @@ void postProcessing::setJoinThread( int v) {
 
 
 
-void postProcessing::startThread(int delflag) {
+void postProcessing::startThread() {
 
 
   setTotalProgress();
@@ -164,11 +158,9 @@ void postProcessing::startThread(int delflag) {
 
   ret = pthread_setschedparam(pthread_self(), policy, &mparam);
 
-  if (delflag)
+
     ret = pthread_create(&dataProcessingThread, &tattr,startProcessData, (void*)this);
-  else
-    ret = pthread_create(&dataProcessingThread, &tattr,startProcessDataNoDelete, (void*)this);
-    
+
   if (ret)
  	  printf("ret %d\n", ret);
 

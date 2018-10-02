@@ -38,10 +38,9 @@ public:
 	int setThreadedProcessing(int b=-1) {if (b>=0) *threadedProcessing=b; return  *threadedProcessing;};
 
 	/** processes the data
-      \param delflag 0 leaves the data in the final data queue
       \returns nothing
 	 */
-	void *processData(int delflag);
+	void *processData();
 
 	int checkJoinThread();
 	void setJoinThread(int v);
@@ -62,7 +61,7 @@ protected:
 			/**
 		    start data processing thread
 			 */
-			void startThread(int delflag=1);
+			void startThread();
 
 			/** mutex to synchronize main and data processing threads */
 			pthread_mutex_t mp;

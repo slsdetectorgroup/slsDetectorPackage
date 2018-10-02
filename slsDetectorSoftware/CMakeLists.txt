@@ -10,6 +10,7 @@ set(SOURCES
     threadFiles/CondVar.cpp  
     threadFiles/Mutex.cpp 
     threadFiles/ThreadPool.cpp
+    ../commonFiles/utilities.cpp
 )
 
 set(HEADERS
@@ -62,6 +63,7 @@ set(PUBLICHEADERS
     ../commonFiles/error_defs.h
     ../commonFiles/versionAPI.h
     ../commonFiles/sls_receiver_exceptions.h
+    ../commonFiles/utilties.h
     sharedMemory/SharedMemory.h
     slsDetector/slsDetectorUtils.h
     slsDetector/slsDetector.h

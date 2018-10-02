@@ -29,7 +29,7 @@ HDF5_DIR = /opt/hdf5v1.10.0
 
 ifeq ($(HDF5),yes)
 	LDFLAGRXR = -L$(LIBDIR) -Wl,-rpath=$(LIBDIR) -lSlsReceiver -L$(HDF5_DIR)/lib  -Wl,-rpath=$(HDF5_DIR)/lib -lhdf5 -lhdf5_cpp -lsz -lz -DHDF5C -L/usr/lib64/ -pthread
-	INCLUDESRXR = -I$(HDF5_DIR)/include
+	INCLUDESRXR = -I$(HDF5_DIR)/include 
 endif	
 
 

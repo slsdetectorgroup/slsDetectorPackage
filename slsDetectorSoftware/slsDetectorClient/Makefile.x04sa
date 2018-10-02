@@ -1,6 +1,6 @@
 CFLAGS= -DC_ONLY 
 FLAGS=-DVERBOSE 
-INCLUDES= -I../slsDetectorSoftware/commonFiles -I../slsDetectorSoftware/slsDetector -I ../slsDetectorSoftware/MySocketTCP  -I../slsDetectorSoftware/usersFunctions -I../slsDetectorSoftware/multiSlsDetector -I../slsDetectorSoftware/slsDetectorAnalysis
+INCLUDES= -I../commonFiles -I../slsDetectorSoftware/slsDetector -I ../slsDetectorSoftware/MySocketTCP  -I../slsDetectorSoftware/usersFunctions -I../slsDetectorSoftware/multiSlsDetector -I../slsDetectorSoftware/slsDetectorAnalysis
 LIBS= -L../slsDetectorSoftware/
 LDFLAG= -lSlsDetector -pthread
 

@@ -1037,8 +1037,6 @@ public:
 
 protected:
 
-	static const int64_t thisSoftwareVersion=0x20141013;
-
 	int *stoppedFlag;
 	int64_t *timerValue;
 	detectorSettings *currentSettings;

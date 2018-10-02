@@ -4,7 +4,7 @@ CFLAGS= -DC_ONLY
 #FLAGS=-DVERBOSE 
 #ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
 
-INCLUDES?= -I../commonFiles -I../slsDetector -I ../MySocketTCP  -I../usersFunctions -I../multiSlsDetector -I../slsDetectorAnalysis -I../slsReceiverInterface -I ../../slsReceiverSoftware/include -I$(shell echo "/lib/modules/`uname -r`/build/include")
+INCLUDES?= -I../../commonfiles -I../slsDetector -I ../MySocketTCP  -I../usersFunctions -I../multiSlsDetector -I../slsDetectorAnalysis -I../slsReceiverInterface -I ../../slsReceiverSoftware/include -I$(shell echo "/lib/modules/`uname -r`/build/include")
 DESTDIR ?= ../../bin
 BIN=$(DESTDIR)
 LIBS?= -L$(DESTDIR) -lSlsDetector 

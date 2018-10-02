@@ -75,7 +75,7 @@ qt4_add_resources(RESOURCES_SRCS ${RESOURCES})
 include_directories(
     include
     slsDetectorPlotting/include
-    ../slsDetectorSoftware/commonFiles 
+    ../commonFiles 
     ../slsDetectorSoftware/slsReceiverInterface   
     ../slsDetectorSoftware/slsDetector  
     ../slsDetectorSoftware/slsDetectorAnalysis  

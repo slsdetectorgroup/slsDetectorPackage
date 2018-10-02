@@ -3,7 +3,7 @@ set(SOURCES
 )
 
 include_directories(
-    ../commonFiles
+    ../../commonfiles
     ../multiSlsDetector 
     ../slsDetector 
     ../slsDetectorAnalysis 

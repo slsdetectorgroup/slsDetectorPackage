@@ -145,7 +145,7 @@ HEADERS 			=  		\
 							include/qTabDeveloper.h\
 							include/qTabMessages.h\
 							include/gitInfoGui.h\  
-							../slsDetectorSoftware/commonFiles/sls_detector_defs.h\
+							../commonFiles/sls_detector_defs.h\
 							../slsReceiverSoftware/include/sls_receiver_defs.h\
 							include/qServer.h
 

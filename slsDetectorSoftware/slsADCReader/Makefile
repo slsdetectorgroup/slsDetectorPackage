@@ -1,7 +1,7 @@
 CC			=	g++
 #CC  		= 	bfin-uclinux-
 SRC			=	slsADCReader.cpp
-INCLUDES	=	-I ../../slsReceiverSoftware/include -I ../commonFiles
+INCLUDES	=	-I ../../slsReceiverSoftware/include -I ../../commonFiles
 CFLAGS 		=	-Wall -lm -lstdc++
 
 

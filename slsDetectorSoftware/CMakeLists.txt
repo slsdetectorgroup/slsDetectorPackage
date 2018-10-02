@@ -16,7 +16,7 @@ set(HEADERS
 )
 
 include_directories(
-commonFiles
+../commonFiles
 multiSlsDetector 
 sharedMemory
 slsDetector 
@@ -59,10 +59,10 @@ target_link_libraries(slsDetectorShared
 )
 
 set(PUBLICHEADERS
-    commonFiles/sls_detector_defs.h
-    commonFiles/sls_detector_funcs.h
-    commonFiles/error_defs.h
-    commonFiles/versionAPI.h
+    ../commonFiles/sls_detector_defs.h
+    ../commonFiles/sls_detector_funcs.h
+    ../commonFiles/error_defs.h
+    ../commonFiles/versionAPI.h
     sharedMemory/SharedMemory.h
     slsDetector/slsDetectorUtils.h
     slsDetector/slsDetector.h

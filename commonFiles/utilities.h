@@ -1,20 +1,23 @@
+#pragma once
+
+#include "utilities.h"
+#include "logger.h"
+#include "sls_receiver_defs.h"
+
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <iostream>
-#include <stdio.h>
-#include <fstream>
-
 #include <map>
-
-#include "utilities.h"
-#include "logger.h"
-
+#include <fstream>
+#include <stdio.h>
 
 
 
-int read_config_file(std::string fname, int *tcpip_port_no, std::map<std::string, std::string> * configuration_map ){
-	
+
+
+int read_config_file(std::string fname, int *tcpip_port_no, std::map<std::string, std::string> * configuration_map) {
+
 	std::ifstream infile;
 	std::string sLine,sargname, sargvalue;
 	int iline = 0;
@@ -33,9 +36,9 @@ int read_config_file(std::string fname, int *tcpip_port_no, std::map<std::string
 		while(infile.good()){
 			getline(infile,sLine);
 			iline++;
-			
+
 			//VERBOSE_PRINT(sLine);
-			
+
 			if(sLine.find('#') != std::string::npos)
 				continue;
 
@@ -44,11 +47,11 @@ int read_config_file(std::string fname, int *tcpip_port_no, std::map<std::string
 
 			else{
 				std::istringstream sstr(sLine);
-				
+
 				//parameter name
 				if(sstr.good()){
 					sstr >> sargname;
-				
+
 					if (! sstr.good())
 						continue;
 
@@ -71,10 +74,8 @@ int read_config_file(std::string fname, int *tcpip_port_no, std::map<std::string
 		}
 		infile.close();
 	}
-	
+
 	return success;
 }
-
-
-
+}
 

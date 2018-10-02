@@ -25,8 +25,6 @@ slsDetectorCommand
 slsDetectorAnalysis 
 slsReceiverInterface 
 threadFiles
-../slsReceiverSoftware/include 
-../slsReceiverSoftware/MySocketTCP 
 )
 
 add_definitions(
@@ -49,7 +47,7 @@ add_library(slsDetectorShared SHARED
 
 add_library(zmq STATIC IMPORTED GLOBAL)
 
-set(ZMQ_STATIC_ARCHIVE ${CMAKE_CURRENT_SOURCE_DIR}/../slsReceiverSoftware/include/libzmq.a)
+set(ZMQ_STATIC_ARCHIVE ${CMAKE_CURRENT_SOURCE_DIR}/../commonFiles/libzmq.a)
 set_target_properties(zmq PROPERTIES
     IMPORTED_LOCATION ${ZMQ_STATIC_ARCHIVE}
 )
@@ -63,6 +61,7 @@ set(PUBLICHEADERS
     ../commonFiles/sls_detector_funcs.h
     ../commonFiles/error_defs.h
     ../commonFiles/versionAPI.h
+    ../commonFiles/sls_receiver_exceptions.h
     sharedMemory/SharedMemory.h
     slsDetector/slsDetectorUtils.h
     slsDetector/slsDetector.h
@@ -72,7 +71,6 @@ set(PUBLICHEADERS
     slsDetectorAnalysis/detectorData.h
     multiSlsDetector/multiSlsDetector.h
     slsReceiverInterface/receiverInterface.h
-    ../slsReceiverSoftware/include/sls_receiver_exceptions.h
 )
 set_target_properties(slsDetectorShared PROPERTIES
     LIBRARY_OUTPUT_NAME SlsDetector

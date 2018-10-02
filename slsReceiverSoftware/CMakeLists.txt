@@ -39,11 +39,12 @@ add_definitions(
 
 include_directories(
     include
+    ../commonFiles
 )
 
 add_library(zmq STATIC IMPORTED GLOBAL)
 
-set(ZMQ_STATIC_ARCHIVE ${CMAKE_CURRENT_SOURCE_DIR}/include/libzmq.a)
+set(ZMQ_STATIC_ARCHIVE ${CMAKE_CURRENT_SOURCE_DIR}/../commonFiles/libzmq.a)
 set_target_properties(zmq PROPERTIES
     IMPORTED_LOCATION ${ZMQ_STATIC_ARCHIVE}
 )
@@ -63,13 +64,13 @@ add_library(slsReceiverShared SHARED
 )
 
 set(PUBLICHEADERS
-    include/sls_receiver_defs.h
-    include/ansi.h
-    include/sls_receiver_funcs.h
-    include/MySocketTCP.h
-    include/genericSocket.h
-    include/logger.h
-	include/sls_receiver_exceptions.h
+    ../commonfiles/sls_receiver_defs.h
+    ../commonfiles/ansi.h
+    ../commonfiles/sls_receiver_funcs.h
+    ../commonfiles/MySocketTCP.h
+    ../commonfiles/genericSocket.h
+    ../commonfiles/logger.h
+	../commonfiles/sls_receiver_exceptions.h
 )
 
 

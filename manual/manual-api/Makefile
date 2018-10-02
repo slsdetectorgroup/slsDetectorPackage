@@ -1,9 +1,9 @@
 PKGDIR		=	../..
 LIBDIR		=   $(PKGDIR)/build/bin
-INCLUDES	=   -I . -I$(PKGDIR)/slsReceiverSoftware/include -I$(PKGDIR)/slsDetectorSoftware/slsDetectorAnalysis -I$(LIBDIR) -I$(PKGDIR)/slsDetectorSoftware/slsDetector 
+INCLUDES	=   -I . -I$(PKGDIR)/commonFiles -I$(PKGDIR)/slsDetectorSoftware/slsDetectorAnalysis -I$(LIBDIR) -I$(PKGDIR)/slsDetectorSoftware/slsDetector 
 SRC_DET		= 	mainClient.cpp 	
 SRC_REC		=   mainReceiver.cpp
-ZMQLIBDIR	= 	$(PKGDIR)/slsReceiverSoftware/include
+ZMQLIBDIR	= 	$(PKGDIR)/commonFiles
 LDFLAG_DET 	=	-I. -L$(LIBDIR) -Wl,-rpath=$(LIBDIR) -lSlsDetector -L/usr/lib64/ -pthread -lrt -L$(ZMQLIBDIR) -Wl,-rpath=$(ZMQLIBDIR) -lzmq
 LDFLAG_REC 	=	-I. -L$(LIBDIR) -Wl,-rpath=$(LIBDIR) -lSlsReceiver -L/usr/lib64/ -pthread -lrt -L$(ZMQLIBDIR) -Wl,-rpath=$(ZMQLIBDIR) -lzmq
 DESTDIR		?=	../docs

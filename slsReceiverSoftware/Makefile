@@ -5,6 +5,7 @@ LIBDIR		?=	../bin
 DOCDIR 		?= 	docs
 SRCDIR		=	src
 INCDIR		=   include
+COMMONDIR	=	../commonFiles
 TESTDIR		=	test
 BUILDDIR	=	build
 PROGS		= 	$(DESTDIR)/slsReceiver 
@@ -15,18 +16,18 @@ CFLAGS= -g -DC_ONLY -fPIC
 
 DFLAGS= -g -DDACS_INT  -DSLS_RECEIVER_UDP_FUNCTIONS #-DVERBOSE
 
-INCLUDES?= $(INCLUDESRXR) -I include/ 
+INCLUDES?= $(INCLUDESRXR) -I $(INCDIR) -I $(COMMONDIR)
 
 ##############################################################
 # ZMQ specific: in this case, you need ZMQ libraries already included in this package
 ###########################################################
-LIBZMQDIR = include
+LIBZMQDIR = ../commonFiles
 LIBZMQ =  -L$(LIBZMQDIR) -Wl,-rpath=$(LIBZMQDIR) -lzmq
 
 
 
 SRC_CLNT = MySocketTCP.cpp  ThreadObject.cpp Listener.cpp DataProcessor.cpp DataStreamer.cpp Fifo.cpp File.cpp BinaryFile.cpp UDPInterface.cpp  UDPBaseImplementation.cpp UDPStandardImplementation.cpp slsReceiverTCPIPInterface.cpp slsReceiver.cpp slsReceiverUsers.cpp utilities.cpp
-DEPSINCLUDES = $(INCDIR)/ansi.h $(INCDIR)/sls_receiver_defs.h $(INCDIR)/sls_receiver_funcs.h $(INCDIR)/GeneralData.h  $(INCDIR)/circularFifo.h $(INCDIR)/genericSocket.h  $(INCDIR)/logger.h $(INCDIR)/receiver_defs.h $(INCDIR)/UDPInterface.h $(INCDIR)/utilities.h $(INCDIR)/ZmqSocket.h $(INCDIR)/BinaryFileStatic.h $(INCDIR)/HDF5FileStatic.h $(INCDIR)/sls_receiver_exceptions.h
+DEPSINCLUDES = $(COMMONDIR)/ansi.h $(COMMONDIR)/sls_receiver_defs.h $(COMMONDIR)/sls_receiver_funcs.h $(COMMONDIR)/GeneralData.h  $(INCDIR)/circularFifo.h $(COMMONDIR)/genericSocket.h  $(COMMONDIR)/logger.h $(INCDIR)/receiver_defs.h $(INCDIR)/UDPInterface.h $(COMMONDIR)/utilities.h $(COMMONDIR)/ZmqSocket.h $(INCDIR)/BinaryFileStatic.h $(INCDIR)/HDF5FileStatic.h $(COMMONDIR)/sls_receiver_exceptions.h
 
 
 ifeq ($(HDF5),yes)
@@ -54,7 +55,7 @@ dummy: $(DESTDIR)/dummyReceiver
 intdoc: $(SRC_H) $(SRC_CLNT) 
 	doxygen doxy.config
 
-$(BUILDDIR)/%.o : $(SRCDIR)/%.cpp $(INCDIR)/%.h $(DEPSINCLUDES) Makefile
+$(BUILDDIR)/%.o : $(SRCDIR)/%.cpp $(INCDIR)/%.h $(COMMONDIR)/%.h $(DEPSINCLUDES) Makefile
 ifeq ($(ROOTSLS),yes)
 	$(CXX) -DROOTSLS -o $@ -c $< $(INCLUDES) $(DFLAGS)  $(ROOTFLAGS) -fPIC  $(EPICSFLAGS) $(LDFLAGRXR) -L/usr/lib64/ $(FLAGS) 
 else	

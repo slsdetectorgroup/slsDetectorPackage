@@ -126,10 +126,10 @@ protected:
 	func3_t <int64_t,			timerIndex,int64_t,int>* 		m13;
 	func2_t <std::string,		networkParameter,std::string>* 	m14;
 	func3_t <int,				int,int,int>* 					m15;
-	func4_t <int,				trimMode,int,int,int>* 			m16;
-	func4_t <int,				int,int,detectorSettings,int>*	m17;
-	func4_t <dacs_t,			dacs_t,dacIndex,int,int>* 		m18;
-	func1_t <int,				portType>* 						m19;
+	func4_t <int,				int,int,detectorSettings,int>*	m16;
+	func4_t <dacs_t,			dacs_t,dacIndex,int,int>* 		m17;
+	func1_t <int,				portType>* 						m18;
+	func1_t <fileFormat,		fileFormat>*					m19;
 };
 
 class Task:  public virtual SuperTask {
@@ -152,10 +152,10 @@ public:
 	Task(func3_t <int64_t,			timerIndex,int64_t,int>* t):			SuperTask(),fnum(13){m13 = t;};
 	Task(func2_t <std::string,		networkParameter,std::string>* t):		SuperTask(),fnum(14){m14 = t;};
 	Task(func3_t <int,				int,int,int>* t): 						SuperTask(),fnum(15){m15 = t;};
-	Task(func4_t <int,				trimMode,int,int,int>* t):				SuperTask(),fnum(16){m16 = t;};
-	Task(func4_t <int,				int,int,detectorSettings,int>* t): 		SuperTask(),fnum(17){m17 = t;};
-	Task(func4_t <dacs_t,			dacs_t,dacIndex,int,int>* t):       	SuperTask(),fnum(18){m18 = t;};
-	Task(func1_t <int,				portType>* t):       					SuperTask(),fnum(19){m19 = t;};
+	Task(func4_t <int,				int,int,detectorSettings,int>* t): 		SuperTask(),fnum(16){m16 = t;};
+	Task(func4_t <dacs_t,			dacs_t,dacIndex,int,int>* t):       	SuperTask(),fnum(17){m17 = t;};
+	Task(func1_t <int,				portType>* t):       					SuperTask(),fnum(18){m18 = t;};
+	Task(func1_t <fileFormat,		fileFormat>* t):						SuperTask(),fnum(19){m19 = t;};
 
 	virtual ~Task(){
         switch(fnum) {

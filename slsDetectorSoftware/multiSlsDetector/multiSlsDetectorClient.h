@@ -11,7 +11,7 @@
 
 
 int dummyCallback(detectorData* d, int p,void*) {
-	cout << "got data "	<< p <<  endl;
+	std::cout << "got data "	<< p <<  std::endl;
 	return 0;
 };
 
@@ -27,16 +27,16 @@ public:
 		char cmd[100] = "";														\
 
 		if (action==slsDetectorDefs::PUT_ACTION && argc<2) {					\
-			cout << "Wrong usage - should be: "<< argv[0] <<					\
-			"[id-][pos:]channel arg" << endl;									\
-			cout << endl;														\
+			std::cout << "Wrong usage - should be: "<< argv[0] <<					\
+			"[id-][pos:]channel arg" << std::endl;									\
+			std::cout << std::endl;														\
 			return;																\
 			if (del) delete myDetector;											\
 		};																		\
 		if (action==slsDetectorDefs::GET_ACTION && argc<1) {					\
-			cout << "Wrong usage - should be: "<< argv[0] <<					\
-			"[id-][pos:]channel arg" << endl;									\
-			cout << endl;														\
+			std::cout << "Wrong usage - should be: "<< argv[0] <<					\
+			"[id-][pos:]channel arg" << std::endl;									\
+			std::cout << std::endl;														\
 			if (del) delete myDetector;											\
 			return;																\
 		};																		\
@@ -51,7 +51,7 @@ public:
 					//%s needn't be there (if not 1:), so 1 or 2 arguments scanned
 					if (iv >= 1 && id >= 0) { 									\
 						argv[0] = cmd;                                      	\
-						cout << id << "-" ;                                 	\
+						std::cout << id << "-" ;                                 	\
 					} else {                                               		\
 						id = 0;                                          		\
 					}															\
@@ -60,7 +60,7 @@ public:
 				if (strchr(argv[0],':')) {										\
 					iv=sscanf(argv[0],"%d:",&pos);								\
 					if (iv == 1 && pos >= 0) {									\
-						cout << "pos " << pos << " is not allowed for readout!" << endl;		\
+						std::cout << "pos " << pos << " is not allowed for readout!" << std::endl;		\
 						return;		                  							\
 					}															\
 				}																\
@@ -71,7 +71,7 @@ public:
 			// scan success
 			if (iv == 2 && id >= 0) {                                       	\
 				argv[0] = cmd;                                                  \
-				cout << id << "-" ;                                             \
+				std::cout << id << "-" ;                                             \
 			} else {                                                            \
 				id = 0;                                                         \
 			}																	\
@@ -80,7 +80,7 @@ public:
 			// scan success
 			if (iv == 2 && pos >= 0) {                                     		\
 				argv[0] = cmd;                                                  \
-				cout << pos << ":" ;                                            \
+				std::cout << pos << ":" ;                                            \
 			}                                                                   \
 			if (iv != 2) {                                                  	\
 				pos = -1;                                                       \
@@ -109,17 +109,17 @@ public:
 
 
 
-		//cout<<"id:"<<id<<" pos:"<<pos<<endl;
+		//std::cout<<"id:"<<id<<" pos:"<<pos<<std::endl;
 		// create multiSlsDetector class if required
 		if (myDetector==NULL) {													\
 			try {																\
 				multiSlsDetector* m = new multiSlsDetector(id, verify, update);			\
 				myDetector = m;													\
 			} catch (const SlsDetectorPackageExceptions & e) {							\
-				/*cout << e.GetMessage() << endl;*/									\
+				/*std::cout << e.GetMessage() << std::endl;*/									\
 				return;															\
 			} catch (...) {														\
-				cout << " caught exception" << endl;							\
+				std::cout << " caught exception" << std::endl;							\
 				return;															\
 			}																	\
 			del=1;																\
@@ -130,20 +130,20 @@ public:
 		try {																	\
 			answer=myCmd->executeLine(argc, argv, action, pos);					\
 		} catch (const SlsDetectorPackageExceptions & e) {								\
-			/*cout << e.GetMessage() << endl;	*/									\
+			/*std::cout << e.GetMessage() << std::endl;	*/									\
 			delete myCmd;														\
 			if (del) delete myDetector;											\
 			return;																\
 		} catch (...) {															\
-			cout << " caught exception" << endl;								\
+			std::cout << " caught exception" << std::endl;								\
 			delete myCmd;														\
 			if (del) delete myDetector;											\
 			return;																\
 		}																		\
 		if (action!=slsDetectorDefs::READOUT_ACTION) { 							\
-			cout << argv[0] << " " ;											\
+			std::cout << argv[0] << " " ;											\
 		}																		\
-		cout << answer<< endl;													\
+		std::cout << answer<< std::endl;													\
 		delete myCmd;															\
 		if (del) delete myDetector;												\
 	};

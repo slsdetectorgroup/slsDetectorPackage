@@ -10,14 +10,6 @@
 //#include <stdint.h>
 #include "sls_receiver_defs.h"
 
-/** default maximum string length */
-#define MAX_SCAN_STEPS 2000
-/** maxmimum number of modules per controller*/
-#define MAXMODS 24
-/** maxmimum number of detectors ina multidetector structure*/
-#define MAXDET 100
-/** header length for data :gotthard*/
-#define HEADERLENGTH 12
 
 /** maximum rois */
 #define MAX_ROIS 100
@@ -28,20 +20,10 @@
 /** maximum unit size of program sent to detector */
 #define MAX_FPGAPROGRAMSIZE (2 * 1024 *1024)
 
-
-
-#define MAX_SCAN_LEVELS 2
-
 typedef char mystring[MAX_STR_LENGTH];
-typedef double mysteps[MAX_SCAN_STEPS];
 
-
-
-#ifndef DACS_FLOAT
 typedef int dacs_t;
-#else
-typedef float dacs_t;
-#endif
+
 
 #define DEFAULT_DET_MAC         "00:aa:bb:cc:dd:ee"
 #define DEFAULT_DET_IP          "129.129.202.46"
@@ -56,8 +38,6 @@ and to the server programs running on the detector
  * @author Anna Bergamaschi
  * @version 0.1alpha (any string)
  * @see slsDetector
-
-$Revision: 824 $
 
 */
 
@@ -77,40 +57,6 @@ class slsDetectorDefs: public virtual slsReceiverDefs{
 #endif
 
 
-  enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, enCalLog, angCalLog, MAX_ACTIONS};
-
-
-
-/**
-    @short  structure for a detector channel
-
-    should not be used by unexperienced users
-
-    \see  ::channelRegisterBit
-*/
-  typedef struct {
-    int chan; /**< is the  channel number */
-    int chip; /**< is the  chip number */
-    int module; /**< is the  module number */
-    int64_t reg;   /**< is the is the channel register (e.g. trimbits, calibration enable, comparator enable...) */
-  } sls_detector_channel;
-
-  /**
-    @short  structure for a detector chip
-
-    should not be used by unexperienced users
-    \see  ::chipRegisterBit ::channelRegisterBit
-*/
-  typedef struct  {
-    int chip;   /**< is the chip number */
-    int module;  /**< is the module number */
-    int nchan; /**< is the number of channels in the chip */
-    int reg; /**<is the chip register (e.g. output analogue buffer enable)
-		\see ::chipRegisterBit */
-    int *chanregs; /**< is the pointer to the array of the channel registers
-		      \see ::channelRegisterBit */
-  } sls_detector_chip;
-
 /**
     @short  structure for a detector module
 
@@ -127,7 +73,6 @@ class slsDetectorDefs: public virtual slsReceiverDefs{
     @li offset is the module offset
 */
 typedef struct {
-  int module; /**< is the module number */
   int serialnumber;  /**< is the module serial number */
   int nchan; /**< is the number of channels on the module*/
   int nchip; /**< is the number of chips on the module */
@@ -145,25 +90,6 @@ typedef struct {
   double offset;  /**< is the module offset (V) */
 } sls_detector_module;
 
-
-/* /\*  */
-/*     @short structure for a generic integer array */
-/* *\/ */
-/* typedef struct { */
-/*   int len;  /\**< is the number of elements of the array *\/ */
-/*   int *iptr; /\**<  is the pointer to the array *\/ */
-/* } iarray ; */
-
-
-
-
-/* /\**  */
-/*      Communication protocol (normally TCP) */
-/* *\/ */
-/* enum communicationProtocol{ */
-/*   TCP,  /\**< TCP/IP *\/ */
-/*   UDP /\**< UDP *\/ */
-/* }; */
 
 /**
      network parameters
@@ -293,17 +219,10 @@ enum digitalTestMode {
   MODULE_FIRMWARE_TEST,  /**< test module firmware */
   DETECTOR_FIRMWARE_TEST,  /**< test detector system firmware */
   DETECTOR_MEMORY_TEST,  /**< test detector system memory */
-  DETECTOR_BUS_TEST,  /**< test detector system CPU-FPGA bus */
   DETECTOR_SOFTWARE_TEST,  /**< test detector system software */
   DIGITAL_BIT_TEST			/**< gotthard digital bit test */
 };
-/**
-    detector analogue test modes
-*/
-enum analogTestMode {
-  CALIBRATION_PULSES,  /**< test using calibration pulses */
-  MY_ANALOG_TEST_MODE  /**< other possible test modes */
-};
+
 
 /**
    detector dacs indexes
@@ -332,14 +251,6 @@ enum dacIndex {
   G_VIN_CM,     /**< gotthard */
   G_VREF_COMP,  /**< gotthard */
   G_IB_TESTC,   /**< gotthard */
-  V_DAC0,		/**< moench */
-  V_DAC1,		/**< moench */
-  V_DAC2,		/**< moench */
-  V_DAC3,		/**< moench */
-  V_DAC4,		/**< moench */
-  V_DAC5,		/**< moench */
-  V_DAC6,		/**< moench */
-  V_DAC7,		/**< moench */
   E_SvP,		/**< eiger */
   E_SvN,		/**< eiger */
   E_Vtr,		/**< eiger */
@@ -414,33 +325,9 @@ enum detectorSettings{
   UNDEFINED=200,    /**< undefined or custom  settings */
   UNINITIALIZED     /**< uninitialiazed (status at startup) */
 };
-/**
-   meaning of the channel register bits
-   \see ::sls_detector_channel
-*/
-enum channelRegisterBit {
-  TRIMBIT_OFF=0,  /**< offset of trimbit value in the channel register  */
-  COMPARATOR_ENABLE=0x100,  /**< mask of the comparator enable bit  */
-  ANALOG_SIGNAL_ENABLE=0x200, /**< mask of the analogue output enable bit  */
-  CALIBRATION_ENABLE=0x300, /**< mask of the calibration input enable bit  */
-};
+
 
 #define TRIMBITMASK 0x3f
-/**
-   meaning of the chip register bits
-   \see ::sls_detector_chip
-*/
-enum chipRegisterBit {
-  ENABLE_ANALOG_OUTPUT=0x1, /**< mask of the analogue output enable bit  */
-  CHIP_OUTPUT_WIDTH=0x2 /**< mask of the chip output width  */
-};
-/**
-   meaning of the module register bits
-*/
-enum moduleRegisterBit {
-  MY_MODULE_REGISTER_BIT,  /**< possible module register bit meaning  */
-  MODULE_OUTPUT_WIDTH   /**< possibly module dynamic range  */
-};
 
 
 /**
@@ -448,10 +335,6 @@ enum moduleRegisterBit {
 */
 enum speedVariable {
   CLOCK_DIVIDER, /**< readout clock divider */
-  WAIT_STATES, /**< wait states for bus read */
-  TOT_CLOCK_DIVIDER, /**< wait states for bus read */
-  TOT_DUTY_CYCLE, /**< wait states for bus read */
-  SET_SIGNAL_LENGTH, /**< set/clear signal length */
   PHASE_SHIFT, /**< adds phase shift */
   OVERSAMPLING, /**< oversampling for analog detectors */
   ADC_CLOCK, /**< adc clock divider */
@@ -485,29 +368,8 @@ enum readOutFlags {
   SHOW_OVERFLOW=0x400000, /** eiger 32 bit mode, show saturated for overflow of single subframes */
   NOOVERFLOW=0x800000 /** eiger 32 bit mode, do not show saturated for overflow of single subframes */
 };
-/**
-   trimming modes
-*/
-enum trimMode {
-  NOISE_TRIMMING, /**< trim with noise */
-  BEAM_TRIMMING, /**< trim with x-rays (on all 63 bits) */
-  IMPROVE_TRIMMING, /**< trim with x-rays (on a limited range of bits - should start from an already trimmed mode) */
-  FIXEDSETTINGS_TRIMMING,/**< trim without optimizing the threshold and the trimbit size */
-  OFFLINE_TRIMMING /**< trimming is performed offline */
-};
-/**
-   data correction flags
-*/
-enum correctionFlags {
-  DISCARD_BAD_CHANNELS, /**< bad channels are discarded */
-  AVERAGE_NEIGHBOURS_FOR_BAD_CHANNELS,  /**< bad channels are replaced with the avergae of the neighbours */
-  FLAT_FIELD_CORRECTION,  /**< data are flat field corrected */
-  RATE_CORRECTION,  /**< data are rate corrected */
-  ANGULAR_CONVERSION,/**< angular conversion is calculated */
-  WRITE_FILE,		/**< file write enable */
-  I0_NORMALIZATION,
-  OVERWRITE_FILE		/**< file over write enable */
-};
+
+
 /** port type */
 enum portType {
   CONTROL_PORT, /**< control port */
@@ -523,58 +385,11 @@ enum masterFlags {
   IS_SLAVE /**< is slave */
 };
 
-/** synchronization in a multidetector structure, if any */
-enum synchronizationMode {
-  GET_SYNCHRONIZATION_MODE=-1, /**< the multidetector will return its synchronization mode */
-  NO_SYNCHRONIZATION, /**< all detectors are independent (no cabling) */
-  MASTER_GATES, /**< the master gates the other detectors */
-  MASTER_TRIGGERS, /**< the master triggers the other detectors */
-  SLAVE_STARTS_WHEN_MASTER_STOPS /**< the slave acquires when the master finishes, to avoid deadtime */
-};
 
 enum imageType {
   DARK_IMAGE,   /**< dark image */
   GAIN_IMAGE   /**< gain image */
 };
-
-
-
-/* /\** */
-/*    angular conversion constant for a module */
-/*  *\/ */
-/* typedef struct  { */
-/*   double center;  /\**< center of the module (channel at which the radius is perpendicular to the module surface) *\/ */
-/*   double ecenter; /\**< error in the center determination *\/ */
-/*   double r_conversion;  /\**<  detector pixel size (or strip pitch) divided by the diffractometer radius *\/ */
-/*   double er_conversion;  /\**< error in the r_conversion determination *\/ */
-/*   double offset; /\**< the module offset i.e. the position of channel 0 with respect to the diffractometer 0 *\/ */
-/*   double eoffset; /\**< error in the offset determination *\/ */
-/*   double tilt; /\**< ossible tilt in the orthogonal direction (unused)*\/ */
-/*   double etilt; /\**< error in the tilt determination *\/ */
-/* } angleConversionConstant; */
-
-
-enum angleConversionParameter {
-  ANGULAR_DIRECTION, /**< angular direction of the diffractometer */
-  GLOBAL_OFFSET, /**< global offset of the diffractometer */
-  FINE_OFFSET, /**< fine offset of the diffractometer */
-  BIN_SIZE, /**< angular bin size */
-  MOVE_FLAG, /**< wether the detector moves with the motor or not in a multi detector system */
-  SAMPLE_X, /**< sample displacement in the beam direction */
-  SAMPLE_Y /**< sample displacement orthogonal to the beam */
-};
-
-
-//typedef struct  {
-  //float center;  /**< center of the module (channel at which the radius is perpendicular to the module surface) */
-  //float ecenter; /**< error in the center determination */
-  //float r_conversion;  /**<  detector pixel size (or strip pitch) divided by the diffractometer radius */
-  //float er_conversion;  /**< error in the r_conversion determination */
-  //float offset; /**< the module offset i.e. the position of channel 0 with respect to the diffractometer 0 */
-  //float eoffset; /**< error in the offset determination */
-  //float tilt; /**< ossible tilt in the orthogonal direction (unused)*/
-  //float etilt; /**< error in the tilt determination *//
-//} angleConversionConstant;
 
 
 //#if defined(__cplusplus) && !defined(EIGERD)

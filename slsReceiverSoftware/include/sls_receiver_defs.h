@@ -67,12 +67,8 @@ public:
 	enum detectorType {
 		GET_DETECTOR_TYPE=-1,   /**< the detector will return its type */
 		GENERIC,  /**< generic sls detector */
-		MYTHEN, /**< mythen */
-		PILATUS, /**< pilatus */
 		EIGER, /**< eiger */
 		GOTTHARD, /**< gotthard */
-		PICASSO, /**< picasso */
-		AGIPD, /**< agipd */
 		MOENCH, /**< moench */
 		JUNGFRAU, /**< jungfrau */
 		JUNGFRAUCTB, /**< jungfrauCTBversion */
@@ -101,7 +97,6 @@ public:
 		FRAME_PERIOD, /**< period between exposures */
 		DELAY_AFTER_TRIGGER, /**< delay between trigger and start of exposure or readout (in triggered mode) */
 		GATES_NUMBER, /**< number of gates per frame (in gated mode) */
-		PROBES_NUMBER, /**< number of probe types in pump-probe mode */
 		CYCLES_NUMBER, /**< number of cycles: total number of acquisitions is number or frames*number of cycles */
 		ACTUAL_TIME, /**< Actual time of the detector's internal timer */
 		MEASUREMENT_TIME,  /**< Time of the measurement from the detector (fifo) */
@@ -234,11 +229,8 @@ public:
 	  */
 	  static std::string getDetectorType(detectorType t){	\
 	    switch (t) {										\
-	    case MYTHEN:    	return std::string("Mythen");	\
-	    case PILATUS:   	return std::string("Pilatus");	\
 	    case EIGER:    		return std::string("Eiger");	\
 	    case GOTTHARD:    	return std::string("Gotthard");	\
-	    case AGIPD:    		return std::string("Agipd");	\
 	    case MOENCH:    	return std::string("Moench");	\
 	    case JUNGFRAU:    	return std::string("Jungfrau");	\
 	    case JUNGFRAUCTB:   return std::string("JungfrauCTB");	\
@@ -252,11 +244,8 @@ public:
 	      \returns Mythen, Pilatus, Eiger, Gotthard, Agipd, Mönch, Unknown
 	  */
 	  static detectorType getDetectorType(std::string const type){\
-	    if (type=="Mythen")      	return MYTHEN;		\
-	    if (type=="Pilatus")      	return PILATUS;		\
 	    if (type=="Eiger")    		return EIGER;		\
 	    if (type=="Gotthard")    	return GOTTHARD;	\
-	    if (type=="Agipd")    		return AGIPD;		\
 	    if (type=="Moench")    		return MOENCH;		\
 	    if (type=="Jungfrau")    	return JUNGFRAU;	\
 	    if (type=="JungfrauCTB") 	return JUNGFRAUCTB;	\

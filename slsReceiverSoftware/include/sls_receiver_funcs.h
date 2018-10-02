@@ -34,7 +34,6 @@ enum recFuncs{
 	F_GET_RECEIVER_STATUS,			/**< gets the status of receiver listening mode */
 	F_START_RECEIVER,				/**< starts the receiver listening mode */
 	F_STOP_RECEIVER,				/**< stops the receiver listening mode */
-	F_START_RECEIVER_READOUT, 		/**< acquisition has stopped. start remaining readout in receiver */
 
 	//file functions
 	F_SET_RECEIVER_FILE_PATH, 		/**< sets receiver file directory */

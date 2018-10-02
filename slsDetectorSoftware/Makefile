@@ -9,15 +9,15 @@ CFLAGS= -g -DC_ONLY -fPIC
 
 DFLAGS= -g -DDACS_INT 
 
-INCLUDES?= -IcommonFiles -IslsDetector -I../slsReceiverSoftware/MySocketTCP -IusersFunctions -ImultiSlsDetector -IslsDetectorUtils -IslsDetectorCommand -IslsDetectorAnalysis -IslsReceiverInterface -I../slsReceiverSoftware/include -IthreadFiles -IsharedMemory -I$(ASM)
+INCLUDES?= -IcommonFiles -IslsDetector -I../slsReceiverSoftware/MySocketTCP  -ImultiSlsDetector -IslsDetectorUtils -IslsDetectorCommand -IslsDetectorAnalysis -IslsReceiverInterface -I../slsReceiverSoftware/include -IthreadFiles -IsharedMemory -I$(ASM)
 
 #EPICSFLAGS=-D EPICS -I/usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/ -L /usr/local/epics/base/lib/$(EPICS_HOST_ARCH) -Wl,-R/usr/local/epics/base/lib/$(EPICS_HOST_ARCH)  -lca -lCom 
 
 LIBZMQDIR = ../slsReceiverSoftware/include
 LIBZMQ =  -L$(LIBZMQDIR) -Wl,-rpath=$(LIBZMQDIR) -lzmq
 
-SRC_CLNT=slsDetectorAnalysis/fileIO.cpp  usersFunctions/usersFunctions.cpp slsDetector/slsDetectorUtils.cpp slsDetector/slsDetectorCommand.cpp slsDetectorAnalysis/angularConversion.cpp slsDetectorAnalysis/angularConversionStatic.cpp slsDetectorAnalysis/energyConversion.cpp slsDetector/slsDetectorActions.cpp slsDetectorAnalysis/postProcessing.cpp slsDetector/slsDetector.cpp multiSlsDetector/multiSlsDetector.cpp slsDetectorAnalysis/postProcessingFuncs.cpp slsReceiverInterface/receiverInterface.cpp slsDetector/slsDetectorUsers.cpp threadFiles/CondVar.cpp  threadFiles/Mutex.cpp threadFiles/ThreadPool.cpp sharedMemory/SharedMemory.cpp #../slsReceiverSoftware/MySocketTCP/MySocketTCP.cpp 
-DEPSINCLUDES = $(LIBZMQDIR)/sls_receiver_defs.h $(LIBZMQDIR)/sls_receiver_funcs.h $(LIBZMQDIR)/ansi.h commonFiles/sls_detector_defs.h  commonFiles/sls_detector_funcs.h commonFiles/error_defs.h slsDetector/slsDetectorBase.h slsDetectorAnalysis/angCalLogClass.h slsDetectorAnalysis/angleConversionConstant.h slsDetectorAnalysis/badChannelCorrections.h slsDetectorAnalysis/detectorData.h slsDetectorAnalysis/enCalLogClass.h slsDetectorAnalysis/fileIOStatic.h slsDetectorAnalysis/movingStat.h slsDetectorAnalysis/runningStat.h slsDetectorAnalysis/single_photon_hit.h threadFiles/Global.h threadFiles/Task.h usersFunctions/angleFunction.h sharedMemory/SharedMemory.h $(LIBZMQDIR)/sls_receiver_exceptions.h commonFiles/versionAPI.h
+SRC_CLNT=  slsDetector/slsDetectorUtils.cpp slsDetector/slsDetectorCommand.cpp slsDetectorAnalysis/postProcessing.cpp slsDetector/slsDetector.cpp multiSlsDetector/multiSlsDetector.cpp slsReceiverInterface/receiverInterface.cpp slsDetector/slsDetectorUsers.cpp threadFiles/CondVar.cpp  threadFiles/Mutex.cpp threadFiles/ThreadPool.cpp sharedMemory/SharedMemory.cpp #../slsReceiverSoftware/MySocketTCP/MySocketTCP.cpp 
+DEPSINCLUDES = $(LIBZMQDIR)/sls_receiver_defs.h $(LIBZMQDIR)/sls_receiver_funcs.h $(LIBZMQDIR)/ansi.h commonFiles/sls_detector_defs.h  commonFiles/sls_detector_funcs.h commonFiles/error_defs.h slsDetector/slsDetectorBase.h slsDetectorAnalysis/detectorData.h  threadFiles/Global.h threadFiles/Task.h sharedMemory/SharedMemory.h $(LIBZMQDIR)/sls_receiver_exceptions.h commonFiles/versionAPI.h
 
 
 

@@ -4,19 +4,12 @@ set(SOURCES
     slsDetector/slsDetectorUsers.cpp 
     slsDetector/slsDetectorUtils.cpp
     slsDetector/slsDetectorCommand.cpp
-    slsDetector/slsDetectorActions.cpp
     slsDetector/slsDetector.cpp 
-    slsDetectorAnalysis/angularConversion.cpp 
-    slsDetectorAnalysis/angularConversionStatic.cpp 
-    slsDetectorAnalysis/energyConversion.cpp 
-    slsDetectorAnalysis/fileIO.cpp
     slsDetectorAnalysis/postProcessing.cpp 
-    slsDetectorAnalysis/postProcessingFuncs.cpp
     slsReceiverInterface/receiverInterface.cpp
     threadFiles/CondVar.cpp  
     threadFiles/Mutex.cpp 
     threadFiles/ThreadPool.cpp
-    usersFunctions/usersFunctions.cpp 
 )
 
 set(HEADERS
@@ -32,7 +25,6 @@ slsDetectorCommand
 slsDetectorAnalysis 
 slsReceiverInterface 
 threadFiles
-usersFunctions 
 ../slsReceiverSoftware/include 
 ../slsReceiverSoftware/MySocketTCP 
 )
@@ -55,6 +47,17 @@ add_library(slsDetectorShared SHARED
     ${HEADERS}
 )
 
+add_library(zmq STATIC IMPORTED GLOBAL)
+
+set(ZMQ_STATIC_ARCHIVE ${CMAKE_CURRENT_SOURCE_DIR}/../slsReceiverSoftware/include/libzmq.a)
+set_target_properties(zmq PROPERTIES
+    IMPORTED_LOCATION ${ZMQ_STATIC_ARCHIVE}
+)
+
+target_link_libraries(slsDetectorShared
+	zmq
+)
+
 set(PUBLICHEADERS
     commonFiles/sls_detector_defs.h
     commonFiles/sls_detector_funcs.h
@@ -63,18 +66,10 @@ set(PUBLICHEADERS
     sharedMemory/SharedMemory.h
     slsDetector/slsDetectorUtils.h
     slsDetector/slsDetector.h
-    slsDetector/slsDetectorActions.h
     slsDetector/slsDetectorBase.h
     slsDetector/slsDetectorUsers.h
     slsDetectorAnalysis/postProcessing.h
     slsDetectorAnalysis/detectorData.h
-    slsDetectorAnalysis/angularConversion.h
-    slsDetectorAnalysis/angularConversionStatic.h
-    slsDetectorAnalysis/angleConversionConstant.h
-    slsDetectorAnalysis/badChannelCorrections.h
-    slsDetectorAnalysis/energyConversion.h
-    slsDetectorAnalysis/fileIO.h
-    slsDetectorAnalysis/fileIOStatic.h
     multiSlsDetector/multiSlsDetector.h
     slsReceiverInterface/receiverInterface.h
     ../slsReceiverSoftware/include/sls_receiver_exceptions.h
@@ -97,6 +92,10 @@ if(DOXYGEN_FOUND)
         COMMENT "Generating API documentation with Doxygen" VERBATIM
     )
 endif()
+
+
+install(FILES ${ZMQ_STATIC_ARCHIVE}
+DESTINATION lib) 
 
 install(TARGETS slsDetectorShared slsDetectorStatic
     LIBRARY DESTINATION lib

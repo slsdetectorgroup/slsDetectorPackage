@@ -56,10 +56,9 @@ The commands are sudivided into different pages depending on their functionaliti
  - \ref acquisition "Acquisition": commands to start/stop the acquisition and retrieve data
  - \ref config "Configuration": commands to configure the detector
  - \ref timing "Timing": commands to configure the detector timing
- - \ref data "Data postprocessing": commands to process the data - mainly for MYTHEN except for rate corrections.
+ - \ref data "Data postprocessing": commands to process the data
  - \ref settings "Settings": commands to define detector settings/threshold.
  - \ref output "Output": commands to define output file destination and format
- - \ref actions "Actions": commands to define scripts to be executed during the acquisition flow
  - \ref network "Network": commands to setup the network between client, detector and receiver
  - \ref receiver "Receiver": commands to configure the receiver
  - \ref ctb "Chiptest board": commands specific for the new chiptest board as pattern generator
@@ -122,13 +121,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 	/*! \page test
-   - <b>bustest</b> performs test of the bus interface between FPGA and embedded Linux system. Can last up to a few minutes. Cannot set! Used for Mythen only. Only get!
-	 */
-	descrToFuncMap[i].m_pFuncName="bustest"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDigiTest;
-	++i;
-
-	/*! \page test
    - <b>digibittest:[i]</b> performs digital test of the module i. Returns 0 if succeeded, otherwise error mask. Only put!
 	 */
 	descrToFuncMap[i].m_pFuncName="digibittest"; //
@@ -170,14 +162,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdRegister;
 	++i;
 
-	/*! \page test
-   - <b>r_compression [i] </b> sets/gets compression in receiver. 1 sets, 0 unsets. Not implemented.</b>
-	 */
-	descrToFuncMap[i].m_pFuncName="r_compression"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
-	++i;
-
-
 
 	/* Acquisition and status commands */
 	/*! \page acquisition Acquition commands
@@ -185,7 +169,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 	/*! \page acquisition
    - \b acquire blocking acquisition (like calling sls_detector_acquire). Starts receiver and detector, writes and processes the data, stops detector. Only get!
-     \c Returns (string)\c "acquire unsuccessful" if fails, else "" for MYTHEN, \c "Acquired (int)" for others, where int is number of frames caught.
+     \c Returns (string)\c "acquire unsuccessful" if fails, else \c "Acquired (int)", where int is number of frames caught.
 	 */
 	descrToFuncMap[i].m_pFuncName="acquire"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAcquire;
@@ -206,17 +190,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 	/*! \page acquisition
-   - \b data gets all data from the detector (if any) processes them and writes them to file according to the preferences already setup (MYTHEN only). Only get!
+   - \b data gets all data from the detector (if any) processes them and writes them to file according to the preferences already setup (Eigerr store in ram only). Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="data"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdData;
-	++i;
-
-	/*! \page acquisition
-   - \b frame gets a single frame from the detector (if any) processes it and writes it to file according to the preferences already setup (MYTHEN only). Only get!
-	 */
-	descrToFuncMap[i].m_pFuncName="frame"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFrame;
 	++i;
 
 	/*! \page acquisition
@@ -298,20 +275,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 	/*! \page config
-   - <b>master i</b> \c put sets the position of the master of the acquisition (-1 if none). Returns the position of the master of the detector structure (-1 if none).
-	 */
-	descrToFuncMap[i].m_pFuncName="master"; //OK
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdMaster;
-	++i;
-
-	/*! \page config
-   - <b>sync</b> Sets/gets the synchronization mode of the detectors in the multi-detector structure. Can be: \c none, \c gating, \c trigger, \c complementary. Mainly used by MYTHEN/GOTTHARD.
-	 */
-	descrToFuncMap[i].m_pFuncName="sync"; //OK
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSync;
-	++i;
-
-	/*! \page config
 		\section configstatus Status
    commands to configure detector status
 	 */
@@ -343,22 +306,9 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
    commands to configure detector data size
 	 */
 
-	/*! \page config
-   - <b>nmod [i]</b> sets/gets the number of modules of the detector. Used for MYTHEN only. \c Returns \c (int)
-	 */
-	descrToFuncMap[i].m_pFuncName="nmod"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
-	++i;
 
 	/*! \page config
-   - <b>maxmod </b> Gets the maximum number of modules of the detector. Used for MYTHEN only. Cannot put! \c Returns \c (int)
-	 */
-	descrToFuncMap[i].m_pFuncName="maxmod"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
-	++i;
-
-	/*! \page config
-   - <b>dr [i]</b> sets/gets the dynamic range of detector. Mythen [4,8,16,24]. Eiger [4,8,16,32]. Others cannot put! \c Returns \c (int)
+   - <b>dr [i]</b> sets/gets the dynamic range of detector. Eiger [4,8,16,32]. Others cannot put! \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="dr"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
@@ -375,13 +325,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
    - <b>detsizechan [xmax] [ymax]</b> sets the maximum number of channels in each dimension for complete detector set; -1 is no limit. Use for multi-detector system as first command in config file. \c Returns \c ("int int")
 	 */
 	descrToFuncMap[i].m_pFuncName="detsizechan"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
-	++i;
-
-	/*! \page config
-   - <b>roimask [i]</b>  ?? \c Returns \c (int) in hexadecimal
-	 */
-	descrToFuncMap[i].m_pFuncName="roimask"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
 	++i;
 
@@ -415,7 +358,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page config
-   - <b>flags [flag]</b> sets/gets the readout flags to mode. Options: none, storeinram, tot, continous, parallel, nonparallel, safe, digital, analog_digital, overflow, nooverflow, unknown. Used for MYTHEN and EIGER only. \c Returns \c (string). put takes one string and \c returns concatenation of all active flags separated by spaces.
+   - <b>flags [flag]</b> sets/gets the readout flags to mode. Options: none, storeinram, tot, continous, parallel, nonparallel, safe, digital, analog_digital, overflow, nooverflow, unknown. Used for EIGER only. \c Returns \c (string). put takes one string and \c returns concatenation of all active flags separated by spaces.
 	 */
 	descrToFuncMap[i].m_pFuncName="flags";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
@@ -424,7 +367,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	/*! \page config
    - <b>extsig:[i] [flag]</b> sets/gets the mode of the external signal i. Options: \c off, \c gate_in_active_high, \c gate_in_active_low, \c trigger_in_rising_edge, \c trigger_in_falling_edge,
    \c ro_trigger_in_rising_edge, \c ro_trigger_in_falling_edge, \c gate_out_active_high, \c gate_out_active_low, \c trigger_out_rising_edge, \c trigger_out_falling_edge, \c ro_trigger_out_rising_edge,
-   \c ro_trigger_out_falling_edge. \n Used in MYTHEN, GOTTHARD, PROPIX only. \c Returns \c (string)
+   \c ro_trigger_out_falling_edge. \n Used in GOTTHARDonly. \c Returns \c (string)
 	*/
 	descrToFuncMap[i].m_pFuncName="extsig"; /* find command! */
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
@@ -435,7 +378,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 
 	/*! \page config
-   - <b>programfpga [file]</b> programs the FPGA with file f (with .pof extension). Used for JUNGFRAU, MOENCH only. Only put! \c Returns \c ("successful", "unsuccessful")
+   - <b>programfpga [file]</b> programs the FPGA with file f (with .pof extension). Used for JUNGFRAU only. Only put! \c Returns \c ("successful", "unsuccessful")
 	 */
 	descrToFuncMap[i].m_pFuncName="programfpga";
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
@@ -523,25 +466,12 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 
 	/*! \page config
-   - <b>moduleversion:[i]</b> Gets the firmware version of module i. Used for MYTHEN only. Only get! \c Returns \c (long int) in hexadecimal or "undefined module number"
-	 */
-	descrToFuncMap[i].m_pFuncName="moduleversion"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
-	++i;
-
-	/*! \page config
    - <b>detectornumber</b> Gets the serial number or MAC of detector. Only get! \c Returns \c (long int) in hexadecimal
 	 */
 	descrToFuncMap[i].m_pFuncName="detectornumber"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
 	++i;
 
-	/*! \page config
-   - <b>modulenumber:[i]</b> Gets the serial number of module i. Used for MYTHEN only. Only get! \c Returns \c (long int) in hexadecimal or "undefined module number"
-	 */
-	descrToFuncMap[i].m_pFuncName="modulenumber"; /* find command! */
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
-	++i;
 
 	/*! \page config
    - <b>detectorversion</b> Gets the firmware version of detector. Only get! \c Returns \c (long int) in hexadecimal
@@ -611,14 +541,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
     ++i;
 
 	/*! \page timing
-   - <b>delay [i]</b> sets/gets delay in s. Used in MYTHEN, GOTTHARD only. \c Returns \c (double with 9 decimal digits)
+   - <b>delay [i]</b> sets/gets delay in s. Used in GOTTHARD only. \c Returns \c (double with 9 decimal digits)
 	 */
 	descrToFuncMap[i].m_pFuncName="delay"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	++i;
 
 	/*! \page timing
-   - <b>gates [i]</b> sets/gets number of gates. Used in MYTHEN, GOTTHARD only. \c Returns \c (long long int)
+   - <b>gates [i]</b> sets/gets number of gates. Used in GOTTHARD only. \c Returns \c (long long int)
 	 */
 	descrToFuncMap[i].m_pFuncName="gates"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
@@ -635,13 +565,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
    - <b>cycles [i]</b> sets/gets number of triggers. Timing mode should be set appropriately. \c Returns \c (long long int)
 	 */
 	descrToFuncMap[i].m_pFuncName="cycles"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
-	++i;
-
-	/*! \page timing
-   - <b>probes [i]</b> sets/gets number of probes to accumulate. When setting, max 3! cycles should be set to 1, frames to the number of pump-probe events. Used in MYTHEN only. \c Returns \c (long long int)
-	 */
-	descrToFuncMap[i].m_pFuncName="probes"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
 	++i;
 
@@ -676,74 +599,63 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	/* read only timers */
 
 	/*! \page timing
-   - <b>exptimel</b> gets exposure time left. Used in MYTHEN, GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
+   - <b>exptimel</b> gets exposure time left. Used in GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
 	 */
 	descrToFuncMap[i].m_pFuncName="exptimel"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	++i;
 
 	/*! \page timing
-   - <b>periodl</b> gets frame period left. Used in MYTHEN, GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
+   - <b>periodl</b> gets frame period left. Used in GOTTHARD  and Jungfrau only. Only get! \c Returns \c (double with 9 decimal digits)
 	 */
 	descrToFuncMap[i].m_pFuncName="periodl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	++i;
 
 	/*! \page timing
-   - <b>delayl</b> gets delay left. Used in MYTHEN, GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
+   - <b>delayl</b> gets delay left. Used in GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
 	 */
 	descrToFuncMap[i].m_pFuncName="delayl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	++i;
 
 	/*! \page timing
-   - <b>gatesl</b> gets number of gates left. Used in MYTHEN, GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
+   - <b>gatesl</b> gets number of gates left. Used in GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
 	 */
 	descrToFuncMap[i].m_pFuncName="gatesl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	++i;
 
 	/*! \page config
-   - <b>framesl</b> gets number of frames left. Used in MYTHEN, GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
+   - <b>framesl</b> gets number of frames left. Used in GOTTHARD and Jungfrau only. Only get! \c Returns \c (double with 9 decimal digits)
 	 */
 	descrToFuncMap[i].m_pFuncName="framesl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	++i;
 
 	/*! \page timing
-   - <b>cyclesl</b> gets number of cylces left. Used in MYTHEN, GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
+   - <b>cyclesl</b> gets number of cylces left. Used in GOTTHARD  and Jungfrau only. Only get! \c Returns \c (double with 9 decimal digits)
 	 */
 	descrToFuncMap[i].m_pFuncName="cyclesl"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	++i;
 
 	/*! \page timing
-   - <b>probesl</b> gets number of probes left. Used in MYTHEN, GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
-	 */
-	descrToFuncMap[i].m_pFuncName="probesl"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
-	++i;
-
-	//   descrToFuncMap[i].m_pFuncName="progress";
-	//   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
-	//   ++i;
-
-	/*! \page timing
-   - <b>now</b> Actual time of the detector. Only get!
+   - <b>now</b> Getting actual time of the detector from start. For Jungfrau only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="now"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	++i;
 
 	/*! \page timing
-   - <b>timestamp</b> Last frame timestamp for MYTHEN. Only get!
+   - <b>timestamp</b> Getting timestamp. For Jungfrau only. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="timestamp"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	++i;
 
 	/*! \page timing
-   - <b>nframes</b> ??? Only get!
+   - <b>nframes</b> Frames from start run control. Only Jungfrau. Only get!
 	 */
 	descrToFuncMap[i].m_pFuncName="nframes"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
@@ -770,37 +682,9 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page config
-   - <b>clkdivider [i]</b> sets/gets the readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)]. Jungfrau, full speed is not implemented and overwrites adcphase to recommended default. MYTHEN[???]. \c Returns \c (int)
+   - <b>clkdivider [i]</b> sets/gets the readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)]. Jungfrau, full speed is not implemented and overwrites adcphase to recommended default.  \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="clkdivider"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
-	++i;
-
-	/*! \page config
-   - <b>setlength [i]</b> sets/gets length of set/reset signals (in clock cycles). Used in MYTHEN only. \c Returns \c (int)
-	 */
-	descrToFuncMap[i].m_pFuncName="setlength"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
-	++i;
-
-	/*! \page config
-   - <b>waitstates [i]</b> sets/gets waitstates of the bus interface (in clock cycles). Used in MYTHEN only. \c Returns \c (int)
-	 */
-	descrToFuncMap[i].m_pFuncName="waitstates"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
-	++i;
-
-	/*! \page config
-   - <b>totdivider [i]</b> sets/gets clock divider in tot mode. Used in MYTHEN only. \c Returns \c (int)
-	 */
-	descrToFuncMap[i].m_pFuncName="totdivider"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
-	++i;
-
-	/*! \page config
-   - <b>totdutycycle [i]</b> sets/gets duty cycle of the tot clock. Used in MYTHEN only. \c Returns \c (int)
-	 */
-	descrToFuncMap[i].m_pFuncName="totdutycycle"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
 	++i;
 
@@ -826,7 +710,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 	/*! \page config
-   - <b>adcphase [i]</b> Sets/gets phase of the sampling clock. For JUNGFRAU, setting speed (clkdivider) overwrites adcphase to its default recommended value. (Not for EIGER) \c Returns \c (int)
+   - <b>adcphase [i]</b> Sets/gets phase of the sampling clock. For JUNGFRAU, setting speed (clkdivider) overwrites adcphase to its default recommended value. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="adcphase"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
@@ -902,92 +786,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	/* data processing commands */
 
 	/*! \page data Data processing commands
-   Commands to setup the data processing (mainly MYTHEN related)
+   Commands to setup the data processing
 	 */
-	/*! \page data
-   - <b>flatfield [fn]</b> \c put sets flatfield file to \c fn (relative to \c ffdir). \get returns the flatfield file name relative to \c ffdir (string). If \fn is specified, it writes the flat field correction factors and errors to \c fn.  \c Returns \c (string) fn
-	\c none disables flat field corrections.
-	 */
-	descrToFuncMap[i].m_pFuncName="flatfield"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFlatField;
-	++i;
 
 	/*! \page data
-   - <b>ffdir [d]</b> Sets/gets the directory in which the flat field file is located. \c Returns \c (string) ffdir
-	 */
-	descrToFuncMap[i].m_pFuncName="ffdir"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFlatField;
-	++i;
-
-	/*! \page data
-   - <b>ratecorr [ns]</b> Returns the dead time used for rate correections in ns (int). \c put sets the deadtime correction constant in ns, -1  will set it to default tau of settings (0 unset).  \c Returns \c (double with 9 decimal digit precision)
+   - <b>ratecorr [ns]</b> Returns the dead time used for rate correections in ns (int). \c put sets the deadtime correction constant in ns, -1  will set it to default tau of settings (0 unset).  \c Returns \c (double with 9 decimal digit precision). For Eiger only.
 	 */
 	descrToFuncMap[i].m_pFuncName="ratecorr"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdRateCorr;
-	++i;
-
-	/*! \page data
-   - <b>badchannels [fn]</b> \c put sets the badchannels file to \c fn . \get returns the bad channels file name. If \fn is specified, it writes the badchannels to \c fn. \c none disables badchannel corrections.
-	 */
-	descrToFuncMap[i].m_pFuncName="badchannels"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdBadChannels;
-	++i;
-
-	/*! \page data
-   - <b>angconv [fn]</b> \c put sets the angular conversion file to \c fn . \get returns the angular conversion file name. If \fn is specified, it writes the angular conversion factors to \c fn. \c none disables angular corrections.
-	 */
-	descrToFuncMap[i].m_pFuncName="angconv"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAngConv;
-	++i;
-
-	/*! \page data
-   - <b>globaloff [f]</b> Sets/gets the beamline angular global offset (float).
-	 */
-	descrToFuncMap[i].m_pFuncName="globaloff"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAngConv;
-	++i;
-
-	/*! \page data
-   - <b>fineoff [f]</b> Sets/gets the angular fine offset of the measurement (float).
-	 */
-	//2017/08/15
-	descrToFuncMap[i].m_pFuncName="fineoff"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAngConv;
-	++i;
-
-	/*! \page data
-   - <b>binsize [f]</b> Sets/gets the bin size used for the angular conversion (float).
-	 */
-	descrToFuncMap[i].m_pFuncName="binsize" ;//
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAngConv;
-	++i;
-
-	/*! \page data
-   - <b>angdir [i]</b> Sets/gets the angular direction. 1 means increasing channels number as increasing angle, -1 increasing channel number decreasing angle.
-	 */
-	descrToFuncMap[i].m_pFuncName="angdir" ;//
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAngConv;
-	++i;
-
-	/*! \page data
-   - <b>moveflag [i]</b> Sets/gets the flag for physically moving the detector during the acquisition of several positions. 1 sets (moves), 0 unsets.
-	 */
-	descrToFuncMap[i].m_pFuncName="moveflag" ;//
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAngConv;
-	++i;
-
-	/*! \page data
-   - <b>samplex [f]</b> Sets/gets the sample displacement in th direction parallel to the beam in um. Unused!
-	 */
-	descrToFuncMap[i].m_pFuncName="samplex" ;//
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAngConv;
-	++i;
-
-	/*! \page data
-   - <b>sampley [f]</b> Sets/gets the sample displacement in th direction orthogonal to the beam in um. Unused!
-	 */
-	descrToFuncMap[i].m_pFuncName="sampley" ;//
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAngConv;
 	++i;
 
 	/*! \page data
@@ -998,14 +804,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 	/*! \page data
-   - <b>darkimage fn</b> Loads the dark image to the detector from file fn (pedestal image). Cannot get.
+   - <b>darkimage fn</b> Loads the dark image to the detector from file fn (pedestal image). Cannot get. For Gotthard only.
 	 */
 	descrToFuncMap[i].m_pFuncName="darkimage"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdImage;
 	++i;
 
 	/*! \page data
-   - <b>gainimage fn</b> Loads the gain image to the detector from file fn (gain map for translation into number of photons of an analog detector). Cannot get.
+   - <b>gainimage fn</b> Loads the gain image to the detector from file fn (gain map for translation into number of photons of an analog detector). Cannot get. For Gotthard only.
 	 */
 	descrToFuncMap[i].m_pFuncName="gainimage"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdImage;
@@ -1092,13 +898,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
    - <b>trimbits [fname] </b> loads/stores the trimbits to/from the detector. If no extension is specified, the serial number of each module will be attached. \c Returns \c (string) fname
 	 */
 	descrToFuncMap[i].m_pFuncName="trimbits"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
-	++i;
-
-	/*! \page settings
-   - <b>trim:[mode] [fname]</b> trims the detector according to mode and saves resulting trimbits to file. Mode: noise, beam, improve, fix. Used in MYTHEN only. Only put!  \c Returns \c ("done")
-	 */
-	descrToFuncMap[i].m_pFuncName="trim"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
 	++i;
 
@@ -1257,40 +1056,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
 	++i;
 
-	/*! \page settings
-   - <b>dac[0..7] [i] [mv]</b> Sets/gets dac[0..7] for MOENCH02. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
-	 */
-	descrToFuncMap[i].m_pFuncName="dac0"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
-	++i;
-
-	descrToFuncMap[i].m_pFuncName="dac1"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
-	++i;
-
-	descrToFuncMap[i].m_pFuncName="dac2"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
-	++i;
-
-	descrToFuncMap[i].m_pFuncName="dac3"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
-	++i;
-
-	descrToFuncMap[i].m_pFuncName="dac4"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
-	++i;
-
-	descrToFuncMap[i].m_pFuncName="dac5"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
-	++i;
-
-	descrToFuncMap[i].m_pFuncName="dac6"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
-	++i;
-
-	descrToFuncMap[i].m_pFuncName="dac7"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
-	++i;
 
 	/*! \page settings
    - <b>vsvp [i] [mv]</b> Sets/gets vsvp. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
@@ -1770,204 +1535,11 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 	/*! \page output
-    - <b>currentfname</b> gets the filename for the data without index and extension. MYTHEN only. \c Returns \c (string)
-	 */
-	descrToFuncMap[i].m_pFuncName="currentfname"; //OK
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFileName;
-	++i;
-
-	/*! \page output
     - <b>fileformat</b> sets/gets the file format for data in receiver. Options: [ascii, binary, hdf5]. Ascii is not implemented in Receiver. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="fileformat"; //OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFileName;
 	++i;
-
-
-
-	/* Acquisition actions */
-
-	/*! \page actions Actions
-    Commands to define scripts to be executed during the acquisition flow
-	 */
-
-	/*! \page actions
-    - <b>positions [n [p0..pn-1]]</b> sets/gets number of angular position and positions to be acquired.. \c Returns \c (int int..) n [p0..pn-1]
-	 */
-	descrToFuncMap[i].m_pFuncName="positions"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPositions;
-	++i;
-
-	/*! \page actions
-    - <b>startscript [s]</b> sets/gets the script to be executed at the beginning of the acquisition. \c none unsets. \c Returns \c (string)
-	 */
-	descrToFuncMap[i].m_pFuncName="startscript"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
-	++i;
-
-	/*! \page actions
-    - <b>startscriptpar [s]</b> sets/gets a string to be passed as a parameter to the startscript. \c Returns \c (string)
-	 */
-	descrToFuncMap[i].m_pFuncName="startscriptpar"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
-	++i;
-
-	/*! \page actions
-    - <b>stopscript [s]</b> sets/gets the script to be executed at the end of the acquisition. \c none unsets. \c Returns \c (string)
-	 */
-	descrToFuncMap[i].m_pFuncName="stopscript"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
-	++i;
-
-	/*! \page actions
-    - <b>stopscriptpar [s]</b> sets/gets a string to be passed as a parameter to the stopscript. \c Returns \c (string)
-	 */
-	descrToFuncMap[i].m_pFuncName="stopscriptpar"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
-	++i;
-
-	/*! \page actions
-    - <b>scriptbefore [s]</b> sets/gets the script to be executed before starting the detector every time in the acquisition. \c none unsets. \c Returns \c (string)
-	 */
-	descrToFuncMap[i].m_pFuncName="scriptbefore"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
-	++i;
-
-	/*! \page actions
-    - <b>scriptbeforepar [s]</b> sets/gets a string to be passed as a parameter to the scriptbefore. \c Returns \c (string)
-	 */
-	descrToFuncMap[i].m_pFuncName="scriptbeforepar"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
-	++i;
-
-	/*! \page actions
-    - <b>scriptafter [s]</b> sets/gets the script to be executed after the detector has finished  every time in the acquisition. \c none unsets. \c Returns \c (string)
-	 */
-	descrToFuncMap[i].m_pFuncName="scriptafter"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
-	++i;
-
-	/*! \page actions
-    - <b>scriptafterpar [s]</b> sets/gets a string to be passed as a parameter to the scriptafter. \c Returns \c (string)
-	 */
-	descrToFuncMap[i].m_pFuncName="scriptafterpar"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
-	++i;
-
-	/*! \page actions
-    - <b>headerafter [s]</b> sets/gets the script to be executed for logging the detector parameters. \c none unsets. \c Returns \c (string)
-	 */
-	descrToFuncMap[i].m_pFuncName="headerafter"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
-	++i;
-
-	/*! \page actions
-    - <b>headerbefore [s]</b> sets/gets the script to be executed for logging the detector parameters. \c none unsets. \c Returns \c (string)
-	 */
-	descrToFuncMap[i].m_pFuncName="headerbefore"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
-	++i;
-
-	/*! \page actions
-    - <b>headerbeforepar [s]</b> sets/gets a string to be passed as a parameter to the headerbefore script. \c Returns \c (string)
-	 */
-	descrToFuncMap[i].m_pFuncName="headerbeforepar"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
-	++i;
-
-	/*! \page actions
-    - <b>headerafterpar [s]</b> sets/gets a string to be passed as a parameter to the headerafter script. \c Returns \c (string)
-	 */
-	descrToFuncMap[i].m_pFuncName="headerafterpar"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
-	++i;
-
-	/*! \page actions
-    - <b>enacallog [i]</b> enables/disables logging of the parameters necessary for the energy calibration. 1 sets, 0 unsets. \c Returns \c (int)
-	 */
-	descrToFuncMap[i].m_pFuncName="encallog"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
-	++i;
-
-	/*! \page actions
-    - <b>angcallog [i]</b> enables/disables logging of the parameters necessary for the angular calibration. 1 sets, 0 unsets. \c Returns \c (int)
-	 */
-	descrToFuncMap[i].m_pFuncName="angcallog"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
-	++i;
-
-	/*! \page actions
-    - <b>scan0script [s]</b> sets/gets the script to be executed for the scan 0 level. \c none unsets.
-	 */
-	descrToFuncMap[i].m_pFuncName="scan0script"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScans;
-	++i;
-
-	/*! \page actions
-    - <b>scan0par [s]</b> sets/gets a string to be passed as a parameter to the scan0script
-	 */
-	descrToFuncMap[i].m_pFuncName="scan0par"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScans;
-	++i;
-
-	/*! \page actions
-    - <b>scan0prec [i]</b> sets/gets number of digits to be used for the scan0 variable in the file name.
-	 */
-	descrToFuncMap[i].m_pFuncName="scan0prec"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScans;
-	++i;
-
-	/*! \page actions
-    - <b>scan0steps [i [s0..sn-1]]</b> sets/gets number of steps (int) of the scan0 level and their values (float).
-	 */
-	descrToFuncMap[i].m_pFuncName="scan0steps"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScans;
-	++i;
-
-
-	/*! \page actions
-    - <b>scan0range [smin smax sstep]</b> sets scan0 min, max and step, returns the number of steps and their values as scan0steps.
-	 */
-	descrToFuncMap[i].m_pFuncName="scan0range"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScans;
-	++i;
-
-	/*! \page actions
-    - <b>scan1script [s]</b> sets/gets the script to be executed for the scan1 level. \c none unsets.
-	 */
-	descrToFuncMap[i].m_pFuncName="scan1script"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScans;
-	++i;
-
-	/*! \page actions
-    - <b>scan1par [s]</b> sets/gets a string to be passed as a parameter to the scan1script
-	 */
-	descrToFuncMap[i].m_pFuncName="scan1par"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScans;
-	++i;
-
-	/*! \page actions
-    - <b>scan1prec [i]</b> sets/gets number of digits to be used for the scan1 variable in the file name.
-	 */
-	descrToFuncMap[i].m_pFuncName="scan1prec"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScans;
-	++i;
-
-	/*! \page actions
-    - <b>scan1steps [i [s0..sn-1]]</b> sets/gets number of steps (int) of the scan1 level and their values (float).
-	 */
-	descrToFuncMap[i].m_pFuncName="scan1steps"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScans;
-	++i;
-
-	/*! \page actions
-    - <b>scan1range [smin smax sstep]</b> sets scan1 min, max and step, returns the number of steps and their values as scan1steps.
-	 */
-	descrToFuncMap[i].m_pFuncName="scan1range"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScans;
-	++i;
-
-
 
 
 
@@ -2166,7 +1738,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	/* receiver functions */
 
 	/*! \page receiver Receiver commands
-   Commands to configure the receiver. Not used in MYTHEN.
+   Commands to configure the receiver.
 	 */
 
 	/*! \page receiver
@@ -2601,38 +2173,6 @@ string slsDetectorCommand::helpData(int narg, char *args[], int action){
 
 }
 
-string slsDetectorCommand::cmdFrame(int narg, char *args[], int action) {
-
-	int b;
-#ifdef VERBOSE
-	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
-#endif
-	if (action==PUT_ACTION) {
-		return  string("cannot set");
-	} else if (action==HELP_ACTION) {
-		return helpFrame(narg,args,HELP_ACTION);
-	} else {
-		b=myDet->setThreadedProcessing(-1);
-		myDet->setThreadedProcessing(0);
-		myDet->setOnline(ONLINE_FLAG);
-		myDet->setReceiverOnline(ONLINE_FLAG);
-		myDet->readFrame();
-		//processdata in receiver is useful only for gui purposes
-		if(myDet->setReceiverOnline()==OFFLINE_FLAG)
-			myDet->processData(1);
-		myDet->setThreadedProcessing(b);
-		return string("ok");
-	}
-
-}
-
-string slsDetectorCommand::helpFrame(int narg, char *args[], int action) {
-
-	if (action==PUT_ACTION)
-		return string("");
-	return string("frame \t gets a single frame from the detector (if any) processes it and writes it to file according to the preferences already setup\n");
-
-}
 
 string slsDetectorCommand::cmdStatus(int narg, char *args[], int action) {
 
@@ -2848,70 +2388,6 @@ string slsDetectorCommand::helpUser(int narg, char *args[], int action){
 
 
 
-string slsDetectorCommand::cmdMaster(int narg, char *args[], int action){
-#ifdef VERBOSE
-	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
-
-#endif
-
-	ostringstream os;
-	int ival;
-
-
-	if (action==HELP_ACTION) {
-		return helpMaster(narg,args,HELP_ACTION);
-	}
-	myDet->setOnline(ONLINE_FLAG);
-	if (action==PUT_ACTION) {
-		istringstream vvstr(args[1]);
-		vvstr >> ival;
-		if (vvstr.fail())
-			return helpMaster(narg,args,HELP_ACTION);
-		myDet->setMaster(ival);
-	}
-	os <<  myDet->setMaster();
-	return os.str();
-
-}
-
-
-string slsDetectorCommand::helpMaster(int narg, char *args[], int action){
-
-	ostringstream os;
-	if (action==GET_ACTION || action==HELP_ACTION)
-		os << string("master \t gets the master of the detector structure (-1 if none)\n");
-	if (action==PUT_ACTION || action==HELP_ACTION)
-		os << string("master pos \t sets position of the master of the detector structure (-1 if none) \n");
-	return os.str();
-
-}
-
-string slsDetectorCommand::cmdSync(int narg, char *args[], int action){
-#ifdef VERBOSE
-	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
-#endif
-
-	if (action==HELP_ACTION) {
-		return helpSync(narg,args,HELP_ACTION);
-	}
-	myDet->setOnline(ONLINE_FLAG);
-	if (action==PUT_ACTION) {
-		if (myDet->getSyncType(string(args[1]))==GET_SYNCHRONIZATION_MODE) return helpSync(narg,args, action);
-		myDet->setSynchronization(myDet->getSyncType(string(args[1])));
-	}
-	return myDet->getSyncType(myDet->setSynchronization());
-
-}
-string slsDetectorCommand::helpSync(int narg, char *args[], int action){
-
-	ostringstream os;
-	if (action==GET_ACTION || action==HELP_ACTION)
-		os << string("sync \t gets the synchronization mode of the structure\n");
-	if (action==PUT_ACTION || action==HELP_ACTION)
-		os << string("sync mode \t sets synchronization mode of the structure. Cane be none, gating, trigger, complementary \n");
-	return os.str();
-}
-
 string slsDetectorCommand::cmdHelp(int narg, char *args[], int action){
 #ifdef VERBOSE
 	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
@@ -3118,7 +2594,7 @@ string slsDetectorCommand::cmdFileName(int narg, char *args[], int action){
 		}
 		return myDet->fileFormats(myDet->getFileFormat());
 	}
-	return string(myDet->getCurrentFileName());
+	return string("unknown command") + cmd;
 
 }
 
@@ -3233,83 +2709,6 @@ string slsDetectorCommand::helpFileIndex(int narg, char *args[], int action){
 }
 
 
-string slsDetectorCommand::cmdFlatField(int narg, char *args[], int action){
-
-	if (action==HELP_ACTION) {
-		return helpFlatField(narg, args, action);
-	}
-	string sval;
-
-	if (string(args[0])==string("ffdir")) {
-		if (action==PUT_ACTION) {
-			sval=string(args[1]);
-			if (sval=="none")
-				sval="";
-			myDet->setFlatFieldCorrectionDir(sval);
-		}
-		return string(myDet->getFlatFieldCorrectionDir());
-
-	} else if  (string(args[0])==string("flatfield")) {
-
-		if (action==PUT_ACTION) {
-			sval=string(args[1]);
-			if (sval=="none")
-				sval="";
-			myDet->setFlatFieldCorrection(sval);
-			return string(myDet->getFlatFieldCorrectionFile());
-
-		}  else {// if (action==GET_ACTION) {
-			if (narg>1)
-				sval=string(args[1]);
-			else
-				sval="none";
-			//  cout << myDet->getMaxNumberOfChannels() << endl;
-			double corr[ myDet->getMaxNumberOfChannels()], ecorr[myDet->getMaxNumberOfChannels()];
-			if (myDet->getFlatFieldCorrection(corr,ecorr)) {
-				if (sval!="none") {
-					myDet->writeDataFile(sval,corr,ecorr,NULL,'i');
-					return sval;
-				}
-				return string(myDet->getFlatFieldCorrectionFile());
-			} else {
-				return string("none");
-			}
-		}
-	}
-	return string("could not decode flat field action ")+cmd;
-
-}
-
-
-string slsDetectorCommand::helpFlatField(int narg, char *args[], int action){
-
-	int t=0;
-	ostringstream os;
-	if (string(args[0])==string("ffdir")) {
-		t=1;
-	} else if  (string(args[0])==string("flatfield")) {
-		t=2;
-	}
-	if (t!=1) {
-
-		if (action==GET_ACTION || action==HELP_ACTION) {
-			os << string("flatfield [fn]\t  gets the flat field file name. the coorection values and errors can be dumped to fn if specified. \n");
-		} if (action==PUT_ACTION || action==HELP_ACTION)
-			os << string("flatfield s \t  sets the flat field file name\n");
-	}
-	if (t!=2) {
-
-		if (action==GET_ACTION || action==HELP_ACTION)
-			os << string("ffdir \t  gets the path for the flat field files \n");
-		if (action==PUT_ACTION || action==HELP_ACTION)
-			os << string("ffdir s \t  sets the path for flat field files\n");
-	}
-	return os.str();
-
-}
-
-
-
 
 
 string slsDetectorCommand::cmdRateCorr(int narg, char *args[], int action){
@@ -3346,195 +2745,6 @@ string slsDetectorCommand::helpRateCorr(int narg, char *args[], int action){
 
 }
 
-
-
-
-string slsDetectorCommand::cmdBadChannels(int narg, char *args[], int action){ 
-
-	string sval;
-
-	if (action==HELP_ACTION) {
-		return helpBadChannels(narg, args, action);
-	}
-	if (action==PUT_ACTION) {
-		sval=string(args[1]);
-		if (sval=="none")
-			sval="";
-		myDet->setBadChannelCorrection(sval);
-	} else if (action==GET_ACTION) {
-		if (narg>1)
-			sval=string(args[1]);
-		else
-			sval="none";
-		int bch[myDet->getMaxNumberOfChannels()], nbch;
-		if ((nbch=myDet->getBadChannelCorrection(bch))) {
-			if (sval!="none") {
-				ofstream outfile;
-				outfile.open (sval.c_str(),ios_base::out);
-				if (outfile.is_open()) {
-					for (int ich=0; ich<nbch; ++ich) {
-						outfile << bch[ich] << std::endl;
-					}
-					outfile.close();
-					return sval;
-				} else
-					std::cout<< "Could not open file " << sval << " for writing " << std::endl;
-			}
-		}
-	}
-	return string(myDet->getBadChannelCorrectionFile());
-
-}
-
-
-string slsDetectorCommand::helpBadChannels(int narg, char *args[], int action){
-	ostringstream os;
-	if (action==GET_ACTION || action==HELP_ACTION)
-		os << string("badchannels [fn]\t  returns the badchannels file. Prints the list of bad channels in fn, if specified. \n");
-	if (action==PUT_ACTION || action==HELP_ACTION)
-		os << string("badchannels \t  sets the bad channels list\n");
-
-	return os.str();
-}
-
-
-
-string slsDetectorCommand::cmdAngConv(int narg, char *args[], int action){ 
-
-	if (action==HELP_ACTION) {
-		return helpAngConv(narg, args, action);
-	}
-	string sval;
-	char answer[1000];
-	double fval;
-	angleConversionParameter c;
-
-	if (string(args[0])==string("angconv")) {
-		if (action==PUT_ACTION) {
-			sval=string(args[1]);
-
-			if (sval=="none")
-				sval="";
-
-			myDet->setAngularConversionFile(sval);
-
-			return string(myDet->getAngularConversionFile());
-		} else if (action==GET_ACTION) {
-			if (narg>1)
-				sval=string(args[1]);
-			else
-				sval="none";
-			int dir;
-			if (myDet->getAngularConversion(dir)) {
-				if (sval!="none") {
-					myDet->writeAngularConversion(sval.c_str());
-					return sval;
-				}
-				return string(myDet->getAngularConversionFile());
-			} else {
-				return string("none");
-			}
-		}
-	} else if  (string(args[0])==string("globaloff")) {
-		c=GLOBAL_OFFSET;
-
-
-	} else if  (string(args[0])==string("fineoff")) {
-		c=FINE_OFFSET;
-
-
-	} else if  (string(args[0])==string("binsize")) {
-		c=BIN_SIZE;
-
-	} else if  (string(args[0])==string("angdir")) {
-		c=ANGULAR_DIRECTION;
-
-	} else if  (string(args[0])==string("moveflag")) {
-		c=MOVE_FLAG;
-	} else if  (string(args[0])==string("samplex")) {
-		c=SAMPLE_X;
-	} else if  (string(args[0])==string("sampley")) {
-		c=SAMPLE_Y;
-	}
-
-
-	else
-		return string("could not decode angular conversion parameter ")+cmd;
-
-
-
-	if (action==PUT_ACTION) {
-		if (sscanf(args[1],"%lf",&fval))
-			myDet->setAngularConversionParameter(c,fval);
-	}
-	sprintf(answer,"%f",myDet->getAngularConversionParameter(c));
-	return string(answer);
-
-
-}
-
-
-string slsDetectorCommand::helpAngConv(int narg, char *args[], int action){
-
-
-	int t=0xffff;
-	ostringstream os;
-
-	if (string(args[0])==string("angconv")) {
-		t=1;
-	} else  if (string(args[0])==string("globaloff")) {
-		t=2;
-	} else  if (string(args[0])==string("fineoff")) {
-		t=4;
-	} else  if (string(args[0])==string("binsize")) {
-		t=8;
-	} else  if (string(args[0])==string("samplex")) {
-		t=16;
-	} else  if (string(args[0])==string("sampley")) {
-		t=32;
-	}
-	if (t&1) {
-		if (action==GET_ACTION || action==HELP_ACTION)
-			os << string("angconv [fn]\t  returns the constants used for angular conversion prints them to the file fn if specified \n");
-		if (action==PUT_ACTION || action==HELP_ACTION)
-			os << string("angconv fn\t  sets the angualr conversion constants (none unsets) \n");
-	} if (t&2) {
-		if (action==GET_ACTION || action==HELP_ACTION)
-			os << string("globaloff\t  returns the global offset used for angular conversion \n");
-		if (action==PUT_ACTION || action==HELP_ACTION)
-			os << string("globaloff f\t  sets the global offset used for the angular conversion \n");
-
-
-	} if (t&4) {
-		if (action==GET_ACTION || action==HELP_ACTION)
-			os << string("fineoff\t  returns the fine offset used for angular conversion \n");
-		if (action==PUT_ACTION || action==HELP_ACTION)
-			os << string("fineoff f\t  sets the fine offset used for the angular conversion \n");
-
-
-
-	} if (t&8) {
-		if (action==GET_ACTION || action==HELP_ACTION)
-			os << string("binsize\t  returns the bin size used for the angular conversion \n");
-		if (action==PUT_ACTION || action==HELP_ACTION)
-			os << string("binsize f\t  sets the bin size used for the angular conversion \n");
-
-	}
-	if (t&16) {
-		if (action==GET_ACTION || action==HELP_ACTION)
-			os << string("samplex \t   gets the sample displacement in th direction parallel to the beam  \n");
-		if (action==PUT_ACTION || action==HELP_ACTION)
-			os << string("samplex f\t  sets the sample displacement in th direction parallel to the beam \n");
-	}
-	if (t&32) {
-		if (action==GET_ACTION || action==HELP_ACTION)
-			os << string("sampley \t   gets the sample displacement in the direction orthogonal to the beam  \n");
-		if (action==PUT_ACTION || action==HELP_ACTION)
-			os << string("sampley f\t  sets the sample displacement in the direction orthogonal to the beam \n");
-	}
-
-	return os.str();
-}
 
 
 string slsDetectorCommand::cmdThreaded(int narg, char *args[], int action){
@@ -3668,343 +2878,6 @@ string slsDetectorCommand::helpCounter(int narg, char *args[], int action){
 	return os.str();
 }
 
-
-
-
-string slsDetectorCommand::cmdPositions(int narg, char *args[], int action){
-	int ival;
-	int ip;
-
-	char answer[1000];
-
-	if (action==HELP_ACTION) return helpPositions(narg,args,action);
-
-	if (action==PUT_ACTION) {
-		if (sscanf(args[1],"%d",&ival)) {
-			double pos[ival];
-			for (ip=0; ip<ival;++ip) {
-				if ((2+ip)<narg) {
-					if (sscanf(args[2+ip],"%lf",pos+ip)) {
-#ifdef VERBOSE
-						std::cout<< "Setting position " << ip <<" to " << pos[ip] <<  std::endl;
-#endif
-					} else
-						break;
-				}
-			}
-			myDet->setPositions(ip,pos);
-		}
-	}
-	int npos=myDet->getPositions();
-	sprintf(answer,"%d",npos);
-	double opos[npos];
-	myDet->getPositions(opos);
-	for (int ip=0; ip<npos;++ip) {
-		sprintf(answer,"%s %f",answer,opos[ip]);
-	}
-	return string(answer);
-
-}
-
-string slsDetectorCommand::helpPositions(int narg, char *args[], int action) {
-
-	ostringstream os;
-	if (action==PUT_ACTION || action==HELP_ACTION)
-		os << "positions np [pos0 pos1...posnp] \t sets the number of positions at which the detector is moved during the acquisition and their values"<< std::endl;
-	if (action==GET_ACTION || action==HELP_ACTION)
-		os << "positions  \t returns the number of positions at which the detector is moved during the acquisition and their values"<< std::endl;
-	return os.str();
-}
-
-string slsDetectorCommand::cmdScripts(int narg, char *args[], int action) {
-
-	int ia=-1;
-	char answer[100];
-	if (action==HELP_ACTION)
-		return helpScripts(narg,args,action);
-
-	if (cmd.find("start")!=string::npos) ia=startScript;
-	if (cmd.find("stop")!=string::npos) ia=stopScript;
-	if (cmd.find("scriptbefore")!=string::npos) ia=scriptBefore;
-	if (cmd.find("scriptafter")!=string::npos) ia=scriptAfter;
-	if (cmd.find("headerafter")!=string::npos) ia=headerAfter;
-	if (cmd.find("headerbefore")!=string::npos) ia=headerBefore;
-
-	if (cmd.find("encallog")!=string::npos) ia=enCalLog;
-	if (cmd.find("angcallog")!=string::npos) ia=angCalLog;
-
-
-
-	if (ia==-1) return string("cannot define action ")+cmd;
-
-	if (cmd.find("par")!=string::npos) {
-
-		if (action==PUT_ACTION) {
-			myDet->setActionParameter(ia, args[1]);
-		}
-		return string(myDet->getActionParameter(ia));
-
-	} else {
-
-		if (ia==enCalLog || ia==angCalLog) {
-
-
-			if (action==PUT_ACTION) {
-
-				int arg=-1;
-
-
-				sscanf(args[1],"%d",&arg);
-
-				if (arg==0)
-					myDet->setActionScript(ia,"none");
-				else
-					myDet->setActionScript(ia,args[1]);
-
-			}
-
-			sprintf(answer,"%d",myDet->getActionMode(ia));
-			return string(answer);
-
-		}
-
-
-		if (action==PUT_ACTION) {
-			myDet->setActionScript(ia, args[1]);
-		}
-		return string(myDet->getActionScript(ia));
-
-	}
-	return string("could not decode command")+cmd;
-
-
-
-
-}
-
-string slsDetectorCommand::helpScripts(int narg, char *args[], int action) {
-
-	ostringstream os;
-
-	if (narg>0) {
-		if ((string(args[0]).find("start")!=string::npos) || (string(args[0]).find("stop")!=string::npos) || (string(args[0]).find("scriptbefore")!=string::npos) || \
-				(string(args[0]).find("scriptafter")!=string::npos)  ||  (string(args[0]).find("headerafter")!=string::npos) ||  (string(args[0]).find("headerbefore")!=string::npos)) {
-
-
-			if (action==PUT_ACTION || action==HELP_ACTION)
-				os << args[0] << " script \t sets the script to execute for the corresponding action"<< std::endl;
-			if (action==GET_ACTION || action==HELP_ACTION)
-				os << args[0] << " \t returns the script to execute for the corresponding action"<< std::endl;
-
-		}
-
-
-		if ((string(args[0]).find("encallog")!=string::npos) ||  (string(args[0]).find("angcallog")!=string::npos)) {
-
-
-
-			if (action==PUT_ACTION || action==HELP_ACTION)
-				os << args[0] << " i \t enables (1) or disables (0) the logging for the calibration"<< std::endl;
-			if (action==GET_ACTION || action==HELP_ACTION)
-				os << args[0] << " \t returns the calibration log mode"<< std::endl;
-		}
-	}
-	return os.str();
-
-}
-
-string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
-
-	int is=-1, ival, ns=0;
-	char answer[MAX_SCAN_STEPS*10];
-	double *values;
-	if (action==HELP_ACTION)
-		return helpScans(narg,args,action);
-
-
-	if (cmd.find("0")!=string::npos) is=0;
-	else if  (cmd.find("1")!=string::npos) is=1;
-	else return string("cannot define scan level ")+cmd;
-
-	if (cmd.find("par")!=string::npos) {
-		if (action==PUT_ACTION) {
-			myDet->setScanParameter(is, args[1]);
-		}
-		return myDet->getScanParameter(is);
-	}
-	if (cmd.find("script")!=string::npos) {
-		if (action==PUT_ACTION) {
-			myDet->setScanScript(is, args[1]);
-		}
-		return myDet->getScanScript(is);
-	}
-	if (cmd.find("prec")!=string::npos) {
-		if (action==PUT_ACTION) {
-			if (sscanf(args[1],"%d",&ival)) {
-				myDet->setScanPrecision(is, ival);
-			} else
-				return string("invalid precision ")+cmd;
-		}
-		sprintf(answer,"%d", myDet->getScanPrecision(is));
-		return string(answer);
-	}
-	if (cmd.find("steps")!=string::npos) {
-
-		if (action==PUT_ACTION) {
-			if (sscanf(args[1],"%d",&ival)) {
-
-				if (ival>MAX_SCAN_STEPS)
-					return string("too many steps required!");
-
-				values=new double[ival];
-				for (int i=0; i<ival; ++i) {
-					if (narg>=(i+2)) {
-						if (sscanf(args[i+2],"%lf",values+i))
-							++ns;
-						else
-							break;
-					} else
-						break;
-				}
-				myDet->setScanSteps(is, ns, values);
-				delete [] values;
-			} else {
-				return string("invalid number of steps ")+string(args[1]);
-			}
-		}
-		ns=myDet->getScanSteps(is);
-		sprintf(answer,"%d ",ns);
-		if (ns>0) {
-			values=new double[ns];
-			ns=myDet->getScanSteps(is, values);
-			int p=myDet->getScanPrecision(is);
-			char format[1000];
-			sprintf(format, "%%s %%0.%df",p);
-			for (int i=0; i<ns; ++i) {
-				sprintf(answer,format,answer,values[i]);
-			}
-			delete [] values;
-		}
-		return string(answer);
-	}
-	if (cmd.find("range")!=string::npos) {
-
-
-		if (action==PUT_ACTION) {
-			double fmin, fmax, fstep;
-			if (narg<4)
-				return string("wrong number of arguments ")+helpScans(narg,args,action);
-
-			if (sscanf(args[1],"%lf",&fmin))
-				;
-			else
-				return string("invalid scan minimum")+string(args[1]);
-			if (sscanf(args[2],"%lf",&fmax))
-				;
-			else
-				return string("invalid scan maximum")+string(args[2]);
-			if (sscanf(args[3],"%lf",&fstep))
-				;
-			else
-				return string("invalid scan step")+string(args[3]);
-
-
-			if (fstep==0)
-				return string("scan step cannot be 0!");
-
-#ifdef VERBOSE
-			cout << fmin << " " << fmax << " " << fstep << endl;
-#endif
-
-			ns=(int)((fmax-fmin)/fstep);
-			if (ns<0)
-				ns=-1*ns;
-			++ns;
-
-			if (ns>MAX_SCAN_STEPS)
-				return string("too many steps required!");
-
-			if (fmax>fmin)
-				if (fstep<0)
-					fstep=-1*fstep;
-
-			if (fmax<fmin)
-				if (fstep>0)
-					fstep=-1*fstep;
-
-
-			values=new double[ns];
-			for (int i=0; i<ns; ++i) {
-				values[i]=fmin+i*fstep;
-			}
-			myDet->setScanSteps(is, ns, values);
-			delete [] values;
-		}
-
-		ns=myDet->getScanSteps(is);
-		values=new double[ns];
-		ns=myDet->getScanSteps(is, values);
-		int p=myDet->getScanPrecision(is);
-		char format[1000];
-		sprintf(format, "%%s %%0.%df",p);
-		sprintf(answer,"%d ",ns);
-		for (int i=0; i<ns; ++i) {
-			sprintf(answer,format,answer,values[i]);
-		}
-		delete [] values;
-		return string(answer);
-	}
-	return string("could not decode command")+cmd;
-
-}
-
-string slsDetectorCommand::helpScans(int narg, char *args[], int action) {
-
-	ostringstream os;
-
-	if ((string(args[0])).find("script")!=string::npos) {
-
-
-		if (action==PUT_ACTION || action==HELP_ACTION)
-			os << args[0] << " script \t sets the script to execute for the corresponding scan level (threshold, energy, trimbits or positions are internally defined)"<< std::endl;
-		if (action==GET_ACTION || action==HELP_ACTION)
-			os << args[0] << " \t returns the script to execute for the corresponding scan level (threshold, energy, trimbits or positions are internally defined)"<< std::endl;
-
-	}
-
-
-	if ((string(args[0])).find("prec")!=string::npos) {
-		if (action==PUT_ACTION || action==HELP_ACTION)
-			os << args[0] << " i \t sets the number of decimals for the scan variable in the file name"<< std::endl;
-		if (action==GET_ACTION || action==HELP_ACTION)
-			os << args[0] << " \t returns the number of decimals for the scan variable in the file name"<< std::endl;
-
-	}
-
-	if ((string(args[0])).find("steps")!=string::npos) {
-		if (action==PUT_ACTION || action==HELP_ACTION)
-			os << args[0] << " n [st0...stn] \t sets the number of steps and steps value for the corresponding scan level"<< std::endl;
-		if (action==GET_ACTION || action==HELP_ACTION)
-			os << args[0] << " \t returns the the number of steps and steps value for the corresponding scan level"<< std::endl;
-
-	}
-
-	if ((string(args[0])).find("range")!=string::npos) {
-		if (action==PUT_ACTION || action==HELP_ACTION)
-			os << args[0] << " min max step \t sets the minimum, maximum and step size for the corresponding scan level"<< std::endl;
-		if (action==GET_ACTION || action==HELP_ACTION)
-			os << args[0] << " \t  returns the the number of steps and steps value for the corresponding scan level"<< std::endl;
-
-	}
-
-
-
-
-
-	return os.str();
-
-
-}
 
 
 
@@ -4468,13 +3341,7 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 		myDet->setReceiverOnline(ONLINE_FLAG);
 
 	if (action==PUT_ACTION) {
-		if (cmd=="maxmod")
-			return string("cannot put!");
-		else if (cmd=="roimask"){
-			if (!sscanf(args[1],"%d",&val))
-				return string("could not scan ")+string(args[0])+string(" ")+string(args[1]);
-		}
-		else if (!sscanf(args[1],"%d",&val))
+		 if (!sscanf(args[1],"%d",&val))
 			return string("could not scan ")+string(args[0])+string(" ")+string(args[1]);
 
 		if (cmd=="roi"){
@@ -4525,11 +3392,7 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 
 	}
 
-	if (cmd=="nmod" || cmd=="roimask") {
-		ret=myDet->setNumberOfModules(val);
-	} else if (cmd=="maxmod") {
-		ret=myDet->getMaxNumberOfModules();
-	} else if (cmd=="dr") {
+	if (cmd=="dr") {
 		myDet->setReceiverOnline(ONLINE_FLAG);
 		ret=myDet->setDynamicRange(val);
 	} else if (cmd=="roi") {
@@ -4557,10 +3420,7 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 	else
 		return string("unknown command ")+cmd;
 
-	if (cmd=="roimask")
-		sprintf(ans,"0x%x",ret);
-	else
-		sprintf(ans,"%d",ret);
+	sprintf(ans,"%d",ret);
 
 	return string(ans);
 
@@ -4571,7 +3431,6 @@ string slsDetectorCommand::helpDetectorSize(int narg, char *args[], int action) 
 
 	ostringstream os;
 	if (action==PUT_ACTION || action==HELP_ACTION) {
-		os << "nmod i \n sets the number of modules of the detector"<< std::endl;
 		os << "dr i \n sets the dynamic range of the detector"<< std::endl;
 		os << "roi i xmin xmax ymin ymax \n sets region of interest where i is number of rois;i=0 to clear rois"<< std::endl;
 		os << "detsizechan x y \n sets the maximum number of channels for complete detector set in both directions; -1 is no limit"<< std::endl;
@@ -4580,8 +3439,6 @@ string slsDetectorCommand::helpDetectorSize(int narg, char *args[], int action) 
 		os << "gappixels i \n enables/disables gap pixels in system (detector & receiver). 1 sets, 0 unsets. Used in EIGER only and multidetector level." << std::endl;
 	}
 	if (action==GET_ACTION || action==HELP_ACTION) {
-		os << "nmod \n gets the number of modules of the detector"<< std::endl;
-		os << "maxmod \n gets the maximum number of modules of the detector"<< std::endl;
 		os << "dr \n gets the dynamic range of the detector"<< std::endl;
 		os << "roi \n gets region of interest"<< std::endl;
 		os << "detsizechan \n gets the maximum number of channels for complete detector set in both directions; -1 is no limit"<< std::endl;
@@ -4679,44 +3536,6 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
 			else return string("not successful");
 		}
 		return myDet->getSettingsFile();
-	} else if (cmd=="trim") {
-		if (action==GET_ACTION)
-			return string("cannot get!");
-
-		trimMode mode=NOISE_TRIMMING;
-		int par1=0, par2=0;
-		if (string(args[0]).find("trim:")==string::npos)
-			return helpSettings(narg,args,action);
-		else if  (string(args[0]).find("noise")!=string::npos) {
-			// par1 is countlim; par2 is nsigma
-			mode=NOISE_TRIMMING;
-			par1=500;
-			par2=4;
-		} else if  (string(args[0]).find("beam")!=string::npos){
-			// par1 is countlim; par2 is nsigma
-			mode=BEAM_TRIMMING;
-			par1=1000;
-			par2=4;
-		} else if  (string(args[0]).find("improve")!=string::npos) {
-			// par1 is maxit; if par2!=0 vthresh will be optimized
-			mode=IMPROVE_TRIMMING;
-			par1=5;
-			par2=0;
-		} else if  (string(args[0]).find("fix")!=string::npos)  {
-			// par1 is countlim; if par2<0 then trimwithlevel else trim with median
-			mode=FIXEDSETTINGS_TRIMMING;
-			par1=1000;
-			par2=1;
-			// }else if  (string(args[0]).find("fix")!=string::npos) {
-			//mode=OFFLINE_TRIMMING;
-		} else {
-			return string("Unknown trim mode ")+cmd;
-		}
-		myDet->executeTrimming(mode, par1, par2);
-		string sval=string(args[1]);
-		myDet->saveSettingsFile(sval, -1);
-		return string("done");
-
 	} else if (cmd=="trimval") {
 	  if (action==PUT_ACTION){
 	    if (sscanf(args[1],"%d",&val))
@@ -4750,7 +3569,6 @@ string slsDetectorCommand::helpSettings(int narg, char *args[], int action) {
 		os << "threshold eV [sett]\n sets the detector threshold in eV. If sett is provided for eiger, uses settings sett"<< std::endl;
 		os << "thresholdnotb eV [sett]\n sets the detector threshold in eV without loading trimbits. If sett is provided for eiger, uses settings sett"<< std::endl;
 		os << "trimbits fname\n loads the trimfile fname to the detector. If no extension is specified, the serial number of each module will be attached."<< std::endl;
-		os << "trim:mode fname\n trims the detector according to mode (can be noise, beam, improve, fix) and saves the resulting trimbits to file fname."<< std::endl;
 		os << "trimval i \n sets all the trimbits to i" << std::endl;
 		os << "pedestal i \n starts acquisition for i frames, calculates pedestal and writes back to fpga."<< std::endl;
 
@@ -4801,18 +3619,6 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
 	myDet->setOnline(ONLINE_FLAG);
 
 
-	if (cmd=="moduleversion") {
-		int ival=-1;
-		if (sscanf(args[0],"moduleversion:%d",&ival)) {
-			int64_t retval = myDet->getId(MODULE_FIRMWARE_VERSION, ival);
-			if (retval < 0)
-				sprintf(answer, "%d", -1);
-			else
-				sprintf(answer,"0x%lx", retval);
-			return string(answer);
-		} else
-			return string("undefined module number");
-	}
 	if (cmd=="detectornumber") {
 		int64_t retval = myDet->getId(DETECTOR_SERIAL_NUMBER);
 		if (retval < 0)
@@ -4820,18 +3626,6 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
 		else
 			sprintf(answer,"0x%lx", retval);
 		return string(answer);
-	}
-	if (cmd.find("modulenumber")!=string::npos) {
-		int ival=-1;
-		if (sscanf(args[0],"modulenumber:%d",&ival)) {
-			int64_t retval = myDet->getId(MODULE_SERIAL_NUMBER, ival);
-			if (retval < 0)
-				sprintf(answer, "%d", -1);
-			else
-				sprintf(answer,"0x%lx", retval);
-			return string(answer);
-		} else
-			return string("undefined module number");
 	}
 
 	if (cmd=="detectorversion") {
@@ -4889,8 +3683,6 @@ string slsDetectorCommand::helpSN(int narg, char *args[], int action) {
 	if (action==GET_ACTION || action==HELP_ACTION) {
 		os << "checkdetversion \n gets the version compatibility with detector server (if hostname is in shared memory). Only for Eiger, Jungfrau & Gotthard. Prints compatible/ incompatible."<< std::endl;
 		os << "checkrecversion \n gets the version compatibility with receiver server (if rx_hostname is in shared memory). Only for Eiger, Jungfrau & Gotthard. Prints compatible/ incompatible."<< std::endl;
-		os << "moduleversion:i \n gets the firmwareversion of the module i"<< std::endl;
-		os << "modulenumber:i \n gets the serial number of the module i"<< std::endl;
 		os << "detectornumber \n gets the serial number of the detector (MAC)"<< std::endl;
 		os << "detectorversion \n gets the firmware version of the detector"<< std::endl;
 		os << "softwareversion \n gets the software version of the detector"<< std::endl;
@@ -4913,13 +3705,6 @@ string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action) {
 
 
 	myDet->setOnline(ONLINE_FLAG);
-
-	if (cmd=="bustest"){
-		if (action==PUT_ACTION)
-			return string("cannot set ")+cmd;
-		sprintf(answer,"0x%x",myDet->digitalTest(DETECTOR_BUS_TEST));
-		return string(answer);
-	}
 
 	if (cmd=="digitest") {
 		if (action==PUT_ACTION)
@@ -4958,7 +3743,6 @@ string slsDetectorCommand::helpDigiTest(int narg, char *args[], int action) {
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION) {
 		os << "digitaltest:i \t performs digital test of the module i. Returns 0 if succeeded, otherwise error mask."<< std::endl;
-		os << "bustest \t performs test of the bus interface between FPGA and embedded Linux system. Can last up to a few minutes."<< std::endl;
 	}
 	if (action==PUT_ACTION || action==HELP_ACTION) {
 		os << "digibittest i\t will perform test which will plot the unique channel identifier, instead of data."<< std::endl;
@@ -5157,24 +3941,6 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
 	else if (cmd=="ib_test_c")
 		dac=G_IB_TESTC;
 
-	else if (cmd=="dac0")
-		dac=V_DAC0;
-	else if (cmd=="dac1")
-		dac=V_DAC1;
-	else if (cmd=="dac2")
-		dac=V_DAC2;
-	else if (cmd=="dac3")
-		dac=V_DAC3;
-	else if (cmd=="dac4")
-		dac=V_DAC4;
-	else if (cmd=="dac5")
-		dac=V_DAC5;
-	else if (cmd=="dac6")
-		dac=V_DAC6;
-	else if (cmd=="dac7")
-		dac=V_DAC7;
-
-
 
 
 	else if (cmd== "vsvp")
@@ -5332,15 +4098,6 @@ string slsDetectorCommand::helpDAC(int narg, char *args[], int action) {
 		os << "ib_test_c " << "dacu\t sets ib_test_c" << std::endl;
 
 
-		os << "dac0 " << "dacu\t sets dac 0" << std::endl;
-		os << "dac1 " << "dacu\t sets dac 1" << std::endl;
-		os << "dac2 " << "dacu\t sets dac 2" << std::endl;
-		os << "dac3 " << "dacu\t sets dac 3" << std::endl;
-		os << "dac4 " << "dacu\t sets dac 4" << std::endl;
-		os << "dac5 " << "dacu\t sets dac 5" << std::endl;
-		os << "dac6 " << "dacu\t sets dac 6" << std::endl;
-		os << "dac7 " << "dacu\t sets dac 7" << std::endl;
-
 		os << "vsvp"	<< "dacu\t sets vsvp" << std::endl;
 		os << "vsvn" 	<< "dacu\t sets vsvn" << std::endl;
 		os << "vtr" 	<< "dacu\t sets vtr" << std::endl;
@@ -5397,16 +4154,6 @@ string slsDetectorCommand::helpDAC(int narg, char *args[], int action) {
 		os << "vcasc_out " << "\t gets vcasc_out" << std::endl;
 		os << "vref_comp " << "\t gets vref_comp" << std::endl;
 		os << "ib_test_c " << "\t gets ib_test_c" << std::endl;
-
-
-		os << "dac0 " << "\t gets dac 0" << std::endl;
-		os << "dac1 " << "\t gets dac 1" << std::endl;
-		os << "dac2 " << "\t gets dac 2" << std::endl;
-		os << "dac3 " << "\t gets dac 3" << std::endl;
-		os << "dac4 " << "\t gets dac 4" << std::endl;
-		os << "dac5 " << "\t gets dac 5" << std::endl;
-		os << "dac6 " << "\t gets dac 6" << std::endl;
-		os << "dac7 " << "\t gets dac 7" << std::endl;
 
 		os << "vsvp"	<< "dacu\t gets vsvp" << std::endl;
 		os << "vsvn" 	<< "dacu\t gets vsvn" << std::endl;
@@ -5668,8 +4415,6 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
 		index=FRAME_NUMBER;
 	else if (cmd=="cycles")
 		index=CYCLES_NUMBER;
-	else if (cmd=="probes")
-		index=PROBES_NUMBER;
 	else if (cmd=="measurements")
 		index=MEASUREMENTS_NUMBER;
 	else if (cmd=="samples")
@@ -5737,7 +4482,6 @@ string slsDetectorCommand::helpTimer(int narg, char *args[], int action) {
 		os << "delay t \t sets the delay after trigger in s" << std::endl;
 		os << "frames t \t sets the number of frames per cycle (e.g. after each trigger)" << std::endl;
 		os << "cycles t \t sets the number of cycles (e.g. number of triggers)" << std::endl;
-		os << "probes t \t sets the number of probes to accumulate (max 3! cycles should be set to 1, frames to the number of pump-probe events)" << std::endl;
 		os << "samples t \t sets the number of samples expected from the jctb" << std::endl;
 		os << "storagecells t \t sets number of storage cells per acquisition. For very advanced users only! For JUNGFRAU only. Range: 0-15. The #images = #frames * #cycles * (#storagecells+1)." << std::endl;
 		os << "storagecell_start t \t sets the storage cell that stores the first acquisition of the series. Default is 15(0xf). For very advanced users only! For JUNGFRAU only. Range: 0-15." << std::endl;
@@ -5754,7 +4498,6 @@ string slsDetectorCommand::helpTimer(int narg, char *args[], int action) {
 		os << "delay  \t gets the delay after trigger in s" << std::endl;
 		os << "frames  \t gets the number of frames per cycle (e.g. after each trigger)" << std::endl;
 		os << "cycles  \t gets the number of cycles (e.g. number of triggers)" << std::endl;
-		os << "probes  \t gets the number of probes to accumulate" << std::endl;
 		os << "samples \t gets the number of samples expected from the jctb" << std::endl;
 		os << "storagecells \t gets number of storage cells per acquisition.For JUNGFRAU only." << std::endl;
 		os << "storagecell_start \t gets the storage cell that stores the first acquisition of the series." << std::endl;
@@ -5797,8 +4540,6 @@ string slsDetectorCommand::cmdTimeLeft(int narg, char *args[], int action) {
 		index=FRAME_NUMBER;
 	else if (cmd=="cyclesl")
 		index=CYCLES_NUMBER;
-	else if (cmd=="probesl")
-		index=PROBES_NUMBER;
 	else if (cmd=="now")
 		index=ACTUAL_TIME;
 	else if (cmd=="timestamp")
@@ -5851,7 +4592,6 @@ string slsDetectorCommand::helpTimeLeft(int narg, char *args[], int action) {
 		os << "delayl  \t gets the delay left" << std::endl;
 		os << "framesl  \t gets the number of frames left" << std::endl;
 		os << "cyclesl  \t gets the number of cycles left" << std::endl;
-		os << "probesl  \t gets the number of probes left" << std::endl;
 		os << "measuredperiod \t gets the measured frame period (time between last frame and the previous one) in s. For Eiger only. Makes sense only for acquisitions of more than 1 frame." << std::endl;
 		os << "measuredsubperiod \t gets the measured subframe period (time between last subframe and the previous one) in s. For Eiger only and in 32 bit mode." << std::endl;
 		os << std::endl;
@@ -5883,14 +4623,6 @@ string slsDetectorCommand::cmdSpeed(int narg, char *args[], int action) {
 
 	if (cmd=="clkdivider")
 		index=CLOCK_DIVIDER;
-	else if (cmd=="setlength")
-		index=SET_SIGNAL_LENGTH;
-	else if (cmd=="waitstates")
-		index=WAIT_STATES;
-	else if (cmd=="totdivider")
-		index=TOT_CLOCK_DIVIDER;
-	else if (cmd=="totdutycycle")
-		index=TOT_DUTY_CYCLE;
 	else if (cmd=="phasestep") {
 		index=PHASE_SHIFT;
 		t=100000;
@@ -5941,10 +4673,6 @@ string slsDetectorCommand::helpSpeed(int narg, char *args[], int action) {
 	if (action==PUT_ACTION || action==HELP_ACTION) {
 
 		os << "clkdivider c  \t sets readout clock divider. For Jungfrau, it also overwrites adcphase to recommended default" << std::endl;
-		os << "setlength  c\t sets the length of the set/reset signals (in clock cycles)" << std::endl;
-		os << "waitstates c \t sets the waitstates of the bus interface" << std::endl;
-		os << "totdivider  c\t sets the clock divider in tot mode" << std::endl;
-		os << "totdutycycle  c\t sets the duty cycle of the tot clock" << std::endl;
 		os << "adcphase  c\t Sets phase of the sampling clock. For JUNGFRAU, setting speed (clkdivider) overwrites adcphase to its default recommended value. (Not for EIGER)" << std::endl;
 		os << std::endl;
 
@@ -5952,11 +4680,7 @@ string slsDetectorCommand::helpSpeed(int narg, char *args[], int action) {
 	if (action==GET_ACTION || action==HELP_ACTION) {
 
 		os << "clkdivider  \t gets readout clock divider. For Jungfrau, it also overwrites adcphase to recommended default" << std::endl;
-		os << "setlength  \t gets the length of the set/reset signals (in clock cycles)" << std::endl;
-		os << "waitstates  \t gets the waitstates of the bus interface" << std::endl;
-		os << "totdivider \t gets the clock divider in tot mode" << std::endl;
-		os << "totdutycycle \t gets the duty cycle of the tot clock" << std::endl;
-        os << "adcphase \t gets phase of the sampling clock. For JUNGFRAU, setting speed (clkdivider) overwrites adcphase to its default recommended value. (Not for EIGER)" << std::endl;
+	    os << "adcphase \t gets phase of the sampling clock. For JUNGFRAU, setting speed (clkdivider) overwrites adcphase to its default recommended value. (Not for EIGER)" << std::endl;
 		os << std::endl;
 
 	}
@@ -6326,17 +5050,6 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 				myDet->setReadReceiverFrequency(ival);
 		}
 		sprintf(answer,"%d",myDet->setReadReceiverFrequency());
-		return string(answer);
-
-	}
-	else if(cmd=="r_compression"){
-		if (action==PUT_ACTION){
-			if (!sscanf(args[1],"%d",&ival))
-				return string("Could not scan receiver compression input ")+string(args[1]);
-			if(ival>=0)
-				sprintf(answer,"%d",myDet->enableReceiverCompression(ival));
-		}else
-			sprintf(answer,"%d",myDet->enableReceiverCompression());
 		return string(answer);
 
 	}

@@ -10,18 +10,13 @@
  */
 
 #include "slsDetectorUtils.h"
-#include "energyConversion.h"
-#include "angleConversionConstant.h"
 #include "MySocketTCP.h"
-#include "angleConversionConstant.h"
 
 class multiSlsDetector;
 class SharedMemory;
 class receiverInterface;
 
-#define SLS_SHMVERSION	0x180629
-#define NMODMAXX 24
-#define NMODMAXY 24
+#define SLS_SHMVERSION	0x181002
 #define NCHIPSMAX 10
 #define NCHANSMAX 65536
 #define NDACSMAX 16
@@ -29,8 +24,6 @@ class receiverInterface;
  * parameter list that has to be initialized depending on the detector type
  */
 typedef  struct detParameterList {
-	int nModMaxX;
-	int nModMaxY;
 	int nChanX;
 	int nChanY;
 	int nChipX;
@@ -40,13 +33,12 @@ typedef  struct detParameterList {
 	int nGain;
 	int nOffset;
 	int dynamicRange;
-	int moveFlag;
 	int nGappixelsX;
 	int nGappixelsY;
 } detParameterList;
 
 
-class slsDetector : public slsDetectorUtils, public energyConversion {
+class slsDetector : public slsDetectorUtils {
 
 private:
 	/**
@@ -100,28 +92,6 @@ private:
 		/** list of the energies at which the detector has been trimmed  */
 		int trimEnergies[MAX_TRIMEN];
 
-		/** indicator for the acquisition progress - set to 0 at the beginning
-		 * of the acquisition and incremented when each frame is processed */
-		int progressIndex;
-
-		/** total number of frames to be acquired */
-		int totalProgress;
-
-		/** path of the output files */
-		char filePath[MAX_STR_LENGTH];
-
-		/** number of installed modules of the detector (x and y directions) */
-		int nMod[2];
-
-		/**  number of modules ( nMod[X]*nMod[Y]) \see nMod */
-		int nMods;
-
-		/** maximum number of modules of the detector (x and y directions) */
-		int nModMax[2];
-
-		/**  maximum number of modules (nModMax[X]*nModMax[Y]) \see nModMax */
-		int nModsMax;
-
 		/**  number of channels per chip */
 		int nChans;
 
@@ -152,70 +122,12 @@ private:
 		/**  size of the data that are transfered from the detector */
 		int dataBytes;
 
-		/** corrections  to be applied to the data \see ::correctionFlags */
-		int correctionMask;
-
 		/** threaded processing flag
 		 * (i.e. if data are processed in a separate thread)  */
 		int threadedProcessing;
 
 		/** dead time (in ns) for rate corrections */
 		double tDead;
-
-		/** directory where the flat field files are stored */
-		char flatFieldDir[MAX_STR_LENGTH];
-
-		/** file used for flat field corrections */
-		char flatFieldFile[MAX_STR_LENGTH];
-
-		/** number of bad channels from bad channel list */
-		int nBadChans;
-
-		/** file with the bad channels */
-		char badChanFile[MAX_STR_LENGTH];
-
-		/** list of bad channels */
-		int badChansList[MAX_BADCHANS];
-
-		/** number of bad channels from flat field
-		 * i.e. channels which read 0 in the flat field file */
-		int nBadFF;
-
-		/** list of bad channels from flat field
-		 * i.e. channels which read 0 in the flat field file */
-		int badFFList[MAX_BADCHANS];
-
-		/** file with the angular conversion factors */
-		char angConvFile[MAX_STR_LENGTH];
-
-		/** array of angular conversion constants for each module
-		 * \see ::angleConversionConstant */
-		angleConversionConstant angOff[MAXMODS];
-
-		/** angular direction (1 if it corresponds to the encoder direction
-		 * i.e. channel 0 is 0, maxchan is positive high angle, 0 otherwise  */
-		int angDirection;
-
-		/** beamline fine offset (of the order of mdeg,
-		 * might be adjusted for each measurements)  */
-		double fineOffset;
-
-		/** beamline offset (might be a few degrees beacuse of encoder offset -
-		 * normally it is kept fixed for a long period of time)  */
-		double globalOffset;
-
-		/** number of positions at which the detector should acquire  */
-		int numberOfPositions;
-
-		/** list of encoder positions at which the detector should acquire */
-		double detPositions[MAXPOS];
-
-		/** bin size for data merging */
-		double binSize;
-
-		/** add encoder value flag (i.e. wether the detector is
-		 * moving - 1 - or stationary - 0) */
-		int moveFlag;
 
 		/** number of rois defined */
 		int nROI;
@@ -237,39 +149,6 @@ private:
 
 		/** timer values */
 		int64_t timerValue[MAX_TIMERS];
-
-		/** action mask */
-		int actionMask;
-
-		/** action script */
-		mystring actionScript[MAX_ACTIONS];
-
-		/** action parameter */
-		mystring actionParameter[MAX_ACTIONS];
-
-		/** scan mode */
-		int scanMode[MAX_SCAN_LEVELS];
-
-		/** scan script */
-		mystring scanScript[MAX_SCAN_LEVELS];
-
-		/** scan parameter */
-		mystring scanParameter[MAX_SCAN_LEVELS];
-
-		/** n scan steps */
-		int nScanSteps[MAX_SCAN_LEVELS];
-
-		/** scan steps */
-		mysteps scanSteps[MAX_SCAN_LEVELS];
-
-		/** scan precision */
-		int scanPrecision[MAX_SCAN_LEVELS];
-
-		/** memory offsets for the flat field coefficients */
-		int ffoff;
-
-		/** memory offsets for the flat filed coefficient errors */
-		int fferroff;
 
 		/** memory offsets for the module structures  */
 		int modoff;
@@ -357,9 +236,6 @@ private:
 		/** additional json header */
 		char receiver_additionalJsonHeader[MAX_STR_LENGTH];
 
-		/** frames per file in receiver */
-		int receiver_framesPerFile;
-
 		/** detector control server software API version */
 		int64_t detectorControlAPIVersion;
 
@@ -384,6 +260,27 @@ private:
 		/** silent receiver */
 		bool receiver_silentMode;
 
+		/** path of the output files */
+		char receiver_filePath[MAX_STR_LENGTH];
+
+		/** file name prefix */
+		char receiver_fileName[MAX_STR_LENGTH];
+
+		/** file index */
+		int receiver_fileIndex;
+
+		/** file format */
+		fileFormat receiver_fileFormatType;
+
+		/** frames per file */
+		int receiver_framesPerFile;
+
+		/** filewriteenable */
+		bool receiver_fileWriteEnable;
+
+		/** overwriteenable */
+		bool receiver_overWriteEnable;
+
 	} sharedSlsDetector;
 
 
@@ -392,13 +289,6 @@ private:
 
 public:
 
-	using slsDetectorUtils::getDetectorType;
-	using postProcessing::flatFieldCorrect;
-	using postProcessing::rateCorrect;
-	using postProcessing::setBadChannelCorrection;
-	using angularConversion::readAngularConversion;
-	using angularConversion::writeAngularConversion;
-	using slsDetectorUtils::getAngularConversion;
 
 	//FIXME: all pos or id arguments needed only for same multi signature
 
@@ -431,16 +321,6 @@ public:
 	 * if command can be implemented as slsDetector/multiSlsDetector object/
 	 */
 	bool isMultiSlsDetectorClass();
-
-	/**
-	 * Decode data from the detector converting them to an array of doubles,
-	 * one for each channel (Mythen only)
-	 * @param datain data from the detector
-	 * @param nn size of datain array
-	 * @param fdata double array of decoded data
-	 * @returns pointer to a double array with a data per channel
-	 */
-	double* decodeData(int *datain, int &nn, double *fdata=NULL);
 
 	/**
 	 * Clears error mask and also the bit in parent det multi error mask
@@ -562,6 +442,8 @@ public:
 	 */
 	void disconnectStop();
 
+	using slsDetectorUtils::getDetectorType;
+
 	/**
 	 * Get detector type by connecting to the detector without creating an object
 	 * @param name hostname of detector
@@ -606,72 +488,6 @@ public:
 	std::string getDetectorType();
 
 	/**
-	 * Returns number of modules from shared memory (Mythen)
-	 * Other detectors, it is 1
-	 * @returns number of modules
-	 */
-	int getNMods();
-
-	/**
-	 * Returns number of modules in dimension d from shared memory (Mythen)
-	 * Other detectors, it is 1
-	 * @param d dimension d
-	 * @returns number of modules in dimension d
-	 */
-	int getNMod(dimension d);
-
-	/**
-	 * Returns maximum number of modules from shared memory (Mythen)
-	 * Other detectors, it is 1
-	 * @returns maximum number of modules
-	 */
-	int getMaxMods();
-
-	/**
-	 * Returns maximum number of modules  in dimension d  from shared memory (Mythen)
-	 * Other detectors, it is 1
-	 * @param d dimension d
-	 * @returns maximum number of modules  in dimension d
-	 */
-	int getNMaxMod(dimension d);
-
-	/**
-	 * Returns maximum number of modules in dimension d (Mythen)
-	 * from the detector directly.
-	 * Other detectors, it is 1
-	 * @param d dimension d
-	 * @returns maximum number of modules in dimension d
-	 */
-	int getMaxNumberOfModules(dimension d=X); //
-
-	/**
-	 * Sets/Gets the number of modules in dimension d (Mythen)
-	 * from the detector directly.
-	 * Other detectors, it is 1
-	 * @param i the number of modules to set to (-1 gets)
-	 * @param d dimension d
-	 * @returns the number of modules in dimension d
-	 */
-	int setNumberOfModules(int n=GET_FLAG, dimension d=X);
-
-	/**
-	 * returns the number of channels per that module
-	 * from shared memory (Mythen)
-	 * @param imod insignificant
-	 * @returns number of channels per module
-	 */
-	int getChansPerMod(int imod=0);
-
-	/**
-	 * returns the number of channels per that module in dimension d
-	 * from shared memory (Mythen)
-	 * @param d dimension d
-	 * @param imod insignificant
-	 * @returns number of channels per module in dimension d
-	 */
-	int getChansPerMod( dimension d,int imod=0);
-
-	/**
 	 * Returns the total number of channels from shared memory
 	 * @returns the total number of channels
 	 */
@@ -692,26 +508,6 @@ public:
 	 * including gap pixels
 	 */
 	int getTotalNumberOfChannelsInclGapPixels(dimension d);
-
-	/**
-	 * Returns the maximum number of channels from shared memory (Mythen)
-	 * @returns the maximum number of channels
-	 */
-	int getMaxNumberOfChannels();
-
-	/**
-	 * Returns the maximum number of channels in dimension d from shared memory (Mythen)
-	 * @param d dimension d
-	 * @returns the maximum number of channels in dimension d
-	 */
-	int getMaxNumberOfChannels(dimension d);
-
-	/**
-	 * Returns the maximum number of channels in dimension d from shared memory (Mythen)
-	 * @param d dimension d
-	 * @returns the maximum number of channels in dimension d
-	 */
-	int getMaxNumberOfChannelsInclGapPixels(dimension d);
 
 	/**
 	 * returns the number of channels per chip from shared memory (Mythen)
@@ -784,7 +580,7 @@ public:
 	/**
 	 * Set/Gets TCP Port of detector or receiver
 	 * @param t port type
-	 * @param p port number (-1 gets)
+	 * @param num port number (-1 gets)
 	 * @returns port number
 	 */
 	int setPort(portType type, int num=-1);
@@ -895,7 +691,6 @@ public:
 	 * @returns OK or FAIL if the file could not be written
 	 * \sa ::sls_detector_module sharedSlsDetector mythenDetector::writeSettingsFile(string, int)
 	 */
-	using energyConversion::writeSettingsFile;
 	int writeSettingsFile(std::string fname, int imod, int iodelay, int tau);
 
 	/**
@@ -1018,53 +813,16 @@ public:
 	int saveCalibrationFile(std::string fname, int imod=-1);
 
 	/**
-	 * Sets/gets the detector in position i as master of the structure (Mythen)
-	 * (e.g. it gates the other detectors and therefore must be started as last.
-	 * Assumes that signal 0 is gate in, signal 1 is trigger in, signal 2 is gate out
-	 * @param i position of master (-1 gets, -2 unset)
-	 * @return master's position (-1 none)
-	 */
-	masterFlags  setMaster(masterFlags flag);
-
-	/**
-	 * Sets/gets the synchronization mode of the various detector (Mythen)
-	 * @param sync syncronization mode
-	 * @returns current syncronization mode
-	 */
-	synchronizationMode setSynchronization(synchronizationMode sync=GET_SYNCHRONIZATION_MODE);
-
-	/**
-	 * Calcualtes the total number of steps of the acquisition
-	 * Called when number of frames, number of cycles, number of positions and scan steps change
-	 * @returns the total number of steps of the acquisition
-	 */
-	int setTotalProgress();
-
-	/**
-	 * Returns the current progress in %
-	 * @returns the current progress in %
-	 */
-	double getCurrentProgress();
-
-	/**
 	 * Get run status of the detector
 	 * @returns the status of the detector
 	 */
 	runStatus  getRunStatus();
 
 	/**
-	 * Prepares detector for acquisition (Eiger and Gotthard)
-	 * For Gotthard, it sets the detector data transmission mode (CPU or receiver)
+	 * Prepares detector for acquisition (Eiger)
 	 * @returns OK or FAIL
 	 */
 	int prepareAcquisition();
-
-	/**
-	 * Cleans up after acquisition (Gotthard only)
-	 * For Gotthard, it sets the detector data transmission to default (via CPU)
-	 * @returns OK or FAIL
-	 */
-	int cleanupAcquisition();
 
 	/**
 	 * Start detector acquisition (Non blocking)
@@ -1085,65 +843,22 @@ public:
 	int sendSoftwareTrigger();
 
 	/**
-	 * Start readout (without exposure or interrupting exposure) (Mythen)
+	 * Start detector acquisition and read all data (Blocking until end of acquisition)
+	 * @returns OK or FAIL
+	 */
+	int startAndReadAll();
+
+	/**
+	 * Start readout (without exposure or interrupting exposure) (Eiger store in ram)
 	 * @returns OK or FAIL
 	 */
 	int startReadOut();
 
 	/**
-	 * Start detector acquisition and read all data (Blocking until end of acquisition)
-	 * (Mythen, puts all data into a data queue. Others, data at receiver via udp packets)
-	 * @returns pointer to the front of the data queue (return significant only for Mythen)
-	 * \sa startAndReadAllNoWait getDataFromDetector dataQueue
-	 */
-	int* startAndReadAll();
-
-	/**
-	 * Start detector acquisition and call read out, but not reading (data for Mythen,
-	 * and status for other detectors) from the socket.
-	 * (startAndReadAll calls this and getDataFromDetector. Client is not blocking,
-	 * but server is blocked until getDataFromDetector is called. so not recommended
-	 * for users)
+	 * Requests and  receives all data from the detector (Eiger store in ram)
 	 * @returns OK or FAIL
 	 */
-	int startAndReadAllNoWait();
-
-	/**
-	 * Reads from the detector socket (data frame for Mythen and status for other
-	 * detectors)
-	 * @returns pointer to the data or NULL. If NULL disconnects the socket
-	 * (return significant only for Mythen)
-	 * Other detectors return NULL
-	 * \sa getDataFromDetector
-	 */
-	int* getDataFromDetector(int *retval=NULL);
-
-	/**
-	 * Requests and receives a single data frame from the detector
-	 * (Mythen: and puts it in the data queue)
-	 * @returns pointer to the data or NULL. (return Mythen significant)
-	 *  Other detectors return NULL
-	 * \sa getDataFromDetector
-	 */
-	int* readFrame();
-
-	/**
-	 * Receives all data from the detector
-	 * (Mythen: and puts them in a data queue)
-	 * @returns pointer to the front of the queue or NULL (return Mythen significant)
-	 * Other detectors return NULL
-	 * \sa getDataFromDetector  dataQueue
-	 */
-	int* readAll();
-
-	/**
-	 * Requests detector for all data, calls readAll afterwards
-	 * (Mythen: and puts them in a data queue)
-	 * @returns pointer to the front of the queue or NULL (return Mythen significant)
-	 * Other detectors return NULL
-	 * \sa getDataFromDetector  dataQueue
-	 */
-	int readAllNoWait();
+	int readAll();
 
 	/**
 	 * Configures in detector the destination for UDP packets (Not Mythen)
@@ -1440,16 +1155,6 @@ public:
 	int digitalTest(digitalTestMode mode, int imod=0);
 
 	/**
-	 * Execute trimming (Mythen)
-	 * @param mode trimming mode type
-	 * @param par1 parameter 1
-	 * @param par2 parameter 2
-	 * @param imod module index (-1 for all)
-	 * @returns result of trimming
-	 */
-	int executeTrimming(trimMode mode, int par1, int par2, int imod=-1);
-
-	/**
 	 * Load dark or gain image to detector (Gotthard)
 	 * @param index image type, 0 for dark image and 1 for gain image
 	 * @param fname file name from which to load image
@@ -1691,15 +1396,7 @@ public:
 	int getChanRegs(double* retval,bool fromDetector);
 
 	/**
-	 * Configure module (who calls this?)
-	 * @param imod module number (-1 all)
-	 * @returns current register value
-	 * \sa ::sls_detector_module
-	 */
-	int setModule(int reg, int imod=-1);
-
-	/**
-	 * Configure Module (Mythen, Eiger)
+	 * Configure Module (Eiger)
 	 * Called for loading trimbits and settings settings to the detector
 	 * @param module module to be set - must contain correct module number and
 	 * also channel and chip registers
@@ -1722,77 +1419,6 @@ public:
 	 * @returns pointer to module structure (which has been created and must then be deleted)
 	 */
 	sls_detector_module *getModule(int imod);
-
-	/**
-	 * Configure channel (Mythen)
-	 * @param reg channel register
-	 * @param ichan channel number (-1 all)
-	 * @param ichip chip number (-1 all)
-	 * @param imod module number (-1 all)
-	 * @returns current register value
-	 * \sa ::sls_detector_channel
-	 */
-	int setChannel(int64_t reg, int ichan=-1, int ichip=-1, int imod=-1);
-
-	/**
-	 * Configure channel (Mythen)
-	 * @param chan channel to be set -
-	 * must contain correct channel, module and chip number
-	 * @returns current register value
-	 */
-	int setChannel(sls_detector_channel chan);
-
-	/**
-	 * Get channel (Mythen)
-	 * @param ichan channel number
-	 * @param ichip chip number
-	 * @param imod module number
-	 * @returns current channel structure for channel
-	 */
-	sls_detector_channel getChannel(int ichan, int ichip, int imod);
-
-	/**
-	 * Configure chip (Mythen)
-	 * @param reg chip register
-	 * @param ichip chip number (-1 all)
-	 * @param imod module number (-1 all)
-	 * @returns current register value
-	 * \sa ::sls_detector_chip
-	 */
-	int setChip(int reg, int ichip=-1, int imod=-1);
-
-	/**
-	 * Configure chip (Mythen)
-	 * @param chip chip to be set
-	 * must contain correct module and chip number and also channel registers
-	 * @returns current register value
-	 * \sa ::sls_detector_chip
-	 */
-	int setChip(sls_detector_chip chip);
-
-	/**
-	 * Get chip (Mythen)
-	 * @param ichip chip number
-	 * @param imod module number
-	 * @returns current chip structure for channel
-	 * \bug probably does not return corretly!
-	 */
-	sls_detector_chip getChip(int ichip, int imod);
-
-	/**
-	 * Get Move Flag (Mythen)
-	 * @param imod module number (-1 all)
-	 * @param istep step index
-	 * @returns move flag
-	 */
-	int getMoveFlag(int imod);
-
-	/**
-	 * Fill Module mask for flat field corrections (Mythen)
-	 * @param mM array
-	 * @returns number of modules
-	 */
-	int fillModuleMask(int *mM);
 
 	/**
 	 * Calibrate Pedestal (ChipTestBoard)
@@ -1829,123 +1455,6 @@ public:
 	 * @returns 0 if rate correction disabled,  > 0 otherwise
 	 */
 	int getRateCorrection();
-
-	/**
-	 * Rate correct data (Mythen)
-	 * @param datain data array
-	 * @param errin error array on data (if NULL will default to sqrt(datain)
-	 * @param dataout array of corrected data
-	 * @param errout error on corrected data (if not NULL)
-	 * @returns 0
-	 */
-	int rateCorrect(double* datain, double *errin, double* dataout, double *errout);
-
-	/**
-	 * Set flat field corrections (Mythen)
-	 * @param fname name of the flat field file (or "" if disable)
-	 * @returns 0 if disable (or file could not be read), >0 otherwise
-	 */
-	int setFlatFieldCorrection(std::string fname="");
-
-	/**
-	 * Set flat field corrections (Mythen)
-	 * @param corr if !=NULL the flat field corrections will be filled with
-	 * corr (NULL usets ff corrections)
-	 * @param  ecorr if !=NULL the flat field correction errors will be filled
-	 * with ecorr (1 otherwise)
-	 * @returns 0 if ff correction disabled, >0 otherwise
-	 */
-	int setFlatFieldCorrection(double *corr, double *ecorr=NULL);
-
-	/**
-	 * Get flat field corrections (Mythen)
-	 * @param corr if !=NULL will be filled with the correction coefficients
-	 * @param ecorr if !=NULL will be filled with the correction coefficients errors
-	 * @returns 0 if ff correction disabled, >0 otherwise
-	 */
-	int getFlatFieldCorrection(double *corr=NULL, double *ecorr=NULL);
-
-	/**
-	 * Flat field correct data (Mythen)
-	 * @param datain data array
-	 * @param errin error array on data (if NULL will default to sqrt(datain)
-	 * @param dataout array of corrected data
-	 * @param errout error on corrected data (if not NULL)
-	 * @returns 0
-	 */
-	int flatFieldCorrect(double* datain, double *errin, double* dataout, double *errout);
-
-	/**
-	 * Set bad channels correction (Mythen)
-	 * @param fname file with bad channel list ("" disable)
-	 * @returns 0 if bad channel disabled, >0 otherwise
-	 */
-	int setBadChannelCorrection(std::string fname="");
-
-	/**
-	 * Set bad channels correction (Mythen)
-	 * @param nch number of bad channels
-	 * @param chs array of channels
-	 * @param ff 0 if normal bad channels, 1 if ff bad channels
-	 * @returns 0 if bad channel disabled, >0 otherwise
-	 */
-	int setBadChannelCorrection(int nch, int *chs, int ff=0);
-
-	/**
-	 * Get bad channels correction (Mythen)
-	 * @param bad pointer to array that if bad!=NULL will be filled with the
-	 * bad channel list
-	 * @returns 0 if bad channel disabled or no bad channels, >0 otherwise
-	 */
-	int getBadChannelCorrection(int *bad=NULL);
-
-	/**
-	 * Reads an angular conversion file (Mythen, Gotthard)
-	 * \sa angleConversionConstant mythenDetector::readAngularConversion
-	 * @param fname file to be read
-	 * @returns 0 if angular conversion disabled, >0 otherwise
-	 */
-	int readAngularConversionFile(std::string fname="");
-
-	/**
-	 * Reads an angular conversion file (Mythen, Gotthard)
-	 * \sa angleConversionConstant mythenDetector::readAngularConversion
-	 * @param ifs input stream
-	 * @returns 0 if angular conversion disabled, >0 otherwise
-	 */
-	int readAngularConversion(std::ifstream& ifs);
-
-	/**
-	 * Writes an angular conversion file (Mythen, Gotthard)
-	 * \sa angleConversionConstant mythenDetector::writeAngularConversion
-	 * @param fname file to be written
-	 * @returns 0 if angular conversion disabled, >0 otherwise
-	 */
-	int writeAngularConversion(std::string fname="");
-
-	/**
-	 * Writes an angular conversion file (Mythen, Gotthard)
-	 * \sa angleConversionConstant mythenDetector::writeAngularConversion
-	 * @param ofs output stream
-	 * @returns 0 if angular conversion disabled, >0 otherwise
-	 */
-	int writeAngularConversion(std::ofstream &ofs);
-
-	/**
-	 * Get angular conversion (Mythen, Gotthard)
-	 * \sa angleConversionConstant mythenDetector::getAngularConversion
-	 * @param direction reference to diffractometer
-	 * @param angconv array that will be filled with the angular conversion constants
-	 * @returns 0 if angular conversion disabled, >0 otherwise
-	 */
-	int getAngularConversion(int &direction,  angleConversionConstant *angconv=NULL) ;
-
-	/**
-	 * Return angular conversion pointer (Mythen, Gotthard)
-	 * @param imod module number
-	 * @returns angular conversion pointer
-	 */
-	angleConversionConstant *getAngularConversionPointer(int imod=0);
 
 	/**
 	 * Prints receiver configuration
@@ -2035,7 +1544,7 @@ public:
 	 * @param s file directory
 	 * @returns file dir
 	 */
-	std::string setFilePath(std::string s="");
+	std::string setFilePath(std::string s);
 
 	/**
 	 * Returns file name prefix
@@ -2048,14 +1557,14 @@ public:
 	 * @param s file name prefix
 	 * @returns file name prefix
 	 */
-	std::string setFileName(std::string s="");
+	std::string setFileName(std::string s);
 
 	/**
 	 * Sets the max frames per file in receiver
 	 * @param f max frames per file
 	 * @returns max frames per file in receiver
 	 */
-	int setReceiverFramesPerFile(int f = -1);
+	int setReceiverFramesPerFile(int f=-1);
 
 	/**
 	 * Sets the frames discard policy in receiver
@@ -2082,7 +1591,7 @@ public:
 	 * @param f file format
 	 * @returns file format
 	 */
-	fileFormat setFileFormat(fileFormat f=GET_FILE_FORMAT);
+	fileFormat setFileFormat(fileFormat f);
 
 	/**
 	 * Returns file index
@@ -2095,7 +1604,13 @@ public:
 	 * @param i file index
 	 * @returns file index
 	 */
-	int setFileIndex(int i=-1);
+	int setFileIndex(int i);
+
+	/**
+	 * increments file index
+	 * @returns the file index
+	 */
+	int incrementFileIndex();
 
 	/**
 	 * Receiver starts listening to packets
@@ -2108,13 +1623,6 @@ public:
 	 * @returns OK or FAIL
 	 */
 	int stopReceiver();
-
-	/**
-	 * Sets the receiver to start any readout remaining in the fifo and
-	 * change status to transmitting (Mythen)
-	 * The status changes to run_finished when fifo is empty
-	 */
-	runStatus startReceiverReadout();
 
 	/**
 	 * Gets the status of the listening mode of receiver
@@ -2193,13 +1701,6 @@ public:
 	 * @returns data streaming from receiver enable
 	 */
 	int enableDataStreamingFromReceiver(int enable=-1);
-
-	/**
-	 * Enable/disable or get data compression in receiver
-	 * @param i is -1 to get, 0 to disable and 1 to enable
-	 * @returns data compression in receiver
-	 */
-	int enableReceiverCompression(int i = -1);
 
 	/**
 	 * Enable/disable or 10Gbe
@@ -2349,39 +1850,11 @@ private:
 	void deleteModule(sls_detector_module *myMod);
 
 	/**
-	 * Send a sls_detector_channel structure over socket
-	 * @param myChan channel structure to send
-	 * @returns number of bytes sent to the detector
-	 */
-	int sendChannel(sls_detector_channel* myChan);
-
-	/**
-	 * Send a sls_detector_chip structure over socket
-	 * @param myChip chip structure to send
-	 * @returns number of bytes sent to the detector
-	 */
-	int sendChip(sls_detector_chip* myChip);
-
-	/**
 	 * Send a sls_detector_module structure over socket
 	 * @param myMod module structure to send
 	 * @returns number of bytes sent to the detector
 	 */
 	int sendModule(sls_detector_module* myMod);
-
-	/**
-	 * Receive a sls_detector_channel structure over socket
-	 * @param myChan channel structure to receive
-	 * @returns number of bytes received from the detector
-	 */
-	int receiveChannel(sls_detector_channel* myChan);
-
-	/**
-	 * Receive a sls_detector_chip structure over socket
-	 * @param myChip chip structure to receive
-	 * @returns number of bytes received from the detector
-	 */
-	int receiveChip(sls_detector_chip* myChip);
 
 	/**
 	 * Receive a sls_detector_module structure over socket
@@ -2431,13 +1904,100 @@ private:
 	 */
 	std::string setDetectorNetworkParameter(networkParameter index, int delay);
 
-
 	/**
 	 * Get MAC from the receiver using udpip and
 	 * set up UDP connection in detector
 	 * @returns Ok or FAIL
 	 */
 	int setUDPConnection();
+
+	/**
+	 * reads a calibration file
+	 * @param fname file to be read
+	 * @param gain reference to the gain variable
+	 * @param offset reference to the offset variable
+	 * @returns OK if successful, else FAIL or -1
+	 */
+	static int readCalibrationFile(std::string fname, double &gain, double &offset);
+
+	/**
+	 * writes a calibration file
+	 * @param fname file to be written
+	 * @param gain
+	 * @param offset
+	 * @returns OK if successful, else FAIL or -1
+	 */
+	static int writeCalibrationFile(std::string fname, double gain, double offset);
+
+	/**
+	 * reads a calibration file
+	 * @param fname file to be read
+	 * @param gain reference to the gain variable
+	 * @param offset reference to the offset variable
+	 * @returns OK if successful, else FAIL or -1
+	 */
+	static int readCalibrationFile(std::string fname, int *gain, int *offset);
+
+	/**
+	 * writes a calibration file
+	 * @param fname file to be written
+	 * @param gain reference to the gain variable
+	 * @param offset reference to the offset variable
+	 * @returns OK if successful, else FAIL or -1
+	 */
+	static int writeCalibrationFile(std::string fname, int *gain, int *offset);
+
+	/*
+	 * Template function to do linear interpolation between two points (Eiger only)
+	 */
+	template <typename E, typename V>
+	V linearInterpolation(const E x, const E x1, const E x2, const V y1, const V y2){
+		double k = static_cast<double>(y2-y1)/(x2-x1);
+		double m = y1-k*x1;
+		int y = round( k*x+m );
+		return static_cast<V>(y);
+	}
+
+	/**
+	 * interpolates dacs and trimbits between 2 trim files
+	 * @param a first module structure
+	 * @param b second module structure
+	 * @param energy energy to trim at
+	 * @param e1 reference trim value
+	 * @param e2 reference trim value
+	 * @param tb 1 to include trimbits, 0 to exclude (used for eiger)
+	 * @returns  the pointer to the module structure with interpolated values or NULL if error
+	 */
+	sls_detector_module* interpolateTrim(
+			sls_detector_module* a, sls_detector_module* b, const int energy,
+			const int e1, const int e2, int tb=1);
+
+	/**
+	 * reads a trim/settings file
+	 * @param fname name of the file to be read
+	 * @param iodelay io delay (detector specific)
+	 * @param tau tau (detector specific)
+	 * @param myMod pointer to the module structure which has to be set. <BR>
+	 * If it is NULL a new module structure will be created
+	 * @param tb 1 to include trimbits, 0 to exclude (used for eiger)
+	 * @returns the pointer to myMod or NULL if reading the file failed
+	 */
+
+	sls_detector_module* readSettingsFile(std::string fname,
+			int& iodelay, int& tau,
+			sls_detector_module* myMod=NULL, int tb=1);
+
+	/**
+	 * writes a trim/settings file
+	 * @param fname name of the file to be written
+	 * @param mod module structure which has to be written to file
+	 * @param iodelay io delay (detector specific)
+	 * @param tau tau (detector specific)
+	 * @returns OK or FAIL if the file could not be written
+	 */
+	int writeSettingsFile(std::string fname,
+			sls_detector_module mod, int iodelay, int tau);
+
 
 	/** slsDetector Id or position in the detectors list */
 	int detId;
@@ -2461,12 +2021,6 @@ private:
 
 	/** socket for data acquisition	 */
 	MySocketTCP *dataSocket;
-
-	/** pointer to flat field coefficients in shared memory  */
-	double *ffcoefficients;
-
-	/** pointer to flat field coefficient errors in shared memory  */
-	double *fferrors;
 
 	/** pointer to detector module structures in shared memory */
 	sls_detector_module *detectorModules;

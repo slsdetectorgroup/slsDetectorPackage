@@ -58,7 +58,6 @@ enum detFuncs{
   F_START_READOUT, /**< start readout */
   F_GET_RUN_STATUS,  /**< get acquisition status */
   F_START_AND_READ_ALL,  /**< start acquisition and read all frames*/
-  F_READ_FRAME,  /**< read one frame */
   F_READ_ALL,  /**< read alla frames */
   
   //Acquisition setup functions
@@ -111,7 +110,6 @@ enum detFuncs{
   F_POWER_CHIP,				/**< power chip */
   F_ACTIVATE,				/** < activate */
   F_PREPARE_ACQUISITION,	/** < prepare acquisition */
-  F_CLEANUP_ACQUISITION,		/** < clean up after acquisition */
 
   F_THRESHOLD_TEMP,          /** < set threshold temperature */
   F_TEMP_CONTROL,            /** < set temperature control */

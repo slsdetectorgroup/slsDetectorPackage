@@ -62,7 +62,6 @@ You can  find examples of how this classes can be instatiated in mainClient.cpp 
    \authors <a href="mailto:anna.bergamaschi@psi.ch">Anna Bergamaschi</a>, <a href="mailto:dhanya.thattil@psi.ch">Dhanya Thattil</a>
    @version 3.0
 <H2>Currently supported detectors</H2>
-\li MYTHEN
 \li GOTTHARD controls
 \li GOTTHARD data receiver
 \li	EIGER
@@ -171,41 +170,6 @@ class slsDetectorUsers
   */
    int setFileIndex(int i);
 
-   /**
-         @short get flat field corrections file directory
-    \returns flat field correction file directory
-  */
-   std::string getFlatFieldCorrectionDir(); 
-  
-  /** 
-           @short set flat field corrections file directory
-      \param dir flat field correction file directory
-      \returns flat field correction file directory
-  */
-   std::string setFlatFieldCorrectionDir(std::string dir);
-  
-  /** 
-           @short get flat field corrections file name
-      \returns flat field correction file name
-  */
-   std::string getFlatFieldCorrectionFile();
-  
-  /** 
-           @short set flat field correction file
-      \param fname name of the flat field file (or "" if disable)
-      \returns 0 if disable (or file could not be read), >0 otherwise
-  */
-   int setFlatFieldCorrectionFile(std::string fname=""); 
-
-  
-
-  /** 
-           @short enable/disable flat field corrections (without changing file name)
-      \param i 0 disables, 1 enables, -1 gets
-      \returns 0 if ff corrections disabled, 1 if enabled
-  */
-   int enableFlatFieldCorrection(int i=-1);
-
   /**
            @short enable/disable count rate corrections 
       \param i 0 disables, 1 enables with default values, -1 gets
@@ -213,48 +177,9 @@ class slsDetectorUsers
   */
    int enableCountRateCorrection(int i=-1);
 
-  /**
-           @short enable/disable bad channel corrections 
-      \param i 0 disables, 1 enables, -1 gets
-      \returns 0 if bad channels corrections disabled, 1 if enabled
-  */
-   int enablePixelMaskCorrection(int i=-1);
-
-  /**
-           @short enable/disable angular conversion 
-      \param i 0 disables, 1 enables, -1 gets
-      \returns 0 if angular conversion disabled, 1 if enabled
-  */
-   int enableAngularConversion(int i=-1);
-
   /**Enable write file function included*/
 
    int enableWriteToFile(int i=-1);
-
-  /** 
-           @short set  positions for the acquisition
-      \param nPos number of positions
-      \param pos array with the encoder positions
-      \returns number of positions
-  */
-   int setPositions(int nPos, double *pos);
-  
-  /** 
-           @short get  positions for the acquisition
-      \param pos array which will contain the encoder positions
-      \returns number of positions
-  */
-   int getPositions(double *pos=NULL);
-  
-  /**
-     @short sets the detector size
-     \param x0 horizontal position origin in channel number (-1 unchanged)
-     \param y0 vertical position origin in channel number (-1 unchanged)
-     \param nx number of channels in horiziontal  (-1 unchanged)
-     \param  ny number of channels in vertical  (-1 unchanged)
-     \returns OK/FAIL
-  */
-   int setDetectorSize(int x0=-1, int y0=-1, int nx=-1, int ny=-1);
 
 
   /**
@@ -419,43 +344,6 @@ class slsDetectorUsers
 
    void registerDataCallback(int( *userCallback)(detectorData* d, int f, int s, void*), void *pArg);
 
-  /**
-     @short register callback for accessing raw data - if the rawDataCallback is registered, no filewriting/postprocessing will be carried on automatically by the software - the raw data are deleted by the software
-     \param userCallback function for postprocessing and saving the data -  p is the pointer to the data, n is the number of channels
-     \param pArg argument
-  */
-  
-   void registerRawDataCallback(int( *userCallback)(double* p, int n, void*), void *pArg);
-
-  /** 
-     @short function to initalize a set of measurements (reset binning if angular conversion, reset summing otherwise)  - can be overcome by the user's functions thanks to the virtual property
-     \param refresh if 1, all parameters like ffcoefficients, badchannels, ratecorrections etc. are reset (should be called at least onece with this option), if 0 simply reset merging/ summation
-  */
-  
-  virtual void initDataset(int refresh);
-
-
-  /**
-     @short adds frame to merging/summation  - can be overcome by the user's functions thanks to the virtual property
-     \param data pointer to the raw data
-     \param pos encoder position
-     \param i0 beam monitor readout for intensity normalization (if 0 not performed)
-     \param t exposure time in seconds, required only if rate corrections
-     \param fname file name (unused since filewriting would be performed by the user)
-     \param var optional parameter - unused.
-  */
-  
-  virtual void addFrame(double *data, double pos, double i0, double t, std::string fname, double var);
-
-  /**
-     @short finalizes the data set returning the array of angles, values and errors to be used as final data - can be overcome by the user's functions thanks to the virtual property
-     \param a pointer to the array of angles - can be null if no angular coversion is required
-     \param v pointer to the array of values
-     \param e pointer to the array of errors
-     \param np reference returning the number of points
-  */
-  
-  virtual void finalizeDataset(double *a, double *v, double *e, int &np); 
 
 
   /** Enable or disable streaming data from receiver (creates transmitting sockets)
@@ -502,19 +390,6 @@ class slsDetectorUsers
     * @returns client streaming in ZMQ IP
     */
    std::string setClientDataStreamingInIP(std::string ip="");
-
-  /**
-     get get Module Firmware Version
-     \returns id
-  */
-  int64_t getModuleFirmwareVersion();
-
-  /**
-     get get Module Serial Number
-     @param imod module number
-     \returns id
-  */
-  int64_t getModuleSerialNumber(int imod=-1);
 
   /**
      get get Detector Firmware Version
@@ -599,44 +474,6 @@ class slsDetectorUsers
   */
    void registerAcquisitionFinishedCallback(int( *func)(double,int, void*), void *pArg);
   
-  /**
-     @short register calbback for reading detector position
-     \param func function for reading the detector position
-     \param arg argument
-  */
-  
-   void registerGetPositionCallback( double (*func)(void*),void *arg);
-  /**
-     @short register callback for connecting to the epics channels
-     \param func function for connecting to the epics channels
-     \param arg argument
-  */
-   void registerConnectChannelsCallback( int (*func)(void*),void *arg);
-  /**
-     @short register callback to disconnect the epics channels
-     \param func function to disconnect the epics channels
-     \param arg argument
-  */
-   void registerDisconnectChannelsCallback( int (*func)(void*),void *arg);  
-  /**
-     @short register callback for moving the detector
-     \param func function for moving the detector
-     \param arg argument
-  */
-   void registerGoToPositionCallback( int (*func)(double,void*),void *arg);
-  /**
-     @short register callback for moving the detector without waiting
-     \param func function for moving the detector
-     \param arg argument
-  */
-   void registerGoToPositionNoWaitCallback( int (*func)(double,void*),void *arg);
-  /**
-     @short register calbback reading to I0
-     \param func function for reading the I0 (called with parameter 0 before the acquisition, 1 after and the return value used as I0)
-     \param arg argument
-  */
-   void registerGetI0Callback( double (*func)(int,void*),void *arg);
-
    /**
      @short sets parameters in command interface http://www.psi.ch/detectors/UsersSupportEN/slsDetectorClientHowTo.pdf
      \param narg value to be set
@@ -775,10 +612,10 @@ class slsDetectorUsers
    int setTenGigabitEthernet(int i = -1);
 
    /**
-    * returns total number of detector modules
-    * @returns the total number of detector modules
+    * returns total number of detectors
+    * @returns the total number of detectors
     */
-   int getNMods();
+   int getNumberOfDetectors();
 
    /**
     * Set sub frame exposure time (only for Eiger)

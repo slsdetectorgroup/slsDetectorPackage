@@ -85,114 +85,6 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   // protected:
 
   /**
-     set angular conversion
-     \param fname file with angular conversion constants ("" disable)
-     \returns 0 if angular conversion disabled, >0 otherwise
-  */
-  virtual int setAngularConversionFile(std::string fname="")=0;
-  
-
-  /**
-     pure virtual function
-     returns the angular conversion file
-  */
-  virtual std::string getAngularConversionFile()=0;
-
-
- 
-  /**
-     set action
-     \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS}
-     \param fname for script ("" disable)
-     \returns 0 if action disabled, >0 otherwise
-  */
-  virtual int setActionScript(int iaction, std::string fname="")=0;
-
-  /**
-     set action
-     \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS}
-     \param par for script ("" disable)
-     \returns 0 if action disabled, >0 otherwise
-  */
-  virtual int setActionParameter(int iaction, std::string par="")=0;
-
-  /**
-     returns action script
-     \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
-     \returns action script
-  */
-  virtual std::string getActionScript(int iaction)=0;
-
-  /**
-     returns action parameter
-     \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
-     \returns action parameter
-  */
-  virtual std::string getActionParameter(int iaction)=0;
-
-  /**
-     set scan script
-     \param index is the scan index (0 or 1)
-     \param script fname for script ("" disable, "none" disables and overwrites current, "threshold" makes threshold scan, "trimbits" make trimbits scan, "energy" makes energy scan)
-     \returns 0 if scan disabled, >0 otherwise
-  */
-  virtual int setScanScript(int index, std::string script="")=0;
-
-  /**
-     set scan script parameter
-     \param index is the scan index (0 or 1)
-     \param spar parameter to be passed to the scan script with syntax par=spar
-     \returns 0 if scan disabled, >0 otherwise
-  */
-  virtual int setScanParameter(int index, std::string spar="")=0;
-
- 
-  /**     set scan precision
-	  \param index is the scan index (0 or 1)
-	  \param precision number of decimals to use for the scan variable in the file name
-	  \returns 0 if scan disabled, >0 otherwise */
-  virtual int setScanPrecision(int index, int precision=-1)=0;
-
-  /**
-     set scan steps (passed to the scan script as var=step)
-     \param index is the scan index (0 or 1)
-     \param nvalues is the number of steps
-     \param values array of steps
-     \returns 0 if scan disabled, >0 otherwise*/
-
-  virtual int setScanSteps(int index, int nvalues=-1, double *values=NULL)=0;
-
-  /**
-     get scan script
-     \param index is the scan index (0 or 1)
-     \returns "none" if disables, "threshold" threshold scan, "trimbits" trimbits scan, "energy"  energy scan or scan script name
-  */
-  virtual std::string getScanScript(int index)=0;
-
-  /**
-     get scan script
-     \param index is the scan index (0 or 1)
-     \returns scan script parameter
-  */
-  virtual std::string getScanParameter(int index)=0;
-
-  /**
-     get scan precision
-     \param index is the scan index (0 or 1)
-     \returns precision i.e. number of decimals to use for the scan variable in the file name
-  */
-  virtual int getScanPrecision(int index)=0;
-
-  /**
-     get scan steps
-     \param index is the scan index (0 or 1)
-     \param values pointer to array of values (must be allocated in advance)
-     \returns number of steps
-  */
-  virtual int getScanSteps(int index, double *values=NULL)=0;
-
-
-  /**
      Writes the configuration file -- will contain all the informations needed for the configuration (e.g. for a PSI detector caldir, settingsdir, angconv, badchannels etc.)
      \param fname file name
      \returns OK or FAIL
@@ -209,26 +101,6 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   virtual int loadImageToDetector(imageType index,std::string const fname)=0;
 
   /**
-     \returns number of positions
-  */
-  virtual int getNumberOfPositions()=0;// {return 0;};
-  
-  /**
-     \returns action mask
-  */
-  virtual int getActionMask()=0;// {return 0;};
-  /**
-     \param index scan level index
-     \returns current scan variable
-  */
-  virtual double getCurrentScanVariable(int index)=0;// {return 0;};
-
-  /**
-     \returns current position index
-  */
-  virtual int getCurrentPositionIndex()=0;// {return 0;};
-
-  /**
      \returns total number of channels
   */
   virtual int getTotalNumberOfChannels()=0;
@@ -238,28 +110,15 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   */
   virtual int getTotalNumberOfChannels(dimension d)=0;
 
-  /** generates file name without extension */
-  virtual std::string createFileName()=0;
 
 
   virtual void incrementProgress()=0;
   virtual void setCurrentProgress(int i=0)=0;
   virtual double getCurrentProgress()=0;
-  virtual void incrementFileIndex()=0;
   virtual int setTotalProgress()=0;
 
 
-  virtual double* decodeData(int *datain, int &nn, double *fdata=NULL)=0;
 
-
-  virtual std::string getCurrentFileName()=0;
-
-
-  virtual int getFileIndexFromFileName(std::string fname)=0;
-
-  virtual int getIndicesFromFileName(std::string fname,int &index)=0;
-
-  virtual double *convertAngles()=0;
   /** 
       set rate correction
       \param t dead time in ns - if 0 disable correction, if >0 set dead time to t, if <0 set deadtime to default dead time for current settings
@@ -279,10 +138,6 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
       \returns 0 if rate correction disabled, >0 otherwise
   */
   virtual int getRateCorrection()=0;
-
-  virtual int setFlatFieldCorrection(std::string fname="")=0; 
-
-  int setFlatFieldCorrectionFile(std::string fname=""){return setFlatFieldCorrection(fname);};
     
   /** 
       set/get dynamic range
@@ -290,22 +145,6 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
       \returns current dynamic range
   */
   virtual int setDynamicRange(int i=-1)=0;
-  //  int setBitDepth(int i=-1){return setDynamicRange(i);};
-
-  /** 
-      set/get the size of the detector 
-      \param i number of modules
-      \param d dimension
-      \returns current number of modules in direction d
-  */
-  virtual int setNumberOfModules(int i=-1, dimension d=X)=0;
-
-  //  int setDetectorSize(int x0=-1, int y0=-1, int nx=-1, int ny=-1){return setNumberOfModules(nx/getChansPerMod(0),X);};
-
-  // int getDetectorSize(int &x0, int &y0, int &nx, int &ny){x0=0; nx=setNumberOfModules(-1,X)*getChansPerMod(0); return nx;};
-
-  virtual int getMaxNumberOfModules(dimension d=X)=0; //
-  //  int getMaximumDetectorSize(int &nx, int &ny){nx=getMaxNumberOfModules(X)*getChansPerMod(0); ny=1; return nx;};
 
 
   /** Locks/Unlocks the connection to the server
@@ -329,12 +168,6 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
 
   int startMeasurement(){acquire(0); return OK;};
 
-  /**
-     asks and  receives a data frame from the detector, writes it to disk and processes the data
-     \returns pointer to the data or NULL (unused!!!). 
-  */ 
-  virtual int* readFrame()=0;
-
 
   /**
      get detector ids/versions for module=0
@@ -343,8 +176,6 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
      \returns id
   */
   virtual int64_t getId(idMode mode, int imod=0)=0;
-  int64_t getModuleFirmwareVersion(){return getId(MODULE_FIRMWARE_VERSION,-1);};
-  int64_t getModuleSerialNumber(int imod=-1){return getId(MODULE_SERIAL_NUMBER,imod);};
   int64_t getDetectorFirmwareVersion(){return getId(DETECTOR_FIRMWARE_VERSION,-1);};
   int64_t getDetectorSerialNumber(){return getId(DETECTOR_SERIAL_NUMBER,-1);};
   int64_t getDetectorSoftwareVersion(){return getId(DETECTOR_SOFTWARE_VERSION,-1);};
@@ -361,14 +192,13 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   */
   virtual int stopAcquisition()=0;
   int stopMeasurement(){return stopAcquisition();};
-  virtual int getChansPerMod(int imod=0)=0;
 
   /**
      set/get timer value
      \param index timer index
-     \param t time in ns or number of...(e.g. frames, gates, probes)
+     \param t time in ns or number of...(e.g. frames, gates)
      \param imod module number
-     \returns timer set value in ns or number of...(e.g. frames, gates, probes)
+     \returns timer set value in ns or number of...(e.g. frames, gates)
   */
   virtual int64_t setTimer(timerIndex index, int64_t t=-1, int imod = -1)=0;
   int64_t setExposureTime(int64_t t=-1, int imod = -1){return setTimer(ACQUISITION_TIME,t,imod);};
@@ -457,7 +287,6 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   virtual dacs_t setDAC(dacs_t val, dacIndex index , int mV, int imod=-1)=0;
   int setDACValue(int val, int index , int imod=-1) { return (int)setDAC((dacs_t)val,(dacIndex)index,0,imod);};
 
-
   /**
      gets ADC value
      \param index ADC index
@@ -466,7 +295,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   */
   virtual dacs_t getADC(dacIndex index, int imod=-1)=0;
   int getADCValue(int index, int imod=-1){return (int)getADC((dacIndex)index, imod);};
-  ///////////////////////////////////////////////////////////////////////////////////////////
+
   /**
      @short get run status
      \returns status mask
@@ -557,6 +386,12 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   */
   virtual int setFileIndex(int i)=0;
 
+  /**
+     @short increments file index
+     \returns the file index
+  */
+  virtual int incrementFileIndex()=0;
+
 
  //receiver
   /**
@@ -627,73 +462,30 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
    */
   virtual int setReadReceiverFrequency(int freq=-1)=0;
 
-  /** Sets the receiver to start any readout remaining in the fifo and
-   * change status to transmitting.
-   * The status changes to run_finished when fifo is empty
-   */
-  virtual runStatus startReceiverReadout()=0;
-
 
   /** returns detector type std::string from detector type index
-      \param t std::string can be Mythen, Pilatus, Eiger, Gotthard, Agipd, Unknown
-      \returns MYTHEN, PILATUS, EIGER, GOTTHARD, AGIPD, MÖNCH, GENERIC
+      \param t std::string can be  Eiger, Gotthard, Jungfrau, Unknown
+      \returns  EIGER, GOTTHARD, JUNGFRAU, GENERIC
   */
   static std::string getDetectorType(detectorType t){\
     switch (t) {\
-    case MYTHEN:    return std::string("Mythen");	\
-    case PILATUS:    return std::string("Pilatus");	\
     case EIGER:    return std::string("Eiger");	\
     case GOTTHARD:    return std::string("Gotthard");	\
-    case AGIPD:    return std::string("Agipd");		\
-    case MOENCH:    return std::string("Moench");		\
     case JUNGFRAU:    return std::string("Jungfrau");		\
     case JUNGFRAUCTB:    return std::string("JungfrauCTB");		\
-    case PROPIX:    return std::string("Propix");		\
     default:    return std::string("Unknown");		\
     }};
 
   /** returns detector type index from detector type std::string
-      \param type can be MYTHEN, PILATUS, EIGER, GOTTHARD, AGIPD, GENERIC
-      \returns Mythen, Pilatus, Eiger, Gotthard, Agipd, Mönch, Unknown
+      \param type can be EIGER, GOTTHARD, JUNGFRAU, GENERIC
+      \returns Eiger, Gotthard, Jungfrau, Unknown
   */
   static detectorType getDetectorType(std::string const type){\
-    if (type=="Mythen")      return MYTHEN;\
-    if  (type=="Pilatus")      return PILATUS;	\
     if  (type=="Eiger")    return EIGER;		\
     if  (type=="Gotthard")    return GOTTHARD;	\
-    if  (type=="Agipd")    return AGIPD;		\
-    if  (type=="Moench")    return MOENCH;		\
     if  (type=="Jungfrau")    return JUNGFRAU;		\
     if  (type=="JungfrauCTB")    return JUNGFRAUCTB;		\
-    if  (type=="Propix")    return PROPIX;		\
     return GENERIC;};
-
-
-
-  /** returns synchronization type index from std::string
-      \param type can be none, gating, trigger, complementary
-      \returns ONE, MASTER_GATES, MASTER_TRIGGERS, SLAVE_STARTS_WHEN_MASTER_STOPS
-  */
-  static synchronizationMode getSyncType(std::string const type){\
-    if (type=="none")    return NO_SYNCHRONIZATION;\
-    if (type=="gating")    return MASTER_GATES;\
-    if (type=="trigger")    return MASTER_TRIGGERS;		\
-    if (type=="complementary") return SLAVE_STARTS_WHEN_MASTER_STOPS; \
-    return GET_SYNCHRONIZATION_MODE;				\
-  };
-
-  /** returns synchronization type std::string from index
-      \param s can be NONE, MASTER_GATES, MASTER_TRIGGERS, SLAVE_STARTS_WHEN_MASTER_STOPS
-      \returns none, gating, trigger, complementary, unknown
-  */
-  static std::string getSyncType(synchronizationMode s ){\
-    switch(s) {					    \
-    case NO_SYNCHRONIZATION:    return std::string("none");	    \
-    case MASTER_GATES:    return std::string("gating");	\
-    case MASTER_TRIGGERS:    return std::string("trigger");			\
-    case SLAVE_STARTS_WHEN_MASTER_STOPS:    return std::string("complementary"); \
-    default:    return std::string("unknown");				\
-    }};
 
 
 
@@ -862,8 +654,8 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
     }};
 
   /** returns std::string from timer index
-      \param s can be FRAME_NUMBER,ACQUISITION_TIME,FRAME_PERIOD, DELAY_AFTER_TRIGGER,GATES_NUMBER,PROBES_NUMBER, CYCLES_NUMBER, ACTUAL_TIME,MEASUREMENT_TIME, PROGRESS,MEASUREMENTS_NUMBER,FRAMES_FROM_START,FRAMES_FROM_START_PG,SAMPLES_JCTB,SUBFRAME_ACQUISITION_TIME,STORAGE_CELL_NUMBER, SUBFRAME_DEADTIME
-      \returns std::string frame_number,acquisition_time,frame_period, delay_after_trigger,gates_number,probes_number, cycles_number, actual_time,measurement_time, progress,measurements_number,frames_from_start,frames_from_start_pg,samples_jctb,subframe_acquisition_time,storage_cell_number, SUBFRAME_DEADTIME
+      \param s can be FRAME_NUMBER,ACQUISITION_TIME,FRAME_PERIOD, DELAY_AFTER_TRIGGER,GATES_NUMBER, CYCLES_NUMBER, ACTUAL_TIME,MEASUREMENT_TIME, PROGRESS,MEASUREMENTS_NUMBER,FRAMES_FROM_START,FRAMES_FROM_START_PG,SAMPLES_JCTB,SUBFRAME_ACQUISITION_TIME,STORAGE_CELL_NUMBER, SUBFRAME_DEADTIME
+      \returns std::string frame_number,acquisition_time,frame_period, delay_after_trigger,gates_number, cycles_number, actual_time,measurement_time, progress,measurements_number,frames_from_start,frames_from_start_pg,samples_jctb,subframe_acquisition_time,storage_cell_number, SUBFRAME_DEADTIME
   */
   static std::string getTimerType(timerIndex t){										\
     switch (t) {																\
@@ -872,7 +664,6 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
     case FRAME_PERIOD: 				return std::string("frame_period"); 				\
     case DELAY_AFTER_TRIGGER: 		return std::string("delay_after_trigger"); 		\
     case GATES_NUMBER: 				return std::string("gates_number"); 				\
-    case PROBES_NUMBER: 			return std::string("probes_number"); 			\
     case CYCLES_NUMBER: 			return std::string("cycles_number"); 			\
     case ACTUAL_TIME: 				return std::string("actual_time"); 				\
     case MEASUREMENT_TIME: 			return std::string("measurement_time"); 			\

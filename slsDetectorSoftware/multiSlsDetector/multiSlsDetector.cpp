@@ -340,11 +340,10 @@ std::string multiSlsDetector::getErrorMessage(int& critical, int detPos) {
 
 	// single
 	if (detPos >= 0) {
-		// position exceeds multi list size
-		if (detPos > detectors.size()) {
-			FILE_LOG(logERROR) << "Position " << detPos << " exceeds list of " << detectors.size();
+
+		if(isDetectorIndexOutOfBounds())
 			return retval;
-		}
+
 		slsMask = getErrorMask();
 		posmin =  (unsigned int)detPos;
 		posmax = posmin + 1;
@@ -404,14 +403,8 @@ int64_t multiSlsDetector::clearAllErrorMask(int detPos) {
 
 	// single
 	if (detPos >= 0) {
-
-		// position exceeds multi list size
-		if (detPos > detectors.size()) {
-			FILE_LOG(logERROR) << "Position " << detPos << " exceeds list of " << detectors.size();
-			setErrorMask(getErrorMask() | MULTI_POS_EXCEEDS_LIST);
+		if(isDetectorIndexOutOfBounds())
 			return -1;
-		}
-
 		return detectors[idet]->clearErrorMask();
 	}
 
@@ -456,12 +449,8 @@ int multiSlsDetector::checkVersionCompatibility(portType t, int detPos) {
 	// single
 	if (detPos >= 0) {
 
-		// position exceeds multi list size
-		if (detPos > detectors.size()) {
-			FILE_LOG(logERROR) << "Position " << detPos << " exceeds list of " << detectors.size();
-			setErrorMask(getErrorMask() | MULTI_POS_EXCEEDS_LIST);
+		if(isDetectorIndexOutOfBounds())
 			return -1;
-		}
 
 		int ret = detectors[detPos]->checkVersionCompatibility(t);
 		if (detectors[detPos]->getErrorMask())
@@ -478,12 +467,8 @@ int64_t multiSlsDetector::getId(idMode mode, int detPos) {
 	// single
 	if (detPos >= 0) {
 
-		// position exceeds multi list size
-		if (detPos > detectors.size()) {
-			FILE_LOG(logERROR) << "Position " << detPos << " exceeds list of " << detectors.size();
-			setErrorMask(getErrorMask() | MULTI_POS_EXCEEDS_LIST);
+		if(isDetectorIndexOutOfBounds())
 			return -1;
-		}
 
 		int64_t ret = detectors[detPos]->getId(mode);
 		if (detectors[detPos]->getErrorMask())
@@ -4613,4 +4598,14 @@ int multiSlsDetector::kbhit() {
 	FD_SET(STDIN_FILENO, &fds); //STDIN_FILENO is 0
 	select(STDIN_FILENO+1, &fds, NULL, NULL, &tv);
 	return FD_ISSET(STDIN_FILENO, &fds);
+}
+
+bool multiSlsDetector::isDetectorIndexOutOfBounds(int detPos) {
+	// position exceeds multi list size
+	if (detPos >= detectors.size()) {
+		FILE_LOG(logERROR) << "Position " << detPos << " is out of bounds with a detector list of " << detectors.size();
+		setErrorMask(getErrorMask() | MULTI_POS_EXCEEDS_LIST);
+		return true;
+	}
+	return false;
 }

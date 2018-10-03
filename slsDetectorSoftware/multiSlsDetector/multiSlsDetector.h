@@ -1569,6 +1569,11 @@ public:
 	 */
 	int setThreadedProcessing(int enable=-1);
 
+	/**
+	 * Returns true if detector position is out of bounds
+	 */
+	bool isDetectorIndexOutOfBounds(int detPos);
+
 private:
 	/**
 	 * Initialize (open/create) shared memory for the sharedMultiDetector structure

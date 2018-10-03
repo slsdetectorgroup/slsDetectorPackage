@@ -19,6 +19,10 @@
 #include <sys/shm.h>
 //#include <time.h> //clock()
 
+#include "container_utils.h"
+#include <future>
+#include <vector>
+
 
 multiSlsDetector::multiSlsDetector(int id, bool verify, bool update)
 : slsDetectorUtils(),
@@ -126,209 +130,6 @@ std::string multiSlsDetector::concatResultOrPos(std::string (slsDetector::*somef
 	}
 }
 
-template <typename T>
-T multiSlsDetector::callDetectorMember(T (slsDetector::*somefunc)())
-{
-	//(Erik) to handle enums, probably a bad idea but follow previous code
-	T defaultValue = static_cast<T>(-1);
-	std::vector<T> values(detectors.size(), defaultValue);
-	for (unsigned int idet = 0; idet < detectors.size(); ++idet) {
-		values[idet] = (detectors[idet]->*somefunc)();
-		if (detectors[idet]->getErrorMask())
-			setErrorMask(getErrorMask() | (1 << idet));
-	}
-	return minusOneIfDifferent(values);
-}
-
-std::string multiSlsDetector::callDetectorMember(std::string (slsDetector::*somefunc)()) {
-	std::string concatenatedValue, firstValue;
-	bool valueNotSame = false;
-
-	for (unsigned int idet = 0; idet < detectors.size(); ++idet) {
-		std::string thisValue = (detectors[idet]->*somefunc)();
-
-		if (detectors[idet]->getErrorMask())
-			setErrorMask(getErrorMask() | (1 << idet));
-
-		if (firstValue.empty()) {
-			concatenatedValue = thisValue;
-			firstValue        = thisValue;
-		} else {
-			concatenatedValue += "+" + thisValue;
-		}
-		if (firstValue != thisValue)
-			valueNotSame = true;
-	}
-	if (valueNotSame)
-		return concatenatedValue;
-	else
-		return firstValue;
-}
-
-std::string multiSlsDetector::callDetectorMember(std::string (slsDetector::*somefunc)(std::string),
-		std::string s0) {
-	std::vector<std::string> return_values(detectors.size(), "");
-	for (unsigned int idet = 0; idet < detectors.size(); ++idet) {
-		return_values[idet] = (detectors[idet]->*somefunc)(s0);
-		if (detectors[idet]->getErrorMask())
-			setErrorMask(getErrorMask() | (1 << idet));
-	}
-	return concatenateIfDifferent(return_values);
-}
-
-template <typename T, typename V>
-T multiSlsDetector::callDetectorMember(T (slsDetector::*somefunc)(V), V value) {
-	//(Erik) to handle enums, probably a bad idea but follow previous code
-	T defaultValue = static_cast<T>(-1);
-	std::vector<T> values(detectors.size(), defaultValue);
-	for (unsigned int idet = 0; idet < detectors.size(); ++idet) {
-		values[idet] = (detectors[idet]->*somefunc)(value);
-		if (detectors[idet]->getErrorMask())
-			setErrorMask(getErrorMask() | (1 << idet));
-	}
-	return minusOneIfDifferent(values);
-}
-
-template <typename T, typename P1, typename P2>
-T multiSlsDetector::callDetectorMember(T (slsDetector::*somefunc)(P1, P2),
-		P1 par1, P2 par2) {
-	//(Erik) to handle enums, probably a bad idea but follow previous code
-	T defaultValue = static_cast<T>(-1);
-	std::vector<T> values(detectors.size(), defaultValue);
-	for (unsigned int idet = 0; idet < detectors.size(); ++idet) {
-		values[idet] = (detectors[idet]->*somefunc)(par1, par2);
-		if (detectors[idet]->getErrorMask())
-			setErrorMask(getErrorMask() | (1 << idet));
-	}
-	return minusOneIfDifferent(values);
-}
-
-template <typename T>
-T multiSlsDetector::parallelCallDetectorMember(T (slsDetector::*somefunc)()) {
-	if (!threadpool) {
-		std::cout << "Error in creating threadpool. Exiting" << std::endl;
-		return -1;
-	} else {
-		std::vector<T> return_values(detectors.size(), -1);
-		for (unsigned int idet = 0; idet < detectors.size(); ++idet) {
-			Task* task = new Task(new func0_t<T>(somefunc,
-					detectors[idet], &return_values[idet]));
-			threadpool->add_task(task);
-		}
-		threadpool->startExecuting();
-		threadpool->wait_for_tasks_to_complete();
-		return minusOneIfDifferent(return_values);
-	}
-}
-
-template <typename T, typename P1>
-T multiSlsDetector::parallelCallDetectorMember(T (slsDetector::*somefunc)(P1),
-		P1 value) {
-	if (!threadpool) {
-		std::cout << "Error in creating threadpool. Exiting" << std::endl;
-		return (T)-1;
-	} else {
-		std::vector<T> return_values(detectors.size(), (T)-1);
-		for (unsigned int idet = 0; idet < detectors.size(); ++idet) {
-			Task* task = new Task(new func1_t<T, P1>(somefunc,
-					detectors[idet], value, &return_values[idet]));
-			threadpool->add_task(task);
-		}
-		threadpool->startExecuting();
-		threadpool->wait_for_tasks_to_complete();
-		return minusOneIfDifferent(return_values);
-	}
-}
-
-template <typename T, typename P1, typename P2>
-T multiSlsDetector::parallelCallDetectorMember(T (slsDetector::*somefunc)(P1, P2),
-		P1 par1, P2 par2) {
-	if (!threadpool) {
-		std::cout << "Error in creating threadpool. Exiting" << std::endl;
-		return -1;
-	} else {
-		std::vector<T> return_values(detectors.size(), -1);
-		for (unsigned int idet = 0; idet < detectors.size(); ++idet) {
-			Task* task = new Task(new func2_t<T, P1, P2>(somefunc,
-					detectors[idet], par1, par2, &return_values[idet]));
-			threadpool->add_task(task);
-		}
-		threadpool->startExecuting();
-		threadpool->wait_for_tasks_to_complete();
-		return minusOneIfDifferent(return_values);
-	}
-}
-
-int multiSlsDetector::parallelCallDetectorMember(int (slsDetector::*somefunc)(int, int, int),
-		int v0, int v1, int v2) {
-	if (!threadpool) {
-		std::cout << "Error in creating threadpool. Exiting" << std::endl;
-		return -1;
-	} else {
-		std::vector<int> return_values(detectors.size(), -1);
-		for (unsigned int idet = 0; idet < detectors.size(); ++idet) {
-			Task* task = new Task(new func3_t<int, int, int, int>(somefunc,
-					detectors[idet], v0, v1, v2, &return_values[idet]));
-			threadpool->add_task(task);
-		}
-		threadpool->startExecuting();
-		threadpool->wait_for_tasks_to_complete();
-		return minusOneIfDifferent(return_values);
-	}
-}
-
-std::string multiSlsDetector::parallelCallDetectorMember(std::string (slsDetector::*somefunc)(std::string),
-		std::string s0) {
-	if (!threadpool) {
-		std::cout << "Error in creating threadpool. Exiting" << std::endl;
-		return "";
-	} else {
-		std::vector<std::string> return_values(detectors.size(), "");
-		for (unsigned int idet = 0; idet < detectors.size(); ++idet) {
-			Task* task = new Task(new func1_t<std::string, std::string>(somefunc,
-					detectors[idet], s0, &return_values[idet]));
-			threadpool->add_task(task);
-		}
-		threadpool->startExecuting();
-		threadpool->wait_for_tasks_to_complete();
-
-		return concatenateIfDifferent(return_values);
-	}
-}
-
-template <typename T>
-T multiSlsDetector::minusOneIfDifferent(const std::vector<T>& return_values) {
-	T ret = static_cast<T>(-100);
-	for (unsigned int idet = 0; idet < detectors.size(); ++idet) {
-		if (ret == static_cast<T>(-100))
-			ret = return_values[idet];
-		else if (ret != return_values[idet])
-			ret = static_cast<T>(-1);
-		if (detectors[idet]->getErrorMask())
-			setErrorMask(getErrorMask() | (1 << idet));
-	}
-	return ret;
-}
-
-std::string multiSlsDetector::concatenateIfDifferent(const std::vector<std::string>& return_values) {
-	std::string concatenatedValue, firstValue;
-	bool valueNotSame = false;
-
-	for (unsigned int idet = 0; idet < detectors.size(); ++idet) {
-		if (firstValue.empty()) {
-			concatenatedValue = return_values[idet];
-			firstValue        = return_values[idet];
-		} else {
-			concatenatedValue += "+" + return_values[idet];
-		}
-		if (firstValue != return_values[idet])
-			valueNotSame = true;
-	}
-	if (valueNotSame)
-		return concatenatedValue;
-	else
-		return firstValue;
-}
 
 int multiSlsDetector::decodeNChannel(int offsetX, int offsetY, int& channelX, int& channelY) {
 	channelX = -1;
@@ -806,7 +607,8 @@ void multiSlsDetector::setHostname(const char* name) {
 
 
 std::string multiSlsDetector::getHostname(int pos) {
-	return concatResultOrPos(&slsDetector::getHostname, pos);
+	auto r = parallelCall(&slsDetector::getHostname, pos);
+	return sls::concatenateIfDifferent(r);
 }
 
 void multiSlsDetector::addMultipleDetectors(const char* name) {
@@ -882,8 +684,13 @@ slsDetectorDefs::detectorType multiSlsDetector::getDetectorsType(int pos) {
 
 
 std::string multiSlsDetector::sgetDetectorsType(int pos) {
-	return concatResultOrPos(&slsDetector::sgetDetectorsType, pos);
+	if (pos >= 0) {
+        return detectors[pos]->sgetDetectorsType(pos);
+    } else {
+        auto r = parallelCall(&slsDetector::sgetDetectorsType, pos);
+        return sls::concatenateIfDifferent(r);
 }
+
 
 
 std::string multiSlsDetector::getDetectorType() {
@@ -1119,8 +926,10 @@ void multiSlsDetector::updateOffsets() {
 
 
 int multiSlsDetector::setOnline(int off) {
-	if (off != GET_ONLINE_FLAG)
-		thisMultiDetector->onlineFlag = parallelCallDetectorMember(&slsDetector::setOnline, off);
+   if (off != GET_ONLINE_FLAG) {
+        auto r                        = parallelCall(&slsDetector::setOnline, off);
+        thisMultiDetector->onlineFlag = sls::minusOneIfDifferent(r);
+    }
 	return thisMultiDetector->onlineFlag;
 }
 
@@ -1149,13 +958,8 @@ std::string multiSlsDetector::getLastClientIP() {
 }
 
 int multiSlsDetector::exitServer() {
-	int ival = FAIL, iv;
-	for (unsigned int idet = 0; idet < detectors.size(); ++idet) {
-		iv = detectors[idet]->exitServer();
-		if (iv == OK)
-			ival = iv;
-	}
-	return ival;
+    auto r = parallelCall(&slsDetector::exitServer);
+	return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 
 int multiSlsDetector::readConfigurationFile(std::string const fname) {
@@ -1516,7 +1320,8 @@ std::string multiSlsDetector::setSettingsDir(std::string s) {
 }
 
 std::string multiSlsDetector::getCalDir() {
-	return callDetectorMember(&slsDetector::getCalDir);
+    auto r = parallelCall(&slsDetector::getCalDir);
+	return sls::concatenateIfDifferent(r);
 }
 
 std::string multiSlsDetector::setCalDir(std::string s) {

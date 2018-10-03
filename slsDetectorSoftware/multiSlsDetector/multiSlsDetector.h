@@ -149,6 +149,15 @@ public:
 	 */
 	void setupMultiDetector(bool verify = true, bool update = true);
 
+
+
+
+    template <typename RT, typename... CT>
+    std::vector<RT> serialCall(RT (slsDetector::*somefunc)(CT...), CT... Args);
+
+    template <typename RT, typename... CT>
+	std::vector<RT> parallelCall(RT (slsDetector::*somefunc)(CT...), CT... Args);
+
 	/**
 	 * If specific position, then provide result with that detector at position pos
 	 * else concatenate the result of all detectors

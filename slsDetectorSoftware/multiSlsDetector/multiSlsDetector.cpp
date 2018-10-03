@@ -87,6 +87,33 @@ void multiSlsDetector::setupMultiDetector(bool verify, bool update) {
 		updateUserdetails();
 }
 
+
+
+template <typename RT, typename... CT>
+std::vector<RT> multiSlsDetector::serialCall(RT (slsDetector::*somefunc)(CT...), CT... Args)
+{
+    std::vector<RT> result;
+    for (size_t det_id = 0; det_id < thisMultiDetector->numberOfDetectors; ++det_id) {
+        result.push_back(((*this)[det_id]->*somefunc)(Args...));
+    }
+    return result;
+}
+
+template <typename RT, typename... CT>
+std::vector<RT> multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...), CT... Args)
+{
+    std::vector<std::future<RT>> futures;
+    for (size_t det_id = 0; det_id < thisMultiDetector->numberOfDetectors; ++det_id) {
+        futures.push_back(std::async(somefunc, (*this)[det_id], Args...));
+    }
+    std::vector<RT> result;
+    for (auto& i : futures)
+        result.push_back(i.get());
+
+    return result;
+}
+
+
 std::string multiSlsDetector::concatResultOrPos(std::string (slsDetector::*somefunc)(int), int pos) {
 	if (pos >= 0 && pos < (int)detectors.size()) {
 		return (detectors[pos]->*somefunc)(pos);

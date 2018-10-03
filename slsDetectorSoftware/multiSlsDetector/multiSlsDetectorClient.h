@@ -124,7 +124,10 @@ public:
 			}																	\
 			del=1;																\
 		}																		\
-
+		if (pos >= myDetector->getNumberOfDetectors()) {						\
+			std::cout << "position is out of bounds." << std::endl;				\
+			return;																\
+		}																		\
 		// call multi detector command line
 		myCmd=new multiSlsDetectorCommand(myDetector);							\
 		try {																	\

@@ -97,12 +97,6 @@ private:
 		/** timer values */
 		int64_t timerValue[MAX_TIMERS];
 
-		/** detector settings (standard, fast, etc.) */
-		detectorSettings currentSettings;
-
-		/** detector threshold (eV) */
-		int currentThresholdEV;
-
 		/** threaded processing flag (i.e. if data are processed and written to
 		 * file in a separate thread)  */
 		int threadedProcessing;
@@ -149,12 +143,17 @@ public:
 	 */
 	void setupMultiDetector(bool verify = true, bool update = true);
 
-
-
-
+	/**
+	 * Loop through the detectors serially
+	 * and return a vector of results
+	 */
     template <typename RT, typename... CT>
     std::vector<RT> serialCall(RT (slsDetector::*somefunc)(CT...), CT... Args);
 
+	/**
+	 * Loop through the detectors in parallel threads
+	 * and return a vector of results
+	 */
     template <typename RT, typename... CT>
 	std::vector<RT> parallelCall(RT (slsDetector::*somefunc)(CT...), CT... Args);
 
@@ -166,8 +165,6 @@ public:
 	 * @returns result for detector at that position or concatenated string of all detectors
 	 */
 	std::string concatResultOrPos(std::string (slsDetector::*somefunc)(int), int pos);
-
-
 
 	/**
 	 * Decodes which detector and the corresponding channel numbers for it
@@ -261,7 +258,7 @@ public:
 	/**
 	 * Free shared memory and delete shared memory structure
 	 * occupied by the sharedMultiSlsDetector structure
-	 * Clears all the vectors and destroys threadpool to bring
+	 * Clears all the vectors and  bring
 	 * object back to state before object creation amap
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 */
@@ -391,18 +388,16 @@ public:
 	/**
 	 * Get Detector offset from shared memory in dimension d
 	 * @param d dimension d
-	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns offset in dimension d, -1 if pos is not an actual position in list
 	 */
-	int getDetectorOffset(dimension d, int detPos = -1);
+	int getDetectorOffset(dimension d);
 
 	/**
 	 * Set Detector offset in shared memory in dimension d
 	 * @param d dimension d
 	 * @param off offset for detector
-	 * @param detPos -1 for all detectors in  list or specific detector position
 	 */
-	void setDetectorOffset(dimension d, int off, int detPos = -1);
+	void setDetectorOffset(dimension d, int off);
 
 	/**
 	 * Updates the channel offsets in X and Y dimension for all the sls detectors
@@ -1237,13 +1232,6 @@ public:
 	int getFramesCaughtByReceiver(int detPos = -1);
 
 	/**
-	 * Gets the number of frames caught by any one receiver (to avoid using threadpool)
-	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns number of frames caught by any one receiver (master receiver if exists)
-	 */
-	int getFramesCaughtByAnyReceiver(int detPos = -1);
-
-	/**
 	 * Gets the current frame index of receiver
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns current frame index of receiver
@@ -1613,9 +1601,6 @@ private:
 
 	/** mutex to synchronize slsdetector threads */
 	pthread_mutex_t ms;
-
-	/** true if post processing thread is enabled */
-	int threadedProcessing;
 
 	/** sets when the acquisition is finished */
 	int jointhread;

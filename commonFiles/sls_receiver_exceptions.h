@@ -22,12 +22,6 @@ public:
     std::string GetMessage() const { return "Shared Memory Failed";};
 };
 
-struct ThreadpoolException : public SlsDetectorPackageExceptions {
-public:
-	ThreadpoolException() {}
-	std::string GetMessage() const { return "Threadpool Failed";};
-};
-
 struct SocketException : public SlsDetectorPackageExceptions {
 public:
 	SocketException() {}

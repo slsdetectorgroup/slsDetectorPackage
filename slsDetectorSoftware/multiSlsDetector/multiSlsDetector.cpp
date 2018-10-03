@@ -341,7 +341,7 @@ std::string multiSlsDetector::getErrorMessage(int& critical, int detPos) {
 	// single
 	if (detPos >= 0) {
 
-		if(isDetectorIndexOutOfBounds())
+		if(isDetectorIndexOutOfBounds(detPos))
 			return retval;
 
 		slsMask = getErrorMask();
@@ -367,7 +367,7 @@ std::string multiSlsDetector::getErrorMessage(int& critical, int detPos) {
 		}
 		if (multiMask & MULTI_POS_EXCEEDS_LIST) {
 			retval.append("Position exceeds multi detector list\n");
-			critical = 1;
+			critical = 0;
 		}
 
 
@@ -403,7 +403,7 @@ int64_t multiSlsDetector::clearAllErrorMask(int detPos) {
 
 	// single
 	if (detPos >= 0) {
-		if(isDetectorIndexOutOfBounds())
+		if(isDetectorIndexOutOfBounds(detPos))
 			return -1;
 		return detectors[idet]->clearErrorMask();
 	}
@@ -449,7 +449,7 @@ int multiSlsDetector::checkVersionCompatibility(portType t, int detPos) {
 	// single
 	if (detPos >= 0) {
 
-		if(isDetectorIndexOutOfBounds())
+		if(isDetectorIndexOutOfBounds(detPos))
 			return -1;
 
 		int ret = detectors[detPos]->checkVersionCompatibility(t);
@@ -467,7 +467,7 @@ int64_t multiSlsDetector::getId(idMode mode, int detPos) {
 	// single
 	if (detPos >= 0) {
 
-		if(isDetectorIndexOutOfBounds())
+		if(isDetectorIndexOutOfBounds(detPos))
 			return -1;
 
 		int64_t ret = detectors[detPos]->getId(mode);
@@ -481,21 +481,52 @@ int64_t multiSlsDetector::getId(idMode mode, int detPos) {
 }
 
 
-slsDetector* multiSlsDetector::getSlsDetector(unsigned int pos) {
-	if (pos >= 0 && pos < detectors.size()) {
+slsDetector* multiSlsDetector::getSlsDetector(int detPos) {
+
+	// single
+	if (detPos >= 0) {
+
+		if(isDetectorIndexOutOfBounds(detPos))
+			return 0;
+
 		return detectors[pos];
 	}
+
+	//multi
 	return 0;
 }
 
-slsDetector *multiSlsDetector::operator()(int pos) const {
-	if (pos >= 0 && pos < (int)detectors.size())
+slsDetector *multiSlsDetector::operator()(int detPos) const {
+
+	// single
+	if (detPos >= 0) {
+
+		if(isDetectorIndexOutOfBounds(detPos))
+			return NULL;
+
 		return detectors[pos];
+	}
+
+	//multi
 	return NULL;
 }
 
 
-void multiSlsDetector::freeSharedMemory(int multiId) {
+void multiSlsDetector::freeSharedMemory(int multiId, int detPos) {
+
+	// single
+	if (detPos >= 0) {
+
+		if(isDetectorIndexOutOfBounds(detPos))
+			return NULL;
+
+		detectors[detPos]->freeSharedMemory(multiId, detPos);
+		if (detectors[detPos]->getErrorMask())
+			setErrorMask(getErrorMask() | (1 << detPos));
+		return;
+	}
+
+	// multi
 	// get number of detectors
 	int numDetectors = 0;
 	SharedMemory* shm = new SharedMemory(multiId, -1);
@@ -520,6 +551,20 @@ void multiSlsDetector::freeSharedMemory(int multiId) {
 
 
 void multiSlsDetector::freeSharedMemory() {
+
+	// single
+	if (detPos >= 0) {
+
+		if(isDetectorIndexOutOfBounds(detPos))
+			return NULL;
+
+		detectors[detPos]->freeSharedMemory();
+		if (detectors[detPos]->getErrorMask())
+			setErrorMask(getErrorMask() | (1 << detPos));
+		return;
+	}
+
+	// multi
 	// clear zmq vector
 	for (std::vector<ZmqSocket*>::const_iterator it = zmqSocket.begin(); it != zmqSocket.end(); ++it) {
 		delete(*it);
@@ -4602,7 +4647,7 @@ int multiSlsDetector::kbhit() {
 
 bool multiSlsDetector::isDetectorIndexOutOfBounds(int detPos) {
 	// position exceeds multi list size
-	if (detPos >= detectors.size()) {
+	if (detPos >= (int)detectors.size()) {
 		FILE_LOG(logERROR) << "Position " << detPos << " is out of bounds with a detector list of " << detectors.size();
 		setErrorMask(getErrorMask() | MULTI_POS_EXCEEDS_LIST);
 		return true;

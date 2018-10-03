@@ -11,7 +11,6 @@
 
 class slsDetector;
 class SharedMemory;
-class ThreadPool;
 class ZmqSocket;
 class detectorData;
 
@@ -291,13 +290,13 @@ public:
 	 * @param critical is 1 if any of the messages is critical
 	 * @returns error message else an empty std::string
 	 */
-	std::string getErrorMessage(int &critical);
+	std::string getErrorMessage(int &critical, int detPos = -1);
 
 	/**
 	 * Clears error mask of both multi and sls
 	 * @returns error mask
 	 */
-	int64_t clearAllErrorMask();
+	int64_t clearAllErrorMask(int detPos = -1);
 
 	/**
 	 * Set Error Mask from all detectors
@@ -329,7 +328,7 @@ public:
 	 * @param p port type control port or receiver port
 	 * @returns FAIL for incompatibility, OK for compatibility
 	 */
-	int checkVersionCompatibility(portType t);
+	int checkVersionCompatibility(portType t, int detPos = -1);
 
 	/**
 	 * Get ID or version numbers
@@ -337,28 +336,28 @@ public:
 	 * @param imod module number in entire module list (gets decoded) (-1 for all)
 	 * @returns Id or version number of that type
 	 */
-	int64_t getId(idMode mode, int imod=0);
+	int64_t getId(idMode mode, int detPos = -1);
 
 	/**
 	 * Get sls detector object from position in detectors array
 	 * @param pos position in detectors array
 	 * @returns pointer to sls detector object
 	 */
-	slsDetector* getSlsDetector(unsigned int pos);
+	slsDetector* getSlsDetector(int detPos = -1);
 
 	/**
 	 * Accessing the sls detector from the multi list using position
 	 * @param pos position in the multi list
 	 * @returns slsDetector object
 	 */
-	slsDetector *operator()(int pos) const;
+	slsDetector *operator()(int detPos = -1) const;
 
 	/**
 	 * Free shared memory from the command line
 	 * avoiding creating the constructor classes and mapping
 	 * @param multiId multi detector Id
 	 */
-	static void freeSharedMemory(int multiId);
+	static void freeSharedMemory(int multiId, int detPos = -1);
 
 	/**
 	 * Free shared memory and delete shared memory structure
@@ -366,7 +365,7 @@ public:
 	 * Clears all the vectors and destroys threadpool to bring
 	 * object back to state before object creation amap
 	 */
-	void freeSharedMemory();
+	void freeSharedMemory(int detPos = -1);
 
 	/**
 	 * Get user details of shared memory
@@ -379,7 +378,7 @@ public:
 	 * Connects to them to set up online flag
 	 * @param name concatenated hostname of all the sls detectors
 	 */
-	void setHostname(const char* name);
+	void setHostname(const char* name, int detPos = -1);
 
 	/**
 	 * Gets the hostname of detector at particular position
@@ -387,7 +386,7 @@ public:
 	 * @param pos position of detector in array, -1 for all detectors
 	 * @returns concatenated hostnames of all detectors or hostname of specific one
 	 */
-	std::string getHostname(int pos = -1);
+	std::string getHostname(int detPos = -1);
 
 	/**
 	 * Appends detectors to the end of the list in shared memory
@@ -403,7 +402,7 @@ public:
 	 * @param pos position of sls detector in array, if -1, returns first detector type
 	 * @returns detector type of sls detector in position pos, if -1, returns the first det type
 	 */
-	detectorType getDetectorsType(int pos = -1);
+	detectorType getDetectorsType(int detPos = -1);
 
 	/**
 	 * Concatenates string types of all sls detectors or
@@ -411,7 +410,7 @@ public:
 	 * @param pos position of sls detector in array, if -1, returns first detector type
 	 * @returns detector type of sls detector in position pos, if -1, concatenates
 	 */
-	std::string sgetDetectorsType(int pos=-1);
+	std::string sgetDetectorsType(int detPos = -1);
 
 	/**
 	 * Just to overload getDetectorType from users
@@ -419,18 +418,7 @@ public:
 	 * returns the detector type of the first sls detector
 	 * @returns detector type of sls detector in position pos, if -1, concatenates
 	 */
-	std::string getDetectorType();
-
-	/**
-	 * Creates all the threads in the threadpool
-	 * throws an exception if it cannot create threads
-	 */
-	void createThreadPool();
-
-	/**
-	 * Destroys all the threads in the threadpool
-	 */
-	void destroyThreadPool();
+	std::string getDetectorType(int detPos = -1);
 
 	/**
 	 * Returns the number of detectors in the multidetector structure
@@ -457,7 +445,7 @@ public:
 	 * Returns the total number of channels of all sls detectors from shared memory
 	 * @returns the total number of channels of all sls detectors
 	 */
-	int getTotalNumberOfChannels();
+	int getTotalNumberOfChannels(int detPos = -1);
 
 	/**
 	 * Returns the total number of channels of all sls detectors in dimension d
@@ -465,7 +453,7 @@ public:
 	 * @param d dimension d
 	 * @returns the total number of channels of all sls detectors in dimension d
 	 */
-	int getTotalNumberOfChannels(dimension d);
+	int getTotalNumberOfChannels(dimension d, int detPos = -1);
 
 	/**
 	 * Returns the total number of channels of all sls detectors in dimension d
@@ -474,7 +462,7 @@ public:
 	 * @returns the total number of channels of all sls detectors in dimension d
 	 * including gap pixels
 	 */
-	int getTotalNumberOfChannelsInclGapPixels(dimension d);
+	int getTotalNumberOfChannelsInclGapPixels(dimension d, int detPos = -1);
 
 	/**
 	 * Returns the maximum number of channels of all sls detectors in each dimension d
@@ -501,7 +489,7 @@ public:
 	 * @param pos detector position in multi detector list
 	 * @returns offset in dimension d, -1 if pos is not an actual position in list
 	 */
-	int getDetectorOffset(dimension d, int pos);
+	int getDetectorOffset(dimension d, int detPos = -1);
 
 	/**
 	 * Set Detector offset in shared memory in dimension d
@@ -509,7 +497,7 @@ public:
 	 * @param off offset for detector
 	 * @param pos detector position in multi detector list
 	 */
-	void setDetectorOffset(dimension d, int off, int pos);
+	void setDetectorOffset(dimension d, int off, int detPos = -1);
 
 	/**
 	 * Updates the channel offsets in X and Y dimension for all the sls detectors
@@ -525,14 +513,14 @@ public:
 	 * if ONLINE_FLAG, detector in online state (i.e. communication to the detector updating the local structure)
 	 * @returns online/offline status
 	 */
-	int setOnline(int const online=GET_ONLINE_FLAG);
+	int setOnline(int const online=GET_ONLINE_FLAG, int detPos = -1);
 
 	/**
 	 * Checks if each of the detectors are online/offline
 	 * @returns empty string if they are all online,
 	 * else returns concatenation of strings of all detectors that are offline
 	 */
-	std::string checkOnline();
+	std::string checkOnline(int detPos = -1);
 
 	/**
 	 * Set/Gets TCP Port of detector or receiver
@@ -540,26 +528,26 @@ public:
 	 * @param num port number (-1 gets)
 	 * @returns port number
 	 */
-	int setPort(portType t, int num=-1);
+	int setPort(portType t, int num=-1, int detPos = -1);
 
 	/**
 	 * Lock server for this client IP
 	 * @param p 0 to unlock, 1 to lock
 	 * @returns 1 for locked or 0 for unlocked
 	 */
-	int lockServer(int p);
+	int lockServer(int p, int detPos = -1);
 
 	/**
 	 * Get last client IP saved on detector server
 	 * @returns last client IP saved on detector server
 	 */
-	std::string getLastClientIP();
+	std::string getLastClientIP(int detPos = -1);
 
 	/**
 	 * Exit detector server
 	 * @returns OK or FAIL
 	 */
-	int exitServer();
+	int exitServer(int detPos = -1);
 
 	/**
 	 * Load configuration from a configuration File
@@ -579,14 +567,14 @@ public:
 	 * Returns the trimfile or settings file name (Useless??)
 	 * @returns the trimfile or settings file name
 	 */
-	std::string getSettingsFile();
+	std::string getSettingsFile(int detPos = -1);
 
 	/**
 	 * Get detector settings
 	 * @param ipos position in multi list (-1 all)
 	 * @returns current settings
 	 */
-	detectorSettings getSettings(int pos=-1);
+	detectorSettings getSettings(int detPos = -1);
 
 	/**
 	 * Load detector settings from the settings file picked from the trimdir/settingsdir
@@ -596,50 +584,50 @@ public:
 	 * @param ipos position in multi list (-1 all)
 	 * @returns current settings
 	 */
-	detectorSettings setSettings(detectorSettings isettings, int pos=-1);
+	detectorSettings setSettings(detectorSettings isettings, int detPos = -1);
 
 	/**
-	 * Get threshold energy (Mythen and Eiger)
+	 * Get threshold energy (Eiger)
 	 * @param imod module number (-1 all)
 	 * @returns current threshold value for imod in ev (-1 failed)
 	 */
-	int getThresholdEnergy(int imod=-1);
+	int getThresholdEnergy(, int detPos = -1);
 
 	/**
-	 * Set threshold energy (Mythen and Eiger)
+	 * Set threshold energy (Eiger)
 	 * @param e_eV threshold in eV
 	 * @param imod module number (-1 all)
 	 * @param isettings ev. change settings
 	 * @param tb 1 to include trimbits, 0 to exclude
 	 * @returns current threshold value for imod in ev (-1 failed)
 	 */
-	int setThresholdEnergy(int e_eV, int imod=-1, detectorSettings isettings=GET_SETTINGS,int tb=1);
+	int setThresholdEnergy(int e_eV, detectorSettings isettings=GET_SETTINGS,int tb=1, int detPos = -1);
 
 	/**
 	 * Returns the detector trimbit/settings directory  \sa sharedSlsDetector
 	 * @returns the trimbit/settings directory
 	 */
-	std::string getSettingsDir();
+	std::string getSettingsDir(int detPos = -1);
 
 	/**
 	 * Sets the detector trimbit/settings directory  \sa sharedSlsDetector
 	 * @param s trimbits/settings directory
 	 * @returns the trimbit/settings directory
 	 */
-	std::string setSettingsDir(std::string s);
+	std::string setSettingsDir(std::string s, int detPos = -1);
 
 	/**
 	 * Returns the calibration files directory   \sa  sharedSlsDetector (Mythen)
 	 * @returns the calibration files directory
 	 */
-	std::string getCalDir();
+	std::string getCalDir(int detPos = -1);
 
 	/**
 	 * Sets the calibration files directory   \sa  sharedSlsDetector (Mythen)
 	 * @param s the calibration files directory
 	 * @returns the calibration files directory
 	 */
-	std::string setCalDir(std::string s);
+	std::string setCalDir(std::string s, int detPos = -1);
 
 	/**
 	 * Loads the modules settings/trimbits reading from a specific file
@@ -648,7 +636,7 @@ public:
 	 * @param imod module number (-1 for all)
 	 * returns OK or FAIL
 	 */
-	int loadSettingsFile(std::string fname, int imod=-1);
+	int loadSettingsFile(std::string fname, int detPos = -1);
 
 	/**
 	 * Saves the modules settings/trimbits to a specific file
@@ -657,7 +645,7 @@ public:
 	 * @param imod module number (-1 for all)
 	 * returns OK or FAIL
 	 */
-	int saveSettingsFile(std::string fname, int imod=-1);
+	int saveSettingsFile(std::string fname, int detPos = -1);
 
 	/**
 	 * Loads the modules calibration data reading from a specific file (Mythen)
@@ -666,7 +654,7 @@ public:
 	 * @param imod module number (-1 for all)
 	 * returns OK or FAIL
 	 */
-	int loadCalibrationFile(std::string fname, int imod=-1);
+	int loadCalibrationFile(std::string fname, int detPos = -1);
 
 	/**
 	 * Saves the modules calibration data to a specific file (Mythen)
@@ -675,61 +663,61 @@ public:
 	 * @param imod module number (-1 for all)
 	 * returns OK or FAIL
 	 */
-	int saveCalibrationFile(std::string fname, int imod=-1);
+	int saveCalibrationFile(std::string fname, int detPos = -1);
 
 	/**
 	 * Get Detector run status
 	 * @returns status
 	 */
-	runStatus  getRunStatus();
+	runStatus  getRunStatus(int detPos = -1);
 
 	/**
 	 * Prepares detector for acquisition (Eiger)
 	 * @returns OK if all detectors are ready for acquisition, FAIL otherwise
 	 */
-	int prepareAcquisition();
+	int prepareAcquisition(int detPos = -1);
 
 	/**
 	 * Start detector acquisition (Non blocking)
 	 * @returns OK or FAIL if even one does not start properly
 	 */
-	int startAcquisition();
+	int startAcquisition(int detPos = -1);
 
 	/**
 	 * Stop detector acquisition
 	 * @returns OK or FAIL
 	 */
-	int stopAcquisition();
+	int stopAcquisition(int detPos = -1);
 
 	/**
 	 * Give an internal software trigger to the detector (Eiger only)
 	 * @return OK or FAIL
 	 */
-	int sendSoftwareTrigger();
+	int sendSoftwareTrigger(int detPos = -1);
 
 	/**
 	 * Start detector acquisition and read all data (Blocking until end of acquisition)
 	 * @returns OK or FAIL
 	 */
-	int startAndReadAll();
+	int startAndReadAll(int detPos = -1);
 
 	/**
 	 * Start readout (without exposure or interrupting exposure) (Eiger store in ram)
 	 * @returns OK or FAIL
 	 */
-	int startReadOut();
+	int startReadOut(int detPos = -1);
 
 	/**
 	 * Requests and  receives all data from the detector (Eiger store in ram)
 	 * @returns OK or FAIL
 	 */
-	int readAll();
+	int readAll(int detPos = -1);
 
 	/**
 	 * Configures in detector the destination for UDP packets (Not Mythen)
 	 * @returns OK or FAIL
 	 */
-	int configureMAC();
+	int configureMAC(int detPos = -1);
 
 	/**
 	 * Set/get timer value (not all implemented for all detectors)
@@ -738,7 +726,7 @@ public:
 	 * @param imod module number (gotthard delay can have different values)
 	 * @returns timer set value in ns or number of...(e.g. frames, gates, probes)
 	 */
-	int64_t setTimer(timerIndex index, int64_t t=-1, int imod = -1);
+	int64_t setTimer(timerIndex index, int64_t t=-1, int detPos = -1);
 
 	/**
 	 * Set/get timer value left in acquisition (not all implemented for all detectors)
@@ -747,7 +735,7 @@ public:
 	 * @param imod module number
 	 * @returns timer set value in ns or number of...(e.g. frames, gates, probes)
 	 */
-	int64_t getTimeLeft(timerIndex index, int imod = -1);
+	int64_t getTimeLeft(timerIndex index, int detPos = -1);
 
 	/**
 	 * Set speed
@@ -755,7 +743,7 @@ public:
 	 * @param value (clkdivider 0,1,2 for full, half and quarter speed). Other values check manual
 	 * @returns value of speed set
 	 */
-	int setSpeed(speedVariable sp, int value=-1);
+	int setSpeed(speedVariable sp, int value=-1, int detPos = -1);
 
 	/**
 	 * Set/get dynamic range and updates the number of dataBytes
@@ -764,13 +752,13 @@ public:
 	 * @returns current dynamic range
 	 * \sa sharedSlsDetector
 	 */
-	int setDynamicRange(int i=-1);
+	int setDynamicRange(int i=-1, int detPos = -1);
 
 	/**
 	 * Recalculated number of data bytes for multi detector
 	 * @returns tota number of data bytes for multi detector
 	 */
-	int getDataBytes();
+	int getDataBytes(int detPos = -1);
 
 	/**
 	 * Set/get dacs value
@@ -780,7 +768,7 @@ public:
 	 * @param imod module number (if -1 all modules)
 	 * @returns current DAC value
 	 */
-	dacs_t setDAC(dacs_t val, dacIndex index , int mV, int imod=-1);
+	dacs_t setDAC(dacs_t val, dacIndex index , int mV, int detPos = -1);
 
 	/**
 	 * Get adc value
@@ -788,14 +776,14 @@ public:
 	 * @param imod module number (if -1 all modules)
 	 * @returns current adc value (temperature for eiger and jungfrau in millidegrees)
 	 */
-	dacs_t getADC(dacIndex index, int imod=-1);
+	dacs_t getADC(dacIndex index, int detPos = -1);
 
 	/**
 	 * Set/get timing mode
 	 * @param pol timing mode (-1 gets)
 	 * @returns current timing mode
 	 */
-	externalCommunicationMode setExternalCommunicationMode(externalCommunicationMode pol=GET_EXTERNAL_COMMUNICATION_MODE);
+	externalCommunicationMode setExternalCommunicationMode(externalCommunicationMode pol=GET_EXTERNAL_COMMUNICATION_MODE, int detPos = -1);
 
 	/**
 	 * Set/get external signal flags (to specify triggerinrising edge etc) (Gotthard, Mythen)
@@ -803,14 +791,14 @@ public:
 	 * @param signalindex singal index (0 - 3)
 	 * @returns current timing mode
 	 */
-	externalSignalFlag setExternalSignalFlags(externalSignalFlag pol=GET_EXTERNAL_SIGNAL_FLAG , int signalindex=0);
+	externalSignalFlag setExternalSignalFlags(externalSignalFlag pol=GET_EXTERNAL_SIGNAL_FLAG , int signalindex=0, int detPos = -1);
 
 	/**
 	 * Set/get readout flags (Eiger, Mythen)
 	 * @param flag readout flag (Eiger options: parallel, nonparallel, safe etc.) (-1 gets)
 	 * @returns readout flag
 	 */
-	int setReadOutFlags(readOutFlags flag=GET_READOUT_FLAGS);
+	int setReadOutFlags(readOutFlags flag=GET_READOUT_FLAGS, int detPos = -1);
 
 	/**
 	 * Write in a register. For Advanced users
@@ -818,14 +806,14 @@ public:
 	 * @param val value to write into register
 	 * @returns value read after writing
 	 */
-	uint32_t writeRegister(uint32_t addr, uint32_t val);
+	uint32_t writeRegister(uint32_t addr, uint32_t val, int detPos = -1);
 
 	/**
 	 * Read from a register. For Advanced users
 	 * @param addr address of register
 	 * @returns value read from register
 	 */
-	uint32_t readRegister(uint32_t addr);
+	uint32_t readRegister(uint32_t addr, int detPos = -1);
 
 	/**
 	 * Set bit in a register. For Advanced users
@@ -833,7 +821,7 @@ public:
 	 * @param n nth bit
 	 * @returns value read from register
 	 */
-	uint32_t setBit(uint32_t addr, int n);
+	uint32_t setBit(uint32_t addr, int n, int detPos = -1);
 
 	/**
 	 * Clear bit in a register. For Advanced users
@@ -841,7 +829,7 @@ public:
 	 * @param n nth bit
 	 * @returns value read from register
 	 */
-	uint32_t clearBit(uint32_t addr, int n);
+	uint32_t clearBit(uint32_t addr, int n, int detPos = -1);
 
 	/**
 	 * Set network parameter
@@ -849,14 +837,14 @@ public:
 	 * @param s network parameter value
 	 * @returns network parameter value set (from getNetworkParameter)
 	 */
-	std::string setNetworkParameter(networkParameter p, std::string s);
+	std::string setNetworkParameter(networkParameter p, std::string s, int detPos = -1);
 
 	/**
 	 * Get network parameter
 	 * @param p network parameter type
 	 * @returns network parameter value set (from getNetworkParameter)
 	 */
-	std::string getNetworkParameter(networkParameter);
+	std::string getNetworkParameter(networkParameter, int detPos = -1);
 
 	/**
 	 * Execute a digital test (Gotthard, Mythen)
@@ -864,7 +852,7 @@ public:
 	 * @param imod module index (-1 for all)
 	 * @returns result of test
 	 */
-	int digitalTest(digitalTestMode mode, int imod=0);
+	int digitalTest(digitalTestMode mode, int detPos = -1);
 
 	/**
 	 * Load dark or gain image to detector (Gotthard)
@@ -872,7 +860,7 @@ public:
 	 * @param fname file name from which to load image
 	 * @returns OK or FAIL
 	 */
-	int loadImageToDetector(imageType index,std::string const fname);
+	int loadImageToDetector(imageType index,std::string const fname, int detPos = -1);
 
 	/**
 	 * Writes the counter memory block from the detector (Gotthard)
@@ -880,28 +868,28 @@ public:
 	 * @param startACQ is 1 to start acquisition after reading counter
 	 * @returns OK or FAIL
 	 */
-	int writeCounterBlockFile(std::string const fname,int startACQ=0);
+	int writeCounterBlockFile(std::string const fname,int startACQ=0, int detPos = -1);
 
 	/**
 	 * Resets counter in detector (Gotthard)
 	 * @param startACQ is 1 to start acquisition after resetting counter
 	 * @returns OK or FAIL
 	 */
-	int resetCounterBlock(int startACQ=0);
+	int resetCounterBlock(int startACQ=0, int detPos = -1);
 
 	/**
 	 * Set/get counter bit in detector (Gotthard)
 	 * @param i is -1 to get, 0 to reset and any other value to set the counter bit
 	 * @returns the counter bit in detector
 	 */
-	int setCounterBit(int i = -1);
+	int setCounterBit(int i = -1, int detPos = -1);
 
 	/**
 	 * Ensures that min is less than max in both dimensions (Gotthard)
 	 * @param n number of rois
 	 * @param r array of rois
 	 */
-	void verifyMinMaxROI(int n, ROI r[]);
+	void verifyMinMaxROI(int n, ROI r[], int detPos = -1);
 
 	/**
 	 * Set ROI (Gotthard)
@@ -910,14 +898,14 @@ public:
 	 * @param roiLimits array of roi
 	 * @returns OK or FAIL
 	 */
-	int setROI(int n=-1,ROI roiLimits[]=NULL);
+	int setROI(int n=-1,ROI roiLimits[]=NULL, int detPos = -1);
 
 	/**
 	 * Get ROI from each detector and convert it to the multi detector scale (Gotthard)
 	 * @param n number of rois
 	 * @returns OK or FAIL
 	 */
-	ROI* getROI(int &n);
+	ROI* getROI(int &n, int detPos = -1);
 
 	/**
 	 * Write to ADC register (Gotthard, Jungfrau, ChipTestBoard). For expert users
@@ -925,28 +913,28 @@ public:
 	 * @param val value
 	 * @returns return value  (mostly -1 as it can't read adc register)
 	 */
-	int writeAdcRegister(int addr, int val);
+	int writeAdcRegister(int addr, int val, int detPos = -1);
 
 	/**
 	 * Activates/Deactivates the detector (Eiger only)
 	 * @param enable active (1) or inactive (0), -1 gets
 	 * @returns 0 (inactive) or 1 (active)for activate mode
 	 */
-	int activate(int const enable=-1);
+	int activate(int const enable=-1, int detPos = -1);
 
 	/**
 	 * Set deactivated Receiver padding mode (Eiger only)
 	 * @param padding padding option for deactivated receiver. Can be 1 (padding), 0 (no padding), -1 (gets)
 	 * @returns 1 (padding), 0 (no padding), -1 (inconsistent values) for padding option
 	 */
-	int setDeactivatedRxrPaddingMode(int padding=-1);
+	int setDeactivatedRxrPaddingMode(int padding=-1, int detPos = -1);
 
 	/**
 	 * Returns the enable if data will be flipped across x or y axis (Eiger)
 	 * @param d axis across which data is flipped
 	 * @returns 1 for flipped, else 0
 	 */
-	int getFlippedData(dimension d=X);
+	int getFlippedData(dimension d=X, int detPos = -1);
 
 	/**
 	 * Sets the enable which determines if
@@ -955,7 +943,7 @@ public:
 	 * @param value 0 or 1 to reset/set or -1 to get value
 	 * @returns enable flipped data across x or y axis
 	 */
-	int setFlippedData(dimension d=X, int value=-1);
+	int setFlippedData(dimension d=X, int value=-1, int detPos = -1);
 
 	/**
 	 * Sets all the trimbits to a particular value (Eiger)
@@ -963,7 +951,7 @@ public:
 	 * @param imod module number, -1 means all modules
 	 * @returns OK or FAIL
 	 */
-	int setAllTrimbits(int val, int imod=-1);
+	int setAllTrimbits(int val, int detPos = -1);
 
 	/**
 	 * Enable gap pixels, only for Eiger and for 8,16 and 32 bit mode. (Eiger)
@@ -971,7 +959,7 @@ public:
 	 * @param val 1 sets, 0 unsets, -1 gets
 	 * @returns gap pixel enable or -1 for error
 	 */
-	int enableGapPixels(int val=-1);
+	int enableGapPixels(int val=-1, int detPos = -1);
 
 	/**
 	 * Sets the number of trim energies and their value  (Eiger)
@@ -980,7 +968,7 @@ public:
 	 * @param en array of energies
 	 * @returns number of trim energies
 	 */
-	int setTrimEn(int nen, int *en=NULL);
+	int setTrimEn(int nen, int *en=NULL, int detPos = -1);
 
 	/**
 	 * Returns the number of trim energies and their value  (Eiger)
@@ -988,7 +976,7 @@ public:
 	 * @param en array of energies
 	 * @returns number of trim energies
 	 */
-	int getTrimEn(int *en=NULL);
+	int getTrimEn(int *en=NULL, int detPos = -1);
 
 	/**
 	 * Pulse Pixel (Eiger)
@@ -997,7 +985,7 @@ public:
 	 * @param y is y coordinate
 	 * @returns OK or FAIL
 	 */
-	int pulsePixel(int n=0,int x=0,int y=0);
+	int pulsePixel(int n=0,int x=0,int y=0, int detPos = -1);
 
 	/**
 	 * Pulse Pixel and move by a relative value (Eiger)
@@ -1006,14 +994,14 @@ public:
 	 * @param y is relative y value
 	 * @returns OK or FAIL
 	 */
-	int pulsePixelNMove(int n=0,int x=0,int y=0);
+	int pulsePixelNMove(int n=0,int x=0,int y=0, int detPos = -1);
 
 	/**
 	 * Pulse Chip (Eiger)
 	 * @param n is number of times to pulse
 	 * @returns OK or FAIL
 	 */
-	int pulseChip(int n=0);
+	int pulseChip(int n=0, int detPos = -1);
 
 	/**
 	 * Set/gets threshold temperature (Jungfrau)
@@ -1021,7 +1009,7 @@ public:
 	 * @param imod module number, -1 is all
 	 * @returns threshold temperature in millidegrees
 	 */
-	int setThresholdTemperature(int val=-1, int imod=-1);
+	int setThresholdTemperature(int val=-1, int detPos = -1);
 
 	/**
 	 * Enables/disables temperature control (Jungfrau)
@@ -1029,7 +1017,7 @@ public:
 	 * @param imod module number, -1 is all
 	 * @returns temperature control enable
 	 */
-	int setTemperatureControl(int val=-1, int imod=-1);
+	int setTemperatureControl(int val=-1, int detPos = -1);
 
 	/**
 	 * Resets/ gets over-temperature event (Jungfrau)
@@ -1037,41 +1025,41 @@ public:
 	 * @param imod module number, -1 is all
 	 * @returns over-temperature event
 	 */
-	int setTemperatureEvent(int val=-1, int imod=-1);
+	int setTemperatureEvent(int val=-1, int detPos = -1);
 
 	/**
 	 * Set storage cell that stores first acquisition of the series (Jungfrau)
 	 * @param value storage cell index. Value can be 0 to 15. (-1 gets)
 	 * @returns the storage cell that stores the first acquisition of the series
 	 */
-	int setStoragecellStart(int pos=-1);
+	int setStoragecellStart(int pos=-1, int detPos = -1);
 
 	/**
 	 * Programs FPGA with pof file (Jungfrau)
 	 * @param fname file name
 	 * @returns OK or FAIL
 	 */
-	int programFPGA(std::string fname);
+	int programFPGA(std::string fname, int detPos = -1);
 
 	/**
 	 * Resets FPGA (Jungfrau)
 	 * @returns OK or FAIL
 	 */
-	int resetFPGA();
+	int resetFPGA(int detPos = -1);
 
 	/**
 	 * Power on/off Chip (Jungfrau)
 	 * @param ival on is 1, off is 0, -1 to get
 	 * @returns OK or FAIL
 	 */
-	int powerChip(int ival= -1);
+	int powerChip(int ival= -1, int detPos = -1);
 
 	/**
 	 * Automatic comparator disable (Jungfrau)
 	 * @param ival on is 1, off is 0, -1 to get
 	 * @returns OK or FAIL
 	 */
-	int setAutoComparatorDisableMode(int ival= -1);
+	int setAutoComparatorDisableMode(int ival= -1, int detPos = -1);
 
 	/**
 	 * Returns the trimbits from the detector's shared memmory (Mythen, Eiger)
@@ -1080,7 +1068,7 @@ public:
 	 * uploaded from detector
 	 * @returns total number of channels for the detector
 	 */
-	int getChanRegs(double* retval,bool fromDetector);
+	int getChanRegs(double* retval,bool fromDetector, int detPos = -1);
 
 	/**
 	 * Calibrate Pedestal (ChipTestBoard)
@@ -1088,7 +1076,7 @@ public:
 	 * @param frames number of frames
 	 * @returns number of frames
 	 */
-	int calibratePedestal(int frames = 0);
+	int calibratePedestal(int frames = 0, int detPos = -1);
 
 	/**
 	 * Set Rate correction (Mythen, Eiger)
@@ -1097,156 +1085,156 @@ public:
 	 * for current settings
 	 * @returns 0 if rate correction disabled, >0 otherwise
 	 */
-	int setRateCorrection(double t=0);
+	int setRateCorrection(double t=0, int detPos = -1);
 
 	/**
 	 * Get rate correction (Mythen, Eiger)
 	 * @param t reference for dead time
 	 * @returns 0 if rate correction disabled, > 0 otherwise
 	 */
-	int getRateCorrection(double &t);
+	int getRateCorrection(double &t, int detPos = -1);
 
 	/**
 	 * Get rate correction tau (Mythen, Eiger)
 	 * @returns 0 if rate correction disabled, otherwise the tau used for the correction
 	 */
-	double getRateCorrectionTau();
+	double getRateCorrectionTau(int detPos = -1);
 
 	/**
 	 * Get rate correction (Mythen, Eiger)
 	 * @returns 0 if rate correction disabled,  > 0 otherwise
 	 */
-	int getRateCorrection();
+	int getRateCorrection(int detPos = -1);
 
 	/**
 	 * Prints receiver configuration
 	 * @returns  OK or FAIL
 	 */
-	int printReceiverConfiguration();
+	int printReceiverConfiguration(int detPos = -1);
 
 	/**
 	 * Sets up receiver socket if online and sets the flag
 	 * @param online online/offline flag (-1 gets)
 	 * @returns online/offline flag
 	 */
-	int setReceiverOnline(int const online=GET_ONLINE_FLAG);
+	int setReceiverOnline(int const online=GET_ONLINE_FLAG, int detPos = -1);
 
 	/**
 	 * Checks if the receiver is really online
 	 * @returns empty string if all online, else concatenates hostnames of all
 	 * detectors that are offline
 	 */
-	std::string checkReceiverOnline();
+	std::string checkReceiverOnline(int detPos = -1);
 
 	/**
 	 * Locks/Unlocks the connection to the receiver
 	 * @param lock sets (1), usets (0), gets (-1) the lock
 	 * @returns lock status of the receiver
 	 */
-	int lockReceiver(int lock=-1);
+	int lockReceiver(int lock=-1, int detPos = -1);
 
 	/**
 	 * Returns the IP of the last client connecting to the receiver
 	 * @returns IP of last client connecting to receiver
 	 */
-	std::string getReceiverLastClientIP();
+	std::string getReceiverLastClientIP(int detPos = -1);
 
 	/**
 	 * Turns off the receiver server!
 	 * @returns OK or FAIL
 	 */
-	int exitReceiver();
+	int exitReceiver(int detPos = -1);
 
 	/**
 	 * Returns output file directory
 	 * @returns output file directory
 	 */
-	std::string getFilePath();
+	std::string getFilePath(int detPos = -1);
 
 	/**
 	 * Sets up the file directory
 	 * @param s file directory
 	 * @returns file dir
 	 */
-	std::string setFilePath(std::string s);
+	std::string setFilePath(std::string s, int detPos = -1);
 
 	/**
 	 * Returns file name prefix
 	 * @returns file name prefix
 	 */
-	std::string getFileName();
+	std::string getFileName(int detPos = -1);
 
 	/**
 	 * Sets up the file name prefix
 	 * @param s file name prefix
 	 * @returns file name prefix
 	 */
-	std::string setFileName(std::string s);
+	std::string setFileName(std::string s, int detPos = -1);
 
 	/**
 	 * Sets the max frames per file in receiver
 	 * @param f max frames per file
 	 * @returns max frames per file in receiver
 	 */
-	int setReceiverFramesPerFile(int f = -1);
+	int setReceiverFramesPerFile(int f = -1, int detPos = -1);
 
 	/**
 	 * Sets the frames discard policy in receiver
 	 * @param f frames discard policy
 	 * @returns frames discard policy set in receiver
 	 */
-	frameDiscardPolicy setReceiverFramesDiscardPolicy(frameDiscardPolicy f = GET_FRAME_DISCARD_POLICY);
+	frameDiscardPolicy setReceiverFramesDiscardPolicy(frameDiscardPolicy f = GET_FRAME_DISCARD_POLICY, int detPos = -1);
 
 	/**
 	 * Sets the partial frames padding enable in receiver
 	 * @param f partial frames padding enable
 	 * @returns partial frames padding enable in receiver
 	 */
-	int setReceiverPartialFramesPadding(int f = -1);
+	int setReceiverPartialFramesPadding(int f = -1, int detPos = -1);
 
 	/**
 	 * Returns file format
 	 * @returns file name
 	 */
-	fileFormat getFileFormat();
+	fileFormat getFileFormat(int detPos = -1);
 
 	/**
 	 * Sets up the file format
 	 * @param f file format
 	 * @returns file format
 	 */
-	fileFormat setFileFormat(fileFormat f);
+	fileFormat setFileFormat(fileFormat f, int detPos = -1);
 
 	/**
 	 * Returns file index
 	 * @returns file index
 	 */
-	int getFileIndex();
+	int getFileIndex(int detPos = -1);
 
 	/**
 	 * Sets up the file index
 	 * @param i file index
 	 * @returns file index
 	 */
-	int setFileIndex(int i);
+	int setFileIndex(int i, int detPos = -1);
 
 	/**
 	 * increments file index
 	 * @returns the file index
 	 */
-	int incrementFileIndex();
+	int incrementFileIndex(int detPos = -1);
 
 	/**
 	 * Receiver starts listening to packets
 	 * @returns OK or FAIL
 	 */
-	int startReceiver();
+	int startReceiver(int detPos = -1);
 
 	/**
 	 * Stops the listening mode of receiver
 	 * @returns OK or FAIL
 	 */
-	int stopReceiver();
+	int stopReceiver(int detPos = -1);
 
 	/**
 	 * Gets the status of the listening mode of receiver
@@ -1258,53 +1246,53 @@ public:
 	 * Gets the number of frames caught by receiver
 	 * @returns number of frames caught by receiver
 	 */
-	int getFramesCaughtByReceiver();
+	int getFramesCaughtByReceiver(int detPos = -1);
 
 	/**
 	 * Gets the number of frames caught by any one receiver (to avoid using threadpool)
 	 * @returns number of frames caught by any one receiver (master receiver if exists)
 	 */
-	int getFramesCaughtByAnyReceiver();
+	int getFramesCaughtByAnyReceiver(int detPos = -1);
 
 	/**
 	 * Gets the current frame index of receiver
 	 * @returns current frame index of receiver
 	 */
-	int getReceiverCurrentFrameIndex();
+	int getReceiverCurrentFrameIndex(int detPos = -1);
 
 	/**
 	 * Resets framescaught in receiver
 	 * Use this when using startAcquisition instead of acquire
 	 * @returns OK or FAIL
 	 */
-	int resetFramesCaught();
+	int resetFramesCaught(int detPos = -1);
 
 	/**
 	 * Create Receiving Data Sockets
 	 * @param destroy is true to destroy all the sockets
 	 * @returns OK or FAIL
 	 */
-	int createReceivingDataSockets(const bool destroy = false);
+	int createReceivingDataSockets(const bool destroy = false), int detPos = -1;
 
 	/**
 	 * Reads frames from receiver through a constant socket
 	 * Called during acquire() when call back registered or when using gui
 	 */
-	void readFrameFromReceiver();
+	void readFrameFromReceiver(int detPos = -1);
 
 	/**
 	 * Sets/Gets receiver file write enable
 	 * @param enable 1 or 0 to set/reset file write enable
 	 * @returns file write enable
 	 */
-	int enableWriteToFile(int enable=-1);
+	int enableWriteToFile(int enable=-1, int detPos = -1);
 
 	/**
 	 * Sets/Gets file overwrite enable
 	 * @param enable 1 or 0 to set/reset file overwrite enable
 	 * @returns file overwrite enable
 	 */
-	int overwriteFile(int enable=-1);
+	int overwriteFile(int enable=-1, int detPos = -1);
 
 	/**
 	 * Sets the read receiver frequency
@@ -1314,7 +1302,7 @@ public:
 	 * frames not sent), 1 is every frame, 2 is every second frame etc.
 	 * @returns read receiver frequency
 	 */
-	int setReadReceiverFrequency(int freq=-1);
+	int setReadReceiverFrequency(int freq=-1, int detPos = -1);
 
 	/**
 	 * Sets the read receiver timer
@@ -1323,49 +1311,49 @@ public:
 	 * @param time_in_ms timer between frames
 	 * @returns read receiver timer
 	 */
-	int setReceiverReadTimer(int time_in_ms=500);
+	int setReceiverReadTimer(int time_in_ms=500, int detPos = -1);
 
 	/**
 	 * Enable data streaming to client
 	 * @param enable 0 to disable, 1 to enable, -1 to get the value
 	 * @returns data streaming to client enable
 	 */
-	int enableDataStreamingToClient(int enable=-1);
+	int enableDataStreamingToClient(int enable=-1, int detPos = -1);
 
 	/**
 	 * Enable or disable streaming data from receiver to client
 	 * @param enable 0 to disable 1 to enable -1 to only get the value
 	 * @returns data streaming from receiver enable
 	 */
-	int enableDataStreamingFromReceiver(int enable=-1);
+	int enableDataStreamingFromReceiver(int enable=-1, int detPos = -1);
 
 	/**
 	 * Enable/disable or 10Gbe
 	 * @param i is -1 to get, 0 to disable and 1 to enable
 	 * @returns if 10Gbe is enabled
 	 */
-	int enableTenGigabitEthernet(int i = -1);
+	int enableTenGigabitEthernet(int i = -1, int detPos = -1);
 
 	/**
 	 * Set/get receiver fifo depth
 	 * @param i is -1 to get, any other value to set the fifo deph
 	 * @returns the receiver fifo depth
 	 */
-	int setReceiverFifoDepth(int i = -1);
+	int setReceiverFifoDepth(int i = -1, int detPos = -1);
 
 	/**
 	 * Set/get receiver silent mode
 	 * @param i is -1 to get, 0 unsets silent mode, 1 sets silent mode
 	 * @returns the receiver silent mode enable
 	 */
-	int setReceiverSilentMode(int i = -1);
+	int setReceiverSilentMode(int i = -1, int detPos = -1);
 
 	/**
 	 * Opens pattern file and sends pattern to CTB
 	 * @param fname pattern file to open
 	 * @returns OK/FAIL
 	 */
-	int setCTBPattern(std::string fname);
+	int setCTBPattern(std::string fname, int detPos = -1);
 
 	/**
 	 * Writes a pattern word to the CTB
@@ -1374,7 +1362,7 @@ public:
 	 * @param word 64bit word to be written, -1 gets
 	 * @returns actual value
 	 */
-	uint64_t setCTBWord(int addr,uint64_t word=-1);
+	uint64_t setCTBWord(int addr,uint64_t word=-1, int detPos = -1);
 
 	/**
 	 * Sets the pattern or loop limits in the CTB
@@ -1384,7 +1372,7 @@ public:
 	 * @param n number of loops (if level >=0)
 	 * @returns OK/FAIL
 	 */
-	int setCTBPatLoops(int level,int &start, int &stop, int &n);
+	int setCTBPatLoops(int level,int &start, int &stop, int &n, int detPos = -1);
 
 	/**
 	 * Sets the wait address in the CTB
@@ -1392,7 +1380,7 @@ public:
 	 * @param addr wait address, -1 gets
 	 * @returns actual value
 	 */
-	int setCTBPatWaitAddr(int level, int addr=-1);
+	int setCTBPatWaitAddr(int level, int addr=-1, int detPos = -1);
 
 	/**
 	 * Sets the wait time in the CTB
@@ -1400,7 +1388,7 @@ public:
 	 * @param t wait time, -1 gets
 	 * @returns actual value
 	 */
-	int setCTBPatWaitTime(int level, uint64_t t=-1);
+	int setCTBPatWaitTime(int level, uint64_t t=-1, int detPos = -1);
 
 	/**
 	 * Loads the detector setup from file
@@ -1409,7 +1397,7 @@ public:
 	 * from files with default extensions as generated by dumpDetectorSetup
 	 * @returns OK or FAIL
 	 */
-	int retrieveDetectorSetup(std::string const fname, int level=0);
+	int retrieveDetectorSetup(std::string const fname, int level=0, int detPos = -1);
 
 	/**
 	 * Saves the detector setup to file
@@ -1418,7 +1406,7 @@ public:
 	 * and writes them to files with automatically added extension
 	 * @returns OK or FAIL
 	 */
-	int dumpDetectorSetup(std::string const fname, int level=0);
+	int dumpDetectorSetup(std::string const fname, int level=0, int detPos = -1);
 
 	/**
 	 * register callback for accessing acquisition final data

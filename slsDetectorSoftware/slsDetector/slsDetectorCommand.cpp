@@ -2151,9 +2151,6 @@ string slsDetectorCommand::cmdData(int narg, char *args[], int action, int detPo
 		return  string("cannot set");
 	} else if (action==HELP_ACTION) {
 		return helpData(HELP_ACTION);
-	} else if (detPos >= 0) {
-		cprintf(RED, "Error: Individual detectors not allowed for readout. Aborting.\n");
-		return string("unsuccessful");
 	} else {
 		b=myDet->setThreadedProcessing(-1);
 		myDet->setThreadedProcessing(0);
@@ -2190,23 +2187,23 @@ string slsDetectorCommand::cmdStatus(int narg, char *args[], int action, int det
 		return helpStatus(action);
 
 	if (cmd=="status") {
-		myDet->setOnline(ONLINE_FLAG);
+		myDet->setOnline(detPos, ONLINE_FLAG);
 		if (action==PUT_ACTION) {
 			//myDet->setThreadedProcessing(0);
 			if (string(args[1])=="start")
-				myDet->startAcquisition();
+				myDet->startAcquisition(detPos);
 			else if (string(args[1])=="stop") {
-				myDet->setReceiverOnline(ONLINE_FLAG);//restream stop
-				myDet->stopAcquisition();
+				myDet->setReceiverOnline(detPos, ONLINE_FLAG);//restream stop
+				myDet->stopAcquisition(detPos);
 			}
 			else if (string(args[1])=="trigger") {
-				myDet->sendSoftwareTrigger();
+				myDet->sendSoftwareTrigger(detPos);
 			}
 			else
 				return string("unknown action");
 		}
-		runStatus s=myDet->getRunStatus();
-		return myDet->runStatusType(s);
+		runStatus s=myDet->getRunStatus(detPos);
+		return myDet->runStatusType(detPos, s);
 	}
 	else if (cmd=="busy") {
 		if (action==PUT_ACTION) {
@@ -2249,8 +2246,8 @@ string slsDetectorCommand::cmdDataStream(int narg, char *args[], int action, int
 	int ival=-1;
 	char ans[100]="";
 
-	myDet->setOnline(ONLINE_FLAG);
-	myDet->setReceiverOnline(ONLINE_FLAG);
+	myDet->setOnline(detPos, ONLINE_FLAG);
+	myDet->setReceiverOnline(detPos, ONLINE_FLAG);
 
 	if (action==HELP_ACTION)
 		return helpDataStream(HELP_ACTION);
@@ -2258,10 +2255,10 @@ string slsDetectorCommand::cmdDataStream(int narg, char *args[], int action, int
 	if (action==PUT_ACTION) {
 		if (!sscanf(args[1],"%d",&ival))
 			return string ("cannot scan rx_datastream mode");
-		myDet->enableDataStreamingFromReceiver(ival);
+		myDet->enableDataStreamingFromReceiver(detPos, ival);
 	}
 
-	sprintf(ans,"%d",myDet->enableDataStreamingFromReceiver());
+	sprintf(ans,"%d",myDet->enableDataStreamingFromReceiver(detPos));
 	return string(ans);
 }
 

@@ -2109,14 +2109,14 @@ string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action, int de
 		return string("acquire unsuccessful");
 	}
 
-	myDet->setOnline(ONLINE_FLAG);
-	int r_online = myDet->setReceiverOnline(ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG, detPos);
+	int r_online = myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 
 	if(myDet->acquire() == FAIL)
 		return string("acquire unsuccessful");
 	if(r_online){
 		char answer[100];
-		sprintf(answer,"\nAcquired %d",myDet->getFramesCaughtByReceiver());
+		sprintf(answer,"\nAcquired %d",myDet->getFramesCaughtByReceiver(detPos));
 		return string(answer);
 	}
 
@@ -2154,8 +2154,8 @@ string slsDetectorCommand::cmdData(int narg, char *args[], int action, int detPo
 	} else {
 		b=myDet->setThreadedProcessing(-1);
 		myDet->setThreadedProcessing(0);
-		myDet->setOnline(detPos, ONLINE_FLAG);
-		myDet->setReceiverOnline(detPos, ONLINE_FLAG);
+		myDet->setOnline(ONLINE_FLAG, detPos);
+		myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 		myDet->readAll(detPos);
 		//processdata in receiver is useful only for gui purposes
 		if(myDet->setReceiverOnline(detPos)==OFFLINE_FLAG)
@@ -2187,13 +2187,13 @@ string slsDetectorCommand::cmdStatus(int narg, char *args[], int action, int det
 		return helpStatus(action);
 
 	if (cmd=="status") {
-		myDet->setOnline(detPos, ONLINE_FLAG);
+		myDet->setOnline(ONLINE_FLAG, detPos);
 		if (action==PUT_ACTION) {
 			//myDet->setThreadedProcessing(0);
 			if (string(args[1])=="start")
 				myDet->startAcquisition(detPos);
 			else if (string(args[1])=="stop") {
-				myDet->setReceiverOnline(detPos, ONLINE_FLAG);//restream stop
+				myDet->setReceiverOnline(ONLINE_FLAG, detPos);//restream stop
 				myDet->stopAcquisition(detPos);
 			}
 			else if (string(args[1])=="trigger") {
@@ -2203,7 +2203,7 @@ string slsDetectorCommand::cmdStatus(int narg, char *args[], int action, int det
 				return string("unknown action");
 		}
 		runStatus s=myDet->getRunStatus(detPos);
-		return myDet->runStatusType(detPos, s);
+		return myDet->runStatusType(s, detPos);
 	}
 	else if (cmd=="busy") {
 		if (action==PUT_ACTION) {
@@ -2246,8 +2246,8 @@ string slsDetectorCommand::cmdDataStream(int narg, char *args[], int action, int
 	int ival=-1;
 	char ans[100]="";
 
-	myDet->setOnline(detPos, ONLINE_FLAG);
-	myDet->setReceiverOnline(detPos, ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG, detPos);
+	myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 
 	if (action==HELP_ACTION)
 		return helpDataStream(HELP_ACTION);
@@ -2255,7 +2255,7 @@ string slsDetectorCommand::cmdDataStream(int narg, char *args[], int action, int
 	if (action==PUT_ACTION) {
 		if (!sscanf(args[1],"%d",&ival))
 			return string ("cannot scan rx_datastream mode");
-		myDet->enableDataStreamingFromReceiver(detPos, ival);
+		myDet->enableDataStreamingFromReceiver(ival, detPos);
 	}
 
 	sprintf(ans,"%d",myDet->enableDataStreamingFromReceiver(detPos));
@@ -2308,11 +2308,11 @@ string slsDetectorCommand::cmdHostname(int narg, char *args[], int action, int d
 
 	if (action==PUT_ACTION) {
 		if (((cmd == "add") || (cmd == "hostname")) &&
-				(!myDet->isMultiSlsDetectorClass())) {
+				(detPos >= 0)) {
 			return string ("Wrong usage - setting hostname/add only from "
 					"multiDetector level");
 		}
-		if ((cmd == "replace") && (myDet->isMultiSlsDetectorClass())) {
+		if ((cmd == "replace") && (detPos < 0)) {
 			return string ("Wrong usage - replace only from "
 					"single detector level");
 		}
@@ -2326,12 +2326,12 @@ string slsDetectorCommand::cmdHostname(int narg, char *args[], int action, int d
 		}
 
 		if (cmd == "add")
-			myDet->addMultipleDetectors(hostname);
+			myDet->addMultipleDetectors(hostname, detPos);
 		else
-			myDet->setHostname(hostname);
+			myDet->setHostname(hostname, detPos);
 	}
 
-	return myDet->getHostname();
+	return myDet->getHostname(detPos);
 }
 
 
@@ -2368,7 +2368,7 @@ string slsDetectorCommand::cmdUser(int narg, char *args[], int action, int detPo
 	if (action==PUT_ACTION) {
 		return string("cannot put");
 	}
-	if (!myDet->isMultiSlsDetectorClass()) {
+	if (detPos >= 0) {
 		return string ("Wrong usage - getting user details only from "
 				"multiDetector level");
 	}
@@ -2417,15 +2417,15 @@ string slsDetectorCommand::cmdExitServer(int narg, char *args[], int action, int
 
 	if (action==PUT_ACTION) {
 		if (cmd=="exitserver"){
-			myDet->setOnline(ONLINE_FLAG);
-			if (myDet->exitServer()!=OK)
+			myDet->setOnline(ONLINE_FLAG, detPos);
+			if (myDet->exitServer(detPos)!=OK)
 				return string("Server shut down.");
 			else
 				return string("Error closing server\n");
 		}
 		else if (cmd=="exitreceiver"){
-			myDet->setReceiverOnline(ONLINE_FLAG);
-			if(myDet->exitReceiver()!=OK)
+			myDet->setReceiverOnline(ONLINE_FLAG, detPos);
+			if(myDet->exitReceiver(detPos)!=OK)
 				return string("Receiver shut down\n");
 			else
 				return string("Error closing receiver\n");
@@ -2452,11 +2452,11 @@ string slsDetectorCommand::cmdSettingsDir(int narg, char *args[], int action, in
 		return helpSettingsDir(action);
 	}
 	if (action==PUT_ACTION) {
-		myDet->setSettingsDir(string(args[1]));
+		myDet->setSettingsDir(string(args[1]), detPos);
 	}
-	if (myDet->getSettingsDir()=="")
+	if (myDet->getSettingsDir(detPos)=="")
 		return string("undefined");
-	return myDet->getSettingsDir();
+	return myDet->getSettingsDir(detPos);
 }
 
 
@@ -2482,11 +2482,11 @@ string slsDetectorCommand::cmdCalDir(int narg, char *args[], int action, int det
 		return helpCalDir(action);
 	}
 	if (action==PUT_ACTION) {
-		myDet->setCalDir(string(args[1]));
+		myDet->setCalDir(string(args[1]), detPos);
 	}
-	if ( (myDet->getCalDir()).empty() )
+	if ( (myDet->getCalDir(detPos)).empty() )
 		return string("undefined");
-	return myDet->getCalDir();
+	return myDet->getCalDir(detPos);
 }
 
 
@@ -2520,14 +2520,14 @@ string slsDetectorCommand::cmdTrimEn(int narg, char *args[], int action, int det
 						break;
 				}
 			}
-			myDet->setTrimEn(ip,pos);
+			myDet->setTrimEn(ip,pos, detPos);
 		}
 	}
-	int npos=myDet->getTrimEn();
+	int npos=myDet->getTrimEn(detPos);
 	if (npos != -1) {
 		sprintf(answer,"%d",npos);
 		int opos[npos];
-		npos = myDet->getTrimEn(opos);
+		npos = myDet->getTrimEn(opos, detPos);
 		if (npos != -1) {
 			for (int ip=0; ip<npos;++ip) {
 				sprintf(answer,"%s %d",answer,opos[ip]);
@@ -2552,14 +2552,14 @@ string slsDetectorCommand::helpTrimEn(int action) {
 
 
 string slsDetectorCommand::cmdOutDir(int narg, char *args[], int action, int detPos){
-	myDet->setReceiverOnline(ONLINE_FLAG);
+	myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 	if (action==HELP_ACTION)
 		return helpOutDir(action);
 
 	else if(action==PUT_ACTION)
-		myDet->setFilePath(string(args[1]));
+		myDet->setFilePath(string(args[1]), detPos);
 
-	return string(myDet->getFilePath());
+	return string(myDet->getFilePath(detPos));
 }
 
 
@@ -2577,25 +2577,25 @@ string slsDetectorCommand::helpOutDir(int action){
 
 
 string slsDetectorCommand::cmdFileName(int narg, char *args[], int action, int detPos){
-	myDet->setReceiverOnline(ONLINE_FLAG);
+	myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 	if (action==HELP_ACTION)
 		return helpFileName(action);
 	if (cmd=="fname") {
 		if (action==PUT_ACTION)
-			myDet->setFileName(string(args[1]));
+			myDet->setFileName(string(args[1]), detPos);
 
-		return string(myDet->getFileName());
+		return string(myDet->getFileName(detPos));
 	} else if(cmd=="fileformat") {
 		if (action==PUT_ACTION){
 			if (string(args[1])=="binary")
-				myDet->setFileFormat(BINARY);
+				myDet->setFileFormat(BINARY, detPos);
 			else if (string(args[1])=="ascii")
-				myDet->setFileFormat(ASCII);
+				myDet->setFileFormat(ASCII, detPos);
 			else if (string(args[1])=="hdf5")
-				myDet->setFileFormat(HDF5);
+				myDet->setFileFormat(HDF5, detPos);
 			else return string("could not scan file format mode\n");
 		}
-		return myDet->fileFormats(myDet->getFileFormat());
+		return myDet->fileFormats(myDet->getFileFormat(detPos));
 	}
 	return string("unknown command") + cmd;
 
@@ -2622,19 +2622,19 @@ string slsDetectorCommand::cmdEnablefwrite(int narg, char *args[], int action, i
 
 	int i;
 	char ans[100];
-	myDet->setReceiverOnline(ONLINE_FLAG);
+	myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 	if (action==HELP_ACTION) {
 		return helpEnablefwrite(action);
 	}
 	if (action==PUT_ACTION) {
 		if (sscanf(args[1],"%d",&i))
-			myDet->enableWriteToFile(i);
+			myDet->enableWriteToFile(i, detPos);
 		else
 			return string("could not decode enable file write");
 
 
 	}
-	sprintf(ans,"%d",myDet->enableWriteToFile());
+	sprintf(ans,"%d",myDet->enableWriteToFile(detPos));
 	return string(ans);
 }
 
@@ -2654,19 +2654,19 @@ string slsDetectorCommand::cmdOverwrite(int narg, char *args[], int action, int 
 
 	int i;
 	char ans[100];
-	myDet->setReceiverOnline(ONLINE_FLAG);
+	myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 	if (action==HELP_ACTION) {
 		return helpOverwrite(action);
 	}
 	if (action==PUT_ACTION) {
 		if (sscanf(args[1],"%d",&i))
-			myDet->overwriteFile(i);
+			myDet->overwriteFile(i, detPos);
 		else
 			return string("could not decode overwrite");
 
 
 	}
-	sprintf(ans,"%d",myDet->overwriteFile());
+	sprintf(ans,"%d",myDet->overwriteFile(detPos));
 	return string(ans);
 }
 
@@ -2686,17 +2686,17 @@ string slsDetectorCommand::helpOverwrite(int action){
 string slsDetectorCommand::cmdFileIndex(int narg, char *args[], int action, int detPos){
 	char ans[100];
 	int i;
-	myDet->setReceiverOnline(ONLINE_FLAG);
+	myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 	if (action==HELP_ACTION) {
 		return helpFileName(action);
 	}
 	else if (action==PUT_ACTION){
 		if(!sscanf(args[1],"%d",&i))
 			return string("cannot parse file index");
-		myDet->setFileIndex(i);
+		myDet->setFileIndex(i, detPos);
 	}
 
-	sprintf(ans,"%d", myDet->getFileIndex());
+	sprintf(ans,"%d", myDet->getFileIndex(detPos));
 	return string(ans);
 }
 
@@ -2722,14 +2722,14 @@ string slsDetectorCommand::cmdRateCorr(int narg, char *args[], int action, int d
 	double fval;
 	char answer[1000];
 
-	myDet->setOnline(ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG, detPos);
 
 	if (action==PUT_ACTION) {
 		sscanf(args[1],"%lf",&fval);
-		myDet->setRateCorrection(fval);
+		myDet->setRateCorrection(fval, detPos);
 	}
 	double t;
-	if (myDet->getRateCorrection(t)) {
+	if (myDet->getRateCorrection(t, detPos)) {
 		sprintf(answer,"%0.9f",t);
 	} else {
 		sprintf(answer,"%0.9f",0.);
@@ -2788,13 +2788,13 @@ string slsDetectorCommand::cmdImage(int narg, char *args[], int action, int detP
 		return string("Cannot get");
 
 	sval=string(args[1]);
-	myDet->setOnline(ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG, detPos);
 
 
 	if (string(args[0])==string("darkimage"))
-		retval=myDet->loadImageToDetector(DARK_IMAGE,sval);
+		retval=myDet->loadImageToDetector(DARK_IMAGE,sval, detPos);
 	else if (string(args[0])==string("gainimage"))
-		retval=myDet->loadImageToDetector(GAIN_IMAGE,sval);
+		retval=myDet->loadImageToDetector(GAIN_IMAGE,sval, detPos);
 
 
 	if(retval==OK)
@@ -2828,7 +2828,7 @@ string slsDetectorCommand::cmdCounter(int narg, char *args[], int action, int de
 	else if (action==PUT_ACTION)
 		ival=atoi(args[1]);
 
-	myDet->setOnline(ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG, detPos);
 
 	if (string(args[0])==string("readctr")){
 		if (action==PUT_ACTION)
@@ -2837,14 +2837,14 @@ string slsDetectorCommand::cmdCounter(int narg, char *args[], int action, int de
 			if (narg<3)
 				return string("should specify I/O file");
 			sval=string(args[2]);
-			retval=myDet->writeCounterBlockFile(sval,ival);
+			retval=myDet->writeCounterBlockFile(sval,ival, detPos);
 		}
 	}
 	else if (string(args[0])==string("resetctr")){
 		if (action==GET_ACTION)
 			return string("Cannot get");
 		else
-			retval=myDet->resetCounterBlock(ival);
+			retval=myDet->resetCounterBlock(ival, detPos);
 	}
 
 	else if (string(args[0])==string("resmat")){
@@ -2852,9 +2852,9 @@ string slsDetectorCommand::cmdCounter(int narg, char *args[], int action, int de
 			if (!sscanf(args[1],"%d",&ival))
 				return string("Could not scan resmat input ")+string(args[1]);
 			if(ival>=0)
-				sprintf(answer,"%d",myDet->setCounterBit(ival));
+				sprintf(answer,"%d",myDet->setCounterBit(ival, detPos));
 		}else
-			sprintf(answer,"%d",myDet->setCounterBit());
+			sprintf(answer,"%d",myDet->setCounterBit(detPos));
 		return string(answer);
 	}
 
@@ -2895,8 +2895,8 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
 	if (action==HELP_ACTION)
 		return helpNetworkParameter(action);
 
-	myDet->setOnline(ONLINE_FLAG);
-	myDet->setReceiverOnline(ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG, detPos);
+	myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 
 	if (cmd=="detectormac") {
 		t=DETECTOR_MAC;
@@ -2967,30 +2967,30 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
 			if (!(sscanf(args[1],"%d",&i)))
 				return ("cannot parse argument") + string(args[1]);
 			// if streaming, switch it off
-			prev_streaming = myDet->enableDataStreamingFromReceiver();
-			if (prev_streaming) myDet->enableDataStreamingFromReceiver(0);
+			prev_streaming = myDet->enableDataStreamingFromReceiver(detPos);
+			if (prev_streaming) myDet->enableDataStreamingFromReceiver(0, detPos);
 		}
 	}else if (cmd=="zmqip") {
 		t=CLIENT_STREAMING_SRC_IP;
 	}else if (cmd=="rx_zmqip") {
 		t=RECEIVER_STREAMING_SRC_IP;
 		// if streaming, switch it off
-		prev_streaming = myDet->enableDataStreamingFromReceiver();
-		if (prev_streaming) myDet->enableDataStreamingFromReceiver(0);
+		prev_streaming = myDet->enableDataStreamingFromReceiver(detPos);
+		if (prev_streaming) myDet->enableDataStreamingFromReceiver(0, detPos);
 	} else if (cmd=="rx_jsonaddheader") {
 	    t=ADDITIONAL_JSON_HEADER;
 	}
 	else return ("unknown network parameter")+cmd;
 
 	if (action==PUT_ACTION) {
-		myDet->setNetworkParameter(t, args[1]);
+		myDet->setNetworkParameter(t, args[1], detPos);
 		// switch it back on, if it had been switched on
 		if (prev_streaming && (t == RECEIVER_STREAMING_PORT || t == RECEIVER_STREAMING_SRC_IP))
-			myDet->enableDataStreamingFromReceiver(1);
+			myDet->enableDataStreamingFromReceiver(1, detPos);
 
 	}
 
-	return myDet->getNetworkParameter(t);
+	return myDet->getNetworkParameter(t, detPos);
 }
 
 string slsDetectorCommand::helpNetworkParameter(int action) {
@@ -3080,11 +3080,11 @@ string slsDetectorCommand::cmdPort(int narg, char *args[], int action, int detPo
 	} else
 		return string("unknown port type ")+cmd;
 
-	myDet->setOnline(ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG, detPos);
 	if (action==PUT_ACTION)
-		myDet->setPort(index,val);
+		myDet->setPort(index,val, detPos);
 
-	sprintf(ans,"%d",myDet->setPort(index));
+	sprintf(ans,"%d",myDet->setPort(index, detPos));
 	return string(ans);
 
 }
@@ -3121,27 +3121,27 @@ string slsDetectorCommand::cmdLock(int narg, char *args[], int action, int detPo
 	char ans[1000];
 
 	if(cmd=="lock"){
-		myDet->setOnline(ONLINE_FLAG);
+		myDet->setOnline(ONLINE_FLAG, detPos);
 		if (action==PUT_ACTION) {
 			if (sscanf(args[1],"%d",&val))
-				myDet->lockServer(val);
+				myDet->lockServer(val, detPos);
 			else
 				return string("could not lock status")+string(args[1]);
 		}
 
-		sprintf(ans,"%d",myDet->lockServer());
+		sprintf(ans,"%d",myDet->lockServer(detPos));
 	}
 
 
 	else  if(cmd=="r_lock"){
-		myDet->setReceiverOnline(ONLINE_FLAG);
+		myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 		if (action==PUT_ACTION) {
 			if (sscanf(args[1],"%d",&val))
-				myDet->lockReceiver(val);
+				myDet->lockReceiver(val, detPos);
 			else
 				return string("could not decode lock status")+string(args[1]);
 		}
-		sprintf(ans,"%d",myDet->lockReceiver());
+		sprintf(ans,"%d",myDet->lockReceiver(detPos));
 	}
 
 
@@ -3181,13 +3181,13 @@ string slsDetectorCommand::cmdLastClient(int narg, char *args[], int action, int
 
 
 	if(cmd=="lastclient"){
-		myDet->setOnline(ONLINE_FLAG);
-		return myDet->getLastClientIP();
+		myDet->setOnline(ONLINE_FLAG, detPos);
+		return myDet->getLastClientIP(detPos);
 	}
 
 	else if(cmd=="r_lastclient"){
-		myDet->setReceiverOnline(ONLINE_FLAG);
-		return myDet->getReceiverLastClientIP();
+		myDet->setReceiverOnline(ONLINE_FLAG, detPos);
+		return myDet->getReceiverLastClientIP(detPos);
 	}
 
 	return string("cannot decode command");
@@ -3217,28 +3217,28 @@ string slsDetectorCommand::cmdOnline(int narg, char *args[], int action, int det
 	if(cmd=="online"){
 		if (action==PUT_ACTION) {
 			if (sscanf(args[1],"%d",&ival))
-				myDet->setOnline(ival);
+				myDet->setOnline(ival, detPos);
 			else
 				return string("Could not scan online mode ")+string(args[1]);
 		}
-		sprintf(ans,"%d",myDet->setOnline());
+		sprintf(ans,"%d",myDet->setOnline(detPos));
 	}
 	else if(cmd=="checkonline"){
 		if (action==PUT_ACTION)
 			return string("cannot set");
-		strcpy(ans,myDet->checkOnline().c_str());
+		strcpy(ans,myDet->checkOnline(detPos).c_str());
 		if(!strlen(ans))
 			strcpy(ans,"All online");
 		else
 			strcat(ans," :Not online");
 	}
 	else if(cmd=="activate"){
-		myDet->setOnline(ONLINE_FLAG);
-		myDet->setReceiverOnline(ONLINE_FLAG);
+		myDet->setOnline(ONLINE_FLAG, detPos);
+		myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 		if (action==PUT_ACTION) {
 			if (!sscanf(args[1],"%d",&ival))
 				return string("Could not scan activate mode ")+string(args[1]);
-			myDet->activate(ival);
+			myDet->activate(ival, detPos);
 			bool padding = true;
 			if (narg > 2) {
 				if (string(args[2]) == "padding")
@@ -3247,26 +3247,26 @@ string slsDetectorCommand::cmdOnline(int narg, char *args[], int action, int det
 					padding = false;
 				else
 					return string ("Could not scan activate mode's padding option " + string(args[2]));
-				myDet->setDeactivatedRxrPaddingMode(padding);
+				myDet->setDeactivatedRxrPaddingMode(padding, detPos);
 			}
 		}
-		int ret = myDet->setDeactivatedRxrPaddingMode();
-		sprintf(ans,"%d %s", myDet->activate(), ret == 1 ? "padding" : (ret == 0 ? "nopadding" : "unknown"));
+		int ret = myDet->setDeactivatedRxrPaddingMode(detPos);
+		sprintf(ans,"%d %s", myDet->activate(detPos), ret == 1 ? "padding" : (ret == 0 ? "nopadding" : "unknown"));
 	}
 	else if(cmd=="r_online"){
 		if (action==PUT_ACTION) {
 			if (sscanf(args[1],"%d",&ival))
-				myDet->setReceiverOnline(ival);
+				myDet->setReceiverOnline(ival, detPos);
 			else
 				return string("Could not scan online mode ")+string(args[1]);
 		}
-		sprintf(ans,"%d",myDet->setReceiverOnline());
+		sprintf(ans,"%d",myDet->setReceiverOnline(detPos));
 	}
 	else{
 		if (action==PUT_ACTION)
 			return string("cannot set");
-		myDet->setReceiverOnline(ONLINE_FLAG);
-		strcpy(ans,myDet->checkReceiverOnline().c_str());
+		myDet->setReceiverOnline(ONLINE_FLAG, detPos);
+		strcpy(ans,myDet->checkReceiverOnline(detPos).c_str());
 		if(!strlen(ans))
 			strcpy(ans,"All receiver online");
 		else
@@ -3308,9 +3308,9 @@ string slsDetectorCommand::cmdConfigureMac(int narg, char *args[], int action, i
 	char ans[1000];
 
 	if (action==PUT_ACTION){
-		myDet->setOnline(ONLINE_FLAG);
-		myDet->setReceiverOnline(ONLINE_FLAG);
-		ret=myDet->configureMAC();
+		myDet->setOnline(ONLINE_FLAG, detPos);
+		myDet->setReceiverOnline(ONLINE_FLAG, detPos);
+		ret=myDet->configureMAC(detPos);
 	}
 	else
 		return string("Cannot get ")+cmd;
@@ -3338,10 +3338,10 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action, i
 	int ret, val=-1, pos=-1,i;
 	char ans[1000];
 
-	myDet->setOnline(ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG, detPos);
 
 	if (cmd == "roi")
-		myDet->setReceiverOnline(ONLINE_FLAG);
+		myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 
 	if (action==PUT_ACTION) {
 		 if (!sscanf(args[1],"%d",&val))
@@ -3360,7 +3360,7 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action, i
 						(!sscanf(args[pos++],"%d",&allroi[i].ymax)) )
 					return string("cannot parse arguments for roi");
 			}
-			myDet->setROI(val,allroi);
+			myDet->setROI(val,allroi, detPos);
 		}
 
 		if(cmd=="detsizechan"){
@@ -3373,51 +3373,51 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action, i
 		if(cmd=="flippeddatax"){
 			if ((!sscanf(args[1],"%d",&val)) ||  (val!=0 && val != 1))
 				return string ("cannot scan flippeddata x mode: must be 0 or 1");
-			myDet->setReceiverOnline(ONLINE_FLAG);
-			myDet->setFlippedData(X,val);
+			myDet->setReceiverOnline(ONLINE_FLAG, detPos);
+			myDet->setFlippedData(X,val, detPos);
 		}
 
 		if(cmd=="flippeddatay"){
 			return string("Not required for this detector\n");
 			if ((!sscanf(args[1],"%d",&val)) ||  (val!=0 && val != 1))
 				return string ("cannot scan flippeddata y mode: must be 0 or 1");
-			myDet->setReceiverOnline(ONLINE_FLAG);
-			myDet->setFlippedData(Y,val);
+			myDet->setReceiverOnline(ONLINE_FLAG, detPos);
+			myDet->setFlippedData(Y,val, detPos);
 		}
 
 		if(cmd=="gappixels"){
 			if ((!sscanf(args[1],"%d",&val)) ||  (val!=0 && val != 1))
 				return string ("cannot scan gappixels mode: must be 0 or 1");
-			myDet->setReceiverOnline(ONLINE_FLAG);
-			if (myDet->isMultiSlsDetectorClass()) // only in multi detector level to update offsets etc.
+			myDet->setReceiverOnline(ONLINE_FLAG, detPos);
+			if (detPos < 0) // only in multi detector level to update offsets etc.
 				myDet->enableGapPixels(val);
 		}
 
 	}
 
 	if (cmd=="dr") {
-		myDet->setReceiverOnline(ONLINE_FLAG);
-		ret=myDet->setDynamicRange(val);
+		myDet->setReceiverOnline(ONLINE_FLAG, detPos);
+		ret=myDet->setDynamicRange(val, detPos);
 	} else if (cmd=="roi") {
-		myDet->getROI(ret);
+		myDet->getROI(ret, detPos);
 	} else if (cmd=="detsizechan") {
 		sprintf(ans,"%d %d",myDet->getMaxNumberOfChannelsPerDetector(X),myDet->getMaxNumberOfChannelsPerDetector(Y));
 		return string(ans);
 	}
 	else if(cmd=="flippeddatax"){
-		myDet->setReceiverOnline(ONLINE_FLAG);
-		ret = myDet->getFlippedData(X);
+		myDet->setReceiverOnline(ONLINE_FLAG, detPos);
+		ret = myDet->getFlippedData(X, detPos);
 	}
 	else if(cmd=="flippeddatay"){
 		return string("Not required for this detector\n");
-		myDet->setReceiverOnline(ONLINE_FLAG);
-		ret = myDet->getFlippedData(Y);
+		myDet->setReceiverOnline(ONLINE_FLAG, detPos);
+		ret = myDet->getFlippedData(Y, detPos);
 	}
 	else if(cmd=="gappixels"){
-		myDet->setReceiverOnline(ONLINE_FLAG);
-		if (!myDet->isMultiSlsDetectorClass()) // only in multi detector level to update offsets etc.
+		myDet->setReceiverOnline(ONLINE_FLAG, detPos);
+		if (detPos >= 0) // only in multi detector level to update offsets etc.
 			return string("Cannot execute this command from slsDetector level. Please use multiSlsDetector level.\n");
-		ret = myDet->enableGapPixels();
+		ret = myDet->enableGapPixels(detPos);
 	}
 
 	else
@@ -3471,55 +3471,55 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action, int d
 	//       return string("could not scan port number")+string(args[1]);
 	//   }
 
-	myDet->setOnline(ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG, detPos);
 
 	if (cmd=="settings") {
 		detectorSettings sett = GET_SETTINGS;
 		if (action==PUT_ACTION) {
-			sett = myDet->getDetectorSettings(string(args[1]));
+			sett = myDet->getDetectorSettings(string(args[1]), detPos);
 			if (sett == -1)
 				return string ("unknown settings scanned " + string(args[1]));
-			sett = myDet->setSettings(sett);
-			if (myDet->getDetectorsType() == EIGER) {
-				return myDet->getDetectorSettings(sett);
+			sett = myDet->setSettings(sett, detPos);
+			if (myDet->getDetectorsType(detPos) == EIGER) {
+				return myDet->getDetectorSettings(sett, detPos);
 			}
 		}
-		return myDet->getDetectorSettings(myDet->getSettings());
+		return myDet->getDetectorSettings(myDet->getSettings(detPos), detPos);
 	} else if (cmd=="threshold") {
 		if (action==PUT_ACTION) {
 			if (!sscanf(args[1],"%d",&val)) {
 				return string("invalid threshold value");
 			}
-			detectorType type = myDet->getDetectorsType();
+			detectorType type = myDet->getDetectorsType(detPos);
 			if (type != EIGER || (type == EIGER && narg<=2)) {
-				myDet->setThresholdEnergy(val);
+				myDet->setThresholdEnergy(val, detPos);
 			} else {
-				detectorSettings sett= myDet->getDetectorSettings(string(args[2]));
+				detectorSettings sett= myDet->getDetectorSettings(string(args[2]), detPos);
 				if(sett == -1)
 					return string("invalid settings value");
-				myDet->setThresholdEnergy(val, -1, sett);
+				myDet->setThresholdEnergy(val, -1, sett, detPos);
 			}
 		}
-		sprintf(ans,"%d",myDet->getThresholdEnergy());
+		sprintf(ans,"%d",myDet->getThresholdEnergy(detPos));
 		return string(ans);
 	}  else if (cmd=="thresholdnotb") {
 		if (action==PUT_ACTION) {
 			if (!sscanf(args[1],"%d",&val)) {
 				return string("invalid threshold value");
 			}
-			detectorType type = myDet->getDetectorsType();
+			detectorType type = myDet->getDetectorsType(detPos);
 			if (type != EIGER)
 				return string("not implemented for this detector");
 			if (narg<=2) {
-				myDet->setThresholdEnergy(val, -1, GET_SETTINGS, 0);
+				myDet->setThresholdEnergy(val, -1, GET_SETTINGS, 0, detPos);
 			} else {
-				detectorSettings sett= myDet->getDetectorSettings(string(args[2]));
+				detectorSettings sett= myDet->getDetectorSettings(string(args[2]), detPos);
 				if(sett == -1)
 					return string("invalid settings value");
-				myDet->setThresholdEnergy(val, -1, sett, 0);
+				myDet->setThresholdEnergy(val, -1, sett, 0, detPos);
 			}
 		}
-		sprintf(ans,"%d",myDet->getThresholdEnergy());
+		sprintf(ans,"%d",myDet->getThresholdEnergy(detPos));
 		return string(ans);
 	} else if (cmd=="trimbits") {
 		if (narg>=2) {
@@ -3530,29 +3530,29 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action, int d
 			int ret = OK;
 			if (action==GET_ACTION) {
 				//create file names
-				ret = myDet->saveSettingsFile(sval, -1);
+				ret = myDet->saveSettingsFile(sval, -1, detPos);
 			} else if (action==PUT_ACTION) {
-				ret = myDet->loadSettingsFile(sval,-1);
+				ret = myDet->loadSettingsFile(sval,-1, detPos);
 			}
 			if (ret == OK)
 				return sval;
 			else return string("not successful");
 		}
-		return myDet->getSettingsFile();
+		return myDet->getSettingsFile(detPos);
 	} else if (cmd=="trimval") {
 	  if (action==PUT_ACTION){
 	    if (sscanf(args[1],"%d",&val))
-	      myDet->setAllTrimbits(val);
+	      myDet->setAllTrimbits(val, detPos);
 	    else
 	      return string("invalid trimbit value ")+cmd;
 	  }
-	  sprintf(ans,"%d",myDet->setAllTrimbits(-1));
+	  sprintf(ans,"%d",myDet->setAllTrimbits(-1, detPos));
 	  return ans;
 	} else if (cmd=="pedestal") {
 		if (action==GET_ACTION)
 			return string("cannot get");
 		if (sscanf(args[1],"%d",&val)){
-			sprintf(ans,"%d",myDet->calibratePedestal(val));
+			sprintf(ans,"%d",myDet->calibratePedestal(val, detPos));
 			return string(ans);
 		}else
 			return string("cannot parse frame number")+cmd;
@@ -3611,7 +3611,7 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action, int detPos)
 
 
 	if (cmd=="thisversion"){
-		int64_t retval = myDet->getId(THIS_SOFTWARE_VERSION);
+		int64_t retval = myDet->getId(THIS_SOFTWARE_VERSION, detPos);
 		if (retval < 0)
 			sprintf(answer, "%d", -1);
 		else
@@ -3619,11 +3619,11 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action, int detPos)
 		return string(answer);
 	}
 
-	myDet->setOnline(ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG, detPos);
 
 
 	if (cmd=="detectornumber") {
-		int64_t retval = myDet->getId(DETECTOR_SERIAL_NUMBER);
+		int64_t retval = myDet->getId(DETECTOR_SERIAL_NUMBER, detPos);
 		if (retval < 0)
 			sprintf(answer, "%d", -1);
 		else
@@ -3632,7 +3632,7 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action, int detPos)
 	}
 
 	if (cmd=="detectorversion") {
-		int64_t retval = myDet->getId(DETECTOR_FIRMWARE_VERSION);
+		int64_t retval = myDet->getId(DETECTOR_FIRMWARE_VERSION, detPos);
 		if (retval < 0)
 			sprintf(answer, "%d", -1);
 		else
@@ -3641,7 +3641,7 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action, int detPos)
 	}
 
 	if (cmd=="softwareversion") {
-		int64_t retval = myDet->getId(DETECTOR_SOFTWARE_VERSION);
+		int64_t retval = myDet->getId(DETECTOR_SOFTWARE_VERSION, detPos);
 		if (retval < 0)
 			sprintf(answer, "%d", -1);
 		else
@@ -3650,8 +3650,8 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action, int detPos)
 	}
 
 	if (cmd=="receiverversion") {
-		myDet->setReceiverOnline(ONLINE_FLAG);
-		int64_t retval = myDet->getId(RECEIVER_VERSION);
+		myDet->setReceiverOnline(ONLINE_FLAG, detPos);
+		int64_t retval = myDet->getId(RECEIVER_VERSION, detPos);
 		if (retval < 0)
 			sprintf(answer, "%d", -1);
 		else
@@ -3660,7 +3660,7 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action, int detPos)
 	}
 
 	if (cmd=="checkdetversion") {
-		int retval = myDet->checkVersionCompatibility(CONTROL_PORT);
+		int retval = myDet->checkVersionCompatibility(CONTROL_PORT, detPos);
 		if (retval < 0)
 			sprintf(answer, "%d", -1);
 		sprintf(answer,"%s", retval == OK ? "compatible" : "incompatible");
@@ -3668,8 +3668,8 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action, int detPos)
 	}
 
 	if (cmd=="checkrecversion") {
-		myDet->setReceiverOnline(ONLINE_FLAG);
-		int retval = myDet->checkVersionCompatibility(DATA_PORT);
+		myDet->setReceiverOnline(ONLINE_FLAG, detPos);
+		int retval = myDet->checkVersionCompatibility(DATA_PORT, detPos);
 		if (retval < 0)
 			sprintf(answer, "%d", -1);
 		sprintf(answer,"%s", retval == OK ? "compatible" : "incompatible");
@@ -3707,14 +3707,14 @@ string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action, int d
 		return helpSN(action);
 
 
-	myDet->setOnline(ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG, detPos);
 
 	if (cmd=="digitest") {
 		if (action==PUT_ACTION)
 			return string("cannot set ")+cmd;
 		int ival=-1;
 		if (sscanf(args[0],"digitest:%d",&ival)) {
-			sprintf(answer,"0x%x",myDet->digitalTest(CHIP_TEST, ival));
+			sprintf(answer,"0x%x",myDet->digitalTest(CHIP_TEST, ival, detPos));
 			return string(answer);
 		} else
 			return string("undefined module number");
@@ -3726,7 +3726,7 @@ string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action, int d
 		int ival=-1;
 		if (sscanf(args[1],"%d",&ival)) {
 			if((ival==0)||(ival==1)){
-				sprintf(answer,"0x%x",myDet->digitalTest(DIGITAL_BIT_TEST,ival));
+				sprintf(answer,"0x%x",myDet->digitalTest(DIGITAL_BIT_TEST,ival, detPos));
 				return string(answer);
 			}
 			else
@@ -3762,7 +3762,7 @@ string slsDetectorCommand::cmdRegister(int narg, char *args[], int action, int d
 	int addr, val,n;
 	char answer[1000];
 
-	myDet->setOnline(ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG, detPos);
 
 
 	// "reg" //
@@ -3798,13 +3798,13 @@ string slsDetectorCommand::cmdRegister(int narg, char *args[], int action, int d
 				;
 			else
 				return string("Could not scan value  (hexadecimal fomat) ")+string(args[2]);
-			sprintf(answer,"0x%x",myDet->writeRegister(addr,val));
+			sprintf(answer,"0x%x",myDet->writeRegister(addr,val, detPos));
 		} else if (cmd=="adcreg") {
 			if (sscanf(args[2],"%x",&val))
 				;
 			else
 				return string("Could not scan value  (hexadecimal fomat) ")+string(args[2]);
-			sprintf(answer,"0x%x",myDet->writeAdcRegister(addr,val));
+			sprintf(answer,"0x%x",myDet->writeAdcRegister(addr,val, detPos));
 		} else {
 
 			if (sscanf(args[2],"%d",&n))
@@ -3816,9 +3816,9 @@ string slsDetectorCommand::cmdRegister(int narg, char *args[], int action, int d
 				return string("Bit number out of range")+string(args[2]);
 
 			if (cmd=="setbit")
-				sprintf(answer,"0x%x",myDet->setBit(addr,n));
+				sprintf(answer,"0x%x",myDet->setBit(addr,n, detPos));
 			if (cmd=="clearbit")
-				sprintf(answer,"0x%x",myDet->clearBit(addr,n));
+				sprintf(answer,"0x%x",myDet->clearBit(addr,n, detPos));
 		}
 
 
@@ -3839,7 +3839,7 @@ string slsDetectorCommand::cmdRegister(int narg, char *args[], int action, int d
 				return string("Could not scan address  (hexadecimal fomat) ")+string(args[1]);
 
 
-			sprintf(answer,"0x%x",myDet->readRegister(addr));
+			sprintf(answer,"0x%x",myDet->readRegister(addr, detPos));
 
 		}
 
@@ -3863,7 +3863,7 @@ string slsDetectorCommand::cmdRegister(int narg, char *args[], int action, int d
 				return string("Bit number out of range")+string(args[2]);
 
 
-			sprintf(answer,"%d",(myDet->readRegister(addr) >> n) & 1);
+			sprintf(answer,"%d",(myDet->readRegister(addr, detPos) >> n) & 1);
 		}
 	}
 
@@ -4026,7 +4026,7 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action, int detPos
 	else
 		return string("cannot decode dac ")+cmd;
 
-	myDet->setOnline(ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG, detPos);
 
 	if (action==PUT_ACTION) {
 
@@ -4043,7 +4043,7 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action, int detPos
 			else
 				return string("cannot scan DAC value ")+string(args[1]);
 
-		myDet->setDAC(val,dac,mode);
+		myDet->setDAC(val,dac,mode, detPos);
 	}
 
 	else if(narg >= 2)
@@ -4051,9 +4051,9 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action, int detPos
 			mode = 1;
 
 #ifdef DACS_INT
-	sprintf(answer,"%d",myDet->setDAC(-1,dac,mode));
+	sprintf(answer,"%d",myDet->setDAC(-1,dac,mode, detPos));
 #else
-	sprintf(answer,"%f",myDet->setDAC(-1,dac,mode));
+	sprintf(answer,"%f",myDet->setDAC(-1,dac,mode, detPos));
 #endif
 	if(mode)
 		strcat(answer," mV");
@@ -4238,18 +4238,18 @@ string slsDetectorCommand::cmdADC(int narg, char *args[], int action, int detPos
 	else
 		return string("cannot decode adc ")+cmd;
 
-	myDet->setOnline(ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG, detPos);
 #ifdef DACS_INT
-	if (myDet->getDetectorsType() == EIGER || myDet->getDetectorsType() == JUNGFRAU){
-		int val = myDet->getADC(adc);
+	if (myDet->getDetectorsType(detPos) == EIGER || myDet->getDetectorsType(detPos) == JUNGFRAU){
+		int val = myDet->getADC(adc, detPos);
 		if (val == -1)
 			sprintf(answer,"%d",val);
 		else
 			sprintf(answer,"%.2f", (double)val/1000.000);
 	}
-	else sprintf(answer,"%d",myDet->getADC(adc));
+	else sprintf(answer,"%d",myDet->getADC(adc, detPos));
 #else
-	sprintf(answer,"%f",myDet->getADC(adc));
+	sprintf(answer,"%f",myDet->getADC(adc, detPos));
 #endif
 	//if ((adc == TEMPERATURE_ADC) || (adc == TEMPERATURE_FPGA))
 	if (adc<=100)
@@ -4299,7 +4299,7 @@ string slsDetectorCommand::cmdTempControl(int narg, char *args[], int action, in
     if (action==HELP_ACTION)
         return helpTempControl(action);
 
-    myDet->setOnline(ONLINE_FLAG);
+    myDet->setOnline(ONLINE_FLAG, detPos);
 
     if (cmd == "temp_threshold") {
         if (action==PUT_ACTION) {
@@ -4307,9 +4307,9 @@ string slsDetectorCommand::cmdTempControl(int narg, char *args[], int action, in
             if (!sscanf(args[1],"%lf", &fval))
                 return string("cannot scan temp control value ")+string(args[1]);
             val = fval * 1000;
-            myDet->setThresholdTemperature(val);
+            myDet->setThresholdTemperature(val, detPos);
         }
-        val = myDet->setThresholdTemperature();
+        val = myDet->setThresholdTemperature(detPos);
         if (val == -1)
             sprintf(answer,"%d",val);
         else
@@ -4322,9 +4322,9 @@ string slsDetectorCommand::cmdTempControl(int narg, char *args[], int action, in
                 return string("cannot scan temp control value ")+string(args[1]);
             if ((val!=0) && (val!=1))
                 return string ("temp_control option must be 0 or 1");
-            myDet->setTemperatureControl(val);
+            myDet->setTemperatureControl(val, detPos);
         }
-        sprintf(answer,"%d", myDet->setTemperatureControl());
+        sprintf(answer,"%d", myDet->setTemperatureControl(detPos));
     }
 
     else if (cmd == "temp_event") {
@@ -4333,9 +4333,9 @@ string slsDetectorCommand::cmdTempControl(int narg, char *args[], int action, in
                 return string("cannot scan temp control value ")+string(args[1]);
             if (val!=0)
                 return string ("temp_event option must be 0 to clear event");
-            myDet->setTemperatureEvent(val);
+            myDet->setTemperatureEvent(val, detPos);
         }
-        sprintf(answer,"%d", myDet->setTemperatureEvent());
+        sprintf(answer,"%d", myDet->setTemperatureEvent(detPos));
     }
 
     else
@@ -4371,12 +4371,12 @@ string slsDetectorCommand::cmdTiming(int narg, char *args[], int action, int det
 	if (action==HELP_ACTION) {
 		return helpTiming(HELP_ACTION);
 	}
-	myDet->setOnline(ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG, detPos);
 	if (action==PUT_ACTION) {
-		if (myDet->externalCommunicationType(string(args[1]))== GET_EXTERNAL_COMMUNICATION_MODE) return helpTiming(narg,args, action);
-		myDet->setExternalCommunicationMode(myDet->externalCommunicationType(string(args[1])));
+		if (myDet->externalCommunicationType(string(args[1]), detPos)== GET_EXTERNAL_COMMUNICATION_MODE) return helpTiming(narg,args, action);
+		myDet->setExternalCommunicationMode(myDet->externalCommunicationType(string(args[1]), detPos), detPos);
 	}
-	return myDet->externalCommunicationType(myDet->setExternalCommunicationMode());
+	return myDet->externalCommunicationType(myDet->setExternalCommunicationMode(detPos));
 
 }
 string slsDetectorCommand::helpTiming(int action){
@@ -4425,14 +4425,14 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action, int detP
     else if (cmd=="storagecells")
         index=STORAGE_CELL_NUMBER;
     else if (cmd=="storagecell_start") {
-        myDet->setOnline(ONLINE_FLAG);
+        myDet->setOnline(ONLINE_FLAG, detPos);
         if (action==PUT_ACTION) {
             int ival =-1;
             if (!sscanf(args[1],"%d", &ival))
                 return string("cannot scan storage cell start value ")+string(args[1]);
-            myDet->setStoragecellStart(ival);
+            myDet->setStoragecellStart(ival, detPos);
         }
-        sprintf(answer,"%d", myDet->setStoragecellStart());
+        sprintf(answer,"%d", myDet->setStoragecellStart(detPos));
         return string(answer);
     }
 	else
@@ -4453,10 +4453,10 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action, int detP
 	}
 
 
-	myDet->setOnline(ONLINE_FLAG);
-	myDet->setReceiverOnline(ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG, detPos);
+	myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 
-	ret=myDet->setTimer(index,t);
+	ret=myDet->setTimer(index,t, detPos);
 
 	if ((ret!=-1) && (index==ACQUISITION_TIME || index==SUBFRAME_ACQUISITION_TIME
 	        || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER ||
@@ -4562,9 +4562,9 @@ string slsDetectorCommand::cmdTimeLeft(int narg, char *args[], int action, int d
 	}
 
 
-	myDet->setOnline(ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG, detPos);
 
-	ret=myDet->getTimeLeft(index);
+	ret=myDet->getTimeLeft(index, detPos);
 
 	if ((ret!=-1) && (index==ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER
 			|| index==ACTUAL_TIME || index==MEASUREMENT_TIME ||
@@ -4657,9 +4657,9 @@ string slsDetectorCommand::cmdSpeed(int narg, char *args[], int action, int detP
 
 	}
 
-	myDet->setOnline(ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG, detPos);
 
-	ret=myDet->setSpeed(index,t);
+	ret=myDet->setSpeed(index,t, detPos);
 
 	sprintf(answer,"%d",ret);
 	return string(answer);
@@ -4742,8 +4742,8 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action, int d
 				return string("could not scan flag ")+string(args[1]);
 		}
 
-		myDet->setOnline(ONLINE_FLAG);
-		retval = myDet->setReadOutFlags(flag);
+		myDet->setOnline(ONLINE_FLAG, detPos);
+		retval = myDet->setReadOutFlags(flag, detPos);
 
 		// cout << hex << flag << " " << retval << endl;
 
@@ -4784,13 +4784,13 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action, int d
 			return string("could not scan signal number ")+string(args[0]);
 
 		if (action==PUT_ACTION) {
-			flag=myDet->externalSignalType(args[1]);
+			flag=myDet->externalSignalType(args[1], detPos);
 			if (flag==GET_EXTERNAL_SIGNAL_FLAG)
 				return string("could not scan external signal mode ")+string(args[1]);
 		}
-		myDet->setOnline(ONLINE_FLAG);
+		myDet->setOnline(ONLINE_FLAG, detPos);
 
-		return myDet->externalSignalType(myDet->setExternalSignalFlags(flag,is));
+		return myDet->externalSignalType(myDet->setExternalSignalFlags(flag,is, detPos));
 
 
 	}	else if (cmd=="programfpga") {
@@ -4802,8 +4802,8 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action, int d
 #ifdef VERBOSE
 		std::cout<< " programming file " << sval << std::endl;
 #endif
-		myDet->setOnline(ONLINE_FLAG);
-		if(myDet->programFPGA(sval) == OK)
+		myDet->setOnline(ONLINE_FLAG, detPos);
+		if(myDet->programFPGA(sval, detPos) == OK)
 			return string("successful");
 		return string("unsuccessful");
 	}
@@ -4815,8 +4815,8 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action, int d
 #ifdef VERBOSE
 		std::cout<< " resetting fpga " << std::endl;
 #endif
-		myDet->setOnline(ONLINE_FLAG);
-		if(myDet->resetFPGA() == OK)
+		myDet->setOnline(ONLINE_FLAG, detPos);
+		if(myDet->resetFPGA(detPos) == OK)
 			return string("successful");
 		return string("unsuccessful");
 	}
@@ -4824,42 +4824,42 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action, int d
 
 	else if (cmd=="powerchip") {
 		char ans[100];
-		myDet->setOnline(ONLINE_FLAG);
+		myDet->setOnline(ONLINE_FLAG, detPos);
 		if (action==PUT_ACTION){
 			int ival = -1;
 			if (!sscanf(args[1],"%d",&ival))
 				return string("could not scan powerchip parameter " + string(args[1]));
-			myDet->powerChip(ival);
+			myDet->powerChip(ival, detPos);
 		}
-		sprintf(ans,"%d",myDet->powerChip());
+		sprintf(ans,"%d",myDet->powerChip(detPos));
 		return string(ans);
 	}
 
 	else if (cmd=="led") {
 		char ans[100];
 		int val=0;
-		myDet->setOnline(ONLINE_FLAG);
+		myDet->setOnline(ONLINE_FLAG, detPos);
 		if (action==PUT_ACTION){
 			int ival = -1;
 			if (!sscanf(args[1],"%d",&ival))
 				return string("could not scan powerchip parameter " + string(args[1]));
-			val=myDet->readRegister(0x4d);
-			myDet->writeRegister(0x4d,(val&(~1))|((~ival)&1));//config register
+			val=myDet->readRegister(0x4d, detPos);
+			myDet->writeRegister(0x4d,(val&(~1))|((~ival)&1), detPos);//config register
 		}
-		sprintf(ans,"%d",~(myDet->readRegister(0x4d))&1);
+		sprintf(ans,"%d",~(myDet->readRegister(0x4d))&1, detPos);
 		return string(ans);
 	}
 
 	else if (cmd=="auto_comp_disable") {
         char ans[100];
-        myDet->setOnline(ONLINE_FLAG);
+        myDet->setOnline(ONLINE_FLAG, detPos);
         if (action==PUT_ACTION){
             int ival = -1;
             if (!sscanf(args[1],"%d",&ival))
                 return string("could not scan auto_comp_control parameter " + string(args[1]));
-            myDet->setAutoComparatorDisableMode(ival);
+            myDet->setAutoComparatorDisableMode(ival, detPos);
         }
-        sprintf(ans,"%d",myDet->setAutoComparatorDisableMode());
+        sprintf(ans,"%d",myDet->setAutoComparatorDisableMode(detPos));
         return string(ans);
     }
 	else
@@ -4919,40 +4919,40 @@ string slsDetectorCommand::cmdConfiguration(int narg, char *args[], int action, 
 	if (narg<2 && cmd != "rx_printconfig")
 		return string("should specify I/O file");
 
-	myDet->setOnline(ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG, detPos);
 
 	if (cmd=="config") {
 		if (action==PUT_ACTION) {
 			sval=string(args[1]);
-			myDet->readConfigurationFile(sval);
+			myDet->readConfigurationFile(sval, detPos);
 		} else if (action==GET_ACTION) {
 			sval=string(args[1]);
-			myDet->writeConfigurationFile(sval);
+			myDet->writeConfigurationFile(sval, detPos);
 		}
 		return sval;
 	} else if (cmd=="rx_printconfig"){
-		myDet->setReceiverOnline(ONLINE_FLAG);
+		myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 		if (action==PUT_ACTION)
 			return string("cannot put");
-		return string(""+myDet->printReceiverConfiguration());
+		return string(""+myDet->printReceiverConfiguration(detPos));
 	}else if (cmd=="parameters") {
-		myDet->setReceiverOnline(ONLINE_FLAG);
+		myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 		if (action==PUT_ACTION) {
 			sval=string(args[1]);
-			myDet->retrieveDetectorSetup(sval);
+			myDet->retrieveDetectorSetup(sval, detPos);
 		} else if (action==GET_ACTION) {
 			sval=string(args[1]);
-			myDet->dumpDetectorSetup(sval);
+			myDet->dumpDetectorSetup(sval, detPos);
 		}
 		return sval;
 	} else if (cmd=="setup") {
-		myDet->setReceiverOnline(ONLINE_FLAG);
+		myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 		if (action==PUT_ACTION) {
 			sval=string(args[1]);
-			myDet->retrieveDetectorSetup(sval,2);
+			myDet->retrieveDetectorSetup(sval,2, detPos);
 		} else if (action==GET_ACTION) {
 			sval=string(args[1]);
-			myDet->dumpDetectorSetup(sval,2);
+			myDet->dumpDetectorSetup(sval,2, detPos);
 		}
 		return sval;
 	}
@@ -5000,19 +5000,19 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action, int d
 		return helpReceiver(action);
 
 
-	myDet->setOnline(ONLINE_FLAG);
-	myDet->setReceiverOnline(ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG, detPos);
+	myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 
 	if(cmd=="receiver"){
 		if (action==PUT_ACTION) {
 			if(!strcasecmp(args[1],"start"))
-				myDet->startReceiver();
+				myDet->startReceiver(detPos);
 			else if(!strcasecmp(args[1],"stop"))
-				myDet->stopReceiver();
+				myDet->stopReceiver(detPos);
 			else
 				return helpReceiver(action);
 		}
-		return myDet->runStatusType(myDet->getReceiverStatus());
+		return myDet->runStatusType(myDet->getReceiverStatus(detPos));
 	}
 
 
@@ -5020,7 +5020,7 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action, int d
 		if (action==PUT_ACTION)
 			return string("cannot put");
 		else{
-			sprintf(answer,"%d",myDet->getFramesCaughtByReceiver());
+			sprintf(answer,"%d",myDet->getFramesCaughtByReceiver(detPos));
 			return string(answer);
 		}
 	}
@@ -5029,7 +5029,7 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action, int d
 		if (action==GET_ACTION)
 			return string("cannot get");
 		else{
-			if(myDet->resetFramesCaught() == FAIL)
+			if(myDet->resetFramesCaught(detPos) == FAIL)
 				strcpy(answer,"failed");
 			else
 				strcpy(answer,"successful");
@@ -5041,7 +5041,7 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action, int d
 		if (action==PUT_ACTION)
 			return string("cannot put");
 		else{
-			sprintf(answer,"%d",myDet->getReceiverCurrentFrameIndex());
+			sprintf(answer,"%d",myDet->getReceiverCurrentFrameIndex(detPos));
 			return string(answer);
 		}
 	}
@@ -5050,9 +5050,9 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action, int d
 			if (!sscanf(args[1],"%d",&ival))
 				return string("Could not scan read frequency mode ")+string(args[1]);
 			if(ival>=0)
-				myDet->setReadReceiverFrequency(ival);
+				myDet->setReadReceiverFrequency(ival, detPos);
 		}
-		sprintf(answer,"%d",myDet->setReadReceiverFrequency());
+		sprintf(answer,"%d",myDet->setReadReceiverFrequency(detPos));
 		return string(answer);
 
 	}
@@ -5062,9 +5062,9 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action, int d
 			if (!sscanf(args[1],"%d",&ival))
 				return string("Could not scan tengiga input ")+string(args[1]);
 			if(ival>=0)
-				sprintf(answer,"%d",myDet->enableTenGigabitEthernet(ival));
+				sprintf(answer,"%d",myDet->enableTenGigabitEthernet(ival, detPos));
 		}else
-			sprintf(answer,"%d",myDet->enableTenGigabitEthernet());
+			sprintf(answer,"%d",myDet->enableTenGigabitEthernet(detPos));
 		return string(answer);
 
 	}
@@ -5075,9 +5075,9 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action, int d
 			if (!sscanf(args[1],"%d",&ival))
 				return string("Could not scan rx_fifodepth input ")+string(args[1]);
 			if(ival>=0)
-				sprintf(answer,"%d",myDet->setReceiverFifoDepth(ival));
+				sprintf(answer,"%d",myDet->setReceiverFifoDepth(ival, detPos));
 		}else
-			sprintf(answer,"%d",myDet->setReceiverFifoDepth());
+			sprintf(answer,"%d",myDet->setReceiverFifoDepth(detPos));
 		return string(answer);
 
 	}
@@ -5087,9 +5087,9 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action, int d
 			if (!sscanf(args[1],"%d",&ival))
 				return string("Could not scan r_online input ")+string(args[1]);
 			if(ival>=0)
-				sprintf(answer,"%d",myDet->setReceiverSilentMode(ival));
+				sprintf(answer,"%d",myDet->setReceiverSilentMode(ival, detPos));
 		}else
-			sprintf(answer,"%d",myDet->setReceiverSilentMode());
+			sprintf(answer,"%d",myDet->setReceiverSilentMode(detPos));
 		return string(answer);
 
 	}
@@ -5097,34 +5097,34 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action, int d
 	else if(cmd=="r_framesperfile") {
 		if (action==PUT_ACTION){
 			if (sscanf(args[1],"%d",&ival)) {
-				myDet->setReceiverFramesPerFile(ival);
+				myDet->setReceiverFramesPerFile(ival, detPos);
 			} else return string("could not scan max frames per file\n");
 		}
 		char answer[100];
 		memset(answer, 0, 100);
-		sprintf(answer,"%d", myDet->setReceiverFramesPerFile());
+		sprintf(answer,"%d", myDet->setReceiverFramesPerFile(detPos));
 		return string(answer);
 	}
 
 	else if(cmd=="r_discardpolicy") {
 		if (action==PUT_ACTION){
-			frameDiscardPolicy f = myDet->getReceiverFrameDiscardPolicy(string(args[1]));
+			frameDiscardPolicy f = myDet->getReceiverFrameDiscardPolicy(string(args[1]), detPos);
 			if (f == GET_FRAME_DISCARD_POLICY)
 				return string("could not scan frame discard policy. Options: nodiscard, discardempty, discardpartial\n");
 			myDet->setReceiverFramesDiscardPolicy(f);
 		}
-		return myDet->getReceiverFrameDiscardPolicy(myDet->setReceiverFramesDiscardPolicy());
+		return myDet->getReceiverFrameDiscardPolicy(myDet->setReceiverFramesDiscardPolicy(detPos));
 	}
 
 	else if(cmd=="r_padding") {
 		if (action==PUT_ACTION){
 			if (sscanf(args[1],"%d",&ival)) {
-				myDet->setReceiverPartialFramesPadding(ival);
+				myDet->setReceiverPartialFramesPadding(ival, detPos);
 			} else return string("could not scan receiver padding enable\n");
 		}
 		char answer[100];
 		memset(answer, 0, 100);
-		sprintf(answer,"%d",myDet->setReceiverPartialFramesPadding());
+		sprintf(answer,"%d",myDet->setReceiverPartialFramesPadding(detPos));
 		return string(answer);
 	}
 
@@ -5232,7 +5232,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 	int addr, start, stop, n;
 	uint64_t word, t;
 
-	myDet->setOnline(ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG, detPos);
 
 	ostringstream os;
 	if (cmd=="pattern") {
@@ -5240,7 +5240,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 
 		if (action==PUT_ACTION) {
 			fname=string(args[1]);
-			os << myDet->setCTBPattern(fname);
+			os << myDet->setCTBPattern(fname, detPos);
 		}   else if (action==GET_ACTION)
 			os << "Cannot get";
 	}  	else if (cmd=="patword") {
@@ -5262,7 +5262,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 				return string("Could not scan value  (hexadecimal fomat) ")+string(args[2]);
 
 
-			os << hex << myDet->setCTBWord(addr,word) << dec;
+			os << hex << myDet->setCTBWord(addr,word, detPos) << dec;
 		}   else if (action==GET_ACTION)
 			os << "Cannot get";
 
@@ -5278,10 +5278,10 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 				return string("Could not scan value  (hexadecimal fomat) ")+string(args[1]);
 
 
-			myDet->setCTBWord(-1,word);
+			myDet->setCTBWord(-1,word, detPos);
 		}
 
-		os << hex << myDet->setCTBWord(-1,-1) << dec;
+		os << hex << myDet->setCTBWord(-1,-1, detPos) << dec;
 	}	else if (cmd=="patclkctrl") {
 		//get word from stdin
 
@@ -5295,10 +5295,10 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 				return string("Could not scan value  (hexadecimal fomat) ")+string(args[1]);
 
 
-			myDet->setCTBWord(-2,word);
+			myDet->setCTBWord(-2,word, detPos);
 		}
 
-		os << hex << myDet->setCTBWord(-2,-1) << dec;
+		os << hex << myDet->setCTBWord(-2,-1, detPos) << dec;
 
 
 	} else if (cmd=="patlimits") {
@@ -5317,13 +5317,13 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 			else
 				return string("Could not scan stop address  (hexadecimal fomat) ")+string(args[2]);
 
-			myDet->setCTBPatLoops(-1,start, stop,n);
+			myDet->setCTBPatLoops(-1,start, stop,n, detPos);
 		}
 
 		start=-1;
 		stop=-1;
 		n=-1;
-		myDet->setCTBPatLoops(-1,start, stop,n);
+		myDet->setCTBPatLoops(-1,start, stop,n, detPos);
 		os << hex << start << " " << stop;// << " "<< dec << n ;
 	} else if (cmd=="patloop0") {
 		//get start, stop from stdin
@@ -5344,13 +5344,13 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 			else
 				return string("Could not scan stop address  (hexadecimal fomat) ")+string(args[2]);
 
-			myDet->setCTBPatLoops(0,start, stop,n);
+			myDet->setCTBPatLoops(0,start, stop,n, detPos);
 		}
 
 		start=-1;
 		stop=-1;
 		n=-1;
-		myDet->setCTBPatLoops(0,start, stop,n);
+		myDet->setCTBPatLoops(0,start, stop,n, detPos);
 		os << hex << start << " " << stop;// << " "<< dec << n ;
 
 
@@ -5371,13 +5371,13 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 			else
 				return string("Could not scan stop address  (hexadecimal fomat) ")+string(args[2]);
 
-			myDet->setCTBPatLoops(1,start, stop,n);
+			myDet->setCTBPatLoops(1,start, stop,n, detPos);
 		}
 
 		start=-1;
 		stop=-1;
 		n=-1;
-		myDet->setCTBPatLoops(1,start, stop,n);
+		myDet->setCTBPatLoops(1,start, stop,n, detPos);
 		os << hex << start << " " << stop;// << " "<< dec << n ;
 
 
@@ -5400,13 +5400,13 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 			else
 				return string("Could not scan stop address  (hexadecimal fomat) ")+string(args[2]);
 
-			myDet->setCTBPatLoops(2,start, stop,n) ;
+			myDet->setCTBPatLoops(2,start, stop,n, detPos) ;
 		}
 
 		start=-1;
 		stop=-1;
 		n=-1;
-		myDet->setCTBPatLoops(2,start, stop,n);
+		myDet->setCTBPatLoops(2,start, stop,n, detPos);
 		os << hex << start << " " << stop << dec;// << " "<< dec << n ;
 
 
@@ -5423,7 +5423,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 				return string("Could not scan number of loops ")+string(args[1]);
 
 
-			myDet->setCTBPatLoops(0,start, stop,n) ;
+			myDet->setCTBPatLoops(0,start, stop,n, detPos) ;
 		}
 
 
@@ -5431,7 +5431,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 		start=-1;
 		stop=-1;
 		n=-1;
-		myDet->setCTBPatLoops(0,start, stop,n);
+		myDet->setCTBPatLoops(0,start, stop,n, detPos);
 		os << n ;
 	} else if (cmd=="patnloop1") {
 
@@ -5448,7 +5448,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 				return string("Could not scan number of loops ")+string(args[1]);
 
 
-			myDet->setCTBPatLoops(1,start, stop,n) ;
+			myDet->setCTBPatLoops(1,start, stop,n, detPos) ;
 		}
 
 
@@ -5456,7 +5456,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 		start=-1;
 		stop=-1;
 		n=-1;
-		myDet->setCTBPatLoops(1,start, stop,n);
+		myDet->setCTBPatLoops(1,start, stop,n, detPos);
 		os << n ;
 
 
@@ -5477,7 +5477,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 				return string("Could not scan number of loops ")+string(args[1]);
 
 
-			myDet->setCTBPatLoops(2,start, stop,n) ;
+			myDet->setCTBPatLoops(2,start, stop,n, detPos) ;
 		}
 
 
@@ -5485,7 +5485,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 		start=-1;
 		stop=-1;
 		n=-1;
-		myDet->setCTBPatLoops(2,start, stop,n);
+		myDet->setCTBPatLoops(2,start, stop,n, detPos);
 		os << n ;
 
 
@@ -5503,12 +5503,12 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 				return string("Could not scan wait address (hex format)")+string(args[1]);
 
 
-			myDet->setCTBPatWaitAddr(0,addr);
+			myDet->setCTBPatWaitAddr(0,addr, detPos);
 		}
 
 
 
-		os <<   hex << myDet->setCTBPatWaitAddr(0,-1) << dec;
+		os <<   hex << myDet->setCTBPatWaitAddr(0,-1, detPos) << dec;
 
 
 
@@ -5526,12 +5526,12 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 				return string("Could not scan wait address (hex format)")+string(args[1]);
 
 
-			myDet->setCTBPatWaitAddr(1,addr);
+			myDet->setCTBPatWaitAddr(1,addr, detPos);
 		}
 
 
 
-		os <<  hex <<  myDet->setCTBPatWaitAddr(1,-1) << dec;
+		os <<  hex <<  myDet->setCTBPatWaitAddr(1,-1, detPos) << dec;
 
 
 
@@ -5545,12 +5545,12 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 				return string("Could not scan wait address (hex format)")+string(args[1]);
 
 
-			myDet->setCTBPatWaitAddr(2,addr);
+			myDet->setCTBPatWaitAddr(2,addr, detPos);
 		}
 
 
 
-		os << hex <<   myDet->setCTBPatWaitAddr(2,-1) << dec ;
+		os << hex <<   myDet->setCTBPatWaitAddr(2,-1, detPos) << dec ;
 
 	}	else if (cmd=="patwaittime0") {
 
@@ -5566,12 +5566,12 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 				return string("Could not scan wait time")+string(args[1]);
 
 
-			myDet->setCTBPatWaitTime(0,t);
+			myDet->setCTBPatWaitTime(0,t, detPos);
 		}
 
 
 
-		os <<  myDet->setCTBPatWaitTime(0,-1);
+		os <<  myDet->setCTBPatWaitTime(0,-1, detPos);
 
 
 
@@ -5589,12 +5589,12 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 				return string("Could not scan wait time ")+string(args[1]);
 
 
-			myDet->setCTBPatWaitTime(1,t);
+			myDet->setCTBPatWaitTime(1,t, detPos);
 		}
 
 
 
-		os <<  myDet->setCTBPatWaitTime(1,-1);
+		os <<  myDet->setCTBPatWaitTime(1,-1, detPos);
 
 
 
@@ -5607,12 +5607,12 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 				return string("Could not scan wait time ")+string(args[1]);
 
 
-			myDet->setCTBPatWaitTime(2,t);
+			myDet->setCTBPatWaitTime(2,t, detPos);
 		}
 
 
 
-		os <<  myDet->setCTBPatWaitTime(2,-1);
+		os <<  myDet->setCTBPatWaitTime(2,-1, detPos);
 
 	}   else if  (cmd=="adcinvert") {
 		if (action==PUT_ACTION) {
@@ -5623,12 +5623,12 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 				return string("Could not scan adcinvert reg ")+string(args[1]);
 
 
-			myDet->writeRegister(67,addr);
+			myDet->writeRegister(67,addr, detPos);
 		}
 
 
 
-		os << hex << myDet->readRegister(67) << dec;
+		os << hex << myDet->readRegister(67, detPos) << dec;
 
 	} else if  (cmd=="dut_clk") {
 		if (action==PUT_ACTION) {
@@ -5639,12 +5639,12 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 				return string("Could not scan dut_clk reg ")+string(args[1]);
 
 
-			myDet->writeRegister(123,addr); //0x7b
+			myDet->writeRegister(123,addr, detPos); //0x7b
 		}
 
 
 
-		os << hex << myDet->readRegister(123) << dec; //0x7b
+		os << hex << myDet->readRegister(123, detPos) << dec; //0x7b
 	} else if  (cmd=="adcdisable") {
 
 		int nroi=0;
@@ -5692,12 +5692,12 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 				cout << "ROI "<< nroi << " xmin "<<roiLimits[nroi-1].xmin << " xmax "<< roiLimits[nroi-1].xmax << endl;
 			}
 			cout << "********ROI "<< nroi << endl;
-			myDet->setROI(nroi-1,roiLimits);
-			//  myDet->writeRegister(94,addr);
-			// myDet->writeRegister(120,addr);
+			myDet->setROI(nroi-1,roiLimits, detPos);
+			//  myDet->writeRegister(94,addr, detPos);
+			// myDet->writeRegister(120,addr, detPos);
 		}
 
-		ROI  *aa=myDet->getROI(nroi);
+		ROI  *aa=myDet->getROI(nroi, detPos);
 
 		int reg=0xffffffff;
 		if (nroi<1)
@@ -5713,7 +5713,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int de
 		os << hex << reg << dec;
 
 
-		//os <<" "<< hex << myDet->readRegister(120) << dec;
+		//os <<" "<< hex << myDet->readRegister(120, detPos) << dec;
 
 	}
 
@@ -5757,7 +5757,7 @@ string slsDetectorCommand::cmdPulse(int narg, char *args[], int action, int detP
 	else if (action==GET_ACTION)
 		return string("cannot get ")+cmd;
 
-	myDet->setOnline(ONLINE_FLAG);
+	myDet->setOnline(ONLINE_FLAG, detPos);
 
 
 	int ival1=-1;
@@ -5765,7 +5765,7 @@ string slsDetectorCommand::cmdPulse(int narg, char *args[], int action, int detP
 		return string("Could not scan 1st argument ")+string(args[1]);
 
 	if (string(args[0])==string("pulsechip"))
-		retval = myDet->pulseChip(ival1);
+		retval = myDet->pulseChip(ival1, detPos);
 
 
 	else{
@@ -5780,10 +5780,10 @@ string slsDetectorCommand::cmdPulse(int narg, char *args[], int action, int detP
 
 
 		if (string(args[0])==string("pulse"))
-			retval = myDet->pulsePixel(ival1,ival2,ival3);
+			retval = myDet->pulsePixel(ival1,ival2,ival3, detPos);
 
 		else if (string(args[0])==string("pulsenmove"))
-			retval = myDet->pulsePixelNMove(ival1,ival2,ival3);
+			retval = myDet->pulsePixelNMove(ival1,ival2,ival3, detPos);
 
 		else return string("could not decode command")+cmd;
 

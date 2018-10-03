@@ -9,9 +9,9 @@ option (USE_GUI "GUI" OFF)
 
 
 if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
-	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -std=c++98 -Wno-misleading-indentation")
+	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -Wno-misleading-indentation")
 else ()
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++98")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
 endif ()
 
 find_package(Qt4)
@@ -46,6 +46,9 @@ if (USE_GUI)
        endif()
 endif (USE_GUI)
 
+if (USE_SUPPORT_LIB)
+    add_subdirectory(slsSupportLib)
+endif(USE_SUPPORT_LIB)
 
 if (CALIBRATE)
     if (DEFINED ENV{ROOTSYS})

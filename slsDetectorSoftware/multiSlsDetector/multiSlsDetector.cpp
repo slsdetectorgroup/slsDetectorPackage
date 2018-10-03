@@ -273,19 +273,10 @@ bool multiSlsDetector::isAcquireReady() {
 }
 
 int multiSlsDetector::checkVersionCompatibility(portType t, int detPos) {
-
 	// single
 	if (detPos >= 0) {
-
-		if(isDetectorIndexOutOfBounds(detPos))
-			return -1;
-
-		int ret = detectors[detPos]->checkVersionCompatibility(t);
-		if (detectors[detPos]->getErrorMask())
-			setErrorMask(getErrorMask() | (1 << detPos));
-		return ret;
+		return = detectors[detPos]->checkVersionCompatibility(t);
 	}
-
 	// multi
 	return parallelCallDetectorMember(&slsDetector::checkVersionCompatibility, t);
 }

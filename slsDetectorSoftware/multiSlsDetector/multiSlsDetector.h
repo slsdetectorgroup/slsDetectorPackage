@@ -549,7 +549,7 @@ public:
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns 1 for locked or 0 for unlocked
 	 */
-	int lockServer(int p, int detPos = -1);
+	int lockServer(int p=-1, int detPos = -1);
 
 	/**
 	 * Get last client IP saved on detector server
@@ -889,12 +889,13 @@ public:
 	std::string getNetworkParameter(networkParameter p, int detPos = -1);
 
 	/**
-	 * Execute a digital test (Gotthard, Mythen)
+	 * Execute a digital test (Gotthard)
 	 * @param mode testmode type
+	 * @param value 1 to set or 0 to clear the digital test bit
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns result of test
 	 */
-	int digitalTest(digitalTestMode mode, int detPos = -1);
+	int digitalTest(digitalTestMode mode, int ival=-1, int detPos = -1);
 
 	/**
 	 * Load dark or gain image to detector (Gotthard)

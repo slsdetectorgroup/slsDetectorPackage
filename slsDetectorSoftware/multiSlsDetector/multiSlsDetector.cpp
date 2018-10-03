@@ -2346,7 +2346,7 @@ std::string multiSlsDetector::getNetworkParameter(networkParameter p) {
 	return ans;
 }
 
-int multiSlsDetector::digitalTest(digitalTestMode mode, int imod) {
+int multiSlsDetector::digitalTest(digitalTestMode mode, int ival, int imod) {
 	int ret = OK;
 
 	// single

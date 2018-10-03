@@ -8,6 +8,7 @@
 #include "multiSlsDetectorCommand.h"
 #include "utilities.h"
 #include "detectorData.h"
+#include "logger.h"
 
 #include <sys/types.h>
 #include <iostream>
@@ -330,14 +331,27 @@ int multiSlsDetector::decodeNChannel(int offsetX, int offsetY, int& channelX, in
 }
 
 
-std::string multiSlsDetector::getErrorMessage(int& critical) {
-	int64_t multiMask, slsMask = 0;
+std::string multiSlsDetector::getErrorMessage(int& critical, int detPos) {
+	int64_t multiMask = 0, slsMask = 0;
 	std::string retval = "";
 	char sNumber[100];
 	critical = 0;
+	unsigned int posmin = 0, posmax = detectors.size();
+
+	// single
+	if (detPos >= 0) {
+		// position exceeds multi list size
+		if (detPos > detectors.size()) {
+			FILE_LOG(logERROR) << "Position " << detPos << " exceeds list of " << detectors.size();
+			return retval;
+		}
+		slsMask = getErrorMask();
+		posmin =  (unsigned int)detPos;
+		posmax = posmin + 1;
+	}
 
 	multiMask = getErrorMask();
-	if (multiMask) {
+	if (multiMask || slsMask) {
 		if (multiMask & MULTI_DETECTORS_NOT_ADDED) {
 			retval.append("Detectors not added:\n" + std::string(getNotAddedList()) +
 					std::string("\n"));
@@ -350,15 +364,22 @@ std::string multiSlsDetector::getErrorMessage(int& critical) {
 		}
 		if (multiMask & MULTI_CONFIG_FILE_ERROR) {
 			retval.append("Could not load Config File\n");
-			critical = 0;
+			critical = 1;
+		}
+		if (multiMask & MULTI_POS_EXCEEDS_LIST) {
+			retval.append("Position exceeds multi detector list\n");
+			critical = 1;
 		}
 
-		for (unsigned int idet = 0; idet < detectors.size(); ++idet) {
+
+		for (unsigned int idet = posmin; idet < posmax; ++idet) {
 			//if the detector has error
-			if (multiMask & (1 << idet)) {
+			if ((multiMask & (1 << idet)) || (detPos >= 0)) {
+
 				//append detector id
 				sprintf(sNumber, "%d", idet);
 				retval.append("Detector " + std::string(sNumber) + std::string(":\n"));
+
 				//get sls det error mask
 				slsMask = detectors[idet]->getErrorMask();
 #ifdef VERYVERBOSE
@@ -366,9 +387,11 @@ std::string multiSlsDetector::getErrorMessage(int& critical) {
 				sprintf(sNumber, "0x%lx", slsMask);
 				retval.append("Error Mask " + std::string(sNumber) + std::string("\n"));
 #endif
+
 				//get the error critical level
 				if ((slsMask > 0xFFFFFFFF) | critical)
 					critical = 1;
+
 				//append error message
 				retval.append(errorDefs::getErrorMessage(slsMask));
 			}
@@ -377,7 +400,22 @@ std::string multiSlsDetector::getErrorMessage(int& critical) {
 	return retval;
 }
 
-int64_t multiSlsDetector::clearAllErrorMask() {
+int64_t multiSlsDetector::clearAllErrorMask(int detPos) {
+
+	// single
+	if (detPos >= 0) {
+
+		// position exceeds multi list size
+		if (detPos > detectors.size()) {
+			FILE_LOG(logERROR) << "Position " << detPos << " exceeds list of " << detectors.size();
+			setErrorMask(getErrorMask() | MULTI_POS_EXCEEDS_LIST);
+			return -1;
+		}
+
+		return detectors[idet]->clearErrorMask();
+	}
+
+	// multi
 	clearErrorMask();
 	clearNotAddedList();
 	for (unsigned int idet = 0; idet < detectors.size(); ++idet)
@@ -385,6 +423,7 @@ int64_t multiSlsDetector::clearAllErrorMask() {
 
 	return getErrorMask();
 }
+
 
 void multiSlsDetector::setErrorMaskFromAllDetectors() {
 	for (unsigned int idet = 0; idet < detectors.size(); ++idet) {
@@ -412,26 +451,48 @@ bool multiSlsDetector::isAcquireReady() {
 	return OK;
 }
 
-int multiSlsDetector::checkVersionCompatibility(portType t) {
-	return parallelCallDetectorMember(&slsDetector::checkVersionCompatibility, t);
-}
-
-int64_t multiSlsDetector::getId(idMode mode, int imod) {
+int multiSlsDetector::checkVersionCompatibility(portType t, int detPos) {
 
 	// single
-	{
-		if (imod >= 0) {
-			if (imod < 0 || imod >= (int)detectors.size())
-				return -1;
-			int64_t ret = detectors[imod]->getId(mode, imod);
-			if (detectors[imod]->getErrorMask())
-				setErrorMask(getErrorMask() | (1 << imod));
-			return ret;
+	if (detPos >= 0) {
+
+		// position exceeds multi list size
+		if (detPos > detectors.size()) {
+			FILE_LOG(logERROR) << "Position " << detPos << " exceeds list of " << detectors.size();
+			setErrorMask(getErrorMask() | MULTI_POS_EXCEEDS_LIST);
+			return -1;
 		}
+
+		int ret = detectors[detPos]->checkVersionCompatibility(t);
+		if (detectors[detPos]->getErrorMask())
+			setErrorMask(getErrorMask() | (1 << detPos));
+		return ret;
 	}
 
 	// multi
-	return callDetectorMember(&slsDetector::getId, mode, imod);
+	return parallelCallDetectorMember(&slsDetector::checkVersionCompatibility, t);
+}
+
+int64_t multiSlsDetector::getId(idMode mode, int detPos) {
+
+	// single
+	if (detPos >= 0) {
+
+		// position exceeds multi list size
+		if (detPos > detectors.size()) {
+			FILE_LOG(logERROR) << "Position " << detPos << " exceeds list of " << detectors.size();
+			setErrorMask(getErrorMask() | MULTI_POS_EXCEEDS_LIST);
+			return -1;
+		}
+
+		int64_t ret = detectors[detPos]->getId(mode);
+		if (detectors[detPos]->getErrorMask())
+			setErrorMask(getErrorMask() | (1 << detPos));
+		return ret;
+	}
+
+	// multi
+	return callDetectorMember(&slsDetector::getId, mode);
 }
 
 

@@ -317,12 +317,6 @@ public:
 	virtual ~slsDetector();
 
 	/**
-	 * Clears error mask and also the bit in parent det multi error mask
-	 * @returns error mask
-	 */
-	int64_t clearAllErrorMask();
-
-	/**
 	 * Set acquiring flag in shared memory
 	 * @param b acquiring flag
 	 */

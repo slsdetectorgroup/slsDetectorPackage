@@ -108,17 +108,6 @@ slsDetector::~slsDetector() {
 }
 
 
-
-int64_t slsDetector::clearAllErrorMask() {
-	clearErrorMask();
-	pthread_mutex_lock(&ms);
-	for(int i=0;i<multiDet->getNumberOfDetectors();++i){
-		multiDet->setErrorMask(multiDet->getErrorMask()|(0<<i));
-	}
-	pthread_mutex_unlock(&ms);
-	return getErrorMask();
-}
-
 void slsDetector::setAcquiringFlag(bool b) {
 	multiDet->setAcquiringFlag(b);
 }

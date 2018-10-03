@@ -7,13 +7,13 @@
  * @author Anna Bergamaschi
  */
 
-#include "slsDetectorUtils.h"
+#include "slsDetectorBase.h"
 
 class slsDetector;
 class SharedMemory;
 class ThreadPool;
 class ZmqSocket;
-
+class detectorData;
 
 #include <vector>
 #include <string>
@@ -23,7 +23,7 @@ class ZmqSocket;
 #define SHORT_STRING_LENGTH	50
 #define DATE_LENGTH			30
 
-class multiSlsDetector  : public postProcessing {
+class multiSlsDetector  : public slsDetectorBase {
 
 private:
 
@@ -141,12 +141,6 @@ public:
 	 * Destructor
 	 */
 	virtual ~multiSlsDetector();
-
-	/**
-	 * returns true. Used when reference is slsDetectorUtils and to determine
-	 * if command can be implemented as slsDetector/multiSlsDetector object/
-	 */
-	bool isMultiSlsDetectorClass();
 
 	/**
 	 * Creates/open shared memory, initializes detector structure and members
@@ -1450,6 +1444,17 @@ public:
 	 */
 	void registerProgressCallback(int( *func)(double,void*), void *pArg);
 
+	  /**
+	   * register calbback for accessing detector final data,
+	   * also enables data streaming in client and receiver
+	   * @param userCallback function for plotting/analyzing the data.
+	   * Its arguments are
+	   * the data structure d and the frame number f,
+	   * s is for subframe number for eiger for 32 bit mode
+	   * @param pArg argument
+	  */
+	void registerDataCallback(int( *userCallback)(detectorData*, int, int, void*),  void *pArg);
+
 	/**
 	 * Performs a complete acquisition
 	 * resets frames caught in receiver, starts receiver, starts detector,
@@ -1458,6 +1463,12 @@ public:
 	 * @returns OK or FAIL depending on if it already started
 	 */
 	int acquire();
+
+	/**
+	 * Set/get if the data processing thread si enabled
+	 * @param enable 0 no data processing thread, 1 separate thread, -1 get
+	 */
+	int setThreadedProcessing(int enable=-1);
 
 private:
 	/**
@@ -1528,6 +1539,39 @@ private:
 	 */
 	void setCurrentProgress(int i=0);
 
+	/**
+	 * Start data processing thread
+	 */
+	void startProcessingThread();
+
+	/**
+	 * Static function to call processing thread
+	 */
+	static void* startProcessData(void *n);
+
+	/**
+	 * Combines data from all readouts and gives it to the gui
+	 * or just gives progress of acquisition by polling receivers
+	 */
+	void* processData();
+
+	/**
+	 * Check if processing thread is ready to join main thread
+	 * @returns true if ready, else false
+	 */
+	int checkJoinThread();
+
+	/**
+	 * Main thread sets if the processing thread should join it
+	 * @param v true if it should join, else false
+	 */
+	void setJoinThread(int v);
+
+	/**
+	 * Listen to key event to stop acquiring
+	 * when using acquire command
+	 */
+	int kbhit(void);
 
 
 	/** Multi detector Id */
@@ -1552,20 +1596,54 @@ private:
 	ThreadPool* threadpool;
 
 
-	int totalProgress;
-	int progressIndex;
-
-	int (*acquisition_finished)(double,int,void*);
-	int (*measurement_finished)(int,int,void*);
-	void *acqFinished_p, *measFinished_p;
-	int (*progress_call)(double,void*);
-	void *pProgressCallArg;
-
 	/** semaphore to let postprocessing thread continue for next scan/measurement */
 	sem_t sem_newRTAcquisition;
 
 	/** semaphore to let main thread know it got all the dummy packets (also from ext. process) */
 	sem_t sem_endRTAcquisition;
+
+	int totalProgress;
+	int progressIndex;
+	/** mutex to synchronize main and data processing threads */
+	pthread_mutex_t mp;
+
+	/** mutex to synchronizedata processing and plotting threads */
+	pthread_mutex_t mg;
+
+	/** mutex to synchronize slsdetector threads */
+	pthread_mutex_t ms;
+
+	int threadedProcessing;
+
+	/** sets when the acquisition is finished */
+	int jointhread;
+
+	/** set when detector finishes acquiring */
+	int acquiringDone;
+
+	/** the data processing thread */
+	pthread_t dataProcessingThread;
+
+	double *fdata;
+	detectorData *thisData;
+
+	int (*acquisition_finished)(double,int,void*);
+	void *acqFinished_p;
+
+	int (*measurement_finished)(int,int,void*);
+	void *measFinished_p;
+
+	int (*progress_call)(double,void*);
+	void *pProgressCallArg;
+
+	int (*dataReady)(detectorData*,int, int, void*);
+	void *pCallbackArg;
+
+
+
+
+
+
 };
 
 

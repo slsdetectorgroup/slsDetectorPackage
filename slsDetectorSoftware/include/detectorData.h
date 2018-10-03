@@ -1,1 +1,0 @@
-../slsDetectorAnalysis/detectorData.h

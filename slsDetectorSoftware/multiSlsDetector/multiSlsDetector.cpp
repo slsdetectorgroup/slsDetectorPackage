@@ -7,6 +7,7 @@
 #include "multiSlsDetectorClient.h"
 #include "multiSlsDetectorCommand.h"
 #include "utilities.h"
+#include "detectorData.h"
 
 #include <sys/types.h>
 #include <iostream>
@@ -27,14 +28,30 @@ multiSlsDetector::multiSlsDetector(int id, bool verify, bool update)
   threadpool(0),
   totalProgress(0),
   progressIndex(0),
-  acquisition_finished(NULL),
-  measurement_finished(NULL),
-  acqFinished_p(NULL),
-  measFinished_p(NULL),
+  threadedProcessing(1),
+  jointhread(0),
+  acquiringDone(0),
+  fdata(0),
+  thisData(0),
+  acquisition_finished(0),
+  acqFinished_p(0),
+  measurement_finished(0),
+  measFinished_p(0),
   progress_call(0),
-  pProgressCallArg(0)
+  pProgressCallArg(0),
+  dataReady(0),
+  pCallbackArg(0)
 {
+	pthread_mutex_t mp1 = PTHREAD_MUTEX_INITIALIZER;
+	mp=mp1;
+	pthread_mutex_init(&mp, NULL);
+	mg=mp1;
+	pthread_mutex_init(&mg, NULL);
+	ms=mp1;
+	pthread_mutex_init(&ms, NULL);
+
 	setupMultiDetector(verify, update);
+
 }
 
 
@@ -59,10 +76,6 @@ multiSlsDetector::~multiSlsDetector() {
 	destroyThreadPool();
 }
 
-
-bool multiSlsDetector::isMultiSlsDetectorClass() {
-	return true;
-}
 
 void multiSlsDetector::setupMultiDetector(bool verify, bool update) {
 	if (initSharedMemory(verify))
@@ -4175,6 +4188,17 @@ void multiSlsDetector::registerProgressCallback(int( *func)(double,void*), void 
 }
 
 
+void multiSlsDetector::registerDataCallback(int( *userCallback)(detectorData*, int, int, void*),
+		void *pArg) {
+	dataReady = userCallback;
+	pCallbackArg = pArg;
+	if (setReceiverOnline() == slsDetectorDefs::ONLINE_FLAG) {
+		enableDataStreamingToClient(1);
+		enableDataStreamingFromReceiver(1);
+	}
+}
+
+
 int multiSlsDetector::setTotalProgress() {
 	int nf=1, nc=1, ns=1, nm=1;
 
@@ -4227,7 +4251,7 @@ void multiSlsDetector::incrementProgress()  {
 	cout << "\r" << flush;
 #endif
 
-};
+}
 
 
 void multiSlsDetector::setCurrentProgress(int i){
@@ -4282,8 +4306,8 @@ int  multiSlsDetector::acquire(){
 	}
 
 	// start processing thread
-	if (*threadedProcessing)
-		startThread();
+	if (threadedProcessing)
+		startProcessingThread();
 
 
 	//resets frames caught in receiver
@@ -4320,7 +4344,7 @@ int  multiSlsDetector::acquire(){
 		// detector start
 		startAndReadAll();
 
-		if (*threadedProcessing==0){
+		if (threadedProcessing==0){
 			processData();
 		}
 
@@ -4333,7 +4357,7 @@ int  multiSlsDetector::acquire(){
 				pthread_mutex_unlock(&mg);
 			} else {
 				pthread_mutex_unlock(&mg);
-				if (*threadedProcessing && dataReady)
+				if (threadedProcessing && dataReady)
 					sem_wait(&sem_endRTAcquisition); // waits for receiver's external process to be done sending data to gui
 			}
 		}
@@ -4357,7 +4381,7 @@ int  multiSlsDetector::acquire(){
 
 
 	// waiting for the data processing thread to finish!
-	if (*threadedProcessing) {
+	if (threadedProcessing) {
 		setJoinThread(1);
 
 		//let processing thread continue and checkjointhread
@@ -4388,3 +4412,144 @@ int  multiSlsDetector::acquire(){
 
 }
 
+
+
+int multiSlsDetector::setThreadedProcessing(int enable=-1) {
+	if (enable>=0)
+		threadedProcessing=enable;
+	return  threadedProcessing;
+}
+
+
+void multiSlsDetector::startProcessingThread() {
+
+	setTotalProgress();
+#ifdef VERBOSE
+	std::cout << "start thread stuff"  << std::endl;
+#endif
+
+	pthread_attr_t tattr;
+	int ret;
+	sched_param param, mparam;
+	int policy= SCHED_OTHER;
+
+	// set the priority; others are unchanged
+	//newprio = 30;
+	mparam.sched_priority =1;
+	param.sched_priority =1;
+
+	/* Initialize and set thread detached attribute */
+	pthread_attr_init(&tattr);
+	pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_JOINABLE);
+
+	ret = pthread_setschedparam(pthread_self(), policy, &mparam);
+
+
+	ret = pthread_create(&dataProcessingThread, &tattr,startProcessData, (void*)this);
+
+	if (ret)
+		printf("ret %d\n", ret);
+
+	pthread_attr_destroy(&tattr);
+
+	// scheduling parameters of target thread
+	ret = pthread_setschedparam(dataProcessingThread, policy, &param);
+}
+
+
+void* multiSlsDetector::startProcessData(void *n) {
+	postProcessing *myDet=(postProcessing*)n;
+	myDet->processData();
+	pthread_exit(NULL);
+}
+
+
+void* multiSlsDetector::processData() {
+	if(setReceiverOnline()==OFFLINE_FLAG){
+		return 0;
+	} //receiver
+	else{
+		//cprintf(RED,"In post processing threads\n");
+
+		if(dataReady) {
+			readFrameFromReceiver();
+		}
+		//only update progress
+		else{
+			int caught = -1;
+			char c;
+			int ifp;
+			while(true){
+
+				// set only in startThread
+				if (*threadedProcessing==0)
+					setTotalProgress();
+
+				// to exit acquire by typing q
+				ifp=kbhit();
+				if (ifp!=0){
+					c=fgetc(stdin);
+					if (c=='q') {
+						std::cout<<"Caught the command to stop acquisition"<<std::endl;
+						stopAcquisition();
+					}
+				}
+
+
+				//get progress
+				if(setReceiverOnline() == ONLINE_FLAG){
+					pthread_mutex_lock(&mg);
+					caught = getFramesCaughtByAnyReceiver();
+					pthread_mutex_unlock(&mg);
+				}
+
+
+				//updating progress
+				if(caught!= -1){
+					setCurrentProgress(caught);
+#ifdef VERY_VERY_DEBUG
+					std::cout << "caught:" << caught << std::endl;
+#endif
+				}
+
+				// exiting loop
+				if (*threadedProcessing==0)
+					break;
+				if (checkJoinThread()){
+					break;
+				}
+
+				usleep(100 * 1000); //20ms need this else connecting error to receiver (too fast)
+			}
+		}
+	}
+
+	return 0;
+}
+
+
+int multiSlsDetector::checkJoinThread() {
+	int retval;
+	pthread_mutex_lock(&mp);
+	retval=jointhread;
+	pthread_mutex_unlock(&mp);
+	return retval;
+}
+
+void multiSlsDetector::setJoinThread( int v) {
+	pthread_mutex_lock(&mp);
+	jointhread=v;
+	pthread_mutex_unlock(&mp);
+}
+
+
+int multiSlsDetector::kbhit() {
+	struct timeval tv;
+	fd_set fds;
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
+	FD_ZERO(&fds);
+	FD_SET(STDIN_FILENO, &fds); //STDIN_FILENO is 0
+	select(STDIN_FILENO+1, &fds, NULL, NULL, &tv);
+	return FD_ISSET(STDIN_FILENO, &fds);
+}

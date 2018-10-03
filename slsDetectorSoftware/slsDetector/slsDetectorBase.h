@@ -541,11 +541,6 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
 		return atoi(sret.c_str());
 	}
 
-				/**
-				 * Used when reference is slsDetectorUtils and to determine
-				 * if command can be implemented as slsDetector/multiSlsDetector object/
-				 */
-				virtual bool isMultiSlsDetectorClass() = 0;
 
 				/**
 				 * Set acquiring flag in shared memory

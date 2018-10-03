@@ -2,10 +2,8 @@ set(SOURCES
     multiSlsDetector/multiSlsDetector.cpp 
     sharedMemory/SharedMemory.cpp
     slsDetector/slsDetectorUsers.cpp 
-    slsDetector/slsDetectorUtils.cpp
     slsDetector/slsDetectorCommand.cpp
     slsDetector/slsDetector.cpp 
-    slsDetectorAnalysis/postProcessing.cpp 
     slsReceiverInterface/receiverInterface.cpp
     threadFiles/CondVar.cpp  
     threadFiles/Mutex.cpp 
@@ -21,9 +19,6 @@ include_directories(
 multiSlsDetector 
 sharedMemory
 slsDetector 
-slsDetectorUtils 
-slsDetectorCommand 
-slsDetectorAnalysis 
 slsReceiverInterface 
 threadFiles
 )
@@ -65,12 +60,10 @@ set(PUBLICHEADERS
     ../commonFiles/sls_receiver_exceptions.h
     ../commonFiles/utilties.h
     sharedMemory/SharedMemory.h
-    slsDetector/slsDetectorUtils.h
     slsDetector/slsDetector.h
     slsDetector/slsDetectorBase.h
     slsDetector/slsDetectorUsers.h
-    slsDetectorAnalysis/postProcessing.h
-    slsDetectorAnalysis/detectorData.h
+    slsDetector/detectorData.h
     multiSlsDetector/multiSlsDetector.h
     slsReceiverInterface/receiverInterface.h
 )

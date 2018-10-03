@@ -108,10 +108,6 @@ slsDetector::~slsDetector() {
 }
 
 
-bool slsDetector::isMultiSlsDetectorClass() {
-	return false;
-}
-
 
 int64_t slsDetector::clearAllErrorMask() {
 	clearErrorMask();

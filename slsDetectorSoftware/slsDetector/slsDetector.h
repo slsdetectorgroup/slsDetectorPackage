@@ -9,7 +9,7 @@
  * @author Anna Bergamaschi
  */
 
-#include "slsDetectorUtils.h"
+#include "slsDetectorBase.h"
 #include "MySocketTCP.h"
 
 class multiSlsDetector;
@@ -38,7 +38,7 @@ typedef  struct detParameterList {
 } detParameterList;
 
 
-class slsDetector : public postProcessing {
+class slsDetector : public slsDetectorBase {
 
 private:
 	/**
@@ -315,12 +315,6 @@ public:
 	 * Destructor
 	 */
 	virtual ~slsDetector();
-
-	/**
-	 * returns false. Used when reference is slsDetectorUtils and to determine
-	 * if command can be implemented as slsDetector/multiSlsDetector object/
-	 */
-	bool isMultiSlsDetectorClass();
 
 	/**
 	 * Clears error mask and also the bit in parent det multi error mask

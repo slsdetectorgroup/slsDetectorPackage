@@ -9,15 +9,15 @@ CFLAGS= -g -DC_ONLY -fPIC
 
 DFLAGS= -g -DDACS_INT 
 
-INCLUDES?= -I../commonFiles -IslsDetector -I../slsReceiverSoftware/MySocketTCP  -ImultiSlsDetector -IslsDetectorUtils -IslsDetectorCommand -IslsDetectorAnalysis -IslsReceiverInterface -I../slsReceiverSoftware/include -IthreadFiles -IsharedMemory -I$(ASM)
+INCLUDES?= -I../commonFiles -IslsDetector -I../slsReceiverSoftware/MySocketTCP  -ImultiSlsDetector  -IslsReceiverInterface -I../slsReceiverSoftware/include -IthreadFiles -IsharedMemory -I$(ASM)
 
 #EPICSFLAGS=-D EPICS -I/usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/ -L /usr/local/epics/base/lib/$(EPICS_HOST_ARCH) -Wl,-R/usr/local/epics/base/lib/$(EPICS_HOST_ARCH)  -lca -lCom 
 
 LIBZMQDIR = ../commonFiles
 LIBZMQ =  -L$(LIBZMQDIR) -Wl,-rpath=$(LIBZMQDIR) -lzmq
 
-SRC_CLNT=  slsDetector/slsDetectorUtils.cpp slsDetector/slsDetectorCommand.cpp slsDetectorAnalysis/postProcessing.cpp slsDetector/slsDetector.cpp multiSlsDetector/multiSlsDetector.cpp slsReceiverInterface/receiverInterface.cpp slsDetector/slsDetectorUsers.cpp threadFiles/CondVar.cpp  threadFiles/Mutex.cpp threadFiles/ThreadPool.cpp sharedMemory/SharedMemory.cpp ../commonFiles/utilities.cpp#../slsReceiverSoftware/MySocketTCP/MySocketTCP.cpp 
-DEPSINCLUDES = ../commonFiles/sls_receiver_defs.h ../commonFiles/sls_receiver_funcs.h ../commonFiles/ansi.h ../commonFiles/sls_detector_defs.h  ../commonFiles/sls_detector_funcs.h ../commonFiles/error_defs.h slsDetector/slsDetectorBase.h slsDetectorAnalysis/detectorData.h  threadFiles/Global.h threadFiles/Task.h sharedMemory/SharedMemory.h ../commonFiles/sls_receiver_exceptions.h ../commonFiles/versionAPI.h ../commonFiles/utilities.h
+SRC_CLNT=  slsDetector/slsDetectorCommand.cpp slsDetector/slsDetector.cpp multiSlsDetector/multiSlsDetector.cpp slsReceiverInterface/receiverInterface.cpp slsDetector/slsDetectorUsers.cpp threadFiles/CondVar.cpp  threadFiles/Mutex.cpp threadFiles/ThreadPool.cpp sharedMemory/SharedMemory.cpp ../commonFiles/utilities.cpp#../slsReceiverSoftware/MySocketTCP/MySocketTCP.cpp 
+DEPSINCLUDES = ../commonFiles/sls_receiver_defs.h ../commonFiles/sls_receiver_funcs.h ../commonFiles/ansi.h ../commonFiles/sls_detector_defs.h  ../commonFiles/sls_detector_funcs.h ../commonFiles/error_defs.h slsDetector/slsDetectorBase.h slsDetector/detectorData.h  threadFiles/Global.h threadFiles/Task.h sharedMemory/SharedMemory.h ../commonFiles/sls_receiver_exceptions.h ../commonFiles/versionAPI.h ../commonFiles/utilities.h
 
 
 
@@ -77,6 +77,6 @@ install: package
 
 install_inc:
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
-	cp -P slsDetector/slsDetectorUsers.h slsDetectorAnalysis/detectorData.h  $(DESTDIR)
+	cp -P slsDetector/slsDetectorUsers.h slsDetector/detectorData.h  $(DESTDIR)
 
 

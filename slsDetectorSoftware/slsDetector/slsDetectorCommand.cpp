@@ -1,4 +1,5 @@
 #include "slsDetectorCommand.h"
+#include "multiSlsDetector.h"
 
 #include <iostream>
 #include <sstream>
@@ -66,7 +67,7 @@ The commands are sudivided into different pages depending on their functionaliti
  
  */
 
-slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
+slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det)  {
 
 	myDet=det;
 
@@ -2006,12 +2007,12 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 //-----------------------------------------------------------
 
-string slsDetectorCommand::executeLine(int narg, char *args[], int action) {
+string slsDetectorCommand::executeLine(int narg, char *args[], int action, int detPos) {
 
 
 
 	if (action==READOUT_ACTION)
-		return cmdAcquire(narg, args, action);
+		return cmdAcquire(narg, args, action, detPos);
 
 
 	size_t s=string(args[0]).find(':');
@@ -2027,9 +2028,6 @@ string slsDetectorCommand::executeLine(int narg, char *args[], int action) {
 		/* otherwise one could try if truncated key is unique */
 
 
-		// size_t p=(descrToFuncMap[i].m_pFuncName).find();
-		//  if (p==0) {
-
 		if(key==descrToFuncMap[i].m_pFuncName){
 #ifdef VERBOSE
 			std::cout<<i << " command="<< descrToFuncMap[i].m_pFuncName<<" key="<<key <<std::endl;
@@ -2037,12 +2035,12 @@ string slsDetectorCommand::executeLine(int narg, char *args[], int action) {
 			cmd=descrToFuncMap[i].m_pFuncName;
 
 			MemFuncGetter memFunc=descrToFuncMap[i].m_pFuncPtr;
-			string dResult=(this->*memFunc)(narg, args, action);
+			string dResult=(this->*memFunc)(narg, args, action, detPos);
 
 			return dResult;
 		}
 	}
-	return cmdUnknown(narg,args,action);
+	return cmdUnknown(narg,args,action, detPos);
 
 }
 
@@ -2054,11 +2052,11 @@ Make sure you have first read \ref intro "the introduction".
  */
 
 
-string slsDetectorCommand::cmdUnknown(int narg, char *args[], int action) {
-	return string("Unknown command ")+string(args[0])+string("\n")+helpLine(0, args, action);
+string slsDetectorCommand::cmdUnknown(int narg, char *args[], int action, int detPos) {
+	return string("Unknown command ")+string(args[0])+string("\n")+helpLine(0, action);
 
 }
-string slsDetectorCommand::cmdUnderDevelopment(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdUnderDevelopment(int narg, char *args[], int action, int detPos) {
 	return string("Must still develop ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 
 }
@@ -2066,12 +2064,12 @@ string slsDetectorCommand::cmdUnderDevelopment(int narg, char *args[], int actio
 
 
 
-string slsDetectorCommand::helpLine(int narg, char *args[], int action) {
+string slsDetectorCommand::helpLine(int narg, int action) {
 
 	ostringstream os;
 
 	if (action==READOUT_ACTION) {
-		return helpAcquire(narg,args,HELP_ACTION);
+		return helpAcquire(HELP_ACTION);
 	}
 
 
@@ -2093,19 +2091,24 @@ string slsDetectorCommand::helpLine(int narg, char *args[], int action) {
 
 
 
-string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action, int detPos) {
 #ifdef VERBOSE
 	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 #endif
 
 
 	if (action==HELP_ACTION) {
-		return helpAcquire(narg,args,HELP_ACTION);
+		return helpAcquire(HELP_ACTION);
 	}
 	if (!myDet->getNumberOfDetectors()) {
 		cprintf(RED, "Error: This shared memory has no detectors added. Aborting.\n");
 		return string("acquire unsuccessful");
 	}
+	if (detPos >= 0) {
+		cprintf(RED, "Error: Individual detectors not allowed for readout. Aborting.\n");
+		return string("acquire unsuccessful");
+	}
+
 	myDet->setOnline(ONLINE_FLAG);
 	int r_online = myDet->setReceiverOnline(ONLINE_FLAG);
 
@@ -2124,7 +2127,7 @@ string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action) {
 
 
 
-string slsDetectorCommand::helpAcquire(int narg, char *args[], int action){
+string slsDetectorCommand::helpAcquire(int action){
 
 
 	if (action==PUT_ACTION)
@@ -2138,7 +2141,7 @@ string slsDetectorCommand::helpAcquire(int narg, char *args[], int action){
 }
 
 
-string slsDetectorCommand::cmdData(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdData(int narg, char *args[], int action, int detPos) {
 
 #ifdef VERBOSE
 	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
@@ -2147,16 +2150,19 @@ string slsDetectorCommand::cmdData(int narg, char *args[], int action) {
 	if (action==PUT_ACTION) {
 		return  string("cannot set");
 	} else if (action==HELP_ACTION) {
-		return helpData(narg,args,HELP_ACTION);
+		return helpData(HELP_ACTION);
+	} else if (detPos >= 0) {
+		cprintf(RED, "Error: Individual detectors not allowed for readout. Aborting.\n");
+		return string("unsuccessful");
 	} else {
 		b=myDet->setThreadedProcessing(-1);
 		myDet->setThreadedProcessing(0);
-		myDet->setOnline(ONLINE_FLAG);
-		myDet->setReceiverOnline(ONLINE_FLAG);
-		myDet->readAll();
+		myDet->setOnline(detPos, ONLINE_FLAG);
+		myDet->setReceiverOnline(detPos, ONLINE_FLAG);
+		myDet->readAll(detPos);
 		//processdata in receiver is useful only for gui purposes
-		if(myDet->setReceiverOnline()==OFFLINE_FLAG)
-			myDet->processData(1);
+		if(myDet->setReceiverOnline(detPos)==OFFLINE_FLAG)
+			myDet->processData(detPos);
 		myDet->setThreadedProcessing(b);
 		return string("");
 	}
@@ -2164,7 +2170,7 @@ string slsDetectorCommand::cmdData(int narg, char *args[], int action) {
 
 
 
-string slsDetectorCommand::helpData(int narg, char *args[], int action){ 
+string slsDetectorCommand::helpData(int action){
 
 	if (action==PUT_ACTION)
 		return string("");
@@ -2174,14 +2180,14 @@ string slsDetectorCommand::helpData(int narg, char *args[], int action){
 }
 
 
-string slsDetectorCommand::cmdStatus(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdStatus(int narg, char *args[], int action, int detPos) {
 
 #ifdef VERBOSE
 	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 #endif
 
 	if (action==HELP_ACTION)
-		return helpStatus(narg,args,action);
+		return helpStatus(action);
 
 	if (cmd=="status") {
 		myDet->setOnline(ONLINE_FLAG);
@@ -2219,7 +2225,7 @@ string slsDetectorCommand::cmdStatus(int narg, char *args[], int action) {
 
 
 
-string slsDetectorCommand::helpStatus(int narg, char *args[], int action) {
+string slsDetectorCommand::helpStatus(int action) {
 
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION) {
@@ -2235,7 +2241,7 @@ string slsDetectorCommand::helpStatus(int narg, char *args[], int action) {
 
 
 
-string slsDetectorCommand::cmdDataStream(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdDataStream(int narg, char *args[], int action, int detPos) {
 
 #ifdef VERBOSE
 	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
@@ -2247,7 +2253,7 @@ string slsDetectorCommand::cmdDataStream(int narg, char *args[], int action) {
 	myDet->setReceiverOnline(ONLINE_FLAG);
 
 	if (action==HELP_ACTION)
-		return helpDataStream(narg,args,HELP_ACTION);
+		return helpDataStream(HELP_ACTION);
 
 	if (action==PUT_ACTION) {
 		if (!sscanf(args[1],"%d",&ival))
@@ -2260,7 +2266,7 @@ string slsDetectorCommand::cmdDataStream(int narg, char *args[], int action) {
 }
 
 
-string slsDetectorCommand::helpDataStream(int narg, char *args[], int action) {
+string slsDetectorCommand::helpDataStream(int action) {
 
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION)
@@ -2272,31 +2278,31 @@ string slsDetectorCommand::helpDataStream(int narg, char *args[], int action) {
 
 
 
-string slsDetectorCommand::cmdFree(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdFree(int narg, char *args[], int action, int detPos) {
 
 #ifdef VERBOSE
 	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 #endif
 	if (action==HELP_ACTION) {
-		return helpFree(narg,args,HELP_ACTION);
+		return helpFree(HELP_ACTION);
 	}
 
 	return("Error: Should have been freed before creating constructor\n");
 }
 
 
-string slsDetectorCommand::helpFree(int narg, char *args[], int action) {
+string slsDetectorCommand::helpFree(int action) {
 	return string("free \t frees the shared memory\n");
 }
 
 
-string slsDetectorCommand::cmdHostname(int narg, char *args[], int action){
+string slsDetectorCommand::cmdHostname(int narg, char *args[], int action, int detPos){
 #ifdef VERBOSE
 	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 #endif
 
 	if (action==HELP_ACTION) {
-		return helpHostname(narg,args,HELP_ACTION);
+		return helpHostname(HELP_ACTION);
 	}
 	if (action==GET_ACTION) {
 		if ((cmd == "add") || (cmd == "replace"))
@@ -2333,7 +2339,7 @@ string slsDetectorCommand::cmdHostname(int narg, char *args[], int action){
 
 
 
-string slsDetectorCommand::helpHostname(int narg, char *args[], int action){
+string slsDetectorCommand::helpHostname(int action){
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION) {
 		os << string("hostname \t returns the hostname(s) of the multi detector structure.\n");
@@ -2354,13 +2360,13 @@ string slsDetectorCommand::helpHostname(int narg, char *args[], int action){
 }
 
 
-string slsDetectorCommand::cmdUser(int narg, char *args[], int action){
+string slsDetectorCommand::cmdUser(int narg, char *args[], int action, int detPos){
 #ifdef VERBOSE
 	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 #endif
 
 	if (action==HELP_ACTION) {
-		return helpHostname(narg,args,HELP_ACTION);
+		return helpHostname(HELP_ACTION);
 	}
 	if (action==PUT_ACTION) {
 		return string("cannot put");
@@ -2374,7 +2380,7 @@ string slsDetectorCommand::cmdUser(int narg, char *args[], int action){
 
 
 
-string slsDetectorCommand::helpUser(int narg, char *args[], int action){
+string slsDetectorCommand::helpUser(int action){
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION) {
 		os << string("user \t returns user details from shared memory without updating shared memory. "
@@ -2388,7 +2394,7 @@ string slsDetectorCommand::helpUser(int narg, char *args[], int action){
 
 
 
-string slsDetectorCommand::cmdHelp(int narg, char *args[], int action){
+string slsDetectorCommand::cmdHelp(int narg, char *args[], int action, int detPos){
 #ifdef VERBOSE
 	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 #endif
@@ -2396,20 +2402,20 @@ string slsDetectorCommand::cmdHelp(int narg, char *args[], int action){
 	cout << narg << endl;
 
 	if (narg>=1)
-		return helpLine(narg-1, args+1, action);
+		return helpLine(narg-1, action);
 	else
-		return helpLine(0, args, action);
+		return helpLine(0, action);
 
 
 
 }
 
-string slsDetectorCommand::cmdExitServer(int narg, char *args[], int action){
+string slsDetectorCommand::cmdExitServer(int narg, char *args[], int action, int detPos){
 #ifdef VERBOSE
 	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 #endif
 	if (action==HELP_ACTION) {
-		return helpExitServer(narg, args, action);
+		return helpExitServer(action);
 	}
 
 	if (action==PUT_ACTION) {
@@ -2433,7 +2439,7 @@ string slsDetectorCommand::cmdExitServer(int narg, char *args[], int action){
 
 }
 
-string slsDetectorCommand::helpExitServer(int narg, char *args[], int action){
+string slsDetectorCommand::helpExitServer(int action){
 	ostringstream os;
 	os << string("exitserver \t shuts down all the detector servers. Don't use it!!!!\n");
 	os << string("exitreceiver \t shuts down all the receiver servers.\n");
@@ -2441,12 +2447,12 @@ string slsDetectorCommand::helpExitServer(int narg, char *args[], int action){
 }
 
 
-string slsDetectorCommand::cmdSettingsDir(int narg, char *args[], int action){
+string slsDetectorCommand::cmdSettingsDir(int narg, char *args[], int action, int detPos){
 #ifdef VERBOSE
 	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 #endif
 	if (action==HELP_ACTION) {
-		return helpSettingsDir(narg, args, action);
+		return helpSettingsDir(action);
 	}
 	if (action==PUT_ACTION) {
 		myDet->setSettingsDir(string(args[1]));
@@ -2458,7 +2464,7 @@ string slsDetectorCommand::cmdSettingsDir(int narg, char *args[], int action){
 
 
 
-string slsDetectorCommand::helpSettingsDir(int narg, char *args[], int action){
+string slsDetectorCommand::helpSettingsDir(int action){
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION)
 		os << string("settingsdir \t  gets the directory where the settings files are located\n");
@@ -2473,10 +2479,10 @@ string slsDetectorCommand::helpSettingsDir(int narg, char *args[], int action){
 
 
 
-string slsDetectorCommand::cmdCalDir(int narg, char *args[], int action){
+string slsDetectorCommand::cmdCalDir(int narg, char *args[], int action, int detPos){
 
 	if (action==HELP_ACTION) {
-		return helpCalDir(narg, args, action);
+		return helpCalDir(action);
 	}
 	if (action==PUT_ACTION) {
 		myDet->setCalDir(string(args[1]));
@@ -2488,7 +2494,7 @@ string slsDetectorCommand::cmdCalDir(int narg, char *args[], int action){
 
 
 
-string slsDetectorCommand::helpCalDir(int narg, char *args[], int action){
+string slsDetectorCommand::helpCalDir(int action){
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION)
 		os << string("caldir \t  gets the directory where the calibration files are located\n");
@@ -2499,13 +2505,13 @@ string slsDetectorCommand::helpCalDir(int narg, char *args[], int action){
 
 
 
-string slsDetectorCommand::cmdTrimEn(int narg, char *args[], int action){
+string slsDetectorCommand::cmdTrimEn(int narg, char *args[], int action, int detPos){
 	int ival;
 	int ip;
 
 	char answer[1000];
 
-	if (action==HELP_ACTION) return helpTrimEn(narg,args,action);
+	if (action==HELP_ACTION) return helpTrimEn(action);
 
 	if (action==PUT_ACTION) {
 		if (sscanf(args[1],"%d",&ival)) {
@@ -2537,7 +2543,7 @@ string slsDetectorCommand::cmdTrimEn(int narg, char *args[], int action){
 
 }
 
-string slsDetectorCommand::helpTrimEn(int narg, char *args[], int action) {
+string slsDetectorCommand::helpTrimEn(int action) {
 
 	ostringstream os;
 	if (action==PUT_ACTION || action==HELP_ACTION)
@@ -2548,10 +2554,10 @@ string slsDetectorCommand::helpTrimEn(int narg, char *args[], int action) {
 }
 
 
-string slsDetectorCommand::cmdOutDir(int narg, char *args[], int action){
+string slsDetectorCommand::cmdOutDir(int narg, char *args[], int action, int detPos){
 	myDet->setReceiverOnline(ONLINE_FLAG);
 	if (action==HELP_ACTION)
-		return helpOutDir(narg, args, action);
+		return helpOutDir(action);
 
 	else if(action==PUT_ACTION)
 		myDet->setFilePath(string(args[1]));
@@ -2561,7 +2567,7 @@ string slsDetectorCommand::cmdOutDir(int narg, char *args[], int action){
 
 
 
-string slsDetectorCommand::helpOutDir(int narg, char *args[], int action){
+string slsDetectorCommand::helpOutDir(int action){
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION)
 		os << string("outdir \t  gets the directory where the output files will be written\n");
@@ -2573,10 +2579,10 @@ string slsDetectorCommand::helpOutDir(int narg, char *args[], int action){
 
 
 
-string slsDetectorCommand::cmdFileName(int narg, char *args[], int action){
+string slsDetectorCommand::cmdFileName(int narg, char *args[], int action, int detPos){
 	myDet->setReceiverOnline(ONLINE_FLAG);
 	if (action==HELP_ACTION)
-		return helpFileName(narg, args, action);
+		return helpFileName(action);
 	if (cmd=="fname") {
 		if (action==PUT_ACTION)
 			myDet->setFileName(string(args[1]));
@@ -2600,7 +2606,7 @@ string slsDetectorCommand::cmdFileName(int narg, char *args[], int action){
 
 
 
-string slsDetectorCommand::helpFileName(int narg, char *args[], int action){
+string slsDetectorCommand::helpFileName(int action){
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION){
 		os << string("fname \t  gets the filename for the data without index and extension\n");
@@ -2615,13 +2621,13 @@ string slsDetectorCommand::helpFileName(int narg, char *args[], int action){
 
 
 
-string slsDetectorCommand::cmdEnablefwrite(int narg, char *args[], int action){
+string slsDetectorCommand::cmdEnablefwrite(int narg, char *args[], int action, int detPos){
 
 	int i;
 	char ans[100];
 	myDet->setReceiverOnline(ONLINE_FLAG);
 	if (action==HELP_ACTION) {
-		return helpEnablefwrite(narg, args, action);
+		return helpEnablefwrite(action);
 	}
 	if (action==PUT_ACTION) {
 		if (sscanf(args[1],"%d",&i))
@@ -2637,7 +2643,7 @@ string slsDetectorCommand::cmdEnablefwrite(int narg, char *args[], int action){
 
 
 
-string slsDetectorCommand::helpEnablefwrite(int narg, char *args[], int action){
+string slsDetectorCommand::helpEnablefwrite(int action){
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION)
 		os << string("enablefwrite \t When Enabled writes the data into the file\n");
@@ -2647,13 +2653,13 @@ string slsDetectorCommand::helpEnablefwrite(int narg, char *args[], int action){
 }
 
 
-string slsDetectorCommand::cmdOverwrite(int narg, char *args[], int action){
+string slsDetectorCommand::cmdOverwrite(int narg, char *args[], int action, int detPos){
 
 	int i;
 	char ans[100];
 	myDet->setReceiverOnline(ONLINE_FLAG);
 	if (action==HELP_ACTION) {
-		return helpOverwrite(narg, args, action);
+		return helpOverwrite(action);
 	}
 	if (action==PUT_ACTION) {
 		if (sscanf(args[1],"%d",&i))
@@ -2669,7 +2675,7 @@ string slsDetectorCommand::cmdOverwrite(int narg, char *args[], int action){
 
 
 
-string slsDetectorCommand::helpOverwrite(int narg, char *args[], int action){
+string slsDetectorCommand::helpOverwrite(int action){
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION)
 		os << string("overwrite \t When Enabled overwrites files\n");
@@ -2680,12 +2686,12 @@ string slsDetectorCommand::helpOverwrite(int narg, char *args[], int action){
 
 
 
-string slsDetectorCommand::cmdFileIndex(int narg, char *args[], int action){
+string slsDetectorCommand::cmdFileIndex(int narg, char *args[], int action, int detPos){
 	char ans[100];
 	int i;
 	myDet->setReceiverOnline(ONLINE_FLAG);
 	if (action==HELP_ACTION) {
-		return helpFileName(narg, args, action);
+		return helpFileName(action);
 	}
 	else if (action==PUT_ACTION){
 		if(!sscanf(args[1],"%d",&i))
@@ -2699,7 +2705,7 @@ string slsDetectorCommand::cmdFileIndex(int narg, char *args[], int action){
 
 
 
-string slsDetectorCommand::helpFileIndex(int narg, char *args[], int action){
+string slsDetectorCommand::helpFileIndex(int action){
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION)
 		os << string("index \t  gets the file index for the next the data file\n");
@@ -2711,10 +2717,10 @@ string slsDetectorCommand::helpFileIndex(int narg, char *args[], int action){
 
 
 
-string slsDetectorCommand::cmdRateCorr(int narg, char *args[], int action){
+string slsDetectorCommand::cmdRateCorr(int narg, char *args[], int action, int detPos){
 
 	if (action==HELP_ACTION) {
-		return helpRateCorr(narg, args, action);
+		return helpRateCorr(action);
 	}
 	double fval;
 	char answer[1000];
@@ -2735,7 +2741,7 @@ string slsDetectorCommand::cmdRateCorr(int narg, char *args[], int action){
 }
 
 
-string slsDetectorCommand::helpRateCorr(int narg, char *args[], int action){ 
+string slsDetectorCommand::helpRateCorr(int action){
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION)
 		os << string("ratecorr \t  returns the dead time used for rate correections in ns \n");
@@ -2747,12 +2753,12 @@ string slsDetectorCommand::helpRateCorr(int narg, char *args[], int action){
 
 
 
-string slsDetectorCommand::cmdThreaded(int narg, char *args[], int action){
+string slsDetectorCommand::cmdThreaded(int narg, char *args[], int action, int detPos){
 	int ival;
 	char answer[1000];
 
 	if (action==HELP_ACTION)
-		return helpThreaded(narg,args,action);
+		return helpThreaded(action);
 
 	if (action==PUT_ACTION) {
 		if (sscanf(args[1],"%d",&ival))
@@ -2764,7 +2770,7 @@ string slsDetectorCommand::cmdThreaded(int narg, char *args[], int action){
 } 
 
 
-string slsDetectorCommand::helpThreaded(int narg, char *args[], int action){
+string slsDetectorCommand::helpThreaded(int action){
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION)
 		os << string("threaded \t  returns wether the data processing is threaded. \n");
@@ -2776,11 +2782,11 @@ string slsDetectorCommand::helpThreaded(int narg, char *args[], int action){
 } 
 
 
-string slsDetectorCommand::cmdImage(int narg, char *args[], int action){
+string slsDetectorCommand::cmdImage(int narg, char *args[], int action, int detPos){
 	string sval;
 	int retval;
 	if (action==HELP_ACTION)
-		return helpImage(narg,args,HELP_ACTION);
+		return helpImage(HELP_ACTION);
 	else if (action==GET_ACTION)
 		return string("Cannot get");
 
@@ -2801,7 +2807,7 @@ string slsDetectorCommand::cmdImage(int narg, char *args[], int action){
 }
 
 
-string slsDetectorCommand::helpImage(int narg, char *args[], int action){
+string slsDetectorCommand::helpImage(int action){
 	ostringstream os;
 	if (action==PUT_ACTION || action==HELP_ACTION){
 		os << "darkimage f \t  loads the image to detector from file f"<< std::endl;
@@ -2815,13 +2821,13 @@ string slsDetectorCommand::helpImage(int narg, char *args[], int action){
 }
 
 
-string slsDetectorCommand::cmdCounter(int narg, char *args[], int action){
+string slsDetectorCommand::cmdCounter(int narg, char *args[], int action, int detPos){
 	int ival;
 	char answer[100];
 	string sval;
 	int retval;
 	if (action==HELP_ACTION)
-		return helpCounter(narg,args,HELP_ACTION);
+		return helpCounter(HELP_ACTION);
 	else if (action==PUT_ACTION)
 		ival=atoi(args[1]);
 
@@ -2862,7 +2868,7 @@ string slsDetectorCommand::cmdCounter(int narg, char *args[], int action){
 }
 
 
-string slsDetectorCommand::helpCounter(int narg, char *args[], int action){
+string slsDetectorCommand::helpCounter(int action){
 	ostringstream os;
 	os << std::endl;
 	if (action==PUT_ACTION || action==HELP_ACTION){
@@ -2884,13 +2890,13 @@ string slsDetectorCommand::helpCounter(int narg, char *args[], int action){
 
 
 
-string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int action, int detPos) {
 
 	networkParameter t;
 	int i;
 	int prev_streaming = 0;
 	if (action==HELP_ACTION)
-		return helpNetworkParameter(narg,args,action);
+		return helpNetworkParameter(action);
 
 	myDet->setOnline(ONLINE_FLAG);
 	myDet->setReceiverOnline(ONLINE_FLAG);
@@ -2990,7 +2996,7 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
 	return myDet->getNetworkParameter(t);
 }
 
-string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int action) {
+string slsDetectorCommand::helpNetworkParameter(int action) {
 
 
 
@@ -3053,10 +3059,10 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
 
 }
 
-string slsDetectorCommand::cmdPort(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdPort(int narg, char *args[], int action, int detPos) {
 
 	if (action==HELP_ACTION)
-		return helpPort(narg,args,action);
+		return helpPort(action);
 	int val; //ret,
 	char ans[1000];
 	portType index;
@@ -3088,7 +3094,7 @@ string slsDetectorCommand::cmdPort(int narg, char *args[], int action) {
 
 
 
-string slsDetectorCommand::helpPort(int narg, char *args[], int action) {
+string slsDetectorCommand::helpPort(int action) {
 
 
 	ostringstream os;
@@ -3109,10 +3115,10 @@ string slsDetectorCommand::helpPort(int narg, char *args[], int action) {
 }
 
 
-string slsDetectorCommand::cmdLock(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdLock(int narg, char *args[], int action, int detPos) {
 
 	if (action==HELP_ACTION)
-		return helpLock(narg,args,action);
+		return helpLock(action);
 
 	int val;//, ret;
 	char ans[1000];
@@ -3150,7 +3156,7 @@ string slsDetectorCommand::cmdLock(int narg, char *args[], int action) {
 
 
 
-string slsDetectorCommand::helpLock(int narg, char *args[], int action) {
+string slsDetectorCommand::helpLock(int action) {
 
 
 	ostringstream os;
@@ -3168,10 +3174,10 @@ string slsDetectorCommand::helpLock(int narg, char *args[], int action) {
 }
 
 
-string slsDetectorCommand::cmdLastClient(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdLastClient(int narg, char *args[], int action, int detPos) {
 
 	if (action==HELP_ACTION)
-		return helpLastClient(narg,args,action);
+		return helpLastClient(action);
 
 	if (action==PUT_ACTION)
 		return string("cannot set");
@@ -3190,7 +3196,7 @@ string slsDetectorCommand::cmdLastClient(int narg, char *args[], int action) {
 	return string("cannot decode command");
 }
 
-string slsDetectorCommand::helpLastClient(int narg, char *args[], int action) {
+string slsDetectorCommand::helpLastClient(int action) {
 
 
 	ostringstream os;
@@ -3203,10 +3209,10 @@ string slsDetectorCommand::helpLastClient(int narg, char *args[], int action) {
 }
 
 
-string slsDetectorCommand::cmdOnline(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdOnline(int narg, char *args[], int action, int detPos) {
 
 	if (action==HELP_ACTION) {
-		return helpOnline(narg,args,action);
+		return helpOnline(action);
 	}
 	int ival;
 	char ans[1000];
@@ -3273,7 +3279,7 @@ string slsDetectorCommand::cmdOnline(int narg, char *args[], int action) {
 	return ans;
 }
 
-string slsDetectorCommand::helpOnline(int narg, char *args[], int action) {
+string slsDetectorCommand::helpOnline(int action) {
 
 	ostringstream os;
 	if (action==PUT_ACTION || action==HELP_ACTION) {
@@ -3296,10 +3302,10 @@ string slsDetectorCommand::helpOnline(int narg, char *args[], int action) {
 
 
 
-string slsDetectorCommand::cmdConfigureMac(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdConfigureMac(int narg, char *args[], int action, int detPos) {
 
 	if (action==HELP_ACTION) {
-		return helpConfigureMac(narg,args,action);
+		return helpConfigureMac(action);
 	}
 	int ret;
 	char ans[1000];
@@ -3316,7 +3322,7 @@ string slsDetectorCommand::cmdConfigureMac(int narg, char *args[], int action) {
 	return ans;
 }
 
-string slsDetectorCommand::helpConfigureMac(int narg, char *args[], int action) {
+string slsDetectorCommand::helpConfigureMac(int action) {
 
 	ostringstream os;
 	if (action==PUT_ACTION || action==HELP_ACTION)
@@ -3328,10 +3334,10 @@ string slsDetectorCommand::helpConfigureMac(int narg, char *args[], int action) 
 }
 
 
-string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action, int detPos) {
 
 	if (action==HELP_ACTION)
-		return helpDetectorSize(narg,args,action);
+		return helpDetectorSize(action);
 	int ret, val=-1, pos=-1,i;
 	char ans[1000];
 
@@ -3347,7 +3353,7 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 		if (cmd=="roi"){
 			//debug number of arguments
 			if ((val<0)	|| (narg!=((val*4)+2)) )
-				return helpDetectorSize(narg,args,action);
+				return helpDetectorSize(action);
 			ROI allroi[val];
 			pos=2;
 			for(i=0;i<val;++i){
@@ -3427,7 +3433,7 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 }
 
 
-string slsDetectorCommand::helpDetectorSize(int narg, char *args[], int action) {
+string slsDetectorCommand::helpDetectorSize(int action) {
 
 	ostringstream os;
 	if (action==PUT_ACTION || action==HELP_ACTION) {
@@ -3453,10 +3459,10 @@ string slsDetectorCommand::helpDetectorSize(int narg, char *args[], int action) 
 
 
 
-string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdSettings(int narg, char *args[], int action, int detPos) {
 
 	if (action==HELP_ACTION)
-		return helpSettings(narg,args,action);
+		return helpSettings(action);
 	int val=-1;//ret,
 	char ans[1000];
 
@@ -3560,7 +3566,7 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
 }
 
 
-string slsDetectorCommand::helpSettings(int narg, char *args[], int action) {
+string slsDetectorCommand::helpSettings(int action) {
 
 	ostringstream os;
 	if (action==PUT_ACTION || action==HELP_ACTION) {
@@ -3594,7 +3600,7 @@ string slsDetectorCommand::helpSettings(int narg, char *args[], int action) {
 
 
 
-string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdSN(int narg, char *args[], int action, int detPos) {
 
 	char answer[1000];
 
@@ -3604,7 +3610,7 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
 
 
 	if (action==HELP_ACTION)
-		return helpSN(narg, args, action);
+		return helpSN(action);
 
 
 	if (cmd=="thisversion"){
@@ -3677,7 +3683,7 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
 
 }
 
-string slsDetectorCommand::helpSN(int narg, char *args[], int action) {
+string slsDetectorCommand::helpSN(int action) {
 
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION) {
@@ -3696,12 +3702,12 @@ string slsDetectorCommand::helpSN(int narg, char *args[], int action) {
 }
 
 
-string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action, int detPos) {
 
 	char answer[1000];
 
 	if (action==HELP_ACTION)
-		return helpSN(narg, args, action);
+		return helpSN(action);
 
 
 	myDet->setOnline(ONLINE_FLAG);
@@ -3737,7 +3743,7 @@ string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action) {
 
 }
 
-string slsDetectorCommand::helpDigiTest(int narg, char *args[], int action) {
+string slsDetectorCommand::helpDigiTest(int action) {
 
 
 	ostringstream os;
@@ -3750,11 +3756,11 @@ string slsDetectorCommand::helpDigiTest(int narg, char *args[], int action) {
 	return os.str();
 }
 
-string slsDetectorCommand::cmdRegister(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdRegister(int narg, char *args[], int action, int detPos) {
 
 
 	if (action==HELP_ACTION)
-		return helpRegister(narg, args, action);
+		return helpRegister(action);
 
 	int addr, val,n;
 	char answer[1000];
@@ -3869,7 +3875,7 @@ string slsDetectorCommand::cmdRegister(int narg, char *args[], int action) {
 
 }
 
-string slsDetectorCommand::helpRegister(int narg, char *args[], int action) {
+string slsDetectorCommand::helpRegister(int action) {
 
 	ostringstream os;
 	if (action==PUT_ACTION || action==HELP_ACTION) {
@@ -3885,10 +3891,10 @@ string slsDetectorCommand::helpRegister(int narg, char *args[], int action) {
 }
 
 
-string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdDAC(int narg, char *args[], int action, int detPos) {
 
 	if (action==HELP_ACTION)
-		return helpDAC(narg, args, action);
+		return helpDAC(action);
 
 	dacIndex dac;
 	dacs_t val=-1;
@@ -4059,7 +4065,7 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
 }
 
 
-string slsDetectorCommand::helpDAC(int narg, char *args[], int action) {
+string slsDetectorCommand::helpDAC(int action) {
 
 	ostringstream os;
 	if (action==PUT_ACTION || action==HELP_ACTION) {
@@ -4179,7 +4185,7 @@ string slsDetectorCommand::helpDAC(int narg, char *args[], int action) {
 
 
 
-string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdADC(int narg, char *args[], int action, int detPos) {
 
 	dacIndex adc;
 	int idac;
@@ -4187,7 +4193,7 @@ string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
 	char answer[1000];
 
 	if (action==HELP_ACTION)
-		return helpADC(narg, args, action);
+		return helpADC(action);
 	else if (action==PUT_ACTION)
 		return string("cannot set ")+cmd;
 
@@ -4258,7 +4264,7 @@ string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
 
 }
 
-string slsDetectorCommand::helpADC(int narg, char *args[], int action) {
+string slsDetectorCommand::helpADC(int action) {
 
 	ostringstream os;
 	if (action==PUT_ACTION || action==HELP_ACTION) {
@@ -4289,12 +4295,12 @@ string slsDetectorCommand::helpADC(int narg, char *args[], int action) {
 
 
 
-string slsDetectorCommand::cmdTempControl(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdTempControl(int narg, char *args[], int action, int detPos) {
     char answer[1000]="";
     int val = -1;
 
     if (action==HELP_ACTION)
-        return helpTempControl(narg, args, action);
+        return helpTempControl(action);
 
     myDet->setOnline(ONLINE_FLAG);
 
@@ -4343,7 +4349,7 @@ string slsDetectorCommand::cmdTempControl(int narg, char *args[], int action) {
 
 
 
-string slsDetectorCommand::helpTempControl(int narg, char *args[], int action) {
+string slsDetectorCommand::helpTempControl(int action) {
     ostringstream os;
     if (action==PUT_ACTION || action==HELP_ACTION) {
         os << "temp_threshold t \t sets the threshold temperature. Jungfrau only" << std::endl;
@@ -4360,13 +4366,13 @@ string slsDetectorCommand::helpTempControl(int narg, char *args[], int action) {
 
 
 
-string slsDetectorCommand::cmdTiming(int narg, char *args[], int action){
+string slsDetectorCommand::cmdTiming(int narg, char *args[], int action, int detPos){
 #ifdef VERBOSE
 	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 #endif
 
 	if (action==HELP_ACTION) {
-		return helpTiming(narg,args,HELP_ACTION);
+		return helpTiming(HELP_ACTION);
 	}
 	myDet->setOnline(ONLINE_FLAG);
 	if (action==PUT_ACTION) {
@@ -4376,7 +4382,7 @@ string slsDetectorCommand::cmdTiming(int narg, char *args[], int action){
 	return myDet->externalCommunicationType(myDet->setExternalCommunicationMode());
 
 }
-string slsDetectorCommand::helpTiming(int narg, char *args[], int action){
+string slsDetectorCommand::helpTiming(int action){
 
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION)
@@ -4388,7 +4394,7 @@ string slsDetectorCommand::helpTiming(int narg, char *args[], int action){
 
 
 
-string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdTimer(int narg, char *args[], int action, int detPos) {
 	timerIndex index;
 	int64_t t=-1, ret;
 	double val, rval;
@@ -4397,7 +4403,7 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
 
 
 	if (action==HELP_ACTION)
-		return helpTimer(narg, args, action);
+		return helpTimer(action);
 
 	if (cmd=="exptime")
 		index=ACQUISITION_TIME;
@@ -4472,7 +4478,7 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
 }
 
 
-string slsDetectorCommand::helpTimer(int narg, char *args[], int action) {
+string slsDetectorCommand::helpTimer(int action) {
 
 	ostringstream os;
 	if (action==PUT_ACTION || action==HELP_ACTION) {
@@ -4517,7 +4523,7 @@ string slsDetectorCommand::helpTimer(int narg, char *args[], int action) {
 }
 
 
-string slsDetectorCommand::cmdTimeLeft(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdTimeLeft(int narg, char *args[], int action, int detPos) {
 	timerIndex index;
 	int64_t ret;
 	double rval;
@@ -4526,7 +4532,7 @@ string slsDetectorCommand::cmdTimeLeft(int narg, char *args[], int action) {
 
 
 	if (action==HELP_ACTION)
-		return helpTimeLeft(narg, args, action);
+		return helpTimeLeft(action);
 
 	if (cmd=="exptimel")
 		index=ACQUISITION_TIME;
@@ -4580,7 +4586,7 @@ string slsDetectorCommand::cmdTimeLeft(int narg, char *args[], int action) {
 }
 
 
-string slsDetectorCommand::helpTimeLeft(int narg, char *args[], int action) {
+string slsDetectorCommand::helpTimeLeft(int action) {
 
 
 
@@ -4610,7 +4616,7 @@ string slsDetectorCommand::helpTimeLeft(int narg, char *args[], int action) {
 
 
 
-string slsDetectorCommand::cmdSpeed(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdSpeed(int narg, char *args[], int action, int detPos) {
 
 	speedVariable index;
 	int t=-1, ret;
@@ -4619,7 +4625,7 @@ string slsDetectorCommand::cmdSpeed(int narg, char *args[], int action) {
 
 
 	if (action==HELP_ACTION)
-		return helpSpeed(narg, args, action);
+		return helpSpeed(action);
 
 	if (cmd=="clkdivider")
 		index=CLOCK_DIVIDER;
@@ -4667,7 +4673,7 @@ string slsDetectorCommand::cmdSpeed(int narg, char *args[], int action) {
 }
 
 
-string slsDetectorCommand::helpSpeed(int narg, char *args[], int action) {
+string slsDetectorCommand::helpSpeed(int action) {
 
 	ostringstream os;
 	if (action==PUT_ACTION || action==HELP_ACTION) {
@@ -4698,13 +4704,13 @@ string slsDetectorCommand::helpSpeed(int narg, char *args[], int action) {
 
 
 
-string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action, int detPos) {
 
 	int retval;
 	char answer[1000]="";
 
 	if (action==HELP_ACTION)
-		return helpAdvanced(narg, args, action);
+		return helpAdvanced(action);
 
 	if (cmd=="flags") {
 
@@ -4865,7 +4871,7 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action) {
 }
 
 
-string slsDetectorCommand::helpAdvanced(int narg, char *args[], int action) {
+string slsDetectorCommand::helpAdvanced(int action) {
 
 	ostringstream os;
 	if (action==PUT_ACTION || action==HELP_ACTION) {
@@ -4904,12 +4910,12 @@ string slsDetectorCommand::helpAdvanced(int narg, char *args[], int action) {
 
 
 
-string slsDetectorCommand::cmdConfiguration(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdConfiguration(int narg, char *args[], int action, int detPos) {
 
 
 
 	if (action==HELP_ACTION)
-		return helpConfiguration(narg, args, action);
+		return helpConfiguration(action);
 
 	string sval;
 
@@ -4959,7 +4965,7 @@ string slsDetectorCommand::cmdConfiguration(int narg, char *args[], int action) 
 }
 
 
-string slsDetectorCommand::helpConfiguration(int narg, char *args[], int action) {
+string slsDetectorCommand::helpConfiguration(int action) {
 
 	ostringstream os;
 	if (action==PUT_ACTION || action==HELP_ACTION) {
@@ -4989,12 +4995,12 @@ string slsDetectorCommand::helpConfiguration(int narg, char *args[], int action)
 }
 
 
-string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action, int detPos) {
 	char answer[100];
 	int ival = -1;
 
 	if (action==HELP_ACTION)
-		return helpReceiver(narg, args, action);
+		return helpReceiver(action);
 
 
 	myDet->setOnline(ONLINE_FLAG);
@@ -5007,7 +5013,7 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 			else if(!strcasecmp(args[1],"stop"))
 				myDet->stopReceiver();
 			else
-				return helpReceiver(narg, args, action);
+				return helpReceiver(action);
 		}
 		return myDet->runStatusType(myDet->getReceiverStatus());
 	}
@@ -5133,7 +5139,7 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 
 
 
-string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
+string slsDetectorCommand::helpReceiver(int action) {
 
 	ostringstream os;
 	if (action==PUT_ACTION || action==HELP_ACTION) {
@@ -5162,7 +5168,7 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
 	return os.str();
 }
 
-string slsDetectorCommand::helpPattern(int narg, char *args[], int action) {
+string slsDetectorCommand::helpPattern(int action) {
 
 	ostringstream os;
 	if (action==PUT_ACTION || action==HELP_ACTION) {
@@ -5215,11 +5221,11 @@ string slsDetectorCommand::helpPattern(int narg, char *args[], int action) {
 }
 
 
-string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int detPos) {
 
 
 	if (action==HELP_ACTION)
-		return helpPattern(narg, args, action);
+		return helpPattern(action);
 	/********
 
   Must implement set ctb functions in slsDetector and multiSlsDetector
@@ -5716,7 +5722,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
 
 
 
-	else  return helpPattern(narg, args, action);
+	else  return helpPattern(action);
 
 
 
@@ -5728,7 +5734,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
 
 
 
-string slsDetectorCommand::helpPulse(int narg, char *args[], int action) {
+string slsDetectorCommand::helpPulse(int action) {
 
 	ostringstream os;
 	if (action==PUT_ACTION || action==HELP_ACTION) {
@@ -5746,11 +5752,11 @@ string slsDetectorCommand::helpPulse(int narg, char *args[], int action) {
 }
 
 
-string slsDetectorCommand::cmdPulse(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdPulse(int narg, char *args[], int action, int detPos) {
 	int retval = FAIL;
 
 	if (action==HELP_ACTION)
-		return helpPulse(narg, args, action);
+		return helpPulse(action);
 	else if (action==GET_ACTION)
 		return string("cannot get ")+cmd;
 
@@ -5769,7 +5775,7 @@ string slsDetectorCommand::cmdPulse(int narg, char *args[], int action) {
 		//next commands requires 3 addnl. arguments
 		int ival2=-1,ival3=-1;
 		if(narg<4)
-			return string("insufficient arguments:\n" + helpPulse(narg, args, action));
+			return string("insufficient arguments:\n" + helpPulse(action));
 		if (!sscanf(args[2],"%d",&ival2))
 			return string("Could not scan 2nd argument ")+string(args[2]);
 		if (!sscanf(args[3],"%d",&ival3))

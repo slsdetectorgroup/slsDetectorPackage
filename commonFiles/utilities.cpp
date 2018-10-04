@@ -110,7 +110,7 @@ int readDataFile(std::string fname, short int *data, int nch) {
 		iline=readDataFile(infile, data, nch, 0);
 		infile.close();
 	} else {
-		std::cout<< "Could not read file " << fname << std::endl;
+		FILE_LOG(logERROR) << "Could not read file " << fname;
 		return -1;
 	}
 	return iline;
@@ -137,7 +137,7 @@ int writeDataFile(std::string fname,int nch, short int *data) {
 		outfile.close();
 		return slsReceiverDefs::OK;
 	} else {
-		std::cout<< "Could not open file " << fname << "for writing"<< std::endl;
+		FILE_LOG(logERROR) << "Could not open file " << fname << "for writing";
 		return slsReceiverDefs::FAIL;
 	}
 }

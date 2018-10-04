@@ -5184,7 +5184,7 @@ int slsDetector::pulsePixel(int n,int x,int y) {
 			if (ret==FAIL){
 				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 				std::cout<< "Detector returned error: " << mess << std::endl;
-				setErrorMask((getErrorMask())|(COULD_NOT_PULSE_PIXEL));
+				setErrorMask((getErrorMask())|(COULD_NOT_PULSE));
 			}
 			disconnectControl();
 			if (ret==FORCE_UPDATE)
@@ -5216,7 +5216,7 @@ int slsDetector::pulsePixelNMove(int n,int x,int y) {
 			if (ret==FAIL){
 				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 				std::cout<< "Detector returned error: " << mess << std::endl;
-				setErrorMask((getErrorMask())|(COULD_NOT_PULSE_PIXEL_NMOVE));
+				setErrorMask((getErrorMask())|(COULD_NOT_PULSE));
 			}
 			disconnectControl();
 			if (ret==FORCE_UPDATE)
@@ -5247,7 +5247,7 @@ int slsDetector::pulseChip(int n) {
 			if (ret==FAIL){
 				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 				std::cout<< "Detector returned error: " << mess << std::endl;
-				setErrorMask((getErrorMask())|(COULD_NOT_PULSE_CHIP));
+				setErrorMask((getErrorMask())|(COULD_NOT_PULSE));
 			}
 			disconnectControl();
 			if (ret==FORCE_UPDATE)
@@ -5768,7 +5768,7 @@ int slsDetector::setAutoComparatorDisableMode(int ival) {
 int slsDetector::getChanRegs(double* retval,bool fromDetector) {
 	int n=getTotalNumberOfChannels();
 	if(fromDetector){
-		getModule(0);
+		getModule(0);//FIXME: check if it worked
 	}
 	//the original array has 0 initialized
 	if(chanregs){
@@ -6094,18 +6094,8 @@ int slsDetector::setRateCorrection(double t) {
 }
 
 
-int slsDetector::getRateCorrection(double &t) {
 
-	if (thisDetector->myDetectorType == EIGER){
-		t = getRateCorrectionTau();
-		return t;
-	}
-
-	printf("unknown detector\n");
-	return -1;
-};
-
-double slsDetector::getRateCorrectionTau() {
+int slsDetector::getRateCorrection() {
 
 	if(thisDetector->myDetectorType == EIGER){
 		int fnum=F_GET_RATE_CORRECT;
@@ -6139,21 +6129,11 @@ double slsDetector::getRateCorrectionTau() {
 }
 
 
-int slsDetector::getRateCorrection() {
-
-	if (thisDetector->myDetectorType == EIGER){
-		double t = getRateCorrectionTau();
-		return (int)t;
-	}
-
-	printf("unknown detector\n");
-	return -1;
-}
-
 
 
 int slsDetector::printReceiverConfiguration() {
-
+	std::cout << std::endl
+					<< "#Detector " << idet << ":" << std::endl;
 	std::cout << "Detector IP:\t\t" << getNetworkParameter(DETECTOR_IP) << std::endl;
 	std::cout << "Detector MAC:\t\t" << getNetworkParameter(DETECTOR_MAC) << std::endl;
 

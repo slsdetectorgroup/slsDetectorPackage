@@ -308,9 +308,7 @@ public:
 	std::string sgetDetectorsType(int detPos = -1);
 
 	/**
-	 * Just to overload getDetectorType from users
-	 * Concatenates string types of all sls detectors or
-	 * returns the detector type of the first sls detector
+	 * Gets Detector type (concatenates if different)
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns detector type of sls detector in position pos, if -1, concatenates
 	 */
@@ -335,7 +333,6 @@ public:
    	   @param ny number of detectors in y direction
 	 */
 	void getNumberOfDetectors(int& nx, int& ny);
-
 
 	/**
 	 * Returns the total number of channels of all sls detectors from shared memory
@@ -385,16 +382,18 @@ public:
 	/**
 	 * Get Detector offset from shared memory in dimension d
 	 * @param d dimension d
+	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns offset in dimension d, -1 if pos is not an actual position in list
 	 */
-	int getDetectorOffset(dimension d);
+	int getDetectorOffset(dimension d, int detPos = -1);
 
 	/**
 	 * Set Detector offset in shared memory in dimension d
 	 * @param d dimension d
 	 * @param off offset for detector
+	 * @param detPos -1 for all detectors in  list or specific detector position
 	 */
-	void setDetectorOffset(dimension d, int off);
+	void setDetectorOffset(dimension d, int off, int detPos = -1);
 
 	/**
 	 * Updates the channel offsets in X and Y dimension for all the sls detectors
@@ -523,21 +522,6 @@ public:
 	std::string setSettingsDir(std::string s, int detPos = -1);
 
 	/**
-	 * Returns the calibration files directory   \sa  sharedSlsDetector
-	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns the calibration files directory
-	 */
-	std::string getCalDir(int detPos = -1);
-
-	/**
-	 * Sets the calibration files directory   \sa  sharedSlsDetector (
-	 * @param s the calibration files directory
-	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns the calibration files directory
-	 */
-	std::string setCalDir(std::string s, int detPos = -1);
-
-	/**
 	 * Loads the modules settings/trimbits reading from a specific file
 	 * file name extension is automatically generated.
 	 * @param fname specific settings/trimbits file
@@ -554,24 +538,6 @@ public:
 	 * returns OK or FAIL
 	 */
 	int saveSettingsFile(std::string fname, int detPos = -1);
-
-	/**
-	 * Loads the modules calibration data reading from a specific file (Mythen)
-	 * file name extension is automatically generated.
-	 * @param fname specific calibration file
-	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * returns OK or FAIL
-	 */
-	int loadCalibrationFile(std::string fname, int detPos = -1);
-
-	/**
-	 * Saves the modules calibration data to a specific file (Mythen)
-	 * file name extension is automatically generated.
-	 * @param fname specific calibration file
-	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * returns OK or FAIL
-	 */
-	int saveCalibrationFile(std::string fname, int detPos = -1);
 
 	/**
 	 * Get Detector run status
@@ -646,6 +612,103 @@ public:
 	int64_t setTimer(timerIndex index, int64_t t=-1, int detPos = -1);
 
 	/**
+	 * Set/get exposure time
+	 * @param t time (-1 gets)
+	 * @param inseconds true if the value is in s, else ns
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns exposure time in ns, or s if specified
+	 */
+   double setExposureTime(double t = -1, bool inseconds = false, int detPos = -1);
+
+	/**
+	 * Set/get exposure period
+	 * @param t time (-1 gets)
+	 * @param inseconds true if the value is in s, else ns
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns exposure period in ns, or s if specified
+	 */
+	double setExposurePeriod(double t = -1, bool inseconds = false, int detPos = -1);
+
+	/**
+	 * Set/get delay after trigger (Gotthard, Jungfrau(not for this release))
+	 * @param t time (-1 gets)
+	 * @param inseconds true if the value is in s, else ns
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns delay after trigger in ns, or s if specified
+	 */
+	double setDelayAfterTrigger(double t = -1, bool inseconds = false, int detPos = -1);
+
+	/**
+	 * (Advanced users)
+	 * Set/get sub frame exposure time (Eiger in 32 bit mode)
+	 * @param t time (-1 gets)
+	 * @param inseconds true if the value is in s, else ns
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns sub frame exposure time in ns, or s if specified
+	 */
+	double setSubFrameExposureTime(double t = -1, bool inseconds = false, int detPos = -1);
+
+	/**
+	 *  (Advanced users)
+	 * Set/get sub frame dead time (Eiger in 32 bit mode)
+	 * @param t time (-1 gets)
+	 * @param inseconds true if the value is in s, else ns
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns sub frame dead time in ns, or s if specified
+	 */
+	double setSubFrameDeadTime(double t = -1, bool inseconds = false, int detPos = -1);
+
+	/**
+	 * Set/get number of frames
+	 * @param t number of frames (-1 gets)
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns number of frames
+	 */
+	int64_t setNumberOfFrames(int64_t t = -1, int detPos = -1);
+
+	/**
+	 * Set/get number of cycles
+	 * @param t number of cycles (-1 gets)
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns number of cycles
+	 */
+	int64_t setNumberOfCycles(int64_t t = -1, int detPos = -1);
+
+	/**
+	 * Set/get number of gates (none of the detectors at the moment)
+	 * @param t number of gates (-1 gets)
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns number of gates
+	 */
+	int64_t setNumberOfGates(int64_t t = -1, int detPos = -1);
+
+	/**
+	 * Set/get number of additional storage cells  (Jungfrau)
+	 * @param t number of additional storage cells. Default is 0.  (-1 gets)
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns number of additional storage cells
+	 */
+	int64_t setNumberOfStorageCells(int64_t t = -1, int detPos = -1);
+
+	/**
+	 * Get measured period between previous two frames (EIGER)
+	 * @param t time (-1 gets)
+	 * @param inseconds true if the value is in s, else ns
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns sub frame dead time in ns, or s if specified
+	 */
+	double getMeasuredPeriod(bool inseconds = false, int detPos = -1);
+
+	/**
+	 * Get sub period between previous two sub frames in 32 bit mode (EIGER)
+	 * @param t time (-1 gets)
+	 * @param inseconds true if the value is in s, else ns
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns sub frame dead time in ns, or s if specified
+	 */
+	double getMeasuredSubFramePeriod(bool inseconds = false, int detPos = -1);
+
+	/**
 	 * Set/get timer value left in acquisition (not all implemented for all detectors)
 	 * @param index timer index
 	 * @param t time in ns or number of...(e.g. frames, gates, probes)
@@ -688,7 +751,7 @@ public:
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns current DAC value
 	 */
-	dacs_t setDAC(dacs_t val, dacIndex index , int mV, int detPos = -1);
+	int setDAC(int val, dacIndex index , int mV, int detPos = -1);
 
 	/**
 	 * Get adc value
@@ -696,7 +759,7 @@ public:
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns current adc value (temperature for eiger and jungfrau in millidegrees)
 	 */
-	dacs_t getADC(dacIndex index, int detPos = -1);
+	int getADC(dacIndex index, int detPos = -1);
 
 	/**
 	 * Set/get timing mode
@@ -759,6 +822,21 @@ public:
 	uint32_t clearBit(uint32_t addr, int n, int detPos = -1);
 
 	/**
+	 * Set up Receiver and update it from shm
+	 * @param s hostname
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns hostname
+	 */
+	std::string setReceiverHostname(std::string s, int detPos = -1);
+
+	/**
+	 * Get receiver hostname
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns hostname
+	 */
+	std::string getReceiverHostname(int detPos = -1);
+
+	/**
 	 * Set network parameter
 	 * @param p network parameter type
 	 * @param s network parameter value
@@ -774,6 +852,54 @@ public:
 	 * @returns network parameter value set (from getNetworkParameter)
 	 */
 	std::string getNetworkParameter(networkParameter p, int detPos = -1);
+
+	/**
+	 * (advanced users)
+	 * Set/Get receiver streaming out ZMQ port and restarts receiver sockets
+	 * @param i sets, -1 gets
+	 * If detPos is -1(multi module), port calculated (increments) for all the individual detectors using i
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns receiver streaming out ZMQ port (if multiple, of first receiver socket)
+	 */
+	int setReceiverDataStreamingOutPort(int i = -1, int detPos = -1);
+
+	/**
+	 * (advanced users)
+	 * Set/Get client streaming in  ZMQ port and restarts client sockets
+	 * @param i sets, -1 gets
+	 * If detPos is -1(multi module), port calculated (increments) for all the individual detectors using i
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns receiver streaming out ZMQ port (if multiple, of first receiver socket)
+	 */
+	int setClientDataStreamingInPort(int i = -1, int detPos = -1);
+
+	/**
+	 * (advanced users)
+	 * Set/Get receiver streaming out ZMQ IP and restarts receiver sockets
+	 * @param i sets, empty string gets
+	 * By default, it is the IP of receiver hostname
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns receiver streaming out ZMQ IP
+	 */
+	std::string setReceiverDataStreamingOutIP(std::string ip="", int detPos = -1);
+
+	/**
+	 * (advanced users)
+	 * Set/Get client streaming in ZMQ IP and restarts client sockets
+	 * @param i sets, empty string gets
+	 * By default, it is the IP of receiver hostname
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns client streaming in ZMQ IP
+	 */
+	std::string setClientDataStreamingInIP(std::string ip="", int detPos = -1);
+
+	/**
+	 * Set 10GbE Flow Control (Eiger)
+	 * @param enable 1 to set, 0 to unset, -1 gets
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns 10GbE flow Control
+	 */
+	int setFlowControl10G(int enable = -1, int detPos = -1);
 
 	/**
 	 * Execute a digital test (Gotthard)
@@ -1257,33 +1383,31 @@ public:
 	int overwriteFile(int enable=-1, int detPos = -1);
 
 	/**
-	 * Sets the read receiver frequency
-	 * if data required from receiver randomly readRxrFrequency=0,
-	 * else every nth frame to be sent to gui/callback
-	 * @param freq is the receiver read frequency. Value 0 is 200 ms timer (other
-	 * frames not sent), 1 is every frame, 2 is every second frame etc.
+	 * (previously setReadReceiverFrequency)
+	 * Sets the receiver streaming frequency
+	 * @param freq nth frame streamed out, if 0, streamed out at a timer of 200 ms
 	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns read receiver frequency
+	 * @returns receiver streaming frequency
 	 */
-	int setReadReceiverFrequency(int freq=-1, int detPos = -1);
+	int setReceiverStreamingFrequency(int freq = -1, int detPos = -1);
 
 	/**
-	 * Sets the read receiver timer
-	 * if data required from receiver randomly readRxrFrequency=0,
-	 * then the timer between each data stream is set with time_in_ms
+	 * (previously setReceiverReadTimer)
+	 * Sets the receiver streaming timer
+	 * If receiver streaming frequency is 0, then this timer between each
+	 * data stream is set. Default is 200 ms.
 	 * @param time_in_ms timer between frames
 	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns read receiver timer
+	 * @returns receiver streaming timer in ms
 	 */
-	int setReceiverReadTimer(int time_in_ms=500, int detPos = -1);
+	int setReceiverStreamingTimer(int time_in_ms=500, int detPos = -1);
 
 	/**
 	 * Enable data streaming to client
 	 * @param enable 0 to disable, 1 to enable, -1 to get the value
-	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns data streaming to client enable
 	 */
-	int enableDataStreamingToClient(int enable=-1, int detPos = -1);
+	int enableDataStreamingToClient(int enable=-1);
 
 	/**
 	 * Enable or disable streaming data from receiver to client

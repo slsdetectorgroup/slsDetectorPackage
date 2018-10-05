@@ -28,7 +28,7 @@ enum recFuncs{
 	//Acquisition setup functions
 	F_SET_RECEIVER_TIMER,  			/**< set/get timer value */
 	F_SET_RECEIVER_DYNAMIC_RANGE,  	/**< set/get detector dynamic range */
-	F_READ_RECEIVER_FREQUENCY, 		/**< sets the frequency of receiver sending frames to gui */
+	F_RECEIVER_STREAMING_FREQUENCY, /**< sets the frequency of receiver sending frames to gui */
 
 	// Acquisition functions
 	F_GET_RECEIVER_STATUS,			/**< gets the status of receiver listening mode */
@@ -51,7 +51,7 @@ enum recFuncs{
 
 	F_RECEIVER_ACTIVATE,			/** < activate/deactivate readout */
 	F_STREAM_DATA_FROM_RECEIVER,		/**< stream data from receiver to client */
-	F_READ_RECEIVER_TIMER,			/** < sets the timer between each data stream in receiver */
+	F_RECEIVER_STREAMING_TIMER,			/** < sets the timer between each data stream in receiver */
 	F_SET_FLIPPED_DATA_RECEIVER,		/** < sets the enable to flip data across x/y axis (bottom/top) */
 	F_SET_RECEIVER_FILE_FORMAT,		/** < sets the receiver file format */
 

@@ -6,10 +6,7 @@ include_directories(
     ../../commonfiles
     ../multiSlsDetector 
     ../slsDetector 
-    ../slsDetectorAnalysis 
     ../slsReceiverInterface 
-    ../usersFunctions 
-    ../MySocketTCP
 )
 
 add_executable(sls_detector_get

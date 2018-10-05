@@ -22,8 +22,6 @@
 
 typedef char mystring[MAX_STR_LENGTH];
 
-typedef int dacs_t;
-
 
 #define DEFAULT_DET_MAC         "00:aa:bb:cc:dd:ee"
 #define DEFAULT_DET_IP          "129.129.202.46"
@@ -80,8 +78,8 @@ typedef struct {
   int nadc; /**< is the number of adcs on the module */
   int reg; /**< is the module register (e.g. dynamic range?)
 	      \see moduleRegisterBit */
-  dacs_t *dacs; /**< is the pointer to the array of the dac values (in V) */
-  dacs_t *adcs;  /**< is the pointer to the array of the adc values (in V) FLAT_FIELD_CORRECTION*/
+  int *dacs; /**< is the pointer to the array of the dac values (in V) */
+  int *adcs;  /**< is the pointer to the array of the adc values (in V) FLAT_FIELD_CORRECTION*/
   int *chipregs; /**< is the pointer to the array of the chip registers
 		    \see ::chipRegisterBit */
   int *chanregs; /**< is the pointer to the array of the channel registers

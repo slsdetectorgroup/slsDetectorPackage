@@ -5,9 +5,6 @@ set(SOURCES
     slsDetector/slsDetectorCommand.cpp
     slsDetector/slsDetector.cpp 
     slsReceiverInterface/receiverInterface.cpp
-    threadFiles/CondVar.cpp  
-    threadFiles/Mutex.cpp 
-    threadFiles/ThreadPool.cpp
     ../commonFiles/utilities.cpp
 )
 
@@ -20,11 +17,6 @@ multiSlsDetector
 sharedMemory
 slsDetector 
 slsReceiverInterface 
-threadFiles
-)
-
-add_definitions(
-    -DDACS_INT
 )
 
 add_library(slsDetectorStatic STATIC

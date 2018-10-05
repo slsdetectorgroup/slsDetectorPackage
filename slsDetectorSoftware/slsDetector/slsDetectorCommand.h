@@ -46,7 +46,6 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   static std::string helpUser(int action);
   static std::string helpExitServer(int action);
   static std::string helpSettingsDir(int action);
-  static std::string helpCalDir(int action);
   static std::string helpTrimEn(int action);
   static std::string helpOutDir(int action);
   static std::string helpFileName(int action);
@@ -109,7 +108,6 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   std::string cmdHelp(int narg, char *args[], int action, int detPos = -1);
   std::string cmdExitServer(int narg, char *args[], int action, int detPos = -1);
   std::string cmdSettingsDir(int narg, char *args[], int action, int detPos = -1);
-  std::string cmdCalDir(int narg, char *args[], int action, int detPos = -1);
   std::string cmdTrimEn(int narg, char *args[], int action, int detPos = -1);
   std::string cmdOutDir(int narg, char *args[], int action, int detPos = -1);
   std::string cmdFileName(int narg, char *args[], int action, int detPos = -1);

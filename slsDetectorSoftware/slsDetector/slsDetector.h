@@ -16,7 +16,7 @@ class multiSlsDetector;
 class SharedMemory;
 class receiverInterface;
 
-#define SLS_SHMVERSION	0x181002
+#define SLS_SHMVERSION	0x181005
 #define NCHIPSMAX 10
 #define NCHANSMAX 65536
 #define NDACSMAX 16
@@ -63,6 +63,9 @@ private:
 		 * before starting the communication */
 		char hostname[MAX_STR_LENGTH];
 
+		/** detector type  \ see :: detectorType*/
+		detectorType myDetectorType;
+
 		/** END OF FIXED PATTERN -----------------------------------------------*/
 
 
@@ -71,20 +74,17 @@ private:
 		/** Detector offset in the X & Y direction in the multi detector structure */
 		int offset[2];
 
+		/** Number of detectors in multi list in x dir and y dir */
+		int multiSize[2];
+
 		/** is the port used for control functions */
 		int controlPort;
 
 		/** is the port used to stop the acquisition */
 		int stopPort;
 
-		/** detector type  \ see :: detectorType*/
-		detectorType myDetectorType;
-
 		/** path of the trimbits/settings files */
 		char settingsDir[MAX_STR_LENGTH];
-
-		/** path of the calibration files */
-		char calDir[MAX_STR_LENGTH];
 
 		/** number of energies at which the detector has been trimmed */
 		int nTrimEn;
@@ -125,9 +125,6 @@ private:
 		/** threaded processing flag
 		 * (i.e. if data are processed in a separate thread)  */
 		int threadedProcessing;
-
-		/** dead time (in ns) for rate corrections */
-		double tDead;
 
 		/** number of rois defined */
 		int nROI;
@@ -289,50 +286,27 @@ private:
 
 public:
 
-
-	//FIXME: all pos or id arguments needed only for same multi signature
-
 	/**
 	 * Constructor called when creating new shared memory
 	 * @param type detector type
 	 * @param multiId multi detector shared memory id
 	 * @param id sls detector id (position in detectors list)
 	 * @param verify true to verify if shared memory version matches existing one
-	 * @param m multiSlsDetector reference
 	 */
-	slsDetector(detectorType type, int multiId = 0, int id = 0, bool verify = true, multiSlsDetector* m = NULL);
+	slsDetector(detectorType type, int multiId = 0, int id = 0, bool verify = true);
 
 	/**
 	 * Constructor called when opening existing shared memory
 	 * @param multiId multi detector shared memory id
 	 * @param id sls detector id (position in detectors list)
 	 * @param verify true to verify if shared memory version matches existing one
-	 * @param m multiSlsDetector reference
 	 */
-	slsDetector(int multiId = 0, int id = 0, bool verify = true, multiSlsDetector* m = NULL);
+	slsDetector(int multiId = 0, int id = 0, bool verify = true);
 
 	/**
 	 * Destructor
 	 */
 	virtual ~slsDetector();
-
-	/**
-	 * Set acquiring flag in shared memory
-	 * @param b acquiring flag
-	 */
-	void setAcquiringFlag(bool b=false);
-
-	/**
-	 * Get acquiring flag from shared memory
-	 * @returns acquiring flag
-	 */
-	bool getAcquiringFlag();
-
-	/**
-	 * Check if acquiring flag is set, set error if set
-	 * @returns FAIL if not ready, OK if ready
-	 */
-	bool isAcquireReady();
 
 	/**
 	 * Check version compatibility with detector/receiver software
@@ -345,10 +319,9 @@ public:
 	/**
 	 * Get ID or version numbers
 	 * @param mode version type
-	 * @param imod module number in entire module list (gets decoded) (-1 for all)
 	 * @returns Id or version number of that type
 	 */
-	int64_t getId(idMode mode, int imod=0);
+	int64_t getId(idMode mode);
 
 	/**
 	 * Free shared memory without creating objects
@@ -369,13 +342,6 @@ public:
 	void freeSharedMemory();
 
 	/**
-	 * Get user details of shared memory
-	 * Should only be called from multi detector level
-	 * @returns string with user details
-	 */
-	std::string getUserDetails();
-
-	/**
 	 * Sets the hostname of all sls detectors in shared memory
 	 * Connects to them to set up online flag
 	 * @param name hostname
@@ -388,14 +354,6 @@ public:
 	 * @returns hostname
 	 */
 	std::string getHostname(int pos = -1);
-
-	/**
-	 * Appends detectors to the end of the list in shared memory
-	 * Connects to them to set up online flag
-	 * Should only be called from multi detector level
-	 * @param name concatenated hostname of the sls detectors to be appended to the list
-	 */
-	 void addMultipleDetectors(const char* name);
 
 	/**
 	 * Connect to the control port
@@ -456,17 +414,15 @@ public:
 
 	/**
 	 * Get Detector type from shared memory variable
-	 * @param pos insignificant
 	 * @returns detector type from shared memory variable
 	 */
-	detectorType getDetectorsType(int pos = -1);
+	detectorType getDetectorsType();
 
 	/**
 	 * Gets string version of detector type from shared memory variable
-	 * @param pos insignificant
 	 * @returns string version of detector type from shared memory variable
 	 */
-	std::string sgetDetectorsType(int pos=-1);
+	std::string sgetDetectorsType();
 
 	/**
 	 * Just to overload getDetectorType from users
@@ -538,6 +494,13 @@ public:
 	void setDetectorOffset(dimension d, int off);
 
 	/**
+	 * Set Detector offset in shared memory in dimension d
+	 * @param detx number of detectors in X dir in multi list
+	 * @param dety number of detectors in Y dir in multi list
+	 */
+	void updateMultiSize(int detx, int dety);
+
+	/**
 	 * Checks if the detector is online and sets the online flag
 	 * @param online if GET_ONLINE_FLAG, only returns shared memory online flag,
 	 * else sets the detector in online/offline state
@@ -563,7 +526,6 @@ public:
 	 * \sa sharedSlsDetector
 	 */
 	int setTCPSocket(std::string const name="", int const control_port=-1, int const stop_port=-1);
-
 
 	/**
 	 * Set/Gets TCP Port of detector or receiver
@@ -670,23 +632,21 @@ public:
 	std::string getSettingsFile();
 
 	/**
-	 * Writes a trim/settings file for module number imod,
+	 * Writes a trim/settings file for module number
 	 * the values will be read from the current detector structure
 	 * @param fname name of the file to be written
-	 * @param imod module number
 	 * @param iodelay io delay (detector specific)
 	 * @param tau tau (detector specific)
 	 * @returns OK or FAIL if the file could not be written
 	 * \sa ::sls_detector_module sharedSlsDetector mythenDetector::writeSettingsFile(string, int)
 	 */
-	int writeSettingsFile(std::string fname, int imod, int iodelay, int tau);
+	int writeSettingsFile(std::string fname, int iodelay, int tau);
 
 	/**
 	 * Get detector settings
-	 * @param imod module number (-1 all)
 	 * @returns current settings
 	 */
-	detectorSettings getSettings(int imod=-1);
+	detectorSettings getSettings();
 
 	/**
 	 * Load detector settings from the settings file picked from the trimdir/settingsdir
@@ -694,39 +654,35 @@ public:
 	 * For Eiger, one must use threshold
 	 * Gotthard, Propix, Jungfrau and Moench only sends the settings enum to the detector
 	 * @param isettings settings
-	 * @param imod module number (-1 all)
 	 * @returns current settings
 	 */
-	detectorSettings setSettings(detectorSettings isettings, int imod=-1);
+	detectorSettings setSettings(detectorSettings isettings);
 
 	/**
 	 * Send detector settings only (set only for Jungfrau, Gotthard, Moench, get for all)
 	 * Only the settings enum is sent to the detector, where it will
 	 * initialize al the dacs already hard coded in the detector server
 	 * @param isettings  settings
-	 * @param imod module number (-1 all)
 	 * @returns current settings
 	 */
-	detectorSettings sendSettingsOnly(detectorSettings isettings, int imod=-1);
+	detectorSettings sendSettingsOnly(detectorSettings isettings);
 
 	/**
 	 * Get threshold energy (Mythen and Eiger)
-	 * @param imod module number (-1 all)
-	 * @returns current threshold value for imod in ev (-1 failed)
+	 * @returns current threshold value in ev (-1 failed)
 	 */
-	int getThresholdEnergy(int imod=-1);
+	int getThresholdEnergy();
 
 
 	/**
 	 * Set threshold energy (Mythen and Eiger)
 	 * For Eiger, calls setThresholdEneryAndSettings
 	 * @param e_eV threshold in eV
-	 * @param imod module number (-1 all)
 	 * @param isettings ev. change settings
 	 * @param tb 1 to include trimbits, 0 to exclude
-	 * @returns current threshold value for imod in ev (-1 failed)
+	 * @returns current threshold value in ev (-1 failed)
 	 */
-	int setThresholdEnergy(int e_eV, int imod=-1, detectorSettings isettings=GET_SETTINGS, int tb=1);
+	int setThresholdEnergy(int e_eV, detectorSettings isettings=GET_SETTINGS, int tb=1);
 
 	/**
 	 * Set threshold energy and settings (Eiger only)
@@ -751,54 +707,20 @@ public:
 	std::string setSettingsDir(std::string s);
 
 	/**
-	 * Returns the calibration files directory   \sa  sharedSlsDetector (Mythen)
-	 * @returns the calibration files directory
-	 */
-	std::string getCalDir();
-
-	/**
-	 * Sets the calibration files directory   \sa  sharedSlsDetector (Mythen)
-	 * @param s the calibration files directory
-	 * @returns the calibration files directory
-	 */
-	std::string setCalDir(std::string s);
-
-	/**
 	 * Loads the modules settings/trimbits reading from a specific file
 	 * file name extension is automatically generated.
 	 * @param fname specific settings/trimbits file
-	 * @param imod module index of the entire list,
-	 * from which will be calculated the detector index and the module index (-1 for all)
 	 * returns OK or FAIL
 	 */
-	int loadSettingsFile(std::string fname, int imod=-1);
+	int loadSettingsFile(std::string fname);
 
 	/**
 	 * Saves the modules settings/trimbits to a specific file
 	 * file name extension is automatically generated.
 	 * @param fname specific settings/trimbits file
-	 * @param imod module number (-1 for all)
 	 * returns OK or FAIL
 	 */
-	int saveSettingsFile(std::string fname, int imod=-1);
-
-	/**
-	 * Loads the modules calibration data reading from a specific file (Mythen)
-	 * file name extension is automatically generated.
-	 * @param fname specific calibration file
-	 * @param imod module number (-1 for all)
-	 * returns OK or FAIL
-	 */
-	int loadCalibrationFile(std::string fname, int imod=-1);
-
-	/**
-	 * Saves the modules calibration data to a specific file (Mythen)
-	 * file name extension is automatically generated.
-	 * @param fname specific calibration file
-	 * @param imod module number (-1 for all)
-	 * returns OK or FAIL
-	 */
-	int saveCalibrationFile(std::string fname, int imod=-1);
+	int saveSettingsFile(std::string fname);
 
 	/**
 	 * Get run status of the detector
@@ -849,28 +771,27 @@ public:
 	int readAll();
 
 	/**
-	 * Configures in detector the destination for UDP packets (Not Mythen)
+	 * Configures in detector the destination for UDP packets
+	 * @param ndety number of detectors in y dir
 	 * @returns OK or FAIL
 	 */
-	int configureMAC();
+	int configureMAC(int ndety);
 
 	/**
 	 * Set/get timer value (not all implemented for all detectors)
 	 * @param index timer index
 	 * @param t time in ns or number of...(e.g. frames, gates, probes)
-	 * \param imod module number (pointless in slsDetector)
 	 * @returns timer set value in ns or number of...(e.g. frames, gates, probes)
 	 */
-	int64_t setTimer(timerIndex index, int64_t t=-1, int imod = -1);
+	int64_t setTimer(timerIndex index, int64_t t=-1);
 
 	/**
 	 * Set/get timer value left in acquisition (not all implemented for all detectors)
 	 * @param index timer index
 	 * @param t time in ns or number of...(e.g. frames, gates, probes)
-	 * @param imod module number
 	 * @returns timer set value in ns or number of...(e.g. frames, gates, probes)
 	 */
-	int64_t getTimeLeft(timerIndex index, int imod = -1);
+	int64_t getTimeLeft(timerIndex index);
 
 	/**
 	 * Set speed
@@ -906,18 +827,16 @@ public:
 	 * @param val value (in V)
 	 * @param index DAC index
 	 * @param mV 0 in dac units or 1 in mV
-	 * @param imod module number (if -1 all modules)
 	 * @returns current DAC value
 	 */
-	dacs_t setDAC(dacs_t val, dacIndex index , int mV, int imod=-1);
+	int setDAC(int val, dacIndex index , int mV);
 
 	/**
 	 * Get adc value
 	 * @param index adc(DAC) index
-	 * @param imod module number (if -1 all modules)
 	 * @returns current adc value (temperature for eiger and jungfrau in millidegrees)
 	 */
-	dacs_t getADC(dacIndex index, int imod=0);
+	int getADC(dacIndex index);
 
 	/**
 	 * Set/get timing mode
@@ -1137,10 +1056,9 @@ public:
 	/**
 	 * Execute a digital test (Gotthard, Mythen)
 	 * @param mode testmode type
-	 * @param imod module index (-1 for all)
 	 * @returns result of test
 	 */
-	int digitalTest(digitalTestMode mode, int imod=0);
+	int digitalTest(digitalTestMode mode);
 
 	/**
 	 * Load dark or gain image to detector (Gotthard)
@@ -1260,10 +1178,9 @@ public:
 	/**
 	 * Sets all the trimbits to a particular value (Eiger)
 	 * @param val trimbit value
-	 * @param imod module number, -1 means all modules
 	 * @returns OK or FAIL
 	 */
-	int setAllTrimbits(int val, int imod=-1);
+	int setAllTrimbits(int val);
 
 	/**
 	 * Enable gap pixels, only for Eiger and for 8,16 and 32 bit mode. (Eiger)
@@ -1318,26 +1235,23 @@ public:
 	/**
 	 * Set/gets threshold temperature (Jungfrau)
 	 * @param val value in millidegrees, -1 gets
-	 * @param imod module number, -1 is all
 	 * @returns threshold temperature in millidegrees
 	 */
-	int setThresholdTemperature(int val=-1, int imod=-1);
+	int setThresholdTemperature(int val=-1);
 
 	/**
 	 * Enables/disables temperature control (Jungfrau)
 	 * @param val value, -1 gets
-	 * @param imod module number, -1 is all
 	 * @returns temperature control enable
 	 */
-	int setTemperatureControl(int val=-1, int imod=-1);
+	int setTemperatureControl(int val=-1);
 
 	/**
 	 * Resets/ gets over-temperature event (Jungfrau)
 	 * @param val value, -1 gets
-	 * @param imod module number, -1 is all
 	 * @returns over-temperature event
 	 */
-	int setTemperatureEvent(int val=-1, int imod=-1);
+	int setTemperatureEvent(int val=-1);
 
 	/**
 	 * Set storage cell that stores first acquisition of the series (Jungfrau)
@@ -1403,10 +1317,9 @@ public:
 
 	/**
 	 * Get module structure from detector (all detectors)
-	 * @param imod module number
 	 * @returns pointer to module structure (which has been created and must then be deleted)
 	 */
-	sls_detector_module *getModule(int imod);
+	sls_detector_module *getModule();
 
 	/**
 	 * Calibrate Pedestal (ChipTestBoard)
@@ -1506,6 +1419,8 @@ public:
 
 	/**
 	 * Send the multi detector size to the detector
+	 * @param detx number of detectors in x dir
+	 * @param dety number of detectors in y dir
 	 */
 	void sendMultiDetectorSize();
 
@@ -1658,23 +1573,23 @@ public:
 	int overwriteFile(int enable=-1);
 
 	/**
-	 * Sets the read receiver frequency
-	 * if data required from receiver randomly readRxrFrequency=0,
-	 * else every nth frame to be sent to gui/callback
-	 * @param freq is the receiver read frequency. Value 0 is 200 ms timer (other
-	 * frames not sent), 1 is every frame, 2 is every second frame etc.
-	 * @returns read receiver frequency
+	 * (previously setReadReceiverFrequency)
+	 * Sets the receiver streaming frequency
+	 * @param freq nth frame streamed out, if 0, streamed out at a timer of 200 ms
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns receiver streaming frequency
 	 */
-	int setReadReceiverFrequency(int freq=-1);
+	int setReceiverStreamingFrequency(int freq=-1);
 
 	/**
-	 * Sets the read receiver timer
-	 * if data required from receiver randomly readRxrFrequency=0,
-	 * then the timer between each data stream is set with time_in_ms
+	 * (previously setReceiverReadTimer)
+	 * Sets the receiver streaming timer
+	 * If receiver streaming frequency is 0, then this timer between each
+	 * data stream is set. Default is 200 ms.
 	 * @param time_in_ms timer between frames
-	 * @returns read receiver timer
+	 * @returns receiver streaming timer in ms
 	 */
-	int setReceiverReadTimer(int time_in_ms=500);
+	int setReceiverStreamingTimer(int time_in_ms=500);
 
 	/**
 	 * Enable data streaming to client
@@ -1996,9 +1911,7 @@ private:
 	/** Shared memory structure */
 	sharedSlsDetector *thisDetector;
 
-	/** multiSlsDetector referece */
-	multiSlsDetector *multiDet;
-
+	/** receiver interface */
 	receiverInterface *thisReceiver;
 
 	/** socket for control commands	 */
@@ -2014,10 +1927,10 @@ private:
 	sls_detector_module *detectorModules;
 
 	/** pointer to dac valuse in shared memory  */
-	dacs_t *dacs;
+	int *dacs;
 
 	/** pointer to adc valuse in shared memory  */
-	dacs_t *adcs;
+	int *adcs;
 
 	/** pointer to chip registers in shared memory */
 	int *chipregs;

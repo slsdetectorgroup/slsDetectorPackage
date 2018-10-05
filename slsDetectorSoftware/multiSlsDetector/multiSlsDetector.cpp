@@ -486,7 +486,7 @@ void multiSlsDetector::initializeMembers(bool verify) {
 	// get objects from single det shared memory (open)
 	for (int i = 0; i < thisMultiDetector->numberOfDetectors; i++) {
 		try {
-			slsDetector* sdet = new slsDetector(detId, i, verify, this);
+			slsDetector* sdet = new slsDetector(detId, i, verify);
 			detectors.push_back(sdet);
 		} catch (...) {
 			// clear detectors list
@@ -620,7 +620,7 @@ void multiSlsDetector::addSlsDetector (std::string s) {
 
 
 	int pos = (int)detectors.size();
-	slsDetector* sdet = new slsDetector(type, detId, pos, false, this);
+	slsDetector* sdet = new slsDetector(type, detId, pos, false);
 	detectors.push_back(sdet);
 	thisMultiDetector->numberOfDetectors = detectors.size();
 
@@ -724,13 +724,13 @@ int multiSlsDetector::setMaxNumberOfChannelsPerDetector(dimension d,int i) {
 }
 
 
-int multiSlsDetector::getDetectorOffset(dimension d, int pos) {
-	return detectors[pos]->getDetectorOffset(d);
+int multiSlsDetector::getDetectorOffset(dimension d, int detPos) {
+	return detectors[detPos]->getDetectorOffset(d);
 }
 
 
-void multiSlsDetector::setDetectorOffset(dimension d, int off, int pos) {
-	detectors[pos]->setDetectorOffset(d, off);
+void multiSlsDetector::setDetectorOffset(dimension d, int off, int detPos) {
+	detectors[detPos]->setDetectorOffset(d, off);
 }
 
 
@@ -871,6 +871,10 @@ void multiSlsDetector::updateOffsets() {
 			thisMultiDetector->numberOfChannelInclGapPixels[Y] << std::endl
 			<< std::endl;
 #endif
+
+	 serialCall(&slsDetector::updateMultiSize,
+			 thisMultiDetector->numberOfDetector[0],
+			 thisMultiDetector->numberOfDetector[1]);
 }
 
 
@@ -1215,43 +1219,6 @@ std::string multiSlsDetector::setSettingsDir(std::string s, int detPos) {
 }
 
 
-std::string multiSlsDetector::getCalDir(int detPos) {
-	// single
-	if (detPos >= 0) {
-		return detectors[detPos]->getCalDir();
-	}
-
-	// multi
-	auto r = serialCall(&slsDetector::getCalDir);
-	return sls::concatenateIfDifferent(r);
-}
-
-
-std::string multiSlsDetector::setCalDir(std::string s, int detPos) {
-	// single
-	if (detPos >= 0) {
-		return detectors[detPos]->setCalDir(s);
-	}
-
-	// multi
-	size_t p1 = 0;
-	size_t p2 = s.find('+', p1);
-	int id = 0;
-	while (p2 != std::string::npos) {
-		detectors[id]->setCalDir(s.substr(p1, p2 - p1));
-		if (detectors[id]->getErrorMask())
-			setErrorMask(getErrorMask() | (1 << id));
-		++id;
-		s  = s.substr(p2 + 1);
-		p2 = s.find('+');
-		if (id >= (int)detectors.size())
-			break;
-	}
-
-	return getCalDir();
-}
-
-
 int multiSlsDetector::loadSettingsFile(std::string fname, int detPos) {
 	// single
 	if (detPos >= 0) {
@@ -1273,30 +1240,6 @@ int multiSlsDetector::saveSettingsFile(std::string fname, int detPos) {
 	auto r = parallelCall(&slsDetector::saveSettingsFile, fname);
 	return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
-
-
-int multiSlsDetector::loadCalibrationFile(std::string fname, int detPos) {
-	// single
-	if (detPos >= 0) {
-		return detectors[detPos]->loadCalibrationFile(fname);
-	}
-
-	// multi
-	auto r = parallelCall(&slsDetector::loadCalibrationFile, fname);
-	return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
-}
-
-int multiSlsDetector::saveCalibrationFile(std::string fname, int detPos) {
-	// single
-	if (detPos >= 0) {
-		return detectors[detPos]->saveCalibrationFile(fname);
-	}
-
-	// multi
-	auto r = parallelCall(&slsDetector::saveCalibrationFile, fname);
-	return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
-}
-
 
 
 slsDetectorDefs::runStatus multiSlsDetector::getRunStatus(int detPos) {
@@ -1442,11 +1385,11 @@ int multiSlsDetector::readAll(int detPos) {
 int multiSlsDetector::configureMAC(int detPos) {
 	// single
 	if (detPos >= 0) {
-		return detectors[detPos]->configureMAC();
+		return detectors[detPos]->configureMAC(getNumberOfDetectors(Y));
 	}
 
 	// multi
-	auto r = parallelCall(&slsDetector::configureMAC);
+	auto r = parallelCall(&slsDetector::configureMAC, getNumberOfDetectors(Y));
 	return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 
@@ -1498,6 +1441,122 @@ int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t, int detPos) {
 
 	thisMultiDetector->timerValue[index] = ret;
 	return ret;
+}
+
+
+double multiSlsDetector::setExposureTime(double t, bool inseconds, int detPos){
+	if(!inseconds)
+		return setTimer(ACQUISITION_TIME, (int64_t)t, detPos);
+
+	// + 0.5 to round for precision lost from converting double to int64_t
+	int64_t tms = (int64_t)(t * (1E+9) + 0.5);
+	if (t < 0) tms = -1;
+	tms = setTimer(ACQUISITION_TIME, tms, detPos);
+	if (tms < 0)
+		return -1;
+	return  ((1E-9) * (double)tms);
+}
+
+
+double multiSlsDetector::setExposurePeriod(double t, bool inseconds, int detPos){
+	if(!inseconds)
+		return setTimer(FRAME_PERIOD, (int64_t)t, detPos);
+
+	// + 0.5 to round for precision lost from converting double to int64_t
+	int64_t tms = (int64_t)(t * (1E+9) + 0.5);
+	if (t < 0) tms = -1;
+	tms = setTimer(FRAME_PERIOD, tms, detPos);
+	if (tms < 0)
+		return -1;
+	return  ((1E-9) * (double)tms);
+}
+
+
+double multiSlsDetector::setDelayAfterTrigger(double t, bool inseconds, int detPos){
+	if(!inseconds)
+		return setTimer(DELAY_AFTER_TRIGGER, (int64_t)t, detPos);
+
+	// + 0.5 to round for precision lost from converting double to int64_t
+	int64_t tms = (int64_t)(t * (1E+9) + 0.5);
+	if (t < 0) tms = -1;
+	tms = setTimer(DELAY_AFTER_TRIGGER, tms, detPos);
+	if (tms < 0)
+		return -1;
+	return  ((1E-9) * (double)tms);
+}
+
+
+double multiSlsDetector::setSubFrameExposureTime(double t, bool inseconds, int detPos){
+	if(!inseconds)
+		return setTimer(SUBFRAME_ACQUISITION_TIME, (int64_t)t, detPos);
+	else {
+		// + 0.5 to round for precision lost from converting double to int64_t
+		int64_t tms = (int64_t)(t * (1E+9) + 0.5);
+		if (t < 0) tms = -1;
+		tms = setTimer(SUBFRAME_ACQUISITION_TIME, tms, detPos);
+		if (tms < 0)
+			return -1;
+		return  ((1E-9) * (double)tms);
+	}
+}
+
+
+double multiSlsDetector::setSubFrameExposureDeadTime(double t, bool inseconds, int detPos){
+	if(!inseconds)
+		return setTimer(SUBFRAME_DEADTIME, (int64_t)t, detPos);
+	else {
+		// + 0.5 to round for precision lost from converting double to int64_t
+		int64_t tms = (int64_t)(t * (1E+9) + 0.5);
+		if (t < 0) tms = -1;
+		tms = setTimer(SUBFRAME_DEADTIME, tms, detPos);
+		if (tms < 0)
+			return -1;
+		return  ((1E-9) * (double)tms);
+	}
+}
+
+
+int64_t multiSlsDetector::setNumberOfFrames(int64_t t, int detPos){
+	return setTimer(FRAME_NUMBER, t, detPos);
+}
+
+
+int64_t multiSlsDetector::setNumberOfCycles(int64_t t, int detPos){
+	return setTimer(CYCLES_NUMBER, t, detPos);
+}
+
+
+int64_t multiSlsDetector::setNumberOfGates(int64_t t, int detPos){
+	return setTimer(GATES_NUMBER, t, detPos);
+}
+
+
+int64_t multiSlsDetector::setNumberOfStorageCells(int64_t t, int detPos) {
+	return setTimer(STORAGE_CELL_NUMBER, t, detPos);
+}
+
+
+double multiSlsDetector::getMeasuredPeriod(bool inseconds, int detPos){
+	if(!inseconds)
+		return getTimeLeft(MEASURED_PERIOD, detPos);
+	else {
+		int64_t tms = getTimeLeft(MEASURED_PERIOD, detPos);
+		if (tms < 0)
+			return -1;
+		return  ((1E-9) * (double)tms);
+	}
+}
+
+
+double multiSlsDetector::getMeasuredSubFramePeriod(bool inseconds, int detPos){
+	if(!inseconds)
+		return getTimeLeft(MEASURED_SUBPERIOD, detPos);
+	else {
+		int64_t tms = getTimeLeft(MEASURED_SUBPERIOD, detPos);
+		if (tms < 0)
+			return -1;
+		return  ((1E-9) * (double)tms);
+	}
 }
 
 
@@ -1585,7 +1644,7 @@ int multiSlsDetector::getDataBytes(int detPos) {
 }
 
 
-dacs_t multiSlsDetector::setDAC(dacs_t val, dacIndex idac, int mV, int detPos) {
+int multiSlsDetector::setDAC(int val, dacIndex idac, int mV, int detPos) {
 	// single
 	if (detPos >= 0) {
 		return detectors[detPos]->setDAC(val, idac, mV);
@@ -1597,7 +1656,7 @@ dacs_t multiSlsDetector::setDAC(dacs_t val, dacIndex idac, int mV, int detPos) {
 		return sls::minusOneIfDifferent(r);
 
 	// ignore slave values for hv (-999)
-	dacs_t firstValue = r.front();
+	int firstValue = r.front();
 	for (const auto& value : r) {
 		if ((value != -999) && (value != firstValue))
 			return -1;
@@ -1607,7 +1666,7 @@ dacs_t multiSlsDetector::setDAC(dacs_t val, dacIndex idac, int mV, int detPos) {
 }
 
 
-dacs_t multiSlsDetector::getADC(dacIndex idac, int detPos) {
+int multiSlsDetector::getADC(dacIndex idac, int detPos) {
 	// single
 	if (detPos >= 0) {
 		return detectors[detPos]->getADC(val, idac);
@@ -1733,6 +1792,7 @@ uint32_t multiSlsDetector::clearBit(uint32_t addr, int n, int detPos) {
 }
 
 
+
 std::string multiSlsDetector::setNetworkParameter(networkParameter p, std::string s, int detPos) {
 	// single
 	if (detPos >= 0) {
@@ -1786,6 +1846,71 @@ std::string multiSlsDetector::getNetworkParameter(networkParameter p, int detPos
 	// multi
     auto r = serialCall(&slsDetector::getNetworkParameter, p);
     return sls::concatenateIfDifferent(r);
+}
+
+
+int multiSlsDetector::setReceiverDataStreamingOutPort(int i, int detPos) {
+	if (i >= 0) {
+		std::string s = to_string(i);
+		int prev_streaming = enableDataStreamingFromReceiver(-1, detPos);
+		setNetworkParameter(RECEIVER_STREAMING_PORT, s, detPos);
+		if (prev_streaming) {
+			enableDataStreamingFromReceiver(0, detPos);
+			enableDataStreamingFromReceiver(1, detPos);
+		}
+	}
+	return stoi(getNetworkParameter(RECEIVER_STREAMING_PORT, detPos));
+}
+
+
+int multiSlsDetector::setClientDataStreamingInPort(int i, int detPos) {
+	if (i >= 0) {
+		std::string s = to_string(i);
+		int prev_streaming = enableDataStreamingToClient();
+		setNetworkParameter(CLIENT_STREAMING_PORT, s, detPos);
+		if (prev_streaming) {
+			enableDataStreamingToClient(0);
+			enableDataStreamingToClient(1);
+		}
+	}
+	return stoi(getNetworkParameter(CLIENT_STREAMING_PORT, detPos));
+}
+
+
+std::string multiSlsDetector::setReceiverDataStreamingOutIP(std::string ip, int detPos) {
+	if (ip.length()) {
+		int prev_streaming = enableDataStreamingFromReceiver(-1, detPos);
+		setNetworkParameter(RECEIVER_STREAMING_SRC_IP, ip, detPos);
+		if (prev_streaming) {
+			enableDataStreamingFromReceiver(0, detPos);
+			enableDataStreamingFromReceiver(1, detPos);
+		}
+	}
+	return getNetworkParameter(RECEIVER_STREAMING_SRC_IP, detPos);
+}
+
+
+std::string multiSlsDetector::setClientDataStreamingInIP(std::string ip, int detPos) {
+	if (ip.length()) {
+		int prev_streaming = enableDataStreamingToClient(-1);
+		setNetworkParameter(CLIENT_STREAMING_SRC_IP, ip, detPos);
+		if (prev_streaming) {
+			enableDataStreamingToClient(0);
+			enableDataStreamingToClient(1);
+		}
+	}
+	return getNetworkParameter(CLIENT_STREAMING_SRC_IP, detPos);
+}
+
+
+int multiSlsDetector::setFlowControl10G(int enable, int detPos) {
+	std::string s;
+	if (i != -1) {
+		s = to_string((enable >= 1) ? 1 : 0);
+		s = setNetworkParameter(FLOW_CONTROL_10G, s);
+	} else
+		s = getNetworkParameter(FLOW_CONTROL_10G);
+	return stoi(s);
 }
 
 
@@ -3234,31 +3359,31 @@ int multiSlsDetector::overwriteFile(int enable, int detPos) {
 }
 
 
-int multiSlsDetector::setReadReceiverFrequency(int freq, int detPos) {
+int multiSlsDetector::setReceiverStreamingFrequency(int freq, int detPos) {
 	// single
 	if (detPos >= 0) {
-		return detectors[detPos]->setReadReceiverFrequency(freq);
+		return detectors[detPos]->setReceiverStreamingFrequency(freq);
 	}
 
 	// multi
-	auto r = parallelCall(&slsDetector::setReadReceiverFrequency, freq);
+	auto r = parallelCall(&slsDetector::setReceiverStreamingFrequency, freq);
 	return sls::minusOneIfDifferent(r);
 }
 
 
-int multiSlsDetector::setReceiverReadTimer(int time_in_ms, int detPos) {
+int multiSlsDetector::setReceiverStreamingTimer(int time_in_ms, int detPos) {
 	// single
 	if (detPos >= 0) {
-		return detectors[detPos]->setReceiverReadTimer(time_in_ms);
+		return detectors[detPos]->setReceiverStreamingTimer(time_in_ms);
 	}
 
 	// multi
-	auto r = parallelCall(&slsDetector::setReceiverReadTimer, time_in_ms);
+	auto r = parallelCall(&slsDetector::setReceiverStreamingTimer, time_in_ms);
 	return sls::minusOneIfDifferent(r);
 }
 
 
-int multiSlsDetector::enableDataStreamingToClient(int enable, int detPos) {
+int multiSlsDetector::enableDataStreamingToClient(int enable) {
 	if (enable >= 0) {
 		//destroy data threads
 		if (!enable)

@@ -18,265 +18,373 @@ slsDetectorUsers::slsDetectorUsers(int& ret, int id) : myDetector(0), myCmd(0){
 
 }
 
-
 slsDetectorUsers::~slsDetectorUsers() {
-  if (myDetector)
-    delete myDetector;
+	if (myDetector)
+		delete myDetector;
 }
 
-string slsDetectorUsers::getDetectorDeveloper(){
-  return myDetector->getDetectorDeveloper();
-}
-
-int slsDetectorUsers::setOnline(int const online){
-  return myDetector->setOnline(online);
-}
-
-int slsDetectorUsers::setReceiverOnline(int const online){
-  return myDetector->setReceiverOnline(online);
-}
-
-void slsDetectorUsers::startMeasurement(){
-  myDetector->acquire(0); 
-}
-
-int slsDetectorUsers::stopMeasurement(){
-  return myDetector->stopAcquisition();
-}
- 
-int slsDetectorUsers::getDetectorStatus(){
-  return (int)myDetector->getRunStatus();
-}
-
-string slsDetectorUsers::getFilePath(){
-  return myDetector->getFilePath();
-}
-
-string slsDetectorUsers::setFilePath(string s){
-  return myDetector->setFilePath(s);
-}  
-
-string slsDetectorUsers::getFileName(){
-  return myDetector->getFileName();
-}  
-
-string slsDetectorUsers::setFileName(string s){
-  return myDetector->setFileName(s);
-}  
-  
-int slsDetectorUsers::getFileIndex(){
-  return (int)myDetector->getFileIndex();
-}
-  
-int slsDetectorUsers::setFileIndex(int i){
-  return (int)myDetector->setFileIndex(i);
-}
-
-int slsDetectorUsers::enableCountRateCorrection(int i){  
-  return myDetector->enableCountRateCorrection(i);
-}
-
-int slsDetectorUsers::enableWriteToFile(int i){
-  return myDetector->enableWriteToFile(i);
-}
-
-int slsDetectorUsers::getDetectorSize(int &x0, int &y0, int &nx, int &ny){ 
-  y0=0; 
-  x0=0; 
-  nx=myDetector->getTotalNumberOfChannels(slsDetectorDefs::X);
-  ny=myDetector->getTotalNumberOfChannels(slsDetectorDefs::Y);
-  return nx*ny;
+int slsDetectorUsers::getNumberOfDetectors() {
+	return myDetector->getNumberOfDetectors();
 }
 
 int slsDetectorUsers::getMaximumDetectorSize(int &nx, int &ny){
-  nx=myDetector->getMaxNumberOfChannelsPerDetector(slsDetectorDefs::X);
-  ny=myDetector->getMaxNumberOfChannelsPerDetector(slsDetectorDefs::Y);
-  return nx*ny;
+	nx=myDetector->getMaxNumberOfChannelsPerDetector(slsDetectorDefs::X);
+	ny=myDetector->getMaxNumberOfChannelsPerDetector(slsDetectorDefs::Y);
+	return nx*ny;
 }
 
-int slsDetectorUsers::setBitDepth(int i){
-  return myDetector->setDynamicRange(i);
+int slsDetectorUsers::getDetectorSize(int &x, int &y, int &nx, int &ny, int detPos){
+	if (detPos < 0) {
+		x = 0;
+		y = 0;
+	} else {
+		x = myDetector->getDetectorOffset(slsDetectorDefs::X, detPos);
+		y = myDetector->getDetectorOffset(slsDetectorDefs::Y, detPos);
+	}
+	nx=myDetector->getTotalNumberOfChannels(slsDetectorDefs::X, detPos);
+	ny=myDetector->getTotalNumberOfChannels(slsDetectorDefs::Y, detPos);
+	return nx*ny;
 }
 
-int slsDetectorUsers::setSettings(int isettings){
-  return myDetector->slsDetectorBase::setSettings(isettings);
+string slsDetectorUsers::getDetectorType(int detPos){
+	return myDetector->sgetDetectorsType(detPos);
+}
+int slsDetectorUsers::setOnline(int const online, int detPos){
+	return myDetector->setOnline(online, detPos);
 }
 
-int slsDetectorUsers::getThresholdEnergy(){
-  return myDetector->getThresholdEnergy(-1);
-}  
-
-int slsDetectorUsers::setThresholdEnergy(int e_eV){
-  return myDetector->setThresholdEnergy(e_eV);
-}
-
-int slsDetectorUsers::setThresholdEnergy(int e_ev, int tb, int isettings, int id) {
-  return myDetector->slsDetectorBase::setThresholdEnergy(e_ev, tb, isettings, id);
-}
-
-double slsDetectorUsers::setExposureTime(double t, bool inseconds, int imod){
-	if(!inseconds)
-		return myDetector->setExposureTime((int64_t)t,imod);
-
-	// + 0.5 to round for precision lost from converting double to int64_t
-	int64_t tms = (int64_t)(t * (1E+9) + 0.5);
-	if (t < 0) tms = -1;
-	tms = myDetector->setExposureTime(tms,imod);
-	if (tms < 0)
-		return -1;
-	return  ((1E-9) * (double)tms);
-}
-
-double slsDetectorUsers::setExposurePeriod(double t, bool inseconds, int imod){
-	if(!inseconds)
-		return myDetector->setExposurePeriod((int64_t)t,imod);
-
-	// + 0.5 to round for precision lost from converting double to int64_t
-	int64_t tms = (int64_t)(t * (1E+9) + 0.5);
-	if (t < 0) tms = -1;
-	tms = myDetector->setExposurePeriod(tms,imod);
-	if (tms < 0)
-		return -1;
-	return  ((1E-9) * (double)tms);
-}
-
-double slsDetectorUsers::setDelayAfterTrigger(double t, bool inseconds, int imod){
-	if(!inseconds)
-		return myDetector->setDelayAfterTrigger((int64_t)t,imod);
-
-	// + 0.5 to round for precision lost from converting double to int64_t
-	int64_t tms = (int64_t)(t * (1E+9) + 0.5);
-	if (t < 0) tms = -1;
-	tms = myDetector->setDelayAfterTrigger(tms,imod);
-	if (tms < 0)
-		return -1;
-	return  ((1E-9) * (double)tms);
-}
-
-int64_t slsDetectorUsers::setNumberOfGates(int64_t t, int imod){
-  return myDetector->setNumberOfGates(t,imod);
-} 
-
-int64_t slsDetectorUsers::setNumberOfFrames(int64_t t, int imod){
-  return myDetector->setNumberOfFrames(t,imod);
-}
-
-int64_t slsDetectorUsers::setNumberOfCycles(int64_t t, int imod){
-  return myDetector->setNumberOfCycles(t,imod);
-}
-  
-int slsDetectorUsers::setTimingMode(int pol){
-  return myDetector->setTimingMode(pol);
+int slsDetectorUsers::setReceiverOnline(int const online, int detPos){
+	return myDetector->setReceiverOnline(online, detPos);
 }
 
 int slsDetectorUsers::readConfigurationFile(string const fname){
-  return myDetector->readConfigurationFile(fname);
-}  
+	return myDetector->readConfigurationFile(fname);
+}
 
-int slsDetectorUsers::dumpDetectorSetup(string const fname){
-  return myDetector->dumpDetectorSetup(fname);
-} 
+int slsDetectorUsers::writeConfigurationFile(string const fname){
+	return myDetector->writeConfigurationFile(fname);
+}
 
 int slsDetectorUsers::retrieveDetectorSetup(string const fname){
-  return myDetector->retrieveDetectorSetup(fname);
+	return myDetector->retrieveDetectorSetup(fname);
 }
 
-string slsDetectorUsers::getDetectorType(){
-  return myDetector->sgetDetectorsType();
+int slsDetectorUsers::dumpDetectorSetup(string const fname){
+	return myDetector->dumpDetectorSetup(fname);
 }
 
-int slsDetectorUsers::setReceiverMode(int n){
-	return myDetector->setReadReceiverFrequency(n);
+int64_t slsDetectorUsers::getDetectorFirmwareVersion(int detPos){
+	return myDetector->getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION);
 }
 
-int slsDetectorUsers::enableDataStreamingFromReceiver(int i){
-	return myDetector->enableDataStreamingFromReceiver(i);
+int64_t slsDetectorUsers::getDetectorSerialNumber(int detPos){
+	return myDetector->getId(slsDetectorDefs::DETECTOR_SERIAL_NUMBER, detPos);
+}
+
+int64_t slsDetectorUsers::getDetectorSoftwareVersion(int detPos){
+	return myDetector->getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION, detPos);
+}
+
+int64_t slsDetectorUsers::getClientSoftwareVersion(int detPos){
+	return myDetector->getId(slsDetectorDefs::THIS_SOFTWARE_VERSION, detPos);
+}
+
+int64_t slsDetectorUsers::getReceiverSoftwareVersion(int detPos){
+	return myDetector->getId(slsDetectorDefs::RECEIVER_VERSION, detPos);
+}
+
+bool isDetectorVersionCompatible(int detPos) {
+	return (myDetector->checkVersionCompatibility(slsDetectorDefs::CONTROL_PORT, detPos) == OK);
+}
+
+bool isReceiverVersionCompatible(int detPos) {
+	return (myDetector->checkVersionCompatibility(slsDetectorDefs::DATA_PORT, detPos) == OK);
+}
+
+int slsDetectorUsers::startMeasurement(){
+	return myDetector->acquire();
+}
+
+int slsDetectorUsers::stopMeasurement(int detPos){
+	return myDetector->stopAcquisition(detPos);
+}
+
+int slsDetectorUsers::getDetectorStatus(int detPos){
+	return (int)myDetector->getRunStatus(detPos);
+}
+
+int slsDetectorUsers::startAcquisition(int detPos) {
+	return myDetector->startAcquisition(detPos);
+}
+
+int slsDetectorUsers::stopAcquisition(int detPos) {
+	return myDetector->stopAcquisition(detPos);
+}
+
+int slsDetectorUsers::sendSoftwareTrigger(int detPos) {
+	return myDetector->sendSoftwareTrigger(detPos);
+}
+
+int slsDetectorUsers::enableCountRateCorrection(int i, int detPos){
+	if (i == 0)
+		myDetector->setRateCorrection(0, detPos);
+	else
+		myDetector->setRateCorrection(-1, detPos);
+
+	return myDetector->getRateCorrection(detPos);
+}
+
+int slsDetectorUsers::setBitDepth(int i, int detPos){
+	return myDetector->setDynamicRange(i, detPos);
+}
+
+int slsDetectorUsers::setSettings(int isettings, int detPos){
+	return myDetector->slsDetectorBase::setSettings(isettings, detPos);
+}
+
+int slsDetectorUsers::getThresholdEnergy(int detPos){
+	return myDetector->getThresholdEnergy(detPos);
+}  
+
+int slsDetectorUsers::setThresholdEnergy(int e_eV){
+	return myDetector->setThresholdEnergy(e_eV);
+}
+
+int slsDetectorUsers::setThresholdEnergy(int e_ev, int tb, int isettings, int detPos) {
+	return myDetector->setThresholdEnergy(e_ev, tb,
+			(isettings == -1) ?  slsDetectorDefs::GET_SETTINGS : isettings,
+					detPos);
+}
+
+double slsDetectorUsers::setExposureTime(double t, bool inseconds, int detPos){
+	return myDetector->setExposureTime(t, inseconds, detPos);
+}
+
+double slsDetectorUsers::setExposurePeriod(double t, bool inseconds, int detPos){
+	return myDetector->setExposurePeriod(t, inseconds, detPos);
+}
+
+double slsDetectorUsers::setDelayAfterTrigger(double t, bool inseconds, int detPos){
+	return myDetector->setDelayAfterTrigger(t, inseconds, detPos);
+}
+
+double slsDetectorUsers::setSubFrameExposureTime(double t, bool inseconds, int detPos){
+	return myDetector->setSubFrameExposureTime(t, inseconds, detPos);
+}
+
+double slsDetectorUsers::setSubFrameExposureDeadTime(double t, bool inseconds, int detPos){
+	return myDetector->setSubFrameExposureDeadTime(t, inseconds, detPos);
+}
+
+int64_t slsDetectorUsers::setNumberOfFrames(int64_t t, int detPos){
+	return myDetector->setNumberOfFrames(t, detPos);
+}
+
+int64_t slsDetectorUsers::setNumberOfCycles(int64_t t, int detPos){
+	return myDetector->setNumberOfCycles(t, detPos);
+}
+
+int64_t slsDetectorUsers::setNumberOfGates(int64_t t, int detPos){
+	return myDetector->setNumberOfGates(t, detPos);
+} 
+
+int64_t slsDetectorUsers::setNumberOfStorageCells(int64_t t, int detPos) {
+	return myDetector->setNumberOfStorageCells(t, detPos);
+}
+
+double slsDetectorUsers::getMeasuredPeriod(bool inseconds, int detPos) {
+	return myDetector->getMeasuredPeriod(inseconds, detPos);
+}
+
+double slsDetectorUsers::getMeasuredSubFramePeriod(bool inseconds, int detPos) {
+	return myDetector->getMeasuredSubFramePeriod(inseconds, detPos);
+}
+
+int slsDetectorUsers::setTimingMode(int pol, int detPos){
+	return myDetector->setExternalCommunicationMode(slsDetectorDefs::externalCommunicationMode(pol), detPos);
+}
+
+int slsDetectorUsers::setClockDivider(int value, int detPos) {
+	return myDetector->setSpeed(slsDetectorDefs::CLOCK_DIVIDER, value, detPos);
+}
+
+int slsDetectorUsers::setParallelMode(int value, int detPos) {
+	if(value >= 0)
+		myDetector->setReadOutFlags(slsDetectorDefs::readOutFlags(value), detPos);
+	return myDetector->setReadOutFlags(-1, detPos);
+}
+
+int slsDetectorUsers::setOverflowMode(int value, int detPos) {
+	if(value >= 0) {
+		if (value == 1)
+			myDetector->setReadOutFlags(slsDetectorDefs::SHOW_OVERFLOW, detPos);
+		else
+			myDetector->setReadOutFlags(slsDetectorDefs::NOOVERFLOW, detPos);
+	}
+	int ret = myDetector->setReadOutFlags(-1, detPos);
+	if (ret == -1)
+		return -1;
+	return ((ret & slsDetectorDefs::SHOW_OVERFLOW) ? 1 : 0);
+}
+
+int slsDetectorUsers::setAllTrimbits(int val, int detPos) {
+	return myDetector->setAllTrimbits(val, detPos);
+}
+
+int slsDetectorUsers::setDAC(int val, int index , int detPos) {
+	return myDetector->setDAC(val, dacsIndex(index), 0, detPos);
+}
+
+int slsDetectorUsers::getADC(int index, int detPos) {
+	return myDetector->getADC(dacsIndex(index),detPos);
+}
+
+int slsDetectorUsers::setTenGigabitEthernet(int i, int detPos) {
+	return myDetector->enableTenGigabitEthernet(i, detPos);
+}
+
+int slsDetectorUsers::setStoragecellStart(int pos) {
+	return myDetector->setStoragecellStart(pos);
+}
+
+int slsDetectorUsers::setHighVoltage(int i, int detPos) {
+	return myDetector->setDAC(i, slsDetectorDefs::HV_NEW, 0, detPos);
+}
+
+int slsDetectorUsers::setFlowControl10G(int i, int detPos) {
+	return myDetector->setFlowControl10G(i, detPos);
+}
+
+
+/************************************************************************
+
+                        RECEIVER FUNCTIONS
+
+ *********************************************************************/
+
+
+int slsDetectorUsers::startReceiver(int detPos) {
+	return myDetector->startReceiver(detPos);
+}
+
+int slsDetectorUsers::stopReceiver(int detPos) {
+	return myDetector->stopReceiver(detPos);
+}
+
+int slsDetectorUsers::setReceiverSilentMode(int i, int detPos) {
+	return myDetector->setReceiverSilentMode(i, detPos);
+}
+
+int slsDetectorUsers::resetFramesCaughtInReceiver(int detPos) {
+	return myDetector->resetFramesCaught(detPos);
+}
+
+int slsDetectorUsers::setReceiverFifoDepth(int i, int detPos) {
+	return myDetector->setReceiverFifoDepth(i, detPos);
+}
+
+string slsDetectorUsers::getFilePath(int detPos){
+	return myDetector->getFilePath(detPos);
+}
+
+string slsDetectorUsers::setFilePath(string s, int detPos){
+	return myDetector->setFilePath(s, detPos);
+}
+
+string slsDetectorUsers::getFileName(int detPos){
+	return myDetector->getFileName(detPos);
+}
+
+string slsDetectorUsers::setFileName(string s, int detPos){
+	return myDetector->setFileName(s, detPos);
+}
+
+int slsDetectorUsers::getFileIndex(int detPos){
+	return (int)myDetector->getFileIndex(detPos);
+}
+
+int slsDetectorUsers::setFileIndex(int i, int detPos){
+	return (int)myDetector->setFileIndex(i, detPos);
+}
+
+int slsDetectorUsers::enableWriteToFile(int enable, int detPos){
+	return myDetector->enableWriteToFile(enable, detPos);
+}
+
+int slsDetectorUsers::enableOverwriteFile(int enable, int detPos){
+	return myDetector->overwriteFile(enable, detPos);
+}
+
+int slsDetectorUsers::setReceiverStreamingFrequency(int freq, int detPos){
+	return myDetector->setReceiverStreamingFrequency(freq, detPos);
+}
+
+int slsDetectorUsers::setReceiverStreamingTimer(int time_in_ms, int detPos){
+	return myDetector->setReceiverStreamingTimer(time_in_ms, detPos);
 }
 
 int slsDetectorUsers::enableDataStreamingToClient(int i){
 	return myDetector->enableDataStreamingToClient(i);
 }
 
-int slsDetectorUsers::setReceiverDataStreamingOutPort(int i){
-	return myDetector->setReceiverDataStreamingOutPort(i);
+int slsDetectorUsers::enableDataStreamingFromReceiver(int i, int detPos){
+	return myDetector->enableDataStreamingFromReceiver(i, detPos);
 }
 
-int slsDetectorUsers::setClientDataStreamingInPort(int i){
-	return myDetector->setClientDataStreamingInPort(i);
+int slsDetectorUsers::setReceiverDataStreamingOutPort(int i, int detPos){
+	return myDetector->setReceiverDataStreamingOutPort(i, detPos);
 }
 
-string slsDetectorUsers::setReceiverDataStreamingOutIP(string ip){
-	return myDetector->setReceiverDataStreamingOutIP(ip);
+int slsDetectorUsers::setClientDataStreamingInPort(int i, int detPos){
+	return myDetector->setClientDataStreamingInPort(i, detPos);
 }
 
-string slsDetectorUsers::setClientDataStreamingInIP(string ip){
-	return myDetector->setClientDataStreamingInIP(ip);
+string slsDetectorUsers::setReceiverDataStreamingOutIP(string ip, int detPos){
+	return myDetector->setReceiverDataStreamingOutIP(ip, detPos);
 }
 
-int64_t slsDetectorUsers::getDetectorFirmwareVersion(){
-	return myDetector->getDetectorFirmwareVersion();
+string slsDetectorUsers::setClientDataStreamingInIP(string ip, int detPos){
+	return myDetector->setClientDataStreamingInIP(ip, detPos);
 }
 
-int64_t slsDetectorUsers::getDetectorSerialNumber(){
-	return myDetector->getDetectorSerialNumber();
+int slsDetectorUsers::enableGapPixels(int enable, int detPos) {
+	return myDetector->enableGapPixels(enable, detPos);
 }
 
-int64_t slsDetectorUsers::getDetectorSoftwareVersion(){
-	return myDetector->getDetectorSoftwareVersion();
+int slsDetectorUsers::setReceiverFramesDiscardPolicy(int f, int detPos) {
+	return myDetector->setReceiverFramesDiscardPolicy(slsDetectorDefs::frameDiscardPolicy(f), detPos);
 }
 
-int64_t slsDetectorUsers::getThisSoftwareVersion(){
-	return myDetector->getThisSoftwareVersion();
+int slsDetectorUsers::setReceiverPartialFramesPadding(int f, int detPos) {
+	return myDetector->setReceiverPartialFramesPadding(f, detPos);
 }
 
-int slsDetectorUsers::enableGapPixels(int enable) {
-    return myDetector->enableGapPixels(enable);
+int slsDetectorUsers::setReceiverFramesPerFile(int f, int detPos) {
+	return myDetector->setReceiverFramesPerFile(f, detPos);
 }
 
-std::string slsDetectorUsers::setReceiverFramesDiscardPolicy(std::string f) {
-	return myDetector->getReceiverFrameDiscardPolicy(
-			myDetector->setReceiverFramesDiscardPolicy(
-					myDetector->getReceiverFrameDiscardPolicy(f)));
+
+
+/************************************************************************
+
+                       CALLBACKS & COMMAND LINE PARSING
+
+ *********************************************************************/
+
+void slsDetectorUsers::registerDataCallback(int( *userCallback)(detectorData*, int, int, void*), void *pArg) {
+	myDetector->registerDataCallback(userCallback,pArg);
 }
 
-int slsDetectorUsers::setReceiverPartialFramesPadding(int f) {
-	return myDetector->setReceiverPartialFramesPadding(f);
+void slsDetectorUsers::registerAcquisitionFinishedCallback(int( *func)(double,int, void*), void *pArg) {
+	myDetector->registerAcquisitionFinishedCallback(func,pArg);
 }
 
-int slsDetectorUsers::setReceiverFramesPerFile(int f) {
-	return myDetector->setReceiverFramesPerFile(f);
+void slsDetectorUsers::registerMeasurementFinishedCallback(int( *func)(int,int, void*), void *pArg) {
+	myDetector->registerMeasurementFinishedCallback(func,pArg);
 }
 
-int slsDetectorUsers::sendSoftwareTrigger() {
-	return myDetector->sendSoftwareTrigger();
-}
-
-double slsDetectorUsers::getMeasuredPeriod(bool inseconds, int imod) {
-	if(!inseconds)
-		return myDetector->getTimeLeft(slsReceiverDefs::MEASURED_PERIOD, imod);
-
-	int64_t tms = myDetector->getTimeLeft(slsReceiverDefs::MEASURED_PERIOD, imod);
-	if (tms < 0)
-		return -1;
-	return  ((1E-9) * (double)tms);
-}
-
-double slsDetectorUsers::getMeasuredSubFramePeriod(bool inseconds, int imod) {
-	if(!inseconds)
-		return myDetector->getTimeLeft(slsReceiverDefs::MEASURED_SUBPERIOD, imod);
-
-	int64_t tms = myDetector->getTimeLeft(slsReceiverDefs::MEASURED_SUBPERIOD, imod);
-	if (tms < 0)
-		return -1;
-	return  ((1E-9) * (double)tms);
-}
-
-void slsDetectorUsers::registerDataCallback(int( *userCallback)(detectorData*, int, int, void*), void *pArg){
-  myDetector->registerDataCallback(userCallback,pArg);
-}
-
-void slsDetectorUsers::registerAcquisitionFinishedCallback(int( *func)(double,int, void*), void *pArg){
-  myDetector->registerAcquisitionFinishedCallback(func,pArg);
+void slsDetectorUsers::registerProgressCallback(int( *func)(double,void*), void *pArg) {
+	myDetector->registerProgressCallback(func,pArg);
 }
 
 string slsDetectorUsers::putCommand(int narg, char *args[], int pos){
@@ -292,114 +400,12 @@ string slsDetectorUsers::getCommand(int narg, char *args[], int pos){
 }
 
 
-int slsDetectorUsers::setClockDivider(int value) {
-	return myDetector->setClockDivider(value);
-}
 
-int slsDetectorUsers::setParallelMode(int value) {
-	if(value >= 0)
-		myDetector->setParallelMode(value);
-	return myDetector->getParallelMode();
-}
 
-int slsDetectorUsers::setOverflowMode(int value) {
-	if(value >= 0)
-		myDetector->setOverflowMode(value);
-	return myDetector->getOverflowMode();
-}
 
-int slsDetectorUsers::setAllTrimbits(int val, int id) {
-	return myDetector->setAllTrimbits(val, id);
-}
 
-int slsDetectorUsers::setDAC(string dac, int val, int id) {
-	int dacindex = myDetector->getDACIndex(dac);
-	if(dacindex == -1) return -9999;
-	return myDetector->setDACValue(val, dacindex, id);
-}
 
-int slsDetectorUsers::getADC(string adc, int id) {
-	int adcindex = myDetector->getADCIndex(adc);
-	if(adcindex == -1) return -9999;
-	return myDetector->getADCValue(adcindex, id);
-}
 
-int slsDetectorUsers::startReceiver() {
-	return myDetector->startReceiver();
-}
 
-int slsDetectorUsers::stopReceiver() {
-	return myDetector->stopReceiver();
-}
 
-int slsDetectorUsers::startAcquisition() {
-	return myDetector->startAcquisition();
-}
 
-int slsDetectorUsers::stopAcquisition() {
-	return myDetector->stopAcquisition();
-}
-
-int slsDetectorUsers::setReceiverSilentMode(int i) {
-	return myDetector->setReceiverSilentMode(i);
-}
-
-int slsDetectorUsers::setHighVoltage(int i) {
-	return myDetector->setHighVoltage(i);
-}
-
-int slsDetectorUsers::resetFramesCaughtInReceiver() {
-    return myDetector->resetFramesCaught();
-}
-
-int slsDetectorUsers::setReceiverFifoDepth(int i) {
-    return myDetector->setReceiverFifoDepth(i);
-}
-
-int slsDetectorUsers::setFlowControl10G(int i) {
-    return myDetector->setFlowControl10G(i);
-}
-
-int slsDetectorUsers::setTenGigabitEthernet(int i) {
-    return myDetector->enableTenGigabitEthernet(i);
-}
-
-int slsDetectorUsers::getNumberOfDetectors() {
-    return myDetector->getNumberOfDetectors();
-}
-
-double slsDetectorUsers::setSubFrameExposureTime(double t, bool inseconds, int imod){
-	if(!inseconds)
-		return myDetector->setSubFrameExposureTime((int64_t)t,imod);
-	else {
-		// + 0.5 to round for precision lost from converting double to int64_t
-		int64_t tms = (int64_t)(t * (1E+9) + 0.5);
-		if (t < 0) tms = -1;
-		tms = myDetector->setSubFrameExposureTime(tms,imod);
-		if (tms < 0)
-			return -1;
-		return  ((1E-9) * (double)tms);
-	}
-}
-
-double slsDetectorUsers::setSubFrameExposureDeadTime(double t, bool inseconds, int imod){
-	if(!inseconds)
-		return myDetector->setSubFrameDeadTime((int64_t)t,imod);
-	else {
-		// + 0.5 to round for precision lost from converting double to int64_t
-		int64_t tms = (int64_t)(t * (1E+9) + 0.5);
-		if (t < 0) tms = -1;
-		tms = myDetector->setSubFrameDeadTime(tms,imod);
-		if (tms < 0)
-			return -1;
-		return  ((1E-9) * (double)tms);
-	}
-}
-
-int64_t slsDetectorUsers::setNumberOfStorageCells(int64_t t, int imod) {
-	return myDetector->setTimer(slsReceiverDefs::STORAGE_CELL_NUMBER, t, imod);
-}
-
-int slsDetectorUsers::setStoragecellStart(int pos) {
-	return myDetector->setStoragecellStart(pos);
-}

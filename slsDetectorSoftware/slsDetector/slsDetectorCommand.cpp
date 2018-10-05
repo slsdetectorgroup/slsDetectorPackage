@@ -853,13 +853,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det)  {
 	++i;
 
 	/*! \page settings
-   - <b>caldir [dir]</b> Sets/gets the directory where the calibration files are located. \c Returns \c (string) dir
-	 */
-	descrToFuncMap[i].m_pFuncName="caldir"; //OK
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdCalDir;
-	++i;
-
-	/*! \page settings
    - <b>trimen [n e0 e1...e(n-1)]</b> Sets/gets the number of energies n at which the detector has default trim file and their values in eV (int). \c Returns \c (int int...) n e0 e1...e(n-1)
 	 */
 	descrToFuncMap[i].m_pFuncName="trimen";
@@ -2476,32 +2469,6 @@ string slsDetectorCommand::helpSettingsDir(int action){
 
 
 
-string slsDetectorCommand::cmdCalDir(int narg, char *args[], int action, int detPos){
-
-	if (action==HELP_ACTION) {
-		return helpCalDir(action);
-	}
-	if (action==PUT_ACTION) {
-		myDet->setCalDir(string(args[1]), detPos);
-	}
-	if ( (myDet->getCalDir(detPos)).empty() )
-		return string("undefined");
-	return myDet->getCalDir(detPos);
-}
-
-
-
-string slsDetectorCommand::helpCalDir(int action){
-	ostringstream os;
-	if (action==GET_ACTION || action==HELP_ACTION)
-		os << string("caldir \t  gets the directory where the calibration files are located\n");
-	if (action==PUT_ACTION || action==HELP_ACTION)
-		os << string("caldir dir \t  sets the directory where the calibration files are located\n");
-	return os.str();
-}
-
-
-
 string slsDetectorCommand::cmdTrimEn(int narg, char *args[], int action, int detPos){
 	int ival;
 	int ip;
@@ -3890,7 +3857,7 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action, int detPos
 		return helpDAC(action);
 
 	dacIndex dac;
-	dacs_t val=-1;
+	int val=-1;
 	char answer[1000];
 	int mode=0;
 
@@ -5047,9 +5014,9 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action, int d
 			if (!sscanf(args[1],"%d",&ival))
 				return string("Could not scan read frequency mode ")+string(args[1]);
 			if(ival>=0)
-				myDet->setReadReceiverFrequency(ival, detPos);
+				myDet->setReceiverStreamingFrequency(ival, detPos);
 		}
-		sprintf(answer,"%d",myDet->setReadReceiverFrequency(-1, detPos));
+		sprintf(answer,"%d",myDet->setReceiverStreamingFrequency(-1, detPos));
 		return string(answer);
 
 	}

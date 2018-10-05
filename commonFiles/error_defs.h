@@ -58,7 +58,7 @@
 //											0x000000FFFFFFFFFFULL
 #define COULDNOT_SET_NETWORK_PARAMETER		0x0000000000000001ULL
 #define COULDNOT_SET_ROI					0x0000000000000002ULL
-#define RECEIVER_READ_FREQUENCY				0x0000000000000004ULL
+#define RECEIVER_STREAMING_FREQUENCY		0x0000000000000004ULL
 #define SETTINGS_NOT_SET					0x0000000000000008ULL
 #define SETTINGS_FILE_NOT_OPEN				0x0000000000000010ULL
 #define DETECTOR_TIMER_VALUE_NOT_SET		0x0000000000000020ULL
@@ -81,7 +81,7 @@
 #define DATA_STREAMING						0x0000000000400000ULL
 #define RESET_ERROR						    0x0000000000800000ULL
 #define POWER_CHIP						    0x0000000001000000ULL
-#define RECEIVER_READ_TIMER				    0x0000000002000000ULL
+#define RECEIVER_STREAMING_TIMER		    0x0000000002000000ULL
 #define RECEIVER_ACQ_TIME_NOT_SET			0x0000000004000000ULL
 #define RECEIVER_FLIPPED_DATA_NOT_SET		0x0000000008000000ULL
 #define THRESHOLD_NOT_SET					0x0000000010000000ULL
@@ -179,7 +179,7 @@ public:
 		if(slsErrorMask&COULDNOT_SET_ROI)
 			retval.append("Could not set the exact region of interest. Verify ROI set by detector.\n");
 
-		if(slsErrorMask&RECEIVER_READ_FREQUENCY)
+		if(slsErrorMask&RECEIVER_STREAMING_FREQUENCY)
 			retval.append("Could not set receiver read frequency.\n");
 
 		if(slsErrorMask&SETTINGS_NOT_SET)
@@ -254,7 +254,7 @@ public:
 		if(slsErrorMask&POWER_CHIP)
 			retval.append("Could not power on/off/get the chip\n");
 
-		if(slsErrorMask&RECEIVER_READ_TIMER)
+		if(slsErrorMask&RECEIVER_STREAMING_TIMER)
 			retval.append("Could not set receiver read timer\n");
 
 		if(slsErrorMask&RECEIVER_FLIPPED_DATA_NOT_SET)

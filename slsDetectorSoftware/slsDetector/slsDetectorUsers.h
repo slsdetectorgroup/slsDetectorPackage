@@ -147,7 +147,7 @@ public:
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns (1)online/(0)offline status
 	 */
-	int setReceiverOnline(int const online = GET_ONLINE_FLAG, int detPos = -1);
+	int setReceiverOnline(int const online = -1, int detPos = -1);
 
 	/**
 	 * Load configuration from a configuration File (for one time detector setup)
@@ -368,7 +368,7 @@ public:
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns sub frame dead time in ns, or s if specified
 	 */
-	double setSubFrameDeadTime(double t = -1, bool inseconds = false, int detPos = -1);
+	double setSubFrameExposureDeadTime(double t = -1, bool inseconds = false, int detPos = -1);
 
 	/**
 	 * Set/get number of frames
@@ -483,7 +483,7 @@ public:
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns current DAC value
 	 */
-	dacs_t setDAC(int val, int index , int detPos = -1);
+	int setDAC(int val, int index , int detPos = -1);
 
 	/**
 	 * Get adc value
@@ -495,7 +495,7 @@ public:
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns current adc value (temperature for eiger and jungfrau in millidegrees)
 	 */
-	dacs_t getADC(int index, int detPos = -1);
+	int getADC(int index, int detPos = -1);
 
 	/**
 	 * Enable/disable or 10Gbe (Eiger)

@@ -353,7 +353,7 @@ public:
 	 * @param pos insignificant
 	 * @returns hostname
 	 */
-	std::string getHostname(int pos = -1);
+	std::string getHostname();
 
 	/**
 	 * Connect to the control port
@@ -388,7 +388,7 @@ public:
 	 */
 	void disconnectStop();
 
-	using slsDetectorUtils::getDetectorType;
+	using slsDetectorBase::getDetectorType;
 
 	/**
 	 * Get detector type by connecting to the detector without creating an object
@@ -595,35 +595,21 @@ public:
 	int updateDetector();
 
 	/**
-	 * Load configuration from a configuration File
-	 * calls readConfigurationFile and gives it the stream
-	 * @param fname configuration file name
-	 * @return OK or FAIL
-	 */
-	int readConfigurationFile(std::string const fname);
-
-	/**
-	 * Load configuration from a stream
-	 * @param infile stream
-	 * @return OK or FAIL
-	 */
-	int readConfigurationFile(std::ifstream &infile);
-
-	/**
 	 * Write current configuration to a file
 	 * calls writeConfigurationFile giving it a stream to write to
 	 * @param fname configuration file name
+	 * @param m multiSlsDetector reference to parse commands
 	 * @returns OK or FAIL
 	 */
-	int writeConfigurationFile(std::string const fname);
+	int writeConfigurationFile(std::string const fname, multiSlsDetector* m);
 
 	/**
 	 * Write current configuration to a stream
 	 * @param outfile outstream
-	 * @param id detector id
+	 * @param m multiSlsDetector reference to parse commands
 	 * @returns OK or FAIL
 	 */
-	int writeConfigurationFile(std::ofstream &outfile, int id=-1);
+	int writeConfigurationFile(std::ofstream &outfile, multiSlsDetector* m);
 
 	/**
 	 * Returns the trimfile or settings file name (Useless??)
@@ -772,10 +758,9 @@ public:
 
 	/**
 	 * Configures in detector the destination for UDP packets
-	 * @param ndety number of detectors in y dir
 	 * @returns OK or FAIL
 	 */
-	int configureMAC(int ndety);
+	int configureMAC();
 
 	/**
 	 * Set/get timer value (not all implemented for all detectors)
@@ -829,7 +814,7 @@ public:
 	 * @param mV 0 in dac units or 1 in mV
 	 * @returns current DAC value
 	 */
-	int setDAC(int val, dacIndex index , int mV);
+	int setDAC(int val, dacIndex index, int mV);
 
 	/**
 	 * Get adc value
@@ -894,14 +879,14 @@ public:
 	/**
 	 * Set network parameter
 	 * @param p network parameter type
-	 * @param s network parameter value
+	 * @param value network parameter value
 	 * @returns network parameter value set (from getNetworkParameter)
 	 */
 	std::string setNetworkParameter(networkParameter index, std::string value);
 
 	/**
 	 * Get network parameter
-	 * @param p network parameter type
+	 * @param index network parameter type
 	 * @returns network parameter value set (from getNetworkParameter)
 	 */
 	std::string getNetworkParameter(networkParameter index);
@@ -1056,9 +1041,10 @@ public:
 	/**
 	 * Execute a digital test (Gotthard, Mythen)
 	 * @param mode testmode type
+	 * @param value 1 to set or 0 to clear the digital test bit
 	 * @returns result of test
 	 */
-	int digitalTest(digitalTestMode mode);
+	int digitalTest(digitalTestMode mode, int ival=-1);
 
 	/**
 	 * Load dark or gain image to detector (Gotthard)
@@ -1336,23 +1322,10 @@ public:
 	 * for current settings
 	 * @returns 0 if rate correction disabled, >0 otherwise
 	 */
-	int setRateCorrection(double t=0);
+	int setRateCorrection(int t=0);
 
 	/**
-	 * Get rate correction (Mythen, Eiger)
-	 * @param t reference for dead time
-	 * @returns 0 if rate correction disabled, > 0 otherwise
-	 */
-	int getRateCorrection(double &t);
-
-	/**
-	 * Get rate correction tau (Mythen, Eiger)
-	 * @returns 0 if rate correction disabled, otherwise the tau used for the correction
-	 */
-	double getRateCorrectionTau();
-
-	/**
-	 * Get rate correction (Mythen, Eiger)
+	 * Get rate correction Eiger)
 	 * @returns 0 if rate correction disabled,  > 0 otherwise
 	 */
 	int getRateCorrection();

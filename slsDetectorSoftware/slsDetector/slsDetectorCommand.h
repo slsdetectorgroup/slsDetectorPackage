@@ -36,7 +36,7 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   /*      \param os output stream to return the help to */
   /*      \param action can be PUT_ACTION or GET_ACTION (from text client even READOUT_ACTION for acquisition)  */
   /*   *\/ */
-  std::string helpLine(int narg, int action=HELP_ACTION);
+  std::string helpLine(int narg, char *args[], int action=HELP_ACTION, int detPos = -1);
   static std::string helpAcquire(int action);
   static std::string helpData(int action);
   static std::string helpStatus(int action);
@@ -146,7 +146,7 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   int numberOfCommands;
   std::string cmd;
 
-  typedef std::string (slsDetectorCommand::*MemFuncGetter)(int narg, char *args[], int action, int detPos = -1);
+  typedef std::string (slsDetectorCommand::*MemFuncGetter)(int narg, char *args[], int action, int detPos);
  
 
   struct FuncTable

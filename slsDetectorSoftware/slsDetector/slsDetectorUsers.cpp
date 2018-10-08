@@ -93,12 +93,12 @@ int64_t slsDetectorUsers::getReceiverSoftwareVersion(int detPos){
 	return myDetector->getId(slsDetectorDefs::RECEIVER_VERSION, detPos);
 }
 
-bool isDetectorVersionCompatible(int detPos) {
-	return (myDetector->checkVersionCompatibility(slsDetectorDefs::CONTROL_PORT, detPos) == OK);
+bool slsDetectorUsers::isDetectorVersionCompatible(int detPos) {
+	return (myDetector->checkVersionCompatibility(slsDetectorDefs::CONTROL_PORT, detPos) == slsReceiverDefs::OK);
 }
 
-bool isReceiverVersionCompatible(int detPos) {
-	return (myDetector->checkVersionCompatibility(slsDetectorDefs::DATA_PORT, detPos) == OK);
+bool slsDetectorUsers::isReceiverVersionCompatible(int detPos) {
+	return (myDetector->checkVersionCompatibility(slsDetectorDefs::DATA_PORT, detPos) == slsReceiverDefs::OK);
 }
 
 int slsDetectorUsers::startMeasurement(){
@@ -139,21 +139,17 @@ int slsDetectorUsers::setBitDepth(int i, int detPos){
 }
 
 int slsDetectorUsers::setSettings(int isettings, int detPos){
-	return myDetector->slsDetectorBase::setSettings(isettings, detPos);
+	return myDetector->setSettings((slsDetectorDefs::detectorSettings)isettings, detPos);
 }
 
 int slsDetectorUsers::getThresholdEnergy(int detPos){
 	return myDetector->getThresholdEnergy(detPos);
 }  
 
-int slsDetectorUsers::setThresholdEnergy(int e_eV){
-	return myDetector->setThresholdEnergy(e_eV);
-}
-
 int slsDetectorUsers::setThresholdEnergy(int e_ev, int tb, int isettings, int detPos) {
-	return myDetector->setThresholdEnergy(e_ev, tb,
-			(isettings == -1) ?  slsDetectorDefs::GET_SETTINGS : isettings,
-					detPos);
+	return myDetector->setThresholdEnergy(e_ev,
+			(isettings == -1) ?  slsDetectorDefs::GET_SETTINGS : (slsDetectorDefs::detectorSettings)isettings,
+					tb, detPos);
 }
 
 double slsDetectorUsers::setExposureTime(double t, bool inseconds, int detPos){
@@ -211,7 +207,7 @@ int slsDetectorUsers::setClockDivider(int value, int detPos) {
 int slsDetectorUsers::setParallelMode(int value, int detPos) {
 	if(value >= 0)
 		myDetector->setReadOutFlags(slsDetectorDefs::readOutFlags(value), detPos);
-	return myDetector->setReadOutFlags(-1, detPos);
+	return myDetector->setReadOutFlags(slsDetectorDefs::GET_READOUT_FLAGS, detPos);
 }
 
 int slsDetectorUsers::setOverflowMode(int value, int detPos) {
@@ -221,7 +217,7 @@ int slsDetectorUsers::setOverflowMode(int value, int detPos) {
 		else
 			myDetector->setReadOutFlags(slsDetectorDefs::NOOVERFLOW, detPos);
 	}
-	int ret = myDetector->setReadOutFlags(-1, detPos);
+	int ret = myDetector->setReadOutFlags(slsDetectorDefs::GET_READOUT_FLAGS, detPos);
 	if (ret == -1)
 		return -1;
 	return ((ret & slsDetectorDefs::SHOW_OVERFLOW) ? 1 : 0);
@@ -232,19 +228,19 @@ int slsDetectorUsers::setAllTrimbits(int val, int detPos) {
 }
 
 int slsDetectorUsers::setDAC(int val, int index , int detPos) {
-	return myDetector->setDAC(val, dacsIndex(index), 0, detPos);
+	return myDetector->setDAC(val, slsDetectorDefs::dacIndex(index), 0, detPos);
 }
 
 int slsDetectorUsers::getADC(int index, int detPos) {
-	return myDetector->getADC(dacsIndex(index),detPos);
+	return myDetector->getADC(slsDetectorDefs::dacIndex(index),detPos);
 }
 
 int slsDetectorUsers::setTenGigabitEthernet(int i, int detPos) {
 	return myDetector->enableTenGigabitEthernet(i, detPos);
 }
 
-int slsDetectorUsers::setStoragecellStart(int pos) {
-	return myDetector->setStoragecellStart(pos);
+int slsDetectorUsers::setStoragecellStart(int pos, int detPos) {
+	return myDetector->setStoragecellStart(pos, detPos);
 }
 
 int slsDetectorUsers::setHighVoltage(int i, int detPos) {

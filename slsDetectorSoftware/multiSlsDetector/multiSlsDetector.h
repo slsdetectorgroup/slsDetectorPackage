@@ -16,6 +16,7 @@ class detectorData;
 
 #include <vector>
 #include <string>
+#include <semaphore.h>
 
 
 #define MULTI_SHMVERSION	0x181002
@@ -244,6 +245,7 @@ public:
 	 */
 	slsDetector *operator()(int detPos = -1) const;
 
+    slsDetector* operator[](int detPos) const;
 	/**
 	 * Free shared memory from the command line
 	 * avoiding creating the constructor classes and mapping
@@ -656,7 +658,7 @@ public:
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns sub frame dead time in ns, or s if specified
 	 */
-	double setSubFrameDeadTime(double t = -1, bool inseconds = false, int detPos = -1);
+	double setSubFrameExposureDeadTime(double t = -1, bool inseconds = false, int detPos = -1);
 
 	/**
 	 * Set/get number of frames
@@ -1165,7 +1167,7 @@ public:
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns 0 if rate correction disabled, >0 otherwise
 	 */
-	int setRateCorrection(double t=0, int detPos = -1);
+	int setRateCorrection(int t=0, int detPos = -1);
 
 	/**
 	 * Get rate correction ( Eiger)
@@ -1561,6 +1563,12 @@ public:
 	 */
 	bool isDetectorIndexOutOfBounds(int detPos);
 
+	/**
+	 * Combines data from all readouts and gives it to the gui
+	 * or just gives progress of acquisition by polling receivers
+	 */
+	void* processData();
+
 private:
 	/**
 	 * Initialize (open/create) shared memory for the sharedMultiDetector structure
@@ -1639,12 +1647,6 @@ private:
 	 * Static function to call processing thread
 	 */
 	static void* startProcessData(void *n);
-
-	/**
-	 * Combines data from all readouts and gives it to the gui
-	 * or just gives progress of acquisition by polling receivers
-	 */
-	void* processData();
 
 	/**
 	 * Check if processing thread is ready to join main thread

@@ -9,7 +9,7 @@ CFLAGS= -g -DC_ONLY -fPIC
 
 DFLAGS= -g -DDACS_INT 
 
-INCLUDES?= -I../commonFiles -IslsDetector  -ImultiSlsDetector  -IslsReceiverInterface -IsharedMemory -I$(ASM)
+INCLUDES?= -I../commonFiles -IslsDetector  -ImultiSlsDetector  -IslsReceiverInterface -IsharedMemory   -I ../slsSupportLib/include-I$(ASM)
 
 #EPICSFLAGS=-D EPICS -I/usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/ -L /usr/local/epics/base/lib/$(EPICS_HOST_ARCH) -Wl,-R/usr/local/epics/base/lib/$(EPICS_HOST_ARCH)  -lca -lCom 
 
@@ -17,7 +17,7 @@ LIBZMQDIR = ../commonFiles
 LIBZMQ =  -L$(LIBZMQDIR) -Wl,-rpath=$(LIBZMQDIR) -lzmq
 
 SRC_CLNT=  slsDetector/slsDetectorCommand.cpp slsDetector/slsDetector.cpp multiSlsDetector/multiSlsDetector.cpp slsReceiverInterface/receiverInterface.cpp slsDetector/slsDetectorUsers.cpp  sharedMemory/SharedMemory.cpp ../commonFiles/utilities.cpp#../slsReceiverSoftware/MySocketTCP/MySocketTCP.cpp 
-DEPSINCLUDES = ../commonFiles/sls_receiver_defs.h ../commonFiles/sls_receiver_funcs.h ../commonFiles/ansi.h ../commonFiles/sls_detector_defs.h  ../commonFiles/sls_detector_funcs.h ../commonFiles/error_defs.h slsDetector/slsDetectorBase.h slsDetector/detectorData.h   sharedMemory/SharedMemory.h ../commonFiles/sls_receiver_exceptions.h ../commonFiles/versionAPI.h ../commonFiles/utilities.h
+DEPSINCLUDES = ../commonFiles/sls_receiver_defs.h ../commonFiles/sls_receiver_funcs.h ../commonFiles/ansi.h ../commonFiles/sls_detector_defs.h  ../commonFiles/sls_detector_funcs.h ../commonFiles/error_defs.h slsDetector/slsDetectorBase.h slsDetector/detectorData.h   sharedMemory/SharedMemory.h ../commonFiles/sls_receiver_exceptions.h ../commonFiles/versionAPI.h ../commonFiles/utilities.h     ../slsSupportLib/include/container_utils.h
 
 
 

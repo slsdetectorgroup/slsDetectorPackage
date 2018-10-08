@@ -31,13 +31,11 @@ public:
 			"[id-][pos:]channel arg" << std::endl;									\
 			std::cout << std::endl;														\
 			return;																\
-			if (del) delete myDetector;											\
 		};																		\
 		if (action==slsDetectorDefs::GET_ACTION && argc<1) {					\
 			std::cout << "Wrong usage - should be: "<< argv[0] <<					\
 			"[id-][pos:]channel arg" << std::endl;									\
 			std::cout << std::endl;														\
-			if (del) delete myDetector;											\
 			return;																\
 		};																		\
 
@@ -93,17 +91,13 @@ public:
 			std::string scmd = cmd;													\
 			// free without calling multiSlsDetector constructor
 			if (scmd == "free") {												\
-				if (pos != -1)													\
-				slsDetector::freeSharedMemory(id, pos);							\
-				else															\
-				multiSlsDetector::freeSharedMemory(id);							\
+				multiSlsDetector::freeSharedMemory(id, pos);					\
 				return;															\
 			}																	\
 			// get user details without verify sharedMultiSlsDetector version
 			else if ((scmd == "user") &&  (action==slsDetectorDefs::GET_ACTION)) {	\
 				verify = false;													\
 				update = false;													\
-				myDetector=NULL;												\
 			}																	\
 		}																		\
 

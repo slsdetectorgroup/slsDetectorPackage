@@ -17,6 +17,7 @@ multiSlsDetector
 sharedMemory
 slsDetector 
 slsReceiverInterface 
+../slsSupportLib/include
 )
 
 add_library(slsDetectorStatic STATIC
@@ -51,6 +52,7 @@ set(PUBLICHEADERS
     ../commonFiles/versionAPI.h
     ../commonFiles/sls_receiver_exceptions.h
     ../commonFiles/utilties.h
+    ../slsSupportLib/include/container_utils.h
     sharedMemory/SharedMemory.h
     slsDetector/slsDetector.h
     slsDetector/slsDetectorBase.h

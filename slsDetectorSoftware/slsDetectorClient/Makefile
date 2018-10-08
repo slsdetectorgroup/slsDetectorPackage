@@ -4,7 +4,7 @@ CFLAGS= -DC_ONLY
 #FLAGS=-DVERBOSE 
 #ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
 
-INCLUDES?= -I../../commonfiles -I../slsDetector   -I../multiSlsDetector  -I../slsReceiverInterface  -I$(shell echo "/lib/modules/`uname -r`/build/include")
+INCLUDES?= -I../../slsSupportLib/include -I../slsDetector   -I../multiSlsDetector  -I../slsReceiverInterface  -I$(shell echo "/lib/modules/`uname -r`/build/include")
 DESTDIR ?= ../../bin
 BIN=$(DESTDIR)
 LIBS?= -L$(DESTDIR) -lSlsDetector 

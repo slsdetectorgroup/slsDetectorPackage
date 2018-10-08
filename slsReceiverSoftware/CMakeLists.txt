@@ -13,7 +13,7 @@ set(SOURCES
     src/DataProcessor.cpp
     src/DataStreamer.cpp
     src/Fifo.cpp
-    ../commonFiles/utilities.cpp
+    ../slsSupportLib/include/utilities.cpp
 )
 
 
@@ -39,12 +39,12 @@ add_definitions(
 
 include_directories(
     include
-    ../commonFiles
+    ../slsSupportLib/include
 )
 
 add_library(zmq STATIC IMPORTED GLOBAL)
 
-set(ZMQ_STATIC_ARCHIVE ${CMAKE_CURRENT_SOURCE_DIR}/../commonFiles/libzmq.a)
+set(ZMQ_STATIC_ARCHIVE ${CMAKE_CURRENT_SOURCE_DIR}/../slsSupportLib/include/libzmq.a)
 set_target_properties(zmq PROPERTIES
     IMPORTED_LOCATION ${ZMQ_STATIC_ARCHIVE}
 )
@@ -64,14 +64,14 @@ add_library(slsReceiverShared SHARED
 )
 
 set(PUBLICHEADERS
-    ../commonFiles/sls_receiver_defs.h
-    ../commonFiles/ansi.h
-    ../commonFiles/sls_receiver_funcs.h
-    ../commonFiles/MySocketTCP.h
-    ../commonFiles/genericSocket.h
-    ../commonFiles/logger.h
-	../commonFiles/sls_receiver_exceptions.h
-	../commonFiles/utilities.h
+    ../slsSupportLib/include/sls_receiver_defs.h
+    ../slsSupportLib/include/ansi.h
+    ../slsSupportLib/include/sls_receiver_funcs.h
+    ../slsSupportLib/include/MySocketTCP.h
+    ../slsSupportLib/include/genericSocket.h
+    ../slsSupportLib/include/logger.h
+	../slsSupportLib/include/sls_receiver_exceptions.h
+	../slsSupportLib/include/utilities.h
 )
 
 

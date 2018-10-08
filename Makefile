@@ -24,9 +24,9 @@ MANAPIDIR		=	$(MANDIR)/manual-api
 TABSPACE		:=	"\t"
 
  
-INCLUDES=-I. -I$(WD)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRARYDIR)/usersFunctions -I$(LIBRARYDIR)/multiSlsDetector   -I$(LIBRARYDIR)/slsReceiverInterface  -I$(LIBRARYRXRDIR)/include -I$(LIBRARYDIR)/threadFiles -I$(LIBRARYDIR)/sharedMemory -I$(ASM)
+INCLUDES=-I. -I$(WD)/slsSupportLib/include -I$(LIBRARYDIR)/slsDetector -I$(LIBRARYDIR)/usersFunctions -I$(LIBRARYDIR)/multiSlsDetector   -I$(LIBRARYDIR)/slsReceiverInterface  -I$(LIBRARYRXRDIR)/include -I$(LIBRARYDIR)/threadFiles -I$(LIBRARYDIR)/sharedMemory -I$(ASM)
 
-INCLUDESRXR += -I. -I$(LIBRARYRXRDIR)/include -I$(WD)/commonFiles -I$(CALIBDIR) -I$(ASM) 
+INCLUDESRXR += -I. -I$(LIBRARYRXRDIR)/include -I$(WD)/slsSupportLib/include -I$(CALIBDIR) -I$(ASM) 
 #LIBFLAGRXR += 
 
 $(info )

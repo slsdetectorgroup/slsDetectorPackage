@@ -5,14 +5,14 @@ set(SOURCES
     slsDetector/slsDetectorCommand.cpp
     slsDetector/slsDetector.cpp 
     slsReceiverInterface/receiverInterface.cpp
-    ../commonFiles/utilities.cpp
+    ../slsSupportLib/include/utilities.cpp
 )
 
 set(HEADERS
 )
 
 include_directories(
-../commonFiles
+../slsSupportLib/include
 multiSlsDetector 
 sharedMemory
 slsDetector 
@@ -36,7 +36,7 @@ add_library(slsDetectorShared SHARED
 
 add_library(zmq STATIC IMPORTED GLOBAL)
 
-set(ZMQ_STATIC_ARCHIVE ${CMAKE_CURRENT_SOURCE_DIR}/../commonFiles/libzmq.a)
+set(ZMQ_STATIC_ARCHIVE ${CMAKE_CURRENT_SOURCE_DIR}/../slsSupportLib/include/libzmq.a)
 set_target_properties(zmq PROPERTIES
     IMPORTED_LOCATION ${ZMQ_STATIC_ARCHIVE}
 )
@@ -46,12 +46,12 @@ target_link_libraries(slsDetectorShared
 )
 
 set(PUBLICHEADERS
-    ../commonFiles/sls_detector_defs.h
-    ../commonFiles/sls_detector_funcs.h
-    ../commonFiles/error_defs.h
-    ../commonFiles/versionAPI.h
-    ../commonFiles/sls_receiver_exceptions.h
-    ../commonFiles/utilties.h
+    ../slsSupportLib/include/sls_detector_defs.h
+    ../slsSupportLib/include/sls_detector_funcs.h
+    ../slsSupportLib/include/error_defs.h
+    ../slsSupportLib/include/versionAPI.h
+    ../slsSupportLib/include/sls_receiver_exceptions.h
+    ../slsSupportLib/include/utilties.h
     ../slsSupportLib/include/container_utils.h
     sharedMemory/SharedMemory.h
     slsDetector/slsDetector.h

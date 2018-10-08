@@ -5,7 +5,7 @@ LIBDIR		?=	../bin
 DOCDIR 		?= 	docs
 SRCDIR		=	src
 INCDIR		=   include
-COMMONDIR	=	../commonFiles
+COMMONDIR	=	../slsSupportLib/include
 TESTDIR		=	test
 BUILDDIR	=	build
 PROGS		= 	$(DESTDIR)/slsReceiver 
@@ -21,7 +21,7 @@ INCLUDES?= $(INCLUDESRXR) -I $(INCDIR) -I $(COMMONDIR)
 ##############################################################
 # ZMQ specific: in this case, you need ZMQ libraries already included in this package
 ###########################################################
-LIBZMQDIR = ../commonFiles
+LIBZMQDIR = ../slsSupportLib/include
 LIBZMQ =  -L$(LIBZMQDIR) -Wl,-rpath=$(LIBZMQDIR) -lzmq
 
 

@@ -16,7 +16,7 @@ DOCDIR		?=	docs
 
 LIBRARYDIR		?=	../slsDetectorSoftware
 LIBRARYRXRDIR 	?= 	../slsReceiverSoftware
-INCLUDES	?= 	../commonFiles -I$(LIBRARYRXRDIR)/MySocketTCP  -I$(LIBRARYDIR)/slsReceiverInterface   -I$(LIBRARYDIR)/slsDetector  -I$(LIBRARYDIR)/slsDetectorAnalysis  -I$(LIBRARYDIR)/multiSlsDetector   -I$(LIBRARYDIR)/usersFunctions  -I$(LIBRARYRXRDIR)/includes
+INCLUDES	?= 	../slsSupportLib/include -I$(LIBRARYRXRDIR)/MySocketTCP  -I$(LIBRARYDIR)/slsReceiverInterface   -I$(LIBRARYDIR)/slsDetector  -I$(LIBRARYDIR)/slsDetectorAnalysis  -I$(LIBRARYDIR)/multiSlsDetector   -I$(LIBRARYDIR)/usersFunctions  -I$(LIBRARYRXRDIR)/includes
 
 LDFLAGDET	?=	 -L$(LIBDIR)  -Wl,-rpath=$(LIBDIR) -lSlsDetector 
 

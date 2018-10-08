@@ -3,7 +3,7 @@ set(SOURCES
 )
 
 include_directories(
-    ../../commonfiles
+    ../../slsSupportLib/include
     ../multiSlsDetector 
     ../slsDetector 
     ../slsReceiverInterface 

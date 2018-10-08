@@ -16,7 +16,7 @@ INCLUDES?= -I../commonFiles -IslsDetector  -ImultiSlsDetector  -IslsReceiverInte
 LIBZMQDIR = ../commonFiles
 LIBZMQ =  -L$(LIBZMQDIR) -Wl,-rpath=$(LIBZMQDIR) -lzmq
 
-SRC_CLNT=  slsDetector/slsDetectorCommand.cpp slsDetector/slsDetector.cpp multiSlsDetector/multiSlsDetector.cpp slsReceiverInterface/receiverInterface.cpp slsDetector/slsDetectorUsers.cpp  sharedMemory/SharedMemory.cpp ../commonFiles/utilities.cpp#../slsReceiverSoftware/MySocketTCP/MySocketTCP.cpp 
+SRC_CLNT=  slsDetector/slsDetectorCommand.cpp slsDetector/slsDetector.cpp multiSlsDetector/multiSlsDetector.cpp slsReceiverInterface/receiverInterface.cpp slsDetector/slsDetectorUsers.cpp  sharedMemory/SharedMemory.cpp ../commonFiles/utilities.cpp
 DEPSINCLUDES = ../commonFiles/sls_receiver_defs.h ../commonFiles/sls_receiver_funcs.h ../commonFiles/ansi.h ../commonFiles/sls_detector_defs.h  ../commonFiles/sls_detector_funcs.h ../commonFiles/error_defs.h slsDetector/slsDetectorBase.h slsDetector/detectorData.h   sharedMemory/SharedMemory.h ../commonFiles/sls_receiver_exceptions.h ../commonFiles/versionAPI.h ../commonFiles/utilities.h     ../slsSupportLib/include/container_utils.h
 
 

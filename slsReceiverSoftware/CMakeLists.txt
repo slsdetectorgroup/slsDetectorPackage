@@ -1,5 +1,4 @@
 set(SOURCES
-    src/MySocketTCP.cpp
     src/UDPInterface.cpp
     src/UDPBaseImplementation.cpp
     src/UDPStandardImplementation.cpp

@@ -26,7 +26,7 @@ LIBZMQ =  -L$(LIBZMQDIR) -Wl,-rpath=$(LIBZMQDIR) -lzmq
 
 
 
-SRC_CLNT = MySocketTCP.cpp  ThreadObject.cpp Listener.cpp DataProcessor.cpp DataStreamer.cpp Fifo.cpp File.cpp BinaryFile.cpp UDPInterface.cpp  UDPBaseImplementation.cpp UDPStandardImplementation.cpp slsReceiverTCPIPInterface.cpp slsReceiver.cpp slsReceiverUsers.cpp $(COMMONDIR)/utilities.cpp
+SRC_CLNT =   ThreadObject.cpp Listener.cpp DataProcessor.cpp DataStreamer.cpp Fifo.cpp File.cpp BinaryFile.cpp UDPInterface.cpp  UDPBaseImplementation.cpp UDPStandardImplementation.cpp slsReceiverTCPIPInterface.cpp slsReceiver.cpp slsReceiverUsers.cpp $(COMMONDIR)/utilities.cpp
 DEPSINCLUDES = $(COMMONDIR)/ansi.h $(COMMONDIR)/sls_receiver_defs.h $(COMMONDIR)/sls_receiver_funcs.h $(COMMONDIR)/GeneralData.h  $(INCDIR)/circularFifo.h $(COMMONDIR)/genericSocket.h  $(COMMONDIR)/logger.h $(INCDIR)/receiver_defs.h $(INCDIR)/UDPInterface.h $(COMMONDIR)/utilities.h $(COMMONDIR)/ZmqSocket.h $(INCDIR)/BinaryFileStatic.h $(INCDIR)/HDF5FileStatic.h $(COMMONDIR)/sls_receiver_exceptions.h
 
 

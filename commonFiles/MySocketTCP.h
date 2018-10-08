@@ -41,27 +41,9 @@ developed and
 class MySocketTCP: public genericSocket {
 
  public:
-  MySocketTCP(const char* const host_ip_or_name, unsigned short int const port_number):  genericSocket(host_ip_or_name, port_number,TCP), last_keep_connection_open_action_was_a_send(0){setPacketSize(TCP_PACKET_SIZE);}; // sender (client): where to? ip
-    MySocketTCP(unsigned short int const port_number):genericSocket(port_number,TCP), last_keep_connection_open_action_was_a_send(0) {setPacketSize(TCP_PACKET_SIZE);}; // receiver (server) local no need for ip
+  MySocketTCP(const char* const host_ip_or_name, unsigned short int const port_number):  genericSocket(host_ip_or_name, port_number,TCP){setPacketSize(TCP_PACKET_SIZE);}; // sender (client): where to? ip
+    MySocketTCP(unsigned short int const port_number):genericSocket(port_number,TCP) {setPacketSize(TCP_PACKET_SIZE);}; // receiver (server) local no need for ip
     virtual ~MySocketTCP(){};
-
-  //The following two functions will connectioned->send/receive->disconnect
-  int  SendData(void* buf,int length);//length in characters
-  int  ReceiveData(void* buf,int length);
- 
-
-  //The following two functions stay connected, blocking other connections, and must be manually disconnected,
-  //          when the last call is a SendData() or ReceiveData() the disconnection will be done automatically
-  //These function will also automatically disconnect->reconnect if
-  //          two reads (or two writes) are called in a row to preserve the data send/receive structure 
-  int  SendDataAndKeepConnection(void* buf,int length);
-  int  ReceiveDataAndKeepConnection(void* buf,int length);
-
- private:
-
-
-  bool last_keep_connection_open_action_was_a_send;
-
 
 };
 

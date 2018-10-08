@@ -6,7 +6,7 @@ LDIR 		=	../../slsDetectorSoftware
 RDIR 		= 	../../slsReceiverSoftware
 DDIR		=	../../bin
 INCLUDES	= 	-I ../../commonFiles  -I $(LDIR)/slsDetector -I ../include -I $(RDIR)/include
-SRC_CLNT	= 	qClient.cpp $(RDIR)/src/MySocketTCP.cpp
+SRC_CLNT	= 	qClient.cpp 
 DEPSINCLUDES=   qClient.h $(RDIR)/include/MySocketTCP.h $(LDIR)/slsDetector/slsDetectorBase.h  ../../commonFiles/sls_detector_defs.h
 
 

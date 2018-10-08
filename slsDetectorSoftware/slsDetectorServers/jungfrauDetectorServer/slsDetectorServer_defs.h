@@ -46,8 +46,6 @@ enum NETWORKINDEX           { TXN_FRAME };
 
 
 /* Hardware Definitions */
-#define NMAXMOD 					(1)
-#define NMOD 						(1)
 #define NCHAN 						(256 * 256)
 #define NCHIP 						(8)
 #define NADC						(0)

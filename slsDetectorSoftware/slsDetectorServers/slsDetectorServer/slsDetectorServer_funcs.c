@@ -17,16 +17,10 @@ extern char thisClientIP[INET_ADDRSTRLEN];
 extern int differentClients;
 
 //defined in the detector specific Makefile
-#ifdef MYTHEND
-const enum detectorType myDetectorType=MYTHEN;
-#elif GOTTHARDD
+#ifdef GOTTHARDD
 const enum detectorType myDetectorType=GOTTHARD;
 #elif EIGERD
 const enum detectorType myDetectorType=EIGER;
-#elif PICASSOD
-const enum detectorType myDetectorType=PICASSO;
-#elif MOENCHD
-const enum detectorType myDetectorType=MOENCH;
 #elif JUNGFRAUD
 const enum detectorType myDetectorType=JUNGFRAU;
 #elif MYTHEN3D
@@ -132,41 +126,24 @@ int decode_function(int file_des) {
 const char* getFunctionName(enum detFuncs func) {
 	switch (func) {
 	case F_EXEC_COMMAND:					return "F_EXEC_COMMAND";
-	case F_GET_ERROR:						return "F_GET_ERROR";
 	case F_GET_DETECTOR_TYPE:				return "F_GET_DETECTOR_TYPE";
-	case F_SET_NUMBER_OF_MODULES:			return "F_SET_NUMBER_OF_MODULES";
-	case F_GET_MAX_NUMBER_OF_MODULES:		return "F_GET_MAX_NUMBER_OF_MODULES";
 	case F_SET_EXTERNAL_SIGNAL_FLAG:		return "F_SET_EXTERNAL_SIGNAL_FLAG";
 	case F_SET_EXTERNAL_COMMUNICATION_MODE:	return "F_SET_EXTERNAL_COMMUNICATION_MODE";
 	case F_GET_ID:							return "F_GET_ID";
 	case F_DIGITAL_TEST:					return "F_DIGITAL_TEST";
-	case F_ANALOG_TEST:						return "F_ANALOG_TEST";
-	case F_ENABLE_ANALOG_OUT:				return "F_ENABLE_ANALOG_OUT";
-	case F_CALIBRATION_PULSE:				return "F_CALIBRATION_PULSE";
 	case F_SET_DAC:							return "F_SET_DAC";
 	case F_GET_ADC:							return "F_GET_ADC";
 	case F_WRITE_REGISTER:					return "F_WRITE_REGISTER";
 	case F_READ_REGISTER:					return "F_READ_REGISTER";
-	case F_WRITE_MEMORY:					return "F_WRITE_MEMORY";
-	case F_READ_MEMORY:						return "F_READ_MEMORY";
-	case F_SET_CHANNEL:						return "F_SET_CHANNEL";
-	case F_GET_CHANNEL:						return "F_GET_CHANNEL";
-	case F_SET_ALL_CHANNELS:				return "F_SET_ALL_CHANNELS";
-	case F_SET_CHIP:						return "F_SET_CHIP";
-	case F_GET_CHIP:						return "F_GET_CHIP";
-	case F_SET_ALL_CHIPS:					return "F_SET_ALL_CHIPS";
 	case F_SET_MODULE:						return "F_SET_MODULE";
 	case F_GET_MODULE:						return "F_GET_MODULE";
-	case F_SET_ALL_MODULES:					return "F_SET_ALL_MODULES";
 	case F_SET_SETTINGS:					return "F_SET_SETTINGS";
 	case F_GET_THRESHOLD_ENERGY:			return "F_GET_THRESHOLD_ENERGY";
-	case F_SET_THRESHOLD_ENERGY:			return "F_SET_THRESHOLD_ENERGY";
 	case F_START_ACQUISITION:				return "F_START_ACQUISITION";
 	case F_STOP_ACQUISITION:				return "F_STOP_ACQUISITION";
 	case F_START_READOUT:					return "F_START_READOUT";
 	case F_GET_RUN_STATUS:					return "F_GET_RUN_STATUS";
 	case F_START_AND_READ_ALL:				return "F_START_AND_READ_ALL";
-	case F_READ_FRAME:						return "F_READ_FRAME";
 	case F_READ_ALL:						return "F_READ_ALL";
 	case F_SET_TIMER:						return "F_SET_TIMER";
 	case F_GET_TIME_LEFT:					return "F_GET_TIME_LEFT";
@@ -174,7 +151,6 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_SET_READOUT_FLAGS:				return "F_SET_READOUT_FLAGS";
 	case F_SET_ROI:							return "F_SET_ROI";
 	case F_SET_SPEED:						return "F_SET_SPEED";
-	case F_EXECUTE_TRIMMING:				return "F_EXECUTE_TRIMMING";
 	case F_EXIT_SERVER:						return "F_EXIT_SERVER";
 	case F_LOCK_SERVER:						return "F_LOCK_SERVER";
 	case F_GET_LAST_CLIENT_IP:				return "F_GET_LAST_CLIENT_IP";
@@ -182,8 +158,6 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_UPDATE_CLIENT:					return "F_UPDATE_CLIENT";
 	case F_CONFIGURE_MAC:					return "F_CONFIGURE_MAC";
 	case F_LOAD_IMAGE:						return "F_LOAD_IMAGE";
-	case F_SET_MASTER:						return "F_SET_MASTER";
-	case F_SET_SYNCHRONIZATION_MODE:		return "F_SET_SYNCHRONIZATION_MODE";
 	case F_READ_COUNTER_BLOCK:				return "F_READ_COUNTER_BLOCK";
 	case F_RESET_COUNTER_BLOCK:				return "F_RESET_COUNTER_BLOCK";
 	case F_CALIBRATE_PEDESTAL:				return "F_CALIBRATE_PEDESTAL";
@@ -203,7 +177,6 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_POWER_CHIP:						return "F_POWER_CHIP";
 	case F_ACTIVATE:						return "F_ACTIVATE";
 	case F_PREPARE_ACQUISITION:				return "F_PREPARE_ACQUISITION";
-	case F_CLEANUP_ACQUISITION:				return "F_CLEANUP_ACQUISITION";
 	case F_THRESHOLD_TEMP:                  return "F_THRESHOLD_TEMP";
 	case F_TEMP_CONTROL:                    return "F_TEMP_CONTROL";
 	case F_TEMP_EVENT:                      return "F_TEMP_EVENT";
@@ -218,41 +191,24 @@ const char* getFunctionName(enum detFuncs func) {
 
 void function_table() {
 	flist[F_EXEC_COMMAND]						= &exec_command;
-	flist[F_GET_ERROR]							= &get_error;
 	flist[F_GET_DETECTOR_TYPE]					= &get_detector_type;
-	flist[F_SET_NUMBER_OF_MODULES]				= &set_number_of_modules;
-	flist[F_GET_MAX_NUMBER_OF_MODULES]			= &get_max_number_of_modules;
 	flist[F_SET_EXTERNAL_SIGNAL_FLAG]			= &set_external_signal_flag;
 	flist[F_SET_EXTERNAL_COMMUNICATION_MODE]	= &set_external_communication_mode;
 	flist[F_GET_ID]								= &get_id;
 	flist[F_DIGITAL_TEST]						= &digital_test;
-	flist[F_ANALOG_TEST]						= &analog_test;
-	flist[F_ENABLE_ANALOG_OUT]					= &enable_analog_out;
-	flist[F_CALIBRATION_PULSE]					= &calibration_pulse;
 	flist[F_SET_DAC]							= &set_dac;
 	flist[F_GET_ADC]							= &get_adc;
 	flist[F_WRITE_REGISTER]						= &write_register;
 	flist[F_READ_REGISTER]						= &read_register;
-	flist[F_WRITE_MEMORY]						= &write_memory;
-	flist[F_READ_MEMORY]						= &read_memory;
-	flist[F_SET_CHANNEL]						= &set_channel;
-	flist[F_GET_CHANNEL]						= &get_channel;
-	flist[F_SET_ALL_CHANNELS]					= &set_all_channels;
-	flist[F_SET_CHIP]							= &set_chip;
-	flist[F_GET_CHIP]							= &get_chip;
-	flist[F_SET_ALL_CHIPS]						= &set_all_chips;
 	flist[F_SET_MODULE]							= &set_module;
 	flist[F_GET_MODULE]							= &get_module;
-	flist[F_SET_ALL_MODULES]					= &set_all_modules;
 	flist[F_SET_SETTINGS]						= &set_settings;
 	flist[F_GET_THRESHOLD_ENERGY]				= &get_threshold_energy;
-	flist[F_SET_THRESHOLD_ENERGY]				= &set_threshold_energy;
 	flist[F_START_ACQUISITION]					= &start_acquisition;
 	flist[F_STOP_ACQUISITION]					= &stop_acquisition;
 	flist[F_START_READOUT]						= &start_readout;
 	flist[F_GET_RUN_STATUS]						= &get_run_status;
 	flist[F_START_AND_READ_ALL]					= &start_and_read_all;
-	flist[F_READ_FRAME]							= &read_frame;
 	flist[F_READ_ALL]							= &read_all;
 	flist[F_SET_TIMER]							= &set_timer;
 	flist[F_GET_TIME_LEFT]						= &get_time_left;
@@ -260,7 +216,6 @@ void function_table() {
 	flist[F_SET_READOUT_FLAGS]					= &set_readout_flags;
 	flist[F_SET_ROI]							= &set_roi;
 	flist[F_SET_SPEED]							= &set_speed;
-	flist[F_EXECUTE_TRIMMING]					= &execute_trimming;
 	flist[F_EXIT_SERVER]						= &exit_server;
 	flist[F_LOCK_SERVER]						= &lock_server;
 	flist[F_GET_LAST_CLIENT_IP]					= &get_last_client_ip;
@@ -268,8 +223,6 @@ void function_table() {
 	flist[F_UPDATE_CLIENT]						= &update_client;
 	flist[F_CONFIGURE_MAC]						= &configure_mac;
 	flist[F_LOAD_IMAGE]							= &load_image;
-	flist[F_SET_MASTER]							= &set_master;
-	flist[F_SET_SYNCHRONIZATION_MODE]			= &set_synchronization;
 	flist[F_READ_COUNTER_BLOCK]					= &read_counter_block;
 	flist[F_RESET_COUNTER_BLOCK]				= &reset_counter_block;
 	flist[F_CALIBRATE_PEDESTAL]					= &calibrate_pedestal;
@@ -289,7 +242,6 @@ void function_table() {
 	flist[F_POWER_CHIP]							= &power_chip;
 	flist[F_ACTIVATE]							= &set_activate;
 	flist[F_PREPARE_ACQUISITION]				= &prepare_acquisition;
-	flist[F_CLEANUP_ACQUISITION]				= &cleanup_acquisition;
 	flist[F_THRESHOLD_TEMP]                     = &threshold_temp;
 	flist[F_TEMP_CONTROL]                       = &temp_control;
 	flist[F_TEMP_EVENT]                         = &temp_event;
@@ -333,7 +285,7 @@ int  M_nofunc(int file_des){
 }
 
 
-
+// Jungfrau program mode
 int  M_nofuncMode(int file_des){
 	int ret=FAIL,ret1=FAIL;
 	int n=0;
@@ -396,24 +348,6 @@ int exec_command(int file_des) {
 
 
 
-int get_error(int file_des) {
-	int ret=FAIL,ret1=FAIL;
-	int n=0;
-	sprintf(mess,"Function (Get Error) is not implemented for this detector\n");
-	cprintf(RED, "Error: %s", mess);
-
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	n = sendData(file_des,mess,MAX_STR_LENGTH,OTHER);
-
-	// return ok / fail
-	return ret;
-}
-
-
 
 int get_detector_type(int file_des) {
 	int ret=OK,ret1=OK;
@@ -443,102 +377,6 @@ int get_detector_type(int file_des) {
 
 
 
-int set_number_of_modules(int file_des) {
-	int ret=OK,ret1=OK;
-	int n=0;
-	int retval=0;
-	int arg[2]={-1,-1};
-	sprintf(mess,"set number of modules failed\n");
-
-	// receive arguments
-	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return printSocketReadError();
-	enum dimension dim=arg[0];
-	int nm=arg[1];
-
-	// execute action
-#ifdef VERBOSE
-	printf("Setting the number of modules in dimension %d to %d\n",dim,nm );
-#endif
-	if (lockStatus && differentClients && nm!=GET_FLAG) {
-		ret = FAIL;
-		sprintf(mess,"Detector locked by %s\n",lastClientIP);
-		cprintf(RED, "Warning: %s", mess);
-	}
-#ifdef SLS_DETECTOR_FUNCTION_LIST
-	else {
-		retval=setNMod(nm, dim);
-		dataBytes=calculateDataBytes();
-	}
-#endif
-
-	if (retval==nm || nm==GET_FLAG) {
-		ret=OK;
-		if (differentClients)
-			ret=FORCE_UPDATE;
-	} else
-		ret=FAIL;
-
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret!=FAIL) {
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
-	} else {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
-
-	// return ok / fail
-	return ret;
-}
-
-
-
-
-int get_max_number_of_modules(int file_des) {
-	int ret=OK,ret1=OK;
-	int n=0;
-	int retval=-1;
-	enum dimension arg=0;
-	sprintf(mess,"get max number of modules failed\n");
-
-	// receive arguments
-	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return printSocketReadError();
-
-	// execute action
-#ifdef VERBOSE
-	printf("Getting the max number of modules in dimension %d \n",arg);
-#endif
-#ifdef SLS_DETECTOR_FUNCTION_LIST
-	retval=getNModBoard(arg);
-#endif
-#ifdef VERBOSE
-	printf("Max number of module in dimension %d is %d\n",arg,retval );
-#endif
-	if (differentClients && ret==OK) {
-		ret=FORCE_UPDATE;
-	}
-
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret!=FAIL) {
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
-	} else {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
-
-	// return ok / fail
-	return ret;
-}
-
-
-
 
 int set_external_signal_flag(int file_des) {
 	int ret=OK,ret1=OK;
@@ -546,7 +384,7 @@ int set_external_signal_flag(int file_des) {
 	enum externalSignalFlag retval=GET_EXTERNAL_SIGNAL_FLAG;
 	sprintf(mess,"set external signal flag failed\n");
 
-#ifndef MYTHEND
+#ifndef GOTTHARDD
 	//to receive any arguments
 	while (n > 0)
 		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
@@ -681,18 +519,12 @@ int get_id(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
 	enum idMode arg=0;
-	int imod=-1;
 	int64_t retval=-1;
 	sprintf(mess,"get id failed\n");
 
 	// receive arguments
 	n = receiveData(file_des,&arg,sizeof(arg),INT32);
 	if (n < 0) return printSocketReadError();
-
-	if (arg == MODULE_SERIAL_NUMBER) {
-		n = receiveData(file_des,&imod,sizeof(imod),INT32);
-		if (n < 0) return printSocketReadError();
-	}
 
 	// execute action
 #ifdef VERBOSE
@@ -701,22 +533,6 @@ int get_id(int file_des) {
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	switch (arg) {
-#ifdef MYTHEND
-	case MODULE_SERIAL_NUMBER:
-	case MODULE_FIRMWARE_VERSION:
-#ifdef VERBOSE
-		printf("of module %d\n", imod);
-#endif
-
-		if (imod>=0 && imod<getTotalNumberOfModules())
-			retval=getModuleId(arg, imod);
-		else {
-			ret = FAIL;
-			sprintf(mess,"Module number %d out of range\n", imod);
-			cprintf(RED, "Warning: %s", mess);
-		}
-		break;
-#endif
 #ifdef EIGERD
 	case SOFTWARE_FIRMWARE_API_VERSION:
 #endif
@@ -775,17 +591,11 @@ int digital_test(int file_des) {
 #else
 
 	enum digitalTestMode arg=0;
-	int imod=-1;
 	int ival=-1;
 
 	// receive arguments
 	n = receiveData(file_des,&arg,sizeof(arg),INT32);
 	if (n < 0) return printSocketReadError();
-
-	if (arg == CHIP_TEST) {
-		n = receiveData(file_des,&imod,sizeof(imod),INT32);
-		if (n < 0) return printSocketReadError();
-	}
 
 	if (arg == DIGITAL_BIT_TEST) {
 		n = receiveData(file_des,&ival,sizeof(ival),INT32);
@@ -809,25 +619,6 @@ int digital_test(int file_des) {
 			retval=0;
 			break;
 
-#elif MYTHEND
-		case  CHIP_TEST:
-#ifdef VERBOSE
-			printf("of module %d\n", imod);
-#endif
-			if (imod>=0 && imod<getTotalNumberOfModules())
-				retval=moduleTest(arg,imod);
-			else {
-				ret = FAIL;
-				sprintf(mess,"Module number %d out of range\n", imod);
-				cprintf(RED, "Warning: %s", mess);
-			}
-			break;
-		case MODULE_FIRMWARE_TEST:
-		case DETECTOR_FIRMWARE_TEST:
-		case DETECTOR_BUS_TEST:
-		case DETECTOR_MEMORY_TEST:
-		case DETECTOR_SOFTWARE_TEST:
-
 #elif JUNGFRAUD
 		case DETECTOR_FIRMWARE_TEST:
 		case DETECTOR_BUS_TEST:
@@ -846,10 +637,7 @@ int digital_test(int file_des) {
 	printf("digital test result is 0x%x\n", retval);
 #endif
 
-	//Always returns force update such that the dynamic range is always updated on the client
-#ifndef MYTHEND
 	if (differentClients)
-#endif
 		ret=FORCE_UPDATE;
 #endif
 
@@ -871,71 +659,12 @@ int digital_test(int file_des) {
 
 
 
-int analog_test(int file_des) {
-	int ret=FAIL,ret1=FAIL;
-	int n=0;
-	sprintf(mess,"Function (Analog Test) is not implemented for this detector\n");
-	cprintf(RED, "Error: %s", mess);
-
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	n = sendData(file_des,mess,MAX_STR_LENGTH,OTHER);
-
-	// return ok / fail
-	return ret;
-}
-
-
-
-int enable_analog_out(int file_des) {
-	int ret=FAIL,ret1=FAIL;
-	int n=0;
-	sprintf(mess,"Function (Enable Analog Out) is not implemented for this detector\n");
-	cprintf(RED, "Error: %s", mess);
-
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	n = sendData(file_des,mess,MAX_STR_LENGTH,OTHER);
-
-	// return ok / fail
-	return ret;
-}
-
-
-
-int calibration_pulse(int file_des) {
-	int ret=FAIL,ret1=FAIL;
-	int n=0;
-	sprintf(mess,"Function (Calibration Pulse) is not implemented for this detector\n");
-	cprintf(RED, "Error: %s", mess);
-
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	n = sendData(file_des,mess,MAX_STR_LENGTH,OTHER);
-
-	// return ok / fail
-	return ret;
-}
-
-
-
-
 int set_dac(int file_des) {
     int ret=OK,ret1=OK;
     int n=0;
-    int arg[3]={-1,-1,-1};
+    int arg[2]={-1,-1};
     int val=-1;
     enum dacIndex ind=0;
-    int imod=-1;
     int retval[2]={-1,-1};
     int mV=0;
     sprintf(mess,"set DAC failed\n");
@@ -944,22 +673,11 @@ int set_dac(int file_des) {
     n = receiveData(file_des,arg,sizeof(arg),INT32);
     if (n < 0) return printSocketReadError();
     ind=arg[0];
-    imod=arg[1];
-    mV=arg[2];
+    mV=arg[1];
 
     n = receiveData(file_des,&val,sizeof(val),INT32);
     if (n < 0) return printSocketReadError();
 
-    // checks
-#ifdef MYTHEND
-#ifdef SLS_DETECTOR_FUNCTION_LIST
-    if (imod>=getTotalNumberOfModules()) {
-        ret = FAIL;
-        sprintf(mess,"Module number %d out of range\n",imod);
-        cprintf(RED, "Warning: %s", mess);
-    }
-#endif
-#endif
     // check if dac exists for this detector
     enum DACINDEX idac=0;
 #ifdef JUNGFRAUD
@@ -971,15 +689,7 @@ int set_dac(int file_des) {
         idac = ind;
 #else
     switch (ind) {
-#ifdef MYTHEND
-    case  TRIMBIT_SIZE:			//ind = VTRIM;
-    case THRESHOLD:
-    case SHAPER1:
-    case SHAPER2:
-    case CALIBRATION_PULSE:
-    case PREAMP:
-        break;
-#elif GOTTHARDD
+#ifdef GOTTHARDD
     case G_VREF_DS :
         break;
     case G_VCASCN_PB:
@@ -1164,7 +874,7 @@ int set_dac(int file_des) {
 
     // execute action
 #ifdef VERBOSE
-    printf("Setting DAC %d of module %d to %d \n", idac, imod, val);
+    printf("Setting DAC %d to %d \n", idac, val);
 #endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
     int temp;
@@ -1177,7 +887,7 @@ int set_dac(int file_des) {
 #ifdef EIGERD
             //iodelay
             if(ind == IO_DELAY)
-                retval[0] = setIODelay(val,imod);
+                retval[0] = setIODelay(val);
             //high voltage
             else
 #endif
@@ -1255,7 +965,7 @@ int set_dac(int file_des) {
                         }
                     }
 #endif
-                    setDAC(idac,val,imod,mV,retval);
+                    setDAC(idac,val,mV,retval);
 #ifdef EIGERD
                     if(val != -1) {
                         //changing dac changes settings to undefined
@@ -1266,7 +976,7 @@ int set_dac(int file_des) {
                         case VCMP_RR:
                         case VRF:
                         case VCP:
-                            setSettings(UNDEFINED,-1);
+                            setSettings(UNDEFINED);
                             cprintf(RED,"Settings has been changed to undefined (changed specific dacs)\n");
                             break;
                         default:
@@ -1284,7 +994,7 @@ int set_dac(int file_des) {
                             ret = OK;
                         } else {
                             ret = FAIL;
-                            sprintf(mess,"Setting dac %d of module %d: wrote %d but read %d\n", idac, imod, val, temp);
+                            sprintf(mess,"Setting dac %d : wrote %d but read %d\n", idac, val, temp);
                             cprintf(RED, "Warning: %s", mess);
                         }
                     }
@@ -1322,10 +1032,9 @@ int set_dac(int file_des) {
 int get_adc(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int arg[2]={-1,-1};
+	int arg=-1;
 	int retval=-1;
 	enum dacIndex ind=0;
-	int imod=-1;
 	sprintf(mess,"get ADC failed\n");
 
 #ifdef MYTHEN3D
@@ -1338,20 +1047,9 @@ int get_adc(int file_des) {
 #else
 
 	// receive arguments
-	n = receiveData(file_des,arg,sizeof(arg),INT32);
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
 	if (n < 0) return printSocketReadError();
-	ind=arg[0];
-	imod=arg[1];
-
-#ifdef MYTHEND
-#ifdef SLS_DETECTOR_FUNCTION_LIST
-	if (imod>=getTotalNumberOfModules() || imod<0) {
-		ret = FAIL;
-		sprintf(mess,"Module number %d out of range\n",imod);
-		cprintf(RED, "Warning: %s", mess);
-	}
-#endif
-#endif
+	ind=arg;
 
 	enum ADCINDEX iadc=0;
 	switch (ind) {
@@ -1397,11 +1095,11 @@ int get_adc(int file_des) {
 	}
 
 #ifdef VERBOSE
-	printf("Getting ADC %d of module %d\n", iadc, imod);
+	printf("Getting ADC %d\n", iadc);
 #endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK)
-		retval=getADC(iadc,imod);
+		retval=getADC(iadc);
 #endif
 #ifdef VERBOSE
 	printf("ADC is %f\n",  retval);
@@ -1531,370 +1229,6 @@ int read_register(int file_des) {
 
 
 
-int write_memory(int file_des) {
-	int ret=FAIL,ret1=FAIL;
-	int n=0;
-	sprintf(mess,"Function (Write Memory) is not implemented for this detector\n");
-	cprintf(RED, "Error: %s", mess);
-
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	n = sendData(file_des,mess,MAX_STR_LENGTH,OTHER);
-
-	// return ok / fail
-	return ret;
-}
-
-
-int read_memory(int file_des) {
-	int ret=FAIL,ret1=FAIL;
-	int n=0;
-	sprintf(mess,"Function (Read Memory) is not implemented for this detector\n");
-	cprintf(RED, "Error: %s", mess);
-
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	n = sendData(file_des,mess,MAX_STR_LENGTH,OTHER);
-
-	// return ok / fail
-	return ret;
-}
-
-
-
-int set_channel(int file_des) {
-	int ret=OK,ret1=OK;
-	int n=0;
-	int retval=-1;
-	sprintf(mess,"set channel failed\n");
-
-#ifndef MYTHEND
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-	ret = FAIL;
-	sprintf(mess,"Function (Set Channel) is not implemented for this detector\n");
-	cprintf(RED, "Warning: %s", mess);
-#else
-
-	// receive arguments
-	sls_detector_channel myChan;
-	n=receiveChannel(file_des, &myChan);
-	if (n < 0) return printSocketReadError();
-
-	// execute action
-#ifdef VERBOSE
-	printf("Setting channel\n");
-	printf("channel number is %d, chip number is %d, module number is %d, register is %lld\n", myChan.chan,myChan.chip, myChan.module, myChan.reg);
-#endif
-	if (differentClients && lockStatus) {
-		ret = FAIL;
-		sprintf(mess,"Detector locked by %s\n",lastClientIP);
-		cprintf(RED, "Warning: %s", mess);
-	}
-#ifdef SLS_DETECTOR_FUNCTION_LIST
-	else if (myChan.chan>=getNumberOfChannelsPerChip()) {
-		ret = FAIL;
-		sprintf(mess,"channel number %d too large!\n",myChan.chan);
-		cprintf(RED, "Warning: %s", mess);
-	}
-	else if (myChan.chip>=getNumberOfChipsPerModule()) {
-		ret = FAIL;
-		sprintf(mess,"chip number %d too large!\n",myChan.chip);
-		cprintf(RED, "Warning: %s", mess);
-	}
-	else if (myChan.module>=getTotalNumberOfModules()) {
-		ret = FAIL;
-		sprintf(mess,"module number %d too large!\n",myChan.module);
-		cprintf(RED, "Warning: %s", mess);
-	}
-	else
-		retval=setChannel(myChan);
-#endif
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
-#endif
-
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret!=FAIL) {
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
-	} else {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
-
-	// return ok / fail
-	return ret;
-}
-
-
-
-
-int get_channel(int file_des) {
-	int ret=OK,ret1=OK;
-	int n=0;
-	sls_detector_channel retval;
-	sprintf(mess,"get channel failed\n");
-
-#ifndef MYTHEND
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-	ret = FAIL;
-	sprintf(mess,"Function (Get Channel) is not implemented for this detector\n");
-	cprintf(RED, "Warning: %s", mess);
-#else
-
-	// receive arguments
-	int arg[3]={-1,-1,-1};
-	n = receiveData(file_des,arg,sizeof(arg),INT32);
-	if (n < 0) return printSocketReadError();
-
-	// execute action
-	int ichan=arg[0];
-	int ichip=arg[1];
-	int imod=arg[2];
-#ifdef SLS_DETECTOR_FUNCTION_LIST
-	if (ichan>=getNumberOfChannelsPerChip()) {
-		ret=FAIL;
-		sprintf(mess, "channel number %d too large!\n",myChan.chan);
-		cprintf(RED, "Warning: %s", mess);
-	} else
-		retval.chan=ichan;
-	if (ichip>=getNumberOfChipsPerModule()) {
-		ret=FAIL;
-		sprintf(mess, "chip number %d too large!\n",myChan.chip);
-		cprintf(RED, "Warning: %s", mess);
-	} else
-		retval.chip=ichip;
-
-	if (imod>=getTotalNumberOfModules()) {
-		ret=FAIL;
-		sprintf(mess, "module number %d too large!\n",myChan.module);
-		cprintf(RED, "Warning: %s", mess);
-	} else {
-		retval.module=imod;
-		ret=getChannel(&retval);
-#ifdef VERBOSE
-	printf("Returning channel %d %d %d, 0x%llx\n", retval.chan, retval.chip, retval.mod, (retval.reg));
-#endif
-	}
-#endif
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
-#endif
-
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret!=FAIL) {
-		ret=sendChannel(file_des, &retval);
-	} else {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
-
-	// return ok / fail
-	return ret;
-}
-
-
-
-int set_all_channels(int file_des) {
-	int ret=FAIL,ret1=FAIL;
-	int n=0;
-	sprintf(mess,"Function (Set All Channels) is not implemented for this detector\n");
-	cprintf(RED, "Error: %s", mess);
-
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	n = sendData(file_des,mess,MAX_STR_LENGTH,OTHER);
-
-	// return ok / fail
-	return ret;
-}
-
-
-
-
-
-int set_chip(int file_des) {
-	int ret=OK,ret1=OK;
-	int n=0;
-	int retval=-1;
-	sprintf(mess,"set chip failed\n");
-
-#ifndef MYTHEND
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-	ret = FAIL;
-	sprintf(mess,"Function (Set Chip) is not implemented for this detector\n");
-	cprintf(RED, "Warning: %s", mess);
-#else
-	sls_detector_chip myChip;
-
-#ifdef SLS_DETECTOR_FUNCTION_LIST
-	myChip.nchan=getNumberOfChannelsPerChip();
-	int *ch(int*)malloc((myChip.nchan)*sizeof(int));
-	myChip.chanregs=ch;
-
-	// receive arguments
-	n=receiveChip(file_des, &myChip);
-#ifdef VERBOSE
-	printf("Chip received\n");
-#endif
-	if(n < 0) return FAIL;
-
-	// execute action
-	if (differentClients==1 && lockStatus==1) {
-		ret = FAIL;
-		sprintf(mess,"Detector locked by %s\n",lastClientIP);
-		cprintf(RED, "Warning: %s", mess);
-	}
-	else{
-#ifdef VERBOSE
-		printf("Setting chip\n");
-		printf("chip number is %d, module number is %d, register is %d, nchan %d\n",myChip.chip, myChip.module, myChip.reg, myChip.nchan);
-#endif
-		if (myChip.chip>=getNumberOfChipsPerModule()) {
-			ret = FAIL;
-			sprintf(mess,"chip number %d too large!\n",myChan.chip);
-			cprintf(RED, "Warning: %s", mess);
-		}
-		else if (myChip.module>=getTotalNumberOfModules()) {
-			ret = FAIL;
-			sprintf(mess,"module number %d too large!\n",myChan.module);
-			cprintf(RED, "Warning: %s", mess);
-		}
-		else
-			retval=setChip(myChip);
-	}
-	free(ch);
-#endif
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
-#endif
-
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret!=FAIL) {
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
-	} else {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
-
-	// return ok / fail
-	return ret;
-}
-
-
-
-
-int get_chip(int file_des) {
-	int ret=OK,ret1=OK;
-	int n=0;
-	sls_detector_chip retval;
-	sprintf(mess,"get chip failed\n");
-
-#ifndef MYTHEND
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-	ret = FAIL;
-	sprintf(mess,"Function (Get Chip) is not implemented for this detector\n");
-	cprintf(RED, "Warning: %s", mess);
-#else
-
-	// receive arguments
-	int arg[2]={-1,-1};
-	n = receiveData(file_des,arg,sizeof(arg),INT32);
-	if (n < 0) return printSocketReadError();
-
-#ifdef SLS_DETECTOR_FUNCTION_LIST
-	int ichip=arg[0];
-	int	imod=arg[1];
-
-	// execute action
-	if (ichip>=getNumberOfChipsPerModule()) {
-		ret = FAIL;
-		sprintf(mess,"channel number %d too large!\n",myChan.chan);
-		cprintf(RED, "Warning: %s", mess);
-	} else
-		retval.chip=ichip;
-
-	if (imod>=getTotalNumberOfModules()) {
-		ret = FAIL;
-		sprintf(mess,"module number %d too large!\n",imod);
-		cprintf(RED, "Warning: %s", mess);
-	} else
-		retval.module=imod;
-
-	if (ret==OK)
-		ret=getChip(&retval);
-#endif
-#ifdef VERBOSE
-	printf("Returning chip %d %d\n",  ichip, imod);
-#endif
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
-#endif
-
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret!=FAIL) {
-		ret=sendChip(file_des, &retval);
-	} else {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
-
-	// return ok / fail
-	return ret;
-}
-
-
-
-
-int set_all_chips(int file_des) {
-	int ret=FAIL,ret1=FAIL;
-	int n=0;
-	sprintf(mess,"Function (Set All Chips) is not implemented for this detector\n");
-	cprintf(RED, "Error: %s", mess);
-
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	n = sendData(file_des,mess,MAX_STR_LENGTH,OTHER);
-
-	// return ok / fail
-	return ret;
-}
-
-
-
-
-
 int set_module(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
@@ -1924,16 +1258,16 @@ int set_module(int file_des) {
 	int *myChip = NULL;
 	int *myChan = NULL;
 
-	myDac=(int*)malloc(getNumberOfDACsPerModule()*sizeof(int));
-	if (getNumberOfDACsPerModule() > 0 && myDac == NULL) {
+	myDac=(int*)malloc(getNumberOfDACs()*sizeof(int));
+	if (getNumberOfDACs() > 0 && myDac == NULL) {
 		ret = FAIL;
 		sprintf(mess,"could not allocate dacs\n");
 		cprintf(RED, "Warning: %s", mess);
 	}
 	else {
 		myModule.dacs=myDac;
-		myAdc=(int*)malloc(getNumberOfADCsPerModule()*sizeof(int));
-		if (getNumberOfADCsPerModule() > 0 && myAdc == NULL) {
+		myAdc=(int*)malloc(getNumberOfADCs()*sizeof(int));
+		if (getNumberOfADCs() > 0 && myAdc == NULL) {
 			ret = FAIL;
 			sprintf(mess,"could not allocate adcs\n");
 			cprintf(RED, "Warning: %s", mess);
@@ -1945,16 +1279,16 @@ int set_module(int file_des) {
 			myModule.chipregs=NULL;
 			myModule.chanregs=NULL;
 #else
-			myChip=(int*)malloc(getNumberOfChipsPerModule()*sizeof(int));
-			if (getNumberOfChipsPerModule() > 0 && myChip == NULL) {
+			myChip=(int*)malloc(getNumberOfChips()*sizeof(int));
+			if (getNumberOfChips() > 0 && myChip == NULL) {
 				ret = FAIL;
 				sprintf(mess,"could not allocate chips\n");
 				cprintf(RED, "Warning: %s", mess);
 			}
 			else {
 				myModule.chipregs=myChip;
-				myChan=(int*)malloc(getNumberOfChannelsPerModule()*sizeof(int));
-				if (getNumberOfChannelsPerModule() > 0 && myChan == NULL) {
+				myChan=(int*)malloc(getTotalNumberOfChannels()*sizeof(int));
+				if (getTotalNumberOfChannels() > 0 && myChan == NULL) {
 					ret = FAIL;
 					sprintf(mess,"could not allocate chans\n");
 					cprintf(RED, "Warning: %s", mess);
@@ -1962,10 +1296,10 @@ int set_module(int file_des) {
 				else {
 					myModule.chanregs=myChan;
 #endif
-					myModule.nchip=getNumberOfChipsPerModule();
-					myModule.nchan=getNumberOfChannelsPerModule();
-					myModule.ndac=getNumberOfDACsPerModule();
-					myModule.nadc=getNumberOfADCsPerModule();
+					myModule.nchip=getNumberOfChips();
+					myModule.nchan=getTotalNumberOfChannels();
+					myModule.ndac=getNumberOfDACs();
+					myModule.nadc=getNumberOfADCs();
 
 
 					// receive arguments
@@ -1981,8 +1315,8 @@ int set_module(int file_des) {
 					);
 					if (n<0) return FAIL;
 #ifdef VERBOSE
-		printf("module number is %d,register is %d, nchan %d, nchip %d, ndac %d, nadc %d, gain %f, offset %f\n",
-				myModule.module, myModule.reg, myModule.nchan, myModule.nchip, myModule.ndac,  myModule.nadc, myModule.gain,myModule.offset);
+		printf("module number register is %d, nchan %d, nchip %d, ndac %d, nadc %d, gain %f, offset %f\n",
+				myModule.reg, myModule.nchan, myModule.nchip, myModule.ndac,  myModule.nadc, myModule.gain,myModule.offset);
 #endif
 #ifdef EIGERD
 					n = receiveData(file_des,&myIODelay,sizeof(myIODelay),INT32);
@@ -2006,15 +1340,6 @@ int set_module(int file_des) {
 
 	//check settings index
 	if (ret==OK) {
-#ifdef MYTHEND
-		if (myModule.module>=getNModBoard()) {
-			ret = FAIL;
-			sprintf(mess,"Module Number to Set Module (%d) is too large\n", myModule.module);
-			cprintf(RED, "Warning: %s", mess);
-		}
-		if (myModule.module<0)
-			myModule.module=ALLMOD;
-#endif
 #if defined(JUNGFRAUD) || defined(EIGERD)
 		switch(myModule.reg){
 		case GET_SETTINGS:
@@ -2056,10 +1381,10 @@ int set_module(int file_des) {
 			ret=setModule(myModule, myIODelay);
 			//set threshhold
 			if (myEV >= 0)
-				setThresholdEnergy(myEV,-1);
+				setThresholdEnergy(myEV);
 			else {
 				//changes settings to undefined (loading a random trim file)
-				setSettings(UNDEFINED,-1);
+				setSettings(UNDEFINED);
 				cprintf(RED,"Settings has been changed to undefined (random trim file)\n");
 			}
 			//rate correction
@@ -2124,24 +1449,17 @@ int set_module(int file_des) {
 int get_module(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int arg=-1;
-	int  imod=-1;
 	sls_detector_module myModule;
 	sprintf(mess,"get module failed\n");
 
 #ifdef MYTHEN3D
-    //to receive any arguments
-    while (n > 0)
-        n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-    ret = FAIL;
-    sprintf(mess,"Function (Get Module) is not implemented for this detector\n");
-    cprintf(RED, "Warning: %s", mess);
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+	ret = FAIL;
+	sprintf(mess,"Function (Get Module) is not implemented for this detector\n");
+	cprintf(RED, "Warning: %s", mess);
 #else
-
-	// receive arguments
-	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return printSocketReadError();
-	imod=arg;
 
 	// execute action
 #ifdef SLS_DETECTOR_FUNCTION_LIST
@@ -2150,64 +1468,56 @@ int get_module(int file_des) {
 	int *myChip = NULL;
 	int *myChan = NULL;
 
-	if (imod<0 || imod>getTotalNumberOfModules()) {
+	myDac=(int*)malloc(getNumberOfDACs()*sizeof(int));
+	if (getNumberOfDACs() > 0 && myDac == NULL) {
 		ret = FAIL;
-		sprintf(mess,"Module Index (%d) is out of range\n", imod);
+		sprintf(mess,"could not allocate dacs\n");
 		cprintf(RED, "Warning: %s", mess);
 	}
 	else {
-		myDac=(int*)malloc(getNumberOfDACsPerModule()*sizeof(int));
-		if (getNumberOfDACsPerModule() > 0 && myDac == NULL) {
+		myModule.dacs=myDac;
+		myAdc=(int*)malloc(getNumberOfADCs()*sizeof(int));
+		if (getNumberOfADCs() > 0 && myAdc == NULL) {
 			ret = FAIL;
-			sprintf(mess,"could not allocate dacs\n");
+			sprintf(mess,"could not allocate adcs\n");
 			cprintf(RED, "Warning: %s", mess);
 		}
 		else {
-			myModule.dacs=myDac;
-			myAdc=(int*)malloc(getNumberOfADCsPerModule()*sizeof(int));
-			if (getNumberOfADCsPerModule() > 0 && myAdc == NULL) {
+			myModule.adcs=myAdc;
+			//no chips and chans allocated for jungfrau, too much memory
+#ifdef JUNGFRAUD
+			myModule.chipregs=NULL;
+			myModule.chanregs=NULL;
+#else
+			myChip=(int*)malloc(getNumberOfChips()*sizeof(int));
+			if (getNumberOfChips() > 0 && myChip == NULL) {
 				ret = FAIL;
-				sprintf(mess,"could not allocate adcs\n");
+				sprintf(mess,"could not allocate chips\n");
 				cprintf(RED, "Warning: %s", mess);
 			}
 			else {
-				myModule.adcs=myAdc;
-				//no chips and chans allocated for jungfrau, too much memory
-#ifdef JUNGFRAUD
-				myModule.chipregs=NULL;
-				myModule.chanregs=NULL;
-#else
-				myChip=(int*)malloc(getNumberOfChipsPerModule()*sizeof(int));
-				if (getNumberOfChipsPerModule() > 0 && myChip == NULL) {
+				myModule.chipregs=myChip;
+				myChan=(int*)malloc(getTotalNumberOfChannels()*sizeof(int));
+				if (getTotalNumberOfChannels() > 0 && myChan == NULL) {
 					ret = FAIL;
-					sprintf(mess,"could not allocate chips\n");
+					sprintf(mess,"could not allocate chans\n");
 					cprintf(RED, "Warning: %s", mess);
 				}
 				else {
-					myModule.chipregs=myChip;
-					myChan=(int*)malloc(getNumberOfChannelsPerModule()*sizeof(int));
-					if (getNumberOfChannelsPerModule() > 0 && myChan == NULL) {
-						ret = FAIL;
-						sprintf(mess,"could not allocate chans\n");
-						cprintf(RED, "Warning: %s", mess);
-					}
-					else {
-						myModule.chanregs=myChan;
+					myModule.chanregs=myChan;
 #endif
-						myModule.nchip=getNumberOfChipsPerModule();
-						myModule.nchan=getNumberOfChannelsPerModule();
-						myModule.ndac=getNumberOfDACsPerModule();
-						myModule.nadc=getNumberOfADCsPerModule();
-						myModule.module=imod;
-						getModule(&myModule);
+					myModule.nchip=getNumberOfChips();
+					myModule.nchan=getTotalNumberOfChannels();
+					myModule.ndac=getNumberOfDACs();
+					myModule.nadc=getNumberOfADCs();
+					getModule(&myModule);
 #ifdef VERBOSE
-						printf("Returning module %d of register %x\n",  imod, myModule.reg);
+					printf("Returning module of register %x\n",  myModule.reg);
 #endif
 #ifndef JUNGFRAUD
-					}
 				}
-#endif
 			}
+#endif
 		}
 	}
 #endif
@@ -2246,32 +1556,14 @@ int get_module(int file_des) {
 
 
 
-int set_all_modules(int file_des) {
-	int ret=FAIL,ret1=FAIL;
-	int n=0;
-	sprintf(mess,"Function (Set All Modules) is not implemented for this detector\n");
-	cprintf(RED, "Error: %s", mess);
-
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	n = sendData(file_des,mess,MAX_STR_LENGTH,OTHER);
-
-	// return ok / fail
-	return ret;
-}
-
 
 
 
 int set_settings(int file_des) {
 	int ret=OK,ret1=OK;
 	int n=0;
-	int arg[2]={-1,-1};
+	int arg=-1;
 	int retval=-1;
-	int imod=-1;
 	enum detectorSettings isett=-1;
 	sprintf(mess,"set settings failed\n");
 
@@ -2287,8 +1579,7 @@ int set_settings(int file_des) {
 	// receive arguments
 	n = receiveData(file_des,&arg,sizeof(arg),INT32);
 	if (n < 0) return printSocketReadError();
-	isett=arg[0];
-	imod=arg[1];
+	isett=arg;
 
 	// execute action
 	if (differentClients && lockStatus && isett!=GET_SETTINGS) {
@@ -2298,13 +1589,6 @@ int set_settings(int file_des) {
 	}
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 
-#ifdef MYTHEND
-	if ( (ret != FAIL) && (imod>=getTotalNumberOfModules())) {
-		ret = FAIL;
-		sprintf(mess,"Module number %d out of range\n",imod);
-		cprintf(RED, "Warning: %s", mess);
-	}
-#endif
 	switch(isett) {
 	case GET_SETTINGS:
 	case UNINITIALIZED:
@@ -2341,9 +1625,9 @@ int set_settings(int file_des) {
 
 	if (ret != FAIL) {
 #ifdef VERBOSE
-		printf("Changing settings of module %d to %d\n", imod,  isett);
+		printf("Changing settings to %d\n", isett);
 #endif
-		retval=setSettings(isett, imod);
+		retval=setSettings(isett);
 #ifdef VERBOSE
 		printf("Settings changed to %d\n",  isett);
 #endif
@@ -2351,7 +1635,7 @@ int set_settings(int file_des) {
 			ret=OK;
 		} else {
 			ret = FAIL;
-			sprintf(mess,"Changing settings of module %d: wrote %d but read %d\n", imod, isett, retval);
+			sprintf(mess,"Changing settings : wrote %d but read %d\n", isett, retval);
 			cprintf(RED, "Warning: %s", mess);
 		}
 	}
@@ -2396,35 +1680,21 @@ int get_threshold_energy(int file_des) {
 	int retval=-1;
 	sprintf(mess,"get threshold energy failed\n");
 
-#if !defined(MYTHEND) && !defined(EIGERD)
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+#ifndef EIGERD
 	ret = FAIL;
 	sprintf(mess,"Function (Get Threshold Energy) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
 #else
 
-	// receive arguments
-	int imod=-1;
-	n = receiveData(file_des,&imod,sizeof(imod),INT32);
-	if (n < 0) return printSocketReadError();
-
 	// execute action
 #ifdef VERBOSE
-	printf("Getting threshold energy of module %d\n", imod);
+	printf("Getting threshold energy \n");
 #endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-	if (imod>=getTotalNumberOfModules()) {
-		ret=FAIL;
-		sprintf(mess,"Module number %d out of range\n",imod);
-	}
-	else {
-		retval=getThresholdEnergy(imod);
+	retval=getThresholdEnergy();
 #ifdef VERBOSE
 	printf("Threshold is %d eV\n",  retval);
 #endif
-	}
 #endif
 	if (ret==OK && differentClients)
 		ret=FORCE_UPDATE;
@@ -2444,75 +1714,6 @@ int get_threshold_energy(int file_des) {
 	return ret;
 }
 
-
-
-
-int set_threshold_energy(int file_des) {
-	int ret=OK,ret1=OK;
-	int n=0;
-	int retval=-1;
-	sprintf(mess,"set thhreshold energy failed\n");
-
-#ifndef MYTHEND
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-	ret = FAIL;
-#ifdef EIGERD
-	sprintf(mess,"Function (Set Threshold Energy) is only implemented via Set Settings for this detector\n");
-#else
-	sprintf(mess,"Function (Set Threshold Energy) is not implemented for this detector\n");
-#endif
-	cprintf(RED, "Warning: %s", mess);
-#else
-
-	// receive arguments
-	int arg[3]={-1,-1,-1};
-	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return printSocketReadError();
-
-	// execute action
-	int ethr=arg[0];
-	int imod=arg[1];
-	enum detectorSettings isett=arg[2];
-	if (differentClients && lockStatus) {
-		ret=FAIL;
-		sprintf(mess,"Detector locked by %s\n",lastClientIP);
-	}
-#ifdef SLS_DETECTOR_FUNCTION_LIST
-	else if (imod>=getTotalNumberOfModules()) {
-		ret=FAIL;
-		sprintf(mess,"Module number %d out of range\n",imod);
-	}
-	else {
-		printf("Setting threshold energy of module %d to %d eV with settings %d\n", imod, ethr, isett);
-		retval=setThresholdEnergy(ethr, imod);
-#ifdef VERBOSE
-	printf("Threshold set to %d eV\n",  retval);
-#endif
-	if (retval!=ethr) {
-		ret=FAIL;
-		sprintf(mess,"Setting threshold of module %d: wrote %d but read %d\n", imod, ethr, retval);
-		cprintf(RED, "Warning: %s", mess);
-	}
-#endif
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
-#endif
-
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
-
-	// return ok / fail
-	return ret;
-}
 
 
 
@@ -2701,10 +1902,10 @@ int start_and_read_all(int file_des) {
 
 
 
-int read_frame(int file_des) {
+int read_all(int file_des) {
 	int dataret1=FAIL, dataret=FAIL;
 	int n=0;
-	sprintf(mess, "read frame failed\n");
+	sprintf(mess, "read all frame failed\n");
 
 	// execute action
 	if (differentClients && lockStatus) {
@@ -2744,22 +1945,6 @@ int read_frame(int file_des) {
 }
 
 
-
-
-int read_all(int file_des) {
-#ifdef SLS_DETECTOR_FUNCTION_LIST
-	while(read_frame(file_des)==OK) {
-#ifdef VERBOSE
-		printf("frame read\n");
-#endif
-		;
-	}
-#endif
-#ifdef VERBOSE
-	printf("Frames finished or failed\n");
-#endif
-	return OK;
-}
 
 
 
@@ -2826,11 +2011,7 @@ int set_timer(int file_des) {
 			retval = setTimer(ind,tns);
 			break;
 #endif
-#ifdef MYTHEN
-		case PROBES_NUMBER:
-		case GATES_NUMBER:
-		case DELAY_AFTER_TRIGGER:
-#elif JUNGFRAUD
+#ifdef JUNGFRAUD
 		case DELAY_AFTER_TRIGGER:
 #elif MYTHEN3D
 		case DELAY_AFTER_TRIGGER:
@@ -2851,17 +2032,6 @@ int set_timer(int file_des) {
 			break;
 		}
 
-
-#if defined(MYTHEND) || defined(GOTTHARD)
-		if (ret == OK && ind==FRAME_NUMBER) {
-			ret=allocateRAM();
-			if (ret!=OK) {
-				ret = FAIL;
-				sprintf(mess,"Could not allocate RAM for %lld frames\n", tns);
-				cprintf(RED, "%s", mess);
-			}
-		}
-#endif
 	}
 #endif
 	if (ret==OK && differentClients)
@@ -2918,8 +2088,6 @@ int get_time_left(int file_des) {
 #ifdef EIGERD
 		case MEASURED_PERIOD:
 		case MEASURED_SUBPERIOD:
-#elif MYTHEND
-		case PROBES_NUMBER:
 #elif JUNGFRAUD
 		case FRAMES_FROM_START:
 		case FRAMES_FROM_START_PG:
@@ -3086,7 +2254,7 @@ int set_readout_flags(int file_des) {
 	enum readOutFlags retval=-1;
 	sprintf(mess,"set readout flags failed\n");
 
-#if !defined(MYTHEND) && !defined(EIGERD)
+#ifndef EIGERD
 	//to receive any arguments
 	while (n > 0)
 		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
@@ -3113,12 +2281,7 @@ int set_readout_flags(int file_des) {
 #endif
 		switch(arg) {
 		case  GET_READOUT_FLAGS:
-#ifdef MYTHEND
-		case TOT_MODE:
-		case NORMAL_READOUT:
-		case STORE_IN_RAM:
-		case CONTINOUS_RO:
-#elif EIGERD
+#ifdef EIGERD
 		case STORE_IN_RAM:
 		case CONTINOUS_RO:
 		case PARALLEL:
@@ -3303,13 +2466,7 @@ int set_speed(int file_des) {
             }
 			break;
 #endif
-#ifdef MYTHEND
-		case CLOCK_DIVIDER:
-		case WAIT_STATES:
-		case SET_SIGNAL_LENGTH:
-		case TOT_CLOCK_DIVIDER:
-		case TOT_DUTY_CYCLE:
-#elif EIGERD
+#ifdef EIGERD
 		case CLOCK_DIVIDER:
 #elif JUNGFRAUD
 		case CLOCK_DIVIDER:
@@ -3349,92 +2506,6 @@ int set_speed(int file_des) {
 	return ret;
 }
 
-
-
-
-
-int execute_trimming(int file_des) {
-	int ret=OK,ret1=OK;
-	int n=0;
-	sprintf(mess,"execute trimming failed\n");
-
-#ifndef MYTHEND
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-	ret = FAIL;
-	sprintf(mess,"Function (Execute Trimming) is not implemented for this detector\n");
-	cprintf(RED, "Warning: %s", mess);
-#else
-
-	int retval=-1;
-
-	// receive arguments
-	enum trimMode mode=0;
-	int arg[3]={-1,-1,-1};
-	n = receiveData(file_des,&mode,sizeof(mode),INT32);
-	if (n < 0) return printSocketReadError();
-
-	n = receiveData(file_des,arg,sizeof(arg),INT32);
-	if (n < 0) return printSocketReadError();
-
-	// execute action
-	int imod, par1,par2;
-	imod=arg[0];
-	par1=arg[1];
-	par2=arg[2];
-	if (differentClients && lockStatus) {
-		ret = FAIL;
-		sprintf(mess,"Detector locked by %s\n",lastClientIP);
-		cprintf(RED, "Warning: %s", mess);
-	}
-#ifdef SLS_DETECTOR_FUNCTION_LIST
-	else if (imod>=getTotalNumberOfModules()) {
-		ret = FAIL;
-		sprintf(mess,"Module Number (%d) is out of range\n");
-		cprintf(RED, "Warning: %s", mess);
-	}
-	else {
-#ifdef VERBOSE
-		printf("trimming module %d mode %d, parameters %d %d \n",imod,mode, par1, par2);
-#endif  
-		switch(mode) {
-		case NOISE_TRIMMING:
-		case BEAM_TRIMMING:
-		case IMPROVE_TRIMMING:
-		case FIXEDSETTINGS_TRIMMING:
-			retval=executeTrimming(mode, par1, par2, imod);
-			if ((ret!=OK) && (retval>0)) {
-				ret=FAIL;
-				sprintf(mess,"Could not trim %d channels\n", retval);
-				cprintf(RED, "Warning: %s", mess);
-			}
-			break;
-		default:
-			ret = FAIL;
-			sprintf(mess,"Trimming Mode (%d) is not implemented for this detector\n", (int) mode);
-			cprintf(RED, "Warning: %s", mess);
-			break;
-		}
-
-	}
-#endif
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
-#endif
-
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
-
-	// return ok / fail
-	return ret;
-}
 
 
 
@@ -3595,20 +2666,6 @@ int send_update(int file_des) {
 
 
 #ifdef	SLS_DETECTOR_FUNCTION_LIST
-	nm=setNMod(GET_FLAG,X);
-#endif
-	n = sendData(file_des,&nm,sizeof(nm),INT32);
-	if (n < 0) return printSocketReadError();
-
-
-#ifdef	SLS_DETECTOR_FUNCTION_LIST
-	nm=setNMod(GET_FLAG,Y);
-#endif
-	n = sendData(file_des,&nm,sizeof(nm),INT32);
-	if (n < 0) return printSocketReadError();
-
-
-#ifdef	SLS_DETECTOR_FUNCTION_LIST
 	nm=setDynamicRange(GET_FLAG);
 #endif
 	n = sendData(file_des,&nm,sizeof(nm),INT32);
@@ -3623,13 +2680,13 @@ int send_update(int file_des) {
 
 
 #ifdef	SLS_DETECTOR_FUNCTION_LIST
-	t=setSettings(GET_SETTINGS, GET_FLAG);
+	t=setSettings(GET_SETTINGS);
 #endif
 	n = sendData(file_des,&t,sizeof(t),INT32);
 	if (n < 0) return printSocketReadError();
 
 
-#if defined(MYTHEND) || defined(EIGERD)
+#ifdef EIGERD
 #ifdef	SLS_DETECTOR_FUNCTION_LIST
 	nm=getThresholdEnergy(GET_FLAG);
 #endif
@@ -3692,15 +2749,6 @@ int send_update(int file_des) {
 #endif
 
 
-#ifdef MYTHEND
-#ifdef	SLS_DETECTOR_FUNCTION_LIST
-	retval=setTimer(PROBES_NUMBER,GET_FLAG);
-#endif
-	n = sendData(file_des,&retval,sizeof(int64_t),INT64);
-	if (n < 0) return printSocketReadError();
-#endif
-
-
 #ifdef	SLS_DETECTOR_FUNCTION_LIST
 	retval=setTimer(CYCLES_NUMBER,GET_FLAG);
 #endif
@@ -3725,15 +2773,6 @@ int configure_mac(int file_des) {
 	int n=0;
 	int retval=-100;
 	sprintf(mess,"configure mac failed\n");
-
-#ifdef MYTHEND
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-	ret = FAIL;
-	strcpy(mess,"Function (Configure MAC) is not implemented for this detector\n");
-	cprintf(RED, "Warning: %s", mess);
-#else
 
 	// receive arguments
 	char arg[6][50];
@@ -3790,7 +2829,7 @@ int configure_mac(int file_des) {
 		printf("detipad %x\n",detipad);
 		printf("udp port2:0x%x\n",udpport2);
 		printf("\n");
-		printf("Configuring MAC of module %d at port %x\n", imod, udpport);
+		printf("Configuring MAC at port %x\n", udpport);
 
 #if defined(JUNGFRAUD) || defined(EIGERD)
 		printf("Position: [%d,%d,%d]\n", pos[0],pos[1],pos[2]);
@@ -3855,7 +2894,7 @@ int configure_mac(int file_des) {
 #endif
 	if (differentClients)
 		ret=FORCE_UPDATE;
-#endif
+
 
 	// ret could be swapped during sendData
 	ret1 = ret;
@@ -3956,105 +2995,6 @@ int load_image(int file_des) {
 	return ret;
 }
 
-
-
-
-
-int set_master(int file_des) {
-	int ret=OK,ret1=OK;
-	int n=0;
-	enum masterFlags arg=GET_MASTER;
-	enum masterFlags retval=GET_MASTER;
-	sprintf(mess,"set master failed\n");
-
-	// receive arguments
-	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return printSocketReadError();
-
-	// execute action
-	if (differentClients && lockStatus && ((int)arg!=(int)GET_MASTER)) {
-		ret = FAIL;
-		sprintf(mess,"Detector locked by %s\n",lastClientIP);
-		cprintf(RED, "Warning: %s", mess);
-	}
-#ifdef SLS_DETECTOR_FUNCTION_LIST
-	else {
-#ifdef VERBOSE
-		printf("setting master flags  to %d\n",arg);
-#endif
-		retval=setMaster(arg);
-		if (retval==GET_MASTER)
-			ret=FAIL;
-
-		if (ret==OK && differentClients)
-			ret=FORCE_UPDATE;
-	}
-#endif
-
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
-
-	// return ok / fail
-	return ret;
-}
-
-
-
-
-
-
-
-int set_synchronization(int file_des) {
-	int ret=OK,ret1=OK;
-	int n=0;
-	enum synchronizationMode arg=GET_SYNCHRONIZATION_MODE;
-	enum synchronizationMode retval=GET_SYNCHRONIZATION_MODE;
-	sprintf(mess,"synchronization mode failed\n");
-
-	// receive arguments
-	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return printSocketReadError();
-
-	// execute action
-	if (differentClients && lockStatus && ((int)arg!=(int)GET_SYNCHRONIZATION_MODE)) {
-		ret = FAIL;
-		sprintf(mess,"Detector locked by %s\n",lastClientIP);
-		cprintf(RED, "Warning: %s", mess);
-	}
-#ifdef SLS_DETECTOR_FUNCTION_LIST
-	else {
-#ifdef VERBOSE
-	printf("setting master flags  to %d\n",arg);
-#endif
-		retval=setSynchronization(arg);
-		if (retval==GET_SYNCHRONIZATION_MODE)
-			ret=FAIL;
-
-		if (ret==OK && differentClients)
-			ret=FORCE_UPDATE;
-	}
-#endif
-
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
-
-	// return ok / fail
-	return ret;
-}
 
 
 
@@ -4335,7 +3275,7 @@ int set_all_trimbits(int file_des){
 			if(arg >= 0){
 				ret = setAllTrimbits(arg);
 				//changes settings to undefined
-				setSettings(UNDEFINED,-1);
+				setSettings(UNDEFINED);
 				cprintf(RED,"Settings has been changed to undefined (change all trimbits)\n");
 			}
 			retval = getAllTrimbits();
@@ -4864,7 +3804,7 @@ int set_rate_correct(int file_des) {
 				tau_ns = getDefaultSettingsTau_in_nsec();
 			else if(tau_ns > 0){
 				//changing tau to a user defined value changes settings to undefined
-				setSettings(UNDEFINED,-1);
+				setSettings(UNDEFINED);
 				cprintf(RED,"Settings has been changed to undefined (tau changed)\n");
 			}
 
@@ -5419,50 +4359,6 @@ int prepare_acquisition(int file_des) {
 }
 
 
-int cleanup_acquisition(int file_des) {
-	int ret=OK,ret1=OK;
-	int n=0;
-	strcpy(mess,"prepare acquisition failed\n");
-
-#ifndef GOTTHARDD
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-	ret = FAIL;
-	sprintf(mess,"Function (Cleanup Acquisition) is not implemented for this detector\n");
-	cprintf(RED, "Warning: %s", mess);
-#else
-
-	// execute action
-	if (differentClients && lockStatus) {
-		ret = FAIL;
-		sprintf(mess,"Detector locked by %s\n",lastClientIP);
-		cprintf(RED, "Warning: %s", mess);
-	}
-#ifdef SLS_DETECTOR_FUNCTION_LIST
-	else {//to be implemented when used here
-		ret = FAIL;
-		sprintf(mess,"Function (Cleanup Acquisition) is not implemented for this detector\n");
-		cprintf(RED, "Warning: %s", mess);
-	}
-#endif
-	if(ret==OK && differentClients)
-		ret=FORCE_UPDATE;
-#endif
-
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
-
-	// return ok / fail
-	return ret;
-}
-
 
 
 
@@ -5480,14 +4376,14 @@ int threshold_temp(int file_des) {
     sprintf(mess,"Function (Threshold Temp) is not implemented for this detector\n");
     cprintf(RED, "%s", mess);
 #else
-    int arg[2]={-1,-1};
+    int arg=-1;
     int val=-1;
 
     // receive arguments
-    n = receiveData(file_des,arg,sizeof(arg),INT32);
+    n = receiveData(file_des,&arg,sizeof(arg),INT32);
     if (n < 0) return printSocketReadError();
-    val=arg[0];
-    //ignoring imod
+
+    val=arg;
     if (val > MAX_THRESHOLD_TEMP_VAL)   {
         ret=FAIL;
         sprintf(mess,"Threshold Temp %d should be in range: 0 - %d\n", val, MAX_THRESHOLD_TEMP_VAL);
@@ -5542,15 +4438,13 @@ int temp_control(int file_des) {
     sprintf(mess,"Function (Temperature control) is not implemented for this detector\n");
     cprintf(RED, "%s", mess);
 #else
-    int arg[2]={-1,-1};
+    int arg=-1;
     int val=-1;
 
     // receive arguments
-    n = receiveData(file_des,arg,sizeof(arg),INT32);
+    n = receiveData(file_des,&arg,sizeof(arg),INT32);
     if (n < 0) return printSocketReadError();
-    val=arg[0];
-    //ignoring imod
-
+    val=arg;
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
     if (ret==OK) {
@@ -5599,14 +4493,13 @@ int temp_event(int file_des) {
     sprintf(mess,"Function (Temperature Event) is not implemented for this detector\n");
     cprintf(RED, "%s", mess);
 #else
-    int arg[2]={-1,-1};
+    int arg=-1;
     int val=-1;
 
     // receive arguments
-    n = receiveData(file_des,arg,sizeof(arg),INT32);
+    n = receiveData(file_des,&arg,sizeof(arg),INT32);
     if (n < 0) return printSocketReadError();
-    val=arg[0];
-    //ignoring imod
+    val=arg;
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
     if (ret==OK) {

@@ -1,1 +1,1 @@
-../commonFiles/sls_detector_funcs.h
+../../../slsSupportLib/include/sls_detector_funcs.h

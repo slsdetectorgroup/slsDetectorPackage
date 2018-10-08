@@ -114,17 +114,18 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det)  {
 
 	/* digital test and debugging */
 
+
 	/*! \page test
-   - <b>digitest [i]</b> will perform test which will plot the unique channel identifier, instead of data. Only get!
+   - <b>digibittest:[i]</b> performs digital test of the module i. Returns 0 if succeeded, otherwise error mask. Gotthard only. Only put!
 	 */
-	descrToFuncMap[i].m_pFuncName="digitest";  // /* find command! */
+	descrToFuncMap[i].m_pFuncName="digibittest"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDigiTest;
 	++i;
 
 	/*! \page test
-   - <b>digibittest:[i]</b> performs digital test of the module i. Returns 0 if succeeded, otherwise error mask. Only put!
+   - <b>bustest</b> performs test of the bus interface between FPGA and embedded Linux system. Can last up to a few minutes. Cannot set! Jungfrau only. Only get!
 	 */
-	descrToFuncMap[i].m_pFuncName="digibittest"; //
+	descrToFuncMap[i].m_pFuncName="bustest"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDigiTest;
 	++i;
 
@@ -3671,14 +3672,14 @@ string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action, int d
 
 	myDet->setOnline(ONLINE_FLAG, detPos);
 
-	if (cmd=="digitest") {
+	if (cmd=="bustest"){
 		if (action==PUT_ACTION)
 			return string("cannot set ")+cmd;
-		sprintf(answer,"0x%x",myDet->digitalTest(CHIP_TEST, -1, detPos));
+		sprintf(answer,"0x%x",myDet->digitalTest(DETECTOR_BUS_TEST));
 		return string(answer);
 	}
 
-	if (cmd=="digibittest") {
+	else if (cmd=="digibittest") {
 		if (action==GET_ACTION)
 			return string("cannot get ")+cmd;
 		int ival=-1;
@@ -3694,7 +3695,7 @@ string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action, int d
 	}
 
 
-	return string("unknown digital test mode ")+cmd;
+	return string("unknown test mode ")+cmd;
 
 }
 
@@ -3703,10 +3704,8 @@ string slsDetectorCommand::helpDigiTest(int action) {
 
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION) {
-		os << "digitaltest:i \t performs digital test of the module i. Returns 0 if succeeded, otherwise error mask."<< std::endl;
-	}
-	if (action==PUT_ACTION || action==HELP_ACTION) {
-		os << "digibittest i\t will perform test which will plot the unique channel identifier, instead of data."<< std::endl;
+		os << "digibittest:i \t performs digital test of the module i. Returns 0 if succeeded, otherwise error mask.Gotthard only."<< std::endl;
+		os << "bustest \t performs test of the bus interface between FPGA and embedded Linux system. Can last up to a few minutes. Jungfrau only."<< std::endl;
 	}
 	return os.str();
 }

@@ -29,8 +29,8 @@ enum{E_PARALLEL, E_NON_PARALLEL, E_SAFE};
 sls_detector_module *detectorModules=NULL;
 int *detectorChips=NULL;
 int *detectorChans=NULL;
-dacs_t *detectorDacs=NULL;
-dacs_t *detectorAdcs=NULL;
+int *detectorDacs=NULL;
+int *detectorAdcs=NULL;
 
 int eiger_highvoltage = 0;
 int eiger_theo_highvoltage = 0;
@@ -406,8 +406,8 @@ void allocateDetectorStructureMemory(){
 	detectorModules=malloc(sizeof(sls_detector_module));
 	detectorChips=malloc(NCHIP*sizeof(int));
 	detectorChans=malloc(NCHIP*NCHAN*sizeof(int));
-	detectorDacs=malloc(NDAC*sizeof(dacs_t));
-	detectorAdcs=malloc(NADC*sizeof(dacs_t));
+	detectorDacs=malloc(NDAC*sizeof(int));
+	detectorAdcs=malloc(NADC*sizeof(int));
 #ifdef VERBOSE
 	printf("modules from 0x%x to 0x%x\n",detectorModules, detectorModules+n);
 	printf("chips from 0x%x to 0x%x\n",detectorChips, detectorChips+n*NCHIP);
@@ -423,7 +423,6 @@ void allocateDetectorStructureMemory(){
 	(detectorModules)->nadc=NADC;
 	(detectorModules)->nchip=NCHIP;
 	(detectorModules)->nchan=NCHIP*NCHAN;
-	(detectorModules)->module=0;
 	(detectorModules)->gain=0;
 	(detectorModules)->offset=0;
 	(detectorModules)->reg=0;
@@ -448,7 +447,7 @@ void setupDetector() {
 		int retval[2]={-1,-1};
 		const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
 		for(i = 0; i < NDAC; ++i) {
-			setDAC((enum DACINDEX)i,defaultvals[i],0,0,retval);
+			setDAC((enum DACINDEX)i,defaultvals[i],0,retval);
 			if (retval[0] != defaultvals[i])
 				cprintf(RED, "Warning: Setting dac %d failed, wrote %d, read %d\n",i ,defaultvals[i], retval[0]);
 		}
@@ -467,7 +466,7 @@ void setupDetector() {
 	setReadOutFlags(DEFAULT_READOUT_STOREINRAM_MODE);
 	setReadOutFlags(DEFAULT_READOUT_OVERFLOW32_MODE);
 	setSpeed(CLOCK_DIVIDER, DEFAULT_CLK_SPEED);//clk_devider,half speed
-	setIODelay(DEFAULT_IO_DELAY, DEFAULT_MOD_INDEX);
+	setIODelay(DEFAULT_IO_DELAY);
 	setTiming(DEFAULT_TIMING_MODE);
 	//SetPhotonEnergyCalibrationParameters(-5.8381e-5,1.838515,5.09948e-7,-4.32390e-11,1.32527e-15);
 	setRateCorrection(DEFAULT_RATE_CORRECTION);
@@ -503,16 +502,8 @@ uint32_t readRegister(uint32_t offset) {
 }
 
 
-/* set parameters - nmod, dr, roi */
+/* set parameters -  dr, roi */
 
-int setNMod(int nm, enum dimension dim){
-	return NMOD;
-}
-
-
-int getNModBoard(enum dimension arg){
-	return NMAXMOD;
-}
 
 int setDynamicRange(int dr){
 #ifdef VIRTUAL
@@ -824,17 +815,17 @@ int setModule(sls_detector_module myMod, int delay){
 			return FAIL;
 
 	// settings
-	setSettings( (enum detectorSettings)myMod.reg,-1);
+	setSettings( (enum detectorSettings)myMod.reg);
 
 	// iodelay
-	if(setIODelay(delay, -1)!= delay){
+	if(setIODelay(delay)!= delay){
 		cprintf(RED,"could not set iodelay %d\n",delay);
 		return FAIL;
 	}
 
 	// dacs
 	for(i=0;i<myMod.ndac;i++)
-		setDAC((enum DACINDEX)i,myMod.dacs[i],myMod.module,0,retval);
+		setDAC((enum DACINDEX)i,myMod.dacs[i],0,retval);
 
 	// trimbits
 #ifndef VIRTUAL
@@ -876,7 +867,7 @@ int getModule(sls_detector_module *myMod){
 
 	//dacs
 	for(i=0;i<NDAC;i++) {
-		setDAC((enum DACINDEX)i,-1,-1,0,retval);
+		setDAC((enum DACINDEX)i,-1,0,retval);
 		//cprintf(BLUE,"dac%d:%d\n",i, *((detectorModules->dacs)+i));
 	}
 
@@ -911,7 +902,7 @@ int getModule(sls_detector_module *myMod){
 
 
 
-enum detectorSettings setSettings(enum detectorSettings sett, int imod){
+enum detectorSettings setSettings(enum detectorSettings sett){
 	if(sett == UNINITIALIZED){
 		return thisSettings;
 	}if(sett != GET_SETTINGS)
@@ -931,17 +922,17 @@ enum detectorSettings getSettings(){
 
 /* parameters - threshold */
 
-int getThresholdEnergy(int imod){
+int getThresholdEnergy(){
 	printf(" Getting Threshold energy\n");
 	return eiger_photonenergy;
 }
 
 
-int setThresholdEnergy(int ev, int imod){
+int setThresholdEnergy(int ev){
 	printf(" Setting threshold energy:%d\n",ev);
 	if(ev >= 0)
 		eiger_photonenergy = ev;
-	return  getThresholdEnergy(imod);
+	return  getThresholdEnergy();
 }
 
 
@@ -950,19 +941,19 @@ int setThresholdEnergy(int ev, int imod){
 
 /* parameters - dac, adc, hv */
 
-void setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]){
-	printf("Going to set dac %d to %d of imod %d with mv mode %d \n", (int)ind, val, imod, mV);
+void setDAC(enum DACINDEX ind, int val, int mV, int retval[]){
+	printf("Going to set dac %d to %d with mv mode %d \n", (int)ind, val, mV);
 	if(ind == VTHRESHOLD){
 		int ret[5];
-		setDAC(VCMP_LL,val,imod,mV,retval);
+		setDAC(VCMP_LL,val,mV,retval);
 			ret[0] = retval[mV];
-		setDAC(VCMP_LR,val,imod,mV,retval);
+		setDAC(VCMP_LR,val,mV,retval);
 			ret[1] = retval[mV];
-		setDAC(VCMP_RL,val,imod,mV,retval);
+		setDAC(VCMP_RL,val,mV,retval);
 			ret[2] = retval[mV];
-		setDAC(VCMP_RR,val,imod,mV,retval);
+		setDAC(VCMP_RR,val,mV,retval);
 			ret[3] = retval[mV];
-		setDAC(VCP,val,imod,mV,retval);
+		setDAC(VCP,val,mV,retval);
 			ret[4] = retval[mV];
 
 
@@ -1018,7 +1009,7 @@ void setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]){
 
 
 
-int getADC(enum ADCINDEX ind,  int imod){
+int getADC(enum ADCINDEX ind){
 #ifdef VIRTUAL
 	return 0;
 #else
@@ -1224,7 +1215,7 @@ int	setDetectorPosition(int pos[]) {
 
 /* eiger specific - iodelay, 10g, pulse, rate, temp, activate, delay nw parameter */
 
-int setIODelay(int val, int imod){
+int setIODelay(int val){
 	if(val!=-1){
 		printf(" Setting IO Delay: %d\n",val);
 #ifndef VIRTUAL
@@ -1745,12 +1736,6 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod){
 	printf("Copying module %x to module %x\n",srcMod,destMod);
 #endif
 
-	if (srcMod->module>=0) {
-#ifdef VERBOSE
-		printf("Copying module number %d to module number %d\n",srcMod->module,destMod->module);
-#endif
-		destMod->module=srcMod->module;
-	}
 	if (srcMod->serialnumber>=0){
 
 		destMod->serialnumber=srcMod->serialnumber;
@@ -1829,33 +1814,17 @@ int calculateDataBytes(){
 }
 
 
-int getTotalNumberOfChannels(){return ((int)getNumberOfChannelsPerModule() * (int)getTotalNumberOfModules());}
-int getTotalNumberOfChips(){return ((int)getNumberOfChipsPerModule() * (int)getTotalNumberOfModules());}
-int getTotalNumberOfModules(){return NMOD;}
-int getNumberOfChannelsPerModule(){return  ((int)getNumberOfChannelsPerChip() * (int)getTotalNumberOfChips());}
-int getNumberOfChipsPerModule(){return  NCHIP;}
-int getNumberOfDACsPerModule(){return  NDAC;}
-int getNumberOfADCsPerModule(){return  NADC;}
+
+
+int getTotalNumberOfChannels(){return  ((int)getNumberOfChannelsPerChip() * (int)getNumberOfChips());}
+int getNumberOfChips(){return  NCHIP;}
+int getNumberOfDACs(){return  NDAC;}
+int getNumberOfADCs(){return  NADC;}
 int getNumberOfChannelsPerChip(){return  NCHAN;}
-int getNumberOfGainsPerModule(){return  NGAIN;}
-int getNumberOfOffsetsPerModule(){return  NOFFSET;}
+int getNumberOfGains(){return  NGAIN;}
+int getNumberOfOffsets(){return  NOFFSET;}
 
 
-
-
-
-
-/* sync */
-
-enum masterFlags setMaster(enum masterFlags arg){
-	return NO_MASTER;
-}
-
-
-
-enum synchronizationMode setSynchronization(enum synchronizationMode arg){
-	return NO_SYNCHRONIZATION;
-}
 
 
 

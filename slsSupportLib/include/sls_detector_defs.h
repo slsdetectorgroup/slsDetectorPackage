@@ -213,11 +213,8 @@ enum idMode{
     detector digital test modes
 */
 enum digitalTestMode {
-  CHIP_TEST, /**< test chips */
-  MODULE_FIRMWARE_TEST,  /**< test module firmware */
   DETECTOR_FIRMWARE_TEST,  /**< test detector system firmware */
-  DETECTOR_MEMORY_TEST,  /**< test detector system memory */
-  DETECTOR_SOFTWARE_TEST,  /**< test detector system software */
+  DETECTOR_BUS_TEST,  /**< test detector system CPU-FPGA bus */
   DIGITAL_BIT_TEST			/**< gotthard digital bit test */
 };
 

@@ -14,8 +14,8 @@
 /* global variables */
 //jungfrau doesnt require chips and chans (save memory)
 sls_detector_module *detectorModules=NULL;
-dacs_t *detectorDacs=NULL;
-dacs_t *detectorAdcs=NULL;
+int *detectorDacs=NULL;
+int *detectorAdcs=NULL;
 
 enum detectorSettings thisSettings;
 enum masterFlags masterMode = NO_MASTER;
@@ -234,9 +234,6 @@ int testBus() {
 }
 
 
-int moduleTest( enum digitalTestMode arg, int imod){
-	return OK;
-}
 
 int detectorTest( enum digitalTestMode arg){
 #ifdef VIRTUAL
@@ -402,8 +399,8 @@ void allocateDetectorStructureMemory(){
 	if (detectorDacs!=NULL) free(detectorDacs);
 	if (detectorAdcs!=NULL) free(detectorAdcs);
 	detectorModules=malloc(sizeof(sls_detector_module));
-	detectorDacs=malloc(NDAC*sizeof(dacs_t));
-	detectorAdcs=malloc(NADC*sizeof(dacs_t));
+	detectorDacs=malloc(NDAC*sizeof(int));
+	detectorAdcs=malloc(NADC*sizeof(int));
 #ifdef VERBOSE
 	printf("modules from 0x%x to 0x%x\n",detectorModules, detectorModules+n);
 	printf("dacs from 0x%x to 0x%x\n",detectorDacs, detectorDacs+n*NDAC);
@@ -415,7 +412,6 @@ void allocateDetectorStructureMemory(){
 	(detectorModules)->nadc=NADC;
 	(detectorModules)->nchip=NCHIP;
 	(detectorModules)->nchan=NCHIP*NCHAN;
-	(detectorModules)->module=0;
 	(detectorModules)->gain=0;
 	(detectorModules)->offset=0;
 	(detectorModules)->reg=0;
@@ -460,7 +456,7 @@ void setupDetector() {
 	bus_w(ADC_PORT_INVERT_REG, ADC_PORT_INVERT_VAL);
 
 	//Initialization of acquistion parameters
-	setSettings(DEFAULT_SETTINGS,-1);
+	setSettings(DEFAULT_SETTINGS);
 
 	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
 	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
@@ -493,7 +489,7 @@ int setDefaultDacs() {
 		for(i = 0; i < NDAC; ++i) {
 			// if not already default, set it to default
 			if (dacValues[i] != defaultvals[i]) {
-				setDAC((enum DACINDEX)i,defaultvals[i],0,0,retval);
+				setDAC((enum DACINDEX)i,defaultvals[i],0,retval);
 				if (retval[0] != defaultvals[i]) {
 					cprintf(RED, "Warning: Setting dac %d failed, wrote %d, read %d\n",i ,defaultvals[i], retval[0]);
 					ret = FAIL;
@@ -602,16 +598,8 @@ void configureASICTimer() {
 
 
 
-/* set parameters - nmod, dr, roi */
+/* set parameters -  dr, roi */
 
-int setNMod(int nm, enum dimension dim){
-	return NMOD;
-}
-
-
-int getNModBoard(enum dimension arg){
-	return NMAXMOD;
-}
 
 
 int setDynamicRange(int dr){
@@ -861,7 +849,7 @@ int setModule(sls_detector_module myMod){
 	printf("Setting module with settings %d\n",myMod.reg);
 	//#endif
 
-	setSettings( (enum detectorSettings)myMod.reg,-1);
+	setSettings( (enum detectorSettings)myMod.reg);
 
 	//copy module locally
 	if (detectorModules)
@@ -869,7 +857,7 @@ int setModule(sls_detector_module myMod){
 
 	//set dac values
 	for(i=0;i<myMod.ndac;i++)
-		setDAC((enum DACINDEX)i,myMod.dacs[i],myMod.module,0,retval);
+		setDAC((enum DACINDEX)i,myMod.dacs[i],0,retval);
 
 	return thisSettings;
 }
@@ -881,7 +869,7 @@ int getModule(sls_detector_module *myMod){
 
 	//dacs
 	for(i=0;i<NDAC;i++)
-		setDAC((enum DACINDEX)i,-1,-1,0,retval);
+		setDAC((enum DACINDEX)i,-1,0,retval);
 
 	//copy from local copy
 	if (detectorModules)
@@ -893,7 +881,7 @@ int getModule(sls_detector_module *myMod){
 
 
 
-enum detectorSettings setSettings(enum detectorSettings sett, int imod){
+enum detectorSettings setSettings(enum detectorSettings sett){
 	if(sett == UNINITIALIZED)
 		return thisSettings;
 
@@ -1047,7 +1035,7 @@ int dacToVoltage(unsigned int digital){
 
 
 
-void setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]){
+void setDAC(enum DACINDEX ind, int val, int mV, int retval[]){
 	int dacval = val;
 
 	//if set and mv, convert to dac
@@ -1099,7 +1087,7 @@ void setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]){
 }
 
 
-int getADC(enum ADCINDEX ind,  int imod){
+int getADC(enum ADCINDEX ind){
 #ifdef VIRTUAL
     return 0;
 #endif
@@ -1668,12 +1656,6 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod){
 	printf("Copying module %x to module %x\n",srcMod,destMod);
 #endif
 
-	if (srcMod->module>=0) {
-#ifdef VERBOSE
-		printf("Copying module number %d to module number %d\n",srcMod->module,destMod->module);
-#endif
-		destMod->module=srcMod->module;
-	}
 	if (srcMod->serialnumber>=0){
 
 		destMod->serialnumber=srcMod->serialnumber;
@@ -1732,26 +1714,12 @@ int calculateDataBytes(){
 	return DATA_BYTES;
 }
 
-int getTotalNumberOfChannels(){return ((int)getNumberOfChannelsPerModule() * (int)getTotalNumberOfModules());}
-int getTotalNumberOfChips(){return ((int)getNumberOfChipsPerModule() * (int)getTotalNumberOfModules());}
-int getTotalNumberOfModules(){return NMOD;}
-int getNumberOfChannelsPerModule(){return  ((int)getNumberOfChannelsPerChip() * (int)getTotalNumberOfChips());}
-int getNumberOfChipsPerModule(){return  NCHIP;}
-int getNumberOfDACsPerModule(){return  NDAC;}
-int getNumberOfADCsPerModule(){return  NADC;}
+int getTotalNumberOfChannels(){return  ((int)getNumberOfChannelsPerChip() * (int)getNumberOfChips());}
+int getNumberOfChips(){return  NCHIP;}
+int getNumberOfDACs(){return  NDAC;}
+int getNumberOfADCs(){return  NADC;}
 int getNumberOfChannelsPerChip(){return  NCHAN;}
 
-
-
-/* sync */
-
-enum masterFlags setMaster(enum masterFlags arg){
-	return NO_MASTER;
-}
-
-enum synchronizationMode setSynchronization(enum synchronizationMode arg){
-	return NO_SYNCHRONIZATION;
-}
 
 
 

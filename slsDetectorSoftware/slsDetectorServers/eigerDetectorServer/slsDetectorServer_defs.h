@@ -45,8 +45,6 @@ enum NETWORKINDEX				 			{TXN_LEFT, TXN_RIGHT, TXN_FRAME,FLOWCTRL_10G};
 
 
 /* Hardware Definitions */
-#define NMAXMOD 					 		(1)
-#define NMOD 						 		(1)
 #define NCHAN 						 		(256 * 256)
 #define NCHIP 						 		(4)
 #define NADC						 		(0)
@@ -65,7 +63,6 @@ enum NETWORKINDEX				 			{TXN_LEFT, TXN_RIGHT, TXN_FRAME,FLOWCTRL_10G};
 #define SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE 	(16)
 
 /** Default Parameters */
-#define DEFAULT_MOD_INDEX					(0)
 #define DEFAULT_NUM_FRAMES					(1)
 #define DEFAULT_NUM_CYCLES					(1)
 #define DEFAULT_EXPTIME						(1E9)			//ns

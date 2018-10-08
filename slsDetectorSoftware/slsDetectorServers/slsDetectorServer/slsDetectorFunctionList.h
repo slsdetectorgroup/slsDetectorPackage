@@ -29,24 +29,22 @@ u_int32_t 	testFpga(void);
 int 		testBus(void);
 #endif
 
-#if defined(MYTHEND) || defined(JUNGFRAUD) || defined(MYTHEN3D)
-int 		moduleTest( enum digitalTestMode arg, int imod);
+#ifdef MYTHEN3D
+int 		moduleTest( enum digitalTestMode arg);
 #endif
-#if defined(MYTHEND) || defined(JUNGFRAUD)
+#ifdef JUNGFRAUD
 int 		detectorTest( enum digitalTestMode arg);
 #endif
 
 // Ids
 int64_t 	getDetectorId(enum idMode arg);
 u_int64_t  	getFirmwareVersion();
-#ifdef MYTHEND
-int64_t 	getModuleId(enum idMode arg, int imod);
-#elif JUNGFRAUD
+#ifdef JUNGFRAUD
 u_int64_t   getFirmwareAPIVersion();
 u_int16_t 	getHardwareVersionNumber();
 u_int16_t 	getHardwareSerialNumber();
 #endif
-#ifndef MYTHEN3D
+#if !defined(MYTHEN3D) || !defined(EIGERD)
 u_int32_t	getDetectorNumber();
 #endif
 u_int64_t  	getDetectorMAC();
@@ -96,9 +94,7 @@ int 		getPhase();
 void        configureASICTimer();
 #endif
 
-// parameters - nmod, dr, roi
-int 		setNMod(int nm, enum dimension dim);	// mythen specific, but for detector compatibility as a get
-int 		getNModBoard(enum dimension arg);		// mythen specific, but for detector compatibility as a get
+// parameters - dr, roi
 int 		setDynamicRange(int dr);
 #ifdef GOTTHARD
 int 		setROI(int n, ROI arg[], int *retvalsize, int *ret);
@@ -106,11 +102,8 @@ int 		setROI(int n, ROI arg[], int *retvalsize, int *ret);
 
 // parameters - readout
 int 		setSpeed(enum speedVariable arg, int val);
-#if defined(EIGERD) || defined(MYTHEND)
+#ifdef EIGERD
 enum 		readOutFlags setReadOutFlags(enum readOutFlags val);
-#endif
-#ifdef MYTHEND
-int 		executeTrimming(enum trimMode mode, int par1, int par2, int imod);
 #endif
 
 // parameters - timer
@@ -121,27 +114,22 @@ int64_t 	setTimer(enum timerIndex ind, int64_t val);
 int64_t 	getTimeLeft(enum timerIndex ind);
 
 
-// parameters - channel, chip, module, settings
-#ifdef MYTHEND
-int 		setChannel(sls_detector_channel myChan);
-int 		getChannel(sls_detector_channel *myChan);
-int 		setChip(sls_detector_chip myChip);
-int 		getChip(sls_detector_chip *myChip);
-#endif
+// parameters - module, settings
+
 #ifdef EIGERD
 int 		setModule(sls_detector_module myMod, int delay);
 #else
 int 		setModule(sls_detector_module myMod);
 #endif
 int 		getModule(sls_detector_module *myMod);
-enum 		detectorSettings setSettings(enum detectorSettings sett, int imod);
+enum 		detectorSettings setSettings(enum detectorSettings sett);
 enum 		detectorSettings getSettings();
 
 
 // parameters - threshold
-#if defined(MYTHEND) || defined(EIGERD)
-int 		getThresholdEnergy(int imod);
-int 		setThresholdEnergy(int ev, int imod);
+#ifdef EIGERD
+int 		getThresholdEnergy();
+int 		setThresholdEnergy(int ev);
 #endif
 
 // parameters - dac, adc, hv
@@ -161,34 +149,30 @@ int         dacToPower(int value, int chip);
 extern void	setAdc(int addr, int val);		// AD9257.h
 #endif
 
-void 		setDAC(enum DACINDEX ind, int val, int imod, int mV, int retval[]);
+void 		setDAC(enum DACINDEX ind, int val, int mV, int retval[]);
 #ifdef MYTHEN3D
 int         getVLimit();
 void        setDacRegister(int dacnum,int dacvalue);
 int         getDacRegister(int dacnum);
 #endif
 #ifndef MYTHEN3D
-int 		getADC(enum ADCINDEX ind,  int imod);
+int 		getADC(enum ADCINDEX ind);
 #endif
 
-#if !defined(MYTHEN3D) && !defined(MYTHEND)
+#ifndef MYTHEN3D
 int 		setHighVoltage(int val);
 #endif
 
 
 
 // parameters - timing, extsig
-#ifdef MYTHEND
-enum 		externalSignalFlag getExtSignal(int signalindex);
-enum 		externalSignalFlag setExtSignal(int signalindex,  enum externalSignalFlag flag);
-#endif
 enum 		externalCommunicationMode setTiming( enum externalCommunicationMode arg);
 
 // configure mac
 #ifdef JUNGFRAUD
 long int 	calcChecksum(int sourceip, int destip);
 #endif
-#if !defined(MYTHEN3D) && !defined(MYTHEND)
+#ifndef MYTHEN3D
 int 		configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2, int ival);
 #endif
 #if defined(JUNGFRAUD) || defined(EIGERD)
@@ -220,7 +204,7 @@ extern int 	writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp);	// prog
 
 // eiger specific - iodelay, 10g, pulse, rate, temp, activate, delay nw parameter
 #elif EIGERD
-int 		setIODelay(int val, int imod);
+int 		setIODelay(int val);
 int 		enableTenGigabitEthernet(int val);
 int 		setCounterBit(int val);
 int 		pulsePixel(int n, int x, int y);
@@ -270,21 +254,14 @@ u_int32_t 	runBusy(void);
 int 		copyModule(sls_detector_module *destMod, sls_detector_module *srcMod);
 int 		calculateDataBytes();
 int 		getTotalNumberOfChannels();
-int 		getTotalNumberOfChips();
-int 		getTotalNumberOfModules();
-int 		getNumberOfChannelsPerModule();
-int 		getNumberOfChipsPerModule();
-int 		getNumberOfDACsPerModule();
-int 		getNumberOfADCsPerModule();
+int 		getNumberOfChips();
+int 		getNumberOfDACs();
+int 		getNumberOfADCs();
 #ifdef EIGERD
-int 		getNumberOfGainsPerModule();
-int 		getNumberOfOffsetsPerModule();
+int 		getNumberOfGains();
+int 		getNumberOfOffsets();
 #endif
 int 		getNumberOfChannelsPerChip();
-
-// sync
-enum masterFlags 			setMaster(enum masterFlags arg);
-enum synchronizationMode 	setSynchronization(enum synchronizationMode arg);
 
 
 

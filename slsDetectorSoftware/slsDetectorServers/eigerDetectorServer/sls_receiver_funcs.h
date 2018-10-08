@@ -1,1 +1,1 @@
-../../slsReceiverSoftware/include/sls_receiver_funcs.h
+../../../slsSupportLib/include/sls_receiver_funcs.h

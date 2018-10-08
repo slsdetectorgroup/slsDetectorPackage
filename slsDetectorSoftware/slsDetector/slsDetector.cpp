@@ -1974,38 +1974,8 @@ int slsDetector::setThresholdEnergy(int e_eV, detectorSettings isettings, int tb
 		return  thisDetector->currentThresholdEV;
 	}
 
-	int fnum=  F_SET_THRESHOLD_ENERGY;
-	int retval;
-	int ret=FAIL;
-	char mess[MAX_STR_LENGTH]="";
-#ifdef VERBOSE
-	std::cout<< "Setting threshold energy "<< std::endl;
-#endif
-	if (thisDetector->onlineFlag==ONLINE_FLAG) {
-		if (connectControl() == OK){
-			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-			controlSocket->SendDataOnly(&e_eV,sizeof(e_eV));
-			controlSocket->SendDataOnly(&isettings,sizeof(isettings));
-			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-			if (ret==FAIL) {
-				std::cout<< "Detector returned error: "<< std::endl;
-				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-				std::cout<<  mess << std::endl;
-			} else {
-#ifdef VERBOSE
-				std::cout<< "Detector returned OK "<< std::endl;
-#endif
-				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-				thisDetector->currentThresholdEV=retval;
-			}
-			disconnectControl();
-			if (ret==FORCE_UPDATE)
-				updateDetector();
-		}
-	} else {
-		thisDetector->currentThresholdEV=e_eV;
-	}
-	return   thisDetector->currentThresholdEV;
+	return -1;
+
 }
 
 

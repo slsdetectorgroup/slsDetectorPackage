@@ -916,73 +916,58 @@ slsDetectorDefs::detectorType slsDetector::getDetectorType(const char *name, int
 
 int slsDetector::setDetectorType(detectorType const type) {
 
-	int arg, retval=FAIL;
+	int ret=FAIL;
 	int fnum=F_GET_DETECTOR_TYPE,fnum2=F_GET_RECEIVER_TYPE;
-	arg=int(type);
-	detectorType retType=type;
+	detectorType retval = type;
 	char mess[MAX_STR_LENGTH];
 	memset(mess, 0, MAX_STR_LENGTH);
 
 
+	if (type != GET_DETECTOR_TYPE) {
 #ifdef VERBOSE
-	std::cout<< std::endl;
-	std::cout<< "Setting detector type to " << arg << std::endl;
+		std::cout<< std::endl;
+		std::cout<< "Setting detector type to " << arg << std::endl;
 #endif
-	if (thisDetector->onlineFlag==ONLINE_FLAG) {
-		if (connectControl() == OK){
-			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-			controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-			if (retval!=FAIL)
-				controlSocket->ReceiveDataOnly(&retType,sizeof(retType));
-			else {
-				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-				std::cout<< "Detector returned error: " << mess << std::endl;
+		if (thisDetector->onlineFlag==ONLINE_FLAG) {
+			if (connectControl() == OK){
+				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+				thisDetector->myDetectorType = (detectorType)retval;
+#ifdef VERBOSE
+				std::cout<< "Detector type retrieved " << retval << std::endl;
+#endif
+				disconnectControl();
+				if (ret==FORCE_UPDATE)
+					updateDetector();
 			}
-			disconnectControl();
-			if (retval==FORCE_UPDATE)
-				updateDetector();
+		} else {
+			std::cout<< "Get detector type failed " << std::endl;
+			thisDetector->myDetectorType = GENERIC;
 		}
-	} else {
-		if (type==GET_DETECTOR_TYPE)
-			retType=thisDetector->myDetectorType;//FIXME: throw exception?
-		else {
-			retType=type;
-			thisDetector->myDetectorType=type;
-		}
-		retval=OK;
 	}
-#ifdef VERBOSE
-	std::cout<< "Detector type set to " << retType << std::endl;
-#endif
-	if (retval==FAIL) {
-		std::cout<< "Set detector type failed " << std::endl;
-		retType=GENERIC;
-	}
-	else
-		thisDetector->myDetectorType=retType;
-
 
 	//receiver
-	if((retType != GENERIC) && (thisDetector->receiverOnlineFlag==ONLINE_FLAG)
-			&& (arg != GENERIC)) {
-		retval = FAIL;
+	if((thisDetector->myDetectorType != GENERIC) &&
+			(thisDetector->receiverOnlineFlag==ONLINE_FLAG)) {
+		ret = FAIL;
 		if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
 #ifdef VERBOSE
 			std::cout << "Sending detector type to Receiver " <<
 					(int)thisDetector->myDetectorType << std::endl;
 #endif
 			if (connectData() == OK){
-				retval=thisReceiver->sendInt(fnum2,arg,(int)thisDetector->myDetectorType);
+				ret=thisReceiver->sendInt(fnum2,retval,(int)thisDetector->myDetectorType);
 				disconnectData();
 			}
-			if(retval==FAIL){
+			if(ret==FAIL){
 				std::cout << "ERROR: Could not send detector type to receiver" << std::endl;
 				setErrorMask((getErrorMask())|(RECEIVER_DET_HOSTTYPE_NOT_SET));
 			}
 		}
 	}
 
-	return retType;
+	return retval;
 }
 
 
@@ -1543,39 +1528,31 @@ std::string slsDetector::getLastClientIP() {
 		if (connectControl() == OK){
 			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-			if (ret==FAIL) {
-				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-				std::cout<< "Detector returned error: " << mess << std::endl;
-			} else {
-				controlSocket->ReceiveDataOnly(clientName,sizeof(clientName));
-			}
+			controlSocket->ReceiveDataOnly(clientName,sizeof(clientName));
 			disconnectControl();
 			if (ret==FORCE_UPDATE)
 				updateDetector();
 		}
 	}
-
 	return std::string(clientName);
-
 }
 
 
 int slsDetector::exitServer() {
-
-	int retval;
+	int ret = FAIL;
 	int fnum=F_EXIT_SERVER;
 
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
 		if (controlSocket) {
 			controlSocket->Connect();
 			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-			controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
 			disconnectControl();
 		}
 	}
-	if (retval!=OK) {
+	if (ret==OK) {
 		std::cout<< std::endl;
-		std::cout<< "Shutting down the server" << std::endl;
+		std::cout<< "Shutting down the Detector server" << std::endl;
 		std::cout<< std::endl;
 	}
 	return retval;
@@ -1583,13 +1560,11 @@ int slsDetector::exitServer() {
 }
 
 
-int slsDetector::execCommand(std::string cmd, std::string answer) {
+int slsDetector::execCommand(std::string cmd) {
 
-	char arg[MAX_STR_LENGTH], retval[MAX_STR_LENGTH];
+	char arg[MAX_STR_LENGTH]="", retval[MAX_STR_LENGTH]="";
 	int fnum=F_EXEC_COMMAND;
-
 	int ret=FAIL;
-
 	strcpy(arg,cmd.c_str());
 
 #ifdef VERBOSE
@@ -1598,19 +1573,13 @@ int slsDetector::execCommand(std::string cmd, std::string answer) {
 #endif
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
 		if (connectControl() == OK){
-			if (controlSocket->SendDataOnly(&fnum,sizeof(fnum))>=0) {
-				if (controlSocket->SendDataOnly(arg,MAX_STR_LENGTH)>=0) {
-					if (controlSocket->ReceiveDataOnly(retval,MAX_STR_LENGTH)>=0) {
-						ret=OK;
-						answer=retval;
-					}
-				}
-			}
+			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+			controlSocket->SendDataOnly(arg,MAX_STR_LENGTH);
+			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			controlSocket->ReceiveDataOnly(retval,MAX_STR_LENGTH);
+			std::cout << "Detector returned:" << retval << std::endl;
 			disconnectControl();
 		}
-#ifdef VERBOSE
-		std::cout<< "Detector answer is " << answer << std::endl;
-#endif
 	}
 	return ret;
 }
@@ -1706,11 +1675,7 @@ int slsDetector::updateDetector() {
 		if (connectControl() == OK){
 			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-			if (ret==FAIL) {
-				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-				std::cout<< "Detector returned error: " << mess << std::endl;
-			} else
-				updateDetectorNoWait();
+			updateDetectorNoWait();
 			disconnectControl();
 		}
 	}
@@ -1905,8 +1870,7 @@ slsDetectorDefs::detectorSettings slsDetector::sendSettingsOnly(detectorSettings
 	char mess[MAX_STR_LENGTH];
 	memset(mess, 0, MAX_STR_LENGTH);
 	int retval = -1;
-	int arg;
-	arg = isettings;
+	int arg = isettings;
 #ifdef VERBOSE
 	std::cout<< "Setting settings to " << arg << std::endl;
 #endif
@@ -1939,7 +1903,7 @@ slsDetectorDefs::detectorSettings slsDetector::sendSettingsOnly(detectorSettings
 int slsDetector::getThresholdEnergy() {
 
 	int fnum=  F_GET_THRESHOLD_ENERGY;
-	int retval;
+	int retval = -1;
 	int ret=FAIL;
 	char mess[MAX_STR_LENGTH]="";
 #ifdef VERBOSE

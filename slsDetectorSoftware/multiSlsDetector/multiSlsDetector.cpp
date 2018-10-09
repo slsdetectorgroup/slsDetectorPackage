@@ -962,6 +962,18 @@ int multiSlsDetector::exitServer(int detPos) {
 }
 
 
+int multiSlsDetector::execCommand(std::string cmd, int detPos) {
+	// single
+	if (detPos >= 0) {
+		return detectors[detPos]->execCommand(cmd);
+	}
+
+	// multi
+	auto r = parallelCall(&slsDetector::execCommand, cmd);
+	return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
+}
+
+
 int multiSlsDetector::readConfigurationFile(std::string const fname) {
 	freeSharedMemory();
 	setupMultiDetector();

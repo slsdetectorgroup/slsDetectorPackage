@@ -106,6 +106,13 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det)  {
 	++i;
 
 	/*! \page test
+   - <b>execcommand</b> Executes a command on the detector server. Don't use it!!!!
+	 */
+	descrToFuncMap[i].m_pFuncName="execcommand";//OK
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdExitServer;
+	++i;
+
+	/*! \page test
    - <b>flippeddatay [i]</b> enables/disables data being flipped across y axis. 1 enables, 0 disables. Not implemented.
 	 */
 	descrToFuncMap[i].m_pFuncName="flippeddatay"; //
@@ -1730,6 +1737,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det)  {
 
 
 
+
 	/* receiver functions */
 
 	/*! \page receiver Receiver commands
@@ -2412,17 +2420,24 @@ string slsDetectorCommand::cmdExitServer(int narg, char *args[], int action, int
 	if (action==PUT_ACTION) {
 		if (cmd=="exitserver"){
 			myDet->setOnline(ONLINE_FLAG, detPos);
-			if (myDet->exitServer(detPos)!=OK)
+			if (myDet->exitServer(detPos)==OK)
 				return string("Server shut down.");
 			else
 				return string("Error closing server\n");
 		}
 		else if (cmd=="exitreceiver"){
 			myDet->setReceiverOnline(ONLINE_FLAG, detPos);
-			if(myDet->exitReceiver(detPos)!=OK)
+			if(myDet->exitReceiver(detPos)==OK)
 				return string("Receiver shut down\n");
 			else
 				return string("Error closing receiver\n");
+		}
+		else if (cmd=="execcommand"){
+			myDet->setOnline(ONLINE_FLAG, detPos);
+			if(myDet->execCommand(std::string(argv[1]), detPos)==OK)
+				return string("Command executed successfully\n");
+			else
+				return string("Command failed\n");
 		}
 		else return("cannot decode command\n");
 	} else
@@ -2434,6 +2449,7 @@ string slsDetectorCommand::helpExitServer(int action){
 	ostringstream os;
 	os << string("exitserver \t shuts down all the detector servers. Don't use it!!!!\n");
 	os << string("exitreceiver \t shuts down all the receiver servers.\n");
+	os << string("execcommand \t executes command in detector server. Don't use it if you do not know what you are doing.\n");
 	return os.str();
 }
 

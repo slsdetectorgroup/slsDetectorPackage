@@ -1681,6 +1681,9 @@ int get_threshold_energy(int file_des) {
 	sprintf(mess,"get threshold energy failed\n");
 
 #ifndef EIGERD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	ret = FAIL;
 	sprintf(mess,"Function (Get Threshold Energy) is not implemented for this detector\n");
 	cprintf(RED, "Warning: %s", mess);
@@ -2512,9 +2515,9 @@ int set_speed(int file_des) {
 
 
 int exit_server(int file_des) {
-	int ret=FAIL;
+	int ret=OK;
 	sprintf(mess,"Closing Server\n");
-	cprintf(BG_RED,"Error: %s",mess);
+	cprintf(BG_RED,"Command: %s",mess);
 	// send ok / fail
 	sendData(file_des,&ret,sizeof(ret),INT32);
 	// send return argument

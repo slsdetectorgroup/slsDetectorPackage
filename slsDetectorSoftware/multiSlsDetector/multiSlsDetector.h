@@ -454,6 +454,14 @@ public:
 	int exitServer(int detPos = -1);
 
 	/**
+	 * Execute a command on the detector server
+	 * @param cmd command
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns OK or FAIL
+	 */
+	int execCommand(std::string cmd, int detPos);
+
+	/**
 	 * Load configuration from a configuration File
 	 * @param fname configuration file name
 	 * @return OK or FAIL

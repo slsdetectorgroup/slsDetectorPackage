@@ -162,13 +162,12 @@ int function_table() {
 int  M_nofunc(int file_des){
 
 	int ret=FAIL;
-
-	sprintf(mess,"Unrecognized Function. Please do not proceed.\n");
-	cprintf(BG_RED,"Error: %s",mess);
-
 	int n = 1;
 	while (n > 0)
 		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+
+	sprintf(mess,"Unrecognized Function. Please do not proceed.\n");
+	cprintf(BG_RED,"Error: %s",mess);
 
 	sendDataOnly(file_des,&ret,sizeof(ret));
 	sendDataOnly(file_des,mess,sizeof(mess));
@@ -232,32 +231,24 @@ int exec_command(int file_des) {
 
 int get_detector_type(int file_des) {
 	int n=0;
-	enum detectorType ret;
-	int retval=OK;
+	enum detectorType retval;
+	int ret = OK;
 
-	sprintf(mess,"Can't return detector type\n");
-
-
-	/* receive arguments */
 	/* execute action */
-	ret=myDetectorType;
+	retval=myDetectorType;
 
 #ifdef VERBOSE
 	printf("Returning detector type %d\n",ret);
 #endif
 
-	/* send answer */
-	/* send OK/failed */
 	if (differentClients==1)
-		retval=FORCE_UPDATE;
+		ret=FORCE_UPDATE;
 
+	/* send OK/failed */
+	n += sendDataOnly(file_des,&ret,sizeof(ret));
+	/* send return argument */
 	n += sendDataOnly(file_des,&retval,sizeof(retval));
-	if (retval!=FAIL) {
-		/* send return argument */
-		n += sendDataOnly(file_des,&ret,sizeof(ret));
-	} else {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
-	}
+
 	/*return ok/fail*/
 	return retval;
 
@@ -1646,10 +1637,10 @@ int set_speed(int file_des) {
 
 
 int exit_server(int file_des) {
-	int retval=FAIL;
-	sendDataOnly(file_des,&retval,sizeof(retval));
-	printf("closing server.");
-	sprintf(mess,"closing server");
+	int ret=OK;
+	sprintf(mess,"closing server\n");
+	cprintf(BG_RED,"Command: %s",mess);
+	sendDataOnly(file_des,&ret,sizeof(ret));
 	sendDataOnly(file_des,mess,sizeof(mess));
 	return GOODBYE;
 }

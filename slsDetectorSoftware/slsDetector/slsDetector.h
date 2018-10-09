@@ -576,10 +576,9 @@ public:
 	 * Executes a system command on the detector server
 	 * e.g. mount an nfs disk, reboot and returns answer etc.
 	 * @param cmd command to be executed
-	 * @param answer is the answer from the detector
 	 * @returns OK or FAIL
 	 */
-	int execCommand(std::string cmd, std::string answer);
+	int execCommand(std::string cmd);
 
 	/**
 	 * Updates some of the shared memory receiving the data from the detector

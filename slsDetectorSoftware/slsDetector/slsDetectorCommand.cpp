@@ -2434,9 +2434,10 @@ string slsDetectorCommand::cmdExitServer(int narg, char *args[], int action, int
 		}
 		else if (cmd=="execcommand"){
 			myDet->setOnline(ONLINE_FLAG, detPos);
-			if(myDet->execCommand(std::string(argv[1]), detPos)==OK)
+			if(myDet->execCommand(std::string(args[1]), detPos)==OK)
 				return string("Command executed successfully\n");
 			else
+
 				return string("Command failed\n");
 		}
 		else return("cannot decode command\n");

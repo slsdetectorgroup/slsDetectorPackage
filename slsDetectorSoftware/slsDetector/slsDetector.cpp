@@ -957,8 +957,10 @@ int slsDetector::setDetectorType(detectorType const type) {
 					(int)thisDetector->myDetectorType << std::endl;
 #endif
 			if (connectData() == OK){
-				ret=thisReceiver->sendInt(fnum2,retval,(int)thisDetector->myDetectorType);
+				int arg = 0;
+				ret=thisReceiver->sendInt(fnum2,arg,(int)thisDetector->myDetectorType);
 				disconnectData();
+				retval = (detectorType)arg;
 			}
 			if(ret==FAIL){
 				std::cout << "ERROR: Could not send detector type to receiver" << std::endl;
@@ -1521,7 +1523,6 @@ std::string slsDetector::getLastClientIP() {
 
 	int fnum=F_GET_LAST_CLIENT_IP;
 	char clientName[INET_ADDRSTRLEN];
-	char mess[MAX_STR_LENGTH]="";
 	int ret=OK;
 
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
@@ -1555,7 +1556,7 @@ int slsDetector::exitServer() {
 		std::cout<< "Shutting down the Detector server" << std::endl;
 		std::cout<< std::endl;
 	}
-	return retval;
+	return ret;
 
 }
 
@@ -1669,8 +1670,6 @@ int slsDetector::updateDetectorNoWait() {
 int slsDetector::updateDetector() {
 	int fnum=F_UPDATE_CLIENT;
 	int ret=OK;
-	char mess[MAX_STR_LENGTH]="";
-
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
 		if (connectControl() == OK){
 			controlSocket->SendDataOnly(&fnum,sizeof(fnum));

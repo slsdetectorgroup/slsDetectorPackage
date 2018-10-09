@@ -1,4 +1,4 @@
-MAINDIR=slsDetectorsPackage
+MAINDIR=slsDetectorPackage
 SPECDIR=slsReceiverSoftware
 TMPFILE=include/gitInfoReceiverTmp.h
 INCLFILE=include/gitInfoReceiver.h

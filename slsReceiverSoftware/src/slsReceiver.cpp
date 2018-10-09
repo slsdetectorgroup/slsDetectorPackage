@@ -11,11 +11,12 @@
 #include <map>
 #include <getopt.h>
 
+
 #include "slsReceiver.h"
+#include "slsReceiverTCPIPInterface.h"
 #include "gitInfoReceiver.h"
-
-
-
+#include "logger.h"
+#include "utilities.h"
 
 slsReceiver::slsReceiver(int argc, char *argv[]):
 		tcpipInterface (0) {

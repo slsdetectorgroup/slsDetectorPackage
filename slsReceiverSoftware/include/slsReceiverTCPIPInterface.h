@@ -7,8 +7,9 @@
 
 #include "sls_receiver_defs.h"
 #include "receiver_defs.h"
-#include "MySocketTCP.h"
-#include "UDPInterface.h"
+
+class MySocketTCP;
+class slsReceiverImplementation;
 
 
 
@@ -175,8 +176,8 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	/** set dynamic range  */
 	int set_dynamic_range();
 
-	/** Sets the receiver to send every nth frame to gui, or only upon gui request */
-	int set_read_frequency();
+	/** Sets the receiver streaming frequency */
+	int set_streaming_frequency();
 
 	/** Gets receiver status */
 	int	get_status();
@@ -186,10 +187,6 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 
 	/** Stop Receiver - stops listening to udp packets from detector*/
 	int stop_receiver();
-
-	/** set status to transmitting and
-	 * when fifo is empty later, sets status to run_finished */
-	int start_readout();
 
 	/** Set File path */
 	int set_file_dir();
@@ -230,8 +227,8 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	/* Set the data stream enable */
 	int set_data_stream_enable();
 
-	/** Sets the timer between frames streamed by receiver when frequency is set to 0 */
-	int set_read_receiver_timer();
+	/** Sets the steadming timer when frequency is set to 0 */
+	int set_streaming_timer();
 
 	/** enable flipped data */
 	int set_flipped_data();
@@ -289,7 +286,7 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	detectorType myDetectorType;
 
 	/** slsReceiverBase object */
-	UDPInterface *receiverBase;
+	slsReceiverImplementation *receiverBase;
 
 	/** Function List */
 	int (slsReceiverTCPIPInterface::*flist[NUM_REC_FUNCTIONS])();

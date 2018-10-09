@@ -1,39 +1,39 @@
 #pragma once
 /********************************************//**
- * @file UDPBaseImplementation.h
+ * @file slsReceiverImplementation.h
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
  ***********************************************/
-
-//#include "sls_receiver_defs.h"
-#include "UDPInterface.h"
-//#include <stdio.h>
-
 /**
- * @short does all the base functions for a receiver, set/get parameters, start/stop etc.
+ * @short does all the functions for a receiver, set/get parameters, start/stop etc.
  */
+#include "sls_receiver_defs.h"
+#include "receiver_defs.h"
+#include "logger.h"
 
-class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInterface {
-	
+class GeneralData;
+class Listener;
+class DataProcessor;
+class DataStreamer;
+class Fifo;
+
+#include <exception>
+#include <vector>
+
+class slsReceiverImplementation: private virtual slsReceiverDefs {
  public:
 
-	/*************************************************************************
-	 * Constructor & Destructor **********************************************
-	 * They access local cache of configuration or detector parameters *******
-	 *************************************************************************/
+
+	//*** cosntructor & destructor ***
 	/**
 	 * Constructor
 	 */
-	UDPBaseImplementation();
+	slsReceiverImplementation();
 
 	/**
 	 * Destructor
 	 */
-	virtual ~UDPBaseImplementation();
+	virtual ~slsReceiverImplementation();
 
-	/*
-	 * Initialize class members
-	 */
-	void initializeMembers();
 
 	/*************************************************************************
 	 * Getters ***************************************************************
@@ -46,7 +46,6 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * @return pointer to array of multi detector size in every dimension
 	 */
 	int* getMultiDetectorSize() const;
-
 
 	/*
 	 * Get detector position id
@@ -116,12 +115,6 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	bool getFramePaddingEnable() const;
 
 	/**
-	 * Get Scan Tag
-	 * @return scan tag //FIXME: needed? (unsigned integer?)
-	 */
-	int getScanTag() const;
-
-	/**
 	 * Get File Write Enable
 	 * @return true if file write enabled, else false
 	 */
@@ -132,12 +125,6 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * @return true if file over write enabled, else false
 	 */
 	bool getOverwriteEnable() const;
-
-	/**
-	 * Get data compression, by saving only hits (so far implemented only for Moench and Gotthard)
-	 * @return true if data compression enabled, else false
-	 */
-	bool getDataCompressionEnable() const;
 
 
 	//***acquisition count parameters***
@@ -188,16 +175,16 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	std::vector<ROI> getROI() const;
 
 	/**
-	 * Get the Frequency of Frames Sent to GUI
-	 * @return 0 for random frame requests, n for nth frame frequency
+	 * Get the streaming frequency
+	 * @return 0 for timer, n for nth frame frequency
 	 */
-	uint32_t getFrameToGuiFrequency() const;
+	uint32_t getStreamingFrequency() const;
 
 	/**
 	 * Gets the timer between frames streamed when frequency is set to 0
 	 * @return timer between frames streamed
 	 */
-	uint32_t getFrameToGuiTimer() const;
+	uint32_t getStreamingTimer() const;
 
 	/**
 	 * Get the data stream enable
@@ -329,10 +316,10 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 
 	//**initial parameters***
 	/**
-	 * Configure command line parameters
-	 * @param config_map mapping of config parameters passed from command line arguments
+	 * Sets detector hostname
+	 * @param c detector hostname
 	 */
-	void configure(std::map<std::string, std::string> config_map);
+	void setDetectorHostname(const char *c);
 
 	/*
 	 * Set multi detector size
@@ -401,12 +388,6 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	void setFramePaddingEnable(const bool i);
 
 	/**
-	 * Set Scan Tag
-	 * @param i scan tag //FIXME: needed? (unsigned integer?)
-	 */
-	void setScanTag(const int i);
-
-	/**
 	 * Set File Write Enable
 	 * @param b true for file write enable, else false
 	 */
@@ -417,14 +398,6 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * @param b true for file overwrite enable, else false
 	 */
 	void setOverwriteEnable(const bool b);
-
-	/**
-	 * Set data compression, by saving only hits (so far implemented only for Moench and Gotthard)
-	 * @param b true for data compression enable, else false
-	 * @return OK or FAIL
-	 */
-	int setDataCompressionEnable(const bool b);
-
 
 	//***connection parameters***
 	/**
@@ -445,6 +418,13 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	void setEthernetInterface(const char* c);
 
+    /** (not saved in client shared memory)
+     * Set UDP Socket Buffer Size
+     * @param s UDP Socket Buffer Size
+     * @return OK or FAIL if dummy socket could be created
+     */
+    int setUDPSocketBufferSize(const uint32_t s);
+
 
 	//***acquisition parameters***
 	/**
@@ -455,24 +435,40 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	int setROI(const std::vector<ROI> i);
 
 	/**
-	 * Set the Frequency of Frames Sent to GUI
-	 * @param freq 0 for random frame requests, n for nth frame frequency
+	 * Set the streaming frequency
+	 * @param freq 0 for timer, n for nth frame frequency
 	 * @return OK or FAIL
 	 */
-	int setFrameToGuiFrequency(const uint32_t freq);
+	int setStreamingFrequency(const uint32_t freq);
 
 	/**
 	 * Sets the timer between frames streamed when frequency is set to 0
 	 * @param time_in_ms timer between frames streamed
 	 */
-	void setFrameToGuiTimer(const uint32_t time_in_ms);
-
+	void setStreamingTimer(const uint32_t time_in_ms);
 	/**
 	 * Set the data stream enable
 	 * @param enable data stream enable
 	 * @return OK or FAIL
 	 */
 	int setDataStreamEnable(const bool enable);
+
+	/**
+	 * Set streaming port
+	 * @param i streaming port
+	 */
+	void setStreamingPort(const uint32_t i);
+
+	/**
+	 * Set streaming source ip
+	 * @param c streaming source ip
+	 */
+	void setStreamingSourceIP(const char* c);
+
+    /**
+     * Set additional json header
+     */
+    void setAdditionalJsonHeader(const char* c);
 
 	/**
 	 * Set Acquisition Period
@@ -525,7 +521,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 
 	/**
 	 * Set Ten Giga Enable
-	 * @param b true if 10Giga enabled, else false (1G enabled)
+	 * @param b true if 10GbE enabled, else false (1G enabled)
 	 * @return OK or FAIL
 	 */
 	int setTenGigaEnable(const bool b);
@@ -537,80 +533,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	int setFifoDepth(const uint32_t i);
 
+
 	//***receiver parameters***
-	/**
-	 * Set Silent Mode
-	 * @param i silent mode. true sets, false unsets
-	 */
-	void setSilentMode(const bool i);
-
-	/*************************************************************************
-	 * Behavioral functions***************************************************
-	 * They may modify the status of the receiver ****************************
-	 *************************************************************************/
-
-
-	//***initial functions***
-	/**
-	 * Set receiver type (and corresponding detector variables in derived STANDARD class)
-	 * It is the first function called by the client when connecting to receiver
-	 * @param d detector type
-	 * @return OK or FAIL
-	 */
-	int setDetectorType(const detectorType d);
-
-	/**
-	 * Set detector position id
-	 * @param i position id
-	 */
-	void setDetectorPositionId(const int i);
-
-	/**
-	 * Sets detector hostname
-	 * It is second function called by the client when connecting to receiver.
-	 * you can call this function only once.
-	 * @param c detector hostname
-	 */
-	void initialize(const char *c);
-
-
-	//***acquisition functions***
-	/**
-	 * Reset acquisition parameters such as total frames caught for an entire acquisition (including all scans)
-	 */
-	void resetAcquisitionCount();
-
-	/**
-	 * Start Listening for Packets by activating all configuration settings to receiver
-	 * @param c error message if FAIL
-	 * @return OK or FAIL
-	 */
-	int startReceiver(char *c=NULL);
-
-	/**
-	 * Stop Listening for Packets
-	 * Calls startReadout(), which stops listening and sets status to Transmitting
-	 * When it has read every frame in buffer,it returns with the status Run_Finished
-	 */
-	void stopReceiver();
-
-	/**
-	 * Stop Listening to Packets
-	 * and sets status to Transmitting
-	 */
-	void startReadout();
-
-	/**
-	 * Shuts down and deletes UDP Sockets
-	 */
-	void shutDownUDPSockets();
-
-	/**
-	 * abort acquisition with minimum damage: close open files, cleanup.
-	 * does nothing if state already is 'idle'
-	 */
-	void abort();  //FIXME: needed, isn't stopReceiver enough?
-
 	/**
 	 * Activate / Deactivate Receiver
 	 * If deactivated, receiver will create dummy data if deactivated padding is enabled
@@ -630,30 +554,77 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	bool setDeactivatedPadding(const bool enable);
 
 	/**
-	 * Set streaming port
-	 * @param i streaming port
+	 * Set Silent Mode
+	 * @param i silent mode. true sets, false unsets
 	 */
-	void setStreamingPort(const uint32_t i);
+	void setSilentMode(const bool i);
+
+
+	/*************************************************************************
+	 * Behavioral functions***************************************************
+	 * They may modify the status of the receiver ****************************
+	 *************************************************************************/
+
+	//***initial functions***
+	/**
+	 * Set receiver type (and corresponding detector variables in derived STANDARD class)
+	 * It is the first function called by the client when connecting to receiver
+	 * @param d detector type
+	 * @return OK or FAIL
+	 */
+	int setDetectorType(const detectorType d);
 
 	/**
-	 * Set streaming source ip
-	 * @param c streaming source ip
+	 * Set detector position id and construct filewriter
+	 * @param i position id
 	 */
-	void setStreamingSourceIP(const char* c);
+	void setDetectorPositionId(const int i);
 
-    /**
-     * Set additional json header
-     */
-    void setAdditionalJsonHeader(const char* c);
+	//***acquisition functions***
+	/**
+	 * Reset acquisition parameters such as total frames caught for an entire acquisition (including all scans)
+	 */
+	void resetAcquisitionCount();
 
-    /** (not saved in client shared memory)
-     * Set UDP Socket Buffer Size
-     * @param s UDP Socket Buffer Size
-     * @return OK or FAIL if dummy socket could be created
-     */
-    int setUDPSocketBufferSize(const uint32_t s);
+	/**
+	 * Start Listening for Packets by activating all configuration settings to receiver
+	 * When this function returns, it has status RUNNING(upon SUCCESS) or IDLE (upon failure)
+	 * @param c error message if FAIL
+	 * @return OK or FAIL
+	 */
+	int startReceiver(char *c=NULL);
 
-	/*
+	/**
+	 * Stop Listening for Packets
+	 * Calls startReadout(), which stops listening and sets status to Transmitting
+	 * When it has read every frame in buffer, the status changes to Run_Finished
+	 * When this function returns, receiver has status IDLE
+	 * Pre: status is running, semaphores have been instantiated,
+	 * Post: udp sockets shut down, status is idle, semaphores destroyed
+	 */
+	void stopReceiver();
+
+	/**
+	 * Stop Listening to Packets
+	 * and sets status to Transmitting
+	 * Next step would be to get all data and stop receiver completely and return with idle state
+	 * Pre: status is running, udp sockets have been initialized, stop receiver initiated
+	 * Post:udp sockets closed, status is transmitting
+	 */
+	void startReadout();
+
+	/**
+	 * Shuts down and deletes UDP Sockets
+	 * also called in case of illegal shutdown of receiver
+	 */
+	void shutDownUDPSockets();
+
+	/**
+	 * Closes file / all files(data compression involves multiple files)
+	 */
+	void closeFiles();
+
+	/**
 	 * Restream stop dummy packet from receiver
 	 * @return OK or FAIL
 	 */
@@ -702,8 +673,61 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
     void registerCallBackRawDataModifyReady(void (*func)(char* ,
             char*, uint32_t &,void*),void *arg);
 
+private:
 
- protected:
+    /**
+	 * Delete and free member parameters
+	 */
+    void DeleteMembers();
+
+	/**
+	 * Initialize member parameters
+	 */
+	void InitializeMembers();
+
+	/**
+	 * Sets local network parameters, but requires permissions
+	 */
+	void SetLocalNetworkParameters();
+
+	/**
+	 * Set Thread Priorities
+	 */
+	void SetThreadPriorities();
+
+	/**
+	 * Set up the Fifo Structure for processing buffers
+	 * between listening and dataprocessor threads
+	 * @return OK or FAIL
+	 */
+	int SetupFifoStructure();
+
+	/**
+	 * Reset parameters for new measurement (eg. for each scan)
+	 */
+	void ResetParametersforNewMeasurement();
+
+	/**
+	 * Creates UDP Sockets
+	 * @return OK or FAIL
+	 */
+	int CreateUDPSockets();
+
+	/**
+	 * Creates the first file
+	 * also does the startAcquisitionCallBack
+	 * @return OK or FAIL
+	 */
+	int SetupWriter();
+
+	/**
+	 * Start Running
+	 * Set running mask and post semaphore of the threads
+	 * to start the inner loop in execution thread
+	 */
+	void StartRunning();
+
+
 
 	/*************************************************************************
 	 * Class Members *********************************************************
@@ -740,7 +764,13 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	/** gap pixels enable */
 	bool gapPixelsEnable;
 
-	//***receiver parameters***
+	//*** receiver parameters ***
+	/** Number of Threads */
+	int numThreads;
+	/** Number of Jobs */
+	int numberofJobs;
+	/** Number of channels in roi for jungfrauctb */
+	uint32_t nroichannels;
 	/** Maximum Number of Listening Threads/ UDP Ports */
 	const static int MAX_NUMBER_OF_LISTENING_THREADS = 2;
 	/** Receiver Status */
@@ -753,6 +783,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	frameDiscardPolicy frameDiscardMode;
 	/** frame padding */
 	bool framePadding;
+	/** silent mode */
+	bool silentMode;
 
 	//***connection parameters***
 	/** Ethernet Interface */
@@ -764,7 +796,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
     /** actual UDP Socket Buffer Size (halved due to kernel bookkeeping) */
     uint32_t actualUDPSocketBufferSize;
 
-	//***file parameters***
+    //***file parameters***
 	/** File format */
 	fileFormat fileFormatType;
 	/** File Name without frame index, file index and extension (_d0_f000000000000_8.raw)*/
@@ -775,22 +807,18 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	uint64_t fileIndex;
 	/** Frames per file  (0 means infinite) */
 	uint32_t framesPerFile;
-	/** Scan Tag */
-	int scanTag;
 	/** File Write enable */
 	bool fileWriteEnable;
 	/** Overwrite enable */
 	bool overwriteEnable;
-	/** Data Compression Enable - save only hits */
-	bool dataCompressionEnable;
 
 	//***acquisition parameters***
 	/* ROI */
 	std::vector<ROI> roi;
-	/** Frequency of Frames sent to GUI */
-	uint32_t frameToGuiFrequency;
-	/** Timer of Frames sent to GUI when frequency is 0 */
-	uint32_t frameToGuiTimerinMS;
+	/** streaming frequency */
+	uint32_t streamingFrequency;
+	/** Streaming timer when frequency is 0 */
+	uint32_t streamingTimerInMs;
 	/** Data Stream Enable from Receiver */
 	bool dataStreamEnable;
 	/** streaming port */
@@ -800,10 +828,17 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	/** additional json header */
 	char additionalJsonHeader[MAX_STR_LENGTH];
 
-	//***receiver parameters***
-	bool silentMode;
-
-
+	//** class objects ***
+	/** General Data Properties */
+	GeneralData* generalData;
+	/** Listener Objects that listen to UDP and push into fifo */
+	std::vector <Listener*> listener;
+	/** DataProcessor Objects that pull from fifo and process data */
+	std::vector <DataProcessor*> dataProcessor;
+	/** DataStreamer Objects that stream data via ZMQ */
+	std::vector <DataStreamer*> dataStreamer;
+	/** Fifo Structure to store addresses of memory writes */
+	std::vector <Fifo*> fifo;
 
 	//***callback parameters***
 	/**
@@ -820,7 +855,6 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	int (*startAcquisitionCallBack)(char*, char*, uint64_t, uint32_t, void*);
 	void *pStartAcquisition;
-
 	/**
 	 * Call back for acquisition finished
 	 * callback argument is
@@ -828,8 +862,6 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	void (*acquisitionFinishedCallBack)(uint64_t, void*);
 	void *pAcquisitionFinished;
-
-
 	/**
 	 * Call back for raw data
 	 * args to raw data ready callback are
@@ -839,7 +871,6 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	void (*rawDataReadyCallBack)(char* ,
 			char*, uint32_t, void*);
-
     /**
      * Call back for raw data (modified)
      * args to raw data ready callback are
@@ -849,11 +880,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
      */
     void (*rawDataModifyReadyCallBack)(char* ,
             char*, uint32_t &, void*);
-
 	void *pRawDataReady;
 
 
-
-private:
-
 };
+

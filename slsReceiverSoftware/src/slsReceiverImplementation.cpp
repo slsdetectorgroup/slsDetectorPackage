@@ -1,10 +1,10 @@
 /********************************************//**
- * @file UDPStandardImplementation.cpp
+ * @file slsReceiverImplementation.cpp
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
  ***********************************************/
 
 
-#include "UDPStandardImplementation.h"
+#include "slsReceiverImplementation.h"
 #include "GeneralData.h"
 #include "Listener.h"
 #include "DataProcessor.h"
@@ -12,6 +12,9 @@
 #include "Fifo.h"
 #include "ZmqSocket.h" 		//just for the zmq port define
 
+#include <sys/stat.h> 		// stat
+#include <iostream>
+#include <string.h>
 #include <cstdlib>			//system
 #include <cstring>			//strcpy
 #include <errno.h>			//eperm
@@ -20,51 +23,218 @@
 
 /** cosntructor & destructor */
 
-UDPStandardImplementation::UDPStandardImplementation() {
+slsReceiverImplementation::slsReceiverImplementation() {
 	InitializeMembers();
 }
 
 
-UDPStandardImplementation::~UDPStandardImplementation() {
+slsReceiverImplementation::~slsReceiverImplementation() {
 	DeleteMembers();
 }
 
 
-void UDPStandardImplementation::DeleteMembers() {
-	if (generalData) { delete generalData; generalData=0;}
-	for (std::vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
-		delete(*it);
+void slsReceiverImplementation::DeleteMembers() {
+	if (generalData) {
+		delete generalData;
+		generalData=0;
+	}
+
+	for (auto* it : listener)
+		delete it;
 	listener.clear();
-	for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
-		delete(*it);
+
+	for (auto* it : dataProcessor)
+		delete it;
 	dataProcessor.clear();
-	for (std::vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
-		delete(*it);
+
+	for (auto* it : dataStreamer)
+		delete it;
 	dataStreamer.clear();
-	for (std::vector<Fifo*>::const_iterator it = fifo.begin(); it != fifo.end(); ++it)
-		delete(*it);
+
+	for (auto* it : fifo)
+		delete it;
 	fifo.clear();
 }
 
 
-void UDPStandardImplementation::InitializeMembers() {
-	UDPBaseImplementation::initializeMembers();
+void slsReceiverImplementation::InitializeMembers() {
+
+	//**detector parameters***
+	myDetectorType = GENERIC;
+	for (int i = 0; i < MAX_DIMENSIONS; ++i)
+		numDet[i] = 0;
+	detID = 0;
+	strcpy(detHostname,"");
 	acquisitionPeriod = SAMPLE_TIME_IN_NS;
+	acquisitionTime = 0;
+	subExpTime = 0;
+	subPeriod = 0;
+	numberOfFrames = 0;
+	numberOfSamples = 0;
+	dynamicRange = 16;
+	tengigaEnable = false;
+	fifoDepth = 0;
+	flippedData[0] = 0;
+	flippedData[1] = 0;
+	gapPixelsEnable = false;
 
 	//*** receiver parameters ***
 	numThreads = 1;
 	numberofJobs = 1;
 	nroichannels = 0;
+	status = IDLE;
+	activated = true;
+	deactivatedPaddingEnable = true;
+	frameDiscardMode = NO_DISCARD;
+	framePadding = false;
+	silentMode = false;
+
+	//***connection parameters***
+	strcpy(eth,"");
+	for(int i=0;i<MAX_NUMBER_OF_LISTENING_THREADS;i++){
+		udpPortNum[i] = DEFAULT_UDP_PORTNO + i;
+	}
+	udpSocketBufferSize = 0;
+	actualUDPSocketBufferSize = 0;
+
+	//***file parameters***
+	fileFormatType = BINARY;
+	strcpy(fileName,"run");
+	strcpy(filePath,"");
+	fileIndex = 0;
+	framesPerFile = 0;
+	fileWriteEnable = true;
+	overwriteEnable = true;
+
+	//***acquisition parameters***
+	roi.clear();
+	streamingFrequency = 0;
+	streamingTimerInMs = DEFAULT_STREAMING_TIMER_IN_MS;
+	dataStreamEnable = false;
+	streamingPort = 0;
+	memset(streamingSrcIP, 0, sizeof(streamingSrcIP));
+    memset(additionalJsonHeader, 0, sizeof(additionalJsonHeader));
 
 	//** class objects ***
 	generalData = 0;
+
+	//***callback parameters***
+	startAcquisitionCallBack = NULL;
+	pStartAcquisition = NULL;
+	acquisitionFinishedCallBack = NULL;
+	pAcquisitionFinished = NULL;
+	rawDataReadyCallBack = NULL;
+	rawDataModifyReadyCallBack = NULL;
+	pRawDataReady = NULL;
+}
+
+/*************************************************************************
+ * Getters ***************************************************************
+ * They access local cache of configuration or detector parameters *******
+ *************************************************************************/
+
+/**initial parameters***/
+int* slsReceiverImplementation::getMultiDetectorSize() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return (int*) numDet;
+}
+
+int slsReceiverImplementation::getDetectorPositionId() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return detID;
+}
+
+char *slsReceiverImplementation::getDetectorHostname() const{
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	//not initialized
+	if(!strlen(detHostname))
+		return NULL;
+
+	char* output = new char[MAX_STR_LENGTH]();
+	strcpy(output,detHostname);
+	//freed by calling function
+	return output;
+}
+
+int slsReceiverImplementation::getFlippedData(int axis) const{
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	if(axis<0 || axis > 1) return -1;
+	return flippedData[axis];
+}
+
+bool slsReceiverImplementation::getGapPixelsEnable() const {
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	return gapPixelsEnable;
+}
+
+/***file parameters***/
+slsReceiverDefs::fileFormat slsReceiverImplementation::getFileFormat() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return fileFormatType;
 }
 
 
+char *slsReceiverImplementation::getFileName() const{
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
-/*** Overloaded Functions called by TCP Interface ***/
+	//not initialized
+	if(!strlen(fileName))
+		return NULL;
 
-uint64_t UDPStandardImplementation::getTotalFramesCaught() const {
+	char* output = new char[MAX_STR_LENGTH]();
+	strcpy(output,fileName);
+	//freed by calling function
+	return output;
+}
+
+char *slsReceiverImplementation::getFilePath() const{
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	//not initialized
+	if(!strlen(filePath))
+		return NULL;
+
+	char* output = new char[MAX_STR_LENGTH]();
+	strcpy(output,filePath);
+	//freed by calling function
+	return output;
+}
+
+uint64_t slsReceiverImplementation::getFileIndex() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return fileIndex;
+}
+
+uint32_t slsReceiverImplementation::getFramesPerFile() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return framesPerFile;
+}
+
+slsReceiverDefs::frameDiscardPolicy slsReceiverImplementation::getFrameDiscardPolicy() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return frameDiscardMode;
+}
+
+bool slsReceiverImplementation::getFramePaddingEnable() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return framePadding;
+}
+
+
+bool slsReceiverImplementation::getFileWriteEnable() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return fileWriteEnable;
+}
+
+bool slsReceiverImplementation::getOverwriteEnable() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return overwriteEnable;
+}
+
+
+/***acquisition count parameters***/
+uint64_t slsReceiverImplementation::getTotalFramesCaught() const {
 	uint64_t sum = 0;
 	uint32_t flagsum = 0;
 
@@ -80,7 +250,7 @@ uint64_t UDPStandardImplementation::getTotalFramesCaught() const {
 	return (sum/dataProcessor.size());
 }
 
-uint64_t UDPStandardImplementation::getFramesCaught() const {
+uint64_t slsReceiverImplementation::getFramesCaught() const {
 	uint64_t sum = 0;
 	uint32_t flagsum = 0;
 
@@ -95,7 +265,7 @@ uint64_t UDPStandardImplementation::getFramesCaught() const {
 	return (sum/dataProcessor.size());
 }
 
-int64_t UDPStandardImplementation::getAcquisitionIndex() const {
+int64_t slsReceiverImplementation::getAcquisitionIndex() const {
 	uint64_t sum = 0;
 	uint32_t flagsum = 0;
 
@@ -112,7 +282,190 @@ int64_t UDPStandardImplementation::getAcquisitionIndex() const {
 
 
 
-int UDPStandardImplementation::setGapPixelsEnable(const bool b) {
+
+/***connection parameters***/
+uint32_t slsReceiverImplementation::getUDPPortNumber() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return udpPortNum[0];
+}
+
+uint32_t slsReceiverImplementation::getUDPPortNumber2() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return udpPortNum[1];
+}
+
+char *slsReceiverImplementation::getEthernetInterface() const{
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	char* output = new char[MAX_STR_LENGTH]();
+	strcpy(output,eth);
+	//freed by calling function
+	return output;
+}
+
+
+/***acquisition parameters***/
+std::vector<slsReceiverDefs::ROI> slsReceiverImplementation::getROI() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return roi;
+}
+
+uint32_t slsReceiverImplementation::getStreamingFrequency() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return streamingFrequency;
+}
+
+uint32_t slsReceiverImplementation::getStreamingTimer() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return streamingTimerInMs;
+}
+
+bool slsReceiverImplementation::getDataStreamEnable() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return dataStreamEnable;
+}
+
+uint64_t slsReceiverImplementation::getAcquisitionPeriod() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return acquisitionPeriod;
+}
+
+uint64_t slsReceiverImplementation::getAcquisitionTime() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return acquisitionTime;
+}
+
+uint64_t slsReceiverImplementation::getSubExpTime() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return subExpTime;
+}
+
+uint64_t slsReceiverImplementation::getSubPeriod() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return subPeriod;
+}
+
+uint64_t slsReceiverImplementation::getNumberOfFrames() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return numberOfFrames;
+}
+
+uint64_t slsReceiverImplementation::getNumberofSamples() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return numberOfSamples;
+}
+
+uint32_t slsReceiverImplementation::getDynamicRange() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return dynamicRange;}
+
+bool slsReceiverImplementation::getTenGigaEnable() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return tengigaEnable;
+}
+
+uint32_t slsReceiverImplementation::getFifoDepth() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return fifoDepth;
+}
+
+/***receiver status***/
+slsReceiverDefs::runStatus slsReceiverImplementation::getStatus() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return status;}
+
+bool slsReceiverImplementation::getSilentMode() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return silentMode;}
+
+bool slsReceiverImplementation::getActivate() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return activated;
+}
+
+bool slsReceiverImplementation::getDeactivatedPadding() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return deactivatedPaddingEnable;
+}
+
+uint32_t slsReceiverImplementation::getStreamingPort() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return streamingPort;
+}
+
+char *slsReceiverImplementation::getStreamingSourceIP() const{
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	char* output = new char[MAX_STR_LENGTH]();
+	strcpy(output,streamingSrcIP);
+	//freed by calling function
+	return output;
+}
+
+char *slsReceiverImplementation::getAdditionalJsonHeader() const{
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+    char* output = new char[MAX_STR_LENGTH]();
+    memset(output, 0, MAX_STR_LENGTH);
+    strcpy(output,additionalJsonHeader);
+    //freed by calling function
+    return output;
+}
+
+uint32_t slsReceiverImplementation::getUDPSocketBufferSize() const {
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return udpSocketBufferSize;
+}
+
+uint32_t slsReceiverImplementation::getActualUDPSocketBufferSize() const {
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    return actualUDPSocketBufferSize;
+}
+
+
+/*************************************************************************
+ * Setters ***************************************************************
+ * They modify the local cache of configuration or detector parameters ***
+ *************************************************************************/
+
+/**initial parameters***/
+
+void slsReceiverImplementation::setDetectorHostname(const char *c){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	if(strlen(c))
+		strcpy(detHostname, c);
+	FILE_LOG(logINFO) << "Detector Hostname: " << detHostname;
+}
+
+
+void slsReceiverImplementation::setMultiDetectorSize(const int* size) {
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	char message[100];
+	strcpy(message, "Detector Size: (");
+	for (int i = 0; i < MAX_DIMENSIONS; ++i) {
+		if (myDetectorType == EIGER && (!i))
+			numDet[i] = size[i]*2;
+		else
+			numDet[i] = size[i];
+		sprintf(message,"%s%d",message,numDet[i]);
+		if (i < MAX_DIMENSIONS-1 )
+			strcat(message,",");
+	}
+	strcat(message,")");
+	FILE_LOG(logINFO)  << message;
+}
+
+
+void slsReceiverImplementation::setFlippedData(int axis, int enable){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	if(axis<0 || axis>1) return;
+	flippedData[axis] = enable==0?0:1;
+	FILE_LOG(logINFO)  << "Flipped Data: " << flippedData[0] << " , " << flippedData[1];
+}
+
+
+int slsReceiverImplementation::setGapPixelsEnable(const bool b) {
 	if (gapPixelsEnable != b) {
 		gapPixelsEnable = b;
 
@@ -131,7 +484,7 @@ int UDPStandardImplementation::setGapPixelsEnable(const bool b) {
 }
 
 
-void UDPStandardImplementation::setFileFormat(const fileFormat f){
+void slsReceiverImplementation::setFileFormat(const fileFormat f){
 	switch(f){
 #ifdef HDF5C
 	case HDF5:
@@ -150,7 +503,66 @@ void UDPStandardImplementation::setFileFormat(const fileFormat f){
 }
 
 
-void UDPStandardImplementation::setFileWriteEnable(const bool b){
+void slsReceiverImplementation::setFileName(const char c[]){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	if(strlen(c))
+		strcpy(fileName, c);
+	FILE_LOG(logINFO) << "File name: " << fileName;
+}
+
+
+void slsReceiverImplementation::setFilePath(const char c[]){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+
+	if(strlen(c)){
+		//check if filepath exists
+		struct stat st;
+		if(stat(c,&st) == 0)
+			strcpy(filePath,c);
+		else
+			FILE_LOG(logERROR) << "FilePath does not exist: " << filePath;
+	}
+	FILE_LOG(logINFO) << "File path: " << filePath;
+}
+
+
+void slsReceiverImplementation::setFileIndex(const uint64_t i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	fileIndex = i;
+	FILE_LOG(logINFO) << "File Index: " << fileIndex;
+}
+
+
+void slsReceiverImplementation::setFramesPerFile(const uint32_t i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	framesPerFile = i;
+	FILE_LOG(logINFO) << "Frames per file: " << framesPerFile;
+}
+
+
+void slsReceiverImplementation::setFrameDiscardPolicy(const frameDiscardPolicy i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	if (i >= 0 && i < NUM_DISCARD_POLICIES)
+		frameDiscardMode = i;
+
+	FILE_LOG(logINFO) << "Frame Discard Policy: " << getFrameDiscardPolicyType(frameDiscardMode);
+}
+
+
+void slsReceiverImplementation::setFramePaddingEnable(const bool i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	framePadding = i;
+	FILE_LOG(logINFO) << "Frame Padding: " << framePadding;
+}
+
+
+void slsReceiverImplementation::setFileWriteEnable(const bool b){
 	if (fileWriteEnable != b){
 		fileWriteEnable = b;
 		for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
@@ -165,9 +577,45 @@ void UDPStandardImplementation::setFileWriteEnable(const bool b){
 }
 
 
+void slsReceiverImplementation::setOverwriteEnable(const bool b){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	overwriteEnable = b;
+	FILE_LOG(logINFO) << "Overwrite Enable: " << stringEnable(overwriteEnable);
+}
 
 
-int UDPStandardImplementation::setROI(const std::vector<slsReceiverDefs::ROI> i) {
+/***connection parameters***/
+void slsReceiverImplementation::setUDPPortNumber(const uint32_t i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	udpPortNum[0] = i;
+	FILE_LOG(logINFO) << "UDP Port Number[0]: " << udpPortNum[0];
+}
+
+void slsReceiverImplementation::setUDPPortNumber2(const uint32_t i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	udpPortNum[1] = i;
+	FILE_LOG(logINFO) << "UDP Port Number[1]: " << udpPortNum[1];
+}
+
+void slsReceiverImplementation::setEthernetInterface(const char* c){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	strcpy(eth, c);
+	FILE_LOG(logINFO) << "Ethernet Interface: " << eth;
+}
+
+int slsReceiverImplementation::setUDPSocketBufferSize(const uint32_t s) {
+    if (listener.size())
+        return listener[0]->CreateDummySocketForUDPSocketBufferSize(s);
+    return FAIL;
+}
+
+
+/***acquisition parameters***/
+int slsReceiverImplementation::setROI(const std::vector<slsReceiverDefs::ROI> i) {
 	if (myDetectorType != GOTTHARD) {
 		cprintf(RED, "Error: Can not set ROI for this detector\n");
 		return FAIL;
@@ -229,16 +677,23 @@ int UDPStandardImplementation::setROI(const std::vector<slsReceiverDefs::ROI> i)
 }
 
 
-int UDPStandardImplementation::setFrameToGuiFrequency(const uint32_t freq) {
-	if (frameToGuiFrequency != freq) {
-		frameToGuiFrequency = freq;
+int slsReceiverImplementation::setStreamingFrequency(const uint32_t freq) {
+	if (streamingFrequency != freq) {
+		streamingFrequency = freq;
 	}
-	FILE_LOG(logINFO) << "Frame to Gui Frequency: " << frameToGuiFrequency;
+	FILE_LOG(logINFO) << "Streaming Frequency: " << streamingFrequency;
 	return OK;
 }
 
+void slsReceiverImplementation::setStreamingTimer(const uint32_t time_in_ms){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
-int UDPStandardImplementation::setDataStreamEnable(const bool enable) {
+	streamingTimerInMs = time_in_ms;
+	FILE_LOG(logINFO) << "Streamer Timer: " << streamingTimerInMs;
+}
+
+
+int slsReceiverImplementation::setDataStreamEnable(const bool enable) {
 
 	if (dataStreamEnable != enable) {
 		dataStreamEnable = enable;
@@ -273,8 +728,73 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {
 }
 
 
+void slsReceiverImplementation::setStreamingPort(const uint32_t i) {
+	streamingPort = i;
 
-int UDPStandardImplementation::setNumberofSamples(const uint64_t i) {
+	FILE_LOG(logINFO) << "Streaming Port: " << streamingPort;
+}
+
+
+void slsReceiverImplementation::setStreamingSourceIP(const char c[]){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	strcpy(streamingSrcIP, c);
+	FILE_LOG(logINFO) << "Streaming Source IP: " << streamingSrcIP;
+}
+
+
+void slsReceiverImplementation::setAdditionalJsonHeader(const char c[]){
+    FILE_LOG(logDEBUG) << __AT__ << " starting";
+    strcpy(additionalJsonHeader, c);
+    FILE_LOG(logINFO) << "Additional JSON Header: " << additionalJsonHeader;
+}
+
+
+int slsReceiverImplementation::setAcquisitionPeriod(const uint64_t i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	acquisitionPeriod = i;
+	FILE_LOG(logINFO) << "Acquisition Period: " <<  (double)acquisitionPeriod/(1E9) << "s";
+
+	//overrridden child classes might return FAIL
+	return OK;
+}
+
+int slsReceiverImplementation::setAcquisitionTime(const uint64_t i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	acquisitionTime = i;
+	FILE_LOG(logINFO) << "Acquisition Time: " <<  (double)acquisitionTime/(1E9) << "s";
+
+	//overrridden child classes might return FAIL
+	return OK;
+}
+
+void slsReceiverImplementation::setSubExpTime(const uint64_t i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	subExpTime = i;
+	FILE_LOG(logINFO) << "Sub Exposure Time: " <<  (double)subExpTime/(1E9) << "s";
+}
+
+void slsReceiverImplementation::setSubPeriod(const uint64_t i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	subPeriod = i;
+	FILE_LOG(logINFO) << "Sub Exposure Time: " <<  (double)subPeriod/(1E9) << "s";
+}
+
+int slsReceiverImplementation::setNumberOfFrames(const uint64_t i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	numberOfFrames = i;
+	FILE_LOG(logINFO) << "Number of Frames: " << numberOfFrames;
+
+	//overrridden child classes might return FAIL
+	return OK;
+}
+
+
+int slsReceiverImplementation::setNumberofSamples(const uint64_t i) {
 	if (numberOfSamples != i) {
 		numberOfSamples = i;
 
@@ -289,7 +809,7 @@ int UDPStandardImplementation::setNumberofSamples(const uint64_t i) {
 }
 
 
-int UDPStandardImplementation::setDynamicRange(const uint32_t i) {
+int slsReceiverImplementation::setDynamicRange(const uint32_t i) {
 	if (dynamicRange != i) {
 		dynamicRange = i;
 
@@ -309,7 +829,7 @@ int UDPStandardImplementation::setDynamicRange(const uint32_t i) {
 }
 
 
-int UDPStandardImplementation::setTenGigaEnable(const bool b) {
+int slsReceiverImplementation::setTenGigaEnable(const bool b) {
 	if (tengigaEnable != b) {
 		tengigaEnable = b;
 		//side effects
@@ -324,7 +844,7 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b) {
 }
 
 
-int UDPStandardImplementation::setFifoDepth(const uint32_t i) {
+int slsReceiverImplementation::setFifoDepth(const uint32_t i) {
 	if (fifoDepth != i) {
 		fifoDepth = i;
 
@@ -337,8 +857,38 @@ int UDPStandardImplementation::setFifoDepth(const uint32_t i) {
 }
 
 
+/***receiver parameters***/
+bool slsReceiverImplementation::setActivate(bool enable){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	activated = enable;
+	FILE_LOG(logINFO) << "Activation: " << stringEnable(activated);
+	return activated;
+}
 
-int UDPStandardImplementation::setDetectorType(const detectorType d) {
+
+bool slsReceiverImplementation::setDeactivatedPadding(bool enable){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	deactivatedPaddingEnable = enable;
+	FILE_LOG(logINFO) << "Deactivated Padding Enable: " << stringEnable(deactivatedPaddingEnable);
+	return deactivatedPaddingEnable;
+}
+
+void slsReceiverImplementation::setSilentMode(const bool i){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	silentMode = i;
+	FILE_LOG(logINFO) << "Silent Mode: " << i;
+}
+
+
+/*************************************************************************
+ * Behavioral functions***************************************************
+ * They may modify the status of the receiver ****************************
+ *************************************************************************/
+
+
+/***initial functions***/
+int slsReceiverImplementation::setDetectorType(const detectorType d) {
 	FILE_LOG(logDEBUG) << "Setting receiver type";
 	DeleteMembers();
 	InitializeMembers();
@@ -395,7 +945,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 
 	        DataProcessor* p = new DataProcessor(i, myDetectorType, fifo[i], &fileFormatType,
 	                fileWriteEnable, &dataStreamEnable, &gapPixelsEnable,
-	                &dynamicRange, &frameToGuiFrequency, &frameToGuiTimerinMS,
+	                &dynamicRange, &streamingFrequency, &streamingTimerInMs,
 					&framePadding, &activated, &deactivatedPaddingEnable, &silentMode,
 	                rawDataReadyCallBack, rawDataModifyReadyCallBack, pRawDataReady);
 	        dataProcessor.push_back(p);
@@ -430,7 +980,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 
 
 
-void UDPStandardImplementation::setDetectorPositionId(const int i){
+void slsReceiverImplementation::setDetectorPositionId(const int i){
 	detID = i;
 	FILE_LOG(logINFO) << "Detector Position Id:" << detID;
 	for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
@@ -449,7 +999,8 @@ void UDPStandardImplementation::setDetectorPositionId(const int i){
 }
 
 
-void UDPStandardImplementation::resetAcquisitionCount() {
+/***acquisition functions***/
+void slsReceiverImplementation::resetAcquisitionCount() {
 	for (std::vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
 		(*it)->ResetParametersforNewAcquisition();
 
@@ -464,7 +1015,7 @@ void UDPStandardImplementation::resetAcquisitionCount() {
 
 
 
-int UDPStandardImplementation::startReceiver(char *c) {
+int slsReceiverImplementation::startReceiver(char *c) {
 	cprintf(RESET,"\n");
 	FILE_LOG(logINFO) << "Starting Receiver";
 	ResetParametersforNewMeasurement();
@@ -510,7 +1061,7 @@ int UDPStandardImplementation::startReceiver(char *c) {
 
 
 
-void UDPStandardImplementation::stopReceiver(){
+void slsReceiverImplementation::stopReceiver(){
 	FILE_LOG(logINFO)  << "Stopping Receiver";
 
 	//set status to transmitting
@@ -591,7 +1142,7 @@ void UDPStandardImplementation::stopReceiver(){
 
 
 
-void UDPStandardImplementation::startReadout(){
+void slsReceiverImplementation::startReadout(){
 	if(status == RUNNING){
 
 		// wait for incoming delayed packets
@@ -634,14 +1185,14 @@ void UDPStandardImplementation::startReadout(){
 }
 
 
-void UDPStandardImplementation::shutDownUDPSockets() {
+void slsReceiverImplementation::shutDownUDPSockets() {
 	for (std::vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
 		(*it)->ShutDownUDPSocket();
 }
 
 
 
-void UDPStandardImplementation::closeFiles() {
+void slsReceiverImplementation::closeFiles() {
 	uint64_t maxIndexCaught = 0;
 	bool anycaught = false;
 	for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it) {
@@ -654,13 +1205,8 @@ void UDPStandardImplementation::closeFiles() {
 	dataProcessor[0]->EndofAcquisition(anycaught, maxIndexCaught);
 }
 
-int UDPStandardImplementation::setUDPSocketBufferSize(const uint32_t s) {
-    if (listener.size())
-        return listener[0]->CreateDummySocketForUDPSocketBufferSize(s);
-    return FAIL;
-}
 
-int UDPStandardImplementation::restreamStop() {
+int slsReceiverImplementation::restreamStop() {
 	bool ret = OK;
 	for (std::vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it) {
 		if ((*it)->RestreamStop() == FAIL)
@@ -676,7 +1222,32 @@ int UDPStandardImplementation::restreamStop() {
 }
 
 
-void UDPStandardImplementation::SetLocalNetworkParameters() {
+
+/***callback functions***/
+void slsReceiverImplementation::registerCallBackStartAcquisition(int (*func)(char*, char*, uint64_t, uint32_t, void*),void *arg){
+	startAcquisitionCallBack=func;
+	pStartAcquisition=arg;
+}
+
+void slsReceiverImplementation::registerCallBackAcquisitionFinished(void (*func)(uint64_t, void*),void *arg){
+	acquisitionFinishedCallBack=func;
+	pAcquisitionFinished=arg;
+}
+
+void slsReceiverImplementation::registerCallBackRawDataReady(void (*func)(char* ,
+		char*, uint32_t, void*),void *arg){
+	rawDataReadyCallBack=func;
+	pRawDataReady=arg;
+}
+
+void slsReceiverImplementation::registerCallBackRawDataModifyReady(void (*func)(char* ,
+        char*, uint32_t&, void*),void *arg){
+    rawDataModifyReadyCallBack=func;
+    pRawDataReady=arg;
+}
+
+
+void slsReceiverImplementation::SetLocalNetworkParameters() {
 
 	// to increase Max length of input packet queue
 	int max_back_log;
@@ -703,7 +1274,7 @@ void UDPStandardImplementation::SetLocalNetworkParameters() {
 
 
 
-void UDPStandardImplementation::SetThreadPriorities() {
+void slsReceiverImplementation::SetThreadPriorities() {
 
 	for (std::vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it){
 		if ((*it)->SetThreadPriority(LISTENER_PRIORITY) == FAIL) {
@@ -719,7 +1290,7 @@ void UDPStandardImplementation::SetThreadPriorities() {
 }
 
 
-int UDPStandardImplementation::SetupFifoStructure() {
+int slsReceiverImplementation::SetupFifoStructure() {
 		numberofJobs = 1;
 
 
@@ -754,7 +1325,7 @@ int UDPStandardImplementation::SetupFifoStructure() {
 
 
 
-void UDPStandardImplementation::ResetParametersforNewMeasurement() {
+void slsReceiverImplementation::ResetParametersforNewMeasurement() {
 	for (std::vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
 		(*it)->ResetParametersforNewMeasurement();
 	for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
@@ -770,7 +1341,7 @@ void UDPStandardImplementation::ResetParametersforNewMeasurement() {
 
 
 
-int UDPStandardImplementation::CreateUDPSockets() {
+int slsReceiverImplementation::CreateUDPSockets() {
 	bool error = false;
 	for (unsigned int i = 0; i < listener.size(); ++i)
 		if (listener[i]->CreateUDPSockets() == FAIL) {
@@ -787,7 +1358,7 @@ int UDPStandardImplementation::CreateUDPSockets() {
 }
 
 
-int UDPStandardImplementation::SetupWriter() {
+int slsReceiverImplementation::SetupWriter() {
 	bool error = false;
 	for (unsigned int i = 0; i < dataProcessor.size(); ++i)
 		if (dataProcessor[i]->CreateNewFile(tengigaEnable,
@@ -805,7 +1376,7 @@ int UDPStandardImplementation::SetupWriter() {
 }
 
 
-void UDPStandardImplementation::StartRunning() {
+void slsReceiverImplementation::StartRunning() {
 	//set running mask and post semaphore to start the inner loop in execution thread
 	for (std::vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it) {
 		(*it)->StartRunning();

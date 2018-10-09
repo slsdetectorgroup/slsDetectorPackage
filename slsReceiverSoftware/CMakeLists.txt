@@ -1,11 +1,8 @@
 set(SOURCES
-    src/UDPInterface.cpp
-    src/UDPBaseImplementation.cpp
-    src/UDPStandardImplementation.cpp
+    src/slsReceiverImplementation.cpp
     src/slsReceiverTCPIPInterface.cpp
     src/slsReceiver.cpp
     src/slsReceiverUsers.cpp
-    src/utilities.cpp
     src/File.cpp
     src/BinaryFile.cpp
     src/ThreadObject.cpp

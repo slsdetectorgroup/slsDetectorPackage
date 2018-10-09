@@ -43,7 +43,6 @@ enum recFuncs{
 	F_GET_RECEIVER_FRAMES_CAUGHT,	/**< gets the number of frames caught by receiver */
 	F_RESET_RECEIVER_FRAMES_CAUGHT, /**< resets the frames caught by receiver */
 	F_ENABLE_RECEIVER_FILE_WRITE,	/**< sets the receiver file write */
-	F_ENABLE_RECEIVER_COMPRESSION,	/**< enable compression in receiver */
 	F_ENABLE_RECEIVER_OVERWRITE,		/**< set overwrite flag in receiver */
 
 	F_ENABLE_RECEIVER_TEN_GIGA,		/**< enable 10Gbe in receiver */

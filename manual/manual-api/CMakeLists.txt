@@ -4,7 +4,7 @@ set(SOURCES
 
 include_directories(
     ../../slsSupportLib/include
-    ../../slsDetectorSoftware/slsDetectorAnalysis 
+    ../../slsReceiverSoftware/include
     ../../build/bin 
     ../../slsdetectorSoftware/slsDetector 
 )

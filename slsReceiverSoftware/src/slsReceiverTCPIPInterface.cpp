@@ -4,7 +4,8 @@
  ***********************************************/
 
 #include "slsReceiverTCPIPInterface.h"
-#include "UDPInterface.h"
+#include "slsReceiverImplementation.h"
+#include "MySocketTCP.h"
 #include "gitInfoReceiver.h"
 #include "slsReceiverUsers.h"
 #include "slsReceiver.h"
@@ -210,11 +211,10 @@ const char* slsReceiverTCPIPInterface::getFunctionName(enum recFuncs func) {
 	case F_SETUP_RECEIVER_UDP:			return "F_SETUP_RECEIVER_UDP";
 	case F_SET_RECEIVER_TIMER:  		return "F_SET_RECEIVER_TIMER";
 	case F_SET_RECEIVER_DYNAMIC_RANGE:  return "F_SET_RECEIVER_DYNAMIC_RANGE";
-	case F_READ_RECEIVER_FREQUENCY: 	return "F_READ_RECEIVER_FREQUENCY";
+	case F_RECEIVER_STREAMING_FREQUENCY:return "F_RECEIVER_STREAMING_FREQUENCY";
 	case F_GET_RECEIVER_STATUS:			return "F_GET_RECEIVER_STATUS";
 	case F_START_RECEIVER:				return "F_START_RECEIVER";
 	case F_STOP_RECEIVER:				return "F_STOP_RECEIVER";
-	case F_START_RECEIVER_READOUT: 		return "F_START_RECEIVER_READOUT";
 	case F_SET_RECEIVER_FILE_PATH: 		return "F_SET_RECEIVER_FILE_PATH";
 	case F_SET_RECEIVER_FILE_NAME: 		return "F_SET_RECEIVER_FILE_NAME";
 	case F_SET_RECEIVER_FILE_INDEX: 	return "F_SET_RECEIVER_FILE_INDEX";
@@ -222,20 +222,19 @@ const char* slsReceiverTCPIPInterface::getFunctionName(enum recFuncs func) {
 	case F_GET_RECEIVER_FRAMES_CAUGHT:	return "F_GET_RECEIVER_FRAMES_CAUGHT";
 	case F_RESET_RECEIVER_FRAMES_CAUGHT:return "F_RESET_RECEIVER_FRAMES_CAUGHT";
 	case F_ENABLE_RECEIVER_FILE_WRITE:	return "F_ENABLE_RECEIVER_FILE_WRITE";
-	case F_ENABLE_RECEIVER_COMPRESSION:	return "F_ENABLE_RECEIVER_COMPRESSION";
 	case F_ENABLE_RECEIVER_OVERWRITE:	return "F_ENABLE_RECEIVER_OVERWRITE";
 	case F_ENABLE_RECEIVER_TEN_GIGA:	return "F_ENABLE_RECEIVER_TEN_GIGA";
 	case F_SET_RECEIVER_FIFO_DEPTH:		return "F_SET_RECEIVER_FIFO_DEPTH";
 	case F_RECEIVER_ACTIVATE:			return "F_RECEIVER_ACTIVATE";
 	case F_STREAM_DATA_FROM_RECEIVER:	return "F_STREAM_DATA_FROM_RECEIVER";
-	case F_READ_RECEIVER_TIMER:			return "F_READ_RECEIVER_TIMER";
+	case F_RECEIVER_STREAMING_TIMER:	return "F_RECEIVER_STREAMING_TIMER";
 	case F_SET_FLIPPED_DATA_RECEIVER:	return "F_SET_FLIPPED_DATA_RECEIVER";
 	case F_SET_RECEIVER_FILE_FORMAT:	return "F_SET_RECEIVER_FILE_FORMAT";
 	case F_SEND_RECEIVER_DETPOSID:		return "F_SEND_RECEIVER_DETPOSID";
 	case F_SEND_RECEIVER_MULTIDETSIZE:  return "F_SEND_RECEIVER_MULTIDETSIZE";
 	case F_SET_RECEIVER_STREAMING_PORT: return "F_SET_RECEIVER_STREAMING_PORT";
-	case F_SET_RECEIVER_SILENT_MODE:	return "F_SET_RECEIVER_SILENT_MODE";
 	case F_RECEIVER_STREAMING_SRC_IP: 	return "F_RECEIVER_STREAMING_SRC_IP";
+	case F_SET_RECEIVER_SILENT_MODE:	return "F_SET_RECEIVER_SILENT_MODE";
 	case F_ENABLE_GAPPIXELS_IN_RECEIVER:return "F_ENABLE_GAPPIXELS_IN_RECEIVER";
 	case F_RESTREAM_STOP_FROM_RECEIVER:	return "F_RESTREAM_STOP_FROM_RECEIVER";
     case F_ADDITIONAL_JSON_HEADER:      return "F_ADDITIONAL_JSON_HEADER";
@@ -267,11 +266,10 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_SETUP_RECEIVER_UDP]				=	&slsReceiverTCPIPInterface::setup_udp;
 	flist[F_SET_RECEIVER_TIMER]				= 	&slsReceiverTCPIPInterface::set_timer;
 	flist[F_SET_RECEIVER_DYNAMIC_RANGE]		= 	&slsReceiverTCPIPInterface::set_dynamic_range;
-	flist[F_READ_RECEIVER_FREQUENCY]		= 	&slsReceiverTCPIPInterface::set_read_frequency;
+	flist[F_RECEIVER_STREAMING_FREQUENCY]	= 	&slsReceiverTCPIPInterface::set_streaming_frequency;
 	flist[F_GET_RECEIVER_STATUS]			=	&slsReceiverTCPIPInterface::get_status;
 	flist[F_START_RECEIVER]					=	&slsReceiverTCPIPInterface::start_receiver;
 	flist[F_STOP_RECEIVER]					=	&slsReceiverTCPIPInterface::stop_receiver;
-	flist[F_START_RECEIVER_READOUT]			= 	&slsReceiverTCPIPInterface::start_readout;
 	flist[F_SET_RECEIVER_FILE_PATH]			=	&slsReceiverTCPIPInterface::set_file_dir;
 	flist[F_SET_RECEIVER_FILE_NAME]			=	&slsReceiverTCPIPInterface::set_file_name;
 	flist[F_SET_RECEIVER_FILE_INDEX]		=	&slsReceiverTCPIPInterface::set_file_index;
@@ -279,20 +277,19 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_GET_RECEIVER_FRAMES_CAUGHT]		=	&slsReceiverTCPIPInterface::get_frames_caught;
 	flist[F_RESET_RECEIVER_FRAMES_CAUGHT]	=	&slsReceiverTCPIPInterface::reset_frames_caught;
 	flist[F_ENABLE_RECEIVER_FILE_WRITE]		=	&slsReceiverTCPIPInterface::enable_file_write;
-	flist[F_ENABLE_RECEIVER_COMPRESSION]	= 	&slsReceiverTCPIPInterface::enable_compression;
 	flist[F_ENABLE_RECEIVER_OVERWRITE]		= 	&slsReceiverTCPIPInterface::enable_overwrite;
 	flist[F_ENABLE_RECEIVER_TEN_GIGA]		= 	&slsReceiverTCPIPInterface::enable_tengiga;
 	flist[F_SET_RECEIVER_FIFO_DEPTH]		= 	&slsReceiverTCPIPInterface::set_fifo_depth;
 	flist[F_RECEIVER_ACTIVATE]				= 	&slsReceiverTCPIPInterface::set_activate;
 	flist[F_STREAM_DATA_FROM_RECEIVER]		= 	&slsReceiverTCPIPInterface::set_data_stream_enable;
-	flist[F_READ_RECEIVER_TIMER]			= 	&slsReceiverTCPIPInterface::set_read_receiver_timer;
+	flist[F_RECEIVER_STREAMING_TIMER]		= 	&slsReceiverTCPIPInterface::set_streaming_timer;
 	flist[F_SET_FLIPPED_DATA_RECEIVER]		= 	&slsReceiverTCPIPInterface::set_flipped_data;
 	flist[F_SET_RECEIVER_FILE_FORMAT]		= 	&slsReceiverTCPIPInterface::set_file_format;
 	flist[F_SEND_RECEIVER_DETPOSID]			= 	&slsReceiverTCPIPInterface::set_detector_posid;
 	flist[F_SEND_RECEIVER_MULTIDETSIZE]		= 	&slsReceiverTCPIPInterface::set_multi_detector_size;
 	flist[F_SET_RECEIVER_STREAMING_PORT]	= 	&slsReceiverTCPIPInterface::set_streaming_port;
-	flist[F_SET_RECEIVER_SILENT_MODE]		= 	&slsReceiverTCPIPInterface::set_silent_mode;
 	flist[F_RECEIVER_STREAMING_SRC_IP]		= 	&slsReceiverTCPIPInterface::set_streaming_source_ip;
+	flist[F_SET_RECEIVER_SILENT_MODE]		= 	&slsReceiverTCPIPInterface::set_silent_mode;
 	flist[F_ENABLE_GAPPIXELS_IN_RECEIVER]	=	&slsReceiverTCPIPInterface::enable_gap_pixels;
 	flist[F_RESTREAM_STOP_FROM_RECEIVER]	= 	&slsReceiverTCPIPInterface::restream_stop;
 	flist[F_ADDITIONAL_JSON_HEADER]         =   &slsReceiverTCPIPInterface::set_additional_json_header;
@@ -675,9 +672,9 @@ int slsReceiverTCPIPInterface::send_update() {
 #endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
-	// receiver read frequency
+	// streaming frequency
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	ind=(int)receiverBase->getFrameToGuiFrequency();
+	ind=(int)receiverBase->getStreamingFrequency();
 #endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
@@ -792,7 +789,7 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 		}
 		if(ret == OK) {
 			if(receiverBase == NULL){
-				receiverBase = UDPInterface::create();
+				receiverBase = new slsReceiverImplementation();
 				if(startAcquisitionCallBack)
 					receiverBase->registerCallBackStartAcquisition(startAcquisitionCallBack,pStartAcquisition);
 				if(acquisitionFinishedCallBack)
@@ -852,7 +849,7 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 	else if (receiverBase->getStatus() != IDLE)
 		receiverNotIdle();
 	else {
-		receiverBase->initialize(hostname);
+		receiverBase->setDetectorHostname(hostname);
 		retval = receiverBase->getDetectorHostname();
 		if(retval == NULL)
 			ret = FAIL;
@@ -1213,7 +1210,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 
 
 
-int slsReceiverTCPIPInterface::set_read_frequency(){
+int slsReceiverTCPIPInterface::set_streaming_frequency(){
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int index = -1;
@@ -1235,7 +1232,7 @@ int slsReceiverTCPIPInterface::set_read_frequency(){
 			else if (receiverBase->getStatus() != IDLE)
 				receiverNotIdle();
 			else {
-				ret = receiverBase->setFrameToGuiFrequency(index);
+				ret = receiverBase->setStreamingFrequency(index);
 				if(ret == FAIL) {
 					strcpy(mess, "Could not allocate memory for listening fifo\n");
 					FILE_LOG(logERROR) << mess;
@@ -1243,10 +1240,10 @@ int slsReceiverTCPIPInterface::set_read_frequency(){
 			}
 		}
 		//get
-		retval=receiverBase->getFrameToGuiFrequency();
+		retval=receiverBase->getStreamingFrequency();
 		if(index >= 0 && retval != index){
 			ret = FAIL;
-			strcpy(mess,"Could not set frame to gui frequency");
+			strcpy(mess,"Could not set streaming frequency");
 			FILE_LOG(logERROR) << mess;
 		}
 	}
@@ -1378,50 +1375,6 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 	return ret;
 }
 
-
-
-int	slsReceiverTCPIPInterface::start_readout(){
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	enum runStatus retval;
-
-	// execute action
-	// only a set, not a get
-
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	/*else if(receiverBase->getStatus() != IDLE){
-		strcpy(mess,"Can not start receiver readout while receiver not idle\n");
-		ret = FAIL;
-	}*/
-	else {
-		receiverBase->startReadout();
-		retval = receiverBase->getStatus();
-		if ((retval == TRANSMITTING) || (retval == RUN_FINISHED) || (retval == IDLE))
-			ret = OK;
-		else {
-			ret = FAIL;
-			strcpy(mess,"Could not start readout");
-			FILE_LOG(logERROR) << mess;
-		}
-	}
-#endif
-
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
-
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
-	return ret;
-}
 
 
 
@@ -1741,29 +1694,6 @@ int slsReceiverTCPIPInterface::enable_file_write(){
 
 
 
-int slsReceiverTCPIPInterface::enable_compression() {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	int enable = -1;
-
-	// receive arguments
-	if(mySock->ReceiveDataOnly(&enable,sizeof(enable)) < 0 )
-		return printSocketReadError();
-
-	ret = FAIL;
-	sprintf(mess, "This function (%s) is not implemented yet\n", getFunctionName((enum recFuncs)fnum));
-	FILE_LOG(logERROR) << mess;
-
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	mySock->SendDataOnly(mess,sizeof(mess));
-
-	// return ok/fail
-	return ret;
-}
-
-
-
 int slsReceiverTCPIPInterface::enable_overwrite() {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
@@ -2046,7 +1976,7 @@ int slsReceiverTCPIPInterface::set_data_stream_enable(){
 
 
 
-int slsReceiverTCPIPInterface::set_read_receiver_timer(){
+int slsReceiverTCPIPInterface::set_streaming_timer(){
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int index = -1;
@@ -2068,11 +1998,11 @@ int slsReceiverTCPIPInterface::set_read_receiver_timer(){
 			else if (receiverBase->getStatus() != IDLE)
 				receiverNotIdle();
 			else {
-				receiverBase->setFrameToGuiTimer(index);
+				receiverBase->setStreamingTimer(index);
 			}
 		}
 		//get
-		retval=receiverBase->getFrameToGuiTimer();
+		retval=receiverBase->getStreamingTimer();
 		if(index >= 0 && retval != index){
 			ret = FAIL;
 			strcpy(mess,"Could not set datastream timer");
@@ -2081,7 +2011,7 @@ int slsReceiverTCPIPInterface::set_read_receiver_timer(){
 	}
 #endif
 #ifdef VERYVERBOSE
-	FILE_LOG(logDEBUG1) << "receiver read timer:" << retval;
+	FILE_LOG(logDEBUG1) << "Streaming timer:" << retval;
 #endif
 
 	if (ret == OK && mySock->differentClients)

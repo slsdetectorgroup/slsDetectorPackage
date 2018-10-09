@@ -6,12 +6,9 @@
 
 
 
-#include "slsReceiverTCPIPInterface.h"
-#include "UDPInterface.h"
+class slsReceiverTCPIPInterface;
 
-#include "receiver_defs.h"
-#include "MySocketTCP.h"
-//#include "utilities.h"
+#include "sls_receiver_defs.h"
 
 
 /**

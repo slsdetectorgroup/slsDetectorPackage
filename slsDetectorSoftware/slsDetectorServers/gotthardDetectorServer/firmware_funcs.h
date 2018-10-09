@@ -12,73 +12,53 @@
 #include <fcntl.h>
 #include <stdarg.h>
 #include <unistd.h>
-//#include <asm/page.h>
-#include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
-#include <stdarg.h>
-#include <unistd.h>
 
 
 int mapCSP0(void);
-
 u_int16_t bus_r16(u_int32_t offset);
 u_int16_t bus_w16(u_int32_t offset, u_int16_t data);//aldos function
 u_int32_t bus_w(u_int32_t offset, u_int32_t data);
 u_int32_t bus_r(u_int32_t offset);
 
+int initDetector();
+int setDefaultDacs();
 void setMasterSlaveConfiguration();
+int configureADC();
 int setPhaseShiftOnce();
 int setPhaseShift(int numphaseshift);
 int cleanFifo();
 int setDAQRegister();
+u_int32_t putout(char *s);
+int setConfigurationRegister(int d);
+int sendviaUDP(int d);
+int setDACRegister(int idac, int val);
 
-u_int32_t putout(char *s, int modnum);
-u_int32_t readin(int modnum);
-u_int32_t setClockDivider(int d);
-u_int32_t getClockDivider();
-u_int32_t setSetLength(int d);
-u_int32_t getSetLength();
-u_int32_t setWaitStates(int d);
-u_int32_t getWaitStates();
-u_int32_t setTotClockDivider(int d);
-u_int32_t getTotClockDivider();
-u_int32_t setTotDutyCycle(int d);
-u_int32_t getTotDutyCycle();
 
 u_int32_t setExtSignal(enum externalSignalFlag  mode);
 int  getExtSignal();
-
 u_int32_t setFPGASignal(enum externalSignalFlag  mode);
 int  getFPGASignal();
 
 int setTiming(int t);
 
+u_int64_t getDetectorNumber();
+u_int32_t getFirmwareVersion();
+u_int32_t  getFirmwareSVNVersion();
 
-int setConfigurationRegister(int d);
-int setToT(int d);
-int setContinousReadOut(int d);
-int startReceiver(int d);
+u_int32_t testFpga(void);
+int testBus(void);
 
-int setDACRegister(int idac, int val, int imod);
-
-int getTemperature(int tempSensor,int imod);
-int initHighVoltage(int val,int imod);
-int initConfGain(int isettings,int val,int imod);
-
+int initHighVoltage(int val);
+int getTemperature(int tempSensor);
+int setSettings(int i);
+int initConfGain(int isettings,int val);
+ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret);
 int setADC(int adc);
 int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int ival, int udpport);
 int getAdcConfigured();
 
-
-u_int64_t getDetectorNumber();
-u_int32_t getFirmwareVersion();
-u_int32_t  getFirmwareSVNVersion();
-int testFifos(void);
-u_int32_t testFpga(void);
-int testBus(void);
-int setDigitalTestBit(int ival);
 
 int64_t set64BitReg(int64_t value, int aLSB, int aMSB);
 int64_t get64BitReg(int aLSB, int aMSB);
@@ -92,88 +72,49 @@ int64_t getExposureTime();
 int64_t setGates(int64_t value);
 int64_t getGates();
 
-int64_t setDelay(int64_t value);
-int64_t getDelay();
-
 int64_t setPeriod(int64_t value);
 int64_t getPeriod();
+
+int64_t setDelay(int64_t value);
+int64_t getDelay();
 
 int64_t setTrains(int64_t value);
 int64_t getTrains();
 
-int64_t setProbes(int64_t value);
-int64_t getProbes();
-
-int64_t getProgress();
-int64_t setProgress();
-
 int64_t getActualTime();
 int64_t getMeasurementTime();
 
-
-u_int32_t runBusy(void); 
-u_int32_t runState(void); 
-u_int32_t dataPresent(void); 
-
-
+u_int32_t fifoReadStatus();
+u_int32_t fifo_full(void);
+u_int32_t runBusy(void);
+u_int32_t runState(void);
 int startStateMachine();
 int stopStateMachine();
 int startReadOut();
-u_int32_t fifoReset(void);
-u_int32_t fifoReadCounter(int fifonum);
-u_int32_t fifoReadStatus();
-
-
-u_int32_t fifo_full(void);
-
-
 void waitForAcquisitionFinish();
-
-u_int32_t* decode_data(int* datain);
-//u_int32_t move_data(u_int64_t* datain, u_int64_t* dataout);
-int setDynamicRange(int dr);
-int getDynamicRange();
-int getNModBoard();
-int setNMod(int n);
-int setStoreInRAM(int b);
-
-
-
-
-int setMaster(int f);
-int setSynchronization(int s);
+int getStatus();
 
 int loadImage(int index, short int ImageVals[]);
 int readCounterBlock(int startACQ, short int CounterVals[]);
 int resetCounterBlock(int startACQ);
 
-int calibratePedestal(int frames);
+int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod);
+
+int setDAC(int ind,int val,int mV, int retval[]);
+int getDAC(int ind);
+
+int setModule(sls_detector_module);
+void getModule(sls_detector_module*);
+
+void initDACs(int* v);
+void initDAC(int dac_addr, int value);
+void clearDACSregister();
+void nextDAC();
+void program_one_dac(int addr, int value);
 
 
 
-/*
 
-u_int32_t setNBits(u_int32_t);
-u_int32_t getNBits();
-*/
-
-/*
-//move to mcb_funcs?
-
-int readOutChan(int *val);
-u_int32_t getModuleNumber(int modnum);
-int testShiftIn(int imod);
-int testShiftOut(int imod);
-int testShiftStSel(int imod);
-int testDataInOut(int num, int imod);
-int testExtPulse(int imod);
-int testExtPulseMux(int imod, int ow);
-int testDataInOutMux(int imod, int ow, int num);
-int testOutMux(int imod);
-int testFpgaMux(int imod);
-int calibration_sensor(int num, int *values, int *dacs) ;
-int calibration_chip(int num, int *values, int *dacs);
-*/
 
 
 #endif

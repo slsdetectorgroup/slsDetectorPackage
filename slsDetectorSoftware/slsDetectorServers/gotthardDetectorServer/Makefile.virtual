@@ -2,13 +2,13 @@
 DESTDIR ?= ./
 
 CC    = gcc
-CFLAGS += -Wall  -DGOTTHARDD -DMCB_FUNCS -DDEBUG -DVIRTUAL 
+CFLAGS += -Wall  -DGOTTHARDD  -DVIRTUAL 
 
 
 PROGS= 		$(DESTDIR)/gotthardDetectorServer_virtual 
 
 
-SRCS = server.c server_funcs.c communication_funcs.c firmware_funcs.c mcb_funcs.c 
+SRCS = server.c server_funcs.c communication_funcs.c firmware_funcs.c
 OBJS = $(SRCS:%.c=%.o) 
 
 gotthardVirtualServer = $(PROGS)

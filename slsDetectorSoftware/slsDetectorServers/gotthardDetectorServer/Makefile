@@ -1,12 +1,7 @@
-# $Id: Makefile,v 1.1.1.1 2006/02/04 03:35:01 freza Exp $
-# first compile
-# make cris-axis-linux-gnu
-
-
 CROSS  = bfin-uclinux-
 CC    = $(CROSS)gcc
 
-CFLAGS += -Wall  -DGOTTHARDD -DMCB_FUNCS  -DDEBUG # -DVERBOSE #-DVERYVERBOSE  #-DVIRTUAL  #-DDACS_INT_CSERVER
+CFLAGS += -Wall  -DGOTTHARDD   -DDEBUG # -DVERBOSE #-DVERYVERBOSE  #-DVIRTUAL
 
 
 PROGS= 		gotthardDetectorServer 
@@ -16,7 +11,7 @@ INSTMODE= 	0777
 
 
 BINS = testlib_sharedlibc
-SRCS = server.c firmware_funcs.c  server_funcs.c communication_funcs.c mcb_funcs.c 
+SRCS = server.c firmware_funcs.c  server_funcs.c communication_funcs.c 
 OBJS = $(SRCS:%.c=%.o) 
 
 

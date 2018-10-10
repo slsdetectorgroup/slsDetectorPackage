@@ -518,7 +518,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 		break;
 	}
 	thisDetector->receiver_fileWriteEnable = 1;
-	thisDetector->receiver_overWriteEnable = 0;
+	thisDetector->receiver_overWriteEnable = 1;
 
 	// get the detector parameters based on type
 	detParameterList detlist;

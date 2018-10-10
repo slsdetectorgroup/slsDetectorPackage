@@ -16,201 +16,84 @@ mySocket(socket),
 index(n),
 type(t){}
 
-
-
 ClientInterface::~ClientInterface(){}
 
 
+void ClientInterface::SetSocket(MySocketTCP *socket) {
+	mySocket=socket;
+}
 
-int ClientInterface::SendString(int fnum, char retval[], char arg[]){
-	int ret = slsDetectorDefs::FAIL;
-	char mess[MAX_STR_LENGTH];
-	memset(mess, 0, MAX_STR_LENGTH);
 
-	mySocket->SendDataOnly(&fnum,sizeof(fnum));
-	mySocket->SendDataOnly(arg,MAX_STR_LENGTH);
-	mySocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==slsDetectorDefs::FAIL){
-		mySocket->ReceiveDataOnly(mess,sizeof(mess));
-		cprintf(RED, "%s %d returned error: %s", type.c_str(), index, mess);
+int ClientInterface::PrintSocketReadError() {
+	FILE_LOG(logERROR) << "Reading from socket failed. Possible socket crash";
+	return FAIL;
+}
+
+
+void ClientInterface::Server_SendResult(int ret, void* retval, int retvalSize) {
+	mySocket->SendDataOnly(&ret,sizeof(ret));
+	mySocket->SendDataOnly(retval, retvalSize);
+}
+
+
+int ClientInterface::Client_GetMesage(char* mess) {
+	int ret = OK;
+	if (!mess){
+		char messref[MAX_STR_LENGTH];
+		memset(messref, 0, MAX_STR_LENGTH);
+		mess = (char*)messref;
 	}
-	if(strstr(mess,"Unrecognized Function")==NULL)
-		mySocket->ReceiveDataOnly(retval,MAX_STR_LENGTH);
+	mySocket->ReceiveDataOnly(mess,MAX_STR_LENGTH);
+	cprintf(RED, "%s %d returned error: %s", type.c_str(), index, mess);
+	if(strstr(mess,"Unrecognized Function")!=NULL)
+		ret = FAIL;
 
 	return ret;
 }
 
 
-
-int ClientInterface::SendUDPDetails(int fnum, char retval[], char arg[3][MAX_STR_LENGTH]){
-	char args[3][MAX_STR_LENGTH];
-	int ret = slsDetectorDefs::FAIL;
-	char mess[MAX_STR_LENGTH];
-	memset(mess, 0, MAX_STR_LENGTH);
+int ClientInterface::Client_Send(int fnum,
+		void* args, int sizeOfArgs,
+		void* retval, int sizeOfRetval,
+		char* mess) {
 
 	mySocket->SendDataOnly(&fnum,sizeof(fnum));
-	mySocket->SendDataOnly(arg,sizeof(args));
+	mySocket->SendDataOnly(args, sizeOfArgs);
+
+	int ret = FAIL;
 	mySocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==slsDetectorDefs::FAIL){
-		mySocket->ReceiveDataOnly(mess,sizeof(mess));
-		cprintf(RED, "%s %d returned error: %s", type.c_str(), index, mess);
+	if (ret == FAIL) {
+		if (Client_GetMesage(mess) == FAIL)
+		return FAIL;
 	}
-	else
-		mySocket->ReceiveDataOnly(retval,MAX_STR_LENGTH);
+	mySocket->ReceiveDataOnly(retval, sizeOfRetval);
 
 	return ret;
 }
 
 
-int ClientInterface::SendInt(int fnum, int &retval, int arg){
-	int ret = slsDetectorDefs::FAIL;
-	char mess[MAX_STR_LENGTH];
-	memset(mess, 0, MAX_STR_LENGTH);
+int ClientInterface::Client_Send(int fnum,
+		void* args, int sizeOfArgs,
+		void* args2, int sizeOfArgs2,
+		void* retval, int sizeOfRetval,
+		char* mess) {
 
 	mySocket->SendDataOnly(&fnum,sizeof(fnum));
-	mySocket->SendDataOnly(&arg,sizeof(arg));
+	mySocket->SendDataOnly(args, sizeOfArgs);
+	mySocket->SendDataOnly(args2, sizeOfArgs2);
+
+	int ret = FAIL;
 	mySocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==slsDetectorDefs::FAIL){
-		mySocket->ReceiveDataOnly(mess,sizeof(mess));
-		cprintf(RED, "%s %d returned error: %s", type.c_str(), index, mess);
+	if (ret == FAIL) {
+		if (Client_GetMesage(mess) == FAIL)
+		return FAIL;
 	}
-	if(strstr(mess,"Unrecognized Function")==NULL)
-		mySocket->ReceiveDataOnly(&retval,sizeof(retval));
+	mySocket->ReceiveDataOnly(retval, sizeOfRetval);
 
 	return ret;
 }
 
 
 
-int ClientInterface::GetInt(int fnum, int &retval){
-	int ret = slsDetectorDefs::FAIL;
-	char mess[MAX_STR_LENGTH];
-	memset(mess, 0, MAX_STR_LENGTH);
-
-	mySocket->SendDataOnly(&fnum,sizeof(fnum));
-	mySocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==slsDetectorDefs::FAIL){
-		mySocket->ReceiveDataOnly(mess,sizeof(mess));
-		cprintf(RED, "%s %d returned error: %s", type.c_str(), index, mess);
-	}
-	if(strstr(mess,"Unrecognized Function")==NULL)
-		mySocket->ReceiveDataOnly(&retval,sizeof(retval));
-
-	return ret;
-}
-
-
-
-int ClientInterface::SendInt(int fnum, int64_t &retval, int64_t arg){
-	int ret = slsDetectorDefs::FAIL;
-	char mess[MAX_STR_LENGTH];
-	memset(mess, 0, MAX_STR_LENGTH);
-
-	mySocket->SendDataOnly(&fnum,sizeof(fnum));
-	mySocket->SendDataOnly(&arg,sizeof(arg));
-	mySocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==slsDetectorDefs::FAIL){
-		mySocket->ReceiveDataOnly(mess,sizeof(mess));
-		cprintf(RED, "%s %d returned error: %s", type.c_str(), index, mess);
-	}
-	if(strstr(mess,"Unrecognized Function")==NULL)
-		mySocket->ReceiveDataOnly(&retval,sizeof(retval));
-
-	return ret;
-}
-
-
-
-int ClientInterface::SendIntArray(int fnum, int64_t &retval, int64_t arg[2], char mess[]){
-	int64_t args[2];
-	int ret = slsDetectorDefs::FAIL;
-	memset(mess, 0, MAX_STR_LENGTH);
-
-	mySocket->SendDataOnly(&fnum,sizeof(fnum));
-	mySocket->SendDataOnly(arg,sizeof(args));
-	mySocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==slsDetectorDefs::FAIL){
-		mySocket->ReceiveDataOnly(mess,MAX_STR_LENGTH);
-		cprintf(RED, "%s %d returned error: %s", type.c_str(), index, mess);
-	}
-	if(strstr(mess,"Unrecognized Function")==NULL)
-		mySocket->ReceiveDataOnly(&retval,sizeof(retval));
-
-	return ret;
-}
-
-
-
-int ClientInterface::SendIntArray(int fnum, int &retval, int arg[2]){
-	int args[2];
-	int ret = slsDetectorDefs::FAIL;
-	char mess[MAX_STR_LENGTH];
-	memset(mess, 0, MAX_STR_LENGTH);
-
-	mySocket->SendDataOnly(&fnum,sizeof(fnum));
-	mySocket->SendDataOnly(arg,sizeof(args));
-	mySocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==slsDetectorDefs::FAIL){
-		mySocket->ReceiveDataOnly(mess,sizeof(mess));
-		cprintf(RED, "%s %d returned error: %s", type.c_str(), index, mess);
-	}
-	if(strstr(mess,"Unrecognized Function")==NULL)
-		mySocket->ReceiveDataOnly(&retval,sizeof(retval));
-
-	return ret;
-}
-
-
-
-int ClientInterface::GetInt(int fnum, int64_t &retval){
-	int ret = slsDetectorDefs::FAIL;
-	mySocket->SendDataOnly(&fnum,sizeof(fnum));
-	mySocket->ReceiveDataOnly(&ret,sizeof(ret));
-	mySocket->ReceiveDataOnly(&retval,sizeof(retval));
-	return ret;
-}
-
-
-int ClientInterface::GetLastClientIP(int fnum, char retval[]){
-	int ret = slsDetectorDefs::FAIL;
-	mySocket->SendDataOnly(&fnum,sizeof(fnum));
-	mySocket->ReceiveDataOnly(&ret,sizeof(ret));
-	mySocket->ReceiveDataOnly(retval,INET_ADDRSTRLEN);
-	return ret;
-}
-
-
-
-int ClientInterface::ExecuteFunction(int fnum,char mess[]){
-	int ret = slsDetectorDefs::FAIL;
-	memset(mess, 0, MAX_STR_LENGTH);
-
-	mySocket->SendDataOnly(&fnum,sizeof(fnum));
-	mySocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==slsDetectorDefs::FAIL){
-		mySocket->ReceiveDataOnly(mess,MAX_STR_LENGTH);
-		cprintf(RED, "%s %d returned error: %s", type.c_str(), index, mess);
-	}
-
-	return ret;
-}
-
-
-
-int ClientInterface::SendROI(int fnum, int n, slsReceiverDefs::ROI roiLimits[]) {
-	int ret = slsDetectorDefs::FAIL;
-	char mess[MAX_STR_LENGTH];
-	memset(mess, 0, MAX_STR_LENGTH);
-
-	mySocket->SendDataOnly(&fnum,sizeof(fnum));
-	mySocket->SendDataOnly(&n,sizeof(n));
-	mySocket->SendDataOnly(roiLimits,n * sizeof(slsReceiverDefs::ROI));
-	mySocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==slsDetectorDefs::FAIL){
-		mySocket->ReceiveDataOnly(mess,sizeof(mess));
-		cprintf(RED, "%s %d returned error: %s", type.c_str(), index, mess);
-	}
-	return ret;
-}
 
 

@@ -1,16 +1,16 @@
 #pragma once
 
 
-#include "sls_detector_defs.h"
+#include "sls_receiver_defs.h"
 #include "MySocketTCP.h"
 
 
 /**
  * @short the ClientInterface class is the interface between the client and the server
  */
+// Do not overload to make it easier for manual comparison between client and server functions
 
-
-class ClientInterface{
+class ClientInterface: public virtual slsReceiverDefs{
 
 public:
 
@@ -31,103 +31,61 @@ public:
 	 * Set the datasocket
 	 * @param socket the data socket
 	 */
-	void SetSocket(MySocketTCP *socket){mySocket=socket;};
+	void SetSocket(MySocketTCP *socket);
 
 	/**
-	 * Send a string to server
+	 * Print socket read error in Server
+	 */
+	int PrintSocketReadError();
+
+	/**
+	 * Server sends result to client
+	 * @param ret success of operation
+	 * @param retval pointer to result
+	 * @param retvalSize size of result
+	 */
+	void Server_SendResult(int ret, void* retval, int retvalSize);
+
+	/**
+	 * Get message from server
+	 * Print appropriate message
+	 * Check for Unrecognized function in message and return fail if it does
+	 * to prevent getting retval from the server afterwards
+	 * @param mess message
+	 * @returns FAIL if unrecognized function found in message, else OK
+	 */
+	int Client_GetMesage(char* mess=0);
+
+	/**
+	 * Send Arguments to server and get result back
 	 * @param fnum function enum to determine what parameter
-	 * @param retval return value
-	 * @param arg value to send
-	 * \returns success of operation
+	 * @param args pointer to arguments
+	 * @param sizeOfArgs argument size
+	 * @param retval pointer to return value
+	 * @param sizeOfRetval return value size
+	 * @param mess pointer to message if message required externally
 	 */
-	int SendString(int fnum, char retval[], char arg[]);
+	int Client_Send(int fnum,
+			void* args, int sizeOfArgs,
+			void* retval, int sizeOfRetval,
+			char* mess = 0);
 
 	/**
-	 * Send a string to server
-	 * @param fnum function enum to send udp ip and udp port
-	 * @param retval return value server mac
-	 * @param arg value to send
-	 * \returns success of operation
-	 */
-	int SendUDPDetails(int fnum, char retval[], char arg[3][MAX_STR_LENGTH]);
-
-	/**
-	 * Send an integer to server
+	 * Send Arguments (second set) to server and get result back
 	 * @param fnum function enum to determine what parameter
-	 * @param retval return value
-	 * @param arg value to send
-	 * \returns success of operation
+	 * @param args pointer to arguments
+	 * @param sizeOfArgs argument size
+	 * @param args2 pointer to arguments 2
+	 * @param sizeOfArgs2 argument size 2
+	 * @param retval pointer to return value
+	 * @param sizeOfRetval return value size
+	 * @param mess pointer to message if message required externally
 	 */
-	int SendInt(int fnum, int &retval, int arg);
-
-	/**
-	 * Get an integer value from server
-	 * @param fnum function enum to determine what parameter
-	 * @param retval return value
-	 * \returns success of operation
-	 */
-	int GetInt(int fnum, int &retval);
-
-	/**
-	 * Send an integer to server
-	 * @param fnum function enum to determine what parameter
-	 * @param retval return value
-	 * @param arg value to send
-	 * \returns success of operation
-	 */
-	int SendInt(int fnum, int64_t &retval, int64_t arg);
-
-	/**
-	 * Send an integer to server
-	 * @param fnum function enum to determine what parameter
-	 * @param retval return value
-	 * @param arg values to send
-	 * @param mess message returned
-	 * \returns success of operation
-	 */
-	int SendIntArray(int fnum, int64_t &retval, int64_t arg[2],char mess[]);
-
-	/**
-	 * Send an integer to server
-	 * @param fnum function enum to determine what parameter
-	 * @param retval return value
-	 * @param arg values to send
-	 * \returns success of operation
-	 */
-	int SendIntArray(int fnum, int &retval, int arg[2]);
-
-	/**
-	 * Get an integer value from server
-	 * @param fnum function enum to determine what parameter
-	 * @param retval return value
-	 * \returns success of operation
-	 */
-	int GetInt(int fnum, int64_t &retval);
-
-	/**
-	 * Get last client ip connected to server
-	 * @param fnum function enum to get last client up
-	 * @param retval return value
-	 * \returns success of operation
-	 */
-	int GetLastClientIP(int fnum, char retval[]);
-
-	/**
-	 * Send a function number to execute function
-	 * @param fnum function enum to determine which function to execute
-	 * @param mess return error message
-	 * \returns success of operation
-	 */
-	int ExecuteFunction(int fnum,char mess[]);
-
-	/**
-	 * Send an integer to server
-	 * @param fnum function enum to determine what parameter
-	 * @param n number of ROIs to send
-	 * @param roiLimits ROI structure
-	 * \returns success of operation
-	 */
-	int SendROI(int fnum, int n, slsReceiverDefs::ROI roiLimits[]);
+	int Client_Send(int fnum,
+			void* args, int sizeOfArgs,
+			void* args2, int sizeOfArgs2,
+			void* retval, int sizeOfRetval,
+			char* mess = 0);
 
 
 private:

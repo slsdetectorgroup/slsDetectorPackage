@@ -501,11 +501,8 @@ int slsReceiverTCPIPInterface::get_last_client_ip() {
 	if (mySock->differentClients)
 		ret = FORCE_UPDATE;
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	mySock->SendDataOnly(mySock->lastClientIP,sizeof(mySock->lastClientIP));
+	clientInterface->Server_SendResult(ret,mySock->lastClientIP, INET_ADDRSTRLEN);
 
-	// return ok/fail
 	return ret;
 }
 
@@ -741,21 +738,13 @@ int slsReceiverTCPIPInterface::send_update() {
 
 int slsReceiverTCPIPInterface::get_id(){
 	ret = OK;
-	int64_t retval=-1;
-
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	retval = getReceiverVersion();
-#endif
+	int64_t retval = getReceiverVersion();
 
 	if(mySock->differentClients)
 		ret = FORCE_UPDATE;
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	mySock->SendDataOnly(&retval,sizeof(retval));
+	clientInterface->Server_SendResult(ret, &retval, sizeof(retval));
 
-	// return ok/fail
 	return ret;
 }
 

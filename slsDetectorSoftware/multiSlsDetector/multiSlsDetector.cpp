@@ -607,8 +607,6 @@ void multiSlsDetector::addSlsDetector (std::string s) {
 
 
 	int pos = (int)detectors.size();
-	// slsDetector* sdet = new slsDetector(type, detId, pos, false);
-	// detectors.push_back(sdet);
 	detectors.push_back(sls::make_unique<slsDetector>(type, detId, pos, false));
 
 
@@ -654,7 +652,7 @@ std::string multiSlsDetector::getDetectorType(int detPos) {
 
 
 int multiSlsDetector::getNumberOfDetectors() {
-	return (int)detectors.size();
+	return detectors.size();
 }
 
 
@@ -664,7 +662,8 @@ int multiSlsDetector::getNumberOfDetectors(dimension d) {
 
 
 void multiSlsDetector::getNumberOfDetectors(int& nx, int& ny) {
-	nx=thisMultiDetector->numberOfDetector[X];ny=thisMultiDetector->numberOfDetector[Y];
+	nx=thisMultiDetector->numberOfDetector[X];
+	ny=thisMultiDetector->numberOfDetector[Y];
 }
 
 
@@ -2975,10 +2974,6 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy) {
 		uint32_t portnum = stoi(detectors[iSocket / numSocketsPerDetector]->getClientStreamingPort());
 		portnum += (iSocket % numSocketsPerDetector);
 		try {
-			// ZmqSocket* z = new ZmqSocket(
-			// 		detectors[iSocket / numSocketsPerDetector]->getClientStreamingIP().c_str(),
-			// 		portnum);
-			// zmqSocket.push_back(z);
 			zmqSocket.push_back(sls::make_unique<ZmqSocket>(detectors[iSocket / numSocketsPerDetector]->getClientStreamingIP().c_str(),
 					portnum));
 			printf("Zmq Client[%lu] at %s\n", iSocket, zmqSocket.back()->GetZmqServerAddress());

@@ -237,16 +237,16 @@ public:
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns pointer to sls detector object
 	 */
-	slsDetector* getSlsDetector(int detPos = -1);
+	// slsDetector* getSlsDetector(int detPos = -1);
 
 	/**
 	 * Accessing the sls detector from the multi list using position
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns slsDetector object
 	 */
-	slsDetector *operator()(int detPos = -1) const;
+	// slsDetector *operator()(int detPos = -1) const;
 
-    slsDetector* operator[](int detPos) const;
+    // slsDetector* operator[](int detPos) const;
 	/**
 	 * Free shared memory from the command line
 	 * avoiding creating the constructor classes and mapping
@@ -1594,7 +1594,7 @@ private:
 	 * @param update true to update last user pid, date etc
 	 * @returns true if shared memory was created in this call, else false
 	 */
-	bool initSharedMemory(bool verify = true);
+	void initSharedMemory(bool verify = true);
 
 	/**
 	 * Initialize detector structure for the shared memory just created

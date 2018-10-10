@@ -65,9 +65,7 @@ multiSlsDetector::~multiSlsDetector() {
 
 
 void multiSlsDetector::setupMultiDetector(bool verify, bool update) {
-	if (initSharedMemory(verify))
-		// shared memory just created, so initialize the structure
-		initializeDetectorStructure();
+	initSharedMemory(verify);
 	initializeMembers(verify);
 	if (update)
 		updateUserdetails();
@@ -78,13 +76,8 @@ template <typename RT, typename... CT>
 std::vector<RT> multiSlsDetector::serialCall(RT (slsDetector::*somefunc)(CT...), CT... Args)
 {
     std::vector<RT> result;
-    for (auto& d: detectors) {
+    for (auto& d: detectors)
         result.push_back((d.get()->*somefunc)(Args...));
-        /*
-         if ((*this)[idet]->getErrorMask())
-			setErrorMask(getErrorMask() | (1 << idet));
-         */
-    }
     return result;
 }
 
@@ -92,17 +85,11 @@ template <typename RT, typename... CT>
 std::vector<RT> multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...), CT... Args)
 {
     std::vector<std::future<RT>> futures;
-    for (auto &d : detectors) {
+    for (auto &d : detectors)
         futures.push_back(std::async(std::launch::async, somefunc, d.get(), Args...));
-        /*
-         if ((*this)[idet]->getErrorMask())
-			setErrorMask(getErrorMask() | (1 << idet));
-         */
-    }
     std::vector<RT> result;
     for (auto& i : futures)
         result.push_back(i.get());
-
     return result;
 }
 
@@ -290,23 +277,22 @@ int64_t multiSlsDetector::getId(idMode mode, int detPos) {
 }
 
 
-slsDetector* multiSlsDetector::getSlsDetector(int detPos) {
-	return detectors[detPos].get();
-}
+// slsDetector* multiSlsDetector::getSlsDetector(int detPos) {
+// 	return detectors[detPos].get();
+// }
 
+// slsDetector *multiSlsDetector::operator()(int detPos) const {
+// 	return detectors[detPos].get();
+// }
 
-slsDetector *multiSlsDetector::operator()(int detPos) const {
-	return detectors[detPos].get();
-}
-
-slsDetector* multiSlsDetector::operator[](int detPos) const {
-    //Providing access to detectors with range checking
-    //throw exception if out of range
-    if (detPos >= 0 && detPos < (int)detectors.size())
-        return detectors[detPos].get();
-    else
-        throw(std::range_error("Detector does not exist"));
-}
+// slsDetector* multiSlsDetector::operator[](int detPos) const {
+//     //Providing access to detectors with range checking
+//     //throw exception if out of range
+//     if (detPos >= 0 && detPos < (int)detectors.size())
+//         return detectors[detPos].get();
+//     else
+//         throw(std::range_error("Detector does not exist"));
+// }
 
 void multiSlsDetector::freeSharedMemory(int multiId, int detPos) {
 	// single
@@ -318,22 +304,20 @@ void multiSlsDetector::freeSharedMemory(int multiId, int detPos) {
 	// multi
 	// get number of detectors
 	int numDetectors = 0;
-	SharedMemory* shm = new SharedMemory(multiId, -1);
+	auto shm = SharedMemory(multiId, -1);
 
 	// get number of detectors from multi shm
-	if (shm->IsExisting()) {
-		sharedMultiSlsDetector* mdet = (sharedMultiSlsDetector*)shm->OpenSharedMemory(
+	if (shm.IsExisting()) {
+		sharedMultiSlsDetector* mdet = (sharedMultiSlsDetector*)shm.OpenSharedMemory(
 				sizeof(sharedMultiSlsDetector));
 		numDetectors = mdet->numberOfDetectors;
-		shm->UnmapSharedMemory(mdet);
-		shm->RemoveSharedMemory();
+		shm.UnmapSharedMemory(mdet);
+		shm.RemoveSharedMemory();
 	}
-	delete shm;
 
 	for (int i = 0; i < numDetectors; ++i) {
-		SharedMemory* shm = new SharedMemory(multiId, i);
-		shm->RemoveSharedMemory();
-		delete shm;
+		auto shm = SharedMemory(multiId, i);
+		shm.RemoveSharedMemory();
 	}
 }
 
@@ -405,18 +389,16 @@ std::string multiSlsDetector::getUserDetails() {
  * pre: sharedMemory=0, thisMultiDetector = 0, detectors.size() = 0
  * exceptions are caught in calling function, shm unmapped and deleted
  */
-bool multiSlsDetector::initSharedMemory(bool verify) {
-	size_t sz = sizeof(sharedMultiSlsDetector);
-	bool created = false;
-
+void multiSlsDetector::initSharedMemory(bool verify) {
 	try {
 		// shared memory object with name
 		sharedMemory = new SharedMemory(detId, -1);
-
+		size_t sz = sizeof(sharedMultiSlsDetector);
+		
 		//create
 		if (!sharedMemory->IsExisting()) {
 			thisMultiDetector = (sharedMultiSlsDetector*)sharedMemory->CreateSharedMemory(sz);
-			created = true;
+			initializeDetectorStructure();
 		}
 		// open and verify version
 		else {
@@ -441,8 +423,6 @@ bool multiSlsDetector::initSharedMemory(bool verify) {
 		}
 		throw;
 	}
-
-	return created;
 }
 
 
@@ -607,8 +587,6 @@ void multiSlsDetector::addSlsDetector (std::string s) {
 
 
 	int pos = (int)detectors.size();
-	// slsDetector* sdet = new slsDetector(type, detId, pos, false);
-	// detectors.push_back(sdet);
 	detectors.push_back(sls::make_unique<slsDetector>(type, detId, pos, false));
 
 
@@ -654,7 +632,7 @@ std::string multiSlsDetector::getDetectorType(int detPos) {
 
 
 int multiSlsDetector::getNumberOfDetectors() {
-	return (int)detectors.size();
+	return detectors.size();
 }
 
 
@@ -664,7 +642,8 @@ int multiSlsDetector::getNumberOfDetectors(dimension d) {
 
 
 void multiSlsDetector::getNumberOfDetectors(int& nx, int& ny) {
-	nx=thisMultiDetector->numberOfDetector[X];ny=thisMultiDetector->numberOfDetector[Y];
+	nx=thisMultiDetector->numberOfDetector[X];
+	ny=thisMultiDetector->numberOfDetector[Y];
 }
 
 
@@ -2987,10 +2966,6 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy) {
 		uint32_t portnum = stoi(detectors[iSocket / numSocketsPerDetector]->getClientStreamingPort());
 		portnum += (iSocket % numSocketsPerDetector);
 		try {
-			// ZmqSocket* z = new ZmqSocket(
-			// 		detectors[iSocket / numSocketsPerDetector]->getClientStreamingIP().c_str(),
-			// 		portnum);
-			// zmqSocket.push_back(z);
 			zmqSocket.push_back(sls::make_unique<ZmqSocket>(detectors[iSocket / numSocketsPerDetector]->getClientStreamingIP().c_str(),
 					portnum));
 			printf("Zmq Client[%lu] at %s\n", iSocket, zmqSocket.back()->GetZmqServerAddress());

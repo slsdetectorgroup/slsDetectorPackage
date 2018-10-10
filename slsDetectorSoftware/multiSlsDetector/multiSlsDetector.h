@@ -14,6 +14,7 @@ class SharedMemory;
 class ZmqSocket;
 class detectorData;
 
+#include <memory>
 #include <vector>
 #include <string>
 #include <semaphore.h>
@@ -1685,13 +1686,13 @@ private:
 	sharedMultiSlsDetector *thisMultiDetector;
 
 	/** pointers to the slsDetector structures */
-	std::vector <slsDetector*> detectors;
+	std::vector <std::unique_ptr<slsDetector>> detectors;
 
 	/** data streaming (down stream) enabled in client (zmq sckets created) */
 	bool client_downstream;
 
 	/** ZMQ Socket - Receiver to Client */
-	std::vector <ZmqSocket*> zmqSocket;
+	std::vector <std::unique_ptr<ZmqSocket>> zmqSocket;
 
 
 	/** semaphore to let postprocessing thread continue for next scan/measurement */

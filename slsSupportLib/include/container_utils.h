@@ -7,8 +7,17 @@
 #include <type_traits>
 #include <vector>
 #include <sstream>
-
+#include <memory>
 namespace sls {
+
+
+
+// C++11 make_unique implementation for exeption safety
+// already available as std::make_unique in C++14
+template <typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args &&... args) {
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
 
 template <typename T>
 bool allEqual(const std::vector<T>& container)

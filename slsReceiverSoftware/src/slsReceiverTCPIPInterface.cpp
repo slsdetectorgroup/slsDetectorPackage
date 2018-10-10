@@ -6,6 +6,7 @@
 #include "slsReceiverTCPIPInterface.h"
 #include "slsReceiverImplementation.h"
 #include "MySocketTCP.h"
+#include "ClientInterface.h"
 #include "gitInfoReceiver.h"
 #include "slsReceiverUsers.h"
 #include "slsReceiver.h"
@@ -28,6 +29,8 @@ slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 		delete mySock;
 		mySock=NULL;
 	}
+	if (clientInterface)
+		delete clientInterface;
 	if(receiverBase)
 		delete receiverBase;
 }
@@ -41,7 +44,8 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int pn):
 				killTCPServerThread(0),
 				tcpThreadCreated(false),
 				portNumber(DEFAULT_PORTNO+2),
-				mySock(0)
+				mySock(0),
+				clientInterface(0)
 {
 	//***callback parameters***
 	startAcquisitionCallBack = NULL;
@@ -56,6 +60,7 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int pn):
 	portNumber = (pn > 0 ? pn : DEFAULT_PORTNO + 2);
 	MySocketTCP* m = new MySocketTCP(portNumber);
 	mySock = m;
+	clientInterface = new ClientInterface(mySock);
 
 	//initialize variables
 	strcpy(mySock->lastClientIP,"none");
@@ -564,6 +569,7 @@ int slsReceiverTCPIPInterface::set_port() {
 			mySock->Disconnect();
 			delete mySock;
 			mySock = mySocket;
+			clientInterface->SetSocket(mySock);
 		}
 	}
 

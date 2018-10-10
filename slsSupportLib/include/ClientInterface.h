@@ -6,7 +6,7 @@
 
 
 /**
- * @short the ClientInterface class is the interface between the client and the receiver/detector
+ * @short the ClientInterface class is the interface between the client and the server
  */
 
 
@@ -17,9 +17,10 @@ public:
 	/**
 	 * (default) constructor
 	 * @param socket tcp socket between client and receiver
+	 * @param n for debugging purposes (useful only for client side)
+	 * @param t string to identify type (Detector, Receiver) for printouts (useful only for client side)
 	 */
-	ClientInterface(MySocketTCP *socket);
-
+	ClientInterface(MySocketTCP *socket, int n=-1, std::string t="");
 
 	/**
 	 * destructor
@@ -30,11 +31,10 @@ public:
 	 * Set the datasocket
 	 * @param socket the data socket
 	 */
-	void SetSocket(MySocketTCP *socket){dataSocket=socket;};
-
+	void SetSocket(MySocketTCP *socket){mySocket=socket;};
 
 	/**
-	 * Send a string to receiver
+	 * Send a string to server
 	 * @param fnum function enum to determine what parameter
 	 * @param retval return value
 	 * @param arg value to send
@@ -43,78 +43,74 @@ public:
 	int SendString(int fnum, char retval[], char arg[]);
 
 	/**
-	 * Send a string to receiver
+	 * Send a string to server
 	 * @param fnum function enum to send udp ip and udp port
-	 * @param retval return value receiver mac
+	 * @param retval return value server mac
 	 * @param arg value to send
 	 * \returns success of operation
 	 */
-	int sendUDPDetails(int fnum, char retval[], char arg[3][MAX_STR_LENGTH]);
-
+	int SendUDPDetails(int fnum, char retval[], char arg[3][MAX_STR_LENGTH]);
 
 	/**
-	 * Send an integer to receiver
+	 * Send an integer to server
 	 * @param fnum function enum to determine what parameter
 	 * @param retval return value
 	 * @param arg value to send
 	 * \returns success of operation
 	 */
-	int sendInt(int fnum, int &retval, int arg);
+	int SendInt(int fnum, int &retval, int arg);
 
 	/**
-	 * Get an integer value from receiver
+	 * Get an integer value from server
 	 * @param fnum function enum to determine what parameter
 	 * @param retval return value
 	 * \returns success of operation
 	 */
-	int getInt(int fnum, int &retval);
+	int GetInt(int fnum, int &retval);
 
 	/**
-	 * Send an integer to receiver
+	 * Send an integer to server
 	 * @param fnum function enum to determine what parameter
 	 * @param retval return value
 	 * @param arg value to send
 	 * \returns success of operation
 	 */
-	int sendInt(int fnum, int64_t &retval, int64_t arg);
-
+	int SendInt(int fnum, int64_t &retval, int64_t arg);
 
 	/**
-	 * Send an integer to receiver
+	 * Send an integer to server
 	 * @param fnum function enum to determine what parameter
 	 * @param retval return value
 	 * @param arg values to send
 	 * @param mess message returned
 	 * \returns success of operation
 	 */
-	int sendIntArray(int fnum, int64_t &retval, int64_t arg[2],char mess[]);
-
+	int SendIntArray(int fnum, int64_t &retval, int64_t arg[2],char mess[]);
 
 	/**
-	 * Send an integer to receiver
+	 * Send an integer to server
 	 * @param fnum function enum to determine what parameter
 	 * @param retval return value
 	 * @param arg values to send
 	 * \returns success of operation
 	 */
-	int sendIntArray(int fnum, int &retval, int arg[2]);
+	int SendIntArray(int fnum, int &retval, int arg[2]);
 
 	/**
-	 * Get an integer value from receiver
+	 * Get an integer value from server
 	 * @param fnum function enum to determine what parameter
 	 * @param retval return value
 	 * \returns success of operation
 	 */
-	int getInt(int fnum, int64_t &retval);
+	int GetInt(int fnum, int64_t &retval);
 
 	/**
-	 * Get last client ip connected to receiver
+	 * Get last client ip connected to server
 	 * @param fnum function enum to get last client up
 	 * @param retval return value
 	 * \returns success of operation
 	 */
-	int getLastClientIP(int fnum, char retval[]);
-
+	int GetLastClientIP(int fnum, char retval[]);
 
 	/**
 	 * Send a function number to execute function
@@ -122,17 +118,16 @@ public:
 	 * @param mess return error message
 	 * \returns success of operation
 	 */
-	int executeFunction(int fnum,char mess[]);
+	int ExecuteFunction(int fnum,char mess[]);
 
 	/**
-	 * Send an integer to receiver
+	 * Send an integer to server
 	 * @param fnum function enum to determine what parameter
 	 * @param n number of ROIs to send
 	 * @param roiLimits ROI structure
 	 * \returns success of operation
 	 */
-	int sendROI(int fnum, int n, slsReceiverDefs::ROI roiLimits[]);
-
+	int SendROI(int fnum, int n, slsReceiverDefs::ROI roiLimits[]);
 
 
 private:
@@ -140,7 +135,13 @@ private:
 	/**
 	 * socket for data acquisition
 	 */
-	MySocketTCP *dataSocket;
+	MySocketTCP *mySocket;
+
+	/** index for debugging purposes */
+	int index;
+
+	/** string for type to differentiate between Detector & Receiver in printouts */
+	std::string type;
 
 };
 

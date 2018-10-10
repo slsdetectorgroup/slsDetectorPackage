@@ -185,7 +185,7 @@ int slsDetector::checkVersionCompatibility(portType t) {
 			if (connectData() == OK){
 				// ignoring retval
 				int64_t retval = -1;
-				ret=thisReceiver->sendInt(fnum,retval,arg);
+				ret=thisReceiver->SendInt(fnum,retval,arg);
 				if (ret==FAIL){
 					setErrorMask((getErrorMask())|(VERSION_COMPATIBILITY));
 					if(strstr(mess,"Unrecognized Function")!=NULL)
@@ -222,7 +222,7 @@ int64_t slsDetector::getId( idMode mode) {
 	} else if (mode==RECEIVER_VERSION) {
 		if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
 			if (connectData() == OK){
-				ret=thisReceiver->getInt(fnum2,retval);
+				ret=thisReceiver->GetInt(fnum2,retval);
 				disconnectData();
 			}
 			if(ret==FORCE_UPDATE)
@@ -590,7 +590,7 @@ void slsDetector::initializeMembers() {
 		delete thisReceiver;
 		thisReceiver = 0;
 	}
-	thisReceiver = new ClientInterface(dataSocket);
+	thisReceiver = new ClientInterface(dataSocket, detId, "Receiver");
 }
 
 
@@ -958,7 +958,7 @@ int slsDetector::setDetectorType(detectorType const type) {
 #endif
 			if (connectData() == OK){
 				int arg = 0;
-				ret=thisReceiver->sendInt(fnum2,arg,(int)thisDetector->myDetectorType);
+				ret=thisReceiver->SendInt(fnum2,arg,(int)thisDetector->myDetectorType);
 				disconnectData();
 				retval = (detectorType)arg;
 			}
@@ -2761,7 +2761,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
 
 				char mess[MAX_STR_LENGTH]="";
 				if (connectData() == OK){
-					ret=thisReceiver->sendIntArray(fnum2,retval,args,mess);
+					ret=thisReceiver->SendIntArray(fnum2,retval,args,mess);
 					disconnectData();
 				}
 				if((args[1] != retval)|| (ret==FAIL)){
@@ -2951,7 +2951,7 @@ int slsDetector::setDynamicRange(int n) {
 					n << std::endl;
 #endif
 			if (connectData() == OK){
-				ret=thisReceiver->sendInt(fnum2,retval1,n);
+				ret=thisReceiver->SendInt(fnum2,retval1,n);
 				disconnectData();
 			}
 			if ((ret==FAIL) || (retval1 != retval)){
@@ -3531,7 +3531,7 @@ std::string slsDetector::getReceiverRealUDPSocketBufferSize() {
 		std::cout << "Getting real UDP Socket Buffer size to receiver " << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->getInt(fnum,retval);
+			ret=thisReceiver->GetInt(fnum,retval);
 			disconnectData();
 		}
 		if(ret==FAIL) {
@@ -3841,7 +3841,7 @@ std::string slsDetector::setReceiverStreamingPort(std::string port) {
 		std::cout << "Sending receiver streaming port to receiver " << arg << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendInt(fnum,retval,arg);
+			ret=thisReceiver->SendInt(fnum,retval,arg);
 			disconnectData();
 		}
 		if (ret==FAIL) {
@@ -3988,7 +3988,7 @@ std::string slsDetector::setReceiverUDPSocketBufferSize(int udpsockbufsize) {
 		std::cout << "Sending UDP Socket Buffer size to receiver " << arg << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendInt(fnum,retval,arg);
+			ret=thisReceiver->SendInt(fnum,retval,arg);
 			disconnectData();
 		}
 		if(ret==FAIL) {
@@ -4101,7 +4101,7 @@ int slsDetector::setUDPConnection() {
 		std::cout << "Setting up UDP Connection for Receiver " << args[0] << "\t" << args[1] << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendUDPDetails(fnum,retval,args);
+			ret=thisReceiver->SendUDPDetails(fnum,retval,args);
 			disconnectData();
 		}
 		if(ret!=FAIL){
@@ -4472,7 +4472,7 @@ int slsDetector::sendROI(int n,ROI roiLimits[]) {
 		std::cout << "Sending ROI to receiver " << thisDetector->nROI << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendROI(fnum, thisDetector->nROI, thisDetector->roiLimits);
+			ret=thisReceiver->SendROI(fnum, thisDetector->nROI, thisDetector->roiLimits);
 			disconnectData();
 		}
 		if(ret==FAIL)
@@ -4586,7 +4586,7 @@ int slsDetector::activate(int const enable) {
 			std::cout << "Activating/Deactivating Receiver: " << arg << std::endl;
 #endif
 			if (connectData() == OK){
-				ret=thisReceiver->sendInt(fnum2,retval,arg);
+				ret=thisReceiver->SendInt(fnum2,retval,arg);
 				disconnectData();
 			}
 			if(ret==FAIL)
@@ -4626,7 +4626,7 @@ int slsDetector::setDeactivatedRxrPaddingMode(int padding) {
 		std::cout << "Deactivated Receiver Padding Enable: " << arg << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendInt(fnum,retval,arg);
+			ret=thisReceiver->SendInt(fnum,retval,arg);
 			disconnectData();
 		}
 		if(ret==FAIL)
@@ -4675,7 +4675,7 @@ int slsDetector::setFlippedData(dimension d, int value) {
 
 	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
 		if (connectData() == OK){
-			ret=thisReceiver->sendIntArray(fnum,retval,args);
+			ret=thisReceiver->SendIntArray(fnum,retval,args);
 
 			disconnectData();
 		}
@@ -4745,7 +4745,7 @@ int slsDetector::enableGapPixels(int val) {
 		int arg=val;
 		if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
 			if (connectData() == OK){
-				ret=thisReceiver->sendInt(fnum,retval,arg);
+				ret=thisReceiver->SendInt(fnum,retval,arg);
 				disconnectData();
 			}
 			if((arg != retval) || (ret==FAIL)){
@@ -5932,7 +5932,7 @@ int slsDetector::lockReceiver(int lock) {
 		std::cout << "Locking or Unlocking Receiver " << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendInt(fnum,retval,arg);
+			ret=thisReceiver->SendInt(fnum,retval,arg);
 			disconnectData();
 		}
 		if(ret==FORCE_UPDATE)
@@ -5957,7 +5957,7 @@ std::string slsDetector::getReceiverLastClientIP() {
 		std::cout << "Geting Last Client IP connected to Receiver " << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->getLastClientIP(fnum,retval);
+			ret=thisReceiver->GetLastClientIP(fnum,retval);
 			disconnectData();
 		}
 		if(ret==FORCE_UPDATE)
@@ -6147,7 +6147,7 @@ void slsDetector::sendMultiDetectorSize() {
 				<< thisDetector->multiSize[1] << ")" << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendIntArray(fnum,retval,thisDetector->multiSize);
+			ret=thisReceiver->SendIntArray(fnum,retval,thisDetector->multiSize);
 			disconnectData();
 		}
 		if((ret==FAIL)){
@@ -6169,7 +6169,7 @@ void slsDetector::setDetectorId() {
 		std::cout << "Sending detector pos id to Receiver " << detId << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendInt(fnum,retval,arg);
+			ret=thisReceiver->SendInt(fnum,retval,arg);
 			disconnectData();
 		}
 		if((ret==FAIL) || (retval != arg)){
@@ -6295,7 +6295,7 @@ int slsDetector::setReceiverFramesPerFile(int f) {
 		std::cout << "Sending frames per file to receiver " << arg << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendInt(fnum,retval,arg);
+			ret=thisReceiver->SendInt(fnum,retval,arg);
 			disconnectData();
 		}
 		if (ret == FAIL)
@@ -6322,7 +6322,7 @@ slsReceiverDefs::frameDiscardPolicy slsDetector::setReceiverFramesDiscardPolicy(
 		std::cout << "Sending frames discard policy to receiver " << arg << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendInt(fnum,retval,arg);
+			ret=thisReceiver->SendInt(fnum,retval,arg);
 			disconnectData();
 		}
 		if(ret==FAIL)
@@ -6349,7 +6349,7 @@ int slsDetector::setReceiverPartialFramesPadding(int f) {
 		std::cout << "Sending partial frames enable to receiver " << arg << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendInt(fnum,retval,arg);
+			ret=thisReceiver->SendInt(fnum,retval,arg);
 			disconnectData();
 		}
 		if(ret==FAIL)
@@ -6379,7 +6379,7 @@ slsReceiverDefs::fileFormat slsDetector::setFileFormat(fileFormat f) {
 	std::cout << "Sending file format to receiver " << arg << std::endl;
 #endif
 	if (connectData() == OK){
-		ret=thisReceiver->sendInt(fnum,retval,arg);
+		ret=thisReceiver->SendInt(fnum,retval,arg);
 		disconnectData();
 	}
 	if (ret == FAIL)
@@ -6417,7 +6417,7 @@ int slsDetector::setFileIndex(int i) {
 	std::cout << "Sending file index to receiver " << arg << std::endl;
 #endif
 	if (connectData() == OK){
-		ret=thisReceiver->sendInt(fnum,retval,arg);
+		ret=thisReceiver->SendInt(fnum,retval,arg);
 		disconnectData();
 	}
 	if (ret == FAIL)
@@ -6452,7 +6452,7 @@ int slsDetector::startReceiver() {
 #endif
 
 		if (connectData() == OK){
-			ret=thisReceiver->executeFunction(fnum,mess);
+			ret=thisReceiver->ExecuteFunction(fnum,mess);
 			disconnectData();
 		}
 		if(ret==FORCE_UPDATE)
@@ -6483,7 +6483,7 @@ int slsDetector::stopReceiver() {
 		std::cout << "Stopping Receiver " << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->executeFunction(fnum,mess);
+			ret=thisReceiver->ExecuteFunction(fnum,mess);
 			disconnectData();
 		}
 		if(ret==FORCE_UPDATE)
@@ -6510,7 +6510,7 @@ slsDetectorDefs::runStatus slsDetector::getReceiverStatus() {
 		std::cout << "Getting Receiver Status" << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->getInt(fnum,retval);
+			ret=thisReceiver->GetInt(fnum,retval);
 			disconnectData();
 		}
 		if(retval!=-1)
@@ -6535,7 +6535,7 @@ int slsDetector::getFramesCaughtByReceiver() {
 		std::cout << "Getting Frames Caught by Receiver " << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->getInt(fnum,retval);
+			ret=thisReceiver->GetInt(fnum,retval);
 			disconnectData();
 		}
 		if(ret==FORCE_UPDATE)
@@ -6563,7 +6563,7 @@ int slsDetector::getReceiverCurrentFrameIndex() {
 		std::cout << "Getting Current Frame Index of Receiver " << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->getInt(fnum,retval);
+			ret=thisReceiver->GetInt(fnum,retval);
 			disconnectData();
 		}
 		if(ret==FORCE_UPDATE)
@@ -6586,7 +6586,7 @@ int slsDetector::resetFramesCaught() {
 		std::cout << "Reset Frames Caught by Receiver" << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->executeFunction(fnum,mess);
+			ret=thisReceiver->ExecuteFunction(fnum,mess);
 			disconnectData();
 		}
 		if(ret==FORCE_UPDATE)
@@ -6621,7 +6621,7 @@ int slsDetector::enableWriteToFile(int enable) {
 		std::cout << "Sending enable file write to receiver " << arg << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendInt(fnum,retval,arg);
+			ret=thisReceiver->SendInt(fnum,retval,arg);
 			disconnectData();
 		}
 		if (ret == FAIL)
@@ -6655,7 +6655,7 @@ int slsDetector::overwriteFile(int enable) {
 		std::cout << "Sending enable file write to receiver " << arg << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendInt(fnum,retval,arg);
+			ret=thisReceiver->SendInt(fnum,retval,arg);
 			disconnectData();
 		}
 		if (ret == FAIL)
@@ -6690,7 +6690,7 @@ int slsDetector::setReceiverStreamingFrequency(int freq) {
 			std::cout << "Sending read frequency to receiver " << arg  << std::endl;
 #endif
 			if (connectData() == OK){
-				ret=thisReceiver->sendInt(fnum,retval,arg);
+				ret=thisReceiver->SendInt(fnum,retval,arg);
 				disconnectData();
 			}
 			if((ret == FAIL) || (retval != freq)) {
@@ -6720,7 +6720,7 @@ int slsDetector::setReceiverStreamingTimer(int time_in_ms) {
 		std::cout << "Sending read timer to receiver " << arg  << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendInt(fnum,retval,arg);
+			ret=thisReceiver->SendInt(fnum,retval,arg);
 			disconnectData();
 		}
 		if(ret==FORCE_UPDATE)
@@ -6760,7 +6760,7 @@ int slsDetector::enableDataStreamingFromReceiver(int enable) {
 					<< arg  << std::endl;
 #endif
 			if (connectData() == OK){
-				ret=thisReceiver->sendInt(fnum,retval,arg);
+				ret=thisReceiver->SendInt(fnum,retval,arg);
 				disconnectData();
 			}
 			if(ret==FAIL) {
@@ -6822,7 +6822,7 @@ int slsDetector::enableTenGigabitEthernet(int i) {
 							<< i << std::endl;
 #endif
 					if (connectData() == OK){
-						ret=thisReceiver->sendInt(fnum2,retval,i);
+						ret=thisReceiver->SendInt(fnum2,retval,i);
 						disconnectData();
 					}
 					if(ret==FAIL)
@@ -6853,7 +6853,7 @@ int slsDetector::setReceiverFifoDepth(int i) {
 			std::cout<< "Setting Receiver Fifo Depth to " << i << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendInt(fnum,retval,i);
+			ret=thisReceiver->SendInt(fnum,retval,i);
 			disconnectData();
 		}
 		if(ret==FAIL)
@@ -6878,7 +6878,7 @@ int slsDetector::setReceiverSilentMode(int i) {
 			std::cout<< "Setting Receiver Silent Mode to " << i << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendInt(fnum,retval,i);
+			ret=thisReceiver->SendInt(fnum,retval,i);
 			disconnectData();
 		}
 		if(ret==FAIL)
@@ -6903,7 +6903,7 @@ int slsDetector::restreamStopFromReceiver() {
 #endif
 
 		if (connectData() == OK){
-			ret=thisReceiver->executeFunction(fnum,mess);
+			ret=thisReceiver->ExecuteFunction(fnum,mess);
 			disconnectData();
 		}
 		if(ret==FORCE_UPDATE)

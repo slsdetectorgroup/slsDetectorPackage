@@ -11,6 +11,7 @@ set(SOURCES
     src/DataStreamer.cpp
     src/Fifo.cpp
     ../slsSupportLib/include/utilities.cpp
+    ../slsSupportLib/include/ClientInterface.cpp
 )
 
 

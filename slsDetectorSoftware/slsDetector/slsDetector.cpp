@@ -2,7 +2,7 @@
 #include "multiSlsDetector.h"
 #include "sls_receiver_exceptions.h"
 #include "SharedMemory.h"
-#include "ReceiverInterface.h"
+#include "ClientInterface.h"
 #include "gitInfoLib.h"
 #include "versionAPI.h"
 #include "slsDetectorCommand.h"
@@ -590,7 +590,7 @@ void slsDetector::initializeMembers() {
 		delete thisReceiver;
 		thisReceiver = 0;
 	}
-	thisReceiver = new ReceiverInterface(dataSocket);
+	thisReceiver = new ClientInterface(dataSocket);
 }
 
 
@@ -3928,7 +3928,7 @@ std::string slsDetector::setReceiverStreamingIP(std::string sourceIP) {
 				std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendString(fnum,retval,arg);
+			ret=thisReceiver->SendString(fnum,retval,arg);
 			disconnectData();
 		}
 		if(ret==FAIL) {
@@ -3960,7 +3960,7 @@ std::string slsDetector::setAdditionalJsonHeader(std::string jsonheader) {
 		std::cout << "Sending additional json header " << arg << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendString(fnum,retval,arg);
+			ret=thisReceiver->SendString(fnum,retval,arg);
 			disconnectData();
 		}
 		if(ret==FAIL) {
@@ -5894,7 +5894,7 @@ int slsDetector::setReceiverTCPSocket(std::string const name, int const receiver
 	//check if it connects
 	if (retval!=FAIL) {
 		checkReceiverOnline();
-		thisReceiver->setSocket(dataSocket);
+		thisReceiver->SetSocket(dataSocket);
 		// check for version compatibility
 		switch (thisDetector->myDetectorType) {
 		case EIGER:
@@ -6168,7 +6168,7 @@ void slsDetector::setDetectorHostname() {
 				thisDetector->hostname << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendString(fnum,retval,thisDetector->hostname);
+			ret=thisReceiver->SendString(fnum,retval,thisDetector->hostname);
 			disconnectData();
 		}
 		if((ret==FAIL) || (strcmp(retval,thisDetector->hostname)))
@@ -6199,7 +6199,7 @@ std::string slsDetector::setFilePath(std::string s) {
 	std::cout << "Sending file path to receiver " << arg << std::endl;
 #endif
 	if (connectData() == OK){
-		ret=thisReceiver->sendString(fnum,retval,arg);
+		ret=thisReceiver->SendString(fnum,retval,arg);
 		disconnectData();
 	}
 	if(ret!=FAIL){
@@ -6240,7 +6240,7 @@ std::string slsDetector::setFileName(std::string s) {
 		std::cout << "Sending file name to receiver " << arg << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendString(fnum,retval,arg);
+			ret=thisReceiver->SendString(fnum,retval,arg);
 			disconnectData();
 		}
 		if (ret == FAIL)

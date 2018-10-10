@@ -14,7 +14,7 @@
 
 class multiSlsDetector;
 class SharedMemory;
-class ReceiverInterface;
+class ClientInterface;
 
 #define SLS_SHMVERSION	0x181005
 #define NCHIPSMAX 10
@@ -1884,7 +1884,7 @@ private:
 	sharedSlsDetector *thisDetector;
 
 	/** receiver interface */
-	ReceiverInterface *thisReceiver;
+	ClientInterface *thisReceiver;
 
 	/** socket for control commands	 */
 	MySocketTCP *controlSocket;

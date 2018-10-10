@@ -6,11 +6,11 @@
 
 
 /**
- * @short the ReceiverInterface class is the interface between the client and the receiver
+ * @short the ClientInterface class is the interface between the client and the receiver/detector
  */
 
 
-class ReceiverInterface{
+class ClientInterface{
 
 public:
 
@@ -18,19 +18,19 @@ public:
 	 * (default) constructor
 	 * @param socket tcp socket between client and receiver
 	 */
-	ReceiverInterface(MySocketTCP *socket);
+	ClientInterface(MySocketTCP *socket);
 
 
 	/**
 	 * destructor
 	 */
-	virtual ~ReceiverInterface();
+	virtual ~ClientInterface();
 
 	/**
 	 * Set the datasocket
 	 * @param socket the data socket
 	 */
-	void setSocket(MySocketTCP *socket){dataSocket=socket;};
+	void SetSocket(MySocketTCP *socket){dataSocket=socket;};
 
 
 	/**
@@ -40,7 +40,7 @@ public:
 	 * @param arg value to send
 	 * \returns success of operation
 	 */
-	int sendString(int fnum, char retval[], char arg[]);
+	int SendString(int fnum, char retval[], char arg[]);
 
 	/**
 	 * Send a string to receiver

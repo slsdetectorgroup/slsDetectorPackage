@@ -426,7 +426,7 @@ int slsReceiverTCPIPInterface::exec_command() {
 		sysret=system(cmd);
 		//should be replaced by popen
 		if (sysret == 0) {
-			sprintf(mess,"Succeeded\n");
+			ret = OK;
 		} else {
 			ret = FAIL;
 			sprintf(mess,"Executing Command failed\n");
@@ -436,7 +436,8 @@ int slsReceiverTCPIPInterface::exec_command() {
 
 	// send answer
 	mySock->SendDataOnly(&ret,sizeof(ret));
-	mySock->SendDataOnly(mess,MAX_STR_LENGTH);
+	if (ret == FAIL)
+		mySock->SendDataOnly(mess,MAX_STR_LENGTH);
 
 	// return ok/fail
 	return ret;

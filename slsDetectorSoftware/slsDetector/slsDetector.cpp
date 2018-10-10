@@ -2,7 +2,7 @@
 #include "multiSlsDetector.h"
 #include "sls_receiver_exceptions.h"
 #include "SharedMemory.h"
-#include "receiverInterface.h"
+#include "ClientInterface.h"
 #include "gitInfoLib.h"
 #include "versionAPI.h"
 #include "slsDetectorCommand.h"
@@ -590,7 +590,7 @@ void slsDetector::initializeMembers() {
 		delete thisReceiver;
 		thisReceiver = 0;
 	}
-	thisReceiver = new receiverInterface(dataSocket);
+	thisReceiver = new ClientInterface(dataSocket);
 }
 
 
@@ -3928,7 +3928,7 @@ std::string slsDetector::setReceiverStreamingIP(std::string sourceIP) {
 				std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendString(fnum,retval,arg);
+			ret=thisReceiver->SendString(fnum,retval,arg);
 			disconnectData();
 		}
 		if(ret==FAIL) {
@@ -3960,7 +3960,7 @@ std::string slsDetector::setAdditionalJsonHeader(std::string jsonheader) {
 		std::cout << "Sending additional json header " << arg << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendString(fnum,retval,arg);
+			ret=thisReceiver->SendString(fnum,retval,arg);
 			disconnectData();
 		}
 		if(ret==FAIL) {
@@ -5894,7 +5894,7 @@ int slsDetector::setReceiverTCPSocket(std::string const name, int const receiver
 	//check if it connects
 	if (retval!=FAIL) {
 		checkReceiverOnline();
-		thisReceiver->setSocket(dataSocket);
+		thisReceiver->SetSocket(dataSocket);
 		// check for version compatibility
 		switch (thisDetector->myDetectorType) {
 		case EIGER:
@@ -5989,6 +5989,30 @@ int slsDetector::exitReceiver() {
 	return retval;
 
 }
+
+int slsDetector::execReceiverCommand(std::string cmd) {
+
+	int fnum=F_EXEC_RECEIVER_COMMAND;
+	int ret=FAIL;
+	char arg[MAX_STR_LENGTH];
+	memset(arg,0,sizeof(arg));
+	char retval[MAX_STR_LENGTH];
+	memset(retval,0, sizeof(retval));
+
+	strcpy(arg,cmd.c_str());
+
+	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
+#ifdef VERBOSE
+		std::cout << "Sending to receiver the command: " << arg << std::endl;
+#endif
+		if (connectData() == OK){
+			ret=thisReceiver->SendString(fnum,retval,arg);
+			disconnectData();
+		}
+	}
+	return ret;
+}
+
 
 
 int slsDetector::updateReceiverNoWait() {
@@ -6168,7 +6192,7 @@ void slsDetector::setDetectorHostname() {
 				thisDetector->hostname << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendString(fnum,retval,thisDetector->hostname);
+			ret=thisReceiver->SendString(fnum,retval,thisDetector->hostname);
 			disconnectData();
 		}
 		if((ret==FAIL) || (strcmp(retval,thisDetector->hostname)))
@@ -6199,7 +6223,7 @@ std::string slsDetector::setFilePath(std::string s) {
 	std::cout << "Sending file path to receiver " << arg << std::endl;
 #endif
 	if (connectData() == OK){
-		ret=thisReceiver->sendString(fnum,retval,arg);
+		ret=thisReceiver->SendString(fnum,retval,arg);
 		disconnectData();
 	}
 	if(ret!=FAIL){
@@ -6240,7 +6264,7 @@ std::string slsDetector::setFileName(std::string s) {
 		std::cout << "Sending file name to receiver " << arg << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->sendString(fnum,retval,arg);
+			ret=thisReceiver->SendString(fnum,retval,arg);
 			disconnectData();
 		}
 		if (ret == FAIL)
@@ -7504,5 +7528,7 @@ int slsDetector::writeSettingsFile(std::string fname,  sls_detector_module mod,
 	}
 
 }
+
+
 
 

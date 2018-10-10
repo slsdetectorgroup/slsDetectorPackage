@@ -4,7 +4,7 @@ set(SOURCES
     slsDetector/slsDetectorUsers.cpp 
     slsDetector/slsDetectorCommand.cpp
     slsDetector/slsDetector.cpp 
-    slsReceiverInterface/receiverInterface.cpp
+    ../slsSupportLib/include/ClientInterface.cpp
     ../slsSupportLib/include/utilities.cpp
 )
 
@@ -16,8 +16,6 @@ include_directories(
 multiSlsDetector 
 sharedMemory
 slsDetector 
-slsReceiverInterface 
-../slsSupportLib/include
 )
 
 add_library(slsDetectorStatic STATIC
@@ -52,7 +50,7 @@ set(PUBLICHEADERS
     slsDetector/slsDetectorUsers.h
     slsDetector/detectorData.h
     multiSlsDetector/multiSlsDetector.h
-    slsReceiverInterface/receiverInterface.h
+    ../slsSupportLib/include/ClientInterface.h
 )
 set_target_properties(slsDetectorShared PROPERTIES
     LIBRARY_OUTPUT_NAME SlsDetector

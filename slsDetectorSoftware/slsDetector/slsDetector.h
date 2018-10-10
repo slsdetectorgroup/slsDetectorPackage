@@ -14,7 +14,7 @@
 
 class multiSlsDetector;
 class SharedMemory;
-class receiverInterface;
+class ClientInterface;
 
 #define SLS_SHMVERSION	0x181005
 #define NCHIPSMAX 10
@@ -1378,6 +1378,14 @@ public:
 	int exitReceiver();
 
 	/**
+	 * Executes a system command on the receiver server
+	 * e.g. mount an nfs disk, reboot and returns answer etc.
+	 * @param cmd command to be executed
+	 * @returns OK or FAIL
+	 */
+	int execReceiverCommand(std::string cmd);
+
+	/**
      updates the shared memory receiving the data from the detector (without asking and closing the connection
      /returns OK
 	 */
@@ -1884,7 +1892,7 @@ private:
 	sharedSlsDetector *thisDetector;
 
 	/** receiver interface */
-	receiverInterface *thisReceiver;
+	ClientInterface *thisReceiver;
 
 	/** socket for control commands	 */
 	MySocketTCP *controlSocket;

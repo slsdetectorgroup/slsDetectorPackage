@@ -78,13 +78,8 @@ template <typename RT, typename... CT>
 std::vector<RT> multiSlsDetector::serialCall(RT (slsDetector::*somefunc)(CT...), CT... Args)
 {
     std::vector<RT> result;
-    for (auto& d: detectors) {
+    for (auto& d: detectors)
         result.push_back((d.get()->*somefunc)(Args...));
-        /*
-         if ((*this)[idet]->getErrorMask())
-			setErrorMask(getErrorMask() | (1 << idet));
-         */
-    }
     return result;
 }
 
@@ -92,17 +87,11 @@ template <typename RT, typename... CT>
 std::vector<RT> multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...), CT... Args)
 {
     std::vector<std::future<RT>> futures;
-    for (auto &d : detectors) {
+    for (auto &d : detectors)
         futures.push_back(std::async(std::launch::async, somefunc, d.get(), Args...));
-        /*
-         if ((*this)[idet]->getErrorMask())
-			setErrorMask(getErrorMask() | (1 << idet));
-         */
-    }
     std::vector<RT> result;
     for (auto& i : futures)
         result.push_back(i.get());
-
     return result;
 }
 
@@ -290,23 +279,22 @@ int64_t multiSlsDetector::getId(idMode mode, int detPos) {
 }
 
 
-slsDetector* multiSlsDetector::getSlsDetector(int detPos) {
-	return detectors[detPos].get();
-}
+// slsDetector* multiSlsDetector::getSlsDetector(int detPos) {
+// 	return detectors[detPos].get();
+// }
 
+// slsDetector *multiSlsDetector::operator()(int detPos) const {
+// 	return detectors[detPos].get();
+// }
 
-slsDetector *multiSlsDetector::operator()(int detPos) const {
-	return detectors[detPos].get();
-}
-
-slsDetector* multiSlsDetector::operator[](int detPos) const {
-    //Providing access to detectors with range checking
-    //throw exception if out of range
-    if (detPos >= 0 && detPos < (int)detectors.size())
-        return detectors[detPos].get();
-    else
-        throw(std::range_error("Detector does not exist"));
-}
+// slsDetector* multiSlsDetector::operator[](int detPos) const {
+//     //Providing access to detectors with range checking
+//     //throw exception if out of range
+//     if (detPos >= 0 && detPos < (int)detectors.size())
+//         return detectors[detPos].get();
+//     else
+//         throw(std::range_error("Detector does not exist"));
+// }
 
 void multiSlsDetector::freeSharedMemory(int multiId, int detPos) {
 	// single
@@ -318,22 +306,20 @@ void multiSlsDetector::freeSharedMemory(int multiId, int detPos) {
 	// multi
 	// get number of detectors
 	int numDetectors = 0;
-	SharedMemory* shm = new SharedMemory(multiId, -1);
+	auto shm = SharedMemory(multiId, -1);
 
 	// get number of detectors from multi shm
-	if (shm->IsExisting()) {
-		sharedMultiSlsDetector* mdet = (sharedMultiSlsDetector*)shm->OpenSharedMemory(
+	if (shm.IsExisting()) {
+		sharedMultiSlsDetector* mdet = (sharedMultiSlsDetector*)shm.OpenSharedMemory(
 				sizeof(sharedMultiSlsDetector));
 		numDetectors = mdet->numberOfDetectors;
-		shm->UnmapSharedMemory(mdet);
-		shm->RemoveSharedMemory();
+		shm.UnmapSharedMemory(mdet);
+		shm.RemoveSharedMemory();
 	}
-	delete shm;
 
 	for (int i = 0; i < numDetectors; ++i) {
-		SharedMemory* shm = new SharedMemory(multiId, i);
-		shm->RemoveSharedMemory();
-		delete shm;
+		auto shm = SharedMemory(multiId, i);
+		shm.RemoveSharedMemory();
 	}
 }
 

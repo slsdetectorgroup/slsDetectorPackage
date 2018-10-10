@@ -237,16 +237,16 @@ public:
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns pointer to sls detector object
 	 */
-	slsDetector* getSlsDetector(int detPos = -1);
+	// slsDetector* getSlsDetector(int detPos = -1);
 
 	/**
 	 * Accessing the sls detector from the multi list using position
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns slsDetector object
 	 */
-	slsDetector *operator()(int detPos = -1) const;
+	// slsDetector *operator()(int detPos = -1) const;
 
-    slsDetector* operator[](int detPos) const;
+    // slsDetector* operator[](int detPos) const;
 	/**
 	 * Free shared memory from the command line
 	 * avoiding creating the constructor classes and mapping

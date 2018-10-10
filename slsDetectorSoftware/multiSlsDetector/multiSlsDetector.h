@@ -1712,9 +1712,6 @@ private:
 	/** mutex to synchronizedata processing and plotting threads */
 	pthread_mutex_t mg;
 
-	/** mutex to synchronize slsdetector threads */
-	pthread_mutex_t ms;
-
 	/** sets when the acquisition is finished */
 	int jointhread;
 

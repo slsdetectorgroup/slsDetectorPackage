@@ -49,8 +49,6 @@ multiSlsDetector::multiSlsDetector(int id, bool verify, bool update)
 	pthread_mutex_init(&mp, NULL);
 	mg=mp1;
 	pthread_mutex_init(&mg, NULL);
-	ms=mp1;
-	pthread_mutex_init(&ms, NULL);
 
 	setupMultiDetector(verify, update);
 

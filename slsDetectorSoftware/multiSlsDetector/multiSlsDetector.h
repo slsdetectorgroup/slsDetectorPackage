@@ -1594,7 +1594,7 @@ private:
 	 * @param update true to update last user pid, date etc
 	 * @returns true if shared memory was created in this call, else false
 	 */
-	bool initSharedMemory(bool verify = true);
+	void initSharedMemory(bool verify = true);
 
 	/**
 	 * Initialize detector structure for the shared memory just created

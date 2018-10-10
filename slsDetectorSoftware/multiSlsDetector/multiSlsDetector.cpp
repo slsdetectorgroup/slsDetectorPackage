@@ -65,9 +65,7 @@ multiSlsDetector::~multiSlsDetector() {
 
 
 void multiSlsDetector::setupMultiDetector(bool verify, bool update) {
-	if (initSharedMemory(verify))
-		// shared memory just created, so initialize the structure
-		initializeDetectorStructure();
+	initSharedMemory(verify);
 	initializeMembers(verify);
 	if (update)
 		updateUserdetails();
@@ -391,9 +389,9 @@ std::string multiSlsDetector::getUserDetails() {
  * pre: sharedMemory=0, thisMultiDetector = 0, detectors.size() = 0
  * exceptions are caught in calling function, shm unmapped and deleted
  */
-bool multiSlsDetector::initSharedMemory(bool verify) {
+void multiSlsDetector::initSharedMemory(bool verify) {
 	size_t sz = sizeof(sharedMultiSlsDetector);
-	bool created = false;
+
 
 	try {
 		// shared memory object with name
@@ -402,7 +400,7 @@ bool multiSlsDetector::initSharedMemory(bool verify) {
 		//create
 		if (!sharedMemory->IsExisting()) {
 			thisMultiDetector = (sharedMultiSlsDetector*)sharedMemory->CreateSharedMemory(sz);
-			created = true;
+			initializeDetectorStructure();
 		}
 		// open and verify version
 		else {
@@ -427,8 +425,6 @@ bool multiSlsDetector::initSharedMemory(bool verify) {
 		}
 		throw;
 	}
-
-	return created;
 }
 
 

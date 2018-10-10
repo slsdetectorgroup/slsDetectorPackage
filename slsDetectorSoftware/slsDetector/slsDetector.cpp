@@ -2,7 +2,7 @@
 #include "multiSlsDetector.h"
 #include "sls_receiver_exceptions.h"
 #include "SharedMemory.h"
-#include "receiverInterface.h"
+#include "ReceiverInterface.h"
 #include "gitInfoLib.h"
 #include "versionAPI.h"
 #include "slsDetectorCommand.h"
@@ -590,7 +590,7 @@ void slsDetector::initializeMembers() {
 		delete thisReceiver;
 		thisReceiver = 0;
 	}
-	thisReceiver = new receiverInterface(dataSocket);
+	thisReceiver = new ReceiverInterface(dataSocket);
 }
 
 

@@ -1,4 +1,4 @@
-#include "receiverInterface.h"
+#include "ReceiverInterface.h"
 
 
 #include  <sys/types.h>
@@ -11,15 +11,15 @@
 
 
 
-receiverInterface::receiverInterface(MySocketTCP *socket):dataSocket(socket){}
+ReceiverInterface::ReceiverInterface(MySocketTCP *socket):dataSocket(socket){}
 
 
 
-receiverInterface::~receiverInterface(){}
+ReceiverInterface::~ReceiverInterface(){}
 
 
 
-int receiverInterface::sendString(int fnum, char retval[], char arg[]){
+int ReceiverInterface::sendString(int fnum, char retval[], char arg[]){
 	int ret = slsDetectorDefs::FAIL;
 	char mess[MAX_STR_LENGTH];
 	memset(mess, 0, MAX_STR_LENGTH);
@@ -39,7 +39,7 @@ int receiverInterface::sendString(int fnum, char retval[], char arg[]){
 
 
 
-int receiverInterface::sendUDPDetails(int fnum, char retval[], char arg[3][MAX_STR_LENGTH]){
+int ReceiverInterface::sendUDPDetails(int fnum, char retval[], char arg[3][MAX_STR_LENGTH]){
 	char args[3][MAX_STR_LENGTH];
 	int ret = slsDetectorDefs::FAIL;
 	char mess[MAX_STR_LENGTH];
@@ -59,7 +59,7 @@ int receiverInterface::sendUDPDetails(int fnum, char retval[], char arg[3][MAX_S
 }
 
 
-int receiverInterface::sendInt(int fnum, int &retval, int arg){
+int ReceiverInterface::sendInt(int fnum, int &retval, int arg){
 	int ret = slsDetectorDefs::FAIL;
 	char mess[MAX_STR_LENGTH];
 	memset(mess, 0, MAX_STR_LENGTH);
@@ -79,7 +79,7 @@ int receiverInterface::sendInt(int fnum, int &retval, int arg){
 
 
 
-int receiverInterface::getInt(int fnum, int &retval){
+int ReceiverInterface::getInt(int fnum, int &retval){
 	int ret = slsDetectorDefs::FAIL;
 	char mess[MAX_STR_LENGTH];
 	memset(mess, 0, MAX_STR_LENGTH);
@@ -98,7 +98,7 @@ int receiverInterface::getInt(int fnum, int &retval){
 
 
 
-int receiverInterface::sendInt(int fnum, int64_t &retval, int64_t arg){
+int ReceiverInterface::sendInt(int fnum, int64_t &retval, int64_t arg){
 	int ret = slsDetectorDefs::FAIL;
 	char mess[MAX_STR_LENGTH];
 	memset(mess, 0, MAX_STR_LENGTH);
@@ -118,7 +118,7 @@ int receiverInterface::sendInt(int fnum, int64_t &retval, int64_t arg){
 
 
 
-int receiverInterface::sendIntArray(int fnum, int64_t &retval, int64_t arg[2], char mess[]){
+int ReceiverInterface::sendIntArray(int fnum, int64_t &retval, int64_t arg[2], char mess[]){
 	int64_t args[2];
 	int ret = slsDetectorDefs::FAIL;
 	memset(mess, 0, MAX_STR_LENGTH);
@@ -138,7 +138,7 @@ int receiverInterface::sendIntArray(int fnum, int64_t &retval, int64_t arg[2], c
 
 
 
-int receiverInterface::sendIntArray(int fnum, int &retval, int arg[2]){
+int ReceiverInterface::sendIntArray(int fnum, int &retval, int arg[2]){
 	int args[2];
 	int ret = slsDetectorDefs::FAIL;
 	char mess[MAX_STR_LENGTH];
@@ -159,7 +159,7 @@ int receiverInterface::sendIntArray(int fnum, int &retval, int arg[2]){
 
 
 
-int receiverInterface::getInt(int fnum, int64_t &retval){
+int ReceiverInterface::getInt(int fnum, int64_t &retval){
 	int ret = slsDetectorDefs::FAIL;
 
 	dataSocket->SendDataOnly(&fnum,sizeof(fnum));
@@ -170,7 +170,7 @@ int receiverInterface::getInt(int fnum, int64_t &retval){
 }
 
 
-int receiverInterface::getLastClientIP(int fnum, char retval[]){
+int ReceiverInterface::getLastClientIP(int fnum, char retval[]){
 	int ret = slsDetectorDefs::FAIL;
 
 	dataSocket->SendDataOnly(&fnum,sizeof(fnum));
@@ -182,7 +182,7 @@ int receiverInterface::getLastClientIP(int fnum, char retval[]){
 
 
 
-int receiverInterface::executeFunction(int fnum,char mess[]){
+int ReceiverInterface::executeFunction(int fnum,char mess[]){
 	int ret = slsDetectorDefs::FAIL;
 	memset(mess, 0, MAX_STR_LENGTH);
 
@@ -198,7 +198,7 @@ int receiverInterface::executeFunction(int fnum,char mess[]){
 
 
 
-int receiverInterface::sendROI(int fnum, int n, slsReceiverDefs::ROI roiLimits[]) {
+int ReceiverInterface::sendROI(int fnum, int n, slsReceiverDefs::ROI roiLimits[]) {
 	int ret = slsDetectorDefs::FAIL;
 	char mess[MAX_STR_LENGTH];
 	memset(mess, 0, MAX_STR_LENGTH);

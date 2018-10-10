@@ -9,14 +9,14 @@ CFLAGS= -g -DC_ONLY -fPIC
 
 DFLAGS= -g -DDACS_INT 
 
-INCLUDES?= -I../slsSupportLib/include -IslsDetector  -ImultiSlsDetector  -IslsReceiverInterface -IsharedMemory  I$(ASM)
+INCLUDES?= -I../slsSupportLib/include -IslsDetector  -ImultiSlsDetector  -IReceiverInterface -IsharedMemory  I$(ASM)
 
 #EPICSFLAGS=-D EPICS -I/usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/ -L /usr/local/epics/base/lib/$(EPICS_HOST_ARCH) -Wl,-R/usr/local/epics/base/lib/$(EPICS_HOST_ARCH)  -lca -lCom 
 
 LIBZMQDIR = ../slsSupportLib/include
 LIBZMQ =  -L$(LIBZMQDIR) -Wl,-rpath=$(LIBZMQDIR) -lzmq
 
-SRC_CLNT=  slsDetector/slsDetectorCommand.cpp slsDetector/slsDetector.cpp multiSlsDetector/multiSlsDetector.cpp slsReceiverInterface/receiverInterface.cpp slsDetector/slsDetectorUsers.cpp  sharedMemory/SharedMemory.cpp ../slsSupportLib/include/utilities.cpp
+SRC_CLNT=  slsDetector/slsDetectorCommand.cpp slsDetector/slsDetector.cpp multiSlsDetector/multiSlsDetector.cpp ReceiverInterface/ReceiverInterface.cpp slsDetector/slsDetectorUsers.cpp  sharedMemory/SharedMemory.cpp ../slsSupportLib/include/utilities.cpp
 DEPSINCLUDES = ../slsSupportLib/include/sls_receiver_defs.h ../slsSupportLib/include/sls_receiver_funcs.h ../slsSupportLib/include/ansi.h ../slsSupportLib/include/sls_detector_defs.h  ../slsSupportLib/include/sls_detector_funcs.h ../slsSupportLib/include/error_defs.h slsDetector/slsDetectorBase.h slsDetector/detectorData.h   sharedMemory/SharedMemory.h ../slsSupportLib/include/sls_receiver_exceptions.h ../slsSupportLib/include/versionAPI.h ../slsSupportLib/include/utilities.h     ../slsSupportLib/include/container_utils.h
 
 

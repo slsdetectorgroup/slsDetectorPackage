@@ -1,23 +1,16 @@
+#pragma once
 
-
-
-#ifndef SLS_RECEIVER_INTERFACE_H
-#define SLS_RECEIVER_INTERFACE_H
 
 #include "sls_detector_defs.h"
 #include "MySocketTCP.h"
 
 
-
 /**
- * 
- * @short the slsReceiverInterface class is the interface between the sls detector and the sls receiver
- * @author Dhanya Maliakal
- * @version 0.1alpha
+ * @short the ReceiverInterface class is the interface between the client and the receiver
  */
 
 
-class receiverInterface{
+class ReceiverInterface{
 
 public:
 
@@ -25,13 +18,13 @@ public:
 	 * (default) constructor
 	 * @param socket tcp socket between client and receiver
 	 */
-	receiverInterface(MySocketTCP *socket);
+	ReceiverInterface(MySocketTCP *socket);
 
 
 	/**
 	 * destructor
 	 */
-	virtual ~receiverInterface();
+	virtual ~ReceiverInterface();
 
 	/**
 	 * Set the datasocket
@@ -140,7 +133,7 @@ public:
 	 */
 	int sendROI(int fnum, int n, slsReceiverDefs::ROI roiLimits[]);
 
-	//here one should implement the funcs listed in 
+
 
 private:
 
@@ -151,4 +144,4 @@ private:
 
 };
 
-#endif
+

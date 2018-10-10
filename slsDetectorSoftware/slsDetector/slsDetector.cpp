@@ -5990,6 +5990,30 @@ int slsDetector::exitReceiver() {
 
 }
 
+int slsDetector::execReceiverCommand(std::string cmd) {
+
+	int fnum=F_EXEC_RECEIVER_COMMAND;
+	int ret=FAIL;
+	char arg[MAX_STR_LENGTH];
+	memset(arg,0,sizeof(arg));
+	char retval[MAX_STR_LENGTH];
+	memset(retval,0, sizeof(retval));
+
+	strcpy(arg,cmd.c_str());
+
+	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
+#ifdef VERBOSE
+		std::cout << "Sending to receiver the command: " << arg << std::endl;
+#endif
+		if (connectData() == OK){
+			ret=thisReceiver->SendString(fnum,retval,arg);
+			disconnectData();
+		}
+	}
+	return ret;
+}
+
+
 
 int slsDetector::updateReceiverNoWait() {
 
@@ -7504,5 +7528,7 @@ int slsDetector::writeSettingsFile(std::string fname,  sls_detector_module mod,
 	}
 
 }
+
+
 
 

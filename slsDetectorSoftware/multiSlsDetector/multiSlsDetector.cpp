@@ -2724,6 +2724,18 @@ int multiSlsDetector::exitReceiver(int detPos) {
 }
 
 
+int multiSlsDetector::execReceiverCommand(std::string cmd, int detPos) {
+	// single
+	if (detPos >= 0) {
+		return detectors[detPos]->execReceiverCommand(cmd);
+	}
+
+	// multi
+	auto r = parallelCall(&slsDetector::execReceiverCommand, cmd);
+	return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
+}
+
+
 std::string multiSlsDetector::getFilePath(int detPos) {
 	// single
 	if (detPos >= 0) {

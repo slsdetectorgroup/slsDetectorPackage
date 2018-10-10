@@ -1378,6 +1378,14 @@ public:
 	int exitReceiver();
 
 	/**
+	 * Executes a system command on the receiver server
+	 * e.g. mount an nfs disk, reboot and returns answer etc.
+	 * @param cmd command to be executed
+	 * @returns OK or FAIL
+	 */
+	int execReceiverCommand(std::string cmd);
+
+	/**
      updates the shared memory receiving the data from the detector (without asking and closing the connection
      /returns OK
 	 */

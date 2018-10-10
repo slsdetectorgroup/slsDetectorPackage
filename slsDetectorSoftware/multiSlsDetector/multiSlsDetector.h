@@ -1230,6 +1230,15 @@ public:
 	int exitReceiver(int detPos = -1);
 
 	/**
+	 * Executes a system command on the receiver server
+	 * e.g. mount an nfs disk, reboot and returns answer etc.
+	 * @param cmd command to be executed
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns OK or FAIL
+	 */
+	int execReceiverCommand(std::string cmd, int detPos = -1);
+
+	/**
 	 * Returns output file directory
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns output file directory

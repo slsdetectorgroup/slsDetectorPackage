@@ -57,15 +57,6 @@ multiSlsDetector::multiSlsDetector(int id, bool verify, bool update)
 
 
 multiSlsDetector::~multiSlsDetector() {
-	// delete zmq sockets first
-    for (auto* it : zmqSocket)
-		delete it;
-	zmqSocket.clear();
-
-    for (auto* it : detectors)
-		delete it;
-	detectors.clear();
-
 	if (sharedMemory) {
 		sharedMemory->UnmapSharedMemory(thisMultiDetector);
 		delete sharedMemory;
@@ -87,8 +78,8 @@ template <typename RT, typename... CT>
 std::vector<RT> multiSlsDetector::serialCall(RT (slsDetector::*somefunc)(CT...), CT... Args)
 {
     std::vector<RT> result;
-    for (size_t idet = 0; idet < detectors.size(); ++idet) {
-        result.push_back(((*this)[idet]->*somefunc)(Args...));
+    for (auto& d: detectors) {
+        result.push_back((d.get()->*somefunc)(Args...));
         /*
          if ((*this)[idet]->getErrorMask())
 			setErrorMask(getErrorMask() | (1 << idet));
@@ -101,8 +92,8 @@ template <typename RT, typename... CT>
 std::vector<RT> multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...), CT... Args)
 {
     std::vector<std::future<RT>> futures;
-    for (size_t idet = 0; idet < detectors.size(); ++idet) {
-        futures.push_back(std::async(std::launch::async, somefunc, (*this)[idet], Args...));
+    for (auto &d : detectors) {
+        futures.push_back(std::async(std::launch::async, somefunc, d.get(), Args...));
         /*
          if ((*this)[idet]->getErrorMask())
 			setErrorMask(getErrorMask() | (1 << idet));
@@ -116,17 +107,17 @@ std::vector<RT> multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...
 }
 
 
-std::string multiSlsDetector::concatResultOrPos(std::string (slsDetector::*somefunc)(int), int pos) {
-	if (pos >= 0 && pos < (int)detectors.size()) {
-		return (detectors[pos]->*somefunc)(pos);
-	} else {
-		std::string s;
-		for (auto* it : detectors) {
-			s += (it->*somefunc)(pos) + "+";
-		}
-		return s;
-	}
-}
+// std::string multiSlsDetector::concatResultOrPos(std::string (slsDetector::*somefunc)(int), int pos) {
+// 	if (pos >= 0 && pos < (int)detectors.size()) {
+// 		return (detectors[pos].get()->*somefunc)(pos);
+// 	} else {
+// 		std::string s;
+// 		for (auto& d : detectors) {
+// 			s += (d.get()->*somefunc)(pos) + "+";
+// 		}
+// 		return s;
+// 	}
+// }
 
 
 int multiSlsDetector::decodeNChannel(int offsetX, int offsetY, int& channelX, int& channelY) {
@@ -239,8 +230,8 @@ int64_t multiSlsDetector::clearAllErrorMask(int detPos) {
 	// multi
 	clearErrorMask();
 	clearNotAddedList();
-	for (auto* it : detectors)
-		it->clearErrorMask();
+	for (auto& d : detectors)
+		d->clearErrorMask();
 	return getErrorMask();
 }
 
@@ -300,19 +291,19 @@ int64_t multiSlsDetector::getId(idMode mode, int detPos) {
 
 
 slsDetector* multiSlsDetector::getSlsDetector(int detPos) {
-	return detectors[detPos];
+	return detectors[detPos].get();
 }
 
 
 slsDetector *multiSlsDetector::operator()(int detPos) const {
-	return detectors[detPos];
+	return detectors[detPos].get();
 }
 
 slsDetector* multiSlsDetector::operator[](int detPos) const {
     //Providing access to detectors with range checking
     //throw exception if out of range
     if (detPos >= 0 && detPos < (int)detectors.size())
-        return detectors[detPos];
+        return detectors[detPos].get();
     else
         throw(std::range_error("Detector does not exist"));
 }
@@ -357,17 +348,14 @@ void multiSlsDetector::freeSharedMemory(int detPos) {
 
 	// multi
 	// clear zmq vector
-    for (auto* it : zmqSocket)
-		delete it;
 	zmqSocket.clear();
 
 	// should be done before the detector list is deleted
 	clearAllErrorMask();
 
 	// clear sls detector vector shm
-    for (auto* it : detectors) {
-    	it->freeSharedMemory();
-    	delete it;
+    for (auto& d : detectors) {
+    	d->freeSharedMemory();
     }
     detectors.clear();
 
@@ -399,8 +387,8 @@ std::string multiSlsDetector::getUserDetails() {
 
 	//type
 	sstream<< "\nType: ";
-    for (auto* it : detectors) {
-    	sstream<< it->sgetDetectorsType() << "+";
+    for (auto& d : detectors) {
+    	sstream<< d->sgetDetectorsType() << "+";
     }
 
 	//PID
@@ -485,19 +473,13 @@ void multiSlsDetector::initializeDetectorStructure() {
 
 void multiSlsDetector::initializeMembers(bool verify) {
 	//multiSlsDetector
-    for (auto* it : zmqSocket)
-		delete it;
 	zmqSocket.clear();
 
 	// get objects from single det shared memory (open)
 	for (int i = 0; i < thisMultiDetector->numberOfDetectors; i++) {
 		try {
-			slsDetector* sdet = new slsDetector(detId, i, verify);
-			detectors.push_back(sdet);
+			detectors.push_back(sls::make_unique<slsDetector>(detId, i, verify));
 		} catch (...) {
-			// clear detectors list
-		    for (auto* it : detectors)
-		    	delete it;
 		    detectors.clear();
 			throw;
 		}
@@ -602,8 +584,8 @@ void multiSlsDetector::addSlsDetector (std::string s) {
 #ifdef VERBOSE
 	std::cout << "Adding detector " << s << std::endl;
 #endif
-    for (auto* it : detectors) {
-		if (it->getHostname() == s) {
+    for (auto& d : detectors) {
+		if (d->getHostname() == s) {
 			std::cout << "Detector " << s << "already part of the multiDetector!" << std::endl
 					<< "Remove it before adding it back in a new position!" << std::endl;
 			return;
@@ -625,8 +607,11 @@ void multiSlsDetector::addSlsDetector (std::string s) {
 
 
 	int pos = (int)detectors.size();
-	slsDetector* sdet = new slsDetector(type, detId, pos, false);
-	detectors.push_back(sdet);
+	// slsDetector* sdet = new slsDetector(type, detId, pos, false);
+	// detectors.push_back(sdet);
+	detectors.push_back(sls::make_unique<slsDetector>(type, detId, pos, false));
+
+
 	thisMultiDetector->numberOfDetectors = detectors.size();
 
 	detectors[pos]->setHostname(s.c_str()); // also updates client
@@ -878,8 +863,8 @@ void multiSlsDetector::updateOffsets() {
 			thisMultiDetector->numberOfChannel[0] *
 			thisMultiDetector->numberOfChannel[1];
 
-	for (auto* it : detectors) {
-		it->updateMultiSize(thisMultiDetector->numberOfDetector[0],
+	for (auto& d : detectors) {
+		d->updateMultiSize(thisMultiDetector->numberOfDetector[0],
 				 thisMultiDetector->numberOfDetector[1]);
 	}
 }
@@ -1620,10 +1605,10 @@ int multiSlsDetector::setDynamicRange(int p, int detPos) {
 	thisMultiDetector->dataBytes              = 0;
 	thisMultiDetector->dataBytesInclGapPixels = 0;
 	thisMultiDetector->numberOfChannels       = 0;
-	for (auto* it : detectors) {
-		thisMultiDetector->dataBytes += it->getDataBytes();
-		thisMultiDetector->dataBytesInclGapPixels += it->getDataBytesInclGapPixels();
-		thisMultiDetector->numberOfChannels +=	it->getTotalNumberOfChannels();
+	for (auto& d : detectors) {
+		thisMultiDetector->dataBytes += d->getDataBytes();
+		thisMultiDetector->dataBytesInclGapPixels += d->getDataBytesInclGapPixels();
+		thisMultiDetector->numberOfChannels +=	d->getTotalNumberOfChannels();
 	}
 
 
@@ -2603,10 +2588,10 @@ int multiSlsDetector::getChanRegs(double* retval, bool fromDetector, int detPos)
 
 	int offset = 0;
 	std::vector<int> r;
-	for (auto* it : detectors) {
-		int nch = it->getTotalNumberOfChannels();
+	for (auto& d : detectors) {
+		int nch = d->getTotalNumberOfChannels();
 		double result[nch];
-		r.push_back(it->getChanRegs(result, fromDetector));
+		r.push_back(d->getChanRegs(result, fromDetector));
 		memcpy(retval + offset, result, nch * sizeof(double));
 	}
 	return sls::minusOneIfDifferent(r);
@@ -2982,8 +2967,6 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy) {
 	if (destroy) {
 		cprintf(MAGENTA, "Going to destroy data sockets\n");
 		//close socket
-	    for (auto* it : zmqSocket)
-			delete it;
 	    zmqSocket.clear();
 
 		client_downstream = false;
@@ -3004,11 +2987,13 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy) {
 		uint32_t portnum = stoi(detectors[iSocket / numSocketsPerDetector]->getClientStreamingPort());
 		portnum += (iSocket % numSocketsPerDetector);
 		try {
-			ZmqSocket* z = new ZmqSocket(
-					detectors[iSocket / numSocketsPerDetector]->getClientStreamingIP().c_str(),
-					portnum);
-			zmqSocket.push_back(z);
-			printf("Zmq Client[%lu] at %s\n", iSocket, z->GetZmqServerAddress());
+			// ZmqSocket* z = new ZmqSocket(
+			// 		detectors[iSocket / numSocketsPerDetector]->getClientStreamingIP().c_str(),
+			// 		portnum);
+			// zmqSocket.push_back(z);
+			zmqSocket.push_back(sls::make_unique<ZmqSocket>(detectors[iSocket / numSocketsPerDetector]->getClientStreamingIP().c_str(),
+					portnum));
+			printf("Zmq Client[%lu] at %s\n", iSocket, zmqSocket.back()->GetZmqServerAddress());
 		} catch (...) {
 			cprintf(RED, "Error: Could not create Zmq socket on port %d\n", portnum);
 			createReceivingDataSockets(true);
@@ -3528,8 +3513,8 @@ int multiSlsDetector::setCTBPatLoops(int level, int& start, int& stop, int& n, i
 
 	// multi
 	std::vector<int> r;
-	for (auto* it : detectors) {
-		r.push_back(it->setCTBPatLoops(level, start, stop, n));
+	for (auto& d : detectors) {
+		r.push_back(d->setCTBPatLoops(level, start, stop, n));
 	}
 	return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
